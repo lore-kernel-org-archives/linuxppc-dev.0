@@ -1,16 +1,24 @@
-Return-Path: <stef.van.os@Prodrive.nl>
-Received: from mail.prodrive.nl (mail.prodrive.nl [212.61.153.67])
- by ozlabs.org (Postfix) with ESMTP id 47D732C0095
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Feb 2013 06:39:13 +1100 (EST)
-From: Stef van Os <stef.van.os@prodrive.nl>
-To: Kumar Gala <galak@kernel.crashing.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v2 1/1] powerpc/85xx: Board support for ppa8548
-Date: Sun, 3 Feb 2013 20:39:07 +0100
-Message-ID: <1359920347-15340-1-git-send-email-stef.van.os@prodrive.nl>
+Return-Path: <rjw@sisk.pl>
+Received: from hydra.sisk.pl (hydra.sisk.pl [212.160.235.94])
+ by ozlabs.org (Postfix) with ESMTP id AEF232C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Feb 2013 07:38:26 +1100 (EST)
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [RFC PATCH v2 01/12] Add sys_hotplug.h for system device hotplug
+ framework
+Date: Sun, 03 Feb 2013 21:44:39 +0100
+Message-ID: <5876609.Ic1nhHW6N2@vostro.rjw.lan>
+In-Reply-To: <1810611.i6Sc4oLaux@vostro.rjw.lan>
+References: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
+ <20130202145801.GB1434@kroah.com> <1810611.i6Sc4oLaux@vostro.rjw.lan>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Scott Wood <scottwood@freescale.com>, Paul Mackerras <paulus@samba.org>,
- Timur Tabi <timur.tabi@calxeda.com>, Stef van Os <stef.van.os@prodrive.nl>
+Content-Type: text/plain; charset="utf-8"
+Cc: linux-s390@vger.kernel.org, Toshi Kani <toshi.kani@hp.com>,
+ jiang.liu@huawei.com, wency@cn.fujitsu.com, linux-acpi@vger.kernel.org,
+ yinghai@kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ isimatu.yasuaki@jp.fujitsu.com, srivatsa.bhat@linux.vnet.ibm.com,
+ guohanjun@huawei.com, bhelgaas@google.com, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, lenb@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,403 +28,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Initial board support for the Prodrive PPA8548 AMC module. Board
-is an MPC8548 AMC platform used in RapidIO systems. This module is
-also used to test/work on mainline linux RapidIO software.
+On Saturday, February 02, 2013 09:15:37 PM Rafael J. Wysocki wrote:
+> On Saturday, February 02, 2013 03:58:01 PM Greg KH wrote:
+> > On Fri, Feb 01, 2013 at 11:12:59PM +0100, Rafael J. Wysocki wrote:
+> > > On Friday, February 01, 2013 08:23:12 AM Greg KH wrote:
+> > > > On Thu, Jan 31, 2013 at 09:54:51PM +0100, Rafael J. Wysocki wrote:
+> > > > > > > But, again, I'm going to ask why you aren't using the existing cpu /
+> > > > > > > memory / bridge / node devices that we have in the kernel.  Please use
+> > > > > > > them, or give me a _really_ good reason why they will not work.
+> > > > > > 
+> > > > > > We cannot use the existing system devices or ACPI devices here.  During
+> > > > > > hot-plug, ACPI handler sets this shp_device info, so that cpu and memory
+> > > > > > handlers (drivers/cpu.c and mm/memory_hotplug.c) can obtain their target
+> > > > > > device information in a platform-neutral way.  During hot-add, we first
+> > > > > > creates an ACPI device node (i.e. device under /sys/bus/acpi/devices),
+> > > > > > but platform-neutral modules cannot use them as they are ACPI-specific.
+> > > > > 
+> > > > > But suppose we're smart and have ACPI scan handlers that will create
+> > > > > "physical" device nodes for those devices during the ACPI namespace scan.
+> > > > > Then, the platform-neutral nodes will be able to bind to those "physical"
+> > > > > nodes.  Moreover, it should be possible to get a hierarchy of device objects
+> > > > > this way that will reflect all of the dependencies we need to take into
+> > > > > account during hot-add and hot-remove operations.  That may not be what we
+> > > > > have today, but I don't see any *fundamental* obstacles preventing us from
+> > > > > using this approach.
+> > > > 
+> > > > I would _much_ rather see that be the solution here as I think it is the
+> > > > proper one.
+> > > > 
+> > > > > This is already done for PCI host bridges and platform devices and I don't
+> > > > > see why we can't do that for the other types of devices too.
+> > > > 
+> > > > I agree.
+> > > > 
+> > > > > The only missing piece I see is a way to handle the "eject" problem, i.e.
+> > > > > when we try do eject a device at the top of a subtree and need to tear down
+> > > > > the entire subtree below it, but if that's going to lead to a system crash,
+> > > > > for example, we want to cancel the eject.  It seems to me that we'll need some
+> > > > > help from the driver core here.
+> > > > 
+> > > > I say do what we always have done here, if the user asked us to tear
+> > > > something down, let it happen as they are the ones that know best :)
+> > > > 
+> > > > Seriously, I guess this gets back to the "fail disconnect" idea that the
+> > > > ACPI developers keep harping on.  I thought we already resolved this
+> > > > properly by having them implement it in their bus code, no reason the
+> > > > same thing couldn't happen here, right?
+> > > 
+> > > Not really. :-)  We haven't ever resolved that particular issue I'm afraid.
+> > 
+> > Ah, I didn't realize that.
+> > 
+> > > > I don't think the core needs to do anything special, but if so, I'll be glad
+> > > > to review it.
+> > > 
+> > > OK, so this is the use case.  We have "eject" defined for something like
+> > > a container with a number of CPU cores, PCI host bridge, and a memory
+> > > controller under it.  And a few pretty much arbitrary I/O devices as a bonus.
+> > > 
+> > > Now, there's a button on the system case labeled as "Eject" and if that button
+> > > is pressed, we're supposed to _try_ to eject all of those things at once.  We
+> > > are allowed to fail that request, though, if that's problematic for some
+> > > reason, but we're supposed to let the BIOS know about that.
+> > > 
+> > > Do you seriously think that if that button is pressed, we should just proceed
+> > > with removing all that stuff no matter what?  That'd be kind of like Russian
+> > > roulette for whoever pressed that button, because s/he could only press it and
+> > > wait for the system to either crash or not.  Or maybe to crash a bit later
+> > > because of some delayed stuff that would hit one of those devices that had just
+> > > gone.  Surely not a situation any admin of a high-availability system would
+> > > like to be in. :-)
+> > > 
+> > > Quite frankly, I have no idea how that can be addressed in a single bus type,
+> > > let alone ACPI (which is not even a proper bus type, just something pretending
+> > > to be one).
+> > 
+> > You don't have it as a single bus type, you have a controller somewhere,
+> > off of the bus being destroyed, that handles sending remove events to
+> > the device and tearing everything down.  PCI does this from the very
+> > beginning.
+> 
+> Yes, but those are just remove events and we can only see how destructive they
+> were after the removal.  The point is to be able to figure out whether or not
+> we *want* to do the removal in the first place.
+> 
+> Say you have a computing node which signals a hardware problem in a processor
+> package (the container with CPU cores, memory, PCI host bridge etc.).  You
+> may want to eject that package, but you don't want to kill the system this
+> way.  So if the eject is doable, it is very much desirable to do it, but if it
+> is not doable, you'd rather shut the box down and do the replacement afterward.
+> That may be costly, however (maybe weeks of computations), so it should be
+> avoided if possible, but not at the expense of crashing the box if the eject
+> doesn't work out.
 
-PPA8548 overview:
-- 1.3 GHz Freescale PowerQUICC III MPC8548 processor
-- 1 GB DDR2 @ 266 MHz
-- 8 MB NOR flash
-- Serial RapidIO 1.2
-- 1 x 10/100/1000 BASE-T front ethernet
-- 1 x 1000 BASE-BX ethernet on AMC connector
+It seems to me that we could handle that with the help of a new flag, say
+"no_eject", in struct device, a global mutex, and a function that will walk
+the given subtree of the device hierarchy and check if "no_eject" is set for
+any devices in there.  Plus a global "no_eject" switch, perhaps.
 
-Signed-off-by: Stef van Os <stef.van.os@prodrive.nl>
----
- arch/powerpc/boot/dts/ppa8548.dts           |  163 +++++++++++++++++++++++++++
- arch/powerpc/configs/85xx/ppa8548_defconfig |   65 +++++++++++
- arch/powerpc/platforms/85xx/Kconfig         |    7 +
- arch/powerpc/platforms/85xx/Makefile        |    1 +
- arch/powerpc/platforms/85xx/ppa8548.c       |   98 ++++++++++++++++
- 5 files changed, 334 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/ppa8548.dts
- create mode 100644 arch/powerpc/configs/85xx/ppa8548_defconfig
- create mode 100644 arch/powerpc/platforms/85xx/ppa8548.c
+To be more precise, suppose we have a "no_eject" flag that is set for a device
+when the kernel is about to start using it in such a way that ejecting it would
+lead to serious trouble (i.e. it is a memory module holding the kernel's page
+tables or something like that).  Next, suppose that we have a function called,
+say, "device_may_eject()" that will walk the subtree of the device hierarchy
+starting at the given node and return false if any of the devices in there have
+"no_eject" set.  Further, require that device_may_eject() has to be called
+under a global mutex called something like "device_eject_lock".  Then, we can
+arrange things as follows:
 
-diff --git a/arch/powerpc/boot/dts/ppa8548.dts b/arch/powerpc/boot/dts/ppa8548.dts
-new file mode 100644
-index 0000000..b5f5220
---- /dev/null
-+++ b/arch/powerpc/boot/dts/ppa8548.dts
-@@ -0,0 +1,163 @@
-+/*
-+ * PPA8548 Device Tree Source (36-bit address map)
-+ * Copyright 2013 Prodrive B.V.
-+ *
-+ * Based on:
-+ * MPC8548 CDS Device Tree Source (36-bit address map)
-+ * Copyright 2012 Freescale Semiconductor Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+/include/ "fsl/mpc8548si-pre.dtsi"
-+
-+/ {
-+	model = "ppa8548";
-+	compatible = "ppa8548";
-+	#address-cells = <2>;
-+	#size-cells = <2>;
-+	interrupt-parent = <&mpic>;
-+
-+	memory {
-+		device_type = "memory";
-+		reg = <0 0 0x0 0x40000000>;
-+	};
-+
-+	lbc: localbus@fe0005000 {
-+		reg = <0xf 0xe0005000 0 0x1000>;
-+		ranges = <0x0 0x0 0xf 0xff800000 0x00800000>;
-+	};
-+
-+	soc: soc8548@fe0000000 {
-+		ranges = <0 0xf 0xe0000000 0x100000>;
-+	};
-+
-+	pci0: pci@fe0008000 {
-+		status = "disabled";
-+	};
-+
-+	pci1: pci@fe0009000 {
-+		status = "disabled";
-+	};
-+
-+	pci2: pcie@fe000a000 {
-+		status = "disabled";
-+	};
-+
-+	rio: rapidio@fe00c0000 {
-+		reg = <0xf 0xe00c0000 0x0 0x11000>;
-+		port1 {
-+			ranges = <0x0 0x0 0x0 0x80000000 0x0 0x40000000>;
-+		};
-+	};
-+};
-+
-+&lbc {
-+	nor@0 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		compatible = "cfi-flash";
-+		reg = <0x0 0x0 0x00800000>;
-+		bank-width = <2>;
-+		device-width = <2>;
-+
-+		partition@0 {
-+			reg = <0x0 0x7A0000>;
-+			label = "user";
-+		};
-+
-+		partition@7A0000 {
-+			reg = <0x7A0000 0x20000>;
-+			label = "env";
-+			read-only;
-+		};
-+
-+		partition@7C0000 {
-+			reg = <0x7C0000 0x40000>;
-+			label = "u-boot";
-+			read-only;
-+		};
-+	};
-+};
-+
-+&soc {
-+	i2c@3000 {
-+		rtc@6f {
-+			compatible = "intersil,isl1208";
-+			reg = <0x6f>;
-+		};
-+	};
-+
-+	i2c@3100 {
-+	};
-+
-+	/*
-+	 * Only ethernet controller @25000 and @26000 are used.
-+	 * Use alias enet2 and enet3 for the remainig controllers,
-+	 * to stay compatible with mpc8548si-pre.dtsi.
-+	 */
-+	enet2: ethernet@24000 {
-+		status = "disabled";
-+	};
-+
-+	mdio@24520 {
-+		phy0: ethernet-phy@0 {
-+			interrupts = <7 1 0 0>;
-+			reg = <0x0>;
-+			device_type = "ethernet-phy";
-+		};
-+		phy1: ethernet-phy@1 {
-+			interrupts = <8 1 0 0>;
-+			reg = <0x1>;
-+			device_type = "ethernet-phy";
-+		};
-+		tbi0: tbi-phy@11 {
-+			reg = <0x11>;
-+			device_type = "tbi-phy";
-+		};
-+	};
-+
-+	enet0: ethernet@25000 {
-+		tbi-handle = <&tbi1>;
-+		phy-handle = <&phy0>;
-+	};
-+
-+	mdio@25520 {
-+		tbi1: tbi-phy@11 {
-+			reg = <0x11>;
-+			device_type = "tbi-phy";
-+		};
-+	};
-+
-+	enet1: ethernet@26000 {
-+		tbi-handle = <&tbi2>;
-+		phy-handle = <&phy1>;
-+	};
-+
-+	mdio@26520 {
-+		tbi2: tbi-phy@11 {
-+			reg = <0x11>;
-+			device_type = "tbi-phy";
-+		};
-+	};
-+
-+	enet3: ethernet@27000 {
-+		status = "disabled";
-+	};
-+
-+	mdio@27520 {
-+		tbi3: tbi-phy@11 {
-+			reg = <0x11>;
-+			device_type = "tbi-phy";
-+		};
-+	};
-+
-+	crypto@30000 {
-+		status = "disabled";
-+	};
-+};
-+
-+/include/ "fsl/mpc8548si-post.dtsi"
-diff --git a/arch/powerpc/configs/85xx/ppa8548_defconfig b/arch/powerpc/configs/85xx/ppa8548_defconfig
-new file mode 100644
-index 0000000..a11337d
---- /dev/null
-+++ b/arch/powerpc/configs/85xx/ppa8548_defconfig
-@@ -0,0 +1,65 @@
-+CONFIG_PPC_85xx=y
-+CONFIG_PPA8548=y
-+CONFIG_DTC=y
-+CONFIG_DEFAULT_UIMAGE=y
-+CONFIG_IKCONFIG=y
-+CONFIG_IKCONFIG_PROC=y
-+# CONFIG_PCI is not set
-+# CONFIG_USB_SUPPORT is not set
-+CONFIG_ADVANCED_OPTIONS=y
-+CONFIG_LOWMEM_SIZE_BOOL=y
-+CONFIG_LOWMEM_SIZE=0x40000000
-+CONFIG_LOWMEM_CAM_NUM_BOOL=y
-+CONFIG_LOWMEM_CAM_NUM=4
-+CONFIG_PAGE_OFFSET_BOOL=y
-+CONFIG_PAGE_OFFSET=0xb0000000
-+CONFIG_KERNEL_START_BOOL=y
-+CONFIG_KERNEL_START=0xb0000000
-+# CONFIG_PHYSICAL_START_BOOL is not set
-+CONFIG_PHYSICAL_START=0x00000000
-+CONFIG_PHYSICAL_ALIGN=0x04000000
-+CONFIG_TASK_SIZE_BOOL=y
-+CONFIG_TASK_SIZE=0xb0000000
-+
-+CONFIG_FSL_LBC=y
-+CONFIG_FSL_DMA=y
-+CONFIG_FSL_RIO=y
-+
-+CONFIG_RAPIDIO=y
-+CONFIG_RAPIDIO_DMA_ENGINE=y
-+CONFIG_RAPIDIO_TSI57X=y
-+CONFIG_RAPIDIO_TSI568=y
-+CONFIG_RAPIDIO_CPS_XX=y
-+CONFIG_RAPIDIO_CPS_GEN2=y
-+CONFIG_SERIAL_8250=y
-+CONFIG_SERIAL_8250_CONSOLE=y
-+CONFIG_PROC_DEVICETREE=y
-+
-+CONFIG_MTD=y
-+CONFIG_MTD_BLKDEVS=y
-+CONFIG_MTD_BLOCK=y
-+CONFIG_MTD_CFI=y
-+CONFIG_MTD_CFI_AMDSTD=y
-+CONFIG_MTD_CFI_INTELEXT=y
-+CONFIG_MTD_CHAR=y
-+CONFIG_MTD_CMDLINE_PARTS=y
-+CONFIG_MTD_CONCAT=y
-+CONFIG_MTD_PARTITIONS=y
-+CONFIG_MTD_PHYSMAP_OF=y
-+
-+CONFIG_I2C=y
-+CONFIG_I2C_MPC=y
-+CONFIG_I2C_CHARDEV
-+CONFIG_RTC_CLASS=y
-+CONFIG_RTC_HCTOSYS=y
-+CONFIG_RTC_DRV_ISL1208=y
-+
-+CONFIG_NET=y
-+CONFIG_INET=y
-+CONFIG_IP_PNP=y
-+CONFIG_NETDEVICES=y
-+CONFIG_MII=y
-+CONFIG_GIANFAR=y
-+CONFIG_MARVELL_PHY=y
-+CONFIG_NFS_FS=y
-+CONFIG_ROOT_NFS=y
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index 02d02a0..803bfed 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -191,6 +191,13 @@ config SBC8548
- 	help
- 	  This option enables support for the Wind River SBC8548 board
- 
-+config PPA8548
-+	bool "Prodrive PPA8548"
-+	help
-+	  This option enables support for the Prodrive PPA8548 board.
-+	select DEFAULT_UIMAGE
-+	select HAS_RAPIDIO
-+
- config GE_IMP3A
- 	bool "GE Intelligent Platforms IMP3A"
- 	select DEFAULT_UIMAGE
-diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
-index 76f679c..d5f4195 100644
---- a/arch/powerpc/platforms/85xx/Makefile
-+++ b/arch/powerpc/platforms/85xx/Makefile
-@@ -25,6 +25,7 @@ obj-$(CONFIG_P5040_DS)    += p5040_ds.o corenet_ds.o
- obj-$(CONFIG_STX_GP3)	  += stx_gp3.o
- obj-$(CONFIG_TQM85xx)	  += tqm85xx.o
- obj-$(CONFIG_SBC8548)     += sbc8548.o
-+obj-$(CONFIG_PPA8548)     += ppa8548.o
- obj-$(CONFIG_SOCRATES)    += socrates.o socrates_fpga_pic.o
- obj-$(CONFIG_KSI8560)	  += ksi8560.o
- obj-$(CONFIG_XES_MPC85xx) += xes_mpc85xx.o
-diff --git a/arch/powerpc/platforms/85xx/ppa8548.c b/arch/powerpc/platforms/85xx/ppa8548.c
-new file mode 100644
-index 0000000..af7bf1a
---- /dev/null
-+++ b/arch/powerpc/platforms/85xx/ppa8548.c
-@@ -0,0 +1,98 @@
-+/*
-+ * ppa8548 setup and early boot code.
-+ *
-+ * Copyright 2009 Prodrive B.V..
-+ *
-+ * By Stef van Os (see MAINTAINERS for contact information)
-+ *
-+ * Based on the SBC8548 support - Copyright 2007 Wind River Systems Inc.
-+ * Based on the MPC8548CDS support - Copyright 2005 Freescale Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#include <linux/stddef.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/reboot.h>
-+#include <linux/seq_file.h>
-+#include <linux/of_platform.h>
-+
-+#include <asm/machdep.h>
-+#include <asm/udbg.h>
-+#include <asm/mpic.h>
-+
-+#include <sysdev/fsl_soc.h>
-+
-+static void __init ppa8548_pic_init(void)
-+{
-+	struct mpic *mpic = mpic_alloc(NULL, 0, MPIC_BIG_ENDIAN,
-+			0, 256, " OpenPIC  ");
-+	BUG_ON(mpic == NULL);
-+	mpic_init(mpic);
-+}
-+
-+/*
-+ * Setup the architecture
-+ */
-+static void __init ppa8548_setup_arch(void)
-+{
-+	if (ppc_md.progress)
-+		ppc_md.progress("ppa8548_setup_arch()", 0);
-+}
-+
-+static void ppa8548_show_cpuinfo(struct seq_file *m)
-+{
-+	uint svid, phid1;
-+
-+	svid = mfspr(SPRN_SVR);
-+
-+	seq_printf(m, "Vendor\t\t: Prodrive B.V.\n");
-+	seq_printf(m, "SVR\t\t: 0x%x\n", svid);
-+
-+	/* Display cpu Pll setting */
-+	phid1 = mfspr(SPRN_HID1);
-+	seq_printf(m, "PLL setting\t: 0x%x\n", ((phid1 >> 24) & 0x3f));
-+}
-+
-+static struct of_device_id __initdata of_bus_ids[] = {
-+	{ .name = "soc", },
-+	{ .type = "soc", },
-+	{ .compatible = "simple-bus", },
-+	{ .compatible = "gianfar", },
-+	{ .compatible = "fsl,srio", },
-+	{},
-+};
-+
-+static int __init declare_of_platform_devices(void)
-+{
-+	of_platform_bus_probe(NULL, of_bus_ids, NULL);
-+
-+	return 0;
-+}
-+machine_device_initcall(ppa8548, declare_of_platform_devices);
-+
-+/*
-+ * Called very early, device-tree isn't unflattened
-+ */
-+static int __init ppa8548_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
-+
-+	return of_flat_dt_is_compatible(root, "ppa8548");
-+}
-+
-+define_machine(ppa8548) {
-+	.name		= "ppa8548",
-+	.probe		= ppa8548_probe,
-+	.setup_arch	= ppa8548_setup_arch,
-+	.init_IRQ	= ppa8548_pic_init,
-+	.show_cpuinfo	= ppa8548_show_cpuinfo,
-+	.get_irq	= mpic_get_irq,
-+	.restart	= fsl_rstcr_restart,
-+	.calibrate_decr = generic_calibrate_decr,
-+	.progress	= udbg_progress,
-+};
+1. When a device is about to be used for such purposes that it shouldn't be
+   ejected, the relevant code should:
+  (a) Acquire device_eject_lock.
+  (b) Check if the device is still there and go to (e) if not.
+  (c) Do whatever needs to be done to the device.
+  (d) Set the device's no_eject flag.
+  (e) Release device_eject_lock.
+
+2. When an eject operation is about to be carried out on a subtree of the device
+   hierarchy, the eject code (be it ACPI or something else) should:
+  (a) Acquire device_eject_lock.
+  (b) Call device_may_eject() on the starting device and go to (d) if it
+      returns false.
+  (c) Carry out the eject (that includes calling .remove() from all of the
+      involved drivers in partiular).
+  (d) Release device_eject_lock.
+
+3. When it is OK to eject the device again, the relevant code should just clear
+   its "no_eject" flag under device_eject_lock.
+
+If we want to synchronize that with such things like boot or system suspend,
+a global "no_eject" switch can be used for that (it needs to be manipulated
+under device_eject_lock) and one more step (check the global "no_eject") is
+needed between 2(a) and 2(b).
+
+Does it look like a reasonable approach?
+
+Rafael
+
+
 -- 
-1.7.2.5
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
