@@ -1,27 +1,25 @@
-Return-Path: <lethal@linux-sh.org>
-Received: from linux-sh.org (linux-sh.org [111.68.239.195])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id CE64B2C02AD
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Feb 2013 23:12:26 +1100 (EST)
-Date: Mon, 4 Feb 2013 20:30:44 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: James Hogan <james.hogan@imgtec.com>
-Subject: Re: [PATCH RESEND 1/1] arch Kconfig: remove references to IRQ_PER_CPU
-Message-ID: <20130204113043.GB12216@linux-sh.org>
-References: <1359972583-17134-1-git-send-email-james.hogan@imgtec.com>
+Return-Path: <rjw@sisk.pl>
+Received: from hydra.sisk.pl (hydra.sisk.pl [212.160.235.94])
+ by ozlabs.org (Postfix) with ESMTP id E70A72C02A7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Feb 2013 23:27:48 +1100 (EST)
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH?] Move ACPI device nodes under /sys/firmware/acpi (was:
+ Re: [RFC PATCH v2 01/12] Add sys_hotplug.h for system device hotplug
+ framework)
+Date: Mon, 04 Feb 2013 13:34:02 +0100
+Message-ID: <2107169.R5mOc9qh97@vostro.rjw.lan>
+In-Reply-To: <20130204012447.GB6433@kroah.com>
+References: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
+ <2806030.VWUMy6F7lm@vostro.rjw.lan> <20130204012447.GB6433@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1359972583-17134-1-git-send-email-james.hogan@imgtec.com>
-Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
- linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
- linux-sh@vger.kernel.org, linux-hexagon@vger.kernel.org,
- Helge Deller <deller@gmx.de>, linux-kernel@vger.kernel.org,
- Fenghua Yu <fenghua.yu@intel.com>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Mike Frysinger <vapier@gentoo.org>, Ralf Baechle <ralf@linux-mips.org>,
- uclinux-dist-devel@blackfin.uclinux.org, Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset="utf-8"
+Cc: linux-s390@vger.kernel.org, Toshi Kani <toshi.kani@hp.com>,
+ jiang.liu@huawei.com, wency@cn.fujitsu.com, linux-acpi@vger.kernel.org,
+ yinghai@kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ isimatu.yasuaki@jp.fujitsu.com, srivatsa.bhat@linux.vnet.ibm.com,
+ guohanjun@huawei.com, bhelgaas@google.com, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, lenb@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,27 +29,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 04, 2013 at 10:09:43AM +0000, James Hogan wrote:
-> The IRQ_PER_CPU Kconfig symbol was removed in the following commit:
+On Sunday, February 03, 2013 07:24:47 PM Greg KH wrote:
+> On Sat, Feb 02, 2013 at 11:18:20PM +0100, Rafael J. Wysocki wrote:
+> > On Saturday, February 02, 2013 09:15:37 PM Rafael J. Wysocki wrote:
+> > > On Saturday, February 02, 2013 03:58:01 PM Greg KH wrote:
+> > [...]
+> > > 
+> > > > I know it's more complicated with these types of devices, and I think we
+> > > > are getting closer to the correct solution, I just don't want to ever
+> > > > see duplicate devices in the driver model for the same physical device.
+> > > 
+> > > Do you mean two things based on struct device for the same hardware component?
+> > > That's been happening already pretty much forever for every PCI device known
+> > > to the ACPI layer, for PNP and many others.  However, those ACPI things are (or
+> > > rather should be, but we're going to clean that up) only for convenience (to be
+> > > able to see the namespace structure and related things in sysfs).  So the stuff
+> > > under /sys/devices/LNXSYSTM\:00/ is not "real".  In my view it shouldn't even
+> > > be under /sys/devices/ (/sys/firmware/acpi/ seems to be a better place for it),
+> > > but that may be difficult to change without breaking user space (maybe we can
+> > > just symlink it from /sys/devices/ or something).  And the ACPI bus type
+> > > shouldn't even exist in my opinion.
+> > 
+> > Well, well.
+> > 
+> > In fact, the appended patch moves the whole ACPI device nodes tree under
+> > /sys/firmware/acpi/ and I'm not seeing any negative consequences of that on my
+> > test box (events work and so on).  User space is quite new on it, though, and
+> > the patch is hackish.
 > 
-> Commit 6a58fb3bad099076f36f0f30f44507bc3275cdb6 ("genirq: Remove
-> CONFIG_IRQ_PER_CPU") merged in v2.6.39-rc1.
-> 
-> But IRQ_PER_CPU wasn't removed from any of the architecture Kconfig
-> files where it was defined or selected. It's completely unused so remove
-> the remaining references.
-> 
-> Signed-off-by: James Hogan <james.hogan@imgtec.com>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Mike Frysinger <vapier@gentoo.org>
-> Cc: Fenghua Yu <fenghua.yu@intel.com>
-> Cc: Ralf Baechle <ralf@linux-mips.org>
-> Cc: "James E.J. Bottomley" <jejb@parisc-linux.org>
-> Cc: Helge Deller <deller@gmx.de>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Paul Mundt <lethal@linux-sh.org>
-> Acked-by: Tony Luck <tony.luck@intel.com>
-> Acked-by: Richard Kuo <rkuo@codeaurora.org>
+> Try booting a RHEL 5 image on this type of kernel, or some old Fedora
+> releases, they were sensitive to changes in sysfs.
 
-Acked-by: Paul Mundt <lethal@linux-sh.org>
+Well, I've found a machine where it causes problems to happen.
+
+I'll try to add a symlink from /sys/devices to that and see what happens then.
+
+Thanks,
+Rafael
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
