@@ -1,28 +1,27 @@
-Return-Path: <toshi.kani@hp.com>
-Received: from g4t0016.houston.hp.com (g4t0016.houston.hp.com [15.201.24.19])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "smtp.hp.com",
- Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4906F2C0087
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Feb 2013 09:23:47 +1100 (EST)
-Message-ID: <1360016009.23410.213.camel@misato.fc.hp.com>
-Subject: Re: [RFC PATCH v2 01/12] Add sys_hotplug.h for system device
- hotplug framework
-From: Toshi Kani <toshi.kani@hp.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Date: Mon, 04 Feb 2013 15:13:29 -0700
-In-Reply-To: <5598823.8hjkkMP1h9@vostro.rjw.lan>
-References: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
- <2048116.Qo8UgQ5hjb@vostro.rjw.lan> <20130204143351.GA20119@kroah.com>
- <5598823.8hjkkMP1h9@vostro.rjw.lan>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <akpm@linux-foundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id 8FFF92C02C1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Feb 2013 10:04:20 +1100 (EST)
+Date: Mon, 4 Feb 2013 15:04:17 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Tang Chen <tangchen@cn.fujitsu.com>
+Subject: Re: [PATCH v6 08/15] memory-hotplug: Common APIs to support page
+ tables hot-remove
+Message-Id: <20130204150417.2b1256b1.akpm@linux-foundation.org>
+In-Reply-To: <1357723959-5416-9-git-send-email-tangchen@cn.fujitsu.com>
+References: <1357723959-5416-1-git-send-email-tangchen@cn.fujitsu.com>
+ <1357723959-5416-9-git-send-email-tangchen@cn.fujitsu.com>
 Mime-Version: 1.0
-Cc: linux-s390@vger.kernel.org, jiang.liu@huawei.com, wency@cn.fujitsu.com,
- linux-acpi@vger.kernel.org, Greg KH <gregkh@linuxfoundation.org>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- isimatu.yasuaki@jp.fujitsu.com, yinghai@kernel.org,
- srivatsa.bhat@linux.vnet.ibm.com, guohanjun@huawei.com, bhelgaas@google.com,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, lenb@kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-mm@kvack.org,
+ paulus@samba.org, hpa@zytor.com, sparclinux@vger.kernel.org, cl@linux.com,
+ linux-s390@vger.kernel.org, x86@kernel.org, linux-acpi@vger.kernel.org,
+ isimatu.yasuaki@jp.fujitsu.com, linfeng@cn.fujitsu.com, mgorman@suse.de,
+ kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, len.brown@intel.com,
+ wency@cn.fujitsu.com, cmetcalf@tilera.com, glommer@parallels.com,
+ wujianguo@huawei.com, yinghai@kernel.org, laijs@cn.fujitsu.com,
+ linux-kernel@vger.kernel.org, minchan.kim@gmail.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,125 +31,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-02-04 at 21:07 +0100, Rafael J. Wysocki wrote:
-> On Monday, February 04, 2013 06:33:52 AM Greg KH wrote:
-> > On Mon, Feb 04, 2013 at 03:21:22PM +0100, Rafael J. Wysocki wrote:
-> > > On Monday, February 04, 2013 04:48:10 AM Greg KH wrote:
-> > > > On Sun, Feb 03, 2013 at 09:44:39PM +0100, Rafael J. Wysocki wrote:
-> > > > > > Yes, but those are just remove events and we can only see how destructive they
-> > > > > > were after the removal.  The point is to be able to figure out whether or not
-> > > > > > we *want* to do the removal in the first place.
-> > > > > > 
-> > > > > > Say you have a computing node which signals a hardware problem in a processor
-> > > > > > package (the container with CPU cores, memory, PCI host bridge etc.).  You
-> > > > > > may want to eject that package, but you don't want to kill the system this
-> > > > > > way.  So if the eject is doable, it is very much desirable to do it, but if it
-> > > > > > is not doable, you'd rather shut the box down and do the replacement afterward.
-> > > > > > That may be costly, however (maybe weeks of computations), so it should be
-> > > > > > avoided if possible, but not at the expense of crashing the box if the eject
-> > > > > > doesn't work out.
-> > > > > 
-> > > > > It seems to me that we could handle that with the help of a new flag, say
-> > > > > "no_eject", in struct device, a global mutex, and a function that will walk
-> > > > > the given subtree of the device hierarchy and check if "no_eject" is set for
-> > > > > any devices in there.  Plus a global "no_eject" switch, perhaps.
-> > > > 
-> > > > I think this will always be racy, or at worst, slow things down on
-> > > > normal device operations as you will always be having to grab this flag
-> > > > whenever you want to do something new.
-> > > 
-> > > I don't see why this particular scheme should be racy, at least I don't see any
-> > > obvious races in it (although I'm not that good at races detection in general,
-> > > admittedly).
-> > > 
-> > > Also, I don't expect that flag to be used for everything, just for things known
-> > > to seriously break if forcible eject is done.  That may be not precise enough,
-> > > so that's a matter of defining its purpose more precisely.
-> > > 
-> > > We can do something like that on the ACPI level (ie. introduce a no_eject flag
-> > > in struct acpi_device and provide an iterface for the layers above ACPI to
-> > > manipulate it) but then devices without ACPI namespace objects won't be
-> > > covered.  That may not be a big deal, though.
-> > > 
-> > > So say dev is about to be used for something incompatible with ejecting, so to
-> > > speak.  Then, one would do platform_lock_eject(dev), which would check if dev
-> > > has an ACPI handle and then take acpi_eject_lock (if so).  The return value of
-> > > platform_lock_eject(dev) would need to be checked to see if the device is not
-> > > gone.  If it returns success (0), one would do something to the device and
-> > > call platform_no_eject(dev) and then platform_unlock_eject(dev).
-> > 
-> > How does a device "know" it is doing something that is incompatible with
-> > ejecting?  That's a non-trivial task from what I can tell.
-> 
-> I agree that this is complicated in general.  But.
-> 
-> There are devices known to have software "offline" and "online" operations
-> such that after the "offline" the given device is guaranteed to be not used
-> until "online".  We have that for CPU cores, for example, and user space can
-> do it via /sys/devices/system/cpu/cpuX/online .  So, why don't we make the
-> "online" set the no_eject flag (under the lock as appropriate) and the
-> "offline" clear it?  And why don't we define such "online" and "offline" for
-> all of the other "system" stuff, like memory, PCI host bridges etc. and make it
-> behave analogously?
-> 
-> Then, it is quite simple to say which devices should use the no_eject flag:
-> devices that have "online" and "offline" exported to user space.  And guess
-> who's responsible for "offlining" all of those things before trying to eject
-> them: user space is.  From the kernel's point of view it is all clear.  Hands
-> clean. :-)
-> 
-> Now, there's a different problem how to expose all of the relevant information
-> to user space so that it knows what to "offline" for the specific eject
-> operation to succeed, but that's kind of separate and worth addressing
-> anyway.
+On Wed, 9 Jan 2013 17:32:32 +0800
+Tang Chen <tangchen@cn.fujitsu.com> wrote:
 
-So, the idea is to run a user space program that off-lines all relevant
-devices before trimming ACPI devices.  Is that right?  That sounds like
-a worth idea to consider with.  This basically moves the "sequencer"
-part into user space instead of the kernel space in my proposal.  I
-agree that how to expose all of the relevant info to user space is an
-issue.  Also, we will need to make sure that the user program always
-runs per a kernel request and then informs a result back to the kernel,
-so that the kernel can do the rest of an operation and inform a result
-to FW with _OST or _EJ0.  This loop has to close.  I think it is going
-to be more complicated than the kernel-only approach.
+> +static void __meminit
+> +remove_pagetable(unsigned long start, unsigned long end, bool direct)
+> +{
+> +	unsigned long next;
+> +	pgd_t *pgd;
+> +	pud_t *pud;
+> +	bool pgd_changed = false;
+> +
+> +	for (; start < end; start = next) {
+> +		pgd = pgd_offset_k(start);
+> +		if (!pgd_present(*pgd))
+> +			continue;
+> +
+> +		next = pgd_addr_end(start, end);
+> +
+> +		pud = (pud_t *)map_low_page((pud_t *)pgd_page_vaddr(*pgd));
+> +		remove_pud_table(pud, start, next, direct);
+> +		if (free_pud_table(pud, pgd))
+> +			pgd_changed = true;
+> +		unmap_low_page(pud);
+> +	}
+> +
+> +	if (pgd_changed)
+> +		sync_global_pgds(start, end - 1);
+> +
+> +	flush_tlb_all();
+> +}
 
-In addition, I am not sure if the "no_eject" flag in acpi_device is
-really necessary here since the user program will inform the kernel if
-all devices are off-line.  Also, the kernel will likely need to expose
-the device info to the user program to tell which devices need to be
-off-lined.  At that time, the kernel already knows if there is any
-on-line device in the scope.
+This generates a compiler warning saying that `next' may be used
+uninitialised.
 
+The warning is correct.  If we take that `continue' on the first pass
+through the loop, the "start = next" will copy uninitialised data into
+`start'.
 
-> > What happens if a device wants to set that flag, right after it was told
-> > to eject and the device was in the middle of being removed?  How can you
-> > "fail" the "I can't be removed me now, so don't" requirement that it now
-> > has?
-> 
-> This one is easy. :-)
-> 
-> If platform_lock_eject() is called when an eject is under way, it will block
-> on acpi_eject_lock until the eject is complete and if the device is gone as
-> a result of the eject, it will return an error code.
+Is this the correct fix?
 
-In this case, we do really need to make sure that the user program does
-not get killed in the middle of its operation since the kernel is
-holding a lock while it is under way.
-
-
-Thanks,
--Toshi
-
-
-> In turn, if an eject happens after platform_lock_eject(), it will block until
-> platform_unlock_eject() and if platform_no_eject() is called in between the
-> lock and unlock, it will notice the device with no_eject set and bail out.
-> 
-> Quite obviously, it would be a bug to call platform_lock_eject() from within an
-> eject code path.
-> 
-> Thanks,
-> Rafael
-> 
-> 
+--- a/arch/x86/mm/init_64.c~memory-hotplug-common-apis-to-support-page-tables-hot-remove-fix-fix-fix-fix-fix-fix-fix
++++ a/arch/x86/mm/init_64.c
+@@ -993,12 +993,12 @@ remove_pagetable(unsigned long start, un
+ 	bool pgd_changed = false;
+ 
+ 	for (; start < end; start = next) {
++		next = pgd_addr_end(start, end);
++
+ 		pgd = pgd_offset_k(start);
+ 		if (!pgd_present(*pgd))
+ 			continue;
+ 
+-		next = pgd_addr_end(start, end);
+-
+ 		pud = (pud_t *)pgd_page_vaddr(*pgd);
+ 		remove_pud_table(pud, start, next, direct);
+ 		if (free_pud_table(pud, pgd))
+_
