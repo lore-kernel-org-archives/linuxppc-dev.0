@@ -1,16 +1,24 @@
-Return-Path: <michael@ellerman.id.au>
-Message-ID: <1359983119.20724.10.camel@concordia>
-Subject: Re: 3.8: possible circular locking dependency detected
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Christian Kujau <lists@nerdbynature.de>
-Date: Tue, 05 Feb 2013 00:05:19 +1100
-In-Reply-To: <alpine.DEB.2.01.1302031843450.13050@trent.utfs.org>
-References: <alpine.DEB.2.01.1302031843450.13050@trent.utfs.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-wireless@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>,
- linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
- b43-dev@lists.infradead.org
+Return-Path: <rjw@sisk.pl>
+Received: from hydra.sisk.pl (hydra.sisk.pl [212.160.235.94])
+ by ozlabs.org (Postfix) with ESMTP id E81962C02AE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Feb 2013 00:35:03 +1100 (EST)
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [RFC PATCH v2 01/12] Add sys_hotplug.h for system device hotplug
+ framework
+Date: Mon, 04 Feb 2013 14:41:15 +0100
+Message-ID: <5192355.CsKHU8mj3W@vostro.rjw.lan>
+In-Reply-To: <20130204012349.GA6433@kroah.com>
+References: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
+ <1810611.i6Sc4oLaux@vostro.rjw.lan> <20130204012349.GA6433@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: linux-s390@vger.kernel.org, Toshi Kani <toshi.kani@hp.com>,
+ jiang.liu@huawei.com, wency@cn.fujitsu.com, linux-acpi@vger.kernel.org,
+ yinghai@kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ isimatu.yasuaki@jp.fujitsu.com, srivatsa.bhat@linux.vnet.ibm.com,
+ guohanjun@huawei.com, bhelgaas@google.com, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, lenb@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,132 +28,213 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2013-02-03 at 21:09 -0800, Christian Kujau wrote:
-> Hi,
+On Sunday, February 03, 2013 07:23:49 PM Greg KH wrote:
+> On Sat, Feb 02, 2013 at 09:15:37PM +0100, Rafael J. Wysocki wrote:
+> > On Saturday, February 02, 2013 03:58:01 PM Greg KH wrote:
+> > > On Fri, Feb 01, 2013 at 11:12:59PM +0100, Rafael J. Wysocki wrote:
+> > > > On Friday, February 01, 2013 08:23:12 AM Greg KH wrote:
+> > > > > On Thu, Jan 31, 2013 at 09:54:51PM +0100, Rafael J. Wysocki wrote:
+> > > > > > > > But, again, I'm going to ask why you aren't using the existing cpu /
+> > > > > > > > memory / bridge / node devices that we have in the kernel.  Please use
+> > > > > > > > them, or give me a _really_ good reason why they will not work.
+> > > > > > > 
+> > > > > > > We cannot use the existing system devices or ACPI devices here.  During
+> > > > > > > hot-plug, ACPI handler sets this shp_device info, so that cpu and memory
+> > > > > > > handlers (drivers/cpu.c and mm/memory_hotplug.c) can obtain their target
+> > > > > > > device information in a platform-neutral way.  During hot-add, we first
+> > > > > > > creates an ACPI device node (i.e. device under /sys/bus/acpi/devices),
+> > > > > > > but platform-neutral modules cannot use them as they are ACPI-specific.
+> > > > > > 
+> > > > > > But suppose we're smart and have ACPI scan handlers that will create
+> > > > > > "physical" device nodes for those devices during the ACPI namespace scan.
+> > > > > > Then, the platform-neutral nodes will be able to bind to those "physical"
+> > > > > > nodes.  Moreover, it should be possible to get a hierarchy of device objects
+> > > > > > this way that will reflect all of the dependencies we need to take into
+> > > > > > account during hot-add and hot-remove operations.  That may not be what we
+> > > > > > have today, but I don't see any *fundamental* obstacles preventing us from
+> > > > > > using this approach.
+> > > > > 
+> > > > > I would _much_ rather see that be the solution here as I think it is the
+> > > > > proper one.
+> > > > > 
+> > > > > > This is already done for PCI host bridges and platform devices and I don't
+> > > > > > see why we can't do that for the other types of devices too.
+> > > > > 
+> > > > > I agree.
+> > > > > 
+> > > > > > The only missing piece I see is a way to handle the "eject" problem, i.e.
+> > > > > > when we try do eject a device at the top of a subtree and need to tear down
+> > > > > > the entire subtree below it, but if that's going to lead to a system crash,
+> > > > > > for example, we want to cancel the eject.  It seems to me that we'll need some
+> > > > > > help from the driver core here.
+> > > > > 
+> > > > > I say do what we always have done here, if the user asked us to tear
+> > > > > something down, let it happen as they are the ones that know best :)
+> > > > > 
+> > > > > Seriously, I guess this gets back to the "fail disconnect" idea that the
+> > > > > ACPI developers keep harping on.  I thought we already resolved this
+> > > > > properly by having them implement it in their bus code, no reason the
+> > > > > same thing couldn't happen here, right?
+> > > > 
+> > > > Not really. :-)  We haven't ever resolved that particular issue I'm afraid.
+> > > 
+> > > Ah, I didn't realize that.
+> > > 
+> > > > > I don't think the core needs to do anything special, but if so, I'll be glad
+> > > > > to review it.
+> > > > 
+> > > > OK, so this is the use case.  We have "eject" defined for something like
+> > > > a container with a number of CPU cores, PCI host bridge, and a memory
+> > > > controller under it.  And a few pretty much arbitrary I/O devices as a bonus.
+> > > > 
+> > > > Now, there's a button on the system case labeled as "Eject" and if that button
+> > > > is pressed, we're supposed to _try_ to eject all of those things at once.  We
+> > > > are allowed to fail that request, though, if that's problematic for some
+> > > > reason, but we're supposed to let the BIOS know about that.
+> > > > 
+> > > > Do you seriously think that if that button is pressed, we should just proceed
+> > > > with removing all that stuff no matter what?  That'd be kind of like Russian
+> > > > roulette for whoever pressed that button, because s/he could only press it and
+> > > > wait for the system to either crash or not.  Or maybe to crash a bit later
+> > > > because of some delayed stuff that would hit one of those devices that had just
+> > > > gone.  Surely not a situation any admin of a high-availability system would
+> > > > like to be in. :-)
+> > > > 
+> > > > Quite frankly, I have no idea how that can be addressed in a single bus type,
+> > > > let alone ACPI (which is not even a proper bus type, just something pretending
+> > > > to be one).
+> > > 
+> > > You don't have it as a single bus type, you have a controller somewhere,
+> > > off of the bus being destroyed, that handles sending remove events to
+> > > the device and tearing everything down.  PCI does this from the very
+> > > beginning.
+> > 
+> > Yes, but those are just remove events and we can only see how destructive they
+> > were after the removal.  The point is to be able to figure out whether or not
+> > we *want* to do the removal in the first place.
 > 
-> similar to what I reported earlier [0] for 3.8.0-rc1, this happens during 
-> "ifup wlan0" (which in effect starts wpa_supplicant to bring up a Broadcom 
-> b43 wifi network interface). The interface is working though and continues 
-> to work over several ifup/ifdown iterations.
+> Yes, but, you will always race if you try to test to see if you can shut
+> down a device and then trying to do it.  So walking the bus ahead of
+> time isn't a good idea.
+>
+> And, we really don't have a viable way to recover if disconnect() fails,
+> do we.  What do we do in that situation, restore the other devices we
+> disconnected successfully?  How do we remember/know what they were?
 > 
-> The backtrace looks awfully similar to the earlier[0] report, but this 
-> time it had b43* stuff in it so I thought I should report it. Full dmesg 
-> and .config here: http://nerdbynature.de/bits/3.8.0-rc6/
-
->[0] https://lkml.org/lkml/2013/1/3/543
-
-Actually the backtrace looks very different, that was fb vs
-console_lock.
-
-This one should probably go to linux-wireless@vger.kernel.org (CC-ed).
-
-IIUI it's actually the work handling that is the problem. In
-b43_wireless_core_stop() it calls cancel_work_sync() with the RTNL held,
-but the work function (b43_request_firmware()) also takes the RTNL via
-ieee80211_register_hw() and wiphy_register(). eg:
-
-> [  807.767412]        CPU0                    CPU1
-> [  807.768561]        ----                    ----
-> [  807.769690]   lock(rtnl_mutex);
-> [  807.770822]                                process_one_work(..., &wl->firmware_load);
-> [  807.771970]                                lock(rtnl_mutex);
-> [  807.773115]   cancel_work_sync(&wl->firmware_load);
-
-cheers
-
-> [  807.693791] 
-> [  807.695519] ======================================================
-> [  807.697198] [ INFO: possible circular locking dependency detected ]
-> [  807.698890] 3.8.0-rc6-00008-g8b31849 #1 Not tainted
-> [  807.700573] -------------------------------------------------------
-> [  807.702255] wpa_supplicant/4129 is trying to acquire lock:
-> [  807.703925]  ((&wl->firmware_load)){+.+.+.}, at: [<c0049d1c>] flush_work+0x0/0x2b0
-> [  807.705696] 
-> [  807.705696] but task is already holding lock:
-> [  807.709023]  (rtnl_mutex){+.+.+.}, at: [<c04362d4>] rtnl_lock+0x1c/0x2c
-> [  807.710743] 
-> [  807.710743] which lock already depends on the new lock.
-> [  807.710743] 
-> [  807.715541] 
-> [  807.715541] the existing dependency chain (in reverse order) is:
-> [  807.718691] 
-> [  807.718691] -> #1 (rtnl_mutex){+.+.+.}:
-> [  807.721903]        [<c04f69ac>] mutex_lock_nested+0x6c/0x2bc
-> [  807.723533]        [<c04362d4>] rtnl_lock+0x1c/0x2c
-> [  807.725138]        [<f20be0d8>] wiphy_register+0x510/0x53c [cfg80211]
-> [  807.726798]        [<f64815ec>] ieee80211_register_hw+0x3f8/0x82c [mac80211]
-> [  807.728431]        [<f64c6890>] b43_request_firmware+0x8c/0x198 [b43]
-> [  807.730025]        [<c004b1f4>] process_one_work+0x1a4/0x498
-> [  807.731549]        [<c004b8b4>] worker_thread+0x17c/0x428
-> [  807.733025]        [<c0051280>] kthread+0xa8/0xac
-> [  807.734439]        [<c0010990>] ret_from_kernel_thread+0x64/0x6c
-> [  807.735810] 
-> [  807.735810] -> #0 ((&wl->firmware_load)){+.+.+.}:
-> [  807.738389]        [<c0071b38>] lock_acquire+0x50/0x6c
-> [  807.739694]        [<c0049d58>] flush_work+0x3c/0x2b0
-> [  807.740980]        [<c004c30c>] __cancel_work_timer+0x94/0xec
-> [  807.742271]        [<f64c748c>] b43_wireless_core_stop+0x5c/0x234 [b43]
-> [  807.743574]        [<f64c76b0>] b43_op_stop+0x4c/0x88 [b43]
-> [  807.744888]        [<f64a4c08>] ieee80211_stop_device+0x4c/0x8c [mac80211]
-> [  807.746240]        [<f64913a8>] ieee80211_do_stop+0x2c0/0x5dc [mac80211]
-> [  807.747582]        [<f64916dc>] ieee80211_stop+0x18/0x2c [mac80211]
-> [  807.748925]        [<c0423d94>] __dev_close_many+0xb0/0x100
-> [  807.750257]        [<c0423e10>] __dev_close+0x2c/0x4c
-> [  807.751560]        [<c0427514>] __dev_change_flags+0x124/0x178
-> [  807.752868]        [<c042761c>] dev_change_flags+0x1c/0x64
-> [  807.754177]        [<c047db9c>] devinet_ioctl+0x69c/0x74c
-> [  807.755459]        [<c047ecf8>] inet_ioctl+0xcc/0xf8
-> [  807.756709]        [<c040eab0>] sock_ioctl+0x70/0x2e8
-> [  807.757948]        [<c00d9f70>] do_vfs_ioctl+0xa4/0x7c0
-> [  807.759182]        [<c00da6d0>] sys_ioctl+0x44/0x70
-> [  807.760407]        [<c001084c>] ret_from_syscall+0x0/0x38
-> [  807.761622] 
-> [  807.761622] other info that might help us debug this:
-> [  807.761622] 
-> [  807.765107]  Possible unsafe locking scenario:
-> [  807.765107] 
-> [  807.767412]        CPU0                    CPU1
-> [  807.768561]        ----                    ----
-> [  807.769690]   lock(rtnl_mutex);
-> [  807.770822]                                lock((&wl->firmware_load));
-> [  807.771970]                                lock(rtnl_mutex);
-> [  807.773115]   lock((&wl->firmware_load));
-> [  807.774244] 
-> [  807.774244]  *** DEADLOCK ***
-> [  807.774244] 
-> [  807.777405] 1 lock held by wpa_supplicant/4129:
-> [  807.778475]  #0:  (rtnl_mutex){+.+.+.}, at: [<c04362d4>] rtnl_lock+0x1c/0x2c
-> [  807.779628] 
-> [  807.779628] stack backtrace:
-> [  807.781720] Call Trace:
-> [  807.782765] [eea2db20] [c0009160] show_stack+0x48/0x15c (unreliable)
-> [  807.784087] [eea2db60] [c04fae24] print_circular_bug+0x2b0/0x2c8
-> [  807.785169] [eea2db90] [c0071300] __lock_acquire+0x14f4/0x18c8
-> [  807.786254] [eea2dc30] [c0071b38] lock_acquire+0x50/0x6c
-> [  807.787335] [eea2dc50] [c0049d58] flush_work+0x3c/0x2b0
-> [  807.788418] [eea2dcc0] [c004c30c] __cancel_work_timer+0x94/0xec
-> [  807.789516] [eea2dcf0] [f64c748c] b43_wireless_core_stop+0x5c/0x234 [b43]
-> [  807.790629] [eea2dd20] [f64c76b0] b43_op_stop+0x4c/0x88 [b43]
-> [  807.791754] [eea2dd40] [f64a4c08] ieee80211_stop_device+0x4c/0x8c [mac80211]
-> [  807.792888] [eea2dd50] [f64913a8] ieee80211_do_stop+0x2c0/0x5dc [mac80211]
-> [  807.794016] [eea2dd80] [f64916dc] ieee80211_stop+0x18/0x2c [mac80211]
-> [  807.795124] [eea2dd90] [c0423d94] __dev_close_many+0xb0/0x100
-> [  807.796237] [eea2ddb0] [c0423e10] __dev_close+0x2c/0x4c
-> [  807.797345] [eea2ddd0] [c0427514] __dev_change_flags+0x124/0x178
-> [  807.798451] [eea2ddf0] [c042761c] dev_change_flags+0x1c/0x64
-> [  807.799564] [eea2de10] [c047db9c] devinet_ioctl+0x69c/0x74c
-> [  807.800680] [eea2de70] [c047ecf8] inet_ioctl+0xcc/0xf8
-> [  807.801792] [eea2de80] [c040eab0] sock_ioctl+0x70/0x2e8
-> [  807.802905] [eea2dea0] [c00d9f70] do_vfs_ioctl+0xa4/0x7c0
-> [  807.804025] [eea2df10] [c00da6d0] sys_ioctl+0x44/0x70
-> [  807.805145] [eea2df40] [c001084c] ret_from_syscall+0x0/0x38
-> [  807.806270] --- Exception: c01 at 0xfbf2758
-> [  807.806270]     LR = 0xfbf26bc
+> PCI hotplug almost had this same problem until the designers finally
+> realized that they just had to accept the fact that removing a PCI
+> device could either happen by:
+> 	- a user yanking out the device, at which time the OS better
+> 	  clean up properly no matter what happens
+> 	- the user asked nicely to remove a device, and the OS can take
+> 	  as long as it wants to complete that action, including
+> 	  stalling for noticable amounts of time before eventually,
+> 	  always letting the action succeed.
 > 
-> [  850.445766] b43-phy1: Broadcom 4306 WLAN found (core revision 5)
-> [  850.469062] b43-phy1: Found PHY: Analog 2, Type 2 (G), Revision 2
-> [  850.493199] Broadcom 43xx driver loaded [ Features: P ]
-> [  850.497448] ieee80211 phy1: Selected rate control algorithm 'minstrel_ht'
-> [  860.820792] b43-phy1: Loading firmware version 410.2160 (2007-05-26 15:32:10)
+> I think the second thing is what you have to do here.  If a user tells
+> the OS it wants to remove these devices, you better do it.  If you
+> can't, because memory is being used by someone else, either move them
+> off, or just hope that nothing bad happens, before the user gets
+> frustrated and yanks out the CPU/memory module themselves physically :)
+
+Well, that we can't help, but sometimes users really *want* the OS to tell them
+if it is safe to unplug something at this particualr time (think about the
+Windows' "safe remove" feature for USB sticks, for example; that came out of
+users' demand AFAIR).
+
+So in my opinion it would be good to give them an option to do "safe eject" or
+"forcible eject", whichever they prefer.
+
+> > Say you have a computing node which signals a hardware problem in a processor
+> > package (the container with CPU cores, memory, PCI host bridge etc.).  You
+> > may want to eject that package, but you don't want to kill the system this
+> > way.  So if the eject is doable, it is very much desirable to do it, but if it
+> > is not doable, you'd rather shut the box down and do the replacement afterward.
+> > That may be costly, however (maybe weeks of computations), so it should be
+> > avoided if possible, but not at the expense of crashing the box if the eject
+> > doesn't work out.
 > 
+> These same "situations" came up for PCI hotplug, and I still say the
+> same resolution there holds true, as described above.  The user wants to
+> remove something, so let them do it.  They always know best, and get mad
+> at us if we think otherwise :)
+
+Well, not necessarily.  Users sometimes really don't know what they are doing
+and want us to give them a hint.  My opinion is that if we can give them a
+hint, there's no reason not to.
+
+> What does the ACPI spec say about this type of thing?  Surely the same
+> people that did the PCI Hotplug spec were consulted when doing this part
+> of the spec, right?  Yeah, I know, I can dream...
+
+It's not very specific (as usual), but it gives hints. :-)
+
+For example, there is the _OST method (Section 6.3.5 of ACPI 5) that we are
+supposed to use to notify the platform of ejection failures and there are
+status codes like "0x81: Device in use by application" or "0x82: Device busy"
+that can be used in there.  So definitely the authors took ejection failures
+for software-related reasons into consideration.
+
+> > > I know it's more complicated with these types of devices, and I think we
+> > > are getting closer to the correct solution, I just don't want to ever
+> > > see duplicate devices in the driver model for the same physical device.
+> > 
+> > Do you mean two things based on struct device for the same hardware component?
+> > That's been happening already pretty much forever for every PCI device known
+> > to the ACPI layer, for PNP and many others.  However, those ACPI things are (or
+> > rather should be, but we're going to clean that up) only for convenience (to be
+> > able to see the namespace structure and related things in sysfs).  So the stuff
+> > under /sys/devices/LNXSYSTM\:00/ is not "real".
 > 
+> Yes, I've never treated that as a "real" device because they (usually)
+> didn't ever bind to the "real" driver that controlled the device and how
+> it talked to the rest of the os (like a USB device for example.)  I
+> always thought just of it as a "shadow" of the firmware image, nothing
+> that should be directly operated on if at all possible.
+
+Precisely.  That's why I'd like to move that stuff away from /sys/devices/
+and I don't see a reason why these objects should be based on struct device.
+They need kobjects to show up in sysfs, but apart from this they don't really
+need anything from struct device as far as I can say.
+
+> But, as you are pointing out, maybe this needs to be changed.  Having
+> users have to look in one part of the tree for one interface to a
+> device, and another totally different part for a different interface to
+> the same physical device is crazy, don't you agree?
+
+Well, it is confusing.  I don't have a problem with exposing the ACPI namespace
+in the form of a directory structure in sysfs and I see some benefits from
+doing that, but I'd like it to be clear what's represented by that directory
+structure and I don't want people to confuse ACPI device objects with devices
+(they are abstract interfaces to devices rather than anything else).
+
+> As to how to solve it, I really have no idea, I don't know ACPI that
+> well at all, and honestly, don't want to, I want to keep what little
+> hair I have left...
+
+I totally understand you. :-)
+
+> > In my view it shouldn't even
+> > be under /sys/devices/ (/sys/firmware/acpi/ seems to be a better place for it),
+> 
+> I agree.
+> 
+> > but that may be difficult to change without breaking user space (maybe we can
+> > just symlink it from /sys/devices/ or something).  And the ACPI bus type
+> > shouldn't even exist in my opinion.
+> > 
+> > There's much confusion in there and much work to clean that up, I agree, but
+> > that's kind of separate from the hotplug thing.
+> 
+> I agree as well.
+> 
+> Best of luck.
+
+Thanks. :-)
+
+Rafael
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
