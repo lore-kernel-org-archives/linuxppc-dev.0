@@ -1,24 +1,22 @@
-Return-Path: <rjw@sisk.pl>
-Received: from hydra.sisk.pl (hydra.sisk.pl [212.160.235.94])
- by ozlabs.org (Postfix) with ESMTP id 502092C02A7
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Feb 2013 07:00:55 +1100 (EST)
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: [RFC PATCH v2 01/12] Add sys_hotplug.h for system device hotplug
- framework
-Date: Mon, 04 Feb 2013 21:07:11 +0100
-Message-ID: <5598823.8hjkkMP1h9@vostro.rjw.lan>
-In-Reply-To: <20130204143351.GA20119@kroah.com>
-References: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
- <2048116.Qo8UgQ5hjb@vostro.rjw.lan> <20130204143351.GA20119@kroah.com>
+Return-Path: <B07421@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 87D152C02A7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Feb 2013 07:02:48 +1100 (EST)
+Date: Mon, 4 Feb 2013 14:02:35 -0600
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: Why is the e500v2 core not using cpuidle?
+To: Thomas Waldecker <Thomas.Waldecker@tqs.de>
+In-Reply-To: <B88C075EE1324644BA0452D5EFDD5828139523EA@TQ-MAIL.tq-net.de>
+ (from Thomas.Waldecker@tqs.de on Sat Feb  2 03:41:27 2013)
+Message-ID: <1360008155.14901.4@snotra>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linux-s390@vger.kernel.org, Toshi Kani <toshi.kani@hp.com>,
- jiang.liu@huawei.com, wency@cn.fujitsu.com, linux-acpi@vger.kernel.org,
- yinghai@kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- isimatu.yasuaki@jp.fujitsu.com, srivatsa.bhat@linux.vnet.ibm.com,
- guohanjun@huawei.com, bhelgaas@google.com, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, lenb@kernel.org
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: "Linux PPC dev mailing list \(linuxppc-dev@lists.ozlabs.org\)"
+ <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,99 +26,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday, February 04, 2013 06:33:52 AM Greg KH wrote:
-> On Mon, Feb 04, 2013 at 03:21:22PM +0100, Rafael J. Wysocki wrote:
-> > On Monday, February 04, 2013 04:48:10 AM Greg KH wrote:
-> > > On Sun, Feb 03, 2013 at 09:44:39PM +0100, Rafael J. Wysocki wrote:
-> > > > > Yes, but those are just remove events and we can only see how destructive they
-> > > > > were after the removal.  The point is to be able to figure out whether or not
-> > > > > we *want* to do the removal in the first place.
-> > > > > 
-> > > > > Say you have a computing node which signals a hardware problem in a processor
-> > > > > package (the container with CPU cores, memory, PCI host bridge etc.).  You
-> > > > > may want to eject that package, but you don't want to kill the system this
-> > > > > way.  So if the eject is doable, it is very much desirable to do it, but if it
-> > > > > is not doable, you'd rather shut the box down and do the replacement afterward.
-> > > > > That may be costly, however (maybe weeks of computations), so it should be
-> > > > > avoided if possible, but not at the expense of crashing the box if the eject
-> > > > > doesn't work out.
-> > > > 
-> > > > It seems to me that we could handle that with the help of a new flag, say
-> > > > "no_eject", in struct device, a global mutex, and a function that will walk
-> > > > the given subtree of the device hierarchy and check if "no_eject" is set for
-> > > > any devices in there.  Plus a global "no_eject" switch, perhaps.
-> > > 
-> > > I think this will always be racy, or at worst, slow things down on
-> > > normal device operations as you will always be having to grab this flag
-> > > whenever you want to do something new.
-> > 
-> > I don't see why this particular scheme should be racy, at least I don't see any
-> > obvious races in it (although I'm not that good at races detection in general,
-> > admittedly).
-> > 
-> > Also, I don't expect that flag to be used for everything, just for things known
-> > to seriously break if forcible eject is done.  That may be not precise enough,
-> > so that's a matter of defining its purpose more precisely.
-> > 
-> > We can do something like that on the ACPI level (ie. introduce a no_eject flag
-> > in struct acpi_device and provide an iterface for the layers above ACPI to
-> > manipulate it) but then devices without ACPI namespace objects won't be
-> > covered.  That may not be a big deal, though.
-> > 
-> > So say dev is about to be used for something incompatible with ejecting, so to
-> > speak.  Then, one would do platform_lock_eject(dev), which would check if dev
-> > has an ACPI handle and then take acpi_eject_lock (if so).  The return value of
-> > platform_lock_eject(dev) would need to be checked to see if the device is not
-> > gone.  If it returns success (0), one would do something to the device and
-> > call platform_no_eject(dev) and then platform_unlock_eject(dev).
-> 
-> How does a device "know" it is doing something that is incompatible with
-> ejecting?  That's a non-trivial task from what I can tell.
+On 02/02/2013 03:41:27 AM, Thomas Waldecker wrote:
+> Hi Scott,
+>=20
+> >> Why is there no support for the cpuidle framework?
+> > Because nobody implemented it. :-)
+> That's the reason I thought before :-)
+>=20
+> > The only reason I can think of to implement it on this chip would =20
+> be to
+> > dynamically choose when to enter nap versus doze, rather than always
+> > just using doze.  It's not clear whether the difference in power
+> > savings is worth it -- do you have any way of measuring?
+>=20
+> Is the e500 only using doze? There are comments in the file
+> arch/powerpc/kernel/idle_e500.S
+> which are stating:
+> /*  Go to NAP or DOZE now */
+> or
+> /* Return from NAP/DOZE ...*/
+>=20
+> and because of this comments I thought that both modes are in use.
 
-I agree that this is complicated in general.  But.
+e500 can use nap instead, but it's statically chosen via sysctl.  The =20
+default is doze.  Entering nap requires flushing the cache, so you'd =20
+only use nap if you care more about lowering idle power consumption =20
+than performance, and you wake infrequently enough that you're not =20
+burning more power on the cache flushes than you save with the deeper =20
+idle state.
 
-There are devices known to have software "offline" and "online" operations
-such that after the "offline" the given device is guaranteed to be not used
-until "online".  We have that for CPU cores, for example, and user space can
-do it via /sys/devices/system/cpu/cpuX/online .  So, why don't we make the
-"online" set the no_eject flag (under the lock as appropriate) and the
-"offline" clear it?  And why don't we define such "online" and "offline" for
-all of the other "system" stuff, like memory, PCI host bridges etc. and make it
-behave analogously?
+> I have a way of measuring the power and it is also a small part of my =20
+> masterthesis,
+> but it is not very meaningful because at the measuring point there =20
+> are other peripheral
+> components too.
+>=20
+> According to the comments can I activate the nap mode somehow?
 
-Then, it is quite simple to say which devices should use the no_eject flag:
-devices that have "online" and "offline" exported to user space.  And guess
-who's responsible for "offlining" all of those things before trying to eject
-them: user space is.  From the kernel's point of view it is all clear.  Hands
-clean. :-)
+echo 1 > /proc/sys/kernel/powersave-nap
 
-Now, there's a different problem how to expose all of the relevant information
-to user space so that it knows what to "offline" for the specific eject
-operation to succeed, but that's kind of separate and worth addressing
-anyway.
+If you're able to measure a meaningful difference between the two, I'd =20
+be interested in hearing your results.
 
-> What happens if a device wants to set that flag, right after it was told
-> to eject and the device was in the middle of being removed?  How can you
-> "fail" the "I can't be removed me now, so don't" requirement that it now
-> has?
+> >> How can I debug the e500 idle modes?
+> >> Are there any statistics?
+> > Top reports idle percentage...
+> If the e500 and e500v2 are indeed using only the doze mode it
+> would be enough statistics.
 
-This one is easy. :-)
+Whichever mode you have selected, that will be used for all idling.  =20
+Statistics would only be useful if the idle mode were dynamically =20
+chosen.
 
-If platform_lock_eject() is called when an eject is under way, it will block
-on acpi_eject_lock until the eject is complete and if the device is gone as
-a result of the eject, it will return an error code.
+> Such statistics would be great for the doze, nap (and sleep for the =20
+> whole package).
 
-In turn, if an eject happens after platform_lock_eject(), it will block until
-platform_unlock_eject() and if platform_no_eject() is called in between the
-lock and unlock, it will notice the device with no_eject set and bail out.
+The only way you'll get into sleep mode is through /sys/power/state.
 
-Quite obviously, it would be a bug to call platform_lock_eject() from within an
-eject code path.
-
-Thanks,
-Rafael
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+-Scott=
