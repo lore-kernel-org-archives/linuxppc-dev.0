@@ -2,17 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id CD7AD2C0291
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Feb 2013 15:22:57 +1100 (EST)
-Message-ID: <1359951767.14701.22.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
+ by ozlabs.org (Postfix) with ESMTPS id B5D7B2C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Feb 2013 15:25:08 +1100 (EST)
+Message-ID: <1359951896.14701.24.camel@pasglop>
+Subject: Re: [PATCH] powerpc/mm: Fix hash computation function
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 04 Feb 2013 15:22:47 +1100
+To: Michael Ellerman <michael@ellerman.id.au>
+Date: Mon, 04 Feb 2013 15:24:56 +1100
+In-Reply-To: <1359948565.25414.12.camel@concordia>
+References: <1359524442-5861-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1359948565.25414.12.camel@concordia>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Cc: Mike Qiu <qiudayu@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ paulus@samba.org, "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,31 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+On Mon, 2013-02-04 at 14:29 +1100, Michael Ellerman wrote:
+> On Wed, 2013-01-30 at 11:10 +0530, Aneesh Kumar K.V wrote:
+> > From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+> > 
+> > The ASM version of hash computation function was truncating the upper bit.
+> > Make the ASM version similar to hpt_hash function. Remove masking vsid bits.
+> > Without this patch, we observed hang during bootup due to not satisfying page
+> > fault request correctly.
+> 
+> Which commit(s) introduced the bug?
 
-Just so that you don't get too bored on your Island here's a patch for
-3.8 fixing a nasty bug that affects the new 64T support that was merged
-in 3.7. Please apply whenever you have a chance (and an internet
-connection !)
+The bug has been there for ever (well, as far back as git goes without
+digging the old monster repo) so may as well date from my original port
+of the C hashing code to asm.
+
+However it wasn't per-se a bug until Aneesh 64T support was added in 3.7
+since we didn't use the top vsid bits that are masked.
+
+I've merged the patch. My only worry is whether there might have been a
+reason for the masking in the first place, ie, do we ever carry VSIDs
+with bad bits at the top... though the hash mask should take care of
+that in any case (well I hope...)
 
 Cheers,
 Ben.
-
-The following changes since commit 689dfa894c57842a05bf6dc9f97e6bb71ec5f386:
-
-  powerpc: Max next_tb to prevent from replaying timer interrupt (2013-01-29 10:18:16 +1100)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-for you to fetch changes up to eda8eebdd153c48a4e2a3a3ac3cd9e2e31f5c6b3:
-
-  powerpc/mm: Fix hash computation function (2013-02-04 15:15:08 +1100)
-
-----------------------------------------------------------------
-Aneesh Kumar K.V (1):
-      powerpc/mm: Fix hash computation function
-
- arch/powerpc/mm/hash_low_64.S |   62 +++++++++++++++++++++++------------------
- 1 file changed, 35 insertions(+), 27 deletions(-)
