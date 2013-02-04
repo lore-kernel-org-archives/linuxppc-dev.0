@@ -1,38 +1,26 @@
-Return-Path: <qiudayu@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 738D52C02A5
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Feb 2013 17:43:24 +1100 (EST)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <qiudayu@linux.vnet.ibm.com>;
- Mon, 4 Feb 2013 16:39:07 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id C276C357804E
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Feb 2013 17:43:19 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r146V9iM9764934
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Feb 2013 17:31:10 +1100
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r146hHUo031839
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Feb 2013 17:43:17 +1100
-Message-ID: <510F5881.7030409@linux.vnet.ibm.com>
-Date: Mon, 04 Feb 2013 14:43:13 +0800
-From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+Return-Path: <James.Hogan@imgtec.com>
+Received: from multi.imgtec.com (multi.imgtec.com [194.200.65.239])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "*.imgtec.com",
+ Issuer "DigiCert High Assurance CA-3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7435D2C02A5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Feb 2013 21:10:26 +1100 (EST)
+From: James Hogan <james.hogan@imgtec.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: [PATCH RESEND 1/1] arch Kconfig: remove references to IRQ_PER_CPU
+Date: Mon, 4 Feb 2013 10:09:43 +0000
+Message-ID: <1359972583-17134-1-git-send-email-james.hogan@imgtec.com>
 MIME-Version: 1.0
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 0/3] Enable multiple MSI feature in pSeries
-References: <1358235536-32741-1-git-send-email-qiudayu@linux.vnet.ibm.com>
- <1359948180.25414.11.camel@concordia> <510F2FDB.6020303@linux.vnet.ibm.com>
- <1359957375.25414.31.camel@concordia>
-In-Reply-To: <1359957375.25414.31.camel@concordia>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
+ James Hogan <james.hogan@imgtec.com>, linux-ia64@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linux-sh@vger.kernel.org,
+ linux-hexagon@vger.kernel.org, Helge Deller <deller@gmx.de>, "James E.J.
+ Bottomley" <jejb@parisc-linux.org>, Fenghua Yu <fenghua.yu@intel.com>,
+ Paul Mundt <lethal@linux-sh.org>, Mike Frysinger <vapier@gentoo.org>,
+ Ralf Baechle <ralf@linux-mips.org>, uclinux-dist-devel@blackfin.uclinux.org,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,89 +30,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2013/2/4 13:56, Michael Ellerman:
-> On Mon, 2013-02-04 at 11:49 +0800, Mike Qiu wrote:
->>> On Tue, 2013-01-15 at 15:38 +0800, Mike Qiu wrote:
->>>> Currently, multiple MSI feature hasn't been enabled in pSeries,
->>>> These patches try to enbale this feature.
->>> Hi Mike,
->>>
->>>> These patches have been tested by using ipr driver, and the driver patch
->>>> has been made by Wen Xiong <wenxiong@linux.vnet.ibm.com>:
->>> So who wrote these patches? Normally we would expect the original author
->>> to post the patches if at all possible.
->> Hi Michael
->>
->> These Multiple MSI patches were wrote by myself, you know this feature
->> has not enabled
->> and it need device driver to test whether it works suitable. So I test
->> my patches use
->> Wen Xiong's ipr patches, which has been send out to the maillinglist.
->>
->> I'm the original author :)
-> Ah OK, sorry, that was more or less clear from your mail but I just
-> misunderstood.
->
->>>> [PATCH 0/7] Add support for new IBM SAS controllers
->>> I would like to see the full series, including the driver enablement.
->> Yep, but the driver patches were wrote by Wen Xiong and has been send
->> out.
-> OK, you mean this series?
->
-> http://thread.gmane.org/gmane.linux.scsi/79639
-Yes, exactly.
->
->
->> I just use her patches to test my patches. all device support Multiple
->> MSI can use my feature not only IBM SAS controllers, I also test my
->> patches use the broadcom wireless card tg3, and also works OK.
-> You mean drivers/net/ethernet/broadcom/tg3.c ? I don't see where it
-> calls pci_enable_msi_block() ?
-Yes, I just modify the driver to support mutiple MSI.
->
-> All devices /can/ use it, but the driver needs to be updated. Currently
-> we have two drivers that do so (in Linus' tree), plus the updated IPR.
-Not all devices, just the device which support the multiple MSI by hardware,
-can use it
->
->>>> Test platform: One partition of pSeries with one cpu core(4 SMTs) and
->>>>                 RAID bus controller: IBM PCI-E IPR SAS Adapter (ASIC) in POWER7
->>>> OS version: SUSE Linux Enterprise Server 11 SP2  (ppc64) with 3.8-rc3 kernel
->>>>
->>>> IRQ 21 and 22 are assigned to the ipr device which support 2 mutiple MSI.
->>>>
->>>> The test results is shown by 'cat /proc/interrups':
->>>>            CPU0       CPU1       CPU2       CPU3
->>>> 21:          6          5          5          5      XICS Level     host1-0
->>>> 22:        817        814        816        813      XICS Level     host1-1
->>> This shows that you are correctly configuring two MSIs.
->>>
->>> But the key advantage of using multiple interrupts is to distribute load
->>> across CPUs and improve performance. So I would like to see some
->>> performance numbers that show that there is a real benefit for all the
->>> extra complexity in the code.
->> Yes, the system just has suport two MSIs. Anyway, I will try to do
->> some proformance test, to show the real benefit.
->> But actually it needs the driver to do so. As the data show above, it
->> seems there is some problems in use the interrupt, the irq 21 use few,
->> most use 22, I will discuss with the driver author to see why and if
->> she fixed, I will give out the proformance result.
-> Yeah that would be good.
->
-> I really dislike that we have a separate API for multi-MSI vs MSI-X, and
-> pci_enable_msi_block() also pushes the contiguous power-of-2 allocation
-> into the irq domain layer, which is unpleasant. So if we really must do
-> multi-MSI I would like to do it differently.
-Yes, but the multi-MSI must need the hardware support, it is one extend 
-for MSI,
-The device may sopport MSI and multiple MSI, but not support MSI-X.
-for these devices, we'd better use multiple MSI to makes it more efficiency,
-compare with MSI.
+The IRQ_PER_CPU Kconfig symbol was removed in the following commit:
 
-multi-MSI just can use no more than 32 interrupts
+Commit 6a58fb3bad099076f36f0f30f44507bc3275cdb6 ("genirq: Remove
+CONFIG_IRQ_PER_CPU") merged in v2.6.39-rc1.
 
-Thanks
->
-> cheers
->
->
+But IRQ_PER_CPU wasn't removed from any of the architecture Kconfig
+files where it was defined or selected. It's completely unused so remove
+the remaining references.
+
+Signed-off-by: James Hogan <james.hogan@imgtec.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Mike Frysinger <vapier@gentoo.org>
+Cc: Fenghua Yu <fenghua.yu@intel.com>
+Cc: Ralf Baechle <ralf@linux-mips.org>
+Cc: "James E.J. Bottomley" <jejb@parisc-linux.org>
+Cc: Helge Deller <deller@gmx.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Paul Mundt <lethal@linux-sh.org>
+Acked-by: Tony Luck <tony.luck@intel.com>
+Acked-by: Richard Kuo <rkuo@codeaurora.org>
+---
+
+Does anybody want to pick this patch up?
+
+ arch/blackfin/Kconfig |    1 -
+ arch/hexagon/Kconfig  |    1 -
+ arch/ia64/Kconfig     |    1 -
+ arch/mips/Kconfig     |    1 -
+ arch/parisc/Kconfig   |    1 -
+ arch/powerpc/Kconfig  |    1 -
+ arch/sh/Kconfig       |    3 ---
+ 7 files changed, 0 insertions(+), 9 deletions(-)
+
+diff --git a/arch/blackfin/Kconfig b/arch/blackfin/Kconfig
+index b6f3ad5..c709715 100644
+--- a/arch/blackfin/Kconfig
++++ b/arch/blackfin/Kconfig
+@@ -38,7 +38,6 @@ config BLACKFIN
+ 	select HAVE_GENERIC_HARDIRQS
+ 	select GENERIC_ATOMIC64
+ 	select GENERIC_IRQ_PROBE
+-	select IRQ_PER_CPU if SMP
+ 	select USE_GENERIC_SMP_HELPERS if SMP
+ 	select HAVE_NMI_WATCHDOG if NMI_WATCHDOG
+ 	select GENERIC_SMP_IDLE_THREAD
+diff --git a/arch/hexagon/Kconfig b/arch/hexagon/Kconfig
+index 0744f7d..800dd9c 100644
+--- a/arch/hexagon/Kconfig
++++ b/arch/hexagon/Kconfig
+@@ -12,7 +12,6 @@ config HEXAGON
+ 	# select ARCH_WANT_OPTIONAL_GPIOLIB
+ 	# select ARCH_REQUIRE_GPIOLIB
+ 	# select HAVE_CLK
+-	# select IRQ_PER_CPU
+ 	# select GENERIC_PENDING_IRQ if SMP
+ 	select HAVE_IRQ_WORK
+ 	select GENERIC_ATOMIC64
+diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
+index 3279646..00c2e88 100644
+--- a/arch/ia64/Kconfig
++++ b/arch/ia64/Kconfig
+@@ -29,7 +29,6 @@ config IA64
+ 	select ARCH_DISCARD_MEMBLOCK
+ 	select GENERIC_IRQ_PROBE
+ 	select GENERIC_PENDING_IRQ if SMP
+-	select IRQ_PER_CPU
+ 	select GENERIC_IRQ_SHOW
+ 	select ARCH_WANT_OPTIONAL_GPIOLIB
+ 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
+diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
+index 2ac626a..451c2e7 100644
+--- a/arch/mips/Kconfig
++++ b/arch/mips/Kconfig
+@@ -2161,7 +2161,6 @@ source "mm/Kconfig"
+ config SMP
+ 	bool "Multi-Processing support"
+ 	depends on SYS_SUPPORTS_SMP
+-	select IRQ_PER_CPU
+ 	select USE_GENERIC_SMP_HELPERS
+ 	help
+ 	  This enables support for systems with more than one CPU. If you have
+diff --git a/arch/parisc/Kconfig b/arch/parisc/Kconfig
+index b77feff..8525be4 100644
+--- a/arch/parisc/Kconfig
++++ b/arch/parisc/Kconfig
+@@ -16,7 +16,6 @@ config PARISC
+ 	select BROKEN_RODATA
+ 	select GENERIC_IRQ_PROBE
+ 	select GENERIC_PCI_IOMAP
+-	select IRQ_PER_CPU
+ 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
+ 	select GENERIC_SMP_IDLE_THREAD
+ 	select GENERIC_STRNCPY_FROM_USER
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 17903f1..f3d7090a 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -125,7 +125,6 @@ config PPC
+ 	select HAVE_GENERIC_HARDIRQS
+ 	select ARCH_WANT_IPC_PARSE_VERSION
+ 	select SPARSE_IRQ
+-	select IRQ_PER_CPU
+ 	select IRQ_DOMAIN
+ 	select GENERIC_IRQ_SHOW
+ 	select GENERIC_IRQ_SHOW_LEVEL
+diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
+index babc2b8..6f799ec 100644
+--- a/arch/sh/Kconfig
++++ b/arch/sh/Kconfig
+@@ -91,9 +91,6 @@ config GENERIC_CSUM
+ config GENERIC_HWEIGHT
+ 	def_bool y
+ 
+-config IRQ_PER_CPU
+-	def_bool y
+-
+ config GENERIC_GPIO
+ 	def_bool n
+ 
+-- 
+1.7.7.6
