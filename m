@@ -1,25 +1,33 @@
-Return-Path: <rjw@sisk.pl>
-Received: from hydra.sisk.pl (hydra.sisk.pl [212.160.235.94])
- by ozlabs.org (Postfix) with ESMTP id 238652C02B1
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Feb 2013 06:42:29 +1100 (EST)
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Toshi Kani <toshi.kani@hp.com>
-Subject: Re: [RFC PATCH v2 01/12] Add sys_hotplug.h for system device hotplug
- framework
-Date: Mon, 04 Feb 2013 20:48:46 +0100
-Message-ID: <1890597.vDojv7So7R@vostro.rjw.lan>
-In-Reply-To: <1359993766.23410.105.camel@misato.fc.hp.com>
-References: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
- <5192355.CsKHU8mj3W@vostro.rjw.lan>
- <1359993766.23410.105.camel@misato.fc.hp.com>
+Return-Path: <balbi@ti.com>
+Received: from comal.ext.ti.com (comal.ext.ti.com [198.47.26.152])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mailhost.ti.com",
+ Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 194002C02C4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Feb 2013 06:53:50 +1100 (EST)
+Date: Mon, 4 Feb 2013 21:53:15 +0200
+From: Felipe Balbi <balbi@ti.com>
+To: Robert Jarzmik <robert.jarzmik@free.fr>
+Subject: Re: [RFC/PATCH 29/32] usb: gadget: pxa27x_udc: let udc-core manage
+ gadget->dev
+Message-ID: <20130204195315.GA29628@arwen.pp.htv.fi>
+References: <1359042370-4358-1-git-send-email-balbi@ti.com>
+ <1359042370-4358-30-git-send-email-balbi@ti.com>
+ <87txq1m57u.fsf@free.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linux-s390@vger.kernel.org, jiang.liu@huawei.com, wency@cn.fujitsu.com,
- linux-acpi@vger.kernel.org, Greg KH <gregkh@linuxfoundation.org>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- isimatu.yasuaki@jp.fujitsu.com, yinghai@kernel.org,
- srivatsa.bhat@linux.vnet.ibm.com, guohanjun@huawei.com, bhelgaas@google.com,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, lenb@kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="XsQoSWH+UP9D9v3l"
+In-Reply-To: <87txq1m57u.fsf@free.fr>
+Cc: kgene.kim@samsung.com, eric.y.miao@gmail.com,
+ kuninori.morimoto.gx@renesas.com, alexander.shishkin@linux.intel.com,
+ gregkh@linuxfoundation.org, yoshihiro.shimoda.uh@renesas.com,
+ Linux USB Mailing List <linux-usb@vger.kernel.org>, nicolas.ferre@atmel.com,
+ linux-geode@lists.infradead.org, Felipe Balbi <balbi@ti.com>,
+ linux-samsung-soc@vger.kernel.org, haojian.zhuang@gmail.com,
+ ben-linux@fluff.org, dahlmann.thomas@arcor.de, linux@arm.linux.org.uk,
+ Linux OMAP Mailing List <linux-omap@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Reply-To: balbi@ti.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,65 +37,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday, February 04, 2013 09:02:46 AM Toshi Kani wrote:
-> On Mon, 2013-02-04 at 14:41 +0100, Rafael J. Wysocki wrote:
-> > On Sunday, February 03, 2013 07:23:49 PM Greg KH wrote:
-> > > On Sat, Feb 02, 2013 at 09:15:37PM +0100, Rafael J. Wysocki wrote:
-> > > > On Saturday, February 02, 2013 03:58:01 PM Greg KH wrote:
->   :
-> > > > Yes, but those are just remove events and we can only see how destructive they
-> > > > were after the removal.  The point is to be able to figure out whether or not
-> > > > we *want* to do the removal in the first place.
-> > > 
-> > > Yes, but, you will always race if you try to test to see if you can shut
-> > > down a device and then trying to do it.  So walking the bus ahead of
-> > > time isn't a good idea.
-> > >
-> > > And, we really don't have a viable way to recover if disconnect() fails,
-> > > do we.  What do we do in that situation, restore the other devices we
-> > > disconnected successfully?  How do we remember/know what they were?
-> > > 
-> > > PCI hotplug almost had this same problem until the designers finally
-> > > realized that they just had to accept the fact that removing a PCI
-> > > device could either happen by:
-> > > 	- a user yanking out the device, at which time the OS better
-> > > 	  clean up properly no matter what happens
-> > > 	- the user asked nicely to remove a device, and the OS can take
-> > > 	  as long as it wants to complete that action, including
-> > > 	  stalling for noticable amounts of time before eventually,
-> > > 	  always letting the action succeed.
-> > > 
-> > > I think the second thing is what you have to do here.  If a user tells
-> > > the OS it wants to remove these devices, you better do it.  If you
-> > > can't, because memory is being used by someone else, either move them
-> > > off, or just hope that nothing bad happens, before the user gets
-> > > frustrated and yanks out the CPU/memory module themselves physically :)
-> > 
-> > Well, that we can't help, but sometimes users really *want* the OS to tell them
-> > if it is safe to unplug something at this particualr time (think about the
-> > Windows' "safe remove" feature for USB sticks, for example; that came out of
-> > users' demand AFAIR).
-> > 
-> > So in my opinion it would be good to give them an option to do "safe eject" or
-> > "forcible eject", whichever they prefer.
-> 
-> For system device hot-plug, it always needs to be "safe eject".  This
-> feature will be implemented on mission critical servers, which are
-> managed by professional IT folks.  Crashing a server causes serious
-> money to the business.
+--XsQoSWH+UP9D9v3l
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Well, "always" is a bit too strong a word as far as human behavior is concerned
-in my opinion.
+On Mon, Jan 28, 2013 at 09:18:29PM +0100, Robert Jarzmik wrote:
+> Felipe Balbi <balbi@ti.com> writes:
+>=20
+> > By simply setting a flag, we can drop some
+> > boilerplate code.
+> >
+> > Signed-off-by: Felipe Balbi <balbi@ti.com>
+> > ---
+> >  drivers/usb/gadget/pxa27x_udc.c | 9 +--------
+> Acked-by: Robert Jarzmik <robert.jarzmik@free.fr>
+>=20
+> And I tested also your patch and it works in my environment. For next pat=
+ches
+> I'd like to be CCed for pxa27x_udc stuff as I'm maintaining that one sinc=
+e its
+> beginning (and yes, I know, I didn't put that in MAINTAINERS ...).
 
-That said I would be perfectly fine with not supporting the "forcible eject" to
-start with and waiting for the first request to add support for it.  I also
-would be fine with taking bets on how much time it's going to take for such a
-request to appear. :-)
+you should add yourself to MAINTAINERS. Please send a patch to Greg when
+you have time.
 
-Thanks,
-Rafael
+No need to prepare a tree, though. I just need you to give your Acked-by
+and I'll queue the patches myself.
 
+cheers
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+--=20
+balbi
+
+--XsQoSWH+UP9D9v3l
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJREBGrAAoJEIaOsuA1yqRE0vUQAKyazTVwVicGXO+vGMA3PsuF
+eOWtYr8dSlvXy/cjOo5ltIlFBbjc8tZVWsOqurALqO+qzu0pfON9AAQShpyHq2YV
++J6iAGFYaQ6x5QrPuFDeDWG9SEWwcAJtSxa99x8pPrVyzt/an06JwEwSztezLHUj
+flhRU0iHLuBPgZVwUPK5Zx9PRu7XeHUoyVLB2pSzsffxM+2cR4P6cglNSrU7uqJY
+vNtoZpwpAMDDjtgzRNLAj3LTiSlmpG6/Jxaq3vqt5xUR34f6OywafM/rjW64CmbT
+u+NGIPnWxXXawThlBkIhotZzMQgS3hD0cZtnw3v9RTdAgSH3KE1sWum/QXkOAMwI
+Jg/6fwcNto4E7npl6cGQqREXYcOg4lH0d4eZ8va1sZQUwSinJKMWZj2Dkd1esGdr
+VDa/3hw6tncruTbaSXcgyr9bWCcSjmZYNdF8hd9B+fEPgMeRBcLH0PF+w2bRcG4Q
+xiPgGG2y3s3SWsUXvyXRE2vtSp1f+aPEYLmWZdGDIum+Ev5v7yRK1s3d2s3kLM/Q
+1Kb3kQMyfachlwYd0Ev54L8X1vyjHe5SQylhdzIbW7RpXY3vn3KIxbT9WjLM385t
+ok43ibbIzXBtS7z17PqMNLQoIrNtJk+vJEaMJsmY7hBBCgfmnFpRqJiRQaTi65xr
+uexTC1K/SknBAg/8+Z8h
+=qf2p
+-----END PGP SIGNATURE-----
+
+--XsQoSWH+UP9D9v3l--
