@@ -1,24 +1,34 @@
-Return-Path: <rjw@sisk.pl>
-Received: from hydra.sisk.pl (hydra.sisk.pl [212.160.235.94])
- by ozlabs.org (Postfix) with ESMTP id 3100F2C02CA
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Feb 2013 08:07:36 +1100 (EST)
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: [RFC PATCH v2 01/12] Add sys_hotplug.h for system device hotplug
- framework
-Date: Tue, 05 Feb 2013 22:13:49 +0100
-Message-ID: <1692384.YXBH6mB6ZX@vostro.rjw.lan>
-In-Reply-To: <20130205183948.GA19026@kroah.com>
-References: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
- <4225828.6MQHJn7Yzr@vostro.rjw.lan> <20130205183948.GA19026@kroah.com>
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8874E2C02AD
+ for <linuxppc-dev@ozlabs.org>; Wed,  6 Feb 2013 10:19:49 +1100 (EST)
+Received: from /spool/local
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Tue, 5 Feb 2013 18:19:45 -0500
+Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 370F838C801B
+ for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2013 18:19:43 -0500 (EST)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r15NJgs3310606
+ for <linuxppc-dev@ozlabs.org>; Tue, 5 Feb 2013 18:19:42 -0500
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r15NJf73022688
+ for <linuxppc-dev@ozlabs.org>; Tue, 5 Feb 2013 21:19:42 -0200
+Date: Tue, 5 Feb 2013 15:19:38 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Subject: [PATCH] perf/powerpc: Fix compile warnings
+Message-ID: <20130205231938.GA24125@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linux-s390@vger.kernel.org, Toshi Kani <toshi.kani@hp.com>,
- jiang.liu@huawei.com, wency@cn.fujitsu.com, linux-acpi@vger.kernel.org,
- yinghai@kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- isimatu.yasuaki@jp.fujitsu.com, srivatsa.bhat@linux.vnet.ibm.com,
- guohanjun@huawei.com, bhelgaas@google.com, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, lenb@kernel.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, sfr@canb.auug.org.au, mingo@kernel.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,64 +38,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday, February 05, 2013 10:39:48 AM Greg KH wrote:
-> On Tue, Feb 05, 2013 at 12:11:17PM +0100, Rafael J. Wysocki wrote:
-> > On Monday, February 04, 2013 04:04:47 PM Greg KH wrote:
-> > > On Tue, Feb 05, 2013 at 12:52:30AM +0100, Rafael J. Wysocki wrote:
-> > > > You'd probably never try to hot-remove a disk before unmounting filesystems
-> > > > mounted from it or failing it as a RAID component and nobody sane wants the
-> > > > kernel to do things like that automatically when the user presses the eject
-> > > > button.  In my opinion we should treat memory eject, or CPU package eject, or
-> > > > PCI host bridge eject in exactly the same way: Don't eject if it is not
-> > > > prepared for ejecting in the first place.
-> > > 
-> > > Bad example, we have disks hot-removed all the time without any
-> > > filesystems being unmounted, and have supported this since the 2.2 days
-> > > (although we didn't get it "right" until 2.6.)
-> > 
-> > I actually don't think it is really bad, because it exposes the problem nicely.
-> > 
-> > Namely, there are two arguments that can be made here.  The first one is the
-> > usability argument: Users should always be allowed to do what they want,
-> > because it is [explicit content] annoying if software pretends to know better
-> > what to do than the user (it is a convenience argument too, because usually
-> > it's *easier* to allow users to do what they want).  The second one is the
-> > data integrity argument: Operations that may lead to data loss should never
-> > be carried out, because it is [explicit content] disappointing to lose valuable
-> > stuff by a stupid mistake if software allows that mistake to be made (that also
-> > may be costly in terms of real money).
-> > 
-> > You seem to believe that we should always follow the usability argument, while
-> > Toshi seems to be thinking that (at least in the case of the "system" devices),
-> > the data integrity argument is more important.  They are both valid arguments,
-> > however, and they are in conflict, so this is a matter of balance.
-> > 
-> > You're saying that in the case of disks we always follow the usability argument
-> > entirely.  I'm fine with that, although I suspect that some people may not be
-> > considering this as the right balance.
-> > 
-> > Toshi seems to be thinking that for the hotplug of memory/CPUs/host bridges we
-> > should always follow the data integrity argument entirely, because the users of
-> > that feature value their data so much that they pretty much don't care about
-> > usability.  That very well may be the case, so I'm fine with that too, although
-> > I'm sure there are people who'll argue that this is not the right balance
-> > either.
-> > 
-> > Now, the point is that we *can* do what Toshi is arguing for and that doesn't
-> > seem to be overly complicated, so my question is: Why don't we do that, at
-> > least to start with?  If it turns out eventually that the users care about
-> > usability too, after all, we can add a switch to adjust things more to their
-> > liking.  Still, we can very well do that later.
-> 
-> Ok, I'd much rather deal with reviewing actual implementations than
-> talking about theory at this point in time, so let's see what you all
-> can come up with next and I'll be glad to review it.
 
-Sure, thanks a lot for your comments so far!
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Date: Tue, 5 Feb 2013 15:04:49 -0800
+Subject: [PATCH] perf/powerpc: Fix compile warnings
 
-Rafael
+Fix compile errors like those below:
 
+  CC      arch/powerpc/perf/power7-pmu.o
+/home/git/linux/arch/powerpc/perf/power7-pmu.c:397:2: error: initialization from
+incompatible pointer type [-Werror]
 
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/include/asm/perf_event_server.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
+index ee63205..92460bc 100644
+--- a/arch/powerpc/include/asm/perf_event_server.h
++++ b/arch/powerpc/include/asm/perf_event_server.h
+@@ -124,7 +124,7 @@ extern ssize_t power_events_sysfs_show(struct device *dev,
+  * POWER CPU specification.
+  */
+ #define	EVENT_VAR(_id, _suffix)		event_attr_##_id##_suffix
+-#define	EVENT_PTR(_id, _suffix)		&EVENT_VAR(_id, _suffix)
++#define	EVENT_PTR(_id, _suffix)		&EVENT_VAR(_id, _suffix).attr.attr
+ 
+ #define	EVENT_ATTR(_name, _id, _suffix)					\
+ 	PMU_EVENT_ATTR(_name, EVENT_VAR(_id, _suffix), PME_PM_##_id,	\
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.7.1
