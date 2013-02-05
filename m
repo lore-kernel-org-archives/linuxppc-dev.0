@@ -1,17 +1,24 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 4240F2C0384
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Feb 2013 18:20:34 +1100 (EST)
-From: Anatolij Gustschin <agust@denx.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/3] powerpc/mpc5xxx: fix sparse warning for non static symbol
-Date: Tue,  5 Feb 2013 08:20:18 +0100
-Message-Id: <1360048818-3765-3-git-send-email-agust@denx.de>
-In-Reply-To: <1360048818-3765-1-git-send-email-agust@denx.de>
-References: <1360048818-3765-1-git-send-email-agust@denx.de>
-Cc: Anatolij Gustschin <agust@denx.de>
+Return-Path: <rjw@sisk.pl>
+Received: from hydra.sisk.pl (hydra.sisk.pl [212.160.235.94])
+ by ozlabs.org (Postfix) with ESMTP id B25282C029F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Feb 2013 22:05:02 +1100 (EST)
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [RFC PATCH v2 01/12] Add sys_hotplug.h for system device hotplug
+ framework
+Date: Tue, 05 Feb 2013 12:11:17 +0100
+Message-ID: <4225828.6MQHJn7Yzr@vostro.rjw.lan>
+In-Reply-To: <20130205000447.GA21782@kroah.com>
+References: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
+ <7003418.onqVlaaHJS@vostro.rjw.lan> <20130205000447.GA21782@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: linux-s390@vger.kernel.org, Toshi Kani <toshi.kani@hp.com>,
+ jiang.liu@huawei.com, wency@cn.fujitsu.com, linux-acpi@vger.kernel.org,
+ yinghai@kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ isimatu.yasuaki@jp.fujitsu.com, srivatsa.bhat@linux.vnet.ibm.com,
+ guohanjun@huawei.com, bhelgaas@google.com, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, lenb@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,29 +28,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fix warning:
-symbol 'mpc5xxx_get_bus_frequency' was not declared. Should it be static?
+On Monday, February 04, 2013 04:04:47 PM Greg KH wrote:
+> On Tue, Feb 05, 2013 at 12:52:30AM +0100, Rafael J. Wysocki wrote:
+> > You'd probably never try to hot-remove a disk before unmounting filesystems
+> > mounted from it or failing it as a RAID component and nobody sane wants the
+> > kernel to do things like that automatically when the user presses the eject
+> > button.  In my opinion we should treat memory eject, or CPU package eject, or
+> > PCI host bridge eject in exactly the same way: Don't eject if it is not
+> > prepared for ejecting in the first place.
+> 
+> Bad example, we have disks hot-removed all the time without any
+> filesystems being unmounted, and have supported this since the 2.2 days
+> (although we didn't get it "right" until 2.6.)
 
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
----
- arch/powerpc/sysdev/mpc5xxx_clocks.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+I actually don't think it is really bad, because it exposes the problem nicely.
 
-diff --git a/arch/powerpc/sysdev/mpc5xxx_clocks.c b/arch/powerpc/sysdev/mpc5xxx_clocks.c
-index 96f815a..5492dc5 100644
---- a/arch/powerpc/sysdev/mpc5xxx_clocks.c
-+++ b/arch/powerpc/sysdev/mpc5xxx_clocks.c
-@@ -9,9 +9,9 @@
- #include <linux/kernel.h>
- #include <linux/of_platform.h>
- #include <linux/export.h>
-+#include <asm/mpc5xxx.h>
- 
--unsigned int
--mpc5xxx_get_bus_frequency(struct device_node *node)
-+unsigned long mpc5xxx_get_bus_frequency(struct device_node *node)
- {
- 	struct device_node *np;
- 	const unsigned int *p_bus_freq = NULL;
+Namely, there are two arguments that can be made here.  The first one is the
+usability argument: Users should always be allowed to do what they want,
+because it is [explicit content] annoying if software pretends to know better
+what to do than the user (it is a convenience argument too, because usually
+it's *easier* to allow users to do what they want).  The second one is the
+data integrity argument: Operations that may lead to data loss should never
+be carried out, because it is [explicit content] disappointing to lose valuable
+stuff by a stupid mistake if software allows that mistake to be made (that also
+may be costly in terms of real money).
+
+You seem to believe that we should always follow the usability argument, while
+Toshi seems to be thinking that (at least in the case of the "system" devices),
+the data integrity argument is more important.  They are both valid arguments,
+however, and they are in conflict, so this is a matter of balance.
+
+You're saying that in the case of disks we always follow the usability argument
+entirely.  I'm fine with that, although I suspect that some people may not be
+considering this as the right balance.
+
+Toshi seems to be thinking that for the hotplug of memory/CPUs/host bridges we
+should always follow the data integrity argument entirely, because the users of
+that feature value their data so much that they pretty much don't care about
+usability.  That very well may be the case, so I'm fine with that too, although
+I'm sure there are people who'll argue that this is not the right balance
+either.
+
+Now, the point is that we *can* do what Toshi is arguing for and that doesn't
+seem to be overly complicated, so my question is: Why don't we do that, at
+least to start with?  If it turns out eventually that the users care about
+usability too, after all, we can add a switch to adjust things more to their
+liking.  Still, we can very well do that later.
+
+Thanks,
+Rafael
+
+
 -- 
-1.7.5.4
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
