@@ -1,24 +1,13 @@
-Return-Path: <rjw@sisk.pl>
-Received: from hydra.sisk.pl (hydra.sisk.pl [212.160.235.94])
- by ozlabs.org (Postfix) with ESMTP id B25282C029F
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Feb 2013 22:05:02 +1100 (EST)
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: [RFC PATCH v2 01/12] Add sys_hotplug.h for system device hotplug
- framework
-Date: Tue, 05 Feb 2013 12:11:17 +0100
-Message-ID: <4225828.6MQHJn7Yzr@vostro.rjw.lan>
-In-Reply-To: <20130205000447.GA21782@kroah.com>
-References: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
- <7003418.onqVlaaHJS@vostro.rjw.lan> <20130205000447.GA21782@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linux-s390@vger.kernel.org, Toshi Kani <toshi.kani@hp.com>,
- jiang.liu@huawei.com, wency@cn.fujitsu.com, linux-acpi@vger.kernel.org,
- yinghai@kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- isimatu.yasuaki@jp.fujitsu.com, srivatsa.bhat@linux.vnet.ibm.com,
- guohanjun@huawei.com, bhelgaas@google.com, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, lenb@kernel.org
+Return-Path: <dborkman@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id CE86F2C02AD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Feb 2013 02:07:12 +1100 (EST)
+From: Daniel Borkmann <dborkman@redhat.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: fix ics_rtas_init and start_secondary section
+ mismatch
+Date: Tue,  5 Feb 2013 16:07:06 +0100
+Message-Id: <1360076826-25435-1-git-send-email-dborkman@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,57 +17,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday, February 04, 2013 04:04:47 PM Greg KH wrote:
-> On Tue, Feb 05, 2013 at 12:52:30AM +0100, Rafael J. Wysocki wrote:
-> > You'd probably never try to hot-remove a disk before unmounting filesystems
-> > mounted from it or failing it as a RAID component and nobody sane wants the
-> > kernel to do things like that automatically when the user presses the eject
-> > button.  In my opinion we should treat memory eject, or CPU package eject, or
-> > PCI host bridge eject in exactly the same way: Don't eject if it is not
-> > prepared for ejecting in the first place.
-> 
-> Bad example, we have disks hot-removed all the time without any
-> filesystems being unmounted, and have supported this since the 2.2 days
-> (although we didn't get it "right" until 2.6.)
+It seems, we're fine with just annotating the two functions.
+Thus, this fixes the following build warnings on ppc64:
 
-I actually don't think it is really bad, because it exposes the problem nicely.
+WARNING: arch/powerpc/sysdev/xics/built-in.o(.text+0x1664):
+The function .ics_rtas_init() references
+the function __init .xics_register_ics().
+This is often because .ics_rtas_init lacks a __init
+annotation or the annotation of .xics_register_ics is wrong.
 
-Namely, there are two arguments that can be made here.  The first one is the
-usability argument: Users should always be allowed to do what they want,
-because it is [explicit content] annoying if software pretends to know better
-what to do than the user (it is a convenience argument too, because usually
-it's *easier* to allow users to do what they want).  The second one is the
-data integrity argument: Operations that may lead to data loss should never
-be carried out, because it is [explicit content] disappointing to lose valuable
-stuff by a stupid mistake if software allows that mistake to be made (that also
-may be costly in terms of real money).
+WARNING: arch/powerpc/sysdev/built-in.o(.text+0x6044):
+The function .ics_rtas_init() references
+the function __init .xics_register_ics().
+This is often because .ics_rtas_init lacks a __init
+annotation or the annotation of .xics_register_ics is wrong.
 
-You seem to believe that we should always follow the usability argument, while
-Toshi seems to be thinking that (at least in the case of the "system" devices),
-the data integrity argument is more important.  They are both valid arguments,
-however, and they are in conflict, so this is a matter of balance.
+WARNING: arch/powerpc/kernel/built-in.o(.text+0x2db30):
+The function .start_secondary() references
+the function __cpuinit .vdso_getcpu_init().
+This is often because .start_secondary lacks a __cpuinit
+annotation or the annotation of .vdso_getcpu_init is wrong.
 
-You're saying that in the case of disks we always follow the usability argument
-entirely.  I'm fine with that, although I suspect that some people may not be
-considering this as the right balance.
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Daniel Borkmann <dborkman@redhat.com>
+---
+ Note: compile-tested only!
 
-Toshi seems to be thinking that for the hotplug of memory/CPUs/host bridges we
-should always follow the data integrity argument entirely, because the users of
-that feature value their data so much that they pretty much don't care about
-usability.  That very well may be the case, so I'm fine with that too, although
-I'm sure there are people who'll argue that this is not the right balance
-either.
+ arch/powerpc/kernel/smp.c           |    2 +-
+ arch/powerpc/sysdev/xics/ics-rtas.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Now, the point is that we *can* do what Toshi is arguing for and that doesn't
-seem to be overly complicated, so my question is: Why don't we do that, at
-least to start with?  If it turns out eventually that the users care about
-usability too, after all, we can add a switch to adjust things more to their
-liking.  Still, we can very well do that later.
-
-Thanks,
-Rafael
-
-
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 793401e..76bd9da 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -610,7 +610,7 @@ static struct device_node *cpu_to_l2cache(int cpu)
+ }
+ 
+ /* Activate a secondary processor. */
+-void start_secondary(void *unused)
++__cpuinit void start_secondary(void *unused)
+ {
+ 	unsigned int cpu = smp_processor_id();
+ 	struct device_node *l2_cache;
+diff --git a/arch/powerpc/sysdev/xics/ics-rtas.c b/arch/powerpc/sysdev/xics/ics-rtas.c
+index c782f85..936575d 100644
+--- a/arch/powerpc/sysdev/xics/ics-rtas.c
++++ b/arch/powerpc/sysdev/xics/ics-rtas.c
+@@ -213,7 +213,7 @@ static int ics_rtas_host_match(struct ics *ics, struct device_node *node)
+ 	return !of_device_is_compatible(node, "chrp,iic");
+ }
+ 
+-int ics_rtas_init(void)
++__init int ics_rtas_init(void)
+ {
+ 	ibm_get_xive = rtas_token("ibm,get-xive");
+ 	ibm_set_xive = rtas_token("ibm,set-xive");
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.7.1
