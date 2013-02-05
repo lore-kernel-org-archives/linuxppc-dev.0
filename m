@@ -1,25 +1,18 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail-ia0-x22d.google.com (mail-ia0-x22d.google.com
- [IPv6:2607:f8b0:4001:c02::22d])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B85E32C0307
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Feb 2013 11:02:45 +1100 (EST)
-Received: by mail-ia0-f173.google.com with SMTP id h37so4430967iak.4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Feb 2013 16:02:41 -0800 (PST)
-Date: Mon, 4 Feb 2013 16:04:47 -0800
-From: Greg KH <gregkh@linuxfoundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Return-Path: <rjw@sisk.pl>
+Received: from hydra.sisk.pl (hydra.sisk.pl [212.160.235.94])
+ by ozlabs.org (Postfix) with ESMTP id D22DC2C02A4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Feb 2013 11:56:09 +1100 (EST)
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Greg KH <gregkh@linuxfoundation.org>
 Subject: Re: [RFC PATCH v2 01/12] Add sys_hotplug.h for system device hotplug
  framework
-Message-ID: <20130205000447.GA21782@kroah.com>
+Date: Tue, 05 Feb 2013 02:02:23 +0100
+Message-ID: <1477324.WRerxpPAK8@vostro.rjw.lan>
+In-Reply-To: <20130205000447.GA21782@kroah.com>
 References: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
- <5598823.8hjkkMP1h9@vostro.rjw.lan>
- <1360016009.23410.213.camel@misato.fc.hp.com>
- <7003418.onqVlaaHJS@vostro.rjw.lan>
+ <7003418.onqVlaaHJS@vostro.rjw.lan> <20130205000447.GA21782@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <7003418.onqVlaaHJS@vostro.rjw.lan>
+Content-Type: text/plain; charset="utf-8"
 Cc: linux-s390@vger.kernel.org, Toshi Kani <toshi.kani@hp.com>,
  jiang.liu@huawei.com, wency@cn.fujitsu.com, linux-acpi@vger.kernel.org,
  yinghai@kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
@@ -35,36 +28,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 05, 2013 at 12:52:30AM +0100, Rafael J. Wysocki wrote:
-> You'd probably never try to hot-remove a disk before unmounting filesystems
-> mounted from it or failing it as a RAID component and nobody sane wants the
-> kernel to do things like that automatically when the user presses the eject
-> button.  In my opinion we should treat memory eject, or CPU package eject, or
-> PCI host bridge eject in exactly the same way: Don't eject if it is not
-> prepared for ejecting in the first place.
-
-Bad example, we have disks hot-removed all the time without any
-filesystems being unmounted, and have supported this since the 2.2 days
-(although we didn't get it "right" until 2.6.)
-
-PCI Host bridge eject is the same as PCI eject today, the user asks us
-to do it, and we can not fail it from happening.  We also can have them
-removed without us being told about it in the first place, and can
-properly clean up from it all.
-
-> And if you think about it, that makes things *massively* simpler, because now
-> the kernel doesn't heed to worry about all of those "synchronous removal"
-> scenarions that very well may involve every single device in the system and
-> the whole problem is nicely split into several separate "implement
-> offline/online" problems that are subsystem-specific and a single
-> "eject if everything relevant is offline" problem which is kind of trivial.
-> Plus the one of exposing information to user space, which is separate too.
+On Monday, February 04, 2013 04:04:47 PM Greg KH wrote:
+> On Tue, Feb 05, 2013 at 12:52:30AM +0100, Rafael J. Wysocki wrote:
+> > You'd probably never try to hot-remove a disk before unmounting filesystems
+> > mounted from it or failing it as a RAID component and nobody sane wants the
+> > kernel to do things like that automatically when the user presses the eject
+> > button.  In my opinion we should treat memory eject, or CPU package eject, or
+> > PCI host bridge eject in exactly the same way: Don't eject if it is not
+> > prepared for ejecting in the first place.
 > 
-> Now, each of them can be worked on separately, *tested* separately and
-> debugged separately if need be and it is much easier to isolate failures
-> and so on.
+> Bad example, we have disks hot-removed all the time without any
+> filesystems being unmounted, and have supported this since the 2.2 days
+> (although we didn't get it "right" until 2.6.)
 
-So you are agreeing with me in that we can not fail hot removing any
-device, nice :)
+Well, that wasn't my point.
 
-greg k-h
+My point was that we have tools for unmounting filesystems from disks that
+the user wants to hot-remove and the user is supposed to use those tools
+before hot-removing the disks.  At least I wouldn't recommend anyone to
+do otherwise. :-)
+
+Now, for memory hot-removal we don't have anything like that, as far as I
+can say, so my point was why don't we add memory "offline" that can be
+done and tested separately from hot-removal and use that before we go and
+hot-remove stuff?  And analogously for PCI host bridges etc.?
+
+[Now, there's a question if an "eject" button on the system case, if there is
+one, should *always* cause the eject to happen even though things are not
+"offline".  My opinion is that not necessarily, because users may not be aware
+that they are doing something wrong.
+
+Quite analogously, does the power button always cause the system to shut down?
+No.  So why the heck should an eject button always cause an eject to happen?
+I see no reason.
+
+That said, the most straightforward approach may be simply to let user space
+disable eject events for specific devices when it wants and only enable them
+when it knows that the given devices are ready for removal.
+
+But I'm digressing.]
+
+> PCI Host bridge eject is the same as PCI eject today, the user asks us
+> to do it, and we can not fail it from happening.  We also can have them
+> removed without us being told about it in the first place, and can
+> properly clean up from it all.
+
+Well, are you sure we'll always clean up?  I kind of have my doubts. :-)
+
+> > And if you think about it, that makes things *massively* simpler, because now
+> > the kernel doesn't heed to worry about all of those "synchronous removal"
+> > scenarions that very well may involve every single device in the system and
+> > the whole problem is nicely split into several separate "implement
+> > offline/online" problems that are subsystem-specific and a single
+> > "eject if everything relevant is offline" problem which is kind of trivial.
+> > Plus the one of exposing information to user space, which is separate too.
+> > 
+> > Now, each of them can be worked on separately, *tested* separately and
+> > debugged separately if need be and it is much easier to isolate failures
+> > and so on.
+> 
+> So you are agreeing with me in that we can not fail hot removing any
+> device, nice :)
+
+That depends on how you define hot-removing.  If you regard the "offline"
+as a separate operation that can be carried out independently and hot-remove
+as the last step causing the device to actually go away, then I agree that
+it can't fail.  The "offline" itself, however, is a different matter (pretty
+much like unmounting a file system).
+
+Thanks,
+Rafael
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
