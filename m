@@ -1,34 +1,30 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8874E2C02AD
- for <linuxppc-dev@ozlabs.org>; Wed,  6 Feb 2013 10:19:49 +1100 (EST)
-Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Tue, 5 Feb 2013 18:19:45 -0500
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 370F838C801B
- for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2013 18:19:43 -0500 (EST)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r15NJgs3310606
- for <linuxppc-dev@ozlabs.org>; Tue, 5 Feb 2013 18:19:42 -0500
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r15NJf73022688
- for <linuxppc-dev@ozlabs.org>; Tue, 5 Feb 2013 21:19:42 -0200
-Date: Tue, 5 Feb 2013 15:19:38 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Subject: [PATCH] perf/powerpc: Fix compile warnings
-Message-ID: <20130205231938.GA24125@us.ibm.com>
+Return-Path: <tangchen@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id F1B152C02CE
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Feb 2013 14:08:11 +1100 (EST)
+Message-ID: <5111C8EB.6090805@cn.fujitsu.com>
+Date: Wed, 06 Feb 2013 11:07:23 +0800
+From: Tang Chen <tangchen@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, sfr@canb.auug.org.au, mingo@kernel.org,
- linux-kernel@vger.kernel.org
+To: Glauber Costa <glommer@parallels.com>
+Subject: Re: [PATCH v5 01/14] memory-hotplug: try to offline the memory twice
+ to avoid dependence
+References: <1356350964-13437-1-git-send-email-tangchen@cn.fujitsu.com>
+ <1356350964-13437-2-git-send-email-tangchen@cn.fujitsu.com>
+ <50D96543.6010903@parallels.com> <50DFD7F7.5090408@cn.fujitsu.com>
+ <50ED8834.1090804@parallels.com>
+In-Reply-To: <50ED8834.1090804@parallels.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-mm@kvack.org,
+ paulus@samba.org, hpa@zytor.com, sparclinux@vger.kernel.org, cl@linux.com,
+ linux-s390@vger.kernel.org, x86@kernel.org, linux-acpi@vger.kernel.org,
+ isimatu.yasuaki@jp.fujitsu.com, linfeng@cn.fujitsu.com, mgorman@suse.de,
+ kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, liuj97@gmail.com,
+ len.brown@intel.com, Miao Xie <miaox@cn.fujitsu.com>,
+ Wen Congyang <wency@cn.fujitsu.com>, cmetcalf@tilera.com, wujianguo@huawei.com,
+ yinghai@kernel.org, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+ laijs@cn.fujitsu.com, linux-kernel@vger.kernel.org, minchan.kim@gmail.com,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,35 +34,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Glauber, all,
 
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Date: Tue, 5 Feb 2013 15:04:49 -0800
-Subject: [PATCH] perf/powerpc: Fix compile warnings
+An old thing I want to discuss with you. :)
 
-Fix compile errors like those below:
+On 01/09/2013 11:09 PM, Glauber Costa wrote:
+>>>> memory can't be offlined when CONFIG_MEMCG is selected.
+>>>> For example: there is a memory device on node 1. The address range
+>>>> is [1G, 1.5G). You will find 4 new directories memory8, memory9, memory10,
+>>>> and memory11 under the directory /sys/devices/system/memory/.
+>>>>
+>>>> If CONFIG_MEMCG is selected, we will allocate memory to store page cgroup
+>>>> when we online pages. When we online memory8, the memory stored page cgroup
+>>>> is not provided by this memory device. But when we online memory9, the memory
+>>>> stored page cgroup may be provided by memory8. So we can't offline memory8
+>>>> now. We should offline the memory in the reversed order.
+>>>>
+>>>> When the memory device is hotremoved, we will auto offline memory provided
+>>>> by this memory device. But we don't know which memory is onlined first, so
+>>>> offlining memory may fail. In such case, iterate twice to offline the memory.
+>>>> 1st iterate: offline every non primary memory block.
+>>>> 2nd iterate: offline primary (i.e. first added) memory block.
+>>>>
+>>>> This idea is suggested by KOSAKI Motohiro.
+>>>>
+>>>> Signed-off-by: Wen Congyang<wency@cn.fujitsu.com>
+>>>
+>>> Maybe there is something here that I am missing - I admit that I came
+>>> late to this one, but this really sounds like a very ugly hack, that
+>>> really has no place in here.
+>>>
+>>> Retrying, of course, may make sense, if we have reasonable belief that
+>>> we may now succeed. If this is the case, you need to document - in the
+>>> code - while is that.
+>>>
+>>> The memcg argument, however, doesn't really cut it. Why can't we make
+>>> all page_cgroup allocations local to the node they are describing? If
+>>> memcg is the culprit here, we should fix it, and not retry. If there is
+>>> still any benefit in retrying, then we retry being very specific about why.
+>>
+>> We try to make all page_cgroup allocations local to the node they are describing
+>> now. If the memory is the first memory onlined in this node, we will allocate
+>> it from the other node.
+>>
+>> For example, node1 has 4 memory blocks: 8-11, and we online it from 8 to 11
+>> 1. memory block 8, page_cgroup allocations are in the other nodes
+>> 2. memory block 9, page_cgroup allocations are in memory block 8
+>>
+>> So we should offline memory block 9 first. But we don't know in which order
+>> the user online the memory block.
+>>
+>> I think we can modify memcg like this:
+>> allocate the memory from the memory block they are describing
+>>
+>> I am not sure it is OK to do so.
+>
+> I don't see a reason why not.
+>
+> You would have to tweak a bit the lookup function for page_cgroup, but
+> assuming you will always have the pfns and limits, it should be easy to do.
+>
+> I think the only tricky part is that today we have a single
+> node_page_cgroup, and we would of course have to have one per memory
+> block. My assumption is that the number of memory blocks is limited and
+> likely not very big. So even a static array would do.
+>
 
-  CC      arch/powerpc/perf/power7-pmu.o
-/home/git/linux/arch/powerpc/perf/power7-pmu.c:397:2: error: initialization from
-incompatible pointer type [-Werror]
+About the idea "allocate the memory from the memory block they are 
+describing",
 
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/include/asm/perf_event_server.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+online_pages()
+  |-->memory_notify(MEM_GOING_ONLINE, &arg) ----------- memory of this 
+section is not in buddy yet.
+       |-->page_cgroup_callback()
+            |-->online_page_cgroup()
+                 |-->init_section_page_cgroup()
+                      |-->alloc_page_cgroup() --------- allocate 
+page_cgroup from buddy system.
 
-diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
-index ee63205..92460bc 100644
---- a/arch/powerpc/include/asm/perf_event_server.h
-+++ b/arch/powerpc/include/asm/perf_event_server.h
-@@ -124,7 +124,7 @@ extern ssize_t power_events_sysfs_show(struct device *dev,
-  * POWER CPU specification.
-  */
- #define	EVENT_VAR(_id, _suffix)		event_attr_##_id##_suffix
--#define	EVENT_PTR(_id, _suffix)		&EVENT_VAR(_id, _suffix)
-+#define	EVENT_PTR(_id, _suffix)		&EVENT_VAR(_id, _suffix).attr.attr
- 
- #define	EVENT_ATTR(_name, _id, _suffix)					\
- 	PMU_EVENT_ATTR(_name, EVENT_VAR(_id, _suffix), PME_PM_##_id,	\
--- 
-1.7.1
+When onlining pages, we allocate page_cgroup from buddy. And the being 
+onlined pages are not in
+buddy yet. I think we can reserve some memory in the section for 
+page_cgroup, and return all the
+rest to the buddy.
+
+But when the system is booting,
+
+start_kernel()
+  |-->setup_arch()
+  |-->mm_init()
+  |    |-->mem_init()
+  |         |-->numa_free_all_bootmem() -------------- all the pages are 
+in buddy system.
+  |-->page_cgroup_init()
+       |-->init_section_page_cgroup()
+            |-->alloc_page_cgroup() ------------------ I don't know how 
+to reserve memory in each section.
+
+So any idea about how to deal with it when the system is booting please?
+
+
+And one more question, a memory section is 128MB in Linux. If we reserve 
+part of the them for page_cgroup,
+then anyone who wants to allocate a contiguous memory larger than 128MB, 
+it will fail, right ?
+Is it OK ?
+
+Thanks. :)
