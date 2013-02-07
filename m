@@ -1,17 +1,24 @@
-Return-Path: <anton@samba.org>
-Date: Thu, 7 Feb 2013 15:13:55 +1100
-From: Anton Blanchard <anton@samba.org>
-To: eparis@redhat.com, viro@zeniv.linux.org.uk, benh@kernel.crashing.org,
- paulus@samba.org
-Subject: Re: [PATCH 1/4] audit: Syscall rules are not applied to existing
- processes on non-x86
-Message-ID: <20130207151355.33f0970a@kryten>
-In-Reply-To: <20130109104617.74e995a5@kryten>
-References: <20130109104617.74e995a5@kryten>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Return-Path: <rusty@ozlabs.org>
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, tglx@linutronix.de,
+ peterz@infradead.org, tj@kernel.org, oleg@redhat.com,
+ paulmck@linux.vnet.ibm.com, mingo@kernel.org
+Subject: Re: [PATCH v5 00/45] CPU hotplug: stop_machine()-free CPU hotplug
+In-Reply-To: <510FBC01.2030405@linux.vnet.ibm.com>
+References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
+ <510FBC01.2030405@linux.vnet.ibm.com>
+Date: Thu, 07 Feb 2013 14:44:27 +1030
+Message-ID: <87haloiwv0.fsf@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linux-arch@vger.kernel.org, linux@arm.linux.org.uk,
+ nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, fweisbec@gmail.com,
+ linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+ xiaoguangrong@linux.vnet.ibm.com, rjw@sisk.pl, sbw@mit.edu,
+ wangyun@linux.vnet.ibm.com,
+ "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, netdev@vger.kernel.org,
+ namhyung@kernel.org, akpm@linux-foundation.org, walken@google.com,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,53 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+"Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com> writes:
+> On 01/22/2013 01:03 PM, Srivatsa S. Bhat wrote:
+>                  Avg. latency of 1 CPU offline (ms) [stop-cpu/stop-m/c latency]
+>
+> # online CPUs    Mainline (with stop-m/c)       This patchset (no stop-m/c)
+>
+>       8                 17.04                          7.73
+>
+>      16                 18.05                          6.44
+>
+>      32                 17.31                          7.39
+>
+>      64                 32.40                          9.28
+>
+>     128                 98.23                          7.35
 
-Hi,
+Nice!  I wonder how the ARM guys feel with their quad-cpu systems...
 
-Just following up on this. I've had a few people complaining about
-audit being broken on ppc64 and it would be nice to fix.
-
-Anton
---
-
-On Wed, 9 Jan 2013 10:46:17 +1100
-Anton Blanchard <anton@samba.org> wrote:
-
-> 
-> Commit b05d8447e782 (audit: inline audit_syscall_entry to reduce
-> burden on archs) changed audit_syscall_entry to check for a dummy
-> context before calling __audit_syscall_entry. Unfortunately the dummy
-> context state is maintained in __audit_syscall_entry so once set it
-> never gets cleared, even if the audit rules change.
-> 
-> As a result, if there are no auditing rules when a process starts
-> then it will never be subject to any rules added later. x86 doesn't
-> see this because it has an assembly fast path that calls directly into
-> __audit_syscall_entry.
-> 
-> I noticed this issue when working on audit performance optimisations.
-> I wrote a set of simple test cases available at:
-> 
-> http://ozlabs.org/~anton/junkcode/audit_tests.tar.gz
-> 
-> 02_new_rule.py fails without the patch and passes with it. The
-> test case clears all rules, starts a process, adds a rule then
-> verifies the process produces a syscall audit record.
-> 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> Cc: <stable@kernel.org> # 3.3+
-> ---
-> 
-> Index: b/include/linux/audit.h
-> ===================================================================
-> --- a/include/linux/audit.h
-> +++ b/include/linux/audit.h
-> @@ -119,7 +119,7 @@ static inline void audit_syscall_entry(i
->  				       unsigned long a1, unsigned
-> long a2, unsigned long a3)
->  {
-> -	if (unlikely(!audit_dummy_context()))
-> +	if (unlikely(current->audit_context))
->  		__audit_syscall_entry(arch, major, a0, a1, a2, a3);
->  }
->  static inline void audit_syscall_exit(void *pt_regs)
+Thanks!
+Rusty.
