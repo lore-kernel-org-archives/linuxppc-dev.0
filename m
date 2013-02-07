@@ -1,23 +1,22 @@
 Return-Path: <B07421@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe002.messaging.microsoft.com [213.199.154.140])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5FDC12C008D
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Feb 2013 05:02:08 +1100 (EST)
-Date: Thu, 7 Feb 2013 12:01:56 -0600
+ by ozlabs.org (Postfix) with ESMTPS id 92B8C2C0085
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Feb 2013 05:27:39 +1100 (EST)
+Date: Thu, 7 Feb 2013 12:27:29 -0600
 From: Scott Wood <scottwood@freescale.com>
-Subject: Re: Why is the e500v2 core not using cpuidle?
-To: Thomas Waldecker <Thomas.Waldecker@tqs.de>
-References: <B88C075EE1324644BA0452D5EFDD582813952706@TQ-MAIL.tq-net.de>
-In-Reply-To: <B88C075EE1324644BA0452D5EFDD582813952706@TQ-MAIL.tq-net.de>
- (from Thomas.Waldecker@tqs.de on Thu Feb  7 06:19:25 2013)
-Message-ID: <1360260116.27002.3@snotra>
+Subject: Re: [PATCH] mpic: fix Destination Registers init problem
+To: Zhao Chenhui <chenhui.zhao@freescale.com>
+References: <1360224420-5009-1-git-send-email-chenhui.zhao@freescale.com>
+In-Reply-To: <1360224420-5009-1-git-send-email-chenhui.zhao@freescale.com>
+ (from chenhui.zhao@freescale.com on Thu Feb  7 02:07:00 2013)
+Message-ID: <1360261649.27002.5@snotra>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: "Linux PPC dev mailing list \(linuxppc-dev@lists.ozlabs.org\)"
- <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,51 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/07/2013 06:19:25 AM, Thomas Waldecker wrote:
-> Hi Scott,
+On 02/07/2013 02:07:00 AM, Zhao Chenhui wrote:
+> The Freescale implementation of the MPIC only allows a single CPU
+> destination for non-IPI interrupts. Test the flag MPIC_SINGLE_DEST_CPU
+> to check if the Destination registers should be set.
 >=20
-> I measured the power consumption of the whole system on the tqmp2020 =20
-> ( http://tq-group.com/tqmp2020 )
-> with a QorIQ P2020.
+> This prevents more than one bit is set at secondary processors
+> initilizing time if the flag MPIC_SINGLE_DEST_CPU is set.
 >=20
-> Kernel:
-> root@generic-powerpc-e500v2:/sys/power# uname -a
-> Linux generic-powerpc-e500v2 3.7.0-rc8-00004-g6e93414 #4 SMP Tue Dec =20
-> 11 08:53:23 CET 2012 ppc GNU/Linux
-> root@generic-powerpc-e500v2:/sys/power# cat /etc/issue
-> ELDK 5.2.1 \n \l
+> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> ---
+>  arch/powerpc/sysdev/mpic.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 >=20
-> In idle using doze I got:
-> 545mA, 18V =3D> 9.81W
->=20
-> In idle using nap I got:
-> 500mA, 18V =3D> 9W
->=20
-> That's a difference of 0.81W,
-> 0.81W/9.81W =3D 0.083 (8.3 %)
+> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+> index 9c6e535..cc537f8 100644
+> --- a/arch/powerpc/sysdev/mpic.c
+> +++ b/arch/powerpc/sysdev/mpic.c
+> @@ -1675,7 +1675,7 @@ void mpic_setup_this_cpu(void)
+>  	 * it differently, then we should make sure we also change the =20
+> default
+>  	 * values of irq_desc[].affinity in irq.c.
+>   	 */
+> -	if (distribute_irqs) {
+> +	if (distribute_irqs && !(mpic->flags & MPIC_SINGLE_DEST_CPU)) {
+>  	 	for (i =3D 0; i < mpic->num_sources ; i++)
+>  			mpic_irq_write(i, MPIC_INFO(IRQ_DESTINATION),
+>  				mpic_irq_read(i, =20
+> MPIC_INFO(IRQ_DETINATION)) | msk);
 
-Thanks.
-
-> > The only way you'll get into sleep mode is through /sys/power/state.
->=20
-> How can I use this interface?
->=20
-> root@generic-powerpc-e500v2:/sys/power# ls -la
-> total 0
-> drwxr-xr-x  2 root root    0 Feb  1 15:39 .
-> dr-xr-xr-x 12 root root    0 Feb  1 15:19 ..
-> -rw-r--r--  1 root root 4096 Feb  1 15:39 state
-> root@generic-powerpc-e500v2:/sys/power# cat state
-> root@generic-powerpc-e500v2:/sys/power# echo "sleep" > state
-> -sh: echo: write error: Function not implemented
-> root@generic-powerpc-e500v2:/sys/power# echo 0 > state
-> -sh: echo: write error: Function not implemented
-> root@generic-powerpc-e500v2:/sys/power#
-
-Make sure that CONFIG_FSL_PMC is enabled, and that you have a pmc node =20
-in the device tree.  You'll only have standby, not sleep.  mpc8536 and =20
-p1022 can support what the chip calls "deep sleep" and is exposed as =20
-"sleep" rather than "standby", but it doesn't look like the code for =20
-that has made it into mainline Linux yet.
+http://patchwork.ozlabs.org/patch/211454/
 
 -Scott=
