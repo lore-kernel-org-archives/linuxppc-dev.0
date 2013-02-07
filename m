@@ -1,19 +1,25 @@
-Return-Path: <lsorense@csclub.uwaterloo.ca>
-Received: from mail.csclub.uwaterloo.ca (mail.csclub.uwaterloo.ca
- [129.97.134.52]) by ozlabs.org (Postfix) with ESMTP id 8EF4A2C0340
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Feb 2013 09:24:40 +1100 (EST)
-From: "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>
-Date: Wed, 6 Feb 2013 17:24:38 -0500
-To: Ben Hutchings <bhutchings@solarflare.com>
-Subject: Re: ethtool occationally fails to communicate with with ucc_geth
-Message-ID: <20130206222438.GK30788@csclub.uwaterloo.ca>
-References: <20130206200504.GJ30788@csclub.uwaterloo.ca>
- <1360184912.2659.27.camel@bwh-desktop.uk.solarflarecom.com>
+Return-Path: <fweisbec@gmail.com>
+Received: from mail-lb0-f174.google.com (mail-lb0-f174.google.com
+ [209.85.217.174])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 251312C02F7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Feb 2013 11:29:43 +1100 (EST)
+Received: by mail-lb0-f174.google.com with SMTP id l12so1696551lbo.19
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Feb 2013 16:29:40 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1360184912.2659.27.camel@bwh-desktop.uk.solarflarecom.com>
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+In-Reply-To: <1359714465-6297-2-git-send-email-zhong@linux.vnet.ibm.com>
+References: <1359714465-6297-1-git-send-email-zhong@linux.vnet.ibm.com>
+ <1359714465-6297-2-git-send-email-zhong@linux.vnet.ibm.com>
+Date: Thu, 7 Feb 2013 01:29:39 +0100
+Message-ID: <CAFTL4hx7njUVVqp9FmtQQWaWG1i5dxscqQD8F_S838z2tUKVGQ@mail.gmail.com>
+Subject: Re: [RFC PATCH 1/5] powerpc: Syscall hooks for context tracking
+ subsystem
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Li Zhong <zhong@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: paulmck@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,23 +29,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 06, 2013 at 09:08:32PM +0000, Ben Hutchings wrote:
-> This seems to be a workaround for a bug in phylib: phy_state_machine()
-> calls netif_carrier_on() before adjust_link(), so the TX scheduler can
-> start immediately even though the MAC has not been configured.
-> 
-> A better workaround would be to use netif_carrier_{off,on}() in
-> ugeth_{quiesce,activate}() respectively instead of
-> netif_device_{detach,attach}().  But I think phylib really ought to be
-> fixed.
+2013/2/1 Li Zhong <zhong@linux.vnet.ibm.com>:
+> This is the syscall slow path hooks for context tracking subsystem,
+> corresponding to
+> [PATCH] x86: Syscall hooks for userspace RCU extended QS
+>   commit bf5a3c13b939813d28ce26c01425054c740d6731
+>
+> TIF_MEMDIE is moved to the second 16-bits (with value 17), as it seems there
+> is no asm code using it. TIF_NOHZ is added to _TIF_SYCALL_T_OR_A, so it is
+> better for it to be in the same 16 bits with others in the group, so in the
+> asm code, andi. with this group could work.
+>
+> Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/thread_info.h |    7 +++++--
+>  arch/powerpc/kernel/ptrace.c           |    5 +++++
+>  2 files changed, 10 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
+> index 406b7b9..414a261 100644
+> --- a/arch/powerpc/include/asm/thread_info.h
+> +++ b/arch/powerpc/include/asm/thread_info.h
+> @@ -97,7 +97,7 @@ static inline struct thread_info *current_thread_info(void)
+>  #define TIF_PERFMON_CTXSW      6       /* perfmon needs ctxsw calls */
+>  #define TIF_SYSCALL_AUDIT      7       /* syscall auditing active */
+>  #define TIF_SINGLESTEP         8       /* singlestepping active */
+> -#define TIF_MEMDIE             9       /* is terminating due to OOM killer */
+> +#define TIF_NOHZ               9       /* in adaptive nohz mode */
+>  #define TIF_SECCOMP            10      /* secure computing */
+>  #define TIF_RESTOREALL         11      /* Restore all regs (implies NOERROR) */
+>  #define TIF_NOERROR            12      /* Force successful syscall return */
+> @@ -106,6 +106,7 @@ static inline struct thread_info *current_thread_info(void)
+>  #define TIF_SYSCALL_TRACEPOINT 15      /* syscall tracepoint instrumentation */
+>  #define TIF_EMULATE_STACK_STORE        16      /* Is an instruction emulation
+>                                                 for stack store? */
+> +#define TIF_MEMDIE             17      /* is terminating due to OOM killer */
+>
+>  /* as above, but as bit values */
+>  #define _TIF_SYSCALL_TRACE     (1<<TIF_SYSCALL_TRACE)
+> @@ -124,8 +125,10 @@ static inline struct thread_info *current_thread_info(void)
+>  #define _TIF_UPROBE            (1<<TIF_UPROBE)
+>  #define _TIF_SYSCALL_TRACEPOINT        (1<<TIF_SYSCALL_TRACEPOINT)
+>  #define _TIF_EMULATE_STACK_STORE       (1<<TIF_EMULATE_STACK_STORE)
+> +#define _TIF_NOHZ              (1<<TIF_NOHZ)
+>  #define _TIF_SYSCALL_T_OR_A    (_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | \
+> -                                _TIF_SECCOMP | _TIF_SYSCALL_TRACEPOINT)
+> +                                _TIF_SECCOMP | _TIF_SYSCALL_TRACEPOINT | \
+> +                                _TIF_NOHZ)
+>
+>  #define _TIF_USER_WORK_MASK    (_TIF_SIGPENDING | _TIF_NEED_RESCHED | \
+>                                  _TIF_NOTIFY_RESUME | _TIF_UPROBE)
+> diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+> index c497000..62238dd 100644
+> --- a/arch/powerpc/kernel/ptrace.c
+> +++ b/arch/powerpc/kernel/ptrace.c
+> @@ -32,6 +32,7 @@
+>  #include <trace/syscall.h>
+>  #include <linux/hw_breakpoint.h>
+>  #include <linux/perf_event.h>
+> +#include <linux/context_tracking.h>
+>
+>  #include <asm/uaccess.h>
+>  #include <asm/page.h>
+> @@ -1745,6 +1746,8 @@ long do_syscall_trace_enter(struct pt_regs *regs)
+>  {
+>         long ret = 0;
+>
+> +       user_exit();
+> +
+>         secure_computing_strict(regs->gpr[0]);
+>
+>         if (test_thread_flag(TIF_SYSCALL_TRACE) &&
+> @@ -1789,4 +1792,6 @@ void do_syscall_trace_leave(struct pt_regs *regs)
+>         step = test_thread_flag(TIF_SINGLESTEP);
+>         if (step || test_thread_flag(TIF_SYSCALL_TRACE))
+>                 tracehook_report_syscall_exit(regs, step);
+> +
+> +       user_enter();
 
-I am willing to try things, but this is certainly in parts of the network
-stack I don't normally poke around in and hence don't know how works.
+In x86-64, schedule_user() and do_notify_resume() can be called before
+syscall_trace_leave(). As a result we may be entering
+syscall_trace_leave() in user mode (from a context tracking POV). To
+fix this I added a call to user_exit() on the very beginning of that
+function.
 
-I just managed to track it down this far. :)
+You can find the details in 2c5594df344cd1ff0cc9bf007dea3235582b3acf
+("rcu: Fix unrecovered RCU user mode in syscall_trace_leave()").
 
-I can try the carrier_off/on in place of the detach/attach and see if
-it works.
+Could this problem happen in ppc as well?
 
--- 
-Len Sorensen
+Thanks.
