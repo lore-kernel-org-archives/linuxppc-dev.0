@@ -1,25 +1,26 @@
-Return-Path: <fweisbec@gmail.com>
-Received: from mail-lb0-f174.google.com (mail-lb0-f174.google.com
- [209.85.217.174])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 251312C02F7
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Feb 2013 11:29:43 +1100 (EST)
-Received: by mail-lb0-f174.google.com with SMTP id l12so1696551lbo.19
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Feb 2013 16:29:40 -0800 (PST)
+Return-Path: <B40534@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe002.messaging.microsoft.com [216.32.180.12])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A5A412C02F1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Feb 2013 14:26:54 +1100 (EST)
+Received: from mail239-va3 (localhost [127.0.0.1])	by
+ mail239-va3-R.bigfish.com (Postfix) with ESMTP id 05DD858023C	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Feb 2013 03:26:49 +0000 (UTC)
+Received: from VA3EHSMHS042.bigfish.com (unknown [10.7.14.247])	by
+ mail239-va3.bigfish.com (Postfix) with ESMTP id 68489A60074	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Feb 2013 03:26:46 +0000 (UTC)
+From: Wang Dongsheng <dongsheng.wang@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [RFC][PATCH] powerpc: add Book E support to 64-bit hibernation
+Date: Thu, 7 Feb 2013 10:25:15 +0800
+Message-ID: <1360203915-22112-1-git-send-email-dongsheng.wang@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <1359714465-6297-2-git-send-email-zhong@linux.vnet.ibm.com>
-References: <1359714465-6297-1-git-send-email-zhong@linux.vnet.ibm.com>
- <1359714465-6297-2-git-send-email-zhong@linux.vnet.ibm.com>
-Date: Thu, 7 Feb 2013 01:29:39 +0100
-Message-ID: <CAFTL4hx7njUVVqp9FmtQQWaWG1i5dxscqQD8F_S838z2tUKVGQ@mail.gmail.com>
-Subject: Re: [RFC PATCH 1/5] powerpc: Syscall hooks for context tracking
- subsystem
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Li Zhong <zhong@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: paulmck@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, paulus@samba.org
+Content-Type: text/plain
+Cc: scottwood@freescale.com, chenhui.zhao@freescale.com,
+ Wang Dongsheng <dongsheng.wang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,93 +30,141 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2013/2/1 Li Zhong <zhong@linux.vnet.ibm.com>:
-> This is the syscall slow path hooks for context tracking subsystem,
-> corresponding to
-> [PATCH] x86: Syscall hooks for userspace RCU extended QS
->   commit bf5a3c13b939813d28ce26c01425054c740d6731
->
-> TIF_MEMDIE is moved to the second 16-bits (with value 17), as it seems there
-> is no asm code using it. TIF_NOHZ is added to _TIF_SYCALL_T_OR_A, so it is
-> better for it to be in the same 16 bits with others in the group, so in the
-> asm code, andi. with this group could work.
->
-> Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/thread_info.h |    7 +++++--
->  arch/powerpc/kernel/ptrace.c           |    5 +++++
->  2 files changed, 10 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
-> index 406b7b9..414a261 100644
-> --- a/arch/powerpc/include/asm/thread_info.h
-> +++ b/arch/powerpc/include/asm/thread_info.h
-> @@ -97,7 +97,7 @@ static inline struct thread_info *current_thread_info(void)
->  #define TIF_PERFMON_CTXSW      6       /* perfmon needs ctxsw calls */
->  #define TIF_SYSCALL_AUDIT      7       /* syscall auditing active */
->  #define TIF_SINGLESTEP         8       /* singlestepping active */
-> -#define TIF_MEMDIE             9       /* is terminating due to OOM killer */
-> +#define TIF_NOHZ               9       /* in adaptive nohz mode */
->  #define TIF_SECCOMP            10      /* secure computing */
->  #define TIF_RESTOREALL         11      /* Restore all regs (implies NOERROR) */
->  #define TIF_NOERROR            12      /* Force successful syscall return */
-> @@ -106,6 +106,7 @@ static inline struct thread_info *current_thread_info(void)
->  #define TIF_SYSCALL_TRACEPOINT 15      /* syscall tracepoint instrumentation */
->  #define TIF_EMULATE_STACK_STORE        16      /* Is an instruction emulation
->                                                 for stack store? */
-> +#define TIF_MEMDIE             17      /* is terminating due to OOM killer */
->
->  /* as above, but as bit values */
->  #define _TIF_SYSCALL_TRACE     (1<<TIF_SYSCALL_TRACE)
-> @@ -124,8 +125,10 @@ static inline struct thread_info *current_thread_info(void)
->  #define _TIF_UPROBE            (1<<TIF_UPROBE)
->  #define _TIF_SYSCALL_TRACEPOINT        (1<<TIF_SYSCALL_TRACEPOINT)
->  #define _TIF_EMULATE_STACK_STORE       (1<<TIF_EMULATE_STACK_STORE)
-> +#define _TIF_NOHZ              (1<<TIF_NOHZ)
->  #define _TIF_SYSCALL_T_OR_A    (_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | \
-> -                                _TIF_SECCOMP | _TIF_SYSCALL_TRACEPOINT)
-> +                                _TIF_SECCOMP | _TIF_SYSCALL_TRACEPOINT | \
-> +                                _TIF_NOHZ)
->
->  #define _TIF_USER_WORK_MASK    (_TIF_SIGPENDING | _TIF_NEED_RESCHED | \
->                                  _TIF_NOTIFY_RESUME | _TIF_UPROBE)
-> diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-> index c497000..62238dd 100644
-> --- a/arch/powerpc/kernel/ptrace.c
-> +++ b/arch/powerpc/kernel/ptrace.c
-> @@ -32,6 +32,7 @@
->  #include <trace/syscall.h>
->  #include <linux/hw_breakpoint.h>
->  #include <linux/perf_event.h>
-> +#include <linux/context_tracking.h>
->
->  #include <asm/uaccess.h>
->  #include <asm/page.h>
-> @@ -1745,6 +1746,8 @@ long do_syscall_trace_enter(struct pt_regs *regs)
->  {
->         long ret = 0;
->
-> +       user_exit();
-> +
->         secure_computing_strict(regs->gpr[0]);
->
->         if (test_thread_flag(TIF_SYSCALL_TRACE) &&
-> @@ -1789,4 +1792,6 @@ void do_syscall_trace_leave(struct pt_regs *regs)
->         step = test_thread_flag(TIF_SINGLESTEP);
->         if (step || test_thread_flag(TIF_SYSCALL_TRACE))
->                 tracehook_report_syscall_exit(regs, step);
-> +
-> +       user_enter();
+Update the 64-bit hibernation code to support Book E CPUs.
+Some registers and instructions are not defined for Book3e
+(SDR reg, tlbia instruction).
+SDR: Storage Description Register. Book3S and Book3E have different
+address translation mode, we do not need HTABORG & HTABSIZE to
+translate virtual address to real address.
+More registers are saved in BookE-64bit.(TCR, SPRGx)
 
-In x86-64, schedule_user() and do_notify_resume() can be called before
-syscall_trace_leave(). As a result we may be entering
-syscall_trace_leave() in user mode (from a context tracking POV). To
-fix this I added a call to user_exit() on the very beginning of that
-function.
+Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+---
 
-You can find the details in 2c5594df344cd1ff0cc9bf007dea3235582b3acf
-("rcu: Fix unrecovered RCU user mode in syscall_trace_leave()").
+Hopefully someone can give me some advice about cache flush. It
+confused me that why only 1 MiB is flushed from KERNEL_START on
+Book3S. Is there a need to flush L2 cache if I have already flushed
+L1 cache? If yes, how about L3 cache? Cache levels are different
+in cores, the instruction sets may also be different.
 
-Could this problem happen in ppc as well?
+ 1 files changed, 62 insertions(+), 2 deletions(-)
 
-Thanks.
+diff --git a/arch/powerpc/kernel/swsusp_asm64.S b/arch/powerpc/kernel/swsusp_asm64.S
+index 86ac1d9..608e4ceb 100644
+--- a/arch/powerpc/kernel/swsusp_asm64.S
++++ b/arch/powerpc/kernel/swsusp_asm64.S
+@@ -46,10 +46,29 @@
+ #define SL_r29		0xe8
+ #define SL_r30		0xf0
+ #define SL_r31		0xf8
+-#define SL_SIZE		SL_r31+8
++#define SL_SPRG0	0x100
++#define SL_SPRG1	0x108
++#define SL_SPRG2	0x110
++#define SL_SPRG3	0x118
++#define SL_SPRG4	0x120
++#define SL_SPRG5	0x128
++#define SL_SPRG6	0x130
++#define SL_SPRG7	0x138
++#define SL_TCR		0x140
++#define SL_SIZE		SL_TCR+8
+ 
+ /* these macros rely on the save area being
+  * pointed to by r11 */
++
++#define SAVE_SPR(register)		\
++	mfspr	r0,SPRN_##register	;\
++	std	r0,SL_##register(r11)
++#define RESTORE_SPR(register)		\
++	ld	r0,SL_##register(r11)	;\
++	mtspr	SPRN_##register,r0
++#define RESTORE_SPRG(n)			\
++	ld	r0,SL_SPRG##n(r11)	;\
++	mtsprg	n,r0
+ #define SAVE_SPECIAL(special)		\
+ 	mf##special	r0		;\
+ 	std	r0, SL_##special(r11)
+@@ -103,8 +122,21 @@ _GLOBAL(swsusp_arch_suspend)
+ 	SAVE_REGISTER(r30)
+ 	SAVE_REGISTER(r31)
+ 	SAVE_SPECIAL(MSR)
+-	SAVE_SPECIAL(SDR1)
+ 	SAVE_SPECIAL(XER)
++#ifdef CONFIG_PPC_BOOK3S_64
++	SAVE_SPECIAL(SDR1)
++#else
++	SAVE_SPR(TCR)
++	/* Save SPRGs */
++	SAVE_SPR(SPRG0)
++	SAVE_SPR(SPRG1)
++	SAVE_SPR(SPRG2)
++	SAVE_SPR(SPRG3)
++	SAVE_SPR(SPRG4)
++	SAVE_SPR(SPRG5)
++	SAVE_SPR(SPRG6)
++	SAVE_SPR(SPRG7)
++#endif
+ 
+ 	/* we push the stack up 128 bytes but don't store the
+ 	 * stack pointer on the stack like a real stackframe */
+@@ -151,6 +183,7 @@ copy_page_loop:
+ 	bne+	copyloop
+ nothing_to_copy:
+ 
++#ifdef CONFIG_PPC_BOOK3S_64
+ 	/* flush caches */
+ 	lis	r3, 0x10
+ 	mtctr	r3
+@@ -167,6 +200,7 @@ nothing_to_copy:
+ 	sync
+ 
+ 	tlbia
++#endif
+ 
+ 	ld	r11,swsusp_save_area_ptr@toc(r2)
+ 
+@@ -208,16 +242,42 @@ nothing_to_copy:
+ 	RESTORE_REGISTER(r29)
+ 	RESTORE_REGISTER(r30)
+ 	RESTORE_REGISTER(r31)
++
++#ifdef CONFIG_PPC_BOOK3S_64
+ 	/* can't use RESTORE_SPECIAL(MSR) */
+ 	ld	r0, SL_MSR(r11)
+ 	mtmsrd	r0, 0
+ 	RESTORE_SPECIAL(SDR1)
++#else
++	/* Save SPRGs */
++	RESTORE_SPRG(0)
++	RESTORE_SPRG(1)
++	RESTORE_SPRG(2)
++	RESTORE_SPRG(3)
++	RESTORE_SPRG(4)
++	RESTORE_SPRG(5)
++	RESTORE_SPRG(6)
++	RESTORE_SPRG(7)
++
++	RESTORE_SPECIAL(MSR)
++
++	/* Restore TCR and clear any pending bits in TSR. */
++	RESTORE_SPR(TCR)
++	lis	r0, (TSR_ENW | TSR_WIS | TSR_DIS | TSR_FIS)@h
++	mtspr	SPRN_TSR,r0
++
++	/* Kick decrementer */
++	li	r0,1
++	mtdec	r0
++#endif
+ 	RESTORE_SPECIAL(XER)
+ 
+ 	sync
+ 
+ 	addi	r1,r1,-128
++#ifdef CONFIG_PPC_BOOK3S_64
+ 	bl	slb_flush_and_rebolt
++#endif
+ 	bl	do_after_copyback
+ 	addi	r1,r1,128
+ 
+-- 
+1.7.5.1
