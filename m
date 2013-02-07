@@ -1,43 +1,31 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EAE322C02CA
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Feb 2013 17:13:47 +1100 (EST)
-Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Thu, 7 Feb 2013 11:41:19 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id D268E125804E
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Feb 2013 11:44:05 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r176DQtn27394142
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Feb 2013 11:43:27 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r176DQgg003051
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Feb 2013 17:13:28 +1100
-Message-ID: <51134596.4080106@linux.vnet.ibm.com>
-Date: Thu, 07 Feb 2013 11:41:34 +0530
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Return-Path: <tangchen@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id CD0142C0294
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Feb 2013 18:57:26 +1100 (EST)
+Message-ID: <51135E33.4060508@cn.fujitsu.com>
+Date: Thu, 07 Feb 2013 15:56:35 +0800
+From: Tang Chen <tangchen@cn.fujitsu.com>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH v5 00/45] CPU hotplug: stop_machine()-free CPU hotplug
-References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
- <510FBC01.2030405@linux.vnet.ibm.com> <87haloiwv0.fsf@rustcorp.com.au>
-In-Reply-To: <87haloiwv0.fsf@rustcorp.com.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
- linux-kernel@vger.kernel.org, walken@google.com, mingo@kernel.org,
- linux-arch@vger.kernel.org, linux@arm.linux.org.uk,
- xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
- paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
- linux-pm@vger.kernel.org, rostedt@goodmis.org, rjw@sisk.pl,
- namhyung@kernel.org, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org,
- netdev@vger.kernel.org, oleg@redhat.com, sbw@mit.edu, tj@kernel.org,
+To: Glauber Costa <glommer@parallels.com>
+Subject: Re: [PATCH v5 01/14] memory-hotplug: try to offline the memory twice
+ to avoid dependence
+References: <1356350964-13437-1-git-send-email-tangchen@cn.fujitsu.com>
+ <1356350964-13437-2-git-send-email-tangchen@cn.fujitsu.com>
+ <50D96543.6010903@parallels.com> <50DFD7F7.5090408@cn.fujitsu.com>
+ <50ED8834.1090804@parallels.com> <5111C8EB.6090805@cn.fujitsu.com>
+ <51121FB7.1070205@cn.fujitsu.com> <51122C1D.5020002@cn.fujitsu.com>
+ <5112679A.7080600@parallels.com>
+In-Reply-To: <5112679A.7080600@parallels.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-mm@kvack.org,
+ paulus@samba.org, hpa@zytor.com, sparclinux@vger.kernel.org, cl@linux.com,
+ linux-s390@vger.kernel.org, x86@kernel.org, linux-acpi@vger.kernel.org,
+ isimatu.yasuaki@jp.fujitsu.com, linfeng@cn.fujitsu.com, mgorman@suse.de,
+ kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, liuj97@gmail.com,
+ len.brown@intel.com, Miao Xie <miaox@cn.fujitsu.com>,
+ Wen Congyang <wency@cn.fujitsu.com>, cmetcalf@tilera.com, wujianguo@huawei.com,
+ yinghai@kernel.org, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+ laijs@cn.fujitsu.com, linux-kernel@vger.kernel.org, minchan.kim@gmail.com,
  akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -48,31 +36,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/07/2013 09:44 AM, Rusty Russell wrote:
-> "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com> writes:
->> On 01/22/2013 01:03 PM, Srivatsa S. Bhat wrote:
->>                  Avg. latency of 1 CPU offline (ms) [stop-cpu/stop-m/c latency]
->>
->> # online CPUs    Mainline (with stop-m/c)       This patchset (no stop-m/c)
->>
->>       8                 17.04                          7.73
->>
->>      16                 18.05                          6.44
->>
->>      32                 17.31                          7.39
->>
->>      64                 32.40                          9.28
->>
->>     128                 98.23                          7.35
-> 
-> Nice!
+On 02/06/2013 10:24 PM, Glauber Costa wrote:
+>>>> And one more question, a memory section is 128MB in Linux. If we reserve
+>>>> part of the them for page_cgroup,
+>>>> then anyone who wants to allocate a contiguous memory larger than 128MB,
+>>>> it will fail, right ?
+>>>> Is it OK ?
+> No, it is not.
+>
+> Another take on this: Can't we free all the page_cgroup structure before
+> we actually start removing the sections ? If we do this, we would be
+> basically left with no problem at all, since when your code starts
+> running we would no longer have any page_cgroup allocated.
+>
+> All you have to guarantee is that it happens after the memory block is
+> already isolated and allocations no longer can reach it.
+>
+> What do you think ?
 
-Thank you :-)
+Hi Glauber,
 
->  I wonder how the ARM guys feel with their quad-cpu systems...
-> 
+I don't think so. We can offline some of the sections and leave the 
+reset online.
 
-That would be definitely interesting to know :-)
+For example, we store page_cgroups of memory9~11 in memory8. So when we 
+offline memory8,
+we free memory8's page_cgroup storing on other section, but we cannot 
+free the page_cgroups
+being stored in memory8 if memory9~11 are left online.
 
-Regards,
-Srivatsa S. Bhat
+So we still need to offline memory9~11, and then offline memory8, right ?
+I think it makes no difference.
+
+Thanks. :)
