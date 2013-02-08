@@ -1,30 +1,31 @@
-Return-Path: <tipbot@zytor.com>
-Received: from terminus.zytor.com (terminus.zytor.com [IPv6:2001:1868:205::10])
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+ [IPv6:2002:4e20:1eda::1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 4DDA52C0082
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Feb 2013 02:19:56 +1100 (EST)
-Date: Fri, 8 Feb 2013 07:18:56 -0800
-Sender: tip tree robot <tipbot@zytor.com>
-From: tip-bot for Stephen Rothwell <sfr@canb.auug.org.au>
-Message-ID: <tip-02fc8d37229d15c654876cf9ce56b5c1cf7945d7@git.kernel.org>
-In-Reply-To: <20130208141938.f31b7b9e1acac5bbe769ee4c@canb.auug.org.au>
-References: <20130208141938.f31b7b9e1acac5bbe769ee4c@canb.auug.org.au>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/core] cputime:
- Restore CPU_ACCOUNTING config defaults for PPC64
+ by ozlabs.org (Postfix) with ESMTPS id 1CDAD2C0085
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Feb 2013 02:42:53 +1100 (EST)
+Date: Fri, 8 Feb 2013 15:41:13 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH v5 00/45] CPU hotplug: stop_machine()-free CPU hotplug
+Message-ID: <20130208154113.GV17833@n2100.arm.linux.org.uk>
+References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
+ <510FBC01.2030405@linux.vnet.ibm.com> <87haloiwv0.fsf@rustcorp.com.au>
+ <51134596.4080106@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: namhyung.kim@lge.com, zhong@linux.vnet.ibm.com, sfr@canb.auug.org.au,
- peterz@infradead.org, linux-kernel@vger.kernel.org, rostedt@goodmis.org,
- fweisbec@gmail.com, paul.gortmaker@windriver.com, hpa@zytor.com,
- tglx@linutronix.de, paulmck@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- mingo@kernel.org
-Reply-To: mingo@kernel.org, hpa@zytor.com, linux-kernel@vger.kernel.org,
- peterz@infradead.org, linuxppc-dev@lists.ozlabs.org, namhyung.kim@lge.com,
- zhong@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com, fweisbec@gmail.com,
- benh@kernel.crashing.org, rostedt@goodmis.org, sfr@canb.auug.org.au,
- tglx@linutronix.de, paul.gortmaker@windriver.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <51134596.4080106@linux.vnet.ibm.com>
+Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
+ linux-kernel@vger.kernel.org, walken@google.com, mingo@kernel.org,
+ linux-arch@vger.kernel.org, xiaoguangrong@linux.vnet.ibm.com,
+ wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com,
+ nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org,
+ Rusty Russell <rusty@rustcorp.com.au>, rostedt@goodmis.org, rjw@sisk.pl,
+ namhyung@kernel.org, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org,
+ netdev@vger.kernel.org, oleg@redhat.com, sbw@mit.edu, tj@kernel.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,45 +35,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit-ID:  02fc8d37229d15c654876cf9ce56b5c1cf7945d7
-Gitweb:     http://git.kernel.org/tip/02fc8d37229d15c654876cf9ce56b5c1cf7945d7
-Author:     Stephen Rothwell <sfr@canb.auug.org.au>
-AuthorDate: Fri, 8 Feb 2013 14:19:38 +1100
-Committer:  Ingo Molnar <mingo@kernel.org>
-CommitDate: Fri, 8 Feb 2013 15:23:12 +0100
+On Thu, Feb 07, 2013 at 11:41:34AM +0530, Srivatsa S. Bhat wrote:
+> On 02/07/2013 09:44 AM, Rusty Russell wrote:
+> > "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com> writes:
+> >> On 01/22/2013 01:03 PM, Srivatsa S. Bhat wrote:
+> >>                  Avg. latency of 1 CPU offline (ms) [stop-cpu/stop-m/c latency]
+> >>
+> >> # online CPUs    Mainline (with stop-m/c)       This patchset (no stop-m/c)
+> >>
+> >>       8                 17.04                          7.73
+> >>
+> >>      16                 18.05                          6.44
+> >>
+> >>      32                 17.31                          7.39
+> >>
+> >>      64                 32.40                          9.28
+> >>
+> >>     128                 98.23                          7.35
+> > 
+> > Nice!
+> 
+> Thank you :-)
+> 
+> >  I wonder how the ARM guys feel with their quad-cpu systems...
+> > 
+> 
+> That would be definitely interesting to know :-)
 
-cputime: Restore CPU_ACCOUNTING config defaults for PPC64
-
-Commit abf917cd91cb ("cputime: Generic on-demand virtual cputime
-accounting") inadvertantly changed the default CPU_ACCOUNTING
-config for PPC64.  Repair that.
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Li Zhong <zhong@linux.vnet.ibm.com>
-Cc: Namhyung Kim <namhyung.kim@lge.com>
-Cc: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Cc: Paul Gortmaker <paul.gortmaker@windriver.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Link: http://lkml.kernel.org/r/20130208141938.f31b7b9e1acac5bbe769ee4c@canb.auug.org.au
-Signed-off-by: Ingo Molnar <mingo@kernel.org>
----
- init/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/init/Kconfig b/init/Kconfig
-index a05f843..ccb9f8f 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -332,7 +332,7 @@ config VIRT_CPU_ACCOUNTING
- choice
- 	prompt "Cputime accounting"
- 	default TICK_CPU_ACCOUNTING if !PPC64
--	default VIRT_CPU_ACCOUNTING if PPC64
-+	default VIRT_CPU_ACCOUNTING_NATIVE if PPC64
- 
- # Kind of a stub config for the pure tick based cputime accounting
- config TICK_CPU_ACCOUNTING
+That depends what exactly you'd like tested (and how) and whether you'd
+like it to be a test-chip based quad core, or an OMAP dual-core SoC.
