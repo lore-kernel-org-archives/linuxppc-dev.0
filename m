@@ -1,46 +1,20 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net
+ [IPv6:2001:a60:0:28:0:1:25:1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C4DCA2C008D
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Feb 2013 03:46:56 +1100 (EST)
-Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Sat, 9 Feb 2013 02:41:33 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 778AF2CE8051
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Feb 2013 03:46:50 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r18GYZc466126068
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 9 Feb 2013 03:34:35 +1100
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r18GkmOJ020960
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 9 Feb 2013 03:46:50 +1100
-Message-ID: <51152B81.2050501@linux.vnet.ibm.com>
-Date: Fri, 08 Feb 2013 22:14:49 +0530
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH v5 00/45] CPU hotplug: stop_machine()-free CPU hotplug
-References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
- <510FBC01.2030405@linux.vnet.ibm.com> <87haloiwv0.fsf@rustcorp.com.au>
- <51134596.4080106@linux.vnet.ibm.com>
- <20130208154113.GV17833@n2100.arm.linux.org.uk>
-In-Reply-To: <20130208154113.GV17833@n2100.arm.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
- linux-kernel@vger.kernel.org, walken@google.com, mingo@kernel.org,
- linux-arch@vger.kernel.org, xiaoguangrong@linux.vnet.ibm.com,
- wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com,
- nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org,
- Rusty Russell <rusty@rustcorp.com.au>, rostedt@goodmis.org, rjw@sisk.pl,
- namhyung@kernel.org, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org,
- netdev@vger.kernel.org, oleg@redhat.com, sbw@mit.edu, tj@kernel.org,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 445FD2C007E
+ for <linuxppc-dev@ozlabs.org>; Sat,  9 Feb 2013 03:50:42 +1100 (EST)
+Date: Fri, 8 Feb 2013 17:41:24 +0100
+From: Anatolij Gustschin <agust@denx.de>
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [PATCH] net: fec_mpc52xx: Read MAC address from device-tree
+Message-ID: <20130208174124.659775b9@crub>
+In-Reply-To: <1360339952-8724-1-git-send-email-sr@denx.de>
+References: <1360339952-8724-1-git-send-email-sr@denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,64 +24,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/08/2013 09:11 PM, Russell King - ARM Linux wrote:
-> On Thu, Feb 07, 2013 at 11:41:34AM +0530, Srivatsa S. Bhat wrote:
->> On 02/07/2013 09:44 AM, Rusty Russell wrote:
->>> "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com> writes:
->>>> On 01/22/2013 01:03 PM, Srivatsa S. Bhat wrote:
->>>>                  Avg. latency of 1 CPU offline (ms) [stop-cpu/stop-m/c latency]
->>>>
->>>> # online CPUs    Mainline (with stop-m/c)       This patchset (no stop-m/c)
->>>>
->>>>       8                 17.04                          7.73
->>>>
->>>>      16                 18.05                          6.44
->>>>
->>>>      32                 17.31                          7.39
->>>>
->>>>      64                 32.40                          9.28
->>>>
->>>>     128                 98.23                          7.35
->>>
->>> Nice!
->>
->> Thank you :-)
->>
->>>  I wonder how the ARM guys feel with their quad-cpu systems...
->>>
->>
->> That would be definitely interesting to know :-)
-> 
-> That depends what exactly you'd like tested (and how) and whether you'd
-> like it to be a test-chip based quad core, or an OMAP dual-core SoC.
-> 
+Hi Stefan,
 
-The effect of stop_machine() doesn't really depend on the CPU architecture
-used underneath or the platform. It depends only on the _number_ of
-_logical_ CPUs used.
+On Fri,  8 Feb 2013 17:12:32 +0100
+Stefan Roese <sr@denx.de> wrote:
 
-And stop_machine() has 2 noticeable drawbacks:
-1. It makes the hotplug operation itself slow
-2. and it causes disruptions to the workloads running on the other
-CPUs by hijacking the entire machine for significant amounts of time.
+> Until now, the MPC5200 FEC ethernet driver relied upon the bootloader
+> (U-Boot) to write the MAC address into the ethernet controller
+> registers. The Linux driver should not rely on such a thing. So
+> lets read the MAC address from the DT as it should be done here.
 
-In my experiments (mentioned above), I tried to measure how my patchset
-improves (reduces) the duration of hotplug (CPU offline) itself. Which is
-also slightly indicative of the impact it has on the rest of the system.
+Somehow the patch didn't reach the netdev list. Could you please resend?
 
-But what would be nice to test, is a setup where the workloads running on
-the rest of the system are latency-sensitive, and measure the impact of
-CPU offline on them, with this patchset applied. That would tell us how
-far is this useful in making CPU hotplug less disruptive on the system.
-
-Of course, it would be nice to also see whether we observe any reduction
-in hotplug duration itself (point 1 above) on ARM platforms with lot
-of CPUs. [This could potentially speed up suspend/resume, which is used
-rather heavily on ARM platforms].
-
-The benefits from this patchset over mainline (both in terms of points
-1 and 2 above) is expected to increase, with increasing number of CPUs in
-the system.
-
-Regards,
-Srivatsa S. Bhat
+Thanks,
+Anatolij
