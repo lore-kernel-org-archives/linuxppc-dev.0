@@ -1,48 +1,20 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E74A82C0089
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Feb 2013 05:12:01 +1100 (EST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Sat, 9 Feb 2013 04:06:15 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 829D93578050
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Feb 2013 05:11:58 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r18IBvBW6357300
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 9 Feb 2013 05:11:57 +1100
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r18IBuZZ015688
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 9 Feb 2013 05:11:57 +1100
-Message-ID: <51153F72.1060005@linux.vnet.ibm.com>
-Date: Fri, 08 Feb 2013 23:39:54 +0530
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Return-Path: <B08248@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 974E32C0092
+ for <linuxppc-dev@ozlabs.org>; Sat,  9 Feb 2013 06:23:06 +1100 (EST)
+From: Stuart Yoder <stuart.yoder@freescale.com>
+To: <benh@kernel.crashing.org>
+Subject: [PATCH][v4] PPC: add paravirt idle loop for 64-bit book E
+Date: Fri, 8 Feb 2013 13:22:56 -0600
+Message-ID: <1360351376-5323-1-git-send-email-stuart.yoder@freescale.com>
 MIME-Version: 1.0
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH v5 00/45] CPU hotplug: stop_machine()-free CPU hotplug
-References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
- <510FBC01.2030405@linux.vnet.ibm.com> <87haloiwv0.fsf@rustcorp.com.au>
- <51134596.4080106@linux.vnet.ibm.com>
- <20130208154113.GV17833@n2100.arm.linux.org.uk>
- <51152B81.2050501@linux.vnet.ibm.com>
-In-Reply-To: <51152B81.2050501@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
- linux-kernel@vger.kernel.org, walken@google.com, mingo@kernel.org,
- linux-arch@vger.kernel.org, vincent.guittot@linaro.org,
- xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
- paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
- linux-pm@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
- rostedt@goodmis.org, rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
- linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com,
- sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: kvm-ppc@vger.kernel.org, linuxppc-dev@ozlabs.org, agraf@suse.de,
+ kvm@vger.kernel.org, Stuart Yoder <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,69 +24,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/08/2013 10:14 PM, Srivatsa S. Bhat wrote:
-> On 02/08/2013 09:11 PM, Russell King - ARM Linux wrote:
->> On Thu, Feb 07, 2013 at 11:41:34AM +0530, Srivatsa S. Bhat wrote:
->>> On 02/07/2013 09:44 AM, Rusty Russell wrote:
->>>> "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com> writes:
->>>>> On 01/22/2013 01:03 PM, Srivatsa S. Bhat wrote:
->>>>>                  Avg. latency of 1 CPU offline (ms) [stop-cpu/stop-m/c latency]
->>>>>
->>>>> # online CPUs    Mainline (with stop-m/c)       This patchset (no stop-m/c)
->>>>>
->>>>>       8                 17.04                          7.73
->>>>>
->>>>>      16                 18.05                          6.44
->>>>>
->>>>>      32                 17.31                          7.39
->>>>>
->>>>>      64                 32.40                          9.28
->>>>>
->>>>>     128                 98.23                          7.35
->>>>
->>>> Nice!
->>>
->>> Thank you :-)
->>>
->>>>  I wonder how the ARM guys feel with their quad-cpu systems...
->>>>
->>>
->>> That would be definitely interesting to know :-)
->>
->> That depends what exactly you'd like tested (and how) and whether you'd
->> like it to be a test-chip based quad core, or an OMAP dual-core SoC.
->>
-> 
-> The effect of stop_machine() doesn't really depend on the CPU architecture
-> used underneath or the platform. It depends only on the _number_ of
-> _logical_ CPUs used.
-> 
-> And stop_machine() has 2 noticeable drawbacks:
-> 1. It makes the hotplug operation itself slow
-> 2. and it causes disruptions to the workloads running on the other
-> CPUs by hijacking the entire machine for significant amounts of time.
-> 
-> In my experiments (mentioned above), I tried to measure how my patchset
-> improves (reduces) the duration of hotplug (CPU offline) itself. Which is
-> also slightly indicative of the impact it has on the rest of the system.
-> 
-> But what would be nice to test, is a setup where the workloads running on
-> the rest of the system are latency-sensitive, and measure the impact of
-> CPU offline on them, with this patchset applied. That would tell us how
-> far is this useful in making CPU hotplug less disruptive on the system.
-> 
-> Of course, it would be nice to also see whether we observe any reduction
-> in hotplug duration itself (point 1 above) on ARM platforms with lot
-> of CPUs. [This could potentially speed up suspend/resume, which is used
-> rather heavily on ARM platforms].
-> 
-> The benefits from this patchset over mainline (both in terms of points
-> 1 and 2 above) is expected to increase, with increasing number of CPUs in
-> the system.
-> 
+From: Stuart Yoder <stuart.yoder@freescale.com>
 
-Adding Vincent to CC, who had previously evaluated the performance and
-latency implications of CPU hotplug on ARM platforms, IIRC.
+Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
+---
 
-Regards,
-Srivatsa S. Bhat
+-removed KVM prefix to patch subject, patch is not KVM specific
+
+ arch/powerpc/kernel/epapr_hcalls.S |    2 ++
+ arch/powerpc/kernel/idle_book3e.S  |   32 ++++++++++++++++++++++++++++++--
+ 2 files changed, 32 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/kernel/epapr_hcalls.S b/arch/powerpc/kernel/epapr_hcalls.S
+index 62c0dc2..9f1ebf7 100644
+--- a/arch/powerpc/kernel/epapr_hcalls.S
++++ b/arch/powerpc/kernel/epapr_hcalls.S
+@@ -17,6 +17,7 @@
+ #include <asm/asm-compat.h>
+ #include <asm/asm-offsets.h>
+ 
++#ifndef CONFIG_PPC64
+ /* epapr_ev_idle() was derived from e500_idle() */
+ _GLOBAL(epapr_ev_idle)
+ 	CURRENT_THREAD_INFO(r3, r1)
+@@ -42,6 +43,7 @@ epapr_ev_idle_start:
+ 	 * _TLF_NAPPING.
+ 	 */
+ 	b	idle_loop
++#endif
+ 
+ /* Hypercall entry point. Will be patched with device tree instructions. */
+ .global epapr_hypercall_start
+diff --git a/arch/powerpc/kernel/idle_book3e.S b/arch/powerpc/kernel/idle_book3e.S
+index 4c7cb400..bfb73cc 100644
+--- a/arch/powerpc/kernel/idle_book3e.S
++++ b/arch/powerpc/kernel/idle_book3e.S
+@@ -16,11 +16,13 @@
+ #include <asm/ppc-opcode.h>
+ #include <asm/processor.h>
+ #include <asm/thread_info.h>
++#include <asm/epapr_hcalls.h>
+ 
+ /* 64-bit version only for now */
+ #ifdef CONFIG_PPC64
+ 
+-_GLOBAL(book3e_idle)
++.macro BOOK3E_IDLE name loop
++_GLOBAL(\name)
+ 	/* Save LR for later */
+ 	mflr	r0
+ 	std	r0,16(r1)
+@@ -67,7 +69,33 @@ _GLOBAL(book3e_idle)
+ 
+ 	/* We can now re-enable hard interrupts and go to sleep */
+ 	wrteei	1
+-1:	PPC_WAIT(0)
++	\loop
++
++.endm
++
++.macro BOOK3E_IDLE_LOOP
++1:
++	PPC_WAIT(0)
+ 	b	1b
++.endm
++
++/* epapr_ev_idle_start below is patched with the proper hcall
++   opcodes during kernel initialization */
++.macro EPAPR_EV_IDLE_LOOP
++idle_loop:
++	LOAD_REG_IMMEDIATE(r11, EV_HCALL_TOKEN(EV_IDLE))
++
++.global epapr_ev_idle_start
++epapr_ev_idle_start:
++	li      r3, -1
++	nop
++	nop
++	nop
++	b       idle_loop
++.endm
++
++BOOK3E_IDLE epapr_ev_idle EPAPR_EV_IDLE_LOOP
++
++BOOK3E_IDLE book3e_idle BOOK3E_IDLE_LOOP
+ 
+ #endif /* CONFIG_PPC64 */
+-- 
+1.7.9.7
