@@ -1,36 +1,32 @@
-Return-Path: <hegdevasant@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp03.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9F9762C0089
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Feb 2013 22:18:31 +1100 (EST)
-Received: from /spool/local
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
- Fri, 8 Feb 2013 16:46:23 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 50C53394004D
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Feb 2013 16:48:24 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r18BIKE432440368
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Feb 2013 16:48:20 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r18BIKCx032762
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Feb 2013 22:18:20 +1100
-Received: from hegdevasant.in.ibm.com (hegdevasant.in.ibm.com [9.124.35.78])
- by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
- r18BIKR5032747
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Feb 2013 22:18:20 +1100
-Subject: [PATCH] powerpc/rtas_flash: Free kmem upon module exit
-To: linuxppc-dev@lists.ozlabs.org
-From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Date: Fri, 08 Feb 2013 16:48:36 +0530
-Message-ID: <20130208111742.31083.67858.stgit@hegdevasant.in.ibm.com>
+Return-Path: <fweisbec@gmail.com>
+Received: from mail-bk0-f46.google.com (mail-bk0-f46.google.com
+ [209.85.214.46])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7C5E62C0087
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Feb 2013 01:32:00 +1100 (EST)
+Received: by mail-bk0-f46.google.com with SMTP id j5so1715269bkw.33
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Feb 2013 06:31:56 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+In-Reply-To: <20130208141447.03914013db9a5f7308fc1675@canb.auug.org.au>
+References: <1359399845-10568-1-git-send-email-fweisbec@gmail.com>
+ <1359399845-10568-5-git-send-email-fweisbec@gmail.com>
+ <20130208140749.5a094f271e529dacfb962b51@canb.auug.org.au>
+ <20130208141447.03914013db9a5f7308fc1675@canb.auug.org.au>
+Date: Fri, 8 Feb 2013 15:31:55 +0100
+Message-ID: <CAFTL4hyx+hSg5n4D+PMTG6OBVgX66tkHcM7S2EvNYqv95qoC7w@mail.gmail.com>
+Subject: Re: [PATCH 4/8] cputime: Generic on-demand virtual cputime accounting
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Namhyung Kim <namhyung.kim@lge.com>, Li Zhong <zhong@linux.vnet.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Paul Gortmaker <paul.gortmaker@windriver.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,41 +36,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Memory allocated to rtas_firmware_flash_list in rtas_flash_write
-is not freed during module exit. We hit below call trace if we
-unload rtas_flash module after loading new firmware image and
-before rebooting the system.
+2013/2/8 Stephen Rothwell <sfr@canb.auug.org.au>:
+> Hi Frederic,
+>
+> On Fri, 8 Feb 2013 14:07:49 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>>
+>> This patch has the side effect of changing the default configurations:
+>> (This is PowerPC pseries_defconfig before/after this patch)
+>>
+>> @@ -119,8 +120,8 @@
+>>  #
+>>  # CPU/Task time and stats accounting
+>>  #
+>> -# CONFIG_TICK_CPU_ACCOUNTING is not set
+>> -CONFIG_VIRT_CPU_ACCOUNTING=y
+>> +CONFIG_TICK_CPU_ACCOUNTING=y
+>> +# CONFIG_VIRT_CPU_ACCOUNTING_NATIVE is not set
+>>  # CONFIG_BSD_PROCESS_ACCT is not set
+>>  CONFIG_TASKSTATS=y
+>>  CONFIG_TASK_DELAY_ACCT=y
+>>
+>> I don't know if that was deliberate, but it was suprising.  I noticed
+>> when this patch entered next-20130207.
+>
+> I suspect that this is caused by the changes to init/Kconfig:
+>
+> diff --git a/init/Kconfig b/init/Kconfig
+> index be8b7f5..a05f843 100644
+> --- a/init/Kconfig
+> +++ b/init/Kconfig
+> @@ -326,6 +326,9 @@ source "kernel/time/Kconfig"
+>
+>  menu "CPU/Task time and stats accounting"
+>
+> +config VIRT_CPU_ACCOUNTING
+> +       bool
+> +
+>  choice
+>         prompt "Cputime accounting"
+>         default TICK_CPU_ACCOUNTING if !PPC64
+>
+> The next line of context is:
+>
+>         default VIRT_CPU_ACCOUNTING if PPC64
+>
+> Which may have needed changing as well?  Indeed, changing that to
+> VIRT_CPU_ACCOUNTING_NATIVE restores the old defaults.
 
-Call trace:
-----------
-Feb  6 08:42:10 eagle3 kernel: kmem_cache_destroy rtas_flash_cache: Slab cache still has objects
-Feb  6 08:42:10 eagle3 kernel: Call Trace:
-Feb  6 08:42:10 eagle3 kernel: [c00000001c303b40] [c000000000014940] .show_stack+0x70/0x1c0 (unreliable)
-Feb  6 08:42:10 eagle3 kernel: [c00000001c303bf0] [c000000000199bec] .kmem_cache_destroy+0x15c/0x170
-Feb  6 08:42:10 eagle3 kernel: [c00000001c303c90] [d000000006fa1208] .rtas_flash_cleanup+0x3c/0x80 [rtas_flash]
-Feb  6 08:42:10 eagle3 kernel: [c00000001c303d20] [c0000000000f8970] .SyS_delete_module+0x1d0/0x2e0
-Feb  6 08:42:10 eagle3 kernel: [c00000001c303e30] [c000000000009954] syscall_exit+0x0/0x94
-
-This patch frees rtas_firmware_flash_list during module exit.
-
-Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/rtas_flash.c |    5 +++++
- 1 file changed, 5 insertions(+)
-
-diff --git a/arch/powerpc/kernel/rtas_flash.c b/arch/powerpc/kernel/rtas_flash.c
-index 8329190..e22ef34 100644
---- a/arch/powerpc/kernel/rtas_flash.c
-+++ b/arch/powerpc/kernel/rtas_flash.c
-@@ -790,6 +790,11 @@ static void __exit rtas_flash_cleanup(void)
- {
- 	rtas_flash_term_hook = NULL;
- 
-+	if (rtas_firmware_flash_list) {
-+		free_flash_list(rtas_firmware_flash_list);
-+		rtas_firmware_flash_list = NULL;
-+	}
-+
- 	if (flash_block_cache)
- 		kmem_cache_destroy(flash_block_cache);
- 
+Indeed, thanks for your fix!
