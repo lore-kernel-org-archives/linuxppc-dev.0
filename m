@@ -2,50 +2,44 @@ Return-Path: <paulmck@linux.vnet.ibm.com>
 Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e32.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 773292C0090
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Feb 2013 09:48:00 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 843462C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Feb 2013 10:10:40 +1100 (EST)
 Received: from /spool/local
  by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Fri, 8 Feb 2013 15:47:56 -0700
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
- [9.17.195.106])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 4DDD71FF0044
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Feb 2013 15:47:52 -0700 (MST)
+ Fri, 8 Feb 2013 16:10:37 -0700
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+ [9.17.195.107])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 5FB323E4003E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Feb 2013 16:10:26 -0700 (MST)
 Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r18MlsjW319466
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Feb 2013 15:47:54 -0700
+ by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r18NASUT158662
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Feb 2013 16:10:28 -0700
 Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
  by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r18Mljsn012648
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Feb 2013 15:47:53 -0700
-Date: Fri, 8 Feb 2013 14:47:42 -0800
+ r18NAI5d024471
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Feb 2013 16:10:25 -0700
+Date: Fri, 8 Feb 2013 15:10:17 -0800
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Namhyung Kim <namhyung@kernel.org>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 Subject: Re: [PATCH v5 04/45] percpu_rwlock: Implement the core design of
  Per-CPU Reader-Writer Locks
-Message-ID: <20130208224742.GJ2666@linux.vnet.ibm.com>
+Message-ID: <20130208231017.GK2666@linux.vnet.ibm.com>
 References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
  <20130122073347.13822.85876.stgit@srivatsabhat.in.ibm.com>
- <20130123185522.GG2373@mtj.dyndns.org>
- <51003B20.2060506@linux.vnet.ibm.com>
- <20130123195740.GI2373@mtj.dyndns.org>
- <5100B8CC.4080406@linux.vnet.ibm.com>
- <87ip6gutsq.fsf@sejong.aot.lge.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87ip6gutsq.fsf@sejong.aot.lge.com>
+In-Reply-To: <20130122073347.13822.85876.stgit@srivatsabhat.in.ibm.com>
 Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
- linux-kernel@vger.kernel.org, walken@google.com, mingo@kernel.org,
- linux-arch@vger.kernel.org, linux@arm.linux.org.uk,
- xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
- nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au,
- rostedt@goodmis.org, rjw@sisk.pl, tglx@linutronix.de,
+ linux-kernel@vger.kernel.org, mingo@kernel.org, linux-arch@vger.kernel.org,
+ linux@arm.linux.org.uk, xiaoguangrong@linux.vnet.ibm.com,
+ wangyun@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
+ linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org,
+ rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
  linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com,
- sbw@mit.edu, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
- Tejun Heo <tj@kernel.org>, akpm@linux-foundation.org,
+ sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org,
  linuxppc-dev@lists.ozlabs.org
 Reply-To: paulmck@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -57,94 +51,276 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 29, 2013 at 08:12:37PM +0900, Namhyung Kim wrote:
-> On Thu, 24 Jan 2013 10:00:04 +0530, Srivatsa S. Bhat wrote:
-> > On 01/24/2013 01:27 AM, Tejun Heo wrote:
-> >> On Thu, Jan 24, 2013 at 01:03:52AM +0530, Srivatsa S. Bhat wrote:
-> >>> CPU 0                          CPU 1
-> >>>
-> >>> read_lock(&rwlock)
-> >>>
-> >>>                               write_lock(&rwlock) //spins, because CPU 0
-> >>>                               //has acquired the lock for read
-> >>>
-> >>> read_lock(&rwlock)
-> >>>    ^^^^^
-> >>> What happens here? Does CPU 0 start spinning (and hence deadlock) or will
-> >>> it continue realizing that it already holds the rwlock for read?
-> >> 
-> >> I don't think rwlock allows nesting write lock inside read lock.
-> >> read_lock(); write_lock() will always deadlock.
-> >> 
-> >
-> > Sure, I understand that :-) My question was, what happens when *two* CPUs
-> > are involved, as in, the read_lock() is invoked only on CPU 0 whereas the
-> > write_lock() is invoked on CPU 1.
-> >
-> > For example, the same scenario shown above, but with slightly different
-> > timing, will NOT result in a deadlock:
-> >
-> > Scenario 2:
-> >   CPU 0                                CPU 1
-> >
-> > read_lock(&rwlock)
-> >
-> >
-> > read_lock(&rwlock) //doesn't spin
-> >
-> >                                     write_lock(&rwlock) //spins, because CPU 0
-> >                                     //has acquired the lock for read
-> >
-> >
-> > So I was wondering whether the "fairness" logic of rwlocks would cause
-> > the second read_lock() to spin (in the first scenario shown above) because
-> > a writer is already waiting (and hence new readers should spin) and thus
-> > cause a deadlock.
+On Tue, Jan 22, 2013 at 01:03:53PM +0530, Srivatsa S. Bhat wrote:
+> Using global rwlocks as the backend for per-CPU rwlocks helps us avoid many
+> lock-ordering related problems (unlike per-cpu locks). However, global
+> rwlocks lead to unnecessary cache-line bouncing even when there are no
+> writers present, which can slow down the system needlessly.
 > 
-> In my understanding, current x86 rwlock does basically this (of course,
-> in an atomic fashion):
+> Per-cpu counters can help solve the cache-line bouncing problem. So we
+> actually use the best of both: per-cpu counters (no-waiting) at the reader
+> side in the fast-path, and global rwlocks in the slowpath.
 > 
+> [ Fastpath = no writer is active; Slowpath = a writer is active ]
 > 
-> #define RW_LOCK_BIAS 0x10000
+> IOW, the readers just increment/decrement their per-cpu refcounts (disabling
+> interrupts during the updates, if necessary) when no writer is active.
+> When a writer becomes active, he signals all readers to switch to global
+> rwlocks for the duration of his activity. The readers switch over when it
+> is safe for them (ie., when they are about to start a fresh, non-nested
+> read-side critical section) and start using (holding) the global rwlock for
+> read in their subsequent critical sections.
 > 
-> rwlock_init(rwlock)
-> {
-> 	rwlock->lock = RW_LOCK_BIAS;
-> }
+> The writer waits for every existing reader to switch, and then acquires the
+> global rwlock for write and enters his critical section. Later, the writer
+> signals all readers that he is done, and that they can go back to using their
+> per-cpu refcounts again.
 > 
-> arch_read_lock(rwlock)
-> {
-> retry:
-> 	if (--rwlock->lock >= 0)
-> 		return;
+> Note that the lock-safety (despite the per-cpu scheme) comes from the fact
+> that the readers can *choose* _when_ to switch to rwlocks upon the writer's
+> signal. And the readers don't wait on anybody based on the per-cpu counters.
+> The only true synchronization that involves waiting at the reader-side in this
+> scheme, is the one arising from the global rwlock, which is safe from circular
+> locking dependency issues.
 > 
->         rwlock->lock++;
->         while (rwlock->lock < 1)
->         	continue;
+> Reader-writer locks and per-cpu counters are recursive, so they can be
+> used in a nested fashion in the reader-path, which makes per-CPU rwlocks also
+> recursive. Also, this design of switching the synchronization scheme ensures
+> that you can safely nest and use these locks in a very flexible manner.
 > 
->         goto retry;
-> }
-> 
-> arch_write_lock(rwlock)
-> {
-> retry:
-> 	if ((rwlock->lock -= RW_LOCK_BIAS) == 0)
->         	return;
-> 
->         rwlock->lock += RW_LOCK_BIAS;
-> 	while (rwlock->lock != RW_LOCK_BIAS)
-> 		continue;
-> 
->         goto retry;
-> }
-> 
-> 
-> So I can't find where the 'fairness' logic comes from..
+> I'm indebted to Michael Wang and Xiao Guangrong for their numerous thoughtful
+> suggestions and ideas, which inspired and influenced many of the decisions in
+> this as well as previous designs. Thanks a lot Michael and Xiao!
 
-I looked through several of the rwlock implementations, and in all of
-them the writer backs off if it sees readers -- or refrains from asserting
-ownership of the lock to begin with.
-
-So it should be OK to use rwlock as shown in the underlying patch.
+Looks pretty close!  Some comments interspersed below.  Please either
+fix the code or my confusion, as the case may be.  ;-)
 
 							Thanx, Paul
+
+> Cc: David Howells <dhowells@redhat.com>
+> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> ---
+> 
+>  include/linux/percpu-rwlock.h |   10 +++
+>  lib/percpu-rwlock.c           |  128 ++++++++++++++++++++++++++++++++++++++++-
+>  2 files changed, 136 insertions(+), 2 deletions(-)
+> 
+> diff --git a/include/linux/percpu-rwlock.h b/include/linux/percpu-rwlock.h
+> index 8dec8fe..6819bb8 100644
+> --- a/include/linux/percpu-rwlock.h
+> +++ b/include/linux/percpu-rwlock.h
+> @@ -68,4 +68,14 @@ extern void percpu_free_rwlock(struct percpu_rwlock *);
+>  	__percpu_init_rwlock(pcpu_rwlock, #pcpu_rwlock, &rwlock_key);	\
+>  })
+> 
+> +#define reader_uses_percpu_refcnt(pcpu_rwlock, cpu)			\
+> +		(ACCESS_ONCE(per_cpu(*((pcpu_rwlock)->reader_refcnt), cpu)))
+> +
+> +#define reader_nested_percpu(pcpu_rwlock)				\
+> +			(__this_cpu_read(*((pcpu_rwlock)->reader_refcnt)) > 1)
+> +
+> +#define writer_active(pcpu_rwlock)					\
+> +			(__this_cpu_read(*((pcpu_rwlock)->writer_signal)))
+> +
+>  #endif
+> +
+> diff --git a/lib/percpu-rwlock.c b/lib/percpu-rwlock.c
+> index 80dad93..992da5c 100644
+> --- a/lib/percpu-rwlock.c
+> +++ b/lib/percpu-rwlock.c
+> @@ -64,21 +64,145 @@ void percpu_free_rwlock(struct percpu_rwlock *pcpu_rwlock)
+> 
+>  void percpu_read_lock(struct percpu_rwlock *pcpu_rwlock)
+>  {
+> -	read_lock(&pcpu_rwlock->global_rwlock);
+> +	preempt_disable();
+> +
+> +	/* First and foremost, let the writer know that a reader is active */
+> +	this_cpu_inc(*pcpu_rwlock->reader_refcnt);
+> +
+> +	/*
+> +	 * If we are already using per-cpu refcounts, it is not safe to switch
+> +	 * the synchronization scheme. So continue using the refcounts.
+> +	 */
+> +	if (reader_nested_percpu(pcpu_rwlock)) {
+> +		goto out;
+> +	} else {
+> +		/*
+> +		 * The write to 'reader_refcnt' must be visible before we
+> +		 * read 'writer_signal'.
+> +		 */
+> +		smp_mb(); /* Paired with smp_rmb() in sync_reader() */
+> +
+> +		if (likely(!writer_active(pcpu_rwlock))) {
+> +			goto out;
+> +		} else {
+> +			/* Writer is active, so switch to global rwlock. */
+> +			read_lock(&pcpu_rwlock->global_rwlock);
+> +
+> +			/*
+> +			 * We might have raced with a writer going inactive
+> +			 * before we took the read-lock. So re-evaluate whether
+> +			 * we still need to hold the rwlock or if we can switch
+> +			 * back to per-cpu refcounts. (This also helps avoid
+> +			 * heterogeneous nesting of readers).
+> +			 */
+> +			if (writer_active(pcpu_rwlock))
+
+The above writer_active() can be reordered with the following this_cpu_dec(),
+strange though it might seem.  But this is OK because holding the rwlock
+is conservative.  But might be worth a comment.
+
+> +				this_cpu_dec(*pcpu_rwlock->reader_refcnt);
+> +			else
+
+In contrast, no reordering can happen here because read_unlock() is
+required to keep the critical section underneath the lock.
+
+> +				read_unlock(&pcpu_rwlock->global_rwlock);
+> +		}
+> +	}
+> +
+> +out:
+> +	/* Prevent reordering of any subsequent reads */
+> +	smp_rmb();
+
+This should be smp_mb().  "Readers" really can do writes.  Hence the
+name lglock -- "local/global" rather than "reader/writer".
+
+>  }
+> 
+>  void percpu_read_unlock(struct percpu_rwlock *pcpu_rwlock)
+>  {
+> -	read_unlock(&pcpu_rwlock->global_rwlock);
+
+We need an smp_mb() here to keep the critical section ordered before the
+this_cpu_dec() below.  Otherwise, if a writer shows up just after we
+exit the fastpath, that writer is not guaranteed to see the effects of
+our critical section.  Equivalently, the prior read-side critical section
+just might see some of the writer's updates, which could be a bit of
+a surprise to the reader.
+
+> +	/*
+> +	 * We never allow heterogeneous nesting of readers. So it is trivial
+> +	 * to find out the kind of reader we are, and undo the operation
+> +	 * done by our corresponding percpu_read_lock().
+> +	 */
+> +	if (__this_cpu_read(*pcpu_rwlock->reader_refcnt)) {
+> +		this_cpu_dec(*pcpu_rwlock->reader_refcnt);
+> +		smp_wmb(); /* Paired with smp_rmb() in sync_reader() */
+
+Given an smp_mb() above, I don't understand the need for this smp_wmb().
+Isn't the idea that if the writer sees ->reader_refcnt decremented to
+zero, it also needs to see the effects of the corresponding reader's
+critical section?
+
+Or am I missing something subtle here?  In any case, if this smp_wmb()
+really is needed, there should be some subsequent write that the writer
+might observe.  From what I can see, there is no subsequent write from
+this reader that the writer cares about.
+
+> +	} else {
+> +		read_unlock(&pcpu_rwlock->global_rwlock);
+> +	}
+> +
+> +	preempt_enable();
+> +}
+> +
+> +static inline void raise_writer_signal(struct percpu_rwlock *pcpu_rwlock,
+> +				       unsigned int cpu)
+> +{
+> +	per_cpu(*pcpu_rwlock->writer_signal, cpu) = true;
+> +}
+> +
+> +static inline void drop_writer_signal(struct percpu_rwlock *pcpu_rwlock,
+> +				      unsigned int cpu)
+> +{
+> +	per_cpu(*pcpu_rwlock->writer_signal, cpu) = false;
+> +}
+> +
+> +static void announce_writer_active(struct percpu_rwlock *pcpu_rwlock)
+> +{
+> +	unsigned int cpu;
+> +
+> +	for_each_online_cpu(cpu)
+> +		raise_writer_signal(pcpu_rwlock, cpu);
+> +
+> +	smp_mb(); /* Paired with smp_rmb() in percpu_read_[un]lock() */
+> +}
+> +
+> +static void announce_writer_inactive(struct percpu_rwlock *pcpu_rwlock)
+> +{
+> +	unsigned int cpu;
+> +
+> +	drop_writer_signal(pcpu_rwlock, smp_processor_id());
+
+Why do we drop ourselves twice?  More to the point, why is it important to
+drop ourselves first?
+
+> +
+> +	for_each_online_cpu(cpu)
+> +		drop_writer_signal(pcpu_rwlock, cpu);
+> +
+> +	smp_mb(); /* Paired with smp_rmb() in percpu_read_[un]lock() */
+> +}
+> +
+> +/*
+> + * Wait for the reader to see the writer's signal and switch from percpu
+> + * refcounts to global rwlock.
+> + *
+> + * If the reader is still using percpu refcounts, wait for him to switch.
+> + * Else, we can safely go ahead, because either the reader has already
+> + * switched over, or the next reader that comes along on that CPU will
+> + * notice the writer's signal and will switch over to the rwlock.
+> + */
+> +static inline void sync_reader(struct percpu_rwlock *pcpu_rwlock,
+> +			       unsigned int cpu)
+> +{
+> +	smp_rmb(); /* Paired with smp_[w]mb() in percpu_read_[un]lock() */
+
+As I understand it, the purpose of this memory barrier is to ensure
+that the stores in drop_writer_signal() happen before the reads from
+->reader_refcnt in reader_uses_percpu_refcnt(), thus preventing the
+race between a new reader attempting to use the fastpath and this writer
+acquiring the lock.  Unless I am confused, this must be smp_mb() rather
+than smp_rmb().
+
+Also, why not just have a single smp_mb() at the beginning of
+sync_all_readers() instead of executing one barrier per CPU?
+
+> +
+> +	while (reader_uses_percpu_refcnt(pcpu_rwlock, cpu))
+> +		cpu_relax();
+> +}
+> +
+> +static void sync_all_readers(struct percpu_rwlock *pcpu_rwlock)
+> +{
+> +	unsigned int cpu;
+> +
+> +	for_each_online_cpu(cpu)
+> +		sync_reader(pcpu_rwlock, cpu);
+>  }
+> 
+>  void percpu_write_lock(struct percpu_rwlock *pcpu_rwlock)
+>  {
+> +	/*
+> +	 * Tell all readers that a writer is becoming active, so that they
+> +	 * start switching over to the global rwlock.
+> +	 */
+> +	announce_writer_active(pcpu_rwlock);
+> +	sync_all_readers(pcpu_rwlock);
+>  	write_lock(&pcpu_rwlock->global_rwlock);
+>  }
+> 
+>  void percpu_write_unlock(struct percpu_rwlock *pcpu_rwlock)
+>  {
+> +	/*
+> +	 * Inform all readers that we are done, so that they can switch back
+> +	 * to their per-cpu refcounts. (We don't need to wait for them to
+> +	 * see it).
+> +	 */
+> +	announce_writer_inactive(pcpu_rwlock);
+>  	write_unlock(&pcpu_rwlock->global_rwlock);
+>  }
+> 
+> 
