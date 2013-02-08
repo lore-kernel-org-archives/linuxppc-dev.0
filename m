@@ -1,31 +1,16 @@
-Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
-Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
- [IPv6:2002:4e20:1eda::1])
+Return-Path: <sr@denx.de>
+Received: from mo6-p05-ob.rzone.de (mo6-p05-ob.rzone.de
+ [IPv6:2a01:238:20a:202:5305::1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 1CDAD2C0085
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Feb 2013 02:42:53 +1100 (EST)
-Date: Fri, 8 Feb 2013 15:41:13 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v5 00/45] CPU hotplug: stop_machine()-free CPU hotplug
-Message-ID: <20130208154113.GV17833@n2100.arm.linux.org.uk>
-References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
- <510FBC01.2030405@linux.vnet.ibm.com> <87haloiwv0.fsf@rustcorp.com.au>
- <51134596.4080106@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <51134596.4080106@linux.vnet.ibm.com>
-Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
- linux-kernel@vger.kernel.org, walken@google.com, mingo@kernel.org,
- linux-arch@vger.kernel.org, xiaoguangrong@linux.vnet.ibm.com,
- wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com,
- nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org,
- Rusty Russell <rusty@rustcorp.com.au>, rostedt@goodmis.org, rjw@sisk.pl,
- namhyung@kernel.org, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org,
- netdev@vger.kernel.org, oleg@redhat.com, sbw@mit.edu, tj@kernel.org,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id E986A2C007E
+ for <linuxppc-dev@ozlabs.org>; Sat,  9 Feb 2013 03:18:43 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: net
+Subject: [PATCH] net: fec_mpc52xx: Read MAC address from device-tree
+Date: Fri,  8 Feb 2013 17:12:32 +0100
+Message-Id: <1360339952-8724-1-git-send-email-sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org, Anatolij Gustschin <agust@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,32 +20,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Feb 07, 2013 at 11:41:34AM +0530, Srivatsa S. Bhat wrote:
-> On 02/07/2013 09:44 AM, Rusty Russell wrote:
-> > "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com> writes:
-> >> On 01/22/2013 01:03 PM, Srivatsa S. Bhat wrote:
-> >>                  Avg. latency of 1 CPU offline (ms) [stop-cpu/stop-m/c latency]
-> >>
-> >> # online CPUs    Mainline (with stop-m/c)       This patchset (no stop-m/c)
-> >>
-> >>       8                 17.04                          7.73
-> >>
-> >>      16                 18.05                          6.44
-> >>
-> >>      32                 17.31                          7.39
-> >>
-> >>      64                 32.40                          9.28
-> >>
-> >>     128                 98.23                          7.35
-> > 
-> > Nice!
-> 
-> Thank you :-)
-> 
-> >  I wonder how the ARM guys feel with their quad-cpu systems...
-> > 
-> 
-> That would be definitely interesting to know :-)
+Until now, the MPC5200 FEC ethernet driver relied upon the bootloader
+(U-Boot) to write the MAC address into the ethernet controller
+registers. The Linux driver should not rely on such a thing. So
+lets read the MAC address from the DT as it should be done here.
 
-That depends what exactly you'd like tested (and how) and whether you'd
-like it to be a test-chip based quad core, or an OMAP dual-core SoC.
+This fixes a problem with a MPC5200 board that uses the SPL U-Boot
+version without FEC initialization before Linux booting for
+boot speedup.
+
+Additionally a status line will now be printed upon successful
+driver probing, also displaying this MAC address.
+
+Signed-off-by: Stefan Roese <sr@denx.de>
+Cc: Anatolij Gustschin <agust@denx.de>
+---
+ drivers/net/ethernet/freescale/fec_mpc52xx.c | 30 +++++++++++++++++-----------
+ 1 file changed, 18 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/net/ethernet/freescale/fec_mpc52xx.c b/drivers/net/ethernet/freescale/fec_mpc52xx.c
+index 2933d08..f4c3897 100644
+--- a/drivers/net/ethernet/freescale/fec_mpc52xx.c
++++ b/drivers/net/ethernet/freescale/fec_mpc52xx.c
+@@ -110,15 +110,6 @@ static void mpc52xx_fec_set_paddr(struct net_device *dev, u8 *mac)
+ 	out_be32(&fec->paddr2, (*(u16 *)(&mac[4]) << 16) | FEC_PADDR2_TYPE);
+ }
+ 
+-static void mpc52xx_fec_get_paddr(struct net_device *dev, u8 *mac)
+-{
+-	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
+-	struct mpc52xx_fec __iomem *fec = priv->fec;
+-
+-	*(u32 *)(&mac[0]) = in_be32(&fec->paddr1);
+-	*(u16 *)(&mac[4]) = in_be32(&fec->paddr2) >> 16;
+-}
+-
+ static int mpc52xx_fec_set_mac_address(struct net_device *dev, void *addr)
+ {
+ 	struct sockaddr *sock = addr;
+@@ -928,10 +919,22 @@ static int __devinit mpc52xx_fec_probe(struct platform_device *op)
+ 	priv->t_irq = bcom_get_task_irq(priv->tx_dmatsk);
+ 
+ 	/* MAC address init */
+-	if (!is_zero_ether_addr(mpc52xx_fec_mac_addr))
++	if (!is_zero_ether_addr(mpc52xx_fec_mac_addr)) {
+ 		memcpy(ndev->dev_addr, mpc52xx_fec_mac_addr, 6);
+-	else
+-		mpc52xx_fec_get_paddr(ndev, ndev->dev_addr);
++	} else {
++		struct device_node *np = op->dev.of_node;
++		const void *p;
++
++		/* Read MAC-address */
++		p = of_get_property(np, "local-mac-address", NULL);
++		if (p == NULL) {
++			dev_err(&ndev->dev, "%s: Can't find local-mac-address property\n",
++				np->full_name);
++			rv = -ENXIO;
++			goto err_irq_dispose;
++		}
++		memcpy(ndev->dev_addr, p, 6);
++	}
+ 
+ 	priv->msg_enable = netif_msg_init(debug, MPC52xx_MESSAGES_DEFAULT);
+ 
+@@ -970,11 +973,14 @@ static int __devinit mpc52xx_fec_probe(struct platform_device *op)
+ 
+ 	/* We're done ! */
+ 	dev_set_drvdata(&op->dev, ndev);
++	printk(KERN_INFO "%s: %s MAC %pM\n",
++	       ndev->name, op->dev.of_node->full_name, ndev->dev_addr);
+ 
+ 	return 0;
+ 
+ err_node:
+ 	of_node_put(priv->phy_node);
++err_irq_dispose:
+ 	irq_dispose_mapping(ndev->irq);
+ err_rx_tx_dmatsk:
+ 	if (priv->rx_dmatsk)
+-- 
+1.8.1.2
