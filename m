@@ -1,23 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 5F0002C0080
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Feb 2013 13:41:30 +1100 (EST)
-Message-ID: <1360291273.2650.52.camel@pasglop>
-Subject: Re: [PATCH] powerpc: kernel/kgdb.c: fix memory leakage
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jason Wessel <jason.wessel@windriver.com>
-Date: Fri, 08 Feb 2013 13:41:13 +1100
-In-Reply-To: <510B22C2.90606@windriver.com>
-References: <1358184395-31418-1-git-send-email-dinggnu@gmail.com>
- <510B22C2.90606@windriver.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id 9973B2C0080
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Feb 2013 14:07:58 +1100 (EST)
+Date: Fri, 8 Feb 2013 14:07:49 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 4/8] cputime: Generic on-demand virtual cputime accounting
+Message-Id: <20130208140749.5a094f271e529dacfb962b51@canb.auug.org.au>
+In-Reply-To: <1359399845-10568-5-git-send-email-fweisbec@gmail.com>
+References: <1359399845-10568-1-git-send-email-fweisbec@gmail.com>
+ <1359399845-10568-5-git-send-email-fweisbec@gmail.com>
 Mime-Version: 1.0
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
- Michael Neuling <mikey@neuling.org>, Cong Ding <dinggnu@gmail.com>,
- linux-kernel@vger.kernel.org, Tiejun Chen <tiejun.chen@windriver.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Fri__8_Feb_2013_14_07_49_+1100_4a4.HCEzi3ISuzA2"
+Cc: Namhyung Kim <namhyung.kim@lge.com>, Li Zhong <zhong@linux.vnet.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Paul Gortmaker <paul.gortmaker@windriver.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,116 +32,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-01-31 at 20:04 -0600, Jason Wessel wrote:
+--Signature=_Fri__8_Feb_2013_14_07_49_+1100_4a4.HCEzi3ISuzA2
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
-> > index 8747447..5ca82cd 100644
-> > --- a/arch/powerpc/kernel/kgdb.c
-> > +++ b/arch/powerpc/kernel/kgdb.c
-> > @@ -154,12 +154,12 @@ static int kgdb_handle_breakpoint(struct pt_regs *regs)
-> >  static int kgdb_singlestep(struct pt_regs *regs)
-> >  {
-> >  	struct thread_info *thread_info, *exception_thread_info;
-> > -	struct thread_info *backup_current_thread_info = \
-> > -		(struct thread_info *)kmalloc(sizeof(struct thread_info), GFP_KERNEL);
-> > +	struct thread_info *backup_current_thread_info;
-> 
-> 
-> 
-> Woh...  This is definitely wrong.  You have found a problem for sure,
-> but this is not the right way to fix it.
+Hi Frederic,
+
+On Mon, 28 Jan 2013 20:04:01 +0100 Frederic Weisbecker <fweisbec@gmail.com>=
+ wrote:
 >
-> It is not a good idea to kmalloc while single stepping because you can
-> hang the kernel if you single step any operation in kmalloc().
+> If we want to stop the tick further idle, we need to be
+> able to account the cputime without using the tick.
+>=20
+> Virtual based cputime accounting solves that problem by
+> hooking into kernel/user boundaries.
+>=20
+> However implementing CONFIG_VIRT_CPU_ACCOUNTING require
+> low level hooks and involves more overhead. But we already
+> have a generic context tracking subsystem that is required
+> for RCU needs by archs which plan to shut down the tick
+> outside idle.
+>=20
+> This patch implements a generic virtual based cputime
+> accounting that relies on these generic kernel/user hooks.
+>=20
+> There are some upsides of doing this:
+>=20
+> - This requires no arch code to implement CONFIG_VIRT_CPU_ACCOUNTING
+> if context tracking is already built (already necessary for RCU in full
+> tickless mode).
+>=20
+> - We can rely on the generic context tracking subsystem to dynamically
+> (de)activate the hooks, so that we can switch anytime between virtual
+> and tick based accounting. This way we don't have the overhead
+> of the virtual accounting when the tick is running periodically.
+>=20
+> And one downside:
+>=20
+> - There is probably more overhead than a native virtual based cputime
+> accounting. But this relies on hooks that are already set anyway.
+>=20
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Ingo Molnar <mingo@kernel.org>
+> Cc: Li Zhong <zhong@linux.vnet.ibm.com>
+> Cc: Namhyung Kim <namhyung.kim@lge.com>
+> Cc: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> Cc: Paul Gortmaker <paul.gortmaker@windriver.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Steven Rostedt <rostedt@goodmis.org>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
 
-Ok. I applied the fix because it was obviously correct vs. the previous
-version of the code (ie. the kmalloc was already there)
+This patch has the side effect of changing the default configurations:
+(This is PowerPC pseries_defconfig before/after this patch)
 
-> I am in the process of going through all the kgdb mails from the last
-> few months while I had been away from the project, so I didn't catch
-> this one and I see it has upstream commit (fefd9e6f8).  I'll submit
-> another patch to fix this the right way and use a static variable.
-> This is ok to use a static variable here because this is not something
-> we can recursively call at a single CPU level.
+@@ -119,8 +120,8 @@
+ #
+ # CPU/Task time and stats accounting
+ #
+-# CONFIG_TICK_CPU_ACCOUNTING is not set
+-CONFIG_VIRT_CPU_ACCOUNTING=3Dy
++CONFIG_TICK_CPU_ACCOUNTING=3Dy
++# CONFIG_VIRT_CPU_ACCOUNTING_NATIVE is not set
+ # CONFIG_BSD_PROCESS_ACCT is not set
+ CONFIG_TASKSTATS=3Dy
+ CONFIG_TASK_DELAY_ACCT=3Dy
 
-But a static will be shared by all CPUs or do you mean a per-cpu one ?
+I don't know if that was deliberate, but it was suprising.  I noticed
+when this patch entered next-20130207.
 
-> If Ben prefers we not burn the memory unless kgdb is active we can
-> kmalloc / kfree the space we need at the time that kgdb is
-> initialized.  Else we can go with this patch you see below.  We'll see
-> what Ben desires.
-
-What about the stack ? thread info isn't very big...
-
+--=20
 Cheers,
-Ben.
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-> -----
-> diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
-> index a7bc752..bb12c8b 100644
-> --- a/arch/powerpc/kernel/kgdb.c
-> +++ b/arch/powerpc/kernel/kgdb.c
-> @@ -151,15 +151,16 @@ static int kgdb_handle_breakpoint(struct pt_regs *regs)
->  	return 1;
->  }
->  
-> +static struct thread_info kgdb_backup_thread_info[NR_CPUS];
-> +
->  static int kgdb_singlestep(struct pt_regs *regs)
->  {
->  	struct thread_info *thread_info, *exception_thread_info;
-> -	struct thread_info *backup_current_thread_info;
-> +	int cpu = raw_smp_processor_id();
->  
->  	if (user_mode(regs))
->  		return 0;
->  
-> -	backup_current_thread_info = (struct thread_info *)kmalloc(sizeof(struct thread_info), GFP_KERNEL);
->  	/*
->  	 * On Book E and perhaps other processors, singlestep is handled on
->  	 * the critical exception stack.  This causes current_thread_info()
-> @@ -175,7 +176,7 @@ static int kgdb_singlestep(struct pt_regs *regs)
->  
->  	if (thread_info != exception_thread_info) {
->  		/* Save the original current_thread_info. */
-> -		memcpy(backup_current_thread_info, exception_thread_info, sizeof *thread_info);
-> +		memcpy(&kgdb_backup_thread_info[cpu], exception_thread_info, sizeof *thread_info);
->  		memcpy(exception_thread_info, thread_info, sizeof *thread_info);
->  	}
->  
-> @@ -183,9 +184,8 @@ static int kgdb_singlestep(struct pt_regs *regs)
->  
->  	if (thread_info != exception_thread_info)
->  		/* Restore current_thread_info lastly. */
-> -		memcpy(exception_thread_info, backup_current_thread_info, sizeof *thread_info);
-> +		memcpy(exception_thread_info, &kgdb_backup_thread_info[cpu], sizeof *thread_info);
->  
-> -	kfree(backup_current_thread_info);
->  	return 1;
->  }
->  
-> 
-> -----
-> 
-> 
-> Thanks,
-> Jason.
-> 
-> 
-> >  
-> >  	if (user_mode(regs))
-> >  		return 0;
-> >  
-> > +	backup_current_thread_info = (struct thread_info *)kmalloc(sizeof(struct thread_info), GFP_KERNEL);
-> >  	/*
-> >  	 * On Book E and perhaps other processors, singlestep is handled on
-> >  	 * the critical exception stack.  This causes current_thread_info()
-> > @@ -185,6 +185,7 @@ static int kgdb_singlestep(struct pt_regs *regs)
-> >  		/* Restore current_thread_info lastly. */
-> >  		memcpy(exception_thread_info, backup_current_thread_info, sizeof *thread_info);
-> >  
-> > +	kfree(backup_current_thread_info);
-> >  	return 1;
-> >  }
-> >  
-> > 
+--Signature=_Fri__8_Feb_2013_14_07_49_+1100_4a4.HCEzi3ISuzA2
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJRFGwFAAoJEECxmPOUX5FEMN8P/3dRSchYze3oBTe8bQVG8EVm
+tW0xi0+/8hWWJFjybgy+uZ7mBKYmiaDoNSiZ9iFqZ3V6CY2HZteixa0WIubfgbKb
+/YsLDK0aQUnGWo7hjb7WAYGcYcJOl9NKBg7j2I742ydn1fXYTfB+M507uGgnIx6v
+gGay1GQUQyVSr6o/mkKwevysH0TiME4eTGmqVmANQLWmEvhdixSnTcJWS5b3XBx9
+0xlhOKqm2QhDjs/1x/ft4E3v2xotiJ4T+blsbAUDT+irB/NZD+tKBZLbP8luUCHr
+aRMEyqOXgHOzjGTH5YXIYPrI8lUPZXBzsXMKoKB7cV5Gccxytw3n9Pz9PdiH1CwJ
+x2oSbsvjEVNbW4R/mh6mekeJm563h67fFEbpuqiIJ3Onkfu9yC6Tl75BfosxMxS8
+5hZquUShWSP+FihLt1a4JZ0rdStGRoesc0aWGSXXzErkV6qGzZbCyipJcLBQzCco
+xp2qvuUc+JZknsAckqECOfKbshDRwZdBz8OjV+92JZsS9PeGDolJPB2X749wHU1M
+sB7qQE/bsgXsybLprI7+3NXGbCfyG3dZhJ2/FXK03l3dhPU+J06amvzlb3uC8zpX
+4OL502esdvsmJdaYJCGKkJUTlM1V6gQwqd42cqKWOypv5xxdCHZC+WRyugj4Z8H8
+77GBi43R8vJrzcKPXV01
+=WaJI
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__8_Feb_2013_14_07_49_+1100_4a4.HCEzi3ISuzA2--
