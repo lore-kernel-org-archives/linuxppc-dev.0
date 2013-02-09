@@ -1,47 +1,16 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Return-Path: <stefan.roese@gmail.com>
+Received: from mo6-p05-ob.rzone.de (mo6-p05-ob.rzone.de
+ [IPv6:2a01:238:20a:202:5305::1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e33.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5A7532C0085
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Feb 2013 11:37:04 +1100 (EST)
-Received: from /spool/local
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Fri, 8 Feb 2013 17:37:01 -0700
-Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
- [9.17.195.107])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 29B1E1FF0038
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Feb 2013 17:14:42 -0700 (MST)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r190Eh9f170924
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Feb 2013 17:14:43 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r190EeaN026573
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Feb 2013 17:14:43 -0700
-Date: Fri, 8 Feb 2013 16:14:39 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v5 14/45] rcu, CPU hotplug: Fix comment referring to
- stop_machine()
-Message-ID: <20130209001439.GQ2666@linux.vnet.ibm.com>
-References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
- <20130122073630.13822.99359.stgit@srivatsabhat.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130122073630.13822.99359.stgit@srivatsabhat.in.ibm.com>
-Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
- linux-kernel@vger.kernel.org, mingo@kernel.org, linux-arch@vger.kernel.org,
- linux@arm.linux.org.uk, xiaoguangrong@linux.vnet.ibm.com,
- wangyun@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
- linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org,
- rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
- linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com,
- sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
-Reply-To: paulmck@linux.vnet.ibm.com
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id C87F22C0085
+ for <linuxppc-dev@ozlabs.org>; Sat,  9 Feb 2013 20:54:20 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: net
+Subject: [PATCH RESEND] net: fec_mpc52xx: Read MAC address from device-tree
+Date: Sat,  9 Feb 2013 10:48:07 +0100
+Message-Id: <1360403287-24106-1-git-send-email-sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org, Anatolij Gustschin <agust@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,51 +20,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 22, 2013 at 01:06:34PM +0530, Srivatsa S. Bhat wrote:
-> Don't refer to stop_machine() in the CPU hotplug path, since we are going
-> to get rid of it. Also, move the comment referring to callback adoption
-> to the CPU_DEAD case, because that's where it happens now.
-> 
-> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Until now, the MPC5200 FEC ethernet driver relied upon the bootloader
+(U-Boot) to write the MAC address into the ethernet controller
+registers. The Linux driver should not rely on such a thing. So
+lets read the MAC address from the DT as it should be done here.
 
-Ouch!  That comment is indeed obsolete and must die.
+This fixes a problem with a MPC5200 board that uses the SPL U-Boot
+version without FEC initialization before Linux booting for
+boot speedup.
 
-I queued this to -rcu with your Signed-off-by.  However, I omitted
-the added comment, as it is imcomplete -- it is easy to look at
-rcu_cleanup_dead_cpu() to see what it does.
+Additionally a status line will now be printed upon successful
+driver probing, also displaying this MAC address.
 
-							Thanx, Paul
+Signed-off-by: Stefan Roese <sr@denx.de>
+Cc: Anatolij Gustschin <agust@denx.de>
+---
+ drivers/net/ethernet/freescale/fec_mpc52xx.c | 30 +++++++++++++++++-----------
+ 1 file changed, 18 insertions(+), 12 deletions(-)
 
-> ---
-> 
->  kernel/rcutree.c |    9 ++++-----
->  1 file changed, 4 insertions(+), 5 deletions(-)
-> 
-> diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-> index e441b77..ac94474 100644
-> --- a/kernel/rcutree.c
-> +++ b/kernel/rcutree.c
-> @@ -2827,11 +2827,6 @@ static int __cpuinit rcu_cpu_notify(struct notifier_block *self,
->  		break;
->  	case CPU_DYING:
->  	case CPU_DYING_FROZEN:
-> -		/*
-> -		 * The whole machine is "stopped" except this CPU, so we can
-> -		 * touch any data without introducing corruption. We send the
-> -		 * dying CPU's callbacks to an arbitrarily chosen online CPU.
-> -		 */
->  		for_each_rcu_flavor(rsp)
->  			rcu_cleanup_dying_cpu(rsp);
->  		rcu_cleanup_after_idle(cpu);
-> @@ -2840,6 +2835,10 @@ static int __cpuinit rcu_cpu_notify(struct notifier_block *self,
->  	case CPU_DEAD_FROZEN:
->  	case CPU_UP_CANCELED:
->  	case CPU_UP_CANCELED_FROZEN:
-> +		/*
-> +		 * We send the dead CPU's callbacks to an arbitrarily chosen
-> +		 * online CPU.
-> +		 */
->  		for_each_rcu_flavor(rsp)
->  			rcu_cleanup_dead_cpu(cpu, rsp);
->  		break;
-> 
+diff --git a/drivers/net/ethernet/freescale/fec_mpc52xx.c b/drivers/net/ethernet/freescale/fec_mpc52xx.c
+index 2933d08..f4c3897 100644
+--- a/drivers/net/ethernet/freescale/fec_mpc52xx.c
++++ b/drivers/net/ethernet/freescale/fec_mpc52xx.c
+@@ -110,15 +110,6 @@ static void mpc52xx_fec_set_paddr(struct net_device *dev, u8 *mac)
+ 	out_be32(&fec->paddr2, (*(u16 *)(&mac[4]) << 16) | FEC_PADDR2_TYPE);
+ }
+ 
+-static void mpc52xx_fec_get_paddr(struct net_device *dev, u8 *mac)
+-{
+-	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
+-	struct mpc52xx_fec __iomem *fec = priv->fec;
+-
+-	*(u32 *)(&mac[0]) = in_be32(&fec->paddr1);
+-	*(u16 *)(&mac[4]) = in_be32(&fec->paddr2) >> 16;
+-}
+-
+ static int mpc52xx_fec_set_mac_address(struct net_device *dev, void *addr)
+ {
+ 	struct sockaddr *sock = addr;
+@@ -928,10 +919,22 @@ static int __devinit mpc52xx_fec_probe(struct platform_device *op)
+ 	priv->t_irq = bcom_get_task_irq(priv->tx_dmatsk);
+ 
+ 	/* MAC address init */
+-	if (!is_zero_ether_addr(mpc52xx_fec_mac_addr))
++	if (!is_zero_ether_addr(mpc52xx_fec_mac_addr)) {
+ 		memcpy(ndev->dev_addr, mpc52xx_fec_mac_addr, 6);
+-	else
+-		mpc52xx_fec_get_paddr(ndev, ndev->dev_addr);
++	} else {
++		struct device_node *np = op->dev.of_node;
++		const void *p;
++
++		/* Read MAC-address */
++		p = of_get_property(np, "local-mac-address", NULL);
++		if (p == NULL) {
++			dev_err(&ndev->dev, "%s: Can't find local-mac-address property\n",
++				np->full_name);
++			rv = -ENXIO;
++			goto err_irq_dispose;
++		}
++		memcpy(ndev->dev_addr, p, 6);
++	}
+ 
+ 	priv->msg_enable = netif_msg_init(debug, MPC52xx_MESSAGES_DEFAULT);
+ 
+@@ -970,11 +973,14 @@ static int __devinit mpc52xx_fec_probe(struct platform_device *op)
+ 
+ 	/* We're done ! */
+ 	dev_set_drvdata(&op->dev, ndev);
++	printk(KERN_INFO "%s: %s MAC %pM\n",
++	       ndev->name, op->dev.of_node->full_name, ndev->dev_addr);
+ 
+ 	return 0;
+ 
+ err_node:
+ 	of_node_put(priv->phy_node);
++err_irq_dispose:
+ 	irq_dispose_mapping(ndev->irq);
+ err_rx_tx_dmatsk:
+ 	if (priv->rx_dmatsk)
+-- 
+1.8.1.2
