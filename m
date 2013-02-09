@@ -3,13 +3,13 @@ Received: from mo6-p05-ob.rzone.de (mo6-p05-ob.rzone.de
  [IPv6:2a01:238:20a:202:5305::1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id C87F22C0085
- for <linuxppc-dev@ozlabs.org>; Sat,  9 Feb 2013 20:54:20 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 092FF2C0085
+ for <linuxppc-dev@ozlabs.org>; Sat,  9 Feb 2013 20:55:21 +1100 (EST)
 From: Stefan Roese <sr@denx.de>
-To: net
+To: netdev@vger.kernel.org
 Subject: [PATCH RESEND] net: fec_mpc52xx: Read MAC address from device-tree
-Date: Sat,  9 Feb 2013 10:48:07 +0100
-Message-Id: <1360403287-24106-1-git-send-email-sr@denx.de>
+Date: Sat,  9 Feb 2013 10:49:12 +0100
+Message-Id: <1360403352-24237-1-git-send-email-sr@denx.de>
 Cc: linuxppc-dev@ozlabs.org, Anatolij Gustschin <agust@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
