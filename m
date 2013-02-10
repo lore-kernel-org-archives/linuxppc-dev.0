@@ -1,23 +1,25 @@
-Return-Path: <phileas-fogg@mail.ru>
-Received: from fallback2.mail.ru (fallback2.mail.ru [94.100.176.87])
- by ozlabs.org (Postfix) with ESMTP id DBF362C0087
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Feb 2013 23:17:33 +1100 (EST)
-Received: from f116.mail.ru (f116.mail.ru [94.100.178.185])
- by fallback2.mail.ru (mPOP.Fallback_MX) with ESMTP id 709D2C97F643
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Feb 2013 16:17:29 +0400 (MSK)
-From: =?UTF-8?B?UGhpbGVhcyBGb2dn?= <phileas-fogg@mail.ru>
-To: =?UTF-8?B?QmVuamFtaW4gSGVycmVuc2NobWlkdA==?= <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org,
- =?UTF-8?B?QW5lZXNoIEt1bWFyIEsuVg==?= <aneesh.kumar@linux.vnet.ibm.com>
-Subject: =?UTF-8?B?UmVbM106IFBTMyBwbGF0Zm9ybSBpcyBicm9rZW4gb24gTGludXggMy43LjA=?=
-Mime-Version: 1.0
-Date: Sun, 10 Feb 2013 16:17:22 +0400
-Message-ID: <1360498641.346858866@f116.mail.ru>
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1360496719.267074236@f380.i.mail.ru>
-References: <1355488506.55692113@f147.mail.ru>
- <1355954017.5397.53.camel@pasglop> <1360496719.267074236@f380.i.mail.ru>
-Reply-To: =?UTF-8?B?UGhpbGVhcyBGb2dn?= <phileas-fogg@mail.ru>
+Return-Path: <fweisbec@gmail.com>
+Received: from mail-la0-x234.google.com (mail-la0-x234.google.com
+ [IPv6:2a00:1450:4010:c03::234])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 04BE32C0095
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2013 01:10:20 +1100 (EST)
+Received: by mail-la0-f52.google.com with SMTP id fs12so5118476lab.11
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Feb 2013 06:10:13 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <1359714465-6297-3-git-send-email-zhong@linux.vnet.ibm.com>
+References: <1359714465-6297-1-git-send-email-zhong@linux.vnet.ibm.com>
+ <1359714465-6297-3-git-send-email-zhong@linux.vnet.ibm.com>
+Date: Sun, 10 Feb 2013 15:10:13 +0100
+Message-ID: <CAFTL4hzfXfCGDjwjW=Frcs5+jS_i3U_JHytNOEhEF5X7_Fw6Sg@mail.gmail.com>
+Subject: Re: [RFC PATCH 2/5] powerpc: Exception hooks for context tracking
+ subsystem
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Li Zhong <zhong@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: paulmck@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,49 +29,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-IFBsZWFzZSBpZ25vcmUgdGhlIHByZXZpb3VzIHBhdGNoIHRvIGZpeCB0aGUgUEFDQSBpc3N1ZSBv
-biBQUzMgYXJjaC4KVGhpcyBpcyB0aGUgY29ycmVjdCBvbmU6CgotLS0gYS9hcmNoL3Bvd2VycGMv
-a2VybmVsL3NldHVwXzY0LmMJMjAxMy0wMi0xMCAxMzo1NjoxMi44MDM4NTU2NzMgKzAxMDAKKysr
-IGIvYXJjaC9wb3dlcnBjL2tlcm5lbC9zZXR1cF82NC5jCTIwMTMtMDItMTAgMTQ6MDc6MjIuODcw
-NTYxMzIyICswMTAwCkBAIC0xODYsNiArMTg2LDkgQEAKIAlpbml0aWFsaXNlX3BhY2EoJmJvb3Rf
-cGFjYSwgMCk7CiAJc2V0dXBfcGFjYSgmYm9vdF9wYWNhKTsKIAorCS8qIEFsbG93IHBlcmNwdSBh
-Y2Nlc3NlcyB0byAid29yayIgdW50aWwgd2Ugc2V0dXAgcGVyY3B1IGRhdGEgKi8KKwlib290X3Bh
-Y2EuZGF0YV9vZmZzZXQgPSAwOworCiAJLyogSW5pdGlhbGl6ZSBsb2NrZGVwIGVhcmx5IG9yIGVs
-c2Ugc3BpbmxvY2tzIHdpbGwgYmxvdyAqLwogCWxvY2tkZXBfaW5pdCgpOwogCgoKCgrQktC+0YHQ
-utGA0LXRgdC10L3RjNC1LCAxMCDRhNC10LLRgNCw0LvRjyAyMDEzLCAxNTo0NSArMDQ6MDAg0L7R
-giBQaGlsZWFzIEZvZ2cgPHBoaWxlYXMtZm9nZ0BtYWlsLnJ1PjoKPgo+Pk9uIEZyaSwgMjAxMi0x
-Mi0xNCBhdCAxNjozNSArMDQwMCwgUGhpbGVhcyBGb2dnIHdyb3RlOgo+Pj4gSGksCj4+PiAKPj4+
-IEkgd2FudGVkIHRvIGJyaW5nIHRvIHlvdXIgYXR0ZW50aW9uIHRoZSBmYWN0IHRoYXQgdGhlIFBT
-MyBwbGF0Zm9ybSBpcyBicm9rZW4gb24gTGludXggMy43LjAuCj4+PiAKPj4+IGknbSBub3QgYWJs
-ZSB0byBib290IExpbnV4IDMuNy4wIG9uIG15IFBTMyBzbGltLiBMaW51eCAzLjYuMTAgYm9vdHMg
-anVzdCBmaW5lIGJ1dCBub3QgMy43LjAKPj4+IFdoZW4gaSB0cnkgdG8gYm9vdCBMaW51eCAzLjcu
-MCB0aGVuIG15IFBTMyAgc2h1dHMgZG93bi4KPj4+IAo+Pj4gU28gaSBjbG9uZWQgdGhlIExpbnV4
-IHBvd2VycGMgR0lUIHJlcG9zaXRvcnkgYW5kIHRyaWVkIHRvIGZpbmQgb3V0IHdoaWNoIGNvbW1p
-dHMgYnJva2UgdGhlIFBTMyBwbGF0Zm9ybS4KPj4+IEFmdGVyIHNvbWUgdGltZSBJIHRyYWNrZWQg
-aXQgZG93biB0byAyIGNvbW1pdHM6Cj4+Cj4+QW5lZXNoLCBkbyB5b3UgaGF2ZSBhbnkgaWRlYSB3
-aGF0IG1pZ2h0IGJlIGdvaW5nIG9uIHRoZXJlID8gQ2FuIHlvdSBsb29rCj4+YXQgdGhlIFBTMyBo
-YXNoIGNvZGUgPyBJdCdzIGEgYml0IGRpZmZlcmVudCBmcm9tIHRoZSByZXN0LCB5b3UgbWlnaHQK
-Pj5oYXZlIG1pc3NlZCBhbiB1cGRhdGUgb3IgdHdvLi4uCj4+Cj4+TWljaGFlbCwgc2FtZSBkZWFs
-IHdpdGggUEFDQS4uLgo+Pgo+PkNoZWVycywKPj5CZW4uCj4KPgo+SSBkZWJ1Z2dlZCB0aGUgaXNz
-dWUgd2l0aCB0aGUgcGFuaWMgb24gUEFDQSBhY2Nlc3Mgb24gUFMzIGFyY2ggYW5kIGZvdW5kIG91
-dCB0aGF0IGl0IHBhbmljcyBpbgo+Cj5hcmNoL3Bvd2VycGMva2VybmVsL3NldHVwXzY0LmMgLT4g
-ZWFybHlfc2V0dXAgLT4gdWRiZ19lYXJseV9pbml0IC0+IHJlZ2lzdGVyX2Vhcmx5X3VkYmdfY29u
-c29sZSAtPiBjb25zb2xlX2xvY2sgLT4gZG93biAtPiByYXdfc3Bpbl91bmxvY2tfaXJxcmVzdG9y
-ZQo+Cj5JdCBwYW5pY3Mgb25seSBpZiBpIGVuYWJsZSBsb2NrIGRlYnVnZ2luZyBpbiBrZXJuZWwu
-Cj4KPkkgc3VnZ2VzdCB0aGUgZm9sbG93aW5nIHBhdGNoIHRvIGZpeCB0aGUgaXNzdWU6Cj4KPi0t
-LSBhcmNoL3Bvd2VycGMva2VybmVsL3NldHVwXzY0LmMub2xkCTIwMTMtMDItMTAgMTM6Mzk6NDUu
-MTQ3MTMxNTQ3ICswMTAwCj4rKysgYXJjaC9wb3dlcnBjL2tlcm5lbC9zZXR1cF82NC5jCTIwMTMt
-MDItMTAgMTM6NDA6NTEuNjk3MTM1NDE5ICswMTAwCj5AQCAtMTg2LDYgKzE4Niw5IEBACj7CoAlp
-bml0aWFsaXNlX3BhY2EoJmJvb3RfcGFjYSwgMCk7Cj7CoAlzZXR1cF9wYWNhKCZib290X3BhY2Ep
-Owo+wqAKPisJLyogQWxsb3cgcGVyY3B1IGFjY2Vzc2VzIHRvICJ3b3JrIiB1bnRpbCB3ZSBzZXR1
-cCBwZXJjcHUgZGF0YSAqLwo+KwlnZXRfcGFjYSgpLT5kYXRhX29mZnNldCA9IDA7Cj4rCj7CoAkv
-KiBJbml0aWFsaXplIGxvY2tkZXAgZWFybHkgb3IgZWxzZSBzcGlubG9ja3Mgd2lsbCBibG93ICov
-Cj7CoAlsb2NrZGVwX2luaXQoKTsKPsKgCj5AQCAtMjA4LDggKzIxMSw2IEBACj7CoAo+wqAJLyog
-Rml4IHVwIHBhY2EgZmllbGRzIHJlcXVpcmVkIGZvciB0aGUgYm9vdCBjcHUgKi8KPsKgCWdldF9w
-YWNhKCktPmNwdV9zdGFydCA9IDE7Cj4tCS8qIEFsbG93IHBlcmNwdSBhY2Nlc3NlcyB0byAid29y
-ayIgdW50aWwgd2Ugc2V0dXAgcGVyY3B1IGRhdGEgKi8KPi0JZ2V0X3BhY2EoKS0+ZGF0YV9vZmZz
-ZXQgPSAwOwo+wqAKPsKgCS8qIFByb2JlIHRoZSBtYWNoaW5lIHR5cGUgKi8KPsKgCXByb2JlX21h
-Y2hpbmUoKTsKPgo+Cj4KPgo+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX18KPkxpbnV4cHBjLWRldiBtYWlsaW5nIGxpc3QKPkxpbnV4cHBjLWRldkBsaXN0cy5v
-emxhYnMub3JnCj5odHRwczovL2xpc3RzLm96bGFicy5vcmcvbGlzdGluZm8vbGludXhwcGMtZGV2
-Cgo=
+2013/2/1 Li Zhong <zhong@linux.vnet.ibm.com>:
+> This is the exception hooks for context tracking subsystem, including
+> data access, program check, single step, instruction breakpoint, machine check,
+> alignment, fp unavailable, altivec assist, unknown exception, whose handlers
+> might use RCU.
+>
+> This patch corresponds to
+> [PATCH] x86: Exception hooks for userspace RCU extended QS
+>   commit 6ba3c97a38803883c2eee489505796cb0a727122
+>
+> Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
+
+Looks good!
+
+I guess we should move exception_enter/exit definition to the generic
+code. They should be the same for all archs after all. Also we are
+relying on user_mode(regs) but this may be buggy with some corner
+cases. For example if an exception happen after a call to user_exit()
+(on syscall exit) but before we actually resume in userspace, the
+exception will exit in kernel mode from the context tracking POV.
+
+So instead on relying on the regs, which are not sync with the context
+tracking state, we should use something like:
+
+prev_state = exception_enter();
+...
+exception_exit(prev_state);
+
+Also preempt_schedule_irq() is concerned as well by this problem. So I
+should convert it to that scheme as well. I'm going to prepare some
+patches.
+
+Feel free to merge this patch in the powerpc tree, I'll do the
+conversion along the way.
+
+Thanks.
