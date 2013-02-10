@@ -1,48 +1,47 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 022672C029F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2013 07:01:20 +1100 (EST)
+ (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 916D62C02C2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2013 07:11:33 +1100 (EST)
 Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Mon, 11 Feb 2013 05:55:57 +1000
+ Mon, 11 Feb 2013 06:05:48 +1000
 Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 42C572CE804D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2013 07:01:17 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 916642CE804A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2013 07:11:28 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
  by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1AJmxp264422032
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2013 06:48:59 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1AK1FDs028813
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2013 07:01:16 +1100
-Message-ID: <5117FC13.1030002@linux.vnet.ibm.com>
-Date: Mon, 11 Feb 2013 01:29:15 +0530
+ r1AJxAsr62980130
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2013 06:59:11 +1100
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r1AKBQib008025
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2013 07:11:27 +1100
+Message-ID: <5117FE74.4020000@linux.vnet.ibm.com>
+Date: Mon, 11 Feb 2013 01:39:24 +0530
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH v5 09/45] smp, cpu hotplug: Fix smp_call_function_*()
- to prevent CPU offline properly
+To: Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [PATCH v5 04/45] percpu_rwlock: Implement the core design of
+ Per-CPU Reader-Writer Locks
 References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
- <20130122073508.13822.12784.stgit@srivatsabhat.in.ibm.com>
- <20130209000717.GP2666@linux.vnet.ibm.com>
- <5117F7E9.7070906@linux.vnet.ibm.com>
- <20130210195639.GL2666@linux.vnet.ibm.com>
-In-Reply-To: <20130210195639.GL2666@linux.vnet.ibm.com>
+ <20130122073347.13822.85876.stgit@srivatsabhat.in.ibm.com>
+ <20130208231017.GK2666@linux.vnet.ibm.com> <20130210180607.GA1375@redhat.com>
+ <5117F403.1050300@linux.vnet.ibm.com> <20130210195042.GA6236@redhat.com>
+In-Reply-To: <20130210195042.GA6236@redhat.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
- linux-kernel@vger.kernel.org, mingo@kernel.org, linux-arch@vger.kernel.org,
- linux@arm.linux.org.uk, xiaoguangrong@linux.vnet.ibm.com,
- wangyun@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
+ mingo@kernel.org, linux-arch@vger.kernel.org, linux@arm.linux.org.uk,
+ xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, nikunj@linux.vnet.ibm.com,
  linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org,
  rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
- linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com,
- sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+ linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, sbw@mit.edu, tj@kernel.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,43 +51,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/11/2013 01:26 AM, Paul E. McKenney wrote:
-> On Mon, Feb 11, 2013 at 01:11:29AM +0530, Srivatsa S. Bhat wrote:
->> On 02/09/2013 05:37 AM, Paul E. McKenney wrote:
->>> On Tue, Jan 22, 2013 at 01:05:10PM +0530, Srivatsa S. Bhat wrote:
->>>> Once stop_machine() is gone from the CPU offline path, we won't be able to
->>>> depend on preempt_disable() to prevent CPUs from going offline from under us.
+On 02/11/2013 01:20 AM, Oleg Nesterov wrote:
+> On 02/11, Srivatsa S. Bhat wrote:
+>>
+>> On 02/10/2013 11:36 PM, Oleg Nesterov wrote:
+>>>>> +static void announce_writer_inactive(struct percpu_rwlock *pcpu_rwlock)
+>>>>> +{
+>>>>> +   unsigned int cpu;
+>>>>> +
+>>>>> +   drop_writer_signal(pcpu_rwlock, smp_processor_id());
 >>>>
->>>> Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going offline,
->>>> while invoking from atomic context.
->>>>
->>>> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+>>>> Why do we drop ourselves twice?  More to the point, why is it important to
+>>>> drop ourselves first?
 >>>
->>> Would it make sense for get_online_cpus_atomic() to return the current
->>> CPU number?
+>>> And don't we need mb() _before_ we clear ->writer_signal ?
+>>>
 >>
->> Hmm, I'm not so sure. I tried to model it after get_online_cpus(), which doesn't
->> return anything (for other reasons, of course..)
->>
->> Moreover, a function name like *_cpu_* returning the CPU number would be intuitive.
->> But a name such as *_cpus_* (plural) returning a CPU number might appear confusing..
->>
->> And also I don't think it'll make a huge improvement in the callers.. (We might
->> be better off avoiding an smp_processor_id() if possible, since this function could
->> be called in very hot paths).. So I don't see a strong case for returning the
->> CPU number. But let me know if you think it'll still be worth it for some reason...
+>> Oh, right! Or, how about moving announce_writer_inactive() to _after_
+>> write_unlock()?
 > 
-> I just noted a lot of two-line code sequences in your patch that would be
-> one line if the CPU number was returned.
+> Not sure this will help... but, either way it seems we have another
+> problem...
+> 
+> percpu_rwlock tries to be "generic". This means we should "ignore" its
+> usage in hotplug, and _write_lock should not race with _write_unlock.
+> 
 
-Ah, in that case, I'll reconsider your suggestion while working on the next version.
-Thanks!
+Yes, good point!
+
+> IOW. Suppose that _write_unlock clears ->writer_signal. We need to ensure
+> that this can't race with another write which wants to set this flag.
+> Perhaps it should be counter as well, and it should be protected by
+> the same ->global_rwlock, but _write_lock() should drop it before
+> sync_all_readers() and then take it again?
+
+Hmm, or we could just add an extra mb() like you suggested, and keep it
+simple...
+
+> 
+>>>>> +static inline void sync_reader(struct percpu_rwlock *pcpu_rwlock,
+>>>>> +			       unsigned int cpu)
+>>>>> +{
+>>>>> +	smp_rmb(); /* Paired with smp_[w]mb() in percpu_read_[un]lock() */
+>>>>
+>>>> As I understand it, the purpose of this memory barrier is to ensure
+>>>> that the stores in drop_writer_signal() happen before the reads from
+>>>> ->reader_refcnt in reader_uses_percpu_refcnt(), thus preventing the
+>>>> race between a new reader attempting to use the fastpath and this writer
+>>>> acquiring the lock.  Unless I am confused, this must be smp_mb() rather
+>>>> than smp_rmb().
+>>>
+>>> And note that before sync_reader() we call announce_writer_active() which
+>>> already adds mb() before sync_all_readers/sync_reader, so this rmb() looks
+>>> unneeded.
+>>>
+>>
+>> My intention was to help the writer see the ->reader_refcnt drop to zero
+>> ASAP; hence I used smp_wmb() at reader and smp_rmb() here at the writer.
+> 
+> Hmm, interesting... Not sure, but can't really comment. However I can
+> answer your next question:
+>
+
+Paul told me in another mail that I was expecting too much out of memory
+barriers, like increasing the speed of electrons and what not ;-)
+[ It would have been cool though, if it had such magical powers :P ]
+ 
+>> Please correct me if my understanding of memory barriers is wrong here..
+> 
+> Who? Me??? No we have paulmck for that ;)
+>
+
+Haha ;-)
 
 Regards,
 Srivatsa S. Bhat
-
->  But I don't feel strongly about
-> it, so if people are OK with the current version, no problem.
-> 
-> 							Thanx, Paul
-> 
