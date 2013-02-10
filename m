@@ -1,23 +1,25 @@
-Return-Path: <phileas-fogg@mail.ru>
-Received: from f350.mail.ru (f350.mail.ru [217.69.140.246])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A2AE62C0089
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Feb 2013 20:16:27 +1100 (EST)
-From: =?UTF-8?B?UGhpbGVhcyBGb2dn?= <phileas-fogg@mail.ru>
-To: =?UTF-8?B?R2VvZmYgTGV2YW5k?= <geoff@infradead.org>,
- linuxppc-dev@lists.ozlabs.org,
- =?UTF-8?B?QW5lZXNoIEt1bWFyIEsuVg==?= <aneesh.kumar@linux.vnet.ibm.com>
-Subject: =?UTF-8?B?UmVbM106IFBTMyBwbGF0Zm9ybSBpcyBicm9rZW4gb24gTGludXggMy43LjA=?=
-Mime-Version: 1.0
-Date: Sun, 10 Feb 2013 13:16:18 +0400
-Message-ID: <1360487778.293641922@f350.mail.ru>
-Content-Type: multipart/alternative;
-	boundary="--ALT--VvyZyfu31360487778"
-In-Reply-To: <1360486777.923599245@f85.mail.ru>
-References: <1355488506.55692113@f147.mail.ru> <1358206641.4489.8.camel@smoke>
- <1360486777.923599245@f85.mail.ru>
-Reply-To: =?UTF-8?B?UGhpbGVhcyBGb2dn?= <phileas-fogg@mail.ru>
+Return-Path: <fweisbec@gmail.com>
+Received: from mail-lb0-f173.google.com (mail-lb0-f173.google.com
+ [209.85.217.173])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B09652C0095
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Feb 2013 21:32:55 +1100 (EST)
+Received: by mail-lb0-f173.google.com with SMTP id gf7so3939715lbb.4
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Feb 2013 02:32:50 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <1359714465-6297-2-git-send-email-zhong@linux.vnet.ibm.com>
+References: <1359714465-6297-1-git-send-email-zhong@linux.vnet.ibm.com>
+ <1359714465-6297-2-git-send-email-zhong@linux.vnet.ibm.com>
+Date: Sun, 10 Feb 2013 11:32:49 +0100
+Message-ID: <CAFTL4hzpwLO--SRUzpJz=zKbupSEYirNcO-KM=ShOMwjoJ0LvA@mail.gmail.com>
+Subject: Re: [RFC PATCH 1/5] powerpc: Syscall hooks for context tracking
+ subsystem
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Li Zhong <zhong@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: paulmck@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,227 +29,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+2013/2/1 Li Zhong <zhong@linux.vnet.ibm.com>:
+> This is the syscall slow path hooks for context tracking subsystem,
+> corresponding to
+> [PATCH] x86: Syscall hooks for userspace RCU extended QS
+>   commit bf5a3c13b939813d28ce26c01425054c740d6731
+>
+> TIF_MEMDIE is moved to the second 16-bits (with value 17), as it seems there
+> is no asm code using it. TIF_NOHZ is added to _TIF_SYCALL_T_OR_A, so it is
+> better for it to be in the same 16 bits with others in the group, so in the
+> asm code, andi. with this group could work.
+>
+> Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
 
-----ALT--VvyZyfu31360487778
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
+Looks good. Thanks.
 
-IEFuZCBhbm90aGVyIG5vdGUuCkkgdG9vayBhIGxvb2sgYXQgdGhlIE1NVSBjaGFwdGVyIGluIHRo
-ZSBDZWxsIEFyY2hpdGVjdHVyZSBoYW5kYm9vayBhbmQgaW5kZWVkIHRoZSBmaXJzdCAxNSBiaXRz
-IGluIFZBIGFyZSB0cmVhdGVkIGFzIDAgYnkgdGhlIGhhcmR3YXJlLgoKUXVvdGU6CgoxLiBIaWdo
-LW9yZGVyIGJpdHMgYWJvdmUgNjUgYml0cyBpbiB0aGUgODAtYml0IHZpcnR1YWwgYWRkcmVzcyAo
-VkFbMDoxNF0pIGFyZSBub3QgaW1wbGVtZW50ZWQuIFRoZSBoYXJkd2FyZSBhbHdheXMKwqDCoCB0
-cmVhdHMgdGhlc2UgYml0cyBhcyBgMCcuIFNvZnR3YXJlIG11c3Qgbm90IHNldCB0aGVzZSBiaXRz
-IHRvIGFueSBvdGhlciB2YWx1ZSB0aGFuIGAwJyBvciB0aGUgcmVzdWx0cyBhcmUgdW5kZWZpbmVk
-IGluCsKgwqAgdGhlIFBQRS4KCgpyZWdhcmRzCgoK0JLQvtGB0LrRgNC10YHQtdC90YzQtSwgMTAg
-0YTQtdCy0YDQsNC70Y8gMjAxMywgMTI6NTkgKzA0OjAwINC+0YIgUGhpbGVhcyBGb2dnIDxwaGls
-ZWFzLWZvZ2dAbWFpbC5ydT46Cj5IaSwKPgo+aSBmb3VuZCB3aGVyZSB0aGUgcHJvYmxlbSBsaWVz
-Lgo+SSBhbHNvIHByaW50ZWQgc29tZSB2YWx1ZXMgaW4gcHMzX2hwdGVfaW5zZXJ0IHdpdGggYW5k
-IHdpdGhvdXQgNjRUQiBzdXBwb3J0LCBpIHVzZWQgT3BlbldSVCB3aXRoIExpbnV4IDMuNy42IGZv
-ciB0ZXN0aW5nLgo+Cj5Tb21lIHZhbHVlcyB3aXRob3V0IDY0VEIgc3VwcG9ydDoKPi0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KPgo+W8KgwqDCoCAwLjA2
-MDQ4N10gUlBDOiBSZWdpc3RlcmVkIG5hbWVkIFVOSVggc29ja2V0IHRyYW5zcG9ydCBtb2R1bGUu
-Cj5bwqDCoMKgIDAuMDYwNTExXSBSUEM6IFJlZ2lzdGVyZWQgdWRwIHRyYW5zcG9ydCBtb2R1bGUu
-Cj5bwqDCoMKgIDAuMDYwNjcyXSBSUEM6IFJlZ2lzdGVyZWQgdGNwIHRyYW5zcG9ydCBtb2R1bGUu
-Cj5bwqDCoMKgIDAuMDYwODczXSBSUEM6IFJlZ2lzdGVyZWQgdGNwIE5GU3Y0LjEgYmFja2NoYW5u
-ZWwgdHJhbnNwb3J0IG1vZHVsZS4KPlvCoMKgwqAgMC4wNjEwODBdIGluaXRjYWxsIC5pbml0X3N1
-bnJwYysweDAvMHhiYyByZXR1cm5lZCAwIGFmdGVyIDc4NCB1c2Vjcwo+W8KgwqDCoCAwLjA2MTI4
-MF0gY2FsbGluZ8KgIC5wb3B1bGF0ZV9yb290ZnMrMHgwLzB4MTIwIEAgMQo+W8KgwqDCoCAwLjA2
-MTY4M10gcHMzX2hwdGVfaW5zZXJ0OnJlc3VsdD0wIHZwbj1mMDliODlhZjUwMTAxIHBhPWQ0ZTAw
-MDAgaXg9ZGZhMCB2PWYwOWI4OWFmNTAwMSByPTZjMDA1ZDRlMDE5NCBwc2l6ZT0wIHNzaXplPTAg
-bHBhcj02YzAwNWQ0ZTAwMDAKPlvCoMKgwqAgMC4wNjE3MzNdIHBzM19ocHRlX2luc2VydDpyZXN1
-bHQ9MCB2cG49ZjA5Yjg5YWY1MDEwMiBwYT1kNGUxMDAwIGl4PWRmYjggdj1mMDliODlhZjUwMDEg
-cj02YzAwNWQ0ZTExOTQgcHNpemU9MCBzc2l6ZT0wIGxwYXI9NmMwMDVkNGUxMDAwCj5bwqDCoMKg
-IDAuMDYxODk1XSBwczNfaHB0ZV9pbnNlcnQ6cmVzdWx0PTAgdnBuPWYwOWI4OWFmNTAxMDMgcGE9
-ZDRlMjAwMCBpeD1kZmIwIHY9ZjA5Yjg5YWY1MDAxIHI9NmMwMDVkNGUyMTk0IHBzaXplPTAgc3Np
-emU9MCBscGFyPTZjMDA1ZDRlMjAwMAo+Cj4KPlNvbWUgdmFsdWVzIHdpdGggNjRUQiBzdXBwb3J0
-Ogo+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQo+Cj5b
-wqDCoMKgIDAuMDc2NDc3XSBjYWxsaW5nwqAgLmluaXRfc3VucnBjKzB4MC8weGJjIEAgMQo+W8Kg
-wqDCoCAwLjA3Njk5Ml0gUlBDOiBSZWdpc3RlcmVkIG5hbWVkIFVOSVggc29ja2V0IHRyYW5zcG9y
-dCBtb2R1bGUuCj5bwqDCoMKgIDAuMDc3MDE3XSBSUEM6IFJlZ2lzdGVyZWQgdWRwIHRyYW5zcG9y
-dCBtb2R1bGUuCj5bwqDCoMKgIDAuMDc3MDc2XSBSUEM6IFJlZ2lzdGVyZWQgdGNwIHRyYW5zcG9y
-dCBtb2R1bGUuCj5bwqDCoMKgIDAuMDc3Mjc3XSBSUEM6IFJlZ2lzdGVyZWQgdGNwIE5GU3Y0LjEg
-YmFja2NoYW5uZWwgdHJhbnNwb3J0IG1vZHVsZS4KPlvCoMKgwqAgMC4wNzc0ODRdIGluaXRjYWxs
-IC5pbml0X3N1bnJwYysweDAvMHhiYyByZXR1cm5lZCAwIGFmdGVyIDc4NCB1c2Vjcwo+W8KgwqDC
-oCAwLjA3NzY4NF0gY2FsbGluZ8KgIC5wb3B1bGF0ZV9yb290ZnMrMHgwLzB4MTIwIEAgMQo+W8Kg
-wqDCoCAwLjA3ODEyNl0gcHMzX2hwdGVfaW5zZXJ0OnJlc3VsdD0tMTcgdnBuPTI1MDA4Njg0ZDgw
-MTAxIHBhPWQ1NjcwMDAgaXg9MmVjOCB2PTI1MDA4Njg0ZDgwMDEgcj02YzAwNWQ1NjcxOTQgcHNp
-emU9MCBzc2l6ZT0wIGxwYXI9NmMwMDVkNTY3MDAwCj5bwqDCoMKgIDAuMDc4MTY0XSBwczNfaHB0
-ZV9pbnNlcnQ6cmVzdWx0PS0xNyB2cG49MjUwMDg2ODRkODAxMDEgcGE9ZDU2NzAwMCBpeD0yZWM4
-IHY9MjUwMDg2ODRkODAwMSByPTZjMDA1ZDU2NzE5NCBwc2l6ZT0wIHNzaXplPTAgbHBhcj02YzAw
-NWQ1NjcwMDAKPlvCoMKgwqAgMC4wNzgyODddIC0tLS0tLS0tLS0tLVsgY3V0IGhlcmUgXS0tLS0t
-LS0tLS0tLQo+W8KgwqDCoCAwLjA3ODQ4Ml0gS2VybmVsIEJVRyBhdCBjMDAwMDAwMDAwMDJjYjNj
-IFt2ZXJib3NlIGRlYnVnIGluZm8gdW5hdmFpbGFibGVdCj5bwqDCoMKgIDAuMDc4Njg2XSBPb3Bz
-OiBFeGNlcHRpb24gaW4ga2VybmVsIG1vZGUsIHNpZzogNSBbIzFdCj5bwqDCoMKgIDAuMDc4ODgz
-XSBTTVAgTlJfQ1BVUz0yIFBTMwo+W8KgwqDCoCAwLjA3OTA4NF0gTW9kdWxlcyBsaW5rZWQgaW46
-Cj5bwqDCoMKgIDAuMDc5Mjg3XSBOSVA6IGMwMDAwMDAwMDAwMmNiM2MgTFI6IGMwMDAwMDAwMDAw
-MmNiMzggQ1RSOiAwMDAwMDAwMDAwMmZmYzM4Cj5bwqDCoMKgIDAuMDc5NDg5XSBSRUdTOiBjMDAw
-MDAwMDBkMDRmMGUwIFRSQVA6IDA3MDDCoMKgIE5vdCB0YWludGVkwqAgKDMuNy42KQo+W8KgwqDC
-oCAwLjA3OTY4N10gTVNSOiA4MDAwMDAwMDAwMDIwMDMyIDxTRixJUixEUixSST7CoCBDUjogMjIw
-MDAwMjLCoCBYRVI6IDAwMDAwMDAwCj5bwqDCoMKgIDAuMDc5ODg4XSBTT0ZURTogMAo+W8KgwqDC
-oCAwLjA4MDA5MF0gVEFTSyA9IGMwMDAwMDAwMGQwNDkwNjBbMV0gJ3N3YXBwZXIvMScgVEhSRUFE
-OiBjMDAwMDAwMDBkMDRjMDAwIENQVTogMQo+R1BSMDA6IGMwMDAwMDAwMDAwMmNiMzggYzAwMDAw
-MDAwZDA0ZjM2MCBjMDAwMDAwMDAxMmVjOGQwIDAwMDAwMDAwMDAwMDAwODEgCj5HUFIwNDogMDAw
-MDAwMDAwMDAwMDAwMCAwMDAwMDAwMDAwMDAwMDAwIDAwMDAwMDAwMDAwMDAwMDAgMDAwMDAwMDAw
-MDAwMDAwMCAKPkdQUjA4OiAwMDAwMDAwMDAwMDAwMDAwIGMwMDAwMDAwMDEyNGNlMTAgMDAwMDAw
-MDAwMDAwMDAwMCBjMDAwMDAwMDAwMDJiY2YwIAo+R1BSMTI6IDAwMDAwMDAwMjIwMDAwMjIgYzAw
-MDAwMDAwN2ZmZTI4MCBjMDAwMDAwMDAwMDA4Yzk0IGMwMDAwMDAwMDA1Y2JhMDAgCj4KPgo+Cj5B
-bmQgbm93IHRha2UgYSBsb29rIGF0ICd2JyB2YWx1ZXMgaW4gYm90aCBjYXNlcy4KPgo+V2l0aG91
-dCA2NFRCIHN1cHBvcnQ6ICAgdj1mMDliODlhZjUwMDEKPldpdGggNjRUQiBzdXBwb3J0OiB2PTI1
-MDA4Njg0ZDgwMDEKPgo+TnVtYmVyIG9mIGxlYWRpbmcgemVyb3MgaW4gZjA5Yjg5YWY1MDAxIGlz
-IDE2Lgo+TnVtYmVyIG9mIGxlYWRpbmcgemVyb3MgaW4gMjUwMDg2ODRkODAwMSBpcyAxNC4KPgo+
-QW5kIHRoYXQncyB3aHkgbHYxX2luc2VydF9odGFiX2VudHJ5IGZhaWxzIHdpdGggLTE3IHdoaWNo
-IG1lYW5zIExWMV9JTExFR0FMX1BBUkFNRVRFUl9WQUxVRSBiZWNhdXNlCj50aGUgSHlwZXJ2aXNv
-ciBvZiBQUzMgY2hlY2tzICdBVlBOJyB2YWx1ZXMgZm9yIG51bWJlciBvZiBsZWFkaW5nIHplcm9z
-IGFuZCBhbGxvd3MgYXQgbGVhc3QgMTUgYml0cyB3aGljaCBpbiBjYXNlCj5vZiAndicgdmFsdWUg
-MjUwMDg2ODRkODAwMSBpcyB0b28gc21hbGwgb2YgY291cnNlLgo+Cj5Ob3Qgc3VyZSBob3cgdG8g
-Zml4IGl0IGluIGN1cnJlbnQgTGludXgga2VybmVsLiBZb3UgZ3V5cyBrbm93IGl0IGJldHRlciB0
-aGFuIG1lLgo+Cj5SZWdhcmRzCj4KPgo+Cj4KPtCf0L7QvdC10LTQtdC70YzQvdC40LosIDE0INGP
-0L3QstCw0YDRjyAyMDEzLCAxNTozNyAtMDg6MDAg0L7RgiBHZW9mZiBMZXZhbmQgPCBnZW9mZkBp
-bmZyYWRlYWQub3JnID46Cj4+SGksCj4+Cj4+T24gRnJpLCAyMDEzLTAxLTExIGF0IDE4OjEyIC0w
-ODAwLCBHZW9mZiBMZXZhbmQgd3JvdGU6Cj4+PiBJIGNoZWNrZWQgdGhlc2UsIGFuZCBNaWNoYWVs
-J3MgNDA3ODIxYTM0ZmNlODliNGYwYjAzMWRiYWI1Y2VjN2QwNTlmNDZiYwo+Pj4gZG9lcyBpbmRl
-ZWQgY2F1c2UgdGhlIExWMSBoeXBlcnZpc29yIHRvIHBhbmljIGVhcmx5LCBhbmQgaWYgdGhhdCBp
-cwo+Pj4gcmV2ZXJ0ZWQsIEFuZWVzaCdzIDA0OGVlMDk5M2VjODM2MGFiYjBiNTFiZGY4Zjg3MjFl
-OWVkNjJlYzQgaGl0cyBhIEJVRy4KPj4KPj5KdXN0IHRvIGdpdmUgYW4gdXBkYXRlLCBJIGRpZCBh
-IGxpdHRsZSBtb3JlIHdvcmsgb24gaXQgYW5kIGZvdW5kIHRoYXQKPj50aGUgY2FsbCB0byBsdjFf
-aW5zZXJ0X2h0YWJfZW50cnkoKSBpbnNpZGUgcHMzX2hwdGVfaW5zZXJ0KCkgaXMKPj5mYWlsaW5n
-Lgo+Pgo+PsKgwqDCoCAgaHR0cDovL2dpdC5rZXJuZWwub3JnLz9wPWxpbnV4L2tlcm5lbC9naXQv
-Z2VvZmYvcHMzLWxpbnV4LmdpdDthPWJsb2I7Zj1hcmNoL3Bvd2VycGMvcGxhdGZvcm1zL3BzMy9o
-dGFiLmM7aGI9SEVBRCNsNzAKPj4KPj5UaGUgdmFsdWVzIG9mIHRoZSB2YXJpYWJsZXMgcHJpbnRl
-ZCBhbGwgbG9vayBzdHJhbmdlIGNvbXBhcmVkIHdpdGgKPj5jb21taXQgMDQ4ZWUwOTkzIHJldmVy
-dGVkLiAgSSdsbCB0cnkgZG8gc29tZSBtb3JlIHdvcmsgb24gaXQgdGhpcwo+PndlZWsuCj4+Cj4+
-LUdlb2ZmCj4+Cj4+Cj4+Cj4+Cj4+Cj4+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX18KPj5MaW51eHBwYy1kZXYgbWFpbGluZyBsaXN0Cj4+TGludXhwcGMtZGV2
-QGxpc3RzLm96bGFicy5vcmcKPj4gaHR0cHM6Ly9saXN0cy5vemxhYnMub3JnL2xpc3RpbmZvL2xp
-bnV4cHBjLWRldgo+Cj5fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fXwo+TGludXhwcGMtZGV2IG1haWxpbmcgbGlzdAo+TGludXhwcGMtZGV2QGxpc3RzLm96bGFi
-cy5vcmcKPmh0dHBzOi8vbGlzdHMub3psYWJzLm9yZy9saXN0aW5mby9saW51eHBwYy1kZXYKCg==
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
 
-----ALT--VvyZyfu31360487778
-Content-Type: text/html; charset=utf-8
-Content-Transfer-Encoding: base64
-
-CjxIVE1MPjxCT0RZPkFuZCBhbm90aGVyIG5vdGUuPGJyPkkgdG9vayBhIGxvb2sgYXQgdGhlIE1N
-VSBjaGFwdGVyIGluIHRoZSBDZWxsIEFyY2hpdGVjdHVyZSBoYW5kYm9vayBhbmQgaW5kZWVkIHRo
-ZSBmaXJzdCAxNSBiaXRzIGluIFZBIGFyZSB0cmVhdGVkIGFzIDAgYnkgdGhlIGhhcmR3YXJlLjxi
-cj48YnI+UXVvdGU6PGJyPjxicj4xLiBIaWdoLW9yZGVyIGJpdHMgYWJvdmUgNjUgYml0cyBpbiB0
-aGUgODAtYml0IHZpcnR1YWwgYWRkcmVzcyAoVkFbMDoxNF0pIGFyZSBub3QgaW1wbGVtZW50ZWQu
-IFRoZSBoYXJkd2FyZSBhbHdheXM8YnI+Jm5ic3A7Jm5ic3A7IHRyZWF0cyB0aGVzZSBiaXRzIGFz
-IGAwJy4gU29mdHdhcmUgbXVzdCBub3Qgc2V0IHRoZXNlIGJpdHMgdG8gYW55IG90aGVyIHZhbHVl
-IHRoYW4gYDAnIG9yIHRoZSByZXN1bHRzIGFyZSB1bmRlZmluZWQgaW48YnI+Jm5ic3A7Jm5ic3A7
-IHRoZSBQUEUuPGJyPjxicj48YnI+cmVnYXJkczxicj48YnI+PGJyPtCS0L7RgdC60YDQtdGB0LXQ
-vdGM0LUsIDEwINGE0LXQstGA0LDQu9GPIDIwMTMsIDEyOjU5ICswNDowMCDQvtGCIFBoaWxlYXMg
-Rm9nZyAmbHQ7cGhpbGVhcy1mb2dnQG1haWwucnUmZ3Q7Ojxicj4KPGJsb2NrcXVvdGUgc3R5bGU9
-ImJvcmRlci1sZWZ0OjFweCBzb2xpZCAjMDg1N0E2OyBtYXJnaW46MTBweDsgcGFkZGluZzowIDAg
-MCAxMHB4OyIgY2xhc3M9Im1haWxydS1ibG9ja3F1b3RlIj4KCTxkaXYgaWQ9IiI+PGRpdiBjbGFz
-cz0ianMtaGVscGVyIGpzLXJlYWRtc2ctbXNnIj4KCTxzdHlsZSB0eXBlPSJ0ZXh0L2NzcyI+PC9z
-dHlsZT4KCTxkaXYgaWQ9InN0eWxlXzEzNjA0ODY4MzIwMDAwMDAwMjkxIiBjbGFzcz0ibXJfcmVh
-ZF9fYm9keSI+CgkJPGJhc2UgdGFyZ2V0PSJfc2VsZiIgaHJlZj0iaHR0cHM6Ly9lLm1haWwucnUv
-Y2dpLWJpbi8iPgoJCQoJCQk8ZGl2IGlkPSJzdHlsZV8xMzYwNDg2ODMyMDAwMDAwMDI5MV9CT0RZ
-Ij4gSGksPGJyPjxicj5pIGZvdW5kIHdoZXJlIHRoZSBwcm9ibGVtIGxpZXMuPGJyPkkgYWxzbyBw
-cmludGVkIHNvbWUgdmFsdWVzIGluIHBzM19ocHRlX2luc2VydCB3aXRoIGFuZCB3aXRob3V0IDY0
-VEIgc3VwcG9ydCwgaSB1c2VkIE9wZW5XUlQgd2l0aCBMaW51eCAzLjcuNiBmb3IgdGVzdGluZy48
-YnI+PGJyPlNvbWUgdmFsdWVzIHdpdGhvdXQgNjRUQiBzdXBwb3J0Ojxicj4tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tPGJyPjxicj5bJm5ic3A7Jm5ic3A7
-Jm5ic3A7IDAuMDYwNDg3XSBSUEM6IFJlZ2lzdGVyZWQgbmFtZWQgVU5JWCBzb2NrZXQgdHJhbnNw
-b3J0IG1vZHVsZS48YnI+WyZuYnNwOyZuYnNwOyZuYnNwOyAwLjA2MDUxMV0gUlBDOiBSZWdpc3Rl
-cmVkIHVkcCB0cmFuc3BvcnQgbW9kdWxlLjxicj5bJm5ic3A7Jm5ic3A7Jm5ic3A7IDAuMDYwNjcy
-XSBSUEM6IFJlZ2lzdGVyZWQgdGNwIHRyYW5zcG9ydCBtb2R1bGUuPGJyPlsmbmJzcDsmbmJzcDsm
-bmJzcDsgMC4wNjA4NzNdIFJQQzogUmVnaXN0ZXJlZCB0Y3AgTkZTdjQuMSBiYWNrY2hhbm5lbCB0
-cmFuc3BvcnQgbW9kdWxlLjxicj5bJm5ic3A7Jm5ic3A7Jm5ic3A7IDAuMDYxMDgwXSBpbml0Y2Fs
-bCAuaW5pdF9zdW5ycGMrMHgwLzB4YmMgcmV0dXJuZWQgMCBhZnRlciA3ODQgdXNlY3M8YnI+WyZu
-YnNwOyZuYnNwOyZuYnNwOyAwLjA2MTI4MF0gY2FsbGluZyZuYnNwOyAucG9wdWxhdGVfcm9vdGZz
-KzB4MC8weDEyMCBAIDE8YnI+WyZuYnNwOyZuYnNwOyZuYnNwOyAwLjA2MTY4M10gcHMzX2hwdGVf
-aW5zZXJ0OnJlc3VsdD0wIHZwbj1mMDliODlhZjUwMTAxIHBhPWQ0ZTAwMDAgaXg9ZGZhMCB2PWYw
-OWI4OWFmNTAwMSByPTZjMDA1ZDRlMDE5NCBwc2l6ZT0wIHNzaXplPTAgbHBhcj02YzAwNWQ0ZTAw
-MDA8YnI+WyZuYnNwOyZuYnNwOyZuYnNwOyAwLjA2MTczM10gcHMzX2hwdGVfaW5zZXJ0OnJlc3Vs
-dD0wIHZwbj1mMDliODlhZjUwMTAyIHBhPWQ0ZTEwMDAgaXg9ZGZiOCB2PWYwOWI4OWFmNTAwMSBy
-PTZjMDA1ZDRlMTE5NCBwc2l6ZT0wIHNzaXplPTAgbHBhcj02YzAwNWQ0ZTEwMDA8YnI+WyZuYnNw
-OyZuYnNwOyZuYnNwOyAwLjA2MTg5NV0gcHMzX2hwdGVfaW5zZXJ0OnJlc3VsdD0wIHZwbj1mMDli
-ODlhZjUwMTAzIHBhPWQ0ZTIwMDAgaXg9ZGZiMCB2PWYwOWI4OWFmNTAwMSByPTZjMDA1ZDRlMjE5
-NCBwc2l6ZT0wIHNzaXplPTAgbHBhcj02YzAwNWQ0ZTIwMDA8YnI+PGJyPjxicj5Tb21lIHZhbHVl
-cyB3aXRoIDY0VEIgc3VwcG9ydDo8YnI+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLTxicj48YnI+WyZuYnNwOyZuYnNwOyZuYnNwOyAwLjA3NjQ3N10gY2Fs
-bGluZyZuYnNwOyAuaW5pdF9zdW5ycGMrMHgwLzB4YmMgQCAxPGJyPlsmbmJzcDsmbmJzcDsmbmJz
-cDsgMC4wNzY5OTJdIFJQQzogUmVnaXN0ZXJlZCBuYW1lZCBVTklYIHNvY2tldCB0cmFuc3BvcnQg
-bW9kdWxlLjxicj5bJm5ic3A7Jm5ic3A7Jm5ic3A7IDAuMDc3MDE3XSBSUEM6IFJlZ2lzdGVyZWQg
-dWRwIHRyYW5zcG9ydCBtb2R1bGUuPGJyPlsmbmJzcDsmbmJzcDsmbmJzcDsgMC4wNzcwNzZdIFJQ
-QzogUmVnaXN0ZXJlZCB0Y3AgdHJhbnNwb3J0IG1vZHVsZS48YnI+WyZuYnNwOyZuYnNwOyZuYnNw
-OyAwLjA3NzI3N10gUlBDOiBSZWdpc3RlcmVkIHRjcCBORlN2NC4xIGJhY2tjaGFubmVsIHRyYW5z
-cG9ydCBtb2R1bGUuPGJyPlsmbmJzcDsmbmJzcDsmbmJzcDsgMC4wNzc0ODRdIGluaXRjYWxsIC5p
-bml0X3N1bnJwYysweDAvMHhiYyByZXR1cm5lZCAwIGFmdGVyIDc4NCB1c2Vjczxicj5bJm5ic3A7
-Jm5ic3A7Jm5ic3A7IDAuMDc3Njg0XSBjYWxsaW5nJm5ic3A7IC5wb3B1bGF0ZV9yb290ZnMrMHgw
-LzB4MTIwIEAgMTxicj5bJm5ic3A7Jm5ic3A7Jm5ic3A7IDAuMDc4MTI2XSBwczNfaHB0ZV9pbnNl
-cnQ6cmVzdWx0PS0xNyB2cG49MjUwMDg2ODRkODAxMDEgcGE9ZDU2NzAwMCBpeD0yZWM4IHY9MjUw
-MDg2ODRkODAwMSByPTZjMDA1ZDU2NzE5NCBwc2l6ZT0wIHNzaXplPTAgbHBhcj02YzAwNWQ1Njcw
-MDA8YnI+WyZuYnNwOyZuYnNwOyZuYnNwOyAwLjA3ODE2NF0gcHMzX2hwdGVfaW5zZXJ0OnJlc3Vs
-dD0tMTcgdnBuPTI1MDA4Njg0ZDgwMTAxIHBhPWQ1NjcwMDAgaXg9MmVjOCB2PTI1MDA4Njg0ZDgw
-MDEgcj02YzAwNWQ1NjcxOTQgcHNpemU9MCBzc2l6ZT0wIGxwYXI9NmMwMDVkNTY3MDAwPGJyPlsm
-bmJzcDsmbmJzcDsmbmJzcDsgMC4wNzgyODddIC0tLS0tLS0tLS0tLVsgY3V0IGhlcmUgXS0tLS0t
-LS0tLS0tLTxicj5bJm5ic3A7Jm5ic3A7Jm5ic3A7IDAuMDc4NDgyXSBLZXJuZWwgQlVHIGF0IGMw
-MDAwMDAwMDAwMmNiM2MgW3ZlcmJvc2UgZGVidWcgaW5mbyB1bmF2YWlsYWJsZV08YnI+WyZuYnNw
-OyZuYnNwOyZuYnNwOyAwLjA3ODY4Nl0gT29wczogRXhjZXB0aW9uIGluIGtlcm5lbCBtb2RlLCBz
-aWc6IDUgWyMxXTxicj5bJm5ic3A7Jm5ic3A7Jm5ic3A7IDAuMDc4ODgzXSBTTVAgTlJfQ1BVUz0y
-IFBTMzxicj5bJm5ic3A7Jm5ic3A7Jm5ic3A7IDAuMDc5MDg0XSBNb2R1bGVzIGxpbmtlZCBpbjo8
-YnI+WyZuYnNwOyZuYnNwOyZuYnNwOyAwLjA3OTI4N10gTklQOiBjMDAwMDAwMDAwMDJjYjNjIExS
-OiBjMDAwMDAwMDAwMDJjYjM4IENUUjogMDAwMDAwMDAwMDJmZmMzODxicj5bJm5ic3A7Jm5ic3A7
-Jm5ic3A7IDAuMDc5NDg5XSBSRUdTOiBjMDAwMDAwMDBkMDRmMGUwIFRSQVA6IDA3MDAmbmJzcDsm
-bmJzcDsgTm90IHRhaW50ZWQmbmJzcDsgKDMuNy42KTxicj5bJm5ic3A7Jm5ic3A7Jm5ic3A7IDAu
-MDc5Njg3XSBNU1I6IDgwMDAwMDAwMDAwMjAwMzIgJmx0O1NGLElSLERSLFJJJmd0OyZuYnNwOyBD
-UjogMjIwMDAwMjImbmJzcDsgWEVSOiAwMDAwMDAwMDxicj5bJm5ic3A7Jm5ic3A7Jm5ic3A7IDAu
-MDc5ODg4XSBTT0ZURTogMDxicj5bJm5ic3A7Jm5ic3A7Jm5ic3A7IDAuMDgwMDkwXSBUQVNLID0g
-YzAwMDAwMDAwZDA0OTA2MFsxXSAnc3dhcHBlci8xJyBUSFJFQUQ6IGMwMDAwMDAwMGQwNGMwMDAg
-Q1BVOiAxPGJyPkdQUjAwOiBjMDAwMDAwMDAwMDJjYjM4IGMwMDAwMDAwMGQwNGYzNjAgYzAwMDAw
-MDAwMTJlYzhkMCAwMDAwMDAwMDAwMDAwMDgxIDxicj5HUFIwNDogMDAwMDAwMDAwMDAwMDAwMCAw
-MDAwMDAwMDAwMDAwMDAwIDAwMDAwMDAwMDAwMDAwMDAgMDAwMDAwMDAwMDAwMDAwMCA8YnI+R1BS
-MDg6IDAwMDAwMDAwMDAwMDAwMDAgYzAwMDAwMDAwMTI0Y2UxMCAwMDAwMDAwMDAwMDAwMDAwIGMw
-MDAwMDAwMDAwMmJjZjAgPGJyPkdQUjEyOiAwMDAwMDAwMDIyMDAwMDIyIGMwMDAwMDAwMDdmZmUy
-ODAgYzAwMDAwMDAwMDAwOGM5NCBjMDAwMDAwMDAwNWNiYTAwIDxicj48YnI+PGJyPjxicj5BbmQg
-bm93IHRha2UgYSBsb29rIGF0ICd2JyB2YWx1ZXMgaW4gYm90aCBjYXNlcy48YnI+PGJyPldpdGhv
-dXQgNjRUQiBzdXBwb3J0OiAgIHY9ZjA5Yjg5YWY1MDAxPGJyPldpdGggNjRUQiBzdXBwb3J0OiB2
-PTI1MDA4Njg0ZDgwMDE8YnI+PGJyPk51bWJlciBvZiBsZWFkaW5nIHplcm9zIGluIGYwOWI4OWFm
-NTAwMSBpcyAxNi48YnI+TnVtYmVyIG9mIGxlYWRpbmcgemVyb3MgaW4gMjUwMDg2ODRkODAwMSBp
-cyAxNC48YnI+PGJyPkFuZCB0aGF0J3Mgd2h5IGx2MV9pbnNlcnRfaHRhYl9lbnRyeSBmYWlscyB3
-aXRoIC0xNyB3aGljaCBtZWFucyBMVjFfSUxMRUdBTF9QQVJBTUVURVJfVkFMVUUgYmVjYXVzZTxi
-cj50aGUgSHlwZXJ2aXNvciBvZiBQUzMgY2hlY2tzICdBVlBOJyB2YWx1ZXMgZm9yIG51bWJlciBv
-ZiBsZWFkaW5nIHplcm9zIGFuZCBhbGxvd3MgYXQgbGVhc3QgMTUgYml0cyB3aGljaCBpbiBjYXNl
-PGJyPm9mICd2JyB2YWx1ZSAyNTAwODY4NGQ4MDAxIGlzIHRvbyBzbWFsbCBvZiBjb3Vyc2UuPGJy
-Pjxicj5Ob3Qgc3VyZSBob3cgdG8gZml4IGl0IGluIGN1cnJlbnQgTGludXgga2VybmVsLiBZb3Ug
-Z3V5cyBrbm93IGl0IGJldHRlciB0aGFuIG1lLjxicj48YnI+UmVnYXJkczxicj48YnI+PGJyPjxi
-cj48YnI+0J/QvtC90LXQtNC10LvRjNC90LjQuiwgMTQg0Y/QvdCy0LDRgNGPIDIwMTMsIDE1OjM3
-IC0wODowMCDQvtGCIEdlb2ZmIExldmFuZCAmbHQ7PGEgaHJlZj0ic2VudG1zZz9jb21wb3NlJmFt
-cDtUbz1nZW9mZkBpbmZyYWRlYWQub3JnIj5nZW9mZkBpbmZyYWRlYWQub3JnPC9hPiZndDs6PGJy
-PiZndDtIaSw8YnI+Jmd0Ozxicj4mZ3Q7T24gRnJpLCAyMDEzLTAxLTExIGF0IDE4OjEyIC0wODAw
-LCBHZW9mZiBMZXZhbmQgd3JvdGU6PGJyPiZndDsmZ3Q7IEkgY2hlY2tlZCB0aGVzZSwgYW5kIE1p
-Y2hhZWwncyA0MDc4MjFhMzRmY2U4OWI0ZjBiMDMxZGJhYjVjZWM3ZDA1OWY0NmJjPGJyPiZndDsm
-Z3Q7IGRvZXMgaW5kZWVkIGNhdXNlIHRoZSBMVjEgaHlwZXJ2aXNvciB0byBwYW5pYyBlYXJseSwg
-YW5kIGlmIHRoYXQgaXM8YnI+Jmd0OyZndDsgcmV2ZXJ0ZWQsIEFuZWVzaCdzIDA0OGVlMDk5M2Vj
-ODM2MGFiYjBiNTFiZGY4Zjg3MjFlOWVkNjJlYzQgaGl0cyBhIEJVRy48YnI+Jmd0Ozxicj4mZ3Q7
-SnVzdCB0byBnaXZlIGFuIHVwZGF0ZSwgSSBkaWQgYSBsaXR0bGUgbW9yZSB3b3JrIG9uIGl0IGFu
-ZCBmb3VuZCB0aGF0PGJyPiZndDt0aGUgY2FsbCB0byBsdjFfaW5zZXJ0X2h0YWJfZW50cnkoKSBp
-bnNpZGUgcHMzX2hwdGVfaW5zZXJ0KCkgaXM8YnI+Jmd0O2ZhaWxpbmcuPGJyPiZndDs8YnI+Jmd0
-OyZuYnNwOyZuYnNwOyZuYnNwOyA8YSBocmVmPSJodHRwOi8vZ2l0Lmtlcm5lbC5vcmcvP3A9bGlu
-dXgva2VybmVsL2dpdC9nZW9mZi9wczMtbGludXguZ2l0O2E9YmxvYjtmPWFyY2gvcG93ZXJwYy9w
-bGF0Zm9ybXMvcHMzL2h0YWIuYztoYj1IRUFEI2w3MCIgdGFyZ2V0PSJfYmxhbmsiPmh0dHA6Ly9n
-aXQua2VybmVsLm9yZy8/cD1saW51eC9rZXJuZWwvZ2l0L2dlb2ZmL3BzMy1saW51eC5naXQ7YT1i
-bG9iO2Y9YXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy9wczMvaHRhYi5jO2hiPUhFQUQjbDcwPC9hPjxi
-cj4mZ3Q7PGJyPiZndDtUaGUgdmFsdWVzIG9mIHRoZSB2YXJpYWJsZXMgcHJpbnRlZCBhbGwgbG9v
-ayBzdHJhbmdlIGNvbXBhcmVkIHdpdGg8YnI+Jmd0O2NvbW1pdCAwNDhlZTA5OTMgcmV2ZXJ0ZWQu
-ICBJJ2xsIHRyeSBkbyBzb21lIG1vcmUgd29yayBvbiBpdCB0aGlzPGJyPiZndDt3ZWVrLjxicj4m
-Z3Q7PGJyPiZndDstR2VvZmY8YnI+Jmd0Ozxicj4mZ3Q7PGJyPiZndDs8YnI+Jmd0Ozxicj4mZ3Q7
-PGJyPiZndDtfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXzxi
-cj4mZ3Q7TGludXhwcGMtZGV2IG1haWxpbmcgbGlzdDxicj4mZ3Q7TGludXhwcGMtZGV2QGxpc3Rz
-Lm96bGFicy5vcmc8YnI+Jmd0OzxhIGhyZWY9Imh0dHBzOi8vbGlzdHMub3psYWJzLm9yZy9saXN0
-aW5mby9saW51eHBwYy1kZXYiIHRhcmdldD0iX2JsYW5rIj5odHRwczovL2xpc3RzLm96bGFicy5v
-cmcvbGlzdGluZm8vbGludXhwcGMtZGV2PC9hPjxicj48YnI+X19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX188YnI+TGludXhwcGMtZGV2IG1haWxpbmcgbGlzdDxi
-cj48YSBocmVmPSJzZW50bXNnP2NvbXBvc2UmYW1wO1RvPUxpbnV4cHBjJTJkZGV2QGxpc3RzLm96
-bGFicy5vcmciPkxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnPC9hPjxicj48YSBocmVmPSJo
-dHRwczovL2xpc3RzLm96bGFicy5vcmcvbGlzdGluZm8vbGludXhwcGMtZGV2IiB0YXJnZXQ9Il9i
-bGFuayI+aHR0cHM6Ly9saXN0cy5vemxhYnMub3JnL2xpc3RpbmZvL2xpbnV4cHBjLWRldjwvYT48
-YnIgZGF0YS1tY2UtYm9ndXM9IjEiPjwvZGl2PgoJCQkKCQkKCQk8YmFzZSB0YXJnZXQ9Il9zZWxm
-IiBocmVmPSJodHRwczovL2UubWFpbC5ydS9jZ2ktYmluLyI+Cgk8L2Rpdj4KCgkKPC9kaXY+CgoK
-PC9kaXY+CjwvYmxvY2txdW90ZT4KPGJyPjwvQk9EWT48L0hUTUw+Cg==
-
-----ALT--VvyZyfu31360487778--
+> ---
+>  arch/powerpc/include/asm/thread_info.h |    7 +++++--
+>  arch/powerpc/kernel/ptrace.c           |    5 +++++
+>  2 files changed, 10 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
+> index 406b7b9..414a261 100644
+> --- a/arch/powerpc/include/asm/thread_info.h
+> +++ b/arch/powerpc/include/asm/thread_info.h
+> @@ -97,7 +97,7 @@ static inline struct thread_info *current_thread_info(void)
+>  #define TIF_PERFMON_CTXSW      6       /* perfmon needs ctxsw calls */
+>  #define TIF_SYSCALL_AUDIT      7       /* syscall auditing active */
+>  #define TIF_SINGLESTEP         8       /* singlestepping active */
+> -#define TIF_MEMDIE             9       /* is terminating due to OOM killer */
+> +#define TIF_NOHZ               9       /* in adaptive nohz mode */
+>  #define TIF_SECCOMP            10      /* secure computing */
+>  #define TIF_RESTOREALL         11      /* Restore all regs (implies NOERROR) */
+>  #define TIF_NOERROR            12      /* Force successful syscall return */
+> @@ -106,6 +106,7 @@ static inline struct thread_info *current_thread_info(void)
+>  #define TIF_SYSCALL_TRACEPOINT 15      /* syscall tracepoint instrumentation */
+>  #define TIF_EMULATE_STACK_STORE        16      /* Is an instruction emulation
+>                                                 for stack store? */
+> +#define TIF_MEMDIE             17      /* is terminating due to OOM killer */
+>
+>  /* as above, but as bit values */
+>  #define _TIF_SYSCALL_TRACE     (1<<TIF_SYSCALL_TRACE)
+> @@ -124,8 +125,10 @@ static inline struct thread_info *current_thread_info(void)
+>  #define _TIF_UPROBE            (1<<TIF_UPROBE)
+>  #define _TIF_SYSCALL_TRACEPOINT        (1<<TIF_SYSCALL_TRACEPOINT)
+>  #define _TIF_EMULATE_STACK_STORE       (1<<TIF_EMULATE_STACK_STORE)
+> +#define _TIF_NOHZ              (1<<TIF_NOHZ)
+>  #define _TIF_SYSCALL_T_OR_A    (_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | \
+> -                                _TIF_SECCOMP | _TIF_SYSCALL_TRACEPOINT)
+> +                                _TIF_SECCOMP | _TIF_SYSCALL_TRACEPOINT | \
+> +                                _TIF_NOHZ)
+>
+>  #define _TIF_USER_WORK_MASK    (_TIF_SIGPENDING | _TIF_NEED_RESCHED | \
+>                                  _TIF_NOTIFY_RESUME | _TIF_UPROBE)
+> diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+> index c497000..62238dd 100644
+> --- a/arch/powerpc/kernel/ptrace.c
+> +++ b/arch/powerpc/kernel/ptrace.c
+> @@ -32,6 +32,7 @@
+>  #include <trace/syscall.h>
+>  #include <linux/hw_breakpoint.h>
+>  #include <linux/perf_event.h>
+> +#include <linux/context_tracking.h>
+>
+>  #include <asm/uaccess.h>
+>  #include <asm/page.h>
+> @@ -1745,6 +1746,8 @@ long do_syscall_trace_enter(struct pt_regs *regs)
+>  {
+>         long ret = 0;
+>
+> +       user_exit();
+> +
+>         secure_computing_strict(regs->gpr[0]);
+>
+>         if (test_thread_flag(TIF_SYSCALL_TRACE) &&
+> @@ -1789,4 +1792,6 @@ void do_syscall_trace_leave(struct pt_regs *regs)
+>         step = test_thread_flag(TIF_SINGLESTEP);
+>         if (step || test_thread_flag(TIF_SYSCALL_TRACE))
+>                 tracehook_report_syscall_exit(regs, step);
+> +
+> +       user_enter();
+>  }
+> --
+> 1.7.9.5
+>
