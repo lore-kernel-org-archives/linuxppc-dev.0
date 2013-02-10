@@ -1,25 +1,23 @@
-Return-Path: <fweisbec@gmail.com>
-Received: from mail-lb0-f173.google.com (mail-lb0-f173.google.com
- [209.85.217.173])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B09652C0095
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Feb 2013 21:32:55 +1100 (EST)
-Received: by mail-lb0-f173.google.com with SMTP id gf7so3939715lbb.4
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Feb 2013 02:32:50 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <1359714465-6297-2-git-send-email-zhong@linux.vnet.ibm.com>
-References: <1359714465-6297-1-git-send-email-zhong@linux.vnet.ibm.com>
- <1359714465-6297-2-git-send-email-zhong@linux.vnet.ibm.com>
-Date: Sun, 10 Feb 2013 11:32:49 +0100
-Message-ID: <CAFTL4hzpwLO--SRUzpJz=zKbupSEYirNcO-KM=ShOMwjoJ0LvA@mail.gmail.com>
-Subject: Re: [RFC PATCH 1/5] powerpc: Syscall hooks for context tracking
- subsystem
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Li Zhong <zhong@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: paulmck@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, paulus@samba.org
+Return-Path: <phileas-fogg@mail.ru>
+Received: from fallback3.mail.ru (fallback3.mail.ru [94.100.176.58])
+ by ozlabs.org (Postfix) with ESMTP id 3DD812C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Feb 2013 22:45:34 +1100 (EST)
+Received: from f380.i.mail.ru (f380.i.mail.ru [185.5.136.51])
+ by fallback3.mail.ru (mPOP.Fallback_MX) with ESMTP id B3785D3FAB1E
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Feb 2013 15:45:29 +0400 (MSK)
+From: =?UTF-8?B?UGhpbGVhcyBGb2dn?= <phileas-fogg@mail.ru>
+To: =?UTF-8?B?QmVuamFtaW4gSGVycmVuc2NobWlkdA==?= <benh@kernel.crashing.org>
+Subject: =?UTF-8?B?UmVbMl06IFBTMyBwbGF0Zm9ybSBpcyBicm9rZW4gb24gTGludXggMy43LjA=?=
+Mime-Version: 1.0
+Date: Sun, 10 Feb 2013 15:45:19 +0400
+Message-ID: <1360496719.267074236@f380.i.mail.ru>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1355954017.5397.53.camel@pasglop>
+References: <1355488506.55692113@f147.mail.ru>
+ <1355954017.5397.53.camel@pasglop>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ =?UTF-8?B?QW5lZXNoIEt1bWFyIEsuVg==?= <aneesh.kumar@linux.vnet.ibm.com>
+Reply-To: =?UTF-8?B?UGhpbGVhcyBGb2dn?= <phileas-fogg@mail.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,89 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2013/2/1 Li Zhong <zhong@linux.vnet.ibm.com>:
-> This is the syscall slow path hooks for context tracking subsystem,
-> corresponding to
-> [PATCH] x86: Syscall hooks for userspace RCU extended QS
->   commit bf5a3c13b939813d28ce26c01425054c740d6731
->
-> TIF_MEMDIE is moved to the second 16-bits (with value 17), as it seems there
-> is no asm code using it. TIF_NOHZ is added to _TIF_SYCALL_T_OR_A, so it is
-> better for it to be in the same 16 bits with others in the group, so in the
-> asm code, andi. with this group could work.
->
-> Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
-
-Looks good. Thanks.
-
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-
-> ---
->  arch/powerpc/include/asm/thread_info.h |    7 +++++--
->  arch/powerpc/kernel/ptrace.c           |    5 +++++
->  2 files changed, 10 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
-> index 406b7b9..414a261 100644
-> --- a/arch/powerpc/include/asm/thread_info.h
-> +++ b/arch/powerpc/include/asm/thread_info.h
-> @@ -97,7 +97,7 @@ static inline struct thread_info *current_thread_info(void)
->  #define TIF_PERFMON_CTXSW      6       /* perfmon needs ctxsw calls */
->  #define TIF_SYSCALL_AUDIT      7       /* syscall auditing active */
->  #define TIF_SINGLESTEP         8       /* singlestepping active */
-> -#define TIF_MEMDIE             9       /* is terminating due to OOM killer */
-> +#define TIF_NOHZ               9       /* in adaptive nohz mode */
->  #define TIF_SECCOMP            10      /* secure computing */
->  #define TIF_RESTOREALL         11      /* Restore all regs (implies NOERROR) */
->  #define TIF_NOERROR            12      /* Force successful syscall return */
-> @@ -106,6 +106,7 @@ static inline struct thread_info *current_thread_info(void)
->  #define TIF_SYSCALL_TRACEPOINT 15      /* syscall tracepoint instrumentation */
->  #define TIF_EMULATE_STACK_STORE        16      /* Is an instruction emulation
->                                                 for stack store? */
-> +#define TIF_MEMDIE             17      /* is terminating due to OOM killer */
->
->  /* as above, but as bit values */
->  #define _TIF_SYSCALL_TRACE     (1<<TIF_SYSCALL_TRACE)
-> @@ -124,8 +125,10 @@ static inline struct thread_info *current_thread_info(void)
->  #define _TIF_UPROBE            (1<<TIF_UPROBE)
->  #define _TIF_SYSCALL_TRACEPOINT        (1<<TIF_SYSCALL_TRACEPOINT)
->  #define _TIF_EMULATE_STACK_STORE       (1<<TIF_EMULATE_STACK_STORE)
-> +#define _TIF_NOHZ              (1<<TIF_NOHZ)
->  #define _TIF_SYSCALL_T_OR_A    (_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | \
-> -                                _TIF_SECCOMP | _TIF_SYSCALL_TRACEPOINT)
-> +                                _TIF_SECCOMP | _TIF_SYSCALL_TRACEPOINT | \
-> +                                _TIF_NOHZ)
->
->  #define _TIF_USER_WORK_MASK    (_TIF_SIGPENDING | _TIF_NEED_RESCHED | \
->                                  _TIF_NOTIFY_RESUME | _TIF_UPROBE)
-> diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-> index c497000..62238dd 100644
-> --- a/arch/powerpc/kernel/ptrace.c
-> +++ b/arch/powerpc/kernel/ptrace.c
-> @@ -32,6 +32,7 @@
->  #include <trace/syscall.h>
->  #include <linux/hw_breakpoint.h>
->  #include <linux/perf_event.h>
-> +#include <linux/context_tracking.h>
->
->  #include <asm/uaccess.h>
->  #include <asm/page.h>
-> @@ -1745,6 +1746,8 @@ long do_syscall_trace_enter(struct pt_regs *regs)
->  {
->         long ret = 0;
->
-> +       user_exit();
-> +
->         secure_computing_strict(regs->gpr[0]);
->
->         if (test_thread_flag(TIF_SYSCALL_TRACE) &&
-> @@ -1789,4 +1792,6 @@ void do_syscall_trace_leave(struct pt_regs *regs)
->         step = test_thread_flag(TIF_SINGLESTEP);
->         if (step || test_thread_flag(TIF_SYSCALL_TRACE))
->                 tracehook_report_syscall_exit(regs, step);
-> +
-> +       user_enter();
->  }
-> --
-> 1.7.9.5
->
+Cj5PbiBGcmksIDIwMTItMTItMTQgYXQgMTY6MzUgKzA0MDAsIFBoaWxlYXMgRm9nZyB3cm90ZToK
+Pj4gSGksCj4+IAo+PiBJIHdhbnRlZCB0byBicmluZyB0byB5b3VyIGF0dGVudGlvbiB0aGUgZmFj
+dCB0aGF0IHRoZSBQUzMgcGxhdGZvcm0gaXMgYnJva2VuIG9uIExpbnV4IDMuNy4wLgo+PiAKPj4g
+aSdtIG5vdCBhYmxlIHRvIGJvb3QgTGludXggMy43LjAgb24gbXkgUFMzIHNsaW0uIExpbnV4IDMu
+Ni4xMCBib290cyBqdXN0IGZpbmUgYnV0IG5vdCAzLjcuMAo+PiBXaGVuIGkgdHJ5IHRvIGJvb3Qg
+TGludXggMy43LjAgdGhlbiBteSBQUzMgIHNodXRzIGRvd24uCj4+IAo+PiBTbyBpIGNsb25lZCB0
+aGUgTGludXggcG93ZXJwYyBHSVQgcmVwb3NpdG9yeSBhbmQgdHJpZWQgdG8gZmluZCBvdXQgd2hp
+Y2ggY29tbWl0cyBicm9rZSB0aGUgUFMzIHBsYXRmb3JtLgo+PiBBZnRlciBzb21lIHRpbWUgSSB0
+cmFja2VkIGl0IGRvd24gdG8gMiBjb21taXRzOgo+Cj5BbmVlc2gsIGRvIHlvdSBoYXZlIGFueSBp
+ZGVhIHdoYXQgbWlnaHQgYmUgZ29pbmcgb24gdGhlcmUgPyBDYW4geW91IGxvb2sKPmF0IHRoZSBQ
+UzMgaGFzaCBjb2RlID8gSXQncyBhIGJpdCBkaWZmZXJlbnQgZnJvbSB0aGUgcmVzdCwgeW91IG1p
+Z2h0Cj5oYXZlIG1pc3NlZCBhbiB1cGRhdGUgb3IgdHdvLi4uCj4KPk1pY2hhZWwsIHNhbWUgZGVh
+bCB3aXRoIFBBQ0EuLi4KPgo+Q2hlZXJzLAo+QmVuLgoKCkkgZGVidWdnZWQgdGhlIGlzc3VlIHdp
+dGggdGhlIHBhbmljIG9uIFBBQ0EgYWNjZXNzIG9uIFBTMyBhcmNoIGFuZCBmb3VuZCBvdXQgdGhh
+dCBpdCBwYW5pY3MgaW4KCmFyY2gvcG93ZXJwYy9rZXJuZWwvc2V0dXBfNjQuYyAtPiBlYXJseV9z
+ZXR1cCAtPiB1ZGJnX2Vhcmx5X2luaXQgLT4gcmVnaXN0ZXJfZWFybHlfdWRiZ19jb25zb2xlIC0+
+IGNvbnNvbGVfbG9jayAtPiBkb3duIC0+IHJhd19zcGluX3VubG9ja19pcnFyZXN0b3JlCgpJdCBw
+YW5pY3Mgb25seSBpZiBpIGVuYWJsZSBsb2NrIGRlYnVnZ2luZyBpbiBrZXJuZWwuCgpJIHN1Z2dl
+c3QgdGhlIGZvbGxvd2luZyBwYXRjaCB0byBmaXggdGhlIGlzc3VlOgoKLS0tIGFyY2gvcG93ZXJw
+Yy9rZXJuZWwvc2V0dXBfNjQuYy5vbGQJMjAxMy0wMi0xMCAxMzozOTo0NS4xNDcxMzE1NDcgKzAx
+MDAKKysrIGFyY2gvcG93ZXJwYy9rZXJuZWwvc2V0dXBfNjQuYwkyMDEzLTAyLTEwIDEzOjQwOjUx
+LjY5NzEzNTQxOSArMDEwMApAQCAtMTg2LDYgKzE4Niw5IEBACiAJaW5pdGlhbGlzZV9wYWNhKCZi
+b290X3BhY2EsIDApOwogCXNldHVwX3BhY2EoJmJvb3RfcGFjYSk7CiAKKwkvKiBBbGxvdyBwZXJj
+cHUgYWNjZXNzZXMgdG8gIndvcmsiIHVudGlsIHdlIHNldHVwIHBlcmNwdSBkYXRhICovCisJZ2V0
+X3BhY2EoKS0+ZGF0YV9vZmZzZXQgPSAwOworCiAJLyogSW5pdGlhbGl6ZSBsb2NrZGVwIGVhcmx5
+IG9yIGVsc2Ugc3BpbmxvY2tzIHdpbGwgYmxvdyAqLwogCWxvY2tkZXBfaW5pdCgpOwogCkBAIC0y
+MDgsOCArMjExLDYgQEAKIAogCS8qIEZpeCB1cCBwYWNhIGZpZWxkcyByZXF1aXJlZCBmb3IgdGhl
+IGJvb3QgY3B1ICovCiAJZ2V0X3BhY2EoKS0+Y3B1X3N0YXJ0ID0gMTsKLQkvKiBBbGxvdyBwZXJj
+cHUgYWNjZXNzZXMgdG8gIndvcmsiIHVudGlsIHdlIHNldHVwIHBlcmNwdSBkYXRhICovCi0JZ2V0
+X3BhY2EoKS0+ZGF0YV9vZmZzZXQgPSAwOwogCiAJLyogUHJvYmUgdGhlIG1hY2hpbmUgdHlwZSAq
+LwogCXByb2JlX21hY2hpbmUoKTsKCgoKCg==
