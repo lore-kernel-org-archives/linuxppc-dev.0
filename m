@@ -1,16 +1,23 @@
-Return-Path: <stefan.roese@gmail.com>
-Received: from mo6-p05-ob.rzone.de (mo6-p05-ob.rzone.de
- [IPv6:2a01:238:20a:202:5305::1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 092FF2C0085
- for <linuxppc-dev@ozlabs.org>; Sat,  9 Feb 2013 20:55:21 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: netdev@vger.kernel.org
-Subject: [PATCH RESEND] net: fec_mpc52xx: Read MAC address from device-tree
-Date: Sat,  9 Feb 2013 10:49:12 +0100
-Message-Id: <1360403352-24237-1-git-send-email-sr@denx.de>
-Cc: linuxppc-dev@ozlabs.org, Anatolij Gustschin <agust@denx.de>
+Return-Path: <phileas-fogg@mail.ru>
+Received: from fallback7.mail.ru (fallback7.mail.ru [94.100.176.135])
+ by ozlabs.org (Postfix) with ESMTP id 803682C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Feb 2013 19:59:54 +1100 (EST)
+Received: from f85.mail.ru (f85.mail.ru [217.69.129.110])
+ by fallback7.mail.ru (mPOP.Fallback_MX) with ESMTP id 6B44DBF53F8A
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Feb 2013 12:59:50 +0400 (MSK)
+From: =?UTF-8?B?UGhpbGVhcyBGb2dn?= <phileas-fogg@mail.ru>
+To: =?UTF-8?B?R2VvZmYgTGV2YW5k?= <geoff@infradead.org>
+Subject: =?UTF-8?B?UmVbMl06IFBTMyBwbGF0Zm9ybSBpcyBicm9rZW4gb24gTGludXggMy43LjA=?=
+Mime-Version: 1.0
+Date: Sun, 10 Feb 2013 12:59:37 +0400
+Message-ID: <1360486777.923599245@f85.mail.ru>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1358206641.4489.8.camel@smoke>
+References: <1355488506.55692113@f147.mail.ru>
+ <1357956742.20936.11.camel@smoke> <1358206641.4489.8.camel@smoke>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ =?UTF-8?B?QW5lZXNoIEt1bWFyIEsuVg==?= <aneesh.kumar@linux.vnet.ibm.com>
+Reply-To: =?UTF-8?B?UGhpbGVhcyBGb2dn?= <phileas-fogg@mail.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,84 +27,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Until now, the MPC5200 FEC ethernet driver relied upon the bootloader
-(U-Boot) to write the MAC address into the ethernet controller
-registers. The Linux driver should not rely on such a thing. So
-lets read the MAC address from the DT as it should be done here.
-
-This fixes a problem with a MPC5200 board that uses the SPL U-Boot
-version without FEC initialization before Linux booting for
-boot speedup.
-
-Additionally a status line will now be printed upon successful
-driver probing, also displaying this MAC address.
-
-Signed-off-by: Stefan Roese <sr@denx.de>
-Cc: Anatolij Gustschin <agust@denx.de>
----
- drivers/net/ethernet/freescale/fec_mpc52xx.c | 30 +++++++++++++++++-----------
- 1 file changed, 18 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/net/ethernet/freescale/fec_mpc52xx.c b/drivers/net/ethernet/freescale/fec_mpc52xx.c
-index 2933d08..f4c3897 100644
---- a/drivers/net/ethernet/freescale/fec_mpc52xx.c
-+++ b/drivers/net/ethernet/freescale/fec_mpc52xx.c
-@@ -110,15 +110,6 @@ static void mpc52xx_fec_set_paddr(struct net_device *dev, u8 *mac)
- 	out_be32(&fec->paddr2, (*(u16 *)(&mac[4]) << 16) | FEC_PADDR2_TYPE);
- }
- 
--static void mpc52xx_fec_get_paddr(struct net_device *dev, u8 *mac)
--{
--	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
--	struct mpc52xx_fec __iomem *fec = priv->fec;
--
--	*(u32 *)(&mac[0]) = in_be32(&fec->paddr1);
--	*(u16 *)(&mac[4]) = in_be32(&fec->paddr2) >> 16;
--}
--
- static int mpc52xx_fec_set_mac_address(struct net_device *dev, void *addr)
- {
- 	struct sockaddr *sock = addr;
-@@ -928,10 +919,22 @@ static int __devinit mpc52xx_fec_probe(struct platform_device *op)
- 	priv->t_irq = bcom_get_task_irq(priv->tx_dmatsk);
- 
- 	/* MAC address init */
--	if (!is_zero_ether_addr(mpc52xx_fec_mac_addr))
-+	if (!is_zero_ether_addr(mpc52xx_fec_mac_addr)) {
- 		memcpy(ndev->dev_addr, mpc52xx_fec_mac_addr, 6);
--	else
--		mpc52xx_fec_get_paddr(ndev, ndev->dev_addr);
-+	} else {
-+		struct device_node *np = op->dev.of_node;
-+		const void *p;
-+
-+		/* Read MAC-address */
-+		p = of_get_property(np, "local-mac-address", NULL);
-+		if (p == NULL) {
-+			dev_err(&ndev->dev, "%s: Can't find local-mac-address property\n",
-+				np->full_name);
-+			rv = -ENXIO;
-+			goto err_irq_dispose;
-+		}
-+		memcpy(ndev->dev_addr, p, 6);
-+	}
- 
- 	priv->msg_enable = netif_msg_init(debug, MPC52xx_MESSAGES_DEFAULT);
- 
-@@ -970,11 +973,14 @@ static int __devinit mpc52xx_fec_probe(struct platform_device *op)
- 
- 	/* We're done ! */
- 	dev_set_drvdata(&op->dev, ndev);
-+	printk(KERN_INFO "%s: %s MAC %pM\n",
-+	       ndev->name, op->dev.of_node->full_name, ndev->dev_addr);
- 
- 	return 0;
- 
- err_node:
- 	of_node_put(priv->phy_node);
-+err_irq_dispose:
- 	irq_dispose_mapping(ndev->irq);
- err_rx_tx_dmatsk:
- 	if (priv->rx_dmatsk)
--- 
-1.8.1.2
+IEhpLAoKaSBmb3VuZCB3aGVyZSB0aGUgcHJvYmxlbSBsaWVzLgpJIGFsc28gcHJpbnRlZCBzb21l
+IHZhbHVlcyBpbiBwczNfaHB0ZV9pbnNlcnQgd2l0aCBhbmQgd2l0aG91dCA2NFRCIHN1cHBvcnQs
+IGkgdXNlZCBPcGVuV1JUIHdpdGggTGludXggMy43LjYgZm9yIHRlc3RpbmcuCgpTb21lIHZhbHVl
+cyB3aXRob3V0IDY0VEIgc3VwcG9ydDoKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLQoKW8KgwqDCoCAwLjA2MDQ4N10gUlBDOiBSZWdpc3RlcmVkIG5hbWVk
+IFVOSVggc29ja2V0IHRyYW5zcG9ydCBtb2R1bGUuClvCoMKgwqAgMC4wNjA1MTFdIFJQQzogUmVn
+aXN0ZXJlZCB1ZHAgdHJhbnNwb3J0IG1vZHVsZS4KW8KgwqDCoCAwLjA2MDY3Ml0gUlBDOiBSZWdp
+c3RlcmVkIHRjcCB0cmFuc3BvcnQgbW9kdWxlLgpbwqDCoMKgIDAuMDYwODczXSBSUEM6IFJlZ2lz
+dGVyZWQgdGNwIE5GU3Y0LjEgYmFja2NoYW5uZWwgdHJhbnNwb3J0IG1vZHVsZS4KW8KgwqDCoCAw
+LjA2MTA4MF0gaW5pdGNhbGwgLmluaXRfc3VucnBjKzB4MC8weGJjIHJldHVybmVkIDAgYWZ0ZXIg
+Nzg0IHVzZWNzClvCoMKgwqAgMC4wNjEyODBdIGNhbGxpbmfCoCAucG9wdWxhdGVfcm9vdGZzKzB4
+MC8weDEyMCBAIDEKW8KgwqDCoCAwLjA2MTY4M10gcHMzX2hwdGVfaW5zZXJ0OnJlc3VsdD0wIHZw
+bj1mMDliODlhZjUwMTAxIHBhPWQ0ZTAwMDAgaXg9ZGZhMCB2PWYwOWI4OWFmNTAwMSByPTZjMDA1
+ZDRlMDE5NCBwc2l6ZT0wIHNzaXplPTAgbHBhcj02YzAwNWQ0ZTAwMDAKW8KgwqDCoCAwLjA2MTcz
+M10gcHMzX2hwdGVfaW5zZXJ0OnJlc3VsdD0wIHZwbj1mMDliODlhZjUwMTAyIHBhPWQ0ZTEwMDAg
+aXg9ZGZiOCB2PWYwOWI4OWFmNTAwMSByPTZjMDA1ZDRlMTE5NCBwc2l6ZT0wIHNzaXplPTAgbHBh
+cj02YzAwNWQ0ZTEwMDAKW8KgwqDCoCAwLjA2MTg5NV0gcHMzX2hwdGVfaW5zZXJ0OnJlc3VsdD0w
+IHZwbj1mMDliODlhZjUwMTAzIHBhPWQ0ZTIwMDAgaXg9ZGZiMCB2PWYwOWI4OWFmNTAwMSByPTZj
+MDA1ZDRlMjE5NCBwc2l6ZT0wIHNzaXplPTAgbHBhcj02YzAwNWQ0ZTIwMDAKCgpTb21lIHZhbHVl
+cyB3aXRoIDY0VEIgc3VwcG9ydDoKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLQoKW8KgwqDCoCAwLjA3NjQ3N10gY2FsbGluZ8KgIC5pbml0X3N1bnJwYysw
+eDAvMHhiYyBAIDEKW8KgwqDCoCAwLjA3Njk5Ml0gUlBDOiBSZWdpc3RlcmVkIG5hbWVkIFVOSVgg
+c29ja2V0IHRyYW5zcG9ydCBtb2R1bGUuClvCoMKgwqAgMC4wNzcwMTddIFJQQzogUmVnaXN0ZXJl
+ZCB1ZHAgdHJhbnNwb3J0IG1vZHVsZS4KW8KgwqDCoCAwLjA3NzA3Nl0gUlBDOiBSZWdpc3RlcmVk
+IHRjcCB0cmFuc3BvcnQgbW9kdWxlLgpbwqDCoMKgIDAuMDc3Mjc3XSBSUEM6IFJlZ2lzdGVyZWQg
+dGNwIE5GU3Y0LjEgYmFja2NoYW5uZWwgdHJhbnNwb3J0IG1vZHVsZS4KW8KgwqDCoCAwLjA3NzQ4
+NF0gaW5pdGNhbGwgLmluaXRfc3VucnBjKzB4MC8weGJjIHJldHVybmVkIDAgYWZ0ZXIgNzg0IHVz
+ZWNzClvCoMKgwqAgMC4wNzc2ODRdIGNhbGxpbmfCoCAucG9wdWxhdGVfcm9vdGZzKzB4MC8weDEy
+MCBAIDEKW8KgwqDCoCAwLjA3ODEyNl0gcHMzX2hwdGVfaW5zZXJ0OnJlc3VsdD0tMTcgdnBuPTI1
+MDA4Njg0ZDgwMTAxIHBhPWQ1NjcwMDAgaXg9MmVjOCB2PTI1MDA4Njg0ZDgwMDEgcj02YzAwNWQ1
+NjcxOTQgcHNpemU9MCBzc2l6ZT0wIGxwYXI9NmMwMDVkNTY3MDAwClvCoMKgwqAgMC4wNzgxNjRd
+IHBzM19ocHRlX2luc2VydDpyZXN1bHQ9LTE3IHZwbj0yNTAwODY4NGQ4MDEwMSBwYT1kNTY3MDAw
+IGl4PTJlYzggdj0yNTAwODY4NGQ4MDAxIHI9NmMwMDVkNTY3MTk0IHBzaXplPTAgc3NpemU9MCBs
+cGFyPTZjMDA1ZDU2NzAwMApbwqDCoMKgIDAuMDc4Mjg3XSAtLS0tLS0tLS0tLS1bIGN1dCBoZXJl
+IF0tLS0tLS0tLS0tLS0KW8KgwqDCoCAwLjA3ODQ4Ml0gS2VybmVsIEJVRyBhdCBjMDAwMDAwMDAw
+MDJjYjNjIFt2ZXJib3NlIGRlYnVnIGluZm8gdW5hdmFpbGFibGVdClvCoMKgwqAgMC4wNzg2ODZd
+IE9vcHM6IEV4Y2VwdGlvbiBpbiBrZXJuZWwgbW9kZSwgc2lnOiA1IFsjMV0KW8KgwqDCoCAwLjA3
+ODg4M10gU01QIE5SX0NQVVM9MiBQUzMKW8KgwqDCoCAwLjA3OTA4NF0gTW9kdWxlcyBsaW5rZWQg
+aW46ClvCoMKgwqAgMC4wNzkyODddIE5JUDogYzAwMDAwMDAwMDAyY2IzYyBMUjogYzAwMDAwMDAw
+MDAyY2IzOCBDVFI6IDAwMDAwMDAwMDAyZmZjMzgKW8KgwqDCoCAwLjA3OTQ4OV0gUkVHUzogYzAw
+MDAwMDAwZDA0ZjBlMCBUUkFQOiAwNzAwwqDCoCBOb3QgdGFpbnRlZMKgICgzLjcuNikKW8KgwqDC
+oCAwLjA3OTY4N10gTVNSOiA4MDAwMDAwMDAwMDIwMDMyIDxTRixJUixEUixSST7CoCBDUjogMjIw
+MDAwMjLCoCBYRVI6IDAwMDAwMDAwClvCoMKgwqAgMC4wNzk4ODhdIFNPRlRFOiAwClvCoMKgwqAg
+MC4wODAwOTBdIFRBU0sgPSBjMDAwMDAwMDBkMDQ5MDYwWzFdICdzd2FwcGVyLzEnIFRIUkVBRDog
+YzAwMDAwMDAwZDA0YzAwMCBDUFU6IDEKR1BSMDA6IGMwMDAwMDAwMDAwMmNiMzggYzAwMDAwMDAw
+ZDA0ZjM2MCBjMDAwMDAwMDAxMmVjOGQwIDAwMDAwMDAwMDAwMDAwODEgCkdQUjA0OiAwMDAwMDAw
+MDAwMDAwMDAwIDAwMDAwMDAwMDAwMDAwMDAgMDAwMDAwMDAwMDAwMDAwMCAwMDAwMDAwMDAwMDAw
+MDAwIApHUFIwODogMDAwMDAwMDAwMDAwMDAwMCBjMDAwMDAwMDAxMjRjZTEwIDAwMDAwMDAwMDAw
+MDAwMDAgYzAwMDAwMDAwMDAyYmNmMCAKR1BSMTI6IDAwMDAwMDAwMjIwMDAwMjIgYzAwMDAwMDAw
+N2ZmZTI4MCBjMDAwMDAwMDAwMDA4Yzk0IGMwMDAwMDAwMDA1Y2JhMDAgCgoKCkFuZCBub3cgdGFr
+ZSBhIGxvb2sgYXQgJ3YnIHZhbHVlcyBpbiBib3RoIGNhc2VzLgoKV2l0aG91dCA2NFRCIHN1cHBv
+cnQ6ICAgdj1mMDliODlhZjUwMDEKV2l0aCA2NFRCIHN1cHBvcnQ6IHY9MjUwMDg2ODRkODAwMQoK
+TnVtYmVyIG9mIGxlYWRpbmcgemVyb3MgaW4gZjA5Yjg5YWY1MDAxIGlzIDE2LgpOdW1iZXIgb2Yg
+bGVhZGluZyB6ZXJvcyBpbiAyNTAwODY4NGQ4MDAxIGlzIDE0LgoKQW5kIHRoYXQncyB3aHkgbHYx
+X2luc2VydF9odGFiX2VudHJ5IGZhaWxzIHdpdGggLTE3IHdoaWNoIG1lYW5zIExWMV9JTExFR0FM
+X1BBUkFNRVRFUl9WQUxVRSBiZWNhdXNlCnRoZSBIeXBlcnZpc29yIG9mIFBTMyBjaGVja3MgJ0FW
+UE4nIHZhbHVlcyBmb3IgbnVtYmVyIG9mIGxlYWRpbmcgemVyb3MgYW5kIGFsbG93cyBhdCBsZWFz
+dCAxNSBiaXRzIHdoaWNoIGluIGNhc2UKb2YgJ3YnIHZhbHVlIDI1MDA4Njg0ZDgwMDEgaXMgdG9v
+IHNtYWxsIG9mIGNvdXJzZS4KCk5vdCBzdXJlIGhvdyB0byBmaXggaXQgaW4gY3VycmVudCBMaW51
+eCBrZXJuZWwuIFlvdSBndXlzIGtub3cgaXQgYmV0dGVyIHRoYW4gbWUuCgpSZWdhcmRzCgoKCgrQ
+n9C+0L3QtdC00LXQu9GM0L3QuNC6LCAxNCDRj9C90LLQsNGA0Y8gMjAxMywgMTU6MzcgLTA4OjAw
+INC+0YIgR2VvZmYgTGV2YW5kIDxnZW9mZkBpbmZyYWRlYWQub3JnPjoKPkhpLAo+Cj5PbiBGcmks
+IDIwMTMtMDEtMTEgYXQgMTg6MTIgLTA4MDAsIEdlb2ZmIExldmFuZCB3cm90ZToKPj4gSSBjaGVj
+a2VkIHRoZXNlLCBhbmQgTWljaGFlbCdzIDQwNzgyMWEzNGZjZTg5YjRmMGIwMzFkYmFiNWNlYzdk
+MDU5ZjQ2YmMKPj4gZG9lcyBpbmRlZWQgY2F1c2UgdGhlIExWMSBoeXBlcnZpc29yIHRvIHBhbmlj
+IGVhcmx5LCBhbmQgaWYgdGhhdCBpcwo+PiByZXZlcnRlZCwgQW5lZXNoJ3MgMDQ4ZWUwOTkzZWM4
+MzYwYWJiMGI1MWJkZjhmODcyMWU5ZWQ2MmVjNCBoaXRzIGEgQlVHLgo+Cj5KdXN0IHRvIGdpdmUg
+YW4gdXBkYXRlLCBJIGRpZCBhIGxpdHRsZSBtb3JlIHdvcmsgb24gaXQgYW5kIGZvdW5kIHRoYXQK
+PnRoZSBjYWxsIHRvIGx2MV9pbnNlcnRfaHRhYl9lbnRyeSgpIGluc2lkZSBwczNfaHB0ZV9pbnNl
+cnQoKSBpcwo+ZmFpbGluZy4KPgo+wqDCoMKgIGh0dHA6Ly9naXQua2VybmVsLm9yZy8/cD1saW51
+eC9rZXJuZWwvZ2l0L2dlb2ZmL3BzMy1saW51eC5naXQ7YT1ibG9iO2Y9YXJjaC9wb3dlcnBjL3Bs
+YXRmb3Jtcy9wczMvaHRhYi5jO2hiPUhFQUQjbDcwCj4KPlRoZSB2YWx1ZXMgb2YgdGhlIHZhcmlh
+YmxlcyBwcmludGVkIGFsbCBsb29rIHN0cmFuZ2UgY29tcGFyZWQgd2l0aAo+Y29tbWl0IDA0OGVl
+MDk5MyByZXZlcnRlZC4gIEknbGwgdHJ5IGRvIHNvbWUgbW9yZSB3b3JrIG9uIGl0IHRoaXMKPndl
+ZWsuCj4KPi1HZW9mZgo+Cj4KPgo+Cj4KPl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fCj5MaW51eHBwYy1kZXYgbWFpbGluZyBsaXN0Cj5MaW51eHBwYy1kZXZA
+bGlzdHMub3psYWJzLm9yZwo+aHR0cHM6Ly9saXN0cy5vemxhYnMub3JnL2xpc3RpbmZvL2xpbnV4
+cHBjLWRldgoK
