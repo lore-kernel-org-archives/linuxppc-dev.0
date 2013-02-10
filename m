@@ -1,38 +1,36 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp08.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1BE9E2C007B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2013 02:46:29 +1100 (EST)
+ (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 98D912C00DC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2013 03:11:46 +1100 (EST)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 11 Feb 2013 01:44:46 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id EBF852CE8051
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2013 02:46:23 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1AFY1DM59441182
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2013 02:34:06 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1AFkHaw021050
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2013 02:46:18 +1100
+ Sun, 10 Feb 2013 21:39:15 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id CA755E004C
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Feb 2013 21:42:25 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r1AGBaCx12320986
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Feb 2013 21:41:36 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r1AGBb3G020748
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2013 03:11:37 +1100
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Phileas Fogg <phileas-fogg@mail.ru>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+To: Phileas Fogg <phileas-fogg@mail.ru>, Geoff Levand <geoff@infradead.org>,
  linuxppc-dev@lists.ozlabs.org
 Subject: Re: Re[3]: PS3 platform is broken on Linux 3.7.0
-In-Reply-To: <1360498641.346858866@f116.mail.ru>
-References: <1355488506.55692113@f147.mail.ru>
- <1355954017.5397.53.camel@pasglop> <1360496719.267074236@f380.i.mail.ru>
- <1360498641.346858866@f116.mail.ru>
-Date: Sun, 10 Feb 2013 21:16:15 +0530
-Message-ID: <87mwvc41fc.fsf@linux.vnet.ibm.com>
+In-Reply-To: <1360487778.293641922@f350.mail.ru>
+References: <1355488506.55692113@f147.mail.ru> <1358206641.4489.8.camel@smoke>
+ <1360486777.923599245@f85.mail.ru> <1360487778.293641922@f350.mail.ru>
+Date: Sun, 10 Feb 2013 21:41:37 +0530
+Message-ID: <87k3qg4092.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,26 +42,42 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Phileas Fogg <phileas-fogg@mail.ru> writes:
 
->  Please ignore the previous patch to fix the PACA issue on PS3 arch.
-> This is the correct one:
+>  And another note.
+> I took a look at the MMU chapter in the Cell Architecture handbook and in=
+deed the first 15 bits in VA are treated as 0 by the hardware.
 >
-> --- a/arch/powerpc/kernel/setup_64.c	2013-02-10 13:56:12.803855673 +0100
-> +++ b/arch/powerpc/kernel/setup_64.c	2013-02-10 14:07:22.870561322 +0100
-> @@ -186,6 +186,9 @@
->  	initialise_paca(&boot_paca, 0);
->  	setup_paca(&boot_paca);
->  
-> +	/* Allow percpu accesses to "work" until we setup percpu data */
-> +	boot_paca.data_offset = 0;
-> +
->  	/* Initialize lockdep early or else spinlocks will blow */
->  	lockdep_init();
->  
+> Quote:
+>
+> 1. High-order bits above 65 bits in the 80-bit virtual address (VA[0:14])=
+ are not implemented. The hardware always
+> =C2=A0=C2=A0 treats these bits as `0'. Software must not set these bits t=
+o any other value than `0' or the results are undefined in
+> =C2=A0=C2=A0 the PPE.
+>
 >
 
-commit 466921c5a4669f4315528a25f9afd66601ce2c04 is done to fix the
-lockdep related issue on ppc64. So this may need little bit more
-explanation. So if we explicitly use boot_paca, do we still need the
-changes in the above commit ?
+True, we missed the below part of ISA doc:
+
+ISA doc says
+
+"On implementations that support a virtual address size
+of only n bits, n < 78, bits 0:77-n of the AVA field must be
+zeros. "
+
+The Cell document I found at=20
+
+https://www-01.ibm.com/chips/techlib/techlib.nsf/techdocs/7A77CCDF14FE70D58=
+52575CA0074E8ED/$file/CellBE_Handbook_v1.12_3Apr09_pub.pdf
+
+gives=20
+
+Virtual Address (VA) Size -> 65 bits
+
+So as per ISA, bits 0:12 should be zero, which should make 0:14 of PTE
+fields zero for Cell.
+
+I will try to do a patch.=20
+
+Thanks for debugging this.
 
 -aneesh
