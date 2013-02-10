@@ -1,52 +1,22 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Return-Path: <phileas-fogg@mail.ru>
+Received: from f337.mail.ru (f337.mail.ru [217.69.140.233])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e36.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 24D862C02EB
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2013 09:14:10 +1100 (EST)
-Received: from /spool/local
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Sun, 10 Feb 2013 15:14:07 -0700
-Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
- [9.17.195.107])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 2D29C3E40040
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Feb 2013 15:13:56 -0700 (MST)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1AME3hi101426
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Feb 2013 15:14:03 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1AME0K2024334
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Feb 2013 15:14:03 -0700
-Date: Sun, 10 Feb 2013 14:13:57 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v5 04/45] percpu_rwlock: Implement the core design of
- Per-CPU Reader-Writer Locks
-Message-ID: <20130210221357.GN2666@linux.vnet.ibm.com>
-References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
- <20130122073347.13822.85876.stgit@srivatsabhat.in.ibm.com>
- <20130208231017.GK2666@linux.vnet.ibm.com>
- <20130210180607.GA1375@redhat.com>
- <5117F403.1050300@linux.vnet.ibm.com>
- <20130210195042.GA6236@redhat.com>
- <5117FE74.4020000@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5117FE74.4020000@linux.vnet.ibm.com>
-Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
- linux-kernel@vger.kernel.org, mingo@kernel.org, linux-arch@vger.kernel.org,
- linux@arm.linux.org.uk, xiaoguangrong@linux.vnet.ibm.com,
- wangyun@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
- linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org,
- rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
- linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org,
- Oleg Nesterov <oleg@redhat.com>, sbw@mit.edu, tj@kernel.org,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
-Reply-To: paulmck@linux.vnet.ibm.com
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 54AD42C0095
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2013 04:51:45 +1100 (EST)
+From: =?UTF-8?B?UGhpbGVhcyBGb2dn?= <phileas-fogg@mail.ru>
+To: =?UTF-8?B?QW5lZXNoIEt1bWFyIEsuVg==?= <aneesh.kumar@linux.vnet.ibm.com>
+Subject: =?UTF-8?B?UmVbNV06IFBTMyBwbGF0Zm9ybSBpcyBicm9rZW4gb24gTGludXggMy43LjA=?=
+Mime-Version: 1.0
+Date: Sun, 10 Feb 2013 21:51:37 +0400
+Message-ID: <1360518697.255951128@f337.mail.ru>
+Content-Type: multipart/alternative;
+	boundary="--ALT--OIK1zVyp1360518697"
+In-Reply-To: <87mwvc41fc.fsf@linux.vnet.ibm.com>
+References: <1355488506.55692113@f147.mail.ru>
+ <1360498641.346858866@f116.mail.ru> <87mwvc41fc.fsf@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Reply-To: =?UTF-8?B?UGhpbGVhcyBGb2dn?= <phileas-fogg@mail.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,84 +26,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 11, 2013 at 01:39:24AM +0530, Srivatsa S. Bhat wrote:
-> On 02/11/2013 01:20 AM, Oleg Nesterov wrote:
-> > On 02/11, Srivatsa S. Bhat wrote:
-> >>
-> >> On 02/10/2013 11:36 PM, Oleg Nesterov wrote:
-> >>>>> +static void announce_writer_inactive(struct percpu_rwlock *pcpu_rwlock)
-> >>>>> +{
-> >>>>> +   unsigned int cpu;
-> >>>>> +
-> >>>>> +   drop_writer_signal(pcpu_rwlock, smp_processor_id());
-> >>>>
-> >>>> Why do we drop ourselves twice?  More to the point, why is it important to
-> >>>> drop ourselves first?
-> >>>
-> >>> And don't we need mb() _before_ we clear ->writer_signal ?
-> >>>
-> >>
-> >> Oh, right! Or, how about moving announce_writer_inactive() to _after_
-> >> write_unlock()?
-> > 
-> > Not sure this will help... but, either way it seems we have another
-> > problem...
-> > 
-> > percpu_rwlock tries to be "generic". This means we should "ignore" its
-> > usage in hotplug, and _write_lock should not race with _write_unlock.
-> > 
-> 
-> Yes, good point!
-> 
-> > IOW. Suppose that _write_unlock clears ->writer_signal. We need to ensure
-> > that this can't race with another write which wants to set this flag.
-> > Perhaps it should be counter as well, and it should be protected by
-> > the same ->global_rwlock, but _write_lock() should drop it before
-> > sync_all_readers() and then take it again?
-> 
-> Hmm, or we could just add an extra mb() like you suggested, and keep it
-> simple...
-> 
-> > 
-> >>>>> +static inline void sync_reader(struct percpu_rwlock *pcpu_rwlock,
-> >>>>> +			       unsigned int cpu)
-> >>>>> +{
-> >>>>> +	smp_rmb(); /* Paired with smp_[w]mb() in percpu_read_[un]lock() */
-> >>>>
-> >>>> As I understand it, the purpose of this memory barrier is to ensure
-> >>>> that the stores in drop_writer_signal() happen before the reads from
-> >>>> ->reader_refcnt in reader_uses_percpu_refcnt(), thus preventing the
-> >>>> race between a new reader attempting to use the fastpath and this writer
-> >>>> acquiring the lock.  Unless I am confused, this must be smp_mb() rather
-> >>>> than smp_rmb().
-> >>>
-> >>> And note that before sync_reader() we call announce_writer_active() which
-> >>> already adds mb() before sync_all_readers/sync_reader, so this rmb() looks
-> >>> unneeded.
-> >>>
-> >>
-> >> My intention was to help the writer see the ->reader_refcnt drop to zero
-> >> ASAP; hence I used smp_wmb() at reader and smp_rmb() here at the writer.
-> > 
-> > Hmm, interesting... Not sure, but can't really comment. However I can
-> > answer your next question:
-> 
-> Paul told me in another mail that I was expecting too much out of memory
-> barriers, like increasing the speed of electrons and what not ;-)
-> [ It would have been cool though, if it had such magical powers :P ]
 
-"But because you have used the special mb_tachyonic instruction, the
-speed of light is 600,000 km/s for the next five clock cycles"...  ;-)
+----ALT--OIK1zVyp1360518697
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
 
-							Thanx, Paul
+Cj5QaGlsZWFzIEZvZ2cgPCBwaGlsZWFzLWZvZ2dAbWFpbC5ydSA+IHdyaXRlczoKPgo+PiAgUGxl
+YXNlIGlnbm9yZSB0aGUgcHJldmlvdXMgcGF0Y2ggdG8gZml4IHRoZSBQQUNBIGlzc3VlIG9uIFBT
+MyBhcmNoLgo+PiBUaGlzIGlzIHRoZSBjb3JyZWN0IG9uZToKPj4KPj4gLS0tIGEvYXJjaC9wb3dl
+cnBjL2tlcm5lbC9zZXR1cF82NC5jCTIwMTMtMDItMTAgMTM6NTY6MTIuODAzODU1NjczICswMTAw
+Cj4+ICsrKyBiL2FyY2gvcG93ZXJwYy9rZXJuZWwvc2V0dXBfNjQuYwkyMDEzLTAyLTEwIDE0OjA3
+OjIyLjg3MDU2MTMyMiArMDEwMAo+PiBAQCAtMTg2LDYgKzE4Niw5IEBACj4+ICAJaW5pdGlhbGlz
+ZV9wYWNhKCZib290X3BhY2EsIDApOwo+PiAgCXNldHVwX3BhY2EoJmJvb3RfcGFjYSk7Cj4+IAo+
+PiArCS8qIEFsbG93IHBlcmNwdSBhY2Nlc3NlcyB0byAid29yayIgdW50aWwgd2Ugc2V0dXAgcGVy
+Y3B1IGRhdGEgKi8KPj4gKwlib290X3BhY2EuZGF0YV9vZmZzZXQgPSAwOwo+PiArCj4+ICAJLyog
+SW5pdGlhbGl6ZSBsb2NrZGVwIGVhcmx5IG9yIGVsc2Ugc3BpbmxvY2tzIHdpbGwgYmxvdyAqLwo+
+PiAgCWxvY2tkZXBfaW5pdCgpOwo+PiAKPj4KPgo+Y29tbWl0IDQ2NjkyMWM1YTQ2NjlmNDMxNTUy
+OGEyNWY5YWZkNjY2MDFjZTJjMDQgaXMgZG9uZSB0byBmaXggdGhlCj5sb2NrZGVwIHJlbGF0ZWQg
+aXNzdWUgb24gcHBjNjQuIFNvIHRoaXMgbWF5IG5lZWQgbGl0dGxlIGJpdCBtb3JlCj5leHBsYW5h
+dGlvbi4gU28gaWYgd2UgZXhwbGljaXRseSB1c2UgYm9vdF9wYWNhLCBkbyB3ZSBzdGlsbCBuZWVk
+IHRoZQo+Y2hhbmdlcyBpbiB0aGUgYWJvdmUgY29tbWl0ID8KPgo+LWFuZWVzaAo+Cj5fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwo+TGludXhwcGMtZGV2IG1h
+aWxpbmcgbGlzdAo+TGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcKPmh0dHBzOi8vbGlzdHMu
+b3psYWJzLm9yZy9saXN0aW5mby9saW51eHBwYy1kZXYKCk9rLCBoZXJlIGlzIHRoZSBuZXh0IFBB
+Q0EgZml4IHRlc3QuCgpJIHRlc3RlZCB0aGUgZm9sbG93aW5nIHBhdGNoIHdpdGggTGludXggMy44
+LjAtcmM3IG9uIFBTMyBhcmNoIGFuZCBzdGlsbCBnZXR0aW5nIHBhbmljcy4KClBhdGNoOgoKLS0t
+IGFyY2gvcG93ZXJwYy9rZXJuZWwvc2V0dXBfNjQuYy5vbGTCoMKgIMKgMjAxMy0wMi0xMCAxOToz
+NDo1My43ODczNjYxOTEgKzAxMDAKKysrIGFyY2gvcG93ZXJwYy9rZXJuZWwvc2V0dXBfNjQuY8Kg
+wqAgwqAyMDEzLTAyLTEwIDE5OjM1OjM4LjgzNDAzNTQ3OCArMDEwMApAQCAtMTg2LDYgKzE4Niw5
+IEBACsKgwqDCoCDCoGluaXRpYWxpc2VfcGFjYSgmYm9vdF9wYWNhLCAwKTsKwqDCoMKgIMKgc2V0
+dXBfcGFjYSgmYm9vdF9wYWNhKTsKwqAKK8KgwqAgwqAvKiBBbGxvdyBwZXJjcHUgYWNjZXNzZXMg
+dG8gIndvcmsiIHVudGlsIHdlIHNldHVwIHBlcmNwdSBkYXRhICovCivCoMKgIMKgYm9vdF9wYWNh
+LmRhdGFfb2Zmc2V0ID0gMDsKKwrCoMKgwqAgwqAvKiBJbml0aWFsaXplIGxvY2tkZXAgZWFybHkg
+b3IgZWxzZSBzcGlubG9ja3Mgd2lsbCBibG93ICovCsKgwqDCoCDCoGxvY2tkZXBfaW5pdCgpOwrC
+oApAQCAtMjA4LDggKzIxMSw2IEBACsKgCsKgwqDCoCDCoC8qIEZpeCB1cCBwYWNhIGZpZWxkcyBy
+ZXF1aXJlZCBmb3IgdGhlIGJvb3QgY3B1ICovCsKgwqDCoCDCoGdldF9wYWNhKCktPmNwdV9zdGFy
+dCA9IDE7Ci3CoMKgIMKgLyogQWxsb3cgcGVyY3B1IGFjY2Vzc2VzIHRvICJ3b3JrIiB1bnRpbCB3
+ZSBzZXR1cCBwZXJjcHUgZGF0YSAqLwotwqDCoCDCoGdldF9wYWNhKCktPmRhdGFfb2Zmc2V0ID0g
+MDsKwqAKwqDCoMKgIMKgLyogUHJvYmUgdGhlIG1hY2hpbmUgdHlwZSAqLwrCoMKgwqAgwqBwcm9i
+ZV9tYWNoaW5lKCk7CgoKCkl0IHNlZW1zIHRoYXQgJ2Jvb3RfcGFjYScgYW5kICdnZXRfcGFjYSgp
+JyByZWZlciB0byBkaWZmZXJlbnQgUEFDQXMuCgpyZWdhcmRzIAoKCg==
 
-> >> Please correct me if my understanding of memory barriers is wrong here..
-> > 
-> > Who? Me??? No we have paulmck for that ;)
-> >
-> 
-> Haha ;-)
-> 
-> Regards,
-> Srivatsa S. Bhat
-> 
+----ALT--OIK1zVyp1360518697
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: base64
+
+CjxIVE1MPjxCT0RZPjxicj4KPGJsb2NrcXVvdGUgc3R5bGU9ImJvcmRlci1sZWZ0OjFweCBzb2xp
+ZCAjMDg1N0E2OyBtYXJnaW46MTBweDsgcGFkZGluZzowIDAgMCAxMHB4OyIgY2xhc3M9Im1haWxy
+dS1ibG9ja3F1b3RlIj4KCTxkaXYgaWQ9IiI+PGRpdiBjbGFzcz0ianMtaGVscGVyIGpzLXJlYWRt
+c2ctbXNnIj4KCTxzdHlsZSB0eXBlPSJ0ZXh0L2NzcyI+PC9zdHlsZT4KCTxkaXYgaWQ9InN0eWxl
+XzEzNjA1MTEyMjkwMDAwMDAwNDU3IiBjbGFzcz0ibXJfcmVhZF9fYm9keSI+CgkJPGJhc2UgdGFy
+Z2V0PSJfc2VsZiIgaHJlZj0iaHR0cHM6Ly9lLm1haWwucnUvY2dpLWJpbi8iPgoJCQoJCQk8ZGl2
+IGlkPSJzdHlsZV8xMzYwNTExMjI5MDAwMDAwMDQ1N19CT0RZIj5QaGlsZWFzIEZvZ2cgJmx0Ozxh
+IGhyZWY9InNlbnRtc2c/Y29tcG9zZSZhbXA7VG89cGhpbGVhcyUyZGZvZ2dAbWFpbC5ydSI+cGhp
+bGVhcy1mb2dnQG1haWwucnU8L2E+Jmd0OyB3cml0ZXM6PGJyPjxicj4mZ3Q7ICBQbGVhc2UgaWdu
+b3JlIHRoZSBwcmV2aW91cyBwYXRjaCB0byBmaXggdGhlIFBBQ0EgaXNzdWUgb24gUFMzIGFyY2gu
+PGJyPiZndDsgVGhpcyBpcyB0aGUgY29ycmVjdCBvbmU6PGJyPiZndDs8YnI+Jmd0OyAtLS0gYS9h
+cmNoL3Bvd2VycGMva2VybmVsL3NldHVwXzY0LmMJMjAxMy0wMi0xMCAxMzo1NjoxMi44MDM4NTU2
+NzMgKzAxMDA8YnI+Jmd0OyArKysgYi9hcmNoL3Bvd2VycGMva2VybmVsL3NldHVwXzY0LmMJMjAx
+My0wMi0xMCAxNDowNzoyMi44NzA1NjEzMjIgKzAxMDA8YnI+Jmd0OyBAQCAtMTg2LDYgKzE4Niw5
+IEBAPGJyPiZndDsgIAlpbml0aWFsaXNlX3BhY2EoJmFtcDtib290X3BhY2EsIDApOzxicj4mZ3Q7
+ICAJc2V0dXBfcGFjYSgmYW1wO2Jvb3RfcGFjYSk7PGJyPiZndDsgIDxicj4mZ3Q7ICsJLyogQWxs
+b3cgcGVyY3B1IGFjY2Vzc2VzIHRvICJ3b3JrIiB1bnRpbCB3ZSBzZXR1cCBwZXJjcHUgZGF0YSAq
+Lzxicj4mZ3Q7ICsJYm9vdF9wYWNhLmRhdGFfb2Zmc2V0ID0gMDs8YnI+Jmd0OyArPGJyPiZndDsg
+IAkvKiBJbml0aWFsaXplIGxvY2tkZXAgZWFybHkgb3IgZWxzZSBzcGlubG9ja3Mgd2lsbCBibG93
+ICovPGJyPiZndDsgIAlsb2NrZGVwX2luaXQoKTs8YnI+Jmd0OyAgPGJyPiZndDs8YnI+PGJyPmNv
+bW1pdCA0NjY5MjFjNWE0NjY5ZjQzMTU1MjhhMjVmOWFmZDY2NjAxY2UyYzA0IGlzIGRvbmUgdG8g
+Zml4IHRoZTxicj5sb2NrZGVwIHJlbGF0ZWQgaXNzdWUgb24gcHBjNjQuIFNvIHRoaXMgbWF5IG5l
+ZWQgbGl0dGxlIGJpdCBtb3JlPGJyPmV4cGxhbmF0aW9uLiBTbyBpZiB3ZSBleHBsaWNpdGx5IHVz
+ZSBib290X3BhY2EsIGRvIHdlIHN0aWxsIG5lZWQgdGhlPGJyPmNoYW5nZXMgaW4gdGhlIGFib3Zl
+IGNvbW1pdCA/PGJyPjxicj4tYW5lZXNoPGJyPjxicj5fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fXzxicj5MaW51eHBwYy1kZXYgbWFpbGluZyBsaXN0PGJyPjxh
+IGhyZWY9InNlbnRtc2c/Y29tcG9zZSZhbXA7VG89TGludXhwcGMlMmRkZXZAbGlzdHMub3psYWJz
+Lm9yZyI+TGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc8L2E+PGJyPjxhIGhyZWY9Imh0dHBz
+Oi8vbGlzdHMub3psYWJzLm9yZy9saXN0aW5mby9saW51eHBwYy1kZXYiIHRhcmdldD0iX2JsYW5r
+Ij5odHRwczovL2xpc3RzLm96bGFicy5vcmcvbGlzdGluZm8vbGludXhwcGMtZGV2PC9hPjxicj48
+L2Rpdj4KCQkJCgkJCgkJPGJhc2UgdGFyZ2V0PSJfc2VsZiIgaHJlZj0iaHR0cHM6Ly9lLm1haWwu
+cnUvY2dpLWJpbi8iPgoJPC9kaXY+CgoJCjwvZGl2PgoKCjwvZGl2Pgo8L2Jsb2NrcXVvdGU+Cjxi
+cj5PaywgaGVyZSBpcyB0aGUgbmV4dCBQQUNBIGZpeCB0ZXN0Ljxicj48YnI+SSB0ZXN0ZWQgdGhl
+IGZvbGxvd2luZyBwYXRjaCB3aXRoIExpbnV4IDMuOC4wLXJjNyBvbiBQUzMgYXJjaCBhbmQgc3Rp
+bGwgZ2V0dGluZyBwYW5pY3MuPGJyPjxicj5QYXRjaDo8YnI+PGJyPi0tLSBhcmNoL3Bvd2VycGMv
+a2VybmVsL3NldHVwXzY0LmMub2xkJm5ic3A7Jm5ic3A7ICZuYnNwOzIwMTMtMDItMTAgMTk6MzQ6
+NTMuNzg3MzY2MTkxICswMTAwPGJyPisrKyBhcmNoL3Bvd2VycGMva2VybmVsL3NldHVwXzY0LmMm
+bmJzcDsmbmJzcDsgJm5ic3A7MjAxMy0wMi0xMCAxOTozNTozOC44MzQwMzU0NzggKzAxMDA8YnI+
+QEAgLTE4Niw2ICsxODYsOSBAQDxicj4mbmJzcDsmbmJzcDsmbmJzcDsgJm5ic3A7aW5pdGlhbGlz
+ZV9wYWNhKCZhbXA7Ym9vdF9wYWNhLCAwKTs8YnI+Jm5ic3A7Jm5ic3A7Jm5ic3A7ICZuYnNwO3Nl
+dHVwX3BhY2EoJmFtcDtib290X3BhY2EpOzxicj4mbmJzcDs8YnI+KyZuYnNwOyZuYnNwOyAmbmJz
+cDsvKiBBbGxvdyBwZXJjcHUgYWNjZXNzZXMgdG8gIndvcmsiIHVudGlsIHdlIHNldHVwIHBlcmNw
+dSBkYXRhICovPGJyPismbmJzcDsmbmJzcDsgJm5ic3A7Ym9vdF9wYWNhLmRhdGFfb2Zmc2V0ID0g
+MDs8YnI+Kzxicj4mbmJzcDsmbmJzcDsmbmJzcDsgJm5ic3A7LyogSW5pdGlhbGl6ZSBsb2NrZGVw
+IGVhcmx5IG9yIGVsc2Ugc3BpbmxvY2tzIHdpbGwgYmxvdyAqLzxicj4mbmJzcDsmbmJzcDsmbmJz
+cDsgJm5ic3A7bG9ja2RlcF9pbml0KCk7PGJyPiZuYnNwOzxicj5AQCAtMjA4LDggKzIxMSw2IEBA
+PGJyPiZuYnNwOzxicj4mbmJzcDsmbmJzcDsmbmJzcDsgJm5ic3A7LyogRml4IHVwIHBhY2EgZmll
+bGRzIHJlcXVpcmVkIGZvciB0aGUgYm9vdCBjcHUgKi88YnI+Jm5ic3A7Jm5ic3A7Jm5ic3A7ICZu
+YnNwO2dldF9wYWNhKCktJmd0O2NwdV9zdGFydCA9IDE7PGJyPi0mbmJzcDsmbmJzcDsgJm5ic3A7
+LyogQWxsb3cgcGVyY3B1IGFjY2Vzc2VzIHRvICJ3b3JrIiB1bnRpbCB3ZSBzZXR1cCBwZXJjcHUg
+ZGF0YSAqLzxicj4tJm5ic3A7Jm5ic3A7ICZuYnNwO2dldF9wYWNhKCktJmd0O2RhdGFfb2Zmc2V0
+ID0gMDs8YnI+Jm5ic3A7PGJyPiZuYnNwOyZuYnNwOyZuYnNwOyAmbmJzcDsvKiBQcm9iZSB0aGUg
+bWFjaGluZSB0eXBlICovPGJyPiZuYnNwOyZuYnNwOyZuYnNwOyAmbmJzcDtwcm9iZV9tYWNoaW5l
+KCk7PGJyPjxicj48YnI+PGJyPkl0IHNlZW1zIHRoYXQgJ2Jvb3RfcGFjYScgYW5kICdnZXRfcGFj
+YSgpJyByZWZlciB0byBkaWZmZXJlbnQgUEFDQXMuPGJyPjxicj5yZWdhcmRzIDxicj48YnI+PGJy
+PjwvQk9EWT48L0hUTUw+Cg==
+
+----ALT--OIK1zVyp1360518697--
