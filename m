@@ -1,46 +1,46 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp03.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B4F3D2C0296
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2013 06:29:27 +1100 (EST)
+ (Client CN "e23smtp09.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id AB3742C0292
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2013 06:32:05 +1100 (EST)
 Received: from /spool/local
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Mon, 11 Feb 2013 00:57:16 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 3F0E0E0050
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2013 01:00:09 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1AJTIjU32309316
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2013 00:59:18 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1AJTJNx010268
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Feb 2013 19:29:21 GMT
-Message-ID: <5117F49D.2030509@linux.vnet.ibm.com>
-Date: Mon, 11 Feb 2013 00:57:25 +0530
+ Mon, 11 Feb 2013 05:25:14 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 5978F2BB0053
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2013 06:32:04 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r1AJJtn733685566
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2013 06:19:55 +1100
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r1AJW2V8010467
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2013 06:32:04 +1100
+Message-ID: <5117F53A.20307@linux.vnet.ibm.com>
+Date: Mon, 11 Feb 2013 01:00:02 +0530
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
+To: Oleg Nesterov <oleg@redhat.com>
 Subject: Re: [PATCH v5 05/45] percpu_rwlock: Make percpu-rwlocks IRQ-safe,
  optimally
 References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
  <20130122073400.13822.52336.stgit@srivatsabhat.in.ibm.com>
- <20130208234403.GL2666@linux.vnet.ibm.com>
-In-Reply-To: <20130208234403.GL2666@linux.vnet.ibm.com>
+ <20130210184209.GA3041@redhat.com>
+In-Reply-To: <20130210184209.GA3041@redhat.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
- linux-kernel@vger.kernel.org, mingo@kernel.org, linux-arch@vger.kernel.org,
- linux@arm.linux.org.uk, xiaoguangrong@linux.vnet.ibm.com,
- wangyun@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
+ mingo@kernel.org, linux-arch@vger.kernel.org, linux@arm.linux.org.uk,
+ xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
+ paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
  linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org,
  rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
- linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com,
- sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+ linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, sbw@mit.edu, tj@kernel.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,36 +50,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/09/2013 05:14 AM, Paul E. McKenney wrote:
-> On Tue, Jan 22, 2013 at 01:04:11PM +0530, Srivatsa S. Bhat wrote:
->> If interrupt handlers can also be readers, then one of the ways to make
->> per-CPU rwlocks safe, is to disable interrupts at the reader side before
->> trying to acquire the per-CPU rwlock and keep it disabled throughout the
->> duration of the read-side critical section.
-[...]
->> -void percpu_read_lock(struct percpu_rwlock *pcpu_rwlock)
->> +void percpu_read_lock_irqsafe(struct percpu_rwlock *pcpu_rwlock)
->>  {
->>  	preempt_disable();
->>
->>  	/* First and foremost, let the writer know that a reader is active */
->> -	this_cpu_inc(*pcpu_rwlock->reader_refcnt);
->> +	this_cpu_add(*pcpu_rwlock->reader_refcnt, READER_PRESENT);
->>
->>  	/*
->>  	 * If we are already using per-cpu refcounts, it is not safe to switch
->>  	 * the synchronization scheme. So continue using the refcounts.
->>  	 */
->>  	if (reader_nested_percpu(pcpu_rwlock)) {
->> -		goto out;
->> +		this_cpu_inc(*pcpu_rwlock->reader_refcnt);
+On 02/11/2013 12:12 AM, Oleg Nesterov wrote:
+> only one cosmetic nit...
 > 
-> Hmmm...  If the reader is nested, it -doesn't- need the memory barrier at
-> the end of this function.  If there is lots of nesting, it might be
-> worth getting rid of it.
+> On 01/22, Srivatsa S. Bhat wrote:
+>>
+>> +#define READER_PRESENT		(1UL << 16)
+>> +#define READER_REFCNT_MASK	(READER_PRESENT - 1)
+>> +
+>>  #define reader_uses_percpu_refcnt(pcpu_rwlock, cpu)			\
+>>  		(ACCESS_ONCE(per_cpu(*((pcpu_rwlock)->reader_refcnt), cpu)))
+>>
+>>  #define reader_nested_percpu(pcpu_rwlock)				\
+>> -			(__this_cpu_read(*((pcpu_rwlock)->reader_refcnt)) > 1)
+>> +	(__this_cpu_read(*((pcpu_rwlock)->reader_refcnt)) & READER_REFCNT_MASK)
+>>
+>>  #define writer_active(pcpu_rwlock)					\
+>>  			(__this_cpu_read(*((pcpu_rwlock)->writer_signal)))
+> 
+> I think this all can go to lib/percpu-rwlock.c. Nobody needs to know
+> these implementation details.
 > 
 
-Yes, good point! Will get rid of it.
-
+Ok, will move them.
+ 
 Regards,
 Srivatsa S. Bhat
