@@ -1,18 +1,21 @@
-Return-Path: <michael@ellerman.id.au>
-Date: Mon, 11 Feb 2013 14:39:08 +1100
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Phileas Fogg <phileas-fogg@mail.ru>
-Subject: Re: PS3 platform is broken on Linux 3.7.0
-Message-ID: <20130211033908.GA21369@concordia>
-References: <1355488506.55692113@f147.mail.ru>
- <1360498641.346858866@f116.mail.ru>
- <87mwvc41fc.fsf@linux.vnet.ibm.com>
- <1360518697.255951128@f337.mail.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1360518697.255951128@f337.mail.ru>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-da0-f53.google.com (mail-da0-f53.google.com
+ [209.85.210.53])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id ECD852C02AD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2013 16:09:20 +1100 (EST)
+Received: by mail-da0-f53.google.com with SMTP id w3so304243dad.40
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Feb 2013 21:09:18 -0800 (PST)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] iommu: adding missing
+ kvm_iommu_map_pages/kvm_iommu_unmap_pages
+Date: Mon, 11 Feb 2013 16:09:02 +1100
+Message-Id: <1360559342-21423-1-git-send-email-aik@ozlabs.ru>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linux-kernel@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,41 +25,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Feb 10, 2013 at 09:51:37PM +0400, Phileas Fogg wrote:
-> 
-> >Phileas Fogg < phileas-fogg@mail.ru > writes:
-> >
-> 
-> Patch:
-> 
-> --- arch/powerpc/kernel/setup_64.c.old    2013-02-10 19:34:53.787366191 +0100
-> +++ arch/powerpc/kernel/setup_64.c    2013-02-10 19:35:38.834035478 +0100
-> @@ -186,6 +186,9 @@
->      initialise_paca(&boot_paca, 0);
->      setup_paca(&boot_paca);
->  
-> +    /* Allow percpu accesses to "work" until we setup percpu data */
-> +    boot_paca.data_offset = 0;
-> +
+The IOMMU API implements groups creating/deletion, device binding
+and IOMMU map/unmap operations.
 
-This is correct.
+The POWERPC implementation uses most of the API except map/unmap
+operations which are implemented on POWERPC using hypercalls.
 
->      /* Initialize lockdep early or else spinlocks will blow */
->      lockdep_init();
->  
-> @@ -208,8 +211,6 @@
->  
->      /* Fix up paca fields required for the boot cpu */
->      get_paca()->cpu_start = 1;
-> -    /* Allow percpu accesses to "work" until we setup percpu data */
-> -    get_paca()->data_offset = 0;
+However in order to link a kernel with the CONFIG_IOMMU_API enabled,
+the empty kvm_iommu_map_pages/kvm_iommu_unmap_pages have to be
+defined, so does the patch.
 
-But this is not.
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: David Gibson <david@gibson.dropbear.id.au>
+---
+ arch/powerpc/kernel/iommu.c |   17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
-As you said, they are different pacas, so we need to make sure both
-boot_paca, and "the paca of the boot cpu" are initialised with
-data_offset = 0.
-
-I'll send a patch to sort it.
-
-cheers
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index 31c4fdc..7c309fe 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -36,6 +36,7 @@
+ #include <linux/hash.h>
+ #include <linux/fault-inject.h>
+ #include <linux/pci.h>
++#include <linux/kvm_host.h>
+ #include <asm/io.h>
+ #include <asm/prom.h>
+ #include <asm/iommu.h>
+@@ -860,3 +861,19 @@ void iommu_free_coherent(struct iommu_table *tbl, size_t size,
+ 		free_pages((unsigned long)vaddr, get_order(size));
+ 	}
+ }
++
++#ifdef CONFIG_IOMMU_API
++/*
++ * SPAPR TCE API
++ */
++
++/* POWERPC does not use IOMMU API for mapping/unmapping */
++int kvm_iommu_map_pages(struct kvm *kvm, struct kvm_memory_slot *slot)
++{
++	return 0;
++}
++void kvm_iommu_unmap_pages(struct kvm *kvm, struct kvm_memory_slot *slot)
++{
++}
++
++#endif /* CONFIG_IOMMU_API */
+-- 
+1.7.10.4
