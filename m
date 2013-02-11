@@ -1,22 +1,18 @@
-Return-Path: <phileas-fogg@mail.ru>
-Received: from f337.mail.ru (f337.mail.ru [217.69.140.233])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 54AD42C0095
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2013 04:51:45 +1100 (EST)
-From: =?UTF-8?B?UGhpbGVhcyBGb2dn?= <phileas-fogg@mail.ru>
-To: =?UTF-8?B?QW5lZXNoIEt1bWFyIEsuVg==?= <aneesh.kumar@linux.vnet.ibm.com>
-Subject: =?UTF-8?B?UmVbNV06IFBTMyBwbGF0Zm9ybSBpcyBicm9rZW4gb24gTGludXggMy43LjA=?=
-Mime-Version: 1.0
-Date: Sun, 10 Feb 2013 21:51:37 +0400
-Message-ID: <1360518697.255951128@f337.mail.ru>
-Content-Type: multipart/alternative;
-	boundary="--ALT--OIK1zVyp1360518697"
-In-Reply-To: <87mwvc41fc.fsf@linux.vnet.ibm.com>
+Return-Path: <michael@ellerman.id.au>
+Date: Mon, 11 Feb 2013 14:39:08 +1100
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Phileas Fogg <phileas-fogg@mail.ru>
+Subject: Re: PS3 platform is broken on Linux 3.7.0
+Message-ID: <20130211033908.GA21369@concordia>
 References: <1355488506.55692113@f147.mail.ru>
- <1360498641.346858866@f116.mail.ru> <87mwvc41fc.fsf@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Reply-To: =?UTF-8?B?UGhpbGVhcyBGb2dn?= <phileas-fogg@mail.ru>
+ <1360498641.346858866@f116.mail.ru>
+ <87mwvc41fc.fsf@linux.vnet.ibm.com>
+ <1360518697.255951128@f337.mail.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1360518697.255951128@f337.mail.ru>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,106 +22,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Sun, Feb 10, 2013 at 09:51:37PM +0400, Phileas Fogg wrote:
+> 
+> >Phileas Fogg < phileas-fogg@mail.ru > writes:
+> >
+> 
+> Patch:
+> 
+> --- arch/powerpc/kernel/setup_64.c.old    2013-02-10 19:34:53.787366191 +0100
+> +++ arch/powerpc/kernel/setup_64.c    2013-02-10 19:35:38.834035478 +0100
+> @@ -186,6 +186,9 @@
+>      initialise_paca(&boot_paca, 0);
+>      setup_paca(&boot_paca);
+>  
+> +    /* Allow percpu accesses to "work" until we setup percpu data */
+> +    boot_paca.data_offset = 0;
+> +
 
-----ALT--OIK1zVyp1360518697
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
+This is correct.
 
-Cj5QaGlsZWFzIEZvZ2cgPCBwaGlsZWFzLWZvZ2dAbWFpbC5ydSA+IHdyaXRlczoKPgo+PiAgUGxl
-YXNlIGlnbm9yZSB0aGUgcHJldmlvdXMgcGF0Y2ggdG8gZml4IHRoZSBQQUNBIGlzc3VlIG9uIFBT
-MyBhcmNoLgo+PiBUaGlzIGlzIHRoZSBjb3JyZWN0IG9uZToKPj4KPj4gLS0tIGEvYXJjaC9wb3dl
-cnBjL2tlcm5lbC9zZXR1cF82NC5jCTIwMTMtMDItMTAgMTM6NTY6MTIuODAzODU1NjczICswMTAw
-Cj4+ICsrKyBiL2FyY2gvcG93ZXJwYy9rZXJuZWwvc2V0dXBfNjQuYwkyMDEzLTAyLTEwIDE0OjA3
-OjIyLjg3MDU2MTMyMiArMDEwMAo+PiBAQCAtMTg2LDYgKzE4Niw5IEBACj4+ICAJaW5pdGlhbGlz
-ZV9wYWNhKCZib290X3BhY2EsIDApOwo+PiAgCXNldHVwX3BhY2EoJmJvb3RfcGFjYSk7Cj4+IAo+
-PiArCS8qIEFsbG93IHBlcmNwdSBhY2Nlc3NlcyB0byAid29yayIgdW50aWwgd2Ugc2V0dXAgcGVy
-Y3B1IGRhdGEgKi8KPj4gKwlib290X3BhY2EuZGF0YV9vZmZzZXQgPSAwOwo+PiArCj4+ICAJLyog
-SW5pdGlhbGl6ZSBsb2NrZGVwIGVhcmx5IG9yIGVsc2Ugc3BpbmxvY2tzIHdpbGwgYmxvdyAqLwo+
-PiAgCWxvY2tkZXBfaW5pdCgpOwo+PiAKPj4KPgo+Y29tbWl0IDQ2NjkyMWM1YTQ2NjlmNDMxNTUy
-OGEyNWY5YWZkNjY2MDFjZTJjMDQgaXMgZG9uZSB0byBmaXggdGhlCj5sb2NrZGVwIHJlbGF0ZWQg
-aXNzdWUgb24gcHBjNjQuIFNvIHRoaXMgbWF5IG5lZWQgbGl0dGxlIGJpdCBtb3JlCj5leHBsYW5h
-dGlvbi4gU28gaWYgd2UgZXhwbGljaXRseSB1c2UgYm9vdF9wYWNhLCBkbyB3ZSBzdGlsbCBuZWVk
-IHRoZQo+Y2hhbmdlcyBpbiB0aGUgYWJvdmUgY29tbWl0ID8KPgo+LWFuZWVzaAo+Cj5fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwo+TGludXhwcGMtZGV2IG1h
-aWxpbmcgbGlzdAo+TGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcKPmh0dHBzOi8vbGlzdHMu
-b3psYWJzLm9yZy9saXN0aW5mby9saW51eHBwYy1kZXYKCk9rLCBoZXJlIGlzIHRoZSBuZXh0IFBB
-Q0EgZml4IHRlc3QuCgpJIHRlc3RlZCB0aGUgZm9sbG93aW5nIHBhdGNoIHdpdGggTGludXggMy44
-LjAtcmM3IG9uIFBTMyBhcmNoIGFuZCBzdGlsbCBnZXR0aW5nIHBhbmljcy4KClBhdGNoOgoKLS0t
-IGFyY2gvcG93ZXJwYy9rZXJuZWwvc2V0dXBfNjQuYy5vbGTCoMKgIMKgMjAxMy0wMi0xMCAxOToz
-NDo1My43ODczNjYxOTEgKzAxMDAKKysrIGFyY2gvcG93ZXJwYy9rZXJuZWwvc2V0dXBfNjQuY8Kg
-wqAgwqAyMDEzLTAyLTEwIDE5OjM1OjM4LjgzNDAzNTQ3OCArMDEwMApAQCAtMTg2LDYgKzE4Niw5
-IEBACsKgwqDCoCDCoGluaXRpYWxpc2VfcGFjYSgmYm9vdF9wYWNhLCAwKTsKwqDCoMKgIMKgc2V0
-dXBfcGFjYSgmYm9vdF9wYWNhKTsKwqAKK8KgwqAgwqAvKiBBbGxvdyBwZXJjcHUgYWNjZXNzZXMg
-dG8gIndvcmsiIHVudGlsIHdlIHNldHVwIHBlcmNwdSBkYXRhICovCivCoMKgIMKgYm9vdF9wYWNh
-LmRhdGFfb2Zmc2V0ID0gMDsKKwrCoMKgwqAgwqAvKiBJbml0aWFsaXplIGxvY2tkZXAgZWFybHkg
-b3IgZWxzZSBzcGlubG9ja3Mgd2lsbCBibG93ICovCsKgwqDCoCDCoGxvY2tkZXBfaW5pdCgpOwrC
-oApAQCAtMjA4LDggKzIxMSw2IEBACsKgCsKgwqDCoCDCoC8qIEZpeCB1cCBwYWNhIGZpZWxkcyBy
-ZXF1aXJlZCBmb3IgdGhlIGJvb3QgY3B1ICovCsKgwqDCoCDCoGdldF9wYWNhKCktPmNwdV9zdGFy
-dCA9IDE7Ci3CoMKgIMKgLyogQWxsb3cgcGVyY3B1IGFjY2Vzc2VzIHRvICJ3b3JrIiB1bnRpbCB3
-ZSBzZXR1cCBwZXJjcHUgZGF0YSAqLwotwqDCoCDCoGdldF9wYWNhKCktPmRhdGFfb2Zmc2V0ID0g
-MDsKwqAKwqDCoMKgIMKgLyogUHJvYmUgdGhlIG1hY2hpbmUgdHlwZSAqLwrCoMKgwqAgwqBwcm9i
-ZV9tYWNoaW5lKCk7CgoKCkl0IHNlZW1zIHRoYXQgJ2Jvb3RfcGFjYScgYW5kICdnZXRfcGFjYSgp
-JyByZWZlciB0byBkaWZmZXJlbnQgUEFDQXMuCgpyZWdhcmRzIAoKCg==
+>      /* Initialize lockdep early or else spinlocks will blow */
+>      lockdep_init();
+>  
+> @@ -208,8 +211,6 @@
+>  
+>      /* Fix up paca fields required for the boot cpu */
+>      get_paca()->cpu_start = 1;
+> -    /* Allow percpu accesses to "work" until we setup percpu data */
+> -    get_paca()->data_offset = 0;
 
-----ALT--OIK1zVyp1360518697
-Content-Type: text/html; charset=utf-8
-Content-Transfer-Encoding: base64
+But this is not.
 
-CjxIVE1MPjxCT0RZPjxicj4KPGJsb2NrcXVvdGUgc3R5bGU9ImJvcmRlci1sZWZ0OjFweCBzb2xp
-ZCAjMDg1N0E2OyBtYXJnaW46MTBweDsgcGFkZGluZzowIDAgMCAxMHB4OyIgY2xhc3M9Im1haWxy
-dS1ibG9ja3F1b3RlIj4KCTxkaXYgaWQ9IiI+PGRpdiBjbGFzcz0ianMtaGVscGVyIGpzLXJlYWRt
-c2ctbXNnIj4KCTxzdHlsZSB0eXBlPSJ0ZXh0L2NzcyI+PC9zdHlsZT4KCTxkaXYgaWQ9InN0eWxl
-XzEzNjA1MTEyMjkwMDAwMDAwNDU3IiBjbGFzcz0ibXJfcmVhZF9fYm9keSI+CgkJPGJhc2UgdGFy
-Z2V0PSJfc2VsZiIgaHJlZj0iaHR0cHM6Ly9lLm1haWwucnUvY2dpLWJpbi8iPgoJCQoJCQk8ZGl2
-IGlkPSJzdHlsZV8xMzYwNTExMjI5MDAwMDAwMDQ1N19CT0RZIj5QaGlsZWFzIEZvZ2cgJmx0Ozxh
-IGhyZWY9InNlbnRtc2c/Y29tcG9zZSZhbXA7VG89cGhpbGVhcyUyZGZvZ2dAbWFpbC5ydSI+cGhp
-bGVhcy1mb2dnQG1haWwucnU8L2E+Jmd0OyB3cml0ZXM6PGJyPjxicj4mZ3Q7ICBQbGVhc2UgaWdu
-b3JlIHRoZSBwcmV2aW91cyBwYXRjaCB0byBmaXggdGhlIFBBQ0EgaXNzdWUgb24gUFMzIGFyY2gu
-PGJyPiZndDsgVGhpcyBpcyB0aGUgY29ycmVjdCBvbmU6PGJyPiZndDs8YnI+Jmd0OyAtLS0gYS9h
-cmNoL3Bvd2VycGMva2VybmVsL3NldHVwXzY0LmMJMjAxMy0wMi0xMCAxMzo1NjoxMi44MDM4NTU2
-NzMgKzAxMDA8YnI+Jmd0OyArKysgYi9hcmNoL3Bvd2VycGMva2VybmVsL3NldHVwXzY0LmMJMjAx
-My0wMi0xMCAxNDowNzoyMi44NzA1NjEzMjIgKzAxMDA8YnI+Jmd0OyBAQCAtMTg2LDYgKzE4Niw5
-IEBAPGJyPiZndDsgIAlpbml0aWFsaXNlX3BhY2EoJmFtcDtib290X3BhY2EsIDApOzxicj4mZ3Q7
-ICAJc2V0dXBfcGFjYSgmYW1wO2Jvb3RfcGFjYSk7PGJyPiZndDsgIDxicj4mZ3Q7ICsJLyogQWxs
-b3cgcGVyY3B1IGFjY2Vzc2VzIHRvICJ3b3JrIiB1bnRpbCB3ZSBzZXR1cCBwZXJjcHUgZGF0YSAq
-Lzxicj4mZ3Q7ICsJYm9vdF9wYWNhLmRhdGFfb2Zmc2V0ID0gMDs8YnI+Jmd0OyArPGJyPiZndDsg
-IAkvKiBJbml0aWFsaXplIGxvY2tkZXAgZWFybHkgb3IgZWxzZSBzcGlubG9ja3Mgd2lsbCBibG93
-ICovPGJyPiZndDsgIAlsb2NrZGVwX2luaXQoKTs8YnI+Jmd0OyAgPGJyPiZndDs8YnI+PGJyPmNv
-bW1pdCA0NjY5MjFjNWE0NjY5ZjQzMTU1MjhhMjVmOWFmZDY2NjAxY2UyYzA0IGlzIGRvbmUgdG8g
-Zml4IHRoZTxicj5sb2NrZGVwIHJlbGF0ZWQgaXNzdWUgb24gcHBjNjQuIFNvIHRoaXMgbWF5IG5l
-ZWQgbGl0dGxlIGJpdCBtb3JlPGJyPmV4cGxhbmF0aW9uLiBTbyBpZiB3ZSBleHBsaWNpdGx5IHVz
-ZSBib290X3BhY2EsIGRvIHdlIHN0aWxsIG5lZWQgdGhlPGJyPmNoYW5nZXMgaW4gdGhlIGFib3Zl
-IGNvbW1pdCA/PGJyPjxicj4tYW5lZXNoPGJyPjxicj5fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fXzxicj5MaW51eHBwYy1kZXYgbWFpbGluZyBsaXN0PGJyPjxh
-IGhyZWY9InNlbnRtc2c/Y29tcG9zZSZhbXA7VG89TGludXhwcGMlMmRkZXZAbGlzdHMub3psYWJz
-Lm9yZyI+TGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc8L2E+PGJyPjxhIGhyZWY9Imh0dHBz
-Oi8vbGlzdHMub3psYWJzLm9yZy9saXN0aW5mby9saW51eHBwYy1kZXYiIHRhcmdldD0iX2JsYW5r
-Ij5odHRwczovL2xpc3RzLm96bGFicy5vcmcvbGlzdGluZm8vbGludXhwcGMtZGV2PC9hPjxicj48
-L2Rpdj4KCQkJCgkJCgkJPGJhc2UgdGFyZ2V0PSJfc2VsZiIgaHJlZj0iaHR0cHM6Ly9lLm1haWwu
-cnUvY2dpLWJpbi8iPgoJPC9kaXY+CgoJCjwvZGl2PgoKCjwvZGl2Pgo8L2Jsb2NrcXVvdGU+Cjxi
-cj5PaywgaGVyZSBpcyB0aGUgbmV4dCBQQUNBIGZpeCB0ZXN0Ljxicj48YnI+SSB0ZXN0ZWQgdGhl
-IGZvbGxvd2luZyBwYXRjaCB3aXRoIExpbnV4IDMuOC4wLXJjNyBvbiBQUzMgYXJjaCBhbmQgc3Rp
-bGwgZ2V0dGluZyBwYW5pY3MuPGJyPjxicj5QYXRjaDo8YnI+PGJyPi0tLSBhcmNoL3Bvd2VycGMv
-a2VybmVsL3NldHVwXzY0LmMub2xkJm5ic3A7Jm5ic3A7ICZuYnNwOzIwMTMtMDItMTAgMTk6MzQ6
-NTMuNzg3MzY2MTkxICswMTAwPGJyPisrKyBhcmNoL3Bvd2VycGMva2VybmVsL3NldHVwXzY0LmMm
-bmJzcDsmbmJzcDsgJm5ic3A7MjAxMy0wMi0xMCAxOTozNTozOC44MzQwMzU0NzggKzAxMDA8YnI+
-QEAgLTE4Niw2ICsxODYsOSBAQDxicj4mbmJzcDsmbmJzcDsmbmJzcDsgJm5ic3A7aW5pdGlhbGlz
-ZV9wYWNhKCZhbXA7Ym9vdF9wYWNhLCAwKTs8YnI+Jm5ic3A7Jm5ic3A7Jm5ic3A7ICZuYnNwO3Nl
-dHVwX3BhY2EoJmFtcDtib290X3BhY2EpOzxicj4mbmJzcDs8YnI+KyZuYnNwOyZuYnNwOyAmbmJz
-cDsvKiBBbGxvdyBwZXJjcHUgYWNjZXNzZXMgdG8gIndvcmsiIHVudGlsIHdlIHNldHVwIHBlcmNw
-dSBkYXRhICovPGJyPismbmJzcDsmbmJzcDsgJm5ic3A7Ym9vdF9wYWNhLmRhdGFfb2Zmc2V0ID0g
-MDs8YnI+Kzxicj4mbmJzcDsmbmJzcDsmbmJzcDsgJm5ic3A7LyogSW5pdGlhbGl6ZSBsb2NrZGVw
-IGVhcmx5IG9yIGVsc2Ugc3BpbmxvY2tzIHdpbGwgYmxvdyAqLzxicj4mbmJzcDsmbmJzcDsmbmJz
-cDsgJm5ic3A7bG9ja2RlcF9pbml0KCk7PGJyPiZuYnNwOzxicj5AQCAtMjA4LDggKzIxMSw2IEBA
-PGJyPiZuYnNwOzxicj4mbmJzcDsmbmJzcDsmbmJzcDsgJm5ic3A7LyogRml4IHVwIHBhY2EgZmll
-bGRzIHJlcXVpcmVkIGZvciB0aGUgYm9vdCBjcHUgKi88YnI+Jm5ic3A7Jm5ic3A7Jm5ic3A7ICZu
-YnNwO2dldF9wYWNhKCktJmd0O2NwdV9zdGFydCA9IDE7PGJyPi0mbmJzcDsmbmJzcDsgJm5ic3A7
-LyogQWxsb3cgcGVyY3B1IGFjY2Vzc2VzIHRvICJ3b3JrIiB1bnRpbCB3ZSBzZXR1cCBwZXJjcHUg
-ZGF0YSAqLzxicj4tJm5ic3A7Jm5ic3A7ICZuYnNwO2dldF9wYWNhKCktJmd0O2RhdGFfb2Zmc2V0
-ID0gMDs8YnI+Jm5ic3A7PGJyPiZuYnNwOyZuYnNwOyZuYnNwOyAmbmJzcDsvKiBQcm9iZSB0aGUg
-bWFjaGluZSB0eXBlICovPGJyPiZuYnNwOyZuYnNwOyZuYnNwOyAmbmJzcDtwcm9iZV9tYWNoaW5l
-KCk7PGJyPjxicj48YnI+PGJyPkl0IHNlZW1zIHRoYXQgJ2Jvb3RfcGFjYScgYW5kICdnZXRfcGFj
-YSgpJyByZWZlciB0byBkaWZmZXJlbnQgUEFDQXMuPGJyPjxicj5yZWdhcmRzIDxicj48YnI+PGJy
-PjwvQk9EWT48L0hUTUw+Cg==
+As you said, they are different pacas, so we need to make sure both
+boot_paca, and "the paca of the boot cpu" are initialised with
+data_offset = 0.
 
-----ALT--OIK1zVyp1360518697--
+I'll send a patch to sort it.
+
+cheers
