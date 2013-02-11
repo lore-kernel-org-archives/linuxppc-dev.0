@@ -1,30 +1,21 @@
-Return-Path: <James.Hogan@imgtec.com>
-Received: from multi.imgtec.com (multi.imgtec.com [194.200.65.239])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "*.imgtec.com",
- Issuer "DigiCert High Assurance CA-3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id F2FDE2C029E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2013 22:58:02 +1100 (EST)
-Message-ID: <5118DCA8.1030905@imgtec.com>
-Date: Mon, 11 Feb 2013 11:57:28 +0000
-From: James Hogan <james.hogan@imgtec.com>
-MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] Centralise CONFIG_ARCH_NO_VIRT_TO_BUS
-References: <ADE657CA350FB648AAC2C43247A983F00206B25884B1@AUSP01VMBX24.collaborationhost.net>
- <CAErSpo6WG2R_8sa=rOmAOci-3iFpDs2NFzNkZYxDnD2oTiMQJg@mail.gmail.com>
- <20121113082615.2f482eb8835daf46e1f27947@canb.auug.org.au>
-In-Reply-To: <20121113082615.2f482eb8835daf46e1f27947@canb.auug.org.au>
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig37A461183FDA2E5D4D4AAECC"
-Cc: linux-arch@vger.kernel.org, linux-sh@vger.kernel.org,
- Vineet Gupta <Vineet.Gupta1@synopsys.com>, linux-kernel@vger.kernel.org,
- "David S. Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org,
- Paul Mundt <lethal@linux-sh.org>, Paul Mackerras <paulus@samba.org>,
- Bjorn Helgaas <bhelgaas@google.com>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org,
- H Hartley Sweeten <hartleys@visionengravers.com>
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-ia0-x231.google.com (mail-ia0-x231.google.com
+ [IPv6:2607:f8b0:4001:c02::231])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9F8BA2C02B6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2013 23:01:14 +1100 (EST)
+Received: by mail-ia0-f177.google.com with SMTP id k38so895905iah.22
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2013 04:01:12 -0800 (PST)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 0/2] vfio on power
+Date: Mon, 11 Feb 2013 22:54:30 +1100
+Message-Id: <1360583672-21924-1-git-send-email-aik@ozlabs.ru>
+Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ linux-kernel@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,46 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---------------enig37A461183FDA2E5D4D4AAECC
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+The series introduces a VFIO support on POWER.
+The QEMU support is required, the real mode acceleration patches are coming later.
 
-Hi Stephen,
+Alexey Kardashevskiy (2):
+  vfio powerpc: enabled on powernv platform
+  vfio powerpc: implemented IOMMU driver for VFIO
 
-On 12/11/12 21:26, Stephen Rothwell wrote:
-> Make if easier for more architectures to select it and thus disable
-> drivers that use virt_to_bus().
->=20
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+ arch/powerpc/include/asm/iommu.h            |   15 ++
+ arch/powerpc/kernel/iommu.c                 |  343 +++++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/pci-ioda.c   |    1 +
+ arch/powerpc/platforms/powernv/pci-p5ioc2.c |    5 +-
+ arch/powerpc/platforms/powernv/pci.c        |    3 +
+ drivers/iommu/Kconfig                       |    8 +
+ drivers/vfio/Kconfig                        |    6 +
+ drivers/vfio/Makefile                       |    1 +
+ drivers/vfio/vfio_iommu_spapr_tce.c         |  269 +++++++++++++++++++++
+ include/uapi/linux/vfio.h                   |   31 +++
+ 10 files changed, 681 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/vfio/vfio_iommu_spapr_tce.c
 
-I was just wondering what the status of this patch is? It was in -next
-for a while but seems to have disappeared.
-
-Cheers
-James
-
-
---------------enig37A461183FDA2E5D4D4AAECC
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.13 (GNU/Linux)
-
-iQIcBAEBAgAGBQJRGNytAAoJEKHZs+irPybf7bsP/RSiVOQdalVSVaHYvN15XDWz
-p+iSIRyYRLbaYTJ3Sln+av82+aVnjMi75l8UBsWLHGKkLSMB4SqnOTVmASJHVnFp
-w8ClS7+/UmlQySB8o5YxQ5IFPO1MaRBYOTPBpc+Y/y6Ub045wzW62wvkjD7j1Rl3
-uVTldd26lD+hysgWEjQOYIl3ZaAeMmSTx+zML/1XxHRFODCVCId5GyGaP8mulRIj
-aeemZHXqZFpzGAJbun52dOy0xI8iY+fj9jzwyoFKq2bMyRHt2CV7b2DsRmrYLT+G
-pTJQpqn609pFYPPFsHD8pCKBZOAzz2KUJjJmf0yAFViAdzaoeSvKQ/405J6ja+0J
-7BJguKzKTJI5MpPe+w7Z6XeNMz4nmhz6JkezwMsEWs8mm2f/ZtvJQQNeJGJ1MD7e
-JUolNN1DjDHNck8i8ZfoA5AiCpdqNqu8BWLc/EW3fE4+dvbkW9N7nG3pu8wQsGBk
-ZS46URl1F8tHHUNVg87pDoYKJU91FTQzq+8TX658R1Voqg2xMRjjBaZkpQSiC16k
-Ewx+uSTWe5Uf7PcjcRdqbLxpvKgoJyD5BSsat2doSk12s/Gv3zeF5Z3Va5Ldn2q2
-r0d4b6qGvL8q6LAhxeVUsVynPBv9UC3UMP2jMNGAecSXrqjwA3qgOOdkwLulIfVM
-r5wi1jOQ1/vVvboMQJ6z
-=wprH
------END PGP SIGNATURE-----
-
---------------enig37A461183FDA2E5D4D4AAECC--
+-- 
+1.7.10.4
