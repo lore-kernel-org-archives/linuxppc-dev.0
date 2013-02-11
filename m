@@ -1,18 +1,53 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (unknown
- [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
- by ozlabs.org (Postfix) with ESMTP id 946D52C02C7
- for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2013 05:58:01 +1100 (EST)
-Date: Mon, 11 Feb 2013 13:50:45 -0500 (EST)
-Message-Id: <20130211.135045.288377899939965231.davem@davemloft.net>
-To: sr@denx.de
-Subject: Re: [PATCH RESEND] net: fec_mpc52xx: Read MAC address from device-tree
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1360403352-24237-1-git-send-email-sr@denx.de>
-References: <1360403352-24237-1-git-send-email-sr@denx.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: netdev@vger.kernel.org, agust@denx.de, linuxppc-dev@ozlabs.org
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e7.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A8F702C02CE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2013 06:34:59 +1100 (EST)
+Received: from /spool/local
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Mon, 11 Feb 2013 14:34:56 -0500
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 88CA96E9901
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2013 14:18:17 -0500 (EST)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r1BJIHUG136906
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2013 14:18:17 -0500
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r1BJHvww018627
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2013 12:17:59 -0700
+Date: Mon, 11 Feb 2013 11:08:52 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH v5 00/45] CPU hotplug: stop_machine()-free CPU hotplug
+Message-ID: <20130211190852.GA5695@linux.vnet.ibm.com>
+References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
+ <510FBC01.2030405@linux.vnet.ibm.com>
+ <87haloiwv0.fsf@rustcorp.com.au>
+ <51134596.4080106@linux.vnet.ibm.com>
+ <20130208154113.GV17833@n2100.arm.linux.org.uk>
+ <51152B81.2050501@linux.vnet.ibm.com>
+ <51153F72.1060005@linux.vnet.ibm.com>
+ <CAKfTPtCe+cD7LLkb+D6pqG1SwG2V08ws=4XO3ttHEHV2qgmqPg@mail.gmail.com>
+ <5118E2CD.90401@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5118E2CD.90401@linux.vnet.ibm.com>
+Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
+ linux-kernel@vger.kernel.org, walken@google.com, mingo@kernel.org,
+ linux-arch@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
+ nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org,
+ Rusty Russell <rusty@rustcorp.com.au>, rostedt@goodmis.org, rjw@sisk.pl,
+ namhyung@kernel.org, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org,
+ netdev@vger.kernel.org, oleg@redhat.com,
+ Vincent Guittot <vincent.guittot@linaro.org>, sbw@mit.edu, tj@kernel.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Reply-To: paulmck@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,40 +57,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Stefan Roese <sr@denx.de>
-Date: Sat,  9 Feb 2013 10:49:12 +0100
+On Mon, Feb 11, 2013 at 05:53:41PM +0530, Srivatsa S. Bhat wrote:
+> On 02/11/2013 05:28 PM, Vincent Guittot wrote:
+> > On 8 February 2013 19:09, Srivatsa S. Bhat
+> > <srivatsa.bhat@linux.vnet.ibm.com> wrote:
 
-> Until now, the MPC5200 FEC ethernet driver relied upon the bootloader
-> (U-Boot) to write the MAC address into the ethernet controller
-> registers. The Linux driver should not rely on such a thing. So
-> lets read the MAC address from the DT as it should be done here.
+[ . . . ]
+
+> >> Adding Vincent to CC, who had previously evaluated the performance and
+> >> latency implications of CPU hotplug on ARM platforms, IIRC.
+> >>
+> >
+> > Hi Srivatsa,
+> > 
+> > I can try to run some of our stress tests on your patches.
 > 
-> This fixes a problem with a MPC5200 board that uses the SPL U-Boot
-> version without FEC initialization before Linux booting for
-> boot speedup.
+> Great!
 > 
-> Additionally a status line will now be printed upon successful
-> driver probing, also displaying this MAC address.
+> > Have you
+> > got a git tree that i can pull ?
+> > 
 > 
-> Signed-off-by: Stefan Roese <sr@denx.de>
+> Unfortunately, no, none at the moment..  :-(
 
-I don't think this is a conservative enough change.
+You do need to create an externally visible git tree.  In the meantime,
+I have added your series at rcu/bhat.2013.01.21a on -rcu:
 
-You have to keep the MAC register reading code around, as a backup
-code path in case the OF device node lacks a MAC address, also:
+git://git.kernel.org/pub/scm/linux/kernel/git/paulmck/linux-rcu.git
 
-> +	if (!is_zero_ether_addr(mpc52xx_fec_mac_addr)) {
+This should appear soon on a kernel.org mirror near you.  ;-)
 
-I really wish I would have caught this terrible module parameter
-when the driver was initially submitted.
-
-I would just get rid of this, and have a priority list of cases:
-
-1) First, try OF node MAC address, if not present or invalid, then:
-
-2) Read from MAC address registers, if invalid, then:
-
-3) Log a warning message, and choose a random MAC address.
-
-That way no matter what happens, the user will at least have a
-functioning networking device.
+							Thanx, Paul
