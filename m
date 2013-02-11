@@ -1,13 +1,17 @@
-Return-Path: <michael@ellerman.id.au>
-Date: Mon, 11 Feb 2013 17:19:49 +1100
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Baruch Siach <baruch@tkos.co.il>
+Return-Path: <baruch@tkos.co.il>
+Received: from sivan.tkos.co.il (guitar.tcltek.co.il [192.115.133.116])
+ by ozlabs.org (Postfix) with ESMTP id 808242C02B4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2013 17:44:12 +1100 (EST)
+Date: Mon, 11 Feb 2013 08:44:08 +0200
+From: Baruch Siach <baruch@tkos.co.il>
+To: Michael Ellerman <michael@ellerman.id.au>
 Subject: Re: [BUG] irq_dispose_mapping after irq request failure
-Message-ID: <20130211061949.GA5561@concordia>
+Message-ID: <20130211064408.GC18462@sapphire.tkos.co.il>
 References: <20130211053100.GB18462@sapphire.tkos.co.il>
+ <20130211061949.GA5561@concordia>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130211053100.GB18462@sapphire.tkos.co.il>
+In-Reply-To: <20130211061949.GA5561@concordia>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -18,58 +22,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 11, 2013 at 07:31:00AM +0200, Baruch Siach wrote:
-> Hi lkml,
+Hi Michael,
 
-Hi Baruch,
+On Mon, Feb 11, 2013 at 05:19:49PM +1100, Michael Ellerman wrote:
+> On Mon, Feb 11, 2013 at 07:31:00AM +0200, Baruch Siach wrote:
 
-> The drivers/edac/mpc85xx_edac.c driver contains the following (abbreviated)
-> code snippet it its .probe:
+[...]
 
-You dropped an important detail which is the preceeding line:
+> > mpc85xx_pci_err_probe: Unable to requiest irq 16 for MPC85xx PCI err
+> While you're there, can you fix the typo :)
 
-	pdata->irq = irq_of_parse_and_map(op->dev.of_node, 0);
+The patch fixing it is already queued at 
+http://git.kernel.org/?p=linux/kernel/git/bp/bp.git;a=commitdiff;h=e7d2c215e56dc9fa0a01e26f2acfc3d73c889ba3.
 
-> 		res = devm_request_irq(&op->dev, pdata->irq,
-> 				       mpc85xx_pci_isr, IRQF_DISABLED,
-> 				       "[EDAC] PCI err", pci);
-> 		if (res < 0) {
-> 			irq_dispose_mapping(pdata->irq);
-> 			goto err2;
-> 		}
-> 
-> Now, since the requested irq is already in use, and IRQF_SHARED is not set,
-> devm_request_irq errors() out, which is OK. Less OK is the
-> irq_dispose_mapping() call, which gives me this:
-> 
-> EDAC PCI1: Giving out device to module 'MPC85xx_edac' controller 'mpc85xx_pci_err': DEV 'ffe0a000.pcie' (INTERRUPT)
-> genirq: Flags mismatch irq 16. 00000020 ([EDAC] PCI err) vs. 00000020 ([EDAC] PCI err)
+Thanks for your details explanation. I'll now try to figure out what's wrong 
+with my device tree.
 
-The hint here is to notice which other irq you're clashing with          ^^
-ie. yourself. Which is odd, that is the root of the problem.
+baruch
 
-The badness you're getting from irq_dispose_mapping() is caused because you're
-disposing of that mapping which is currently still in use, by the same interrupt.
-
-That is caused by a "feature" in the irq mapping code, where if you ask to map an
-already mapped hwirq, it will give you back the same virq. So in your case when
-you called irq_of_parse_and_map() it noticed that someone had already mapped
-that hwirq, and gave you back an existing (in use) virq.
-
-> mpc85xx_pci_err_probe: Unable to requiest irq 16 for MPC85xx PCI err
-                                       ^
-While you're there, can you fix the typo :)
-
-
-> So, is irq_dispose_mapping() the right thing to do when irq request fails?
-
-It's the right thing to do to undo the effect of irq_create_mapping(), or in your case irq_of_parse_and_map().
-
-It just falls down in this case, because you're inadvertently disposing of something that's still in use.
-
-> A simple grep shows that irq_dispose_mapping() calls are mostly limited to
-> powerpc code. Is there a reason for that?
-
-That's because the irq domain code began life as powerpc specific code. It's now become generic and will start to appear in more places.
-
-cheers
+-- 
+     http://baruch.siach.name/blog/                  ~. .~   Tk Open Systems
+=}------------------------------------------------ooO--U--Ooo------------{=
+   - baruch@tkos.co.il - tel: +972.2.679.5364, http://www.tkos.co.il -
