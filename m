@@ -1,20 +1,23 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 42E622C02A4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2013 09:18:03 +1100 (EST)
-Message-ID: <1360621078.12392.119.camel@bling.home>
-Subject: Re: [PATCH 2/2] vfio powerpc: implemented IOMMU driver for VFIO
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Mon, 11 Feb 2013 15:17:58 -0700
-In-Reply-To: <1360583672-21924-3-git-send-email-aik@ozlabs.ru>
-References: <1360583672-21924-1-git-send-email-aik@ozlabs.ru>
- <1360583672-21924-3-git-send-email-aik@ozlabs.ru>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <phileas-fogg@mail.ru>
+Received: from f126.mail.ru (f126.mail.ru [94.100.178.189])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 3D1B92C02A4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2013 03:57:53 +1100 (EST)
+From: =?UTF-8?B?UGhpbGVhcyBGb2dn?= <phileas-fogg@mail.ru>
+To: =?UTF-8?B?QW5lZXNoIEt1bWFyIEsuVg==?= <aneesh.kumar@linux.vnet.ibm.com>
+Subject: =?UTF-8?B?UmVbNV06IFBTMyBwbGF0Zm9ybSBpcyBicm9rZW4gb24gTGludXggMy43LjA=?=
 Mime-Version: 1.0
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Date: Mon, 11 Feb 2013 20:57:43 +0400
+Message-ID: <1360601863.295233799@f126.mail.ru>
+Content-Type: multipart/alternative;
+	boundary="--ALT--4HR1eHKf1360601863"
+In-Reply-To: <87zjzb4051.fsf@linux.vnet.ibm.com>
+References: <1355488506.55692113@f147.mail.ru>
+ <87k3qg4092.fsf@linux.vnet.ibm.com> <87zjzb4051.fsf@linux.vnet.ibm.com>
+Cc: =?UTF-8?B?R2VvZmYgTGV2YW5k?= <geoff@infradead.org>,
+ linuxppc-dev@lists.ozlabs.org
+Reply-To: =?UTF-8?B?UGhpbGVhcyBGb2dn?= <phileas-fogg@mail.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,403 +27,139 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-02-11 at 22:54 +1100, Alexey Kardashevskiy wrote:
-> VFIO implements platform independent stuff such as
-> a PCI driver, BAR access (via read/write on a file descriptor
-> or direct mapping when possible) and IRQ signaling.
-> 
-> The platform dependent part includes IOMMU initialization
-> and handling. This patch implements an IOMMU driver for VFIO
-> which does mapping/unmapping pages for the guest IO and
-> provides information about DMA window (required by a POWERPC
-> guest).
-> 
-> The counterpart in QEMU is required to support this functionality.
 
-Revision info would be great here too.
+----ALT--4HR1eHKf1360601863
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
 
-> Cc: David Gibson <david@gibson.dropbear.id.au>
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
->  drivers/vfio/Kconfig                |    6 +
->  drivers/vfio/Makefile               |    1 +
->  drivers/vfio/vfio_iommu_spapr_tce.c |  269 +++++++++++++++++++++++++++++++++++
->  include/uapi/linux/vfio.h           |   31 ++++
->  4 files changed, 307 insertions(+)
->  create mode 100644 drivers/vfio/vfio_iommu_spapr_tce.c
-> 
-> diff --git a/drivers/vfio/Kconfig b/drivers/vfio/Kconfig
-> index 7cd5dec..b464687 100644
-> --- a/drivers/vfio/Kconfig
-> +++ b/drivers/vfio/Kconfig
-> @@ -3,10 +3,16 @@ config VFIO_IOMMU_TYPE1
->  	depends on VFIO
->  	default n
->  
-> +config VFIO_IOMMU_SPAPR_TCE
-> +	tristate
-> +	depends on VFIO && SPAPR_TCE_IOMMU
-> +	default n
-> +
->  menuconfig VFIO
->  	tristate "VFIO Non-Privileged userspace driver framework"
->  	depends on IOMMU_API
->  	select VFIO_IOMMU_TYPE1 if X86
-> +	select VFIO_IOMMU_SPAPR_TCE if PPC_POWERNV
->  	help
->  	  VFIO provides a framework for secure userspace device drivers.
->  	  See Documentation/vfio.txt for more details.
-> diff --git a/drivers/vfio/Makefile b/drivers/vfio/Makefile
-> index 2398d4a..72bfabc 100644
-> --- a/drivers/vfio/Makefile
-> +++ b/drivers/vfio/Makefile
-> @@ -1,3 +1,4 @@
->  obj-$(CONFIG_VFIO) += vfio.o
->  obj-$(CONFIG_VFIO_IOMMU_TYPE1) += vfio_iommu_type1.o
-> +obj-$(CONFIG_VFIO_IOMMU_SPAPR_TCE) += vfio_iommu_spapr_tce.o
->  obj-$(CONFIG_VFIO_PCI) += pci/
-> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-> new file mode 100644
-> index 0000000..9b3fa88
-> --- /dev/null
-> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -0,0 +1,269 @@
-> +/*
-> + * VFIO: IOMMU DMA mapping support for TCE on POWER
-> + *
-> + * Copyright (C) 2012 IBM Corp.  All rights reserved.
+Cj4iQW5lZXNoIEt1bWFyIEsuViIgPCBhbmVlc2gua3VtYXJAbGludXgudm5ldC5pYm0uY29tID4g
+d3JpdGVzOgo+Cj4+IFBoaWxlYXMgRm9nZyA8IHBoaWxlYXMtZm9nZ0BtYWlsLnJ1ID4gd3JpdGVz
+Ogo+Pgo+Pj4gIEFuZCBhbm90aGVyIG5vdGUuCj4+PiBJIHRvb2sgYSBsb29rIGF0IHRoZSBNTVUg
+Y2hhcHRlciBpbiB0aGUgQ2VsbCBBcmNoaXRlY3R1cmUgaGFuZGJvb2sgYW5kIGluZGVlZCB0aGUg
+Zmlyc3QgMTUgYml0cyBpbiBWQSBhcmUgdHJlYXRlZCBhcyAwIGJ5IHRoZSBoYXJkd2FyZS4KPj4+
+Cj4+PiBRdW90ZToKPj4+Cj4+PiAxLiBIaWdoLW9yZGVyIGJpdHMgYWJvdmUgNjUgYml0cyBpbiB0
+aGUgODAtYml0IHZpcnR1YWwgYWRkcmVzcyAoVkFbMDoxNF0pIGFyZSBub3QgaW1wbGVtZW50ZWQu
+IFRoZSBoYXJkd2FyZSBhbHdheXMKPj4+IMKgwqAgdHJlYXRzIHRoZXNlIGJpdHMgYXMgYDAnLiBT
+b2Z0d2FyZSBtdXN0IG5vdCBzZXQgdGhlc2UgYml0cyB0byBhbnkgb3RoZXIgdmFsdWUgdGhhbiBg
+MCcgb3IgdGhlIHJlc3VsdHMgYXJlIHVuZGVmaW5lZCBpbgo+Pj4gwqDCoCB0aGUgUFBFLgo+Pj4K
+Pj4+Cj4+Cj4+IFRydWUsIHdlIG1pc3NlZCB0aGUgYmVsb3cgcGFydCBvZiBJU0EgZG9jOgo+Pgo+
+PiBJU0EgZG9jIHNheXMKPj4KPj4gIk9uIGltcGxlbWVudGF0aW9ucyB0aGF0IHN1cHBvcnQgYSB2
+aXJ0dWFsIGFkZHJlc3Mgc2l6ZQo+PiBvZiBvbmx5IG4gYml0cywgbiA8IDc4LCBiaXRzIDA6Nzct
+biBvZiB0aGUgQVZBIGZpZWxkIG11c3QgYmUKPj4gemVyb3MuICIKPj4KPj4gVGhlIENlbGwgZG9j
+dW1lbnQgSSBmb3VuZCBhdCAKPj4KPj4gIGh0dHBzOi8vd3d3LTAxLmlibS5jb20vY2hpcHMvdGVj
+aGxpYi90ZWNobGliLm5zZi90ZWNoZG9jcy83QTc3Q0NERjE0RkU3MEQ1ODUyNTc1Q0EwMDc0RThF
+RC8kZmlsZS9DZWxsQkVfSGFuZGJvb2tfdjEuMTJfM0FwcjA5X3B1Yi5wZGYKPj4KPj4gZ2l2ZXMg
+Cj4+Cj4+IFZpcnR1YWwgQWRkcmVzcyAoVkEpIFNpemUgLT4gNjUgYml0cwo+Pgo+PiBTbyBhcyBw
+ZXIgSVNBLCBiaXRzIDA6MTIgc2hvdWxkIGJlIHplcm8sIHdoaWNoIHNob3VsZCBtYWtlIDA6MTQg
+b2YgUFRFCj4+IGZpZWxkcyB6ZXJvIGZvciBDZWxsLgo+Pgo+PiBJIHdpbGwgdHJ5IHRvIGRvIGEg
+cGF0Y2guIAo+Pgo+Cj5DYW4geW91IHRyeSB0aGlzIHBhdGNoID8KPgo+ZGlmZiAtLWdpdCBhL2Fy
+Y2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9tbXUtaGFzaDY0LmggYi9hcmNoL3Bvd2VycGMvaW5jbHVk
+ZS9hc20vbW11LWhhc2g2NC5oCj5pbmRleCAyZmRiNDdhLi5mMDFmZDlhIDEwMDY0NAo+LS0tIGEv
+YXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL21tdS1oYXNoNjQuaAo+KysrIGIvYXJjaC9wb3dlcnBj
+L2luY2x1ZGUvYXNtL21tdS1oYXNoNjQuaAo+QEAgLTM4MSwyMSArMzgxLDM3IEBAIGV4dGVybiB2
+b2lkIHNsYl9zZXRfc2l6ZSh1MTYgc2l6ZSk7Cj7CoMKgKiBoYXNoIGNvbGxpc2lvbnMuCj7CoMKg
+Ki8KPsKgCj4rLyogVGhpcyBzaG91bGQgZ28gaW4gS2NvbmZpZyAqLwo+Ky8qCj4rICogQmUgY2Fy
+ZWZ1bCB3aXRoIHRoaXMgdmFsdWUuIFRoaXMgZGV0ZXJtaW5lcyB0aGUgVlNJRF9NT0RVTFVTXyog
+IGFuZCB0aGF0Cj4rICogbmVlZCB0byBiZSBjby1wcmltZSB3aXRoIFZTSURfTVVMVElQTElFUioK
+PisgKi8KPisjaWYgMQo+KyNkZWZpbmUgTUFYX1ZJUlRVQUxfQUREUl9CSVRTCTY1Cj4rI2Vsc2UK
+PisjZGVmaW5lIE1BWF9WSVJUVUFMX0FERFJfQklUUwk2Ngo+KyNlbmRpZgo+Ky8qCj4rICogT25l
+IGJpdCBpcyB0YWtlbiBieSB0aGUga2VybmVsLCBvbmx5IHRoZSByZXN0IG9mIHNwYWNlIGlzIGF2
+YWlsYWJsZSBmb3IgdGhlCj4rICogdXNlciBzcGFjZS4KPisgKi8KPisjZGVmaW5lIENPTlRFWFRf
+QklUUwkJKE1BWF9WSVJUVUFMX0FERFJfQklUUyAtIFwKPisJCQkJIChVU0VSX0VTSURfQklUUyAr
+IFNJRF9TSElGVCArIDEpKQo+KyNkZWZpbmUgVVNFUl9FU0lEX0JJVFMJCTE4Cj4rI2RlZmluZSBV
+U0VSX0VTSURfQklUU18xVAk2Cj4rCj7CoC8qCj7CoMKgKiBUaGlzIHNob3VsZCBiZSBjb21wdXRl
+ZCBzdWNoIHRoYXQgcHJvdG92b3NpZCAqIHZzaWRfbXVsaXRwbGllcgo+wqDCoCogZG9lc24ndCBv
+dmVyZmxvdyA2NCBiaXRzLiBJdCBzaG91bGQgYWxzbyBiZSBjby1wcmltZSB0byB2c2lkX21vZHVs
+dXMKPsKgwqAqLwo+wqAjZGVmaW5lIFZTSURfTVVMVElQTElFUl8yNTZNCUFTTV9DT05TVCgxMjUz
+ODA3MykJLyogMjQtYml0IHByaW1lICovCj4tI2RlZmluZSBWU0lEX0JJVFNfMjU2TQkJMzgKPisj
+ZGVmaW5lIFZTSURfQklUU18yNTZNCQkoQ09OVEVYVF9CSVRTICsgVVNFUl9FU0lEX0JJVFMgKyAx
+KQo+wqAjZGVmaW5lIFZTSURfTU9EVUxVU18yNTZNCSgoMVVMPDxWU0lEX0JJVFNfMjU2TSktMSkK
+PsKgCj7CoCNkZWZpbmUgVlNJRF9NVUxUSVBMSUVSXzFUCUFTTV9DT05TVCgxMjUzODA3MykJLyog
+MjQtYml0IHByaW1lICovCj4tI2RlZmluZSBWU0lEX0JJVFNfMVQJCTI2Cj4rI2RlZmluZSBWU0lE
+X0JJVFNfMVQJCShDT05URVhUX0JJVFMgKyBVU0VSX0VTSURfQklUU18xVCArIDEpCj7CoCNkZWZp
+bmUgVlNJRF9NT0RVTFVTXzFUCQkoKDFVTDw8VlNJRF9CSVRTXzFUKS0xKQo+wqAKPi0jZGVmaW5l
+IENPTlRFWFRfQklUUwkJMTkKPi0jZGVmaW5lIFVTRVJfRVNJRF9CSVRTCQkxOAo+LSNkZWZpbmUg
+VVNFUl9FU0lEX0JJVFNfMVQJNgo+wqAKPsKgI2RlZmluZSBVU0VSX1ZTSURfUkFOR0UJKDFVTCA8
+PCAoVVNFUl9FU0lEX0JJVFMgKyBTSURfU0hJRlQpKQo+wqAKPgoKVGVzdGluZyBpdCB3aXRoIExp
+bnV4IDMuOC4wLXJjNywgaXQgbG9va3MgZ29vZCBzbyBmYXIgdW5kZXIgaGVhdnkgaGFyZCBkaXNr
+IHVzYWdlLgoK
 
-2013 now
+----ALT--4HR1eHKf1360601863
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: base64
 
-> + *     Author: Alexey Kardashevskiy <aik@ozlabs.ru>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + * Derived from original vfio_iommu_type1.c:
-> + * Copyright (C) 2012 Red Hat, Inc.  All rights reserved.
-> + *     Author: Alex Williamson <alex.williamson@redhat.com>
-> + */
-> +
-> +#include <linux/module.h>
-> +#include <linux/pci.h>
-> +#include <linux/slab.h>
-> +#include <linux/uaccess.h>
-> +#include <linux/err.h>
-> +#include <linux/vfio.h>
-> +#include <asm/iommu.h>
-> +#include <asm/tce.h>
-> +
-> +#define DRIVER_VERSION  "0.1"
-> +#define DRIVER_AUTHOR   "aik@ozlabs.ru"
-> +#define DRIVER_DESC     "VFIO IOMMU SPAPR TCE"
-> +
-> +static void tce_iommu_detach_group(void *iommu_data,
-> +		struct iommu_group *iommu_group);
-> +
-> +/*
-> + * VFIO IOMMU fd for SPAPR_TCE IOMMU implementation
-> + *
-> + * This code handles mapping and unmapping of user data buffers
-> + * into DMA'ble space using the IOMMU
-> + */
-> +
-> +/*
-> + * The container descriptor supports only a single group per container.
-> + * Required by the API as the container is not supplied with the IOMMU group
-> + * at the moment of initialization.
-> + */
-> +struct tce_container {
-> +	struct mutex lock;
-> +	struct iommu_table *tbl;
-> +};
-> +
-> +static void *tce_iommu_open(unsigned long arg)
-> +{
-> +	struct tce_container *container;
-> +
-> +	if (arg != VFIO_SPAPR_TCE_IOMMU) {
-> +		pr_err("tce_vfio: Wrong IOMMU type\n");
-> +		return ERR_PTR(-EINVAL);
-> +	}
-> +
-> +	container = kzalloc(sizeof(*container), GFP_KERNEL);
-> +	if (!container)
-> +		return ERR_PTR(-ENOMEM);
-> +
-> +	mutex_init(&container->lock);
-> +
-> +	return container;
-> +}
-> +
-> +static void tce_iommu_release(void *iommu_data)
-> +{
-> +	struct tce_container *container = iommu_data;
-> +
-> +	WARN_ON(container->tbl && !container->tbl->it_group);
-> +	if (container->tbl && container->tbl->it_group)
-> +		tce_iommu_detach_group(iommu_data, container->tbl->it_group);
-> +
-> +	mutex_destroy(&container->lock);
-> +
-> +	kfree(container);
-> +}
-> +
-> +static long tce_iommu_ioctl(void *iommu_data,
-> +				 unsigned int cmd, unsigned long arg)
-> +{
-> +	struct tce_container *container = iommu_data;
-> +	unsigned long minsz;
-> +	long ret;
-> +
-> +	switch (cmd) {
-> +	case VFIO_CHECK_EXTENSION:
-> +		return (arg == VFIO_SPAPR_TCE_IOMMU) ? 1 : 0;
-> +
-> +	case VFIO_IOMMU_SPAPR_TCE_GET_INFO: {
-> +		struct vfio_iommu_spapr_tce_info info;
-> +		struct iommu_table *tbl = container->tbl;
-> +
-> +		if (WARN_ON(!tbl))
-> +			return -ENXIO;
-> +
-> +		minsz = offsetofend(struct vfio_iommu_spapr_tce_info,
-> +				dma32_window_size);
-> +
-> +		if (copy_from_user(&info, (void __user *)arg, minsz))
-> +			return -EFAULT;
-> +
-> +		if (info.argsz < minsz)
-> +			return -EINVAL;
-> +
-> +		info.dma32_window_start = tbl->it_offset << IOMMU_PAGE_SHIFT;
-> +		info.dma32_window_size = tbl->it_size << IOMMU_PAGE_SHIFT;
-> +		info.flags = 0;
-> +
-> +		if (copy_to_user((void __user *)arg, &info, minsz))
-> +			return -EFAULT;
-> +
-> +		return 0;
-> +	}
-> +	case VFIO_IOMMU_MAP_DMA: {
-> +		vfio_iommu_spapr_tce_dma_map param;
-> +		struct iommu_table *tbl = container->tbl;
-> +		unsigned long tce;
-> +
-> +		if (WARN_ON(!tbl))
-> +			return -ENXIO;
-> +
-> +		minsz = offsetofend(vfio_iommu_spapr_tce_dma_map, size);
-> +
-> +		if (copy_from_user(&param, (void __user *)arg, minsz))
-> +			return -EFAULT;
-> +
-> +		if (param.argsz < minsz)
-> +			return -EINVAL;
-> +
-> +		if (param.flags & ~(VFIO_DMA_MAP_FLAG_READ |
-> +				VFIO_DMA_MAP_FLAG_WRITE))
-> +			return -EINVAL;
-> +
-> +		if ((param.size & ~IOMMU_PAGE_MASK) ||
-> +				(param.vaddr & ~IOMMU_PAGE_MASK))
-> +			return -EINVAL;
-> +
-> +		/* TODO: support multiple TCEs */
-> +		if (param.size != IOMMU_PAGE_SIZE) {
+CjxIVE1MPjxCT0RZPjxicj4KPGJsb2NrcXVvdGUgc3R5bGU9ImJvcmRlci1sZWZ0OjFweCBzb2xp
+ZCAjMDg1N0E2OyBtYXJnaW46MTBweDsgcGFkZGluZzowIDAgMCAxMHB4OyIgY2xhc3M9Im1haWxy
+dS1ibG9ja3F1b3RlIj4KCTxkaXYgaWQ9IiI+PGRpdiBjbGFzcz0ianMtaGVscGVyIGpzLXJlYWRt
+c2ctbXNnIj4KCTxzdHlsZSB0eXBlPSJ0ZXh0L2NzcyI+PC9zdHlsZT4KCTxkaXYgaWQ9InN0eWxl
+XzEzNjA1NzgzOTQwMDAwMDAwMzI3IiBjbGFzcz0ibXJfcmVhZF9fYm9keSI+CgkJPGJhc2UgdGFy
+Z2V0PSJfc2VsZiIgaHJlZj0iaHR0cHM6Ly9lLm1haWwucnUvY2dpLWJpbi8iPgoJCQoJCQk8ZGl2
+IGlkPSJzdHlsZV8xMzYwNTc4Mzk0MDAwMDAwMDMyN19CT0RZIj4iQW5lZXNoIEt1bWFyIEsuViIg
+Jmx0OzxhIGhyZWY9InNlbnRtc2c/Y29tcG9zZSZhbXA7VG89YW5lZXNoLmt1bWFyQGxpbnV4LnZu
+ZXQuaWJtLmNvbSI+YW5lZXNoLmt1bWFyQGxpbnV4LnZuZXQuaWJtLmNvbTwvYT4mZ3Q7IHdyaXRl
+czo8YnI+PGJyPiZndDsgUGhpbGVhcyBGb2dnICZsdDs8YSBocmVmPSJzZW50bXNnP2NvbXBvc2Um
+YW1wO1RvPXBoaWxlYXMlMmRmb2dnQG1haWwucnUiPnBoaWxlYXMtZm9nZ0BtYWlsLnJ1PC9hPiZn
+dDsgd3JpdGVzOjxicj4mZ3Q7PGJyPiZndDsmZ3Q7ICBBbmQgYW5vdGhlciBub3RlLjxicj4mZ3Q7
+Jmd0OyBJIHRvb2sgYSBsb29rIGF0IHRoZSBNTVUgY2hhcHRlciBpbiB0aGUgQ2VsbCBBcmNoaXRl
+Y3R1cmUgaGFuZGJvb2sgYW5kIGluZGVlZCB0aGUgZmlyc3QgMTUgYml0cyBpbiBWQSBhcmUgdHJl
+YXRlZCBhcyAwIGJ5IHRoZSBoYXJkd2FyZS48YnI+Jmd0OyZndDs8YnI+Jmd0OyZndDsgUXVvdGU6
+PGJyPiZndDsmZ3Q7PGJyPiZndDsmZ3Q7IDEuIEhpZ2gtb3JkZXIgYml0cyBhYm92ZSA2NSBiaXRz
+IGluIHRoZSA4MC1iaXQgdmlydHVhbCBhZGRyZXNzIChWQVswOjE0XSkgYXJlIG5vdCBpbXBsZW1l
+bnRlZC4gVGhlIGhhcmR3YXJlIGFsd2F5czxicj4mZ3Q7Jmd0OyAmbmJzcDsmbmJzcDsgdHJlYXRz
+IHRoZXNlIGJpdHMgYXMgYDAnLiBTb2Z0d2FyZSBtdXN0IG5vdCBzZXQgdGhlc2UgYml0cyB0byBh
+bnkgb3RoZXIgdmFsdWUgdGhhbiBgMCcgb3IgdGhlIHJlc3VsdHMgYXJlIHVuZGVmaW5lZCBpbjxi
+cj4mZ3Q7Jmd0OyAmbmJzcDsmbmJzcDsgdGhlIFBQRS48YnI+Jmd0OyZndDs8YnI+Jmd0OyZndDs8
+YnI+Jmd0Ozxicj4mZ3Q7IFRydWUsIHdlIG1pc3NlZCB0aGUgYmVsb3cgcGFydCBvZiBJU0EgZG9j
+Ojxicj4mZ3Q7PGJyPiZndDsgSVNBIGRvYyBzYXlzPGJyPiZndDs8YnI+Jmd0OyAiT24gaW1wbGVt
+ZW50YXRpb25zIHRoYXQgc3VwcG9ydCBhIHZpcnR1YWwgYWRkcmVzcyBzaXplPGJyPiZndDsgb2Yg
+b25seSBuIGJpdHMsIG4gJmx0OyA3OCwgYml0cyAwOjc3LW4gb2YgdGhlIEFWQSBmaWVsZCBtdXN0
+IGJlPGJyPiZndDsgemVyb3MuICI8YnI+Jmd0Ozxicj4mZ3Q7IFRoZSBDZWxsIGRvY3VtZW50IEkg
+Zm91bmQgYXQgPGJyPiZndDs8YnI+Jmd0OyA8YSBocmVmPSJodHRwczovL3d3dy0wMS5pYm0uY29t
+L2NoaXBzL3RlY2hsaWIvdGVjaGxpYi5uc2YvdGVjaGRvY3MvN0E3N0NDREYxNEZFNzBENTg1MjU3
+NUNBMDA3NEU4RUQvJGZpbGUvQ2VsbEJFX0hhbmRib29rX3YxLjEyXzNBcHIwOV9wdWIucGRmIiB0
+YXJnZXQ9Il9ibGFuayI+aHR0cHM6Ly93d3ctMDEuaWJtLmNvbS9jaGlwcy90ZWNobGliL3RlY2hs
+aWIubnNmL3RlY2hkb2NzLzdBNzdDQ0RGMTRGRTcwRDU4NTI1NzVDQTAwNzRFOEVELyRmaWxlL0Nl
+bGxCRV9IYW5kYm9va192MS4xMl8zQXByMDlfcHViLnBkZjwvYT48YnI+Jmd0Ozxicj4mZ3Q7IGdp
+dmVzIDxicj4mZ3Q7PGJyPiZndDsgVmlydHVhbCBBZGRyZXNzIChWQSkgU2l6ZSAtJmd0OyA2NSBi
+aXRzPGJyPiZndDs8YnI+Jmd0OyBTbyBhcyBwZXIgSVNBLCBiaXRzIDA6MTIgc2hvdWxkIGJlIHpl
+cm8sIHdoaWNoIHNob3VsZCBtYWtlIDA6MTQgb2YgUFRFPGJyPiZndDsgZmllbGRzIHplcm8gZm9y
+IENlbGwuPGJyPiZndDs8YnI+Jmd0OyBJIHdpbGwgdHJ5IHRvIGRvIGEgcGF0Y2guIDxicj4mZ3Q7
+PGJyPjxicj5DYW4geW91IHRyeSB0aGlzIHBhdGNoID88YnI+PGJyPmRpZmYgLS1naXQgYS9hcmNo
+L3Bvd2VycGMvaW5jbHVkZS9hc20vbW11LWhhc2g2NC5oIGIvYXJjaC9wb3dlcnBjL2luY2x1ZGUv
+YXNtL21tdS1oYXNoNjQuaDxicj5pbmRleCAyZmRiNDdhLi5mMDFmZDlhIDEwMDY0NDxicj4tLS0g
+YS9hcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vbW11LWhhc2g2NC5oPGJyPisrKyBiL2FyY2gvcG93
+ZXJwYy9pbmNsdWRlL2FzbS9tbXUtaGFzaDY0Lmg8YnI+QEAgLTM4MSwyMSArMzgxLDM3IEBAIGV4
+dGVybiB2b2lkIHNsYl9zZXRfc2l6ZSh1MTYgc2l6ZSk7PGJyPiZuYnNwOyZuYnNwOyogaGFzaCBj
+b2xsaXNpb25zLjxicj4mbmJzcDsmbmJzcDsqLzxicj4mbmJzcDs8YnI+Ky8qIFRoaXMgc2hvdWxk
+IGdvIGluIEtjb25maWcgKi88YnI+Ky8qPGJyPisgKiBCZSBjYXJlZnVsIHdpdGggdGhpcyB2YWx1
+ZS4gVGhpcyBkZXRlcm1pbmVzIHRoZSBWU0lEX01PRFVMVVNfKiAgYW5kIHRoYXQ8YnI+KyAqIG5l
+ZWQgdG8gYmUgY28tcHJpbWUgd2l0aCBWU0lEX01VTFRJUExJRVIqPGJyPisgKi88YnI+KyNpZiAx
+PGJyPisjZGVmaW5lIE1BWF9WSVJUVUFMX0FERFJfQklUUwk2NTxicj4rI2Vsc2U8YnI+KyNkZWZp
+bmUgTUFYX1ZJUlRVQUxfQUREUl9CSVRTCTY2PGJyPisjZW5kaWY8YnI+Ky8qPGJyPisgKiBPbmUg
+Yml0IGlzIHRha2VuIGJ5IHRoZSBrZXJuZWwsIG9ubHkgdGhlIHJlc3Qgb2Ygc3BhY2UgaXMgYXZh
+aWxhYmxlIGZvciB0aGU8YnI+KyAqIHVzZXIgc3BhY2UuPGJyPisgKi88YnI+KyNkZWZpbmUgQ09O
+VEVYVF9CSVRTCQkoTUFYX1ZJUlRVQUxfQUREUl9CSVRTIC0gXDxicj4rCQkJCSAoVVNFUl9FU0lE
+X0JJVFMgKyBTSURfU0hJRlQgKyAxKSk8YnI+KyNkZWZpbmUgVVNFUl9FU0lEX0JJVFMJCTE4PGJy
+PisjZGVmaW5lIFVTRVJfRVNJRF9CSVRTXzFUCTY8YnI+Kzxicj4mbmJzcDsvKjxicj4mbmJzcDsm
+bmJzcDsqIFRoaXMgc2hvdWxkIGJlIGNvbXB1dGVkIHN1Y2ggdGhhdCBwcm90b3Zvc2lkICogdnNp
+ZF9tdWxpdHBsaWVyPGJyPiZuYnNwOyZuYnNwOyogZG9lc24ndCBvdmVyZmxvdyA2NCBiaXRzLiBJ
+dCBzaG91bGQgYWxzbyBiZSBjby1wcmltZSB0byB2c2lkX21vZHVsdXM8YnI+Jm5ic3A7Jm5ic3A7
+Ki88YnI+Jm5ic3A7I2RlZmluZSBWU0lEX01VTFRJUExJRVJfMjU2TQlBU01fQ09OU1QoMTI1Mzgw
+NzMpCS8qIDI0LWJpdCBwcmltZSAqLzxicj4tI2RlZmluZSBWU0lEX0JJVFNfMjU2TQkJMzg8YnI+
+KyNkZWZpbmUgVlNJRF9CSVRTXzI1Nk0JCShDT05URVhUX0JJVFMgKyBVU0VSX0VTSURfQklUUyAr
+IDEpPGJyPiZuYnNwOyNkZWZpbmUgVlNJRF9NT0RVTFVTXzI1Nk0JKCgxVUwmbHQ7Jmx0O1ZTSURf
+QklUU18yNTZNKS0xKTxicj4mbmJzcDs8YnI+Jm5ic3A7I2RlZmluZSBWU0lEX01VTFRJUExJRVJf
+MVQJQVNNX0NPTlNUKDEyNTM4MDczKQkvKiAyNC1iaXQgcHJpbWUgKi88YnI+LSNkZWZpbmUgVlNJ
+RF9CSVRTXzFUCQkyNjxicj4rI2RlZmluZSBWU0lEX0JJVFNfMVQJCShDT05URVhUX0JJVFMgKyBV
+U0VSX0VTSURfQklUU18xVCArIDEpPGJyPiZuYnNwOyNkZWZpbmUgVlNJRF9NT0RVTFVTXzFUCQko
+KDFVTCZsdDsmbHQ7VlNJRF9CSVRTXzFUKS0xKTxicj4mbmJzcDs8YnI+LSNkZWZpbmUgQ09OVEVY
+VF9CSVRTCQkxOTxicj4tI2RlZmluZSBVU0VSX0VTSURfQklUUwkJMTg8YnI+LSNkZWZpbmUgVVNF
+Ul9FU0lEX0JJVFNfMVQJNjxicj4mbmJzcDs8YnI+Jm5ic3A7I2RlZmluZSBVU0VSX1ZTSURfUkFO
+R0UJKDFVTCAmbHQ7Jmx0OyAoVVNFUl9FU0lEX0JJVFMgKyBTSURfU0hJRlQpKTxicj4mbmJzcDs8
+YnI+PGJyPjwvZGl2PgoJCQkKCQkKCQk8YmFzZSB0YXJnZXQ9Il9zZWxmIiBocmVmPSJodHRwczov
+L2UubWFpbC5ydS9jZ2ktYmluLyI+Cgk8L2Rpdj4KCgkKPC9kaXY+CgoKPC9kaXY+CjwvYmxvY2tx
+dW90ZT4KPGJyPlRlc3RpbmcgaXQgd2l0aCBMaW51eCAzLjguMC1yYzcsIGl0IGxvb2tzIGdvb2Qg
+c28gZmFyIHVuZGVyIGhlYXZ5IGhhcmQgZGlzayB1c2FnZS48YnI+PGJyPjwvQk9EWT48L0hUTUw+
+Cg==
 
-Ouch, ioctl per page...
-
-> +			pr_err("VFIO map on POWER supports only %lu page size\n",
-> +					IOMMU_PAGE_SIZE);
-> +			return -EINVAL;
-> +		}
-> +
-> +		/* iova is checked by the IOMMU API */
-> +		tce = param.vaddr;
-> +		if (param.flags & VFIO_DMA_MAP_FLAG_READ)
-> +			tce |= TCE_PCI_READ;
-> +		if (param.flags & VFIO_DMA_MAP_FLAG_WRITE)
-> +			tce |= TCE_PCI_WRITE;
-> +
-> +		ret = iommu_put_tce_user_mode(tbl, param.iova, tce);
-> +		iommu_flush_tce(tbl);
-> +
-> +		return ret;
-> +	}
-> +	case VFIO_IOMMU_UNMAP_DMA: {
-> +		vfio_iommu_spapr_tce_dma_unmap param;
-> +		struct iommu_table *tbl = container->tbl;
-> +
-> +		if (WARN_ON(!tbl))
-> +			return -ENXIO;
-> +
-> +		minsz = offsetofend(vfio_iommu_spapr_tce_dma_unmap, size);
-> +
-> +		if (copy_from_user(&param, (void __user *)arg, minsz))
-> +			return -EFAULT;
-> +
-> +		if (param.argsz < minsz)
-> +			return -EINVAL;
-> +
-> +		/* No flag is supported now */
-> +		if (param.flags)
-> +			return -EINVAL;
-> +
-> +		if (param.size & ~IOMMU_PAGE_MASK)
-> +			return -EINVAL;
-
-But you support multi-page unmaps?
-
-> +
-> +		/* iova is checked by the IOMMU API */
-> +		ret = iommu_clear_tce_user_mode(tbl, param.iova, 0,
-> +				param.size >> IOMMU_PAGE_SHIFT);
-> +		iommu_flush_tce(tbl);
-> +
-> +		return ret;
-> +	}
-> +	}
-> +
-> +	return -ENOTTY;
-> +}
-> +
-> +static int tce_iommu_attach_group(void *iommu_data,
-> +		struct iommu_group *iommu_group)
-> +{
-> +	int ret;
-> +	struct tce_container *container = iommu_data;
-> +	struct iommu_table *tbl = iommu_group_get_iommudata(iommu_group);
-> +
-> +	BUG_ON(!tbl);
-> +	mutex_lock(&container->lock);
-> +	pr_debug("tce_vfio: Attaching group #%u to iommu %p\n",
-> +			iommu_group_id(iommu_group), iommu_group);
-> +	if (container->tbl) {
-> +		pr_warn("tce_vfio: Only one group per IOMMU container is allowed, existing id=%d, attaching id=%d\n",
-> +				iommu_group_id(container->tbl->it_group),
-> +				iommu_group_id(iommu_group));
-> +		mutex_unlock(&container->lock);
-> +		return -EBUSY;
-> +	}
-> +
-> +	container->tbl = tbl;
-> +	ret = iommu_lock_table(tbl, true);
-
-Bug, container->tbl is set regardless of iommu_lock_table.
-
-Ok, so now we're checking rlimits and handling page accounting on
-VFIO_GROUP_SET_CONTAINER to avoid any overhead at map/unmap.  How can
-the user learn tbl->it_size to set their locked page limit prior to
-this?  It's available from GET_INFO, but there's a chicken and egg
-problem that to get it there you have to get past this, which means
-you're already ok.  Maybe it's in sysfs somewhere already or it could be
-exposed in the iommu group like the name attribute.  Otherwise we might
-consider doing locking on first mapping.  Thanks,
-
-Alex
-
-> +	mutex_unlock(&container->lock);
-> +
-> +	return ret;
-> +}
-> +
-> +static void tce_iommu_detach_group(void *iommu_data,
-> +		struct iommu_group *iommu_group)
-> +{
-> +	struct tce_container *container = iommu_data;
-> +	struct iommu_table *tbl = iommu_group_get_iommudata(iommu_group);
-> +
-> +	BUG_ON(!tbl);
-> +	mutex_lock(&container->lock);
-> +	if (tbl != container->tbl) {
-> +		pr_warn("tce_vfio: detaching group #%u, expected group is #%u\n",
-> +				iommu_group_id(iommu_group),
-> +				iommu_group_id(tbl->it_group));
-> +	} else {
-> +
-> +		pr_debug("tce_vfio: detaching group #%u from iommu %p\n",
-> +				iommu_group_id(iommu_group), iommu_group);
-> +
-> +		container->tbl = NULL;
-> +		iommu_lock_table(tbl, false);
-> +	}
-> +	mutex_unlock(&container->lock);
-> +}
-> +
-> +const struct vfio_iommu_driver_ops tce_iommu_driver_ops = {
-> +	.name		= "iommu-vfio-powerpc",
-> +	.owner		= THIS_MODULE,
-> +	.open		= tce_iommu_open,
-> +	.release	= tce_iommu_release,
-> +	.ioctl		= tce_iommu_ioctl,
-> +	.attach_group	= tce_iommu_attach_group,
-> +	.detach_group	= tce_iommu_detach_group,
-> +};
-> +
-> +static int __init tce_iommu_init(void)
-> +{
-> +	return vfio_register_iommu_driver(&tce_iommu_driver_ops);
-> +}
-> +
-> +static void __exit tce_iommu_cleanup(void)
-> +{
-> +	vfio_unregister_iommu_driver(&tce_iommu_driver_ops);
-> +}
-> +
-> +module_init(tce_iommu_init);
-> +module_exit(tce_iommu_cleanup);
-> +
-> +MODULE_VERSION(DRIVER_VERSION);
-> +MODULE_LICENSE("GPL v2");
-> +MODULE_AUTHOR(DRIVER_AUTHOR);
-> +MODULE_DESCRIPTION(DRIVER_DESC);
-> +
-> diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
-> index 4758d1b..ea9a9a7 100644
-> --- a/include/uapi/linux/vfio.h
-> +++ b/include/uapi/linux/vfio.h
-> @@ -22,6 +22,7 @@
->  /* Extensions */
->  
->  #define VFIO_TYPE1_IOMMU		1
-> +#define VFIO_SPAPR_TCE_IOMMU		2
->  
->  /*
->   * The IOCTL interface is designed for extensibility by embedding the
-> @@ -365,4 +366,34 @@ struct vfio_iommu_type1_dma_unmap {
->  
->  #define VFIO_IOMMU_UNMAP_DMA _IO(VFIO_TYPE, VFIO_BASE + 14)
->  
-> +/* -------- Additional API for SPAPR TCE (Server POWERPC) IOMMU -------- */
-> +
-> +/*
-> + * The SPAPR TCE info struct provides the information about the PCI bus
-> + * address ranges available for DMA, these values are programmed into
-> + * the hardware so the guest has to know that information.
-> + *
-> + * The DMA 32 bit window start is an absolute PCI bus address.
-> + * The IOVA address passed via map/unmap ioctls are absolute PCI bus
-> + * addresses too so the window works as a filter rather than an offset
-> + * for IOVA addresses.
-> + *
-> + * A flag will need to be added if other page sizes are supported,
-> + * so as defined here, it is always 4k.
-> + */
-> +struct vfio_iommu_spapr_tce_info {
-> +	__u32 argsz;
-> +	__u32 flags;			/* reserved for future use */
-> +	__u32 dma32_window_start;	/* 32 bit window start (bytes) */
-> +	__u32 dma32_window_size;	/* 32 bit window size (bytes) */
-> +};
-> +
-> +#define VFIO_IOMMU_SPAPR_TCE_GET_INFO	_IO(VFIO_TYPE, VFIO_BASE + 12)
-> +
-> +/* Reuse type1 map/unmap structs as they are the same at the moment */
-> +typedef struct vfio_iommu_type1_dma_map vfio_iommu_spapr_tce_dma_map;
-> +typedef struct vfio_iommu_type1_dma_unmap vfio_iommu_spapr_tce_dma_unmap;
-> +
-> +/* ***************************************************************** */
-> +
->  #endif /* _UAPIVFIO_H */
+----ALT--4HR1eHKf1360601863--
