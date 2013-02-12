@@ -1,16 +1,29 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Bhushan Bharat-R65777 <R65777@freescale.com>
-Subject: Re: BOOKE KVM calling load_up_fpu from C?
-In-reply-to: <6A3DF150A5B70D4F9B66A25E3F7C888D0659EC82@039-SN2MPN1-023.039d.mgd.msft.net>
-References: <14306.1360639760@ale.ozlabs.ibm.com>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0659EC4A@039-SN2MPN1-023.039d.mgd.msft.net>
- <16381.1360640767@ale.ozlabs.ibm.com>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0659EC82@039-SN2MPN1-023.039d.mgd.msft.net>
-Date: Tue, 12 Feb 2013 15:16:18 +1100
-Message-ID: <30014.1360642578@ale.ozlabs.ibm.com>
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id 4DE692C02C8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2013 15:40:21 +1100 (EST)
+Date: Tue, 12 Feb 2013 15:40:10 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: James Hogan <james.hogan@imgtec.com>
+Subject: Re: [PATCH] Centralise CONFIG_ARCH_NO_VIRT_TO_BUS
+Message-Id: <20130212154010.3f8b88da4756c7cf04e28a04@canb.auug.org.au>
+In-Reply-To: <5118DCA8.1030905@imgtec.com>
+References: <ADE657CA350FB648AAC2C43247A983F00206B25884B1@AUSP01VMBX24.collaborationhost.net>
+ <CAErSpo6WG2R_8sa=rOmAOci-3iFpDs2NFzNkZYxDnD2oTiMQJg@mail.gmail.com>
+ <20121113082615.2f482eb8835daf46e1f27947@canb.auug.org.au>
+ <5118DCA8.1030905@imgtec.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Tue__12_Feb_2013_15_40_10_+1100_/tP3R2cmcOMVcqGq"
+Cc: linux-arch@vger.kernel.org, linux-sh@vger.kernel.org,
+ Vineet Gupta <Vineet.Gupta1@synopsys.com>, linux-kernel@vger.kernel.org,
+ "David S. Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org,
+ Paul Mundt <lethal@linux-sh.org>, Paul Mackerras <paulus@samba.org>,
+ Bjorn Helgaas <bhelgaas@google.com>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org,
+ H Hartley Sweeten <hartleys@visionengravers.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,89 +33,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Bhushan Bharat-R65777 <R65777@freescale.com> wrote:
+--Signature=_Tue__12_Feb_2013_15_40_10_+1100_/tP3R2cmcOMVcqGq
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> 
-> > -----Original Message-----
-> > From: Michael Neuling [mailto:mikey@neuling.org]
-> > Sent: Tuesday, February 12, 2013 9:16 AM
-> > To: Bhushan Bharat-R65777
-> > Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org
-> > Subject: Re: BOOKE KVM calling load_up_fpu from C?
-> > 
-> > Bhushan Bharat-R65777 <R65777@freescale.com> wrote:
-> > 
-> > >
-> > >
-> > > > -----Original Message-----
-> > > > From: Linuxppc-dev [mailto:linuxppc-dev-
-> > > > bounces+bharat.bhushan=freescale.com@lists.ozlabs.org] On Behalf Of
-> > > > bounces+Michael
-> > > > Neuling
-> > > > Sent: Tuesday, February 12, 2013 8:59 AM
-> > > > To: Wood Scott-B07421
-> > > > Cc: linuxppc-dev@lists.ozlabs.org
-> > > > Subject: BOOKE KVM calling load_up_fpu from C?
-> > > >
-> > > > Scott,
-> > > >
-> > > > I was looking at changing how load_up_fpu works and I found this in
-> > > > arch/powerpc/kvm/booke.h:
-> > > >
-> > > > static inline void kvmppc_load_guest_fp(struct kvm_vcpu *vcpu) {
-> > > > #ifdef CONFIG_PPC_FPU
-> > > > 	if (vcpu->fpu_active && !(current->thread.regs->msr & MSR_FP)) {
-> > > > 		load_up_fpu();
-> > > > 		current->thread.regs->msr |= MSR_FP;
-> > > > 	}
-> > > > #endif
-> > > > }
-> > > >
-> > > > I'm wondering how this is suppose to work since load_up_fpu is
-> > > > suppose to have MSR in R12?
-> > >
-> > > Is not the load_up_fpu() does mfmsr:
-> > >
-> > > _GLOBAL(load_up_fpu)
-> > >         mfmsr   r5
-> > >         ori     r5,r5,MSR_FP
-> > > #ifdef CONFIG_VSX
-> > > BEGIN_FTR_SECTION
-> > >         oris    r5,r5,MSR_VSX@h
-> > > END_FTR_SECTION_IFSET(CPU_FTR_VSX)
-> > > #endif
-> > >         SYNC
-> > >         MTMSRD(r5)                      /* enable use of fpu now */
-> > >         isync
-> > > <snip>
-> > 
-> > Look further down...
-> > 
-> > #ifdef CONFIG_PPC32
-> > 	mfspr	r5,SPRN_SPRG_THREAD		/* current task's THREAD (phys) */
-> > 	lwz	r4,THREAD_FPEXC_MODE(r5)
-> > 	ori	r9,r9,MSR_FP		/* enable FP for current */
-> > 	or	r9,r9,r4
-> > #else
-> > 	ld	r4,PACACURRENT(r13)
-> > 	addi	r5,r4,THREAD		/* Get THREAD */
-> > 	lwz	r4,THREAD_FPEXC_MODE(r5)
-> > 	ori	r12,r12,MSR_FP
-> > 	or	r12,r12,r4
-> > 	std	r12,_MSR(r1)
-> > #endif
-> > 
-> > R12 is loaded with SRR1 in the exception prolog before load_up_fpu is called.
-> 
-> Yes it is SRR1 not MSR.
+Hi James,
 
-Yes, SRR1 == the MSR of the user process, not the current MSR.
+On Mon, 11 Feb 2013 11:57:28 +0000 James Hogan <james.hogan@imgtec.com> wro=
+te:
+>
+> On 12/11/12 21:26, Stephen Rothwell wrote:
+> > Make if easier for more architectures to select it and thus disable
+> > drivers that use virt_to_bus().
+> >=20
+> > Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+>=20
+> I was just wondering what the status of this patch is? It was in -next
+> for a while but seems to have disappeared.
 
-> Also on 32bit it looks like that R9 is assumed to have SRR1.
+Yeah, I think Andrew dropped it in favour of a more complete solution
+which I haven't written yet.   Let me dig out the emails and have a shot.
 
-Yep that too.  
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-So any idea how it's suppose to work or is it broken?
+--Signature=_Tue__12_Feb_2013_15_40_10_+1100_/tP3R2cmcOMVcqGq
+Content-Type: application/pgp-signature
 
-Mikey
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJRGceqAAoJEECxmPOUX5FEFmMP/0Ij7tkBNzHsx4SV440XKPZA
+D1dk7h3RiqyQnN6PR3EXOyRq8bqAOZvo45qor94ToZjleK8c2/qJP1cPlhJ4FQg1
+d8tQ/0ZElEnpwfAXTL20FZL38vz3OivQWW4Bg/NR8eIMK1HXkQWSjTeAQEYXY+4a
+ImIHecJd5bigDctCIuBnSgur9Ojso/sUHnk6vlin5pW5PjYeEucGoYPjjP84MY+6
+L8KbTarTQdLwS3U2mNmpnuJYjLcykJqrmjj+RP6O6qUmcSE5/Gc8KnrPWIMEQ7Yq
+QGijkjTJcoAoDTZ/lv0hY5UDFoqFFvjBnLmmcbpdzK0WfB46jP0WRz7pfatvxfP1
+/QwGED65JR5nuwMmD2KVIJwF/X4jv8f+qi/yMFk3xvFESLx4MJwVESU5N/VjH091
+Fo3xjohM+YzujERv7CGLTT5ncgQHaxi/7KpynIOfIUEOiAAgZH/v2Z6kYSR7hfVS
+vjXmTicgCv6/5B2lSQ3bstq0uOD0dS2H9KLw42V3zvqJNXkMR4R/uPoefKyVENTt
+8kReuHcDAa/bfBuTCdzn97xH3sxYxs/QCMNlJHdeH41Hya4KEtR4Q4sa2O2/zg2Z
+upTJ/uRiJnzQ4UW6XNPPPXpnD3eq+y/PrtDmCcJvHy1S9i4U14ztqgYqy0WKlJWt
+28ClCvTZEJqz7XzYWvNm
+=9W1/
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__12_Feb_2013_15_40_10_+1100_/tP3R2cmcOMVcqGq--
