@@ -1,29 +1,18 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id 4DE692C02C8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2013 15:40:21 +1100 (EST)
-Date: Tue, 12 Feb 2013 15:40:10 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: James Hogan <james.hogan@imgtec.com>
-Subject: Re: [PATCH] Centralise CONFIG_ARCH_NO_VIRT_TO_BUS
-Message-Id: <20130212154010.3f8b88da4756c7cf04e28a04@canb.auug.org.au>
-In-Reply-To: <5118DCA8.1030905@imgtec.com>
-References: <ADE657CA350FB648AAC2C43247A983F00206B25884B1@AUSP01VMBX24.collaborationhost.net>
- <CAErSpo6WG2R_8sa=rOmAOci-3iFpDs2NFzNkZYxDnD2oTiMQJg@mail.gmail.com>
- <20121113082615.2f482eb8835daf46e1f27947@canb.auug.org.au>
- <5118DCA8.1030905@imgtec.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Tue__12_Feb_2013_15_40_10_+1100_/tP3R2cmcOMVcqGq"
-Cc: linux-arch@vger.kernel.org, linux-sh@vger.kernel.org,
- Vineet Gupta <Vineet.Gupta1@synopsys.com>, linux-kernel@vger.kernel.org,
- "David S. Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org,
- Paul Mundt <lethal@linux-sh.org>, Paul Mackerras <paulus@samba.org>,
- Bjorn Helgaas <bhelgaas@google.com>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org,
- H Hartley Sweeten <hartleys@visionengravers.com>
+Return-Path: <michael@ellerman.id.au>
+Date: Tue, 12 Feb 2013 17:18:22 +1100
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [BUG] irq_dispose_mapping after irq request failure
+Message-ID: <20130212061822.GA8977@concordia>
+References: <20130211053100.GB18462@sapphire.tkos.co.il>
+ <20130211061949.GA5561@concordia>
+ <20130211205255.72B513E3530@localhost>
+ <1360630273.2035.2.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1360630273.2035.2.camel@pasglop>
+Cc: Baruch Siach <baruch@tkos.co.il>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,51 +22,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Tue__12_Feb_2013_15_40_10_+1100_/tP3R2cmcOMVcqGq
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, Feb 12, 2013 at 11:51:13AM +1100, Benjamin Herrenschmidt wrote:
+> On Mon, 2013-02-11 at 20:52 +0000, Grant Likely wrote:
+> > Really the irq mappings should be using reference counting. The existing
+> > code is naive on this count and just releases the irq on the first call
+> > to irq_dispose_mapping().  I've not gotten around to fixing that. Anyone
+> > want to take that task on?
+> 
+> Is this the best approach ?
+> 
+> The original idea was that there was no point disposing of mappings in most
+> cases and keeping the mapping around would provide a bit of stability of
+> interrupt numbers which might come in handy for debugging etc...
+> 
+> The few cases where disposing of a mapping might be useful is if the underlying
+> physical interrupts completely disappear, as in a cascaded controller gets
+> removed or that sort of thing, which is a very rare case... And even then...
 
-Hi James,
+That may have been the intent, but we forgot to tell driver writers, ourselves
+included.
 
-On Mon, 11 Feb 2013 11:57:28 +0000 James Hogan <james.hogan@imgtec.com> wro=
-te:
->
-> On 12/11/12 21:26, Stephen Rothwell wrote:
-> > Make if easier for more architectures to select it and thus disable
-> > drivers that use virt_to_bus().
-> >=20
-> > Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
->=20
-> I was just wondering what the status of this patch is? It was in -next
-> for a while but seems to have disappeared.
+> Could you just make irq_dispose_mapping() check if the irq desc is
+> active and fail/WARN/BUG if it is ? I don't see the point of adding a refcount,
+> that feels overkill.
 
-Yeah, I think Andrew dropped it in favour of a more complete solution
-which I haven't written yet.   Let me dig out the emails and have a shot.
+I don't think you can, "active" is not well defined. Other code may have
+done nothing other than create the mapping and remembered the virq,
+which will break if you destroy the mapping. Or?
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+I agree refcounting is not fun. It'll end up with the same mess as
+of_node_get/put() where practically every 2nd piece of code leaks
+references.
 
---Signature=_Tue__12_Feb_2013_15_40_10_+1100_/tP3R2cmcOMVcqGq
-Content-Type: application/pgp-signature
+I guess we can't go the other way, and say that mapping the same hwirq
+twice is an error.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBCAAGBQJRGceqAAoJEECxmPOUX5FEFmMP/0Ij7tkBNzHsx4SV440XKPZA
-D1dk7h3RiqyQnN6PR3EXOyRq8bqAOZvo45qor94ToZjleK8c2/qJP1cPlhJ4FQg1
-d8tQ/0ZElEnpwfAXTL20FZL38vz3OivQWW4Bg/NR8eIMK1HXkQWSjTeAQEYXY+4a
-ImIHecJd5bigDctCIuBnSgur9Ojso/sUHnk6vlin5pW5PjYeEucGoYPjjP84MY+6
-L8KbTarTQdLwS3U2mNmpnuJYjLcykJqrmjj+RP6O6qUmcSE5/Gc8KnrPWIMEQ7Yq
-QGijkjTJcoAoDTZ/lv0hY5UDFoqFFvjBnLmmcbpdzK0WfB46jP0WRz7pfatvxfP1
-/QwGED65JR5nuwMmD2KVIJwF/X4jv8f+qi/yMFk3xvFESLx4MJwVESU5N/VjH091
-Fo3xjohM+YzujERv7CGLTT5ncgQHaxi/7KpynIOfIUEOiAAgZH/v2Z6kYSR7hfVS
-vjXmTicgCv6/5B2lSQ3bstq0uOD0dS2H9KLw42V3zvqJNXkMR4R/uPoefKyVENTt
-8kReuHcDAa/bfBuTCdzn97xH3sxYxs/QCMNlJHdeH41Hya4KEtR4Q4sa2O2/zg2Z
-upTJ/uRiJnzQ4UW6XNPPPXpnD3eq+y/PrtDmCcJvHy1S9i4U14ztqgYqy0WKlJWt
-28ClCvTZEJqz7XzYWvNm
-=9W1/
------END PGP SIGNATURE-----
-
---Signature=_Tue__12_Feb_2013_15_40_10_+1100_/tP3R2cmcOMVcqGq--
+cheers
