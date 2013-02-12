@@ -1,19 +1,16 @@
 Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A29AF2C02FD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2013 07:02:27 +1100 (EST)
-Subject: Re: [PATCH 1/4] powerpc/fsl: msi: sparse fixes
+Subject: Re: [PATCH -next] powerpc/85xx: use for_each_compatible_node() macro
 Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1354318502-367-1-git-send-email-kim.phillips@freescale.com>
-Date: Tue, 12 Feb 2013 14:02:11 -0600
-Message-Id: <89A92237-49C7-48F7-ABDF-C9850EFB610E@kernel.crashing.org>
-References: <1354318502-367-1-git-send-email-kim.phillips@freescale.com>
-To: Kim Phillips <kim.phillips@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <CAPgLHd_esknTwVv4EeehwSJz6ee5eFJ+zf6xntH-vaNwdxkrvg@mail.gmail.com>
+Date: Tue, 12 Feb 2013 14:02:01 -0600
+Message-Id: <1C757F9C-FD71-44C5-B018-DF0F38571BC8@kernel.crashing.org>
+References: <CAPgLHd_esknTwVv4EeehwSJz6ee5eFJ+zf6xntH-vaNwdxkrvg@mail.gmail.com>
+To: Wei Yongjun <weiyj.lk@gmail.com>
+Cc: devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ rob.herring@calxeda.com, yongjun_wei@trendmicro.com.cn, paulus@samba.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,22 +21,17 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Nov 30, 2012, at 5:34 PM, Kim Phillips wrote:
+On Dec 3, 2012, at 7:36 AM, Wei Yongjun wrote:
 
-> arch/powerpc/sysdev/fsl_msi.c:31:1: warning: symbol 'msi_head' was not =
-declared. Should it be static?
-> arch/powerpc/sysdev/fsl_msi.c:138:40: warning: incorrect type in =
-argument 1 (different base types)
-> arch/powerpc/sysdev/fsl_msi.c:138:40:    expected restricted __be64 =
-const [usertype] *p
-> arch/powerpc/sysdev/fsl_msi.c:138:40:    got unsigned long long const =
-[usertype] *[assigned] reg
->=20
-> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+> From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+> 
+> Use for_each_compatible_node() macro instead of open coding it.
+> 
+> Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 > ---
-> arch/powerpc/sysdev/fsl_msi.c | 4 ++--
-> 1 file changed, 2 insertions(+), 2 deletions(-)
+> arch/powerpc/platforms/85xx/mpc85xx_mds.c | 4 +---
+> 1 file changed, 1 insertion(+), 3 deletions(-)
 
-applied 1-4 to next
+applied to next
 
-- k=
+- k
