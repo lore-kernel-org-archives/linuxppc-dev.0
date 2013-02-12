@@ -1,16 +1,19 @@
 Return-Path: <galak@kernel.crashing.org>
-Subject: Re: [PATCHv1] crypto: caam - Added property fsl,
- sec-era in SEC4.0 device tree binding.
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 82EC92C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2013 07:07:17 +1100 (EST)
+Subject: Re: [PATCH 1/4] powerpc/fsl: msi: sparse fixes
 Mime-Version: 1.0 (Apple Message framework v1278)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1358925668-10330-1-git-send-email-vakul@freescale.com>
-Date: Tue, 12 Feb 2013 14:04:49 -0600
-Message-Id: <8E12AE5C-7927-458A-B563-F7FC39143DEF@kernel.crashing.org>
-References: <1358925668-10330-1-git-send-email-vakul@freescale.com>
-To: Vakul Garg <vakul@freescale.com>
-Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
- linux-crypto@vger.kernel.org
+In-Reply-To: <1354318502-367-1-git-send-email-kim.phillips@freescale.com>
+Date: Tue, 12 Feb 2013 14:07:15 -0600
+Message-Id: <B793C26E-BE7C-4AA2-B95B-3B492FD314E5@kernel.crashing.org>
+References: <1354318502-367-1-git-send-email-kim.phillips@freescale.com>
+To: Kim Phillips <kim.phillips@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,22 +24,22 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Jan 23, 2013, at 1:21 AM, Vakul Garg wrote:
+On Nov 30, 2012, at 5:34 PM, Kim Phillips wrote:
 
-> This new property defines the era of the particular SEC version.
-> The compatible property in device tree "crypto" node has been updated
-> not to contain SEC era numbers.
-> 
-> Signed-off-by: Vakul Garg <vakul@freescale.com>
+> arch/powerpc/sysdev/fsl_msi.c:31:1: warning: symbol 'msi_head' was not =
+declared. Should it be static?
+> arch/powerpc/sysdev/fsl_msi.c:138:40: warning: incorrect type in =
+argument 1 (different base types)
+> arch/powerpc/sysdev/fsl_msi.c:138:40:    expected restricted __be64 =
+const [usertype] *p
+> arch/powerpc/sysdev/fsl_msi.c:138:40:    got unsigned long long const =
+[usertype] *[assigned] reg
+>=20
+> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
 > ---
-> Changelog:
-> 	1. Marked fsl,sec-era as 'optional'.
-> 
-> .../devicetree/bindings/crypto/fsl-sec4.txt        |   12 +++++++++---
-> 1 files changed, 9 insertions(+), 3 deletions(-)
+> arch/powerpc/sysdev/fsl_msi.c | 4 ++--
+> 1 file changed, 2 insertions(+), 2 deletions(-)
 
-applied to next.
+applied 1-4 to next
 
-I assume this supersedes http://patchwork.ozlabs.org/patch/204431/
-
-- k
+- k=
