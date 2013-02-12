@@ -1,22 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 0DDDF2C0087
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2013 07:09:57 +1100 (EST)
-Subject: Re: [PATCH v2 1/1] powerpc/85xx: Board support for ppa8548
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=iso-8859-1
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <510FD412.4000505@calxeda.com>
-Date: Tue, 12 Feb 2013 14:09:48 -0600
-Message-Id: <8D4EF5B0-BEC6-4114-88CF-166EB3A70A53@kernel.crashing.org>
-References: <1359920347-15340-1-git-send-email-stef.van.os@prodrive.nl>
- <510FD412.4000505@calxeda.com>
-To: Timur Tabi <timur.tabi@calxeda.com>
-Cc: Scott Wood <scottwood@freescale.com>, Stef van Os <stef.van.os@prodrive.nl>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Paul Mackerras <paulus@samba.org>
+ by ozlabs.org (Postfix) with ESMTPS id 41F012C0087
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2013 07:33:13 +1100 (EST)
+Message-ID: <1360701185.2035.10.camel@pasglop>
+Subject: Re: [PATCH 2/2] powerpc: Make context bits depend on virtual addr
+ size.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Date: Wed, 13 Feb 2013 07:33:05 +1100
+In-Reply-To: <1360693905-23503-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1360693905-23503-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1360693905-23503-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,39 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, 2013-02-13 at 00:01 +0530, Aneesh Kumar K.V wrote:
+> + * Be careful with this value. This determines the VSID_MODULUS_*  and that
+> + * need to be co-prime with VSID_MULTIPLIER*
+> + */
+> +#if defined(CONFIG_POWER6_CPU) || defined(CONFIG_POWER7_CPU)
+> +/*
+> + * Even if cpu support 68 bits, we limit this to 66 because
+> + * we support only 2^19 context.
+> + */
+> +#define MAX_VIRTUAL_ADDR_BITS 66
+> +#else
+> +/* power4,power 5 and cell is 65 */
+> +#define MAX_VIRTUAL_ADDR_BITS 65
+> +#endif
+> +
 
-On Feb 4, 2013, at 9:30 AM, Timur Tabi wrote:
+A compile option ? Really ? Ugh...
 
-> On 02/03/2013 01:39 PM, Stef van Os wrote:
->=20
->> +	pci0: pci@fe0008000 {
->> +		status =3D "disabled";
->> +	};
->> +
->> +	pci1: pci@fe0009000 {
->> +		status =3D "disabled";
->> +	};
->> +
->> +	pci2: pcie@fe000a000 {
->> +		status =3D "disabled";
->> +	};
->=20
-> I was hoping you'd follow my example and include a comment indicating =
-why the PCI devices are all disabled.
->=20
->> +static void ppa8548_show_cpuinfo(struct seq_file *m)
->> +{
->> +	uint svid, phid1;
->=20
-> Please don't used unsized integers for hardware registers.
->=20
-> 	uint32_t svid, phid1;
-
-
-Stef,
-
-If you'd like this included for 3.9, please make the minor updates.
-
-thanks
-
-- k=
+Ben.
