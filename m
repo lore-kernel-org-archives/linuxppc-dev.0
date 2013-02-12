@@ -1,25 +1,21 @@
-Return-Path: <B11780@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe005.messaging.microsoft.com [213.199.154.208])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EC0982C0347
- for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2013 07:01:23 +1100 (EST)
-From: Gala Kumar-B11780 <B11780@freescale.com>
-To: Timur Tabi <timur@tabi.org>
-Subject: Re: [PATCH 2/2] powerpc/85xx: describe the PAMU topology in the
- device tree
-Date: Tue, 12 Feb 2013 20:01:14 +0000
-Message-ID: <CF1EE7AED478CD48A05574C8E2DA142D7165CB@039-SN1MPN1-004.039d.mgd.msft.net>
-References: <1358462073-2558-1-git-send-email-timur@tabi.org>
- <1358462073-2558-2-git-send-email-timur@tabi.org>
-In-Reply-To: <1358462073-2558-2-git-send-email-timur@tabi.org>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- Wood Scott-B07421 <B07421@freescale.com>,
- Yoder Stuart-B08248 <B08248@freescale.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id B98472C04CF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2013 07:01:46 +1100 (EST)
+Subject: Re: [PATCH 1/4] powerpc: split sbc8548 dts file into pre and post
+ chunks
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1358972013-5271-2-git-send-email-paul.gortmaker@windriver.com>
+Date: Tue, 12 Feb 2013 14:01:38 -0600
+Message-Id: <49F72831-A7DB-4FDD-9FF5-E4B4B7F22E45@kernel.crashing.org>
+References: <1358972013-5271-1-git-send-email-paul.gortmaker@windriver.com>
+ <1358972013-5271-2-git-send-email-paul.gortmaker@windriver.com>
+To: Paul Gortmaker <paul.gortmaker@windriver.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,37 +26,35 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Jan 17, 2013, at 4:34 PM, Timur Tabi wrote:
+On Jan 23, 2013, at 2:13 PM, Paul Gortmaker wrote:
 
-> From: Timur Tabi <timur@freescale.com>
+> Updates to u-boot allow this board to boot off of either
+> the 8MB soldered on flash, or the 64MB SODIMM flash.
 >=20
-> The PAMU caches use the LIODNs to determine which cache lines hold the
-> entries for the corresponding LIODs.  The LIODNs must therefore be
-> carefully assigned to avoid cache thrashing -- two active LIODs with
-> LIODNs that put them in the same cache line.
+> This is achieved by changing JP12 and SW2.8 which in turn
+> swaps which flash device appears on /CS0 and /CS6 respectively.
 >=20
-> Currently, LIODNs are statically assigned by U-Boot, but this has
-> limitations.  LIODNs are assigned even for devices that may be disabled
-> or unused by the kernel.  Static assignments also do not allow for device
-> drivers which may know which LIODs can be used simultaneously.  In
-> other words, we really should assign LIODNs dynamically in Linux.
+> Since the flash devices are not the same size, this also
+> changes the MTD memory map layout on the local bus.
 >=20
-> To do that, we need to describe the PAMU device and cache topologies in
-> the device trees.
+> Here we split the common chunks out into a pre and post
+> include, so they can be reused by an upcoming "alternative
+> boot" dts file; leaving only the local bus chunk behind.
 >=20
-> Signed-off-by: Timur Tabi <timur@freescale.com>
+> No content changes are made at this point - it is just purely
+> the move to using include files.
+>=20
+> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 > ---
-> .../devicetree/bindings/powerpc/fsl/guts.txt       |   14 ++-
-> .../devicetree/bindings/powerpc/fsl/pamu.txt       |  142 +++++++++++++++=
-+++++
-> arch/powerpc/boot/dts/fsl/p2041si-post.dtsi        |   87 +++++++++++--
-> arch/powerpc/boot/dts/fsl/p3041si-post.dtsi        |   87 +++++++++++--
-> arch/powerpc/boot/dts/fsl/p4080si-post.dtsi        |   68 +++++++++-
-> arch/powerpc/boot/dts/fsl/p5020si-post.dtsi        |   92 +++++++++++--
-> arch/powerpc/boot/dts/fsl/p5040si-post.dtsi        |   92 +++++++++++--
-> 7 files changed, 533 insertions(+), 49 deletions(-)
-> create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/pamu.txt
+> arch/powerpc/boot/dts/sbc8548-post.dtsi | 295 =
++++++++++++++++++++++++++++++
+> arch/powerpc/boot/dts/sbc8548-pre.dtsi  |  52 ++++++
+> arch/powerpc/boot/dts/sbc8548.dts       | 322 =
++-------------------------------
+> 3 files changed, 351 insertions(+), 318 deletions(-)
+> create mode 100644 arch/powerpc/boot/dts/sbc8548-post.dtsi
+> create mode 100644 arch/powerpc/boot/dts/sbc8548-pre.dtsi
 
-applied to next
+applied 1-4 to next
 
 - k=
