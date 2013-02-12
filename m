@@ -1,51 +1,16 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp08.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7AC112C0308
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2013 15:01:03 +1100 (EST)
-Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 12 Feb 2013 13:59:20 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 762302CE8054
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2013 15:00:56 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1C40tY92097606
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2013 15:00:55 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1C40si3011080
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2013 15:00:56 +1100
-Message-ID: <5119BDFD.1000909@linux.vnet.ibm.com>
-Date: Tue, 12 Feb 2013 09:28:53 +0530
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH v5 00/45] CPU hotplug: stop_machine()-free CPU hotplug
-References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
- <510FBC01.2030405@linux.vnet.ibm.com> <87haloiwv0.fsf@rustcorp.com.au>
- <51134596.4080106@linux.vnet.ibm.com>
- <20130208154113.GV17833@n2100.arm.linux.org.uk>
- <51152B81.2050501@linux.vnet.ibm.com> <51153F72.1060005@linux.vnet.ibm.com>
- <CAKfTPtCe+cD7LLkb+D6pqG1SwG2V08ws=4XO3ttHEHV2qgmqPg@mail.gmail.com>
- <5118E2CD.90401@linux.vnet.ibm.com>
- <20130211190852.GA5695@linux.vnet.ibm.com>
-In-Reply-To: <20130211190852.GA5695@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
- linux-kernel@vger.kernel.org, walken@google.com, mingo@kernel.org,
- linux-arch@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>,
- xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
- nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org,
- Rusty Russell <rusty@rustcorp.com.au>, rostedt@goodmis.org, rjw@sisk.pl,
- namhyung@kernel.org, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org,
- netdev@vger.kernel.org, oleg@redhat.com,
- Vincent Guittot <vincent.guittot@linaro.org>, sbw@mit.edu, tj@kernel.org,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Bhushan Bharat-R65777 <R65777@freescale.com>
+Subject: Re: BOOKE KVM calling load_up_fpu from C?
+In-reply-to: <6A3DF150A5B70D4F9B66A25E3F7C888D0659EC82@039-SN2MPN1-023.039d.mgd.msft.net>
+References: <14306.1360639760@ale.ozlabs.ibm.com>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0659EC4A@039-SN2MPN1-023.039d.mgd.msft.net>
+ <16381.1360640767@ale.ozlabs.ibm.com>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0659EC82@039-SN2MPN1-023.039d.mgd.msft.net>
+Date: Tue, 12 Feb 2013 15:16:18 +1100
+Message-ID: <30014.1360642578@ale.ozlabs.ibm.com>
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,43 +20,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/12/2013 12:38 AM, Paul E. McKenney wrote:
-> On Mon, Feb 11, 2013 at 05:53:41PM +0530, Srivatsa S. Bhat wrote:
->> On 02/11/2013 05:28 PM, Vincent Guittot wrote:
->>> On 8 February 2013 19:09, Srivatsa S. Bhat
->>> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
-> 
-> [ . . . ]
-> 
->>>> Adding Vincent to CC, who had previously evaluated the performance and
->>>> latency implications of CPU hotplug on ARM platforms, IIRC.
->>>>
->>>
->>> Hi Srivatsa,
->>>
->>> I can try to run some of our stress tests on your patches.
->>
->> Great!
->>
->>> Have you
->>> got a git tree that i can pull ?
->>>
->>
->> Unfortunately, no, none at the moment..  :-(
-> 
-> You do need to create an externally visible git tree.
+Bhushan Bharat-R65777 <R65777@freescale.com> wrote:
 
-Ok, I'll do that soon.
-
->  In the meantime,
-> I have added your series at rcu/bhat.2013.01.21a on -rcu:
 > 
-> git://git.kernel.org/pub/scm/linux/kernel/git/paulmck/linux-rcu.git
 > 
-> This should appear soon on a kernel.org mirror near you.  ;-)
->
+> > -----Original Message-----
+> > From: Michael Neuling [mailto:mikey@neuling.org]
+> > Sent: Tuesday, February 12, 2013 9:16 AM
+> > To: Bhushan Bharat-R65777
+> > Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org
+> > Subject: Re: BOOKE KVM calling load_up_fpu from C?
+> > 
+> > Bhushan Bharat-R65777 <R65777@freescale.com> wrote:
+> > 
+> > >
+> > >
+> > > > -----Original Message-----
+> > > > From: Linuxppc-dev [mailto:linuxppc-dev-
+> > > > bounces+bharat.bhushan=freescale.com@lists.ozlabs.org] On Behalf Of
+> > > > bounces+Michael
+> > > > Neuling
+> > > > Sent: Tuesday, February 12, 2013 8:59 AM
+> > > > To: Wood Scott-B07421
+> > > > Cc: linuxppc-dev@lists.ozlabs.org
+> > > > Subject: BOOKE KVM calling load_up_fpu from C?
+> > > >
+> > > > Scott,
+> > > >
+> > > > I was looking at changing how load_up_fpu works and I found this in
+> > > > arch/powerpc/kvm/booke.h:
+> > > >
+> > > > static inline void kvmppc_load_guest_fp(struct kvm_vcpu *vcpu) {
+> > > > #ifdef CONFIG_PPC_FPU
+> > > > 	if (vcpu->fpu_active && !(current->thread.regs->msr & MSR_FP)) {
+> > > > 		load_up_fpu();
+> > > > 		current->thread.regs->msr |= MSR_FP;
+> > > > 	}
+> > > > #endif
+> > > > }
+> > > >
+> > > > I'm wondering how this is suppose to work since load_up_fpu is
+> > > > suppose to have MSR in R12?
+> > >
+> > > Is not the load_up_fpu() does mfmsr:
+> > >
+> > > _GLOBAL(load_up_fpu)
+> > >         mfmsr   r5
+> > >         ori     r5,r5,MSR_FP
+> > > #ifdef CONFIG_VSX
+> > > BEGIN_FTR_SECTION
+> > >         oris    r5,r5,MSR_VSX@h
+> > > END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+> > > #endif
+> > >         SYNC
+> > >         MTMSRD(r5)                      /* enable use of fpu now */
+> > >         isync
+> > > <snip>
+> > 
+> > Look further down...
+> > 
+> > #ifdef CONFIG_PPC32
+> > 	mfspr	r5,SPRN_SPRG_THREAD		/* current task's THREAD (phys) */
+> > 	lwz	r4,THREAD_FPEXC_MODE(r5)
+> > 	ori	r9,r9,MSR_FP		/* enable FP for current */
+> > 	or	r9,r9,r4
+> > #else
+> > 	ld	r4,PACACURRENT(r13)
+> > 	addi	r5,r4,THREAD		/* Get THREAD */
+> > 	lwz	r4,THREAD_FPEXC_MODE(r5)
+> > 	ori	r12,r12,MSR_FP
+> > 	or	r12,r12,r4
+> > 	std	r12,_MSR(r1)
+> > #endif
+> > 
+> > R12 is loaded with SRR1 in the exception prolog before load_up_fpu is called.
+> 
+> Yes it is SRR1 not MSR.
 
-Thank you very much, Paul! :-)
+Yes, SRR1 == the MSR of the user process, not the current MSR.
 
-Regards,
-Srivatsa S. Bhat
+> Also on 32bit it looks like that R9 is assumed to have SRR1.
+
+Yep that too.  
+
+So any idea how it's suppose to work or is it broken?
+
+Mikey
