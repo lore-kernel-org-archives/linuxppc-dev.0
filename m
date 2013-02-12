@@ -1,25 +1,33 @@
-Return-Path: <sr@denx.de>
-Received: from mo6-p05-ob.rzone.de (mo6-p05-ob.rzone.de
- [IPv6:2a01:238:20a:202:5305::1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id CC2D42C0328
- for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2013 23:03:51 +1100 (EST)
-Message-ID: <511A2F97.6090209@denx.de>
-Date: Tue, 12 Feb 2013 13:03:35 +0100
-From: Stefan Roese <sr@denx.de>
+Return-Path: <James.Hogan@imgtec.com>
+Received: from multi.imgtec.com (multi.imgtec.com [194.200.65.239])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "*.imgtec.com",
+ Issuer "DigiCert High Assurance CA-3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 78C672C0322
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2013 23:04:47 +1100 (EST)
+Message-ID: <511A2FC2.7010909@imgtec.com>
+Date: Tue, 12 Feb 2013 12:04:18 +0000
+From: James Hogan <james.hogan@imgtec.com>
 MIME-Version: 1.0
-To: Bhushan Bharat-R65777 <R65777@freescale.com>
-Subject: Re: [PATCH v2] net: fec_mpc52xx: Read MAC address from device-tree
-References: <1360660088-27464-1-git-send-email-sr@denx.de>
- <6A3DF150A5B70D4F9B66A25E3F7C888D065A0271@039-SN2MPN1-023.039d.mgd.msft.net>
- <511A219A.7080000@denx.de>
- <6A3DF150A5B70D4F9B66A25E3F7C888D065A1614@039-SN2MPN1-023.039d.mgd.msft.net>
-In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D065A1614@039-SN2MPN1-023.039d.mgd.msft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- Anatolij Gustschin <agust@denx.de>, "David S. Miller" <davem@davemloft.net>,
- "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH] Centralise CONFIG_ARCH_NO_VIRT_TO_BUS
+References: <ADE657CA350FB648AAC2C43247A983F00206B25884B1@AUSP01VMBX24.collaborationhost.net>
+ <CAErSpo6WG2R_8sa=rOmAOci-3iFpDs2NFzNkZYxDnD2oTiMQJg@mail.gmail.com>
+ <20121113082615.2f482eb8835daf46e1f27947@canb.auug.org.au>
+ <5118DCA8.1030905@imgtec.com>
+ <20130212154010.3f8b88da4756c7cf04e28a04@canb.auug.org.au>
+ <20130212224729.5e60d0303bda923bebcc1185@canb.auug.org.au>
+In-Reply-To: <20130212224729.5e60d0303bda923bebcc1185@canb.auug.org.au>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigCD18698F87994248FE52F0D9"
+Cc: linux-arch@vger.kernel.org, linux-sh@vger.kernel.org,
+ Vineet Gupta <Vineet.Gupta1@synopsys.com>, linux-kernel@vger.kernel.org,
+ "David S. Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org,
+ Paul Mundt <lethal@linux-sh.org>, Paul Mackerras <paulus@samba.org>,
+ Bjorn Helgaas <bhelgaas@google.com>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org,
+ H Hartley Sweeten <hartleys@visionengravers.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,34 +37,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12.02.2013 12:23, Bhushan Bharat-R65777 wrote:
->>> Why we read from MAC registers if Linux should not rely on bootloader?
->>
->> It was suggested by David. Backwards compatibility. Here Davids comment to my
->> original patch which removed this register reading completely:
->>
->> "
->> I don't think this is a conservative enough change.
->>
->> You have to keep the MAC register reading code around, as a backup code path in
->> case the OF device node lacks a MAC address "
-> 
-> Ok,
-> 
-> But this is really a backward compatibility or hiding some bug? My
-> thought is that if DT does not have a valid MAC address then it is
-> a BUG and should be fixed. Is not it?
+--------------enigCD18698F87994248FE52F0D9
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Yes. But it can only be fixed in the bootloader then. And some people
-might not want to do this or might be unable to do this. So lets keep
-this "feature" available for such cases.
+On 12/02/13 11:47, Stephen Rothwell wrote:
+> Change it to CONFIG_HAVE_VIRT_TO_BUS and set it in all architecures
 
-BTW: U-Boot traditionally always wrote the MAC address into the FEC
-registers. Even if FEC was not used in U-Boot at all. I only noticed
-this problem with the new SPL fastbooting U-Boot version, which is
-basically a very stripped down U-Boot version directly booting into
-Linux (or U-Boot if selected). Here the FEC registers are not touched at
-all. And the Linux FEC driver then woke up with an invalid MAC address.
+nit: typo in "architecures"
 
-Thanks,
-Stefan
+> that already provide virt_to_bus().
+>=20
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+
+Reviewed-by: James Hogan <james.hogan@imgtec.com>
+
+Cheers
+James
+
+
+--------------enigCD18698F87994248FE52F0D9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.13 (GNU/Linux)
+
+iQIcBAEBAgAGBQJRGi/CAAoJEKHZs+irPybfbLoQAJcwSYD3NK1dOp1OC8OUY4tF
+SA0WEPGCHUY0ewKfTfJAxzxeiKBL0/v0EigmMktkMmg/BauiT/75q4/EG8SxjnD7
+Tf/pZ0IlTU9xM5dYeqSNEeimxZv8gXp5DEJ56+UV8pSZ0PhtNowKCTnePA71DtO6
+mFNYP9GcjSxNYHfYTzHxLEhp0xfSTVWrOpW0ak+y97XMQOS3Yxff8wSizq7LhBcG
+H+t5J8paEWs73BJsZKzVtkdDyp4Tv5shjHhl4TeGv7doxcYykX5yIlWxgZLFRRI+
+3o1JACl75gmFDxGi/2cYK+mkp24SupVYNGw/teRrsKGOoGO6k30XLG3COlYQCSOb
+mslGyP1DFryONBNcRJ3gT8dkyv9zsoL0vwMj6TN1e36MnAAlKoAnziJZ/kpscR4F
+IOuEPBtOjothoEgA9e+X/BdkGBh3kLztZvFE72wWYIX/r9+ynrWi85SZDcxMG/o+
+f/uvRaOIRI5E8nPyapat75veiw7GWNl5ZxvCRzHl8e1xEWUb/PWlJma+fd7sAZLn
+fFlCPQ53QG//t2t1Y6OjiNbzOJsj+1yMI/EHULbeSVALUyvYPzaH+yfCvHwIBNTx
+vbb0JQKEB+syLW5QNYIBOpBCkyMYrEW+TUHj3MUIXJ2JZgB6e9P+HUKwQXb7PW4F
+6gotw7qwQEz9aNx36fBk
+=69Xu
+-----END PGP SIGNATURE-----
+
+--------------enigCD18698F87994248FE52F0D9--
