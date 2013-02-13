@@ -1,42 +1,14 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C96E82C0291
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2013 01:26:52 +1100 (EST)
-Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 13 Feb 2013 19:55:06 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 1FCF4E0050
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2013 19:57:37 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1DEQga123658572
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2013 19:56:42 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1DEQi45014189
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2013 01:26:45 +1100
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: David Laight <David.Laight@aculab.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- phileas-fogg@mail.ru, geoff@infradead.org
-Subject: RE: [PATCH 2/2] powerpc: Make context bits depend on virtual addr
- size.
-In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6026B7148@saturn3.aculab.com>
-References: <1360693905-23503-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1360693905-23503-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1360701185.2035.10.camel@pasglop> <87sj50kian.fsf@linux.vnet.ibm.com>
- <1360727211.2035.30.camel@pasglop> <87pq04jvb4.fsf@linux.vnet.ibm.com>
- <AE90C24D6B3A694183C094C60CF0A2F6026B7148@saturn3.aculab.com>
-Date: Wed, 13 Feb 2013 19:56:44 +0530
-Message-ID: <87mwv8jnmj.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by ozlabs.org (Postfix) with ESMTP id 3FB462C0087
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2013 04:00:39 +1100 (EST)
+Date: Wed, 13 Feb 2013 16:19:55 +0100
+Message-Id: <201302131519.r1DFJtGm032487@localhost.localdomain>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+To: Wim Van Sebroeck <wim@iguana.be>
+Subject: [PATCH] Enhanced support for MPC8xx/8xxx watchdog
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-watchdog@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,50 +18,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-David Laight <David.Laight@aculab.com> writes:
+This patch modifies the behaviour of the MPC8xx/8xxx watchdog. On the MPC8xx,
+at 133Mhz, the maximum timeout of the watchdog timer is 1s, which means it must
+be pinged twice a second. This is not in line with the Linux watchdog concept
+which is based on a default watchdog timeout around 60s.
+This patch introduces an intermediate layer between the CPU and the userspace.
+The kernel pings the watchdog at the required frequency at the condition that
+userspace tools refresh it regularly.
+The new parameter 'heartbeat' allows to set up the userspace timeout.
+The driver also implements the WDIOC_SETTIMEOUT ioctl.
 
->> +#define CONTEXT_BITS		19
->> +#define USER_ESID_BITS		18
->> +#define USER_ESID_BITS_1T	6
->> +
->> +/*
->> + * 256MB segment
->> + * The proto-VSID space has 2^(CONTEX_BITS + USER_ESID_BITS) - 1 segments
->> + * available for user + kernel mapping. The top 4 contexts are used for
->> + * kernel mapping. Each segment contains 2^28 bytes. Each
->> + * context maps 2^46 bytes (64TB) so we can support 2^19-1 contexts
->> + * (19 == 37 + 28 - 46).
->> + */
->
-> I can't help feeling this would be easier to understand if a full
-> 64? 80? bit address was shown with the various bit ranges identified.
->
-> Given the comment, I'd have expected CONTEXT_BITS to be calculated
-> from three other named constants - rather than being set to 19.
->
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-May be the comments were misleading. We build proto vsid using a
-combination of context and ea bits.
-
-Current code does the below:
-
-for kernel:
-proto_vsid = ea >> SID_SHIFT;
-proto_vsid |= (1UL << (CONTEXT_BITS + USER_ESID_BITS));
-for user:
-proto_vsid = ea >> SID_SHIFT
-proto_vsid |= context << USER_ESID_BITS 
-
-context range is 0 - (2^19 -1)
-
-With this patch we _don't_ give kernel half the proto vsid range.
-Instead, we reduce the proto vsid range and then the kernel is given
-top 4 context. ie, kernel proto vsid is now
-
-for kenel:
-proto_vsid = ea >> SID_SHIFT;
-context = (MAX_CONTEXT - 4) +  ((effective address >> 60) - 0xc);
-proto_vsid |= context << USER_ESID_BITS 
-
-
--aneesh
+diff -ur linux-3.7.7/drivers/watchdog/mpc8xxx_wdt.c linux/drivers/watchdog/mpc8xxx_wdt.c
+--- linux-3.7.7/drivers/watchdog/mpc8xxx_wdt.c	2013-02-11 18:05:09.000000000 +0100
++++ linux/drivers/watchdog/mpc8xxx_wdt.c	2013-02-13 15:55:22.000000000 +0100
+@@ -52,10 +52,17 @@
+ static struct mpc8xxx_wdt __iomem *wd_base;
+ static int mpc8xxx_wdt_init_late(void);
+ 
++#define WD_TIMO 10			/* Default heartbeat = 10 seconds */
++
++static int heartbeat = WD_TIMO;
++module_param(heartbeat, int, 0);
++MODULE_PARM_DESC(heartbeat,
++	"Watchdog SW heartbeat in seconds. (0 < heartbeat < 65536s, default="
++				__MODULE_STRING(WD_TIMO) "s)");
+ static u16 timeout = 0xffff;
+ module_param(timeout, ushort, 0);
+ MODULE_PARM_DESC(timeout,
+-	"Watchdog timeout in ticks. (0<timeout<65536, default=65535)");
++	"Watchdog HW timeout in ticks. (0<timeout<65536, default=65535)");
+ 
+ static bool reset = 1;
+ module_param(reset, bool, 0);
+@@ -74,8 +81,10 @@
+ static int prescale = 1;
+ static unsigned int timeout_sec;
+ 
++static int wdt_auto = 1;
+ static unsigned long wdt_is_open;
+ static DEFINE_SPINLOCK(wdt_spinlock);
++static unsigned long wdt_last_ping;
+ 
+ static void mpc8xxx_wdt_keepalive(void)
+ {
+@@ -91,9 +100,20 @@
+ 
+ static void mpc8xxx_wdt_timer_ping(unsigned long arg)
+ {
+-	mpc8xxx_wdt_keepalive();
+-	/* We're pinging it twice faster than needed, just to be sure. */
+-	mod_timer(&wdt_timer, jiffies + HZ * timeout_sec / 2);
++	if (wdt_auto)
++		wdt_last_ping = jiffies;
++
++	if (jiffies - wdt_last_ping <= heartbeat * HZ) {
++		mpc8xxx_wdt_keepalive();
++		/* We're pinging it twice faster than needed, to be sure. */
++		mod_timer(&wdt_timer, jiffies + HZ * timeout_sec / 2);
++	}
++}
++
++static void mpc8xxx_wdt_sw_keepalive(void)
++{
++	wdt_last_ping = jiffies;
++	mpc8xxx_wdt_timer_ping(0);
+ }
+ 
+ static void mpc8xxx_wdt_pr_warn(const char *msg)
+@@ -106,7 +126,7 @@
+ 				 size_t count, loff_t *ppos)
+ {
+ 	if (count)
+-		mpc8xxx_wdt_keepalive();
++		mpc8xxx_wdt_sw_keepalive();
+ 	return count;
+ }
+ 
+@@ -130,7 +150,7 @@
+ 
+ 	out_be32(&wd_base->swcrr, tmp);
+ 
+-	del_timer_sync(&wdt_timer);
++	wdt_auto = 0;
+ 
+ 	return nonseekable_open(inode, file);
+ }
+@@ -138,7 +158,8 @@
+ static int mpc8xxx_wdt_release(struct inode *inode, struct file *file)
+ {
+ 	if (!nowayout)
+-		mpc8xxx_wdt_timer_ping(0);
++		wdt_auto = 1;
++
+ 	else
+ 		mpc8xxx_wdt_pr_warn("watchdog closed");
+ 	clear_bit(0, &wdt_is_open);
+@@ -163,10 +184,12 @@
+ 	case WDIOC_GETBOOTSTATUS:
+ 		return put_user(0, p);
+ 	case WDIOC_KEEPALIVE:
+-		mpc8xxx_wdt_keepalive();
++		mpc8xxx_wdt_sw_keepalive();
+ 		return 0;
+ 	case WDIOC_GETTIMEOUT:
+-		return put_user(timeout_sec, p);
++		return put_user(heartbeat, p);
++	case WDIOC_SETTIMEOUT:
++		return get_user(heartbeat, p);
+ 	default:
+ 		return -ENOTTY;
+ 	}
+@@ -215,6 +238,8 @@
+ 		ret = -ENOSYS;
+ 		goto err_unmap;
+ 	}
++	if (enabled)
++		timeout = in_be32(&wd_base->swcrr) >> 16;
+ 
+ 	/* Calculate the timeout in seconds */
+ 	if (prescale)
+@@ -273,6 +298,7 @@
+ 		.compatible = "fsl,mpc823-wdt",
+ 		.data = &(struct mpc8xxx_wdt_type) {
+ 			.prescaler = 0x800,
++			.hw_enabled = true,
+ 		},
+ 	},
+ 	{},
