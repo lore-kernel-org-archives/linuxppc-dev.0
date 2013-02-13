@@ -1,15 +1,17 @@
-Return-Path: <michael@ellerman.id.au>
-Date: Thu, 14 Feb 2013 09:37:18 +1100
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Geoff Levand <geoff@infradead.org>
-Subject: Re: PS3 platform is broken on Linux 3.7.0
-Message-ID: <20130213223718.GA17158@concordia>
-References: <1355488506.55692113@f147.mail.ru> <1360740779.28936.20.camel@clam>
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (www.linutronix.de [62.245.132.108])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 4F5052C008E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2013 09:39:04 +1100 (EST)
+Date: Wed, 13 Feb 2013 23:38:51 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: Mark low level irq handlers NO_THREAD
+Message-ID: <alpine.LFD.2.02.1302132337080.22263@ionos>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1360740779.28936.20.camel@clam>
-Cc: Phileas Fogg <phileas-fogg@mail.ru>, cbe-oss-dev@lists.ozlabs.org,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: leroy christophe <christophe.leroy@c-s.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,27 +21,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 12, 2013 at 11:32:59PM -0800, Geoff Levand wrote:
-> Hi,
-> 
-> On Fri, 2012-12-14 at 16:35 +0400, Phileas Fogg wrote:
-> > I wanted to bring to your attention the fact that the PS3 platform is broken on Linux 3.7.0.
-> 
-> > So i cloned the Linux powerpc GIT repository and tried to find out which commits broke the PS3 platform.
-> 
-> > ---------------------------------------------------------------------------------------------
-> > 
-> > commit 407821a34fce89b4f0b031dbab5cec7d059f46bc
-> > Author: Michael Ellerman <michael@ellerman.id.au>
-> > Date:   Fri Sep 7 15:31:44 2012 +0000
-> > 
-> >     powerpc: Initialise paca.data_offset with poison
-> 
-> I did a little more work on this, and it seems the change below
-> will fix the problem introduced by Michael's change.  I can only
-> guess we need to use udbg_printf() here.  I'll look at it some more
-> as I have time.
+These low level handlers cannot be threaded. Mark them NO_THREAD
 
-Have you tried with the patch I posted yesterday?
+Reported-by: leroy christophe <christophe.leroy@c-s.fr>
+Tested-by: leroy christophe <christophe.leroy@c-s.fr>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
-cheers
+---
+ arch/powerpc/platforms/8xx/m8xx_setup.c |    1 +
+ arch/powerpc/sysdev/cpm1.c              |    1 +
+ 2 files changed, 2 insertions(+)
+
+Index: linux-stable/arch/powerpc/platforms/8xx/m8xx_setup.c
+===================================================================
+--- linux-stable.orig/arch/powerpc/platforms/8xx/m8xx_setup.c
++++ linux-stable/arch/powerpc/platforms/8xx/m8xx_setup.c
+@@ -43,6 +43,7 @@ static irqreturn_t timebase_interrupt(in
+ 
+ static struct irqaction tbint_irqaction = {
+ 	.handler = timebase_interrupt,
++	.flags = IRQF_NO_THREAD,
+ 	.name = "tbint",
+ };
+ 
+Index: linux-stable/arch/powerpc/sysdev/cpm1.c
+===================================================================
+--- linux-stable.orig/arch/powerpc/sysdev/cpm1.c
++++ linux-stable/arch/powerpc/sysdev/cpm1.c
+@@ -120,6 +120,7 @@ static irqreturn_t cpm_error_interrupt(i
+ 
+ static struct irqaction cpm_error_irqaction = {
+ 	.handler = cpm_error_interrupt,
++	.flags = IRQF_NO_THREAD,
+ 	.name = "error",
+ };
+ 
