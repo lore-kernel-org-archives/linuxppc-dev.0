@@ -1,15 +1,40 @@
-Return-Path: <geoff@infradead.org>
-Message-ID: <1360740779.28936.20.camel@clam>
-Subject: Re: PS3 platform is broken on Linux 3.7.0
-From: Geoff Levand <geoff@infradead.org>
-To: Phileas Fogg <phileas-fogg@mail.ru>, Michael Ellerman
- <michael@ellerman.id.au>
-Date: Tue, 12 Feb 2013 23:32:59 -0800
-In-Reply-To: <1355488506.55692113@f147.mail.ru>
-References: <1355488506.55692113@f147.mail.ru>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: cbe-oss-dev@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3AA892C0295
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2013 22:40:59 +1100 (EST)
+Received: from /spool/local
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 13 Feb 2013 17:08:36 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id BBB79E0054
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2013 17:11:40 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r1DBekkq27590750
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2013 17:10:46 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r1DBemPh025608
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2013 11:40:49 GMT
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, phileas-fogg@mail.ru,
+ geoff@infradead.org
+Subject: Re: [PATCH 2/2] powerpc: Make context bits depend on virtual addr
+ size.
+In-Reply-To: <1360727211.2035.30.camel@pasglop>
+References: <1360693905-23503-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1360693905-23503-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1360701185.2035.10.camel@pasglop> <87sj50kian.fsf@linux.vnet.ibm.com>
+ <1360727211.2035.30.camel@pasglop>
+Date: Wed, 13 Feb 2013 17:10:47 +0530
+Message-ID: <87pq04jvb4.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,42 +44,243 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-On Fri, 2012-12-14 at 16:35 +0400, Phileas Fogg wrote:
-> I wanted to bring to your attention the fact that the PS3 platform is broken on Linux 3.7.0.
+> On Wed, 2013-02-13 at 08:54 +0530, Aneesh Kumar K.V wrote:
+>> > A compile option ? Really ? Ugh...
+>> 
+>> I actually wanted that to be done in Kconfig.cputype, but haven't found
+>> a nice way to do it. Considering we are switching between only two
+>> values, I was thinking an #ifdef would work.
+>
+> No, we want to support all those processor types from a single kernel image.
 
-> So i cloned the Linux powerpc GIT repository and tried to find out which commits broke the PS3 platform.
+Ok. How about the below patch. This is based on the suggestion from
+Paulus. I still have to take care of few comments in the code.
 
-> ---------------------------------------------------------------------------------------------
-> 
-> commit 407821a34fce89b4f0b031dbab5cec7d059f46bc
-> Author: Michael Ellerman <michael@ellerman.id.au>
-> Date:   Fri Sep 7 15:31:44 2012 +0000
-> 
->     powerpc: Initialise paca.data_offset with poison
+We now split the proto-vsid range differently.
+ User:   0 to [2^(CONTEXT_BITS) - 4  + 2^(USER_ESID_BITS)]
+ kernel: [2^(CONTEXT_BITS) - 4 + 2^(USER_ESID_BITS)] to 2^(VSID_BITS) - 1
 
-I did a little more work on this, and it seems the change below
-will fix the problem introduced by Michael's change.  I can only
-guess we need to use udbg_printf() here.  I'll look at it some more
-as I have time.
+Phileas and Geoff,
 
--Geoff
+Can we check whether this fix the PS3 boot hang ?
 
-diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
-index 5c56834..6b4f613 100644
---- a/arch/powerpc/kernel/paca.c
-+++ b/arch/powerpc/kernel/paca.c
-@@ -184,8 +185,8 @@ void __init allocate_pacas(void)
- 	paca = __va(memblock_alloc_base(paca_size, PAGE_SIZE, limit));
- 	memset(paca, 0, paca_size);
+-aneesh
+
+diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
+index 2fdb47a..1e65a01 100644
+--- a/arch/powerpc/include/asm/mmu-hash64.h
++++ b/arch/powerpc/include/asm/mmu-hash64.h
+@@ -381,21 +381,33 @@ extern void slb_set_size(u16 size);
+  * hash collisions.
+  */
  
--	printk(KERN_DEBUG "Allocated %u bytes for %d pacas at %p\n",
--		paca_size, nr_cpu_ids, paca);
-+//	printk(KERN_DEBUG "Allocated %u bytes for %d pacas at %p\n",
-+//		paca_size, nr_cpu_ids, paca);
++#define CONTEXT_BITS		19
++#define USER_ESID_BITS		18
++#define USER_ESID_BITS_1T	6
++
++/*
++ * 256MB segment
++ * The proto-VSID space has 2^(CONTEX_BITS + USER_ESID_BITS) - 1 segments
++ * available for user + kernel mapping. The top 4 contexts are used for
++ * kernel mapping. Each segment contains 2^28 bytes. Each
++ * context maps 2^46 bytes (64TB) so we can support 2^19-1 contexts
++ * (19 == 37 + 28 - 46).
++ */
++#define MAX_CONTEXT	((ASM_CONST(1) << CONTEXT_BITS) - 1)
++
++
+ /*
+  * This should be computed such that protovosid * vsid_mulitplier
+  * doesn't overflow 64 bits. It should also be co-prime to vsid_modulus
+  */
+ #define VSID_MULTIPLIER_256M	ASM_CONST(12538073)	/* 24-bit prime */
+-#define VSID_BITS_256M		38
++#define VSID_BITS_256M		(CONTEXT_BITS + USER_ESID_BITS)
+ #define VSID_MODULUS_256M	((1UL<<VSID_BITS_256M)-1)
  
- 	allocate_lppacas(nr_cpu_ids, limit);
+ #define VSID_MULTIPLIER_1T	ASM_CONST(12538073)	/* 24-bit prime */
+-#define VSID_BITS_1T		26
++#define VSID_BITS_1T		(CONTEXT_BITS + USER_ESID_BITS_1T)
+ #define VSID_MODULUS_1T		((1UL<<VSID_BITS_1T)-1)
  
-
-> 
+-#define CONTEXT_BITS		19
+-#define USER_ESID_BITS		18
+-#define USER_ESID_BITS_1T	6
+ 
+ #define USER_VSID_RANGE	(1UL << (USER_ESID_BITS + SID_SHIFT))
+ 
+@@ -513,34 +525,6 @@ typedef struct {
+ 	})
+ #endif /* 1 */
+ 
+-/*
+- * This is only valid for addresses >= PAGE_OFFSET
+- * The proto-VSID space is divided into two class
+- * User:   0 to 2^(CONTEXT_BITS + USER_ESID_BITS) -1
+- * kernel: 2^(CONTEXT_BITS + USER_ESID_BITS) to 2^(VSID_BITS) - 1
+- *
+- * With KERNEL_START at 0xc000000000000000, the proto vsid for
+- * the kernel ends up with 0xc00000000 (36 bits). With 64TB
+- * support we need to have kernel proto-VSID in the
+- * [2^37 to 2^38 - 1] range due to the increased USER_ESID_BITS.
+- */
+-static inline unsigned long get_kernel_vsid(unsigned long ea, int ssize)
+-{
+-	unsigned long proto_vsid;
+-	/*
+-	 * We need to make sure proto_vsid for the kernel is
+-	 * >= 2^(CONTEXT_BITS + USER_ESID_BITS[_1T])
+-	 */
+-	if (ssize == MMU_SEGSIZE_256M) {
+-		proto_vsid = ea >> SID_SHIFT;
+-		proto_vsid |= (1UL << (CONTEXT_BITS + USER_ESID_BITS));
+-		return vsid_scramble(proto_vsid, 256M);
+-	}
+-	proto_vsid = ea >> SID_SHIFT_1T;
+-	proto_vsid |= (1UL << (CONTEXT_BITS + USER_ESID_BITS_1T));
+-	return vsid_scramble(proto_vsid, 1T);
+-}
+-
+ /* Returns the segment size indicator for a user address */
+ static inline int user_segment_size(unsigned long addr)
+ {
+@@ -561,6 +545,26 @@ static inline unsigned long get_vsid(unsigned long context, unsigned long ea,
+ 			     | (ea >> SID_SHIFT_1T), 1T);
+ }
+ 
++/*
++ * This is only valid for addresses >= PAGE_OFFSET
++ * The proto-VSID space is divided into two class
++ * User:   0 to 2^(CONTEXT_BITS) - 4  + 2^(USER_ESID_BITS)
++ * kernel: 2^(CONTEXT_BITS) - 4 + 2^(USER_ESID_BITS) to 2^(VSID_BITS) - 1
++ *
++ * With KERNEL_START at 0xc000000000000000, the proto vsid for
++ * the kernel ends up with 0xc00000000 (36 bits). We use one context
++ * for 0xc, 0xd, 0xe and 0xf.
++ *
++ */
++static inline unsigned long get_kernel_vsid(unsigned long ea, int ssize)
++{
++	unsigned long context;
++	/*
++	 * kernel take the top 4 context from the available range
++	 */
++	context = (MAX_CONTEXT - 4) +  ((ea >> 60) - 0xc);
++	return get_vsid(context, ea, ssize);
++}
+ #endif /* __ASSEMBLY__ */
+ 
+ #endif /* _ASM_POWERPC_MMU_HASH64_H_ */
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 4665e82..78c6d0b 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -1269,16 +1269,23 @@ _GLOBAL(do_stab_bolted)
+ 	stw	r9,PACA_EXSLB+EX_CCR(r13)	/* save CR in exc. frame */
+ 	std	r11,PACA_EXSLB+EX_SRR0(r13)	/* save SRR0 in exc. frame */
+ 
++	mfspr	r11,SPRN_DAR
++	srdi	r9,r11,60	/* ea >> 60 */
++	srdi	r11,r11,SID_SHIFT
++
++	/* Calculate VSID:
++	 * This is the kernel vsid, we take the top for context from
++	 * the range. context = (MAX_CONTEXT - 4) + ((ea >> 60) - 0xc)
++	 */
++	subi	r9,r9,(0xc + 4 + 1)
++	lis	r10,8
++	add	r9,r9,r10
++
+ 	/* Hash to the primary group */
+ 	ld	r10,PACASTABVIRT(r13)
+-	mfspr	r11,SPRN_DAR
+-	srdi	r11,r11,28
+ 	rldimi	r10,r11,7,52	/* r10 = first ste of the group */
++	rldimi  r11,r9,USER_ESID_BITS,0 /* proto vsid */
+ 
+-	/* Calculate VSID */
+-	/* This is a kernel address, so protovsid = ESID | 1 << 37 */
+-	li	r9,0x1
+-	rldimi  r11,r9,(CONTEXT_BITS + USER_ESID_BITS),0
+ 	ASM_VSID_SCRAMBLE(r11, r9, 256M)
+ 	rldic	r9,r11,12,16	/* r9 = vsid << 12 */
+ 
+diff --git a/arch/powerpc/mm/mmu_context_hash64.c b/arch/powerpc/mm/mmu_context_hash64.c
+index 40bc5b0..9c84b16 100644
+--- a/arch/powerpc/mm/mmu_context_hash64.c
++++ b/arch/powerpc/mm/mmu_context_hash64.c
+@@ -29,15 +29,6 @@
+ static DEFINE_SPINLOCK(mmu_context_lock);
+ static DEFINE_IDA(mmu_context_ida);
+ 
+-/*
+- * 256MB segment
+- * The proto-VSID space has 2^(CONTEX_BITS + USER_ESID_BITS) - 1 segments
+- * available for user mappings. Each segment contains 2^28 bytes. Each
+- * context maps 2^46 bytes (64TB) so we can support 2^19-1 contexts
+- * (19 == 37 + 28 - 46).
+- */
+-#define MAX_CONTEXT	((1UL << CONTEXT_BITS) - 1)
+-
+ int __init_new_context(void)
+ {
+ 	int index;
+@@ -56,7 +47,7 @@ again:
+ 	else if (err)
+ 		return err;
+ 
+-	if (index > MAX_CONTEXT) {
++	if (index > (MAX_CONTEXT - 4)) {
+ 		spin_lock(&mmu_context_lock);
+ 		ida_remove(&mmu_context_ida, index);
+ 		spin_unlock(&mmu_context_lock);
+diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
+index 1a16ca2..487f998 100644
+--- a/arch/powerpc/mm/slb_low.S
++++ b/arch/powerpc/mm/slb_low.S
+@@ -56,12 +56,19 @@ _GLOBAL(slb_allocate_realmode)
+ 	 */
+ _GLOBAL(slb_miss_kernel_load_linear)
+ 	li	r11,0
+-	li	r9,0x1
++	/*
++	 * context = (MAX_CONTEXT - 4) + ((ea >> 60) - 0xc)
++	 */
++	srdi	r9,r3,60
++	subi	r9,r9,(0xc + 4 + 1)
++	lis	r10, 8
++	add	r9,r9,r10
++	srdi	r10,r3,28 /* FIXME!! doing it twice */
+ 	/*
+ 	 * for 1T we shift 12 bits more.  slb_finish_load_1T will do
+ 	 * the necessary adjustment
+ 	 */
+-	rldimi  r10,r9,(CONTEXT_BITS + USER_ESID_BITS),0
++	rldimi  r10,r9,USER_ESID_BITS,0
+ BEGIN_FTR_SECTION
+ 	b	slb_finish_load
+ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_1T_SEGMENT)
+@@ -91,12 +98,19 @@ _GLOBAL(slb_miss_kernel_load_vmemmap)
+ 	_GLOBAL(slb_miss_kernel_load_io)
+ 	li	r11,0
+ 6:
+-	li	r9,0x1
++	/*
++	 * context = (MAX_CONTEXT - 4) + ((ea >> 60) - 0xc)
++	 */
++	srdi	r9,r3,60
++	subi	r9,r9,(0xc + 4 + 1)
++	lis	r10,8
++	add	r9,r9,r10
++	srdi	r10,r3,28 /* FIXME!! doing it twice */
+ 	/*
+ 	 * for 1T we shift 12 bits more.  slb_finish_load_1T will do
+ 	 * the necessary adjustment
+ 	 */
+-	rldimi  r10,r9,(CONTEXT_BITS + USER_ESID_BITS),0
++	rldimi  r10,r9,USER_ESID_BITS,0
+ BEGIN_FTR_SECTION
+ 	b	slb_finish_load
+ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_1T_SEGMENT)
