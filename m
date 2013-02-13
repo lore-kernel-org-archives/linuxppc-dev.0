@@ -1,10 +1,10 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 08/17] powerpc: Add FP/VSX and VMX register load functions for
- transactional memory
-Date: Wed, 13 Feb 2013 15:31:26 +1100
-Message-Id: <1360729895-304-9-git-send-email-mikey@neuling.org>
+Subject: [PATCH 09/17] powerpc: Add reclaim and recheckpoint functions for
+ context switching transactional memory processes
+Date: Wed, 13 Feb 2013 15:31:27 +1100
+Message-Id: <1360729895-304-10-git-send-email-mikey@neuling.org>
 In-Reply-To: <1360729895-304-1-git-send-email-mikey@neuling.org>
 References: <1360729895-304-1-git-send-email-mikey@neuling.org>
 Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
@@ -18,146 +18,153 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds functions to restore the state of the FP/VSX registers from
-what's stored in the thread_struct.  Two version for FP/VSX are required
-since one restores them from transactional/checkpoint side of the
-thread_struct and the other from the speculated side.
+When we switch out a task, we need to save both the checkpointed and the
+speculated state into the thread struct.
 
-Similar functions are added for VMX registers.
+Similarly when we are switching in a task we need to load both the checkpointed
+and speculated state.  If the task was using FP, we non-lazily reload both the
+original and the speculative FP register states.  This is because the kernel
+doesn't see if/when a TM rollback occurs, so if we take an FP unavoidable
+later, we are unable to determine which set of FP regs need to be restored.
+
+This simply adds these functions.  It doesn't hook them into the existing code
+yet.
 
 Signed-off-by: Matt Evans <matt@ozlabs.org>
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/kernel/fpu.S    |   54 ++++++++++++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/vector.S |   51 +++++++++++++++++++++++++++++++++++++++
- 2 files changed, 105 insertions(+)
+ arch/powerpc/kernel/process.c |  112 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 112 insertions(+)
 
-diff --git a/arch/powerpc/kernel/fpu.S b/arch/powerpc/kernel/fpu.S
-index adb1551..0441ba6 100644
---- a/arch/powerpc/kernel/fpu.S
-+++ b/arch/powerpc/kernel/fpu.S
-@@ -62,6 +62,60 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX);					\
- 	__REST_32FPVSRS_TRANSACT(n,__REG_##c,__REG_##base)
- #define SAVE_32FPVSRS(n,c,base) __SAVE_32FPVSRS(n,__REG_##c,__REG_##base)
- 
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 1cc4053..48a9875 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -50,6 +50,7 @@
+ #include <asm/runlatch.h>
+ #include <asm/syscalls.h>
+ #include <asm/switch_to.h>
++#include <asm/tm.h>
+ #include <asm/debug.h>
+ #ifdef CONFIG_PPC64
+ #include <asm/firmware.h>
+@@ -467,6 +468,117 @@ static inline bool hw_brk_match(struct arch_hw_breakpoint *a,
+ 		return false;
+ 	return true;
+ }
 +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+/*
-+ * Wrapper to call load_up_fpu from C.
-+ * void do_load_up_fpu(struct pt_regs *regs);
-+ */
-+_GLOBAL(do_load_up_fpu)
-+	mflr	r0
-+	std	r0, 16(r1)
-+	stdu	r1, -112(r1)
-+
-+	subi	r6, r3, STACK_FRAME_OVERHEAD
-+	/* load_up_fpu expects r12=MSR, r13=PACA, and returns
-+	 * with r12 = new MSR.
++static inline void tm_reclaim_task(struct task_struct *tsk)
++{
++	/* We have to work out if we're switching from/to a task that's in the
++	 * middle of a transaction.
++	 *
++	 * In switching we need to maintain a 2nd register state as
++	 * oldtask->thread.ckpt_regs.  We tm_reclaim(oldproc); this saves the
++	 * checkpointed (tbegin) state in ckpt_regs and saves the transactional
++	 * (current) FPRs into oldtask->thread.transact_fpr[].
++	 *
++	 * We also context switch (save) TFHAR/TEXASR/TFIAR in here.
 +	 */
-+	ld	r12,_MSR(r6)
-+	GET_PACA(r13)
++	struct thread_struct *thr = &tsk->thread;
 +
-+	bl	load_up_fpu
-+	std	r12,_MSR(r6)
++	if (!thr->regs)
++		return;
 +
-+	ld	r0, 112+16(r1)
-+	addi	r1, r1, 112
-+	mtlr	r0
-+	blr
++	if (!MSR_TM_ACTIVE(thr->regs->msr))
++		goto out_and_saveregs;
 +
++	/* Stash the original thread MSR, as giveup_fpu et al will
++	 * modify it.  We hold onto it to see whether the task used
++	 * FP & vector regs.
++	 */
++	thr->tm_orig_msr = thr->regs->msr;
 +
-+/* void do_load_up_fpu(struct thread_struct *thread)
-+ *
-+ * This is similar to load_up_fpu but for the transactional version of the FP
-+ * register set.  It doesn't mess with the task MSR or valid flags.
-+ * Furthermore, we don't do lazy FP with TM currently.
-+ */
-+_GLOBAL(do_load_up_transact_fpu)
-+	mfmsr	r6
-+	ori	r5,r6,MSR_FP
-+#ifdef CONFIG_VSX
-+BEGIN_FTR_SECTION
-+	oris	r5,r5,MSR_VSX@h
-+END_FTR_SECTION_IFSET(CPU_FTR_VSX)
-+#endif
-+	SYNC
-+	MTMSRD(r5)
++	TM_DEBUG("--- tm_reclaim on pid %d (NIP=%lx, "
++		 "ccr=%lx, msr=%lx, trap=%lx)\n",
++		 tsk->pid, thr->regs->nip,
++		 thr->regs->ccr, thr->regs->msr,
++		 thr->regs->trap);
 +
-+	lfd	fr0,THREAD_TRANSACT_FPSCR(r3)
-+	MTFSF_L(fr0)
-+	REST_32FPVSRS_TRANSACT(0, R4, R3)
++	tm_reclaim(thr, thr->regs->msr, TM_CAUSE_RESCHED);
 +
-+	/* FP/VSX off again */
-+	MTMSRD(r6)
-+	SYNC
++	TM_DEBUG("--- tm_reclaim on pid %d complete\n",
++		 tsk->pid);
 +
-+	blr
++out_and_saveregs:
++	/* Always save the regs here, even if a transaction's not active.
++	 * This context-switches a thread's TM info SPRs.  We do it here to
++	 * be consistent with the restore path (in recheckpoint) which
++	 * cannot happen later in _switch().
++	 */
++	tm_save_sprs(thr);
++}
++
++static inline void __maybe_unused tm_recheckpoint_new_task(struct task_struct *new)
++{
++	unsigned long msr;
++
++	if (!cpu_has_feature(CPU_FTR_TM))
++		return;
++
++	/* Recheckpoint the registers of the thread we're about to switch to.
++	 *
++	 * If the task was using FP, we non-lazily reload both the original and
++	 * the speculative FP register states.  This is because the kernel
++	 * doesn't see if/when a TM rollback occurs, so if we take an FP
++	 * unavoidable later, we are unable to determine which set of FP regs
++	 * need to be restored.
++	 */
++	if (!new->thread.regs)
++		return;
++
++	/* The TM SPRs are restored here, so that TEXASR.FS can be set
++	 * before the trecheckpoint and no explosion occurs.
++	 */
++	tm_restore_sprs(&new->thread);
++
++	if (!MSR_TM_ACTIVE(new->thread.regs->msr))
++		return;
++	msr = new->thread.tm_orig_msr;
++	/* Recheckpoint to restore original checkpointed register state. */
++	TM_DEBUG("*** tm_recheckpoint of pid %d "
++		 "(new->msr 0x%lx, new->origmsr 0x%lx)\n",
++		 new->pid, new->thread.regs->msr, msr);
++
++	/* This loads the checkpointed FP/VEC state, if used */
++	tm_recheckpoint(&new->thread, msr);
++
++	/* This loads the speculative FP/VEC state, if used */
++	if (msr & MSR_FP) {
++		do_load_up_transact_fpu(&new->thread);
++		new->thread.regs->msr |=
++			(MSR_FP | new->thread.fpexc_mode);
++	}
++	if (msr & MSR_VEC) {
++		do_load_up_transact_altivec(&new->thread);
++		new->thread.regs->msr |= MSR_VEC;
++	}
++	/* We may as well turn on VSX too since all the state is restored now */
++	if (msr & MSR_VSX)
++		new->thread.regs->msr |= MSR_VSX;
++
++	TM_DEBUG("*** tm_recheckpoint of pid %d complete "
++		 "(kernel msr 0x%lx)\n",
++		 new->pid, mfmsr());
++}
++
++static inline void __switch_to_tm(struct task_struct *prev)
++{
++	if (cpu_has_feature(CPU_FTR_TM)) {
++		tm_enable();
++		tm_reclaim_task(prev);
++	}
++}
++#else
++#define tm_recheckpoint_new_task(new)
++#define __switch_to_tm(prev)
 +#endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
-+
- /*
-  * This task wants to use the FPU now.
-  * On UP, disable FP for the task which had the FPU previously,
-diff --git a/arch/powerpc/kernel/vector.S b/arch/powerpc/kernel/vector.S
-index e830289..7112a24 100644
---- a/arch/powerpc/kernel/vector.S
-+++ b/arch/powerpc/kernel/vector.S
-@@ -7,6 +7,57 @@
- #include <asm/page.h>
- #include <asm/ptrace.h>
  
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+/*
-+ * Wrapper to call load_up_altivec from C.
-+ * void do_load_up_altivec(struct pt_regs *regs);
-+ */
-+_GLOBAL(do_load_up_altivec)
-+	mflr	r0
-+	std	r0, 16(r1)
-+	stdu	r1, -112(r1)
-+
-+	subi	r6, r3, STACK_FRAME_OVERHEAD
-+	/* load_up_altivec expects r12=MSR, r13=PACA, and returns
-+	 * with r12 = new MSR.
-+	 */
-+	ld	r12,_MSR(r6)
-+	GET_PACA(r13)
-+	bl	load_up_altivec
-+	std	r12,_MSR(r6)
-+
-+	ld	r0, 112+16(r1)
-+	addi	r1, r1, 112
-+	mtlr	r0
-+	blr
-+
-+/* void do_load_up_altivec(struct thread_struct *thread)
-+ *
-+ * This is similar to load_up_altivec but for the transactional version of the
-+ * vector regs.  It doesn't mess with the task MSR or valid flags.
-+ * Furthermore, VEC laziness is not supported with TM currently.
-+ */
-+_GLOBAL(do_load_up_transact_altivec)
-+	mfmsr	r6
-+	oris	r5,r6,MSR_VEC@h
-+	MTMSRD(r5)
-+	isync
-+
-+	li	r4,1
-+	stw	r4,THREAD_USED_VR(r3)
-+
-+	li	r10,THREAD_TRANSACT_VSCR
-+	lvx	vr0,r10,r3
-+	mtvscr	vr0
-+	REST_32VRS_TRANSACT(0,r4,r3)
-+
-+	/* Disable VEC again. */
-+	MTMSRD(r6)
-+	isync
-+
-+	blr
-+#endif
-+
- /*
-  * load_up_altivec(unused, unused, tsk)
-  * Disable VMX for the task which had it previously,
+ struct task_struct *__switch_to(struct task_struct *prev,
+ 	struct task_struct *new)
 -- 
 1.7.10.4
