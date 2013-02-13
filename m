@@ -1,25 +1,14 @@
-Return-Path: <R65777@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 975AC2C008C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2013 15:17:07 +1100 (EST)
-From: Bhushan Bharat-R65777 <R65777@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: BOOKE KVM calling load_up_fpu from C?
-Date: Wed, 13 Feb 2013 04:17:00 +0000
-Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D065A3511@039-SN2MPN1-023.039d.mgd.msft.net>
-References: <6A3DF150A5B70D4F9B66A25E3F7C888D0659EF89@039-SN2MPN1-023.039d.mgd.msft.net>
- <1360693988.24612.4@snotra>
- <6A3DF150A5B70D4F9B66A25E3F7C888D065A3456@039-SN2MPN1-023.039d.mgd.msft.net>
- <1360718594.24612.21@snotra>
-In-Reply-To: <1360718594.24612.21@snotra>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: Michael Neuling <mikey@neuling.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 00/17] powerpc: Hardware transactional memory support for
+ POWER8
+Date: Wed, 13 Feb 2013 15:31:18 +1100
+Message-Id: <1360729895-304-1-git-send-email-mikey@neuling.org>
+In-Reply-To: <1358488117-17363-1-git-send-email-mikey@neuling.org>
+References: <1358488117-17363-1-git-send-email-mikey@neuling.org>
+Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
+ Matt Evans <matt@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,92 +18,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+POWER8 implements hardware transactional memory support.  This patch series
+adds kernel support so that user programs can use this hardware transactional
+memory and the new state is properly context switched.  It is not currently
+used by the kernel itself.
+
+This patch series was originally developed by Matt Evans.
+
+v3 changes:
+ Incorporate review from benh (offline conversation):
+   - Improve IRQ disabling for tm_reclaim
+   - Improve IRQ disabling for early fp/vmx/vsx unavail handling
+   - Change CONFIG option to add PPC (now PPC_TRANSACTIONAL_MEM)
+   - strip some unneeded #defines
+   - micro optimisation to asm in  early fp/vmx/vsx
+      -       srdi    r0, r12, MSR_TS_LG
+      -       andi.   r0, r0, 3
+      +       rldicl. r0, r12, (64-MSR_TS_LG), (64-2)
+   - do tabort on unmap only when current is using TM
+   - removed unneeded patch which moved when writing MSR back to the stack
+
+v2 changes:
+ Adds signal handling
+ Removes some code for detecting when to restore all register or not
+ Added tabort for local tlb invalidates 
+ Rebased on benh's next tree
+
+Basic overview of a POWER8 hardware transaction memory
+=====================================================
+Hardware transactional memory is a feature that enables a different form of
+atomic memory access.  Several new instructions are presented to delimit
+transactions; transactions are guaranteed to either complete atomically or roll
+back and undo any partial changes.
+
+A simple transaction looks like this:
+
+begin_move_money:
+  tbegin
+  beq   abort_handler
+
+  ld    r4, SAVINGS_ACCT(r3)
+  ld    r5, CURRENT_ACCT(r3)
+  subi  r5, r5, 1
+  addi  r4, r4, 1
+  std   r4, SAVINGS_ACCT(r3)
+  std   r5, CURRENT_ACCT(r3)
+
+  tend
+
+  b     continue
+
+abort_handler:
+  ... test for odd failures ...
+
+  /* Retry the transaction if it failed because it conflicted with
+   * someone else: */
+  b     begin_move_money
 
 
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Wednesday, February 13, 2013 6:53 AM
-> To: Bhushan Bharat-R65777
-> Cc: Wood Scott-B07421; Michael Neuling; linuxppc-dev@lists.ozlabs.org
-> Subject: Re: BOOKE KVM calling load_up_fpu from C?
->=20
-> On 02/12/2013 07:18:14 PM, Bhushan Bharat-R65777 wrote:
-> >
-> >
-> > > -----Original Message-----
-> > > From: Wood Scott-B07421
-> > > Sent: Wednesday, February 13, 2013 12:03 AM
-> > > To: Bhushan Bharat-R65777
-> > > Cc: Michael Neuling; Wood Scott-B07421;
-> > linuxppc-dev@lists.ozlabs.org
-> > > Subject: Re: BOOKE KVM calling load_up_fpu from C?
-> > >
-> > > On 02/12/2013 03:01:07 AM, Bhushan Bharat-R65777 wrote:
-> > > > To me this looks wrong. And this seems to works because the
-> > > > thread->reg->msr is not actually used to write SRR1 (and
-> > eventually
-> > > > the thread MSR) when doing rfi to enter guest. Infact
-> > > > Guest(shadow_msr) MSR is used as SRR1 and which will have proper
-> > MSR
-> > > > (including FP set).
-> > > >
-> > > > But Yes, Scott is right person to comment, So let us wait for him
-> > > > comment.
-> > >
-> > > I don't think it's actually a problem on 32-bit, since r9 is
-> > modified but never
-> > > actually used for anything.
-> >
-> > Is not the epilog loads srr1 in r9 and load_up_fpu() changes r9 and
-> > then r9 is written back in srr1 ?
->=20
-> What epilog?  We're talking about the case where it's called from C code.
->=20
-> When it's called from an exception handler, then r9 is used, but in that =
-case
-> it's also initialized before calling load_up_fpu, by the prolog.
->=20
-> > >  On 64-bit, though, there's a store to the caller's stack frame
-> > > (yuck) which the kvm/booke.h caller is not prepared for.
-> >
-> > So if caller is using r12 then it can lead to come corruption, right ?
->=20
-> No, r12 is a volatile register in the ABI, as is r9.  The issue is that t=
-he
-> stack can be corrupted.
+The 'tbegin' instruction denotes the start point, and 'tend' the end point.
+Between these points the processor is in 'Transactional' state; any memory
+references will complete in one go if there are no conflicts with other
+transactional or non-transactional accesses within the system.  In this
+example, the transaction completes as though it were normal straight-line code
+IF no other processor has touched SAVINGS_ACCT(r3) or CURRENT_ACCT(r3); an
+atomic move of money from the current account to the savings account has been
+performed.  Even though the normal ld/std instructions are used (note no
+lwarx/stwcx), either *both* SAVINGS_ACCT(r3) and CURRENT_ACCT(r3) will be
+updated, or neither will be updated.
 
-What do you mean by stack is corrupted?
-My understanding is that when calling the assembly function from C function=
- then stack frame will not be pushed and assembly function uses the caller =
-stack frame.  Example function1() calls function2() which calls assembly_ro=
-utine()
+If, in the meantime, there is a conflict with the locations accessed by the
+transaction, the transaction will be aborted by the CPU.  Register and memory
+state will roll back to that at the 'tbegin', and control will continue from
+'tbegin+4'.  The branch to abort_handler will be taken this second time; the
+abort handler can check the cause of the failure, and retry.
 
+Checkpointed registers include all GPRs, FPRs, VRs/VSRs, LR, CCR/CR, CTR, FPCSR
+and a few other status/flag regs; 
 
-functio1()=20
+A preliminary ISA for TM can be found here:
+  https://www.power.org/documentation/power-isa-transactional-memory/
 
-|---------------------|
-|     Stack Frame 1   |
-| <function1 caller   |
-|  registers etc>     |
-|---------------------|
-
-
-Calls function 2
-
-|----------------------|
-|     Stack Frame 2    |
-| <function1 registers |
-|   etc >              |
-|----------------------|
-|     Stack Frame 1    |
-| <function1 caller    |
-|  registers etc>      |
-|----------------------|
-
-calls assembly_routine();
-Now no stack frame push; And the assembly_routine() changes register values=
- saved in stack. So when stack will be unrolled then registers of function1=
-() will get corrupted, right?
-
-Thanks
--Bharat
+-- 
+1.7.10.4
