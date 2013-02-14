@@ -1,9 +1,10 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 04/17] powerpc: New macros for transactional memory support
-Date: Thu, 14 Feb 2013 13:21:32 +1100
-Message-Id: <1360808505-10086-5-git-send-email-mikey@neuling.org>
+Subject: [PATCH 05/17] powerpc: Register defines for various transactional
+ memory registers
+Date: Thu, 14 Feb 2013 13:21:33 +1100
+Message-Id: <1360808505-10086-6-git-send-email-mikey@neuling.org>
 In-Reply-To: <1360808505-10086-1-git-send-email-mikey@neuling.org>
 References: <1360808505-10086-1-git-send-email-mikey@neuling.org>
 Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
@@ -17,239 +18,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds new macros for saving and restoring checkpointed architected state
-from and to the thread_struct.
-
-It also adds some debugging macros for when your brain explodes trying to debug
-your transactional memory enabled kernel.
+Defines for MSR bits and transactional memory related SPRs TFIAR, TEXASR and
+TEXASRU.
 
 Signed-off-by: Matt Evans <matt@ozlabs.org>
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/include/asm/ppc_asm.h   |   83 ++++++++++++++++++++++++++++++++++
- arch/powerpc/include/asm/processor.h |    1 +
- arch/powerpc/kernel/asm-offsets.c    |   23 ++++++++++
- arch/powerpc/kernel/fpu.S            |   12 +++++
- arch/powerpc/kernel/process.c        |    7 +++
- arch/powerpc/kernel/traps.c          |    8 ++++
- 6 files changed, 134 insertions(+)
+ arch/powerpc/include/asm/reg.h |   27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-index c2d0e58..54219ce 100644
---- a/arch/powerpc/include/asm/ppc_asm.h
-+++ b/arch/powerpc/include/asm/ppc_asm.h
-@@ -123,6 +123,89 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
- #define REST_16VRS(n,b,base)	REST_8VRS(n,b,base); REST_8VRS(n+8,b,base)
- #define REST_32VRS(n,b,base)	REST_16VRS(n,b,base); REST_16VRS(n+16,b,base)
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index e09ac51..7844c28 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -29,6 +29,10 @@
+ #define MSR_SF_LG	63              /* Enable 64 bit mode */
+ #define MSR_ISF_LG	61              /* Interrupt 64b mode valid on 630 */
+ #define MSR_HV_LG 	60              /* Hypervisor state */
++#define MSR_TS_T_LG	34		/* Trans Mem state: Transactional */
++#define MSR_TS_S_LG	33		/* Trans Mem state: Suspended */
++#define MSR_TS_LG	33		/* Trans Mem state (2 bits) */
++#define MSR_TM_LG	32		/* Trans Mem Available */
+ #define MSR_VEC_LG	25	        /* Enable AltiVec */
+ #define MSR_VSX_LG	23		/* Enable VSX */
+ #define MSR_POW_LG	18		/* Enable Power Management */
+@@ -98,6 +102,25 @@
+ #define MSR_RI		__MASK(MSR_RI_LG)	/* Recoverable Exception */
+ #define MSR_LE		__MASK(MSR_LE_LG)	/* Little Endian */
  
-+/* Save/restore FPRs, VRs and VSRs from their checkpointed backups in
-+ * thread_struct:
-+ */
-+#define SAVE_FPR_TRANSACT(n, base)	stfd n,THREAD_TRANSACT_FPR0+	\
-+					8*TS_FPRWIDTH*(n)(base)
-+#define SAVE_2FPRS_TRANSACT(n, base)	SAVE_FPR_TRANSACT(n, base);	\
-+					SAVE_FPR_TRANSACT(n+1, base)
-+#define SAVE_4FPRS_TRANSACT(n, base)	SAVE_2FPRS_TRANSACT(n, base);	\
-+					SAVE_2FPRS_TRANSACT(n+2, base)
-+#define SAVE_8FPRS_TRANSACT(n, base)	SAVE_4FPRS_TRANSACT(n, base);	\
-+					SAVE_4FPRS_TRANSACT(n+4, base)
-+#define SAVE_16FPRS_TRANSACT(n, base)	SAVE_8FPRS_TRANSACT(n, base);	\
-+					SAVE_8FPRS_TRANSACT(n+8, base)
-+#define SAVE_32FPRS_TRANSACT(n, base)	SAVE_16FPRS_TRANSACT(n, base);	\
-+					SAVE_16FPRS_TRANSACT(n+16, base)
++#define MSR_TM		__MASK(MSR_TM_LG)	/* Transactional Mem Available */
++#define MSR_TS_N	0			/*  Non-transactional */
++#define MSR_TS_S	__MASK(MSR_TS_S_LG)	/*  Transaction Suspended */
++#define MSR_TS_T	__MASK(MSR_TS_T_LG)	/*  Transaction Transactional */
++#define MSR_TS_MASK	(MSR_TS_T | MSR_TS_S)   /* Transaction State bits */
++#define MSR_TM_ACTIVE(x) (((x) & MSR_TS_MASK) != 0) /* Transaction active? */
++#define MSR_TM_TRANSACTIONAL(x)	(((x) & MSR_TS_MASK) == MSR_TS_T)
++#define MSR_TM_SUSPENDED(x)	(((x) & MSR_TS_MASK) == MSR_TS_S)
 +
-+#define REST_FPR_TRANSACT(n, base)	lfd	n,THREAD_TRANSACT_FPR0+	\
-+					8*TS_FPRWIDTH*(n)(base)
-+#define REST_2FPRS_TRANSACT(n, base)	REST_FPR_TRANSACT(n, base);	\
-+					REST_FPR_TRANSACT(n+1, base)
-+#define REST_4FPRS_TRANSACT(n, base)	REST_2FPRS_TRANSACT(n, base);	\
-+					REST_2FPRS_TRANSACT(n+2, base)
-+#define REST_8FPRS_TRANSACT(n, base)	REST_4FPRS_TRANSACT(n, base);	\
-+					REST_4FPRS_TRANSACT(n+4, base)
-+#define REST_16FPRS_TRANSACT(n, base)	REST_8FPRS_TRANSACT(n, base);	\
-+					REST_8FPRS_TRANSACT(n+8, base)
-+#define REST_32FPRS_TRANSACT(n, base)	REST_16FPRS_TRANSACT(n, base);	\
-+					REST_16FPRS_TRANSACT(n+16, base)
++/* Reason codes describing kernel causes for transaction aborts.  By
++   convention, bit0 is copied to TEXASR[56] (IBM bit 7) which is set if
++   the failure is persistent.
++*/
++#define TM_CAUSE_RESCHED	0xfe
++#define TM_CAUSE_TLBI		0xfc
++#define TM_CAUSE_FAC_UNAV	0xfa
++#define TM_CAUSE_SYSCALL	0xf9 /* Persistent */
++#define TM_CAUSE_MISC		0xf6
 +
-+
-+#define SAVE_VR_TRANSACT(n,b,base)	li b,THREAD_TRANSACT_VR0+(16*(n)); \
-+					stvx n,b,base
-+#define SAVE_2VRS_TRANSACT(n,b,base)	SAVE_VR_TRANSACT(n,b,base);	\
-+					SAVE_VR_TRANSACT(n+1,b,base)
-+#define SAVE_4VRS_TRANSACT(n,b,base)	SAVE_2VRS_TRANSACT(n,b,base);	\
-+					SAVE_2VRS_TRANSACT(n+2,b,base)
-+#define SAVE_8VRS_TRANSACT(n,b,base)	SAVE_4VRS_TRANSACT(n,b,base);	\
-+					SAVE_4VRS_TRANSACT(n+4,b,base)
-+#define SAVE_16VRS_TRANSACT(n,b,base)	SAVE_8VRS_TRANSACT(n,b,base);	\
-+					SAVE_8VRS_TRANSACT(n+8,b,base)
-+#define SAVE_32VRS_TRANSACT(n,b,base)	SAVE_16VRS_TRANSACT(n,b,base);	\
-+					SAVE_16VRS_TRANSACT(n+16,b,base)
-+
-+#define REST_VR_TRANSACT(n,b,base)	li b,THREAD_TRANSACT_VR0+(16*(n)); \
-+					lvx n,b,base
-+#define REST_2VRS_TRANSACT(n,b,base)	REST_VR_TRANSACT(n,b,base);	\
-+					REST_VR_TRANSACT(n+1,b,base)
-+#define REST_4VRS_TRANSACT(n,b,base)	REST_2VRS_TRANSACT(n,b,base);	\
-+					REST_2VRS_TRANSACT(n+2,b,base)
-+#define REST_8VRS_TRANSACT(n,b,base)	REST_4VRS_TRANSACT(n,b,base);	\
-+					REST_4VRS_TRANSACT(n+4,b,base)
-+#define REST_16VRS_TRANSACT(n,b,base)	REST_8VRS_TRANSACT(n,b,base);	\
-+					REST_8VRS_TRANSACT(n+8,b,base)
-+#define REST_32VRS_TRANSACT(n,b,base)	REST_16VRS_TRANSACT(n,b,base);	\
-+					REST_16VRS_TRANSACT(n+16,b,base)
-+
-+
-+#define SAVE_VSR_TRANSACT(n,b,base)	li b,THREAD_TRANSACT_VSR0+(16*(n)); \
-+					STXVD2X(n,R##base,R##b)
-+#define SAVE_2VSRS_TRANSACT(n,b,base)	SAVE_VSR_TRANSACT(n,b,base);	\
-+	                                SAVE_VSR_TRANSACT(n+1,b,base)
-+#define SAVE_4VSRS_TRANSACT(n,b,base)	SAVE_2VSRS_TRANSACT(n,b,base);	\
-+	                                SAVE_2VSRS_TRANSACT(n+2,b,base)
-+#define SAVE_8VSRS_TRANSACT(n,b,base)	SAVE_4VSRS_TRANSACT(n,b,base);	\
-+	                                SAVE_4VSRS_TRANSACT(n+4,b,base)
-+#define SAVE_16VSRS_TRANSACT(n,b,base)	SAVE_8VSRS_TRANSACT(n,b,base);	\
-+	                                SAVE_8VSRS_TRANSACT(n+8,b,base)
-+#define SAVE_32VSRS_TRANSACT(n,b,base)	SAVE_16VSRS_TRANSACT(n,b,base);	\
-+	                                SAVE_16VSRS_TRANSACT(n+16,b,base)
-+
-+#define REST_VSR_TRANSACT(n,b,base)	li b,THREAD_TRANSACT_VSR0+(16*(n)); \
-+					LXVD2X(n,R##base,R##b)
-+#define REST_2VSRS_TRANSACT(n,b,base)	REST_VSR_TRANSACT(n,b,base);    \
-+	                                REST_VSR_TRANSACT(n+1,b,base)
-+#define REST_4VSRS_TRANSACT(n,b,base)	REST_2VSRS_TRANSACT(n,b,base);	\
-+	                                REST_2VSRS_TRANSACT(n+2,b,base)
-+#define REST_8VSRS_TRANSACT(n,b,base)	REST_4VSRS_TRANSACT(n,b,base);	\
-+	                                REST_4VSRS_TRANSACT(n+4,b,base)
-+#define REST_16VSRS_TRANSACT(n,b,base)	REST_8VSRS_TRANSACT(n,b,base);	\
-+	                                REST_8VSRS_TRANSACT(n+8,b,base)
-+#define REST_32VSRS_TRANSACT(n,b,base)	REST_16VSRS_TRANSACT(n,b,base);	\
-+	                                REST_16VSRS_TRANSACT(n+16,b,base)
-+
- /* Save the lower 32 VSRs in the thread VSR region */
- #define SAVE_VSR(n,b,base)	li b,THREAD_VSR0+(16*(n));  STXVD2X(n,R##base,R##b)
- #define SAVE_2VSRS(n,b,base)	SAVE_VSR(n,b,base); SAVE_VSR(n+1,b,base)
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index fc41ab3..7ff9eaa 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -152,6 +152,7 @@ typedef struct {
- #define TS_FPROFFSET 0
- #define TS_VSRLOWOFFSET 1
- #define TS_FPR(i) fpr[i][TS_FPROFFSET]
-+#define TS_TRANS_FPR(i) transact_fpr[i][TS_FPROFFSET]
+ #if defined(CONFIG_PPC_BOOK3S_64)
+ #define MSR_64BIT	MSR_SF
  
- struct thread_struct {
- 	unsigned long	ksp;		/* Kernel stack pointer */
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index beddba4..b67e4c3 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -125,6 +125,29 @@ int main(void)
- #ifdef CONFIG_PPC_BOOK3S_64
- 	DEFINE(THREAD_TAR, offsetof(struct thread_struct, tar));
- #endif
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+	DEFINE(THREAD_TM_TFHAR, offsetof(struct thread_struct, tm_tfhar));
-+	DEFINE(THREAD_TM_TEXASR, offsetof(struct thread_struct, tm_texasr));
-+	DEFINE(THREAD_TM_TFIAR, offsetof(struct thread_struct, tm_tfiar));
-+	DEFINE(PT_CKPT_REGS, offsetof(struct thread_struct, ckpt_regs));
-+	DEFINE(THREAD_TRANSACT_VR0, offsetof(struct thread_struct,
-+					 transact_vr[0]));
-+	DEFINE(THREAD_TRANSACT_VSCR, offsetof(struct thread_struct,
-+					  transact_vscr));
-+	DEFINE(THREAD_TRANSACT_VRSAVE, offsetof(struct thread_struct,
-+					    transact_vrsave));
-+	DEFINE(THREAD_TRANSACT_FPR0, offsetof(struct thread_struct,
-+					  transact_fpr[0]));
-+	DEFINE(THREAD_TRANSACT_FPSCR, offsetof(struct thread_struct,
-+					   transact_fpscr));
-+#ifdef CONFIG_VSX
-+	DEFINE(THREAD_TRANSACT_VSR0, offsetof(struct thread_struct,
-+					  transact_fpr[0]));
-+#endif
-+	/* Local pt_regs on stack for Transactional Memory funcs. */
-+	DEFINE(TM_FRAME_SIZE, STACK_FRAME_OVERHEAD +
-+	       sizeof(struct pt_regs) + 16);
-+#endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
- 
- 	DEFINE(TI_FLAGS, offsetof(struct thread_info, flags));
- 	DEFINE(TI_LOCAL_FLAGS, offsetof(struct thread_info, local_flags));
-diff --git a/arch/powerpc/kernel/fpu.S b/arch/powerpc/kernel/fpu.S
-index e0ada05..adb1551 100644
---- a/arch/powerpc/kernel/fpu.S
-+++ b/arch/powerpc/kernel/fpu.S
-@@ -35,6 +35,15 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX);					\
- 2:	REST_32VSRS(n,c,base);						\
- 3:
- 
-+#define __REST_32FPVSRS_TRANSACT(n,c,base)				\
-+BEGIN_FTR_SECTION							\
-+	b	2f;							\
-+END_FTR_SECTION_IFSET(CPU_FTR_VSX);					\
-+	REST_32FPRS_TRANSACT(n,base);					\
-+	b	3f;							\
-+2:	REST_32VSRS_TRANSACT(n,c,base);					\
-+3:
-+
- #define __SAVE_32FPVSRS(n,c,base)					\
- BEGIN_FTR_SECTION							\
- 	b	2f;							\
-@@ -45,9 +54,12 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX);					\
- 3:
- #else
- #define __REST_32FPVSRS(n,b,base)	REST_32FPRS(n, base)
-+#define __REST_32FPVSRS_TRANSACT(n,b,base)	REST_32FPRS(n, base)
- #define __SAVE_32FPVSRS(n,b,base)	SAVE_32FPRS(n, base)
- #endif
- #define REST_32FPVSRS(n,c,base) __REST_32FPVSRS(n,__REG_##c,__REG_##base)
-+#define REST_32FPVSRS_TRANSACT(n,c,base) \
-+	__REST_32FPVSRS_TRANSACT(n,__REG_##c,__REG_##base)
- #define SAVE_32FPVSRS(n,c,base) __SAVE_32FPVSRS(n,__REG_##c,__REG_##base)
- 
- /*
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 96e31de..b0a0321 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -57,6 +57,13 @@
- #include <linux/kprobes.h>
- #include <linux/kdebug.h>
- 
-+/* Transactional Memory debug */
-+#ifdef TM_DEBUG_SW
-+#define TM_DEBUG(x...) printk(KERN_INFO x)
-+#else
-+#define TM_DEBUG(x...) do { } while(0)
-+#endif
-+
- extern unsigned long _get_SP(void);
- 
- #ifndef CONFIG_SMP
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index a008cf5..bd5de5d 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -78,6 +78,13 @@ EXPORT_SYMBOL(__debugger_break_match);
- EXPORT_SYMBOL(__debugger_fault_handler);
- #endif
- 
-+/* Transactional Memory trap debug */
-+#ifdef TM_DEBUG_SW
-+#define TM_DEBUG(x...) printk(KERN_INFO x)
-+#else
-+#define TM_DEBUG(x...) do { } while(0)
-+#endif
-+
- /*
-  * Trap & Exception support
-  */
-@@ -350,6 +357,7 @@ static inline int check_io_access(struct pt_regs *regs)
-    exception is in the MSR. */
- #define get_reason(regs)	((regs)->msr)
- #define get_mc_reason(regs)	((regs)->msr)
-+#define REASON_TM		0x200000
- #define REASON_FP		0x100000
- #define REASON_ILLEGAL		0x80000
- #define REASON_PRIVILEGED	0x40000
+@@ -193,6 +216,10 @@
+ #define SPRN_UAMOR	0x9d	/* User Authority Mask Override Register */
+ #define SPRN_AMOR	0x15d	/* Authority Mask Override Register */
+ #define SPRN_ACOP	0x1F	/* Available Coprocessor Register */
++#define SPRN_TFIAR	0x81	/* Transaction Failure Inst Addr   */
++#define SPRN_TEXASR	0x82	/* Transaction EXception & Summary */
++#define SPRN_TEXASRU	0x83	/* ''	   ''	   ''	 Upper 32  */
++#define SPRN_TFHAR	0x80	/* Transaction Failure Handler Addr */
+ #define SPRN_CTRLF	0x088
+ #define SPRN_CTRLT	0x098
+ #define   CTRL_CT	0xc0000000	/* current thread */
 -- 
 1.7.10.4
