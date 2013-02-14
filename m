@@ -1,31 +1,31 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 059682C008E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2013 19:36:41 +1100 (EST)
+ (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CDDCE2C033C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2013 19:36:48 +1100 (EST)
 Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 14 Feb 2013 14:03:53 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 3439BE0058
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2013 14:07:22 +0530 (IST)
+ Thu, 14 Feb 2013 14:04:11 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id A02681258057
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2013 14:07:12 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1E8aSvr30867598
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2013 14:06:28 +0530
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r1E8aQHC31719478
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2013 14:06:27 +0530
 Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1E8aSef020306
+ r1E8aSgR020301
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2013 19:36:28 +1100
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, phileas-fogg@mail.ru,
  geoff@infradead.org
-Subject: [PATCH 4/4] powerpc: Add vm debug code to catch errors
-Date: Thu, 14 Feb 2013 14:06:23 +0530
-Message-Id: <1360830983-1812-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH 3/4] powerpc: Don't update r10 early in the call
+Date: Thu, 14 Feb 2013 14:06:22 +0530
+Message-Id: <1360830983-1812-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1360830983-1812-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <a>
  <1360830983-1812-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
@@ -42,92 +42,54 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-We need to make sure that we don't have higher bits of kernel effective
-address set. That would result in multiple kernel segments having same
-proto vsid. Add debug code to make sure we capture this.
+This enables us to use r10 as scratch in the code.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/mmu-hash64.h |   49 +++++++++++++++++++++++++++++----
- 1 file changed, 43 insertions(+), 6 deletions(-)
+ arch/powerpc/mm/slb_low.S |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
-index 0e08252..3e297ea 100644
---- a/arch/powerpc/include/asm/mmu-hash64.h
-+++ b/arch/powerpc/include/asm/mmu-hash64.h
-@@ -22,6 +22,13 @@
-  */
- #include <asm/pgtable-ppc64.h>
+diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
+index 487f998..2a233cb 100644
+--- a/arch/powerpc/mm/slb_low.S
++++ b/arch/powerpc/mm/slb_low.S
+@@ -34,7 +34,6 @@ _GLOBAL(slb_allocate_realmode)
+ 	/* r3 = faulting address */
  
-+#ifdef CONFIG_DEBUG_VM
-+#ifndef __ASSEMBLY__
-+#include <asm/udbg.h>
-+#include <asm/bug.h>
-+#endif
-+#endif
-+
- /*
-  * Segment table
-  */
-@@ -522,11 +529,32 @@ static inline int user_segment_size(unsigned long addr)
- static inline unsigned long get_vsid(unsigned long context, unsigned long ea,
- 				     int ssize)
- {
--	if (ssize == MMU_SEGSIZE_256M)
--		return vsid_scramble((context << USER_ESID_BITS)
--				     | (ea >> SID_SHIFT), 256M);
--	return vsid_scramble((context << USER_ESID_BITS_1T)
--			     | (ea >> SID_SHIFT_1T), 1T);
-+	if (ssize == MMU_SEGSIZE_256M) {
-+		context = context << USER_ESID_BITS;
-+		ea = ea >> SID_SHIFT;
-+#ifdef CONFIG_DEBUG_VM
-+		/*
-+		 * context and ea should not overlap.
-+		 */
-+		if (context & ea) {
-+			udbg_printf("Overlapping bits %lx %lx\n", context, ea);
-+			WARN_ON(1);
-+		}
-+#endif
-+		return vsid_scramble(context | ea, 256M);
-+	}
-+	context = context << USER_ESID_BITS_1T;
-+	ea = ea >> SID_SHIFT_1T;
-+#ifdef CONFIG_DEBUG_VM
-+	/*
-+	 * context and ea should not overlap.
-+	 */
-+	if (context & ea) {
-+		udbg_printf("Overlapping bits for 1T %lx %lx\n", context, ea);
-+		WARN_ON(1);
-+	}
-+#endif
-+	return vsid_scramble(context | ea, 1T);
- }
+ 	srdi	r9,r3,60		/* get region */
+-	srdi	r10,r3,28		/* get esid */
+ 	cmpldi	cr7,r9,0xc		/* cmp PAGE_OFFSET for later use */
  
- /*
-@@ -540,11 +568,20 @@ static inline unsigned long get_vsid(unsigned long context, unsigned long ea,
-  */
- static inline unsigned long get_kernel_vsid(unsigned long ea, int ssize)
- {
-+	unsigned int c_index;
- 	unsigned long context;
+ 	/* r3 = address, r10 = esid, cr7 = <> PAGE_OFFSET */
+@@ -63,7 +62,7 @@ _GLOBAL(slb_miss_kernel_load_linear)
+ 	subi	r9,r9,(0xc + 4 + 1)
+ 	lis	r10, 8
+ 	add	r9,r9,r10
+-	srdi	r10,r3,28 /* FIXME!! doing it twice */
++	srdi	r10,r3,SID_SHIFT	/* get esid */
  	/*
- 	 * kernel take the top 4 context from the available range
+ 	 * for 1T we shift 12 bits more.  slb_finish_load_1T will do
+ 	 * the necessary adjustment
+@@ -75,6 +74,7 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_1T_SEGMENT)
+ 	b	slb_finish_load_1T
+ 
+ 1:
++	srdi	r10,r3,SID_SHIFT	/* get esid */
+ #ifdef CONFIG_SPARSEMEM_VMEMMAP
+ 	/* Check virtual memmap region. To be patches at kernel boot */
+ 	cmpldi	cr0,r9,0xf
+@@ -116,9 +116,11 @@ BEGIN_FTR_SECTION
+ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_1T_SEGMENT)
+ 	b	slb_finish_load_1T
+ 
+-0:	/* user address: proto-VSID = context << 15 | ESID. First check
++0:	/*
++	 * user address: proto-VSID = context << 15 | ESID. First check
+ 	 * if the address is within the boundaries of the user region
  	 */
--	context = (MAX_CONTEXT - 4) +  ((ea >> 60) - 0xc);
-+	c_index =   ((ea >> 60) - 0xc);
-+	context = (MAX_CONTEXT - 4) + c_index;
-+#ifdef CONFIG_DEBUG_VM
-+	/*
-+	 * Drop the c_index related bits from ea, so we get
-+	 * non overlapping context and ea.
-+	 */
-+	ea = ea - ((0xcUL + c_index) << 60);
-+#endif
- 	return get_vsid(context, ea, ssize);
- }
- #endif /* __ASSEMBLY__ */
++	srdi	r10,r3,SID_SHIFT	/* get esid */
+ 	srdi.	r9,r10,USER_ESID_BITS
+ 	bne-	8f			/* invalid ea bits set */
+ 
 -- 
 1.7.10
