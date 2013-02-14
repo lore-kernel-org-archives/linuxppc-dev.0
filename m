@@ -1,9 +1,9 @@
 Return-Path: <geoff@infradead.org>
-Message-Id: <cf8f609bb785e9eebd9f9a3a22888440194afe12.1360810584.git.geoff@infradead.org>
+Message-Id: <6796cfa786e8fa7d6b7872a9d2749eca835fccf3.1360810584.git.geoff@infradead.org>
 In-Reply-To: <cover.1360810584.git.geoff@infradead.org>
 References: <cover.1360810584.git.geoff@infradead.org>
 From: Geoff Levand <geoff@infradead.org>
-Subject: [PATCH 1/4] powerpc/ps3: Add macro PS3_VERBOSE_RESULT
+Subject: [PATCH 2/4] powerpc/ps3: Increase verbosity of htab errors
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Date: Thu, 14 Feb 2013 03:03:16 +0000
 Cc: Geoff Levand <geoff@infradead.org>, cbe-oss-dev@lists.ozlabs.org,
@@ -17,27 +17,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-To allow more control of the verbosity of ps3_result() add a check
-for the preprocessor macro PS3_VERBOSE_RESULT that builds a verbose
-verion of the ps3_result() routine.
-
 Signed-off-by: Geoff Levand <geoff@infradead.org>
 ---
- arch/powerpc/include/asm/ps3.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/platforms/ps3/htab.c |   14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/ps3.h b/arch/powerpc/include/asm/ps3.h
-index 0e15db4..678a7c1 100644
---- a/arch/powerpc/include/asm/ps3.h
-+++ b/arch/powerpc/include/asm/ps3.h
-@@ -245,7 +245,7 @@ enum lv1_result {
+diff --git a/arch/powerpc/platforms/ps3/htab.c b/arch/powerpc/platforms/ps3/htab.c
+index d00d7b0..6cc5820 100644
+--- a/arch/powerpc/platforms/ps3/htab.c
++++ b/arch/powerpc/platforms/ps3/htab.c
+@@ -27,6 +27,7 @@
+ #include <asm/lv1call.h>
+ #include <asm/ps3fb.h>
  
- static inline const char* ps3_result(int result)
- {
--#if defined(DEBUG)
-+#if defined(DEBUG) || defined(PS3_VERBOSE_RESULT)
- 	switch (result) {
- 	case LV1_SUCCESS:
- 		return "LV1_SUCCESS (0)";
++#define PS3_VERBOSE_RESULT
+ #include "platform.h"
+ 
+ /**
+@@ -75,8 +76,9 @@ static long ps3_hpte_insert(unsigned long hpte_group, unsigned long vpn,
+ 
+ 	if (result) {
+ 		/* all entries bolted !*/
+-		pr_info("%s:result=%d vpn=%lx pa=%lx ix=%lx v=%llx r=%llx\n",
+-			__func__, result, vpn, pa, hpte_group, hpte_v, hpte_r);
++		pr_info("%s:result=%s vpn=%lx pa=%lx ix=%lx v=%llx r=%llx\n",
++			__func__, ps3_result(result), vpn, pa, hpte_group,
++			hpte_v, hpte_r);
+ 		BUG();
+ 	}
+ 
+@@ -125,8 +127,8 @@ static long ps3_hpte_updatepp(unsigned long slot, unsigned long newpp,
+ 				       &hpte_rs);
+ 
+ 	if (result) {
+-		pr_info("%s: res=%d read vpn=%lx slot=%lx psize=%d\n",
+-			__func__, result, vpn, slot, psize);
++		pr_info("%s: result=%s read vpn=%lx slot=%lx psize=%d\n",
++			__func__, ps3_result(result), vpn, slot, psize);
+ 		BUG();
+ 	}
+ 
+@@ -170,8 +172,8 @@ static void ps3_hpte_invalidate(unsigned long slot, unsigned long vpn,
+ 	result = lv1_write_htab_entry(PS3_LPAR_VAS_ID_CURRENT, slot, 0, 0);
+ 
+ 	if (result) {
+-		pr_info("%s: res=%d vpn=%lx slot=%lx psize=%d\n",
+-			__func__, result, vpn, slot, psize);
++		pr_info("%s: result=%s vpn=%lx slot=%lx psize=%d\n",
++			__func__, ps3_result(result), vpn, slot, psize);
+ 		BUG();
+ 	}
+ 
 -- 
 1.7.9.5
