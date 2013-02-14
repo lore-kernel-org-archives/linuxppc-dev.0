@@ -1,36 +1,25 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CDDCE2C033C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2013 19:36:48 +1100 (EST)
-Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 14 Feb 2013 14:04:11 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id A02681258057
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2013 14:07:12 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1E8aQHC31719478
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2013 14:06:27 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1E8aSgR020301
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2013 19:36:28 +1100
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, phileas-fogg@mail.ru,
- geoff@infradead.org
-Subject: [PATCH 3/4] powerpc: Don't update r10 early in the call
-Date: Thu, 14 Feb 2013 14:06:22 +0530
-Message-Id: <1360830983-1812-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1360830983-1812-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <a>
- <1360830983-1812-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <STFD002@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe001.messaging.microsoft.com [213.199.154.139])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 170202C0077
+ for <linuxppc-dev@ozlabs.org>; Thu, 14 Feb 2013 23:56:53 +1100 (EST)
+Received: from mail79-db3 (localhost [127.0.0.1])	by mail79-db3-R.bigfish.com
+ (Postfix) with ESMTP id 83A7912028A	for <linuxppc-dev@ozlabs.org>;
+ Thu, 14 Feb 2013 12:56:49 +0000 (UTC)
+Received: from DB3EHSMHS009.bigfish.com (unknown [10.3.81.232])	by
+ mail79-db3.bigfish.com (Postfix) with ESMTP id 4027630004B	for
+ <linuxppc-dev@ozlabs.org>; Thu, 14 Feb 2013 12:56:48 +0000 (UTC)
+From: Diana Craciun <diana.craciun@freescale.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH][RFC] Replaced tlbilx with tlbwe in the initialization code
+Date: Thu, 14 Feb 2013 14:56:35 +0200
+Message-ID: <1360846595-3397-1-git-send-email-diana.craciun@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Diana Craciun <Diana.Craciun@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,56 +29,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+From: Diana Craciun <Diana.Craciun@freescale.com>
 
-This enables us to use r10 as scratch in the code.
+On Freescale e6500 cores EPCR[DGTMI] controls whether guest supervisor
+state can execute TLB management instructions. If EPCR[DGTMI]=0
+tlbwe and tlbilx are allowed to execute normally in the guest state.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+A hypervisor may choose to virtualize TLB1 and for this purpose it
+may use IPROT to protect the entries for being invalidated by the
+guest. However, because tlbwe and tlbilx execution in the guest state
+are sharing the same bit, it is not possible to have a scenario where
+tlbwe is allowed to be executed in guest state and tlbilx traps. When
+guest TLB management instructions are allowed to be executed in guest
+state the guest cannot use tlbilx to invalidate TLB1 guest entries.
+
+Linux is using tlbilx in the boot code to invalidate the temporary
+entries it creates when initializing the MMU. The patch is replacing
+the usage of tlbilx in initialization code with tlbwe with VALID bit
+cleared.
+
+Linux is also using tlbilx in other contexts (like huge pages or
+indirect entries) but removing the tlbilx from the initialization code
+offers the possibility to have scenarios under hypervisor which are
+not using huge pages or indirect entries.
+
+Signed-off-by: Diana Craciun <Diana.Craciun@freescale.com>
 ---
- arch/powerpc/mm/slb_low.S |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/exceptions-64e.S | 10 ++--------
+ 1 file changed, 2 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
-index 487f998..2a233cb 100644
---- a/arch/powerpc/mm/slb_low.S
-+++ b/arch/powerpc/mm/slb_low.S
-@@ -34,7 +34,6 @@ _GLOBAL(slb_allocate_realmode)
- 	/* r3 = faulting address */
+diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+index 4684e33..1f0ae33 100644
+--- a/arch/powerpc/kernel/exceptions-64e.S
++++ b/arch/powerpc/kernel/exceptions-64e.S
+@@ -1010,12 +1010,9 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ 	mtspr	SPRN_MAS0,r3
+ 	tlbre
+ 	mfspr	r6,SPRN_MAS1
+-	rlwinm	r6,r6,0,2,0	/* clear IPROT */
++	rlwinm	r6,r6,0,2,31	/* clear IPROT and VALID */
+ 	mtspr	SPRN_MAS1,r6
+ 	tlbwe
+-
+-	/* Invalidate TLB1 */
+-	PPC_TLBILX_ALL(0,R0)
+ 	sync
+ 	isync
  
- 	srdi	r9,r3,60		/* get region */
--	srdi	r10,r3,28		/* get esid */
- 	cmpldi	cr7,r9,0xc		/* cmp PAGE_OFFSET for later use */
- 
- 	/* r3 = address, r10 = esid, cr7 = <> PAGE_OFFSET */
-@@ -63,7 +62,7 @@ _GLOBAL(slb_miss_kernel_load_linear)
- 	subi	r9,r9,(0xc + 4 + 1)
- 	lis	r10, 8
- 	add	r9,r9,r10
--	srdi	r10,r3,28 /* FIXME!! doing it twice */
-+	srdi	r10,r3,SID_SHIFT	/* get esid */
- 	/*
- 	 * for 1T we shift 12 bits more.  slb_finish_load_1T will do
- 	 * the necessary adjustment
-@@ -75,6 +74,7 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_1T_SEGMENT)
- 	b	slb_finish_load_1T
- 
- 1:
-+	srdi	r10,r3,SID_SHIFT	/* get esid */
- #ifdef CONFIG_SPARSEMEM_VMEMMAP
- 	/* Check virtual memmap region. To be patches at kernel boot */
- 	cmpldi	cr0,r9,0xf
-@@ -116,9 +116,11 @@ BEGIN_FTR_SECTION
- END_MMU_FTR_SECTION_IFCLR(MMU_FTR_1T_SEGMENT)
- 	b	slb_finish_load_1T
- 
--0:	/* user address: proto-VSID = context << 15 | ESID. First check
-+0:	/*
-+	 * user address: proto-VSID = context << 15 | ESID. First check
- 	 * if the address is within the boundaries of the user region
- 	 */
-+	srdi	r10,r3,SID_SHIFT	/* get esid */
- 	srdi.	r9,r10,USER_ESID_BITS
- 	bne-	8f			/* invalid ea bits set */
+@@ -1069,12 +1066,9 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ 	mtspr	SPRN_MAS0,r4
+ 	tlbre
+ 	mfspr	r5,SPRN_MAS1
+-	rlwinm	r5,r5,0,2,0	/* clear IPROT */
++	rlwinm	r5,r5,0,2,31	/* clear IPROT and VALID */
+ 	mtspr	SPRN_MAS1,r5
+ 	tlbwe
+-
+-	/* Invalidate TLB1 */
+-	PPC_TLBILX_ALL(0,R0)
+ 	sync
+ 	isync
  
 -- 
-1.7.10
+1.7.11.7
