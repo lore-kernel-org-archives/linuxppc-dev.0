@@ -1,10 +1,9 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 01/17] powerpc: Add new CPU feature bit for transactional
- memory
-Date: Thu, 14 Feb 2013 13:21:29 +1100
-Message-Id: <1360808505-10086-2-git-send-email-mikey@neuling.org>
+Subject: [PATCH 02/17] powerpc: Add new instructions for transactional memory
+Date: Thu, 14 Feb 2013 13:21:30 +1100
+Message-Id: <1360808505-10086-3-git-send-email-mikey@neuling.org>
 In-Reply-To: <1360808505-10086-1-git-send-email-mikey@neuling.org>
 References: <1360808505-10086-1-git-send-email-mikey@neuling.org>
 Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
@@ -18,29 +17,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Here we define the new instructions we need for transactional memory in the
+kernel.  This is so we can support compiling with binutils that don't support
+the new transactional memory instructions.
+
+Transactional memory results in two sets of architected state (GPRs/VSRs
+etc).
+
+treclaim allows us to read the checkpointed state (from the tbegin) so that we
+can store it away on a context switch.  It does this by overwriting the exiting
+architected state, so you have to save that away before you treclaim.  treclaim
+will also abort a transaction, so you can give a register value which contains
+an abort reason.
+
+trecheckpoint allows us to inject into the checkpointed state as if it were at
+the tbegin.  It does this by copying the current architected state into the
+checkpointed state.
+
 Signed-off-by: Matt Evans <matt@ozlabs.org>
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/include/asm/cputable.h |    7 +++++++
- 1 file changed, 7 insertions(+)
+ arch/powerpc/include/asm/ppc-opcode.h |   10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index 5f1938f..3636081 100644
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -220,6 +220,13 @@ extern const char *powerpc_base_platform;
- #define PPC_FEATURE_HAS_EFP_DOUBLE_COMP 0
- #endif
+diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+index 0fd1928..8752bc8 100644
+--- a/arch/powerpc/include/asm/ppc-opcode.h
++++ b/arch/powerpc/include/asm/ppc-opcode.h
+@@ -129,6 +129,9 @@
+ #define PPC_INST_TLBSRX_DOT		0x7c0006a5
+ #define PPC_INST_XXLOR			0xf0000510
+ #define PPC_INST_XVCPSGNDP		0xf0000780
++#define PPC_INST_TRECHKPT		0x7c0007dd
++#define PPC_INST_TRECLAIM		0x7c00075d
++#define PPC_INST_TABORT			0x7c00071d
  
-+/* We only set the TM feature if the kernel was compiled with TM supprt */
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+#define CPU_FTR_TM_COMP		CPU_FTR_TM
-+#else
-+#define CPU_FTR_TM_COMP		0
-+#endif
+ #define PPC_INST_NAP			0x4c000364
+ #define PPC_INST_SLEEP			0x4c0003a4
+@@ -294,4 +297,11 @@
+ #define PPC_NAP			stringify_in_c(.long PPC_INST_NAP)
+ #define PPC_SLEEP		stringify_in_c(.long PPC_INST_SLEEP)
+ 
++/* Transactional memory instructions */
++#define TRECHKPT		stringify_in_c(.long PPC_INST_TRECHKPT)
++#define TRECLAIM(r)		stringify_in_c(.long PPC_INST_TRECLAIM \
++					       | __PPC_RA(r))
++#define TABORT(r)		stringify_in_c(.long PPC_INST_TABORT \
++					       | __PPC_RA(r))
 +
- /* We need to mark all pages as being coherent if we're SMP or we have a
-  * 74[45]x and an MPC107 host bridge. Also 83xx and PowerQUICC II
-  * require it for PCI "streaming/prefetch" to work properly.
+ #endif /* _ASM_POWERPC_PPC_OPCODE_H */
 -- 
 1.7.10.4
