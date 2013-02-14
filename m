@@ -1,11 +1,35 @@
-Return-Path: <geoff@infradead.org>
-Message-Id: <cover.1360810584.git.geoff@infradead.org>
-From: Geoff Levand <geoff@infradead.org>
-Subject: [PATCH 0/4] PS3 patches for 3.9
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 14 Feb 2013 03:06:19 +0000
-Cc: Geoff Levand <geoff@infradead.org>, cbe-oss-dev@lists.ozlabs.org,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6861F2C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2013 19:36:39 +1100 (EST)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 14 Feb 2013 14:03:58 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id E9FCA1258052
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2013 14:07:11 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r1E8aPas31981652
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2013 14:06:26 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r1E8aS2R020288
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2013 19:36:28 +1100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, phileas-fogg@mail.ru,
+ geoff@infradead.org
+Subject: [PATCH 1/4] powerpc: Make VSID_BITS* dependency explicit
+Date: Thu, 14 Feb 2013 14:06:20 +0530
+Message-Id: <1360830983-1812-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <a>
+References: <a>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -15,38 +39,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-Here are a few minor PS3 patches, and one cleanup for the powerpc
-boot_paca variable.
+VSID_BITS and VSID_BITS_1T depends on the context bits  and user esid
+bits. Make the dependency explicit
 
-Please consider for 3.9
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/mmu-hash64.h |   11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
--Geoff
-
-The following changes since commit 836dc9e3fbbab0c30aa6e664417225f5c1fb1c39:
-
-  Linux 3.8-rc7 (2013-02-09 08:20:39 +1100)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/geoff/ps3-linux.git for-powerpc
-
-for you to fetch changes up to f9fda8ea9d2ef07dd5b3313892ec20b6cbad2ce8:
-
-  powerpc: Move boot_paca into early_setup (2013-02-13 18:07:41 -0800)
-
-----------------------------------------------------------------
-Geoff Levand (4):
-      powerpc/ps3: Add macro PS3_VERBOSE_RESULT
-      powerpc/ps3: Increase verbosity of htab errors
-      powerpc/ps3: Refresh ps3_defconfig
-      powerpc: Move boot_paca into early_setup
-
- arch/powerpc/configs/ps3_defconfig |   15 +++++++++------
- arch/powerpc/include/asm/paca.h    |    1 -
- arch/powerpc/include/asm/ps3.h     |    2 +-
- arch/powerpc/kernel/paca.c         |    2 --
- arch/powerpc/kernel/setup_64.c     |    2 ++
- arch/powerpc/platforms/ps3/htab.c  |   14 ++++++++------
- 6 files changed, 20 insertions(+), 16 deletions(-)
+diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
+index 2fdb47a..5f8c2bd 100644
+--- a/arch/powerpc/include/asm/mmu-hash64.h
++++ b/arch/powerpc/include/asm/mmu-hash64.h
+@@ -381,21 +381,22 @@ extern void slb_set_size(u16 size);
+  * hash collisions.
+  */
+ 
++#define CONTEXT_BITS		19
++#define USER_ESID_BITS		18
++#define USER_ESID_BITS_1T	6
++
+ /*
+  * This should be computed such that protovosid * vsid_mulitplier
+  * doesn't overflow 64 bits. It should also be co-prime to vsid_modulus
+  */
+ #define VSID_MULTIPLIER_256M	ASM_CONST(12538073)	/* 24-bit prime */
+-#define VSID_BITS_256M		38
++#define VSID_BITS_256M		(CONTEXT_BITS + USER_ESID_BITS + 1)
+ #define VSID_MODULUS_256M	((1UL<<VSID_BITS_256M)-1)
+ 
+ #define VSID_MULTIPLIER_1T	ASM_CONST(12538073)	/* 24-bit prime */
+-#define VSID_BITS_1T		26
++#define VSID_BITS_1T		(CONTEXT_BITS + USER_ESID_BITS_1T + 1)
+ #define VSID_MODULUS_1T		((1UL<<VSID_BITS_1T)-1)
+ 
+-#define CONTEXT_BITS		19
+-#define USER_ESID_BITS		18
+-#define USER_ESID_BITS_1T	6
+ 
+ #define USER_VSID_RANGE	(1UL << (USER_ESID_BITS + SID_SHIFT))
+ 
+-- 
+1.7.10
