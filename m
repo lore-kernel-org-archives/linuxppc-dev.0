@@ -1,9 +1,9 @@
 Return-Path: <geoff@infradead.org>
-Message-Id: <e2170d10295a6391bbbb7c296c6d50a8f2ac5bc1.1360810584.git.geoff@infradead.org>
+Message-Id: <f9fda8ea9d2ef07dd5b3313892ec20b6cbad2ce8.1360810584.git.geoff@infradead.org>
 In-Reply-To: <cover.1360810584.git.geoff@infradead.org>
 References: <cover.1360810584.git.geoff@infradead.org>
 From: Geoff Levand <geoff@infradead.org>
-Subject: [PATCH 3/4] powerpc/ps3: Refresh ps3_defconfig
+Subject: [PATCH 4/4] powerpc: Move boot_paca into early_setup
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Date: Thu, 14 Feb 2013 03:03:16 +0000
 Cc: Geoff Levand <geoff@infradead.org>, cbe-oss-dev@lists.ozlabs.org,
@@ -17,96 +17,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The powerpc boot_paca symbol is now only used within the
+early_setup() routine, so move it from its global definition
+into early_setup().
+
 Signed-off-by: Geoff Levand <geoff@infradead.org>
 ---
- arch/powerpc/configs/ps3_defconfig |   15 +++++++++------
- 1 file changed, 9 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/paca.h |    1 -
+ arch/powerpc/kernel/paca.c      |    2 --
+ arch/powerpc/kernel/setup_64.c  |    2 ++
+ 3 files changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/configs/ps3_defconfig b/arch/powerpc/configs/ps3_defconfig
-index c2f4b4a..7a5c15f 100644
---- a/arch/powerpc/configs/ps3_defconfig
-+++ b/arch/powerpc/configs/ps3_defconfig
-@@ -6,6 +6,7 @@ CONFIG_NR_CPUS=2
- CONFIG_EXPERIMENTAL=y
- CONFIG_SYSVIPC=y
- CONFIG_POSIX_MQUEUE=y
-+CONFIG_HIGH_RES_TIMERS=y
- CONFIG_BLK_DEV_INITRD=y
- CONFIG_CC_OPTIMIZE_FOR_SIZE=y
- CONFIG_EMBEDDED=y
-@@ -24,12 +25,13 @@ CONFIG_PS3_DISK=y
- CONFIG_PS3_ROM=y
- CONFIG_PS3_FLASH=y
- CONFIG_PS3_VRAM=m
-+CONFIG_PS3_LPM=m
- # CONFIG_PPC_OF_BOOT_TRAMPOLINE is not set
--CONFIG_HIGH_RES_TIMERS=y
- # CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
- CONFIG_BINFMT_MISC=y
- CONFIG_KEXEC=y
- # CONFIG_SPARSEMEM_VMEMMAP is not set
-+# CONFIG_COMPACTION is not set
- CONFIG_SCHED_SMT=y
- CONFIG_CMDLINE_BOOL=y
- CONFIG_CMDLINE=""
-@@ -59,6 +61,7 @@ CONFIG_BT_BNEP_PROTO_FILTER=y
- CONFIG_BT_HIDP=m
- CONFIG_BT_HCIBTUSB=m
- CONFIG_CFG80211=m
-+CONFIG_CFG80211_WEXT=y
- CONFIG_MAC80211=m
- CONFIG_MAC80211_RC_PID=y
- # CONFIG_MAC80211_RC_MINSTREL is not set
-@@ -78,7 +81,6 @@ CONFIG_MD=y
- CONFIG_BLK_DEV_DM=m
- CONFIG_NETDEVICES=y
- # CONFIG_NET_VENDOR_BROADCOM is not set
--# CONFIG_NET_VENDOR_CHELSIO is not set
- # CONFIG_NET_VENDOR_INTEL is not set
- # CONFIG_NET_VENDOR_MARVELL is not set
- # CONFIG_NET_VENDOR_MICREL is not set
-@@ -119,21 +121,21 @@ CONFIG_SND=m
- # CONFIG_SND_DRIVERS is not set
- CONFIG_SND_USB_AUDIO=m
- CONFIG_HIDRAW=y
--CONFIG_USB_HIDDEV=y
- CONFIG_HID_APPLE=m
- CONFIG_HID_BELKIN=m
- CONFIG_HID_CHERRY=m
- CONFIG_HID_EZKEY=m
- CONFIG_HID_TWINHAN=m
- CONFIG_HID_LOGITECH=m
-+CONFIG_HID_LOGITECH_DJ=m
- CONFIG_HID_MICROSOFT=m
-+CONFIG_HID_PS3REMOTE=m
- CONFIG_HID_SONY=m
- CONFIG_HID_SUNPLUS=m
- CONFIG_HID_SMARTJOYPLUS=m
-+CONFIG_USB_HIDDEV=y
- CONFIG_USB=m
- CONFIG_USB_ANNOUNCE_NEW_DEVICES=y
--CONFIG_USB_DEVICEFS=y
--# CONFIG_USB_DEVICE_CLASS is not set
- CONFIG_USB_SUSPEND=y
- CONFIG_USB_MON=m
- CONFIG_USB_EHCI_HCD=m
-@@ -158,8 +160,8 @@ CONFIG_PROC_KCORE=y
- CONFIG_TMPFS=y
- CONFIG_HUGETLBFS=y
- CONFIG_NFS_FS=y
--CONFIG_NFS_V3=y
- CONFIG_NFS_V4=y
-+CONFIG_NFS_SWAP=y
- CONFIG_ROOT_NFS=y
- CONFIG_CIFS=m
- CONFIG_NLS=y
-@@ -176,6 +178,7 @@ CONFIG_DEBUG_INFO=y
- CONFIG_DEBUG_WRITECOUNT=y
- CONFIG_DEBUG_MEMORY_INIT=y
- CONFIG_DEBUG_LIST=y
-+CONFIG_RCU_CPU_STALL_TIMEOUT=60
- # CONFIG_FTRACE is not set
- CONFIG_DEBUG_STACKOVERFLOW=y
- CONFIG_CRYPTO_CCM=m
+diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+index e9e7a69..45e87b7 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -167,7 +167,6 @@ struct paca_struct {
+ };
+ 
+ extern struct paca_struct *paca;
+-extern __initdata struct paca_struct boot_paca;
+ extern void initialise_paca(struct paca_struct *new_paca, int cpu);
+ extern void setup_paca(struct paca_struct *new_paca);
+ extern void allocate_pacas(void);
+diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
+index cd6da85..f8f2468 100644
+--- a/arch/powerpc/kernel/paca.c
++++ b/arch/powerpc/kernel/paca.c
+@@ -120,8 +120,6 @@ struct slb_shadow slb_shadow[] __cacheline_aligned = {
+ struct paca_struct *paca;
+ EXPORT_SYMBOL(paca);
+ 
+-struct paca_struct boot_paca;
+-
+ void __init initialise_paca(struct paca_struct *new_paca, int cpu)
+ {
+        /* The TOC register (GPR2) points 32kB into the TOC, so that 64kB
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 6da881b..f2514e1 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -177,6 +177,8 @@ early_param("smt-enabled", early_smt_enabled);
+ 
+ void __init early_setup(unsigned long dt_ptr)
+ {
++	static __initdata struct paca_struct boot_paca;
++
+ 	/* -------- printk is _NOT_ safe to use here ! ------- */
+ 
+ 	/* Identify CPU type */
 -- 
 1.7.9.5
