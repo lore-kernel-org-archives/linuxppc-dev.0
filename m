@@ -1,14 +1,14 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 08/17] powerpc: Add FP/VSX and VMX register load functions
- for transactional memory
-In-reply-to: <0233B491-CB0D-4B0C-9859-8B486D3C3314@kernel.crashing.org>
+Subject: Re: [PATCH 06/17] powerpc: Add transactional memory paca scratch
+ register to show_regs
+In-reply-to: <7B4CE428-128F-43FC-9ABE-CE3728B3CF93@kernel.crashing.org>
 References: <1360729895-304-1-git-send-email-mikey@neuling.org>
- <1360729895-304-9-git-send-email-mikey@neuling.org>
- <0233B491-CB0D-4B0C-9859-8B486D3C3314@kernel.crashing.org>
-Date: Thu, 14 Feb 2013 12:53:19 +1100
-Message-ID: <5963.1360806799@ale.ozlabs.ibm.com>
+ <1360729895-304-7-git-send-email-mikey@neuling.org>
+ <7B4CE428-128F-43FC-9ABE-CE3728B3CF93@kernel.crashing.org>
+Date: Thu, 14 Feb 2013 12:53:41 +1100
+Message-ID: <6035.1360806821@ale.ozlabs.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, Matt Evans <matt@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -19,18 +19,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> > +/* void do_load_up_fpu(struct thread_struct *thread)
+Kumar Gala <galak@kernel.crashing.org> wrote:
+
 > 
-> Comment is wrong, should be void do_load_up_transact_fpu(...)
-
-Ooops, thanks for the catch.
-
-> > +/* void do_load_up_altivec(struct thread_struct *thread)
+> On Feb 12, 2013, at 10:31 PM, Michael Neuling wrote:
 > 
-> comment wrong.
+> > Add transactional memory paca scratch register to show_regs.  This is useful
+> > for debugging.
+> > 
+> > Signed-off-by: Matt Evans <matt@ozlabs.org>
+> > Signed-off-by: Michael Neuling <mikey@neuling.org>
+> > ---
+> > arch/powerpc/include/asm/paca.h   |    1 +
+> > arch/powerpc/kernel/asm-offsets.c |    1 +
+> > arch/powerpc/kernel/entry_64.S    |    4 ++++
+> > arch/powerpc/kernel/process.c     |    3 +++
+> > 4 files changed, 9 insertions(+)
+> > 
+> > diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+> > index c47d687..07e9851 100644
+> > --- a/arch/powerpc/include/asm/paca.h
+> > +++ b/arch/powerpc/include/asm/paca.h
+> > @@ -137,6 +137,7 @@ struct paca_struct {
+> > 	u8 irq_work_pending;		/* IRQ_WORK interrupt while soft-disable */
+> > 	u8 nap_state_lost;		/* NV GPR values lost in power7_idle */
+> > 	u64 sprg3;			/* Saved user-visible sprg */
+> 
+> #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> 
+> > +	u64 tm_scratch;                 /* TM scratch area for reclaim */
+> 
+> #endif
 
-Ooops again.
-
-FYI I'm in Austin next week if you wanna grab a beer.
+Yep.. thanks again.
 
 Mikey
