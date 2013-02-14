@@ -1,15 +1,14 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 06/17] powerpc: Add transactional memory paca scratch
- register to show_regs
-In-reply-to: <7B4CE428-128F-43FC-9ABE-CE3728B3CF93@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 00/17] powerpc: Hardware transactional memory support for
+ POWER8
+Date: Thu, 14 Feb 2013 13:21:28 +1100
+Message-Id: <1360808505-10086-1-git-send-email-mikey@neuling.org>
+In-Reply-To: <1360729895-304-1-git-send-email-mikey@neuling.org>
 References: <1360729895-304-1-git-send-email-mikey@neuling.org>
- <1360729895-304-7-git-send-email-mikey@neuling.org>
- <7B4CE428-128F-43FC-9ABE-CE3728B3CF93@kernel.crashing.org>
-Date: Thu, 14 Feb 2013 12:53:41 +1100
-Message-ID: <6035.1360806821@ale.ozlabs.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Matt Evans <matt@ozlabs.org>
+Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
+ Matt Evans <matt@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,38 +18,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kumar Gala <galak@kernel.crashing.org> wrote:
+POWER8 implements hardware transactional memory support.  This patch series
+adds kernel support so that user programs can use this hardware transactional
+memory and the new state is properly context switched.  It is not currently
+used by the kernel itself.
 
-> 
-> On Feb 12, 2013, at 10:31 PM, Michael Neuling wrote:
-> 
-> > Add transactional memory paca scratch register to show_regs.  This is useful
-> > for debugging.
-> > 
-> > Signed-off-by: Matt Evans <matt@ozlabs.org>
-> > Signed-off-by: Michael Neuling <mikey@neuling.org>
-> > ---
-> > arch/powerpc/include/asm/paca.h   |    1 +
-> > arch/powerpc/kernel/asm-offsets.c |    1 +
-> > arch/powerpc/kernel/entry_64.S    |    4 ++++
-> > arch/powerpc/kernel/process.c     |    3 +++
-> > 4 files changed, 9 insertions(+)
-> > 
-> > diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-> > index c47d687..07e9851 100644
-> > --- a/arch/powerpc/include/asm/paca.h
-> > +++ b/arch/powerpc/include/asm/paca.h
-> > @@ -137,6 +137,7 @@ struct paca_struct {
-> > 	u8 irq_work_pending;		/* IRQ_WORK interrupt while soft-disable */
-> > 	u8 nap_state_lost;		/* NV GPR values lost in power7_idle */
-> > 	u64 sprg3;			/* Saved user-visible sprg */
-> 
-> #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-> 
-> > +	u64 tm_scratch;                 /* TM scratch area for reclaim */
-> 
-> #endif
+This patch series was originally developed by Matt Evans.
 
-Yep.. thanks again.
+v4 changes:
+ Incorporate reviews from Kumar.
 
-Mikey
+v3 changes:
+ Incorporate review from benh (offline conversation):
+   - Improve IRQ disabling for tm_reclaim
+   - Improve IRQ disabling for early fp/vmx/vsx unavail handling
+   - Change CONFIG option to add PPC (now PPC_TRANSACTIONAL_MEM)
+   - strip some unneeded #defines
+   - micro optimisation to asm in  early fp/vmx/vsx
+      -       srdi    r0, r12, MSR_TS_LG
+      -       andi.   r0, r0, 3
+      +       rldicl. r0, r12, (64-MSR_TS_LG), (64-2)
+   - do tabort on unmap only when current is using TM
+   - removed unneeded patch which moved when writing MSR back to the stack
+
+v2 changes:
+ Adds signal handling
+ Removes some code for detecting when to restore all register or not
+ Added tabort for local tlb invalidates 
+ Rebased on benh's next tree
+
+Basic overview of a POWER8 hardware transaction memory
+=====================================================
+Hardware transactional memory is a feature that enables a different form of
+atomic memory access.  Several new instructions are presented to delimit
+transactions; transactions are guaranteed to either complete atomically or roll
+back and undo any partial changes.
+
+A simple transaction looks like this:
+
+begin_move_money:
+  tbegin
+  beq   abort_handler
+
+  ld    r4, SAVINGS_ACCT(r3)
+  ld    r5, CURRENT_ACCT(r3)
+  subi  r5, r5, 1
+  addi  r4, r4, 1
+  std   r4, SAVINGS_ACCT(r3)
+  std   r5, CURRENT_ACCT(r3)
+
+  tend
+
+  b     continue
+
+abort_handler:
+  ... test for odd failures ...
+
+  /* Retry the transaction if it failed because it conflicted with
+   * someone else: */
+  b     begin_move_money
+
+
+The 'tbegin' instruction denotes the start point, and 'tend' the end point.
+Between these points the processor is in 'Transactional' state; any memory
+references will complete in one go if there are no conflicts with other
+transactional or non-transactional accesses within the system.  In this
+example, the transaction completes as though it were normal straight-line code
+IF no other processor has touched SAVINGS_ACCT(r3) or CURRENT_ACCT(r3); an
+atomic move of money from the current account to the savings account has been
+performed.  Even though the normal ld/std instructions are used (note no
+lwarx/stwcx), either *both* SAVINGS_ACCT(r3) and CURRENT_ACCT(r3) will be
+updated, or neither will be updated.
+
+If, in the meantime, there is a conflict with the locations accessed by the
+transaction, the transaction will be aborted by the CPU.  Register and memory
+state will roll back to that at the 'tbegin', and control will continue from
+'tbegin+4'.  The branch to abort_handler will be taken this second time; the
+abort handler can check the cause of the failure, and retry.
+
+Checkpointed registers include all GPRs, FPRs, VRs/VSRs, LR, CCR/CR, CTR, FPCSR
+and a few other status/flag regs; 
+
+A preliminary ISA for TM can be found here:
+  https://www.power.org/documentation/power-isa-transactional-memory/
+
+-- 
+1.7.10.4
