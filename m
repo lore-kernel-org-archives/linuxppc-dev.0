@@ -1,21 +1,20 @@
-Return-Path: <B11780@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 110EF2C007A
- for <linuxppc-dev@ozlabs.org>; Sat, 16 Feb 2013 07:05:09 +1100 (EST)
-From: Gala Kumar-B11780 <B11780@freescale.com>
-To: Timur Tabi <timur@tabi.org>
-Subject: Re: [PATCH] [v2] powerpc/fsl: remove extraneous DIU platform functions
-Date: Fri, 15 Feb 2013 20:05:01 +0000
-Message-ID: <CF1EE7AED478CD48A05574C8E2DA142D728A77@039-SN1MPN1-005.039d.mgd.msft.net>
-References: <1358465214-18746-1-git-send-email-timur@tabi.org>
-In-Reply-To: <1358465214-18746-1-git-send-email-timur@tabi.org>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id CD8842C02BF
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Feb 2013 07:05:24 +1100 (EST)
+Subject: Re: [PATCH v3 1/1] powerpc/85xx: Board support for ppa8548
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1360764540-4185-1-git-send-email-stef.van.os@prodrive.nl>
+Date: Fri, 15 Feb 2013 14:03:10 -0600
+Message-Id: <19684E02-1C40-4296-850E-4FC9D5C55DD4@kernel.crashing.org>
+References: <1360764540-4185-1-git-send-email-stef.van.os@prodrive.nl>
+To: Stef van Os <stef.van.os@Prodrive.nl>
+Cc: scottwood@freescale.com, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, timur.tabi@calxeda.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,21 +25,32 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Jan 17, 2013, at 5:26 PM, Timur Tabi wrote:
+On Feb 13, 2013, at 8:09 AM, Stef van Os wrote:
 
-> From: Timur Tabi <timur@freescale.com>
+> Initial board support for the Prodrive PPA8548 AMC module. Board
+> is an MPC8548 AMC platform used in RapidIO systems. This module is
+> also used to test/work on mainline linux RapidIO software.
 >=20
-> The Freescale DIU driver was recently updated to not require every DIU
-> platform function, so now we can remove the unneeded functions from
-> some boards.
+> PPA8548 overview:
+> - 1.3 GHz Freescale PowerQUICC III MPC8548 processor
+> - 1 GB DDR2 @ 266 MHz
+> - 8 MB NOR flash
+> - Serial RapidIO 1.2
+> - 1 x 10/100/1000 BASE-T front ethernet
+> - 1 x 1000 BASE-BX ethernet on AMC connector
 >=20
-> Signed-off-by: Timur Tabi <timur@freescale.com>
+> Signed-off-by: Stef van Os <stef.van.os@prodrive.nl>
 > ---
-> arch/powerpc/platforms/512x/mpc512x_shared.c |    5 ---
-> arch/powerpc/platforms/85xx/p1022_ds.c       |   38 ---------------------=
------
-> arch/powerpc/platforms/85xx/p1022_rdk.c      |   12 --------
-> 3 files changed, 0 insertions(+), 55 deletions(-)
+> arch/powerpc/boot/dts/ppa8548.dts           |  166 =
++++++++++++++++++++++++++++
+> arch/powerpc/configs/85xx/ppa8548_defconfig |   65 +++++++++++
+> arch/powerpc/platforms/85xx/Kconfig         |    7 +
+> arch/powerpc/platforms/85xx/Makefile        |    1 +
+> arch/powerpc/platforms/85xx/ppa8548.c       |   98 ++++++++++++++++
+> 5 files changed, 337 insertions(+), 0 deletions(-)
+> create mode 100644 arch/powerpc/boot/dts/ppa8548.dts
+> create mode 100644 arch/powerpc/configs/85xx/ppa8548_defconfig
+> create mode 100644 arch/powerpc/platforms/85xx/ppa8548.c
 
 applied to next
 
