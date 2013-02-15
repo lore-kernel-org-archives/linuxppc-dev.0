@@ -1,53 +1,22 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8A74D2C007E
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Feb 2013 06:42:53 +1100 (EST)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Sat, 16 Feb 2013 01:10:55 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 2630F1258056
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Feb 2013 01:13:28 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1FJgfo823068730
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Feb 2013 01:12:42 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1FJgfee004421
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Feb 2013 06:42:43 +1100
-Message-ID: <511E8F3C.2010406@linux.vnet.ibm.com>
-Date: Sat, 16 Feb 2013 01:10:44 +0530
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH v5 00/45] CPU hotplug: stop_machine()-free CPU hotplug
-References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
- <510FBC01.2030405@linux.vnet.ibm.com>	<87haloiwv0.fsf@rustcorp.com.au>
- <51134596.4080106@linux.vnet.ibm.com>
- <20130208154113.GV17833@n2100.arm.linux.org.uk>
- <51152B81.2050501@linux.vnet.ibm.com>	<51153F72.1060005@linux.vnet.ibm.com>
- <CAKfTPtCe+cD7LLkb+D6pqG1SwG2V08ws=4XO3ttHEHV2qgmqPg@mail.gmail.com>
- <5118E2CD.90401@linux.vnet.ibm.com>
- <20130211190852.GA5695@linux.vnet.ibm.com>
- <5119BDFD.1000909@linux.vnet.ibm.com>
- <CAKfTPtAo2hQTfBKTVUuLKgsGJ2ZLD0UTR3fH9UFuJwyFt4n__w@mail.gmail.com>
-In-Reply-To: <CAKfTPtAo2hQTfBKTVUuLKgsGJ2ZLD0UTR3fH9UFuJwyFt4n__w@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
- linux-kernel@vger.kernel.org, walken@google.com, mingo@kernel.org,
- linux-arch@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>,
- xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
- paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
- linux-pm@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
- rostedt@goodmis.org, rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
- linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com,
- sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id A2D782C007A
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Feb 2013 07:03:38 +1100 (EST)
+Subject: Re: [PATCH 8/15] arch/powerpc/platforms/85xx/p1022_ds.c: adjust
+ duplicate test
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1358773378-4700-9-git-send-email-Julia.Lawall@lip6.fr>
+Date: Fri, 15 Feb 2013 14:02:51 -0600
+Message-Id: <A9025211-6E24-4730-8BEC-582CA6E9A563@kernel.crashing.org>
+References: <1358773378-4700-1-git-send-email-Julia.Lawall@lip6.fr>
+ <1358773378-4700-9-git-send-email-Julia.Lawall@lip6.fr>
+To: Julia Lawall <julia.lawall@lip6.fr>
+Cc: kernel-janitors@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,105 +26,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Vincent,
 
-On 02/15/2013 06:58 PM, Vincent Guittot wrote:
-> Hi Srivatsa,
+On Jan 21, 2013, at 7:02 AM, Julia Lawall wrote:
+
+> From: Julia Lawall <Julia.Lawall@lip6.fr>
 > 
-> I have run some tests with you branch (thanks Paul for the git tree)
-> and you will find results below.
->
-
-Thank you very much for testing this patchset!
- 
-> The tests condition are:
-> - 5 CPUs system in 2 clusters
-> - The test plugs/unplugs CPU2 and it increases the system load each 20
-> plug/unplug sequence with either more cyclictests threads
-> - The test is done with all CPUs online and with only CPU0 and CPU2
+> Delete successive tests to the same location.  The code tested the result
+> of a previous call, that itself was already tested.  It is changed to test
+> the result of the most recent call.
 > 
-> The main conclusion is that there is no differences with and without
-> your patches with my stress tests. I'm not sure that it was the
-> expected results but the cpu_down is already quite low : 4-5ms in
-> average
+> A simplified version of the semantic match that finds this problem is as
+> follows: (http://coccinelle.lip6.fr/)
 > 
-
-Atleast my patchset doesn't perform _worse_ than mainline, with respect
-to cpu_down duration :-)
-
-So, here is the analysis:
-Stop-machine() doesn't really slow down CPU-down operation, if the rest
-of the CPUs are mostly running in userspace all the time. Because, the
-CPUs running userspace workloads cooperate very eagerly with the stop-machine
-dance - they receive the resched IPI, and allow the per-cpu cpu-stopper
-thread to monopolize the CPU, almost immediately.
-
-The scenario where stop-machine() takes longer to take effect is when
-most of the online CPUs are running in kernelspace, because, then the
-probability that they call preempt_disable() frequently (and hence inhibit
-stop-machine) is higher. That's why, in my tests, I ran genload from LTP
-which generated a lot of system-time (system-time in 'top' indicates activity
-in kernelspace). Hence my patchset showed significant improvement over
-mainline in my tests.
-
-However, your test is very useful too, if we measure a different parameter:
-the latency impact on the workloads running on the system (cyclic test).
-One other important aim of this patchset is to make hotplug as less intrusive
-as possible, for other workloads running on the system. So if you measure
-the cyclictest numbers, I would expect my patchset to show better numbers
-than mainline, when you do cpu-hotplug in parallel (same test that you did).
-Mainline would run stop-machine and hence interrupt the cyclic test tasks
-too often. My patchset wouldn't do that, and hence cyclic test should
-ideally show better numbers.
-
-I'd really appreciate if you could try that out and let me know how it
-goes.. :-) Thank you very much!
-
-Regards,
-Srivatsa S. Bhat
-
+> // <smpl>
+> @s exists@
+> local idexpression y;
+> expression x,e;
+> @@
 > 
+> *if ( \(x == NULL\|IS_ERR(x)\|y != 0\) )
+> { ... when forall
+>   return ...; }
+> ... when != \(y = e\|y += e\|y -= e\|y |= e\|y &= e\|y++\|y--\|&y\)
+>    when != \(XT_GETPAGE(...,y)\|WMI_CMD_BUF(...)\)
+> *if ( \(x == NULL\|IS_ERR(x)\|y != 0\) )
+> { ... when forall
+>   return ...; }
+> // </smpl>
 > 
-> On 12 February 2013 04:58, Srivatsa S. Bhat
-> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
->> On 02/12/2013 12:38 AM, Paul E. McKenney wrote:
->>> On Mon, Feb 11, 2013 at 05:53:41PM +0530, Srivatsa S. Bhat wrote:
->>>> On 02/11/2013 05:28 PM, Vincent Guittot wrote:
->>>>> On 8 February 2013 19:09, Srivatsa S. Bhat
->>>>> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
->>>
->>> [ . . . ]
->>>
->>>>>> Adding Vincent to CC, who had previously evaluated the performance and
->>>>>> latency implications of CPU hotplug on ARM platforms, IIRC.
->>>>>>
->>>>>
->>>>> Hi Srivatsa,
->>>>>
->>>>> I can try to run some of our stress tests on your patches.
->>>>
->>>> Great!
->>>>
->>>>> Have you
->>>>> got a git tree that i can pull ?
->>>>>
->>>>
->>>> Unfortunately, no, none at the moment..  :-(
->>>
->>> You do need to create an externally visible git tree.
->>
->> Ok, I'll do that soon.
->>
->>>  In the meantime,
->>> I have added your series at rcu/bhat.2013.01.21a on -rcu:
->>>
->>> git://git.kernel.org/pub/scm/linux/kernel/git/paulmck/linux-rcu.git
->>>
->>> This should appear soon on a kernel.org mirror near you.  ;-)
->>>
->>
->> Thank you very much, Paul! :-)
->>
->> Regards,
->> Srivatsa S. Bhat
->>
+> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+> 
+> ---
+> arch/powerpc/platforms/85xx/p1022_ds.c |    2 +-
+> 1 file changed, 1 insertion(+), 1 deletion(-)
+
+applied to next
+
+- k
