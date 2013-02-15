@@ -1,17 +1,16 @@
 Return-Path: <paulus@ozlabs.org>
-Date: Fri, 15 Feb 2013 14:24:59 +1100
+Date: Fri, 15 Feb 2013 15:42:28 +1100
 From: Paul Mackerras <paulus@samba.org>
-To: aik@ozlabs.ru
-Subject: Re: [PATCH 2/4] powerpc kvm: added multiple TCEs requests support
-Message-ID: <20130215032458.GB25015@drongo>
-References: <1360584763-21988-1-git-send-email-a>
- <5118e064.22ca320a.1f08.ffffe2ec@mx.google.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2/4] powerpc: Update kernel VSID range
+Message-ID: <20130215044228.GE25015@drongo>
+References: <a>
+ <1360830983-1812-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1360830983-1812-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5118e064.22ca320a.1f08.ffffe2ec@mx.google.com>
-Cc: kvm@vger.kernel.org, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <1360830983-1812-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: phileas-fogg@mail.ru, linuxppc-dev@lists.ozlabs.org, geoff@infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,236 +20,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 11, 2013 at 11:12:41PM +1100, aik@ozlabs.ru wrote:
+On Thu, Feb 14, 2013 at 02:06:21PM +0530, Aneesh Kumar K.V wrote:
+> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+> 
+> This patch change the kernel VSID range so that we limit VSID_BITS to 37.
+> This enables us to support 64TB with 65 bit VA (37+28). Without this patch
+> we have boot hangs on platforms that only support 65 bit VA.
+> 
+> With this patch we now have proto vsid generated as below:
+> 
+> We first generate a 37-bit "proto-VSID". Proto-VSIDs are generated
+> from mmu context id and effective segment id of the address.
+> 
+> For user processes max context id is limited to ((1ul << 19) - 6)
+> for kernel space, we use the top 4 context ids to map address as below
+> 0x7fffb -  [ 0xc000000000000000 - 0xcfffffffffffffff ]
 
-> +static long emulated_h_put_tce(struct kvmppc_spapr_tce_table *stt,
-> +		unsigned long ioba, unsigned long tce)
-> +{
-> +	unsigned long idx = ioba >> SPAPR_TCE_SHIFT;
-> +	struct page *page;
-> +	u64 *tbl;
-> +
-> +	/* udbg_printf("H_PUT_TCE: liobn 0x%lx => stt=%p  window_size=0x%x\n", */
-> +	/* 	    liobn, stt, stt->window_size); */
-> +	if (ioba >= stt->window_size) {
-> +		pr_err("%s failed on ioba=%lx\n", __func__, ioba);
+Actually, each context only gives us 64TB, so the range here would be
+0xc000000000000000 - 0xc0003fffffffffff.  Similarly for the others.
 
-Doesn't this give the guest a way to spam the host logs?  And in fact
-printk in real mode is potentially problematic.  I would just leave
-out this statement.
+> 0x7fffc -  [ 0xd000000000000000 - 0xdfffffffffffffff ]
+> 0x7fffd -  [ 0xe000000000000000 - 0xefffffffffffffff ]
+> 0x7fffe -  [ 0xf000000000000000 - 0xffffffffffffffff ]
 
-> +		return H_PARAMETER;
-> +	}
-> +
-> +	page = stt->pages[idx / TCES_PER_PAGE];
-> +	tbl = (u64 *)page_address(page);
+We could increase all these context numbers by 1.  We have to avoid
+the last ESID of the last context because of the modulo operation in
+the vsid scramble, but the vmemmap (which is what uses region 0xf)
+will never be close to 64TB in size (it's 56 bytes per page of system
+memory).
 
-I would like to see an explanation of why we are confident that
-page_address() will work correctly in real mode, across all the
-combinations of config options that we can have for a ppc64 book3s
-kernel.
-
-> +
-> +	/* FIXME: Need to validate the TCE itself */
-> +	/* udbg_printf("tce @ %p\n", &tbl[idx % TCES_PER_PAGE]); */
-> +	tbl[idx % TCES_PER_PAGE] = tce;
-> +
-> +	return H_SUCCESS;
-> +}
-> +
-> +/*
-> + * Real mode handlers
->   */
->  long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
->  		      unsigned long ioba, unsigned long tce)
->  {
-> -	struct kvm *kvm = vcpu->kvm;
->  	struct kvmppc_spapr_tce_table *stt;
->  
-> -	/* udbg_printf("H_PUT_TCE(): liobn=0x%lx ioba=0x%lx, tce=0x%lx\n", */
-> -	/* 	    liobn, ioba, tce); */
-> +	stt = find_tce_table(vcpu, liobn);
-> +	/* Didn't find the liobn, put it to userspace */
-> +	if (!stt)
-> +		return H_TOO_HARD;
-> +
-> +	/* Emulated IO */
-> +	return emulated_h_put_tce(stt, ioba, tce);
-> +}
-> +
-> +long kvmppc_h_put_tce_indirect(struct kvm_vcpu *vcpu,
-> +		unsigned long liobn, unsigned long ioba,
-> +		unsigned long tce_list,	unsigned long npages)
-> +{
-> +	struct kvmppc_spapr_tce_table *stt;
-> +	long i, ret = 0;
-> +	unsigned long *tces;
-> +
-> +	stt = find_tce_table(vcpu, liobn);
-> +	/* Didn't find the liobn, put it to userspace */
-> +	if (!stt)
-> +		return H_TOO_HARD;
->  
-> -	list_for_each_entry(stt, &kvm->arch.spapr_tce_tables, list) {
-> -		if (stt->liobn == liobn) {
-> -			unsigned long idx = ioba >> SPAPR_TCE_SHIFT;
-> -			struct page *page;
-> -			u64 *tbl;
-> +	tces = (void *) get_real_address(vcpu, tce_list, false, NULL, NULL);
-> +	if (!tces)
-> +		return H_TOO_HARD;
->  
-> -			/* udbg_printf("H_PUT_TCE: liobn 0x%lx => stt=%p  window_size=0x%x\n", */
-> -			/* 	    liobn, stt, stt->window_size); */
-> -			if (ioba >= stt->window_size)
-> -				return H_PARAMETER;
-> +	/* Emulated IO */
-> +	for (i = 0; (i < npages) && !ret; ++i, ioba += IOMMU_PAGE_SIZE)
-> +		ret = emulated_h_put_tce(stt, ioba, tces[i]);
-
-So, tces is a pointer to somewhere inside a real page.  Did we check
-somewhere that tces[npages-1] is in the same page as tces[0]?  If so,
-I missed it.  If we didn't, then we probably should check and do
-something about it.
-
->  
-> -			page = stt->pages[idx / TCES_PER_PAGE];
-> -			tbl = (u64 *)page_address(page);
-> +	return ret;
-> +}
->  
-> -			/* FIXME: Need to validate the TCE itself */
-> -			/* udbg_printf("tce @ %p\n", &tbl[idx % TCES_PER_PAGE]); */
-> -			tbl[idx % TCES_PER_PAGE] = tce;
-> -			return H_SUCCESS;
-> -		}
-> -	}
-> +long kvmppc_h_stuff_tce(struct kvm_vcpu *vcpu,
-> +		unsigned long liobn, unsigned long ioba,
-> +		unsigned long tce_value, unsigned long npages)
-> +{
-> +	struct kvmppc_spapr_tce_table *stt;
-> +	long i, ret = 0;
-> +
-> +	stt = find_tce_table(vcpu, liobn);
-> +	/* Didn't find the liobn, put it to userspace */
-> +	if (!stt)
-> +		return H_TOO_HARD;
->  
-> -	/* Didn't find the liobn, punt it to userspace */
-> -	return H_TOO_HARD;
-> +	/* Emulated IO */
-> +	for (i = 0; (i < npages) && !ret; ++i, ioba += IOMMU_PAGE_SIZE)
-> +		ret = emulated_h_put_tce(stt, ioba, tce_value);
-> +
-> +	return ret;
-> +}
-> +
-> +/*
-> + * Virtual mode handlers
-> + */
-> +extern long kvmppc_virtmode_h_put_tce(struct kvm_vcpu *vcpu,
-> +		unsigned long liobn, unsigned long ioba,
-> +		unsigned long tce)
-> +{
-> +	/* At the moment emulated IO is handled the same way */
-> +	return kvmppc_h_put_tce(vcpu, liobn, ioba, tce);
-> +}
-> +
-> +extern long kvmppc_virtmode_h_put_tce_indirect(struct kvm_vcpu *vcpu,
-> +		unsigned long liobn, unsigned long ioba,
-> +		unsigned long tce_list, unsigned long npages)
-> +{
-> +	struct kvmppc_spapr_tce_table *stt;
-> +	unsigned long *tces;
-> +	long ret = 0, i;
-> +
-> +	stt = find_tce_table(vcpu, liobn);
-> +	/* Didn't find the liobn, put it to userspace */
-> +	if (!stt)
-> +		return H_TOO_HARD;
-> +
-> +	tces = (void *) get_virt_address(vcpu, tce_list, false, NULL, NULL);
-> +	if (!tces)
-> +		return H_TOO_HARD;
-> +
-> +	/* Emulated IO */
-> +	for (i = 0; (i < npages) && !ret; ++i, ioba += IOMMU_PAGE_SIZE)
-> +		ret = emulated_h_put_tce(stt, ioba, tces[i]);
-
-Same comment here about tces[i] overflowing a page boundary.
-
-> +
-> +	return ret;
-> +}
-> +
-> +extern long kvmppc_virtmode_h_stuff_tce(struct kvm_vcpu *vcpu,
-> +		unsigned long liobn, unsigned long ioba,
-> +		unsigned long tce_value, unsigned long npages)
-> +{
-> +	/* At the moment emulated IO is handled the same way */
-> +	return kvmppc_h_stuff_tce(vcpu, liobn, ioba, tce_value, npages);
->  }
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index 71d0c90..13c8436 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -515,6 +515,29 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
->  					kvmppc_get_gpr(vcpu, 5),
->  					kvmppc_get_gpr(vcpu, 6));
->  		break;
-> +	case H_PUT_TCE:
-> +		ret = kvmppc_virtmode_h_put_tce(vcpu, kvmppc_get_gpr(vcpu, 4),
-> +					        kvmppc_get_gpr(vcpu, 5),
-> +					        kvmppc_get_gpr(vcpu, 6));
-> +		if (ret == H_TOO_HARD)
-> +			return RESUME_HOST;
-> +		break;
-> +	case H_PUT_TCE_INDIRECT:
-> +		ret = kvmppc_virtmode_h_put_tce_indirect(vcpu, kvmppc_get_gpr(vcpu, 4),
-> +					        kvmppc_get_gpr(vcpu, 5),
-> +					        kvmppc_get_gpr(vcpu, 6),
-> +						kvmppc_get_gpr(vcpu, 7));
-> +		if (ret == H_TOO_HARD)
-> +			return RESUME_HOST;
-> +		break;
-> +	case H_STUFF_TCE:
-> +		ret = kvmppc_virtmode_h_stuff_tce(vcpu, kvmppc_get_gpr(vcpu, 4),
-> +					        kvmppc_get_gpr(vcpu, 5),
-> +					        kvmppc_get_gpr(vcpu, 6),
-> +						kvmppc_get_gpr(vcpu, 7));
-> +		if (ret == H_TOO_HARD)
-> +			return RESUME_HOST;
-> +		break;
->  	default:
->  		return RESUME_HOST;
->  	}
 [snip]
-> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-> index 70739a0..95614c7 100644
-> --- a/arch/powerpc/kvm/powerpc.c
-> +++ b/arch/powerpc/kvm/powerpc.c
-> @@ -383,6 +383,9 @@ int kvm_dev_ioctl_check_extension(long ext)
->  		r = 1;
->  		break;
->  #endif
-> +	case KVM_CAP_PPC_MULTITCE:
-> +		r = 1;
-> +		break;
->  	default:
->  		r = 0;
->  		break;
-> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
-> index e6e5d4b..26e2b271 100644
-> --- a/include/uapi/linux/kvm.h
-> +++ b/include/uapi/linux/kvm.h
-> @@ -635,6 +635,7 @@ struct kvm_ppc_smmu_info {
->  #define KVM_CAP_IRQFD_RESAMPLE 82
->  #define KVM_CAP_PPC_BOOKE_WATCHDOG 83
->  #define KVM_CAP_PPC_HTAB_FD 84
-> +#define KVM_CAP_PPC_MULTITCE 87
+> +static inline unsigned long get_kernel_vsid(unsigned long ea, int ssize)
+> +{
+> +	unsigned long context;
+> +	/*
+> +	 * kernel take the top 4 context from the available range
+> +	 */
 
-The capability should be described in
-Documentation/virtual/kvm/api.txt.
+You should check the ea here, and if it is out of range (below 0xc...,
+or with any of the 0x0fffc00000000000 bits set), return 0, which is
+the reserved vsid.
+
+> +	context = (MAX_CONTEXT - 4) +  ((ea >> 60) - 0xc);
+> +	return get_vsid(context, ea, ssize);
+> +}
+>  #endif /* __ASSEMBLY__ */
+>  
+>  #endif /* _ASM_POWERPC_MMU_HASH64_H_ */
+> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+> index 4665e82..d8f6804 100644
+> --- a/arch/powerpc/kernel/exceptions-64s.S
+> +++ b/arch/powerpc/kernel/exceptions-64s.S
+> @@ -1268,17 +1268,24 @@ do_ste_alloc:
+>  _GLOBAL(do_stab_bolted)
+>  	stw	r9,PACA_EXSLB+EX_CCR(r13)	/* save CR in exc. frame */
+>  	std	r11,PACA_EXSLB+EX_SRR0(r13)	/* save SRR0 in exc. frame */
+> +	mfspr	r11,SPRN_DAR			/* ea */
+> +
+> +	/*
+> +	 * Calculate VSID:
+> +	 * This is the kernel vsid, we take the top for context from
+> +	 * the range. context = (MAX_CONTEXT - 4) + ((ea >> 60) - 0xc)
+> +	 */
+> +	srdi	r9,r11,60
+> +	subi	r9,r9,(0xc + 4 + 1)
+> +	lis	r10,8
+> +	add	r9,r9,r10		/* context */
+
+At this point we know the top 4 bits of EA are 0xc, so the context is
+a constant which we can load with 2 instructions.  We do also need to
+check the middle bits (0x0fff_c000_0000_0000) and use a VSID of 0 if
+any of them are set.
+
+> diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
+> index 1a16ca2..487f998 100644
+> --- a/arch/powerpc/mm/slb_low.S
+> +++ b/arch/powerpc/mm/slb_low.S
+> @@ -56,12 +56,19 @@ _GLOBAL(slb_allocate_realmode)
+>  	 */
+>  _GLOBAL(slb_miss_kernel_load_linear)
+>  	li	r11,0
+> -	li	r9,0x1
+> +	/*
+> +	 * context = (MAX_CONTEXT - 4) + ((ea >> 60) - 0xc)
+> +	 */
+> +	srdi	r9,r3,60
+> +	subi	r9,r9,(0xc + 4 + 1)
+> +	lis	r10, 8
+> +	add	r9,r9,r10
+> +	srdi	r10,r3,28 /* FIXME!! doing it twice */
+
+Also need to check the middle bits here and for the 1T case.
 
 Paul.
