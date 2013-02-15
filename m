@@ -1,22 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A2D782C007A
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Feb 2013 07:03:38 +1100 (EST)
-Subject: Re: [PATCH 8/15] arch/powerpc/platforms/85xx/p1022_ds.c: adjust
- duplicate test
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1358773378-4700-9-git-send-email-Julia.Lawall@lip6.fr>
-Date: Fri, 15 Feb 2013 14:02:51 -0600
-Message-Id: <A9025211-6E24-4730-8BEC-582CA6E9A563@kernel.crashing.org>
-References: <1358773378-4700-1-git-send-email-Julia.Lawall@lip6.fr>
- <1358773378-4700-9-git-send-email-Julia.Lawall@lip6.fr>
-To: Julia Lawall <julia.lawall@lip6.fr>
-Cc: kernel-janitors@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Return-Path: <B11780@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 110EF2C007A
+ for <linuxppc-dev@ozlabs.org>; Sat, 16 Feb 2013 07:05:09 +1100 (EST)
+From: Gala Kumar-B11780 <B11780@freescale.com>
+To: Timur Tabi <timur@tabi.org>
+Subject: Re: [PATCH] [v2] powerpc/fsl: remove extraneous DIU platform functions
+Date: Fri, 15 Feb 2013 20:05:01 +0000
+Message-ID: <CF1EE7AED478CD48A05574C8E2DA142D728A77@039-SN1MPN1-005.039d.mgd.msft.net>
+References: <1358465214-18746-1-git-send-email-timur@tabi.org>
+In-Reply-To: <1358465214-18746-1-git-send-email-timur@tabi.org>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,39 +26,22 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Jan 21, 2013, at 7:02 AM, Julia Lawall wrote:
+On Jan 17, 2013, at 5:26 PM, Timur Tabi wrote:
 
-> From: Julia Lawall <Julia.Lawall@lip6.fr>
-> 
-> Delete successive tests to the same location.  The code tested the result
-> of a previous call, that itself was already tested.  It is changed to test
-> the result of the most recent call.
-> 
-> A simplified version of the semantic match that finds this problem is as
-> follows: (http://coccinelle.lip6.fr/)
-> 
-> // <smpl>
-> @s exists@
-> local idexpression y;
-> expression x,e;
-> @@
-> 
-> *if ( \(x == NULL\|IS_ERR(x)\|y != 0\) )
-> { ... when forall
->   return ...; }
-> ... when != \(y = e\|y += e\|y -= e\|y |= e\|y &= e\|y++\|y--\|&y\)
->    when != \(XT_GETPAGE(...,y)\|WMI_CMD_BUF(...)\)
-> *if ( \(x == NULL\|IS_ERR(x)\|y != 0\) )
-> { ... when forall
->   return ...; }
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
-> 
+> From: Timur Tabi <timur@freescale.com>
+>=20
+> The Freescale DIU driver was recently updated to not require every DIU
+> platform function, so now we can remove the unneeded functions from
+> some boards.
+>=20
+> Signed-off-by: Timur Tabi <timur@freescale.com>
 > ---
-> arch/powerpc/platforms/85xx/p1022_ds.c |    2 +-
-> 1 file changed, 1 insertion(+), 1 deletion(-)
+> arch/powerpc/platforms/512x/mpc512x_shared.c |    5 ---
+> arch/powerpc/platforms/85xx/p1022_ds.c       |   38 ---------------------=
+-----
+> arch/powerpc/platforms/85xx/p1022_rdk.c      |   12 --------
+> 3 files changed, 0 insertions(+), 55 deletions(-)
 
 applied to next
 
-- k
+- k=
