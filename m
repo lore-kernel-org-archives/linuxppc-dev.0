@@ -1,20 +1,26 @@
-Return-Path: <gang.chen@asianux.com>
-Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 9061F2C0082
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Feb 2013 15:00:29 +1100 (EST)
-Message-ID: <512055D0.7050100@asianux.com>
-Date: Sun, 17 Feb 2013 12:00:16 +0800
-From: Chen Gang <gang.chen@asianux.com>
+Return-Path: <shawn.guo@linaro.org>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D4B922C0085
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Feb 2013 18:43:31 +1100 (EST)
+Date: Sun, 17 Feb 2013 15:43:20 +0800
+From: Shawn Guo <shawn.guo@linaro.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 2/2] of: use platform_device_add
+Message-ID: <20130217074317.GB16632@S2101-09.ap.freescale.net>
+References: <1358473200-17886-1-git-send-email-grant.likely@secretlab.ca>
+ <1358473200-17886-2-git-send-email-grant.likely@secretlab.ca>
+ <20130217030331.GA15048@S2101-09.ap.freescale.net>
 MIME-Version: 1.0
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: Re: [PATCH] arch/powerpc/kernel: using %12.12s instead of %12s for
- avoiding memory overflow.
-References: <5100B53C.3030109@asianux.com>
-In-Reply-To: <5100B53C.3030109@asianux.com>
-Content-Type: text/plain; charset=GB2312
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20130217030331.GA15048@S2101-09.ap.freescale.net>
+Cc: linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,54 +30,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello relative members:
-
-  please give a glance to this patch, when you have time.
-
-  thanks.
-
-  :-)
-
-gchen.
-
-
-于 2013年01月24日 12:14, Chen Gang 写道:
+On Sun, Feb 17, 2013 at 11:03:35AM +0800, Shawn Guo wrote:
+> On Fri, Jan 18, 2013 at 01:40:00AM +0000, Grant Likely wrote:
+> > This allows platform_device_add a chance to call insert_resource on all
+> > of the resources from OF. At a minimum this fills in proc/iomem and
+> > presumably makes resource tracking and conflict detection work better.
+> > However, it has the side effect of moving all OF generated platform
+> > devices from /sys/devices to /sys/devices/platform/. It /shouldn't/
+> > break userspace because userspace is not supposed to depend on the full
+> > path (because userspace always does what it is supposed to, right?).
+> > 
+> > This may cause breakage if either:
+> > 1) any two nodes in a given device tree have overlapping & staggered
+> >    regions (ie. 0x80..0xbf and 0xa0..0xdf; where one is not contained
+> >    within the other). In this case one of the devices will fail to
+> >    register and an exception will be needed in platform_device_add() to
+> >    complain but not fail.
 > 
->   for tmp_part->header.name:
->     it is "Terminating null required only for names < 12 chars".
->     so need to limit the %.12s for it in printk
+> Grant,
 > 
->   additional info:
-> 
->     %12s  limit the width, not for the original string output length
->           if name length is more than 12, it still can be fully displayed.
->           if name length is less than 12, the ' ' will be filled before name.
-> 
->     %.12s truly limit the original string output length (precision)
-> 
-> 
-> Signed-off-by: Chen Gang <gang.chen@asianux.com>
-> ---
->  arch/powerpc/kernel/nvram_64.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
-> index bec1e93..57bf6d2 100644
-> --- a/arch/powerpc/kernel/nvram_64.c
-> +++ b/arch/powerpc/kernel/nvram_64.c
-> @@ -202,7 +202,7 @@ static void __init nvram_print_partitions(char * label)
->  	printk(KERN_WARNING "--------%s---------\n", label);
->  	printk(KERN_WARNING "indx\t\tsig\tchks\tlen\tname\n");
->  	list_for_each_entry(tmp_part, &nvram_partitions, partition) {
-> -		printk(KERN_WARNING "%4d    \t%02x\t%02x\t%d\t%12s\n",
-> +		printk(KERN_WARNING "%4d    \t%02x\t%02x\t%d\t%12.12s\n",
->  		       tmp_part->index, tmp_part->header.signature,
->  		       tmp_part->header.checksum, tmp_part->header.length,
->  		       tmp_part->header.name);
-> 
+> The patch introduce a regression on imx6q boot.
 
+It also breaks all of_amba_device users.
 
--- 
-Chen Gang
+of_amba_device_create() --> amba_device_add() --> request_resource()
+and fails.
 
-Asianux Corporation
+Shawn
