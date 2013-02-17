@@ -1,24 +1,25 @@
-Return-Path: <shawn.guo@linaro.org>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D4B922C0085
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Feb 2013 18:43:31 +1100 (EST)
-Date: Sun, 17 Feb 2013 15:43:20 +0800
-From: Shawn Guo <shawn.guo@linaro.org>
-To: Grant Likely <grant.likely@secretlab.ca>
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+ [78.32.30.218])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 2B0042C007C
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Feb 2013 21:41:32 +1100 (EST)
+Date: Sun, 17 Feb 2013 10:19:58 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Shawn Guo <shawn.guo@linaro.org>
 Subject: Re: [PATCH 2/2] of: use platform_device_add
-Message-ID: <20130217074317.GB16632@S2101-09.ap.freescale.net>
+Message-ID: <20130217101958.GR17833@n2100.arm.linux.org.uk>
 References: <1358473200-17886-1-git-send-email-grant.likely@secretlab.ca>
  <1358473200-17886-2-git-send-email-grant.likely@secretlab.ca>
  <20130217030331.GA15048@S2101-09.ap.freescale.net>
+ <20130217074317.GB16632@S2101-09.ap.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20130217030331.GA15048@S2101-09.ap.freescale.net>
-Cc: linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
- Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130217074317.GB16632@S2101-09.ap.freescale.net>
+Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+ linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
  linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,30 +31,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Feb 17, 2013 at 11:03:35AM +0800, Shawn Guo wrote:
-> On Fri, Jan 18, 2013 at 01:40:00AM +0000, Grant Likely wrote:
-> > This allows platform_device_add a chance to call insert_resource on all
-> > of the resources from OF. At a minimum this fills in proc/iomem and
-> > presumably makes resource tracking and conflict detection work better.
-> > However, it has the side effect of moving all OF generated platform
-> > devices from /sys/devices to /sys/devices/platform/. It /shouldn't/
-> > break userspace because userspace is not supposed to depend on the full
-> > path (because userspace always does what it is supposed to, right?).
-> > 
-> > This may cause breakage if either:
-> > 1) any two nodes in a given device tree have overlapping & staggered
-> >    regions (ie. 0x80..0xbf and 0xa0..0xdf; where one is not contained
-> >    within the other). In this case one of the devices will fail to
-> >    register and an exception will be needed in platform_device_add() to
-> >    complain but not fail.
+On Sun, Feb 17, 2013 at 03:43:20PM +0800, Shawn Guo wrote:
+> It also breaks all of_amba_device users.
 > 
-> Grant,
-> 
-> The patch introduce a regression on imx6q boot.
+> of_amba_device_create() --> amba_device_add() --> request_resource()
+> and fails.
 
-It also breaks all of_amba_device users.
-
-of_amba_device_create() --> amba_device_add() --> request_resource()
-and fails.
-
-Shawn
+Presumably that's because we no longer know what the parent resource
+is supposed to be?
