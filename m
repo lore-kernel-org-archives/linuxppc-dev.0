@@ -1,21 +1,28 @@
-Return-Path: <phileas-fogg@mail.ru>
-Received: from smtp12.mail.ru (smtp12.mail.ru [94.100.176.89])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 351242C0079
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Feb 2013 22:40:16 +1100 (EST)
-Message-ID: <5120CFA4.7090005@mail.ru>
-Date: Sun, 17 Feb 2013 13:40:04 +0100
-From: Phileas Fogg <phileas-fogg@mail.ru>
+Return-Path: <festevam@gmail.com>
+Received: from mail-ve0-f171.google.com (mail-ve0-f171.google.com
+ [209.85.128.171])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D9D032C0040
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 00:18:26 +1100 (EST)
+Received: by mail-ve0-f171.google.com with SMTP id b10so4147795vea.16
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Feb 2013 05:18:23 -0800 (PST)
 MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: PS3: Strange issue with kexec and FreeBSD loader
-References: <1360365046.495584377@f356.mail.ru> <511F652F.4090508@mail.ru>
- <51201276.8020104@mail.ru>
- <CAMuHMdUTQWpQH=UaHc=iZPiJrry7_VqOjtm7bX+jW6r3vOge8A@mail.gmail.com>
-In-Reply-To: <CAMuHMdUTQWpQH=UaHc=iZPiJrry7_VqOjtm7bX+jW6r3vOge8A@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <20130217074317.GB16632@S2101-09.ap.freescale.net>
+References: <1358473200-17886-1-git-send-email-grant.likely@secretlab.ca>
+ <1358473200-17886-2-git-send-email-grant.likely@secretlab.ca>
+ <20130217030331.GA15048@S2101-09.ap.freescale.net>
+ <20130217074317.GB16632@S2101-09.ap.freescale.net>
+Date: Sun, 17 Feb 2013 10:18:22 -0300
+Message-ID: <CAOMZO5DD419Yy9UgRaQ+zMQsJ=mZ6dCohoG-52P8Ds8=bZ+shA@mail.gmail.com>
+Subject: Re: [PATCH 2/2] of: use platform_device_add
+From: Fabio Estevam <festevam@gmail.com>
+To: Shawn Guo <shawn.guo@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+ linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,62 +32,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Geert Uytterhoeven wrote:
-> Hi Phileas,
+On Sun, Feb 17, 2013 at 4:43 AM, Shawn Guo <shawn.guo@linaro.org> wrote:
+> On Sun, Feb 17, 2013 at 11:03:35AM +0800, Shawn Guo wrote:
+>> On Fri, Jan 18, 2013 at 01:40:00AM +0000, Grant Likely wrote:
+>> > This allows platform_device_add a chance to call insert_resource on all
+>> > of the resources from OF. At a minimum this fills in proc/iomem and
+>> > presumably makes resource tracking and conflict detection work better.
+>> > However, it has the side effect of moving all OF generated platform
+>> > devices from /sys/devices to /sys/devices/platform/. It /shouldn't/
+>> > break userspace because userspace is not supposed to depend on the full
+>> > path (because userspace always does what it is supposed to, right?).
+>> >
+>> > This may cause breakage if either:
+>> > 1) any two nodes in a given device tree have overlapping & staggered
+>> >    regions (ie. 0x80..0xbf and 0xa0..0xdf; where one is not contained
+>> >    within the other). In this case one of the devices will fail to
+>> >    register and an exception will be needed in platform_device_add() to
+>> >    complain but not fail.
+>>
+>> Grant,
+>>
+>> The patch introduce a regression on imx6q boot.
 >
-> On Sun, Feb 17, 2013 at 12:12 AM, Phileas Fogg <phileas-fogg@mail.ru> wrote:
->> I found new clues about the problem.
->>
->> Normally the device tree memory segment is allocated at the top of the boot
->> memory region. The boot memory size on the PS3 console is 128MB.
->>
->>
->> root@ps3-linux:~# kexec -l loader.ps3
->> segment[0].mem:0x131d000 memsz:262144
->> segment[1].mem:0x135d000 memsz:36864
->> segment[2].mem:0x7fff000 memsz:4096
->>
->> And the device tree is located at address 0x7fff000, it's the last page of
->> the boot memory.
->>
->> I changed the kexec-tools and made it store the device tree just after the
->> purgatory code which is located at address 0x135d000. Like here:
->>
->>
->> root@ps3-linux:~# kexec -l loader.ps3
->> segment[0].mem:0x131d000 memsz:262144
->> segment[1].mem:0x135d000 memsz:36864
->> segment[2].mem:0x1366000 memsz:4096   <---- new address of device tree
->> segment
->>
->> And now the sha256 verification is always successful for the FreeBSD loader
->> too.
->> But still no idea what actually corrupts the device tree segment when it's
->> located at the top of the boot memory region. And why it happens on Linux
->> 3.7 and Linux 3.8 but not on Linux 3.3.8.
+> It also breaks all of_amba_device users.
 >
-> Have you looked at the actual data that ends up being written there?
-> It may give a clue...
->
-> Gr{oetje,eeting}s,
->
->                          Geert
->
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
->
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
->                                  -- Linus Torvalds
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
+> of_amba_device_create() --> amba_device_add() --> request_resource()
+> and fails.
 
-i was able to dump the device tree data from the purgatory code and compared the 
-original DT which i dumped from kexec-tools and the one from purgatory.
-About 20 bytes at the end of the string table of the device tree were corrupted. 
-Large part of the new data are 0s.
-
-regards
+Yes, correct: amba-pl011 does not register anymore after this patch,
+which causes the serial console to be not functional.
