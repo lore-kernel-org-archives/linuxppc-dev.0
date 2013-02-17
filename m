@@ -1,27 +1,24 @@
-Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
-Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
- [78.32.30.218])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 2B0042C007C
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Feb 2013 21:41:32 +1100 (EST)
-Date: Sun, 17 Feb 2013 10:19:58 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH 2/2] of: use platform_device_add
-Message-ID: <20130217101958.GR17833@n2100.arm.linux.org.uk>
-References: <1358473200-17886-1-git-send-email-grant.likely@secretlab.ca>
- <1358473200-17886-2-git-send-email-grant.likely@secretlab.ca>
- <20130217030331.GA15048@S2101-09.ap.freescale.net>
- <20130217074317.GB16632@S2101-09.ap.freescale.net>
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-ie0-x236.google.com (mail-ie0-x236.google.com
+ [IPv6:2607:f8b0:4001:c03::236])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1E7C12C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Feb 2013 21:46:20 +1100 (EST)
+Received: by mail-ie0-f182.google.com with SMTP id k14so6347582iea.27
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Feb 2013 02:46:17 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130217074317.GB16632@S2101-09.ap.freescale.net>
-Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
- linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <51201276.8020104@mail.ru>
+References: <1360365046.495584377@f356.mail.ru> <511F652F.4090508@mail.ru>
+ <51201276.8020104@mail.ru>
+Date: Sun, 17 Feb 2013 09:53:30 +0100
+Message-ID: <CAMuHMdUTQWpQH=UaHc=iZPiJrry7_VqOjtm7bX+jW6r3vOge8A@mail.gmail.com>
+Subject: Re: PS3: Strange issue with kexec and FreeBSD loader
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Phileas Fogg <phileas-fogg@mail.ru>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,11 +28,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Feb 17, 2013 at 03:43:20PM +0800, Shawn Guo wrote:
-> It also breaks all of_amba_device users.
-> 
-> of_amba_device_create() --> amba_device_add() --> request_resource()
-> and fails.
+Hi Phileas,
 
-Presumably that's because we no longer know what the parent resource
-is supposed to be?
+On Sun, Feb 17, 2013 at 12:12 AM, Phileas Fogg <phileas-fogg@mail.ru> wrote:
+> I found new clues about the problem.
+>
+> Normally the device tree memory segment is allocated at the top of the boot
+> memory region. The boot memory size on the PS3 console is 128MB.
+>
+>
+> root@ps3-linux:~# kexec -l loader.ps3
+> segment[0].mem:0x131d000 memsz:262144
+> segment[1].mem:0x135d000 memsz:36864
+> segment[2].mem:0x7fff000 memsz:4096
+>
+> And the device tree is located at address 0x7fff000, it's the last page of
+> the boot memory.
+>
+> I changed the kexec-tools and made it store the device tree just after the
+> purgatory code which is located at address 0x135d000. Like here:
+>
+>
+> root@ps3-linux:~# kexec -l loader.ps3
+> segment[0].mem:0x131d000 memsz:262144
+> segment[1].mem:0x135d000 memsz:36864
+> segment[2].mem:0x1366000 memsz:4096   <---- new address of device tree
+> segment
+>
+> And now the sha256 verification is always successful for the FreeBSD loader
+> too.
+> But still no idea what actually corrupts the device tree segment when it's
+> located at the top of the boot memory region. And why it happens on Linux
+> 3.7 and Linux 3.8 but not on Linux 3.3.8.
+
+Have you looked at the actual data that ends up being written there?
+It may give a clue...
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
