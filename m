@@ -1,19 +1,25 @@
-Return-Path: <phileas-fogg@mail.ru>
-Received: from smtp45.i.mail.ru (smtp45.i.mail.ru [94.100.177.105])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 40A2D2C007A
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Feb 2013 09:12:59 +1100 (EST)
-Message-ID: <51201276.8020104@mail.ru>
-Date: Sun, 17 Feb 2013 00:12:54 +0100
-From: Phileas Fogg <phileas-fogg@mail.ru>
+Return-Path: <shawn.guo@linaro.org>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4727C2C0085
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Feb 2013 14:03:49 +1100 (EST)
+Date: Sun, 17 Feb 2013 11:03:35 +0800
+From: Shawn Guo <shawn.guo@linaro.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 2/2] of: use platform_device_add
+Message-ID: <20130217030331.GA15048@S2101-09.ap.freescale.net>
+References: <1358473200-17886-1-git-send-email-grant.likely@secretlab.ca>
+ <1358473200-17886-2-git-send-email-grant.likely@secretlab.ca>
 MIME-Version: 1.0
-To: Phileas Fogg <phileas-fogg@mail.ru>
-Subject: Re: PS3: Strange issue with kexec and FreeBSD loader
-References: <1360365046.495584377@f356.mail.ru> <511F652F.4090508@mail.ru>
-In-Reply-To: <511F652F.4090508@mail.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1358473200-17886-2-git-send-email-grant.likely@secretlab.ca>
+Cc: linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,31 +29,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, Jan 18, 2013 at 01:40:00AM +0000, Grant Likely wrote:
+> This allows platform_device_add a chance to call insert_resource on all
+> of the resources from OF. At a minimum this fills in proc/iomem and
+> presumably makes resource tracking and conflict detection work better.
+> However, it has the side effect of moving all OF generated platform
+> devices from /sys/devices to /sys/devices/platform/. It /shouldn't/
+> break userspace because userspace is not supposed to depend on the full
+> path (because userspace always does what it is supposed to, right?).
+> 
+> This may cause breakage if either:
+> 1) any two nodes in a given device tree have overlapping & staggered
+>    regions (ie. 0x80..0xbf and 0xa0..0xdf; where one is not contained
+>    within the other). In this case one of the devices will fail to
+>    register and an exception will be needed in platform_device_add() to
+>    complain but not fail.
 
-I found new clues about the problem.
+Grant,
 
-Normally the device tree memory segment is allocated at the top of the boot 
-memory region. The boot memory size on the PS3 console is 128MB.
+The patch introduce a regression on imx6q boot.  The IOMUXC block on
+imx6q is special.  It acts not only a pin controller but also a system
+controller with a bunch of system level registers in there.  That's why
+we currently have the following two nodes in imx6q device tree with the
+same start "reg" address, which work with drivers/mfd/syscon.c and
+drivers/pinctrl/pinctrl-imx6q.c respectively.
 
-root@ps3-linux:~# kexec -l loader.ps3
-segment[0].mem:0x131d000 memsz:262144
-segment[1].mem:0x135d000 memsz:36864
-segment[2].mem:0x7fff000 memsz:4096
+	gpr: iomuxc-gpr@020e0000 {
+		compatible = "fsl,imx6q-iomuxc-gpr", "syscon";
+		reg = <0x020e0000 0x38>;
+	};
 
-And the device tree is located at address 0x7fff000, it's the last page of the 
-boot memory.
+	iomuxc: iomuxc@020e0000 {
+		compatible = "fsl,imx6q-iomuxc";
+		reg = <0x020e0000 0x4000>;
+	};
 
-I changed the kexec-tools and made it store the device tree just after the 
-purgatory code which is located at address 0x135d000. Like here:
+With the patch in place, pinctrl-imx6q fails to register like below.
 
-root@ps3-linux:~# kexec -l loader.ps3
-segment[0].mem:0x131d000 memsz:262144
-segment[1].mem:0x135d000 memsz:36864
-segment[2].mem:0x1366000 memsz:4096   <---- new address of device tree segment
+syscon 20e0000.iomuxc: syscon regmap start 0x20e0000 end 0x20e3fff registered
+imx6q-pinctrl 20e0000.iomuxc: can't request region for resource [mem 0x020e0000-0x020e3fff]
+imx6q-pinctrl: probe of 20e0000.iomuxc failed with error -16
 
-And now the sha256 verification is always successful for the FreeBSD loader too.
-But still no idea what actually corrupts the device tree segment when it's 
-located at the top of the boot memory region. And why it happens on Linux 3.7 
-and Linux 3.8 but not on Linux 3.3.8.
+Shawn
 
-regards
+> 2) any device calls request_mem_region() on a region larger than
+>    specified in the device tree. In this case the device node may be
+>    wrong, or the driver is overreaching. In either case I'd like to know
+>    about any problems and fix them.
