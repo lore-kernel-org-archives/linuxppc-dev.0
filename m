@@ -1,28 +1,51 @@
-Return-Path: <festevam@gmail.com>
-Received: from mail-ve0-f171.google.com (mail-ve0-f171.google.com
- [209.85.128.171])
+Return-Path: <jacmet@gmail.com>
+Received: from mail-ee0-f50.google.com (mail-ee0-f50.google.com [74.125.83.50])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D9D032C0040
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 00:18:26 +1100 (EST)
-Received: by mail-ve0-f171.google.com with SMTP id b10so4147795vea.16
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Feb 2013 05:18:23 -0800 (PST)
+ by ozlabs.org (Postfix) with ESMTPS id 971602C007C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 02:12:44 +1100 (EST)
+Received: by mail-ee0-f50.google.com with SMTP id e51so2470280eek.9
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Feb 2013 07:12:39 -0800 (PST)
+Sender: Peter Korsgaard <jacmet@gmail.com>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+To: Doug Anderson <dianders@chromium.org>
+Subject: Re: [PATCH] i2c: Remove unneeded xxx_set_drvdata(..., NULL) calls
+References: <1360953682-25066-1-git-send-email-dianders@chromium.org>
+ <1360970315-32116-1-git-send-email-dianders@chromium.org>
+Date: Sun, 17 Feb 2013 16:12:31 +0100
+In-Reply-To: <1360970315-32116-1-git-send-email-dianders@chromium.org> (Doug
+ Anderson's message of "Fri, 15 Feb 2013 15:18:35 -0800")
+Message-ID: <87txpboty7.fsf@dell.be.48ers.dk>
 MIME-Version: 1.0
-In-Reply-To: <20130217074317.GB16632@S2101-09.ap.freescale.net>
-References: <1358473200-17886-1-git-send-email-grant.likely@secretlab.ca>
- <1358473200-17886-2-git-send-email-grant.likely@secretlab.ca>
- <20130217030331.GA15048@S2101-09.ap.freescale.net>
- <20130217074317.GB16632@S2101-09.ap.freescale.net>
-Date: Sun, 17 Feb 2013 10:18:22 -0300
-Message-ID: <CAOMZO5DD419Yy9UgRaQ+zMQsJ=mZ6dCohoG-52P8Ds8=bZ+shA@mail.gmail.com>
-Subject: Re: [PATCH 2/2] of: use platform_device_add
-From: Fabio Estevam <festevam@gmail.com>
-To: Shawn Guo <shawn.guo@linaro.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
- linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Cc: Wolfram Sang <wsa@the-dreams.de>, Tony Lindgren <tony@atomide.com>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ Thierry Reding <thierry.reding@avionic-design.de>,
+ Sekhar Nori <nsekhar@ti.com>, linux-i2c@vger.kernel.org,
+ Guan Xuetao <gxt@mprc.pku.edu.cn>, Kevin Hilman <khilman@ti.com>,
+ Sonic Zhang <sonic.zhang@analog.com>, linux-arm-kernel@lists.infradead.org,
+ Deepak Sikri <deepak.sikri@st.com>, Havard Skinnemoen <hskinnemoen@gmail.com>,
+ Marek Vasut <marex@denx.de>, Pawel Moll <pawel.moll@arm.com>,
+ Stephen Warren <swarren@wwwdotorg.org>, Sascha Hauer <s.hauer@pengutronix.de>,
+ Uwe =?utf-8?Q?Kleine?= =?utf-8?Q?-K=C3=B6nig?=
+ <u.kleine-koenig@pengutronix.de>, Rob Herring <rob.herring@calxeda.com>,
+ uclinux-dist-devel@blackfin.uclinux.org, Jean Delvare <khali@linux-fr.org>,
+ Lars-Peter Clausen <lars@metafoo.de>,
+ "Ben Dooks \(embedded platforms\)" <ben-linux@fluff.org>,
+ Barry Song <baohua.song@csr.com>, linux-omap@vger.kernel.org,
+ Mika Westerberg <mika.westerberg@linux.intel.com>,
+ Oskar Schirmer <oskar@scara.com>, Fabio Estevam <fabio.estevam@freescale.com>,
+ davinci-linux-open-source@linux.davincidsp.com,
+ Shawn Guo <shawn.guo@linaro.org>, Jim Cromie <jim.cromie@gmail.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Tomoya MORINAGA <tomoya.rohm@gmail.com>, linux-kernel@vger.kernel.org,
+ Kyungmin Park <kyungmin.park@samsung.com>,
+ Viresh Kumar <viresh.linux@gmail.com>,
+ Karol Lewandowski <k.lewandowsk@samsung.com>, Jiri Kosina <jkosina@suse.cz>,
+ STEricsson <STEricsson_nomadik_linux@list.st.com>,
+ Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
+ Alessandro Rubini <rubini@unipv.it>, linuxppc-dev@lists.ozlabs.org,
+ Alexander Stein <alexander.stein@systec-electronic.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,32 +55,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Feb 17, 2013 at 4:43 AM, Shawn Guo <shawn.guo@linaro.org> wrote:
-> On Sun, Feb 17, 2013 at 11:03:35AM +0800, Shawn Guo wrote:
->> On Fri, Jan 18, 2013 at 01:40:00AM +0000, Grant Likely wrote:
->> > This allows platform_device_add a chance to call insert_resource on all
->> > of the resources from OF. At a minimum this fills in proc/iomem and
->> > presumably makes resource tracking and conflict detection work better.
->> > However, it has the side effect of moving all OF generated platform
->> > devices from /sys/devices to /sys/devices/platform/. It /shouldn't/
->> > break userspace because userspace is not supposed to depend on the full
->> > path (because userspace always does what it is supposed to, right?).
->> >
->> > This may cause breakage if either:
->> > 1) any two nodes in a given device tree have overlapping & staggered
->> >    regions (ie. 0x80..0xbf and 0xa0..0xdf; where one is not contained
->> >    within the other). In this case one of the devices will fail to
->> >    register and an exception will be needed in platform_device_add() to
->> >    complain but not fail.
->>
->> Grant,
->>
->> The patch introduce a regression on imx6q boot.
->
-> It also breaks all of_amba_device users.
->
-> of_amba_device_create() --> amba_device_add() --> request_resource()
-> and fails.
+>>>>> "Doug" == Doug Anderson <dianders@chromium.org> writes:
 
-Yes, correct: amba-pl011 does not register anymore after this patch,
-which causes the serial console to be not functional.
+ Doug> There is simply no reason to be manually setting the private driver
+ Doug> data to NULL in the remove/fail to probe cases.  This is just extra
+ Doug> cruft code that can be removed.
+
+ Doug> A few notes:
+ Doug> * Nothing relies on drvdata being set to NULL.
+ Doug> * The __device_release_driver() function eventually calls
+ Doug>   dev_set_drvdata(dev, NULL) anyway, so there's no need to do it
+ Doug>   twice.
+ Doug> * I verified that there were no cases where xxx_get_drvdata() was
+ Doug>   being called in these drivers and checking for / relying on the NULL
+ Doug>   return value.
+
+ Doug> This could be cleaned up kernel-wide but for now just take the baby
+ Doug> step and remove from the i2c subsystem.
+
+ Doug> Reported-by: Wolfram Sang <wsa@the-dreams.de>
+ Doug> Reported-by: Stephen Warren <swarren@wwwdotorg.org>
+ Doug> Signed-off-by: Doug Anderson <dianders@chromium.org>
+
+For i2c-ocores.c + i2c-mux-gpio.c:
+
+Acked-by: Peter Korsgaard <jacmet@sunsite.dk>
+
+-- 
+Bye, Peter Korsgaard
