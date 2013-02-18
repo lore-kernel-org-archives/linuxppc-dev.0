@@ -1,33 +1,33 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 297872C03D6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:42:18 +1100 (EST)
+ (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CF2DB2C04DE
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:42:25 +1100 (EST)
 Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Mon, 18 Feb 2013 18:09:31 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 544EC394004F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 18:12:12 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1ICgAxo30015542
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 18:12:10 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1ICg9ns021558
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 12:42:12 GMT
+ Mon, 18 Feb 2013 22:35:09 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 4BFC43578023
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:42:23 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r1ICTumH5833118
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:29:56 +1100
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r1ICgLh2003486
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:42:23 +1100
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v6 14/46] sched/rt: Use get/put_online_cpus_atomic() to
- prevent CPU offline
+Subject: [PATCH v6 15/46] tick: Use get/put_online_cpus_atomic() to prevent
+ CPU offline
 To: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com,
  paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org,
  akpm@linux-foundation.org, namhyung@kernel.org
-Date: Mon, 18 Feb 2013 18:10:13 +0530
-Message-ID: <20130218124012.26245.44243.stgit@srivatsabhat.in.ibm.com>
+Date: Mon, 18 Feb 2013 18:10:18 +0530
+Message-ID: <20130218124018.26245.34450.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
 References: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
@@ -58,28 +58,26 @@ while invoking from atomic context.
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- kernel/sched/rt.c |    3 +++
- 1 file changed, 3 insertions(+)
+ kernel/time/tick-broadcast.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/kernel/sched/rt.c b/kernel/sched/rt.c
-index 4f02b28..e546c98 100644
---- a/kernel/sched/rt.c
-+++ b/kernel/sched/rt.c
-@@ -6,6 +6,7 @@
- #include "sched.h"
+diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
+index f113755..d123a2c 100644
+--- a/kernel/time/tick-broadcast.c
++++ b/kernel/time/tick-broadcast.c
+@@ -160,6 +160,7 @@ static void tick_do_broadcast(struct cpumask *mask)
+  */
+ static void tick_do_periodic_broadcast(void)
+ {
++	get_online_cpus_atomic();
+ 	raw_spin_lock(&tick_broadcast_lock);
  
- #include <linux/slab.h>
-+#include <linux/cpu.h>
+ 	cpumask_and(to_cpumask(tmpmask),
+@@ -167,6 +168,7 @@ static void tick_do_periodic_broadcast(void)
+ 	tick_do_broadcast(to_cpumask(tmpmask));
  
- static int do_sched_rt_period_timer(struct rt_bandwidth *rt_b, int overrun);
+ 	raw_spin_unlock(&tick_broadcast_lock);
++	put_online_cpus_atomic();
+ }
  
-@@ -26,7 +27,9 @@ static enum hrtimer_restart sched_rt_period_timer(struct hrtimer *timer)
- 		if (!overrun)
- 			break;
- 
-+		get_online_cpus_atomic();
- 		idle = do_sched_rt_period_timer(rt_b, overrun);
-+		put_online_cpus_atomic();
- 	}
- 
- 	return idle ? HRTIMER_NORESTART : HRTIMER_RESTART;
+ /*
