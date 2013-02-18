@@ -1,31 +1,30 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E14B82C029C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 21:28:46 +1100 (EST)
+ (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9AB462C02B0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 21:28:47 +1100 (EST)
 Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 18 Feb 2013 15:56:51 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 7217D3940059
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 15:58:38 +0530 (IST)
+ Mon, 18 Feb 2013 15:56:43 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 7DAA3E005C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 15:59:34 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1IASaOA26214540
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r1IASaT033423508
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 15:58:36 +0530
 Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1IASZgt001101
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 21:28:37 +1100
+ r1IASZmJ001020
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 21:28:35 +1100
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [RFC PATCH 09/17] powerpc/mm: Use encode avpn where we need only avpn
- values
-Date: Mon, 18 Feb 2013 15:58:07 +0530
-Message-Id: <1361183295-6958-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [RFC PATCH 05/17] powerpc: Add size argument to pgtable_cache_add
+Date: Mon, 18 Feb 2013 15:58:03 +0530
+Message-Id: <1361183295-6958-6-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1361183295-6958-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1361183295-6958-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -41,97 +40,83 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
+We will use this later with THP changes. With THP we want to create PMD with
+twice the size. The second half will be used to depoist pgtable, which will
+carry the hpte hash index value
+
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/mmu-hash64.h |    8 ++++----
- arch/powerpc/mm/hash_native_64.c      |   10 +++++-----
- arch/powerpc/platforms/pseries/lpar.c |    2 +-
- 3 files changed, 10 insertions(+), 10 deletions(-)
+ arch/powerpc/include/asm/pgtable-ppc64.h |    7 ++++++-
+ arch/powerpc/mm/init_64.c                |   16 ++++++++--------
+ 2 files changed, 14 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
-index 6ec65b6..aeeee5e 100644
---- a/arch/powerpc/include/asm/mmu-hash64.h
-+++ b/arch/powerpc/include/asm/mmu-hash64.h
-@@ -237,14 +237,14 @@ static inline unsigned long hpte_encode_avpn(unsigned long vpn, int psize,
+diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
+index 0182c20..658ba7c 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc64.h
++++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+@@ -338,8 +338,13 @@ static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
+ #define pgoff_to_pte(off)	((pte_t) {((off) << PTE_RPN_SHIFT)|_PAGE_FILE})
+ #define PTE_FILE_MAX_BITS	(BITS_PER_LONG - PTE_RPN_SHIFT)
+ 
+-void pgtable_cache_add(unsigned shift, void (*ctor)(void *));
++extern void __pgtable_cache_add(unsigned index, unsigned long table_size,
++				void (*ctor)(void *));
+ void pgtable_cache_init(void);
++static inline void pgtable_cache_add(unsigned shift, void (*ctor)(void *))
++{
++	return __pgtable_cache_add(shift, sizeof(void *) << shift, ctor);
++}
  
  /*
-  * This function sets the AVPN and L fields of the HPTE  appropriately
-- * for the page size
-+ * using the base page size and actual page size.
+  * find_linux_pte returns the address of a linux pte for a given
+diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+index 95a4529..b378438 100644
+--- a/arch/powerpc/mm/init_64.c
++++ b/arch/powerpc/mm/init_64.c
+@@ -100,10 +100,10 @@ struct kmem_cache *pgtable_cache[MAX_PGTABLE_INDEX_SIZE];
+  * everything else.  Caches created by this function are used for all
+  * the higher level pagetables, and for hugepage pagetables.
   */
--static inline unsigned long hpte_encode_v(unsigned long vpn,
--					  int psize, int ssize)
-+static inline unsigned long hpte_encode_v(unsigned long vpn, int psize,
-+					  int apsize, int ssize)
+-void pgtable_cache_add(unsigned shift, void (*ctor)(void *))
++void __pgtable_cache_add(unsigned int index, unsigned long table_size,
++			 void (*ctor)(void *))
  {
- 	unsigned long v;
- 	v = hpte_encode_avpn(vpn, psize, ssize);
--	if (psize != MMU_PAGE_4K)
-+	if (apsize != MMU_PAGE_4K)
- 		v |= HPTE_V_LARGE;
- 	return v;
+ 	char *name;
+-	unsigned long table_size = sizeof(void *) << shift;
+ 	unsigned long align = table_size;
+ 
+ 	/* When batching pgtable pointers for RCU freeing, we store
+@@ -111,7 +111,7 @@ void pgtable_cache_add(unsigned shift, void (*ctor)(void *))
+ 	 * big enough to fit it.
+ 	 *
+ 	 * Likewise, hugeapge pagetable pointers contain a (different)
+-	 * shift value in the low bits.  All tables must be aligned so
++	 * huge page size in the low bits.  All tables must be aligned so
+ 	 * as to leave enough 0 bits in the address to contain it. */
+ 	unsigned long minalign = max(MAX_PGTABLE_INDEX_SIZE + 1,
+ 				     HUGEPD_SHIFT_MASK + 1);
+@@ -121,17 +121,17 @@ void pgtable_cache_add(unsigned shift, void (*ctor)(void *))
+ 	 * moment, gcc doesn't seem to recognize is_power_of_2 as a
+ 	 * constant expression, so so much for that. */
+ 	BUG_ON(!is_power_of_2(minalign));
+-	BUG_ON((shift < 1) || (shift > MAX_PGTABLE_INDEX_SIZE));
++	BUG_ON((index < 1) || (index > MAX_PGTABLE_INDEX_SIZE));
+ 
+-	if (PGT_CACHE(shift))
++	if (PGT_CACHE(index))
+ 		return; /* Already have a cache of this size */
+ 
+ 	align = max_t(unsigned long, align, minalign);
+-	name = kasprintf(GFP_KERNEL, "pgtable-2^%d", shift);
++	name = kasprintf(GFP_KERNEL, "pgtable-2^%d", index);
+ 	new = kmem_cache_create(name, table_size, align, 0, ctor);
+-	PGT_CACHE(shift) = new;
++	PGT_CACHE(index) = new;
+ 
+-	pr_debug("Allocated pgtable cache for order %d\n", shift);
++	pr_debug("Allocated pgtable cache for order %d\n", index);
  }
-diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
-index da46cd3..4cf361f 100644
---- a/arch/powerpc/mm/hash_native_64.c
-+++ b/arch/powerpc/mm/hash_native_64.c
-@@ -216,7 +216,7 @@ static long native_hpte_insert(unsigned long hpte_group, unsigned long vpn,
- 	if (i == HPTES_PER_GROUP)
- 		return -1;
  
--	hpte_v = hpte_encode_v(vpn, psize, ssize) | vflags | HPTE_V_VALID;
-+	hpte_v = hpte_encode_v(vpn, psize, apsize, ssize) | vflags | HPTE_V_VALID;
- 	hpte_r = hpte_encode_r(pa, psize, apsize) | rflags;
  
- 	if (!(vflags & HPTE_V_BOLTED)) {
-@@ -327,7 +327,7 @@ static long native_hpte_updatepp(unsigned long slot, unsigned long newpp,
- 	int ret = 0;
- 	int actual_psize;
- 
--	want_v = hpte_encode_v(vpn, psize, ssize);
-+	want_v = hpte_encode_avpn(vpn, psize, ssize);
- 
- 	DBG_LOW("    update(vpn=%016lx, avpnv=%016lx, group=%lx, newpp=%lx)",
- 		vpn, want_v & HPTE_V_AVPN, slot, newpp);
-@@ -364,7 +364,7 @@ static long native_hpte_find(unsigned long vpn, int psize, int ssize)
- 	unsigned long want_v, hpte_v;
- 
- 	hash = hpt_hash(vpn, mmu_psize_defs[psize].shift, ssize);
--	want_v = hpte_encode_v(vpn, psize, ssize);
-+	want_v = hpte_encode_avpn(vpn, psize, ssize);
- 
- 	/* Bolted mappings are only ever in the primary group */
- 	slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
-@@ -427,7 +427,7 @@ static void native_hpte_invalidate(unsigned long slot, unsigned long vpn,
- 
- 	DBG_LOW("    invalidate(vpn=%016lx, hash: %lx)\n", vpn, slot);
- 
--	want_v = hpte_encode_v(vpn, psize, ssize);
-+	want_v = hpte_encode_avpn(vpn, psize, ssize);
- 	native_lock_hpte(hptep);
- 	hpte_v = hptep->v;
- 
-@@ -599,7 +599,7 @@ static void native_flush_hash_range(unsigned long number, int local)
- 			slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
- 			slot += hidx & _PTEIDX_GROUP_IX;
- 			hptep = htab_address + slot;
--			want_v = hpte_encode_v(vpn, psize, ssize);
-+			want_v = hpte_encode_avpn(vpn, psize, ssize);
- 			native_lock_hpte(hptep);
- 			hpte_v = hptep->v;
- 			if (!HPTE_V_COMPARE(hpte_v, want_v) ||
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index 9f99847..ca9c2bb 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -121,7 +121,7 @@ static long pSeries_lpar_hpte_insert(unsigned long hpte_group,
- 			 "pa=%016lx, rflags=%lx, vflags=%lx, psize=%d)\n",
- 			 hpte_group, vpn,  pa, rflags, vflags, psize);
- 
--	hpte_v = hpte_encode_v(vpn, psize, ssize) | vflags | HPTE_V_VALID;
-+	hpte_v = hpte_encode_v(vpn, psize, apsize, ssize) | vflags | HPTE_V_VALID;
- 	hpte_r = hpte_encode_r(pa, psize, apsize) | rflags;
- 
- 	if (!(vflags & HPTE_V_BOLTED))
 -- 
 1.7.10
