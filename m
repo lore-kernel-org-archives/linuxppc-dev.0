@@ -1,12 +1,12 @@
 Return-Path: <rostedt@goodmis.org>
 Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
- [71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id E5B6B2C0092
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2013 06:53:19 +1100 (EST)
-Message-ID: <1361217195.23152.170.camel@gandalf.local.home>
+ [71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id CD5832C02F4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2013 06:53:26 +1100 (EST)
+Message-ID: <1361217204.23152.171.camel@gandalf.local.home>
 Subject: Re: [PATCH v5 00/45] CPU hotplug: stop_machine()-free CPU hotplug
 From: Steven Rostedt <rostedt@goodmis.org>
 To: Vincent Guittot <vincent.guittot@linaro.org>
-Date: Mon, 18 Feb 2013 14:53:15 -0500
+Date: Mon, 18 Feb 2013 14:53:24 -0500
 In-Reply-To: <CAKfTPtC4hbXXWO=_zsGYryM9hpWaGFLbiY+jiLf=koLa4xGJOQ@mail.gmail.com>
 References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
  <510FBC01.2030405@linux.vnet.ibm.com> <87haloiwv0.fsf@rustcorp.com.au>
@@ -74,3 +74,5 @@ f(t) {
 
  <failed? bisect f(t1), if not bisect f(t2)>
 }
+
+-- Steve
