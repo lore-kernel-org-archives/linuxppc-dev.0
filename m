@@ -1,33 +1,33 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2B7E12C0313
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:43:23 +1100 (EST)
+ (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2EF552C05E4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:43:22 +1100 (EST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Mon, 18 Feb 2013 22:34:16 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 27FEA357804E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:43:20 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1ICUrFr9109906
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:30:53 +1100
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1IChIhT026652
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:43:19 +1100
+ Mon, 18 Feb 2013 18:10:36 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 323B0E004F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 18:14:05 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r1ICh67a30015578
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 18:13:06 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r1ICh6Io024360
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:43:08 +1100
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v6 22/46] crypto: pcrypt - Protect access to cpu_online_mask
- with get/put_online_cpus()
+Subject: [PATCH v6 21/46] block: Use get/put_online_cpus_atomic() to prevent
+ CPU offline
 To: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com,
  paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org,
  akpm@linux-foundation.org, namhyung@kernel.org
-Date: Mon, 18 Feb 2013 18:11:15 +0530
-Message-ID: <20130218124115.26245.88223.stgit@srivatsabhat.in.ibm.com>
+Date: Mon, 18 Feb 2013 18:11:10 +0530
+Message-ID: <20130218124109.26245.27817.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
 References: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
@@ -48,38 +48,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The pcrypt_aead_init_tfm() function access the cpu_online_mask without
-disabling CPU hotplug. And it looks like it can afford to sleep, so use
-the get/put_online_cpus() APIs to protect against CPU hotplug.
+Once stop_machine() is gone from the CPU offline path, we won't be able to
+depend on preempt_disable() or local_irq_disable() to prevent CPUs from
+going offline from under us.
 
-Cc: Steffen Klassert <steffen.klassert@secunet.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: linux-crypto@vger.kernel.org
+Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going offline,
+while invoking from atomic context.
+
+Cc: Jens Axboe <axboe@kernel.dk>
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- crypto/pcrypt.c |    4 ++++
+ block/blk-softirq.c |    4 ++++
  1 file changed, 4 insertions(+)
 
-diff --git a/crypto/pcrypt.c b/crypto/pcrypt.c
-index b2c99dc..10f64e2 100644
---- a/crypto/pcrypt.c
-+++ b/crypto/pcrypt.c
-@@ -280,12 +280,16 @@ static int pcrypt_aead_init_tfm(struct crypto_tfm *tfm)
- 
- 	ictx->tfm_count++;
- 
-+	get_online_cpus();
+diff --git a/block/blk-softirq.c b/block/blk-softirq.c
+index 467c8de..448f9a9 100644
+--- a/block/blk-softirq.c
++++ b/block/blk-softirq.c
+@@ -58,6 +58,8 @@ static void trigger_softirq(void *data)
+  */
+ static int raise_blk_irq(int cpu, struct request *rq)
+ {
++	get_online_cpus_atomic();
 +
- 	cpu_index = ictx->tfm_count % cpumask_weight(cpu_online_mask);
+ 	if (cpu_online(cpu)) {
+ 		struct call_single_data *data = &rq->csd;
  
- 	ctx->cb_cpu = cpumask_first(cpu_online_mask);
- 	for (cpu = 0; cpu < cpu_index; cpu++)
- 		ctx->cb_cpu = cpumask_next(ctx->cb_cpu, cpu_online_mask);
+@@ -66,9 +68,11 @@ static int raise_blk_irq(int cpu, struct request *rq)
+ 		data->flags = 0;
  
-+	put_online_cpus();
-+
- 	cipher = crypto_spawn_aead(crypto_instance_ctx(inst));
+ 		__smp_call_function_single(cpu, data, 0);
++		put_online_cpus_atomic();
+ 		return 0;
+ 	}
  
- 	if (IS_ERR(cipher))
++	put_online_cpus_atomic();
+ 	return 1;
+ }
+ #else /* CONFIG_SMP && CONFIG_USE_GENERIC_SMP_HELPERS */
