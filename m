@@ -1,33 +1,33 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8E9BB2C0480
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:44:22 +1100 (EST)
+ (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 94D362C06F6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:44:32 +1100 (EST)
 Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Mon, 18 Feb 2013 22:38:25 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id D65302CE804C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:44:19 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1ICiIZ159441382
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:44:18 +1100
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1ICiHho027301
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:44:19 +1100
+ Mon, 18 Feb 2013 18:12:05 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 861A7E004E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 18:15:24 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r1ICiMbP30474376
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 18:14:23 +0530
+Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r1ICiMeM012184
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:44:24 +1100
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v6 28/46] KVM: Use get/put_online_cpus_atomic() to prevent CPU
- offline from atomic context
+Subject: [PATCH v6 29/46] kvm/vmx: Use get/put_online_cpus_atomic() to prevent
+ CPU offline
 To: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com,
  paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org,
  akpm@linux-foundation.org, namhyung@kernel.org
-Date: Mon, 18 Feb 2013 18:12:14 +0530
-Message-ID: <20130218124214.26245.41186.stgit@srivatsabhat.in.ibm.com>
+Date: Mon, 18 Feb 2013 18:12:26 +0530
+Message-ID: <20130218124226.26245.11310.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
 References: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
@@ -53,52 +53,40 @@ depend on preempt_disable() or local_irq_disable() to prevent CPUs from
 going offline from under us.
 
 Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going offline,
-while invoking from atomic context.
+while invoking from atomic context (in vmx_vcpu_load() to prevent CPUs from
+going offline while clearing vmcs).
 
+Reported-by: Michael Wang <wangyun@linux.vnet.ibm.com>
+Debugged-by: Xiao Guangrong <xiaoguangrong@linux.vnet.ibm.com>
 Cc: Marcelo Tosatti <mtosatti@redhat.com>
 Cc: Gleb Natapov <gleb@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: x86@kernel.org
 Cc: kvm@vger.kernel.org
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- virt/kvm/kvm_main.c |   10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+ arch/x86/kvm/vmx.c |    8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 1cd693a..47f9c30 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -174,7 +174,8 @@ static bool make_all_cpus_request(struct kvm *kvm, unsigned int req)
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index 9120ae1..2886ff0 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -1557,10 +1557,14 @@ static void vmx_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+ 	struct vcpu_vmx *vmx = to_vmx(vcpu);
+ 	u64 phys_addr = __pa(per_cpu(vmxarea, cpu));
  
- 	zalloc_cpumask_var(&cpus, GFP_ATOMIC);
+-	if (!vmm_exclusive)
++	if (!vmm_exclusive) {
+ 		kvm_cpu_vmxon(phys_addr);
+-	else if (vmx->loaded_vmcs->cpu != cpu)
++	} else if (vmx->loaded_vmcs->cpu != cpu) {
++		/* Prevent any CPU from going offline */
++		get_online_cpus_atomic();
+ 		loaded_vmcs_clear(vmx->loaded_vmcs);
++		put_online_cpus_atomic();
++	}
  
--	me = get_cpu();
-+	get_online_cpus_atomic();
-+	me = smp_processor_id();
- 	kvm_for_each_vcpu(i, vcpu, kvm) {
- 		kvm_make_request(req, vcpu);
- 		cpu = vcpu->cpu;
-@@ -192,7 +193,7 @@ static bool make_all_cpus_request(struct kvm *kvm, unsigned int req)
- 		smp_call_function_many(cpus, ack_flush, NULL, 1);
- 	else
- 		called = false;
--	put_cpu();
-+	put_online_cpus_atomic();
- 	free_cpumask_var(cpus);
- 	return called;
- }
-@@ -1621,11 +1622,12 @@ void kvm_vcpu_kick(struct kvm_vcpu *vcpu)
- 		++vcpu->stat.halt_wakeup;
- 	}
- 
--	me = get_cpu();
-+	get_online_cpus_atomic();
-+	me = smp_processor_id();
- 	if (cpu != me && (unsigned)cpu < nr_cpu_ids && cpu_online(cpu))
- 		if (kvm_arch_vcpu_should_kick(vcpu))
- 			smp_send_reschedule(cpu);
--	put_cpu();
-+	put_online_cpus_atomic();
- }
- #endif /* !CONFIG_S390 */
- 
+ 	if (per_cpu(current_vmcs, cpu) != vmx->loaded_vmcs->vmcs) {
+ 		per_cpu(current_vmcs, cpu) = vmx->loaded_vmcs->vmcs;
