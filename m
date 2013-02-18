@@ -1,33 +1,35 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9E4EA2C0082
+ (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BC7402C0292
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 21:28:44 +1100 (EST)
 Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 18 Feb 2013 15:55:57 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 3982B394004E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 15:58:38 +0530 (IST)
+ Mon, 18 Feb 2013 15:56:15 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 0B46EE0053
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 15:59:34 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1IASaiS22216946
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 15:58:36 +0530
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r1IASYjJ31064196
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 15:58:34 +0530
 Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1IASZAL001077
+ r1IASZMO001089
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 21:28:37 +1100
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [RFC PATCH 08/17] powerpc: print both base and actual page size on
- hash failure
-Date: Mon, 18 Feb 2013 15:58:06 +0530
-Message-Id: <1361183295-6958-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [RFC PATCH 10/17] powerpc/mm: Fix hpte_decode to use the correct
+ decoding for page sizes
+Date: Mon, 18 Feb 2013 15:58:08 +0530
+Message-Id: <1361183295-6958-11-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1361183295-6958-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1361183295-6958-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,81 +43,84 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
+As per ISA doc, we encode base and actual page size in the LP bits of
+PTE. The number of bit used to encode the page sizes depend on actual
+page size.  ISA doc lists this as
+
+   PTE LP     actual page size
+rrrr rrrz 	≥8KB
+rrrr rrzz	≥16KB
+rrrr rzzz 	≥32KB
+rrrr zzzz 	≥64KB
+rrrz zzzz 	≥128KB
+rrzz zzzz 	≥256KB
+rzzz zzzz	≥512KB
+zzzz zzzz 	≥1MB
+
+ISA doc also says
+"The values of the “z” bits used to specify each size, along with all possible
+values of “r” bits in the LP field, must result in LP values distinct from
+other LP values for other sizes."
+
+based on the above update hpte_decode to use the correct decoding for LP bits.
+
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/mmu-hash64.h |    3 ++-
- arch/powerpc/mm/hash_utils_64.c       |   12 +++++++-----
- arch/powerpc/mm/hugetlbpage-hash64.c  |    2 +-
- 3 files changed, 10 insertions(+), 7 deletions(-)
+ arch/powerpc/mm/hash_native_64.c |   26 ++++++++++++++++----------
+ 1 file changed, 16 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
-index 6290e26..6ec65b6 100644
---- a/arch/powerpc/include/asm/mmu-hash64.h
-+++ b/arch/powerpc/include/asm/mmu-hash64.h
-@@ -321,7 +321,8 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
- 		     unsigned int shift, unsigned int mmu_psize);
- extern void hash_failure_debug(unsigned long ea, unsigned long access,
- 			       unsigned long vsid, unsigned long trap,
--			       int ssize, int psize, unsigned long pte);
-+			       int ssize, int psize, int lpsize,
-+			       unsigned long pte);
- extern int htab_bolt_mapping(unsigned long vstart, unsigned long vend,
- 			     unsigned long pstart, unsigned long prot,
- 			     int psize, int ssize);
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 48edb46..df48ba5 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -917,14 +917,14 @@ static inline int subpage_protection(struct mm_struct *mm, unsigned long ea)
- 
- void hash_failure_debug(unsigned long ea, unsigned long access,
- 			unsigned long vsid, unsigned long trap,
--			int ssize, int psize, unsigned long pte)
-+			int ssize, int psize, int lpsize, unsigned long pte)
+diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+index 4cf361f..d36ddef 100644
+--- a/arch/powerpc/mm/hash_native_64.c
++++ b/arch/powerpc/mm/hash_native_64.c
+@@ -449,19 +449,14 @@ static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
+ 			int *psize, int *apsize, int *ssize, unsigned long *vpn)
  {
- 	if (!printk_ratelimit())
- 		return;
- 	pr_info("mm: Hashing failure ! EA=0x%lx access=0x%lx current=%s\n",
- 		ea, access, current->comm);
--	pr_info("    trap=0x%lx vsid=0x%lx ssize=%d psize=%d pte=0x%lx\n",
--		trap, vsid, ssize, psize, pte);
-+	pr_info("    trap=0x%lx vsid=0x%lx ssize=%d base psize=%d psize %d pte=0x%lx\n",
-+		trap, vsid, ssize, psize, lpsize, pte);
- }
+ 	unsigned long avpn, pteg, vpi;
+-	unsigned long hpte_r = hpte->r;
+ 	unsigned long hpte_v = hpte->v;
+ 	unsigned long vsid, seg_off;
+-	int i, size, a_size = MMU_PAGE_4K, shift, penc;
++	int size, a_size = MMU_PAGE_4K, shift, mask;
++	unsigned int lp = (hpte->r >> LP_SHIFT) & LP_BITS;
  
- /* Result code is:
-@@ -1097,7 +1097,7 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
- 	 */
- 	if (rc == -1)
- 		hash_failure_debug(ea, access, vsid, trap, ssize, psize,
--				   pte_val(*ptep));
-+				   psize, pte_val(*ptep));
- #ifndef CONFIG_PPC_64K_PAGES
- 	DBG_LOW(" o-pte: %016lx\n", pte_val(*ptep));
- #else
-@@ -1175,7 +1175,9 @@ void hash_preload(struct mm_struct *mm, unsigned long ea,
- 	 */
- 	if (rc == -1)
- 		hash_failure_debug(ea, access, vsid, trap, ssize,
--				   mm->context.user_psize, pte_val(*ptep));
-+				   mm->context.user_psize,
-+				   mm->context.user_psize,
-+				   pte_val(*ptep));
+ 	if (!(hpte_v & HPTE_V_LARGE))
+ 		size = MMU_PAGE_4K;
+ 	else {
+-		for (i = 0; i < LP_BITS; i++) {
+-			if ((hpte_r & LP_MASK(i+1)) == LP_MASK(i+1))
+-				break;
+-		}
+-		penc = LP_MASK(i+1) >> LP_SHIFT;
+ 		for (size = 0; size < MMU_PAGE_COUNT; size++) {
  
- 	local_irq_restore(flags);
- }
-diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
-index cecad34..af98ee8 100644
---- a/arch/powerpc/mm/hugetlbpage-hash64.c
-+++ b/arch/powerpc/mm/hugetlbpage-hash64.c
-@@ -129,7 +129,7 @@ repeat:
- 		if (unlikely(slot == -2)) {
- 			*ptep = __pte(old_pte);
- 			hash_failure_debug(ea, access, vsid, trap, ssize,
--					   mmu_psize, old_pte);
-+					   mmu_psize, mmu_psize, old_pte);
- 			return -1;
+ 			/* 4K pages are not represented by LP */
+@@ -471,12 +466,23 @@ static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
+ 			/* valid entries have a shift value */
+ 			if (!mmu_psize_defs[size].shift)
+ 				continue;
+-			for (a_size = 0; a_size < MMU_PAGE_COUNT; a_size++)
+-				if (penc == mmu_psize_defs[size].penc[a_size])
++
++			for (a_size = 0; a_size < MMU_PAGE_COUNT; a_size++) {
++				/* valid entries have a shift value */
++				if (!mmu_psize_defs[a_size].shift)
++					continue;
++
++				shift = mmu_psize_defs[a_size].shift - 11;
++				if (shift > 9)
++					shift = 9;
++				mask = (1 << shift) - 1;
++				if ((lp & mask) ==
++				    mmu_psize_defs[size].penc[a_size]) {
+ 					goto out;
++				}
++			}
  		}
- 
+ 	}
+-
+ out:
+ 	/* This works for all page sizes, and for 256M and 1T segments */
+ 	*ssize = hpte_v >> HPTE_V_SSIZE_SHIFT;
 -- 
 1.7.10
