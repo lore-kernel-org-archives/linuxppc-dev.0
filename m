@@ -1,19 +1,41 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 33AC62C0079
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2013 06:43:05 +1100 (EST)
-Subject: Re: [PATCH][UPSTEAM] powerpc/mpic: add irq_set_wake support
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1359601823-9861-1-git-send-email-dongsheng.wang@freescale.com>
-Date: Mon, 18 Feb 2013 13:43:11 -0600
-Message-Id: <3887203D-64E3-4BA5-AB2A-20BE668560A4@kernel.crashing.org>
-References: <1359601823-9861-1-git-send-email-dongsheng.wang@freescale.com>
-To: Wang Dongsheng <Dongsheng.Wang@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+ [71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id E5B6B2C0092
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2013 06:53:19 +1100 (EST)
+Message-ID: <1361217195.23152.170.camel@gandalf.local.home>
+Subject: Re: [PATCH v5 00/45] CPU hotplug: stop_machine()-free CPU hotplug
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Date: Mon, 18 Feb 2013 14:53:15 -0500
+In-Reply-To: <CAKfTPtC4hbXXWO=_zsGYryM9hpWaGFLbiY+jiLf=koLa4xGJOQ@mail.gmail.com>
+References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
+ <510FBC01.2030405@linux.vnet.ibm.com> <87haloiwv0.fsf@rustcorp.com.au>
+ <51134596.4080106@linux.vnet.ibm.com>
+ <20130208154113.GV17833@n2100.arm.linux.org.uk>
+ <51152B81.2050501@linux.vnet.ibm.com> <51153F72.1060005@linux.vnet.ibm.com>
+ <CAKfTPtCe+cD7LLkb+D6pqG1SwG2V08ws=4XO3ttHEHV2qgmqPg@mail.gmail.com>
+ <5118E2CD.90401@linux.vnet.ibm.com>
+ <20130211190852.GA5695@linux.vnet.ibm.com>
+ <5119BDFD.1000909@linux.vnet.ibm.com>
+ <CAKfTPtAo2hQTfBKTVUuLKgsGJ2ZLD0UTR3fH9UFuJwyFt4n__w@mail.gmail.com>
+ <511E8F3C.2010406@linux.vnet.ibm.com>
+ <CAKfTPtD=2jn1AVjuhVP1ot7_8x9-W4==hNGZET5N9tRE7gtyMw@mail.gmail.com>
+ <512203B3.7090002@linux.vnet.ibm.com> <512207A6.4000402@linux.vnet.ibm.com>
+ <CAKfTPtA1aTseD6Gntkf_zbCEbfZzt3P2-P1un6iF5_1TdVLjRQ@mail.gmail.com>
+ <1361201422.23152.154.camel@gandalf.local.home>
+ <CAKfTPtC4hbXXWO=_zsGYryM9hpWaGFLbiY+jiLf=koLa4xGJOQ@mail.gmail.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Mime-Version: 1.0
+Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
+ linux-kernel@vger.kernel.org, walken@google.com, mingo@kernel.org,
+ linux-arch@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
+ paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
+ linux-pm@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>, rjw@sisk.pl,
+ namhyung@kernel.org, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org,
+ netdev@vger.kernel.org, oleg@redhat.com, sbw@mit.edu,
+ "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, tj@kernel.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,81 +45,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, 2013-02-18 at 17:50 +0100, Vincent Guittot wrote:
 
-On Jan 30, 2013, at 9:10 PM, Wang Dongsheng wrote:
+> yes for sure.
+> The problem is more linked to cpuidle and function tracer.
+> 
+> cpu hotplug and function tracer work when cpuidle is disable.
+> cpu hotplug and cpuidle works if i don't enable function tracer.
+> my platform is dead as soon as I enable function tracer if cpuidle is
+> enabled. It looks like some notrace are missing in my platform driver
+> but we haven't completely fix the issue yet
+> 
 
-> Add irq_set_wake support. Just add IRQF_NO_SUSPEND to =
-desc->action->flag.
-> So the wake up interrupt will not be disable in suspend_device_irqs.
->=20
-> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
-> ---
-> arch/powerpc/sysdev/mpic.c |   15 +++++++++++++++
-> 1 files changed, 15 insertions(+), 0 deletions(-)
+You can bisect to find out exactly what function is the problem:
 
-Why are we doing this globally for all interrupts?  Don't we only have =
-some specific interrupts that wake us up?
+ cat /debug/tracing/available_filter_functions > t
+ 
+f(t) {
+ num=`wc -l t`
+ sed -ne "1,${num}p" t > t1
+ let num=num+1
+ sed -ne "${num},$p" t > t2
 
-Also, I'm guessing the wake behavior for interrupts is FSL specific so =
-should not apply to ALL users of MPIC.
+ cat t1 > /debug/tracing/set_ftrace_filter
+ # note this may take a long time to finish
 
-- k
+ echo function > /debug/tracing/current_tracer
 
->=20
-> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-> index 9c6e535..2ed0220 100644
-> --- a/arch/powerpc/sysdev/mpic.c
-> +++ b/arch/powerpc/sysdev/mpic.c
-> @@ -920,6 +920,18 @@ int mpic_set_irq_type(struct irq_data *d, =
-unsigned int flow_type)
-> 	return IRQ_SET_MASK_OK_NOCOPY;
-> }
->=20
-> +static int mpic_irq_set_wake(struct irq_data *d, unsigned int on)
-> +{
-> +	struct irq_desc *desc =3D container_of(d, struct irq_desc, =
-irq_data);
-> +
-> +	if (on)
-> +		desc->action->flags |=3D IRQF_NO_SUSPEND;
-> +	else
-> +		desc->action->flags &=3D ~IRQF_NO_SUSPEND;
-> +
-> +	return 0;
-> +}
-> +
-> void mpic_set_vector(unsigned int virq, unsigned int vector)
-> {
-> 	struct mpic *mpic =3D mpic_from_irq(virq);
-> @@ -957,6 +969,7 @@ static struct irq_chip mpic_irq_chip =3D {
-> 	.irq_unmask	=3D mpic_unmask_irq,
-> 	.irq_eoi	=3D mpic_end_irq,
-> 	.irq_set_type	=3D mpic_set_irq_type,
-> +	.irq_set_wake	=3D mpic_irq_set_wake,
-> };
->=20
-> #ifdef CONFIG_SMP
-> @@ -971,6 +984,7 @@ static struct irq_chip mpic_tm_chip =3D {
-> 	.irq_mask	=3D mpic_mask_tm,
-> 	.irq_unmask	=3D mpic_unmask_tm,
-> 	.irq_eoi	=3D mpic_end_irq,
-> +	.irq_set_wake	=3D mpic_irq_set_wake,
-> };
->=20
-> #ifdef CONFIG_MPIC_U3_HT_IRQS
-> @@ -981,6 +995,7 @@ static struct irq_chip mpic_irq_ht_chip =3D {
-> 	.irq_unmask	=3D mpic_unmask_ht_irq,
-> 	.irq_eoi	=3D mpic_end_ht_irq,
-> 	.irq_set_type	=3D mpic_set_irq_type,
-> +	.irq_set_wake	=3D mpic_irq_set_wake,
-> };
-> #endif /* CONFIG_MPIC_U3_HT_IRQS */
->=20
-> --
-> 1.7.5.1
->=20
->=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+ <failed? bisect f(t1), if not bisect f(t2)>
+}
