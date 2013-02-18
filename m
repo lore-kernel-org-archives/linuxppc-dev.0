@@ -1,48 +1,19 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 867B82C0291
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2013 05:53:01 +1100 (EST)
-Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 19 Feb 2013 00:20:33 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 31476394004D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2013 00:22:56 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1IIqrgp33816576
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2013 00:22:53 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1IIqsOL013002
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2013 05:52:55 +1100
-Message-ID: <51227810.6090009@linux.vnet.ibm.com>
-Date: Tue, 19 Feb 2013 00:20:56 +0530
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Michel Lespinasse <walken@google.com>
-Subject: Re: [PATCH v6 08/46] CPU hotplug: Provide APIs to prevent CPU offline
- from atomic context
-References: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
- <20130218123920.26245.56709.stgit@srivatsabhat.in.ibm.com>
- <CANN689HhVxDv+3Bn9UAxOMzj0egTvVp_c7oAmQ2nnQ8Xjn_aMA@mail.gmail.com>
- <51225A36.40600@linux.vnet.ibm.com>
- <CANN689FJPLfz06MFRJ9T+BuToejAzjYP_yrw_H4iGi1Kb3p2-g@mail.gmail.com>
-In-Reply-To: <CANN689FJPLfz06MFRJ9T+BuToejAzjYP_yrw_H4iGi1Kb3p2-g@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
- linux-kernel@vger.kernel.org, mingo@kernel.org, linux-arch@vger.kernel.org,
- linux@arm.linux.org.uk, xiaoguangrong@linux.vnet.ibm.com,
- wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com,
- nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au,
- rostedt@goodmis.org, rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
- linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com,
- vincent.guittot@linaro.org, sbw@mit.edu, tj@kernel.org,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 33AC62C0079
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2013 06:43:05 +1100 (EST)
+Subject: Re: [PATCH][UPSTEAM] powerpc/mpic: add irq_set_wake support
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1359601823-9861-1-git-send-email-dongsheng.wang@freescale.com>
+Date: Mon, 18 Feb 2013 13:43:11 -0600
+Message-Id: <3887203D-64E3-4BA5-AB2A-20BE668560A4@kernel.crashing.org>
+References: <1359601823-9861-1-git-send-email-dongsheng.wang@freescale.com>
+To: Wang Dongsheng <Dongsheng.Wang@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,88 +23,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/18/2013 10:51 PM, Michel Lespinasse wrote:
-> On Tue, Feb 19, 2013 at 12:43 AM, Srivatsa S. Bhat
-> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
->> On 02/18/2013 09:53 PM, Michel Lespinasse wrote:
->>> I am wondering though, if you could take care of recursive uses in
->>> get/put_online_cpus_atomic() instead of doing it as a property of your
->>> rwlock:
->>>
->>> get_online_cpus_atomic()
->>> {
->>>     unsigned long flags;
->>>     local_irq_save(flags);
->>>     if (this_cpu_inc_return(hotplug_recusion_count) == 1)
->>>         percpu_read_lock_irqsafe(&hotplug_pcpu_rwlock);
->>>     local_irq_restore(flags);
->>> }
->>>
->>> Once again, the idea there is to avoid baking the reader side
->>> recursive properties into your rwlock itself, so that it won't be
->>> impossible to implement reader/writer fairness into your rwlock in the
->>> future (which may be not be very important for the hotplug use, but
->>> could be when other uses get introduced).
->>
->> Hmm, your proposal above looks good to me, at first glance.
->> (Sorry, I had mistaken your earlier mails to mean that you were against
->> recursive reader-side, while you actually meant that you didn't like
->> implementing the recursive reader-side logic using the recursive property
->> of rwlocks).
-> 
-> To be honest, I was replying as I went through the series, so I hadn't
-> digested your hotplug use case yet :)
-> 
-> But yes - I don't like having the rwlock itself be recursive, but I do
-> understand that you have a legitimate requirement for
-> get_online_cpus_atomic() to be recursive. This IMO points to the
-> direction I suggested, of explicitly handling the recusion in
-> get_online_cpus_atomic() so that the underlying rwlock doesn't have to
-> support recursive reader side itself.
-> 
-> (And this would work for the idea of making writers own the reader
-> side as well - you can do it with the hotplug_recursion_count instead
-> of with the underlying rwlock).
-> 
->> While your idea above looks good, it might introduce more complexity
->> in the unlock path, since this would allow nesting of heterogeneous readers
->> (ie., if hotplug_recursion_count == 1, you don't know whether you need to
->> simply decrement the counter or unlock the rwlock as well).
-> 
-> Well, I think the idea doesn't make the underlying rwlock more
-> complex, since you could in principle keep your existing
-> percpu_read_lock_irqsafe implementation as is and just remove the
-> recursive behavior from its documentation.
-> 
-> Now ideally if we're adding a bit of complexity in
-> get_online_cpus_atomic() it'd be nice if we could remove some from
-> percpu_read_lock_irqsafe, but I haven't thought about that deeply
-> either. I think you'd still want to have the equivalent of a percpu
-> reader_refcnt, except it could now be a bool instead of an int, and
-> percpu_read_lock_irqsafe would still set it to back to 0/false after
-> acquiring the global read side if a writer is signaled. Basically your
-> existing percpu_read_lock_irqsafe code should still work, and we could
-> remove just the parts that were only there to deal with the recursive
-> property.
-> 
 
-But, the whole intention behind removing the parts depending on the
-recursive property of rwlocks would be to make it easier to make rwlocks
-fair (going forward) right? Then, that won't work for CPU hotplug, because,
-just like we have a legitimate reason to have recursive
-get_online_cpus_atomic(), we also have a legitimate reason to have
-unfairness in locking (i.e., for deadlock-safety). So we simply can't
-afford to make the locking fair - we'll end up in too many deadlock
-possibilities, as hinted in the changelog of patch 1.
+On Jan 30, 2013, at 9:10 PM, Wang Dongsheng wrote:
 
-(Remember, we are replacing preempt_disable(), which had absolutely no
-special nesting rules or locking implications. That is why we are forced
-to provide maximum locking flexibility and safety against new/previously
-non-existent deadlocks, in the new synchronization scheme).
+> Add irq_set_wake support. Just add IRQF_NO_SUSPEND to =
+desc->action->flag.
+> So the wake up interrupt will not be disable in suspend_device_irqs.
+>=20
+> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> ---
+> arch/powerpc/sysdev/mpic.c |   15 +++++++++++++++
+> 1 files changed, 15 insertions(+), 0 deletions(-)
 
-So the only long-term solution I can think of is to decouple
-percpu-rwlocks and rwlock_t (like what Tejun suggested) by implementing
-our own unfair locking scheme inside. What do you think?
+Why are we doing this globally for all interrupts?  Don't we only have =
+some specific interrupts that wake us up?
 
-Regards,
-Srivatsa S. Bhat
+Also, I'm guessing the wake behavior for interrupts is FSL specific so =
+should not apply to ALL users of MPIC.
+
+- k
+
+>=20
+> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+> index 9c6e535..2ed0220 100644
+> --- a/arch/powerpc/sysdev/mpic.c
+> +++ b/arch/powerpc/sysdev/mpic.c
+> @@ -920,6 +920,18 @@ int mpic_set_irq_type(struct irq_data *d, =
+unsigned int flow_type)
+> 	return IRQ_SET_MASK_OK_NOCOPY;
+> }
+>=20
+> +static int mpic_irq_set_wake(struct irq_data *d, unsigned int on)
+> +{
+> +	struct irq_desc *desc =3D container_of(d, struct irq_desc, =
+irq_data);
+> +
+> +	if (on)
+> +		desc->action->flags |=3D IRQF_NO_SUSPEND;
+> +	else
+> +		desc->action->flags &=3D ~IRQF_NO_SUSPEND;
+> +
+> +	return 0;
+> +}
+> +
+> void mpic_set_vector(unsigned int virq, unsigned int vector)
+> {
+> 	struct mpic *mpic =3D mpic_from_irq(virq);
+> @@ -957,6 +969,7 @@ static struct irq_chip mpic_irq_chip =3D {
+> 	.irq_unmask	=3D mpic_unmask_irq,
+> 	.irq_eoi	=3D mpic_end_irq,
+> 	.irq_set_type	=3D mpic_set_irq_type,
+> +	.irq_set_wake	=3D mpic_irq_set_wake,
+> };
+>=20
+> #ifdef CONFIG_SMP
+> @@ -971,6 +984,7 @@ static struct irq_chip mpic_tm_chip =3D {
+> 	.irq_mask	=3D mpic_mask_tm,
+> 	.irq_unmask	=3D mpic_unmask_tm,
+> 	.irq_eoi	=3D mpic_end_irq,
+> +	.irq_set_wake	=3D mpic_irq_set_wake,
+> };
+>=20
+> #ifdef CONFIG_MPIC_U3_HT_IRQS
+> @@ -981,6 +995,7 @@ static struct irq_chip mpic_irq_ht_chip =3D {
+> 	.irq_unmask	=3D mpic_unmask_ht_irq,
+> 	.irq_eoi	=3D mpic_end_ht_irq,
+> 	.irq_set_type	=3D mpic_set_irq_type,
+> +	.irq_set_wake	=3D mpic_irq_set_wake,
+> };
+> #endif /* CONFIG_MPIC_U3_HT_IRQS */
+>=20
+> --
+> 1.7.5.1
+>=20
+>=20
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
