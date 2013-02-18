@@ -2,33 +2,30 @@ Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D3C182C02C4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 21:28:48 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 49DF62C02CB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 21:28:49 +1100 (EST)
 Received: from /spool/local
  by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 18 Feb 2013 15:55:25 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 2E8BD3940056
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 15:58:36 +0530 (IST)
+ Mon, 18 Feb 2013 15:55:27 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 644E7E0058
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 15:59:31 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1IASXB830998690
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 15:58:33 +0530
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r1IASVCd31457352
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 15:58:31 +0530
 Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1IASZc5000981
+ r1IASYMR000961
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 21:28:35 +1100
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [RFC PATCH 01/17] powerpc: Don't hard code the size of pte page
-Date: Mon, 18 Feb 2013 15:57:59 +0530
-Message-Id: <1361183295-6958-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1361183295-6958-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1361183295-6958-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [RFC PATCH 00/17] THP support for PPC64
+Date: Mon, 18 Feb 2013 15:57:58 +0530
+Message-Id: <1361183295-6958-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,54 +35,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Hi,
 
-USE PTRS_PER_PTE to indicate the size of pte page.
+This is an early RFC version adding transparent huge page support for PPC64.
+I am sharing the changes, so that we can have early review on the approach
+taken. The TODOs include
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/pgtable.h |    6 ++++++
- arch/powerpc/mm/hash_low_64.S      |    4 ++--
- 2 files changed, 8 insertions(+), 2 deletions(-)
+*) Compile issues with different config option
+*) HugeTLBfs is disabled now (mostly compile issues)
+*) PPC32 and other sub architecture details need to be worked out.
+*) 4K page size details need to be worked out
+*) Closer review of PMD* flags.
 
-diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
-index a9cbd3b..fc57855 100644
---- a/arch/powerpc/include/asm/pgtable.h
-+++ b/arch/powerpc/include/asm/pgtable.h
-@@ -17,6 +17,12 @@ struct mm_struct;
- #  include <asm/pgtable-ppc32.h>
- #endif
- 
-+/*
-+ * hidx is in the second half of the page table. We use the
-+ * 8 bytes per each pte entry.
-+ */
-+#define PTE_PAGE_HIDX_OFFSET (PTRS_PER_PTE * 8)
-+
- #ifndef __ASSEMBLY__
- 
- #include <asm/tlbflush.h>
-diff --git a/arch/powerpc/mm/hash_low_64.S b/arch/powerpc/mm/hash_low_64.S
-index 7443481..abdd5e2 100644
---- a/arch/powerpc/mm/hash_low_64.S
-+++ b/arch/powerpc/mm/hash_low_64.S
-@@ -490,7 +490,7 @@ END_FTR_SECTION(CPU_FTR_NOEXECUTE|CPU_FTR_COHERENT_ICACHE, CPU_FTR_NOEXECUTE)
- 	beq	htab_inval_old_hpte
- 
- 	ld	r6,STK_PARAM(R6)(r1)
--	ori	r26,r6,0x8000		/* Load the hidx mask */
-+	ori	r26,r6,PTE_PAGE_HIDX_OFFSET /* Load the hidx mask. */
- 	ld	r26,0(r26)
- 	addi	r5,r25,36		/* Check actual HPTE_SUB bit, this */
- 	rldcr.	r0,r31,r5,0		/* must match pgtable.h definition */
-@@ -607,7 +607,7 @@ htab_pte_insert_ok:
- 	sld	r4,r4,r5
- 	andc	r26,r26,r4
- 	or	r26,r26,r3
--	ori	r5,r6,0x8000
-+	ori	r5,r6,PTE_PAGE_HIDX_OFFSET
- 	std	r26,0(r5)
- 	lwsync
- 	std	r30,0(r6)
--- 
-1.7.10
+Some numbers:
+
+The latency measurements code from Anton  found at
+http://ozlabs.org/~anton/junkcode/latency2001.c
+
+THP disabled 64K page size
+------------------------
+[root@llmp24l02 ~]# ./latency2001 8G
+ 8589934592    731.73 cycles    205.77 ns
+[root@llmp24l02 ~]# ./latency2001 8G
+ 8589934592    743.39 cycles    209.05 ns
+[root@llmp24l02 ~]#
+
+THP disabled large page via hugetlbfs
+-------------------------------------
+[root@llmp24l02 ~]# ./latency2001  -l 8G
+ 8589934592    416.09 cycles    117.01 ns
+[root@llmp24l02 ~]# ./latency2001  -l 8G
+ 8589934592    415.74 cycles    116.91 ns
+
+THP enabled 64K page size.
+----------------
+[root@llmp24l02 ~]# ./latency2001 8G
+ 8589934592    405.07 cycles    113.91 ns
+[root@llmp24l02 ~]# ./latency2001 8G
+ 8589934592    411.82 cycles    115.81 ns
+[root@llmp24l02 ~]#
+
+
+We are close to hugetlbfs in latency and we can achieve this with zero
+config/page reservation. Most of the allocations above are fault allocated.
+I haven't really measured the collapse alloc impact.
+
+Another test that does 50000000 random access over 1GB area goes from
+2.65 seconds to 1.07 seconds with this patchset.
+
+Thanks,
+-aneesh
