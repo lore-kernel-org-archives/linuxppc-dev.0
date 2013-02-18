@@ -1,33 +1,33 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp08.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B980F2C02AD
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:42:38 +1100 (EST)
+ (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 15CA72C030B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:42:45 +1100 (EST)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Mon, 18 Feb 2013 22:40:52 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id E88122CE8053
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:42:34 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1ICU8Er5636464
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:30:08 +1100
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1ICgXWU017497
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:42:34 +1100
+ Mon, 18 Feb 2013 18:09:38 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id C939EE0050
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 18:13:36 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r1ICgacC36569160
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 18:12:36 +0530
+Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r1ICgcpm006021
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:42:40 +1100
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v6 16/46] time/clocksource: Use get/put_online_cpus_atomic()
- to prevent CPU offline
+Subject: [PATCH v6 17/46] clockevents: Use get/put_online_cpus_atomic() in
+ clockevents_notify()
 To: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com,
  paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org,
  akpm@linux-foundation.org, namhyung@kernel.org
-Date: Mon, 18 Feb 2013 18:10:30 +0530
-Message-ID: <20130218124030.26245.64712.stgit@srivatsabhat.in.ibm.com>
+Date: Mon, 18 Feb 2013 18:10:42 +0530
+Message-ID: <20130218124042.26245.92242.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
 References: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
@@ -48,53 +48,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Once stop_machine() is gone from the CPU offline path, we won't be able to
-depend on preempt_disable() or local_irq_disable() to prevent CPUs from going
-offline from under us.
+The cpu idle code invokes clockevents_notify() during idle state transitions
+and the cpu offline code invokes it during the CPU_DYING phase. There
+seems to be a race-condition between the two, where the clockevents_lock
+never gets released, ending in a lockup. This can be fixed by synchronizing
+clockevents_notify() with CPU offline, by wrapping its contents within
+get/put_online_cpus_atomic().
 
-Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going offline,
-while invoking from atomic context.
-
-Cc: John Stultz <john.stultz@linaro.org>
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- kernel/time/clocksource.c |    5 +++++
- 1 file changed, 5 insertions(+)
+ kernel/time/clockevents.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
-index c958338..1c8d735 100644
---- a/kernel/time/clocksource.c
-+++ b/kernel/time/clocksource.c
-@@ -30,6 +30,7 @@
- #include <linux/sched.h> /* for spin_unlock_irq() using preempt_count() m68k */
- #include <linux/tick.h>
- #include <linux/kthread.h>
+diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
+index 30b6de0..ca340fd 100644
+--- a/kernel/time/clockevents.c
++++ b/kernel/time/clockevents.c
+@@ -17,6 +17,7 @@
+ #include <linux/module.h>
+ #include <linux/notifier.h>
+ #include <linux/smp.h>
 +#include <linux/cpu.h>
  
- void timecounter_init(struct timecounter *tc,
- 		      const struct cyclecounter *cc,
-@@ -320,11 +321,13 @@ static void clocksource_watchdog(unsigned long data)
- 	 * Cycle through CPUs to check if the CPUs stay synchronized
- 	 * to each other.
- 	 */
-+	get_online_cpus_atomic();
- 	next_cpu = cpumask_next(raw_smp_processor_id(), cpu_online_mask);
- 	if (next_cpu >= nr_cpu_ids)
- 		next_cpu = cpumask_first(cpu_online_mask);
- 	watchdog_timer.expires += WATCHDOG_INTERVAL;
- 	add_timer_on(&watchdog_timer, next_cpu);
-+	put_online_cpus_atomic();
- out:
- 	spin_unlock(&watchdog_lock);
- }
-@@ -336,7 +339,9 @@ static inline void clocksource_start_watchdog(void)
- 	init_timer(&watchdog_timer);
- 	watchdog_timer.function = clocksource_watchdog;
- 	watchdog_timer.expires = jiffies + WATCHDOG_INTERVAL;
-+	get_online_cpus_atomic();
- 	add_timer_on(&watchdog_timer, cpumask_first(cpu_online_mask));
-+	put_online_cpus_atomic();
- 	watchdog_running = 1;
- }
+ #include "tick-internal.h"
  
+@@ -431,6 +432,7 @@ void clockevents_notify(unsigned long reason, void *arg)
+ 	unsigned long flags;
+ 	int cpu;
+ 
++	get_online_cpus_atomic();
+ 	raw_spin_lock_irqsave(&clockevents_lock, flags);
+ 	clockevents_do_notify(reason, arg);
+ 
+@@ -459,6 +461,7 @@ void clockevents_notify(unsigned long reason, void *arg)
+ 		break;
+ 	}
+ 	raw_spin_unlock_irqrestore(&clockevents_lock, flags);
++	put_online_cpus_atomic();
+ }
+ EXPORT_SYMBOL_GPL(clockevents_notify);
+ #endif
