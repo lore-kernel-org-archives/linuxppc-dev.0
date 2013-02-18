@@ -1,26 +1,43 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-f52.google.com (mail-pa0-f52.google.com
- [209.85.220.52])
+Return-Path: <vincent.guittot@linaro.org>
+Received: from mail-bk0-f45.google.com (mail-bk0-f45.google.com
+ [209.85.214.45])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6E6D52C02A8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 19:14:38 +1100 (EST)
-Received: by mail-pa0-f52.google.com with SMTP id fb1so2669696pad.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 00:14:36 -0800 (PST)
-Message-ID: <5121E2E5.5000802@ozlabs.ru>
-Date: Mon, 18 Feb 2013 19:14:29 +1100
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
+ by ozlabs.org (Postfix) with ESMTPS id E356E2C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 21:24:14 +1100 (EST)
+Received: by mail-bk0-f45.google.com with SMTP id i18so2421913bkv.4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 02:24:10 -0800 (PST)
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 2/4] powerpc kvm: added multiple TCEs requests support
-References: <1360584763-21988-1-git-send-email-a>
- <5118e064.22ca320a.1f08.ffffe2ec@mx.google.com>
- <20130215032458.GB25015@drongo>
-In-Reply-To: <20130215032458.GB25015@drongo>
-Content-Type: text/plain; charset=KOI8-R; format=flowed
-Cc: kvm@vger.kernel.org, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <511E8F3C.2010406@linux.vnet.ibm.com>
+References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
+ <510FBC01.2030405@linux.vnet.ibm.com>
+ <87haloiwv0.fsf@rustcorp.com.au>
+ <51134596.4080106@linux.vnet.ibm.com>
+ <20130208154113.GV17833@n2100.arm.linux.org.uk>
+ <51152B81.2050501@linux.vnet.ibm.com>
+ <51153F72.1060005@linux.vnet.ibm.com>
+ <CAKfTPtCe+cD7LLkb+D6pqG1SwG2V08ws=4XO3ttHEHV2qgmqPg@mail.gmail.com>
+ <5118E2CD.90401@linux.vnet.ibm.com>
+ <20130211190852.GA5695@linux.vnet.ibm.com>
+ <5119BDFD.1000909@linux.vnet.ibm.com>
+ <CAKfTPtAo2hQTfBKTVUuLKgsGJ2ZLD0UTR3fH9UFuJwyFt4n__w@mail.gmail.com>
+ <511E8F3C.2010406@linux.vnet.ibm.com>
+Date: Mon, 18 Feb 2013 11:24:10 +0100
+Message-ID: <CAKfTPtD=2jn1AVjuhVP1ot7_8x9-W4==hNGZET5N9tRE7gtyMw@mail.gmail.com>
+Subject: Re: [PATCH v5 00/45] CPU hotplug: stop_machine()-free CPU hotplug
+From: Vincent Guittot <vincent.guittot@linaro.org>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
+ linux-kernel@vger.kernel.org, walken@google.com, mingo@kernel.org,
+ linux-arch@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
+ paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
+ linux-pm@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+ rostedt@goodmis.org, rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
+ linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com,
+ sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,278 +47,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 15/02/13 14:24, Paul Mackerras wrote:
-> On Mon, Feb 11, 2013 at 11:12:41PM +1100, aik@ozlabs.ru wrote:
+On 15 February 2013 20:40, Srivatsa S. Bhat
+<srivatsa.bhat@linux.vnet.ibm.com> wrote:
+> Hi Vincent,
 >
->> +static long emulated_h_put_tce(struct kvmppc_spapr_tce_table *stt,
->> +		unsigned long ioba, unsigned long tce)
->> +{
->> +	unsigned long idx = ioba >> SPAPR_TCE_SHIFT;
->> +	struct page *page;
->> +	u64 *tbl;
->> +
->> +	/* udbg_printf("H_PUT_TCE: liobn 0x%lx => stt=%p  window_size=0x%x\n", */
->> +	/* 	    liobn, stt, stt->window_size); */
->> +	if (ioba >= stt->window_size) {
->> +		pr_err("%s failed on ioba=%lx\n", __func__, ioba);
->
-> Doesn't this give the guest a way to spam the host logs?  And in fact
-> printk in real mode is potentially problematic.  I would just leave
-> out this statement.
->
->> +		return H_PARAMETER;
->> +	}
->> +
->> +	page = stt->pages[idx / TCES_PER_PAGE];
->> +	tbl = (u64 *)page_address(page);
->
-> I would like to see an explanation of why we are confident that
-> page_address() will work correctly in real mode, across all the
-> combinations of config options that we can have for a ppc64 book3s
-> kernel.
-
-It was there before this patch, I just moved it so I would think it has 
-been explained before :)
-
-There is no combination on PPC to get WANT_PAGE_VIRTUAL enabled.
-CONFIG_HIGHMEM is supported for PPC32 only so HASHED_PAGE_VIRTUAL is not 
-enabled on PPC64 either.
-
-So this definition is supposed to work on PPC64:
-#define page_address(page) lowmem_page_address(page)
-
-where lowmem_page_address() is arithmetic operation on a page struct address:
-static __always_inline void *lowmem_page_address(const struct page *page)
-{
-	return __va(PFN_PHYS(page_to_pfn(page)));
-}
-
-PPC32 will use page_address() from mm/highmem.c, I need some lesson about 
-memory layout in 32bit but for now I cannot see how it can possibly fail here.
-
-
-
->> +
->> +	/* FIXME: Need to validate the TCE itself */
->> +	/* udbg_printf("tce @ %p\n", &tbl[idx % TCES_PER_PAGE]); */
->> +	tbl[idx % TCES_PER_PAGE] = tce;
->> +
->> +	return H_SUCCESS;
->> +}
->> +
->> +/*
->> + * Real mode handlers
->>    */
->>   long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
->>   		      unsigned long ioba, unsigned long tce)
->>   {
->> -	struct kvm *kvm = vcpu->kvm;
->>   	struct kvmppc_spapr_tce_table *stt;
+> On 02/15/2013 06:58 PM, Vincent Guittot wrote:
+>> Hi Srivatsa,
 >>
->> -	/* udbg_printf("H_PUT_TCE(): liobn=0x%lx ioba=0x%lx, tce=0x%lx\n", */
->> -	/* 	    liobn, ioba, tce); */
->> +	stt = find_tce_table(vcpu, liobn);
->> +	/* Didn't find the liobn, put it to userspace */
->> +	if (!stt)
->> +		return H_TOO_HARD;
->> +
->> +	/* Emulated IO */
->> +	return emulated_h_put_tce(stt, ioba, tce);
->> +}
->> +
->> +long kvmppc_h_put_tce_indirect(struct kvm_vcpu *vcpu,
->> +		unsigned long liobn, unsigned long ioba,
->> +		unsigned long tce_list,	unsigned long npages)
->> +{
->> +	struct kvmppc_spapr_tce_table *stt;
->> +	long i, ret = 0;
->> +	unsigned long *tces;
->> +
->> +	stt = find_tce_table(vcpu, liobn);
->> +	/* Didn't find the liobn, put it to userspace */
->> +	if (!stt)
->> +		return H_TOO_HARD;
+>> I have run some tests with you branch (thanks Paul for the git tree)
+>> and you will find results below.
 >>
->> -	list_for_each_entry(stt, &kvm->arch.spapr_tce_tables, list) {
->> -		if (stt->liobn == liobn) {
->> -			unsigned long idx = ioba >> SPAPR_TCE_SHIFT;
->> -			struct page *page;
->> -			u64 *tbl;
->> +	tces = (void *) get_real_address(vcpu, tce_list, false, NULL, NULL);
->> +	if (!tces)
->> +		return H_TOO_HARD;
->>
->> -			/* udbg_printf("H_PUT_TCE: liobn 0x%lx => stt=%p  window_size=0x%x\n", */
->> -			/* 	    liobn, stt, stt->window_size); */
->> -			if (ioba >= stt->window_size)
->> -				return H_PARAMETER;
->> +	/* Emulated IO */
->> +	for (i = 0; (i < npages) && !ret; ++i, ioba += IOMMU_PAGE_SIZE)
->> +		ret = emulated_h_put_tce(stt, ioba, tces[i]);
 >
-> So, tces is a pointer to somewhere inside a real page.  Did we check
-> somewhere that tces[npages-1] is in the same page as tces[0]?  If so,
-> I missed it.  If we didn't, then we probably should check and do
-> something about it.
+> Thank you very much for testing this patchset!
+>
+>> The tests condition are:
+>> - 5 CPUs system in 2 clusters
+>> - The test plugs/unplugs CPU2 and it increases the system load each 20
+>> plug/unplug sequence with either more cyclictests threads
+>> - The test is done with all CPUs online and with only CPU0 and CPU2
+>>
+>> The main conclusion is that there is no differences with and without
+>> your patches with my stress tests. I'm not sure that it was the
+>> expected results but the cpu_down is already quite low : 4-5ms in
+>> average
+>>
+>
+> Atleast my patchset doesn't perform _worse_ than mainline, with respect
+> to cpu_down duration :-)
+
+yes exactly and it has pass  more than 400 consecutive plug/unplug on
+an ARM platform
+
+>
+> So, here is the analysis:
+> Stop-machine() doesn't really slow down CPU-down operation, if the rest
+> of the CPUs are mostly running in userspace all the time. Because, the
+> CPUs running userspace workloads cooperate very eagerly with the stop-machine
+> dance - they receive the resched IPI, and allow the per-cpu cpu-stopper
+> thread to monopolize the CPU, almost immediately.
+>
+> The scenario where stop-machine() takes longer to take effect is when
+> most of the online CPUs are running in kernelspace, because, then the
+> probability that they call preempt_disable() frequently (and hence inhibit
+> stop-machine) is higher. That's why, in my tests, I ran genload from LTP
+> which generated a lot of system-time (system-time in 'top' indicates activity
+> in kernelspace). Hence my patchset showed significant improvement over
+> mainline in my tests.
+>
+
+ok, I hadn't noticed this important point for the test
+
+> However, your test is very useful too, if we measure a different parameter:
+> the latency impact on the workloads running on the system (cyclic test).
+> One other important aim of this patchset is to make hotplug as less intrusive
+> as possible, for other workloads running on the system. So if you measure
+> the cyclictest numbers, I would expect my patchset to show better numbers
+> than mainline, when you do cpu-hotplug in parallel (same test that you did).
+> Mainline would run stop-machine and hence interrupt the cyclic test tasks
+> too often. My patchset wouldn't do that, and hence cyclic test should
+> ideally show better numbers.
+
+In fact, I haven't looked at the results as i was more interested by
+the load that was generated
+
+>
+> I'd really appreciate if you could try that out and let me know how it
+> goes.. :-) Thank you very much!
+
+ok, I'm going to try to run a test series
+
+Vincent
+>
+> Regards,
+> Srivatsa S. Bhat
 >
 >>
->> -			page = stt->pages[idx / TCES_PER_PAGE];
->> -			tbl = (u64 *)page_address(page);
->> +	return ret;
->> +}
 >>
->> -			/* FIXME: Need to validate the TCE itself */
->> -			/* udbg_printf("tce @ %p\n", &tbl[idx % TCES_PER_PAGE]); */
->> -			tbl[idx % TCES_PER_PAGE] = tce;
->> -			return H_SUCCESS;
->> -		}
->> -	}
->> +long kvmppc_h_stuff_tce(struct kvm_vcpu *vcpu,
->> +		unsigned long liobn, unsigned long ioba,
->> +		unsigned long tce_value, unsigned long npages)
->> +{
->> +	struct kvmppc_spapr_tce_table *stt;
->> +	long i, ret = 0;
->> +
->> +	stt = find_tce_table(vcpu, liobn);
->> +	/* Didn't find the liobn, put it to userspace */
->> +	if (!stt)
->> +		return H_TOO_HARD;
->>
->> -	/* Didn't find the liobn, punt it to userspace */
->> -	return H_TOO_HARD;
->> +	/* Emulated IO */
->> +	for (i = 0; (i < npages) && !ret; ++i, ioba += IOMMU_PAGE_SIZE)
->> +		ret = emulated_h_put_tce(stt, ioba, tce_value);
->> +
->> +	return ret;
->> +}
->> +
->> +/*
->> + * Virtual mode handlers
->> + */
->> +extern long kvmppc_virtmode_h_put_tce(struct kvm_vcpu *vcpu,
->> +		unsigned long liobn, unsigned long ioba,
->> +		unsigned long tce)
->> +{
->> +	/* At the moment emulated IO is handled the same way */
->> +	return kvmppc_h_put_tce(vcpu, liobn, ioba, tce);
->> +}
->> +
->> +extern long kvmppc_virtmode_h_put_tce_indirect(struct kvm_vcpu *vcpu,
->> +		unsigned long liobn, unsigned long ioba,
->> +		unsigned long tce_list, unsigned long npages)
->> +{
->> +	struct kvmppc_spapr_tce_table *stt;
->> +	unsigned long *tces;
->> +	long ret = 0, i;
->> +
->> +	stt = find_tce_table(vcpu, liobn);
->> +	/* Didn't find the liobn, put it to userspace */
->> +	if (!stt)
->> +		return H_TOO_HARD;
->> +
->> +	tces = (void *) get_virt_address(vcpu, tce_list, false, NULL, NULL);
->> +	if (!tces)
->> +		return H_TOO_HARD;
->> +
->> +	/* Emulated IO */
->> +	for (i = 0; (i < npages) && !ret; ++i, ioba += IOMMU_PAGE_SIZE)
->> +		ret = emulated_h_put_tce(stt, ioba, tces[i]);
+>> On 12 February 2013 04:58, Srivatsa S. Bhat
+>> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+>>> On 02/12/2013 12:38 AM, Paul E. McKenney wrote:
+>>>> On Mon, Feb 11, 2013 at 05:53:41PM +0530, Srivatsa S. Bhat wrote:
+>>>>> On 02/11/2013 05:28 PM, Vincent Guittot wrote:
+>>>>>> On 8 February 2013 19:09, Srivatsa S. Bhat
+>>>>>> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+>>>>
+>>>> [ . . . ]
+>>>>
+>>>>>>> Adding Vincent to CC, who had previously evaluated the performance and
+>>>>>>> latency implications of CPU hotplug on ARM platforms, IIRC.
+>>>>>>>
+>>>>>>
+>>>>>> Hi Srivatsa,
+>>>>>>
+>>>>>> I can try to run some of our stress tests on your patches.
+>>>>>
+>>>>> Great!
+>>>>>
+>>>>>> Have you
+>>>>>> got a git tree that i can pull ?
+>>>>>>
+>>>>>
+>>>>> Unfortunately, no, none at the moment..  :-(
+>>>>
+>>>> You do need to create an externally visible git tree.
+>>>
+>>> Ok, I'll do that soon.
+>>>
+>>>>  In the meantime,
+>>>> I have added your series at rcu/bhat.2013.01.21a on -rcu:
+>>>>
+>>>> git://git.kernel.org/pub/scm/linux/kernel/git/paulmck/linux-rcu.git
+>>>>
+>>>> This should appear soon on a kernel.org mirror near you.  ;-)
+>>>>
+>>>
+>>> Thank you very much, Paul! :-)
+>>>
+>>> Regards,
+>>> Srivatsa S. Bhat
+>>>
 >
-> Same comment here about tces[i] overflowing a page boundary.
 >
->> +
->> +	return ret;
->> +}
->> +
->> +extern long kvmppc_virtmode_h_stuff_tce(struct kvm_vcpu *vcpu,
->> +		unsigned long liobn, unsigned long ioba,
->> +		unsigned long tce_value, unsigned long npages)
->> +{
->> +	/* At the moment emulated IO is handled the same way */
->> +	return kvmppc_h_stuff_tce(vcpu, liobn, ioba, tce_value, npages);
->>   }
->> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
->> index 71d0c90..13c8436 100644
->> --- a/arch/powerpc/kvm/book3s_hv.c
->> +++ b/arch/powerpc/kvm/book3s_hv.c
->> @@ -515,6 +515,29 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
->>   					kvmppc_get_gpr(vcpu, 5),
->>   					kvmppc_get_gpr(vcpu, 6));
->>   		break;
->> +	case H_PUT_TCE:
->> +		ret = kvmppc_virtmode_h_put_tce(vcpu, kvmppc_get_gpr(vcpu, 4),
->> +					        kvmppc_get_gpr(vcpu, 5),
->> +					        kvmppc_get_gpr(vcpu, 6));
->> +		if (ret == H_TOO_HARD)
->> +			return RESUME_HOST;
->> +		break;
->> +	case H_PUT_TCE_INDIRECT:
->> +		ret = kvmppc_virtmode_h_put_tce_indirect(vcpu, kvmppc_get_gpr(vcpu, 4),
->> +					        kvmppc_get_gpr(vcpu, 5),
->> +					        kvmppc_get_gpr(vcpu, 6),
->> +						kvmppc_get_gpr(vcpu, 7));
->> +		if (ret == H_TOO_HARD)
->> +			return RESUME_HOST;
->> +		break;
->> +	case H_STUFF_TCE:
->> +		ret = kvmppc_virtmode_h_stuff_tce(vcpu, kvmppc_get_gpr(vcpu, 4),
->> +					        kvmppc_get_gpr(vcpu, 5),
->> +					        kvmppc_get_gpr(vcpu, 6),
->> +						kvmppc_get_gpr(vcpu, 7));
->> +		if (ret == H_TOO_HARD)
->> +			return RESUME_HOST;
->> +		break;
->>   	default:
->>   		return RESUME_HOST;
->>   	}
-> [snip]
->> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
->> index 70739a0..95614c7 100644
->> --- a/arch/powerpc/kvm/powerpc.c
->> +++ b/arch/powerpc/kvm/powerpc.c
->> @@ -383,6 +383,9 @@ int kvm_dev_ioctl_check_extension(long ext)
->>   		r = 1;
->>   		break;
->>   #endif
->> +	case KVM_CAP_PPC_MULTITCE:
->> +		r = 1;
->> +		break;
->>   	default:
->>   		r = 0;
->>   		break;
->> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
->> index e6e5d4b..26e2b271 100644
->> --- a/include/uapi/linux/kvm.h
->> +++ b/include/uapi/linux/kvm.h
->> @@ -635,6 +635,7 @@ struct kvm_ppc_smmu_info {
->>   #define KVM_CAP_IRQFD_RESAMPLE 82
->>   #define KVM_CAP_PPC_BOOKE_WATCHDOG 83
->>   #define KVM_CAP_PPC_HTAB_FD 84
->> +#define KVM_CAP_PPC_MULTITCE 87
->
-> The capability should be described in
-> Documentation/virtual/kvm/api.txt.
-
-Is it enough description?
-
-===
-4.79 KVM_CAP_PPC_MULTITCE
-
-Architectures: ppc
-Parameters: none
-Returns: 0 on success; -1 on error
-
-This capability enables the guest to put/remove multiple TCE entries
-per hypercall which significanly accelerates DMA operations for PPC KVM
-guests.
-
-When this capability is enabled, H_PUT_TCE_INDIRECT and H_STUFF_TCE are
-expected to occur rather than H_PUT_TCE which supports only one TCE entry
-per call.
-===
-
-
--- 
-Alexey
