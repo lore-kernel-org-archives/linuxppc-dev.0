@@ -1,43 +1,35 @@
-Return-Path: <vincent.guittot@linaro.org>
-Received: from mail-bk0-f45.google.com (mail-bk0-f45.google.com
- [209.85.214.45])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E356E2C0091
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 21:24:14 +1100 (EST)
-Received: by mail-bk0-f45.google.com with SMTP id i18so2421913bkv.4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 02:24:10 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <511E8F3C.2010406@linux.vnet.ibm.com>
-References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
- <510FBC01.2030405@linux.vnet.ibm.com>
- <87haloiwv0.fsf@rustcorp.com.au>
- <51134596.4080106@linux.vnet.ibm.com>
- <20130208154113.GV17833@n2100.arm.linux.org.uk>
- <51152B81.2050501@linux.vnet.ibm.com>
- <51153F72.1060005@linux.vnet.ibm.com>
- <CAKfTPtCe+cD7LLkb+D6pqG1SwG2V08ws=4XO3ttHEHV2qgmqPg@mail.gmail.com>
- <5118E2CD.90401@linux.vnet.ibm.com>
- <20130211190852.GA5695@linux.vnet.ibm.com>
- <5119BDFD.1000909@linux.vnet.ibm.com>
- <CAKfTPtAo2hQTfBKTVUuLKgsGJ2ZLD0UTR3fH9UFuJwyFt4n__w@mail.gmail.com>
- <511E8F3C.2010406@linux.vnet.ibm.com>
-Date: Mon, 18 Feb 2013 11:24:10 +0100
-Message-ID: <CAKfTPtD=2jn1AVjuhVP1ot7_8x9-W4==hNGZET5N9tRE7gtyMw@mail.gmail.com>
-Subject: Re: [PATCH v5 00/45] CPU hotplug: stop_machine()-free CPU hotplug
-From: Vincent Guittot <vincent.guittot@linaro.org>
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
- linux-kernel@vger.kernel.org, walken@google.com, mingo@kernel.org,
- linux-arch@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>,
- xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
- paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
- linux-pm@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
- rostedt@goodmis.org, rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
- linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com,
- sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9E4EA2C0082
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 21:28:44 +1100 (EST)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 18 Feb 2013 15:55:57 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 3982B394004E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 15:58:38 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r1IASaiS22216946
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 15:58:36 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r1IASZAL001077
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 21:28:37 +1100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [RFC PATCH 08/17] powerpc: print both base and actual page size on
+ hash failure
+Date: Mon, 18 Feb 2013 15:58:06 +0530
+Message-Id: <1361183295-6958-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1361183295-6958-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1361183295-6958-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,124 +39,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 15 February 2013 20:40, Srivatsa S. Bhat
-<srivatsa.bhat@linux.vnet.ibm.com> wrote:
-> Hi Vincent,
->
-> On 02/15/2013 06:58 PM, Vincent Guittot wrote:
->> Hi Srivatsa,
->>
->> I have run some tests with you branch (thanks Paul for the git tree)
->> and you will find results below.
->>
->
-> Thank you very much for testing this patchset!
->
->> The tests condition are:
->> - 5 CPUs system in 2 clusters
->> - The test plugs/unplugs CPU2 and it increases the system load each 20
->> plug/unplug sequence with either more cyclictests threads
->> - The test is done with all CPUs online and with only CPU0 and CPU2
->>
->> The main conclusion is that there is no differences with and without
->> your patches with my stress tests. I'm not sure that it was the
->> expected results but the cpu_down is already quite low : 4-5ms in
->> average
->>
->
-> Atleast my patchset doesn't perform _worse_ than mainline, with respect
-> to cpu_down duration :-)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-yes exactly and it has pass  more than 400 consecutive plug/unplug on
-an ARM platform
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/mmu-hash64.h |    3 ++-
+ arch/powerpc/mm/hash_utils_64.c       |   12 +++++++-----
+ arch/powerpc/mm/hugetlbpage-hash64.c  |    2 +-
+ 3 files changed, 10 insertions(+), 7 deletions(-)
 
->
-> So, here is the analysis:
-> Stop-machine() doesn't really slow down CPU-down operation, if the rest
-> of the CPUs are mostly running in userspace all the time. Because, the
-> CPUs running userspace workloads cooperate very eagerly with the stop-machine
-> dance - they receive the resched IPI, and allow the per-cpu cpu-stopper
-> thread to monopolize the CPU, almost immediately.
->
-> The scenario where stop-machine() takes longer to take effect is when
-> most of the online CPUs are running in kernelspace, because, then the
-> probability that they call preempt_disable() frequently (and hence inhibit
-> stop-machine) is higher. That's why, in my tests, I ran genload from LTP
-> which generated a lot of system-time (system-time in 'top' indicates activity
-> in kernelspace). Hence my patchset showed significant improvement over
-> mainline in my tests.
->
-
-ok, I hadn't noticed this important point for the test
-
-> However, your test is very useful too, if we measure a different parameter:
-> the latency impact on the workloads running on the system (cyclic test).
-> One other important aim of this patchset is to make hotplug as less intrusive
-> as possible, for other workloads running on the system. So if you measure
-> the cyclictest numbers, I would expect my patchset to show better numbers
-> than mainline, when you do cpu-hotplug in parallel (same test that you did).
-> Mainline would run stop-machine and hence interrupt the cyclic test tasks
-> too often. My patchset wouldn't do that, and hence cyclic test should
-> ideally show better numbers.
-
-In fact, I haven't looked at the results as i was more interested by
-the load that was generated
-
->
-> I'd really appreciate if you could try that out and let me know how it
-> goes.. :-) Thank you very much!
-
-ok, I'm going to try to run a test series
-
-Vincent
->
-> Regards,
-> Srivatsa S. Bhat
->
->>
->>
->> On 12 February 2013 04:58, Srivatsa S. Bhat
->> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
->>> On 02/12/2013 12:38 AM, Paul E. McKenney wrote:
->>>> On Mon, Feb 11, 2013 at 05:53:41PM +0530, Srivatsa S. Bhat wrote:
->>>>> On 02/11/2013 05:28 PM, Vincent Guittot wrote:
->>>>>> On 8 February 2013 19:09, Srivatsa S. Bhat
->>>>>> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
->>>>
->>>> [ . . . ]
->>>>
->>>>>>> Adding Vincent to CC, who had previously evaluated the performance and
->>>>>>> latency implications of CPU hotplug on ARM platforms, IIRC.
->>>>>>>
->>>>>>
->>>>>> Hi Srivatsa,
->>>>>>
->>>>>> I can try to run some of our stress tests on your patches.
->>>>>
->>>>> Great!
->>>>>
->>>>>> Have you
->>>>>> got a git tree that i can pull ?
->>>>>>
->>>>>
->>>>> Unfortunately, no, none at the moment..  :-(
->>>>
->>>> You do need to create an externally visible git tree.
->>>
->>> Ok, I'll do that soon.
->>>
->>>>  In the meantime,
->>>> I have added your series at rcu/bhat.2013.01.21a on -rcu:
->>>>
->>>> git://git.kernel.org/pub/scm/linux/kernel/git/paulmck/linux-rcu.git
->>>>
->>>> This should appear soon on a kernel.org mirror near you.  ;-)
->>>>
->>>
->>> Thank you very much, Paul! :-)
->>>
->>> Regards,
->>> Srivatsa S. Bhat
->>>
->
->
+diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
+index 6290e26..6ec65b6 100644
+--- a/arch/powerpc/include/asm/mmu-hash64.h
++++ b/arch/powerpc/include/asm/mmu-hash64.h
+@@ -321,7 +321,8 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		     unsigned int shift, unsigned int mmu_psize);
+ extern void hash_failure_debug(unsigned long ea, unsigned long access,
+ 			       unsigned long vsid, unsigned long trap,
+-			       int ssize, int psize, unsigned long pte);
++			       int ssize, int psize, int lpsize,
++			       unsigned long pte);
+ extern int htab_bolt_mapping(unsigned long vstart, unsigned long vend,
+ 			     unsigned long pstart, unsigned long prot,
+ 			     int psize, int ssize);
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 48edb46..df48ba5 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -917,14 +917,14 @@ static inline int subpage_protection(struct mm_struct *mm, unsigned long ea)
+ 
+ void hash_failure_debug(unsigned long ea, unsigned long access,
+ 			unsigned long vsid, unsigned long trap,
+-			int ssize, int psize, unsigned long pte)
++			int ssize, int psize, int lpsize, unsigned long pte)
+ {
+ 	if (!printk_ratelimit())
+ 		return;
+ 	pr_info("mm: Hashing failure ! EA=0x%lx access=0x%lx current=%s\n",
+ 		ea, access, current->comm);
+-	pr_info("    trap=0x%lx vsid=0x%lx ssize=%d psize=%d pte=0x%lx\n",
+-		trap, vsid, ssize, psize, pte);
++	pr_info("    trap=0x%lx vsid=0x%lx ssize=%d base psize=%d psize %d pte=0x%lx\n",
++		trap, vsid, ssize, psize, lpsize, pte);
+ }
+ 
+ /* Result code is:
+@@ -1097,7 +1097,7 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
+ 	 */
+ 	if (rc == -1)
+ 		hash_failure_debug(ea, access, vsid, trap, ssize, psize,
+-				   pte_val(*ptep));
++				   psize, pte_val(*ptep));
+ #ifndef CONFIG_PPC_64K_PAGES
+ 	DBG_LOW(" o-pte: %016lx\n", pte_val(*ptep));
+ #else
+@@ -1175,7 +1175,9 @@ void hash_preload(struct mm_struct *mm, unsigned long ea,
+ 	 */
+ 	if (rc == -1)
+ 		hash_failure_debug(ea, access, vsid, trap, ssize,
+-				   mm->context.user_psize, pte_val(*ptep));
++				   mm->context.user_psize,
++				   mm->context.user_psize,
++				   pte_val(*ptep));
+ 
+ 	local_irq_restore(flags);
+ }
+diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
+index cecad34..af98ee8 100644
+--- a/arch/powerpc/mm/hugetlbpage-hash64.c
++++ b/arch/powerpc/mm/hugetlbpage-hash64.c
+@@ -129,7 +129,7 @@ repeat:
+ 		if (unlikely(slot == -2)) {
+ 			*ptep = __pte(old_pte);
+ 			hash_failure_debug(ea, access, vsid, trap, ssize,
+-					   mmu_psize, old_pte);
++					   mmu_psize, mmu_psize, old_pte);
+ 			return -1;
+ 		}
+ 
+-- 
+1.7.10
