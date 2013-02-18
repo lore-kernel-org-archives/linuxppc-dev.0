@@ -1,33 +1,33 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CF2DB2C04DE
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:42:25 +1100 (EST)
+ (Client CN "e23smtp08.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B980F2C02AD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:42:38 +1100 (EST)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Mon, 18 Feb 2013 22:35:09 +1000
+ Mon, 18 Feb 2013 22:40:52 +1000
 Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 4BFC43578023
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:42:23 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id E88122CE8053
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:42:34 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
  by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1ICTumH5833118
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:29:56 +1100
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1ICgLh2003486
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:42:23 +1100
+ r1ICU8Er5636464
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:30:08 +1100
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r1ICgXWU017497
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:42:34 +1100
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v6 15/46] tick: Use get/put_online_cpus_atomic() to prevent
- CPU offline
+Subject: [PATCH v6 16/46] time/clocksource: Use get/put_online_cpus_atomic()
+ to prevent CPU offline
 To: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com,
  paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org,
  akpm@linux-foundation.org, namhyung@kernel.org
-Date: Mon, 18 Feb 2013 18:10:18 +0530
-Message-ID: <20130218124018.26245.34450.stgit@srivatsabhat.in.ibm.com>
+Date: Mon, 18 Feb 2013 18:10:30 +0530
+Message-ID: <20130218124030.26245.64712.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
 References: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
@@ -49,35 +49,52 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Once stop_machine() is gone from the CPU offline path, we won't be able to
-depend on preempt_disable() or local_irq_disable() to prevent CPUs from
-going offline from under us.
+depend on preempt_disable() or local_irq_disable() to prevent CPUs from going
+offline from under us.
 
 Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going offline,
 while invoking from atomic context.
 
+Cc: John Stultz <john.stultz@linaro.org>
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- kernel/time/tick-broadcast.c |    2 ++
- 1 file changed, 2 insertions(+)
+ kernel/time/clocksource.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
-index f113755..d123a2c 100644
---- a/kernel/time/tick-broadcast.c
-+++ b/kernel/time/tick-broadcast.c
-@@ -160,6 +160,7 @@ static void tick_do_broadcast(struct cpumask *mask)
-  */
- static void tick_do_periodic_broadcast(void)
- {
+diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
+index c958338..1c8d735 100644
+--- a/kernel/time/clocksource.c
++++ b/kernel/time/clocksource.c
+@@ -30,6 +30,7 @@
+ #include <linux/sched.h> /* for spin_unlock_irq() using preempt_count() m68k */
+ #include <linux/tick.h>
+ #include <linux/kthread.h>
++#include <linux/cpu.h>
+ 
+ void timecounter_init(struct timecounter *tc,
+ 		      const struct cyclecounter *cc,
+@@ -320,11 +321,13 @@ static void clocksource_watchdog(unsigned long data)
+ 	 * Cycle through CPUs to check if the CPUs stay synchronized
+ 	 * to each other.
+ 	 */
 +	get_online_cpus_atomic();
- 	raw_spin_lock(&tick_broadcast_lock);
- 
- 	cpumask_and(to_cpumask(tmpmask),
-@@ -167,6 +168,7 @@ static void tick_do_periodic_broadcast(void)
- 	tick_do_broadcast(to_cpumask(tmpmask));
- 
- 	raw_spin_unlock(&tick_broadcast_lock);
+ 	next_cpu = cpumask_next(raw_smp_processor_id(), cpu_online_mask);
+ 	if (next_cpu >= nr_cpu_ids)
+ 		next_cpu = cpumask_first(cpu_online_mask);
+ 	watchdog_timer.expires += WATCHDOG_INTERVAL;
+ 	add_timer_on(&watchdog_timer, next_cpu);
 +	put_online_cpus_atomic();
+ out:
+ 	spin_unlock(&watchdog_lock);
+ }
+@@ -336,7 +339,9 @@ static inline void clocksource_start_watchdog(void)
+ 	init_timer(&watchdog_timer);
+ 	watchdog_timer.function = clocksource_watchdog;
+ 	watchdog_timer.expires = jiffies + WATCHDOG_INTERVAL;
++	get_online_cpus_atomic();
+ 	add_timer_on(&watchdog_timer, cpumask_first(cpu_online_mask));
++	put_online_cpus_atomic();
+ 	watchdog_running = 1;
  }
  
- /*
