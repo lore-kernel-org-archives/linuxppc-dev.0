@@ -1,49 +1,48 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4E39B2C0092
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2013 03:48:11 +1100 (EST)
-Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Mon, 18 Feb 2013 22:15:02 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id A8C34E0054
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 22:19:01 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1IGm3fj31785088
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 22:18:03 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1IGm3FG029123
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 16:48:05 GMT
-Message-ID: <51225ACD.3080100@linux.vnet.ibm.com>
-Date: Mon, 18 Feb 2013 22:16:05 +0530
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Return-Path: <vincent.guittot@linaro.org>
+Received: from mail-bk0-f54.google.com (mail-bk0-f54.google.com
+ [209.85.214.54])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6FC0A2C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2013 03:50:33 +1100 (EST)
+Received: by mail-bk0-f54.google.com with SMTP id w5so2669065bku.13
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 08:50:29 -0800 (PST)
 MIME-Version: 1.0
+In-Reply-To: <1361201422.23152.154.camel@gandalf.local.home>
+References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
+ <510FBC01.2030405@linux.vnet.ibm.com>
+ <87haloiwv0.fsf@rustcorp.com.au>
+ <51134596.4080106@linux.vnet.ibm.com>
+ <20130208154113.GV17833@n2100.arm.linux.org.uk>
+ <51152B81.2050501@linux.vnet.ibm.com>
+ <51153F72.1060005@linux.vnet.ibm.com>
+ <CAKfTPtCe+cD7LLkb+D6pqG1SwG2V08ws=4XO3ttHEHV2qgmqPg@mail.gmail.com>
+ <5118E2CD.90401@linux.vnet.ibm.com>
+ <20130211190852.GA5695@linux.vnet.ibm.com>
+ <5119BDFD.1000909@linux.vnet.ibm.com>
+ <CAKfTPtAo2hQTfBKTVUuLKgsGJ2ZLD0UTR3fH9UFuJwyFt4n__w@mail.gmail.com>
+ <511E8F3C.2010406@linux.vnet.ibm.com>
+ <CAKfTPtD=2jn1AVjuhVP1ot7_8x9-W4==hNGZET5N9tRE7gtyMw@mail.gmail.com>
+ <512203B3.7090002@linux.vnet.ibm.com>
+ <512207A6.4000402@linux.vnet.ibm.com>
+ <CAKfTPtA1aTseD6Gntkf_zbCEbfZzt3P2-P1un6iF5_1TdVLjRQ@mail.gmail.com>
+ <1361201422.23152.154.camel@gandalf.local.home>
+Date: Mon, 18 Feb 2013 17:50:28 +0100
+Message-ID: <CAKfTPtC4hbXXWO=_zsGYryM9hpWaGFLbiY+jiLf=koLa4xGJOQ@mail.gmail.com>
+Subject: Re: [PATCH v5 00/45] CPU hotplug: stop_machine()-free CPU hotplug
+From: Vincent Guittot <vincent.guittot@linaro.org>
 To: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH v6 04/46] percpu_rwlock: Implement the core design of
- Per-CPU Reader-Writer Locks
-References: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
- <20130218123856.26245.46705.stgit@srivatsabhat.in.ibm.com>
- <CANN689F9S7c1M8+cEpz3tsxGF34+NTRBLvxgPUOtbvav5u+RRA@mail.gmail.com>
- <5122551E.1080703@linux.vnet.ibm.com>
- <1361205087.23152.159.camel@gandalf.local.home>
-In-Reply-To: <1361205087.23152.159.camel@gandalf.local.home>
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
- linux-kernel@vger.kernel.org, Michel Lespinasse <walken@google.com>,
- mingo@kernel.org, linux-arch@vger.kernel.org, linux@arm.linux.org.uk,
+ linux-kernel@vger.kernel.org, walken@google.com, mingo@kernel.org,
+ linux-arch@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>,
  xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
  paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
- linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rjw@sisk.pl,
+ linux-pm@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>, rjw@sisk.pl,
  namhyung@kernel.org, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org,
- netdev@vger.kernel.org, oleg@redhat.com, vincent.guittot@linaro.org,
- sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+ netdev@vger.kernel.org, oleg@redhat.com, sbw@mit.edu,
+ "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, tj@kernel.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,20 +52,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/18/2013 10:01 PM, Steven Rostedt wrote:
-> On Mon, 2013-02-18 at 21:51 +0530, Srivatsa S. Bhat wrote:
->> Hi Michel,
-> 
->> Yes.. I don't think we can avoid that. Moreover, since we _want_ unfair
->> reader/writer semantics to allow flexible locking rules and guarantee
->> deadlock-safety, having a recursive reader side is not even an issue, IMHO.
-> 
-> Recursive unfair reader lock may guarantee deadlock-safety, but
-> remember, it adds a higher probability of live-locking the write_lock.
-> Which is another argument to keep this separate to cpu hotplug only.
-> 
+On 18 February 2013 16:30, Steven Rostedt <rostedt@goodmis.org> wrote:
+> On Mon, 2013-02-18 at 11:58 +0100, Vincent Guittot wrote:
+>
+>> My tests have been done without cpuidle because i have some issues
+>> with function tracer and cpuidle
+>>
+>> But the cpu hotplug and cpuidle work well when I run the tests without
+>> enabling the function tracer
+>>
+>
+> I know suspend and resume has issues with function tracing (because it
+> makes things like calling smp_processor_id() crash the system), but I'm
+> unaware of issues with hotplug itself. Could be some of the same issues.
+>
+> Can you give me more details, I'll try to investigate it.
 
-True.
- 
-Regards,
-Srivatsa S. Bhat
+yes for sure.
+The problem is more linked to cpuidle and function tracer.
+
+cpu hotplug and function tracer work when cpuidle is disable.
+cpu hotplug and cpuidle works if i don't enable function tracer.
+my platform is dead as soon as I enable function tracer if cpuidle is
+enabled. It looks like some notrace are missing in my platform driver
+but we haven't completely fix the issue yet
+
+Vincent
+
+>
+> Thanks,
+>
+> -- Steve
+>
+>
