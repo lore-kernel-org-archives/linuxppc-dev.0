@@ -1,30 +1,30 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B1D492C02B3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 21:28:47 +1100 (EST)
+ (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CEAB12C029C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 21:28:48 +1100 (EST)
 Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 18 Feb 2013 15:55:48 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id F05FE125804E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 15:59:25 +0530 (IST)
+ Mon, 18 Feb 2013 15:55:25 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 6D37C3940053
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 15:58:38 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1IASbCp17629362
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 15:58:38 +0530
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r1IASaHb22872190
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 15:58:36 +0530
 Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1IASb8x001282
+ r1IASbQQ001237
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 21:28:38 +1100
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [RFC PATCH 17/17] powerpc: Save DAR and DSISR in pt_regs on MCE
-Date: Mon, 18 Feb 2013 15:58:15 +0530
-Message-Id: <1361183295-6958-18-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [RFC PATCH 15/17] powerpc: hypervisor require few WIMG bit set
+Date: Mon, 18 Feb 2013 15:58:13 +0530
+Message-Id: <1361183295-6958-16-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1361183295-6958-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1361183295-6958-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -40,50 +40,40 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-We were not saving DAR and DSISR on MCE. Save then and also print the values
-along with exception details in xmon.
+Without this insert will return H_PARAMETER error. Also use
+the signed variant when printing error.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/exceptions-64s.S |    9 +++++++++
- arch/powerpc/xmon/xmon.c             |    2 +-
- 2 files changed, 10 insertions(+), 1 deletion(-)
+ arch/powerpc/mm/largepage-hash64.c    |    2 ++
+ arch/powerpc/platforms/pseries/lpar.c |    2 +-
+ 2 files changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 0e9c48c..d02e730 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -640,9 +640,18 @@ slb_miss_user_pseries:
- 	.align	7
- 	.globl machine_check_common
- machine_check_common:
-+
-+	mfspr	r10,SPRN_DAR
-+	std	r10,PACA_EXGEN+EX_DAR(r13)
-+	mfspr	r10,SPRN_DSISR
-+	stw	r10,PACA_EXGEN+EX_DSISR(r13)
- 	EXCEPTION_PROLOG_COMMON(0x200, PACA_EXMC)
- 	FINISH_NAP
- 	DISABLE_INTS
-+	ld	r3,PACA_EXGEN+EX_DAR(r13)
-+	lwz	r4,PACA_EXGEN+EX_DSISR(r13)
-+	std	r3,_DAR(r1)
-+	std	r4,_DSISR(r1)
- 	bl	.save_nvgprs
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	.machine_check_exception
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 1f8d2f1..a72e490 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -1423,7 +1423,7 @@ static void excprint(struct pt_regs *fp)
- 	printf("    sp: %lx\n", fp->gpr[1]);
- 	printf("   msr: %lx\n", fp->msr);
- 
--	if (trap == 0x300 || trap == 0x380 || trap == 0x600) {
-+	if (trap == 0x300 || trap == 0x380 || trap == 0x600 || trap == 0x200) {
- 		printf("   dar: %lx\n", fp->dar);
- 		if (trap != 0x380)
- 			printf(" dsisr: %lx\n", fp->dsisr);
+diff --git a/arch/powerpc/mm/largepage-hash64.c b/arch/powerpc/mm/largepage-hash64.c
+index 2a5fc39..20a626e 100644
+--- a/arch/powerpc/mm/largepage-hash64.c
++++ b/arch/powerpc/mm/largepage-hash64.c
+@@ -123,6 +123,8 @@ repeat:
+ 		/* Add in WIMG bits. FIXME!! enabled by default */
+ 		rflags |= (new_pmd & (_PAGE_WRITETHRU | _PAGE_NO_CACHE |
+ 				      _PAGE_COHERENT | _PAGE_GUARDED));
++#else
++		rflags |= _PAGE_COHERENT;
+ #endif
+ 		/* Insert into the hash table, primary slot */
+ 		slot = ppc_md.hpte_insert(hpte_group, vpn, pa, rflags, 0,
+diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+index ca9c2bb..3daced3 100644
+--- a/arch/powerpc/platforms/pseries/lpar.c
++++ b/arch/powerpc/platforms/pseries/lpar.c
+@@ -155,7 +155,7 @@ static long pSeries_lpar_hpte_insert(unsigned long hpte_group,
+ 	 */
+ 	if (unlikely(lpar_rc != H_SUCCESS)) {
+ 		if (!(vflags & HPTE_V_BOLTED))
+-			pr_devel(" lpar err %lu\n", lpar_rc);
++			pr_devel(" lpar err %ld\n", lpar_rc);
+ 		return -2;
+ 	}
+ 	if (!(vflags & HPTE_V_BOLTED))
 -- 
 1.7.10
