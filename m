@@ -1,33 +1,33 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4F8B62C0336
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:44:41 +1100 (EST)
+ (Client CN "e23smtp09.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D31392C0314
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:44:50 +1100 (EST)
 Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Mon, 18 Feb 2013 18:11:56 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id EFA32125805A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 18:15:20 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1ICiVTN31195268
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 18:14:31 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1ICiXuu031271
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:44:35 +1100
+ Mon, 18 Feb 2013 22:37:44 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 7A4822BB0051
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:44:47 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r1ICWL7v41353458
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:32:21 +1100
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r1ICijcJ004962
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:44:47 +1100
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v6 31/46] alpha/smp: Use get/put_online_cpus_atomic() to
+Subject: [PATCH v6 32/46] blackfin/smp: Use get/put_online_cpus_atomic() to
  prevent CPU offline
 To: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com,
  paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org,
  akpm@linux-foundation.org, namhyung@kernel.org
-Date: Mon, 18 Feb 2013 18:12:37 +0530
-Message-ID: <20130218124237.26245.20750.stgit@srivatsabhat.in.ibm.com>
+Date: Mon, 18 Feb 2013 18:12:42 +0530
+Message-ID: <20130218124242.26245.39810.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
 References: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
@@ -55,103 +55,49 @@ going offline from under us.
 Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going offline,
 while invoking from atomic context.
 
-Also, remove the non-ASCII character present in this file!
-
-Cc: linux-alpha@vger.kernel.org
+Cc: Mike Frysinger <vapier@gentoo.org>
+Cc: Bob Liu <lliubbo@gmail.com>
+Cc: Steven Miao <realmz6@gmail.com>
+Cc: uclinux-dist-devel@blackfin.uclinux.org
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- arch/alpha/kernel/smp.c |   19 +++++++++----------
- 1 file changed, 9 insertions(+), 10 deletions(-)
+ arch/blackfin/mach-common/smp.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/arch/alpha/kernel/smp.c b/arch/alpha/kernel/smp.c
-index 9603bc2..9213d5d 100644
---- a/arch/alpha/kernel/smp.c
-+++ b/arch/alpha/kernel/smp.c
-@@ -498,7 +498,6 @@ smp_cpus_done(unsigned int max_cpus)
- 	       ((bogosum + 2500) / (5000/HZ)) % 100);
+diff --git a/arch/blackfin/mach-common/smp.c b/arch/blackfin/mach-common/smp.c
+index bb61ae4..6cc6d7a 100644
+--- a/arch/blackfin/mach-common/smp.c
++++ b/arch/blackfin/mach-common/smp.c
+@@ -194,6 +194,7 @@ void send_ipi(const struct cpumask *cpumask, enum ipi_message_type msg)
+ 	struct ipi_data *bfin_ipi_data;
+ 	unsigned long flags;
+ 
++	get_online_cpus_atomic();
+ 	local_irq_save(flags);
+ 	smp_mb();
+ 	for_each_cpu(cpu, cpumask) {
+@@ -205,6 +206,7 @@ void send_ipi(const struct cpumask *cpumask, enum ipi_message_type msg)
+ 	}
+ 
+ 	local_irq_restore(flags);
++	put_online_cpus_atomic();
  }
  
--
- void
- smp_percpu_timer_interrupt(struct pt_regs *regs)
+ void arch_send_call_function_single_ipi(int cpu)
+@@ -238,13 +240,13 @@ void smp_send_stop(void)
  {
-@@ -682,7 +681,7 @@ ipi_flush_tlb_mm(void *x)
- void
- flush_tlb_mm(struct mm_struct *mm)
- {
--	preempt_disable();
-+	get_online_cpus_atomic();
- 
- 	if (mm == current->active_mm) {
- 		flush_tlb_current(mm);
-@@ -694,7 +693,7 @@ flush_tlb_mm(struct mm_struct *mm)
- 				if (mm->context[cpu])
- 					mm->context[cpu] = 0;
- 			}
--			preempt_enable();
-+			put_online_cpus_atomic();
- 			return;
- 		}
- 	}
-@@ -703,7 +702,7 @@ flush_tlb_mm(struct mm_struct *mm)
- 		printk(KERN_CRIT "flush_tlb_mm: timed out\n");
- 	}
- 
--	preempt_enable();
-+	put_online_cpus_atomic();
- }
- EXPORT_SYMBOL(flush_tlb_mm);
- 
-@@ -731,7 +730,7 @@ flush_tlb_page(struct vm_area_struct *vma, unsigned long addr)
- 	struct flush_tlb_page_struct data;
- 	struct mm_struct *mm = vma->vm_mm;
+ 	cpumask_t callmap;
  
 -	preempt_disable();
 +	get_online_cpus_atomic();
- 
- 	if (mm == current->active_mm) {
- 		flush_tlb_current_page(mm, vma, addr);
-@@ -743,7 +742,7 @@ flush_tlb_page(struct vm_area_struct *vma, unsigned long addr)
- 				if (mm->context[cpu])
- 					mm->context[cpu] = 0;
- 			}
--			preempt_enable();
-+			put_online_cpus_atomic();
- 			return;
- 		}
- 	}
-@@ -756,7 +755,7 @@ flush_tlb_page(struct vm_area_struct *vma, unsigned long addr)
- 		printk(KERN_CRIT "flush_tlb_page: timed out\n");
- 	}
+ 	cpumask_copy(&callmap, cpu_online_mask);
+ 	cpumask_clear_cpu(smp_processor_id(), &callmap);
+ 	if (!cpumask_empty(&callmap))
+ 		send_ipi(&callmap, BFIN_IPI_CPU_STOP);
  
 -	preempt_enable();
 +	put_online_cpus_atomic();
- }
- EXPORT_SYMBOL(flush_tlb_page);
  
-@@ -787,7 +786,7 @@ flush_icache_user_range(struct vm_area_struct *vma, struct page *page,
- 	if ((vma->vm_flags & VM_EXEC) == 0)
- 		return;
- 
--	preempt_disable();
-+	get_online_cpus_atomic();
- 
- 	if (mm == current->active_mm) {
- 		__load_new_mm_context(mm);
-@@ -799,7 +798,7 @@ flush_icache_user_range(struct vm_area_struct *vma, struct page *page,
- 				if (mm->context[cpu])
- 					mm->context[cpu] = 0;
- 			}
--			preempt_enable();
-+			put_online_cpus_atomic();
- 			return;
- 		}
- 	}
-@@ -808,5 +807,5 @@ flush_icache_user_range(struct vm_area_struct *vma, struct page *page,
- 		printk(KERN_CRIT "flush_icache_page: timed out\n");
- 	}
- 
--	preempt_enable();
-+	put_online_cpus_atomic();
+ 	return;
  }
