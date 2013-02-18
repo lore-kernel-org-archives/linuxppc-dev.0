@@ -1,33 +1,32 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EA5152C092F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:46:27 +1100 (EST)
+ (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8A4E82C0955
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:46:39 +1100 (EST)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Mon, 18 Feb 2013 22:40:24 +1000
+ Mon, 18 Feb 2013 22:42:06 +1000
 Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id C91863578023
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:46:24 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 6D05B357804E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:46:36 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
  by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1ICY7vl6881598
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:34:07 +1100
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1ICkMuL028967
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:46:24 +1100
+ r1ICYIxj6488500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:34:18 +1100
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r1ICkYiO006934
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:46:36 +1100
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v6 43/46] tile: Use get/put_online_cpus_atomic() to prevent
- CPU offline
+Subject: [PATCH v6 44/46] cpu: No more __stop_machine() in _cpu_down()
 To: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com,
  paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org,
  akpm@linux-foundation.org, namhyung@kernel.org
-Date: Mon, 18 Feb 2013 18:14:20 +0530
-Message-ID: <20130218124419.26245.57077.stgit@srivatsabhat.in.ibm.com>
+Date: Mon, 18 Feb 2013 18:14:31 +0530
+Message-ID: <20130218124431.26245.10956.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
 References: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
@@ -48,42 +47,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Once stop_machine() is gone from the CPU offline path, we won't be able to
-depend on preempt_disable() or local_irq_disable() to prevent CPUs from
-going offline from under us.
+From: Paul E. McKenney <paul.mckenney@linaro.org>
 
-Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going offline,
-while invoking from atomic context.
+The _cpu_down() function invoked as part of the CPU-hotplug offlining
+process currently invokes __stop_machine(), which is slow and inflicts
+substantial real-time latencies on the entire system.  This patch
+substitutes stop_one_cpu() for __stop_machine() in order to improve
+both performance and real-time latency.
 
-Cc: Chris Metcalf <cmetcalf@tilera.com>
+There were a number of uses of preempt_disable() or local_irq_disable()
+that were intended to block CPU-hotplug offlining. These were fixed by
+using get/put_online_cpus_atomic(), which is the new synchronization
+primitive to prevent CPU offline, while invoking from atomic context.
+
+Signed-off-by: Paul E. McKenney <paul.mckenney@linaro.org>
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+[ srivatsa.bhat@linux.vnet.ibm.com: Refer to the new sync primitives for
+  readers (in the changelog); s/stop_cpus/stop_one_cpu and fix comment
+  referring to stop_machine in the code]
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- arch/tile/kernel/smp.c |    4 ++++
- 1 file changed, 4 insertions(+)
+ kernel/cpu.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/tile/kernel/smp.c b/arch/tile/kernel/smp.c
-index cbc73a8..fb30624 100644
---- a/arch/tile/kernel/smp.c
-+++ b/arch/tile/kernel/smp.c
-@@ -15,6 +15,7 @@
-  */
+diff --git a/kernel/cpu.c b/kernel/cpu.c
+index 58dd1df..652fb53 100644
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -337,7 +337,7 @@ static int __ref _cpu_down(unsigned int cpu, int tasks_frozen)
+ 	}
+ 	smpboot_park_threads(cpu);
  
- #include <linux/smp.h>
-+#include <linux/cpu.h>
- #include <linux/interrupt.h>
- #include <linux/io.h>
- #include <linux/irq.h>
-@@ -82,9 +83,12 @@ void send_IPI_many(const struct cpumask *mask, int tag)
- void send_IPI_allbutself(int tag)
- {
- 	struct cpumask mask;
-+
-+	get_online_cpus_atomic();
- 	cpumask_copy(&mask, cpu_online_mask);
- 	cpumask_clear_cpu(smp_processor_id(), &mask);
- 	send_IPI_many(&mask, tag);
-+	put_online_cpus_atomic();
- }
- 
- /*
+-	err = __stop_machine(take_cpu_down, &tcd_param, cpumask_of(cpu));
++	err = stop_one_cpu(cpu, take_cpu_down, &tcd_param);
+ 	if (err) {
+ 		/* CPU didn't die: tell everyone.  Can't complain. */
+ 		smpboot_unpark_threads(cpu);
+@@ -349,7 +349,7 @@ static int __ref _cpu_down(unsigned int cpu, int tasks_frozen)
+ 	/*
+ 	 * The migration_call() CPU_DYING callback will have removed all
+ 	 * runnable tasks from the cpu, there's only the idle task left now
+-	 * that the migration thread is done doing the stop_machine thing.
++	 * that the migration thread is done doing the stop_one_cpu() thing.
+ 	 *
+ 	 * Wait for the stop thread to go away.
+ 	 */
