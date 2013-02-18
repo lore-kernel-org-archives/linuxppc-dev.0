@@ -1,33 +1,33 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 15CA72C030B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:42:45 +1100 (EST)
+ (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E72D82C02B5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:42:49 +1100 (EST)
 Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Mon, 18 Feb 2013 18:09:38 +0530
+ Mon, 18 Feb 2013 18:10:03 +0530
 Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id C939EE0050
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 18:13:36 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 4AD4C394004D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 18:12:46 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
  by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1ICgacC36569160
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 18:12:36 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1ICgcpm006021
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:42:40 +1100
+ r1ICggH637879906
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 18:12:42 +0530
+Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r1ICgi66024633
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:42:45 +1100
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v6 17/46] clockevents: Use get/put_online_cpus_atomic() in
- clockevents_notify()
+Subject: [PATCH v6 18/46] softirq: Use get/put_online_cpus_atomic() to prevent
+ CPU offline
 To: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com,
  paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org,
  akpm@linux-foundation.org, namhyung@kernel.org
-Date: Mon, 18 Feb 2013 18:10:42 +0530
-Message-ID: <20130218124042.26245.92242.stgit@srivatsabhat.in.ibm.com>
+Date: Mon, 18 Feb 2013 18:10:47 +0530
+Message-ID: <20130218124047.26245.76718.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
 References: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
@@ -48,44 +48,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The cpu idle code invokes clockevents_notify() during idle state transitions
-and the cpu offline code invokes it during the CPU_DYING phase. There
-seems to be a race-condition between the two, where the clockevents_lock
-never gets released, ending in a lockup. This can be fixed by synchronizing
-clockevents_notify() with CPU offline, by wrapping its contents within
-get/put_online_cpus_atomic().
+Once stop_machine() is gone from the CPU offline path, we won't be able to
+depend on preempt_disable() or local_irq_disable() to prevent CPUs from
+going offline from under us.
 
+Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going offline,
+while invoking from atomic context.
+
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- kernel/time/clockevents.c |    3 +++
+ kernel/softirq.c |    3 +++
  1 file changed, 3 insertions(+)
 
-diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
-index 30b6de0..ca340fd 100644
---- a/kernel/time/clockevents.c
-+++ b/kernel/time/clockevents.c
-@@ -17,6 +17,7 @@
- #include <linux/module.h>
- #include <linux/notifier.h>
- #include <linux/smp.h>
-+#include <linux/cpu.h>
+diff --git a/kernel/softirq.c b/kernel/softirq.c
+index ed567ba..98c3e27 100644
+--- a/kernel/softirq.c
++++ b/kernel/softirq.c
+@@ -631,6 +631,7 @@ static void remote_softirq_receive(void *data)
  
- #include "tick-internal.h"
- 
-@@ -431,6 +432,7 @@ void clockevents_notify(unsigned long reason, void *arg)
- 	unsigned long flags;
- 	int cpu;
- 
+ static int __try_remote_softirq(struct call_single_data *cp, int cpu, int softirq)
+ {
 +	get_online_cpus_atomic();
- 	raw_spin_lock_irqsave(&clockevents_lock, flags);
- 	clockevents_do_notify(reason, arg);
+ 	if (cpu_online(cpu)) {
+ 		cp->func = remote_softirq_receive;
+ 		cp->info = cp;
+@@ -638,8 +639,10 @@ static int __try_remote_softirq(struct call_single_data *cp, int cpu, int softir
+ 		cp->priv = softirq;
  
-@@ -459,6 +461,7 @@ void clockevents_notify(unsigned long reason, void *arg)
- 		break;
+ 		__smp_call_function_single(cpu, cp, 0);
++		put_online_cpus_atomic();
+ 		return 0;
  	}
- 	raw_spin_unlock_irqrestore(&clockevents_lock, flags);
 +	put_online_cpus_atomic();
+ 	return 1;
  }
- EXPORT_SYMBOL_GPL(clockevents_notify);
- #endif
+ #else /* CONFIG_USE_GENERIC_SMP_HELPERS */
