@@ -1,32 +1,33 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8A4E82C0955
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:46:39 +1100 (EST)
+ (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CF34A2C095E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:46:47 +1100 (EST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Mon, 18 Feb 2013 22:42:06 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 6D05B357804E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:46:36 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1ICYIxj6488500
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:34:18 +1100
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1ICkYiO006934
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:46:36 +1100
+ Mon, 18 Feb 2013 18:14:56 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 6C9AAE0050
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 18:17:39 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r1ICkdFn35848332
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 18:16:39 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r1ICkeRk031392
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2013 23:46:42 +1100
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v6 44/46] cpu: No more __stop_machine() in _cpu_down()
+Subject: [PATCH v6 45/46] CPU hotplug,
+ stop_machine: Decouple CPU hotplug from stop_machine() in Kconfig
 To: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com,
  paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org,
  akpm@linux-foundation.org, namhyung@kernel.org
-Date: Mon, 18 Feb 2013 18:14:31 +0530
-Message-ID: <20130218124431.26245.10956.stgit@srivatsabhat.in.ibm.com>
+Date: Mon, 18 Feb 2013 18:14:43 +0530
+Message-ID: <20130218124443.26245.34919.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
 References: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
@@ -47,49 +48,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Paul E. McKenney <paul.mckenney@linaro.org>
+Simply dropping HOTPLUG_CPU from the dependency list of STOP_MACHINE will
+lead to the following kconfig issue, reported by Fengguang Wu:
 
-The _cpu_down() function invoked as part of the CPU-hotplug offlining
-process currently invokes __stop_machine(), which is slow and inflicts
-substantial real-time latencies on the entire system.  This patch
-substitutes stop_one_cpu() for __stop_machine() in order to improve
-both performance and real-time latency.
+"warning: (HAVE_TEXT_POKE_SMP) selects STOP_MACHINE which has unmet direct
+dependencies (SMP && MODULE_UNLOAD)"
 
-There were a number of uses of preempt_disable() or local_irq_disable()
-that were intended to block CPU-hotplug offlining. These were fixed by
-using get/put_online_cpus_atomic(), which is the new synchronization
-primitive to prevent CPU offline, while invoking from atomic context.
+So drop HOTPLUG_CPU and add HAVE_TEXT_POKE_SMP to the dependency list of
+STOP_MACHINE.
 
-Signed-off-by: Paul E. McKenney <paul.mckenney@linaro.org>
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-[ srivatsa.bhat@linux.vnet.ibm.com: Refer to the new sync primitives for
-  readers (in the changelog); s/stop_cpus/stop_one_cpu and fix comment
-  referring to stop_machine in the code]
+And while at it, also cleanup a comment that refers to CPU hotplug being
+dependent on stop_machine().
+
+Cc: David Howells <dhowells@redhat.com>
+Reported-by: Fengguang Wu <fengguang.wu@intel.com>
+Suggested-by: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
 
- kernel/cpu.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ include/linux/stop_machine.h |    2 +-
+ init/Kconfig                 |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/cpu.c b/kernel/cpu.c
-index 58dd1df..652fb53 100644
---- a/kernel/cpu.c
-+++ b/kernel/cpu.c
-@@ -337,7 +337,7 @@ static int __ref _cpu_down(unsigned int cpu, int tasks_frozen)
- 	}
- 	smpboot_park_threads(cpu);
+diff --git a/include/linux/stop_machine.h b/include/linux/stop_machine.h
+index 3b5e910..ce2d3c4 100644
+--- a/include/linux/stop_machine.h
++++ b/include/linux/stop_machine.h
+@@ -120,7 +120,7 @@ int stop_machine(int (*fn)(void *), void *data, const struct cpumask *cpus);
+  * @cpus: the cpus to run the @fn() on (NULL = any online cpu)
+  *
+  * Description: This is a special version of the above, which assumes cpus
+- * won't come or go while it's being called.  Used by hotplug cpu.
++ * won't come or go while it's being called.
+  */
+ int __stop_machine(int (*fn)(void *), void *data, const struct cpumask *cpus);
  
--	err = __stop_machine(take_cpu_down, &tcd_param, cpumask_of(cpu));
-+	err = stop_one_cpu(cpu, take_cpu_down, &tcd_param);
- 	if (err) {
- 		/* CPU didn't die: tell everyone.  Can't complain. */
- 		smpboot_unpark_threads(cpu);
-@@ -349,7 +349,7 @@ static int __ref _cpu_down(unsigned int cpu, int tasks_frozen)
- 	/*
- 	 * The migration_call() CPU_DYING callback will have removed all
- 	 * runnable tasks from the cpu, there's only the idle task left now
--	 * that the migration thread is done doing the stop_machine thing.
-+	 * that the migration thread is done doing the stop_one_cpu() thing.
- 	 *
- 	 * Wait for the stop thread to go away.
- 	 */
+diff --git a/init/Kconfig b/init/Kconfig
+index be8b7f5..f4f79af 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -1711,7 +1711,7 @@ config INIT_ALL_POSSIBLE
+ config STOP_MACHINE
+ 	bool
+ 	default y
+-	depends on (SMP && MODULE_UNLOAD) || HOTPLUG_CPU
++	depends on (SMP && (MODULE_UNLOAD || HAVE_TEXT_POKE_SMP))
+ 	help
+ 	  Need stop_machine() primitive.
+ 
