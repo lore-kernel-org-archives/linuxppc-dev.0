@@ -1,24 +1,25 @@
 Return-Path: <B11780@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 99F7D2C0292
- for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2013 03:01:13 +1100 (EST)
-Received: from mail121-co1 (localhost [127.0.0.1])	by
- mail121-co1-R.bigfish.com (Postfix) with ESMTP id 0EB857C0237	for
- <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2013 16:01:10 +0000 (UTC)
-Received: from CO1EHSMHS004.bigfish.com (unknown [10.243.78.197])	by
- mail121-co1.bigfish.com (Postfix) with ESMTP id 51124A40129	for
- <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2013 16:01:07 +0000 (UTC)
+ by ozlabs.org (Postfix) with ESMTPS id D2FC72C0389
+ for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2013 03:01:32 +1100 (EST)
+Received: from mail17-va3 (localhost [127.0.0.1])	by mail17-va3-R.bigfish.com
+ (Postfix) with ESMTP id 29119200205	for <linuxppc-dev@ozlabs.org>;
+ Tue, 19 Feb 2013 16:01:30 +0000 (UTC)
+Received: from VA3EHSMHS022.bigfish.com (unknown [10.7.14.235])	by
+ mail17-va3.bigfish.com (Postfix) with ESMTP id 52BD5420058	for
+ <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2013 16:01:29 +0000 (UTC)
 From: Gala Kumar-B11780 <B11780@freescale.com>
-To: Liu Po-B43644 <B43644@freescale.com>
-Subject: Re: [PATCH] powerpc/85xx: dts - add ranges property for SEC
-Date: Tue, 19 Feb 2013 16:01:03 +0000
-Message-ID: <CF1EE7AED478CD48A05574C8E2DA142D72B420@039-SN1MPN1-005.039d.mgd.msft.net>
-References: <1361233746-19106-1-git-send-email-po.liu@freescale.com>
-In-Reply-To: <1361233746-19106-1-git-send-email-po.liu@freescale.com>
+To: Rai Harninder-B01044 <B01044@freescale.com>
+Subject: Re: [PATCH] bsc913x:defconfig: Add new defconfig file for BSC913x
+ platforms
+Date: Tue, 19 Feb 2013 16:01:25 +0000
+Message-ID: <CF1EE7AED478CD48A05574C8E2DA142D72B42C@039-SN1MPN1-005.039d.mgd.msft.net>
+References: <1361265290-28206-1-git-send-email-harninder.rai@freescale.com>
+In-Reply-To: <1361265290-28206-1-git-send-email-harninder.rai@freescale.com>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Cc: "<linuxppc-dev@ozlabs.org>" <linuxppc-dev@ozlabs.org>
@@ -32,18 +33,23 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Feb 18, 2013, at 6:29 PM, Po Liu wrote:
+On Feb 19, 2013, at 3:14 AM, Harninder Rai wrote:
 
-> This facilitates getting the physical address of the SEC node.
+> BSC913x are heterogeneous platforms having DSP and PowerPC.
+> * Lot of new IPs like AIC (Antenna Interface Controller), RF (radio) etc
+> * Such IPs are not present in any other 85xx platform
+> * Lot of optimizations related to ethernet/ASF (Application Specific Fast=
+path)
+>  are enabled in this config
+> * IPC for inter-domain communication (DSP and PA) is present
 >=20
-> Signed-off-by: Liu po <po.liu@freescale.com>
+> Signed-off-by: Harninder Rai <harninder.rai@freescale.com>
 > ---
-> arch/powerpc/boot/dts/fsl/pq3-sec4.4-0.dtsi |    1 +
-> 1 files changed, 1 insertions(+), 0 deletions(-)
+> arch/powerpc/configs/qoriq_sdk_asf_term_defconfig |  209 ++++++++++++++++=
++++++
+> 1 files changed, 209 insertions(+), 0 deletions(-)
+> create mode 100644 arch/powerpc/configs/qoriq_sdk_asf_term_defconfig
 
-Why are you reposting this, I already applied it:
-
-http://git.kernel.org/?p=3Dlinux/kernel/git/galak/powerpc.git;a=3Dcommit;h=
-=3Ddb29cd3c4497e7edf9176284ba7cf3cec1814c7a
+I'm ignoring this as this is clearly meant for FSL SDK and not upstream.
 
 - k=
