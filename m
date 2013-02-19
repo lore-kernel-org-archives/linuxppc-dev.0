@@ -1,46 +1,19 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+Return-Path: <phileas-fogg@mail.ru>
+Received: from smtp26.mail.ru (smtp26.mail.ru [94.100.176.179])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 77CB32C0085
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2013 05:31:38 +1100 (EST)
-Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 19 Feb 2013 23:59:36 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 34128E0053
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2013 00:02:21 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1JIVLwR31719448
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2013 00:01:21 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1JIVLmm012840
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2013 05:31:23 +1100
-Message-ID: <5123C482.5070704@linux.vnet.ibm.com>
-Date: Tue, 19 Feb 2013 23:59:22 +0530
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 5E11B2C008E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2013 05:54:15 +1100 (EST)
+Message-ID: <5123D864.4060503@mail.ru>
+Date: Tue, 19 Feb 2013 20:54:12 +0100
+From: Phileas Fogg <phileas-fogg@mail.ru>
 MIME-Version: 1.0
-To: Konrad Rzeszutek Wilk <konrad@kernel.org>
-Subject: Re: [PATCH v5 29/45] x86/xen: Use get/put_online_cpus_atomic() to
- prevent CPU offline
-References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
- <20130122074046.13822.61950.stgit@srivatsabhat.in.ibm.com>
- <20130219181038.GB18244@phenom.dumpdata.com>
-In-Reply-To: <20130219181038.GB18244@phenom.dumpdata.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
- linux-kernel@vger.kernel.org, mingo@kernel.org, linux-arch@vger.kernel.org,
- linux@arm.linux.org.uk, xiaoguangrong@linux.vnet.ibm.com,
- wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com,
- nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au,
- rostedt@goodmis.org, rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
- linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com,
- sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+To: Phileas Fogg <phileas-fogg@mail.ru>
+Subject: Re: PS3: Strange issue with kexec and FreeBSD loader
+References: <1360365046.495584377@f356.mail.ru> <5123C729.5040607@mail.ru>
+In-Reply-To: <5123C729.5040607@mail.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,47 +23,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/19/2013 11:40 PM, Konrad Rzeszutek Wilk wrote:
-> On Tue, Jan 22, 2013 at 01:10:51PM +0530, Srivatsa S. Bhat wrote:
->> Once stop_machine() is gone from the CPU offline path, we won't be able to
->> depend on preempt_disable() or local_irq_disable() to prevent CPUs from
->> going offline from under us.
->>
->> Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going offline,
->> while invoking from atomic context.
->>
->> Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-> 
-> Weird. I see this in the patch but I don't see it in the header?
-
-Meaning, you didn't get this email at all?
-
-> Did you
-> explicitly suppress the CC part?
-> 
-
-No.. I sent the entire patchset to a set of email ids and in addition to
-that I CC'ed individual patches to the respective maintainers/lists (the
-CC: list in the changelog). I used the --auto knob from stgit to do that.
-
-> 
-> Anyhow, the patch looks sane enough, thought I need to to run it through
-> a test framework just to be on a sure side.
+Phileas Fogg wrote:
+> I could finally find the commit which broke FreeBSD booting in linux-stable.git
+> repository.
+> The Linux 3.4-rc1 seems to have this problem already.
 >
+> --------------
+> commit 5375871d432ae9fc581014ac117b96aaee3cd0c7
+> Merge: b57cb72 dfbc2d7
+> Author: Linus Torvalds <torvalds@linux-foundation.org>
+> Date:   Wed Mar 21 18:55:10 2012 -0700
+>
+>      Merge branch 'next' of
+> git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc
+>
+>      Pull powerpc merge from Benjamin Herrenschmidt:
+>       "Here's the powerpc batch for this merge window.  It is going to be a
+>        bit more nasty than usual as in touching things outside of
+>        arch/powerpc mostly due to the big iSeriesectomy :-) We finally got
+>        rid of the bugger (legacy iSeries support) which was a PITA to
+>        maintain and that nobody really used anymore.
+>
+>        Here are some of the highlights:
+>
+>         - Legacy iSeries is gone.  Thanks Stephen ! There's still some bits
+>           and pieces remaining if you do a grep -ir series arch/powerpc but
+>           they are harmless and will be removed in the next few weeks
+>           hopefully.
+>
+>         - The 'fadump' functionality (Firmware Assisted Dump) replaces the
+>           previous (equivalent) "pHyp assisted dump"...  it's a rewrite of a
+>           mechanism to get the hypervisor to do crash dumps on pSeries, the
+>           new implementation hopefully being much more reliable.  Thanks
+>           Mahesh Salgaonkar.
+>
+>         - The "EEH" code (pSeries PCI error handling & recovery) got a big
+>           spring cleaning, motivated by the need to be able to implement a
+>           new backend for it on top of some new different type of firwmare.
+>
+>           The work isn't complete yet, but a good chunk of the cleanups is
+>           there.  Note that this adds a field to struct device_node which is
+>           not very nice and which Grant objects to.  I will have a patch soon
+>           that moves that to a powerpc private data structure (hopefully
+>           before rc1) and we'll improve things further later on (hopefully
+>           getting rid of the need for that pointer completely).  Thanks Gavin
+>           Shan.
+>
+>         - I dug into our exception & interrupt handling code to improve the
+>           way we do lazy interrupt handling (and make it work properly with
+>           "edge" triggered interrupt sources), and while at it found & fixed
+>           a wagon of issues in those areas, including adding support for page
+>           fault retry & fatal signals on page faults.
+>
+>         - Your usual random batch of small fixes & updates, including a bunch
+>           of new embedded boards, both Freescale and APM based ones, etc..."
+>
+>      I fixed up some conflicts with the generalized irq-domain changes from
+>      Grant Likely, hopefully correctly.
+>
+>      * 'next' of git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc:
+> (141 commits)
+>        powerpc/ps3: Do not adjust the wrapper load address
+>        powerpc: Remove the rest of the legacy iSeries include files
+>        powerpc: Remove the remaining CONFIG_PPC_ISERIES pieces
+>        init: Remove CONFIG_PPC_ISERIES
+>        powerpc: Remove FW_FEATURE ISERIES from arch code
+>        tty/hvc_vio: FW_FEATURE_ISERIES is no longer selectable
+>        powerpc/spufs: Fix double unlocks
+>        powerpc/5200: convert mpc5200 to use of_platform_populate()
+>        powerpc/mpc5200: add options to mpc5200_defconfig
+>        powerpc/mpc52xx: add a4m072 board support
+>        powerpc/mpc5200: update mpc5200_defconfig to fit for charon board
+>        Documentation/powerpc/mpc52xx.txt: Checkpatch cleanup
+>        powerpc/44x: Add additional device support for APM821xx SoC and Bluestone
+> board
+>        powerpc/44x: Add support PCI-E for APM821xx SoC and Bluestone board
+>        MAINTAINERS: Update PowerPC 4xx tree
+>        powerpc/44x: The bug fixed support for APM821xx SoC and Bluestone board
+>        powerpc: document the FSL MPIC message register binding
+>        powerpc: add support for MPIC message register API
+>        powerpc/fsl: Added aliased MSIIR register address to MSI node in dts
+>        powerpc/85xx: mpc8548cds - add 36-bit dts
+>        ...
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
 
-Sure, thank you. But you might want to test the v6 that I sent out
-yesterday instead of v5. Oh, wait a min, you didn't get the v6 mail also?
+Reverting this commit fixes the problem with SHA256 checkusm in the purgatory 
+code too. I'm trying to find out which commit exactly caused the problem.
 
-Here it is, for your reference:
-http://marc.info/?l=linux-kernel&m=136119260122255&w=2
-
-Regards,
-Srivatsa S. Bhat
-
->> Cc: Jeremy Fitzhardinge <jeremy@goop.org>
->> Cc: "H. Peter Anvin" <hpa@zytor.com>
->> Cc: x86@kernel.org
->> Cc: xen-devel@lists.xensource.com
->> Cc: virtualization@lists.linux-foundation.org
->> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
->> ---
+regards
