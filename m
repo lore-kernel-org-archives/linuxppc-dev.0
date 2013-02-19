@@ -1,30 +1,23 @@
-Return-Path: <jgunthorpe@obsidianresearch.com>
-Received: from quartz.orcorp.ca (quartz.orcorp.ca [184.70.90.242])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 950482C0090
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2013 06:03:58 +1100 (EST)
-Date: Tue, 19 Feb 2013 12:03:35 -0700
-From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 2/2] of: use platform_device_add
-Message-ID: <20130219190335.GA6024@obsidianresearch.com>
-References: <1358473200-17886-1-git-send-email-grant.likely@secretlab.ca>
- <1358473200-17886-2-git-send-email-grant.likely@secretlab.ca>
- <20130217030331.GA15048@S2101-09.ap.freescale.net>
- <20130217074317.GB16632@S2101-09.ap.freescale.net>
- <20130217101958.GR17833@n2100.arm.linux.org.uk>
- <CACxGe6sJfRZ4AaDDtoQv6c-xOdB6-=cCJSn6fKawB0ULnzQFoA@mail.gmail.com>
+Return-Path: <B07421@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D7B3D2C0099
+ for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2013 06:48:06 +1100 (EST)
+Date: Tue, 19 Feb 2013 13:47:58 -0600
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH][RFC] Replaced tlbilx with tlbwe in the initialization code
+To: Diana Craciun <diana.craciun@freescale.com>
+References: <1360846595-3397-1-git-send-email-diana.craciun@freescale.com>
+ <1360887119.22260.10.camel@pasglop> <511E513F.7090103@freescale.com>
+In-Reply-To: <511E513F.7090103@freescale.com> (from
+ diana.craciun@freescale.com on Fri Feb 15 09:16:15 2013)
+Message-ID: <1361303278.29654.7@snotra>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CACxGe6sJfRZ4AaDDtoQv6c-xOdB6-=cCJSn6fKawB0ULnzQFoA@mail.gmail.com>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Rob Herring <rob.herring@calxeda.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Shawn Guo <shawn.guo@linaro.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,61 +27,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Feb 17, 2013 at 10:49:08AM +0000, Grant Likely wrote:
-> > > The patch introduce a regression on imx6q boot.  The IOMUXC block on
-> > > imx6q is special.  It acts not only a pin controller but also a system
-> > > controller with a bunch of system level registers in there.  That's why
-> > > we currently have the following two nodes in imx6q device tree with the
-> > > same start "reg" address, which work with drivers/mfd/syscon.c and
-> > > drivers/pinctrl/pinctrl-imx6q.c respectively.
-> > >
-> > >         gpr: iomuxc-gpr@020e0000 {
-> > >                 compatible = "fsl,imx6q-iomuxc-gpr", "syscon";
-> > >                 reg = <0x020e0000 0x38>;
-> > >         };
-> > >
-> > >         iomuxc: iomuxc@020e0000 {
-> > >                 compatible = "fsl,imx6q-iomuxc";
-> > >                 reg = <0x020e0000 0x4000>;
-> > >         };
-> > >
-> > > With the patch in place, pinctrl-imx6q fails to register like below.
-> > >
-> > > syscon 20e0000.iomuxc: syscon regmap start 0x20e0000 end 0x20e3fff registered
-> > > imx6q-pinctrl 20e0000.iomuxc: can't request region for resource [mem 0x020e0000-0x020e3fff]
-> > > imx6q-pinctrl: probe of 20e0000.iomuxc failed with error -16
-> 
-> Strictly you're not supposed to do that with the device tree. There
-> shouldn't be two nodes using the same overlapping memory region unless
-> they are parent/child. That rule has been around for a long time, but
-> the core never checked for it. What /should/ happen is the two drivers
-> should be cooperating for the register region and only one device
-> driver probe sets up both behaviours.
+On 02/15/2013 09:16:15 AM, Diana Craciun wrote:
+> On 02/15/2013 02:11 AM, Benjamin Herrenschmidt wrote:
+>> On Thu, 2013-02-14 at 14:56 +0200, Diana Craciun wrote:
+>>> From: Diana Craciun <Diana.Craciun@freescale.com>
+>>>=20
+>>> On Freescale e6500 cores EPCR[DGTMI] controls whether guest =20
+>>> supervisor
+>>> state can execute TLB management instructions. If EPCR[DGTMI]=3D0
+>>> tlbwe and tlbilx are allowed to execute normally in the guest state.
+>>>=20
+>>> A hypervisor may choose to virtualize TLB1 and for this purpose it
+>>> may use IPROT to protect the entries for being invalidated by the
+>>> guest. However, because tlbwe and tlbilx execution in the guest =20
+>>> state
+>>> are sharing the same bit, it is not possible to have a scenario =20
+>>> where
+>>> tlbwe is allowed to be executed in guest state and tlbilx traps. =20
+>>> When
+>>> guest TLB management instructions are allowed to be executed in =20
+>>> guest
+>>> state the guest cannot use tlbilx to invalidate TLB1 guest entries.
+>> Sorry, I don't understand the explanation... can you be more =20
+>> detailed ?
+>=20
+> TLB1 supports huge page sizes. The guest may see the memory as =20
+> contiguous but it sees the guest physical memory as presented by the =20
+> hypervisor. In reality the real physical memory may be fragmented. In =20
+> this case the hypervisor can add more than one TLB1 entry for one =20
+> guest request and the hypervisor will keep track of all fragments. =20
+> When the guest performs a tlbilx, the hypervisor will correctly =20
+> invalidate all the corresponding fragments because both tlbwe and =20
+> tlbilx trap and has full control of tlb management instructions =20
+> targeting TLB1.
+>=20
+> For e6500 a single bit controls if tlbwe and tlbilx trap to the =20
+> Hypervisor. tlbwe targeting TLB1 always traps. But if we want to use =20
+> LRAT for TLB0, we have to configure tlbwe (targeting TLB 0) to go =20
+> directly to the guest. But in this case tlbilx (which is targeting =20
+> both TLBs) will never trap.
+>=20
+> If the tlbilx does not trap, the guest can invalidate only one of =20
+> (possible more) fragments and furthermore the synchronization between =20
+> what entries the hypervisor thinks there are in the TLB1 and what are =20
+> the actual entries is lost.
 
-This case was something we both discussed when this patch was first
-brough up, and both our tests seemed like it was OK.. What is going on
-here that these non-staggered regions are failing? It looks like the
-platform devices registered but the devm_request_and_iormap failed?
+This patch addresses boot-time invalidations only.  How will you handle =20
+hugetlb invalidations (or indirect entry invalidations, once that =20
+becomes supported)?
 
-> >> It also breaks all of_amba_device users.
-> >>
-> >> of_amba_device_create() --> amba_device_add() --> request_resource()
-> >> and fails.
-> >
-> > Presumably that's because we no longer know what the parent resource
-> > is supposed to be?
-> 
-> Hmmm, it looks that way, yes. Currently the OF code is using
-> iomem_resource as the parent for all amba_device_add() calls
-> (driver/of/platform.c), but if the parent node gets registered as a
-> platform device and it has the resources then the parenthood chain
-> doesn't match up. It isn't immediately obvious to me how to fix this.
-> I'm going to drop the patch from my tree. I could use some help
-> figuring out what the correct behaviour really should be here.
-
-I looked for a bit and it wasn't obvious to me where the colliding
-request_resource was coming from. The DTs for amba busses seem to all
-be placed under the root node, or within a simple bus, so there is not
-parent platform device and the use of iomem_resource should still be OK?
-
-Jason
+-Scott=
