@@ -1,49 +1,38 @@
-Return-Path: <vincent.guittot@linaro.org>
-Received: from mail-bk0-f45.google.com (mail-bk0-f45.google.com
- [209.85.214.45])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6E2162C0293
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2013 21:33:47 +1100 (EST)
-Received: by mail-bk0-f45.google.com with SMTP id i18so2965565bkv.32
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2013 02:33:43 -0800 (PST)
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by ozlabs.org (Postfix) with SMTP id 9003B2C0077
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2013 21:44:01 +1100 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 09560-04 for <linuxppc-dev@lists.ozlabs.org>;
+ Tue, 19 Feb 2013 10:43:55 +0000 (GMT)
 MIME-Version: 1.0
-In-Reply-To: <1361217204.23152.171.camel@gandalf.local.home>
-References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
- <510FBC01.2030405@linux.vnet.ibm.com>
- <87haloiwv0.fsf@rustcorp.com.au>
- <51134596.4080106@linux.vnet.ibm.com>
- <20130208154113.GV17833@n2100.arm.linux.org.uk>
- <51152B81.2050501@linux.vnet.ibm.com>
- <51153F72.1060005@linux.vnet.ibm.com>
- <CAKfTPtCe+cD7LLkb+D6pqG1SwG2V08ws=4XO3ttHEHV2qgmqPg@mail.gmail.com>
- <5118E2CD.90401@linux.vnet.ibm.com>
- <20130211190852.GA5695@linux.vnet.ibm.com>
- <5119BDFD.1000909@linux.vnet.ibm.com>
- <CAKfTPtAo2hQTfBKTVUuLKgsGJ2ZLD0UTR3fH9UFuJwyFt4n__w@mail.gmail.com>
- <511E8F3C.2010406@linux.vnet.ibm.com>
- <CAKfTPtD=2jn1AVjuhVP1ot7_8x9-W4==hNGZET5N9tRE7gtyMw@mail.gmail.com>
- <512203B3.7090002@linux.vnet.ibm.com>
- <512207A6.4000402@linux.vnet.ibm.com>
- <CAKfTPtA1aTseD6Gntkf_zbCEbfZzt3P2-P1un6iF5_1TdVLjRQ@mail.gmail.com>
- <1361201422.23152.154.camel@gandalf.local.home>
- <CAKfTPtC4hbXXWO=_zsGYryM9hpWaGFLbiY+jiLf=koLa4xGJOQ@mail.gmail.com>
- <1361217204.23152.171.camel@gandalf.local.home>
-Date: Tue, 19 Feb 2013 11:33:42 +0100
-Message-ID: <CAKfTPtBRv8ffewiXP0740YRn6TxmKOLS5Tzo=a98=60vAqyBEw@mail.gmail.com>
-Subject: Re: [PATCH v5 00/45] CPU hotplug: stop_machine()-free CPU hotplug
-From: Vincent Guittot <vincent.guittot@linaro.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+	charset="Windows-1252"
+Subject: RE: [PATCH v6 08/46] CPU hotplug: Provide APIs to prevent CPU offline
+ from atomic context
+Date: Tue, 19 Feb 2013 10:42:53 -0000
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B7154@saturn3.aculab.com>
+In-Reply-To: <51234C23.2030909@linux.vnet.ibm.com>
+References: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
+ <20130218123920.26245.56709.stgit@srivatsabhat.in.ibm.com>
+ <CANN689HhVxDv+3Bn9UAxOMzj0egTvVp_c7oAmQ2nnQ8Xjn_aMA@mail.gmail.com>
+ <51225A36.40600@linux.vnet.ibm.com>
+ <CANN689FJPLfz06MFRJ9T+BuToejAzjYP_yrw_H4iGi1Kb3p2-g@mail.gmail.com>
+ <51227810.6090009@linux.vnet.ibm.com>
+ <CANN689E-98zK69pGeojbm30n3sswQYVBvhk3i3OzqvbeqSrSrg@mail.gmail.com>
+ <51234C23.2030909@linux.vnet.ibm.com>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
+ "Michel Lespinasse" <walken@google.com>
 Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
- linux-kernel@vger.kernel.org, walken@google.com, mingo@kernel.org,
- linux-arch@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>,
- xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
- paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
- linux-pm@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>, rjw@sisk.pl,
- namhyung@kernel.org, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org,
- netdev@vger.kernel.org, oleg@redhat.com, sbw@mit.edu,
- "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, tj@kernel.org,
+ linux-kernel@vger.kernel.org, mingo@kernel.org, linux-arch@vger.kernel.org,
+ linux@arm.linux.org.uk, xiaoguangrong@linux.vnet.ibm.com,
+ wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com,
+ nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au,
+ rostedt@goodmis.org, rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
+ linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com,
+ vincent.guittot@linaro.org, sbw@mit.edu, tj@kernel.org,
  akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -54,43 +43,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 18 February 2013 20:53, Steven Rostedt <rostedt@goodmis.org> wrote:
-> On Mon, 2013-02-18 at 17:50 +0100, Vincent Guittot wrote:
->
->> yes for sure.
->> The problem is more linked to cpuidle and function tracer.
->>
->> cpu hotplug and function tracer work when cpuidle is disable.
->> cpu hotplug and cpuidle works if i don't enable function tracer.
->> my platform is dead as soon as I enable function tracer if cpuidle is
->> enabled. It looks like some notrace are missing in my platform driver
->> but we haven't completely fix the issue yet
->>
->
-> You can bisect to find out exactly what function is the problem:
->
->  cat /debug/tracing/available_filter_functions > t
->
-> f(t) {
->  num=`wc -l t`
->  sed -ne "1,${num}p" t > t1
->  let num=num+1
->  sed -ne "${num},$p" t > t2
->
->  cat t1 > /debug/tracing/set_ftrace_filter
->  # note this may take a long time to finish
->
->  echo function > /debug/tracing/current_tracer
->
->  <failed? bisect f(t1), if not bisect f(t2)>
-> }
->
+> I wouldn't go that far... ;-) Unfairness is not a show-stopper right?
+> IMHO, the warning/documentation should suffice for anybody wanting to
+> try out this locking scheme for other use-cases.
 
-Thanks, i'm going to have a look
+I presume that by 'fairness' you mean 'write preference'?
 
-Vincent
+I'd not sure how difficult it would be, but maybe have two functions
+for acquiring the lock for read, one blocks if there is a writer
+waiting, the other doesn't.
 
-> -- Steve
->
->
->
+That way you can change the individual call sites separately.
+
+The other place I can imagine a per-cpu rwlock being used
+is to allow a driver to disable 'sleep' or software controlled
+hardware removal while it performs a sequence of operations.
+
+	David
