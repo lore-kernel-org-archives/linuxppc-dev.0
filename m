@@ -1,25 +1,27 @@
-Return-Path: <STFD002@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
+Return-Path: <B11780@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 46E9C2C0092
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2013 02:59:52 +1100 (EST)
-Message-ID: <5123A169.9060100@freescale.com>
-Date: Tue, 19 Feb 2013 17:59:37 +0200
-From: Diana Craciun <diana.craciun@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 99F7D2C0292
+ for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2013 03:01:13 +1100 (EST)
+Received: from mail121-co1 (localhost [127.0.0.1])	by
+ mail121-co1-R.bigfish.com (Postfix) with ESMTP id 0EB857C0237	for
+ <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2013 16:01:10 +0000 (UTC)
+Received: from CO1EHSMHS004.bigfish.com (unknown [10.243.78.197])	by
+ mail121-co1.bigfish.com (Postfix) with ESMTP id 51124A40129	for
+ <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2013 16:01:07 +0000 (UTC)
+From: Gala Kumar-B11780 <B11780@freescale.com>
+To: Liu Po-B43644 <B43644@freescale.com>
+Subject: Re: [PATCH] powerpc/85xx: dts - add ranges property for SEC
+Date: Tue, 19 Feb 2013 16:01:03 +0000
+Message-ID: <CF1EE7AED478CD48A05574C8E2DA142D72B420@039-SN1MPN1-005.039d.mgd.msft.net>
+References: <1361233746-19106-1-git-send-email-po.liu@freescale.com>
+In-Reply-To: <1361233746-19106-1-git-send-email-po.liu@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: Varun Sethi <Varun.Sethi@freescale.com>
-Subject: Re: [PATCH 6/6 v8] iommu/fsl: Freescale PAMU driver and IOMMU API
- implementation.
-References: <1361191939-21260-1-git-send-email-Varun.Sethi@freescale.com>
- <1361191939-21260-7-git-send-email-Varun.Sethi@freescale.com>
-In-Reply-To: <1361191939-21260-7-git-send-email-Varun.Sethi@freescale.com>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: joro@8bytes.org, stuart.yoder@freescale.com, linux-kernel@vger.kernel.org,
- iommu@lists.linux-foundation.org, scottwood@freescale.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: "<linuxppc-dev@ozlabs.org>" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,26 +31,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/18/2013 02:52 PM, Varun Sethi wrote:
-> +/**
-> + * pamu_get_ppaace() - Return the primary PACCE
-> + * @liodn: liodn PAACT index for desired PAACE
-> + *
-> + * Returns the ppace pointer upon success else return
-> + * null.
-> + */
-> +static struct paace *pamu_get_ppaace(int liodn)
-> +{
-> +	if (!ppaact || liodn > PAACE_NUMBER_ENTRIES) {
 
-Shouldn't be "liodn >= PAACE_NUMBER_ENTRIES" ?
+On Feb 18, 2013, at 6:29 PM, Po Liu wrote:
 
-> +		pr_err("PPAACT doesn't exist\n");
-> +		return NULL;
-> +	}
-> +
-> +	return &ppaact[liodn];
-> +}
-> +
+> This facilitates getting the physical address of the SEC node.
+>=20
+> Signed-off-by: Liu po <po.liu@freescale.com>
+> ---
+> arch/powerpc/boot/dts/fsl/pq3-sec4.4-0.dtsi |    1 +
+> 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Diana
+Why are you reposting this, I already applied it:
+
+http://git.kernel.org/?p=3Dlinux/kernel/git/galak/powerpc.git;a=3Dcommit;h=
+=3Ddb29cd3c4497e7edf9176284ba7cf3cec1814c7a
+
+- k=
