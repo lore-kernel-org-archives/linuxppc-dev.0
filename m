@@ -1,23 +1,33 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D7B3D2C0099
- for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2013 06:48:06 +1100 (EST)
-Date: Tue, 19 Feb 2013 13:47:58 -0600
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH][RFC] Replaced tlbilx with tlbwe in the initialization code
-To: Diana Craciun <diana.craciun@freescale.com>
-References: <1360846595-3397-1-git-send-email-diana.craciun@freescale.com>
- <1360887119.22260.10.camel@pasglop> <511E513F.7090103@freescale.com>
-In-Reply-To: <511E513F.7090103@freescale.com> (from
- diana.craciun@freescale.com on Fri Feb 15 09:16:15 2013)
-Message-ID: <1361303278.29654.7@snotra>
+Return-Path: <ketuzsezr@gmail.com>
+Received: from mail-vb0-f52.google.com (mail-vb0-f52.google.com
+ [209.85.212.52])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6EC862C007A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2013 05:10:47 +1100 (EST)
+Received: by mail-vb0-f52.google.com with SMTP id fa15so4332331vbb.25
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2013 10:10:43 -0800 (PST)
+Sender: Konrad Rzeszutek <ketuzsezr@gmail.com>
+Date: Tue, 19 Feb 2013 13:10:39 -0500
+From: Konrad Rzeszutek Wilk <konrad@kernel.org>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH v5 29/45] x86/xen: Use get/put_online_cpus_atomic() to
+ prevent CPU offline
+Message-ID: <20130219181038.GB18244@phenom.dumpdata.com>
+References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
+ <20130122074046.13822.61950.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130122074046.13822.61950.stgit@srivatsabhat.in.ibm.com>
+Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
+ linux-kernel@vger.kernel.org, mingo@kernel.org, linux-arch@vger.kernel.org,
+ linux@arm.linux.org.uk, xiaoguangrong@linux.vnet.ibm.com,
+ wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com,
+ nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au,
+ rostedt@goodmis.org, rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
+ linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com,
+ sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,53 +37,142 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/15/2013 09:16:15 AM, Diana Craciun wrote:
-> On 02/15/2013 02:11 AM, Benjamin Herrenschmidt wrote:
->> On Thu, 2013-02-14 at 14:56 +0200, Diana Craciun wrote:
->>> From: Diana Craciun <Diana.Craciun@freescale.com>
->>>=20
->>> On Freescale e6500 cores EPCR[DGTMI] controls whether guest =20
->>> supervisor
->>> state can execute TLB management instructions. If EPCR[DGTMI]=3D0
->>> tlbwe and tlbilx are allowed to execute normally in the guest state.
->>>=20
->>> A hypervisor may choose to virtualize TLB1 and for this purpose it
->>> may use IPROT to protect the entries for being invalidated by the
->>> guest. However, because tlbwe and tlbilx execution in the guest =20
->>> state
->>> are sharing the same bit, it is not possible to have a scenario =20
->>> where
->>> tlbwe is allowed to be executed in guest state and tlbilx traps. =20
->>> When
->>> guest TLB management instructions are allowed to be executed in =20
->>> guest
->>> state the guest cannot use tlbilx to invalidate TLB1 guest entries.
->> Sorry, I don't understand the explanation... can you be more =20
->> detailed ?
->=20
-> TLB1 supports huge page sizes. The guest may see the memory as =20
-> contiguous but it sees the guest physical memory as presented by the =20
-> hypervisor. In reality the real physical memory may be fragmented. In =20
-> this case the hypervisor can add more than one TLB1 entry for one =20
-> guest request and the hypervisor will keep track of all fragments. =20
-> When the guest performs a tlbilx, the hypervisor will correctly =20
-> invalidate all the corresponding fragments because both tlbwe and =20
-> tlbilx trap and has full control of tlb management instructions =20
-> targeting TLB1.
->=20
-> For e6500 a single bit controls if tlbwe and tlbilx trap to the =20
-> Hypervisor. tlbwe targeting TLB1 always traps. But if we want to use =20
-> LRAT for TLB0, we have to configure tlbwe (targeting TLB 0) to go =20
-> directly to the guest. But in this case tlbilx (which is targeting =20
-> both TLBs) will never trap.
->=20
-> If the tlbilx does not trap, the guest can invalidate only one of =20
-> (possible more) fragments and furthermore the synchronization between =20
-> what entries the hypervisor thinks there are in the TLB1 and what are =20
-> the actual entries is lost.
+On Tue, Jan 22, 2013 at 01:10:51PM +0530, Srivatsa S. Bhat wrote:
+> Once stop_machine() is gone from the CPU offline path, we won't be able to
+> depend on preempt_disable() or local_irq_disable() to prevent CPUs from
+> going offline from under us.
+> 
+> Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going offline,
+> while invoking from atomic context.
+> 
+> Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
 
-This patch addresses boot-time invalidations only.  How will you handle =20
-hugetlb invalidations (or indirect entry invalidations, once that =20
-becomes supported)?
+Weird. I see this in the patch but I don't see it in the header? Did you
+explicitly suppress the CC part?
 
--Scott=
+
+Anyhow, the patch looks sane enough, thought I need to to run it through
+a test framework just to be on a sure side.
+
+> Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+> Cc: "H. Peter Anvin" <hpa@zytor.com>
+> Cc: x86@kernel.org
+> Cc: xen-devel@lists.xensource.com
+> Cc: virtualization@lists.linux-foundation.org
+> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> ---
+> 
+>  arch/x86/xen/mmu.c |   11 +++++++++--
+>  arch/x86/xen/smp.c |    9 +++++++++
+>  2 files changed, 18 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
+> index 01de35c..6a95a15 100644
+> --- a/arch/x86/xen/mmu.c
+> +++ b/arch/x86/xen/mmu.c
+> @@ -39,6 +39,7 @@
+>   * Jeremy Fitzhardinge <jeremy@xensource.com>, XenSource Inc, 2007
+>   */
+>  #include <linux/sched.h>
+> +#include <linux/cpu.h>
+>  #include <linux/highmem.h>
+>  #include <linux/debugfs.h>
+>  #include <linux/bug.h>
+> @@ -1163,9 +1164,13 @@ static void xen_drop_mm_ref(struct mm_struct *mm)
+>   */
+>  static void xen_exit_mmap(struct mm_struct *mm)
+>  {
+> -	get_cpu();		/* make sure we don't move around */
+> +	/*
+> +	 * Make sure we don't move around, and prevent CPUs from going
+> +	 * offline.
+> +	 */
+> +	get_online_cpus_atomic();
+>  	xen_drop_mm_ref(mm);
+> -	put_cpu();
+> +	put_online_cpus_atomic();
+>  
+>  	spin_lock(&mm->page_table_lock);
+>  
+> @@ -1371,6 +1376,7 @@ static void xen_flush_tlb_others(const struct cpumask *cpus,
+>  	args->op.arg2.vcpumask = to_cpumask(args->mask);
+>  
+>  	/* Remove us, and any offline CPUS. */
+> +	get_online_cpus_atomic();
+>  	cpumask_and(to_cpumask(args->mask), cpus, cpu_online_mask);
+>  	cpumask_clear_cpu(smp_processor_id(), to_cpumask(args->mask));
+>  
+> @@ -1383,6 +1389,7 @@ static void xen_flush_tlb_others(const struct cpumask *cpus,
+>  	MULTI_mmuext_op(mcs.mc, &args->op, 1, NULL, DOMID_SELF);
+>  
+>  	xen_mc_issue(PARAVIRT_LAZY_MMU);
+> +	put_online_cpus_atomic();
+>  }
+>  
+>  static unsigned long xen_read_cr3(void)
+> diff --git a/arch/x86/xen/smp.c b/arch/x86/xen/smp.c
+> index 4f7d259..7d753ae 100644
+> --- a/arch/x86/xen/smp.c
+> +++ b/arch/x86/xen/smp.c
+> @@ -16,6 +16,7 @@
+>  #include <linux/err.h>
+>  #include <linux/slab.h>
+>  #include <linux/smp.h>
+> +#include <linux/cpu.h>
+>  #include <linux/irq_work.h>
+>  
+>  #include <asm/paravirt.h>
+> @@ -487,8 +488,10 @@ static void __xen_send_IPI_mask(const struct cpumask *mask,
+>  {
+>  	unsigned cpu;
+>  
+> +	get_online_cpus_atomic();
+>  	for_each_cpu_and(cpu, mask, cpu_online_mask)
+>  		xen_send_IPI_one(cpu, vector);
+> +	put_online_cpus_atomic();
+>  }
+>  
+>  static void xen_smp_send_call_function_ipi(const struct cpumask *mask)
+> @@ -551,8 +554,10 @@ void xen_send_IPI_all(int vector)
+>  {
+>  	int xen_vector = xen_map_vector(vector);
+>  
+> +	get_online_cpus_atomic();
+>  	if (xen_vector >= 0)
+>  		__xen_send_IPI_mask(cpu_online_mask, xen_vector);
+> +	put_online_cpus_atomic();
+>  }
+>  
+>  void xen_send_IPI_self(int vector)
+> @@ -572,20 +577,24 @@ void xen_send_IPI_mask_allbutself(const struct cpumask *mask,
+>  	if (!(num_online_cpus() > 1))
+>  		return;
+>  
+> +	get_online_cpus_atomic();
+>  	for_each_cpu_and(cpu, mask, cpu_online_mask) {
+>  		if (this_cpu == cpu)
+>  			continue;
+>  
+>  		xen_smp_send_call_function_single_ipi(cpu);
+>  	}
+> +	put_online_cpus_atomic();
+>  }
+>  
+>  void xen_send_IPI_allbutself(int vector)
+>  {
+>  	int xen_vector = xen_map_vector(vector);
+>  
+> +	get_online_cpus_atomic();
+>  	if (xen_vector >= 0)
+>  		xen_send_IPI_mask_allbutself(cpu_online_mask, xen_vector);
+> +	put_online_cpus_atomic();
+>  }
+>  
+>  static irqreturn_t xen_call_function_interrupt(int irq, void *dev_id)
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
