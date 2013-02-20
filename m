@@ -1,24 +1,20 @@
-Return-Path: <STFD002@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe001.messaging.microsoft.com [213.199.154.204])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 606852C007A
- for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2013 01:31:35 +1100 (EST)
-Message-ID: <5124DE3A.8040309@freescale.com>
-Date: Wed, 20 Feb 2013 16:31:22 +0200
-From: Diana Craciun <diana.craciun@freescale.com>
+Return-Path: <phileas-fogg@mail.ru>
+Received: from smtp1.mail.ru (smtp1.mail.ru [94.100.176.129])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 5B6F92C007C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2013 06:43:08 +1100 (EST)
+Message-ID: <51253558.1070407@mail.ru>
+Date: Wed, 20 Feb 2013 21:43:04 +0100
+From: Phileas Fogg <phileas-fogg@mail.ru>
 MIME-Version: 1.0
-To: Stuart Yoder <b08248@gmail.com>
-Subject: Re: [PATCH][RFC] Replaced tlbilx with tlbwe in the initialization code
-References: <1360846595-3397-1-git-send-email-diana.craciun@freescale.com>
- <1360887119.22260.10.camel@pasglop> <511E513F.7090103@freescale.com>
- <1361303278.29654.7@snotra>
- <CALRxmdCpS6cJ6kJ=cg4Mre6YA572fxyk+596E1k1MX+iRL7s9Q@mail.gmail.com>
-In-Reply-To: <CALRxmdCpS6cJ6kJ=cg4Mre6YA572fxyk+596E1k1MX+iRL7s9Q@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+To: Phileas Fogg <phileas-fogg@mail.ru>
+Subject: Re: PS3: Strange issue with kexec and FreeBSD loader
+References: <1360365046.495584377@f356.mail.ru> <5123C729.5040607@mail.ru>
+ <5123D864.4060503@mail.ru>
+In-Reply-To: <5123D864.4060503@mail.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,29 +24,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/20/2013 04:22 PM, Stuart Yoder wrote:
-> On Tue, Feb 19, 2013 at 1:47 PM, Scott Wood <scottwood@freescale.com> wrote:
->> This patch addresses boot-time invalidations only.  How will you handle
->> hugetlb invalidations (or indirect entry invalidations, once that becomes
->> supported)?
-> We do envision that "direct guest TLB management" is an opt-in option
-> that a guest can enable.
+Phileas Fogg wrote:
+> Phileas Fogg wrote:
+>> I could finally find the commit which broke FreeBSD booting in linux-stable.git
+>> repository.
+>> The Linux 3.4-rc1 seems to have this problem already.
+>>
+>> --------------
+>> commit 5375871d432ae9fc581014ac117b96aaee3cd0c7
+>> Merge: b57cb72 dfbc2d7
+>> Author: Linus Torvalds <torvalds@linux-foundation.org>
+>> Date:   Wed Mar 21 18:55:10 2012 -0700
+>>
+>>      Merge branch 'next' of
+>> git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc
+>>
+>>      Pull powerpc merge from Benjamin Herrenschmidt:
+>>       "Here's the powerpc batch for this merge window.  It is going to be a
+>>        bit more nasty than usual as in touching things outside of
+>>        arch/powerpc mostly due to the big iSeriesectomy :-) We finally got
+>>        rid of the bugger (legacy iSeries support) which was a PITA to
+>>        maintain and that nobody really used anymore.
+>>
+>>        Here are some of the highlights:
+>>
+>>         - Legacy iSeries is gone.  Thanks Stephen ! There's still some bits
+>>           and pieces remaining if you do a grep -ir series arch/powerpc but
+>>           they are harmless and will be removed in the next few weeks
+>>           hopefully.
+>>
+>>         - The 'fadump' functionality (Firmware Assisted Dump) replaces the
+>>           previous (equivalent) "pHyp assisted dump"...  it's a rewrite of a
+>>           mechanism to get the hypervisor to do crash dumps on pSeries, the
+>>           new implementation hopefully being much more reliable.  Thanks
+>>           Mahesh Salgaonkar.
+>>
+>>         - The "EEH" code (pSeries PCI error handling & recovery) got a big
+>>           spring cleaning, motivated by the need to be able to implement a
+>>           new backend for it on top of some new different type of firwmare.
+>>
+>>           The work isn't complete yet, but a good chunk of the cleanups is
+>>           there.  Note that this adds a field to struct device_node which is
+>>           not very nice and which Grant objects to.  I will have a patch soon
+>>           that moves that to a powerpc private data structure (hopefully
+>>           before rc1) and we'll improve things further later on (hopefully
+>>           getting rid of the need for that pointer completely).  Thanks Gavin
+>>           Shan.
+>>
+>>         - I dug into our exception & interrupt handling code to improve the
+>>           way we do lazy interrupt handling (and make it work properly with
+>>           "edge" triggered interrupt sources), and while at it found & fixed
+>>           a wagon of issues in those areas, including adding support for page
+>>           fault retry & fatal signals on page faults.
+>>
+>>         - Your usual random batch of small fixes & updates, including a bunch
+>>           of new embedded boards, both Freescale and APM based ones, etc..."
+>>
+>>      I fixed up some conflicts with the generalized irq-domain changes from
+>>      Grant Likely, hopefully correctly.
+>>
+>>      * 'next' of git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc:
+>> (141 commits)
+>>        powerpc/ps3: Do not adjust the wrapper load address
+>>        powerpc: Remove the rest of the legacy iSeries include files
+>>        powerpc: Remove the remaining CONFIG_PPC_ISERIES pieces
+>>        init: Remove CONFIG_PPC_ISERIES
+>>        powerpc: Remove FW_FEATURE ISERIES from arch code
+>>        tty/hvc_vio: FW_FEATURE_ISERIES is no longer selectable
+>>        powerpc/spufs: Fix double unlocks
+>>        powerpc/5200: convert mpc5200 to use of_platform_populate()
+>>        powerpc/mpc5200: add options to mpc5200_defconfig
+>>        powerpc/mpc52xx: add a4m072 board support
+>>        powerpc/mpc5200: update mpc5200_defconfig to fit for charon board
+>>        Documentation/powerpc/mpc52xx.txt: Checkpatch cleanup
+>>        powerpc/44x: Add additional device support for APM821xx SoC and Bluestone
+>> board
+>>        powerpc/44x: Add support PCI-E for APM821xx SoC and Bluestone board
+>>        MAINTAINERS: Update PowerPC 4xx tree
+>>        powerpc/44x: The bug fixed support for APM821xx SoC and Bluestone board
+>>        powerpc: document the FSL MPIC message register binding
+>>        powerpc: add support for MPIC message register API
+>>        powerpc/fsl: Added aliased MSIIR register address to MSI node in dts
+>>        powerpc/85xx: mpc8548cds - add 36-bit dts
+>>        ...
+>>
+>> _______________________________________________
+>> Linuxppc-dev mailing list
+>> Linuxppc-dev@lists.ozlabs.org
+>> https://lists.ozlabs.org/listinfo/linuxppc-dev
 >
-> If LRAT is on, with TLB management directly handled by guests, the only
-> mechanism we have to do TLB1 invalidates is tlbwe.   That is our only option
-> as far as I know.   So, hugetlb and indirect entries will each need to be
-> addressed separately.    The kernel code that handles these either needs
-> to be A) modified to unconditionally do all invalidates by tlbwe or B)
-> conditionally
-> use tlbwe depending on whether this is a guest that has enabled direct
-> TLB management.
+> Reverting this commit fixes the problem with SHA256 checkusm in the purgatory
+> code too. I'm trying to find out which commit exactly caused the problem.
 >
-> Stuart
->
+> regards
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
 
-In case of indirect entries I think we can configure tlbwe and tlbilx to 
-go to the hypervisor. The guest should not mix tlbwe (for TLB0) and 
-hardware page table walk, so we can support this scenario without 
-modifying the guest.
 
-Diana
+
+
+
+I found the single commit which brakes kexec stuff for FreeBSD loader or other 
+custom ELF kernels on the PS3 console.
+
+
+ From 7230c5644188cd9e3fb380cc97dde00c464a3ba7 Mon Sep 17 00:00:00 2001
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Tue, 6 Mar 2012 18:27:59 +1100
+Subject: [PATCH] powerpc: Rework lazy-interrupt handling
+
+
+
+regards
