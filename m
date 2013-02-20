@@ -1,22 +1,23 @@
-Return-Path: <B40534@freescale.com>
+Return-Path: <STFD002@freescale.com>
 Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+ (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E2A782C007A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2013 16:58:03 +1100 (EST)
-From: Wang Dongsheng-B40534 <B40534@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: RE: [PATCH][UPSTEAM] powerpc/mpic: add irq_set_wake support
-Date: Wed, 20 Feb 2013 05:57:48 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259E71F4A@039-SN2MPN1-021.039d.mgd.msft.net>
-References: <1359601823-9861-1-git-send-email-dongsheng.wang@freescale.com>
- <3887203D-64E3-4BA5-AB2A-20BE668560A4@kernel.crashing.org>
-In-Reply-To: <3887203D-64E3-4BA5-AB2A-20BE668560A4@kernel.crashing.org>
-Content-Type: text/plain; charset="us-ascii"
+ by ozlabs.org (Postfix) with ESMTPS id 3E2802C0085
+ for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2013 20:22:23 +1100 (EST)
+Message-ID: <512495C4.9040000@freescale.com>
+Date: Wed, 20 Feb 2013 11:22:12 +0200
+From: Diana Craciun <diana.craciun@freescale.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH][RFC] Replaced tlbilx with tlbwe in the initialization code
+References: <1360846595-3397-1-git-send-email-diana.craciun@freescale.com>
+ <1360887119.22260.10.camel@pasglop> <511E513F.7090103@freescale.com>
+ <1361303278.29654.7@snotra>
+In-Reply-To: <1361303278.29654.7@snotra>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: Yoder Stuart-B08248 <B08248@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,111 +27,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 02/19/2013 09:47 PM, Scott Wood wrote:
+> On 02/15/2013 09:16:15 AM, Diana Craciun wrote:
+>> On 02/15/2013 02:11 AM, Benjamin Herrenschmidt wrote:
+>>> On Thu, 2013-02-14 at 14:56 +0200, Diana Craciun wrote:
+>>>> From: Diana Craciun <Diana.Craciun@freescale.com>
+>>>>
+>>>> On Freescale e6500 cores EPCR[DGTMI] controls whether guest
+>>>> supervisor
+>>>> state can execute TLB management instructions. If EPCR[DGTMI]=0
+>>>> tlbwe and tlbilx are allowed to execute normally in the guest state.
+>>>>
+>>>> A hypervisor may choose to virtualize TLB1 and for this purpose it
+>>>> may use IPROT to protect the entries for being invalidated by the
+>>>> guest. However, because tlbwe and tlbilx execution in the guest
+>>>> state
+>>>> are sharing the same bit, it is not possible to have a scenario
+>>>> where
+>>>> tlbwe is allowed to be executed in guest state and tlbilx traps.
+>>>> When
+>>>> guest TLB management instructions are allowed to be executed in
+>>>> guest
+>>>> state the guest cannot use tlbilx to invalidate TLB1 guest entries.
+>>> Sorry, I don't understand the explanation... can you be more
+>>> detailed ?
+>> TLB1 supports huge page sizes. The guest may see the memory as
+>> contiguous but it sees the guest physical memory as presented by the
+>> hypervisor. In reality the real physical memory may be fragmented. In
+>> this case the hypervisor can add more than one TLB1 entry for one
+>> guest request and the hypervisor will keep track of all fragments.
+>> When the guest performs a tlbilx, the hypervisor will correctly
+>> invalidate all the corresponding fragments because both tlbwe and
+>> tlbilx trap and has full control of tlb management instructions
+>> targeting TLB1.
+>>
+>> For e6500 a single bit controls if tlbwe and tlbilx trap to the
+>> Hypervisor. tlbwe targeting TLB1 always traps. But if we want to use
+>> LRAT for TLB0, we have to configure tlbwe (targeting TLB 0) to go
+>> directly to the guest. But in this case tlbilx (which is targeting
+>> both TLBs) will never trap.
+>>
+>> If the tlbilx does not trap, the guest can invalidate only one of
+>> (possible more) fragments and furthermore the synchronization between
+>> what entries the hypervisor thinks there are in the TLB1 and what are
+>> the actual entries is lost.
+> This patch addresses boot-time invalidations only.  How will you handle
+> hugetlb invalidations (or indirect entry invalidations, once that
+> becomes supported)?
+>
+> -Scott
 
+I will not handle them. This patch offers the possibility to run Linux 
+under hypervisor without using hugetlb or indirect entries (of course in 
+case when we configure tlb management instructions to go to the guest 
+because otherwise it works)
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> Sent: Tuesday, February 19, 2013 3:43 AM
-> To: Wang Dongsheng-B40534
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Subject: Re: [PATCH][UPSTEAM] powerpc/mpic: add irq_set_wake support
->=20
->=20
-> On Jan 30, 2013, at 9:10 PM, Wang Dongsheng wrote:
->=20
-> > Add irq_set_wake support. Just add IRQF_NO_SUSPEND to desc->action-
-> >flag.
-> > So the wake up interrupt will not be disable in suspend_device_irqs.
-> >
-> > Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
-> > ---
-> > arch/powerpc/sysdev/mpic.c |   15 +++++++++++++++
-> > 1 files changed, 15 insertions(+), 0 deletions(-)
->=20
-> Why are we doing this globally for all interrupts? Don't we only have=20
-> some specific interrupts that wake us up?
-> Also, I'm guessing the wake behavior for interrupts is FSL specific so
-> should not apply to ALL users of MPIC.
+If indirect entries are supported most likely we will configure tlbilx 
+and tlbwe to trap. In this case LRAT will be still used through the page 
+table walk mechanism.
 
-That is IRQ wakeup (PM) control. Actually not all interrupts will be set.
-We just let mpic have this ability. It's control by driver.
-If a device has the ability to wake up system, this device driver can set
-irq wake up(through enable/disable_irq_wake()), and the driver do not need
-add a flag(IRQF_NO_SUSPEND) to request_irq().
-
-for example,
-
-suspend()
-{
-	...;
-	enable_irq_wake(irq);
-	...;
-}
-
-resume()
-{
-	...;
-	disable_irq_wake(irq);
-	...;
-}
-
->=20
-> - k
->=20
-
-> >
-> > diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-> > index 9c6e535..2ed0220 100644
-> > --- a/arch/powerpc/sysdev/mpic.c
-> > +++ b/arch/powerpc/sysdev/mpic.c
-> > @@ -920,6 +920,18 @@ int mpic_set_irq_type(struct irq_data *d, unsigned
-> int flow_type)
-> > 	return IRQ_SET_MASK_OK_NOCOPY;
-> > }
-> >
-> > +static int mpic_irq_set_wake(struct irq_data *d, unsigned int on) {
-> > +	struct irq_desc *desc =3D container_of(d, struct irq_desc, irq_data);
-> > +
-> > +	if (on)
-> > +		desc->action->flags |=3D IRQF_NO_SUSPEND;
-> > +	else
-> > +		desc->action->flags &=3D ~IRQF_NO_SUSPEND;
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > void mpic_set_vector(unsigned int virq, unsigned int vector) {
-> > 	struct mpic *mpic =3D mpic_from_irq(virq); @@ -957,6 +969,7 @@ static
-> > struct irq_chip mpic_irq_chip =3D {
-> > 	.irq_unmask	=3D mpic_unmask_irq,
-> > 	.irq_eoi	=3D mpic_end_irq,
-> > 	.irq_set_type	=3D mpic_set_irq_type,
-> > +	.irq_set_wake	=3D mpic_irq_set_wake,
-> > };
-> >
-> > #ifdef CONFIG_SMP
-> > @@ -971,6 +984,7 @@ static struct irq_chip mpic_tm_chip =3D {
-> > 	.irq_mask	=3D mpic_mask_tm,
-> > 	.irq_unmask	=3D mpic_unmask_tm,
-> > 	.irq_eoi	=3D mpic_end_irq,
-> > +	.irq_set_wake	=3D mpic_irq_set_wake,
-> > };
-> >
-> > #ifdef CONFIG_MPIC_U3_HT_IRQS
-> > @@ -981,6 +995,7 @@ static struct irq_chip mpic_irq_ht_chip =3D {
-> > 	.irq_unmask	=3D mpic_unmask_ht_irq,
-> > 	.irq_eoi	=3D mpic_end_ht_irq,
-> > 	.irq_set_type	=3D mpic_set_irq_type,
-> > +	.irq_set_wake	=3D mpic_irq_set_wake,
-> > };
-> > #endif /* CONFIG_MPIC_U3_HT_IRQS */
-> >
-> > --
-> > 1.7.5.1
-> >
-> >
-> > _______________________________________________
-> > Linuxppc-dev mailing list
-> > Linuxppc-dev@lists.ozlabs.org
-> > https://lists.ozlabs.org/listinfo/linuxppc-dev
->=20
+Diana
