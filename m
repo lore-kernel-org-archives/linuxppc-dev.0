@@ -1,29 +1,24 @@
-Return-Path: <B16395@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 890982C0086
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2013 20:41:14 +1100 (EST)
-From: Sethi Varun-B16395 <B16395@freescale.com>
-To: Craciun Diana Madalina-STFD002 <STFD002@freescale.com>
-Subject: RE: [PATCH 6/6 v8] iommu/fsl: Freescale PAMU driver and IOMMU API
- implementation.
-Date: Wed, 20 Feb 2013 09:41:05 +0000
-Message-ID: <C5ECD7A89D1DC44195F34B25E172658D3AC29D@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1361191939-21260-1-git-send-email-Varun.Sethi@freescale.com>
- <1361191939-21260-7-git-send-email-Varun.Sethi@freescale.com>
- <5123A169.9060100@freescale.com>
-In-Reply-To: <5123A169.9060100@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <b08248@gmail.com>
+Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
+ [209.85.160.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B39692C007C
+ for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2013 01:22:54 +1100 (EST)
+Received: by mail-pb0-f51.google.com with SMTP id un15so2915203pbc.10
+ for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2013 06:22:53 -0800 (PST)
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "joro@8bytes.org" <joro@8bytes.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Yoder Stuart-B08248 <B08248@freescale.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <1361303278.29654.7@snotra>
+References: <1360846595-3397-1-git-send-email-diana.craciun@freescale.com>
+ <1360887119.22260.10.camel@pasglop>
+ <511E513F.7090103@freescale.com> <1361303278.29654.7@snotra>
+Date: Wed, 20 Feb 2013 08:22:52 -0600
+Message-ID: <CALRxmdCpS6cJ6kJ=cg4Mre6YA572fxyk+596E1k1MX+iRL7s9Q@mail.gmail.com>
+Subject: Re: [PATCH][RFC] Replaced tlbilx with tlbwe in the initialization code
+From: Stuart Yoder <b08248@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Diana Craciun <diana.craciun@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,30 +28,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Feb 19, 2013 at 1:47 PM, Scott Wood <scottwood@freescale.com> wrote:
+>
+> This patch addresses boot-time invalidations only.  How will you handle
+> hugetlb invalidations (or indirect entry invalidations, once that becomes
+> supported)?
 
+We do envision that "direct guest TLB management" is an opt-in option
+that a guest can enable.
 
-> -----Original Message-----
-> From: Craciun Diana Madalina-STFD002
-> Sent: Tuesday, February 19, 2013 9:30 PM
-> To: Sethi Varun-B16395
-> Cc: iommu@lists.linux-foundation.org; linuxppc-dev@lists.ozlabs.org;
-> linux-kernel@vger.kernel.org; Wood Scott-B07421; joro@8bytes.org; Yoder
-> Stuart-B08248
-> Subject: Re: [PATCH 6/6 v8] iommu/fsl: Freescale PAMU driver and IOMMU
-> API implementation.
->=20
-> On 02/18/2013 02:52 PM, Varun Sethi wrote:
-> > +/**
-> > + * pamu_get_ppaace() - Return the primary PACCE
-> > + * @liodn: liodn PAACT index for desired PAACE
-> > + *
-> > + * Returns the ppace pointer upon success else return
-> > + * null.
-> > + */
-> > +static struct paace *pamu_get_ppaace(int liodn) {
-> > +	if (!ppaact || liodn > PAACE_NUMBER_ENTRIES) {
->=20
-> Shouldn't be "liodn >=3D PAACE_NUMBER_ENTRIES" ?
-Yes, will fix this.
+If LRAT is on, with TLB management directly handled by guests, the only
+mechanism we have to do TLB1 invalidates is tlbwe.   That is our only option
+as far as I know.   So, hugetlb and indirect entries will each need to be
+addressed separately.    The kernel code that handles these either needs
+to be A) modified to unconditionally do all invalidates by tlbwe or B)
+conditionally
+use tlbwe depending on whether this is a guest that has enabled direct
+TLB management.
 
--Varun
+Stuart
