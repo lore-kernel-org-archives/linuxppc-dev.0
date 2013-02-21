@@ -1,33 +1,35 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C5D962C02F1
+ (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A28ED2C02CB
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2013 03:48:02 +1100 (EST)
 Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 21 Feb 2013 22:15:29 +0530
+ Thu, 21 Feb 2013 22:15:58 +0530
 Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 99B77125804E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2013 22:18:46 +0530 (IST)
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id AD2FAE0050
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2013 22:18:58 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
  by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1LGlsWX21037190
+ r1LGltCC9044160
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2013 22:17:55 +0530
 Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1LGlsM4011035
+ r1LGlrTd010970
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2013 03:47:56 +1100
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [RFC PATCH -V2 14/21] mm/THP: Add pmd args to pgtable deposit and
- withdraw APIs
-Date: Thu, 21 Feb 2013 22:17:21 +0530
-Message-Id: <1361465248-10867-15-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [RFC PATCH -V2 12/21] powerpc: Fix hpte_decode to use the correct
+ decoding for page sizes
+Date: Thu, 21 Feb 2013 22:17:19 +0530
+Message-Id: <1361465248-10867-13-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1361465248-10867-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1361465248-10867-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,232 +43,85 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-This will be later used by powerpc THP support. In powerpc we want to use
-pgtable for storing the hash index values. So instead of adding them to
-mm_context list, we would like to store them in the second half of pmd
+As per ISA doc, we encode base and actual page size in the LP bits of
+PTE. The number of bit used to encode the page sizes depend on actual
+page size.  ISA doc lists this as
+
+   PTE LP     actual page size
+rrrr rrrz 	≥8KB
+rrrr rrzz	≥16KB
+rrrr rzzz 	≥32KB
+rrrr zzzz 	≥64KB
+rrrz zzzz 	≥128KB
+rrzz zzzz 	≥256KB
+rzzz zzzz	≥512KB
+zzzz zzzz 	≥1MB
+
+ISA doc also says
+"The values of the “z” bits used to specify each size, along with all possible
+values of “r” bits in the LP field, must result in LP values distinct from
+other LP values for other sizes."
+
+based on the above update hpte_decode to use the correct decoding for LP bits.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/s390/include/asm/pgtable.h     |    5 +++--
- arch/s390/mm/pgtable.c              |    5 +++--
- arch/sparc/include/asm/pgtable_64.h |    5 +++--
- arch/sparc/mm/tlb.c                 |    5 +++--
- include/asm-generic/pgtable.h       |    5 +++--
- mm/huge_memory.c                    |   18 +++++++++---------
- mm/pgtable-generic.c                |    5 +++--
- 7 files changed, 27 insertions(+), 21 deletions(-)
+ arch/powerpc/mm/hash_native_64.c |   27 +++++++++++++++++----------
+ 1 file changed, 17 insertions(+), 10 deletions(-)
 
-diff --git a/arch/s390/include/asm/pgtable.h b/arch/s390/include/asm/pgtable.h
-index 098adbb..883296e 100644
---- a/arch/s390/include/asm/pgtable.h
-+++ b/arch/s390/include/asm/pgtable.h
-@@ -1232,10 +1232,11 @@ static inline void __pmd_idte(unsigned long address, pmd_t *pmdp)
- #define SEGMENT_RW	__pgprot(_HPAGE_TYPE_RW)
- 
- #define __HAVE_ARCH_PGTABLE_DEPOSIT
--extern void pgtable_trans_huge_deposit(struct mm_struct *mm, pgtable_t pgtable);
-+extern void pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
-+				       pgtable_t pgtable);
- 
- #define __HAVE_ARCH_PGTABLE_WITHDRAW
--extern pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm);
-+extern pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp);
- 
- static inline int pmd_trans_splitting(pmd_t pmd)
+diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+index 3bc57e2..5448ad4 100644
+--- a/arch/powerpc/mm/hash_native_64.c
++++ b/arch/powerpc/mm/hash_native_64.c
+@@ -428,19 +428,15 @@ static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
+ 			int *psize, int *apsize, int *ssize, unsigned long *vpn)
  {
-diff --git a/arch/s390/mm/pgtable.c b/arch/s390/mm/pgtable.c
-index ae44d2a..9ab3224 100644
---- a/arch/s390/mm/pgtable.c
-+++ b/arch/s390/mm/pgtable.c
-@@ -920,7 +920,8 @@ void pmdp_splitting_flush(struct vm_area_struct *vma, unsigned long address,
+ 	unsigned long avpn, pteg, vpi;
+-	unsigned long hpte_r = hpte->r;
+ 	unsigned long hpte_v = hpte->v;
+ 	unsigned long vsid, seg_off;
+-	int i, size, a_size = MMU_PAGE_4K, shift, penc;
++	int size, a_size = MMU_PAGE_4K, shift, mask;
++	/* Look at the 8 bit LP value */
++	unsigned int lp = (hpte->r >> LP_SHIFT) & ((1 << (LP_BITS + 1)) - 1);
+ 
+ 	if (!(hpte_v & HPTE_V_LARGE))
+ 		size = MMU_PAGE_4K;
+ 	else {
+-		for (i = 0; i < LP_BITS; i++) {
+-			if ((hpte_r & LP_MASK(i+1)) == LP_MASK(i+1))
+-				break;
+-		}
+-		penc = LP_MASK(i+1) >> LP_SHIFT;
+ 		for (size = 0; size < MMU_PAGE_COUNT; size++) {
+ 
+ 			/* 4K pages are not represented by LP */
+@@ -450,12 +446,23 @@ static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
+ 			/* valid entries have a shift value */
+ 			if (!mmu_psize_defs[size].shift)
+ 				continue;
+-			for (a_size = 0; a_size < MMU_PAGE_COUNT; a_size++)
+-				if (penc == mmu_psize_defs[size].penc[a_size])
++
++			for (a_size = 0; a_size < MMU_PAGE_COUNT; a_size++) {
++				/* valid entries have a shift value */
++				if (!mmu_psize_defs[a_size].shift)
++					continue;
++
++				shift = mmu_psize_defs[a_size].shift - 11;
++				if (shift > 9)
++					shift = 9;
++				mask = (1 << shift) - 1;
++				if ((lp & mask) ==
++				    mmu_psize_defs[size].penc[a_size]) {
+ 					goto out;
++				}
++			}
+ 		}
  	}
- }
- 
--void pgtable_trans_huge_deposit(struct mm_struct *mm, pgtable_t pgtable)
-+void pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
-+				pgtable_t pgtable)
- {
- 	struct list_head *lh = (struct list_head *) pgtable;
- 
-@@ -934,7 +935,7 @@ void pgtable_trans_huge_deposit(struct mm_struct *mm, pgtable_t pgtable)
- 	mm->pmd_huge_pte = pgtable;
- }
- 
--pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm)
-+pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp)
- {
- 	struct list_head *lh;
- 	pgtable_t pgtable;
-diff --git a/arch/sparc/include/asm/pgtable_64.h b/arch/sparc/include/asm/pgtable_64.h
-index 08fcce9..4c86de2 100644
---- a/arch/sparc/include/asm/pgtable_64.h
-+++ b/arch/sparc/include/asm/pgtable_64.h
-@@ -853,10 +853,11 @@ extern void update_mmu_cache_pmd(struct vm_area_struct *vma, unsigned long addr,
- 				 pmd_t *pmd);
- 
- #define __HAVE_ARCH_PGTABLE_DEPOSIT
--extern void pgtable_trans_huge_deposit(struct mm_struct *mm, pgtable_t pgtable);
-+extern void pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
-+				       pgtable_t pgtable);
- 
- #define __HAVE_ARCH_PGTABLE_WITHDRAW
--extern pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm);
-+extern pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp);
- #endif
- 
- /* Encode and de-code a swap entry */
-diff --git a/arch/sparc/mm/tlb.c b/arch/sparc/mm/tlb.c
-index 3e8fec3..79922f4 100644
---- a/arch/sparc/mm/tlb.c
-+++ b/arch/sparc/mm/tlb.c
-@@ -150,7 +150,8 @@ void set_pmd_at(struct mm_struct *mm, unsigned long addr,
- 	}
- }
- 
--void pgtable_trans_huge_deposit(struct mm_struct *mm, pgtable_t pgtable)
-+void pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
-+				pgtable_t pgtable)
- {
- 	struct list_head *lh = (struct list_head *) pgtable;
- 
-@@ -164,7 +165,7 @@ void pgtable_trans_huge_deposit(struct mm_struct *mm, pgtable_t pgtable)
- 	mm->pmd_huge_pte = pgtable;
- }
- 
--pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm)
-+pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp)
- {
- 	struct list_head *lh;
- 	pgtable_t pgtable;
-diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
-index 5cf680a..6f87e9e 100644
---- a/include/asm-generic/pgtable.h
-+++ b/include/asm-generic/pgtable.h
-@@ -163,11 +163,12 @@ extern void pmdp_splitting_flush(struct vm_area_struct *vma,
- #endif
- 
- #ifndef __HAVE_ARCH_PGTABLE_DEPOSIT
--extern void pgtable_trans_huge_deposit(struct mm_struct *mm, pgtable_t pgtable);
-+extern void pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
-+				       pgtable_t pgtable);
- #endif
- 
- #ifndef __HAVE_ARCH_PGTABLE_WITHDRAW
--extern pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm);
-+extern pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp);
- #endif
- 
- #ifndef __HAVE_ARCH_PMDP_INVALIDATE
-diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-index 1940ee0..e91b763 100644
---- a/mm/huge_memory.c
-+++ b/mm/huge_memory.c
-@@ -742,7 +742,7 @@ static int __do_huge_pmd_anonymous_page(struct mm_struct *mm,
- 		 */
- 		page_add_new_anon_rmap(page, vma, haddr);
- 		set_pmd_at(mm, haddr, pmd, entry);
--		pgtable_trans_huge_deposit(mm, pgtable);
-+		pgtable_trans_huge_deposit(mm, pmd, pgtable);
- 		add_mm_counter(mm, MM_ANONPAGES, HPAGE_PMD_NR);
- 		mm->nr_ptes++;
- 		spin_unlock(&mm->page_table_lock);
-@@ -784,7 +784,7 @@ static bool set_huge_zero_page(pgtable_t pgtable, struct mm_struct *mm,
- 	entry = pmd_wrprotect(entry);
- 	entry = pmd_mkhuge(entry);
- 	set_pmd_at(mm, haddr, pmd, entry);
--	pgtable_trans_huge_deposit(mm, pgtable);
-+	pgtable_trans_huge_deposit(mm, pmd, pgtable);
- 	mm->nr_ptes++;
- 	return true;
- }
-@@ -929,7 +929,7 @@ int copy_huge_pmd(struct mm_struct *dst_mm, struct mm_struct *src_mm,
- 	pmdp_set_wrprotect(src_mm, addr, src_pmd);
- 	pmd = pmd_mkold(pmd_wrprotect(pmd));
- 	set_pmd_at(dst_mm, addr, dst_pmd, pmd);
--	pgtable_trans_huge_deposit(dst_mm, pgtable);
-+	pgtable_trans_huge_deposit(dst_mm, dst_pmd, pgtable);
- 	dst_mm->nr_ptes++;
- 
- 	ret = 0;
-@@ -999,7 +999,7 @@ static int do_huge_pmd_wp_zero_page_fallback(struct mm_struct *mm,
- 	pmdp_clear_flush(vma, haddr, pmd);
- 	/* leave pmd empty until pte is filled */
- 
--	pgtable = pgtable_trans_huge_withdraw(mm);
-+	pgtable = pgtable_trans_huge_withdraw(mm, pmd);
- 	pmd_populate(mm, &_pmd, pgtable);
- 
- 	for (i = 0; i < HPAGE_PMD_NR; i++, haddr += PAGE_SIZE) {
-@@ -1094,10 +1094,10 @@ static int do_huge_pmd_wp_page_fallback(struct mm_struct *mm,
- 		goto out_free_pages;
- 	VM_BUG_ON(!PageHead(page));
- 
-+	pgtable = pgtable_trans_huge_withdraw(mm, pmd);
- 	pmdp_clear_flush(vma, haddr, pmd);
- 	/* leave pmd empty until pte is filled */
- 
--	pgtable = pgtable_trans_huge_withdraw(mm);
- 	pmd_populate(mm, &_pmd, pgtable);
- 
- 	for (i = 0; i < HPAGE_PMD_NR; i++, haddr += PAGE_SIZE) {
-@@ -1380,7 +1380,7 @@ int zap_huge_pmd(struct mmu_gather *tlb, struct vm_area_struct *vma,
- 		struct page *page;
- 		pgtable_t pgtable;
- 		pmd_t orig_pmd;
--		pgtable = pgtable_trans_huge_withdraw(tlb->mm);
-+		pgtable = pgtable_trans_huge_withdraw(tlb->mm, pmd);
- 		orig_pmd = pmdp_get_and_clear(tlb->mm, addr, pmd);
- 		tlb_remove_pmd_tlb_entry(tlb, pmd, addr);
- 		if (is_huge_zero_pmd(orig_pmd)) {
-@@ -1712,7 +1712,7 @@ static int __split_huge_page_map(struct page *page,
- 	pmd = page_check_address_pmd(page, mm, address,
- 				     PAGE_CHECK_ADDRESS_PMD_SPLITTING_FLAG);
- 	if (pmd) {
--		pgtable = pgtable_trans_huge_withdraw(mm);
-+		pgtable = pgtable_trans_huge_withdraw(mm, pmd);
- 		pmd_populate(mm, &_pmd, pgtable);
- 
- 		haddr = address;
-@@ -2400,7 +2400,7 @@ static void collapse_huge_page(struct mm_struct *mm,
- 	page_add_new_anon_rmap(new_page, vma, address);
- 	set_pmd_at(mm, address, pmd, _pmd);
- 	update_mmu_cache_pmd(vma, address, pmd);
--	pgtable_trans_huge_deposit(mm, pgtable);
-+	pgtable_trans_huge_deposit(mm, pmd, pgtable);
- 	spin_unlock(&mm->page_table_lock);
- 
- 	*hpage = NULL;
-@@ -2706,7 +2706,7 @@ static void __split_huge_zero_page_pmd(struct vm_area_struct *vma,
- 	pmdp_clear_flush(vma, haddr, pmd);
- 	/* leave pmd empty until pte is filled */
- 
--	pgtable = pgtable_trans_huge_withdraw(mm);
-+	pgtable = pgtable_trans_huge_withdraw(mm, pmd);
- 	pmd_populate(mm, &_pmd, pgtable);
- 
- 	for (i = 0; i < HPAGE_PMD_NR; i++, haddr += PAGE_SIZE) {
-diff --git a/mm/pgtable-generic.c b/mm/pgtable-generic.c
-index 0c8323f..e1a6e4f 100644
---- a/mm/pgtable-generic.c
-+++ b/mm/pgtable-generic.c
-@@ -124,7 +124,8 @@ void pmdp_splitting_flush(struct vm_area_struct *vma, unsigned long address,
- 
- #ifndef __HAVE_ARCH_PGTABLE_DEPOSIT
- #ifdef CONFIG_TRANSPARENT_HUGEPAGE
--void pgtable_trans_huge_deposit(struct mm_struct *mm, pgtable_t pgtable)
-+void pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
-+				pgtable_t pgtable)
- {
- 	assert_spin_locked(&mm->page_table_lock);
- 
-@@ -141,7 +142,7 @@ void pgtable_trans_huge_deposit(struct mm_struct *mm, pgtable_t pgtable)
- #ifndef __HAVE_ARCH_PGTABLE_WITHDRAW
- #ifdef CONFIG_TRANSPARENT_HUGEPAGE
- /* no "address" argument so destroys page coloring of some arch */
--pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm)
-+pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp)
- {
- 	pgtable_t pgtable;
- 
+-
+ out:
+ 	/* This works for all page sizes, and for 256M and 1T segments */
+ 	*ssize = hpte_v >> HPTE_V_SSIZE_SHIFT;
 -- 
 1.7.10
