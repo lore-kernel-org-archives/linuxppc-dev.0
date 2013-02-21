@@ -1,31 +1,30 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A1B972C0294
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2013 03:47:52 +1100 (EST)
+ (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 990AB2C0094
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2013 03:47:53 +1100 (EST)
 Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 21 Feb 2013 22:14:58 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 3B6DF125804F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2013 22:18:33 +0530 (IST)
+ Thu, 21 Feb 2013 22:15:49 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 309A2125804E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2013 22:18:35 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1LGlfHo35455218
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2013 22:17:41 +0530
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r1LGljcN10813572
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2013 22:17:45 +0530
 Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1LGlguU009841
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2013 03:47:44 +1100
+ r1LGliGV010083
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2013 03:47:47 +1100
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [RFC PATCH -V2 01/21] powerpc: Use signed formatting when printing
- error
-Date: Thu, 21 Feb 2013 22:17:08 +0530
-Message-Id: <1361465248-10867-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [RFC PATCH -V2 03/21] powerpc: Don't hard code the size of pte page
+Date: Thu, 21 Feb 2013 22:17:10 +0530
+Message-Id: <1361465248-10867-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1361465248-10867-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1361465248-10867-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
@@ -41,26 +40,57 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-PAPR define these errors as negative values. So print them accordingly
-for easy debugging.
+USE PTRS_PER_PTE to indicate the size of pte page.
+
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+powerpc: Don't hard code the size of pte page
+
+USE PTRS_PER_PTE to indicate the size of pte page.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/pseries/lpar.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/include/asm/pgtable.h |    6 ++++++
+ arch/powerpc/mm/hash_low_64.S      |    4 ++--
+ 2 files changed, 8 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index 0da39fe..a77c35b 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -155,7 +155,7 @@ static long pSeries_lpar_hpte_insert(unsigned long hpte_group,
- 	 */
- 	if (unlikely(lpar_rc != H_SUCCESS)) {
- 		if (!(vflags & HPTE_V_BOLTED))
--			pr_devel(" lpar err %lu\n", lpar_rc);
-+			pr_devel(" lpar err %ld\n", lpar_rc);
- 		return -2;
- 	}
- 	if (!(vflags & HPTE_V_BOLTED))
+diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
+index a9cbd3b..fc57855 100644
+--- a/arch/powerpc/include/asm/pgtable.h
++++ b/arch/powerpc/include/asm/pgtable.h
+@@ -17,6 +17,12 @@ struct mm_struct;
+ #  include <asm/pgtable-ppc32.h>
+ #endif
+ 
++/*
++ * hidx is in the second half of the page table. We use the
++ * 8 bytes per each pte entry.
++ */
++#define PTE_PAGE_HIDX_OFFSET (PTRS_PER_PTE * 8)
++
+ #ifndef __ASSEMBLY__
+ 
+ #include <asm/tlbflush.h>
+diff --git a/arch/powerpc/mm/hash_low_64.S b/arch/powerpc/mm/hash_low_64.S
+index 7443481..abdd5e2 100644
+--- a/arch/powerpc/mm/hash_low_64.S
++++ b/arch/powerpc/mm/hash_low_64.S
+@@ -490,7 +490,7 @@ END_FTR_SECTION(CPU_FTR_NOEXECUTE|CPU_FTR_COHERENT_ICACHE, CPU_FTR_NOEXECUTE)
+ 	beq	htab_inval_old_hpte
+ 
+ 	ld	r6,STK_PARAM(R6)(r1)
+-	ori	r26,r6,0x8000		/* Load the hidx mask */
++	ori	r26,r6,PTE_PAGE_HIDX_OFFSET /* Load the hidx mask. */
+ 	ld	r26,0(r26)
+ 	addi	r5,r25,36		/* Check actual HPTE_SUB bit, this */
+ 	rldcr.	r0,r31,r5,0		/* must match pgtable.h definition */
+@@ -607,7 +607,7 @@ htab_pte_insert_ok:
+ 	sld	r4,r4,r5
+ 	andc	r26,r26,r4
+ 	or	r26,r26,r3
+-	ori	r5,r6,0x8000
++	ori	r5,r6,PTE_PAGE_HIDX_OFFSET
+ 	std	r26,0(r5)
+ 	lwsync
+ 	std	r30,0(r6)
 -- 
 1.7.10
