@@ -1,35 +1,33 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A28ED2C02CB
+ (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B4C982C02F0
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2013 03:48:02 +1100 (EST)
 Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 21 Feb 2013 22:15:58 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id AD2FAE0050
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2013 22:18:58 +0530 (IST)
+ Thu, 21 Feb 2013 22:15:29 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 19C133940057
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2013 22:17:58 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1LGltCC9044160
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2013 22:17:55 +0530
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r1LGlsxp31522908
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2013 22:17:54 +0530
 Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1LGlrTd010970
+ r1LGlsfV011039
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2013 03:47:56 +1100
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [RFC PATCH -V2 12/21] powerpc: Fix hpte_decode to use the correct
- decoding for page sizes
-Date: Thu, 21 Feb 2013 22:17:19 +0530
-Message-Id: <1361465248-10867-13-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [RFC PATCH -V2 13/21] mm/THP: HPAGE_SHIFT is not a #define on some
+ arch
+Date: Thu, 21 Feb 2013 22:17:20 +0530
+Message-Id: <1361465248-10867-14-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1361465248-10867-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1361465248-10867-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -43,85 +41,67 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-As per ISA doc, we encode base and actual page size in the LP bits of
-PTE. The number of bit used to encode the page sizes depend on actual
-page size.  ISA doc lists this as
-
-   PTE LP     actual page size
-rrrr rrrz 	≥8KB
-rrrr rrzz	≥16KB
-rrrr rzzz 	≥32KB
-rrrr zzzz 	≥64KB
-rrrz zzzz 	≥128KB
-rrzz zzzz 	≥256KB
-rzzz zzzz	≥512KB
-zzzz zzzz 	≥1MB
-
-ISA doc also says
-"The values of the “z” bits used to specify each size, along with all possible
-values of “r” bits in the LP field, must result in LP values distinct from
-other LP values for other sizes."
-
-based on the above update hpte_decode to use the correct decoding for LP bits.
+On archs like powerpc that support different huge page sizes, HPAGE_SHIFT
+and other derived values like HPAGE_PMD_ORDER are not constants. So move
+that to hugepage_init
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/hash_native_64.c |   27 +++++++++++++++++----------
- 1 file changed, 17 insertions(+), 10 deletions(-)
+ include/linux/huge_mm.h |    3 ---
+ mm/huge_memory.c        |    9 ++++++---
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
-index 3bc57e2..5448ad4 100644
---- a/arch/powerpc/mm/hash_native_64.c
-+++ b/arch/powerpc/mm/hash_native_64.c
-@@ -428,19 +428,15 @@ static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
- 			int *psize, int *apsize, int *ssize, unsigned long *vpn)
- {
- 	unsigned long avpn, pteg, vpi;
--	unsigned long hpte_r = hpte->r;
- 	unsigned long hpte_v = hpte->v;
- 	unsigned long vsid, seg_off;
--	int i, size, a_size = MMU_PAGE_4K, shift, penc;
-+	int size, a_size = MMU_PAGE_4K, shift, mask;
-+	/* Look at the 8 bit LP value */
-+	unsigned int lp = (hpte->r >> LP_SHIFT) & ((1 << (LP_BITS + 1)) - 1);
+diff --git a/include/linux/huge_mm.h b/include/linux/huge_mm.h
+index 1d76f8c..0022b70 100644
+--- a/include/linux/huge_mm.h
++++ b/include/linux/huge_mm.h
+@@ -119,9 +119,6 @@ extern void __split_huge_page_pmd(struct vm_area_struct *vma,
+ 	} while (0)
+ extern void split_huge_page_pmd_mm(struct mm_struct *mm, unsigned long address,
+ 		pmd_t *pmd);
+-#if HPAGE_PMD_ORDER > MAX_ORDER
+-#error "hugepages can't be allocated by the buddy allocator"
+-#endif
+ extern int hugepage_madvise(struct vm_area_struct *vma,
+ 			    unsigned long *vm_flags, int advice);
+ extern void __vma_adjust_trans_huge(struct vm_area_struct *vma,
+diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+index b5783d8..1940ee0 100644
+--- a/mm/huge_memory.c
++++ b/mm/huge_memory.c
+@@ -44,7 +44,7 @@ unsigned long transparent_hugepage_flags __read_mostly =
+ 	(1<<TRANSPARENT_HUGEPAGE_USE_ZERO_PAGE_FLAG);
  
- 	if (!(hpte_v & HPTE_V_LARGE))
- 		size = MMU_PAGE_4K;
- 	else {
--		for (i = 0; i < LP_BITS; i++) {
--			if ((hpte_r & LP_MASK(i+1)) == LP_MASK(i+1))
--				break;
--		}
--		penc = LP_MASK(i+1) >> LP_SHIFT;
- 		for (size = 0; size < MMU_PAGE_COUNT; size++) {
+ /* default scan 8*512 pte (or vmas) every 30 second */
+-static unsigned int khugepaged_pages_to_scan __read_mostly = HPAGE_PMD_NR*8;
++static unsigned int khugepaged_pages_to_scan __read_mostly;
+ static unsigned int khugepaged_pages_collapsed;
+ static unsigned int khugepaged_full_scans;
+ static unsigned int khugepaged_scan_sleep_millisecs __read_mostly = 10000;
+@@ -59,7 +59,7 @@ static DECLARE_WAIT_QUEUE_HEAD(khugepaged_wait);
+  * it would have happened if the vma was large enough during page
+  * fault.
+  */
+-static unsigned int khugepaged_max_ptes_none __read_mostly = HPAGE_PMD_NR-1;
++static unsigned int khugepaged_max_ptes_none __read_mostly;
  
- 			/* 4K pages are not represented by LP */
-@@ -450,12 +446,23 @@ static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
- 			/* valid entries have a shift value */
- 			if (!mmu_psize_defs[size].shift)
- 				continue;
--			for (a_size = 0; a_size < MMU_PAGE_COUNT; a_size++)
--				if (penc == mmu_psize_defs[size].penc[a_size])
-+
-+			for (a_size = 0; a_size < MMU_PAGE_COUNT; a_size++) {
-+				/* valid entries have a shift value */
-+				if (!mmu_psize_defs[a_size].shift)
-+					continue;
-+
-+				shift = mmu_psize_defs[a_size].shift - 11;
-+				if (shift > 9)
-+					shift = 9;
-+				mask = (1 << shift) - 1;
-+				if ((lp & mask) ==
-+				    mmu_psize_defs[size].penc[a_size]) {
- 					goto out;
-+				}
-+			}
- 		}
+ static int khugepaged(void *none);
+ static int mm_slots_hash_init(void);
+@@ -621,11 +621,14 @@ static int __init hugepage_init(void)
+ 	int err;
+ 	struct kobject *hugepage_kobj;
+ 
+-	if (!has_transparent_hugepage()) {
++	if (!has_transparent_hugepage() || (HPAGE_PMD_ORDER > MAX_ORDER)) {
+ 		transparent_hugepage_flags = 0;
+ 		return -EINVAL;
  	}
--
- out:
- 	/* This works for all page sizes, and for 256M and 1T segments */
- 	*ssize = hpte_v >> HPTE_V_SSIZE_SHIFT;
+ 
++	khugepaged_pages_to_scan = HPAGE_PMD_NR*8;
++	khugepaged_max_ptes_none = HPAGE_PMD_NR-1;
++
+ 	err = hugepage_init_sysfs(&hugepage_kobj);
+ 	if (err)
+ 		return err;
 -- 
 1.7.10
