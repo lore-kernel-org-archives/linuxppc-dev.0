@@ -1,35 +1,16 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3FAF02C02B4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2013 03:48:16 +1100 (EST)
-Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 21 Feb 2013 22:15:00 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 16B4A394004E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2013 22:17:52 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1LGlm0K28901482
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2013 22:17:48 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1LGlmmK010501
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2013 03:47:50 +1100
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [RFC PATCH -V2 07/21] powerpc: Use encode avpn where we need only
- avpn values
-Date: Thu, 21 Feb 2013 22:17:14 +0530
-Message-Id: <1361465248-10867-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1361465248-10867-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1361465248-10867-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by ozlabs.org (Postfix) with ESMTP id C242B2C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2013 04:30:49 +1100 (EST)
+Date: Thu, 21 Feb 2013 17:32:36 +0100
+Message-Id: <201302211632.r1LGWaRr025445@localhost.localdomain>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Vitaly Bordug <vitb@kernel.crashing.org>,
+ Marcelo Tosatti <marcelo@kvack.org>, Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH] Handling of IRQ in MPC8xx GPIO
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,116 +20,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+This patch allows the use IRQ to notify the change of GPIO status on the MPC8xx
+CPM IO ports. This then allows to associate IRQs to GPIOs in the Device Tree. Ex:
+	CPM1_PIO_C: gpio-controller@960 {
+		#gpio-cells = <2>;
+		compatible = "fsl,cpm1-pario-bank-c";
+		reg = <0x960 0x10>;
+		interrupts = <255 255 255 255 1 2 6 9 10 11 14 15 23 24 26 31>;
+		interrupt-parent = <&CPM_PIC>;
+		gpio-controller;
+	};
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/mm/hash_native_64.c        |    8 ++++----
- arch/powerpc/platforms/cell/beat_htab.c |   10 +++++-----
- arch/powerpc/platforms/ps3/htab.c       |    2 +-
- 3 files changed, 10 insertions(+), 10 deletions(-)
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
-index ffc1e00..9d8983a 100644
---- a/arch/powerpc/mm/hash_native_64.c
-+++ b/arch/powerpc/mm/hash_native_64.c
-@@ -252,7 +252,7 @@ static long native_hpte_updatepp(unsigned long slot, unsigned long newpp,
- 	unsigned long hpte_v, want_v;
- 	int ret = 0;
+diff -ur linux-3.7.9/arch/powerpc/include/asm/cpm1.h linux/arch/powerpc/include/asm/cpm1.h
+--- linux-3.7.9/arch/powerpc/include/asm/cpm1.h	2013-02-17 19:53:32.000000000 +0100
++++ linux/arch/powerpc/include/asm/cpm1.h	2012-11-03 03:18:35.000000000 +0100
+@@ -560,6 +560,8 @@
+ #define CPM_PIN_SECONDARY 2
+ #define CPM_PIN_GPIO      4
+ #define CPM_PIN_OPENDRAIN 8
++#define CPM_PIN_FALLEDGE  16
++#define CPM_PIN_ANYEDGE   0
  
--	want_v = hpte_encode_v(vpn, psize, ssize);
-+	want_v = hpte_encode_avpn(vpn, psize, ssize);
+ enum cpm_port {
+ 	CPM_PORTA,
+diff -ur linux-3.7.9/arch/powerpc/sysdev/cpm1.c linux/arch/powerpc/sysdev/cpm1.c
+--- linux-3.7.9/arch/powerpc/sysdev/cpm1.c	2013-02-17 19:53:32.000000000 +0100
++++ linux/arch/powerpc/sysdev/cpm1.c	2013-02-21 15:52:51.000000000 +0100
+@@ -375,6 +375,10 @@
+ 			setbits16(&iop->odr_sor, pin);
+ 		else
+ 			clrbits16(&iop->odr_sor, pin);
++		if (flags & CPM_PIN_FALLEDGE)
++			setbits16(&iop->intr, pin);
++		else
++			clrbits16(&iop->intr, pin);
+ 	}
+ }
  
- 	DBG_LOW("    update(vpn=%016lx, avpnv=%016lx, group=%lx, newpp=%lx)",
- 		vpn, want_v & HPTE_V_AVPN, slot, newpp);
-@@ -288,7 +288,7 @@ static long native_hpte_find(unsigned long vpn, int psize, int ssize)
- 	unsigned long want_v, hpte_v;
+@@ -526,6 +530,9 @@
  
- 	hash = hpt_hash(vpn, mmu_psize_defs[psize].shift, ssize);
--	want_v = hpte_encode_v(vpn, psize, ssize);
-+	want_v = hpte_encode_avpn(vpn, psize, ssize);
+ 	/* shadowed data register to clear/set bits safely */
+ 	u16 cpdata;
++
++	/* IRQ associated with Pins when relevant */
++	int irq[16];
+ };
  
- 	/* Bolted mappings are only ever in the primary group */
- 	slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
-@@ -348,7 +348,7 @@ static void native_hpte_invalidate(unsigned long slot, unsigned long vpn,
+ static inline struct cpm1_gpio16_chip *
+@@ -581,6 +588,30 @@
+ 	spin_unlock_irqrestore(&cpm1_gc->lock, flags);
+ }
  
- 	DBG_LOW("    invalidate(vpn=%016lx, hash: %lx)\n", vpn, slot);
++static int __cpm1_gpio16_to_irq(struct of_mm_gpio_chip *mm_gc,
++		unsigned int gpio)
++{
++	struct cpm1_gpio16_chip *cpm1_gc = to_cpm1_gpio16_chip(mm_gc);
++
++	return cpm1_gc->irq[gpio] ? cpm1_gc->irq[gpio] : -ENXIO;
++}
++
++static int cpm1_gpio16_to_irq(struct gpio_chip *gc, unsigned int gpio)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct cpm1_gpio16_chip *cpm1_gc = to_cpm1_gpio16_chip(mm_gc);
++	unsigned long flags;
++	int ret;
++
++	spin_lock_irqsave(&cpm1_gc->lock, flags);
++
++	ret = __cpm1_gpio16_to_irq(mm_gc, gpio);
++
++	spin_unlock_irqrestore(&cpm1_gc->lock, flags);
++
++	return ret;
++}
++
+ static int cpm1_gpio16_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
+ {
+ 	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+@@ -621,6 +652,7 @@
+ 	struct cpm1_gpio16_chip *cpm1_gc;
+ 	struct of_mm_gpio_chip *mm_gc;
+ 	struct gpio_chip *gc;
++	int i;
  
--	want_v = hpte_encode_v(vpn, psize, ssize);
-+	want_v = hpte_encode_avpn(vpn, psize, ssize);
- 	native_lock_hpte(hptep);
- 	hpte_v = hptep->v;
+ 	cpm1_gc = kzalloc(sizeof(*cpm1_gc), GFP_KERNEL);
+ 	if (!cpm1_gc)
+@@ -628,6 +660,9 @@
  
-@@ -520,7 +520,7 @@ static void native_flush_hash_range(unsigned long number, int local)
- 			slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
- 			slot += hidx & _PTEIDX_GROUP_IX;
- 			hptep = htab_address + slot;
--			want_v = hpte_encode_v(vpn, psize, ssize);
-+			want_v = hpte_encode_avpn(vpn, psize, ssize);
- 			native_lock_hpte(hptep);
- 			hpte_v = hptep->v;
- 			if (!HPTE_V_COMPARE(hpte_v, want_v) ||
-diff --git a/arch/powerpc/platforms/cell/beat_htab.c b/arch/powerpc/platforms/cell/beat_htab.c
-index 0f6f839..472f9a7 100644
---- a/arch/powerpc/platforms/cell/beat_htab.c
-+++ b/arch/powerpc/platforms/cell/beat_htab.c
-@@ -191,7 +191,7 @@ static long beat_lpar_hpte_updatepp(unsigned long slot,
- 	u64 dummy0, dummy1;
- 	unsigned long want_v;
+ 	spin_lock_init(&cpm1_gc->lock);
  
--	want_v = hpte_encode_v(vpn, psize, MMU_SEGSIZE_256M);
-+	want_v = hpte_encode_avpn(vpn, psize, MMU_SEGSIZE_256M);
++	for (i = 0; i < 16; i++)
++		cpm1_gc->irq[i] = irq_of_parse_and_map(np, i);
++
+ 	mm_gc = &cpm1_gc->mm_gc;
+ 	gc = &mm_gc->gc;
  
- 	DBG_LOW("    update: "
- 		"avpnv=%016lx, slot=%016lx, psize: %d, newpp %016lx ... ",
-@@ -228,7 +228,7 @@ static long beat_lpar_hpte_find(unsigned long vpn, int psize)
- 	unsigned long want_v, hpte_v;
+@@ -637,6 +672,7 @@
+ 	gc->direction_output = cpm1_gpio16_dir_out;
+ 	gc->get = cpm1_gpio16_get;
+ 	gc->set = cpm1_gpio16_set;
++	gc->to_irq = cpm1_gpio16_to_irq;
  
- 	hash = hpt_hash(vpn, mmu_psize_defs[psize].shift, MMU_SEGSIZE_256M);
--	want_v = hpte_encode_v(vpn, psize, MMU_SEGSIZE_256M);
-+	want_v = hpte_encode_avpn(vpn, psize, MMU_SEGSIZE_256M);
+ 	return of_mm_gpiochip_add(np, mm_gc);
+ }
+diff -ur linux-3.7.9/kernel/irq/irqdomain.c linux/kernel/irq/irqdomain.c
+--- linux-3.7.9/kernel/irq/irqdomain.c	2013-02-17 19:53:32.000000000 +0100
++++ linux/kernel/irq/irqdomain.c	2012-12-13 19:52:38.000000000 +0100
+@@ -763,7 +763,8 @@
+ 	BUG_ON(domain->revmap_type != IRQ_DOMAIN_MAP_LINEAR);
  
- 	for (j = 0; j < 2; j++) {
- 		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
-@@ -283,7 +283,7 @@ static void beat_lpar_hpte_invalidate(unsigned long slot, unsigned long vpn,
+ 	/* Check revmap bounds; complain if exceeded */
+-	if (WARN_ON(hwirq >= domain->revmap_data.linear.size))
++	/* 255 is a trick to allow UNDEF value in DTS */
++	if (hwirq == 255 || WARN_ON(hwirq >= domain->revmap_data.linear.size))
+ 		return 0;
  
- 	DBG_LOW("    inval : slot=%lx, va=%016lx, psize: %d, local: %d\n",
- 		slot, va, psize, local);
--	want_v = hpte_encode_v(vpn, psize, MMU_SEGSIZE_256M);
-+	want_v = hpte_encode_avpn(vpn, psize, MMU_SEGSIZE_256M);
- 
- 	raw_spin_lock_irqsave(&beat_htab_lock, flags);
- 	dummy1 = beat_lpar_hpte_getword0(slot);
-@@ -372,7 +372,7 @@ static long beat_lpar_hpte_updatepp_v3(unsigned long slot,
- 	unsigned long want_v;
- 	unsigned long pss;
- 
--	want_v = hpte_encode_v(vpn, psize, MMU_SEGSIZE_256M);
-+	want_v = hpte_encode_avpn(vpn, psize, MMU_SEGSIZE_256M);
- 	pss = (psize == MMU_PAGE_4K) ? -1UL : mmu_psize_defs[psize].penc;
- 
- 	DBG_LOW("    update: "
-@@ -402,7 +402,7 @@ static void beat_lpar_hpte_invalidate_v3(unsigned long slot, unsigned long vpn,
- 
- 	DBG_LOW("    inval : slot=%lx, vpn=%016lx, psize: %d, local: %d\n",
- 		slot, vpn, psize, local);
--	want_v = hpte_encode_v(vpn, psize, MMU_SEGSIZE_256M);
-+	want_v = hpte_encode_avpn(vpn, psize, MMU_SEGSIZE_256M);
- 	pss = (psize == MMU_PAGE_4K) ? -1UL : mmu_psize_defs[psize].penc;
- 
- 	lpar_rc = beat_invalidate_htab_entry3(0, slot, want_v, pss);
-diff --git a/arch/powerpc/platforms/ps3/htab.c b/arch/powerpc/platforms/ps3/htab.c
-index d00d7b0..07a4bba 100644
---- a/arch/powerpc/platforms/ps3/htab.c
-+++ b/arch/powerpc/platforms/ps3/htab.c
-@@ -115,7 +115,7 @@ static long ps3_hpte_updatepp(unsigned long slot, unsigned long newpp,
- 	unsigned long flags;
- 	long ret;
- 
--	want_v = hpte_encode_v(vpn, psize, ssize);
-+	want_v = hpte_encode_avpn(vpn, psize, ssize);
- 
- 	spin_lock_irqsave(&ps3_htab_lock, flags);
- 
--- 
-1.7.10
+ 	return domain->revmap_data.linear.revmap[hwirq];
