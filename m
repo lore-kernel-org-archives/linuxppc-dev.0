@@ -1,30 +1,30 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9C12E2C0292
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2013 03:47:56 +1100 (EST)
+ (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 95F0E2C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2013 03:47:53 +1100 (EST)
 Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 21 Feb 2013 22:15:51 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 438AE1258057
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2013 22:18:39 +0530 (IST)
+ Thu, 21 Feb 2013 22:14:48 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 5DE3F394004D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2013 22:17:47 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1LGlm0W31260732
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2013 22:17:49 +0530
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r1LGlhOF36700292
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2013 22:17:43 +0530
 Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1LGlm9j010422
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2013 03:47:50 +1100
+ r1LGlj2t010117
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2013 03:47:47 +1100
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [RFC PATCH -V2 06/21] powerpc: Add size argument to pgtable_cache_add
-Date: Thu, 21 Feb 2013 22:17:13 +0530
-Message-Id: <1361465248-10867-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [RFC PATCH -V2 04/21] powerpc: Reduce the PTE_INDEX_SIZE
+Date: Thu, 21 Feb 2013 22:17:11 +0530
+Message-Id: <1361465248-10867-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1361465248-10867-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1361465248-10867-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
@@ -40,83 +40,32 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-We will use this later with THP changes. With THP we want to create PMD with
-twice the size. The second half will be used to depoist pgtable, which will
-carry the hpte hash index value
+This make one PMD cover 16MB range. That helps in easier implementation of THP
+on power. THP core code make use of one pmd entry to track the huge page and
+the range mapped by a single pmd entry should be equal to the huge page size
+supported by the hardware.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/pgtable-ppc64.h |    7 ++++++-
- arch/powerpc/mm/init_64.c                |   16 ++++++++--------
- 2 files changed, 14 insertions(+), 9 deletions(-)
+ arch/powerpc/include/asm/pgtable-ppc64-64k.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
-index 0182c20..658ba7c 100644
---- a/arch/powerpc/include/asm/pgtable-ppc64.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-@@ -338,8 +338,13 @@ static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
- #define pgoff_to_pte(off)	((pte_t) {((off) << PTE_RPN_SHIFT)|_PAGE_FILE})
- #define PTE_FILE_MAX_BITS	(BITS_PER_LONG - PTE_RPN_SHIFT)
- 
--void pgtable_cache_add(unsigned shift, void (*ctor)(void *));
-+extern void __pgtable_cache_add(unsigned index, unsigned long table_size,
-+				void (*ctor)(void *));
- void pgtable_cache_init(void);
-+static inline void pgtable_cache_add(unsigned shift, void (*ctor)(void *))
-+{
-+	return __pgtable_cache_add(shift, sizeof(void *) << shift, ctor);
-+}
- 
- /*
-  * find_linux_pte returns the address of a linux pte for a given
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index 95a4529..b378438 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -100,10 +100,10 @@ struct kmem_cache *pgtable_cache[MAX_PGTABLE_INDEX_SIZE];
-  * everything else.  Caches created by this function are used for all
-  * the higher level pagetables, and for hugepage pagetables.
-  */
--void pgtable_cache_add(unsigned shift, void (*ctor)(void *))
-+void __pgtable_cache_add(unsigned int index, unsigned long table_size,
-+			 void (*ctor)(void *))
- {
- 	char *name;
--	unsigned long table_size = sizeof(void *) << shift;
- 	unsigned long align = table_size;
- 
- 	/* When batching pgtable pointers for RCU freeing, we store
-@@ -111,7 +111,7 @@ void pgtable_cache_add(unsigned shift, void (*ctor)(void *))
- 	 * big enough to fit it.
- 	 *
- 	 * Likewise, hugeapge pagetable pointers contain a (different)
--	 * shift value in the low bits.  All tables must be aligned so
-+	 * huge page size in the low bits.  All tables must be aligned so
- 	 * as to leave enough 0 bits in the address to contain it. */
- 	unsigned long minalign = max(MAX_PGTABLE_INDEX_SIZE + 1,
- 				     HUGEPD_SHIFT_MASK + 1);
-@@ -121,17 +121,17 @@ void pgtable_cache_add(unsigned shift, void (*ctor)(void *))
- 	 * moment, gcc doesn't seem to recognize is_power_of_2 as a
- 	 * constant expression, so so much for that. */
- 	BUG_ON(!is_power_of_2(minalign));
--	BUG_ON((shift < 1) || (shift > MAX_PGTABLE_INDEX_SIZE));
-+	BUG_ON((index < 1) || (index > MAX_PGTABLE_INDEX_SIZE));
- 
--	if (PGT_CACHE(shift))
-+	if (PGT_CACHE(index))
- 		return; /* Already have a cache of this size */
- 
- 	align = max_t(unsigned long, align, minalign);
--	name = kasprintf(GFP_KERNEL, "pgtable-2^%d", shift);
-+	name = kasprintf(GFP_KERNEL, "pgtable-2^%d", index);
- 	new = kmem_cache_create(name, table_size, align, 0, ctor);
--	PGT_CACHE(shift) = new;
-+	PGT_CACHE(index) = new;
- 
--	pr_debug("Allocated pgtable cache for order %d\n", shift);
-+	pr_debug("Allocated pgtable cache for order %d\n", index);
- }
+diff --git a/arch/powerpc/include/asm/pgtable-ppc64-64k.h b/arch/powerpc/include/asm/pgtable-ppc64-64k.h
+index be4e287..3c529b4 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc64-64k.h
++++ b/arch/powerpc/include/asm/pgtable-ppc64-64k.h
+@@ -4,10 +4,10 @@
+ #include <asm-generic/pgtable-nopud.h>
  
  
+-#define PTE_INDEX_SIZE  12
++#define PTE_INDEX_SIZE  8
+ #define PMD_INDEX_SIZE  12
+ #define PUD_INDEX_SIZE	0
+-#define PGD_INDEX_SIZE  6
++#define PGD_INDEX_SIZE  10
+ 
+ #ifndef __ASSEMBLY__
+ #define PTE_TABLE_SIZE	(sizeof(real_pte_t) << PTE_INDEX_SIZE)
 -- 
 1.7.10
