@@ -1,31 +1,35 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0D2EB2C02F0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2013 03:48:03 +1100 (EST)
+ (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DD0B52C02A9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2013 03:48:04 +1100 (EST)
 Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 21 Feb 2013 22:16:08 +0530
+ Thu, 21 Feb 2013 22:16:00 +0530
 Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id CD3CA394004F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2013 22:17:57 +0530 (IST)
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id E95C9E0057
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2013 22:18:59 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
  by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1LGlfIh13959190
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2013 22:17:42 +0530
+ r1LGltpw25821394
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2013 22:17:55 +0530
 Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1LGleXW009772
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2013 03:47:44 +1100
+ r1LGlqYW010851
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2013 03:47:56 +1100
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [RFC PATCH -V2 00/21] THP support for PPC64
-Date: Thu, 21 Feb 2013 22:17:07 +0530
-Message-Id: <1361465248-10867-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org
+Subject: [RFC PATCH -V2 10/21] powerpc: print both base and actual page size
+ on hash failure
+Date: Thu, 21 Feb 2013 22:17:17 +0530
+Message-Id: <1361465248-10867-11-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1361465248-10867-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1361465248-10867-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,58 +39,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-This patchset adds transparent huge page support for PPC64.
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/mmu-hash64.h |    3 ++-
+ arch/powerpc/mm/hash_utils_64.c       |   12 +++++++-----
+ arch/powerpc/mm/hugetlbpage-hash64.c  |    2 +-
+ 3 files changed, 10 insertions(+), 7 deletions(-)
 
-I am marking the series to linux-mm because the PPC64 implementation
-required few interface changes to core THP code. I still have considerable
-number of FIXME!! in the patchset mostly related to PPC64 mm susbsytem.
-Those would require closer review and once we are clear on those changes,
-I will drop those FIXME!! with necessary comments.
-
-Some numbers:
-
-The latency measurements code from Anton  found at
-http://ozlabs.org/~anton/junkcode/latency2001.c
-
-THP disabled 64K page size
-------------------------
-[root@llmp24l02 ~]# ./latency2001 8G
- 8589934592    731.73 cycles    205.77 ns
-[root@llmp24l02 ~]# ./latency2001 8G
- 8589934592    743.39 cycles    209.05 ns
-[root@llmp24l02 ~]#
-
-THP disabled large page via hugetlbfs
--------------------------------------
-[root@llmp24l02 ~]# ./latency2001  -l 8G
- 8589934592    416.09 cycles    117.01 ns
-[root@llmp24l02 ~]# ./latency2001  -l 8G
- 8589934592    415.74 cycles    116.91 ns
-
-THP enabled 64K page size.
-----------------
-[root@llmp24l02 ~]# ./latency2001 8G
- 8589934592    405.07 cycles    113.91 ns
-[root@llmp24l02 ~]# ./latency2001 8G
- 8589934592    411.82 cycles    115.81 ns
-[root@llmp24l02 ~]#
-
-
-We are close to hugetlbfs in latency and we can achieve this with zero
-config/page reservation. Most of the allocations above are fault allocated.
-I haven't really measured the collapse alloc impact.
-
-Another test that does 50000000 random access over 1GB area goes from
-2.65 seconds to 1.07 seconds with this patchset.
-
-Changes from RFC V1:
-* HugeTLB fs now works
-* Compile issues fixed
-* rebased to v3.8
-* Patch series reorded so that ppc64 cleanups and MM THP changes are moved
-  early in the series. This should help in picking those patches early.
-
-Thanks,
--aneesh
+diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
+index c7bc181..ca4f174 100644
+--- a/arch/powerpc/include/asm/mmu-hash64.h
++++ b/arch/powerpc/include/asm/mmu-hash64.h
+@@ -327,7 +327,8 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		     unsigned int shift, unsigned int mmu_psize);
+ extern void hash_failure_debug(unsigned long ea, unsigned long access,
+ 			       unsigned long vsid, unsigned long trap,
+-			       int ssize, int psize, unsigned long pte);
++			       int ssize, int psize, int lpsize,
++			       unsigned long pte);
+ extern int htab_bolt_mapping(unsigned long vstart, unsigned long vend,
+ 			     unsigned long pstart, unsigned long prot,
+ 			     int psize, int ssize);
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 48edb46..df48ba5 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -917,14 +917,14 @@ static inline int subpage_protection(struct mm_struct *mm, unsigned long ea)
+ 
+ void hash_failure_debug(unsigned long ea, unsigned long access,
+ 			unsigned long vsid, unsigned long trap,
+-			int ssize, int psize, unsigned long pte)
++			int ssize, int psize, int lpsize, unsigned long pte)
+ {
+ 	if (!printk_ratelimit())
+ 		return;
+ 	pr_info("mm: Hashing failure ! EA=0x%lx access=0x%lx current=%s\n",
+ 		ea, access, current->comm);
+-	pr_info("    trap=0x%lx vsid=0x%lx ssize=%d psize=%d pte=0x%lx\n",
+-		trap, vsid, ssize, psize, pte);
++	pr_info("    trap=0x%lx vsid=0x%lx ssize=%d base psize=%d psize %d pte=0x%lx\n",
++		trap, vsid, ssize, psize, lpsize, pte);
+ }
+ 
+ /* Result code is:
+@@ -1097,7 +1097,7 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
+ 	 */
+ 	if (rc == -1)
+ 		hash_failure_debug(ea, access, vsid, trap, ssize, psize,
+-				   pte_val(*ptep));
++				   psize, pte_val(*ptep));
+ #ifndef CONFIG_PPC_64K_PAGES
+ 	DBG_LOW(" o-pte: %016lx\n", pte_val(*ptep));
+ #else
+@@ -1175,7 +1175,9 @@ void hash_preload(struct mm_struct *mm, unsigned long ea,
+ 	 */
+ 	if (rc == -1)
+ 		hash_failure_debug(ea, access, vsid, trap, ssize,
+-				   mm->context.user_psize, pte_val(*ptep));
++				   mm->context.user_psize,
++				   mm->context.user_psize,
++				   pte_val(*ptep));
+ 
+ 	local_irq_restore(flags);
+ }
+diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
+index e0d52ee..06ecb55 100644
+--- a/arch/powerpc/mm/hugetlbpage-hash64.c
++++ b/arch/powerpc/mm/hugetlbpage-hash64.c
+@@ -129,7 +129,7 @@ repeat:
+ 		if (unlikely(slot == -2)) {
+ 			*ptep = __pte(old_pte);
+ 			hash_failure_debug(ea, access, vsid, trap, ssize,
+-					   mmu_psize, old_pte);
++					   mmu_psize, mmu_psize, old_pte);
+ 			return -1;
+ 		}
+ 
+-- 
+1.7.10
