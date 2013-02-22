@@ -1,26 +1,37 @@
-Return-Path: <B40534@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4DB012C02A7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2013 20:51:44 +1100 (EST)
-From: Wang Dongsheng-B40534 <B40534@freescale.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: RE: [RFC][PATCH] powerpc: add Book E support to 64-bit hibernation
-Date: Fri, 22 Feb 2013 09:50:33 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259E729DB@039-SN2MPN1-021.039d.mgd.msft.net>
-References: <1360203915-22112-1-git-send-email-dongsheng.wang@freescale.com>
- <ABB05CD9C9F68C46A5CEDC7F15439259E728F2@039-SN2MPN1-021.039d.mgd.msft.net>
- <1361524129.8146.1.camel@jlt4.sipsolutions.net>
-In-Reply-To: <1361524129.8146.1.camel@jlt4.sipsolutions.net>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A81352C029E
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Feb 2013 04:20:58 +1100 (EST)
+Received: from /spool/local
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 22 Feb 2013 22:48:21 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id DE83B125804F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2013 22:51:39 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r1MHKjtG33095920
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2013 22:50:47 +0530
+Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r1MHKnxi002736
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Feb 2013 04:20:50 +1100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [RFC PATCH -V2 05/21] powerpc: Reduce PTE table memory wastage
+In-Reply-To: <20130222052351.GE6139@drongo>
+References: <1361465248-10867-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1361465248-10867-6-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20130222052351.GE6139@drongo>
+Date: Fri, 22 Feb 2013 22:50:49 +0530
+Message-ID: <87y5eguuxa.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: Zhao Chenhui-B35336 <B35336@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>,
- Wood Scott-B07421 <B07421@freescale.com>
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,30 +41,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBKb2hhbm5lcyBCZXJnIFttYWls
-dG86am9oYW5uZXNAc2lwc29sdXRpb25zLm5ldF0NCj4gU2VudDogRnJpZGF5LCBGZWJydWFyeSAy
-MiwgMjAxMyA1OjA5IFBNDQo+IFRvOiBXYW5nIERvbmdzaGVuZy1CNDA1MzQNCj4gQ2M6IGJlbmhA
-a2VybmVsLmNyYXNoaW5nLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IFdvb2Qg
-U2NvdHQtDQo+IEIwNzQyMTsgTGkgWWFuZy1SNTg0NzI7IFpoYW8gQ2hlbmh1aS1CMzUzMzYNCj4g
-U3ViamVjdDogUmU6IFtSRkNdW1BBVENIXSBwb3dlcnBjOiBhZGQgQm9vayBFIHN1cHBvcnQgdG8g
-NjQtYml0DQo+IGhpYmVybmF0aW9uDQo+IA0KPiBIaSwNCj4gDQo+ID4gPiBTdWJqZWN0OiBbUkZD
-XVtQQVRDSF0gcG93ZXJwYzogYWRkIEJvb2sgRSBzdXBwb3J0IHRvIDY0LWJpdA0KPiA+ID4gaGli
-ZXJuYXRpb24NCj4gDQo+ID4gQW55IHRob3VnaHRzIGFib3V0IHRoaXMgcGF0Y2g/DQo+IA0KPiBI
-ZWgsIGhvbmVzdGx5LCBuby4gSSBrbm93IG5vdGhpbmcgYWJvdXQgQm9vayBFLCBhbmQgaXQncyB0
-b28gbG9uZyBhZ28NCj4gdGhhdCBJIHdyb3RlIChzb21lIG9mKSB0aGUgNjQtYml0IGhpYmVybmF0
-aW9uIGNvZGUuDQo+IA0KVGhhbmtzIGZvciB5b3VyIGZlZWRiYWNrLg0KDQpDb3VsZCB5b3UgZ2l2
-ZSBtZSBzb21lIGFkdmljZSBhYm91dCBjYWNoZSBmbHVzaC4gSXQgY29uZnVzZWQgbWUgdGhhdCB3
-aHkNCm9ubHkgMSBNaUIgaXMgZmx1c2hlZCBmcm9tIEtFUk5FTF9TVEFSVCBvbiBQb3dlcm1hYyBH
-NS4NCg0KT24gRlNMIEJvb2sgRShlNTAwIGZhbWlseSksIEV2ZW4gaWYgSSBkb24ndCBmbGFzaCBj
-YWNoZSwgdGhlIHdvcmsgaXMNCmFsc28gbm9ybWFsKERjYWNoZXMgYXJlIGtlcHQgY29oZXJlbnQg
-YnkgaGFyZHdhcmUsIGFuZCBpY2FjaGVzIGFyZSBrZXB0DQpjb2hlcmVudCBieSBzb2Z0d2FyZSku
-IEJ1dCBJIHN0aWxsIHdvcnJ5IGFib3V0IGNhY2hlcy4gSXMgdGhlcmUgYSBuZWVkDQp0byBmbHVz
-aCBMMiBjYWNoZSBpZiBJIGhhdmUgYWxyZWFkeSBmbHVzaGVkIEwxIGNhY2hlPyANCk9yIG9uIFBv
-d2VybWFjIEc1LCBmbHVzaCBjYWNoZXMgaXMgYSBnZW5lcmFsIHdheT8NCg0KUG93ZXJtYWMgRzUg
-Q29kZXM6DQogICAgICAgIC8qIGZsdXNoIGNhY2hlcyAqLw0KICAgICAgICBsaXMgICAgIHIzLCAw
-eDEwDQogICAgICAgIG10Y3RyICAgcjMNCiAgICAgICAgbGkgICAgICByMywgMA0KICAgICAgICBv
-cmkgICAgIHIzLCByMywgQ09ORklHX0tFUk5FTF9TVEFSVD4+NDgNCiAgICAgICAgbGkgICAgICBy
-MCwgNDgNCiAgICAgICAgc2xkICAgICByMywgcjMsIHIwDQogICAgICAgIGxpICAgICAgcjAsIDAN
-CjE6DQogICAgICAgIGRjYmYgICAgcjAscjMNCiAgICAgICAgYWRkaSAgICByMyxyMywweDIwDQog
-ICAgICAgIGJkbnogICAgMWINCg0KICAgICAgICBzeW5jDQoNCiAgICAgICAgdGxiaWENCg0KPiBq
-b2hhbm5lcw0KPiANCg==
+Paul Mackerras <paulus@samba.org> writes:
+
+I will reply to the other parts in a seperate email, but the below
+
+>> +static void page_table_free_rcu(struct mmu_gather *tlb, unsigned long *table)
+>> +{
+>> +	struct page *page;
+>> +	struct mm_struct *mm;
+>> +	unsigned int bit, mask;
+>> +
+>> +	mm = tlb->mm;
+>> +	/* Free 2K page table fragment of a 64K page */
+>> +	page = virt_to_page(table);
+>> +	bit = 1 << ((__pa(table) & ~PAGE_MASK) / PTE_FRAG_SIZE);
+>> +	spin_lock(&mm->page_table_lock);
+>> +	/*
+>> +	 * stash the actual mask in higher half, and clear the lower half
+>> +	 * and selectively, add remove from pgtable list
+>> +	 */
+>> +	mask = atomic_xor_bits(&page->_mapcount, bit | (bit << FRAG_MASK_BITS));
+>> +	if (!(mask & FRAG_MASK))
+>> +		list_del(&page->lru);
+>> +	else {
+>> +		/*
+>> +		 * Add the page table page to pgtable_list so that
+>> +		 * the free fragment can be used by the next alloc
+>> +		 */
+>> +		list_del_init(&page->lru);
+>> +		list_add_tail(&page->lru, &mm->context.pgtable_list);
+>> +	}
+>> +	spin_unlock(&mm->page_table_lock);
+>> +	tlb_remove_table(tlb, table);
+>> +}
+>
+> This looks like you're allowing a fragment that is being freed to be
+> reallocated and used again during the grace period when we are waiting
+> for any references to the fragment to disappear.  Doesn't that allow a
+> race where one CPU traversing the page table and using the fragment in
+> its old location in the tree could see a PTE created after the
+> fragment was reallocated?  In other words, why is it safe to allow the
+> fragment to be used during the grace period?  If it is safe, it at
+> least needs a comment explaining why.
+>
+
+We don't allow it to be reallocated during the grace period. The trick
+is in the below lines of page_table_alloc()
+
+		/*
+		 * Update with the higher order mask bits accumulated,
+		 * added as a part of rcu free.
+		 */
+		mask = mask | (mask >> FRAG_MASK_BITS);
+
+When checking for mask, we also look at the higher order bits.
+
+The reason we add the page back to &mm->context.pgtable_list in
+page_table_free_rcu is because we need to have access to struct
+mm_struct. We don't have that in the rcu call back. So we add early and
+make sure we don't reallocate them, until the grace period is over.
+
+I will definitely add more comments around the code to clarify these details.
+
+-aneesh
