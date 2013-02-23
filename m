@@ -1,25 +1,38 @@
-Return-Path: <phileas-fogg@mail.ru>
-Received: from smtp21.mail.ru (smtp21.mail.ru [94.100.176.174])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 650F82C02AE
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Feb 2013 09:53:20 +1100 (EST)
-Message-ID: <512804EC.6050407@mail.ru>
-Date: Sat, 23 Feb 2013 00:53:16 +0100
-From: Phileas Fogg <phileas-fogg@mail.ru>
+ (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1EFB52C02AB
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Feb 2013 03:18:07 +1100 (EST)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Sun, 24 Feb 2013 02:13:25 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id D8E5D357802D
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Feb 2013 03:18:00 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r1NGHw477930296
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Feb 2013 03:17:58 +1100
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r1NGHxRW024382
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Feb 2013 03:18:00 +1100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [RFC PATCH -V2 03/21] powerpc: Don't hard code the size of pte
+ page
+In-Reply-To: <20130222050607.GC6139@drongo>
+References: <1361465248-10867-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1361465248-10867-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20130222050607.GC6139@drongo>
+Date: Sat, 23 Feb 2013 21:47:57 +0530
+Message-ID: <87621jc8cq.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: PS3: Strange issue with kexec and FreeBSD loader
-References: <1360365046.495584377@f356.mail.ru> <5123C729.5040607@mail.ru>
- <5123D864.4060503@mail.ru> <51253558.1070407@mail.ru>
- <1361406741.4676.44.camel@pasglop> <512685B7.5080404@mail.ru>
- <1361478942.4676.53.camel@pasglop> <5126955B.9070808@mail.ru>
- <1361490374.4676.58.camel@pasglop> <5127D9CE.2090500@mail.ru>
- <1361562773.15017.36.camel@pasglop> <51280223.9070109@mail.ru>
- <1361573108.15017.39.camel@pasglop>
-In-Reply-To: <1361573108.15017.39.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,131 +42,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Sat, 2013-02-23 at 00:41 +0100, Phileas Fogg wrote:
->> Benjamin Herrenschmidt wrote:
->>> On Fri, 2013-02-22 at 21:49 +0100, Phileas Fogg wrote:
->>>> i wanted to let you know that i tested your advice. And let me say, it's was a
->>>> damn good advice :) I can boot FreeBSD loader on Linux 3.8 now, no SHA256
->>>> checksum failures. And no panics with FreeBSD LiveCD anymore too.
->>>>
->>>> I just inserted hard_irq_disable() after each local_irq_disable() in
->>>> arch/powerpc/kernel/machine_kexec_64.c
->>>
->>> Awesome ! :-)
->>>
->>> Care to send a patch with a Signed-off-by: ?
->>
->> No problem, but as i said it was your idea how to fix the issue with kexec.
->> Anyways here is the patch which i tested on my PS3 console with Linux 3.8.
->> After applying this patch i can boot any Linux kernel starting with 2.6,
->> FreeBSD loader, FreeBSD LiveCD and my own tiny ELF kernels too.
->> Even OpenBSD bootloader starts now too :)
->> And i don't see any failed SHA256 checksums in the purgatory code.
+Paul Mackerras <paulus@samba.org> writes:
+
+> On Thu, Feb 21, 2013 at 10:17:10PM +0530, Aneesh Kumar K.V wrote:
+>> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+>> 
+>> USE PTRS_PER_PTE to indicate the size of pte page.
+>> 
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>> powerpc: Don't hard code the size of pte page
+>> 
+>> USE PTRS_PER_PTE to indicate the size of pte page.
+>> 
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 >
-> Thanks, but I still need the Signed-off-by: line before i can apply
-> it :-) (legal...)
+> Description and signoff are duplicated.  Description could be more
+> informative, for example - why would we want to do this?
 >
-> Cheers,
-> Ben.
+>> +/*
+>> + * hidx is in the second half of the page table. We use the
+>> + * 8 bytes per each pte entry.
 >
->> regards
->>
->>   From c17cdf38dfe180b4a571827bb547aaf9b678cf29 Mon Sep 17 00:00:00 2001
->> From: Phileas Fogg <phileas-fogg@mail.ru>
->> Date: Sat, 23 Feb 2013 00:32:19 +0100
->> Subject: [PATCH] kexec: disable hard IRQ before kexec
->>
->> Disable hard IRQ before kexec a new kernel image.
->> Not doing it can result in corrupted data in the memory segments
->> reserved for the new kernel.
->> ---
->>    arch/powerpc/kernel/machine_kexec_64.c | 3 +++
->>    1 file changed, 3 insertions(+)
->>
->> diff --git a/arch/powerpc/kernel/machine_kexec_64.c
->> b/arch/powerpc/kernel/machine_kexec_64.c
->> index 7206701..e08b9d0 100644
->> --- a/arch/powerpc/kernel/machine_kexec_64.c
->> +++ b/arch/powerpc/kernel/machine_kexec_64.c
->> @@ -162,6 +162,7 @@ static int kexec_all_irq_disabled = 0;
->>    static void kexec_smp_down(void *arg)
->>    {
->>    	local_irq_disable();
->> +	hard_irq_disable();
->>    	mb(); /* make sure our irqs are disabled before we say they are */
->>    	get_paca()->kexec_state = KEXEC_STATE_IRQS_OFF;
->>    	while(kexec_all_irq_disabled == 0)
->> @@ -244,6 +245,7 @@ static void kexec_prepare_cpus(void)
->>    	wake_offline_cpus();
->>    	smp_call_function(kexec_smp_down, NULL, /* wait */0);
->>    	local_irq_disable();
->> +	hard_irq_disable();
->>    	mb(); /* make sure IRQs are disabled before we say they are */
->>    	get_paca()->kexec_state = KEXEC_STATE_IRQS_OFF;
->>
->> @@ -281,6 +283,7 @@ static void kexec_prepare_cpus(void)
->>    	if (ppc_md.kexec_cpu_down)
->>    		ppc_md.kexec_cpu_down(0, 0);
->>    	local_irq_disable();
->> +	hard_irq_disable();
->>    }
->>
->>    #endif /* SMP */
->
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
+> The casual reader probably wouldn't know what "hidx" is.  The comment
+> needs at least to use a better name than "hidx".
 
-Next attempt.
+how about
+
++/*
++ * We save the slot number & secondary bit in the second half of the
++ * PTE page. We use the 8 bytes per each pte entry.
++ */
 
 
-Signed-off-by: Phileas Fogg <phileas-fogg@mail.ru>
----
-
- From c17cdf38dfe180b4a571827bb547aaf9b678cf29 Mon Sep 17 00:00:00 2001
-From: Phileas Fogg <phileas-fogg@mail.ru>
-Date: Sat, 23 Feb 2013 00:32:19 +0100
-Subject: [PATCH] kexec: disable hard IRQ before kexec
-
-Disable hard IRQ before kexec a new kernel image.
-Not doing it can result in corrupted data in the memory segments
-reserved for the new kernel.
----
-  arch/powerpc/kernel/machine_kexec_64.c | 3 +++
-  1 file changed, 3 insertions(+)
-
-diff --git a/arch/powerpc/kernel/machine_kexec_64.c 
-b/arch/powerpc/kernel/machine_kexec_64.c
-index 7206701..e08b9d0 100644
---- a/arch/powerpc/kernel/machine_kexec_64.c
-+++ b/arch/powerpc/kernel/machine_kexec_64.c
-@@ -162,6 +162,7 @@ static int kexec_all_irq_disabled = 0;
-  static void kexec_smp_down(void *arg)
-  {
-  	local_irq_disable();
-+	hard_irq_disable();
-  	mb(); /* make sure our irqs are disabled before we say they are */
-  	get_paca()->kexec_state = KEXEC_STATE_IRQS_OFF;
-  	while(kexec_all_irq_disabled == 0)
-@@ -244,6 +245,7 @@ static void kexec_prepare_cpus(void)
-  	wake_offline_cpus();
-  	smp_call_function(kexec_smp_down, NULL, /* wait */0);
-  	local_irq_disable();
-+	hard_irq_disable();
-  	mb(); /* make sure IRQs are disabled before we say they are */
-  	get_paca()->kexec_state = KEXEC_STATE_IRQS_OFF;
-
-@@ -281,6 +283,7 @@ static void kexec_prepare_cpus(void)
-  	if (ppc_md.kexec_cpu_down)
-  		ppc_md.kexec_cpu_down(0, 0);
-  	local_irq_disable();
-+	hard_irq_disable();
-  }
-
-  #endif /* SMP */
--- 
-1.8.1.4
+-aneesh
