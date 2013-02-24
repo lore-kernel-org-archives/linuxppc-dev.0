@@ -1,38 +1,21 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 15F1D2C029A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Feb 2013 03:51:48 +1100 (EST)
-Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 25 Feb 2013 02:42:24 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 3B5892CE802D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Feb 2013 03:51:43 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1OGdHxf11993284
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Feb 2013 03:39:18 +1100
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1OGpfjB024551
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Feb 2013 03:51:42 +1100
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [RFC PATCH -V2 08/21] powerpc: Decode the pte-lp-encoding bits
- correctly.
-In-Reply-To: <20130222053735.GH6139@drongo>
-References: <1361465248-10867-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1361465248-10867-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20130222053735.GH6139@drongo>
-Date: Sun, 24 Feb 2013 22:21:37 +0530
-Message-ID: <87sj4lbqp2.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (unknown
+ [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
+ by ozlabs.org (Postfix) with ESMTP id B38CF2C02A4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Feb 2013 04:13:12 +1100 (EST)
+Date: Sun, 24 Feb 2013 12:04:58 -0500 (EST)
+Message-Id: <20130224.120458.1711395595508489332.davem@davemloft.net>
+To: paul.gortmaker@windriver.com
+Subject: Re: [PATCH net] gianfar: fix compile fail for NET_POLL=y due to
+ struct packing
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1361720311-13267-1-git-send-email-paul.gortmaker@windriver.com>
+References: <1361717023.16950.12.camel@pasglop>
+ <1361720311-13267-1-git-send-email-paul.gortmaker@windriver.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: jianhua.xie@freescale.com, netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, claudiu.manoil@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,97 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul Mackerras <paulus@samba.org> writes:
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+Date: Sun, 24 Feb 2013 10:38:31 -0500
 
-> On Thu, Feb 21, 2013 at 10:17:15PM +0530, Aneesh Kumar K.V wrote:
->> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
->> 
->> We look at both the segment base page size and actual page size and store
->> the pte-lp-encodings in an array per base page size.
->> 
->> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->
-> This needs more than 2 lines of patch description.  In fact what
-> you're doing is adding general mixed page-size segment (MPSS)
-> support.  Doing this should mean that you can also get rid of the
-> MMU_PAGE_64K_AP value from the list in asm/mmu.h.
->
+> Commit ee873fda3bec7c668407b837fc5519eb961fcd37 ("gianfar: Pack struct
+> gfar_priv_grp into three cachelines") moved the irq number and names
+> off into a separate struct and created accessors for them.  However
+> it was never tested with NET_POLL enabled, and so some conversions
+> that were simply overlooked went undetected until now.
+> 
+> Make the netpoll ones also use the gfar_irq() accessors.
+> 
+> Reported-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Claudiu Manoil <claudiu.manoil@freescale.com>
+> Cc: Jianhua Xie <jianhua.xie@freescale.com>
+> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 
-Can you elaborate on Admixed pages ? I was not able to find more info on
-that. 
-
-
->>  struct mmu_psize_def
->>  {
->>  	unsigned int	shift;	/* number of bits */
->> -	unsigned int	penc;	/* HPTE encoding */
->> +	unsigned int	penc[MMU_PAGE_COUNT];	/* HPTE encoding */
->
-> I guess this is reasonable, though adding space for 14 page size
-> encodings seems a little bit over the top.  Also, you don't seem to
-> have any way to indicate which encodings are valid, since 0 is a valid
-> encoding.  Maybe you need to add a valid bit higher up to indicate
-> which page sizes are valid.
->
-
-how about penc = { [0 ... MMU_PAGE_COUNT] = -1 } ?, that would make sure
-we set all the bits for invalid entries. 
-
-
->> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
->> index 71d0c90..d2c9932 100644
->> --- a/arch/powerpc/kvm/book3s_hv.c
->> +++ b/arch/powerpc/kvm/book3s_hv.c
->> @@ -1515,7 +1515,12 @@ static void kvmppc_add_seg_page_size(struct kvm_ppc_one_seg_page_size **sps,
->>  	(*sps)->page_shift = def->shift;
->>  	(*sps)->slb_enc = def->sllp;
->>  	(*sps)->enc[0].page_shift = def->shift;
->> -	(*sps)->enc[0].pte_enc = def->penc;
->> +	/*
->> +	 * FIXME!!
->> +	 * This is returned to user space. Do we need to
->> +	 * return details of MPSS here ?
->
-> Yes, we do, probably a separate entry for each valid base/actual page
-> size pair.
->
-
-Ok will do new entries to enc for valid actual page size supported.
-
-for 16MB actual page size 
-
-enc[1].page_shift = 24
-enc[1].page_shift = x
-
-should this be a seperate patch ?
-
->> +static inline int hpte_actual_psize(struct hash_pte *hptep, int psize)
->> +{
->> +	unsigned int mask;
->> +	int i, penc, shift;
->> +	/* Look at the 8 bit LP value */
->> +	unsigned int lp = (hptep->r >> LP_SHIFT) & ((1 << (LP_BITS + 1)) - 1);
->
-> Why LP_BITS + 1 here?  You seem to be extracting and comparing 9 bits
-> rather than 8.  Why is that?
->
-
-My mistake.  Will fix
-
->> @@ -395,12 +422,13 @@ static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
->>  			/* valid entries have a shift value */
->>  			if (!mmu_psize_defs[size].shift)
->>  				continue;
->> -
->> -			if (penc == mmu_psize_defs[size].penc)
->> -				break;
->> +			for (a_size = 0; a_size < MMU_PAGE_COUNT; a_size++)
->> +				if (penc == mmu_psize_defs[size].penc[a_size])
->> +					goto out;
->
-> I think this will get false matches due to unused/invalid entries
-> in mmu_psize_defs[size].penc[] containing 0.
-
-Will set the invalid value to 0xff. 
-
--aneesh
+Applied, thanks.
