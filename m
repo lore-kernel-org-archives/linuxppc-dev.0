@@ -1,23 +1,23 @@
-Return-Path: <paul.gortmaker@gmail.com>
-Received: from mail-wg0-f51.google.com (mail-wg0-f51.google.com [74.125.82.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 73CE22C02A3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Feb 2013 02:13:42 +1100 (EST)
-Received: by mail-wg0-f51.google.com with SMTP id 8so1702576wgl.18
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Feb 2013 07:13:38 -0800 (PST)
-MIME-Version: 1.0
-Sender: paul.gortmaker@gmail.com
+Return-Path: <Paul.Gortmaker@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 522422C029A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Feb 2013 02:40:13 +1100 (EST)
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: <netdev@vger.kernel.org>
+Subject: [PATCH net] gianfar: fix compile fail for NET_POLL=y due to struct
+ packing
+Date: Sun, 24 Feb 2013 10:38:31 -0500
+Message-ID: <1361720311-13267-1-git-send-email-paul.gortmaker@windriver.com>
 In-Reply-To: <1361717023.16950.12.camel@pasglop>
 References: <1361717023.16950.12.camel@pasglop>
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-Date: Sun, 24 Feb 2013 10:05:17 -0500
-Message-ID: <CAP=VYLpjNHkYZL0aJXFshQ0fZY9yGpKN-8qhCzHARmKx=S9jFA@mail.gmail.com>
-Subject: Re: Gianfar breaks one of my test configs
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Jianhua Xie <jianhua.xie@freescale.com>, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, claudiu.manoil@freescale.com
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Jianhua Xie <jianhua.xie@freescale.com>,
+ Paul Gortmaker <paul.gortmaker@windriver.com>, linuxppc-dev@lists.ozlabs.org,
+ Claudiu Manoil <claudiu.manoil@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,40 +27,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Feb 24, 2013 at 9:43 AM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> Hi folks !
->
-> Current Linus tree as of this morning fails to build with one of my
-> (semi-random) test configs (attached):
->
-> /home/benh/linux-powerpc-test/drivers/net/ethernet/freescale/gianfar.c: In function 'gfar_netpoll':
-> /home/benh/linux-powerpc-test/drivers/net/ethernet/freescale/gianfar.c:2909:32: error: 'struct gfar_priv_grp' has no member named 'interruptTransmit'
+Commit ee873fda3bec7c668407b837fc5519eb961fcd37 ("gianfar: Pack struct
+gfar_priv_grp into three cachelines") moved the irq number and names
+off into a separate struct and created accessors for them.  However
+it was never tested with NET_POLL enabled, and so some conversions
+that were simply overlooked went undetected until now.
 
-I see the problem - it wasn't tested with NET_POLL.   I'll have a fix
-out shortly.
+Make the netpoll ones also use the gfar_irq() accessors.
 
-Thanks,
-Paul.
---
+Reported-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Claudiu Manoil <claudiu.manoil@freescale.com>
+Cc: Jianhua Xie <jianhua.xie@freescale.com>
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+---
 
-> /home/benh/linux-powerpc-test/drivers/net/ethernet/freescale/gianfar.c:2910:32: error: 'struct gfar_priv_grp' has no member named 'interruptReceive'
-> /home/benh/linux-powerpc-test/drivers/net/ethernet/freescale/gianfar.c:2911:32: error: 'struct gfar_priv_grp' has no member named 'interruptError'
-> /home/benh/linux-powerpc-test/drivers/net/ethernet/freescale/gianfar.c:2912:35: error: 'struct gfar_priv_grp' has no member named 'interruptTransmit'
-> /home/benh/linux-powerpc-test/drivers/net/ethernet/freescale/gianfar.c:2914:31: error: 'struct gfar_priv_grp' has no member named 'interruptError'
-> /home/benh/linux-powerpc-test/drivers/net/ethernet/freescale/gianfar.c:2915:31: error: 'struct gfar_priv_grp' has no member named 'interruptReceive'
-> /home/benh/linux-powerpc-test/drivers/net/ethernet/freescale/gianfar.c:2916:31: error: 'struct gfar_priv_grp' has no member named 'interruptTransmit'
-> /home/benh/linux-powerpc-test/drivers/net/ethernet/freescale/gianfar.c:2920:32: error: 'struct gfar_priv_grp' has no member named 'interruptTransmit'
-> /home/benh/linux-powerpc-test/drivers/net/ethernet/freescale/gianfar.c:2921:35: error: 'struct gfar_priv_grp' has no member named 'interruptTransmit'
-> /home/benh/linux-powerpc-test/drivers/net/ethernet/freescale/gianfar.c:2923:31: error: 'struct gfar_priv_grp' has no member named 'interruptTransmit'
-> make[5]: *** [drivers/net/ethernet/freescale/gianfar.o] Error 1
-> make[5]: *** Waiting for unfinished jobs....
->
-> Cheers,
-> Ben.
->
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+[compile tested for sbc8548 with NET_POLL=y]
+
+ drivers/net/ethernet/freescale/gianfar.c | 26 ++++++++++++++------------
+ 1 file changed, 14 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/net/ethernet/freescale/gianfar.c b/drivers/net/ethernet/freescale/gianfar.c
+index 4b5e8a6..d2c5441 100644
+--- a/drivers/net/ethernet/freescale/gianfar.c
++++ b/drivers/net/ethernet/freescale/gianfar.c
+@@ -2906,21 +2906,23 @@ static void gfar_netpoll(struct net_device *dev)
+ 	/* If the device has multiple interrupts, run tx/rx */
+ 	if (priv->device_flags & FSL_GIANFAR_DEV_HAS_MULTI_INTR) {
+ 		for (i = 0; i < priv->num_grps; i++) {
+-			disable_irq(priv->gfargrp[i].interruptTransmit);
+-			disable_irq(priv->gfargrp[i].interruptReceive);
+-			disable_irq(priv->gfargrp[i].interruptError);
+-			gfar_interrupt(priv->gfargrp[i].interruptTransmit,
+-				       &priv->gfargrp[i]);
+-			enable_irq(priv->gfargrp[i].interruptError);
+-			enable_irq(priv->gfargrp[i].interruptReceive);
+-			enable_irq(priv->gfargrp[i].interruptTransmit);
++			struct gfar_priv_grp *grp = &priv->gfargrp[i];
++
++			disable_irq(gfar_irq(grp, TX)->irq);
++			disable_irq(gfar_irq(grp, RX)->irq);
++			disable_irq(gfar_irq(grp, ER)->irq);
++			gfar_interrupt(gfar_irq(grp, TX)->irq, grp);
++			enable_irq(gfar_irq(grp, ER)->irq);
++			enable_irq(gfar_irq(grp, RX)->irq);
++			enable_irq(gfar_irq(grp, TX)->irq);
+ 		}
+ 	} else {
+ 		for (i = 0; i < priv->num_grps; i++) {
+-			disable_irq(priv->gfargrp[i].interruptTransmit);
+-			gfar_interrupt(priv->gfargrp[i].interruptTransmit,
+-				       &priv->gfargrp[i]);
+-			enable_irq(priv->gfargrp[i].interruptTransmit);
++			struct gfar_priv_grp *grp = &priv->gfargrp[i];
++
++			disable_irq(gfar_irq(grp, TX)->irq);
++			gfar_interrupt(gfar_irq(grp, TX)->irq, grp);
++			enable_irq(gfar_irq(grp, TX)->irq);
+ 		}
+ 	}
+ }
+-- 
+1.8.1.2
