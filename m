@@ -1,31 +1,34 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5DBBE2C02BD
+ (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 587DD2C02B3
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 19:05:36 +1100 (EST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 26 Feb 2013 17:56:05 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 1BF672CE8052
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 19:05:26 +1100 (EST)
+ Tue, 26 Feb 2013 17:59:19 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 6A3332CE804C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 19:05:33 +1100 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1Q85Nun3932556
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 19:05:23 +1100
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r1Q7r6pZ15597700
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 18:53:06 +1100
 Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1Q85PFX007310
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 19:05:25 +1100
+ r1Q85Vss007467
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 19:05:32 +1100
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V1 00/24] THP support for PPC64
-Date: Tue, 26 Feb 2013 13:34:50 +0530
-Message-Id: <1361865914-13911-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH -V1 03/24] powerpc: Don't hard code the size of pte page
+Date: Tue, 26 Feb 2013 13:34:53 +0530
+Message-Id: <1361865914-13911-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1361865914-13911-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1361865914-13911-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,65 +38,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-This patchset adds transparent huge page support for PPC64.
+USE PTRS_PER_PTE to indicate the size of pte page. To support THP,
+later patches will be changing PTRS_PER_PTE value.
 
-I am marking the series to linux-mm because the PPC64 implementation
-required few interface changes to core THP code.
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/pgtable.h |    6 ++++++
+ arch/powerpc/mm/hash_low_64.S      |    4 ++--
+ 2 files changed, 8 insertions(+), 2 deletions(-)
 
-TODO:
-* ppc64 KVM related changes
-* batch support for hpte invalidate
-* powernv still doesn't boot
-* hash preload support in update_mmu_cache_pmd
-
-Some numbers:
-
-The latency measurements code from Anton  found at
-http://ozlabs.org/~anton/junkcode/latency2001.c
-
-THP disabled 64K page size
-------------------------
-[root@llmp24l02 ~]# ./latency2001 8G
- 8589934592    731.73 cycles    205.77 ns
-[root@llmp24l02 ~]# ./latency2001 8G
- 8589934592    743.39 cycles    209.05 ns
-[root@llmp24l02 ~]#
-
-THP disabled large page via hugetlbfs
--------------------------------------
-[root@llmp24l02 ~]# ./latency2001  -l 8G
- 8589934592    416.09 cycles    117.01 ns
-[root@llmp24l02 ~]# ./latency2001  -l 8G
- 8589934592    415.74 cycles    116.91 ns
-
-THP enabled 64K page size.
-----------------
-[root@llmp24l02 ~]# ./latency2001 8G
- 8589934592    405.07 cycles    113.91 ns
-[root@llmp24l02 ~]# ./latency2001 8G
- 8589934592    411.82 cycles    115.81 ns
-[root@llmp24l02 ~]#
-
-
-We are close to hugetlbfs in latency and we can achieve this with zero
-config/page reservation. Most of the allocations above are fault allocated.
-I haven't really measured the collapse alloc impact.
-
-Another test that does 50000000 random access over 1GB area goes from
-2.65 seconds to 1.07 seconds with this patchset.
-
-Changes from RFC V2:
-* Address review comments
-* More code cleanup and patch split
-
-Changes from RFC V1:
-* HugeTLB fs now works
-* Compile issues fixed
-* rebased to v3.8
-* Patch series reorded so that ppc64 cleanups and MM THP changes are moved
-  early in the series. This should help in picking those patches early.
-
-Thanks,
--aneesh
+diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
+index a9cbd3b..4b52726 100644
+--- a/arch/powerpc/include/asm/pgtable.h
++++ b/arch/powerpc/include/asm/pgtable.h
+@@ -17,6 +17,12 @@ struct mm_struct;
+ #  include <asm/pgtable-ppc32.h>
+ #endif
+ 
++/*
++ * We save the slot number & secondary bit in the second half of the
++ * PTE page. We use the 8 bytes per each pte entry.
++ */
++#define PTE_PAGE_HIDX_OFFSET (PTRS_PER_PTE * 8)
++
+ #ifndef __ASSEMBLY__
+ 
+ #include <asm/tlbflush.h>
+diff --git a/arch/powerpc/mm/hash_low_64.S b/arch/powerpc/mm/hash_low_64.S
+index 7443481..abdd5e2 100644
+--- a/arch/powerpc/mm/hash_low_64.S
++++ b/arch/powerpc/mm/hash_low_64.S
+@@ -490,7 +490,7 @@ END_FTR_SECTION(CPU_FTR_NOEXECUTE|CPU_FTR_COHERENT_ICACHE, CPU_FTR_NOEXECUTE)
+ 	beq	htab_inval_old_hpte
+ 
+ 	ld	r6,STK_PARAM(R6)(r1)
+-	ori	r26,r6,0x8000		/* Load the hidx mask */
++	ori	r26,r6,PTE_PAGE_HIDX_OFFSET /* Load the hidx mask. */
+ 	ld	r26,0(r26)
+ 	addi	r5,r25,36		/* Check actual HPTE_SUB bit, this */
+ 	rldcr.	r0,r31,r5,0		/* must match pgtable.h definition */
+@@ -607,7 +607,7 @@ htab_pte_insert_ok:
+ 	sld	r4,r4,r5
+ 	andc	r26,r26,r4
+ 	or	r26,r26,r3
+-	ori	r5,r6,0x8000
++	ori	r5,r6,PTE_PAGE_HIDX_OFFSET
+ 	std	r26,0(r5)
+ 	lwsync
+ 	std	r30,0(r6)
+-- 
+1.7.10
