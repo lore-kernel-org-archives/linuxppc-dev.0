@@ -1,42 +1,33 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 185D52C0299
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2013 02:20:07 +1100 (EST)
-Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 26 Feb 2013 20:46:51 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 431A13940057
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 20:50:00 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1QFJvqF29556748
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 20:49:58 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1QFJvNo028938
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 15:20:00 GMT
-Message-ID: <512CD20A.3020100@linux.vnet.ibm.com>
-Date: Tue, 26 Feb 2013 20:47:30 +0530
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Return-Path: <eag0628@gmail.com>
+Received: from mail-ie0-x22b.google.com (mail-ie0-x22b.google.com
+ [IPv6:2607:f8b0:4001:c03::22b])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 442842C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2013 03:25:36 +1100 (EST)
+Received: by mail-ie0-f171.google.com with SMTP id 10so4697111ied.30
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 08:25:33 -0800 (PST)
 MIME-Version: 1.0
-To: Lai Jiangshan <eag0628@gmail.com>
-Subject: Re: [PATCH v6 04/46] percpu_rwlock: Implement the core design of
- Per-CPU Reader-Writer Locks
+In-Reply-To: <512CC509.1050000@linux.vnet.ibm.com>
 References: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
  <20130218123856.26245.46705.stgit@srivatsabhat.in.ibm.com>
  <CANN689F9S7c1M8+cEpz3tsxGF34+NTRBLvxgPUOtbvav5u+RRA@mail.gmail.com>
- <5122551E.1080703@linux.vnet.ibm.com> <51226B46.9080707@linux.vnet.ibm.com>
+ <5122551E.1080703@linux.vnet.ibm.com>
+ <51226B46.9080707@linux.vnet.ibm.com>
  <CANN689FSxOz+0Cu7EG_yKD8ZE1OpT4kyT+ybLfXSqaifodJRpw@mail.gmail.com>
  <51226F91.7000108@linux.vnet.ibm.com>
  <CACvQF53bdh4_BxF0y1fnTVR+T2OmRc0jmWQYftsvx92-fg-Lug@mail.gmail.com>
  <512BBAD8.8010006@linux.vnet.ibm.com>
- <CACvQF53gcuEfgM=L8-mPTt4W3GFMte-w6eyO0iv2CobAN68SNw@mail.gmail.com>
-In-Reply-To: <CACvQF53gcuEfgM=L8-mPTt4W3GFMte-w6eyO0iv2CobAN68SNw@mail.gmail.com>
+ <CACvQF51jCxk5jUqmhD=QBBtUsBkQWZzakacrKO4Gsk=w61rNwQ@mail.gmail.com>
+ <512C7A38.8060906@linux.vnet.ibm.com>
+ <CACvQF51RvhM8XNqu3-1OTQ=cZUZ=pAX+_zx0a29+W67N1X+BgQ@mail.gmail.com>
+ <512CC509.1050000@linux.vnet.ibm.com>
+Date: Wed, 27 Feb 2013 00:25:33 +0800
+Message-ID: <CACvQF50UgiqPpDk3HCmV86zKSf6tPjqr0bZowfPEOJs0g0r0MQ@mail.gmail.com>
+Subject: Re: [PATCH v6 04/46] percpu_rwlock: Implement the core design of
+ Per-CPU Reader-Writer Locks
+From: Lai Jiangshan <eag0628@gmail.com>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
  linux-kernel@vger.kernel.org, Michel Lespinasse <walken@google.com>,
@@ -45,10 +36,9 @@ Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
  paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
  linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org,
  rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
- linux-arm-kernel@lists.infradead.org, Lai Jiangshan <laijs@cn.fujitsu.com>,
- netdev@vger.kernel.org, oleg@redhat.com, vincent.guittot@linaro.org,
- sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+ linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com,
+ vincent.guittot@linaro.org, sbw@mit.edu, tj@kernel.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -58,51 +48,167 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/26/2013 07:04 PM, Lai Jiangshan wrote:
-> On Tue, Feb 26, 2013 at 3:26 AM, Srivatsa S. Bhat
-> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
->> Hi Lai,
->>
->> On 02/25/2013 09:23 PM, Lai Jiangshan wrote:
->>> Hi, Srivatsa,
+On Tue, Feb 26, 2013 at 10:22 PM, Srivatsa S. Bhat
+<srivatsa.bhat@linux.vnet.ibm.com> wrote:
+>
+> Hi Lai,
+>
+> I'm really not convinced that piggy-backing on lglocks would help
+> us in any way. But still, let me try to address some of the points
+> you raised...
+>
+> On 02/26/2013 06:29 PM, Lai Jiangshan wrote:
+>> On Tue, Feb 26, 2013 at 5:02 PM, Srivatsa S. Bhat
+>> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+>>> On 02/26/2013 05:47 AM, Lai Jiangshan wrote:
+>>>> On Tue, Feb 26, 2013 at 3:26 AM, Srivatsa S. Bhat
+>>>> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+>>>>> Hi Lai,
+>>>>>
+>>>>> On 02/25/2013 09:23 PM, Lai Jiangshan wrote:
+>>>>>> Hi, Srivatsa,
+>>>>>>
+>>>>>> The target of the whole patchset is nice for me.
+>>>>>
+>>>>> Cool! Thanks :-)
+>>>>>
+>>> [...]
 >>>
->>> The target of the whole patchset is nice for me.
+>>> Unfortunately, I see quite a few issues with the code above. IIUC, the
+>>> writer and the reader both increment the same counters. So how will the
+>>> unlock() code in the reader path know when to unlock which of the locks?
 >>
->> Cool! Thanks :-)
+>> The same as your code, the reader(which nested in write C.S.) just dec
+>> the counters.
+>
+> And that works fine in my case because the writer and the reader update
+> _two_ _different_ counters.
+
+I can't find any magic in your code, they are the same counter.
+
+        /*
+         * It is desirable to allow the writer to acquire the percpu-rwlock
+         * for read (if necessary), without deadlocking or getting complaints
+         * from lockdep. To achieve that, just increment the reader_refcnt of
+         * this CPU - that way, any attempt by the writer to acquire the
+         * percpu-rwlock for read, will get treated as a case of nested percpu
+         * reader, which is safe, from a locking perspective.
+         */
+        this_cpu_inc(pcpu_rwlock->rw_state->reader_refcnt);
+
+
+> If both of them update the same counter, there
+> will be a semantic clash - an increment of the counter can either mean that
+> a new writer became active, or it can also indicate a nested reader. A decrement
+> can also similarly have 2 meanings. And thus it will be difficult to decide
+> the right action to take, based on the value of the counter.
+>
 >>
->>> A question: How did you find out the such usages of
->>> "preempt_disable()" and convert them? did all are converted?
+>>> (The counter-dropping-to-zero logic is not safe, since it can be updated
+>>> due to different reasons). And now that I look at it again, in the absence
+>>> of the writer, the reader is allowed to be recursive at the heavy cost of
+>>> taking the global rwlock for read, every 2nd time you nest (because the
+>>> spinlock is non-recursive).
+>>
+>> (I did not understand your comments of this part)
+>> nested reader is considered seldom.
+>
+> No, nested readers can be _quite_ frequent. Because, potentially all users
+> of preempt_disable() are readers - and its well-known how frequently we
+> nest preempt_disable(). As a simple example, any atomic reader who calls
+> smp_call_function() will become a nested reader, because smp_call_function()
+> itself is a reader. So reader nesting is expected to be quite frequent.
+>
+>> But if N(>=2) nested readers happen,
+>> the overhead is:
+>>     1 spin_try_lock() + 1 read_lock() + (N-1) __this_cpu_inc()
+>>
+>
+> In my patch, its just this_cpu_inc(). Note that these are _very_ hot paths.
+> So every bit of optimization that you can add is worthwhile.
+>
+> And your read_lock() is a _global_ lock - thus, it can lead to a lot of
+> cache-line bouncing. That's *exactly* why I have used per-cpu refcounts in
+> my synchronization scheme, to avoid taking the global rwlock as much as possible.
+>
+> Another important point to note is that, the overhead we are talking about
+> here, exists even when _not_ performing hotplug. And its the replacement to
+> the super-fast preempt_disable(). So its extremely important to consciously
+> minimize this overhead - else we'll end up slowing down the system significantly.
+>
+
+All I was considered is "nested reader is seldom", so I always
+fallback to rwlock when nested.
+If you like, I can add 6 lines of code, the overhead is
+1 spin_try_lock()(fast path)  + N  __this_cpu_inc()
+
+The overhead of your code is
+2 smp_mb() + N __this_cpu_inc()
+
+I don't see how much different.
+
+>>> Also, this lg_rwlock implementation uses 3
+>>> different data-structures - a per-cpu spinlock, a global rwlock and
+>>> a per-cpu refcnt, and its not immediately apparent why you need those many
+>>> or even those many varieties.
+>>
+>> data-structures is the same as yours.
+>> fallback_reader_refcnt <--> reader_refcnt
+>
+> This has semantic problems, as noted above.
+>
+>> per-cpu spinlock <--> write_signal
+>
+> Acquire/release of (spin) lock is costlier than inc/dec of a counter, IIUC.
+>
+>> fallback_rwlock  <---> global_rwlock
+>>
+>>> Also I see that this doesn't handle the
+>>> case of interrupt-handlers also being readers.
+>>
+>> handled. nested reader will see the ref or take the fallback_rwlock
+>>
+
+Sorry, _reentrance_ read_lock() will see the ref or take the fallback_rwlock
+
+>
+> I'm not referring to simple nested readers here, but interrupt handlers who
+> can act as readers. For starters, the arch_spin_trylock() is not safe when
+> interrupt handlers can also run the same code, right? You'll need to save
+> and restore interrupts at critical points in the code. Also, the __foo()
+> variants used to read/update the counters are not interrupt-safe.
+
+I must missed something.
+
+Could you elaborate more why arch_spin_trylock() is not safe when
+interrupt handlers can also run the same code?
+
+Could you elaborate more why __this_cpu_op variants is not
+interrupt-safe since they are always called paired.
+
+
+> And,
+> the unlock() code in the reader path is again going to be confused about
+> what to do when interrupt handlers interrupt regular readers, due to the
+> messed up refcount.
+
+I still can't understand.
+
+>
 >>>
->>
->> Well, I scanned through the source tree for usages which implicitly
->> disabled CPU offline and converted them over.
-> 
-> How do you scan? could you show the way you scan the source tree.
-> I can follow your instructions for double checking.
-> 
-
-Its nothing special. I grepped the source tree for anything dealing with
-cpu_online_mask or its derivatives and also for functions/constructs that
-rely on the cpumasks internally (eg: smp_call_function). Then I audited all
-such call-sites and converted them (if needed) accordingly.
-
->> Its not limited to uses
->> of preempt_disable() alone - even spin_locks, rwlocks, local_irq_disable()
->> etc also help disable CPU offline. So I tried to dig out all such uses
->> and converted them. However, since the merge window is open, a lot of
->> new code is flowing into the tree. So I'll have to rescan the tree to
->> see if there are any more places to convert.
-> 
-> I remember some code has such assumption:
->     preempt_disable() (or something else)
->     //the code assume that the cpu_online_map can't be changed.
->     preempt_enable()
-> 
-> It is very hard to find out all such kinds of assumptions and fixes them.
-> (I notice your code mainly fixes code around send_xxxx())
-> 
-
-The conversion can be carried out using the method I mentioned above.
-
-Regards,
-Srivatsa S. Bhat
+>>> IMHO, the per-cpu rwlock scheme that I have implemented in this patchset
+>>> has a clean, understandable design and just enough data-structures/locks
+>>> to achieve its goal and has several optimizations (like reducing the
+>>> interrupts-disabled time etc) included - all in a very straight-forward
+>>> manner. Since this is non-trivial, IMHO, starting from a clean slate is
+>>> actually better than trying to retrofit the logic into some locking scheme
+>>> which we actively want to avoid (and hence effectively we aren't even
+>>> borrowing anything from!).
+>>>
+>>> To summarize, if you are just pointing out that we can implement the same
+>>> logic by altering lglocks, then sure, I acknowledge the possibility.
+>>> However, I don't think doing that actually makes it better; it either
+>>> convolutes the logic unnecessarily, or ends up looking _very_ similar to
+>>> the implementation in this patchset, from what I can see.
+>>>
+>
