@@ -1,30 +1,30 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp08.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1635B2C0370
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 19:05:44 +1100 (EST)
+ (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id EC42B2C0379
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 19:05:50 +1100 (EST)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 26 Feb 2013 18:03:53 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 635EB2BB004F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 19:05:39 +1100 (EST)
+ Tue, 26 Feb 2013 17:59:40 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 83AEE357804A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 19:05:47 +1100 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1Q85bdb4915470
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 19:05:37 +1100
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r1Q7rKVO12124584
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 18:53:20 +1100
 Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1Q85coh007826
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 19:05:39 +1100
+ r1Q85krw007987
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 19:05:46 +1100
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V1 07/24] powerpc: Add size argument to pgtable_cache_add
-Date: Tue, 26 Feb 2013 13:34:57 +0530
-Message-Id: <1361865914-13911-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V1 11/24] powerpc: Update tlbie/tlbiel as per ISA doc
+Date: Tue, 26 Feb 2013 13:35:01 +0530
+Message-Id: <1361865914-13911-12-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1361865914-13911-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1361865914-13911-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
@@ -40,88 +40,134 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-We will use this later with THP changes to request for pmd table of double the size.
-THP code does PTE page allocation along with large page request and deposit them
-for later use. This is to ensure that we won't have any failures when we split
-huge pages to regular pages.
-
-On powerpc we want to use the deposited PTE page for storing hash pte slot and
-secondary bit information for the HPTEs. Hence we save them in the second half
-of the pmd table.
+This make sure we handle multiple page size segment correctly.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/pgtable-ppc64.h |    7 ++++++-
- arch/powerpc/mm/init_64.c                |   16 ++++++++--------
- 2 files changed, 14 insertions(+), 9 deletions(-)
+ arch/powerpc/mm/hash_native_64.c |   52 +++++++++++++++++++++++++++++---------
+ 1 file changed, 40 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
-index 0182c20..658ba7c 100644
---- a/arch/powerpc/include/asm/pgtable-ppc64.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-@@ -338,8 +338,13 @@ static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
- #define pgoff_to_pte(off)	((pte_t) {((off) << PTE_RPN_SHIFT)|_PAGE_FILE})
- #define PTE_FILE_MAX_BITS	(BITS_PER_LONG - PTE_RPN_SHIFT)
+diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+index e2d816d..e800b26 100644
+--- a/arch/powerpc/mm/hash_native_64.c
++++ b/arch/powerpc/mm/hash_native_64.c
+@@ -39,7 +39,7 @@
  
--void pgtable_cache_add(unsigned shift, void (*ctor)(void *));
-+extern void __pgtable_cache_add(unsigned index, unsigned long table_size,
-+				void (*ctor)(void *));
- void pgtable_cache_init(void);
-+static inline void pgtable_cache_add(unsigned shift, void (*ctor)(void *))
-+{
-+	return __pgtable_cache_add(shift, sizeof(void *) << shift, ctor);
-+}
+ DEFINE_RAW_SPINLOCK(native_tlbie_lock);
  
- /*
-  * find_linux_pte returns the address of a linux pte for a given
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index 95a4529..b378438 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -100,10 +100,10 @@ struct kmem_cache *pgtable_cache[MAX_PGTABLE_INDEX_SIZE];
-  * everything else.  Caches created by this function are used for all
-  * the higher level pagetables, and for hugepage pagetables.
-  */
--void pgtable_cache_add(unsigned shift, void (*ctor)(void *))
-+void __pgtable_cache_add(unsigned int index, unsigned long table_size,
-+			 void (*ctor)(void *))
+-static inline void __tlbie(unsigned long vpn, int psize, int apsize, int ssize)
++static inline void __tlbie(unsigned long vpn, int bpsize, int apsize, int ssize)
  {
- 	char *name;
--	unsigned long table_size = sizeof(void *) << shift;
- 	unsigned long align = table_size;
+ 	unsigned long va;
+ 	unsigned int penc;
+@@ -59,19 +59,33 @@ static inline void __tlbie(unsigned long vpn, int psize, int apsize, int ssize)
+ 	 */
+ 	va &= ~(0xffffULL << 48);
  
- 	/* When batching pgtable pointers for RCU freeing, we store
-@@ -111,7 +111,7 @@ void pgtable_cache_add(unsigned shift, void (*ctor)(void *))
- 	 * big enough to fit it.
- 	 *
- 	 * Likewise, hugeapge pagetable pointers contain a (different)
--	 * shift value in the low bits.  All tables must be aligned so
-+	 * huge page size in the low bits.  All tables must be aligned so
- 	 * as to leave enough 0 bits in the address to contain it. */
- 	unsigned long minalign = max(MAX_PGTABLE_INDEX_SIZE + 1,
- 				     HUGEPD_SHIFT_MASK + 1);
-@@ -121,17 +121,17 @@ void pgtable_cache_add(unsigned shift, void (*ctor)(void *))
- 	 * moment, gcc doesn't seem to recognize is_power_of_2 as a
- 	 * constant expression, so so much for that. */
- 	BUG_ON(!is_power_of_2(minalign));
--	BUG_ON((shift < 1) || (shift > MAX_PGTABLE_INDEX_SIZE));
-+	BUG_ON((index < 1) || (index > MAX_PGTABLE_INDEX_SIZE));
- 
--	if (PGT_CACHE(shift))
-+	if (PGT_CACHE(index))
- 		return; /* Already have a cache of this size */
- 
- 	align = max_t(unsigned long, align, minalign);
--	name = kasprintf(GFP_KERNEL, "pgtable-2^%d", shift);
-+	name = kasprintf(GFP_KERNEL, "pgtable-2^%d", index);
- 	new = kmem_cache_create(name, table_size, align, 0, ctor);
--	PGT_CACHE(shift) = new;
-+	PGT_CACHE(index) = new;
- 
--	pr_debug("Allocated pgtable cache for order %d\n", shift);
-+	pr_debug("Allocated pgtable cache for order %d\n", index);
+-	switch (psize) {
++	switch (bpsize) {
+ 	case MMU_PAGE_4K:
++		/* clear out bits after (52) [0....52.....63] */
++		va &= ~((1ul << (64 - 52)) - 1);
+ 		va |= ssize << 8;
++		va |= mmu_psize_defs[apsize].sllp << 6;
+ 		asm volatile(ASM_FTR_IFCLR("tlbie %0,0", PPC_TLBIE(%1,%0), %2)
+ 			     : : "r" (va), "r"(0), "i" (CPU_FTR_ARCH_206)
+ 			     : "memory");
+ 		break;
+ 	default:
+ 		/* We need 14 to 14 + i bits of va */
+-		penc = mmu_psize_defs[psize].penc[apsize];
+-		va &= ~((1ul << mmu_psize_defs[psize].shift) - 1);
++		penc = mmu_psize_defs[bpsize].penc[apsize];
++		/* clear out bits after (44) [0....44.....63] */
++		va &= ~((1ul << (64 - 44)) - 1);
+ 		va |= penc << 12;
+ 		va |= ssize << 8;
++		/* Add AVAL part */
++		if (bpsize != apsize) {
++			/*
++			 * MPSS, 64K base page size and 16MB parge page size
++			 * We don't need all the bits, but this seems to work.
++			 * vpn cover upto 65 bits of va. (0...65) and we need
++			 * 56..62 bits of va.
++			 */
++			va |= ((vpn >> 2) & 0xfe);
++		}
+ 		va |= 1; /* L */
+ 		asm volatile(ASM_FTR_IFCLR("tlbie %0,1", PPC_TLBIE(%1,%0), %2)
+ 			     : : "r" (va), "r"(0), "i" (CPU_FTR_ARCH_206)
+@@ -80,7 +94,7 @@ static inline void __tlbie(unsigned long vpn, int psize, int apsize, int ssize)
+ 	}
  }
  
+-static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
++static inline void __tlbiel(unsigned long vpn, int bpsize, int apsize, int ssize)
+ {
+ 	unsigned long va;
+ 	unsigned int penc;
+@@ -94,18 +108,32 @@ static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
+ 	 */
+ 	va &= ~(0xffffULL << 48);
  
+-	switch (psize) {
++	switch (bpsize) {
+ 	case MMU_PAGE_4K:
++		/* clear out bits after(52) [0....52.....63] */
++		va &= ~((1ul << (64 - 52)) - 1);
+ 		va |= ssize << 8;
++		va |= mmu_psize_defs[apsize].sllp << 6;
+ 		asm volatile(".long 0x7c000224 | (%0 << 11) | (0 << 21)"
+ 			     : : "r"(va) : "memory");
+ 		break;
+ 	default:
+ 		/* We need 14 to 14 + i bits of va */
+-		penc = mmu_psize_defs[psize].penc[apsize];
+-		va &= ~((1ul << mmu_psize_defs[psize].shift) - 1);
++		penc = mmu_psize_defs[bpsize].penc[apsize];
++		/* clear out bits after(44) [0....44.....63] */
++		va &= ~((1ul << (64 - 44)) - 1);
+ 		va |= penc << 12;
+ 		va |= ssize << 8;
++		/* Add AVAL part */
++		if (bpsize != apsize) {
++			/*
++			 * MPSS, 64K base page size and 16MB parge page size
++			 * We don't need all the bits, but this seems to work.
++			 * vpn cover upto 65 bits of va. (0...65) and we need
++			 * 56..62 bits of va.
++			 */
++			va |= ((vpn >> 2) & 0xfe);
++		}
+ 		va |= 1; /* L */
+ 		asm volatile(".long 0x7c000224 | (%0 << 11) | (1 << 21)"
+ 			     : : "r"(va) : "memory");
+@@ -114,22 +142,22 @@ static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
+ 
+ }
+ 
+-static inline void tlbie(unsigned long vpn, int psize, int apsize,
++static inline void tlbie(unsigned long vpn, int bpsize, int apsize,
+ 			 int ssize, int local)
+ {
+ 	unsigned int use_local = local && mmu_has_feature(MMU_FTR_TLBIEL);
+ 	int lock_tlbie = !mmu_has_feature(MMU_FTR_LOCKLESS_TLBIE);
+ 
+ 	if (use_local)
+-		use_local = mmu_psize_defs[psize].tlbiel;
++		use_local = mmu_psize_defs[bpsize].tlbiel;
+ 	if (lock_tlbie && !use_local)
+ 		raw_spin_lock(&native_tlbie_lock);
+ 	asm volatile("ptesync": : :"memory");
+ 	if (use_local) {
+-		__tlbiel(vpn, psize, apsize, ssize);
++		__tlbiel(vpn, bpsize, apsize, ssize);
+ 		asm volatile("ptesync": : :"memory");
+ 	} else {
+-		__tlbie(vpn, psize, apsize, ssize);
++		__tlbie(vpn, bpsize, apsize, ssize);
+ 		asm volatile("eieio; tlbsync; ptesync": : :"memory");
+ 	}
+ 	if (lock_tlbie && !use_local)
 -- 
 1.7.10
