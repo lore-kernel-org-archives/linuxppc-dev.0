@@ -1,45 +1,26 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 58B5C2C0292
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 08:47:19 +1100 (EST)
-Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 26 Feb 2013 03:13:37 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 485C7E0055
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 03:18:16 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1PLl8w724576136
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 03:17:08 +0530
-Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1PLl9He009646
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 08:47:12 +1100
-Message-ID: <512BDB61.1010204@linux.vnet.ibm.com>
-Date: Tue, 26 Feb 2013 03:15:05 +0530
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Return-Path: <b08248@gmail.com>
+Received: from mail-oa0-f41.google.com (mail-oa0-f41.google.com
+ [209.85.219.41])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6403D2C0077
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 11:09:07 +1100 (EST)
+Received: by mail-oa0-f41.google.com with SMTP id i10so4226633oag.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Feb 2013 16:09:04 -0800 (PST)
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH v6 00/46] CPU hotplug: stop_machine()-free CPU hotplug
-References: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
- <87mwuxfatp.fsf@rustcorp.com.au>
-In-Reply-To: <87mwuxfatp.fsf@rustcorp.com.au>
+In-Reply-To: <1361191939-21260-3-git-send-email-Varun.Sethi@freescale.com>
+References: <1361191939-21260-1-git-send-email-Varun.Sethi@freescale.com>
+ <1361191939-21260-3-git-send-email-Varun.Sethi@freescale.com>
+Date: Mon, 25 Feb 2013 18:09:04 -0600
+Message-ID: <CALRxmdDc9TuxH7HgAF3_iLgatoaOUML6fUt8SU+sxHyz6ZVjfw@mail.gmail.com>
+Subject: Re: [PATCH 2/6] powerpc/fsl_pci: Store the platform device
+ information corresponding to the pci controller.
+From: Stuart Yoder <b08248@gmail.com>
+To: Varun Sethi <Varun.Sethi@freescale.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
- linux-kernel@vger.kernel.org, walken@google.com, mingo@kernel.org,
- linux-arch@vger.kernel.org, linux@arm.linux.org.uk,
- xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
- paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
- linux-pm@vger.kernel.org, rostedt@goodmis.org, rjw@sisk.pl,
- namhyung@kernel.org, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org,
- netdev@vger.kernel.org, oleg@redhat.com, vincent.guittot@linaro.org,
- sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: Joerg Roedel <joro@8bytes.org>, Stuart Yoder <stuart.yoder@freescale.com>,
+ linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+ Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,28 +30,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/22/2013 06:01 AM, Rusty Russell wrote:
-> "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com> writes:
->> Hi,
->>
->> This patchset removes CPU hotplug's dependence on stop_machine() from the CPU
->> offline path and provides an alternative (set of APIs) to preempt_disable() to
->> prevent CPUs from going offline, which can be invoked from atomic context.
->> The motivation behind the removal of stop_machine() is to avoid its ill-effects
->> and thus improve the design of CPU hotplug. (More description regarding this
->> is available in the patches).
-> 
-> If you're doing a v7, please put your benchmark results somewhere!
-> 
+This patch was submitted separately to linuxppc-dev (and was already
+applied).  You don't need it in this patch set, right?
 
-Oh, I forgot to put them in v6! Thanks for reminding :-)
-And yes, I'll have to do a v7 to incorporate changes (if any) to the new code
-that went in during this merge window.
+Stuart
 
-> The obvious place is in the 44/46.
+On Mon, Feb 18, 2013 at 6:52 AM, Varun Sethi <Varun.Sethi@freescale.com> wrote:
+> The pci controller structure has a provision to store the device strcuture
+> pointer of the corresponding platform device. Currently this information is
+> not stored during fsl pci controller initialization. This information is
+> required while dealing with iommu groups for pci devices connected to the fsl
+> pci controller. For the case where the pci devices can't be paritioned, they
+> would fall under the same device group as the pci controller.
 >
-
-Ok, will add it there. Thank you!
- 
-Regards,
-Srivatsa S. Bhat
+> This patch stores the platform device information in the pci controller
+> structure during initialization.
+>
+> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
+> ---
+>  arch/powerpc/sysdev/fsl_pci.c |    9 +++++++--
+>  arch/powerpc/sysdev/fsl_pci.h |    2 +-
+>  2 files changed, 8 insertions(+), 3 deletions(-)
+>
+> diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+> index 92a5915..b393ae7 100644
+> --- a/arch/powerpc/sysdev/fsl_pci.c
+> +++ b/arch/powerpc/sysdev/fsl_pci.c
+> @@ -421,13 +421,16 @@ void fsl_pcibios_fixup_bus(struct pci_bus *bus)
+>         }
+>  }
+>
+> -int __init fsl_add_bridge(struct device_node *dev, int is_primary)
+> +int __init fsl_add_bridge(struct platform_device *pdev, int is_primary)
+>  {
+>         int len;
+>         struct pci_controller *hose;
+>         struct resource rsrc;
+>         const int *bus_range;
+>         u8 hdr_type, progif;
+> +       struct device_node *dev;
+> +
+> +       dev = pdev->dev.of_node;
+>
+>         if (!of_device_is_available(dev)) {
+>                 pr_warning("%s: disabled\n", dev->full_name);
+> @@ -453,6 +456,8 @@ int __init fsl_add_bridge(struct device_node *dev, int is_primary)
+>         if (!hose)
+>                 return -ENOMEM;
+>
+> +       /* set platform device as the parent */
+> +       hose->parent = &pdev->dev;
+>         hose->first_busno = bus_range ? bus_range[0] : 0x0;
+>         hose->last_busno = bus_range ? bus_range[1] : 0xff;
+>
+> @@ -880,7 +885,7 @@ static int fsl_pci_probe(struct platform_device *pdev)
+>  #endif
+>
+>         node = pdev->dev.of_node;
+> -       ret = fsl_add_bridge(node, fsl_pci_primary == node);
+> +       ret = fsl_add_bridge(pdev, fsl_pci_primary == node);
+>
+>  #ifdef CONFIG_SWIOTLB
+>         if (ret == 0) {
+> diff --git a/arch/powerpc/sysdev/fsl_pci.h b/arch/powerpc/sysdev/fsl_pci.h
+> index d078537..c495c00 100644
+> --- a/arch/powerpc/sysdev/fsl_pci.h
+> +++ b/arch/powerpc/sysdev/fsl_pci.h
+> @@ -91,7 +91,7 @@ struct ccsr_pci {
+>         __be32  pex_err_cap_r3;         /* 0x.e34 - PCIE error capture register 0 */
+>  };
+>
+> -extern int fsl_add_bridge(struct device_node *dev, int is_primary);
+> +extern int fsl_add_bridge(struct platform_device *pdev, int is_primary);
+>  extern void fsl_pcibios_fixup_bus(struct pci_bus *bus);
+>  extern int mpc83xx_add_bridge(struct device_node *dev);
+>  u64 fsl_pci_immrbar_base(struct pci_controller *hose);
+> --
+> 1.7.4.1
+>
+>
+> _______________________________________________
+> iommu mailing list
+> iommu@lists.linux-foundation.org
+> https://lists.linuxfoundation.org/mailman/listinfo/iommu
