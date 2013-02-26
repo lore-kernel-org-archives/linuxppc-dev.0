@@ -1,43 +1,26 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e7.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7A3D02C007E
- for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2013 07:06:34 +1100 (EST)
-Received: from /spool/local
- by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Tue, 26 Feb 2013 15:06:30 -0500
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id B9DC96E8061
- for <linuxppc-dev@ozlabs.org>; Tue, 26 Feb 2013 15:06:24 -0500 (EST)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1QK6KhH65077264
- for <linuxppc-dev@ozlabs.org>; Tue, 26 Feb 2013 15:06:20 -0500
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1QK6BFO007113
- for <linuxppc-dev@ozlabs.org>; Tue, 26 Feb 2013 17:06:19 -0300
-Date: Tue, 26 Feb 2013 12:03:43 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 5/6][v4]: perf: Create a sysfs entry for Power event format
-Message-ID: <20130226200343.GA21543@us.ibm.com>
-References: <20130123062201.GA13720@us.ibm.com>
- <20130123062613.GF13720@us.ibm.com>
- <20130226052646.GB21553@concordia>
+Return-Path: <b08248@gmail.com>
+Received: from mail-oa0-f52.google.com (mail-oa0-f52.google.com
+ [209.85.219.52])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 381462C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2013 09:33:18 +1100 (EST)
+Received: by mail-oa0-f52.google.com with SMTP id k14so6289938oag.25
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 14:33:16 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130226052646.GB21553@concordia>
-Cc: Andi Kleen <ak@linux.intel.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
- robert.richter@amd.com, Anton Blanchard <anton@au1.ibm.com>,
- linux-kernel@vger.kernel.org, Stephane Eranian <eranian@google.com>,
- linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@redhat.com>,
- Paul Mackerras <paulus@samba.org>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
- Jiri Olsa <jolsa@redhat.com>
+In-Reply-To: <1361191939-21260-7-git-send-email-Varun.Sethi@freescale.com>
+References: <1361191939-21260-1-git-send-email-Varun.Sethi@freescale.com>
+ <1361191939-21260-7-git-send-email-Varun.Sethi@freescale.com>
+Date: Tue, 26 Feb 2013 16:33:15 -0600
+Message-ID: <CALRxmdBBO2AoAnKSTNNTYhHZ9fitJKWWeZMUj1ObtFhsZS5iSw@mail.gmail.com>
+Subject: Re: [PATCH 6/6 v8] iommu/fsl: Freescale PAMU driver and IOMMU API
+ implementation.
+From: Stuart Yoder <b08248@gmail.com>
+To: Varun Sethi <Varun.Sethi@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Joerg Roedel <joro@8bytes.org>, Stuart Yoder <stuart.yoder@freescale.com>,
+ linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+ Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,35 +30,142 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman [michael@ellerman.id.au] wrote:
-| On Tue, Jan 22, 2013 at 10:26:13PM -0800, Sukadev Bhattiprolu wrote:
-| > 
-| > [PATCH 5/6][v4]: perf: Create a sysfs entry for Power event format
-| > 
-| > Create a sysfs entry, '/sys/bus/event_source/devices/cpu/format/event'
-| > which describes the format of a POWER cpu.
-| 
-| Did this patch go upstream? I don't see it.
+Have not got through the entire file, but have a few comments...
 
-Hmm, patches 1..4,6 are in linux-tip and Arnaldo's trees but patch 5 is
-in neither.
++/*
++ * Set the PAACE type as primary and set the coherency required domain
++ * attribute
++ */
++static void pamu_setup_default_xfer_to_host_ppaace(struct paace *ppaace)
++{
++       set_bf(ppaace->addr_bitfields, PAACE_AF_PT, PAACE_PT_PRIMARY);
++
++       set_bf(ppaace->domain_attr.to_host.coherency_required, PAACE_DA_HOST_CR,
++              PAACE_M_COHERENCE_REQ);
++}
++
++/*
++ * Set the PAACE type as secondary and set the coherency required domain
++ * attribute.
++ */
++static void pamu_setup_default_xfer_to_host_spaace(struct paace *spaace)
++{
++       set_bf(spaace->addr_bitfields, PAACE_AF_PT, PAACE_PT_SECONDARY);
++       set_bf(spaace->domain_attr.to_host.coherency_required, PAACE_DA_HOST_CR,
++              PAACE_M_COHERENCE_REQ);
++}
 
-| 
-| If not, please don't merge it.
-| 
-| > The format of the event is the same for all POWER cpus at least in
-| > (Power6, Power7), so bulk of this change is common in the code common
-| > to POWER cpus.
-| 
-| No. The event format is different on most POWER cpus, in particular it
-| is different on Power6 and Power7, and will be different again on
-| Power8.
+Can we change the names of the above functions...   I know there is some history
+with the name, but "xfer_to_host" is confusing.
 
-Sigh.  The port of this patchset to Power6 has not started yet.
+Maybe just call them:
 
-But this patchset does work on Power7 correct ?
+pamu_init_paace()
+pamu_init_spaace()
 
-If so, and we figure out what happened to patch 5, can we add a patch to
-to move the format code to power7-pmu.c ?
+> +/**
+> + * pamu_config_spaace() - Sets up SPAACE entry for specified subwindow
+> + *
+> + * @liodn:  Logical IO device number
+> + * @subwin_cnt:  number of sub-windows associated with dma-window
+> + * @subwin_addr: starting address of subwindow
+> + * @subwin_size: size of subwindow
+> + * @omi: Operation mapping index
+> + * @rpn: real (true physical) page number
+> + * @snoopid: snoop id for hardware coherency -- if ~snoopid == 0 then
+> + *                       snoopid not defined
+> + * @stashid: cache stash id for associated cpu
+> + * @enable: enable/disable subwindow after reconfiguration
+> + * @prot: sub window permissions
+> + *
+> + * Returns 0 upon success else error code < 0 returned
+> + */
+> +int pamu_config_spaace(int liodn, u32 subwin_cnt, u32 subwin_addr,
+> +                      phys_addr_t subwin_size, u32 omi, unsigned long rpn,
+> +                      u32 snoopid, u32 stashid, int enable, int prot)
+> +{
+> +       struct paace *paace;
+> +
+> +       /* setup sub-windows */
+> +       if (!subwin_cnt) {
+> +               pr_err("Invalid subwindow count\n");
+> +               return -EINVAL;
+> +       }
+> +
+> +       paace = pamu_get_ppaace(liodn);
+> +       if (subwin_addr > 0 && subwin_addr < subwin_cnt && paace) {
 
-Sukadev
+Why is the comparison subwin_addr < subwin_cnt?   Seems wrong...
+
+> +               paace = pamu_get_spaace(paace, subwin_addr - 1);
+> +
+> +               if (paace && !(paace->addr_bitfields & PAACE_V_VALID)) {
+> +                       pamu_setup_default_xfer_to_host_spaace(paace);
+> +                       set_bf(paace->addr_bitfields, SPAACE_AF_LIODN, liodn);
+> +               }
+> +       }
+> +
+> +       if (!paace) {
+> +               pr_err("Invalid liodn entry\n");
+> +               return -ENOENT;
+> +       }
+> +
+> +       if (!enable && prot == PAACE_AP_PERMS_DENIED) {
+> +               if (subwin_addr > 0)
+> +                       set_bf(paace->addr_bitfields, PAACE_AF_V,
+> +                                PAACE_V_INVALID);
+> +               else
+> +                       set_bf(paace->addr_bitfields, PAACE_AF_AP,
+> +                                prot);
+> +               mb();
+> +               return 0;
+> +       }
+
+Can you add a comment to the above if statement...when is this function called
+with PAACE_AP_PERMS_DENIED?
+
+
+> +       if (subwin_size & (subwin_size - 1) || subwin_size < PAMU_PAGE_SIZE) {
+> +               pr_err("subwindow size out of range, or not a power of 2\n");
+> +               return -EINVAL;
+> +       }
+> +
+> +       if (rpn == ULONG_MAX) {
+> +               pr_err("real page number out of range\n");
+> +               return -EINVAL;
+> +       }
+> +
+> +       /* window size is 2^(WSE+1) bytes */
+> +       set_bf(paace->win_bitfields, PAACE_WIN_SWSE,
+> +              map_addrspace_size_to_wse(subwin_size));
+> +
+> +       set_bf(paace->impl_attr, PAACE_IA_ATM, PAACE_ATM_WINDOW_XLATE);
+> +       paace->twbah = rpn >> 20;
+> +       set_bf(paace->win_bitfields, PAACE_WIN_TWBAL, rpn);
+> +       set_bf(paace->addr_bitfields, PAACE_AF_AP, prot);
+> +
+> +       /* configure snoop id */
+> +       if (~snoopid != 0)
+> +               paace->domain_attr.to_host.snpid = snoopid;
+> +
+> +       /* set up operation mapping if it's configured */
+> +       if (omi < OME_NUMBER_ENTRIES) {
+> +               set_bf(paace->impl_attr, PAACE_IA_OTM, PAACE_OTM_INDEXED);
+> +               paace->op_encode.index_ot.omi = omi;
+> +       } else if (~omi != 0) {
+> +               pr_err("bad operation mapping index: %d\n", omi);
+> +               return -EINVAL;
+> +       }
+> +
+> +       if (~stashid != 0)
+> +               set_bf(paace->impl_attr, PAACE_IA_CID, stashid);
+> +
+> +       smp_wmb();
+> +
+> +       if (enable)
+> +               paace->addr_bitfields |= PAACE_V_VALID;
+> +
+> +       mb();
+> +
+> +       return 0;
+> +}
