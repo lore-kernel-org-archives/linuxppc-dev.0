@@ -1,34 +1,53 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EC4A42C0315
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 19:06:13 +1100 (EST)
+ (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2F1012C02CB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 20:05:02 +1100 (EST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 26 Feb 2013 17:56:47 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id D643E3578050
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 19:06:11 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1Q869jQ7078188
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 19:06:09 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1Q86AOk008941
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 19:06:11 +1100
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V1 24/24] powerpc/THP: Enable THP on PPC64
-Date: Tue, 26 Feb 2013 13:35:14 +0530
-Message-Id: <1361865914-13911-25-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1361865914-13911-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1361865914-13911-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+ Tue, 26 Feb 2013 14:31:48 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 81D323940060
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 14:34:55 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r1Q94oN912320796
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 14:34:50 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r1Q94q2B005426
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 09:04:55 GMT
+Message-ID: <512C7A38.8060906@linux.vnet.ibm.com>
+Date: Tue, 26 Feb 2013 14:32:48 +0530
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Lai Jiangshan <eag0628@gmail.com>
+Subject: Re: [PATCH v6 04/46] percpu_rwlock: Implement the core design of
+ Per-CPU Reader-Writer Locks
+References: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
+ <20130218123856.26245.46705.stgit@srivatsabhat.in.ibm.com>
+ <CANN689F9S7c1M8+cEpz3tsxGF34+NTRBLvxgPUOtbvav5u+RRA@mail.gmail.com>
+ <5122551E.1080703@linux.vnet.ibm.com>	<51226B46.9080707@linux.vnet.ibm.com>
+ <CANN689FSxOz+0Cu7EG_yKD8ZE1OpT4kyT+ybLfXSqaifodJRpw@mail.gmail.com>
+ <51226F91.7000108@linux.vnet.ibm.com>
+ <CACvQF53bdh4_BxF0y1fnTVR+T2OmRc0jmWQYftsvx92-fg-Lug@mail.gmail.com>
+ <512BBAD8.8010006@linux.vnet.ibm.com>
+ <CACvQF51jCxk5jUqmhD=QBBtUsBkQWZzakacrKO4Gsk=w61rNwQ@mail.gmail.com>
+In-Reply-To: <CACvQF51jCxk5jUqmhD=QBBtUsBkQWZzakacrKO4Gsk=w61rNwQ@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
+ linux-kernel@vger.kernel.org, Michel Lespinasse <walken@google.com>,
+ mingo@kernel.org, linux-arch@vger.kernel.org, linux@arm.linux.org.uk,
+ xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
+ paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
+ linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org,
+ rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
+ linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com,
+ vincent.guittot@linaro.org, sbw@mit.edu, tj@kernel.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,55 +57,182 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+On 02/26/2013 05:47 AM, Lai Jiangshan wrote:
+> On Tue, Feb 26, 2013 at 3:26 AM, Srivatsa S. Bhat
+> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+>> Hi Lai,
+>>
+>> On 02/25/2013 09:23 PM, Lai Jiangshan wrote:
+>>> Hi, Srivatsa,
+>>>
+>>> The target of the whole patchset is nice for me.
+>>
+>> Cool! Thanks :-)
+>>
+[...]
+>>> I wrote an untested draft here.
+>>>
+>>> Thanks,
+>>> Lai
+>>>
+>>> PS: Some HA tools(I'm writing one) which takes checkpoints of
+>>> virtual-machines frequently, I guess this patchset can speedup the
+>>> tools.
+>>>
+>>> From 01db542693a1b7fc6f9ece45d57cb529d9be5b66 Mon Sep 17 00:00:00 2001
+>>> From: Lai Jiangshan <laijs@cn.fujitsu.com>
+>>> Date: Mon, 25 Feb 2013 23:14:27 +0800
+>>> Subject: [PATCH] lglock: add read-preference local-global rwlock
+>>>
+>>> locality via lglock(trylock)
+>>> read-preference read-write-lock via fallback rwlock_t
+>>>
+>>> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+>>> ---
+>>>  include/linux/lglock.h |   31 +++++++++++++++++++++++++++++++
+>>>  kernel/lglock.c        |   45 +++++++++++++++++++++++++++++++++++++++++++++
+>>>  2 files changed, 76 insertions(+), 0 deletions(-)
+>>>
+>>> diff --git a/include/linux/lglock.h b/include/linux/lglock.h
+>>> index 0d24e93..30fe887 100644
+>>> --- a/include/linux/lglock.h
+>>> +++ b/include/linux/lglock.h
+>>> @@ -67,4 +67,35 @@ void lg_local_unlock_cpu(struct lglock *lg, int cpu);
+>>>  void lg_global_lock(struct lglock *lg);
+>>>  void lg_global_unlock(struct lglock *lg);
+>>>
+>>> +struct lgrwlock {
+>>> +     unsigned long __percpu *fallback_reader_refcnt;
+>>> +     struct lglock lglock;
+>>> +     rwlock_t fallback_rwlock;
+>>> +};
+>>> +
+>>> +#define DEFINE_LGRWLOCK(name)                                                \
+>>> +     static DEFINE_PER_CPU(arch_spinlock_t, name ## _lock)           \
+>>> +     = __ARCH_SPIN_LOCK_UNLOCKED;                                    \
+>>> +     static DEFINE_PER_CPU(unsigned long, name ## _refcnt);          \
+>>> +     struct lgrwlock name = {                                        \
+>>> +             .fallback_reader_refcnt = &name ## _refcnt,             \
+>>> +             .lglock = { .lock = &name ## _lock } }
+>>> +
+>>> +#define DEFINE_STATIC_LGRWLOCK(name)                                 \
+>>> +     static DEFINE_PER_CPU(arch_spinlock_t, name ## _lock)           \
+>>> +     = __ARCH_SPIN_LOCK_UNLOCKED;                                    \
+>>> +     static DEFINE_PER_CPU(unsigned long, name ## _refcnt);          \
+>>> +     static struct lgrwlock name = {                                 \
+>>> +             .fallback_reader_refcnt = &name ## _refcnt,             \
+>>> +             .lglock = { .lock = &name ## _lock } }
+>>> +
+>>> +static inline void lg_rwlock_init(struct lgrwlock *lgrw, char *name)
+>>> +{
+>>> +     lg_lock_init(&lgrw->lglock, name);
+>>> +}
+>>> +
+>>> +void lg_rwlock_local_read_lock(struct lgrwlock *lgrw);
+>>> +void lg_rwlock_local_read_unlock(struct lgrwlock *lgrw);
+>>> +void lg_rwlock_global_write_lock(struct lgrwlock *lgrw);
+>>> +void lg_rwlock_global_write_unlock(struct lgrwlock *lgrw);
+>>>  #endif
+>>> diff --git a/kernel/lglock.c b/kernel/lglock.c
+>>> index 6535a66..463543a 100644
+>>> --- a/kernel/lglock.c
+>>> +++ b/kernel/lglock.c
+>>> @@ -87,3 +87,48 @@ void lg_global_unlock(struct lglock *lg)
+>>>       preempt_enable();
+>>>  }
+>>>  EXPORT_SYMBOL(lg_global_unlock);
+>>> +
+>>> +void lg_rwlock_local_read_lock(struct lgrwlock *lgrw)
+>>> +{
+>>> +     struct lglock *lg = &lgrw->lglock;
+>>> +
+>>> +     preempt_disable();
+>>> +     if (likely(!__this_cpu_read(*lgrw->fallback_reader_refcnt))) {
+>>> +             if (likely(arch_spin_trylock(this_cpu_ptr(lg->lock)))) {
+>>> +                     rwlock_acquire_read(&lg->lock_dep_map, 0, 0, _RET_IP_);
+>>> +                     return;
+>>> +             }
+>>> +             read_lock(&lgrw->fallback_rwlock);
+>>> +     }
+>>> +
+>>> +     __this_cpu_inc(*lgrw->fallback_reader_refcnt);
+>>> +}
+>>> +EXPORT_SYMBOL(lg_rwlock_local_read_lock);
+>>> +
+>>> +void lg_rwlock_local_read_unlock(struct lgrwlock *lgrw)
+>>> +{
+>>> +     if (likely(!__this_cpu_read(*lgrw->fallback_reader_refcnt))) {
+>>> +             lg_local_unlock(&lgrw->lglock);
+>>> +             return;
+>>> +     }
+>>> +
+>>> +     if (!__this_cpu_dec_return(*lgrw->fallback_reader_refcnt))
+>>> +             read_unlock(&lgrw->fallback_rwlock);
+>>> +
+>>> +     preempt_enable();
+>>> +}
+>>> +EXPORT_SYMBOL(lg_rwlock_local_read_unlock);
+>>> +
+>>
+>> If I read the code above correctly, all you are doing is implementing a
+>> recursive reader-side primitive (ie., allowing the reader to call these
+>> functions recursively, without resulting in a self-deadlock).
+>>
+>> But the thing is, making the reader-side recursive is the least of our
+>> problems! Our main challenge is to make the locking extremely flexible
+>> and also safe-guard it against circular-locking-dependencies and deadlocks.
+>> Please take a look at the changelog of patch 1 - it explains the situation
+>> with an example.
+> 
+> 
+> My lock fixes your requirements(I read patch 1-6 before I sent). In
+> readsite, lglock 's lock is token via trylock, the lglock doesn't
+> contribute to deadlocks, we can consider it doesn't exist when we find
+> deadlock from it. And global fallback rwlock doesn't result to
+> deadlocks because it is read-preference(you need to inc the
+> fallback_reader_refcnt inside the cpu-hotplug write-side, I don't do
+> it in generic lgrwlock)
+>
 
-We enable only if the we support 16MB page size.
-
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/pgtable.h |   30 ++++++++++++++++++++++++++++--
- 1 file changed, 28 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
-index 09f3a77..17120c3 100644
---- a/arch/powerpc/include/asm/pgtable.h
-+++ b/arch/powerpc/include/asm/pgtable.h
-@@ -107,8 +107,34 @@ static inline int pmd_trans_huge(pmd_t pmd)
- 	return ((pmd_val(pmd) & PMD_ISHUGE) ==  PMD_ISHUGE);
- }
+Ah, since you hadn't mentioned the increment at the writer-side in your
+previous email, I had missed the bigger picture of what you were trying
+to achieve.
  
--/* We will enable it in the last patch */
--#define has_transparent_hugepage() 0
-+static inline int has_transparent_hugepage(void)
-+{
-+	if (!mmu_has_feature(MMU_FTR_16M_PAGE))
-+		return 0;
-+	/*
-+	 * We support THP only if HPAGE_SHIFT is 16MB.
-+	 */
-+	if (!HPAGE_SHIFT || (HPAGE_SHIFT != mmu_psize_defs[MMU_PAGE_16M].shift))
-+		return 0;
-+	/*
-+	 * We need to make sure that we support 16MB huge page in a segement
-+	 * with base page size 64K or 4K. We only enable THP with a PAGE_SIZE
-+	 * of 64K.
-+	 */
-+	/*
-+	 * If we have 64K HPTE, we will be using that by default
-+	 */
-+	if (mmu_psize_defs[MMU_PAGE_64K].shift &&
-+	    ((signed int)mmu_psize_defs[MMU_PAGE_64K].penc[MMU_PAGE_16M] == -1))
-+		return 0;
-+	/*
-+	 * Ok we only have 4K HPTE
-+	 */
-+	if (mmu_psize_defs[MMU_PAGE_4K].penc[MMU_PAGE_16M] == -1)
-+		return 0;
-+
-+	return 1;
-+}
- 
- static inline pmd_t pmd_mkold(pmd_t pmd)
- {
--- 
-1.7.10
+> 
+> If lg_rwlock_local_read_lock() spins, which means
+> lg_rwlock_local_read_lock() spins on fallback_rwlock, and which means
+> lg_rwlock_global_write_lock() took the lgrwlock successfully and
+> return, and which means lg_rwlock_local_read_lock() will stop spinning
+> when the write side finished.
+> 
+
+Unfortunately, I see quite a few issues with the code above. IIUC, the
+writer and the reader both increment the same counters. So how will the
+unlock() code in the reader path know when to unlock which of the locks?
+(The counter-dropping-to-zero logic is not safe, since it can be updated
+due to different reasons). And now that I look at it again, in the absence
+of the writer, the reader is allowed to be recursive at the heavy cost of
+taking the global rwlock for read, every 2nd time you nest (because the
+spinlock is non-recursive). Also, this lg_rwlock implementation uses 3
+different data-structures - a per-cpu spinlock, a global rwlock and
+a per-cpu refcnt, and its not immediately apparent why you need those many
+or even those many varieties. Also I see that this doesn't handle the
+case of interrupt-handlers also being readers.
+
+IMHO, the per-cpu rwlock scheme that I have implemented in this patchset
+has a clean, understandable design and just enough data-structures/locks
+to achieve its goal and has several optimizations (like reducing the
+interrupts-disabled time etc) included - all in a very straight-forward
+manner. Since this is non-trivial, IMHO, starting from a clean slate is
+actually better than trying to retrofit the logic into some locking scheme
+which we actively want to avoid (and hence effectively we aren't even
+borrowing anything from!).
+
+To summarize, if you are just pointing out that we can implement the same
+logic by altering lglocks, then sure, I acknowledge the possibility.
+However, I don't think doing that actually makes it better; it either
+convolutes the logic unnecessarily, or ends up looking _very_ similar to
+the implementation in this patchset, from what I can see.
+
+Regards,
+Srivatsa S. Bhat
