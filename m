@@ -1,26 +1,16 @@
-Return-Path: <b08248@gmail.com>
-Received: from mail-oa0-f52.google.com (mail-oa0-f52.google.com
- [209.85.219.52])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 381462C007E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2013 09:33:18 +1100 (EST)
-Received: by mail-oa0-f52.google.com with SMTP id k14so6289938oag.25
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 14:33:16 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <1361191939-21260-7-git-send-email-Varun.Sethi@freescale.com>
-References: <1361191939-21260-1-git-send-email-Varun.Sethi@freescale.com>
- <1361191939-21260-7-git-send-email-Varun.Sethi@freescale.com>
-Date: Tue, 26 Feb 2013 16:33:15 -0600
-Message-ID: <CALRxmdBBO2AoAnKSTNNTYhHZ9fitJKWWeZMUj1ObtFhsZS5iSw@mail.gmail.com>
-Subject: Re: [PATCH 6/6 v8] iommu/fsl: Freescale PAMU driver and IOMMU API
- implementation.
-From: Stuart Yoder <b08248@gmail.com>
-To: Varun Sethi <Varun.Sethi@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Joerg Roedel <joro@8bytes.org>, Stuart Yoder <stuart.yoder@freescale.com>,
- linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
- Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id 358242C0087
+ for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2013 10:58:15 +1100 (EST)
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: linux-kernel@vger.kernel.org
+Subject: [ 110/150] uprobes/powerpc: Add dependency on single step emulation
+Date: Tue, 26 Feb 2013 15:56:07 -0800
+Message-Id: <20130226235535.522339983@linuxfoundation.org>
+In-Reply-To: <20130226235523.930663721@linuxfoundation.org>
+References: <20130226235523.930663721@linuxfoundation.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org,
+ linuxppc-dev@ozlabs.org, "Suzuki K. Poulose" <suzuki@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,142 +20,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Have not got through the entire file, but have a few comments...
+3.8-stable review patch.  If anyone has any objections, please let me know.
 
-+/*
-+ * Set the PAACE type as primary and set the coherency required domain
-+ * attribute
-+ */
-+static void pamu_setup_default_xfer_to_host_ppaace(struct paace *ppaace)
-+{
-+       set_bf(ppaace->addr_bitfields, PAACE_AF_PT, PAACE_PT_PRIMARY);
+------------------
+
+From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
+
+commit 5e249d4528528c9a77da051a89ec7f99d31b83eb upstream.
+
+Uprobes uses emulate_step in sstep.c, but we haven't explicitly specified
+the dependency. On pseries HAVE_HW_BREAKPOINT protects us, but 44x has no
+such luxury.
+
+Consolidate other users that depend on sstep and create a new config option.
+
+Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Signed-off-by: Suzuki K. Poulose <suzuki@in.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+
+---
+ arch/powerpc/Kconfig      |    4 ++++
+ arch/powerpc/lib/Makefile |    4 +---
+ 2 files changed, 5 insertions(+), 3 deletions(-)
+
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -275,6 +275,10 @@ config PPC_ADV_DEBUG_DAC_RANGE
+ 	depends on PPC_ADV_DEBUG_REGS && 44x
+ 	default y
+ 
++config PPC_EMULATE_SSTEP
++	bool
++	default y if KPROBES || UPROBES || XMON || HAVE_HW_BREAKPOINT
 +
-+       set_bf(ppaace->domain_attr.to_host.coherency_required, PAACE_DA_HOST_CR,
-+              PAACE_M_COHERENCE_REQ);
-+}
-+
-+/*
-+ * Set the PAACE type as secondary and set the coherency required domain
-+ * attribute.
-+ */
-+static void pamu_setup_default_xfer_to_host_spaace(struct paace *spaace)
-+{
-+       set_bf(spaace->addr_bitfields, PAACE_AF_PT, PAACE_PT_SECONDARY);
-+       set_bf(spaace->domain_attr.to_host.coherency_required, PAACE_DA_HOST_CR,
-+              PAACE_M_COHERENCE_REQ);
-+}
-
-Can we change the names of the above functions...   I know there is some history
-with the name, but "xfer_to_host" is confusing.
-
-Maybe just call them:
-
-pamu_init_paace()
-pamu_init_spaace()
-
-> +/**
-> + * pamu_config_spaace() - Sets up SPAACE entry for specified subwindow
-> + *
-> + * @liodn:  Logical IO device number
-> + * @subwin_cnt:  number of sub-windows associated with dma-window
-> + * @subwin_addr: starting address of subwindow
-> + * @subwin_size: size of subwindow
-> + * @omi: Operation mapping index
-> + * @rpn: real (true physical) page number
-> + * @snoopid: snoop id for hardware coherency -- if ~snoopid == 0 then
-> + *                       snoopid not defined
-> + * @stashid: cache stash id for associated cpu
-> + * @enable: enable/disable subwindow after reconfiguration
-> + * @prot: sub window permissions
-> + *
-> + * Returns 0 upon success else error code < 0 returned
-> + */
-> +int pamu_config_spaace(int liodn, u32 subwin_cnt, u32 subwin_addr,
-> +                      phys_addr_t subwin_size, u32 omi, unsigned long rpn,
-> +                      u32 snoopid, u32 stashid, int enable, int prot)
-> +{
-> +       struct paace *paace;
-> +
-> +       /* setup sub-windows */
-> +       if (!subwin_cnt) {
-> +               pr_err("Invalid subwindow count\n");
-> +               return -EINVAL;
-> +       }
-> +
-> +       paace = pamu_get_ppaace(liodn);
-> +       if (subwin_addr > 0 && subwin_addr < subwin_cnt && paace) {
-
-Why is the comparison subwin_addr < subwin_cnt?   Seems wrong...
-
-> +               paace = pamu_get_spaace(paace, subwin_addr - 1);
-> +
-> +               if (paace && !(paace->addr_bitfields & PAACE_V_VALID)) {
-> +                       pamu_setup_default_xfer_to_host_spaace(paace);
-> +                       set_bf(paace->addr_bitfields, SPAACE_AF_LIODN, liodn);
-> +               }
-> +       }
-> +
-> +       if (!paace) {
-> +               pr_err("Invalid liodn entry\n");
-> +               return -ENOENT;
-> +       }
-> +
-> +       if (!enable && prot == PAACE_AP_PERMS_DENIED) {
-> +               if (subwin_addr > 0)
-> +                       set_bf(paace->addr_bitfields, PAACE_AF_V,
-> +                                PAACE_V_INVALID);
-> +               else
-> +                       set_bf(paace->addr_bitfields, PAACE_AF_AP,
-> +                                prot);
-> +               mb();
-> +               return 0;
-> +       }
-
-Can you add a comment to the above if statement...when is this function called
-with PAACE_AP_PERMS_DENIED?
-
-
-> +       if (subwin_size & (subwin_size - 1) || subwin_size < PAMU_PAGE_SIZE) {
-> +               pr_err("subwindow size out of range, or not a power of 2\n");
-> +               return -EINVAL;
-> +       }
-> +
-> +       if (rpn == ULONG_MAX) {
-> +               pr_err("real page number out of range\n");
-> +               return -EINVAL;
-> +       }
-> +
-> +       /* window size is 2^(WSE+1) bytes */
-> +       set_bf(paace->win_bitfields, PAACE_WIN_SWSE,
-> +              map_addrspace_size_to_wse(subwin_size));
-> +
-> +       set_bf(paace->impl_attr, PAACE_IA_ATM, PAACE_ATM_WINDOW_XLATE);
-> +       paace->twbah = rpn >> 20;
-> +       set_bf(paace->win_bitfields, PAACE_WIN_TWBAL, rpn);
-> +       set_bf(paace->addr_bitfields, PAACE_AF_AP, prot);
-> +
-> +       /* configure snoop id */
-> +       if (~snoopid != 0)
-> +               paace->domain_attr.to_host.snpid = snoopid;
-> +
-> +       /* set up operation mapping if it's configured */
-> +       if (omi < OME_NUMBER_ENTRIES) {
-> +               set_bf(paace->impl_attr, PAACE_IA_OTM, PAACE_OTM_INDEXED);
-> +               paace->op_encode.index_ot.omi = omi;
-> +       } else if (~omi != 0) {
-> +               pr_err("bad operation mapping index: %d\n", omi);
-> +               return -EINVAL;
-> +       }
-> +
-> +       if (~stashid != 0)
-> +               set_bf(paace->impl_attr, PAACE_IA_CID, stashid);
-> +
-> +       smp_wmb();
-> +
-> +       if (enable)
-> +               paace->addr_bitfields |= PAACE_V_VALID;
-> +
-> +       mb();
-> +
-> +       return 0;
-> +}
+ source "init/Kconfig"
+ 
+ source "kernel/Kconfig.freezer"
+--- a/arch/powerpc/lib/Makefile
++++ b/arch/powerpc/lib/Makefile
+@@ -19,9 +19,7 @@ obj-$(CONFIG_PPC64)	+= copypage_64.o cop
+ 			   checksum_wrappers_64.o hweight_64.o \
+ 			   copyuser_power7.o string_64.o copypage_power7.o \
+ 			   memcpy_power7.o
+-obj-$(CONFIG_XMON)	+= sstep.o ldstfp.o
+-obj-$(CONFIG_KPROBES)	+= sstep.o ldstfp.o
+-obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+= sstep.o ldstfp.o
++obj-$(CONFIG_PPC_EMULATE_SSTEP)	+= sstep.o ldstfp.o
+ 
+ ifeq ($(CONFIG_PPC64),y)
+ obj-$(CONFIG_SMP)	+= locks.o
