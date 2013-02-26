@@ -1,27 +1,27 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp03.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 23CF52C0077
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2013 01:39:28 +1100 (EST)
+ (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 185D52C0299
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2013 02:20:07 +1100 (EST)
 Received: from /spool/local
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 26 Feb 2013 20:06:49 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 59790E004C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 20:10:23 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r1QEdGoP32047346
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 20:09:16 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r1QEdGJT030961
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2013 01:39:18 +1100
-Message-ID: <512CC899.4060908@linux.vnet.ibm.com>
-Date: Tue, 26 Feb 2013 20:07:13 +0530
+ Tue, 26 Feb 2013 20:46:51 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 431A13940057
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 20:50:00 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r1QFJvqF29556748
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 20:49:58 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r1QFJvNo028938
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 15:20:00 GMT
+Message-ID: <512CD20A.3020100@linux.vnet.ibm.com>
+Date: Tue, 26 Feb 2013 20:47:30 +0530
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: Lai Jiangshan <eag0628@gmail.com>
@@ -29,17 +29,24 @@ Subject: Re: [PATCH v6 04/46] percpu_rwlock: Implement the core design of
  Per-CPU Reader-Writer Locks
 References: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
  <20130218123856.26245.46705.stgit@srivatsabhat.in.ibm.com>
- <CACvQF529c72xLuosD44CPd_y_0zJBc-tjgNQpBiD0UhbzS8XDg@mail.gmail.com>
-In-Reply-To: <CACvQF529c72xLuosD44CPd_y_0zJBc-tjgNQpBiD0UhbzS8XDg@mail.gmail.com>
+ <CANN689F9S7c1M8+cEpz3tsxGF34+NTRBLvxgPUOtbvav5u+RRA@mail.gmail.com>
+ <5122551E.1080703@linux.vnet.ibm.com> <51226B46.9080707@linux.vnet.ibm.com>
+ <CANN689FSxOz+0Cu7EG_yKD8ZE1OpT4kyT+ybLfXSqaifodJRpw@mail.gmail.com>
+ <51226F91.7000108@linux.vnet.ibm.com>
+ <CACvQF53bdh4_BxF0y1fnTVR+T2OmRc0jmWQYftsvx92-fg-Lug@mail.gmail.com>
+ <512BBAD8.8010006@linux.vnet.ibm.com>
+ <CACvQF53gcuEfgM=L8-mPTt4W3GFMte-w6eyO0iv2CobAN68SNw@mail.gmail.com>
+In-Reply-To: <CACvQF53gcuEfgM=L8-mPTt4W3GFMte-w6eyO0iv2CobAN68SNw@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
- linux-kernel@vger.kernel.org, namhyung@kernel.org, walken@google.com,
+ linux-kernel@vger.kernel.org, Michel Lespinasse <walken@google.com>,
  mingo@kernel.org, linux-arch@vger.kernel.org, linux@arm.linux.org.uk,
  xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
  paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
  linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org,
- rjw@sisk.pl, vincent.guittot@linaro.org, tglx@linutronix.de,
- linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com,
+ rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
+ linux-arm-kernel@lists.infradead.org, Lai Jiangshan <laijs@cn.fujitsu.com>,
+ netdev@vger.kernel.org, oleg@redhat.com, vincent.guittot@linaro.org,
  sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org,
  linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -51,65 +58,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/26/2013 07:47 PM, Lai Jiangshan wrote:
-> On Mon, Feb 18, 2013 at 8:38 PM, Srivatsa S. Bhat
+On 02/26/2013 07:04 PM, Lai Jiangshan wrote:
+> On Tue, Feb 26, 2013 at 3:26 AM, Srivatsa S. Bhat
 > <srivatsa.bhat@linux.vnet.ibm.com> wrote:
->> Using global rwlocks as the backend for per-CPU rwlocks helps us avoid many
->> lock-ordering related problems (unlike per-cpu locks). However, global
->> rwlocks lead to unnecessary cache-line bouncing even when there are no
->> writers present, which can slow down the system needlessly.
+>> Hi Lai,
+>>
+>> On 02/25/2013 09:23 PM, Lai Jiangshan wrote:
+>>> Hi, Srivatsa,
+>>>
+>>> The target of the whole patchset is nice for me.
+>>
+>> Cool! Thanks :-)
+>>
+>>> A question: How did you find out the such usages of
+>>> "preempt_disable()" and convert them? did all are converted?
+>>>
+>>
+>> Well, I scanned through the source tree for usages which implicitly
+>> disabled CPU offline and converted them over.
 > 
-> per-CPU rwlocks(yours and mine) are the exactly same as rwlock_t in
-> the view of lock dependency(except reader-C.S. can be nested in
-> writer-C.S.)
-> so they can deadlock in this order:
-> 
-> spin_lock(some_lock);				percpu_write_lock_irqsave()
-> 						case CPU_DYING
-> percpu_read_lock_irqsafe();	<---deadlock--->	spin_lock(some_lock);
-> 
-
-Yes, of course! But this is the most straight-forward of cases to fix,
-because there are a well-defined number of CPU_DYING notifiers, and the fix
-is to make the lock ordering same at both sides.
-
-The real challenge is with cases like below:
-
-spin_lock(some_lock)			percpu_read_lock_irqsafe()
-
-percpu_read_lock_irqsafe()		spin_lock(some_lock)
-
-The locking primitives (percpu_read_lock/unlock_irqsafe) have been explicitly
-designed to keep cases like the above deadlock-free. Because, they ease
-conversions from preempt_disable() to the new locking primitive without
-lock-ordering headache.
-
-> The lockdep can find out such dependency, but we must try our best to
-> find out them before merge the patchset to mainline. We can  review
-> all the code of cpu_disable() and CPU_DYING and fix this kinds of lock
-> dependency, but it is not easy thing, it may be a long term project.
+> How do you scan? could you show the way you scan the source tree.
+> I can follow your instructions for double checking.
 > 
 
-:-)
+Its nothing special. I grepped the source tree for anything dealing with
+cpu_online_mask or its derivatives and also for functions/constructs that
+rely on the cpumasks internally (eg: smp_call_function). Then I audited all
+such call-sites and converted them (if needed) accordingly.
 
-That's exactly what I have done in this patchset, and that's why there
-are 46 patches in this series! :-) I have run this patchset with lockdep
-turned on, and verified that there are no locking problems due to the
-conversion. I even posted out performance numbers from this patchset
-(ie., in comparison to stop_machine), if you are curious...
-http://article.gmane.org/gmane.linux.kernel/1435249
+>> Its not limited to uses
+>> of preempt_disable() alone - even spin_locks, rwlocks, local_irq_disable()
+>> etc also help disable CPU offline. So I tried to dig out all such uses
+>> and converted them. However, since the merge window is open, a lot of
+>> new code is flowing into the tree. So I'll have to rescan the tree to
+>> see if there are any more places to convert.
+> 
+> I remember some code has such assumption:
+>     preempt_disable() (or something else)
+>     //the code assume that the cpu_online_map can't be changed.
+>     preempt_enable()
+> 
+> It is very hard to find out all such kinds of assumptions and fixes them.
+> (I notice your code mainly fixes code around send_xxxx())
+> 
 
-But yes, I'll have to re-verify this because of the new code that went in
-during this merge window.
-
-> ======
-> And if there is any CPU_DYING code takes no locks and do some
-> works(because they know they are called via stop_machine()) we need to
-> add that locking code back if there is such code.(I don't know whether
-> such code exist or not)
->
-
-Yes, I explicitly verified this too. (I had mentioned this in the cover letter).
+The conversion can be carried out using the method I mentioned above.
 
 Regards,
 Srivatsa S. Bhat
