@@ -1,26 +1,40 @@
-Return-Path: <b08248@gmail.com>
-Received: from mail-oa0-f41.google.com (mail-oa0-f41.google.com
- [209.85.219.41])
+Return-Path: <eag0628@gmail.com>
+Received: from mail-ia0-x231.google.com (mail-ia0-x231.google.com
+ [IPv6:2607:f8b0:4001:c02::231])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6403D2C0077
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 11:09:07 +1100 (EST)
-Received: by mail-oa0-f41.google.com with SMTP id i10so4226633oag.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Feb 2013 16:09:04 -0800 (PST)
+ by ozlabs.org (Postfix) with ESMTPS id DA9E92C029E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 11:17:33 +1100 (EST)
+Received: by mail-ia0-f177.google.com with SMTP id o25so2997189iad.36
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Feb 2013 16:17:29 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <1361191939-21260-3-git-send-email-Varun.Sethi@freescale.com>
-References: <1361191939-21260-1-git-send-email-Varun.Sethi@freescale.com>
- <1361191939-21260-3-git-send-email-Varun.Sethi@freescale.com>
-Date: Mon, 25 Feb 2013 18:09:04 -0600
-Message-ID: <CALRxmdDc9TuxH7HgAF3_iLgatoaOUML6fUt8SU+sxHyz6ZVjfw@mail.gmail.com>
-Subject: Re: [PATCH 2/6] powerpc/fsl_pci: Store the platform device
- information corresponding to the pci controller.
-From: Stuart Yoder <b08248@gmail.com>
-To: Varun Sethi <Varun.Sethi@freescale.com>
+In-Reply-To: <512BBAD8.8010006@linux.vnet.ibm.com>
+References: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
+ <20130218123856.26245.46705.stgit@srivatsabhat.in.ibm.com>
+ <CANN689F9S7c1M8+cEpz3tsxGF34+NTRBLvxgPUOtbvav5u+RRA@mail.gmail.com>
+ <5122551E.1080703@linux.vnet.ibm.com>
+ <51226B46.9080707@linux.vnet.ibm.com>
+ <CANN689FSxOz+0Cu7EG_yKD8ZE1OpT4kyT+ybLfXSqaifodJRpw@mail.gmail.com>
+ <51226F91.7000108@linux.vnet.ibm.com>
+ <CACvQF53bdh4_BxF0y1fnTVR+T2OmRc0jmWQYftsvx92-fg-Lug@mail.gmail.com>
+ <512BBAD8.8010006@linux.vnet.ibm.com>
+Date: Tue, 26 Feb 2013 08:17:29 +0800
+Message-ID: <CACvQF51jCxk5jUqmhD=QBBtUsBkQWZzakacrKO4Gsk=w61rNwQ@mail.gmail.com>
+Subject: Re: [PATCH v6 04/46] percpu_rwlock: Implement the core design of
+ Per-CPU Reader-Writer Locks
+From: Lai Jiangshan <eag0628@gmail.com>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Joerg Roedel <joro@8bytes.org>, Stuart Yoder <stuart.yoder@freescale.com>,
- linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
- Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
+ linux-kernel@vger.kernel.org, Michel Lespinasse <walken@google.com>,
+ mingo@kernel.org, linux-arch@vger.kernel.org, linux@arm.linux.org.uk,
+ xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
+ paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
+ linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org,
+ rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
+ linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com,
+ vincent.guittot@linaro.org, sbw@mit.edu, tj@kernel.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,86 +44,198 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch was submitted separately to linuxppc-dev (and was already
-applied).  You don't need it in this patch set, right?
+On Tue, Feb 26, 2013 at 3:26 AM, Srivatsa S. Bhat
+<srivatsa.bhat@linux.vnet.ibm.com> wrote:
+> Hi Lai,
+>
+> On 02/25/2013 09:23 PM, Lai Jiangshan wrote:
+>> Hi, Srivatsa,
+>>
+>> The target of the whole patchset is nice for me.
+>
+> Cool! Thanks :-)
+>
+>> A question: How did you find out the such usages of
+>> "preempt_disable()" and convert them? did all are converted?
+>>
+>
+> Well, I scanned through the source tree for usages which implicitly
+> disabled CPU offline and converted them over. Its not limited to uses
+> of preempt_disable() alone - even spin_locks, rwlocks, local_irq_disable()
+> etc also help disable CPU offline. So I tried to dig out all such uses
+> and converted them. However, since the merge window is open, a lot of
+> new code is flowing into the tree. So I'll have to rescan the tree to
+> see if there are any more places to convert.
+>
+>> And I think the lock is too complex and reinvent the wheel, why don't
+>> you reuse the lglock?
+>
+> lglocks? No way! ;-) See below...
+>
+>> I wrote an untested draft here.
+>>
+>> Thanks,
+>> Lai
+>>
+>> PS: Some HA tools(I'm writing one) which takes checkpoints of
+>> virtual-machines frequently, I guess this patchset can speedup the
+>> tools.
+>>
+>> From 01db542693a1b7fc6f9ece45d57cb529d9be5b66 Mon Sep 17 00:00:00 2001
+>> From: Lai Jiangshan <laijs@cn.fujitsu.com>
+>> Date: Mon, 25 Feb 2013 23:14:27 +0800
+>> Subject: [PATCH] lglock: add read-preference local-global rwlock
+>>
+>> locality via lglock(trylock)
+>> read-preference read-write-lock via fallback rwlock_t
+>>
+>> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+>> ---
+>>  include/linux/lglock.h |   31 +++++++++++++++++++++++++++++++
+>>  kernel/lglock.c        |   45 +++++++++++++++++++++++++++++++++++++++++++++
+>>  2 files changed, 76 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/include/linux/lglock.h b/include/linux/lglock.h
+>> index 0d24e93..30fe887 100644
+>> --- a/include/linux/lglock.h
+>> +++ b/include/linux/lglock.h
+>> @@ -67,4 +67,35 @@ void lg_local_unlock_cpu(struct lglock *lg, int cpu);
+>>  void lg_global_lock(struct lglock *lg);
+>>  void lg_global_unlock(struct lglock *lg);
+>>
+>> +struct lgrwlock {
+>> +     unsigned long __percpu *fallback_reader_refcnt;
+>> +     struct lglock lglock;
+>> +     rwlock_t fallback_rwlock;
+>> +};
+>> +
+>> +#define DEFINE_LGRWLOCK(name)                                                \
+>> +     static DEFINE_PER_CPU(arch_spinlock_t, name ## _lock)           \
+>> +     = __ARCH_SPIN_LOCK_UNLOCKED;                                    \
+>> +     static DEFINE_PER_CPU(unsigned long, name ## _refcnt);          \
+>> +     struct lgrwlock name = {                                        \
+>> +             .fallback_reader_refcnt = &name ## _refcnt,             \
+>> +             .lglock = { .lock = &name ## _lock } }
+>> +
+>> +#define DEFINE_STATIC_LGRWLOCK(name)                                 \
+>> +     static DEFINE_PER_CPU(arch_spinlock_t, name ## _lock)           \
+>> +     = __ARCH_SPIN_LOCK_UNLOCKED;                                    \
+>> +     static DEFINE_PER_CPU(unsigned long, name ## _refcnt);          \
+>> +     static struct lgrwlock name = {                                 \
+>> +             .fallback_reader_refcnt = &name ## _refcnt,             \
+>> +             .lglock = { .lock = &name ## _lock } }
+>> +
+>> +static inline void lg_rwlock_init(struct lgrwlock *lgrw, char *name)
+>> +{
+>> +     lg_lock_init(&lgrw->lglock, name);
+>> +}
+>> +
+>> +void lg_rwlock_local_read_lock(struct lgrwlock *lgrw);
+>> +void lg_rwlock_local_read_unlock(struct lgrwlock *lgrw);
+>> +void lg_rwlock_global_write_lock(struct lgrwlock *lgrw);
+>> +void lg_rwlock_global_write_unlock(struct lgrwlock *lgrw);
+>>  #endif
+>> diff --git a/kernel/lglock.c b/kernel/lglock.c
+>> index 6535a66..463543a 100644
+>> --- a/kernel/lglock.c
+>> +++ b/kernel/lglock.c
+>> @@ -87,3 +87,48 @@ void lg_global_unlock(struct lglock *lg)
+>>       preempt_enable();
+>>  }
+>>  EXPORT_SYMBOL(lg_global_unlock);
+>> +
+>> +void lg_rwlock_local_read_lock(struct lgrwlock *lgrw)
+>> +{
+>> +     struct lglock *lg = &lgrw->lglock;
+>> +
+>> +     preempt_disable();
+>> +     if (likely(!__this_cpu_read(*lgrw->fallback_reader_refcnt))) {
+>> +             if (likely(arch_spin_trylock(this_cpu_ptr(lg->lock)))) {
+>> +                     rwlock_acquire_read(&lg->lock_dep_map, 0, 0, _RET_IP_);
+>> +                     return;
+>> +             }
+>> +             read_lock(&lgrw->fallback_rwlock);
+>> +     }
+>> +
+>> +     __this_cpu_inc(*lgrw->fallback_reader_refcnt);
+>> +}
+>> +EXPORT_SYMBOL(lg_rwlock_local_read_lock);
+>> +
+>> +void lg_rwlock_local_read_unlock(struct lgrwlock *lgrw)
+>> +{
+>> +     if (likely(!__this_cpu_read(*lgrw->fallback_reader_refcnt))) {
+>> +             lg_local_unlock(&lgrw->lglock);
+>> +             return;
+>> +     }
+>> +
+>> +     if (!__this_cpu_dec_return(*lgrw->fallback_reader_refcnt))
+>> +             read_unlock(&lgrw->fallback_rwlock);
+>> +
+>> +     preempt_enable();
+>> +}
+>> +EXPORT_SYMBOL(lg_rwlock_local_read_unlock);
+>> +
+>
+> If I read the code above correctly, all you are doing is implementing a
+> recursive reader-side primitive (ie., allowing the reader to call these
+> functions recursively, without resulting in a self-deadlock).
+>
+> But the thing is, making the reader-side recursive is the least of our
+> problems! Our main challenge is to make the locking extremely flexible
+> and also safe-guard it against circular-locking-dependencies and deadlocks.
+> Please take a look at the changelog of patch 1 - it explains the situation
+> with an example.
 
-Stuart
 
-On Mon, Feb 18, 2013 at 6:52 AM, Varun Sethi <Varun.Sethi@freescale.com> wrote:
-> The pci controller structure has a provision to store the device strcuture
-> pointer of the corresponding platform device. Currently this information is
-> not stored during fsl pci controller initialization. This information is
-> required while dealing with iommu groups for pci devices connected to the fsl
-> pci controller. For the case where the pci devices can't be paritioned, they
-> would fall under the same device group as the pci controller.
+My lock fixes your requirements(I read patch 1-6 before I sent). In
+readsite, lglock 's lock is token via trylock, the lglock doesn't
+contribute to deadlocks, we can consider it doesn't exist when we find
+deadlock from it. And global fallback rwlock doesn't result to
+deadlocks because it is read-preference(you need to inc the
+fallback_reader_refcnt inside the cpu-hotplug write-side, I don't do
+it in generic lgrwlock)
+
+
+If lg_rwlock_local_read_lock() spins, which means
+lg_rwlock_local_read_lock() spins on fallback_rwlock, and which means
+lg_rwlock_global_write_lock() took the lgrwlock successfully and
+return, and which means lg_rwlock_local_read_lock() will stop spinning
+when the write side finished.
+
+
 >
-> This patch stores the platform device information in the pci controller
-> structure during initialization.
+>> +void lg_rwlock_global_write_lock(struct lgrwlock *lgrw)
+>> +{
+>> +     lg_global_lock(&lgrw->lglock);
 >
-> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
-> ---
->  arch/powerpc/sysdev/fsl_pci.c |    9 +++++++--
->  arch/powerpc/sysdev/fsl_pci.h |    2 +-
->  2 files changed, 8 insertions(+), 3 deletions(-)
+> This does a for-loop on all CPUs and takes their locks one-by-one. That's
+> exactly what we want to prevent, because that is the _source_ of all our
+> deadlock woes in this case. In the presence of perfect lock ordering
+> guarantees, this wouldn't have been a problem (that's why lglocks are
+> being used successfully elsewhere in the kernel). In the stop-machine()
+> removal case, the over-flexibility of preempt_disable() forces us to provide
+> an equally flexible locking alternative. Hence we can't use such per-cpu
+> locking schemes.
 >
-> diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-> index 92a5915..b393ae7 100644
-> --- a/arch/powerpc/sysdev/fsl_pci.c
-> +++ b/arch/powerpc/sysdev/fsl_pci.c
-> @@ -421,13 +421,16 @@ void fsl_pcibios_fixup_bus(struct pci_bus *bus)
->         }
->  }
+> You might note that, for exactly this reason, I haven't actually used any
+> per-cpu _locks_ in this synchronization scheme, though it is named as
+> "per-cpu rwlocks". The only per-cpu component here are the refcounts, and
+> we consciously avoid waiting/spinning on them (because then that would be
+> equivalent to having per-cpu locks, which are deadlock-prone). We use
+> global rwlocks to get the deadlock-safety that we need.
 >
-> -int __init fsl_add_bridge(struct device_node *dev, int is_primary)
-> +int __init fsl_add_bridge(struct platform_device *pdev, int is_primary)
->  {
->         int len;
->         struct pci_controller *hose;
->         struct resource rsrc;
->         const int *bus_range;
->         u8 hdr_type, progif;
-> +       struct device_node *dev;
-> +
-> +       dev = pdev->dev.of_node;
+>> +     write_lock(&lgrw->fallback_rwlock);
+>> +}
+>> +EXPORT_SYMBOL(lg_rwlock_global_write_lock);
+>> +
+>> +void lg_rwlock_global_write_unlock(struct lgrwlock *lgrw)
+>> +{
+>> +     write_unlock(&lgrw->fallback_rwlock);
+>> +     lg_global_unlock(&lgrw->lglock);
+>> +}
+>> +EXPORT_SYMBOL(lg_rwlock_global_write_unlock);
+>>
 >
->         if (!of_device_is_available(dev)) {
->                 pr_warning("%s: disabled\n", dev->full_name);
-> @@ -453,6 +456,8 @@ int __init fsl_add_bridge(struct device_node *dev, int is_primary)
->         if (!hose)
->                 return -ENOMEM;
+> Regards,
+> Srivatsa S. Bhat
 >
-> +       /* set platform device as the parent */
-> +       hose->parent = &pdev->dev;
->         hose->first_busno = bus_range ? bus_range[0] : 0x0;
->         hose->last_busno = bus_range ? bus_range[1] : 0xff;
->
-> @@ -880,7 +885,7 @@ static int fsl_pci_probe(struct platform_device *pdev)
->  #endif
->
->         node = pdev->dev.of_node;
-> -       ret = fsl_add_bridge(node, fsl_pci_primary == node);
-> +       ret = fsl_add_bridge(pdev, fsl_pci_primary == node);
->
->  #ifdef CONFIG_SWIOTLB
->         if (ret == 0) {
-> diff --git a/arch/powerpc/sysdev/fsl_pci.h b/arch/powerpc/sysdev/fsl_pci.h
-> index d078537..c495c00 100644
-> --- a/arch/powerpc/sysdev/fsl_pci.h
-> +++ b/arch/powerpc/sysdev/fsl_pci.h
-> @@ -91,7 +91,7 @@ struct ccsr_pci {
->         __be32  pex_err_cap_r3;         /* 0x.e34 - PCIE error capture register 0 */
->  };
->
-> -extern int fsl_add_bridge(struct device_node *dev, int is_primary);
-> +extern int fsl_add_bridge(struct platform_device *pdev, int is_primary);
->  extern void fsl_pcibios_fixup_bus(struct pci_bus *bus);
->  extern int mpc83xx_add_bridge(struct device_node *dev);
->  u64 fsl_pci_immrbar_base(struct pci_controller *hose);
-> --
-> 1.7.4.1
->
->
-> _______________________________________________
-> iommu mailing list
-> iommu@lists.linux-foundation.org
-> https://lists.linuxfoundation.org/mailman/listinfo/iommu
