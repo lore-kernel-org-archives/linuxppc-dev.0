@@ -1,18 +1,21 @@
-Return-Path: <gang.chen@asianux.com>
-Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id C0FDD2C0292
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 14:43:45 +1100 (EST)
-Message-ID: <512C2F5D.1080207@asianux.com>
-Date: Tue, 26 Feb 2013 11:43:25 +0800
-From: Chen Gang <gang.chen@asianux.com>
+Return-Path: <michael@ellerman.id.au>
+Date: Tue, 26 Feb 2013 16:26:46 +1100
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: Re: [PATCH 5/6][v4]: perf: Create a sysfs entry for Power event format
+Message-ID: <20130226052646.GB21553@concordia>
+References: <20130123062201.GA13720@us.ibm.com>
+ <20130123062613.GF13720@us.ibm.com>
 MIME-Version: 1.0
-To: Jiri Slaby <jslaby@suse.cz>, wfp5p@virginia.edu, tklauser@distanz.ch
-Subject: [PATCH] drivers/tty/hvc: using strlcpy instead of strncpy
-Content-Type: text/plain; charset=GB2312
-Cc: Greg KH <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
- alan@linux.intel.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130123062613.GF13720@us.ibm.com>
+Cc: Andi Kleen <ak@linux.intel.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+ robert.richter@amd.com, Anton Blanchard <anton@au1.ibm.com>,
+ linux-kernel@vger.kernel.org, Stephane Eranian <eranian@google.com>,
+ linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@redhat.com>,
+ Paul Mackerras <paulus@samba.org>,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+ Jiri Olsa <jolsa@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,39 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Jan 22, 2013 at 10:26:13PM -0800, Sukadev Bhattiprolu wrote:
+> 
+> [PATCH 5/6][v4]: perf: Create a sysfs entry for Power event format
+> 
+> Create a sysfs entry, '/sys/bus/event_source/devices/cpu/format/event'
+> which describes the format of a POWER cpu.
 
-  when strlen pi->location_code is larger than HVCS_CLC_LENGTH + 1,
-    original implementation can not let hvcsd->p_location_code NUL terminated.
-  so need fix it (also can simplify the code)
+Did this patch go upstream? I don't see it.
 
-Signed-off-by: Chen Gang <gang.chen@asianux.com>
----
- drivers/tty/hvc/hvcs.c |    9 ++-------
- 1 files changed, 2 insertions(+), 7 deletions(-)
+If not, please don't merge it.
 
-diff --git a/drivers/tty/hvc/hvcs.c b/drivers/tty/hvc/hvcs.c
-index 1956593..81e939e 100644
---- a/drivers/tty/hvc/hvcs.c
-+++ b/drivers/tty/hvc/hvcs.c
-@@ -881,17 +881,12 @@ static struct vio_driver hvcs_vio_driver = {
- /* Only called from hvcs_get_pi please */
- static void hvcs_set_pi(struct hvcs_partner_info *pi, struct hvcs_struct *hvcsd)
- {
--	int clclength;
--
- 	hvcsd->p_unit_address = pi->unit_address;
- 	hvcsd->p_partition_ID  = pi->partition_ID;
--	clclength = strlen(&pi->location_code[0]);
--	if (clclength > HVCS_CLC_LENGTH)
--		clclength = HVCS_CLC_LENGTH;
- 
- 	/* copy the null-term char too */
--	strncpy(&hvcsd->p_location_code[0],
--			&pi->location_code[0], clclength + 1);
-+	strlcpy(&hvcsd->p_location_code[0],
-+			&pi->location_code[0], sizeof(hvcsd->p_location_code));
- }
- 
- /*
--- 
-1.7.7.6
+> The format of the event is the same for all POWER cpus at least in
+> (Power6, Power7), so bulk of this change is common in the code common
+> to POWER cpus.
+
+No. The event format is different on most POWER cpus, in particular it
+is different on Power6 and Power7, and will be different again on
+Power8.
+
+cheers
