@@ -1,41 +1,33 @@
 Return-Path: <eag0628@gmail.com>
-Received: from mail-ie0-x22d.google.com (mail-ie0-x22d.google.com
- [IPv6:2607:f8b0:4001:c03::22d])
+Received: from mail-ia0-x22d.google.com (mail-ia0-x22d.google.com
+ [IPv6:2607:f8b0:4001:c02::22d])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A449B2C030C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2013 00:34:12 +1100 (EST)
-Received: by mail-ie0-f173.google.com with SMTP id 9so4460421iec.32
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 05:34:09 -0800 (PST)
+ by ozlabs.org (Postfix) with ESMTPS id 328FF2C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2013 01:17:08 +1100 (EST)
+Received: by mail-ia0-f173.google.com with SMTP id h37so3491615iak.4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 06:17:04 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <512BBAD8.8010006@linux.vnet.ibm.com>
+In-Reply-To: <20130218123856.26245.46705.stgit@srivatsabhat.in.ibm.com>
 References: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
  <20130218123856.26245.46705.stgit@srivatsabhat.in.ibm.com>
- <CANN689F9S7c1M8+cEpz3tsxGF34+NTRBLvxgPUOtbvav5u+RRA@mail.gmail.com>
- <5122551E.1080703@linux.vnet.ibm.com>
- <51226B46.9080707@linux.vnet.ibm.com>
- <CANN689FSxOz+0Cu7EG_yKD8ZE1OpT4kyT+ybLfXSqaifodJRpw@mail.gmail.com>
- <51226F91.7000108@linux.vnet.ibm.com>
- <CACvQF53bdh4_BxF0y1fnTVR+T2OmRc0jmWQYftsvx92-fg-Lug@mail.gmail.com>
- <512BBAD8.8010006@linux.vnet.ibm.com>
-Date: Tue, 26 Feb 2013 21:34:09 +0800
-Message-ID: <CACvQF53gcuEfgM=L8-mPTt4W3GFMte-w6eyO0iv2CobAN68SNw@mail.gmail.com>
+Date: Tue, 26 Feb 2013 22:17:03 +0800
+Message-ID: <CACvQF529c72xLuosD44CPd_y_0zJBc-tjgNQpBiD0UhbzS8XDg@mail.gmail.com>
 Subject: Re: [PATCH v6 04/46] percpu_rwlock: Implement the core design of
  Per-CPU Reader-Writer Locks
 From: Lai Jiangshan <eag0628@gmail.com>
 To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
- linux-kernel@vger.kernel.org, Michel Lespinasse <walken@google.com>,
- mingo@kernel.org, linux-arch@vger.kernel.org, linux@arm.linux.org.uk,
+ linux-kernel@vger.kernel.org, walken@google.com, mingo@kernel.org,
+ linux-arch@vger.kernel.org, linux@arm.linux.org.uk,
  xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
  paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
  linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org,
  rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
- linux-arm-kernel@lists.infradead.org, Lai Jiangshan <laijs@cn.fujitsu.com>,
- netdev@vger.kernel.org, oleg@redhat.com, vincent.guittot@linaro.org,
- sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+ linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com,
+ vincent.guittot@linaro.org, sbw@mit.edu, tj@kernel.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,195 +37,249 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 26, 2013 at 3:26 AM, Srivatsa S. Bhat
+On Mon, Feb 18, 2013 at 8:38 PM, Srivatsa S. Bhat
 <srivatsa.bhat@linux.vnet.ibm.com> wrote:
-> Hi Lai,
->
-> On 02/25/2013 09:23 PM, Lai Jiangshan wrote:
->> Hi, Srivatsa,
->>
->> The target of the whole patchset is nice for me.
->
-> Cool! Thanks :-)
->
->> A question: How did you find out the such usages of
->> "preempt_disable()" and convert them? did all are converted?
->>
->
-> Well, I scanned through the source tree for usages which implicitly
-> disabled CPU offline and converted them over.
+> Using global rwlocks as the backend for per-CPU rwlocks helps us avoid many
+> lock-ordering related problems (unlike per-cpu locks). However, global
+> rwlocks lead to unnecessary cache-line bouncing even when there are no
+> writers present, which can slow down the system needlessly.
 
-How do you scan? could you show the way you scan the source tree.
-I can follow your instructions for double checking.
+per-CPU rwlocks(yours and mine) are the exactly same as rwlock_t in
+the view of lock dependency(except reader-C.S. can be nested in
+writer-C.S.)
+so they can deadlock in this order:
 
-> Its not limited to uses
-> of preempt_disable() alone - even spin_locks, rwlocks, local_irq_disable()
-> etc also help disable CPU offline. So I tried to dig out all such uses
-> and converted them. However, since the merge window is open, a lot of
-> new code is flowing into the tree. So I'll have to rescan the tree to
-> see if there are any more places to convert.
+spin_lock(some_lock);				percpu_write_lock_irqsave()
+						case CPU_DYING
+percpu_read_lock_irqsafe();	<---deadlock--->	spin_lock(some_lock);
 
-I remember some code has such assumption:
-    preempt_disable() (or something else)
-    //the code assume that the cpu_online_map can't be changed.
-    preempt_enable()
+The lockdep can find out such dependency, but we must try our best to
+find out them before merge the patchset to mainline. We can  review
+all the code of cpu_disable() and CPU_DYING and fix this kinds of lock
+dependency, but it is not easy thing, it may be a long term project.
 
-It is very hard to find out all such kinds of assumptions and fixes them.
-(I notice your code mainly fixes code around send_xxxx())
-
+======
+And if there is any CPU_DYING code takes no locks and do some
+works(because they know they are called via stop_machine()) we need to
+add that locking code back if there is such code.(I don't know whether
+such code exist or not)
 
 >
->> And I think the lock is too complex and reinvent the wheel, why don't
->> you reuse the lglock?
+> Per-cpu counters can help solve the cache-line bouncing problem. So we
+> actually use the best of both: per-cpu counters (no-waiting) at the reader
+> side in the fast-path, and global rwlocks in the slowpath.
 >
-> lglocks? No way! ;-) See below...
+> [ Fastpath = no writer is active; Slowpath = a writer is active ]
 >
->> I wrote an untested draft here.
->>
->> Thanks,
->> Lai
->>
->> PS: Some HA tools(I'm writing one) which takes checkpoints of
->> virtual-machines frequently, I guess this patchset can speedup the
->> tools.
->>
->> From 01db542693a1b7fc6f9ece45d57cb529d9be5b66 Mon Sep 17 00:00:00 2001
->> From: Lai Jiangshan <laijs@cn.fujitsu.com>
->> Date: Mon, 25 Feb 2013 23:14:27 +0800
->> Subject: [PATCH] lglock: add read-preference local-global rwlock
->>
->> locality via lglock(trylock)
->> read-preference read-write-lock via fallback rwlock_t
->>
->> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
->> ---
->>  include/linux/lglock.h |   31 +++++++++++++++++++++++++++++++
->>  kernel/lglock.c        |   45 +++++++++++++++++++++++++++++++++++++++++++++
->>  2 files changed, 76 insertions(+), 0 deletions(-)
->>
->> diff --git a/include/linux/lglock.h b/include/linux/lglock.h
->> index 0d24e93..30fe887 100644
->> --- a/include/linux/lglock.h
->> +++ b/include/linux/lglock.h
->> @@ -67,4 +67,35 @@ void lg_local_unlock_cpu(struct lglock *lg, int cpu);
->>  void lg_global_lock(struct lglock *lg);
->>  void lg_global_unlock(struct lglock *lg);
->>
->> +struct lgrwlock {
->> +     unsigned long __percpu *fallback_reader_refcnt;
->> +     struct lglock lglock;
->> +     rwlock_t fallback_rwlock;
->> +};
->> +
->> +#define DEFINE_LGRWLOCK(name)                                                \
->> +     static DEFINE_PER_CPU(arch_spinlock_t, name ## _lock)           \
->> +     = __ARCH_SPIN_LOCK_UNLOCKED;                                    \
->> +     static DEFINE_PER_CPU(unsigned long, name ## _refcnt);          \
->> +     struct lgrwlock name = {                                        \
->> +             .fallback_reader_refcnt = &name ## _refcnt,             \
->> +             .lglock = { .lock = &name ## _lock } }
->> +
->> +#define DEFINE_STATIC_LGRWLOCK(name)                                 \
->> +     static DEFINE_PER_CPU(arch_spinlock_t, name ## _lock)           \
->> +     = __ARCH_SPIN_LOCK_UNLOCKED;                                    \
->> +     static DEFINE_PER_CPU(unsigned long, name ## _refcnt);          \
->> +     static struct lgrwlock name = {                                 \
->> +             .fallback_reader_refcnt = &name ## _refcnt,             \
->> +             .lglock = { .lock = &name ## _lock } }
->> +
->> +static inline void lg_rwlock_init(struct lgrwlock *lgrw, char *name)
->> +{
->> +     lg_lock_init(&lgrw->lglock, name);
->> +}
->> +
->> +void lg_rwlock_local_read_lock(struct lgrwlock *lgrw);
->> +void lg_rwlock_local_read_unlock(struct lgrwlock *lgrw);
->> +void lg_rwlock_global_write_lock(struct lgrwlock *lgrw);
->> +void lg_rwlock_global_write_unlock(struct lgrwlock *lgrw);
->>  #endif
->> diff --git a/kernel/lglock.c b/kernel/lglock.c
->> index 6535a66..463543a 100644
->> --- a/kernel/lglock.c
->> +++ b/kernel/lglock.c
->> @@ -87,3 +87,48 @@ void lg_global_unlock(struct lglock *lg)
->>       preempt_enable();
->>  }
->>  EXPORT_SYMBOL(lg_global_unlock);
->> +
->> +void lg_rwlock_local_read_lock(struct lgrwlock *lgrw)
->> +{
->> +     struct lglock *lg = &lgrw->lglock;
->> +
->> +     preempt_disable();
->> +     if (likely(!__this_cpu_read(*lgrw->fallback_reader_refcnt))) {
->> +             if (likely(arch_spin_trylock(this_cpu_ptr(lg->lock)))) {
->> +                     rwlock_acquire_read(&lg->lock_dep_map, 0, 0, _RET_IP_);
->> +                     return;
->> +             }
->> +             read_lock(&lgrw->fallback_rwlock);
->> +     }
->> +
->> +     __this_cpu_inc(*lgrw->fallback_reader_refcnt);
->> +}
->> +EXPORT_SYMBOL(lg_rwlock_local_read_lock);
->> +
->> +void lg_rwlock_local_read_unlock(struct lgrwlock *lgrw)
->> +{
->> +     if (likely(!__this_cpu_read(*lgrw->fallback_reader_refcnt))) {
->> +             lg_local_unlock(&lgrw->lglock);
->> +             return;
->> +     }
->> +
->> +     if (!__this_cpu_dec_return(*lgrw->fallback_reader_refcnt))
->> +             read_unlock(&lgrw->fallback_rwlock);
->> +
->> +     preempt_enable();
->> +}
->> +EXPORT_SYMBOL(lg_rwlock_local_read_unlock);
->> +
+> IOW, the readers just increment/decrement their per-cpu refcounts (disabling
+> interrupts during the updates, if necessary) when no writer is active.
+> When a writer becomes active, he signals all readers to switch to global
+> rwlocks for the duration of his activity. The readers switch over when it
+> is safe for them (ie., when they are about to start a fresh, non-nested
+> read-side critical section) and start using (holding) the global rwlock for
+> read in their subsequent critical sections.
 >
-> If I read the code above correctly, all you are doing is implementing a
-> recursive reader-side primitive (ie., allowing the reader to call these
-> functions recursively, without resulting in a self-deadlock).
+> The writer waits for every existing reader to switch, and then acquires the
+> global rwlock for write and enters his critical section. Later, the writer
+> signals all readers that he is done, and that they can go back to using their
+> per-cpu refcounts again.
 >
-> But the thing is, making the reader-side recursive is the least of our
-> problems! Our main challenge is to make the locking extremely flexible
-> and also safe-guard it against circular-locking-dependencies and deadlocks.
-> Please take a look at the changelog of patch 1 - it explains the situation
-> with an example.
+> Note that the lock-safety (despite the per-cpu scheme) comes from the fact
+> that the readers can *choose* _when_ to switch to rwlocks upon the writer's
+> signal. And the readers don't wait on anybody based on the per-cpu counters.
+> The only true synchronization that involves waiting at the reader-side in this
+> scheme, is the one arising from the global rwlock, which is safe from circular
+> locking dependency issues.
 >
->> +void lg_rwlock_global_write_lock(struct lgrwlock *lgrw)
->> +{
->> +     lg_global_lock(&lgrw->lglock);
+> Reader-writer locks and per-cpu counters are recursive, so they can be
+> used in a nested fashion in the reader-path, which makes per-CPU rwlocks also
+> recursive. Also, this design of switching the synchronization scheme ensures
+> that you can safely nest and use these locks in a very flexible manner.
 >
-> This does a for-loop on all CPUs and takes their locks one-by-one. That's
-> exactly what we want to prevent, because that is the _source_ of all our
-> deadlock woes in this case. In the presence of perfect lock ordering
-> guarantees, this wouldn't have been a problem (that's why lglocks are
-> being used successfully elsewhere in the kernel). In the stop-machine()
-> removal case, the over-flexibility of preempt_disable() forces us to provide
-> an equally flexible locking alternative. Hence we can't use such per-cpu
-> locking schemes.
+> I'm indebted to Michael Wang and Xiao Guangrong for their numerous thoughtful
+> suggestions and ideas, which inspired and influenced many of the decisions in
+> this as well as previous designs. Thanks a lot Michael and Xiao!
 >
-> You might note that, for exactly this reason, I haven't actually used any
-> per-cpu _locks_ in this synchronization scheme, though it is named as
-> "per-cpu rwlocks". The only per-cpu component here are the refcounts, and
-> we consciously avoid waiting/spinning on them (because then that would be
-> equivalent to having per-cpu locks, which are deadlock-prone). We use
-> global rwlocks to get the deadlock-safety that we need.
+> Cc: David Howells <dhowells@redhat.com>
+> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> ---
 >
->> +     write_lock(&lgrw->fallback_rwlock);
->> +}
->> +EXPORT_SYMBOL(lg_rwlock_global_write_lock);
->> +
->> +void lg_rwlock_global_write_unlock(struct lgrwlock *lgrw)
->> +{
->> +     write_unlock(&lgrw->fallback_rwlock);
->> +     lg_global_unlock(&lgrw->lglock);
->> +}
->> +EXPORT_SYMBOL(lg_rwlock_global_write_unlock);
->>
+>  lib/percpu-rwlock.c |  139 ++++++++++++++++++++++++++++++++++++++++++++++++++-
+>  1 file changed, 137 insertions(+), 2 deletions(-)
 >
-> Regards,
-> Srivatsa S. Bhat
+> diff --git a/lib/percpu-rwlock.c b/lib/percpu-rwlock.c
+> index f938096..edefdea 100644
+> --- a/lib/percpu-rwlock.c
+> +++ b/lib/percpu-rwlock.c
+> @@ -27,6 +27,24 @@
+>  #include <linux/percpu-rwlock.h>
+>  #include <linux/errno.h>
 >
+> +#include <asm/processor.h>
+> +
+> +
+> +#define reader_yet_to_switch(pcpu_rwlock, cpu)                             \
+> +       (ACCESS_ONCE(per_cpu_ptr((pcpu_rwlock)->rw_state, cpu)->reader_refcnt))
+> +
+> +#define reader_percpu_nesting_depth(pcpu_rwlock)                 \
+> +       (__this_cpu_read((pcpu_rwlock)->rw_state->reader_refcnt))
+> +
+> +#define reader_uses_percpu_refcnt(pcpu_rwlock)                         \
+> +                               reader_percpu_nesting_depth(pcpu_rwlock)
+> +
+> +#define reader_nested_percpu(pcpu_rwlock)                              \
+> +                       (reader_percpu_nesting_depth(pcpu_rwlock) > 1)
+> +
+> +#define writer_active(pcpu_rwlock)                                     \
+> +       (__this_cpu_read((pcpu_rwlock)->rw_state->writer_signal))
+> +
+>
+>  int __percpu_init_rwlock(struct percpu_rwlock *pcpu_rwlock,
+>                          const char *name, struct lock_class_key *rwlock_key)
+> @@ -55,21 +73,138 @@ void percpu_free_rwlock(struct percpu_rwlock *pcpu_rwlock)
+>
+>  void percpu_read_lock(struct percpu_rwlock *pcpu_rwlock)
+>  {
+> -       read_lock(&pcpu_rwlock->global_rwlock);
+> +       preempt_disable();
+> +
+> +       /*
+> +        * Let the writer know that a reader is active, even before we choose
+> +        * our reader-side synchronization scheme.
+> +        */
+> +       this_cpu_inc(pcpu_rwlock->rw_state->reader_refcnt);
+> +
+> +       /*
+> +        * If we are already using per-cpu refcounts, it is not safe to switch
+> +        * the synchronization scheme. So continue using the refcounts.
+> +        */
+> +       if (reader_nested_percpu(pcpu_rwlock))
+> +               return;
+> +
+> +       /*
+> +        * The write to 'reader_refcnt' must be visible before we read
+> +        * 'writer_signal'.
+> +        */
+> +       smp_mb();
+> +
+> +       if (likely(!writer_active(pcpu_rwlock))) {
+> +               goto out;
+> +       } else {
+> +               /* Writer is active, so switch to global rwlock. */
+> +               read_lock(&pcpu_rwlock->global_rwlock);
+> +
+> +               /*
+> +                * We might have raced with a writer going inactive before we
+> +                * took the read-lock. So re-evaluate whether we still need to
+> +                * hold the rwlock or if we can switch back to per-cpu
+> +                * refcounts. (This also helps avoid heterogeneous nesting of
+> +                * readers).
+> +                */
+> +               if (writer_active(pcpu_rwlock)) {
+> +                       /*
+> +                        * The above writer_active() check can get reordered
+> +                        * with this_cpu_dec() below, but this is OK, because
+> +                        * holding the rwlock is conservative.
+> +                        */
+> +                       this_cpu_dec(pcpu_rwlock->rw_state->reader_refcnt);
+> +               } else {
+> +                       read_unlock(&pcpu_rwlock->global_rwlock);
+> +               }
+> +       }
+> +
+> +out:
+> +       /* Prevent reordering of any subsequent reads/writes */
+> +       smp_mb();
+>  }
+>
+>  void percpu_read_unlock(struct percpu_rwlock *pcpu_rwlock)
+>  {
+> -       read_unlock(&pcpu_rwlock->global_rwlock);
+> +       /*
+> +        * We never allow heterogeneous nesting of readers. So it is trivial
+> +        * to find out the kind of reader we are, and undo the operation
+> +        * done by our corresponding percpu_read_lock().
+> +        */
+> +
+> +       /* Try to fast-path: a nested percpu reader is the simplest case */
+> +       if (reader_nested_percpu(pcpu_rwlock)) {
+> +               this_cpu_dec(pcpu_rwlock->rw_state->reader_refcnt);
+> +               preempt_enable();
+> +               return;
+> +       }
+> +
+> +       /*
+> +        * Now we are left with only 2 options: a non-nested percpu reader,
+> +        * or a reader holding rwlock
+> +        */
+> +       if (reader_uses_percpu_refcnt(pcpu_rwlock)) {
+> +               /*
+> +                * Complete the critical section before decrementing the
+> +                * refcnt. We can optimize this away if we are a nested
+> +                * reader (the case above).
+> +                */
+> +               smp_mb();
+> +               this_cpu_dec(pcpu_rwlock->rw_state->reader_refcnt);
+> +       } else {
+> +               read_unlock(&pcpu_rwlock->global_rwlock);
+> +       }
+> +
+> +       preempt_enable();
+>  }
+>
+>  void percpu_write_lock(struct percpu_rwlock *pcpu_rwlock)
+>  {
+> +       unsigned int cpu;
+> +
+> +       /*
+> +        * Tell all readers that a writer is becoming active, so that they
+> +        * start switching over to the global rwlock.
+> +        */
+> +       for_each_possible_cpu(cpu)
+> +               per_cpu_ptr(pcpu_rwlock->rw_state, cpu)->writer_signal = true;
+> +
+> +       smp_mb();
+> +
+> +       /*
+> +        * Wait for every reader to see the writer's signal and switch from
+> +        * percpu refcounts to global rwlock.
+> +        *
+> +        * If a reader is still using percpu refcounts, wait for him to switch.
+> +        * Else, we can safely go ahead, because either the reader has already
+> +        * switched over, or the next reader that comes along on that CPU will
+> +        * notice the writer's signal and will switch over to the rwlock.
+> +        */
+> +
+> +       for_each_possible_cpu(cpu) {
+> +               while (reader_yet_to_switch(pcpu_rwlock, cpu))
+> +                       cpu_relax();
+> +       }
+> +
+> +       smp_mb(); /* Complete the wait-for-readers, before taking the lock */
+>         write_lock(&pcpu_rwlock->global_rwlock);
+>  }
+>
+>  void percpu_write_unlock(struct percpu_rwlock *pcpu_rwlock)
+>  {
+> +       unsigned int cpu;
+> +
+> +       /* Complete the critical section before clearing ->writer_signal */
+> +       smp_mb();
+> +
+> +       /*
+> +        * Inform all readers that we are done, so that they can switch back
+> +        * to their per-cpu refcounts. (We don't need to wait for them to
+> +        * see it).
+> +        */
+> +       for_each_possible_cpu(cpu)
+> +               per_cpu_ptr(pcpu_rwlock->rw_state, cpu)->writer_signal = false;
+> +
+>         write_unlock(&pcpu_rwlock->global_rwlock);
+>  }
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
