@@ -1,15 +1,15 @@
 Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6DEAE2C02FC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 20:19:56 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 724D92C0309
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 20:19:59 +1100 (EST)
 From: Tiejun Chen <tiejun.chen@windriver.com>
 To: <benh@kernel.crashing.org>, <galak@kernel.crashing.org>
-Subject: [v1][PATCH 2/7] book3e/kexec/kdump: enable kexec for kernel
-Date: Tue, 26 Feb 2013 17:19:37 +0800
-Message-ID: <1361870382-743-3-git-send-email-tiejun.chen@windriver.com>
+Subject: [v1][PATCH 4/7] book3e/kexec/kdump: introduce a kexec kernel flag
+Date: Tue, 26 Feb 2013 17:19:39 +0800
+Message-ID: <1361870382-743-5-git-send-email-tiejun.chen@windriver.com>
 In-Reply-To: <1361870382-743-1-git-send-email-tiejun.chen@windriver.com>
 References: <1361870382-743-1-git-send-email-tiejun.chen@windriver.com>
 MIME-Version: 1.0
@@ -24,108 +24,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We need to active KEXEC for book3e and bypass or convert non-book3e stuff
-in kexec coverage.
+We need to introduce a flag to indicate we're already running
+a kexec kernel then we can go proper path. For example, We
+shouldn't access spin_table from the bootloader to up any secondary
+cpu for kexec kernel, and kexec kernel already know how to jump to
+generic_secondary_smp_init.
 
 Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
 ---
- arch/powerpc/Kconfig                   |    2 +-
- arch/powerpc/kernel/machine_kexec_64.c |    6 ++++++
- arch/powerpc/kernel/misc_64.S          |    6 ++++++
- 3 files changed, 13 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/smp.h    |    3 +++
+ arch/powerpc/kernel/head_64.S     |   12 ++++++++++++
+ arch/powerpc/kernel/misc_64.S     |    6 ++++++
+ arch/powerpc/platforms/85xx/smp.c |   14 ++++++++++++++
+ 4 files changed, 35 insertions(+)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 85ff3a0..d6d1a02 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -370,7 +370,7 @@ config ARCH_ENABLE_MEMORY_HOTREMOVE
- 
- config KEXEC
- 	bool "kexec system call (EXPERIMENTAL)"
--	depends on (PPC_BOOK3S || FSL_BOOKE || (44x && !SMP)) && EXPERIMENTAL
-+	depends on (PPC_BOOK3S || FSL_BOOKE || PPC_BOOK3E || (44x && !SMP)) && EXPERIMENTAL
- 	help
- 	  kexec is a system call that implements the ability to shutdown your
- 	  current kernel, and to start another kernel.  It is like a reboot
-diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
-index 466a290..a1222c8 100644
---- a/arch/powerpc/kernel/machine_kexec_64.c
-+++ b/arch/powerpc/kernel/machine_kexec_64.c
-@@ -32,6 +32,7 @@
- int default_machine_kexec_prepare(struct kimage *image)
- {
- 	int i;
-+#ifndef CONFIG_PPC_BOOK3E
- 	unsigned long begin, end;	/* limits of segment */
- 	unsigned long low, high;	/* limits of blocked memory range */
- 	struct device_node *node;
-@@ -40,6 +41,7 @@ int default_machine_kexec_prepare(struct kimage *image)
- 
- 	if (!ppc_md.hpte_clear_all)
- 		return -ENOENT;
+diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
+index 195ce2a..161a5912 100644
+--- a/arch/powerpc/include/asm/smp.h
++++ b/arch/powerpc/include/asm/smp.h
+@@ -198,6 +198,9 @@ extern void generic_secondary_thread_init(void);
+ extern unsigned long __secondary_hold_spinloop;
+ extern unsigned long __secondary_hold_acknowledge;
+ extern char __secondary_hold;
++#if defined(CONFIG_KEXEC) || defined(CONFIG_CRASH_DUMP)
++extern unsigned long __run_at_kexec;
 +#endif
  
- 	/*
- 	 * Since we use the kernel fault handlers and paging code to
-@@ -50,6 +52,7 @@ int default_machine_kexec_prepare(struct kimage *image)
- 		if (image->segment[i].mem < __pa(_end))
- 			return -ETXTBSY;
+ extern void __early_start(void);
+ #endif /* __ASSEMBLY__ */
+diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+index a93ca67..038e81d 100644
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -89,6 +89,12 @@ __secondary_hold_spinloop:
+ __secondary_hold_acknowledge:
+ 	.llong	0x0
  
-+#ifndef CONFIG_PPC_BOOK3E
- 	/*
- 	 * For non-LPAR, we absolutely can not overwrite the mmu hash
- 	 * table, since we are still using the bolted entries in it to
-@@ -91,6 +94,7 @@ int default_machine_kexec_prepare(struct kimage *image)
- 				return -ETXTBSY;
- 		}
- 	}
++#if defined(CONFIG_KEXEC) || defined(CONFIG_CRASH_DUMP)
++	.globl	__run_at_kexec
++__run_at_kexec:
++	.llong	0x0	/* Flag for the secondary kernel from kexec. */
 +#endif
- 
- 	return 0;
- }
-@@ -363,6 +367,7 @@ void default_machine_kexec(struct kimage *image)
- 	/* NOTREACHED */
- }
- 
-+#ifndef CONFIG_PPC_BOOK3E
- /* Values we need to export to the second kernel via the device tree. */
- static unsigned long htab_base;
- 
-@@ -407,3 +412,4 @@ static int __init export_htab_values(void)
- 	return 0;
- }
- late_initcall(export_htab_values);
++
+ #ifdef CONFIG_RELOCATABLE
+ 	/* This flag is set to 1 by a loader if the kernel should run
+ 	 * at the loaded address instead of the linked address.  This
+@@ -417,6 +423,12 @@ _STATIC(__after_prom_start)
+ #if defined(CONFIG_PPC_BOOK3E)
+ 	tovirt(r26,r26)			/* on booke, we already run at PAGE_OFFSET */
+ #endif
++#if defined(CONFIG_KEXEC) || defined(CONFIG_CRASH_DUMP)
++	/* If relocated we need to restore this flag on that relocated address. */
++	ld	r7,__run_at_kexec-_stext(r26)
++	std	r7,__run_at_kexec-_stext(r26)
 +#endif
++
+ 	lwz	r7,__run_at_load-_stext(r26)
+ #if defined(CONFIG_PPC_BOOK3E)
+ 	tophys(r26,r26)			/* Restore for the remains. */
 diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
-index 5cfa800..c2acf8c 100644
+index ffe6043..b81f8ac 100644
 --- a/arch/powerpc/kernel/misc_64.S
 +++ b/arch/powerpc/kernel/misc_64.S
-@@ -532,9 +532,13 @@ _GLOBAL(kexec_sequence)
- 	lhz	r25,PACAHWCPUID(r13)	/* get our phys cpu from paca */
+@@ -608,6 +608,12 @@ _GLOBAL(kexec_sequence)
+ 	bl	.copy_and_flush	/* (dest, src, copy limit, start offset) */
+ 1:	/* assume normal blr return */
  
- 	/* disable interrupts, we are overwriting kernel data next */
-+#ifndef CONFIG_PPC_BOOK3E
- 	mfmsr	r3
- 	rlwinm	r3,r3,0,17,15
- 	mtmsrd	r3,1
-+#else
-+	wrteei	0
-+#endif
- 
- 	/* copy dest pages, flush whole dest image */
- 	mr	r3,r29
-@@ -556,10 +560,12 @@ _GLOBAL(kexec_sequence)
++	/* notify we're going into kexec kernel for SMP. */
++	LOAD_REG_ADDR(r3,__run_at_kexec)
++	li	r4,1
++	std	r4,0(r3)
++	sync
++
+ 	/* release other cpus to the new kernel secondary start at 0x60 */
+ 	mflr	r5
  	li	r6,1
- 	stw	r6,kexec_flag-1b(5)
- 
-+#ifndef CONFIG_PPC_BOOK3E
- 	/* clear out hardware hash page table and tlb */
- 	ld	r5,0(r27)		/* deref function descriptor */
- 	mtctr	r5
- 	bctrl				/* ppc_md.hpte_clear_all(void); */
+diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
+index 148c2f2..8beef93 100644
+--- a/arch/powerpc/platforms/85xx/smp.c
++++ b/arch/powerpc/platforms/85xx/smp.c
+@@ -150,6 +150,9 @@ static int __cpuinit smp_85xx_kick_cpu(int nr)
+ 	int hw_cpu = get_hard_smp_processor_id(nr);
+ 	int ioremappable;
+ 	int ret = 0;
++#if defined(CONFIG_KEXEC) || defined(CONFIG_CRASH_DUMP)
++	unsigned long *ptr;
 +#endif
  
- /*
-  *   kexec image calling is:
+ 	WARN_ON(nr < 0 || nr >= NR_CPUS);
+ 	WARN_ON(hw_cpu < 0 || hw_cpu >= NR_CPUS);
+@@ -238,11 +241,22 @@ out:
+ #else
+ 	smp_generic_kick_cpu(nr);
+ 
++#if defined(CONFIG_KEXEC) || defined(CONFIG_CRASH_DUMP)
++	ptr  = (unsigned long *)((unsigned long)&__run_at_kexec);
++	/* We shouldn't access spin_table from the bootloader to up any
++	 * secondary cpu for kexec kernel, and kexec kernel already
++	 * know how to jump to generic_secondary_smp_init.
++	 */
++	if (!*ptr) {
++#endif
+ 	flush_spin_table(spin_table);
+ 	out_be32(&spin_table->pir, hw_cpu);
+ 	out_be64((u64 *)(&spin_table->addr_h),
+ 	  __pa((u64)*((unsigned long long *)generic_secondary_smp_init)));
+ 	flush_spin_table(spin_table);
++#if defined(CONFIG_KEXEC) || defined(CONFIG_CRASH_DUMP)
++	}
++#endif
+ #endif
+ 
+ 	local_irq_restore(flags);
 -- 
 1.7.9.5
