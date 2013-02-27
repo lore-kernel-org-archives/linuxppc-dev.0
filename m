@@ -1,15 +1,15 @@
 Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3B3172C057D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2013 14:09:43 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 3D12B2C0304
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2013 14:09:45 +1100 (EST)
 From: Tiejun Chen <tiejun.chen@windriver.com>
 To: <benh@kernel.crashing.org>, <galak@kernel.crashing.org>
-Subject: [v3][PATCH 4/6] powerpc/book3e: support kgdb for kernel space
-Date: Wed, 27 Feb 2013 11:09:26 +0800
-Message-ID: <1361934568-31989-5-git-send-email-tiejun.chen@windriver.com>
+Subject: [v3][PATCH 5/6] kgdb/kgdbts: support ppc64
+Date: Wed, 27 Feb 2013 11:09:27 +0800
+Message-ID: <1361934568-31989-6-git-send-email-tiejun.chen@windriver.com>
 In-Reply-To: <1361934568-31989-1-git-send-email-tiejun.chen@windriver.com>
 References: <1361934568-31989-1-git-send-email-tiejun.chen@windriver.com>
 MIME-Version: 1.0
@@ -25,32 +25,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently we need to skip this for supporting KGDB.
+We can't look up the address of the entry point of the function simply
+via that function symbol for all architectures.
+
+For PPC64 ABI, actually there is a function descriptors structure.
+
+A function descriptor is a three doubleword data structure that contains
+the following values:
+	* The first doubleword contains the address of the entry point of
+		the function.
+	* The second doubleword contains the TOC base address for
+		the function.
+	* The third doubleword contains the environment pointer for
+		languages such as Pascal and PL/1.
+
+So we should call a wapperred dereference_function_descriptor() to get
+the address of the entry point of the function.
+
+Note this is also safe for other architecture after refer to
+"include/asm-generic/sections.h" since:
+
+dereference_function_descriptor(p) always is (p) if without arched definition.
 
 Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
 ---
- arch/powerpc/kernel/exceptions-64e.S |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/misc/kgdbts.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index 7df9a1f..800e2a3 100644
---- a/arch/powerpc/kernel/exceptions-64e.S
-+++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -598,11 +598,14 @@ kernel_dbg_exc:
- 	rfdi
+diff --git a/drivers/misc/kgdbts.c b/drivers/misc/kgdbts.c
+index 3aa9a96..4799e1f 100644
+--- a/drivers/misc/kgdbts.c
++++ b/drivers/misc/kgdbts.c
+@@ -103,6 +103,7 @@
+ #include <linux/delay.h>
+ #include <linux/kthread.h>
+ #include <linux/module.h>
++#include <asm/sections.h>
  
- 	/* Normal debug exception */
-+1:
-+#ifndef CONFIG_KGDB
- 	/* XXX We only handle coming from userspace for now since we can't
- 	 *     quite save properly an interrupted kernel state yet
- 	 */
--1:	andi.	r14,r11,MSR_PR;		/* check for userspace again */
-+	andi.	r14,r11,MSR_PR;		/* check for userspace again */
- 	beq	kernel_dbg_exc;		/* if from kernel mode */
-+#endif
+ #define v1printk(a...) do { \
+ 	if (verbose) \
+@@ -222,6 +223,7 @@ static unsigned long lookup_addr(char *arg)
+ 		addr = (unsigned long)do_fork;
+ 	else if (!strcmp(arg, "hw_break_val"))
+ 		addr = (unsigned long)&hw_break_val;
++	addr = (unsigned long )dereference_function_descriptor((void *)addr);
+ 	return addr;
+ }
  
- 	/* Now we mash up things to make it look like we are coming on a
- 	 * normal exception
 -- 
 1.7.9.5
