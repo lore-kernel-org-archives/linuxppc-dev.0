@@ -1,15 +1,15 @@
 Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 66E482C035D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2013 14:09:41 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 3B3172C057D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2013 14:09:43 +1100 (EST)
 From: Tiejun Chen <tiejun.chen@windriver.com>
 To: <benh@kernel.crashing.org>, <galak@kernel.crashing.org>
-Subject: [v3][PATCH 3/6] book3e/kgdb: update thread's dbcr0
-Date: Wed, 27 Feb 2013 11:09:25 +0800
-Message-ID: <1361934568-31989-4-git-send-email-tiejun.chen@windriver.com>
+Subject: [v3][PATCH 4/6] powerpc/book3e: support kgdb for kernel space
+Date: Wed, 27 Feb 2013 11:09:26 +0800
+Message-ID: <1361934568-31989-5-git-send-email-tiejun.chen@windriver.com>
 In-Reply-To: <1361934568-31989-1-git-send-email-tiejun.chen@windriver.com>
 References: <1361934568-31989-1-git-send-email-tiejun.chen@windriver.com>
 MIME-Version: 1.0
@@ -25,51 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-gdb always need to generate a single step properly to invoke
-a kgdb state. But with lazy interrupt, book3e can't always
-trigger a debug exception with a single step since the current
-is blocked for handling those pending exception, then we miss
-that expected dbcr configuration at last to generate a debug
-exception.
-
-So here we also update thread's dbcr0 to make sure the current
-can go back with that missed dbcr0 configuration.
+Currently we need to skip this for supporting KGDB.
 
 Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
 ---
- arch/powerpc/kernel/kgdb.c |   13 ++++++++++---
- 1 file changed, 10 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/exceptions-64e.S |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
-index 5ca82cd..1a57307 100644
---- a/arch/powerpc/kernel/kgdb.c
-+++ b/arch/powerpc/kernel/kgdb.c
-@@ -410,7 +410,7 @@ int kgdb_arch_handle_exception(int vector, int signo, int err_code,
- 			       struct pt_regs *linux_regs)
- {
- 	char *ptr = &remcom_in_buffer[1];
--	unsigned long addr;
-+	unsigned long addr, dbcr0;
+diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+index 7df9a1f..800e2a3 100644
+--- a/arch/powerpc/kernel/exceptions-64e.S
++++ b/arch/powerpc/kernel/exceptions-64e.S
+@@ -598,11 +598,14 @@ kernel_dbg_exc:
+ 	rfdi
  
- 	switch (remcom_in_buffer[0]) {
- 		/*
-@@ -427,8 +427,15 @@ int kgdb_arch_handle_exception(int vector, int signo, int err_code,
- 		/* set the trace bit if we're stepping */
- 		if (remcom_in_buffer[0] == 's') {
- #ifdef CONFIG_PPC_ADV_DEBUG_REGS
--			mtspr(SPRN_DBCR0,
--			      mfspr(SPRN_DBCR0) | DBCR0_IC | DBCR0_IDM);
-+			dbcr0 = mfspr(SPRN_DBCR0) | DBCR0_IC | DBCR0_IDM;
-+			mtspr(SPRN_DBCR0, dbcr0);
-+#ifdef CONFIG_PPC_BOOK3E_64
-+			/* With lazy interrut we have to update thread dbcr0 here
-+			 * to make sure we can set debug properly at last to invoke
-+			 * kgdb again to work well.
-+			 */
-+			current->thread.dbcr0 = dbcr0;
+ 	/* Normal debug exception */
++1:
++#ifndef CONFIG_KGDB
+ 	/* XXX We only handle coming from userspace for now since we can't
+ 	 *     quite save properly an interrupted kernel state yet
+ 	 */
+-1:	andi.	r14,r11,MSR_PR;		/* check for userspace again */
++	andi.	r14,r11,MSR_PR;		/* check for userspace again */
+ 	beq	kernel_dbg_exc;		/* if from kernel mode */
 +#endif
- 			linux_regs->msr |= MSR_DE;
- #else
- 			linux_regs->msr |= MSR_SE;
+ 
+ 	/* Now we mash up things to make it look like we are coming on a
+ 	 * normal exception
 -- 
 1.7.9.5
