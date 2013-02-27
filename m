@@ -1,16 +1,46 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id 358242C0087
- for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2013 10:58:15 +1100 (EST)
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: linux-kernel@vger.kernel.org
-Subject: [ 110/150] uprobes/powerpc: Add dependency on single step emulation
-Date: Tue, 26 Feb 2013 15:56:07 -0800
-Message-Id: <20130226235535.522339983@linuxfoundation.org>
-In-Reply-To: <20130226235523.930663721@linuxfoundation.org>
-References: <20130226235523.930663721@linuxfoundation.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org,
- linuxppc-dev@ozlabs.org, "Suzuki K. Poulose" <suzuki@in.ibm.com>
+Return-Path: <eag0628@gmail.com>
+Received: from mail-ia0-x234.google.com (mail-ia0-x234.google.com
+ [IPv6:2607:f8b0:4001:c02::234])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2C2052C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2013 11:33:27 +1100 (EST)
+Received: by mail-ia0-f180.google.com with SMTP id f27so3960978iae.39
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2013 16:33:24 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <512D0D67.9010609@linux.vnet.ibm.com>
+References: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
+ <20130218123856.26245.46705.stgit@srivatsabhat.in.ibm.com>
+ <CANN689F9S7c1M8+cEpz3tsxGF34+NTRBLvxgPUOtbvav5u+RRA@mail.gmail.com>
+ <5122551E.1080703@linux.vnet.ibm.com>
+ <51226B46.9080707@linux.vnet.ibm.com>
+ <CANN689FSxOz+0Cu7EG_yKD8ZE1OpT4kyT+ybLfXSqaifodJRpw@mail.gmail.com>
+ <51226F91.7000108@linux.vnet.ibm.com>
+ <CACvQF53bdh4_BxF0y1fnTVR+T2OmRc0jmWQYftsvx92-fg-Lug@mail.gmail.com>
+ <512BBAD8.8010006@linux.vnet.ibm.com>
+ <CACvQF51jCxk5jUqmhD=QBBtUsBkQWZzakacrKO4Gsk=w61rNwQ@mail.gmail.com>
+ <512C7A38.8060906@linux.vnet.ibm.com>
+ <CACvQF51RvhM8XNqu3-1OTQ=cZUZ=pAX+_zx0a29+W67N1X+BgQ@mail.gmail.com>
+ <512CC509.1050000@linux.vnet.ibm.com>
+ <CACvQF50UgiqPpDk3HCmV86zKSf6tPjqr0bZowfPEOJs0g0r0MQ@mail.gmail.com>
+ <512D0D67.9010609@linux.vnet.ibm.com>
+Date: Wed, 27 Feb 2013 08:33:23 +0800
+Message-ID: <CACvQF53ph2ixdM-otzetjM5cR+2kcZj6sckOp3TnzzA_x-EZ8w@mail.gmail.com>
+Subject: Re: [PATCH v6 04/46] percpu_rwlock: Implement the core design of
+ Per-CPU Reader-Writer Locks
+From: Lai Jiangshan <eag0628@gmail.com>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
+ linux-kernel@vger.kernel.org, Michel Lespinasse <walken@google.com>,
+ mingo@kernel.org, linux-arch@vger.kernel.org, linux@arm.linux.org.uk,
+ xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
+ paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
+ linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org,
+ rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
+ linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com,
+ vincent.guittot@linaro.org, sbw@mit.edu, tj@kernel.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,54 +50,267 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-3.8-stable review patch.  If anyone has any objections, please let me know.
+On Wed, Feb 27, 2013 at 3:30 AM, Srivatsa S. Bhat
+<srivatsa.bhat@linux.vnet.ibm.com> wrote:
+> On 02/26/2013 09:55 PM, Lai Jiangshan wrote:
+>> On Tue, Feb 26, 2013 at 10:22 PM, Srivatsa S. Bhat
+>> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+>>>
+>>> Hi Lai,
+>>>
+>>> I'm really not convinced that piggy-backing on lglocks would help
+>>> us in any way. But still, let me try to address some of the points
+>>> you raised...
+>>>
+>>> On 02/26/2013 06:29 PM, Lai Jiangshan wrote:
+>>>> On Tue, Feb 26, 2013 at 5:02 PM, Srivatsa S. Bhat
+>>>> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+>>>>> On 02/26/2013 05:47 AM, Lai Jiangshan wrote:
+>>>>>> On Tue, Feb 26, 2013 at 3:26 AM, Srivatsa S. Bhat
+>>>>>> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+>>>>>>> Hi Lai,
+>>>>>>>
+>>>>>>> On 02/25/2013 09:23 PM, Lai Jiangshan wrote:
+>>>>>>>> Hi, Srivatsa,
+>>>>>>>>
+>>>>>>>> The target of the whole patchset is nice for me.
+>>>>>>>
+>>>>>>> Cool! Thanks :-)
+>>>>>>>
+>>>>> [...]
+>>>>>
+>>>>> Unfortunately, I see quite a few issues with the code above. IIUC, the
+>>>>> writer and the reader both increment the same counters. So how will the
+>>>>> unlock() code in the reader path know when to unlock which of the locks?
+>>>>
+>>>> The same as your code, the reader(which nested in write C.S.) just dec
+>>>> the counters.
+>>>
+>>> And that works fine in my case because the writer and the reader update
+>>> _two_ _different_ counters.
+>>
+>> I can't find any magic in your code, they are the same counter.
+>>
+>>         /*
+>>          * It is desirable to allow the writer to acquire the percpu-rwlock
+>>          * for read (if necessary), without deadlocking or getting complaints
+>>          * from lockdep. To achieve that, just increment the reader_refcnt of
+>>          * this CPU - that way, any attempt by the writer to acquire the
+>>          * percpu-rwlock for read, will get treated as a case of nested percpu
+>>          * reader, which is safe, from a locking perspective.
+>>          */
+>>         this_cpu_inc(pcpu_rwlock->rw_state->reader_refcnt);
+>>
+>
+> Whoa! Hold on, were you really referring to _this_ increment when you said
+> that, in your patch you would increment the refcnt at the writer? Then I guess
+> there is a major disconnect in our conversations. (I had assumed that you were
+> referring to the update of writer_signal, and were just trying to have a single
+> refcnt instead of reader_refcnt and writer_signal).
 
-------------------
+https://github.com/laijs/linux/commit/53e5053d5b724bea7c538b11743d0f420d98f38d
 
-From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
+Sorry the name "fallback_reader_refcnt" misled you.
 
-commit 5e249d4528528c9a77da051a89ec7f99d31b83eb upstream.
+>
+> So, please let me clarify things a bit here. Forget about the above increment
+> of reader_refcnt at the writer side. Its almost utterly insignificant for our
+> current discussion. We can simply replace it with a check as shown below, at
+> the reader side:
+>
+> void percpu_read_lock_irqsafe()
+> {
+>         if (current == active_writer)
+>                 return;
+>
+>         /* Rest of the code */
+> }
+>
+> Now, assuming that, in your patch, you were trying to use the per-cpu refcnt
+> to allow the writer to safely take the reader path, you can simply get rid of
+> that percpu-refcnt, as demonstrated above.
+>
+> So that would reduce your code to the following (after simplification):
+>
+> lg_rwlock_local_read_lock()
+> {
+>         if (current == active_writer)
+>                 return;
+>         if (arch_spin_trylock(per-cpu-spinlock))
+>                 return;
+>         read_lock(global-rwlock);
+> }
+>
+> Now, let us assume that hotplug is not happening, meaning, nobody is running
+> the writer side code. Now let's see what happens at the reader side in your
+> patch. As I mentioned earlier, the readers are _very_ frequent and can be in
+> very hot paths. And they also happen to be nested quite often.
+>
+> So, a non-nested reader acquires the per-cpu spinlock. Every subsequent nested
+> reader on that CPU has to acquire the global rwlock for read. Right there you
+> have 2 significant performance issues -
+> 1. Acquiring the (spin) lock is costly
+> 2. Acquiring the global rwlock causes cacheline bouncing, which hurts
+>    performance.
+>
+> And why do we care so much about performance here? Because, the existing
+> kernel does an efficient preempt_disable() here - which is an optimized
+> per-cpu counter increment. Replacing that with such heavy primitives on the
+> reader side can be very bad.
+>
+> Now, how does my patchset tackle this? My scheme just requires an increment
+> of a per-cpu refcnt (reader_refcnt) and memory barrier. Which is acceptable
+> from a performance-perspective, because IMHO its not horrendously worse than
+> a preempt_disable().
+>
+>>
+>>> If both of them update the same counter, there
+>>> will be a semantic clash - an increment of the counter can either mean that
+>>> a new writer became active, or it can also indicate a nested reader. A decrement
+>>> can also similarly have 2 meanings. And thus it will be difficult to decide
+>>> the right action to take, based on the value of the counter.
+>>>
+>>>>
+>>>>> (The counter-dropping-to-zero logic is not safe, since it can be updated
+>>>>> due to different reasons). And now that I look at it again, in the absence
+>>>>> of the writer, the reader is allowed to be recursive at the heavy cost of
+>>>>> taking the global rwlock for read, every 2nd time you nest (because the
+>>>>> spinlock is non-recursive).
+>>>>
+>>>> (I did not understand your comments of this part)
+>>>> nested reader is considered seldom.
+>>>
+>>> No, nested readers can be _quite_ frequent. Because, potentially all users
+>>> of preempt_disable() are readers - and its well-known how frequently we
+>>> nest preempt_disable(). As a simple example, any atomic reader who calls
+>>> smp_call_function() will become a nested reader, because smp_call_function()
+>>> itself is a reader. So reader nesting is expected to be quite frequent.
+>>>
+>>>> But if N(>=2) nested readers happen,
+>>>> the overhead is:
+>>>>     1 spin_try_lock() + 1 read_lock() + (N-1) __this_cpu_inc()
+>>>>
+>>>
+>>> In my patch, its just this_cpu_inc(). Note that these are _very_ hot paths.
+>>> So every bit of optimization that you can add is worthwhile.
+>>>
+>>> And your read_lock() is a _global_ lock - thus, it can lead to a lot of
+>>> cache-line bouncing. That's *exactly* why I have used per-cpu refcounts in
+>>> my synchronization scheme, to avoid taking the global rwlock as much as possible.
+>>>
+>>> Another important point to note is that, the overhead we are talking about
+>>> here, exists even when _not_ performing hotplug. And its the replacement to
+>>> the super-fast preempt_disable(). So its extremely important to consciously
+>>> minimize this overhead - else we'll end up slowing down the system significantly.
+>>>
+>>
+>> All I was considered is "nested reader is seldom", so I always
+>> fallback to rwlock when nested.
+>> If you like, I can add 6 lines of code, the overhead is
+>> 1 spin_try_lock()(fast path)  + N  __this_cpu_inc()
+>>
+>
+> I'm assuming that calculation is no longer valid, considering that
+> we just discussed how the per-cpu refcnt that you were using is quite
+> unnecessary and can be removed.
+>
+> IIUC, the overhead with your code, as per above discussion would be:
+> 1 spin_try_lock() [non-nested] + N read_lock(global_rwlock).
 
-Uprobes uses emulate_step in sstep.c, but we haven't explicitly specified
-the dependency. On pseries HAVE_HW_BREAKPOINT protects us, but 44x has no
-such luxury.
+https://github.com/laijs/linux/commit/46334544bb7961550b7065e015da76f6dab21f16
 
-Consolidate other users that depend on sstep and create a new config option.
+Again, I'm so sorry the name "fallback_reader_refcnt" misled you.
 
-Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Signed-off-by: Suzuki K. Poulose <suzuki@in.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+>
+> Note that I'm referring to the scenario when hotplug is _not_ happening
+> (ie., nobody is running writer side code).
+>
+>> The overhead of your code is
+>> 2 smp_mb() + N __this_cpu_inc()
+>>
+>
+> Right. And as you can see, this is much much better than the overhead
+> shown above.
 
----
- arch/powerpc/Kconfig      |    4 ++++
- arch/powerpc/lib/Makefile |    4 +---
- 2 files changed, 5 insertions(+), 3 deletions(-)
+I will write a test to compare it to "1 spin_try_lock()(fast path)  +
+N  __this_cpu_inc()"
 
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -275,6 +275,10 @@ config PPC_ADV_DEBUG_DAC_RANGE
- 	depends on PPC_ADV_DEBUG_REGS && 44x
- 	default y
- 
-+config PPC_EMULATE_SSTEP
-+	bool
-+	default y if KPROBES || UPROBES || XMON || HAVE_HW_BREAKPOINT
-+
- source "init/Kconfig"
- 
- source "kernel/Kconfig.freezer"
---- a/arch/powerpc/lib/Makefile
-+++ b/arch/powerpc/lib/Makefile
-@@ -19,9 +19,7 @@ obj-$(CONFIG_PPC64)	+= copypage_64.o cop
- 			   checksum_wrappers_64.o hweight_64.o \
- 			   copyuser_power7.o string_64.o copypage_power7.o \
- 			   memcpy_power7.o
--obj-$(CONFIG_XMON)	+= sstep.o ldstfp.o
--obj-$(CONFIG_KPROBES)	+= sstep.o ldstfp.o
--obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+= sstep.o ldstfp.o
-+obj-$(CONFIG_PPC_EMULATE_SSTEP)	+= sstep.o ldstfp.o
- 
- ifeq ($(CONFIG_PPC64),y)
- obj-$(CONFIG_SMP)	+= locks.o
+>
+>> I don't see how much different.
+>>
+>>>>> Also, this lg_rwlock implementation uses 3
+>>>>> different data-structures - a per-cpu spinlock, a global rwlock and
+>>>>> a per-cpu refcnt, and its not immediately apparent why you need those many
+>>>>> or even those many varieties.
+>>>>
+>>>> data-structures is the same as yours.
+>>>> fallback_reader_refcnt <--> reader_refcnt
+>>>
+>>> This has semantic problems, as noted above.
+>>>
+>>>> per-cpu spinlock <--> write_signal
+>>>
+>>> Acquire/release of (spin) lock is costlier than inc/dec of a counter, IIUC.
+>>>
+>>>> fallback_rwlock  <---> global_rwlock
+>>>>
+>>>>> Also I see that this doesn't handle the
+>>>>> case of interrupt-handlers also being readers.
+>>>>
+>>>> handled. nested reader will see the ref or take the fallback_rwlock
+>>>>
+>>
+>> Sorry, _reentrance_ read_lock() will see the ref or take the fallback_rwlock
+>>
+>>>
+>>> I'm not referring to simple nested readers here, but interrupt handlers who
+>>> can act as readers. For starters, the arch_spin_trylock() is not safe when
+>>> interrupt handlers can also run the same code, right? You'll need to save
+>>> and restore interrupts at critical points in the code. Also, the __foo()
+>>> variants used to read/update the counters are not interrupt-safe.
+>>
+>> I must missed something.
+>>
+>> Could you elaborate more why arch_spin_trylock() is not safe when
+>> interrupt handlers can also run the same code?
+>>
+>> Could you elaborate more why __this_cpu_op variants is not
+>> interrupt-safe since they are always called paired.
+>>
+>
+> Take a look at include/linux/percpu.h. You'll note that __this_cpu_*
+> operations map to __this_cpu_generic_to_op(), which doesn't disable interrupts
+> while doing the update. Hence you can get inconsistent results if an interrupt
+> hits the CPU at that time and the interrupt handler tries to do the same thing.
+> In contrast, if you use this_cpu_inc() for example, interrupts are explicitly
+> disabled during the update and hence you won't get inconsistent results.
+
+
+xx_lock()/xx_unlock() are must called paired, if interrupts happens
+the value of the data is recovered after the interrupts return.
+
+the same reason, preempt_disable() itself it is not irqsafe,
+but preempt_disable()/preempt_enable() are called paired, so they are
+all irqsafe.
+
+>
+>>
+>>> And,
+>>> the unlock() code in the reader path is again going to be confused about
+>>> what to do when interrupt handlers interrupt regular readers, due to the
+>>> messed up refcount.
+>>
+>> I still can't understand.
+>>
+>
+> The primary reason _I_ was using the refcnt vs the reason _you_ were using the
+> refcnt, appears to be very different.  Maybe that's why the above statement
+> didn't make sense. In your case, IIUC, you can simply get rid of the refcnt
+> and replace it with the simple check I mentioned above. Whereas, I use
+> refcnts to keep the reader-side synchronization fast (and for reader-writer
+> communication).
+>
+>
+> Regards,
+> Srivatsa S. Bhat
+>
