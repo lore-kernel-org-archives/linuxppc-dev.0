@@ -1,21 +1,30 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5F94B2C0ACE
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2013 14:09:47 +1100 (EST)
-From: Tiejun Chen <tiejun.chen@windriver.com>
-To: <benh@kernel.crashing.org>, <galak@kernel.crashing.org>
-Subject: [v3][PATCH 6/6] powerpc/kgdb: remove copying the thread_info
-Date: Wed, 27 Feb 2013 11:09:28 +0800
-Message-ID: <1361934568-31989-7-git-send-email-tiejun.chen@windriver.com>
-In-Reply-To: <1361934568-31989-1-git-send-email-tiejun.chen@windriver.com>
-References: <1361934568-31989-1-git-send-email-tiejun.chen@windriver.com>
+Return-Path: <B16395@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 110E52C0080
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2013 21:56:43 +1100 (EST)
+From: Sethi Varun-B16395 <B16395@freescale.com>
+To: Joerg Roedel <joro@8bytes.org>
+Subject: RE: [PATCH 2/6] powerpc/fsl_pci: Store the platform device
+ information corresponding to the pci controller.
+Date: Wed, 27 Feb 2013 10:56:31 +0000
+Message-ID: <C5ECD7A89D1DC44195F34B25E172658D3C24A9@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1361191939-21260-1-git-send-email-Varun.Sethi@freescale.com>
+ <1361191939-21260-3-git-send-email-Varun.Sethi@freescale.com>
+ <CALRxmdDc9TuxH7HgAF3_iLgatoaOUML6fUt8SU+sxHyz6ZVjfw@mail.gmail.com>
+ <C5ECD7A89D1DC44195F34B25E172658D3BD338@039-SN2MPN1-013.039d.mgd.msft.net>
+ <20130227104505.GE26252@8bytes.org>
+In-Reply-To: <20130227104505.GE26252@8bytes.org>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- jason.wessel@windriver.com
+Cc: Wood Scott-B07421 <B07421@freescale.com>, Stuart Yoder <b08248@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Yoder Stuart-B08248 <B08248@freescale.com>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,58 +34,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently BookE and Book3E always copy the thread_info from
-the kernel stack when we enter the debug exception, so we can
-remove these action here to avoid copying again.
+This patch is present in the "next branch" of linux ppc tree maintained by =
+Kumar Gala.
+Following is the commit id:
+52c5affc545053d37c0b05224bbf70f5336caa20
 
-Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
----
- arch/powerpc/kernel/kgdb.c |   28 ----------------------------
- 1 file changed, 28 deletions(-)
+I am not sure if this would be part of 3.9-rc1.
 
-diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
-index 1a57307..e954888 100644
---- a/arch/powerpc/kernel/kgdb.c
-+++ b/arch/powerpc/kernel/kgdb.c
-@@ -153,39 +153,11 @@ static int kgdb_handle_breakpoint(struct pt_regs *regs)
- 
- static int kgdb_singlestep(struct pt_regs *regs)
- {
--	struct thread_info *thread_info, *exception_thread_info;
--	struct thread_info *backup_current_thread_info;
--
- 	if (user_mode(regs))
- 		return 0;
- 
--	backup_current_thread_info = (struct thread_info *)kmalloc(sizeof(struct thread_info), GFP_KERNEL);
--	/*
--	 * On Book E and perhaps other processors, singlestep is handled on
--	 * the critical exception stack.  This causes current_thread_info()
--	 * to fail, since it it locates the thread_info by masking off
--	 * the low bits of the current stack pointer.  We work around
--	 * this issue by copying the thread_info from the kernel stack
--	 * before calling kgdb_handle_exception, and copying it back
--	 * afterwards.  On most processors the copy is avoided since
--	 * exception_thread_info == thread_info.
--	 */
--	thread_info = (struct thread_info *)(regs->gpr[1] & ~(THREAD_SIZE-1));
--	exception_thread_info = current_thread_info();
--
--	if (thread_info != exception_thread_info) {
--		/* Save the original current_thread_info. */
--		memcpy(backup_current_thread_info, exception_thread_info, sizeof *thread_info);
--		memcpy(exception_thread_info, thread_info, sizeof *thread_info);
--	}
--
- 	kgdb_handle_exception(0, SIGTRAP, 0, regs);
- 
--	if (thread_info != exception_thread_info)
--		/* Restore current_thread_info lastly. */
--		memcpy(exception_thread_info, backup_current_thread_info, sizeof *thread_info);
--
--	kfree(backup_current_thread_info);
- 	return 1;
- }
- 
--- 
-1.7.9.5
+Regards
+varun
+
+> -----Original Message-----
+> From: Joerg Roedel [mailto:joro@8bytes.org]
+> Sent: Wednesday, February 27, 2013 4:15 PM
+> To: Sethi Varun-B16395
+> Cc: Stuart Yoder; iommu@lists.linux-foundation.org; linuxppc-
+> dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; Wood Scott-B07421;
+> Yoder Stuart-B08248
+> Subject: Re: [PATCH 2/6] powerpc/fsl_pci: Store the platform device
+> information corresponding to the pci controller.
+>=20
+> On Tue, Feb 26, 2013 at 06:16:10AM +0000, Sethi Varun-B16395 wrote:
+> > This patch is not present in Joerg's tree and the add_device API in
+> > the PAMU driver requires this patch.
+>=20
+> Will this patch be part of v3.9-rc1?
+>=20
+>=20
+> 	Joerg
+>=20
+>=20
