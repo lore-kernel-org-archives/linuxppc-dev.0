@@ -1,28 +1,46 @@
-Return-Path: <joro@8bytes.org>
-Received: from mail.8bytes.org (8bytes.org [85.214.48.195])
- by ozlabs.org (Postfix) with ESMTP id 9DC5D2C007C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2013 22:01:42 +1100 (EST)
-Received: from localhost (localhost [127.0.0.1])
- by mail.8bytes.org (Postfix) with SMTP id F282C12B16B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2013 11:45:06 +0100 (CET)
-Date: Wed, 27 Feb 2013 11:45:05 +0100
-From: Joerg Roedel <joro@8bytes.org>
-To: Sethi Varun-B16395 <B16395@freescale.com>
-Subject: Re: [PATCH 2/6] powerpc/fsl_pci: Store the platform device
- information corresponding to the pci controller.
-Message-ID: <20130227104505.GE26252@8bytes.org>
-References: <1361191939-21260-1-git-send-email-Varun.Sethi@freescale.com>
- <1361191939-21260-3-git-send-email-Varun.Sethi@freescale.com>
- <CALRxmdDc9TuxH7HgAF3_iLgatoaOUML6fUt8SU+sxHyz6ZVjfw@mail.gmail.com>
- <C5ECD7A89D1DC44195F34B25E172658D3BD338@039-SN2MPN1-013.039d.mgd.msft.net>
+Return-Path: <walken@google.com>
+Received: from mail-ia0-x236.google.com (mail-ia0-x236.google.com
+ [IPv6:2607:f8b0:4001:c02::236])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CA3FF2C0086
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2013 22:11:43 +1100 (EST)
+Received: by mail-ia0-f182.google.com with SMTP id k38so352134iah.41
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2013 03:11:34 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <C5ECD7A89D1DC44195F34B25E172658D3BD338@039-SN2MPN1-013.039d.mgd.msft.net>
-Cc: Wood Scott-B07421 <B07421@freescale.com>, Stuart Yoder <b08248@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Yoder Stuart-B08248 <B08248@freescale.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <512D0D67.9010609@linux.vnet.ibm.com>
+References: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
+ <20130218123856.26245.46705.stgit@srivatsabhat.in.ibm.com>
+ <CANN689F9S7c1M8+cEpz3tsxGF34+NTRBLvxgPUOtbvav5u+RRA@mail.gmail.com>
+ <5122551E.1080703@linux.vnet.ibm.com>
+ <51226B46.9080707@linux.vnet.ibm.com>
+ <CANN689FSxOz+0Cu7EG_yKD8ZE1OpT4kyT+ybLfXSqaifodJRpw@mail.gmail.com>
+ <51226F91.7000108@linux.vnet.ibm.com>
+ <CACvQF53bdh4_BxF0y1fnTVR+T2OmRc0jmWQYftsvx92-fg-Lug@mail.gmail.com>
+ <512BBAD8.8010006@linux.vnet.ibm.com>
+ <CACvQF51jCxk5jUqmhD=QBBtUsBkQWZzakacrKO4Gsk=w61rNwQ@mail.gmail.com>
+ <512C7A38.8060906@linux.vnet.ibm.com>
+ <CACvQF51RvhM8XNqu3-1OTQ=cZUZ=pAX+_zx0a29+W67N1X+BgQ@mail.gmail.com>
+ <512CC509.1050000@linux.vnet.ibm.com>
+ <CACvQF50UgiqPpDk3HCmV86zKSf6tPjqr0bZowfPEOJs0g0r0MQ@mail.gmail.com>
+ <512D0D67.9010609@linux.vnet.ibm.com>
+Date: Wed, 27 Feb 2013 19:11:34 +0800
+Message-ID: <CANN689FuuEb9wpV43DkTtgv6syvBYL-LQxByWznyAq8dkrhzBw@mail.gmail.com>
+Subject: Re: [PATCH v6 04/46] percpu_rwlock: Implement the core design of
+ Per-CPU Reader-Writer Locks
+From: Michel Lespinasse <walken@google.com>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Lai Jiangshan <eag0628@gmail.com>, linux-doc@vger.kernel.org,
+ peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org,
+ mingo@kernel.org, linux-arch@vger.kernel.org, linux@arm.linux.org.uk,
+ xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
+ paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
+ linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org,
+ rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
+ linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com,
+ vincent.guittot@linaro.org, sbw@mit.edu, tj@kernel.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,11 +50,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 26, 2013 at 06:16:10AM +0000, Sethi Varun-B16395 wrote:
-> This patch is not present in Joerg's tree and the add_device API in
-> the PAMU driver requires this patch.
+Hi Srivatsa,
 
-Will this patch be part of v3.9-rc1?
+I think there is some elegance in Lai's proposal of using a local
+trylock for the reader uncontended case and global rwlock to deal with
+the contended case without deadlocks. He apparently didn't realize
+initially that nested read locks are common, and he seems to have
+confused you because of that, but I think his proposal could be
+changed easily to account for that and result in short, easily
+understood code. What about the following:
 
+- local_refcnt is a local lock count; it indicates how many recursive
+locks are taken using the local lglock
+- lglock is used by readers for local locking; it must be acquired
+before local_refcnt becomes nonzero and released after local_refcnt
+goes back to zero.
+- fallback_rwlock is used by readers for global locking; it is
+acquired when fallback_reader_refcnt is zero and the trylock fails on
+lglock
 
-	Joerg
++void lg_rwlock_local_read_lock(struct lgrwlock *lgrw)
++{
++       preempt_disable();
++
++       if (__this_cpu_read(*lgrw->local_refcnt) ||
++           arch_spin_trylock(this_cpu_ptr(lgrw->lglock->lock))) {
++               __this_cpu_inc(*lgrw->local_refcnt);
++
+rwlock_acquire_read(&lgrw->fallback_rwlock->lock_dep_map, 0, 0,
+_RET_IP_);
++       } else {
++               read_lock(&lgrw->fallback_rwlock);
++       }
++}
++EXPORT_SYMBOL(lg_rwlock_local_read_lock);
++
++void lg_rwlock_local_read_unlock(struct lgrwlock *lgrw)
++{
++       if (likely(__this_cpu_read(*lgrw->local_refcnt))) {
++               rwlock_release(&lgrw->fallback_rwlock->lock_dep_map,
+1, _RET_IP_);
++               if (!__this_cpu_dec_return(*lgrw->local_refcnt))
++                       arch_spin_unlock(this_cpu_ptr(lgrw->lglock->lock));
++       } else {
++               read_unlock(&lgrw->fallback_rwlock);
++       }
++
++       preempt_enable();
++}
++EXPORT_SYMBOL(lg_rwlock_local_read_unlock);
++
++void lg_rwlock_global_write_lock(struct lgrwlock *lgrw)
++{
++       int i;
++
++       preempt_disable();
++
++       for_each_possible_cpu(i)
++               arch_spin_lock(per_cpu_ptr(lgrw->lglock->lock, i));
++       write_lock(&lgrw->fallback_rwlock);
++}
++EXPORT_SYMBOL(lg_rwlock_global_write_lock);
++
++void lg_rwlock_global_write_unlock(struct lgrwlock *lgrw)
++{
++       int i;
++
++       write_unlock(&lgrw->fallback_rwlock);
++       for_each_possible_cpu(i)
++               arch_spin_unlock(per_cpu_ptr(lgrw->lglock->lock, i));
++
++       preempt_enable();
++}
++EXPORT_SYMBOL(lg_rwlock_global_write_unlock);
+
+This is to me relatively easier to understand than Srivatsa's
+proposal. Now I'm not sure who wins efficiency wise, but I think it
+should be relatively close as readers at least don't touch shared
+state in the uncontended case (even with some recursion going on).
+
+There is an interesting case where lg_rwlock_local_read_lock could be
+interrupted after getting the local lglock but before incrementing
+local_refcnt to 1; if that happens any nested readers within that
+interrupt will have to take the global rwlock read side. I think this
+is perfectly acceptable as this should not be a common case though
+(and thus the global rwlock cache line probably wouldn't even bounce
+between cpus then).
+
+-- 
+Michel "Walken" Lespinasse
+A program is never fully debugged until the last user dies.
