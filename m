@@ -1,18 +1,30 @@
-Return-Path: <luis.henriques@canonical.com>
-Received: from youngberry.canonical.com (youngberry.canonical.com
- [91.189.89.112]) by ozlabs.org (Postfix) with ESMTP id B63962C02B2
- for <linuxppc-dev@ozlabs.org>; Fri,  1 Mar 2013 01:46:20 +1100 (EST)
-From: Luis Henriques <luis.henriques@canonical.com>
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org,
- kernel-team@lists.ubuntu.com
-Subject: [PATCH 014/139] uprobes/powerpc: Add dependency on single step
- emulation
-Date: Thu, 28 Feb 2013 14:42:44 +0000
-Message-Id: <1362062689-2567-15-git-send-email-luis.henriques@canonical.com>
-In-Reply-To: <1362062689-2567-1-git-send-email-luis.henriques@canonical.com>
-References: <1362062689-2567-1-git-send-email-luis.henriques@canonical.com>
-Cc: Luis Henriques <luis.henriques@canonical.com>, linuxppc-dev@ozlabs.org,
- "Suzuki K. Poulose" <suzuki@in.ibm.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id CCFFD2C02AD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Mar 2013 02:45:24 +1100 (EST)
+Subject: Re: [PATCH 2/6] powerpc/fsl_pci: Store the platform device
+ information corresponding to the pci controller.
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <C5ECD7A89D1DC44195F34B25E172658D3C24A9@039-SN2MPN1-013.039d.mgd.msft.net>
+Date: Thu, 28 Feb 2013 09:45:18 -0600
+Message-Id: <D109CC7C-09D2-41E6-82BF-376692C390CA@kernel.crashing.org>
+References: <1361191939-21260-1-git-send-email-Varun.Sethi@freescale.com>
+ <1361191939-21260-3-git-send-email-Varun.Sethi@freescale.com>
+ <CALRxmdDc9TuxH7HgAF3_iLgatoaOUML6fUt8SU+sxHyz6ZVjfw@mail.gmail.com>
+ <C5ECD7A89D1DC44195F34B25E172658D3BD338@039-SN2MPN1-013.039d.mgd.msft.net>
+ <20130227104505.GE26252@8bytes.org>
+ <C5ECD7A89D1DC44195F34B25E172658D3C24A9@039-SN2MPN1-013.039d.mgd.msft.net>
+To: Sethi Varun-B16395 <B16395@freescale.com>
+Cc: Wood Scott-B07421 <B07421@freescale.com>, Stuart Yoder <b08248@gmail.com>,
+ Joerg Roedel <joro@8bytes.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Yoder Stuart-B08248 <B08248@freescale.com>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,60 +34,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-3.5.7.7 -stable review patch.  If anyone has any objections, please let me know.
 
-------------------
+On Feb 27, 2013, at 4:56 AM, Sethi Varun-B16395 wrote:
 
-From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
+> This patch is present in the "next branch" of linux ppc tree =
+maintained by Kumar Gala.
+> Following is the commit id:
+> 52c5affc545053d37c0b05224bbf70f5336caa20
+>=20
+> I am not sure if this would be part of 3.9-rc1.
+>=20
+> Regards
+> varun
 
-commit 5e249d4528528c9a77da051a89ec7f99d31b83eb upstream.
+This is now in Linus's tree so will be in 3.9-rc1
 
-Uprobes uses emulate_step in sstep.c, but we haven't explicitly specified
-the dependency. On pseries HAVE_HW_BREAKPOINT protects us, but 44x has no
-such luxury.
-
-Consolidate other users that depend on sstep and create a new config option.
-
-Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Signed-off-by: Suzuki K. Poulose <suzuki@in.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-[ luis: adjust context ]
-Signed-off-by: Luis Henriques <luis.henriques@canonical.com>
----
- arch/powerpc/Kconfig      | 4 ++++
- arch/powerpc/lib/Makefile | 4 +---
- 2 files changed, 5 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 050cb37..4d8336c 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -264,6 +264,10 @@ config PPC_ADV_DEBUG_DAC_RANGE
- 	depends on PPC_ADV_DEBUG_REGS && 44x
- 	default y
- 
-+config PPC_EMULATE_SSTEP
-+	bool
-+	default y if KPROBES || UPROBES || XMON || HAVE_HW_BREAKPOINT
-+
- source "init/Kconfig"
- 
- source "kernel/Kconfig.freezer"
-diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
-index 7735a2c..3230bc1 100644
---- a/arch/powerpc/lib/Makefile
-+++ b/arch/powerpc/lib/Makefile
-@@ -18,9 +18,7 @@ obj-$(CONFIG_PPC64)	+= copypage_64.o copyuser_64.o \
- 			   memcpy_64.o usercopy_64.o mem_64.o string.o \
- 			   checksum_wrappers_64.o hweight_64.o \
- 			   copyuser_power7.o
--obj-$(CONFIG_XMON)	+= sstep.o ldstfp.o
--obj-$(CONFIG_KPROBES)	+= sstep.o ldstfp.o
--obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+= sstep.o ldstfp.o
-+obj-$(CONFIG_PPC_EMULATE_SSTEP)	+= sstep.o ldstfp.o
- 
- ifeq ($(CONFIG_PPC64),y)
- obj-$(CONFIG_SMP)	+= locks.o
--- 
-1.8.1.2
+- k
