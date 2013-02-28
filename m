@@ -1,28 +1,37 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 1F2042C02B5
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Mar 2013 02:51:48 +1100 (EST)
-Subject: Re: [PATCH 1/6 v8] iommu/fsl: Store iommu domain information pointer
- in archdata.
-Mime-Version: 1.0 (Apple Message framework v1278)
+Return-Path: <oleg@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id F343D2C029A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Mar 2013 05:02:38 +1100 (EST)
+Date: Thu, 28 Feb 2013 19:00:07 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Michel Lespinasse <walken@google.com>
+Subject: Re: [PATCH v6 04/46] percpu_rwlock: Implement the core design of
+ Per-CPU Reader-Writer Locks
+Message-ID: <20130228180007.GA3537@redhat.com>
+References: <512BBAD8.8010006@linux.vnet.ibm.com>
+ <CACvQF51jCxk5jUqmhD=QBBtUsBkQWZzakacrKO4Gsk=w61rNwQ@mail.gmail.com>
+ <512C7A38.8060906@linux.vnet.ibm.com>
+ <CACvQF51RvhM8XNqu3-1OTQ=cZUZ=pAX+_zx0a29+W67N1X+BgQ@mail.gmail.com>
+ <512CC509.1050000@linux.vnet.ibm.com>
+ <CACvQF50UgiqPpDk3HCmV86zKSf6tPjqr0bZowfPEOJs0g0r0MQ@mail.gmail.com>
+ <512D0D67.9010609@linux.vnet.ibm.com>
+ <CANN689FuuEb9wpV43DkTtgv6syvBYL-LQxByWznyAq8dkrhzBw@mail.gmail.com>
+ <20130227192551.GA8333@redhat.com>
+ <CANN689EhqoQAKALR7WhT3YrQh3=VDA2Dq3QX1yLuYU_gZAo_Tg@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <C5ECD7A89D1DC44195F34B25E172658D3C26F6@039-SN2MPN1-013.039d.mgd.msft.net>
-Date: Thu, 28 Feb 2013 09:51:23 -0600
-Message-Id: <BAB98EA5-5324-4FB2-97C2-A28A96C569DC@kernel.crashing.org>
-References: <1361191939-21260-1-git-send-email-Varun.Sethi@freescale.com>
- <1361191939-21260-2-git-send-email-Varun.Sethi@freescale.com>
- <20130227113045.GH26252@8bytes.org>
- <C5ECD7A89D1DC44195F34B25E172658D3C26F6@039-SN2MPN1-013.039d.mgd.msft.net>
-To: Sethi Varun-B16395 <B16395@freescale.com>
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- Alexey Kardashevskiy <aik@ozlabs.ru>, Joerg Roedel <joro@8bytes.org>,
- "linux-kernel@vger.kernel.org list" <linux-kernel@vger.kernel.org>,
- Yoder Stuart-B08248 <B08248@freescale.com>, iommu@lists.linux-foundation.org,
- Paul Mackerras <paulus@samba.org>,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <CANN689EhqoQAKALR7WhT3YrQh3=VDA2Dq3QX1yLuYU_gZAo_Tg@mail.gmail.com>
+Cc: Lai Jiangshan <eag0628@gmail.com>, linux-doc@vger.kernel.org,
+ peterz@infradead.org, fweisbec@gmail.com, mingo@kernel.org,
+ linux-arch@vger.kernel.org, linux@arm.linux.org.uk,
+ xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
+ paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
+ linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org,
+ rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
+ linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, vincent.guittot@linaro.org, sbw@mit.edu,
+ "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, tj@kernel.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,73 +41,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 02/28, Michel Lespinasse wrote:
+>
+> On Thu, Feb 28, 2013 at 3:25 AM, Oleg Nesterov <oleg@redhat.com> wrote:
+> > On 02/27, Michel Lespinasse wrote:
+> >>
+> >> +void lg_rwlock_local_read_lock(struct lgrwlock *lgrw)
+> >> +{
+> >> +       preempt_disable();
+> >> +
+> >> +       if (__this_cpu_read(*lgrw->local_refcnt) ||
+> >> +           arch_spin_trylock(this_cpu_ptr(lgrw->lglock->lock))) {
+> >> +               __this_cpu_inc(*lgrw->local_refcnt);
+> >
+> > Please look at __this_cpu_generic_to_op(). You need this_cpu_inc()
+> > to avoid the race with irs. The same for _read_unlock.
+>
+> Hmmm, I was thinking that this was safe because while interrupts might
+> modify local_refcnt to acquire a nested read lock, they are expected
+> to release that lock as well which would set local_refcnt back to its
+> original value ???
 
-On Feb 27, 2013, at 6:04 AM, Sethi Varun-B16395 wrote:
+Yes, yes, this is correct.
 
-> Hi Kumar,Ben,
-> I am implementing the Freescale PAMU (IOMMU) driver using the Linux =
-IOMMU API. In this particular patch, I have added a new field to =
-dev_archdata structure to store the dma domain information.
-> This field is updated whenever we attach a device to an iommu domain.
->=20
-> Regards
-> Varun
+I meant that (in general, x86 is fine) __this_cpu_inc() itself is not
+irq-safe. It simply does "pcp += 1".
 
-Would be good to see if this overlaps with Alexey's work for IOMMU =
-driver for powernv.
+this_cpu_inc() is fine, _this_cpu_generic_to_op() does cli/sti around.
 
-- k
+I know this only because I did the same mistake recently, and Srivatsa
+explained the problem to me ;)
 
->=20
->> -----Original Message-----
->> From: Joerg Roedel [mailto:joro@8bytes.org]
->> Sent: Wednesday, February 27, 2013 5:01 PM
->> To: Sethi Varun-B16395
->> Cc: iommu@lists.linux-foundation.org; linuxppc-dev@lists.ozlabs.org;
->> linux-kernel@vger.kernel.org; Wood Scott-B07421; Yoder Stuart-B08248
->> Subject: Re: [PATCH 1/6 v8] iommu/fsl: Store iommu domain information
->> pointer in archdata.
->>=20
->> On Mon, Feb 18, 2013 at 06:22:14PM +0530, Varun Sethi wrote:
->>> Add a new field in the device (powerpc) archdata structure for =
-storing
->>> iommu domain information pointer. This pointer is stored when the
->>> device is attached to a particular domain.
->>>=20
->>>=20
->>> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
->>> ---
->>> - no change.
->>> arch/powerpc/include/asm/device.h |    4 ++++
->>> 1 files changed, 4 insertions(+), 0 deletions(-)
->>>=20
->>> diff --git a/arch/powerpc/include/asm/device.h
->>> b/arch/powerpc/include/asm/device.h
->>> index 77e97dd..6dc79fe 100644
->>> --- a/arch/powerpc/include/asm/device.h
->>> +++ b/arch/powerpc/include/asm/device.h
->>> @@ -28,6 +28,10 @@ struct dev_archdata {
->>> 		void		*iommu_table_base;
->>> 	} dma_data;
->>>=20
->>> +	/* IOMMU domain information pointer. This would be set
->>> +	 * when this device is attached to an iommu_domain.
->>> +	 */
->>> +	void			*iommu_domain;
->>=20
->> Please Cc the PowerPC Maintainers on this, so that they can have a =
-look
->> at it. This also must be put this into an #ifdef CONFIG_IOMMU_API.
->>=20
->>=20
->> 	Joerg
->>=20
->>=20
->=20
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe =
-linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Oleg.
