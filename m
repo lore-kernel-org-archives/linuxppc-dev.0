@@ -2,29 +2,23 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id CCFFD2C02AD
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Mar 2013 02:45:24 +1100 (EST)
-Subject: Re: [PATCH 2/6] powerpc/fsl_pci: Store the platform device
- information corresponding to the pci controller.
+ by ozlabs.org (Postfix) with ESMTPS id 332152C02A4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Mar 2013 02:46:47 +1100 (EST)
+Subject: Re: [PATCH 3/6] powerpc/fsl_pci: Added defines for the FSL PCI
+ controller BRR1 register.
 Mime-Version: 1.0 (Apple Message framework v1278)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <C5ECD7A89D1DC44195F34B25E172658D3C24A9@039-SN2MPN1-013.039d.mgd.msft.net>
-Date: Thu, 28 Feb 2013 09:45:18 -0600
-Message-Id: <D109CC7C-09D2-41E6-82BF-376692C390CA@kernel.crashing.org>
+In-Reply-To: <20130227113336.GI26252@8bytes.org>
+Date: Thu, 28 Feb 2013 09:46:51 -0600
+Message-Id: <414263AA-3E4B-4748-AD06-94F869261841@kernel.crashing.org>
 References: <1361191939-21260-1-git-send-email-Varun.Sethi@freescale.com>
- <1361191939-21260-3-git-send-email-Varun.Sethi@freescale.com>
- <CALRxmdDc9TuxH7HgAF3_iLgatoaOUML6fUt8SU+sxHyz6ZVjfw@mail.gmail.com>
- <C5ECD7A89D1DC44195F34B25E172658D3BD338@039-SN2MPN1-013.039d.mgd.msft.net>
- <20130227104505.GE26252@8bytes.org>
- <C5ECD7A89D1DC44195F34B25E172658D3C24A9@039-SN2MPN1-013.039d.mgd.msft.net>
-To: Sethi Varun-B16395 <B16395@freescale.com>
-Cc: Wood Scott-B07421 <B07421@freescale.com>, Stuart Yoder <b08248@gmail.com>,
- Joerg Roedel <joro@8bytes.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Yoder Stuart-B08248 <B08248@freescale.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ <1361191939-21260-4-git-send-email-Varun.Sethi@freescale.com>
+ <20130227113336.GI26252@8bytes.org>
+To: Joerg Roedel <joro@8bytes.org>
+Cc: linux-kernel@vger.kernel.org, stuart.yoder@freescale.com,
+ iommu@lists.linux-foundation.org, scottwood@freescale.com,
+ Varun Sethi <Varun.Sethi@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,18 +29,37 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Feb 27, 2013, at 4:56 AM, Sethi Varun-B16395 wrote:
+On Feb 27, 2013, at 5:33 AM, Joerg Roedel wrote:
 
-> This patch is present in the "next branch" of linux ppc tree =
-maintained by Kumar Gala.
-> Following is the commit id:
-> 52c5affc545053d37c0b05224bbf70f5336caa20
+> On Mon, Feb 18, 2013 at 06:22:16PM +0530, Varun Sethi wrote:
+>> Macros for checking FSL PCI controller version.
+>>=20
+>> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
+>> ---
+>> arch/powerpc/include/asm/pci-bridge.h |    4 ++++
+>> 1 files changed, 4 insertions(+), 0 deletions(-)
+>>=20
+>> diff --git a/arch/powerpc/include/asm/pci-bridge.h =
+b/arch/powerpc/include/asm/pci-bridge.h
+>> index 025a130..c12ed78 100644
+>> --- a/arch/powerpc/include/asm/pci-bridge.h
+>> +++ b/arch/powerpc/include/asm/pci-bridge.h
+>> @@ -14,6 +14,10 @@
+>>=20
+>> struct device_node;
+>>=20
+>> +/* FSL PCI controller BRR1 register */
+>> +#define PCI_FSL_BRR1      0xbf8
+>> +#define PCI_FSL_BRR1_VER 0xffff
+>> +
 >=20
-> I am not sure if this would be part of 3.9-rc1.
 >=20
-> Regards
-> varun
+> Please merge this patch with the one where you actually make use of
+> these defines for the first time.
+>=20
+>=20
+> 	Joerg
 
-This is now in Linus's tree so will be in 3.9-rc1
+This also seems an odd place for these defines.
 
-- k
+- k=
