@@ -1,13 +1,14 @@
 Return-Path: <laijs@cn.fujitsu.com>
 Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id 481352C02FE
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Mar 2013 04:42:06 +1100 (EST)
-Message-ID: <5130E8E2.50206@cn.fujitsu.com>
-Date: Sat, 02 Mar 2013 01:44:02 +0800
+ by ozlabs.org (Postfix) with ESMTP id 9356A2C02FE
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Mar 2013 04:48:37 +1100 (EST)
+Message-ID: <5130EA6B.6030901@cn.fujitsu.com>
+Date: Sat, 02 Mar 2013 01:50:35 +0800
 From: Lai Jiangshan <laijs@cn.fujitsu.com>
 MIME-Version: 1.0
 To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH] lglock: add read-preference local-global rwlock
+Subject: Re: [PATCH v6 04/46] percpu_rwlock: Implement the core design of
+ Per-CPU Reader-Writer Locks
 References: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
  <20130218123856.26245.46705.stgit@srivatsabhat.in.ibm.com>
  <CANN689F9S7c1M8+cEpz3tsxGF34+NTRBLvxgPUOtbvav5u+RRA@mail.gmail.com>
@@ -46,242 +47,172 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->From c63f2be9a4cf7106a521dda169a0e14f8e4f7e3b Mon Sep 17 00:00:00 2001
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-Date: Mon, 25 Feb 2013 23:14:27 +0800
-Subject: [PATCH] lglock: add read-preference local-global rwlock
+On 28/02/13 05:19, Srivatsa S. Bhat wrote:
+> On 02/27/2013 06:03 AM, Lai Jiangshan wrote:
+>> On Wed, Feb 27, 2013 at 3:30 AM, Srivatsa S. Bhat
+>> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+>>> On 02/26/2013 09:55 PM, Lai Jiangshan wrote:
+>>>> On Tue, Feb 26, 2013 at 10:22 PM, Srivatsa S. Bhat
+>>>> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+>>>>>
+>>>>> Hi Lai,
+>>>>>
+>>>>> I'm really not convinced that piggy-backing on lglocks would help
+>>>>> us in any way. But still, let me try to address some of the points
+>>>>> you raised...
+>>>>>
+>>>>> On 02/26/2013 06:29 PM, Lai Jiangshan wrote:
+>>>>>> On Tue, Feb 26, 2013 at 5:02 PM, Srivatsa S. Bhat
+>>>>>> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+>>>>>>> On 02/26/2013 05:47 AM, Lai Jiangshan wrote:
+>>>>>>>> On Tue, Feb 26, 2013 at 3:26 AM, Srivatsa S. Bhat
+>>>>>>>> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+>>>>>>>>> Hi Lai,
+>>>>>>>>>
+>>>>>>>>> On 02/25/2013 09:23 PM, Lai Jiangshan wrote:
+>>>>>>>>>> Hi, Srivatsa,
+>>>>>>>>>>
+>>>>>>>>>> The target of the whole patchset is nice for me.
+>>>>>>>>>
+>>>>>>>>> Cool! Thanks :-)
+>>>>>>>>>
+>>>>>>> [...]
+>>>>>>>
+>>>>>>> Unfortunately, I see quite a few issues with the code above. IIUC, the
+>>>>>>> writer and the reader both increment the same counters. So how will the
+>>>>>>> unlock() code in the reader path know when to unlock which of the locks?
+>>>>>>
+>>>>>> The same as your code, the reader(which nested in write C.S.) just dec
+>>>>>> the counters.
+>>>>>
+>>>>> And that works fine in my case because the writer and the reader update
+>>>>> _two_ _different_ counters.
+>>>>
+>>>> I can't find any magic in your code, they are the same counter.
+>>>>
+>>>>         /*
+>>>>          * It is desirable to allow the writer to acquire the percpu-rwlock
+>>>>          * for read (if necessary), without deadlocking or getting complaints
+>>>>          * from lockdep. To achieve that, just increment the reader_refcnt of
+>>>>          * this CPU - that way, any attempt by the writer to acquire the
+>>>>          * percpu-rwlock for read, will get treated as a case of nested percpu
+>>>>          * reader, which is safe, from a locking perspective.
+>>>>          */
+>>>>         this_cpu_inc(pcpu_rwlock->rw_state->reader_refcnt);
+>>>>
+>>>
+>>> Whoa! Hold on, were you really referring to _this_ increment when you said
+>>> that, in your patch you would increment the refcnt at the writer? Then I guess
+>>> there is a major disconnect in our conversations. (I had assumed that you were
+>>> referring to the update of writer_signal, and were just trying to have a single
+>>> refcnt instead of reader_refcnt and writer_signal).
+>>
+>> https://github.com/laijs/linux/commit/53e5053d5b724bea7c538b11743d0f420d98f38d
+>>
+>> Sorry the name "fallback_reader_refcnt" misled you.
+>>
+> [...]
+> 
+>>>> All I was considered is "nested reader is seldom", so I always
+>>>> fallback to rwlock when nested.
+>>>> If you like, I can add 6 lines of code, the overhead is
+>>>> 1 spin_try_lock()(fast path)  + N  __this_cpu_inc()
+>>>>
+>>>
+>>> I'm assuming that calculation is no longer valid, considering that
+>>> we just discussed how the per-cpu refcnt that you were using is quite
+>>> unnecessary and can be removed.
+>>>
+>>> IIUC, the overhead with your code, as per above discussion would be:
+>>> 1 spin_try_lock() [non-nested] + N read_lock(global_rwlock).
+>>
+>> https://github.com/laijs/linux/commit/46334544bb7961550b7065e015da76f6dab21f16
+>>
+>> Again, I'm so sorry the name "fallback_reader_refcnt" misled you.
+>>
+> 
+> At this juncture I really have to admit that I don't understand your
+> intentions at all. What are you really trying to prove? Without giving
+> a single good reason why my code is inferior, why are you even bringing
+> up the discussion about a complete rewrite of the synchronization code?
+> http://article.gmane.org/gmane.linux.kernel.cross-arch/17103
+> http://article.gmane.org/gmane.linux.power-management.general/31345
+> 
+> I'm beginning to add 2 + 2 together based on the kinds of questions you
+> have been asking...
+> 
+> You posted a patch in this thread and started a discussion around it without
+> even establishing a strong reason to do so. Now you point me to your git
+> tree where your patches have even more traces of ideas being borrowed from
+> my patchset (apart from my own ideas/code, there are traces of others' ideas
+> being borrowed too - for example, it was Oleg who originally proposed the
+> idea of splitting up the counter into 2 parts and I'm seeing that it is
+> slowly crawling into your code with no sign of appropriate credits).
+> http://article.gmane.org/gmane.linux.network/260288
+> 
+> And in reply to my mail pointing out the performance implications of the
+> global read_lock at the reader side in your code, you said you'll come up
+> with a comparison between that and my patchset.
+> http://article.gmane.org/gmane.linux.network/260288
+> The issue has been well-documented in my patch description of patch 4.
+> http://article.gmane.org/gmane.linux.kernel/1443258
+> 
+> Are you really trying to pit bits and pieces of my own ideas/versions
+> against one another and claiming them as your own?
+> 
+> You projected the work involved in handling the locking issues pertaining
+> to CPU_DYING notifiers etc as a TODO, despite the fact that I had explicitly
+> noted in my cover letter that I had audited and taken care of all of them.
+> http://article.gmane.org/gmane.linux.documentation/9727
+> http://article.gmane.org/gmane.linux.documentation/9520
+> 
+> You failed to acknowledge (on purpose?) that I had done a tree-wide
+> conversion despite the fact that you were replying to the very thread which
+> had the 46 patches which did exactly that (and I had also mentioned it
+> explicitly in my cover letter).
+> http://article.gmane.org/gmane.linux.documentation/9727
+> http://article.gmane.org/gmane.linux.documentation/9520
+> 
+> You then started probing more and more about the technique I used to do
+> the tree-wide conversion.
+> http://article.gmane.org/gmane.linux.kernel.cross-arch/17111
+> 
+> You also retorted saying you did go through my patch descriptions, so
+> its not like you have missed reading them.
+> http://article.gmane.org/gmane.linux.power-management.general/31345
+> 
+> Each of these when considered individually, might appear like innocuous and
+> honest attempts at evaluating my code. But when put together, I'm beginning
+> to sense a whole different angle to it altogether, as if you are trying
+> to spin your own patch series, complete with the locking framework _and_
+> the tree-wide conversion, heavily borrowed from mine. At the beginning of
+> this discussion, I predicted that the lglock version that you are proposing
+> would end up being either less efficient than my version or look very similar
+> to my version. http://article.gmane.org/gmane.linux.kernel/1447139
+> 
+> I thought it was just the former till now, but its not hard to see how it
+> is getting closer to becoming the latter too. So yeah, I'm not amused.
+> 
+> Maybe (and hopefully) you are just trying out different ideas on your own,
+> and I'm just being paranoid. I really hope that is the case. If you are just
+> trying to review my code, then please stop sending patches with borrowed ideas
+> with your sole Signed-off-by, and purposefully ignoring the work already done
+> in my patchset, because it is really starting to look suspicious, at least
+> to me.
+> 
+> Don't get me wrong - I'll whole-heartedly acknowledge and appreciate if
+> _your_ code is better than mine. I just don't like the idea of somebody
+> plagiarizing my ideas/code (or even others' ideas for that matter).
+> However, I sincerely apologize in advance if I misunderstood/misjudged your
+> intentions; I just wanted to voice my concerns out loud at this point,
+> considering the bad feeling I got by looking at your responses collectively.
+> 
 
-Current lglock is not read-preference, so it can't be used on some cases
-which read-preference rwlock can do. Example, get_cpu_online_atomic().
+Hi, Srivatsa
 
-Although we can use rwlock for these cases which needs read-preference.
-but it leads to unnecessary cache-line bouncing even when there are no
-writers present, which can slow down the system needlessly. It will be
-worse when we have a lot of CPUs, it is not scale.
+I'm sorry, big apology to you.
+I'm bad in communication and I did be wrong.
+I tended to improve the codes but in false direction.
 
-So we look forward to lglock. lglock is read-write-lock based on percpu locks,
-but it is not read-preference due to its underlining percpu locks.
-
-But what if we convert the percpu locks of lglock to use percpu rwlocks:
-
-         CPU 0                                CPU 1
-         ------                               ------
-1.    spin_lock(&random_lock);             read_lock(my_rwlock of CPU 1);
-2.    read_lock(my_rwlock of CPU 0);       spin_lock(&random_lock);
-
-Writer:
-         CPU 2:
-         ------
-      for_each_online_cpu(cpu)
-        write_lock(my_rwlock of 'cpu');
-
-
-Consider what happens if the writer begins his operation in between steps 1
-and 2 at the reader side. It becomes evident that we end up in a (previously
-non-existent) deadlock due to a circular locking dependency between the 3
-entities, like this:
-
-
-(holds              Waiting for
- random_lock) CPU 0 -------------> CPU 2  (holds my_rwlock of CPU 0
-                                               for write)
-               ^                   |
-               |                   |
-        Waiting|                   | Waiting
-          for  |                   |  for
-               |                   V
-                ------ CPU 1 <------
-
-                (holds my_rwlock of
-                 CPU 1 for read)
-
-
-So obviously this "straight-forward" way of implementing percpu rwlocks is
-deadlock-prone. So we can't implement read-preference local-global rwlock
-like this.
-
-
-The implement of this patch reuse current lglock as frontend to achieve
-local-read-lock, and reuse global fallback rwlock as backend to achieve
-read-preference, and use percpu reader counter to indicate 1) the depth
-of the nested reader lockes and 2) whether the outmost lock is percpu lock
-or fallback rwlock.
-
-The algorithm is simple, in the read site:
-If it is nested reader, just increase the counter
-If it is the outmost reader,
-	1) try to lock its cpu's lock of the frontend lglock.
-	   (reader count +=1 if success)
-	2) if the above step fails, read_lock(&fallback_rwlock).
-	   (reader count += FALLBACK_BASE + 1)
-
-Write site:
-Do the lg_global_lock() of the frontend lglock.
-And then write_lock(&fallback_rwlock).
-
-
-Prof:
-1) reader-writer exclusive:
-The two steps of write site finished, no reader. Vice-verse.
-
-2) read-preference:
-before write site lock finished acquired, read site at least
-wins at read_lock(&fallback_rwlock) for rwlock is read-preference.
-read-preference also implies nestable.
-
-3) read site functions are irqsafe(reentrance-safe)
-	If read site function is interrupted at any point and reenters read site
-again, reentranced read site will not be mislead by the first read site if the
-reader counter > 0, in this case, it means currently frontend(this cpu lock of
-lglock) or backend(fallback rwlock) lock is held, it is safe to act as
-nested reader.
-	if the reader counter=0, eentranced reader considers it is the
-outmost read site, and it always successes after the write side release the lock.
-(even the interrupted read-site has already hold the cpu lock of lglock
-or the fallback_rwlock).
-	And reentranced read site only calls arch_spin_trylock(), read_lock()
-and __this_cpu_op(), arch_spin_trylock(), read_lock() is already reentrance-safe.
-Although __this_cpu_op() is not reentrance-safe, but the value of the counter
-will be restored after the interrupted finished, so read site functions
-are still reentrance-safe.
-
-
-Performance:
-We only focus on the performance of the read site. this read site's fast path
-is just preempt_disable() + __this_cpu_read/inc() + arch_spin_trylock(),
-It has only one heavy memory operation. it will be expected fast.
-
-We test three locks.
-1) traditional rwlock WITHOUT remote competition nor cache-bouncing.(opt-rwlock)
-2) this lock(lgrwlock)
-3) V6 percpu-rwlock by "Srivatsa S. Bhat". (percpu-rwlock)
-   (https://lkml.org/lkml/2013/2/18/186)
-
-		nested=1(no nested)	nested=2	nested=4
-opt-rwlock	 517181			1009200		2010027
-lgrwlock	 452897			 700026		1201415
-percpu-rwlock	1192955			1451343		1951757
-
-The value is the time(nano-second) of 10000 times of the operations:
-{
-	read-lock
-	[nested read-lock]...
-	[nested read-unlock]...
-	read-unlock
-}
-If the way of this test is wrong nor bad, please correct me,
-the code of test is here: https://gist.github.com/laijs/5066159
-(i5 760, 64bit)
-
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
----
- include/linux/lglock.h |   35 ++++++++++++++++++++++++++++++++
- kernel/lglock.c        |   52 ++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 87 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/lglock.h b/include/linux/lglock.h
-index 0d24e93..afb22bd 100644
---- a/include/linux/lglock.h
-+++ b/include/linux/lglock.h
-@@ -67,4 +67,39 @@ void lg_local_unlock_cpu(struct lglock *lg, int cpu);
- void lg_global_lock(struct lglock *lg);
- void lg_global_unlock(struct lglock *lg);
- 
-+struct lgrwlock {
-+	unsigned long __percpu *reader_refcnt;
-+	struct lglock lglock;
-+	rwlock_t fallback_rwlock;
-+};
-+
-+#define __DEFINE_LGRWLOCK_PERCPU_DATA(name)				\
-+	static DEFINE_PER_CPU(arch_spinlock_t, name ## _lock)		\
-+	= __ARCH_SPIN_LOCK_UNLOCKED;					\
-+	static DEFINE_PER_CPU(unsigned long, name ## _refcnt);
-+
-+#define __LGRWLOCK_INIT(name)						\
-+	{								\
-+		.reader_refcnt = &name ## _refcnt,			\
-+		.lglock = { .lock = &name ## _lock },			\
-+		.fallback_rwlock = __RW_LOCK_UNLOCKED(name.fallback_rwlock)\
-+	}
-+
-+#define DEFINE_LGRWLOCK(name)						\
-+	__DEFINE_LGRWLOCK_PERCPU_DATA(name)				\
-+	struct lgrwlock name = __LGRWLOCK_INIT(name)
-+
-+#define DEFINE_STATIC_LGRWLOCK(name)					\
-+	__DEFINE_LGRWLOCK_PERCPU_DATA(name)				\
-+	static struct lgrwlock name = __LGRWLOCK_INIT(name)
-+
-+static inline void lg_rwlock_init(struct lgrwlock *lgrw, char *name)
-+{
-+	lg_lock_init(&lgrw->lglock, name);
-+}
-+
-+void lg_rwlock_local_read_lock(struct lgrwlock *lgrw);
-+void lg_rwlock_local_read_unlock(struct lgrwlock *lgrw);
-+void lg_rwlock_global_write_lock(struct lgrwlock *lgrw);
-+void lg_rwlock_global_write_unlock(struct lgrwlock *lgrw);
- #endif
-diff --git a/kernel/lglock.c b/kernel/lglock.c
-index 6535a66..6c60cf7 100644
---- a/kernel/lglock.c
-+++ b/kernel/lglock.c
-@@ -87,3 +87,55 @@ void lg_global_unlock(struct lglock *lg)
- 	preempt_enable();
- }
- EXPORT_SYMBOL(lg_global_unlock);
-+
-+#define FALLBACK_BASE	(1UL << 30)
-+
-+void lg_rwlock_local_read_lock(struct lgrwlock *lgrw)
-+{
-+	struct lglock *lg = &lgrw->lglock;
-+
-+	preempt_disable();
-+	rwlock_acquire_read(&lg->lock_dep_map, 0, 0, _RET_IP_);
-+	if (likely(!__this_cpu_read(*lgrw->reader_refcnt))) {
-+		if (!arch_spin_trylock(this_cpu_ptr(lg->lock))) {
-+			read_lock(&lgrw->fallback_rwlock);
-+			__this_cpu_add(*lgrw->reader_refcnt, FALLBACK_BASE);
-+		}
-+	}
-+
-+	__this_cpu_inc(*lgrw->reader_refcnt);
-+}
-+EXPORT_SYMBOL(lg_rwlock_local_read_lock);
-+
-+void lg_rwlock_local_read_unlock(struct lgrwlock *lgrw)
-+{
-+	switch (__this_cpu_dec_return(*lgrw->reader_refcnt)) {
-+	case 0:
-+		lg_local_unlock(&lgrw->lglock);
-+		return;
-+	case FALLBACK_BASE:
-+		__this_cpu_sub(*lgrw->reader_refcnt, FALLBACK_BASE);
-+		read_unlock(&lgrw->fallback_rwlock);
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	rwlock_release(&lg->lock_dep_map, 1, _RET_IP_);
-+	preempt_enable();
-+}
-+EXPORT_SYMBOL(lg_rwlock_local_read_unlock);
-+
-+void lg_rwlock_global_write_lock(struct lgrwlock *lgrw)
-+{
-+	lg_global_lock(&lgrw->lglock);
-+	write_lock(&lgrw->fallback_rwlock);
-+}
-+EXPORT_SYMBOL(lg_rwlock_global_write_lock);
-+
-+void lg_rwlock_global_write_unlock(struct lgrwlock *lgrw)
-+{
-+	write_unlock(&lgrw->fallback_rwlock);
-+	lg_global_unlock(&lgrw->lglock);
-+}
-+EXPORT_SYMBOL(lg_rwlock_global_write_unlock);
--- 
-1.7.7.6
+Thanks,
+Lai
