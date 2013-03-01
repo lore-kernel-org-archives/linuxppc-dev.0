@@ -1,36 +1,42 @@
-Return-Path: <B08248@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A46652C02F8
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Mar 2013 03:22:08 +1100 (EST)
-From: Yoder Stuart-B08248 <B08248@freescale.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, Sethi Varun-B16395
- <B16395@freescale.com>
-Subject: RE: [PATCH 1/6 v8] iommu/fsl: Store iommu domain information
- pointer in archdata.
-Date: Fri, 1 Mar 2013 16:21:57 +0000
-Message-ID: <9F6FE96B71CF29479FF1CDC8046E1503565876@039-SN1MPN1-003.039d.mgd.msft.net>
-References: <1361191939-21260-1-git-send-email-Varun.Sethi@freescale.com>
- <1361191939-21260-2-git-send-email-Varun.Sethi@freescale.com>
- <20130227113045.GH26252@8bytes.org>
- <C5ECD7A89D1DC44195F34B25E172658D3C26F6@039-SN2MPN1-013.039d.mgd.msft.net>
- <BAB98EA5-5324-4FB2-97C2-A28A96C569DC@kernel.crashing.org>
- <51300367.6080300@ozlabs.ru>
- <C5ECD7A89D1DC44195F34B25E172658D3C802F@039-SN2MPN1-013.039d.mgd.msft.net>
- <51307DCE.1050506@ozlabs.ru>
-In-Reply-To: <51307DCE.1050506@ozlabs.ru>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <htejun@gmail.com>
+Received: from mail-qe0-f46.google.com (mail-qe0-f46.google.com
+ [209.85.128.46])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0C7112C02FE
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Mar 2013 04:53:59 +1100 (EST)
+Received: by mail-qe0-f46.google.com with SMTP id a11so2538012qen.33
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Mar 2013 09:53:56 -0800 (PST)
+Sender: Tejun Heo <htejun@gmail.com>
+Date: Fri, 1 Mar 2013 09:53:49 -0800
+From: Tejun Heo <tj@kernel.org>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Subject: Re: [PATCH] lglock: add read-preference local-global rwlock
+Message-ID: <20130301175349.GC2481@mtj.dyndns.org>
+References: <512BBAD8.8010006@linux.vnet.ibm.com>
+ <CACvQF51jCxk5jUqmhD=QBBtUsBkQWZzakacrKO4Gsk=w61rNwQ@mail.gmail.com>
+ <512C7A38.8060906@linux.vnet.ibm.com>
+ <CACvQF51RvhM8XNqu3-1OTQ=cZUZ=pAX+_zx0a29+W67N1X+BgQ@mail.gmail.com>
+ <512CC509.1050000@linux.vnet.ibm.com>
+ <CACvQF50UgiqPpDk3HCmV86zKSf6tPjqr0bZowfPEOJs0g0r0MQ@mail.gmail.com>
+ <512D0D67.9010609@linux.vnet.ibm.com>
+ <CACvQF53ph2ixdM-otzetjM5cR+2kcZj6sckOp3TnzzA_x-EZ8w@mail.gmail.com>
+ <512E7879.20109@linux.vnet.ibm.com> <5130E8E2.50206@cn.fujitsu.com>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- Alex Williamson <alex.williamson@redhat.com>, Joerg Roedel <joro@8bytes.org>,
- "linux-kernel@vger.kernel.org list" <linux-kernel@vger.kernel.org>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- Paul Mackerras <paulus@samba.org>,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
- David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5130E8E2.50206@cn.fujitsu.com>
+Cc: Lai Jiangshan <eag0628@gmail.com>, linux-doc@vger.kernel.org,
+ peterz@infradead.org, fweisbec@gmail.com, oleg@redhat.com,
+ Michel Lespinasse <walken@google.com>, mingo@kernel.org,
+ linux-arch@vger.kernel.org, linux@arm.linux.org.uk,
+ xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
+ paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
+ linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org,
+ rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
+ linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, vincent.guittot@linaro.org, sbw@mit.edu,
+ "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,41 +46,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hey, guys and Oleg (yes, I'm singling you out ;p because you're that
+awesome.)
 
+On Sat, Mar 02, 2013 at 01:44:02AM +0800, Lai Jiangshan wrote:
+> Performance:
+> We only focus on the performance of the read site. this read site's fast path
+> is just preempt_disable() + __this_cpu_read/inc() + arch_spin_trylock(),
+> It has only one heavy memory operation. it will be expected fast.
+> 
+> We test three locks.
+> 1) traditional rwlock WITHOUT remote competition nor cache-bouncing.(opt-rwlock)
+> 2) this lock(lgrwlock)
+> 3) V6 percpu-rwlock by "Srivatsa S. Bhat". (percpu-rwlock)
+>    (https://lkml.org/lkml/2013/2/18/186)
+> 
+> 		nested=1(no nested)	nested=2	nested=4
+> opt-rwlock	 517181			1009200		2010027
+> lgrwlock	 452897			 700026		1201415
+> percpu-rwlock	1192955			1451343		1951757
 
-> -----Original Message-----
-> From: Alexey Kardashevskiy [mailto:aik@ozlabs.ru]
-> Sent: Friday, March 01, 2013 4:07 AM
-> To: Sethi Varun-B16395
-> Cc: Kumar Gala; Benjamin Herrenschmidt; iommu@lists.linux-foundation.org;=
- linuxppc-dev@lists.ozlabs.org
-> list; linux-kernel@vger.kernel.org list; Wood Scott-B07421; Yoder Stuart-=
-B08248; Joerg Roedel; Paul
-> Mackerras; David Gibson; Alex Williamson
-> Subject: Re: [PATCH 1/6 v8] iommu/fsl: Store iommu domain information poi=
-nter in archdata.
->=20
-> btw the device struct already has a pointer to its iommu_group, and the
-> iommu_group struct itself has a pointer void *iommu_data which you could
-> use for anything you want (iommu_group_get_iommudata(),
-> iommu_group_set_iommudata()).
->
-> By design you are expected to add iommu groups to a domain but not device=
-s
-> so I am not so sure that you really need a pointer to domain in the devic=
-e
-> struct.
+On the first glance, the numbers look pretty good and I kinda really
+like the fact that if this works out we don't have to introduce yet
+another percpu synchronization construct and get to reuse lglock.
 
-Well, at the lowest level the IOMMU API does attach devices to domains-- i.=
-e.
-API attach_dev().  So, it seems to conceptually make sense to have a ptr
-from the device to the associated domain.  When you implement attach_dev()
-you need to be able to see whether the device is already attached to
-a domain.   Adding a couple of levels of indirection...from device to
-group to domain...doesn't seems to make things simpler or better IMHO.
+So, Oleg, can you please see whether you can find holes in this one?
 
-x86 keeps a pointer to the domain in device archdata and since there is
-a direct correlation between a device and domain I'd rather see it
-where this patch has it.
+Srivatsa, I know you spent a lot of time on percpu_rwlock but as you
+wrote before Lai's work can be seen as continuation of yours, and if
+we get to extend what's already there instead of introducing something
+completely new, there's no reason not to (and my apologies for not
+noticing the possibility of extending lglock before).  So, if this can
+work, it would be awesome if you guys can work together.  Lai might
+not be very good at communicating in english yet but he's really good
+at spotting patterns in complex code and playing with them.
 
-Stuart
+Thanks!
+
+-- 
+tejun
