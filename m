@@ -1,43 +1,26 @@
-Return-Path: <laijs@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id 9356A2C02FE
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Mar 2013 04:48:37 +1100 (EST)
-Message-ID: <5130EA6B.6030901@cn.fujitsu.com>
-Date: Sat, 02 Mar 2013 01:50:35 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
+Return-Path: <b08248@gmail.com>
+Received: from mail-bk0-f47.google.com (mail-bk0-f47.google.com
+ [209.85.214.47])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C55EA2C02C7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Mar 2013 10:28:01 +1100 (EST)
+Received: by mail-bk0-f47.google.com with SMTP id jc3so1573441bkc.6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Mar 2013 15:27:57 -0800 (PST)
 MIME-Version: 1.0
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v6 04/46] percpu_rwlock: Implement the core design of
- Per-CPU Reader-Writer Locks
-References: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
- <20130218123856.26245.46705.stgit@srivatsabhat.in.ibm.com>
- <CANN689F9S7c1M8+cEpz3tsxGF34+NTRBLvxgPUOtbvav5u+RRA@mail.gmail.com>
- <5122551E.1080703@linux.vnet.ibm.com>	<51226B46.9080707@linux.vnet.ibm.com>
- <CANN689FSxOz+0Cu7EG_yKD8ZE1OpT4kyT+ybLfXSqaifodJRpw@mail.gmail.com>
- <51226F91.7000108@linux.vnet.ibm.com>
- <CACvQF53bdh4_BxF0y1fnTVR+T2OmRc0jmWQYftsvx92-fg-Lug@mail.gmail.com>
- <512BBAD8.8010006@linux.vnet.ibm.com>
- <CACvQF51jCxk5jUqmhD=QBBtUsBkQWZzakacrKO4Gsk=w61rNwQ@mail.gmail.com>
- <512C7A38.8060906@linux.vnet.ibm.com>
- <CACvQF51RvhM8XNqu3-1OTQ=cZUZ=pAX+_zx0a29+W67N1X+BgQ@mail.gmail.com>
- <512CC509.1050000@linux.vnet.ibm.com>
- <CACvQF50UgiqPpDk3HCmV86zKSf6tPjqr0bZowfPEOJs0g0r0MQ@mail.gmail.com>
- <512D0D67.9010609@linux.vnet.ibm.com>
- <CACvQF53ph2ixdM-otzetjM5cR+2kcZj6sckOp3TnzzA_x-EZ8w@mail.gmail.com>
- <512E7879.20109@linux.vnet.ibm.com>
-In-Reply-To: <512E7879.20109@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Lai Jiangshan <eag0628@gmail.com>, linux-doc@vger.kernel.org,
- peterz@infradead.org, fweisbec@gmail.com, oleg@redhat.com,
- Michel Lespinasse <walken@google.com>, mingo@kernel.org,
- linux-arch@vger.kernel.org, linux@arm.linux.org.uk,
- xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
- paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
- linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org,
- rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
- linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, vincent.guittot@linaro.org, sbw@mit.edu,
- tj@kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1361191939-21260-7-git-send-email-Varun.Sethi@freescale.com>
+References: <1361191939-21260-1-git-send-email-Varun.Sethi@freescale.com>
+ <1361191939-21260-7-git-send-email-Varun.Sethi@freescale.com>
+Date: Fri, 1 Mar 2013 17:27:56 -0600
+Message-ID: <CALRxmdDEccTaS2Houuns44DoQ_8wUbXAMiXQ8w0Ks9R2F2u-Ag@mail.gmail.com>
+Subject: Re: [PATCH 6/6 v8] iommu/fsl: Freescale PAMU driver and IOMMU API
+ implementation.
+From: Stuart Yoder <b08248@gmail.com>
+To: Varun Sethi <Varun.Sethi@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Joerg Roedel <joro@8bytes.org>, Stuart Yoder <stuart.yoder@freescale.com>,
+ linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+ Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,172 +30,515 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 28/02/13 05:19, Srivatsa S. Bhat wrote:
-> On 02/27/2013 06:03 AM, Lai Jiangshan wrote:
->> On Wed, Feb 27, 2013 at 3:30 AM, Srivatsa S. Bhat
->> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
->>> On 02/26/2013 09:55 PM, Lai Jiangshan wrote:
->>>> On Tue, Feb 26, 2013 at 10:22 PM, Srivatsa S. Bhat
->>>> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
->>>>>
->>>>> Hi Lai,
->>>>>
->>>>> I'm really not convinced that piggy-backing on lglocks would help
->>>>> us in any way. But still, let me try to address some of the points
->>>>> you raised...
->>>>>
->>>>> On 02/26/2013 06:29 PM, Lai Jiangshan wrote:
->>>>>> On Tue, Feb 26, 2013 at 5:02 PM, Srivatsa S. Bhat
->>>>>> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
->>>>>>> On 02/26/2013 05:47 AM, Lai Jiangshan wrote:
->>>>>>>> On Tue, Feb 26, 2013 at 3:26 AM, Srivatsa S. Bhat
->>>>>>>> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
->>>>>>>>> Hi Lai,
->>>>>>>>>
->>>>>>>>> On 02/25/2013 09:23 PM, Lai Jiangshan wrote:
->>>>>>>>>> Hi, Srivatsa,
->>>>>>>>>>
->>>>>>>>>> The target of the whole patchset is nice for me.
->>>>>>>>>
->>>>>>>>> Cool! Thanks :-)
->>>>>>>>>
->>>>>>> [...]
->>>>>>>
->>>>>>> Unfortunately, I see quite a few issues with the code above. IIUC, the
->>>>>>> writer and the reader both increment the same counters. So how will the
->>>>>>> unlock() code in the reader path know when to unlock which of the locks?
->>>>>>
->>>>>> The same as your code, the reader(which nested in write C.S.) just dec
->>>>>> the counters.
->>>>>
->>>>> And that works fine in my case because the writer and the reader update
->>>>> _two_ _different_ counters.
->>>>
->>>> I can't find any magic in your code, they are the same counter.
->>>>
->>>>         /*
->>>>          * It is desirable to allow the writer to acquire the percpu-rwlock
->>>>          * for read (if necessary), without deadlocking or getting complaints
->>>>          * from lockdep. To achieve that, just increment the reader_refcnt of
->>>>          * this CPU - that way, any attempt by the writer to acquire the
->>>>          * percpu-rwlock for read, will get treated as a case of nested percpu
->>>>          * reader, which is safe, from a locking perspective.
->>>>          */
->>>>         this_cpu_inc(pcpu_rwlock->rw_state->reader_refcnt);
->>>>
->>>
->>> Whoa! Hold on, were you really referring to _this_ increment when you said
->>> that, in your patch you would increment the refcnt at the writer? Then I guess
->>> there is a major disconnect in our conversations. (I had assumed that you were
->>> referring to the update of writer_signal, and were just trying to have a single
->>> refcnt instead of reader_refcnt and writer_signal).
->>
->> https://github.com/laijs/linux/commit/53e5053d5b724bea7c538b11743d0f420d98f38d
->>
->> Sorry the name "fallback_reader_refcnt" misled you.
->>
-> [...]
-> 
->>>> All I was considered is "nested reader is seldom", so I always
->>>> fallback to rwlock when nested.
->>>> If you like, I can add 6 lines of code, the overhead is
->>>> 1 spin_try_lock()(fast path)  + N  __this_cpu_inc()
->>>>
->>>
->>> I'm assuming that calculation is no longer valid, considering that
->>> we just discussed how the per-cpu refcnt that you were using is quite
->>> unnecessary and can be removed.
->>>
->>> IIUC, the overhead with your code, as per above discussion would be:
->>> 1 spin_try_lock() [non-nested] + N read_lock(global_rwlock).
->>
->> https://github.com/laijs/linux/commit/46334544bb7961550b7065e015da76f6dab21f16
->>
->> Again, I'm so sorry the name "fallback_reader_refcnt" misled you.
->>
-> 
-> At this juncture I really have to admit that I don't understand your
-> intentions at all. What are you really trying to prove? Without giving
-> a single good reason why my code is inferior, why are you even bringing
-> up the discussion about a complete rewrite of the synchronization code?
-> http://article.gmane.org/gmane.linux.kernel.cross-arch/17103
-> http://article.gmane.org/gmane.linux.power-management.general/31345
-> 
-> I'm beginning to add 2 + 2 together based on the kinds of questions you
-> have been asking...
-> 
-> You posted a patch in this thread and started a discussion around it without
-> even establishing a strong reason to do so. Now you point me to your git
-> tree where your patches have even more traces of ideas being borrowed from
-> my patchset (apart from my own ideas/code, there are traces of others' ideas
-> being borrowed too - for example, it was Oleg who originally proposed the
-> idea of splitting up the counter into 2 parts and I'm seeing that it is
-> slowly crawling into your code with no sign of appropriate credits).
-> http://article.gmane.org/gmane.linux.network/260288
-> 
-> And in reply to my mail pointing out the performance implications of the
-> global read_lock at the reader side in your code, you said you'll come up
-> with a comparison between that and my patchset.
-> http://article.gmane.org/gmane.linux.network/260288
-> The issue has been well-documented in my patch description of patch 4.
-> http://article.gmane.org/gmane.linux.kernel/1443258
-> 
-> Are you really trying to pit bits and pieces of my own ideas/versions
-> against one another and claiming them as your own?
-> 
-> You projected the work involved in handling the locking issues pertaining
-> to CPU_DYING notifiers etc as a TODO, despite the fact that I had explicitly
-> noted in my cover letter that I had audited and taken care of all of them.
-> http://article.gmane.org/gmane.linux.documentation/9727
-> http://article.gmane.org/gmane.linux.documentation/9520
-> 
-> You failed to acknowledge (on purpose?) that I had done a tree-wide
-> conversion despite the fact that you were replying to the very thread which
-> had the 46 patches which did exactly that (and I had also mentioned it
-> explicitly in my cover letter).
-> http://article.gmane.org/gmane.linux.documentation/9727
-> http://article.gmane.org/gmane.linux.documentation/9520
-> 
-> You then started probing more and more about the technique I used to do
-> the tree-wide conversion.
-> http://article.gmane.org/gmane.linux.kernel.cross-arch/17111
-> 
-> You also retorted saying you did go through my patch descriptions, so
-> its not like you have missed reading them.
-> http://article.gmane.org/gmane.linux.power-management.general/31345
-> 
-> Each of these when considered individually, might appear like innocuous and
-> honest attempts at evaluating my code. But when put together, I'm beginning
-> to sense a whole different angle to it altogether, as if you are trying
-> to spin your own patch series, complete with the locking framework _and_
-> the tree-wide conversion, heavily borrowed from mine. At the beginning of
-> this discussion, I predicted that the lglock version that you are proposing
-> would end up being either less efficient than my version or look very similar
-> to my version. http://article.gmane.org/gmane.linux.kernel/1447139
-> 
-> I thought it was just the former till now, but its not hard to see how it
-> is getting closer to becoming the latter too. So yeah, I'm not amused.
-> 
-> Maybe (and hopefully) you are just trying out different ideas on your own,
-> and I'm just being paranoid. I really hope that is the case. If you are just
-> trying to review my code, then please stop sending patches with borrowed ideas
-> with your sole Signed-off-by, and purposefully ignoring the work already done
-> in my patchset, because it is really starting to look suspicious, at least
-> to me.
-> 
-> Don't get me wrong - I'll whole-heartedly acknowledge and appreciate if
-> _your_ code is better than mine. I just don't like the idea of somebody
-> plagiarizing my ideas/code (or even others' ideas for that matter).
-> However, I sincerely apologize in advance if I misunderstood/misjudged your
-> intentions; I just wanted to voice my concerns out loud at this point,
-> considering the bad feeling I got by looking at your responses collectively.
-> 
+On Mon, Feb 18, 2013 at 6:52 AM, Varun Sethi <Varun.Sethi@freescale.com> wrote:
+[cut]
+> +static phys_addr_t get_phys_addr(struct fsl_dma_domain *dma_domain, unsigned long iova)
+> +{
+> +       u32 win_cnt = dma_domain->win_cnt;
+> +       struct dma_window *win_ptr =
+> +                               &dma_domain->win_arr[0];
+> +       struct iommu_domain_geometry *geom;
+> +
+> +       geom = &dma_domain->iommu_domain->geometry;
+> +
+> +       if (!win_cnt || !dma_domain->geom_size) {
+> +               pr_err("Number of windows/geometry not configured for the domain\n");
+> +               return 0;
+> +       }
+> +
+> +       if (win_cnt > 1) {
+> +               u64 subwin_size;
+> +               unsigned long subwin_iova;
+> +               u32 wnd;
+> +
+> +               subwin_size = dma_domain->geom_size >> ilog2(win_cnt);
 
-Hi, Srivatsa
+Could it be just geom_size / win_cnt ??
 
-I'm sorry, big apology to you.
-I'm bad in communication and I did be wrong.
-I tended to improve the codes but in false direction.
+> +               subwin_iova = iova & ~(subwin_size - 1);
+> +               wnd = (subwin_iova - geom->aperture_start) >> ilog2(subwin_size);
+> +               win_ptr = &dma_domain->win_arr[wnd];
+> +       }
+> +
+> +       if (win_ptr->valid)
+> +               return (win_ptr->paddr + (iova & (win_ptr->size - 1)));
+> +
+> +       return 0;
+> +}
+> +
+> +static int map_liodn_subwins(int liodn, struct fsl_dma_domain *dma_domain)
 
-Thanks,
-Lai
+Just call it map_subwins().  They are just sub windows, not "liodn sub windows".
+
+[cut]
+
+> +static int map_liodn_win(int liodn, struct fsl_dma_domain *dma_domain)
+
+Call it map_win().
+
+[cut]
+> +static struct fsl_dma_domain *iommu_alloc_dma_domain(void)
+> +{
+> +       struct fsl_dma_domain *domain;
+> +
+> +       domain = kmem_cache_zalloc(fsl_pamu_domain_cache, GFP_KERNEL);
+> +       if (!domain)
+> +               return NULL;
+> +
+> +       domain->stash_id = ~(u32)0;
+> +       domain->snoop_id = ~(u32)0;
+> +       domain->win_cnt = max_subwindow_count;
+
+To align with my previous comments on fsl_pamu.c, I think instead of referencing
+a global variable (in fsl_pamu.c) you should be making an accessor API
+call here to get
+the max subwindow _count.
+
+> +       domain->geom_size = 0;
+> +
+> +       INIT_LIST_HEAD(&domain->devices);
+> +
+> +       spin_lock_init(&domain->domain_lock);
+> +
+> +       return domain;
+> +}
+> +
+> +static inline struct device_domain_info *find_domain(struct device *dev)
+> +{
+> +       return dev->archdata.iommu_domain;
+> +}
+> +
+> +static void remove_domain_ref(struct device_domain_info *info, u32 win_cnt)
+> +{
+> +               list_del(&info->link);
+> +               spin_lock(&iommu_lock);
+> +               if (win_cnt)
+> +                       pamu_free_subwins(info->liodn);
+> +               pamu_disable_liodn(info->liodn);
+> +               spin_unlock(&iommu_lock);
+> +               spin_lock(&device_domain_lock);
+> +               info->dev->archdata.iommu_domain = NULL;
+> +               kmem_cache_free(iommu_devinfo_cache, info);
+> +               spin_unlock(&device_domain_lock);
+> +}
+
+The above function is literally removing the _device_ reference from the domain.
+The name implies that it is removing a "domain reference".   Suggestion is
+to call it "remove_device_ref".
+
+Also, the whitespace is messed up there.  You have 2 tabs instead of 1.
+
+> +static void destroy_domain(struct fsl_dma_domain *dma_domain)
+> +{
+> +       struct device_domain_info *info;
+> +
+> +       /* Dissociate all the devices from this domain */
+> +       while (!list_empty(&dma_domain->devices)) {
+> +               info = list_entry(dma_domain->devices.next,
+> +                       struct device_domain_info, link);
+> +               remove_domain_ref(info, dma_domain->win_cnt);
+> +       }
+> +}
+
+This function is removing all devices from a domain...maybe to be
+consistent with my
+suggestion below on detach_domain(), call this detach_all_devices().
+ We have 2 functions
+doing almost the same thing....one detaches a single device, one
+detaches all devices.
+The current names "destroy_domain" and "detach_domain" are not as clear to me.
+
+> +static void detach_domain(struct device *dev, struct fsl_dma_domain *dma_domain)
+> +{
+> +       struct device_domain_info *info;
+> +       struct list_head *entry, *tmp;
+> +       unsigned long flags;
+> +
+> +       spin_lock_irqsave(&dma_domain->domain_lock, flags);
+> +       /* Remove the device from the domain device list */
+> +       if (!list_empty(&dma_domain->devices)) {
+> +               list_for_each_safe(entry, tmp, &dma_domain->devices) {
+> +                       info = list_entry(entry, struct device_domain_info, link);
+> +                       if (info->dev == dev)
+> +                               remove_domain_ref(info, dma_domain->win_cnt);
+> +               }
+> +       }
+> +       spin_unlock_irqrestore(&dma_domain->domain_lock, flags);
+> +}
+
+This function is not "detaching a domain", but is detaching a device.
+ Call it detach_device().
+
+> +static void attach_domain(struct fsl_dma_domain *dma_domain, int liodn, struct device *dev)
+> +{
+
+Same thing here.   This is not attaching a domain, but attaching a
+device.  Call it attach_device.
+
+> +       struct device_domain_info *info, *old_domain_info;
+> +
+> +       spin_lock(&device_domain_lock);
+> +       /*
+> +        * Check here if the device is already attached to domain or not.
+> +        * If the device is already attached to a domain detach it.
+> +        */
+> +       old_domain_info = find_domain(dev);
+> +       if (old_domain_info && old_domain_info->domain != dma_domain) {
+> +               spin_unlock(&device_domain_lock);
+> +               detach_domain(dev, old_domain_info->domain);
+> +               spin_lock(&device_domain_lock);
+> +       }
+> +
+> +       info = kmem_cache_zalloc(iommu_devinfo_cache, GFP_KERNEL);
+> +
+> +       info->dev = dev;
+> +       info->liodn = liodn;
+> +       info->domain = dma_domain;
+> +
+> +       list_add(&info->link, &dma_domain->devices);
+> +       /*
+> +        * In case of devices with multiple LIODNs just store
+> +        * the info for the first LIODN as all
+> +        * LIODNs share the same domain
+> +        */
+> +       if (!old_domain_info)
+> +               dev->archdata.iommu_domain = info;
+> +       spin_unlock(&device_domain_lock);
+> +
+> +}
+> +
+
+[cut]
+> +/* Configure geometry settings for all LIODNs associated with domain */
+> +static int configure_domain(struct fsl_dma_domain *dma_domain,
+> +                           struct iommu_domain_geometry *geom_attr,
+> +                           u32 win_cnt)
+
+This function is not configuring the iommu domain...which is a concept
+in the Linux driver, it is taking the domain geometry and setting
+up the PAMU tables for all LIODNs currently in the domain.
+
+Maybe it would help if you used a prefix like "pamu" or "paact" to
+identify functions that operate on the actual PAMU tables.
+
+maybe:  pamu_set_domain_geometry()
+
+> +{
+> +       struct device_domain_info *info;
+> +       int ret = 0;
+> +
+> +       if (!list_empty(&dma_domain->devices)) {
+> +               list_for_each_entry(info, &dma_domain->devices, link) {
+> +                       ret = configure_liodn(info->liodn, info->dev, dma_domain,
+> +                                             geom_attr, win_cnt);
+
+...and following the above naming convention, call this (?): pamu_set_liodn
+
+> +                       if (ret)
+> +                               break;
+> +               }
+> +       }
+> +
+> +       return ret;
+> +}
+> +
+
+[cut]
+> +static int fsl_pamu_window_enable(struct iommu_domain *domain, u32 wnd_nr,
+> +                                 phys_addr_t paddr, u64 size, int iommu_prot)
+> +{
+> +       struct fsl_dma_domain *dma_domain = domain->priv;
+> +       struct dma_window *wnd;
+> +       int prot = 0;
+> +       int ret;
+> +       unsigned long flags;
+> +       u64 win_size;
+> +
+> +       if (iommu_prot & IOMMU_READ)
+> +               prot |= PAACE_AP_PERMS_QUERY;
+> +       if (iommu_prot & IOMMU_WRITE)
+> +               prot |= PAACE_AP_PERMS_UPDATE;
+> +
+> +       spin_lock_irqsave(&dma_domain->domain_lock, flags);
+> +       if (!dma_domain->win_arr) {
+> +               pr_err("Number of windows not configured\n");
+> +               spin_unlock_irqrestore(&dma_domain->domain_lock, flags);
+> +               return -ENODEV;
+> +       }
+> +
+> +       if (wnd_nr >= dma_domain->win_cnt) {
+> +               pr_err("Invalid window index\n");
+> +               spin_unlock_irqrestore(&dma_domain->domain_lock, flags);
+> +               return -EINVAL;
+> +       }
+> +
+> +       win_size = dma_domain->geom_size >> ilog2(dma_domain->win_cnt);
+
+Isn't size just geom_size / win_cnt.   Not sure why you do the ilog2()
+and right shift...
+We already validated that  win_cnt is power of 2 when it was set.
+
+> +       if (size > win_size) {
+> +               pr_err("Invalid window size \n");
+> +               spin_unlock_irqrestore(&dma_domain->domain_lock, flags);
+> +               return -EINVAL;
+> +       }
+> +
+> +       if (dma_domain->win_cnt == 1) {
+> +               if (dma_domain->enabled) {
+> +                       pr_err("Disable the window before updating the mapping\n");
+> +                       spin_unlock_irqrestore(&dma_domain->domain_lock, flags);
+> +                       return -EBUSY;
+> +               }
+> +
+> +               ret = check_size(size, domain->geometry.aperture_start);
+> +               if (ret) {
+> +                       pr_err("Aperture start not aligned to the size\n");
+> +                       spin_unlock_irqrestore(&dma_domain->domain_lock, flags);
+> +                       return -EINVAL;
+> +               }
+> +       }
+
+Why is win_cnt==1 a special case?    Would the geometry not have been verified
+when it was originally set up?
+
+Also, do you need a check here to verify if the geometry has been set.  Is it a
+requirement to set the geometry prior to window enable?
+
+> +       wnd = &dma_domain->win_arr[wnd_nr];
+> +       if (!wnd->valid) {
+> +               wnd->paddr = paddr;
+> +               wnd->size = size;
+> +               wnd->prot = prot;
+> +
+> +               ret = update_domain_mapping(dma_domain, wnd_nr);
+> +               if (!ret) {
+> +                       wnd->valid = 1;
+> +                       dma_domain->mapped++;
+> +               }
+> +       } else {
+> +               pr_err("Disable the window before updating the mapping\n");
+> +               ret = -EBUSY;
+> +       }
+> +
+> +       spin_unlock_irqrestore(&dma_domain->domain_lock, flags);
+> +
+> +       return ret;
+> +}
+> +
+> +/*
+
+[cut]
+> +static int fsl_pamu_attach_device(struct iommu_domain *domain,
+> +                                 struct device *dev)
+> +{
+> +       struct fsl_dma_domain *dma_domain = domain->priv;
+> +       const u32 *prop;
+> +       u32 prop_cnt;
+> +       int len, ret = 0;
+> +       struct pci_dev *pdev = NULL;
+> +       struct pci_controller *pci_ctl;
+> +
+> +       /*
+> +        * Hack to make attach device work for the PCI devices. Simply assign the
+> +        * the LIODN for the PCI controller to the PCI device.
+> +        */
+
+Instead of "Simply assign...", perhaps say instead:  Use the LIODN for the
+PCI controller when attaching a PCI device.
+
+> +       if (dev->bus == &pci_bus_type) {
+> +               pdev = to_pci_dev(dev);
+> +               pci_ctl = pci_bus_to_host(pdev->bus);
+> +               /*
+> +                * make dev point to pci controller device
+> +                * so we can get the LIODN programmed by
+> +                * u-boot;
+> +                */
+> +               dev = pci_ctl->parent;
+> +       }
+> +
+> +       prop = of_get_property(dev->of_node, "fsl,liodn", &len);
+
+suggestion: name "prop" to be "liodn" and "prop_cnt" to be "liodn_cnt".  That
+will be more clear.
+
+> +       if (prop) {
+> +               prop_cnt = len / sizeof(u32);
+> +               ret = handle_attach_device(dma_domain, dev,
+> +                                        prop, prop_cnt);
+> +       } else {
+> +               pr_err("missing fsl,liodn property at %s\n",
+> +                         dev->of_node->full_name);
+> +                       ret = -EINVAL;
+> +       }
+> +
+> +       return ret;
+> +}
+> +
+> +static void fsl_pamu_detach_device(struct iommu_domain *domain,
+> +                                     struct device *dev)
+> +{
+> +       struct fsl_dma_domain *dma_domain = domain->priv;
+> +       const u32 *prop;
+> +       int len;
+> +       struct pci_dev *pdev = NULL;
+> +       struct pci_controller *pci_ctl;
+> +
+> +       /*
+> +        * Hack to make detach device work for the PCI devices. Simply assign the
+> +        * the LIODN for the PCI controller to the PCI device.
+> +        */
+> +       if (dev->bus == &pci_bus_type) {
+> +               pdev = to_pci_dev(dev);
+> +               pci_ctl = pci_bus_to_host(pdev->bus);
+> +               /*
+> +                * make dev point to pci controller device
+> +                * so we can get the LIODN programmed by
+> +                * u-boot;
+> +                */
+> +               dev = pci_ctl->parent;
+> +       }
+> +
+> +       prop = of_get_property(dev->of_node, "fsl,liodn", &len);
+> +       if (prop)
+> +               detach_domain(dev, dma_domain);
+> +       else
+> +               pr_err("missing fsl,liodn property at %s\n",
+> +                         dev->of_node->full_name);
+> +}
+
+I understand why you need the LIODN when attaching, but why do you get it
+in the detatch function.   You are not using "prop" here.
+
+[cut]
+> +static  bool check_pci_ctl_endpt_part(struct pci_controller *pci_ctl)
+> +{
+> +       u32 version;
+> +
+> +       /* Check the PCI controller version number by readding BRR1 register */
+> +       version = in_be32(pci_ctl->cfg_addr + (PCI_FSL_BRR1 >> 2));
+> +       version &= PCI_FSL_BRR1_VER;
+> +       /* If PCI controller version is >= 0x204 we can partition endpoints*/
+> +       if (version >= 0x204)
+> +               return 1;
+> +
+> +       return 0;
+> +}
+
+Can we just use the compatible string here to identify the different
+kinds of PCI
+controllers?   Reading the actual device registers is ugly right now because
+you are #defining the BRR1 stuff in a generic powerpc header.
+
+> +static int fsl_pamu_add_device(struct device *dev)
+> +{
+> +       struct iommu_group *group = NULL;
+> +       struct pci_dev *pdev;
+> +       struct pci_dev *bridge, *dma_pdev = NULL;
+> +       struct pci_controller *pci_ctl;
+> +       int ret;
+> +
+> +       /*
+> +        * For platform devices we allocate a separate group for
+> +        * each of the devices.
+> +        */
+> +       if (dev->bus == &pci_bus_type) {
+> +               bool pci_endpt_part;
+
+That variable name is not clear, the abbreviations are not natural.  I
+would just
+call it pci_endpoint_partitioning.
+
+> +               pdev = to_pci_dev(dev);
+> +               /* Don't create device groups for virtual PCI bridges */
+> +               if (pdev->subordinate)
+> +                       return 0;
+> +
+> +               pci_ctl = pci_bus_to_host(pdev->bus);
+> +               pci_endpt_part = check_pci_ctl_endpt_part(pci_ctl);
+> +               /* We can partition PCIe devices so assign device group to the device */
+> +               if (pci_endpt_part) {
+> +                       bridge = pci_find_upstream_pcie_bridge(pdev);
+> +                       if (bridge) {
+> +                               if (pci_is_pcie(bridge))
+> +                                       dma_pdev = pci_get_domain_bus_and_slot(
+> +                                                               pci_domain_nr(pdev->bus),
+> +                                                               bridge->subordinate->number, 0);
+> +                               if (!dma_pdev)
+> +                                       dma_pdev = pci_dev_get(bridge);
+> +                       } else
+> +                               dma_pdev = pci_dev_get(pdev);
+> +                       /* Account for quirked devices */
+> +                       swap_pci_ref(&dma_pdev, pci_get_dma_source(dma_pdev));
+> +                       group = get_device_iommu_group(&pdev->dev);
+> +                       pci_dev_put(pdev);
+> +                       /*
+> +                        * PCIe controller is not a paritionable entity
+> +                        * free the controller device iommu_group.
+> +                        */
+> +                       if (pci_ctl->parent->iommu_group)
+> +                               iommu_group_remove_device(pci_ctl->parent);
+> +               } else {
+> +                       /*
+> +                        * All devices connected to the controller will share the
+> +                        * PCI controllers device group. If this is the first
+> +                        * device to be probed for the pci controller, copy the
+> +                        * device group information from the PCI controller device
+> +                        * node and remove the PCI controller iommu group.
+> +                        * For subsequent devices, the iommu group information can
+> +                        * be obtained from sibling devices (i.e. from the bus_devices
+> +                        * link list).
+> +                        */
+> +                       if (pci_ctl->parent->iommu_group) {
+> +                               group = get_device_iommu_group(pci_ctl->parent);
+> +                               iommu_group_remove_device(pci_ctl->parent);
+> +                       } else {
+> +                               /* check if this is the first device on the bus*/
+> +                               if (pdev->bus_list.next == pdev->bus_list.prev) {
+> +                                       struct pci_bus *bus = pdev->bus->parent;
+> +                                       int found = 0;
+> +                                       /* Traverese the parent bus list to get
+> +                                        * pdev & dev for the sibling device.
+> +                                        */
+> +                                       while (bus) {
+> +                                               if (!list_empty(&bus->devices)) {
+> +                                                       pdev = container_of(bus->devices.next,
+> +                                                                struct pci_dev, bus_list);
+> +                                                       group = iommu_group_get(&pdev->dev);
+> +                                                       /*
+> +                                                        * All devices should be associated with
+> +                                                        * a group.
+> +                                                        */
+> +                                                       if (group)
+> +                                                               found = 1;
+> +                                                       break;
+> +                                               } else
+> +                                                       bus = bus->parent;
+> +                                       }
+> +                                       if (!found)
+> +                                               dev_err(&pdev->dev, "Failed to allocate group for the device\n");
+> +                               } else {
+> +                                       /*
+> +                                        * Get the pdev & dev for the sibling device
+> +                                        */
+> +                                       pdev = container_of(pdev->bus_list.prev, struct pci_dev, bus_list);
+> +                                       group = iommu_group_get(&pdev->dev);
+> +                               }
+> +                       }
+> +               }
+> +       } else
+> +               group = get_device_iommu_group(dev);
+> +
+> +       if (IS_ERR(group))
+> +               return PTR_ERR(group);
+> +
+> +       ret = iommu_group_add_device(group, dev);
+> +
+> +       iommu_group_put(group);
+> +       return ret;
+> +}
+> +
+
+Regards,
+Stuart
