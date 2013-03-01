@@ -1,34 +1,32 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2EABB2C0309
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Mar 2013 07:01:35 +1100 (EST)
+ (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 102132C0308
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Mar 2013 07:09:07 +1100 (EST)
 Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Sat, 2 Mar 2013 01:29:29 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id C8F83E0050
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Mar 2013 01:32:37 +0530 (IST)
+ Sat, 2 Mar 2013 01:36:49 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 191953940055
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Mar 2013 01:39:01 +0530 (IST)
 Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r21K1OKZ35455158
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 2 Mar 2013 01:31:25 +0530
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r21K8wQl9437396
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 2 Mar 2013 01:38:58 +0530
 Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
  by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r21K1RUw026973
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 2 Mar 2013 07:01:29 +1100
-Message-ID: <51310899.1090308@linux.vnet.ibm.com>
-Date: Sat, 02 Mar 2013 01:29:21 +0530
+ r21K8x57017733
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 2 Mar 2013 07:09:01 +1100
+Message-ID: <51310A5F.1070001@linux.vnet.ibm.com>
+Date: Sat, 02 Mar 2013 01:36:55 +0530
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH v6 04/46] percpu_rwlock: Implement the core design of
- Per-CPU Reader-Writer Locks
-References: <CACvQF53bdh4_BxF0y1fnTVR+T2OmRc0jmWQYftsvx92-fg-Lug@mail.gmail.com>
- <512BBAD8.8010006@linux.vnet.ibm.com>
+Subject: Re: [PATCH] lglock: add read-preference local-global rwlock
+References: <512BBAD8.8010006@linux.vnet.ibm.com>
  <CACvQF51jCxk5jUqmhD=QBBtUsBkQWZzakacrKO4Gsk=w61rNwQ@mail.gmail.com>
  <512C7A38.8060906@linux.vnet.ibm.com>
  <CACvQF51RvhM8XNqu3-1OTQ=cZUZ=pAX+_zx0a29+W67N1X+BgQ@mail.gmail.com>
@@ -36,8 +34,9 @@ References: <CACvQF53bdh4_BxF0y1fnTVR+T2OmRc0jmWQYftsvx92-fg-Lug@mail.gmail.com>
  <CACvQF50UgiqPpDk3HCmV86zKSf6tPjqr0bZowfPEOJs0g0r0MQ@mail.gmail.com>
  <512D0D67.9010609@linux.vnet.ibm.com>
  <CACvQF53ph2ixdM-otzetjM5cR+2kcZj6sckOp3TnzzA_x-EZ8w@mail.gmail.com>
- <512E7879.20109@linux.vnet.ibm.com> <20130301181054.GD2481@mtj.dyndns.org>
-In-Reply-To: <20130301181054.GD2481@mtj.dyndns.org>
+ <512E7879.20109@linux.vnet.ibm.com> <5130E8E2.50206@cn.fujitsu.com>
+ <20130301175349.GC2481@mtj.dyndns.org>
+In-Reply-To: <20130301175349.GC2481@mtj.dyndns.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: Lai Jiangshan <eag0628@gmail.com>, linux-doc@vger.kernel.org,
  peterz@infradead.org, fweisbec@gmail.com, oleg@redhat.com,
@@ -47,9 +46,10 @@ Cc: Lai Jiangshan <eag0628@gmail.com>, linux-doc@vger.kernel.org,
  paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
  linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org,
  rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
- linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, vincent.guittot@linaro.org, sbw@mit.edu,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+ linux-arm-kernel@lists.infradead.org, Lai Jiangshan <laijs@cn.fujitsu.com>,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ vincent.guittot@linaro.org, sbw@mit.edu, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -59,46 +59,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Tejun,
+On 03/01/2013 11:23 PM, Tejun Heo wrote:
+> Hey, guys and Oleg (yes, I'm singling you out ;p because you're that
+> awesome.)
+> 
+> On Sat, Mar 02, 2013 at 01:44:02AM +0800, Lai Jiangshan wrote:
+>> Performance:
+>> We only focus on the performance of the read site. this read site's fast path
+>> is just preempt_disable() + __this_cpu_read/inc() + arch_spin_trylock(),
+>> It has only one heavy memory operation. it will be expected fast.
+>>
+>> We test three locks.
+>> 1) traditional rwlock WITHOUT remote competition nor cache-bouncing.(opt-rwlock)
+>> 2) this lock(lgrwlock)
+>> 3) V6 percpu-rwlock by "Srivatsa S. Bhat". (percpu-rwlock)
+>>    (https://lkml.org/lkml/2013/2/18/186)
+>>
+>> 		nested=1(no nested)	nested=2	nested=4
+>> opt-rwlock	 517181			1009200		2010027
+>> lgrwlock	 452897			 700026		1201415
+>> percpu-rwlock	1192955			1451343		1951757
+> 
+> On the first glance, the numbers look pretty good and I kinda really
+> like the fact that if this works out we don't have to introduce yet
+> another percpu synchronization construct and get to reuse lglock.
+> 
+> So, Oleg, can you please see whether you can find holes in this one?
+> 
+> Srivatsa, I know you spent a lot of time on percpu_rwlock but as you
+> wrote before Lai's work can be seen as continuation of yours, and if
+> we get to extend what's already there instead of introducing something
+> completely new, there's no reason not to
 
-On 03/01/2013 11:40 PM, Tejun Heo wrote:
-> Hello, Srivatsa.
-> 
-> On Thu, Feb 28, 2013 at 02:49:53AM +0530, Srivatsa S. Bhat wrote:
->> Don't get me wrong - I'll whole-heartedly acknowledge and appreciate if
->> _your_ code is better than mine. I just don't like the idea of somebody
->> plagiarizing my ideas/code (or even others' ideas for that matter).
->> However, I sincerely apologize in advance if I misunderstood/misjudged your
->> intentions; I just wanted to voice my concerns out loud at this point,
->> considering the bad feeling I got by looking at your responses collectively.
-> 
-> Although I don't know Lai personally, from my experience working with
-> him past several months on workqueue, I strongly doubt he has dark
-> urterior intenions.  The biggest problem probably is that his
-> communication in English isn't very fluent yet and thus doesn't carry
-> the underlying intentions or tones very well and he tends to bombard
-> patches in quick succession without much explanation inbetween (during
-> 3.8 cycle, I was receiving several workqueue patchsets days apart
-> trying to solve the same problem with completely different approaches
-> way before the discussion on the previous postings reach any kind of
-> consensus).  A lot of that also probably comes from communication
-> problems.
-> 
-> Anyways, I really don't think he's trying to take claim of your work.
-> At least for now, you kinda need to speculate what he's trying to do
-> and then confirm that back to him, but once you get used to that part,
-> he's pretty nice to work with and I'm sure his communication will
-> improve in time (I think it has gotten a lot better than only some
-> months ago).
+Yep, I agree!
+
+> (and my apologies for not
+> noticing the possibility of extending lglock before).
+
+No problem at all! You gave so many invaluable suggestions to make this
+whole thing work in the first place! Now, if we can reuse the existing
+stuff and extend it to what we want, then its just even better! :-)
+
+>  So, if this can
+> work, it would be awesome if you guys can work together.
+
+Absolutely!
+
+>  Lai might
+> not be very good at communicating in english yet but he's really good
+> at spotting patterns in complex code and playing with them.
 >
 
-Thank you so much for helping clear the air, Tejun! I'm truly sorry again
-for having drawn the wrong conclusions based on gaps in our communication.
-It was a mistake on my part and I would like to request Lai to kindly
-forgive me. I'm looking forward to working with Lai effectively, going
-forward.
+That sounds great! :-)
 
-Thank you!
+I'll soon take a closer look at his code and the comparisons he posted,
+and work towards taking this effort forward.
+
+Thank you very much!
 
 Regards,
 Srivatsa S. Bhat
