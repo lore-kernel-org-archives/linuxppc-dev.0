@@ -1,23 +1,35 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id EC22A2C030B
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Mar 2013 03:22:29 +1100 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Phileas Fogg <phileas-fogg@mail.ru>
-Subject: Re: Linux kernel 3.x problems on PowerMac G5
-References: <51320F53.9040000@mail.ru>
- <20130302141352.GG22941@blackmetal.musicnaut.iki.fi>
- <5132198C.8050300__15885.293405927$1362234296$gmane$org@mail.ru>
-Date: Sat, 02 Mar 2013 17:22:21 +0100
-In-Reply-To: <5132198C.8050300__15885.293405927$1362234296$gmane$org@mail.ru>
- (Phileas Fogg's message of "Sat, 02 Mar 2013 16:23:56 +0100")
-Message-ID: <m2txotzs8y.fsf@igel.home>
+Return-Path: <oleg@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id ABA972C02F6
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Mar 2013 04:03:57 +1100 (EST)
+Date: Sat, 2 Mar 2013 18:01:45 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Subject: Re: [PATCH] lglock: add read-preference local-global rwlock
+Message-ID: <20130302170145.GA29769@redhat.com>
+References: <512C7A38.8060906@linux.vnet.ibm.com>
+ <CACvQF51RvhM8XNqu3-1OTQ=cZUZ=pAX+_zx0a29+W67N1X+BgQ@mail.gmail.com>
+ <512CC509.1050000@linux.vnet.ibm.com>
+ <CACvQF50UgiqPpDk3HCmV86zKSf6tPjqr0bZowfPEOJs0g0r0MQ@mail.gmail.com>
+ <512D0D67.9010609@linux.vnet.ibm.com>
+ <CACvQF53ph2ixdM-otzetjM5cR+2kcZj6sckOp3TnzzA_x-EZ8w@mail.gmail.com>
+ <512E7879.20109@linux.vnet.ibm.com> <5130E8E2.50206@cn.fujitsu.com>
+ <20130301182854.GA3631@redhat.com> <513201B7.5070004@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Aaro Koskinen <aaro.koskinen@iki.fi>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <513201B7.5070004@cn.fujitsu.com>
+Cc: Lai Jiangshan <eag0628@gmail.com>, linux-doc@vger.kernel.org,
+ peterz@infradead.org, fweisbec@gmail.com,
+ Michel Lespinasse <walken@google.com>, mingo@kernel.org,
+ linux-arch@vger.kernel.org, linux@arm.linux.org.uk,
+ xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
+ paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
+ linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org,
+ rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
+ linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, vincent.guittot@linaro.org, sbw@mit.edu,
+ "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, tj@kernel.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,29 +39,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Phileas Fogg <phileas-fogg@mail.ru> writes:
-
-> Aaro Koskinen wrote:
->> Hi,
->>
->> On Sat, Mar 02, 2013 at 03:40:19PM +0100, Phileas Fogg wrote:
->>> Have anyone tested Linux 3 kernels on PowerMac G5 recently ?
->>
->> 3.8 boots normally to shell and is stable on G5 iMac (PowerMac8,1).
->>
->> A.
->>
+On 03/02, Lai Jiangshan wrote:
 >
-> Thanks. Then i configured something wrongly probably.
-> I tried Linux 2.6.39.4 and it boots too.
-> I looked around on the Internet and it seems i'm not the only one
-> who has problems with Linux 3.x on my PowerMac G5.
+> On 02/03/13 02:28, Oleg Nesterov wrote:
+> > Lai, I didn't read this discussion except the code posted by Michel.
+> > I'll try to read this patch carefully later, but I'd like to ask
+> > a couple of questions.
+> >
+> > This version looks more complex than Michel's, why? Just curious, I
+> > am trying to understand what I missed. See
+> > http://marc.info/?l=linux-kernel&m=136196350213593
+>
+> Michel changed my old draft version a little, his version is good enough for me.
 
-I have no problem with 3.8 either, but mine is a PowerMac7,3.
+Yes, I see. But imho Michel suggested the valuable cleanup, the code
+becomes even more simple with the same perfomance.
 
-Andreas.
+Your v2 looks almost correct to me, but I still think it makes sense
+to incorporate the simplification from Michel.
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+> My new version tries to add a little better nestable support with only
+> adding single __this_cpu_op() in _read_[un]lock().
+
+How? Afaics with or without FALLBACK_BASE you need _reed + _inc/dec in
+_read_lock/unlock.
+
+Oleg.
