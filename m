@@ -1,18 +1,24 @@
-Return-Path: <akinobu.mita@gmail.com>
-Received: from mail-pa0-f45.google.com (mail-pa0-f45.google.com
- [209.85.220.45])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A55EA2C02F3
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Mar 2013 01:06:49 +1100 (EST)
-Received: by mail-pa0-f45.google.com with SMTP id kl14so2342048pab.32
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 02 Mar 2013 06:06:47 -0800 (PST)
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: remove unused BITOP_LE_SWIZZLE macro
-Date: Sat,  2 Mar 2013 23:06:30 +0900
-Message-Id: <1362233190-4362-1-git-send-email-akinobu.mita@gmail.com>
-Cc: Paul Mackerras <paulus@samba.org>, Akinobu Mita <akinobu.mita@gmail.com>
+Return-Path: <aaro.koskinen@iki.fi>
+Received: from filtteri2.pp.htv.fi (filtteri2.pp.htv.fi [213.243.153.185])
+ by ozlabs.org (Postfix) with ESMTP id DDF2F2C02EA
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Mar 2013 01:14:06 +1100 (EST)
+Received: from localhost (localhost [127.0.0.1])
+ by filtteri2.pp.htv.fi (Postfix) with ESMTP id 4A1E619B9E6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Mar 2013 16:14:00 +0200 (EET)
+Received: from smtp6.welho.com ([213.243.153.40])
+ by localhost (filtteri2.pp.htv.fi [213.243.153.185]) (amavisd-new, port 10024)
+ with ESMTP id PjDSup7aORCA for <linuxppc-dev@lists.ozlabs.org>;
+ Sat,  2 Mar 2013 16:13:59 +0200 (EET)
+Date: Sat, 2 Mar 2013 16:13:52 +0200
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
+To: Phileas Fogg <phileas-fogg@mail.ru>
+Subject: Re: Linux kernel 3.x problems on PowerMac G5
+Message-ID: <20130302141352.GG22941@blackmetal.musicnaut.iki.fi>
+References: <51320F53.9040000@mail.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <51320F53.9040000@mail.ru>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,30 +28,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The BITOP_LE_SWIZZLE macro was used in the little-endian bitops functions
-for powerpc.  But these functions were converted to generic bitops and
-the BITOP_LE_SWIZZLE is not used anymore.
+Hi,
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
----
- arch/powerpc/include/asm/bitops.h | 2 --
- 1 file changed, 2 deletions(-)
+On Sat, Mar 02, 2013 at 03:40:19PM +0100, Phileas Fogg wrote:
+> Have anyone tested Linux 3 kernels on PowerMac G5 recently ?
 
-diff --git a/arch/powerpc/include/asm/bitops.h b/arch/powerpc/include/asm/bitops.h
-index ef918a2..08bd299 100644
---- a/arch/powerpc/include/asm/bitops.h
-+++ b/arch/powerpc/include/asm/bitops.h
-@@ -52,8 +52,6 @@
- #define smp_mb__before_clear_bit()	smp_mb()
- #define smp_mb__after_clear_bit()	smp_mb()
- 
--#define BITOP_LE_SWIZZLE	((BITS_PER_LONG-1) & ~0x7)
--
- /* Macro for generating the ***_bits() functions */
- #define DEFINE_BITOP(fn, op, prefix, postfix)	\
- static __inline__ void fn(unsigned long mask,	\
--- 
-1.8.1.2
+3.8 boots normally to shell and is stable on G5 iMac (PowerMac8,1).
+
+A.
