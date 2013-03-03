@@ -1,35 +1,26 @@
-Return-Path: <oleg@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 582002C030B
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Mar 2013 04:43:21 +1100 (EST)
-Date: Sun, 3 Mar 2013 18:40:56 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Subject: Re: [PATCH V2] lglock: add read-preference local-global rwlock
-Message-ID: <20130303174056.GA30176@redhat.com>
-References: <512CC509.1050000@linux.vnet.ibm.com>
- <CACvQF50UgiqPpDk3HCmV86zKSf6tPjqr0bZowfPEOJs0g0r0MQ@mail.gmail.com>
- <512D0D67.9010609@linux.vnet.ibm.com>
- <CACvQF53ph2ixdM-otzetjM5cR+2kcZj6sckOp3TnzzA_x-EZ8w@mail.gmail.com>
- <512E7879.20109@linux.vnet.ibm.com> <5130E8E2.50206@cn.fujitsu.com>
- <20130301182854.GA3631@redhat.com>
- <CANN689HEW=b5S93J27p+rBX-5m7jkW4FER=eHDCp7OgMaTWLPw@mail.gmail.com>
- <5131FB4C.7070408@cn.fujitsu.com> <20130302172003.GC29769@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130302172003.GC29769@redhat.com>
-Cc: Lai Jiangshan <eag0628@gmail.com>, linux-doc@vger.kernel.org,
- peterz@infradead.org, fweisbec@gmail.com,
- Michel Lespinasse <walken@google.com>, mingo@kernel.org,
- linux-arch@vger.kernel.org, linux@arm.linux.org.uk,
- xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
- paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
- linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org,
- rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
- linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, vincent.guittot@linaro.org, sbw@mit.edu,
- "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, tj@kernel.org,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 017022C0303
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Mar 2013 06:04:16 +1100 (EST)
+Message-ID: <1362337429.2969.17.camel@pasglop>
+Subject: Re: Linux kernel 3.x problems on PowerMac G5
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Phileas Fogg <phileas-fogg@mail.ru>
+Date: Mon, 04 Mar 2013 06:03:49 +1100
+In-Reply-To: <51333F1C.4080605@mail.ru>
+References: <51320F53.9040000@mail.ru>
+ <20130302141352.GG22941@blackmetal.musicnaut.iki.fi>
+ <5132198C.8050300__15885.293405927$1362234296$gmane$org@mail.ru>
+ <m2txotzs8y.fsf@igel.home> <1362288663.2969.15.camel@pasglop>
+ <CAHj3AVni2t1-Hrn-jAKjsqo=0oFkVjkQ0KApNQk52buNTruDqQ@mail.gmail.com>
+ <1362303524.2969.16.camel@pasglop> <51333F1C.4080605@mail.ru>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Andreas Schwab <schwab@linux-m68k.org>, Denis Kirjanov <kirjanov@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Aaro Koskinen <aaro.koskinen@iki.fi>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,50 +30,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/02, Oleg Nesterov wrote:
->
-> On 03/02, Lai Jiangshan wrote:
-> >
-> > +void lg_rwlock_local_read_unlock(struct lgrwlock *lgrw)
-> > +{
-> > +	switch (__this_cpu_read(*lgrw->reader_refcnt)) {
-> > +	case 1:
-> > +		__this_cpu_write(*lgrw->reader_refcnt, 0);
-> > +		lg_local_unlock(&lgrw->lglock);
-> > +		return;
-> > +	case FALLBACK_BASE:
-> > +		__this_cpu_write(*lgrw->reader_refcnt, 0);
-> > +		read_unlock(&lgrw->fallback_rwlock);
-> > +		rwlock_release(&lg->lock_dep_map, 1, _RET_IP_);
->
-> I guess "case 1:" should do rwlock_release() too.
->
-> Otherwise, at first glance looks correct...
->
-> However, I still think that FALLBACK_BASE only adds the unnecessary
-> complications. But even if I am right this is subjective of course, please
-> feel free to ignore.
+On Sun, 2013-03-03 at 05:16 -0700, Phileas Fogg wrote:
+> i'm testing currently with slightly modified g5_defconfig. I enabled
+> the Ralink driver for my USB WLAN NIC and some other stuff, nothing 
+> fancy. Anyways, i'm sending you config for 3.0.67. Linux 3.0.67 hangs on 
+> my machine too.
+> 
+> I cloned your GIT powerpc repository and at the moment bisecting and
+> trying to find the commit which causes trouble on my machine.
+> 
+> I have already found out that
+> the commit 27d934b28752b860cba6c0d77ea4598861d80998 is OK
+> but
+> the commit 0bd41dfc9fbbcf174d5336c1c9fc5ba917519761 is NOT.
+> The problem appeared between Linux 2.6.39 and Linux-3.0-rc1.
+> 
+> Just my typical luck with PowerPC :) First PS3 and now G5.
+> 
+> I will report back as soon as i find the commit which causes the hangs.
 
-Yes, but...
+Thanks. It looks like a bisection might indeed be the way to go... 
 
-> And btw, I am not sure about lg->lock_dep_map, perhaps we should use
-> fallback_rwlock->dep_map ?
->
-> We need rwlock_acquire_read() even in the fast-path, and this acquire_read
-> should be paired with rwlock_acquire() in _write_lock(), but it does
-> spin_acquire(lg->lock_dep_map). Yes, currently this is the same (afaics)
-> but perhaps fallback_rwlock->dep_map would be more clean.
+Out of curiosity, have you tried without some of your additional drivers ?
+Maybe one of them is the culprit...
 
-Please ignore this part.
-
-I missed that lg_rwlock_global_write_lock() relies on lg_global_lock(),
-and I just noticed that it does rwlock_acquire(lg->lock_dep_map).
-
-Hmm. But then I do not understand the lglock annotations. Obviously,
-rwlock_acquire_read() in lg_local_lock() can't even detect the simplest
-deadlock, say, lg_local_lock(LOCK) + lg_local_lock(LOCK). Not to mention
-spin_lock(X) + lg_local_lock(Y) vs lg_local_lock(Y) + spin_lock(X).
-
-OK, I understand that it is not easy to make these annotations correct...
-
-Oleg.
+Cheers,
+Ben.
