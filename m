@@ -2,18 +2,23 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 222662C02FC
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Mar 2013 16:29:17 +1100 (EST)
-Message-ID: <1362288548.2969.13.camel@pasglop>
+ by ozlabs.org (Postfix) with ESMTPS id 434952C02FC
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Mar 2013 16:31:22 +1100 (EST)
+Message-ID: <1362288663.2969.15.camel@pasglop>
 Subject: Re: Linux kernel 3.x problems on PowerMac G5
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Phileas Fogg <phileas-fogg@mail.ru>
-Date: Sun, 03 Mar 2013 16:29:08 +1100
-In-Reply-To: <51320F53.9040000@mail.ru>
+To: Andreas Schwab <schwab@linux-m68k.org>
+Date: Sun, 03 Mar 2013 16:31:03 +1100
+In-Reply-To: <m2txotzs8y.fsf@igel.home>
 References: <51320F53.9040000@mail.ru>
+ <20130302141352.GG22941@blackmetal.musicnaut.iki.fi>
+ <5132198C.8050300__15885.293405927$1362234296$gmane$org@mail.ru>
+ <m2txotzs8y.fsf@igel.home>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Phileas Fogg <phileas-fogg@mail.ru>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Aaro Koskinen <aaro.koskinen@iki.fi>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,32 +28,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2013-03-02 at 15:40 +0100, Phileas Fogg wrote:
-> recently i got a PowerMac G5 and installed Debian Linux 2.6.32 on it.
-> Everything works so far and Debian boots properly.
+On Sat, 2013-03-02 at 17:22 +0100, Andreas Schwab wrote:
+> > Thanks. Then i configured something wrongly probably.
+> > I tried Linux 2.6.39.4 and it boots too.
+> > I looked around on the Internet and it seems i'm not the only one
+> > who has problems with Linux 3.x on my PowerMac G5.
 > 
-> Today i tried to boot Linux 3 on the machine and it doesn't boot.
-> The Linux 3 kernel was cross-compiled by me.
-> 
-> On Linux 3.8.1 it hangs after this line:
-> ---
-> windfarm: Drive bay control loop started.
-> 
-> And then i'm getting RCU stall call traces.
-> 
-> On Linux 3.2 it hangs too but not at the same place.
-> It hangs after some SCSI message.
-> 
-> Have anyone tested Linux 3 kernels on PowerMac G5 recently ?
+> I have no problem with 3.8 either, but mine is a PowerMac7,3.
 
-Hrm, this is odd. I do run pretty much every release on my G5's without
-problems... Can you send me your .config and then try with a
-g5_defconfig just to see if it makes a difference ?
+Ok. I have a quad core G5 which is also a 11,2, it's even my primary
+workstation in the office :-) So it tends to work fine but I admit I
+haven't updated the kernel on it in a while.
 
-There *might* have been a problem on those older machines vs. the 64T
-address space patches, so maybe try back 3.6 and 3.7 and let me know,
-I'm still trying to get the right fix in (I know it breaks PS/3 under
-some circumstances).
+Phileas, send me the .config you're using, there might be an issue
+there, I'll do some tests next week.
 
 Cheers,
 Ben.
