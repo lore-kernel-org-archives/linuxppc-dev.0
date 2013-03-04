@@ -1,37 +1,15 @@
-Return-Path: <qiudayu@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 351392C02F9
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Mar 2013 14:15:04 +1100 (EST)
-Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <qiudayu@linux.vnet.ibm.com>;
- Mon, 4 Mar 2013 13:08:40 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id DC4923578053
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Mar 2013 14:14:56 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r2432DRj56229892
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Mar 2013 14:02:14 +1100
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r243EtGG012152
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Mar 2013 14:14:56 +1100
-Message-ID: <513411AD.5010408@linux.vnet.ibm.com>
-Date: Mon, 04 Mar 2013 11:14:53 +0800
-From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+Return-Path: <paulus@ozlabs.org>
+Date: Mon, 4 Mar 2013 15:58:53 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH -V1 06/24] powerpc: Reduce PTE table memory wastage
+Message-ID: <20130304045853.GB27523@drongo>
+References: <1361865914-13911-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1361865914-13911-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 0/3] Enable multiple MSI feature in pSeries
-References: <1358235536-32741-1-git-send-email-qiudayu@linux.vnet.ibm.com>
- <1362107325.2712.2.camel@localhost> <20130301035417.GA17236@concordia>
-In-Reply-To: <20130301035417.GA17236@concordia>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1361865914-13911-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,25 +19,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-于 2013/3/1 11:54, Michael Ellerman 写道:
-> On Fri, Mar 01, 2013 at 11:08:45AM +0800, Mike wrote:
->> Hi all
->>
->> Any comments? or any questions about my patchset?
-> You were going to get some performance numbers that show a definite
-> benefit for using more than one MSI.
-Yes, but my patch just enable the kernel to support this feature, whether
-to use it depens on the device driver.
+On Tue, Feb 26, 2013 at 01:34:56PM +0530, Aneesh Kumar K.V wrote:
+> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+> 
+> We allocate one page for the last level of linux page table. With THP and
+> large page size of 16MB, that would mean we are be wasting large part
+> of that page. To map 16MB area, we only need a PTE space of 2K with 64K
+> page size. This patch reduce the space wastage by sharing the page
+> allocated for the last level of linux page table with multiple pmd
+> entries. We call these smaller chunks PTE page fragments and allocated
+> page, PTE page. We use the page->_mapcount as bitmap to indicate which
+> PTE fragments are free.
+> 
+> page->_mapcount is divided into two halves. The upper half is used for
+> tracking the freed page framents in the RCU grace period.
+> 
+> In order to support systems which doesn't have 64K HPTE support, we also
+> add another 2K to PTE page fragment. The second half of the PTE fragments
+> is used for storing slot and secondary bit information of an HPTE. With this
+> we now have a 4K PTE fragment.
+> 
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-And this feature has been merged to the kernel for X86 for a long time.
-See commit: 5ca72c4f7c412c2002363218901eba5516c476b1
-51906e779f2b13b38f8153774c4c7163d412ffd9
+This one has taken me hours to review.  Perhaps it's partly because of
+the way that diff has matched things up, but it's difficult to see
+what's moved where, what's common code that is now the 4k page case,
+etc.  For example, pmd_alloc_one() and pmd_free() are unchanged, but
+the diff shows them as removed in one place and added in another.
 
-Actually, I'm trying to do the test. but it is difficult to do that test,
-because it mostly depends on how the device driver to use this feature,
-while the ipr driver patch was wrote by another person. also no any reply
-from her.
+The other general comment I have is that it's not really clear when a
+page will be on the mm->context.pgtable_list and when it won't.  I
+would like to see an invariant that says something like "the page is
+on the pgtable_list if and only if (page->_mapcount & FRAG_MASK) is
+neither 0 nor FRAG_MASK".  But that doesn't seem to be the case
+exactly, and I can't see any consistent rule, which makes me think
+there are going to be bugs in corner cases.
 
+Consider, for example, the case where a page has two fragments still
+in use, and one of them gets queued up by RCU for freeing via a call
+to page_table_free_rcu, and then the other one gets freed through
+page_table_free().  Neither the call to page_table_free_rcu nor the
+call to page_table_free will take the page off the list AFAICS, and
+then __page_table_free_rcu() will free the page while it's still on
+the pgtable_list.
 
-> cheers
->
+More specific comments below...
+
+> -static inline void pgtable_free(void *table, unsigned index_size)
+> -{
+> -	if (!index_size)
+> -		free_page((unsigned long)table);
+> -	else {
+> -		BUG_ON(index_size > MAX_PGTABLE_INDEX_SIZE);
+> -		kmem_cache_free(PGT_CACHE(index_size), table);
+> -	}
+> -}
+
+This is still used in the UP case, both for 4k and 64k, and UP configs
+now fail to build.
+
+>  static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
+>  {
+>  	free_page((unsigned long)pte);
+> @@ -156,7 +118,12 @@ static inline void __tlb_remove_table(void *_table)
+>  	void *table = (void *)((unsigned long)_table & ~MAX_PGTABLE_INDEX_SIZE);
+>  	unsigned shift = (unsigned long)_table & MAX_PGTABLE_INDEX_SIZE;
+>  
+> -	pgtable_free(table, shift);
+> +	if (!shift)
+> +		free_page((unsigned long)table);
+> +	else {
+> +		BUG_ON(shift > MAX_PGTABLE_INDEX_SIZE);
+> +		kmem_cache_free(PGT_CACHE(shift), table);
+> +	}
+
+Any particular reason for open-coding pgtable_free() here?
+
+> +/*
+> + * we support 15 fragments per PTE page. This is limited by how many
+> + * bits we can pack in page->_mapcount. We use the first half for
+> + * tracking the usage for rcu page table free.
+> + */
+> +#define FRAG_MASK_BITS	15
+> +#define FRAG_MASK ((1 << FRAG_MASK_BITS) - 1)
+
+Atomic_t variables are 32-bit, so you really should be able to make
+FRAG_MASK_BITS be 16 and avoid wasting the last fragment of each page.
+
+Paul.
