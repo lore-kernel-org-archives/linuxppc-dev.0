@@ -1,20 +1,37 @@
-Return-Path: <horms@verge.net.au>
-Received: from kirsty.vergenet.net (kirsty.vergenet.net [202.4.237.240])
- by ozlabs.org (Postfix) with ESMTP id 66DD62C02FA
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Mar 2013 13:01:12 +1100 (EST)
-Date: Mon, 4 Mar 2013 10:41:52 +0900
-From: Simon Horman <horms@verge.net.au>
-To: "Suzuki K. Poulose" <suzuki@in.ibm.com>
-Subject: Re: [PATCH] kexec/ppc: Fix kernel program entry point while changing
- the load addr
-Message-ID: <20130304014152.GB9007@verge.net.au>
-References: <20130303073540.12040.16854.stgit@suzukikp>
+Return-Path: <qiudayu@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 351392C02F9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Mar 2013 14:15:04 +1100 (EST)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <qiudayu@linux.vnet.ibm.com>;
+ Mon, 4 Mar 2013 13:08:40 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id DC4923578053
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Mar 2013 14:14:56 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r2432DRj56229892
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Mar 2013 14:02:14 +1100
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r243EtGG012152
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Mar 2013 14:14:56 +1100
+Message-ID: <513411AD.5010408@linux.vnet.ibm.com>
+Date: Mon, 04 Mar 2013 11:14:53 +0800
+From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130303073540.12040.16854.stgit@suzukikp>
-Cc: Matthew McClintock <msm@freescale.com>,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>, kexec@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH 0/3] Enable multiple MSI feature in pSeries
+References: <1358235536-32741-1-git-send-email-qiudayu@linux.vnet.ibm.com>
+ <1362107325.2712.2.camel@localhost> <20130301035417.GA17236@concordia>
+In-Reply-To: <20130301035417.GA17236@concordia>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,86 +41,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[ Cc: linuxppc-dev@lists.ozlabs.org ]
+于 2013/3/1 11:54, Michael Ellerman 写道:
+> On Fri, Mar 01, 2013 at 11:08:45AM +0800, Mike wrote:
+>> Hi all
+>>
+>> Any comments? or any questions about my patchset?
+> You were going to get some performance numbers that show a definite
+> benefit for using more than one MSI.
+Yes, but my patch just enable the kernel to support this feature, whether
+to use it depens on the device driver.
 
-On Sun, Mar 03, 2013 at 01:06:00PM +0530, Suzuki K. Poulose wrote:
-> From: Suzuki K. Poulose <suzuki@in.ibm.com>
-> 
-> uImage probe fills the entry point (ep) based on the load_addr
-> from the uImage headers. If we change the load_addr, we should
-> accordingly update the entry point.
-> 
-> For ELF, calculate the offset of e_entry from the virtual start
-> address and add it to the physical start address to find the
-> physical address of kernel entry.
-> 
-> i.e,
->   pa (e_entry) = pa(phdr[0].p_vaddr) + (e_entry - phdr[0].p_vaddr)
->                = kernel_addr + (e_entry - phdr[0].p_vaddr)
+And this feature has been merged to the kernel for X86 for a long time.
+See commit: 5ca72c4f7c412c2002363218901eba5516c476b1
+51906e779f2b13b38f8153774c4c7163d412ffd9
 
-Would it be possible for someone to provide a review of this change?
+Actually, I'm trying to do the test. but it is difficult to do that test,
+because it mostly depends on how the device driver to use this feature,
+while the ipr driver patch was wrote by another person. also no any reply
+from her.
 
-> 
-> Signed-off-by: Suzuki K. Poulose <suzuki@in.ibm.com>
-> Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-> Cc: Matthew McClintock <msm@freescale.com>
-> ---
->  kexec/arch/ppc/kexec-elf-ppc.c    |   12 ++++++++----
->  kexec/arch/ppc/kexec-uImage-ppc.c |    6 +++++-
->  2 files changed, 13 insertions(+), 5 deletions(-)
-> 
-> diff --git a/kexec/arch/ppc/kexec-elf-ppc.c b/kexec/arch/ppc/kexec-elf-ppc.c
-> index 8e408cc..5f63a64 100644
-> --- a/kexec/arch/ppc/kexec-elf-ppc.c
-> +++ b/kexec/arch/ppc/kexec-elf-ppc.c
-> @@ -397,10 +397,14 @@ int elf_ppc_load(int argc, char **argv,	const char *buf, off_t len,
->  		die("Error device tree not loadded to address it was expecting to be loaded too!\n");
->  	}
->  
-> -	/* set various variables for the purgatory  ehdr.e_entry is a
-> -	 * virtual address, we can use kernel_addr which
-> -	 * should be the physical start address of the kernel */
-> -	addr = kernel_addr;
-> +	/* 
-> +	 * set various variables for the purgatory.
-> +	 * ehdr.e_entry is a virtual address. we know physical start
-> +	 * address of the kernel (kernel_addr). Find the offset of
-> +	 * e_entry from the virtual start address(e_phdr[0].p_vaddr)
-> +	 * and calculate the actual physical address of the 'kernel entry'.
-> +	 */
-> +	addr = kernel_addr + (ehdr.e_entry - ehdr.e_phdr[0].p_vaddr);
->  	elf_rel_set_symbol(&info->rhdr, "kernel", &addr, sizeof(addr));
->  
->  	addr = dtb_addr;
-> diff --git a/kexec/arch/ppc/kexec-uImage-ppc.c b/kexec/arch/ppc/kexec-uImage-ppc.c
-> index e0bc7bb..900cd16 100644
-> --- a/kexec/arch/ppc/kexec-uImage-ppc.c
-> +++ b/kexec/arch/ppc/kexec-uImage-ppc.c
-> @@ -159,15 +159,19 @@ static int ppc_load_bare_bits(int argc, char **argv, const char *buf,
->  
->  	/*
->  	 * If the provided load_addr cannot be allocated, find a new
-> -	 * area.
-> +	 * area. Rebase the entry point based on the new load_addr.
->  	 */
->  	if (!valid_memory_range(info, load_addr, load_addr + (len + _1MiB))) {
-> +		int ep_offset = ep - load_addr;
-> +
->  		load_addr = locate_hole(info, len + _1MiB, 0, 0, max_addr, 1);
->  		if (load_addr == ULONG_MAX) {
->  			printf("Can't allocate memory for kernel of len %ld\n",
->  					len + _1MiB);
->  			return -1;
->  		}
-> +
-> +		ep = load_addr + ep_offset;
->  	}
->  
->  	add_segment(info, buf, len, load_addr, len + _1MiB);
-> 
-> 
-> _______________________________________________
-> kexec mailing list
-> kexec@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kexec
-> 
+
+> cheers
+>
