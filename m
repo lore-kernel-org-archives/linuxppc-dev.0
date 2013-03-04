@@ -1,15 +1,39 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Mon, 4 Mar 2013 16:13:40 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH -V1 07/24] powerpc: Add size argument to pgtable_cache_add
-Message-ID: <20130304051340.GC27523@drongo>
-References: <1361865914-13911-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1361865914-13911-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <suzuki@in.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C4F652C0302
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Mar 2013 16:56:40 +1100 (EST)
+Received: from /spool/local
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <suzuki@in.ibm.com>;
+ Mon, 4 Mar 2013 11:23:08 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 989A6E0050
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Mar 2013 11:27:38 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r245uN3o32440552
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Mar 2013 11:26:23 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r245uQOd011087
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Mar 2013 16:56:27 +1100
+Message-ID: <51343788.7070503@in.ibm.com>
+Date: Mon, 04 Mar 2013 11:26:24 +0530
+From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1361865914-13911-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
+To: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH] kexec/ppc: Fix kernel program entry point while changing
+ the load addr
+References: <20130303073540.12040.16854.stgit@suzukikp>
+ <20130304014152.GB9007@verge.net.au>
+In-Reply-To: <20130304014152.GB9007@verge.net.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Matthew McClintock <msm@freescale.com>,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>, kexec@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,20 +43,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 26, 2013 at 01:34:57PM +0530, Aneesh Kumar K.V wrote:
-> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-> 
-> We will use this later with THP changes to request for pmd table of double the size.
-> THP code does PTE page allocation along with large page request and deposit them
-> for later use. This is to ensure that we won't have any failures when we split
-> huge pages to regular pages.
-> 
-> On powerpc we want to use the deposited PTE page for storing hash pte slot and
-> secondary bit information for the HPTEs. Hence we save them in the second half
-> of the pmd table.
+On 03/04/2013 07:11 AM, Simon Horman wrote:
+> [ Cc: linuxppc-dev@lists.ozlabs.org ]
+>
+> On Sun, Mar 03, 2013 at 01:06:00PM +0530, Suzuki K. Poulose wrote:
+>> From: Suzuki K. Poulose <suzuki@in.ibm.com>
+>>
+>> uImage probe fills the entry point (ep) based on the load_addr
+>> from the uImage headers. If we change the load_addr, we should
+>> accordingly update the entry point.
+>>
+>> For ELF, calculate the offset of e_entry from the virtual start
+>> address and add it to the physical start address to find the
+>> physical address of kernel entry.
+>>
+>> i.e,
+>>    pa (e_entry) = pa(phdr[0].p_vaddr) + (e_entry - phdr[0].p_vaddr)
+>>                 = kernel_addr + (e_entry - phdr[0].p_vaddr)
+>
+> Would it be possible for someone to provide a review of this change?
+To make it bit more clear :
 
-Looks OK, but you should explain why you made the wholesale change of
-"shift" to "index".  Is there some important semantic difference, or
-do you just prefer the "index" name for some reason?
+The entry point of the kernel is usually at 0 offset from the first
+PT_LOAD section. The current code makes this assumption and uses the 
+pa(phdr[0].p_vaddr) as the kernel entry.
 
-Paul.
+But this *may* not be true always, in such a case the kexec would fail.
+While I fixed the uImage case, I thought it would be better to handle 
+the same case in ELF.
+
+Btw, this calculation is not specific to ppc32.
+
+Thanks
+Suzuki
+
+>
+>>
+>> Signed-off-by: Suzuki K. Poulose <suzuki@in.ibm.com>
+>> Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+>> Cc: Matthew McClintock <msm@freescale.com>
+>> ---
+>>   kexec/arch/ppc/kexec-elf-ppc.c    |   12 ++++++++----
+>>   kexec/arch/ppc/kexec-uImage-ppc.c |    6 +++++-
+>>   2 files changed, 13 insertions(+), 5 deletions(-)
+>>
+>> diff --git a/kexec/arch/ppc/kexec-elf-ppc.c b/kexec/arch/ppc/kexec-elf-ppc.c
+>> index 8e408cc..5f63a64 100644
+>> --- a/kexec/arch/ppc/kexec-elf-ppc.c
+>> +++ b/kexec/arch/ppc/kexec-elf-ppc.c
+>> @@ -397,10 +397,14 @@ int elf_ppc_load(int argc, char **argv,	const char *buf, off_t len,
+>>   		die("Error device tree not loadded to address it was expecting to be loaded too!\n");
+>>   	}
+>>
+>> -	/* set various variables for the purgatory  ehdr.e_entry is a
+>> -	 * virtual address, we can use kernel_addr which
+>> -	 * should be the physical start address of the kernel */
+>> -	addr = kernel_addr;
+>> +	/*
+>> +	 * set various variables for the purgatory.
+>> +	 * ehdr.e_entry is a virtual address. we know physical start
+>> +	 * address of the kernel (kernel_addr). Find the offset of
+>> +	 * e_entry from the virtual start address(e_phdr[0].p_vaddr)
+>> +	 * and calculate the actual physical address of the 'kernel entry'.
+>> +	 */
+>> +	addr = kernel_addr + (ehdr.e_entry - ehdr.e_phdr[0].p_vaddr);
+>>   	elf_rel_set_symbol(&info->rhdr, "kernel", &addr, sizeof(addr));
+>>
+>>   	addr = dtb_addr;
+>> diff --git a/kexec/arch/ppc/kexec-uImage-ppc.c b/kexec/arch/ppc/kexec-uImage-ppc.c
+>> index e0bc7bb..900cd16 100644
+>> --- a/kexec/arch/ppc/kexec-uImage-ppc.c
+>> +++ b/kexec/arch/ppc/kexec-uImage-ppc.c
+>> @@ -159,15 +159,19 @@ static int ppc_load_bare_bits(int argc, char **argv, const char *buf,
+>>
+>>   	/*
+>>   	 * If the provided load_addr cannot be allocated, find a new
+>> -	 * area.
+>> +	 * area. Rebase the entry point based on the new load_addr.
+>>   	 */
+>>   	if (!valid_memory_range(info, load_addr, load_addr + (len + _1MiB))) {
+>> +		int ep_offset = ep - load_addr;
+>> +
+>>   		load_addr = locate_hole(info, len + _1MiB, 0, 0, max_addr, 1);
+>>   		if (load_addr == ULONG_MAX) {
+>>   			printf("Can't allocate memory for kernel of len %ld\n",
+>>   					len + _1MiB);
+>>   			return -1;
+>>   		}
+>> +
+>> +		ep = load_addr + ep_offset;
+>>   	}
+>>
+>>   	add_segment(info, buf, len, load_addr, len + _1MiB);
+>>
+>>
+>> _______________________________________________
+>> kexec mailing list
+>> kexec@lists.infradead.org
+>> http://lists.infradead.org/mailman/listinfo/kexec
+>>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
