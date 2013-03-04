@@ -1,14 +1,15 @@
 Return-Path: <paulus@ozlabs.org>
-Date: Mon, 4 Mar 2013 15:58:53 +1100
+Date: Mon, 4 Mar 2013 16:48:48 +1100
 From: Paul Mackerras <paulus@samba.org>
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH -V1 06/24] powerpc: Reduce PTE table memory wastage
-Message-ID: <20130304045853.GB27523@drongo>
+Subject: Re: [PATCH -V1 09/24] powerpc: Decode the pte-lp-encoding bits
+ correctly.
+Message-ID: <20130304054848.GE27523@drongo>
 References: <1361865914-13911-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1361865914-13911-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1361865914-13911-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1361865914-13911-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1361865914-13911-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -19,91 +20,208 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 26, 2013 at 01:34:56PM +0530, Aneesh Kumar K.V wrote:
+On Tue, Feb 26, 2013 at 01:34:59PM +0530, Aneesh Kumar K.V wrote:
 > From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 > 
-> We allocate one page for the last level of linux page table. With THP and
-> large page size of 16MB, that would mean we are be wasting large part
-> of that page. To map 16MB area, we only need a PTE space of 2K with 64K
-> page size. This patch reduce the space wastage by sharing the page
-> allocated for the last level of linux page table with multiple pmd
-> entries. We call these smaller chunks PTE page fragments and allocated
-> page, PTE page. We use the page->_mapcount as bitmap to indicate which
-> PTE fragments are free.
+> We look at both the segment base page size and actual page size and store
+> the pte-lp-encodings in an array per base page size.
 > 
-> page->_mapcount is divided into two halves. The upper half is used for
-> tracking the freed page framents in the RCU grace period.
-> 
-> In order to support systems which doesn't have 64K HPTE support, we also
-> add another 2K to PTE page fragment. The second half of the PTE fragments
-> is used for storing slot and secondary bit information of an HPTE. With this
-> we now have a 4K PTE fragment.
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> We also update all relevant functions to take actual page size argument
+> so that we can use the correct PTE LP encoding in HPTE. This should also
+> get the basic Multiple Page Size per Segment (MPSS) support. This is needed
+> to enable THP on ppc64.
 
-This one has taken me hours to review.  Perhaps it's partly because of
-the way that diff has matched things up, but it's difficult to see
-what's moved where, what's common code that is now the 4k page case,
-etc.  For example, pmd_alloc_one() and pmd_free() are unchanged, but
-the diff shows them as removed in one place and added in another.
-
-The other general comment I have is that it's not really clear when a
-page will be on the mm->context.pgtable_list and when it won't.  I
-would like to see an invariant that says something like "the page is
-on the pgtable_list if and only if (page->_mapcount & FRAG_MASK) is
-neither 0 nor FRAG_MASK".  But that doesn't seem to be the case
-exactly, and I can't see any consistent rule, which makes me think
-there are going to be bugs in corner cases.
-
-Consider, for example, the case where a page has two fragments still
-in use, and one of them gets queued up by RCU for freeing via a call
-to page_table_free_rcu, and then the other one gets freed through
-page_table_free().  Neither the call to page_table_free_rcu nor the
-call to page_table_free will take the page off the list AFAICS, and
-then __page_table_free_rcu() will free the page while it's still on
-the pgtable_list.
-
-More specific comments below...
-
-> -static inline void pgtable_free(void *table, unsigned index_size)
-> -{
-> -	if (!index_size)
-> -		free_page((unsigned long)table);
-> -	else {
-> -		BUG_ON(index_size > MAX_PGTABLE_INDEX_SIZE);
-> -		kmem_cache_free(PGT_CACHE(index_size), table);
-> -	}
-> -}
-
-This is still used in the UP case, both for 4k and 64k, and UP configs
-now fail to build.
-
->  static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
->  {
->  	free_page((unsigned long)pte);
-> @@ -156,7 +118,12 @@ static inline void __tlb_remove_table(void *_table)
->  	void *table = (void *)((unsigned long)_table & ~MAX_PGTABLE_INDEX_SIZE);
->  	unsigned shift = (unsigned long)_table & MAX_PGTABLE_INDEX_SIZE;
->  
-> -	pgtable_free(table, shift);
-> +	if (!shift)
-> +		free_page((unsigned long)table);
-> +	else {
-> +		BUG_ON(shift > MAX_PGTABLE_INDEX_SIZE);
-> +		kmem_cache_free(PGT_CACHE(shift), table);
-> +	}
-
-Any particular reason for open-coding pgtable_free() here?
+Mostly looks OK, comments below...
 
 > +/*
-> + * we support 15 fragments per PTE page. This is limited by how many
-> + * bits we can pack in page->_mapcount. We use the first half for
-> + * tracking the usage for rcu page table free.
+> + * HPTE LP details
 > + */
-> +#define FRAG_MASK_BITS	15
-> +#define FRAG_MASK ((1 << FRAG_MASK_BITS) - 1)
+> +#define LP_SHIFT	12
+> +#define LP_BITS		8
+> +#define LP_MASK(i)	((0xFF >> (i)) << LP_SHIFT)
 
-Atomic_t variables are 32-bit, so you really should be able to make
-FRAG_MASK_BITS be 16 and avoid wasting the last fragment of each page.
+The reader might be wondering at this point what "LP" is; be kind and
+make it "large page" in the comment for them.
+
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index 71d0c90..48f6d99 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -1515,7 +1515,7 @@ static void kvmppc_add_seg_page_size(struct kvm_ppc_one_seg_page_size **sps,
+>  	(*sps)->page_shift = def->shift;
+>  	(*sps)->slb_enc = def->sllp;
+>  	(*sps)->enc[0].page_shift = def->shift;
+> -	(*sps)->enc[0].pte_enc = def->penc;
+> +	(*sps)->enc[0].pte_enc = def->penc[linux_psize];
+>  	(*sps)++;
+>  }
+
+This will only return the entries where actual page size == base page
+size, which basically means that KVM guests won't be able to use
+MPSS.  We will need to return multiple entries in that case.
+
+> +static inline int hpte_actual_psize(struct hash_pte *hptep, int psize)
+> +{
+> +	unsigned int mask;
+> +	int i, penc, shift;
+> +	/* Look at the 8 bit LP value */
+> +	unsigned int lp = (hptep->r >> LP_SHIFT) & ((1 << LP_BITS) - 1);
+> +
+> +	penc = 0;
+> +	for (i = 0; i < MMU_PAGE_COUNT; i++) {
+> +		/* valid entries have a shift value */
+> +		if (!mmu_psize_defs[i].shift)
+> +			continue;
+> +
+> +		/* encoding bits per actual page size */
+> +		shift = mmu_psize_defs[i].shift - 11;
+> +		if (shift > 9)
+> +			shift = 9;
+> +		mask = (1 << shift) - 1;
+> +		if ((lp & mask) == mmu_psize_defs[psize].penc[i])
+> +			return i;
+> +	}
+> +	return -1;
+> +}
+
+This doesn't look right to me.  First, it's not clear what the 11 and
+9 refer to, and I think the 9 should be LP_BITS (i.e. 8).  Secondly,
+the mask for the comparison needs to depend on the actual page size
+not the base page size.
+
+I strongly suggest you pull out this code together with
+native_hpte_insert into a little userspace test program that runs
+through all the possible page size combinations, creating an HPTE and
+then decoding it with hpte_actual_psize() to check that you get back
+the correct actual page size.
+
+>  static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
+> -			int *psize, int *ssize, unsigned long *vpn)
+> +			int *psize, int *apsize, int *ssize, unsigned long *vpn)
+>  {
+>  	unsigned long avpn, pteg, vpi;
+>  	unsigned long hpte_r = hpte->r;
+>  	unsigned long hpte_v = hpte->v;
+>  	unsigned long vsid, seg_off;
+> -	int i, size, shift, penc;
+> +	int i, size, a_size = MMU_PAGE_4K, shift, penc;
+>  
+>  	if (!(hpte_v & HPTE_V_LARGE))
+>  		size = MMU_PAGE_4K;
+> @@ -395,12 +422,13 @@ static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
+>  			/* valid entries have a shift value */
+>  			if (!mmu_psize_defs[size].shift)
+>  				continue;
+> -
+> -			if (penc == mmu_psize_defs[size].penc)
+> -				break;
+> +			for (a_size = 0; a_size < MMU_PAGE_COUNT; a_size++)
+> +				if (penc == mmu_psize_defs[size].penc[a_size])
+> +					goto out;
+
+Once again I don't think this is correct, since the number of bits in
+the page size encoding depends on the page size.  In fact the
+calculation of penc in that function looks completely bogus to me (not
+that that is code that you have written or modified, but it looks to
+me like it needs fixing).
+
+>  static int __init htab_dt_scan_page_sizes(unsigned long node,
+>  					  const char *uname, int depth,
+>  					  void *data)
+> @@ -294,60 +318,57 @@ static int __init htab_dt_scan_page_sizes(unsigned long node,
+>  		size /= 4;
+>  		cur_cpu_spec->mmu_features &= ~(MMU_FTR_16M_PAGE);
+>  		while(size > 0) {
+> -			unsigned int shift = prop[0];
+> +			unsigned int base_shift = prop[0];
+>  			unsigned int slbenc = prop[1];
+>  			unsigned int lpnum = prop[2];
+> -			unsigned int lpenc = 0;
+>  			struct mmu_psize_def *def;
+> -			int idx = -1;
+> +			int idx, base_idx;
+>  
+>  			size -= 3; prop += 3;
+> -			while(size > 0 && lpnum) {
+> -				if (prop[0] == shift)
+> -					lpenc = prop[1];
+> +			base_idx = get_idx_from_shift(base_shift);
+> +			if (base_idx < 0) {
+> +				/*
+> +				 * skip the pte encoding also
+> +				 */
+>  				prop += 2; size -= 2;
+> -				lpnum--;
+> +				continue;
+>  			}
+> -			switch(shift) {
+> -			case 0xc:
+> -				idx = MMU_PAGE_4K;
+> -				break;
+> -			case 0x10:
+> -				idx = MMU_PAGE_64K;
+> -				break;
+> -			case 0x14:
+> -				idx = MMU_PAGE_1M;
+> -				break;
+> -			case 0x18:
+> -				idx = MMU_PAGE_16M;
+> +			def = &mmu_psize_defs[base_idx];
+> +			if (base_idx == MMU_PAGE_16M)
+>  				cur_cpu_spec->mmu_features |= MMU_FTR_16M_PAGE;
+> -				break;
+> -			case 0x22:
+> -				idx = MMU_PAGE_16G;
+> -				break;
+> -			}
+> -			if (idx < 0)
+> -				continue;
+> -			def = &mmu_psize_defs[idx];
+> -			def->shift = shift;
+> -			if (shift <= 23)
+> +
+> +			def->shift = base_shift;
+> +			if (base_shift <= 23)
+>  				def->avpnm = 0;
+>  			else
+> -				def->avpnm = (1 << (shift - 23)) - 1;
+> +				def->avpnm = (1 << (base_shift - 23)) - 1;
+>  			def->sllp = slbenc;
+> -			def->penc = lpenc;
+> -			/* We don't know for sure what's up with tlbiel, so
+> +			/*
+> +			 * We don't know for sure what's up with tlbiel, so
+>  			 * for now we only set it for 4K and 64K pages
+>  			 */
+> -			if (idx == MMU_PAGE_4K || idx == MMU_PAGE_64K)
+> +			if (base_idx == MMU_PAGE_4K || base_idx == MMU_PAGE_64K)
+>  				def->tlbiel = 1;
+>  			else
+>  				def->tlbiel = 0;
+>  
+> -			DBG(" %d: shift=%02x, sllp=%04lx, avpnm=%08lx, "
+> -			    "tlbiel=%d, penc=%d\n",
+> -			    idx, shift, def->sllp, def->avpnm, def->tlbiel,
+> -			    def->penc);
+> +			while (size > 0 && lpnum) {
+> +				unsigned int shift = prop[0];
+> +				unsigned int penc  = prop[1];
+> +
+> +				prop += 2; size -= 2;
+> +				lpnum--;
+> +
+> +				idx = get_idx_from_shift(shift);
+> +				if (idx < 0)
+> +					continue;
+> +
+> +				def->penc[idx] = penc;
+> +				DBG(" %d: shift=%02x, sllp=%04lx, "
+> +				    "avpnm=%08lx, tlbiel=%d, penc=%d\n",
+> +				    idx, shift, def->sllp, def->avpnm,
+> +				    def->tlbiel, def->penc[idx]);
+> +			}
+
+I don't see where in this function you set the penc[] elements for
+invalid actual page sizes to -1.
 
 Paul.
