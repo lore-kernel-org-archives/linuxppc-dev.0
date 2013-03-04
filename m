@@ -1,39 +1,37 @@
-Return-Path: <suzuki@in.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C4F652C0302
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Mar 2013 16:56:40 +1100 (EST)
-Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <suzuki@in.ibm.com>;
- Mon, 4 Mar 2013 11:23:08 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 989A6E0050
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Mar 2013 11:27:38 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r245uN3o32440552
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Mar 2013 11:26:23 +0530
-Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r245uQOd011087
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Mar 2013 16:56:27 +1100
-Message-ID: <51343788.7070503@in.ibm.com>
-Date: Mon, 04 Mar 2013 11:26:24 +0530
-From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
+Return-Path: <B16395@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe004.messaging.microsoft.com [213.199.154.207])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 835842C02FF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Mar 2013 17:36:17 +1100 (EST)
+From: Sethi Varun-B16395 <B16395@freescale.com>
+To: Yoder Stuart-B08248 <B08248@freescale.com>, Alexey Kardashevskiy
+ <aik@ozlabs.ru>
+Subject: RE: [PATCH 1/6 v8] iommu/fsl: Store iommu domain information
+ pointer in archdata.
+Date: Mon, 4 Mar 2013 06:35:55 +0000
+Message-ID: <C5ECD7A89D1DC44195F34B25E172658D3D06A1@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1361191939-21260-1-git-send-email-Varun.Sethi@freescale.com>
+ <1361191939-21260-2-git-send-email-Varun.Sethi@freescale.com>
+ <20130227113045.GH26252@8bytes.org>
+ <C5ECD7A89D1DC44195F34B25E172658D3C26F6@039-SN2MPN1-013.039d.mgd.msft.net>
+ <BAB98EA5-5324-4FB2-97C2-A28A96C569DC@kernel.crashing.org>
+ <51300367.6080300@ozlabs.ru>
+ <C5ECD7A89D1DC44195F34B25E172658D3C802F@039-SN2MPN1-013.039d.mgd.msft.net>
+ <51307DCE.1050506@ozlabs.ru>
+ <9F6FE96B71CF29479FF1CDC8046E1503565876@039-SN1MPN1-003.039d.mgd.msft.net>
+In-Reply-To: <9F6FE96B71CF29479FF1CDC8046E1503565876@039-SN1MPN1-003.039d.mgd.msft.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH] kexec/ppc: Fix kernel program entry point while changing
- the load addr
-References: <20130303073540.12040.16854.stgit@suzukikp>
- <20130304014152.GB9007@verge.net.au>
-In-Reply-To: <20130304014152.GB9007@verge.net.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Matthew McClintock <msm@freescale.com>,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>, kexec@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ Alex Williamson <alex.williamson@redhat.com>, Joerg Roedel <joro@8bytes.org>,
+ "linux-kernel@vger.kernel.org list" <linux-kernel@vger.kernel.org>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,107 +41,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/04/2013 07:11 AM, Simon Horman wrote:
-> [ Cc: linuxppc-dev@lists.ozlabs.org ]
->
-> On Sun, Mar 03, 2013 at 01:06:00PM +0530, Suzuki K. Poulose wrote:
->> From: Suzuki K. Poulose <suzuki@in.ibm.com>
->>
->> uImage probe fills the entry point (ep) based on the load_addr
->> from the uImage headers. If we change the load_addr, we should
->> accordingly update the entry point.
->>
->> For ELF, calculate the offset of e_entry from the virtual start
->> address and add it to the physical start address to find the
->> physical address of kernel entry.
->>
->> i.e,
->>    pa (e_entry) = pa(phdr[0].p_vaddr) + (e_entry - phdr[0].p_vaddr)
->>                 = kernel_addr + (e_entry - phdr[0].p_vaddr)
->
-> Would it be possible for someone to provide a review of this change?
-To make it bit more clear :
 
-The entry point of the kernel is usually at 0 offset from the first
-PT_LOAD section. The current code makes this assumption and uses the 
-pa(phdr[0].p_vaddr) as the kernel entry.
 
-But this *may* not be true always, in such a case the kexec would fail.
-While I fixed the uImage case, I thought it would be better to handle 
-the same case in ELF.
+> -----Original Message-----
+> From: Yoder Stuart-B08248
+> Sent: Friday, March 01, 2013 9:52 PM
+> To: Alexey Kardashevskiy; Sethi Varun-B16395
+> Cc: Kumar Gala; Benjamin Herrenschmidt; iommu@lists.linux-foundation.org;
+> linuxppc-dev@lists.ozlabs.org list; linux-kernel@vger.kernel.org list;
+> Wood Scott-B07421; Joerg Roedel; Paul Mackerras; David Gibson; Alex
+> Williamson
+> Subject: RE: [PATCH 1/6 v8] iommu/fsl: Store iommu domain information
+> pointer in archdata.
+>=20
+>=20
+>=20
+> > -----Original Message-----
+> > From: Alexey Kardashevskiy [mailto:aik@ozlabs.ru]
+> > Sent: Friday, March 01, 2013 4:07 AM
+> > To: Sethi Varun-B16395
+> > Cc: Kumar Gala; Benjamin Herrenschmidt;
+> > iommu@lists.linux-foundation.org; linuxppc-dev@lists.ozlabs.org list;
+> > linux-kernel@vger.kernel.org list; Wood Scott-B07421; Yoder
+> > Stuart-B08248; Joerg Roedel; Paul Mackerras; David Gibson; Alex
+> > Williamson
+> > Subject: Re: [PATCH 1/6 v8] iommu/fsl: Store iommu domain information
+> pointer in archdata.
+> >
+> > btw the device struct already has a pointer to its iommu_group, and
+> > the iommu_group struct itself has a pointer void *iommu_data which you
+> > could use for anything you want (iommu_group_get_iommudata(),
+> > iommu_group_set_iommudata()).
+> >
+> > By design you are expected to add iommu groups to a domain but not
+> > devices so I am not so sure that you really need a pointer to domain
+> > in the device struct.
+>=20
+> Well, at the lowest level the IOMMU API does attach devices to domains--
+> i.e.
+> API attach_dev().  So, it seems to conceptually make sense to have a ptr
+> from the device to the associated domain.  When you implement
+> attach_dev() you need to be able to see whether the device is already
+> attached to
+> a domain.   Adding a couple of levels of indirection...from device to
+> group to domain...doesn't seems to make things simpler or better IMHO.
+>=20
+> x86 keeps a pointer to the domain in device archdata and since there is a
+> direct correlation between a device and domain I'd rather see it where
+> this patch has it.
+>=20
 
-Btw, this calculation is not specific to ppc32.
+As Stuart stated this allows us to maintain the device <-> domain relations=
+hip at the lowest level.
 
-Thanks
-Suzuki
-
->
->>
->> Signed-off-by: Suzuki K. Poulose <suzuki@in.ibm.com>
->> Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
->> Cc: Matthew McClintock <msm@freescale.com>
->> ---
->>   kexec/arch/ppc/kexec-elf-ppc.c    |   12 ++++++++----
->>   kexec/arch/ppc/kexec-uImage-ppc.c |    6 +++++-
->>   2 files changed, 13 insertions(+), 5 deletions(-)
->>
->> diff --git a/kexec/arch/ppc/kexec-elf-ppc.c b/kexec/arch/ppc/kexec-elf-ppc.c
->> index 8e408cc..5f63a64 100644
->> --- a/kexec/arch/ppc/kexec-elf-ppc.c
->> +++ b/kexec/arch/ppc/kexec-elf-ppc.c
->> @@ -397,10 +397,14 @@ int elf_ppc_load(int argc, char **argv,	const char *buf, off_t len,
->>   		die("Error device tree not loadded to address it was expecting to be loaded too!\n");
->>   	}
->>
->> -	/* set various variables for the purgatory  ehdr.e_entry is a
->> -	 * virtual address, we can use kernel_addr which
->> -	 * should be the physical start address of the kernel */
->> -	addr = kernel_addr;
->> +	/*
->> +	 * set various variables for the purgatory.
->> +	 * ehdr.e_entry is a virtual address. we know physical start
->> +	 * address of the kernel (kernel_addr). Find the offset of
->> +	 * e_entry from the virtual start address(e_phdr[0].p_vaddr)
->> +	 * and calculate the actual physical address of the 'kernel entry'.
->> +	 */
->> +	addr = kernel_addr + (ehdr.e_entry - ehdr.e_phdr[0].p_vaddr);
->>   	elf_rel_set_symbol(&info->rhdr, "kernel", &addr, sizeof(addr));
->>
->>   	addr = dtb_addr;
->> diff --git a/kexec/arch/ppc/kexec-uImage-ppc.c b/kexec/arch/ppc/kexec-uImage-ppc.c
->> index e0bc7bb..900cd16 100644
->> --- a/kexec/arch/ppc/kexec-uImage-ppc.c
->> +++ b/kexec/arch/ppc/kexec-uImage-ppc.c
->> @@ -159,15 +159,19 @@ static int ppc_load_bare_bits(int argc, char **argv, const char *buf,
->>
->>   	/*
->>   	 * If the provided load_addr cannot be allocated, find a new
->> -	 * area.
->> +	 * area. Rebase the entry point based on the new load_addr.
->>   	 */
->>   	if (!valid_memory_range(info, load_addr, load_addr + (len + _1MiB))) {
->> +		int ep_offset = ep - load_addr;
->> +
->>   		load_addr = locate_hole(info, len + _1MiB, 0, 0, max_addr, 1);
->>   		if (load_addr == ULONG_MAX) {
->>   			printf("Can't allocate memory for kernel of len %ld\n",
->>   					len + _1MiB);
->>   			return -1;
->>   		}
->> +
->> +		ep = load_addr + ep_offset;
->>   	}
->>
->>   	add_segment(info, buf, len, load_addr, len + _1MiB);
->>
->>
->> _______________________________________________
->> kexec mailing list
->> kexec@lists.infradead.org
->> http://lists.infradead.org/mailman/listinfo/kexec
->>
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
+-Varun
