@@ -1,22 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id EAC332C032F
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Mar 2013 10:36:57 +1100 (EST)
-Message-ID: <1362440204.21357.20.camel@pasglop>
-Subject: Re: [PATCH -V1 06/24] powerpc: Reduce PTE table memory wastage
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Date: Tue, 05 Mar 2013 10:36:44 +1100
-In-Reply-To: <874ngr2zz1.fsf@linux.vnet.ibm.com>
-References: <1361865914-13911-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1361865914-13911-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20130304045853.GB27523@drongo> <874ngr2zz1.fsf@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- linux-mm@kvack.org
+Return-Path: <B07421@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0252.outbound.messaging.microsoft.com [213.199.154.252])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CEB3A2C0321
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Mar 2013 10:45:57 +1100 (EST)
+Date: Mon, 4 Mar 2013 17:45:44 -0600
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH V4] powerpc/85xx: Add machine check handler to fix PCIe
+ erratum on mpc85xx
+To: Stuart Yoder <b08248@gmail.com>
+In-Reply-To: <CALRxmdBjb+TrqZ_XdNjH=oDcdYtVJ5=Q71dcCkKodpe7WCHDpA@mail.gmail.com>
+ (from b08248@gmail.com on Mon Mar  4 10:16:10 2013)
+Message-ID: <1362440744.16575.6@snotra>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: linuxppc-dev@lists.ozlabs.org, Jia Hongtao <B38951@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,48 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-03-04 at 16:28 +0530, Aneesh Kumar K.V wrote:
-> I added the below comment when initializing the list.
-> 
-> +#ifdef CONFIG_PPC_64K_PAGES
-> +       /*
-> +        * Used to support 4K PTE fragment. The pages are added to list,
-> +        * when we have free framents in the page. We track the whether
-> +        * a page frament is available using page._mapcount. A value of
-> +        * zero indicate none of the fragments are used and page can be
-> +        * freed. A value of FRAG_MASK indicate all the fragments are used
-> +        * and hence the page will be removed from the below list.
-> +        */
-> +       INIT_LIST_HEAD(&init_mm.context.pgtable_list);
-> +#endif
-> 
-> I am not sure about why you say there is no consistent rule. Can you
-> elaborate on that ?
+On 03/04/2013 10:16:10 AM, Stuart Yoder wrote:
+> On Mon, Mar 4, 2013 at 2:40 AM, Jia Hongtao <B38951@freescale.com> =20
+> wrote:
+> > A PCIe erratum of mpc85xx may causes a core hang when a link of PCIe
+> > goes down. when the link goes down, Non-posted transactions issued
+> > via the ATMU requiring completion result in an instruction stall.
+> > At the same time a machine-check exception is generated to the core
+> > to allow further processing by the handler. We implements the =20
+> handler
+> > which skips the instruction caused the stall.
+>=20
+> Can you explain at a high level how just skipping an instruction =20
+> solves
+> anything?   If you just skip a load/store and continue like nothing is
+> wrong, isn't your system possibly in a really bad state.
 
-Do you really need that list ? I assume it's meant to allow you to find
-free frags when allocating but my worry is that you'll end up losing
-quite a bit of node locality of PTE pages....
+If the instruction was a load, we probably at least want to fill the =20
+destination register with 0xffffffff or similar.
 
-It may or may not work but can you investigate doing things differently
-here ? The idea I want you to consider is to always allocate a full
-page, but make the relationship of the fragments to PTE pages fixed. IE.
-the fragment in the page is a function of the VA.
+> And if the core is already hung, due to the PCI link going down, isn't
+> it too late?   How does skipping help?
 
-Basically, the algorithm for allocation is roughly:
+Maybe the machine check unhangs the core?
 
- - Walk the tree down to the PMD ptr (* that can be improved with a
-generic change, see below)
+Is there an erratum number for this?
 
- - Check if any of the neighbouring PMDs is populated. If yes, you have
-your page and pick the appropriate fragment based on the VA
-
- - If not, allocate and populate
-
-On free, similarly, you checked if all neighbouring PMDs have been
-cleared, in which case you can fire off the page for RCU freeing.
-
-(*) By changing pte_alloc_one to take the PMD ptr (which the call side
-has right at hand) you can avoid the tree lookup.
-
-Cheers,
-Ben.
+-Scott=
