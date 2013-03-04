@@ -1,38 +1,22 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 06D082C02F3
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Mar 2013 05:11:09 +1100 (EST)
-Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 4 Mar 2013 23:37:10 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 0EE62E004A
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Mar 2013 23:42:14 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r24IAx4M27721980
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Mar 2013 23:40:59 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r24IB1jP000924
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Mar 2013 05:11:02 +1100
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH -V1 09/24] powerpc: Decode the pte-lp-encoding bits
- correctly.
-In-Reply-To: <87vc971iwd.fsf@linux.vnet.ibm.com>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id EAC332C032F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Mar 2013 10:36:57 +1100 (EST)
+Message-ID: <1362440204.21357.20.camel@pasglop>
+Subject: Re: [PATCH -V1 06/24] powerpc: Reduce PTE table memory wastage
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Date: Tue, 05 Mar 2013 10:36:44 +1100
+In-Reply-To: <874ngr2zz1.fsf@linux.vnet.ibm.com>
 References: <1361865914-13911-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1361865914-13911-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20130304054848.GE27523@drongo> <87vc971iwd.fsf@linux.vnet.ibm.com>
-Date: Mon, 04 Mar 2013 23:41:01 +0530
-Message-ID: <87txor828a.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
+ <1361865914-13911-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20130304045853.GB27523@drongo> <874ngr2zz1.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,78 +26,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+On Mon, 2013-03-04 at 16:28 +0530, Aneesh Kumar K.V wrote:
+> I added the below comment when initializing the list.
+> 
+> +#ifdef CONFIG_PPC_64K_PAGES
+> +       /*
+> +        * Used to support 4K PTE fragment. The pages are added to list,
+> +        * when we have free framents in the page. We track the whether
+> +        * a page frament is available using page._mapcount. A value of
+> +        * zero indicate none of the fragments are used and page can be
+> +        * freed. A value of FRAG_MASK indicate all the fragments are used
+> +        * and hence the page will be removed from the below list.
+> +        */
+> +       INIT_LIST_HEAD(&init_mm.context.pgtable_list);
+> +#endif
+> 
+> I am not sure about why you say there is no consistent rule. Can you
+> elaborate on that ?
 
-> Paul Mackerras <paulus@samba.org> writes:
->
->> On Tue, Feb 26, 2013 at 01:34:59PM +0530, Aneesh Kumar K.V wrote:
->>> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
->>>=20
->>> +static inline int hpte_actual_psize(struct hash_pte *hptep, int psize)
->>> +{
->>> +	unsigned int mask;
->>> +	int i, penc, shift;
->>> +	/* Look at the 8 bit LP value */
->>> +	unsigned int lp =3D (hptep->r >> LP_SHIFT) & ((1 << LP_BITS) - 1);
->>> +
->>> +	penc =3D 0;
->>> +	for (i =3D 0; i < MMU_PAGE_COUNT; i++) {
->>> +		/* valid entries have a shift value */
->>> +		if (!mmu_psize_defs[i].shift)
->>> +			continue;
->>> +
->>> +		/* encoding bits per actual page size */
->>> +		shift =3D mmu_psize_defs[i].shift - 11;
->>> +		if (shift > 9)
->>> +			shift =3D 9;
->>> +		mask =3D (1 << shift) - 1;
->>> +		if ((lp & mask) =3D=3D mmu_psize_defs[psize].penc[i])
->>> +			return i;
->>> +	}
->>> +	return -1;
->>> +}
->>
->> This doesn't look right to me.  First, it's not clear what the 11 and
->> 9 refer to, and I think the 9 should be LP_BITS (i.e. 8).  Secondly,
->> the mask for the comparison needs to depend on the actual page size
->> not the base page size.
->
-> How about the below. I am yet to test this in user space.=20
+Do you really need that list ? I assume it's meant to allow you to find
+free frags when allocating but my worry is that you'll end up losing
+quite a bit of node locality of PTE pages....
 
-I needed to special case 4K case. This seems to work fine with the test.
+It may or may not work but can you investigate doing things differently
+here ? The idea I want you to consider is to always allocate a full
+page, but make the relationship of the fragments to PTE pages fixed. IE.
+the fragment in the page is a function of the VA.
 
-static inline int hpte_actual_psize(struct hash_pte *hptep, int psize)
-{
-	unsigned int mask;
-	int i, penc, shift;
-	/* Look at the 8 bit LP value */
-	unsigned int lp =3D (hptep->r >> LP_SHIFT) & ((1 << LP_BITS) - 1);
+Basically, the algorithm for allocation is roughly:
 
-	/* First check if it is large page */
-	if (!(hptep->v & HPTE_V_LARGE))
-		return MMU_PAGE_4K;
+ - Walk the tree down to the PMD ptr (* that can be improved with a
+generic change, see below)
 
-	penc =3D 0;
-	for (i =3D 1; i < MMU_PAGE_COUNT; i++) {
-		/* valid entries have a shift value */
-		if (!mmu_psize_defs[i].shift)
-			continue;
-		/*
-		 * encoding bits per actual page size
-		 *        PTE LP     actual page size
-		 *    rrrr rrrz		=E2=89=A58KB
-		 *    rrrr rrzz		=E2=89=A516KB
-		 *    rrrr rzzz		=E2=89=A532KB
-		 *    rrrr zzzz		=E2=89=A564KB
-		 * .......
-		 */
-		shift =3D mmu_psize_defs[i].shift -
-				mmu_psize_defs[MMU_PAGE_4K].shift;
-		if (shift > LP_BITS)
-			shift =3D LP_BITS;
-		mask =3D (1 << shift) - 1;
-		if ((lp & mask) =3D=3D mmu_psize_defs[psize].penc[i])
-			return i;
-	}
-	return -1;
-}
+ - Check if any of the neighbouring PMDs is populated. If yes, you have
+your page and pick the appropriate fragment based on the VA
+
+ - If not, allocate and populate
+
+On free, similarly, you checked if all neighbouring PMDs have been
+cleared, in which case you can fire off the page for RCU freeing.
+
+(*) By changing pte_alloc_one to take the PMD ptr (which the call side
+has right at hand) you can avoid the tree lookup.
+
+Cheers,
+Ben.
