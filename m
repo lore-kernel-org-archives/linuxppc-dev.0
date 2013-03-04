@@ -1,38 +1,23 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6DB452C0314
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Mar 2013 22:53:01 +1100 (EST)
-Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 4 Mar 2013 17:19:21 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 7FBC41258055
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Mar 2013 17:23:47 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r24BqmAb24051942
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Mar 2013 17:22:48 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r24BqowD030245
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Mar 2013 22:52:50 +1100
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH -V1 09/24] powerpc: Decode the pte-lp-encoding bits
- correctly.
-In-Reply-To: <20130304054848.GE27523@drongo>
-References: <1361865914-13911-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1361865914-13911-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20130304054848.GE27523@drongo>
-Date: Mon, 04 Mar 2013 17:22:50 +0530
-Message-ID: <87vc971iwd.fsf@linux.vnet.ibm.com>
+Return-Path: <b08248@gmail.com>
+Received: from mail-oa0-f41.google.com (mail-oa0-f41.google.com
+ [209.85.219.41])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7C1632C0321
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Mar 2013 03:16:13 +1100 (EST)
+Received: by mail-oa0-f41.google.com with SMTP id i10so9460452oag.14
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Mar 2013 08:16:11 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
+In-Reply-To: <1362386425-20149-1-git-send-email-B38951@freescale.com>
+References: <1362386425-20149-1-git-send-email-B38951@freescale.com>
+Date: Mon, 4 Mar 2013 10:16:10 -0600
+Message-ID: <CALRxmdBjb+TrqZ_XdNjH=oDcdYtVJ5=Q71dcCkKodpe7WCHDpA@mail.gmail.com>
+Subject: Re: [PATCH V4] powerpc/85xx: Add machine check handler to fix PCIe
+ erratum on mpc85xx
+From: Stuart Yoder <b08248@gmail.com>
+To: Jia Hongtao <B38951@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: B07421@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,70 +27,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul Mackerras <paulus@samba.org> writes:
+On Mon, Mar 4, 2013 at 2:40 AM, Jia Hongtao <B38951@freescale.com> wrote:
+> A PCIe erratum of mpc85xx may causes a core hang when a link of PCIe
+> goes down. when the link goes down, Non-posted transactions issued
+> via the ATMU requiring completion result in an instruction stall.
+> At the same time a machine-check exception is generated to the core
+> to allow further processing by the handler. We implements the handler
+> which skips the instruction caused the stall.
 
-> On Tue, Feb 26, 2013 at 01:34:59PM +0530, Aneesh Kumar K.V wrote:
->> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
->>=20
->> +static inline int hpte_actual_psize(struct hash_pte *hptep, int psize)
->> +{
->> +	unsigned int mask;
->> +	int i, penc, shift;
->> +	/* Look at the 8 bit LP value */
->> +	unsigned int lp =3D (hptep->r >> LP_SHIFT) & ((1 << LP_BITS) - 1);
->> +
->> +	penc =3D 0;
->> +	for (i =3D 0; i < MMU_PAGE_COUNT; i++) {
->> +		/* valid entries have a shift value */
->> +		if (!mmu_psize_defs[i].shift)
->> +			continue;
->> +
->> +		/* encoding bits per actual page size */
->> +		shift =3D mmu_psize_defs[i].shift - 11;
->> +		if (shift > 9)
->> +			shift =3D 9;
->> +		mask =3D (1 << shift) - 1;
->> +		if ((lp & mask) =3D=3D mmu_psize_defs[psize].penc[i])
->> +			return i;
->> +	}
->> +	return -1;
->> +}
->
-> This doesn't look right to me.  First, it's not clear what the 11 and
-> 9 refer to, and I think the 9 should be LP_BITS (i.e. 8).  Secondly,
-> the mask for the comparison needs to depend on the actual page size
-> not the base page size.
+Can you explain at a high level how just skipping an instruction solves
+anything?   If you just skip a load/store and continue like nothing is
+wrong, isn't your system possibly in a really bad state.
 
-How about the below. I am yet to test this in user space.=20
+And if the core is already hung, due to the PCI link going down, isn't
+it too late?   How does skipping help?
 
-static inline int hpte_actual_psize(struct hash_pte *hptep, int psize)
-{
-	unsigned int mask;
-	int i, penc, shift;
-	/* Look at the 8 bit LP value */
-	unsigned int lp =3D (hptep->r >> LP_SHIFT) & ((1 << LP_BITS) - 1);
-
-	penc =3D 0;
-	for (i =3D 0; i < MMU_PAGE_COUNT; i++) {
-		/* valid entries have a shift value */
-		if (!mmu_psize_defs[i].shift)
-			continue;
-		/*
-		 * encoding bits per actual page size
-		 *        PTE LP     actual page size
-		 *    rrrr rrrz		=E2=89=A58KB
-		 *    rrrr rrzz		=E2=89=A516KB
-		 *    rrrr rzzz		=E2=89=A532KB
-		 *    rrrr zzzz		=E2=89=A564KB
-		 * .......
-		 */
-		shift =3D mmu_psize_defs[i].shift -
-				mmu_psize_defs[MMU_PAGE_4K].shift;
-		if (shift > LP_BITS)
-			shift =3D LP_BITS;
-		mask =3D (1 << shift) - 1;
-		if ((lp & mask) =3D=3D mmu_psize_defs[psize].penc[i])
-			return i;
-	}
-	return -1;
-}
+Stuart
