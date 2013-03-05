@@ -1,13 +1,22 @@
-Return-Path: <tony@bakeyournoodle.com>
-From: Tony Breeds <tony@bakeyournoodle.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v2] powerpc: Wireup the kcmp syscall to sys_ni
-Date: Tue,  5 Mar 2013 12:57:30 +1100
-Message-Id: <1362448650-5212-1-git-send-email-tony@bakeyournoodle.com>
-In-Reply-To: <1362443994-26580-1-git-send-email-tony@bakeyournoodle.com>
-References: <1362443994-26580-1-git-send-email-tony@bakeyournoodle.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Return-Path: <gang.chen@asianux.com>
+Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 8684E2C0332
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Mar 2013 12:58:51 +1100 (EST)
+Message-ID: <51355142.4070505@asianux.com>
+Date: Tue, 05 Mar 2013 09:58:26 +0800
+From: Chen Gang <gang.chen@asianux.com>
+MIME-Version: 1.0
+To: Jiri Slaby <jslaby@suse.cz>
+Subject: Re: [PATCH] drivers/tty/hvc: using strlcpy instead of strncpy
+References: <512C2F5D.1080207@asianux.com> <512F343E.7010201@suse.cz>
+ <512F3BC5.8020903@asianux.com> <512F3C60.9070409@asianux.com>
+ <512F5FDC.3060000@suse.cz>
+In-Reply-To: <512F5FDC.3060000@suse.cz>
+Content-Type: text/plain; charset=UTF-8
+Cc: Greg KH <gregkh@linuxfoundation.org>, tklauser@distanz.ch,
+ wfp5p@virginia.edu, linuxppc-dev@lists.ozlabs.org, alan@linux.intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,53 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since kmp takes 2 unsigned long args there should be a compat wrapper.
-Since one isn't provided I think it's safer just to hook this up to not
-implemented.  If we need it later we can do it properly then.
+于 2013年02月28日 21:47, Jiri Slaby 写道:
+>>>   when strlen(&pi->location_code[0]) == HVCS_CLC_LENGTH + 2
+> It cannot, pi->location_code is defined as char[HVCS_CLC_LENGTH + 1].
+> 
 
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
----
-Changes since v1:
- - Add comment to make finding the syscall later - thanks sfr
+  really, it is, I did not notice it.
 
- arch/powerpc/include/asm/systbl.h      | 1 +
- arch/powerpc/include/asm/unistd.h      | 2 +-
- arch/powerpc/include/uapi/asm/unistd.h | 1 +
- 3 files changed, 3 insertions(+), 1 deletion(-)
+  but I still prefer to modify it, but the patch should be changed
+  such as:
+    subject: beautify code: deleting useless judging code.
+    comments: src buf len and dest buf len are the same, strcpy is better.
+    contents: using strcpy instead of strncpy, and delete judging code.
 
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-index 535b6d8..ebbec52 100644
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -358,3 +358,4 @@ SYSCALL_SPU(setns)
- COMPAT_SYS(process_vm_readv)
- COMPAT_SYS(process_vm_writev)
- SYSCALL(finit_module)
-+SYSCALL(ni_syscall) /* sys_kcmp */
-diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
-index f25b5c4..1487f0f 100644
---- a/arch/powerpc/include/asm/unistd.h
-+++ b/arch/powerpc/include/asm/unistd.h
-@@ -12,7 +12,7 @@
- #include <uapi/asm/unistd.h>
- 
- 
--#define __NR_syscalls		354
-+#define __NR_syscalls		355
- 
- #define __NR__exit __NR_exit
- #define NR_syscalls	__NR_syscalls
-diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
-index 8c478c6..74cb4d7 100644
---- a/arch/powerpc/include/uapi/asm/unistd.h
-+++ b/arch/powerpc/include/uapi/asm/unistd.h
-@@ -376,6 +376,7 @@
- #define __NR_process_vm_readv	351
- #define __NR_process_vm_writev	352
- #define __NR_finit_module	353
-+#define __NR_kcmp		354
- 
- 
- #endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
+  is it ok ?
+
+BTW:
+  sorry for my reply is too late, and did not notify it, originally before.
+    I have to do some urgent things, during these days.
+      my father had a serious heart disease, and is in hospital.
+      during these days, most of my time has to be in hospital.
+      (God Bless, and thank Jesus Christ, my father is safe, now).
+    within my company (Asianux), I also have something to do.
+
+  excuse me:
+    within this week, maybe can not get my mail reply, too.
+
+
+
+
 -- 
-1.8.1.4
+Chen Gang
+
+Asianux Corporation
