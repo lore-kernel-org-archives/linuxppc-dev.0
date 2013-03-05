@@ -1,20 +1,13 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 191282C034A
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Mar 2013 16:10:10 +1100 (EST)
-Message-ID: <1362460198.21357.47.camel@pasglop>
-Subject: Re: [PATCH 2/3] powerpc: Add DSCR FSCR register bit definition
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Neuling <mikey@neuling.org>
-Date: Tue, 05 Mar 2013 16:09:58 +1100
-In-Reply-To: <1362390402-17725-3-git-send-email-mikey@neuling.org>
-References: <1362390402-17725-1-git-send-email-mikey@neuling.org>
- <1362390402-17725-3-git-send-email-mikey@neuling.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 0/3] powerpc: FSCR fixes for POWER8
+Date: Tue,  5 Mar 2013 16:45:49 +1100
+Message-Id: <1362462352-12009-1-git-send-email-mikey@neuling.org>
+In-Reply-To: <1362459996.21357.46.camel@pasglop>
+References: <1362459996.21357.46.camel@pasglop>
+Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
+ Ian Munsie <imunsie@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,12 +17,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-03-04 at 20:46 +1100, Michael Neuling wrote:
-> Also harmonise TAR bit definition too.
+Benh, 
 
-Same, expand accronyms, minimum blurb about what these are about (not a
-long explanation, just so that when I come out of the blue I can at
-least connect it to something that makes sense :-)
+Here are a few fixes for the POWER8 (Performance Optimization With Enhanced
+RISC Eight) FSCR (Facility Status & Control Register).
 
-Cheers,
-Ben.
+First patch changes the FSCR so that it's set on secondary CPUs as well as when
+MSR HV=0.
+
+Second two patches make sure that the FSCR DSCR (Data Stream Control
+Register) bit is set so that we don't trap on DSCR usage.
+
+These are aimed to fix issues in 3.9.
+
+v2:
+  Addressing comments from benh (Benjamin Herrenschmidt)
+
+Mikey
