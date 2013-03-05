@@ -1,10 +1,15 @@
-Return-Path: <michael@ellerman.id.au>
-Date: Tue, 5 Mar 2013 13:23:48 +1100
-From: Michael Ellerman <michael@ellerman.id.au>
+Return-Path: <lethal@linux-sh.org>
+Received: from linux-sh.org (linux-sh.org [111.68.239.195])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id AB3A32C031F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Mar 2013 13:41:46 +1100 (EST)
+Date: Tue, 5 Mar 2013 11:41:12 +0900
+From: Paul Mundt <lethal@linux-sh.org>
 To: Mike Qiu <qiudayu@linux.vnet.ibm.com>
 Subject: Re: [PATCH 2/3] irq: Add hw continuous IRQs map to virtual
  continuous IRQs support
-Message-ID: <20130305022348.GB7656@concordia>
+Message-ID: <20130305024110.GB14275@linux-sh.org>
 References: <1358235536-32741-1-git-send-email-qiudayu@linux.vnet.ibm.com>
  <1358235536-32741-3-git-send-email-qiudayu@linux.vnet.ibm.com>
 MIME-Version: 1.0
@@ -27,112 +32,15 @@ On Tue, Jan 15, 2013 at 03:38:55PM +0800, Mike Qiu wrote:
 > 
 > This is needed to enable multiple MSI support for pSeries.
 > 
-> Signed-off-by: Mike Qiu <qiudayu@linux.vnet.ibm.com>
-> ---
->  include/linux/irq.h       |    2 +
->  include/linux/irqdomain.h |    3 ++
->  kernel/irq/irqdomain.c    |   61 +++++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 66 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/linux/irq.h b/include/linux/irq.h
-> index 60ef45b..e00a7ec 100644
-> --- a/include/linux/irq.h
-> +++ b/include/linux/irq.h
-> @@ -592,6 +592,8 @@ int __irq_alloc_descs(int irq, unsigned int from, unsigned int cnt, int node,
->  #define irq_alloc_desc_from(from, node)		\
->  	irq_alloc_descs(-1, from, 1, node)
->  
-> +#define irq_alloc_desc_n(nevc, node)		\
-> +	irq_alloc_descs(-1, 0, nevc, node)
-
-This has been superseeded by irq_alloc_descs_from(), which is the right
-way to do it.
-
-> diff --git a/include/linux/irqdomain.h b/include/linux/irqdomain.h
-> index 0d5b17b..831dded 100644
-> --- a/include/linux/irqdomain.h
-> +++ b/include/linux/irqdomain.h
-> @@ -168,6 +168,9 @@ extern int irq_create_strict_mappings(struct irq_domain *domain,
->  				      unsigned int irq_base,
->  				      irq_hw_number_t hwirq_base, int count);
->  
-> +extern int irq_create_mapping_many(struct irq_domain *domain,
-> +					irq_hw_number_t hwirq_base, int count);
-> +
->  static inline int irq_create_identity_mapping(struct irq_domain *host,
->  					      irq_hw_number_t hwirq)
->  {
-> diff --git a/kernel/irq/irqdomain.c b/kernel/irq/irqdomain.c
-> index 96f3a1d..38648e6 100644
-> --- a/kernel/irq/irqdomain.c
-> +++ b/kernel/irq/irqdomain.c
-> @@ -636,6 +636,67 @@ int irq_create_strict_mappings(struct irq_domain *domain, unsigned int irq_base,
->  }
->  EXPORT_SYMBOL_GPL(irq_create_strict_mappings);
->  
-> +/**
-> + * irq_create_mapping_many - Map a range of hw IRQs to a range of virtual IRQs
-> + * @domain: domain owning the interrupt range
-> + * @hwirq_base: beginning of continuous hardware IRQ range
-> + * @count: Number of interrupts to map
-
-For multiple-MSI the allocated interrupt numbers must be a power-of-2,
-and must be naturally aligned. I don't /think/ that's a requirement for
-the virtual numbers, but it's probably best that we do it anyway.
-
-So this API needs to specify that it will give you back a power-of-2
-block that is naturally aligned - otherwise you can't use it for MSI.
-
-> + * This routine is used for allocating and mapping a range of hardware
-> + * irqs to virtual IRQs where the virtual irq numbers are not at pre-defined
-> + * locations.
-
-This comment doesn't make sense to me.
-
-> + *
-> + * Greater than 0 is returned upon success, while any failure to establish a
-> + * static mapping is treated as an error.
-> + */
 > +int irq_create_mapping_many(struct irq_domain *domain,
 > +		irq_hw_number_t hwirq_base, int count)
 > +{
-> +	int ret, irq_base;
-> +	int virq, i;
-> +
-> +	pr_debug("irq_create_mapping(0x%p, 0x%lx)\n", domain, hwirq_base);
 
+Other than the other review comments already made, I think you can
+simplify this considerably by simply doing what irq_create_strict_mappings() does,
+and relaxing the irq_base requirements.
 
-I'd like to see this whole function rewritten to reduce the duplication
-vs irq_create_mapping(). I don't see any reason why this can't be the
-core routine, and irq_create_mapping() becomes a caller of it, passing a
-count of 1 ?
-
-> +	/* Look for default domain if nececssary */
-> +	if (!domain)
-> +		domain = irq_default_domain;
-> +	if (!domain) {
-> +		pr_warn("irq_create_mapping called for NULL domain, hwirq=%lx\n"
-> +			, hwirq_base);
-> +		WARN_ON(1);
-> +		return 0;
-> +	}
-> +	pr_debug("-> using domain @%p\n", domain);
-> +
-> +	/* For IRQ_DOMAIN_MAP_LEGACY, get the first virtual interrupt number */
-> +	if (domain->revmap_type == IRQ_DOMAIN_MAP_LEGACY)
-> +		return irq_domain_legacy_revmap(domain, hwirq_base);
-
-The above doesn't work.
-
-> +	/* Check if mapping already exists */
-> +	for (i = 0; i < count; i++) {
-> +		virq = irq_find_mapping(domain, hwirq_base+i);
-> +		if (virq) {
-> +			pr_debug("existing mapping on virq %d,"
-> +					" now dispose it first\n", virq);
-> +			irq_dispose_mapping(virq);
-
-You might have just disposed of someone elses mapping, we shouldn't do
-that. It should be an error to the caller.
-
-cheers
+In any event, as you are creating a new interface, I don't think you want
+to carry around half of the legacy crap that irq_create_mapping() has to
+deal with. We made the decision to avoid this with irq_create_strict_mappings()
+intentionally, too.
