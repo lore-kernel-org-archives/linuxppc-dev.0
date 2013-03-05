@@ -1,36 +1,36 @@
 Return-Path: <qiudayu@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 578502C033D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Mar 2013 18:20:10 +1100 (EST)
+ (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 39EDB2C0348
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Mar 2013 18:44:21 +1100 (EST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <qiudayu@linux.vnet.ibm.com>;
- Tue, 5 Mar 2013 17:15:16 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 50A243578050
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Mar 2013 18:20:03 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r257K0dl66257138
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Mar 2013 18:20:00 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r257K2LU014866
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Mar 2013 18:20:02 +1100
-Message-ID: <51359C9D.5030009@linux.vnet.ibm.com>
-Date: Tue, 05 Mar 2013 15:19:57 +0800
+ Tue, 5 Mar 2013 13:12:08 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 0C7561258059
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Mar 2013 13:15:11 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r257iBZI28246114
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Mar 2013 13:14:11 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r257iD3c010552
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Mar 2013 18:44:13 +1100
+Message-ID: <5135A248.4010205@linux.vnet.ibm.com>
+Date: Tue, 05 Mar 2013 15:44:08 +0800
 From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Michael Ellerman <michael@ellerman.id.au>
+To: Paul Mundt <lethal@linux-sh.org>
 Subject: Re: [PATCH 2/3] irq: Add hw continuous IRQs map to virtual continuous
  IRQs support
 References: <1358235536-32741-1-git-send-email-qiudayu@linux.vnet.ibm.com>
  <1358235536-32741-3-git-send-email-qiudayu@linux.vnet.ibm.com>
- <20130305022348.GB7656@concordia>
-In-Reply-To: <20130305022348.GB7656@concordia>
+ <20130305024110.GB14275@linux-sh.org>
+In-Reply-To: <20130305024110.GB14275@linux-sh.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Cc: tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
@@ -43,123 +43,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-于 2013/3/5 10:23, Michael Ellerman 写道:
+于 2013/3/5 10:41, Paul Mundt 写道:
 > On Tue, Jan 15, 2013 at 03:38:55PM +0800, Mike Qiu wrote:
 >> Adding a function irq_create_mapping_many() which can associate
 >> multiple MSIs to a continous irq mapping.
 >>
 >> This is needed to enable multiple MSI support for pSeries.
 >>
->> Signed-off-by: Mike Qiu <qiudayu@linux.vnet.ibm.com>
->> ---
->>   include/linux/irq.h       |    2 +
->>   include/linux/irqdomain.h |    3 ++
->>   kernel/irq/irqdomain.c    |   61 +++++++++++++++++++++++++++++++++++++++++++++
->>   3 files changed, 66 insertions(+), 0 deletions(-)
->>
->> diff --git a/include/linux/irq.h b/include/linux/irq.h
->> index 60ef45b..e00a7ec 100644
->> --- a/include/linux/irq.h
->> +++ b/include/linux/irq.h
->> @@ -592,6 +592,8 @@ int __irq_alloc_descs(int irq, unsigned int from, unsigned int cnt, int node,
->>   #define irq_alloc_desc_from(from, node)		\
->>   	irq_alloc_descs(-1, from, 1, node)
->>   
->> +#define irq_alloc_desc_n(nevc, node)		\
->> +	irq_alloc_descs(-1, 0, nevc, node)
-> This has been superseeded by irq_alloc_descs_from(), which is the right
-> way to do it.
-Yes, but irq_alloc_descs_from() just for 1 irq, and if I change the api, 
-maybe a lot places which call this
-function will be affact.
->
->> diff --git a/include/linux/irqdomain.h b/include/linux/irqdomain.h
->> index 0d5b17b..831dded 100644
->> --- a/include/linux/irqdomain.h
->> +++ b/include/linux/irqdomain.h
->> @@ -168,6 +168,9 @@ extern int irq_create_strict_mappings(struct irq_domain *domain,
->>   				      unsigned int irq_base,
->>   				      irq_hw_number_t hwirq_base, int count);
->>   
->> +extern int irq_create_mapping_many(struct irq_domain *domain,
->> +					irq_hw_number_t hwirq_base, int count);
->> +
->>   static inline int irq_create_identity_mapping(struct irq_domain *host,
->>   					      irq_hw_number_t hwirq)
->>   {
->> diff --git a/kernel/irq/irqdomain.c b/kernel/irq/irqdomain.c
->> index 96f3a1d..38648e6 100644
->> --- a/kernel/irq/irqdomain.c
->> +++ b/kernel/irq/irqdomain.c
->> @@ -636,6 +636,67 @@ int irq_create_strict_mappings(struct irq_domain *domain, unsigned int irq_base,
->>   }
->>   EXPORT_SYMBOL_GPL(irq_create_strict_mappings);
->>   
->> +/**
->> + * irq_create_mapping_many - Map a range of hw IRQs to a range of virtual IRQs
->> + * @domain: domain owning the interrupt range
->> + * @hwirq_base: beginning of continuous hardware IRQ range
->> + * @count: Number of interrupts to map
-> For multiple-MSI the allocated interrupt numbers must be a power-of-2,
-> and must be naturally aligned. I don't /think/ that's a requirement for
-> the virtual numbers, but it's probably best that we do it anyway.
->
-> So this API needs to specify that it will give you back a power-of-2
-> block that is naturally aligned - otherwise you can't use it for MSI.
-rtas_call will return the numbers of hardware interrupt, and it should 
-be power-of-2,
-as this I think do not need to specify
->> + * This routine is used for allocating and mapping a range of hardware
->> + * irqs to virtual IRQs where the virtual irq numbers are not at pre-defined
->> + * locations.
-> This comment doesn't make sense to me.
->
->> + *
->> + * Greater than 0 is returned upon success, while any failure to establish a
->> + * static mapping is treated as an error.
->> + */
 >> +int irq_create_mapping_many(struct irq_domain *domain,
 >> +		irq_hw_number_t hwirq_base, int count)
 >> +{
->> +	int ret, irq_base;
->> +	int virq, i;
->> +
->> +	pr_debug("irq_create_mapping(0x%p, 0x%lx)\n", domain, hwirq_base);
+> Other than the other review comments already made, I think you can
+> simplify this considerably by simply doing what irq_create_strict_mappings() does,
+> and relaxing the irq_base requirements.
 >
-> I'd like to see this whole function rewritten to reduce the duplication
-> vs irq_create_mapping(). I don't see any reason why this can't be the
-> core routine, and irq_create_mapping() becomes a caller of it, passing a
-> count of 1 ?
-It's good suggestion.
->> +	/* Look for default domain if nececssary */
->> +	if (!domain)
->> +		domain = irq_default_domain;
->> +	if (!domain) {
->> +		pr_warn("irq_create_mapping called for NULL domain, hwirq=%lx\n"
->> +			, hwirq_base);
->> +		WARN_ON(1);
->> +		return 0;
->> +	}
->> +	pr_debug("-> using domain @%p\n", domain);
->> +
->> +	/* For IRQ_DOMAIN_MAP_LEGACY, get the first virtual interrupt number */
->> +	if (domain->revmap_type == IRQ_DOMAIN_MAP_LEGACY)
->> +		return irq_domain_legacy_revmap(domain, hwirq_base);
-> The above doesn't work.
-Why it doesn't work ?
->> +	/* Check if mapping already exists */
->> +	for (i = 0; i < count; i++) {
->> +		virq = irq_find_mapping(domain, hwirq_base+i);
->> +		if (virq) {
->> +			pr_debug("existing mapping on virq %d,"
->> +					" now dispose it first\n", virq);
->> +			irq_dispose_mapping(virq);
-> You might have just disposed of someone elses mapping, we shouldn't do
-> that. It should be an error to the caller.
-It's a good question. If the interrupt used for someone elses, why I can 
-apply it from the system?
-So it may someone else forget to dispose mapping, and it never be used 
-for others as I have got
-the interrupt I think.
-> cheers
+> In any event, as you are creating a new interface, I don't think you want
+> to carry around half of the legacy crap that irq_create_mapping() has to
+> deal with. We made the decision to avoid this with irq_create_strict_mappings()
+> intentionally, too.
 >
+Oh, yes, you are right, I will send out V2 of my patch to make it more 
+comfortable , and hope you can review my patch again
+
+Thanks
+
+Mike
