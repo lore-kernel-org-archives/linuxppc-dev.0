@@ -1,17 +1,42 @@
-Return-Path: <lists@nerdbynature.de>
-Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
- by ozlabs.org (Postfix) with ESMTP id F32A92C0340
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Mar 2013 12:23:24 +1100 (EST)
-Date: Mon, 4 Mar 2013 17:23:14 -0800 (PST)
-From: Christian Kujau <lists@nerdbynature.de>
-To: Tony Breeds <tony@bakeyournoodle.com>
-Subject: Re: [PATCH] ppc32: Fix compile of sha1-powerpc-asm.S
-In-Reply-To: <1361845205-30606-1-git-send-email-tony@bakeyournoodle.com>
-Message-ID: <alpine.DEB.2.10.1303041656010.22410@trent.utfs.org>
-References: <1361845205-30606-1-git-send-email-tony@bakeyournoodle.com>
+Return-Path: <walken@google.com>
+Received: from mail-ia0-x236.google.com (mail-ia0-x236.google.com
+ [IPv6:2607:f8b0:4001:c02::236])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 201D02C0341
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Mar 2013 12:37:13 +1100 (EST)
+Received: by mail-ia0-f182.google.com with SMTP id r4so266555iaj.41
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Mar 2013 17:37:10 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <20130303174056.GA30176@redhat.com>
+References: <512CC509.1050000@linux.vnet.ibm.com>
+ <CACvQF50UgiqPpDk3HCmV86zKSf6tPjqr0bZowfPEOJs0g0r0MQ@mail.gmail.com>
+ <512D0D67.9010609@linux.vnet.ibm.com>
+ <CACvQF53ph2ixdM-otzetjM5cR+2kcZj6sckOp3TnzzA_x-EZ8w@mail.gmail.com>
+ <512E7879.20109@linux.vnet.ibm.com> <5130E8E2.50206@cn.fujitsu.com>
+ <20130301182854.GA3631@redhat.com>
+ <CANN689HEW=b5S93J27p+rBX-5m7jkW4FER=eHDCp7OgMaTWLPw@mail.gmail.com>
+ <5131FB4C.7070408@cn.fujitsu.com>
+ <20130302172003.GC29769@redhat.com>
+ <20130303174056.GA30176@redhat.com>
+Date: Mon, 4 Mar 2013 17:37:09 -0800
+Message-ID: <CANN689F6RHCtDAiBGu=n60UKUEE5Ld50gkwS3rNdE2GN2+v3nA@mail.gmail.com>
+Subject: Re: [PATCH V2] lglock: add read-preference local-global rwlock
+From: Michel Lespinasse <walken@google.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Lai Jiangshan <eag0628@gmail.com>, linux-doc@vger.kernel.org,
+ peterz@infradead.org, fweisbec@gmail.com, mingo@kernel.org,
+ linux-arch@vger.kernel.org, linux@arm.linux.org.uk,
+ xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
+ paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
+ linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org,
+ rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
+ linux-arm-kernel@lists.infradead.org, Lai Jiangshan <laijs@cn.fujitsu.com>,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ vincent.guittot@linaro.org, sbw@mit.edu,
+ "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, tj@kernel.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,72 +46,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 26 Feb 2013 at 13:20, Tony Breeds wrote:
-> When building with CRYPTO_SHA1_PPC enabled we fail with:
-> ---
-> powerpc/crypto/sha1-powerpc-asm.S: Assembler messages:
-> powerpc/crypto/sha1-powerpc-asm.S:116: Error: can't resolve `0' {*ABS* section} - `STACKFRAMESIZE' {*UND* section}
-> powerpc/crypto/sha1-powerpc-asm.S:116: Error: expression too complex
-> powerpc/crypto/sha1-powerpc-asm.S:178: Error: unsupported relocation against STACKFRAMESIZE
-> ---
-> 
-> Use INT_FRAME_SIZE instead.
-> 
-> Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+On Sun, Mar 3, 2013 at 9:40 AM, Oleg Nesterov <oleg@redhat.com> wrote:
+>> However, I still think that FALLBACK_BASE only adds the unnecessary
+>> complications. But even if I am right this is subjective of course, please
+>> feel free to ignore.
 
-Thanks for the fix! Ran into this as well, with your patch 3.9-rc1 
-compiles again (and it even boots :-))
+Would it help if I sent out that version (without FALLBACK_BASE) as a
+formal proposal ?
 
-Tested-by: Christian Kujau <lists@nerdbynature.de>
+> Hmm. But then I do not understand the lglock annotations. Obviously,
+> rwlock_acquire_read() in lg_local_lock() can't even detect the simplest
+> deadlock, say, lg_local_lock(LOCK) + lg_local_lock(LOCK). Not to mention
+> spin_lock(X) + lg_local_lock(Y) vs lg_local_lock(Y) + spin_lock(X).
+>
+> OK, I understand that it is not easy to make these annotations correct...
 
-$ grep -A10 sha1 /proc/crypto
-name         : sha1
-driver       : sha1-powerpc
-module       : kernel
-priority     : 0
-refcnt       : 1
-selftest     : passed
-type         : shash
-blocksize    : 64
-digestsize   : 20
-
-
-> ---
->  arch/powerpc/crypto/sha1-powerpc-asm.S | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> FWIW the SHA1_PPC makes about a 20% difference on my 32bit board
-> 
-> diff --git a/arch/powerpc/crypto/sha1-powerpc-asm.S b/arch/powerpc/crypto/sha1-powerpc-asm.S
-> index a5f8264..125e165 100644
-> --- a/arch/powerpc/crypto/sha1-powerpc-asm.S
-> +++ b/arch/powerpc/crypto/sha1-powerpc-asm.S
-> @@ -113,7 +113,7 @@
->  	STEPUP4((t)+16, fn)
->  
->  _GLOBAL(powerpc_sha_transform)
-> -	PPC_STLU r1,-STACKFRAMESIZE(r1)
-> +	PPC_STLU r1,-INT_FRAME_SIZE(r1)
->  	SAVE_8GPRS(14, r1)
->  	SAVE_10GPRS(22, r1)
->  
-> @@ -175,5 +175,5 @@ _GLOBAL(powerpc_sha_transform)
->  
->  	REST_8GPRS(14, r1)
->  	REST_10GPRS(22, r1)
-> -	addi	r1,r1,STACKFRAMESIZE
-> +	addi	r1,r1,INT_FRAME_SIZE
->  	blr
-> -- 
-> 1.8.1.2
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+I am going to send out a proposal to fix the existing lglock
+annotations and detect the two cases you noticed. It's actually not
+that hard :)
 
 -- 
-BOFH excuse #21:
-
-POSIX compliance problem
+Michel "Walken" Lespinasse
+A program is never fully debugged until the last user dies.
