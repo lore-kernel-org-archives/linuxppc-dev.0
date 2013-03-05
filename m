@@ -1,11 +1,17 @@
-Return-Path: <tony@bakeyournoodle.com>
-From: Tony Breeds <tony@bakeyournoodle.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc: Wireup the kcmp syscall to sys_ni
-Date: Tue,  5 Mar 2013 11:39:54 +1100
-Message-Id: <1362443994-26580-1-git-send-email-tony@bakeyournoodle.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Return-Path: <lists@nerdbynature.de>
+Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
+ by ozlabs.org (Postfix) with ESMTP id F32A92C0340
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Mar 2013 12:23:24 +1100 (EST)
+Date: Mon, 4 Mar 2013 17:23:14 -0800 (PST)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Tony Breeds <tony@bakeyournoodle.com>
+Subject: Re: [PATCH] ppc32: Fix compile of sha1-powerpc-asm.S
+In-Reply-To: <1361845205-30606-1-git-send-email-tony@bakeyournoodle.com>
+Message-ID: <alpine.DEB.2.10.1303041656010.22410@trent.utfs.org>
+References: <1361845205-30606-1-git-send-email-tony@bakeyournoodle.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -15,50 +21,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since kmp takes 2 unsigned long args there should be a compat wrapper.
-Since one isn't provided I think it's safer just to hook this up to not
-implemented.  If we need it later we can do it properly then.
+On Tue, 26 Feb 2013 at 13:20, Tony Breeds wrote:
+> When building with CRYPTO_SHA1_PPC enabled we fail with:
+> ---
+> powerpc/crypto/sha1-powerpc-asm.S: Assembler messages:
+> powerpc/crypto/sha1-powerpc-asm.S:116: Error: can't resolve `0' {*ABS* section} - `STACKFRAMESIZE' {*UND* section}
+> powerpc/crypto/sha1-powerpc-asm.S:116: Error: expression too complex
+> powerpc/crypto/sha1-powerpc-asm.S:178: Error: unsupported relocation against STACKFRAMESIZE
+> ---
+> 
+> Use INT_FRAME_SIZE instead.
+> 
+> Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
 
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
----
- arch/powerpc/include/asm/systbl.h      | 1 +
- arch/powerpc/include/asm/unistd.h      | 2 +-
- arch/powerpc/include/uapi/asm/unistd.h | 1 +
- 3 files changed, 3 insertions(+), 1 deletion(-)
+Thanks for the fix! Ran into this as well, with your patch 3.9-rc1 
+compiles again (and it even boots :-))
 
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-index 535b6d8..289bb52 100644
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -358,3 +358,4 @@ SYSCALL_SPU(setns)
- COMPAT_SYS(process_vm_readv)
- COMPAT_SYS(process_vm_writev)
- SYSCALL(finit_module)
-+SYSCALL(ni_syscall)
-diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
-index f25b5c4..1487f0f 100644
---- a/arch/powerpc/include/asm/unistd.h
-+++ b/arch/powerpc/include/asm/unistd.h
-@@ -12,7 +12,7 @@
- #include <uapi/asm/unistd.h>
- 
- 
--#define __NR_syscalls		354
-+#define __NR_syscalls		355
- 
- #define __NR__exit __NR_exit
- #define NR_syscalls	__NR_syscalls
-diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
-index 8c478c6..74cb4d7 100644
---- a/arch/powerpc/include/uapi/asm/unistd.h
-+++ b/arch/powerpc/include/uapi/asm/unistd.h
-@@ -376,6 +376,7 @@
- #define __NR_process_vm_readv	351
- #define __NR_process_vm_writev	352
- #define __NR_finit_module	353
-+#define __NR_kcmp		354
- 
- 
- #endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
+Tested-by: Christian Kujau <lists@nerdbynature.de>
+
+$ grep -A10 sha1 /proc/crypto
+name         : sha1
+driver       : sha1-powerpc
+module       : kernel
+priority     : 0
+refcnt       : 1
+selftest     : passed
+type         : shash
+blocksize    : 64
+digestsize   : 20
+
+
+> ---
+>  arch/powerpc/crypto/sha1-powerpc-asm.S | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> FWIW the SHA1_PPC makes about a 20% difference on my 32bit board
+> 
+> diff --git a/arch/powerpc/crypto/sha1-powerpc-asm.S b/arch/powerpc/crypto/sha1-powerpc-asm.S
+> index a5f8264..125e165 100644
+> --- a/arch/powerpc/crypto/sha1-powerpc-asm.S
+> +++ b/arch/powerpc/crypto/sha1-powerpc-asm.S
+> @@ -113,7 +113,7 @@
+>  	STEPUP4((t)+16, fn)
+>  
+>  _GLOBAL(powerpc_sha_transform)
+> -	PPC_STLU r1,-STACKFRAMESIZE(r1)
+> +	PPC_STLU r1,-INT_FRAME_SIZE(r1)
+>  	SAVE_8GPRS(14, r1)
+>  	SAVE_10GPRS(22, r1)
+>  
+> @@ -175,5 +175,5 @@ _GLOBAL(powerpc_sha_transform)
+>  
+>  	REST_8GPRS(14, r1)
+>  	REST_10GPRS(22, r1)
+> -	addi	r1,r1,STACKFRAMESIZE
+> +	addi	r1,r1,INT_FRAME_SIZE
+>  	blr
+> -- 
+> 1.8.1.2
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
+
 -- 
-1.8.1.4
+BOFH excuse #21:
+
+POSIX compliance problem
