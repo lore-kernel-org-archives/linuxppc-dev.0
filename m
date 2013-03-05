@@ -1,21 +1,20 @@
-Return-Path: <B08248@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe003.messaging.microsoft.com [213.199.154.206])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 11C702C007C
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2013 09:41:17 +1100 (EST)
-From: Stuart Yoder <stuart.yoder@freescale.com>
-To: <galak@kernel.crashing.org>
-Subject: [PATCH][v2] powerpc: add missing deo arch category to e500mc/e5500 dts
-Date: Tue, 5 Mar 2013 16:39:09 -0600
-Message-ID: <1362523149-19393-2-git-send-email-stuart.yoder@freescale.com>
-In-Reply-To: <1362523149-19393-1-git-send-email-stuart.yoder@freescale.com>
-References: <1362523149-19393-1-git-send-email-stuart.yoder@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, Stuart Yoder <stuart.yoder@freescale.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id DC91C2C0324
+ for <linuxppc-dev@ozlabs.org>; Wed,  6 Mar 2013 10:16:04 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id r25NG2pP024136
+ for <linuxppc-dev@ozlabs.org>; Tue, 5 Mar 2013 17:16:02 -0600
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 3/8] powerpc/fsl-booke: Support detection of page sizes on
+Date: Tue,  5 Mar 2013 17:15:55 -0600
+Message-Id: <1362525360-23136-3-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1362525360-23136-2-git-send-email-galak@kernel.crashing.org>
+References: <1362525360-23136-1-git-send-email-galak@kernel.crashing.org>
+ <1362525360-23136-2-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,41 +24,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Stuart Yoder <stuart.yoder@freescale.com>
+The e6500 core used on T4240 and B4860 SoCs from FSL implements MMUv2 of
+the Power Book-E Architecture.  However there are some minor differences
+between it and other Book-E implementations.
 
-Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
+Add support to parse SPRN_TLB1PS for the variable page sizes supported.
+In the future this should be expanded for more page sizes supported on
+e6500 as well as other MMU features.
+
+This patch is based on code from Scott Wood.
+
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
+ arch/powerpc/mm/tlb_nohash.c |   18 ++++++++++++++++--
+ 1 file changed, 16 insertions(+), 2 deletions(-)
 
--v2
-   -deo is EREF specific, changed name of property
-
- arch/powerpc/boot/dts/fsl/e500mc_power_isa.dtsi |    1 +
- arch/powerpc/boot/dts/fsl/e5500_power_isa.dtsi  |    1 +
- 2 files changed, 2 insertions(+)
-
-diff --git a/arch/powerpc/boot/dts/fsl/e500mc_power_isa.dtsi b/arch/powerpc/boot/dts/fsl/e500mc_power_isa.dtsi
-index 870c653..ea145c9 100644
---- a/arch/powerpc/boot/dts/fsl/e500mc_power_isa.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/e500mc_power_isa.dtsi
-@@ -53,6 +53,7 @@
- 		power-isa-mmc;		// Memory Coherence
- 		power-isa-scpm;		// Store Conditional Page Mobility
- 		power-isa-wt;		// Wait
-+		fsl,eref-deo;		// Data Cache Extended Operations
- 		mmu-type = "power-embedded";
- 	};
- };
-diff --git a/arch/powerpc/boot/dts/fsl/e5500_power_isa.dtsi b/arch/powerpc/boot/dts/fsl/e5500_power_isa.dtsi
-index 3230212..c254c98 100644
---- a/arch/powerpc/boot/dts/fsl/e5500_power_isa.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/e5500_power_isa.dtsi
-@@ -54,6 +54,7 @@
- 		power-isa-scpm;		// Store Conditional Page Mobility
- 		power-isa-wt;		// Wait
- 		power-isa-64;		// 64-bit
-+		fsl,eref-deo;		// Data Cache Extended Operations
- 		mmu-type = "power-embedded";
- 	};
- };
+diff --git a/arch/powerpc/mm/tlb_nohash.c b/arch/powerpc/mm/tlb_nohash.c
+index df32a83..6888cad 100644
+--- a/arch/powerpc/mm/tlb_nohash.c
++++ b/arch/powerpc/mm/tlb_nohash.c
+@@ -414,9 +414,9 @@ static void setup_page_sizes(void)
+ 
+ #ifdef CONFIG_PPC_FSL_BOOK3E
+ 	unsigned int mmucfg = mfspr(SPRN_MMUCFG);
++	int fsl_mmu = mmu_has_feature(MMU_FTR_TYPE_FSL_E);
+ 
+-	if (((mmucfg & MMUCFG_MAVN) == MMUCFG_MAVN_V1) &&
+-		(mmu_has_feature(MMU_FTR_TYPE_FSL_E))) {
++	if (fsl_mmu && (mmucfg & MMUCFG_MAVN) == MMUCFG_MAVN_V1) {
+ 		unsigned int tlb1cfg = mfspr(SPRN_TLB1CFG);
+ 		unsigned int min_pg, max_pg;
+ 
+@@ -442,6 +442,20 @@ static void setup_page_sizes(void)
+ 
+ 		goto no_indirect;
+ 	}
++
++	if (fsl_mmu && (mmucfg & MMUCFG_MAVN) == MMUCFG_MAVN_V2) {
++		u32 tlb1ps = mfspr(SPRN_TLB1PS);
++
++		for (psize = 0; psize < MMU_PAGE_COUNT; ++psize) {
++			struct mmu_psize_def *def = &mmu_psize_defs[psize];
++
++			if (tlb1ps & (1U << (def->shift - 10))) {
++				def->flags |= MMU_PAGE_SIZE_DIRECT;
++			}
++		}
++
++		goto no_indirect;
++	}
+ #endif
+ 
+ 	tlb0cfg = mfspr(SPRN_TLB0CFG);
 -- 
 1.7.9.7
