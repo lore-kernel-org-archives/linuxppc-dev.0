@@ -1,22 +1,20 @@
-Return-Path: <lethal@linux-sh.org>
-Received: from linux-sh.org (linux-sh.org [111.68.239.195])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id AB3A32C031F
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Mar 2013 13:41:46 +1100 (EST)
-Date: Tue, 5 Mar 2013 11:41:12 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Mike Qiu <qiudayu@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/3] irq: Add hw continuous IRQs map to virtual
- continuous IRQs support
-Message-ID: <20130305024110.GB14275@linux-sh.org>
-References: <1358235536-32741-1-git-send-email-qiudayu@linux.vnet.ibm.com>
- <1358235536-32741-3-git-send-email-qiudayu@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1358235536-32741-3-git-send-email-qiudayu@linux.vnet.ibm.com>
-Cc: tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+ by ozlabs.org (Postfix) with ESMTPS id C88D42C0347
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Mar 2013 16:06:51 +1100 (EST)
+Message-ID: <1362459996.21357.46.camel@pasglop>
+Subject: Re: [PATCH 1/3] powerpc: Fix setting FSCR for HV=0 and secondary CPUs
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Neuling <mikey@neuling.org>
+Date: Tue, 05 Mar 2013 16:06:36 +1100
+In-Reply-To: <1362390402-17725-2-git-send-email-mikey@neuling.org>
+References: <1362390402-17725-1-git-send-email-mikey@neuling.org>
+ <1362390402-17725-2-git-send-email-mikey@neuling.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,21 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 15, 2013 at 03:38:55PM +0800, Mike Qiu wrote:
-> Adding a function irq_create_mapping_many() which can associate
-> multiple MSIs to a continous irq mapping.
+On Mon, 2013-03-04 at 20:46 +1100, Michael Neuling wrote:
+> Currently we only set the FSCR when HV=1 but this feature is available when
+> HV=0 also.  This patch sets FSCR when HV=0.
 > 
-> This is needed to enable multiple MSI support for pSeries.
+> Also, we currently only set the FSCR on the master CPU.  This patch also sets
+> the FSCR on secondary CPUs.
+
+Please add a quick blurb/reminder of what FSCR is (at least expand the
+accronym).
+
+Cheers,
+Ben.
+
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> cc: Ian Munsie <imunsie@au1.ibm.com>
+> ---
+>  arch/powerpc/kernel/cpu_setup_power.S |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 > 
-> +int irq_create_mapping_many(struct irq_domain *domain,
-> +		irq_hw_number_t hwirq_base, int count)
-> +{
-
-Other than the other review comments already made, I think you can
-simplify this considerably by simply doing what irq_create_strict_mappings() does,
-and relaxing the irq_base requirements.
-
-In any event, as you are creating a new interface, I don't think you want
-to carry around half of the legacy crap that irq_create_mapping() has to
-deal with. We made the decision to avoid this with irq_create_strict_mappings()
-intentionally, too.
+> diff --git a/arch/powerpc/kernel/cpu_setup_power.S b/arch/powerpc/kernel/cpu_setup_power.S
+> index d29facb..bb2d203 100644
+> --- a/arch/powerpc/kernel/cpu_setup_power.S
+> +++ b/arch/powerpc/kernel/cpu_setup_power.S
+> @@ -48,6 +48,7 @@ _GLOBAL(__restore_cpu_power7)
+>  
+>  _GLOBAL(__setup_cpu_power8)
+>  	mflr	r11
+> +	bl	__init_FSCR
+>  	bl	__init_hvmode_206
+>  	mtlr	r11
+>  	beqlr
+> @@ -56,13 +57,13 @@ _GLOBAL(__setup_cpu_power8)
+>  	mfspr	r3,SPRN_LPCR
+>  	oris	r3, r3, LPCR_AIL_3@h
+>  	bl	__init_LPCR
+> -	bl	__init_FSCR
+>  	bl	__init_TLB
+>  	mtlr	r11
+>  	blr
+>  
+>  _GLOBAL(__restore_cpu_power8)
+>  	mflr	r11
+> +	bl	__init_FSCR
+>  	mfmsr	r3
+>  	rldicl.	r0,r3,4,63
+>  	beqlr
