@@ -1,23 +1,21 @@
-Return-Path: <B38951@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
+Return-Path: <B37400@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 93BB82C03AA
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Mar 2013 21:12:40 +1100 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>, Stuart Yoder <b08248@gmail.com>
-Subject: RE: [PATCH V4] powerpc/85xx: Add machine check handler to fix PCIe
- erratum on mpc85xx
-Date: Tue, 5 Mar 2013 10:12:30 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01BE952E@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <CALRxmdBjb+TrqZ_XdNjH=oDcdYtVJ5=Q71dcCkKodpe7WCHDpA@mail.gmail.com>	(from
- b08248@gmail.com on Mon Mar  4 10:16:10 2013) <1362440744.16575.6@snotra>
-In-Reply-To: <1362440744.16575.6@snotra>
-Content-Type: text/plain; charset="us-ascii"
+ by ozlabs.org (Postfix) with ESMTPS id F09E02C0333
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Mar 2013 23:42:08 +1100 (EST)
+From: Sandeep Singh <Sandeep@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 1/4][v2] Adding Documentation for TDM
+Date: Tue, 5 Mar 2013 18:11:34 +0530
+Message-ID: <1362487297-19702-1-git-send-email-Sandeep@freescale.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: Sandeep Singh <Sandeep@freescale.com>,
+ Poonam Aggrwal <poonam.aggrwal@freescale.com>,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,59 +25,396 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+ tdm-summary.txt contains general description about TDM.
+ tdm-framework.txt contains specific description of TDM framework.
 
+Signed-off-by: Sandeep Singh <Sandeep@freescale.com>
+Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
+---
+ Documentation/tdm/tdm-framework.txt |  264 +++++++++++++++++++++++++++++++++++
+ Documentation/tdm/tdm-summary.txt   |  103 ++++++++++++++
+ 2 files changed, 367 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/tdm/tdm-framework.txt
+ create mode 100644 Documentation/tdm/tdm-summary.txt
 
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Tuesday, March 05, 2013 7:46 AM
-> To: Stuart Yoder
-> Cc: Jia Hongtao-B38951; linuxppc-dev@lists.ozlabs.org; Kumar Gala
-> Subject: Re: [PATCH V4] powerpc/85xx: Add machine check handler to fix
-> PCIe erratum on mpc85xx
->=20
-> On 03/04/2013 10:16:10 AM, Stuart Yoder wrote:
-> > On Mon, Mar 4, 2013 at 2:40 AM, Jia Hongtao <B38951@freescale.com>
-> > wrote:
-> > > A PCIe erratum of mpc85xx may causes a core hang when a link of PCIe
-> > > goes down. when the link goes down, Non-posted transactions issued
-> > > via the ATMU requiring completion result in an instruction stall.
-> > > At the same time a machine-check exception is generated to the core
-> > > to allow further processing by the handler. We implements the
-> > handler
-> > > which skips the instruction caused the stall.
-> >
-> > Can you explain at a high level how just skipping an instruction
-> > solves
-> > anything?   If you just skip a load/store and continue like nothing is
-> > wrong, isn't your system possibly in a really bad state.
->=20
-> If the instruction was a load, we probably at least want to fill the
-> destination register with 0xffffffff or similar.
-
-You discuss this with Liu Shuo about a year ago.
-here is the log:
-
-"
-On 02/01/2012 02:18 AM, shuo.liu@freescale.com wrote:
-> v3 : Skip the instruction only. Don't access the user space memory in=20
->      mechine check.=20
-
-It may be the least bad option for now, but be aware that there's a
-small chance that this will cause a leak of sensitive information (such
-as a piece of a crypto key that happened to be sitting in the register
-to be loaded into).
-
--Scott
-"
-
--Hongtao.
-
->=20
-> > And if the core is already hung, due to the PCI link going down, isn't
-> > it too late?   How does skipping help?
->=20
-> Maybe the machine check unhangs the core?
->=20
-> Is there an erratum number for this?
->=20
-> -Scott
+diff --git a/Documentation/tdm/tdm-framework.txt b/Documentation/tdm/tdm-framework.txt
+new file mode 100644
+index 0000000..e8704a4
+--- /dev/null
++++ b/Documentation/tdm/tdm-framework.txt
+@@ -0,0 +1,264 @@
++This document gives an overview of TDM framework and its interface with low
++level drivers and upper level users/clients.
++
++Terminology:
++============
++1. Adapter or TDM adapter: Refers to an instance of TDM controller/device on
++   the system.
++2. TDM channel: The channel is the smallest entity on which all the TDM
++   read/write operations will occur. Technically all channels map to a set of
++   consecutive time slots on the physical TDM frame. The channels will be
++   dynamically created and destroyed using tdm_open_channel and
++   tdm_close_channel.
++3. TDM frame: Is a set of TDM channels which is transmitted sequentially over
++   time. The frame start is identified by a frame sync signal that is briefly
++   asserted at the beginning of each frame.
++
++<----------TDM Frame 0------------>|<-----TDM Frame 1----------------->
++
++|----|----|----|----|----|----|----|----|----|----|----|----|----|----|
++| 0  | 1  | 2  | 3  | 4  | ...|  n |  0 | 1  |  2 |  3 | 4  | ...| n  |
++|----|----|----|----|----|----|----|----|----|----|----|----|----|----|
++<---->                             <---->
++ ch 0                               ch 0
++
++4. TDM client: Application/driver which registers with TDM framework to use TDM
++   device.
++
++TDM modes:
++==========
++A TDM device can operate in one of the following modes:
++1. Single port full mode - Single user, no interleaving
++2. Single port channelised mode (raw, E1, T1)- many users using different channels
++3. Single port fractional mode -
++4. Multi port mode - multiple users using different ports in different configurations.
++
++All the above configurations differ in number of TDM client they support,
++number of TDM channels and number of TDM ports.
++
++Currently we are supporting only single port channelised mode. Hence all the explanations below
++refer to channelised mode of TDM. This framework can be easily extended to support other modes.
++
++Single port Channelised Mode:
++=============================
++In single port channelised mode there can be only one port and each channel can have only one time slot.
++The number of active channels can be less than the maximum supported channels/slots.
++
++<----------TDM Frame 0------------>|<-----TDM Frame 1----------------->
++
++|----|----|----|----|----|----|----|----|----|----|----|----|----|----|
++| 0  | 1  | 2  | 3  | 4  | ...|  n |  0 | 1  |  2 |  3 | 4  | ...| n  |...
++|----|----|----|----|----|----|----|----|----|----|----|----|----|----|
++<----><--->                         <---->
++ ch 0  ch1                           ch 0
++client0 client1
++
++TDM Subsystem Overview:
++=======================
++
++-------------------------------------------------------------------
++                                     |------------------------|
++                                     | kernel mode TDM clients|
++                                     |------------------------|
++                                                ||
++                                                ||
++                                           client register
++                                                ||
++                                                ||
++                                                \/
++      ______________________________________________________________
++      |                                                            |
++      |                 client interface                           |
++      |------------------------------------------------------------|
++      |             TDM Subsystem Framework                        |
++      |                   (tdm-core.c)                             |
++      |                                                            |
++      | ->buffer handling                                          |
++      | ->interleaving/de-interleaving                             |
++      |                                                            |
++      |------------------------------------------------------------|
++      |    TDM interface                  Line control interface   |
++      |____________________________________________________________|
++          /\                                       /\
++          ||                                       ||
++    device register                          device register
++          ||                                       ||
++          ||                                       ||
++
++     fsl_tdm.c                 ucc_tdm.c         slic_zarlink.c framer.c
++--------------------------------------------------------------------------
++_______________________    _____________________  ________    ________
++|                     |    |                   |  |      |    |      |
++|[h/w] TDM controller |    |UCC TDM controller |  | SLIC |    |Framer|
++|_____________________|    |___________________|  |______|    |______|
++
++
++TDM Adapter Registration:
++=========================
++All the TDM adapter drivers will get registered as platform drivers to Linux.
++For every instance of the TDM adapter the relevant driver will be probed.
++As part of probe the driver will
++1. Do the basic initialization in terms of memory allocation for various
++   driver specific data structures, interrupts registration, etc.
++2. Initialize the TDM adapter and configure it in default configuration.
++   like operating mode, number of channels, channel type, etc.
++3. Add the TDM adapter to the TDM Framework via tdm_add_adapter() API.
++   As a result TDM framework will add this adapter to it's queue of
++   available adapters. As part of this adapter registration TDM framework
++   is also supplied a list of access algorithms for the particular TDM
++   adapter.
++4. Notifies the clients
++
++TDM Client Registration:
++========================
++Every TDM client gets itself registered with the TDM framework layer as
++a TDM driver using the API tdm_add_driver(). As part of this the TDM client
++supplies to the TDM framework the adapter with which it wants to hook and
++the function pointers of attach and detach functions which must be called
++as soon as the requested adapter is available.
++
++As a result the TDM framework keeps association of TDM adapters and TDM
++client drivers.
++As soon as this association gets established a tasklet is created for the
++adapter which is handled by tdm_data_tasklet_fn. The primary function of
++this tasklet acts as an interface to transfer the TDM data between the
++TDM adapter and the TDM client drivers.
++
++Currently TDM adaper can only be used in the default configuration.
++ie the configuration cannot be modified by TDM clients. This will be
++enhanced in future.
++
++Line Control Device Registration:
++=================================
++Each line control device has to add itself to list of available tdm phy device
++list by calling tdm_add_phy. At this point the framework traverses the list of
++available tdm devices to check if this tdm phy belongs to an already
++registered tdm device. If a match is found, then this phy attaches itself to
++that tdm device. Similarly the list of available tdm phys is traversed when a
++new tdm device registers itself.
++
++Data handling:
++==============
++Some basic assumptions about data handling:
++
++1. As per standard voice rate of 8Khz or 8192Hz. Which means 8192 samples must
++be sent every second. So if there are multiple clients sending voice data
++over TDM interface the rate should be such that the individual samples
++sent by them must be transmitted at 8 KHz.
++
++This is defined in the driver as
++
++	#define CH_1_MS_FRAMES		8
++
++2. Number of milliseconds at which TDM Rx interrupts occur
++This is basically the time for which the TDM data is sent in one Tx or Rx
++cycle of TDM controller hardware. In one DMA we send the data for 10ms.
++This gives enough time so that no buffer overflow or under-run occurs for
++transmit and receive respectively.
++
++	#define NUM_MS                  10
++
++3. TDM has programmable slot length (8 bits or 16 bits). This can be configured by:
++
++	#define CHANNEL_8BIT_LIN        0       /* 8 bit linear */
++	#define CHANNEL_8BIT_ULAW       1       /* 8 bit Mu-law */
++	#define CHANNEL_8BIT_ALAW       2       /* 8 bit A-law */
++	#define CHANNEL_16BIT_LIN       3       /* 16 bit Linear */
++
++depending on the type of sample. For example the sample could be 16 bit linear
++or 8bit u-law encoded etc. Presently only word length of 16 is supported
++which is the default configuration.
++
++4. Number of channels means the total number of channels per TDM port.
++For example for E1 mode it will be 24, for T1 it will be 32, etc.
++There can also be raw mode, where the use case is not E1 or T1.
++Here the number of channels can be any number as per the use case.
++
++The whole framework follows a triple buffer approach to make sure that TDM data
++is played continuously at  the desired rate.
++
++Buffers Involved:
++=================
++
++1.TDM driver or device buffers:
++These buffers are the device level buffers. They contain the TDM data
++which is transmitted/received on the TDM physical signals. As such these buffers must be
++allocated from driver layer so that all the hardware requirements are met.
++As an optimized design to remove extra memcopies, the client can
++pass the data in the same buffers. But this is only true for full mode of
++TDM.  Where the user data can be straightaway passed to the hardware for
++transmission. Although in other cases memcopy cannot be avoided, because
++the framework layer will have to interleave the individual channels data to
++create the TDM frame data buffer. The size of this buffer will be governed by
++
++For channelised mode:
++The size of this buffer will be
++
++-	number of channels
++-	number of slots per channel
++-	number of bytes per slot
++-	number of frames per ms
++-	number of ms
++
++For a channelised mode with single port the size of the device level buffer
++will be:
++channels * slots per channel * bytes per slot *  frames per ms * number of ms
++channels * 1 * NUM_BYTES_PER_SLOT * NUM_MS * CH_1_MS_FRAMES
++
++There will be 3 such buffers.
++
++2.Channel level buffers:
++In case the TDM device is configured for multiport/multichannel the Framework
++layer needs to maintain the data for each channel. Hence for each channel
++opened a Buffer Descriptor ring of 3 BDs(see note below) is allocated both for
++transmit and receive. The client reads from/writes to the buffers pointed by
++these BD rings.
++
++The framework layer maintains a Data Process Tasklet per TDM
++device which is scheduled from every Rx interrupt. The interrupt handling
++periodicity is governed by the TDM data buffer size configured in the above
++section.
++The data tasklet when scheduled, will do Rx and Tx processing to copy
++the data from/to the  channel specific interleaved buffers. The TDM
++controller will DMA the data which is copied in the interleaved buffers
++ or device level buffers.
++
++TDM framework provides the port level APIs and channel level APIs to the TDM
++client drivers to send and receive the respective data on different TDM slots.
++
++
++num of buffers = 3
++
++TDM client1              TDM Client2
++
++buf0------->buf1       buf0------->buf1
++^            |          ^            |
++|            V          |            V
++----buf2------          ------buf2----
++     |                          |
++     |                          |
++     |                          |
++     V                          V
++-----------------------------------------
++|                                       |
++|           DATA Tasklet                |
++|                                       |
++-----------------------------------------
++                |
++                |
++                V
++-----------------------------------------
++|        TDM buffer interleaved * 3     |
++-----------------------------------------
++
++
++Not Implemented/Future work:
++============================
++1. TDM client will use the default configuration which is done at init time and
++   is not configurable. In future this should be made configurable as per the
++   need of client.
++2. The TDM framework still needs to be enhanced to configure the ports and their
++   attributes. Currently only single port channelised mode is supported.
++3. Line control interface is not available in the framework presently.
++   Presently it offer very minimal kind of interface.
++4. SLIC interface will be enhanced as per Zarlink Open source APIs in future.
+diff --git a/Documentation/tdm/tdm-summary.txt b/Documentation/tdm/tdm-summary.txt
+new file mode 100644
+index 0000000..2788e7f
+--- /dev/null
++++ b/Documentation/tdm/tdm-summary.txt
+@@ -0,0 +1,103 @@
++Time Division Multiplexing (TDM)
++=================================
++
++TDM stands for Time Division Multiplexing. TDM is a type of digital or analog multiplexing in which two or more bit
++streams or signals are transferred apparently simultaneously as sub-channels
++in one communication channel, but are physically taking turns on the channel.
++
++The time domain is divided into several recurrent timeslots of fixed duration.
++These timeslot are grouped together to form a channel. A sample byte or data
++block of channel 1 is transmitted during timeslots allocated to channel 1,
++channel 2 during timeslot for channel 2, etc.
++
++One TDM frame consists of multiple channels. After the last channel the cycle
++starts all over again with a new frame, starting with the second sample, byte
++or data block from channel 1, and so on.
++
++X----------TDM Frame 0-------------X------TDM Frame 1-----------------X
++|----|----|----|----|----|----|----|----|----|----|----|----|----|----|
++| 0  | 1  | 2  | 3  | 4  | ...|  n |  0 | 1  |  2 |  3 | 4  | ...| n  |...
++|----|----|----|----|----|----|----|----|----|----|----|----|----|----|
++<---->				   <---->
++channel 0			   channel 0
++-------------------------------------------------------------------->
++         Increasing Time
++
++Physical TDM interface
++=======================
++
++Physically TDM interface is a serial full duplex interface designed to
++communicate with variety of serial devices like industry standard framers,
++codecs, other DSPs, and microprocessors. It is typically used to transfer
++samples in a periodic manner. The TDM consists of independent transmitter and
++receiver sections with independent clock generation and frame synchronization.
++
++External TDM signals are:
++1. TDM_TCK: TDM Transmit clock
++2. TDM_RCK: TDM Receive clock
++3. TDM_TFS: TDM Tx frame sync to identify frame boundary
++4. TDM_RFS: TDM Rx Frame sync to identify frame boundary
++5. TDM_TD: TDM Tx data
++6. TDM_RD: TDM Rx data
++
++TDM is generally used to simultaneously transmit periodic data for multiple
++users. Common use cases would be to carry voice for various telephone
++subscribers in the telephone networks. It is widely used to carry telephonic
++data of various industry standards like E1/T1 data, etc.
++
++T1 Details
++==========
++T1 frame consists of 24 channels of 8 bits each plus one frame alignment bit.
++So a T1 frame has a total of 24x8 + 1 = 193 bits. Since each T1 frame contains
++one byte of voice data for each of 24 channels and the system needs to maintain
++a data rate of 8000 samples/sec. This would require 8000 frames/sec to be sent,
++yielding a data rate of 8000x193 bit/sec = 1.544 Mbps.
++
++E1 Details
++===========
++E1 frame consists of 32 channels each of 8 bits. Thus having a total frame
++length of 32x8 = 256 bits. Similar to the case of T1 it has to maintain a data
++rate of 8000 frames/sec. Thus having a data rate of 8000 x 256 bits/sec =
++2.048 Mbps.
++
++TDM use cases
++=============
++
++With SLIC kind of devices
++=========================
++SLIC stands for Subscriber Line Interface Card.
++Typically TDM systems consist of TDM controller and a line control device.
++
++The TDM controller interfaces to the line control device through TDM interface
++which is digital TDM multiplexed data.
++
++The Line controller has the functionality to interface with the TDM controller
++at one end and interface with the analog units at the other. For example if the
++line control device is a SLIC kind of device.
++The typical setup would be:
++
++|------------------|
++|		   |
++|		   | /-------\  |---------|
++|   TDM controller |/   TDM   \ |  SLIC   |<--------> s-ch0 analog phone 1
++|		   |\   data  / |         |<--------> s-ch1 analog phone 2
++|		   | \-------/  |---------|<--------> s-ch2 analog phone 3
++|		   |<----digital---->     <analog>
++|------------------|
++
++
++
++Another use case (VoIP):
++========================
++
++                             Voice packets on network
++     |--------|     |------|      _________      |------|     |------|
++>----|        |/---\|  TDM |     (         )     | TDM  |/---\|      |----->
++<----| SLIC   |\---/|      |     ( n/w     )     |      |\---/| SLIC |-----<
++>----|        |     |------|      ---------      |------|     |      |----->
++     |--------|      mux                          demux       |------|
++
++In the above figure analog phones are connected to the hosts via SLICs.
++The voice spoken on the phones is multiplexed converted into VoIP packets
++and sent over network. At the rendering end the multiplexed data
++is de-multiplexed and sent to respective listeners via SLIC.
+-- 
+1.7.6.GIT
