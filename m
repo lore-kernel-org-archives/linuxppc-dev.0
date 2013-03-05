@@ -1,15 +1,16 @@
 Return-Path: <paulus@ozlabs.org>
-Date: Tue, 5 Mar 2013 13:12:19 +1100
+Date: Tue, 5 Mar 2013 13:02:05 +1100
 From: Paul Mackerras <paulus@samba.org>
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH -V1 06/24] powerpc: Reduce PTE table memory wastage
-Message-ID: <20130305021219.GC2888@iris.ozlabs.ibm.com>
+Subject: Re: [PATCH -V1 09/24] powerpc: Decode the pte-lp-encoding bits
+ correctly.
+Message-ID: <20130305020205.GB2888@iris.ozlabs.ibm.com>
 References: <1361865914-13911-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1361865914-13911-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20130304045853.GB27523@drongo> <874ngr2zz1.fsf@linux.vnet.ibm.com>
+ <1361865914-13911-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20130304054848.GE27523@drongo> <87y5e31jem.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <874ngr2zz1.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <87y5e31jem.fsf@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,65 +21,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Mar 04, 2013 at 04:28:42PM +0530, Aneesh Kumar K.V wrote:
+On Mon, Mar 04, 2013 at 05:11:53PM +0530, Aneesh Kumar K.V wrote:
 > Paul Mackerras <paulus@samba.org> writes:
-> 
-> > The other general comment I have is that it's not really clear when a
-> > page will be on the mm->context.pgtable_list and when it won't.  I
-> > would like to see an invariant that says something like "the page is
-> > on the pgtable_list if and only if (page->_mapcount & FRAG_MASK) is
-> > neither 0 nor FRAG_MASK".  But that doesn't seem to be the case
-> > exactly, and I can't see any consistent rule, which makes me think
-> > there are going to be bugs in corner cases.
+> >> +static inline int hpte_actual_psize(struct hash_pte *hptep, int psize)
+> >> +{
+> >> +	unsigned int mask;
+> >> +	int i, penc, shift;
+> >> +	/* Look at the 8 bit LP value */
+> >> +	unsigned int lp = (hptep->r >> LP_SHIFT) & ((1 << LP_BITS) - 1);
+> >> +
+> >> +	penc = 0;
+> >> +	for (i = 0; i < MMU_PAGE_COUNT; i++) {
+> >> +		/* valid entries have a shift value */
+> >> +		if (!mmu_psize_defs[i].shift)
+> >> +			continue;
+> >> +
+> >> +		/* encoding bits per actual page size */
+> >> +		shift = mmu_psize_defs[i].shift - 11;
+> >> +		if (shift > 9)
+> >> +			shift = 9;
+> >> +		mask = (1 << shift) - 1;
+> >> +		if ((lp & mask) == mmu_psize_defs[psize].penc[i])
+> >> +			return i;
+> >> +	}
+> >> +	return -1;
+> >> +}
 > >
+> > This doesn't look right to me.  First, it's not clear what the 11 and
+> > 9 refer to, and I think the 9 should be LP_BITS (i.e. 8).  Secondly,
+> > the mask for the comparison needs to depend on the actual page size
+> > not the base page size.
 > 
-> 
-> I added the below comment when initializing the list.
-> 
-> +#ifdef CONFIG_PPC_64K_PAGES
-> +       /*
-> +        * Used to support 4K PTE fragment. The pages are added to list,
-> +        * when we have free framents in the page. We track the whether
-> +        * a page frament is available using page._mapcount. A value of
-> +        * zero indicate none of the fragments are used and page can be
-> +        * freed. A value of FRAG_MASK indicate all the fragments are used
-> +        * and hence the page will be removed from the below list.
-> +        */
-> +       INIT_LIST_HEAD(&init_mm.context.pgtable_list);
-> +#endif
-> 
-> I am not sure about why you say there is no consistent rule. Can you
-> elaborate on that ?
+> That 11 should be 12.That depends on the fact that we have below mapping
 
-Well, sometimes you take things off the list when mask == 0, and
-sometimes when (mask & FRAG_MASK) == 0.  So it's not clear whether the
-page is supposed to be on the list when (mask & FRAG_MASK) == 0 but
-mask != 0.  If you stated in a comment what the rule was supposed to
-be then reviewers could check whether your code implemented that rule.
-Also, if you had a consistent rule you could more easily add debug
-code to check that the rule was being followed.
+And the 12 should be LP_SHIFT, shouldn't it?
 
-Also, that comment above doesn't say anything about the upper bits and
-whether they have any influence on whether the page should be on the
-list or not.
-
-> > Consider, for example, the case where a page has two fragments still
-> > in use, and one of them gets queued up by RCU for freeing via a call
-> > to page_table_free_rcu, and then the other one gets freed through
-> > page_table_free().  Neither the call to page_table_free_rcu nor the
-> > call to page_table_free will take the page off the list AFAICS, and
-> > then __page_table_free_rcu() will free the page while it's still on
-> > the pgtable_list.
+>  rrrr rrrz 	≥8KB
 > 
-> The last one that ends up doing atomic_xor_bits which cause the mapcount
-> to go zero, will take the page off the list and free the page. 
+> Yes, that 9 should be LP_BITs. 
+> 
+> We are generating mask based on actual page size above (variable i in
+> the for loop).
 
-No, look at the example again.  page_table_free_rcu() won't take it
-off the list because it uses the (mask & FRAG_MASK) == 0 test, which
-fails (one fragment is still in use).  page_table_free() won't take it
-off the list because it uses the mask == 0 test, which also fails (one
-fragment is still waiting for the RCU grace period).  Finally,
-__page_table_free_rcu() doesn't take it off the list, it just frees
-the page.  Oops. :)
+OK, yes, you're right.
+
+> > I don't see where in this function you set the penc[] elements for
+> > invalid actual page sizes to -1.
+> 
+> We do the below
+> 
+> --- a/arch/powerpc/mm/hash_utils_64.c
+> +++ b/arch/powerpc/mm/hash_utils_64.c
+> @@ -125,7 +125,7 @@ static struct mmu_psize_def mmu_psize_defaults_old[] = {
+>         [MMU_PAGE_4K] = {
+>                 .shift  = 12,
+>                 .sllp   = 0,
+> -               .penc   = 0,
+> +               .penc   = { [0 ... MMU_PAGE_COUNT - 1] = -1 },
+>                 .avpnm  = 0,
+
+Yes, which sets them for the entries you initialize, but not for the
+others.  For example, the entry for MMU_PAGE_64K will initially be all
+zeroes.  Then we find an entry in the ibm,segment-page-sizes property
+for 64k pages, so we set mmu_psize_defs[MMU_PAGE_64K].shift to 16,
+making that entry valid, but we never set any of the .penc[] entries
+to -1, leading your other code to think that it can do (say) 1M pages
+in a 64k segment using an encoding of 0.
+
+Also, I noticed that the code in the if (base_idx < 0) statement is
+wrong.  It needs to advance prop (and decrease size) by 2 * lpnum,
+not just 2.
 
 Paul.
