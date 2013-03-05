@@ -1,13 +1,14 @@
-Return-Path: <laijs@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id 3AEB92C0349
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2013 03:26:21 +1100 (EST)
-Message-ID: <51361540.3060603@cn.fujitsu.com>
-Date: Tue, 05 Mar 2013 23:54:40 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
+Return-Path: <walken@google.com>
+Received: from mail-ia0-x22a.google.com (mail-ia0-x22a.google.com
+ [IPv6:2607:f8b0:4001:c02::22a])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 776452C02EB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2013 03:32:18 +1100 (EST)
+Received: by mail-ia0-f170.google.com with SMTP id h8so1092609iaa.29
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Mar 2013 08:32:14 -0800 (PST)
 MIME-Version: 1.0
-To: Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH] lglock: add read-preference local-global rwlock
+In-Reply-To: <51361540.3060603@cn.fujitsu.com>
 References: <512C7A38.8060906@linux.vnet.ibm.com>
  <CACvQF51RvhM8XNqu3-1OTQ=cZUZ=pAX+_zx0a29+W67N1X+BgQ@mail.gmail.com>
  <512CC509.1050000@linux.vnet.ibm.com>
@@ -18,18 +19,22 @@ References: <512C7A38.8060906@linux.vnet.ibm.com>
  <20130301182854.GA3631@redhat.com>
  <CANN689HEW=b5S93J27p+rBX-5m7jkW4FER=eHDCp7OgMaTWLPw@mail.gmail.com>
  <20130302170656.GB29769@redhat.com>
-In-Reply-To: <20130302170656.GB29769@redhat.com>
-Content-Type: text/plain; charset=UTF-8
+ <51361540.3060603@cn.fujitsu.com>
+Date: Tue, 5 Mar 2013 08:32:14 -0800
+Message-ID: <CANN689EKsSZpq-oVPL3_y+ReT+vbz5wPbOs8iz8YzS_Wo-FboQ@mail.gmail.com>
+Subject: Re: [PATCH] lglock: add read-preference local-global rwlock
+From: Michel Lespinasse <walken@google.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: Lai Jiangshan <eag0628@gmail.com>, linux-doc@vger.kernel.org,
- peterz@infradead.org, fweisbec@gmail.com,
- Michel Lespinasse <walken@google.com>, mingo@kernel.org,
- linux-arch@vger.kernel.org, linux@arm.linux.org.uk,
+ peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org,
+ mingo@kernel.org, linux-arch@vger.kernel.org, linux@arm.linux.org.uk,
  xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
  paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
  linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org,
  rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
  linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, vincent.guittot@linaro.org, sbw@mit.edu,
+ Oleg Nesterov <oleg@redhat.com>, vincent.guittot@linaro.org, sbw@mit.edu,
  "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, tj@kernel.org,
  akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,35 +46,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/03/13 01:06, Oleg Nesterov wrote:
-> On 03/02, Michel Lespinasse wrote:
+On Tue, Mar 5, 2013 at 7:54 AM, Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
+> On 03/03/13 01:06, Oleg Nesterov wrote:
+>> On 03/02, Michel Lespinasse wrote:
+>>>
+>>> My version would be slower if it needs to take the
+>>> slow path in a reentrant way, but I'm not sure it matters either :)
 >>
->> My version would be slower if it needs to take the
->> slow path in a reentrant way, but I'm not sure it matters either :)
-> 
-> I'd say, this doesn't matter at all, simply because this can only happen
-> if we race with the active writer.
-> 
+>> I'd say, this doesn't matter at all, simply because this can only happen
+>> if we race with the active writer.
+>>
+>
+> It can also happen when interrupted. (still very rarely)
+>
+> arch_spin_trylock()
+>         ------->interrupted,
+>                 __this_cpu_read() returns 0.
+>                 arch_spin_trylock() fails
+>                 slowpath, any nested will be slowpath too.
+>                 ...
+>                 ..._read_unlock()
+>         <-------interrupt
+> __this_cpu_inc()
+> ....
 
-It can also happen when interrupted. (still very rarely)
+Yes (and I think this is actually the most likely way for it to happen).
 
-arch_spin_trylock()
-	------->interrupted,
-		__this_cpu_read() returns 0.
-		arch_spin_trylock() fails
-		slowpath, any nested will be slowpath too.
-		...
-		..._read_unlock()
-	<-------interrupt
-__this_cpu_inc()
-....
+We do need this to work correctly, but I don't expect we need it to be fast.
+(could be wrong, this is only my intuition)
 
-
-I saw get_online_cpu_atomic() is called very frequent.
-And the above thing happens in one CPU rarely, but how often it
-happens in the whole system if we have 4096 CPUs?
-(I worries to much. I tend to remove FALLBACK_BASE now, we should
-add it only after we proved we needed it, this part is not proved)
-
-Thanks,
-Lai
+-- 
+Michel "Walken" Lespinasse
+A program is never fully debugged until the last user dies.
