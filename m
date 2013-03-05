@@ -1,61 +1,27 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2BC192C0340
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2013 05:30:07 +1100 (EST)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Wed, 6 Mar 2013 04:22:19 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id C63A42CE8051
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2013 05:30:01 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r25ITwsf7799154
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Mar 2013 05:29:58 +1100
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r25ITxgE031535
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Mar 2013 05:30:01 +1100
-Message-ID: <51363920.3040906@linux.vnet.ibm.com>
-Date: Tue, 05 Mar 2013 23:57:44 +0530
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Return-Path: <B07421@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 510462C029E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2013 05:47:56 +1100 (EST)
+Date: Tue, 5 Mar 2013 12:47:42 -0600
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH V4] powerpc/85xx: Add machine check handler to fix PCIe
+ erratum on mpc85xx
+To: Jia Hongtao-B38951 <B38951@freescale.com>
+References: <CALRxmdBjb+TrqZ_XdNjH=oDcdYtVJ5=Q71dcCkKodpe7WCHDpA@mail.gmail.com>
+ <1362440744.16575.6@snotra>
+ <412C8208B4A0464FA894C5F0C278CD5D01BE952E@039-SN1MPN1-002.039d.mgd.msft.net>
+In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01BE952E@039-SN1MPN1-002.039d.mgd.msft.net>
+ (from B38951@freescale.com on Tue Mar  5 04:12:30 2013)
+Message-ID: <1362509262.25308.0@snotra>
 MIME-Version: 1.0
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Subject: Re: [PATCH v6 04/46] percpu_rwlock: Implement the core design of
- Per-CPU Reader-Writer Locks
-References: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
- <CANN689F9S7c1M8+cEpz3tsxGF34+NTRBLvxgPUOtbvav5u+RRA@mail.gmail.com>
- <5122551E.1080703@linux.vnet.ibm.com>	<51226B46.9080707@linux.vnet.ibm.com>
- <CANN689FSxOz+0Cu7EG_yKD8ZE1OpT4kyT+ybLfXSqaifodJRpw@mail.gmail.com>
- <51226F91.7000108@linux.vnet.ibm.com>
- <CACvQF53bdh4_BxF0y1fnTVR+T2OmRc0jmWQYftsvx92-fg-Lug@mail.gmail.com>
- <512BBAD8.8010006@linux.vnet.ibm.com>
- <CACvQF51jCxk5jUqmhD=QBBtUsBkQWZzakacrKO4Gsk=w61rNwQ@mail.gmail.com>
- <512C7A38.8060906@linux.vnet.ibm.com>
- <CACvQF51RvhM8XNqu3-1OTQ=cZUZ=pAX+_zx0a29+W67N1X+BgQ@mail.gmail.com>
- <512CC509.1050000@linux.vnet.ibm.com>
- <CACvQF50UgiqPpDk3HCmV86zKSf6tPjqr0bZowfPEOJs0g0r0MQ@mail.gmail.com>
- <512D0D67.9010609@linux.vnet.ibm.com>
- <CACvQF53ph2ixdM-otzetjM5cR+2kcZj6sckOp3TnzzA_x-EZ8w@mail.gmail.com>
- <512E7879.20109@linux.vnet.ibm.com> <5130EA6B.6030901@cn.fujitsu.com>
- <513105DD.8010908@linux.vnet.ibm.com> <51361C71.5060502@cn.fujitsu.com>
-In-Reply-To: <51361C71.5060502@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Lai Jiangshan <eag0628@gmail.com>, linux-doc@vger.kernel.org,
- peterz@infradead.org, fweisbec@gmail.com, oleg@redhat.com,
- Michel Lespinasse <walken@google.com>, mingo@kernel.org,
- linux-arch@vger.kernel.org, linux@arm.linux.org.uk,
- xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
- paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
- linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org,
- rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
- linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, vincent.guittot@linaro.org, sbw@mit.edu,
- tj@kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Stuart Yoder <b08248@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -65,57 +31,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Lai,
+On 03/05/2013 04:12:30 AM, Jia Hongtao-B38951 wrote:
+>=20
+>=20
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Tuesday, March 05, 2013 7:46 AM
+> > To: Stuart Yoder
+> > Cc: Jia Hongtao-B38951; linuxppc-dev@lists.ozlabs.org; Kumar Gala
+> > Subject: Re: [PATCH V4] powerpc/85xx: Add machine check handler to =20
+> fix
+> > PCIe erratum on mpc85xx
+> >
+> > On 03/04/2013 10:16:10 AM, Stuart Yoder wrote:
+> > > On Mon, Mar 4, 2013 at 2:40 AM, Jia Hongtao <B38951@freescale.com>
+> > > wrote:
+> > > > A PCIe erratum of mpc85xx may causes a core hang when a link of =20
+> PCIe
+> > > > goes down. when the link goes down, Non-posted transactions =20
+> issued
+> > > > via the ATMU requiring completion result in an instruction =20
+> stall.
+> > > > At the same time a machine-check exception is generated to the =20
+> core
+> > > > to allow further processing by the handler. We implements the
+> > > handler
+> > > > which skips the instruction caused the stall.
+> > >
+> > > Can you explain at a high level how just skipping an instruction
+> > > solves
+> > > anything?   If you just skip a load/store and continue like =20
+> nothing is
+> > > wrong, isn't your system possibly in a really bad state.
+> >
+> > If the instruction was a load, we probably at least want to fill the
+> > destination register with 0xffffffff or similar.
+>=20
+> You discuss this with Liu Shuo about a year ago.
+> here is the log:
+>=20
+> "
+> On 02/01/2012 02:18 AM, shuo.liu@freescale.com wrote:
+> > v3 : Skip the instruction only. Don't access the user space memory =20
+> in
+> >      mechine check.
+>=20
+> It may be the least bad option for now, but be aware that there's a
+> small chance that this will cause a leak of sensitive information =20
+> (such
+> as a piece of a crypto key that happened to be sitting in the register
+> to be loaded into).
 
-On 03/05/2013 09:55 PM, Lai Jiangshan wrote:
-> Hi, Srivatsa,
-> 
-> I'm sorry again, I delayed your works.
->
+Yes, that's (one reason) why you'd want to fill in a known value.  Note =20
+the "for now". :-)
 
-No, you didn't :-) I have been busy with some internal work lately,
-so I haven't been able to go through the recent discussions and
-review the new code carefully.. I'll get to it as soon as I can.
- 
-> I have some thinkings about the way how to get this work done.
-> 
-> First step: (2~3 patches)
-> Use preempt_disable() to implement get_online_cpu_atomic(), and add lockdep for it.
-> 
-> Second step:
-> Conversion patches.
-> 
-> We can send the patchset of the above steps at first.
-> {
-> It does not change any behavior of the kernel.
-> and it is annotation(instead of direct preempt_diable() without comments sometimes),
-> so I expected they can be merged very early.
-> }
-> 
-> Third step:
-> After all people confide the conversion patches covered all cases and cpuhotplug site is ready for it,
-> we will implement get_online_cpu_atomic() via locks and remove stop_machine() from cpuhotplug.
-> 
-> Any thought?
-> 
-
-That sounds like a good plan. It might involve slightly more churn
-than just directly changing the locking scheme, but it is safer.
-And the extra churn is anyway limited only to the implementation of
-get/put_online_cpus_atomic().. so that should be fine IMHO.
-
-> 
-> If I have time, I will help you for the patches of the first step.
-> (I was assigned bad job in office-time, I can only do kernel-dev work in night.)
-> 
-> And for step2, I will write a checklist or spatch-script.
-> 
-
-Do look at the conversion already done in this v6 as well. In
-addition to that, we will have to account for the new kernel
-code that went in recently.
-
-I'll get back to working on the above mentioned aspects soon.
-
-Regards,
-Srivatsa S. Bhat
+-Scott=
