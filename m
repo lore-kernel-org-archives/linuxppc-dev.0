@@ -1,22 +1,18 @@
-Return-Path: <B07421@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0252.outbound.messaging.microsoft.com [213.199.154.252])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CEB3A2C0321
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Mar 2013 10:45:57 +1100 (EST)
-Date: Mon, 4 Mar 2013 17:45:44 -0600
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH V4] powerpc/85xx: Add machine check handler to fix PCIe
- erratum on mpc85xx
-To: Stuart Yoder <b08248@gmail.com>
-In-Reply-To: <CALRxmdBjb+TrqZ_XdNjH=oDcdYtVJ5=Q71dcCkKodpe7WCHDpA@mail.gmail.com>
- (from b08248@gmail.com on Mon Mar  4 10:16:10 2013)
-Message-ID: <1362440744.16575.6@snotra>
+Return-Path: <michael@ellerman.id.au>
+Date: Tue, 5 Mar 2013 11:28:57 +1100
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+Subject: Re: [PATCH 0/3] Enable multiple MSI feature in pSeries
+Message-ID: <20130305002857.GA7656@concordia>
+References: <1358235536-32741-1-git-send-email-qiudayu@linux.vnet.ibm.com>
+ <1362107325.2712.2.camel@localhost>
+ <20130301035417.GA17236@concordia>
+ <513411AD.5010408@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: linuxppc-dev@lists.ozlabs.org, Jia Hongtao <B38951@freescale.com>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <513411AD.5010408@linux.vnet.ibm.com>
+Cc: tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,30 +22,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/04/2013 10:16:10 AM, Stuart Yoder wrote:
-> On Mon, Mar 4, 2013 at 2:40 AM, Jia Hongtao <B38951@freescale.com> =20
-> wrote:
-> > A PCIe erratum of mpc85xx may causes a core hang when a link of PCIe
-> > goes down. when the link goes down, Non-posted transactions issued
-> > via the ATMU requiring completion result in an instruction stall.
-> > At the same time a machine-check exception is generated to the core
-> > to allow further processing by the handler. We implements the =20
-> handler
-> > which skips the instruction caused the stall.
->=20
-> Can you explain at a high level how just skipping an instruction =20
-> solves
-> anything?   If you just skip a load/store and continue like nothing is
-> wrong, isn't your system possibly in a really bad state.
+On Mon, Mar 04, 2013 at 11:14:53AM +0800, Mike Qiu wrote:
+> 于 2013/3/1 11:54, Michael Ellerman 写道:
+> >On Fri, Mar 01, 2013 at 11:08:45AM +0800, Mike wrote:
+> >>Hi all
+> >>
+> >>Any comments? or any questions about my patchset?
+> >You were going to get some performance numbers that show a definite
+> >benefit for using more than one MSI.
 
-If the instruction was a load, we probably at least want to fill the =20
-destination register with 0xffffffff or similar.
+> Yes, but my patch just enable the kernel to support this feature, whether
+> to use it depens on the device driver.
 
-> And if the core is already hung, due to the PCI link going down, isn't
-> it too late?   How does skipping help?
+Sure, but we don't add code just for fun, so unless there's a good
+reason to add the feature - like better performance - we won't bother.
 
-Maybe the machine check unhangs the core?
+> And this feature has been merged to the kernel for X86 for a long time.
+> See commit: 5ca72c4f7c412c2002363218901eba5516c476b1
+> 51906e779f2b13b38f8153774c4c7163d412ffd9
 
-Is there an erratum number for this?
+That commit was merged in 3.9-rc1, ie. a few days ago, so no it has not been
+in x86 for a long time.
 
--Scott=
+That code removes the need for your first patch, which is a good start.
+Please send a new version using irq_set_msi_desc_off().
+
+cheers
