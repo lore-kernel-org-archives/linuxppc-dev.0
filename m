@@ -1,22 +1,16 @@
-Return-Path: <gang.chen@asianux.com>
-Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 8684E2C0332
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Mar 2013 12:58:51 +1100 (EST)
-Message-ID: <51355142.4070505@asianux.com>
-Date: Tue, 05 Mar 2013 09:58:26 +0800
-From: Chen Gang <gang.chen@asianux.com>
+Return-Path: <paulus@ozlabs.org>
+Date: Tue, 5 Mar 2013 12:50:41 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH -V1 07/24] powerpc: Add size argument to pgtable_cache_add
+Message-ID: <20130305015041.GA2888@iris.ozlabs.ibm.com>
+References: <1361865914-13911-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1361865914-13911-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20130304051340.GC27523@drongo> <871ubv2zsv.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Jiri Slaby <jslaby@suse.cz>
-Subject: Re: [PATCH] drivers/tty/hvc: using strlcpy instead of strncpy
-References: <512C2F5D.1080207@asianux.com> <512F343E.7010201@suse.cz>
- <512F3BC5.8020903@asianux.com> <512F3C60.9070409@asianux.com>
- <512F5FDC.3060000@suse.cz>
-In-Reply-To: <512F5FDC.3060000@suse.cz>
-Content-Type: text/plain; charset=UTF-8
-Cc: Greg KH <gregkh@linuxfoundation.org>, tklauser@distanz.ch,
- wfp5p@virginia.edu, linuxppc-dev@lists.ozlabs.org, alan@linux.intel.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <871ubv2zsv.fsf@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,36 +20,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-于 2013年02月28日 21:47, Jiri Slaby 写道:
->>>   when strlen(&pi->location_code[0]) == HVCS_CLC_LENGTH + 2
-> It cannot, pi->location_code is defined as char[HVCS_CLC_LENGTH + 1].
+On Mon, Mar 04, 2013 at 04:32:24PM +0530, Aneesh Kumar K.V wrote:
 > 
+> Now with table_size argument, the first arg is no more the shift value,
+> rather it is index into the array. Hence i changed the variable name. I
+> will split that patch to make it easy for review.
 
-  really, it is, I did not notice it.
+OK, so you're saying that the simple relation between index and the
+size of the objects in PGT_CACHE(index) no longer holds.  That worries
+me, because now, what guarantees that two callers won't use the same
+index value with two different sizes?  And what guarantees that we
+won't have two callers using different index values but the same size
+(which wouldn't be a disaster but would be a waste of space)?
 
-  but I still prefer to modify it, but the patch should be changed
-  such as:
-    subject: beautify code: deleting useless judging code.
-    comments: src buf len and dest buf len are the same, strcpy is better.
-    contents: using strcpy instead of strncpy, and delete judging code.
+I think it would be preferable to keep the relation between shift and
+the size of the objects and just arrange to use a different shift
+value for the pmd objects when you need to.
 
-  is it ok ?
-
-BTW:
-  sorry for my reply is too late, and did not notify it, originally before.
-    I have to do some urgent things, during these days.
-      my father had a serious heart disease, and is in hospital.
-      during these days, most of my time has to be in hospital.
-      (God Bless, and thank Jesus Christ, my father is safe, now).
-    within my company (Asianux), I also have something to do.
-
-  excuse me:
-    within this week, maybe can not get my mail reply, too.
-
-
-
-
--- 
-Chen Gang
-
-Asianux Corporation
+Paul.
