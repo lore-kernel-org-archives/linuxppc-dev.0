@@ -1,15 +1,12 @@
-Return-Path: <aaro.koskinen@iki.fi>
-Received: from filtteri5.pp.htv.fi (filtteri5.pp.htv.fi [213.243.153.188])
- by ozlabs.org (Postfix) with ESMTP id 8B36E2C03CA
- for <linuxppc-dev@ozlabs.org>; Wed,  6 Mar 2013 23:38:01 +1100 (EST)
-Date: Wed, 6 Mar 2013 14:29:13 +0200
-From: Aaro Koskinen <aaro.koskinen@iki.fi>
-To: Anton Blanchard <anton@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
-Subject: Bisected 3.9-rc1 boot failure on G5
-Message-ID: <20130306122913.GC14552@blackmetal.musicnaut.iki.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Philippe De Muyter <phdm@macqel.be>
+Subject: Re: 3.9-rc1 powerpc ptrace.c: 'brk.len' is used uninitialized
+In-reply-to: <20130306060058.GA3106@frolo.macqel>
+References: <20130306060058.GA3106@frolo.macqel>
+Date: Thu, 07 Mar 2013 09:09:48 +1100
+Message-ID: <21084.1362607788@ale.ozlabs.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,16 +16,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+> bisect tells me that since your commit 9422de3e953d0e60eb95f5430a9dd803eec1c6d7 
+> "powerpc: Hardware breakpoints rewrite to handle non DABR breakpoint registers",
+> compiling linux fails with :
+> 
+>   cc1: warnings being treated as errors
+>   arch/powerpc/kernel/ptrace.c: In function 'arch_ptrace':
+>   arch/powerpc/kernel/ptrace.c:1450: warning: 'brk.len' is used uninitialized in this function
+>   arch/powerpc/kernel/ptrace.c:1352: note: 'brk.len' was declared here
+> 
+> could you look at that ?
 
-Booting 3.9-rc1 fails with the following dump:
+Sure. 
 
-   Invalid memory access at %SSR0: 00000000.00000380 %SSR1: 90000000.00081000
+How are you compiling this?  Is there a ppc defconfig that hits it?
 
-According to bisect, it's caused by 1fbe9cf2598dae3bd464d860bd89c67b1ff8682b
-(powerpc: Build kernel with -mcmodel=medium).
-
-I'm loading & booting the kernel with GRUB 2.00 on iMac G5 (PowerMac8,1),
-toolchain is GCC 4.7.2 / binutils 2.23.1.
-
-A.
+Mikey
