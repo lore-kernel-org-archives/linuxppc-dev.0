@@ -1,38 +1,38 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e31.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 399172C0378
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2013 15:10:16 +1100 (EST)
+ (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6B9AE2C0379
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2013 15:24:08 +1100 (EST)
 Received: from /spool/local
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Tue, 5 Mar 2013 21:10:13 -0700
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
- [9.17.195.228])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 1277B3E4003E
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Mar 2013 21:09:50 -0700 (MST)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r2649xUg117618
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Mar 2013 21:09:59 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r2649wJd017106
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Mar 2013 21:09:59 -0700
-Date: Wed, 6 Mar 2013 12:09:35 +0800
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/powernv: Fix next available MSI IRQ
-Message-ID: <20130306040935.GA24016@shangw.(null)>
-References: <1362466756-16113-1-git-send-email-shangw@linux.vnet.ibm.com>
- <20130306032454.GA3493@concordia>
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 6 Mar 2013 09:50:06 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 61CD43940023
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2013 09:54:02 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r264Nwxh27263152
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Mar 2013 09:53:58 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r264O0tR005021
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Mar 2013 15:24:01 +1100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH -V1 07/24] powerpc: Add size argument to pgtable_cache_add
+In-Reply-To: <20130305015041.GA2888@iris.ozlabs.ibm.com>
+References: <1361865914-13911-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1361865914-13911-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20130304051340.GC27523@drongo> <871ubv2zsv.fsf@linux.vnet.ibm.com>
+ <20130305015041.GA2888@iris.ozlabs.ibm.com>
+Date: Wed, 06 Mar 2013 09:53:59 +0530
+Message-ID: <87d2vd88bk.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130306032454.GA3493@concordia>
-Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <shangw@linux.vnet.ibm.com>
-Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,47 +42,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 06, 2013 at 02:24:54PM +1100, Michael Ellerman wrote:
->On Tue, Mar 05, 2013 at 02:59:16PM +0800, Gavin Shan wrote:
->> The allocation of MSI is implemented based on bitmap and working
->> like the mechanism of strict round through the traced next available
->> cursor. However, the next available MSI is never updated in current
->> implementation. The patch fixes the issue.
+Paul Mackerras <paulus@samba.org> writes:
+
+> On Mon, Mar 04, 2013 at 04:32:24PM +0530, Aneesh Kumar K.V wrote:
 >> 
->> Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/platforms/powernv/pci.c |    5 +++++
->>  1 files changed, 5 insertions(+), 0 deletions(-)
->> 
->> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
->> index 6f464dc..9cf18c4 100644
->> --- a/arch/powerpc/platforms/powernv/pci.c
->> +++ b/arch/powerpc/platforms/powernv/pci.c
->> @@ -66,6 +66,11 @@ static unsigned int pnv_get_one_msi(struct pnv_phb *phb)
->>  		rc = 0;
->>  		goto out;
->>  	}
->> +
->> +	if (id >= phb->msi_count - 1)
->> +		phb->msi_next = 0;
->> +	else
->> +		phb->msi_next = id + 1;
->>  	__set_bit(id, phb->msi_map);
+>> Now with table_size argument, the first arg is no more the shift value,
+>> rather it is index into the array. Hence i changed the variable name. I
+>> will split that patch to make it easy for review.
 >
+> OK, so you're saying that the simple relation between index and the
+> size of the objects in PGT_CACHE(index) no longer holds. That worries
+> me, because now, what guarantees that two callers won't use the same
+> index value with two different sizes?  And what guarantees that we
+> won't have two callers using different index values but the same size
+> (which wouldn't be a disaster but would be a waste of space)?
 >
->There is code in arch/powerpc/sysdev/msi_bitmap.c that implements a
->bitmap allocator for MSI. It may not do what you need but please take a
->look at it if you haven't already.
->
+> I think it would be preferable to keep the relation between shift and
+> the size of the objects and just arrange to use a different shift
+> value for the pmd objects when you need to.
 
-Thanks, Michael. I neve know that you've implemented bitmaps to manage
-MSI interrupts. It seems arch/powerpc/sysdev/msi_bitmap.c meets our
-requirment here except that needs device tree node. Fortunately, we
-can set the corresponding device tree node to NULL and functions playing
-with the device tree nodes (of_node_get/of_node_put) works well for NULL
-device tree node.
+Most of the places we get the cache pointer by doing something like.
+PGT_CACHE(PMD_INDEX_SIZE). What we need is that kmem_cache to return an
+object twice the size of PMD_TABLE_SIZE. The relevant diff in the later
+patch is below.
 
-I'll update powernv platform to use msi_bitmap.c to manage it MSI interrupts.
-
-Thanks,
-Gavin
++#ifdef CONFIG_TRANSPARENT_HUGEPAGE
++	/*
++	 * we store the pgtable details in the second half of PMD
++	 */
++	if (PGT_CACHE(PMD_INDEX_SIZE))
++		pr_err("PMD Page cache already initialized with different size\n");
++	__pgtable_cache_add(PMD_INDEX_SIZE, PMD_TABLE_SIZE * 2, pmd_ctor);
++#else
+ 	pgtable_cache_add(PMD_INDEX_SIZE, pmd_ctor);
++#endif
