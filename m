@@ -1,26 +1,21 @@
-Return-Path: <B38951@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe002.messaging.microsoft.com [216.32.180.12])
+Return-Path: <B40534@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe002.messaging.microsoft.com [213.199.154.140])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E546F2C02BE
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2013 19:29:06 +1100 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH V4] powerpc/85xx: Add machine check handler to fix PCIe
- erratum on mpc85xx
-Date: Wed, 6 Mar 2013 08:28:52 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01BE9D9D@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <CALRxmdBjb+TrqZ_XdNjH=oDcdYtVJ5=Q71dcCkKodpe7WCHDpA@mail.gmail.com>
- <1362440744.16575.6@snotra>
- <412C8208B4A0464FA894C5F0C278CD5D01BE952E@039-SN1MPN1-002.039d.mgd.msft.net>
- <1362509262.25308.0@snotra>
-In-Reply-To: <1362509262.25308.0@snotra>
+ by ozlabs.org (Postfix) with ESMTPS id F289A2C0362
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2013 20:13:58 +1100 (EST)
+From: Wang Dongsheng-B40534 <B40534@freescale.com>
+To: "benh@kernel.crashing.org" <benh@kernel.crashing.org>
+Subject: RE: [PATCH][UPSTEAM] powerpc/mpic: add irq_set_wake support
+Date: Wed, 6 Mar 2013 09:13:46 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259E79777@039-SN2MPN1-021.039d.mgd.msft.net>
+References: <1359601823-9861-1-git-send-email-dongsheng.wang@freescale.com>
+ <3887203D-64E3-4BA5-AB2A-20BE668560A4@kernel.crashing.org>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Stuart Yoder <b08248@gmail.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,82 +25,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Benjamin,
 
+Could you please apply this patch?
+
+Regards,
+dongsheng
 
 > -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Wednesday, March 06, 2013 2:48 AM
-> To: Jia Hongtao-B38951
-> Cc: Wood Scott-B07421; Stuart Yoder; linuxppc-dev@lists.ozlabs.org; Kumar
-> Gala
-> Subject: Re: [PATCH V4] powerpc/85xx: Add machine check handler to fix
-> PCIe erratum on mpc85xx
+> From: Wang Dongsheng-B40534
+> Sent: Wednesday, February 20, 2013 1:58 PM
+> To: 'Kumar Gala'
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Subject: RE: [PATCH][UPSTEAM] powerpc/mpic: add irq_set_wake support
 >=20
-> On 03/05/2013 04:12:30 AM, Jia Hongtao-B38951 wrote:
+>=20
+>=20
+> > -----Original Message-----
+> > From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> > Sent: Tuesday, February 19, 2013 3:43 AM
+> > To: Wang Dongsheng-B40534
+> > Cc: linuxppc-dev@lists.ozlabs.org
+> > Subject: Re: [PATCH][UPSTEAM] powerpc/mpic: add irq_set_wake support
 > >
 > >
-> > > -----Original Message-----
-> > > From: Wood Scott-B07421
-> > > Sent: Tuesday, March 05, 2013 7:46 AM
-> > > To: Stuart Yoder
-> > > Cc: Jia Hongtao-B38951; linuxppc-dev@lists.ozlabs.org; Kumar Gala
-> > > Subject: Re: [PATCH V4] powerpc/85xx: Add machine check handler to
-> > fix
-> > > PCIe erratum on mpc85xx
+> > On Jan 30, 2013, at 9:10 PM, Wang Dongsheng wrote:
+> >
+> > > Add irq_set_wake support. Just add IRQF_NO_SUSPEND to desc->action-
+> > >flag.
+> > > So the wake up interrupt will not be disable in suspend_device_irqs.
 > > >
-> > > On 03/04/2013 10:16:10 AM, Stuart Yoder wrote:
-> > > > On Mon, Mar 4, 2013 at 2:40 AM, Jia Hongtao <B38951@freescale.com>
-> > > > wrote:
-> > > > > A PCIe erratum of mpc85xx may causes a core hang when a link of
-> > PCIe
-> > > > > goes down. when the link goes down, Non-posted transactions
-> > issued
-> > > > > via the ATMU requiring completion result in an instruction
-> > stall.
-> > > > > At the same time a machine-check exception is generated to the
-> > core
-> > > > > to allow further processing by the handler. We implements the
-> > > > handler
-> > > > > which skips the instruction caused the stall.
-> > > >
-> > > > Can you explain at a high level how just skipping an instruction
-> > > > solves
-> > > > anything?   If you just skip a load/store and continue like
-> > nothing is
-> > > > wrong, isn't your system possibly in a really bad state.
+> > > Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> > > ---
+> > > arch/powerpc/sysdev/mpic.c |   15 +++++++++++++++
+> > > 1 files changed, 15 insertions(+), 0 deletions(-)
+> >
+> > Why are we doing this globally for all interrupts? Don't we only have
+> > some specific interrupts that wake us up?
+> > Also, I'm guessing the wake behavior for interrupts is FSL specific so
+> > should not apply to ALL users of MPIC.
+>=20
+> That is IRQ wakeup (PM) control. Actually not all interrupts will be set.
+> We just let mpic have this ability. It's control by driver.
+> If a device has the ability to wake up system, this device driver can set
+> irq wake up(through enable/disable_irq_wake()), and the driver do not
+> need add a flag(IRQF_NO_SUSPEND) to request_irq().
+>=20
+> for example,
+>=20
+> suspend()
+> {
+> 	...;
+> 	enable_irq_wake(irq);
+> 	...;
+> }
+>=20
+> resume()
+> {
+> 	...;
+> 	disable_irq_wake(irq);
+> 	...;
+> }
+>=20
+> >
+> > - k
+> >
+>=20
 > > >
-> > > If the instruction was a load, we probably at least want to fill the
-> > > destination register with 0xffffffff or similar.
+> > > diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+> > > index 9c6e535..2ed0220 100644
+> > > --- a/arch/powerpc/sysdev/mpic.c
+> > > +++ b/arch/powerpc/sysdev/mpic.c
+> > > @@ -920,6 +920,18 @@ int mpic_set_irq_type(struct irq_data *d,
+> > > unsigned
+> > int flow_type)
+> > > 	return IRQ_SET_MASK_OK_NOCOPY;
+> > > }
+> > >
+> > > +static int mpic_irq_set_wake(struct irq_data *d, unsigned int on) {
+> > > +	struct irq_desc *desc =3D container_of(d, struct irq_desc,
+> > > +irq_data);
+> > > +
+> > > +	if (on)
+> > > +		desc->action->flags |=3D IRQF_NO_SUSPEND;
+> > > +	else
+> > > +		desc->action->flags &=3D ~IRQF_NO_SUSPEND;
+> > > +
+> > > +	return 0;
+> > > +}
+> > > +
+> > > void mpic_set_vector(unsigned int virq, unsigned int vector) {
+> > > 	struct mpic *mpic =3D mpic_from_irq(virq); @@ -957,6 +969,7 @@ stati=
+c
+> > > struct irq_chip mpic_irq_chip =3D {
+> > > 	.irq_unmask	=3D mpic_unmask_irq,
+> > > 	.irq_eoi	=3D mpic_end_irq,
+> > > 	.irq_set_type	=3D mpic_set_irq_type,
+> > > +	.irq_set_wake	=3D mpic_irq_set_wake,
+> > > };
+> > >
+> > > #ifdef CONFIG_SMP
+> > > @@ -971,6 +984,7 @@ static struct irq_chip mpic_tm_chip =3D {
+> > > 	.irq_mask	=3D mpic_mask_tm,
+> > > 	.irq_unmask	=3D mpic_unmask_tm,
+> > > 	.irq_eoi	=3D mpic_end_irq,
+> > > +	.irq_set_wake	=3D mpic_irq_set_wake,
+> > > };
+> > >
+> > > #ifdef CONFIG_MPIC_U3_HT_IRQS
+> > > @@ -981,6 +995,7 @@ static struct irq_chip mpic_irq_ht_chip =3D {
+> > > 	.irq_unmask	=3D mpic_unmask_ht_irq,
+> > > 	.irq_eoi	=3D mpic_end_ht_irq,
+> > > 	.irq_set_type	=3D mpic_set_irq_type,
+> > > +	.irq_set_wake	=3D mpic_irq_set_wake,
+> > > };
+> > > #endif /* CONFIG_MPIC_U3_HT_IRQS */
+> > >
+> > > --
+> > > 1.7.5.1
+> > >
+> > >
+> > > _______________________________________________
+> > > Linuxppc-dev mailing list
+> > > Linuxppc-dev@lists.ozlabs.org
+> > > https://lists.ozlabs.org/listinfo/linuxppc-dev
 > >
-> > You discuss this with Liu Shuo about a year ago.
-> > here is the log:
-> >
-> > "
-> > On 02/01/2012 02:18 AM, shuo.liu@freescale.com wrote:
-> > > v3 : Skip the instruction only. Don't access the user space memory
-> > in
-> > >      mechine check.
-> >
-> > It may be the least bad option for now, but be aware that there's a
-> > small chance that this will cause a leak of sensitive information
-> > (such as a piece of a crypto key that happened to be sitting in the
-> > register to be loaded into).
->=20
-> Yes, that's (one reason) why you'd want to fill in a known value.  Note
-> the "for now". :-)
->=20
-> -Scott
-
-I think there is no overwhelming reason to fill the destination register
-with 0xffffffff.=20
-
-There's a small chance that 0xffffffff is treated as regular data rather
-than an error sign.
-
-Also setting this register may influence the user space under certain
-circumstance.
-
-So I think just ignore the skipped instruction is an acceptable option for
-this fix.
-
--Hongtao.
