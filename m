@@ -1,19 +1,28 @@
-Return-Path: <B29983@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe006.messaging.microsoft.com [216.32.180.16])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 16DD02C0317
- for <linuxppc-dev@ozlabs.org>; Wed,  6 Mar 2013 20:48:30 +1100 (EST)
-From: <Yuantian.Tang@freescale.com>
-To: <galak@kernel.crashing.org>
-Subject: [PATCH][V2] powerpc: remove the PPC_CLOCK dependency
-Date: Wed, 6 Mar 2013 17:16:04 +0800
-Message-ID: <1362561364-16073-1-git-send-email-Yuantian.Tang@freescale.com>
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by ozlabs.org (Postfix) with SMTP id DAE482C03A6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2013 21:26:05 +1100 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 32296-01 for <linuxppc-dev@lists.ozlabs.org>;
+ Wed,  6 Mar 2013 10:26:00 +0000 (GMT)
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@ozlabs.org, Tang Yuantian <Yuantian.Tang@freescale.com>
+Content-Type: text/plain;
+	charset="Windows-1252"
+Subject: RE: [PATCH V4] powerpc/85xx: Add machine check handler to fix PCIe
+ erratum on mpc85xx
+Date: Wed, 6 Mar 2013 10:24:12 -0000
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B7179@saturn3.aculab.com>
+In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01BE9D9D@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <CALRxmdBjb+TrqZ_XdNjH=oDcdYtVJ5=Q71dcCkKodpe7WCHDpA@mail.gmail.com>
+ <1362440744.16575.6@snotra>
+ <412C8208B4A0464FA894C5F0C278CD5D01BE952E@039-SN1MPN1-002.039d.mgd.msft.net>
+ <1362509262.25308.0@snotra>
+ <412C8208B4A0464FA894C5F0C278CD5D01BE9D9D@039-SN1MPN1-002.039d.mgd.msft.net>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: "Jia Hongtao-B38951" <B38951@freescale.com>,
+ "Wood Scott-B07421" <B07421@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Stuart Yoder <b08248@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,42 +32,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Tang Yuantian <Yuantian.Tang@freescale.com>
+> > Yes, that's (one reason) why you'd want to fill in a known value.  =
+Note
+> > the "for now". :-)
+> >
+> > -Scott
+>=20
+> I think there is no overwhelming reason to fill the destination =
+register
+> with 0xffffffff.
+>=20
+> There's a small chance that 0xffffffff is treated as regular data =
+rather
+> than an error sign.
+>=20
+> Also setting this register may influence the user space under certain
+> circumstance.
+>=20
+> So I think just ignore the skipped instruction is an acceptable option =
+for
+> this fix.
 
-config FSL_SOC and CPM do not really depend on PPC_CLOCK. So remove it.
-PPC_CLOCK also keeps powerpc archtecture from supporting COMMON_CLK.
+The 'random' value is just as likely to affect the reader, but only
+for some values - so you'll get almost impossible to repeat bugs.
+If a fixed value (0 or ~0) has an adverse effect, at least it will
+have the same every time.
 
-Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
----
-v2: correct the title
+Read errors are also likely to affect device drivers reading
+status bits, since these are very likely 'write to clear' any
+driver would have to be willing to process the 'dummy' value
+in a manner that won't loop forever (especially in an ISR).
 
- arch/powerpc/Kconfig           |    1 -
- arch/powerpc/platforms/Kconfig |    1 -
- 2 files changed, 0 insertions(+), 2 deletions(-)
+You don't need every access to be via a function that explicitly
+(somehow) detects that the fault happened, but knowing that a
+specific value might be caused by a dead PCIe bus, and being
+able to find out whether that is true (to avoid looping forever)
+is probably useful.
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 352f416..383485b 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -655,7 +655,6 @@ config SBUS
- config FSL_SOC
- 	bool
- 	select HAVE_CAN_FLEXCAN if NET && CAN
--	select PPC_CLOCK
- 
- config FSL_PCI
-  	bool
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index e7a896a..aba81cd 100644
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -343,7 +343,6 @@ config FSL_ULI1575
- 
- config CPM
- 	bool
--	select PPC_CLOCK
- 
- config OF_RTC
- 	bool
--- 
-1.7.0.4
+This is probably similar to what a driver needs to recover from
+an external PCIe list being unplugged.
+
+	David
