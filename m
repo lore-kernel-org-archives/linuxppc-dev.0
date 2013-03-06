@@ -1,38 +1,21 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 61B902C037E
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2013 16:03:33 +1100 (EST)
-Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 6 Mar 2013 10:29:48 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id A5AB1E004A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2013 10:34:32 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r2653Ftl31981656
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Mar 2013 10:33:15 +0530
-Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r2653Hcd023806
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Mar 2013 16:03:17 +1100
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH -V1 06/24] powerpc: Reduce PTE table memory wastage
-In-Reply-To: <20130305021219.GC2888@iris.ozlabs.ibm.com>
-References: <1361865914-13911-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1361865914-13911-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20130304045853.GB27523@drongo> <874ngr2zz1.fsf@linux.vnet.ibm.com>
- <20130305021219.GC2888@iris.ozlabs.ibm.com>
-Date: Wed, 06 Mar 2013 10:33:16 +0530
-Message-ID: <877gll86i3.fsf@linux.vnet.ibm.com>
+Return-Path: <michael@ellerman.id.au>
+Date: Wed, 6 Mar 2013 16:42:03 +1100
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2/3] irq: Add hw continuous IRQs map to virtual
+ continuous IRQs support
+Message-ID: <20130306054203.GA13075@concordia>
+References: <1358235536-32741-1-git-send-email-qiudayu@linux.vnet.ibm.com>
+ <1358235536-32741-3-git-send-email-qiudayu@linux.vnet.ibm.com>
+ <20130305022348.GB7656@concordia>
+ <51359C9D.5030009@linux.vnet.ibm.com>
+ <20130306035443.GB3493@concordia>
+ <5136D582.80101@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <5136D582.80101@linux.vnet.ibm.com>
+Cc: tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,38 +25,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul Mackerras <paulus@samba.org> writes:
+On Wed, Mar 06, 2013 at 01:34:58PM +0800, Mike Qiu wrote:
+> 于 2013/3/6 11:54, Michael Ellerman 写道:
+> >On Tue, Mar 05, 2013 at 03:19:57PM +0800, Mike Qiu wrote:
+> >>于 2013/3/5 10:23, Michael Ellerman 写道:
+> >>>On Tue, Jan 15, 2013 at 03:38:55PM +0800, Mike Qiu wrote:
+> >>>>diff --git a/kernel/irq/irqdomain.c b/kernel/irq/irqdomain.c
+> >>>>index 96f3a1d..38648e6 100644
+> >>>>--- a/kernel/irq/irqdomain.c
+> >>>>+++ b/kernel/irq/irqdomain.c
+> >>>>@@ -636,6 +636,67 @@ int irq_create_strict_mappings(struct irq_domain *domain, unsigned int irq_base,
+> >>>>  }
+> >>>>  EXPORT_SYMBOL_GPL(irq_create_strict_mappings);
+> >>>>+/**
+> >>>>+ * irq_create_mapping_many - Map a range of hw IRQs to a range of virtual IRQs
+> >>>>+ * @domain: domain owning the interrupt range
+> >>>>+ * @hwirq_base: beginning of continuous hardware IRQ range
+> >>>>+ * @count: Number of interrupts to map
+> >>>For multiple-MSI the allocated interrupt numbers must be a power-of-2,
+> >>>and must be naturally aligned. I don't /think/ that's a requirement for
+> >>>the virtual numbers, but it's probably best that we do it anyway.
+> >>>
+> >>>So this API needs to specify that it will give you back a power-of-2
+> >>>block that is naturally aligned - otherwise you can't use it for MSI.
+> >>rtas_call will return the numbers of hardware interrupt, and it
+> >>should be power-of-2, as this I think do not need to specify
+> >You're confusing hardware interrupt numbers and virtual interrupt
+> >numbers. My comment is about irq_create_mapping_many(), which returns
+> >virtual interrupt numbers.
+> >
+> >As I said I don't think there is a requirement that the virtual
+> >interrupt numbers are also a power-of-2 naturally aligned block, but we
+> >should allocate them as one anyway, to avoid any issues in future.
 
-> On Mon, Mar 04, 2013 at 04:28:42PM +0530, Aneesh Kumar K.V wrote:
->> The last one that ends up doing atomic_xor_bits which cause the mapcount
->> to go zero, will take the page off the list and free the page. 
->
-> No, look at the example again.  page_table_free_rcu() won't take it
-> off the list because it uses the (mask & FRAG_MASK) == 0 test, which
-> fails (one fragment is still in use).  page_table_free() won't take it
-> off the list because it uses the mask == 0 test, which also fails (one
-> fragment is still waiting for the RCU grace period).  Finally,
-> __page_table_free_rcu() doesn't take it off the list, it just frees
-> the page.  Oops. :)
+> But for virtual interrupt numbersit should be a power-of-2 naturally
+> aligned block, because it must be continuous, as the MSI-HOWTO.txt says:
+> 
+>     4.2.2 pci_enable_msi_block
+>     int pci_enable_msi_block(struct pci_dev *dev, int count)
+>     This variation on the above call allows a device driver to request
+>     multiple MSIs.  The MSI specification only allows interrupts to be
+>     allocated in powers of two, up to a maximum of 2^5 (32).
+>     If this function returns 0, it has succeeded in allocating at least
+>     as many interrupts as the driver requested
+>     (it may have allocated more in order to satisfy the power-of-two
+>     requirement). In this case, the function enables MSI on this device
+>     and updates dev->irq to be the lowest of the new interrupts
+>     assigned to it. The other interrupts assigned to the device are in
+>     the range dev->irq to dev->irq + count - 1.
+> 
+> See the last line, that means for the virtual interrupts must be a
+> continuous block.
 
+In practice I think things could work if we didn't, because we are not
+using the mask routines that assume that layout.
 
-How about the below
+But you're right, we must implement the API as it's specified, so the
+virtual interrupt numbers must be a naturally aligned power-of-2.
 
---- a/arch/powerpc/mm/pgtable_64.c
-+++ b/arch/powerpc/mm/pgtable_64.c
-@@ -425,7 +425,7 @@ void page_table_free(struct mm_struct *mm, unsigned long *table)
-        bit = 1 << ((__pa(table) & ~PAGE_MASK) / PTE_FRAG_SIZE);
-        spin_lock(&mm->page_table_lock);
-        mask = atomic_xor_bits(&page->_mapcount, bit);
--       if (mask == 0)
-+       if (!(mask & FRAG_MASK))
-                list_del(&page->lru);
-        else if (mask & FRAG_MASK) {
-                /*
-@@ -446,7 +446,7 @@ void page_table_free(struct mm_struct *mm, unsigned long *table)
-
-
-ie, we always remove the page from the list, when the lower half is
-zero or lower half is FRAG_MASK.  We free the page when _mapcount is 0.
-
--aneesh
+cheers
