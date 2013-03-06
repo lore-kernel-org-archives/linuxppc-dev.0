@@ -1,19 +1,39 @@
-Return-Path: <michael@ellerman.id.au>
-Date: Wed, 6 Mar 2013 14:54:43 +1100
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Mike Qiu <qiudayu@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/3] irq: Add hw continuous IRQs map to virtual
- continuous IRQs support
-Message-ID: <20130306035443.GB3493@concordia>
-References: <1358235536-32741-1-git-send-email-qiudayu@linux.vnet.ibm.com>
- <1358235536-32741-3-git-send-email-qiudayu@linux.vnet.ibm.com>
- <20130305022348.GB7656@concordia>
- <51359C9D.5030009@linux.vnet.ibm.com>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 723122C035B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2013 15:02:08 +1100 (EST)
+Received: from /spool/local
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 6 Mar 2013 09:29:43 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id B70D3E0050
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2013 09:33:13 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r2641ukp28836050
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Mar 2013 09:31:57 +0530
+Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r2641xF8005036
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Mar 2013 15:01:59 +1100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH -V1 06/24] powerpc: Reduce PTE table memory wastage
+In-Reply-To: <1362440204.21357.20.camel@pasglop>
+References: <1361865914-13911-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1361865914-13911-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20130304045853.GB27523@drongo> <874ngr2zz1.fsf@linux.vnet.ibm.com>
+ <1362440204.21357.20.camel@pasglop>
+Date: Wed, 06 Mar 2013 09:31:58 +0530
+Message-ID: <87ip5589c9.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <51359C9D.5030009@linux.vnet.ibm.com>
-Cc: tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,116 +43,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 05, 2013 at 03:19:57PM +0800, Mike Qiu wrote:
-> 于 2013/3/5 10:23, Michael Ellerman 写道:
-> >On Tue, Jan 15, 2013 at 03:38:55PM +0800, Mike Qiu wrote:
-> >>Adding a function irq_create_mapping_many() which can associate
-> >>multiple MSIs to a continous irq mapping.
-> >>
-> >>This is needed to enable multiple MSI support for pSeries.
-> >>
-> >>Signed-off-by: Mike Qiu <qiudayu@linux.vnet.ibm.com>
-> >>---
-> >>  include/linux/irq.h       |    2 +
-> >>  include/linux/irqdomain.h |    3 ++
-> >>  kernel/irq/irqdomain.c    |   61 +++++++++++++++++++++++++++++++++++++++++++++
-> >>  3 files changed, 66 insertions(+), 0 deletions(-)
-> >>
-> >>diff --git a/include/linux/irq.h b/include/linux/irq.h
-> >>index 60ef45b..e00a7ec 100644
-> >>--- a/include/linux/irq.h
-> >>+++ b/include/linux/irq.h
-> >>@@ -592,6 +592,8 @@ int __irq_alloc_descs(int irq, unsigned int from, unsigned int cnt, int node,
-> >>  #define irq_alloc_desc_from(from, node)		\
-> >>  	irq_alloc_descs(-1, from, 1, node)
-> >>+#define irq_alloc_desc_n(nevc, node)		\
-> >>+	irq_alloc_descs(-1, 0, nevc, node)
-> >This has been superseeded by irq_alloc_descs_from(), which is the right
-> >way to do it.
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-> Yes, but irq_alloc_descs_from() just for 1 irq
+> On Mon, 2013-03-04 at 16:28 +0530, Aneesh Kumar K.V wrote:
+>> I added the below comment when initializing the list.
+>> 
+>> +#ifdef CONFIG_PPC_64K_PAGES
+>> +       /*
+>> +        * Used to support 4K PTE fragment. The pages are added to list,
+>> +        * when we have free framents in the page. We track the whether
+>> +        * a page frament is available using page._mapcount. A value of
+>> +        * zero indicate none of the fragments are used and page can be
+>> +        * freed. A value of FRAG_MASK indicate all the fragments are used
+>> +        * and hence the page will be removed from the below list.
+>> +        */
+>> +       INIT_LIST_HEAD(&init_mm.context.pgtable_list);
+>> +#endif
+>> 
+>> I am not sure about why you say there is no consistent rule. Can you
+>> elaborate on that ?
+>
+> Do you really need that list ? I assume it's meant to allow you to find
+> free frags when allocating but my worry is that you'll end up losing
+> quite a bit of node locality of PTE pages....
+>
+> It may or may not work but can you investigate doing things differently
+> here ? The idea I want you to consider is to always allocate a full
+> page, but make the relationship of the fragments to PTE pages fixed. IE.
+> the fragment in the page is a function of the VA.
+>
+> Basically, the algorithm for allocation is roughly:
+>
+>  - Walk the tree down to the PMD ptr (* that can be improved with a
+> generic change, see below)
+>
+>  - Check if any of the neighbouring PMDs is populated. If yes, you have
+> your page and pick the appropriate fragment based on the VA
+>
+>  - If not, allocate and populate
+>
+> On free, similarly, you checked if all neighbouring PMDs have been
+> cleared, in which case you can fire off the page for RCU freeing.
+>
+> (*) By changing pte_alloc_one to take the PMD ptr (which the call side
+> has right at hand) you can avoid the tree lookup.
+>
 
-No it's not, look again.
+Will try this.
 
-#define irq_alloc_descs_from(from, cnt, node)   \
-	irq_alloc_descs(-1, from, cnt, node)
-
-
-> >>diff --git a/kernel/irq/irqdomain.c b/kernel/irq/irqdomain.c
-> >>index 96f3a1d..38648e6 100644
-> >>--- a/kernel/irq/irqdomain.c
-> >>+++ b/kernel/irq/irqdomain.c
-> >>@@ -636,6 +636,67 @@ int irq_create_strict_mappings(struct irq_domain *domain, unsigned int irq_base,
-> >>  }
-> >>  EXPORT_SYMBOL_GPL(irq_create_strict_mappings);
-> >>+/**
-> >>+ * irq_create_mapping_many - Map a range of hw IRQs to a range of virtual IRQs
-> >>+ * @domain: domain owning the interrupt range
-> >>+ * @hwirq_base: beginning of continuous hardware IRQ range
-> >>+ * @count: Number of interrupts to map
-
-> >For multiple-MSI the allocated interrupt numbers must be a power-of-2,
-> >and must be naturally aligned. I don't /think/ that's a requirement for
-> >the virtual numbers, but it's probably best that we do it anyway.
-> >
-> >So this API needs to specify that it will give you back a power-of-2
-> >block that is naturally aligned - otherwise you can't use it for MSI.
-
-> rtas_call will return the numbers of hardware interrupt, and it
-> should be power-of-2, as this I think do not need to specify
-
-You're confusing hardware interrupt numbers and virtual interrupt
-numbers. My comment is about irq_create_mapping_many(), which returns
-virtual interrupt numbers.
-
-As I said I don't think there is a requirement that the virtual
-interrupt numbers are also a power-of-2 naturally aligned block, but we
-should allocate them as one anyway, to avoid any issues in future.
-
-And so this API, which returns virtual interrupt numbers, must satisfy
-that specification.
-
-> >>+	/* Look for default domain if nececssary */
-> >>+	if (!domain)
-> >>+		domain = irq_default_domain;
-> >>+	if (!domain) {
-> >>+		pr_warn("irq_create_mapping called for NULL domain, hwirq=%lx\n"
-> >>+			, hwirq_base);
-> >>+		WARN_ON(1);
-> >>+		return 0;
-> >>+	}
-> >>+	pr_debug("-> using domain @%p\n", domain);
-> >>+
-> >>+	/* For IRQ_DOMAIN_MAP_LEGACY, get the first virtual interrupt number */
-> >>+	if (domain->revmap_type == IRQ_DOMAIN_MAP_LEGACY)
-> >>+		return irq_domain_legacy_revmap(domain, hwirq_base);
-> >The above doesn't work.
-> Why it doesn't work ?
-
-Because irq_domain_legacy_revmap() only allocates a single interrupt
-number.
-
-> >>+	/* Check if mapping already exists */
-> >>+	for (i = 0; i < count; i++) {
-> >>+		virq = irq_find_mapping(domain, hwirq_base+i);
-> >>+		if (virq) {
-> >>+			pr_debug("existing mapping on virq %d,"
-> >>+					" now dispose it first\n", virq);
-> >>+			irq_dispose_mapping(virq);
-
-> >You might have just disposed of someone elses mapping, we shouldn't do
-> >that. It should be an error to the caller.
-
-> It's a good question. If the interrupt used for someone elses, why I
-> can apply it from the system?
-
-I agree, that would be a bug. But disposing of someone elses mapping is
-not OK.
-
-> So it may someone else forget to dispose mapping, and it never be
-> used for others as I have got the interrupt I think.
-
-Perhaps, but that is a bug that needs to be fixed in the code that
-forgets to dispose of the mapping.
-
-cheers
+-aneesh
