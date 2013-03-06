@@ -1,16 +1,16 @@
 Return-Path: <B29983@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe006.messaging.microsoft.com [216.32.180.16])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0E1762C0379
- for <linuxppc-dev@ozlabs.org>; Wed,  6 Mar 2013 20:46:31 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 16DD02C0317
+ for <linuxppc-dev@ozlabs.org>; Wed,  6 Mar 2013 20:48:30 +1100 (EST)
 From: <Yuantian.Tang@freescale.com>
 To: <galak@kernel.crashing.org>
-Subject: [PATCH][RFC, upstream] powerpc: remove the PPC_CLOCK dependency
-Date: Wed, 6 Mar 2013 17:14:09 +0800
-Message-ID: <1362561249-14144-1-git-send-email-Yuantian.Tang@freescale.com>
+Subject: [PATCH][V2] powerpc: remove the PPC_CLOCK dependency
+Date: Wed, 6 Mar 2013 17:16:04 +0800
+Message-ID: <1362561364-16073-1-git-send-email-Yuantian.Tang@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: linuxppc-dev@ozlabs.org, Tang Yuantian <Yuantian.Tang@freescale.com>
@@ -30,6 +30,8 @@ PPC_CLOCK also keeps powerpc archtecture from supporting COMMON_CLK.
 
 Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
 ---
+v2: correct the title
+
  arch/powerpc/Kconfig           |    1 -
  arch/powerpc/platforms/Kconfig |    1 -
  2 files changed, 0 insertions(+), 2 deletions(-)
