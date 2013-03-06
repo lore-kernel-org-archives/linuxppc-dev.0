@@ -1,41 +1,31 @@
-Return-Path: <qiudayu@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7030D2C0390
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2013 18:03:02 +1100 (EST)
+ (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6F0CE2C0086
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2013 18:23:19 +1100 (EST)
 Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <qiudayu@linux.vnet.ibm.com>;
- Wed, 6 Mar 2013 12:30:37 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id C3914125805A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2013 12:33:53 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r2672nJu10682502
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Mar 2013 12:32:51 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r2672pZG026391
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Mar 2013 18:02:52 +1100
-Message-ID: <5136EA12.7040703@linux.vnet.ibm.com>
-Date: Wed, 06 Mar 2013 15:02:42 +0800
-From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 2/3] irq: Add hw continuous IRQs map to virtual continuous
- IRQs support
-References: <1358235536-32741-1-git-send-email-qiudayu@linux.vnet.ibm.com>
- <1358235536-32741-3-git-send-email-qiudayu@linux.vnet.ibm.com>
- <20130305022348.GB7656@concordia> <51359C9D.5030009@linux.vnet.ibm.com>
- <20130306035443.GB3493@concordia> <5136D582.80101@linux.vnet.ibm.com>
- <20130306054203.GA13075@concordia>
-In-Reply-To: <20130306054203.GA13075@concordia>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+ for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Wed, 6 Mar 2013 00:13:11 -0700
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id C2560C90025
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2013 02:13:08 -0500 (EST)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r267D8XS320542
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Mar 2013 02:13:08 -0500
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r267D7wA025304
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Mar 2013 00:13:08 -0700
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/powernv: Use MSI bitmap to manage IRQs
+Date: Wed,  6 Mar 2013 15:12:37 +0800
+Message-Id: <1362553957-12110-1-git-send-email-shangw@linux.vnet.ibm.com>
+Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,67 +35,232 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-于 2013/3/6 13:42, Michael Ellerman 写道:
-> On Wed, Mar 06, 2013 at 01:34:58PM +0800, Mike Qiu wrote:
->> 于 2013/3/6 11:54, Michael Ellerman 写道:
->>> On Tue, Mar 05, 2013 at 03:19:57PM +0800, Mike Qiu wrote:
->>>> 于 2013/3/5 10:23, Michael Ellerman 写道:
->>>>> On Tue, Jan 15, 2013 at 03:38:55PM +0800, Mike Qiu wrote:
->>>>>> diff --git a/kernel/irq/irqdomain.c b/kernel/irq/irqdomain.c
->>>>>> index 96f3a1d..38648e6 100644
->>>>>> --- a/kernel/irq/irqdomain.c
->>>>>> +++ b/kernel/irq/irqdomain.c
->>>>>> @@ -636,6 +636,67 @@ int irq_create_strict_mappings(struct irq_domain *domain, unsigned int irq_base,
->>>>>>   }
->>>>>>   EXPORT_SYMBOL_GPL(irq_create_strict_mappings);
->>>>>> +/**
->>>>>> + * irq_create_mapping_many - Map a range of hw IRQs to a range of virtual IRQs
->>>>>> + * @domain: domain owning the interrupt range
->>>>>> + * @hwirq_base: beginning of continuous hardware IRQ range
->>>>>> + * @count: Number of interrupts to map
->>>>> For multiple-MSI the allocated interrupt numbers must be a power-of-2,
->>>>> and must be naturally aligned. I don't /think/ that's a requirement for
->>>>> the virtual numbers, but it's probably best that we do it anyway.
->>>>>
->>>>> So this API needs to specify that it will give you back a power-of-2
->>>>> block that is naturally aligned - otherwise you can't use it for MSI.
->>>> rtas_call will return the numbers of hardware interrupt, and it
->>>> should be power-of-2, as this I think do not need to specify
->>> You're confusing hardware interrupt numbers and virtual interrupt
->>> numbers. My comment is about irq_create_mapping_many(), which returns
->>> virtual interrupt numbers.
->>>
->>> As I said I don't think there is a requirement that the virtual
->>> interrupt numbers are also a power-of-2 naturally aligned block, but we
->>> should allocate them as one anyway, to avoid any issues in future.
->> But for virtual interrupt numbersit should be a power-of-2 naturally
->> aligned block, because it must be continuous, as the MSI-HOWTO.txt says:
->>
->>      4.2.2 pci_enable_msi_block
->>      int pci_enable_msi_block(struct pci_dev *dev, int count)
->>      This variation on the above call allows a device driver to request
->>      multiple MSIs.  The MSI specification only allows interrupts to be
->>      allocated in powers of two, up to a maximum of 2^5 (32).
->>      If this function returns 0, it has succeeded in allocating at least
->>      as many interrupts as the driver requested
->>      (it may have allocated more in order to satisfy the power-of-two
->>      requirement). In this case, the function enables MSI on this device
->>      and updates dev->irq to be the lowest of the new interrupts
->>      assigned to it. The other interrupts assigned to the device are in
->>      the range dev->irq to dev->irq + count - 1.
->>
->> See the last line, that means for the virtual interrupts must be a
->> continuous block.
-> In practice I think things could work if we didn't, because we are not
-> using the mask routines that assume that layout.
->
-> But you're right, we must implement the API as it's specified, so the
-> virtual interrupt numbers must be a naturally aligned power-of-2.
-Yes, also your opinion is also right, just becasue the API requires
-a naturally aligned power-of-2 interrupt numbers, so we need to
-implement it like this.
+As Michael Ellerman mentioned, arch/powerpc/sysdev/msi_bitmap.c
+already implemented bitmap to manage (alloc/free) MSI interrupts.
+The patch intends to use that mechanism to manage MSI interrupts
+for PowerNV platform.
 
-cheers
->
-> cheers
->
+Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/powernv/pci-ioda.c   |   12 +++---
+ arch/powerpc/platforms/powernv/pci-p5ioc2.c |   11 ++---
+ arch/powerpc/platforms/powernv/pci.c        |   59 ++++++---------------------
+ arch/powerpc/platforms/powernv/pci.h        |    4 +-
+ 4 files changed, 25 insertions(+), 61 deletions(-)
+
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 8e90e89..a5c5f15 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -26,6 +26,7 @@
+ #include <asm/prom.h>
+ #include <asm/pci-bridge.h>
+ #include <asm/machdep.h>
++#include <asm/msi_bitmap.h>
+ #include <asm/ppc-pci.h>
+ #include <asm/opal.h>
+ #include <asm/iommu.h>
+@@ -647,7 +648,7 @@ static int pnv_pci_ioda_msi_setup(struct pnv_phb *phb, struct pci_dev *dev,
+ 
+ static void pnv_pci_init_ioda_msis(struct pnv_phb *phb)
+ {
+-	unsigned int bmap_size;
++	unsigned int count;
+ 	const __be32 *prop = of_get_property(phb->hose->dn,
+ 					     "ibm,opal-msi-ranges", NULL);
+ 	if (!prop) {
+@@ -658,18 +659,17 @@ static void pnv_pci_init_ioda_msis(struct pnv_phb *phb)
+ 		return;
+ 
+ 	phb->msi_base = be32_to_cpup(prop);
+-	phb->msi_count = be32_to_cpup(prop + 1);
+-	bmap_size = BITS_TO_LONGS(phb->msi_count) * sizeof(unsigned long);
+-	phb->msi_map = zalloc_maybe_bootmem(bmap_size, GFP_KERNEL);
+-	if (!phb->msi_map) {
++	count = be32_to_cpup(prop + 1);
++	if (msi_bitmap_alloc(&phb->msi_bmp, count, phb->hose->dn)) {
+ 		pr_err("PCI %d: Failed to allocate MSI bitmap !\n",
+ 		       phb->hose->global_number);
+ 		return;
+ 	}
++
+ 	phb->msi_setup = pnv_pci_ioda_msi_setup;
+ 	phb->msi32_support = 1;
+ 	pr_info("  Allocated bitmap for %d MSIs (base IRQ 0x%x)\n",
+-		phb->msi_count, phb->msi_base);
++		count, phb->msi_base);
+ }
+ #else
+ static void pnv_pci_init_ioda_msis(struct pnv_phb *phb) { }
+diff --git a/arch/powerpc/platforms/powernv/pci-p5ioc2.c b/arch/powerpc/platforms/powernv/pci-p5ioc2.c
+index 7db8771..d5c066e 100644
+--- a/arch/powerpc/platforms/powernv/pci-p5ioc2.c
++++ b/arch/powerpc/platforms/powernv/pci-p5ioc2.c
+@@ -26,6 +26,7 @@
+ #include <asm/prom.h>
+ #include <asm/pci-bridge.h>
+ #include <asm/machdep.h>
++#include <asm/msi_bitmap.h>
+ #include <asm/ppc-pci.h>
+ #include <asm/opal.h>
+ #include <asm/iommu.h>
+@@ -55,7 +56,7 @@ static int pnv_pci_p5ioc2_msi_setup(struct pnv_phb *phb, struct pci_dev *dev,
+ 
+ static void pnv_pci_init_p5ioc2_msis(struct pnv_phb *phb)
+ {
+-	unsigned int bmap_size;
++	unsigned int count;
+ 	const __be32 *prop = of_get_property(phb->hose->dn,
+ 					     "ibm,opal-msi-ranges", NULL);
+ 	if (!prop)
+@@ -67,10 +68,8 @@ static void pnv_pci_init_p5ioc2_msis(struct pnv_phb *phb)
+ 	if (of_device_is_compatible(phb->hose->dn, "ibm,p5ioc2-pcix"))
+ 		return;
+ 	phb->msi_base = be32_to_cpup(prop);
+-	phb->msi_count = be32_to_cpup(prop + 1);
+-	bmap_size = BITS_TO_LONGS(phb->msi_count) * sizeof(unsigned long);
+-	phb->msi_map = zalloc_maybe_bootmem(bmap_size, GFP_KERNEL);
+-	if (!phb->msi_map) {
++	count = be32_to_cpup(prop + 1);
++	if (msi_bitmap_alloc(&phb->msi_bmp, count, phb->hose->dn)) {
+ 		pr_err("PCI %d: Failed to allocate MSI bitmap !\n",
+ 		       phb->hose->global_number);
+ 		return;
+@@ -78,7 +77,7 @@ static void pnv_pci_init_p5ioc2_msis(struct pnv_phb *phb)
+ 	phb->msi_setup = pnv_pci_p5ioc2_msi_setup;
+ 	phb->msi32_support = 0;
+ 	pr_info(" Allocated bitmap for %d MSIs (base IRQ 0x%x)\n",
+-		phb->msi_count, phb->msi_base);
++		count, phb->msi_base);
+ }
+ #else
+ static void pnv_pci_init_p5ioc2_msis(struct pnv_phb *phb) { }
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index b8b8e0b..42eee93 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -26,6 +26,7 @@
+ #include <asm/prom.h>
+ #include <asm/pci-bridge.h>
+ #include <asm/machdep.h>
++#include <asm/msi_bitmap.h>
+ #include <asm/ppc-pci.h>
+ #include <asm/opal.h>
+ #include <asm/iommu.h>
+@@ -47,43 +48,7 @@ static int pnv_msi_check_device(struct pci_dev* pdev, int nvec, int type)
+ 	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
+ 	struct pnv_phb *phb = hose->private_data;
+ 
+-	return (phb && phb->msi_map) ? 0 : -ENODEV;
+-}
+-
+-static unsigned int pnv_get_one_msi(struct pnv_phb *phb)
+-{
+-	unsigned long flags;
+-	unsigned int id, rc;
+-
+-	spin_lock_irqsave(&phb->lock, flags);
+-
+-	id = find_next_zero_bit(phb->msi_map, phb->msi_count, phb->msi_next);
+-	if (id >= phb->msi_count && phb->msi_next)
+-		id = find_next_zero_bit(phb->msi_map, phb->msi_count, 0);
+-	if (id >= phb->msi_count) {
+-		rc = 0;
+-		goto out;
+-	}
+-	__set_bit(id, phb->msi_map);
+-	rc = id + phb->msi_base;
+-out:
+-	spin_unlock_irqrestore(&phb->lock, flags);
+-	return rc;
+-}
+-
+-static void pnv_put_msi(struct pnv_phb *phb, unsigned int hwirq)
+-{
+-	unsigned long flags;
+-	unsigned int id;
+-
+-	if (WARN_ON(hwirq < phb->msi_base ||
+-		    hwirq >= (phb->msi_base + phb->msi_count)))
+-		return;
+-	id = hwirq - phb->msi_base;
+-
+-	spin_lock_irqsave(&phb->lock, flags);
+-	__clear_bit(id, phb->msi_map);
+-	spin_unlock_irqrestore(&phb->lock, flags);
++	return (phb && phb->msi_bmp.bitmap) ? 0 : -ENODEV;
+ }
+ 
+ static int pnv_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+@@ -92,7 +57,8 @@ static int pnv_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+ 	struct pnv_phb *phb = hose->private_data;
+ 	struct msi_desc *entry;
+ 	struct msi_msg msg;
+-	unsigned int hwirq, virq;
++	int hwirq;
++	unsigned int virq;
+ 	int rc;
+ 
+ 	if (WARN_ON(!phb))
+@@ -104,25 +70,25 @@ static int pnv_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+ 				pci_name(pdev));
+ 			return -ENXIO;
+ 		}
+-		hwirq = pnv_get_one_msi(phb);
+-		if (!hwirq) {
++		hwirq = msi_bitmap_alloc_hwirqs(&phb->msi_bmp, 1);
++		if (hwirq < 0) {
+ 			pr_warn("%s: Failed to find a free MSI\n",
+ 				pci_name(pdev));
+ 			return -ENOSPC;
+ 		}
+-		virq = irq_create_mapping(NULL, hwirq);
++		virq = irq_create_mapping(NULL, phb->msi_base + hwirq);
+ 		if (virq == NO_IRQ) {
+ 			pr_warn("%s: Failed to map MSI to linux irq\n",
+ 				pci_name(pdev));
+-			pnv_put_msi(phb, hwirq);
++			msi_bitmap_free_hwirqs(&phb->msi_bmp, hwirq, 1);
+ 			return -ENOMEM;
+ 		}
+-		rc = phb->msi_setup(phb, pdev, hwirq, entry->msi_attrib.is_64,
+-				    &msg);
++		rc = phb->msi_setup(phb, pdev, phb->msi_base + hwirq,
++				    entry->msi_attrib.is_64, &msg);
+ 		if (rc) {
+ 			pr_warn("%s: Failed to setup MSI\n", pci_name(pdev));
+ 			irq_dispose_mapping(virq);
+-			pnv_put_msi(phb, hwirq);
++			msi_bitmap_free_hwirqs(&phb->msi_bmp, hwirq, 1);
+ 			return rc;
+ 		}
+ 		irq_set_msi_desc(virq, entry);
+@@ -144,7 +110,8 @@ static void pnv_teardown_msi_irqs(struct pci_dev *pdev)
+ 		if (entry->irq == NO_IRQ)
+ 			continue;
+ 		irq_set_msi_desc(entry->irq, NULL);
+-		pnv_put_msi(phb, virq_to_hw(entry->irq));
++		msi_bitmap_free_hwirqs(&phb->msi_bmp,
++			virq_to_hw(entry->irq) - phb->msi_base, 1);
+ 		irq_dispose_mapping(entry->irq);
+ 	}
+ }
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index 7cfb7c8..42ddfba 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -73,11 +73,9 @@ struct pnv_phb {
+ 	spinlock_t		lock;
+ 
+ #ifdef CONFIG_PCI_MSI
+-	unsigned long		*msi_map;
+ 	unsigned int		msi_base;
+-	unsigned int		msi_count;
+-	unsigned int		msi_next;
+ 	unsigned int		msi32_support;
++	struct msi_bitmap	msi_bmp;
+ #endif
+ 	int (*msi_setup)(struct pnv_phb *phb, struct pci_dev *dev,
+ 			 unsigned int hwirq, unsigned int is_64,
+-- 
+1.7.5.4
