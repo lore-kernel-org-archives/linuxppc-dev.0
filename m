@@ -1,28 +1,15 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
- by ozlabs.org (Postfix) with SMTP id DAE482C03A6
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2013 21:26:05 +1100 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
- by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
- id 32296-01 for <linuxppc-dev@lists.ozlabs.org>;
- Wed,  6 Mar 2013 10:26:00 +0000 (GMT)
+Return-Path: <aaro.koskinen@iki.fi>
+Received: from filtteri5.pp.htv.fi (filtteri5.pp.htv.fi [213.243.153.188])
+ by ozlabs.org (Postfix) with ESMTP id 8B36E2C03CA
+ for <linuxppc-dev@ozlabs.org>; Wed,  6 Mar 2013 23:38:01 +1100 (EST)
+Date: Wed, 6 Mar 2013 14:29:13 +0200
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
+To: Anton Blanchard <anton@samba.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
+Subject: Bisected 3.9-rc1 boot failure on G5
+Message-ID: <20130306122913.GC14552@blackmetal.musicnaut.iki.fi>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
-Subject: RE: [PATCH V4] powerpc/85xx: Add machine check handler to fix PCIe
- erratum on mpc85xx
-Date: Wed, 6 Mar 2013 10:24:12 -0000
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B7179@saturn3.aculab.com>
-In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01BE9D9D@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <CALRxmdBjb+TrqZ_XdNjH=oDcdYtVJ5=Q71dcCkKodpe7WCHDpA@mail.gmail.com>
- <1362440744.16575.6@snotra>
- <412C8208B4A0464FA894C5F0C278CD5D01BE952E@039-SN1MPN1-002.039d.mgd.msft.net>
- <1362509262.25308.0@snotra>
- <412C8208B4A0464FA894C5F0C278CD5D01BE9D9D@039-SN1MPN1-002.039d.mgd.msft.net>
-From: "David Laight" <David.Laight@ACULAB.COM>
-To: "Jia Hongtao-B38951" <B38951@freescale.com>,
- "Wood Scott-B07421" <B07421@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Stuart Yoder <b08248@gmail.com>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,44 +19,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> > Yes, that's (one reason) why you'd want to fill in a known value.  =
-Note
-> > the "for now". :-)
-> >
-> > -Scott
->=20
-> I think there is no overwhelming reason to fill the destination =
-register
-> with 0xffffffff.
->=20
-> There's a small chance that 0xffffffff is treated as regular data =
-rather
-> than an error sign.
->=20
-> Also setting this register may influence the user space under certain
-> circumstance.
->=20
-> So I think just ignore the skipped instruction is an acceptable option =
-for
-> this fix.
+Hi,
 
-The 'random' value is just as likely to affect the reader, but only
-for some values - so you'll get almost impossible to repeat bugs.
-If a fixed value (0 or ~0) has an adverse effect, at least it will
-have the same every time.
+Booting 3.9-rc1 fails with the following dump:
 
-Read errors are also likely to affect device drivers reading
-status bits, since these are very likely 'write to clear' any
-driver would have to be willing to process the 'dummy' value
-in a manner that won't loop forever (especially in an ISR).
+   Invalid memory access at %SSR0: 00000000.00000380 %SSR1: 90000000.00081000
 
-You don't need every access to be via a function that explicitly
-(somehow) detects that the fault happened, but knowing that a
-specific value might be caused by a dead PCIe bus, and being
-able to find out whether that is true (to avoid looping forever)
-is probably useful.
+According to bisect, it's caused by 1fbe9cf2598dae3bd464d860bd89c67b1ff8682b
+(powerpc: Build kernel with -mcmodel=medium).
 
-This is probably similar to what a driver needs to recover from
-an external PCIe list being unplugged.
+I'm loading & booting the kernel with GRUB 2.00 on iMac G5 (PowerMac8,1),
+toolchain is GCC 4.7.2 / binutils 2.23.1.
 
-	David
+A.
