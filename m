@@ -2,30 +2,30 @@ Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 94F852C04C3
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2013 17:10:52 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 217552C0507
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2013 17:10:54 +1100 (EST)
 Received: from /spool/local
  by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 6 Mar 2013 16:01:05 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id C44422CE8054
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2013 17:10:49 +1100 (EST)
+ Wed, 6 Mar 2013 16:01:07 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 493C33578052
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2013 17:10:51 +1100 (EST)
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r265wDBB53870802
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Mar 2013 16:58:13 +1100
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r266AmIk42664170
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Mar 2013 17:10:48 +1100
 Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r266Am8C014554
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Mar 2013 17:10:49 +1100
+ r266AoqM014607
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Mar 2013 17:10:50 +1100
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V2 08/26] powerpc: Clarify __pgtable_cache_add by renaming
- shift to index
-Date: Wed,  6 Mar 2013 11:40:09 +0530
-Message-Id: <1362550227-575-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V2 09/26] powerpc: Use encode avpn where we need only avpn
+ values
+Date: Wed,  6 Mar 2013 11:40:10 +0530
+Message-Id: <1362550227-575-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1362550227-575-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1362550227-575-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -41,75 +41,124 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-With table_size as second argument, first argument of the function
-is not the shift value, but rather index into the array. Rename the
-variable to clarify the same.
+In all these cases we are doing something similar to
 
+HPTE_V_COMPARE(hpte_v, want_v) which ignores the HPTE_V_LARGE bit
+
+With MPSS support we would need actual page size to set HPTE_V_LARGE
+bit and that won't be available in most of these cases. Since we are ignoring
+HPTE_V_LARGE bit, use the  avpn value instead. There should not be any change
+in behaviour after this patch.
+
+Acked-by: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/pgtable-ppc64.h |    2 +-
- arch/powerpc/mm/init_64.c                |   16 ++++++++--------
- 2 files changed, 9 insertions(+), 9 deletions(-)
+ arch/powerpc/mm/hash_native_64.c        |    8 ++++----
+ arch/powerpc/platforms/cell/beat_htab.c |   10 +++++-----
+ arch/powerpc/platforms/ps3/htab.c       |    2 +-
+ 3 files changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
-index d51d893..658ba7c 100644
---- a/arch/powerpc/include/asm/pgtable-ppc64.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-@@ -338,7 +338,7 @@ static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
- #define pgoff_to_pte(off)	((pte_t) {((off) << PTE_RPN_SHIFT)|_PAGE_FILE})
- #define PTE_FILE_MAX_BITS	(BITS_PER_LONG - PTE_RPN_SHIFT)
+diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+index ffc1e00..9d8983a 100644
+--- a/arch/powerpc/mm/hash_native_64.c
++++ b/arch/powerpc/mm/hash_native_64.c
+@@ -252,7 +252,7 @@ static long native_hpte_updatepp(unsigned long slot, unsigned long newpp,
+ 	unsigned long hpte_v, want_v;
+ 	int ret = 0;
  
--extern void __pgtable_cache_add(unsigned shift, unsigned long table_size,
-+extern void __pgtable_cache_add(unsigned index, unsigned long table_size,
- 				void (*ctor)(void *));
- void pgtable_cache_init(void);
- static inline void pgtable_cache_add(unsigned shift, void (*ctor)(void *))
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index d6df419..2e09ec1 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -100,7 +100,7 @@ struct kmem_cache *pgtable_cache[MAX_PGTABLE_INDEX_SIZE];
-  * everything else.  Caches created by this function are used for all
-  * the higher level pagetables, and for hugepage pagetables.
-  */
--void __pgtable_cache_add(unsigned int shift, unsigned long table_size,
-+void __pgtable_cache_add(unsigned int index, unsigned long table_size,
- 			 void (*ctor)(void *))
- {
- 	char *name;
-@@ -110,8 +110,8 @@ void __pgtable_cache_add(unsigned int shift, unsigned long table_size,
- 	 * the index size in the low bits.  Table alignment must be
- 	 * big enough to fit it.
- 	 *
--	 * Likewise, hugeapge pagetable pointers contain a (different)
--	 * shift value in the low bits.  All tables must be aligned so
-+	 * Likewise, hugepage pagetable pointers contain a (different)
-+	 * huge page size in the low bits.  All tables must be aligned so
- 	 * as to leave enough 0 bits in the address to contain it. */
- 	unsigned long minalign = max(MAX_PGTABLE_INDEX_SIZE + 1,
- 				     HUGEPD_SHIFT_MASK + 1);
-@@ -121,17 +121,17 @@ void __pgtable_cache_add(unsigned int shift, unsigned long table_size,
- 	 * moment, gcc doesn't seem to recognize is_power_of_2 as a
- 	 * constant expression, so so much for that. */
- 	BUG_ON(!is_power_of_2(minalign));
--	BUG_ON((shift < 1) || (shift > MAX_PGTABLE_INDEX_SIZE));
-+	BUG_ON((index < 1) || (index > MAX_PGTABLE_INDEX_SIZE));
+-	want_v = hpte_encode_v(vpn, psize, ssize);
++	want_v = hpte_encode_avpn(vpn, psize, ssize);
  
--	if (PGT_CACHE(shift))
-+	if (PGT_CACHE(index))
- 		return; /* Already have a cache of this size */
+ 	DBG_LOW("    update(vpn=%016lx, avpnv=%016lx, group=%lx, newpp=%lx)",
+ 		vpn, want_v & HPTE_V_AVPN, slot, newpp);
+@@ -288,7 +288,7 @@ static long native_hpte_find(unsigned long vpn, int psize, int ssize)
+ 	unsigned long want_v, hpte_v;
  
- 	align = max_t(unsigned long, align, minalign);
--	name = kasprintf(GFP_KERNEL, "pgtable-2^%d", shift);
-+	name = kasprintf(GFP_KERNEL, "pgtable-2^%d", index);
- 	new = kmem_cache_create(name, table_size, align, 0, ctor);
--	PGT_CACHE(shift) = new;
-+	PGT_CACHE(index) = new;
+ 	hash = hpt_hash(vpn, mmu_psize_defs[psize].shift, ssize);
+-	want_v = hpte_encode_v(vpn, psize, ssize);
++	want_v = hpte_encode_avpn(vpn, psize, ssize);
  
--	pr_debug("Allocated pgtable cache for order %d\n", shift);
-+	pr_debug("Allocated pgtable cache for order %d\n", index);
- }
+ 	/* Bolted mappings are only ever in the primary group */
+ 	slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
+@@ -348,7 +348,7 @@ static void native_hpte_invalidate(unsigned long slot, unsigned long vpn,
  
+ 	DBG_LOW("    invalidate(vpn=%016lx, hash: %lx)\n", vpn, slot);
+ 
+-	want_v = hpte_encode_v(vpn, psize, ssize);
++	want_v = hpte_encode_avpn(vpn, psize, ssize);
+ 	native_lock_hpte(hptep);
+ 	hpte_v = hptep->v;
+ 
+@@ -520,7 +520,7 @@ static void native_flush_hash_range(unsigned long number, int local)
+ 			slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
+ 			slot += hidx & _PTEIDX_GROUP_IX;
+ 			hptep = htab_address + slot;
+-			want_v = hpte_encode_v(vpn, psize, ssize);
++			want_v = hpte_encode_avpn(vpn, psize, ssize);
+ 			native_lock_hpte(hptep);
+ 			hpte_v = hptep->v;
+ 			if (!HPTE_V_COMPARE(hpte_v, want_v) ||
+diff --git a/arch/powerpc/platforms/cell/beat_htab.c b/arch/powerpc/platforms/cell/beat_htab.c
+index 0f6f839..472f9a7 100644
+--- a/arch/powerpc/platforms/cell/beat_htab.c
++++ b/arch/powerpc/platforms/cell/beat_htab.c
+@@ -191,7 +191,7 @@ static long beat_lpar_hpte_updatepp(unsigned long slot,
+ 	u64 dummy0, dummy1;
+ 	unsigned long want_v;
+ 
+-	want_v = hpte_encode_v(vpn, psize, MMU_SEGSIZE_256M);
++	want_v = hpte_encode_avpn(vpn, psize, MMU_SEGSIZE_256M);
+ 
+ 	DBG_LOW("    update: "
+ 		"avpnv=%016lx, slot=%016lx, psize: %d, newpp %016lx ... ",
+@@ -228,7 +228,7 @@ static long beat_lpar_hpte_find(unsigned long vpn, int psize)
+ 	unsigned long want_v, hpte_v;
+ 
+ 	hash = hpt_hash(vpn, mmu_psize_defs[psize].shift, MMU_SEGSIZE_256M);
+-	want_v = hpte_encode_v(vpn, psize, MMU_SEGSIZE_256M);
++	want_v = hpte_encode_avpn(vpn, psize, MMU_SEGSIZE_256M);
+ 
+ 	for (j = 0; j < 2; j++) {
+ 		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
+@@ -283,7 +283,7 @@ static void beat_lpar_hpte_invalidate(unsigned long slot, unsigned long vpn,
+ 
+ 	DBG_LOW("    inval : slot=%lx, va=%016lx, psize: %d, local: %d\n",
+ 		slot, va, psize, local);
+-	want_v = hpte_encode_v(vpn, psize, MMU_SEGSIZE_256M);
++	want_v = hpte_encode_avpn(vpn, psize, MMU_SEGSIZE_256M);
+ 
+ 	raw_spin_lock_irqsave(&beat_htab_lock, flags);
+ 	dummy1 = beat_lpar_hpte_getword0(slot);
+@@ -372,7 +372,7 @@ static long beat_lpar_hpte_updatepp_v3(unsigned long slot,
+ 	unsigned long want_v;
+ 	unsigned long pss;
+ 
+-	want_v = hpte_encode_v(vpn, psize, MMU_SEGSIZE_256M);
++	want_v = hpte_encode_avpn(vpn, psize, MMU_SEGSIZE_256M);
+ 	pss = (psize == MMU_PAGE_4K) ? -1UL : mmu_psize_defs[psize].penc;
+ 
+ 	DBG_LOW("    update: "
+@@ -402,7 +402,7 @@ static void beat_lpar_hpte_invalidate_v3(unsigned long slot, unsigned long vpn,
+ 
+ 	DBG_LOW("    inval : slot=%lx, vpn=%016lx, psize: %d, local: %d\n",
+ 		slot, vpn, psize, local);
+-	want_v = hpte_encode_v(vpn, psize, MMU_SEGSIZE_256M);
++	want_v = hpte_encode_avpn(vpn, psize, MMU_SEGSIZE_256M);
+ 	pss = (psize == MMU_PAGE_4K) ? -1UL : mmu_psize_defs[psize].penc;
+ 
+ 	lpar_rc = beat_invalidate_htab_entry3(0, slot, want_v, pss);
+diff --git a/arch/powerpc/platforms/ps3/htab.c b/arch/powerpc/platforms/ps3/htab.c
+index d00d7b0..07a4bba 100644
+--- a/arch/powerpc/platforms/ps3/htab.c
++++ b/arch/powerpc/platforms/ps3/htab.c
+@@ -115,7 +115,7 @@ static long ps3_hpte_updatepp(unsigned long slot, unsigned long newpp,
+ 	unsigned long flags;
+ 	long ret;
+ 
+-	want_v = hpte_encode_v(vpn, psize, ssize);
++	want_v = hpte_encode_avpn(vpn, psize, ssize);
+ 
+ 	spin_lock_irqsave(&ps3_htab_lock, flags);
  
 -- 
 1.7.10
