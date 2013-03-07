@@ -1,19 +1,30 @@
-Return-Path: <phdm@macqel.be>
-Received: from smtp2.macqel.be (smtp2.macqel.be [194.78.208.39])
- by ozlabs.org (Postfix) with ESMTP id 4E2E82C0394
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2013 20:59:13 +1100 (EST)
-Date: Thu, 7 Mar 2013 10:59:07 +0100
-From: Philippe De Muyter <phdm@macqel.be>
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: 3.9-rc1 powerpc ptrace.c: 'brk.len' is used uninitialized
-Message-ID: <20130307095907.GA16489@frolo.macqel>
-References: <20130306060058.GA3106@frolo.macqel>
- <21084.1362607788@ale.ozlabs.ibm.com> <20130306223645.GA15484@frolo.macqel>
- <31862.1362611670@ale.ozlabs.ibm.com>
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by ozlabs.org (Postfix) with SMTP id 3BAE22C0395
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2013 21:11:00 +1100 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 15790-01 for <linuxppc-dev@lists.ozlabs.org>;
+ Thu,  7 Mar 2013 10:10:56 +0000 (GMT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <31862.1362611670@ale.ozlabs.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain;
+	charset="Windows-1252"
+Subject: RE: [PATCH V4] powerpc/85xx: Add machine check handler to fix PCIe
+ erratum on mpc85xx
+Date: Thu, 7 Mar 2013 10:04:44 -0000
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B7180@saturn3.aculab.com>
+In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01BFA1D0@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <CALRxmdBjb+TrqZ_XdNjH=oDcdYtVJ5=Q71dcCkKodpe7WCHDpA@mail.gmail.com>
+ <1362440744.16575.6@snotra>
+ <412C8208B4A0464FA894C5F0C278CD5D01BE952E@039-SN1MPN1-002.039d.mgd.msft.net>
+ <1362509262.25308.0@snotra>
+ <412C8208B4A0464FA894C5F0C278CD5D01BE9D9D@039-SN1MPN1-002.039d.mgd.msft.net>
+ <AE90C24D6B3A694183C094C60CF0A2F6026B7179@saturn3.aculab.com>
+ <412C8208B4A0464FA894C5F0C278CD5D01BFA1D0@039-SN1MPN1-002.039d.mgd.msft.net>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: "Jia Hongtao-B38951" <B38951@freescale.com>,
+ "Wood Scott-B07421" <B07421@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Stuart Yoder <b08248@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,55 +34,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Mikey,
+> In my understanding filling the register could warn the executing =
+process
+> an error occurred in some cases. But no way to fix the wrong behavior =
+caused
+> by the instruction lost. So let's say that filling the register may =
+benefit
+> a little.
 
-On Thu, Mar 07, 2013 at 10:14:30AM +1100, Michael Neuling wrote:
-> Philippe De Muyter <phdm@macqel.be> wrote:
-> 
-> > On Thu, Mar 07, 2013 at 09:09:48AM +1100, Michael Neuling wrote:
-> > > > bisect tells me that since your commit 9422de3e953d0e60eb95f5430a9dd803eec1c6d7 
-> > > > "powerpc: Hardware breakpoints rewrite to handle non DABR breakpoint registers",
-> > > > compiling linux fails with :
-> > > > 
-> > > >   cc1: warnings being treated as errors
-> > > >   arch/powerpc/kernel/ptrace.c: In function 'arch_ptrace':
-> > > >   arch/powerpc/kernel/ptrace.c:1450: warning: 'brk.len' is used uninitialized in this function
-> > > >   arch/powerpc/kernel/ptrace.c:1352: note: 'brk.len' was declared here
-> > > > 
-> > > > could you look at that ?
-> > > 
-> > > Sure. 
-> > 
-> > I use gcc-4.2.2, and my .config follows.
-> 
-> I'm a bit lost.  
-> 
-> I don't have 4.2.2 (which is ancient BTW) and I can't hit this on
-> 4.3,4.5 or 4.6 with your config.  It compiles fine.
-> 
-> Also:
-> 
-> >   arch/powerpc/kernel/ptrace.c:1450: warning: 'brk.len' is used uninitialized in this function
-> >   arch/powerpc/kernel/ptrace.c:1352: note: 'brk.len' was declared here
-> 
-> These line numbers make no sense at all WRT v3.9-rc1.  brk.len is neither
-> declared or used in those lines:
+IIRC the only ppc instructions that should be accessing PCIe space
+are simple memory reads/writes, locked exchanges probably don't work.
+writes will be async - so we are talking about memory reads.
 
-those were the line numbers just after your commit
+> On the other side, we should not access to the addresses of unknown =
+process
+> in Linux kernel. We must get the instruction before filling the =
+register.
+> If the instruction is not in the cache we have to access to the =
+unknown
+> addresses to get it. For system security I think this is strictly =
+forbidden.
 
-In 3.9-rc1 they are :
+Eh???
+The kernel fault handler will know whether the fault is from kernel
+or userspace (in which case it must be the current process), and will
+almost certainly already have code that looks at the faulting =
+instruction
+sequence.
+If the faulting code address is 'user', then the normal functions for
+reading user addresses have to be used.
+If the faulting address is 'kernel' it might be in an ISR - restricting
+what can be done - but the instruction is definitely readable.
 
-cc1: warnings being treated as errors
-arch/powerpc/kernel/ptrace.c: In function 'arch_ptrace':
-arch/powerpc/kernel/ptrace.c:1479: warning: 'brk.len' is used uninitialized in this function
-arch/powerpc/kernel/ptrace.c:1381: note: 'brk.len' was declared here
+> Although I think filling the register have some advantages but it's =
+should
+> be forbidden for security reason.
 
-		if (child->thread.hw_brk.address)
-			return -ENOSPC;
+I'm sure security would say exactly the opposite.
 
-1479:		child->thread.hw_brk = brk;
-
-		return 1;
-	#endif /* !CONFIG_PPC_ADV_DEBUG_DVCS */
-
-Philippe
+	David
