@@ -1,15 +1,13 @@
-Return-Path: <pebolle@tiscali.nl>
-Received: from cpsmtpb-ews10.kpnxchange.com (cpsmtpb-ews10.kpnxchange.com
- [213.75.39.15]) by ozlabs.org (Postfix) with ESMTP id 23BDF2C02C3
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Mar 2013 09:29:22 +1100 (EST)
-Message-ID: <1362694559.5994.31.camel@x61.thuisdomein>
-Subject: [PATCH] powerpc/wsp: drop "select PPC_WSP_COPRO"
-From: Paul Bolle <pebolle@tiscali.nl>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>
-Date: Thu, 07 Mar 2013 23:15:59 +0100
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Philippe De Muyter <phdm@macqel.be>
+Subject: Re: 3.9-rc1 powerpc ptrace.c: 'brk.len' is used uninitialized
+In-reply-to: <20130307095907.GA16489@frolo.macqel>
+References: <20130306060058.GA3106@frolo.macqel>
+ <21084.1362607788@ale.ozlabs.ibm.com> <20130306223645.GA15484@frolo.macqel>
+ <31862.1362611670@ale.ozlabs.ibm.com> <20130307095907.GA16489@frolo.macqel>
+Date: Fri, 08 Mar 2013 09:32:51 +1100
+Message-ID: <22285.1362695571@ale.ozlabs.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,48 +18,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There is no Kconfig symbol PPC_WSP_COPRO. The select statement for it is
-a nop. Drop it.
+Philippe De Muyter <phdm@macqel.be> wrote:
 
-Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
----
-A short treatise on the uneventful life of PPC_WSP_COPRO in the mainline
-kernel tree
+> Hello Mikey,
+> 
+> On Thu, Mar 07, 2013 at 10:14:30AM +1100, Michael Neuling wrote:
+> > Philippe De Muyter <phdm@macqel.be> wrote:
+> > 
+> > > On Thu, Mar 07, 2013 at 09:09:48AM +1100, Michael Neuling wrote:
+> > > > > bisect tells me that since your commit 9422de3e953d0e60eb95f5430a9dd803eec1c6d7 
+> > > > > "powerpc: Hardware breakpoints rewrite to handle non DABR breakpoint registers",
+> > > > > compiling linux fails with :
+> > > > > 
+> > > > >   cc1: warnings being treated as errors
+> > > > >   arch/powerpc/kernel/ptrace.c: In function 'arch_ptrace':
+> > > > >   arch/powerpc/kernel/ptrace.c:1450: warning: 'brk.len' is used uninitialized in this function
+> > > > >   arch/powerpc/kernel/ptrace.c:1352: note: 'brk.len' was declared here
+> > > > > 
+> > > > > could you look at that ?
+> > > > 
+> > > > Sure. 
+> > > 
+> > > I use gcc-4.2.2, and my .config follows.
+> > 
+> > I'm a bit lost.  
+> > 
+> > I don't have 4.2.2 (which is ancient BTW) and I can't hit this on
+> > 4.3,4.5 or 4.6 with your config.  It compiles fine.
+> > 
+> > Also:
+> > 
+> > >   arch/powerpc/kernel/ptrace.c:1450: warning: 'brk.len' is used uninitialized in this function
+> > >   arch/powerpc/kernel/ptrace.c:1352: note: 'brk.len' was declared here
+> > 
+> > These line numbers make no sense at all WRT v3.9-rc1.  brk.len is neither
+> > declared or used in those lines:
+> 
+> those were the line numbers just after your commit
+> 
+> In 3.9-rc1 they are :
+> 
+> cc1: warnings being treated as errors
+> arch/powerpc/kernel/ptrace.c: In function 'arch_ptrace':
+> arch/powerpc/kernel/ptrace.c:1479: warning: 'brk.len' is used uninitialized in this function
+> arch/powerpc/kernel/ptrace.c:1381: note: 'brk.len' was declared here
+> 
+> 		if (child->thread.hw_brk.address)
+> 			return -ENOSPC;
+> 
+> 1479:		child->thread.hw_brk = brk;
+> 
+> 		return 1;
+> 	#endif /* !CONFIG_PPC_ADV_DEBUG_DVCS */
 
-Release v3.0 included commit 76b4eda866c4936af8d696f040abea56bf688e16
-("powerpc: Add A2 cpu support"). It added some code wrapped in an
-"#ifdef CONFIG_PPC_WSP_COPRO" and "#endif" pair. It did not add a
-Kconfig symbol PPC_WSP_COPRO. Neither did it add a preprocessor #define
-for CONFIG_PPC_WSP_COPRO. There haS actually never been such a symbol or
-such a macro in the mainline tree.
+Got it.  I still can't replicate the issue here, so can you check if the
+below works for you?
 
-Release v3.3 included commit fac26ad4f9cb794c9d1032f55f40a31cb55be09a
-("powerpc/book3e: Add ICSWX/ACOP support to Book3e cores like A2"). It
-basically renamed CONFIG_PPC_WSP_COPRO to CONFIG_PPC_ICSWX. It did not
-elaborate why it did that. But at least PPC_ICSWX was a valid Kconfig
-symbol.
+Thanks,
+Mikey
 
-Release v3.3 also included commit
-cc35b6766878e31accc95c3fdae945bdadc73a46 ("powerpc/book3e: Add Chroma as
-a new WSP/PowerEN platform."). That commit added a Kconfig select
-statement for PPC_WSP_COPRO. It is not clear why it did that. Current
-opinion is that it served no purpose and that the kernel tree would be
-better of without that statement.
-
- arch/powerpc/platforms/wsp/Kconfig | 1 -
- 1 file changed, 1 deletion(-)
-
-diff --git a/arch/powerpc/platforms/wsp/Kconfig b/arch/powerpc/platforms/wsp/Kconfig
-index 79d2225..56203a4 100644
---- a/arch/powerpc/platforms/wsp/Kconfig
-+++ b/arch/powerpc/platforms/wsp/Kconfig
-@@ -9,7 +9,6 @@ config PPC_WSP
- 	select PCI
- 	select PPC_IO_WORKAROUNDS if PCI
- 	select PPC_INDIRECT_PIO if PCI
--	select PPC_WSP_COPRO
- 	default n
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index 245c1b6..3b5f9dc 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -1428,6 +1428,7 @@ static long ppc_set_hwdebug(struct task_struct *child,
  
- menu "WSP platform selection"
--- 
-1.7.11.7
+ 	brk.address = bp_info->addr & ~7UL;
+ 	brk.type = HW_BRK_TYPE_TRANSLATE;
++	brk.len = len;
+ 	if (bp_info->trigger_type & PPC_BREAKPOINT_TRIGGER_READ)
+ 		brk.type |= HW_BRK_TYPE_READ;
+ 	if (bp_info->trigger_type & PPC_BREAKPOINT_TRIGGER_WRITE)
