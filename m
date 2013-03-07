@@ -1,32 +1,19 @@
-Return-Path: <B16395@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 53A7A2C0080
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2013 20:14:29 +1100 (EST)
-From: Sethi Varun-B16395 <B16395@freescale.com>
-To: Joerg Roedel <joro@8bytes.org>
-Subject: RE: [PATCH 2/6] powerpc/fsl_pci: Store the platform device
- information corresponding to the pci controller.
-Date: Thu, 7 Mar 2013 09:14:21 +0000
-Message-ID: <C5ECD7A89D1DC44195F34B25E172658D3E74C7@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1361191939-21260-1-git-send-email-Varun.Sethi@freescale.com>
- <1361191939-21260-3-git-send-email-Varun.Sethi@freescale.com>
- <CALRxmdDc9TuxH7HgAF3_iLgatoaOUML6fUt8SU+sxHyz6ZVjfw@mail.gmail.com>
- <C5ECD7A89D1DC44195F34B25E172658D3BD338@039-SN2MPN1-013.039d.mgd.msft.net>
- <20130227104505.GE26252@8bytes.org>
- <C5ECD7A89D1DC44195F34B25E172658D3C24A9@039-SN2MPN1-013.039d.mgd.msft.net>
- <D109CC7C-09D2-41E6-82BF-376692C390CA@kernel.crashing.org>
-In-Reply-To: <D109CC7C-09D2-41E6-82BF-376692C390CA@kernel.crashing.org>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <phdm@macqel.be>
+Received: from smtp2.macqel.be (smtp2.macqel.be [194.78.208.39])
+ by ozlabs.org (Postfix) with ESMTP id 4E2E82C0394
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2013 20:59:13 +1100 (EST)
+Date: Thu, 7 Mar 2013 10:59:07 +0100
+From: Philippe De Muyter <phdm@macqel.be>
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: 3.9-rc1 powerpc ptrace.c: 'brk.len' is used uninitialized
+Message-ID: <20130307095907.GA16489@frolo.macqel>
+References: <20130306060058.GA3106@frolo.macqel>
+ <21084.1362607788@ale.ozlabs.ibm.com> <20130306223645.GA15484@frolo.macqel>
+ <31862.1362611670@ale.ozlabs.ibm.com>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>, Stuart Yoder <b08248@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Yoder Stuart-B08248 <B08248@freescale.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <31862.1362611670@ale.ozlabs.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,38 +23,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Joerg,
-I have to post the next version of my patchset, should I base it on top of =
-3.9-rc1?
-By when would you move the iommu git tree to 3.9-rc1?
+Hello Mikey,
 
-Regards
-Varun
+On Thu, Mar 07, 2013 at 10:14:30AM +1100, Michael Neuling wrote:
+> Philippe De Muyter <phdm@macqel.be> wrote:
+> 
+> > On Thu, Mar 07, 2013 at 09:09:48AM +1100, Michael Neuling wrote:
+> > > > bisect tells me that since your commit 9422de3e953d0e60eb95f5430a9dd803eec1c6d7 
+> > > > "powerpc: Hardware breakpoints rewrite to handle non DABR breakpoint registers",
+> > > > compiling linux fails with :
+> > > > 
+> > > >   cc1: warnings being treated as errors
+> > > >   arch/powerpc/kernel/ptrace.c: In function 'arch_ptrace':
+> > > >   arch/powerpc/kernel/ptrace.c:1450: warning: 'brk.len' is used uninitialized in this function
+> > > >   arch/powerpc/kernel/ptrace.c:1352: note: 'brk.len' was declared here
+> > > > 
+> > > > could you look at that ?
+> > > 
+> > > Sure. 
+> > 
+> > I use gcc-4.2.2, and my .config follows.
+> 
+> I'm a bit lost.  
+> 
+> I don't have 4.2.2 (which is ancient BTW) and I can't hit this on
+> 4.3,4.5 or 4.6 with your config.  It compiles fine.
+> 
+> Also:
+> 
+> >   arch/powerpc/kernel/ptrace.c:1450: warning: 'brk.len' is used uninitialized in this function
+> >   arch/powerpc/kernel/ptrace.c:1352: note: 'brk.len' was declared here
+> 
+> These line numbers make no sense at all WRT v3.9-rc1.  brk.len is neither
+> declared or used in those lines:
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> Sent: Thursday, February 28, 2013 9:15 PM
-> To: Sethi Varun-B16395
-> Cc: Joerg Roedel; Stuart Yoder; iommu@lists.linux-foundation.org;
-> linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; Wood Scott-
-> B07421; Yoder Stuart-B08248
-> Subject: Re: [PATCH 2/6] powerpc/fsl_pci: Store the platform device
-> information corresponding to the pci controller.
->=20
->=20
-> On Feb 27, 2013, at 4:56 AM, Sethi Varun-B16395 wrote:
->=20
-> > This patch is present in the "next branch" of linux ppc tree maintained
-> by Kumar Gala.
-> > Following is the commit id:
-> > 52c5affc545053d37c0b05224bbf70f5336caa20
-> >
-> > I am not sure if this would be part of 3.9-rc1.
-> >
-> > Regards
-> > varun
->=20
-> This is now in Linus's tree so will be in 3.9-rc1
->=20
-> - k
->=20
+those were the line numbers just after your commit
+
+In 3.9-rc1 they are :
+
+cc1: warnings being treated as errors
+arch/powerpc/kernel/ptrace.c: In function 'arch_ptrace':
+arch/powerpc/kernel/ptrace.c:1479: warning: 'brk.len' is used uninitialized in this function
+arch/powerpc/kernel/ptrace.c:1381: note: 'brk.len' was declared here
+
+		if (child->thread.hw_brk.address)
+			return -ENOSPC;
+
+1479:		child->thread.hw_brk = brk;
+
+		return 1;
+	#endif /* !CONFIG_PPC_ADV_DEBUG_DVCS */
+
+Philippe
