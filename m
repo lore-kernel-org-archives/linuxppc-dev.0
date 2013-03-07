@@ -1,32 +1,19 @@
-Return-Path: <B07421@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EDBBB2C0394
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Mar 2013 03:38:02 +1100 (EST)
-Date: Thu, 7 Mar 2013 10:37:47 -0600
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH V4] powerpc/85xx: Add machine check handler to fix PCIe
- erratum on mpc85xx
-To: Jia Hongtao-B38951 <B38951@freescale.com>
-References: <CALRxmdBjb+TrqZ_XdNjH=oDcdYtVJ5=Q71dcCkKodpe7WCHDpA@mail.gmail.com>
- <1362440744.16575.6@snotra>
- <412C8208B4A0464FA894C5F0C278CD5D01BE952E@039-SN1MPN1-002.039d.mgd.msft.net>
- <1362509262.25308.0@snotra>
- <412C8208B4A0464FA894C5F0C278CD5D01BE9D9D@039-SN1MPN1-002.039d.mgd.msft.net>
- <AE90C24D6B3A694183C094C60CF0A2F6026B7179@saturn3.aculab.com>
- <412C8208B4A0464FA894C5F0C278CD5D01BFA1D0@039-SN1MPN1-002.039d.mgd.msft.net>
-In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01BFA1D0@039-SN1MPN1-002.039d.mgd.msft.net>
- (from B38951@freescale.com on Thu Mar  7 02:06:05 2013)
-Message-ID: <1362674267.23227.1@snotra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- David Laight <David.Laight@ACULAB.COM>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Stuart Yoder <b08248@gmail.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 1C9452C038D
+ for <linuxppc-dev@ozlabs.org>; Fri,  8 Mar 2013 04:10:02 +1100 (EST)
+Subject: Re: [PATCH 5/8] powerpc/fsl-booke: Add initial silicon device tree for
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1362528955.25308.12@snotra>
+Date: Thu, 7 Mar 2013 11:09:50 -0600
+Message-Id: <FFA4082B-0C61-43F6-BB84-2C5A25476814@kernel.crashing.org>
+References: <1362528955.25308.12@snotra>
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,27 +23,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/07/2013 02:06:05 AM, Jia Hongtao-B38951 wrote:
-> Here is the ideas from Scott:
-> "
-> > +	if (is_in_pci_mem_space(addr)) {
-> > +		inst =3D *(unsigned int *)regs->nip;
->=20
-> Be careful about taking a fault here.  A simple TLB miss should be =20
-> safe
-> given that we shouldn't be accessing PCIe in the middle of exception
-> code, but what if the mapping has gone away (e.g. a userspace driver =20
-> had
-> its code munmap()ed or swapped out)?  What if permissions allow =20
-> execute
-> but not read (not sure if Linux will allow this, but the hardware =20
-> does)?
->=20
-> What if it happened in a KVM guest?  You can't access guest addresses
-> directly.
-> "
 
-That means you need to be careful about how you read the instruction, =20
-not that you shouldn't do it at all.
+On Mar 5, 2013, at 6:15 PM, Scott Wood wrote:
 
--Scott=
+> On 03/05/2013 05:15:57 PM, Kumar Gala wrote:
+>> Enable a baseline T4240 SoC to boot.  There are several things =
+missing
+>> from the device trees for T4240:
+>> * Thread support on e6500
+>=20
+> Why did threads get removed from the device tree?  It's supposed to =
+describe hardware, not what Linux currently supports.
+
+will fix, was concerned if we'd be able to boot if they exited
+
+>=20
+>> * Proper PAMU topology information
+>> * DPAA related nodes (Qman, Bman, Fman, Rman, DCE)
+>> * Prefetch Manager
+>> * Thermal monitor unit
+>> * Interlaken
+>=20
+> The dts should be marked preliminary somehow -- we really should get =
+out of the habit of letting device nodes trickle in as drivers get =
+added.
+
+agreed but forward progress always gets in the way
+
+>=20
+>> +/* controller at 0x240000 */
+>> +&pci0 {
+>> +	compatible =3D "fsl,t4240-pcie", "fsl,qoriq-pcie-v3.0";
+>=20
+> We have a version register -- do we really need to keep sticking the =
+version number in the compatible?  Note that we've had device trees that =
+specified the version incorrectly in the past.
+>=20
+>> +	device_type =3D "pci";
+>> +	#size-cells =3D <2>;
+>> +	#address-cells =3D <3>;
+>> +	bus-range =3D <0x0 0xff>;
+>> +	clock-frequency =3D <33333333>;
+>=20
+> This clock-frequency is not correct (I doubt it's needed at all).
+
+I can zero the field, but its spec'd by pci binding
+
+>=20
+>> +		PowerPC,e6500@1 {
+>> +			device_type =3D "cpu";
+>> +			reg =3D <2>;
+>> +			next-level-cache =3D <&L2_1>;
+>> +		};
+>> +		PowerPC,e6500@2 {
+>> +			device_type =3D "cpu";
+>> +			reg =3D <4>;
+>> +			next-level-cache =3D <&L2_1>;
+>> +		};
+>> +		PowerPC,e6500@3 {
+>> +			device_type =3D "cpu";
+>> +			reg =3D <6>;
+>> +			next-level-cache =3D <&L2_1>;
+>> +		};
+>> +
+>> +		PowerPC,e6500@4 {
+>> +			device_type =3D "cpu";
+>> +			reg =3D <8>;
+>> +			next-level-cache =3D <&L2_2>;
+>> +		};
+>=20
+> Inconsistent whitespace.
+
+will kill the whitespace.
+
+> As usual, the pre/post split is unnecessary.  Everything in it can go =
+in post.
+>=20
+> -Scott
