@@ -1,32 +1,20 @@
-Return-Path: <joro@8bytes.org>
-Received: from mail.8bytes.org (8bytes.org [85.214.48.195])
- by ozlabs.org (Postfix) with ESMTP id DDF802C038F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2013 21:37:48 +1100 (EST)
-Received: from localhost (localhost [127.0.0.1])
- by mail.8bytes.org (Postfix) with SMTP id 8E24812B089
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2013 11:37:43 +0100 (CET)
-Date: Thu, 7 Mar 2013 11:37:41 +0100
-From: Joerg Roedel <joro@8bytes.org>
-To: Sethi Varun-B16395 <B16395@freescale.com>
-Subject: Re: [PATCH 2/6] powerpc/fsl_pci: Store the platform device
- information corresponding to the pci controller.
-Message-ID: <20130307103741.GB22602@8bytes.org>
-References: <1361191939-21260-1-git-send-email-Varun.Sethi@freescale.com>
- <1361191939-21260-3-git-send-email-Varun.Sethi@freescale.com>
- <CALRxmdDc9TuxH7HgAF3_iLgatoaOUML6fUt8SU+sxHyz6ZVjfw@mail.gmail.com>
- <C5ECD7A89D1DC44195F34B25E172658D3BD338@039-SN2MPN1-013.039d.mgd.msft.net>
- <20130227104505.GE26252@8bytes.org>
- <C5ECD7A89D1DC44195F34B25E172658D3C24A9@039-SN2MPN1-013.039d.mgd.msft.net>
- <D109CC7C-09D2-41E6-82BF-376692C390CA@kernel.crashing.org>
- <C5ECD7A89D1DC44195F34B25E172658D3E74C7@039-SN2MPN1-013.039d.mgd.msft.net>
+Return-Path: <B37400@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe005.messaging.microsoft.com [213.199.154.208])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0B7912C039A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2013 22:28:05 +1100 (EST)
+From: Sandeep Singh <Sandeep@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>
+Subject: [PATCH 1/4] Device tree entry for Freescale TDM controller
+Date: Thu, 7 Mar 2013 16:57:45 +0530
+Message-ID: <1362655668-26721-1-git-send-email-Sandeep@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <C5ECD7A89D1DC44195F34B25E172658D3E74C7@039-SN2MPN1-013.039d.mgd.msft.net>
-Cc: Wood Scott-B07421 <B07421@freescale.com>, Stuart Yoder <b08248@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Yoder Stuart-B08248 <B08248@freescale.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: Sandeep Singh <Sandeep@freescale.com>,
+ Poonam Aggrwal <poonam.aggrwal@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,43 +24,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Yes, please base your patches on the latest upstream-tag. I will move my
-tree to v3.9-rc1 soon, there are some fixes that need to go upstream.
+Added dtsi file for Freescale TDM controller.
+This controller is available on many Freescale SOCs like MPC8315, P1020, P1010,
+P1022 and P1024
+Signed-off-by: Sandeep Singh <Sandeep@freescale.com>
+Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
+---
+ arch/powerpc/boot/dts/fsl/pq3-tdm1.0-0.dtsi |   42 +++++++++++++++++++++++++++
+ 1 files changed, 42 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/fsl/pq3-tdm1.0-0.dtsi
 
-On Thu, Mar 07, 2013 at 09:14:21AM +0000, Sethi Varun-B16395 wrote:
-> Hi Joerg,
-> I have to post the next version of my patchset, should I base it on top of 3.9-rc1?
-> By when would you move the iommu git tree to 3.9-rc1?
-> 
-> Regards
-> Varun
-> 
-> > -----Original Message-----
-> > From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> > Sent: Thursday, February 28, 2013 9:15 PM
-> > To: Sethi Varun-B16395
-> > Cc: Joerg Roedel; Stuart Yoder; iommu@lists.linux-foundation.org;
-> > linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; Wood Scott-
-> > B07421; Yoder Stuart-B08248
-> > Subject: Re: [PATCH 2/6] powerpc/fsl_pci: Store the platform device
-> > information corresponding to the pci controller.
-> > 
-> > 
-> > On Feb 27, 2013, at 4:56 AM, Sethi Varun-B16395 wrote:
-> > 
-> > > This patch is present in the "next branch" of linux ppc tree maintained
-> > by Kumar Gala.
-> > > Following is the commit id:
-> > > 52c5affc545053d37c0b05224bbf70f5336caa20
-> > >
-> > > I am not sure if this would be part of 3.9-rc1.
-> > >
-> > > Regards
-> > > varun
-> > 
-> > This is now in Linus's tree so will be in 3.9-rc1
-> > 
-> > - k
-> > 
-> 
-> 
+diff --git a/arch/powerpc/boot/dts/fsl/pq3-tdm1.0-0.dtsi b/arch/powerpc/boot/dts/fsl/pq3-tdm1.0-0.dtsi
+new file mode 100644
+index 0000000..e89f637
+--- /dev/null
++++ b/arch/powerpc/boot/dts/fsl/pq3-tdm1.0-0.dtsi
+@@ -0,0 +1,42 @@
++/*
++ * PQ3 TDM device tree stub [ controller @ offset 0x16000 ]
++ *
++ * Copyright 2012 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++tdm@16000 {
++	compatible = "fsl,tdm1.0";
++	reg = <0x16000 0x200 0x2c000 0x2000>;
++	clock-frequency = <0>;
++	tdm_tx_clk = <2048000>;
++	interrupts = <62 8 0 0>;
++	fsl,max-time-slots = <128>;
++};
+-- 
+1.7.6.GIT
