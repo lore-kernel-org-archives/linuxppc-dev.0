@@ -1,25 +1,25 @@
-Return-Path: <gang.chen@asianux.com>
-Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 362132C0361
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2013 18:10:37 +1100 (EST)
-Message-ID: <51383D52.6000801@asianux.com>
-Date: Thu, 07 Mar 2013 15:10:10 +0800
-From: Chen Gang <gang.chen@asianux.com>
+Return-Path: <B25806@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BC2E72C038C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2013 19:02:40 +1100 (EST)
+Received: from mail154-co1 (localhost [127.0.0.1])	by
+ mail154-co1-R.bigfish.com (Postfix) with ESMTP id 8C641C601C4	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2013 08:02:35 +0000 (UTC)
+Received: from CO1EHSMHS023.bigfish.com (unknown [10.243.78.231])	by
+ mail154-co1.bigfish.com (Postfix) with ESMTP id ED0122004A	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2013 08:02:32 +0000 (UTC)
+From: Chunhe Lan <Chunhe.Lan@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] mmc: sdhci-pltfm: Fix timeout on t4240's sdhci controller
+Date: Thu, 7 Mar 2013 16:05:35 +0800
+Message-ID: <1362643535-2377-1-git-send-email-Chunhe.Lan@freescale.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] drivers/tty/hvc: using strlcpy instead of strncpy
-References: <512C2F5D.1080207@asianux.com> <512F343E.7010201@suse.cz>
- <512F3BC5.8020903@asianux.com> <512F3C60.9070409@asianux.com>
- <512F5FDC.3060000@suse.cz> <51355142.4070505@asianux.com>
- <5135BCAB.5040500@suse.cz> <51381352.9090803@asianux.com>
- <513818EC.9050504@asianux.com> <1362636305.3548.58.camel@pasglop>
-In-Reply-To: <1362636305.3548.58.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8
-Cc: Greg KH <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
- wfp5p@virginia.edu, tklauser@distanz.ch, Jiri Slaby <jslaby@suse.cz>,
- alan@linux.intel.com
+Content-Type: text/plain
+Cc: kumar.gala@freescale.com, Chunhe Lan <Chunhe.Lan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,20 +29,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-于 2013年03月07日 14:05, Benjamin Herrenschmidt 写道:
-> On Thu, 2013-03-07 at 12:34 +0800, Chen Gang wrote:
->> >   oh, this patch has integrated into next-20130307 tree.
->> >     (commit 9276dfd27897a0b29d8b5814f39a1f82f56b6b6b)
->> >   it seems we need a regression for this commit, then I send patch v2
->> > 
->> >   is it correct ?
-> Just send a fixup patch on top of the existing upstream.
+This patch fixes timeout problems on t4240's sdhci controller:
 
-  ok, thanks.
+	mmc0: Too large timeout requested for CMD25!
+	mmc0: Too large timeout requested for CMD25!
+	mmc0: Too large timeout requested for CMD25!
 
-  :-)
+Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
+---
+ drivers/mmc/host/sdhci-pltfm.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
+diff --git a/drivers/mmc/host/sdhci-pltfm.c b/drivers/mmc/host/sdhci-pltfm.c
+index 3145a78..9db7b12 100644
+--- a/drivers/mmc/host/sdhci-pltfm.c
++++ b/drivers/mmc/host/sdhci-pltfm.c
+@@ -94,6 +94,7 @@ void sdhci_get_of_property(struct platform_device *pdev)
+ 
+ 		if (of_device_is_compatible(np, "fsl,p2020-esdhc") ||
+ 		    of_device_is_compatible(np, "fsl,p1010-esdhc") ||
++		    of_device_is_compatible(np, "fsl,t4240-esdhc") ||
+ 		    of_device_is_compatible(np, "fsl,mpc8536-esdhc"))
+ 			host->quirks |= SDHCI_QUIRK_BROKEN_TIMEOUT_VAL;
+ 
 -- 
-Chen Gang
-
-Asianux Corporation
+1.7.6.5
