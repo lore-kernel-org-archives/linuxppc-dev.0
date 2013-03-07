@@ -1,17 +1,28 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <phileas-fogg@mail.ru>
+Received: from smtp39.i.mail.ru (smtp39.i.mail.ru [94.100.177.99])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id BD5ED2C02EA
- for <linuxppc-dev@ozlabs.org>; Fri,  8 Mar 2013 06:58:59 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id r27Jwu7C032581
- for <linuxppc-dev@ozlabs.org>; Thu, 7 Mar 2013 13:58:56 -0600
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 5/8 v2] powerpc/fsl-booke: Add initial silicon device tree for
-Date: Thu,  7 Mar 2013 13:58:56 -0600
-Message-Id: <1362686336-5426-1-git-send-email-galak@kernel.crashing.org>
+ by ozlabs.org (Postfix) with ESMTPS id 23F372C02F7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Mar 2013 07:09:10 +1100 (EST)
+Message-ID: <5138F3AB.5040401@mail.ru>
+Date: Thu, 07 Mar 2013 21:08:11 +0100
+From: Phileas Fogg <phileas-fogg@mail.ru>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Linux kernel 3.x problems on PowerMac G5
+References: <51320F53.9040000@mail.ru>
+ <20130302141352.GG22941@blackmetal.musicnaut.iki.fi>
+ <5132198C.8050300__15885.293405927$1362234296$gmane$org@mail.ru>
+ <m2txotzs8y.fsf@igel.home> <1362288663.2969.15.camel@pasglop>
+ <CAHj3AVni2t1-Hrn-jAKjsqo=0oFkVjkQ0KApNQk52buNTruDqQ@mail.gmail.com>
+ <1362303524.2969.16.camel@pasglop> <51333F1C.4080605@mail.ru>
+ <1362337429.2969.17.camel@pasglop> <5133A180.2040908@mail.ru>
+ <1362338657.2969.20.camel@pasglop>
+In-Reply-To: <1362338657.2969.20.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Andreas Schwab <schwab@linux-m68k.org>, Denis Kirjanov <kirjanov@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Aaro Koskinen <aaro.koskinen@iki.fi>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,630 +32,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Enable a baseline T4240 SoC to boot.  There are several things missing
-from the device trees for T4240:
+On 03/03/2013 08:24 PM, Benjamin Herrenschmidt wrote:
+> On Sun, 2013-03-03 at 20:16 +0100, Phileas Fogg wrote:
+>> Benjamin Herrenschmidt wrote:
+>>> Thanks. It looks like a bisection might indeed be the way to go...
+>>>
+>>> Out of curiosity, have you tried without some of your additional drivers ?
+>>> Maybe one of them is the culprit...
+>>>
+>>> Cheers,
+>>> Ben.
+>>>
+>>
+>> Not yet, will do.
+>> But I tested the official Debian Wheezy RC netinstall CD with Linux 3.2,
+>> it has the same problem and hangs at boot on my machine.
+>
+> Ok, so it's definitely something about your configuration. Maybe
+> something in the 11,2 support code chokes on single-chip configs, I
+> don't have one of them to test, both mines are dual chip (ie. quad
+> core).
+>
+> But it does look like a regression that should be bisectable, so let me
+> know went you're done there and what you get.
+>
+> Cheers,
+> Ben.
+>
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
 
-* Proper PAMU topology information
-* DPAA related nodes (Qman, Bman, Fman, Rman, DCE)
-* Prefetch Manager
-* Thermal monitor unit
-* Interlaken
+Hi,
 
-Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
-Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
-Signed-off-by: Haiying Wang <Haiying.Wang@freescale.com>
-Signed-off-by: Andy Fleming <afleming@freescale.com>
-Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
-Signed-off-by: York Sun <yorksun@freescale.com>
-Signed-off-by: Vakul Garg <vakul@freescale.com>
-Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
-Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
-Signed-off-by: Li Yang <leoli@freescale.com>
-Signed-off-by: Ramneek Mehresh <ramneek.mehresh@freescale.com>
-Signed-off-by: Laurentiu Tudor <Laurentiu.Tudor@freescale.com>
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
-* Added thread ids to cpu nodes
-* removed clock-frequency from PCI nodes as we dont use it
+i'm completely confused now.
+I did a bisect between the following 2 commits: 
+61c4f2c81c61f73549928dfd9f3e8f26aa36a8cf (good) Linux 2.6.39
+and
+55922c9d1b84b89cb946c777fddccb3247e7df2c (bad)  Linux 3.0-rc1
+Both commist were tested by me on my machine. And Linux 3.0-rc1 hangs
+on my machine but Linux 2.6.39 works fine.
 
- arch/powerpc/boot/dts/fsl/qoriq-gpio-1.dtsi |   41 ++++
- arch/powerpc/boot/dts/fsl/qoriq-gpio-2.dtsi |   41 ++++
- arch/powerpc/boot/dts/fsl/qoriq-gpio-3.dtsi |   41 ++++
- arch/powerpc/boot/dts/fsl/t4240si-post.dtsi |  307 +++++++++++++++++++++++++++
- arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi  |  127 +++++++++++
- 5 files changed, 557 insertions(+)
- create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-gpio-1.dtsi
- create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-gpio-2.dtsi
- create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-gpio-3.dtsi
- create mode 100644 arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
- create mode 100644 arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi
+And the bisect couldn't find the commit which causes hangs on my machine.
+All commits which were provided by the bisect were bad.
+And the commit before tha last bad bisect commit was bad too.
+I did bisect several times, and got the same results.
 
-diff --git a/arch/powerpc/boot/dts/fsl/qoriq-gpio-1.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-gpio-1.dtsi
-new file mode 100644
-index 0000000..c2f9cda
---- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/qoriq-gpio-1.dtsi
-@@ -0,0 +1,41 @@
-+/*
-+ * QorIQ GPIO device tree stub [ controller @ offset 0x131000 ]
-+ *
-+ * Copyright 2013 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+gpio1: gpio@131000 {
-+	compatible = "fsl,qoriq-gpio";
-+	reg = <0x131000 0x1000>;
-+	interrupts = <54 2 0 0>;
-+	#gpio-cells = <2>;
-+	gpio-controller;
-+};
-diff --git a/arch/powerpc/boot/dts/fsl/qoriq-gpio-2.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-gpio-2.dtsi
-new file mode 100644
-index 0000000..33f3ccb
---- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/qoriq-gpio-2.dtsi
-@@ -0,0 +1,41 @@
-+/*
-+ * QorIQ GPIO device tree stub [ controller @ offset 0x132000 ]
-+ *
-+ * Copyright 2013 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+gpio2: gpio@132000 {
-+	compatible = "fsl,qoriq-gpio";
-+	reg = <0x132000 0x1000>;
-+	interrupts = <86 2 0 0>;
-+	#gpio-cells = <2>;
-+	gpio-controller;
-+};
-diff --git a/arch/powerpc/boot/dts/fsl/qoriq-gpio-3.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-gpio-3.dtsi
-new file mode 100644
-index 0000000..86954e9
---- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/qoriq-gpio-3.dtsi
-@@ -0,0 +1,41 @@
-+/*
-+ * QorIQ GPIO device tree stub [ controller @ offset 0x133000 ]
-+ *
-+ * Copyright 2013 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+gpio3: gpio@133000 {
-+	compatible = "fsl,qoriq-gpio";
-+	reg = <0x133000 0x1000>;
-+	interrupts = <87 2 0 0>;
-+	#gpio-cells = <2>;
-+	gpio-controller;
-+};
-diff --git a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-new file mode 100644
-index 0000000..376b958
---- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-@@ -0,0 +1,307 @@
-+/*
-+ * T4240 Silicon/SoC Device Tree Source (post include)
-+ *
-+ * Copyright 2012 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+&ifc {
-+	#address-cells = <2>;
-+	#size-cells = <1>;
-+	compatible = "fsl,ifc", "simple-bus";
-+	interrupts = <25 2 0 0>;
-+};
-+
-+/* controller at 0x240000 */
-+&pci0 {
-+	compatible = "fsl,t4240-pcie", "fsl,qoriq-pcie-v3.0";
-+	device_type = "pci";
-+	#size-cells = <2>;
-+	#address-cells = <3>;
-+	bus-range = <0x0 0xff>;
-+	interrupts = <20 2 0 0>;
-+	pcie@0 {
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		device_type = "pci";
-+		interrupts = <20 2 0 0>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <
-+			/* IDSEL 0x0 */
-+			0000 0 0 1 &mpic 40 1 0 0
-+			0000 0 0 2 &mpic 1 1 0 0
-+			0000 0 0 3 &mpic 2 1 0 0
-+			0000 0 0 4 &mpic 3 1 0 0
-+			>;
-+	};
-+};
-+
-+/* controller at 0x250000 */
-+&pci1 {
-+	compatible = "fsl,t4240-pcie", "fsl,qoriq-pcie-v3.0";
-+	device_type = "pci";
-+	#size-cells = <2>;
-+	#address-cells = <3>;
-+	bus-range = <0 0xff>;
-+	interrupts = <21 2 0 0>;
-+	pcie@0 {
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		device_type = "pci";
-+		interrupts = <21 2 0 0>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <
-+			/* IDSEL 0x0 */
-+			0000 0 0 1 &mpic 41 1 0 0
-+			0000 0 0 2 &mpic 5 1 0 0
-+			0000 0 0 3 &mpic 6 1 0 0
-+			0000 0 0 4 &mpic 7 1 0 0
-+			>;
-+	};
-+};
-+
-+/* controller at 0x260000 */
-+&pci2 {
-+	compatible = "fsl,t4240-pcie", "fsl,qoriq-pcie-v3.0";
-+	device_type = "pci";
-+	#size-cells = <2>;
-+	#address-cells = <3>;
-+	bus-range = <0x0 0xff>;
-+	interrupts = <22 2 0 0>;
-+	pcie@0 {
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		device_type = "pci";
-+		interrupts = <22 2 0 0>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <
-+			/* IDSEL 0x0 */
-+			0000 0 0 1 &mpic 42 1 0 0
-+			0000 0 0 2 &mpic 9 1 0 0
-+			0000 0 0 3 &mpic 10 1 0 0
-+			0000 0 0 4 &mpic 11 1 0 0
-+			>;
-+	};
-+};
-+
-+/* controller at 0x270000 */
-+&pci3 {
-+	compatible = "fsl,t4240-pcie", "fsl,qoriq-pcie-v3.0";
-+	device_type = "pci";
-+	#size-cells = <2>;
-+	#address-cells = <3>;
-+	bus-range = <0x0 0xff>;
-+	interrupts = <23 2 0 0>;
-+	pcie@0 {
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		device_type = "pci";
-+		interrupts = <23 2 0 0>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <
-+			/* IDSEL 0x0 */
-+			0000 0 0 1 &mpic 43 1 0 0
-+			0000 0 0 2 &mpic 0 1 0 0
-+			0000 0 0 3 &mpic 4 1 0 0
-+			0000 0 0 4 &mpic 8 1 0 0
-+			>;
-+	};
-+};
-+
-+&rio {
-+	compatible = "fsl,srio";
-+	interrupts = <16 2 1 11>;
-+	#address-cells = <2>;
-+	#size-cells = <2>;
-+	ranges;
-+
-+	port1 {
-+		#address-cells = <2>;
-+		#size-cells = <2>;
-+		cell-index = <1>;
-+	};
-+
-+	port2 {
-+		#address-cells = <2>;
-+		#size-cells = <2>;
-+		cell-index = <2>;
-+	};
-+};
-+
-+&soc {
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+	device_type = "soc";
-+	compatible = "simple-bus";
-+
-+	soc-sram-error {
-+		compatible = "fsl,soc-sram-error";
-+		interrupts = <16 2 1 29>;
-+	};
-+
-+	corenet-law@0 {
-+		compatible = "fsl,corenet-law";
-+		reg = <0x0 0x1000>;
-+		fsl,num-laws = <32>;
-+	};
-+
-+	ddr1: memory-controller@8000 {
-+		compatible = "fsl,qoriq-memory-controller-v4.7",
-+				"fsl,qoriq-memory-controller";
-+		reg = <0x8000 0x1000>;
-+		interrupts = <16 2 1 23>;
-+	};
-+
-+	ddr2: memory-controller@9000 {
-+		compatible = "fsl,qoriq-memory-controller-v4.7",
-+				"fsl,qoriq-memory-controller";
-+		reg = <0x9000 0x1000>;
-+		interrupts = <16 2 1 22>;
-+	};
-+
-+	ddr3: memory-controller@a000 {
-+		compatible = "fsl,qoriq-memory-controller-v4.7",
-+				"fsl,qoriq-memory-controller";
-+		reg = <0xa000 0x1000>;
-+		interrupts = <16 2 1 21>;
-+	};
-+
-+	cpc: l3-cache-controller@10000 {
-+		compatible = "fsl,t4240-l3-cache-controller", "cache";
-+		reg = <0x10000 0x1000
-+		       0x11000 0x1000
-+		       0x12000 0x1000>;
-+		interrupts = <16 2 1 27
-+			      16 2 1 26
-+			      16 2 1 25>;
-+	};
-+
-+	corenet-cf@18000 {
-+		compatible = "fsl,corenet-cf";
-+		reg = <0x18000 0x1000>;
-+		interrupts = <16 2 1 31>;
-+		fsl,ccf-num-csdids = <32>;
-+		fsl,ccf-num-snoopids = <32>;
-+	};
-+
-+	iommu@20000 {
-+		compatible = "fsl,pamu-v1.0", "fsl,pamu";
-+		reg = <0x20000 0x6000>;
-+		interrupts = <
-+			24 2 0 0
-+			16 2 1 30>;
-+	};
-+
-+/include/ "qoriq-mpic.dtsi"
-+
-+	guts: global-utilities@e0000 {
-+		compatible = "fsl,t4240-device-config";
-+		reg = <0xe0000 0xe00>;
-+		fsl,has-rstcr;
-+		fsl,liodn-bits = <12>;
-+	};
-+
-+	clockgen: global-utilities@e1000 {
-+		compatible = "fsl,t4240-clockgen", "fsl,qoriq-clockgen-2";
-+		reg = <0xe1000 0x1000>;
-+	};
-+
-+	rcpm: global-utilities@e2000 {
-+		compatible = "fsl,t4240-rcpm", "fsl,qoriq-rcpm-2";
-+		reg = <0xe2000 0x1000>;
-+	};
-+
-+	sfp: sfp@e8000 {
-+		compatible = "fsl,t4240-sfp";
-+		reg	   = <0xe8000 0x1000>;
-+	};
-+
-+	serdes: serdes@ea000 {
-+		compatible = "fsl,t4240-serdes";
-+		reg	   = <0xea000 0x4000>;
-+	};
-+
-+/include/ "qoriq-dma-0.dtsi"
-+/include/ "qoriq-dma-1.dtsi"
-+
-+/include/ "qoriq-espi-0.dtsi"
-+	spi@110000 {
-+		fsl,espi-num-chipselects = <4>;
-+	};
-+
-+/include/ "qoriq-esdhc-0.dtsi"
-+	sdhc@114000 {
-+		compatible = "fsl,t4240-esdhc", "fsl,esdhc";
-+		sdhci,auto-cmd12;
-+	};
-+/include/ "qoriq-i2c-0.dtsi"
-+/include/ "qoriq-i2c-1.dtsi"
-+/include/ "qoriq-duart-0.dtsi"
-+/include/ "qoriq-duart-1.dtsi"
-+/include/ "qoriq-gpio-0.dtsi"
-+/include/ "qoriq-gpio-1.dtsi"
-+/include/ "qoriq-gpio-2.dtsi"
-+/include/ "qoriq-gpio-3.dtsi"
-+/include/ "qoriq-usb2-mph-0.dtsi"
-+		usb0: usb@210000 {
-+			compatible = "fsl-usb2-mph-v2.4", "fsl-usb2-mph";
-+			phy_type = "utmi";
-+			port0;
-+		};
-+/include/ "qoriq-usb2-dr-0.dtsi"
-+		usb1: usb@211000 {
-+			compatible = "fsl-usb2-dr-v2.4", "fsl-usb2-dr";
-+			dr_mode = "host";
-+			phy_type = "utmi";
-+		};
-+/include/ "qoriq-sata2-0.dtsi"
-+/include/ "qoriq-sata2-1.dtsi"
-+/include/ "qoriq-sec5.0-0.dtsi"
-+
-+	L2_1: l2-cache-controller@c20000 {
-+		compatible = "fsl,t4240-l2-cache-controller";
-+		reg = <0xc20000 0x40000>;
-+		next-level-cache = <&cpc>;
-+	};
-+	L2_2: l2-cache-controller@c60000 {
-+		compatible = "fsl,t4240-l2-cache-controller";
-+		reg = <0xc60000 0x40000>;
-+		next-level-cache = <&cpc>;
-+	};
-+	L2_3: l2-cache-controller@ca0000 {
-+		compatible = "fsl,t4240-l2-cache-controller";
-+		reg = <0xca0000 0x40000>;
-+		next-level-cache = <&cpc>;
-+	};
-+};
-diff --git a/arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi
-new file mode 100644
-index 0000000..12af298
---- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi
-@@ -0,0 +1,127 @@
-+/*
-+ * T4240 Silicon/SoC Device Tree Source (pre include)
-+ *
-+ * Copyright 2012 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/dts-v1/;
-+
-+/include/ "e6500_power_isa.dtsi"
-+
-+/ {
-+	compatible = "fsl,T4240";
-+	#address-cells = <2>;
-+	#size-cells = <2>;
-+	interrupt-parent = <&mpic>;
-+
-+	aliases {
-+		ccsr = &soc;
-+
-+		serial0 = &serial0;
-+		serial1 = &serial1;
-+		serial2 = &serial2;
-+		serial3 = &serial3;
-+		crypto = &crypto;
-+		pci0 = &pci0;
-+		pci1 = &pci1;
-+		pci2 = &pci2;
-+		pci3 = &pci3;
-+		dma0 = &dma0;
-+		dma1 = &dma1;
-+		sdhc = &sdhc;
-+	};
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		PowerPC,e6500@0 {
-+			device_type = "cpu";
-+			reg = <0 1>;
-+			next-level-cache = <&L2_1>;
-+		};
-+		PowerPC,e6500@1 {
-+			device_type = "cpu";
-+			reg = <2 3>;
-+			next-level-cache = <&L2_1>;
-+		};
-+		PowerPC,e6500@2 {
-+			device_type = "cpu";
-+			reg = <4 5>;
-+			next-level-cache = <&L2_1>;
-+		};
-+		PowerPC,e6500@3 {
-+			device_type = "cpu";
-+			reg = <6 7>;
-+			next-level-cache = <&L2_1>;
-+		};
-+		PowerPC,e6500@4 {
-+			device_type = "cpu";
-+			reg = <8 9>;
-+			next-level-cache = <&L2_2>;
-+		};
-+		PowerPC,e6500@5 {
-+			device_type = "cpu";
-+			reg = <10 11>;
-+			next-level-cache = <&L2_2>;
-+		};
-+		PowerPC,e6500@6 {
-+			device_type = "cpu";
-+			reg = <12 13>;
-+			next-level-cache = <&L2_2>;
-+		};
-+		PowerPC,e6500@7 {
-+			device_type = "cpu";
-+			reg = <14 15>;
-+			next-level-cache = <&L2_2>;
-+		};
-+		PowerPC,e6500@8 {
-+			device_type = "cpu";
-+			reg = <16 17>;
-+			next-level-cache = <&L2_3>;
-+		};
-+		PowerPC,e6500@9 {
-+			device_type = "cpu";
-+			reg = <18 19>;
-+			next-level-cache = <&L2_3>;
-+		};
-+		PowerPC,e6500@10 {
-+			device_type = "cpu";
-+			reg = <20 21>;
-+			next-level-cache = <&L2_3>;
-+		};
-+		PowerPC,e6500@11 {
-+			device_type = "cpu";
-+			reg = <22 23>;
-+			next-level-cache = <&L2_3>;
-+		};
-+	};
-+};
--- 
-1.7.9.7
+Fo testing i used linux-3.0.y branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git.
+
+Did i miss something or do something wrong here ?
+
+Regards
