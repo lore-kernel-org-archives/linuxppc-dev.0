@@ -1,29 +1,16 @@
-Return-Path: <phileas-fogg@mail.ru>
-Received: from smtp36.i.mail.ru (smtp36.i.mail.ru [94.100.177.96])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 545912C039D
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Mar 2013 08:08:43 +1100 (EST)
-Message-ID: <5139019B.1050209@mail.ru>
-Date: Thu, 07 Mar 2013 22:07:39 +0100
-From: Phileas Fogg <phileas-fogg@mail.ru>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Linux kernel 3.x problems on PowerMac G5
-References: <51320F53.9040000@mail.ru>
- <20130302141352.GG22941@blackmetal.musicnaut.iki.fi>
- <5132198C.8050300__15885.293405927$1362234296$gmane$org@mail.ru>
- <m2txotzs8y.fsf@igel.home> <1362288663.2969.15.camel@pasglop>
- <CAHj3AVni2t1-Hrn-jAKjsqo=0oFkVjkQ0KApNQk52buNTruDqQ@mail.gmail.com>
- <1362303524.2969.16.camel@pasglop> <51333F1C.4080605@mail.ru>
- <1362337429.2969.17.camel@pasglop> <5133A180.2040908@mail.ru>
- <1362338657.2969.20.camel@pasglop> <5138F3AB.5040401@mail.ru>
- <1362687724.6977.1.camel@pasglop>
-In-Reply-To: <1362687724.6977.1.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Andreas Schwab <schwab@linux-m68k.org>, Denis Kirjanov <kirjanov@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Aaro Koskinen <aaro.koskinen@iki.fi>
+Return-Path: <pebolle@tiscali.nl>
+Received: from cpsmtpb-ews10.kpnxchange.com (cpsmtpb-ews10.kpnxchange.com
+ [213.75.39.15]) by ozlabs.org (Postfix) with ESMTP id 23BDF2C02C3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Mar 2013 09:29:22 +1100 (EST)
+Message-ID: <1362694559.5994.31.camel@x61.thuisdomein>
+Subject: [PATCH] powerpc/wsp: drop "select PPC_WSP_COPRO"
+From: Paul Bolle <pebolle@tiscali.nl>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>
+Date: Thu, 07 Mar 2013 23:15:59 +0100
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,81 +20,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/07/2013 09:22 PM, Benjamin Herrenschmidt wrote:
-> On Thu, 2013-03-07 at 21:08 +0100, Phileas Fogg wrote:
->> And the bisect couldn't find the commit which causes hangs on my
->> machine.
->> All commits which were provided by the bisect were bad.
->> And the commit before tha last bad bisect commit was bad too.
->> I did bisect several times, and got the same results.
->>
->> Fo testing i used linux-3.0.y branch of
->> git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git.
->>
->> Did i miss something or do something wrong here ?
->
-> Did git bisect go down a merge commit ? It does for me if I try that and
-> asks to test that merge first. If you get that wrong it can get very
-> confused.
->
-> That's all I can think of... do you have the bisection log just in
-> case ?
->
-> Also you can use gitk -- arch/powerpc to look at the changes to powerpc
-> code and try manually random points before/after that if you think
-> bisect isn't doing the right thing.
->
-> Cheers,
-> Ben.
->
->
+There is no Kconfig symbol PPC_WSP_COPRO. The select statement for it is
+a nop. Drop it.
 
-Thanks. I'll try manually some commits then.
+Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+---
+A short treatise on the uneventful life of PPC_WSP_COPRO in the mainline
+kernel tree
 
-And here is the bisect log:
+Release v3.0 included commit 76b4eda866c4936af8d696f040abea56bf688e16
+("powerpc: Add A2 cpu support"). It added some code wrapped in an
+"#ifdef CONFIG_PPC_WSP_COPRO" and "#endif" pair. It did not add a
+Kconfig symbol PPC_WSP_COPRO. Neither did it add a preprocessor #define
+for CONFIG_PPC_WSP_COPRO. There haS actually never been such a symbol or
+such a macro in the mainline tree.
 
-git bisect log
-# bad: [55922c9d1b84b89cb946c777fddccb3247e7df2c] Linux 3.0-rc1
-# good: [61c4f2c81c61f73549928dfd9f3e8f26aa36a8cf] Linux 2.6.39
-git bisect start '55922c9d1b84b89cb946c777fddccb3247e7df2c' 
-'61c4f2c81c61f73549928dfd9f3e8f26aa36a8cf'
-# bad: [c44dead70a841d90ddc01968012f323c33217c9e] Merge branch 
-'usb-next' of git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/usb-2.6
-git bisect bad c44dead70a841d90ddc01968012f323c33217c9e
-# bad: [d93515611bbc70c2fe4db232e5feb448ed8e4cc9] macvlan: fix panic if 
-lowerdev in a bond
-git bisect bad d93515611bbc70c2fe4db232e5feb448ed8e4cc9
-# bad: [9c6a02f41d10dc9fbf5dd42058e8846f38dd2d9a] sctp: make sctp over 
-IPv6 work with IPsec
-git bisect bad 9c6a02f41d10dc9fbf5dd42058e8846f38dd2d9a
-# bad: [d30ee670f25ea8f265a2804e2a0a53804cac5185] net-bonding: Fix minor 
-sparse complaints
-git bisect bad d30ee670f25ea8f265a2804e2a0a53804cac5185
-# bad: [b37e3b6d64358604960b35e8ecbb7aed22e0926e] Merge branch 'master' 
-of git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6
-git bisect bad b37e3b6d64358604960b35e8ecbb7aed22e0926e
-# bad: [6c74608bd479bbe02ce330f83df43c3f535ed200] ssb: pci: trivial: 
-drop useless pointer
-git bisect bad 6c74608bd479bbe02ce330f83df43c3f535ed200
-# bad: [83860c594f65945b1a2c99e84338e1145cd34890] ath9k_hw: remove 
-pCap->tx_triglevel_max
-git bisect bad 83860c594f65945b1a2c99e84338e1145cd34890
-# bad: [f171760c558946c7a2e0ee310dfb968f9d4853c6] ath9k_hw: enable a 
-BlockAck related fixup specific to AR9100
-git bisect bad f171760c558946c7a2e0ee310dfb968f9d4853c6
-# bad: [e600707b021efdc109e7becd467798da339ec26d] mwl8k: differentiate 
-between WMM queues and AMPDU queues
-git bisect bad e600707b021efdc109e7becd467798da339ec26d
-# bad: [e7fc63388def06d2d1bdb6916748c92c037a42c6] ath9k_hw: Speedup 
-register ops for HTC driver
-git bisect bad e7fc63388def06d2d1bdb6916748c92c037a42c6
-# bad: [6d64ab7f9240e3201fde3fd16ce4227bd795d2ab] ath9k_htc: Fix LED pin 
-for AR9287 HTC device
-git bisect bad 6d64ab7f9240e3201fde3fd16ce4227bd795d2ab
-# bad: [22dd2fd283ea96b4d45185d3e861ef46005082f4] iwlwifi: remove 
-duplicate initialization in __iwl_down()
-git bisect bad 22dd2fd283ea96b4d45185d3e861ef46005082f4
+Release v3.3 included commit fac26ad4f9cb794c9d1032f55f40a31cb55be09a
+("powerpc/book3e: Add ICSWX/ACOP support to Book3e cores like A2"). It
+basically renamed CONFIG_PPC_WSP_COPRO to CONFIG_PPC_ICSWX. It did not
+elaborate why it did that. But at least PPC_ICSWX was a valid Kconfig
+symbol.
 
+Release v3.3 also included commit
+cc35b6766878e31accc95c3fdae945bdadc73a46 ("powerpc/book3e: Add Chroma as
+a new WSP/PowerEN platform."). That commit added a Kconfig select
+statement for PPC_WSP_COPRO. It is not clear why it did that. Current
+opinion is that it served no purpose and that the kernel tree would be
+better of without that statement.
 
+ arch/powerpc/platforms/wsp/Kconfig | 1 -
+ 1 file changed, 1 deletion(-)
 
-Regards
+diff --git a/arch/powerpc/platforms/wsp/Kconfig b/arch/powerpc/platforms/wsp/Kconfig
+index 79d2225..56203a4 100644
+--- a/arch/powerpc/platforms/wsp/Kconfig
++++ b/arch/powerpc/platforms/wsp/Kconfig
+@@ -9,7 +9,6 @@ config PPC_WSP
+ 	select PCI
+ 	select PPC_IO_WORKAROUNDS if PCI
+ 	select PPC_INDIRECT_PIO if PCI
+-	select PPC_WSP_COPRO
+ 	default n
+ 
+ menu "WSP platform selection"
+-- 
+1.7.11.7
