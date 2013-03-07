@@ -1,23 +1,18 @@
-Return-Path: <gang.chen@asianux.com>
-Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 7FBA42C0388
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2013 15:11:25 +1100 (EST)
-Message-ID: <51381352.9090803@asianux.com>
-Date: Thu, 07 Mar 2013 12:10:58 +0800
-From: Chen Gang <gang.chen@asianux.com>
-MIME-Version: 1.0
-To: Jiri Slaby <jslaby@suse.cz>
-Subject: Re: [PATCH] drivers/tty/hvc: using strlcpy instead of strncpy
-References: <512C2F5D.1080207@asianux.com> <512F343E.7010201@suse.cz>
- <512F3BC5.8020903@asianux.com> <512F3C60.9070409@asianux.com>
- <512F5FDC.3060000@suse.cz> <51355142.4070505@asianux.com>
- <5135BCAB.5040500@suse.cz>
-In-Reply-To: <5135BCAB.5040500@suse.cz>
-Content-Type: text/plain; charset=UTF-8
-Cc: Greg KH <gregkh@linuxfoundation.org>, tklauser@distanz.ch,
- wfp5p@virginia.edu, linuxppc-dev@lists.ozlabs.org, alan@linux.intel.com
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id 718362C043D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2013 15:11:55 +1100 (EST)
+Date: Thu, 7 Mar 2013 15:11:51 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc: make sure that we alays include CONFIG_BINFMT_ELF
+Message-Id: <20130307151151.fcb469cb5a65a98785081b18@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Thu__7_Mar_2013_15_11_51_+1100_1aoyv0vxv2W6RYa5"
+Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,38 +22,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-于 2013年03月05日 17:36, Jiri Slaby 写道:
-> On 03/05/2013 02:58 AM, Chen Gang wrote:
->> > 于 2013年02月28日 21:47, Jiri Slaby 写道:
->>>>> >>>>   when strlen(&pi->location_code[0]) == HVCS_CLC_LENGTH + 2
->>> >> It cannot, pi->location_code is defined as char[HVCS_CLC_LENGTH + 1].
->>> >>
->> > 
->> >   really, it is, I did not notice it.
->> > 
->> >   but I still prefer to modify it, but the patch should be changed
->> >   such as:
->> >     subject: beautify code: deleting useless judging code.
->> >     comments: src buf len and dest buf len are the same, strcpy is better.
->> >     contents: using strcpy instead of strncpy, and delete judging code.
->> > 
->> >   is it ok ?
-> Yeah.
-> 
+--Signature=_Thu__7_Mar_2013_15_11_51_+1100_1aoyv0vxv2W6RYa5
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-  I will send patch v2.
+Our kernel is not much good without BINFMT_ELF and this fixes a build
+warning on 64 bit allnoconfig builds:
 
+warning: (COMPAT) selects COMPAT_BINFMT_ELF which has unmet direct dependen=
+cies (COMPAT && BINFMT_ELF)
 
->> > BTW:
->> >   sorry for my reply is too late, and did not notify it, originally before.
->> >     I have to do some urgent things, during these days.
->> >       my father had a serious heart disease, and is in hospital.
-> No problem, these drivers are not so critical. Neither these code paths
-> in them. Take care of your relatives first.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-  thanks.
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index b89d7eb..a091c01 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -90,6 +90,7 @@ config GENERIC_GPIO
+ config PPC
+ 	bool
+ 	default y
++	select BINFMT_ELF
+ 	select OF
+ 	select OF_EARLY_FLATTREE
+ 	select HAVE_FTRACE_MCOUNT_RECORD
+--=20
+1.8.1
 
--- 
-Chen Gang
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-Asianux Corporation
+--Signature=_Thu__7_Mar_2013_15_11_51_+1100_1aoyv0vxv2W6RYa5
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJROBOHAAoJEECxmPOUX5FEoOIP/jvNPhVejHedLvY6a0jzta1z
+Rp3ruwggibda7x3no5Lzd/81E9OQiFO3YvL1nb1Jdmj0Djw5rHGdiAw6mDH2WyIN
+ogVzsAfruvZC0MjFkpndkAP/MnvVeAwGDD7GtxLooWukfrhTMIc+QztRhXZ5KiXQ
+TJ0pmvxslohK2XD/7Bjnzwo3a+q87oayTVSNLqZVR12C06F5UVXS9VSz+aH7bwlP
+lWx1n5zoi8vDiqIrpAx+dRa3kFTYOl6fgGWdAjIah/uwyC9lM1f3aHZ5gnvXT41E
+xz7X2+3SEmtoMBiyufE9Hblcd0ijivkYNDka2G5ymF9d2K1Hc9SqdMq/uvEZu9On
+mDF+KYsgJNCNg5tozg9VL4qJIHsVm9cX7C/eUBsP1iszP+IrJzk07qnJ/biiurUd
+JzV78aEW9WGn5ksjQhjtKG5/W2NXjTEu+AwoaxAO5QVGhiYZbmPvYgUaWb8fdUZm
+wog8A4zfZPuDJ71ZcXg/DbMVCsx3wk6EnOXiihKnhpEJZMrBmq5CnmMIXVIEZ5we
+I2KrWIlnppCu/erR9HvSHslWrhaIy5v0Tk1VuWa58sTVbJV1yVw2168cfxMT0MDg
+MQp3Er2rGwequsSy/e8FPFg/x3prUuwgAQ9mrbyJEr6+pKXcmB2PUvDyJ7orrQqM
+W2AiUJp5Vu4XatiqwvDs
+=+rDY
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__7_Mar_2013_15_11_51_+1100_1aoyv0vxv2W6RYa5--
