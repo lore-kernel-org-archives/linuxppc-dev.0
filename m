@@ -1,29 +1,32 @@
-Return-Path: <B38951@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
+Return-Path: <B16395@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 60C5E2C0369
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2013 19:06:41 +1100 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: David Laight <David.Laight@ACULAB.COM>, Wood Scott-B07421
- <B07421@freescale.com>
-Subject: RE: [PATCH V4] powerpc/85xx: Add machine check handler to fix PCIe
- erratum on mpc85xx
-Date: Thu, 7 Mar 2013 08:06:05 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01BFA1D0@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <CALRxmdBjb+TrqZ_XdNjH=oDcdYtVJ5=Q71dcCkKodpe7WCHDpA@mail.gmail.com>
- <1362440744.16575.6@snotra>
- <412C8208B4A0464FA894C5F0C278CD5D01BE952E@039-SN1MPN1-002.039d.mgd.msft.net>
- <1362509262.25308.0@snotra>
- <412C8208B4A0464FA894C5F0C278CD5D01BE9D9D@039-SN1MPN1-002.039d.mgd.msft.net>
- <AE90C24D6B3A694183C094C60CF0A2F6026B7179@saturn3.aculab.com>
-In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6026B7179@saturn3.aculab.com>
+ by ozlabs.org (Postfix) with ESMTPS id 53A7A2C0080
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2013 20:14:29 +1100 (EST)
+From: Sethi Varun-B16395 <B16395@freescale.com>
+To: Joerg Roedel <joro@8bytes.org>
+Subject: RE: [PATCH 2/6] powerpc/fsl_pci: Store the platform device
+ information corresponding to the pci controller.
+Date: Thu, 7 Mar 2013 09:14:21 +0000
+Message-ID: <C5ECD7A89D1DC44195F34B25E172658D3E74C7@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1361191939-21260-1-git-send-email-Varun.Sethi@freescale.com>
+ <1361191939-21260-3-git-send-email-Varun.Sethi@freescale.com>
+ <CALRxmdDc9TuxH7HgAF3_iLgatoaOUML6fUt8SU+sxHyz6ZVjfw@mail.gmail.com>
+ <C5ECD7A89D1DC44195F34B25E172658D3BD338@039-SN2MPN1-013.039d.mgd.msft.net>
+ <20130227104505.GE26252@8bytes.org>
+ <C5ECD7A89D1DC44195F34B25E172658D3C24A9@039-SN2MPN1-013.039d.mgd.msft.net>
+ <D109CC7C-09D2-41E6-82BF-376692C390CA@kernel.crashing.org>
+In-Reply-To: <D109CC7C-09D2-41E6-82BF-376692C390CA@kernel.crashing.org>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Stuart Yoder <b08248@gmail.com>
+Cc: Wood Scott-B07421 <B07421@freescale.com>, Stuart Yoder <b08248@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Yoder Stuart-B08248 <B08248@freescale.com>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,83 +36,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Joerg,
+I have to post the next version of my patchset, should I base it on top of =
+3.9-rc1?
+By when would you move the iommu git tree to 3.9-rc1?
 
+Regards
+Varun
 
 > -----Original Message-----
-> From: David Laight [mailto:David.Laight@ACULAB.COM]
-> Sent: Wednesday, March 06, 2013 6:24 PM
-> To: Jia Hongtao-B38951; Wood Scott-B07421
-> Cc: linuxppc-dev@lists.ozlabs.org; Stuart Yoder
-> Subject: RE: [PATCH V4] powerpc/85xx: Add machine check handler to fix
-> PCIe erratum on mpc85xx
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> Sent: Thursday, February 28, 2013 9:15 PM
+> To: Sethi Varun-B16395
+> Cc: Joerg Roedel; Stuart Yoder; iommu@lists.linux-foundation.org;
+> linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; Wood Scott-
+> B07421; Yoder Stuart-B08248
+> Subject: Re: [PATCH 2/6] powerpc/fsl_pci: Store the platform device
+> information corresponding to the pci controller.
 >=20
-> > > Yes, that's (one reason) why you'd want to fill in a known value.
-> > > Note the "for now". :-)
-> > >
-> > > -Scott
+>=20
+> On Feb 27, 2013, at 4:56 AM, Sethi Varun-B16395 wrote:
+>=20
+> > This patch is present in the "next branch" of linux ppc tree maintained
+> by Kumar Gala.
+> > Following is the commit id:
+> > 52c5affc545053d37c0b05224bbf70f5336caa20
 > >
-> > I think there is no overwhelming reason to fill the destination
-> > register with 0xffffffff.
+> > I am not sure if this would be part of 3.9-rc1.
 > >
-> > There's a small chance that 0xffffffff is treated as regular data
-> > rather than an error sign.
-> >
-> > Also setting this register may influence the user space under certain
-> > circumstance.
-> >
-> > So I think just ignore the skipped instruction is an acceptable option
-> > for this fix.
+> > Regards
+> > varun
 >=20
-> The 'random' value is just as likely to affect the reader, but only for
-> some values - so you'll get almost impossible to repeat bugs.
-> If a fixed value (0 or ~0) has an adverse effect, at least it will have
-> the same every time.
+> This is now in Linus's tree so will be in 3.9-rc1
 >=20
-> Read errors are also likely to affect device drivers reading status bits,
-> since these are very likely 'write to clear' any driver would have to be
-> willing to process the 'dummy' value in a manner that won't loop forever
-> (especially in an ISR).
+> - k
 >=20
-> You don't need every access to be via a function that explicitly
-> (somehow) detects that the fault happened, but knowing that a specific
-> value might be caused by a dead PCIe bus, and being able to find out
-> whether that is true (to avoid looping forever) is probably useful.
->=20
-> This is probably similar to what a driver needs to recover from an
-> external PCIe list being unplugged.
->=20
-> 	David
->=20
->=20
-
-In my understanding filling the register could warn the executing process
-an error occurred in some cases. But no way to fix the wrong behavior cause=
-d
-by the instruction lost. So let's say that filling the register may benefit
-a little.
-
-On the other side, we should not access to the addresses of unknown process
-in Linux kernel. We must get the instruction before filling the register.
-If the instruction is not in the cache we have to access to the unknown
-addresses to get it. For system security I think this is strictly forbidden=
-.
-
-Here is the ideas from Scott:
-"
-> +	if (is_in_pci_mem_space(addr)) {
-> +		inst =3D *(unsigned int *)regs->nip;
-
-Be careful about taking a fault here.  A simple TLB miss should be safe
-given that we shouldn't be accessing PCIe in the middle of exception
-code, but what if the mapping has gone away (e.g. a userspace driver had
-its code munmap()ed or swapped out)?  What if permissions allow execute
-but not read (not sure if Linux will allow this, but the hardware does)?
-
-What if it happened in a KVM guest?  You can't access guest addresses
-directly.
-"
-
-Although I think filling the register have some advantages but it's should
-be forbidden for security reason.
-
--Hongtao.
