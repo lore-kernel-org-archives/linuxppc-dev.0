@@ -1,23 +1,26 @@
-Return-Path: <B29983@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7B0202C03AB
- for <linuxppc-dev@ozlabs.org>; Fri,  8 Mar 2013 13:57:11 +1100 (EST)
-From: Tang Yuantian-B29983 <B29983@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: RE: [PATCH][V2] powerpc: remove the PPC_CLOCK dependency
-Date: Fri, 8 Mar 2013 02:57:06 +0000
-Message-ID: <D07C73A334FF604B95B3CBD2A545D07B0B0F85F8@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1362561364-16073-1-git-send-email-Yuantian.Tang@freescale.com>
- <BED928B9-2212-413F-8C96-BCDFCE57C76A@kernel.crashing.org>
-In-Reply-To: <BED928B9-2212-413F-8C96-BCDFCE57C76A@kernel.crashing.org>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <gang.chen@asianux.com>
+Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id C22392C03AE
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Mar 2013 14:38:51 +1100 (EST)
+Message-ID: <51395D2C.6040007@asianux.com>
+Date: Fri, 08 Mar 2013 11:38:20 +0800
+From: Chen Gang <gang.chen@asianux.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- "kernel@pengutronix.de" <kernel@pengutronix.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] drivers/tty/hvc: fixup original commit:
+ 9276dfd27897a0b29d8b5814f39a1f82f56b6b6b
+References: <512C2F5D.1080207@asianux.com> <512F343E.7010201@suse.cz>
+ <512F3BC5.8020903@asianux.com> <512F3C60.9070409@asianux.com>
+ <512F5FDC.3060000@suse.cz> <51355142.4070505@asianux.com>
+ <5135BCAB.5040500@suse.cz> <51381352.9090803@asianux.com>
+ <513818EC.9050504@asianux.com> <1362636305.3548.58.camel@pasglop>
+In-Reply-To: <1362636305.3548.58.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8
+Cc: Greg KH <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
+ wfp5p@virginia.edu, tklauser@distanz.ch, Jiri Slaby <jslaby@suse.cz>,
+ alan@linux.intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,63 +30,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Subject: Re: [PATCH][V2] powerpc: remove the PPC_CLOCK dependency
->=20
->=20
-> On Mar 6, 2013, at 3:16 AM, <Yuantian.Tang@freescale.com>
-> <Yuantian.Tang@freescale.com> wrote:
->=20
-> > From: Tang Yuantian <Yuantian.Tang@freescale.com>
-> >
-> > config FSL_SOC and CPM do not really depend on PPC_CLOCK. So remove it.
-> > PPC_CLOCK also keeps powerpc archtecture from supporting COMMON_CLK.
-> >
-> > Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
-> > ---
-> > v2: correct the title
-> >
-> > arch/powerpc/Kconfig           |    1 -
-> > arch/powerpc/platforms/Kconfig |    1 -
-> > 2 files changed, 0 insertions(+), 2 deletions(-)
->=20
-> Does the Flexcan driver use this?
->=20
 
-In SDK, Flexcan did select the PPC_CLOCK, in upstream, it didn't.
-Whatever it selects PPC_CLOCK or not, it doesn't use it.
+  originally I did not notice src buf len and dest buf len are the same.
+    so origianlly, it is not a bug issue, it is only for beautify code.
+    and now, using strcpy is better.
 
-Added the patch author to this loop.
 
-- Yuantian
+Signed-off-by: Chen Gang <gang.chen@asianux.com>
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+---
+ drivers/tty/hvc/hvcs.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-> - k
->=20
-> >
-> > diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig index
-> > 352f416..383485b 100644
-> > --- a/arch/powerpc/Kconfig
-> > +++ b/arch/powerpc/Kconfig
-> > @@ -655,7 +655,6 @@ config SBUS
-> > config FSL_SOC
-> > 	bool
-> > 	select HAVE_CAN_FLEXCAN if NET && CAN
-> > -	select PPC_CLOCK
-> >
-> > config FSL_PCI
-> >  	bool
-> > diff --git a/arch/powerpc/platforms/Kconfig
-> > b/arch/powerpc/platforms/Kconfig index e7a896a..aba81cd 100644
-> > --- a/arch/powerpc/platforms/Kconfig
-> > +++ b/arch/powerpc/platforms/Kconfig
-> > @@ -343,7 +343,6 @@ config FSL_ULI1575
-> >
-> > config CPM
-> > 	bool
-> > -	select PPC_CLOCK
-> >
-> > config OF_RTC
-> > 	bool
-> > --
-> > 1.7.0.4
-> >
->=20
+diff --git a/drivers/tty/hvc/hvcs.c b/drivers/tty/hvc/hvcs.c
+index 81e939e..9330a4b 100644
+--- a/drivers/tty/hvc/hvcs.c
++++ b/drivers/tty/hvc/hvcs.c
+@@ -885,8 +885,7 @@ static void hvcs_set_pi(struct hvcs_partner_info
+*pi, struct hvcs_struct *hvcsd)
+ 	hvcsd->p_partition_ID  = pi->partition_ID;
+
+ 	/* copy the null-term char too */
+-	strlcpy(&hvcsd->p_location_code[0],
+-			&pi->location_code[0], sizeof(hvcsd->p_location_code));
++	strcpy(&hvcsd->p_location_code[0], &pi->location_code[0]);
+ }
+
+ /*
+-- 
+1.7.7.6
