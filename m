@@ -1,32 +1,26 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e38.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B207C2C0378
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Mar 2013 22:48:09 +1100 (EST)
-Received: from /spool/local
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Fri, 8 Mar 2013 04:48:06 -0700
-Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
- [9.17.195.226])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 6329019D8042
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Mar 2013 04:48:00 -0700 (MST)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r28Bm25c078976
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Mar 2013 04:48:02 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r28Bm1ZT029397
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Mar 2013 04:48:02 -0700
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/kernel: Cleanup on rtas_pci.c
-Date: Fri,  8 Mar 2013 19:47:58 +0800
-Message-Id: <1362743278-25729-1-git-send-email-shangw@linux.vnet.ibm.com>
-Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
+Return-Path: <timur@tabi.org>
+Received: from muin.pair.com (muin.pair.com [209.68.1.55])
+ by ozlabs.org (Postfix) with ESMTP id 28AC72C041B
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Mar 2013 03:47:18 +1100 (EST)
+Received: from mail-la0-f41.google.com (mail-la0-f41.google.com
+ [209.85.215.41])
+ by muin.pair.com (Postfix) with ESMTPSA id E39CC8FC31
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Mar 2013 11:47:15 -0500 (EST)
+Received: by mail-la0-f41.google.com with SMTP id fo12so1891022lab.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Mar 2013 08:47:14 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <1362655668-26721-3-git-send-email-Sandeep@freescale.com>
+References: <1362655668-26721-1-git-send-email-Sandeep@freescale.com>
+ <1362655668-26721-3-git-send-email-Sandeep@freescale.com>
+Date: Fri, 8 Mar 2013 10:47:14 -0600
+Message-ID: <CAOZdJXW7=3G8STRzaF04dmFZKFjp3=_2uy9F2pTZ-pe7L8nd7A@mail.gmail.com>
+Subject: Re: [PATCH 3/4] TDM Device Tree entries for various Freescale
+ Platforms
+From: Timur Tabi <timur@tabi.org>
+To: Sandeep Singh <Sandeep@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Poonam Aggrwal <poonam.aggrwal@freescale.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,35 +30,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It's minor cleanup so that the function names comply with the
-coding style.
+On Thu, Mar 7, 2013 at 5:27 AM, Sandeep Singh <Sandeep@freescale.com> wrote:
+> arch/powerpc/boot/dts/p1022ds_36b.dts       |    3 +++
 
-Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/rtas_pci.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+You forgot to update p1022ds_3b.dts.
 
-diff --git a/arch/powerpc/kernel/rtas_pci.c b/arch/powerpc/kernel/rtas_pci.c
-index 81c1abb..8d26f92 100644
---- a/arch/powerpc/kernel/rtas_pci.c
-+++ b/arch/powerpc/kernel/rtas_pci.c
-@@ -202,7 +202,7 @@ static void python_countermeasures(struct device_node *dev)
- 	iounmap(chip_regs);
- }
- 
--void __init init_pci_config_tokens (void)
-+void __init init_pci_config_tokens(void)
- {
- 	read_pci_config = rtas_token("read-pci-config");
- 	write_pci_config = rtas_token("write-pci-config");
-@@ -210,7 +210,7 @@ void __init init_pci_config_tokens (void)
- 	ibm_write_pci_config = rtas_token("ibm,write-pci-config");
- }
- 
--unsigned long get_phb_buid (struct device_node *phb)
-+unsigned long get_phb_buid(struct device_node *phb)
- {
- 	struct resource r;
- 
+> - * Copyright 2011 Freescale Semiconductor Inc.
+> + * Copyright 2011-2012 Freescale Semiconductor Inc.
+
+Do not update the copyright year in patches.
+
 -- 
-1.7.5.4
+Timur Tabi
+Linux kernel developer at Freescale
