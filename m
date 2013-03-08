@@ -1,15 +1,28 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Philippe De Muyter <phdm@macqel.be>
-Subject: Re: 3.9-rc1 powerpc ptrace.c: 'brk.len' is used uninitialized
-In-reply-to: <22285.1362695571@ale.ozlabs.ibm.com>
-References: <20130306060058.GA3106@frolo.macqel>
- <21084.1362607788@ale.ozlabs.ibm.com> <20130306223645.GA15484@frolo.macqel>
- <31862.1362611670@ale.ozlabs.ibm.com> <20130307095907.GA16489@frolo.macqel>
- <22285.1362695571@ale.ozlabs.ibm.com>
-Date: Fri, 08 Mar 2013 10:03:34 +1100
-Message-ID: <11606.1362697414@ale.ozlabs.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <B25806@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0185.outbound.messaging.microsoft.com [213.199.154.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E042D2C0379
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Mar 2013 13:54:57 +1100 (EST)
+Received: from mail168-db8 (localhost [127.0.0.1])	by
+ mail168-db8-R.bigfish.com (Postfix) with ESMTP id 3E40BD40090	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Mar 2013 02:54:50 +0000 (UTC)
+Received: from DB8EHSMHS007.bigfish.com (unknown [10.174.8.244])	by
+ mail168-db8.bigfish.com (Postfix) with ESMTP id 8F28A1C004D	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Mar 2013 02:54:48 +0000 (UTC)
+Message-ID: <513953B5.30707@freescale.com>
+Date: Fri, 8 Mar 2013 10:57:57 +0800
+From: Chunhe Lan <b25806@freescale.com>
+MIME-Version: 1.0
+To: Gala Kumar-B11780 <B11780@freescale.com>
+Subject: Re: [PATCH] mmc: sdhci-pltfm: Fix timeout on t4240's sdhci controller
+References: <1362643535-2377-1-git-send-email-Chunhe.Lan@freescale.com>
+ <CF1EE7AED478CD48A05574C8E2DA142D746975@039-SN1MPN1-004.039d.mgd.msft.net>
+In-Reply-To: <CF1EE7AED478CD48A05574C8E2DA142D746975@039-SN1MPN1-004.039d.mgd.msft.net>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: "<linuxppc-dev@lists.ozlabs.org>" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,75 +32,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Neuling <mikey@neuling.org> wrote:
+On 03/08/2013 12:30 AM, Gala Kumar-B11780 wrote:
+> On Mar 7, 2013, at 2:05 AM, Chunhe Lan wrote:
+>
+>> This patch fixes timeout problems on t4240's sdhci controller:
+>>
+>> 	mmc0: Too large timeout requested for CMD25!
+>> 	mmc0: Too large timeout requested for CMD25!
+>> 	mmc0: Too large timeout requested for CMD25!
+>>
+>> Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
+>> ---
+>> drivers/mmc/host/sdhci-pltfm.c |    1 +
+>> 1 files changed, 1 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/drivers/mmc/host/sdhci-pltfm.c b/drivers/mmc/host/sdhci-pltfm.c
+>> index 3145a78..9db7b12 100644
+>> --- a/drivers/mmc/host/sdhci-pltfm.c
+>> +++ b/drivers/mmc/host/sdhci-pltfm.c
+>> @@ -94,6 +94,7 @@ void sdhci_get_of_property(struct platform_device *pdev)
+>>
+>> 		if (of_device_is_compatible(np, "fsl,p2020-esdhc") ||
+>> 		    of_device_is_compatible(np, "fsl,p1010-esdhc") ||
+>> +		    of_device_is_compatible(np, "fsl,t4240-esdhc") ||
+>> 		    of_device_is_compatible(np, "fsl,mpc8536-esdhc"))
+>> 			host->quirks |= SDHCI_QUIRK_BROKEN_TIMEOUT_VAL;
+>>
+>> -- 
+>> 1.7.6.5
+>>
+>
+> Why does this occur?  Is it a board issue?  Is it a silicon issue?  Is it due to some erratum?  Why T4 only?
+      It would be the property of T4 hardware, and please see below the 
+patch which locates
+      the mail list of freescale:
 
-> Philippe De Muyter <phdm@macqel.be> wrote:
-> 
-> > Hello Mikey,
-> > 
-> > On Thu, Mar 07, 2013 at 10:14:30AM +1100, Michael Neuling wrote:
-> > > Philippe De Muyter <phdm@macqel.be> wrote:
-> > > 
-> > > > On Thu, Mar 07, 2013 at 09:09:48AM +1100, Michael Neuling wrote:
-> > > > > > bisect tells me that since your commit 9422de3e953d0e60eb95f5430a9dd803eec1c6d7 
-> > > > > > "powerpc: Hardware breakpoints rewrite to handle non DABR breakpoint registers",
-> > > > > > compiling linux fails with :
-> > > > > > 
-> > > > > >   cc1: warnings being treated as errors
-> > > > > >   arch/powerpc/kernel/ptrace.c: In function 'arch_ptrace':
-> > > > > >   arch/powerpc/kernel/ptrace.c:1450: warning: 'brk.len' is used uninitialized in this function
-> > > > > >   arch/powerpc/kernel/ptrace.c:1352: note: 'brk.len' was declared here
-> > > > > > 
-> > > > > > could you look at that ?
-> > > > > 
-> > > > > Sure. 
-> > > > 
-> > > > I use gcc-4.2.2, and my .config follows.
-> > > 
-> > > I'm a bit lost.  
-> > > 
-> > > I don't have 4.2.2 (which is ancient BTW) and I can't hit this on
-> > > 4.3,4.5 or 4.6 with your config.  It compiles fine.
-> > > 
-> > > Also:
-> > > 
-> > > >   arch/powerpc/kernel/ptrace.c:1450: warning: 'brk.len' is used uninitialized in this function
-> > > >   arch/powerpc/kernel/ptrace.c:1352: note: 'brk.len' was declared here
-> > > 
-> > > These line numbers make no sense at all WRT v3.9-rc1.  brk.len is neither
-> > > declared or used in those lines:
-> > 
-> > those were the line numbers just after your commit
-> > 
-> > In 3.9-rc1 they are :
-> > 
-> > cc1: warnings being treated as errors
-> > arch/powerpc/kernel/ptrace.c: In function 'arch_ptrace':
-> > arch/powerpc/kernel/ptrace.c:1479: warning: 'brk.len' is used uninitialized in this function
-> > arch/powerpc/kernel/ptrace.c:1381: note: 'brk.len' was declared here
-> > 
-> > 		if (child->thread.hw_brk.address)
-> > 			return -ENOSPC;
-> > 
-> > 1479:		child->thread.hw_brk = brk;
-> > 
-> > 		return 1;
-> > 	#endif /* !CONFIG_PPC_ADV_DEBUG_DVCS */
-> 
-> Got it.  I still can't replicate the issue here, so can you check if the
-> below works for you?
+eSDHC: mmc:host host need long time to generate command complete interrupt
 
-Argh, scrap that..... try this.
+According to Spec 2.0, command complete interrupt will generate within 
+150 SD-CLK.
+But this was not enough on T4240 board. So give it sufficient time to 
+detect command
+timeout. 1000 * HZ will be enough, this value was test on all T4 board, 
+all worked well.
 
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index 245c1b6..8564515 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -1428,6 +1428,7 @@ static long ppc_set_hwdebug(struct task_struct *child,
- 
- 	brk.address = bp_info->addr & ~7UL;
- 	brk.type = HW_BRK_TYPE_TRANSLATE;
-+	brk.len = 0;
- 	if (bp_info->trigger_type & PPC_BREAKPOINT_TRIGGER_READ)
- 		brk.type |= HW_BRK_TYPE_READ;
- 	if (bp_info->trigger_type & PPC_BREAKPOINT_TRIGGER_WRITE)
+Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
+Signed-off-by: Haijun Zhang <Haijun.Zhang@freescale.com>
+
+Thanks,
+Chunhe
+>
+> - k
