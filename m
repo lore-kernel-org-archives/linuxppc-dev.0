@@ -1,29 +1,25 @@
-Return-Path: <B40534@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+Return-Path: <B25806@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DFECD2C053E
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Mar 2013 19:12:03 +1100 (EST)
-Received: from mail63-co1 (localhost [127.0.0.1])	by mail63-co1-R.bigfish.com
- (Postfix) with ESMTP id 0CDEC380191	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Mar 2013 08:12:00 +0000 (UTC)
-Received: from CO1EHSMHS032.bigfish.com (unknown [10.243.78.230])	by
- mail63-co1.bigfish.com (Postfix) with ESMTP id 275E99E0053	for
- <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Mar 2013 08:11:58 +0000 (UTC)
-From: Wang Dongsheng <dongsheng.wang@freescale.com>
-To: <scottwood@freescale.com>, <kumar.gala@freescale.com>
-Subject: [PATCH 3/3] powerpc/fsl: add MPIC timer wakeup support
-Date: Fri, 8 Mar 2013 15:38:47 +0800
-Message-ID: <1362728327-21013-3-git-send-email-dongsheng.wang@freescale.com>
-In-Reply-To: <1362728327-21013-1-git-send-email-dongsheng.wang@freescale.com>
-References: <1362728327-21013-1-git-send-email-dongsheng.wang@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 2881D2C0365
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Mar 2013 19:29:34 +1100 (EST)
+Received: from mail151-va3 (localhost [127.0.0.1])	by
+ mail151-va3-R.bigfish.com (Postfix) with ESMTP id 101C460095	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Mar 2013 08:29:30 +0000 (UTC)
+Received: from VA3EHSMHS002.bigfish.com (unknown [10.7.14.233])	by
+ mail151-va3.bigfish.com (Postfix) with ESMTP id 54A14200BD	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Mar 2013 08:29:27 +0000 (UTC)
+From: Chunhe Lan <Chunhe.Lan@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] edac/85xx: Add PCIe error interrupt edac support
+Date: Fri, 8 Mar 2013 16:32:27 +0800
+Message-ID: <1362731547-25165-1-git-send-email-Chunhe.Lan@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org,
- Wang Dongsheng <dongsheng.wang@freescale.com>,
- Zhao Chenhui <chenhui.zhao@freescale.com>
+Cc: kumar.gala@freescale.com, Chunhe Lan <Chunhe.Lan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,247 +29,274 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The driver provides a way to wake up the system by the MPIC timer.
+Adding pcie error interrupt edac support for mpc85xx, p3041, p4080,
+and p5020. The mpc85xx uses the legacy interrupt report mechanism -
+the error interrupts are reported directly to mpic. While, the p3041/
+p4080/p5020 attaches the most of error interrupts to interrupt zero.
+And report error interrupts to mpic via interrupt 0.
 
-For example,
-echo 5 > /sys/devices/system/mpic/timer_wakeup
-echo standby > /sys/power/state
+This patch can handle both of them.
 
-After 5 seconds the MPIC timer will generate an interrupt to wake up
-the system.
-
-Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
-Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
-Signed-off-by: Li Yang <leoli@freescale.com>
+Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
 ---
- arch/powerpc/platforms/Kconfig              |    9 ++
- arch/powerpc/sysdev/Makefile                |    1 +
- arch/powerpc/sysdev/fsl_mpic_timer_wakeup.c |  185 +++++++++++++++++++++++++++
- 3 files changed, 195 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/sysdev/fsl_mpic_timer_wakeup.c
+ drivers/edac/mpc85xx_edac.c |  169 ++++++++++++++++++++++++++++++++++++++++---
+ drivers/edac/mpc85xx_edac.h |    7 ++
+ 2 files changed, 165 insertions(+), 11 deletions(-)
 
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index 5af04fa..487c37f 100644
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -99,6 +99,15 @@ config MPIC_TIMER
- 	  only tested on fsl chip, but it can potentially support
- 	  other global timers complying to Open-PIC standard.
+diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
+index 42a840d..085b6b3 100644
+--- a/drivers/edac/mpc85xx_edac.c
++++ b/drivers/edac/mpc85xx_edac.c
+@@ -1,5 +1,6 @@
+ /*
+  * Freescale MPC85xx Memory Controller kenel module
++ * Copyright (c) 2013 Freescale Semiconductor, Inc.
+  *
+  * Author: Dave Jiang <djiang@mvista.com>
+  *
+@@ -196,6 +197,120 @@ static void mpc85xx_pci_check(struct edac_pci_ctl_info *pci)
+ 		edac_pci_handle_npe(pci, pci->ctl_name);
+ }
  
-+config FSL_MPIC_TIMER_WAKEUP
-+	tristate "Freescale MPIC global timer wakeup driver"
-+	depends on FSL_SOC &&  MPIC_TIMER
-+	default n
-+	help
-+	  This is only for freescale powerpc platform. The driver
-+	  provides a way to wake up the system by MPIC timer,
-+	  e.g. "echo 5 > /sys/devices/system/mpic/timer_wakeup"
++static void mpc85xx_pcie_check(struct edac_pci_ctl_info *pci)
++{
++	struct mpc85xx_pci_pdata *pdata = pci->pvt_info;
++	u32 err_detect;
 +
- config PPC_EPAPR_HV_PIC
- 	bool
- 	default n
-diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-index ff6184a..e1b8a80 100644
---- a/arch/powerpc/sysdev/Makefile
-+++ b/arch/powerpc/sysdev/Makefile
-@@ -5,6 +5,7 @@ ccflags-$(CONFIG_PPC64)		:= -mno-minimal-toc
- mpic-msi-obj-$(CONFIG_PCI_MSI)	+= mpic_msi.o mpic_u3msi.o mpic_pasemi_msi.o
- obj-$(CONFIG_MPIC)		+= mpic.o $(mpic-msi-obj-y)
- obj-$(CONFIG_MPIC_TIMER)        += mpic_timer.o
-+obj-$(CONFIG_FSL_MPIC_TIMER_WAKEUP)	+= fsl_mpic_timer_wakeup.o
- mpic-msgr-obj-$(CONFIG_MPIC_MSGR)	+= mpic_msgr.o
- obj-$(CONFIG_MPIC)		+= mpic.o $(mpic-msi-obj-y) $(mpic-msgr-obj-y)
- obj-$(CONFIG_PPC_EPAPR_HV_PIC)	+= ehv_pic.o
-diff --git a/arch/powerpc/sysdev/fsl_mpic_timer_wakeup.c b/arch/powerpc/sysdev/fsl_mpic_timer_wakeup.c
-new file mode 100644
-index 0000000..e94ba65
---- /dev/null
-+++ b/arch/powerpc/sysdev/fsl_mpic_timer_wakeup.c
-@@ -0,0 +1,185 @@
++	err_detect = in_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_DR);
++
++	pr_err("PCIE error(s) detected\n");
++	pr_err("PCIE ERR_DR register: 0x%08x\n", err_detect);
++	pr_err("PCIE ERR_CAP_STAT register: 0x%08x\n",
++			in_be32(pdata->pci_vbase + MPC85XX_PCI_GAS_TIMR));
++	pr_err("PCIE ERR_CAP_R0 register: 0x%08x\n",
++			in_be32(pdata->pci_vbase + MPC85XX_PCIE_ERR_CAP_R0));
++	pr_err("PCIE ERR_CAP_R1 register: 0x%08x\n",
++			in_be32(pdata->pci_vbase + MPC85XX_PCIE_ERR_CAP_R1));
++	pr_err("PCIE ERR_CAP_R2 register: 0x%08x\n",
++			in_be32(pdata->pci_vbase + MPC85XX_PCIE_ERR_CAP_R2));
++	pr_err("PCIE ERR_CAP_R3 register: 0x%08x\n",
++			in_be32(pdata->pci_vbase + MPC85XX_PCIE_ERR_CAP_R3));
++
++	/* clear error bits */
++	out_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_DR, err_detect);
++}
++
 +/*
-+ * MPIC timer wakeup driver
++ * This function is for error interrupt ORed mechanism.
++ * This mechanism attaches most functions' error interrupts to interrupt 0.
++ * And report error interrupt to mpic via interrupt 0.
++ * EIMR0 - Error Interrupt Mask Register 0.
 + *
-+ * Copyright 2013 Freescale Semiconductor, Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by the
-+ * Free Software Foundation; either version 2 of the License, or (at your
-+ * option) any later version.
++ * This function check whether the device support error interrupt ORed
++ * mechanism via device tree. If supported, umask pcie error interrupt
++ * bit in EIMR0.
 + */
-+
-+#include <linux/kernel.h>
-+#include <linux/slab.h>
-+#include <linux/errno.h>
-+#include <linux/module.h>
-+#include <linux/interrupt.h>
-+#include <linux/device.h>
-+
-+#include <asm/mpic_timer.h>
-+
-+struct fsl_mpic_timer_wakeup {
-+	struct mpic_timer *timer;
-+	struct work_struct free_work;
-+};
-+
-+static struct fsl_mpic_timer_wakeup *fsl_wakeup;
-+static DEFINE_MUTEX(sysfs_lock);
-+
-+static void fsl_free_resource(struct work_struct *ws)
++static int mpc85xx_err_int_en(struct platform_device *op)
 +{
-+	struct fsl_mpic_timer_wakeup *wakeup =
-+		container_of(ws, struct fsl_mpic_timer_wakeup, free_work);
++	u32 *int_cell;
++	struct device_node *np;
++	void __iomem *mpic_base;
++	u32 reg_tmp;
++	u32 int_len;
++	struct resource r;
++	int res;
 +
-+	mutex_lock(&sysfs_lock);
-+
-+	if (wakeup->timer) {
-+		disable_irq_wake(wakeup->timer->irq);
-+		mpic_free_timer(wakeup->timer);
-+	}
-+
-+	wakeup->timer = NULL;
-+	mutex_unlock(&sysfs_lock);
-+}
-+
-+static irqreturn_t fsl_mpic_timer_irq(int irq, void *dev_id)
-+{
-+	struct fsl_mpic_timer_wakeup *wakeup = dev_id;
-+
-+	schedule_work(&wakeup->free_work);
-+	return IRQ_HANDLED;
-+}
-+
-+static ssize_t fsl_timer_wakeup_show(struct device *dev,
-+				struct device_attribute *attr,
-+				char *buf)
-+{
-+	struct timeval interval;
-+	int val = 0;
-+
-+	mutex_lock(&sysfs_lock);
-+	if (fsl_wakeup->timer) {
-+		mpic_get_remain_time(fsl_wakeup->timer, &interval);
-+		val = interval.tv_sec + 1;
-+	}
-+	mutex_unlock(&sysfs_lock);
-+
-+	return sprintf(buf, "%d\n", val);
-+}
-+
-+static ssize_t fsl_timer_wakeup_store(struct device *dev,
-+				struct device_attribute *attr,
-+				const char *buf,
-+				size_t count)
-+{
-+	struct timeval interval;
-+	int ret;
-+
-+	interval.tv_usec = 0;
-+	if (kstrtol(buf, 0, &interval.tv_sec))
++	if (!op->dev.of_node)
 +		return -EINVAL;
 +
-+	mutex_lock(&sysfs_lock);
++	/*
++	 * Unmask pcie error interrupt bit in EIMR0.
++	 * Extend interrupt specifier has 4 cells.
++	 * For the 3rd cell:
++	 *	0 -- normal interrupt;
++	 *	1 -- error interrupt.
++	 */
++	int_cell = (u32 *)of_get_property(op->dev.of_node, "interrupts",
++						&int_len);
++	if ((int_len/sizeof(u32)) == 4) {
++		/* soc has error interrupt integration handling mechanism */
++		if (*(int_cell + 2) == 1) {
++			np = of_find_node_by_type(NULL, "open-pic");
 +
-+	if (fsl_wakeup->timer && !interval.tv_sec) {
-+		disable_irq_wake(fsl_wakeup->timer->irq);
-+		mpic_free_timer(fsl_wakeup->timer);
-+		fsl_wakeup->timer = NULL;
-+		mutex_unlock(&sysfs_lock);
++			if (of_address_to_resource(np, 0, &r)) {
++				pr_err("%s: Failed to map mpic regs\n",
++					__func__);
++				of_node_put(np);
++				res = -ENOMEM;
++				goto err;
++			}
 +
-+		return count;
++			if (!request_mem_region(r.start, r.end - r.start + 1,
++						"mpic")) {
++				pr_err("%s: Error when requesting mem region\n",
++					__func__);
++				res = -EBUSY;
++				goto err;
++			}
++
++			mpic_base = ioremap(r.start, r.end - r.start + 1);
++			if (!mpic_base) {
++				pr_err("%s: Unable to map mpic regs\n",
++					__func__);
++				res = -ENOMEM;
++				goto err_ioremap;
++			}
++
++			reg_tmp = in_be32(mpic_base + MPC85XX_MPIC_EIMR0);
++			out_be32(mpic_base + MPC85XX_MPIC_EIMR0, reg_tmp &
++					~(1 << (31 - *(int_cell + 3))));
++			iounmap(mpic_base);
++			release_mem_region(r.start, r.end - r.start + 1);
++			of_node_put(np);
++		}
 +	}
 +
-+	if (fsl_wakeup->timer) {
-+		mutex_unlock(&sysfs_lock);
-+		return -EBUSY;
-+	}
++	return 0;
 +
-+	fsl_wakeup->timer = mpic_request_timer(fsl_mpic_timer_irq,
-+						fsl_wakeup, &interval);
-+	if (!fsl_wakeup->timer) {
-+		mutex_unlock(&sysfs_lock);
-+		return -EINVAL;
-+	}
-+
-+	ret = enable_irq_wake(fsl_wakeup->timer->irq);
-+	if (ret) {
-+		mpic_free_timer(fsl_wakeup->timer);
-+		fsl_wakeup->timer = NULL;
-+		mutex_unlock(&sysfs_lock);
-+
-+		return ret;
-+	}
-+	mpic_start_timer(fsl_wakeup->timer);
-+
-+	mutex_unlock(&sysfs_lock);
-+
-+	return count;
-+}
-+
-+static struct bus_type mpic_subsys = {
-+	.name = "mpic",
-+	.dev_name = "mpic",
-+};
-+
-+static DEVICE_ATTR(timer_wakeup, 0644,
-+			fsl_timer_wakeup_show, fsl_timer_wakeup_store);
-+
-+static struct device_attribute *mpic_attributes[] = {
-+	&dev_attr_timer_wakeup,
-+	NULL
-+};
-+
-+static int __init fsl_wakeup_sys_init(void)
-+{
-+	int ret;
-+	int i;
-+
-+	fsl_wakeup = kzalloc(sizeof(struct fsl_mpic_timer_wakeup), GFP_KERNEL);
-+	if (!fsl_wakeup)
-+		return -ENOMEM;
-+
-+	INIT_WORK(&fsl_wakeup->free_work, fsl_free_resource);
-+
-+	ret = subsys_system_register(&mpic_subsys, NULL);
-+	if (ret)
-+		goto err;
-+
-+	for (i = 0; mpic_attributes[i]; i++) {
-+		ret = device_create_file(mpic_subsys.dev_root,
-+					mpic_attributes[i]);
-+		if (ret)
-+			goto err2;
-+	}
-+
-+	return ret;
-+
-+err2:
-+	while (--i >= 0)
-+		device_remove_file(mpic_subsys.dev_root, mpic_attributes[i]);
-+
-+	bus_unregister(&mpic_subsys);
-+
++err_ioremap:
++	release_mem_region(r.start, r.end - r.start + 1);
 +err:
-+	kfree(fsl_wakeup);
-+
-+	return ret;
++	return res;
 +}
 +
-+static void __exit fsl_wakeup_sys_exit(void)
++static int mpc85xx_pcie_find_capability(struct device_node *np)
 +{
-+	int i;
++	struct pci_controller *hose;
 +
-+	for (i = 0; mpic_attributes[i]; i++)
-+		device_remove_file(mpic_subsys.dev_root,
-+				mpic_attributes[i]);
-+	bus_unregister(&mpic_subsys);
-+	kfree(fsl_wakeup);
++	if (!np)
++		return -EINVAL;
++
++	hose = pci_find_hose_for_OF_device(np);
++
++	return early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP);
 +}
 +
-+module_init(fsl_wakeup_sys_init);
-+module_exit(fsl_wakeup_sys_exit);
+ static irqreturn_t mpc85xx_pci_isr(int irq, void *dev_id)
+ {
+ 	struct edac_pci_ctl_info *pci = dev_id;
+@@ -207,7 +322,10 @@ static irqreturn_t mpc85xx_pci_isr(int irq, void *dev_id)
+ 	if (!err_detect)
+ 		return IRQ_NONE;
+ 
+-	mpc85xx_pci_check(pci);
++	if (pdata->is_pcie)
++		mpc85xx_pcie_check(pci);
++	else
++		mpc85xx_pci_check(pci);
+ 
+ 	return IRQ_HANDLED;
+ }
+@@ -239,14 +357,23 @@ int mpc85xx_pci_err_probe(struct platform_device *op)
+ 	pdata = pci->pvt_info;
+ 	pdata->name = "mpc85xx_pci_err";
+ 	pdata->irq = NO_IRQ;
++	if (mpc85xx_pcie_find_capability(op->dev.of_node) > 0)
++		pdata->is_pcie = 1;
++	else
++		pdata->is_pcie = 0;
 +
-+MODULE_DESCRIPTION("Freescale MPIC global timer wakeup driver");
-+MODULE_LICENSE("GPL v2");
-+MODULE_AUTHOR("Wang Dongsheng <dongsheng.wang@freescale.com>");
+ 	dev_set_drvdata(&op->dev, pci);
+ 	pci->dev = &op->dev;
+ 	pci->mod_name = EDAC_MOD_STR;
+ 	pci->ctl_name = pdata->name;
+ 	pci->dev_name = dev_name(&op->dev);
+ 
+-	if (edac_op_state == EDAC_OPSTATE_POLL)
+-		pci->edac_check = mpc85xx_pci_check;
++	if (edac_op_state == EDAC_OPSTATE_POLL) {
++		if (pdata->is_pcie)
++			pci->edac_check = mpc85xx_pcie_check;
++		else
++			pci->edac_check = mpc85xx_pci_check;
++	}
+ 
+ 	pdata->edac_idx = edac_pci_idx++;
+ 
+@@ -275,16 +402,29 @@ int mpc85xx_pci_err_probe(struct platform_device *op)
+ 		goto err;
+ 	}
+ 
+-	orig_pci_err_cap_dr =
+-	    in_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_CAP_DR);
++	if (pdata->is_pcie) {
++		if (mpc85xx_err_int_en(op) < 0)
++			goto err;
+ 
+-	/* PCI master abort is expected during config cycles */
+-	out_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_CAP_DR, 0x40);
++		orig_pci_err_cap_dr =
++		    in_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_ADDR);
++		out_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_ADDR, ~0);
++		orig_pci_err_en =
++		    in_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_EN);
++		out_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_EN, 0);
++	} else {
++		orig_pci_err_cap_dr =
++		    in_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_CAP_DR);
++
++		/* PCI master abort is expected during config cycles */
++		out_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_CAP_DR, 0x40);
+ 
+-	orig_pci_err_en = in_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_EN);
++		orig_pci_err_en =
++		    in_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_EN);
+ 
+-	/* disable master abort reporting */
+-	out_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_EN, ~0x40);
++		/* disable master abort reporting */
++		out_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_EN, ~0x40);
++	}
+ 
+ 	/* clear error bits */
+ 	out_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_DR, ~0);
+@@ -297,7 +437,8 @@ int mpc85xx_pci_err_probe(struct platform_device *op)
+ 	if (edac_op_state == EDAC_OPSTATE_INT) {
+ 		pdata->irq = irq_of_parse_and_map(op->dev.of_node, 0);
+ 		res = devm_request_irq(&op->dev, pdata->irq,
+-				       mpc85xx_pci_isr, IRQF_DISABLED,
++				       mpc85xx_pci_isr,
++				       IRQF_DISABLED | IRQF_SHARED,
+ 				       "[EDAC] PCI err", pci);
+ 		if (res < 0) {
+ 			printk(KERN_ERR
+@@ -312,6 +453,12 @@ int mpc85xx_pci_err_probe(struct platform_device *op)
+ 		       pdata->irq);
+ 	}
+ 
++	if (pdata->is_pcie) {
++		/* enable all pcie error interrupt & error detect */
++		out_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_EN, ~0);
++		out_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_ADDR, 0);
++	}
++
+ 	devres_remove_group(&op->dev, mpc85xx_pci_err_probe);
+ 	edac_dbg(3, "success\n");
+ 	printk(KERN_INFO EDAC_MOD_STR " PCI err registered\n");
+diff --git a/drivers/edac/mpc85xx_edac.h b/drivers/edac/mpc85xx_edac.h
+index 932016f..8ce091a 100644
+--- a/drivers/edac/mpc85xx_edac.h
++++ b/drivers/edac/mpc85xx_edac.h
+@@ -141,6 +141,12 @@
+ #define MPC85XX_PCI_ERR_DH		0x001c
+ #define MPC85XX_PCI_GAS_TIMR		0x0020
+ #define MPC85XX_PCI_PCIX_TIMR		0x0024
++#define MPC85XX_PCIE_ERR_CAP_R0		0x0028
++#define MPC85XX_PCIE_ERR_CAP_R1		0x002c
++#define MPC85XX_PCIE_ERR_CAP_R2		0x0030
++#define MPC85XX_PCIE_ERR_CAP_R3		0x0034
++
++#define MPC85XX_MPIC_EIMR0		0x3910
+ 
+ struct mpc85xx_mc_pdata {
+ 	char *name;
+@@ -158,6 +164,7 @@ struct mpc85xx_l2_pdata {
+ 
+ struct mpc85xx_pci_pdata {
+ 	char *name;
++	char is_pcie;
+ 	int edac_idx;
+ 	void __iomem *pci_vbase;
+ 	int irq;
 -- 
-1.7.5.1
+1.7.6.5
