@@ -1,22 +1,31 @@
-Return-Path: <vneethv@gmail.com>
-Received: from sam.nabble.com (sam.nabble.com [216.139.236.26])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 520BF2C03E4
- for <linuxppc-dev@ozlabs.org>; Fri,  8 Mar 2013 18:05:34 +1100 (EST)
-Received: from tom.nabble.com ([192.168.236.105])
- by sam.nabble.com with esmtp (Exim 4.72)
- (envelope-from <vneethv@gmail.com>) id 1UDr75-0004Wi-BH
- for linuxppc-dev@ozlabs.org; Thu, 07 Mar 2013 22:49:07 -0800
-Date: Thu, 7 Mar 2013 22:49:07 -0800 (PST)
-From: vneethv <vneethv@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Message-ID: <1362725347342-69102.post@n7.nabble.com>
-In-Reply-To: <CAFbQSaDmDfcsV03w5jOX-cSC-jr4d4GXk8rkzxs5QZeRd2z+-Q@mail.gmail.com>
-References: <CAFbQSaDmDfcsV03w5jOX-cSC-jr4d4GXk8rkzxs5QZeRd2z+-Q@mail.gmail.com>
-Subject: Re: Issue with USB Mass storage on P5020
+Return-Path: <B38951@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 91B2F2C0344
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Mar 2013 19:01:54 +1100 (EST)
+From: Jia Hongtao-B38951 <B38951@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH V4] powerpc/85xx: Add machine check handler to fix PCIe
+ erratum on mpc85xx
+Date: Fri, 8 Mar 2013 08:01:46 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01BFC620@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <CALRxmdBjb+TrqZ_XdNjH=oDcdYtVJ5=Q71dcCkKodpe7WCHDpA@mail.gmail.com>
+ <1362440744.16575.6@snotra>
+ <412C8208B4A0464FA894C5F0C278CD5D01BE952E@039-SN1MPN1-002.039d.mgd.msft.net>
+ <1362509262.25308.0@snotra>
+ <412C8208B4A0464FA894C5F0C278CD5D01BE9D9D@039-SN1MPN1-002.039d.mgd.msft.net>
+ <AE90C24D6B3A694183C094C60CF0A2F6026B7179@saturn3.aculab.com>
+ <412C8208B4A0464FA894C5F0C278CD5D01BFA1D0@039-SN1MPN1-002.039d.mgd.msft.net>
+ <1362674267.23227.1@snotra>
+In-Reply-To: <1362674267.23227.1@snotra>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Cc: David Laight <David.Laight@ACULAB.COM>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Stuart Yoder <b08248@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,11 +35,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Issue was with the USB mass storage i was using.. problem is specific to that
-device.
 
 
+> -----Original Message-----
+> From: Wood Scott-B07421
+> Sent: Friday, March 08, 2013 12:38 AM
+> To: Jia Hongtao-B38951
+> Cc: David Laight; Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org;
+> Stuart Yoder
+> Subject: Re: [PATCH V4] powerpc/85xx: Add machine check handler to fix
+> PCIe erratum on mpc85xx
+>=20
+> On 03/07/2013 02:06:05 AM, Jia Hongtao-B38951 wrote:
+> > Here is the ideas from Scott:
+> > "
+> > > +	if (is_in_pci_mem_space(addr)) {
+> > > +		inst =3D *(unsigned int *)regs->nip;
+> >
+> > Be careful about taking a fault here.  A simple TLB miss should be
+> > safe given that we shouldn't be accessing PCIe in the middle of
+> > exception code, but what if the mapping has gone away (e.g. a
+> > userspace driver had its code munmap()ed or swapped out)?  What if
+> > permissions allow execute but not read (not sure if Linux will allow
+> > this, but the hardware does)?
+> >
+> > What if it happened in a KVM guest?  You can't access guest addresses
+> > directly.
+> > "
+>=20
+> That means you need to be careful about how you read the instruction, not
+> that you shouldn't do it at all.
+>=20
+> -Scott
 
---
-View this message in context: http://linuxppc.10917.n7.nabble.com/Issue-with-USB-Mass-storage-on-P5020-tp67725p69102.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+I agree.
+
+Do you have a more secure way to get the instruction?
+Or what should be done to avoid permission break issue?
+
+Thanks.
+-Hongtao
