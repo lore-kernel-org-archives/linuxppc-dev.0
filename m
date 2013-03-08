@@ -1,31 +1,32 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
- by ozlabs.org (Postfix) with SMTP id 3ED6F2C0368
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Mar 2013 22:13:33 +1100 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
- by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
- id 12684-09 for <linuxppc-dev@lists.ozlabs.org>;
- Fri,  8 Mar 2013 11:13:29 +0000 (GMT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
-Subject: RE: [PATCH] drivers/tty/hvc: fixup original commit:
- 9276dfd27897a0b29d8b5814f39a1f82f56b6b6b
-Date: Fri, 8 Mar 2013 11:11:47 -0000
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B7182@saturn3.aculab.com>
-In-Reply-To: <1362714364.6977.4.camel@pasglop>
-References: <512C2F5D.1080207@asianux.com> <512F343E.7010201@suse.cz>
- <512F3BC5.8020903@asianux.com> <512F3C60.9070409@asianux.com>
- <512F5FDC.3060000@suse.cz> <51355142.4070505@asianux.com>
- <5135BCAB.5040500@suse.cz> <51381352.9090803@asianux.com>
- <513818EC.9050504@asianux.com> <1362636305.3548.58.camel@pasglop>
- <51395D2C.6040007@asianux.com> <1362714364.6977.4.camel@pasglop>
-From: "David Laight" <David.Laight@ACULAB.COM>
-To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
- "Chen Gang" <gang.chen@asianux.com>
-Cc: Jiri Slaby <jslaby@suse.cz>, Greg KH <gregkh@linuxfoundation.org>,
- wfp5p@virginia.edu, tklauser@distanz.ch, linuxppc-dev@lists.ozlabs.org,
- alan@linux.intel.com
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e38.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B207C2C0378
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Mar 2013 22:48:09 +1100 (EST)
+Received: from /spool/local
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Fri, 8 Mar 2013 04:48:06 -0700
+Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
+ [9.17.195.226])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 6329019D8042
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Mar 2013 04:48:00 -0700 (MST)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r28Bm25c078976
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Mar 2013 04:48:02 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r28Bm1ZT029397
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Mar 2013 04:48:02 -0700
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/kernel: Cleanup on rtas_pci.c
+Date: Fri,  8 Mar 2013 19:47:58 +0800
+Message-Id: <1362743278-25729-1-git-send-email-shangw@linux.vnet.ibm.com>
+Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,21 +36,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> On Fri, 2013-03-08 at 11:38 +0800, Chen Gang wrote:
-> >   originally I did not notice src buf len and dest buf len are the =
-same.
-> >     so origianlly, it is not a bug issue, it is only for beautify =
-code.
-> >     and now, using strcpy is better.
->=20
-> Being the same len doesn't mean it's safe to use strcpy ... the source
-> might be missing the 0 terminator. In this specific case though, I
-> believe the source string comes was itself populated with strlcpy
-> (at least since your patch 6b6680c4ea3952af8ae76915cbca41245147741b) =
-so
-> strcpy is indeed safe but using strlcpy doesn't hurt does it ?
+It's minor cleanup so that the function names comply with the
+coding style.
 
-Using strlcpy() also stops someone else having to check it
-again in a few years time.
+Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/rtas_pci.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-	David
+diff --git a/arch/powerpc/kernel/rtas_pci.c b/arch/powerpc/kernel/rtas_pci.c
+index 81c1abb..8d26f92 100644
+--- a/arch/powerpc/kernel/rtas_pci.c
++++ b/arch/powerpc/kernel/rtas_pci.c
+@@ -202,7 +202,7 @@ static void python_countermeasures(struct device_node *dev)
+ 	iounmap(chip_regs);
+ }
+ 
+-void __init init_pci_config_tokens (void)
++void __init init_pci_config_tokens(void)
+ {
+ 	read_pci_config = rtas_token("read-pci-config");
+ 	write_pci_config = rtas_token("write-pci-config");
+@@ -210,7 +210,7 @@ void __init init_pci_config_tokens (void)
+ 	ibm_write_pci_config = rtas_token("ibm,write-pci-config");
+ }
+ 
+-unsigned long get_phb_buid (struct device_node *phb)
++unsigned long get_phb_buid(struct device_node *phb)
+ {
+ 	struct resource r;
+ 
+-- 
+1.7.5.4
