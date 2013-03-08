@@ -1,16 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <gang.chen@asianux.com>
+Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 6723D2C0373
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Mar 2013 16:08:52 +1100 (EST)
-Message-ID: <1362719285.6977.6.camel@pasglop>
+ by ozlabs.org (Postfix) with ESMTPS id 798C52C0369
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Mar 2013 17:12:41 +1100 (EST)
+Message-ID: <5139813C.3030008@asianux.com>
+Date: Fri, 08 Mar 2013 14:12:12 +0800
+From: Chen Gang <gang.chen@asianux.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH] drivers/tty/hvc: fixup original commit:
  9276dfd27897a0b29d8b5814f39a1f82f56b6b6b
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Chen Gang <gang.chen@asianux.com>
-Date: Fri, 08 Mar 2013 16:08:05 +1100
-In-Reply-To: <51396BAA.2030307@asianux.com>
 References: <512C2F5D.1080207@asianux.com> <512F343E.7010201@suse.cz>
  <512F3BC5.8020903@asianux.com> <512F3C60.9070409@asianux.com>
  <512F5FDC.3060000@suse.cz> <51355142.4070505@asianux.com>
@@ -18,9 +18,9 @@ References: <512C2F5D.1080207@asianux.com> <512F343E.7010201@suse.cz>
  <513818EC.9050504@asianux.com> <1362636305.3548.58.camel@pasglop>
  <51395D2C.6040007@asianux.com> <1362714364.6977.4.camel@pasglop>
  <513967BC.2030301@asianux.com> <1362717201.6977.5.camel@pasglop>
- <51396BAA.2030307@asianux.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ <51396BAA.2030307@asianux.com> <1362719285.6977.6.camel@pasglop>
+In-Reply-To: <1362719285.6977.6.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8
 Cc: Greg KH <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
  wfp5p@virginia.edu, tklauser@distanz.ch, Jiri Slaby <jslaby@suse.cz>,
  alan@linux.intel.com
@@ -33,9 +33,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-03-08 at 12:40 +0800, Chen Gang wrote:
->   is it correct ?
+于 2013年03月08日 13:08, Benjamin Herrenschmidt 写道:
+> Yes, the code is fine as it is now.
 
-Yes, the code is fine as it is now.
+ok, thanks.
 
-Ben.
+-- 
+Chen Gang
+
+Asianux Corporation
