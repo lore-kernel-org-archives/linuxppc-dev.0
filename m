@@ -2,34 +2,36 @@ Return-Path: <nfont@linux.vnet.ibm.com>
 Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id F32192C0363
- for <linuxppc-dev@ozlabs.org>; Sat,  9 Mar 2013 14:56:27 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 724AA2C0363
+ for <linuxppc-dev@ozlabs.org>; Sat,  9 Mar 2013 14:59:35 +1100 (EST)
 Received: from /spool/local
  by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Fri, 8 Mar 2013 22:56:24 -0500
-Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 4DE49C9001A
- for <linuxppc-dev@ozlabs.org>; Fri,  8 Mar 2013 22:56:21 -0500 (EST)
+ Fri, 8 Mar 2013 22:59:32 -0500
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id A0F8038C8029
+ for <linuxppc-dev@ozlabs.org>; Fri,  8 Mar 2013 22:59:28 -0500 (EST)
 Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r293uLba286898
- for <linuxppc-dev@ozlabs.org>; Fri, 8 Mar 2013 22:56:21 -0500
+ by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r293xS7C311314
+ for <linuxppc-dev@ozlabs.org>; Fri, 8 Mar 2013 22:59:28 -0500
 Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
  by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r293uKet026992
- for <linuxppc-dev@ozlabs.org>; Sat, 9 Mar 2013 00:56:20 -0300
+ r293xS9U000433
+ for <linuxppc-dev@ozlabs.org>; Sat, 9 Mar 2013 00:59:28 -0300
 Received: from [9.76.31.13] (sig-9-76-31-13.mts.ibm.com [9.76.31.13])
  by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
- r293uJ2X026961
- for <linuxppc-dev@ozlabs.org>; Sat, 9 Mar 2013 00:56:20 -0300
-Message-ID: <513AB2E3.6090209@linux.vnet.ibm.com>
-Date: Fri, 08 Mar 2013 21:56:19 -0600
+ r293xRkv000406
+ for <linuxppc-dev@ozlabs.org>; Sat, 9 Mar 2013 00:59:27 -0300
+Message-ID: <513AB39E.8000504@linux.vnet.ibm.com>
+Date: Fri, 08 Mar 2013 21:59:26 -0600
 From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 0/11] NUMA CPU Reconfiguration using PRRN
+Subject: [PATCH 1/11] Expose pseries devicetree_update()
+References: <513AB2E3.6090209@linux.vnet.ibm.com>
+In-Reply-To: <513AB2E3.6090209@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -40,43 +42,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Newer firmware on Power systems can transparently reassign platform resources
-(CPU and Memory) in use. For instance, if a processor or memory unit is
-predicted to fail, the platform may transparently move the processing to an
-equivalent unused processor or the memory state to an equivalent unused
-memory unit. However, reassigning resources across NUMA boundaries may alter
-the performance of the partition. When such reassignment is necessary, the
-Platform Resource Reassignment Notification (PRRN) option provides a
-mechanism to inform the Linux kernel of changes to the NUMA affinity of
-its platform resources.
+From: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
 
-PRRN Events are RTAS events sent up through the event-scan mechanism on
-Power. When these events are received the system needs can get the updated
-device tree affinity information for the affected CPUs/memory via the
-rtas update-nodes and update-properties calls. This information is then
-used to update the NUMA affinity of the CPUs/Memory in the kernel.
+When rtasd receives a PRRN event, it needs to make a series of RTAS
+calls (ibm,update-nodes and ibm,update-properties) to retrieve the
+updated device tree information. These calls are already handled in the
+pseries_devtree_update() routine used in partition migration.
 
-This patch set adds the ability to recognize PRRN events, update the device
-tree and kernel information for CPUs (memory will be handled in a later
-patch), and add an interface to enable/disable toplogy updates from /proc.
+This patch simply exposes pseries_devicetree_update() so it can be
+called by rtasd. pseries_devicetree_update() and supporting functions
+are also modified to take a 32-bit 'scope' parameter. This parameter is
+required by the ibm,update-nodes/ibm,update-properties RTAS calls, and
+the appropriate value is contained within the RTAS event for PRRN
+notifications. In pseries_devicetree_update() it was previously
+hard-coded to 1, the scope value for partition migration.
 
-Additionally, these updates solve an exisitng problem with the VPHN (Virtual
-Processor Home Node) capability and allow us to re-enable this feature.
-
-Nathan Fontenot
+Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 ---
+ arch/powerpc/include/asm/rtas.h           |    1 +
+ arch/powerpc/platforms/pseries/mobility.c |   21 ++++++++++++---------
+ 2 files changed, 13 insertions(+), 9 deletions(-)
 
- arch/powerpc/include/asm/prom.h                   |   42 +++--
- arch/powerpc/include/asm/rtas.h                   |    2 
- arch/powerpc/kernel/prom_init.c                   |   89 +---------
- arch/powerpc/kernel/rtasd.c                       |   35 ++++
- arch/powerpc/mm/numa.c                            |  183 ++++++++++++++--------
- powerpc/arch/powerpc/include/asm/prom.h           |   73 ++++++++
- powerpc/arch/powerpc/include/asm/rtas.h           |    1 
- powerpc/arch/powerpc/include/asm/topology.h       |    5 
- powerpc/arch/powerpc/kernel/prom.c                |   19 ++
- powerpc/arch/powerpc/kernel/prom_init.c           |    2 
- powerpc/arch/powerpc/kernel/rtasd.c               |    6 
- powerpc/arch/powerpc/mm/numa.c                    |   62 +++++++
- powerpc/arch/powerpc/platforms/pseries/mobility.c |   21 +-
- 13 files changed, 372 insertions(+), 168 deletions(-)
+Index: powerpc/arch/powerpc/include/asm/rtas.h
+===================================================================
+--- powerpc.orig/arch/powerpc/include/asm/rtas.h	2013-03-08 19:23:06.000000000 -0600
++++ powerpc/arch/powerpc/include/asm/rtas.h	2013-03-08 19:56:13.000000000 -0600
+@@ -276,6 +276,7 @@
+ 		const char *uname, int depth, void *data);
+ 
+ extern void pSeries_log_error(char *buf, unsigned int err_type, int fatal);
++extern int pseries_devicetree_update(s32 scope);
+ 
+ #ifdef CONFIG_PPC_RTAS_DAEMON
+ extern void rtas_cancel_event_scan(void);
+Index: powerpc/arch/powerpc/platforms/pseries/mobility.c
+===================================================================
+--- powerpc.orig/arch/powerpc/platforms/pseries/mobility.c	2013-03-08 19:23:07.000000000 -0600
++++ powerpc/arch/powerpc/platforms/pseries/mobility.c	2013-03-08 19:56:13.000000000 -0600
+@@ -37,14 +37,16 @@
+ #define UPDATE_DT_NODE	0x02000000
+ #define ADD_DT_NODE	0x03000000
+ 
+-static int mobility_rtas_call(int token, char *buf)
++#define MIGRATION_SCOPE	(1)
++
++static int mobility_rtas_call(int token, char *buf, s32 scope)
+ {
+ 	int rc;
+ 
+ 	spin_lock(&rtas_data_buf_lock);
+ 
+ 	memcpy(rtas_data_buf, buf, RTAS_DATA_BUF_SIZE);
+-	rc = rtas_call(token, 2, 1, NULL, rtas_data_buf, 1);
++	rc = rtas_call(token, 2, 1, NULL, rtas_data_buf, scope);
+ 	memcpy(buf, rtas_data_buf, RTAS_DATA_BUF_SIZE);
+ 
+ 	spin_unlock(&rtas_data_buf_lock);
+@@ -123,7 +125,7 @@
+ 	return 0;
+ }
+ 
+-static int update_dt_node(u32 phandle)
++static int update_dt_node(u32 phandle, s32 scope)
+ {
+ 	struct update_props_workarea *upwa;
+ 	struct device_node *dn;
+@@ -151,7 +153,8 @@
+ 	upwa->phandle = phandle;
+ 
+ 	do {
+-		rc = mobility_rtas_call(update_properties_token, rtas_buf);
++		rc = mobility_rtas_call(update_properties_token, rtas_buf,
++					scope);
+ 		if (rc < 0)
+ 			break;
+ 
+@@ -219,7 +222,7 @@
+ 	return rc;
+ }
+ 
+-static int pseries_devicetree_update(void)
++int pseries_devicetree_update(s32 scope)
+ {
+ 	char *rtas_buf;
+ 	u32 *data;
+@@ -235,7 +238,7 @@
+ 		return -ENOMEM;
+ 
+ 	do {
+-		rc = mobility_rtas_call(update_nodes_token, rtas_buf);
++		rc = mobility_rtas_call(update_nodes_token, rtas_buf, scope);
+ 		if (rc && rc != 1)
+ 			break;
+ 
+@@ -256,7 +259,7 @@
+ 					delete_dt_node(phandle);
+ 					break;
+ 				case UPDATE_DT_NODE:
+-					update_dt_node(phandle);
++					update_dt_node(phandle, scope);
+ 					break;
+ 				case ADD_DT_NODE:
+ 					drc_index = *data++;
+@@ -276,7 +279,7 @@
+ 	int rc;
+ 	int activate_fw_token;
+ 
+-	rc = pseries_devicetree_update();
++	rc = pseries_devicetree_update(MIGRATION_SCOPE);
+ 	if (rc) {
+ 		printk(KERN_ERR "Initial post-mobility device tree update "
+ 		       "failed: %d\n", rc);
+@@ -292,7 +295,7 @@
+ 
+ 	rc = rtas_call(activate_fw_token, 0, 1, NULL);
+ 	if (!rc) {
+-		rc = pseries_devicetree_update();
++		rc = pseries_devicetree_update(MIGRATION_SCOPE);
+ 		if (rc)
+ 			printk(KERN_ERR "Secondary post-mobility device tree "
+ 			       "update failed: %d\n", rc);
