@@ -1,39 +1,19 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e31.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E5C152C0387
- for <linuxppc-dev@ozlabs.org>; Sat,  9 Mar 2013 15:10:07 +1100 (EST)
-Received: from /spool/local
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Fri, 8 Mar 2013 21:10:05 -0700
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
- [9.17.195.106])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 0A4703E40044
- for <linuxppc-dev@ozlabs.org>; Fri,  8 Mar 2013 21:09:54 -0700 (MST)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r294A3l1384130
- for <linuxppc-dev@ozlabs.org>; Fri, 8 Mar 2013 21:10:03 -0700
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r294A3F2030777
- for <linuxppc-dev@ozlabs.org>; Fri, 8 Mar 2013 21:10:03 -0700
-Received: from [9.76.31.13] (sig-9-76-31-13.mts.ibm.com [9.76.31.13])
- by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
- r294A03w030632
- for <linuxppc-dev@ozlabs.org>; Fri, 8 Mar 2013 21:10:01 -0700
-Message-ID: <513AB618.2090401@linux.vnet.ibm.com>
-Date: Fri, 08 Mar 2013 22:10:00 -0600
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 11/11] Add /proc interface to control topology updates
-References: <513AB2E3.6090209@linux.vnet.ibm.com>
-In-Reply-To: <513AB2E3.6090209@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 8F4112C034D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Mar 2013 18:29:17 +1100 (EST)
+Message-ID: <1362814152.6977.32.camel@pasglop>
+Subject: Re: [PATCH] powerpc: Fix dynamic relocation
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alexander Graf <agraf@suse.de>
+Date: Sat, 09 Mar 2013 18:29:12 +1100
+In-Reply-To: <1362790950-23065-1-git-send-email-agraf@suse.de>
+References: <1362790950-23065-1-git-send-email-agraf@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,145 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There are instances in which we do not want topology updates to occur.
-In order to allow this a /proc interface (/proc/powerpc/topology_updates)
-is introduced so that topology updates can be enabled and disabled.
+On Sat, 2013-03-09 at 02:02 +0100, Alexander Graf wrote:
+> Commit 5ac47f7a introduced dynamic relocation of code by manually
+> relocating TOC entries. However, we need to access the TOC using
+> the physical address that we have for it, not the virtual address
+> that we can't even access yet.
+> 
+> Drop the offset from the TOC accessing pointer.
+> 
+> This fixes Linux 3.9 booting on OpenBIOS for me.
+> 
+> Signed-off-by: Alexander Graf <agraf@suse.de>
+> 
+> ---
+> 
+> I've also encountered breakage on a G5 Mac, not sure if it's related.
+> I'll have to test whether this is the culprit on that one too.
 
-This patch also adds a prrn_is_enabled() call so that PRRN events are
-handled in the kernel only if topology updating is enabled.
+That might fix the mac too.. Anton's patch assumed OF ran in real mode
+in which case the top bits of the address are ignored, meaning we could
+use kernel virtual addresses but that isn't the case with Apple OF which
+has MMU enabled and maps memory 1:1. I suppose OpenBIOS has the same
+problem ? Or is this a 32-bit issue as well ?
 
-Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/topology.h |    5 ++
- arch/powerpc/kernel/rtasd.c         |    6 ++-
- arch/powerpc/mm/numa.c              |   62 +++++++++++++++++++++++++++++++++++-
- 3 files changed, 70 insertions(+), 3 deletions(-)
-
-Index: powerpc/arch/powerpc/mm/numa.c
-===================================================================
---- powerpc.orig/arch/powerpc/mm/numa.c	2013-03-08 19:58:09.000000000 -0600
-+++ powerpc/arch/powerpc/mm/numa.c	2013-03-08 19:58:37.000000000 -0600
-@@ -23,6 +23,9 @@
- #include <linux/cpuset.h>
- #include <linux/node.h>
- #include <linux/stop_machine.h>
-+#include <linux/proc_fs.h>
-+#include <linux/seq_file.h>
-+#include <linux/uaccess.h>
- #include <asm/sparsemem.h>
- #include <asm/prom.h>
- #include <asm/smp.h>
-@@ -1558,7 +1561,6 @@
- 
- 	return rc;
- }
--__initcall(start_topology_update);
- 
- /*
-  * Disable polling for VPHN associativity changes.
-@@ -1577,4 +1579,62 @@
- 
- 	return rc;
- }
-+
-+inline int prrn_is_enabled(void)
-+{
-+	return prrn_enabled;
-+}
-+
-+static int topology_read(struct seq_file *file, void *v)
-+{
-+	if (vphn_enabled || prrn_enabled)
-+		seq_puts(file, "on\n");
-+	else
-+		seq_puts(file, "off\n");
-+
-+	return 0;
-+}
-+
-+static int topology_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, topology_read, NULL);
-+}
-+
-+static ssize_t topology_write(struct file *file, const char __user *buf,
-+			      size_t count, loff_t *off)
-+{
-+	char kbuf[4]; /* "on" or "off" plus null. */
-+	int read_len;
-+
-+	read_len = count < 3 ? count : 3;
-+	if (copy_from_user(kbuf, buf, read_len))
-+		return -EINVAL;
-+
-+	kbuf[read_len] = '\0';
-+
-+	if (!strncmp(kbuf, "on", 2))
-+		start_topology_update();
-+	else if (!strncmp(kbuf, "off", 3))
-+		stop_topology_update();
-+	else
-+		return -EINVAL;
-+
-+	return count;
-+}
-+
-+static const struct file_operations topology_ops = {
-+	.read = seq_read,
-+	.write = topology_write,
-+	.open = topology_open,
-+	.release = single_release
-+};
-+
-+static int topology_update_init(void)
-+{
-+	start_topology_update();
-+	proc_create("powerpc/topology_updates", 644, NULL, &topology_ops);
-+
-+	return 0;
-+}
-+device_initcall(topology_update_init);
- #endif /* CONFIG_PPC_SPLPAR */
-Index: powerpc/arch/powerpc/include/asm/topology.h
-===================================================================
---- powerpc.orig/arch/powerpc/include/asm/topology.h	2013-03-08 19:23:06.000000000 -0600
-+++ powerpc/arch/powerpc/include/asm/topology.h	2013-03-08 19:58:37.000000000 -0600
-@@ -71,6 +71,7 @@
- #if defined(CONFIG_NUMA) && defined(CONFIG_PPC_SPLPAR)
- extern int start_topology_update(void);
- extern int stop_topology_update(void);
-+extern inline int prrn_is_enabled(void);
- #else
- static inline int start_topology_update(void)
- {
-@@ -80,6 +81,10 @@
- {
- 	return 0;
- }
-+static inline int prrn_is_enabled(void)
-+{
-+	return 0;
-+}
- #endif /* CONFIG_NUMA && CONFIG_PPC_SPLPAR */
- 
- #include <asm-generic/topology.h>
-Index: powerpc/arch/powerpc/kernel/rtasd.c
-===================================================================
---- powerpc.orig/arch/powerpc/kernel/rtasd.c	2013-03-08 19:56:48.000000000 -0600
-+++ powerpc/arch/powerpc/kernel/rtasd.c	2013-03-08 19:58:37.000000000 -0600
-@@ -292,11 +292,13 @@
- {
- 	pSeries_log_error((char *)log, ERR_TYPE_RTAS_LOG, 0);
- 
--	if (log->type == RTAS_TYPE_PRRN)
-+	if (log->type == RTAS_TYPE_PRRN) {
- 		/* For PRRN Events the extended log length is used to denote
- 		 * the scope for calling rtas update-nodes.
- 		 */
--		prrn_schedule_update(log->extended_log_length);
-+		if (prrn_is_enabled())
-+			prrn_schedule_update(log->extended_log_length);
-+	}
- 
- 	return;
- }
+> Ben, please make sure that this gets into 3.9.
+> ---
+>  arch/powerpc/kernel/prom_init.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+> index 7f7fb7f..2bf7cc3 100644
+> --- a/arch/powerpc/kernel/prom_init.c
+> +++ b/arch/powerpc/kernel/prom_init.c
+> @@ -2851,7 +2851,7 @@ static void reloc_toc(void)
+>  		(__prom_init_toc_end - __prom_init_toc_start) / sizeof(long);
+>  
+>  	/* Need to add offset to get at __prom_init_toc_start */
+> -	__reloc_toc(__prom_init_toc_start + offset, offset, nr_entries);
+> +	__reloc_toc(__prom_init_toc_start, offset, nr_entries);
+>  
+>  	mb();
+>  }
