@@ -1,13 +1,20 @@
-Return-Path: <ady8radu@gmail.com>
-From: Adrian-Leonard Radu <ady8radu@gmail.com>
+Return-Path: <valentina.manea.m@gmail.com>
+Received: from mail-wi0-x229.google.com (mail-wi0-x229.google.com
+ [IPv6:2a00:1450:400c:c05::229])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0C7B62C030A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Mar 2013 00:22:57 +1100 (EST)
+Received: by mail-wi0-f169.google.com with SMTP id l13so503653wie.4
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Mar 2013 06:22:53 -0700 (PDT)
+From: Valentina Manea <valentina.manea.m@gmail.com>
 To: benh@kernel.crashing.org
-Subject: [PATCH] powerpc: Use PTR_RET instead of IS_ERR/PTR_ERR
-Date: Sun, 10 Mar 2013 15:07:00 +0200
-Message-Id: <1362920820-11073-1-git-send-email-ady8radu@gmail.com>
-Cc: cbe-oss-dev@lists.ozlabs.org, geoff@infradead.org, fweisbec@gmail.com,
- akinobu.mita@gmail.com, rostedt@goodmis.org, linux-kernel@vger.kernel.org,
- paulus@samba.org, anton@samba.org, john.stultz@linaro.org, ady8radu@gmail.com,
- linuxppc-dev@lists.ozlabs.org, cascardo@linux.vnet.ibm.com
+Subject: [PATCH] powerpc: place EXPORT_SYMBOL macro right after declaration
+Date: Sun, 10 Mar 2013 15:22:39 +0200
+Message-Id: <1362921759-23498-1-git-send-email-valentina.manea.m@gmail.com>
+Cc: Valentina Manea <valentina.manea.m@gmail.com>, agraf@suse.de,
+ linux-kernel@vger.kernel.org, suzuki@in.ibm.com, paulus@samba.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,74 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Adrian-Leonard Radu <ady8radu@gmail.com>
----
- arch/powerpc/kernel/iommu.c          |    2 +-
- arch/powerpc/kernel/time.c           |    4 +---
- arch/powerpc/platforms/ps3/time.c    |    4 +---
- arch/powerpc/sysdev/rtc_cmos_setup.c |    5 +----
- 4 files changed, 4 insertions(+), 11 deletions(-)
+This fixes the following checkpatch.pl warnings:
 
-diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index 31c4fdc..c0d0dbd 100644
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -102,7 +102,7 @@ static int __init fail_iommu_debugfs(void)
- 	struct dentry *dir = fault_create_debugfs_attr("fail_iommu",
- 						       NULL, &fail_iommu);
+WARNING: EXPORT_SYMBOL(foo); should immediately follow its function/variable
++EXPORT_SYMBOL(kmap_prot);
+
+WARNING: EXPORT_SYMBOL(foo); should immediately follow its function/variable
++EXPORT_SYMBOL(kmap_pte);
+
+Signed-off-by: Valentina Manea <valentina.manea.m@gmail.com>
+---
+ arch/powerpc/mm/mem.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index f1f7409..056732e 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -66,10 +66,9 @@ unsigned long long memory_limit;
  
--	return IS_ERR(dir) ? PTR_ERR(dir) : 0;
-+	return PTR_RET(dir);
- }
- late_initcall(fail_iommu_debugfs);
- 
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index f77fa22..5fc29ad 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -1049,10 +1049,8 @@ static int __init rtc_init(void)
- 		return -ENODEV;
- 
- 	pdev = platform_device_register_simple("rtc-generic", -1, NULL, 0);
--	if (IS_ERR(pdev))
--		return PTR_ERR(pdev);
- 
--	return 0;
-+	return PTR_RET(pdev);
- }
- 
- module_init(rtc_init);
-diff --git a/arch/powerpc/platforms/ps3/time.c b/arch/powerpc/platforms/ps3/time.c
-index 40b5cb4..cba1e6b 100644
---- a/arch/powerpc/platforms/ps3/time.c
-+++ b/arch/powerpc/platforms/ps3/time.c
-@@ -89,10 +89,8 @@ static int __init ps3_rtc_init(void)
- 		return -ENODEV;
- 
- 	pdev = platform_device_register_simple("rtc-ps3", -1, NULL, 0);
--	if (IS_ERR(pdev))
--		return PTR_ERR(pdev);
- 
--	return 0;
-+	return PTR_RET(pdev);
- }
- 
- module_init(ps3_rtc_init);
-diff --git a/arch/powerpc/sysdev/rtc_cmos_setup.c b/arch/powerpc/sysdev/rtc_cmos_setup.c
-index 9afba92..af79e1e 100644
---- a/arch/powerpc/sysdev/rtc_cmos_setup.c
-+++ b/arch/powerpc/sysdev/rtc_cmos_setup.c
-@@ -62,10 +62,7 @@ static int  __init add_rtc(void)
- 	pd = platform_device_register_simple("rtc_cmos", -1,
- 					     &res[0], num_res);
- 
--	if (IS_ERR(pd))
--		return PTR_ERR(pd);
+ #ifdef CONFIG_HIGHMEM
+ pte_t *kmap_pte;
++EXPORT_SYMBOL(kmap_pte);
+ pgprot_t kmap_prot;
 -
--	return 0;
-+	return PTR_RET(pd);
- }
- fs_initcall(add_rtc);
+ EXPORT_SYMBOL(kmap_prot);
+-EXPORT_SYMBOL(kmap_pte);
  
+ static inline pte_t *virt_to_kpte(unsigned long vaddr)
+ {
 -- 
-1.7.10.4
+1.7.9.5
