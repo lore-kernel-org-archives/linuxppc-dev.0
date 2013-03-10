@@ -1,30 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 71F652C0315
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Mar 2013 23:52:52 +1100 (EST)
-Message-ID: <1362919948.4534.1.camel@pasglop>
-Subject: Re: Linux kernel 3.x problems on PowerMac G5
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Phileas Fogg <phileas-fogg@mail.ru>
-Date: Sun, 10 Mar 2013 23:52:28 +1100
-In-Reply-To: <513C6641.2010308@mail.ru>
-References: <51320F53.9040000@mail.ru>
- <20130302141352.GG22941@blackmetal.musicnaut.iki.fi>
- <5132198C.8050300__15885.293405927$1362234296$gmane$org@mail.ru>
- <m2txotzs8y.fsf@igel.home> <1362288663.2969.15.camel@pasglop>
- <CAHj3AVni2t1-Hrn-jAKjsqo=0oFkVjkQ0KApNQk52buNTruDqQ@mail.gmail.com>
- <1362303524.2969.16.camel@pasglop> <51333F1C.4080605@mail.ru>
- <1362337429.2969.17.camel@pasglop> <5133A180.2040908@mail.ru>
- <1362338657.2969.20.camel@pasglop> <5138F3AB.5040401@mail.ru>
- <1362687724.6977.1.camel@pasglop> <513BD33B.7020305@mail.ru>
- <1362876308.6977.42.camel@pasglop> <513C6641.2010308@mail.ru>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Andreas Schwab <schwab@linux-m68k.org>, Denis Kirjanov <kirjanov@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Aaro Koskinen <aaro.koskinen@iki.fi>
+Return-Path: <penberg@gmail.com>
+Received: from mail-we0-x231.google.com (mail-we0-x231.google.com
+ [IPv6:2a00:1450:400c:c03::231])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8A1542C0315
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Mar 2013 01:11:01 +1100 (EST)
+Received: by mail-we0-f177.google.com with SMTP id d7so2611294wer.8
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Mar 2013 07:10:57 -0700 (PDT)
+MIME-Version: 1.0
+Sender: penberg@gmail.com
+In-Reply-To: <1362920779-25925-1-git-send-email-alex.grad@gmail.com>
+References: <1362920779-25925-1-git-send-email-alex.grad@gmail.com>
+Date: Sun, 10 Mar 2013 16:10:56 +0200
+Message-ID: <CAOJsxLGD1fXsGMCQbP8aAMDsRiwPD2hHcfWfupO4jy5=JCM=NA@mail.gmail.com>
+Subject: Re: [PATCH] kgdb: Removed kmalloc returned value cast
+From: Pekka Enberg <penberg@kernel.org>
+To: Alex Grad <alex.grad@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: mikey@neuling.org, fr@canb.auug.org.au, linux-kernel@vger.kernel.org,
+ tiejun.chen@windriver.com, paulus@samba.org, jason.wessel@windriver.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,19 +29,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2013-03-10 at 11:53 +0100, Phileas Fogg wrote:
-> Good news :) I found the bug.
-> MMU features were not set properly for PPC970MP DD1.0 which,
-> unfortunately, my machine has.
-> Damn, one line fix but one week searching.
-> Linux 3.8.2 boots without problems now :)
+On Sun, Mar 10, 2013 at 3:06 PM, Alex Grad <alex.grad@gmail.com> wrote:
+> Signed-off-by: Alex Grad <alex.grad@gmail.com>
+> ---
+>  arch/powerpc/kernel/kgdb.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
+> index 5ca82cd..c1eef24 100644
+> --- a/arch/powerpc/kernel/kgdb.c
+> +++ b/arch/powerpc/kernel/kgdb.c
+> @@ -159,7 +159,7 @@ static int kgdb_singlestep(struct pt_regs *regs)
+>         if (user_mode(regs))
+>                 return 0;
+>
+> -       backup_current_thread_info = (struct thread_info *)kmalloc(sizeof(struct thread_info), GFP_KERNEL);
+> +       backup_current_thread_info = kmalloc(sizeof(struct thread_info), GFP_KERNEL);
 
-Nice one ! I didn't think anybody shipped a DD1.0 chip ! :-)
+Looks good to me.
 
-Looks like some typo/thinko in the cputable and you are one of the very
-rare victims of it. I'll fix that up. Regarding the IDE problem, can you
-shoot a note to Tejun who wrote that patch (and CC me) ? I do recommend
-switching to libata but we should still fix the problem with legacy IDE.
+There's two additional problems in the kgdb_singlestep() function: it
+doesn't check if the kmalloc() call fails nor does it kfree() the
+allocated memory.
 
-Cheers,
-Ben.
+                        Pekka
