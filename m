@@ -1,22 +1,24 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C528E2C02EC
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Mar 2013 12:34:07 +1100 (EST)
-Message-ID: <513D346E.20009@windriver.com>
-Date: Mon, 11 Mar 2013 09:33:34 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
+Return-Path: <daniel.baluta@gmail.com>
+Received: from mail-we0-x22a.google.com (mail-we0-x22a.google.com
+ [IPv6:2a00:1450:400c:c03::22a])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 939B92C02F9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Mar 2013 06:05:32 +1100 (EST)
+Received: by mail-we0-f170.google.com with SMTP id z53so2929231wey.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Mar 2013 12:05:25 -0700 (PDT)
 MIME-Version: 1.0
-To: Alex Grad <alex.grad@gmail.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Jason Wessel <jason.wessel@windriver.com>
-Subject: Re: [PATCH]->[PATCH v2] kgdb: Removed kmalloc returned value cast
-References: <1362955188-3023-1-git-send-email-alex.grad@gmail.com>
-In-Reply-To: <1362955188-3023-1-git-send-email-alex.grad@gmail.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: sfr@canb.auug.org.au, mikey@neuling.org, daniel.baluta@gmail.com,
- linux-kernel@vger.kernel.org, penberg@kernel.org, paulus@samba.org,
+In-Reply-To: <CAOJsxLGD1fXsGMCQbP8aAMDsRiwPD2hHcfWfupO4jy5=JCM=NA@mail.gmail.com>
+References: <1362920779-25925-1-git-send-email-alex.grad@gmail.com>
+ <CAOJsxLGD1fXsGMCQbP8aAMDsRiwPD2hHcfWfupO4jy5=JCM=NA@mail.gmail.com>
+Date: Sun, 10 Mar 2013 21:05:25 +0200
+Message-ID: <CAEnQRZB3MGgmDwY8+bHc60f6vts5TgyhBycvhSwn9s6O4px5ow@mail.gmail.com>
+Subject: Re: [PATCH] kgdb: Removed kmalloc returned value cast
+From: Daniel Baluta <daniel.baluta@gmail.com>
+To: Pekka Enberg <penberg@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: mikey@neuling.org, fr@canb.auug.org.au, linux-kernel@vger.kernel.org,
+ tiejun.chen@windriver.com, paulus@samba.org, Alex Grad <alex.grad@gmail.com>,
  jason.wessel@windriver.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,29 +29,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/11/2013 06:39 AM, Alex Grad wrote:
-> While at it, check kmalloc return value.
+On Sun, Mar 10, 2013 at 4:10 PM, Pekka Enberg <penberg@kernel.org> wrote:
+> On Sun, Mar 10, 2013 at 3:06 PM, Alex Grad <alex.grad@gmail.com> wrote:
+>> Signed-off-by: Alex Grad <alex.grad@gmail.com>
+>> ---
+>>  arch/powerpc/kernel/kgdb.c |    2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
+>> index 5ca82cd..c1eef24 100644
+>> --- a/arch/powerpc/kernel/kgdb.c
+>> +++ b/arch/powerpc/kernel/kgdb.c
+>> @@ -159,7 +159,7 @@ static int kgdb_singlestep(struct pt_regs *regs)
+>>         if (user_mode(regs))
+>>                 return 0;
+>>
+>> -       backup_current_thread_info = (struct thread_info *)kmalloc(sizeof(struct thread_info), GFP_KERNEL);
+>> +       backup_current_thread_info = kmalloc(sizeof(struct thread_info), GFP_KERNEL);
 >
-> Signed-off-by: Alex Grad <alex.grad@gmail.com>
-> ---
->   arch/powerpc/kernel/kgdb.c |    5 ++++-
->   1 file changed, 4 insertions(+), 1 deletion(-)
+> Looks good to me.
 >
-> diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
-> index 5ca82cd..9e81dd8 100644
-> --- a/arch/powerpc/kernel/kgdb.c
-> +++ b/arch/powerpc/kernel/kgdb.c
-> @@ -159,7 +159,10 @@ static int kgdb_singlestep(struct pt_regs *regs)
->   	if (user_mode(regs))
->   		return 0;
->
-> -	backup_current_thread_info = (struct thread_info *)kmalloc(sizeof(struct thread_info), GFP_KERNEL);
-> +	backup_current_thread_info = kmalloc(sizeof(struct thread_info), GFP_KERNEL);
-> +	if (!backup_current_thread_info)
-> +		return -ENOMEM;
+> There's two additional problems in the kgdb_singlestep() function: it
+> doesn't check if the kmalloc() call fails nor does it kfree() the
+> allocated memory.
 
-I already send a kgdb patchset in "[v3][PATCH 6/6] powerpc/kgdb: remove copying 
-the thread_info" to remove these stuff since its unnecessary to copy current 
-thread_info now.
+Hi Pekka,
 
-Tiejun
+Indeed there is no check if kmalloc() fails. This should be fixed.
+
+Anyhow, commit fefd9e6f powerpc: kernel/kgdb.c: Fix memory leakage
+fixed the problem with kfree.
+
+thanks,
+Daniel.
