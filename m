@@ -1,19 +1,31 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <phileas-fogg@mail.ru>
+Received: from smtp39.i.mail.ru (smtp39.i.mail.ru [94.100.177.99])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 214D12C02A3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2013 04:17:52 +1100 (EST)
-Subject: Re: [PATCH] Make PCIe hotplug work with Freescale PCIe controllers
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <3989200.gO920IVs04@pcimr>
-Date: Mon, 11 Mar 2013 12:17:42 -0500
-Message-Id: <179EA411-594D-4774-903A-6C0445A01747@kernel.crashing.org>
-References: <3989200.gO920IVs04@pcimr>
-To: Rojhalat Ibrahim <imr@rtschenk.de>
-Cc: linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 498AB2C02C8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2013 06:32:28 +1100 (EST)
+Message-ID: <513E3111.9010501@mail.ru>
+Date: Mon, 11 Mar 2013 20:31:29 +0100
+From: Phileas Fogg <phileas-fogg@mail.ru>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Linux kernel 3.x problems on PowerMac G5
+References: <51320F53.9040000@mail.ru>
+ <20130302141352.GG22941@blackmetal.musicnaut.iki.fi>
+ <5132198C.8050300__15885.293405927$1362234296$gmane$org@mail.ru>
+ <m2txotzs8y.fsf@igel.home> <1362288663.2969.15.camel@pasglop>
+ <CAHj3AVni2t1-Hrn-jAKjsqo=0oFkVjkQ0KApNQk52buNTruDqQ@mail.gmail.com>
+ <1362303524.2969.16.camel@pasglop> <51333F1C.4080605@mail.ru>
+ <1362337429.2969.17.camel@pasglop> <5133A180.2040908@mail.ru>
+ <1362338657.2969.20.camel@pasglop> <5138F3AB.5040401@mail.ru>
+ <1362687724.6977.1.camel@pasglop> <513BD33B.7020305@mail.ru>
+ <1362876308.6977.42.camel@pasglop> <513C6641.2010308@mail.ru>
+ <1362919948.4534.1.camel@pasglop>
+In-Reply-To: <1362919948.4534.1.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Denis Kirjanov <kirjanov@gmail.com>, Andreas Schwab <schwab@linux-m68k.org>,
+ Aaro Koskinen <aaro.koskinen@iki.fi>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,121 +35,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 03/10/2013 01:52 PM, Benjamin Herrenschmidt wrote:
+> On Sun, 2013-03-10 at 11:53 +0100, Phileas Fogg wrote:
+>> Good news :) I found the bug.
+>> MMU features were not set properly for PPC970MP DD1.0 which,
+>> unfortunately, my machine has.
+>> Damn, one line fix but one week searching.
+>> Linux 3.8.2 boots without problems now :)
+>
+> Nice one ! I didn't think anybody shipped a DD1.0 chip ! :-)
+>
+> Looks like some typo/thinko in the cputable and you are one of the very
+> rare victims of it. I'll fix that up. Regarding the IDE problem, can you
+> shoot a note to Tejun who wrote that patch (and CC me) ? I do recommend
+> switching to libata but we should still fix the problem with legacy IDE.
+>
+> Cheers,
+> Ben.
+>
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
 
-On Mar 11, 2013, at 9:47 AM, Rojhalat Ibrahim wrote:
+The IDE-CD bug appears to be already fixed. I tested g5_defconfig with 
+Linux 3.8.2 and it boots OK. I think i saw a commit regarding this issue 
+in git.
 
-> Hi,
->=20
-> this issue was brought up before.=20
-> See this thread: =
-https://lists.ozlabs.org/pipermail/linuxppc-dev/2012-July/099529.html
->=20
-> The following patch works for me.
-> Hot-added devices appear after "echo 1 > /sys/bus/pci/rescan".
-> I tested it with a P5020DS development system.
->=20
-> Signed-off-by: Rojhalat Ibrahim <imr@rtschenk.de>
-> ---
-> arch/powerpc/sysdev/indirect_pci.c |   53 =
-++++++++++++++++++++++++++++++-------
-> 1 file changed, 44 insertions(+), 9 deletions(-)
-
-Rather than do it this way, we should do something like:
-
-fsl_indirect_read_config() {
-	link check
-	if (link)
-		indirect_read_config()
-}
-
-and just add fsl_indirect_{r,w}_config into fsl_pci.c
-
-- k
-
->=20
-> diff --git a/arch/powerpc/sysdev/indirect_pci.c =
-b/arch/powerpc/sysdev/indirect_pci.c
-> index 82fdad8..aa36009 100644
-> --- a/arch/powerpc/sysdev/indirect_pci.c
-> +++ b/arch/powerpc/sysdev/indirect_pci.c
-> @@ -20,22 +20,19 @@
-> #include <asm/pci-bridge.h>
-> #include <asm/machdep.h>
->=20
-> +#ifdef CONFIG_FSL_PCI
-> +#include <sysdev/fsl_pci.h>
-> +#endif
-> +
-> static int
-> -indirect_read_config(struct pci_bus *bus, unsigned int devfn, int =
-offset,
-> -		     int len, u32 *val)
-> +read_config_no_link_check(struct pci_bus *bus, unsigned int devfn, =
-int offset,
-> +			  int len, u32 *val)
-> {
-> 	struct pci_controller *hose =3D pci_bus_to_host(bus);
-> 	volatile void __iomem *cfg_data;
-> 	u8 cfg_type =3D 0;
-> 	u32 bus_no, reg;
->=20
-> -	if (hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK) {
-> -		if (bus->number !=3D hose->first_busno)
-> -			return PCIBIOS_DEVICE_NOT_FOUND;
-> -		if (devfn !=3D 0)
-> -			return PCIBIOS_DEVICE_NOT_FOUND;
-> -	}
-> -
-> 	if (ppc_md.pci_exclude_device)
-> 		if (ppc_md.pci_exclude_device(hose, bus->number, devfn))
-> 			return PCIBIOS_DEVICE_NOT_FOUND;
-> @@ -78,6 +75,44 @@ indirect_read_config(struct pci_bus *bus, unsigned =
-int devfn, int offset,
-> 	return PCIBIOS_SUCCESSFUL;
-> }
->=20
-> +#ifdef CONFIG_FSL_PCI
-> +static int fsl_pcie_check_link(struct pci_bus *bus)
-> +{
-> +	struct pci_controller *hose =3D pci_bus_to_host(bus);
-> +	u32 val =3D 0;
-> +
-> +	read_config_no_link_check(bus, 0, PCIE_LTSSM, 4, &val);
-> +	if (val < PCIE_LTSSM_L0) {
-> +		hose->indirect_type |=3D PPC_INDIRECT_TYPE_NO_PCIE_LINK;
-> +		return 1;
-> +	} else {
-> +		hose->indirect_type &=3D =
-~PPC_INDIRECT_TYPE_NO_PCIE_LINK;
-> +		return 0;
-> +	}
-> +}
-> +#endif
-> +
-> +static int
-> +indirect_read_config(struct pci_bus *bus, unsigned int devfn, int =
-offset,
-> +		     int len, u32 *val)
-> +{
-> +	struct pci_controller *hose =3D pci_bus_to_host(bus);
-> +
-> +#ifdef CONFIG_FSL_PCI
-> +	if ((bus->number =3D=3D hose->first_busno) && (devfn =3D=3D 0)) =
-{
-> +		fsl_pcie_check_link(bus);
-> +	}
-> +#endif
-> +	if (hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK) {
-> +		if (bus->number !=3D hose->first_busno)
-> +			return PCIBIOS_DEVICE_NOT_FOUND;
-> +		if (devfn !=3D 0)
-> +			return PCIBIOS_DEVICE_NOT_FOUND;
-> +	}
-> +
-> +	return read_config_no_link_check(bus, devfn, offset, len, val);
-> +}
-> +
-> static int
-> indirect_write_config(struct pci_bus *bus, unsigned int devfn, int =
-offset,
-> 		      int len, u32 val)
+Regards
