@@ -1,25 +1,21 @@
-Return-Path: <B37400@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 089AB2C029D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Mar 2013 20:27:47 +1100 (EST)
-From: Singh Sandeep-B37400 <B37400@freescale.com>
-To: Timur Tabi <timur@tabi.org>
-Subject: RE: [PATCH 3/4] TDM Device Tree entries for various Freescale
- Platforms
-Date: Mon, 11 Mar 2013 09:27:39 +0000
-Message-ID: <3F1D9DCAAB49B94D88DBE05911FA4E6E06FA5353@039-SN1MPN1-001.039d.mgd.msft.net>
-References: <1362655668-26721-1-git-send-email-Sandeep@freescale.com>
- <1362655668-26721-3-git-send-email-Sandeep@freescale.com>
- <CAOZdJXW7=3G8STRzaF04dmFZKFjp3=_2uy9F2pTZ-pe7L8nd7A@mail.gmail.com>
-In-Reply-To: <CAOZdJXW7=3G8STRzaF04dmFZKFjp3=_2uy9F2pTZ-pe7L8nd7A@mail.gmail.com>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 886042C00DC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Mar 2013 21:09:26 +1100 (EST)
+From: Tiejun Chen <tiejun.chen@windriver.com>
+To: <alex.grad@gmail.com>, <penberg@kernel.org>, <jason.wessel@windriver.com>,
+ <benh@kernel.crashing.org>
+Subject: [PATCH 1/1] powerpc/kgdb: use DEFINE_PER_CPU to allocate kgdb's
+ thread_info
+Date: Mon, 11 Mar 2013 18:08:06 +0800
+Message-ID: <1362996486-13983-1-git-send-email-tiejun.chen@windriver.com>
 MIME-Version: 1.0
-Cc: Aggrwal Poonam-B10812 <B10812@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: sfr@canb.auug.org.au, daniel.baluta@gmail.com, mikey@neuling.org,
+ linux-kernel@vger.kernel.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,28 +25,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Use DEFINE_PER_CPU to allocate thread_info statically instead of kmalloc().
+This can avoid introducing more memory check codes.
 
-> -----Original Message-----
-> From: Timur Tabi [mailto:timur@tabi.org]
-> Sent: Friday, March 08, 2013 10:17 PM
-> To: Singh Sandeep-B37400
-> Cc: linuxppc-dev@lists.ozlabs.org; Aggrwal Poonam-B10812
-> Subject: Re: [PATCH 3/4] TDM Device Tree entries for various Freescale
-> Platforms
->=20
-> On Thu, Mar 7, 2013 at 5:27 AM, Sandeep Singh <Sandeep@freescale.com>
-> wrote:
-> > arch/powerpc/boot/dts/p1022ds_36b.dts       |    3 +++
->=20
-> You forgot to update p1022ds_3b.dts.
-p1022ds_32b.dts includes "fsl/p1022si-post.dtsi" which is getting updated.
->=20
-> > - * Copyright 2011 Freescale Semiconductor Inc.
-> > + * Copyright 2011-2012 Freescale Semiconductor Inc.
->=20
-> Do not update the copyright year in patches.
-Ok, will correct this.
->=20
-> --
-> Timur Tabi
-> Linux kernel developer at Freescale
+Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+---
+ arch/powerpc/kernel/kgdb.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
+index 1a57307..cde7818 100644
+--- a/arch/powerpc/kernel/kgdb.c
++++ b/arch/powerpc/kernel/kgdb.c
+@@ -151,15 +151,15 @@ static int kgdb_handle_breakpoint(struct pt_regs *regs)
+ 	return 1;
+ }
+ 
++static DEFINE_PER_CPU(struct thread_info, kgdb_thread_info);
+ static int kgdb_singlestep(struct pt_regs *regs)
+ {
+ 	struct thread_info *thread_info, *exception_thread_info;
+-	struct thread_info *backup_current_thread_info;
++	struct thread_info *backup_current_thread_info = &__get_cpu_var(kgdb_thread_info);
+ 
+ 	if (user_mode(regs))
+ 		return 0;
+ 
+-	backup_current_thread_info = (struct thread_info *)kmalloc(sizeof(struct thread_info), GFP_KERNEL);
+ 	/*
+ 	 * On Book E and perhaps other processors, singlestep is handled on
+ 	 * the critical exception stack.  This causes current_thread_info()
+@@ -185,7 +185,6 @@ static int kgdb_singlestep(struct pt_regs *regs)
+ 		/* Restore current_thread_info lastly. */
+ 		memcpy(exception_thread_info, backup_current_thread_info, sizeof *thread_info);
+ 
+-	kfree(backup_current_thread_info);
+ 	return 1;
+ }
+ 
+-- 
+1.7.9.5
