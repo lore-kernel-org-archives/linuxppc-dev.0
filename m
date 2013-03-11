@@ -1,21 +1,14 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 107532C030B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Mar 2013 22:03:06 +1100 (EST)
-From: Tiejun Chen <tiejun.chen@windriver.com>
-To: <benh@kernel.crashing.org>, <galak@kernel.crashing.org>
-Subject: [v4][PATCH 7/7] book3e/kgdb: Fix a single stgep case of lazy IRQ
-Date: Mon, 11 Mar 2013 19:02:46 +0800
-Message-ID: <1362999766-20897-8-git-send-email-tiejun.chen@windriver.com>
-In-Reply-To: <1362999766-20897-1-git-send-email-tiejun.chen@windriver.com>
-References: <1362999766-20897-1-git-send-email-tiejun.chen@windriver.com>
+Return-Path: <weiyj.lk@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- jason.wessel@windriver.com
+Date: Mon, 11 Mar 2013 22:24:18 +0800
+Message-ID: <CAPgLHd_CZXucALyD4JrDsA9ffYFrcufTyw-Nh0o2sAjg10YsvA@mail.gmail.com>
+Subject: [PATCH -next] powerpc: use for_each_compatible_node() macro
+From: Wei Yongjun <weiyj.lk@gmail.com>
+To: benh@kernel.crashing.org, paulus@samba.org, grant.likely@secretlab.ca,
+ rob.herring@calxeda.com
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: yongjun_wei@trendmicro.com.cn, linuxppc-dev@lists.ozlabs.org,
+ devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,66 +18,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When we're in kgdb_singlestep(), we have to work around to get
-thread_info by copying from the kernel stack before calling
-kgdb_handle_exception(), then copying it back afterwards.
+From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 
-But for PPC64, we have a lazy interrupt implementation. So after
-copying thread info frome kernle stack, if we need to replay an
-interrupt, we shouldn't restore that previous backup thread info
-to make sure we can replay an interrupt lately with a proper
-thread info.
+Use for_each_compatible_node() macro instead of open coding it.
 
-This patch use __check_irq_replay() to guarantee this process.
-
-Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 ---
- arch/powerpc/kernel/irq.c  |   10 ++++++++++
- arch/powerpc/kernel/kgdb.c |    3 ++-
- 2 files changed, 12 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/parport.h | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 4f97fe3..bb8d27a 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -339,7 +339,17 @@ bool prep_irq_for_idle(void)
- 	return true;
- }
+diff --git a/arch/powerpc/include/asm/parport.h b/arch/powerpc/include/asm/parport.h
+index 6dc2577..a452968 100644
+--- a/arch/powerpc/include/asm/parport.h
++++ b/arch/powerpc/include/asm/parport.h
+@@ -21,9 +21,7 @@ static int parport_pc_find_nonpci_ports (int autoirq, int autodma)
+ 	int count = 0;
+ 	int virq;
  
-+notrace unsigned int check_irq_replay(void)
-+{
-+	return __check_irq_replay();
-+}
-+#else
-+notrace unsigned int check_irq_replay(void)
-+{
-+	return 0;
-+}
- #endif /* CONFIG_PPC64 */
-+EXPORT_SYMBOL(check_irq_replay);
- 
- int arch_show_interrupts(struct seq_file *p, int prec)
- {
-diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
-index cde7818..5b30408 100644
---- a/arch/powerpc/kernel/kgdb.c
-+++ b/arch/powerpc/kernel/kgdb.c
-@@ -152,6 +152,7 @@ static int kgdb_handle_breakpoint(struct pt_regs *regs)
- }
- 
- static DEFINE_PER_CPU(struct thread_info, kgdb_thread_info);
-+extern notrace unsigned int check_irq_replay(void);
- static int kgdb_singlestep(struct pt_regs *regs)
- {
- 	struct thread_info *thread_info, *exception_thread_info;
-@@ -181,7 +182,7 @@ static int kgdb_singlestep(struct pt_regs *regs)
- 
- 	kgdb_handle_exception(0, SIGTRAP, 0, regs);
- 
--	if (thread_info != exception_thread_info)
-+	if ((thread_info != exception_thread_info) && (!check_irq_replay()))
- 		/* Restore current_thread_info lastly. */
- 		memcpy(exception_thread_info, backup_current_thread_info, sizeof *thread_info);
- 
--- 
-1.7.9.5
+-	for (np = NULL; (np = of_find_compatible_node(np,
+-						      "parallel",
+-						      "pnpPNP,400")) != NULL;) {
++	for_each_compatible_node(np, "parallel", "pnpPNP,400") {
+ 		prop = of_get_property(np, "reg", &propsize);
+ 		if (!prop || propsize > 6*sizeof(u32))
+ 			continue;
