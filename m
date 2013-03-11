@@ -3,22 +3,17 @@ Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mail1.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 20CAE2C02AD
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Mar 2013 21:14:46 +1100 (EST)
-Message-ID: <513DAE85.9010603@windriver.com>
-Date: Mon, 11 Mar 2013 18:14:29 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
+ by ozlabs.org (Postfix) with ESMTPS id 284CC2C02B6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Mar 2013 22:02:51 +1100 (EST)
+From: Tiejun Chen <tiejun.chen@windriver.com>
+To: <benh@kernel.crashing.org>, <galak@kernel.crashing.org>
+Subject: [v4][PATCH 0/7] powerpc/book3e: powerpc/book3e: make kgdb to work well
+Date: Mon, 11 Mar 2013 19:02:39 +0800
+Message-ID: <1362999766-20897-1-git-send-email-tiejun.chen@windriver.com>
 MIME-Version: 1.0
-To: Alex Grad <alex.grad@gmail.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Jason Wessel <jason.wessel@windriver.com>
-Subject: Re: [PATCH]->[PATCH v2] kgdb: Removed kmalloc returned value cast
-References: <1362955188-3023-1-git-send-email-alex.grad@gmail.com>
- <513D346E.20009@windriver.com>
-In-Reply-To: <513D346E.20009@windriver.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: sfr@canb.auug.org.au, mikey@neuling.org, daniel.baluta@gmail.com,
- linux-kernel@vger.kernel.org, penberg@kernel.org, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ jason.wessel@windriver.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,44 +23,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/11/2013 09:33 AM, tiejun.chen wrote:
-> On 03/11/2013 06:39 AM, Alex Grad wrote:
->> While at it, check kmalloc return value.
->>
->> Signed-off-by: Alex Grad <alex.grad@gmail.com>
->> ---
->>   arch/powerpc/kernel/kgdb.c |    5 ++++-
->>   1 file changed, 4 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
->> index 5ca82cd..9e81dd8 100644
->> --- a/arch/powerpc/kernel/kgdb.c
->> +++ b/arch/powerpc/kernel/kgdb.c
->> @@ -159,7 +159,10 @@ static int kgdb_singlestep(struct pt_regs *regs)
->>       if (user_mode(regs))
->>           return 0;
->>
->> -    backup_current_thread_info = (struct thread_info *)kmalloc(sizeof(struct
->> thread_info), GFP_KERNEL);
->> +    backup_current_thread_info = kmalloc(sizeof(struct thread_info),
->> GFP_KERNEL);
->> +    if (!backup_current_thread_info)
->> +        return -ENOMEM;
->
-> I already send a kgdb patchset in "[v3][PATCH 6/6] powerpc/kgdb: remove copying
-> the thread_info" to remove these stuff since its unnecessary to copy current
-> thread_info now.
+This patchset is used to support kgdb/gdb on book3e.
 
-I guess that patchset needs to be reviewed with more time and I also think I can 
-leave this copying to be compatible for other platforms in the future, but we 
-really should fix this problem I introduced right now. So I'd like to fix this 
-with DEFINE_PER_CPU.
+Validated on p4080ds and p5040ds with test single step and breakpoint
 
-I send a patch, "powerpc/kgdb: use DEFINE_PER_CPU to allocate kgdb's 
-thread_info", so please take a look at if that version is fine to every one.
+v4:
 
-Any comments are appreciated.
+* use DEFINE_PER_CPU to allocate kgdb's thread_info
+* add patch 7 to make usre copy thread_info only !__check_irq_replay
+* leave "andi.   r14,r11,MSR_PR" out of "#ifndef CONFIG_KGDB"
+  since cr0 is still used lately.
+* retest
 
-BTW, I will update that kgdb patchset with this change to resend.
+v3:
+
+* make work when enable CONFIG_RELOCATABLE
+* fix one typo in patch,
+  "powerpc/book3e: store critical/machine/debug exception thread info": 
+	ld	r1,PACAKSAVE(r13);
+    ->  ld	r14,PACAKSAVE(r13);
+* remove copying the thread_info since booke and book3e always copy
+  the thead_info now when we enter the debug exception, and so drop
+  the v2 patch, "book3e/kgdb: Fix a single stgep case of lazy IRQ"
+
+v2:
+
+* Make sure we cover CONFIG_PPC_BOOK3E_64 safely
+* Use LOAD_REG_IMMEDIATE() to load properly
+	the value of the constant expression in load debug exception stack 
+* Copy thread infor form the kernel stack coming from usr
+* Rebase latest powerpc git tree
+
+v1:
+* Copy thread info only when we are from !user mode since we'll get kernel stack
+  coming from usr directly.
+* remove save/restore EX_R14/EX_R15 since DBG_EXCEPTION_PROLOG already covered
+  this.
+* use CURRENT_THREAD_INFO() conveniently to get thread.
+* fix some typos
+* add a patch to make sure gdb can generate a single step properly to invoke a
+  kgdb state.
+* add a patch to if we need to replay an interrupt, we shouldn't restore that
+  previous backup thread info to make sure we can replay an interrupt lately
+  with a proper thread info.
+* rebase latest powerpc git tree
+
+v0:
+This patchset is used to support kgdb for book3e.
+
+------
+Tiejun Chen (7):
+      powerpc/book3e: load critical/machine/debug exception stack
+      powerpc/book3e: store critical/machine/debug exception thread info
+      book3e/kgdb: update thread's dbcr0
+      powerpc/book3e: support kgdb for kernel space
+      kgdb/kgdbts: support ppc64
+      powerpc/kgdb: use DEFINE_PER_CPU to allocate kgdb's thread_info
+      book3e/kgdb: Fix a single stgep case of lazy IRQ
+
+ arch/powerpc/kernel/exceptions-64e.S |   68 ++++++++++++++++++++++++++++++++--
+ arch/powerpc/kernel/irq.c            |   10 +++++
+ arch/powerpc/kernel/kgdb.c           |   21 +++++++----
+ drivers/misc/kgdbts.c                |    2 +
+ 4 files changed, 90 insertions(+), 11 deletions(-)
 
 Tiejun
