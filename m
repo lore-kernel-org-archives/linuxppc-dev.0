@@ -1,19 +1,22 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id F07672C02B7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2013 02:23:08 +1100 (EST)
-In-Reply-To: <3989200.gO920IVs04@pcimr>
-References: <3989200.gO920IVs04@pcimr>
-To: Rojhalat Ibrahim <imr@rtschenk.de>
+Return-Path: <olof@lixom.net>
+Received: from mail-wg0-f46.google.com (mail-wg0-f46.google.com [74.125.82.46])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id F24282C02C2
+ for <linuxppc-dev@ozlabs.org>; Tue, 12 Mar 2013 03:20:45 +1100 (EST)
+Received: by mail-wg0-f46.google.com with SMTP id fg15so5009696wgb.25
+ for <linuxppc-dev@ozlabs.org>; Mon, 11 Mar 2013 09:20:42 -0700 (PDT)
 MIME-Version: 1.0
-Subject: Re: [PATCH] Make PCIe hotplug work with Freescale PCIe controllers
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Message-ID: <OF22E9DC45.43C40B0F-ONC1257B2B.0053CF4D-C1257B2B.0053F7FF@transmode.se>
-Date: Mon, 11 Mar 2013 16:17:10 +0100
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1363016099.3348.47.camel@sauron.fi.intel.com>
+References: <1363016099.3348.47.camel@sauron.fi.intel.com>
+Date: Mon, 11 Mar 2013 09:20:41 -0700
+Message-ID: <CAOesGMhy6YceRr3T4ZALhYeSQfEuASO+ajJy1Htwws=OMtvrTg@mail.gmail.com>
+Subject: Re: Dead mappings and drivers in MTD
+From: Olof Johansson <olof@lixom.net>
+To: dedekind1@gmail.com
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+ LKML <linux-kernel@vger.kernel.org>, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,112 +26,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Rojhalat Ibrahim <imr@rtschenk.de> wrote on 2013/03/11 15:47:30:
-> 
-> Hi,
-> 
-> this issue was brought up before. 
-> See this thread: 
-https://lists.ozlabs.org/pipermail/linuxppc-dev/2012-July/099529.html
-> 
-> The following patch works for me.
-> Hot-added devices appear after "echo 1 > /sys/bus/pci/rescan".
-> I tested it with a P5020DS development system.
-> 
-> Signed-off-by: Rojhalat Ibrahim <imr@rtschenk.de>
+On Mon, Mar 11, 2013 at 8:34 AM, Artem Bityutskiy <dedekind1@gmail.com> wrote:
+> Hi MTD folks,
+>
+> we have huge amount of drivers, espacially mapping drives in
+> 'drivers/mtd', and for sure may of them are for ancient devices which
+> are long dead and not supported by modern kernels anyway. I would like
+> to do a small clean-up. It is difficult to judge which ones are dead for
+> me, so I am asking the community to help. Thanks!
+>
+> There are few easy cases - some drivers depend on Kconfig symbols which
+> are not defined anywhere - I guess these are clear candidates for
+> removal. For example this one:
+>
+> config MTD_DBOX2
+>         tristate "CFI Flash device mapped on D-Box2"
+>         depends on DBOX2 && MTD_CFI_INTELSTD && MTD_CFI_INTELEXT && MTD_CFI_AMDSTD
+>         help
+>           This enables access routines for the flash chips on the Nokia/Sagem
+>           D-Box 2 board. If you have one of these boards and would like to use
+>
+> Grepping for "DBOX2" gives nothing.
 
-Nice! This LOOKS ok to me(cannot test ATM as I am lagging behind)
+In 2.6.14, it dropped two dependencies that used to be there for PPC32
+and 8xx. There still was no DBOX2 symbol to fulfill that dependency
+back then.
 
- Jocke
+Take it out, if someone finds a user later on it can always be
+reverted. Seems very very unlikely in this case.
 
-> ---
->  arch/powerpc/sysdev/indirect_pci.c |   53 
-++++++++++++++++++++++++++++++-------
->  1 file changed, 44 insertions(+), 9 deletions(-)
-> 
-> diff --git a/arch/powerpc/sysdev/indirect_pci.c 
-b/arch/powerpc/sysdev/indirect_pci.c
-> index 82fdad8..aa36009 100644
-> --- a/arch/powerpc/sysdev/indirect_pci.c
-> +++ b/arch/powerpc/sysdev/indirect_pci.c
-> @@ -20,22 +20,19 @@
->  #include <asm/pci-bridge.h>
->  #include <asm/machdep.h>
-> 
-> +#ifdef CONFIG_FSL_PCI
-> +#include <sysdev/fsl_pci.h>
-> +#endif
-> +
->  static int
-> -indirect_read_config(struct pci_bus *bus, unsigned int devfn, int 
-offset,
-> -           int len, u32 *val)
-> +read_config_no_link_check(struct pci_bus *bus, unsigned int devfn, int 
-offset,
-> +           int len, u32 *val)
->  {
->     struct pci_controller *hose = pci_bus_to_host(bus);
->     volatile void __iomem *cfg_data;
->     u8 cfg_type = 0;
->     u32 bus_no, reg;
-> 
-> -   if (hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK) {
-> -      if (bus->number != hose->first_busno)
-> -         return PCIBIOS_DEVICE_NOT_FOUND;
-> -      if (devfn != 0)
-> -         return PCIBIOS_DEVICE_NOT_FOUND;
-> -   }
-> -
->     if (ppc_md.pci_exclude_device)
->        if (ppc_md.pci_exclude_device(hose, bus->number, devfn))
->           return PCIBIOS_DEVICE_NOT_FOUND;
-> @@ -78,6 +75,44 @@ indirect_read_config(struct pci_bus *bus, unsigned 
-int 
-> devfn, int offset,
->     return PCIBIOS_SUCCESSFUL;
->  }
-> 
-> +#ifdef CONFIG_FSL_PCI
-> +static int fsl_pcie_check_link(struct pci_bus *bus)
-> +{
-> +   struct pci_controller *hose = pci_bus_to_host(bus);
-> +   u32 val = 0;
-> +
-> +   read_config_no_link_check(bus, 0, PCIE_LTSSM, 4, &val);
-> +   if (val < PCIE_LTSSM_L0) {
-> +      hose->indirect_type |= PPC_INDIRECT_TYPE_NO_PCIE_LINK;
-> +      return 1;
-> +   } else {
-> +      hose->indirect_type &= ~PPC_INDIRECT_TYPE_NO_PCIE_LINK;
-> +      return 0;
-> +   }
-> +}
-> +#endif
-> +
-> +static int
-> +indirect_read_config(struct pci_bus *bus, unsigned int devfn, int 
-offset,
-> +           int len, u32 *val)
-> +{
-> +   struct pci_controller *hose = pci_bus_to_host(bus);
-> +
-> +#ifdef CONFIG_FSL_PCI
-> +   if ((bus->number == hose->first_busno) && (devfn == 0)) {
-> +      fsl_pcie_check_link(bus);
-> +   }
-> +#endif
-> +   if (hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK) {
-> +      if (bus->number != hose->first_busno)
-> +         return PCIBIOS_DEVICE_NOT_FOUND;
-> +      if (devfn != 0)
-> +         return PCIBIOS_DEVICE_NOT_FOUND;
-> +   }
-> +
-> +   return read_config_no_link_check(bus, devfn, offset, len, val);
-> +}
-> +
->  static int
->  indirect_write_config(struct pci_bus *bus, unsigned int devfn, int 
-offset,
->              int len, u32 val)
-> 
+
+-Olof
