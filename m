@@ -1,19 +1,21 @@
-Return-Path: <B38951@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8EBD52C008D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2013 19:21:36 +1100 (EST)
-From: Jia Hongtao <B38951@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
-Subject: [PATCH] powerpc/85xx: workaround for chips with MSI hardware errata
-Date: Tue, 12 Mar 2013 15:48:02 +0800
-Message-ID: <1363074482-868-1-git-send-email-B38951@freescale.com>
+Return-Path: <imr@rtschenk.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net
+ [IPv6:2001:a60:0:28:0:1:25:1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 793442C0293
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2013 20:23:47 +1100 (EST)
+From: Rojhalat Ibrahim <imr@rtschenk.de>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] Make PCIe hotplug work with Freescale PCIe controllers
+Date: Tue, 12 Mar 2013 10:23:24 +0100
+Message-ID: <2399353.017i5G1tnZ@pcimr>
+In-Reply-To: <179EA411-594D-4774-903A-6C0445A01747@kernel.crashing.org>
+References: <3989200.gO920IVs04@pcimr>
+ <179EA411-594D-4774-903A-6C0445A01747@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: B07421@freescale.com, b38951@freescale.com
+Content-Type: text/plain; charset="us-ascii"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,130 +25,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The MPIC chip with version 2.0 has a MSI errata (errata PIC1 of mpc8544),
-It causes that neither MSI nor MSI-X can work fine. This is a workaround
-to allow MSI-X to function properly.
+On Monday 11 March 2013 12:17:42 Kumar Gala wrote:
+> 
+> Rather than do it this way, we should do something like:
+> 
+> fsl_indirect_read_config() {
+> 	link check
+> 	if (link)
+> 		indirect_read_config()
+> }
+> 
+> and just add fsl_indirect_{r,w}_config into fsl_pci.c
+> 
+> - k
+> 
 
-Signed-off-by: Liu Shuo <soniccat.liu@gmail.com>
-Signed-off-by: Li Yang <leoli@freescale.com>
-Signed-off-by: Jia Hongtao <B38951@freescale.com>
+Ok, how about this:
+
+
+Signed-off-by: Rojhalat Ibrahim <imr@rtschenk.de>
 ---
- arch/powerpc/sysdev/fsl_msi.c |   60 +++++++++++++++++++++++++++++++++++++++-
- arch/powerpc/sysdev/fsl_msi.h |    2 +
- 2 files changed, 60 insertions(+), 2 deletions(-)
+ arch/powerpc/sysdev/fsl_pci.c |   49 
+++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 45 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
-index 178c994..0dea680 100644
---- a/arch/powerpc/sysdev/fsl_msi.c
-+++ b/arch/powerpc/sysdev/fsl_msi.c
-@@ -98,8 +98,20 @@ static int fsl_msi_init_allocator(struct fsl_msi *msi_data)
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 682084d..693db9f 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -36,6 +36,8 @@
  
- static int fsl_msi_check_device(struct pci_dev *pdev, int nvec, int type)
+ static int fsl_pcie_bus_fixup, is_mpc83xx_pci;
+ 
++static struct pci_ops *indirect_pci_ops;
++
+ static void quirk_fsl_pcie_header(struct pci_dev *dev)
  {
-+	struct fsl_msi *msi;
-+
- 	if (type == PCI_CAP_ID_MSIX)
- 		pr_debug("fslmsi: MSI-X untested, trying anyway.\n");
-+	else if (type == PCI_CAP_ID_MSI)
-+		/*
-+		 * MPIC chip with 2.0 version has erratum PIC1. It
-+		 * causes that neither MSI nor MSI-X can work fine.
-+		 * This is a workaround to allow MSI-X to function
-+		 * properly.
-+		 */
-+		list_for_each_entry(msi, &msi_head, list)
-+			if (msi->feature & MSI_HW_ERRATA_ENDIAN)
-+				return -EINVAL;
- 
- 	return 0;
- }
-@@ -142,7 +154,11 @@ static void fsl_compose_msi_msg(struct pci_dev *pdev, int hwirq,
- 	msg->address_lo = lower_32_bits(address);
- 	msg->address_hi = upper_32_bits(address);
- 
--	msg->data = hwirq;
-+	/* See the comment in fsl_msi_check_device() */
-+	if (msi_data->feature & MSI_HW_ERRATA_ENDIAN)
-+		msg->data = __swab32(hwirq);
-+	else
-+		msg->data = hwirq;
- 
- 	pr_debug("%s: allocated srs: %d, ibs: %d\n",
- 		__func__, hwirq / IRQS_PER_MSI_REG, hwirq % IRQS_PER_MSI_REG);
-@@ -361,13 +377,43 @@ static int fsl_msi_setup_hwirq(struct fsl_msi *msi, struct platform_device *dev,
+ 	u8 hdr_type;
+@@ -64,6 +66,45 @@ static int __init fsl_pcie_check_link(struct pci_controller 
+*hose)
  	return 0;
  }
  
-+/* MPIC chip with 2.0 version has erratum PIC1 */
-+static int mpic_has_errata(struct platform_device *dev)
++static int fsl_indirect_read_config(struct pci_bus *bus, unsigned int devfn,
++				    int offset, int len, u32 *val)
 +{
-+	struct device_node *mpic_node;
-+
-+	mpic_node = of_irq_find_parent(dev->dev.of_node);
-+	if (mpic_node) {
-+		u32 *reg_base, brr1 = 0;
-+		/* Get the PIC reg base */
-+		reg_base = of_iomap(mpic_node, 0);
-+		of_node_put(mpic_node);
-+		if (!reg_base) {
-+			dev_err(&dev->dev, "ioremap problem failed.\n");
-+			return -EIO;
++	struct pci_controller *hose = pci_bus_to_host(bus);
++	
++	// check the link status
++	if ((bus->number == hose->first_busno) && (devfn == 0)) {
++		u32 ltssm = 0;
++		indirect_pci_ops->read(bus, 0, PCIE_LTSSM, 4, &ltssm);
++		if (ltssm < PCIE_LTSSM_L0) {
++			hose->indirect_type |= PPC_INDIRECT_TYPE_NO_PCIE_LINK;
++		} else {
++			hose->indirect_type &= ~PPC_INDIRECT_TYPE_NO_PCIE_LINK;
 +		}
-+
-+		/* Get the mpic chip version from block revision register 1 */
-+		brr1 = in_be32(reg_base + MPIC_FSL_BRR1);
-+		iounmap(reg_base);
-+		if ((brr1 & MPIC_FSL_BRR1_VER) == 0x0200)
-+			return 1;
-+	} else {
-+		dev_err(&dev->dev, "MSI can't find his parent mpic node.\n");
-+		of_node_put(mpic_node);
-+		return -ENODEV;
 +	}
-+
-+	return 0;
++	return indirect_pci_ops->read(bus, devfn, offset, len, val);
 +}
 +
- static const struct of_device_id fsl_of_msi_ids[];
- static int fsl_of_msi_probe(struct platform_device *dev)
- {
- 	const struct of_device_id *match;
- 	struct fsl_msi *msi;
- 	struct resource res;
--	int err, i, j, irq_index, count;
-+	int err, i, j, irq_index, count, errata;
- 	int rc;
- 	const u32 *p;
- 	const struct fsl_msi_feature *features;
-@@ -423,6 +469,16 @@ static int fsl_of_msi_probe(struct platform_device *dev)
- 
- 	msi->feature = features->fsl_pic_ip;
- 
-+	if ((features->fsl_pic_ip & FSL_PIC_IP_MASK) == FSL_PIC_IP_MPIC) {
-+		errata = mpic_has_errata(dev);
-+		if (errata > 0) {
-+			msi->feature |= MSI_HW_ERRATA_ENDIAN;
-+		} else if (errata < 0) {
-+			err = errata;
-+			goto error_out;
-+		}
-+	}
++static int fsl_indirect_write_config(struct pci_bus *bus, unsigned int devfn,
++				     int offset, int len, u32 val)
++{
++	return indirect_pci_ops->write(bus, devfn, offset, len, val);
++}
 +
- 	/*
- 	 * Remember the phandle, so that we can match with any PCI nodes
- 	 * that have an "fsl,msi" property.
-diff --git a/arch/powerpc/sysdev/fsl_msi.h b/arch/powerpc/sysdev/fsl_msi.h
-index 8225f86..7389e8e 100644
---- a/arch/powerpc/sysdev/fsl_msi.h
-+++ b/arch/powerpc/sysdev/fsl_msi.h
-@@ -25,6 +25,8 @@
- #define FSL_PIC_IP_IPIC   0x00000002
- #define FSL_PIC_IP_VMPIC  0x00000003
- 
-+#define MSI_HW_ERRATA_ENDIAN 0x00000010
++static struct pci_ops fsl_indirect_pci_ops =
++{
++	.read = fsl_indirect_read_config,
++	.write = fsl_indirect_write_config,
++};
 +
- struct fsl_msi {
- 	struct irq_domain *irqhost;
++static void __init fsl_setup_indirect_pci(struct pci_controller* hose,
++					  resource_size_t cfg_addr,
++					  resource_size_t cfg_data, u32 flags)
++{
++	setup_indirect_pci(hose, cfg_addr, cfg_data, flags);
++	indirect_pci_ops = hose->ops;
++	hose->ops = &fsl_indirect_pci_ops;
++}
++
+ #if defined(CONFIG_FSL_SOC_BOOKE) || defined(CONFIG_PPC_86xx)
  
--- 
-1.7.5.1
+ #define MAX_PHYS_ADDR_BITS	40
+@@ -461,8 +502,8 @@ int __init fsl_add_bridge(struct platform_device *pdev, 
+int is_primary)
+ 	hose->first_busno = bus_range ? bus_range[0] : 0x0;
+ 	hose->last_busno = bus_range ? bus_range[1] : 0xff;
+ 
+-	setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4,
+-		PPC_INDIRECT_TYPE_BIG_ENDIAN);
++	fsl_setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4,
++			       PPC_INDIRECT_TYPE_BIG_ENDIAN);
+ 
+ 	if (early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP)) {
+ 		/* For PCIE read HEADER_TYPE to identify controler mode */
+@@ -766,8 +807,8 @@ int __init mpc83xx_add_bridge(struct device_node *dev)
+ 		if (ret)
+ 			goto err0;
+ 	} else {
+-		setup_indirect_pci(hose, rsrc_cfg.start,
+-				   rsrc_cfg.start + 4, 0);
++		fsl_setup_indirect_pci(hose, rsrc_cfg.start,
++				       rsrc_cfg.start + 4, 0);
+ 	}
+ 
+ 	printk(KERN_INFO "Found FSL PCI host bridge at 0x%016llx. "
