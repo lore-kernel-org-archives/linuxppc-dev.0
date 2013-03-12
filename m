@@ -1,24 +1,26 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Tue, 12 Mar 2013 20:27:40 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH 5/6][v4]: perf: Create a sysfs entry for Power event format
-Message-ID: <20130312092740.GC30591@iris.ozlabs.ibm.com>
-References: <20130123062201.GA13720@us.ibm.com>
- <20130123062613.GF13720@us.ibm.com>
- <20130226052646.GB21553@concordia>
- <20130226200343.GA21543@us.ibm.com>
- <20130227011725.GA5819@concordia>
- <20130306054826.GA14627@us.ibm.com>
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by ozlabs.org (Postfix) with SMTP id 23CF22C029F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2013 20:48:49 +1100 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 07476-08 for <linuxppc-dev@lists.ozlabs.org>;
+ Tue, 12 Mar 2013 09:48:37 +0000 (GMT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130306054826.GA14627@us.ibm.com>
-Cc: Andi Kleen <ak@linux.intel.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
- robert.richter@amd.com, Anton Blanchard <anton@au1.ibm.com>,
- linux-kernel@vger.kernel.org, Stephane Eranian <eranian@google.com>,
- linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@redhat.com>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
- Jiri Olsa <jolsa@redhat.com>
+Content-Type: text/plain;
+	charset="Windows-1252"
+Subject: RE: [PATCH V4] powerpc/85xx: Add machine check handler to fix PCIe
+ erratum on mpc85xx
+Date: Tue, 12 Mar 2013 09:47:13 -0000
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B7183@saturn3.aculab.com>
+In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01C15369@039-SN1MPN1-003.039d.mgd.msft.net>
+References: <412C8208B4A0464FA894C5F0C278CD5D01BFC620@039-SN1MPN1-002.039d.mgd.msft.net>(from
+ B38951@freescale.com on Fri Mar 8 02:01:46 2013) <1362790153.29198.11@snotra>
+ <412C8208B4A0464FA894C5F0C278CD5D01C15369@039-SN1MPN1-003.039d.mgd.msft.net>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: "Jia Hongtao-B38951" <B38951@freescale.com>,
+ "Wood Scott-B07421" <B07421@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Stuart Yoder <b08248@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,34 +30,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 05, 2013 at 09:48:26PM -0800, Sukadev Bhattiprolu wrote:
-> Michael Ellerman [michael@ellerman.id.au] wrote:
-> | I suspect Arnaldo was either waiting for an ACK from Ben, or was
-> | expecting Ben to take it?
-> 
-> Arnaldo, here is an updated patch. If it is acked by Paul Mackerras,
-> Michael Ellerman or Ben, will you add it to your tree so the whole
-> patchset comes from one place ?
-> 
-> Sukadev
-> 
-> ---
-> >From 50c7a46f14083c0ed10d66b7aed66ba76e798550 Mon Sep 17 00:00:00 2001
-> From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> Date: Tue, 5 Mar 2013 21:20:56 -0800
-> Subject: [PATCH] [PATCH 5/6][v4]: perf Create a sysfs format entry for Power7 events
-> 
-> Create a sysfs entry, '/sys/bus/event_source/devices/cpu/format/event'
-> which describes the format of the POWER7 PMU events.
-> 
-> This code is based on corresponding code in x86.
-> 
-> Changelog[v4]:  [Michael Ellerman, Paul Mckerras] The event format is different
-> 		for other POWER cpus. So move the code to POWER7-specific,
-> 		power7-pmu.c Also, the POWER7 format uses bits 0-19 not 0-20.
-> 
-> Changelog[v2]: [Jiri Osla] Use PMU_FORMAT_ATTR rather than duplicating code.
-> 
-> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> Is that OK if I use the following code?
+...
+> 	if (is_in_pci_mem_space(addr)) {
+> 		if (!user_mode(regs)) {
+> 			ret =3D probe_kernel_address(regs->nip, inst);
+>=20
+> 			if (!ret) {
+> 				rd =3D get_rt(inst);
+> 				regs->gpr[rd] =3D 0xffffffff;
+> 			}
+> 		}
 
-Acked-by: Paul Mackerras <paulus@samba.org>
+Don't you need to check that the instruction is actually
+a memory read?
+
+I also know that there are people mapping PCIe addresses
+directly into userspace for 'simple' access to things like
+fpga devices.
+
+I suspect that such devices are the ones likely to generate
+the faulting cycles. So you probably do want to handle
+faults from normal userspace addresses.
+
+	David
