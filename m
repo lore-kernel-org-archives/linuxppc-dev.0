@@ -1,19 +1,16 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id C6D392C02C2
- for <linuxppc-dev@ozlabs.org>; Wed, 13 Mar 2013 08:14:45 +1100 (EST)
-Subject: Re: [PATCH][V3] powerpc: remove the PPC_CLOCK dependency
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1363070583-23197-1-git-send-email-Yuantian.Tang@freescale.com>
-Date: Tue, 12 Mar 2013 16:14:40 -0500
-Message-Id: <11305E37-9A88-414D-879F-B9C2B58EF395@kernel.crashing.org>
-References: <1363070583-23197-1-git-send-email-Yuantian.Tang@freescale.com>
-To: "<Yuantian.Tang@freescale.com>" <Yuantian.Tang@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, R58472@freescale.com
+Return-Path: <B11780@freescale.com>
+From: Gala Kumar-B11780 <B11780@freescale.com>
+To: Mehresh Ramneek-B31383 <B31383@freescale.com>
+Subject: Re: [PATCH]qonverge/usb: Add first usb controller node
+Date: Tue, 12 Mar 2013 21:14:37 +0000
+Message-ID: <CF1EE7AED478CD48A05574C8E2DA142D74F34F@039-SN1MPN1-004.039d.mgd.msft.net>
+References: <1362041205-18171-1-git-send-email-ramneek.mehresh@freescale.com>
+In-Reply-To: <1362041205-18171-1-git-send-email-ramneek.mehresh@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: "<devicetree-discuss@lists.ozlabs.org>"
+ <devicetree-discuss@lists.ozlabs.org>,
+ "<linuxppc-dev@lists.ozlabs.org>" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,27 +21,21 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Mar 12, 2013, at 1:43 AM, <Yuantian.Tang@freescale.com> =
-<Yuantian.Tang@freescale.com> wrote:
+On Feb 28, 2013, at 2:46 AM, Ramneek Mehresh wrote:
 
-> From: Tang Yuantian <Yuantian.Tang@freescale.com>
+> Add first usb controller node for qonverge qoriq platforms like
+> B4860, etc
 >=20
-> Config FSL_SOC does not depend on PPC_CLOCK anymore since the =
-following
-> commit got merged: 93abe8e (clk: add non CONFIG_HAVE_CLK routines)
-> Config CPM does not use PPC_CLOCK either currently. So remove them.
->=20
-> PPC_CLOCK also keeps Freescale PowerPC archtecture from supporting =
-COMMON_CLK.
->=20
-> Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+> Signed-off-by: Ramneek Mehresh <ramneek.mehresh@freescale.com>
 > ---
-> v3: modified the description
-> v2: correct the title
+> Applies on git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.gi=
+t
+> (branch next)
 >=20
-> arch/powerpc/Kconfig           |    1 -
-> arch/powerpc/platforms/Kconfig |    1 -
-> 2 files changed, 0 insertions(+), 2 deletions(-)
+> arch/powerpc/boot/dts/fsl/qonverge-usb2-dr-0.dtsi | 41 ++++++++++++++++++=
++++++
+> 1 file changed, 41 insertions(+)
+> create mode 100644 arch/powerpc/boot/dts/fsl/qonverge-usb2-dr-0.dtsi
 
 applied to next
 
