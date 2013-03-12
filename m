@@ -1,22 +1,13 @@
-Return-Path: <B41889@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2DB5C2C0298
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2013 22:03:58 +1100 (EST)
-Message-ID: <513F0B8B.4090607@freescale.com>
-Date: Tue, 12 Mar 2013 19:03:39 +0800
-From: Chen Yuanquan-B41889 <B41889@freescale.com>
-MIME-Version: 1.0
-To: Rojhalat Ibrahim <imr@rtschenk.de>
-Subject: Re: [PATCH] Make PCIe hotplug work with Freescale PCIe controllers
-References: <3E027F8168735B46AC006B1D0C7BB0020B102CFB@039-SN2MPN1-013.039d.mgd.msft.net>
- <513EFF84.3090103@freescale.com> <2837636.lhg2IyzI4d@pcimr>
-In-Reply-To: <2837636.lhg2IyzI4d@pcimr>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, Zang Roy-R61911 <r61911@freescale.com>
+Return-Path: <anton@samba.org>
+Date: Tue, 12 Mar 2013 22:51:51 +1100
+From: Anton Blanchard <anton@samba.org>
+To: agraf@suse.de, benh@kernel.crashing.org, aaro.koskinen@iki.fi,
+ amodra@gmail.com
+Subject: [PATCH] powerpc: Fix -mcmodel=medium breakage in prom_init.c
+Message-ID: <20130312225151.2faeb395@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,231 +17,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/12/2013 06:30 PM, Rojhalat Ibrahim wrote:
-> On Tuesday 12 March 2013 18:12:20 Chen Yuanquan-B41889 wrote:
->>>> -----Original Message-----
->>>> From: Linuxppc-dev [mailto:linuxppc-dev-bounces+tie-
->>>> fei.zang=freescale.com@lists.ozlabs.org] On Behalf Of Rojhalat Ibrahim
->>>> Sent: Tuesday, March 12, 2013 5:23 PM
->>>> To: Kumar Gala
->>>> Cc: linuxppc-dev@lists.ozlabs.org
->>>> Subject: Re: [PATCH] Make PCIe hotplug work with Freescale PCIe
->>>> controllers
->>>>
->>>> On Monday 11 March 2013 12:17:42 Kumar Gala wrote:
->>>>> Rather than do it this way, we should do something like:
->>>>>
->>>>> fsl_indirect_read_config() {
->>>>>
->>>>> 	link check
->>>>> 	if (link)
->>>>> 	
->>>>> 		indirect_read_config()
->>>>>
->>>>> }
->>>>>
->>>>> and just add fsl_indirect_{r,w}_config into fsl_pci.c
->>>>>
->>>>> - k
->>>> Ok, how about this:
->> Yeah, this patch can solve the problem of PCI-e bus rescan which a PCI-e
->> EP is added to RC
->> after RC booting up. If RC boots up without EP added, the original code
->> will set the PCI-e
->> bus as no link even if you add a EP to RC during RC's runtime.
->>
->> Regards,
->> Yuanquan
->>
-> Right. The EP is only added if you first do "echo 1 > /sys/bus/pci/rescan".
->
->     Rojhalat
->
 
-The following patch can solve your issue of "only added if you first ...":
+Commit 5ac47f7a6efb (powerpc: Relocate prom_init.c on 64bit) made
+prom_init.c position independent by manually relocating its entries
+in the TOC.
 
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index 5b3771a..c1298d0 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -730,11 +730,12 @@ int __devinit pci_scan_bridge(struct pci_bus *bus, 
-struct
+We get the address of the TOC entries with the __prom_init_toc_start
+linker symbol. If __prom_init_toc_start ends up as an entry in the
+TOC then we need to add an offset to get the current address. This is
+the case for older toolchains.
 
-                 /* Prevent assigning a bus number that already exists.
-                  * This can happen when a bridge is hot-plugged */
--               if (pci_find_bus(pci_domain_nr(bus), max+1))
--                       goto out;
--               child = pci_add_new_bus(bus, dev, ++max);
--               if (!child)
--                       goto out;
-+               child = pci_find_bus(pci_domain_nr(bus), max+1);
-+               if (!child) {
-+                       child = pci_add_new_bus(bus, dev, ++max);
-+                       if (!child)
-+                               goto out;
-+               }
-                 buses = (buses & 0xff000000)
-                       | ((unsigned int)(child->primary) <<  0)
-                       | ((unsigned int)(child->secondary) <<  8)
+On the other hand, if we have a newer toolchain that supports
+-mcmodel=medium then __prom_init_toc_start will be created by a
+relative offset from r2 (the TOC pointer). Since r2 has already been
+relocated, nothing more needs to be done.  Adding an offset in this
+case is wrong and Aaro Koskinen and Alexander Graf have noticed noticed
+G5 and OpenBIOS breakage.
 
+Alan Modra suggested we just use r2 to get at the TOC which is simpler
+and works with both old and new toolchains.
 
-There are still some issues about powerpc PCI-e rescan. For example, add 
-a Intel e1000e
-ethernet card or silicon PCI-e_sata to powerpc PCI-e slot and boot the 
-board. The EP can
-work well with their driver. But if you "echo 1 > 
-/sys/bus/pci/device/xxx/remove" which
-corresponds to Intel e1000e ethernet card or  silicon PCI-e_sata, then 
-"echo 1" to rescan,
-the device can be rescanned, but it will fail to load the corresponded 
-driver due to hw_irq
-and dma_set_mask error. The following  patch can solve the problem, but 
-not a good method
-to solve it.
+Reported-by: Alexander Graf <agraf@suse.de>
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
-diff --git a/arch/powerpc/kernel/pci-common.c 
-b/arch/powerpc/kernel/pci-common.c
-index 2476a32..f9b7f0f 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -1557,6 +1557,19 @@ int pcibios_enable_device(struct pci_dev *dev, 
-int mask)
-                 if (ppc_md.pcibios_enable_device_hook(dev))
-                         return -EINVAL;
+Thanks Aaro for reporting this, and Alexander for an initial
+fix. This tested ok for me with both a new and an old toolchain,
+but would appreciate if you could double check it fixes your issues
+too.
 
-+       if (!dev->is_added) {
-+               set_dev_node(&dev->dev, pcibus_to_node(dev->bus));
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index 7f7fb7f..13f8d16 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -2832,11 +2832,13 @@ static void unreloc_toc(void)
+ {
+ }
+ #else
+-static void __reloc_toc(void *tocstart, unsigned long offset,
+-			unsigned long nr_entries)
++static void __reloc_toc(unsigned long offset, unsigned long nr_entries)
+ {
+ 	unsigned long i;
+-	unsigned long *toc_entry = (unsigned long *)tocstart;
++	unsigned long *toc_entry;
 +
-+               set_dma_ops(&dev->dev, pci_dma_ops);
-+               set_dma_offset(&dev->dev, PCI_DRAM_OFFSET);
-+
-+               if (ppc_md.pci_dma_dev_setup)
-+                       ppc_md.pci_dma_dev_setup(dev);
-+
-+               pci_read_irq_line(dev);
-+               if (ppc_md.pci_irq_fixup)
-+                       ppc_md.pci_irq_fixup(dev);
-+       }
-         return pci_enable_resources(dev, mask);
-  }
-
-
-Regards,
-Yuanquan
-
->>>> Signed-off-by: Rojhalat Ibrahim <imr@rtschenk.de>
->>>> ---
->>>>
->>>>    arch/powerpc/sysdev/fsl_pci.c |   49
->>>>
->>>> ++++++++++++++++++++++++++++++++++++++----
->>>>
->>>>    1 file changed, 45 insertions(+), 4 deletions(-)
->>>>
->>>> diff --git a/arch/powerpc/sysdev/fsl_pci.c
->>>> b/arch/powerpc/sysdev/fsl_pci.c index 682084d..693db9f 100644
->>>> --- a/arch/powerpc/sysdev/fsl_pci.c
->>>> +++ b/arch/powerpc/sysdev/fsl_pci.c
->>>> @@ -36,6 +36,8 @@
->>>>
->>>>    static int fsl_pcie_bus_fixup, is_mpc83xx_pci;
->>>>
->>>> +static struct pci_ops *indirect_pci_ops;
->>>> +
->>>>
->>>>    static void quirk_fsl_pcie_header(struct pci_dev *dev)  {
->>>>    
->>>>    	u8 hdr_type;
->>>>
->>>> @@ -64,6 +66,45 @@ static int __init fsl_pcie_check_link(struct
->>>> pci_controller
->>>> *hose)
->>>>
->>>>    	return 0;
->>>>    
->>>>    }
->>>>
->>>> +static int fsl_indirect_read_config(struct pci_bus *bus, unsigned int
->>>> devfn,
->>>> +				    int offset, int len, u32 *val)
->>>> +{
->>>> +	struct pci_controller *hose = pci_bus_to_host(bus);
->>>> +
->>>> +	// check the link status
->>>> +	if ((bus->number == hose->first_busno) && (devfn == 0)) {
->>>> +		u32 ltssm = 0;
->>>> +		indirect_pci_ops->read(bus, 0, PCIE_LTSSM, 4, &ltssm);
->>>> +		if (ltssm < PCIE_LTSSM_L0) {
->>>> +			hose->indirect_type |= PPC_INDIRECT_TYPE_NO_PCIE_LINK;
->>>> +		} else {
->>>> +			hose->indirect_type &= ~PPC_INDIRECT_TYPE_NO_PCIE_LINK;
->>>> +		}
->>>> +	}
->>>> +	return indirect_pci_ops->read(bus, devfn, offset, len, val); }
->>>> +
->>>> +static int fsl_indirect_write_config(struct pci_bus *bus, unsigned int
->>>> devfn,
->>>> +				     int offset, int len, u32 val)
->>>> +{
->>>> +	return indirect_pci_ops->write(bus, devfn, offset, len, val); }
->>>> +
->>>> +static struct pci_ops fsl_indirect_pci_ops = {
->>>> +	.read = fsl_indirect_read_config,
->>>> +	.write = fsl_indirect_write_config,
->>>> +};
->>>> +
->>>> +static void __init fsl_setup_indirect_pci(struct pci_controller* hose,
->>>> +					  resource_size_t cfg_addr,
->>>> +					  resource_size_t cfg_data, u32 flags) {
->>>> +	setup_indirect_pci(hose, cfg_addr, cfg_data, flags);
->>>> +	indirect_pci_ops = hose->ops;
->>>> +	hose->ops = &fsl_indirect_pci_ops;
->>>> +}
->>>> +
->>>>
->>>>    #if defined(CONFIG_FSL_SOC_BOOKE) || defined(CONFIG_PPC_86xx)
->>>>    
->>>>    #define MAX_PHYS_ADDR_BITS	40
->>>>
->>>> @@ -461,8 +502,8 @@ int __init fsl_add_bridge(struct platform_device
->>>> *pdev, int is_primary)
->>>>
->>>>    	hose->first_busno = bus_range ? bus_range[0] : 0x0;
->>>>    	hose->last_busno = bus_range ? bus_range[1] : 0xff;
->>>>
->>>> -	setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4,
->>>> -		PPC_INDIRECT_TYPE_BIG_ENDIAN);
->>>> +	fsl_setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4,
->>>> +			       PPC_INDIRECT_TYPE_BIG_ENDIAN);
->>>>
->>>>    	if (early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP)) {
->>>>    	
->>>>    		/* For PCIE read HEADER_TYPE to identify controler mode */ @@
->>>>
->>>> -766,8 +807,8 @@ int __init mpc83xx_add_bridge(struct device_node *dev)
->>>>
->>>>    		if (ret)
->>>>    		
->>>>    			goto err0;
->>>>    	
->>>>    	} else {
->>>>
->>>> -		setup_indirect_pci(hose, rsrc_cfg.start,
->>>> -				   rsrc_cfg.start + 4, 0);
->>>> +		fsl_setup_indirect_pci(hose, rsrc_cfg.start,
->>>> +				       rsrc_cfg.start + 4, 0);
->>>>
->>>>    	}
->>>>    	
->>>>    	printk(KERN_INFO "Found FSL PCI host bridge at 0x%016llx. "
->>>>
->>>> _______________________________________________
->>>> Linuxppc-dev mailing list
->>>> Linuxppc-dev@lists.ozlabs.org
->>>> https://lists.ozlabs.org/listinfo/linuxppc-dev
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
->
++	/* Get the start of the TOC by using r2 directly. */
++	asm volatile("addi %0,2,-0x8000" : "=b" (toc_entry));
+ 
+ 	for (i = 0; i < nr_entries; i++) {
+ 		*toc_entry = *toc_entry + offset;
+@@ -2850,8 +2852,7 @@ static void reloc_toc(void)
+ 	unsigned long nr_entries =
+ 		(__prom_init_toc_end - __prom_init_toc_start) / sizeof(long);
+ 
+-	/* Need to add offset to get at __prom_init_toc_start */
+-	__reloc_toc(__prom_init_toc_start + offset, offset, nr_entries);
++	__reloc_toc(offset, nr_entries);
+ 
+ 	mb();
+ }
+@@ -2864,8 +2865,7 @@ static void unreloc_toc(void)
+ 
+ 	mb();
+ 
+-	/* __prom_init_toc_start has been relocated, no need to add offset */
+-	__reloc_toc(__prom_init_toc_start, -offset, nr_entries);
++	__reloc_toc(-offset, nr_entries);
+ }
+ #endif
+ #endif
