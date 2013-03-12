@@ -1,16 +1,20 @@
-Return-Path: <pebolle@tiscali.nl>
-Received: from cpsmtpb-ews04.kpnxchange.com (cpsmtpb-ews04.kpnxchange.com
- [213.75.39.7]) by ozlabs.org (Postfix) with ESMTP id 99C242C02A2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2013 11:21:55 +1100 (EST)
-Message-ID: <1363047710.3137.132.camel@x61.thuisdomein>
-Subject: [PATCH] powerpc: remove outdated default
-From: Paul Bolle <pebolle@tiscali.nl>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>
-Date: Tue, 12 Mar 2013 01:21:50 +0100
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <gang.chen@asianux.com>
+Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 1F8F02C0095
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2013 11:39:38 +1100 (EST)
+Message-ID: <513E792B.3040903@asianux.com>
+Date: Tue, 12 Mar 2013 08:39:07 +0800
+From: Chen Gang <gang.chen@asianux.com>
+MIME-Version: 1.0
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: Re: [PATCH] arch/powerpc/kernel: using %12.12s instead of %12s for
+ avoiding memory overflow.
+References: <5100B53C.3030109@asianux.com>
+In-Reply-To: <5100B53C.3030109@asianux.com>
+Content-Type: text/plain; charset=GB2312
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,31 +24,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The Kconfig symbol PCI_PERMEDIA got removed in v2.6.24, through commit
-e6b6e3ffb9ee8926f9f2f7dc9147df73e27d5828 ("[POWERPC] Remove APUS support
-from arch/ppc"). Remove its last occurrence.
+Hello Benjamin Herrenschmidt:
 
-Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
----
-Tested with "make ARCH=powerpc menuconfig" using ps3_defconfig, both
-before and after this patch. ("!4xx && !CPM2 && !8xx" is true for ps3,
-and it uses PPC_PCI_CHOICE.) Nothing seemed to change. Which makes
-sense, as defaulting to an undefined symbol should be a nop.
+  how about this patch ?   is it correct ?
 
- arch/powerpc/Kconfig | 1 -
- 1 file changed, 1 deletion(-)
+  thanks.
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index b89d7eb..3d566c3 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -744,7 +744,6 @@ config PCI
- 	bool "PCI support" if PPC_PCI_CHOICE
- 	default y if !40x && !CPM2 && !8xx && !PPC_83xx \
- 		&& !PPC_85xx && !PPC_86xx && !GAMECUBE_COMMON
--	default PCI_PERMEDIA if !4xx && !CPM2 && !8xx
- 	default PCI_QSPAN if !4xx && !CPM2 && 8xx
- 	select ARCH_SUPPORTS_MSI
- 	select GENERIC_PCI_IOMAP
+  :-)
+
+gchen.
+
+于 2013年01月24日 12:14, Chen Gang 写道:
+> 
+>   for tmp_part->header.name:
+>     it is "Terminating null required only for names < 12 chars".
+>     so need to limit the %.12s for it in printk
+> 
+>   additional info:
+> 
+>     %12s  limit the width, not for the original string output length
+>           if name length is more than 12, it still can be fully displayed.
+>           if name length is less than 12, the ' ' will be filled before name.
+> 
+>     %.12s truly limit the original string output length (precision)
+> 
+> 
+> Signed-off-by: Chen Gang <gang.chen@asianux.com>
+> ---
+>  arch/powerpc/kernel/nvram_64.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
+> index bec1e93..57bf6d2 100644
+> --- a/arch/powerpc/kernel/nvram_64.c
+> +++ b/arch/powerpc/kernel/nvram_64.c
+> @@ -202,7 +202,7 @@ static void __init nvram_print_partitions(char * label)
+>  	printk(KERN_WARNING "--------%s---------\n", label);
+>  	printk(KERN_WARNING "indx\t\tsig\tchks\tlen\tname\n");
+>  	list_for_each_entry(tmp_part, &nvram_partitions, partition) {
+> -		printk(KERN_WARNING "%4d    \t%02x\t%02x\t%d\t%12s\n",
+> +		printk(KERN_WARNING "%4d    \t%02x\t%02x\t%d\t%12.12s\n",
+>  		       tmp_part->index, tmp_part->header.signature,
+>  		       tmp_part->header.checksum, tmp_part->header.length,
+>  		       tmp_part->header.name);
+> 
+
+
 -- 
-1.7.11.7
+Chen Gang
+
+Asianux Corporation
