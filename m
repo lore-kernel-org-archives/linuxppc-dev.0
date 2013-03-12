@@ -1,14 +1,20 @@
-Return-Path: <matteo.facchinetti@sirius-es.it>
-Received: from ns1.gatteins.it (ns1.gatteins.it [193.58.239.94])
- by ozlabs.org (Postfix) with ESMTP id 3E0FA2C02A3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2013 08:26:31 +1100 (EST)
-From: Matteo Facchinetti <matteo.facchinetti@sirius-es.it>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/1] serial/mpc52xx_uart: fix psc clock name for mpc512x
-Date: Tue, 12 Mar 2013 22:17:17 +0100
-Message-Id: <1363123037-4926-1-git-send-email-matteo.facchinetti@sirius-es.it>
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id EF0AF2C0295
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2013 08:29:14 +1100 (EST)
+Date: Tue, 12 Mar 2013 22:29:04 +0100
+From: Anatolij Gustschin <agust@denx.de>
+To: Matteo Facchinetti <matteo.facchinetti@sirius-es.it>
+Subject: Re: [PATCH 1/1] serial/mpc52xx_uart: fix psc clock name for mpc512x
+Message-ID: <20130312222904.1c7acbc8@crub>
+In-Reply-To: <1363123037-4926-1-git-send-email-matteo.facchinetti@sirius-es.it>
+References: <1363123037-4926-1-git-send-email-matteo.facchinetti@sirius-es.it>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: Matteo Facchinetti <engineering@sirius-es.it>,
- Anatolij Gustschin <agust@denx.de>
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,31 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Matteo Facchinetti <engineering@sirius-es.it>
+Hi,
 
-On platform mpc512x, PSC clock name registered by clk_register()
-(clock.c:703) has _mclk suffix.
-In mpc512x uart device driver, PSC clock name has _clk suffix.
+On Tue, 12 Mar 2013 22:17:17 +0100
+Matteo Facchinetti <matteo.facchinetti@sirius-es.it> wrote:
 
-So change PSC clock name in UART device driver using registered clock.
+> From: Matteo Facchinetti <engineering@sirius-es.it>
+> 
+> On platform mpc512x, PSC clock name registered by clk_register()
+> (clock.c:703) has _mclk suffix.
+> In mpc512x uart device driver, PSC clock name has _clk suffix.
+> 
+> So change PSC clock name in UART device driver using registered clock.
 
-Signed-off-by: Matteo Facchinetti <engineering@sirius-es.it>
----
- drivers/tty/serial/mpc52xx_uart.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+This bug is already fixed in the tty tree [1].
 
-diff --git a/drivers/tty/serial/mpc52xx_uart.c b/drivers/tty/serial/mpc52xx_uart.c
-index c0e1fad..018bad9 100644
---- a/drivers/tty/serial/mpc52xx_uart.c
-+++ b/drivers/tty/serial/mpc52xx_uart.c
-@@ -550,7 +550,7 @@ static int mpc512x_psc_clock(struct uart_port *port, int enable)
- 		return 0;
- 
- 	psc_num = (port->mapbase & 0xf00) >> 8;
--	snprintf(clk_name, sizeof(clk_name), "psc%d_clk", psc_num);
-+	snprintf(clk_name, sizeof(clk_name), "psc%d_mclk", psc_num);
- 	psc_clk = clk_get(port->dev, clk_name);
- 	if (IS_ERR(psc_clk)) {
- 		dev_err(port->dev, "Failed to get PSC clock entry!\n");
--- 
-1.7.10.4
+Thanks,
+
+Anatolij
+
+[1] https://git.kernel.org/cgit/linux/kernel/git/gregkh/tty.git/commit/?h=tty-linus&id=09081e5b47f6842669bb645e015deedf191244f4
