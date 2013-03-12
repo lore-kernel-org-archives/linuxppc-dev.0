@@ -1,20 +1,16 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id EF0AF2C0295
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2013 08:29:14 +1100 (EST)
-Date: Tue, 12 Mar 2013 22:29:04 +0100
-From: Anatolij Gustschin <agust@denx.de>
-To: Matteo Facchinetti <matteo.facchinetti@sirius-es.it>
-Subject: Re: [PATCH 1/1] serial/mpc52xx_uart: fix psc clock name for mpc512x
-Message-ID: <20130312222904.1c7acbc8@crub>
-In-Reply-To: <1363123037-4926-1-git-send-email-matteo.facchinetti@sirius-es.it>
-References: <1363123037-4926-1-git-send-email-matteo.facchinetti@sirius-es.it>
+Return-Path: <pebolle@tiscali.nl>
+Received: from cpsmtpb-ews01.kpnxchange.com (cpsmtpb-ews01.kpnxchange.com
+ [213.75.39.4]) by ozlabs.org (Postfix) with ESMTP id 8B76F2C0094
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2013 08:49:16 +1100 (EST)
+Message-ID: <1363124951.3137.156.camel@x61.thuisdomein>
+Subject: [PATCH] powerpc/qe: remove useless Kconfig default
+From: Paul Bolle <pebolle@tiscali.nl>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>
+Date: Tue, 12 Mar 2013 22:49:11 +0100
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Matteo Facchinetti <engineering@sirius-es.it>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,23 +20,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+The Kconfig entry for QE_USB contains
+	default y if USB_GADGET_FSL_QE
 
-On Tue, 12 Mar 2013 22:17:17 +0100
-Matteo Facchinetti <matteo.facchinetti@sirius-es.it> wrote:
+But USB_GADGET_FSL_QE got removed in commit
+193ab2a6070039e7ee2b9b9bebea754a7c52fd1b ("usb: gadget: allow multiple
+gadgets to be built"). This default will therefor never be set and can
+be removed.
 
-> From: Matteo Facchinetti <engineering@sirius-es.it>
-> 
-> On platform mpc512x, PSC clock name registered by clk_register()
-> (clock.c:703) has _mclk suffix.
-> In mpc512x uart device driver, PSC clock name has _clk suffix.
-> 
-> So change PSC clock name in UART device driver using registered clock.
+Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+---
+0) Tested with "make ARCH=powerpc menuconfig" and "make ARCH=powerpc
+oldconfig" (before and after the patch). Enough to see this patch didn't
+obviously break stuff.
 
-This bug is already fixed in the tty tree [1].
+1) I don't really understand commit
+193ab2a6070039e7ee2b9b9bebea754a7c52fd1b. Was its point that we replace
+USB_GADGET_FSL_QE with USB_FSL_QE? I couldn't tell and chose not to
+actually change any behavior.
 
-Thanks,
+ arch/powerpc/sysdev/qe_lib/Kconfig | 1 -
+ 1 file changed, 1 deletion(-)
 
-Anatolij
-
-[1] https://git.kernel.org/cgit/linux/kernel/git/gregkh/tty.git/commit/?h=tty-linus&id=09081e5b47f6842669bb645e015deedf191244f4
+diff --git a/arch/powerpc/sysdev/qe_lib/Kconfig b/arch/powerpc/sysdev/qe_lib/Kconfig
+index 41ac3df..33caf44 100644
+--- a/arch/powerpc/sysdev/qe_lib/Kconfig
++++ b/arch/powerpc/sysdev/qe_lib/Kconfig
+@@ -22,6 +22,5 @@ config UCC
+ 
+ config QE_USB
+ 	bool
+-	default y if USB_GADGET_FSL_QE
+ 	help
+ 	  QE USB Controller support
+-- 
+1.7.11.7
