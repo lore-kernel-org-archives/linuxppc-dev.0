@@ -1,13 +1,32 @@
-Return-Path: <anton@samba.org>
-Date: Tue, 12 Mar 2013 22:51:51 +1100
-From: Anton Blanchard <anton@samba.org>
-To: agraf@suse.de, benh@kernel.crashing.org, aaro.koskinen@iki.fi,
- amodra@gmail.com
-Subject: [PATCH] powerpc: Fix -mcmodel=medium breakage in prom_init.c
-Message-ID: <20130312225151.2faeb395@kryten>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E325D2C02CF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2013 23:09:03 +1100 (EST)
+Received: from /spool/local
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 12 Mar 2013 17:35:32 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 034B63940023
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2013 17:38:57 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r2CC8sIe33685722
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2013 17:38:54 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r2CC8uCP025214
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2013 23:08:56 +1100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, David Gibson <dwg@au1.ibm.com>
+Subject: [PATCH -V3 1/3] powerpc: Make VSID_BITS* dependency explicit
+Date: Tue, 12 Mar 2013 17:38:49 +0530
+Message-Id: <1363090131-14545-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,73 +36,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-Commit 5ac47f7a6efb (powerpc: Relocate prom_init.c on 64bit) made
-prom_init.c position independent by manually relocating its entries
-in the TOC.
+VSID_BITS and VSID_BITS_1T depends on the context bits  and user esid
+bits. Make the dependency explicit
 
-We get the address of the TOC entries with the __prom_init_toc_start
-linker symbol. If __prom_init_toc_start ends up as an entry in the
-TOC then we need to add an offset to get the current address. This is
-the case for older toolchains.
-
-On the other hand, if we have a newer toolchain that supports
--mcmodel=medium then __prom_init_toc_start will be created by a
-relative offset from r2 (the TOC pointer). Since r2 has already been
-relocated, nothing more needs to be done.  Adding an offset in this
-case is wrong and Aaro Koskinen and Alexander Graf have noticed noticed
-G5 and OpenBIOS breakage.
-
-Alan Modra suggested we just use r2 to get at the TOC which is simpler
-and works with both old and new toolchains.
-
-Reported-by: Alexander Graf <agraf@suse.de>
-Signed-off-by: Anton Blanchard <anton@samba.org>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
+ arch/powerpc/include/asm/mmu-hash64.h |   11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
-Thanks Aaro for reporting this, and Alexander for an initial
-fix. This tested ok for me with both a new and an old toolchain,
-but would appreciate if you could double check it fixes your issues
-too.
-
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 7f7fb7f..13f8d16 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -2832,11 +2832,13 @@ static void unreloc_toc(void)
- {
- }
- #else
--static void __reloc_toc(void *tocstart, unsigned long offset,
--			unsigned long nr_entries)
-+static void __reloc_toc(unsigned long offset, unsigned long nr_entries)
- {
- 	unsigned long i;
--	unsigned long *toc_entry = (unsigned long *)tocstart;
-+	unsigned long *toc_entry;
+diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
+index 2fdb47a..5f8c2bd 100644
+--- a/arch/powerpc/include/asm/mmu-hash64.h
++++ b/arch/powerpc/include/asm/mmu-hash64.h
+@@ -381,21 +381,22 @@ extern void slb_set_size(u16 size);
+  * hash collisions.
+  */
+ 
++#define CONTEXT_BITS		19
++#define USER_ESID_BITS		18
++#define USER_ESID_BITS_1T	6
 +
-+	/* Get the start of the TOC by using r2 directly. */
-+	asm volatile("addi %0,2,-0x8000" : "=b" (toc_entry));
+ /*
+  * This should be computed such that protovosid * vsid_mulitplier
+  * doesn't overflow 64 bits. It should also be co-prime to vsid_modulus
+  */
+ #define VSID_MULTIPLIER_256M	ASM_CONST(12538073)	/* 24-bit prime */
+-#define VSID_BITS_256M		38
++#define VSID_BITS_256M		(CONTEXT_BITS + USER_ESID_BITS + 1)
+ #define VSID_MODULUS_256M	((1UL<<VSID_BITS_256M)-1)
  
- 	for (i = 0; i < nr_entries; i++) {
- 		*toc_entry = *toc_entry + offset;
-@@ -2850,8 +2852,7 @@ static void reloc_toc(void)
- 	unsigned long nr_entries =
- 		(__prom_init_toc_end - __prom_init_toc_start) / sizeof(long);
+ #define VSID_MULTIPLIER_1T	ASM_CONST(12538073)	/* 24-bit prime */
+-#define VSID_BITS_1T		26
++#define VSID_BITS_1T		(CONTEXT_BITS + USER_ESID_BITS_1T + 1)
+ #define VSID_MODULUS_1T		((1UL<<VSID_BITS_1T)-1)
  
--	/* Need to add offset to get at __prom_init_toc_start */
--	__reloc_toc(__prom_init_toc_start + offset, offset, nr_entries);
-+	__reloc_toc(offset, nr_entries);
+-#define CONTEXT_BITS		19
+-#define USER_ESID_BITS		18
+-#define USER_ESID_BITS_1T	6
  
- 	mb();
- }
-@@ -2864,8 +2865,7 @@ static void unreloc_toc(void)
+ #define USER_VSID_RANGE	(1UL << (USER_ESID_BITS + SID_SHIFT))
  
- 	mb();
- 
--	/* __prom_init_toc_start has been relocated, no need to add offset */
--	__reloc_toc(__prom_init_toc_start, -offset, nr_entries);
-+	__reloc_toc(-offset, nr_entries);
- }
- #endif
- #endif
+-- 
+1.7.10
