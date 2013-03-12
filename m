@@ -2,20 +2,22 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A25EC2C0087
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2013 07:44:17 +1100 (EST)
-Subject: Re: [PATCH] Make PCIe hotplug work with Freescale PCIe controllers
+ by ozlabs.org (Postfix) with ESMTPS id C072C2C0087
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2013 07:46:16 +1100 (EST)
+Subject: Re: [PATCH] powerpc/85xx: Add platform_device declaration to fsl_pci.h
 Mime-Version: 1.0 (Apple Message framework v1278)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <2399353.017i5G1tnZ@pcimr>
-Date: Tue, 12 Mar 2013 15:44:07 -0500
-Message-Id: <92335390-A05A-4E1D-9D07-A69896768A57@kernel.crashing.org>
-References: <3989200.gO920IVs04@pcimr>
- <179EA411-594D-4774-903A-6C0445A01747@kernel.crashing.org>
- <2399353.017i5G1tnZ@pcimr>
-To: Rojhalat Ibrahim <imr@rtschenk.de>
-Cc: linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01C11ED4@039-SN1MPN1-003.039d.mgd.msft.net>
+Date: Tue, 12 Mar 2013 15:46:09 -0500
+Message-Id: <1A66AF08-B77F-419C-B742-87EE61DBB11F@kernel.crashing.org>
+References: <1362386409-15907-1-git-send-email-B38951@freescale.com>
+ <CC45B9DD-7BB6-4E88-B5A0-F3E7A30608A7@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01C11ED4@039-SN1MPN1-003.039d.mgd.msft.net>
+To: Jia Hongtao-B38951 <B38951@freescale.com>
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,133 +28,86 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Mar 12, 2013, at 4:23 AM, Rojhalat Ibrahim wrote:
+On Mar 10, 2013, at 9:36 PM, Jia Hongtao-B38951 wrote:
 
-> On Monday 11 March 2013 12:17:42 Kumar Gala wrote:
+>=20
+>=20
+>> -----Original Message-----
+>> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+>> Sent: Saturday, March 09, 2013 4:38 AM
+>> To: Jia Hongtao-B38951
+>> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Li Yang-R58472
+>> Subject: Re: [PATCH] powerpc/85xx: Add platform_device declaration to
+>> fsl_pci.h
 >>=20
->> Rather than do it this way, we should do something like:
 >>=20
->> fsl_indirect_read_config() {
->> 	link check
->> 	if (link)
->> 		indirect_read_config()
->> }
+>> On Mar 4, 2013, at 2:40 AM, Jia Hongtao wrote:
 >>=20
->> and just add fsl_indirect_{r,w}_config into fsl_pci.c
+>>> mpc85xx_pci_err_probe(struct platform_device *op) need =
+platform_device
+>>> declaration for definition. Otherwise, it will cause compile error =
+if
+>>> any files including fsl_pci.h without declaration of =
+platform_device.
+>>>=20
+>>> Signed-off-by: Jia Hongtao <B38951@freescale.com>
+>>> ---
+>>> arch/powerpc/sysdev/fsl_pci.h |    2 ++
+>>> 1 files changed, 2 insertions(+), 0 deletions(-)
+>>>=20
+>>=20
+>> Where does the compile error show up?
 >>=20
 >> - k
+>=20
+> The function mpc85xx_pci_err_probe(struct platform_device *op) need
+> *platform_device* declaration so <linux/platform_device.h> must be
+> included.=20
+>=20
+> For now there is no compile error occurred just because the file that
+> need fsl_pci.h happened to include <linux/platform_device.h> already.
+>=20
+> If not the compile error log will be like this:
+> "
+> In file included from arch/powerpc/kernel/traps.c:62:0:
+> arch/powerpc/sysdev/fsl_pci.h:108:34: error: 'struct platform_device' =
+declared inside parameter list
+> arch/powerpc/sysdev/fsl_pci.h:108:34: error: its scope is only this =
+definition or declaration, which is probably not what you want
+> "
+>=20
+> You mean I have to show the compile error log in patch description?
+
+Not necessarily, I'm just trying to decide if we should include =
+<linux/platform_device.h> or just do:
+
+struct platform_device;
+
+near the top of fsl_pci.h.
+
+>=20
+> Thanks.
+> -Hongtao.
+>=20
 >>=20
->=20
-> Ok, how about this:
->=20
-
-I'd rather we just export indirect_read_config() & =
-indirect_write_config() from indirect_pci.c and call the functions =
-directly.  Adding a global and call them via a function pointer seems =
-wrong to me.
-
-- k
-
->=20
-> Signed-off-by: Rojhalat Ibrahim <imr@rtschenk.de>
-> ---
-> arch/powerpc/sysdev/fsl_pci.c |   49=20
-> ++++++++++++++++++++++++++++++++++++++----
-> 1 file changed, 45 insertions(+), 4 deletions(-)
->=20
-> diff --git a/arch/powerpc/sysdev/fsl_pci.c =
-b/arch/powerpc/sysdev/fsl_pci.c
-> index 682084d..693db9f 100644
-> --- a/arch/powerpc/sysdev/fsl_pci.c
-> +++ b/arch/powerpc/sysdev/fsl_pci.c
-> @@ -36,6 +36,8 @@
->=20
-> static int fsl_pcie_bus_fixup, is_mpc83xx_pci;
->=20
-> +static struct pci_ops *indirect_pci_ops;
-> +
-> static void quirk_fsl_pcie_header(struct pci_dev *dev)
-> {
-> 	u8 hdr_type;
-> @@ -64,6 +66,45 @@ static int __init fsl_pcie_check_link(struct =
-pci_controller=20
-> *hose)
-> 	return 0;
-> }
->=20
-> +static int fsl_indirect_read_config(struct pci_bus *bus, unsigned int =
-devfn,
-> +				    int offset, int len, u32 *val)
-> +{
-> +	struct pci_controller *hose =3D pci_bus_to_host(bus);
-> +=09
-> +	// check the link status
-> +	if ((bus->number =3D=3D hose->first_busno) && (devfn =3D=3D 0)) =
-{
-> +		u32 ltssm =3D 0;
-> +		indirect_pci_ops->read(bus, 0, PCIE_LTSSM, 4, &ltssm);
-> +		if (ltssm < PCIE_LTSSM_L0) {
-> +			hose->indirect_type |=3D =
-PPC_INDIRECT_TYPE_NO_PCIE_LINK;
-> +		} else {
-> +			hose->indirect_type &=3D =
-~PPC_INDIRECT_TYPE_NO_PCIE_LINK;
-> +		}
-> +	}
-> +	return indirect_pci_ops->read(bus, devfn, offset, len, val);
-> +}
-> +
-> +static int fsl_indirect_write_config(struct pci_bus *bus, unsigned =
-int devfn,
-> +				     int offset, int len, u32 val)
-> +{
-> +	return indirect_pci_ops->write(bus, devfn, offset, len, val);
-> +}
-> +
-> +static struct pci_ops fsl_indirect_pci_ops =3D
-> +{
-> +	.read =3D fsl_indirect_read_config,
-> +	.write =3D fsl_indirect_write_config,
-> +};
-> +
-> +static void __init fsl_setup_indirect_pci(struct pci_controller* =
-hose,
-> +					  resource_size_t cfg_addr,
-> +					  resource_size_t cfg_data, u32 =
-flags)
-> +{
-> +	setup_indirect_pci(hose, cfg_addr, cfg_data, flags);
-> +	indirect_pci_ops =3D hose->ops;
-> +	hose->ops =3D &fsl_indirect_pci_ops;
-> +}
-> +
-> #if defined(CONFIG_FSL_SOC_BOOKE) || defined(CONFIG_PPC_86xx)
->=20
-> #define MAX_PHYS_ADDR_BITS	40
-> @@ -461,8 +502,8 @@ int __init fsl_add_bridge(struct platform_device =
-*pdev,=20
-> int is_primary)
-> 	hose->first_busno =3D bus_range ? bus_range[0] : 0x0;
-> 	hose->last_busno =3D bus_range ? bus_range[1] : 0xff;
->=20
-> -	setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4,
-> -		PPC_INDIRECT_TYPE_BIG_ENDIAN);
-> +	fsl_setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4,
-> +			       PPC_INDIRECT_TYPE_BIG_ENDIAN);
->=20
-> 	if (early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP)) {
-> 		/* For PCIE read HEADER_TYPE to identify controler mode =
-*/
-> @@ -766,8 +807,8 @@ int __init mpc83xx_add_bridge(struct device_node =
-*dev)
-> 		if (ret)
-> 			goto err0;
-> 	} else {
-> -		setup_indirect_pci(hose, rsrc_cfg.start,
-> -				   rsrc_cfg.start + 4, 0);
-> +		fsl_setup_indirect_pci(hose, rsrc_cfg.start,
-> +				       rsrc_cfg.start + 4, 0);
-> 	}
->=20
-> 	printk(KERN_INFO "Found FSL PCI host bridge at 0x%016llx. "
+>>> diff --git a/arch/powerpc/sysdev/fsl_pci.h
+>>> b/arch/powerpc/sysdev/fsl_pci.h index c495c00..df66721 100644
+>>> --- a/arch/powerpc/sysdev/fsl_pci.h
+>>> +++ b/arch/powerpc/sysdev/fsl_pci.h
+>>> @@ -14,6 +14,8 @@
+>>> #ifndef __POWERPC_FSL_PCI_H
+>>> #define __POWERPC_FSL_PCI_H
+>>>=20
+>>> +#include <linux/platform_device.h>
+>>> +
+>>> #define PCIE_LTSSM	0x0404		/* PCIE Link Training and
+>> Status */
+>>> #define PCIE_LTSSM_L0	0x16		/* L0 state */
+>>> #define PCIE_IP_REV_2_2		0x02080202 /* PCIE IP block =
+version
+>> Rev2.2 */
+>>> --
+>>> 1.7.5.1
+>>>=20
+>>=20
 >=20
