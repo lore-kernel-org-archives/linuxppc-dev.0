@@ -1,16 +1,17 @@
-Return-Path: <pebolle@tiscali.nl>
-Received: from cpsmtpb-ews01.kpnxchange.com (cpsmtpb-ews01.kpnxchange.com
- [213.75.39.4]) by ozlabs.org (Postfix) with ESMTP id 8B76F2C0094
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2013 08:49:16 +1100 (EST)
-Message-ID: <1363124951.3137.156.camel@x61.thuisdomein>
-Subject: [PATCH] powerpc/qe: remove useless Kconfig default
-From: Paul Bolle <pebolle@tiscali.nl>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>
-Date: Tue, 12 Mar 2013 22:49:11 +0100
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <aaro.koskinen@iki.fi>
+Received: from filtteri5.pp.htv.fi (filtteri5.pp.htv.fi [213.243.153.188])
+ by ozlabs.org (Postfix) with ESMTP id AFED42C008C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2013 09:12:09 +1100 (EST)
+Date: Wed, 13 Mar 2013 00:11:59 +0200
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH] powerpc: Fix -mcmodel=medium breakage in prom_init.c
+Message-ID: <20130312221159.GC8798@blackmetal.musicnaut.iki.fi>
+References: <20130312225151.2faeb395@kryten>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130312225151.2faeb395@kryten>
+Cc: linuxppc-dev@lists.ozlabs.org, agraf@suse.de, amodra@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,38 +21,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The Kconfig entry for QE_USB contains
-	default y if USB_GADGET_FSL_QE
+Hi,
 
-But USB_GADGET_FSL_QE got removed in commit
-193ab2a6070039e7ee2b9b9bebea754a7c52fd1b ("usb: gadget: allow multiple
-gadgets to be built"). This default will therefor never be set and can
-be removed.
+On Tue, Mar 12, 2013 at 10:51:51PM +1100, Anton Blanchard wrote:
+> Commit 5ac47f7a6efb (powerpc: Relocate prom_init.c on 64bit) made
+> prom_init.c position independent by manually relocating its entries
+> in the TOC.
+> 
+> We get the address of the TOC entries with the __prom_init_toc_start
+> linker symbol. If __prom_init_toc_start ends up as an entry in the
+> TOC then we need to add an offset to get the current address. This is
+> the case for older toolchains.
+> 
+> On the other hand, if we have a newer toolchain that supports
+> -mcmodel=medium then __prom_init_toc_start will be created by a
+> relative offset from r2 (the TOC pointer). Since r2 has already been
+> relocated, nothing more needs to be done.  Adding an offset in this
+> case is wrong and Aaro Koskinen and Alexander Graf have noticed noticed
+> G5 and OpenBIOS breakage.
+> 
+> Alan Modra suggested we just use r2 to get at the TOC which is simpler
+> and works with both old and new toolchains.
+> 
+> Reported-by: Alexander Graf <agraf@suse.de>
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
+> 
+> Thanks Aaro for reporting this, and Alexander for an initial
+> fix. This tested ok for me with both a new and an old toolchain,
+> but would appreciate if you could double check it fixes your issues
+> too.
 
-Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
----
-0) Tested with "make ARCH=powerpc menuconfig" and "make ARCH=powerpc
-oldconfig" (before and after the patch). Enough to see this patch didn't
-obviously break stuff.
+This seems to fix the issue also for me, so:
 
-1) I don't really understand commit
-193ab2a6070039e7ee2b9b9bebea754a7c52fd1b. Was its point that we replace
-USB_GADGET_FSL_QE with USB_FSL_QE? I couldn't tell and chose not to
-actually change any behavior.
+Tested-by: Aaro Koskinen <aaro.koskinen@iki.fi>
 
- arch/powerpc/sysdev/qe_lib/Kconfig | 1 -
- 1 file changed, 1 deletion(-)
+Thanks,
 
-diff --git a/arch/powerpc/sysdev/qe_lib/Kconfig b/arch/powerpc/sysdev/qe_lib/Kconfig
-index 41ac3df..33caf44 100644
---- a/arch/powerpc/sysdev/qe_lib/Kconfig
-+++ b/arch/powerpc/sysdev/qe_lib/Kconfig
-@@ -22,6 +22,5 @@ config UCC
- 
- config QE_USB
- 	bool
--	default y if USB_GADGET_FSL_QE
- 	help
- 	  QE USB Controller support
--- 
-1.7.11.7
+A.
+
+> diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+> index 7f7fb7f..13f8d16 100644
+> --- a/arch/powerpc/kernel/prom_init.c
+> +++ b/arch/powerpc/kernel/prom_init.c
+> @@ -2832,11 +2832,13 @@ static void unreloc_toc(void)
+>  {
+>  }
+>  #else
+> -static void __reloc_toc(void *tocstart, unsigned long offset,
+> -			unsigned long nr_entries)
+> +static void __reloc_toc(unsigned long offset, unsigned long nr_entries)
+>  {
+>  	unsigned long i;
+> -	unsigned long *toc_entry = (unsigned long *)tocstart;
+> +	unsigned long *toc_entry;
+> +
+> +	/* Get the start of the TOC by using r2 directly. */
+> +	asm volatile("addi %0,2,-0x8000" : "=b" (toc_entry));
+>  
+>  	for (i = 0; i < nr_entries; i++) {
+>  		*toc_entry = *toc_entry + offset;
+> @@ -2850,8 +2852,7 @@ static void reloc_toc(void)
+>  	unsigned long nr_entries =
+>  		(__prom_init_toc_end - __prom_init_toc_start) / sizeof(long);
+>  
+> -	/* Need to add offset to get at __prom_init_toc_start */
+> -	__reloc_toc(__prom_init_toc_start + offset, offset, nr_entries);
+> +	__reloc_toc(offset, nr_entries);
+>  
+>  	mb();
+>  }
+> @@ -2864,8 +2865,7 @@ static void unreloc_toc(void)
+>  
+>  	mb();
+>  
+> -	/* __prom_init_toc_start has been relocated, no need to add offset */
+> -	__reloc_toc(__prom_init_toc_start, -offset, nr_entries);
+> +	__reloc_toc(-offset, nr_entries);
+>  }
+>  #endif
+>  #endif
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
