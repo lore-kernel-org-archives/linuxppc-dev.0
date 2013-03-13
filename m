@@ -1,37 +1,37 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 04F982C008E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2013 20:17:17 +1100 (EST)
+ (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6FD222C0296
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2013 20:25:27 +1100 (EST)
 Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 13 Mar 2013 14:42:54 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 94597E004E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2013 14:48:28 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r2D9H41S29098234
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2013 14:47:04 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r2D9H72O006354
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2013 20:17:07 +1100
+ Wed, 13 Mar 2013 14:51:52 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 2DCDDE004A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2013 14:56:39 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r2D9PFO730408754
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2013 14:55:15 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r2D9PHKQ014681
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2013 09:25:18 GMT
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH -V3 2/3] powerpc: Update kernel VSID range
-In-Reply-To: <20130313034254.GC21125@iris.ozlabs.ibm.com>
-References: <1363090131-14545-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1363090131-14545-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20130313034254.GC21125@iris.ozlabs.ibm.com>
-Date: Wed, 13 Mar 2013 14:47:06 +0530
-Message-ID: <87a9q7d5gt.fsf@linux.vnet.ibm.com>
+Subject: Re: [PATCH -V2 07/26] powerpc: Add size argument to pgtable_cache_add
+In-Reply-To: <20130313024725.GA21125@iris.ozlabs.ibm.com>
+References: <1362550227-575-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1362550227-575-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20130313024725.GA21125@iris.ozlabs.ibm.com>
+Date: Wed, 13 Mar 2013 14:55:17 +0530
+Message-ID: <877glbd536.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, David Gibson <dwg@au1.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,42 +43,44 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Paul Mackerras <paulus@samba.org> writes:
 
-> On Tue, Mar 12, 2013 at 05:38:50PM +0530, Aneesh Kumar K.V wrote:
+> On Wed, Mar 06, 2013 at 11:40:08AM +0530, Aneesh Kumar K.V wrote:
 >> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 >> 
->> This patch change the kernel VSID range so that we limit VSID_BITS to 37.
->> This enables us to support 64TB with 65 bit VA (37+28). Without this patch
->> we have boot hangs on platforms that only support 65 bit VA.
+>> We will use this later with THP changes to request for pmd table of double the size.
+>> THP code does PTE page allocation along with large page request and deposit them
+>> for later use. This is to ensure that we won't have any failures when we split
+>> huge pages to regular pages.
 >> 
->> With this patch we now have proto vsid generated as below:
->> 
->> We first generate a 37-bit "proto-VSID". Proto-VSIDs are generated
->> from mmu context id and effective segment id of the address.
->> 
->> For user processes max context id is limited to ((1ul << 19) - 5)
->> for kernel space, we use the top 4 context ids to map address as below
->> 0x7fffc -  [ 0xc000000000000000 - 0xc0003fffffffffff ]
->> 0x7fffd -  [ 0xd000000000000000 - 0xd0003fffffffffff ]
->> 0x7fffe -  [ 0xe000000000000000 - 0xe0003fffffffffff ]
->> 0x7ffff -  [ 0xf000000000000000 - 0xf0003fffffffffff ]
->> 
->> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>> On powerpc we want to use the deposited PTE page for storing hash pte slot and
+>> secondary bit information for the HPTEs. Hence we save them in the second half
+>> of the pmd table.
 >
-> Mostly looks OK, and it could go in as is, so
+> That much is fine, but...
 >
-> Acked-by: Paul Mackerras <paulus@samba.org>
+>> -void pgtable_cache_add(unsigned shift, void (*ctor)(void *));
+>> +extern void __pgtable_cache_add(unsigned shift, unsigned long table_size,
+>> +				void (*ctor)(void *));
+>>  void pgtable_cache_init(void);
+>> +static inline void pgtable_cache_add(unsigned shift, void (*ctor)(void *))
+>> +{
+>> +	return __pgtable_cache_add(shift, sizeof(void *) << shift, ctor);
+>> +}
 >
-> Some minor comments below...
+> NAK to this (and in fact the rest of this patch).
 >
->> + * For user processes max context id is limited to ((1ul << 19) - 6)
->
-> should be ((1ul << 19) - 5)
+> If you need twice the size, use the next slot along in pgtable_cache,
+> which will give you the size you need, rather than breaking the
+> relationship between slot index and allocation size.
 
-I update the commit message but missed updating this.  
+That would mean we will have to do 
 
-Ben,
+ static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
+ {
+-	return kmem_cache_alloc(PGT_CACHE(PMD_INDEX_SIZE),
++	return kmem_cache_alloc(PGT_CACHE(PMD_INDEX_SIZE + 1),
+ 				GFP_KERNEL|__GFP_REPEAT);
+ }
 
-Let me know if you want me to send V4 to take care of these review
-feedbacks.
+is that ok ?
 
 -aneesh
