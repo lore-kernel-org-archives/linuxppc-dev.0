@@ -1,15 +1,15 @@
 Return-Path: <paulus@ozlabs.org>
-Date: Wed, 13 Mar 2013 13:47:25 +1100
+Date: Wed, 13 Mar 2013 14:42:54 +1100
 From: Paul Mackerras <paulus@samba.org>
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH -V2 07/26] powerpc: Add size argument to pgtable_cache_add
-Message-ID: <20130313024725.GA21125@iris.ozlabs.ibm.com>
-References: <1362550227-575-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1362550227-575-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH -V3 2/3] powerpc: Update kernel VSID range
+Message-ID: <20130313034254.GC21125@iris.ozlabs.ibm.com>
+References: <1363090131-14545-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1363090131-14545-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1362550227-575-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1363090131-14545-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, David Gibson <dwg@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,33 +19,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 06, 2013 at 11:40:08AM +0530, Aneesh Kumar K.V wrote:
+On Tue, Mar 12, 2013 at 05:38:50PM +0530, Aneesh Kumar K.V wrote:
 > From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 > 
-> We will use this later with THP changes to request for pmd table of double the size.
-> THP code does PTE page allocation along with large page request and deposit them
-> for later use. This is to ensure that we won't have any failures when we split
-> huge pages to regular pages.
+> This patch change the kernel VSID range so that we limit VSID_BITS to 37.
+> This enables us to support 64TB with 65 bit VA (37+28). Without this patch
+> we have boot hangs on platforms that only support 65 bit VA.
 > 
-> On powerpc we want to use the deposited PTE page for storing hash pte slot and
-> secondary bit information for the HPTEs. Hence we save them in the second half
-> of the pmd table.
+> With this patch we now have proto vsid generated as below:
+> 
+> We first generate a 37-bit "proto-VSID". Proto-VSIDs are generated
+> from mmu context id and effective segment id of the address.
+> 
+> For user processes max context id is limited to ((1ul << 19) - 5)
+> for kernel space, we use the top 4 context ids to map address as below
+> 0x7fffc -  [ 0xc000000000000000 - 0xc0003fffffffffff ]
+> 0x7fffd -  [ 0xd000000000000000 - 0xd0003fffffffffff ]
+> 0x7fffe -  [ 0xe000000000000000 - 0xe0003fffffffffff ]
+> 0x7ffff -  [ 0xf000000000000000 - 0xf0003fffffffffff ]
+> 
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-That much is fine, but...
+Mostly looks OK, and it could go in as is, so
 
-> -void pgtable_cache_add(unsigned shift, void (*ctor)(void *));
-> +extern void __pgtable_cache_add(unsigned shift, unsigned long table_size,
-> +				void (*ctor)(void *));
->  void pgtable_cache_init(void);
-> +static inline void pgtable_cache_add(unsigned shift, void (*ctor)(void *))
-> +{
-> +	return __pgtable_cache_add(shift, sizeof(void *) << shift, ctor);
-> +}
+Acked-by: Paul Mackerras <paulus@samba.org>
 
-NAK to this (and in fact the rest of this patch).
+Some minor comments below...
 
-If you need twice the size, use the next slot along in pgtable_cache,
-which will give you the size you need, rather than breaking the
-relationship between slot index and allocation size.
+> + * For user processes max context id is limited to ((1ul << 19) - 6)
+
+should be ((1ul << 19) - 5)
+
+> + * a divide or extra multiply (see below). The scramble function gives
+> + * robust scattering in the hash * table (at least based on some initial
+
+                                    ^ superfluous *
+
+> +	/*
+> +	 * Calculate VSID:
+> +	 * This is the kernel vsid, we take the top for context from
+> +	 * the range. context = (MAX_USER_CONTEXT) + ((ea >> 60) - 0xc) + 1
+> +	 * Here we know that (ea >> 60) == 0xc
+> +	 */
+> +	lis	r9,8
+> +	subi	r9,r9,4		/* context */
+
+Would be nice to do this as:
+
+	lis	r9, (MAX_USER_CONTEXT+1)@ha
+	addi	r9, r9, (MAX_USER_CONTEXT+1)@l
+
+rather than having the hard-coded 8 and 4.
+
+>  int __init_new_context(void)
+>  {
+>  	int index;
+> @@ -56,7 +47,7 @@ again:
+>  	else if (err)
+>  		return err;
+>  
+> -	if (index > MAX_CONTEXT) {
+> +	if (index > (MAX_USER_CONTEXT)) {
+
+Unnecessary extra parentheses.
+
+>  _GLOBAL(slb_allocate_realmode)
+> -	/* r3 = faulting address */
+> +	/*
+> +	 * check for bad kernel/user address
+> +	 * (ea & ~REGION_MASK) >= PGTABLE_RANGE
+> +	 */
+> +	rldicr. r9,r3,4,(63 - 46 - 4)
+> +	bne-	8f
+>  
+>  	srdi	r9,r3,60		/* get region */
+> -	srdi	r10,r3,28		/* get esid */
+> +	srdi	r10,r3,SID_SHIFT	/* get esid */
+>  	cmpldi	cr7,r9,0xc		/* cmp PAGE_OFFSET for later use */
+>  
+>  	/* r3 = address, r10 = esid, cr7 = <> PAGE_OFFSET */
+> @@ -56,12 +61,13 @@ _GLOBAL(slb_allocate_realmode)
+>  	 */
+>  _GLOBAL(slb_miss_kernel_load_linear)
+>  	li	r11,0
+> -	li	r9,0x1
+>  	/*
+> -	 * for 1T we shift 12 bits more.  slb_finish_load_1T will do
+> -	 * the necessary adjustment
+> +	 * context = (MAX_USER_CONTEXT) + ((ea >> 60) - 0xc) + 1
+>  	 */
+> -	rldimi  r10,r9,(CONTEXT_BITS + USER_ESID_BITS),0
+> +	rldicl	r9,r3,4,62
+> +	addis	r9,r9,8
+> +	subi	r9,r9,4
+
+You already have the region ID in r9, so you could do this in two
+instructions like this:
+
+	addis	r9,r9,(MAX_USER_CONTEXT - 0xc + 1)@ha
+	addi	r9,r9,(MAX_USER_CONTEXT - 0xc + 1)@l
+
+> +
+>  BEGIN_FTR_SECTION
+>  	b	slb_finish_load
+>  END_MMU_FTR_SECTION_IFCLR(MMU_FTR_1T_SEGMENT)
+> @@ -91,24 +97,19 @@ _GLOBAL(slb_miss_kernel_load_vmemmap)
+>  	_GLOBAL(slb_miss_kernel_load_io)
+>  	li	r11,0
+>  6:
+> -	li	r9,0x1
+>  	/*
+> -	 * for 1T we shift 12 bits more.  slb_finish_load_1T will do
+> -	 * the necessary adjustment
+> +	 * context = (MAX_USER_CONTEXT) + ((ea >> 60) - 0xc) + 1
+>  	 */
+> -	rldimi  r10,r9,(CONTEXT_BITS + USER_ESID_BITS),0
+> +	rldicl	r9,r3,4,62
+> +	addis	r9,r9,8
+> +	subi	r9,r9,4
+
+If you did the context calculation earlier, before the "bne cr7,1f",
+you could save 3 more instructions.
 
 Paul.
