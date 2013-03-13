@@ -1,25 +1,16 @@
-Return-Path: <michael@ellerman.id.au>
-Date: Wed, 13 Mar 2013 11:15:43 +1100
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 5/6][v4]: perf: Create a sysfs entry for Power event format
-Message-ID: <20130313001542.GA5058@concordia>
-References: <20130123062201.GA13720@us.ibm.com>
- <20130123062613.GF13720@us.ibm.com>
- <20130226052646.GB21553@concordia>
- <20130226200343.GA21543@us.ibm.com>
- <20130227011725.GA5819@concordia>
- <20130306054826.GA14627@us.ibm.com>
- <20130312092740.GC30591@iris.ozlabs.ibm.com>
+Return-Path: <paulus@ozlabs.org>
+Date: Wed, 13 Mar 2013 13:56:14 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH -V2 11/26] powerpc: Fix hpte_decode to use the correct
+ decoding for page sizes
+Message-ID: <20130313025614.GB21125@iris.ozlabs.ibm.com>
+References: <1362550227-575-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1362550227-575-12-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130312092740.GC30591@iris.ozlabs.ibm.com>
-Cc: Andi Kleen <ak@linux.intel.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
- robert.richter@amd.com, Anton Blanchard <anton@au1.ibm.com>,
- linux-kernel@vger.kernel.org, Stephane Eranian <eranian@google.com>,
- linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@redhat.com>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, Jiri Olsa <jolsa@redhat.com>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1362550227-575-12-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,39 +20,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 12, 2013 at 08:27:40PM +1100, Paul Mackerras wrote:
-> On Tue, Mar 05, 2013 at 09:48:26PM -0800, Sukadev Bhattiprolu wrote:
-> > Michael Ellerman [michael@ellerman.id.au] wrote:
-> > | I suspect Arnaldo was either waiting for an ACK from Ben, or was
-> > | expecting Ben to take it?
-> > 
-> > Arnaldo, here is an updated patch. If it is acked by Paul Mackerras,
-> > Michael Ellerman or Ben, will you add it to your tree so the whole
-> > patchset comes from one place ?
-> > 
-> > Sukadev
-> > 
-> > ---
-> > >From 50c7a46f14083c0ed10d66b7aed66ba76e798550 Mon Sep 17 00:00:00 2001
-> > From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> > Date: Tue, 5 Mar 2013 21:20:56 -0800
-> > Subject: [PATCH] [PATCH 5/6][v4]: perf Create a sysfs format entry for Power7 events
-> > 
-> > Create a sysfs entry, '/sys/bus/event_source/devices/cpu/format/event'
-> > which describes the format of the POWER7 PMU events.
-> > 
-> > This code is based on corresponding code in x86.
-> > 
-> > Changelog[v4]:  [Michael Ellerman, Paul Mckerras] The event format is different
-> > 		for other POWER cpus. So move the code to POWER7-specific,
-> > 		power7-pmu.c Also, the POWER7 format uses bits 0-19 not 0-20.
-> > 
-> > Changelog[v2]: [Jiri Osla] Use PMU_FORMAT_ATTR rather than duplicating code.
-> > 
-> > Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+On Wed, Mar 06, 2013 at 11:40:12AM +0530, Aneesh Kumar K.V wrote:
+> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 > 
-> Acked-by: Paul Mackerras <paulus@samba.org>
+> As per ISA doc, we encode base and actual page size in the LP bits of
+> PTE. The number of bit used to encode the page sizes depend on actual
+> page size.  ISA doc lists this as
+> 
+>    PTE LP     actual page size
+> rrrr rrrz 	≥8KB
+> rrrr rrzz	≥16KB
+> rrrr rzzz 	≥32KB
+> rrrr zzzz 	≥64KB
+> rrrz zzzz 	≥128KB
+> rrzz zzzz 	≥256KB
+> rzzz zzzz	≥512KB
+> zzzz zzzz 	≥1MB
+> 
+> ISA doc also says
+> "The values of the “z” bits used to specify each size, along with all possible
+> values of “r” bits in the LP field, must result in LP values distinct from
+> other LP values for other sizes."
+> 
+> based on the above update hpte_decode to use the correct decoding for LP bits.
+> 
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+[snip]
+> +				shift = mmu_psize_defs[a_size].shift -
+> +					mmu_psize_defs[MMU_PAGE_4K].shift;
 
-Tested-by: Michael Ellerman <michael@ellerman.id.au>
+"mmu_psize_defs[MMU_PAGE_4K].shift" seems like an overly complicated
+way to write "LP_SHIFT" (or even "12").  After all, you did:
 
-cheers
+> +	unsigned int lp = (hpte->r >> LP_SHIFT) & ((1 << LP_BITS) - 1);
+
+earlier.  If LP_SHIFT is good enough in that expression it's good
+enough when calculating shift.
+
+Apart from that minor nit,
+
+Acked-by: Paul Mackerras <paulus@samba.org>
