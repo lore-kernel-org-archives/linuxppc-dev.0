@@ -1,15 +1,26 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E6D6F2C009D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2013 01:43:31 +1100 (EST)
-From: Anatolij Gustschin <agust@denx.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/mpc512x: create SoC devices for more nodes
-Date: Wed, 13 Mar 2013 15:43:22 +0100
-Message-Id: <1363185802-25427-1-git-send-email-agust@denx.de>
-Cc: Anatolij Gustschin <agust@denx.de>
+Return-Path: <B07421@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0D37B2C00A1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2013 03:37:51 +1100 (EST)
+Date: Wed, 13 Mar 2013 11:37:39 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH V4] powerpc/85xx: Add machine check handler to fix PCIe
+ erratum on mpc85xx
+To: David Laight <David.Laight@ACULAB.COM>
+References: <412C8208B4A0464FA894C5F0C278CD5D01C15369@039-SN1MPN1-003.039d.mgd.msft.net>
+ <1363123452.17135.13@snotra>
+ <AE90C24D6B3A694183C094C60CF0A2F6026B7186@saturn3.aculab.com>
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6026B7186@saturn3.aculab.com>
+ (from David.Laight@ACULAB.COM on Wed Mar 13 04:40:40 2013)
+Message-ID: <1363192659.8945.1@snotra>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: Wood Scott-B07421 <B07421@freescale.com>, Stuart Yoder <b08248@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, Jia Hongtao-B38951 <B38951@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,46 +30,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Create devices for mbx, sram, pci and gpio-leds nodes and
-also move nfc compatible to of_bus_id list for automatic
-nfc device creation.
+On 03/13/2013 04:40:40 AM, David Laight wrote:
+> > Hmm, seems there's no probe_user_address() -- for userspace we
+> > basically want the same thing minus the KERNEL_DS.  See
+> > arch/powerpc/perf/callchain.c for an example.
+>=20
+> Isn't that just copy_from_user() ?
 
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
----
- arch/powerpc/platforms/512x/mpc512x_shared.c |   13 +++++--------
- 1 files changed, 5 insertions(+), 8 deletions(-)
+Plus pagefault_disable/enable().
 
-diff --git a/arch/powerpc/platforms/512x/mpc512x_shared.c b/arch/powerpc/platforms/512x/mpc512x_shared.c
-index d30235b..2765cd1 100644
---- a/arch/powerpc/platforms/512x/mpc512x_shared.c
-+++ b/arch/powerpc/platforms/512x/mpc512x_shared.c
-@@ -330,22 +330,19 @@ void __init mpc512x_init_IRQ(void)
- static struct of_device_id __initdata of_bus_ids[] = {
- 	{ .compatible = "fsl,mpc5121-immr", },
- 	{ .compatible = "fsl,mpc5121-localbus", },
-+	{ .compatible = "fsl,mpc5121-mbx", },
-+	{ .compatible = "fsl,mpc5121-nfc", },
-+	{ .compatible = "fsl,mpc5121-sram", },
-+	{ .compatible = "fsl,mpc5121-pci", },
-+	{ .compatible = "gpio-leds", },
- 	{},
- };
- 
- void __init mpc512x_declare_of_platform_devices(void)
- {
--	struct device_node *np;
--
- 	if (of_platform_bus_probe(NULL, of_bus_ids, NULL))
- 		printk(KERN_ERR __FILE__ ": "
- 			"Error while probing of_platform bus\n");
--
--	np = of_find_compatible_node(NULL, NULL, "fsl,mpc5121-nfc");
--	if (np) {
--		of_platform_device_create(np, NULL, NULL);
--		of_node_put(np);
--	}
- }
- 
- #define DEFAULT_FIFO_SIZE 16
--- 
-1.7.5.4
+-Scott=
