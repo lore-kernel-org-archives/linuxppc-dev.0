@@ -1,18 +1,37 @@
-Return-Path: <dedekind1@gmail.com>
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by ozlabs.org (Postfix) with ESMTP id 08B122C03F0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2013 20:04:35 +1100 (EST)
-Message-ID: <1363165527.9457.15.camel@sauron.fi.intel.com>
-Subject: [PATCH 10/10] mtd: remove the ixp2000 map driver
-From: Artem Bityutskiy <dedekind1@gmail.com>
-To: MTD Maling List <linux-mtd@lists.infradead.org>, linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>
-Date: Wed, 13 Mar 2013 11:05:27 +0200
-In-Reply-To: <1363086855-2847-1-git-send-email-dedekind1@gmail.com>
-References: <1363086855-2847-1-git-send-email-dedekind1@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Reply-To: dedekind1@gmail.com
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 04F982C008E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2013 20:17:17 +1100 (EST)
+Received: from /spool/local
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 13 Mar 2013 14:42:54 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 94597E004E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2013 14:48:28 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r2D9H41S29098234
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2013 14:47:04 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r2D9H72O006354
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2013 20:17:07 +1100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH -V3 2/3] powerpc: Update kernel VSID range
+In-Reply-To: <20130313034254.GC21125@iris.ozlabs.ibm.com>
+References: <1363090131-14545-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1363090131-14545-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20130313034254.GC21125@iris.ozlabs.ibm.com>
+Date: Wed, 13 Mar 2013 14:47:06 +0530
+Message-ID: <87a9q7d5gt.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, David Gibson <dwg@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,321 +41,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
+Paul Mackerras <paulus@samba.org> writes:
 
-This driver depends on CONFIG_IXP2000 which is not defined anywhere, which means
-this driver is dead.
+> On Tue, Mar 12, 2013 at 05:38:50PM +0530, Aneesh Kumar K.V wrote:
+>> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+>> 
+>> This patch change the kernel VSID range so that we limit VSID_BITS to 37.
+>> This enables us to support 64TB with 65 bit VA (37+28). Without this patch
+>> we have boot hangs on platforms that only support 65 bit VA.
+>> 
+>> With this patch we now have proto vsid generated as below:
+>> 
+>> We first generate a 37-bit "proto-VSID". Proto-VSIDs are generated
+>> from mmu context id and effective segment id of the address.
+>> 
+>> For user processes max context id is limited to ((1ul << 19) - 5)
+>> for kernel space, we use the top 4 context ids to map address as below
+>> 0x7fffc -  [ 0xc000000000000000 - 0xc0003fffffffffff ]
+>> 0x7fffd -  [ 0xd000000000000000 - 0xd0003fffffffffff ]
+>> 0x7fffe -  [ 0xe000000000000000 - 0xe0003fffffffffff ]
+>> 0x7ffff -  [ 0xf000000000000000 - 0xf0003fffffffffff ]
+>> 
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>
+> Mostly looks OK, and it could go in as is, so
+>
+> Acked-by: Paul Mackerras <paulus@samba.org>
+>
+> Some minor comments below...
+>
+>> + * For user processes max context id is limited to ((1ul << 19) - 6)
+>
+> should be ((1ul << 19) - 5)
 
-Signed-off-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
----
+I update the commit message but missed updating this.  
 
-Adding the PPC list
+Ben,
 
- drivers/mtd/maps/Kconfig   |    9 --
- drivers/mtd/maps/Makefile  |    1 -
- drivers/mtd/maps/ixp2000.c |  253 --------------------------------------------
- 3 files changed, 263 deletions(-)
- delete mode 100644 drivers/mtd/maps/ixp2000.c
+Let me know if you want me to send V4 to take care of these review
+feedbacks.
 
-diff --git a/drivers/mtd/maps/Kconfig b/drivers/mtd/maps/Kconfig
-index b6a369a..4b70976 100644
---- a/drivers/mtd/maps/Kconfig
-+++ b/drivers/mtd/maps/Kconfig
-@@ -297,15 +297,6 @@ config MTD_IXP4XX
- 	  IXDP425 and Coyote. If you have an IXP4xx based board and
- 	  would like to use the flash chips on it, say 'Y'.
- 
--config MTD_IXP2000
--	tristate "CFI Flash device mapped on Intel IXP2000 based systems"
--	depends on MTD_CFI && MTD_COMPLEX_MAPPINGS && ARCH_IXP2000
--	help
--	  This enables MTD access to flash devices on platforms based
--	  on Intel's IXP2000 family of network processors. If you have an
--	  IXP2000 based board and would like to use the flash chips on it,
--	  say 'Y'.
--
- config MTD_AUTCPU12
- 	bool "NV-RAM mapping AUTCPU12 board"
- 	depends on ARCH_AUTCPU12
-diff --git a/drivers/mtd/maps/Makefile b/drivers/mtd/maps/Makefile
-index 7315ed8..781e4b8 100644
---- a/drivers/mtd/maps/Makefile
-+++ b/drivers/mtd/maps/Makefile
-@@ -39,7 +39,6 @@ obj-$(CONFIG_MTD_NETtel)	+= nettel.o
- obj-$(CONFIG_MTD_SCB2_FLASH)	+= scb2_flash.o
- obj-$(CONFIG_MTD_H720X)		+= h720x-flash.o
- obj-$(CONFIG_MTD_IXP4XX)	+= ixp4xx.o
--obj-$(CONFIG_MTD_IXP2000)	+= ixp2000.o
- obj-$(CONFIG_MTD_PLATRAM)	+= plat-ram.o
- obj-$(CONFIG_MTD_INTEL_VR_NOR)	+= intel_vr_nor.o
- obj-$(CONFIG_MTD_BFIN_ASYNC)	+= bfin-async-flash.o
-diff --git a/drivers/mtd/maps/ixp2000.c b/drivers/mtd/maps/ixp2000.c
-deleted file mode 100644
-index 4a41ced..0000000
---- a/drivers/mtd/maps/ixp2000.c
-+++ /dev/null
-@@ -1,253 +0,0 @@
--/*
-- * drivers/mtd/maps/ixp2000.c
-- *
-- * Mapping for the Intel XScale IXP2000 based systems
-- *
-- * Copyright (C) 2002 Intel Corp.
-- * Copyright (C) 2003-2004 MontaVista Software, Inc.
-- *
-- * Original Author: Naeem M Afzal <naeem.m.afzal@intel.com>
-- * Maintainer: Deepak Saxena <dsaxena@plexity.net>
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License version 2 as
-- * published by the Free Software Foundation.
-- *
-- */
--
--#include <linux/module.h>
--#include <linux/types.h>
--#include <linux/init.h>
--#include <linux/kernel.h>
--#include <linux/string.h>
--#include <linux/slab.h>
--#include <linux/ioport.h>
--#include <linux/device.h>
--#include <linux/platform_device.h>
--
--#include <linux/mtd/mtd.h>
--#include <linux/mtd/map.h>
--#include <linux/mtd/partitions.h>
--
--#include <asm/io.h>
--#include <mach/hardware.h>
--#include <asm/mach/flash.h>
--
--#include <linux/reboot.h>
--
--struct ixp2000_flash_info {
--	struct		mtd_info *mtd;
--	struct		map_info map;
--	struct		resource *res;
--};
--
--static inline unsigned long flash_bank_setup(struct map_info *map, unsigned long ofs)
--{
--	unsigned long (*set_bank)(unsigned long) =
--		(unsigned long(*)(unsigned long))map->map_priv_2;
--
--	return (set_bank ? set_bank(ofs) : ofs);
--}
--
--#ifdef __ARMEB__
--/*
-- * Rev A0 and A1 of IXP2400 silicon have a broken addressing unit which
-- * causes the lower address bits to be XORed with 0x11 on 8 bit accesses
-- * and XORed with 0x10 on 16 bit accesses. See the spec update, erratum 44.
-- */
--static int erratum44_workaround = 0;
--
--static inline unsigned long address_fix8_write(unsigned long addr)
--{
--	if (erratum44_workaround) {
--		return (addr ^ 3);
--	}
--	return addr;
--}
--#else
--
--#define address_fix8_write(x)	(x)
--#endif
--
--static map_word ixp2000_flash_read8(struct map_info *map, unsigned long ofs)
--{
--	map_word val;
--
--	val.x[0] =  *((u8 *)(map->map_priv_1 + flash_bank_setup(map, ofs)));
--	return val;
--}
--
--/*
-- * We can't use the standard memcpy due to the broken SlowPort
-- * address translation on rev A0 and A1 silicon and the fact that
-- * we have banked flash.
-- */
--static void ixp2000_flash_copy_from(struct map_info *map, void *to,
--			      unsigned long from, ssize_t len)
--{
--	from = flash_bank_setup(map, from);
--	while(len--)
--		*(__u8 *) to++ = *(__u8 *)(map->map_priv_1 + from++);
--}
--
--static void ixp2000_flash_write8(struct map_info *map, map_word d, unsigned long ofs)
--{
--	*(__u8 *) (address_fix8_write(map->map_priv_1 +
--				      flash_bank_setup(map, ofs))) = d.x[0];
--}
--
--static void ixp2000_flash_copy_to(struct map_info *map, unsigned long to,
--			    const void *from, ssize_t len)
--{
--	to = flash_bank_setup(map, to);
--	while(len--) {
--		unsigned long tmp = address_fix8_write(map->map_priv_1 + to++);
--		*(__u8 *)(tmp) = *(__u8 *)(from++);
--	}
--}
--
--
--static int ixp2000_flash_remove(struct platform_device *dev)
--{
--	struct flash_platform_data *plat = dev->dev.platform_data;
--	struct ixp2000_flash_info *info = platform_get_drvdata(dev);
--
--	platform_set_drvdata(dev, NULL);
--
--	if(!info)
--		return 0;
--
--	if (info->mtd) {
--		mtd_device_unregister(info->mtd);
--		map_destroy(info->mtd);
--	}
--	if (info->map.map_priv_1)
--		iounmap((void *) info->map.map_priv_1);
--
--	if (info->res) {
--		release_resource(info->res);
--		kfree(info->res);
--	}
--
--	if (plat->exit)
--		plat->exit();
--
--	return 0;
--}
--
--
--static int ixp2000_flash_probe(struct platform_device *dev)
--{
--	static const char *probes[] = { "RedBoot", "cmdlinepart", NULL };
--	struct ixp2000_flash_data *ixp_data = dev->dev.platform_data;
--	struct flash_platform_data *plat;
--	struct ixp2000_flash_info *info;
--	unsigned long window_size;
--	int err = -1;
--
--	if (!ixp_data)
--		return -ENODEV;
--
--	plat = ixp_data->platform_data;
--	if (!plat)
--		return -ENODEV;
--
--	window_size = resource_size(dev->resource);
--	dev_info(&dev->dev, "Probe of IXP2000 flash(%d banks x %dMiB)\n",
--		 ixp_data->nr_banks, ((u32)window_size >> 20));
--
--	if (plat->width != 1) {
--		dev_err(&dev->dev, "IXP2000 MTD map only supports 8-bit mode, asking for %d\n",
--			plat->width * 8);
--		return -EIO;
--	}
--
--	info = kzalloc(sizeof(struct ixp2000_flash_info), GFP_KERNEL);
--	if(!info) {
--		err = -ENOMEM;
--		goto Error;
--	}
--
--	platform_set_drvdata(dev, info);
--
--	/*
--	 * Tell the MTD layer we're not 1:1 mapped so that it does
--	 * not attempt to do a direct access on us.
--	 */
--	info->map.phys = NO_XIP;
--
--	info->map.size = ixp_data->nr_banks * window_size;
--	info->map.bankwidth = 1;
--
--	/*
-- 	 * map_priv_2 is used to store a ptr to the bank_setup routine
-- 	 */
--	info->map.map_priv_2 = (unsigned long) ixp_data->bank_setup;
--
--	info->map.name = dev_name(&dev->dev);
--	info->map.read = ixp2000_flash_read8;
--	info->map.write = ixp2000_flash_write8;
--	info->map.copy_from = ixp2000_flash_copy_from;
--	info->map.copy_to = ixp2000_flash_copy_to;
--
--	info->res = request_mem_region(dev->resource->start,
--				       resource_size(dev->resource),
--				       dev_name(&dev->dev));
--	if (!info->res) {
--		dev_err(&dev->dev, "Could not reserve memory region\n");
--		err = -ENOMEM;
--		goto Error;
--	}
--
--	info->map.map_priv_1 =
--		(unsigned long)ioremap(dev->resource->start,
--				       resource_size(dev->resource));
--	if (!info->map.map_priv_1) {
--		dev_err(&dev->dev, "Failed to ioremap flash region\n");
--		err = -EIO;
--		goto Error;
--	}
--
--#if defined(__ARMEB__)
--	/*
--	 * Enable erratum 44 workaround for NPUs with broken slowport
--	 */
--
--	erratum44_workaround = ixp2000_has_broken_slowport();
--	dev_info(&dev->dev, "Erratum 44 workaround %s\n",
--	       erratum44_workaround ? "enabled" : "disabled");
--#endif
--
--	info->mtd = do_map_probe(plat->map_name, &info->map);
--	if (!info->mtd) {
--		dev_err(&dev->dev, "map_probe failed\n");
--		err = -ENXIO;
--		goto Error;
--	}
--	info->mtd->owner = THIS_MODULE;
--
--	err = mtd_device_parse_register(info->mtd, probes, NULL, NULL, 0);
--	if (err)
--		goto Error;
--
--	return 0;
--
--Error:
--	ixp2000_flash_remove(dev);
--	return err;
--}
--
--static struct platform_driver ixp2000_flash_driver = {
--	.probe		= ixp2000_flash_probe,
--	.remove		= ixp2000_flash_remove,
--	.driver		= {
--		.name	= "IXP2000-Flash",
--		.owner	= THIS_MODULE,
--	},
--};
--
--module_platform_driver(ixp2000_flash_driver);
--
--MODULE_LICENSE("GPL");
--MODULE_AUTHOR("Deepak Saxena <dsaxena@plexity.net>");
--MODULE_ALIAS("platform:IXP2000-Flash");
--- 
-1.7.10.4
-
-
-______________________________________________________
-Linux MTD discussion mailing list
-http://lists.infradead.org/mailman/listinfo/linux-mtd/
-
--- 
-Best Regards,
-Artem Bityutskiy
+-aneesh
