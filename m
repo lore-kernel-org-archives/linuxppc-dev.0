@@ -1,15 +1,14 @@
 Return-Path: <paulus@ozlabs.org>
-Date: Wed, 13 Mar 2013 13:56:14 +1100
+Date: Wed, 13 Mar 2013 13:47:25 +1100
 From: Paul Mackerras <paulus@samba.org>
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH -V2 11/26] powerpc: Fix hpte_decode to use the correct
- decoding for page sizes
-Message-ID: <20130313025614.GB21125@iris.ozlabs.ibm.com>
+Subject: Re: [PATCH -V2 07/26] powerpc: Add size argument to pgtable_cache_add
+Message-ID: <20130313024725.GA21125@iris.ozlabs.ibm.com>
 References: <1362550227-575-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1362550227-575-12-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1362550227-575-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1362550227-575-12-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1362550227-575-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,43 +19,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 06, 2013 at 11:40:12AM +0530, Aneesh Kumar K.V wrote:
+On Wed, Mar 06, 2013 at 11:40:08AM +0530, Aneesh Kumar K.V wrote:
 > From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 > 
-> As per ISA doc, we encode base and actual page size in the LP bits of
-> PTE. The number of bit used to encode the page sizes depend on actual
-> page size.  ISA doc lists this as
+> We will use this later with THP changes to request for pmd table of double the size.
+> THP code does PTE page allocation along with large page request and deposit them
+> for later use. This is to ensure that we won't have any failures when we split
+> huge pages to regular pages.
 > 
->    PTE LP     actual page size
-> rrrr rrrz 	≥8KB
-> rrrr rrzz	≥16KB
-> rrrr rzzz 	≥32KB
-> rrrr zzzz 	≥64KB
-> rrrz zzzz 	≥128KB
-> rrzz zzzz 	≥256KB
-> rzzz zzzz	≥512KB
-> zzzz zzzz 	≥1MB
-> 
-> ISA doc also says
-> "The values of the “z” bits used to specify each size, along with all possible
-> values of “r” bits in the LP field, must result in LP values distinct from
-> other LP values for other sizes."
-> 
-> based on the above update hpte_decode to use the correct decoding for LP bits.
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-[snip]
-> +				shift = mmu_psize_defs[a_size].shift -
-> +					mmu_psize_defs[MMU_PAGE_4K].shift;
+> On powerpc we want to use the deposited PTE page for storing hash pte slot and
+> secondary bit information for the HPTEs. Hence we save them in the second half
+> of the pmd table.
 
-"mmu_psize_defs[MMU_PAGE_4K].shift" seems like an overly complicated
-way to write "LP_SHIFT" (or even "12").  After all, you did:
+That much is fine, but...
 
-> +	unsigned int lp = (hpte->r >> LP_SHIFT) & ((1 << LP_BITS) - 1);
+> -void pgtable_cache_add(unsigned shift, void (*ctor)(void *));
+> +extern void __pgtable_cache_add(unsigned shift, unsigned long table_size,
+> +				void (*ctor)(void *));
+>  void pgtable_cache_init(void);
+> +static inline void pgtable_cache_add(unsigned shift, void (*ctor)(void *))
+> +{
+> +	return __pgtable_cache_add(shift, sizeof(void *) << shift, ctor);
+> +}
 
-earlier.  If LP_SHIFT is good enough in that expression it's good
-enough when calculating shift.
+NAK to this (and in fact the rest of this patch).
 
-Apart from that minor nit,
+If you need twice the size, use the next slot along in pgtable_cache,
+which will give you the size you need, rather than breaking the
+relationship between slot index and allocation size.
 
-Acked-by: Paul Mackerras <paulus@samba.org>
+Paul.
