@@ -1,15 +1,24 @@
-Return-Path: <michael@ellerman.id.au>
-Date: Wed, 13 Mar 2013 16:04:03 +1100
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Jia Hongtao <B38951@freescale.com>
-Subject: Re: [PATCH] powerpc/85xx: workaround for chips with MSI hardware
- errata
-Message-ID: <20130313050403.GB9317@concordia>
-References: <1363074482-868-1-git-send-email-B38951@freescale.com>
+Return-Path: <B37400@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CE4A52C029D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2013 16:18:30 +1100 (EST)
+From: Singh Sandeep-B37400 <B37400@freescale.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: RE: [PATCH 1/4] Device tree entry for Freescale TDM controller
+Date: Wed, 13 Mar 2013 05:17:58 +0000
+Message-ID: <3F1D9DCAAB49B94D88DBE05911FA4E6E06FA8A37@039-SN1MPN1-001.039d.mgd.msft.net>
+References: <1362655668-26721-1-git-send-email-Sandeep@freescale.com>
+ <20130307133421.GA4977@n2100.arm.linux.org.uk>
+In-Reply-To: <20130307133421.GA4977@n2100.arm.linux.org.uk>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1363074482-868-1-git-send-email-B38951@freescale.com>
-Cc: B07421@freescale.com, linuxppc-dev@lists.ozlabs.org
+Cc: Aggrwal Poonam-B10812 <B10812@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,140 +28,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 12, 2013 at 03:48:02PM +0800, Jia Hongtao wrote:
-> The MPIC chip with version 2.0 has a MSI errata (errata PIC1 of mpc8544),
-> It causes that neither MSI nor MSI-X can work fine. This is a workaround
-> to allow MSI-X to function properly.
-
-You say "neither MSI nor MSI-X can work fine", which I take to mean
-"both MSI and MSI-X do not work".
-
-But then you say this is a workaround to allow MSI-X to work.
-
-So what I think you mean is, the erratum prevents both MSI and MSI-X
-from working. This is a workaround that allows MSI-X to work, and in addition
-the patch prevents MSI from being used on chips with the erratum -
-because there is no workaround for MSI.
-
-> diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
-> index 178c994..0dea680 100644
-> --- a/arch/powerpc/sysdev/fsl_msi.c
-> +++ b/arch/powerpc/sysdev/fsl_msi.c
-> @@ -98,8 +98,20 @@ static int fsl_msi_init_allocator(struct fsl_msi *msi_data)
->  
->  static int fsl_msi_check_device(struct pci_dev *pdev, int nvec, int type)
->  {
-> +	struct fsl_msi *msi;
-> +
->  	if (type == PCI_CAP_ID_MSIX)
->  		pr_debug("fslmsi: MSI-X untested, trying anyway.\n");
-
-Seeing as this patch is enabling a workaround for MSI-X you've obviously
-tested MSI-X, so you should remove the two lines above.
-
-> +	else if (type == PCI_CAP_ID_MSI)
-> +		/*
-> +		 * MPIC chip with 2.0 version has erratum PIC1. It
-> +		 * causes that neither MSI nor MSI-X can work fine.
-> +		 * This is a workaround to allow MSI-X to function
-> +		 * properly.
-> +		 */
-
-This is not a workaround. This is a check to prevent MSI from being used
-on buggy chipsets.
-
-> +		list_for_each_entry(msi, &msi_head, list)
-> +			if (msi->feature & MSI_HW_ERRATA_ENDIAN)
-> +				return -EINVAL;
-
-I take it you're happy preventing MSI for all devices even if only a
-single chip in the machine has the erratum? In practice you probably
-have all or none with the erratum right?
-
-I would suggest brackets on an if with such a large body, even though it
-is OK as it is.
-
->  
->  	return 0;
->  }
-> @@ -142,7 +154,11 @@ static void fsl_compose_msi_msg(struct pci_dev *pdev, int hwirq,
->  	msg->address_lo = lower_32_bits(address);
->  	msg->address_hi = upper_32_bits(address);
->  
-> -	msg->data = hwirq;
-> +	/* See the comment in fsl_msi_check_device() */
-> +	if (msi_data->feature & MSI_HW_ERRATA_ENDIAN)
-> +		msg->data = __swab32(hwirq);
-> +	else
-> +		msg->data = hwirq;
-
-This is the workaround. The comment here should say, "this only works
-for MSI-X, we prevent MSI in on buggy chips in fsl_msi_check_device()".
-
->  
->  	pr_debug("%s: allocated srs: %d, ibs: %d\n",
->  		__func__, hwirq / IRQS_PER_MSI_REG, hwirq % IRQS_PER_MSI_REG);
-> @@ -361,13 +377,43 @@ static int fsl_msi_setup_hwirq(struct fsl_msi *msi, struct platform_device *dev,
->  	return 0;
->  }
->  
-> +/* MPIC chip with 2.0 version has erratum PIC1 */
-> +static int mpic_has_errata(struct platform_device *dev)
-> +{
-> +	struct device_node *mpic_node;
-> +
-> +	mpic_node = of_irq_find_parent(dev->dev.of_node);
-> +	if (mpic_node) {
-> +		u32 *reg_base, brr1 = 0;
-> +		/* Get the PIC reg base */
-> +		reg_base = of_iomap(mpic_node, 0);
-> +		of_node_put(mpic_node);
-> +		if (!reg_base) {
-> +			dev_err(&dev->dev, "ioremap problem failed.\n");
-> +			return -EIO;
-> +		}
-> +
-> +		/* Get the mpic chip version from block revision register 1 */
-> +		brr1 = in_be32(reg_base + MPIC_FSL_BRR1);
-> +		iounmap(reg_base);
-> +		if ((brr1 & MPIC_FSL_BRR1_VER) == 0x0200)
-> +			return 1;
-> +	} else {
-> +		dev_err(&dev->dev, "MSI can't find his parent mpic node.\n");
-> +		of_node_put(mpic_node);
-
-You don't need the put here, you know it's NULL (you just checked).
-
-> +		return -ENODEV;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
->  static const struct of_device_id fsl_of_msi_ids[];
->  static int fsl_of_msi_probe(struct platform_device *dev)
->  {
->  	const struct of_device_id *match;
->  	struct fsl_msi *msi;
->  	struct resource res;
-> -	int err, i, j, irq_index, count;
-> +	int err, i, j, irq_index, count, errata;
->  	int rc;
->  	const u32 *p;
->  	const struct fsl_msi_feature *features;
-> @@ -423,6 +469,16 @@ static int fsl_of_msi_probe(struct platform_device *dev)
->  
->  	msi->feature = features->fsl_pic_ip;
->  
-> +	if ((features->fsl_pic_ip & FSL_PIC_IP_MASK) == FSL_PIC_IP_MPIC) {
-> +		errata = mpic_has_errata(dev);
-> +		if (errata > 0) {
-> +			msi->feature |= MSI_HW_ERRATA_ENDIAN;
-> +		} else if (errata < 0) {
-> +			err = errata;
-> +			goto error_out;
-> +		}
-
-I don't think you need errata here, "rc" would be fine.
-
-cheers
+> -----Original Message-----
+> From: Russell King - ARM Linux [mailto:linux@arm.linux.org.uk]
+> Sent: Thursday, March 07, 2013 7:04 PM
+> To: Singh Sandeep-B37400
+> Cc: linuxppc-dev@lists.ozlabs.org; linux-arm-kernel@lists.infradead.org;
+> Aggrwal Poonam-B10812
+> Subject: Re: [PATCH 1/4] Device tree entry for Freescale TDM controller
+>=20
+> I know I'm probably missing something... but... why are these patches
+> copied to the ARM list?  They appear to be PowerPC patches.
+There was a request from few ARM Linux developers that they were interested
+in developing TDM subsystem for ARM and would like to see TDM patches in
+ARM mailing list. Just trying to oblige
+>=20
+> On Thu, Mar 07, 2013 at 04:57:45PM +0530, Sandeep Singh wrote:
+> > Added dtsi file for Freescale TDM controller.
+> > This controller is available on many Freescale SOCs like MPC8315,
+> > P1020, P1010,
+> > P1022 and P1024
+> > Signed-off-by: Sandeep Singh <Sandeep@freescale.com>
+> > Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
+> > ---
+> >  arch/powerpc/boot/dts/fsl/pq3-tdm1.0-0.dtsi |   42
+> +++++++++++++++++++++++++++
+> >  1 files changed, 42 insertions(+), 0 deletions(-)  create mode 100644
+> > arch/powerpc/boot/dts/fsl/pq3-tdm1.0-0.dtsi
+> >
+> > diff --git a/arch/powerpc/boot/dts/fsl/pq3-tdm1.0-0.dtsi
+> > b/arch/powerpc/boot/dts/fsl/pq3-tdm1.0-0.dtsi
+> > new file mode 100644
+> > index 0000000..e89f637
+> > --- /dev/null
+> > +++ b/arch/powerpc/boot/dts/fsl/pq3-tdm1.0-0.dtsi
+> > @@ -0,0 +1,42 @@
+> > +/*
+> > + * PQ3 TDM device tree stub [ controller @ offset 0x16000 ]
+> > + *
+> > + * Copyright 2012 Freescale Semiconductor Inc.
+> > + *
+> > + * Redistribution and use in source and binary forms, with or without
+> > + * modification, are permitted provided that the following conditions
+> are met:
+> > + *     * Redistributions of source code must retain the above
+> copyright
+> > + *       notice, this list of conditions and the following disclaimer.
+> > + *     * Redistributions in binary form must reproduce the above
+> copyright
+> > + *       notice, this list of conditions and the following disclaimer
+> in the
+> > + *       documentation and/or other materials provided with the
+> distribution.
+> > + *     * Neither the name of Freescale Semiconductor nor the
+> > + *       names of its contributors may be used to endorse or promote
+> products
+> > + *       derived from this software without specific prior written
+> permission.
+> > + *
+> > + *
+> > + * ALTERNATIVELY, this software may be distributed under the terms of
+> > +the
+> > + * GNU General Public License ("GPL") as published by the Free
+> > +Software
+> > + * Foundation, either version 2 of that License or (at your option)
+> > +any
+> > + * later version.
+> > + *
+> > + * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND
+> > +ANY
+> > + * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+> > +IMPLIED
+> > + * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+> > +ARE
+> > + * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE
+> > +FOR ANY
+> > + * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+> > +DAMAGES
+> > + * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+> > +SERVICES;
+> > + * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+> > +CAUSED AND
+> > + * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+> > +OR TORT
+> > + * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+> > +USE OF THIS
+> > + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+> > + */
+> > +
+> > +tdm@16000 {
+> > +	compatible =3D "fsl,tdm1.0";
+> > +	reg =3D <0x16000 0x200 0x2c000 0x2000>;
+> > +	clock-frequency =3D <0>;
+> > +	tdm_tx_clk =3D <2048000>;
+> > +	interrupts =3D <62 8 0 0>;
+> > +	fsl,max-time-slots =3D <128>;
+> > +};
+> > --
+> > 1.7.6.GIT
+> >
+> >
+> >
+> > _______________________________________________
+> > linux-arm-kernel mailing list
+> > linux-arm-kernel@lists.infradead.org
+> > http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
