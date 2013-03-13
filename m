@@ -1,23 +1,23 @@
-Return-Path: <B07421@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 29D4E2C009C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2013 07:24:32 +1100 (EST)
-Date: Wed, 13 Mar 2013 15:24:20 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] powerpc/85xx: workaround for chips with MSI hardware
- errata
-To: Michael Ellerman <michael@ellerman.id.au>
-In-Reply-To: <20130313050403.GB9317@concordia> (from michael@ellerman.id.au
- on Wed Mar 13 00:04:03 2013)
-Message-ID: <1363206260.8945.13@snotra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: B07421@freescale.com, linuxppc-dev@lists.ozlabs.org,
- Jia Hongtao <B38951@freescale.com>
+Return-Path: <geoff@infradead.org>
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:4978:20e::2])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 34C642C0079
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2013 09:07:09 +1100 (EST)
+Message-ID: <1363212419.3155.57.camel@smoke>
+Subject: Re: [PATCH -V4 2/3] powerpc: Update kernel VSID range
+From: Geoff Levand <geoff@infradead.org>
+To: benh@kernel.crashing.org
+Date: Wed, 13 Mar 2013 15:06:59 -0700
+In-Reply-To: <1363181695-5315-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1363181695-5315-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1363181695-5315-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ David Gibson <dwg@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,41 +27,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/13/2013 12:04:03 AM, Michael Ellerman wrote:
-> On Tue, Mar 12, 2013 at 03:48:02PM +0800, Jia Hongtao wrote:
-> > The MPIC chip with version 2.0 has a MSI errata (errata PIC1 of =20
-> mpc8544),
-> > It causes that neither MSI nor MSI-X can work fine. This is a =20
-> workaround
-> > to allow MSI-X to function properly.
->=20
-> You say "neither MSI nor MSI-X can work fine", which I take to mean
-> "both MSI and MSI-X do not work".
->=20
-> But then you say this is a workaround to allow MSI-X to work.
->=20
-> So what I think you mean is, the erratum prevents both MSI and MSI-X
-> from working. This is a workaround that allows MSI-X to work, and in =20
-> addition
-> the patch prevents MSI from being used on chips with the erratum -
-> because there is no workaround for MSI.
+Hi,
 
-There actually is a workaround for MSI, but it's more complicated and =20
-not implemented by this patch.
+On Wed, 2013-03-13 at 19:04 +0530, Aneesh Kumar K.V wrote:
+> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+> 
+> This patch change the kernel VSID range so that we limit VSID_BITS to 37.
+> This enables us to support 64TB with 65 bit VA (37+28). Without this patch
+> we have boot hangs on platforms that only support 65 bit VA.
 
-We could also possibly get away with allowing exactly one MSI =20
-(byteswapping doesn't matter if the value is zero) -- not sure how hard =20
-that would be.
+I tested the V4 series on PS3 applied to linux-3.8 and it fixed the boot
+hang problem.
 
-> > +		list_for_each_entry(msi, &msi_head, list)
-> > +			if (msi->feature & MSI_HW_ERRATA_ENDIAN)
-> > +				return -EINVAL;
->=20
-> I take it you're happy preventing MSI for all devices even if only a
-> single chip in the machine has the erratum? In practice you probably
-> have all or none with the erratum right?
+Ben, please apply.
 
-Yes, it's all integrated onto one chip (the SoC itself).  In fact there =20
-should only be one MSI block on these chips.
-
--Scott=
+Tested-by: Geoff Levand <geoff@infradead.org>
