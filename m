@@ -1,13 +1,13 @@
 Return-Path: <dedekind1@gmail.com>
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by ozlabs.org (Postfix) with ESMTP id ED68C2C0381
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2013 20:04:16 +1100 (EST)
-Message-ID: <1363165508.9457.13.camel@sauron.fi.intel.com>
-Subject: [PATCH 08/10] mtd: remove the tqm8xxl map driver
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ by ozlabs.org (Postfix) with ESMTP id 4142B2C02CC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2013 20:04:30 +1100 (EST)
+Message-ID: <1363165519.9457.14.camel@sauron.fi.intel.com>
+Subject: [PATCH 09/10] mtd: remove the dilnetpc map driver support
 From: Artem Bityutskiy <dedekind1@gmail.com>
 To: MTD Maling List <linux-mtd@lists.infradead.org>, linuxppc-dev
  <linuxppc-dev@lists.ozlabs.org>
-Date: Wed, 13 Mar 2013 11:05:08 +0200
+Date: Wed, 13 Mar 2013 11:05:19 +0200
 In-Reply-To: <1363086855-2847-1-git-send-email-dedekind1@gmail.com>
 References: <1363086855-2847-1-git-send-email-dedekind1@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
@@ -22,311 +22,563 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
 From: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
 
-This driver depends on the CONFIG_TQM8xxL symbol, which is not defined
-anywhere, which means that this driver is dead.
+This driver is marked as broken for very long time. Most probably this board is
+just something ancient no one cares about anyway.
 
 Signed-off-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
 ---
 
 Adding the PPC list
 
- drivers/mtd/maps/Kconfig   |   10 --
- drivers/mtd/maps/Makefile  |    1 -
- drivers/mtd/maps/tqm8xxl.c |  249 --------------------------------------------
- 3 files changed, 260 deletions(-)
- delete mode 100644 drivers/mtd/maps/tqm8xxl.c
+ drivers/mtd/maps/Kconfig    |   16 --
+ drivers/mtd/maps/Makefile   |    1 -
+ drivers/mtd/maps/dilnetpc.c |  496 -------------------------------------------
+ 3 files changed, 513 deletions(-)
+ delete mode 100644 drivers/mtd/maps/dilnetpc.c
 
 diff --git a/drivers/mtd/maps/Kconfig b/drivers/mtd/maps/Kconfig
-index 3fe3216..888e684 100644
+index 888e684..b6a369a 100644
 --- a/drivers/mtd/maps/Kconfig
 +++ b/drivers/mtd/maps/Kconfig
-@@ -274,16 +274,6 @@ config MTD_L440GX
+@@ -249,22 +249,6 @@ config MTD_LANTIQ
+ 	help
+ 	  Support for NOR flash attached to the Lantiq SoC's External Bus Unit.
  
- 	  BE VERY CAREFUL.
- 
--config MTD_TQM8XXL
--	tristate "CFI Flash device mapped on TQM8XXL"
--	depends on MTD_CFI && TQM8xxL
+-config MTD_DILNETPC
+-	tristate "CFI Flash device mapped on DIL/Net PC"
+-	depends on X86 && MTD_CFI_INTELEXT && BROKEN
 -	help
--	  The TQM8xxL PowerPC board has up to two banks of CFI-compliant
--	  chips, currently uses AMD one. This 'mapping' driver supports
--	  that arrangement, allowing the CFI probe and command set driver
--	  code to communicate with the chips on the TQM8xxL board. More at
--	  <http://www.denx.de/wiki/PPCEmbedded/>.
+-	  MTD map driver for SSV DIL/Net PC Boards "DNP" and "ADNP".
+-	  For details, see <http://www.ssv-embedded.de/ssv/pc104/p169.htm>
+- 	  and <http://www.ssv-embedded.de/ssv/pc104/p170.htm>
 -
- config MTD_CFI_FLAGADM
- 	tristate "CFI Flash device mapping on FlagaDM"
- 	depends on 8xx && MTD_CFI
+-config MTD_DILNETPC_BOOTSIZE
+-	hex "Size of DIL/Net PC flash boot partition"
+-	depends on MTD_DILNETPC
+-	default "0x80000"
+-	help
+-	  The amount of space taken up by the kernel or Etherboot
+-	  on the DIL/Net PC flash chips.
+-
+ config MTD_L440GX
+ 	tristate "BIOS flash chip on Intel L440GX boards"
+ 	depends on X86 && MTD_JEDECPROBE
 diff --git a/drivers/mtd/maps/Makefile b/drivers/mtd/maps/Makefile
-index 8e2b289..0cdc881 100644
+index 0cdc881..7315ed8 100644
 --- a/drivers/mtd/maps/Makefile
 +++ b/drivers/mtd/maps/Makefile
-@@ -23,7 +23,6 @@ obj-$(CONFIG_MTD_PHYSMAP_OF)	+= physmap_of.o
- obj-$(CONFIG_MTD_PISMO)		+= pismo.o
- obj-$(CONFIG_MTD_PMC_MSP_EVM)   += pmcmsp-flash.o
- obj-$(CONFIG_MTD_PCMCIA)	+= pcmciamtd.o
--obj-$(CONFIG_MTD_TQM8XXL)	+= tqm8xxl.o
- obj-$(CONFIG_MTD_SA1100)	+= sa1100-flash.o
- obj-$(CONFIG_MTD_SBC_GXX)	+= sbc_gxx.o
- obj-$(CONFIG_MTD_SC520CDP)	+= sc520cdp.o
-diff --git a/drivers/mtd/maps/tqm8xxl.c b/drivers/mtd/maps/tqm8xxl.c
+@@ -9,7 +9,6 @@ endif
+ # Chip mappings
+ obj-$(CONFIG_MTD_CFI_FLAGADM)	+= cfi_flagadm.o
+ obj-$(CONFIG_MTD_DC21285)	+= dc21285.o
+-obj-$(CONFIG_MTD_DILNETPC)	+= dilnetpc.o
+ obj-$(CONFIG_MTD_L440GX)	+= l440gx.o
+ obj-$(CONFIG_MTD_AMD76XROM)	+= amd76xrom.o
+ obj-$(CONFIG_MTD_ESB2ROM)	+= esb2rom.o
+diff --git a/drivers/mtd/maps/dilnetpc.c b/drivers/mtd/maps/dilnetpc.c
 deleted file mode 100644
-index d785879..0000000
---- a/drivers/mtd/maps/tqm8xxl.c
+index 3e393f0..0000000
+--- a/drivers/mtd/maps/dilnetpc.c
 +++ /dev/null
-@@ -1,249 +0,0 @@
--/*
-- * Handle mapping of the flash memory access routines
-- * on TQM8xxL based devices.
+@@ -1,496 +0,0 @@
+-/* dilnetpc.c -- MTD map driver for SSV DIL/Net PC Boards "DNP" and "ADNP"
 - *
-- * based on rpxlite.c
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
 - *
-- * Copyright(C) 2001 Kirk Lee <kirk@hpc.ee.ntu.edu.tw>
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
 - *
-- * This code is GPLed
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 - *
+- * The DIL/Net PC is a tiny embedded PC board made by SSV Embedded Systems
+- * featuring the AMD Elan SC410 processor. There are two variants of this
+- * board: DNP/1486 and ADNP/1486. The DNP version has 2 megs of flash
+- * ROM (Intel 28F016S3) and 8 megs of DRAM, the ADNP version has 4 megs
+- * flash and 16 megs of RAM.
+- * For details, see http://www.ssv-embedded.de/ssv/pc104/p169.htm
+- * and http://www.ssv-embedded.de/ssv/pc104/p170.htm
 - */
 -
--/*
-- * According to TQM8xxL hardware manual, TQM8xxL series have
-- * following flash memory organisations:
-- *	| capacity |	| chip type |	| bank0 |	| bank1 |
-- *	    2MiB	   512Kx16	  2MiB		   0
-- *	    4MiB	   1Mx16	  4MiB		   0
-- *	    8MiB	   1Mx16	  4MiB		   4MiB
-- * Thus, we choose CONFIG_MTD_CFI_I2 & CONFIG_MTD_CFI_B4 at
-- * kernel configuration.
-- */
 -#include <linux/module.h>
 -#include <linux/types.h>
 -#include <linux/kernel.h>
 -#include <linux/init.h>
--#include <linux/slab.h>
+-#include <linux/string.h>
 -
 -#include <linux/mtd/mtd.h>
 -#include <linux/mtd/map.h>
 -#include <linux/mtd/partitions.h>
+-#include <linux/mtd/concat.h>
 -
 -#include <asm/io.h>
 -
--#define FLASH_ADDR 0x40000000
--#define FLASH_SIZE 0x00800000
--#define FLASH_BANK_MAX 4
--
--// trivial struct to describe partition information
--struct mtd_part_def
--{
--	int nums;
--	unsigned char *type;
--	struct mtd_partition* mtd_part;
--};
--
--//static struct mtd_info *mymtd;
--static struct mtd_info* mtd_banks[FLASH_BANK_MAX];
--static struct map_info* map_banks[FLASH_BANK_MAX];
--static struct mtd_part_def part_banks[FLASH_BANK_MAX];
--static unsigned long num_banks;
--static void __iomem *start_scan_addr;
+-/*
+-** The DIL/NetPC keeps its BIOS in two distinct flash blocks.
+-** Destroying any of these blocks transforms the DNPC into
+-** a paperweight (albeit not a very useful one, considering
+-** it only weighs a few grams).
+-**
+-** Therefore, the BIOS blocks must never be erased or written to
+-** except by people who know exactly what they are doing (e.g.
+-** to install a BIOS update). These partitions are marked read-only
+-** by default, but can be made read/write by undefining
+-** DNPC_BIOS_BLOCKS_WRITEPROTECTED:
+-*/
+-#define DNPC_BIOS_BLOCKS_WRITEPROTECTED
 -
 -/*
-- * Here are partition information for all known TQM8xxL series devices.
-- * See include/linux/mtd/partitions.h for definition of the mtd_partition
-- * structure.
-- *
-- * The *_max_flash_size is the maximum possible mapped flash size which
-- * is not necessarily the actual flash size.  It must correspond to the
-- * value specified in the mapping definition defined by the
-- * "struct map_desc *_io_desc" for the corresponding machine.
-- */
+-** The ID string (in ROM) is checked to determine whether we
+-** are running on a DNP/1486 or ADNP/1486
+-*/
+-#define BIOSID_BASE	0x000fe100
 -
--/* Currently, TQM8xxL has up to 8MiB flash */
--static unsigned long tqm8xxl_max_flash_size = 0x00800000;
+-#define ID_DNPC	"DNP1486"
+-#define ID_ADNP	"ADNP1486"
 -
--/* partition definition for first flash bank
-- * (cf. "drivers/char/flash_config.c")
-- */
--static struct mtd_partition tqm8xxl_partitions[] = {
--	{
--	  .name = "ppcboot",
--	  .offset = 0x00000000,
--	  .size = 0x00020000,           /* 128KB           */
--	  .mask_flags = MTD_WRITEABLE,  /* force read-only */
--	},
--	{
--	  .name = "kernel",             /* default kernel image */
--	  .offset = 0x00020000,
--	  .size = 0x000e0000,
--	  .mask_flags = MTD_WRITEABLE,  /* force read-only */
--	},
--	{
--	  .name = "user",
--	  .offset = 0x00100000,
--	  .size = 0x00100000,
--	},
--	{
--	  .name = "initrd",
--	  .offset = 0x00200000,
--	  .size = 0x00200000,
--	}
--};
--/* partition definition for second flash bank */
--static struct mtd_partition tqm8xxl_fs_partitions[] = {
--	{
--	  .name = "cramfs",
--	  .offset = 0x00000000,
--	  .size = 0x00200000,
--	},
--	{
--	  .name = "jffs",
--	  .offset = 0x00200000,
--	  .size = 0x00200000,
--	  //.size = MTDPART_SIZ_FULL,
--	}
--};
+-/*
+-** Address where the flash should appear in CPU space
+-*/
+-#define FLASH_BASE	0x2000000
 -
--static int __init init_tqm_mtd(void)
+-/*
+-** Chip Setup and Control (CSC) indexed register space
+-*/
+-#define CSC_INDEX	0x22
+-#define CSC_DATA	0x23
+-
+-#define CSC_MMSWAR	0x30	/* MMS window C-F attributes register */
+-#define CSC_MMSWDSR	0x31	/* MMS window C-F device select register */
+-
+-#define CSC_RBWR	0xa7	/* GPIO Read-Back/Write Register B */
+-
+-#define CSC_CR		0xd0	/* internal I/O device disable/Echo */
+-				/* Z-bus/configuration register */
+-
+-#define CSC_PCCMDCR	0xf1	/* PC card mode and DMA control register */
+-
+-
+-/*
+-** PC Card indexed register space:
+-*/
+-
+-#define PCC_INDEX	0x3e0
+-#define PCC_DATA	0x3e1
+-
+-#define PCC_AWER_B		0x46	/* Socket B Address Window enable register */
+-#define PCC_MWSAR_1_Lo	0x58	/* memory window 1 start address low register */
+-#define PCC_MWSAR_1_Hi	0x59	/* memory window 1 start address high register */
+-#define PCC_MWEAR_1_Lo	0x5A	/* memory window 1 stop address low register */
+-#define PCC_MWEAR_1_Hi	0x5B	/* memory window 1 stop address high register */
+-#define PCC_MWAOR_1_Lo	0x5C	/* memory window 1 address offset low register */
+-#define PCC_MWAOR_1_Hi	0x5D	/* memory window 1 address offset high register */
+-
+-
+-/*
+-** Access to SC4x0's Chip Setup and Control (CSC)
+-** and PC Card (PCC) indexed registers:
+-*/
+-static inline void setcsc(int reg, unsigned char data)
 -{
--	int idx = 0, ret = 0;
--	unsigned long flash_addr, flash_size, mtd_size = 0;
--	/* pointer to TQM8xxL board info data */
--	bd_t *bd = (bd_t *)__res;
+-	outb(reg, CSC_INDEX);
+-	outb(data, CSC_DATA);
+-}
 -
--	flash_addr = bd->bi_flashstart;
--	flash_size = bd->bi_flashsize;
+-static inline unsigned char getcsc(int reg)
+-{
+-	outb(reg, CSC_INDEX);
+-	return(inb(CSC_DATA));
+-}
 -
--	//request maximum flash size address space
--	start_scan_addr = ioremap(flash_addr, flash_size);
--	if (!start_scan_addr) {
--		printk(KERN_WARNING "%s:Failed to ioremap address:0x%x\n", __func__, flash_addr);
--		return -EIO;
--	}
+-static inline void setpcc(int reg, unsigned char data)
+-{
+-	outb(reg, PCC_INDEX);
+-	outb(data, PCC_DATA);
+-}
 -
--	for (idx = 0 ; idx < FLASH_BANK_MAX ; idx++) {
--		if(mtd_size >= flash_size)
--			break;
+-static inline unsigned char getpcc(int reg)
+-{
+-	outb(reg, PCC_INDEX);
+-	return(inb(PCC_DATA));
+-}
 -
--		printk(KERN_INFO "%s: chip probing count %d\n", __func__, idx);
 -
--		map_banks[idx] = kzalloc(sizeof(struct map_info), GFP_KERNEL);
--		if(map_banks[idx] == NULL) {
--			ret = -ENOMEM;
--			/* FIXME: What if some MTD devices were probed already? */
--			goto error_mem;
--		}
--
--		map_banks[idx]->name = kmalloc(16, GFP_KERNEL);
--
--		if (!map_banks[idx]->name) {
--			ret = -ENOMEM;
--			/* FIXME: What if some MTD devices were probed already? */
--			goto error_mem;
--		}
--		sprintf(map_banks[idx]->name, "TQM8xxL%d", idx);
--
--		map_banks[idx]->size = flash_size;
--		map_banks[idx]->bankwidth = 4;
--
--		simple_map_init(map_banks[idx]);
--
--		map_banks[idx]->virt = start_scan_addr;
--		map_banks[idx]->phys = flash_addr;
--		/* FIXME: This looks utterly bogus, but I'm trying to
--		   preserve the behaviour of the original (shown here)...
--
--		map_banks[idx]->map_priv_1 =
--		start_scan_addr + ((idx > 0) ?
--		(mtd_banks[idx-1] ? mtd_banks[idx-1]->size : 0) : 0);
--		*/
--
--		if (idx && mtd_banks[idx-1]) {
--			map_banks[idx]->virt += mtd_banks[idx-1]->size;
--			map_banks[idx]->phys += mtd_banks[idx-1]->size;
--		}
--
--		//start to probe flash chips
--		mtd_banks[idx] = do_map_probe("cfi_probe", map_banks[idx]);
--
--		if (mtd_banks[idx]) {
--			mtd_banks[idx]->owner = THIS_MODULE;
--			mtd_size += mtd_banks[idx]->size;
--			num_banks++;
--
--			printk(KERN_INFO "%s: bank%d, name:%s, size:%dbytes \n", __func__, num_banks,
--			mtd_banks[idx]->name, mtd_banks[idx]->size);
--		}
--	}
--
--	/* no supported flash chips found */
--	if (!num_banks) {
--		printk(KERN_NOTICE "TQM8xxL: No support flash chips found!\n");
--		ret = -ENXIO;
--		goto error_mem;
--	}
+-/*
+-************************************************************
+-** Enable access to DIL/NetPC's flash by mapping it into
+-** the SC4x0's MMS Window C.
+-************************************************************
+-*/
+-static void dnpc_map_flash(unsigned long flash_base, unsigned long flash_size)
+-{
+-	unsigned long flash_end = flash_base + flash_size - 1;
 -
 -	/*
--	 * Select Static partition definitions
--	 */
--	part_banks[0].mtd_part = tqm8xxl_partitions;
--	part_banks[0].type = "Static image";
--	part_banks[0].nums = ARRAY_SIZE(tqm8xxl_partitions);
+-	** enable setup of MMS windows C-F:
+-	*/
+-	/* - enable PC Card indexed register space */
+-	setcsc(CSC_CR, getcsc(CSC_CR) | 0x2);
+-	/* - set PC Card controller to operate in standard mode */
+-	setcsc(CSC_PCCMDCR, getcsc(CSC_PCCMDCR) & ~1);
 -
--	part_banks[1].mtd_part = tqm8xxl_fs_partitions;
--	part_banks[1].type = "Static file system";
--	part_banks[1].nums = ARRAY_SIZE(tqm8xxl_fs_partitions);
+-	/*
+-	** Program base address and end address of window
+-	** where the flash ROM should appear in CPU address space
+-	*/
+-	setpcc(PCC_MWSAR_1_Lo, (flash_base >> 12) & 0xff);
+-	setpcc(PCC_MWSAR_1_Hi, (flash_base >> 20) & 0x3f);
+-	setpcc(PCC_MWEAR_1_Lo, (flash_end >> 12) & 0xff);
+-	setpcc(PCC_MWEAR_1_Hi, (flash_end >> 20) & 0x3f);
 -
--	for(idx = 0; idx < num_banks ; idx++) {
--		if (part_banks[idx].nums == 0)
--			printk(KERN_NOTICE "TQM flash%d: no partition info available, registering whole flash at once\n", idx);
--		else
--			printk(KERN_NOTICE "TQM flash%d: Using %s partition definition\n",
--					idx, part_banks[idx].type);
--		mtd_device_register(mtd_banks[idx], part_banks[idx].mtd_part,
--		part_banks[idx].nums);
--	}
--	return 0;
--error_mem:
--	for(idx = 0 ; idx < FLASH_BANK_MAX ; idx++) {
--		if(map_banks[idx] != NULL) {
--			kfree(map_banks[idx]->name);
--			map_banks[idx]->name = NULL;
--			kfree(map_banks[idx]);
--			map_banks[idx] = NULL;
--		}
--	}
--error:
--	iounmap(start_scan_addr);
--	return ret;
+-	/* program offset of first flash location to appear in this window (0) */
+-	setpcc(PCC_MWAOR_1_Lo, ((0 - flash_base) >> 12) & 0xff);
+-	setpcc(PCC_MWAOR_1_Hi, ((0 - flash_base)>> 20) & 0x3f);
+-
+-	/* set attributes for MMS window C: non-cacheable, write-enabled */
+-	setcsc(CSC_MMSWAR, getcsc(CSC_MMSWAR) & ~0x11);
+-
+-	/* select physical device ROMCS0 (i.e. flash) for MMS Window C */
+-	setcsc(CSC_MMSWDSR, getcsc(CSC_MMSWDSR) & ~0x03);
+-
+-	/* enable memory window 1 */
+-	setpcc(PCC_AWER_B, getpcc(PCC_AWER_B) | 0x02);
+-
+-	/* now disable PC Card indexed register space again */
+-	setcsc(CSC_CR, getcsc(CSC_CR) & ~0x2);
 -}
 -
--static void __exit cleanup_tqm_mtd(void)
+-
+-/*
+-************************************************************
+-** Disable access to DIL/NetPC's flash by mapping it into
+-** the SC4x0's MMS Window C.
+-************************************************************
+-*/
+-static void dnpc_unmap_flash(void)
 -{
--	unsigned int idx = 0;
--	for(idx = 0 ; idx < num_banks ; idx++) {
--		/* destroy mtd_info previously allocated */
--		if (mtd_banks[idx]) {
--			mtd_device_unregister(mtd_banks[idx]);
--			map_destroy(mtd_banks[idx]);
--		}
--		/* release map_info not used anymore */
--		kfree(map_banks[idx]->name);
--		kfree(map_banks[idx]);
+-	/* - enable PC Card indexed register space */
+-	setcsc(CSC_CR, getcsc(CSC_CR) | 0x2);
+-
+-	/* disable memory window 1 */
+-	setpcc(PCC_AWER_B, getpcc(PCC_AWER_B) & ~0x02);
+-
+-	/* now disable PC Card indexed register space again */
+-	setcsc(CSC_CR, getcsc(CSC_CR) & ~0x2);
+-}
+-
+-
+-
+-/*
+-************************************************************
+-** Enable/Disable VPP to write to flash
+-************************************************************
+-*/
+-
+-static DEFINE_SPINLOCK(dnpc_spin);
+-static int        vpp_counter = 0;
+-/*
+-** This is what has to be done for the DNP board ..
+-*/
+-static void dnp_set_vpp(struct map_info *not_used, int on)
+-{
+-	spin_lock_irq(&dnpc_spin);
+-
+-	if (on)
+-	{
+-		if(++vpp_counter == 1)
+-			setcsc(CSC_RBWR, getcsc(CSC_RBWR) & ~0x4);
+-	}
+-	else
+-	{
+-		if(--vpp_counter == 0)
+-			setcsc(CSC_RBWR, getcsc(CSC_RBWR) | 0x4);
+-		else
+-			BUG_ON(vpp_counter < 0);
+-	}
+-	spin_unlock_irq(&dnpc_spin);
+-}
+-
+-/*
+-** .. and this the ADNP version:
+-*/
+-static void adnp_set_vpp(struct map_info *not_used, int on)
+-{
+-	spin_lock_irq(&dnpc_spin);
+-
+-	if (on)
+-	{
+-		if(++vpp_counter == 1)
+-			setcsc(CSC_RBWR, getcsc(CSC_RBWR) & ~0x8);
+-	}
+-	else
+-	{
+-		if(--vpp_counter == 0)
+-			setcsc(CSC_RBWR, getcsc(CSC_RBWR) | 0x8);
+-		else
+-			BUG_ON(vpp_counter < 0);
+-	}
+-	spin_unlock_irq(&dnpc_spin);
+-}
+-
+-
+-
+-#define DNP_WINDOW_SIZE		0x00200000	/*  DNP flash size is 2MiB  */
+-#define ADNP_WINDOW_SIZE	0x00400000	/* ADNP flash size is 4MiB */
+-#define WINDOW_ADDR		FLASH_BASE
+-
+-static struct map_info dnpc_map = {
+-	.name = "ADNP Flash Bank",
+-	.size = ADNP_WINDOW_SIZE,
+-	.bankwidth = 1,
+-	.set_vpp = adnp_set_vpp,
+-	.phys = WINDOW_ADDR
+-};
+-
+-/*
+-** The layout of the flash is somewhat "strange":
+-**
+-** 1.  960 KiB (15 blocks) : Space for ROM Bootloader and user data
+-** 2.   64 KiB (1 block)   : System BIOS
+-** 3.  960 KiB (15 blocks) : User Data (DNP model) or
+-** 3. 3008 KiB (47 blocks) : User Data (ADNP model)
+-** 4.   64 KiB (1 block)   : System BIOS Entry
+-*/
+-
+-static struct mtd_partition partition_info[]=
+-{
+-	{
+-		.name =		"ADNP boot",
+-		.offset =	0,
+-		.size =		0xf0000,
+-	},
+-	{
+-		.name =		"ADNP system BIOS",
+-		.offset =	MTDPART_OFS_NXTBLK,
+-		.size =		0x10000,
+-#ifdef DNPC_BIOS_BLOCKS_WRITEPROTECTED
+-		.mask_flags =	MTD_WRITEABLE,
+-#endif
+-	},
+-	{
+-		.name =		"ADNP file system",
+-		.offset =	MTDPART_OFS_NXTBLK,
+-		.size =		0x2f0000,
+-	},
+-	{
+-		.name =		"ADNP system BIOS entry",
+-		.offset =	MTDPART_OFS_NXTBLK,
+-		.size =		MTDPART_SIZ_FULL,
+-#ifdef DNPC_BIOS_BLOCKS_WRITEPROTECTED
+-		.mask_flags =	MTD_WRITEABLE,
+-#endif
+-	},
+-};
+-
+-#define NUM_PARTITIONS ARRAY_SIZE(partition_info)
+-
+-static struct mtd_info *mymtd;
+-static struct mtd_info *lowlvl_parts[NUM_PARTITIONS];
+-static struct mtd_info *merged_mtd;
+-
+-/*
+-** "Highlevel" partition info:
+-**
+-** Using the MTD concat layer, we can re-arrange partitions to our
+-** liking: we construct a virtual MTD device by concatenating the
+-** partitions, specifying the sequence such that the boot block
+-** is immediately followed by the filesystem block (i.e. the stupid
+-** system BIOS block is mapped to a different place). When re-partitioning
+-** this concatenated MTD device, we can set the boot block size to
+-** an arbitrary (though erase block aligned) value i.e. not one that
+-** is dictated by the flash's physical layout. We can thus set the
+-** boot block to be e.g. 64 KB (which is fully sufficient if we want
+-** to boot an etherboot image) or to -say- 1.5 MB if we want to boot
+-** a large kernel image. In all cases, the remainder of the flash
+-** is available as file system space.
+-*/
+-
+-static struct mtd_partition higlvl_partition_info[]=
+-{
+-	{
+-		.name =		"ADNP boot block",
+-		.offset =	0,
+-		.size =		CONFIG_MTD_DILNETPC_BOOTSIZE,
+-	},
+-	{
+-		.name =		"ADNP file system space",
+-		.offset =	MTDPART_OFS_NXTBLK,
+-		.size =		ADNP_WINDOW_SIZE-CONFIG_MTD_DILNETPC_BOOTSIZE-0x20000,
+-	},
+-	{
+-		.name =		"ADNP system BIOS + BIOS Entry",
+-		.offset =	MTDPART_OFS_NXTBLK,
+-		.size =		MTDPART_SIZ_FULL,
+-#ifdef DNPC_BIOS_BLOCKS_WRITEPROTECTED
+-		.mask_flags =	MTD_WRITEABLE,
+-#endif
+-	},
+-};
+-
+-#define NUM_HIGHLVL_PARTITIONS ARRAY_SIZE(higlvl_partition_info)
+-
+-
+-static int dnp_adnp_probe(void)
+-{
+-	char *biosid, rc = -1;
+-
+-	biosid = (char*)ioremap(BIOSID_BASE, 16);
+-	if(biosid)
+-	{
+-		if(!strcmp(biosid, ID_DNPC))
+-			rc = 1;		/* this is a DNPC  */
+-		else if(!strcmp(biosid, ID_ADNP))
+-			rc = 0;		/* this is a ADNPC */
+-	}
+-	iounmap((void *)biosid);
+-	return(rc);
+-}
+-
+-
+-static int __init init_dnpc(void)
+-{
+-	int is_dnp;
+-
+-	/*
+-	** determine hardware (DNP/ADNP/invalid)
+-	*/
+-	if((is_dnp = dnp_adnp_probe()) < 0)
+-		return -ENXIO;
+-
+-	/*
+-	** Things are set up for ADNP by default
+-	** -> modify all that needs to be different for DNP
+-	*/
+-	if(is_dnp)
+-	{	/*
+-		** Adjust window size, select correct set_vpp function.
+-		** The partitioning scheme is identical on both DNP
+-		** and ADNP except for the size of the third partition.
+-		*/
+-		int i;
+-		dnpc_map.size          = DNP_WINDOW_SIZE;
+-		dnpc_map.set_vpp       = dnp_set_vpp;
+-		partition_info[2].size = 0xf0000;
+-
+-		/*
+-		** increment all string pointers so the leading 'A' gets skipped,
+-		** thus turning all occurrences of "ADNP ..." into "DNP ..."
+-		*/
+-		++dnpc_map.name;
+-		for(i = 0; i < NUM_PARTITIONS; i++)
+-			++partition_info[i].name;
+-		higlvl_partition_info[1].size = DNP_WINDOW_SIZE -
+-			CONFIG_MTD_DILNETPC_BOOTSIZE - 0x20000;
+-		for(i = 0; i < NUM_HIGHLVL_PARTITIONS; i++)
+-			++higlvl_partition_info[i].name;
 -	}
 -
--	if (start_scan_addr) {
--		iounmap(start_scan_addr);
--		start_scan_addr = 0;
+-	printk(KERN_NOTICE "DIL/Net %s flash: 0x%lx at 0x%llx\n",
+-		is_dnp ? "DNPC" : "ADNP", dnpc_map.size, (unsigned long long)dnpc_map.phys);
+-
+-	dnpc_map.virt = ioremap_nocache(dnpc_map.phys, dnpc_map.size);
+-
+-	dnpc_map_flash(dnpc_map.phys, dnpc_map.size);
+-
+-	if (!dnpc_map.virt) {
+-		printk("Failed to ioremap_nocache\n");
+-		return -EIO;
+-	}
+-	simple_map_init(&dnpc_map);
+-
+-	printk("FLASH virtual address: 0x%p\n", dnpc_map.virt);
+-
+-	mymtd = do_map_probe("jedec_probe", &dnpc_map);
+-
+-	if (!mymtd)
+-		mymtd = do_map_probe("cfi_probe", &dnpc_map);
+-
+-	/*
+-	** If flash probes fail, try to make flashes accessible
+-	** at least as ROM. Ajust erasesize in this case since
+-	** the default one (128M) will break our partitioning
+-	*/
+-	if (!mymtd)
+-		if((mymtd = do_map_probe("map_rom", &dnpc_map)))
+-			mymtd->erasesize = 0x10000;
+-
+-	if (!mymtd) {
+-		iounmap(dnpc_map.virt);
+-		return -ENXIO;
+-	}
+-
+-	mymtd->owner = THIS_MODULE;
+-
+-	/*
+-	** Supply pointers to lowlvl_parts[] array to add_mtd_partitions()
+-	** -> add_mtd_partitions() will _not_ register MTD devices for
+-	** the partitions, but will instead store pointers to the MTD
+-	** objects it creates into our lowlvl_parts[] array.
+-	** NOTE: we arrange the pointers such that the sequence of the
+-	**       partitions gets re-arranged: partition #2 follows
+-	**       partition #0.
+-	*/
+-	partition_info[0].mtdp = &lowlvl_parts[0];
+-	partition_info[1].mtdp = &lowlvl_parts[2];
+-	partition_info[2].mtdp = &lowlvl_parts[1];
+-	partition_info[3].mtdp = &lowlvl_parts[3];
+-
+-	mtd_device_register(mymtd, partition_info, NUM_PARTITIONS);
+-
+-	/*
+-	** now create a virtual MTD device by concatenating the for partitions
+-	** (in the sequence given by the lowlvl_parts[] array.
+-	*/
+-	merged_mtd = mtd_concat_create(lowlvl_parts, NUM_PARTITIONS, "(A)DNP Flash Concatenated");
+-	if(merged_mtd)
+-	{	/*
+-		** now partition the new device the way we want it. This time,
+-		** we do not supply mtd pointers in higlvl_partition_info, so
+-		** add_mtd_partitions() will register the devices.
+-		*/
+-		mtd_device_register(merged_mtd, higlvl_partition_info,
+-				    NUM_HIGHLVL_PARTITIONS);
+-	}
+-
+-	return 0;
+-}
+-
+-static void __exit cleanup_dnpc(void)
+-{
+-	if(merged_mtd) {
+-		mtd_device_unregister(merged_mtd);
+-		mtd_concat_destroy(merged_mtd);
+-	}
+-
+-	if (mymtd) {
+-		mtd_device_unregister(mymtd);
+-		map_destroy(mymtd);
+-	}
+-	if (dnpc_map.virt) {
+-		iounmap(dnpc_map.virt);
+-		dnpc_unmap_flash();
+-		dnpc_map.virt = NULL;
 -	}
 -}
 -
--module_init(init_tqm_mtd);
--module_exit(cleanup_tqm_mtd);
+-module_init(init_dnpc);
+-module_exit(cleanup_dnpc);
 -
 -MODULE_LICENSE("GPL");
--MODULE_AUTHOR("Kirk Lee <kirk@hpc.ee.ntu.edu.tw>");
--MODULE_DESCRIPTION("MTD map driver for TQM8xxL boards");
+-MODULE_AUTHOR("Sysgo Real-Time Solutions GmbH");
+-MODULE_DESCRIPTION("MTD map driver for SSV DIL/NetPC DNP & ADNP");
 -- 
 1.7.10.4
 
