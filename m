@@ -1,13 +1,13 @@
 Return-Path: <dedekind1@gmail.com>
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
- by ozlabs.org (Postfix) with ESMTP id 4142B2C02CC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2013 20:04:30 +1100 (EST)
-Message-ID: <1363165519.9457.14.camel@sauron.fi.intel.com>
-Subject: [PATCH 09/10] mtd: remove the dilnetpc map driver support
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+ by ozlabs.org (Postfix) with ESMTP id 08B122C03F0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2013 20:04:35 +1100 (EST)
+Message-ID: <1363165527.9457.15.camel@sauron.fi.intel.com>
+Subject: [PATCH 10/10] mtd: remove the ixp2000 map driver
 From: Artem Bityutskiy <dedekind1@gmail.com>
 To: MTD Maling List <linux-mtd@lists.infradead.org>, linuxppc-dev
  <linuxppc-dev@lists.ozlabs.org>
-Date: Wed, 13 Mar 2013 11:05:19 +0200
+Date: Wed, 13 Mar 2013 11:05:27 +0200
 In-Reply-To: <1363086855-2847-1-git-send-email-dedekind1@gmail.com>
 References: <1363086855-2847-1-git-send-email-dedekind1@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
@@ -24,561 +24,311 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
 
-This driver is marked as broken for very long time. Most probably this board is
-just something ancient no one cares about anyway.
+This driver depends on CONFIG_IXP2000 which is not defined anywhere, which means
+this driver is dead.
 
 Signed-off-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
 ---
 
 Adding the PPC list
 
- drivers/mtd/maps/Kconfig    |   16 --
- drivers/mtd/maps/Makefile   |    1 -
- drivers/mtd/maps/dilnetpc.c |  496 -------------------------------------------
- 3 files changed, 513 deletions(-)
- delete mode 100644 drivers/mtd/maps/dilnetpc.c
+ drivers/mtd/maps/Kconfig   |    9 --
+ drivers/mtd/maps/Makefile  |    1 -
+ drivers/mtd/maps/ixp2000.c |  253 --------------------------------------------
+ 3 files changed, 263 deletions(-)
+ delete mode 100644 drivers/mtd/maps/ixp2000.c
 
 diff --git a/drivers/mtd/maps/Kconfig b/drivers/mtd/maps/Kconfig
-index 888e684..b6a369a 100644
+index b6a369a..4b70976 100644
 --- a/drivers/mtd/maps/Kconfig
 +++ b/drivers/mtd/maps/Kconfig
-@@ -249,22 +249,6 @@ config MTD_LANTIQ
- 	help
- 	  Support for NOR flash attached to the Lantiq SoC's External Bus Unit.
+@@ -297,15 +297,6 @@ config MTD_IXP4XX
+ 	  IXDP425 and Coyote. If you have an IXP4xx based board and
+ 	  would like to use the flash chips on it, say 'Y'.
  
--config MTD_DILNETPC
--	tristate "CFI Flash device mapped on DIL/Net PC"
--	depends on X86 && MTD_CFI_INTELEXT && BROKEN
+-config MTD_IXP2000
+-	tristate "CFI Flash device mapped on Intel IXP2000 based systems"
+-	depends on MTD_CFI && MTD_COMPLEX_MAPPINGS && ARCH_IXP2000
 -	help
--	  MTD map driver for SSV DIL/Net PC Boards "DNP" and "ADNP".
--	  For details, see <http://www.ssv-embedded.de/ssv/pc104/p169.htm>
-- 	  and <http://www.ssv-embedded.de/ssv/pc104/p170.htm>
+-	  This enables MTD access to flash devices on platforms based
+-	  on Intel's IXP2000 family of network processors. If you have an
+-	  IXP2000 based board and would like to use the flash chips on it,
+-	  say 'Y'.
 -
--config MTD_DILNETPC_BOOTSIZE
--	hex "Size of DIL/Net PC flash boot partition"
--	depends on MTD_DILNETPC
--	default "0x80000"
--	help
--	  The amount of space taken up by the kernel or Etherboot
--	  on the DIL/Net PC flash chips.
--
- config MTD_L440GX
- 	tristate "BIOS flash chip on Intel L440GX boards"
- 	depends on X86 && MTD_JEDECPROBE
+ config MTD_AUTCPU12
+ 	bool "NV-RAM mapping AUTCPU12 board"
+ 	depends on ARCH_AUTCPU12
 diff --git a/drivers/mtd/maps/Makefile b/drivers/mtd/maps/Makefile
-index 0cdc881..7315ed8 100644
+index 7315ed8..781e4b8 100644
 --- a/drivers/mtd/maps/Makefile
 +++ b/drivers/mtd/maps/Makefile
-@@ -9,7 +9,6 @@ endif
- # Chip mappings
- obj-$(CONFIG_MTD_CFI_FLAGADM)	+= cfi_flagadm.o
- obj-$(CONFIG_MTD_DC21285)	+= dc21285.o
--obj-$(CONFIG_MTD_DILNETPC)	+= dilnetpc.o
- obj-$(CONFIG_MTD_L440GX)	+= l440gx.o
- obj-$(CONFIG_MTD_AMD76XROM)	+= amd76xrom.o
- obj-$(CONFIG_MTD_ESB2ROM)	+= esb2rom.o
-diff --git a/drivers/mtd/maps/dilnetpc.c b/drivers/mtd/maps/dilnetpc.c
+@@ -39,7 +39,6 @@ obj-$(CONFIG_MTD_NETtel)	+= nettel.o
+ obj-$(CONFIG_MTD_SCB2_FLASH)	+= scb2_flash.o
+ obj-$(CONFIG_MTD_H720X)		+= h720x-flash.o
+ obj-$(CONFIG_MTD_IXP4XX)	+= ixp4xx.o
+-obj-$(CONFIG_MTD_IXP2000)	+= ixp2000.o
+ obj-$(CONFIG_MTD_PLATRAM)	+= plat-ram.o
+ obj-$(CONFIG_MTD_INTEL_VR_NOR)	+= intel_vr_nor.o
+ obj-$(CONFIG_MTD_BFIN_ASYNC)	+= bfin-async-flash.o
+diff --git a/drivers/mtd/maps/ixp2000.c b/drivers/mtd/maps/ixp2000.c
 deleted file mode 100644
-index 3e393f0..0000000
---- a/drivers/mtd/maps/dilnetpc.c
+index 4a41ced..0000000
+--- a/drivers/mtd/maps/ixp2000.c
 +++ /dev/null
-@@ -1,496 +0,0 @@
--/* dilnetpc.c -- MTD map driver for SSV DIL/Net PC Boards "DNP" and "ADNP"
+@@ -1,253 +0,0 @@
+-/*
+- * drivers/mtd/maps/ixp2000.c
+- *
+- * Mapping for the Intel XScale IXP2000 based systems
+- *
+- * Copyright (C) 2002 Intel Corp.
+- * Copyright (C) 2003-2004 MontaVista Software, Inc.
+- *
+- * Original Author: Naeem M Afzal <naeem.m.afzal@intel.com>
+- * Maintainer: Deepak Saxena <dsaxena@plexity.net>
 - *
 - * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2 of the License, or
-- * (at your option) any later version.
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
 - *
-- * This program is distributed in the hope that it will be useful,
-- * but WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- * GNU General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License
-- * along with this program; if not, write to the Free Software
-- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
-- *
-- * The DIL/Net PC is a tiny embedded PC board made by SSV Embedded Systems
-- * featuring the AMD Elan SC410 processor. There are two variants of this
-- * board: DNP/1486 and ADNP/1486. The DNP version has 2 megs of flash
-- * ROM (Intel 28F016S3) and 8 megs of DRAM, the ADNP version has 4 megs
-- * flash and 16 megs of RAM.
-- * For details, see http://www.ssv-embedded.de/ssv/pc104/p169.htm
-- * and http://www.ssv-embedded.de/ssv/pc104/p170.htm
 - */
 -
 -#include <linux/module.h>
 -#include <linux/types.h>
--#include <linux/kernel.h>
 -#include <linux/init.h>
+-#include <linux/kernel.h>
 -#include <linux/string.h>
+-#include <linux/slab.h>
+-#include <linux/ioport.h>
+-#include <linux/device.h>
+-#include <linux/platform_device.h>
 -
 -#include <linux/mtd/mtd.h>
 -#include <linux/mtd/map.h>
 -#include <linux/mtd/partitions.h>
--#include <linux/mtd/concat.h>
 -
 -#include <asm/io.h>
+-#include <mach/hardware.h>
+-#include <asm/mach/flash.h>
 -
--/*
--** The DIL/NetPC keeps its BIOS in two distinct flash blocks.
--** Destroying any of these blocks transforms the DNPC into
--** a paperweight (albeit not a very useful one, considering
--** it only weighs a few grams).
--**
--** Therefore, the BIOS blocks must never be erased or written to
--** except by people who know exactly what they are doing (e.g.
--** to install a BIOS update). These partitions are marked read-only
--** by default, but can be made read/write by undefining
--** DNPC_BIOS_BLOCKS_WRITEPROTECTED:
--*/
--#define DNPC_BIOS_BLOCKS_WRITEPROTECTED
+-#include <linux/reboot.h>
 -
--/*
--** The ID string (in ROM) is checked to determine whether we
--** are running on a DNP/1486 or ADNP/1486
--*/
--#define BIOSID_BASE	0x000fe100
--
--#define ID_DNPC	"DNP1486"
--#define ID_ADNP	"ADNP1486"
--
--/*
--** Address where the flash should appear in CPU space
--*/
--#define FLASH_BASE	0x2000000
--
--/*
--** Chip Setup and Control (CSC) indexed register space
--*/
--#define CSC_INDEX	0x22
--#define CSC_DATA	0x23
--
--#define CSC_MMSWAR	0x30	/* MMS window C-F attributes register */
--#define CSC_MMSWDSR	0x31	/* MMS window C-F device select register */
--
--#define CSC_RBWR	0xa7	/* GPIO Read-Back/Write Register B */
--
--#define CSC_CR		0xd0	/* internal I/O device disable/Echo */
--				/* Z-bus/configuration register */
--
--#define CSC_PCCMDCR	0xf1	/* PC card mode and DMA control register */
--
--
--/*
--** PC Card indexed register space:
--*/
--
--#define PCC_INDEX	0x3e0
--#define PCC_DATA	0x3e1
--
--#define PCC_AWER_B		0x46	/* Socket B Address Window enable register */
--#define PCC_MWSAR_1_Lo	0x58	/* memory window 1 start address low register */
--#define PCC_MWSAR_1_Hi	0x59	/* memory window 1 start address high register */
--#define PCC_MWEAR_1_Lo	0x5A	/* memory window 1 stop address low register */
--#define PCC_MWEAR_1_Hi	0x5B	/* memory window 1 stop address high register */
--#define PCC_MWAOR_1_Lo	0x5C	/* memory window 1 address offset low register */
--#define PCC_MWAOR_1_Hi	0x5D	/* memory window 1 address offset high register */
--
--
--/*
--** Access to SC4x0's Chip Setup and Control (CSC)
--** and PC Card (PCC) indexed registers:
--*/
--static inline void setcsc(int reg, unsigned char data)
--{
--	outb(reg, CSC_INDEX);
--	outb(data, CSC_DATA);
--}
--
--static inline unsigned char getcsc(int reg)
--{
--	outb(reg, CSC_INDEX);
--	return(inb(CSC_DATA));
--}
--
--static inline void setpcc(int reg, unsigned char data)
--{
--	outb(reg, PCC_INDEX);
--	outb(data, PCC_DATA);
--}
--
--static inline unsigned char getpcc(int reg)
--{
--	outb(reg, PCC_INDEX);
--	return(inb(PCC_DATA));
--}
--
--
--/*
--************************************************************
--** Enable access to DIL/NetPC's flash by mapping it into
--** the SC4x0's MMS Window C.
--************************************************************
--*/
--static void dnpc_map_flash(unsigned long flash_base, unsigned long flash_size)
--{
--	unsigned long flash_end = flash_base + flash_size - 1;
--
--	/*
--	** enable setup of MMS windows C-F:
--	*/
--	/* - enable PC Card indexed register space */
--	setcsc(CSC_CR, getcsc(CSC_CR) | 0x2);
--	/* - set PC Card controller to operate in standard mode */
--	setcsc(CSC_PCCMDCR, getcsc(CSC_PCCMDCR) & ~1);
--
--	/*
--	** Program base address and end address of window
--	** where the flash ROM should appear in CPU address space
--	*/
--	setpcc(PCC_MWSAR_1_Lo, (flash_base >> 12) & 0xff);
--	setpcc(PCC_MWSAR_1_Hi, (flash_base >> 20) & 0x3f);
--	setpcc(PCC_MWEAR_1_Lo, (flash_end >> 12) & 0xff);
--	setpcc(PCC_MWEAR_1_Hi, (flash_end >> 20) & 0x3f);
--
--	/* program offset of first flash location to appear in this window (0) */
--	setpcc(PCC_MWAOR_1_Lo, ((0 - flash_base) >> 12) & 0xff);
--	setpcc(PCC_MWAOR_1_Hi, ((0 - flash_base)>> 20) & 0x3f);
--
--	/* set attributes for MMS window C: non-cacheable, write-enabled */
--	setcsc(CSC_MMSWAR, getcsc(CSC_MMSWAR) & ~0x11);
--
--	/* select physical device ROMCS0 (i.e. flash) for MMS Window C */
--	setcsc(CSC_MMSWDSR, getcsc(CSC_MMSWDSR) & ~0x03);
--
--	/* enable memory window 1 */
--	setpcc(PCC_AWER_B, getpcc(PCC_AWER_B) | 0x02);
--
--	/* now disable PC Card indexed register space again */
--	setcsc(CSC_CR, getcsc(CSC_CR) & ~0x2);
--}
--
--
--/*
--************************************************************
--** Disable access to DIL/NetPC's flash by mapping it into
--** the SC4x0's MMS Window C.
--************************************************************
--*/
--static void dnpc_unmap_flash(void)
--{
--	/* - enable PC Card indexed register space */
--	setcsc(CSC_CR, getcsc(CSC_CR) | 0x2);
--
--	/* disable memory window 1 */
--	setpcc(PCC_AWER_B, getpcc(PCC_AWER_B) & ~0x02);
--
--	/* now disable PC Card indexed register space again */
--	setcsc(CSC_CR, getcsc(CSC_CR) & ~0x2);
--}
--
--
--
--/*
--************************************************************
--** Enable/Disable VPP to write to flash
--************************************************************
--*/
--
--static DEFINE_SPINLOCK(dnpc_spin);
--static int        vpp_counter = 0;
--/*
--** This is what has to be done for the DNP board ..
--*/
--static void dnp_set_vpp(struct map_info *not_used, int on)
--{
--	spin_lock_irq(&dnpc_spin);
--
--	if (on)
--	{
--		if(++vpp_counter == 1)
--			setcsc(CSC_RBWR, getcsc(CSC_RBWR) & ~0x4);
--	}
--	else
--	{
--		if(--vpp_counter == 0)
--			setcsc(CSC_RBWR, getcsc(CSC_RBWR) | 0x4);
--		else
--			BUG_ON(vpp_counter < 0);
--	}
--	spin_unlock_irq(&dnpc_spin);
--}
--
--/*
--** .. and this the ADNP version:
--*/
--static void adnp_set_vpp(struct map_info *not_used, int on)
--{
--	spin_lock_irq(&dnpc_spin);
--
--	if (on)
--	{
--		if(++vpp_counter == 1)
--			setcsc(CSC_RBWR, getcsc(CSC_RBWR) & ~0x8);
--	}
--	else
--	{
--		if(--vpp_counter == 0)
--			setcsc(CSC_RBWR, getcsc(CSC_RBWR) | 0x8);
--		else
--			BUG_ON(vpp_counter < 0);
--	}
--	spin_unlock_irq(&dnpc_spin);
--}
--
--
--
--#define DNP_WINDOW_SIZE		0x00200000	/*  DNP flash size is 2MiB  */
--#define ADNP_WINDOW_SIZE	0x00400000	/* ADNP flash size is 4MiB */
--#define WINDOW_ADDR		FLASH_BASE
--
--static struct map_info dnpc_map = {
--	.name = "ADNP Flash Bank",
--	.size = ADNP_WINDOW_SIZE,
--	.bankwidth = 1,
--	.set_vpp = adnp_set_vpp,
--	.phys = WINDOW_ADDR
+-struct ixp2000_flash_info {
+-	struct		mtd_info *mtd;
+-	struct		map_info map;
+-	struct		resource *res;
 -};
 -
+-static inline unsigned long flash_bank_setup(struct map_info *map, unsigned long ofs)
+-{
+-	unsigned long (*set_bank)(unsigned long) =
+-		(unsigned long(*)(unsigned long))map->map_priv_2;
+-
+-	return (set_bank ? set_bank(ofs) : ofs);
+-}
+-
+-#ifdef __ARMEB__
 -/*
--** The layout of the flash is somewhat "strange":
--**
--** 1.  960 KiB (15 blocks) : Space for ROM Bootloader and user data
--** 2.   64 KiB (1 block)   : System BIOS
--** 3.  960 KiB (15 blocks) : User Data (DNP model) or
--** 3. 3008 KiB (47 blocks) : User Data (ADNP model)
--** 4.   64 KiB (1 block)   : System BIOS Entry
--*/
+- * Rev A0 and A1 of IXP2400 silicon have a broken addressing unit which
+- * causes the lower address bits to be XORed with 0x11 on 8 bit accesses
+- * and XORed with 0x10 on 16 bit accesses. See the spec update, erratum 44.
+- */
+-static int erratum44_workaround = 0;
 -
--static struct mtd_partition partition_info[]=
+-static inline unsigned long address_fix8_write(unsigned long addr)
 -{
--	{
--		.name =		"ADNP boot",
--		.offset =	0,
--		.size =		0xf0000,
--	},
--	{
--		.name =		"ADNP system BIOS",
--		.offset =	MTDPART_OFS_NXTBLK,
--		.size =		0x10000,
--#ifdef DNPC_BIOS_BLOCKS_WRITEPROTECTED
--		.mask_flags =	MTD_WRITEABLE,
--#endif
--	},
--	{
--		.name =		"ADNP file system",
--		.offset =	MTDPART_OFS_NXTBLK,
--		.size =		0x2f0000,
--	},
--	{
--		.name =		"ADNP system BIOS entry",
--		.offset =	MTDPART_OFS_NXTBLK,
--		.size =		MTDPART_SIZ_FULL,
--#ifdef DNPC_BIOS_BLOCKS_WRITEPROTECTED
--		.mask_flags =	MTD_WRITEABLE,
--#endif
--	},
--};
--
--#define NUM_PARTITIONS ARRAY_SIZE(partition_info)
--
--static struct mtd_info *mymtd;
--static struct mtd_info *lowlvl_parts[NUM_PARTITIONS];
--static struct mtd_info *merged_mtd;
--
--/*
--** "Highlevel" partition info:
--**
--** Using the MTD concat layer, we can re-arrange partitions to our
--** liking: we construct a virtual MTD device by concatenating the
--** partitions, specifying the sequence such that the boot block
--** is immediately followed by the filesystem block (i.e. the stupid
--** system BIOS block is mapped to a different place). When re-partitioning
--** this concatenated MTD device, we can set the boot block size to
--** an arbitrary (though erase block aligned) value i.e. not one that
--** is dictated by the flash's physical layout. We can thus set the
--** boot block to be e.g. 64 KB (which is fully sufficient if we want
--** to boot an etherboot image) or to -say- 1.5 MB if we want to boot
--** a large kernel image. In all cases, the remainder of the flash
--** is available as file system space.
--*/
--
--static struct mtd_partition higlvl_partition_info[]=
--{
--	{
--		.name =		"ADNP boot block",
--		.offset =	0,
--		.size =		CONFIG_MTD_DILNETPC_BOOTSIZE,
--	},
--	{
--		.name =		"ADNP file system space",
--		.offset =	MTDPART_OFS_NXTBLK,
--		.size =		ADNP_WINDOW_SIZE-CONFIG_MTD_DILNETPC_BOOTSIZE-0x20000,
--	},
--	{
--		.name =		"ADNP system BIOS + BIOS Entry",
--		.offset =	MTDPART_OFS_NXTBLK,
--		.size =		MTDPART_SIZ_FULL,
--#ifdef DNPC_BIOS_BLOCKS_WRITEPROTECTED
--		.mask_flags =	MTD_WRITEABLE,
--#endif
--	},
--};
--
--#define NUM_HIGHLVL_PARTITIONS ARRAY_SIZE(higlvl_partition_info)
--
--
--static int dnp_adnp_probe(void)
--{
--	char *biosid, rc = -1;
--
--	biosid = (char*)ioremap(BIOSID_BASE, 16);
--	if(biosid)
--	{
--		if(!strcmp(biosid, ID_DNPC))
--			rc = 1;		/* this is a DNPC  */
--		else if(!strcmp(biosid, ID_ADNP))
--			rc = 0;		/* this is a ADNPC */
+-	if (erratum44_workaround) {
+-		return (addr ^ 3);
 -	}
--	iounmap((void *)biosid);
--	return(rc);
+-	return addr;
+-}
+-#else
+-
+-#define address_fix8_write(x)	(x)
+-#endif
+-
+-static map_word ixp2000_flash_read8(struct map_info *map, unsigned long ofs)
+-{
+-	map_word val;
+-
+-	val.x[0] =  *((u8 *)(map->map_priv_1 + flash_bank_setup(map, ofs)));
+-	return val;
+-}
+-
+-/*
+- * We can't use the standard memcpy due to the broken SlowPort
+- * address translation on rev A0 and A1 silicon and the fact that
+- * we have banked flash.
+- */
+-static void ixp2000_flash_copy_from(struct map_info *map, void *to,
+-			      unsigned long from, ssize_t len)
+-{
+-	from = flash_bank_setup(map, from);
+-	while(len--)
+-		*(__u8 *) to++ = *(__u8 *)(map->map_priv_1 + from++);
+-}
+-
+-static void ixp2000_flash_write8(struct map_info *map, map_word d, unsigned long ofs)
+-{
+-	*(__u8 *) (address_fix8_write(map->map_priv_1 +
+-				      flash_bank_setup(map, ofs))) = d.x[0];
+-}
+-
+-static void ixp2000_flash_copy_to(struct map_info *map, unsigned long to,
+-			    const void *from, ssize_t len)
+-{
+-	to = flash_bank_setup(map, to);
+-	while(len--) {
+-		unsigned long tmp = address_fix8_write(map->map_priv_1 + to++);
+-		*(__u8 *)(tmp) = *(__u8 *)(from++);
+-	}
 -}
 -
 -
--static int __init init_dnpc(void)
+-static int ixp2000_flash_remove(struct platform_device *dev)
 -{
--	int is_dnp;
+-	struct flash_platform_data *plat = dev->dev.platform_data;
+-	struct ixp2000_flash_info *info = platform_get_drvdata(dev);
 -
--	/*
--	** determine hardware (DNP/ADNP/invalid)
--	*/
--	if((is_dnp = dnp_adnp_probe()) < 0)
--		return -ENXIO;
+-	platform_set_drvdata(dev, NULL);
 -
--	/*
--	** Things are set up for ADNP by default
--	** -> modify all that needs to be different for DNP
--	*/
--	if(is_dnp)
--	{	/*
--		** Adjust window size, select correct set_vpp function.
--		** The partitioning scheme is identical on both DNP
--		** and ADNP except for the size of the third partition.
--		*/
--		int i;
--		dnpc_map.size          = DNP_WINDOW_SIZE;
--		dnpc_map.set_vpp       = dnp_set_vpp;
--		partition_info[2].size = 0xf0000;
+-	if(!info)
+-		return 0;
 -
--		/*
--		** increment all string pointers so the leading 'A' gets skipped,
--		** thus turning all occurrences of "ADNP ..." into "DNP ..."
--		*/
--		++dnpc_map.name;
--		for(i = 0; i < NUM_PARTITIONS; i++)
--			++partition_info[i].name;
--		higlvl_partition_info[1].size = DNP_WINDOW_SIZE -
--			CONFIG_MTD_DILNETPC_BOOTSIZE - 0x20000;
--		for(i = 0; i < NUM_HIGHLVL_PARTITIONS; i++)
--			++higlvl_partition_info[i].name;
+-	if (info->mtd) {
+-		mtd_device_unregister(info->mtd);
+-		map_destroy(info->mtd);
+-	}
+-	if (info->map.map_priv_1)
+-		iounmap((void *) info->map.map_priv_1);
+-
+-	if (info->res) {
+-		release_resource(info->res);
+-		kfree(info->res);
 -	}
 -
--	printk(KERN_NOTICE "DIL/Net %s flash: 0x%lx at 0x%llx\n",
--		is_dnp ? "DNPC" : "ADNP", dnpc_map.size, (unsigned long long)dnpc_map.phys);
--
--	dnpc_map.virt = ioremap_nocache(dnpc_map.phys, dnpc_map.size);
--
--	dnpc_map_flash(dnpc_map.phys, dnpc_map.size);
--
--	if (!dnpc_map.virt) {
--		printk("Failed to ioremap_nocache\n");
--		return -EIO;
--	}
--	simple_map_init(&dnpc_map);
--
--	printk("FLASH virtual address: 0x%p\n", dnpc_map.virt);
--
--	mymtd = do_map_probe("jedec_probe", &dnpc_map);
--
--	if (!mymtd)
--		mymtd = do_map_probe("cfi_probe", &dnpc_map);
--
--	/*
--	** If flash probes fail, try to make flashes accessible
--	** at least as ROM. Ajust erasesize in this case since
--	** the default one (128M) will break our partitioning
--	*/
--	if (!mymtd)
--		if((mymtd = do_map_probe("map_rom", &dnpc_map)))
--			mymtd->erasesize = 0x10000;
--
--	if (!mymtd) {
--		iounmap(dnpc_map.virt);
--		return -ENXIO;
--	}
--
--	mymtd->owner = THIS_MODULE;
--
--	/*
--	** Supply pointers to lowlvl_parts[] array to add_mtd_partitions()
--	** -> add_mtd_partitions() will _not_ register MTD devices for
--	** the partitions, but will instead store pointers to the MTD
--	** objects it creates into our lowlvl_parts[] array.
--	** NOTE: we arrange the pointers such that the sequence of the
--	**       partitions gets re-arranged: partition #2 follows
--	**       partition #0.
--	*/
--	partition_info[0].mtdp = &lowlvl_parts[0];
--	partition_info[1].mtdp = &lowlvl_parts[2];
--	partition_info[2].mtdp = &lowlvl_parts[1];
--	partition_info[3].mtdp = &lowlvl_parts[3];
--
--	mtd_device_register(mymtd, partition_info, NUM_PARTITIONS);
--
--	/*
--	** now create a virtual MTD device by concatenating the for partitions
--	** (in the sequence given by the lowlvl_parts[] array.
--	*/
--	merged_mtd = mtd_concat_create(lowlvl_parts, NUM_PARTITIONS, "(A)DNP Flash Concatenated");
--	if(merged_mtd)
--	{	/*
--		** now partition the new device the way we want it. This time,
--		** we do not supply mtd pointers in higlvl_partition_info, so
--		** add_mtd_partitions() will register the devices.
--		*/
--		mtd_device_register(merged_mtd, higlvl_partition_info,
--				    NUM_HIGHLVL_PARTITIONS);
--	}
+-	if (plat->exit)
+-		plat->exit();
 -
 -	return 0;
 -}
 -
--static void __exit cleanup_dnpc(void)
+-
+-static int ixp2000_flash_probe(struct platform_device *dev)
 -{
--	if(merged_mtd) {
--		mtd_device_unregister(merged_mtd);
--		mtd_concat_destroy(merged_mtd);
+-	static const char *probes[] = { "RedBoot", "cmdlinepart", NULL };
+-	struct ixp2000_flash_data *ixp_data = dev->dev.platform_data;
+-	struct flash_platform_data *plat;
+-	struct ixp2000_flash_info *info;
+-	unsigned long window_size;
+-	int err = -1;
+-
+-	if (!ixp_data)
+-		return -ENODEV;
+-
+-	plat = ixp_data->platform_data;
+-	if (!plat)
+-		return -ENODEV;
+-
+-	window_size = resource_size(dev->resource);
+-	dev_info(&dev->dev, "Probe of IXP2000 flash(%d banks x %dMiB)\n",
+-		 ixp_data->nr_banks, ((u32)window_size >> 20));
+-
+-	if (plat->width != 1) {
+-		dev_err(&dev->dev, "IXP2000 MTD map only supports 8-bit mode, asking for %d\n",
+-			plat->width * 8);
+-		return -EIO;
 -	}
 -
--	if (mymtd) {
--		mtd_device_unregister(mymtd);
--		map_destroy(mymtd);
+-	info = kzalloc(sizeof(struct ixp2000_flash_info), GFP_KERNEL);
+-	if(!info) {
+-		err = -ENOMEM;
+-		goto Error;
 -	}
--	if (dnpc_map.virt) {
--		iounmap(dnpc_map.virt);
--		dnpc_unmap_flash();
--		dnpc_map.virt = NULL;
+-
+-	platform_set_drvdata(dev, info);
+-
+-	/*
+-	 * Tell the MTD layer we're not 1:1 mapped so that it does
+-	 * not attempt to do a direct access on us.
+-	 */
+-	info->map.phys = NO_XIP;
+-
+-	info->map.size = ixp_data->nr_banks * window_size;
+-	info->map.bankwidth = 1;
+-
+-	/*
+- 	 * map_priv_2 is used to store a ptr to the bank_setup routine
+- 	 */
+-	info->map.map_priv_2 = (unsigned long) ixp_data->bank_setup;
+-
+-	info->map.name = dev_name(&dev->dev);
+-	info->map.read = ixp2000_flash_read8;
+-	info->map.write = ixp2000_flash_write8;
+-	info->map.copy_from = ixp2000_flash_copy_from;
+-	info->map.copy_to = ixp2000_flash_copy_to;
+-
+-	info->res = request_mem_region(dev->resource->start,
+-				       resource_size(dev->resource),
+-				       dev_name(&dev->dev));
+-	if (!info->res) {
+-		dev_err(&dev->dev, "Could not reserve memory region\n");
+-		err = -ENOMEM;
+-		goto Error;
 -	}
+-
+-	info->map.map_priv_1 =
+-		(unsigned long)ioremap(dev->resource->start,
+-				       resource_size(dev->resource));
+-	if (!info->map.map_priv_1) {
+-		dev_err(&dev->dev, "Failed to ioremap flash region\n");
+-		err = -EIO;
+-		goto Error;
+-	}
+-
+-#if defined(__ARMEB__)
+-	/*
+-	 * Enable erratum 44 workaround for NPUs with broken slowport
+-	 */
+-
+-	erratum44_workaround = ixp2000_has_broken_slowport();
+-	dev_info(&dev->dev, "Erratum 44 workaround %s\n",
+-	       erratum44_workaround ? "enabled" : "disabled");
+-#endif
+-
+-	info->mtd = do_map_probe(plat->map_name, &info->map);
+-	if (!info->mtd) {
+-		dev_err(&dev->dev, "map_probe failed\n");
+-		err = -ENXIO;
+-		goto Error;
+-	}
+-	info->mtd->owner = THIS_MODULE;
+-
+-	err = mtd_device_parse_register(info->mtd, probes, NULL, NULL, 0);
+-	if (err)
+-		goto Error;
+-
+-	return 0;
+-
+-Error:
+-	ixp2000_flash_remove(dev);
+-	return err;
 -}
 -
--module_init(init_dnpc);
--module_exit(cleanup_dnpc);
+-static struct platform_driver ixp2000_flash_driver = {
+-	.probe		= ixp2000_flash_probe,
+-	.remove		= ixp2000_flash_remove,
+-	.driver		= {
+-		.name	= "IXP2000-Flash",
+-		.owner	= THIS_MODULE,
+-	},
+-};
+-
+-module_platform_driver(ixp2000_flash_driver);
 -
 -MODULE_LICENSE("GPL");
--MODULE_AUTHOR("Sysgo Real-Time Solutions GmbH");
--MODULE_DESCRIPTION("MTD map driver for SSV DIL/NetPC DNP & ADNP");
+-MODULE_AUTHOR("Deepak Saxena <dsaxena@plexity.net>");
+-MODULE_ALIAS("platform:IXP2000-Flash");
 -- 
 1.7.10.4
 
