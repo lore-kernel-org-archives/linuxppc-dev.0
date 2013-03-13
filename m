@@ -1,13 +1,13 @@
 Return-Path: <dedekind1@gmail.com>
 Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by ozlabs.org (Postfix) with ESMTP id 43DCC2C0323
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2013 20:04:09 +1100 (EST)
-Message-ID: <1363165499.9457.11.camel@sauron.fi.intel.com>
-Subject: [PATCH 01/10] mtd: remove the dbox2-flash map driver
+ by ozlabs.org (Postfix) with ESMTP id 10DFA2C02EC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2013 20:04:12 +1100 (EST)
+Message-ID: <1363165504.9457.12.camel@sauron.fi.intel.com>
+Subject: [PATCH 02/10] mtd: remove the dmv182 map driver
 From: Artem Bityutskiy <dedekind1@gmail.com>
 To: MTD Maling List <linux-mtd@lists.infradead.org>, linuxppc-dev
  <linuxppc-dev@lists.ozlabs.org>
-Date: Wed, 13 Mar 2013 11:04:59 +0200
+Date: Wed, 13 Mar 2013 11:05:04 +0200
 In-Reply-To: <1363086855-2847-1-git-send-email-dedekind1@gmail.com>
 References: <1363086855-2847-1-git-send-email-dedekind1@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
@@ -22,182 +22,207 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+
 From: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
 
-This driver depends on the CONFIG_DBOX2 symbol which does not exist in
-the kernel, which means the driver is dead.
+This driver depends on the CONFIG_DMV182 symbol which is not defined anywhere,
+and this means that this driver is dead.
 
 Signed-off-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
 ---
 
 Adding the PPC list
 
- drivers/mtd/maps/Kconfig       |    8 ---
- drivers/mtd/maps/Makefile      |    1 -
- drivers/mtd/maps/dbox2-flash.c |  123 ----------------------------------------
- 3 files changed, 132 deletions(-)
- delete mode 100644 drivers/mtd/maps/dbox2-flash.c
+ drivers/mtd/maps/Kconfig  |    9 ---
+ drivers/mtd/maps/Makefile |    1 -
+ drivers/mtd/maps/dmv182.c |  146 ---------------------------------------------
+ 3 files changed, 156 deletions(-)
+ delete mode 100644 drivers/mtd/maps/dmv182.c
 
 diff --git a/drivers/mtd/maps/Kconfig b/drivers/mtd/maps/Kconfig
-index 3ed17c4..74fe0c2 100644
+index 74fe0c2..7071486 100644
 --- a/drivers/mtd/maps/Kconfig
 +++ b/drivers/mtd/maps/Kconfig
-@@ -302,14 +302,6 @@ config MTD_MBX860
- 	  MBX860 board. If you have one of these boards and would like
- 	  to use the flash chips on it, say 'Y'.
+@@ -425,15 +425,6 @@ config MTD_UCLINUX
+ 	help
+ 	  Map driver to support image based filesystems for uClinux.
  
--config MTD_DBOX2
--	tristate "CFI Flash device mapped on D-Box2"
--	depends on DBOX2 && MTD_CFI_INTELSTD && MTD_CFI_INTELEXT && MTD_CFI_AMDSTD
--	help
--	  This enables access routines for the flash chips on the Nokia/Sagem
--	  D-Box 2 board. If you have one of these boards and would like to use
--	  the flash chips on it, say 'Y'.
+-config MTD_DMV182
+-        tristate "Map driver for Dy-4 SVME/DMV-182 board."
+-        depends on DMV182
+-	select MTD_MAP_BANK_WIDTH_32
+-	select MTD_CFI_I8
+-	select MTD_CFI_AMDSTD
+-        help
+-          Map driver for Dy-4 SVME/DMV-182 board.
 -
- config MTD_CFI_FLAGADM
- 	tristate "CFI Flash device mapping on FlagaDM"
- 	depends on 8xx && MTD_CFI
+ config MTD_INTEL_VR_NOR
+ 	tristate "NOR flash on Intel Vermilion Range Expansion Bus CS0"
+ 	depends on PCI
 diff --git a/drivers/mtd/maps/Makefile b/drivers/mtd/maps/Makefile
-index 4ded287..93f4db2 100644
+index 93f4db2..819e2ab 100644
 --- a/drivers/mtd/maps/Makefile
 +++ b/drivers/mtd/maps/Makefile
-@@ -34,7 +34,6 @@ obj-$(CONFIG_MTD_TS5500)	+= ts5500_flash.o
- obj-$(CONFIG_MTD_SUN_UFLASH)	+= sun_uflash.o
- obj-$(CONFIG_MTD_VMAX)		+= vmax301.o
- obj-$(CONFIG_MTD_SCx200_DOCFLASH)+= scx200_docflash.o
--obj-$(CONFIG_MTD_DBOX2)		+= dbox2-flash.o
- obj-$(CONFIG_MTD_SOLUTIONENGINE)+= solutionengine.o
- obj-$(CONFIG_MTD_PCI)		+= pci.o
- obj-$(CONFIG_MTD_AUTCPU12)	+= autcpu12-nvram.o
-diff --git a/drivers/mtd/maps/dbox2-flash.c b/drivers/mtd/maps/dbox2-flash.c
+@@ -44,7 +44,6 @@ obj-$(CONFIG_MTD_SCB2_FLASH)	+= scb2_flash.o
+ obj-$(CONFIG_MTD_H720X)		+= h720x-flash.o
+ obj-$(CONFIG_MTD_IXP4XX)	+= ixp4xx.o
+ obj-$(CONFIG_MTD_IXP2000)	+= ixp2000.o
+-obj-$(CONFIG_MTD_DMV182)	+= dmv182.o
+ obj-$(CONFIG_MTD_PLATRAM)	+= plat-ram.o
+ obj-$(CONFIG_MTD_INTEL_VR_NOR)	+= intel_vr_nor.o
+ obj-$(CONFIG_MTD_BFIN_ASYNC)	+= bfin-async-flash.o
+diff --git a/drivers/mtd/maps/dmv182.c b/drivers/mtd/maps/dmv182.c
 deleted file mode 100644
-index 85bdece..0000000
---- a/drivers/mtd/maps/dbox2-flash.c
+index 6538ac6..0000000
+--- a/drivers/mtd/maps/dmv182.c
 +++ /dev/null
-@@ -1,123 +0,0 @@
+@@ -1,146 +0,0 @@
+-
 -/*
-- * D-Box 2 flash driver
+- * drivers/mtd/maps/dmv182.c
+- *
+- * Flash map driver for the Dy4 SVME182 board
+- *
+- * Copyright 2003-2004, TimeSys Corporation
+- *
+- * Based on the SVME181 flash map, by Tom Nelson, Dot4, Inc. for TimeSys Corp.
+- *
+- * This program is free software; you can redistribute  it and/or modify it
+- * under  the terms of  the GNU General  Public License as published by the
+- * Free Software Foundation;  either version 2 of the  License, or (at your
+- * option) any later version.
 - */
 -
 -#include <linux/module.h>
+-#include <linux/init.h>
 -#include <linux/types.h>
 -#include <linux/kernel.h>
--#include <linux/init.h>
 -#include <asm/io.h>
 -#include <linux/mtd/mtd.h>
 -#include <linux/mtd/map.h>
 -#include <linux/mtd/partitions.h>
 -#include <linux/errno.h>
 -
--/* partition_info gives details on the logical partitions that the split the
-- * single flash device into. If the size if zero we use up to the end of the
-- * device. */
--static struct mtd_partition partition_info[]= {
+-/*
+- * This driver currently handles only the 16MiB user flash bank 1 on the
+- * board.  It does not provide access to bank 0 (contains the Dy4 FFW), bank 2
+- * (VxWorks boot), or the optional 48MiB expansion flash.
+- *
+- * scott.wood@timesys.com: On the newer boards with 128MiB flash, it
+- * now supports the first 96MiB (the boot flash bank containing FFW
+- * is excluded).  The VxWorks loader is in partition 1.
+- */
+-
+-#define FLASH_BASE_ADDR 0xf0000000
+-#define FLASH_BANK_SIZE (128*1024*1024)
+-
+-MODULE_AUTHOR("Scott Wood, TimeSys Corporation <scott.wood@timesys.com>");
+-MODULE_DESCRIPTION("User-programmable flash device on the Dy4 SVME182 board");
+-MODULE_LICENSE("GPL");
+-
+-static struct map_info svme182_map = {
+-	.name		= "Dy4 SVME182",
+-	.bankwidth	= 32,
+-	.size		=  128 * 1024 * 1024
+-};
+-
+-#define BOOTIMAGE_PART_SIZE		((6*1024*1024)-RESERVED_PART_SIZE)
+-
+-// Allow 6MiB for the kernel
+-#define NEW_BOOTIMAGE_PART_SIZE  (6 * 1024 * 1024)
+-// Allow 1MiB for the bootloader
+-#define NEW_BOOTLOADER_PART_SIZE (1024 * 1024)
+-// Use the remaining 9MiB at the end of flash for the RFS
+-#define NEW_RFS_PART_SIZE        (0x01000000 - NEW_BOOTLOADER_PART_SIZE - \
+-                                  NEW_BOOTIMAGE_PART_SIZE)
+-
+-static struct mtd_partition svme182_partitions[] = {
+-	// The Lower PABS is only 128KiB, but the partition code doesn't
+-	// like partitions that don't end on the largest erase block
+-	// size of the device, even if all of the erase blocks in the
+-	// partition are small ones.  The hardware should prevent
+-	// writes to the actual PABS areas.
 -	{
--	.name		= "BR bootloader",
--	.size		= 128 * 1024,
--	.offset		= 0,
--	.mask_flags	= MTD_WRITEABLE
+-		name:       "Lower PABS and CPU 0 bootloader or kernel",
+-		size:       6*1024*1024,
+-		offset:     0,
 -	},
 -	{
--	.name		= "FLFS (U-Boot)",
--	.size		= 128 * 1024,
--	.offset		= MTDPART_OFS_APPEND,
--	.mask_flags	= 0
+-		name:       "Root Filesystem",
+-		size:       10*1024*1024,
+-		offset:     MTDPART_OFS_NXTBLK
 -	},
 -	{
--	.name		= "Root (SquashFS)",
--	.size		= 7040 * 1024,
--	.offset		= MTDPART_OFS_APPEND,
--	.mask_flags	= 0
+-		name:       "CPU1 Bootloader",
+-		size:       1024*1024,
+-		offset:     MTDPART_OFS_NXTBLK,
 -	},
 -	{
--	.name		= "var (JFFS2)",
--	.size		= 896 * 1024,
--	.offset		= MTDPART_OFS_APPEND,
--	.mask_flags	= 0
+-		name:       "Extra",
+-		size:       110*1024*1024,
+-		offset:     MTDPART_OFS_NXTBLK
 -	},
 -	{
--	.name		= "Flash without bootloader",
--	.size		= MTDPART_SIZ_FULL,
--	.offset		= 128 * 1024,
--	.mask_flags	= 0
--	},
--	{
--	.name		= "Complete Flash",
--	.size		= MTDPART_SIZ_FULL,
--	.offset		= 0,
--	.mask_flags	= MTD_WRITEABLE
+-		name:       "Foundation Firmware and Upper PABS",
+-		size:       1024*1024,
+-		offset:     MTDPART_OFS_NXTBLK,
+-		mask_flags: MTD_WRITEABLE // read-only
 -	}
 -};
 -
--#define NUM_PARTITIONS ARRAY_SIZE(partition_info)
+-static struct mtd_info *this_mtd;
 -
--#define WINDOW_ADDR 0x10000000
--#define WINDOW_SIZE 0x800000
--
--static struct mtd_info *mymtd;
--
--
--struct map_info dbox2_flash_map = {
--	.name		= "D-Box 2 flash memory",
--	.size		= WINDOW_SIZE,
--	.bankwidth	= 4,
--	.phys		= WINDOW_ADDR,
--};
--
--static int __init init_dbox2_flash(void)
+-static int __init init_svme182(void)
 -{
--       	printk(KERN_NOTICE "D-Box 2 flash driver (size->0x%X mem->0x%X)\n", WINDOW_SIZE, WINDOW_ADDR);
--	dbox2_flash_map.virt = ioremap(WINDOW_ADDR, WINDOW_SIZE);
+-	struct mtd_partition *partitions;
+-	int num_parts = ARRAY_SIZE(svme182_partitions);
 -
--	if (!dbox2_flash_map.virt) {
--		printk("Failed to ioremap\n");
+-	partitions = svme182_partitions;
+-
+-	svme182_map.virt = ioremap(FLASH_BASE_ADDR, svme182_map.size);
+-
+-	if (svme182_map.virt == 0) {
+-		printk("Failed to ioremap FLASH memory area.\n");
 -		return -EIO;
 -	}
--	simple_map_init(&dbox2_flash_map);
 -
--	// Probe for dual Intel 28F320 or dual AMD
--	mymtd = do_map_probe("cfi_probe", &dbox2_flash_map);
--	if (!mymtd) {
--	    // Probe for single Intel 28F640
--	    dbox2_flash_map.bankwidth = 2;
+-	simple_map_init(&svme182_map);
 -
--	    mymtd = do_map_probe("cfi_probe", &dbox2_flash_map);
+-	this_mtd = do_map_probe("cfi_probe", &svme182_map);
+-	if (!this_mtd)
+-	{
+-		iounmap((void *)svme182_map.virt);
+-		return -ENXIO;
 -	}
 -
--	if (mymtd) {
--		mymtd->owner = THIS_MODULE;
+-	printk(KERN_NOTICE "SVME182 flash device: %dMiB at 0x%08x\n",
+-		   this_mtd->size >> 20, FLASH_BASE_ADDR);
 -
--                /* Create MTD devices for each partition. */
--		mtd_device_register(mymtd, partition_info, NUM_PARTITIONS);
+-	this_mtd->owner = THIS_MODULE;
+-	mtd_device_register(this_mtd, partitions, num_parts);
 -
--		return 0;
--	}
--
--	iounmap((void *)dbox2_flash_map.virt);
--	return -ENXIO;
+-	return 0;
 -}
 -
--static void __exit cleanup_dbox2_flash(void)
+-static void __exit cleanup_svme182(void)
 -{
--	if (mymtd) {
--		mtd_device_unregister(mymtd);
--		map_destroy(mymtd);
+-	if (this_mtd)
+-	{
+-		mtd_device_unregister(this_mtd);
+-		map_destroy(this_mtd);
 -	}
--	if (dbox2_flash_map.virt) {
--		iounmap((void *)dbox2_flash_map.virt);
--		dbox2_flash_map.virt = 0;
+-
+-	if (svme182_map.virt)
+-	{
+-		iounmap((void *)svme182_map.virt);
+-		svme182_map.virt = 0;
 -	}
+-
+-	return;
 -}
 -
--module_init(init_dbox2_flash);
--module_exit(cleanup_dbox2_flash);
--
--
--MODULE_LICENSE("GPL");
--MODULE_AUTHOR("Kári Davíðsson <kd@flaga.is>, Bastian Blank <waldi@tuxbox.org>, Alexander Wild <wild@te-elektronik.com>");
--MODULE_DESCRIPTION("MTD map driver for D-Box 2 board");
+-module_init(init_svme182);
+-module_exit(cleanup_svme182);
 -- 
 1.7.10.4
 
