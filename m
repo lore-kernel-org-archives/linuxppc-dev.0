@@ -1,17 +1,32 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Wed, 13 Mar 2013 22:34:12 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH -V2 07/26] powerpc: Add size argument to pgtable_cache_add
-Message-ID: <20130313113412.GA29597@iris.ozlabs.ibm.com>
-References: <1362550227-575-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1362550227-575-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20130313024725.GA21125@iris.ozlabs.ibm.com>
- <877glbd536.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <877glbd536.fsf@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp05.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 935302C0086
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2013 00:35:09 +1100 (EST)
+Received: from /spool/local
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 13 Mar 2013 23:30:50 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 60D50357804A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2013 00:35:04 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r2DDZ07164094420
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2013 00:35:00 +1100
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r2DDZ2ho014008
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2013 00:35:03 +1100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, David Gibson <dwg@au1.ibm.com>
+Subject: [PATCH -V4 1/3] powerpc: Make VSID_BITS* dependency explicit
+Date: Wed, 13 Mar 2013 19:04:53 +0530
+Message-Id: <1363181695-5315-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,30 +36,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 13, 2013 at 02:55:17PM +0530, Aneesh Kumar K.V wrote:
-> Paul Mackerras <paulus@samba.org> writes:
-> > NAK to this (and in fact the rest of this patch).
-> >
-> > If you need twice the size, use the next slot along in pgtable_cache,
-> > which will give you the size you need, rather than breaking the
-> > relationship between slot index and allocation size.
-> 
-> That would mean we will have to do 
-> 
->  static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
->  {
-> -	return kmem_cache_alloc(PGT_CACHE(PMD_INDEX_SIZE),
-> +	return kmem_cache_alloc(PGT_CACHE(PMD_INDEX_SIZE + 1),
->  				GFP_KERNEL|__GFP_REPEAT);
->  }
-> 
-> is that ok ?
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-I would define a symbol such as PMD_CACHE_INDEX and arrange for that
-to be either PMD_INDEX_SIZE or PMD_INDEX_SIZE + 1, as needed, and then
-use PGT_CACHE(PMD_CACHE_INDEX) everywhere instead of
-PGT_CACHE(PMD_INDEX_SIZE).  If you want, you could also do
-PUD_CACHE_INDEX and PGD_CACHE_INDEX for consistency, but it's not
-totally necessary.
+VSID_BITS and VSID_BITS_1T depends on the context bits  and user esid
+bits. Make the dependency explicit
 
-Paul.
+Acked-by: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/mmu-hash64.h |   11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
+index 2fdb47a..5f8c2bd 100644
+--- a/arch/powerpc/include/asm/mmu-hash64.h
++++ b/arch/powerpc/include/asm/mmu-hash64.h
+@@ -381,21 +381,22 @@ extern void slb_set_size(u16 size);
+  * hash collisions.
+  */
+ 
++#define CONTEXT_BITS		19
++#define USER_ESID_BITS		18
++#define USER_ESID_BITS_1T	6
++
+ /*
+  * This should be computed such that protovosid * vsid_mulitplier
+  * doesn't overflow 64 bits. It should also be co-prime to vsid_modulus
+  */
+ #define VSID_MULTIPLIER_256M	ASM_CONST(12538073)	/* 24-bit prime */
+-#define VSID_BITS_256M		38
++#define VSID_BITS_256M		(CONTEXT_BITS + USER_ESID_BITS + 1)
+ #define VSID_MODULUS_256M	((1UL<<VSID_BITS_256M)-1)
+ 
+ #define VSID_MULTIPLIER_1T	ASM_CONST(12538073)	/* 24-bit prime */
+-#define VSID_BITS_1T		26
++#define VSID_BITS_1T		(CONTEXT_BITS + USER_ESID_BITS_1T + 1)
+ #define VSID_MODULUS_1T		((1UL<<VSID_BITS_1T)-1)
+ 
+-#define CONTEXT_BITS		19
+-#define USER_ESID_BITS		18
+-#define USER_ESID_BITS_1T	6
+ 
+ #define USER_VSID_RANGE	(1UL << (USER_ESID_BITS + SID_SHIFT))
+ 
+-- 
+1.7.10
