@@ -1,20 +1,20 @@
 Return-Path: <B16395@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe004.messaging.microsoft.com [216.32.180.14])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 34D8D2C0117
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2013 05:53:07 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id BBB252C0149
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2013 05:53:13 +1100 (EST)
 From: Varun Sethi <Varun.Sethi@freescale.com>
 To: <joro@8bytes.org>, <iommu@lists.linux-foundation.org>,
  <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
  <galak@kernel.crashing.org>, <benh@kernel.crashing.org>,
  <scottwood@freescale.com>, <stuart.yoder@freescale.com>
-Subject: [PATCH 3/5 v9] iommu/fsl: Add the window permission flag as a
- parameter to iommu_window_enable API.
-Date: Thu, 14 Mar 2013 00:15:08 +0530
-Message-ID: <1363200310-11513-4-git-send-email-Varun.Sethi@freescale.com>
+Subject: [PATCH 4/5 v9] iommu/fsl: Add additional iommu attributes required by
+ the PAMU driver.
+Date: Thu, 14 Mar 2013 00:15:09 +0530
+Message-ID: <1363200310-11513-5-git-send-email-Varun.Sethi@freescale.com>
 In-Reply-To: <1363200310-11513-1-git-send-email-Varun.Sethi@freescale.com>
 References: <1363200310-11513-1-git-send-email-Varun.Sethi@freescale.com>
 MIME-Version: 1.0
@@ -29,68 +29,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Each iommu window can have access permissions associated with it. Extended the
-window_enable API to incorporate window access permissions.
-
-In case of PAMU each window can have its specific set of permissions.
+Added the following domain attributes for the FSL PAMU driver:
+1. Added new iommu stash attribute, which allows setting of the
+   LIODN specific stash id parameter through IOMMU API.
+2. Added an attribute for enabling/disabling DMA to a particular
+   memory window.
+3. Added domain attribute to check for PAMUV1 specific constraints.
 
 Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
 ---
- drivers/iommu/iommu.c |    5 +++--
- include/linux/iommu.h |    7 ++++---
- 2 files changed, 7 insertions(+), 5 deletions(-)
+ include/linux/iommu.h |   35 +++++++++++++++++++++++++++++++++++
+ 1 files changed, 35 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/iommu/iommu.c b/drivers/iommu/iommu.c
-index 39106ec..c4d5265 100644
---- a/drivers/iommu/iommu.c
-+++ b/drivers/iommu/iommu.c
-@@ -853,12 +853,13 @@ EXPORT_SYMBOL_GPL(iommu_unmap);
- 
- 
- int iommu_domain_window_enable(struct iommu_domain *domain, u32 wnd_nr,
--			       phys_addr_t paddr, u64 size)
-+			       phys_addr_t paddr, u64 size, int prot)
- {
- 	if (unlikely(domain->ops->domain_window_enable == NULL))
- 		return -ENODEV;
- 
--	return domain->ops->domain_window_enable(domain, wnd_nr, paddr, size);
-+	return domain->ops->domain_window_enable(domain, wnd_nr, paddr, size,
-+						 prot);
- }
- EXPORT_SYMBOL_GPL(iommu_domain_window_enable);
- 
 diff --git a/include/linux/iommu.h b/include/linux/iommu.h
-index 576cc19..02ac111 100644
+index 02ac111..1db9fd3 100644
 --- a/include/linux/iommu.h
 +++ b/include/linux/iommu.h
-@@ -104,7 +104,7 @@ struct iommu_ops {
+@@ -40,6 +40,25 @@ struct notifier_block;
+ typedef int (*iommu_fault_handler_t)(struct iommu_domain *,
+ 			struct device *, unsigned long, int, void *);
  
- 	/* Window handling functions */
- 	int (*domain_window_enable)(struct iommu_domain *domain, u32 wnd_nr,
--				    phys_addr_t paddr, u64 size);
-+				    phys_addr_t paddr, u64 size, int prot);
- 	void (*domain_window_disable)(struct iommu_domain *domain, u32 wnd_nr);
- 	/* Set the numer of window per domain */
- 	int (*domain_set_windows)(struct iommu_domain *domain, u32 w_count);
-@@ -169,7 +169,8 @@ extern int iommu_domain_set_attr(struct iommu_domain *domain, enum iommu_attr,
++/* cache stash targets */
++enum stash_target {
++	IOMMU_ATTR_CACHE_L1 = 1,
++	IOMMU_ATTR_CACHE_L2,
++	IOMMU_ATTR_CACHE_L3,
++};
++
++/* This attribute corresponds to IOMMUs capable of generating
++ * a stash transaction. A stash transaction is typically a
++ * hardware initiated prefetch of data from memory to cache.
++ * This attribute allows configuring stashig specific parameters
++ * in the IOMMU hardware.
++ */
++
++struct iommu_stash_attribute {
++	u32 	cpu;	/* cpu number */
++	u32 	cache;	/* cache to stash to: L1,L2,L3 */
++};
++
+ struct iommu_domain_geometry {
+ 	dma_addr_t aperture_start; /* First address that can be mapped    */
+ 	dma_addr_t aperture_end;   /* Last address that can be mapped     */
+@@ -57,10 +76,26 @@ struct iommu_domain {
+ #define IOMMU_CAP_CACHE_COHERENCY	0x1
+ #define IOMMU_CAP_INTR_REMAP		0x2	/* isolates device intrs */
  
- /* Window handling function prototypes */
- extern int iommu_domain_window_enable(struct iommu_domain *domain, u32 wnd_nr,
--				      phys_addr_t offset, u64 size);
-+				      phys_addr_t offset, u64 size,
-+				      int prot);
- extern void iommu_domain_window_disable(struct iommu_domain *domain, u32 wnd_nr);
- /**
-  * report_iommu_fault() - report about an IOMMU fault to the IOMMU framework
-@@ -255,7 +256,7 @@ static inline int iommu_unmap(struct iommu_domain *domain, unsigned long iova,
++/*
++ * Following constraints are specifc to PAMUV1:
++ *  -aperture must be power of 2, and naturally aligned
++ *  -number of windows must be power of 2, and address space size
++ *   of each window is determined by aperture size / # of windows
++ *  -the actual size of the mapped region of a window must be power
++ *   of 2 starting with 4KB and physical address must be naturally
++ *   aligned.
++ * DOMAIN_ATTR_FSL_PAMUV1 corresponds to the above mentioned contraints.
++ * The caller can invoke iommu_domain_get_attr to check if the underlying
++ * iommu implementation supports these constraints.
++ */
++
+ enum iommu_attr {
+ 	DOMAIN_ATTR_GEOMETRY,
+ 	DOMAIN_ATTR_PAGING,
+ 	DOMAIN_ATTR_WINDOWS,
++	DOMAIN_ATTR_PAMU_STASH,
++	DOMAIN_ATTR_PAMU_ENABLE,
++	DOMAIN_ATTR_FSL_PAMUV1,
+ 	DOMAIN_ATTR_MAX,
+ };
  
- static inline int iommu_domain_window_enable(struct iommu_domain *domain,
- 					     u32 wnd_nr, phys_addr_t paddr,
--					     u64 size)
-+					     u64 size, int prot)
- {
- 	return -ENODEV;
- }
 -- 
 1.7.4.1
