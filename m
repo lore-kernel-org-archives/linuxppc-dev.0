@@ -1,26 +1,16 @@
-Return-Path: <STFD002@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2DAAF2C00B2
- for <linuxppc-dev@ozlabs.org>; Fri, 15 Mar 2013 01:55:27 +1100 (EST)
-Received: from mail229-ch1 (localhost [127.0.0.1])	by
- mail229-ch1-R.bigfish.com (Postfix) with ESMTP id 6F7EE1BC00E2	for
- <linuxppc-dev@ozlabs.org>; Thu, 14 Mar 2013 14:55:23 +0000 (UTC)
-Received: from CH1EHSMHS024.bigfish.com (snatpool1.int.messaging.microsoft.com
- [10.43.68.254])	by mail229-ch1.bigfish.com (Postfix) with ESMTP id
- 81221260212	for <linuxppc-dev@ozlabs.org>; Thu, 14 Mar 2013 14:55:21 +0000
- (UTC)
-From: Diana Craciun <diana.craciun@freescale.com>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc: Replaced tlbilx with tlbwe in the initialization code
-Date: Thu, 14 Mar 2013 16:55:11 +0200
-Message-ID: <1363272911-16698-1-git-send-email-diana.craciun@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Diana Craciun <Diana.Craciun@freescale.com>
+Return-Path: <pebolle@tiscali.nl>
+Received: from cpsmtpb-ews02.kpnxchange.com (cpsmtpb-ews02.kpnxchange.com
+ [213.75.39.5]) by ozlabs.org (Postfix) with ESMTP id C03152C00C2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 02:15:02 +1100 (EST)
+Message-ID: <1363274097.1335.83.camel@x61.thuisdomein>
+Subject: [PATCH] powerpc: remove "config 8260_PCI9"
+From: Paul Bolle <pebolle@tiscali.nl>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>
+Date: Thu, 14 Mar 2013 16:14:57 +0100
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,66 +20,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Diana Craciun <Diana.Craciun@freescale.com>
+The last user of Kconfig symbol 8260_PCI9 got removed in release v3.2.
+Remove this symbol too.
 
-On Freescale e6500 cores EPCR[DGTMI] controls whether guest supervisor
-state can execute TLB management instructions. If EPCR[DGTMI]=0
-tlbwe and tlbilx are allowed to execute normally in the guest state.
-
-A hypervisor may choose to virtualize TLB1 and for this purpose it
-may use IPROT to protect the entries for being invalidated by the
-guest. However, because tlbwe and tlbilx execution in the guest state
-are sharing the same bit, it is not possible to have a scenario where
-tlbwe is allowed to be executed in guest state and tlbilx traps. When
-guest TLB management instructions are allowed to be executed in guest
-state the guest cannot use tlbilx to invalidate TLB1 guest entries.
-
-Linux is using tlbilx in the boot code to invalidate the temporary
-entries it creates when initializing the MMU. The patch is replacing
-the usage of tlbilx in initialization code with tlbwe with VALID bit
-cleared.
-
-Linux is also using tlbilx in other contexts (like huge pages or
-indirect entries) but removing the tlbilx from the initialization code
-offers the possibility to have scenarios under hypervisor which are
-not using huge pages or indirect entries.
-
-Signed-off-by: Diana Craciun <Diana.Craciun@freescale.com>
+Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
 ---
- arch/powerpc/kernel/exceptions-64e.S | 10 ++--------
- 1 file changed, 2 insertions(+), 8 deletions(-)
+0) Untested.
 
-diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index 42a756e..a979e9d 100644
---- a/arch/powerpc/kernel/exceptions-64e.S
-+++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -1053,12 +1053,9 @@ skpinv:	addi	r6,r6,1				/* Increment */
- 	mtspr	SPRN_MAS0,r3
- 	tlbre
- 	mfspr	r6,SPRN_MAS1
--	rlwinm	r6,r6,0,2,0	/* clear IPROT */
-+	rlwinm	r6,r6,0,2,31	/* clear IPROT and VALID */
- 	mtspr	SPRN_MAS1,r6
- 	tlbwe
--
--	/* Invalidate TLB1 */
--	PPC_TLBILX_ALL(0,R0)
- 	sync
- 	isync
+1) This probably is a second order effect of my commit
+6805ab6daa2b589fe3242d05ddc47a9dbb0c4eb1 ("powerpc: drop unused Kconfig
+symbols"). Not sure how I missed that.
+
+ arch/powerpc/Kconfig | 5 -----
+ 1 file changed, 5 deletions(-)
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index b89d7eb..8014a44 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -774,11 +774,6 @@ config PCI_8260
+ 	select PPC_INDIRECT_PCI
+ 	default y
  
-@@ -1112,12 +1109,9 @@ skpinv:	addi	r6,r6,1				/* Increment */
- 	mtspr	SPRN_MAS0,r4
- 	tlbre
- 	mfspr	r5,SPRN_MAS1
--	rlwinm	r5,r5,0,2,0	/* clear IPROT */
-+	rlwinm	r5,r5,0,2,31	/* clear IPROT and VALID */
- 	mtspr	SPRN_MAS1,r5
- 	tlbwe
+-config 8260_PCI9
+-	bool "Enable workaround for MPC826x erratum PCI 9"
+-	depends on PCI_8260 && !8272
+-	default y
 -
--	/* Invalidate TLB1 */
--	PPC_TLBILX_ALL(0,R0)
- 	sync
- 	isync
+ source "drivers/pci/pcie/Kconfig"
  
+ source "drivers/pci/Kconfig"
 -- 
 1.7.11.7
