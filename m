@@ -1,17 +1,24 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- by ozlabs.org (Postfix) with ESMTP id 0050D2C00B3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 03:26:25 +1100 (EST)
-Subject: Re: [PATCH] powerpc: Fix -mcmodel=medium breakage in prom_init.c
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <20130312225151.2faeb395@kryten>
-Date: Thu, 14 Mar 2013 17:26:17 +0100
-Message-Id: <944D093B-3C8D-4832-BF23-D8CC0D9EA287@suse.de>
-References: <20130312225151.2faeb395@kryten>
-To: Anton Blanchard <anton@samba.org>
-Cc: amodra@gmail.com, linuxppc-dev@lists.ozlabs.org, aaro.koskinen@iki.fi
+Return-Path: <B07421@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 00BFD2C00BA
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 03:52:51 +1100 (EST)
+Date: Thu, 14 Mar 2013 11:52:41 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] powerpc: add Book E support to 64-bit hibernation
+To: Johannes Berg <johannes@sipsolutions.net>
+References: <1363232178-29938-1-git-send-email-dongsheng.wang@freescale.com>
+ <1363250273.4833.1.camel@jlt4.sipsolutions.net>
+In-Reply-To: <1363250273.4833.1.camel@jlt4.sipsolutions.net> (from
+ johannes@sipsolutions.net on Thu Mar 14 03:37:53 2013)
+Message-ID: <1363279961.28440.4@snotra>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Wang Dongsheng <dongsheng.wang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,92 +28,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 03/14/2013 03:37:53 AM, Johannes Berg wrote:
+> On Thu, 2013-03-14 at 11:36 +0800, Wang Dongsheng wrote:
+>=20
+> > +#ifdef CONFIG_PPC_BOOK3S_64
+> >  	/* can't use RESTORE_SPECIAL(MSR) */
+> >  	ld	r0, SL_MSR(r11)
+> >  	mtmsrd	r0, 0
+>=20
+> Unfortunately, I forgot the reason for this comment, and didn't put a
+> better one (almost 6 years ago!!)
+>=20
+> > +	RESTORE_SPECIAL(MSR)
+>=20
+> but maybe you also can't do this on BookE?
 
-On 12.03.2013, at 12:51, Anton Blanchard wrote:
+If it's because book3s needs mtmsrd instead of mtmsr, that doesn't =20
+apply to booke.
 
->=20
-> Commit 5ac47f7a6efb (powerpc: Relocate prom_init.c on 64bit) made
-> prom_init.c position independent by manually relocating its entries
-> in the TOC.
->=20
-> We get the address of the TOC entries with the __prom_init_toc_start
-> linker symbol. If __prom_init_toc_start ends up as an entry in the
-> TOC then we need to add an offset to get the current address. This is
-> the case for older toolchains.
->=20
-> On the other hand, if we have a newer toolchain that supports
-> -mcmodel=3Dmedium then __prom_init_toc_start will be created by a
-> relative offset from r2 (the TOC pointer). Since r2 has already been
-> relocated, nothing more needs to be done.  Adding an offset in this
-> case is wrong and Aaro Koskinen and Alexander Graf have noticed =
-noticed
-> G5 and OpenBIOS breakage.
->=20
-> Alan Modra suggested we just use r2 to get at the TOC which is simpler
-> and works with both old and new toolchains.
->=20
-> Reported-by: Alexander Graf <agraf@suse.de>
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-
-This fixes my G5 again as well.
-
-Acked-by: Alexander Graf <agraf@suse.de>
-
-Please make sure this patch goes into 3.9.
-
-
-Alex
-
-
-> ---
->=20
-> Thanks Aaro for reporting this, and Alexander for an initial
-> fix. This tested ok for me with both a new and an old toolchain,
-> but would appreciate if you could double check it fixes your issues
-> too.
->=20
-> diff --git a/arch/powerpc/kernel/prom_init.c =
-b/arch/powerpc/kernel/prom_init.c
-> index 7f7fb7f..13f8d16 100644
-> --- a/arch/powerpc/kernel/prom_init.c
-> +++ b/arch/powerpc/kernel/prom_init.c
-> @@ -2832,11 +2832,13 @@ static void unreloc_toc(void)
-> {
-> }
-> #else
-> -static void __reloc_toc(void *tocstart, unsigned long offset,
-> -			unsigned long nr_entries)
-> +static void __reloc_toc(unsigned long offset, unsigned long =
-nr_entries)
-> {
-> 	unsigned long i;
-> -	unsigned long *toc_entry =3D (unsigned long *)tocstart;
-> +	unsigned long *toc_entry;
-> +
-> +	/* Get the start of the TOC by using r2 directly. */
-> +	asm volatile("addi %0,2,-0x8000" : "=3Db" (toc_entry));
->=20
-> 	for (i =3D 0; i < nr_entries; i++) {
-> 		*toc_entry =3D *toc_entry + offset;
-> @@ -2850,8 +2852,7 @@ static void reloc_toc(void)
-> 	unsigned long nr_entries =3D
-> 		(__prom_init_toc_end - __prom_init_toc_start) / =
-sizeof(long);
->=20
-> -	/* Need to add offset to get at __prom_init_toc_start */
-> -	__reloc_toc(__prom_init_toc_start + offset, offset, nr_entries);
-> +	__reloc_toc(offset, nr_entries);
->=20
-> 	mb();
-> }
-> @@ -2864,8 +2865,7 @@ static void unreloc_toc(void)
->=20
-> 	mb();
->=20
-> -	/* __prom_init_toc_start has been relocated, no need to add =
-offset */
-> -	__reloc_toc(__prom_init_toc_start, -offset, nr_entries);
-> +	__reloc_toc(-offset, nr_entries);
-> }
-> #endif
-> #endif
+-Scott=
