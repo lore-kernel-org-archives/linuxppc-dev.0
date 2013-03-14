@@ -1,17 +1,18 @@
-Return-Path: <f.fainelli@gmail.com>
-Sender: Florian Fainelli <f.fainelli@gmail.com>
-Message-ID: <514225E9.9060902@openwrt.org>
-Date: Thu, 14 Mar 2013 20:32:57 +0100
-From: Florian Fainelli <florian@openwrt.org>
-MIME-Version: 1.0
-To: Jason Cooper <jason@lakedaemon.net>
-Subject: Re: [PATCH] mv643xx_eth: convert to use the Marvell Orion MDIO driver
+Return-Path: <jason@lakedaemon.net>
+Received: from mho-01-ewr.mailhop.org (mho-03-ewr.mailhop.org [204.13.248.66])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 428502C00CB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 06:35:48 +1100 (EST)
+Date: Thu, 14 Mar 2013 13:25:44 -0400
+From: Jason Cooper <jason@lakedaemon.net>
+To: Florian Fainelli <florian@openwrt.org>
+Subject: Re: [PATCH 0/5] mv643xx_eth: use mvmdio MDIO bus driver
+Message-ID: <20130314172544.GT12700@titan.lakedaemon.net>
 References: <1359473048-26551-1-git-send-email-florian@openwrt.org>
- <1363284515-9865-1-git-send-email-florian@openwrt.org>
- <1363284515-9865-2-git-send-email-florian@openwrt.org>
- <20130314190235.GW12700@titan.lakedaemon.net>
-In-Reply-To: <20130314190235.GW12700@titan.lakedaemon.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1359473048-26551-1-git-send-email-florian@openwrt.org>
 Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
  Andrew Lunn <andrew@lunn.ch>, Russell King <linux@arm.linux.org.uk>,
  linux-doc@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
@@ -30,35 +31,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Jason,
+Florian,
 
-Le 14/03/2013 20:02, Jason Cooper a écrit :
-> Florian,
->
-> On Thu, Mar 14, 2013 at 07:08:32PM +0100, Florian Fainelli wrote:
->> This patch converts the Marvell MV643XX ethernet driver to use the
->> Marvell Orion MDIO driver. As a result, PowerPC and ARM platforms
->> registering the Marvell MV643XX ethernet driver are also updated to
->> register a Marvell Orion MDIO driver. This driver voluntarily overlaps
->> with the Marvell Ethernet shared registers because it will use a subset
->> of this shared register (shared_base + 0x4 - shared_base + 0x84). The
->> Ethernet driver is also updated to look up for a PHY device using the
->> Orion MDIO bus driver.
->>
->> Signed-off-by: Florian Fainelli <florian@openwrt.org>
->> ---
->>   arch/arm/plat-orion/common.c               |   97 +++++++++++----
->>   arch/powerpc/platforms/chrp/pegasos_eth.c  |   20 +++
->>   arch/powerpc/sysdev/mv64x60_dev.c          |   14 ++-
->>   drivers/net/ethernet/marvell/Kconfig       |    1 +
->>   drivers/net/ethernet/marvell/mv643xx_eth.c |  186 ++--------------------------
->>   include/linux/mv643xx_eth.h                |    1 -
->>   6 files changed, 117 insertions(+), 202 deletions(-)
->
-> Isn't this the old version of 4/4 ?
+Any word on version 2 of this series?  I'd like to base the conversion
+of kirkwood to DT based ethernet init on it.
 
-No this really is v2, but I reformatted just that one and sent it 
-without the v2 changelog, you should have received the proper version a 
-couple minutes later once I realized my mistake.
---
-Florian
+thx,
+
+Jason.
+
+On Tue, Jan 29, 2013 at 04:24:03PM +0100, Florian Fainelli wrote:
+> Hi all,
+> 
+> This patch converts the mv643xx_eth driver to use the mvmdio MDIO bus driver
+> instead of rolling its own implementation. As a result, all users of this
+> mv643xx_eth driver are converted to register an "orion-mdio" platform_device.
+> The mvmdio driver is also updated to support an interrupt line which reports
+> SMI error/completion, and to allow traditionnal platform device registration
+> instead of just device tree.
+> 
+> David, I think it makes sense for you to merge all of this, since we do
+> not want the architecture files to be desynchronized from the mv643xx_eth to
+> avoid runtime breakage. The potential for merge conflicts should be very small.
+> 
+> You can probably safely merge patches 1 to 4 if Thomas agrees, and we will
+> see what kind of feeback I get on patch 5.
+> 
+> Florian Fainelli (5):
+>   net: mvmdio: unmap base register address at driver removal
+>   net: mvmdio: rename base register cookie from smireg to regs
+>   net: mvmdio: enhance driver to support SMI error/done interrupts
+>   net: mvmdio: allow Device Tree and platform device to coexist
+>   mv643xx_eth: convert to use the Marvell Orion MDIO driver
+> 
+>  .../devicetree/bindings/net/marvell-orion-mdio.txt |    3 +
+>  arch/arm/plat-orion/common.c                       |   84 +++++++--
+>  arch/powerpc/platforms/chrp/pegasos_eth.c          |   20 +++
+>  arch/powerpc/sysdev/mv64x60_dev.c                  |   14 +-
+>  drivers/net/ethernet/marvell/Kconfig               |    1 +
+>  drivers/net/ethernet/marvell/mv643xx_eth.c         |  187 +-------------------
+>  drivers/net/ethernet/marvell/mvmdio.c              |  136 +++++++++++---
+>  7 files changed, 226 insertions(+), 219 deletions(-)
+> 
+> -- 
+> 1.7.10.4
+> 
+> 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
