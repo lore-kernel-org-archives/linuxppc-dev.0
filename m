@@ -1,14 +1,20 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Thu, 14 Mar 2013 19:51:55 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Subject: Re: [PATCH2/11] Add PRRN Event Handler
-Message-ID: <20130314085155.GB9841@iris.ozlabs.ibm.com>
-References: <513AB2E3.6090209@linux.vnet.ibm.com>
- <513AB3C9.6010302@linux.vnet.ibm.com>
+Return-Path: <imr@rtschenk.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 5E8D52C009B
+ for <linuxppc-dev@ozlabs.org>; Thu, 14 Mar 2013 20:43:25 +1100 (EST)
+From: Rojhalat Ibrahim <imr@rtschenk.de>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [RFC][PATCH 2/2] powerpc/fsl-pci Make PCIe hotplug work with
+ Freescale
+Date: Thu, 14 Mar 2013 10:43:19 +0100
+Message-ID: <4166754.n4Zsp0OSQ4@pcimr>
+In-Reply-To: <1363201636-7318-2-git-send-email-galak@kernel.crashing.org>
+References: <1363201636-7318-1-git-send-email-galak@kernel.crashing.org>
+ <1363201636-7318-2-git-send-email-galak@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <513AB3C9.6010302@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="us-ascii"
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -19,39 +25,170 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 08, 2013 at 10:00:09PM -0600, Nathan Fontenot wrote:
-> From: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
+On Wednesday 13 March 2013 14:07:16 Kumar Gala wrote:
+> diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+> index 41bbcc4..b18c377 100644
+> --- a/arch/powerpc/sysdev/fsl_pci.c
+> +++ b/arch/powerpc/sysdev/fsl_pci.c
+> @@ -74,6 +74,35 @@ static int __init fsl_pcie_check_link(struct
+> pci_controller *hose) return 0;
+>  }
 > 
-> A PRRN event is signaled via the RTAS event-scan mechanism, which
-> returns a Hot Plug Event message "fixed part" indicating "Platform
-> Resource Reassignment". In response to the Hot Plug Event message,
-> we must call ibm,update-nodes to determine which resources were
-> reassigned and then ibm,update-properties to obtain the new affinity
-> information about those resources.
-> 
-> The PRRN event-scan RTAS message contains only the "fixed part" with
-> the "Type" field set to the value 160 and no Extended Event Log. The
-> four-byte Extended Event Log Length field is repurposed (since no
-> Extended Event Log message is included) to pass the "scope" parameter
-> that causes the ibm,update-nodes to return the nodes affected by the
-> specific resource reassignment.
-> 
-> This patch adds a handler in rtasd for PRRN RTAS events. The function
-> pseries_devicetree_update() (from mobility.c) is used to make the
-> ibm,update-nodes/ibm,update-properties RTAS calls. Updating the NUMA maps
-> (handled by a subsequent patch) will require significant processing,
-> so pseries_devicetree_update() is called from an asynchronous workqueue
-> to allow rtasd to continue processing events.
-> 
-> Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+> +static int fsl_indirect_read_config(struct pci_bus *bus, unsigned int
+> devfn, +				    int offset, int len, u32 *val)
+> +{
+> +	struct pci_controller *hose = pci_bus_to_host(bus);
+> +
+> +	/* check the link status */
+> +	if ((bus->number == hose->first_busno) && (devfn == 0)) {
+> +		if (fsl_pcie_check_link(hose))
+> +			hose->indirect_type |= PPC_INDIRECT_TYPE_NO_PCIE_LINK;
+> +		else
+> +			hose->indirect_type &= ~PPC_INDIRECT_TYPE_NO_PCIE_LINK;
+> +	}
+> +	return indirect_read_config(bus, devfn, offset, len, val);
+> +}
+> +
 
-[snip]
+This does not work because fsl_indirect_read_config calls fsl_pcie_check_link which calls early_read_config_dword which eventually calls fsl_indirect_read_config, so the kernel hangs in a recursion loop. Below is a modified patch that does work.
 
-> +static s32 update_scope;
 
-Do we have a guarantee that there can only be one of these events
-outstanding at a time?  If so it would be nice to document that in a
-comment next to this declaration, so we know in future that this is
-why this is safe.
+Signed-off-by: Rojhalat Ibrahim <imr@rtschenk.de>
+---
+ arch/powerpc/include/asm/pci-bridge.h |    6 ++++
+ arch/powerpc/sysdev/fsl_pci.c         |   51 ++++++++++++++++++++++++++++++----
+ arch/powerpc/sysdev/indirect_pci.c    |   10 ++----
+ 3 files changed, 55 insertions(+), 12 deletions(-)
 
-Paul.
+diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+index c0278f0..ffbc5fd 100644
+--- a/arch/powerpc/include/asm/pci-bridge.h
++++ b/arch/powerpc/include/asm/pci-bridge.h
+@@ -120,6 +120,12 @@ extern void setup_indirect_pci(struct pci_controller* hose,
+ 			       resource_size_t cfg_addr,
+ 			       resource_size_t cfg_data, u32 flags);
+ 
++extern int indirect_read_config(struct pci_bus *bus, unsigned int devfn,
++				int offset, int len, u32 *val);
++
++extern int indirect_write_config(struct pci_bus *bus, unsigned int devfn,
++				 int offset, int len, u32 val);
++
+ static inline struct pci_controller *pci_bus_to_host(const struct pci_bus *bus)
+ {
+ 	return bus->sysdata;
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 41bbcc4..63740f6 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -54,12 +54,22 @@ static void quirk_fsl_pcie_header(struct pci_dev *dev)
+ 	return;
+ }
+ 
+-static int __init fsl_pcie_check_link(struct pci_controller *hose)
++static int fsl_indirect_read_config(struct pci_bus *, unsigned int,
++				    int, int, u32 *);
++
++static int fsl_pcie_check_link(struct pci_controller *hose)
+ {
+ 	u32 val;
+ 
+ 	if (hose->indirect_type & PPC_INDIRECT_TYPE_FSL_CFG_REG_LINK) {
+-		early_read_config_dword(hose, 0, 0, PCIE_LTSSM, &val);
++		if (hose->ops->read == fsl_indirect_read_config) {
++			struct pci_bus bus;
++			bus.number = 0;
++			bus.sysdata = hose;
++			bus.ops = hose->ops;
++			indirect_read_config(&bus, 0, PCIE_LTSSM, 4, &val);
++		} else
++			early_read_config_dword(hose, 0, 0, PCIE_LTSSM, &val);
+ 		if (val < PCIE_LTSSM_L0)
+ 			return 1;
+ 	} else {
+@@ -74,6 +84,35 @@ static int __init fsl_pcie_check_link(struct pci_controller *hose)
+ 	return 0;
+ }
+ 
++static int fsl_indirect_read_config(struct pci_bus *bus, unsigned int devfn,
++				    int offset, int len, u32 *val)
++{
++	struct pci_controller *hose = pci_bus_to_host(bus);
++	
++	/* check the link status */
++	if ((bus->number == hose->first_busno) && (devfn == 0)) {
++		if (fsl_pcie_check_link(hose))
++			hose->indirect_type |= PPC_INDIRECT_TYPE_NO_PCIE_LINK;
++		else
++			hose->indirect_type &= ~PPC_INDIRECT_TYPE_NO_PCIE_LINK;
++	}
++	return indirect_read_config(bus, devfn, offset, len, val);
++}
++
++static struct pci_ops fsl_indirect_pci_ops =
++{
++	.read = fsl_indirect_read_config,
++	.write = indirect_write_config,
++};
++
++static void __init fsl_setup_indirect_pci(struct pci_controller* hose,
++					  resource_size_t cfg_addr,
++					  resource_size_t cfg_data, u32 flags)
++{
++	setup_indirect_pci(hose, cfg_addr, cfg_data, flags);
++	hose->ops = &fsl_indirect_pci_ops;
++}
++
+ #if defined(CONFIG_FSL_SOC_BOOKE) || defined(CONFIG_PPC_86xx)
+ 
+ #define MAX_PHYS_ADDR_BITS	40
+@@ -469,8 +508,8 @@ int __init fsl_add_bridge(struct platform_device *pdev, int is_primary)
+ 	if (!hose->private_data)
+ 		goto no_bridge;
+ 
+-	setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4,
+-		PPC_INDIRECT_TYPE_BIG_ENDIAN);
++	fsl_setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4,
++			       PPC_INDIRECT_TYPE_BIG_ENDIAN);
+ 
+ 	if (in_be32(&pci->block_rev1) < PCIE_IP_REV_3_0)
+ 		hose->indirect_type |= PPC_INDIRECT_TYPE_FSL_CFG_REG_LINK;
+@@ -779,8 +818,8 @@ int __init mpc83xx_add_bridge(struct device_node *dev)
+ 		if (ret)
+ 			goto err0;
+ 	} else {
+-		setup_indirect_pci(hose, rsrc_cfg.start,
+-				   rsrc_cfg.start + 4, 0);
++		fsl_setup_indirect_pci(hose, rsrc_cfg.start,
++				       rsrc_cfg.start + 4, 0);
+ 	}
+ 
+ 	printk(KERN_INFO "Found FSL PCI host bridge at 0x%016llx. "
+diff --git a/arch/powerpc/sysdev/indirect_pci.c b/arch/powerpc/sysdev/indirect_pci.c
+index 82fdad8..c6c8b52 100644
+--- a/arch/powerpc/sysdev/indirect_pci.c
++++ b/arch/powerpc/sysdev/indirect_pci.c
+@@ -20,9 +20,8 @@
+ #include <asm/pci-bridge.h>
+ #include <asm/machdep.h>
+ 
+-static int
+-indirect_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
+-		     int len, u32 *val)
++int indirect_read_config(struct pci_bus *bus, unsigned int devfn,
++			 int offset, int len, u32 *val)
+ {
+ 	struct pci_controller *hose = pci_bus_to_host(bus);
+ 	volatile void __iomem *cfg_data;
+@@ -78,9 +77,8 @@ indirect_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
+ 	return PCIBIOS_SUCCESSFUL;
+ }
+ 
+-static int
+-indirect_write_config(struct pci_bus *bus, unsigned int devfn, int offset,
+-		      int len, u32 val)
++int indirect_write_config(struct pci_bus *bus, unsigned int devfn,
++			  int offset, int len, u32 val)
+ {
+ 	struct pci_controller *hose = pci_bus_to_host(bus);
+ 	volatile void __iomem *cfg_data;
