@@ -3,23 +3,32 @@ Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2001:4830:2446:ff00:4687:fcff:fea6:5117])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 65CF92C0079
- for <linuxppc-dev@ozlabs.org>; Thu, 14 Mar 2013 23:23:45 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id EF94A2C00D3
+ for <linuxppc-dev@ozlabs.org>; Thu, 14 Mar 2013 23:23:51 +1100 (EST)
 From: Arnaldo Carvalho de Melo <acme@infradead.org>
 To: Ingo Molnar <mingo@kernel.org>
-Subject: [PATCH 7/8] perf/POWER7: Create a sysfs format entry for Power7 events
-Date: Thu, 14 Mar 2013 09:23:14 -0300
-Message-Id: <1363263795-31485-8-git-send-email-acme@infradead.org>
-In-Reply-To: <1363263795-31485-1-git-send-email-acme@infradead.org>
-References: <1363263795-31485-1-git-send-email-acme@infradead.org>
-Content-Type: text/plain; charset="utf-8"
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>, Andi Kleen <ak@linux.intel.com>,
+Subject: [GIT PULL 0/8] perf/urgent fixes
+Date: Thu, 14 Mar 2013 09:23:07 -0300
+Message-Id: <1363263795-31485-1-git-send-email-acme@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Cc: Feng Tang <feng.tang@intel.com>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ Jack Mitchell <jack.mitchell@dbbroadcast.co.uk>,
+ Stephane Eranian <eranian@google.com>, Oleg Nesterov <oleg@redhat.com>,
+ linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ Jiri Olsa <jolsa@redhat.com>, Namhyung Kim <namhyung.kim@lge.com>,
+ Andi Kleen <ak@linux.intel.com>, Irina Tirdea <irina.tirdea@intel.com>,
+ Robert Richter <robert.richter@amd.com>, Vinson Lee <vlee@twitter.com>,
+ Ingo Molnar <mingo@redhat.com>, Marcin Slusarz <marcin.slusarz@gmail.com>,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+ Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
  Peter Zijlstra <a.p.zijlstra@chello.nl>,
- Robert Richter <robert.richter@amd.com>, Anton Blanchard <anton@au1.ibm.com>,
- linux-kernel@vger.kernel.org, Stephane Eranian <eranian@google.com>,
- linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@redhat.com>,
- Paul Mackerras <paulus@samba.org>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, Jiri Olsa <jolsa@redhat.com>
+ Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+ Anton Blanchard <anton@au1.ibm.com>, Namhyung Kim <namhyung@kernel.org>,
+ Arnaldo Carvalho de Melo <acme@redhat.com>, linux-kernel@vger.kernel.org,
+ Pekka Enberg <penberg@kernel.org>, David Ahern <dsahern@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,63 +38,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+From: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
 
-Create a sysfs entry, '/sys/bus/event_source/devices/cpu/format/event'
-which describes the format of the POWER7 PMU events.
+Hi Ingo,
 
-This code is based on corresponding code in x86.
+	Please consider pulling,
 
-Changelog[v4]:  [Michael Ellerman, Paul Mckerras] The event format is different
-		for other POWER cpus. So move the code to POWER7-specific,
-		power7-pmu.c Also, the POWER7 format uses bits 0-19 not 0-20.
+- Arnaldo
 
-Changelog[v2]: [Jiri Osla] Use PMU_FORMAT_ATTR rather than duplicating code.
+The following changes since commit cb16b91a449afd01b85ec4e59f30449d11c4acd7:
 
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Acked-by: Paul Mackerras <paulus@samba.org>
-Tested-by: Michael Ellerman <michael@ellerman.id.au>
-Cc: Andi Kleen <ak@linux.intel.com>
-Cc: Anton Blanchard <anton@au1.ibm.com>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Jiri Olsa <jolsa@redhat.com>
-Cc: Michael Ellerman <michael@ellerman.id.au>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Robert Richter <robert.richter@amd.com>
-Cc: Stephane Eranian <eranian@google.com>
-Cc: benh@kernel.crashing.org
-Cc: linuxppc-dev@ozlabs.org
-Link: http://lkml.kernel.org/r/20130306054826.GA14627@us.ibm.com
+  s390: Fix a header dependencies related build error (2013-03-11 10:43:35 +0100)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux tags/perf-urgent-for-mingo
+
+for you to fetch changes up to d1398ccfec56e54010476efd6a316427d29045a6:
+
+  perf tools: Fix LIBNUMA build with glibc 2.12 and older. (2013-03-14 08:06:21 -0300)
+
+----------------------------------------------------------------
+perf/urgent fixes:
+
+. perf probe: Fix segfault due to testing the wrong pointer for NULL,
+  from Ananth N Mavinakayanahalli.
+
+. libtraceevent: Remove hard coded include to /usr/local/include in
+  Makefile, which causes cross builds to include host header files,
+  fix from Jack Mitchell.
+
+. perf record: Use the right target interface for synthesizing
+  threads when --cpu/-C option is used, fix from Jiri Olsa.
+
+. Check if -DFORTIFY_SOURCE=2 is allowed, as gcc 4.7.2 defines
+  it and then the build is broken when it is redefined in perf,
+  fix from Marcin Slusarz.
+
+. Fix build with NO_NEWT=1, that can happen explicitely or when
+  the newt-devel package is not installed, from Michael Ellerman.
+
+. perf/POWER7: Create a sysfs format entry for Power7 events, missing
+  patch from a patchseries already merged, from Sukadev Bhattiprolu.
+
+. Fix LIBNUMA build with glibc 2.12 and older, from Vinson Lee.
+
 Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- arch/powerpc/perf/power7-pmu.c |   13 +++++++++++++
- 1 files changed, 13 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/perf/power7-pmu.c b/arch/powerpc/perf/power7-pmu.c
-index b554879..3c475d6 100644
---- a/arch/powerpc/perf/power7-pmu.c
-+++ b/arch/powerpc/perf/power7-pmu.c
-@@ -420,7 +420,20 @@ static struct attribute_group power7_pmu_events_group = {
- 	.attrs = power7_events_attr,
- };
- 
-+PMU_FORMAT_ATTR(event, "config:0-19");
-+
-+static struct attribute *power7_pmu_format_attr[] = {
-+	&format_attr_event.attr,
-+	NULL,
-+};
-+
-+struct attribute_group power7_pmu_format_group = {
-+	.name = "format",
-+	.attrs = power7_pmu_format_attr,
-+};
-+
- static const struct attribute_group *power7_pmu_attr_groups[] = {
-+	&power7_pmu_format_group,
- 	&power7_pmu_events_group,
- 	NULL,
- };
--- 
-1.7.1
+----------------------------------------------------------------
+Ananth N Mavinakayanahalli (1):
+      perf probe: Fix segfault
+
+Jack Mitchell (1):
+      libtraceevent: Remove hard coded include to /usr/local/include in Makefile
+
+Jiri Olsa (1):
+      perf record: Fix -C option
+
+Marcin Slusarz (1):
+      perf tools: check if -DFORTIFY_SOURCE=2 is allowed
+
+Michael Ellerman (2):
+      perf annotate: Fix build with NO_NEWT=1
+      perf report: Fix build with NO_NEWT=1
+
+Sukadev Bhattiprolu (1):
+      perf/POWER7: Create a sysfs format entry for Power7 events
+
+Vinson Lee (1):
+      perf tools: Fix LIBNUMA build with glibc 2.12 and older.
+
+ arch/powerpc/perf/power7-pmu.c | 13 +++++++++++++
+ tools/lib/traceevent/Makefile  |  2 +-
+ tools/perf/Makefile            |  8 +++++++-
+ tools/perf/bench/bench.h       | 24 ++++++++++++++++++++++++
+ tools/perf/builtin-record.c    |  6 ++++--
+ tools/perf/util/hist.h         |  5 +++--
+ tools/perf/util/strlist.c      |  2 +-
+ 7 files changed, 53 insertions(+), 7 deletions(-)
