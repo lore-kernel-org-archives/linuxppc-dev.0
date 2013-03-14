@@ -1,24 +1,24 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 00BFD2C00BA
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 03:52:51 +1100 (EST)
-Date: Thu, 14 Mar 2013 11:52:41 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] powerpc: add Book E support to 64-bit hibernation
-To: Johannes Berg <johannes@sipsolutions.net>
-References: <1363232178-29938-1-git-send-email-dongsheng.wang@freescale.com>
- <1363250273.4833.1.camel@jlt4.sipsolutions.net>
-In-Reply-To: <1363250273.4833.1.camel@jlt4.sipsolutions.net> (from
- johannes@sipsolutions.net on Thu Mar 14 03:37:53 2013)
-Message-ID: <1363279961.28440.4@snotra>
+Return-Path: <f.fainelli@gmail.com>
+Sender: Florian Fainelli <f.fainelli@gmail.com>
+Message-ID: <5142124E.7050909@openwrt.org>
+Date: Thu, 14 Mar 2013 19:09:18 +0100
+From: Florian Fainelli <florian@openwrt.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: linuxppc-dev@lists.ozlabs.org,
- Wang Dongsheng <dongsheng.wang@freescale.com>
+To: Jason Cooper <jason@lakedaemon.net>
+Subject: Re: [PATCH 0/5] mv643xx_eth: use mvmdio MDIO bus driver
+References: <1359473048-26551-1-git-send-email-florian@openwrt.org>
+ <20130314172544.GT12700@titan.lakedaemon.net>
+In-Reply-To: <20130314172544.GT12700@titan.lakedaemon.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ Andrew Lunn <andrew@lunn.ch>, Russell King <linux@arm.linux.org.uk>,
+ linux-doc@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Paul Mackerras <paulus@samba.org>, Lennert Buytenhek <buytenh@wantstofly.org>,
+ Rob Landley <rob@landley.net>, netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, davem@davemloft.net,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,22 +28,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/14/2013 03:37:53 AM, Johannes Berg wrote:
-> On Thu, 2013-03-14 at 11:36 +0800, Wang Dongsheng wrote:
->=20
-> > +#ifdef CONFIG_PPC_BOOK3S_64
-> >  	/* can't use RESTORE_SPECIAL(MSR) */
-> >  	ld	r0, SL_MSR(r11)
-> >  	mtmsrd	r0, 0
->=20
-> Unfortunately, I forgot the reason for this comment, and didn't put a
-> better one (almost 6 years ago!!)
->=20
-> > +	RESTORE_SPECIAL(MSR)
->=20
-> but maybe you also can't do this on BookE?
+Hello Jason,
 
-If it's because book3s needs mtmsrd instead of mtmsr, that doesn't =20
-apply to booke.
+Le 03/14/13 18:25, Jason Cooper a écrit :
+> Florian,
+>
+> Any word on version 2 of this series?  I'd like to base the conversion
+> of kirkwood to DT based ethernet init on it.
 
--Scott=
+Just sent them out for review, thanks for reminder, they were sitting in 
+my tree for a couple days already.
+--
+Florian
