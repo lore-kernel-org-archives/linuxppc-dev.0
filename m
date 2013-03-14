@@ -1,20 +1,27 @@
-Return-Path: <B40534@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
+Return-Path: <r61911@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 800FF2C00A3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2013 15:10:18 +1100 (EST)
-From: Wang Dongsheng <dongsheng.wang@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 7D04E2C00A7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2013 18:41:17 +1100 (EST)
+Received: from mail46-ch1 (localhost [127.0.0.1])	by mail46-ch1-R.bigfish.com
+ (Postfix) with ESMTP id 070142A0228	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu,
+ 14 Mar 2013 07:41:12 +0000 (UTC)
+Received: from CH1EHSMHS022.bigfish.com (snatpool1.int.messaging.microsoft.com
+ [10.43.68.250])	by mail46-ch1.bigfish.com (Postfix) with ESMTP id
+ D1ADD260045
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2013 07:41:10 +0000 (UTC)
+From: Roy Zang <tie-fei.zang@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc: add Book E support to 64-bit hibernation
-Date: Thu, 14 Mar 2013 11:36:18 +0800
-Message-ID: <1363232178-29938-1-git-send-email-dongsheng.wang@freescale.com>
+Subject: [PATCH] powerpc/85xx: enable E1000 NIC to mpc85xx_defconfig
+Date: Thu, 14 Mar 2013 23:40:22 +0800
+Message-ID: <1363275622-1412-1-git-send-email-tie-fei.zang@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: scottwood@freescale.com, johannes@sipsolutions.net,
- Wang Dongsheng <dongsheng.wang@freescale.com>
+Cc: b36666@freescale.com, B11780@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,137 +31,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Update the 64-bit hibernation code to support Book E CPUs.
-Some registers and instructions are not defined for Book3e
-(SDR reg, tlbia instruction).
+E1000 NIC is a common used Ethernet card. Enable it as default
+for mpc85xx platform.
 
-SDR: Storage Description Register. Book3S and Book3E have different
-address translation mode, we do not need HTABORG & HTABSIZE to
-translate virtual address to real address.
+other change is due to make savedefconfig
 
-More registers are saved in BookE-64bit.(TCR, SPRGx)
-
-Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+Reported-by: Fu Jiwei <b36666@freescale.com>
+Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
 ---
- arch/powerpc/kernel/swsusp_asm64.S |   64 ++++++++++++++++++++++++++++++++++-
- 1 files changed, 62 insertions(+), 2 deletions(-)
+tested on P1010rdb board
+ arch/powerpc/configs/mpc85xx_defconfig |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/kernel/swsusp_asm64.S b/arch/powerpc/kernel/swsusp_asm64.S
-index 86ac1d9..608e4ceb 100644
---- a/arch/powerpc/kernel/swsusp_asm64.S
-+++ b/arch/powerpc/kernel/swsusp_asm64.S
-@@ -46,10 +46,29 @@
- #define SL_r29		0xe8
- #define SL_r30		0xf0
- #define SL_r31		0xf8
--#define SL_SIZE		SL_r31+8
-+#define SL_SPRG0	0x100
-+#define SL_SPRG1	0x108
-+#define SL_SPRG2	0x110
-+#define SL_SPRG3	0x118
-+#define SL_SPRG4	0x120
-+#define SL_SPRG5	0x128
-+#define SL_SPRG6	0x130
-+#define SL_SPRG7	0x138
-+#define SL_TCR		0x140
-+#define SL_SIZE		SL_TCR+8
- 
- /* these macros rely on the save area being
-  * pointed to by r11 */
-+
-+#define SAVE_SPR(register)		\
-+	mfspr	r0,SPRN_##register	;\
-+	std	r0,SL_##register(r11)
-+#define RESTORE_SPR(register)		\
-+	ld	r0,SL_##register(r11)	;\
-+	mtspr	SPRN_##register,r0
-+#define RESTORE_SPRG(n)			\
-+	ld	r0,SL_SPRG##n(r11)	;\
-+	mtsprg	n,r0
- #define SAVE_SPECIAL(special)		\
- 	mf##special	r0		;\
- 	std	r0, SL_##special(r11)
-@@ -103,8 +122,21 @@ _GLOBAL(swsusp_arch_suspend)
- 	SAVE_REGISTER(r30)
- 	SAVE_REGISTER(r31)
- 	SAVE_SPECIAL(MSR)
--	SAVE_SPECIAL(SDR1)
- 	SAVE_SPECIAL(XER)
-+#ifdef CONFIG_PPC_BOOK3S_64
-+	SAVE_SPECIAL(SDR1)
-+#else
-+	SAVE_SPR(TCR)
-+	/* Save SPRGs */
-+	SAVE_SPR(SPRG0)
-+	SAVE_SPR(SPRG1)
-+	SAVE_SPR(SPRG2)
-+	SAVE_SPR(SPRG3)
-+	SAVE_SPR(SPRG4)
-+	SAVE_SPR(SPRG5)
-+	SAVE_SPR(SPRG6)
-+	SAVE_SPR(SPRG7)
-+#endif
- 
- 	/* we push the stack up 128 bytes but don't store the
- 	 * stack pointer on the stack like a real stackframe */
-@@ -151,6 +183,7 @@ copy_page_loop:
- 	bne+	copyloop
- nothing_to_copy:
- 
-+#ifdef CONFIG_PPC_BOOK3S_64
- 	/* flush caches */
- 	lis	r3, 0x10
- 	mtctr	r3
-@@ -167,6 +200,7 @@ nothing_to_copy:
- 	sync
- 
- 	tlbia
-+#endif
- 
- 	ld	r11,swsusp_save_area_ptr@toc(r2)
- 
-@@ -208,16 +242,42 @@ nothing_to_copy:
- 	RESTORE_REGISTER(r29)
- 	RESTORE_REGISTER(r30)
- 	RESTORE_REGISTER(r31)
-+
-+#ifdef CONFIG_PPC_BOOK3S_64
- 	/* can't use RESTORE_SPECIAL(MSR) */
- 	ld	r0, SL_MSR(r11)
- 	mtmsrd	r0, 0
- 	RESTORE_SPECIAL(SDR1)
-+#else
-+	/* Save SPRGs */
-+	RESTORE_SPRG(0)
-+	RESTORE_SPRG(1)
-+	RESTORE_SPRG(2)
-+	RESTORE_SPRG(3)
-+	RESTORE_SPRG(4)
-+	RESTORE_SPRG(5)
-+	RESTORE_SPRG(6)
-+	RESTORE_SPRG(7)
-+
-+	RESTORE_SPECIAL(MSR)
-+
-+	/* Restore TCR and clear any pending bits in TSR. */
-+	RESTORE_SPR(TCR)
-+	lis	r0, (TSR_ENW | TSR_WIS | TSR_DIS | TSR_FIS)@h
-+	mtspr	SPRN_TSR,r0
-+
-+	/* Kick decrementer */
-+	li	r0,1
-+	mtdec	r0
-+#endif
- 	RESTORE_SPECIAL(XER)
- 
- 	sync
- 
- 	addi	r1,r1,-128
-+#ifdef CONFIG_PPC_BOOK3S_64
- 	bl	slb_flush_and_rebolt
-+#endif
- 	bl	do_after_copyback
- 	addi	r1,r1,128
- 
+diff --git a/arch/powerpc/configs/mpc85xx_defconfig b/arch/powerpc/configs/mpc85xx_defconfig
+index cf815e8..e12146f 100644
+--- a/arch/powerpc/configs/mpc85xx_defconfig
++++ b/arch/powerpc/configs/mpc85xx_defconfig
+@@ -1,13 +1,12 @@
+ CONFIG_PPC_85xx=y
+ CONFIG_PHYS_64BIT=y
+-CONFIG_EXPERIMENTAL=y
+ CONFIG_SYSVIPC=y
+ CONFIG_POSIX_MQUEUE=y
+-CONFIG_BSD_PROCESS_ACCT=y
+ CONFIG_AUDIT=y
+ CONFIG_IRQ_DOMAIN_DEBUG=y
+ CONFIG_NO_HZ=y
+ CONFIG_HIGH_RES_TIMERS=y
++CONFIG_BSD_PROCESS_ACCT=y
+ CONFIG_IKCONFIG=y
+ CONFIG_IKCONFIG_PROC=y
+ CONFIG_LOG_BUF_SHIFT=14
+@@ -113,6 +112,9 @@ CONFIG_DUMMY=y
+ CONFIG_FS_ENET=y
+ CONFIG_UCC_GETH=y
+ CONFIG_GIANFAR=y
++CONFIG_E1000=y
++CONFIG_E1000E=y
++CONFIG_IGB=y
+ CONFIG_MARVELL_PHY=y
+ CONFIG_DAVICOM_PHY=y
+ CONFIG_CICADA_PHY=y
+@@ -132,7 +134,6 @@ CONFIG_SERIAL_8250_DETECT_IRQ=y
+ CONFIG_SERIAL_8250_RSA=y
+ CONFIG_SERIAL_QE=m
+ CONFIG_NVRAM=y
+-CONFIG_I2C=y
+ CONFIG_I2C_CHARDEV=y
+ CONFIG_I2C_CPM=m
+ CONFIG_I2C_MPC=y
+@@ -230,7 +231,6 @@ CONFIG_DEBUG_INFO=y
+ CONFIG_CRYPTO_PCBC=m
+ CONFIG_CRYPTO_SHA256=y
+ CONFIG_CRYPTO_SHA512=y
+-CONFIG_CRYPTO_AES=y
+ # CONFIG_CRYPTO_ANSI_CPRNG is not set
+ CONFIG_CRYPTO_DEV_FSL_CAAM=y
+ CONFIG_CRYPTO_DEV_TALITOS=y
 -- 
-1.7.5.1
+1.7.9.5
