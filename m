@@ -1,19 +1,25 @@
-Return-Path: <B38951@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E931C2C009C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2013 22:09:21 +1100 (EST)
-From: Jia Hongtao <hongtao.jia@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
-Subject: [PATCH V2] powerpc/85xx: workaround for chips with MSI hardware errata
-Date: Thu, 14 Mar 2013 18:35:23 +0800
-Message-ID: <1363257323-2801-1-git-send-email-hongtao.jia@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: B07421@freescale.com, b38951@freescale.com
+Return-Path: <BATV+18920339ee8181c42cca+3490+infradead.org+acme@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:4830:2446:ff00:4687:fcff:fea6:5117])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 65CF92C0079
+ for <linuxppc-dev@ozlabs.org>; Thu, 14 Mar 2013 23:23:45 +1100 (EST)
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
+To: Ingo Molnar <mingo@kernel.org>
+Subject: [PATCH 7/8] perf/POWER7: Create a sysfs format entry for Power7 events
+Date: Thu, 14 Mar 2013 09:23:14 -0300
+Message-Id: <1363263795-31485-8-git-send-email-acme@infradead.org>
+In-Reply-To: <1363263795-31485-1-git-send-email-acme@infradead.org>
+References: <1363263795-31485-1-git-send-email-acme@infradead.org>
+Content-Type: text/plain; charset="utf-8"
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>, Andi Kleen <ak@linux.intel.com>,
+ Peter Zijlstra <a.p.zijlstra@chello.nl>,
+ Robert Richter <robert.richter@amd.com>, Anton Blanchard <anton@au1.ibm.com>,
+ linux-kernel@vger.kernel.org, Stephane Eranian <eranian@google.com>,
+ linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@redhat.com>,
+ Paul Mackerras <paulus@samba.org>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, Jiri Olsa <jolsa@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,132 +29,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The MPIC version 2.0 has a MSI errata (errata PIC1 of mpc8544), It causes
-that neither MSI nor MSI-X can work fine. This is a workaround to allow
-MSI-X to function properly.
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 
-Signed-off-by: Liu Shuo <soniccat.liu@gmail.com>
-Signed-off-by: Li Yang <leoli@freescale.com>
-Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+Create a sysfs entry, '/sys/bus/event_source/devices/cpu/format/event'
+which describes the format of the POWER7 PMU events.
+
+This code is based on corresponding code in x86.
+
+Changelog[v4]:  [Michael Ellerman, Paul Mckerras] The event format is different
+		for other POWER cpus. So move the code to POWER7-specific,
+		power7-pmu.c Also, the POWER7 format uses bits 0-19 not 0-20.
+
+Changelog[v2]: [Jiri Osla] Use PMU_FORMAT_ATTR rather than duplicating code.
+
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Acked-by: Paul Mackerras <paulus@samba.org>
+Tested-by: Michael Ellerman <michael@ellerman.id.au>
+Cc: Andi Kleen <ak@linux.intel.com>
+Cc: Anton Blanchard <anton@au1.ibm.com>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Jiri Olsa <jolsa@redhat.com>
+Cc: Michael Ellerman <michael@ellerman.id.au>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Robert Richter <robert.richter@amd.com>
+Cc: Stephane Eranian <eranian@google.com>
+Cc: benh@kernel.crashing.org
+Cc: linuxppc-dev@ozlabs.org
+Link: http://lkml.kernel.org/r/20130306054826.GA14627@us.ibm.com
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 ---
-Changes for V2:
-- Address almost all the comments from Michael Ellerman for V1.
-  Here is the link:
-  http://patchwork.ozlabs.org/patch/226833/
+ arch/powerpc/perf/power7-pmu.c |   13 +++++++++++++
+ 1 files changed, 13 insertions(+), 0 deletions(-)
 
- arch/powerpc/sysdev/fsl_msi.c | 65 +++++++++++++++++++++++++++++++++++++++++--
- arch/powerpc/sysdev/fsl_msi.h |  2 ++
- 2 files changed, 64 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
-index 178c994..54cb83e 100644
---- a/arch/powerpc/sysdev/fsl_msi.c
-+++ b/arch/powerpc/sysdev/fsl_msi.c
-@@ -98,8 +98,18 @@ static int fsl_msi_init_allocator(struct fsl_msi *msi_data)
+diff --git a/arch/powerpc/perf/power7-pmu.c b/arch/powerpc/perf/power7-pmu.c
+index b554879..3c475d6 100644
+--- a/arch/powerpc/perf/power7-pmu.c
++++ b/arch/powerpc/perf/power7-pmu.c
+@@ -420,7 +420,20 @@ static struct attribute_group power7_pmu_events_group = {
+ 	.attrs = power7_events_attr,
+ };
  
- static int fsl_msi_check_device(struct pci_dev *pdev, int nvec, int type)
- {
--	if (type == PCI_CAP_ID_MSIX)
--		pr_debug("fslmsi: MSI-X untested, trying anyway.\n");
-+	struct fsl_msi *msi;
++PMU_FORMAT_ATTR(event, "config:0-19");
 +
-+	if (type == PCI_CAP_ID_MSI) {
-+		/*
-+		 * MPIC version 2.0 has erratum PIC1. For now MSI
-+		 * could not work. So check to prevent MSI from
-+		 * being used on the board with this erratum.
-+		 */
-+		list_for_each_entry(msi, &msi_head, list)
-+			if (msi->feature & MSI_HW_ERRATA_ENDIAN)
-+				return -EINVAL;
-+	}
- 
- 	return 0;
- }
-@@ -142,7 +152,17 @@ static void fsl_compose_msi_msg(struct pci_dev *pdev, int hwirq,
- 	msg->address_lo = lower_32_bits(address);
- 	msg->address_hi = upper_32_bits(address);
- 
--	msg->data = hwirq;
-+	/*
-+	 * MPIC version 2.0 has erratum PIC1. It causes
-+	 * that neither MSI nor MSI-X can work fine.
-+	 * This is a workaround to allow MSI-X to function
-+	 * properly. It only works for MSI-X, we prevent
-+	 * MSI on buggy chips in fsl_msi_check_device().
-+	 */
-+	if (msi_data->feature & MSI_HW_ERRATA_ENDIAN)
-+		msg->data = __swab32(hwirq);
-+	else
-+		msg->data = hwirq;
- 
- 	pr_debug("%s: allocated srs: %d, ibs: %d\n",
- 		__func__, hwirq / IRQS_PER_MSI_REG, hwirq % IRQS_PER_MSI_REG);
-@@ -361,6 +381,35 @@ static int fsl_msi_setup_hwirq(struct fsl_msi *msi, struct platform_device *dev,
- 	return 0;
- }
- 
-+/* MPIC version 2.0 has erratum PIC1 */
-+static int mpic_has_errata(struct platform_device *dev)
-+{
-+	struct device_node *mpic_node;
++static struct attribute *power7_pmu_format_attr[] = {
++	&format_attr_event.attr,
++	NULL,
++};
 +
-+	mpic_node = of_irq_find_parent(dev->dev.of_node);
-+	if (mpic_node) {
-+		u32 *reg_base, brr1 = 0;
-+		/* Get the PIC reg base */
-+		reg_base = of_iomap(mpic_node, 0);
-+		of_node_put(mpic_node);
-+		if (!reg_base) {
-+			dev_err(&dev->dev, "ioremap problem failed.\n");
-+			return -EIO;
-+		}
++struct attribute_group power7_pmu_format_group = {
++	.name = "format",
++	.attrs = power7_pmu_format_attr,
++};
 +
-+		/* Get the mpic version from block revision register 1 */
-+		brr1 = in_be32(reg_base + MPIC_FSL_BRR1);
-+		iounmap(reg_base);
-+		if ((brr1 & MPIC_FSL_BRR1_VER) == 0x0200)
-+			return 1;
-+	} else {
-+		dev_err(&dev->dev, "MSI can't find his parent mpic node.\n");
-+		return -ENODEV;
-+	}
-+
-+	return 0;
-+}
-+
- static const struct of_device_id fsl_of_msi_ids[];
- static int fsl_of_msi_probe(struct platform_device *dev)
- {
-@@ -423,6 +472,16 @@ static int fsl_of_msi_probe(struct platform_device *dev)
- 
- 	msi->feature = features->fsl_pic_ip;
- 
-+	if ((features->fsl_pic_ip & FSL_PIC_IP_MASK) == FSL_PIC_IP_MPIC) {
-+		rc = mpic_has_errata(dev);
-+		if (rc > 0) {
-+			msi->feature |= MSI_HW_ERRATA_ENDIAN;
-+		} else if (rc < 0) {
-+			err = rc;
-+			goto error_out;
-+		}
-+	}
-+
- 	/*
- 	 * Remember the phandle, so that we can match with any PCI nodes
- 	 * that have an "fsl,msi" property.
-diff --git a/arch/powerpc/sysdev/fsl_msi.h b/arch/powerpc/sysdev/fsl_msi.h
-index 8225f86..7389e8e 100644
---- a/arch/powerpc/sysdev/fsl_msi.h
-+++ b/arch/powerpc/sysdev/fsl_msi.h
-@@ -25,6 +25,8 @@
- #define FSL_PIC_IP_IPIC   0x00000002
- #define FSL_PIC_IP_VMPIC  0x00000003
- 
-+#define MSI_HW_ERRATA_ENDIAN 0x00000010
-+
- struct fsl_msi {
- 	struct irq_domain *irqhost;
- 
+ static const struct attribute_group *power7_pmu_attr_groups[] = {
++	&power7_pmu_format_group,
+ 	&power7_pmu_events_group,
+ 	NULL,
+ };
 -- 
-1.8.0
+1.7.1
