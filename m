@@ -1,23 +1,20 @@
-Return-Path: <geoff@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:4978:20e::2])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 34C642C0079
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2013 09:07:09 +1100 (EST)
-Message-ID: <1363212419.3155.57.camel@smoke>
-Subject: Re: [PATCH -V4 2/3] powerpc: Update kernel VSID range
-From: Geoff Levand <geoff@infradead.org>
-To: benh@kernel.crashing.org
-Date: Wed, 13 Mar 2013 15:06:59 -0700
-In-Reply-To: <1363181695-5315-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1363181695-5315-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1363181695-5315-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- David Gibson <dwg@au1.ibm.com>
+Return-Path: <B40534@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 800FF2C00A3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2013 15:10:18 +1100 (EST)
+From: Wang Dongsheng <dongsheng.wang@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc: add Book E support to 64-bit hibernation
+Date: Thu, 14 Mar 2013 11:36:18 +0800
+Message-ID: <1363232178-29938-1-git-send-email-dongsheng.wang@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: scottwood@freescale.com, johannes@sipsolutions.net,
+ Wang Dongsheng <dongsheng.wang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,18 +24,137 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Update the 64-bit hibernation code to support Book E CPUs.
+Some registers and instructions are not defined for Book3e
+(SDR reg, tlbia instruction).
 
-On Wed, 2013-03-13 at 19:04 +0530, Aneesh Kumar K.V wrote:
-> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-> 
-> This patch change the kernel VSID range so that we limit VSID_BITS to 37.
-> This enables us to support 64TB with 65 bit VA (37+28). Without this patch
-> we have boot hangs on platforms that only support 65 bit VA.
+SDR: Storage Description Register. Book3S and Book3E have different
+address translation mode, we do not need HTABORG & HTABSIZE to
+translate virtual address to real address.
 
-I tested the V4 series on PS3 applied to linux-3.8 and it fixed the boot
-hang problem.
+More registers are saved in BookE-64bit.(TCR, SPRGx)
 
-Ben, please apply.
+Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+---
+ arch/powerpc/kernel/swsusp_asm64.S |   64 ++++++++++++++++++++++++++++++++++-
+ 1 files changed, 62 insertions(+), 2 deletions(-)
 
-Tested-by: Geoff Levand <geoff@infradead.org>
+diff --git a/arch/powerpc/kernel/swsusp_asm64.S b/arch/powerpc/kernel/swsusp_asm64.S
+index 86ac1d9..608e4ceb 100644
+--- a/arch/powerpc/kernel/swsusp_asm64.S
++++ b/arch/powerpc/kernel/swsusp_asm64.S
+@@ -46,10 +46,29 @@
+ #define SL_r29		0xe8
+ #define SL_r30		0xf0
+ #define SL_r31		0xf8
+-#define SL_SIZE		SL_r31+8
++#define SL_SPRG0	0x100
++#define SL_SPRG1	0x108
++#define SL_SPRG2	0x110
++#define SL_SPRG3	0x118
++#define SL_SPRG4	0x120
++#define SL_SPRG5	0x128
++#define SL_SPRG6	0x130
++#define SL_SPRG7	0x138
++#define SL_TCR		0x140
++#define SL_SIZE		SL_TCR+8
+ 
+ /* these macros rely on the save area being
+  * pointed to by r11 */
++
++#define SAVE_SPR(register)		\
++	mfspr	r0,SPRN_##register	;\
++	std	r0,SL_##register(r11)
++#define RESTORE_SPR(register)		\
++	ld	r0,SL_##register(r11)	;\
++	mtspr	SPRN_##register,r0
++#define RESTORE_SPRG(n)			\
++	ld	r0,SL_SPRG##n(r11)	;\
++	mtsprg	n,r0
+ #define SAVE_SPECIAL(special)		\
+ 	mf##special	r0		;\
+ 	std	r0, SL_##special(r11)
+@@ -103,8 +122,21 @@ _GLOBAL(swsusp_arch_suspend)
+ 	SAVE_REGISTER(r30)
+ 	SAVE_REGISTER(r31)
+ 	SAVE_SPECIAL(MSR)
+-	SAVE_SPECIAL(SDR1)
+ 	SAVE_SPECIAL(XER)
++#ifdef CONFIG_PPC_BOOK3S_64
++	SAVE_SPECIAL(SDR1)
++#else
++	SAVE_SPR(TCR)
++	/* Save SPRGs */
++	SAVE_SPR(SPRG0)
++	SAVE_SPR(SPRG1)
++	SAVE_SPR(SPRG2)
++	SAVE_SPR(SPRG3)
++	SAVE_SPR(SPRG4)
++	SAVE_SPR(SPRG5)
++	SAVE_SPR(SPRG6)
++	SAVE_SPR(SPRG7)
++#endif
+ 
+ 	/* we push the stack up 128 bytes but don't store the
+ 	 * stack pointer on the stack like a real stackframe */
+@@ -151,6 +183,7 @@ copy_page_loop:
+ 	bne+	copyloop
+ nothing_to_copy:
+ 
++#ifdef CONFIG_PPC_BOOK3S_64
+ 	/* flush caches */
+ 	lis	r3, 0x10
+ 	mtctr	r3
+@@ -167,6 +200,7 @@ nothing_to_copy:
+ 	sync
+ 
+ 	tlbia
++#endif
+ 
+ 	ld	r11,swsusp_save_area_ptr@toc(r2)
+ 
+@@ -208,16 +242,42 @@ nothing_to_copy:
+ 	RESTORE_REGISTER(r29)
+ 	RESTORE_REGISTER(r30)
+ 	RESTORE_REGISTER(r31)
++
++#ifdef CONFIG_PPC_BOOK3S_64
+ 	/* can't use RESTORE_SPECIAL(MSR) */
+ 	ld	r0, SL_MSR(r11)
+ 	mtmsrd	r0, 0
+ 	RESTORE_SPECIAL(SDR1)
++#else
++	/* Save SPRGs */
++	RESTORE_SPRG(0)
++	RESTORE_SPRG(1)
++	RESTORE_SPRG(2)
++	RESTORE_SPRG(3)
++	RESTORE_SPRG(4)
++	RESTORE_SPRG(5)
++	RESTORE_SPRG(6)
++	RESTORE_SPRG(7)
++
++	RESTORE_SPECIAL(MSR)
++
++	/* Restore TCR and clear any pending bits in TSR. */
++	RESTORE_SPR(TCR)
++	lis	r0, (TSR_ENW | TSR_WIS | TSR_DIS | TSR_FIS)@h
++	mtspr	SPRN_TSR,r0
++
++	/* Kick decrementer */
++	li	r0,1
++	mtdec	r0
++#endif
+ 	RESTORE_SPECIAL(XER)
+ 
+ 	sync
+ 
+ 	addi	r1,r1,-128
++#ifdef CONFIG_PPC_BOOK3S_64
+ 	bl	slb_flush_and_rebolt
++#endif
+ 	bl	do_after_copyback
+ 	addi	r1,r1,128
+ 
+-- 
+1.7.5.1
