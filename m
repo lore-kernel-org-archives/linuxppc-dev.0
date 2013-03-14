@@ -2,19 +2,21 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E646B2C00B3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 07:05:06 +1100 (EST)
-Subject: Re: [PATCH V2] powerpc/85xx: workaround for chips with MSI hardware
- errata
+ by ozlabs.org (Postfix) with ESMTPS id 2C8AB2C00C6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 07:20:25 +1100 (EST)
+Subject: Re: [PATCH 5/5 v9] iommu/fsl: Freescale PAMU driver and iommu
+ implementation.
 Mime-Version: 1.0 (Apple Message framework v1278)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1363257323-2801-1-git-send-email-hongtao.jia@freescale.com>
-Date: Thu, 14 Mar 2013 15:04:57 -0500
-Message-Id: <6844A08B-8711-47AE-ACF1-9FAC23460710@kernel.crashing.org>
-References: <1363257323-2801-1-git-send-email-hongtao.jia@freescale.com>
-To: Jia Hongtao <hongtao.jia@freescale.com>
-Cc: B07421@freescale.com, linuxppc-dev@lists.ozlabs.org, b38951@freescale.com
+In-Reply-To: <1363200580-11623-1-git-send-email-Varun.Sethi@freescale.com>
+Date: Thu, 14 Mar 2013 15:20:11 -0500
+Message-Id: <0080B56D-8417-41B9-8341-665457D04DE6@kernel.crashing.org>
+References: <1363200580-11623-1-git-send-email-Varun.Sethi@freescale.com>
+To: Varun Sethi <Varun.Sethi@freescale.com>
+Cc: joro@8bytes.org, linux-kernel@vger.kernel.org, stuart.yoder@freescale.com,
+ iommu@lists.linux-foundation.org, scottwood@freescale.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,155 +27,261 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Mar 14, 2013, at 5:35 AM, Jia Hongtao wrote:
+On Mar 13, 2013, at 1:49 PM, Varun Sethi wrote:
 
-> The MPIC version 2.0 has a MSI errata (errata PIC1 of mpc8544), It =
-causes
-> that neither MSI nor MSI-X can work fine. This is a workaround to =
-allow
-> MSI-X to function properly.
->=20
-> Signed-off-by: Liu Shuo <soniccat.liu@gmail.com>
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
-> ---
-> Changes for V2:
-> - Address almost all the comments from Michael Ellerman for V1.
->  Here is the link:
->  http://patchwork.ozlabs.org/patch/226833/
->=20
-> arch/powerpc/sysdev/fsl_msi.c | 65 =
-+++++++++++++++++++++++++++++++++++++++++--
-> arch/powerpc/sysdev/fsl_msi.h |  2 ++
-> 2 files changed, 64 insertions(+), 3 deletions(-)
->=20
-> diff --git a/arch/powerpc/sysdev/fsl_msi.c =
-b/arch/powerpc/sysdev/fsl_msi.c
-> index 178c994..54cb83e 100644
-> --- a/arch/powerpc/sysdev/fsl_msi.c
-> +++ b/arch/powerpc/sysdev/fsl_msi.c
-> @@ -98,8 +98,18 @@ static int fsl_msi_init_allocator(struct fsl_msi =
-*msi_data)
->=20
-> static int fsl_msi_check_device(struct pci_dev *pdev, int nvec, int =
-type)
-> {
-> -	if (type =3D=3D PCI_CAP_ID_MSIX)
-> -		pr_debug("fslmsi: MSI-X untested, trying anyway.\n");
-> +	struct fsl_msi *msi;
+> +/*
+> + * Table of SVRs and the corresponding PORT_ID values.
+> + *
+> + * All future CoreNet-enabled SOCs will have this erratum fixed, so =
+this table
+> + * should never need to be updated.  SVRs are guaranteed to be =
+unique, so
+> + * there is no worry that a future SOC will inadvertently have one of =
+these
+> + * values.
+> + */
+
+Maybe add to the comment about what port_id represents
+
+> +static const struct {
+> +	u32 svr;
+> +	u32 port_id;
+> +} port_id_map[] =3D {
+> +	{0x82100010, 0xFF000000},	/* P2040 1.0 */
+> +	{0x82100011, 0xFF000000},	/* P2040 1.1 */
+> +	{0x82100110, 0xFF000000},	/* P2041 1.0 */
+> +	{0x82100111, 0xFF000000},	/* P2041 1.1 */
+> +	{0x82110310, 0xFF000000},	/* P3041 1.0 */
+> +	{0x82110311, 0xFF000000},	/* P3041 1.1 */
+> +	{0x82010020, 0xFFF80000},	/* P4040 2.0 */
+> +	{0x82000020, 0xFFF80000},	/* P4080 2.0 */
+> +	{0x82210010, 0xFC000000},       /* P5010 1.0 */
+> +	{0x82210020, 0xFC000000},       /* P5010 2.0 */
+> +	{0x82200010, 0xFC000000},	/* P5020 1.0 */
+> +	{0x82050010, 0xFF800000},	/* P5021 1.0 */
+> +	{0x82040010, 0xFF800000},	/* P5040 1.0 */
+> +};
 > +
-> +	if (type =3D=3D PCI_CAP_ID_MSI) {
-> +		/*
-> +		 * MPIC version 2.0 has erratum PIC1. For now MSI
-> +		 * could not work. So check to prevent MSI from
-> +		 * being used on the board with this erratum.
-> +		 */
-> +		list_for_each_entry(msi, &msi_head, list)
-> +			if (msi->feature & MSI_HW_ERRATA_ENDIAN)
-> +				return -EINVAL;
-> +	}
->=20
-> 	return 0;
-> }
-> @@ -142,7 +152,17 @@ static void fsl_compose_msi_msg(struct pci_dev =
-*pdev, int hwirq,
-> 	msg->address_lo =3D lower_32_bits(address);
-> 	msg->address_hi =3D upper_32_bits(address);
->=20
-> -	msg->data =3D hwirq;
-> +	/*
-> +	 * MPIC version 2.0 has erratum PIC1. It causes
-> +	 * that neither MSI nor MSI-X can work fine.
-> +	 * This is a workaround to allow MSI-X to function
-> +	 * properly. It only works for MSI-X, we prevent
-> +	 * MSI on buggy chips in fsl_msi_check_device().
-> +	 */
-> +	if (msi_data->feature & MSI_HW_ERRATA_ENDIAN)
-> +		msg->data =3D __swab32(hwirq);
-> +	else
-> +		msg->data =3D hwirq;
->=20
-> 	pr_debug("%s: allocated srs: %d, ibs: %d\n",
-> 		__func__, hwirq / IRQS_PER_MSI_REG, hwirq % =
-IRQS_PER_MSI_REG);
-> @@ -361,6 +381,35 @@ static int fsl_msi_setup_hwirq(struct fsl_msi =
-*msi, struct platform_device *dev,
-> 	return 0;
-> }
->=20
-> +/* MPIC version 2.0 has erratum PIC1 */
-> +static int mpic_has_errata(struct platform_device *dev)
+> +#define SVR_SECURITY	0x80000	/* The Security (E) bit */
+> +
+> +static int __init fsl_pamu_probe(struct platform_device *pdev)
 > +{
-> +	struct device_node *mpic_node;
+> +	void __iomem *pamu_regs =3D NULL;
+> +	struct ccsr_guts __iomem *guts_regs =3D NULL;
+> +	u32 pamubypenr, pamu_counter;
+> +	unsigned long pamu_reg_off;
+> +	unsigned long pamu_reg_base;
+> +	struct pamu_isr_data *data;
+> +	struct device_node *guts_node;
+> +	u64 size;
+> +	struct page *p;
+> +	int ret =3D 0;
+> +	int irq;
+> +	phys_addr_t ppaact_phys;
+> +	phys_addr_t spaact_phys;
+> +	phys_addr_t omt_phys;
+> +	size_t mem_size =3D 0;
+> +	unsigned int order =3D 0;
+> +	u32 csd_port_id =3D 0;
+> +	unsigned i;
+> +	/*
+> +	 * enumerate all PAMUs and allocate and setup PAMU tables
+> +	 * for each of them,
+> +	 * NOTE : All PAMUs share the same LIODN tables.
+> +	 */
 > +
-> +	mpic_node =3D of_irq_find_parent(dev->dev.of_node);
-> +	if (mpic_node) {
-> +		u32 *reg_base, brr1 =3D 0;
-> +		/* Get the PIC reg base */
-> +		reg_base =3D of_iomap(mpic_node, 0);
-> +		of_node_put(mpic_node);
-> +		if (!reg_base) {
-> +			dev_err(&dev->dev, "ioremap problem failed.\n");
-> +			return -EIO;
-> +		}
-> +
-> +		/* Get the mpic version from block revision register 1 =
-*/
-> +		brr1 =3D in_be32(reg_base + MPIC_FSL_BRR1);
-> +		iounmap(reg_base);
-> +		if ((brr1 & MPIC_FSL_BRR1_VER) =3D=3D 0x0200)
-> +			return 1;
-> +	} else {
-> +		dev_err(&dev->dev, "MSI can't find his parent mpic =
-node.\n");
-> +		return -ENODEV;
+> +	pamu_regs =3D of_iomap(pdev->dev.of_node, 0);
+> +	if (!pamu_regs) {
+> +		dev_err(&pdev->dev, "ioremap of PAMU node failed\n");
+> +		return -ENOMEM;
 > +	}
+> +	of_get_address(pdev->dev.of_node, 0, &size, NULL);
+> +
+> +	irq =3D irq_of_parse_and_map(pdev->dev.of_node, 0);
+> +	if (irq =3D=3D NO_IRQ) {
+> +		dev_warn(&pdev->dev, "no interrupts listed in PAMU =
+node\n");
+> +		goto error;
+> +	}
+> +
+> +	data =3D kzalloc(sizeof(struct pamu_isr_data), GFP_KERNEL);
+> +	if (!data) {
+> +		iounmap(pamu_regs);
+> +		return -ENOMEM;
+> +	}
+> +	data->pamu_reg_base =3D pamu_regs;
+> +	data->count =3D size / PAMU_OFFSET;
+> +
+> +	/* The ISR needs access to the regs, so we won't iounmap them */
+> +	ret =3D request_irq(irq, pamu_av_isr, 0, "pamu", data);
+> +	if (ret < 0) {
+> +		dev_err(&pdev->dev, "error %i installing ISR for irq =
+%i\n",
+> +			ret, irq);
+> +		goto error;
+> +	}
+> +
+> +	guts_node =3D of_find_compatible_node(NULL, NULL,
+> +			"fsl,qoriq-device-config-1.0");
+
+This doesn't work for T4 or B4 device trees.
+
+> +	if (!guts_node) {
+> +		dev_err(&pdev->dev, "could not find GUTS node %s\n",
+> +			pdev->dev.of_node->full_name);
+> +		ret =3D -ENODEV;
+> +		goto error;
+> +	}
+> +
+> +	guts_regs =3D of_iomap(guts_node, 0);
+> +	of_node_put(guts_node);
+> +	if (!guts_regs) {
+> +		dev_err(&pdev->dev, "ioremap of GUTS node failed\n");
+> +		ret =3D -ENODEV;
+> +		goto error;
+> +	}
+> +
+> +	/* read in the PAMU capability registers */
+> +	get_pamu_cap_values((unsigned long)pamu_regs);
+> +	/*
+> +	 * To simplify the allocation of a coherency domain, we allocate =
+the
+> +	 * PAACT and the OMT in the same memory buffer.  Unfortunately, =
+this
+> +	 * wastes more memory compared to allocating the buffers =
+separately.
+> +	 */
+> +	/* Determine how much memory we need */
+> +	mem_size =3D (PAGE_SIZE << get_order(PAACT_SIZE)) +
+> +		(PAGE_SIZE << get_order(SPAACT_SIZE)) +
+> +		(PAGE_SIZE << get_order(OMT_SIZE));
+> +	order =3D get_order(mem_size);
+> +
+> +	p =3D alloc_pages(GFP_KERNEL | __GFP_ZERO, order);
+> +	if (!p) {
+> +		dev_err(&pdev->dev, "unable to allocate PAACT/SPAACT/OMT =
+block\n");
+> +		ret =3D -ENOMEM;
+> +		goto error;
+> +	}
+> +
+> +	ppaact =3D page_address(p);
+> +	ppaact_phys =3D page_to_phys(p);
+> +
+> +	/* Make sure the memory is naturally aligned */
+> +	if (ppaact_phys & ((PAGE_SIZE << order) - 1)) {
+> +		dev_err(&pdev->dev, "PAACT/OMT block is unaligned\n");
+> +		ret =3D -ENOMEM;
+> +		goto error;
+> +	}
+> +
+> +	spaact =3D (void *)ppaact + (PAGE_SIZE << =
+get_order(PAACT_SIZE));
+> +	omt =3D (void *)spaact + (PAGE_SIZE << get_order(SPAACT_SIZE));
+> +
+> +	dev_dbg(&pdev->dev, "ppaact virt=3D%p phys=3D0x%llx\n", ppaact,
+> +		(unsigned long long) ppaact_phys);
+> +
+> +	/* Check to see if we need to implement the work-around on this =
+SOC */
+> +
+> +	/* Determine the Port ID for our coherence subdomain */
+> +	for (i =3D 0; i < ARRAY_SIZE(port_id_map); i++) {
+> +		if (port_id_map[i].svr =3D=3D (mfspr(SPRN_SVR) & =
+~SVR_SECURITY)) {
+> +			csd_port_id =3D port_id_map[i].port_id;
+> +			dev_dbg(&pdev->dev, "found matching SVR %08x\n",
+> +				port_id_map[i].svr);
+> +			break;
+> +		}
+> +	}
+> +
+> +	if (csd_port_id) {
+> +		dev_dbg(&pdev->dev, "creating coherency subdomain at =
+address "
+> +			"0x%llx, size %zu, port id 0x%08x", ppaact_phys,
+> +			mem_size, csd_port_id);
+> +
+> +		ret =3D create_csd(ppaact_phys, mem_size, csd_port_id);
+> +		if (ret) {
+> +			dev_err(&pdev->dev, "could not create coherence =
+"
+> +				"subdomain\n");
+> +			return ret;
+> +		}
+> +	}
+> +
+> +	spaact_phys =3D virt_to_phys(spaact);
+> +	omt_phys =3D virt_to_phys(omt);
+> +
+> +	spaace_pool =3D gen_pool_create(ilog2(sizeof(struct paace)), =
+-1);
+> +	if (!spaace_pool) {
+> +		ret =3D -ENOMEM;
+> +		dev_err(&pdev->dev, "PAMU : failed to allocate spaace =
+gen pool\n");
+> +		goto error;
+> +	}
+> +
+> +	ret =3D gen_pool_add(spaace_pool, (unsigned long)spaact, =
+SPAACT_SIZE, -1);
+> +	if (ret)
+> +		goto error_genpool;
+> +
+> +	pamubypenr =3D in_be32(&guts_regs->pamubypenr);
+> +
+> +	for (pamu_reg_off =3D 0, pamu_counter =3D 0x80000000; =
+pamu_reg_off < size;
+> +	     pamu_reg_off +=3D PAMU_OFFSET, pamu_counter >>=3D 1) {
+> +
+> +		pamu_reg_base =3D (unsigned long) pamu_regs + =
+pamu_reg_off;
+> +		setup_one_pamu(pamu_reg_base, pamu_reg_off, ppaact_phys,
+> +				 spaact_phys, omt_phys);
+> +		/* Disable PAMU bypass for this PAMU */
+> +		pamubypenr &=3D ~pamu_counter;
+> +	}
+> +
+> +	setup_omt(omt);
+> +
+> +	/* Enable all relevant PAMU(s) */
+> +	out_be32(&guts_regs->pamubypenr, pamubypenr);
+> +
+> +	iounmap(guts_regs);
+> +
+> +	/* Enable DMA for the LIODNs in the device tree*/
+> +
+> +	setup_liodns();
 > +
 > +	return 0;
+> +
+> +error_genpool:
+> +	gen_pool_destroy(spaace_pool);
+> +
+> +error:
+> +	if (irq !=3D NO_IRQ)
+> +		free_irq(irq, 0);
+
+Should be:
+
+free_irq(irq, data);
+
+> +
+> +	if (pamu_regs)
+> +		iounmap(pamu_regs);
+> +
+> +	if (guts_regs)
+> +		iounmap(guts_regs);
+> +
+> +	if (ppaact)
+> +		free_pages((unsigned long)ppaact, order);
+> +
+> +	ppaact =3D NULL;
+> +
+
+you alloc data, shouldn't you free it ?
+
+> +	return ret;
 > +}
 > +
-> static const struct of_device_id fsl_of_msi_ids[];
-> static int fsl_of_msi_probe(struct platform_device *dev)
-> {
-> @@ -423,6 +472,16 @@ static int fsl_of_msi_probe(struct =
-platform_device *dev)
->=20
-> 	msi->feature =3D features->fsl_pic_ip;
->=20
-> +	if ((features->fsl_pic_ip & FSL_PIC_IP_MASK) =3D=3D =
-FSL_PIC_IP_MPIC) {
-> +		rc =3D mpic_has_errata(dev);
-> +		if (rc > 0) {
-> +			msi->feature |=3D MSI_HW_ERRATA_ENDIAN;
-> +		} else if (rc < 0) {
-> +			err =3D rc;
-> +			goto error_out;
-> +		}
-> +	}
 > +
-> 	/*
-> 	 * Remember the phandle, so that we can match with any PCI nodes
-> 	 * that have an "fsl,msi" property.
-> diff --git a/arch/powerpc/sysdev/fsl_msi.h =
-b/arch/powerpc/sysdev/fsl_msi.h
-> index 8225f86..7389e8e 100644
-> --- a/arch/powerpc/sysdev/fsl_msi.h
-> +++ b/arch/powerpc/sysdev/fsl_msi.h
-> @@ -25,6 +25,8 @@
-> #define FSL_PIC_IP_IPIC   0x00000002
-> #define FSL_PIC_IP_VMPIC  0x00000003
->=20
-> +#define MSI_HW_ERRATA_ENDIAN 0x00000010
-> +
-
-Is there any reason to put this in fsl_msi.h rather than just in =
-fsl_msi.c itself?
-
-- k
-
-> struct fsl_msi {
-> 	struct irq_domain *irqhost;
->=20
-> --=20
-> 1.8.0
->=20
