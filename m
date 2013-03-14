@@ -1,27 +1,20 @@
-Return-Path: <jason@lakedaemon.net>
-Received: from mho-01-ewr.mailhop.org (mho-03-ewr.mailhop.org [204.13.248.66])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 428502C00CB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 06:35:48 +1100 (EST)
-Date: Thu, 14 Mar 2013 13:25:44 -0400
-From: Jason Cooper <jason@lakedaemon.net>
-To: Florian Fainelli <florian@openwrt.org>
-Subject: Re: [PATCH 0/5] mv643xx_eth: use mvmdio MDIO bus driver
-Message-ID: <20130314172544.GT12700@titan.lakedaemon.net>
-References: <1359473048-26551-1-git-send-email-florian@openwrt.org>
-MIME-Version: 1.0
+ by ozlabs.org (Postfix) with ESMTPS id E646B2C00B3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 07:05:06 +1100 (EST)
+Subject: Re: [PATCH V2] powerpc/85xx: workaround for chips with MSI hardware
+ errata
+Mime-Version: 1.0 (Apple Message framework v1278)
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1359473048-26551-1-git-send-email-florian@openwrt.org>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
- Andrew Lunn <andrew@lunn.ch>, Russell King <linux@arm.linux.org.uk>,
- linux-doc@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Paul Mackerras <paulus@samba.org>, Lennert Buytenhek <buytenh@wantstofly.org>,
- Rob Landley <rob@landley.net>, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, davem@davemloft.net,
- linux-arm-kernel@lists.infradead.org
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1363257323-2801-1-git-send-email-hongtao.jia@freescale.com>
+Date: Thu, 14 Mar 2013 15:04:57 -0500
+Message-Id: <6844A08B-8711-47AE-ACF1-9FAC23460710@kernel.crashing.org>
+References: <1363257323-2801-1-git-send-email-hongtao.jia@freescale.com>
+To: Jia Hongtao <hongtao.jia@freescale.com>
+Cc: B07421@freescale.com, linuxppc-dev@lists.ozlabs.org, b38951@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,53 +24,156 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Florian,
 
-Any word on version 2 of this series?  I'd like to base the conversion
-of kirkwood to DT based ethernet init on it.
+On Mar 14, 2013, at 5:35 AM, Jia Hongtao wrote:
 
-thx,
+> The MPIC version 2.0 has a MSI errata (errata PIC1 of mpc8544), It =
+causes
+> that neither MSI nor MSI-X can work fine. This is a workaround to =
+allow
+> MSI-X to function properly.
+>=20
+> Signed-off-by: Liu Shuo <soniccat.liu@gmail.com>
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+> ---
+> Changes for V2:
+> - Address almost all the comments from Michael Ellerman for V1.
+>  Here is the link:
+>  http://patchwork.ozlabs.org/patch/226833/
+>=20
+> arch/powerpc/sysdev/fsl_msi.c | 65 =
++++++++++++++++++++++++++++++++++++++++++--
+> arch/powerpc/sysdev/fsl_msi.h |  2 ++
+> 2 files changed, 64 insertions(+), 3 deletions(-)
+>=20
+> diff --git a/arch/powerpc/sysdev/fsl_msi.c =
+b/arch/powerpc/sysdev/fsl_msi.c
+> index 178c994..54cb83e 100644
+> --- a/arch/powerpc/sysdev/fsl_msi.c
+> +++ b/arch/powerpc/sysdev/fsl_msi.c
+> @@ -98,8 +98,18 @@ static int fsl_msi_init_allocator(struct fsl_msi =
+*msi_data)
+>=20
+> static int fsl_msi_check_device(struct pci_dev *pdev, int nvec, int =
+type)
+> {
+> -	if (type =3D=3D PCI_CAP_ID_MSIX)
+> -		pr_debug("fslmsi: MSI-X untested, trying anyway.\n");
+> +	struct fsl_msi *msi;
+> +
+> +	if (type =3D=3D PCI_CAP_ID_MSI) {
+> +		/*
+> +		 * MPIC version 2.0 has erratum PIC1. For now MSI
+> +		 * could not work. So check to prevent MSI from
+> +		 * being used on the board with this erratum.
+> +		 */
+> +		list_for_each_entry(msi, &msi_head, list)
+> +			if (msi->feature & MSI_HW_ERRATA_ENDIAN)
+> +				return -EINVAL;
+> +	}
+>=20
+> 	return 0;
+> }
+> @@ -142,7 +152,17 @@ static void fsl_compose_msi_msg(struct pci_dev =
+*pdev, int hwirq,
+> 	msg->address_lo =3D lower_32_bits(address);
+> 	msg->address_hi =3D upper_32_bits(address);
+>=20
+> -	msg->data =3D hwirq;
+> +	/*
+> +	 * MPIC version 2.0 has erratum PIC1. It causes
+> +	 * that neither MSI nor MSI-X can work fine.
+> +	 * This is a workaround to allow MSI-X to function
+> +	 * properly. It only works for MSI-X, we prevent
+> +	 * MSI on buggy chips in fsl_msi_check_device().
+> +	 */
+> +	if (msi_data->feature & MSI_HW_ERRATA_ENDIAN)
+> +		msg->data =3D __swab32(hwirq);
+> +	else
+> +		msg->data =3D hwirq;
+>=20
+> 	pr_debug("%s: allocated srs: %d, ibs: %d\n",
+> 		__func__, hwirq / IRQS_PER_MSI_REG, hwirq % =
+IRQS_PER_MSI_REG);
+> @@ -361,6 +381,35 @@ static int fsl_msi_setup_hwirq(struct fsl_msi =
+*msi, struct platform_device *dev,
+> 	return 0;
+> }
+>=20
+> +/* MPIC version 2.0 has erratum PIC1 */
+> +static int mpic_has_errata(struct platform_device *dev)
+> +{
+> +	struct device_node *mpic_node;
+> +
+> +	mpic_node =3D of_irq_find_parent(dev->dev.of_node);
+> +	if (mpic_node) {
+> +		u32 *reg_base, brr1 =3D 0;
+> +		/* Get the PIC reg base */
+> +		reg_base =3D of_iomap(mpic_node, 0);
+> +		of_node_put(mpic_node);
+> +		if (!reg_base) {
+> +			dev_err(&dev->dev, "ioremap problem failed.\n");
+> +			return -EIO;
+> +		}
+> +
+> +		/* Get the mpic version from block revision register 1 =
+*/
+> +		brr1 =3D in_be32(reg_base + MPIC_FSL_BRR1);
+> +		iounmap(reg_base);
+> +		if ((brr1 & MPIC_FSL_BRR1_VER) =3D=3D 0x0200)
+> +			return 1;
+> +	} else {
+> +		dev_err(&dev->dev, "MSI can't find his parent mpic =
+node.\n");
+> +		return -ENODEV;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> static const struct of_device_id fsl_of_msi_ids[];
+> static int fsl_of_msi_probe(struct platform_device *dev)
+> {
+> @@ -423,6 +472,16 @@ static int fsl_of_msi_probe(struct =
+platform_device *dev)
+>=20
+> 	msi->feature =3D features->fsl_pic_ip;
+>=20
+> +	if ((features->fsl_pic_ip & FSL_PIC_IP_MASK) =3D=3D =
+FSL_PIC_IP_MPIC) {
+> +		rc =3D mpic_has_errata(dev);
+> +		if (rc > 0) {
+> +			msi->feature |=3D MSI_HW_ERRATA_ENDIAN;
+> +		} else if (rc < 0) {
+> +			err =3D rc;
+> +			goto error_out;
+> +		}
+> +	}
+> +
+> 	/*
+> 	 * Remember the phandle, so that we can match with any PCI nodes
+> 	 * that have an "fsl,msi" property.
+> diff --git a/arch/powerpc/sysdev/fsl_msi.h =
+b/arch/powerpc/sysdev/fsl_msi.h
+> index 8225f86..7389e8e 100644
+> --- a/arch/powerpc/sysdev/fsl_msi.h
+> +++ b/arch/powerpc/sysdev/fsl_msi.h
+> @@ -25,6 +25,8 @@
+> #define FSL_PIC_IP_IPIC   0x00000002
+> #define FSL_PIC_IP_VMPIC  0x00000003
+>=20
+> +#define MSI_HW_ERRATA_ENDIAN 0x00000010
+> +
 
-Jason.
+Is there any reason to put this in fsl_msi.h rather than just in =
+fsl_msi.c itself?
 
-On Tue, Jan 29, 2013 at 04:24:03PM +0100, Florian Fainelli wrote:
-> Hi all,
-> 
-> This patch converts the mv643xx_eth driver to use the mvmdio MDIO bus driver
-> instead of rolling its own implementation. As a result, all users of this
-> mv643xx_eth driver are converted to register an "orion-mdio" platform_device.
-> The mvmdio driver is also updated to support an interrupt line which reports
-> SMI error/completion, and to allow traditionnal platform device registration
-> instead of just device tree.
-> 
-> David, I think it makes sense for you to merge all of this, since we do
-> not want the architecture files to be desynchronized from the mv643xx_eth to
-> avoid runtime breakage. The potential for merge conflicts should be very small.
-> 
-> You can probably safely merge patches 1 to 4 if Thomas agrees, and we will
-> see what kind of feeback I get on patch 5.
-> 
-> Florian Fainelli (5):
->   net: mvmdio: unmap base register address at driver removal
->   net: mvmdio: rename base register cookie from smireg to regs
->   net: mvmdio: enhance driver to support SMI error/done interrupts
->   net: mvmdio: allow Device Tree and platform device to coexist
->   mv643xx_eth: convert to use the Marvell Orion MDIO driver
-> 
->  .../devicetree/bindings/net/marvell-orion-mdio.txt |    3 +
->  arch/arm/plat-orion/common.c                       |   84 +++++++--
->  arch/powerpc/platforms/chrp/pegasos_eth.c          |   20 +++
->  arch/powerpc/sysdev/mv64x60_dev.c                  |   14 +-
->  drivers/net/ethernet/marvell/Kconfig               |    1 +
->  drivers/net/ethernet/marvell/mv643xx_eth.c         |  187 +-------------------
->  drivers/net/ethernet/marvell/mvmdio.c              |  136 +++++++++++---
->  7 files changed, 226 insertions(+), 219 deletions(-)
-> 
-> -- 
-> 1.7.10.4
-> 
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+- k
+
+> struct fsl_msi {
+> 	struct irq_domain *irqhost;
+>=20
+> --=20
+> 1.8.0
+>=20
