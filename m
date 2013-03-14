@@ -1,26 +1,28 @@
-Return-Path: <jason@lakedaemon.net>
-Date: Thu, 14 Mar 2013 16:36:37 -0400
-From: Jason Cooper <jason@lakedaemon.net>
-To: Florian Fainelli <florian@openwrt.org>
-Subject: Re: [PATCH] mv643xx_eth: convert to use the Marvell Orion MDIO driver
-Message-ID: <20130314203637.GX12700@titan.lakedaemon.net>
-References: <1359473048-26551-1-git-send-email-florian@openwrt.org>
- <1363284515-9865-1-git-send-email-florian@openwrt.org>
- <1363284515-9865-2-git-send-email-florian@openwrt.org>
- <20130314190235.GW12700@titan.lakedaemon.net>
- <514225E9.9060902@openwrt.org>
+Return-Path: <B08248@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0187.outbound.messaging.microsoft.com [213.199.154.187])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 485E82C00D5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 08:15:02 +1100 (EST)
+From: Yoder Stuart-B08248 <B08248@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>, Sethi Varun-B16395
+ <B16395@freescale.com>
+Subject: RE: [PATCH 5/5 v9] iommu/fsl: Freescale PAMU driver and iommu
+ implementation.
+Date: Thu, 14 Mar 2013 21:14:52 +0000
+Message-ID: <9F6FE96B71CF29479FF1CDC8046E1503586936@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <1363200580-11623-1-git-send-email-Varun.Sethi@freescale.com>
+ <0080B56D-8417-41B9-8341-665457D04DE6@kernel.crashing.org>
+In-Reply-To: <0080B56D-8417-41B9-8341-665457D04DE6@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <514225E9.9060902@openwrt.org>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
- Andrew Lunn <andrew@lunn.ch>, Russell King <linux@arm.linux.org.uk>,
- linux-doc@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Paul Mackerras <paulus@samba.org>, Lennert Buytenhek <buytenh@wantstofly.org>,
- Rob Landley <rob@landley.net>, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, davem@davemloft.net,
- linux-arm-kernel@lists.infradead.org
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "joro@8bytes.org" <joro@8bytes.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,43 +32,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 14, 2013 at 08:32:57PM +0100, Florian Fainelli wrote:
-> Hello Jason,
+
+
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> Sent: Thursday, March 14, 2013 3:20 PM
+> To: Sethi Varun-B16395
+> Cc: joro@8bytes.org; iommu@lists.linux-foundation.org; linuxppc-dev@lists=
+.ozlabs.org; linux-
+> kernel@vger.kernel.org; benh@kernel.crashing.org; Wood Scott-B07421; Yode=
+r Stuart-B08248
+> Subject: Re: [PATCH 5/5 v9] iommu/fsl: Freescale PAMU driver and iommu im=
+plementation.
 >=20
-> Le 14/03/2013 20:02, Jason Cooper a =E9crit :
-> >Florian,
-> >
-> >On Thu, Mar 14, 2013 at 07:08:32PM +0100, Florian Fainelli wrote:
-> >>This patch converts the Marvell MV643XX ethernet driver to use the
-> >>Marvell Orion MDIO driver. As a result, PowerPC and ARM platforms
-> >>registering the Marvell MV643XX ethernet driver are also updated to
-> >>register a Marvell Orion MDIO driver. This driver voluntarily overlap=
-s
-> >>with the Marvell Ethernet shared registers because it will use a subs=
-et
-> >>of this shared register (shared_base + 0x4 - shared_base + 0x84). The
-> >>Ethernet driver is also updated to look up for a PHY device using the
-> >>Orion MDIO bus driver.
-> >>
-> >>Signed-off-by: Florian Fainelli <florian@openwrt.org>
-> >>---
-> >>  arch/arm/plat-orion/common.c               |   97 +++++++++++----
-> >>  arch/powerpc/platforms/chrp/pegasos_eth.c  |   20 +++
-> >>  arch/powerpc/sysdev/mv64x60_dev.c          |   14 ++-
-> >>  drivers/net/ethernet/marvell/Kconfig       |    1 +
-> >>  drivers/net/ethernet/marvell/mv643xx_eth.c |  186 ++---------------=
------------
-> >>  include/linux/mv643xx_eth.h                |    1 -
-> >>  6 files changed, 117 insertions(+), 202 deletions(-)
-> >
-> >Isn't this the old version of 4/4 ?
 >=20
-> No this really is v2, but I reformatted just that one and sent it
-> without the v2 changelog, you should have received the proper
-> version a couple minutes later once I realized my mistake.
+> On Mar 13, 2013, at 1:49 PM, Varun Sethi wrote:
+>=20
+> > +/*
+> > + * Table of SVRs and the corresponding PORT_ID values.
+> > + *
+> > + * All future CoreNet-enabled SOCs will have this erratum fixed, so th=
+is table
+> > + * should never need to be updated.  SVRs are guaranteed to be unique,=
+ so
+> > + * there is no worry that a future SOC will inadvertently have one of =
+these
+> > + * values.
+> > + */
+>=20
+> Maybe add to the comment about what port_id represents
 
-Yes, I received both, just making sure.
+When you update the comment, I would also suggest identifying the specific
+errata here (A-004510) so that it's easy to reference back to the specific
+issue this code is fixing.
 
-thx,
-
-Jason.
+Stuart
