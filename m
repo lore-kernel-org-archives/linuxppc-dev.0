@@ -1,21 +1,24 @@
-Return-Path: <imr@rtschenk.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 5E8D52C009B
- for <linuxppc-dev@ozlabs.org>; Thu, 14 Mar 2013 20:43:25 +1100 (EST)
-From: Rojhalat Ibrahim <imr@rtschenk.de>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [RFC][PATCH 2/2] powerpc/fsl-pci Make PCIe hotplug work with
- Freescale
-Date: Thu, 14 Mar 2013 10:43:19 +0100
-Message-ID: <4166754.n4Zsp0OSQ4@pcimr>
-In-Reply-To: <1363201636-7318-2-git-send-email-galak@kernel.crashing.org>
-References: <1363201636-7318-1-git-send-email-galak@kernel.crashing.org>
- <1363201636-7318-2-git-send-email-galak@kernel.crashing.org>
-MIME-Version: 1.0
+Return-Path: <B38951@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 830972C009C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2013 22:04:40 +1100 (EST)
+From: Jia Hongtao-B38951 <B38951@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>, Michael Ellerman
+ <michael@ellerman.id.au>
+Subject: RE: [PATCH] powerpc/85xx: workaround for chips with MSI hardware
+ errata
+Date: Thu, 14 Mar 2013 11:04:26 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01C18D6F@039-SN1MPN1-003.039d.mgd.msft.net>
+References: <20130313050403.GB9317@concordia> (from michael@ellerman.id.au
+ on Wed Mar 13 00:04:03 2013) <1363206260.8945.13@snotra>
+In-Reply-To: <1363206260.8945.13@snotra>
 Content-Type: text/plain; charset="us-ascii"
-Cc: linuxppc-dev@ozlabs.org
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,170 +28,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday 13 March 2013 14:07:16 Kumar Gala wrote:
-> diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-> index 41bbcc4..b18c377 100644
-> --- a/arch/powerpc/sysdev/fsl_pci.c
-> +++ b/arch/powerpc/sysdev/fsl_pci.c
-> @@ -74,6 +74,35 @@ static int __init fsl_pcie_check_link(struct
-> pci_controller *hose) return 0;
->  }
-> 
-> +static int fsl_indirect_read_config(struct pci_bus *bus, unsigned int
-> devfn, +				    int offset, int len, u32 *val)
-> +{
-> +	struct pci_controller *hose = pci_bus_to_host(bus);
-> +
-> +	/* check the link status */
-> +	if ((bus->number == hose->first_busno) && (devfn == 0)) {
-> +		if (fsl_pcie_check_link(hose))
-> +			hose->indirect_type |= PPC_INDIRECT_TYPE_NO_PCIE_LINK;
-> +		else
-> +			hose->indirect_type &= ~PPC_INDIRECT_TYPE_NO_PCIE_LINK;
-> +	}
-> +	return indirect_read_config(bus, devfn, offset, len, val);
-> +}
-> +
-
-This does not work because fsl_indirect_read_config calls fsl_pcie_check_link which calls early_read_config_dword which eventually calls fsl_indirect_read_config, so the kernel hangs in a recursion loop. Below is a modified patch that does work.
 
 
-Signed-off-by: Rojhalat Ibrahim <imr@rtschenk.de>
----
- arch/powerpc/include/asm/pci-bridge.h |    6 ++++
- arch/powerpc/sysdev/fsl_pci.c         |   51 ++++++++++++++++++++++++++++++----
- arch/powerpc/sysdev/indirect_pci.c    |   10 ++----
- 3 files changed, 55 insertions(+), 12 deletions(-)
+> -----Original Message-----
+> From: Wood Scott-B07421
+> Sent: Thursday, March 14, 2013 4:24 AM
+> To: Michael Ellerman
+> Cc: Jia Hongtao-B38951; linuxppc-dev@lists.ozlabs.org;
+> galak@kernel.crashing.org; Wood Scott-B07421
+> Subject: Re: [PATCH] powerpc/85xx: workaround for chips with MSI hardware
+> errata
+>=20
+> On 03/13/2013 12:04:03 AM, Michael Ellerman wrote:
+> > On Tue, Mar 12, 2013 at 03:48:02PM +0800, Jia Hongtao wrote:
+> > > The MPIC chip with version 2.0 has a MSI errata (errata PIC1 of
+> > mpc8544),
+> > > It causes that neither MSI nor MSI-X can work fine. This is a
+> > workaround
+> > > to allow MSI-X to function properly.
+> >
+> > You say "neither MSI nor MSI-X can work fine", which I take to mean
+> > "both MSI and MSI-X do not work".
+> >
+> > But then you say this is a workaround to allow MSI-X to work.
+> >
+> > So what I think you mean is, the erratum prevents both MSI and MSI-X
+> > from working. This is a workaround that allows MSI-X to work, and in
+> > addition the patch prevents MSI from being used on chips with the
+> > erratum - because there is no workaround for MSI.
+>=20
+> There actually is a workaround for MSI, but it's more complicated and not
+> implemented by this patch.
+>=20
+> We could also possibly get away with allowing exactly one MSI
+> (byteswapping doesn't matter if the value is zero) -- not sure how hard
+> that would be.
 
-diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index c0278f0..ffbc5fd 100644
---- a/arch/powerpc/include/asm/pci-bridge.h
-+++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -120,6 +120,12 @@ extern void setup_indirect_pci(struct pci_controller* hose,
- 			       resource_size_t cfg_addr,
- 			       resource_size_t cfg_data, u32 flags);
- 
-+extern int indirect_read_config(struct pci_bus *bus, unsigned int devfn,
-+				int offset, int len, u32 *val);
-+
-+extern int indirect_write_config(struct pci_bus *bus, unsigned int devfn,
-+				 int offset, int len, u32 val);
-+
- static inline struct pci_controller *pci_bus_to_host(const struct pci_bus *bus)
- {
- 	return bus->sysdata;
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 41bbcc4..63740f6 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -54,12 +54,22 @@ static void quirk_fsl_pcie_header(struct pci_dev *dev)
- 	return;
- }
- 
--static int __init fsl_pcie_check_link(struct pci_controller *hose)
-+static int fsl_indirect_read_config(struct pci_bus *, unsigned int,
-+				    int, int, u32 *);
-+
-+static int fsl_pcie_check_link(struct pci_controller *hose)
- {
- 	u32 val;
- 
- 	if (hose->indirect_type & PPC_INDIRECT_TYPE_FSL_CFG_REG_LINK) {
--		early_read_config_dword(hose, 0, 0, PCIE_LTSSM, &val);
-+		if (hose->ops->read == fsl_indirect_read_config) {
-+			struct pci_bus bus;
-+			bus.number = 0;
-+			bus.sysdata = hose;
-+			bus.ops = hose->ops;
-+			indirect_read_config(&bus, 0, PCIE_LTSSM, 4, &val);
-+		} else
-+			early_read_config_dword(hose, 0, 0, PCIE_LTSSM, &val);
- 		if (val < PCIE_LTSSM_L0)
- 			return 1;
- 	} else {
-@@ -74,6 +84,35 @@ static int __init fsl_pcie_check_link(struct pci_controller *hose)
- 	return 0;
- }
- 
-+static int fsl_indirect_read_config(struct pci_bus *bus, unsigned int devfn,
-+				    int offset, int len, u32 *val)
-+{
-+	struct pci_controller *hose = pci_bus_to_host(bus);
-+	
-+	/* check the link status */
-+	if ((bus->number == hose->first_busno) && (devfn == 0)) {
-+		if (fsl_pcie_check_link(hose))
-+			hose->indirect_type |= PPC_INDIRECT_TYPE_NO_PCIE_LINK;
-+		else
-+			hose->indirect_type &= ~PPC_INDIRECT_TYPE_NO_PCIE_LINK;
-+	}
-+	return indirect_read_config(bus, devfn, offset, len, val);
-+}
-+
-+static struct pci_ops fsl_indirect_pci_ops =
-+{
-+	.read = fsl_indirect_read_config,
-+	.write = indirect_write_config,
-+};
-+
-+static void __init fsl_setup_indirect_pci(struct pci_controller* hose,
-+					  resource_size_t cfg_addr,
-+					  resource_size_t cfg_data, u32 flags)
-+{
-+	setup_indirect_pci(hose, cfg_addr, cfg_data, flags);
-+	hose->ops = &fsl_indirect_pci_ops;
-+}
-+
- #if defined(CONFIG_FSL_SOC_BOOKE) || defined(CONFIG_PPC_86xx)
- 
- #define MAX_PHYS_ADDR_BITS	40
-@@ -469,8 +508,8 @@ int __init fsl_add_bridge(struct platform_device *pdev, int is_primary)
- 	if (!hose->private_data)
- 		goto no_bridge;
- 
--	setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4,
--		PPC_INDIRECT_TYPE_BIG_ENDIAN);
-+	fsl_setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4,
-+			       PPC_INDIRECT_TYPE_BIG_ENDIAN);
- 
- 	if (in_be32(&pci->block_rev1) < PCIE_IP_REV_3_0)
- 		hose->indirect_type |= PPC_INDIRECT_TYPE_FSL_CFG_REG_LINK;
-@@ -779,8 +818,8 @@ int __init mpc83xx_add_bridge(struct device_node *dev)
- 		if (ret)
- 			goto err0;
- 	} else {
--		setup_indirect_pci(hose, rsrc_cfg.start,
--				   rsrc_cfg.start + 4, 0);
-+		fsl_setup_indirect_pci(hose, rsrc_cfg.start,
-+				       rsrc_cfg.start + 4, 0);
- 	}
- 
- 	printk(KERN_INFO "Found FSL PCI host bridge at 0x%016llx. "
-diff --git a/arch/powerpc/sysdev/indirect_pci.c b/arch/powerpc/sysdev/indirect_pci.c
-index 82fdad8..c6c8b52 100644
---- a/arch/powerpc/sysdev/indirect_pci.c
-+++ b/arch/powerpc/sysdev/indirect_pci.c
-@@ -20,9 +20,8 @@
- #include <asm/pci-bridge.h>
- #include <asm/machdep.h>
- 
--static int
--indirect_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
--		     int len, u32 *val)
-+int indirect_read_config(struct pci_bus *bus, unsigned int devfn,
-+			 int offset, int len, u32 *val)
- {
- 	struct pci_controller *hose = pci_bus_to_host(bus);
- 	volatile void __iomem *cfg_data;
-@@ -78,9 +77,8 @@ indirect_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
- 	return PCIBIOS_SUCCESSFUL;
- }
- 
--static int
--indirect_write_config(struct pci_bus *bus, unsigned int devfn, int offset,
--		      int len, u32 val)
-+int indirect_write_config(struct pci_bus *bus, unsigned int devfn,
-+			  int offset, int len, u32 val)
- {
- 	struct pci_controller *hose = pci_bus_to_host(bus);
- 	volatile void __iomem *cfg_data;
+For now we have no plan to support MSI workaround. Also MSI workaround
+deserve a new patch :)
+
+I will sent V2 of this patch soon.
+
+-Hongtao.
+
+>=20
+> > > +		list_for_each_entry(msi, &msi_head, list)
+> > > +			if (msi->feature & MSI_HW_ERRATA_ENDIAN)
+> > > +				return -EINVAL;
+> >
+> > I take it you're happy preventing MSI for all devices even if only a
+> > single chip in the machine has the erratum? In practice you probably
+> > have all or none with the erratum right?
+>=20
+> Yes, it's all integrated onto one chip (the SoC itself).  In fact there
+> should only be one MSI block on these chips.
+>=20
+> -Scott
