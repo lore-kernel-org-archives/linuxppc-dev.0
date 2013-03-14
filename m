@@ -1,19 +1,15 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (he.sipsolutions.net [78.46.109.217])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A06382C009B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2013 19:38:03 +1100 (EST)
-Message-ID: <1363250273.4833.1.camel@jlt4.sipsolutions.net>
-Subject: Re: [PATCH] powerpc: add Book E support to 64-bit hibernation
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Wang Dongsheng <dongsheng.wang@freescale.com>
-Date: Thu, 14 Mar 2013 10:37:53 +0200
-In-Reply-To: <1363232178-29938-1-git-send-email-dongsheng.wang@freescale.com>
-References: <1363232178-29938-1-git-send-email-dongsheng.wang@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
+Return-Path: <paulus@ozlabs.org>
+Date: Thu, 14 Mar 2013 19:52:19 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Subject: Re: [PATCH 3/11] Move architecture vector definitions to prom.h
+Message-ID: <20130314085219.GC9841@iris.ozlabs.ibm.com>
+References: <513AB2E3.6090209@linux.vnet.ibm.com>
+ <513AB415.2040006@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <513AB415.2040006@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,18 +19,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-03-14 at 11:36 +0800, Wang Dongsheng wrote:
+On Fri, Mar 08, 2013 at 10:01:25PM -0600, Nathan Fontenot wrote:
+> As part of handling of handling PRRN events we will need to check the
+> vector 5 portion of the architecture bits reported in the device tree
+> to ensure that PRRN event handling is enabled. In order to do this a
+> new platform_has_feature call is introduced (in a subsequent patch) to
+> make this check.  To avoid having to re-define bits in the architecture
+> vector the bits are moved to prom.h.
+> 
+> This patch is the first step in implementing the platform_has_feature
+> call by simply moving the bit definitions from prom_init.c to asm/prom.h.
+> There are no functional.
+> 
+> Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 
-> +#ifdef CONFIG_PPC_BOOK3S_64
->  	/* can't use RESTORE_SPECIAL(MSR) */
->  	ld	r0, SL_MSR(r11)
->  	mtmsrd	r0, 0
-
-Unfortunately, I forgot the reason for this comment, and didn't put a
-better one (almost 6 years ago!!)
-
-> +	RESTORE_SPECIAL(MSR)
-
-but maybe you also can't do this on BookE?
-
-johannes
+Acked-by: Paul Mackerras <paulus@samba.org>
