@@ -1,19 +1,18 @@
-Return-Path: <f.fainelli@gmail.com>
-Sender: Florian Fainelli <f.fainelli@gmail.com>
-Message-ID: <514300E0.2030108@openwrt.org>
-Date: Fri, 15 Mar 2013 12:07:12 +0100
-From: Florian Fainelli <florian@openwrt.org>
-MIME-Version: 1.0
+Return-Path: <thomas.petazzoni@free-electrons.com>
+Date: Fri, 15 Mar 2013 12:42:10 +0100
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 To: Florian Fainelli <florian@openwrt.org>
 Subject: Re: [PATCH 4/4 v2] mv643xx_eth: convert to use the Marvell Orion
  MDIO driver
+Message-ID: <20130315124210.27d0794a@skate>
+In-Reply-To: <514300E0.2030108@openwrt.org>
 References: <1359473048-26551-1-git-send-email-florian@openwrt.org>
  <1363284515-9865-1-git-send-email-florian@openwrt.org>
  <1363284515-9865-5-git-send-email-florian@openwrt.org>
-In-Reply-To: <1363284515-9865-5-git-send-email-florian@openwrt.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
- Andrew Lunn <andrew@lunn.ch>, Russell King <linux@arm.linux.org.uk>,
+ <514300E0.2030108@openwrt.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Andrew Lunn <andrew@lunn.ch>, Russell King <linux@arm.linux.org.uk>,
  Jason Cooper <jason@lakedaemon.net>, linux-doc@vger.kernel.org,
  devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  Rob Herring <rob.herring@calxeda.com>, netdev@vger.kernel.org,
@@ -30,26 +29,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Le 03/14/13 19:08, Florian Fainelli a écrit :
-> This patch converts the Marvell MV643XX ethernet driver to use the
-> Marvell Orion MDIO driver. As a result, PowerPC and ARM platforms
-> registering the Marvell MV643XX ethernet driver are also updated to
-> register a Marvell Orion MDIO driver. This driver voluntarily overlaps
-> with the Marvell Ethernet shared registers because it will use a subset
-> of this shared register (shared_base + 0x4 - shared_base + 0x84). The
-> Ethernet driver is also updated to look up for a PHY device using the
-> Orion MDIO bus driver.
+Dear Florian Fainelli,
 
-Thanks to the help of Andrew Lunn, there is at least two known issues 
-with this patch version:
+On Fri, 15 Mar 2013 12:07:12 +0100, Florian Fainelli wrote:
 
-- we need to move up the mvmdio line in 
-drivers/net/ethernet/marvell/Makefile to make sure that configs having 
-both mvmdio and mv643xx_eth built-in get the probing order right
-- the bus name used by mv643xx_eth is not the right now (orion-mdio.0 vs 
-expected orion-mdio) so the PHY device will not be found during 
-phy_connect()
+> Thanks to the help of Andrew Lunn, there is at least two known issues 
+> with this patch version:
+> 
+> - we need to move up the mvmdio line in 
+> drivers/net/ethernet/marvell/Makefile to make sure that configs having 
+> both mvmdio and mv643xx_eth built-in get the probing order right
 
-I will fix these two issues in the next version of the patchset.
---
-Florian
+I don't think it's the right way of fixing the problem. If there is no
+dependency on the two devices through the device model (i.e they don't
+have a parent->child relationship), then the mv643xx_eth driver should
+probably return -EPROBE_DEFER when it can't find its PHY so that its
+->probe() operation gets called once again by the kernel when other
+drivers (including mvmdio) have been probed.
+
+Best regards,
+
+Thomas
+-- 
+Thomas Petazzoni, Free Electrons
+Kernel, drivers, real-time and embedded Linux
+development, consulting, training and support.
+http://free-electrons.com
