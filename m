@@ -1,15 +1,17 @@
-Return-Path: <davem@davemloft.net>
-Date: Fri, 15 Mar 2013 09:05:17 -0400 (EDT)
-Message-Id: <20130315.090517.2027403317215151155.davem@davemloft.net>
-To: florian@openwrt.org
+Return-Path: <f.fainelli@gmail.com>
+Sender: Florian Fainelli <f.fainelli@gmail.com>
+Message-ID: <51431C0F.6080703@openwrt.org>
+Date: Fri, 15 Mar 2013 14:03:11 +0100
+From: Florian Fainelli <florian@openwrt.org>
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
 Subject: Re: [PATCH 0/4] mv643xx_eth: use mvmdio MDIO bus driver
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <514319B6.7030307@openwrt.org>
 References: <20130315.085321.1047694772636447477.davem@davemloft.net>
  <20130315.085510.974056254781971889.davem@davemloft.net>
  <514319B6.7030307@openwrt.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=utf-8
+ <20130315.090517.2027403317215151155.davem@davemloft.net>
+In-Reply-To: <20130315.090517.2027403317215151155.davem@davemloft.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Cc: thomas.petazzoni@free-electrons.com, andrew@lunn.ch, linux@arm.linux.org.uk,
  jason@lakedaemon.net, linux-doc@vger.kernel.org,
  devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
@@ -26,45 +28,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogRmxvcmlhbiBGYWluZWxsaSA8ZmxvcmlhbkBvcGVud3J0Lm9yZz4NCkRhdGU6IEZyaSwg
-MTUgTWFyIDIwMTMgMTM6NTM6MTAgKzAxMDANCg0KPiBMZSAwMy8xNS8xMyAxMzo1NSwgRGF2aWQg
-TWlsbGVyIGEgw6ljcml0IDoNCj4+IEZyb206IERhdmlkIE1pbGxlciA8ZGF2ZW1AZGF2ZW1sb2Z0
-Lm5ldD4NCj4+IERhdGU6IEZyaSwgMTUgTWFyIDIwMTMgMDg6NTM6MjEgLTA0MDAgKEVEVCkNCj4+
-DQo+Pj4gRnJvbTogRmxvcmlhbiBGYWluZWxsaSA8ZmxvcmlhbkBvcGVud3J0Lm9yZz4NCj4+PiBE
-YXRlOiBUaHUsIDE0IE1hciAyMDEzIDE5OjA4OjMxICswMTAwDQo+Pj4NCj4+Pj4gVGhpcyBwYXRj
-aCBjb252ZXJ0cyB0aGUgbXY2NDN4eF9ldGggZHJpdmVyIHRvIHVzZSB0aGUgbXZtZGlvIE1ESU8g
-YnVzDQo+Pj4+IGRyaXZlcg0KPj4+PiBpbnN0ZWFkIG9mIHJvbGxpbmcgaXRzIG93biBpbXBsZW1l
-bnRhdGlvbi4gQXMgYSByZXN1bHQsIGFsbCB1c2VycyBvZg0KPj4+PiB0aGlzDQo+Pj4+IG12NjQz
-eHhfZXRoIGRyaXZlciBhcmUgY29udmVydGVkIHRvIHJlZ2lzdGVyIGFuICJvcmlvbi1tZGlvIg0K
-Pj4+PiBwbGF0Zm9ybV9kZXZpY2UuDQo+Pj4+IFRoZSBtdm1kaW8gZHJpdmVyIGlzIGFsc28gdXBk
-YXRlZCB0byBzdXBwb3J0IGFuIGludGVycnVwdCBsaW5lIHdoaWNoDQo+Pj4+IHJlcG9ydHMNCj4+
-Pj4gU01JIGVycm9yL2NvbXBsZXRpb24sIGFuZCB0byBhbGxvdyB0cmFkaXRpb25uYWwgcGxhdGZv
-cm0gZGV2aWNlDQo+Pj4+IHJlZ2lzdHJhdGlvbg0KPj4+PiBpbnN0ZWFkIG9mIGp1c3QgZGV2aWNl
-IHRyZWUuDQo+Pj4+DQo+Pj4+IERhdmlkLCBJIHRoaW5rIGl0IG1ha2VzIHNlbnNlIGZvciB5b3Ug
-dG8gbWVyZ2UgYWxsIG9mIHRoaXMsIHNpbmNlIHdlDQo+Pj4+IGRvDQo+Pj4+IG5vdCB3YW50IHRo
-ZSBhcmNoaXRlY3R1cmUgZmlsZXMgdG8gYmUgZGVzeW5jaHJvbml6ZWQgZnJvbSB0aGUNCj4+Pj4g
-bXY2NDN4eF9ldGggdG8NCj4+Pj4gYXZvaWQgcnVudGltZSBicmVha2FnZS4gVGhlIHBvdGVudGlh
-bCBmb3IgbWVyZ2UgY29uZmxpY3RzIHNob3VsZCBiZQ0KPj4+PiB2ZXJ5IHNtYWxsLg0KPj4+DQo+
-Pj4gQWxsIGFwcGxpZWQgdG8gbmV0LW5leHQsIHRoYW5rcy4NCj4+DQo+PiBBY3R1YWxseSwgcmV2
-ZXJ0ZWQuICBQbGVhc2Ugc2VuZCBtZSBjb2RlIHdoaWNoIGFjdHVhbGx5IGNvbXBpbGVzOg0KPj4N
-Cj4+IGRyaXZlcnMvbmV0L2V0aGVybmV0L21hcnZlbGwvbXZtZGlvLmM6IEluIGZ1bmN0aW9uDQo+
-PiDigJhvcmlvbl9tZGlvX3dhaXRfcmVhZHnigJk6DQo+PiBkcml2ZXJzL25ldC9ldGhlcm5ldC9t
-YXJ2ZWxsL212bWRpby5jOjcwOjI4OiBlcnJvcjog4oCYTk9fSVJR4oCZDQo+PiB1bmRlY2xhcmVk
-IChmaXJzdCB1c2UgaW4gdGhpcyBmdW5jdGlvbikNCj4+IGRyaXZlcnMvbmV0L2V0aGVybmV0L21h
-cnZlbGwvbXZtZGlvLmM6NzA6Mjg6IG5vdGU6IGVhY2ggdW5kZWNsYXJlZA0KPj4gaWRlbnRpZmll
-ciBpcyByZXBvcnRlZCBvbmx5IG9uY2UgZm9yIGVhY2ggZnVuY3Rpb24gaXQgYXBwZWFycyBpbg0K
-Pj4gZHJpdmVycy9uZXQvZXRoZXJuZXQvbWFydmVsbC9tdm1kaW8uYzogSW4gZnVuY3Rpb24g4oCY
-b3Jpb25fbWRpb19wcm9iZeKAmToNCj4+IGRyaXZlcnMvbmV0L2V0aGVybmV0L21hcnZlbGwvbXZt
-ZGlvLmM6MjQyOjI0OiBlcnJvcjog4oCYTk9fSVJR4oCZDQo+PiB1bmRlY2xhcmVkIChmaXJzdCB1
-c2UgaW4gdGhpcyBmdW5jdGlvbikNCj4+IG1ha2VbNF06ICoqKiBbZHJpdmVycy9uZXQvZXRoZXJu
-ZXQvbWFydmVsbC9tdm1kaW8ub10gRXJyb3IgMQ0KPj4NCj4+IEFuZCBkb24ndCB1c2UgS2NvbmZp
-ZyBkZXBlbmRlbmNpZXMgdG8gd29yayBhcm91bmQgdGhpcywgZml4IGl0DQo+PiBwcm9wZXJseS4N
-Cj4gDQo+IElzIHRoZXJlIGFueSBwbGF0Zm9ybSBvdXQgdGhlcmUgZm9yIHdoaWNoIHdlIGRvIG5v
-dCBoYXZlIGEgTk9fSVJRDQo+IGRlZmluaXRpb24gYnkgbm93PyBJZiBzbywgd2hhdCBpcyBpdD8N
-Cg0KT2J2aW91c2x5IGlmIHg4Nl82NCBkb2Vzbid0IGV2ZW4gYnVpbGQgeW91ciBjaGFuZ2VzLCB0
-aGF0IGlzIG9uZSBzdWNoDQpwbGF0Zm9ybS4gIEFsc28sIGlzIGdyZXAgbm90IHdvcmtpbmcgb24g
-eW91ciBjb21wdXRlcj8NCg0KUGxhdGZvcm1zIGFyZSBhYnNvbHV0ZWx5IG5vIHJlcXVpcmVkIHRv
-IGhhdmUgdGhpcyBkZWZpbmUsIHplcm8gaXMgdGhlDQpvbmx5IHZhbGlkICJubyBJUlEiIHdoaWNo
-IGlzIHBvcnRhYmxlIGluIGFueSB3YXkuDQoNClRoaXMgaXMgYW4gb2xkIGFuZCB0aXJlZCB0b3Bp
-YywgcG9ydGFibGUgY29kZSBkb2VzIG5vdCB1c2UgTk9fSVJRLCBhbmQNCnRoYXQncyBzaW1wbHkg
-dGhlIGVuZCBvZiBpdC4NCg==
+Le 03/15/13 14:05, David Miller a écrit :
+> From: Florian Fainelli <florian@openwrt.org>
+> Date: Fri, 15 Mar 2013 13:53:10 +0100
+>
+>> Le 03/15/13 13:55, David Miller a écrit :
+>>> From: David Miller <davem@davemloft.net>
+>>> Date: Fri, 15 Mar 2013 08:53:21 -0400 (EDT)
+>>>
+>>>> From: Florian Fainelli <florian@openwrt.org>
+>>>> Date: Thu, 14 Mar 2013 19:08:31 +0100
+>>>>
+>>>>> This patch converts the mv643xx_eth driver to use the mvmdio MDIO bus
+>>>>> driver
+>>>>> instead of rolling its own implementation. As a result, all users of
+>>>>> this
+>>>>> mv643xx_eth driver are converted to register an "orion-mdio"
+>>>>> platform_device.
+>>>>> The mvmdio driver is also updated to support an interrupt line which
+>>>>> reports
+>>>>> SMI error/completion, and to allow traditionnal platform device
+>>>>> registration
+>>>>> instead of just device tree.
+>>>>>
+>>>>> David, I think it makes sense for you to merge all of this, since we
+>>>>> do
+>>>>> not want the architecture files to be desynchronized from the
+>>>>> mv643xx_eth to
+>>>>> avoid runtime breakage. The potential for merge conflicts should be
+>>>>> very small.
+>>>>
+>>>> All applied to net-next, thanks.
+>>>
+>>> Actually, reverted.  Please send me code which actually compiles:
+>>>
+>>> drivers/net/ethernet/marvell/mvmdio.c: In function
+>>> ‘orion_mdio_wait_ready’:
+>>> drivers/net/ethernet/marvell/mvmdio.c:70:28: error: ‘NO_IRQ’
+>>> undeclared (first use in this function)
+>>> drivers/net/ethernet/marvell/mvmdio.c:70:28: note: each undeclared
+>>> identifier is reported only once for each function it appears in
+>>> drivers/net/ethernet/marvell/mvmdio.c: In function ‘orion_mdio_probe’:
+>>> drivers/net/ethernet/marvell/mvmdio.c:242:24: error: ‘NO_IRQ’
+>>> undeclared (first use in this function)
+>>> make[4]: *** [drivers/net/ethernet/marvell/mvmdio.o] Error 1
+>>>
+>>> And don't use Kconfig dependencies to work around this, fix it
+>>> properly.
+>>
+>> Is there any platform out there for which we do not have a NO_IRQ
+>> definition by now? If so, what is it?
+>
+> Obviously if x86_64 doesn't even build your changes, that is one such
+> platform.  Also, is grep not working on your computer?
+
+I built tested on PowerPC and ARM which are the platforms actually 
+*using* these drivers and forgot that you build for x86_64.
+
+>
+> Platforms are absolutely no required to have this define, zero is the
+> only valid "no IRQ" which is portable in any way.
+>
+> This is an old and tired topic, portable code does not use NO_IRQ, and
+> that's simply the end of it.
+
+I changed not to rely on NO_IRQ anymore. Thanks!
+--
+Florian
