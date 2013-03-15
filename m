@@ -1,19 +1,33 @@
-Return-Path: <B38951@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0188.outbound.messaging.microsoft.com [213.199.154.188])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5AB5B2C00D2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 17:49:06 +1100 (EST)
-From: Jia Hongtao <hongtao.jia@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
-Subject: [PATCH V2] powerpc/85xx: Add platform_device declaration to fsl_pci.h
-Date: Fri, 15 Mar 2013 14:14:58 +0800
-Message-ID: <1363328098-20343-1-git-send-email-hongtao.jia@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: B07421@freescale.com, b38951@freescale.com
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e37.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 59FC22C00DB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 18:26:41 +1100 (EST)
+Received: from /spool/local
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Fri, 15 Mar 2013 01:26:38 -0600
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+ [9.17.195.106])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 0788F1FF003F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 01:21:40 -0600 (MDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r2F7QY4V380258
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 01:26:34 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r2F7QXMg014853
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 01:26:34 -0600
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0/3] VFIO change for EEH support
+Date: Fri, 15 Mar 2013 15:26:27 +0800
+Message-Id: <1363332390-12754-1-git-send-email-shangw@linux.vnet.ibm.com>
+Cc: aik@ozlabs.ru, alex.williamson@redhat.com,
+ Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,30 +37,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-mpc85xx_pci_err_probe(struct platform_device *op) need platform_device
-declaration for definition. Otherwise, it will cause compile error if any
-files including fsl_pci.h without declaration of platform_device.
+The EEH (Enhanced Error Handling) is one of RAS features on IBM Power
+machines. In order to support EEH, the VFIO needs some modification
+as the patchset addresses. Firstly, the address (domain:bus:slot:function)
+of passed PCI devices looks quite different from host and guest perspectives.
+So we have to mantain the address mapping in host so that the EEH could
+direct the EEH errors from guest to proper PCI device. Unfortunately, it
+seems that the VFIO implementation doesn't include the mechanism yet. On
+the other hand, it's totally business of individual platforms. So I introduced
+some weak functions in VFIO driver and individual platforms can override
+that to figure out more information that platform needs. Apart from that,
+the last patch [3/3] is changing the current behavior of accessing uncoverred
+config space for specific PCI device.
 
-Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
----
-Changes for V2:
-- Just declare platform_device instead of including <linux/platform_device.h>
+The patchset is expected to be applied after Alexy's patchset (supporting
+VFIO on PowerNV platform). Besides, there're patchset based on it queued
+in my personal tree for EEH core to support PowerKVM guest. With all of
+them (Alexy's patchset, this patchset, EEH core patchset), I can sucessfully
+pass PCI device to guest and recover it from EEH errors.
 
- arch/powerpc/sysdev/fsl_pci.h | 2 ++
- 1 file changed, 2 insertions(+)
+drivers/vfio/pci/vfio_pci.c        |   42 ++++++++++++++++++++++++++++++------
+drivers/vfio/pci/vfio_pci_config.c |   31 +++++++++++++++++---------
+include/linux/vfio.h               |    7 +++++-
+include/uapi/linux/vfio.h          |   16 +++++++++++++
+4 files changed, 77 insertions(+), 19 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/fsl_pci.h b/arch/powerpc/sysdev/fsl_pci.h
-index c495c00..851dd56 100644
---- a/arch/powerpc/sysdev/fsl_pci.h
-+++ b/arch/powerpc/sysdev/fsl_pci.h
-@@ -14,6 +14,8 @@
- #ifndef __POWERPC_FSL_PCI_H
- #define __POWERPC_FSL_PCI_H
- 
-+struct platform_device;
-+
- #define PCIE_LTSSM	0x0404		/* PCIE Link Training and Status */
- #define PCIE_LTSSM_L0	0x16		/* L0 state */
- #define PCIE_IP_REV_2_2		0x02080202 /* PCIE IP block version Rev2.2 */
--- 
-1.8.0
+Thanks,
+Gavin
