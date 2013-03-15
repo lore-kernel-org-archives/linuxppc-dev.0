@@ -1,25 +1,27 @@
 Return-Path: <B38951@freescale.com>
 Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
+ (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4C41F2C00DB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 13:00:10 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 634432C00CC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 13:48:58 +1100 (EST)
 From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: RE: [PATCH V2] powerpc/85xx: workaround for chips with MSI hardware
- errata
-Date: Fri, 15 Mar 2013 02:00:02 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01C18FB3@039-SN1MPN1-003.039d.mgd.msft.net>
-References: <1363257323-2801-1-git-send-email-hongtao.jia@freescale.com>
- <6844A08B-8711-47AE-ACF1-9FAC23460710@kernel.crashing.org>
-In-Reply-To: <6844A08B-8711-47AE-ACF1-9FAC23460710@kernel.crashing.org>
+To: Wood Scott-B07421 <B07421@freescale.com>, David Laight
+ <David.Laight@ACULAB.COM>
+Subject: RE: [PATCH V4] powerpc/85xx: Add machine check handler to fix PCIe
+ erratum on mpc85xx
+Date: Fri, 15 Mar 2013 02:47:58 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01C18FD6@039-SN1MPN1-003.039d.mgd.msft.net>
+References: <412C8208B4A0464FA894C5F0C278CD5D01C15369@039-SN1MPN1-003.039d.mgd.msft.net>
+ <1363123452.17135.13@snotra>
+ <AE90C24D6B3A694183C094C60CF0A2F6026B7186@saturn3.aculab.com>
+ <1363192659.8945.1@snotra>
+In-Reply-To: <1363192659.8945.1@snotra>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Stuart Yoder <b08248@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,164 +32,32 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-
 > -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> Sent: Friday, March 15, 2013 4:05 AM
-> To: Jia Hongtao-B38951
-> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421;
-> michael@ellerman.id.au; Li Yang-R58472; Jia Hongtao-B38951
-> Subject: Re: [PATCH V2] powerpc/85xx: workaround for chips with MSI
-> hardware errata
+> From: Wood Scott-B07421
+> Sent: Thursday, March 14, 2013 12:38 AM
+> To: David Laight
+> Cc: Jia Hongtao-B38951; Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org;
+> Stuart Yoder
+> Subject: Re: [PATCH V4] powerpc/85xx: Add machine check handler to fix
+> PCIe erratum on mpc85xx
 >=20
+> On 03/13/2013 04:40:40 AM, David Laight wrote:
+> > > Hmm, seems there's no probe_user_address() -- for userspace we
+> > > basically want the same thing minus the KERNEL_DS.  See
+> > > arch/powerpc/perf/callchain.c for an example.
+> >
+> > Isn't that just copy_from_user() ?
 >=20
-> On Mar 14, 2013, at 5:35 AM, Jia Hongtao wrote:
+> Plus pagefault_disable/enable().
 >=20
-> > The MPIC version 2.0 has a MSI errata (errata PIC1 of mpc8544), It
-> > causes that neither MSI nor MSI-X can work fine. This is a workaround
-> > to allow MSI-X to function properly.
-> >
-> > Signed-off-by: Liu Shuo <soniccat.liu@gmail.com>
-> > Signed-off-by: Li Yang <leoli@freescale.com>
-> > Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
-> > ---
-> > Changes for V2:
-> > - Address almost all the comments from Michael Ellerman for V1.
-> >  Here is the link:
-> >  http://patchwork.ozlabs.org/patch/226833/
-> >
-> > arch/powerpc/sysdev/fsl_msi.c | 65
-> > +++++++++++++++++++++++++++++++++++++++++--
-> > arch/powerpc/sysdev/fsl_msi.h |  2 ++
-> > 2 files changed, 64 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/arch/powerpc/sysdev/fsl_msi.c
-> > b/arch/powerpc/sysdev/fsl_msi.c index 178c994..54cb83e 100644
-> > --- a/arch/powerpc/sysdev/fsl_msi.c
-> > +++ b/arch/powerpc/sysdev/fsl_msi.c
-> > @@ -98,8 +98,18 @@ static int fsl_msi_init_allocator(struct fsl_msi
-> > *msi_data)
-> >
-> > static int fsl_msi_check_device(struct pci_dev *pdev, int nvec, int
-> > type) {
-> > -	if (type =3D=3D PCI_CAP_ID_MSIX)
-> > -		pr_debug("fslmsi: MSI-X untested, trying anyway.\n");
-> > +	struct fsl_msi *msi;
-> > +
-> > +	if (type =3D=3D PCI_CAP_ID_MSI) {
-> > +		/*
-> > +		 * MPIC version 2.0 has erratum PIC1. For now MSI
-> > +		 * could not work. So check to prevent MSI from
-> > +		 * being used on the board with this erratum.
-> > +		 */
-> > +		list_for_each_entry(msi, &msi_head, list)
-> > +			if (msi->feature & MSI_HW_ERRATA_ENDIAN)
-> > +				return -EINVAL;
-> > +	}
-> >
-> > 	return 0;
-> > }
-> > @@ -142,7 +152,17 @@ static void fsl_compose_msi_msg(struct pci_dev
-> *pdev, int hwirq,
-> > 	msg->address_lo =3D lower_32_bits(address);
-> > 	msg->address_hi =3D upper_32_bits(address);
-> >
-> > -	msg->data =3D hwirq;
-> > +	/*
-> > +	 * MPIC version 2.0 has erratum PIC1. It causes
-> > +	 * that neither MSI nor MSI-X can work fine.
-> > +	 * This is a workaround to allow MSI-X to function
-> > +	 * properly. It only works for MSI-X, we prevent
-> > +	 * MSI on buggy chips in fsl_msi_check_device().
-> > +	 */
-> > +	if (msi_data->feature & MSI_HW_ERRATA_ENDIAN)
-> > +		msg->data =3D __swab32(hwirq);
-> > +	else
-> > +		msg->data =3D hwirq;
-> >
-> > 	pr_debug("%s: allocated srs: %d, ibs: %d\n",
-> > 		__func__, hwirq / IRQS_PER_MSI_REG, hwirq % IRQS_PER_MSI_REG);
-> @@
-> > -361,6 +381,35 @@ static int fsl_msi_setup_hwirq(struct fsl_msi *msi,
-> struct platform_device *dev,
-> > 	return 0;
-> > }
-> >
-> > +/* MPIC version 2.0 has erratum PIC1 */ static int
-> > +mpic_has_errata(struct platform_device *dev) {
-> > +	struct device_node *mpic_node;
-> > +
-> > +	mpic_node =3D of_irq_find_parent(dev->dev.of_node);
-> > +	if (mpic_node) {
-> > +		u32 *reg_base, brr1 =3D 0;
-> > +		/* Get the PIC reg base */
-> > +		reg_base =3D of_iomap(mpic_node, 0);
-> > +		of_node_put(mpic_node);
-> > +		if (!reg_base) {
-> > +			dev_err(&dev->dev, "ioremap problem failed.\n");
-> > +			return -EIO;
-> > +		}
-> > +
-> > +		/* Get the mpic version from block revision register 1 */
-> > +		brr1 =3D in_be32(reg_base + MPIC_FSL_BRR1);
-> > +		iounmap(reg_base);
-> > +		if ((brr1 & MPIC_FSL_BRR1_VER) =3D=3D 0x0200)
-> > +			return 1;
-> > +	} else {
-> > +		dev_err(&dev->dev, "MSI can't find his parent mpic node.\n");
-> > +		return -ENODEV;
-> > +	}
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > static const struct of_device_id fsl_of_msi_ids[]; static int
-> > fsl_of_msi_probe(struct platform_device *dev) { @@ -423,6 +472,16 @@
-> > static int fsl_of_msi_probe(struct platform_device *dev)
-> >
-> > 	msi->feature =3D features->fsl_pic_ip;
-> >
-> > +	if ((features->fsl_pic_ip & FSL_PIC_IP_MASK) =3D=3D FSL_PIC_IP_MPIC) =
-{
-> > +		rc =3D mpic_has_errata(dev);
-> > +		if (rc > 0) {
-> > +			msi->feature |=3D MSI_HW_ERRATA_ENDIAN;
-> > +		} else if (rc < 0) {
-> > +			err =3D rc;
-> > +			goto error_out;
-> > +		}
-> > +	}
-> > +
-> > 	/*
-> > 	 * Remember the phandle, so that we can match with any PCI nodes
-> > 	 * that have an "fsl,msi" property.
-> > diff --git a/arch/powerpc/sysdev/fsl_msi.h
-> > b/arch/powerpc/sysdev/fsl_msi.h index 8225f86..7389e8e 100644
-> > --- a/arch/powerpc/sysdev/fsl_msi.h
-> > +++ b/arch/powerpc/sysdev/fsl_msi.h
-> > @@ -25,6 +25,8 @@
-> > #define FSL_PIC_IP_IPIC   0x00000002
-> > #define FSL_PIC_IP_VMPIC  0x00000003
-> >
-> > +#define MSI_HW_ERRATA_ENDIAN 0x00000010
-> > +
->=20
-> Is there any reason to put this in fsl_msi.h rather than just in
-> fsl_msi.c itself?
->=20
-> - k
+> -Scott
 
-Actually no. This micro is only used by fsl_msi.c.
-Will move it to fsl_msi.c.
+pagefault_disable() is identical to preempt_disable(). So I think this
+could not avoid other cpu to swap out the instruction we want to read back.
+probe_kernel_address() also have the same issue.
 
-Thanks.
+Does this mean we can't just use pagefault_disable() to prevent from gettin=
+g
+the wrong instruction?
+
 -Hongtao.
-
->=20
-> > struct fsl_msi {
-> > 	struct irq_domain *irqhost;
-> >
-> > --
-> > 1.8.0
-> >
->=20
