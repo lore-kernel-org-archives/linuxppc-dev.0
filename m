@@ -1,27 +1,20 @@
-Return-Path: <B38951@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 634432C00CC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 13:48:58 +1100 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>, David Laight
- <David.Laight@ACULAB.COM>
-Subject: RE: [PATCH V4] powerpc/85xx: Add machine check handler to fix PCIe
- erratum on mpc85xx
-Date: Fri, 15 Mar 2013 02:47:58 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01C18FD6@039-SN1MPN1-003.039d.mgd.msft.net>
-References: <412C8208B4A0464FA894C5F0C278CD5D01C15369@039-SN1MPN1-003.039d.mgd.msft.net>
- <1363123452.17135.13@snotra>
- <AE90C24D6B3A694183C094C60CF0A2F6026B7186@saturn3.aculab.com>
- <1363192659.8945.1@snotra>
-In-Reply-To: <1363192659.8945.1@snotra>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <gang.chen@asianux.com>
+Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 859102C00D3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 13:51:12 +1100 (EST)
+Message-ID: <51428C81.6000204@asianux.com>
+Date: Fri, 15 Mar 2013 10:50:41 +0800
+From: Chen Gang <gang.chen@asianux.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Stuart Yoder <b08248@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ "paulus@samba.org" <paulus@samba.org>,
+ mikey@neuling.org, matt@ozlabs.org, imunsie@au1.ibm.com
+Subject: [Suggestion] PowerPC: kernel: cross compiling issue with allmodconfig
+Content-Type: text/plain; charset=GB2312
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,33 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hello Maintainers:
 
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Thursday, March 14, 2013 12:38 AM
-> To: David Laight
-> Cc: Jia Hongtao-B38951; Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org;
-> Stuart Yoder
-> Subject: Re: [PATCH V4] powerpc/85xx: Add machine check handler to fix
-> PCIe erratum on mpc85xx
->=20
-> On 03/13/2013 04:40:40 AM, David Laight wrote:
-> > > Hmm, seems there's no probe_user_address() -- for userspace we
-> > > basically want the same thing minus the KERNEL_DS.  See
-> > > arch/powerpc/perf/callchain.c for an example.
-> >
-> > Isn't that just copy_from_user() ?
->=20
-> Plus pagefault_disable/enable().
->=20
-> -Scott
+  do next-* tree support powerpc POWER7 with allmodconfig ?
 
-pagefault_disable() is identical to preempt_disable(). So I think this
-could not avoid other cpu to swap out the instruction we want to read back.
-probe_kernel_address() also have the same issue.
+  I met an issue, can we bear it (or I need additional trying) ?
 
-Does this mean we can't just use pagefault_disable() to prevent from gettin=
-g
-the wrong instruction?
 
--Hongtao.
+Compiling:
+  make V=1 EXTRA_CFLAGS=-W ARCH=powerpc allmodconfig
+    set cpu type POWER7 in menuconfig.
+    set cross-compiler in menuconfig.
+      under Fedora 16 x86_64 laptop
+      /usr/bin/powerpc64-linux-gnu-gcc -v
+        gcc version 4.7.1 20120606 (Red Hat 4.7.1-0.1.20120606) (GCC)
+
+Issue:
+  error:
+    /android/public-kernel/linux-next/arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
+    /android/public-kernel/linux-next/arch/powerpc/kernel/exceptions-64s.S:1304: Error: attempt to move .org backwards
+
+  command:
+    powerpc64-linux-gnu-gcc -m64 -Wp,-MD,arch/powerpc/kernel/.head_64.o.d  -nostdinc -isystem /usr/lib/gcc/powerpc64-linux-gnu/4.7.1/include -I/android/public-kernel/linux-next/arch/powerpc/include -Iarch/powerpc/include/generated  -I/android/public-kernel/linux-next/include -Iinclude -I/android/public-kernel/linux-next/arch/powerpc/include/uapi -Iarch/powerpc/include/generated/uapi -I/android/public-kernel/linux-next/include/uapi -Iinclude/generated/uapi -include /android/public-kernel/linux-next/include/linux/kconfig.h -D__KERNEL__  -I/android/public-kernel/linux-next/arch/powerpc -Iarch/powerpc -D__ASSEMBLY__  -I/android/public-kernel/linux-next/arch/powerpc -Iarch/powerpc -Wa,-maltivec -gdwarf-2   -c -o arch/powerpc/kernel/head_64.o /android/public-kernel/linux-next/arch/powerpc/kernel/head_64.S
+
+  (head_64.S includes exceptions-64.S)
+
+
+  thanks.
+
+-- 
+Chen Gang
+
+Asianux Corporation
