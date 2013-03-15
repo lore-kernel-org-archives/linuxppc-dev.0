@@ -2,24 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 5299C2C00B2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Mar 2013 02:55:34 +1100 (EST)
-Subject: Re: [PATCH 1/6] powerpc/fsl-booke: Add initial silicon device tree
- files for B4860QDS
+ by ozlabs.org (Postfix) with ESMTPS id 94DFE2C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Mar 2013 02:58:05 +1100 (EST)
+Subject: Re: [PATCH 5/6] powerpc/fsl-booke: Add B4_QDS board support
 Mime-Version: 1.0 (Apple Message framework v1278)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1363334109-21922-1-git-send-email-shaveta@freescale.com>
-Date: Fri, 15 Mar 2013 10:54:33 -0500
-Message-Id: <CA43CC11-2BA1-4DF4-9646-DCEFA049FE93@kernel.crashing.org>
+In-Reply-To: <1363334109-21922-5-git-send-email-shaveta@freescale.com>
+Date: Fri, 15 Mar 2013 10:58:09 -0500
+Message-Id: <69F32D25-11C5-414D-A23A-AD25C9CCF9C6@kernel.crashing.org>
 References: <1363334109-21922-1-git-send-email-shaveta@freescale.com>
+ <1363334109-21922-5-git-send-email-shaveta@freescale.com>
 To: Shaveta Leekha <shaveta@freescale.com>
-Cc: Zhao Chenhui <chenhui.zhao@freescale.com>,
- Minghuan Lian <Minghuan.Lian@freescale.com>,
- Tang Yuantian <Yuantian.Tang@freescale.com>,
- Andy Fleming <afleming@freescale.com>,
- Ramneek Mehresh <ramneek.mehresh@freescale.com>,
- Varun Sethi <Varun.Sethi@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,352 +27,235 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On Mar 15, 2013, at 2:55 AM, Shaveta Leekha wrote:
 
-> Signed-off-by: Shaveta Leekha <shaveta@freescale.com>
-> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
-> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
-> Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
-> Signed-off-by: Ramneek Mehresh <ramneek.mehresh@freescale.com>
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> Signed-off-by: Andy Fleming <afleming@freescale.com>
-> ---
-> arch/powerpc/boot/dts/fsl/b4860si-post.dtsi |  184 =
-+++++++++++++++++++++++++++
-> arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi  |   80 ++++++++++++
-> 2 files changed, 264 insertions(+), 0 deletions(-)
-> create mode 100644 arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
-> create mode 100644 arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi
+> - Add support for B4 board's personalities in board file
+>  b4_qds.c, It is common for B4 personalities B4860 and B4420QDS
+> - Add B4QDS support in Kconfig and Makefile
 
-Commit description should convey what hw isn't yet covered as well.
-
-DPAA, DSPs, etc.
-
-- k
+Code also references a B4220, what about it?
 
 >=20
-> diff --git a/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi =
-b/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
+> B4860QDS is a high-performance computing evaluation, development and
+> test platform supporting the B4860 QorIQ Power Architecture processor,
+> with following major features:
+>=20
+>    - Four dual-threaded e6500 Power Architecture processors
+>      organized in one cluster-each core runs up to 1.8 GHz
+>    - Two DDR3/3L controllers for high-speed memory interface each
+>      runs at up to 1866.67 MHz
+>    - CoreNet fabric that fully supports coherency using MESI protocol
+>      between the e6500 cores, SC3900 FVP cores, memories and
+>      external interfaces.
+>    - Data Path Acceleration Architecture having FMAN, QMan, BMan, SEC =
+5.3 and RMAN
+>    - Large internal cache memory with snooping and stashing =
+capabilities
+>    - Sixteen 10-GHz SerDes lanes that serve:
+>        - Two SRIO interfaces. Each supports up to 4 lanes and
+>          a total of up to 8 lanes
+>        - Up to 8-lanes Common Public Radio Interface (CPRI) controller
+>          for glue-less antenna connection
+>        - Two 10-Gbit Ethernet controllers (10GEC)
+>        - Six 1G/2.5-Gbit Ethernet controllers for network =
+communications
+>        - PCI Express controller
+>        - Debug (Aurora)
+>    - Various system peripherals
+>=20
+> B4420 is a reduced personality of B4860 with fewer core/clusters(both =
+SC3900 and e6500),
+> fewer DDR controllers, fewer serdes lanes, fewer SGMII interfaces and =
+reduced target frequencies.
+>=20
+> Key differences between B4860 and B4420:
+> B4420 has:
+>    - Fewer e6500 cores:
+>        1 cluster with 2 e6500 cores
+>    - Fewer SC3900 cores/clusters:
+>        1 cluster with 2 SC3900 cores per cluster
+>    - Single DDRC
+>    - 2X 4 lane serdes
+>    - 3 SGMII interfaces
+>    - no sRIO
+>    - no 10G
+>=20
+> Signed-off-by: Shaveta Leekha <shaveta@freescale.com>
+> ---
+> arch/powerpc/platforms/85xx/Kconfig  |   16 +++++
+> arch/powerpc/platforms/85xx/Makefile |    1 +
+> arch/powerpc/platforms/85xx/b4_qds.c |  102 =
+++++++++++++++++++++++++++++++++++
+> 3 files changed, 119 insertions(+), 0 deletions(-)
+> create mode 100644 arch/powerpc/platforms/85xx/b4_qds.c
+>=20
+> diff --git a/arch/powerpc/platforms/85xx/Kconfig =
+b/arch/powerpc/platforms/85xx/Kconfig
+> index 31dc066..7bbd522 100644
+> --- a/arch/powerpc/platforms/85xx/Kconfig
+> +++ b/arch/powerpc/platforms/85xx/Kconfig
+> @@ -262,6 +262,22 @@ config SGY_CTS1000
+>=20
+> endif # PPC32
+>=20
+> +config B4_QDS
+> +	bool "Freescale B4 QDS"
+> +	select DEFAULT_UIMAGE
+> +	select E500
+> +	select PPC_E500MC
+> +	select PHYS_64BIT
+> +	select SWIOTLB
+> +	select MPC8xxx_GPIO
+
+should be:
+        select GENERIC_GPIO
+        select ARCH_REQUIRE_GPIOLIB
+
+> +	select HAS_RAPIDIO
+> +	select PPC_EPAPR_HV_PIC
+> +	help
+> +	  This option enables support for the B4 QDS board
+> +	  The B4 application development system B4 QDS is a complete
+> +	  debugging environment intended for engineers developing
+> +	  applications for the B4.
+> +
+
+Should be in the if PPC64 section with T4240 QDS support
+
+> config P5020_DS
+> 	bool "Freescale P5020 DS"
+> 	select DEFAULT_UIMAGE
+> diff --git a/arch/powerpc/platforms/85xx/Makefile =
+b/arch/powerpc/platforms/85xx/Makefile
+> index 712e233..a12ae2d 100644
+> --- a/arch/powerpc/platforms/85xx/Makefile
+> +++ b/arch/powerpc/platforms/85xx/Makefile
+> @@ -6,6 +6,7 @@ obj-$(CONFIG_SMP) +=3D smp.o
+> obj-y +=3D common.o
+>=20
+> obj-$(CONFIG_BSC9131_RDB) +=3D bsc913x_rdb.o
+> +obj-$(CONFIG_B4_QDS)   +=3D b4_qds.o corenet_ds.o
+> obj-$(CONFIG_MPC8540_ADS) +=3D mpc85xx_ads.o
+> obj-$(CONFIG_MPC8560_ADS) +=3D mpc85xx_ads.o
+> obj-$(CONFIG_MPC85xx_CDS) +=3D mpc85xx_cds.o
+> diff --git a/arch/powerpc/platforms/85xx/b4_qds.c =
+b/arch/powerpc/platforms/85xx/b4_qds.c
 > new file mode 100644
-> index 0000000..2db68b2
+> index 0000000..0c6702f
 > --- /dev/null
-> +++ b/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
-> @@ -0,0 +1,184 @@
+> +++ b/arch/powerpc/platforms/85xx/b4_qds.c
+> @@ -0,0 +1,102 @@
 > +/*
-> + * B4860 Silicon/SoC Device Tree Source (post include)
+> + * B4 QDS Setup
+> + * Should apply for QDS platform of B4860 and it's personalities.
+> + * viz B4860/B4420/B4220QDS
 > + *
 > + * Copyright 2012 Freescale Semiconductor Inc.
 > + *
-> + * Redistribution and use in source and binary forms, with or without
-> + * modification, are permitted provided that the following conditions =
-are met:
-> + *     * Redistributions of source code must retain the above =
-copyright
-> + *       notice, this list of conditions and the following =
-disclaimer.
-> + *     * Redistributions in binary form must reproduce the above =
-copyright
-> + *       notice, this list of conditions and the following disclaimer =
-in the
-> + *       documentation and/or other materials provided with the =
-distribution.
-> + *     * Neither the name of Freescale Semiconductor nor the
-> + *       names of its contributors may be used to endorse or promote =
-products
-> + *       derived from this software without specific prior written =
-permission.
-> + *
-> + *
-> + * ALTERNATIVELY, this software may be distributed under the terms of =
-the
-> + * GNU General Public License ("GPL") as published by the Free =
-Software
-> + * Foundation, either version 2 of that License or (at your option) =
-any
-> + * later version.
-> + *
-> + * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND =
-ANY
-> + * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE =
-IMPLIED
-> + * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE =
-ARE
-> + * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE =
-FOR ANY
-> + * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL =
-DAMAGES
-> + * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR =
-SERVICES;
-> + * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER =
-CAUSED AND
-> + * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, =
-OR TORT
-> + * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE =
-USE OF THIS
-> + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+> + * This program is free software; you can redistribute  it and/or =
+modify it
+> + * under  the terms of  the GNU General  Public License as published =
+by the
+> + * Free Software Foundation;  either version 2 of the  License, or =
+(at your
+> + * option) any later version.
 > + */
 > +
-> +&ifc {
-> +	#address-cells =3D <2>;
-> +	#size-cells =3D <1>;
-> +	compatible =3D "fsl,ifc", "simple-bus";
-> +	interrupts =3D <25 2 0 0>;
-> +};
+> +#include <linux/kernel.h>
+> +#include <linux/pci.h>
+> +#include <linux/kdev_t.h>
+> +#include <linux/delay.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/phy.h>
 > +
-> +/* controller at 0x200000 */
-> +&pci0 {
-> +	compatible =3D "fsl,b4860-pcie", "fsl,qoriq-pcie-v2.4";
-> +	device_type =3D "pci";
-> +	#size-cells =3D <2>;
-> +	#address-cells =3D <3>;
-> +	bus-range =3D <0x0 0xff>;
-> +	interrupts =3D <20 2 0 0>;
-> +	pcie@0 {
-> +		#interrupt-cells =3D <1>;
-> +		#size-cells =3D <2>;
-> +		#address-cells =3D <3>;
-> +		device_type =3D "pci";
-> +		interrupts =3D <20 2 0 0>;
-> +		interrupt-map-mask =3D <0xf800 0 0 7>;
-> +		interrupt-map =3D <
-> +			/* IDSEL 0x0 */
-> +			0000 0 0 1 &mpic 40 1 0 0
-> +			0000 0 0 2 &mpic 1 1 0 0
-> +			0000 0 0 3 &mpic 2 1 0 0
-> +			0000 0 0 4 &mpic 3 1 0 0
-> +			>;
-> +	};
-> +};
+> +#include <asm/time.h>
+> +#include <asm/machdep.h>
+> +#include <asm/pci-bridge.h>
+> +#include <mm/mmu_decl.h>
+> +#include <asm/prom.h>
+> +#include <asm/udbg.h>
+> +#include <asm/mpic.h>
 > +
-> +&rio {
-> +	compatible =3D "fsl,srio";
-> +	interrupts =3D <16 2 1 11>;
-> +	#address-cells =3D <2>;
-> +	#size-cells =3D <2>;
-> +	ranges;
+> +#include <linux/of_platform.h>
+> +#include <sysdev/fsl_soc.h>
+> +#include <sysdev/fsl_pci.h>
+> +#include <asm/ehv_pic.h>
 > +
-> +	port1 {
-> +		#address-cells =3D <2>;
-> +		#size-cells =3D <2>;
-> +		cell-index =3D <1>;
-> +	};
+> +#include "corenet_ds.h"
 > +
-> +	port2 {
-> +		#address-cells =3D <2>;
-> +		#size-cells =3D <2>;
-> +		cell-index =3D <2>;
-> +	};
-> +};
-> +
-> +&soc {
-> +	#address-cells =3D <1>;
-> +	#size-cells =3D <1>;
-> +	device_type =3D "soc";
-> +	compatible =3D "simple-bus";
-> +
-> +	soc-sram-error {
-> +		compatible =3D "fsl,soc-sram-error";
-> +		interrupts =3D <16 2 1 2>;
-> +	};
-> +
-> +	corenet-law@0 {
-> +		compatible =3D "fsl,corenet-law";
-> +		reg =3D <0x0 0x1000>;
-> +		fsl,num-laws =3D <32>;
-> +	};
-> +
-> +	ddr1: memory-controller@8000 {
-> +		compatible =3D "fsl,qoriq-memory-controller-v4.5", =
-"fsl,qoriq-memory-controller";
-> +		reg =3D <0x8000 0x1000>;
-> +		interrupts =3D <16 2 1 8>;
-> +	};
-> +
-> +	ddr2: memory-controller@9000 {
-> +		compatible =3D =
-"fsl,qoriq-memory-controller-v4.5","fsl,qoriq-memory-controller";
-> +		reg =3D <0x9000 0x1000>;
-> +		interrupts =3D <16 2 1 9>;
-> +	};
-> +
-> +	cpc: l3-cache-controller@10000 {
-> +		compatible =3D "fsl,p5020-l3-cache-controller", =
-"fsl,p4080-l3-cache-controller", "cache";
-> +		reg =3D <0x10000 0x1000
-> +		       0x11000 0x1000>;
-> +		interrupts =3D <16 2 1 4
-> +			      16 2 1 5>;
-> +	};
-> +
-> +	corenet-cf@18000 {
-> +		compatible =3D "fsl,corenet-cf";
-> +		reg =3D <0x18000 0x1000>;
-> +		interrupts =3D <16 2 1 0>;
-> +		fsl,ccf-num-csdids =3D <32>;
-> +		fsl,ccf-num-snoopids =3D <32>;
-> +	};
-> +
-> +	iommu@20000 {
-> +		compatible =3D "fsl,pamu-v1.0", "fsl,pamu";
-> +		reg =3D <0x20000 0x4000>;
-> +		interrupts =3D <
-> +			24 2 0 0
-> +			16 2 1 1>;
-> +	};
-> +
-> +/include/ "qoriq-mpic.dtsi"
-> +
-> +	guts: global-utilities@e0000 {
-> +		compatible =3D "fsl,b4860-device-config";
-> +		reg =3D <0xe0000 0xe00>;
-> +		fsl,has-rstcr;
-> +		fsl,liodn-bits =3D <12>;
-> +	};
-> +
-> +	clockgen: global-utilities@e1000 {
-> +		compatible =3D "fsl,b4860-clockgen", =
-"fsl,qoriq-clockgen-2";
-> +		reg =3D <0xe1000 0x1000>;
-> +	};
-> +
-> +	rcpm: global-utilities@e2000 {
-> +		compatible =3D "fsl,b4860-rcpm", "fsl,qoriq-rcpm-2";
-> +		reg =3D <0xe2000 0x1000>;
-> +	};
-> +
-> +/include/ "qoriq-dma-0.dtsi"
-> +/include/ "qoriq-dma-1.dtsi"
-> +
-> +/include/ "qonverge-usb2-dr-0.dtsi"
-> +	usb0: usb@210000 {
-> +		compatible =3D "fsl-usb2-dr-v2.4", "fsl-usb2-dr";
-> +	};
-> +
-> +/include/ "qoriq-espi-0.dtsi"
-> +	spi@110000 {
-> +		fsl,espi-num-chipselects =3D <4>;
-> +	};
-> +
-> +/include/ "qoriq-esdhc-0.dtsi"
-> +	sdhc@114000 {
-> +		sdhci,auto-cmd12;
-> +	};
-> +/include/ "qoriq-i2c-0.dtsi"
-> +/include/ "qoriq-i2c-1.dtsi"
-> +/include/ "qoriq-duart-0.dtsi"
-> +/include/ "qoriq-duart-1.dtsi"
-> +
-> +	L2: l2-cache-controller@c20000 {
-> +		next-level-cache =3D <&cpc>;
-> +	};
-> +};
-> diff --git a/arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi =
-b/arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi
-> new file mode 100644
-> index 0000000..33bc600
-> --- /dev/null
-> +++ b/arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi
-> @@ -0,0 +1,80 @@
 > +/*
-> + * B4860 Silicon/SoC Device Tree Source (pre include)
-> + *
-> + * Copyright 2012 Freescale Semiconductor Inc.
-> + *
-> + * Redistribution and use in source and binary forms, with or without
-> + * modification, are permitted provided that the following conditions =
-are met:
-> + *     * Redistributions of source code must retain the above =
-copyright
-> + *       notice, this list of conditions and the following =
-disclaimer.
-> + *     * Redistributions in binary form must reproduce the above =
-copyright
-> + *       notice, this list of conditions and the following disclaimer =
-in the
-> + *       documentation and/or other materials provided with the =
-distribution.
-> + *     * Neither the name of Freescale Semiconductor nor the
-> + *       names of its contributors may be used to endorse or promote =
-products
-> + *       derived from this software without specific prior written =
-permission.
-> + *
-> + *
-> + * ALTERNATIVELY, this software may be distributed under the terms of =
-the
-> + * GNU General Public License ("GPL") as published by the Free =
-Software
-> + * Foundation, either version 2 of that License or (at your option) =
-any
-> + * later version.
-> + *
-> + * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND =
-ANY
-> + * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE =
-IMPLIED
-> + * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE =
-ARE
-> + * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE =
-FOR ANY
-> + * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL =
-DAMAGES
-> + * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR =
-SERVICES;
-> + * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER =
-CAUSED AND
-> + * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, =
-OR TORT
-> + * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE =
-USE OF THIS
-> + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+> + * Called very early, device-tree isn't unflattened
 > + */
+> +static int __init b4_qds_probe(void)
+> +{
+> +	unsigned long root =3D of_get_flat_dt_root();
+> +#ifdef CONFIG_SMP
+> +	extern struct smp_ops_t smp_85xx_ops;
+> +#endif
 > +
-> +/dts-v1/;
-> +/ {
-> +	compatible =3D "fsl,B4860";
-> +	#address-cells =3D <2>;
-> +	#size-cells =3D <2>;
-> +	interrupt-parent =3D <&mpic>;
+> +	if ((of_flat_dt_is_compatible(root, "fsl,B4860QDS")) ||
+> +		(of_flat_dt_is_compatible(root, "fsl,B4420QDS")) ||
+> +			(of_flat_dt_is_compatible(root, =
+"fsl,B4220QDS")))
+> +		return 1;
 > +
-> +	aliases {
-> +		ccsr =3D &soc;
+> +	/* Check if we're running under the Freescale hypervisor */
+> +	if ((of_flat_dt_is_compatible(root, "fsl,B4860QDS-hv")) ||
+> +		(of_flat_dt_is_compatible(root, "fsl,B4420QDS-hv")) ||
+> +			(of_flat_dt_is_compatible(root, =
+"fsl,B4220QDS-hv"))) {
+> +		ppc_md.init_IRQ =3D ehv_pic_init;
+> +		ppc_md.get_irq =3D ehv_pic_get_irq;
+> +		ppc_md.restart =3D fsl_hv_restart;
+> +		ppc_md.power_off =3D fsl_hv_halt;
+> +		ppc_md.halt =3D fsl_hv_halt;
+> +#ifdef CONFIG_SMP
+> +		/*
+> +		 * Disable the timebase sync operations because we can't =
+write
+> +		 * to the timebase registers under the hypervisor.
+> +		  */
+> +		smp_85xx_ops.give_timebase =3D NULL;
+> +		smp_85xx_ops.take_timebase =3D NULL;
+> +#endif
+> +		return 1;
+> +	}
 > +
-> +		serial0 =3D &serial0;
-> +		serial1 =3D &serial1;
-> +		serial2 =3D &serial2;
-> +		serial3 =3D &serial3;
-> +		pci0 =3D &pci0;
-> +		dma0 =3D &dma0;
-> +		dma1 =3D &dma1;
-> +		sdhc =3D &sdhc;
-> +	};
+> +	return 0;
+> +}
 > +
-> +	cpus {
-> +		#address-cells =3D <1>;
-> +		#size-cells =3D <0>;
-> +
-> +		PowerPC,e6500@0 {
-> +			device_type =3D "cpu";
-> +			reg =3D <0 1>;
-> +			next-level-cache =3D <&L2>;
-> +		};
-> +		PowerPC,e6500@1 {
-> +			device_type =3D "cpu";
-> +			reg =3D <2 3>;
-> +			next-level-cache =3D <&L2>;
-> +		};
-> +		PowerPC,e6500@2 {
-> +			device_type =3D "cpu";
-> +			reg =3D <4 5>;
-> +			next-level-cache =3D <&L2>;
-> +		};
-> +		PowerPC,e6500@3 {
-> +			device_type =3D "cpu";
-> +			reg =3D <6 7>;
-> +			next-level-cache =3D <&L2>;
-> +		};
-> +	};
+> +define_machine(b4_qds) {
+> +	.name			=3D "B4 QDS",
+> +	.probe			=3D b4_qds_probe,
+> +	.setup_arch		=3D corenet_ds_setup_arch,
+> +	.init_IRQ		=3D corenet_ds_pic_init,
+> +#ifdef CONFIG_PCI
+> +	.pcibios_fixup_bus	=3D fsl_pcibios_fixup_bus,
+> +#endif
+> +/* coreint doesn't play nice with lazy EE, use legacy mpic for now */
+> +#ifdef CONFIG_PPC64
+> +	.get_irq		=3D mpic_get_irq,
+> +#else
+> +	.get_irq		=3D mpic_get_coreint_irq,
+> +#endif
+> +	.restart		=3D fsl_rstcr_restart,
+> +	.calibrate_decr		=3D generic_calibrate_decr,
+> +	.progress		=3D udbg_progress,
+> +#ifdef CONFIG_PPC64
+> +	.power_save		=3D book3e_idle,
+> +#else
+> +	.power_save		=3D e500_idle,
+> +#endif
 > +};
+> +
+> +machine_arch_initcall(b4_qds, corenet_ds_publish_devices);
+> +
+> +#ifdef CONFIG_SWIOTLB
+> +machine_arch_initcall(b4_qds, swiotlb_setup_bus_notifier);
+> +#endif
 > --=20
 > 1.7.6.GIT
 >=20
+>=20
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
