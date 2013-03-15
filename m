@@ -2,34 +2,32 @@ Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 443682C09F7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 20:44:17 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 98EAF2C09E1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 20:44:20 +1100 (EST)
 Received: from /spool/local
  by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 15 Mar 2013 15:07:51 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id B14F63940149
+ Fri, 15 Mar 2013 15:07:54 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id D63133940160
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 15:10:13 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r2F9eAQR10551608
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 15:10:10 +0530
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r2F9e8iu3473700
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 15:10:08 +0530
 Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r2F9eBR2009615
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 20:40:13 +1100
+ r2F9eBi2009578
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 20:40:12 +1100
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V3 09/25] powerpc: Fix hpte_decode to use the correct
- decoding for page sizes
-Date: Fri, 15 Mar 2013 15:09:51 +0530
-Message-Id: <1363340407-22619-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V3 07/25] powerpc: Use encode avpn where we need only avpn
+ values
+Date: Fri, 15 Mar 2013 15:09:49 +0530
+Message-Id: <1363340407-22619-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1363340407-22619-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1363340407-22619-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -43,102 +41,124 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-As per ISA doc, we encode base and actual page size in the LP bits of
-PTE. The number of bit used to encode the page sizes depend on actual
-page size.  ISA doc lists this as
+In all these cases we are doing something similar to
 
-   PTE LP     actual page size
-rrrr rrrz 	≥8KB
-rrrr rrzz	≥16KB
-rrrr rzzz 	≥32KB
-rrrr zzzz 	≥64KB
-rrrz zzzz 	≥128KB
-rrzz zzzz 	≥256KB
-rzzz zzzz	≥512KB
-zzzz zzzz 	≥1MB
+HPTE_V_COMPARE(hpte_v, want_v) which ignores the HPTE_V_LARGE bit
 
-ISA doc also says
-"The values of the “z” bits used to specify each size, along with all possible
-values of “r” bits in the LP field, must result in LP values distinct from
-other LP values for other sizes."
-
-based on the above update hpte_decode to use the correct decoding for LP bits.
+With MPSS support we would need actual page size to set HPTE_V_LARGE
+bit and that won't be available in most of these cases. Since we are ignoring
+HPTE_V_LARGE bit, use the  avpn value instead. There should not be any change
+in behaviour after this patch.
 
 Acked-by: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/hash_native_64.c |   38 ++++++++++++++++++++++++--------------
- 1 file changed, 24 insertions(+), 14 deletions(-)
+ arch/powerpc/mm/hash_native_64.c        |    8 ++++----
+ arch/powerpc/platforms/cell/beat_htab.c |   10 +++++-----
+ arch/powerpc/platforms/ps3/htab.c       |    2 +-
+ 3 files changed, 10 insertions(+), 10 deletions(-)
 
 diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
-index 910b50d..af9eb1c 100644
+index ffc1e00..9d8983a 100644
 --- a/arch/powerpc/mm/hash_native_64.c
 +++ b/arch/powerpc/mm/hash_native_64.c
-@@ -415,41 +415,51 @@ static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
- 			int *psize, int *apsize, int *ssize, unsigned long *vpn)
- {
- 	unsigned long avpn, pteg, vpi;
--	unsigned long hpte_r = hpte->r;
- 	unsigned long hpte_v = hpte->v;
- 	unsigned long vsid, seg_off;
--	int i, size, a_size, shift, penc;
-+	int size, a_size, shift, mask;
-+	/* Look at the 8 bit LP value */
-+	unsigned int lp = (hpte->r >> LP_SHIFT) & ((1 << LP_BITS) - 1);
+@@ -252,7 +252,7 @@ static long native_hpte_updatepp(unsigned long slot, unsigned long newpp,
+ 	unsigned long hpte_v, want_v;
+ 	int ret = 0;
  
- 	if (!(hpte_v & HPTE_V_LARGE)) {
- 		size   = MMU_PAGE_4K;
- 		a_size = MMU_PAGE_4K;
- 	} else {
--		for (i = 0; i < LP_BITS; i++) {
--			if ((hpte_r & LP_MASK(i+1)) == LP_MASK(i+1))
--				break;
--		}
--		penc = LP_MASK(i+1) >> LP_SHIFT;
- 		for (size = 0; size < MMU_PAGE_COUNT; size++) {
+-	want_v = hpte_encode_v(vpn, psize, ssize);
++	want_v = hpte_encode_avpn(vpn, psize, ssize);
  
- 			/* valid entries have a shift value */
- 			if (!mmu_psize_defs[size].shift)
- 				continue;
--			for (a_size = 0; a_size < MMU_PAGE_COUNT; a_size++) {
--
--				/* 4K pages are not represented by LP */
--				if (a_size == MMU_PAGE_4K)
--					continue;
+ 	DBG_LOW("    update(vpn=%016lx, avpnv=%016lx, group=%lx, newpp=%lx)",
+ 		vpn, want_v & HPTE_V_AVPN, slot, newpp);
+@@ -288,7 +288,7 @@ static long native_hpte_find(unsigned long vpn, int psize, int ssize)
+ 	unsigned long want_v, hpte_v;
  
-+			/* start from 1 ignoring MMU_PAGE_4K */
-+			for (a_size = 1; a_size < MMU_PAGE_COUNT; a_size++) {
- 				/* valid entries have a shift value */
- 				if (!mmu_psize_defs[a_size].shift)
- 					continue;
+ 	hash = hpt_hash(vpn, mmu_psize_defs[psize].shift, ssize);
+-	want_v = hpte_encode_v(vpn, psize, ssize);
++	want_v = hpte_encode_avpn(vpn, psize, ssize);
  
--				if (penc == mmu_psize_defs[size].penc[a_size])
-+				/* invalid penc */
-+				if (mmu_psize_defs[size].penc[a_size] == -1)
-+					continue;
-+				/*
-+				 * encoding bits per actual page size
-+				 *        PTE LP     actual page size
-+				 *    rrrr rrrz		≥8KB
-+				 *    rrrr rrzz		≥16KB
-+				 *    rrrr rzzz		≥32KB
-+				 *    rrrr zzzz		≥64KB
-+				 * .......
-+				 */
-+				shift = mmu_psize_defs[a_size].shift - LP_SHIFT;
-+				if (shift > LP_BITS)
-+					shift = LP_BITS;
-+				mask = (1 << shift) - 1;
-+				if ((lp & mask) ==
-+				    mmu_psize_defs[size].penc[a_size]) {
- 					goto out;
-+				}
- 			}
- 		}
- 	}
--
- out:
- 	/* This works for all page sizes, and for 256M and 1T segments */
- 	*ssize = hpte_v >> HPTE_V_SSIZE_SHIFT;
+ 	/* Bolted mappings are only ever in the primary group */
+ 	slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
+@@ -348,7 +348,7 @@ static void native_hpte_invalidate(unsigned long slot, unsigned long vpn,
+ 
+ 	DBG_LOW("    invalidate(vpn=%016lx, hash: %lx)\n", vpn, slot);
+ 
+-	want_v = hpte_encode_v(vpn, psize, ssize);
++	want_v = hpte_encode_avpn(vpn, psize, ssize);
+ 	native_lock_hpte(hptep);
+ 	hpte_v = hptep->v;
+ 
+@@ -520,7 +520,7 @@ static void native_flush_hash_range(unsigned long number, int local)
+ 			slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
+ 			slot += hidx & _PTEIDX_GROUP_IX;
+ 			hptep = htab_address + slot;
+-			want_v = hpte_encode_v(vpn, psize, ssize);
++			want_v = hpte_encode_avpn(vpn, psize, ssize);
+ 			native_lock_hpte(hptep);
+ 			hpte_v = hptep->v;
+ 			if (!HPTE_V_COMPARE(hpte_v, want_v) ||
+diff --git a/arch/powerpc/platforms/cell/beat_htab.c b/arch/powerpc/platforms/cell/beat_htab.c
+index 0f6f839..472f9a7 100644
+--- a/arch/powerpc/platforms/cell/beat_htab.c
++++ b/arch/powerpc/platforms/cell/beat_htab.c
+@@ -191,7 +191,7 @@ static long beat_lpar_hpte_updatepp(unsigned long slot,
+ 	u64 dummy0, dummy1;
+ 	unsigned long want_v;
+ 
+-	want_v = hpte_encode_v(vpn, psize, MMU_SEGSIZE_256M);
++	want_v = hpte_encode_avpn(vpn, psize, MMU_SEGSIZE_256M);
+ 
+ 	DBG_LOW("    update: "
+ 		"avpnv=%016lx, slot=%016lx, psize: %d, newpp %016lx ... ",
+@@ -228,7 +228,7 @@ static long beat_lpar_hpte_find(unsigned long vpn, int psize)
+ 	unsigned long want_v, hpte_v;
+ 
+ 	hash = hpt_hash(vpn, mmu_psize_defs[psize].shift, MMU_SEGSIZE_256M);
+-	want_v = hpte_encode_v(vpn, psize, MMU_SEGSIZE_256M);
++	want_v = hpte_encode_avpn(vpn, psize, MMU_SEGSIZE_256M);
+ 
+ 	for (j = 0; j < 2; j++) {
+ 		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
+@@ -283,7 +283,7 @@ static void beat_lpar_hpte_invalidate(unsigned long slot, unsigned long vpn,
+ 
+ 	DBG_LOW("    inval : slot=%lx, va=%016lx, psize: %d, local: %d\n",
+ 		slot, va, psize, local);
+-	want_v = hpte_encode_v(vpn, psize, MMU_SEGSIZE_256M);
++	want_v = hpte_encode_avpn(vpn, psize, MMU_SEGSIZE_256M);
+ 
+ 	raw_spin_lock_irqsave(&beat_htab_lock, flags);
+ 	dummy1 = beat_lpar_hpte_getword0(slot);
+@@ -372,7 +372,7 @@ static long beat_lpar_hpte_updatepp_v3(unsigned long slot,
+ 	unsigned long want_v;
+ 	unsigned long pss;
+ 
+-	want_v = hpte_encode_v(vpn, psize, MMU_SEGSIZE_256M);
++	want_v = hpte_encode_avpn(vpn, psize, MMU_SEGSIZE_256M);
+ 	pss = (psize == MMU_PAGE_4K) ? -1UL : mmu_psize_defs[psize].penc;
+ 
+ 	DBG_LOW("    update: "
+@@ -402,7 +402,7 @@ static void beat_lpar_hpte_invalidate_v3(unsigned long slot, unsigned long vpn,
+ 
+ 	DBG_LOW("    inval : slot=%lx, vpn=%016lx, psize: %d, local: %d\n",
+ 		slot, vpn, psize, local);
+-	want_v = hpte_encode_v(vpn, psize, MMU_SEGSIZE_256M);
++	want_v = hpte_encode_avpn(vpn, psize, MMU_SEGSIZE_256M);
+ 	pss = (psize == MMU_PAGE_4K) ? -1UL : mmu_psize_defs[psize].penc;
+ 
+ 	lpar_rc = beat_invalidate_htab_entry3(0, slot, want_v, pss);
+diff --git a/arch/powerpc/platforms/ps3/htab.c b/arch/powerpc/platforms/ps3/htab.c
+index d00d7b0..07a4bba 100644
+--- a/arch/powerpc/platforms/ps3/htab.c
++++ b/arch/powerpc/platforms/ps3/htab.c
+@@ -115,7 +115,7 @@ static long ps3_hpte_updatepp(unsigned long slot, unsigned long newpp,
+ 	unsigned long flags;
+ 	long ret;
+ 
+-	want_v = hpte_encode_v(vpn, psize, ssize);
++	want_v = hpte_encode_avpn(vpn, psize, ssize);
+ 
+ 	spin_lock_irqsave(&ps3_htab_lock, flags);
+ 
 -- 
 1.7.10
