@@ -2,30 +2,33 @@ Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1CAC22C009C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 20:40:21 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 81DA32C0184
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 20:40:37 +1100 (EST)
 Received: from /spool/local
  by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 15 Mar 2013 15:07:43 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id E0D0D125806A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 15:11:18 +0530 (IST)
+ Fri, 15 Mar 2013 15:08:00 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id CA5B11258065
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 15:11:26 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r2F9e8Nx852250
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 15:10:08 +0530
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r2F9eJU12818538
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 15:10:19 +0530
 Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r2F9eA0Y009488
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 20:40:11 +1100
+ r2F9eIPP010406
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 20:40:20 +1100
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V3 00/25] THP support for PPC64
-Date: Fri, 15 Mar 2013 15:09:42 +0530
-Message-Id: <1363340407-22619-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH -V3 21/25] powerpc: Handle hugepage in perf callchain
+Date: Fri, 15 Mar 2013 15:10:03 +0530
+Message-Id: <1363340407-22619-22-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1363340407-22619-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1363340407-22619-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,70 +38,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-This patchset adds transparent hugepage support for PPC64.
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/perf/callchain.c |   32 +++++++++++++++++++++-----------
+ 1 file changed, 21 insertions(+), 11 deletions(-)
 
-TODO:
-* powernv still doesn't boot
-* hash preload support in update_mmu_cache_pmd
-
-Some numbers:
-
-The latency measurements code from Anton  found at
-http://ozlabs.org/~anton/junkcode/latency2001.c
-
-THP disabled 64K page size
-------------------------
-[root@llmp24l02 ~]# ./latency2001 8G
- 8589934592    731.73 cycles    205.77 ns
-[root@llmp24l02 ~]# ./latency2001 8G
- 8589934592    743.39 cycles    209.05 ns
-[root@llmp24l02 ~]#
-
-THP disabled large page via hugetlbfs
--------------------------------------
-[root@llmp24l02 ~]# ./latency2001  -l 8G
- 8589934592    416.09 cycles    117.01 ns
-[root@llmp24l02 ~]# ./latency2001  -l 8G
- 8589934592    415.74 cycles    116.91 ns
-
-THP enabled 64K page size.
-----------------
-[root@llmp24l02 ~]# ./latency2001 8G
- 8589934592    405.07 cycles    113.91 ns
-[root@llmp24l02 ~]# ./latency2001 8G
- 8589934592    411.82 cycles    115.81 ns
-[root@llmp24l02 ~]#
-
-We are close to hugetlbfs in latency and we can achieve this with zero
-config/page reservation. Most of the allocations above are fault allocated.
-I haven't really measured the collapse alloc impact.
-
-Another test that does 50000000 random access over 1GB area goes from
-2.65 seconds to 1.07 seconds with this patchset.
-
-Change from V2:
-* Change patch "powerpc: Reduce PTE table memory wastage" to use much simpler approach
-  for PTE page sharing.
-* Changes to handle huge pages in KVM code.
-* Address other review comments
-
-Changes from V1
-* Address review comments
-* More patch split
-* Add batch hpte invalidate for hugepages.
-
-Changes from RFC V2:
-* Address review comments
-* More code cleanup and patch split
-
-Changes from RFC V1:
-* HugeTLB fs now works
-* Compile issues fixed
-* rebased to v3.8
-* Patch series reorded so that ppc64 cleanups and MM THP changes are moved
-  early in the series. This should help in picking those patches early.
-
-Thanks,
--aneesh
+diff --git a/arch/powerpc/perf/callchain.c b/arch/powerpc/perf/callchain.c
+index 578cac7..99262ce 100644
+--- a/arch/powerpc/perf/callchain.c
++++ b/arch/powerpc/perf/callchain.c
+@@ -115,7 +115,7 @@ static int read_user_stack_slow(void __user *ptr, void *ret, int nb)
+ {
+ 	pgd_t *pgdir;
+ 	pte_t *ptep, pte;
+-	unsigned shift;
++	unsigned shift, hugepage;
+ 	unsigned long addr = (unsigned long) ptr;
+ 	unsigned long offset;
+ 	unsigned long pfn;
+@@ -125,20 +125,30 @@ static int read_user_stack_slow(void __user *ptr, void *ret, int nb)
+ 	if (!pgdir)
+ 		return -EFAULT;
+ 
+-	ptep = find_linux_pte_or_hugepte(pgdir, addr, &shift, NULL);
++	ptep = find_linux_pte_or_hugepte(pgdir, addr, &shift, &hugepage);
+ 	if (!shift)
+ 		shift = PAGE_SHIFT;
+ 
+-	/* align address to page boundary */
+-	offset = addr & ((1UL << shift) - 1);
+-	addr -= offset;
+-
+-	if (ptep == NULL)
+-		return -EFAULT;
+-	pte = *ptep;
+-	if (!pte_present(pte) || !(pte_val(pte) & _PAGE_USER))
++	if (!ptep)
+ 		return -EFAULT;
+-	pfn = pte_pfn(pte);
++
++	if (hugepage) {
++		pmd_t pmd = *(pmd_t *)ptep;
++		shift = mmu_psize_defs[MMU_PAGE_16M].shift;
++		offset = addr & ((1UL << shift) - 1);
++
++		if (!pmd_large(pmd) || !(pmd_val(pmd) & PMD_HUGE_USER))
++			return -EFAULT;
++		pfn = pmd_pfn(pmd);
++	} else {
++		offset = addr & ((1UL << shift) - 1);
++
++		pte = *ptep;
++		if (!pte_present(pte) || !(pte_val(pte) & _PAGE_USER))
++			return -EFAULT;
++		pfn = pte_pfn(pte);
++	}
++
+ 	if (!page_is_ram(pfn))
+ 		return -EFAULT;
+ 
+-- 
+1.7.10
