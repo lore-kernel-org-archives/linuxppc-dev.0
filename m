@@ -1,23 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (he.sipsolutions.net [78.46.109.217])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 25C6B2C0094
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Mar 2013 16:37:42 +1100 (EST)
-Message-ID: <1363412256.1244.20.camel@pasglop>
-Subject: Re: [PATCH 2/3] VFIO: VFIO_DEVICE_SET_ADDR_MAPPING command
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gavin Shan <shangw@linux.vnet.ibm.com>
-Date: Sat, 16 Mar 2013 06:37:36 +0100
-In-Reply-To: <20130316013417.GA3873@shangw.(null)>
-References: <1363332390-12754-1-git-send-email-shangw@linux.vnet.ibm.com>
- <1363332390-12754-3-git-send-email-shangw@linux.vnet.ibm.com>
- <1363375740.16793.12.camel@ul30vt.home>
- <20130316013417.GA3873@shangw.(null)>
+ by ozlabs.org (Postfix) with ESMTPS id 76D932C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Mar 2013 23:57:01 +1100 (EST)
+Message-ID: <1363360926.8656.5.camel@jlt4.sipsolutions.net>
+Subject: Re: [PATCH] powerpc: add Book E support to 64-bit hibernation
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <1363279961.28440.4@snotra>
+References: <1363232178-29938-1-git-send-email-dongsheng.wang@freescale.com>
+ <1363250273.4833.1.camel@jlt4.sipsolutions.net> <1363279961.28440.4@snotra>
 Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 15 Mar 2013 16:22:06 +0100
 Mime-Version: 1.0
-Cc: aik@ozlabs.ru, Alex Williamson <alex.williamson@redhat.com>,
- linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Wang Dongsheng <dongsheng.wang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,47 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2013-03-16 at 09:34 +0800, Gavin Shan wrote:
-> >Could you explain further how this will be used?  How the device is
-> >exposed to a guest is entirely a userspace construct, so why does vfio
-> >need to know or care about this?  I had assumed for AER that QEMU would
-> >do the translation from host to guest address space.
-> >
-> 
-> The weak IOCTL function (vfio_pci_arch_ioctl) was introduced by previous
-> patch. The PowerNV platform is going to override it to figure out the
-> information for EEH core to use. On the other hand, QEMU will runs into
-> the IOCTL command while opening (creating) one VFIO device.
-> 
-> Though I'm not familiar with AER very much. AER is quite different from
-> EEH. The EEH functionality implemented in PHB instead of in PCI device
-> core. So we don't care AER stuff in EEH directly :-)
+On Thu, 2013-03-14 at 11:52 -0500, Scott Wood wrote:
+> > > +#ifdef CONFIG_PPC_BOOK3S_64
+> > >  	/* can't use RESTORE_SPECIAL(MSR) */
+> > >  	ld	r0, SL_MSR(r11)
+> > >  	mtmsrd	r0, 0
+> > 
+> > Unfortunately, I forgot the reason for this comment, and didn't put a
+> > better one (almost 6 years ago!!)
 
-To give Alex a bit more background...
+> If it's because book3s needs mtmsrd instead of mtmsr, that doesn't  
+> apply to booke.
 
-EEH is our IBM specific error handling facility which is a superset of AER.
+Indeed, looking at the code again now that seems pretty obvious.
 
-IE. In addition to AER's error detection and logging, it adds a layer of
-error detection at the host bridge level (such as iommu violations etc...)
-and a mechanism for handling and recovering from errors. This is tied to
-our iommu domain stuff (our PE's) and our device "freezing" capability
-among others.
+Looking at the patch again, I'd be a little concerned about the lack of
+cache flushing, seems a bit odd but I'm sure you know what you're doing
+(and I don't know book3e at all, and hardly remember book3s -- or even
+that name...) :-)
 
-With VFIO + KVM, we want to implement most of the EEH support for guests in
-the host kernel. The reason is multipart and we can discuss this separately
-as some of it might well be debatable (mostly it's more convenient that way
-because we hook into the underlying HW/FW EEH which isn't directly userspace
-accessible so we don't have to add a new layer of kernel -> user API in
-addition to the VFIO stuff), but there's at least one aspect of it that drives
-this requirement more strongly which is performance:
-
-When EEH is enabled, whenever any MMIO returns all 1's, the kernel will do
-a firmware call to query the EEH state of the device and check whether it
-has been frozen. On some devices, that can be a performance issue, and
-going all the way to qemu for that would be horribly expensive.
-
-So we want at least a way to handle that call in the kernel and for that we
-need at least some way of mapping things there.
-
-Cheers,
-Ben.
+johannes
