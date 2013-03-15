@@ -1,25 +1,28 @@
 Return-Path: <b20052@nmglablinux22.freescale.com>
 Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe006.messaging.microsoft.com [213.199.154.209])
+ (am1ehsobe001.messaging.microsoft.com [213.199.154.204])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AFEA02C00F3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 18:55:26 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 385F12C00FE
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 18:55:27 +1100 (EST)
+Received: from mail63-am1 (localhost [127.0.0.1])	by mail63-am1-R.bigfish.com
+ (Postfix) with ESMTP id 453892A01EF	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri,
+ 15 Mar 2013 07:55:21 +0000 (UTC)
+Received: from AM1EHSMHS006.bigfish.com (unknown [10.3.201.239])	by
+ mail63-am1.bigfish.com (Postfix) with ESMTP id 5A85B408D0	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2013 07:55:18 +0000 (UTC)
 From: Shaveta Leekha <shaveta@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 2/6] powerpc/fsl-booke: Add initial B4860QDS board device tree
-Date: Fri, 15 Mar 2013 13:25:05 +0530
-Message-ID: <1363334109-21922-2-git-send-email-shaveta@freescale.com>
+Subject: [PATCH 4/6] powerpc/fsl-booke: Add initial B4420QDS board device tree
+Date: Fri, 15 Mar 2013 13:25:07 +0530
+Message-ID: <1363334109-21922-4-git-send-email-shaveta@freescale.com>
 In-Reply-To: <1363334109-21922-1-git-send-email-shaveta@freescale.com>
 References: <1363334109-21922-1-git-send-email-shaveta@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: Poonam Aggrwal <poonam.aggrwal@freescale.com>,
- Shaveta Leekha <shaveta@freescale.com>,
- Minghuan Lian <Minghuan.Lian@freescale.com>,
- Andy Fleming <afleming@freescale.com>,
- Ramneek Mehresh <ramneek.mehresh@freescale.com>
+Cc: Shaveta Leekha <shaveta@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,26 +33,21 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Signed-off-by: Shaveta Leekha <shaveta@freescale.com>
-Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
-Signed-off-by: Andy Fleming <afleming@freescale.com>
-Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
-Signed-off-by: Ramneek Mehresh <ramneek.mehresh@freescale.com>
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/boot/dts/b4860qds.dts |  178 ++++++++++++++++++++++++++++++++++++
- 1 files changed, 178 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/b4860qds.dts
+ arch/powerpc/boot/dts/b4420qds.dts |  168 ++++++++++++++++++++++++++++++++++++
+ 1 files changed, 168 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/b4420qds.dts
 
-diff --git a/arch/powerpc/boot/dts/b4860qds.dts b/arch/powerpc/boot/dts/b4860qds.dts
+diff --git a/arch/powerpc/boot/dts/b4420qds.dts b/arch/powerpc/boot/dts/b4420qds.dts
 new file mode 100644
-index 0000000..ae6ac05
+index 0000000..3152f8c
 --- /dev/null
-+++ b/arch/powerpc/boot/dts/b4860qds.dts
-@@ -0,0 +1,178 @@
++++ b/arch/powerpc/boot/dts/b4420qds.dts
+@@ -0,0 +1,168 @@
 +/*
-+ * B4860DS Device Tree Source
++ * B4420DS Device Tree Source
 + *
-+ * Copyright 2012 Freescale Semiconductor Inc.
++ * Copyright 2012 Freescale Semiconductor, Inc.
 + *
 + * Redistribution and use in source and binary forms, with or without
 + * modification, are permitted provided that the following conditions are met:
@@ -68,23 +66,23 @@ index 0000000..ae6ac05
 + * Foundation, either version 2 of that License or (at your option) any
 + * later version.
 + *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ * This software is provided by Freescale Semiconductor "as is" and any
++ * express or implied warranties, including, but not limited to, the implied
++ * warranties of merchantability and fitness for a particular purpose are
++ * disclaimed. In no event shall Freescale Semiconductor be liable for any
++ * direct, indirect, incidental, special, exemplary, or consequential damages
++ * (including, but not limited to, procurement of substitute goods or services;
++ * loss of use, data, or profits; or business interruption) however caused and
++ * on any theory of liability, whether in contract, strict liability, or tort
++ * (including negligence or otherwise) arising in any way out of the use of
++ * this software, even if advised of the possibility of such damage.
 + */
 +
-+/include/ "fsl/b4860si-pre.dtsi"
++/include/ "fsl/b4420si-pre.dtsi"
 +
 +/ {
-+	model = "fsl,B4860QDS";
-+	compatible = "fsl,B4860QDS";
++	model = "fsl,B4420QDS";
++	compatible = "fsl,B4420QDS";
 +	#address-cells = <2>;
 +	#size-cells = <2>;
 +	interrupt-parent = <&mpic>;
@@ -138,7 +136,7 @@ index 0000000..ae6ac05
 +		};
 +
 +		board-control@3,0 {
-+			compatible = "fsl,b4860qds-fpga", "fsl,fpga-qixis";
++			compatible = "fsl,b4420qds-fpga", "fsl,fpga-qixis";
 +			reg = <3 0 0x300>;
 +		};
 +	};
@@ -161,6 +159,7 @@ index 0000000..ae6ac05
 +		};
 +
 +		sdhc@114000 {
++			/*Disabled as there is no sdhc connector on B4420QDS board*/
 +			status = "disabled";
 +		};
 +
@@ -210,19 +209,8 @@ index 0000000..ae6ac05
 +		};
 +	};
 +
-+	rio: rapidio@ffe0c0000 {
-+		reg = <0xf 0xfe0c0000 0 0x11000>;
-+
-+		port1 {
-+			ranges = <0 0 0xc 0x20000000 0 0x10000000>;
-+		};
-+		port2 {
-+			ranges = <0 0 0xc 0x30000000 0 0x10000000>;
-+		};
-+	};
-+
 +};
 +
-+/include/ "fsl/b4860si-post.dtsi"
++/include/ "fsl/b4420si-post.dtsi"
 -- 
 1.7.6.GIT
