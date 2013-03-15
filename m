@@ -1,19 +1,31 @@
-Return-Path: <laijs@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id E4D722C00B9
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Mar 2013 03:51:37 +1100 (EST)
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/9] powerpc,kvm: fix imbalance srcu_read_[un]lock()
-Date: Sat, 16 Mar 2013 00:50:49 +0800
-Message-Id: <1363366257-4886-2-git-send-email-laijs@cn.fujitsu.com>
-In-Reply-To: <1363366257-4886-1-git-send-email-laijs@cn.fujitsu.com>
-References: <1363366257-4886-1-git-send-email-laijs@cn.fujitsu.com>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, Gleb Natapov <gleb@redhat.com>,
- Marcelo Tosatti <mtosatti@redhat.com>, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+ [IPv6:2002:4e20:1eda::1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 8CA2C2C00B7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Mar 2013 05:06:52 +1100 (EST)
+Date: Fri, 15 Mar 2013 18:05:03 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Florian Fainelli <florian@openwrt.org>
+Subject: Re: [PATCH 3/4 v2] net: mvmdio: enhance driver to support SMI
+ error/done interrupts
+Message-ID: <20130315180503.GU4977@n2100.arm.linux.org.uk>
+References: <1359473048-26551-1-git-send-email-florian@openwrt.org>
+ <1363284515-9865-1-git-send-email-florian@openwrt.org>
+ <1363284515-9865-4-git-send-email-florian@openwrt.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1363284515-9865-4-git-send-email-florian@openwrt.org>
+Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>,
+ linux-doc@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
+ netdev@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linux-arm-kernel@lists.infradead.org, Rob Landley <rob@landley.net>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
+ davem@davemloft.net, Lennert Buytenhek <buytenh@wantstofly.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,35 +35,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At the point of up_out label in kvmppc_hv_setup_htab_rma(),
-srcu read lock is still held.
+On Thu, Mar 14, 2013 at 07:08:34PM +0100, Florian Fainelli wrote:
+> +	if (dev->err_interrupt == NO_IRQ) {
+...
+> +	init_waitqueue_head(&dev->smi_busy_wait);
+> +
+> +	dev->err_interrupt = platform_get_irq(pdev, 0);
+> +	if (dev->err_interrupt != -ENXIO) {
+...
+> +	} else
+> +		dev->err_interrupt = NO_IRQ;
 
-We have to release it before return.
 
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Marcelo Tosatti <mtosatti@redhat.com>
-Cc: Gleb Natapov <gleb@redhat.com>
-Cc: Alexander Graf <agraf@suse.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: kvm@vger.kernel.org
-Cc: kvm-ppc@vger.kernel.org
----
- arch/powerpc/kvm/book3s_hv.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 80dcc53..c26740e 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -1799,7 +1799,7 @@ static int kvmppc_hv_setup_htab_rma(struct kvm_vcpu *vcpu)
- 
-  up_out:
- 	up_read(&current->mm->mmap_sem);
--	goto out;
-+	goto out_srcu;
- }
- 
- int kvmppc_core_init_vm(struct kvm *kvm)
--- 
-1.7.4.4
+FYI, NO_IRQ is not supposed to be used anymore (we're supposed to be
+removing it).  platform_get_irq() returns negative numbers for failure,
+so why not test for < 0 in both the above tests, or maybe <= 0 (as
+IRQ0 is also not supposed to be valid.)?
