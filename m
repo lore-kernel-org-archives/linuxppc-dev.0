@@ -2,21 +2,22 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B3E272C00B3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Mar 2013 16:35:23 +1100 (EST)
-Message-ID: <1363411807.1244.13.camel@pasglop>
-Subject: Re: [PATCH 3/3] VFIO: Direct access config reg without capability
+ by ozlabs.org (Postfix) with ESMTPS id 25C6B2C0094
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Mar 2013 16:37:42 +1100 (EST)
+Message-ID: <1363412256.1244.20.camel@pasglop>
+Subject: Re: [PATCH 2/3] VFIO: VFIO_DEVICE_SET_ADDR_MAPPING command
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alex Williamson <alex.williamson@redhat.com>
-Date: Sat, 16 Mar 2013 06:30:07 +0100
-In-Reply-To: <1363376468.16793.18.camel@ul30vt.home>
+To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Date: Sat, 16 Mar 2013 06:37:36 +0100
+In-Reply-To: <20130316013417.GA3873@shangw.(null)>
 References: <1363332390-12754-1-git-send-email-shangw@linux.vnet.ibm.com>
- <1363332390-12754-4-git-send-email-shangw@linux.vnet.ibm.com>
- <1363376468.16793.18.camel@ul30vt.home>
+ <1363332390-12754-3-git-send-email-shangw@linux.vnet.ibm.com>
+ <1363375740.16793.12.camel@ul30vt.home>
+ <20130316013417.GA3873@shangw.(null)>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: aik@ozlabs.ru, linuxppc-dev@lists.ozlabs.org,
- Gavin Shan <shangw@linux.vnet.ibm.com>, kvm@vger.kernel.org
+Cc: aik@ozlabs.ru, Alex Williamson <alex.williamson@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,43 +27,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-03-15 at 13:41 -0600, Alex Williamson wrote:
+On Sat, 2013-03-16 at 09:34 +0800, Gavin Shan wrote:
+> >Could you explain further how this will be used?  How the device is
+> >exposed to a guest is entirely a userspace construct, so why does vfio
+> >need to know or care about this?  I had assumed for AER that QEMU would
+> >do the translation from host to guest address space.
+> >
 > 
-> This basically gives userspace free access to any regions that aren't
-> covered by known capabilities. 
+> The weak IOCTL function (vfio_pci_arch_ioctl) was introduced by previous
+> patch. The PowerNV platform is going to override it to figure out the
+> information for EEH core to use. On the other hand, QEMU will runs into
+> the IOCTL command while opening (creating) one VFIO device.
+> 
+> Though I'm not familiar with AER very much. AER is quite different from
+> EEH. The EEH functionality implemented in PHB instead of in PCI device
+> core. So we don't care AER stuff in EEH directly :-)
 
-And ?
+To give Alex a bit more background...
 
-I mean seriously :-) We already had that discussion ... trying to
-"protect" config space is just plain doomed. There is no point.
+EEH is our IBM specific error handling facility which is a superset of AER.
 
-It makes sense to do things like emulate BARs etc... for things to
-function properly under some circumstances/setups where you can't just
-expose the original BAR values to the guest and have the HW take care of
-it but you *must* be prepared to deal with anything in config space
-being changed without you knowing about it.
+IE. In addition to AER's error detection and logging, it adds a layer of
+error detection at the host bridge level (such as iommu violations etc...)
+and a mechanism for handling and recovering from errors. This is tied to
+our iommu domain stuff (our PE's) and our device "freezing" capability
+among others.
 
-Devices *will* have backdoors via MMIO. Period. You cannot rely on those
-not existing, whether they are documented or not.
+With VFIO + KVM, we want to implement most of the EEH support for guests in
+the host kernel. The reason is multipart and we can discuss this separately
+as some of it might well be debatable (mostly it's more convenient that way
+because we hook into the underlying HW/FW EEH which isn't directly userspace
+accessible so we don't have to add a new layer of kernel -> user API in
+addition to the VFIO stuff), but there's at least one aspect of it that drives
+this requirement more strongly which is performance:
 
-If you can't cope with the config space accesses then you aren't
-properly isolated. It can be deemed acceptable (depends what you use
-your VMs for) but that I mean is that any config space
-filtering/emulation for the sake of "security" is ... pointless.
+When EEH is enabled, whenever any MMIO returns all 1's, the kernel will do
+a firmware call to query the EEH state of the device and check whether it
+has been frozen. On some devices, that can be a performance issue, and
+going all the way to qemu for that would be horribly expensive.
 
-Doing it for functionality to work at all (ie BAR emulation) is fine,
-but that's about it. IE. As a mean of security it's pointless.
+So we want at least a way to handle that call in the kernel and for that we
+need at least some way of mapping things there.
 
-
->  We have no idea what this might expose on some devices.
-
-No more than we have any idea what MMIO mapping of the device register
-space exposes :-)
-
->   I'd like to support be2net, but what's the minimal
-> access that it needs?  Can we provide 2 or 4 bytes of read-only access
-> at offset 0x7c for just that device?  Is it always 0x7c?  Let's split
-> this patch from the series since it's clearly dealing with something
-> independent.  Thanks,
-
+Cheers,
 Ben.
