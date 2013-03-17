@@ -1,21 +1,20 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (he.sipsolutions.net [78.46.109.217])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <phileas-fogg@mail.ru>
+Received: from smtp32.i.mail.ru (smtp32.i.mail.ru [94.100.177.92])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 76D932C0099
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Mar 2013 23:57:01 +1100 (EST)
-Message-ID: <1363360926.8656.5.camel@jlt4.sipsolutions.net>
-Subject: Re: [PATCH] powerpc: add Book E support to 64-bit hibernation
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <1363279961.28440.4@snotra>
-References: <1363232178-29938-1-git-send-email-dongsheng.wang@freescale.com>
- <1363250273.4833.1.camel@jlt4.sipsolutions.net> <1363279961.28440.4@snotra>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 15 Mar 2013 16:22:06 +0100
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org,
- Wang Dongsheng <dongsheng.wang@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 69FF02C00BC
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Mar 2013 23:08:34 +1100 (EST)
+Received: from [37.49.86.97] (port=54462 helo=[192.168.1.240])
+ by smtp32.i.mail.ru with esmtpa (envelope-from <phileas-fogg@mail.ru>)
+ id 1UHCO5-0002ol-EA
+ for linuxppc-dev@lists.ozlabs.org; Sun, 17 Mar 2013 16:08:29 +0400
+Message-ID: <5145B20C.2090104@mail.ru>
+Date: Sun, 17 Mar 2013 13:07:40 +0100
+From: Phileas Fogg <phileas-fogg@mail.ru>
+MIME-Version: 1.0
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Kernel panic on PowerMac G5 while scanning for SMU sensors
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,23 +24,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-03-14 at 11:52 -0500, Scott Wood wrote:
-> > > +#ifdef CONFIG_PPC_BOOK3S_64
-> > >  	/* can't use RESTORE_SPECIAL(MSR) */
-> > >  	ld	r0, SL_MSR(r11)
-> > >  	mtmsrd	r0, 0
-> > 
-> > Unfortunately, I forgot the reason for this comment, and didn't put a
-> > better one (almost 6 years ago!!)
 
-> If it's because book3s needs mtmsrd instead of mtmsr, that doesn't  
-> apply to booke.
+I wanted to read the temperature sensors of my PowerMac G5 11,2.
+For that i installed the lm-sensors package, run 'sensors-detect' 
+command and my Linux 3.8.2 kernel paniced in
 
-Indeed, looking at the code again now that seems pretty obvious.
+_smu_i2c_low_completion_
 
-Looking at the patch again, I'd be a little concerned about the lack of
-cache flushing, seems a bit odd but I'm sure you know what you're doing
-(and I don't know book3e at all, and hardly remember book3s -- or even
-that name...) :-)
+with this message
 
-johannes
+'Unable to handle kernel paging request for data at address 0x00000008.'
+
+Regards
