@@ -1,20 +1,25 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 7C28E2C009B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2013 08:15:36 +1100 (EST)
-Message-ID: <1363641330.24132.437.camel@bling.home>
-Subject: Re: [PATCH 3/3] VFIO: Direct access config reg without capability
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 18 Mar 2013 15:15:30 -0600
-In-Reply-To: <1363411807.1244.13.camel@pasglop>
-References: <1363332390-12754-1-git-send-email-shangw@linux.vnet.ibm.com>
- <1363332390-12754-4-git-send-email-shangw@linux.vnet.ibm.com>
- <1363376468.16793.18.camel@ul30vt.home> <1363411807.1244.13.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: aik@ozlabs.ru, linuxppc-dev@lists.ozlabs.org,
- Gavin Shan <shangw@linux.vnet.ibm.com>, kvm@vger.kernel.org
+Return-Path: <B07421@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 17B8C2C00AD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2013 09:12:48 +1100 (EST)
+Date: Mon, 18 Mar 2013 17:12:37 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] powerpc: add Book E support to 64-bit hibernation
+To: Johannes Berg <johannes@sipsolutions.net>
+References: <1363232178-29938-1-git-send-email-dongsheng.wang@freescale.com>
+ <1363250273.4833.1.camel@jlt4.sipsolutions.net> <1363279961.28440.4@snotra>
+ <1363360926.8656.5.camel@jlt4.sipsolutions.net>
+In-Reply-To: <1363360926.8656.5.camel@jlt4.sipsolutions.net> (from
+ johannes@sipsolutions.net on Fri Mar 15 10:22:06 2013)
+Message-ID: <1363644757.27435.16@snotra>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Wang Dongsheng <dongsheng.wang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,42 +29,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2013-03-16 at 06:30 +0100, Benjamin Herrenschmidt wrote:
-> On Fri, 2013-03-15 at 13:41 -0600, Alex Williamson wrote:
-> > 
-> > This basically gives userspace free access to any regions that aren't
-> > covered by known capabilities. 
-> 
-> And ?
-> 
-> I mean seriously :-) We already had that discussion ... trying to
-> "protect" config space is just plain doomed. There is no point.
-> 
-> It makes sense to do things like emulate BARs etc... for things to
-> function properly under some circumstances/setups where you can't just
-> expose the original BAR values to the guest and have the HW take care of
-> it but you *must* be prepared to deal with anything in config space
-> being changed without you knowing about it.
-> 
-> Devices *will* have backdoors via MMIO. Period. You cannot rely on those
-> not existing, whether they are documented or not.
-> 
-> If you can't cope with the config space accesses then you aren't
-> properly isolated. It can be deemed acceptable (depends what you use
-> your VMs for) but that I mean is that any config space
-> filtering/emulation for the sake of "security" is ... pointless.
-> 
-> Doing it for functionality to work at all (ie BAR emulation) is fine,
-> but that's about it. IE. As a mean of security it's pointless.
-> 
-> 
-> >  We have no idea what this might expose on some devices.
-> 
-> No more than we have any idea what MMIO mapping of the device register
-> space exposes :-)
+On 03/15/2013 10:22:06 AM, Johannes Berg wrote:
+> On Thu, 2013-03-14 at 11:52 -0500, Scott Wood wrote:
+> > > > +#ifdef CONFIG_PPC_BOOK3S_64
+> > > >  	/* can't use RESTORE_SPECIAL(MSR) */
+> > > >  	ld	r0, SL_MSR(r11)
+> > > >  	mtmsrd	r0, 0
+> > >
+> > > Unfortunately, I forgot the reason for this comment, and didn't =20
+> put a
+> > > better one (almost 6 years ago!!)
+>=20
+> > If it's because book3s needs mtmsrd instead of mtmsr, that doesn't
+> > apply to booke.
+>=20
+> Indeed, looking at the code again now that seems pretty obvious.
+>=20
+> Looking at the patch again, I'd be a little concerned about the lack =20
+> of
+> cache flushing, seems a bit odd but I'm sure you know what you're =20
+> doing
+> (and I don't know book3e at all, and hardly remember book3s -- or even
+> that name...) :-)
 
-Yeah, yeah.  Ok, I can't come up with a reasonable argument otherwise,
-it'll give us better device support, and I believe pci-assign has always
-done this.  I'll take another look at the patch.  Thanks,
+Could you elaborate on why book3s flushes the way it does?  What's =20
+special about the first 32 MiB?  If it's to cover kernel code, why =20
+would that be changing from what's already there?
 
-Alex
+-Scott=
