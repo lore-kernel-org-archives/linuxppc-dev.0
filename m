@@ -1,21 +1,21 @@
-Return-Path: <benmcollins13@gmail.com>
-Received: from mail-da0-x229.google.com (mail-da0-x229.google.com
- [IPv6:2607:f8b0:400e:c00::229])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 553772C008D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2013 10:19:12 +1100 (EST)
-Received: by mail-da0-f41.google.com with SMTP id w4so15759dam.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2013 16:19:09 -0700 (PDT)
-From: Ben Collins <benmcollins13@gmail.com>
-Content-Type: text/plain; charset=us-ascii
-Subject: [PATCH] sgy-cts1000: Remove __dev* attributes
-Date: Mon, 18 Mar 2013 19:19:07 -0400
-Message-Id: <1A7562E2-E3F4-499C-AB2E-788D08234B02@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Mime-Version: 1.0 (Mac OS X Mail 6.2 \(1499\))
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Return-Path: <B07421@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0DE772C00B8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2013 10:36:28 +1100 (EST)
+Date: Mon, 18 Mar 2013 18:36:18 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH][UPSTEAM] powerpc/mpic: add irq_set_wake support
+To: Wang Dongsheng <dongsheng.wang@freescale.com>
+In-Reply-To: <1359601823-9861-1-git-send-email-dongsheng.wang@freescale.com>
+ (from dongsheng.wang@freescale.com on Wed Jan 30 21:10:23 2013)
+Message-ID: <1363649778.27435.21@snotra>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,53 +25,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Somehow the driver snuck in with these still in it.
+On 01/30/2013 09:10:23 PM, Wang Dongsheng wrote:
+> Add irq_set_wake support. Just add IRQF_NO_SUSPEND to =20
+> desc->action->flag.
+> So the wake up interrupt will not be disable in suspend_device_irqs.
+>=20
+> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> ---
+>  arch/powerpc/sysdev/mpic.c |   15 +++++++++++++++
+>  1 files changed, 15 insertions(+), 0 deletions(-)
+>=20
+> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+> index 9c6e535..2ed0220 100644
+> --- a/arch/powerpc/sysdev/mpic.c
+> +++ b/arch/powerpc/sysdev/mpic.c
+> @@ -920,6 +920,18 @@ int mpic_set_irq_type(struct irq_data *d, =20
+> unsigned int flow_type)
+>  	return IRQ_SET_MASK_OK_NOCOPY;
+>  }
+>=20
+> +static int mpic_irq_set_wake(struct irq_data *d, unsigned int on)
+> +{
+> +	struct irq_desc *desc =3D container_of(d, struct irq_desc, =20
+> irq_data);
+> +
+> +	if (on)
+> +		desc->action->flags |=3D IRQF_NO_SUSPEND;
+> +	else
+> +		desc->action->flags &=3D ~IRQF_NO_SUSPEND;
+> +
+> +	return 0;
+> +}
 
-Signed-off-by: Ben Collins <ben.c@servergy.com>
----
- arch/powerpc/platforms/85xx/sgy_cts1000.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+This should really be something like fsl_mpic_irq_set_wake() and only =20
+set when we have an FSL MPIC.
 
-diff --git a/arch/powerpc/platforms/85xx/sgy_cts1000.c =
-b/arch/powerpc/platforms/85xx/sgy_cts1000.c
-index 611e92f..7179726 100644
---- a/arch/powerpc/platforms/85xx/sgy_cts1000.c
-+++ b/arch/powerpc/platforms/85xx/sgy_cts1000.c
-@@ -69,7 +69,7 @@ static irqreturn_t gpio_halt_irq(int irq, void =
-*__data)
-         return IRQ_HANDLED;
- };
-=20
--static int __devinit gpio_halt_probe(struct platform_device *pdev)
-+static int gpio_halt_probe(struct platform_device *pdev)
- {
- 	enum of_gpio_flags flags;
- 	struct device_node *node =3D pdev->dev.of_node;
-@@ -128,7 +128,7 @@ static int __devinit gpio_halt_probe(struct =
-platform_device *pdev)
- 	return 0;
- }
-=20
--static int __devexit gpio_halt_remove(struct platform_device *pdev)
-+static int gpio_halt_remove(struct platform_device *pdev)
- {
- 	if (halt_node) {
- 		int gpio =3D of_get_gpio(halt_node, 0);
-@@ -165,7 +165,7 @@ static struct platform_driver gpio_halt_driver =3D {
- 		.of_match_table =3D gpio_halt_match,
- 	},
- 	.probe		=3D gpio_halt_probe,
--	.remove		=3D __devexit_p(gpio_halt_remove),
-+	.remove		=3D gpio_halt_remove,
- };
-=20
- module_platform_driver(gpio_halt_driver);
---=20
-1.8.1.2
+>  void mpic_set_vector(unsigned int virq, unsigned int vector)
+>  {
+>  	struct mpic *mpic =3D mpic_from_irq(virq);
+> @@ -957,6 +969,7 @@ static struct irq_chip mpic_irq_chip =3D {
+>  	.irq_unmask	=3D mpic_unmask_irq,
+>  	.irq_eoi	=3D mpic_end_irq,
+>  	.irq_set_type	=3D mpic_set_irq_type,
+> +	.irq_set_wake	=3D mpic_irq_set_wake,
+>  };
+>=20
+>  #ifdef CONFIG_SMP
+> @@ -971,6 +984,7 @@ static struct irq_chip mpic_tm_chip =3D {
+>  	.irq_mask	=3D mpic_mask_tm,
+>  	.irq_unmask	=3D mpic_unmask_tm,
+>  	.irq_eoi	=3D mpic_end_irq,
+> +	.irq_set_wake	=3D mpic_irq_set_wake,
+>  };
+>=20
+>  #ifdef CONFIG_MPIC_U3_HT_IRQS
+> @@ -981,6 +995,7 @@ static struct irq_chip mpic_irq_ht_chip =3D {
+>  	.irq_unmask	=3D mpic_unmask_ht_irq,
+>  	.irq_eoi	=3D mpic_end_ht_irq,
+>  	.irq_set_type	=3D mpic_set_irq_type,
+> +	.irq_set_wake	=3D mpic_irq_set_wake,
+>  };
+>  #endif /* CONFIG_MPIC_U3_HT_IRQS */
 
+Why ht?
 
---
-Servergy  : http://www.servergy.com/
-SwissDisk : http://www.swissdisk.com/
-Ubuntu    : http://www.ubuntu.com/
-My Blog   : http://ben-collins.blogspot.com/
+-Scott=
