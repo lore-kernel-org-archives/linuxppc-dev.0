@@ -1,19 +1,39 @@
-Return-Path: <B32579@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1D0352C0087
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2013 19:31:42 +1100 (EST)
-From: Prabhakar Kushwaha <prabhakar@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc: add CONFIG(s) require for using flash controller
-Date: Mon, 18 Mar 2013 14:01:23 +0530
-Message-ID: <1363595483-7248-1-git-send-email-prabhakar@freescale.com>
+Return-Path: <mingo.kernel.org@gmail.com>
+Received: from mail-ea0-x22d.google.com (mail-ea0-x22d.google.com
+ [IPv6:2a00:1450:4013:c01::22d])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8BD292C00BF
+ for <linuxppc-dev@ozlabs.org>; Mon, 18 Mar 2013 20:02:38 +1100 (EST)
+Received: by mail-ea0-f173.google.com with SMTP id h14so2355184eak.4
+ for <linuxppc-dev@ozlabs.org>; Mon, 18 Mar 2013 02:02:30 -0700 (PDT)
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Date: Mon, 18 Mar 2013 10:02:26 +0100
+From: Ingo Molnar <mingo@kernel.org>
+To: Arnaldo Carvalho de Melo <acme@infradead.org>
+Subject: Re: [GIT PULL 0/8] perf/urgent fixes
+Message-ID: <20130318090226.GA19068@gmail.com>
+References: <1363263795-31485-1-git-send-email-acme@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Prabhakar Kushwaha <prabhakar@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1363263795-31485-1-git-send-email-acme@infradead.org>
+Cc: Feng Tang <feng.tang@intel.com>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ Jack Mitchell <jack.mitchell@dbbroadcast.co.uk>,
+ Stephane Eranian <eranian@google.com>, Oleg Nesterov <oleg@redhat.com>,
+ linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ Jiri Olsa <jolsa@redhat.com>, Namhyung Kim <namhyung.kim@lge.com>,
+ Andi Kleen <ak@linux.intel.com>, Irina Tirdea <irina.tirdea@intel.com>,
+ Robert Richter <robert.richter@amd.com>, Vinson Lee <vlee@twitter.com>,
+ Ingo Molnar <mingo@redhat.com>, Marcin Slusarz <marcin.slusarz@gmail.com>,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+ Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Peter Zijlstra <a.p.zijlstra@chello.nl>,
+ Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+ Anton Blanchard <anton@au1.ibm.com>, Namhyung Kim <namhyung@kernel.org>,
+ Arnaldo Carvalho de Melo <acme@redhat.com>, linux-kernel@vger.kernel.org,
+ Pekka Enberg <penberg@kernel.org>, David Ahern <dsahern@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,247 +43,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add CONFIG(s) required for NAND and NOR flash controller usage.
-It defines MTD, Jffs2 and UBIFS file system required for controllers.
 
-It also enables IFC controller
+* Arnaldo Carvalho de Melo <acme@infradead.org> wrote:
 
-Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
----
- Based upon http://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
- branch next
+> From: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+> 
+> Hi Ingo,
+> 
+> 	Please consider pulling,
+> 
+> - Arnaldo
+> 
+> The following changes since commit cb16b91a449afd01b85ec4e59f30449d11c4acd7:
+> 
+>   s390: Fix a header dependencies related build error (2013-03-11 10:43:35 +0100)
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux tags/perf-urgent-for-mingo
+> 
+> for you to fetch changes up to d1398ccfec56e54010476efd6a316427d29045a6:
+> 
+>   perf tools: Fix LIBNUMA build with glibc 2.12 and older. (2013-03-14 08:06:21 -0300)
+> 
+> ----------------------------------------------------------------
+> perf/urgent fixes:
+> 
+> . perf probe: Fix segfault due to testing the wrong pointer for NULL,
+>   from Ananth N Mavinakayanahalli.
+> 
+> . libtraceevent: Remove hard coded include to /usr/local/include in
+>   Makefile, which causes cross builds to include host header files,
+>   fix from Jack Mitchell.
+> 
+> . perf record: Use the right target interface for synthesizing
+>   threads when --cpu/-C option is used, fix from Jiri Olsa.
+> 
+> . Check if -DFORTIFY_SOURCE=2 is allowed, as gcc 4.7.2 defines
+>   it and then the build is broken when it is redefined in perf,
+>   fix from Marcin Slusarz.
+> 
+> . Fix build with NO_NEWT=1, that can happen explicitely or when
+>   the newt-devel package is not installed, from Michael Ellerman.
+> 
+> . perf/POWER7: Create a sysfs format entry for Power7 events, missing
+>   patch from a patchseries already merged, from Sukadev Bhattiprolu.
+> 
+> . Fix LIBNUMA build with glibc 2.12 and older, from Vinson Lee.
+> 
+> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+> 
+> ----------------------------------------------------------------
+> Ananth N Mavinakayanahalli (1):
+>       perf probe: Fix segfault
+> 
+> Jack Mitchell (1):
+>       libtraceevent: Remove hard coded include to /usr/local/include in Makefile
+> 
+> Jiri Olsa (1):
+>       perf record: Fix -C option
+> 
+> Marcin Slusarz (1):
+>       perf tools: check if -DFORTIFY_SOURCE=2 is allowed
+> 
+> Michael Ellerman (2):
+>       perf annotate: Fix build with NO_NEWT=1
+>       perf report: Fix build with NO_NEWT=1
+> 
+> Sukadev Bhattiprolu (1):
+>       perf/POWER7: Create a sysfs format entry for Power7 events
+> 
+> Vinson Lee (1):
+>       perf tools: Fix LIBNUMA build with glibc 2.12 and older.
+> 
+>  arch/powerpc/perf/power7-pmu.c | 13 +++++++++++++
+>  tools/lib/traceevent/Makefile  |  2 +-
+>  tools/perf/Makefile            |  8 +++++++-
+>  tools/perf/bench/bench.h       | 24 ++++++++++++++++++++++++
+>  tools/perf/builtin-record.c    |  6 ++++--
+>  tools/perf/util/hist.h         |  5 +++--
+>  tools/perf/util/strlist.c      |  2 +-
+>  7 files changed, 53 insertions(+), 7 deletions(-)
 
- arch/powerpc/configs/corenet64_smp_defconfig |   35 +++++++++++++++++++++++++-
- arch/powerpc/configs/mpc85xx_defconfig       |   31 +++++++++++++++++++++++
- arch/powerpc/configs/mpc85xx_smp_defconfig   |   31 +++++++++++++++++++++++
- 3 files changed, 96 insertions(+), 1 deletion(-)
+Pulled, thanks Arnaldo!
 
-diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
-index 36a5c41..1c6eb66 100644
---- a/arch/powerpc/configs/corenet64_smp_defconfig
-+++ b/arch/powerpc/configs/corenet64_smp_defconfig
-@@ -26,6 +26,7 @@ CONFIG_P5040_DS=y
- CONFIG_T4240_QDS=y
- # CONFIG_PPC_OF_BOOT_TRAMPOLINE is not set
- CONFIG_BINFMT_MISC=m
-+CONFIG_FSL_IFC=y
- CONFIG_PCIEPORTBUS=y
- CONFIG_PCI_MSI=y
- CONFIG_RAPIDIO=y
-@@ -58,16 +59,33 @@ CONFIG_IP_SCTP=m
- CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
- CONFIG_DEVTMPFS=y
- CONFIG_MTD=y
-+CONFIG_MTD_PARTITIONS=y
-+CONFIG_MTD_OF_PARTS=y
- CONFIG_MTD_CMDLINE_PARTS=y
- CONFIG_MTD_CHAR=y
-+CONFIG_MTD_BLKDEVS=y
- CONFIG_MTD_BLOCK=y
-+CONFIG_FTL=y
- CONFIG_MTD_CFI=y
-+CONFIG_MTD_GEN_PROBE=y
-+CONFIG_MTD_MAP_BANK_WIDTH_1=y
-+CONFIG_MTD_MAP_BANK_WIDTH_2=y
-+CONFIG_MTD_MAP_BANK_WIDTH_4=y
-+CONFIG_MTD_CFI_I1=y
-+CONFIG_MTD_CFI_I2=y
-+CONFIG_MTD_CFI_INTELEXT=y
- CONFIG_MTD_CFI_AMDSTD=y
- CONFIG_MTD_PHYSMAP_OF=y
- CONFIG_MTD_M25P80=y
-+CONFIG_MTD_CFI_UTIL=y
-+CONFIG_MTD_NAND_ECC=y
- CONFIG_MTD_NAND=y
-+CONFIG_MTD_NAND_IDS=y
- CONFIG_MTD_NAND_FSL_ELBC=y
- CONFIG_MTD_NAND_FSL_IFC=y
-+CONFIG_MTD_UBI=y
-+CONFIG_MTD_UBI_WL_THRESHOLD=4096
-+CONFIG_MTD_UBI_BEB_RESERVE=1
- CONFIG_PROC_DEVICETREE=y
- CONFIG_BLK_DEV_LOOP=y
- CONFIG_BLK_DEV_RAM=y
-@@ -122,7 +140,16 @@ CONFIG_NTFS_FS=y
- CONFIG_PROC_KCORE=y
- CONFIG_TMPFS=y
- CONFIG_HUGETLBFS=y
--# CONFIG_MISC_FILESYSTEMS is not set
-+CONFIG_MISC_FILESYSTEMS=y
-+CONFIG_JFFS2_FS=y
-+CONFIG_JFFS2_FS_DEBUG=1
-+CONFIG_JFFS2_FS_WRITEBUFFER=y
-+CONFIG_JFFS2_ZLIB=y
-+CONFIG_JFFS2_RTIME=y
-+CONFIG_UBIFS_FS=y
-+CONFIG_UBIFS_FS_XATTR=y
-+CONFIG_UBIFS_FS_LZO=y
-+CONFIG_UBIFS_FS_ZLIB=y
- CONFIG_NFS_FS=y
- CONFIG_NFS_V4=y
- CONFIG_ROOT_NFS=y
-@@ -130,6 +157,12 @@ CONFIG_NFSD=m
- CONFIG_NLS_ISO8859_1=y
- CONFIG_NLS_UTF8=m
- CONFIG_CRC_T10DIF=y
-+CONFIG_CRC16=y
-+CONFIG_ZLIB_DEFLATE=y
-+CONFIG_LZO_COMPRESS=y
-+CONFIG_LZO_DECOMPRESS=y
-+CONFIG_CRYPTO_DEFLATE=y
-+CONFIG_CRYPTO_LZO=y
- CONFIG_FRAME_WARN=1024
- CONFIG_MAGIC_SYSRQ=y
- CONFIG_DEBUG_FS=y
-diff --git a/arch/powerpc/configs/mpc85xx_defconfig b/arch/powerpc/configs/mpc85xx_defconfig
-index e12146f..37812b4 100644
---- a/arch/powerpc/configs/mpc85xx_defconfig
-+++ b/arch/powerpc/configs/mpc85xx_defconfig
-@@ -47,6 +47,7 @@ CONFIG_HIGHMEM=y
- CONFIG_BINFMT_MISC=m
- CONFIG_MATH_EMULATION=y
- CONFIG_FORCE_MAX_ZONEORDER=12
-+CONFIG_FSL_IFC=y
- CONFIG_PCI=y
- CONFIG_PCI_MSI=y
- CONFIG_RAPIDIO=y
-@@ -78,18 +79,33 @@ CONFIG_IP_SCTP=m
- CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
- CONFIG_DEVTMPFS=y
- CONFIG_MTD=y
-+CONFIG_MTD_PARTITIONS=y
-+CONFIG_MTD_OF_PARTS=y
- CONFIG_MTD_CMDLINE_PARTS=y
- CONFIG_MTD_CHAR=y
-+CONFIG_MTD_BLKDEVS=y
- CONFIG_MTD_BLOCK=y
- CONFIG_FTL=y
- CONFIG_MTD_CFI=y
-+CONFIG_MTD_GEN_PROBE=y
-+CONFIG_MTD_MAP_BANK_WIDTH_1=y
-+CONFIG_MTD_MAP_BANK_WIDTH_2=y
-+CONFIG_MTD_MAP_BANK_WIDTH_4=y
-+CONFIG_MTD_CFI_I1=y
-+CONFIG_MTD_CFI_I2=y
- CONFIG_MTD_CFI_INTELEXT=y
- CONFIG_MTD_CFI_AMDSTD=y
- CONFIG_MTD_PHYSMAP_OF=y
- CONFIG_MTD_M25P80=y
-+CONFIG_MTD_CFI_UTIL=y
-+CONFIG_MTD_NAND_ECC=y
- CONFIG_MTD_NAND=y
-+CONFIG_MTD_NAND_IDS=y
- CONFIG_MTD_NAND_FSL_ELBC=y
- CONFIG_MTD_NAND_FSL_IFC=y
-+CONFIG_MTD_UBI=y
-+CONFIG_MTD_UBI_WL_THRESHOLD=4096
-+CONFIG_MTD_UBI_BEB_RESERVE=1
- CONFIG_PROC_DEVICETREE=y
- CONFIG_BLK_DEV_LOOP=y
- CONFIG_BLK_DEV_NBD=y
-@@ -207,6 +223,15 @@ CONFIG_NTFS_FS=y
- CONFIG_PROC_KCORE=y
- CONFIG_TMPFS=y
- CONFIG_HUGETLBFS=y
-+CONFIG_JFFS2_FS=y
-+CONFIG_JFFS2_FS_DEBUG=1
-+CONFIG_JFFS2_FS_WRITEBUFFER=y
-+CONFIG_JFFS2_ZLIB=y
-+CONFIG_JFFS2_RTIME=y
-+CONFIG_UBIFS_FS=y
-+CONFIG_UBIFS_FS_XATTR=y
-+CONFIG_UBIFS_FS_LZO=y
-+CONFIG_UBIFS_FS_ZLIB=y
- CONFIG_ADFS_FS=m
- CONFIG_AFFS_FS=m
- CONFIG_HFS_FS=m
-@@ -225,6 +250,12 @@ CONFIG_NFS_V4=y
- CONFIG_ROOT_NFS=y
- CONFIG_NFSD=y
- CONFIG_CRC_T10DIF=y
-+CONFIG_CRC16=y
-+CONFIG_ZLIB_DEFLATE=y
-+CONFIG_LZO_COMPRESS=y
-+CONFIG_LZO_DECOMPRESS=y
-+CONFIG_CRYPTO_DEFLATE=y
-+CONFIG_CRYPTO_LZO=y
- CONFIG_DEBUG_FS=y
- CONFIG_DETECT_HUNG_TASK=y
- CONFIG_DEBUG_INFO=y
-diff --git a/arch/powerpc/configs/mpc85xx_smp_defconfig b/arch/powerpc/configs/mpc85xx_smp_defconfig
-index 8d00ea5b..7fc3e6f 100644
---- a/arch/powerpc/configs/mpc85xx_smp_defconfig
-+++ b/arch/powerpc/configs/mpc85xx_smp_defconfig
-@@ -50,6 +50,7 @@ CONFIG_HIGHMEM=y
- CONFIG_BINFMT_MISC=m
- CONFIG_MATH_EMULATION=y
- CONFIG_FORCE_MAX_ZONEORDER=12
-+CONFIG_FSL_IFC=y
- CONFIG_PCI=y
- CONFIG_PCI_MSI=y
- CONFIG_RAPIDIO=y
-@@ -81,18 +82,33 @@ CONFIG_IP_SCTP=m
- CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
- CONFIG_DEVTMPFS=y
- CONFIG_MTD=y
-+CONFIG_MTD_PARTITIONS=y
-+CONFIG_MTD_OF_PARTS=y
- CONFIG_MTD_CMDLINE_PARTS=y
- CONFIG_MTD_CHAR=y
-+CONFIG_MTD_BLKDEVS=y
- CONFIG_MTD_BLOCK=y
- CONFIG_FTL=y
- CONFIG_MTD_CFI=y
-+CONFIG_MTD_GEN_PROBE=y
-+CONFIG_MTD_MAP_BANK_WIDTH_1=y
-+CONFIG_MTD_MAP_BANK_WIDTH_2=y
-+CONFIG_MTD_MAP_BANK_WIDTH_4=y
-+CONFIG_MTD_CFI_I1=y
-+CONFIG_MTD_CFI_I2=y
- CONFIG_MTD_CFI_INTELEXT=y
- CONFIG_MTD_CFI_AMDSTD=y
- CONFIG_MTD_PHYSMAP_OF=y
- CONFIG_MTD_M25P80=y
-+CONFIG_MTD_CFI_UTIL=y
-+CONFIG_MTD_NAND_ECC=y
- CONFIG_MTD_NAND=y
-+CONFIG_MTD_NAND_IDS=y
- CONFIG_MTD_NAND_FSL_ELBC=y
- CONFIG_MTD_NAND_FSL_IFC=y
-+CONFIG_MTD_UBI=y
-+CONFIG_MTD_UBI_WL_THRESHOLD=4096
-+CONFIG_MTD_UBI_BEB_RESERVE=1
- CONFIG_PROC_DEVICETREE=y
- CONFIG_BLK_DEV_LOOP=y
- CONFIG_BLK_DEV_NBD=y
-@@ -207,6 +223,15 @@ CONFIG_NTFS_FS=y
- CONFIG_PROC_KCORE=y
- CONFIG_TMPFS=y
- CONFIG_HUGETLBFS=y
-+CONFIG_JFFS2_FS=y
-+CONFIG_JFFS2_FS_DEBUG=1
-+CONFIG_JFFS2_FS_WRITEBUFFER=y
-+CONFIG_JFFS2_ZLIB=y
-+CONFIG_JFFS2_RTIME=y
-+CONFIG_UBIFS_FS=y
-+CONFIG_UBIFS_FS_XATTR=y
-+CONFIG_UBIFS_FS_LZO=y
-+CONFIG_UBIFS_FS_ZLIB=y
- CONFIG_ADFS_FS=m
- CONFIG_AFFS_FS=m
- CONFIG_HFS_FS=m
-@@ -225,6 +250,12 @@ CONFIG_NFS_V4=y
- CONFIG_ROOT_NFS=y
- CONFIG_NFSD=y
- CONFIG_CRC_T10DIF=y
-+CONFIG_CRC16=y
-+CONFIG_ZLIB_DEFLATE=y
-+CONFIG_LZO_COMPRESS=y
-+CONFIG_LZO_DECOMPRESS=y
-+CONFIG_CRYPTO_DEFLATE=y
-+CONFIG_CRYPTO_LZO=y
- CONFIG_DEBUG_FS=y
- CONFIG_DETECT_HUNG_TASK=y
- CONFIG_DEBUG_INFO=y
--- 
-1.7.9.5
+	Ingo
