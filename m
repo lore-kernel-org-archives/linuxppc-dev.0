@@ -2,15 +2,13 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A6BA72C0201
+ by ozlabs.org (Postfix) with ESMTPS id E18B82C0206
  for <linuxppc-dev@ozlabs.org>; Tue, 19 Mar 2013 06:11:18 +1100 (EST)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/2] powerpc/fsl-booke: Update DCSR EPU device tree entries
-Date: Mon, 18 Mar 2013 14:11:10 -0500
-Message-Id: <1363633870-3894-2-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1363633870-3894-1-git-send-email-galak@kernel.crashing.org>
-References: <1363633870-3894-1-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH 1/2] powerpc/fsl-booke: Added device tree DCSR entries for
+Date: Mon, 18 Mar 2013 14:11:09 -0500
+Message-Id: <1363633870-3894-1-git-send-email-galak@kernel.crashing.org>
 Cc: Stephen George <Stephen.George@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -23,82 +21,257 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Stephen George <Stephen.George@freescale.com>
 
-Identifies the epu as compatible with Chassis v1 Debug IP.
-
 Signed-off-by: Stephen George <Stephen.George@freescale.com>
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/boot/dts/fsl/p2041si-post.dtsi |    2 +-
- arch/powerpc/boot/dts/fsl/p3041si-post.dtsi |    2 +-
- arch/powerpc/boot/dts/fsl/p4080si-post.dtsi |    2 +-
- arch/powerpc/boot/dts/fsl/p5020si-post.dtsi |    2 +-
- arch/powerpc/boot/dts/fsl/p5040si-post.dtsi |    2 +-
- 5 files changed, 5 insertions(+), 5 deletions(-)
+ arch/powerpc/boot/dts/fsl/t4240si-post.dtsi |  131 +++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi  |   25 ++---
+ arch/powerpc/boot/dts/t4240qds.dts          |    4 +
+ 3 files changed, 148 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi b/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
-index 69ac1ac..dc6cc5a 100644
---- a/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
-@@ -155,7 +155,7 @@
- 	compatible = "fsl,dcsr", "simple-bus";
+diff --git a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
+index 376b958..2b17699 100644
+--- a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
+@@ -159,6 +159,137 @@
+ 	};
+ };
  
- 	dcsr-epu@0 {
--		compatible = "fsl,dcsr-epu";
-+		compatible = "fsl,p2041-dcsr-epu", "fsl,dcsr-epu";
- 		interrupts = <52 2 0 0
- 			      84 2 0 0
- 			      85 2 0 0>;
-diff --git a/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi b/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi
-index 9b5a81a..3fa1e22 100644
---- a/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi
-@@ -182,7 +182,7 @@
- 	compatible = "fsl,dcsr", "simple-bus";
++&dcsr {
++	#address-cells = <1>;
++	#size-cells = <1>;
++	compatible = "fsl,dcsr", "simple-bus";
++
++	dcsr-epu@0 {
++		compatible = "fsl,t4240-dcsr-epu", "fsl,dcsr-epu";
++		interrupts = <52 2 0 0
++			      84 2 0 0
++			      85 2 0 0
++			      94 2 0 0
++			      95 2 0 0>;
++		reg = <0x0 0x1000>;
++	};
++	dcsr-npc {
++		compatible = "fsl,t4240-dcsr-cnpc", "fsl,dcsr-cnpc";
++		reg = <0x1000 0x1000 0x1002000 0x10000>;
++	};
++	dcsr-nxc@2000 {
++		compatible = "fsl,dcsr-nxc";
++		reg = <0x2000 0x1000>;
++	};
++	dcsr-corenet {
++		compatible = "fsl,dcsr-corenet";
++		reg = <0x8000 0x1000 0x1A000 0x1000>;
++	};
++	dcsr-dpaa@9000 {
++		compatible = "fsl,t4240-dcsr-dpaa", "fsl,dcsr-dpaa";
++		reg = <0x9000 0x1000>;
++	};
++	dcsr-ocn@11000 {
++		compatible = "fsl,t4240-dcsr-ocn", "fsl,dcsr-ocn";
++		reg = <0x11000 0x1000>;
++	};
++	dcsr-ddr@12000 {
++		compatible = "fsl,dcsr-ddr";
++		dev-handle = <&ddr1>;
++		reg = <0x12000 0x1000>;
++	};
++	dcsr-ddr@13000 {
++		compatible = "fsl,dcsr-ddr";
++		dev-handle = <&ddr2>;
++		reg = <0x13000 0x1000>;
++	};
++	dcsr-ddr@14000 {
++		compatible = "fsl,dcsr-ddr";
++		dev-handle = <&ddr3>;
++		reg = <0x14000 0x1000>;
++	};
++	dcsr-nal@18000 {
++		compatible = "fsl,t4240-dcsr-nal", "fsl,dcsr-nal";
++		reg = <0x18000 0x1000>;
++	};
++	dcsr-rcpm@22000 {
++		compatible = "fsl,t4240-dcsr-rcpm", "fsl,dcsr-rcpm";
++		reg = <0x22000 0x1000>;
++	};
++	dcsr-snpc@30000 {
++		compatible = "fsl,t4240-dcsr-snpc", "fsl,dcsr-snpc";
++		reg = <0x30000 0x1000 0x1022000 0x10000>;
++	};
++	dcsr-snpc@31000 {
++		compatible = "fsl,t4240-dcsr-snpc", "fsl,dcsr-snpc";
++		reg = <0x31000 0x1000 0x1042000 0x10000>;
++	};
++	dcsr-snpc@32000 {
++		compatible = "fsl,t4240-dcsr-snpc", "fsl,dcsr-snpc";
++		reg = <0x32000 0x1000 0x1062000 0x10000>;
++	};
++	dcsr-cpu-sb-proxy@100000 {
++		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++		cpu-handle = <&cpu0>;
++		reg = <0x100000 0x1000 0x101000 0x1000>;
++	};
++	dcsr-cpu-sb-proxy@108000 {
++		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++		cpu-handle = <&cpu1>;
++		reg = <0x108000 0x1000 0x109000 0x1000>;
++	};
++	dcsr-cpu-sb-proxy@110000 {
++		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++		cpu-handle = <&cpu2>;
++		reg = <0x110000 0x1000 0x111000 0x1000>;
++	};
++	dcsr-cpu-sb-proxy@118000 {
++		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++		cpu-handle = <&cpu3>;
++		reg = <0x118000 0x1000 0x119000 0x1000>;
++	};
++	dcsr-cpu-sb-proxy@120000 {
++		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++		cpu-handle = <&cpu4>;
++		reg = <0x120000 0x1000 0x121000 0x1000>;
++	};
++	dcsr-cpu-sb-proxy@128000 {
++		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++		cpu-handle = <&cpu5>;
++		reg = <0x128000 0x1000 0x129000 0x1000>;
++	};
++	dcsr-cpu-sb-proxy@130000 {
++		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++		cpu-handle = <&cpu6>;
++		reg = <0x130000 0x1000 0x131000 0x1000>;
++	};
++	dcsr-cpu-sb-proxy@138000 {
++		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++		cpu-handle = <&cpu7>;
++		reg = <0x138000 0x1000 0x139000 0x1000>;
++	};
++	dcsr-cpu-sb-proxy@140000 {
++		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++		cpu-handle = <&cpu8>;
++		reg = <0x140000 0x1000 0x141000 0x1000>;
++	};
++	dcsr-cpu-sb-proxy@148000 {
++		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++		cpu-handle = <&cpu9>;
++		reg = <0x148000 0x1000 0x149000 0x1000>;
++	};
++	dcsr-cpu-sb-proxy@150000 {
++		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++		cpu-handle = <&cpu10>;
++		reg = <0x150000 0x1000 0x151000 0x1000>;
++	};
++	dcsr-cpu-sb-proxy@158000 {
++		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++		cpu-handle = <&cpu11>;
++		reg = <0x158000 0x1000 0x159000 0x1000>;
++	};
++};
++
+ &soc {
+ 	#address-cells = <1>;
+ 	#size-cells = <1>;
+diff --git a/arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi
+index 12af298..9b39a43 100644
+--- a/arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi
+@@ -44,6 +44,7 @@
  
- 	dcsr-epu@0 {
--		compatible = "fsl,dcsr-epu";
-+		compatible = "fsl,p3041-dcsr-epu", "fsl,dcsr-epu";
- 		interrupts = <52 2 0 0
- 			      84 2 0 0
- 			      85 2 0 0>;
-diff --git a/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi b/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
-index 19859ad..34769a7 100644
---- a/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
-@@ -156,7 +156,7 @@
- 	compatible = "fsl,dcsr", "simple-bus";
+ 	aliases {
+ 		ccsr = &soc;
++		dcsr = &dcsr;
  
- 	dcsr-epu@0 {
--		compatible = "fsl,dcsr-epu";
-+		compatible = "fsl,p4080-dcsr-epu", "fsl,dcsr-epu";
- 		interrupts = <52 2 0 0
- 			      84 2 0 0
- 			      85 2 0 0>;
-diff --git a/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi b/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi
-index 9ea77c3..bc3ae5a 100644
---- a/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi
-@@ -184,7 +184,7 @@
- 	compatible = "fsl,dcsr", "simple-bus";
+ 		serial0 = &serial0;
+ 		serial1 = &serial1;
+@@ -63,62 +64,62 @@
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
  
- 	dcsr-epu@0 {
--		compatible = "fsl,dcsr-epu";
-+		compatible = "fsl,p5020-dcsr-epu", "fsl,dcsr-epu";
- 		interrupts = <52 2 0 0
- 			      84 2 0 0
- 			      85 2 0 0>;
-diff --git a/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi b/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi
-index 97f8c26..a91897f 100644
---- a/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi
-@@ -129,7 +129,7 @@
- 	compatible = "fsl,dcsr", "simple-bus";
+-		PowerPC,e6500@0 {
++		cpu0: PowerPC,e6500@0 {
+ 			device_type = "cpu";
+ 			reg = <0 1>;
+ 			next-level-cache = <&L2_1>;
+ 		};
+-		PowerPC,e6500@1 {
++		cpu1: PowerPC,e6500@1 {
+ 			device_type = "cpu";
+ 			reg = <2 3>;
+ 			next-level-cache = <&L2_1>;
+ 		};
+-		PowerPC,e6500@2 {
++		cpu2: PowerPC,e6500@2 {
+ 			device_type = "cpu";
+ 			reg = <4 5>;
+ 			next-level-cache = <&L2_1>;
+ 		};
+-		PowerPC,e6500@3 {
++		cpu3: PowerPC,e6500@3 {
+ 			device_type = "cpu";
+ 			reg = <6 7>;
+ 			next-level-cache = <&L2_1>;
+ 		};
+-		PowerPC,e6500@4 {
++		cpu4: PowerPC,e6500@4 {
+ 			device_type = "cpu";
+ 			reg = <8 9>;
+ 			next-level-cache = <&L2_2>;
+ 		};
+-		PowerPC,e6500@5 {
++		cpu5: PowerPC,e6500@5 {
+ 			device_type = "cpu";
+ 			reg = <10 11>;
+ 			next-level-cache = <&L2_2>;
+ 		};
+-		PowerPC,e6500@6 {
++		cpu6: PowerPC,e6500@6 {
+ 			device_type = "cpu";
+ 			reg = <12 13>;
+ 			next-level-cache = <&L2_2>;
+ 		};
+-		PowerPC,e6500@7 {
++		cpu7: PowerPC,e6500@7 {
+ 			device_type = "cpu";
+ 			reg = <14 15>;
+ 			next-level-cache = <&L2_2>;
+ 		};
+-		PowerPC,e6500@8 {
++		cpu8: PowerPC,e6500@8 {
+ 			device_type = "cpu";
+ 			reg = <16 17>;
+ 			next-level-cache = <&L2_3>;
+ 		};
+-		PowerPC,e6500@9 {
++		cpu9: PowerPC,e6500@9 {
+ 			device_type = "cpu";
+ 			reg = <18 19>;
+ 			next-level-cache = <&L2_3>;
+ 		};
+-		PowerPC,e6500@10 {
++		cpu10: PowerPC,e6500@10 {
+ 			device_type = "cpu";
+ 			reg = <20 21>;
+ 			next-level-cache = <&L2_3>;
+ 		};
+-		PowerPC,e6500@11 {
++		cpu11: PowerPC,e6500@11 {
+ 			device_type = "cpu";
+ 			reg = <22 23>;
+ 			next-level-cache = <&L2_3>;
+diff --git a/arch/powerpc/boot/dts/t4240qds.dts b/arch/powerpc/boot/dts/t4240qds.dts
+index 83b479f..0555976 100644
+--- a/arch/powerpc/boot/dts/t4240qds.dts
++++ b/arch/powerpc/boot/dts/t4240qds.dts
+@@ -100,6 +100,10 @@
+ 		device_type = "memory";
+ 	};
  
- 	dcsr-epu@0 {
--		compatible = "fsl,dcsr-epu";
-+		compatible = "fsl,p5040-dcsr-epu", "fsl,dcsr-epu";
- 		interrupts = <52 2 0 0
- 			      84 2 0 0
- 			      85 2 0 0>;
++	dcsr: dcsr@f00000000 {
++		ranges = <0x00000000 0xf 0x00000000 0x01072000>;
++	};
++
+ 	soc: soc@ffe000000 {
+ 		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
+ 		reg = <0xf 0xfe000000 0 0x00001000>;
 -- 
 1.7.9.7
