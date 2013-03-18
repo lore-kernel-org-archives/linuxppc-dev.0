@@ -1,26 +1,22 @@
-Return-Path: <B11780@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0188.outbound.messaging.microsoft.com [213.199.154.188])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 31ADD2C0085
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2013 01:44:17 +1100 (EST)
-From: Gala Kumar-B11780 <B11780@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/3] powerpc/mpic: add irq_set_wake support
-Date: Mon, 18 Mar 2013 14:44:07 +0000
-Message-ID: <CF1EE7AED478CD48A05574C8E2DA142D7611FE@039-SN1MPN1-005.039d.mgd.msft.net>
-References: <1362728327-21013-1-git-send-email-dongsheng.wang@freescale.com>
- <ABB05CD9C9F68C46A5CEDC7F15439259EB6434@039-SN2MPN1-022.039d.mgd.msft.net>
- <1363617693.15862.1.camel@pasglop>
-In-Reply-To: <1363617693.15862.1.camel@pasglop>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- Gala Kumar-B11780 <B11780@freescale.com>,
- Wang Dongsheng-B40534 <B40534@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 91AF02C0085
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2013 01:55:48 +1100 (EST)
+Subject: Re: [PATCH 5/6] powerpc/fsl-booke: Add B4_QDS board support
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <E12D2F89F87F4A49B0320A4C2DE7E749144A98@039-SN2MPN1-011.039d.mgd.msft.net>
+Date: Mon, 18 Mar 2013 09:56:00 -0500
+Message-Id: <6F89A437-E585-4426-8DA9-36B2D85BF590@kernel.crashing.org>
+References: <1363334109-21922-1-git-send-email-shaveta@freescale.com>
+ <1363334109-21922-5-git-send-email-shaveta@freescale.com>
+ <69F32D25-11C5-414D-A23A-AD25C9CCF9C6@kernel.crashing.org>
+ <E12D2F89F87F4A49B0320A4C2DE7E749144A98@039-SN2MPN1-011.039d.mgd.msft.net>
+To: Leekha Shaveta-B20052 <B20052@freescale.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,103 +27,92 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Mar 18, 2013, at 9:41 AM, Benjamin Herrenschmidt wrote:
+On Mar 18, 2013, at 1:28 AM, Leekha Shaveta-B20052 wrote:
 
-> On Mon, 2013-03-18 at 09:28 +0000, Wang Dongsheng-B40534 wrote:
->> Hi Benjamin & Kumar,
->>=20
->> I am not sure who can apply these patches...
->>=20
->> Could you apply these patches?
 >=20
-> I can but I need somebody to review them, I don't have the bandwidth nor
-> am I familiar with the FSL changes to the MPIC.
 >=20
-> Cheers,
-> Ben.
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
+> Sent: Friday, March 15, 2013 9:28 PM
+> To: Leekha Shaveta-B20052
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Subject: Re: [PATCH 5/6] powerpc/fsl-booke: Add B4_QDS board support
+>=20
+>=20
+> On Mar 15, 2013, at 2:55 AM, Shaveta Leekha wrote:
+>=20
+>> - Add support for B4 board's personalities in board file  b4_qds.c, =
+It=20
+>> is common for B4 personalities B4860 and B4420QDS
+>> - Add B4QDS support in Kconfig and Makefile
+>=20
+> Code also references a B4220, what about it?
+> [SL] I have added the basic support for it in board file as it's one =
+of the personality of
+> B4, missed it in description. But device trees for this has not been =
+created and tested.
+> So what do you suggest here:
+> Should I add it here in B4 board support or should I remove its =
+references altogether?
 
-I'd ask for Scott's ack/signoff on these patches for ben or I to accept the=
-m.
+What's the difference between B4220 and B4420 or B4860?
 
 - k
 
 >=20
->> Thanks.
 >>=20
->> [1/3] powerpc/mpic: add irq_set_wake support
->> http://patchwork.ozlabs.org/patch/226034/
+>> B4860QDS is a high-performance computing evaluation, development and=20=
+
+>> test platform supporting the B4860 QorIQ Power Architecture =
+processor,=20
+>> with following major features:
 >>=20
->> [2/3] powerpc/mpic: add global timer support
->> http://patchwork.ozlabs.org/patch/226035/
+>>   - Four dual-threaded e6500 Power Architecture processors
+>>     organized in one cluster-each core runs up to 1.8 GHz
+>>   - Two DDR3/3L controllers for high-speed memory interface each
+>>     runs at up to 1866.67 MHz
+>>   - CoreNet fabric that fully supports coherency using MESI protocol
+>>     between the e6500 cores, SC3900 FVP cores, memories and
+>>     external interfaces.
+>>   - Data Path Acceleration Architecture having FMAN, QMan, BMan, SEC =
+5.3 and RMAN
+>>   - Large internal cache memory with snooping and stashing =
+capabilities
+>>   - Sixteen 10-GHz SerDes lanes that serve:
+>>       - Two SRIO interfaces. Each supports up to 4 lanes and
+>>         a total of up to 8 lanes
+>>       - Up to 8-lanes Common Public Radio Interface (CPRI) controller
+>>         for glue-less antenna connection
+>>       - Two 10-Gbit Ethernet controllers (10GEC)
+>>       - Six 1G/2.5-Gbit Ethernet controllers for network =
+communications
+>>       - PCI Express controller
+>>       - Debug (Aurora)
+>>   - Various system peripherals
 >>=20
->> [3/3] powerpc/fsl: add MPIC timer wakeup support
->> http://patchwork.ozlabs.org/patch/226036/
+>> B4420 is a reduced personality of B4860 with fewer core/clusters(both=20=
+
+>> SC3900 and e6500), fewer DDR controllers, fewer serdes lanes, fewer =
+SGMII interfaces and reduced target frequencies.
 >>=20
->>> -----Original Message-----
->>> From: Wang Dongsheng-B40534
->>> Sent: Friday, March 08, 2013 3:39 PM
->>> To: Wood Scott-B07421; Gala Kumar-B11780
->>> Cc: linuxppc-dev@lists.ozlabs.org; Wang Dongsheng-B40534
->>> Subject: [PATCH 1/3] powerpc/mpic: add irq_set_wake support
->>>=20
->>> Add irq_set_wake support. Just add IRQF_NO_SUSPEND to desc->action->fla=
-g.
->>> So the wake up interrupt will not be disable in suspend_device_irqs.
->>>=20
->>> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
->>> ---
->>> arch/powerpc/sysdev/mpic.c |   15 +++++++++++++++
->>> 1 files changed, 15 insertions(+), 0 deletions(-)
->>>=20
->>> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
->>> index 3b2efd4..10e474e 100644
->>> --- a/arch/powerpc/sysdev/mpic.c
->>> +++ b/arch/powerpc/sysdev/mpic.c
->>> @@ -920,6 +920,18 @@ int mpic_set_irq_type(struct irq_data *d, unsigned
->>> int flow_type)
->>> 	return IRQ_SET_MASK_OK_NOCOPY;
->>> }
->>>=20
->>> +static int mpic_irq_set_wake(struct irq_data *d, unsigned int on) {
->>> +	struct irq_desc *desc =3D container_of(d, struct irq_desc, irq_data);
->>> +
->>> +	if (on)
->>> +		desc->action->flags |=3D IRQF_NO_SUSPEND;
->>> +	else
->>> +		desc->action->flags &=3D ~IRQF_NO_SUSPEND;
->>> +
->>> +	return 0;
->>> +}
->>> +
->>> void mpic_set_vector(unsigned int virq, unsigned int vector)  {
->>> 	struct mpic *mpic =3D mpic_from_irq(virq); @@ -957,6 +969,7 @@ static
->>> struct irq_chip mpic_irq_chip =3D {
->>> 	.irq_unmask	=3D mpic_unmask_irq,
->>> 	.irq_eoi	=3D mpic_end_irq,
->>> 	.irq_set_type	=3D mpic_set_irq_type,
->>> +	.irq_set_wake	=3D mpic_irq_set_wake,
->>> };
->>>=20
->>> #ifdef CONFIG_SMP
->>> @@ -971,6 +984,7 @@ static struct irq_chip mpic_tm_chip =3D {
->>> 	.irq_mask	=3D mpic_mask_tm,
->>> 	.irq_unmask	=3D mpic_unmask_tm,
->>> 	.irq_eoi	=3D mpic_end_irq,
->>> +	.irq_set_wake	=3D mpic_irq_set_wake,
->>> };
->>>=20
->>> #ifdef CONFIG_MPIC_U3_HT_IRQS
->>> @@ -981,6 +995,7 @@ static struct irq_chip mpic_irq_ht_chip =3D {
->>> 	.irq_unmask	=3D mpic_unmask_ht_irq,
->>> 	.irq_eoi	=3D mpic_end_ht_irq,
->>> 	.irq_set_type	=3D mpic_set_irq_type,
->>> +	.irq_set_wake	=3D mpic_irq_set_wake,
->>> };
->>> #endif /* CONFIG_MPIC_U3_HT_IRQS */
->>>=20
->>> --
->>> 1.7.5.1
+>> Key differences between B4860 and B4420:
+>> B4420 has:
+>>   - Fewer e6500 cores:
+>>       1 cluster with 2 e6500 cores
+>>   - Fewer SC3900 cores/clusters:
+>>       1 cluster with 2 SC3900 cores per cluster
+>>   - Single DDRC
+>>   - 2X 4 lane serdes
+>>   - 3 SGMII interfaces
+>>   - no sRIO
+>>   - no 10G
 >>=20
->=20
->=20
->=20
+>> Signed-off-by: Shaveta Leekha <shaveta@freescale.com>
+>> ---
+>> arch/powerpc/platforms/85xx/Kconfig  |   16 +++++
+>> arch/powerpc/platforms/85xx/Makefile |    1 +
+>> arch/powerpc/platforms/85xx/b4_qds.c |  102=20
+>> ++++++++++++++++++++++++++++++++++
+>> 3 files changed, 119 insertions(+), 0 deletions(-) create mode 100644=20=
+
+>> arch/powerpc/platforms/85xx/b4_qds.c
