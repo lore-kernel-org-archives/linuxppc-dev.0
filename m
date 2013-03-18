@@ -2,26 +2,20 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 9D2002C023D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2013 06:12:32 +1100 (EST)
-Subject: Re: [PATCH 5/5 v9] iommu/fsl: Freescale PAMU driver and iommu
- implementation.
+ by ozlabs.org (Postfix) with ESMTPS id 01A912C00A3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2013 07:18:28 +1100 (EST)
+Subject: Re: [PATCH 1/1] Add a new platform tree for ib8315. Also add the DTS
+ and the defconfig for that board.
 Mime-Version: 1.0 (Apple Message framework v1278)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <CCCE947A-1C24-40C2-9341-BBF3F5C00D98@kernel.crashing.org>
-Date: Mon, 18 Mar 2013 14:12:13 -0500
-Message-Id: <329F7C2C-F1DA-4025-977F-5C09A9BFE21D@kernel.crashing.org>
-References: <1363200580-11623-1-git-send-email-Varun.Sethi@freescale.com>
- <0080B56D-8417-41B9-8341-665457D04DE6@kernel.crashing.org>
- <C5ECD7A89D1DC44195F34B25E172658D40ABB4@039-SN2MPN1-013.039d.mgd.msft.net>
- <CCCE947A-1C24-40C2-9341-BBF3F5C00D98@kernel.crashing.org>
-To: Sethi Varun-B16395 <B16395@freescale.com>
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Yoder Stuart-B08248 <B08248@freescale.com>
+In-Reply-To: <1363614452-1109-1-git-send-email-Sergey.Gerasimov@astrosoft-development.com>
+Date: Mon, 18 Mar 2013 15:18:15 -0500
+Message-Id: <307780DE-9735-4329-B5D7-DF2E9451A217@kernel.crashing.org>
+References: <1363614452-1109-1-git-send-email-Sergey.Gerasimov@astrosoft-development.com>
+To: Sergey Gerasimov <Sergey.Gerasimov@astrosoft-development.com>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,24 +26,22 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Mar 18, 2013, at 9:59 AM, Kumar Gala wrote:
+On Mar 18, 2013, at 8:47 AM, Sergey Gerasimov wrote:
 
->=20
-> On Mar 17, 2013, at 10:48 AM, Sethi Varun-B16395 wrote:
->=20
->>>>=20
->>>> +	guts_node =3D of_find_compatible_node(NULL, NULL,
->>>> +			"fsl,qoriq-device-config-1.0");
->>>=20
->>> This doesn't work for T4 or B4 device trees.
->>>=20
->> [Sethi Varun-B16395]hmm.... I need to use the dcfg space for this.
->=20
-> Let's see with the SoC arch's if something like =
-"fsl,qoriq-device-config-2.0" makes sense for T4 & B4.
+> Signed-off-by: Sergey Gerasimov =
+<Sergey.Gerasimov@astrosoft-development.com>
+> ---
+> arch/powerpc/boot/dts/ib8315.dts           |  490 +++++++
+> arch/powerpc/configs/83xx/ib8315_defconfig | 2121 =
+++++++++++++++++++++++++++++
+> arch/powerpc/platforms/83xx/Kconfig        |    7 +
+> arch/powerpc/platforms/83xx/Makefile       |    1 +
+> arch/powerpc/platforms/83xx/tqm8315.c      |  137 ++
+> 5 files changed, 2756 insertions(+)
+> create mode 100644 arch/powerpc/boot/dts/ib8315.dts
+> create mode 100644 arch/powerpc/configs/83xx/ib8315_defconfig
+> create mode 100644 arch/powerpc/platforms/83xx/tqm8315.c
 
-Based on discuss, I've sent patch for T4 dts to use =
-"fsl,qoriq-device-config-2.0", so please update PAMU code to use that =
-string.
+Is there some relationship of this board with the TQM8315?
 
-- k
+- k=
