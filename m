@@ -1,23 +1,23 @@
-Return-Path: <imr@rtschenk.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:28:0:1:25:1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E70132C00BF
- for <linuxppc-dev@ozlabs.org>; Mon, 18 Mar 2013 20:22:55 +1100 (EST)
-From: Rojhalat Ibrahim <imr@rtschenk.de>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [RFC][PATCH 2/2] powerpc/fsl-pci Make PCIe hotplug work with
- Freescale
-Date: Mon, 18 Mar 2013 10:22:40 +0100
-Message-ID: <40109604.xu0e1YNl88@pcimr>
-In-Reply-To: <677E5CC0-EC8D-4DB5-B9E3-F4E4D39EEF59@kernel.crashing.org>
-References: <1363201636-7318-1-git-send-email-galak@kernel.crashing.org>
- <4166754.n4Zsp0OSQ4@pcimr>
- <677E5CC0-EC8D-4DB5-B9E3-F4E4D39EEF59@kernel.crashing.org>
-MIME-Version: 1.0
+Return-Path: <B40534@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8C8152C00C3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2013 20:28:17 +1100 (EST)
+From: Wang Dongsheng-B40534 <B40534@freescale.com>
+To: Gala Kumar-B11780 <B11780@freescale.com>, "benh@kernel.crashing.org"
+ <benh@kernel.crashing.org>
+Subject: RE: [PATCH 1/3] powerpc/mpic: add irq_set_wake support
+Date: Mon, 18 Mar 2013 09:28:07 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259EB6434@039-SN2MPN1-022.039d.mgd.msft.net>
+References: <1362728327-21013-1-git-send-email-dongsheng.wang@freescale.com>
+In-Reply-To: <1362728327-21013-1-git-send-email-dongsheng.wang@freescale.com>
 Content-Type: text/plain; charset="us-ascii"
-Cc: linuxppc-dev@ozlabs.org
+MIME-Version: 1.0
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,183 +27,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday 14 March 2013 15:35:40 Kumar Gala wrote:
-> On Mar 14, 2013, at 4:43 AM, Rojhalat Ibrahim wrote:
-> > On Wednesday 13 March 2013 14:07:16 Kumar Gala wrote:
-> >> diff --git a/arch/powerpc/sysdev/fsl_pci.c
-> >> b/arch/powerpc/sysdev/fsl_pci.c
-> >> index 41bbcc4..b18c377 100644
-> >> --- a/arch/powerpc/sysdev/fsl_pci.c
-> >> +++ b/arch/powerpc/sysdev/fsl_pci.c
-> >> @@ -74,6 +74,35 @@ static int __init fsl_pcie_check_link(struct
-> >> pci_controller *hose) return 0;
-> >> }
-> >> 
-> >> +static int fsl_indirect_read_config(struct pci_bus *bus, unsigned int
-> >> devfn, +				    int offset, int len, u32 *val)
-> >> +{
-> >> +	struct pci_controller *hose = pci_bus_to_host(bus);
-> >> +
-> >> +	/* check the link status */
-> >> +	if ((bus->number == hose->first_busno) && (devfn == 0)) {
-> >> +		if (fsl_pcie_check_link(hose))
-> >> +			hose->indirect_type |= PPC_INDIRECT_TYPE_NO_PCIE_LINK;
-> >> +		else
-> >> +			hose->indirect_type &= ~PPC_INDIRECT_TYPE_NO_PCIE_LINK;
-> >> +	}
-> >> +	return indirect_read_config(bus, devfn, offset, len, val);
-> >> +}
-> >> +
-> > 
-> > This does not work because fsl_indirect_read_config calls
-> > fsl_pcie_check_link which calls early_read_config_dword which eventually
-> > calls fsl_indirect_read_config, so the kernel hangs in a recursion loop.
-> > Below is a modified patch that does work.
-> ok, that makes sense, but I guess now its making me question the following statement:
-> > if ((bus->number == hose->first_busno) && (devfn == 0)) {
-> 
-> Why do we have this conditional?
-> 
-> - k
+Hi Benjamin & Kumar,
 
-Right. This is not necessary anymore. I modified the patch accordingly.
+I am not sure who can apply these patches...
 
+Could you apply these patches?
 
-Signed-off-by: Rojhalat Ibrahim <imr@rtschenk.de>
----
- arch/powerpc/include/asm/pci-bridge.h |    6 ++++
- arch/powerpc/sysdev/fsl_pci.c         |   51 +++++++++++++++++++++++++++++-----
- arch/powerpc/sysdev/indirect_pci.c    |   10 ++----
- 3 files changed, 54 insertions(+), 13 deletions(-)
+Thanks.
 
-diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index c0278f0..ffbc5fd 100644
---- a/arch/powerpc/include/asm/pci-bridge.h
-+++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -120,6 +120,12 @@ extern void setup_indirect_pci(struct pci_controller* hose,
- 			       resource_size_t cfg_addr,
- 			       resource_size_t cfg_data, u32 flags);
- 
-+extern int indirect_read_config(struct pci_bus *bus, unsigned int devfn,
-+				int offset, int len, u32 *val);
-+
-+extern int indirect_write_config(struct pci_bus *bus, unsigned int devfn,
-+				 int offset, int len, u32 val);
-+
- static inline struct pci_controller *pci_bus_to_host(const struct pci_bus *bus)
- {
- 	return bus->sysdata;
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 41bbcc4..9c0fcc9 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -54,12 +54,22 @@ static void quirk_fsl_pcie_header(struct pci_dev *dev)
- 	return;
- }
- 
--static int __init fsl_pcie_check_link(struct pci_controller *hose)
-+static int fsl_indirect_read_config(struct pci_bus *, unsigned int,
-+				    int, int, u32 *);
-+
-+static int fsl_pcie_check_link(struct pci_controller *hose)
- {
--	u32 val;
-+	u32 val = 0;
- 
- 	if (hose->indirect_type & PPC_INDIRECT_TYPE_FSL_CFG_REG_LINK) {
--		early_read_config_dword(hose, 0, 0, PCIE_LTSSM, &val);
-+		if (hose->ops->read == fsl_indirect_read_config) {
-+			struct pci_bus bus;
-+			bus.number = 0;
-+			bus.sysdata = hose;
-+			bus.ops = hose->ops;
-+			indirect_read_config(&bus, 0, PCIE_LTSSM, 4, &val);
-+		} else
-+			early_read_config_dword(hose, 0, 0, PCIE_LTSSM, &val);
- 		if (val < PCIE_LTSSM_L0)
- 			return 1;
- 	} else {
-@@ -74,6 +84,33 @@ static int __init fsl_pcie_check_link(struct pci_controller *hose)
- 	return 0;
- }
- 
-+static int fsl_indirect_read_config(struct pci_bus *bus, unsigned int devfn,
-+				    int offset, int len, u32 *val)
-+{
-+	struct pci_controller *hose = pci_bus_to_host(bus);
-+	
-+	if (fsl_pcie_check_link(hose))
-+		hose->indirect_type |= PPC_INDIRECT_TYPE_NO_PCIE_LINK;
-+	else
-+		hose->indirect_type &= ~PPC_INDIRECT_TYPE_NO_PCIE_LINK;
-+	
-+	return indirect_read_config(bus, devfn, offset, len, val);
-+}
-+
-+static struct pci_ops fsl_indirect_pci_ops =
-+{
-+	.read = fsl_indirect_read_config,
-+	.write = indirect_write_config,
-+};
-+
-+static void __init fsl_setup_indirect_pci(struct pci_controller* hose,
-+					  resource_size_t cfg_addr,
-+					  resource_size_t cfg_data, u32 flags)
-+{
-+	setup_indirect_pci(hose, cfg_addr, cfg_data, flags);
-+	hose->ops = &fsl_indirect_pci_ops;
-+}
-+
- #if defined(CONFIG_FSL_SOC_BOOKE) || defined(CONFIG_PPC_86xx)
- 
- #define MAX_PHYS_ADDR_BITS	40
-@@ -469,8 +506,8 @@ int __init fsl_add_bridge(struct platform_device *pdev, int is_primary)
- 	if (!hose->private_data)
- 		goto no_bridge;
- 
--	setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4,
--		PPC_INDIRECT_TYPE_BIG_ENDIAN);
-+	fsl_setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4,
-+			       PPC_INDIRECT_TYPE_BIG_ENDIAN);
- 
- 	if (in_be32(&pci->block_rev1) < PCIE_IP_REV_3_0)
- 		hose->indirect_type |= PPC_INDIRECT_TYPE_FSL_CFG_REG_LINK;
-@@ -779,8 +816,8 @@ int __init mpc83xx_add_bridge(struct device_node *dev)
- 		if (ret)
- 			goto err0;
- 	} else {
--		setup_indirect_pci(hose, rsrc_cfg.start,
--				   rsrc_cfg.start + 4, 0);
-+		fsl_setup_indirect_pci(hose, rsrc_cfg.start,
-+				       rsrc_cfg.start + 4, 0);
- 	}
- 
- 	printk(KERN_INFO "Found FSL PCI host bridge at 0x%016llx. "
-diff --git a/arch/powerpc/sysdev/indirect_pci.c b/arch/powerpc/sysdev/indirect_pci.c
-index 82fdad8..c6c8b52 100644
---- a/arch/powerpc/sysdev/indirect_pci.c
-+++ b/arch/powerpc/sysdev/indirect_pci.c
-@@ -20,9 +20,8 @@
- #include <asm/pci-bridge.h>
- #include <asm/machdep.h>
- 
--static int
--indirect_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
--		     int len, u32 *val)
-+int indirect_read_config(struct pci_bus *bus, unsigned int devfn,
-+			 int offset, int len, u32 *val)
- {
- 	struct pci_controller *hose = pci_bus_to_host(bus);
- 	volatile void __iomem *cfg_data;
-@@ -78,9 +77,8 @@ indirect_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
- 	return PCIBIOS_SUCCESSFUL;
- }
- 
--static int
--indirect_write_config(struct pci_bus *bus, unsigned int devfn, int offset,
--		      int len, u32 val)
-+int indirect_write_config(struct pci_bus *bus, unsigned int devfn,
-+			  int offset, int len, u32 val)
- {
- 	struct pci_controller *hose = pci_bus_to_host(bus);
- 	volatile void __iomem *cfg_data;
+[1/3] powerpc/mpic: add irq_set_wake support
+http://patchwork.ozlabs.org/patch/226034/
+
+[2/3] powerpc/mpic: add global timer support
+http://patchwork.ozlabs.org/patch/226035/
+
+[3/3] powerpc/fsl: add MPIC timer wakeup support
+http://patchwork.ozlabs.org/patch/226036/
+
+> -----Original Message-----
+> From: Wang Dongsheng-B40534
+> Sent: Friday, March 08, 2013 3:39 PM
+> To: Wood Scott-B07421; Gala Kumar-B11780
+> Cc: linuxppc-dev@lists.ozlabs.org; Wang Dongsheng-B40534
+> Subject: [PATCH 1/3] powerpc/mpic: add irq_set_wake support
+>=20
+> Add irq_set_wake support. Just add IRQF_NO_SUSPEND to desc->action->flag.
+> So the wake up interrupt will not be disable in suspend_device_irqs.
+>=20
+> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> ---
+>  arch/powerpc/sysdev/mpic.c |   15 +++++++++++++++
+>  1 files changed, 15 insertions(+), 0 deletions(-)
+>=20
+> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+> index 3b2efd4..10e474e 100644
+> --- a/arch/powerpc/sysdev/mpic.c
+> +++ b/arch/powerpc/sysdev/mpic.c
+> @@ -920,6 +920,18 @@ int mpic_set_irq_type(struct irq_data *d, unsigned
+> int flow_type)
+>  	return IRQ_SET_MASK_OK_NOCOPY;
+>  }
+>=20
+> +static int mpic_irq_set_wake(struct irq_data *d, unsigned int on) {
+> +	struct irq_desc *desc =3D container_of(d, struct irq_desc, irq_data);
+> +
+> +	if (on)
+> +		desc->action->flags |=3D IRQF_NO_SUSPEND;
+> +	else
+> +		desc->action->flags &=3D ~IRQF_NO_SUSPEND;
+> +
+> +	return 0;
+> +}
+> +
+>  void mpic_set_vector(unsigned int virq, unsigned int vector)  {
+>  	struct mpic *mpic =3D mpic_from_irq(virq); @@ -957,6 +969,7 @@ static
+> struct irq_chip mpic_irq_chip =3D {
+>  	.irq_unmask	=3D mpic_unmask_irq,
+>  	.irq_eoi	=3D mpic_end_irq,
+>  	.irq_set_type	=3D mpic_set_irq_type,
+> +	.irq_set_wake	=3D mpic_irq_set_wake,
+>  };
+>=20
+>  #ifdef CONFIG_SMP
+> @@ -971,6 +984,7 @@ static struct irq_chip mpic_tm_chip =3D {
+>  	.irq_mask	=3D mpic_mask_tm,
+>  	.irq_unmask	=3D mpic_unmask_tm,
+>  	.irq_eoi	=3D mpic_end_irq,
+> +	.irq_set_wake	=3D mpic_irq_set_wake,
+>  };
+>=20
+>  #ifdef CONFIG_MPIC_U3_HT_IRQS
+> @@ -981,6 +995,7 @@ static struct irq_chip mpic_irq_ht_chip =3D {
+>  	.irq_unmask	=3D mpic_unmask_ht_irq,
+>  	.irq_eoi	=3D mpic_end_ht_irq,
+>  	.irq_set_type	=3D mpic_set_irq_type,
+> +	.irq_set_wake	=3D mpic_irq_set_wake,
+>  };
+>  #endif /* CONFIG_MPIC_U3_HT_IRQS */
+>=20
+> --
+> 1.7.5.1
