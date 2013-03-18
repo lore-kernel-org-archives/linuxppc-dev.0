@@ -1,39 +1,23 @@
-Return-Path: <mingo.kernel.org@gmail.com>
-Received: from mail-ea0-x22d.google.com (mail-ea0-x22d.google.com
- [IPv6:2a00:1450:4013:c01::22d])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8BD292C00BF
- for <linuxppc-dev@ozlabs.org>; Mon, 18 Mar 2013 20:02:38 +1100 (EST)
-Received: by mail-ea0-f173.google.com with SMTP id h14so2355184eak.4
- for <linuxppc-dev@ozlabs.org>; Mon, 18 Mar 2013 02:02:30 -0700 (PDT)
-Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
-Date: Mon, 18 Mar 2013 10:02:26 +0100
-From: Ingo Molnar <mingo@kernel.org>
-To: Arnaldo Carvalho de Melo <acme@infradead.org>
-Subject: Re: [GIT PULL 0/8] perf/urgent fixes
-Message-ID: <20130318090226.GA19068@gmail.com>
-References: <1363263795-31485-1-git-send-email-acme@infradead.org>
+Return-Path: <imr@rtschenk.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net
+ [IPv6:2001:a60:0:28:0:1:25:1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id E70132C00BF
+ for <linuxppc-dev@ozlabs.org>; Mon, 18 Mar 2013 20:22:55 +1100 (EST)
+From: Rojhalat Ibrahim <imr@rtschenk.de>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [RFC][PATCH 2/2] powerpc/fsl-pci Make PCIe hotplug work with
+ Freescale
+Date: Mon, 18 Mar 2013 10:22:40 +0100
+Message-ID: <40109604.xu0e1YNl88@pcimr>
+In-Reply-To: <677E5CC0-EC8D-4DB5-B9E3-F4E4D39EEF59@kernel.crashing.org>
+References: <1363201636-7318-1-git-send-email-galak@kernel.crashing.org>
+ <4166754.n4Zsp0OSQ4@pcimr>
+ <677E5CC0-EC8D-4DB5-B9E3-F4E4D39EEF59@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1363263795-31485-1-git-send-email-acme@infradead.org>
-Cc: Feng Tang <feng.tang@intel.com>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- Jack Mitchell <jack.mitchell@dbbroadcast.co.uk>,
- Stephane Eranian <eranian@google.com>, Oleg Nesterov <oleg@redhat.com>,
- linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
- Jiri Olsa <jolsa@redhat.com>, Namhyung Kim <namhyung.kim@lge.com>,
- Andi Kleen <ak@linux.intel.com>, Irina Tirdea <irina.tirdea@intel.com>,
- Robert Richter <robert.richter@amd.com>, Vinson Lee <vlee@twitter.com>,
- Ingo Molnar <mingo@redhat.com>, Marcin Slusarz <marcin.slusarz@gmail.com>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
- Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Peter Zijlstra <a.p.zijlstra@chello.nl>,
- Corey Ashford <cjashfor@linux.vnet.ibm.com>,
- Anton Blanchard <anton@au1.ibm.com>, Namhyung Kim <namhyung@kernel.org>,
- Arnaldo Carvalho de Melo <acme@redhat.com>, linux-kernel@vger.kernel.org,
- Pekka Enberg <penberg@kernel.org>, David Ahern <dsahern@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,88 +27,183 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thursday 14 March 2013 15:35:40 Kumar Gala wrote:
+> On Mar 14, 2013, at 4:43 AM, Rojhalat Ibrahim wrote:
+> > On Wednesday 13 March 2013 14:07:16 Kumar Gala wrote:
+> >> diff --git a/arch/powerpc/sysdev/fsl_pci.c
+> >> b/arch/powerpc/sysdev/fsl_pci.c
+> >> index 41bbcc4..b18c377 100644
+> >> --- a/arch/powerpc/sysdev/fsl_pci.c
+> >> +++ b/arch/powerpc/sysdev/fsl_pci.c
+> >> @@ -74,6 +74,35 @@ static int __init fsl_pcie_check_link(struct
+> >> pci_controller *hose) return 0;
+> >> }
+> >> 
+> >> +static int fsl_indirect_read_config(struct pci_bus *bus, unsigned int
+> >> devfn, +				    int offset, int len, u32 *val)
+> >> +{
+> >> +	struct pci_controller *hose = pci_bus_to_host(bus);
+> >> +
+> >> +	/* check the link status */
+> >> +	if ((bus->number == hose->first_busno) && (devfn == 0)) {
+> >> +		if (fsl_pcie_check_link(hose))
+> >> +			hose->indirect_type |= PPC_INDIRECT_TYPE_NO_PCIE_LINK;
+> >> +		else
+> >> +			hose->indirect_type &= ~PPC_INDIRECT_TYPE_NO_PCIE_LINK;
+> >> +	}
+> >> +	return indirect_read_config(bus, devfn, offset, len, val);
+> >> +}
+> >> +
+> > 
+> > This does not work because fsl_indirect_read_config calls
+> > fsl_pcie_check_link which calls early_read_config_dword which eventually
+> > calls fsl_indirect_read_config, so the kernel hangs in a recursion loop.
+> > Below is a modified patch that does work.
+> ok, that makes sense, but I guess now its making me question the following statement:
+> > if ((bus->number == hose->first_busno) && (devfn == 0)) {
+> 
+> Why do we have this conditional?
+> 
+> - k
 
-* Arnaldo Carvalho de Melo <acme@infradead.org> wrote:
+Right. This is not necessary anymore. I modified the patch accordingly.
 
-> From: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-> 
-> Hi Ingo,
-> 
-> 	Please consider pulling,
-> 
-> - Arnaldo
-> 
-> The following changes since commit cb16b91a449afd01b85ec4e59f30449d11c4acd7:
-> 
->   s390: Fix a header dependencies related build error (2013-03-11 10:43:35 +0100)
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux tags/perf-urgent-for-mingo
-> 
-> for you to fetch changes up to d1398ccfec56e54010476efd6a316427d29045a6:
-> 
->   perf tools: Fix LIBNUMA build with glibc 2.12 and older. (2013-03-14 08:06:21 -0300)
-> 
-> ----------------------------------------------------------------
-> perf/urgent fixes:
-> 
-> . perf probe: Fix segfault due to testing the wrong pointer for NULL,
->   from Ananth N Mavinakayanahalli.
-> 
-> . libtraceevent: Remove hard coded include to /usr/local/include in
->   Makefile, which causes cross builds to include host header files,
->   fix from Jack Mitchell.
-> 
-> . perf record: Use the right target interface for synthesizing
->   threads when --cpu/-C option is used, fix from Jiri Olsa.
-> 
-> . Check if -DFORTIFY_SOURCE=2 is allowed, as gcc 4.7.2 defines
->   it and then the build is broken when it is redefined in perf,
->   fix from Marcin Slusarz.
-> 
-> . Fix build with NO_NEWT=1, that can happen explicitely or when
->   the newt-devel package is not installed, from Michael Ellerman.
-> 
-> . perf/POWER7: Create a sysfs format entry for Power7 events, missing
->   patch from a patchseries already merged, from Sukadev Bhattiprolu.
-> 
-> . Fix LIBNUMA build with glibc 2.12 and older, from Vinson Lee.
-> 
-> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-> 
-> ----------------------------------------------------------------
-> Ananth N Mavinakayanahalli (1):
->       perf probe: Fix segfault
-> 
-> Jack Mitchell (1):
->       libtraceevent: Remove hard coded include to /usr/local/include in Makefile
-> 
-> Jiri Olsa (1):
->       perf record: Fix -C option
-> 
-> Marcin Slusarz (1):
->       perf tools: check if -DFORTIFY_SOURCE=2 is allowed
-> 
-> Michael Ellerman (2):
->       perf annotate: Fix build with NO_NEWT=1
->       perf report: Fix build with NO_NEWT=1
-> 
-> Sukadev Bhattiprolu (1):
->       perf/POWER7: Create a sysfs format entry for Power7 events
-> 
-> Vinson Lee (1):
->       perf tools: Fix LIBNUMA build with glibc 2.12 and older.
-> 
->  arch/powerpc/perf/power7-pmu.c | 13 +++++++++++++
->  tools/lib/traceevent/Makefile  |  2 +-
->  tools/perf/Makefile            |  8 +++++++-
->  tools/perf/bench/bench.h       | 24 ++++++++++++++++++++++++
->  tools/perf/builtin-record.c    |  6 ++++--
->  tools/perf/util/hist.h         |  5 +++--
->  tools/perf/util/strlist.c      |  2 +-
->  7 files changed, 53 insertions(+), 7 deletions(-)
 
-Pulled, thanks Arnaldo!
+Signed-off-by: Rojhalat Ibrahim <imr@rtschenk.de>
+---
+ arch/powerpc/include/asm/pci-bridge.h |    6 ++++
+ arch/powerpc/sysdev/fsl_pci.c         |   51 +++++++++++++++++++++++++++++-----
+ arch/powerpc/sysdev/indirect_pci.c    |   10 ++----
+ 3 files changed, 54 insertions(+), 13 deletions(-)
 
-	Ingo
+diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+index c0278f0..ffbc5fd 100644
+--- a/arch/powerpc/include/asm/pci-bridge.h
++++ b/arch/powerpc/include/asm/pci-bridge.h
+@@ -120,6 +120,12 @@ extern void setup_indirect_pci(struct pci_controller* hose,
+ 			       resource_size_t cfg_addr,
+ 			       resource_size_t cfg_data, u32 flags);
+ 
++extern int indirect_read_config(struct pci_bus *bus, unsigned int devfn,
++				int offset, int len, u32 *val);
++
++extern int indirect_write_config(struct pci_bus *bus, unsigned int devfn,
++				 int offset, int len, u32 val);
++
+ static inline struct pci_controller *pci_bus_to_host(const struct pci_bus *bus)
+ {
+ 	return bus->sysdata;
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 41bbcc4..9c0fcc9 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -54,12 +54,22 @@ static void quirk_fsl_pcie_header(struct pci_dev *dev)
+ 	return;
+ }
+ 
+-static int __init fsl_pcie_check_link(struct pci_controller *hose)
++static int fsl_indirect_read_config(struct pci_bus *, unsigned int,
++				    int, int, u32 *);
++
++static int fsl_pcie_check_link(struct pci_controller *hose)
+ {
+-	u32 val;
++	u32 val = 0;
+ 
+ 	if (hose->indirect_type & PPC_INDIRECT_TYPE_FSL_CFG_REG_LINK) {
+-		early_read_config_dword(hose, 0, 0, PCIE_LTSSM, &val);
++		if (hose->ops->read == fsl_indirect_read_config) {
++			struct pci_bus bus;
++			bus.number = 0;
++			bus.sysdata = hose;
++			bus.ops = hose->ops;
++			indirect_read_config(&bus, 0, PCIE_LTSSM, 4, &val);
++		} else
++			early_read_config_dword(hose, 0, 0, PCIE_LTSSM, &val);
+ 		if (val < PCIE_LTSSM_L0)
+ 			return 1;
+ 	} else {
+@@ -74,6 +84,33 @@ static int __init fsl_pcie_check_link(struct pci_controller *hose)
+ 	return 0;
+ }
+ 
++static int fsl_indirect_read_config(struct pci_bus *bus, unsigned int devfn,
++				    int offset, int len, u32 *val)
++{
++	struct pci_controller *hose = pci_bus_to_host(bus);
++	
++	if (fsl_pcie_check_link(hose))
++		hose->indirect_type |= PPC_INDIRECT_TYPE_NO_PCIE_LINK;
++	else
++		hose->indirect_type &= ~PPC_INDIRECT_TYPE_NO_PCIE_LINK;
++	
++	return indirect_read_config(bus, devfn, offset, len, val);
++}
++
++static struct pci_ops fsl_indirect_pci_ops =
++{
++	.read = fsl_indirect_read_config,
++	.write = indirect_write_config,
++};
++
++static void __init fsl_setup_indirect_pci(struct pci_controller* hose,
++					  resource_size_t cfg_addr,
++					  resource_size_t cfg_data, u32 flags)
++{
++	setup_indirect_pci(hose, cfg_addr, cfg_data, flags);
++	hose->ops = &fsl_indirect_pci_ops;
++}
++
+ #if defined(CONFIG_FSL_SOC_BOOKE) || defined(CONFIG_PPC_86xx)
+ 
+ #define MAX_PHYS_ADDR_BITS	40
+@@ -469,8 +506,8 @@ int __init fsl_add_bridge(struct platform_device *pdev, int is_primary)
+ 	if (!hose->private_data)
+ 		goto no_bridge;
+ 
+-	setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4,
+-		PPC_INDIRECT_TYPE_BIG_ENDIAN);
++	fsl_setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4,
++			       PPC_INDIRECT_TYPE_BIG_ENDIAN);
+ 
+ 	if (in_be32(&pci->block_rev1) < PCIE_IP_REV_3_0)
+ 		hose->indirect_type |= PPC_INDIRECT_TYPE_FSL_CFG_REG_LINK;
+@@ -779,8 +816,8 @@ int __init mpc83xx_add_bridge(struct device_node *dev)
+ 		if (ret)
+ 			goto err0;
+ 	} else {
+-		setup_indirect_pci(hose, rsrc_cfg.start,
+-				   rsrc_cfg.start + 4, 0);
++		fsl_setup_indirect_pci(hose, rsrc_cfg.start,
++				       rsrc_cfg.start + 4, 0);
+ 	}
+ 
+ 	printk(KERN_INFO "Found FSL PCI host bridge at 0x%016llx. "
+diff --git a/arch/powerpc/sysdev/indirect_pci.c b/arch/powerpc/sysdev/indirect_pci.c
+index 82fdad8..c6c8b52 100644
+--- a/arch/powerpc/sysdev/indirect_pci.c
++++ b/arch/powerpc/sysdev/indirect_pci.c
+@@ -20,9 +20,8 @@
+ #include <asm/pci-bridge.h>
+ #include <asm/machdep.h>
+ 
+-static int
+-indirect_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
+-		     int len, u32 *val)
++int indirect_read_config(struct pci_bus *bus, unsigned int devfn,
++			 int offset, int len, u32 *val)
+ {
+ 	struct pci_controller *hose = pci_bus_to_host(bus);
+ 	volatile void __iomem *cfg_data;
+@@ -78,9 +77,8 @@ indirect_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
+ 	return PCIBIOS_SUCCESSFUL;
+ }
+ 
+-static int
+-indirect_write_config(struct pci_bus *bus, unsigned int devfn, int offset,
+-		      int len, u32 val)
++int indirect_write_config(struct pci_bus *bus, unsigned int devfn,
++			  int offset, int len, u32 val)
+ {
+ 	struct pci_controller *hose = pci_bus_to_host(bus);
+ 	volatile void __iomem *cfg_data;
