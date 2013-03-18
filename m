@@ -1,32 +1,32 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4BEB52C00C4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2013 21:41:59 +1100 (EST)
+ (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D105D2C007A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2013 22:13:12 +1100 (EST)
 Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 18 Mar 2013 20:35:35 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 9485F357804A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2013 21:41:34 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r2IASA0K9437598
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2013 21:28:11 +1100
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r2IAf0YN016468
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2013 21:41:00 +1100
+ Mon, 18 Mar 2013 16:38:56 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 09C65E0059
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2013 16:44:09 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r2IBCeCm7799266
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2013 16:42:40 +0530
+Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r2IBCcmP028810
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2013 22:12:42 +1100
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: akpm@linux-foundation.org, benh@kernel.crashing.org
 Subject: Re: [patch 2/2] mm: use vm_unmapped_area() on powerpc architecture
 In-Reply-To: <20130221230558.C201931C1B7@corp2gmr1-1.hot.corp.google.com>
 References: <20130221230558.C201931C1B7@corp2gmr1-1.hot.corp.google.com>
-Date: Mon, 18 Mar 2013 16:10:47 +0530
-Message-ID: <87hak92dow.fsf@linux.vnet.ibm.com>
+Date: Mon, 18 Mar 2013 16:42:35 +0530
+Message-ID: <87d2ux2c7w.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org, walken@google.com,
@@ -88,13 +88,30 @@ akpm@linux-foundation.org writes:
 > +		return !!(available.high_slices & (1u << slice));
 > +	}
 > +}
+> +
 
+how about  ?
 
-Can you clarify more on when boundary_addr is set to start of the slice
-in the comment ? Also may be it would be better if we can say
-slice_scan_prev_available and slice_scan_next_available and get rid of
-end completely ?
+static bool slice_scan_available(unsigned long addr,
+				 struct slice_mask available,
+				 int end,
+				 unsigned long *boundary_addr)
+{
+	unsigned long slice;
+	if (addr < SLICE_LOW_TOP) {
+		slice = GET_LOW_SLICE_INDEX(addr);
+		*boundary_addr = (slice + end) << SLICE_LOW_SHIFT;
+		return !!(available.low_slices & (1u << slice));
+	} else {
+		slice = GET_HIGH_SLICE_INDEX(addr);
+		if ((slice + end) >= SLICE_NUM_HIGH)
+			/* loop back in the high slice */
+			*boundary_addr = SLICE_LOW_TOP;
+		else
+			*boundary_addr = (slice + end) << SLICE_HIGH_SHIFT;
+		return !!(available.high_slices & (1u << slice));
+	}
+}
 
-I have tested with both the patches applied and the resulting kernel boots fine. 
 
 -aneesh
