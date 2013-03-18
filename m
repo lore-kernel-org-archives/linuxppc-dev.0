@@ -1,37 +1,22 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8DD6E2C00B7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2013 23:27:56 +1100 (EST)
-Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 18 Mar 2013 17:53:19 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id C3370125805E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2013 17:58:52 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r2ICRgo76160678
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2013 17:57:42 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r2ICRieE009991
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2013 23:27:44 +1100
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Michel Lespinasse <walken@google.com>
-Subject: Re: [patch 2/2] mm: use vm_unmapped_area() on powerpc architecture
-In-Reply-To: <CANN689H_Q8RBmyuF6hqOB+prZciHTUPudfhs_+y0p2peHwTdTw@mail.gmail.com>
-References: <20130221230558.C201931C1B7@corp2gmr1-1.hot.corp.google.com>
- <87d2ux2c7w.fsf@linux.vnet.ibm.com>
- <CANN689H_Q8RBmyuF6hqOB+prZciHTUPudfhs_+y0p2peHwTdTw@mail.gmail.com>
-Date: Mon, 18 Mar 2013 17:57:44 +0530
-Message-ID: <87a9q03nb3.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: akpm@linux-foundation.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 9A7782C008E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2013 01:41:44 +1100 (EST)
+Message-ID: <1363617693.15862.1.camel@pasglop>
+Subject: Re: [PATCH 1/3] powerpc/mpic: add irq_set_wake support
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Wang Dongsheng-B40534 <B40534@freescale.com>
+Date: Mon, 18 Mar 2013 15:41:33 +0100
+In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F15439259EB6434@039-SN2MPN1-022.039d.mgd.msft.net>
+References: <1362728327-21013-1-git-send-email-dongsheng.wang@freescale.com>
+ <ABB05CD9C9F68C46A5CEDC7F15439259EB6434@039-SN2MPN1-022.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ Gala Kumar-B11780 <B11780@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,43 +26,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michel Lespinasse <walken@google.com> writes:
+On Mon, 2013-03-18 at 09:28 +0000, Wang Dongsheng-B40534 wrote:
+> Hi Benjamin & Kumar,
+> 
+> I am not sure who can apply these patches...
+> 
+> Could you apply these patches?
 
-> On Mon, Mar 18, 2013 at 4:12 AM, Aneesh Kumar K.V
-> <aneesh.kumar@linux.vnet.ibm.com> wrote:
->> how about  ?
->>
->> static bool slice_scan_available(unsigned long addr,
->>                                  struct slice_mask available,
->>                                  int end,
->>                                  unsigned long *boundary_addr)
->> {
->>         unsigned long slice;
->>         if (addr < SLICE_LOW_TOP) {
->>                 slice = GET_LOW_SLICE_INDEX(addr);
->>                 *boundary_addr = (slice + end) << SLICE_LOW_SHIFT;
->>                 return !!(available.low_slices & (1u << slice));
->>         } else {
->>                 slice = GET_HIGH_SLICE_INDEX(addr);
->
->>                 if ((slice + end) >= SLICE_NUM_HIGH)
->>                         /* loop back in the high slice */
->>                         *boundary_addr = SLICE_LOW_TOP;
->>                 else
->>                         *boundary_addr = (slice + end) << SLICE_HIGH_SHIFT;
->
-> I don't mind having this section as an if..else rather than ?:
-> statement. However, the condition would need to be if (slice == 0 &&
-> end == 0) or if (slice + end == 0)
->
-> This is because the beginning of high slice 0 is at SLICE_LOW_TOP and not at 0,
-> and the end of high slice 63 is at 64TB not at SLICE_LOW_TOP.
->
+I can but I need somebody to review them, I don't have the bandwidth nor
+am I familiar with the FSL changes to the MPIC.
 
-aha, I missed the fact that it was to handle slice = 0 && end == 0
-case. I was looking it as looping back to start slice in high slice
-range once we reached 0xffffffff. Above slice 63 in high slice, we
-should have available always unset, so beyond that we can ideally
-loop back to SLICE_LOW_TOP right ?
+Cheers,
+Ben.
 
--aneesh
+> Thanks.
+> 
+> [1/3] powerpc/mpic: add irq_set_wake support
+> http://patchwork.ozlabs.org/patch/226034/
+> 
+> [2/3] powerpc/mpic: add global timer support
+> http://patchwork.ozlabs.org/patch/226035/
+> 
+> [3/3] powerpc/fsl: add MPIC timer wakeup support
+> http://patchwork.ozlabs.org/patch/226036/
+> 
+> > -----Original Message-----
+> > From: Wang Dongsheng-B40534
+> > Sent: Friday, March 08, 2013 3:39 PM
+> > To: Wood Scott-B07421; Gala Kumar-B11780
+> > Cc: linuxppc-dev@lists.ozlabs.org; Wang Dongsheng-B40534
+> > Subject: [PATCH 1/3] powerpc/mpic: add irq_set_wake support
+> > 
+> > Add irq_set_wake support. Just add IRQF_NO_SUSPEND to desc->action->flag.
+> > So the wake up interrupt will not be disable in suspend_device_irqs.
+> > 
+> > Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> > ---
+> >  arch/powerpc/sysdev/mpic.c |   15 +++++++++++++++
+> >  1 files changed, 15 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+> > index 3b2efd4..10e474e 100644
+> > --- a/arch/powerpc/sysdev/mpic.c
+> > +++ b/arch/powerpc/sysdev/mpic.c
+> > @@ -920,6 +920,18 @@ int mpic_set_irq_type(struct irq_data *d, unsigned
+> > int flow_type)
+> >  	return IRQ_SET_MASK_OK_NOCOPY;
+> >  }
+> > 
+> > +static int mpic_irq_set_wake(struct irq_data *d, unsigned int on) {
+> > +	struct irq_desc *desc = container_of(d, struct irq_desc, irq_data);
+> > +
+> > +	if (on)
+> > +		desc->action->flags |= IRQF_NO_SUSPEND;
+> > +	else
+> > +		desc->action->flags &= ~IRQF_NO_SUSPEND;
+> > +
+> > +	return 0;
+> > +}
+> > +
+> >  void mpic_set_vector(unsigned int virq, unsigned int vector)  {
+> >  	struct mpic *mpic = mpic_from_irq(virq); @@ -957,6 +969,7 @@ static
+> > struct irq_chip mpic_irq_chip = {
+> >  	.irq_unmask	= mpic_unmask_irq,
+> >  	.irq_eoi	= mpic_end_irq,
+> >  	.irq_set_type	= mpic_set_irq_type,
+> > +	.irq_set_wake	= mpic_irq_set_wake,
+> >  };
+> > 
+> >  #ifdef CONFIG_SMP
+> > @@ -971,6 +984,7 @@ static struct irq_chip mpic_tm_chip = {
+> >  	.irq_mask	= mpic_mask_tm,
+> >  	.irq_unmask	= mpic_unmask_tm,
+> >  	.irq_eoi	= mpic_end_irq,
+> > +	.irq_set_wake	= mpic_irq_set_wake,
+> >  };
+> > 
+> >  #ifdef CONFIG_MPIC_U3_HT_IRQS
+> > @@ -981,6 +995,7 @@ static struct irq_chip mpic_irq_ht_chip = {
+> >  	.irq_unmask	= mpic_unmask_ht_irq,
+> >  	.irq_eoi	= mpic_end_ht_irq,
+> >  	.irq_set_type	= mpic_set_irq_type,
+> > +	.irq_set_wake	= mpic_irq_set_wake,
+> >  };
+> >  #endif /* CONFIG_MPIC_U3_HT_IRQS */
+> > 
+> > --
+> > 1.7.5.1
+> 
