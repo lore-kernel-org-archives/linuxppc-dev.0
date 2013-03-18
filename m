@@ -2,14 +2,26 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E18B82C0206
- for <linuxppc-dev@ozlabs.org>; Tue, 19 Mar 2013 06:11:18 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 9D2002C023D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2013 06:12:32 +1100 (EST)
+Subject: Re: [PATCH 5/5 v9] iommu/fsl: Freescale PAMU driver and iommu
+ implementation.
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/2] powerpc/fsl-booke: Added device tree DCSR entries for
-Date: Mon, 18 Mar 2013 14:11:09 -0500
-Message-Id: <1363633870-3894-1-git-send-email-galak@kernel.crashing.org>
-Cc: Stephen George <Stephen.George@freescale.com>
+In-Reply-To: <CCCE947A-1C24-40C2-9341-BBF3F5C00D98@kernel.crashing.org>
+Date: Mon, 18 Mar 2013 14:12:13 -0500
+Message-Id: <329F7C2C-F1DA-4025-977F-5C09A9BFE21D@kernel.crashing.org>
+References: <1363200580-11623-1-git-send-email-Varun.Sethi@freescale.com>
+ <0080B56D-8417-41B9-8341-665457D04DE6@kernel.crashing.org>
+ <C5ECD7A89D1DC44195F34B25E172658D40ABB4@039-SN2MPN1-013.039d.mgd.msft.net>
+ <CCCE947A-1C24-40C2-9341-BBF3F5C00D98@kernel.crashing.org>
+To: Sethi Varun-B16395 <B16395@freescale.com>
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Yoder Stuart-B08248 <B08248@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,259 +31,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Stephen George <Stephen.George@freescale.com>
 
-Signed-off-by: Stephen George <Stephen.George@freescale.com>
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/boot/dts/fsl/t4240si-post.dtsi |  131 +++++++++++++++++++++++++++
- arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi  |   25 ++---
- arch/powerpc/boot/dts/t4240qds.dts          |    4 +
- 3 files changed, 148 insertions(+), 12 deletions(-)
+On Mar 18, 2013, at 9:59 AM, Kumar Gala wrote:
 
-diff --git a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-index 376b958..2b17699 100644
---- a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-@@ -159,6 +159,137 @@
- 	};
- };
- 
-+&dcsr {
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+	compatible = "fsl,dcsr", "simple-bus";
-+
-+	dcsr-epu@0 {
-+		compatible = "fsl,t4240-dcsr-epu", "fsl,dcsr-epu";
-+		interrupts = <52 2 0 0
-+			      84 2 0 0
-+			      85 2 0 0
-+			      94 2 0 0
-+			      95 2 0 0>;
-+		reg = <0x0 0x1000>;
-+	};
-+	dcsr-npc {
-+		compatible = "fsl,t4240-dcsr-cnpc", "fsl,dcsr-cnpc";
-+		reg = <0x1000 0x1000 0x1002000 0x10000>;
-+	};
-+	dcsr-nxc@2000 {
-+		compatible = "fsl,dcsr-nxc";
-+		reg = <0x2000 0x1000>;
-+	};
-+	dcsr-corenet {
-+		compatible = "fsl,dcsr-corenet";
-+		reg = <0x8000 0x1000 0x1A000 0x1000>;
-+	};
-+	dcsr-dpaa@9000 {
-+		compatible = "fsl,t4240-dcsr-dpaa", "fsl,dcsr-dpaa";
-+		reg = <0x9000 0x1000>;
-+	};
-+	dcsr-ocn@11000 {
-+		compatible = "fsl,t4240-dcsr-ocn", "fsl,dcsr-ocn";
-+		reg = <0x11000 0x1000>;
-+	};
-+	dcsr-ddr@12000 {
-+		compatible = "fsl,dcsr-ddr";
-+		dev-handle = <&ddr1>;
-+		reg = <0x12000 0x1000>;
-+	};
-+	dcsr-ddr@13000 {
-+		compatible = "fsl,dcsr-ddr";
-+		dev-handle = <&ddr2>;
-+		reg = <0x13000 0x1000>;
-+	};
-+	dcsr-ddr@14000 {
-+		compatible = "fsl,dcsr-ddr";
-+		dev-handle = <&ddr3>;
-+		reg = <0x14000 0x1000>;
-+	};
-+	dcsr-nal@18000 {
-+		compatible = "fsl,t4240-dcsr-nal", "fsl,dcsr-nal";
-+		reg = <0x18000 0x1000>;
-+	};
-+	dcsr-rcpm@22000 {
-+		compatible = "fsl,t4240-dcsr-rcpm", "fsl,dcsr-rcpm";
-+		reg = <0x22000 0x1000>;
-+	};
-+	dcsr-snpc@30000 {
-+		compatible = "fsl,t4240-dcsr-snpc", "fsl,dcsr-snpc";
-+		reg = <0x30000 0x1000 0x1022000 0x10000>;
-+	};
-+	dcsr-snpc@31000 {
-+		compatible = "fsl,t4240-dcsr-snpc", "fsl,dcsr-snpc";
-+		reg = <0x31000 0x1000 0x1042000 0x10000>;
-+	};
-+	dcsr-snpc@32000 {
-+		compatible = "fsl,t4240-dcsr-snpc", "fsl,dcsr-snpc";
-+		reg = <0x32000 0x1000 0x1062000 0x10000>;
-+	};
-+	dcsr-cpu-sb-proxy@100000 {
-+		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
-+		cpu-handle = <&cpu0>;
-+		reg = <0x100000 0x1000 0x101000 0x1000>;
-+	};
-+	dcsr-cpu-sb-proxy@108000 {
-+		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
-+		cpu-handle = <&cpu1>;
-+		reg = <0x108000 0x1000 0x109000 0x1000>;
-+	};
-+	dcsr-cpu-sb-proxy@110000 {
-+		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
-+		cpu-handle = <&cpu2>;
-+		reg = <0x110000 0x1000 0x111000 0x1000>;
-+	};
-+	dcsr-cpu-sb-proxy@118000 {
-+		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
-+		cpu-handle = <&cpu3>;
-+		reg = <0x118000 0x1000 0x119000 0x1000>;
-+	};
-+	dcsr-cpu-sb-proxy@120000 {
-+		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
-+		cpu-handle = <&cpu4>;
-+		reg = <0x120000 0x1000 0x121000 0x1000>;
-+	};
-+	dcsr-cpu-sb-proxy@128000 {
-+		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
-+		cpu-handle = <&cpu5>;
-+		reg = <0x128000 0x1000 0x129000 0x1000>;
-+	};
-+	dcsr-cpu-sb-proxy@130000 {
-+		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
-+		cpu-handle = <&cpu6>;
-+		reg = <0x130000 0x1000 0x131000 0x1000>;
-+	};
-+	dcsr-cpu-sb-proxy@138000 {
-+		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
-+		cpu-handle = <&cpu7>;
-+		reg = <0x138000 0x1000 0x139000 0x1000>;
-+	};
-+	dcsr-cpu-sb-proxy@140000 {
-+		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
-+		cpu-handle = <&cpu8>;
-+		reg = <0x140000 0x1000 0x141000 0x1000>;
-+	};
-+	dcsr-cpu-sb-proxy@148000 {
-+		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
-+		cpu-handle = <&cpu9>;
-+		reg = <0x148000 0x1000 0x149000 0x1000>;
-+	};
-+	dcsr-cpu-sb-proxy@150000 {
-+		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
-+		cpu-handle = <&cpu10>;
-+		reg = <0x150000 0x1000 0x151000 0x1000>;
-+	};
-+	dcsr-cpu-sb-proxy@158000 {
-+		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
-+		cpu-handle = <&cpu11>;
-+		reg = <0x158000 0x1000 0x159000 0x1000>;
-+	};
-+};
-+
- &soc {
- 	#address-cells = <1>;
- 	#size-cells = <1>;
-diff --git a/arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi
-index 12af298..9b39a43 100644
---- a/arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi
-@@ -44,6 +44,7 @@
- 
- 	aliases {
- 		ccsr = &soc;
-+		dcsr = &dcsr;
- 
- 		serial0 = &serial0;
- 		serial1 = &serial1;
-@@ -63,62 +64,62 @@
- 		#address-cells = <1>;
- 		#size-cells = <0>;
- 
--		PowerPC,e6500@0 {
-+		cpu0: PowerPC,e6500@0 {
- 			device_type = "cpu";
- 			reg = <0 1>;
- 			next-level-cache = <&L2_1>;
- 		};
--		PowerPC,e6500@1 {
-+		cpu1: PowerPC,e6500@1 {
- 			device_type = "cpu";
- 			reg = <2 3>;
- 			next-level-cache = <&L2_1>;
- 		};
--		PowerPC,e6500@2 {
-+		cpu2: PowerPC,e6500@2 {
- 			device_type = "cpu";
- 			reg = <4 5>;
- 			next-level-cache = <&L2_1>;
- 		};
--		PowerPC,e6500@3 {
-+		cpu3: PowerPC,e6500@3 {
- 			device_type = "cpu";
- 			reg = <6 7>;
- 			next-level-cache = <&L2_1>;
- 		};
--		PowerPC,e6500@4 {
-+		cpu4: PowerPC,e6500@4 {
- 			device_type = "cpu";
- 			reg = <8 9>;
- 			next-level-cache = <&L2_2>;
- 		};
--		PowerPC,e6500@5 {
-+		cpu5: PowerPC,e6500@5 {
- 			device_type = "cpu";
- 			reg = <10 11>;
- 			next-level-cache = <&L2_2>;
- 		};
--		PowerPC,e6500@6 {
-+		cpu6: PowerPC,e6500@6 {
- 			device_type = "cpu";
- 			reg = <12 13>;
- 			next-level-cache = <&L2_2>;
- 		};
--		PowerPC,e6500@7 {
-+		cpu7: PowerPC,e6500@7 {
- 			device_type = "cpu";
- 			reg = <14 15>;
- 			next-level-cache = <&L2_2>;
- 		};
--		PowerPC,e6500@8 {
-+		cpu8: PowerPC,e6500@8 {
- 			device_type = "cpu";
- 			reg = <16 17>;
- 			next-level-cache = <&L2_3>;
- 		};
--		PowerPC,e6500@9 {
-+		cpu9: PowerPC,e6500@9 {
- 			device_type = "cpu";
- 			reg = <18 19>;
- 			next-level-cache = <&L2_3>;
- 		};
--		PowerPC,e6500@10 {
-+		cpu10: PowerPC,e6500@10 {
- 			device_type = "cpu";
- 			reg = <20 21>;
- 			next-level-cache = <&L2_3>;
- 		};
--		PowerPC,e6500@11 {
-+		cpu11: PowerPC,e6500@11 {
- 			device_type = "cpu";
- 			reg = <22 23>;
- 			next-level-cache = <&L2_3>;
-diff --git a/arch/powerpc/boot/dts/t4240qds.dts b/arch/powerpc/boot/dts/t4240qds.dts
-index 83b479f..0555976 100644
---- a/arch/powerpc/boot/dts/t4240qds.dts
-+++ b/arch/powerpc/boot/dts/t4240qds.dts
-@@ -100,6 +100,10 @@
- 		device_type = "memory";
- 	};
- 
-+	dcsr: dcsr@f00000000 {
-+		ranges = <0x00000000 0xf 0x00000000 0x01072000>;
-+	};
-+
- 	soc: soc@ffe000000 {
- 		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
- 		reg = <0xf 0xfe000000 0 0x00001000>;
--- 
-1.7.9.7
+>=20
+> On Mar 17, 2013, at 10:48 AM, Sethi Varun-B16395 wrote:
+>=20
+>>>>=20
+>>>> +	guts_node =3D of_find_compatible_node(NULL, NULL,
+>>>> +			"fsl,qoriq-device-config-1.0");
+>>>=20
+>>> This doesn't work for T4 or B4 device trees.
+>>>=20
+>> [Sethi Varun-B16395]hmm.... I need to use the dcfg space for this.
+>=20
+> Let's see with the SoC arch's if something like =
+"fsl,qoriq-device-config-2.0" makes sense for T4 & B4.
+
+Based on discuss, I've sent patch for T4 dts to use =
+"fsl,qoriq-device-config-2.0", so please update PAMU code to use that =
+string.
+
+- k
