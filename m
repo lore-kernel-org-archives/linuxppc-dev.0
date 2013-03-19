@@ -1,29 +1,25 @@
-Return-Path: <B40534@freescale.com>
-Received: from db3outboundpool.messaging.microsoft.com
- (db3ehsobe006.messaging.microsoft.com [213.199.154.144])
+Return-Path: <B38951@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 546662C00A2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2013 18:56:09 +1100 (EST)
-Received: from mail6-db3 (localhost [127.0.0.1])	by mail6-db3-R.bigfish.com
- (Postfix) with ESMTP id 3ED5F48006B	for <linuxppc-dev@lists.ozlabs.org>; Tue,
- 19 Mar 2013 07:56:03 +0000 (UTC)
-Received: from DB3EHSMHS019.bigfish.com (unknown [10.3.81.228])	by
- mail6-db3.bigfish.com (Postfix) with ESMTP id EA39B2E004A	for
- <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2013 07:56:01 +0000 (UTC)
-From: Wang Dongsheng-B40534 <B40534@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH 2/3] powerpc/mpic: add global timer support
-Date: Tue, 19 Mar 2013 07:55:58 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259EB717E@039-SN2MPN1-022.039d.mgd.msft.net>
-References: <1362728327-21013-2-git-send-email-dongsheng.wang@freescale.com>
- (from dongsheng.wang@freescale.com on Fri Mar  8 01:38:46 2013)
- <1363650392.27435.22@snotra>
-In-Reply-To: <1363650392.27435.22@snotra>
+ by ozlabs.org (Postfix) with ESMTPS id 320982C00C4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2013 19:03:25 +1100 (EST)
+From: Jia Hongtao-B38951 <B38951@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: RE: [PATCH V2] powerpc/85xx: workaround for chips with MSI hardware
+ errata
+Date: Tue, 19 Mar 2013 08:03:13 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01C1AB0B@039-SN1MPN1-003.039d.mgd.msft.net>
+References: <1363257323-2801-1-git-send-email-hongtao.jia@freescale.com>
+ <6844A08B-8711-47AE-ACF1-9FAC23460710@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01C18FB3@039-SN1MPN1-003.039d.mgd.msft.net>
+ <15F68699-A225-4103-BE64-36554493C405@kernel.crashing.org>
+In-Reply-To: <15F68699-A225-4103-BE64-36554493C405@kernel.crashing.org>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Cc: Gala Kumar-B11780 <B11780@freescale.com>,
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,76 +31,192 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> > +static void convert_ticks_to_time(struct timer_group_priv *priv,
-> > +		const u64 ticks, struct timeval *time) {
-> > +	u64 tmp_sec;
-> > +	u32 rem_us;
-> > +	u32 div;
-> > +
-> > +	if (!(priv->flags & FSL_GLOBAL_TIMER)) {
-> > +		time->tv_sec =3D (__kernel_time_t)
-> > +			div_u64_rem(ticks, priv->timerfreq, &rem_us);
-> > +		tmp_sec =3D (u64)time->tv_sec * (u64)priv->timerfreq;
-> > +		time->tv_usec =3D (__kernel_suseconds_t)
-> > +			div_u64((ticks - tmp_sec) * 1000000,
-> > priv->timerfreq);
-> > +
-> > +		return;
-> > +	}
-> > +
-> > +	div =3D (1 << (MPIC_TIMER_TCR_CLKDIV_64 >> 8)) * 8;
-> > +
-> > +	time->tv_sec =3D (__kernel_time_t)div_u64(ticks, priv->timerfreq
-> > / div);
-> > +	tmp_sec =3D div_u64((u64)time->tv_sec * (u64)priv->timerfreq,
-> > div);
-> > +
-> > +	time->tv_usec =3D (__kernel_suseconds_t)
-> > +		div_u64((ticks - tmp_sec) * 1000000, priv->timerfreq /
-> > div);
-> > +
-> > +	return;
+
+
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> Sent: Friday, March 15, 2013 11:53 PM
+> To: Jia Hongtao-B38951
+> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421;
+> michael@ellerman.id.au; Li Yang-R58472
+> Subject: Re: [PATCH V2] powerpc/85xx: workaround for chips with MSI
+> hardware errata
 >=20
-> Why don't you just adjust the clock frequency up front for CLKDIV_64,
-> rather than introduce alternate (and untested!) code paths throughout the
-> driver?
 >=20
-No, It cannot be integrated. The div cannot be removed.
-Because if do priv->timerfreq /=3D div, that will affect the accuracy.
+> On Mar 14, 2013, at 9:00 PM, Jia Hongtao-B38951 wrote:
+>=20
+> >
+> >
+> >> -----Original Message-----
+> >> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> >> Sent: Friday, March 15, 2013 4:05 AM
+> >> To: Jia Hongtao-B38951
+> >> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421;
+> >> michael@ellerman.id.au; Li Yang-R58472; Jia Hongtao-B38951
+> >> Subject: Re: [PATCH V2] powerpc/85xx: workaround for chips with MSI
+> >> hardware errata
+> >>
+> >>
+> >> On Mar 14, 2013, at 5:35 AM, Jia Hongtao wrote:
+> >>
+> >>> The MPIC version 2.0 has a MSI errata (errata PIC1 of mpc8544), It
+> >>> causes that neither MSI nor MSI-X can work fine. This is a
+> >>> workaround to allow MSI-X to function properly.
+> >>>
+> >>> Signed-off-by: Liu Shuo <soniccat.liu@gmail.com>
+> >>> Signed-off-by: Li Yang <leoli@freescale.com>
+> >>> Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+> >>> ---
+> >>> Changes for V2:
+> >>> - Address almost all the comments from Michael Ellerman for V1.
+> >>> Here is the link:
+> >>> http://patchwork.ozlabs.org/patch/226833/
+> >>>
+> >>> arch/powerpc/sysdev/fsl_msi.c | 65
+> >>> +++++++++++++++++++++++++++++++++++++++++--
+> >>> arch/powerpc/sysdev/fsl_msi.h |  2 ++
+> >>> 2 files changed, 64 insertions(+), 3 deletions(-)
+> >>>
+> >>> diff --git a/arch/powerpc/sysdev/fsl_msi.c
+> >>> b/arch/powerpc/sysdev/fsl_msi.c index 178c994..54cb83e 100644
+> >>> --- a/arch/powerpc/sysdev/fsl_msi.c
+> >>> +++ b/arch/powerpc/sysdev/fsl_msi.c
+> >>> @@ -98,8 +98,18 @@ static int fsl_msi_init_allocator(struct fsl_msi
+> >>> *msi_data)
+> >>>
+> >>> static int fsl_msi_check_device(struct pci_dev *pdev, int nvec, int
+> >>> type) {
+> >>> -	if (type =3D=3D PCI_CAP_ID_MSIX)
+> >>> -		pr_debug("fslmsi: MSI-X untested, trying anyway.\n");
+> >>> +	struct fsl_msi *msi;
+> >>> +
+> >>> +	if (type =3D=3D PCI_CAP_ID_MSI) {
+> >>> +		/*
+> >>> +		 * MPIC version 2.0 has erratum PIC1. For now MSI
+> >>> +		 * could not work. So check to prevent MSI from
+> >>> +		 * being used on the board with this erratum.
+> >>> +		 */
+> >>> +		list_for_each_entry(msi, &msi_head, list)
+> >>> +			if (msi->feature & MSI_HW_ERRATA_ENDIAN)
+> >>> +				return -EINVAL;
+> >>> +	}
+> >>>
+> >>> 	return 0;
+> >>> }
+> >>> @@ -142,7 +152,17 @@ static void fsl_compose_msi_msg(struct pci_dev
+> >> *pdev, int hwirq,
+> >>> 	msg->address_lo =3D lower_32_bits(address);
+> >>> 	msg->address_hi =3D upper_32_bits(address);
+> >>>
+> >>> -	msg->data =3D hwirq;
+> >>> +	/*
+> >>> +	 * MPIC version 2.0 has erratum PIC1. It causes
+> >>> +	 * that neither MSI nor MSI-X can work fine.
+> >>> +	 * This is a workaround to allow MSI-X to function
+> >>> +	 * properly. It only works for MSI-X, we prevent
+> >>> +	 * MSI on buggy chips in fsl_msi_check_device().
+> >>> +	 */
+> >>> +	if (msi_data->feature & MSI_HW_ERRATA_ENDIAN)
+> >>> +		msg->data =3D __swab32(hwirq);
+> >>> +	else
+> >>> +		msg->data =3D hwirq;
+> >>>
+> >>> 	pr_debug("%s: allocated srs: %d, ibs: %d\n",
+> >>> 		__func__, hwirq / IRQS_PER_MSI_REG, hwirq % IRQS_PER_MSI_REG);
+> >> @@
+> >>> -361,6 +381,35 @@ static int fsl_msi_setup_hwirq(struct fsl_msi
+> >>> *msi,
+> >> struct platform_device *dev,
+> >>> 	return 0;
+> >>> }
+> >>>
+> >>> +/* MPIC version 2.0 has erratum PIC1 */ static int
+> >>> +mpic_has_errata(struct platform_device *dev) {
+> >>> +	struct device_node *mpic_node;
+> >>> +
+> >>> +	mpic_node =3D of_irq_find_parent(dev->dev.of_node);
+> >>> +	if (mpic_node) {
+> >>> +		u32 *reg_base, brr1 =3D 0;
+> >>> +		/* Get the PIC reg base */
+> >>> +		reg_base =3D of_iomap(mpic_node, 0);
+> >>> +		of_node_put(mpic_node);
+> >>> +		if (!reg_base) {
+> >>> +			dev_err(&dev->dev, "ioremap problem failed.\n");
+> >>> +			return -EIO;
+> >>> +		}
+> >>> +
+> >>> +		/* Get the mpic version from block revision register 1 */
+> >>> +		brr1 =3D in_be32(reg_base + MPIC_FSL_BRR1);
+> >>> +		iounmap(reg_base);
+> >>> +		if ((brr1 & MPIC_FSL_BRR1_VER) =3D=3D 0x0200)
+> >>> +			return 1;
+> >>> +	} else {
+> >>> +		dev_err(&dev->dev, "MSI can't find his parent mpic node.\n");
+> >>> +		return -ENODEV;
+> >>> +	}
+> >>> +
+> >>> +	return 0;
+> >>> +}
+> >>> +
+> >>> static const struct of_device_id fsl_of_msi_ids[]; static int
+> >>> fsl_of_msi_probe(struct platform_device *dev) { @@ -423,6 +472,16 @@
+> >>> static int fsl_of_msi_probe(struct platform_device *dev)
+> >>>
+> >>> 	msi->feature =3D features->fsl_pic_ip;
+> >>>
+> >>> +	if ((features->fsl_pic_ip & FSL_PIC_IP_MASK) =3D=3D FSL_PIC_IP_MPIC=
+) {
+> >>> +		rc =3D mpic_has_errata(dev);
+> >>> +		if (rc > 0) {
+> >>> +			msi->feature |=3D MSI_HW_ERRATA_ENDIAN;
+> >>> +		} else if (rc < 0) {
+> >>> +			err =3D rc;
+> >>> +			goto error_out;
+> >>> +		}
+> >>> +	}
+> >>> +
+> >>> 	/*
+> >>> 	 * Remember the phandle, so that we can match with any PCI nodes
+> >>> 	 * that have an "fsl,msi" property.
+> >>> diff --git a/arch/powerpc/sysdev/fsl_msi.h
+> >>> b/arch/powerpc/sysdev/fsl_msi.h index 8225f86..7389e8e 100644
+> >>> --- a/arch/powerpc/sysdev/fsl_msi.h
+> >>> +++ b/arch/powerpc/sysdev/fsl_msi.h
+> >>> @@ -25,6 +25,8 @@
+> >>> #define FSL_PIC_IP_IPIC   0x00000002
+> >>> #define FSL_PIC_IP_VMPIC  0x00000003
+> >>>
+> >>> +#define MSI_HW_ERRATA_ENDIAN 0x00000010
+> >>> +
+> >>
+> >> Is there any reason to put this in fsl_msi.h rather than just in
+> >> fsl_msi.c itself?
+> >>
+> >> - k
+> >
+> > Actually no. This micro is only used by fsl_msi.c.
+> > Will move it to fsl_msi.c.
+> >
+> > Thanks.
+> > -Hongtao.
+>=20
+> Also, wondering if we can do the mpic version detection in mpic.c and not
+> here.  I'm not sure what means we'd have to get back to the mpic struct
+> so we could possible use mpic->flags.
+>
 
-Like:
-3 * 5 / 2 =3D 7;
-3 / 2 * 5 =3D 5;
+Use the MPIC version result in mpic.c was my plan.
+But as you point out there seems no obvious way to get the mpic struct.
+mpic struct is defined as an automatic variable in platform files.
+Also MSI driver is not so close to mpic driver under current architecture.
 
-BTW
-if (!(priv->flags & FSL_GLOBAL_TIMER)) {
-	time->tv_sec =3D (__kernel_time_t)
-		div_u64_rem(ticks, priv->timerfreq, &rem_us);
-	tmp_sec =3D (u64)time->tv_sec * (u64)priv->timerfreq;
-	time->tv_usec =3D (__kernel_suseconds_t)
-		div_u64((ticks - tmp_sec) * 1000000, priv->timerfreq);
+If you get some elegant way to do this please feel free to tell me.
 
-	return;
-}
-This branch I has been tested.
-
-Test methods:
-1. Get timerfreq and set timerfreq.
-   timerfreq /=3D 64;(Clock ratio is divide by 64)
-
-2. Clear FSL_GLOBAL_TIMER flag.
-
-Test Log:
-[root@p5020 root]# echo 20 > /sys/devices/system/mpic/timer_wakeup
-[root@p5020 root]# cat /sys/devices/system/mpic/timer_wakeup
-sec =3D 18, ticks =3D 118295518.., timerfreq =3D 6249999..
-19
-[root@p5020 root]# cat /sys/devices/system/mpic/timer_wakeup
-sec =3D 17, ticks =3D 110095766.., timerfreq =3D 6249999..
-18
-[root@p5020 root]# cat /sys/devices/system/mpic/timer_wakeup
-sec =3D 16, ticks =3D 105095737.., timerfreq =3D 6249999..
-17
-[root@p5020 root]# cat /sys/devices/system/mpic/timer_wakeup
-sec =3D 15, ticks =3D 99495711.., timerfreq =3D 6249999..
-16
+Thanks.
+-Hongtao.
+=20
+> I'll look to see if I can suggest anything along those lines, thus
+> reducing the amount of ioremap() and code to find the mpic registers, etc=
+.
+>=20
+> - k
