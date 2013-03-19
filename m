@@ -1,22 +1,22 @@
-Return-Path: <geert@linux-m68k.org>
-Received: from winston.telenet-ops.be (winston.telenet-ops.be [195.130.137.75])
- by ozlabs.org (Postfix) with ESMTP id 1603D2C008A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 08:03:35 +1100 (EST)
-Received: from jacques.telenet-ops.be (jacques.telenet-ops.be [195.130.132.50])
- by winston.telenet-ops.be (Postfix) with ESMTP id 5E07E1BF79C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2013 21:52:51 +0100 (CET)
-Date: Tue, 19 Mar 2013 21:52:49 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Sender: geert@linux-m68k.org
-To: Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: Build regressions/improvements in v3.9-rc3
-In-Reply-To: <alpine.DEB.2.00.1303192148530.18971@ayla.of.borg>
-Message-ID: <alpine.DEB.2.00.1303192149210.18990@ayla.of.borg>
-References: <alpine.DEB.2.00.1303192148530.18971@ayla.of.borg>
+Return-Path: <B07421@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 73D5D2C0086
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 08:10:57 +1100 (EST)
+Date: Tue, 19 Mar 2013 16:10:45 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] powerpc: add Book E support to 64-bit hibernation
+To: Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <1363726534.8336.37.camel@jlt4.sipsolutions.net> (from
+ johannes@sipsolutions.net on Tue Mar 19 15:55:34 2013)
+Message-ID: <1363727445.16671.30@snotra>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-s390@vger.kernel.org,
- Linux/PPC Development <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Wang Dongsheng <dongsheng.wang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,40 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 19 Mar 2013, Geert Uytterhoeven wrote:
-> JFYI, when comparing v3.9-rc3 to v3.9-rc2[3], the summaries are:
->   - build errors: +10/-12
+On 03/19/2013 03:55:34 PM, Johannes Berg wrote:
+> On Mon, 2013-03-18 at 17:12 -0500, Scott Wood wrote:
+>=20
+> > Could you elaborate on why book3s flushes the way it does?  What's
+> > special about the first 32 MiB?  If it's to cover kernel code, why
+> > would that be changing from what's already there?
+>=20
+> I was going to say I have no idea, but looking at it again ... this is
+> in the *resume* code, not the suspend code as I'd assumed, and on =20
+> resume
+> I guess I felt it was safer to not assume it didn't change, since it
+> could be a slightly different kernel that loaded and restored the
+> hibernation image?
 
-10 regressions:
-  + arch/powerpc/kvm/book3s_hv.c: error: implicit declaration of function 'inhibit_secondary_onlining' [-Werror=implicit-function-declaration]:  => 1855:2
-  + arch/powerpc/kvm/book3s_hv.c: error: implicit declaration of function 'uninhibit_secondary_onlining' [-Werror=implicit-function-declaration]:  => 1862:2
+Wouldn't that be doomed for other reasons?
 
-ppc64_defconfig+UP
+I wonder about kernel modules, though flushing 32 MiB wouldn't be =20
+adequate there.
 
-  + error: "devm_request_threaded_irq" [drivers/dma/dw_dmac.ko] undefined!:  => N/A
-  + error: "devm_request_threaded_irq" [drivers/i2c/busses/i2c-ocores.ko] undefined!:  => N/A
-  + error: "devm_request_threaded_irq" [drivers/i2c/i2c-smbus.ko] undefined!:  => N/A
-  + error: "devm_request_threaded_irq" [drivers/media/platform/sh_veu.ko] undefined!:  => N/A
-  + error: "devm_request_threaded_irq" [drivers/spi/spi-altera.ko] undefined!:  => N/A
-  + error: "mfd_add_devices" [drivers/mfd/lpc_sch.ko] undefined!:  => N/A
-  + error: "mfd_remove_devices" [drivers/mfd/lpc_sch.ko] undefined!:  => N/A
+> It should be the same one, so I guess it should be
+> exactly the same code, but I guess I wanted to make sure there wasn't
+> anything weird there. As for why it'd be 32 MiB? No idea. Although =20
+> that
+> really ought to flush all your possible caches anyway, I guess.
 
-s390-allmodconfig
+It's not a displacement flush (i.e. you don't do a separate load pass =20
+first) -- it just flushes lines if they happen to be present, and =20
+leaves alone anything outside that range.  Given that you just finished =20
+copying a bunch of data, most likely what's in the cache is the last =20
+bit of data you copied.
 
-  + error: "vgacon_remap_base" [drivers/video/vga16fb.ko] undefined!:  => N/A
-
-powerpc-randconfig
-
-> [1] http://kisskb.ellerman.id.au/kisskb/head/5993/ (118 out of 117 configs)
-> [3] http://kisskb.ellerman.id.au/kisskb/head/5972/ (all 117 configs)
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-Scott=
