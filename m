@@ -1,22 +1,15 @@
-Return-Path: <florian@openwrt.org>
-From: Florian Fainelli <florian@openwrt.org>
-To: davem@davemloft.net
-Subject: [PATCH 4/4 v3] mv643xx_eth: convert to use the Marvell Orion MDIO
- driver
-Date: Fri, 22 Mar 2013 14:39:28 +0100
-Message-Id: <1363959568-16976-5-git-send-email-florian@openwrt.org>
-In-Reply-To: <1363959568-16976-1-git-send-email-florian@openwrt.org>
-References: <1363284515-9865-1-git-send-email-florian@openwrt.org>
- <1363959568-16976-1-git-send-email-florian@openwrt.org>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
- Andrew Lunn <andrew@lunn.ch>, Russell King <linux@arm.linux.org.uk>,
- Jason Cooper <jason@lakedaemon.net>, linux-doc@vger.kernel.org,
- devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Rob Herring <rob.herring@calxeda.com>, netdev@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linux-arm-kernel@lists.infradead.org,
- Rob Landley <rob@landley.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linuxppc-dev@lists.ozlabs.org, Florian Fainelli <florian@openwrt.org>,
- Lennert Buytenhek <buytenh@wantstofly.org>
+Return-Path: <489c5e5084d69a92f55c338d5e80c02e679ccd99@swissweb.swissdisk.com>
+Received: from swissweb.swissdisk.com (swissweb.swissdisk.com [174.129.12.238])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 3D89F2C00BF
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Mar 2013 00:39:41 +1100 (EST)
+From: Ben Collins <ben.c@servergy.com>
+Date: Tue, 19 Mar 2013 01:14:22 -0400
+Subject: [PATCH] sgy-cts-1000: New DTS file for Servergy CTS-1000 systems
+To: linux-kernel@vger.kernel.org
+Message-Id: <E1UJ1fR-0004i4-H8@swissweb.swissdisk.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,598 +19,1592 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch converts the Marvell MV643XX ethernet driver to use the
-Marvell Orion MDIO driver. As a result, PowerPC and ARM platforms
-registering the Marvell MV643XX ethernet driver are also updated to
-register a Marvell Orion MDIO driver. This driver voluntarily overlaps
-with the Marvell Ethernet shared registers because it will use a subset
-of this shared register (shared_base + 0x4 to shared_base + 0x84). The
-Ethernet driver is also updated to look up for a PHY device using the
-Orion MDIO bus driver.
+This isn't specifically needed in order to build the kernel. It's
+stored in flash with firmware. However, keep it in the kernel for
+reference (and to have an example for fsl_dpa device tree usage).
 
-For ARM and PowerPC we register a single instance of the "mvmdio" driver
-in the system like it used to be done with the use of the "shared_smi"
-platform_data cookie on ARM.
-
-Note that it is safe to register the mvmdio driver only for the "ge00"
-instance of the driver because this "ge00" interface is guaranteed to
-always be explicitely registered by consumers of
-arch/arm/plat-orion/common.c and other instances (ge01, ge10 and ge11)
-were all pointing their shared_smi to ge00. For PowerPC the in-tree
-Device Tree Source files mention only one MV643XX ethernet MAC instance
-so the MDIO bus driver is registered only when id == 0.
-
-Signed-off-by: Florian Fainelli <florian@openwrt.org>
+Signed-off-by: Ben Collins <ben.c@servergy.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 ---
-Changes since v2:
-- added missing adjust_link callback to phy_connect
-- removed superfluous phy_attach() call
-- modified PowerPC code to register a single orion-mdio instance
-- modified arm code to register a single orion-mdio instance for
-  all GE* interfaces
+ arch/powerpc/boot/dts/sgy-cts-1000.dts | 1570 ++++++++++++++++++++++++++++++++
+ 1 file changed, 1570 insertions(+)
+ create mode 100644 arch/powerpc/boot/dts/sgy-cts-1000.dts
 
-Changes since v1:
-- removed one too many mdio bus registration for Orion5x/Kirkwood
-
-
- arch/arm/plat-orion/common.c               |   54 ++++----
- arch/powerpc/platforms/chrp/pegasos_eth.c  |   20 +++
- arch/powerpc/sysdev/mv64x60_dev.c          |   16 ++-
- drivers/net/ethernet/marvell/Kconfig       |    5 +-
- drivers/net/ethernet/marvell/Makefile      |    2 +-
- drivers/net/ethernet/marvell/mv643xx_eth.c |  195 +++-------------------------
- include/linux/mv643xx_eth.h                |    1 -
- 7 files changed, 84 insertions(+), 209 deletions(-)
-
-diff --git a/arch/arm/plat-orion/common.c b/arch/arm/plat-orion/common.c
-index 2d4b641..251f827 100644
---- a/arch/arm/plat-orion/common.c
-+++ b/arch/arm/plat-orion/common.c
-@@ -238,6 +238,7 @@ static __init void ge_complete(
- 	struct mv643xx_eth_shared_platform_data *orion_ge_shared_data,
- 	struct resource *orion_ge_resource, unsigned long irq,
- 	struct platform_device *orion_ge_shared,
-+	struct platform_device *orion_ge_mvmdio,
- 	struct mv643xx_eth_platform_data *eth_data,
- 	struct platform_device *orion_ge)
- {
-@@ -247,6 +248,8 @@ static __init void ge_complete(
- 	orion_ge->dev.platform_data = eth_data;
- 
- 	platform_device_register(orion_ge_shared);
-+	if (orion_ge_mvmdio)
-+		platform_device_register(orion_ge_mvmdio);
- 	platform_device_register(orion_ge);
- }
- 
-@@ -258,8 +261,6 @@ struct mv643xx_eth_shared_platform_data orion_ge00_shared_data;
- static struct resource orion_ge00_shared_resources[] = {
- 	{
- 		.name	= "ge00 base",
--	}, {
--		.name	= "ge00 err irq",
- 	},
- };
- 
-@@ -271,6 +272,19 @@ static struct platform_device orion_ge00_shared = {
- 	},
- };
- 
-+static struct resource orion_ge_mvmdio_resources[] = {
-+	{
-+		.name	= "ge00 mvmdio base",
-+	}, {
-+		.name	= "ge00 mvmdio err irq",
-+	},
-+};
-+
-+static struct platform_device orion_ge_mvmdio = {
-+	.name		= "orion-mdio",
-+	.id		= -1,
-+};
-+
- static struct resource orion_ge00_resources[] = {
- 	{
- 		.name	= "ge00 irq",
-@@ -295,26 +309,25 @@ void __init orion_ge00_init(struct mv643xx_eth_platform_data *eth_data,
- 			    unsigned int tx_csum_limit)
- {
- 	fill_resources(&orion_ge00_shared, orion_ge00_shared_resources,
--		       mapbase + 0x2000, SZ_16K - 1, irq_err);
-+		       mapbase + 0x2000, SZ_16K - 1, NO_IRQ);
-+	fill_resources(&orion_ge_mvmdio, orion_ge_mvmdio_resources,
-+			mapbase + 0x2004, 0x84 - 1, irq_err);
- 	orion_ge00_shared_data.tx_csum_limit = tx_csum_limit;
- 	ge_complete(&orion_ge00_shared_data,
- 		    orion_ge00_resources, irq, &orion_ge00_shared,
-+		    &orion_ge_mvmdio,
- 		    eth_data, &orion_ge00);
- }
- 
- /*****************************************************************************
-  * GE01
-  ****************************************************************************/
--struct mv643xx_eth_shared_platform_data orion_ge01_shared_data = {
--	.shared_smi	= &orion_ge00_shared,
--};
-+struct mv643xx_eth_shared_platform_data orion_ge01_shared_data;
- 
- static struct resource orion_ge01_shared_resources[] = {
- 	{
- 		.name	= "ge01 base",
--	}, {
--		.name	= "ge01 err irq",
--	},
-+	}
- };
- 
- static struct platform_device orion_ge01_shared = {
-@@ -349,26 +362,23 @@ void __init orion_ge01_init(struct mv643xx_eth_platform_data *eth_data,
- 			    unsigned int tx_csum_limit)
- {
- 	fill_resources(&orion_ge01_shared, orion_ge01_shared_resources,
--		       mapbase + 0x2000, SZ_16K - 1, irq_err);
-+		       mapbase + 0x2000, SZ_16K - 1, NO_IRQ);
- 	orion_ge01_shared_data.tx_csum_limit = tx_csum_limit;
- 	ge_complete(&orion_ge01_shared_data,
- 		    orion_ge01_resources, irq, &orion_ge01_shared,
-+		    NULL,
- 		    eth_data, &orion_ge01);
- }
- 
- /*****************************************************************************
-  * GE10
-  ****************************************************************************/
--struct mv643xx_eth_shared_platform_data orion_ge10_shared_data = {
--	.shared_smi	= &orion_ge00_shared,
--};
-+struct mv643xx_eth_shared_platform_data orion_ge10_shared_data;
- 
- static struct resource orion_ge10_shared_resources[] = {
- 	{
- 		.name	= "ge10 base",
--	}, {
--		.name	= "ge10 err irq",
--	},
-+	}
- };
- 
- static struct platform_device orion_ge10_shared = {
-@@ -402,24 +412,21 @@ void __init orion_ge10_init(struct mv643xx_eth_platform_data *eth_data,
- 			    unsigned long irq_err)
- {
- 	fill_resources(&orion_ge10_shared, orion_ge10_shared_resources,
--		       mapbase + 0x2000, SZ_16K - 1, irq_err);
-+		       mapbase + 0x2000, SZ_16K - 1, NO_IRQ);
- 	ge_complete(&orion_ge10_shared_data,
- 		    orion_ge10_resources, irq, &orion_ge10_shared,
-+		    NULL,
- 		    eth_data, &orion_ge10);
- }
- 
- /*****************************************************************************
-  * GE11
-  ****************************************************************************/
--struct mv643xx_eth_shared_platform_data orion_ge11_shared_data = {
--	.shared_smi	= &orion_ge00_shared,
--};
-+struct mv643xx_eth_shared_platform_data orion_ge11_shared_data;
- 
- static struct resource orion_ge11_shared_resources[] = {
- 	{
- 		.name	= "ge11 base",
--	}, {
--		.name	= "ge11 err irq",
- 	},
- };
- 
-@@ -454,9 +461,10 @@ void __init orion_ge11_init(struct mv643xx_eth_platform_data *eth_data,
- 			    unsigned long irq_err)
- {
- 	fill_resources(&orion_ge11_shared, orion_ge11_shared_resources,
--		       mapbase + 0x2000, SZ_16K - 1, irq_err);
-+		       mapbase + 0x2000, SZ_16K - 1, NO_IRQ);
- 	ge_complete(&orion_ge11_shared_data,
- 		    orion_ge11_resources, irq, &orion_ge11_shared,
-+		    NULL,
- 		    eth_data, &orion_ge11);
- }
- 
-diff --git a/arch/powerpc/platforms/chrp/pegasos_eth.c b/arch/powerpc/platforms/chrp/pegasos_eth.c
-index 039fc8e..2b4dc6a 100644
---- a/arch/powerpc/platforms/chrp/pegasos_eth.c
-+++ b/arch/powerpc/platforms/chrp/pegasos_eth.c
-@@ -47,6 +47,25 @@ static struct platform_device mv643xx_eth_shared_device = {
- 	.resource	= mv643xx_eth_shared_resources,
- };
- 
+diff --git a/arch/powerpc/boot/dts/sgy-cts-1000.dts b/arch/powerpc/boot/dts/sgy-cts-1000.dts
+new file mode 100644
+index 0000000..1efa01a
+--- /dev/null
++++ b/arch/powerpc/boot/dts/sgy-cts-1000.dts
+@@ -0,0 +1,1570 @@
 +/*
-+ * The orion mdio driver only covers shared + 0x4 up to shared + 0x84 - 1
++ * Servergy CTS-1000 Device Tree Source
++ *
++ * Copyright 2009-2011 Freescale Semiconductor Inc.
++ * Copyright 2011-2013 Servergy, Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 + */
-+static struct resource mv643xx_eth_mvmdio_resources[] = {
-+	[0] = {
-+		.name	= "ethernet mdio base",
-+		.start	= 0xf1000000 + MV643XX_ETH_SHARED_REGS + 0x4,
-+		.end	= 0xf1000000 + MV643XX_ETH_SHARED_REGS + 0x83,
-+		.flags	= IORESOURCE_MEM,
-+	},
++
++/dts-v1/;
++
++/ {
++	model = "sgy,cts-1000";
++	compatible = "fsl,P4080DS";
++	#address-cells = <2>;
++	#size-cells = <2>;
++	interrupt-parent = <&mpic>;
++
++	aliases {
++		ccsr = &soc;
++		dcsr = &dcsr;
++
++		ethernet4 = &enet4;
++		ethernet7 = &enet7;
++		ethernet8 = &enet8;
++		ethernet9 = &enet9;
++		serial0 = &serial0;
++		serial1 = &serial1;
++		pci0 = &pci0;
++		usb0 = &usb0;
++		usb1 = &usb1;
++		dma0 = &dma0;
++		dma1 = &dma1;
++		bman = &bman;
++		qman = &qman;
++		pme = &pme;
++		msi0 = &msi0;
++		msi1 = &msi1;
++		msi2 = &msi2;
++
++		crypto = &crypto;
++		sec_jr0 = &sec_jr0;
++		sec_jr1 = &sec_jr1;
++		sec_jr2 = &sec_jr2;
++		sec_jr3 = &sec_jr3;
++		rtic_a = &rtic_a;
++		rtic_b = &rtic_b;
++		rtic_c = &rtic_c;
++		rtic_d = &rtic_d;
++		sec_mon = &sec_mon;
++
++		fman0 = &fman0;
++		fman0_oh0 = &fman0_oh0;
++		fman0_oh1 = &fman0_oh1;
++		fman0_oh2 = &fman0_oh2;
++		fman0_oh3 = &fman0_oh3;
++		fman0_oh4 = &fman0_oh4;
++		fman0_oh5 = &fman0_oh5;
++		fman0_oh6 = &fman0_oh6;
++		fman0_rx0 = &fman0_rx0;
++		fman0_rx1 = &fman0_rx1;
++		fman0_rx2 = &fman0_rx2;
++		fman0_rx3 = &fman0_rx3;
++		fman0_rx4 = &fman0_rx4;
++
++		fman1 = &fman1;
++		fman1_oh0 = &fman1_oh0;
++		fman1_oh1 = &fman1_oh1;
++		fman1_oh2 = &fman1_oh2;
++		fman1_oh3 = &fman1_oh3;
++		fman1_oh4 = &fman1_oh4;
++		fman1_oh5 = &fman1_oh5;
++		fman1_oh6 = &fman1_oh6;
++		fman1_rx0 = &fman1_rx0;
++		fman1_rx1 = &fman1_rx1;
++		fman1_rx2 = &fman1_rx2;
++		fman1_rx3 = &fman1_rx3;
++		fman1_rx4 = &fman1_rx4;
++	};
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		cpu0: PowerPC,e500mc@0 {
++			device_type = "cpu";
++			reg = <0>;
++			next-level-cache = <&L2_0>;
++			L2_0: l2-cache {
++				next-level-cache = <&cpc>;
++			};
++		};
++		cpu1: PowerPC,e500mc@1 {
++			device_type = "cpu";
++			reg = <1>;
++			next-level-cache = <&L2_1>;
++			L2_1: l2-cache {
++				next-level-cache = <&cpc>;
++			};
++		};
++		cpu2: PowerPC,e500mc@2 {
++			device_type = "cpu";
++			reg = <2>;
++			next-level-cache = <&L2_2>;
++			L2_2: l2-cache {
++				next-level-cache = <&cpc>;
++			};
++		};
++		cpu3: PowerPC,e500mc@3 {
++			device_type = "cpu";
++			reg = <3>;
++			next-level-cache = <&L2_3>;
++			L2_3: l2-cache {
++				next-level-cache = <&cpc>;
++			};
++		};
++		cpu4: PowerPC,e500mc@4 {
++			device_type = "cpu";
++			reg = <4>;
++			next-level-cache = <&L2_4>;
++			L2_4: l2-cache {
++				next-level-cache = <&cpc>;
++			};
++		};
++		cpu5: PowerPC,e500mc@5 {
++			device_type = "cpu";
++			reg = <5>;
++			next-level-cache = <&L2_5>;
++			L2_5: l2-cache {
++				next-level-cache = <&cpc>;
++			};
++		};
++		cpu6: PowerPC,e500mc@6 {
++			device_type = "cpu";
++			reg = <6>;
++			next-level-cache = <&L2_6>;
++			L2_6: l2-cache {
++				next-level-cache = <&cpc>;
++			};
++		};
++		cpu7: PowerPC,e500mc@7 {
++			device_type = "cpu";
++			reg = <7>;
++			next-level-cache = <&L2_7>;
++			L2_7: l2-cache {
++				next-level-cache = <&cpc>;
++			};
++		};
++	};
++
++	memory {
++		device_type = "memory";
++	};
++
++	dcsr: dcsr@f00000000 {
++		ranges = <0x00000000 0xf 0x00000000 0x01008000>;
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "fsl,dcsr", "simple-bus";
++
++		dcsr-epu@0 {
++			compatible = "fsl,dcsr-epu";
++			interrupts = <52 2 0 0
++  				      84 2 0 0
++				      85 2 0 0>;
++			reg = <0x0 0x1000>;
++		};
++		dcsr-npc {
++			compatible = "fsl,dcsr-npc";
++			reg = <0x1000 0x1000 0x1000000 0x8000>;
++		};
++		dcsr-nxc@2000 {
++			compatible = "fsl,dcsr-nxc";
++			reg = <0x2000 0x1000>;
++		};
++		dcsr-corenet {
++			compatible = "fsl,dcsr-corenet";
++			reg = <0x8000 0x1000 0xB0000 0x1000>;
++		};
++		dcsr-dpaa@9000 {
++			compatible = "fsl,p4080-dcsr-dpaa", "fsl,dcsr-dpaa";
++			reg = <0x9000 0x1000>;
++		};
++		dcsr-ocn@11000 {
++			compatible = "fsl,p4080-dcsr-ocn", "fsl,dcsr-ocn";
++			reg = <0x11000 0x1000>;
++		};
++		dcsr-ddr@12000 {
++			compatible = "fsl,dcsr-ddr";
++			dev-handle = <&ddr1>;
++			reg = <0x12000 0x1000>;
++		};
++		dcsr-ddr@13000 {
++			compatible = "fsl,dcsr-ddr";
++			dev-handle = <&ddr2>;
++			reg = <0x13000 0x1000>;
++		};
++		dcsr-nal@18000 {
++			compatible = "fsl,p4080-dcsr-nal", "fsl,dcsr-nal";
++			reg = <0x18000 0x1000>;
++		};
++		dcsr-rcpm@22000 {
++			compatible = "fsl,p4080-dcsr-rcpm", "fsl,dcsr-rcpm";
++			reg = <0x22000 0x1000>;
++		};
++		dcsr-cpu-sb-proxy@40000 {
++			compatible = "fsl,dcsr-e500mc-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu0>;
++			reg = <0x40000 0x1000>;
++		};
++		dcsr-cpu-sb-proxy@41000 {
++			compatible = "fsl,dcsr-e500mc-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu1>;
++			reg = <0x41000 0x1000>;
++		};
++		dcsr-cpu-sb-proxy@42000 {
++			compatible = "fsl,dcsr-e500mc-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu2>;
++			reg = <0x42000 0x1000>;
++		};
++		dcsr-cpu-sb-proxy@43000 {
++			compatible = "fsl,dcsr-e500mc-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu3>;
++			reg = <0x43000 0x1000>;
++		};
++		dcsr-cpu-sb-proxy@44000 {
++			compatible = "fsl,dcsr-e500mc-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu4>;
++			reg = <0x44000 0x1000>;
++		};
++		dcsr-cpu-sb-proxy@45000 {
++			compatible = "fsl,dcsr-e500mc-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu5>;
++			reg = <0x45000 0x1000>;
++		};
++		dcsr-cpu-sb-proxy@46000 {
++			compatible = "fsl,dcsr-e500mc-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu6>;
++			reg = <0x46000 0x1000>;
++		};
++		dcsr-cpu-sb-proxy@47000 {
++			compatible = "fsl,dcsr-e500mc-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu7>;
++			reg = <0x47000 0x1000>;
++		};
++	};
++
++	bman-portals@ff4000000 {
++		#address-cells = <0x1>;
++		#size-cells = <0x1>;
++		compatible = "simple-bus";
++		ranges = <0x0 0xf 0xf4000000 0x200000>;
++		bman-portal@0 {
++			cell-index = <0x0>;
++			compatible = "fsl,p4080-bman-portal", "fsl,bman-portal";
++			reg = <0x0 0x4000 0x100000 0x1000>;
++			cpu-handle = <&cpu0>;
++			interrupts = <105 2 0 0>;
++		};
++		bman-portal@4000 {
++			cell-index = <0x1>;
++			compatible = "fsl,p4080-bman-portal", "fsl,bman-portal";
++			reg = <0x4000 0x4000 0x101000 0x1000>;
++			cpu-handle = <&cpu1>;
++			interrupts = <107 2 0 0>;
++		};
++		bman-portal@8000 {
++			cell-index = <2>;
++			compatible = "fsl,p4080-bman-portal", "fsl,bman-portal";
++			reg = <0x8000 0x4000 0x102000 0x1000>;
++			cpu-handle = <&cpu2>;
++			interrupts = <109 2 0 0>;
++		};
++		bman-portal@c000 {
++			cell-index = <0x3>;
++			compatible = "fsl,p4080-bman-portal", "fsl,bman-portal";
++			reg = <0xc000 0x4000 0x103000 0x1000>;
++			cpu-handle = <&cpu3>;
++			interrupts = <111 2 0 0>;
++		};
++		bman-portal@10000 {
++			cell-index = <0x4>;
++			compatible = "fsl,p4080-bman-portal", "fsl,bman-portal";
++			reg = <0x10000 0x4000 0x104000 0x1000>;
++			cpu-handle = <&cpu4>;
++			interrupts = <113 2 0 0>;
++		};
++		bman-portal@14000 {
++			cell-index = <0x5>;
++			compatible = "fsl,p4080-bman-portal", "fsl,bman-portal";
++			reg = <0x14000 0x4000 0x105000 0x1000>;
++			cpu-handle = <&cpu5>;
++			interrupts = <115 2 0 0>;
++		};
++		bman-portal@18000 {
++			cell-index = <0x6>;
++			compatible = "fsl,p4080-bman-portal", "fsl,bman-portal";
++			reg = <0x18000 0x4000 0x106000 0x1000>;
++			cpu-handle = <&cpu6>;
++			interrupts = <117 2 0 0>;
++		};
++		bman-portal@1c000 {
++			cell-index = <0x7>;
++			compatible = "fsl,p4080-bman-portal", "fsl,bman-portal";
++			reg = <0x1c000 0x4000 0x107000 0x1000>;
++			cpu-handle = <&cpu7>;
++			interrupts = <119 2 0 0>;
++		};
++		bman-portal@20000 {
++			cell-index = <0x8>;
++			compatible = "fsl,p4080-bman-portal", "fsl,bman-portal";
++			reg = <0x20000 0x4000 0x108000 0x1000>;
++			interrupts = <121 2 0 0>;
++		};
++		bman-portal@24000 {
++			cell-index = <0x9>;
++			compatible = "fsl,p4080-bman-portal", "fsl,bman-portal";
++			reg = <0x24000 0x4000 0x109000 0x1000>;
++			interrupts = <123 2 0 0>;
++		};
++
++		buffer-pool@0 {
++			compatible = "fsl,p4080-bpool", "fsl,bpool";
++			fsl,bpid = <0>;
++			fsl,bpool-cfg = <0 0x100 0 1 0 0x100>;
++		};
++	};
++
++	qman-portals@ff4200000 {
++		#address-cells = <0x1>;
++		#size-cells = <0x1>;
++		compatible = "simple-bus";
++		ranges = <0x0 0xf 0xf4200000 0x200000>;
++		qportal0: qman-portal@0 {
++			cell-index = <0x0>;
++			compatible = "fsl,p4080-qman-portal", "fsl,qman-portal";
++			reg = <0x0 0x4000 0x100000 0x1000>;
++			cpu-handle = <&cpu0>;
++			interrupts = <104 0x2 0 0>;
++			fsl,qman-channel-id = <0x0>;
++			fsl,qman-pool-channels = <&qpool1 &qpool2 &qpool3
++						  &qpool4 &qpool5 &qpool6
++						  &qpool7 &qpool8 &qpool9
++						  &qpool10 &qpool11 &qpool12
++						  &qpool13 &qpool14 &qpool15>;
++		};
++
++		qportal1: qman-portal@4000 {
++			cell-index = <0x1>;
++			compatible = "fsl,p4080-qman-portal", "fsl,qman-portal";
++			reg = <0x4000 0x4000 0x101000 0x1000>;
++			cpu-handle = <&cpu1>;
++			interrupts = <106 0x2 0 0>;
++			fsl,qman-channel-id = <0x1>;
++			fsl,qman-pool-channels = <&qpool1 &qpool2 &qpool3
++						  &qpool4 &qpool5 &qpool6
++						  &qpool7 &qpool8 &qpool9
++						  &qpool10 &qpool11 &qpool12
++						  &qpool13 &qpool14 &qpool15>;
++		};
++
++		qportal2: qman-portal@8000 {
++			cell-index = <0x2>;
++			compatible = "fsl,p4080-qman-portal", "fsl,qman-portal";
++			reg = <0x8000 0x4000 0x102000 0x1000>;
++			cpu-handle = <&cpu2>;
++			interrupts = <108 0x2 0 0>;
++			fsl,qman-channel-id = <0x2>;
++			fsl,qman-pool-channels = <&qpool1 &qpool2 &qpool3
++						  &qpool4 &qpool5 &qpool6
++						  &qpool7 &qpool8 &qpool9
++						  &qpool10 &qpool11 &qpool12
++						  &qpool13 &qpool14 &qpool15>;
++		};
++
++		qportal3: qman-portal@c000 {
++			cell-index = <0x3>;
++			compatible = "fsl,p4080-qman-portal", "fsl,qman-portal";
++			reg = <0xc000 0x4000 0x103000 0x1000>;
++			cpu-handle = <&cpu3>;
++			interrupts = <110 0x2 0 0>;
++			fsl,qman-channel-id = <0x3>;
++			fsl,qman-pool-channels = <&qpool1 &qpool2 &qpool3
++						  &qpool4 &qpool5 &qpool6
++						  &qpool7 &qpool8 &qpool9
++						  &qpool10 &qpool11 &qpool12
++						  &qpool13 &qpool14 &qpool15>;
++		};
++
++		qportal4: qman-portal@10000 {
++			cell-index = <0x4>;
++			compatible = "fsl,p4080-qman-portal", "fsl,qman-portal";
++			reg = <0x10000 0x4000 0x104000 0x1000>;
++			cpu-handle = <&cpu4>;
++			interrupts = <112 0x2 0 0>;
++			fsl,qman-channel-id = <0x4>;
++			fsl,qman-pool-channels = <&qpool1 &qpool2 &qpool3
++						  &qpool4 &qpool5 &qpool6
++						  &qpool7 &qpool8 &qpool9
++						  &qpool10 &qpool11 &qpool12
++						  &qpool13 &qpool14 &qpool15>;
++		};
++
++		qportal5: qman-portal@14000 {
++			cell-index = <0x5>;
++			compatible = "fsl,p4080-qman-portal", "fsl,qman-portal";
++			reg = <0x14000 0x4000 0x105000 0x1000>;
++			cpu-handle = <&cpu5>;
++			interrupts = <114 0x2 0 0>;
++			fsl,qman-channel-id = <0x5>;
++			fsl,qman-pool-channels = <&qpool1 &qpool2 &qpool3
++						  &qpool4 &qpool5 &qpool6
++						  &qpool7 &qpool8 &qpool9
++						  &qpool10 &qpool11 &qpool12
++						  &qpool13 &qpool14 &qpool15>;
++		};
++
++		qportal6: qman-portal@18000 {
++			cell-index = <0x6>;
++			compatible = "fsl,p4080-qman-portal", "fsl,qman-portal";
++			reg = <0x18000 0x4000 0x106000 0x1000>;
++			cpu-handle = <&cpu6>;
++			interrupts = <116 0x2 0 0>;
++			fsl,qman-channel-id = <0x6>;
++			fsl,qman-pool-channels = <&qpool1 &qpool2 &qpool3
++						  &qpool4 &qpool5 &qpool6
++						  &qpool7 &qpool8 &qpool9
++						  &qpool10 &qpool11 &qpool12
++						  &qpool13 &qpool14 &qpool15>;
++		};
++
++		qportal7: qman-portal@1c000 {
++			cell-index = <0x7>;
++			compatible = "fsl,p4080-qman-portal", "fsl,qman-portal";
++			reg = <0x1c000 0x4000 0x107000 0x1000>;
++			cpu-handle = <&cpu7>;
++			interrupts = <118 0x2 0 0>;
++			fsl,qman-channel-id = <0x7>;
++			fsl,qman-pool-channels = <&qpool1 &qpool2 &qpool3
++						  &qpool4 &qpool5 &qpool6
++						  &qpool7 &qpool8 &qpool9
++						  &qpool10 &qpool11 &qpool12
++						  &qpool13 &qpool14 &qpool15>;
++		};
++
++		qportal8: qman-portal@20000 {
++			cell-index = <0x8>;
++			compatible = "fsl,p4080-qman-portal", "fsl,qman-portal";
++			reg = <0x20000 0x4000 0x108000 0x1000>;
++			interrupts = <120 0x2 0 0>;
++			fsl,qman-channel-id = <0x8>;
++			fsl,qman-pool-channels = <&qpool1 &qpool2 &qpool3
++						  &qpool4 &qpool5 &qpool6
++						  &qpool7 &qpool8 &qpool9
++						  &qpool10 &qpool11 &qpool12
++						  &qpool13 &qpool14 &qpool15>;
++		};
++
++		qportal9: qman-portal@24000 {
++			cell-index = <0x9>;
++			compatible = "fsl,p4080-qman-portal", "fsl,qman-portal";
++			reg = <0x24000 0x4000 0x109000 0x1000>;
++			interrupts = <122 0x2 0 0>;
++			fsl,qman-channel-id = <0x9>;
++			fsl,qman-pool-channels = <&qpool1 &qpool2 &qpool3
++						  &qpool4 &qpool5 &qpool6
++						  &qpool7 &qpool8 &qpool9
++						  &qpool10 &qpool11 &qpool12
++						  &qpool13 &qpool14 &qpool15>;
++		};
++
++		qpool1: qman-pool@1 {
++			cell-index = <1>;
++			compatible = "fsl,p4080-qman-pool-channel", "fsl,qman-pool-channel";
++			fsl,qman-channel-id = <0x21>;
++		};
++
++		qpool2: qman-pool@2 {
++			cell-index = <2>;
++			compatible = "fsl,p4080-qman-pool-channel", "fsl,qman-pool-channel";
++			fsl,qman-channel-id = <0x22>;
++		};
++
++		qpool3: qman-pool@3 {
++			cell-index = <3>;
++			compatible = "fsl,p4080-qman-pool-channel", "fsl,qman-pool-channel";
++			fsl,qman-channel-id = <0x23>;
++		};
++
++		qpool4: qman-pool@4 {
++			cell-index = <4>;
++			compatible = "fsl,p4080-qman-pool-channel", "fsl,qman-pool-channel";
++			fsl,qman-channel-id = <0x24>;
++		};
++
++		qpool5: qman-pool@5 {
++			cell-index = <5>;
++			compatible = "fsl,p4080-qman-pool-channel", "fsl,qman-pool-channel";
++			fsl,qman-channel-id = <0x25>;
++		};
++
++		qpool6: qman-pool@6 {
++			cell-index = <6>;
++			compatible = "fsl,p4080-qman-pool-channel", "fsl,qman-pool-channel";
++			fsl,qman-channel-id = <0x26>;
++		};
++
++		qpool7: qman-pool@7 {
++			cell-index = <7>;
++			compatible = "fsl,p4080-qman-pool-channel", "fsl,qman-pool-channel";
++			fsl,qman-channel-id = <0x27>;
++		};
++
++		qpool8: qman-pool@8 {
++			cell-index = <8>;
++			compatible = "fsl,p4080-qman-pool-channel", "fsl,qman-pool-channel";
++			fsl,qman-channel-id = <0x28>;
++		};
++
++		qpool9: qman-pool@9 {
++			cell-index = <9>;
++			compatible = "fsl,p4080-qman-pool-channel", "fsl,qman-pool-channel";
++			fsl,qman-channel-id = <0x29>;
++		};
++
++		qpool10: qman-pool@10 {
++			cell-index = <10>;
++			compatible = "fsl,p4080-qman-pool-channel", "fsl,qman-pool-channel";
++			fsl,qman-channel-id = <0x2a>;
++		};
++
++		qpool11: qman-pool@11 {
++			cell-index = <11>;
++			compatible = "fsl,p4080-qman-pool-channel", "fsl,qman-pool-channel";
++			fsl,qman-channel-id = <0x2b>;
++		};
++
++		qpool12: qman-pool@12 {
++			cell-index = <12>;
++			compatible = "fsl,p4080-qman-pool-channel", "fsl,qman-pool-channel";
++			fsl,qman-channel-id = <0x2c>;
++		};
++
++		qpool13: qman-pool@13 {
++			cell-index = <13>;
++			compatible = "fsl,p4080-qman-pool-channel", "fsl,qman-pool-channel";
++			fsl,qman-channel-id = <0x2d>;
++		};
++
++		qpool14: qman-pool@14 {
++			cell-index = <14>;
++			compatible = "fsl,p4080-qman-pool-channel", "fsl,qman-pool-channel";
++			fsl,qman-channel-id = <0x2e>;
++		};
++
++		qpool15: qman-pool@15 {
++			cell-index = <15>;
++			compatible = "fsl,p4080-qman-pool-channel", "fsl,qman-pool-channel";
++			fsl,qman-channel-id = <0x2f>;
++		};
++	};
++
++	soc: soc@ffe000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		device_type = "soc";
++		compatible = "simple-bus";
++		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
++		reg = <0xf 0xfe000000 0 0x00001000>;
++
++		soc-sram-error {
++			compatible = "fsl,soc-sram-error";
++			interrupts = <16 2 1 29>;
++		};
++
++		corenet-law@0 {
++			compatible = "fsl,corenet-law";
++			reg = <0x0 0x1000>;
++			fsl,num-laws = <32>;
++		};
++
++		ddr1: memory-controller@8000 {
++			compatible = "fsl,qoriq-memory-controller-v4.4", "fsl,qoriq-memory-controller";
++			reg = <0x8000 0x1000>;
++			interrupts = <16 2 1 23>;
++		};
++
++		ddr2: memory-controller@9000 {
++			compatible = "fsl,qoriq-memory-controller-v4.4","fsl,qoriq-memory-controller";
++			reg = <0x9000 0x1000>;
++			interrupts = <16 2 1 22>;
++		};
++
++		cpc: l3-cache-controller@10000 {
++			compatible = "fsl,p4080-l3-cache-controller", "cache";
++			reg = <0x10000 0x1000
++			       0x11000 0x1000>;
++			interrupts = <16 2 1 27
++				      16 2 1 26>;
++		};
++
++		corenet-cf@18000 {
++			compatible = "fsl,corenet-cf";
++			reg = <0x18000 0x1000>;
++			interrupts = <16 2 1 31>;
++			fsl,ccf-num-csdids = <32>;
++			fsl,ccf-num-snoopids = <32>;
++		};
++
++		iommu@20000 {
++			compatible = "fsl,pamu-v1.0", "fsl,pamu";
++			reg = <0x20000 0x5000>;
++			interrupts = <
++				24 2 0 0
++				16 2 1 30>;
++		};
++
++		mpic: pic@40000 {
++			clock-frequency = <0>;
++			interrupt-controller;
++			#address-cells = <0>;
++			#interrupt-cells = <4>;
++			reg = <0x40000 0x40000>;
++			compatible = "fsl,mpic", "chrp,open-pic";
++			device_type = "open-pic";
++		};
++
++		timer@41100 {
++			compatible = "fsl,mpic-global-timer";
++			reg = <0x41100 0x100 0x41300 4>;
++			interrupts = <
++				0 0 3 0
++				1 0 3 0
++				2 0 3 0
++				3 0 3 0>;
++		};
++
++		msi0: msi@41600 {
++			compatible = "fsl,mpic-msi";
++			reg = <0x41600 0x200>;
++			msi-available-ranges = <0 0x100>;
++			interrupts = <
++				0xe0 0 0 0
++				0xe1 0 0 0
++				0xe2 0 0 0
++				0xe3 0 0 0
++				0xe4 0 0 0
++				0xe5 0 0 0
++				0xe6 0 0 0
++				0xe7 0 0 0>;
++		};
++
++		msi1: msi@41800 {
++			compatible = "fsl,mpic-msi";
++			reg = <0x41800 0x200>;
++			msi-available-ranges = <0 0x100>;
++			interrupts = <
++				0xe8 0 0 0
++				0xe9 0 0 0
++				0xea 0 0 0
++				0xeb 0 0 0
++				0xec 0 0 0
++				0xed 0 0 0
++				0xee 0 0 0
++				0xef 0 0 0>;
++		};
++
++		msi2: msi@41a00 {
++			compatible = "fsl,mpic-msi";
++			reg = <0x41a00 0x200>;
++			msi-available-ranges = <0 0x100>;
++			interrupts = <
++				0xf0 0 0 0
++				0xf1 0 0 0
++				0xf2 0 0 0
++				0xf3 0 0 0
++				0xf4 0 0 0
++				0xf5 0 0 0
++				0xf6 0 0 0
++				0xf7 0 0 0>;
++		};
++
++		timer@42100 {
++			compatible = "fsl,mpic-global-timer";
++			reg = <0x42100 0x100 0x42300 4>;
++			interrupts = <
++				4 0 3 0
++				5 0 3 0
++				6 0 3 0
++				7 0 3 0>;
++		};
++
++		guts: global-utilities@e0000 {
++			compatible = "fsl,qoriq-device-config-1.0", "fsl,mpc8572-guts";
++			reg = <0xe0000 0xe00>;
++			fsl,has-rstcr;
++			#sleep-cells = <1>;
++			fsl,liodn-bits = <12>;
++		};
++
++		pins: global-utilities@e0e00 {
++			compatible = "fsl,qoriq-pin-control-1.0";
++			reg = <0xe0e00 0x200>;
++			#sleep-cells = <2>;
++		};
++
++		clockgen: global-utilities@e1000 {
++			compatible = "fsl,p4080-clockgen", "fsl,qoriq-clockgen-1.0";
++			reg = <0xe1000 0x1000>;
++			clock-frequency = <0>;
++		};
++
++		rcpm: global-utilities@e2000 {
++			compatible = "fsl,qoriq-rcpm-1.0";
++			reg = <0xe2000 0x1000>;
++			#sleep-cells = <1>;
++		};
++
++		sfp: sfp@e8000 {
++			compatible = "fsl,p4080-sfp", "fsl,qoriq-sfp-1.0";
++			reg	   = <0xe8000 0x1000>;
++		};
++
++		serdes: serdes@ea000 {
++			compatible = "fsl,p4080-serdes";
++			reg	   = <0xea000 0x1000>;
++		};
++
++		dma0: dma@100300 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "fsl,eloplus-dma";
++			reg = <0x100300 0x4>;
++			ranges = <0x0 0x100100 0x200>;
++			cell-index = <0>;
++			dma-channel@0 {
++				compatible = "fsl,eloplus-dma-channel";
++				reg = <0x0 0x80>;
++				cell-index = <0>;
++				interrupts = <28 2 0 0>;
++			};
++			dma-channel@80 {
++				compatible = "fsl,eloplus-dma-channel";
++				reg = <0x80 0x80>;
++				cell-index = <1>;
++				interrupts = <29 2 0 0>;
++			};
++			dma-channel@100 {
++				compatible = "fsl,eloplus-dma-channel";
++				reg = <0x100 0x80>;
++				cell-index = <2>;
++				interrupts = <30 2 0 0>;
++			};
++			dma-channel@180 {
++				compatible = "fsl,eloplus-dma-channel";
++				reg = <0x180 0x80>;
++				cell-index = <3>;
++				interrupts = <31 2 0 0>;
++			};
++		};
++
++		dma1: dma@101300 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "fsl,eloplus-dma";
++			reg = <0x101300 0x4>;
++			ranges = <0x0 0x101100 0x200>;
++			cell-index = <1>;
++			dma-channel@0 {
++				compatible = "fsl,eloplus-dma-channel";
++				reg = <0x0 0x80>;
++				cell-index = <0>;
++				interrupts = <32 2 0 0>;
++			};
++			dma-channel@80 {
++				compatible = "fsl,eloplus-dma-channel";
++				reg = <0x80 0x80>;
++				cell-index = <1>;
++				interrupts = <33 2 0 0>;
++			};
++			dma-channel@100 {
++				compatible = "fsl,eloplus-dma-channel";
++				reg = <0x100 0x80>;
++				cell-index = <2>;
++				interrupts = <34 2 0 0>;
++			};
++			dma-channel@180 {
++				compatible = "fsl,eloplus-dma-channel";
++				reg = <0x180 0x80>;
++				cell-index = <3>;
++				interrupts = <35 2 0 0>;
++			};
++		};
++
++		/* I2C1 */
++		i2c@118000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			cell-index = <0>;
++			compatible = "fsl-i2c";
++			reg = <0x118000 0x100>;
++			interrupts = <38 2 0 0>;
++			dfsrr;
++
++			/* RCW EEPROM */
++			eeprom@50 {
++				compatible = "at24,24c64";
++				reg = <0x50>;
++			};
++			/* SYS EEPROM */
++			eeprom@57 {
++				compatible = "at24,24c02";
++				reg = <0x57>;
++			};
++		};
++
++		/* I2C2 */
++		i2c@118100 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			cell-index = <1>;
++			compatible = "fsl-i2c";
++			reg = <0x118100 0x100>;
++			interrupts = <38 2 0 0>;
++			dfsrr;
++
++			rtc@68 {
++				compatible = "dallas,ds3232";
++				reg = <0x68>;
++				interrupts = <1 1 0 0>;
++			};
++
++			hwmon@4c {
++				compatible = "adt,adt7461";
++				reg = <0x4c>;
++				/* 
++				 * Enabling this causes a flood of interrupts
++				 * on the ds3232 device (and since it never
++				 * gets ACK'd, it consumes 100% of a CPU).
++				 * -- BenC
++				interrupts = <1 10 0 0
++					      1 11 0 0>;
++				 */
++			};
++		};
++
++		i2c@119000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			cell-index = <2>;
++			compatible = "fsl-i2c";
++			reg = <0x119000 0x100>;
++			interrupts = <39 2 0 0>;
++			dfsrr;
++		};
++
++		i2c@119100 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			cell-index = <3>;
++			compatible = "fsl-i2c";
++			reg = <0x119100 0x100>;
++			interrupts = <39 2 0 0>;
++			dfsrr;
++		};
++
++		serial0: serial@11c500 {
++			cell-index = <0>;
++			device_type = "serial";
++			compatible = "fsl,ns16550", "ns16550";
++			reg = <0x11c500 0x100>;
++			clock-frequency = <0>;
++			interrupts = <36 2 0 0>;
++		};
++
++		serial1: serial@11c600 {
++			cell-index = <1>;
++			device_type = "serial";
++			compatible = "fsl,ns16550", "ns16550";
++			reg = <0x11c600 0x100>;
++			clock-frequency = <0>;
++			interrupts = <36 2 0 0>;
++		};
++
++		gpio0: gpio@130000 {
++			compatible = "fsl,qoriq-gpio";
++			reg = <0x130000 0x1000>;
++			interrupts = <55 2 0 0>;
++			#gpio-cells = <2>;
++			gpio-controller;
++
++			/* Allows powering off the system via GPIO signal. */
++			gpio-halt@27 {
++				compatible = "sgy,gpio-halt";
++				gpios = <&gpio0 27 0>;
++				interrupts = <8 1 0 0>;
++			};
++		};
++
++		usb0: usb@210000 {
++			compatible = "fsl,mpc85xx-usb2-dr", "fsl-usb2-dr";
++			reg = <0x210000 0x1000>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			interrupts = <44 0x2 0 0>;
++		};
++
++		usb1: usb@211000 {
++			compatible = "fsl,mpc85xx-usb2-dr", "fsl-usb2-dr";
++			reg = <0x211000 0x1000>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			interrupts = <45 0x2 0 0>;
++		};
++
++		crypto: crypto@300000 {
++			compatible = "fsl,sec-v4.0";
++			#address-cells = <1>;
++			#size-cells = <1>;
++			reg		 = <0x300000 0x10000>;
++			ranges		 = <0 0x300000 0x10000>;
++			interrupts	 = <92 2 0 0>;
++			fsl,qi-spids	 = <5>;
++
++			sec_jr0: jr@1000 {
++				compatible = "fsl,sec-v4.0-job-ring";
++				reg	   = <0x1000 0x1000>;
++				interrupts	 = <88 2 0 0>;
++			};
++
++			sec_jr1: jr@2000 {
++				compatible = "fsl,sec-v4.0-job-ring";
++				reg	   = <0x2000 0x1000>;
++				interrupts	 = <89 2 0 0>;
++			};
++
++			sec_jr2: jr@3000 {
++				compatible = "fsl,sec-v4.0-job-ring";
++				reg	   = <0x3000 0x1000>;
++				interrupts	 = <90 2 0 0>;
++			};
++
++			sec_jr3: jr@4000 {
++				compatible = "fsl,sec-v4.0-job-ring";
++				reg	   = <0x4000 0x1000>;
++				interrupts	 = <91 2 0 0>;
++			};
++
++			rtic@6000 {
++				compatible = "fsl,sec-v4.0-rtic";
++				#address-cells = <1>;
++				#size-cells = <1>;
++				reg		 = <0x6000 0x100>;
++				ranges		 = <0x0 0x6100 0xe00>;
++
++				rtic_a: rtic-a@0 {
++					compatible = "fsl,sec-v4.0-rtic-memory";
++					reg		 = <0x00 0x20 0x100 0x80>;
++				};
++
++				rtic_b: rtic-b@20 {
++					compatible = "fsl,sec-v4.0-rtic-memory";
++					reg		 = <0x20 0x20 0x200 0x80>;
++				};
++
++				rtic_c: rtic-c@40 {
++					compatible = "fsl,sec-v4.0-rtic-memory";
++					reg		 = <0x40 0x20 0x300 0x80>;
++				};
++
++				rtic_d: rtic-d@60 {
++					compatible = "fsl,sec-v4.0-rtic-memory";
++					reg		 = <0x60 0x20 0x500 0x80>;
++				};
++			};
++		};
++
++		sec_mon: sec_mon@314000 {
++			compatible = "fsl,sec-v4.0-mon";
++			reg	   = <0x314000 0x1000>;
++			interrupts	 = <93 2 0 0>;
++		};
++
++		pme: pme@316000 {
++			compatible = "fsl,pme";
++			reg = <0x316000 0x10000>;
++			/* Use default allocation */
++			/* fsl,pme-pdsr = <0x0 0x23000000 0x0 0x01000000>; */
++			/* fsl,pme-sre = <0x0 0x24000000 0x0 0x00a00000>; */
++			interrupts = <16 2 1 5>;
++		};
++
++		qman: qman@318000 {
++			compatible = "fsl,p4080-qman", "fsl,qman";
++			reg = <0x318000 0x1000>;
++			interrupts = <16 2 1 3>;
++			/* Commented out, use default allocation */
++			/* fsl,qman-fqd = <0x0 0x20000000 0x0 0x01000000>; */
++			/* fsl,qman-pfdr = <0x0 0x21000000 0x0 0x01000000>; */
++		};
++
++		bman: bman@31a000 {
++			compatible = "fsl,p4080-bman", "fsl,bman";
++			reg = <0x31a000 0x1000>;
++			interrupts = <16 2 1 2>;
++			/* Same as fsl,qman-*, use default allocation */
++			/* fsl,bman-fbpr = <0x0 0x22000000 0x0 0x01000000>; */
++		};
++
++		fman0: fman@400000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			cell-index = <0>;
++			compatible = "fsl,p4080-fman", "fsl,fman", "simple-bus";
++			ranges = <0 0x400000 0x100000>;
++			reg = <0x400000 0x100000>;
++			clock-frequency = <0>;
++			interrupts = <
++				96 2 0 0
++				16 2 1 1>;
++
++			cc@0 {
++				compatible = "fsl,p4080-fman-cc", "fsl,fman-cc";
++			};
++
++			parser@c7000 {
++				compatible = "fsl,p4080-fman-parser", "fsl,fman-parser";
++				reg = <0xc7000 0x1000>;
++			};
++
++			keygen@c1000 {
++				compatible = "fsl,p4080-fman-keygen", "fsl,fman-keygen";
++				reg = <0xc1000 0x1000>;
++			};
++
++			policer@c0000 {
++				compatible = "fsl,p4080-fman-policer", "fsl,fman-policer";
++				reg = <0xc0000 0x1000>;
++			};
++
++			muram@0 {
++				compatible = "fsl,p4080-fman-muram", "fsl,fman-muram";
++				reg = <0x0 0x28000>;
++			};
++
++			bmi@80000 {
++				compatible = "fsl,p4080-fman-bmi", "fsl,fman-bmi";
++				reg = <0x80000 0x400>;
++			};
++
++			qmi@80400 {
++				compatible = "fsl,p4080-fman-qmi", "fsl,fman-qmi";
++				reg = <0x80400 0x400>;
++			};
++
++			fman0_rx0: port@88000 {
++				cell-index = <0>;
++				compatible = "fsl,p4080-fman-port-1g-rx", "fsl,fman-port-1g-rx";
++				reg = <0x88000 0x1000>;
++			};
++			fman0_rx1: port@89000 {
++				cell-index = <1>;
++				compatible = "fsl,p4080-fman-port-1g-rx", "fsl,fman-port-1g-rx";
++				reg = <0x89000 0x1000>;
++			};
++			fman0_rx2: port@8a000 {
++				cell-index = <2>;
++				compatible = "fsl,p4080-fman-port-1g-rx", "fsl,fman-port-1g-rx";
++				reg = <0x8a000 0x1000>;
++			};
++			fman0_rx3: port@8b000 {
++				cell-index = <3>;
++				compatible = "fsl,p4080-fman-port-1g-rx", "fsl,fman-port-1g-rx";
++				reg = <0x8b000 0x1000>;
++			};
++			fman0_rx4: port@90000 {
++				cell-index = <0>;
++				compatible = "fsl,p4080-fman-port-10g-rx", "fsl,fman-port-10g-rx";
++				reg = <0x90000 0x1000>;
++			};
++
++			fman0_tx4: port@b0000 {
++				cell-index = <0>;
++				compatible = "fsl,p4080-fman-port-10g-tx", "fsl,fman-port-10g-tx";
++				reg = <0xb0000 0x1000>;
++				fsl,qman-channel-id = <0x40>;
++			};
++			fman0_tx0: port@a8000 {
++				cell-index = <0>;
++				compatible = "fsl,p4080-fman-port-1g-tx", "fsl,fman-port-1g-tx";
++				reg = <0xa8000 0x1000>;
++				fsl,qman-channel-id = <0x41>;
++			};
++			fman0_tx1: port@a9000 {
++				cell-index = <1>;
++				compatible = "fsl,p4080-fman-port-1g-tx", "fsl,fman-port-1g-tx";
++				reg = <0xa9000 0x1000>;
++				fsl,qman-channel-id = <0x42>;
++			};
++			fman0_tx2: port@aa000 {
++				cell-index = <2>;
++				compatible = "fsl,p4080-fman-port-1g-tx", "fsl,fman-port-1g-tx";
++				reg = <0xaa000 0x1000>;
++				fsl,qman-channel-id = <0x43>;
++			};
++			fman0_tx3: port@ab000 {
++				cell-index = <3>;
++				compatible = "fsl,p4080-fman-port-1g-tx", "fsl,fman-port-1g-tx";
++				reg = <0xab000 0x1000>;
++				fsl,qman-channel-id = <0x44>;
++			};
++
++			fman0_oh0: port@81000 {
++				cell-index = <0>;
++				compatible = "fsl,p4080-fman-port-oh", "fsl,fman-port-oh";
++				reg = <0x81000 0x1000>;
++				fsl,qman-channel-id = <0x45>;
++			};
++			fman0_oh1: port@82000 {
++				cell-index = <1>;
++				compatible = "fsl,p4080-fman-port-oh", "fsl,fman-port-oh";
++				reg = <0x82000 0x1000>;
++				fsl,qman-channel-id = <0x46>;
++			};
++			fman0_oh2: port@83000 {
++				cell-index = <2>;
++				compatible = "fsl,p4080-fman-port-oh", "fsl,fman-port-oh";
++				reg = <0x83000 0x1000>;
++				fsl,qman-channel-id = <0x47>;
++			};
++			fman0_oh3: port@84000 {
++				cell-index = <3>;
++				compatible = "fsl,p4080-fman-port-oh", "fsl,fman-port-oh";
++				reg = <0x84000 0x1000>;
++				fsl,qman-channel-id = <0x48>;
++			};
++			fman0_oh4: port@85000 {
++				cell-index = <4>;
++				compatible = "fsl,p4080-fman-port-oh", "fsl,fman-port-oh";
++				reg = <0x85000 0x1000>;
++				fsl,qman-channel-id = <0x49>;
++			};
++			fman0_oh5: port@86000 {
++				cell-index = <5>;
++				compatible = "fsl,p4080-fman-port-oh", "fsl,fman-port-oh";
++				reg = <0x86000 0x1000>;
++				fsl,qman-channel-id = <0x4a>;
++			};
++			fman0_oh6: port@87000 {
++				cell-index = <6>;
++				compatible = "fsl,p4080-fman-port-oh", "fsl,fman-port-oh";
++				reg = <0x87000 0x1000>;
++				fsl,qman-channel-id = <0x4b>;
++			};
++
++			/* FM2@DTSEC 3-4 */
++			emi1: mdio@e1120 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,fman-mdio";
++				reg = <0xe1120 0xee0>;
++				interrupts = <100 1 0 0>;
++
++				phy0: ethernet-phy@1c {
++					reg = <0x1c>;
++				};
++
++				phy1: ethernet-phy@1d {
++					reg = <0x1d>;
++				};
++			};
++
++			enet4: ethernet@f0000 {
++				cell-index = <0>;
++				compatible = "fsl,p4080-fman-10g-mac", "fsl,fman-10g-mac";
++				reg = <0xf0000 0x1000>;
++				fsl,port-handles = <&fman0_rx4 &fman0_tx4>;
++				phy-handle = <&xphy0>;
++				phy-connection-type = "xgmii";
++			};
++
++			/* FM[12]@TGEC */
++			xmdio0: mdio@f1000 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,fman-xmdio";
++				reg = <0xf1000 0x1000>;
++				interrupts = <100 1 0 0>;
++				gpios = <&gpio0 2 0
++					 &gpio0 3 0>;
++
++				xphy0: p4080ds-xmdio1 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					compatible = "fsl,p4080ds-xmdio";
++					fsl,mdio-handle = <&xmdio0>;
++					fsl,muxval = <1>;
++					reg = <0x4>;
++				};
++
++				xphy1: p4080ds-xmdio3 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					compatible = "fsl,p4080ds-xmdio";
++					fsl,mdio-handle = <&xmdio0>;
++					fsl,muxval = <3>;
++					reg = <0x5>;
++				};
++			};
++		};
++
++		fman1: fman@500000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			cell-index = <1>;
++			compatible = "fsl,p4080-fman", "fsl,fman", "simple-bus";
++			ranges = <0 0x500000 0x100000>;
++			reg = <0x500000 0x100000>;
++			clock-frequency = <0>;
++			interrupts = <
++				97 2 0 0
++				16 2 1 0>;
++
++			cc@0 {
++				compatible = "fsl,p4080-fman-cc", "fsl,fman-cc";
++			};
++
++			parser@c7000 {
++				compatible = "fsl,p4080-fman-parser", "fsl,fman-parser";
++				reg = <0xc7000 0x1000>;
++			};
++
++			keygen@c1000 {
++				compatible = "fsl,p4080-fman-keygen", "fsl,fman-keygen";
++				reg = <0xc1000 0x1000>;
++			};
++
++			policer@c0000 {
++				compatible = "fsl,p4080-fman-policer", "fsl,fman-policer";
++				reg = <0xc0000 0x1000>;
++			};
++
++			muram@0 {
++				compatible = "fsl,p4080-fman-muram", "fsl,fman-muram";
++				reg = <0x0 0x28000>;
++			};
++
++			bmi@80000 {
++				compatible = "fsl,p4080-fman-bmi", "fsl,fman-bmi";
++				reg = <0x80000 0x400>;
++			};
++
++			qmi@80400 {
++				compatible = "fsl,p4080-fman-qmi", "fsl,fman-qmi";
++				reg = <0x80400 0x400>;
++			};
++
++			fman1_rx0: port@88000 {
++				cell-index = <0>;
++				compatible = "fsl,p4080-fman-port-1g-rx", "fsl,fman-port-1g-rx";
++				reg = <0x88000 0x1000>;
++			};
++			fman1_rx1: port@89000 {
++				cell-index = <1>;
++				compatible = "fsl,p4080-fman-port-1g-rx", "fsl,fman-port-1g-rx";
++				reg = <0x89000 0x1000>;
++			};
++			fman1_rx2: port@8a000 {
++				cell-index = <2>;
++				compatible = "fsl,p4080-fman-port-1g-rx", "fsl,fman-port-1g-rx";
++				reg = <0x8a000 0x1000>;
++			};
++			fman1_rx3: port@8b000 {
++				cell-index = <3>;
++				compatible = "fsl,p4080-fman-port-1g-rx", "fsl,fman-port-1g-rx";
++				reg = <0x8b000 0x1000>;
++			};
++			fman1_rx4: port@90000 {
++				cell-index = <0>;
++				compatible = "fsl,p4080-fman-port-10g-rx", "fsl,fman-port-10g-rx";
++				reg = <0x90000 0x1000>;
++			};
++
++			fman1_tx4: port@b0000 {
++				cell-index = <0>;
++				compatible = "fsl,p4080-fman-port-10g-tx", "fsl,fman-port-10g-tx";
++				reg = <0xb0000 0x1000>;
++				fsl,qman-channel-id = <0x60>;
++			};
++			fman1_tx0: port@a8000 {
++				cell-index = <0>;
++				compatible = "fsl,p4080-fman-port-1g-tx", "fsl,fman-port-1g-tx";
++				reg = <0xa8000 0x1000>;
++				fsl,qman-channel-id = <0x61>;
++			};
++			fman1_tx1: port@a9000 {
++				cell-index = <1>;
++				compatible = "fsl,p4080-fman-port-1g-tx", "fsl,fman-port-1g-tx";
++				reg = <0xa9000 0x1000>;
++				fsl,qman-channel-id = <0x62>;
++			};
++			fman1_tx2: port@aa000 {
++				cell-index = <2>;
++				compatible = "fsl,p4080-fman-port-1g-tx", "fsl,fman-port-1g-tx";
++				reg = <0xaa000 0x1000>;
++				fsl,qman-channel-id = <0x63>;
++			};
++			fman1_tx3: port@ab000 {
++				cell-index = <3>;
++				compatible = "fsl,p4080-fman-port-1g-tx", "fsl,fman-port-1g-tx";
++				reg = <0xab000 0x1000>;
++				fsl,qman-channel-id = <0x64>;
++			};
++
++			fman1_oh0: port@81000 {
++				cell-index = <0>;
++				compatible = "fsl,p4080-fman-port-oh", "fsl,fman-port-oh";
++				reg = <0x81000 0x1000>;
++				fsl,qman-channel-id = <0x65>;
++			};
++			fman1_oh1: port@82000 {
++				cell-index = <1>;
++				compatible = "fsl,p4080-fman-port-oh", "fsl,fman-port-oh";
++				reg = <0x82000 0x1000>;
++				fsl,qman-channel-id = <0x66>;
++			};
++			fman1_oh2: port@83000 {
++				cell-index = <2>;
++				compatible = "fsl,p4080-fman-port-oh", "fsl,fman-port-oh";
++				reg = <0x83000 0x1000>;
++				fsl,qman-channel-id = <0x67>;
++			};
++			fman1_oh3: port@84000 {
++				cell-index = <3>;
++				compatible = "fsl,p4080-fman-port-oh", "fsl,fman-port-oh";
++				reg = <0x84000 0x1000>;
++				fsl,qman-channel-id = <0x68>;
++			};
++			fman1_oh4: port@85000 {
++				cell-index = <4>;
++				compatible = "fsl,p4080-fman-port-oh", "fsl,fman-port-oh";
++				reg = <0x85000 0x1000>;
++				fsl,qman-channel-id = <0x69>;
++			};
++			fman1_oh5: port@86000 {
++				cell-index = <5>;
++				compatible = "fsl,p4080-fman-port-oh", "fsl,fman-port-oh";
++				reg = <0x86000 0x1000>;
++				fsl,qman-channel-id = <0x6a>;
++			};
++			fman1_oh6: port@87000 {
++				cell-index = <6>;
++				compatible = "fsl,p4080-fman-port-oh", "fsl,fman-port-oh";
++				reg = <0x87000 0x1000>;
++				fsl,qman-channel-id = <0x6b>;
++			};
++
++			enet7: ethernet@e4000 {
++				cell-index = <2>;
++				compatible = "fsl,p4080-fman-1g-mac", "fsl,fman-1g-mac";
++				reg = <0xe4000 0x1000>;
++				fsl,port-handles = <&fman1_rx2 &fman1_tx2>;
++				tbi-handle = <&tbi0>;
++				phy-handle = <&phy0>;
++				phy-connection-type = "sgmii";
++			};
++
++			mdio@e5120 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,fman-tbi";
++				reg = <0xe5120 0xee0>;
++				interrupts = <101 1 0 0>;
++
++				tbi0: tbi-phy@8 {
++					reg = <0x08>;
++					device_type = "tbi-phy";
++				};
++			};
++
++			enet8: ethernet@e6000 {
++				cell-index = <3>;
++				compatible = "fsl,p4080-fman-1g-mac", "fsl,fman-1g-mac";
++				reg = <0xe6000 0x1000>;
++				fsl,port-handles = <&fman1_rx3 &fman1_tx3>;
++				tbi-handle = <&tbi1>;
++				phy-handle = <&phy1>;
++				phy-connection-type = "sgmii";
++			};
++
++			mdio@e7120 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,fman-tbi";
++				reg = <0xe7120 0xee0>;
++				interrupts = <101 1 0 0>;
++
++				tbi1: tbi-phy@8 {
++					reg = <0x8>;
++					device_type = "tbi-phy";
++				};
++			};
++
++			enet9: ethernet@f0000 {
++				cell-index = <0>;
++				compatible = "fsl,p4080-fman-10g-mac", "fsl,fman-10g-mac";
++				reg = <0xf0000 0x1000>;
++				fsl,port-handles = <&fman1_rx4 &fman1_tx4>;
++				phy-handle = <&xphy1>;
++				phy-connection-type = "xgmii";
++			};
++		};
++	};
++
++	localbus@ffe124000 {
++		compatible = "fsl,p4080-elbc", "fsl,elbc", "simple-bus";
++		reg = <0xf 0xfe124000 0 0x1000>;
++		interrupts = <25 2 0 0>;
++		#address-cells = <2>;
++		#size-cells = <1>;
++
++		ranges = <0 0 0xf 0xe8000000 0x08000000>;
++
++		/* 256M Flash device */
++		flash@0,0 {
++			compatible = "cfi-flash";
++			reg = <0 0 0x08000000>;
++			bank-width = <2>;
++			device-width = <2>;
++			#address-cells = <0x1>;
++			#size-cells = <0x1>;
++
++			/* 16M for kernel */
++			partition@0 {
++				label = "sgyboot-kernel";
++				reg = <0x00000000 0x01000000>;
++			};
++			/* 64M for root fs */
++			partition@1 {
++				label = "sgyboot-initrd";
++				reg = <0x01000000 0x04000000>;
++			};
++			/* 256K for FMan microcode */
++			partition@2 {
++				label = "fsl-fman-ucode";
++				reg = <0x05000000 0x00040000>;
++			};
++			/* 256K for Device-tree */
++			partition@3 {
++				label = "device-tree";
++				reg = <0x05040000 0x00040000>;
++			};
++			/* 128K for u-Boot environment */
++			partition@4 {
++				label = "u-boot-env";
++				reg = <0x05080000 0x00020000>;
++			};
++			/* 128K Unused */
++
++			/* 1Meg for splash screen in u-boot's UDL driver */
++			partition@6 {
++				label = "udl-splash";
++				reg = <0x050c0000 0x00100000>;
++			};
++
++			/* ~44Megs Unused */
++
++			/* 2.5M for u-Boot */
++			partition@5 {
++				label = "u-boot";
++				reg = <0x07D80000 0x00280000>;
++			};
++
++			/* The whole flash area */
++			partition@20 {
++				label = "whole";
++				reg = <0x00000000 0x08000000>;
++			};
++		};
++	};
++
++	pci0: pcie@ffe200000 {
++		compatible = "fsl,p4080-pcie";
++		device_type = "pci";
++		#size-cells = <2>;
++		#address-cells = <3>;
++		reg = <0xf 0xfe200000 0 0x1000>;
++		bus-range = <0x0 0xff>;
++		ranges = <0x02000000 0 0xe0000000 0xc 0x00000000 0x0 0x20000000
++			  0x01000000 0 0x00000000 0xf 0xf8000000 0x0 0x00010000>;
++		clock-frequency = <0x1fca055>;
++		fsl,msi = <&msi0>;
++		interrupts = <16 2 1 15>;
++
++		pcie@0 {
++			reg = <0 0 0 0 0>;
++			#interrupt-cells = <1>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			device_type = "pci";
++			interrupts = <16 2 1 15>;
++			interrupt-map-mask = <0xf800 0 0 7>;
++			interrupt-map = <
++				/* IDSEL 0x0 */
++				0000 0 0 1 &mpic 40 1 0 0
++				0000 0 0 2 &mpic 1 1 0 0
++				0000 0 0 3 &mpic 2 1 0 0
++				0000 0 0 4 &mpic 3 1 0 0
++				>;
++			ranges = <0x02000000 0 0xe0000000
++				  0x02000000 0 0xe0000000
++				  0 0x20000000
++
++				  0x01000000 0 0x00000000
++				  0x01000000 0 0x00000000
++				  0 0x00010000>;
++		};
++	};
++
++	fsl,dpaa {
++		compatible = "fsl,p4080-dpaa", "fsl,dpaa";
++
++		ethernet@4 {
++			compatible = "fsl,p4080-dpa-ethernet", "fsl,dpa-ethernet";
++			fsl,qman-channel = <&qpool1>;
++			fsl,fman-mac = <&enet4>;
++		};
++		ethernet@7 {
++			compatible = "fsl,p4080-dpa-ethernet", "fsl,dpa-ethernet";
++			fsl,qman-channel = <&qpool1>;
++			fsl,fman-mac = <&enet7>;
++		};
++		ethernet@8 {
++			compatible = "fsl,p4080-dpa-ethernet", "fsl,dpa-ethernet";
++			fsl,qman-channel = <&qpool1>;
++			fsl,fman-mac = <&enet8>;
++		};
++		ethernet@9 {
++			compatible = "fsl,p4080-dpa-ethernet", "fsl,dpa-ethernet";
++			fsl,qman-channel = <&qpool1>;
++			fsl,fman-mac = <&enet9>;
++		};
++	};
 +};
-+
-+static struct platform_device mv643xx_eth_mvmdio_device = {
-+	.name		= "orion-mdio",
-+	.id		= -1,
-+	.num_resources	= ARRAY_SIZE(mv643xx_eth_mvmdio_resources),
-+	.resource	= mv643xx_eth_shared_resources,
-+};
-+
- static struct resource mv643xx_eth_port1_resources[] = {
- 	[0] = {
- 		.name	= "eth port1 irq",
-@@ -82,6 +101,7 @@ static struct platform_device eth_port1_device = {
- 
- static struct platform_device *mv643xx_eth_pd_devs[] __initdata = {
- 	&mv643xx_eth_shared_device,
-+	&mv643xx_eth_mvmdio_device,
- 	&eth_port1_device,
- };
- 
-diff --git a/arch/powerpc/sysdev/mv64x60_dev.c b/arch/powerpc/sysdev/mv64x60_dev.c
-index 0f6af41..4a25c26 100644
---- a/arch/powerpc/sysdev/mv64x60_dev.c
-+++ b/arch/powerpc/sysdev/mv64x60_dev.c
-@@ -214,15 +214,27 @@ static struct platform_device * __init mv64x60_eth_register_shared_pdev(
- 						struct device_node *np, int id)
- {
- 	struct platform_device *pdev;
--	struct resource r[1];
-+	struct resource r[2];
- 	int err;
- 
- 	err = of_address_to_resource(np, 0, &r[0]);
- 	if (err)
- 		return ERR_PTR(err);
- 
-+	/* register an orion mdio bus driver */
-+	r[1].start = r[0].start + 0x4;
-+	r[1].end = r[0].start + 0x84 - 1;
-+	r[1].flags = IORESOURCE_MEM;
-+
-+	if (id == 0) {
-+		pdev = platform_device_register_simple("orion-mdio", -1, &r[1], 1);
-+		if (!pdev)
-+			return pdev;
-+	}
-+
- 	pdev = platform_device_register_simple(MV643XX_ETH_SHARED_NAME, id,
--					       r, 1);
-+					       &r[0], 1);
-+
- 	return pdev;
- }
- 
-diff --git a/drivers/net/ethernet/marvell/Kconfig b/drivers/net/ethernet/marvell/Kconfig
-index edfba93..5170ecb 100644
---- a/drivers/net/ethernet/marvell/Kconfig
-+++ b/drivers/net/ethernet/marvell/Kconfig
-@@ -23,6 +23,7 @@ config MV643XX_ETH
- 	depends on (MV64X60 || PPC32 || PLAT_ORION) && INET
- 	select INET_LRO
- 	select PHYLIB
-+	select MVMDIO
- 	---help---
- 	  This driver supports the gigabit ethernet MACs in the
- 	  Marvell Discovery PPC/MIPS chipset family (MV643XX) and
-@@ -38,9 +39,7 @@ config MVMDIO
- 	  interface units of the Marvell EBU SoCs (Kirkwood, Orion5x,
- 	  Dove, Armada 370 and Armada XP).
- 
--	  For now, this driver is only needed for the MVNETA driver
--	  (used on Armada 370 and XP), but it could be used in the
--	  future by the MV643XX_ETH driver.
-+	  This driver is used by the MV643XX_ETH and MVNETA drivers.
- 
- config MVNETA
- 	tristate "Marvell Armada 370/XP network interface support"
-diff --git a/drivers/net/ethernet/marvell/Makefile b/drivers/net/ethernet/marvell/Makefile
-index 7f63b4a..5c4a776 100644
---- a/drivers/net/ethernet/marvell/Makefile
-+++ b/drivers/net/ethernet/marvell/Makefile
-@@ -2,8 +2,8 @@
- # Makefile for the Marvell device drivers.
- #
- 
--obj-$(CONFIG_MV643XX_ETH) += mv643xx_eth.o
- obj-$(CONFIG_MVMDIO) += mvmdio.o
-+obj-$(CONFIG_MV643XX_ETH) += mv643xx_eth.o
- obj-$(CONFIG_MVNETA) += mvneta.o
- obj-$(CONFIG_PXA168_ETH) += pxa168_eth.o
- obj-$(CONFIG_SKGE) += skge.o
-diff --git a/drivers/net/ethernet/marvell/mv643xx_eth.c b/drivers/net/ethernet/marvell/mv643xx_eth.c
-index d1ecf4b..a65a92e 100644
---- a/drivers/net/ethernet/marvell/mv643xx_eth.c
-+++ b/drivers/net/ethernet/marvell/mv643xx_eth.c
-@@ -69,14 +69,6 @@ static char mv643xx_eth_driver_version[] = "1.4";
-  * Registers shared between all ports.
-  */
- #define PHY_ADDR			0x0000
--#define SMI_REG				0x0004
--#define  SMI_BUSY			0x10000000
--#define  SMI_READ_VALID			0x08000000
--#define  SMI_OPCODE_READ		0x04000000
--#define  SMI_OPCODE_WRITE		0x00000000
--#define ERR_INT_CAUSE			0x0080
--#define  ERR_INT_SMI_DONE		0x00000010
--#define ERR_INT_MASK			0x0084
- #define WINDOW_BASE(w)			(0x0200 + ((w) << 3))
- #define WINDOW_SIZE(w)			(0x0204 + ((w) << 3))
- #define WINDOW_REMAP_HIGH(w)		(0x0280 + ((w) << 2))
-@@ -266,25 +258,6 @@ struct mv643xx_eth_shared_private {
- 	void __iomem *base;
- 
- 	/*
--	 * Points at the right SMI instance to use.
--	 */
--	struct mv643xx_eth_shared_private *smi;
--
--	/*
--	 * Provides access to local SMI interface.
--	 */
--	struct mii_bus *smi_bus;
--
--	/*
--	 * If we have access to the error interrupt pin (which is
--	 * somewhat misnamed as it not only reflects internal errors
--	 * but also reflects SMI completion), use that to wait for
--	 * SMI access completion instead of polling the SMI busy bit.
--	 */
--	int err_interrupt;
--	wait_queue_head_t smi_busy_wait;
--
--	/*
- 	 * Per-port MBUS window access register value.
- 	 */
- 	u32 win_protect;
-@@ -1122,97 +1095,6 @@ out_write:
- 	wrlp(mp, PORT_SERIAL_CONTROL, pscr);
- }
- 
--static irqreturn_t mv643xx_eth_err_irq(int irq, void *dev_id)
--{
--	struct mv643xx_eth_shared_private *msp = dev_id;
--
--	if (readl(msp->base + ERR_INT_CAUSE) & ERR_INT_SMI_DONE) {
--		writel(~ERR_INT_SMI_DONE, msp->base + ERR_INT_CAUSE);
--		wake_up(&msp->smi_busy_wait);
--		return IRQ_HANDLED;
--	}
--
--	return IRQ_NONE;
--}
--
--static int smi_is_done(struct mv643xx_eth_shared_private *msp)
--{
--	return !(readl(msp->base + SMI_REG) & SMI_BUSY);
--}
--
--static int smi_wait_ready(struct mv643xx_eth_shared_private *msp)
--{
--	if (msp->err_interrupt == NO_IRQ) {
--		int i;
--
--		for (i = 0; !smi_is_done(msp); i++) {
--			if (i == 10)
--				return -ETIMEDOUT;
--			msleep(10);
--		}
--
--		return 0;
--	}
--
--	if (!smi_is_done(msp)) {
--		wait_event_timeout(msp->smi_busy_wait, smi_is_done(msp),
--				   msecs_to_jiffies(100));
--		if (!smi_is_done(msp))
--			return -ETIMEDOUT;
--	}
--
--	return 0;
--}
--
--static int smi_bus_read(struct mii_bus *bus, int addr, int reg)
--{
--	struct mv643xx_eth_shared_private *msp = bus->priv;
--	void __iomem *smi_reg = msp->base + SMI_REG;
--	int ret;
--
--	if (smi_wait_ready(msp)) {
--		pr_warn("SMI bus busy timeout\n");
--		return -ETIMEDOUT;
--	}
--
--	writel(SMI_OPCODE_READ | (reg << 21) | (addr << 16), smi_reg);
--
--	if (smi_wait_ready(msp)) {
--		pr_warn("SMI bus busy timeout\n");
--		return -ETIMEDOUT;
--	}
--
--	ret = readl(smi_reg);
--	if (!(ret & SMI_READ_VALID)) {
--		pr_warn("SMI bus read not valid\n");
--		return -ENODEV;
--	}
--
--	return ret & 0xffff;
--}
--
--static int smi_bus_write(struct mii_bus *bus, int addr, int reg, u16 val)
--{
--	struct mv643xx_eth_shared_private *msp = bus->priv;
--	void __iomem *smi_reg = msp->base + SMI_REG;
--
--	if (smi_wait_ready(msp)) {
--		pr_warn("SMI bus busy timeout\n");
--		return -ETIMEDOUT;
--	}
--
--	writel(SMI_OPCODE_WRITE | (reg << 21) |
--		(addr << 16) | (val & 0xffff), smi_reg);
--
--	if (smi_wait_ready(msp)) {
--		pr_warn("SMI bus busy timeout\n");
--		return -ETIMEDOUT;
--	}
--
--	return 0;
--}
--
--
- /* statistics ***************************************************************/
- static struct net_device_stats *mv643xx_eth_get_stats(struct net_device *dev)
- {
-@@ -2688,47 +2570,6 @@ static int mv643xx_eth_shared_probe(struct platform_device *pdev)
- 		goto out_free;
- 
- 	/*
--	 * Set up and register SMI bus.
--	 */
--	if (pd == NULL || pd->shared_smi == NULL) {
--		msp->smi_bus = mdiobus_alloc();
--		if (msp->smi_bus == NULL)
--			goto out_unmap;
--
--		msp->smi_bus->priv = msp;
--		msp->smi_bus->name = "mv643xx_eth smi";
--		msp->smi_bus->read = smi_bus_read;
--		msp->smi_bus->write = smi_bus_write,
--		snprintf(msp->smi_bus->id, MII_BUS_ID_SIZE, "%s-%d",
--			pdev->name, pdev->id);
--		msp->smi_bus->parent = &pdev->dev;
--		msp->smi_bus->phy_mask = 0xffffffff;
--		if (mdiobus_register(msp->smi_bus) < 0)
--			goto out_free_mii_bus;
--		msp->smi = msp;
--	} else {
--		msp->smi = platform_get_drvdata(pd->shared_smi);
--	}
--
--	msp->err_interrupt = NO_IRQ;
--	init_waitqueue_head(&msp->smi_busy_wait);
--
--	/*
--	 * Check whether the error interrupt is hooked up.
--	 */
--	res = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
--	if (res != NULL) {
--		int err;
--
--		err = request_irq(res->start, mv643xx_eth_err_irq,
--				  IRQF_SHARED, "mv643xx_eth", msp);
--		if (!err) {
--			writel(ERR_INT_SMI_DONE, msp->base + ERR_INT_MASK);
--			msp->err_interrupt = res->start;
--		}
--	}
--
--	/*
- 	 * (Re-)program MBUS remapping windows if we are asked to.
- 	 */
- 	dram = mv_mbus_dram_info();
-@@ -2743,10 +2584,6 @@ static int mv643xx_eth_shared_probe(struct platform_device *pdev)
- 
- 	return 0;
- 
--out_free_mii_bus:
--	mdiobus_free(msp->smi_bus);
--out_unmap:
--	iounmap(msp->base);
- out_free:
- 	kfree(msp);
- out:
-@@ -2756,14 +2593,7 @@ out:
- static int mv643xx_eth_shared_remove(struct platform_device *pdev)
- {
- 	struct mv643xx_eth_shared_private *msp = platform_get_drvdata(pdev);
--	struct mv643xx_eth_shared_platform_data *pd = pdev->dev.platform_data;
- 
--	if (pd == NULL || pd->shared_smi == NULL) {
--		mdiobus_unregister(msp->smi_bus);
--		mdiobus_free(msp->smi_bus);
--	}
--	if (msp->err_interrupt != NO_IRQ)
--		free_irq(msp->err_interrupt, msp);
- 	iounmap(msp->base);
- 	kfree(msp);
- 
-@@ -2826,14 +2656,21 @@ static void set_params(struct mv643xx_eth_private *mp,
- 	mp->txq_count = pd->tx_queue_count ? : 1;
- }
- 
-+static void mv643xx_eth_adjust_link(struct net_device *dev)
-+{
-+	struct mv643xx_eth_private *mp = netdev_priv(dev);
-+
-+	mv643xx_adjust_pscr(mp);
-+}
-+
- static struct phy_device *phy_scan(struct mv643xx_eth_private *mp,
- 				   int phy_addr)
- {
--	struct mii_bus *bus = mp->shared->smi->smi_bus;
- 	struct phy_device *phydev;
- 	int start;
- 	int num;
- 	int i;
-+	char phy_id[MII_BUS_ID_SIZE + 3];
- 
- 	if (phy_addr == MV643XX_ETH_PHY_ADDR_DEFAULT) {
- 		start = phy_addr_get(mp) & 0x1f;
-@@ -2843,17 +2680,19 @@ static struct phy_device *phy_scan(struct mv643xx_eth_private *mp,
- 		num = 1;
- 	}
- 
-+	/* Attempt to connect to the PHY using orion-mdio */
- 	phydev = NULL;
- 	for (i = 0; i < num; i++) {
- 		int addr = (start + i) & 0x1f;
- 
--		if (bus->phy_map[addr] == NULL)
--			mdiobus_scan(bus, addr);
-+		snprintf(phy_id, sizeof(phy_id), PHY_ID_FMT,
-+				"orion-mdio-mii", addr);
- 
--		if (phydev == NULL) {
--			phydev = bus->phy_map[addr];
--			if (phydev != NULL)
--				phy_addr_set(mp, addr);
-+		phydev = phy_connect(mp->dev, phy_id, mv643xx_eth_adjust_link,
-+				PHY_INTERFACE_MODE_GMII);
-+		if (!IS_ERR(phydev)) {
-+			phy_addr_set(mp, addr);
-+			break;
- 		}
- 	}
- 
-@@ -2866,8 +2705,6 @@ static void phy_init(struct mv643xx_eth_private *mp, int speed, int duplex)
- 
- 	phy_reset(mp);
- 
--	phy_attach(mp->dev, dev_name(&phy->dev), PHY_INTERFACE_MODE_GMII);
--
- 	if (speed == 0) {
- 		phy->autoneg = AUTONEG_ENABLE;
- 		phy->speed = 0;
-diff --git a/include/linux/mv643xx_eth.h b/include/linux/mv643xx_eth.h
-index 49258e0..141d395 100644
---- a/include/linux/mv643xx_eth.h
-+++ b/include/linux/mv643xx_eth.h
-@@ -19,7 +19,6 @@
- 
- struct mv643xx_eth_shared_platform_data {
- 	struct mbus_dram_target_info	*dram;
--	struct platform_device	*shared_smi;
- 	/*
- 	 * Max packet size for Tx IP/Layer 4 checksum, when set to 0, default
- 	 * limit of 9KiB will be used.
 -- 
-1.7.10.4
+1.8.1.2
