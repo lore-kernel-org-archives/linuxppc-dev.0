@@ -1,21 +1,25 @@
-Return-Path: <Sergey.Gerasimov@astrosoft-development.com>
-Received: from storage.astrosoft.ru (storage.astrosoft.ru [195.218.158.6])
- by ozlabs.org (Postfix) with SMTP id F12262C00C3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2013 21:10:07 +1100 (EST)
-From: Sergey Gerasimov <Sergey.Gerasimov@astrosoft-development.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Date: Tue, 19 Mar 2013 14:09:38 +0400
-Subject: RE: [PATCH 1/1] Add a new platform tree for ib8315. Also add the
- DTS and the defconfig for that board.
-Message-ID: <94EB659E3D5E594D80696B67540292A2F6D13719A1@nov-exch01.astro.local>
-References: <1363614452-1109-1-git-send-email-Sergey.Gerasimov@astrosoft-development.com>
- <307780DE-9735-4329-B5D7-DF2E9451A217@kernel.crashing.org>
-In-Reply-To: <307780DE-9735-4329-B5D7-DF2E9451A217@kernel.crashing.org>
-Content-Type: text/plain; charset="koi8-r"
+Return-Path: <R65777@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D0F762C00AE
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 01:55:14 +1100 (EST)
+Received: from mail216-co1 (localhost [127.0.0.1])	by
+ mail216-co1-R.bigfish.com (Postfix) with ESMTP id B4FFE4400D9	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2013 14:55:09 +0000 (UTC)
+Received: from CO1EHSMHS031.bigfish.com (unknown [10.243.78.231])	by
+ mail216-co1.bigfish.com (Postfix) with ESMTP id AE072480056	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2013 14:55:07 +0000 (UTC)
+From: Bhushan Bharat-R65777 <R65777@freescale.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Wood
+ Scott-B07421 <B07421@freescale.com>
+Subject: using request_irq_percpu()
+Date: Tue, 19 Mar 2013 14:55:05 +0000
+Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D065F508E@039-SN2MPN1-023.039d.mgd.msft.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,35 +29,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Yes. Ib8315 based on tqm8315. Ib8315 is baseboard that has the tqm8215m plu=
-gged in as "the central part".=20
+Hi All,
 
------Original Message-----
-From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
-Sent: 19 =CD=C1=D2=D4=C1 2013 =C7. 00:18
-To: Sergey Gerasimov
-Cc: Benjamin Herrenschmidt; Paul Mackerras; linuxppc-dev@lists.ozlabs.org; =
-linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] Add a new platform tree for ib8315. Also add the D=
-TS and the defconfig for that board.
+request_irq_percpu() is defined in kernel/irq/manage.c, this takes a percpu=
+ pointer which will be unique based upon on which cpu the handler executes.
 
+So, it looks like we can use this to have multiple bottom half interrupt ha=
+ndler executing at same time on different CPU and each can handle this inde=
+pendently.
 
-On Mar 18, 2013, at 8:47 AM, Sergey Gerasimov wrote:
+Flow will be like:
+-- Interrupt occurs on CPU1 - handler save some context for bottom half and=
+ then clears the interrupt condition, and return (in between the interrupt =
+affinity will be moved to next CPU in round robin fashion).
 
-> Signed-off-by: Sergey Gerasimov=20
-> <Sergey.Gerasimov@astrosoft-development.com>
-> ---
-> arch/powerpc/boot/dts/ib8315.dts           |  490 +++++++
-> arch/powerpc/configs/83xx/ib8315_defconfig | 2121 +++++++++++++++++++++++=
-+++++
-> arch/powerpc/platforms/83xx/Kconfig        |    7 +
-> arch/powerpc/platforms/83xx/Makefile       |    1 +
-> arch/powerpc/platforms/83xx/tqm8315.c      |  137 ++
-> 5 files changed, 2756 insertions(+)
-> create mode 100644 arch/powerpc/boot/dts/ib8315.dts create mode 100644=20
-> arch/powerpc/configs/83xx/ib8315_defconfig
-> create mode 100644 arch/powerpc/platforms/83xx/tqm8315.c
+-- CPU 1 executing its bottom half.
 
-Is there some relationship of this board with the TQM8315?
+-- Again interrupt occurs, which will come on CPU 2
 
-- k
+-- CPU 2 handler similar to CPU1 and so on.
+
+This way multiple similar bottom half can run at same time on different CPU
+
+Thanks
+-Bharat
