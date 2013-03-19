@@ -1,15 +1,19 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 19 Mar 2013 17:31:55 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: akpm@linux-foundation.org
-Subject: Re: [patch 2/2] mm: use vm_unmapped_area() on powerpc architecture
-Message-ID: <20130319063155.GW9402@truffula.fritz.box>
-References: <20130221230558.C201931C1B7@corp2gmr1-1.hot.corp.google.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="zGa1rFMfQatMxgJk"
-In-Reply-To: <20130221230558.C201931C1B7@corp2gmr1-1.hot.corp.google.com>
-Cc: walken@google.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 5F3F72C00B7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2013 17:40:46 +1100 (EST)
+Message-ID: <1363675240.18880.19.camel@pasglop>
+Subject: Re: Kernel panic on PowerMac G5 while scanning for SMU sensors
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Phileas Fogg <phileas-fogg@mail.ru>
+Date: Tue, 19 Mar 2013 07:40:40 +0100
+In-Reply-To: <5145BA3A.8080508@mail.ru>
+References: <5145B20C.2090104@mail.ru> <5145BA3A.8080508@mail.ru>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,44 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Sun, 2013-03-17 at 13:42 +0100, Phileas Fogg wrote:
 
---zGa1rFMfQatMxgJk
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> A further analysis showed that it crashes in _smu_i2c_complete_command_
+> which is called from _smu_i2c_low_completion_.
+> 
+> This line caused the panic:
+> 
+> list_del(&cmd->link);
 
-On Thu, Feb 21, 2013 at 03:05:58PM -0800, akpm@linux-foundation.org wrote:
-> From: Michel Lespinasse <walken@google.com>
-> Subject: mm: use vm_unmapped_area() on powerpc architecture
->=20
-> Update the powerpc slice_get_unmapped_area function to make use of
-> vm_unmapped_area() instead of implementing a brute force search.
->=20
-> Signed-off-by: Michel Lespinasse <walken@google.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Ok, we must have a bug :-) I'm on holiday for a while, I can look when
+I'm back.
 
-Acked-by: David Gibson <david@gibson.dropbear.id.au>
+However, I would generally advise against messing around with the
+sensors directly from userspace which is what I believe lm-sensors does.
+It has no real understanding of what those sensors are about, where they
+are located etc... and might also conflict with the use of those sensors
+by the kernel windfarm drivers.
 
-A little unnecessarily cryptic in places, but the logic looks sound.
+If you want to look at the values, windfarm does expose them to
+userspace in sysfs, you might want to take a peek.
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---zGa1rFMfQatMxgJk
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iEYEARECAAYFAlFIBlsACgkQaILKxv3ab8aGyACgkl786nn4d64eLL0PA1RLuf6v
-bzIAn01e7Jj5GEymVRb7wZ+gvTd+Yyp/
-=A33D
------END PGP SIGNATURE-----
-
---zGa1rFMfQatMxgJk--
+Cheers,
+Ben.
