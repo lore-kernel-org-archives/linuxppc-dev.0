@@ -2,34 +2,34 @@ Return-Path: <nfont@linux.vnet.ibm.com>
 Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 941BB2C00F7
- for <linuxppc-dev@ozlabs.org>; Wed, 20 Mar 2013 05:02:30 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 971DB2C00D9
+ for <linuxppc-dev@ozlabs.org>; Wed, 20 Mar 2013 05:04:06 +1100 (EST)
 Received: from /spool/local
  by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Tue, 19 Mar 2013 14:02:28 -0400
-Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 9E58A6E805F
- for <linuxppc-dev@ozlabs.org>; Tue, 19 Mar 2013 14:02:22 -0400 (EDT)
+ Tue, 19 Mar 2013 14:04:04 -0400
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id B3608C9002A
+ for <linuxppc-dev@ozlabs.org>; Tue, 19 Mar 2013 14:03:59 -0400 (EDT)
 Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r2JI2O8L076786
- for <linuxppc-dev@ozlabs.org>; Tue, 19 Mar 2013 14:02:24 -0400
+ by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r2JI3wNO253458
+ for <linuxppc-dev@ozlabs.org>; Tue, 19 Mar 2013 14:03:58 -0400
 Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
  by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r2JI1JY6012684
- for <linuxppc-dev@ozlabs.org>; Tue, 19 Mar 2013 12:01:19 -0600
-Message-ID: <5148A7EC.70301@linux.vnet.ibm.com>
-Date: Tue, 19 Mar 2013 13:01:16 -0500
+ r2JI3rg0027428
+ for <linuxppc-dev@ozlabs.org>; Tue, 19 Mar 2013 12:03:54 -0600
+Message-ID: <5148A886.5080109@linux.vnet.ibm.com>
+Date: Tue, 19 Mar 2013 13:03:50 -0500
 From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH2/11] Add PRRN Event Handler
+Subject: Re: [PATCH 4/11] Add platform_has_feature()
 References: <513AB2E3.6090209@linux.vnet.ibm.com>
- <513AB3C9.6010302@linux.vnet.ibm.com>
- <20130314085155.GB9841@iris.ozlabs.ibm.com>
-In-Reply-To: <20130314085155.GB9841@iris.ozlabs.ibm.com>
+ <513AB457.9000409@linux.vnet.ibm.com>
+ <20130314085616.GD9841@iris.ozlabs.ibm.com>
+In-Reply-To: <20130314085616.GD9841@iris.ozlabs.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,49 +41,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/14/2013 03:51 AM, Paul Mackerras wrote:
-> On Fri, Mar 08, 2013 at 10:00:09PM -0600, Nathan Fontenot wrote:
->> From: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
->>
->> A PRRN event is signaled via the RTAS event-scan mechanism, which
->> returns a Hot Plug Event message "fixed part" indicating "Platform
->> Resource Reassignment". In response to the Hot Plug Event message,
->> we must call ibm,update-nodes to determine which resources were
->> reassigned and then ibm,update-properties to obtain the new affinity
->> information about those resources.
->>
->> The PRRN event-scan RTAS message contains only the "fixed part" with
->> the "Type" field set to the value 160 and no Extended Event Log. The
->> four-byte Extended Event Log Length field is repurposed (since no
->> Extended Event Log message is included) to pass the "scope" parameter
->> that causes the ibm,update-nodes to return the nodes affected by the
->> specific resource reassignment.
->>
->> This patch adds a handler in rtasd for PRRN RTAS events. The function
->> pseries_devicetree_update() (from mobility.c) is used to make the
->> ibm,update-nodes/ibm,update-properties RTAS calls. Updating the NUMA maps
->> (handled by a subsequent patch) will require significant processing,
->> so pseries_devicetree_update() is called from an asynchronous workqueue
->> to allow rtasd to continue processing events.
->>
->> Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+On 03/14/2013 03:56 AM, Paul Mackerras wrote:
+> On Fri, Mar 08, 2013 at 10:02:31PM -0600, Nathan Fontenot wrote:
+>> The firmware_has_feature() function makes it easy to check for supported
+>> features of the hardware. There is not corresponding function to check for
+>> features supported by the client architecture.
 > 
-> [snip]
-> 
->> +static s32 update_scope;
-> 
-> Do we have a guarantee that there can only be one of these events
-> outstanding at a time?  If so it would be nice to document that in a
-> comment next to this declaration, so we know in future that this is
-> why this is safe.
-> 
+> Actually, firmware_has_feature checks for supported features of the
+> hypervisor, or in a sense the platform, rather than hardware.
 
-We only allow for one event to be outstanding. When a PRRN Event is
-received we flush any work currently queued up and add the new event
-event to the workqueue (see prrn_schedule_work() from the patch).
+Ahh, thanks for clarifying that for me. I'll update the description.
 
-As I understand flush_work(), this would wait for any work in flight
-to complete, then remove all work before returning. I'll add a comment
-and update the patch description.
+> 
+>> This patch adds a platform_has_feature() function to check features selected
+>> by firmware and reported via the device tree 'ibm,architecture-vec5'
+>> property. As part of this the #defines used for the architecture vector are
+>> moved to prom.h and re-defined such that the vector 5 options have the vector
+>> index and the feature bits encoded into them. This allows for callers of
+>> platform_has_feature() to pass in a single pre-defined value.
+> 
+> One other comment below...
+> 
+>>  /* PCIe/MSI support.  Without MSI full PCIe is not supported */
+>>  #ifdef CONFIG_PCI_MSI
+>> -#define OV5_MSI			0x01	/* PCIe/MSI support */
+>> +#define OV5_MSI			0x0201	/* PCIe/MSI support */
+>>  #else
+>> -#define OV5_MSI			0x00
+>> +#define OV5_MSI			0x0200
+>>  #endif /* CONFIG_PCI_MSI */
+> 
+> The #ifdef was done this way in order to control what ended up in the
+> option vector we pass to the platform firmware.  For checking what the
+> platform supports, wouldn't we want OV5_MSI to be 0x0201 always?
+> Similarly for OV5_CMO, OV5_XCMO, etc.?
 
+Yes, you're correct. I will update this.
+
+-- 
 -Nathan
