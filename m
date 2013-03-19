@@ -1,30 +1,32 @@
-Return-Path: <B20052@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
+Return-Path: <B40534@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C465E2C0097
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2013 17:23:45 +1100 (EST)
-From: Leekha Shaveta-B20052 <B20052@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: RE: [PATCH 2/6] powerpc/fsl-booke: Add initial B4860QDS board
- device tree
-Date: Tue, 19 Mar 2013 06:23:37 +0000
-Message-ID: <E12D2F89F87F4A49B0320A4C2DE7E749145383@039-SN2MPN1-011.039d.mgd.msft.net>
-References: <1363334109-21922-1-git-send-email-shaveta@freescale.com>
- <1363334109-21922-2-git-send-email-shaveta@freescale.com>
- <7EB2D4A9-A5BC-4958-9AD8-51B254666356@kernel.crashing.org>
- <E12D2F89F87F4A49B0320A4C2DE7E749144AA5@039-SN2MPN1-011.039d.mgd.msft.net>
- <5594D9B8-885F-4A02-9F7D-B6BFA8BD84C8@kernel.crashing.org>
+ by ozlabs.org (Postfix) with ESMTPS id D712E2C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2013 17:25:50 +1100 (EST)
+Received: from mail160-tx2 (localhost [127.0.0.1])	by
+ mail160-tx2-R.bigfish.com (Postfix) with ESMTP id 3CBF01C01A4	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2013 06:25:46 +0000 (UTC)
+Received: from TX2EHSMHS027.bigfish.com (unknown [10.9.14.234])	by
+ mail160-tx2.bigfish.com (Postfix) with ESMTP id 29BD53E0048	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2013 06:25:44 +0000 (UTC)
+From: Wang Dongsheng-B40534 <B40534@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH 3/3] powerpc/fsl: add MPIC timer wakeup support
+Date: Tue, 19 Mar 2013 06:25:42 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259EB7111@039-SN2MPN1-022.039d.mgd.msft.net>
+References: <1362728327-21013-3-git-send-email-dongsheng.wang@freescale.com>
+ (from dongsheng.wang@freescale.com on Fri Mar  8 01:38:47 2013)
+ <1363653058.27435.24@snotra>
+In-Reply-To: <1363653058.27435.24@snotra>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Cc: Aggrwal Poonam-B10812 <B10812@freescale.com>,
- Mehresh Ramneek-B31383 <B31383@freescale.com>,
- Lian Minghuan-B31939 <B31939@freescale.com>,
- Leekha Shaveta-B20052 <B20052@freescale.com>,
- Fleming Andy-AFLEMING <afleming@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Gala Kumar-B11780 <B11780@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>,
+ Zhao Chenhui-B35336 <B35336@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,289 +36,164 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Scoot,
 
+Thanks for reviewing.
 
------Original Message-----
-From: Leekha Shaveta-B20052=20
-Sent: Tuesday, March 19, 2013 11:41 AM
-To: 'Kumar Gala'
-Cc: linuxppc-dev@lists.ozlabs.org; Lian Minghuan-B31939; Fleming Andy-AFLEM=
-ING; Aggrwal Poonam-B10812; Mehresh Ramneek-B31383
-Subject: RE: [PATCH 2/6] powerpc/fsl-booke: Add initial B4860QDS board devi=
-ce tree
-
-
-
------Original Message-----
-From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
-Sent: Monday, March 18, 2013 8:33 PM
-To: Leekha Shaveta-B20052
-Cc: linuxppc-dev@lists.ozlabs.org; Lian Minghuan-B31939; Fleming Andy-AFLEM=
-ING; Aggrwal Poonam-B10812; Mehresh Ramneek-B31383
-Subject: Re: [PATCH 2/6] powerpc/fsl-booke: Add initial B4860QDS board devi=
-ce tree
-
-
-On Mar 18, 2013, at 1:31 AM, Leekha Shaveta-B20052 wrote:
-
->=20
->=20
 > -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> Sent: Saturday, March 16, 2013 1:57 AM
-> To: Leekha Shaveta-B20052
-> Cc: linuxppc-dev@lists.ozlabs.org; Lian Minghuan-B31939; Fleming=20
-> Andy-AFLEMING; Aggrwal Poonam-B10812; Mehresh Ramneek-B31383
-> Subject: Re: [PATCH 2/6] powerpc/fsl-booke: Add initial B4860QDS board=20
-> device tree
+> From: Wood Scott-B07421
+> Sent: Tuesday, March 19, 2013 8:31 AM
+> To: Wang Dongsheng-B40534
+> Cc: Gala Kumar-B11780; linuxppc-dev@lists.ozlabs.org; Wang Dongsheng-
+> B40534; Zhao Chenhui-B35336; Li Yang-R58472
+> Subject: Re: [PATCH 3/3] powerpc/fsl: add MPIC timer wakeup support
 >=20
+> On 03/08/2013 01:38:47 AM, Wang Dongsheng wrote:
+> > The driver provides a way to wake up the system by the MPIC timer.
+> >
+> > For example,
+> > echo 5 > /sys/devices/system/mpic/timer_wakeup
+> > echo standby > /sys/power/state
+> >
+> > After 5 seconds the MPIC timer will generate an interrupt to wake up
+> > the system.
+> >
+> > Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> > Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+> > Signed-off-by: Li Yang <leoli@freescale.com>
 >=20
-> On Mar 15, 2013, at 2:55 AM, Shaveta Leekha wrote:
+> Does this work with deep sleep (echo mem > /sys/power/state on mpc8536,
+> p1022, etc) or just regular sleep?
 >=20
->> Signed-off-by: Shaveta Leekha <shaveta@freescale.com>
->> Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
->> Signed-off-by: Andy Fleming <afleming@freescale.com>
->> Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
->> Signed-off-by: Ramneek Mehresh <ramneek.mehresh@freescale.com>
->> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->> ---
->> arch/powerpc/boot/dts/b4860qds.dts |  178
->> ++++++++++++++++++++++++++++++++++++
->> 1 files changed, 178 insertions(+), 0 deletions(-) create mode 100644=20
->> arch/powerpc/boot/dts/b4860qds.dts
->>=20
->> diff --git a/arch/powerpc/boot/dts/b4860qds.dts
->> b/arch/powerpc/boot/dts/b4860qds.dts
->> new file mode 100644
->> index 0000000..ae6ac05
->> --- /dev/null
->> +++ b/arch/powerpc/boot/dts/b4860qds.dts
->> @@ -0,0 +1,178 @@
->> +/*
->> + * B4860DS Device Tree Source
->> + *
->> + * Copyright 2012 Freescale Semiconductor Inc.
->> + *
->> + * Redistribution and use in source and binary forms, with or=20
->> +without
->> + * modification, are permitted provided that the following conditions a=
-re met:
->> + *     * Redistributions of source code must retain the above copyright
->> + *       notice, this list of conditions and the following disclaimer.
->> + *     * Redistributions in binary form must reproduce the above copyri=
-ght
->> + *       notice, this list of conditions and the following disclaimer i=
-n the
->> + *       documentation and/or other materials provided with the distrib=
-ution.
->> + *     * Neither the name of Freescale Semiconductor nor the
->> + *       names of its contributors may be used to endorse or promote pr=
-oducts
->> + *       derived from this software without specific prior written perm=
-ission.
->> + *
->> + *
->> + * ALTERNATIVELY, this software may be distributed under the terms=20
->> +of the
->> + * GNU General Public License ("GPL") as published by the Free=20
->> +Software
->> + * Foundation, either version 2 of that License or (at your option)=20
->> +any
->> + * later version.
->> + *
->> + * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS''=20
->> +AND ANY
->> + * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE=20
->> +IMPLIED
->> + * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR=20
->> +PURPOSE ARE
->> + * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE=20
->> +FOR ANY
->> + * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR=20
->> +CONSEQUENTIAL DAMAGES
->> + * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS=20
->> +OR SERVICES;
->> + * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER=20
->> +CAUSED AND
->> + * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT=20
->> +LIABILITY, OR TORT
->> + * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE=20
->> +USE OF THIS
->> + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
->> + */
->> +
->> +/include/ "fsl/b4860si-pre.dtsi"
->> +
->> +/ {
->> +	model =3D "fsl,B4860QDS";
->> +	compatible =3D "fsl,B4860QDS";
->> +	#address-cells =3D <2>;
->> +	#size-cells =3D <2>;
->> +	interrupt-parent =3D <&mpic>;
->> +
->> +	ifc: localbus@ffe124000 {
->> +		reg =3D <0xf 0xfe124000 0 0x2000>;
->> +		ranges =3D <0 0 0xf 0xe8000000 0x08000000
->> +			  2 0 0xf 0xff800000 0x00010000
->> +			  3 0 0xf 0xffdf0000 0x00008000>;
->> +
->> +		nor@0,0 {
->> +			#address-cells =3D <1>;
->> +			#size-cells =3D <1>;
->> +			compatible =3D "cfi-flash";
->> +			reg =3D <0x0 0x0 0x8000000>;
->> +			bank-width =3D <2>;
->> +			device-width =3D <1>;
->> +		};
->> +
->> +		nand@2,0 {
->> +			#address-cells =3D <1>;
->> +			#size-cells =3D <1>;
->> +			compatible =3D "fsl,ifc-nand";
->> +			reg =3D <0x2 0x0 0x10000>;
->> +
->> +			partition@0 {
->> +				/* This location must not be altered  */
->> +				/* 1MB for u-boot Bootloader Image */
->> +				reg =3D <0x0 0x00100000>;
->> +				label =3D "NAND U-Boot Image";
->> +				read-only;
->> +			};
->> +
->> +			partition@100000 {
->> +				/* 1MB for DTB Image */
->> +				reg =3D <0x00100000 0x00100000>;
->> +				label =3D "NAND DTB Image";
->> +			};
->> +
->> +			partition@200000 {
->> +				/* 10MB for Linux Kernel Image */
->> +				reg =3D <0x00200000 0x00A00000>;
->> +				label =3D "NAND Linux Kernel Image";
->> +			};
->> +
->> +			partition@c00000 {
->> +				/* 500MB for Root file System Image */
->> +				reg =3D <0x00c00000 0x1F400000>;
->> +				label =3D "NAND RFS Image";
->> +			};
->> +		};
->> +
->> +		board-control@3,0 {
->> +			compatible =3D "fsl,b4860qds-fpga", "fsl,fpga-qixis";
->> +			reg =3D <3 0 0x300>;
->> +		};
->> +	};
->> +
->=20
-> dscr nodes are missing and should be included [SL] I don't have much=20
-> idea about dcsr nodes structure and their respective testing, also couldn=
-'t find then in T4 device tree files. I have added initial device trees. Dc=
-sr may be added later as updation. What do you say?
+The deep sleep can also work.
 
-I'll add them to T4, but if you look at the internal FSL SDK tree you will =
-see they've been added for T4 & B4.
-[SL] Ok, will add them.
+> > ---
+> >  arch/powerpc/platforms/Kconfig              |    9 ++
+> >  arch/powerpc/sysdev/Makefile                |    1 +
+> >  arch/powerpc/sysdev/fsl_mpic_timer_wakeup.c |  185
+> > +++++++++++++++++++++++++++
+> >  3 files changed, 195 insertions(+), 0 deletions(-)  create mode
+> > 100644 arch/powerpc/sysdev/fsl_mpic_timer_wakeup.c
+> >
+> > diff --git a/arch/powerpc/platforms/Kconfig
+> > b/arch/powerpc/platforms/Kconfig index 5af04fa..487c37f 100644
+> > --- a/arch/powerpc/platforms/Kconfig
+> > +++ b/arch/powerpc/platforms/Kconfig
+> > @@ -99,6 +99,15 @@ config MPIC_TIMER
+> >  	  only tested on fsl chip, but it can potentially support
+> >  	  other global timers complying to Open-PIC standard.
+> >
+> > +config FSL_MPIC_TIMER_WAKEUP
+> > +	tristate "Freescale MPIC global timer wakeup driver"
+> > +	depends on FSL_SOC &&  MPIC_TIMER
+> > +	default n
+> > +	help
+> > +	  This is only for freescale powerpc platform.
+>=20
+> This sentence is redundant... It already says "Freescale MPIC" in the
+> name and depends on "FSL_SOC && MPIC_TIMER".
+>=20
+Um...yes, I will remove it.
+=20
+> > +static irqreturn_t fsl_mpic_timer_irq(int irq, void *dev_id) {
+> > +	struct fsl_mpic_timer_wakeup *wakeup =3D dev_id;
+> > +
+> > +	schedule_work(&wakeup->free_work);
+> > +	return IRQ_HANDLED;
+> > +}
+>=20
+> return wakeup->timer ? IRQ_HANDLED : IRQ_NONE;
+>=20
+Looks better, thanks.
 
-Can you please point me to the patch or codebase where dcsr nodes are added=
- in B4?=20
-BR,
-Shaveta
+> > +
+> > +static ssize_t fsl_timer_wakeup_show(struct device *dev,
+> > +				struct device_attribute *attr,
+> > +				char *buf)
+> > +{
+> > +	struct timeval interval;
+> > +	int val =3D 0;
+> > +
+> > +	mutex_lock(&sysfs_lock);
+> > +	if (fsl_wakeup->timer) {
+> > +		mpic_get_remain_time(fsl_wakeup->timer, &interval);
+> > +		val =3D interval.tv_sec + 1;
+> > +	}
+> > +	mutex_unlock(&sysfs_lock);
+> > +
+> > +	return sprintf(buf, "%d\n", val);
+> > +}
+> > +
+> > +static ssize_t fsl_timer_wakeup_store(struct device *dev,
+> > +				struct device_attribute *attr,
+> > +				const char *buf,
+> > +				size_t count)
+> > +{
+> > +	struct timeval interval;
+> > +	int ret;
+> > +
+> > +	interval.tv_usec =3D 0;
+> > +	if (kstrtol(buf, 0, &interval.tv_sec))
+> > +		return -EINVAL;
+>=20
+> I don't think the buffer will NUL-terminated...  Ordinarily there'll be
+> an LF terminator, but you can't rely on that (many other sysfs attributes
+> seem to, though...).
+>=20
+I think we don't need to care about LF terminator.
+The kstrtol--> _kstrtoull has been done.
 
+> > +	mutex_lock(&sysfs_lock);
+> > +
+> > +	if (fsl_wakeup->timer && !interval.tv_sec) {
+> > +		disable_irq_wake(fsl_wakeup->timer->irq);
+> > +		mpic_free_timer(fsl_wakeup->timer);
+> > +		fsl_wakeup->timer =3D NULL;
+> > +		mutex_unlock(&sysfs_lock);
+> > +
+> > +		return count;
+> > +	}
+> > +
+> > +	if (fsl_wakeup->timer) {
+> > +		mutex_unlock(&sysfs_lock);
+> > +		return -EBUSY;
+> > +	}
+>=20
+> So to change an already-set timer you have to set it to zero and then to
+> what you want?  Why not just do:
+>=20
+> 	if (fsl_wakeup->timer) {
+> 		disable_irq_wake(...);
+> 		mpic_free_timer(...);
+> 		fsl_wakeup_timer =3D NULL;
+> 	}
+>=20
+> 	if (!interval.tv_sec) {
+> 		mutex_unlock(&sysfs_lock);
+> 		return count;
+> 	}
+>=20
+You can't break up the it.
+if echo zero the code will cancel the timer that is currently running.
+Not echo non-zero value just zero to cancel.
 
+> > +	ret =3D subsys_system_register(&mpic_subsys, NULL);
+> > +	if (ret)
+> > +		goto err;
 >=20
+> Maybe arch/powerpc/sysdev/mpic.c should be doing this?
 >=20
->> +	memory {
->> +		device_type =3D "memory";
->> +	};
->> +
->> +	soc: soc@ffe000000 {
->> +		ranges =3D <0x00000000 0xf 0xfe000000 0x1000000>;
->> +		reg =3D <0xf 0xfe000000 0 0x00001000>;
->> +		spi@110000 {
->> +			flash@0 {
->> +				#address-cells =3D <1>;
->> +				#size-cells =3D <1>;
->> +				compatible =3D "sst,sst25wf040";
->> +				reg =3D <0>;
->> +				spi-max-frequency =3D <40000000>; /* input clock */
->> +			};
->> +		};
->> +
->> +		sdhc@114000 {
->> +			status =3D "disabled";
->> +		};
->> +
->> +		i2c@118000 {
->> +			eeprom@50 {
->> +				compatible =3D "at24,24c64";
->> +				reg =3D <0x50>;
->> +			};
->> +			eeprom@51 {
->> +				compatible =3D "at24,24c256";
->> +				reg =3D <0x51>;
->> +			};
->> +			eeprom@53 {
->> +				compatible =3D "at24,24c256";
->> +				reg =3D <0x53>;
->> +			};
->> +			eeprom@57 {
->> +				compatible =3D "at24,24c256";
->> +				reg =3D <0x57>;
->> +			};
->> +			rtc@68 {
->> +				compatible =3D "dallas,ds3232";
->> +				reg =3D <0x68>;
->> +				interrupts =3D <0x1 0x1 0 0>;
+This can be registered by mpic. Maybe better than here.
+
+> > +
+> > +	for (i =3D 0; mpic_attributes[i]; i++) {
+> > +		ret =3D device_create_file(mpic_subsys.dev_root,
+> > +					mpic_attributes[i]);
+> > +		if (ret)
+> > +			goto err2;
+> > +	}
 >=20
-> there is no IRQ for RTC on the board.
-> [SL] will remove it.=20
+> Is this code ever going to register more than one?
 >=20
->> +			};
->> +		};
->> +
->> +		usb@210000 {
->> +			dr_mode =3D "host";
->> +			phy_type =3D "ulpi";
->> +		};
->> +
->> +	};
->> +
->> +	pci0: pcie@ffe200000 {
->> +		reg =3D <0xf 0xfe200000 0 0x10000>;
->> +		ranges =3D <0x02000000 0 0xe0000000 0xc 0x00000000 0x0 0x20000000
->> +			  0x01000000 0 0x00000000 0xf 0xf8000000 0x0 0x00010000>;
->> +		pcie@0 {
->> +			ranges =3D <0x02000000 0 0xe0000000
->> +				  0x02000000 0 0xe0000000
->> +				  0 0x20000000
->> +
->> +				  0x01000000 0 0x00000000
->> +				  0x01000000 0 0x00000000
->> +				  0 0x00010000>;
->> +		};
->> +	};
->> +
->> +	rio: rapidio@ffe0c0000 {
->> +		reg =3D <0xf 0xfe0c0000 0 0x11000>;
->> +
->> +		port1 {
->> +			ranges =3D <0 0 0xc 0x20000000 0 0x10000000>;
->> +		};
->> +		port2 {
->> +			ranges =3D <0 0 0xc 0x30000000 0 0x10000000>;
->> +		};
->> +	};
->> +
->> +};
->> +
->> +/include/ "fsl/b4860si-post.dtsi"
->> --
->> 1.7.6.GIT
->>=20
->=20
->=20
-> Regards,
-> Shaveta
->=20
->=20
+No, just one. I only keep the style here.
+If you don't think it's necessary I can remove this loop.
