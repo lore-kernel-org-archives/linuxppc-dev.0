@@ -1,23 +1,22 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (he.sipsolutions.net [78.46.109.217])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 073EE2C00C1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 07:55:46 +1100 (EST)
-Message-ID: <1363726534.8336.37.camel@jlt4.sipsolutions.net>
-Subject: Re: [PATCH] powerpc: add Book E support to 64-bit hibernation
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Scott Wood <scottwood@freescale.com>
-Date: Tue, 19 Mar 2013 21:55:34 +0100
-In-Reply-To: <1363644757.27435.16@snotra>
-References: <1363232178-29938-1-git-send-email-dongsheng.wang@freescale.com>
- <1363250273.4833.1.camel@jlt4.sipsolutions.net> <1363279961.28440.4@snotra>
- <1363360926.8656.5.camel@jlt4.sipsolutions.net>
- <1363644757.27435.16@snotra>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org,
- Wang Dongsheng <dongsheng.wang@freescale.com>
+Return-Path: <geert@linux-m68k.org>
+Received: from winston.telenet-ops.be (winston.telenet-ops.be [195.130.137.75])
+ by ozlabs.org (Postfix) with ESMTP id 1603D2C008A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 08:03:35 +1100 (EST)
+Received: from jacques.telenet-ops.be (jacques.telenet-ops.be [195.130.132.50])
+ by winston.telenet-ops.be (Postfix) with ESMTP id 5E07E1BF79C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2013 21:52:51 +0100 (CET)
+Date: Tue, 19 Mar 2013 21:52:49 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Sender: geert@linux-m68k.org
+To: Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: Build regressions/improvements in v3.9-rc3
+In-Reply-To: <alpine.DEB.2.00.1303192148530.18971@ayla.of.borg>
+Message-ID: <alpine.DEB.2.00.1303192149210.18990@ayla.of.borg>
+References: <alpine.DEB.2.00.1303192148530.18971@ayla.of.borg>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-s390@vger.kernel.org,
+ Linux/PPC Development <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,19 +26,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-03-18 at 17:12 -0500, Scott Wood wrote:
+On Tue, 19 Mar 2013, Geert Uytterhoeven wrote:
+> JFYI, when comparing v3.9-rc3 to v3.9-rc2[3], the summaries are:
+>   - build errors: +10/-12
 
-> Could you elaborate on why book3s flushes the way it does?  What's  
-> special about the first 32 MiB?  If it's to cover kernel code, why  
-> would that be changing from what's already there?
+10 regressions:
+  + arch/powerpc/kvm/book3s_hv.c: error: implicit declaration of function 'inhibit_secondary_onlining' [-Werror=implicit-function-declaration]:  => 1855:2
+  + arch/powerpc/kvm/book3s_hv.c: error: implicit declaration of function 'uninhibit_secondary_onlining' [-Werror=implicit-function-declaration]:  => 1862:2
 
-I was going to say I have no idea, but looking at it again ... this is
-in the *resume* code, not the suspend code as I'd assumed, and on resume
-I guess I felt it was safer to not assume it didn't change, since it
-could be a slightly different kernel that loaded and restored the
-hibernation image? It should be the same one, so I guess it should be
-exactly the same code, but I guess I wanted to make sure there wasn't
-anything weird there. As for why it'd be 32 MiB? No idea. Although that
-really ought to flush all your possible caches anyway, I guess.
+ppc64_defconfig+UP
 
-johannes
+  + error: "devm_request_threaded_irq" [drivers/dma/dw_dmac.ko] undefined!:  => N/A
+  + error: "devm_request_threaded_irq" [drivers/i2c/busses/i2c-ocores.ko] undefined!:  => N/A
+  + error: "devm_request_threaded_irq" [drivers/i2c/i2c-smbus.ko] undefined!:  => N/A
+  + error: "devm_request_threaded_irq" [drivers/media/platform/sh_veu.ko] undefined!:  => N/A
+  + error: "devm_request_threaded_irq" [drivers/spi/spi-altera.ko] undefined!:  => N/A
+  + error: "mfd_add_devices" [drivers/mfd/lpc_sch.ko] undefined!:  => N/A
+  + error: "mfd_remove_devices" [drivers/mfd/lpc_sch.ko] undefined!:  => N/A
+
+s390-allmodconfig
+
+  + error: "vgacon_remap_base" [drivers/video/vga16fb.ko] undefined!:  => N/A
+
+powerpc-randconfig
+
+> [1] http://kisskb.ellerman.id.au/kisskb/head/5993/ (118 out of 117 configs)
+> [3] http://kisskb.ellerman.id.au/kisskb/head/5972/ (all 117 configs)
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
