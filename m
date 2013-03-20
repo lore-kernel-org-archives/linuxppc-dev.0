@@ -1,30 +1,30 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4FC922C00C3
+ (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 637AB2C00BA
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 06:35:28 +1100 (EST)
 Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 21 Mar 2013 01:00:50 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 47F6FE0060
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 01:06:52 +0530 (IST)
+ Thu, 21 Mar 2013 01:01:11 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id F2E831258062
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 01:06:32 +0530 (IST)
 Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r2KJZJ0X46596248
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 01:05:19 +0530
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r2KJZKtO7406008
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 01:05:21 +0530
 Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
  by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r2KJZM9G021238
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 19:35:23 GMT
+ r2KJZMb6021211
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 19:35:22 GMT
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V4 22/25] powerpc/THP: get_user_pages_fast changes
-Date: Thu, 21 Mar 2013 01:05:07 +0530
-Message-Id: <1363808110-25748-23-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V4 21/25] powerpc: Handle hugepage in perf callchain
+Date: Thu, 21 Mar 2013 01:05:06 +0530
+Message-Id: <1363808110-25748-22-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1363808110-25748-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1363808110-25748-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -40,115 +40,64 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-handle large pages for get_user_pages_fast. Also take care of large page splitting.
-
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/gup.c |   84 +++++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 82 insertions(+), 2 deletions(-)
+ arch/powerpc/perf/callchain.c |   32 +++++++++++++++++++++-----------
+ 1 file changed, 21 insertions(+), 11 deletions(-)
 
-diff --git a/arch/powerpc/mm/gup.c b/arch/powerpc/mm/gup.c
-index d7efdbf..835c1ae 100644
---- a/arch/powerpc/mm/gup.c
-+++ b/arch/powerpc/mm/gup.c
-@@ -55,6 +55,72 @@ static noinline int gup_pte_range(pmd_t pmd, unsigned long addr,
- 	return 1;
- }
- 
-+#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-+static inline int gup_huge_pmd(pmd_t *pmdp, unsigned long addr,
-+			       unsigned long end, int write,
-+			       struct page **pages, int *nr)
-+{
-+	int refs;
-+	pmd_t pmd;
-+	unsigned long mask;
-+	struct page *head, *page, *tail;
-+
-+	pmd = *pmdp;
-+	mask = PMD_HUGE_PRESENT | PMD_HUGE_USER;
-+	if (write)
-+		mask |= PMD_HUGE_RW;
-+
-+	if ((pmd_val(pmd) & mask) != mask)
-+		return 0;
-+
-+	/* large pages are never "special" */
-+	VM_BUG_ON(!pfn_valid(pmd_pfn(pmd)));
-+
-+	refs = 0;
-+	head = pmd_page(pmd);
-+	page = head + ((addr & ~PMD_MASK) >> PAGE_SHIFT);
-+	tail = page;
-+	do {
-+		VM_BUG_ON(compound_head(page) != head);
-+		pages[*nr] = page;
-+		(*nr)++;
-+		page++;
-+		refs++;
-+	} while (addr += PAGE_SIZE, addr != end);
-+
-+	if (!page_cache_add_speculative(head, refs)) {
-+		*nr -= refs;
-+		return 0;
-+	}
-+
-+	if (unlikely(pmd_val(pmd) != pmd_val(*pmdp))) {
-+		*nr -= refs;
-+		while (refs--)
-+			put_page(head);
-+		return 0;
-+	}
-+	/*
-+	 * Any tail page need their mapcount reference taken before we
-+	 * return.
-+	 */
-+	while (refs--) {
-+		if (PageTail(tail))
-+			get_huge_page_tail(tail);
-+		tail++;
-+	}
-+
-+	return 1;
-+}
-+#else
-+
-+static inline int gup_huge_pmd(pmd_t *pmdp, unsigned long addr,
-+			       unsigned long end, int write,
-+			       struct page **pages, int *nr)
-+{
-+	return 1;
-+}
-+#endif
-+
- static int gup_pmd_range(pud_t pud, unsigned long addr, unsigned long end,
- 		int write, struct page **pages, int *nr)
+diff --git a/arch/powerpc/perf/callchain.c b/arch/powerpc/perf/callchain.c
+index 578cac7..99262ce 100644
+--- a/arch/powerpc/perf/callchain.c
++++ b/arch/powerpc/perf/callchain.c
+@@ -115,7 +115,7 @@ static int read_user_stack_slow(void __user *ptr, void *ret, int nb)
  {
-@@ -66,9 +132,23 @@ static int gup_pmd_range(pud_t pud, unsigned long addr, unsigned long end,
- 		pmd_t pmd = *pmdp;
+ 	pgd_t *pgdir;
+ 	pte_t *ptep, pte;
+-	unsigned shift;
++	unsigned shift, hugepage;
+ 	unsigned long addr = (unsigned long) ptr;
+ 	unsigned long offset;
+ 	unsigned long pfn;
+@@ -125,20 +125,30 @@ static int read_user_stack_slow(void __user *ptr, void *ret, int nb)
+ 	if (!pgdir)
+ 		return -EFAULT;
  
- 		next = pmd_addr_end(addr, end);
--		if (pmd_none(pmd))
-+		/*
-+		 * The pmd_trans_splitting() check below explains why
-+		 * pmdp_splitting_flush has to flush the tlb, to stop
-+		 * this gup-fast code from running while we set the
-+		 * splitting bit in the pmd. Returning zero will take
-+		 * the slow path that will call wait_split_huge_page()
-+		 * if the pmd is still in splitting state. gup-fast
-+		 * can't because it has irq disabled and
-+		 * wait_split_huge_page() would never return as the
-+		 * tlb flush IPI wouldn't run.
-+		 */
-+		if (pmd_none(pmd) || pmd_trans_splitting(pmd))
- 			return 0;
--		if (is_hugepd(pmdp)) {
-+		if (unlikely(pmd_large(pmd))) {
-+			if (!gup_huge_pmd(pmdp, addr, next, write, pages, nr))
-+				return 0;
-+		} else if (is_hugepd(pmdp)) {
- 			if (!gup_hugepd((hugepd_t *)pmdp, PMD_SHIFT,
- 					addr, next, write, pages, nr))
- 				return 0;
+-	ptep = find_linux_pte_or_hugepte(pgdir, addr, &shift, NULL);
++	ptep = find_linux_pte_or_hugepte(pgdir, addr, &shift, &hugepage);
+ 	if (!shift)
+ 		shift = PAGE_SHIFT;
+ 
+-	/* align address to page boundary */
+-	offset = addr & ((1UL << shift) - 1);
+-	addr -= offset;
+-
+-	if (ptep == NULL)
+-		return -EFAULT;
+-	pte = *ptep;
+-	if (!pte_present(pte) || !(pte_val(pte) & _PAGE_USER))
++	if (!ptep)
+ 		return -EFAULT;
+-	pfn = pte_pfn(pte);
++
++	if (hugepage) {
++		pmd_t pmd = *(pmd_t *)ptep;
++		shift = mmu_psize_defs[MMU_PAGE_16M].shift;
++		offset = addr & ((1UL << shift) - 1);
++
++		if (!pmd_large(pmd) || !(pmd_val(pmd) & PMD_HUGE_USER))
++			return -EFAULT;
++		pfn = pmd_pfn(pmd);
++	} else {
++		offset = addr & ((1UL << shift) - 1);
++
++		pte = *ptep;
++		if (!pte_present(pte) || !(pte_val(pte) & _PAGE_USER))
++			return -EFAULT;
++		pfn = pte_pfn(pte);
++	}
++
+ 	if (!page_is_ram(pfn))
+ 		return -EFAULT;
+ 
 -- 
 1.7.10
