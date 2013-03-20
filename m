@@ -1,32 +1,26 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A12462C00AF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 18:43:41 +1100 (EST)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
- Wed, 20 Mar 2013 17:38:28 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id B61F83578052
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 18:43:19 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r2K7gjcH61341780
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 18:42:45 +1100
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r2K7gnBu008016
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 18:42:49 +1100
-From: "Ian Munsie" <imunsie@au1.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc: Add accounting for Doorbell interrupts
-Date: Wed, 20 Mar 2013 18:42:12 +1100
-Message-Id: <1363765332-28461-1-git-send-email-imunsie@au1.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Ian Munsie <imunsie@au1.ibm.com>
+Return-Path: <b20052@nmglablinux22.freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id AA5B62C00A0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 21:22:32 +1100 (EST)
+Received: from mail2-co1 (localhost [127.0.0.1])	by mail2-co1-R.bigfish.com
+ (Postfix) with ESMTP id 250FFA4014D	for <linuxppc-dev@lists.ozlabs.org>; Wed,
+ 20 Mar 2013 10:22:27 +0000 (UTC)
+Received: from CO1EHSMHS032.bigfish.com (unknown [10.243.78.253])	by
+ mail2-co1.bigfish.com (Postfix) with ESMTP id 860C9AC0046	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 10:22:24 +0000 (UTC)
+From: Shaveta Leekha <shaveta@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 0/5] powerpc/fsl-booke: Add B4(B4860QDS and B4420QDS) board
+ support
+Date: Wed, 20 Mar 2013 15:52:15 +0530
+Message-ID: <1363774939-29909-1-git-send-email-shaveta@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Shaveta Leekha <shaveta@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,78 +30,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Ian Munsie <imunsie@au1.ibm.com>
+B4860 and B4420 are personalities of same silicon which share same QDS board.
+B4420 is a reduced personality of b4860. To manage the common board and similar
+silicon features, device tree refactoring is being done through this patch set.
 
-This patch adds a new line to /proc/interrupts to account for the
-doorbell interrupts that each hardware thread has received. The total
-interrupt count in /proc/stat will now also include doorbells.
+* common board features have been added in b4qds.dts
+* common silicon related features have been added in b4si-pre.dtsi and b4si-post.dtsi
+* the various silicon and board differences are in respective files of personalities
 
- # cat /proc/interrupts
-           CPU0       CPU1       CPU2       CPU3
- 16:        551       1267        281        175      XICS Level     IPI
-LOC:       2037       1503       1688       1625   Local timer interrupts
-SPU:          0          0          0          0   Spurious interrupts
-CNT:          0          0          0          0   Performance monitoring interrupts
-MCE:          0          0          0          0   Machine check exceptions
-DBL:         42        550         20         91   Doorbell interrupts
+Shaveta Leekha (5):
+  powerpc/85xx: add SEC-5.3 device tree
+  powerpc/fsl-booke: Add initial silicon device tree files      for
+    B4860 and B4420
+  powerpc/fsl-booke: Add initial B4860QDS and B4420QDS board device
+    tree
+  powerpc/fsl-booke: Add B4_QDS board support
+  powerpc/85xx: Update corenet64_smp_defconfig for B4_QDS
 
-Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
----
- arch/powerpc/include/asm/hardirq.h |    1 +
- arch/powerpc/kernel/dbell.c        |    2 ++
- arch/powerpc/kernel/irq.c          |    8 ++++++++
- 3 files changed, 11 insertions(+)
+ arch/powerpc/boot/dts/b4420qds.dts            |   50 ++++++
+ arch/powerpc/boot/dts/b4860qds.dts            |   61 +++++++
+ arch/powerpc/boot/dts/b4qds.dts               |  171 +++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/b4420si-post.dtsi   |   94 +++++++++++
+ arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi    |   49 ++++++
+ arch/powerpc/boot/dts/fsl/b4860si-post.dtsi   |  135 +++++++++++++++
+ arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi    |   59 +++++++
+ arch/powerpc/boot/dts/fsl/b4si-post.dtsi      |  216 +++++++++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/b4si-pre.dtsi       |   65 ++++++++
+ arch/powerpc/boot/dts/fsl/qoriq-sec5.3-0.dtsi |  118 ++++++++++++++
+ arch/powerpc/configs/corenet64_smp_defconfig  |    1 +
+ arch/powerpc/platforms/85xx/Kconfig           |   17 ++
+ arch/powerpc/platforms/85xx/Makefile          |    1 +
+ arch/powerpc/platforms/85xx/b4_qds.c          |  102 ++++++++++++
+ 14 files changed, 1139 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/b4420qds.dts
+ create mode 100644 arch/powerpc/boot/dts/b4860qds.dts
+ create mode 100644 arch/powerpc/boot/dts/b4qds.dts
+ create mode 100644 arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/b4si-post.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/b4si-pre.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-sec5.3-0.dtsi
+ create mode 100644 arch/powerpc/platforms/85xx/b4_qds.c
 
-diff --git a/arch/powerpc/include/asm/hardirq.h b/arch/powerpc/include/asm/hardirq.h
-index 3147a29..e88c5f2 100644
---- a/arch/powerpc/include/asm/hardirq.h
-+++ b/arch/powerpc/include/asm/hardirq.h
-@@ -10,6 +10,7 @@ typedef struct {
- 	unsigned int pmu_irqs;
- 	unsigned int mce_exceptions;
- 	unsigned int spurious_irqs;
-+	unsigned int doorbell_irqs;
- } ____cacheline_aligned irq_cpustat_t;
- 
- DECLARE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
-diff --git a/arch/powerpc/kernel/dbell.c b/arch/powerpc/kernel/dbell.c
-index 9ebbc24..d55c76c 100644
---- a/arch/powerpc/kernel/dbell.c
-+++ b/arch/powerpc/kernel/dbell.c
-@@ -41,6 +41,8 @@ void doorbell_exception(struct pt_regs *regs)
- 
- 	may_hard_irq_enable();
- 
-+	__get_cpu_var(irq_stat).doorbell_irqs++;
-+
- 	smp_ipi_demux();
- 
- 	irq_exit();
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 4f97fe3..3a3c3b9 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -374,6 +374,13 @@ int arch_show_interrupts(struct seq_file *p, int prec)
- 		seq_printf(p, "%10u ", per_cpu(irq_stat, j).mce_exceptions);
- 	seq_printf(p, "  Machine check exceptions\n");
- 
-+	if (cpu_has_feature(CPU_FTR_DBELL)) {
-+		seq_printf(p, "%*s: ", prec, "DBL");
-+		for_each_online_cpu(j)
-+			seq_printf(p, "%10u ", per_cpu(irq_stat, j).doorbell_irqs);
-+		seq_printf(p, "  Doorbell interrupts\n");
-+	}
-+
- 	return 0;
- }
- 
-@@ -387,6 +394,7 @@ u64 arch_irq_stat_cpu(unsigned int cpu)
- 	sum += per_cpu(irq_stat, cpu).pmu_irqs;
- 	sum += per_cpu(irq_stat, cpu).mce_exceptions;
- 	sum += per_cpu(irq_stat, cpu).spurious_irqs;
-+	sum += per_cpu(irq_stat, cpu).doorbell_irqs;
- 
- 	return sum;
- }
 -- 
-1.7.10.4
+1.7.6.GIT
