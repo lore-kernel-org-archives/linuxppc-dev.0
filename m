@@ -1,24 +1,26 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id E1DAE2C00A0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 05:48:37 +1100 (EST)
-Message-ID: <1363805280.24132.529.camel@bling.home>
-Subject: Re: [PATCH 2/3] VFIO: VFIO_DEVICE_SET_ADDR_MAPPING command
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 20 Mar 2013 12:48:00 -0600
-In-Reply-To: <1363668309.18880.10.camel@pasglop>
-References: <1363332390-12754-1-git-send-email-shangw@linux.vnet.ibm.com>
- <1363332390-12754-3-git-send-email-shangw@linux.vnet.ibm.com>
- <1363375740.16793.12.camel@ul30vt.home>
- <20130316013417.GA3873@shangw.(null)> <1363412256.1244.20.camel@pasglop>
- <1363640474.24132.433.camel@bling.home>
- <20130319032410.GA22591@shangw.(null)>
- <1363666721.24132.472.camel@bling.home> <1363668309.18880.10.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: aik@ozlabs.ru, linuxppc-dev@lists.ozlabs.org,
- Gavin Shan <shangw@linux.vnet.ibm.com>, kvm@vger.kernel.org
+Return-Path: <j.glisse@gmail.com>
+Received: from mail-qc0-x232.google.com (mail-qc0-x232.google.com
+ [IPv6:2607:f8b0:400d:c01::232])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 839B72C00B5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 02:34:59 +1100 (EST)
+Received: by mail-qc0-f178.google.com with SMTP id d10so216570qca.23
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 08:34:54 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1363757079-23550-1-git-send-email-lucaskt@linux.vnet.ibm.com>
+References: <1363757079-23550-1-git-send-email-lucaskt@linux.vnet.ibm.com>
+Date: Wed, 20 Mar 2013 11:34:54 -0400
+Message-ID: <CAH3drwa-bM4pOzu7QPPAm7nNVNPNAKDUzjtLb5xr2kHQW=LAwQ@mail.gmail.com>
+Subject: Re: [PATCHv2 0/3] PCI Speed Cap Fixes for ppc64
+From: Jerome Glisse <j.glisse@gmail.com>
+To: Lucas Kannebley Tavares <lucaskt@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-pci@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ Thadeu Cascardo <cascardo@linux.vnet.ibm.com>,
+ Brian King <brking@linux.vnet.ibm.com>,
+ Alex Deucher <alexander.deucher@amd.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,55 +30,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-03-19 at 05:45 +0100, Benjamin Herrenschmidt wrote:
-> On Mon, 2013-03-18 at 22:18 -0600, Alex Williamson wrote:
-> > > Yes, EEH firmware call needn't going through VFIO. However, EEH has
-> > > very close relationship with PCI and so VFIO-PCI does. Eventually, EEH
-> > > has close relationship with VFIO-PCI :-)
-> > 
-> > Is there some plan to do more with EEH through VFIO in the future or are
-> > we just talking about some kind of weird associative property to sell
-> > this ioctl?  Thanks,
-> 
-> Well, I'm not sure how 'weird' that is but it makes sense to me... VFIO
-> is the mechanism that virtualizes access to a PCI device and provides
-> interfaces to qemu & kvm to access it &| map it.
-> 
-> Or rather VFIO-PCI is.
-> 
-> At a basic level it provides ... the basic PCI interfaces, ie, config
-> space access (with or without filtering), interrupts, etc...
-> 
-> In our environment, EEH is just another functionality of PCI really.
-> The firmware calls used by the guest to do that fall into more or less
-> the same category as the ones used for PCI config space accesses,
-> manipulation of DMA windows, etc... Similar to host (though guest
-> and host use a different FW interface for various reasons).
-> 
-> So it's very natural to "transport" these via VFIO-PCI like everything
-> else, I don't see a more natural place to put the ioctl's we need for
-> qemu to be able to access the EEH state, trigger EEH (un)isolation,
-> resets, etc...
-> 
-> Fundamentally, the design should be for VFIO-PCI to provide some specific
-> ioctls for EEH that userspace programs such as qemu can use, and then
-> re-expose those APIs to the guest.
-> 
-> In addition, to do some of it in the kernel for performance reason, we
-> want to establish that mapping, but I see that as a VFIO "accelerator".
-> 
-> IE. Whatever is going to respond to the EEH calls from the guest in-kernel
-> will have to share state with the rest of the EEH stuff provided to qemu
-> by vfio-pci.
+On Wed, Mar 20, 2013 at 1:24 AM, Lucas Kannebley Tavares
+<lucaskt@linux.vnet.ibm.com> wrote:
+> This patch series first implements a function called pcie_get_speed_cap_mask
+> in the PCI subsystem based off from drm_pcie_get_speed_cap_mask in drm. Then
+> it removes the latter and fixes all references to it. And ultimately, it
+> implements an architecture-specific version of the same function for ppc64.
+>
+> The refactor is done because the function that was used by drm is more
+> architecture goo than module-specific. Whilst the function also needed a
+> platform-specific implementation to get PCIE Gen2 speeds on ppc64.
 
-Perhaps my problem is that I don't have a clear picture of where you're
-going with this like I do for AER.  For AER we're starting with
-notification of an error, from that we build into how to retrieve the
-error information, and finally how to perform corrective action.  Each
-of these will be done through vifo-pci.
+Looks good to me but we probably want some one from the pci side to take a look
 
-Here we're starting by registering a mapping that's really only useful
-to the vfio "accelerator" path, but we don't even have a hint of what
-the non-accelerated path is and how vfio is involved with it.  Thanks,
+Reviewed-by: Jerome Glisse <jglisse@redhat.com>
 
-Alex
+>
+> Lucas Kannebley Tavares (3):
+>   pci: added pcie_get_speed_cap_mask function
+>   drm: removed drm_pcie_get_speed_cap_mask function
+>   ppc64: implemented pcibios_get_speed_cap_mask
+>
+>  arch/powerpc/platforms/pseries/pci.c |   35 +++++++++++++++++++++++++++
+>  drivers/gpu/drm/drm_pci.c            |   38 -----------------------------
+>  drivers/gpu/drm/radeon/evergreen.c   |    5 ++-
+>  drivers/gpu/drm/radeon/r600.c        |    5 ++-
+>  drivers/gpu/drm/radeon/rv770.c       |    5 ++-
+>  drivers/pci/pci.c                    |   44 ++++++++++++++++++++++++++++++++++
+>  include/drm/drmP.h                   |    6 ----
+>  include/linux/pci.h                  |    6 ++++
+>  8 files changed, 94 insertions(+), 50 deletions(-)
+>
+> --
+> 1.7.4.4
+>
+> _______________________________________________
+> dri-devel mailing list
+> dri-devel@lists.freedesktop.org
+> http://lists.freedesktop.org/mailman/listinfo/dri-devel
