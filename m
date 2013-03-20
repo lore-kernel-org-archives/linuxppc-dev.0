@@ -1,27 +1,35 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 2E4412C008D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 06:31:54 +1100 (EST)
-Message-ID: <1363807906.17680.11.camel@pasglop>
-Subject: Re: [PATCH 2/3] VFIO: VFIO_DEVICE_SET_ADDR_MAPPING command
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alex Williamson <alex.williamson@redhat.com>
-Date: Wed, 20 Mar 2013 20:31:46 +0100
-In-Reply-To: <1363805280.24132.529.camel@bling.home>
-References: <1363332390-12754-1-git-send-email-shangw@linux.vnet.ibm.com>
- <1363332390-12754-3-git-send-email-shangw@linux.vnet.ibm.com>
- <1363375740.16793.12.camel@ul30vt.home>
- <20130316013417.GA3873@shangw.(null)> <1363412256.1244.20.camel@pasglop>
- <1363640474.24132.433.camel@bling.home>
- <20130319032410.GA22591@shangw.(null)>
- <1363666721.24132.472.camel@bling.home> <1363668309.18880.10.camel@pasglop>
- <1363805280.24132.529.camel@bling.home>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: aik@ozlabs.ru, linuxppc-dev@lists.ozlabs.org,
- Gavin Shan <shangw@linux.vnet.ibm.com>, kvm@vger.kernel.org
+ (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4F4162C00B5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 06:35:25 +1100 (EST)
+Received: from /spool/local
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 21 Mar 2013 01:01:23 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 120D73940067
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 01:05:21 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r2KJZFRT9699662
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 01:05:16 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r2KJZK9d020998
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 19:35:20 GMT
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH -V4 12/25] powerpc: Return all the valid pte ecndoing in
+ KVM_PPC_GET_SMMU_INFO ioctl
+Date: Thu, 21 Mar 2013 01:04:57 +0530
+Message-Id: <1363808110-25748-13-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1363808110-25748-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1363808110-25748-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,43 +39,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-03-20 at 12:48 -0600, Alex Williamson wrote:
-> Perhaps my problem is that I don't have a clear picture of where
-> you're
-> going with this like I do for AER.  For AER we're starting with
-> notification of an error, from that we build into how to retrieve the
-> error information, and finally how to perform corrective action.  Each
-> of these will be done through vifo-pci.
-> 
-> Here we're starting by registering a mapping that's really only useful
-> to the vfio "accelerator" path, but we don't even have a hint of what
-> the non-accelerated path is and how vfio is involved with it.  Thanks,
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-I'm surprised that you are building so much policy around AER ... can't
-you just pass the raw stuff down to the guest and let the guest do it's
-own corrective actions ?
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/kvm/book3s_hv.c |   14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
 
-As for EEH, I will let Gavin describe in more details what he is doing,
-though I wouldn't be surprised if so far he doesn't have a
-non-accelerated path :-) Which indeed makes things oddball, granted ...
-at least for now. I *think* what Gavin's doing right now is a
-pass-through to the host EEH directly in the kernel, so without a slow
-path...
-
-Gavin, it really boils down to that. In-kernel EEH for guests is a
-KVMism that ends up not involving VFIO in any other way than
-establishing the mapping, then arguably it could be done via a VM ioctl.
-
-If there's more going through VFIO and shared state, then it should
-probably go through VFIO-PCI.
-
-Note (FYI) that EEH somewhat encompass AER... the EEH logic triggers on
-AER errors as well and the error reports generated by the firmware
-contain the AER register dump in addition to the bridge internal stuff.
-IE. EEH encompass pretty much all sort of errors, correctable or not,
-that happens on PCI. It adds a mechanism of "isolation" of domains on
-first error (involving blocking MMIOs, DMAs and MSIs) which helps with
-preventing propagation of bad data, and various recovery schemes.
-
-Cheers,
-Ben.
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 48f6d99..f472414 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -1508,14 +1508,24 @@ long kvm_vm_ioctl_allocate_rma(struct kvm *kvm, struct kvm_allocate_rma *ret)
+ static void kvmppc_add_seg_page_size(struct kvm_ppc_one_seg_page_size **sps,
+ 				     int linux_psize)
+ {
++	int i, index = 0;
+ 	struct mmu_psize_def *def = &mmu_psize_defs[linux_psize];
+ 
+ 	if (!def->shift)
+ 		return;
+ 	(*sps)->page_shift = def->shift;
+ 	(*sps)->slb_enc = def->sllp;
+-	(*sps)->enc[0].page_shift = def->shift;
+-	(*sps)->enc[0].pte_enc = def->penc[linux_psize];
++	for (i = 0; i < MMU_PAGE_COUNT; i++) {
++		if (def->penc[i] != -1) {
++			if (index >= KVM_PPC_PAGE_SIZES_MAX_SZ) {
++				WARN_ON(1);
++				break;
++			}
++			(*sps)->enc[index].page_shift = mmu_psize_defs[i].shift;
++			(*sps)->enc[index].pte_enc = def->penc[i];
++			index++;
++		}
++	}
+ 	(*sps)++;
+ }
+ 
+-- 
+1.7.10
