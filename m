@@ -1,26 +1,27 @@
-Return-Path: <j.glisse@gmail.com>
-Received: from mail-qc0-x232.google.com (mail-qc0-x232.google.com
- [IPv6:2607:f8b0:400d:c01::232])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 839B72C00B5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 02:34:59 +1100 (EST)
-Received: by mail-qc0-f178.google.com with SMTP id d10so216570qca.23
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 08:34:54 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1363757079-23550-1-git-send-email-lucaskt@linux.vnet.ibm.com>
-References: <1363757079-23550-1-git-send-email-lucaskt@linux.vnet.ibm.com>
-Date: Wed, 20 Mar 2013 11:34:54 -0400
-Message-ID: <CAH3drwa-bM4pOzu7QPPAm7nNVNPNAKDUzjtLb5xr2kHQW=LAwQ@mail.gmail.com>
-Subject: Re: [PATCHv2 0/3] PCI Speed Cap Fixes for ppc64
-From: Jerome Glisse <j.glisse@gmail.com>
-To: Lucas Kannebley Tavares <lucaskt@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-pci@vger.kernel.org, dri-devel@lists.freedesktop.org,
- Bjorn Helgaas <bhelgaas@google.com>,
- Thadeu Cascardo <cascardo@linux.vnet.ibm.com>,
- Brian King <brking@linux.vnet.ibm.com>,
- Alex Deucher <alexander.deucher@amd.com>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 2E4412C008D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 06:31:54 +1100 (EST)
+Message-ID: <1363807906.17680.11.camel@pasglop>
+Subject: Re: [PATCH 2/3] VFIO: VFIO_DEVICE_SET_ADDR_MAPPING command
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alex Williamson <alex.williamson@redhat.com>
+Date: Wed, 20 Mar 2013 20:31:46 +0100
+In-Reply-To: <1363805280.24132.529.camel@bling.home>
+References: <1363332390-12754-1-git-send-email-shangw@linux.vnet.ibm.com>
+ <1363332390-12754-3-git-send-email-shangw@linux.vnet.ibm.com>
+ <1363375740.16793.12.camel@ul30vt.home>
+ <20130316013417.GA3873@shangw.(null)> <1363412256.1244.20.camel@pasglop>
+ <1363640474.24132.433.camel@bling.home>
+ <20130319032410.GA22591@shangw.(null)>
+ <1363666721.24132.472.camel@bling.home> <1363668309.18880.10.camel@pasglop>
+ <1363805280.24132.529.camel@bling.home>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: aik@ozlabs.ru, linuxppc-dev@lists.ozlabs.org,
+ Gavin Shan <shangw@linux.vnet.ibm.com>, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,41 +31,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 20, 2013 at 1:24 AM, Lucas Kannebley Tavares
-<lucaskt@linux.vnet.ibm.com> wrote:
-> This patch series first implements a function called pcie_get_speed_cap_mask
-> in the PCI subsystem based off from drm_pcie_get_speed_cap_mask in drm. Then
-> it removes the latter and fixes all references to it. And ultimately, it
-> implements an architecture-specific version of the same function for ppc64.
->
-> The refactor is done because the function that was used by drm is more
-> architecture goo than module-specific. Whilst the function also needed a
-> platform-specific implementation to get PCIE Gen2 speeds on ppc64.
+On Wed, 2013-03-20 at 12:48 -0600, Alex Williamson wrote:
+> Perhaps my problem is that I don't have a clear picture of where
+> you're
+> going with this like I do for AER.  For AER we're starting with
+> notification of an error, from that we build into how to retrieve the
+> error information, and finally how to perform corrective action.  Each
+> of these will be done through vifo-pci.
+> 
+> Here we're starting by registering a mapping that's really only useful
+> to the vfio "accelerator" path, but we don't even have a hint of what
+> the non-accelerated path is and how vfio is involved with it.  Thanks,
 
-Looks good to me but we probably want some one from the pci side to take a look
+I'm surprised that you are building so much policy around AER ... can't
+you just pass the raw stuff down to the guest and let the guest do it's
+own corrective actions ?
 
-Reviewed-by: Jerome Glisse <jglisse@redhat.com>
+As for EEH, I will let Gavin describe in more details what he is doing,
+though I wouldn't be surprised if so far he doesn't have a
+non-accelerated path :-) Which indeed makes things oddball, granted ...
+at least for now. I *think* what Gavin's doing right now is a
+pass-through to the host EEH directly in the kernel, so without a slow
+path...
 
->
-> Lucas Kannebley Tavares (3):
->   pci: added pcie_get_speed_cap_mask function
->   drm: removed drm_pcie_get_speed_cap_mask function
->   ppc64: implemented pcibios_get_speed_cap_mask
->
->  arch/powerpc/platforms/pseries/pci.c |   35 +++++++++++++++++++++++++++
->  drivers/gpu/drm/drm_pci.c            |   38 -----------------------------
->  drivers/gpu/drm/radeon/evergreen.c   |    5 ++-
->  drivers/gpu/drm/radeon/r600.c        |    5 ++-
->  drivers/gpu/drm/radeon/rv770.c       |    5 ++-
->  drivers/pci/pci.c                    |   44 ++++++++++++++++++++++++++++++++++
->  include/drm/drmP.h                   |    6 ----
->  include/linux/pci.h                  |    6 ++++
->  8 files changed, 94 insertions(+), 50 deletions(-)
->
-> --
-> 1.7.4.4
->
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> http://lists.freedesktop.org/mailman/listinfo/dri-devel
+Gavin, it really boils down to that. In-kernel EEH for guests is a
+KVMism that ends up not involving VFIO in any other way than
+establishing the mapping, then arguably it could be done via a VM ioctl.
+
+If there's more going through VFIO and shared state, then it should
+probably go through VFIO-PCI.
+
+Note (FYI) that EEH somewhat encompass AER... the EEH logic triggers on
+AER errors as well and the error reports generated by the firmware
+contain the AER register dump in addition to the bridge internal stuff.
+IE. EEH encompass pretty much all sort of errors, correctable or not,
+that happens on PCI. It adds a mechanism of "isolation" of domains on
+first error (involving blocking MMIOs, DMAs and MSIs) which helps with
+preventing propagation of bad data, and various recovery schemes.
+
+Cheers,
+Ben.
