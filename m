@@ -1,31 +1,30 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 24B342C00C1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 06:35:25 +1100 (EST)
+ (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 728762C00B5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 06:35:26 +1100 (EST)
 Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 21 Mar 2013 01:00:47 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id A36083940066
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 01:05:20 +0530 (IST)
+ Thu, 21 Mar 2013 01:02:41 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 7B3851258061
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 01:06:28 +0530 (IST)
 Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r2KJZFFa12583384
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 01:05:15 +0530
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r2KJZGOJ5833170
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 01:05:16 +0530
 Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
  by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r2KJZJSr020965
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 19:35:20 GMT
+ r2KJZIQb020848
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 19:35:18 GMT
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V4 10/25] powerpc: print both base and actual page size on
- hash failure
-Date: Thu, 21 Mar 2013 01:04:55 +0530
-Message-Id: <1363808110-25748-11-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V4 01/25] powerpc: Use signed formatting when printing error
+Date: Thu, 21 Mar 2013 01:04:46 +0530
+Message-Id: <1363808110-25748-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1363808110-25748-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1363808110-25748-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -41,81 +40,27 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
+PAPR defines these errors as negative values. So print them accordingly
+for easy debugging.
+
+Acked-by: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/mmu-hash64.h |    3 ++-
- arch/powerpc/mm/hash_utils_64.c       |   12 +++++++-----
- arch/powerpc/mm/hugetlbpage-hash64.c  |    2 +-
- 3 files changed, 10 insertions(+), 7 deletions(-)
+ arch/powerpc/platforms/pseries/lpar.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
-index e42f4a3..e187254 100644
---- a/arch/powerpc/include/asm/mmu-hash64.h
-+++ b/arch/powerpc/include/asm/mmu-hash64.h
-@@ -324,7 +324,8 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
- 		     unsigned int shift, unsigned int mmu_psize);
- extern void hash_failure_debug(unsigned long ea, unsigned long access,
- 			       unsigned long vsid, unsigned long trap,
--			       int ssize, int psize, unsigned long pte);
-+			       int ssize, int psize, int lpsize,
-+			       unsigned long pte);
- extern int htab_bolt_mapping(unsigned long vstart, unsigned long vend,
- 			     unsigned long pstart, unsigned long prot,
- 			     int psize, int ssize);
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index a5a5067..56ff4bb 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -933,14 +933,14 @@ static inline int subpage_protection(struct mm_struct *mm, unsigned long ea)
- 
- void hash_failure_debug(unsigned long ea, unsigned long access,
- 			unsigned long vsid, unsigned long trap,
--			int ssize, int psize, unsigned long pte)
-+			int ssize, int psize, int lpsize, unsigned long pte)
- {
- 	if (!printk_ratelimit())
- 		return;
- 	pr_info("mm: Hashing failure ! EA=0x%lx access=0x%lx current=%s\n",
- 		ea, access, current->comm);
--	pr_info("    trap=0x%lx vsid=0x%lx ssize=%d psize=%d pte=0x%lx\n",
--		trap, vsid, ssize, psize, pte);
-+	pr_info("    trap=0x%lx vsid=0x%lx ssize=%d base psize=%d psize %d pte=0x%lx\n",
-+		trap, vsid, ssize, psize, lpsize, pte);
- }
- 
- /* Result code is:
-@@ -1113,7 +1113,7 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
+diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+index 0da39fe..a77c35b 100644
+--- a/arch/powerpc/platforms/pseries/lpar.c
++++ b/arch/powerpc/platforms/pseries/lpar.c
+@@ -155,7 +155,7 @@ static long pSeries_lpar_hpte_insert(unsigned long hpte_group,
  	 */
- 	if (rc == -1)
- 		hash_failure_debug(ea, access, vsid, trap, ssize, psize,
--				   pte_val(*ptep));
-+				   psize, pte_val(*ptep));
- #ifndef CONFIG_PPC_64K_PAGES
- 	DBG_LOW(" o-pte: %016lx\n", pte_val(*ptep));
- #else
-@@ -1191,7 +1191,9 @@ void hash_preload(struct mm_struct *mm, unsigned long ea,
- 	 */
- 	if (rc == -1)
- 		hash_failure_debug(ea, access, vsid, trap, ssize,
--				   mm->context.user_psize, pte_val(*ptep));
-+				   mm->context.user_psize,
-+				   mm->context.user_psize,
-+				   pte_val(*ptep));
- 
- 	local_irq_restore(flags);
- }
-diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
-index e0d52ee..06ecb55 100644
---- a/arch/powerpc/mm/hugetlbpage-hash64.c
-+++ b/arch/powerpc/mm/hugetlbpage-hash64.c
-@@ -129,7 +129,7 @@ repeat:
- 		if (unlikely(slot == -2)) {
- 			*ptep = __pte(old_pte);
- 			hash_failure_debug(ea, access, vsid, trap, ssize,
--					   mmu_psize, old_pte);
-+					   mmu_psize, mmu_psize, old_pte);
- 			return -1;
- 		}
- 
+ 	if (unlikely(lpar_rc != H_SUCCESS)) {
+ 		if (!(vflags & HPTE_V_BOLTED))
+-			pr_devel(" lpar err %lu\n", lpar_rc);
++			pr_devel(" lpar err %ld\n", lpar_rc);
+ 		return -2;
+ 	}
+ 	if (!(vflags & HPTE_V_BOLTED))
 -- 
 1.7.10
