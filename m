@@ -1,31 +1,30 @@
 Return-Path: <B07421@freescale.com>
 Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
+ (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8754F2C00BA
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 08:49:15 +1100 (EST)
-Received: from mail107-co9 (localhost [127.0.0.1])	by
- mail107-co9-R.bigfish.com (Postfix) with ESMTP id 346242C009E	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 21:49:10 +0000 (UTC)
-Received: from CO9EHSMHS015.bigfish.com (unknown [10.236.132.233])	by
- mail107-co9.bigfish.com (Postfix) with ESMTP id 2D53CC005C	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 21:49:08 +0000 (UTC)
-Date: Wed, 20 Mar 2013 16:48:58 -0500
+ by ozlabs.org (Postfix) with ESMTPS id A1B842C00BD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 09:59:48 +1100 (EST)
+Received: from mail4-co9 (localhost [127.0.0.1])	by mail4-co9-R.bigfish.com
+ (Postfix) with ESMTP id 342F314012B	for <linuxppc-dev@lists.ozlabs.org>; Wed,
+ 20 Mar 2013 22:59:44 +0000 (UTC)
+Received: from CO9EHSMHS006.bigfish.com (unknown [10.236.132.248])	by
+ mail4-co9.bigfish.com (Postfix) with ESMTP id 084EE8014C	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 22:59:43 +0000 (UTC)
+Date: Wed, 20 Mar 2013 17:59:38 -0500
 From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 3/3] powerpc/fsl: add MPIC timer wakeup support
+Subject: Re: [PATCH 2/3] powerpc/mpic: add global timer support
 To: Wang Dongsheng-B40534 <B40534@freescale.com>
-In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F15439259EB7712@039-SN2MPN1-022.039d.mgd.msft.net>
- (from B40534@freescale.com on Tue Mar 19 22:48:53 2013)
-Message-ID: <1363816138.25034.21@snotra>
+In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F15439259EB77BB@039-SN2MPN1-022.039d.mgd.msft.net>
+ (from B40534@freescale.com on Wed Mar 20 01:45:03 2013)
+Message-ID: <1363820378.25034.31@snotra>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
 Cc: Wood Scott-B07421 <B07421@freescale.com>,
  Gala Kumar-B11780 <B11780@freescale.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>,
- Zhao Chenhui-B35336 <B35336@freescale.com>
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,108 +34,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/19/2013 10:48:53 PM, Wang Dongsheng-B40534 wrote:
+On 03/20/2013 01:45:03 AM, Wang Dongsheng-B40534 wrote:
 >=20
 >=20
 > > -----Original Message-----
 > > From: Wood Scott-B07421
-> > Sent: Wednesday, March 20, 2013 6:55 AM
+> > Sent: Wednesday, March 20, 2013 6:59 AM
 > > To: Wang Dongsheng-B40534
 > > Cc: Wood Scott-B07421; Gala Kumar-B11780; =20
 > linuxppc-dev@lists.ozlabs.org;
-> > Zhao Chenhui-B35336; Li Yang-R58472
-> > Subject: Re: [PATCH 3/3] powerpc/fsl: add MPIC timer wakeup support
+> > Li Yang-R58472
+> > Subject: Re: [PATCH 2/3] powerpc/mpic: add global timer support
 > >
-> > On 03/19/2013 01:25:42 AM, Wang Dongsheng-B40534 wrote:
-> > > > -----Original Message-----
-> > > > From: Wood Scott-B07421
-> > > > Sent: Tuesday, March 19, 2013 8:31 AM
-> > > > To: Wang Dongsheng-B40534
-> > > > Cc: Gala Kumar-B11780; linuxppc-dev@lists.ozlabs.org; Wang
-> > > Dongsheng-
-> > > > B40534; Zhao Chenhui-B35336; Li Yang-R58472
-> > > > Subject: Re: [PATCH 3/3] powerpc/fsl: add MPIC timer wakeup =20
-> support
-> > > >
-> > > > On 03/08/2013 01:38:47 AM, Wang Dongsheng wrote:
-> > > > > +static ssize_t fsl_timer_wakeup_store(struct device *dev,
-> > > > > +				struct device_attribute *attr,
-> > > > > +				const char *buf,
-> > > > > +				size_t count)
-> > > > > +{
-> > > > > +	struct timeval interval;
-> > > > > +	int ret;
+> > On 03/19/2013 02:55:58 AM, Wang Dongsheng-B40534 wrote:
+> > > > > +static void convert_ticks_to_time(struct timer_group_priv =20
+> *priv,
+> > > > > +		const u64 ticks, struct timeval *time) {
+> > > > > +	u64 tmp_sec;
+> > > > > +	u32 rem_us;
+> > > > > +	u32 div;
 > > > > > +
-> > > > > +	interval.tv_usec =3D 0;
-> > > > > +	if (kstrtol(buf, 0, &interval.tv_sec))
-> > > > > +		return -EINVAL;
+> > > > > +	if (!(priv->flags & FSL_GLOBAL_TIMER)) {
+> > > > > +		time->tv_sec =3D (__kernel_time_t)
+> > > > > +			div_u64_rem(ticks, priv->timerfreq, =20
+> &rem_us);
+> > > > > +		tmp_sec =3D (u64)time->tv_sec * =20
+> (u64)priv->timerfreq;
+> > > > > +		time->tv_usec =3D (__kernel_suseconds_t)
+> > > > > +			div_u64((ticks - tmp_sec) * 1000000,
+> > > > > priv->timerfreq);
+> > > > > +
+> > > > > +		return;
+> > > > > +	}
+> > > > > +
+> > > > > +	div =3D (1 << (MPIC_TIMER_TCR_CLKDIV_64 >> 8)) * 8;
+> > > > > +
+> > > > > +	time->tv_sec =3D (__kernel_time_t)div_u64(ticks, priv-
+> > >timerfreq
+> > > > > / div);
+> > > > > +	tmp_sec =3D div_u64((u64)time->tv_sec * =20
+> (u64)priv->timerfreq,
+> > > > > div);
+> > > > > +
+> > > > > +	time->tv_usec =3D (__kernel_suseconds_t)
+> > > > > +		div_u64((ticks - tmp_sec) * 1000000, =20
+> priv->timerfreq /
+> > > > > div);
+> > > > > +
+> > > > > +	return;
 > > > >
-> > > > I don't think the buffer will NUL-terminated...  Ordinarily
-> > > there'll be
-> > > > an LF terminator, but you can't rely on that (many other sysfs
-> > > attributes
-> > > > seem to, though...).
+> > > > Why don't you just adjust the clock frequency up front for
+> > > CLKDIV_64,
+> > > > rather than introduce alternate (and untested!) code paths
+> > > throughout the
+> > > > driver?
 > > > >
-> > > I think we don't need to care about LF terminator.
-> > > The kstrtol--> _kstrtoull has been done.
+> > > No, It cannot be integrated. The div cannot be removed.
+> > > Because if do priv->timerfreq /=3D div, that will affect the =20
+> accuracy.
+> > >
+> > > Like:
+> > > 3 * 5 / 2 =3D 7;
+> > > 3 / 2 * 5 =3D 5;
 > >
-> > My point is, what happens if userspace passes in a buffer that has =20
-> no
-> > terminator of any sort?  kstrtol will continue reading beyond the =20
-> end of
-> > the buffer.
+> > I don't follow -- a change in the clock speed is a change in the =20
+> clock
+> > speed, no matter how you accomplish it.
 > >
-> Do not care about terminator.
+> This is not change hardware clock frequency.
 
-kstrtol() obviously *does* because it doesn't take the buffer length as =20
-a parameter.
+Citation needed.  It looks like a change in the timer frequency to me:
 
-> kstrtol--> _kstrtoull--> _parse_integer
+   Clock ratio. Specifies the ratio of the timer frequency to the MPIC =20
+input clock (platform clock/2) . The
+   following clock ratios are supported:
+   00
+   01
+   10
+   11
+   Default. Divide by 8
+   Divide by 16
+   Divide by 32
+   Divide by 64
+
+The end result is that the counter in the timer register changes only
+1/64 as often as the input clock.  There's nothing special about that,
+compared to having an input clock that is 1/64 the speed.
+
+> The mpic timer hardware clock is not be changed after initialization. =20
+> This is just conversion ticks.
+> These calculated ticks will be set to the hardware.
 >=20
-> _kstrtoull(...) {
-> 	...
-> 	rv =3D _parse_integer(s, base, &_res);
-> 	if (rv & KSTRTOX_OVERFLOW)
-> 		return -ERANGE;
-> 	rv &=3D ~KSTRTOX_OVERFLOW;
-> 	if (rv =3D=3D 0)
-> 		return -EINVAL;
-> 	s +=3D rv;
->=20
-> 	if (*s =3D=3D '\n')
-> 		s++;
-> 	if (*s)
-> 		return -EINVAL;
-> 	...
-> }
->=20
-> _parse_integer(...) {
-> 	...
-> 	while (*s) {
-> 		if ('0' <=3D *s && *s <=3D '9')
-> 			val =3D *s - '0';
-> 		else if ('a' <=3D _tolower(*s) && _tolower(*s) <=3D 'f')
-> 			val =3D _tolower(*s) - 'a' + 10;
-> 		else
-> 			break;	//this will break out to convert.
-
-Really?  How do you know that the next byte after the buffer isn't a =20
-valid hex digit?  How do you even know that we won't take a fault =20
-accessing it?
-
-> > Echoing a nonzero value wouldn't just be to cancel, it would be to =20
-> set a
-> > new timer after cancelling the old.
+> > How you round is a different question.  You should probably be =20
+> rounding
+> > up always, based on the final clock frequency -- though it's =20
+> unlikely to
+> > matter much given the high precision of the timer relative to the =20
+> input
+> > granularity.
 > >
-> If you think this way is better, I can change.
+> Each ticks are based on the mpic timer hardware clock frequency.
+> The conversion and calculation are in order to make the tick value is =20
+> more
+> accurate, more close to real time.
+> If echo 40 seconds may be difference is not obvious. But echo =20
+> 315360000(10 years)
+> difference is obvious.
 
-I do.
+So basically you're taking advantage of the fact that you have what
+appears to be a more precise value of the frequency than is expressible
+in integer Hz -- but I think that's false precision; odds are the
+frequency is not accurate to 1 Hz to begin with.  Even if it is, I doubt
+it's worth worrying about.  The error as a percentage will still be very
+small with an input frequency of many MHz.  Does an error of a few
+minutes really matter if you're delaying for 10 years?  That's =20
+acceptable
+clock drift for something not synced to network time.  The main thing is
+to ensure that you round up, not down, so that software doesn't see an
+early wakeup as measured by its own timers.
 
-> But why should do it?
-> Explicitly stop the timer (echo 0) before reuse it is more reasonable =20
-> for me.
-
-It's an unnecessary restriction, and eliminating it doesn't make =20
-anything simpler.
+BTW, the input clock frequency has been similarly scaled, yet you don't
+try to scrounge up that information to get further precision...
 
 -Scott=
