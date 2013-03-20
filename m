@@ -1,34 +1,33 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp03.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4495D2C00D1
+ (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4FC922C00C3
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 06:35:28 +1100 (EST)
 Received: from /spool/local
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 21 Mar 2013 01:02:11 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id BBA933940065
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 01:05:22 +0530 (IST)
+ Thu, 21 Mar 2013 01:00:50 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 47F6FE0060
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 01:06:52 +0530 (IST)
 Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r2KJZHiG65142906
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 01:05:17 +0530
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r2KJZJ0X46596248
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 01:05:19 +0530
 Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
  by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r2KJZLfK021054
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 19:35:21 GMT
+ r2KJZM9G021238
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 19:35:23 GMT
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V4 16/25] mm/THP: withdraw the pgtable after pmdp related
- operations
-Date: Thu, 21 Mar 2013 01:05:01 +0530
-Message-Id: <1363808110-25748-17-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V4 22/25] powerpc/THP: get_user_pages_fast changes
+Date: Thu, 21 Mar 2013 01:05:07 +0530
+Message-Id: <1363808110-25748-23-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1363808110-25748-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1363808110-25748-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: Andrea Arcangeli <aarcange@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -41,31 +40,115 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-For architectures like ppc64 we look at deposited pgtable when
-calling pmdp_get_and_clear. So do the pgtable_trans_huge_withdraw
-after finishing pmdp related operations.
+handle large pages for get_user_pages_fast. Also take care of large page splitting.
 
-Cc: Andrea Arcangeli <aarcange@redhat.com>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- mm/huge_memory.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/mm/gup.c |   84 +++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 82 insertions(+), 2 deletions(-)
 
-diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-index e91b763..5c7cd7d 100644
---- a/mm/huge_memory.c
-+++ b/mm/huge_memory.c
-@@ -1380,9 +1380,10 @@ int zap_huge_pmd(struct mmu_gather *tlb, struct vm_area_struct *vma,
- 		struct page *page;
- 		pgtable_t pgtable;
- 		pmd_t orig_pmd;
--		pgtable = pgtable_trans_huge_withdraw(tlb->mm, pmd);
+diff --git a/arch/powerpc/mm/gup.c b/arch/powerpc/mm/gup.c
+index d7efdbf..835c1ae 100644
+--- a/arch/powerpc/mm/gup.c
++++ b/arch/powerpc/mm/gup.c
+@@ -55,6 +55,72 @@ static noinline int gup_pte_range(pmd_t pmd, unsigned long addr,
+ 	return 1;
+ }
+ 
++#ifdef CONFIG_TRANSPARENT_HUGEPAGE
++static inline int gup_huge_pmd(pmd_t *pmdp, unsigned long addr,
++			       unsigned long end, int write,
++			       struct page **pages, int *nr)
++{
++	int refs;
++	pmd_t pmd;
++	unsigned long mask;
++	struct page *head, *page, *tail;
 +
- 		orig_pmd = pmdp_get_and_clear(tlb->mm, addr, pmd);
- 		tlb_remove_pmd_tlb_entry(tlb, pmd, addr);
-+		pgtable = pgtable_trans_huge_withdraw(tlb->mm, pmd);
- 		if (is_huge_zero_pmd(orig_pmd)) {
- 			tlb->mm->nr_ptes--;
- 			spin_unlock(&tlb->mm->page_table_lock);
++	pmd = *pmdp;
++	mask = PMD_HUGE_PRESENT | PMD_HUGE_USER;
++	if (write)
++		mask |= PMD_HUGE_RW;
++
++	if ((pmd_val(pmd) & mask) != mask)
++		return 0;
++
++	/* large pages are never "special" */
++	VM_BUG_ON(!pfn_valid(pmd_pfn(pmd)));
++
++	refs = 0;
++	head = pmd_page(pmd);
++	page = head + ((addr & ~PMD_MASK) >> PAGE_SHIFT);
++	tail = page;
++	do {
++		VM_BUG_ON(compound_head(page) != head);
++		pages[*nr] = page;
++		(*nr)++;
++		page++;
++		refs++;
++	} while (addr += PAGE_SIZE, addr != end);
++
++	if (!page_cache_add_speculative(head, refs)) {
++		*nr -= refs;
++		return 0;
++	}
++
++	if (unlikely(pmd_val(pmd) != pmd_val(*pmdp))) {
++		*nr -= refs;
++		while (refs--)
++			put_page(head);
++		return 0;
++	}
++	/*
++	 * Any tail page need their mapcount reference taken before we
++	 * return.
++	 */
++	while (refs--) {
++		if (PageTail(tail))
++			get_huge_page_tail(tail);
++		tail++;
++	}
++
++	return 1;
++}
++#else
++
++static inline int gup_huge_pmd(pmd_t *pmdp, unsigned long addr,
++			       unsigned long end, int write,
++			       struct page **pages, int *nr)
++{
++	return 1;
++}
++#endif
++
+ static int gup_pmd_range(pud_t pud, unsigned long addr, unsigned long end,
+ 		int write, struct page **pages, int *nr)
+ {
+@@ -66,9 +132,23 @@ static int gup_pmd_range(pud_t pud, unsigned long addr, unsigned long end,
+ 		pmd_t pmd = *pmdp;
+ 
+ 		next = pmd_addr_end(addr, end);
+-		if (pmd_none(pmd))
++		/*
++		 * The pmd_trans_splitting() check below explains why
++		 * pmdp_splitting_flush has to flush the tlb, to stop
++		 * this gup-fast code from running while we set the
++		 * splitting bit in the pmd. Returning zero will take
++		 * the slow path that will call wait_split_huge_page()
++		 * if the pmd is still in splitting state. gup-fast
++		 * can't because it has irq disabled and
++		 * wait_split_huge_page() would never return as the
++		 * tlb flush IPI wouldn't run.
++		 */
++		if (pmd_none(pmd) || pmd_trans_splitting(pmd))
+ 			return 0;
+-		if (is_hugepd(pmdp)) {
++		if (unlikely(pmd_large(pmd))) {
++			if (!gup_huge_pmd(pmdp, addr, next, write, pages, nr))
++				return 0;
++		} else if (is_hugepd(pmdp)) {
+ 			if (!gup_hugepd((hugepd_t *)pmdp, PMD_SHIFT,
+ 					addr, next, write, pages, nr))
+ 				return 0;
 -- 
 1.7.10
