@@ -1,25 +1,31 @@
-Return-Path: <b20052@nmglablinux22.freescale.com>
+Return-Path: <B20052@freescale.com>
 Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
+ (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 43E202C0555
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 21:23:40 +1100 (EST)
-Received: from mail190-co1 (localhost [127.0.0.1])	by
- mail190-co1-R.bigfish.com (Postfix) with ESMTP id 219218C0085	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 10:23:34 +0000 (UTC)
-Received: from CO1EHSMHS022.bigfish.com (unknown [10.243.78.254])	by
- mail190-co1.bigfish.com (Postfix) with ESMTP id 8ADA6B20045	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 10:23:31 +0000 (UTC)
-From: <vakul@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 1/5][RFC] powerpc/85xx: add SEC-5.3 device tree
-Date: Wed, 20 Mar 2013 15:53:25 +0530
-Message-ID: <1363775005-29970-1-git-send-email-vakul@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id E9C5C2C00A0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 21:32:17 +1100 (EST)
+From: Leekha Shaveta-B20052 <B20052@freescale.com>
+To: Leekha Shaveta-B20052 <B20052@freescale.com>, Kumar Gala
+ <galak@kernel.crashing.org>
+Subject: RE: [PATCH 1/6] powerpc/fsl-booke: Add initial silicon device tree
+ files for B4860QDS
+Date: Wed, 20 Mar 2013 10:32:09 +0000
+Message-ID: <E12D2F89F87F4A49B0320A4C2DE7E749145811@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <1363334109-21922-1-git-send-email-shaveta@freescale.com>
+ <CAOZdJXV5UgT71j5XJH8K6DnfE-SUVL2jE7yNZUhE+gstb_33tQ@mail.gmail.com>
+ <E12D2F89F87F4A49B0320A4C2DE7E749144B3C@039-SN2MPN1-011.039d.mgd.msft.net>
+ <9B5470DD-595E-4234-B462-1232745D8F9F@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Shaveta Leekha <shaveta@freescale.com>, Vakul Garg <vakul@freescale.com>
+Cc: Zhao Chenhui-B35336 <B35336@freescale.com>,
+ Mehresh Ramneek-B31383 <B31383@freescale.com>, Timur Tabi <timur@tabi.org>,
+ Lian Minghuan-B31939 <B31939@freescale.com>,
+ Tang Yuantian-B29983 <B29983@freescale.com>,
+ Fleming Andy-AFLEMING <afleming@freescale.com>,
+ Sethi Varun-B16395 <B16395@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,138 +35,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Shaveta Leekha <shaveta@freescale.com>
 
-Signed-off-by: Vakul Garg <vakul@freescale.com>
-Signed-off-by: Shaveta Leekha <shaveta@freescale.com>
----
- arch/powerpc/boot/dts/fsl/qoriq-sec5.3-0.dtsi |  118 +++++++++++++++++++++++++
- 1 files changed, 118 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-sec5.3-0.dtsi
 
-diff --git a/arch/powerpc/boot/dts/fsl/qoriq-sec5.3-0.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-sec5.3-0.dtsi
-new file mode 100644
-index 0000000..0339825
---- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/qoriq-sec5.3-0.dtsi
-@@ -0,0 +1,118 @@
-+/*
-+ * QorIQ Sec/Crypto 5.3 device tree stub [ controller @ offset 0x300000 ]
-+ *
-+ * Copyright 2012 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+crypto: crypto@300000 {
-+	compatible = "fsl,sec-v5.3", "fsl,sec-v5.0", "fsl,sec-v4.0";
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+	reg		 = <0x300000 0x10000>;
-+	ranges		 = <0 0x300000 0x10000>;
-+	interrupts	 = <92 2 0 0>;
-+
-+	sec_jr0: jr@1000 {
-+		compatible = "fsl,sec-v5.3-job-ring",
-+			     "fsl,sec-v5.0-job-ring",
-+			     "fsl,sec-v4.0-job-ring";
-+		reg = <0x1000 0x1000>;
-+		interrupts = <88 2 0 0>;
-+	};
-+
-+	sec_jr1: jr@2000 {
-+		compatible = "fsl,sec-v5.3-job-ring",
-+			     "fsl,sec-v5.0-job-ring",
-+			     "fsl,sec-v4.0-job-ring";
-+		reg = <0x2000 0x1000>;
-+		interrupts = <89 2 0 0>;
-+	};
-+
-+	sec_jr2: jr@3000 {
-+		compatible = "fsl,sec-v5.3-job-ring",
-+			     "fsl,sec-v5.0-job-ring",
-+			     "fsl,sec-v4.0-job-ring";
-+		reg = <0x3000 0x1000>;
-+		interrupts = <90 2 0 0>;
-+	};
-+
-+	sec_jr3: jr@4000 {
-+		compatible = "fsl,sec-v5.3-job-ring",
-+			     "fsl,sec-v5.0-job-ring",
-+			     "fsl,sec-v4.0-job-ring";
-+		reg = <0x4000 0x1000>;
-+		interrupts = <91 2 0 0>;
-+	};
-+
-+	rtic@6000 {
-+		compatible = "fsl,sec-v5.3-rtic",
-+			     "fsl,sec-v5.0-rtic",
-+			     "fsl,sec-v4.0-rtic";
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		reg = <0x6000 0x100>;
-+		ranges = <0x0 0x6100 0xe00>;
-+
-+		rtic_a: rtic-a@0 {
-+			compatible = "fsl,sec-v5.3-rtic-memory",
-+				     "fsl,sec-v5.0-rtic-memory",
-+				     "fsl,sec-v4.0-rtic-memory";
-+			reg = <0x00 0x20 0x100 0x80>;
-+		};
-+
-+		rtic_b: rtic-b@20 {
-+			compatible = "fsl,sec-v5.3-rtic-memory",
-+				     "fsl,sec-v5.0-rtic-memory",
-+				     "fsl,sec-v4.0-rtic-memory";
-+			reg = <0x20 0x20 0x200 0x80>;
-+		};
-+
-+		rtic_c: rtic-c@40 {
-+			compatible = "fsl,sec-v5.3-rtic-memory",
-+				     "fsl,sec-v5.0-rtic-memory",
-+				     "fsl,sec-v4.0-rtic-memory";
-+			reg = <0x40 0x20 0x300 0x80>;
-+		};
-+
-+		rtic_d: rtic-d@60 {
-+			compatible = "fsl,sec-v5.3-rtic-memory",
-+				     "fsl,sec-v5.0-rtic-memory",
-+				     "fsl,sec-v4.0-rtic-memory";
-+			reg = <0x60 0x20 0x500 0x80>;
-+		};
-+	};
-+};
-+
-+sec_mon: sec_mon@314000 {
-+	compatible = "fsl,sec-v5.3-mon", "fsl,sec-v5.0-mon", "fsl,sec-v4.0-mon";
-+	reg = <0x314000 0x1000>;
-+	interrupts = <93 2 0 0>;
-+};
--- 
-1.7.6.GIT
+-----Original Message-----
+From: Leekha Shaveta-B20052=20
+Sent: Tuesday, March 19, 2013 11:43 AM
+To: 'Kumar Gala'
+Cc: Timur Tabi; linuxppc-dev@lists.ozlabs.org; Zhao Chenhui-B35336; Lian Mi=
+nghuan-B31939; Tang Yuantian-B29983; Fleming Andy-AFLEMING; Mehresh Ramneek=
+-B31383; Sethi Varun-B16395
+Subject: RE: [PATCH 1/6] powerpc/fsl-booke: Add initial silicon device tree=
+ files for B4860QDS
+
+
+
+-----Original Message-----
+From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
+Sent: Monday, March 18, 2013 8:34 PM
+To: Leekha Shaveta-B20052
+Cc: Timur Tabi; linuxppc-dev@lists.ozlabs.org; Zhao Chenhui-B35336; Lian Mi=
+nghuan-B31939; Tang Yuantian-B29983; Fleming Andy-AFLEMING; Mehresh Ramneek=
+-B31383; Sethi Varun-B16395
+Subject: Re: [PATCH 1/6] powerpc/fsl-booke: Add initial silicon device tree=
+ files for B4860QDS
+
+
+On Mar 18, 2013, at 2:41 AM, Leekha Shaveta-B20052 wrote:
+
+>=20
+>=20
+> -----Original Message-----
+> From: Timur Tabi [mailto:timur@tabi.org]
+> Sent: Friday, March 15, 2013 6:38 PM
+> To: Leekha Shaveta-B20052
+> Cc: linuxppc-dev@lists.ozlabs.org; Zhao Chenhui-B35336; Lian=20
+> Minghuan-B31939; Tang Yuantian-B29983; Fleming Andy-AFLEMING; Mehresh=20
+> Ramneek-B31383; Sethi Varun-B16395
+> Subject: Re: [PATCH 1/6] powerpc/fsl-booke: Add initial silicon device=20
+> tree files for B4860QDS
+>=20
+> On Fri, Mar 15, 2013 at 2:55 AM, Shaveta Leekha <shaveta@freescale.com> w=
+rote:
+>=20
+>=20
+>> +       iommu@20000 {
+>> +               compatible =3D "fsl,pamu-v1.0", "fsl,pamu";
+>> +               reg =3D <0x20000 0x4000>;
+>> +               interrupts =3D <
+>> +                       24 2 0 0
+>> +                       16 2 1 1>;
+>> +       };
+>=20
+> You need to add the PAMU topology.
+> [SL] Thanks for reviewing the patches.
+> These patches are on similar lines as T4 initial support In due course=20
+> of time, we plan to add pamu topology and pamu related support in various=
+ devices both for T4 and B4.
+> Kumar can you please suggest?
+
+I can help with the B4 topology as its reasonable well described, I've been=
+ working on trying to get the info to finish T4.
+[SL] I have seen your patches to add PAMU topology in B4. Should I include =
+them in my set of patches or you would send them above my initial set of pa=
+tches?
+BR,
+Shaveta
+[SL] Kumar, Waiting for your response on it. Thought I have sent new set of=
+ patches with the refactoring suggested, but not added PAMU in them.
+
+BR,
+Shaveta
