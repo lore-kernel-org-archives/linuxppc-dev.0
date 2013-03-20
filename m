@@ -1,20 +1,24 @@
-Return-Path: <R65777@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E06132C00BE
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 04:47:19 +1100 (EST)
-From: Bharat Bhushan <r65777@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <kvm@vger.kernel.org>,
- <kvm-ppc@vger.kernel.org>, <agraf@suse.de>, <scottwood@freescale.com>
-Subject: [PATCH] bookehv: Handle debug exception on guest exit
-Date: Wed, 20 Mar 2013 23:15:57 +0530
-Message-ID: <1363801557-27436-1-git-send-email-Bharat.Bhushan@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Bharat Bhushan <bharat.bhushan@freescale.com>
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id E1DAE2C00A0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 05:48:37 +1100 (EST)
+Message-ID: <1363805280.24132.529.camel@bling.home>
+Subject: Re: [PATCH 2/3] VFIO: VFIO_DEVICE_SET_ADDR_MAPPING command
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Wed, 20 Mar 2013 12:48:00 -0600
+In-Reply-To: <1363668309.18880.10.camel@pasglop>
+References: <1363332390-12754-1-git-send-email-shangw@linux.vnet.ibm.com>
+ <1363332390-12754-3-git-send-email-shangw@linux.vnet.ibm.com>
+ <1363375740.16793.12.camel@ul30vt.home>
+ <20130316013417.GA3873@shangw.(null)> <1363412256.1244.20.camel@pasglop>
+ <1363640474.24132.433.camel@bling.home>
+ <20130319032410.GA22591@shangw.(null)>
+ <1363666721.24132.472.camel@bling.home> <1363668309.18880.10.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: aik@ozlabs.ru, linuxppc-dev@lists.ozlabs.org,
+ Gavin Shan <shangw@linux.vnet.ibm.com>, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,120 +28,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-EPCR.DUVD controls whether the debug events can come in
-hypervisor mode or not. When KVM guest is using the debug
-resource then we do not want debug events to be captured
-in guest entry/exit path. So we set EPCR.DUVD when entering
-and clears EPCR.DUVD when exiting from guest.
+On Tue, 2013-03-19 at 05:45 +0100, Benjamin Herrenschmidt wrote:
+> On Mon, 2013-03-18 at 22:18 -0600, Alex Williamson wrote:
+> > > Yes, EEH firmware call needn't going through VFIO. However, EEH has
+> > > very close relationship with PCI and so VFIO-PCI does. Eventually, EEH
+> > > has close relationship with VFIO-PCI :-)
+> > 
+> > Is there some plan to do more with EEH through VFIO in the future or are
+> > we just talking about some kind of weird associative property to sell
+> > this ioctl?  Thanks,
+> 
+> Well, I'm not sure how 'weird' that is but it makes sense to me... VFIO
+> is the mechanism that virtualizes access to a PCI device and provides
+> interfaces to qemu & kvm to access it &| map it.
+> 
+> Or rather VFIO-PCI is.
+> 
+> At a basic level it provides ... the basic PCI interfaces, ie, config
+> space access (with or without filtering), interrupts, etc...
+> 
+> In our environment, EEH is just another functionality of PCI really.
+> The firmware calls used by the guest to do that fall into more or less
+> the same category as the ones used for PCI config space accesses,
+> manipulation of DMA windows, etc... Similar to host (though guest
+> and host use a different FW interface for various reasons).
+> 
+> So it's very natural to "transport" these via VFIO-PCI like everything
+> else, I don't see a more natural place to put the ioctl's we need for
+> qemu to be able to access the EEH state, trigger EEH (un)isolation,
+> resets, etc...
+> 
+> Fundamentally, the design should be for VFIO-PCI to provide some specific
+> ioctls for EEH that userspace programs such as qemu can use, and then
+> re-expose those APIs to the guest.
+> 
+> In addition, to do some of it in the kernel for performance reason, we
+> want to establish that mapping, but I see that as a VFIO "accelerator".
+> 
+> IE. Whatever is going to respond to the EEH calls from the guest in-kernel
+> will have to share state with the rest of the EEH stuff provided to qemu
+> by vfio-pci.
 
-Debug instruction complete is a post-completion debug
-exception but debug event gets posted on the basis of MSR
-before the instruction is executed. Now if the instruction
-switches the context from guest mode (MSR.GS = 1) to hypervisor
-mode (MSR.GS = 0) then the xSRR0 points to first instruction of
-KVM handler and xSRR1 points that MSR.GS is clear
-(hypervisor context). Now as xSRR1.GS is used to decide whether
-KVM handler will be invoked to handle the exception or host
-host kernel debug handler will be invoked to handle the exception.
-This leads to host kernel debug handler handling the exception
-which should either be handled by KVM.
+Perhaps my problem is that I don't have a clear picture of where you're
+going with this like I do for AER.  For AER we're starting with
+notification of an error, from that we build into how to retrieve the
+error information, and finally how to perform corrective action.  Each
+of these will be done through vifo-pci.
 
-This is tested on e500mc in 32 bit mode
+Here we're starting by registering a mapping that's really only useful
+to the vfio "accelerator" path, but we don't even have a hint of what
+the non-accelerated path is and how vfio is involved with it.  Thanks,
 
-Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
----
-v0:
- - Do not apply this change for debug_crit as we do not know those chips have issue or not.
- - corrected 64bit case branching
-
- arch/powerpc/kernel/exceptions-64e.S |   29 ++++++++++++++++++++++++++++-
- arch/powerpc/kernel/head_booke.h     |   26 ++++++++++++++++++++++++++
- 2 files changed, 54 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index 4684e33..8b26294 100644
---- a/arch/powerpc/kernel/exceptions-64e.S
-+++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -516,6 +516,33 @@ kernel_dbg_exc:
- 	andis.	r15,r14,DBSR_IC@h
- 	beq+	1f
- 
-+#ifdef CONFIG_KVM_BOOKE_HV
-+	/*
-+	 * EPCR.DUVD controls whether the debug events can come in
-+	 * hypervisor mode or not. When KVM guest is using the debug
-+	 * resource then we do not want debug events to be captured
-+	 * in guest entry/exit path. So we set EPCR.DUVD when entering
-+	 * and clears EPCR.DUVD when exiting from guest.
-+	 * Debug instruction complete is a post-completion debug
-+	 * exception but debug event gets posted on the basis of MSR
-+	 * before the instruction is executed. Now if the instruction
-+	 * switches the context from guest mode (MSR.GS = 1) to hypervisor
-+	 * mode (MSR.GS = 0) then the xSRR0 points to first instruction of
-+	 * KVM handler and xSRR1 points that MSR.GS is clear
-+	 * (hypervisor context). Now as xSRR1.GS is used to decide whether
-+	 * KVM handler will be invoked to handle the exception or host
-+	 * host kernel debug handler will be invoked to handle the exception.
-+	 * This leads to host kernel debug handler handling the exception
-+	 * which should either be handled by KVM.
-+	 */
-+	mfspr	r10, SPRN_EPCR
-+	andis.	r10,r10,SPRN_EPCR_DUVD@h
-+	beq+	2f
-+
-+	andis.	r10,r9,MSR_GS@h
-+	beq+	3f
-+2:
-+#endif
- 	LOAD_REG_IMMEDIATE(r14,interrupt_base_book3e)
- 	LOAD_REG_IMMEDIATE(r15,interrupt_end_book3e)
- 	cmpld	cr0,r10,r14
-@@ -523,7 +550,7 @@ kernel_dbg_exc:
- 	blt+	cr0,1f
- 	bge+	cr1,1f
- 
--	/* here it looks like we got an inappropriate debug exception. */
-+3:	/* here it looks like we got an inappropriate debug exception. */
- 	lis	r14,DBSR_IC@h		/* clear the IC event */
- 	rlwinm	r11,r11,0,~MSR_DE	/* clear DE in the DSRR1 value */
- 	mtspr	SPRN_DBSR,r14
-diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
-index 5f051ee..edc6a3b 100644
---- a/arch/powerpc/kernel/head_booke.h
-+++ b/arch/powerpc/kernel/head_booke.h
-@@ -285,7 +285,33 @@ label:
- 	mfspr	r10,SPRN_DBSR;		/* check single-step/branch taken */  \
- 	andis.	r10,r10,(DBSR_IC|DBSR_BT)@h;				      \
- 	beq+	2f;							      \
-+#ifdef CONFIG_KVM_BOOKE_HV						      \
-+	/*								      \
-+	 * EPCR.DUVD controls whether the debug events can come in	      \
-+	 * hypervisor mode or not. When KVM guest is using the debug	      \
-+	 * resource then we do not want debug events to be captured 	      \
-+	 * in guest entry/exit path. So we set EPCR.DUVD when entering	      \
-+	 * and clears EPCR.DUVD when exiting from guest.		      \
-+	 * Debug instruction complete is a post-completion debug	      \
-+	 * exception but debug event gets posted on the basis of MSR	      \
-+	 * before the instruction is executed. Now if the instruction	      \
-+	 * switches the context from guest mode (MSR.GS = 1) to hypervisor    \
-+	 * mode (MSR.GS = 0) then the xSRR0 points to first instruction of    \
-+	 * KVM handler and xSRR1 points that MSR.GS is clear 		      \
-+	 * (hypervisor context). Now as xSRR1.GS is used to decide whether    \
-+	 * KVM handler will be invoked to handle the exception or host	      \
-+	 * host kernel debug handler will be invoked to handle the exception. \
-+	 * This leads to host kernel debug handler handling the exception     \
-+	 * which should either be handled by KVM.			      \
-+	 */								      \
-+	mfspr	r10, SPRN_EPCR;						      \
-+	andis.	r10,r10,SPRN_EPCR_DUVD@h;				      \
-+	beq+	3f;							      \
- 									      \
-+	andis.	r10,r9,MSR_GS@h;				    	      \
-+	beq+	1f;							      \
-+3:									      \
-+#endif									      \
- 	lis	r10,KERNELBASE@h;	/* check if exception in vectors */   \
- 	ori	r10,r10,KERNELBASE@l;					      \
- 	cmplw	r12,r10;						      \
--- 
-1.7.0.4
+Alex
