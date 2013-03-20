@@ -2,30 +2,29 @@ Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 78BF42C00D6
+ by ozlabs.org (Postfix) with ESMTPS id 199E42C00E3
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 06:35:28 +1100 (EST)
 Received: from /spool/local
  by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 21 Mar 2013 01:00:50 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 2F656E0062
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 01:06:51 +0530 (IST)
+ Thu, 21 Mar 2013 01:00:51 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 3D9ADE005B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 01:06:52 +0530 (IST)
 Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r2KJZJxC7406006
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 01:05:20 +0530
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r2KJZLQl11272500
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 01:05:21 +0530
 Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
  by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r2KJZM2j021156
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 19:35:22 GMT
+ r2KJZNRv021284
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 19:35:23 GMT
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V4 19/25] powerpc/THP: Differentiate THP PMD entries from
- HUGETLB PMD entries
-Date: Thu, 21 Mar 2013 01:05:04 +0530
-Message-Id: <1363808110-25748-20-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V4 25/25] powerpc: Handle hugepages in kvm
+Date: Thu, 21 Mar 2013 01:05:10 +0530
+Message-Id: <1363808110-25748-26-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1363808110-25748-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1363808110-25748-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -41,95 +40,212 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-HUGETLB clear the top bit of PMD entries and use that to indicate
-a HUGETLB page directory. Since we store pfns in PMDs for THP,
-we would have the top bit cleared by default. Add the top bit mask
-for THP PMD entries and clear that when we are looking for pmd_pfn.
+We could possibly avoid some of these changes because most of the HUGE PMD bits
+map to PTE bits.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/pgtable.h |   16 +++++++++++++---
- arch/powerpc/mm/pgtable.c          |    5 ++++-
- arch/powerpc/mm/pgtable_64.c       |    2 +-
- 3 files changed, 18 insertions(+), 5 deletions(-)
+ arch/powerpc/include/asm/kvm_book3s_64.h |   31 ++++++++++++
+ arch/powerpc/kvm/book3s_64_mmu_hv.c      |   12 ++++-
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c      |   75 ++++++++++++++++++++++--------
+ 3 files changed, 97 insertions(+), 21 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
-index 9fbe2a7..9681de4 100644
---- a/arch/powerpc/include/asm/pgtable.h
-+++ b/arch/powerpc/include/asm/pgtable.h
-@@ -31,7 +31,7 @@ struct mm_struct;
- #define PMD_HUGE_SPLITTING	0x008
- #define PMD_HUGE_SAO		0x010 /* strong Access order */
- #define PMD_HUGE_HASHPTE	0x020
--#define PMD_ISHUGE		0x040
-+#define _PMD_ISHUGE		0x040
- #define PMD_HUGE_DIRTY		0x080 /* C: page changed */
- #define PMD_HUGE_ACCESSED	0x100 /* R: page referenced */
- #define PMD_HUGE_RW		0x200 /* software: user write access allowed */
-@@ -44,6 +44,14 @@ struct mm_struct;
- #define PMD_HUGE_RPN_SHIFT	PTE_RPN_SHIFT
- #define HUGE_PAGE_SIZE		(ASM_CONST(1) << 24)
- #define HUGE_PAGE_MASK		(~(HUGE_PAGE_SIZE - 1))
+diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
+index 38bec1d..1c5c799 100644
+--- a/arch/powerpc/include/asm/kvm_book3s_64.h
++++ b/arch/powerpc/include/asm/kvm_book3s_64.h
+@@ -110,6 +110,7 @@ static inline unsigned long compute_tlbie_rb(unsigned long v, unsigned long r,
+ 	return rb;
+ }
+ 
++/* FIXME !! should we use hpte_actual_psize or hpte decode ? */
+ static inline unsigned long hpte_page_size(unsigned long h, unsigned long l)
+ {
+ 	/* only handle 4k, 64k and 16M pages for now */
+@@ -189,6 +190,36 @@ static inline pte_t kvmppc_read_update_linux_pte(pte_t *p, int writing)
+ 	return pte;
+ }
+ 
 +/*
-+ * HugeTLB looks at the top bit of the Linux page table entries to
-+ * decide whether it is a huge page directory or not. Mark HUGE
-+ * PMD to differentiate
++ * Lock and read a linux hugepage PMD.  If it's present and writable, atomically
++ * set dirty and referenced bits and return the PMD, otherwise return 0.
 + */
-+#define PMD_HUGE_NOT_HUGETLB	(ASM_CONST(1) << 63)
-+#define PMD_ISHUGE		(_PMD_ISHUGE | PMD_HUGE_NOT_HUGETLB)
-+#define PMD_HUGE_PROTBITS	(0xfff | PMD_HUGE_NOT_HUGETLB)
- 
- #ifndef __ASSEMBLY__
- extern void hpte_need_hugepage_flush(struct mm_struct *mm, unsigned long addr,
-@@ -70,8 +78,9 @@ static inline int pmd_trans_splitting(pmd_t pmd)
- 
- static inline int pmd_trans_huge(pmd_t pmd)
- {
--	return pmd_val(pmd) & PMD_ISHUGE;
-+	return ((pmd_val(pmd) & PMD_ISHUGE) ==  PMD_ISHUGE);
- }
++static inline pmd_t kvmppc_read_update_linux_hugepmd(pmd_t *p, int writing)
++{
++	pmd_t pmd, tmp;
 +
- /* We will enable it in the last patch */
- #define has_transparent_hugepage() 0
- #else
-@@ -84,7 +93,8 @@ static inline unsigned long pmd_pfn(pmd_t pmd)
- 	/*
- 	 * Only called for hugepage pmd
- 	 */
--	return pmd_val(pmd) >> PMD_HUGE_RPN_SHIFT;
-+	unsigned long val = pmd_val(pmd) & ~PMD_HUGE_PROTBITS;
-+	return val  >> PMD_HUGE_RPN_SHIFT;
++	/* wait until _PAGE_BUSY is clear then set it atomically */
++	__asm__ __volatile__ (
++		"1:	ldarx	%0,0,%3\n"
++		"	andi.	%1,%0,%4\n"
++		"	bne-	1b\n"
++		"	ori	%1,%0,%4\n"
++		"	stdcx.	%1,0,%3\n"
++		"	bne-	1b"
++		: "=&r" (pmd), "=&r" (tmp), "=m" (*p)
++		: "r" (p), "i" (PMD_HUGE_BUSY)
++		: "cc");
++
++	if (pmd_large(pmd)) {
++		pmd = pmd_mkyoung(pmd);
++		if (writing && pmd_write(pmd))
++			pmd = pte_mkdirty(pmd);
++	}
++
++	*p = pmd;	/* clears PMD_HUGE_BUSY */
++	return pmd;
++}
++
+ /* Return HPTE cache control bits corresponding to Linux pte bits */
+ static inline unsigned long hpte_cache_bits(unsigned long pte_val)
+ {
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+index 4f2a7dc..da006da 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+@@ -675,6 +675,7 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 		}
+ 		/* if the guest wants write access, see if that is OK */
+ 		if (!writing && hpte_is_writable(r)) {
++			int hugepage;
+ 			pte_t *ptep, pte;
+ 
+ 			/*
+@@ -683,11 +684,18 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 			 */
+ 			rcu_read_lock_sched();
+ 			ptep = find_linux_pte_or_hugepte(current->mm->pgd,
+-							 hva, NULL, NULL);
+-			if (ptep && pte_present(*ptep)) {
++							 hva, NULL, &hugepage);
++			if (!hugepage && ptep && pte_present(*ptep)) {
+ 				pte = kvmppc_read_update_linux_pte(ptep, 1);
+ 				if (pte_write(pte))
+ 					write_ok = 1;
++			} else if (hugepage && ptep) {
++				pmd_t pmd = *(pmd_t *)ptep;
++				if (pmd_large(pmd)) {
++					pmd = kvmppc_read_update_linux_hugepmd((pmd_t *)ptep, 1);
++					if (pmd_write(pmd))
++						write_ok = 1;
++				}
+ 			}
+ 			rcu_read_unlock_sched();
+ 		}
+diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+index 7c8e1ed..e9d4e3a 100644
+--- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
++++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+@@ -146,24 +146,37 @@ static void remove_revmap_chain(struct kvm *kvm, long pte_index,
  }
  
- static inline int pmd_young(pmd_t pmd)
-diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
-index 9f33780..cf3ca8e 100644
---- a/arch/powerpc/mm/pgtable.c
-+++ b/arch/powerpc/mm/pgtable.c
-@@ -517,7 +517,10 @@ static pmd_t pmd_set_protbits(pmd_t pmd, pgprot_t pgprot)
- pmd_t pfn_pmd(unsigned long pfn, pgprot_t pgprot)
+ static pte_t lookup_linux_pte(pgd_t *pgdir, unsigned long hva,
+-			      int writing, unsigned long *pte_sizep)
++			      int writing, unsigned long *pte_sizep,
++			      int *hugepage)
  {
- 	pmd_t pmd;
--
-+	/*
-+	 * We cannot support that many PFNs
-+	 */
-+	VM_BUG_ON(pfn & PMD_HUGE_NOT_HUGETLB);
- 	pmd_val(pmd) = pfn << PMD_HUGE_RPN_SHIFT;
- 	pmd_val(pmd) |= PMD_ISHUGE;
- 	pmd = pmd_set_protbits(pmd, pgprot);
-diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index 6be1182..01a18d6 100644
---- a/arch/powerpc/mm/pgtable_64.c
-+++ b/arch/powerpc/mm/pgtable_64.c
-@@ -345,7 +345,7 @@ EXPORT_SYMBOL(__iounmap_at);
- struct page *pmd_page(pmd_t pmd)
- {
- #ifdef CONFIG_TRANSPARENT_HUGEPAGE
--	if (pmd_val(pmd) & PMD_ISHUGE)
-+	if ((pmd_val(pmd) & PMD_ISHUGE) == PMD_ISHUGE)
- 		return pfn_to_page(pmd_pfn(pmd));
- #endif
- 	return virt_to_page(pmd_page_vaddr(pmd));
+ 	pte_t *ptep;
+ 	unsigned long ps = *pte_sizep;
+ 	unsigned int shift;
+ 
+-	ptep = find_linux_pte_or_hugepte(pgdir, hva, &shift, NULL);
++	ptep = find_linux_pte_or_hugepte(pgdir, hva, &shift, hugepage);
+ 	if (!ptep)
+ 		return __pte(0);
+-	if (shift)
+-		*pte_sizep = 1ul << shift;
+-	else
+-		*pte_sizep = PAGE_SIZE;
++	if (*hugepage) {
++		*pte_sizep = 1ul << 24;
++	} else {
++		if (shift)
++			*pte_sizep = 1ul << shift;
++		else
++			*pte_sizep = PAGE_SIZE;
++	}
+ 	if (ps > *pte_sizep)
+ 		return __pte(0);
+-	if (!pte_present(*ptep))
+-		return __pte(0);
+-	return kvmppc_read_update_linux_pte(ptep, writing);
++
++	if (*hugepage) {
++		pmd_t *pmdp = (pmd_t *)ptep;
++		if (!pmd_large(*pmdp))
++			return __pmd(0);
++		return kvmppc_read_update_linux_hugepmd(pmdp, writing);
++	} else {
++		if (!pte_present(*ptep))
++			return __pte(0);
++		return kvmppc_read_update_linux_pte(ptep, writing);
++	}
+ }
+ 
+ static inline void unlock_hpte(unsigned long *hpte, unsigned long hpte_v)
+@@ -239,18 +252,34 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+ 		pte_size = PAGE_SIZE << (pa & KVMPPC_PAGE_ORDER_MASK);
+ 		pa &= PAGE_MASK;
+ 	} else {
++		int hugepage;
++
+ 		/* Translate to host virtual address */
+ 		hva = __gfn_to_hva_memslot(memslot, gfn);
+ 
+ 		/* Look up the Linux PTE for the backing page */
+ 		pte_size = psize;
+-		pte = lookup_linux_pte(pgdir, hva, writing, &pte_size);
+-		if (pte_present(pte)) {
+-			if (writing && !pte_write(pte))
+-				/* make the actual HPTE be read-only */
+-				ptel = hpte_make_readonly(ptel);
+-			is_io = hpte_cache_bits(pte_val(pte));
+-			pa = pte_pfn(pte) << PAGE_SHIFT;
++		pte = lookup_linux_pte(pgdir, hva, writing, &pte_size, &hugepage);
++		if (hugepage) {
++			pmd_t pmd = (pmd_t)pte;
++			if (!pmd_large(pmd)) {
++				if (writing && !pmd_write(pmd))
++					/* make the actual HPTE be read-only */
++					ptel = hpte_make_readonly(ptel);
++				/*
++				 * we support hugepage only for RAM
++				 */
++				is_io = 0;
++				pa = pmd_pfn(pmd) << PAGE_SHIFT;
++			}
++		} else {
++			if (pte_present(pte)) {
++				if (writing && !pte_write(pte))
++					/* make the actual HPTE be read-only */
++					ptel = hpte_make_readonly(ptel);
++				is_io = hpte_cache_bits(pte_val(pte));
++				pa = pte_pfn(pte) << PAGE_SHIFT;
++			}
+ 		}
+ 	}
+ 
+@@ -645,10 +674,18 @@ long kvmppc_h_protect(struct kvm_vcpu *vcpu, unsigned long flags,
+ 			gfn = ((r & HPTE_R_RPN) & ~(psize - 1)) >> PAGE_SHIFT;
+ 			memslot = __gfn_to_memslot(kvm_memslots(kvm), gfn);
+ 			if (memslot) {
++				int hugepage;
+ 				hva = __gfn_to_hva_memslot(memslot, gfn);
+-				pte = lookup_linux_pte(pgdir, hva, 1, &psize);
+-				if (pte_present(pte) && !pte_write(pte))
+-					r = hpte_make_readonly(r);
++				pte = lookup_linux_pte(pgdir, hva, 1,
++						       &psize, &hugepage);
++				if (hugepage) {
++					pmd_t pmd = (pmd_t)pte;
++					if (pmd_large(pmd) && !pmd_write(pmd))
++						r = hpte_make_readonly(r);
++				} else {
++					if (pte_present(pte) && !pte_write(pte))
++						r = hpte_make_readonly(r);
++				}
+ 			}
+ 		}
+ 	}
 -- 
 1.7.10
