@@ -1,20 +1,29 @@
-Return-Path: <R65777@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 918B22C009E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 22:31:13 +1100 (EST)
-From: Bharat Bhushan <r65777@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <kvm@vger.kernel.org>,
- <kvm-ppc@vger.kernel.org>, <agraf@suse.de>, <scottwood@freescale.com>
-Subject: [PATCH] [RFC] bookehv: Handle debug exception on guest exit
-Date: Wed, 20 Mar 2013 16:59:40 +0530
-Message-ID: <1363778980-23689-1-git-send-email-Bharat.Bhushan@freescale.com>
+Return-Path: <timur@tabi.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+ [71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 394852C009A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 22:37:56 +1100 (EST)
+Message-ID: <51499F90.4020303@tabi.org>
+Date: Wed, 20 Mar 2013 06:37:52 -0500
+From: Timur Tabi <timur@tabi.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Bharat Bhushan <bharat.bhushan@freescale.com>
+To: Leekha Shaveta-B20052 <B20052@freescale.com>,
+ Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/6] powerpc/fsl-booke: Add initial silicon device tree
+ files for B4860QDS
+References: <1363334109-21922-1-git-send-email-shaveta@freescale.com>
+ <CAOZdJXV5UgT71j5XJH8K6DnfE-SUVL2jE7yNZUhE+gstb_33tQ@mail.gmail.com>
+ <E12D2F89F87F4A49B0320A4C2DE7E749144B3C@039-SN2MPN1-011.039d.mgd.msft.net>
+ <9B5470DD-595E-4234-B462-1232745D8F9F@kernel.crashing.org>
+ <E12D2F89F87F4A49B0320A4C2DE7E749145811@039-SN2MPN1-011.039d.mgd.msft.net>
+In-Reply-To: <E12D2F89F87F4A49B0320A4C2DE7E749145811@039-SN2MPN1-011.039d.mgd.msft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Mehresh Ramneek-B31383 <B31383@freescale.com>,
+ Zhao Chenhui-B35336 <B35336@freescale.com>,
+ Lian Minghuan-B31939 <B31939@freescale.com>,
+ Tang Yuantian-B29983 <B29983@freescale.com>,
+ Fleming Andy-AFLEMING <afleming@freescale.com>,
+ Sethi Varun-B16395 <B16395@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,157 +33,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-EPCR.DUVD controls whether the debug events can come in
-hypervisor mode or not. When KVM guest is using the debug
-resource then we do not want debug events to be captured
-in guest entry/exit path. So we set EPCR.DUVD when entering
-and clears EPCR.DUVD when exiting from guest.
+Leekha Shaveta-B20052 wrote:
+> [SL] Kumar, Waiting for your response on it. Thought I have sent new
+> set of patches with the refactoring suggested, but not added PAMU in
+> them.
 
-Debug instruction complete is a post-completion debug
-exception but debug event gets posted on the basis of MSR
-before the instruction is executed. Now if the instruction
-switches the context from guest mode (MSR.GS = 1) to hypervisor
-mode (MSR.GS = 0) then the xSRR0 points to first instruction of
-KVM handler and xSRR1 points that MSR.GS is clear
-(hypervisor context). Now as xSRR1.GS is used to decide whether
-KVM handler will be invoked to handle the exception or host
-host kernel debug handler will be invoked to handle the exception.
-This leads to host kernel debug handler handling the exception
-which should either be handled by KVM.
+If you have the information, why wouldn't you include it in the patch? 
+The hard part has already been done for you!
 
-This is tested on e500mc in 32 bit mode
-
-Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
----
- arch/powerpc/kernel/exceptions-64e.S |   54 ++++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/head_booke.h     |   35 ++++++++++++++++++++++
- 2 files changed, 89 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index 4684e33..56882a0 100644
---- a/arch/powerpc/kernel/exceptions-64e.S
-+++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -450,6 +450,33 @@ interrupt_end_book3e:
- 	andis.	r15,r14,DBSR_IC@h
- 	beq+	1f
- 
-+#ifdef CONFIG_KVM_BOOKE_HV
-+	/*
-+	 * EPCR.DUVD controls whether the debug events can come in
-+	 * hypervisor mode or not. When KVM guest is using the debug
-+	 * resource then we do not want debug events to be captured
-+	 * in guest entry/exit path. So we set EPCR.DUVD when entering
-+	 * and clears EPCR.DUVD when exiting from guest.
-+	 * Debug instruction complete is a post-completion debug
-+	 * exception but debug event gets posted on the basis of MSR
-+	 * before the instruction is executed. Now if the instruction
-+	 * switches the context from guest mode (MSR.GS = 1) to hypervisor
-+	 * mode (MSR.GS = 0) then the xSRR0 points to first instruction of
-+	 * KVM handler and xSRR1 points that MSR.GS is clear
-+	 * (hypervisor context). Now as xSRR1.GS is used to decide whether
-+	 * KVM handler will be invoked to handle the exception or host
-+	 * host kernel debug handler will be invoked to handle the exception.
-+	 * This leads to host kernel debug handler handling the exception
-+	 * which should either be handled by KVM.
-+	 */
-+	mfspr	r10, SPRN_EPCR
-+	andis.	r10,r10,SPRN_EPCR_DUVD@h
-+	beq+	2f
-+
-+	andis.	r10,r9,MSR_GS@h
-+	beq+	1f
-+2:
-+#endif
- 	LOAD_REG_IMMEDIATE(r14,interrupt_base_book3e)
- 	LOAD_REG_IMMEDIATE(r15,interrupt_end_book3e)
- 	cmpld	cr0,r10,r14
-@@ -516,6 +543,33 @@ kernel_dbg_exc:
- 	andis.	r15,r14,DBSR_IC@h
- 	beq+	1f
- 
-+#ifdef CONFIG_KVM_BOOKE_HV
-+	/*
-+	 * EPCR.DUVD controls whether the debug events can come in
-+	 * hypervisor mode or not. When KVM guest is using the debug
-+	 * resource then we do not want debug events to be captured
-+	 * in guest entry/exit path. So we set EPCR.DUVD when entering
-+	 * and clears EPCR.DUVD when exiting from guest.
-+	 * Debug instruction complete is a post-completion debug
-+	 * exception but debug event gets posted on the basis of MSR
-+	 * before the instruction is executed. Now if the instruction
-+	 * switches the context from guest mode (MSR.GS = 1) to hypervisor
-+	 * mode (MSR.GS = 0) then the xSRR0 points to first instruction of
-+	 * KVM handler and xSRR1 points that MSR.GS is clear
-+	 * (hypervisor context). Now as xSRR1.GS is used to decide whether
-+	 * KVM handler will be invoked to handle the exception or host
-+	 * host kernel debug handler will be invoked to handle the exception.
-+	 * This leads to host kernel debug handler handling the exception
-+	 * which should either be handled by KVM.
-+	 */
-+	mfspr	r10, SPRN_EPCR
-+	andis.	r10,r10,SPRN_EPCR_DUVD@h
-+	beq+	2f
-+
-+	andis.	r10,r9,MSR_GS@h
-+	beq+	1f
-+2:
-+#endif
- 	LOAD_REG_IMMEDIATE(r14,interrupt_base_book3e)
- 	LOAD_REG_IMMEDIATE(r15,interrupt_end_book3e)
- 	cmpld	cr0,r10,r14
-diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
-index 5f051ee..040b0a3 100644
---- a/arch/powerpc/kernel/head_booke.h
-+++ b/arch/powerpc/kernel/head_booke.h
-@@ -285,7 +285,33 @@ label:
- 	mfspr	r10,SPRN_DBSR;		/* check single-step/branch taken */  \
- 	andis.	r10,r10,(DBSR_IC|DBSR_BT)@h;				      \
- 	beq+	2f;							      \
-+#ifdef CONFIG_KVM_BOOKE_HV						      \
-+	/*								      \
-+	 * EPCR.DUVD controls whether the debug events can come in	      \
-+	 * hypervisor mode or not. When KVM guest is using the debug	      \
-+	 * resource then we do not want debug events to be captured 	      \
-+	 * in guest entry/exit path. So we set EPCR.DUVD when entering	      \
-+	 * and clears EPCR.DUVD when exiting from guest.		      \
-+	 * Debug instruction complete is a post-completion debug	      \
-+	 * exception but debug event gets posted on the basis of MSR	      \
-+	 * before the instruction is executed. Now if the instruction	      \
-+	 * switches the context from guest mode (MSR.GS = 1) to hypervisor    \
-+	 * mode (MSR.GS = 0) then the xSRR0 points to first instruction of    \
-+	 * KVM handler and xSRR1 points that MSR.GS is clear 		      \
-+	 * (hypervisor context). Now as xSRR1.GS is used to decide whether    \
-+	 * KVM handler will be invoked to handle the exception or host	      \
-+	 * host kernel debug handler will be invoked to handle the exception. \
-+	 * This leads to host kernel debug handler handling the exception     \
-+	 * which should either be handled by KVM.			      \
-+	 */								      \
-+	mfspr	r10, SPRN_EPCR;						      \
-+	andis.	r10,r10,SPRN_EPCR_DUVD@h;				      \
-+	beq+	3f;							      \
- 									      \
-+	andis.	r10,r9,MSR_GS@h;				    	      \
-+	beq+	1f;							      \
-+3:									      \
-+#endif									      \
- 	lis	r10,KERNELBASE@h;	/* check if exception in vectors */   \
- 	ori	r10,r10,KERNELBASE@l;					      \
- 	cmplw	r12,r10;						      \
-@@ -339,6 +365,15 @@ label:
- 	andis.	r10,r10,(DBSR_IC|DBSR_BT)@h;				      \
- 	beq+	2f;							      \
- 									      \
-+#ifdef CONFIG_KVM_BOOKE_HV						      \
-+	mfspr	r10, SPRN_EPCR;						      \
-+	andis.	r10,r10,SPRN_EPCR_DUVD@h;				      \
-+	beq+	3f;							      \
-+									      \
-+	andis.	r10,r9,MSR_GS@h;				    	      \
-+	beq+	1f;							      \
-+3:									      \
-+#endif									      \
- 	lis	r10,KERNELBASE@h;	/* check if exception in vectors */   \
- 	ori	r10,r10,KERNELBASE@l;					      \
- 	cmplw	r12,r10;						      \
 -- 
-1.7.0.4
+Timur Tabi
