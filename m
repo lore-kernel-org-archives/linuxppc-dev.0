@@ -1,31 +1,36 @@
-Return-Path: <B20052@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E9C5C2C00A0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 21:32:17 +1100 (EST)
-From: Leekha Shaveta-B20052 <B20052@freescale.com>
-To: Leekha Shaveta-B20052 <B20052@freescale.com>, Kumar Gala
- <galak@kernel.crashing.org>
-Subject: RE: [PATCH 1/6] powerpc/fsl-booke: Add initial silicon device tree
- files for B4860QDS
-Date: Wed, 20 Mar 2013 10:32:09 +0000
-Message-ID: <E12D2F89F87F4A49B0320A4C2DE7E749145811@039-SN2MPN1-011.039d.mgd.msft.net>
-References: <1363334109-21922-1-git-send-email-shaveta@freescale.com>
- <CAOZdJXV5UgT71j5XJH8K6DnfE-SUVL2jE7yNZUhE+gstb_33tQ@mail.gmail.com>
- <E12D2F89F87F4A49B0320A4C2DE7E749144B3C@039-SN2MPN1-011.039d.mgd.msft.net>
- <9B5470DD-595E-4234-B462-1232745D8F9F@kernel.crashing.org>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <ananth@in.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e35.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 00AAC2C0085
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 21:40:50 +1100 (EST)
+Received: from /spool/local
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ananth@in.ibm.com>;
+ Wed, 20 Mar 2013 04:40:47 -0600
+Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
+ [9.17.195.226])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 19C231FF0049
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 04:35:46 -0600 (MDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r2KAefpA105278
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 04:40:41 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r2KAeeEP012675
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 04:40:41 -0600
+Date: Wed, 20 Mar 2013 16:10:33 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: ppcdev <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/uprobes: teach uprobes to ignore gdb breakpoints
+Message-ID: <20130320104033.GA19844@in.ibm.com>
 MIME-Version: 1.0
-Cc: Zhao Chenhui-B35336 <B35336@freescale.com>,
- Mehresh Ramneek-B31383 <B31383@freescale.com>, Timur Tabi <timur@tabi.org>,
- Lian Minghuan-B31939 <B31939@freescale.com>,
- Tang Yuantian-B29983 <B29983@freescale.com>,
- Fleming Andy-AFLEMING <afleming@freescale.com>,
- Sethi Varun-B16395 <B16395@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+Cc: oleg@redhat.com, stable@vger.kernel.org,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Reply-To: ananth@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,73 +40,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 
+GDB uses a variant of the trap instruction that is different from the
+one used by uprobes. Currently, running gdb on a program being traced
+by uprobes causes an endless loop since uprobes doesn't understand
+that the trap is inserted by some other entity and hence a SIGTRAP needs
+to be delivered.
 
------Original Message-----
-From: Leekha Shaveta-B20052=20
-Sent: Tuesday, March 19, 2013 11:43 AM
-To: 'Kumar Gala'
-Cc: Timur Tabi; linuxppc-dev@lists.ozlabs.org; Zhao Chenhui-B35336; Lian Mi=
-nghuan-B31939; Tang Yuantian-B29983; Fleming Andy-AFLEMING; Mehresh Ramneek=
--B31383; Sethi Varun-B16395
-Subject: RE: [PATCH 1/6] powerpc/fsl-booke: Add initial silicon device tree=
- files for B4860QDS
+Teach uprobes to ignore breakpoints that doesn't belong to it.
 
+Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: stable@vger.kernel.org
+---
+ arch/powerpc/kernel/uprobes.c |   10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-
------Original Message-----
-From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
-Sent: Monday, March 18, 2013 8:34 PM
-To: Leekha Shaveta-B20052
-Cc: Timur Tabi; linuxppc-dev@lists.ozlabs.org; Zhao Chenhui-B35336; Lian Mi=
-nghuan-B31939; Tang Yuantian-B29983; Fleming Andy-AFLEMING; Mehresh Ramneek=
--B31383; Sethi Varun-B16395
-Subject: Re: [PATCH 1/6] powerpc/fsl-booke: Add initial silicon device tree=
- files for B4860QDS
-
-
-On Mar 18, 2013, at 2:41 AM, Leekha Shaveta-B20052 wrote:
-
->=20
->=20
-> -----Original Message-----
-> From: Timur Tabi [mailto:timur@tabi.org]
-> Sent: Friday, March 15, 2013 6:38 PM
-> To: Leekha Shaveta-B20052
-> Cc: linuxppc-dev@lists.ozlabs.org; Zhao Chenhui-B35336; Lian=20
-> Minghuan-B31939; Tang Yuantian-B29983; Fleming Andy-AFLEMING; Mehresh=20
-> Ramneek-B31383; Sethi Varun-B16395
-> Subject: Re: [PATCH 1/6] powerpc/fsl-booke: Add initial silicon device=20
-> tree files for B4860QDS
->=20
-> On Fri, Mar 15, 2013 at 2:55 AM, Shaveta Leekha <shaveta@freescale.com> w=
-rote:
->=20
->=20
->> +       iommu@20000 {
->> +               compatible =3D "fsl,pamu-v1.0", "fsl,pamu";
->> +               reg =3D <0x20000 0x4000>;
->> +               interrupts =3D <
->> +                       24 2 0 0
->> +                       16 2 1 1>;
->> +       };
->=20
-> You need to add the PAMU topology.
-> [SL] Thanks for reviewing the patches.
-> These patches are on similar lines as T4 initial support In due course=20
-> of time, we plan to add pamu topology and pamu related support in various=
- devices both for T4 and B4.
-> Kumar can you please suggest?
-
-I can help with the B4 topology as its reasonable well described, I've been=
- working on trying to get the info to finish T4.
-[SL] I have seen your patches to add PAMU topology in B4. Should I include =
-them in my set of patches or you would send them above my initial set of pa=
-tches?
-BR,
-Shaveta
-[SL] Kumar, Waiting for your response on it. Thought I have sent new set of=
- patches with the refactoring suggested, but not added PAMU in them.
-
-BR,
-Shaveta
+Index: linux-3.9-rc3/arch/powerpc/kernel/uprobes.c
+===================================================================
+--- linux-3.9-rc3.orig/arch/powerpc/kernel/uprobes.c
++++ linux-3.9-rc3/arch/powerpc/kernel/uprobes.c
+@@ -80,6 +80,16 @@ unsigned long uprobe_get_swbp_addr(struc
+ 	return instruction_pointer(regs);
+ }
+ 
++/**
++ * is_swbp_insn - check if the instruction is a breakpoint instruction.
++ * @insn: instruction to be checked.
++ * Returns true if @insn is a breakpoint instruction.
++ */
++bool is_swbp_insn(uprobe_opcode_t *insn)
++{
++	return (is_trap(*insn));
++}
++
+ /*
+  * If xol insn itself traps and generates a signal (SIGILL/SIGSEGV/etc),
+  * then detect the case where a singlestepped instruction jumps back to its
