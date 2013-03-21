@@ -1,39 +1,22 @@
-Return-Path: <ananth@in.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1E7BF2C00C3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 18:17:24 +1100 (EST)
-Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ananth@in.ibm.com>;
- Thu, 21 Mar 2013 03:17:21 -0400
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id E87E16E803F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 03:17:16 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r2L7HI8v267766
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 03:17:18 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r2L7HI2m003380
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 04:17:18 -0300
-Date: Thu, 21 Mar 2013 12:47:07 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH] powerpc/uprobes: teach uprobes to ignore gdb breakpoints
-Message-ID: <20130321071707.GB5271@in.ibm.com>
-References: <20130320104033.GA19844@in.ibm.com>
- <20130320122639.GA29541@redhat.com> <20130320124301.GA30887@redhat.com>
- <20130320154245.GB8246@in.ibm.com> <20130320160728.GB20352@redhat.com>
+Return-Path: <simon.jeons@gmail.com>
+Received: from mail-pb0-f54.google.com (mail-pb0-f54.google.com
+ [209.85.160.54])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 044662C008D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 19:17:32 +1100 (EST)
+Received: by mail-pb0-f54.google.com with SMTP id rr4so2037245pbb.41
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 01:17:31 -0700 (PDT)
+Message-ID: <514AC211.2030500@gmail.com>
+Date: Thu, 21 Mar 2013 16:17:21 +0800
+From: Simon Jeons <simon.jeons@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130320160728.GB20352@redhat.com>
-Cc: ppcdev <linuxppc-dev@lists.ozlabs.org>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>, stable@vger.kernel.org
-Reply-To: ananth@in.ibm.com
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH -V2 00/21] THP support for PPC64
+References: <1361465248-10867-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1361465248-10867-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,27 +26,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 20, 2013 at 05:07:28PM +0100, Oleg Nesterov wrote:
-> On 03/20, Ananth N Mavinakayanahalli wrote:
-> >
-> > On Wed, Mar 20, 2013 at 01:43:01PM +0100, Oleg Nesterov wrote:
-> > > On 03/20, Oleg Nesterov wrote:
-> > > >
-> > > > But we did not install UPROBE_SWBP_INSN. Is it fine? I hope yes, just to
-> > > > verify. If not, we need 2 definitions. is_uprobe_insn() should still check
-> > > > insns == UPROBE_SWBP_INSN, and is_swbp_insn() should check is_trap().
-> > > >
-> > > > And I am just curious, could you explain how X and UPROBE_SWBP_INSN
-> > > > differ?
-> > >
-> > > IOW, if I wasn't clear... Lets forget about gdb/etc for the moment.
-> > > Suppose we apply the patch below. Will uprobes on powerpc work?
-> > >
-> > > If yes, then your patch should be fine. If not, we probably need more
-> > > changes.
-> >
-> > Yes, it will work fine.
-> 
-> Even if this new insn is conditional?
+Hi Aneesh,
+On 02/22/2013 12:47 AM, Aneesh Kumar K.V wrote:
+> Hi,
+>
+> This patchset adds transparent huge page support for PPC64.
+>
+> I am marking the series to linux-mm because the PPC64 implementation
+> required few interface changes to core THP code. I still have considerable
+> number of FIXME!! in the patchset mostly related to PPC64 mm susbsytem.
+> Those would require closer review and once we are clear on those changes,
+> I will drop those FIXME!! with necessary comments.
+>
+> Some numbers:
+>
+> The latency measurements code from Anton  found at
+> http://ozlabs.org/~anton/junkcode/latency2001.c
 
-Yes.
+Can this benchmark use for x86?
+
+>
+> THP disabled 64K page size
+> ------------------------
+> [root@llmp24l02 ~]# ./latency2001 8G
+>   8589934592    731.73 cycles    205.77 ns
+> [root@llmp24l02 ~]# ./latency2001 8G
+>   8589934592    743.39 cycles    209.05 ns
+> [root@llmp24l02 ~]#
+>
+> THP disabled large page via hugetlbfs
+> -------------------------------------
+> [root@llmp24l02 ~]# ./latency2001  -l 8G
+>   8589934592    416.09 cycles    117.01 ns
+> [root@llmp24l02 ~]# ./latency2001  -l 8G
+>   8589934592    415.74 cycles    116.91 ns
+>
+> THP enabled 64K page size.
+> ----------------
+> [root@llmp24l02 ~]# ./latency2001 8G
+>   8589934592    405.07 cycles    113.91 ns
+> [root@llmp24l02 ~]# ./latency2001 8G
+>   8589934592    411.82 cycles    115.81 ns
+> [root@llmp24l02 ~]#
+>
+>
+> We are close to hugetlbfs in latency and we can achieve this with zero
+> config/page reservation. Most of the allocations above are fault allocated.
+> I haven't really measured the collapse alloc impact.
+>
+> Another test that does 50000000 random access over 1GB area goes from
+> 2.65 seconds to 1.07 seconds with this patchset.
+>
+> Changes from RFC V1:
+> * HugeTLB fs now works
+> * Compile issues fixed
+> * rebased to v3.8
+> * Patch series reorded so that ppc64 cleanups and MM THP changes are moved
+>    early in the series. This should help in picking those patches early.
+>
+> Thanks,
+> -aneesh
+>
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
