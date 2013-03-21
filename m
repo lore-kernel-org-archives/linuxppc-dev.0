@@ -1,23 +1,25 @@
 Return-Path: <B02008@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 043A62C00AA
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 22:20:21 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 61F5A2C00A5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 22:42:28 +1100 (EST)
 From: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
 To: Alexander Graf <agraf@suse.de>
-Subject: RE: [PATCH] KVM: PPC: e500: Add separate functions for vcpu's MMU
- configuration
-Date: Thu, 21 Mar 2013 11:19:58 +0000
-Message-ID: <300B73AA675FCE4A93EB4FC1D42459FF373151@039-SN2MPN1-012.039d.mgd.msft.net>
-References: <1363713407-27886-1-git-send-email-mihai.caraman@freescale.com>
- <90E4FFA9-97C8-4D7D-910E-2E5DB273C88C@suse.de>
-In-Reply-To: <90E4FFA9-97C8-4D7D-910E-2E5DB273C88C@suse.de>
+Subject: RE: [PATCH] KVM: PPC: e500: Expose MMU registers via ONE_REG
+Date: Thu, 21 Mar 2013 11:42:18 +0000
+Message-ID: <300B73AA675FCE4A93EB4FC1D42459FF37321B@039-SN2MPN1-012.039d.mgd.msft.net>
+References: <1363713985.16671.12@snotra>
+ <5F65F205-3B81-4154-B9E0-43FA1100A3FD@suse.de>
+ <300B73AA675FCE4A93EB4FC1D42459FF37304B@039-SN2MPN1-012.039d.mgd.msft.net>
+ <53B128A9-FE74-4C85-994B-6A8674270C8B@suse.de>
+In-Reply-To: <53B128A9-FE74-4C85-994B-6A8674270C8B@suse.de>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
  "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,149 +32,108 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 > -----Original Message-----
-> From: kvm-ppc-owner@vger.kernel.org [mailto:kvm-ppc-
-> owner@vger.kernel.org] On Behalf Of Alexander Graf
-> Sent: Thursday, March 21, 2013 12:07 PM
+> From: Alexander Graf [mailto:agraf@suse.de]
+> Sent: Thursday, March 21, 2013 1:07 PM
 > To: Caraman Mihai Claudiu-B02008
-> Cc: kvm-ppc@vger.kernel.org; kvm@vger.kernel.org; linuxppc-
-> dev@lists.ozlabs.org
-> Subject: Re: [PATCH] KVM: PPC: e500: Add separate functions for vcpu's
-> MMU configuration
+> Cc: Wood Scott-B07421; kvm-ppc@vger.kernel.org; linuxppc-
+> dev@lists.ozlabs.org; kvm@vger.kernel.org
+> Subject: Re: [PATCH] KVM: PPC: e500: Expose MMU registers via ONE_REG
 >=20
 >=20
-> On 19.03.2013, at 18:16, Mihai Caraman wrote:
+> On 21.03.2013, at 12:02, Caraman Mihai Claudiu-B02008 wrote:
 >=20
-> > Move vcpu's MMU default configuration and geometry update into their
-> own
-> > functions.
+> >
+> >
+> >> -----Original Message-----
+> >> From: Alexander Graf [mailto:agraf@suse.de]
+> >> Sent: Thursday, March 21, 2013 12:07 PM
+> >> To: Wood Scott-B07421
+> >> Cc: Caraman Mihai Claudiu-B02008; kvm-ppc@vger.kernel.org; linuxppc-
+> >> dev@lists.ozlabs.org; kvm@vger.kernel.org
+> >> Subject: Re: [PATCH] KVM: PPC: e500: Expose MMU registers via ONE_REG
+> >>
+> >>
+> >> On 19.03.2013, at 18:26, Scott Wood wrote:
+> >>
+> >>> On 03/19/2013 12:17:11 PM, Mihai Caraman wrote:
+> >>>> diff --git a/arch/powerpc/kvm/e500_mmu.c
+> b/arch/powerpc/kvm/e500_mmu.c
+> >>>> index 66b6e31..b77b855 100644
+> >>>> --- a/arch/powerpc/kvm/e500_mmu.c
+> >>>> +++ b/arch/powerpc/kvm/e500_mmu.c
+> >>>> @@ -596,6 +596,95 @@ int kvmppc_set_sregs_e500_tlb(struct kvm_vcpu
+> >> *vcpu, struct kvm_sregs *sregs)
+> >>>> 	return 0;
+> >>>> }
+> >>>> +int kvmppc_get_one_reg_500_tlb(struct kvm_vcpu *vcpu, u64 id,
+> >>>> +				union kvmppc_one_reg *val)
+> >>>
+> >>> s/500/e500/
+> >>>
+> >>>> +int kvmppc_set_one_reg_500_tlb(struct kvm_vcpu *vcpu, u64 id,
+> >>>> +			       union kvmppc_one_reg *val)
+> >>>> +{
+> >>>> +	int r =3D 0;
+> >>>> +	long int i;
+> >>>> +
+> >>>> +	switch (id) {
+> >>>> +	case KVM_REG_PPC_MAS0:
+> >>>> +		vcpu->arch.shared->mas0 =3D set_reg_val(id, *val);
+> >>>> +		break;
+> >>>> +	case KVM_REG_PPC_MAS1:
+> >>>> +		vcpu->arch.shared->mas1 =3D set_reg_val(id, *val);
+> >>>> +		break;
+> >>>> +	case KVM_REG_PPC_MAS2:
+> >>>> +		vcpu->arch.shared->mas2 =3D set_reg_val(id, *val);
+> >>>> +		break;
+> >>>> +	case KVM_REG_PPC_MAS7_3:
+> >>>> +		vcpu->arch.shared->mas7_3 =3D set_reg_val(id, *val);
+> >>>> +		break;
+> >>>> +	case KVM_REG_PPC_MAS4:
+> >>>> +		vcpu->arch.shared->mas4 =3D set_reg_val(id, *val);
+> >>>> +		break;
+> >>>> +	case KVM_REG_PPC_MAS6:
+> >>>> +		vcpu->arch.shared->mas6 =3D set_reg_val(id, *val);
+> >>>> +		break;
+> >>>> +	case KVM_REG_PPC_MMUCFG: {
+> >>>> +		u32 mmucfg =3D set_reg_val(id, *val);
+> >>>> +		vcpu->arch.mmucfg =3D mmucfg & ~MMUCFG_LPIDSIZE;
+> >>>> +		break;
+> >>>> +	}
+> >>>
+> >>> Do we really want to allow arbitrary MMUCFG changes?  It won't
+> >> magically make us able to support larger RAs, PIDs, different MAVN,
+> etc.
+> >
+> > Not magically, some changes e.g TLBnCFG_IND or TLBnPS require just a
+> kvm
+> > check other changes e.g. TLBnCFG_MAVN require additional support and we
+> > might not implement all of them. Until then this code should do the
+> job:
+> >
+> > 	/* MMU registers can be set only to the configuration supported by
+> KVM */
+> > 	case KVM_REG_PPC_MMUCFG: {
+> > 		if (set_reg_val(id, *val) !=3D vcpu->arch.mmucfg)
+> > 			r =3D -EINVAL;
+> > 		break;
+> > 	}
 >=20
-> Mind to explain why?
+> Yes :).
+>=20
+> >
+> >>
+> >> Only if we update the actual shadow mmu configuration as well.
+> >
+> > These registers (MMUCFG, EPTCFG, TLBnCFG, TLBnPS) are read-only (and
+> shared
+> > between e6500 threads), we can only emulate them.
+>=20
+> We need to change the behavior of the shadow mmu as well. It's not about
+> the registers, but the actually exposed TLBs. If you configure 4 TLBs,
+> and you announce to the guest that you can do 4 TLBs, you better emulate
+> 4 TLBs :).
 
-You requested a separate function for clearing TLBnCFG_IND bit (E.PT remova=
-l)
-to self-document the code. The existing logic (that TLBnCFG_IND relies on)
-was buried in a chunk of code and I thought this will add more clarity.
-If you don't agree I would document the code at least.
+Right, like the rest of configs I was talking above:)
 
 -Mike
-
->=20
->=20
-> Alex
->=20
-> >
-> > Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
-> > ---
-> > arch/powerpc/kvm/e500_mmu.c |   59 +++++++++++++++++++++++++++---------
-> -------
-> > 1 files changed, 37 insertions(+), 22 deletions(-)
-> >
-> > diff --git a/arch/powerpc/kvm/e500_mmu.c b/arch/powerpc/kvm/e500_mmu.c
-> > index 5c44759..66b6e31 100644
-> > --- a/arch/powerpc/kvm/e500_mmu.c
-> > +++ b/arch/powerpc/kvm/e500_mmu.c
-> > @@ -596,6 +596,20 @@ int kvmppc_set_sregs_e500_tlb(struct kvm_vcpu
-> *vcpu, struct kvm_sregs *sregs)
-> > 	return 0;
-> > }
-> >
-> > +static int vcpu_mmu_geometry_update(struct kvm_vcpu *vcpu,
-> > +		struct kvm_book3e_206_tlb_params *params)
-> > +{
-> > +	vcpu->arch.tlbcfg[0] &=3D ~(TLBnCFG_N_ENTRY | TLBnCFG_ASSOC);
-> > +	if (params->tlb_sizes[0] <=3D 2048)
-> > +		vcpu->arch.tlbcfg[0] |=3D params->tlb_sizes[0];
-> > +	vcpu->arch.tlbcfg[0] |=3D params->tlb_ways[0] << TLBnCFG_ASSOC_SHIFT;
-> > +
-> > +	vcpu->arch.tlbcfg[1] &=3D ~(TLBnCFG_N_ENTRY | TLBnCFG_ASSOC);
-> > +	vcpu->arch.tlbcfg[1] |=3D params->tlb_sizes[1];
-> > +	vcpu->arch.tlbcfg[1] |=3D params->tlb_ways[1] << TLBnCFG_ASSOC_SHIFT;
-> > +	return 0;
-> > +}
-> > +
-> > int kvm_vcpu_ioctl_config_tlb(struct kvm_vcpu *vcpu,
-> > 			      struct kvm_config_tlb *cfg)
-> > {
-> > @@ -692,16 +706,8 @@ int kvm_vcpu_ioctl_config_tlb(struct kvm_vcpu
-> *vcpu,
-> > 	vcpu_e500->gtlb_offset[0] =3D 0;
-> > 	vcpu_e500->gtlb_offset[1] =3D params.tlb_sizes[0];
-> >
-> > -	vcpu->arch.mmucfg =3D mfspr(SPRN_MMUCFG) & ~MMUCFG_LPIDSIZE;
-> > -
-> > -	vcpu->arch.tlbcfg[0] &=3D ~(TLBnCFG_N_ENTRY | TLBnCFG_ASSOC);
-> > -	if (params.tlb_sizes[0] <=3D 2048)
-> > -		vcpu->arch.tlbcfg[0] |=3D params.tlb_sizes[0];
-> > -	vcpu->arch.tlbcfg[0] |=3D params.tlb_ways[0] << TLBnCFG_ASSOC_SHIFT;
-> > -
-> > -	vcpu->arch.tlbcfg[1] &=3D ~(TLBnCFG_N_ENTRY | TLBnCFG_ASSOC);
-> > -	vcpu->arch.tlbcfg[1] |=3D params.tlb_sizes[1];
-> > -	vcpu->arch.tlbcfg[1] |=3D params.tlb_ways[1] << TLBnCFG_ASSOC_SHIFT;
-> > +	/* Update vcpu's MMU geometry based on SW_TLB input */
-> > +	vcpu_mmu_geometry_update(vcpu, &params);
-> >
-> > 	vcpu_e500->shared_tlb_pages =3D pages;
-> > 	vcpu_e500->num_shared_tlb_pages =3D num_pages;
-> > @@ -737,6 +743,26 @@ int kvm_vcpu_ioctl_dirty_tlb(struct kvm_vcpu
-> *vcpu,
-> > 	return 0;
-> > }
-> >
-> > +/* vcpu's MMU default configuration */
-> > +static int vcpu_mmu_init(struct kvm_vcpu *vcpu,
-> > +		       struct kvmppc_e500_tlb_params *params)
-> > +{
-> > +	/* Initialize RASIZE, PIDSIZE, NTLBS and MAVN fields with host
-> values*/
-> > +	vcpu->arch.mmucfg =3D mfspr(SPRN_MMUCFG) & ~MMUCFG_LPIDSIZE;
-> > +
-> > +	/* Initialize IPROT field with host value*/
-> > +	vcpu->arch.tlbcfg[0] =3D mfspr(SPRN_TLB0CFG) &
-> > +			     ~(TLBnCFG_N_ENTRY | TLBnCFG_ASSOC);
-> > +	vcpu->arch.tlbcfg[0] |=3D params[0].entries;
-> > +	vcpu->arch.tlbcfg[0] |=3D params[0].ways << TLBnCFG_ASSOC_SHIFT;
-> > +
-> > +	vcpu->arch.tlbcfg[1] =3D mfspr(SPRN_TLB1CFG) &
-> > +			     ~(TLBnCFG_N_ENTRY | TLBnCFG_ASSOC);
-> > +	vcpu->arch.tlbcfg[1] |=3D params[1].entries;
-> > +	vcpu->arch.tlbcfg[1] |=3D params[1].ways << TLBnCFG_ASSOC_SHIFT;
-> > +	return 0;
-> > +}
-> > +
-> > int kvmppc_e500_tlb_init(struct kvmppc_vcpu_e500 *vcpu_e500)
-> > {
-> > 	struct kvm_vcpu *vcpu =3D &vcpu_e500->vcpu;
-> > @@ -781,18 +807,7 @@ int kvmppc_e500_tlb_init(struct kvmppc_vcpu_e500
-> *vcpu_e500)
-> > 	if (!vcpu_e500->g2h_tlb1_map)
-> > 		goto err;
-> >
-> > -	/* Init TLB configuration register */
-> > -	vcpu->arch.tlbcfg[0] =3D mfspr(SPRN_TLB0CFG) &
-> > -			     ~(TLBnCFG_N_ENTRY | TLBnCFG_ASSOC);
-> > -	vcpu->arch.tlbcfg[0] |=3D vcpu_e500->gtlb_params[0].entries;
-> > -	vcpu->arch.tlbcfg[0] |=3D
-> > -		vcpu_e500->gtlb_params[0].ways << TLBnCFG_ASSOC_SHIFT;
-> > -
-> > -	vcpu->arch.tlbcfg[1] =3D mfspr(SPRN_TLB1CFG) &
-> > -			     ~(TLBnCFG_N_ENTRY | TLBnCFG_ASSOC);
-> > -	vcpu->arch.tlbcfg[1] |=3D vcpu_e500->gtlb_params[1].entries;
-> > -	vcpu->arch.tlbcfg[1] |=3D
-> > -		vcpu_e500->gtlb_params[1].ways << TLBnCFG_ASSOC_SHIFT;
-> > +	vcpu_mmu_init(vcpu, vcpu_e500->gtlb_params);
-> >
-> > 	kvmppc_recalc_tlb1map_range(vcpu_e500);
-> > 	return 0;
-> > --
-> > 1.7.4.1
-> >
-> >
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
