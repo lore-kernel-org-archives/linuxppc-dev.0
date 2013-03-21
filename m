@@ -1,20 +1,40 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.pcug.org.au [203.10.76.10])
- by ozlabs.org (Postfix) with ESMTP id B63412C00C1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 17:23:45 +1100 (EST)
-Date: Thu, 21 Mar 2013 17:23:34 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Marcelo Tosatti <mtosatti@redhat.com>, Gleb Natapov <gleb@redhat.com>
-Subject: linux-next: build failure after merge of the final tree (linus'
- tree related)
-Message-Id: <20130321172334.068a89406c4dede83d3e9c66@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Thu__21_Mar_2013_17_23_34_+1100_ei_NwUE.DwvcoY9C"
-Cc: Kevin Hilman <khilman@linaro.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Linus <torvalds@linux-foundation.org>
+Return-Path: <ananth@in.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e33.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 5224E2C00C5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 18:15:54 +1100 (EST)
+Received: from /spool/local
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ananth@in.ibm.com>;
+ Thu, 21 Mar 2013 01:15:51 -0600
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+ [9.17.195.106])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id D0A921FF003E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 01:10:52 -0600 (MDT)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r2L7Fmvp156236
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 01:15:48 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r2L7FlX8008124
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 01:15:48 -0600
+Date: Thu, 21 Mar 2013 12:45:45 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [PATCH] powerpc/uprobes: teach uprobes to ignore gdb breakpoints
+Message-ID: <20130321071545.GA5271@in.ibm.com>
+References: <20130320104033.GA19844@in.ibm.com>
+ <20130320122639.GA29541@redhat.com> <20130320154152.GA8246@in.ibm.com>
+ <20130320160644.GA20352@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130320160644.GA20352@redhat.com>
+Cc: ppcdev <linuxppc-dev@lists.ozlabs.org>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>, stable@vger.kernel.org
+Reply-To: ananth@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,73 +44,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Thu__21_Mar_2013_17_23_34_+1100_ei_NwUE.DwvcoY9C
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, Mar 20, 2013 at 05:06:44PM +0100, Oleg Nesterov wrote:
+> On 03/20, Ananth N Mavinakayanahalli wrote:
+> >
+> > On Wed, Mar 20, 2013 at 01:26:39PM +0100, Oleg Nesterov wrote:
+> >
+> > > But, at the same time, is the new definition fine for verify_opcode()?
+> > >
+> > > IOW, powerpc has another is_trap() insn(s) used by gdb, lets denote it X.
+> > > X != UPROBE_SWBP_INSN.
+> > >
+> > > Suppose that gdb installs the trap X at some addr, and then uprobe_register()
+> > > tries to install uprobe at the same address. Then set_swbp() will do nothing,
+> > > assuming the uprobe was already installed.
 
-Hi all,
+I think that is not right... see below...
 
-After merging the final tree, today's linux-next build (powerpc64
-allnoconfig) failed like this:
+> > > But we did not install UPROBE_SWBP_INSN. Is it fine? I hope yes, just to
+> > > verify. If not, we need 2 definitions. is_uprobe_insn() should still check
+> > > insns == UPROBE_SWBP_INSN, and is_swbp_insn() should check is_trap().
 
-In file included from arch/powerpc/include/asm/kvm_ppc.h:33:0,
-                 from arch/powerpc/kernel/setup_64.c:67:
-arch/powerpc/include/asm/kvm_book3s.h:65:20: error: field 'pte' has incompl=
-ete type
-arch/powerpc/include/asm/kvm_book3s.h:69:18: error: field 'vcpu' has incomp=
-lete type
-arch/powerpc/include/asm/kvm_book3s.h:98:34: error: 'HPTEG_HASH_NUM_PTE' un=
-declared here (not in a function)
-arch/powerpc/include/asm/kvm_book3s.h:99:39: error: 'HPTEG_HASH_NUM_PTE_LON=
-G' undeclared here (not in a function)
-arch/powerpc/include/asm/kvm_book3s.h:100:35: error: 'HPTEG_HASH_NUM_VPTE' =
-undeclared here (not in a function)
-arch/powerpc/include/asm/kvm_book3s.h:101:40: error: 'HPTEG_HASH_NUM_VPTE_L=
-ONG' undeclared here (not in a function)
-arch/powerpc/include/asm/kvm_book3s.h:129:4: error: 'struct kvm_run' declar=
-ed inside parameter list [-Werror]
-arch/powerpc/include/asm/kvm_book3s.h:129:4: error: its scope is only this =
-definition or declaration, which is probably not what you want [-Werror]
+Its fine from gdb's perspective with my patch.
 
-And it went downhill form there.  This build does not have CONFIG_KVM
-defined.
+> > is_trap() checks for all trap variants on powerpc, including the one
+> > uprobe uses. It returns true if the instruction is *any* trap variant.
+> 
+> I understand,
+> 
+> > So, install_breakpoint()->prepare_uprobe()->is_swbp_insn() will return
+> > ENOTSUPP. In fact, arch_uprobe_analyze_insn() will also do the same.
+> 
+> Yes and the check in arch_uprobe_analyze_insn() should go away.
+> 
+> But you missed my point. Please forget about prepare_uprobe(), it is
+> wrong anyway. And, prepare_uprobe() inspects the _original_ insn from
+> the file, this has nothing install_breakpoint/etc.
+>
+> I meant verify_opcode() called by install_breakpoint/etc.
 
-Caused by commit f445f11eb2cc ("KVM: allow host header to be included
-even for !CONFIG_KVM") which clearly never saw the light of day in
-linux-next :-(
+For the case where X already exists, verify_opcode() currently returns 0.
+IMO, it should return -EEXIST, unless you are proposing that uprobes
+should ride on the existing trap (even if its a variant).
 
-It would have been nice if the "compile failure when KVM is not enabled"
-was included in the commit log so that we could figure out exactly what
-needed to be protected instead of just effectively removing the whole
-file.
+If you are proposing that uprobes ride on X if it already exists, that's
+not always possible and is a big can of worms... see below...
 
-I just reverted that commit for today.  Can someone please supply a
-better solution or even just more information about what that commit was
-solving.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+> > This itself should take care of all the cases.
+> >
+> > > And I am just curious, could you explain how X and UPROBE_SWBP_INSN
+> > > differ?
+> >
+> > Powerpc has numerous variants of the trap instruction based on
+> > comparison of two registers or a regsiter and immediate value and a condition
+> > (less than, greater than, [signed forms thereof], or equal to).
+> >
+> > Uprobes uses 0x7fe0008 which is 'tw 31,0,0'  which essentially is an
+> > unconditional trap.
+> >
+> > Gdb uses many traps, one of which is 0x7d821008 which is twge r2,r2,
+> > which is basically trap if r2 greater than or equal to r2.
+> 
+> OK. So, if I understand correctly, gdb can use some conditional
+> breakpoint, and it is possible that this insn won't generate the
+> trap?
 
---Signature=_Thu__21_Mar_2013_17_23_34_+1100_ei_NwUE.DwvcoY9C
-Content-Type: application/pgp-signature
+Yes it is possible if the condition is not met. If the condition is
+met, the instruction will generate a trap, and uprobes will do a
+send_sig(SIGTRAP) from handle_swbp().
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+> Then this patch is not right, or at least we need another change
+> on top?
+> 
+> Once again. Suppose that gdb installs the TRAP_IF_R1_GT_R2.
+> 
+> After that uprobe_register() is called, but it won't change this
+> insn because verify_opcode() returns 0.
+> 
+> Then the probed task hits this breakoint with "r1 < r2" and we do
+> not report this event.
 
-iQIcBAEBCAAGBQJRSqdmAAoJEECxmPOUX5FEtTMP/i4dRcADUbW6eJo9NjP5cK1j
-CpHGLg3JCH3veWBGCRgF+fHTzVHSV/UWcytW+sq8rfvbnP8HCeh+Nk3bgRzRQXKT
-FGDbT0m2QrbrRQ8co5IHCNxAY7ihA9ScaRBiKBPm6rfN03QsXH3gLLoTJQhuhmao
-omRVJb0NuOJgHaGPQQldnZkhg56dTGi0RyNzEwOHVZOST/HLJKdwuUQAv7O9TJnU
-Ww553aKisDFW7gEf/BCigdEwGVcOpbfPlFQawhV/HbQwFk+YjNNebrAV3Je45Fe/
-tDVcGbAlnEStcpsH3XT2QZ5ks05y4RwdgehjOuIA1LOEv3Kb3Ec0ElvNQxKosOlc
-9mzpytdnD3dbGhS5jfttR5Y1tZa4rJ+VbzDjGXfKJIIWNMERniS77DY81/BeXNND
-Dvbv+K79bL/p6FOVARXopLtll6TbFdNU8PlafDHTGsT/iXdrs78m3jhACjLXLXgI
-1xa00NJE/XoHxL0LHchCwNJMSDCHMfnyZ2WfNd9vSEcBm4n/hFaViWLUUyr47Y3F
-879PClJpd6zDb/XuAT1xeNEfW8pU1RnfkZNqCOIJmXfb4e58fdLTewfjhjuQvLL9
-vTEJlgDXuO0V77+aomNwLDM9z++B4fqWsmSsvzqT+iDTibT9k/iqFy1V5YahxX04
-TzvJBbE0lENqO2ZfBZHQ
-=i4Hb
------END PGP SIGNATURE-----
+At this time, the condition for the trap is not satisfied, so no
+exception occurs. If the expectation is that the trap always trigger,
+then all such trap variants need to be replaced with the unconditional
+trap and we should either add logic to re-execute the condional trap
+after uprobe handling and send_sig() via handle_swbp() or emulate the
+condition in software and do a send_sig() if needed.
 
---Signature=_Thu__21_Mar_2013_17_23_34_+1100_ei_NwUE.DwvcoY9C--
+> So. I still think that we actually need something like below, and
+> powerpc should reimplement is_trap_insn() to use is_trap(insn).
+> 
+> No?
+
+I don't see how this will help, especially since the gdb<->uprobes is
+fraught with races.
+
+With your proposed patch, we refuse to insert a uprobe if the underlying
+instruction is a UPROBE_SWBP_INSTRUCTION; changing is_swbp_at_addr()
+will need changes in handle_swbp() too. But, unlike x86, we cannot
+expect a uprobe with an underlying trap variant (X) to always trigger.
+
+IMHO, its not a good idea to do that for x86 either, since you'll run
+into many other complications (what if the entity that put the original
+breakpoint, removed it, etc).
+
+IMHO, I really think we should not allow uprobe_register() to succeed if
+the underlying instruction is a breakpoint (or a variant thereof).
+
+Ananth
