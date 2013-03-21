@@ -1,47 +1,25 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+Return-Path: <gang.chen@asianux.com>
+Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e37.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 56CF02C0091
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 13:09:16 +1100 (EST)
-Received: from /spool/local
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Wed, 20 Mar 2013 20:09:12 -0600
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
- [9.17.195.106])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id B283519D804A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 20:09:04 -0600 (MDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r2L297fq342076
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 20:09:07 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r2L29718027276
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 20:09:07 -0600
-Date: Thu, 21 Mar 2013 10:09:03 +0800
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: Alex Williamson <alex.williamson@redhat.com>
-Subject: Re: [PATCH 2/3] VFIO: VFIO_DEVICE_SET_ADDR_MAPPING command
-Message-ID: <20130321020903.GA13178@shangw.(null)>
-References: <1363375740.16793.12.camel@ul30vt.home>
- <20130316013417.GA3873@shangw.(null)>
- <1363412256.1244.20.camel@pasglop>
- <1363640474.24132.433.camel@bling.home>
- <20130319032410.GA22591@shangw.(null)>
- <1363666721.24132.472.camel@bling.home>
- <1363668309.18880.10.camel@pasglop>
- <1363805280.24132.529.camel@bling.home>
- <1363807906.17680.11.camel@pasglop>
- <1363808782.24132.534.camel@bling.home>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 87AC32C00C4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 16:56:12 +1100 (EST)
+Message-ID: <514AA0D9.1090509@asianux.com>
+Date: Thu, 21 Mar 2013 13:55:37 +0800
+From: Chen Gang <gang.chen@asianux.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1363808782.24132.534.camel@bling.home>
-Cc: aik@ozlabs.ru, linuxppc-dev@lists.ozlabs.org,
- Gavin Shan <shangw@linux.vnet.ibm.com>, kvm@vger.kernel.org
-Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: Michael Neuling <mikey@neuling.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [Suggestion] PowerPC: kernel: cross compiling issue with
+ allmodconfig
+References: <51428C81.6000204@asianux.com>
+ <25841.1363323174@ale.ozlabs.ibm.com> <5142AE27.7060003@asianux.com>
+In-Reply-To: <5142AE27.7060003@asianux.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: sfr@canb.auug.org.au, matt@ozlabs.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "paulus@samba.org" <paulus@samba.org>, imunsie@au1.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,44 +29,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 20, 2013 at 01:46:22PM -0600, Alex Williamson wrote:
->On Wed, 2013-03-20 at 20:31 +0100, Benjamin Herrenschmidt wrote:
->> On Wed, 2013-03-20 at 12:48 -0600, Alex Williamson wrote:
+Hello All:
 
-.../...
+summary:
+  the root cause is no enough room in exception area (0x5500 -- 0x7000).
 
->> As for EEH, I will let Gavin describe in more details what he is doing,
->> though I wouldn't be surprised if so far he doesn't have a
->> non-accelerated path :-) Which indeed makes things oddball, granted ...
->> at least for now. I *think* what Gavin's doing right now is a
->> pass-through to the host EEH directly in the kernel, so without a slow
->> path...
->> 
+  it is caused by the patches "for saving/restre PPR":
+    they consumed much space of this area (0x5500 -- 0x7000).
+    for pseries_defconfig and ppc64_defconfig, it is still ok.
+    but for allmodconfig and "some additional config", it will cause issue.
 
-Yes, I don't have non-accelerated path. I'm trying to describe what I'm
-doing: On the host side, the interrupt will be triggered while detecting
-frozen PE, which has been passed to guest. We won't send EEH event to
-EEH core on host side and we're waiting for guest to be involved to handle
-the EEH error. In guest, any access to config or MMIO of the frozen PE will
-trigger EEH event and in turn, the guest utilizes existing (exactly same
-to pSeries on phyp case) RTAS calls to recover the error. The RTAS calls is
-being emulated in host kernel.
+  the solving patch "Make room in exception vector area" can make room larger.
+    it can let "some additional config" ok.
+    but for allmodconfig, it is still not enough.
 
-Part of the RTAS call arguments is PCI domain/bus/slot/function viewed from
-guest perspective. That's different from that for same physical PCI device
-in host side. So I used VFIO-PCI to do the mapping and maintain the information
-in host kernel.
 
->> Gavin, it really boils down to that. In-kernel EEH for guests is a
->> KVMism that ends up not involving VFIO in any other way than
->> establishing the mapping, then arguably it could be done via a VM ioctl.
->> 
->> If there's more going through VFIO and shared state, then it should
->> probably go through VFIO-PCI.
->
+details
+  reason:
+    it is caused by:
+       commit number: 13e7a8e846c2ea38a552b986ea49332f965bbb7a
+       commit number: 44e9309f1f357794b7ae93d5f3e3e6f11d2b8a7f
+    they are "for saving/restore PPR"
+    by Haren Myneni <haren@linux.vnet.ibm.com> Thu, 6 Dec 2012
+    compiling result:
+      pseries_defconfig: pass   (cpu for POWER7)
+      ppc64_defconfig:   pass   (cpu for POWER7)
+      allmodconfig:      failed (cpu for POWER7)
 
-Ben, you're right. I use VFIO for nothing other than doing address mapping.
-So I will do the address mapping in VM IOCTL instead of in VFIO-PCI.
+  analysing:
+    solving patch:
+      ------------------------------------------------------------------
+      commit number: 61383407677aef05928541a00678591abea2d84c
+      Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+      Date:   Thu Jan 10 17:44:19 2013 +1100
 
-Thanks,
-Gavin
+        powerpc: Make room in exception vector area
+    
+        The FWNMI region is fixed at 0x7000 and the vector are now
+        overflowing that with some configurations. Fix that by moving
+        some hash management code out of that region as it doesn't need
+        to be that close to the call sites (isn't accessed using
+        conditional branches).
+      ------------------------------------------------------------------
+
+      but for allmodconfig (not only for "some configurations"):
+        it really can reduce much overflow bytes,
+          (maybe from hundreds bytes to dozens bytes)
+        but still not enough (still content overflow bytes)
+
+    additional trying:
+	after del CONFIG_VSX and CONFIG_PPC_970_NAP in allmodconfig,
+          (will reduce dozens bytes in the region .0x5500 -- .0x7000)
+        it can pass compiling (not overflow).
+
+
+next:
+  I am sorry:
+      I am not quite familiar with the detail features of powerpc.
+      it seems I am not the suitable member to continue trying.
+
+  I prefer Benjamin to continue trying (just like what he has done).
+
+  if Benjamin will not do it (e.g. maybe no time to do)
+    I should continue: "make additional room in exception vector area".
+      (if get no reply within a week: before 2013-03-28, I should continue)
+
+
+
+  welcome any members' (especially Benjamin) suggestions or completions.
+
+  thanks.
+
+  :-)
+
+
+On 2013年03月15日 13:14, Chen Gang wrote:
+> 于 2013年03月15日 12:52, Michael Neuling 写道:
+>> Yep it's a known problem but no one has bothered to fix it since it
+>> doesn't happen in a config that anyone cares about like
+>> pseries_defconfig and ppc64_defconfig.  We've been moving code around in
+>> this area a lot recently hence the breakage.
+>>
+>> It should be fixed though.  Patches welcome. :-)
+> 
+>   thanks, and I should try, and very glad to try.
+> 
+>   :-)  :-)
+> 
+>   excuse me, I try to provide related patch within this month (2013-03-31), is it ok ?
+>   the reason is:
+>     I am not familiar with ppc assembly code, neither ppc kernel,
+>     so need additional time resource.
+>       (originally, I worked for x86(_64) core dump analysing for kernel and user programs)
+> 
+>   thanks.
+> 
+
+
+-- 
+Chen Gang
+
+Asianux Corporation
