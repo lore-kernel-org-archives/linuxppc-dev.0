@@ -1,12 +1,18 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: "Ian Munsie" <imunsie@au1.ibm.com>
-Subject: Re: [PATCH] powerpc: Add accounting for Doorbell interrupts
-In-reply-to: <1363765332-28461-1-git-send-email-imunsie@au1.ibm.com>
-References: <1363765332-28461-1-git-send-email-imunsie@au1.ibm.com>
-Date: Thu, 21 Mar 2013 11:28:37 +1100
-Message-ID: <3519.1363825717@ale.ozlabs.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 8ED692C00BF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 11:58:34 +1100 (EST)
+Message-ID: <1363827492.24132.555.camel@bling.home>
+Subject: Re: [PATCH 3/3] VFIO: Direct access config reg without capability
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Date: Wed, 20 Mar 2013 18:58:12 -0600
+In-Reply-To: <1363332390-12754-4-git-send-email-shangw@linux.vnet.ibm.com>
+References: <1363332390-12754-1-git-send-email-shangw@linux.vnet.ibm.com>
+ <1363332390-12754-4-git-send-email-shangw@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: aik@ozlabs.ru, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,86 +22,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> From: Ian Munsie <imunsie@au1.ibm.com>
+On Fri, 2013-03-15 at 15:26 +0800, Gavin Shan wrote:
+> The config registers in [0, 0x40] is being supported by VFIO. Apart
+> from that, the other config registers should be coverred by PCI or
+> PCIe capability. However, there might have some PCI devices (be2net)
+> who has config registers (0x7c) out of [0, 0x40], and don't have
+> corresponding PCI or PCIe capability. VFIO will return 0x0 on reading
+> those registers and writing is dropped. It caused the be2net driver
+> fails to be loaded because 0x0 returned from its config register 0x7c.
 > 
-> This patch adds a new line to /proc/interrupts to account for the
-> doorbell interrupts that each hardware thread has received. The total
-> interrupt count in /proc/stat will now also include doorbells.
-
-It's probably worth noting in the comment that these are not being
-accounted at all currently, even in the existing IPI line in
-/proc/interrupts.
-
-Mikey
-
->  # cat /proc/interrupts
->            CPU0       CPU1       CPU2       CPU3
->  16:        551       1267        281        175      XICS Level     IPI
-> LOC:       2037       1503       1688       1625   Local timer interrupts
-> SPU:          0          0          0          0   Spurious interrupts
-> CNT:          0          0          0          0   Performance monitoring interrupts
-> MCE:          0          0          0          0   Machine check exceptions
-> DBL:         42        550         20         91   Doorbell interrupts
->
+> The patch changes the behaviour so that those config registers out
+> of [0, 0x40] and don't have corresponding PCI or PCIe capability
+> will be accessed directly.
 > 
-> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+> Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/include/asm/hardirq.h |    1 +
->  arch/powerpc/kernel/dbell.c        |    2 ++
->  arch/powerpc/kernel/irq.c          |    8 ++++++++
->  3 files changed, 11 insertions(+)
+
+Hi Gavin,
+
+I'm onboard with making this change now, but this patch isn't
+sufficient.  The config space map uses a byte per dword to index the
+capability since both standard and extended capabilities are dword
+aligned.  We currently have a bug that this patch exposes that we round
+the length down, ex. a 14 byte MSI capability becomes 12 bytes leaving
+the message data now exposed and writable with this patch.  That bug can
+be fixed by aligning the length so the capability fills the dword, but
+notice that 0x7c on the be2net is filling one of these gaps.  So fixing
+that bug attaches that gap to the previous capability instead of
+allowing direct access.
+
+So, before we can make this change we need to fix the config map to have
+byte granularity.  Thanks,
+
+Alex
+
+>  drivers/vfio/pci/vfio_pci_config.c |   31 ++++++++++++++++++++-----------
+>  1 files changed, 20 insertions(+), 11 deletions(-)
 > 
-> diff --git a/arch/powerpc/include/asm/hardirq.h b/arch/powerpc/include/asm/hardirq.h
-> index 3147a29..e88c5f2 100644
-> --- a/arch/powerpc/include/asm/hardirq.h
-> +++ b/arch/powerpc/include/asm/hardirq.h
-> @@ -10,6 +10,7 @@ typedef struct {
->  	unsigned int pmu_irqs;
->  	unsigned int mce_exceptions;
->  	unsigned int spurious_irqs;
-> +	unsigned int doorbell_irqs;
->  } ____cacheline_aligned irq_cpustat_t;
+> diff --git a/drivers/vfio/pci/vfio_pci_config.c b/drivers/vfio/pci/vfio_pci_config.c
+> index 964ff22..5ea3afb 100644
+> --- a/drivers/vfio/pci/vfio_pci_config.c
+> +++ b/drivers/vfio/pci/vfio_pci_config.c
+> @@ -1471,18 +1471,27 @@ static ssize_t vfio_config_do_rw(struct vfio_pci_device *vdev, char __user *buf,
 >  
->  DECLARE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
-> diff --git a/arch/powerpc/kernel/dbell.c b/arch/powerpc/kernel/dbell.c
-> index 9ebbc24..d55c76c 100644
-> --- a/arch/powerpc/kernel/dbell.c
-> +++ b/arch/powerpc/kernel/dbell.c
-> @@ -41,6 +41,8 @@ void doorbell_exception(struct pt_regs *regs)
+>  	cap_id = vdev->pci_config_map[*ppos / 4];
 >  
->  	may_hard_irq_enable();
+> +	/*
+> +	 * Some PCI device config registers might not be coverred by
+> +	 * capability and useful. We will enable direct access to
+> +	 * those registers.
+> +	 */
+>  	if (cap_id == PCI_CAP_ID_INVALID) {
+> -		if (iswrite)
+> -			return ret; /* drop */
+> -
+> -		/*
+> -		 * Per PCI spec 3.0, section 6.1, reads from reserved and
+> -		 * unimplemented registers return 0
+> -		 */
+> -		if (copy_to_user(buf, &val, count))
+> -			return -EFAULT;
+> -
+> -		return ret;
+> +		if (iswrite) {
+> +			if (copy_from_user(&val, buf, count))
+> +				return -EFAULT;
+> +			ret = vfio_user_config_write(vdev->pdev, (int)(*ppos),
+> +						     val, count);
+> +			return ret ? ret : count;
+> +		} else {
+> +			ret = vfio_user_config_read(vdev->pdev, (int)(*ppos),
+> +						    &val, count);
+> +			if (ret)
+> +				return ret;
+> +			if (copy_to_user(buf, &val, count))
+> +				return -EFAULT;
+> +			return count;
+> +		}
+>  	}
 >  
-> +	__get_cpu_var(irq_stat).doorbell_irqs++;
-> +
->  	smp_ipi_demux();
->  
->  	irq_exit();
-> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-> index 4f97fe3..3a3c3b9 100644
-> --- a/arch/powerpc/kernel/irq.c
-> +++ b/arch/powerpc/kernel/irq.c
-> @@ -374,6 +374,13 @@ int arch_show_interrupts(struct seq_file *p, int prec)
->  		seq_printf(p, "%10u ", per_cpu(irq_stat, j).mce_exceptions);
->  	seq_printf(p, "  Machine check exceptions\n");
->  
-> +	if (cpu_has_feature(CPU_FTR_DBELL)) {
-> +		seq_printf(p, "%*s: ", prec, "DBL");
-> +		for_each_online_cpu(j)
-> +			seq_printf(p, "%10u ", per_cpu(irq_stat, j).doorbell_irqs);
-> +		seq_printf(p, "  Doorbell interrupts\n");
-> +	}
-> +
->  	return 0;
->  }
->  
-> @@ -387,6 +394,7 @@ u64 arch_irq_stat_cpu(unsigned int cpu)
->  	sum += per_cpu(irq_stat, cpu).pmu_irqs;
->  	sum += per_cpu(irq_stat, cpu).mce_exceptions;
->  	sum += per_cpu(irq_stat, cpu).spurious_irqs;
-> +	sum += per_cpu(irq_stat, cpu).doorbell_irqs;
->  
->  	return sum;
->  }
-> -- 
-> 1.7.10.4
-> 
+>  	/*
