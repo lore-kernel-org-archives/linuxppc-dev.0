@@ -1,38 +1,26 @@
-Return-Path: <azanella@linux.vnet.ibm.com>
-Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e24smtp04.br.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EB8022C00A4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2013 00:40:43 +1100 (EST)
-Received: from /spool/local
- by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <azanella@linux.vnet.ibm.com>;
- Thu, 21 Mar 2013 10:40:33 -0300
-Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id 78CFE3520060
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 09:40:30 -0400 (EDT)
-Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
- by d24relay01.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r2LDcInv2228236
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 10:38:18 -0300
-Received: from d24av02.br.ibm.com (loopback [127.0.0.1])
- by d24av02.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r2LDeTlO026687
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 10:40:29 -0300
-Received: from [9.18.239.243] (carranca.br.ibm.com [9.18.239.243])
- by d24av02.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
- r2LDeTmV026684
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 10:40:29 -0300
-Message-ID: <514B0DCD.5020209@linux.vnet.ibm.com>
-Date: Thu, 21 Mar 2013 10:40:29 -0300
-From: Adhemerval Zanella <azanella@linux.vnet.ibm.com>
+Return-Path: <cfoissac@studelec-sa.com>
+Received: from madmax.studelec-sa.com (unknown [195.167.234.227])
+ by ozlabs.org (Postfix) with ESMTP id 866072C00C3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2013 00:44:57 +1100 (EST)
+Received: from localhost (madmax.studelec-sa.com [127.0.0.1])
+ by madmax.studelec-sa.com (Postfix) with ESMTP id 887EB3FE090
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 14:44:50 +0100 (CET)
+Received: from madmax.studelec-sa.com ([127.0.0.1])
+ by localhost (madmax.studelec-sa.com [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id OY0iCy0UyR25 for <linuxppc-dev@lists.ozlabs.org>;
+ Thu, 21 Mar 2013 14:44:50 +0100 (CET)
+Received: from [192.168.1.12]
+ (AMontpellier-552-1-219-46.w86-202.abo.wanadoo.fr [86.202.74.46])
+ by madmax.studelec-sa.com (Postfix) with ESMTPSA id C8EB13FE05F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 14:44:49 +0100 (CET)
+Message-ID: <514B0ECE.6050104@studelec-sa.com>
+Date: Thu, 21 Mar 2013 14:44:46 +0100
+From: CF Studelec <cfoissac@studelec-sa.com>
 MIME-Version: 1.0
 To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] [RFC] powerpc: Add VDSO version of time
-References: <5148C2B3.6010408@linux.vnet.ibm.com>
- <1363755620.18880.27.camel@pasglop>
-In-Reply-To: <1363755620.18880.27.camel@pasglop>
+Subject: Re: MPC5121e, Linux, simple IO ports
+References: <514ACAD6.6010909@studelec-sa.com>
+In-Reply-To: <514ACAD6.6010909@studelec-sa.com>
 Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -43,13 +31,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 20-03-2013 02:00, Benjamin Herrenschmidt wrote:
-> On Tue, 2013-03-19 at 16:55 -0300, Adhemerval Zanella wrote:
->> I focused on 64 bit kernel, do I need to provide a scheme for 32 bits
->> as well?
-> You did provide both 32 and 64-bit VDSO implementations so 32-bit
-> kernels should be covered.
+Sorry to bump the post, i'm wondering if it was correctly sent.
 
-Indeed and thanks for the reply. Any objection or request about including it?
-
-Thanks.
+Le 21/03/2013 09:54, CF Studelec a écrit :
+> Hello,
+>
+> This is a simple board base on mpc5121e MCU.
+>
+>
+> Gpio is detected: kernel is compiled with its support - i got
+> gpiochip_find_base: found new base @224 in dmesg - on kernel 3.0.4.
+>
+>  
+> But i'm unable to access it through /sys/class/gpio. I can successfully
+> export a pin (ie, if i type cat 224 > export, gpio224 is created), but i
+> can't successfully control it:
+>
+>  
+>
+> echo "out" > /sys/class/gpio/gpio224/direction
+>
+> cat /sys/class/gpio/gpio224/value
+>
+> 0
+>
+> echo 1 > /sys/class/gpio/gpio224/value
+>
+> cat /sys/class/gpio/gpio224/value
+>
+> 0
+>
+>  
+>
+> My need is a simple chipselect (well, 3 chipselect exactly ), for a
+> custom design. Running linux is mandatory. I suspect the MPC5121e to be
+> in the bad function mode, so:
+>
+> - does anyone knows how to change mode ? What register can i acces and
+> how ? does it worths a try ?
+>
+> - does anyone successfully performed simple IO control ?
+>
+>  
+>
+> Last thing, i have tryed to access internal registers through /dev/mem,
+> but no success. There are very few ressources available for this
+> microcontroler, but i'm stick to it. Perhaps anybody knows how to access
+> (read) internal registers with /proc or sys-fs ?
+>
+>  
+>
+> Thank you for your help.
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
