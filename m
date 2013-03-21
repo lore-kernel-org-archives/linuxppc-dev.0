@@ -1,21 +1,23 @@
-Return-Path: <oleg@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 24FA02C00EE
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2013 03:02:32 +1100 (EST)
-Date: Thu, 21 Mar 2013 17:00:02 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Subject: Re: [PATCH] powerpc/uprobes: teach uprobes to ignore gdb breakpoints
-Message-ID: <20130321160002.GB20865@redhat.com>
-References: <20130320104033.GA19844@in.ibm.com>
- <20130320122639.GA29541@redhat.com> <20130320124301.GA30887@redhat.com>
- <20130320154245.GB8246@in.ibm.com> <20130320160728.GB20352@redhat.com>
- <20130321071707.GB5271@in.ibm.com>
+Return-Path: <timur@tabi.org>
+Received: from muin.pair.com (muin.pair.com [209.68.1.55])
+ by ozlabs.org (Postfix) with ESMTP id 7E5882C00CB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2013 05:42:11 +1100 (EST)
+Received: from mail-la0-f47.google.com (mail-la0-f47.google.com
+ [209.85.215.47])
+ by muin.pair.com (Postfix) with ESMTPSA id 1C30C8FC2C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 14:42:08 -0400 (EDT)
+Received: by mail-la0-f47.google.com with SMTP id fj20so5707625lab.6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 11:42:06 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130321071707.GB5271@in.ibm.com>
-Cc: ppcdev <linuxppc-dev@lists.ozlabs.org>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>, stable@vger.kernel.org
+In-Reply-To: <1363857961-23296-1-git-send-email-B32736@freescale.com>
+References: <1363857961-23296-1-git-send-email-B32736@freescale.com>
+Date: Thu, 21 Mar 2013 13:42:06 -0500
+Message-ID: <CAOZdJXVs9My50m9KHzdbn6pjvhvLqHrqqMsK02z2kCFx8YB03w@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/dts: Add qe support for 36bit
+From: Timur Tabi <timur@tabi.org>
+To: Zhicheng Fan <B32736@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,27 +27,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/21, Ananth N Mavinakayanahalli wrote:
-?
-> On Wed, Mar 20, 2013 at 05:07:28PM +0100, Oleg Nesterov wrote:
-> > On 03/20, Ananth N Mavinakayanahalli wrote:
-> > >
-> > > On Wed, Mar 20, 2013 at 01:43:01PM +0100, Oleg Nesterov wrote:
-> > > > On 03/20, Oleg Nesterov wrote:
-> > > > >
-> > > > IOW, if I wasn't clear... Lets forget about gdb/etc for the moment.
-> > > > Suppose we apply the patch below. Will uprobes on powerpc work?
-> > > >
-> > > > If yes, then your patch should be fine. If not, we probably need more
-> > > > changes.
-> > >
-> > > Yes, it will work fine.
-> >
-> > Even if this new insn is conditional?
->
-> Yes.
+On Thu, Mar 21, 2013 at 4:26 AM, Zhicheng Fan <B32736@freescale.com> wrote:
+> +       qe: qe@fffe80000 {
+> +               ranges = <0x0 0xf 0xffe80000 0x40000>;
 
-But this can't be true. If it is conditional, it won't always generate a
-trap, this means uprobe won't actually work.
-
-Oleg.
+Are you sure this works?  The QE can't handle 36-bit addresses, and I
+think the MURAM is located inside the QE address space.
