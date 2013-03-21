@@ -1,18 +1,47 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 8ED692C00BF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 11:58:34 +1100 (EST)
-Message-ID: <1363827492.24132.555.camel@bling.home>
-Subject: Re: [PATCH 3/3] VFIO: Direct access config reg without capability
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Gavin Shan <shangw@linux.vnet.ibm.com>
-Date: Wed, 20 Mar 2013 18:58:12 -0600
-In-Reply-To: <1363332390-12754-4-git-send-email-shangw@linux.vnet.ibm.com>
-References: <1363332390-12754-1-git-send-email-shangw@linux.vnet.ibm.com>
- <1363332390-12754-4-git-send-email-shangw@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: aik@ozlabs.ru, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e37.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 56CF02C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 13:09:16 +1100 (EST)
+Received: from /spool/local
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Wed, 20 Mar 2013 20:09:12 -0600
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+ [9.17.195.106])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id B283519D804A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 20:09:04 -0600 (MDT)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r2L297fq342076
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 20:09:07 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r2L29718027276
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2013 20:09:07 -0600
+Date: Thu, 21 Mar 2013 10:09:03 +0800
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: Alex Williamson <alex.williamson@redhat.com>
+Subject: Re: [PATCH 2/3] VFIO: VFIO_DEVICE_SET_ADDR_MAPPING command
+Message-ID: <20130321020903.GA13178@shangw.(null)>
+References: <1363375740.16793.12.camel@ul30vt.home>
+ <20130316013417.GA3873@shangw.(null)>
+ <1363412256.1244.20.camel@pasglop>
+ <1363640474.24132.433.camel@bling.home>
+ <20130319032410.GA22591@shangw.(null)>
+ <1363666721.24132.472.camel@bling.home>
+ <1363668309.18880.10.camel@pasglop>
+ <1363805280.24132.529.camel@bling.home>
+ <1363807906.17680.11.camel@pasglop>
+ <1363808782.24132.534.camel@bling.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1363808782.24132.534.camel@bling.home>
+Cc: aik@ozlabs.ru, linuxppc-dev@lists.ozlabs.org,
+ Gavin Shan <shangw@linux.vnet.ibm.com>, kvm@vger.kernel.org
+Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,83 +51,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-03-15 at 15:26 +0800, Gavin Shan wrote:
-> The config registers in [0, 0x40] is being supported by VFIO. Apart
-> from that, the other config registers should be coverred by PCI or
-> PCIe capability. However, there might have some PCI devices (be2net)
-> who has config registers (0x7c) out of [0, 0x40], and don't have
-> corresponding PCI or PCIe capability. VFIO will return 0x0 on reading
-> those registers and writing is dropped. It caused the be2net driver
-> fails to be loaded because 0x0 returned from its config register 0x7c.
-> 
-> The patch changes the behaviour so that those config registers out
-> of [0, 0x40] and don't have corresponding PCI or PCIe capability
-> will be accessed directly.
-> 
-> Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
-> ---
+On Wed, Mar 20, 2013 at 01:46:22PM -0600, Alex Williamson wrote:
+>On Wed, 2013-03-20 at 20:31 +0100, Benjamin Herrenschmidt wrote:
+>> On Wed, 2013-03-20 at 12:48 -0600, Alex Williamson wrote:
 
-Hi Gavin,
+.../...
 
-I'm onboard with making this change now, but this patch isn't
-sufficient.  The config space map uses a byte per dword to index the
-capability since both standard and extended capabilities are dword
-aligned.  We currently have a bug that this patch exposes that we round
-the length down, ex. a 14 byte MSI capability becomes 12 bytes leaving
-the message data now exposed and writable with this patch.  That bug can
-be fixed by aligning the length so the capability fills the dword, but
-notice that 0x7c on the be2net is filling one of these gaps.  So fixing
-that bug attaches that gap to the previous capability instead of
-allowing direct access.
+>> As for EEH, I will let Gavin describe in more details what he is doing,
+>> though I wouldn't be surprised if so far he doesn't have a
+>> non-accelerated path :-) Which indeed makes things oddball, granted ...
+>> at least for now. I *think* what Gavin's doing right now is a
+>> pass-through to the host EEH directly in the kernel, so without a slow
+>> path...
+>> 
 
-So, before we can make this change we need to fix the config map to have
-byte granularity.  Thanks,
+Yes, I don't have non-accelerated path. I'm trying to describe what I'm
+doing: On the host side, the interrupt will be triggered while detecting
+frozen PE, which has been passed to guest. We won't send EEH event to
+EEH core on host side and we're waiting for guest to be involved to handle
+the EEH error. In guest, any access to config or MMIO of the frozen PE will
+trigger EEH event and in turn, the guest utilizes existing (exactly same
+to pSeries on phyp case) RTAS calls to recover the error. The RTAS calls is
+being emulated in host kernel.
 
-Alex
+Part of the RTAS call arguments is PCI domain/bus/slot/function viewed from
+guest perspective. That's different from that for same physical PCI device
+in host side. So I used VFIO-PCI to do the mapping and maintain the information
+in host kernel.
 
->  drivers/vfio/pci/vfio_pci_config.c |   31 ++++++++++++++++++++-----------
->  1 files changed, 20 insertions(+), 11 deletions(-)
-> 
-> diff --git a/drivers/vfio/pci/vfio_pci_config.c b/drivers/vfio/pci/vfio_pci_config.c
-> index 964ff22..5ea3afb 100644
-> --- a/drivers/vfio/pci/vfio_pci_config.c
-> +++ b/drivers/vfio/pci/vfio_pci_config.c
-> @@ -1471,18 +1471,27 @@ static ssize_t vfio_config_do_rw(struct vfio_pci_device *vdev, char __user *buf,
->  
->  	cap_id = vdev->pci_config_map[*ppos / 4];
->  
-> +	/*
-> +	 * Some PCI device config registers might not be coverred by
-> +	 * capability and useful. We will enable direct access to
-> +	 * those registers.
-> +	 */
->  	if (cap_id == PCI_CAP_ID_INVALID) {
-> -		if (iswrite)
-> -			return ret; /* drop */
-> -
-> -		/*
-> -		 * Per PCI spec 3.0, section 6.1, reads from reserved and
-> -		 * unimplemented registers return 0
-> -		 */
-> -		if (copy_to_user(buf, &val, count))
-> -			return -EFAULT;
-> -
-> -		return ret;
-> +		if (iswrite) {
-> +			if (copy_from_user(&val, buf, count))
-> +				return -EFAULT;
-> +			ret = vfio_user_config_write(vdev->pdev, (int)(*ppos),
-> +						     val, count);
-> +			return ret ? ret : count;
-> +		} else {
-> +			ret = vfio_user_config_read(vdev->pdev, (int)(*ppos),
-> +						    &val, count);
-> +			if (ret)
-> +				return ret;
-> +			if (copy_to_user(buf, &val, count))
-> +				return -EFAULT;
-> +			return count;
-> +		}
->  	}
->  
->  	/*
+>> Gavin, it really boils down to that. In-kernel EEH for guests is a
+>> KVMism that ends up not involving VFIO in any other way than
+>> establishing the mapping, then arguably it could be done via a VM ioctl.
+>> 
+>> If there's more going through VFIO and shared state, then it should
+>> probably go through VFIO-PCI.
+>
+
+Ben, you're right. I use VFIO for nothing other than doing address mapping.
+So I will do the address mapping in VM IOCTL instead of in VFIO-PCI.
+
+Thanks,
+Gavin
