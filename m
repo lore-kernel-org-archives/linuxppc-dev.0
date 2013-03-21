@@ -1,25 +1,20 @@
-Return-Path: <gang.chen@asianux.com>
-Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 87AC32C00C4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 16:56:12 +1100 (EST)
-Message-ID: <514AA0D9.1090509@asianux.com>
-Date: Thu, 21 Mar 2013 13:55:37 +0800
-From: Chen Gang <gang.chen@asianux.com>
-MIME-Version: 1.0
-To: Michael Neuling <mikey@neuling.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [Suggestion] PowerPC: kernel: cross compiling issue with
- allmodconfig
-References: <51428C81.6000204@asianux.com>
- <25841.1363323174@ale.ozlabs.ibm.com> <5142AE27.7060003@asianux.com>
-In-Reply-To: <5142AE27.7060003@asianux.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: sfr@canb.auug.org.au, matt@ozlabs.org,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "paulus@samba.org" <paulus@samba.org>, imunsie@au1.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.pcug.org.au [203.10.76.10])
+ by ozlabs.org (Postfix) with ESMTP id B63412C00C1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 17:23:45 +1100 (EST)
+Date: Thu, 21 Mar 2013 17:23:34 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Marcelo Tosatti <mtosatti@redhat.com>, Gleb Natapov <gleb@redhat.com>
+Subject: linux-next: build failure after merge of the final tree (linus'
+ tree related)
+Message-Id: <20130321172334.068a89406c4dede83d3e9c66@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Thu__21_Mar_2013_17_23_34_+1100_ei_NwUE.DwvcoY9C"
+Cc: Kevin Hilman <khilman@linaro.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Linus <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,104 +24,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello All:
+--Signature=_Thu__21_Mar_2013_17_23_34_+1100_ei_NwUE.DwvcoY9C
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-summary:
-  the root cause is no enough room in exception area (0x5500 -- 0x7000).
+Hi all,
 
-  it is caused by the patches "for saving/restre PPR":
-    they consumed much space of this area (0x5500 -- 0x7000).
-    for pseries_defconfig and ppc64_defconfig, it is still ok.
-    but for allmodconfig and "some additional config", it will cause issue.
+After merging the final tree, today's linux-next build (powerpc64
+allnoconfig) failed like this:
 
-  the solving patch "Make room in exception vector area" can make room larger.
-    it can let "some additional config" ok.
-    but for allmodconfig, it is still not enough.
+In file included from arch/powerpc/include/asm/kvm_ppc.h:33:0,
+                 from arch/powerpc/kernel/setup_64.c:67:
+arch/powerpc/include/asm/kvm_book3s.h:65:20: error: field 'pte' has incompl=
+ete type
+arch/powerpc/include/asm/kvm_book3s.h:69:18: error: field 'vcpu' has incomp=
+lete type
+arch/powerpc/include/asm/kvm_book3s.h:98:34: error: 'HPTEG_HASH_NUM_PTE' un=
+declared here (not in a function)
+arch/powerpc/include/asm/kvm_book3s.h:99:39: error: 'HPTEG_HASH_NUM_PTE_LON=
+G' undeclared here (not in a function)
+arch/powerpc/include/asm/kvm_book3s.h:100:35: error: 'HPTEG_HASH_NUM_VPTE' =
+undeclared here (not in a function)
+arch/powerpc/include/asm/kvm_book3s.h:101:40: error: 'HPTEG_HASH_NUM_VPTE_L=
+ONG' undeclared here (not in a function)
+arch/powerpc/include/asm/kvm_book3s.h:129:4: error: 'struct kvm_run' declar=
+ed inside parameter list [-Werror]
+arch/powerpc/include/asm/kvm_book3s.h:129:4: error: its scope is only this =
+definition or declaration, which is probably not what you want [-Werror]
 
+And it went downhill form there.  This build does not have CONFIG_KVM
+defined.
 
-details
-  reason:
-    it is caused by:
-       commit number: 13e7a8e846c2ea38a552b986ea49332f965bbb7a
-       commit number: 44e9309f1f357794b7ae93d5f3e3e6f11d2b8a7f
-    they are "for saving/restore PPR"
-    by Haren Myneni <haren@linux.vnet.ibm.com> Thu, 6 Dec 2012
-    compiling result:
-      pseries_defconfig: pass   (cpu for POWER7)
-      ppc64_defconfig:   pass   (cpu for POWER7)
-      allmodconfig:      failed (cpu for POWER7)
+Caused by commit f445f11eb2cc ("KVM: allow host header to be included
+even for !CONFIG_KVM") which clearly never saw the light of day in
+linux-next :-(
 
-  analysing:
-    solving patch:
-      ------------------------------------------------------------------
-      commit number: 61383407677aef05928541a00678591abea2d84c
-      Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-      Date:   Thu Jan 10 17:44:19 2013 +1100
+It would have been nice if the "compile failure when KVM is not enabled"
+was included in the commit log so that we could figure out exactly what
+needed to be protected instead of just effectively removing the whole
+file.
 
-        powerpc: Make room in exception vector area
-    
-        The FWNMI region is fixed at 0x7000 and the vector are now
-        overflowing that with some configurations. Fix that by moving
-        some hash management code out of that region as it doesn't need
-        to be that close to the call sites (isn't accessed using
-        conditional branches).
-      ------------------------------------------------------------------
+I just reverted that commit for today.  Can someone please supply a
+better solution or even just more information about what that commit was
+solving.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-      but for allmodconfig (not only for "some configurations"):
-        it really can reduce much overflow bytes,
-          (maybe from hundreds bytes to dozens bytes)
-        but still not enough (still content overflow bytes)
+--Signature=_Thu__21_Mar_2013_17_23_34_+1100_ei_NwUE.DwvcoY9C
+Content-Type: application/pgp-signature
 
-    additional trying:
-	after del CONFIG_VSX and CONFIG_PPC_970_NAP in allmodconfig,
-          (will reduce dozens bytes in the region .0x5500 -- .0x7000)
-        it can pass compiling (not overflow).
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
 
+iQIcBAEBCAAGBQJRSqdmAAoJEECxmPOUX5FEtTMP/i4dRcADUbW6eJo9NjP5cK1j
+CpHGLg3JCH3veWBGCRgF+fHTzVHSV/UWcytW+sq8rfvbnP8HCeh+Nk3bgRzRQXKT
+FGDbT0m2QrbrRQ8co5IHCNxAY7ihA9ScaRBiKBPm6rfN03QsXH3gLLoTJQhuhmao
+omRVJb0NuOJgHaGPQQldnZkhg56dTGi0RyNzEwOHVZOST/HLJKdwuUQAv7O9TJnU
+Ww553aKisDFW7gEf/BCigdEwGVcOpbfPlFQawhV/HbQwFk+YjNNebrAV3Je45Fe/
+tDVcGbAlnEStcpsH3XT2QZ5ks05y4RwdgehjOuIA1LOEv3Kb3Ec0ElvNQxKosOlc
+9mzpytdnD3dbGhS5jfttR5Y1tZa4rJ+VbzDjGXfKJIIWNMERniS77DY81/BeXNND
+Dvbv+K79bL/p6FOVARXopLtll6TbFdNU8PlafDHTGsT/iXdrs78m3jhACjLXLXgI
+1xa00NJE/XoHxL0LHchCwNJMSDCHMfnyZ2WfNd9vSEcBm4n/hFaViWLUUyr47Y3F
+879PClJpd6zDb/XuAT1xeNEfW8pU1RnfkZNqCOIJmXfb4e58fdLTewfjhjuQvLL9
+vTEJlgDXuO0V77+aomNwLDM9z++B4fqWsmSsvzqT+iDTibT9k/iqFy1V5YahxX04
+TzvJBbE0lENqO2ZfBZHQ
+=i4Hb
+-----END PGP SIGNATURE-----
 
-next:
-  I am sorry:
-      I am not quite familiar with the detail features of powerpc.
-      it seems I am not the suitable member to continue trying.
-
-  I prefer Benjamin to continue trying (just like what he has done).
-
-  if Benjamin will not do it (e.g. maybe no time to do)
-    I should continue: "make additional room in exception vector area".
-      (if get no reply within a week: before 2013-03-28, I should continue)
-
-
-
-  welcome any members' (especially Benjamin) suggestions or completions.
-
-  thanks.
-
-  :-)
-
-
-On 2013年03月15日 13:14, Chen Gang wrote:
-> 于 2013年03月15日 12:52, Michael Neuling 写道:
->> Yep it's a known problem but no one has bothered to fix it since it
->> doesn't happen in a config that anyone cares about like
->> pseries_defconfig and ppc64_defconfig.  We've been moving code around in
->> this area a lot recently hence the breakage.
->>
->> It should be fixed though.  Patches welcome. :-)
-> 
->   thanks, and I should try, and very glad to try.
-> 
->   :-)  :-)
-> 
->   excuse me, I try to provide related patch within this month (2013-03-31), is it ok ?
->   the reason is:
->     I am not familiar with ppc assembly code, neither ppc kernel,
->     so need additional time resource.
->       (originally, I worked for x86(_64) core dump analysing for kernel and user programs)
-> 
->   thanks.
-> 
-
-
--- 
-Chen Gang
-
-Asianux Corporation
+--Signature=_Thu__21_Mar_2013_17_23_34_+1100_ei_NwUE.DwvcoY9C--
