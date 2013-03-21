@@ -1,19 +1,18 @@
-Return-Path: <B32736@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0188.outbound.messaging.microsoft.com [213.199.154.188])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A529E2C0086
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 20:59:33 +1100 (EST)
-From: Zhicheng Fan <B32736@freescale.com>
-To: <galak@kernel.crashing.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/dts: Add qe support for 36bit
-Date: Thu, 21 Mar 2013 17:26:01 +0800
-Message-ID: <1363857961-23296-1-git-send-email-B32736@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Zhicheng Fan <B32736@freescale.com>
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ by ozlabs.org (Postfix) with ESMTP id 7E5362C00B6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 21:07:01 +1100 (EST)
+Subject: Re: [PATCH] KVM: PPC: e500: Expose MMU registers via ONE_REG
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <1363713985.16671.12@snotra>
+Date: Thu, 21 Mar 2013 11:06:57 +0100
+Message-Id: <5F65F205-3B81-4154-B9E0-43FA1100A3FD@suse.de>
+References: <1363713985.16671.12@snotra>
+To: Scott Wood <scottwood@freescale.com>
+Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,74 +22,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-fixed the following errors:
-	Error: arch/powerpc/boot/dts/p1025rdb.dtsi:326.2-3 label or path, 'qe', not found
-	Error: arch/powerpc/boot/dts/fsl/p1021si-post.dtsi:242.2-3 label or path, 'qe', not found
-	FATAL ERROR: Syntax error parsing input tree
 
-Signed-off-by: Zhicheng Fan <B32736@freescale.com>
----
- arch/powerpc/boot/dts/p1025rdb_36b.dts |   48 ++++++++++++++++++++++++++++++++
- 1 files changed, 48 insertions(+), 0 deletions(-)
+On 19.03.2013, at 18:26, Scott Wood wrote:
 
-diff --git a/arch/powerpc/boot/dts/p1025rdb_36b.dts b/arch/powerpc/boot/dts/p1025rdb_36b.dts
-index 4ce4bfa..c74c39b 100644
---- a/arch/powerpc/boot/dts/p1025rdb_36b.dts
-+++ b/arch/powerpc/boot/dts/p1025rdb_36b.dts
-@@ -82,6 +82,54 @@
- 				  0x0 0x100000>;
- 		};
- 	};
-+
-+	qe: qe@fffe80000 {
-+		ranges = <0x0 0xf 0xffe80000 0x40000>;
-+		reg = <0xf 0xffe80000 0 0x480>;
-+		brg-frequency = <0>;
-+		bus-frequency = <0>;
-+		status = "disabled"; /* no firmware loaded */
-+
-+		enet3: ucc@2000 {
-+			device_type = "network";
-+			compatible = "ucc_geth";
-+			rx-clock-name = "clk12";
-+			tx-clock-name = "clk9";
-+			pio-handle = <&pio1>;
-+			phy-handle = <&qe_phy0>;
-+			phy-connection-type = "mii";
-+		};
-+
-+		mdio@2120 {
-+			qe_phy0: ethernet-phy@0 {
-+				interrupt-parent = <&mpic>;
-+				interrupts = <4 1 0 0>;
-+				reg = <0x6>;
-+				device_type = "ethernet-phy";
-+			};
-+			qe_phy1: ethernet-phy@03 {
-+				interrupt-parent = <&mpic>;
-+				interrupts = <5 1 0 0>;
-+				reg = <0x3>;
-+				device_type = "ethernet-phy";
-+			};
-+			tbi-phy@11 {
-+				reg = <0x11>;
-+				device_type = "tbi-phy";
-+			};
-+		};
-+
-+		enet4: ucc@2400 {
-+			device_type = "network";
-+			compatible = "ucc_geth";
-+			rx-clock-name = "none";
-+			tx-clock-name = "clk13";
-+			pio-handle = <&pio2>;
-+			phy-handle = <&qe_phy1>;
-+			phy-connection-type = "rmii";
-+		};
-+	};
-+
- };
- 
- /include/ "p1025rdb.dtsi"
--- 
-1.7.0.4
+> On 03/19/2013 12:17:11 PM, Mihai Caraman wrote:
+>> diff --git a/arch/powerpc/kvm/e500_mmu.c =
+b/arch/powerpc/kvm/e500_mmu.c
+>> index 66b6e31..b77b855 100644
+>> --- a/arch/powerpc/kvm/e500_mmu.c
+>> +++ b/arch/powerpc/kvm/e500_mmu.c
+>> @@ -596,6 +596,95 @@ int kvmppc_set_sregs_e500_tlb(struct kvm_vcpu =
+*vcpu, struct kvm_sregs *sregs)
+>> 	return 0;
+>> }
+>> +int kvmppc_get_one_reg_500_tlb(struct kvm_vcpu *vcpu, u64 id,
+>> +				union kvmppc_one_reg *val)
+>=20
+> s/500/e500/
+>=20
+>> +int kvmppc_set_one_reg_500_tlb(struct kvm_vcpu *vcpu, u64 id,
+>> +			       union kvmppc_one_reg *val)
+>> +{
+>> +	int r =3D 0;
+>> +	long int i;
+>> +
+>> +	switch (id) {
+>> +	case KVM_REG_PPC_MAS0:
+>> +		vcpu->arch.shared->mas0 =3D set_reg_val(id, *val);
+>> +		break;
+>> +	case KVM_REG_PPC_MAS1:
+>> +		vcpu->arch.shared->mas1 =3D set_reg_val(id, *val);
+>> +		break;
+>> +	case KVM_REG_PPC_MAS2:
+>> +		vcpu->arch.shared->mas2 =3D set_reg_val(id, *val);
+>> +		break;
+>> +	case KVM_REG_PPC_MAS7_3:
+>> +		vcpu->arch.shared->mas7_3 =3D set_reg_val(id, *val);
+>> +		break;
+>> +	case KVM_REG_PPC_MAS4:
+>> +		vcpu->arch.shared->mas4 =3D set_reg_val(id, *val);
+>> +		break;
+>> +	case KVM_REG_PPC_MAS6:
+>> +		vcpu->arch.shared->mas6 =3D set_reg_val(id, *val);
+>> +		break;
+>> +	case KVM_REG_PPC_MMUCFG: {
+>> +		u32 mmucfg =3D set_reg_val(id, *val);
+>> +		vcpu->arch.mmucfg =3D mmucfg & ~MMUCFG_LPIDSIZE;
+>> +		break;
+>> +	}
+>=20
+> Do we really want to allow arbitrary MMUCFG changes?  It won't =
+magically make us able to support larger RAs, PIDs, different MAVN, etc.
+
+Only if we update the actual shadow mmu configuration as well.
+
+>=20
+>> +	case KVM_REG_PPC_TLB0CFG:
+>> +	case KVM_REG_PPC_TLB1CFG:
+>> +	case KVM_REG_PPC_TLB2CFG:
+>> +	case KVM_REG_PPC_TLB3CFG: {
+>> +		u32 tlbncfg =3D set_reg_val(id, *val);			=09=
+
+>> +		u32 geometry_mask =3D TLBnCFG_N_ENTRY | TLBnCFG_ASSOC;
+>> +		i =3D id - KVM_REG_PPC_TLB0CFG;
+>> +
+>> +		/* MMU geometry (way/size) can be set only using SW_TLB =
+*/
+>> +		if ((vcpu->arch.tlbcfg[i] & geometry_mask) !=3D
+>> +		    (tlbncfg & geometry_mask))
+>> +			r =3D -EINVAL;
+>> +
+>> +		vcpu->arch.tlbcfg[i] =3D set_reg_val(id, *val);
+>> +		break;
+>> +	}
+>=20
+> Likewise -- just because QEMU sets a bit here doesn't mean KVM can =
+support it.
+>=20
+> I thought the initial plan for setting these config registers was to =
+accept it if it exactly matches what KVM already has, and give an error =
+otherwise -- thus allowing for the possibliity of accepting certain =
+specific updates in the future.
+
+Yes, that was the idea :).
+
+
+Alex
