@@ -1,20 +1,22 @@
-Return-Path: <lethal@linux-sh.org>
-Received: from linux-sh.org (linux-sh.org [111.68.239.195])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E89152C00B6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 20:35:32 +1100 (EST)
-Date: Thu, 21 Mar 2013 18:34:55 +0900
-From: Paul Mundt <lethal@linux-sh.org>
+Return-Path: <James.Hogan@imgtec.com>
+Received: from multi.imgtec.com (multi.imgtec.com [194.200.65.239])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "*.imgtec.com",
+ Issuer "DigiCert High Assurance CA-3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4071D2C0086
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2013 20:49:25 +1100 (EST)
+Message-ID: <514AD76D.2020401@imgtec.com>
+Date: Thu, 21 Mar 2013 09:48:29 +0000
+From: James Hogan <james.hogan@imgtec.com>
+MIME-Version: 1.0
 To: Paul Bolle <pebolle@tiscali.nl>
 Subject: Re: [PATCH] memblock: kill "config MAX_ACTIVE_REGIONS"
-Message-ID: <20130321093455.GA8027@linux-sh.org>
 References: <1363858076.1390.104.camel@x61.thuisdomein>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1363858076.1390.104.camel@x61.thuisdomein>
-Cc: James Hogan <james.hogan@imgtec.com>, linux-sh@vger.kernel.org,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ <20130321093455.GA8027@linux-sh.org>
+In-Reply-To: <20130321093455.GA8027@linux-sh.org>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Paul Mundt <lethal@linux-sh.org>, Paul Mackerras <paulus@samba.org>,
  Tejun Heo <tj@kernel.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,23 +27,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 21, 2013 at 10:27:56AM +0100, Paul Bolle wrote:
-> The Kconfig symbol MAX_ACTIVE_REGIONS is unused. Commit
-> 0ee332c1451869963626bf9cac88f165a90990e1 ("memblock: Kill
-> early_node_map[]") removed the only place were it was actually used. But
-> it did not remove its Kconfig entries (for powerpc and sh).
+On 21/03/13 09:34, Paul Mundt wrote:
+> On Thu, Mar 21, 2013 at 10:27:56AM +0100, Paul Bolle wrote:
+>> The Kconfig symbol MAX_ACTIVE_REGIONS is unused. Commit
+>> 0ee332c1451869963626bf9cac88f165a90990e1 ("memblock: Kill
+>> early_node_map[]") removed the only place were it was actually used. But
+>> it did not remove its Kconfig entries (for powerpc and sh).
+>>
+>> Remove those two entries (and the entry for metag, that popped up in
+>> v3.9-rc1).
+>>
+>> Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+>> ---
+>> 0) Eyeball tested again.
+>>
+>> 1) It felt silly to split this clean up patch into three patches. But if
+>> the maintainers involved disagree I'm happy to split and resend it. 
+>>
+> Given that it's unused now it doesn't really matter how it gets applied,
+> it looks fine to me.
 > 
-> Remove those two entries (and the entry for metag, that popped up in
-> v3.9-rc1).
+> Acked-by: Paul Mundt <lethal@linux-sh.org>
 > 
-> Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
-> ---
-> 0) Eyeball tested again.
-> 
-> 1) It felt silly to split this clean up patch into three patches. But if
-> the maintainers involved disagree I'm happy to split and resend it. 
-> 
-Given that it's unused now it doesn't really matter how it gets applied,
-it looks fine to me.
 
-Acked-by: Paul Mundt <lethal@linux-sh.org>
+Acked-by: James Hogan <james.hogan@imgtec.com>
