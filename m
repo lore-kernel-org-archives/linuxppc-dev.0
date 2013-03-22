@@ -1,9 +1,10 @@
 Return-Path: <florian@openwrt.org>
 From: Florian Fainelli <florian@openwrt.org>
 To: davem@davemloft.net
-Subject: [PATCH 1/4 v3] net: mvmdio: allow platform device style registration
-Date: Fri, 22 Mar 2013 14:39:25 +0100
-Message-Id: <1363959568-16976-2-git-send-email-florian@openwrt.org>
+Subject: [PATCH 3/4 v3] net: mvmdio: enhance driver to support SMI error/done
+ interrupts
+Date: Fri, 22 Mar 2013 14:39:27 +0100
+Message-Id: <1363959568-16976-4-git-send-email-florian@openwrt.org>
 In-Reply-To: <1363959568-16976-1-git-send-email-florian@openwrt.org>
 References: <1363284515-9865-1-git-send-email-florian@openwrt.org>
  <1363959568-16976-1-git-send-email-florian@openwrt.org>
@@ -25,90 +26,205 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch changes the mvmdio driver not to use device tree
-helper functions such as of_mdiobus_register() and of_iomap() so we can
-instantiate this driver using a classic platform_device approach. Use
-the device manager helper to ioremap() the base register cookie so we
-get automatic freeing upon error and removal. This change is harmless
-for Device Tree platforms because they will get the driver be registered
-the same way as it was before.
+This patch enhances the "mvmdio" to support a SMI error/done interrupt
+line which can be used along with a wait queue instead of doing
+busy-waiting on the registers. This is a feature which is available in
+the mv643xx_eth SMI code and thus reduces again the gap between the two.
 
 Signed-off-by: Florian Fainelli <florian@openwrt.org>
 ---
 Changes since v2:
-- use of_mdiobus_register if device tree node is available to ensure that
-  all child PHY nodes get also registered (fixes PHY probing on DT-only)
+- remove NO_IRQ usage which is not portable, check for irq >= 0
+  instead
+- factor out mdiobus cleaning under the out_mdio label in probe()
 
-Changes since v1:
-- use device managed helpers to fix an ioremap leak in remove function
-- remove the use of Device Tree specific helpers to allow platform-style
-  registration
+Chances since v1:
+- always use orion_smi_is_done() helper
+- make interrupt/non-interrupt code path entirely independant
 
- drivers/net/ethernet/marvell/mvmdio.c |   22 +++++++++++++++-------
- 1 file changed, 15 insertions(+), 7 deletions(-)
+ .../devicetree/bindings/net/marvell-orion-mdio.txt |    3 +
+ drivers/net/ethernet/marvell/mvmdio.c              |   98 ++++++++++++++++----
+ 2 files changed, 83 insertions(+), 18 deletions(-)
 
+diff --git a/Documentation/devicetree/bindings/net/marvell-orion-mdio.txt b/Documentation/devicetree/bindings/net/marvell-orion-mdio.txt
+index 34e7aaf..052b5f2 100644
+--- a/Documentation/devicetree/bindings/net/marvell-orion-mdio.txt
++++ b/Documentation/devicetree/bindings/net/marvell-orion-mdio.txt
+@@ -9,6 +9,9 @@ Required properties:
+ - compatible: "marvell,orion-mdio"
+ - reg: address and length of the SMI register
+ 
++Optional properties:
++- interrupts: interrupt line number for the SMI error/done interrupt
++
+ The child nodes of the MDIO driver are the individual PHY devices
+ connected to this MDIO bus. They must have a "reg" property given the
+ PHY address on the MDIO bus.
 diff --git a/drivers/net/ethernet/marvell/mvmdio.c b/drivers/net/ethernet/marvell/mvmdio.c
-index 77b7c80..bbc5fde 100644
+index 3e2711d..3472574 100644
 --- a/drivers/net/ethernet/marvell/mvmdio.c
 +++ b/drivers/net/ethernet/marvell/mvmdio.c
-@@ -24,10 +24,10 @@
+@@ -24,10 +24,13 @@
  #include <linux/module.h>
  #include <linux/mutex.h>
  #include <linux/phy.h>
--#include <linux/of_address.h>
--#include <linux/of_mdio.h>
++#include <linux/interrupt.h>
  #include <linux/platform_device.h>
  #include <linux/delay.h>
-+#include <linux/io.h>
-+#include <linux/of_mdio.h>
+ #include <linux/io.h>
+ #include <linux/of_mdio.h>
++#include <linux/sched.h>
++#include <linux/wait.h>
  
  #define MVMDIO_SMI_DATA_SHIFT              0
  #define MVMDIO_SMI_PHY_ADDR_SHIFT          16
-@@ -143,11 +143,17 @@ static int orion_mdio_reset(struct mii_bus *bus)
+@@ -36,33 +39,58 @@
+ #define MVMDIO_SMI_WRITE_OPERATION         0
+ #define MVMDIO_SMI_READ_VALID              BIT(27)
+ #define MVMDIO_SMI_BUSY                    BIT(28)
++#define MVMDIO_ERR_INT_CAUSE		   0x007C
++#define  MVMDIO_ERR_INT_SMI_DONE	   0x00000010
++#define MVMDIO_ERR_INT_MASK		   0x0080
  
- static int orion_mdio_probe(struct platform_device *pdev)
+ struct orion_mdio_dev {
+ 	struct mutex lock;
+ 	void __iomem *regs;
++	/*
++	 * If we have access to the error interrupt pin (which is
++	 * somewhat misnamed as it not only reflects internal errors
++	 * but also reflects SMI completion), use that to wait for
++	 * SMI access completion instead of polling the SMI busy bit.
++	 */
++	int err_interrupt;
++	wait_queue_head_t smi_busy_wait;
+ };
+ 
++static int orion_mdio_smi_is_done(struct orion_mdio_dev *dev)
++{
++	return !(readl(dev->regs) & MVMDIO_SMI_BUSY);
++}
++
+ /* Wait for the SMI unit to be ready for another operation
+  */
+ static int orion_mdio_wait_ready(struct mii_bus *bus)
  {
--	struct device_node *np = pdev->dev.of_node;
-+	struct resource *r;
- 	struct mii_bus *bus;
- 	struct orion_mdio_dev *dev;
- 	int i, ret;
+ 	struct orion_mdio_dev *dev = bus->priv;
+ 	int count;
+-	u32 val;
  
-+	r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	if (!r) {
-+		dev_err(&pdev->dev, "No SMI register address given\n");
-+		return -ENODEV;
+-	count = 0;
+-	while (1) {
+-		val = readl(dev->regs);
+-		if (!(val & MVMDIO_SMI_BUSY))
+-			break;
++	if (dev->err_interrupt <= 0) {
++		count = 0;
++		while (1) {
++			if (orion_mdio_smi_is_done(dev))
++				break;
+ 
+-		if (count > 100) {
+-			dev_err(bus->parent, "Timeout: SMI busy for too long\n");
+-			return -ETIMEDOUT;
+-		}
++			if (count > 100) {
++				dev_err(bus->parent,
++					"Timeout: SMI busy for too long\n");
++				return -ETIMEDOUT;
++			}
+ 
+-		udelay(10);
+-		count++;
++			udelay(10);
++			count++;
++		}
++	} else {
++		if (!orion_mdio_smi_is_done(dev)) {
++			wait_event_timeout(dev->smi_busy_wait,
++				orion_mdio_smi_is_done(dev),
++				msecs_to_jiffies(100));
++			if (!orion_mdio_smi_is_done(dev))
++				return -ETIMEDOUT;
++		}
+ 	}
+ 
+ 	return 0;
+@@ -141,6 +169,21 @@ static int orion_mdio_reset(struct mii_bus *bus)
+ 	return 0;
+ }
+ 
++static irqreturn_t orion_mdio_err_irq(int irq, void *dev_id)
++{
++	struct orion_mdio_dev *dev = dev_id;
++
++	if (readl(dev->regs + MVMDIO_ERR_INT_CAUSE) &
++			MVMDIO_ERR_INT_SMI_DONE) {
++		writel(~MVMDIO_ERR_INT_SMI_DONE,
++				dev->regs + MVMDIO_ERR_INT_CAUSE);
++		wake_up(&dev->smi_busy_wait);
++		return IRQ_HANDLED;
 +	}
 +
- 	bus = mdiobus_alloc_size(sizeof(struct orion_mdio_dev));
- 	if (!bus) {
- 		dev_err(&pdev->dev, "Cannot allocate MDIO bus\n");
-@@ -172,9 +178,9 @@ static int orion_mdio_probe(struct platform_device *pdev)
- 		bus->irq[i] = PHY_POLL;
- 
- 	dev = bus->priv;
--	dev->smireg = of_iomap(pdev->dev.of_node, 0);
-+	dev->smireg = devm_ioremap(&pdev->dev, r->start, resource_size(r));
- 	if (!dev->smireg) {
--		dev_err(&pdev->dev, "No SMI register address given in DT\n");
-+		dev_err(&pdev->dev, "Unable to remap SMI register\n");
- 		kfree(bus->irq);
- 		mdiobus_free(bus);
- 		return -ENODEV;
-@@ -182,10 +188,12 @@ static int orion_mdio_probe(struct platform_device *pdev)
++	return IRQ_NONE;
++}
++
+ static int orion_mdio_probe(struct platform_device *pdev)
+ {
+ 	struct resource *r;
+@@ -181,9 +224,22 @@ static int orion_mdio_probe(struct platform_device *pdev)
+ 	dev->regs = devm_ioremap(&pdev->dev, r->start, resource_size(r));
+ 	if (!dev->regs) {
+ 		dev_err(&pdev->dev, "Unable to remap SMI register\n");
+-		kfree(bus->irq);
+-		mdiobus_free(bus);
+-		return -ENODEV;
++		ret = -ENODEV;
++		goto out_mdio;
++	}
++
++	init_waitqueue_head(&dev->smi_busy_wait);
++
++	dev->err_interrupt = platform_get_irq(pdev, 0);
++	if (dev->err_interrupt != -ENXIO) {
++		ret = devm_request_irq(&pdev->dev, dev->err_interrupt,
++					orion_mdio_err_irq,
++					IRQF_SHARED, pdev->name, dev);
++		if (ret)
++			goto out_mdio;
++
++		writel(MVMDIO_ERR_INT_SMI_DONE,
++			dev->regs + MVMDIO_ERR_INT_MASK);
+ 	}
  
  	mutex_init(&dev->lock);
- 
--	ret = of_mdiobus_register(bus, np);
-+	if (pdev->dev.of_node)
-+		ret = of_mdiobus_register(bus, pdev->dev.of_node);
-+	else
-+		ret = mdiobus_register(bus);
+@@ -194,19 +250,25 @@ static int orion_mdio_probe(struct platform_device *pdev)
+ 		ret = mdiobus_register(bus);
  	if (ret < 0) {
  		dev_err(&pdev->dev, "Cannot register MDIO bus (%d)\n", ret);
--		iounmap(dev->smireg);
- 		kfree(bus->irq);
- 		mdiobus_free(bus);
- 		return ret;
+-		kfree(bus->irq);
+-		mdiobus_free(bus);
+-		return ret;
++		goto out_mdio;
+ 	}
+ 
+ 	platform_set_drvdata(pdev, bus);
+ 
+ 	return 0;
++
++out_mdio:
++	kfree(bus->irq);
++	mdiobus_free(bus);
++	return ret;
+ }
+ 
+ static int orion_mdio_remove(struct platform_device *pdev)
+ {
+ 	struct mii_bus *bus = platform_get_drvdata(pdev);
++	struct orion_mdio_dev *dev = bus->priv;
++
++	writel(0, dev->regs + MVMDIO_ERR_INT_MASK);
+ 	mdiobus_unregister(bus);
+ 	kfree(bus->irq);
+ 	mdiobus_free(bus);
 -- 
 1.7.10.4
