@@ -1,25 +1,22 @@
-Return-Path: <gang.chen@asianux.com>
-Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 9073E2C00C4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2013 17:56:03 +1100 (EST)
-Message-ID: <514C0061.8080004@asianux.com>
-Date: Fri, 22 Mar 2013 14:55:29 +0800
-From: Chen Gang <gang.chen@asianux.com>
+Return-Path: <B32736@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9560A2C00B6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2013 18:15:18 +1100 (EST)
+Message-ID: <514C054E.4080102@freescale.com>
+Date: Fri, 22 Mar 2013 15:16:30 +0800
+From: Zhicheng Fan <b32736@freescale.com>
 MIME-Version: 1.0
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [Suggestion] PowerPC: kernel: cross compiling issue with
- allmodconfig
-References: <51428C81.6000204@asianux.com>
- <25841.1363323174@ale.ozlabs.ibm.com> <5142AE27.7060003@asianux.com>
- <514AA0D9.1090509@asianux.com> <10123.1363906486@ale.ozlabs.ibm.com>
-In-Reply-To: <10123.1363906486@ale.ozlabs.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: sfr@canb.auug.org.au, matt@ozlabs.org,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "paulus@samba.org" <paulus@samba.org>, imunsie@au1.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+To: Timur Tabi <timur@tabi.org>
+Subject: Re: [PATCH] powerpc/dts: Add qe support for 36bit
+References: <1363857961-23296-1-git-send-email-B32736@freescale.com>
+ <CAOZdJXVs9My50m9KHzdbn6pjvhvLqHrqqMsK02z2kCFx8YB03w@mail.gmail.com>
+In-Reply-To: <CAOZdJXVs9My50m9KHzdbn6pjvhvLqHrqqMsK02z2kCFx8YB03w@mail.gmail.com>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,27 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2013年03月22日 06:54, Michael Neuling wrote:
-> This is great, thanks a lot.  
-> 
-> If you want this to be picked up by the maintainer, you'll need to add
-> your signed-off-by.
-> 
-> The signed-off-by is to indicate that your happy for it to be included
-> and that you're legally allowed to do so.  See
-> http://gerrit.googlecode.com/svn/documentation/2.0/user-signedoffby.html
-> for more info.
-> 
-> Mikey
-
-  thanks, too.
-  I prefer Benjamin to have a closer look for my fixing.
-  if pass his checking, I will send a patch.
-    (he is on vacation, now, and he will check it when he is back).
-
-  Regards
+On 03/22/2013 02:42 AM, Timur Tabi wrote:
+> On Thu, Mar 21, 2013 at 4:26 AM, Zhicheng Fan <B32736@freescale.com> wrote:
+>> +       qe: qe@fffe80000 {
+>> +               ranges = <0x0 0xf 0xffe80000 0x40000>;
+> Are you sure this works?  The QE can't handle 36-bit addresses, and I
+> think the MURAM is located inside the QE address space.
+>
+Hi Timur,
+         you are right ,the QE can not support the 36-bit , I test it on 
+the p1025 ,the qe can not work
+         but we need the qe node , becase the dts include the 
+fsl/p1021si-post.dtsi
+         that needed, I will send other patch
 
 -- 
-Chen Gang
-
-Asianux Corporation
+Regards & Thanks
+Zhicheng Fan
