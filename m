@@ -1,34 +1,33 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3C89F2C00A3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2013 16:23:21 +1100 (EST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
- Fri, 22 Mar 2013 15:16:23 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id B84E92BB0050
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2013 16:23:16 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r2M5NCI67078182
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2013 16:23:12 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r2M5NF4p005329
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2013 16:23:16 +1100
-From: "Ian Munsie" <imunsie@au1.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH v2] powerpc: Add accounting for Doorbell interrupts
-Date: Fri, 22 Mar 2013 16:22:52 +1100
-Message-Id: <1363929772-15944-1-git-send-email-imunsie@au1.ibm.com>
-In-Reply-To: <1363928529-sup-704@delenn.ozlabs.ibm.com>
-References: <1363928529-sup-704@delenn.ozlabs.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Ian Munsie <imunsie@au1.ibm.com>
+Return-Path: <B40534@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1F8052C00B9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2013 16:46:32 +1100 (EST)
+Received: from mail7-ch1 (localhost [127.0.0.1])	by mail7-ch1-R.bigfish.com
+ (Postfix) with ESMTP id 0F7323E0391	for <linuxppc-dev@lists.ozlabs.org>; Fri,
+ 22 Mar 2013 05:46:27 +0000 (UTC)
+Received: from CH1EHSMHS026.bigfish.com (snatpool2.int.messaging.microsoft.com
+ [10.43.68.232])	by mail7-ch1.bigfish.com (Postfix) with ESMTP id
+ 5F47460047
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2013 05:46:25 +0000 (UTC)
+From: Wang Dongsheng-B40534 <B40534@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH 3/3] powerpc/fsl: add MPIC timer wakeup support
+Date: Fri, 22 Mar 2013 05:46:24 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259EB854F@039-SN2MPN1-022.039d.mgd.msft.net>
+References: <ABB05CD9C9F68C46A5CEDC7F15439259EB7712@039-SN2MPN1-022.039d.mgd.msft.net>
+ (from B40534@freescale.com on Tue Mar 19 22:48:53 2013)
+ <1363816138.25034.21@snotra>
+In-Reply-To: <1363816138.25034.21@snotra>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: Gala Kumar-B11780 <B11780@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>,
+ Zhao Chenhui-B35336 <B35336@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,90 +37,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Ian Munsie <imunsie@au1.ibm.com>
 
-This patch adds a new line to /proc/interrupts to account for the
-doorbell interrupts that each hardware thread has received. The total
-interrupt count in /proc/stat will now also include doorbells.
 
- # cat /proc/interrupts
-           CPU0       CPU1       CPU2       CPU3
- 16:        551       1267        281        175      XICS Level     IPI
-LOC:       2037       1503       1688       1625   Local timer interrupts
-SPU:          0          0          0          0   Spurious interrupts
-CNT:          0          0          0          0   Performance monitoring interrupts
-MCE:          0          0          0          0   Machine check exceptions
-DBL:         42        550         20         91   Doorbell interrupts
+> -----Original Message-----
+> From: Wood Scott-B07421
+> Sent: Thursday, March 21, 2013 5:49 AM
+> To: Wang Dongsheng-B40534
+> Cc: Wood Scott-B07421; Gala Kumar-B11780; linuxppc-dev@lists.ozlabs.org;
+> Zhao Chenhui-B35336; Li Yang-R58472
+> Subject: Re: [PATCH 3/3] powerpc/fsl: add MPIC timer wakeup support
+>=20
+> On 03/19/2013 10:48:53 PM, Wang Dongsheng-B40534 wrote:
+> >
+> >
+> > > -----Original Message-----
+> > > From: Wood Scott-B07421
+> > > Sent: Wednesday, March 20, 2013 6:55 AM
+> > > To: Wang Dongsheng-B40534
+> > > Cc: Wood Scott-B07421; Gala Kumar-B11780;
+> > linuxppc-dev@lists.ozlabs.org;
+> > > Zhao Chenhui-B35336; Li Yang-R58472
+> > > Subject: Re: [PATCH 3/3] powerpc/fsl: add MPIC timer wakeup support
+> > >
+> > > On 03/19/2013 01:25:42 AM, Wang Dongsheng-B40534 wrote:
+> > > > > -----Original Message-----
+> > > > > From: Wood Scott-B07421
+> > > > > Sent: Tuesday, March 19, 2013 8:31 AM
+> > > > > To: Wang Dongsheng-B40534
+> > > > > Cc: Gala Kumar-B11780; linuxppc-dev@lists.ozlabs.org; Wang
+> > > > Dongsheng-
+> > > > > B40534; Zhao Chenhui-B35336; Li Yang-R58472
+> > > > > Subject: Re: [PATCH 3/3] powerpc/fsl: add MPIC timer wakeup
+> > support
+> > > > >
+> > > > > On 03/08/2013 01:38:47 AM, Wang Dongsheng wrote:
+> > > > > > +static ssize_t fsl_timer_wakeup_store(struct device *dev,
+> > > > > > +				struct device_attribute *attr,
+> > > > > > +				const char *buf,
+> > > > > > +				size_t count)
+> > > > > > +{
+> > > > > > +	struct timeval interval;
+> > > > > > +	int ret;
+> > > > > > +
+> > > > > > +	interval.tv_usec =3D 0;
+> > > > > > +	if (kstrtol(buf, 0, &interval.tv_sec))
+> > > > > > +		return -EINVAL;
+> > > > >
+> > > > > I don't think the buffer will NUL-terminated...  Ordinarily
+> > > > there'll be
+> > > > > an LF terminator, but you can't rely on that (many other sysfs
+> > > > attributes
+> > > > > seem to, though...).
+> > > > >
+> > > > I think we don't need to care about LF terminator.
+> > > > The kstrtol--> _kstrtoull has been done.
+> > >
+> > > My point is, what happens if userspace passes in a buffer that has
+> > no
+> > > terminator of any sort?  kstrtol will continue reading beyond the
+> > end of
+> > > the buffer.
+> > >
+> > Do not care about terminator.
+>=20
+> kstrtol() obviously *does* because it doesn't take the buffer length as
+> a parameter.
+>=20
+> > kstrtol--> _kstrtoull--> _parse_integer
+> >
+> > _kstrtoull(...) {
+> > 	...
+> > 	rv =3D _parse_integer(s, base, &_res);
+> > 	if (rv & KSTRTOX_OVERFLOW)
+> > 		return -ERANGE;
+> > 	rv &=3D ~KSTRTOX_OVERFLOW;
+> > 	if (rv =3D=3D 0)
+> > 		return -EINVAL;
+> > 	s +=3D rv;
+> >
+> > 	if (*s =3D=3D '\n')
+> > 		s++;
+> > 	if (*s)
+> > 		return -EINVAL;
+> > 	...
+> > }
+> >
+> > _parse_integer(...) {
+> > 	...
+> > 	while (*s) {
+> > 		if ('0' <=3D *s && *s <=3D '9')
+> > 			val =3D *s - '0';
+> > 		else if ('a' <=3D _tolower(*s) && _tolower(*s) <=3D 'f')
+> > 			val =3D _tolower(*s) - 'a' + 10;
+> > 		else
+> > 			break;	//this will break out to convert.
+>=20
+> Really?  How do you know that the next byte after the buffer isn't a
+> valid hex digit?  How do you even know that we won't take a fault
+> accessing it?
+>=20
+Under what case is unsafe, please make sense.
 
-Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
----
-
-Changes from v1:
-  - Added #ifdef CONFIG_PPC_DOORBELL as requested by Michael Ellerman to avoid
-    the extra per cpu variable in irq_stat when building for a system that does
-    not support doorbells.
-
- arch/powerpc/include/asm/hardirq.h |    3 +++
- arch/powerpc/kernel/dbell.c        |    2 ++
- arch/powerpc/kernel/irq.c          |   12 ++++++++++++
- 3 files changed, 17 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/hardirq.h b/arch/powerpc/include/asm/hardirq.h
-index 3147a29..3bdcfce 100644
---- a/arch/powerpc/include/asm/hardirq.h
-+++ b/arch/powerpc/include/asm/hardirq.h
-@@ -10,6 +10,9 @@ typedef struct {
- 	unsigned int pmu_irqs;
- 	unsigned int mce_exceptions;
- 	unsigned int spurious_irqs;
-+#ifdef CONFIG_PPC_DOORBELL
-+	unsigned int doorbell_irqs;
-+#endif
- } ____cacheline_aligned irq_cpustat_t;
- 
- DECLARE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
-diff --git a/arch/powerpc/kernel/dbell.c b/arch/powerpc/kernel/dbell.c
-index 9ebbc24..d55c76c 100644
---- a/arch/powerpc/kernel/dbell.c
-+++ b/arch/powerpc/kernel/dbell.c
-@@ -41,6 +41,8 @@ void doorbell_exception(struct pt_regs *regs)
- 
- 	may_hard_irq_enable();
- 
-+	__get_cpu_var(irq_stat).doorbell_irqs++;
-+
- 	smp_ipi_demux();
- 
- 	irq_exit();
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 4f97fe3..5cbcf4d 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -374,6 +374,15 @@ int arch_show_interrupts(struct seq_file *p, int prec)
- 		seq_printf(p, "%10u ", per_cpu(irq_stat, j).mce_exceptions);
- 	seq_printf(p, "  Machine check exceptions\n");
- 
-+#ifdef CONFIG_PPC_DOORBELL
-+	if (cpu_has_feature(CPU_FTR_DBELL)) {
-+		seq_printf(p, "%*s: ", prec, "DBL");
-+		for_each_online_cpu(j)
-+			seq_printf(p, "%10u ", per_cpu(irq_stat, j).doorbell_irqs);
-+		seq_printf(p, "  Doorbell interrupts\n");
-+	}
-+#endif
-+
- 	return 0;
- }
- 
-@@ -387,6 +396,9 @@ u64 arch_irq_stat_cpu(unsigned int cpu)
- 	sum += per_cpu(irq_stat, cpu).pmu_irqs;
- 	sum += per_cpu(irq_stat, cpu).mce_exceptions;
- 	sum += per_cpu(irq_stat, cpu).spurious_irqs;
-+#ifdef CONFIG_PPC_DOORBELL
-+	sum += per_cpu(irq_stat, cpu).doorbell_irqs;
-+#endif
- 
- 	return sum;
- }
--- 
-1.7.10.4
+"kstrtol" is used in almost of sysfs interface, I think it should be accept=
+ed in defaule :).
