@@ -1,15 +1,15 @@
 Return-Path: <michael@ellerman.id.au>
-Date: Fri, 22 Mar 2013 15:18:03 +1100
+Date: Fri, 22 Mar 2013 15:21:59 +1100
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Ian Munsie <imunsie@au1.ibm.com>
-Subject: Re: [PATCH] powerpc: Add accounting for Doorbell interrupts
-Message-ID: <20130322041803.GB26908@concordia>
-References: <1363765332-28461-1-git-send-email-imunsie@au1.ibm.com>
+To: Paul Bolle <pebolle@tiscali.nl>
+Subject: Re: [PATCH] powerpc: drop even more unused Kconfig symbols
+Message-ID: <20130322042159.GC26908@concordia>
+References: <1363864206.1390.117.camel@x61.thuisdomein>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1363765332-28461-1-git-send-email-imunsie@au1.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <1363864206.1390.117.camel@x61.thuisdomein>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,13 +19,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 20, 2013 at 06:42:12PM +1100, Ian Munsie wrote:
-> From: Ian Munsie <imunsie@au1.ibm.com>
+On Thu, Mar 21, 2013 at 12:10:06PM +0100, Paul Bolle wrote:
+> When I submitted commit 6805ab6daa2b589fe3242d05ddc47a9dbb0c4eb1
+> ("powerpc: drop unused Kconfig symbols") I apparently failed to notice
+> that my patch also made PREP_RESIDUAL and PPC_A2_DD2 unused. Drop these
+> now.
 > 
-> This patch adds a new line to /proc/interrupts to account for the
-> doorbell interrupts that each hardware thread has received. The total
-> interrupt count in /proc/stat will now also include doorbells.
+> Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+> ---
+> 0) Untested.
+> 
+> 1) I investigated these Kconfig files a bit and discovered that PPC_PREP
+> is marked BROKEN since v2.6.15, see commit
+> 5be396b00ca0f2f769c55cf69bbd7c77451c925e ("powerpc: Mark PREP and
+> embedded as broken for now"). Though it's not my problem, this does
+> suggest PReP support can be removed entirely.
 
-Should it be inside CONFIG_PPC_DOORBELL ?
+It does, and the best code is deleted code.
+
+Care to send a patch?
 
 cheers
