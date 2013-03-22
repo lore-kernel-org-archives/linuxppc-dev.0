@@ -1,38 +1,19 @@
-Return-Path: <ananth@in.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e37.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BD6C82C0259
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2013 22:46:33 +1100 (EST)
-Received: from /spool/local
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ananth@in.ibm.com>;
- Fri, 22 Mar 2013 05:46:31 -0600
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
- [9.17.195.106])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id E6B0A1FF0039
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2013 05:41:31 -0600 (MDT)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r2MBkRoB283328
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2013 05:46:27 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r2MBkRPj030497
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2013 05:46:27 -0600
-Date: Fri, 22 Mar 2013 17:16:24 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/3] uprobes/powerpc: ignore trap variants during register
-Message-ID: <20130322114624.GI26183@in.ibm.com>
-References: <20130322114446.GG26183@in.ibm.com>
+Return-Path: <timur@tabi.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+ [71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id CDCE02C00BA
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2013 22:50:47 +1100 (EST)
+Message-ID: <514C4595.4080706@tabi.org>
+Date: Fri, 22 Mar 2013 06:50:45 -0500
+From: Timur Tabi <timur@tabi.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130322114446.GG26183@in.ibm.com>
-Cc: ppcdev <linuxppc-dev@lists.ozlabs.org>, oleg@redhat.com,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Reply-To: ananth@in.ibm.com
+To: Zhicheng Fan <b32736@freescale.com>
+Subject: Re: [PATCH] powerpc/dts: Add qe support for 36bit
+References: <1363857961-23296-1-git-send-email-B32736@freescale.com>
+ <CAOZdJXVs9My50m9KHzdbn6pjvhvLqHrqqMsK02z2kCFx8YB03w@mail.gmail.com>
+ <514C054E.4080102@freescale.com>
+In-Reply-To: <514C054E.4080102@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,36 +23,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Zhicheng Fan wrote:
+>>
+> Hi Timur,
+>          you are right ,the QE can not support the 36-bit , I test it on
+> the p1025 ,the qe can not work
+>          but we need the qe node , becase the dts include the
+> fsl/p1021si-post.dtsi
+>          that needed, I will send other patch
 
-The current implementation of uprobes assumes that uprobes always wins
-even when a register request is at a location with a conditional
-breakpoint by some other entity. Refer to [1] for more details.
+My suggestion: with a 36-bit device tree, the QE must be disabled.
 
-Remove the breakpoint instruction check during registration on powerpc,
-so that uprobes behavior on powerpc matches that of x86.
+	qe: qe@fffe80000 {
+		/* The QE does not work with 36-bit addressing */
+		status = "disabled";
+	};
 
-[1] https://lists.ozlabs.org/pipermail/linuxppc-dev/2013-March/104771.html
-
-Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
----
- arch/powerpc/kernel/uprobes.c |    6 ------
- 1 file changed, 6 deletions(-)
-
-Index: linux-3.9-rc3/arch/powerpc/kernel/uprobes.c
-===================================================================
---- linux-3.9-rc3.orig/arch/powerpc/kernel/uprobes.c
-+++ linux-3.9-rc3/arch/powerpc/kernel/uprobes.c
-@@ -53,12 +53,6 @@ int arch_uprobe_analyze_insn(struct arch
- 	if (addr & 0x03)
- 		return -EINVAL;
- 
--	/*
--	 * We currently don't support a uprobe on an already
--	 * existing breakpoint instruction underneath
--	 */
--	if (is_trap(auprobe->ainsn))
--		return -ENOTSUPP;
- 	return 0;
- }
- 
+However, on the P102x, there may be a GUTS register that stores the upper 
+four bits of the QE's physical address.  Your patch *can* work if you 
+*also* set this register to 0xF.  Look for that register.
+-- 
+Timur Tabi
