@@ -1,38 +1,35 @@
-Return-Path: <ananth@in.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Return-Path: <svaidy@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D02B92C00CF
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Mar 2013 02:20:04 +1100 (EST)
+ (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2DE352C009E
+ for <linuxppc-dev@ozlabs.org>; Sat, 23 Mar 2013 02:49:51 +1100 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ananth@in.ibm.com>;
- Fri, 22 Mar 2013 11:20:02 -0400
-Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 699FE38C8068
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2013 11:19:59 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r2MFJxuO30343298
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2013 11:19:59 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r2MFJwvM025050
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2013 12:19:59 -0300
-Date: Fri, 22 Mar 2013 20:49:46 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2 4/4] uprobes/powerpc: remove additional trap instruction
- check
-Message-ID: <20130322151946.GE20010@in.ibm.com>
-References: <20130322151627.GB20010@in.ibm.com>
+ for <linuxppc-dev@ozlabs.org> from <svaidy@linux.vnet.ibm.com>;
+ Sat, 23 Mar 2013 01:39:21 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 62C8D2BB0023
+ for <linuxppc-dev@ozlabs.org>; Sat, 23 Mar 2013 02:49:45 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r2MFadf65505500
+ for <linuxppc-dev@ozlabs.org>; Sat, 23 Mar 2013 02:36:40 +1100
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r2MFnh15019607
+ for <linuxppc-dev@ozlabs.org>; Sat, 23 Mar 2013 02:49:44 +1100
+Date: Fri, 22 Mar 2013 21:19:35 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [BUG][PATCH] powerpc: fix numa distance for form0 device tree
+Message-ID: <20130322154935.GA26283@dirshya.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130322151627.GB20010@in.ibm.com>
-Cc: ppcdev <linuxppc-dev@lists.ozlabs.org>, oleg@redhat.com,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Reply-To: ananth@in.ibm.com
+Content-Type: text/plain; charset=iso-8859-1
+Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>,
+ Michael Neuling <mikey@neuling.org>
+Reply-To: svaidy@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,30 +39,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+    powerpc: fix numa distance for form0 device tree
+    
+    The following commit breaks numa distance setup for old powerpc
+    systems that use form0 encoding in device tree.
+    
+        commit 41eab6f88f24124df89e38067b3766b7bef06ddb
+        powerpc/numa: Use form 1 affinity to setup node distance
+    
+    Device tree node /rtas/ibm,associativity-reference-points would
+    index into /cpus/PowerPCxxxx/ibm,associativity based on form0 or
+    form1 encoding detected by ibm,architecture-vec-5 property.
+    
+    All modern systems use form1 and current kernel code is correct.
+    However, on older systems with form0 encoding, the numa distance
+    will get hard coded as LOCAL_DISTANCE for all nodes.  This causes
+    task scheduling anomaly since scheduler will skip building numa
+    level domain (topmost domain with all cpus) if all numa distances
+    are same.  (value of 'level' in sched_init_numa() will remain 0)
+    
+    Prior to the above commit:
+    #define node_distance(from,to)
+    	((from) == (to) ? LOCAL_DISTANCE : REMOTE_DISTANCE)
+    
+    Restoring compatible behavior with this patch for old powerpc systems
+    with device tree where numa distance are encoded as form0.
 
-prepare_uprobe() already checks if the underlying unstruction
-(on file) is a trap variant. We don't need to check this again.
+    Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 
-Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
----
- arch/powerpc/kernel/uprobes.c |    6 ------
- 1 file changed, 6 deletions(-)
-
-Index: linux-3.9-rc3/arch/powerpc/kernel/uprobes.c
-===================================================================
---- linux-3.9-rc3.orig/arch/powerpc/kernel/uprobes.c
-+++ linux-3.9-rc3/arch/powerpc/kernel/uprobes.c
-@@ -53,12 +53,6 @@ int arch_uprobe_analyze_insn(struct arch
- 	if (addr & 0x03)
- 		return -EINVAL;
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index bba87ca..6a252c4 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -201,7 +201,7 @@ int __node_distance(int a, int b)
+ 	int distance = LOCAL_DISTANCE;
  
--	/*
--	 * We currently don't support a uprobe on an already
--	 * existing breakpoint instruction underneath
--	 */
--	if (is_trap(auprobe->ainsn))
--		return -ENOTSUPP;
- 	return 0;
- }
+ 	if (!form1_affinity)
+-		return distance;
++		return ((a == b) ? LOCAL_DISTANCE : REMOTE_DISTANCE);
  
+ 	for (i = 0; i < distance_ref_points_depth; i++) {
+ 		if (distance_lookup_table[a][i] == distance_lookup_table[b][i])
