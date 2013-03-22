@@ -1,25 +1,21 @@
-Return-Path: <f.fainelli@gmail.com>
-Sender: Florian Fainelli <f.fainelli@gmail.com>
-Message-ID: <514C6B2D.5000100@openwrt.org>
-Date: Fri, 22 Mar 2013 15:31:09 +0100
-From: Florian Fainelli <florian@openwrt.org>
+Return-Path: <oleg@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 4FA6A2C00A5
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Mar 2013 01:49:15 +1100 (EST)
+Date: Fri, 22 Mar 2013 15:46:40 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Subject: Re: [PATCH] powerpc/uprobes: teach uprobes to ignore gdb breakpoints
+Message-ID: <20130322144640.GA17286@redhat.com>
+References: <20130320104033.GA19844@in.ibm.com>
+ <20130320122639.GA29541@redhat.com> <20130320154152.GA8246@in.ibm.com>
+ <20130320160644.GA20352@redhat.com> <20130321071545.GA5271@in.ibm.com>
+ <20130321155809.GA20865@redhat.com> <20130322044747.GB26183@in.ibm.com>
 MIME-Version: 1.0
-To: Jason Cooper <jason@lakedaemon.net>
-Subject: Re: [PATCH 0/4 v3] mv643xx_eth: use mvmdio MDIO bus driver
-References: <1363284515-9865-1-git-send-email-florian@openwrt.org>
- <1363959568-16976-1-git-send-email-florian@openwrt.org>
- <20130322141423.GJ13280@titan.lakedaemon.net> <514C69B7.8090106@openwrt.org>
- <20130322142924.GK13280@titan.lakedaemon.net>
-In-Reply-To: <20130322142924.GK13280@titan.lakedaemon.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
- Andrew Lunn <andrew@lunn.ch>, Russell King <linux@arm.linux.org.uk>,
- linux-doc@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
- netdev@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linux-arm-kernel@lists.infradead.org, Rob Landley <rob@landley.net>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
- davem@davemloft.net, Lennert Buytenhek <buytenh@wantstofly.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130322044747.GB26183@in.ibm.com>
+Cc: ppcdev <linuxppc-dev@lists.ozlabs.org>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>, stable@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,22 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Le 03/22/13 15:29, Jason Cooper a écrit :
->> Ok, thanks! Does that mean that you want these changes to go via
->> your tree? David initially applied my v2 of this patchset, and since
->> it thouches mostly ethernet driver stuff, I would rather make it go
->> via his tree if both of you agree.
+On 03/22, Ananth N Mavinakayanahalli wrote:
 >
-> Yeah, I thought I should have reworded that after I hit send :)  I
-> simply meant it applied cleanly against v3.9-rc3, booted, and worked.  I
-> Acked it so David could take the whole series through his tree.  Sorry
-> for the confusion.
+> On Thu, Mar 21, 2013 at 04:58:09PM +0100, Oleg Nesterov wrote:
+> >
+> > 	- verify_opcode()->is_swbp_insn() means:
+> >
+> > 		is this insn fine for uprobe? (we do not care about
+> > 		gdb, we simply ignore this problem)
 >
-> Now that I can build mv643xx_eth DT on top of this, I'll structure it so
-> those changes go on top of yours (in David's tree) and try to avoid the
-> external dependency for the DT bits going though arm-soc.
+> I will write up a patch for this case.. So, IIUC we do not care to send
+> gdb a SIGTRAP if we have replaced a conditional trap from gdb with an
+> unconditional uprobes one, right?
 
-Sounds good! FYI, I am finishing up DSA Device Tree bindings so that we 
-can finally get rid of board-specific Kirkwood files.
---
-Florian
+Yes.
+
+And just in case, we do not send SIGTRAP if gdb used the same/unconditional
+insn. We simply can't know if someone else wants to know that the task hits
+this breakpoint.
+
+Oleg.
