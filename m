@@ -1,32 +1,32 @@
-Return-Path: <B08248@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
+Return-Path: <B07421@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe005.messaging.microsoft.com [213.199.154.143])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B549A2C00D0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Mar 2013 06:17:36 +1100 (EST)
-From: Yoder Stuart-B08248 <B08248@freescale.com>
-To: Michael Neuling <mikey@neuling.org>, Chen Gang F T
- <chen.gang.flying.transformer@gmail.com>, Kumar Gala
- <galak@kernel.crashing.org>
-Subject: RE: [Suggestion] PowerPC: kernel: cross compiling issue with
- allmodconfig
-Date: Fri, 22 Mar 2013 19:17:28 +0000
-Message-ID: <9F6FE96B71CF29479FF1CDC8046E150358CDE5@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <51428C81.6000204@asianux.com>
- <25841.1363323174@ale.ozlabs.ibm.com> <5142AE27.7060003@asianux.com>
- <514AA0D9.1090509@asianux.com> <514AC418.1070806@gmail.com>
- <14121.1363908062@ale.ozlabs.ibm.com>
-In-Reply-To: <14121.1363908062@ale.ozlabs.ibm.com>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id 95A1C2C00B9
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Mar 2013 09:11:45 +1100 (EST)
+Received: from mail15-db3 (localhost [127.0.0.1])	by mail15-db3-R.bigfish.com
+ (Postfix) with ESMTP id 0B2394800DA	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri,
+ 22 Mar 2013 22:11:39 +0000 (UTC)
+Received: from DB3EHSMHS007.bigfish.com (unknown [10.3.81.227])	by
+ mail15-db3.bigfish.com (Postfix) with ESMTP id 616882E004B	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2013 22:11:36 +0000 (UTC)
+Date: Fri, 22 Mar 2013 17:11:08 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 3/3] powerpc/fsl: add MPIC timer wakeup support
+To: Wang Dongsheng-B40534 <B40534@freescale.com>
+In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F15439259EB854F@039-SN2MPN1-022.039d.mgd.msft.net>
+ (from B40534@freescale.com on Fri Mar 22 00:46:24 2013)
+Message-ID: <1363990268.24790.11@snotra>
 MIME-Version: 1.0
-Cc: "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>,
- "matt@ozlabs.org" <matt@ozlabs.org>, Chen Gang <gang.chen@asianux.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "paulus@samba.org" <paulus@samba.org>,
- "imunsie@au1.ibm.com" <imunsie@au1.ibm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ Gala Kumar-B11780 <B11780@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>,
+ Zhao Chenhui-B35336 <B35336@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,36 +36,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogTWljaGFlbCBOZXVsaW5n
-IFttYWlsdG86bWlrZXlAbmV1bGluZy5vcmddDQo+IFNlbnQ6IFRodXJzZGF5LCBNYXJjaCAyMSwg
-MjAxMyA2OjIxIFBNDQo+IFRvOiBDaGVuIEdhbmcgRiBUOyBZb2RlciBTdHVhcnQtQjA4MjQ4OyBL
-dW1hciBHYWxhDQo+IENjOiBDaGVuIEdhbmc7IEJlbmphbWluIEhlcnJlbnNjaG1pZHQ7IHNmckBj
-YW5iLmF1dWcub3JnLmF1OyBwYXVsdXNAc2FtYmEub3JnOyBtYXR0QG96bGFicy5vcmc7DQo+IGlt
-dW5zaWVAYXUxLmlibS5jb207IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBsaW51eC1r
-ZXJuZWxAdmdlci5rZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBbU3VnZ2VzdGlvbl0gUG93ZXJQ
-Qzoga2VybmVsOiBjcm9zcyBjb21waWxpbmcgaXNzdWUgd2l0aCBhbGxtb2Rjb25maWcNCj4gDQo+
-IENoZW4gR2FuZyBGIFQgPGNoZW4uZ2FuZy5mbHlpbmcudHJhbnNmb3JtZXJAZ21haWwuY29tPiB3
-cm90ZToNCj4gDQo+ID4NCj4gPiAgIGl0IHNlZW1zOg0KPiA+ICAgICBvbmx5IG1vdmUgc2xiX21p
-c3NfcmVhbG1vZGUgdG8gdGhlIGVuZCwgY2FuIGZpeCB0aGlzIGlzc3VlIHdpdGhvdXQgbmVnYXRp
-dmUgZWZmZWN0Lg0KPiANCj4gU28gdGhpcyB3b3JrcyBidXQgdW5jb3ZlcnMgYSBuZXcgYnVnLg0K
-PiANCj4gU3R1YXJ0OiBpZiB5b3UgYXBwbHkgdGhpcyBwYXRjaCBhbGxtb2Rjb25maWcgbm93IGdl
-dHMgdGhpcyBidWlsZCBlcnJvcg0KPiBvbiBsaW51eC1uZXh0Lg0KPiANCj4gYXJjaC9wb3dlcnBj
-L2tlcm5lbC9idWlsdC1pbi5vOiBJbiBmdW5jdGlvbiBgcmVzdG9yZV9wYmxpc3RfcHRyJzoNCj4g
-ZnRyYWNlLmM6KC50b2MrMHhkNzgpOiB1bmRlZmluZWQgcmVmZXJlbmNlIHRvIGBlcGFwcl9ldl9p
-ZGxlX3N0YXJ0Jw0KPiBmdHJhY2UuYzooLnRvYysweGQ4OCk6IHVuZGVmaW5lZCByZWZlcmVuY2Ug
-dG8gYGVwYXByX2V2X2lkbGUnDQo+IG1ha2VbMV06ICoqKiBbdm1saW51eF0gRXJyb3IgMQ0KPiAN
-Cj4gUmV2ZXJ0aW5nIHlvdXIgcGF0Y2ggYmVsb3cgZml4ZXMgdGhpczoNCj4gDQo+ICAgY29tbWl0
-IGYwNzA5ODZhMDdlNTE0ZTNiNGZjNGFlZjY1NTFiOGRmZmNiMTkyODcNCj4gICBBdXRob3I6IFN0
-dWFydCBZb2RlciA8c3R1YXJ0LnlvZGVyQGZyZWVzY2FsZS5jb20+DQo+ICAgRGF0ZTogICBGcmkg
-RmViIDggMTM6MjI6NTYgMjAxMyAtMDYwMA0KPiANCj4gICBwb3dlcnBjOiBBZGQgcGFyYXZpcnQg
-aWRsZSBsb29wIGZvciA2NC1iaXQgQm9vay1FDQo+IA0KPiAgIFNpZ25lZC1vZmYtYnk6IFN0dWFy
-dCBZb2RlciA8c3R1YXJ0LnlvZGVyQGZyZWVzY2FsZS5jb20+DQo+ICAgU2lnbmVkLW9mZi1ieTog
-S3VtYXIgR2FsYSA8Z2FsYWtAa2VybmVsLmNyYXNoaW5nLm9yZz4NCj4gDQo+IFNob3VsZCB3ZSBy
-ZXZlcnQgeW91ciBwYXRjaCBvciBjYW4geW91IHNlbmQgYSBmaXg/ICBUaGlzIGlzIGN1cnJlbnRs
-eQ0KPiBicm9rZW4gaW4gbGludXgtbmV4dCAoYXQgbGVhc3QgbmV4dC0yMDEzMDMyMSkuDQoNClNl
-bnQgYSBwYXRjaCB0aGF0IHJlc29sdmVzIHRoaXMuICBOb3QgY29tcGxldGVseSBoYXBweSB3aXRo
-IGl0DQpiZWNhdXNlIG9mIHRoZSBhZGRlZCAjaWZkZWZzLCBidXQgbm90IHN1cmUgaG93IGVsc2Ug
-dG8gcmVzb2x2ZQ0KdGhpcy4gICBhbGxtb2Rjb25maWcgaXMgY3JlYXRpbmcgY29uZmlnIGNvbWJp
-bmF0aW9ucyB0aGF0IGRvbid0DQpoYXBwZW4gaW4gYSBub3JtYWwgYnVpbGQgKGF0IGxlYXN0IGN1
-cnJlbnRseSktLSA2NC1iaXQgYnVpbGQNCnRoYXQgZW5hYmxlcyBFUEFQUl9QQVJBVklSVCBidXQg
-bm90IFBQQ19CT09LM0VfNjQuDQoNClN0dWFydA0K
+On 03/22/2013 12:46:24 AM, Wang Dongsheng-B40534 wrote:
+>=20
+>=20
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Thursday, March 21, 2013 5:49 AM
+> > To: Wang Dongsheng-B40534
+> > Cc: Wood Scott-B07421; Gala Kumar-B11780; =20
+> linuxppc-dev@lists.ozlabs.org;
+> > Zhao Chenhui-B35336; Li Yang-R58472
+> > Subject: Re: [PATCH 3/3] powerpc/fsl: add MPIC timer wakeup support
+> >
+> > On 03/19/2013 10:48:53 PM, Wang Dongsheng-B40534 wrote:
+> > > 	while (*s) {
+> > > 		if ('0' <=3D *s && *s <=3D '9')
+> > > 			val =3D *s - '0';
+> > > 		else if ('a' <=3D _tolower(*s) && _tolower(*s) <=3D 'f')
+> > > 			val =3D _tolower(*s) - 'a' + 10;
+> > > 		else
+> > > 			break;	//this will break out to convert.
+> >
+> > Really?  How do you know that the next byte after the buffer isn't a
+> > valid hex digit?  How do you even know that we won't take a fault
+> > accessing it?
+> >
+> Under what case is unsafe, please make sense.
+
+char buffer[1] =3D { '5' };
+write(fd, &buffer, 1);
+
+What comes after that '5' byte in the pointer you pass to kstrtol?
+
+> "kstrtol" is used in almost of sysfs interface, I think it should be =20
+> accepted in defaule :).
+
+Just because a lot of other people copy blindly doesn't make it right.  =20
+Most of the examples I found use sscanf instead, though that has the =20
+same problem.
+
+I do see a few instances of the "strings from sysfs write are not 0 =20
+terminated!" in the comments, though (kernel/time/clocksource.c and =20
+kernel/rtmutex-tester.c).
+
+Also "words written to sysfs files may, or may not, be \n terminated" =20
+in drivers/md/md.c.
+
+-Scott=
