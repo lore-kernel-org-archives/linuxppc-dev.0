@@ -1,20 +1,20 @@
-Return-Path: <gleb@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 621D52C00C3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2013 18:21:17 +1100 (EST)
-Date: Fri, 22 Mar 2013 09:21:03 +0200
-From: Gleb Natapov <gleb@redhat.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] KVM: fix powerpc build error for !CONFIG_KVM
-Message-ID: <20130322072102.GL9382@redhat.com>
-References: <20130322143550.c7ebe79c9fd97ec7a385ea16@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130322143550.c7ebe79c9fd97ec7a385ea16@canb.auug.org.au>
-Cc: Phil Carmody <pc+lkml@asdf.org>, Kevin Hilman <khilman@linaro.org>,
- Marcelo Tosatti <mtosatti@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
- linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <florian@openwrt.org>
+From: Florian Fainelli <florian@openwrt.org>
+To: davem@davemloft.net
+Subject: [PATCH 0/4 v3] mv643xx_eth: use mvmdio MDIO bus driver
+Date: Fri, 22 Mar 2013 14:39:24 +0100
+Message-Id: <1363959568-16976-1-git-send-email-florian@openwrt.org>
+In-Reply-To: <1363284515-9865-1-git-send-email-florian@openwrt.org>
+References: <1363284515-9865-1-git-send-email-florian@openwrt.org>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ Andrew Lunn <andrew@lunn.ch>, Russell King <linux@arm.linux.org.uk>,
+ Jason Cooper <jason@lakedaemon.net>, linux-doc@vger.kernel.org,
+ devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Rob Herring <rob.herring@calxeda.com>, netdev@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linux-arm-kernel@lists.infradead.org,
+ Rob Landley <rob@landley.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linuxppc-dev@lists.ozlabs.org, Florian Fainelli <florian@openwrt.org>,
+ Lennert Buytenhek <buytenh@wantstofly.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,93 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 22, 2013 at 02:35:50PM +1100, Stephen Rothwell wrote:
-> Fixes these build error when CONFIG_KVM is not defined:
-> 
-> In file included from arch/powerpc/include/asm/kvm_ppc.h:33:0,
->                  from arch/powerpc/kernel/setup_64.c:67:
-> arch/powerpc/include/asm/kvm_book3s.h:65:20: error: field 'pte' has incomplete type
-> arch/powerpc/include/asm/kvm_book3s.h:69:18: error: field 'vcpu' has incomplete type
-> arch/powerpc/include/asm/kvm_book3s.h:98:34: error: 'HPTEG_HASH_NUM_PTE' undeclared here (not in a function)
-> arch/powerpc/include/asm/kvm_book3s.h:99:39: error: 'HPTEG_HASH_NUM_PTE_LONG' undeclared here (not in a function)
-> arch/powerpc/include/asm/kvm_book3s.h:100:35: error: 'HPTEG_HASH_NUM_VPTE' undeclared here (not in a function)
-> arch/powerpc/include/asm/kvm_book3s.h:101:40: error: 'HPTEG_HASH_NUM_VPTE_LONG' undeclared here (not in a function)
-> arch/powerpc/include/asm/kvm_book3s.h:129:4: error: 'struct kvm_run' declared inside parameter list [-Werror]
-> arch/powerpc/include/asm/kvm_book3s.h:129:4: error: its scope is only this definition or declaration, which is probably not what you want [-Werror]
-> 
-> ... and so on ...
-> 
-> This was introduced by commit f445f11eb2cc265dd47da5b2e864df46cd6e5a82
-> "KVM: allow host header to be included even for !CONFIG_KVM"
-> 
-This will re-introduce the problem that Kevin tried to fix with his
-original patch. The problem is that kernel/context_tracking.c includes
-linux/kvm_host.h unconditionally and the later includes asm/kvm_host.h
-and this breaks on archs without KVM.
+Hi all,
 
-I think the correct solution is to not include linux/kvm_host.h in
-kernel/context_tracking.c unconditionally. The patch by Kevin is here:
-http://lkml.org/lkml/2013/3/21/745
+This patch converts the mv643xx_eth driver to use the mvmdio MDIO bus driver
+instead of rolling its own implementation. As a result, all users of this
+mv643xx_eth driver are converted to register an "orion-mdio" platform_device.
+The mvmdio driver is also updated to support an interrupt line which reports
+SMI error/completion, and to allow traditionnal platform device registration
+instead of just device tree.
 
-> Cc: Kevin Hilman <khilman@linaro.org>
-> Cc: Marcelo Tosatti <mtosatti@redhat.com>
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->  include/linux/kvm_host.h | 11 +++++------
->  1 file changed, 5 insertions(+), 6 deletions(-)
-> 
-> Kevin, does this still fix the error that commit
-> f445f11eb2cc265dd47da5b2e864df46cd6e5a82 was fixing?
-> 
-> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-> index a942863..90ebec0 100644
-> --- a/include/linux/kvm_host.h
-> +++ b/include/linux/kvm_host.h
-> @@ -1,8 +1,6 @@
->  #ifndef __KVM_HOST_H
->  #define __KVM_HOST_H
->  
-> -#if IS_ENABLED(CONFIG_KVM)
-> -
->  /*
->   * This work is licensed under the terms of the GNU GPL, version 2.  See
->   * the COPYING file in the top-level directory.
-> @@ -751,6 +749,7 @@ static inline int kvm_deassign_device(struct kvm *kvm,
->  }
->  #endif /* CONFIG_IOMMU_API */
->  
-> +#if IS_ENABLED(CONFIG_KVM)
->  static inline void __guest_enter(void)
->  {
->  	/*
-> @@ -770,6 +769,10 @@ static inline void __guest_exit(void)
->  	vtime_account_system(current);
->  	current->flags &= ~PF_VCPU;
->  }
-> +#else
-> +static inline void __guest_enter(void) { return; }
-> +static inline void __guest_exit(void) { return; }
-> +#endif /* IS_ENABLED(CONFIG_KVM) */
->  
->  #ifdef CONFIG_CONTEXT_TRACKING
->  extern void guest_enter(void);
-> @@ -1057,8 +1060,4 @@ static inline bool kvm_vcpu_eligible_for_directed_yield(struct kvm_vcpu *vcpu)
->  }
->  
->  #endif /* CONFIG_HAVE_KVM_CPU_RELAX_INTERCEPT */
-> -#else
-> -static inline void __guest_enter(void) { return; }
-> -static inline void __guest_exit(void) { return; }
-> -#endif /* IS_ENABLED(CONFIG_KVM) */
->  #endif
-> -- 
-> 1.8.1
-> 
-> -- 
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
+David, I think it makes sense for you to merge all of this, since we do
+not want the architecture files to be desynchronized from the mv643xx_eth to
+avoid runtime breakage. The potential for merge conflicts should be very small.
 
+Florian Fainelli (4):
+  net: mvmdio: allow platform device style registration
+  net: mvmdio: rename base register cookie from smireg to regs
+  net: mvmdio: enhance driver to support SMI error/done interrupts
+  mv643xx_eth: convert to use the Marvell Orion MDIO driver
 
+ .../devicetree/bindings/net/marvell-orion-mdio.txt |    3 +
+ arch/arm/plat-orion/common.c                       |   54 +++---
+ arch/powerpc/platforms/chrp/pegasos_eth.c          |   20 ++
+ arch/powerpc/sysdev/mv64x60_dev.c                  |   16 +-
+ drivers/net/ethernet/marvell/Kconfig               |    5 +-
+ drivers/net/ethernet/marvell/Makefile              |    2 +-
+ drivers/net/ethernet/marvell/mv643xx_eth.c         |  195 ++------------------
+ drivers/net/ethernet/marvell/mvmdio.c              |  130 ++++++++++---
+ include/linux/mv643xx_eth.h                        |    1 -
+ 9 files changed, 187 insertions(+), 239 deletions(-)
 
---
-			Gleb.
+-- 
+1.7.10.4
