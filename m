@@ -1,22 +1,22 @@
-Return-Path: <thomas.petazzoni@free-electrons.com>
-Date: Fri, 22 Mar 2013 14:53:37 +0100
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Return-Path: <jason@lakedaemon.net>
+Date: Fri, 22 Mar 2013 10:14:23 -0400
+From: Jason Cooper <jason@lakedaemon.net>
 To: Florian Fainelli <florian@openwrt.org>
 Subject: Re: [PATCH 0/4 v3] mv643xx_eth: use mvmdio MDIO bus driver
-Message-ID: <20130322145337.3814fcc8@skate>
-In-Reply-To: <1363959568-16976-1-git-send-email-florian@openwrt.org>
+Message-ID: <20130322141423.GJ13280@titan.lakedaemon.net>
 References: <1363284515-9865-1-git-send-email-florian@openwrt.org>
  <1363959568-16976-1-git-send-email-florian@openwrt.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Andrew Lunn <andrew@lunn.ch>, Russell King <linux@arm.linux.org.uk>,
- Jason Cooper <jason@lakedaemon.net>, linux-doc@vger.kernel.org,
- devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Rob Herring <rob.herring@calxeda.com>, netdev@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linux-arm-kernel@lists.infradead.org,
- Rob Landley <rob@landley.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linuxppc-dev@lists.ozlabs.org, davem@davemloft.net,
- Lennert Buytenhek <buytenh@wantstofly.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1363959568-16976-1-git-send-email-florian@openwrt.org>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ Andrew Lunn <andrew@lunn.ch>, Russell King <linux@arm.linux.org.uk>,
+ linux-doc@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
+ netdev@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linux-arm-kernel@lists.infradead.org, Rob Landley <rob@landley.net>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
+ davem@davemloft.net, Lennert Buytenhek <buytenh@wantstofly.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,9 +26,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
-
-On Fri, 22 Mar 2013 14:39:24 +0100, Florian Fainelli wrote:
+On Fri, Mar 22, 2013 at 02:39:24PM +0100, Florian Fainelli wrote:
 > Hi all,
 > 
 > This patch converts the mv643xx_eth driver to use the mvmdio MDIO bus driver
@@ -47,24 +45,27 @@ On Fri, 22 Mar 2013 14:39:24 +0100, Florian Fainelli wrote:
 >   net: mvmdio: rename base register cookie from smireg to regs
 >   net: mvmdio: enhance driver to support SMI error/done interrupts
 >   mv643xx_eth: convert to use the Marvell Orion MDIO driver
+> 
+>  .../devicetree/bindings/net/marvell-orion-mdio.txt |    3 +
+>  arch/arm/plat-orion/common.c                       |   54 +++---
+>  arch/powerpc/platforms/chrp/pegasos_eth.c          |   20 ++
+>  arch/powerpc/sysdev/mv64x60_dev.c                  |   16 +-
+>  drivers/net/ethernet/marvell/Kconfig               |    5 +-
+>  drivers/net/ethernet/marvell/Makefile              |    2 +-
+>  drivers/net/ethernet/marvell/mv643xx_eth.c         |  195 ++------------------
+>  drivers/net/ethernet/marvell/mvmdio.c              |  130 ++++++++++---
+>  include/linux/mv643xx_eth.h                        |    1 -
+>  9 files changed, 187 insertions(+), 239 deletions(-)
 
-For the entire series:
+Whole series applied on top of v3.9-rc3 and tested on dreamplug
+(kirkwood DT boot with legacy mv643xx_eth init)
 
-Tested-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Tested-by: Jason Cooper <jason@lakedaemon.net>
 
-tested on:
+also, for the bits changing plat-orion:
 
- * Armada XP DB, DT-based, which uses the mvneta driver. It is affected
-   by the 3 first commits since Armada XP also uses the mvmdio driver.
+Acked-by: Jason Cooper <jason@lakedaemon.net>
 
- * Kirkwood development board, non-DT, which uses the mv643xx_eth
-   driver.
+thx,
 
-Thanks Florian for this work,
-
-Thomas
--- 
-Thomas Petazzoni, Free Electrons
-Kernel, drivers, real-time and embedded Linux
-development, consulting, training and support.
-http://free-electrons.com
+Jason.
