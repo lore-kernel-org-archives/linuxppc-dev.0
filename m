@@ -1,21 +1,18 @@
 Return-Path: <oleg@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 4FA6A2C00A5
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Mar 2013 01:49:15 +1100 (EST)
-Date: Fri, 22 Mar 2013 15:46:40 +0100
+ by ozlabs.org (Postfix) with ESMTP id 7C7582C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Mar 2013 01:56:21 +1100 (EST)
+Date: Fri, 22 Mar 2013 15:54:06 +0100
 From: Oleg Nesterov <oleg@redhat.com>
 To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Subject: Re: [PATCH] powerpc/uprobes: teach uprobes to ignore gdb breakpoints
-Message-ID: <20130322144640.GA17286@redhat.com>
-References: <20130320104033.GA19844@in.ibm.com>
- <20130320122639.GA29541@redhat.com> <20130320154152.GA8246@in.ibm.com>
- <20130320160644.GA20352@redhat.com> <20130321071545.GA5271@in.ibm.com>
- <20130321155809.GA20865@redhat.com> <20130322044747.GB26183@in.ibm.com>
+Subject: Re: [PATCH 1/3] uprobes: add trap variant helper
+Message-ID: <20130322145406.GB17286@redhat.com>
+References: <20130322114446.GG26183@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130322044747.GB26183@in.ibm.com>
-Cc: ppcdev <linuxppc-dev@lists.ozlabs.org>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>, stable@vger.kernel.org
+In-Reply-To: <20130322114446.GG26183@in.ibm.com>
+Cc: ppcdev <linuxppc-dev@lists.ozlabs.org>, lkml <linux-kernel@vger.kernel.org>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,21 +24,27 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On 03/22, Ananth N Mavinakayanahalli wrote:
 >
-> On Thu, Mar 21, 2013 at 04:58:09PM +0100, Oleg Nesterov wrote:
-> >
-> > 	- verify_opcode()->is_swbp_insn() means:
-> >
-> > 		is this insn fine for uprobe? (we do not care about
-> > 		gdb, we simply ignore this problem)
->
-> I will write up a patch for this case.. So, IIUC we do not care to send
-> gdb a SIGTRAP if we have replaced a conditional trap from gdb with an
-> unconditional uprobes one, right?
+> +/**
+> + * is_trap_insn - check if instruction is breakpoint instruction.
+> + * @insn: instruction to be checked.
+> + * Default implementation of is_trap_insn
+> + * Returns true if @insn is a breakpoint instruction.
+> + *
+> + * This function is needed for the case where an architecture has multiple
+> + * trap instructions (like powerpc).
+> + */
+> +bool __weak is_trap_insn(uprobe_opcode_t *insn)
+> +{
+> +	return is_swbp_insn(insn);
+> +}
 
-Yes.
+OK, thanks, the whole series looks fine, just one note...
 
-And just in case, we do not send SIGTRAP if gdb used the same/unconditional
-insn. We simply can't know if someone else wants to know that the task hits
-this breakpoint.
+My patch also changed prepare_uprobe() to use is_trap_insn(), and I think
+this is right. Exactly because of 3/3 which removes is_trap() from
+arch_uprobe_analyze_insn().
+
+If the original insn is_trap(), we do not want to singlestep it and get
+another trap after we hit handle_swbp().
 
 Oleg.
