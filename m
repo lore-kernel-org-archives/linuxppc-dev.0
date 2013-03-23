@@ -1,33 +1,18 @@
-Return-Path: <chen.gang.flying.transformer@gmail.com>
-Received: from mail-pa0-f45.google.com (mail-pa0-f45.google.com
- [209.85.220.45])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BE2282C00D7
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Mar 2013 13:51:59 +1100 (EST)
-Received: by mail-pa0-f45.google.com with SMTP id kl13so203121pab.32
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2013 19:51:57 -0700 (PDT)
-Message-ID: <514D18A8.7080904@gmail.com>
-Date: Sat, 23 Mar 2013 10:51:20 +0800
-From: Chen Gang F T <chen.gang.flying.transformer@gmail.com>
+Return-Path: <oleg@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 3822F2C00BE
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Mar 2013 05:43:17 +1100 (EST)
+Date: Sat, 23 Mar 2013 19:08:01 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Subject: Re: [PATCH v2 1/4] uprobes: add trap variant helper
+Message-ID: <20130323180801.GA4667@redhat.com>
+References: <20130322151627.GB20010@in.ibm.com>
 MIME-Version: 1.0
-To: Yoder Stuart-B08248 <B08248@freescale.com>
-Subject: Re: [Suggestion] PowerPC: kernel: cross compiling issue with
- allmodconfig
-References: <51428C81.6000204@asianux.com>
- <25841.1363323174@ale.ozlabs.ibm.com> <5142AE27.7060003@asianux.com>
- <514AA0D9.1090509@asianux.com> <514AC418.1070806@gmail.com>
- <14121.1363908062@ale.ozlabs.ibm.com>
- <9F6FE96B71CF29479FF1CDC8046E150358CDE5@039-SN1MPN1-002.039d.mgd.msft.net>
-In-Reply-To: <9F6FE96B71CF29479FF1CDC8046E150358CDE5@039-SN1MPN1-002.039d.mgd.msft.net>
-Content-Type: text/plain; charset=UTF-8
-Cc: "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>,
- Michael Neuling <mikey@neuling.org>, "matt@ozlabs.org" <matt@ozlabs.org>,
- Chen Gang <gang.chen@asianux.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "paulus@samba.org" <paulus@samba.org>,
- "imunsie@au1.ibm.com" <imunsie@au1.ibm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130322151627.GB20010@in.ibm.com>
+Cc: ppcdev <linuxppc-dev@lists.ozlabs.org>, lkml <linux-kernel@vger.kernel.org>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,19 +22,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2013年03月23日 03:17, Yoder Stuart-B08248 wrote:
-> allmodconfig is creating config combinations that don't
-> happen in a normal build (at least currently)-- 64-bit build
-> that enables EPAPR_PARAVIRT but not PPC_BOOK3E_64.
+On 03/22, Ananth N Mavinakayanahalli wrote:
+>
+> Some architectures like powerpc have multiple variants of the trap
+> instruction. Introduce an additional helper is_trap_insn() for run-time
+> handling of non-uprobe traps on such architectures.
 
-  if it should not happen.
-    can we add dependency to let it will never happen in any config combinations ?
-      let allmodconfig can not create this config combinamtions:
-        "64-bit build that enables EPAPR_PARAVIRT but not PPC_BOOK3E_64".
+Looks fine to me.
 
-  thanks.
+I am going to take this into my tree, hopefully Ben won't object. The
+main change is arch-agnostic and the changes in arch/powerpc are trivial.
 
--- 
-Chen Gang
-
-Flying Transformer
+Oleg.
