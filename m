@@ -1,16 +1,15 @@
 Return-Path: <baatz@schnuecks.de>
 Received: from mo6-p00-ob.rzone.de (mo6-p00-ob.rzone.de
  [IPv6:2a01:238:20a:202:5300::1])
- by ozlabs.org (Postfix) with ESMTP id 187BE2C00A9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2013 07:41:04 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTP id 9CC0F2C00AA
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2013 07:41:05 +1100 (EST)
 From: Simon Baatz <gmbnomis@gmail.com>
 To: linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, florian@openwrt.org,
  thomas.petazzoni@free-electrons.com
-Subject: [PATCH 2/2] mv643xx_eth: defer probing if Marvell Orion MDIO driver
- not loaded
-Date: Sun, 24 Mar 2013 21:34:00 +0100
-Message-Id: <1364157240-28883-3-git-send-email-gmbnomis@gmail.com>
+Subject: [PATCH 1/2] net: mvmdio: define module alias for platform device
+Date: Sun, 24 Mar 2013 21:33:59 +0100
+Message-Id: <1364157240-28883-2-git-send-email-gmbnomis@gmail.com>
 In-Reply-To: <1364157240-28883-1-git-send-email-gmbnomis@gmail.com>
 References: <1364157240-28883-1-git-send-email-gmbnomis@gmail.com>
 Cc: Simon Baatz <gmbnomis@gmail.com>, andrew@lunn.ch, jason@lakedaemon.net,
@@ -24,48 +23,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When both the Marvell MV643XX ethernet driver and the Orion MDIO driver
-are compiled as modules, the ethernet driver may be probed before the
-MDIO driver.  Let mv643xx_eth_probe() return EPROBE_DEFER in this case,
-i.e. when it cannot find the PHY.
+The mvmdio driver can be instantiated using device tree or as a classic
+platform device.  In order to load the driver automatically by udev in
+the latter case, the driver needs to define a module alias for the
+platform device.
 
 Signed-off-by: Simon Baatz <gmbnomis@gmail.com>
 ---
- drivers/net/ethernet/marvell/mv643xx_eth.c |   12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/marvell/mvmdio.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/net/ethernet/marvell/mv643xx_eth.c b/drivers/net/ethernet/marvell/mv643xx_eth.c
-index a65a92e..aedbd82 100644
---- a/drivers/net/ethernet/marvell/mv643xx_eth.c
-+++ b/drivers/net/ethernet/marvell/mv643xx_eth.c
-@@ -2681,7 +2681,7 @@ static struct phy_device *phy_scan(struct mv643xx_eth_private *mp,
- 	}
- 
- 	/* Attempt to connect to the PHY using orion-mdio */
--	phydev = NULL;
-+	phydev = ERR_PTR(-ENODEV);
- 	for (i = 0; i < num; i++) {
- 		int addr = (start + i) & 0x1f;
- 
-@@ -2812,11 +2812,17 @@ static int mv643xx_eth_probe(struct platform_device *pdev)
- 	netif_set_real_num_tx_queues(dev, mp->txq_count);
- 	netif_set_real_num_rx_queues(dev, mp->rxq_count);
- 
--	if (pd->phy_addr != MV643XX_ETH_PHY_NONE)
-+	if (pd->phy_addr != MV643XX_ETH_PHY_NONE) {
- 		mp->phy = phy_scan(mp, pd->phy_addr);
- 
--	if (mp->phy != NULL)
-+		if (IS_ERR(mp->phy)) {
-+			err = PTR_ERR(mp->phy);
-+			if (err == -ENODEV)
-+				err = -EPROBE_DEFER;
-+			goto out;
-+		}
- 		phy_init(mp, pd->speed, pd->duplex);
-+	}
- 
- 	SET_ETHTOOL_OPS(dev, &mv643xx_eth_ethtool_ops);
- 
+diff --git a/drivers/net/ethernet/marvell/mvmdio.c b/drivers/net/ethernet/marvell/mvmdio.c
+index 3472574..7b5158f 100644
+--- a/drivers/net/ethernet/marvell/mvmdio.c
++++ b/drivers/net/ethernet/marvell/mvmdio.c
+@@ -295,3 +295,4 @@ module_platform_driver(orion_mdio_driver);
+ MODULE_DESCRIPTION("Marvell MDIO interface driver");
+ MODULE_AUTHOR("Thomas Petazzoni <thomas.petazzoni@free-electrons.com>");
+ MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:orion-mdio");
 -- 
 1.7.9.5
