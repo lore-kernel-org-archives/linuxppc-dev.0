@@ -1,20 +1,20 @@
 Return-Path: <liuj97@gmail.com>
-Received: from mail-pa0-f42.google.com (mail-pa0-f42.google.com
- [209.85.220.42])
+Received: from mail-da0-x232.google.com (mail-da0-x232.google.com
+ [IPv6:2607:f8b0:400e:c00::232])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8CBBF2C00C4
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Mar 2013 18:32:59 +1100 (EST)
-Received: by mail-pa0-f42.google.com with SMTP id kq12so542406pab.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Mar 2013 00:32:57 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 299722C00F0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Mar 2013 18:33:08 +1100 (EST)
+Received: by mail-da0-f50.google.com with SMTP id t1so1264647dae.23
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Mar 2013 00:33:06 -0700 (PDT)
 From: Jiang Liu <liuj97@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
  David Rientjes <rientjes@google.com>
 Subject: [RFC PATCH v2,
- part4 27/39] mm/ppc: prepare for removing num_physpages and simplify
+ part4 28/39] mm/ppc: prepare for removing num_physpages and simplify
  mem_init()
-Date: Sun, 24 Mar 2013 15:25:12 +0800
-Message-Id: <1364109934-7851-47-git-send-email-jiang.liu@huawei.com>
+Date: Sun, 24 Mar 2013 15:25:13 +0800
+Message-Id: <1364109934-7851-48-git-send-email-jiang.liu@huawei.com>
 In-Reply-To: <1364109934-7851-1-git-send-email-jiang.liu@huawei.com>
 References: <1364109934-7851-1-git-send-email-jiang.liu@huawei.com>
 Cc: Jiang Liu <jiang.liu@huawei.com>, Wen Congyang <wency@cn.fujitsu.com>,
