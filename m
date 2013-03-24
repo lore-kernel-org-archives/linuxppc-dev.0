@@ -1,15 +1,18 @@
 Return-Path: <baatz@schnuecks.de>
 Received: from mo6-p00-ob.rzone.de (mo6-p00-ob.rzone.de
  [IPv6:2a01:238:20a:202:5300::1])
- by ozlabs.org (Postfix) with ESMTP id F23902C00A5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2013 07:40:58 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTP id 187BE2C00A9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2013 07:41:04 +1100 (EST)
 From: Simon Baatz <gmbnomis@gmail.com>
 To: linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, florian@openwrt.org,
  thomas.petazzoni@free-electrons.com
-Subject: [PATCH 0/2] Fix for mv643xx_eth built as module
-Date: Sun, 24 Mar 2013 21:33:58 +0100
-Message-Id: <1364157240-28883-1-git-send-email-gmbnomis@gmail.com>
+Subject: [PATCH 2/2] mv643xx_eth: defer probing if Marvell Orion MDIO driver
+ not loaded
+Date: Sun, 24 Mar 2013 21:34:00 +0100
+Message-Id: <1364157240-28883-3-git-send-email-gmbnomis@gmail.com>
+In-Reply-To: <1364157240-28883-1-git-send-email-gmbnomis@gmail.com>
+References: <1364157240-28883-1-git-send-email-gmbnomis@gmail.com>
 Cc: Simon Baatz <gmbnomis@gmail.com>, andrew@lunn.ch, jason@lakedaemon.net,
  davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,33 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Recently [1], mv643xx_eth was changed to make use of mvmdio. However,
-this change introduces two problems when mvmdio and mv643xx_eth are
-built as modules:
+When both the Marvell MV643XX ethernet driver and the Orion MDIO driver
+are compiled as modules, the ethernet driver may be probed before the
+MDIO driver.  Let mv643xx_eth_probe() return EPROBE_DEFER in this case,
+i.e. when it cannot find the PHY.
 
-- mvmdio is not loaded automatically by udev
-- mv643xx_eth oopses when it can't find its PHY, i.e. when mvmdio is
-  not yet loaded
-
-The first problem can be fixed easily by adding a module alias for the
-respective platform device.  The proposed fix for the second problem
-uses EPROBE_DEFER as suggested by Thomas Petazzoni when the driver
-can't find its PHY.
-
-These patches apply on top of Florian Fainelli's patchset. They have
-been tested on Marvel Kirkwood non-DT.
-
-- Simon
-
-[1] https://lkml.org/lkml/2013/3/22/247
-
-Simon Baatz (2):
-  net: mvmdio: define module alias for platform device
-  mv643xx_eth: defer probing if Marvell Orion MDIO driver not loaded
-
+Signed-off-by: Simon Baatz <gmbnomis@gmail.com>
+---
  drivers/net/ethernet/marvell/mv643xx_eth.c |   12 +++++++++---
- drivers/net/ethernet/marvell/mvmdio.c      |    1 +
- 2 files changed, 10 insertions(+), 3 deletions(-)
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
+diff --git a/drivers/net/ethernet/marvell/mv643xx_eth.c b/drivers/net/ethernet/marvell/mv643xx_eth.c
+index a65a92e..aedbd82 100644
+--- a/drivers/net/ethernet/marvell/mv643xx_eth.c
++++ b/drivers/net/ethernet/marvell/mv643xx_eth.c
+@@ -2681,7 +2681,7 @@ static struct phy_device *phy_scan(struct mv643xx_eth_private *mp,
+ 	}
+ 
+ 	/* Attempt to connect to the PHY using orion-mdio */
+-	phydev = NULL;
++	phydev = ERR_PTR(-ENODEV);
+ 	for (i = 0; i < num; i++) {
+ 		int addr = (start + i) & 0x1f;
+ 
+@@ -2812,11 +2812,17 @@ static int mv643xx_eth_probe(struct platform_device *pdev)
+ 	netif_set_real_num_tx_queues(dev, mp->txq_count);
+ 	netif_set_real_num_rx_queues(dev, mp->rxq_count);
+ 
+-	if (pd->phy_addr != MV643XX_ETH_PHY_NONE)
++	if (pd->phy_addr != MV643XX_ETH_PHY_NONE) {
+ 		mp->phy = phy_scan(mp, pd->phy_addr);
+ 
+-	if (mp->phy != NULL)
++		if (IS_ERR(mp->phy)) {
++			err = PTR_ERR(mp->phy);
++			if (err == -ENODEV)
++				err = -EPROBE_DEFER;
++			goto out;
++		}
+ 		phy_init(mp, pd->speed, pd->duplex);
++	}
+ 
+ 	SET_ETHTOOL_OPS(dev, &mv643xx_eth_ethtool_ops);
+ 
 -- 
 1.7.9.5
