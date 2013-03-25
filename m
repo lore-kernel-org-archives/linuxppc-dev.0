@@ -1,15 +1,26 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Stuart Yoder <stuart.yoder@freescale.com>
-Subject: Re: [PATCH] PPC: define the conditions where the ePAPR idle hcall can
- be supported
-In-reply-to: <1363979533-24485-1-git-send-email-stuart.yoder@freescale.com>
-References: <1363979533-24485-1-git-send-email-stuart.yoder@freescale.com>
-Date: Mon, 25 Mar 2013 11:34:04 +1100
-Message-ID: <18100.1364171644@ale.ozlabs.ibm.com>
-Cc: sfr@canb.auug.org.au, matt@ozlabs.org, gang.chen@asianux.com,
- linux-kernel@vger.kernel.org, paulus@samba.org, imunsie@au1.ibm.com,
- chen.gang.flying.transformer@gmail.com, linuxppc-dev@lists.ozlabs.org
+Return-Path: <gang.chen@asianux.com>
+Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 5C30A2C0085
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2013 12:07:36 +1100 (EST)
+Message-ID: <514FA336.7020207@asianux.com>
+Date: Mon, 25 Mar 2013 09:07:02 +0800
+From: Chen Gang <gang.chen@asianux.com>
+MIME-Version: 1.0
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [Suggestion] PowerPC: kernel: cross compiling issue with
+ allmodconfig
+References: <51428C81.6000204@asianux.com>
+ <25841.1363323174@ale.ozlabs.ibm.com> <5142AE27.7060003@asianux.com>
+ <514AA0D9.1090509@asianux.com> <10123.1363906486@ale.ozlabs.ibm.com>
+ <514C0061.8080004@asianux.com> <29457.1364169818@ale.ozlabs.ibm.com>
+In-Reply-To: <29457.1364169818@ale.ozlabs.ibm.com>
+Content-Type: text/plain; charset=GB2312
+Cc: sfr@canb.auug.org.au, matt@ozlabs.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "paulus@samba.org" <paulus@samba.org>, imunsie@au1.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,62 +30,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Stuart Yoder <stuart.yoder@freescale.com> wrote:
+On 2013Äê03ÔÂ25ÈÕ 08:03, Michael Neuling wrote:
+> 
+> benh asked paulus or sfr to send in while he was away.
+> 
+> So please send your signed off by now (if you can), or someone is going
+> to rewrite it, sent it upstream bypassing you.
+> 
+> Mikey
+> 
+> 
 
-> From: Stuart Yoder <stuart.yoder@freescale.com>
-> 
-> For 32-bit, CONFIG_EPAPR_PARAVIRT pulls in both epapr_paravirt.c
-> and epapr_hcalls.c which contains the 32-bit paravirt idle loop.
-> 
-> For 64-bit, the paravirt idle loop is in idle_book3e.S and that
-> source file is included only if CONFIG_PPC_BOOK3E_64 defined.
-> 
-> This patch makes that dependency for 64-bit explicit.
-> 
-> Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
+  thanks, I will send patch now.
 
-It works for me.  Thanks.
+  :-)
 
+-- 
+Chen Gang
 
-> ---
->  arch/powerpc/kernel/epapr_paravirt.c |    6 ++++++
->  1 file changed, 6 insertions(+)
-> 
-> diff --git a/arch/powerpc/kernel/epapr_paravirt.c b/arch/powerpc/kernel/epapr_paravirt.c
-> index f3eab85..d44a571 100644
-> --- a/arch/powerpc/kernel/epapr_paravirt.c
-> +++ b/arch/powerpc/kernel/epapr_paravirt.c
-> @@ -23,8 +23,10 @@
->  #include <asm/code-patching.h>
->  #include <asm/machdep.h>
->  
-> +#if !defined(CONFIG_64BIT) || defined(CONFIG_PPC_BOOK3E_64)
->  extern void epapr_ev_idle(void);
->  extern u32 epapr_ev_idle_start[];
-> +#endif
-
-You don't need this #ifdef
-
->  
->  bool epapr_paravirt_enabled;
->  
-> @@ -47,11 +49,15 @@ static int __init epapr_paravirt_init(void)
->  
->  	for (i = 0; i < (len / 4); i++) {
->  		patch_instruction(epapr_hypercall_start + i, insts[i]);
-> +#if !defined(CONFIG_64BIT) || defined(CONFIG_PPC_BOOK3E_64)
->  		patch_instruction(epapr_ev_idle_start + i, insts[i]);
-> +#endif
->  	}
->  
-> +#if !defined(CONFIG_64BIT) || defined(CONFIG_PPC_BOOK3E_64)
->  	if (of_get_property(hyper_node, "has-idle", NULL))
->  		ppc_md.power_save = epapr_ev_idle;
-> +#endif
->  
->  	epapr_paravirt_enabled = true;
->  
-> -- 
-> 1.7.9.7
-> 
-> 
+Asianux Corporation
