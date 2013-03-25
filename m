@@ -2,25 +2,22 @@ Return-Path: <gang.chen@asianux.com>
 Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id CC01E2C00B2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2013 15:29:17 +1100 (EST)
-Message-ID: <514FD27B.6050706@asianux.com>
-Date: Mon, 25 Mar 2013 12:28:43 +0800
+ by ozlabs.org (Postfix) with ESMTPS id EE8EF2C00AC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2013 15:30:58 +1100 (EST)
+Message-ID: <514FD2E0.5030805@asianux.com>
+Date: Mon, 25 Mar 2013 12:30:24 +0800
 From: Chen Gang <gang.chen@asianux.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- "paulus@samba.org" <paulus@samba.org>,
- michael@ellerman.id.au, dhowells@redhat.com, geoff@infradead.org,
- "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>,
- Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH] PowerPC:kernel: section mismatch from smp_release_cpus
- to __initdata spinning_secondaries
-References: <51495774.9080809@asianux.com>
-In-Reply-To: <51495774.9080809@asianux.com>
-Content-Type: text/plain; charset=UTF-8
+To: benh@kernel.crashing.org, paulus@samba.org,
+ Michael Neuling <mikey@neuling.org>,
+ "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>
+Subject: Re: [PATCH] arch/powerpc/kernel: using %12.12s instead of %12s for
+ avoiding memory overflow.
+References: <5100B53C.3030109@asianux.com> <512055D0.7050100@asianux.com>
+In-Reply-To: <512055D0.7050100@asianux.com>
+Content-Type: text/plain; charset=GB2312
 Cc: linuxppc-dev@lists.ozlabs.org,
- "linux-kernel@vger.kernel.org >> \"linux-kernel@vger.kernel.org\""
- <linux-kernel@vger.kernel.org>
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,51 +34,53 @@ Hello Maintainers:
   thanks.
 
 
-On 2013å¹´03æœˆ20æ—¥ 14:30, Chen Gang wrote:
+On 2013Äê02ÔÂ17ÈÕ 12:00, Chen Gang wrote:
+> Hello relative members:
 > 
->   the smp_release_cpus is a normal funciton and called in normal environments,
->   but it calls the __initdata spinning_secondaries.
->   need modify spinning_secondaries to match smp_release_cpus.
+>   please give a glance to this patch, when you have time.
 > 
-> the related warning:
->   (the linker report boot_paca.33377, but it should be spinning_secondaries)
+>   thanks.
 > 
-> -----------------------------------------------------------------------------
+>   :-)
 > 
-> WARNING: arch/powerpc/kernel/built-in.o(.text+0x23176): Section mismatch in reference from the function .smp_release_cpus() to the variable .init.data:boot_paca.33377
-> The function .smp_release_cpus() references
-> the variable __initdata boot_paca.33377.
-> This is often because .smp_release_cpus lacks a __initdata 
-> annotation or the annotation of boot_paca.33377 is wrong.
-> 
-> WARNING: arch/powerpc/kernel/built-in.o(.text+0x231fe): Section mismatch in reference from the function .smp_release_cpus() to the variable .init.data:boot_paca.33377
-> The function .smp_release_cpus() references
-> the variable __initdata boot_paca.33377.
-> This is often because .smp_release_cpus lacks a __initdata 
-> annotation or the annotation of boot_paca.33377 is wrong.
-> 
-> -----------------------------------------------------------------------------
+> gchen.
 > 
 > 
+> ÓÚ 2013Äê01ÔÂ24ÈÕ 12:14, Chen Gang Ð´µÀ:
+>>
+>>   for tmp_part->header.name:
+>>     it is "Terminating null required only for names < 12 chars".
+>>     so need to limit the %.12s for it in printk
+>>
+>>   additional info:
+>>
+>>     %12s  limit the width, not for the original string output length
+>>           if name length is more than 12, it still can be fully displayed.
+>>           if name length is less than 12, the ' ' will be filled before name.
+>>
+>>     %.12s truly limit the original string output length (precision)
+>>
+>>
+>> Signed-off-by: Chen Gang <gang.chen@asianux.com>
+>> ---
+>>  arch/powerpc/kernel/nvram_64.c |    2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
+>> index bec1e93..57bf6d2 100644
+>> --- a/arch/powerpc/kernel/nvram_64.c
+>> +++ b/arch/powerpc/kernel/nvram_64.c
+>> @@ -202,7 +202,7 @@ static void __init nvram_print_partitions(char * label)
+>>  	printk(KERN_WARNING "--------%s---------\n", label);
+>>  	printk(KERN_WARNING "indx\t\tsig\tchks\tlen\tname\n");
+>>  	list_for_each_entry(tmp_part, &nvram_partitions, partition) {
+>> -		printk(KERN_WARNING "%4d    \t%02x\t%02x\t%d\t%12s\n",
+>> +		printk(KERN_WARNING "%4d    \t%02x\t%02x\t%d\t%12.12s\n",
+>>  		       tmp_part->index, tmp_part->header.signature,
+>>  		       tmp_part->header.checksum, tmp_part->header.length,
+>>  		       tmp_part->header.name);
+>>
 > 
-> Signed-off-by: Chen Gang <gang.chen@asianux.com>
-> ---
->  arch/powerpc/kernel/setup_64.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-> index 75fbaceb..e8a2f2e 100644
-> --- a/arch/powerpc/kernel/setup_64.c
-> +++ b/arch/powerpc/kernel/setup_64.c
-> @@ -76,7 +76,7 @@
->  #endif
->  
->  int boot_cpuid = 0;
-> -int __initdata spinning_secondaries;
-> +int spinning_secondaries;
->  u64 ppc64_pft_size;
->  
->  /* Pick defaults since we might want to patch instructions
 > 
 
 
