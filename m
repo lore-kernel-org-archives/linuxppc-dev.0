@@ -1,23 +1,30 @@
-Return-Path: <gang.chen@asianux.com>
-Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id EE8EF2C00AC
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2013 15:30:58 +1100 (EST)
-Message-ID: <514FD2E0.5030805@asianux.com>
-Date: Mon, 25 Mar 2013 12:30:24 +0800
-From: Chen Gang <gang.chen@asianux.com>
-MIME-Version: 1.0
-To: benh@kernel.crashing.org, paulus@samba.org,
- Michael Neuling <mikey@neuling.org>,
- "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] arch/powerpc/kernel: using %12.12s instead of %12s for
- avoiding memory overflow.
-References: <5100B53C.3030109@asianux.com> <512055D0.7050100@asianux.com>
-In-Reply-To: <512055D0.7050100@asianux.com>
-Content-Type: text/plain; charset=GB2312
-Cc: linuxppc-dev@lists.ozlabs.org,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id 96E952C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2013 16:14:44 +1100 (EST)
+Date: Mon, 25 Mar 2013 16:14:35 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Chen Gang <gang.chen@asianux.com>
+Subject: Re: [PATCH] PowerPC:kernel: make additional room in exception
+ vector area
+Message-Id: <20130325161435.ffff94805826bc7cad2c7de4@canb.auug.org.au>
+In-Reply-To: <514FA8F3.1030102@asianux.com>
+References: <51428C81.6000204@asianux.com>
+ <25841.1363323174@ale.ozlabs.ibm.com>
+ <5142AE27.7060003@asianux.com> <514AA0D9.1090509@asianux.com>
+ <10123.1363906486@ale.ozlabs.ibm.com>
+ <514C0061.8080004@asianux.com>
+ <29457.1364169818@ale.ozlabs.ibm.com>
+ <514FA8F3.1030102@asianux.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Mon__25_Mar_2013_16_14_35_+1100_zE=a3GxGNOj/lX0k"
+Cc: Michael Neuling <mikey@neuling.org>, matt@ozlabs.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "paulus@samba.org" <paulus@samba.org>, imunsie@au1.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,64 +34,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Maintainers:
+--Signature=_Mon__25_Mar_2013_16_14_35_+1100_zE=a3GxGNOj/lX0k
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-  could you help check this patch whether is ok ?
+Hi all,
 
-  thanks.
+On Mon, 25 Mar 2013 09:31:31 +0800 Chen Gang <gang.chen@asianux.com> wrote:
+>
+>   The FWNMI region is fixed at 0x7000 and the vector are now overflowing
+>   that with allmodconfig. Fix that by moving slb_miss_realmode code out
+>   of that region as it doesn't need to be that close to the call sites
+>   (it is a _GLOBAL function)
+>=20
+> Signed-off-by: Chen Gang <gang.chen@asianux.com>
+> ---
+>  arch/powerpc/kernel/exceptions-64s.S |  144 +++++++++++++++++-----------=
+------
+>  1 files changed, 72 insertions(+), 72 deletions(-)
 
+Thanks, Chen,
 
-On 2013年02月17日 12:00, Chen Gang wrote:
-> Hello relative members:
-> 
->   please give a glance to this patch, when you have time.
-> 
->   thanks.
-> 
->   :-)
-> 
-> gchen.
-> 
-> 
-> 于 2013年01月24日 12:14, Chen Gang 写道:
->>
->>   for tmp_part->header.name:
->>     it is "Terminating null required only for names < 12 chars".
->>     so need to limit the %.12s for it in printk
->>
->>   additional info:
->>
->>     %12s  limit the width, not for the original string output length
->>           if name length is more than 12, it still can be fully displayed.
->>           if name length is less than 12, the ' ' will be filled before name.
->>
->>     %.12s truly limit the original string output length (precision)
->>
->>
->> Signed-off-by: Chen Gang <gang.chen@asianux.com>
->> ---
->>  arch/powerpc/kernel/nvram_64.c |    2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
->> index bec1e93..57bf6d2 100644
->> --- a/arch/powerpc/kernel/nvram_64.c
->> +++ b/arch/powerpc/kernel/nvram_64.c
->> @@ -202,7 +202,7 @@ static void __init nvram_print_partitions(char * label)
->>  	printk(KERN_WARNING "--------%s---------\n", label);
->>  	printk(KERN_WARNING "indx\t\tsig\tchks\tlen\tname\n");
->>  	list_for_each_entry(tmp_part, &nvram_partitions, partition) {
->> -		printk(KERN_WARNING "%4d    \t%02x\t%02x\t%d\t%12s\n",
->> +		printk(KERN_WARNING "%4d    \t%02x\t%02x\t%d\t%12.12s\n",
->>  		       tmp_part->index, tmp_part->header.signature,
->>  		       tmp_part->header.checksum, tmp_part->header.length,
->>  		       tmp_part->header.name);
->>
-> 
-> 
+I have applied this to linux-next today and pending the builds overnight,
+will send it to Linus tomorrow or Wednesday.
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
--- 
-Chen Gang
+--Signature=_Mon__25_Mar_2013_16_14_35_+1100_zE=a3GxGNOj/lX0k
+Content-Type: application/pgp-signature
 
-Asianux Corporation
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJRT907AAoJEECxmPOUX5FEkIUP/jK8nEzxczJ2qal/XwuZp4TQ
+Jm65w5SticAj/s8oWbxehKUMx6hdx3qUPO5cgGuvE5UGInuuMDHhk5Gf1B+R9beF
+mzyLgYVG/sYcMS0P6nTLM41+bshOqCD9PUVeQmNMOfIXyMv0Bhk5cSux9t1hpa93
+mwC6UgdSaFLnFlz2WQHE2BsdmljuY70xZ1C6S7Rtti/xBI5MNVSWj2tFYZ9IKIc7
+iuHJ6nlJHwxSZr2HoNfTTwlZYTgMGRyyjfOvHh4KF8BDaxUXqQ5jAGrEJ0gWWF/3
+Y8FLLj3nGcnnxEeBXiQo5Z/XN2UJ6nZVHKjy4NLxyxTztPjvGGmsL9PdJlQO4Khm
+Gp775W05r31WMevr7mBHUUMwGAttpttwxbLcPtXpvFYhYKFI9W5aKbnw5EcULGQc
+11nwjWZeHfhg6jUn/k2O0KJe9QQS1hYESnAaj85V8t7rYn5RuI+R18KkQLMAZ9C3
+mIr6v5g6jtteCGb+Yjf6JZLiZvMQV97IK3JJjWq7nItmOjE3D+ovBV2b5pDH2Dhr
+F0ux0NPXSiJl23GmM4VMo1eqHdECwNXROOD5sZti7gB8E4yjvyTBntRIlynUalst
+wueCuGgOJF8lhFvCtKoXXSiqm3YJVzorUVee0scLyYIWXXrfIC2W9F/0E1j6m2x4
+hAYWZxLTqqb9zwvd93Qj
+=PnnT
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__25_Mar_2013_16_14_35_+1100_zE=a3GxGNOj/lX0k--
