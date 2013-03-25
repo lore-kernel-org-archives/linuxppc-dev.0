@@ -1,19 +1,21 @@
-Return-Path: <baatz@schnuecks.de>
-Received: from mo6-p00-ob.rzone.de (mo6-p00-ob.rzone.de
- [IPv6:2a01:238:20a:202:5300::1])
- by ozlabs.org (Postfix) with ESMTP id 9CC0F2C00AA
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2013 07:41:05 +1100 (EST)
-From: Simon Baatz <gmbnomis@gmail.com>
-To: linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, florian@openwrt.org,
- thomas.petazzoni@free-electrons.com
-Subject: [PATCH 1/2] net: mvmdio: define module alias for platform device
-Date: Sun, 24 Mar 2013 21:33:59 +0100
-Message-Id: <1364157240-28883-2-git-send-email-gmbnomis@gmail.com>
-In-Reply-To: <1364157240-28883-1-git-send-email-gmbnomis@gmail.com>
-References: <1364157240-28883-1-git-send-email-gmbnomis@gmail.com>
-Cc: Simon Baatz <gmbnomis@gmail.com>, andrew@lunn.ch, jason@lakedaemon.net,
- davem@davemloft.net
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Chen Gang <gang.chen@asianux.com>
+Subject: Re: [Suggestion] PowerPC: kernel: cross compiling issue with
+ allmodconfig
+In-reply-to: <514C0061.8080004@asianux.com>
+References: <51428C81.6000204@asianux.com>
+ <25841.1363323174@ale.ozlabs.ibm.com> <5142AE27.7060003@asianux.com>
+ <514AA0D9.1090509@asianux.com> <10123.1363906486@ale.ozlabs.ibm.com>
+ <514C0061.8080004@asianux.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 25 Mar 2013 11:03:38 +1100
+Message-ID: <29457.1364169818@ale.ozlabs.ibm.com>
+Cc: sfr@canb.auug.org.au, matt@ozlabs.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "paulus@samba.org" <paulus@samba.org>, imunsie@au1.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,24 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The mvmdio driver can be instantiated using device tree or as a classic
-platform device.  In order to load the driver automatically by udev in
-the latter case, the driver needs to define a module alias for the
-platform device.
+Chen Gang <gang.chen@asianux.com> wrote:
 
-Signed-off-by: Simon Baatz <gmbnomis@gmail.com>
----
- drivers/net/ethernet/marvell/mvmdio.c |    1 +
- 1 file changed, 1 insertion(+)
+> On 2013=E5=B9=B403=E6=9C=8822=E6=97=A5 06:54, Michael Neuling wrote:
+> > This is great, thanks a lot.=20=20
+> >=20
+> > If you want this to be picked up by the maintainer, you'll need to add
+> > your signed-off-by.
+> >=20
+> > The signed-off-by is to indicate that your happy for it to be included
+> > and that you're legally allowed to do so.  See
+> > http://gerrit.googlecode.com/svn/documentation/2.0/user-signedoffby.html
+> > for more info.
+> >=20
+> > Mikey
+>=20
+>   thanks, too.
+>   I prefer Benjamin to have a closer look for my fixing.
+>   if pass his checking, I will send a patch.
+>     (he is on vacation, now, and he will check it when he is back).
 
-diff --git a/drivers/net/ethernet/marvell/mvmdio.c b/drivers/net/ethernet/marvell/mvmdio.c
-index 3472574..7b5158f 100644
---- a/drivers/net/ethernet/marvell/mvmdio.c
-+++ b/drivers/net/ethernet/marvell/mvmdio.c
-@@ -295,3 +295,4 @@ module_platform_driver(orion_mdio_driver);
- MODULE_DESCRIPTION("Marvell MDIO interface driver");
- MODULE_AUTHOR("Thomas Petazzoni <thomas.petazzoni@free-electrons.com>");
- MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:orion-mdio");
--- 
-1.7.9.5
+benh asked paulus or sfr to send in while he was away.
+
+So please send your signed off by now (if you can), or someone is going
+to rewrite it, sent it upstream bypassing you.
+
+Mikey
