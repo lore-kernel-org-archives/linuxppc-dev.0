@@ -1,32 +1,16 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id 2754C2C00AE
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2013 17:20:43 +1100 (EST)
-Date: Mon, 25 Mar 2013 17:20:35 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH] PowerPC:kernel: make additional room in exception
- vector area
-Message-Id: <20130325172035.7ecf486f05009afb4b603529@canb.auug.org.au>
-In-Reply-To: <5944.1364191637@ale.ozlabs.ibm.com>
-References: <51428C81.6000204@asianux.com>
- <25841.1363323174@ale.ozlabs.ibm.com>
- <5142AE27.7060003@asianux.com> <514AA0D9.1090509@asianux.com>
- <10123.1363906486@ale.ozlabs.ibm.com>
- <514C0061.8080004@asianux.com>
- <29457.1364169818@ale.ozlabs.ibm.com>
- <514FA8F3.1030102@asianux.com>
- <20130325161435.ffff94805826bc7cad2c7de4@canb.auug.org.au>
- <5944.1364191637@ale.ozlabs.ibm.com>
+Return-Path: <pebolle@tiscali.nl>
+Received: from cpsmtpb-ews07.kpnxchange.com (cpsmtpb-ews07.kpnxchange.com
+ [213.75.39.10]) by ozlabs.org (Postfix) with ESMTP id 622C62C00A6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2013 21:32:17 +1100 (EST)
+Message-ID: <1364207531.1390.271.camel@x61.thuisdomein>
+Subject: [PATCH] powerpc: remove two lines of dead code
+From: Paul Bolle <pebolle@tiscali.nl>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>
+Date: Mon, 25 Mar 2013 11:32:11 +0100
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Mon__25_Mar_2013_17_20_35_+1100_1iDW93=VQb7Fu_FA"
-Cc: matt@ozlabs.org, Chen Gang <gang.chen@asianux.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "paulus@samba.org" <paulus@samba.org>, imunsie@au1.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,45 +20,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Mon__25_Mar_2013_17_20_35_+1100_1iDW93=VQb7Fu_FA
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Commit c1fb6816fb1b78dd94b673b0fdaa9a7a16e97bd1 ("powerpc: Add
+relocation on exception vector handlers") added two lines of code that
+depend on the macro CONFIG_HVC_SCOM. That macro doesn't exist. Perhaps
+it was intended to use CONFIG_PPC_SCOM here. But since
+"maintence_interrupt" is a typo and there's nothing in arch/powerpc that
+looks like maintenance_interrupt it seems best to just delete these
+lines.
 
-Hi Mikey,
+Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+---
+Untested, but low risk anyway.
 
-On Mon, 25 Mar 2013 17:07:17 +1100 Michael Neuling <mikey@neuling.org> wrot=
-e:
->
-> FYI you're gonna need this one also to make allmodconfig work.
->=20
->   http://patchwork.ozlabs.org/patch/230244/
+ arch/powerpc/kernel/exceptions-64s.S | 4 ----
+ 1 file changed, 4 deletions(-)
 
-Thanks for that, I will add it to linux-next tomorrow.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Signature=_Mon__25_Mar_2013_17_20_35_+1100_1iDW93=VQb7Fu_FA
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBCAAGBQJRT+yzAAoJEECxmPOUX5FEMX4P/1sgJBPMfROG7pOapNG2xaBw
-EtJqvTu3h1E1X0yFH5FbbAdYSmJgICFsg2l9RMPzf6pWL/dlAPoAfNsbCcMNLzGb
-kyP7pmxWWwlCSA8SVRIvOb9ea270gwTxoR0RUsnPFfBQRFEXeq7wsqZwO1orMXKz
-KgaPsqLXKJBy1TLsTQBRpiitae1UWR7mD2FDWc25yfwtRbEK0ZKvFl3LRAchxODx
-JLeVX40iejEwWTnSqwJgaXuK6LEv123w9yFwM1sL3Q2EJvBzITaX8YfGRcB4h6un
-tHZrPg5PXegHNhrmTViZhpUR9wmk22cUkr6HV67WUpe42PEGm5G+QUNodL8q71gS
-l7rtdBJnXJA2WqU4Br/8lgJaeTEChVXMxulxHCvQO79HswLvSYq5REXwDJ2yJaCM
-elA6ZxCCguLSa0yhw5/vDbxSn3zU0iJpqXdKxhxInet7ht4rA/vuTl95N8xB6G9S
-B4rKDmkfFM+Y88L/3olzfKNEDnO4WQ1UTYy+wpbyhvNmcbeOiuvAECuOuqaf2q1F
-NBGR6RZ+xt516PhUnQG7qJV6o+s2spsxXahl3RLlrbRQOfQmDQzB4S4/sU8PZobd
-XwZIISeeKucMNA5zDlcMvjFLGoXAmhQF06j3T8hniFmBcYZxDrvzJfu/sLB5C+4h
-V4TCX98M2a32FLG4PP6M
-=eNIn
------END PGP SIGNATURE-----
-
---Signature=_Mon__25_Mar_2013_17_20_35_+1100_1iDW93=VQb7Fu_FA--
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 200afa5..9181353 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -870,10 +870,6 @@ tm_unavailable_relon_pSeries_1:
+ 	. = 0x5500
+ 	b	denorm_exception_hv
+ #endif
+-#ifdef CONFIG_HVC_SCOM
+-	STD_RELON_EXCEPTION_HV(0x5600, 0x1600, maintence_interrupt)
+-	KVM_HANDLER_SKIP(PACA_EXGEN, EXC_HV, 0x1600)
+-#endif /* CONFIG_HVC_SCOM */
+ 	STD_RELON_EXCEPTION_PSERIES(0x5700, 0x1700, altivec_assist)
+ 
+ 	/* Other future vectors */
+-- 
+1.7.11.7
