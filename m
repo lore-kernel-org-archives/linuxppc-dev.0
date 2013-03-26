@@ -1,19 +1,19 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 29FE52C0085
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2013 09:55:19 +1100 (EST)
-Date: Mon, 25 Mar 2013 23:55:14 +0100
-From: Anatolij Gustschin <agust@denx.de>
-To: Maxwell MacLean <mmaclean@symbotic.com>
-Subject: Re: repository location (MPC5200b)
-Message-ID: <20130325235514.1efcaed2@crub>
-In-Reply-To: <97D2107B9206854998F088796329C879198B644F@AUSP01DAG0203>
-References: <97D2107B9206854998F088796329C879198B644F@AUSP01DAG0203>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.pcug.org.au [203.10.76.10])
+ by ozlabs.org (Postfix) with ESMTP id C29AB2C00BD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2013 13:12:09 +1100 (EST)
+Date: Tue, 26 Mar 2013 13:11:58 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Linus <torvalds@linux-foundation.org>
+Subject: [git pull] Please pull some powerpc build fixes
+Message-Id: <20130326131158.51bab1d55b2cda10ebc4ea4f@canb.auug.org.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Tue__26_Mar_2013_13_11_58_+1100_C=79Lg3SB5UZW33g"
+Cc: Michael Neuling <mikey@neuling.org>, Chen Gang <gang.chen@asianux.com>,
+ LKML <linux-kernel@vger.kernel.org>, Stuart Yoder <stuart.yoder@freescale.com>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,40 +23,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+--Signature=_Tue__26_Mar_2013_13_11_58_+1100_C=79Lg3SB5UZW33g
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, 25 Mar 2013 20:27:17 +0000
-Maxwell MacLean <mmaclean@symbotic.com> wrote:
+The following changes since commit 3912a677f68f6084e0a7b6a1a29310ac1b083713:
 
-> Hello all,
-> I have been following this list for a while now and am interested
-> in getting a version of the latest work in progress Linux kernel
-> with fixes for powerpc.
+  Merge tag 'pinctrl-fixes-for-v3.9' of git://git.kernel.org/pub/scm/linux/=
+kernel/git/linusw/linux-pinctrl (2013-03-24 10:11:29 -0700)
 
-For latest work in progress kernel look at master branch in linux-next
-tree
+are available in the git repository at:
 
- http://git.kernel.org/cgit/linux/kernel/git/next/linux-next.git
+  git://git.kernel.org/pub/scm/linux/kernel/git/sfr/next-fixes.git tags/for=
+-linus
 
-> Yes, I am a kernel newbie, but I am learning! I have an inherited
-> project based on version 2.6.28 that is compiled for an MPC5200b
-> and there are some issues I am interested in fixing (or seeing If
-> they are already fixed) .
-> 
-> I know there are many branches of development, but where can I get
-> the 'best' kernel for my processor?
+for you to fetch changes up to f9294e989fa6f2990da155242db03cea1550cac8:
 
-The current mainline kernel supports MPC5200b pretty well, you can
-use latest stable release, branch "linux-3.8.y" of the stable tree
+  powerpc: define the conditions where the ePAPR idle hcall can be supporte=
+d (2013-03-26 08:47:27 +1100)
 
- http://git.kernel.org/cgit/linux/kernel/git/stable/linux-stable.git
+----------------------------------------------------------------
+Just a couple of build fixes for powerpc all{mod,yes}config.
 
+Submitted by me since BenH is on vacation.
 
-HTH,
+----------------------------------------------------------------
+Chen Gang (1):
+      powerpc: make additional room in exception vector area
 
-Anatolij
+Stuart Yoder (1):
+      powerpc: define the conditions where the ePAPR idle hcall can be supp=
+orted
 
---
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0  Fax: +49-8142-66989-80 Email: office@denx.de
+ arch/powerpc/kernel/epapr_paravirt.c |   6 ++
+ arch/powerpc/kernel/exceptions-64s.S | 144 +++++++++++++++++--------------=
+----
+ 2 files changed, 78 insertions(+), 72 deletions(-)
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Tue__26_Mar_2013_13_11_58_+1100_C=79Lg3SB5UZW33g
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJRUQPuAAoJEECxmPOUX5FEA1AP/jvf8f6TA17rjGzV/R8YWVSR
+das8OhXqzp537gsxi2ognn7HQT9cd4YBn49IQP6aDxTNP6xxsnR8AfdXfAWxrUhd
+DWYDk4HssuNKNhyAK+UIqQkvGlc0AP0PBMBfah3YkfxVhbd0AnJ/DJ7CT0ALeE8g
+sFJxqGk8LqzNy3w3XCGQR6+8eYVX1AhR++swQ6SbPu86BcSemoJaihl61HbMrEmj
+/vxYDdcgs1eakH7C3j+3r8UG2eFGq5tvF/OmUuqxQ6zrKo3QMWp+ToKMoILkbTj2
+5JCa0KuAXL8AePal+om2Gnomajcgf+Lmlt/9NEl9OHFPzwKl8bJ9vp0NWKfZUSl0
+7QmYdOCbaetCzzmsX78jJZ1JHc3FjD9NbqbY1jEBgSigqg0mYLvxZTkJhyPLBvzW
+5dHNvV78oR5hOsUPnNFBFYkDnK2ke9hZCqBckggS/Wrjfl5bU4+gazANEiXMqt+q
+q8t5DGYsKYuHnffJ0tsYGrCH+wzSzAb62CsQ5pNxULJ/ICF1Xdxb62DOlum+8yG2
+HaXYT8A196JIqNZp/rcLkFW2dD2nCa6SXx4QGHbFlBPs+a9ltfKozMFTy52A6NfE
+POLgPTnr7FDZMY6CK5iXszFllc9YVxq9/2x6w2X19jo7NaFfBHVAuaFwAtozc6dO
+QtKD8XB+7rt+1y2Nh8KR
+=tWbN
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__26_Mar_2013_13_11_58_+1100_C=79Lg3SB5UZW33g--
