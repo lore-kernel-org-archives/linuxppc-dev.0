@@ -1,33 +1,33 @@
-Return-Path: <liuj97@gmail.com>
-Received: from mail-da0-x232.google.com (mail-da0-x232.google.com
- [IPv6:2607:f8b0:400e:c00::232])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 33FE62C0090
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2013 03:02:09 +1100 (EST)
-Received: by mail-da0-f50.google.com with SMTP id t1so2206026dae.9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2013 09:01:57 -0700 (PDT)
-From: Jiang Liu <liuj97@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
- David Rientjes <rientjes@google.com>
-Subject: [PATCH v3,
- part4 28/39] mm/ppc: prepare for removing num_physpages and simplify
- mem_init()
-Date: Tue, 26 Mar 2013 23:54:47 +0800
-Message-Id: <1364313298-17336-29-git-send-email-jiang.liu@huawei.com>
-In-Reply-To: <1364313298-17336-1-git-send-email-jiang.liu@huawei.com>
-References: <1364313298-17336-1-git-send-email-jiang.liu@huawei.com>
-Cc: linux-arch@vger.kernel.org,
- James Bottomley <James.Bottomley@HansenPartnership.com>,
- David Howells <dhowells@redhat.com>, Jiang Liu <jiang.liu@huawei.com>,
- Wen Congyang <wency@cn.fujitsu.com>, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, Michal Hocko <mhocko@suse.cz>,
- Minchan Kim <minchan@kernel.org>, Paul Mackerras <paulus@samba.org>,
- Mel Gorman <mgorman@suse.de>, Mark Salter <msalter@redhat.com>,
- linuxppc-dev@lists.ozlabs.org,
- Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
- KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
- Jianguo Wu <wujianguo@huawei.com>
+Return-Path: <B07421@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E4A802C007A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2013 04:31:50 +1100 (EST)
+Received: from mail213-co9 (localhost [127.0.0.1])	by
+ mail213-co9-R.bigfish.com (Postfix) with ESMTP id AEA21A00AB	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2013 17:31:45 +0000 (UTC)
+Received: from CO9EHSMHS012.bigfish.com (unknown [10.236.132.237])	by
+ mail213-co9.bigfish.com (Postfix) with ESMTP id 0C1802E0056	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2013 17:31:44 +0000 (UTC)
+Date: Tue, 26 Mar 2013 12:31:39 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 2/3] powerpc/mpic: add global timer support
+To: Wang Dongsheng-B40534 <B40534@freescale.com>
+References: <ABB05CD9C9F68C46A5CEDC7F15439259EB857A@039-SN2MPN1-022.039d.mgd.msft.net>
+ <1363991395.24790.13@snotra>
+ <ABB05CD9C9F68C46A5CEDC7F15439259EBAA0F@039-SN2MPN1-022.039d.mgd.msft.net>
+In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F15439259EBAA0F@039-SN2MPN1-022.039d.mgd.msft.net>
+ (from B40534@freescale.com on Mon Mar 25 22:29:58 2013)
+Message-ID: <1364319099.469.6@snotra>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ Gala Kumar-B11780 <B11780@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,119 +37,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Prepare for removing num_physpages and simplify mem_init().
+On 03/25/2013 10:29:58 PM, Wang Dongsheng-B40534 wrote:
+>=20
+>=20
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Saturday, March 23, 2013 6:30 AM
+> > To: Wang Dongsheng-B40534
+> > Cc: Wood Scott-B07421; Gala Kumar-B11780; =20
+> linuxppc-dev@lists.ozlabs.org;
+> > Li Yang-R58472
+> > Subject: Re: [PATCH 2/3] powerpc/mpic: add global timer support
+> >
+> > On 03/22/2013 01:14:51 AM, Wang Dongsheng-B40534 wrote:
+> > >
+> > >
+> > > > -----Original Message-----
+> > > > From: Wood Scott-B07421
+> > > > Sent: Thursday, March 21, 2013 7:00 AM
+> > > > To: Wang Dongsheng-B40534
+> > > > Cc: Wood Scott-B07421; Gala Kumar-B11780;
+> > > linuxppc-dev@lists.ozlabs.org;
+> > > > Li Yang-R58472
+> > > > Subject: Re: [PATCH 2/3] powerpc/mpic: add global timer support
+> > > >
+> > > > BTW, the input clock frequency has been similarly scaled, yet =20
+> you
+> > > don't
+> > > > try to scrounge up that information to get further precision...
+> > > >
+> > > Let's go back patch, do you think the code is repeated?
+> > > I will remove "if (!(priv->flags & FSL_GLOBAL_TIMER))" branch, =20
+> there
+> > > will be no redundant code.
+> >
+> > I'd rather that branch be kept and the more complicated branch =20
+> deleted,
+> > and priv->timerfreq frequency be adjusted on initialization to =20
+> account
+> > for the scaler.
+>=20
+> static void convert_ticks_to_time(struct timer_group_priv *priv,
+>                 const u64 ticks, struct timeval *time)
+> {
+>         u64 tmp_sec;
+>=20
+>         time->tv_sec =3D (__kernel_time_t)div_u64(ticks, =20
+> priv->timerfreq);
+>         tmp_sec =3D (u64)time->tv_sec * (u64)priv->timerfreq;
+>=20
+>         time->tv_usec =3D (__kernel_suseconds_t)
+>                 div_u64((ticks - tmp_sec) * 1000000, priv->timerfreq);
+>=20
+>         return;
+> }
+>=20
+> timer_group_get_freq() {
+> 	...
+> 	if (priv->flags & FSL_GLOBAL_TIMER) {
+> 		div =3D (1 << (MPIC_TIMER_TCR_CLKDIV_64 >> 8)) * 8;
+> 		priv->timerfreq /=3D div;
+> 	}
+> 	...
+> }
+> Do you want to do that?
 
-Signed-off-by: Jiang Liu <jiang.liu@huawei.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org
----
-Hi all,
-	Sorry for my mistake that my previous patch series has been screwed up.
-So I regenerate a third version and also set up a git tree at:
-	git://github.com/jiangliu/linux.git mem_init
-	Any help to review and test are welcomed!
+	if (priv->flags & FSL_GLOBAL_TIMER)
+		priv->timerfreq /=3D 64;
 
-	Regards!
-	Gerry
----
- arch/powerpc/mm/mem.c |   56 +++++++++++--------------------------------------
- 1 file changed, 12 insertions(+), 44 deletions(-)
+...but otherwise yes.
 
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 0e154a9..8aba687 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -303,46 +303,27 @@ void __init paging_init(void)
- 
- void __init mem_init(void)
- {
--#ifdef CONFIG_NEED_MULTIPLE_NODES
--	int nid;
--#endif
--	pg_data_t *pgdat;
--	unsigned long i;
--	struct page *page;
--	unsigned long reservedpages = 0, codesize, initsize, datasize, bsssize;
--
- #ifdef CONFIG_SWIOTLB
- 	swiotlb_init(0);
- #endif
- 
--	num_physpages = memblock_phys_mem_size() >> PAGE_SHIFT;
- 	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE);
- 
- #ifdef CONFIG_NEED_MULTIPLE_NODES
--        for_each_online_node(nid) {
--		if (NODE_DATA(nid)->node_spanned_pages != 0) {
--			printk("freeing bootmem node %d\n", nid);
--			free_all_bootmem_node(NODE_DATA(nid));
--		}
-+	{
-+		pg_data_t *pgdat;
-+
-+		for_each_online_pgdat(pgdat)
-+			if (pgdat->node_spanned_pages != 0) {
-+				printk("freeing bootmem node %d\n",
-+					pgdat->node_id);
-+				free_all_bootmem_node(pgdat);
-+			}
- 	}
- #else
- 	max_mapnr = max_pfn;
- 	free_all_bootmem();
- #endif
--	for_each_online_pgdat(pgdat) {
--		for (i = 0; i < pgdat->node_spanned_pages; i++) {
--			if (!pfn_valid(pgdat->node_start_pfn + i))
--				continue;
--			page = pgdat_page_nr(pgdat, i);
--			if (PageReserved(page))
--				reservedpages++;
--		}
--	}
--
--	codesize = (unsigned long)&_sdata - (unsigned long)&_stext;
--	datasize = (unsigned long)&_edata - (unsigned long)&_sdata;
--	initsize = (unsigned long)&__init_end - (unsigned long)&__init_begin;
--	bsssize = (unsigned long)&__bss_stop - (unsigned long)&__bss_start;
- 
- #ifdef CONFIG_HIGHMEM
- 	{
-@@ -352,13 +333,9 @@ void __init mem_init(void)
- 		for (pfn = highmem_mapnr; pfn < max_mapnr; ++pfn) {
- 			phys_addr_t paddr = (phys_addr_t)pfn << PAGE_SHIFT;
- 			struct page *page = pfn_to_page(pfn);
--			if (memblock_is_reserved(paddr))
--				continue;
--			free_highmem_page(page);
--			reservedpages--;
-+			if (!memblock_is_reserved(paddr))
-+				free_highmem_page(page);
- 		}
--		printk(KERN_DEBUG "High memory: %luk\n",
--		       totalhigh_pages << (PAGE_SHIFT-10));
- 	}
- #endif /* CONFIG_HIGHMEM */
- 
-@@ -371,16 +348,7 @@ void __init mem_init(void)
- 		(mfspr(SPRN_TLB1CFG) & TLBnCFG_N_ENTRY) - 1;
- #endif
- 
--	printk(KERN_INFO "Memory: %luk/%luk available (%luk kernel code, "
--	       "%luk reserved, %luk data, %luk bss, %luk init)\n",
--		nr_free_pages() << (PAGE_SHIFT-10),
--		num_physpages << (PAGE_SHIFT-10),
--		codesize >> 10,
--		reservedpages << (PAGE_SHIFT-10),
--		datasize >> 10,
--		bsssize >> 10,
--		initsize >> 10);
--
-+	mem_init_print_info(NULL);
- #ifdef CONFIG_PPC32
- 	pr_info("Kernel virtual memory layout:\n");
- 	pr_info("  * 0x%08lx..0x%08lx  : fixmap\n", FIXADDR_START, FIXADDR_TOP);
--- 
-1.7.9.5
+-Scott=
