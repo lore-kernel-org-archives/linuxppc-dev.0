@@ -1,29 +1,22 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-oa0-f49.google.com (mail-oa0-f49.google.com
- [209.85.219.49])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A98362C008D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2013 05:40:05 +1100 (EST)
-Received: by mail-oa0-f49.google.com with SMTP id j6so7812161oag.22
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2013 11:40:00 -0700 (PDT)
+Return-Path: <B02008@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe003.messaging.microsoft.com [213.199.154.206])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 669B92C0097
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2013 09:05:47 +1100 (EST)
+From: Mihai Caraman <mihai.caraman@freescale.com>
+To: <kvm-ppc@vger.kernel.org>
+Subject: [PATCH 4/7 v2] KVM: PPC: e500: Add support for EPTCFG register
+Date: Wed, 27 Mar 2013 00:05:09 +0200
+Message-ID: <1364335512-28426-5-git-send-email-mihai.caraman@freescale.com>
+In-Reply-To: <1364335512-28426-1-git-send-email-mihai.caraman@freescale.com>
+References: <1364335512-28426-1-git-send-email-mihai.caraman@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <1363757079-23550-2-git-send-email-lucaskt@linux.vnet.ibm.com>
-References: <1363757079-23550-1-git-send-email-lucaskt@linux.vnet.ibm.com>
- <1363757079-23550-2-git-send-email-lucaskt@linux.vnet.ibm.com>
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Tue, 26 Mar 2013 12:39:39 -0600
-Message-ID: <CAErSpo4rc=8mYgwuTO6693QCQJ9nsPsxmh7YAwxMygiVrPQR0A@mail.gmail.com>
-Subject: Re: [PATCHv2 1/3] pci: added pcie_get_speed_cap_mask function
-To: Lucas Kannebley Tavares <lucaskt@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: David Airlie <airlied@linux.ie>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- DRI mailing list <dri-devel@lists.freedesktop.org>,
- Alex Deucher <alexander.deucher@amd.com>,
- Thadeu Cascardo <cascardo@linux.vnet.ibm.com>,
- Brian King <brking@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,137 +26,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 19, 2013 at 11:24 PM, Lucas Kannebley Tavares
-<lucaskt@linux.vnet.ibm.com> wrote:
-> Added function to gather the speed cap for a device and return a mask to
-> supported speeds. The function is divided into an interface and a weak
-> implementation so that architecture-specific functions can be called.
->
-> This is the first step in moving function drm_pcie_get_speed_cap_mask
-> from the drm subsystem to the pci one.
+EPTCFG register defined by E.PT is accessed unconditionally by Linux guests
+in the presence of MAV 2.0. Support it now.
 
-This still doesn't feel right to me.
+Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+---
+v2:
+ - Use has_feature() function
 
-I'm definitely not a hardware guy, but my understanding based on the
-PCIe spec r3.0, sec 6.11, is that the hardware will automatically
-maintain the link at the highest speed supported by both ends of the
-link, unless software sets a lower Target Link Speed.  The only users
-of this function are some Radeon drivers, and it looks like they only
-use it because the hardware doesn't conform to this aspect of the spec
-and requires device-specific tweaking.
+ Documentation/virtual/kvm/api.txt   |    1 +
+ arch/powerpc/include/asm/kvm_host.h |    1 +
+ arch/powerpc/include/uapi/asm/kvm.h |    1 +
+ arch/powerpc/kvm/e500.h             |    5 +++++
+ arch/powerpc/kvm/e500_emulate.c     |    9 +++++++++
+ arch/powerpc/kvm/e500_mmu.c         |   11 +++++++++++
+ 6 files changed, 28 insertions(+), 0 deletions(-)
 
-We already have bus->max_bus_speed, which should tell you the max
-speed supported by the upstream component.  Is that enough
-information?  Maybe the radeon drivers could simply do something like
-this:
-
-    speed = rdev->ddev->pdev->bus->max_bus_speed;
-    if (speed == PCI_SPEED_UNKNOWN || speed < PCIE_SPEED_5_0GT)
-        return;
-
-In your original email [1], you mentioned a null pointer dereference,
-presumably when reading the PCIe capability for dev->pdev->bus->self,
-with "self" being NULL.  This only happens for a bus with no upstream
-P2P bridge, i.e., self will be NULL only if pdev is on a root bus.
-But we also know pdev is a PCIe device, and I think a PCIe device on a
-root bus must be a "Root Complex Integrated Endpoint" (PCIe spec sec
-1.3.2.3).  Such a device does not have a link at all, so there's no
-point in fiddling with its link speed.
-
-I don't see how a radeon device could be an integrated endpoint, but
-in your hypervisor environment, maybe it isn't quite spec-compliant in
-terms of its attachment.  Can you collect the output of "lspci -vv"?
-Maybe that will make things clearer.
-
-In any case, if a radeon device is on a root bus, I think the root bus
-max_bus_speed will be PCI_SPEED_UNKNOWN, and if it's not on a root
-bus, max_bus_speed should be set correctly based on the upstream PCIe
-port.
-
-Bjorn
-
-[1] http://lkml.kernel.org/r/50819140.8030806@linux.vnet.ibm.com
-
-> Signed-off-by: Lucas Kannebley Tavares <lucaskt@linux.vnet.ibm.com>
-> ---
->  drivers/pci/pci.c   |   44 ++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/pci.h |    6 ++++++
->  2 files changed, 50 insertions(+), 0 deletions(-)
->
-> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index b099e00..d94ab79 100644
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -3931,6 +3931,50 @@ static int __init pci_setup(char *str)
->  }
->  early_param("pci", pci_setup);
->
-> +int __weak pcibios_get_speed_cap_mask(struct pci_dev *dev, u32 *mask)
-> +{
-> +       struct pci_dev *root;
-> +       u32 lnkcap, lnkcap2;
-> +
-> +       *mask = 0;
-> +       if (!dev)
-> +               return -EINVAL;
-> +
-> +       root = dev->bus->self;
-> +
-> +       /* we've been informed via and serverworks don't make the cut */
-> +       if (root->vendor == PCI_VENDOR_ID_VIA ||
-> +           root->vendor == PCI_VENDOR_ID_SERVERWORKS)
-> +               return -EINVAL;
-> +
-> +       pcie_capability_read_dword(root, PCI_EXP_LNKCAP, &lnkcap);
-> +       pcie_capability_read_dword(root, PCI_EXP_LNKCAP2, &lnkcap2);
-> +
-> +       if (lnkcap2) {  /* PCIe r3.0-compliant */
-> +               if (lnkcap2 & PCI_EXP_LNKCAP2_SLS_2_5GB)
-> +                       *mask |= PCIE_SPEED_25;
-> +               if (lnkcap2 & PCI_EXP_LNKCAP2_SLS_5_0GB)
-> +                       *mask |= PCIE_SPEED_50;
-> +               if (lnkcap2 & PCI_EXP_LNKCAP2_SLS_8_0GB)
-> +                       *mask |= PCIE_SPEED_80;
-> +       } else {        /* pre-r3.0 */
-> +               if (lnkcap & PCI_EXP_LNKCAP_SLS_2_5GB)
-> +                       *mask |= PCIE_SPEED_25;
-> +               if (lnkcap & PCI_EXP_LNKCAP_SLS_5_0GB)
-> +                       *mask |= (PCIE_SPEED_25 | PCIE_SPEED_50);
-> +       }
-> +
-> +       dev_info(&dev->dev, "probing gen 2 caps for device %x:%x = %x/%x\n",
-> +               root->vendor, root->device, lnkcap, lnkcap2);
-> +       return 0;
-> +}
-> +
-> +int pcie_get_speed_cap_mask(struct pci_dev *dev, u32 *mask)
-> +{
-> +       return pcibios_get_speed_cap_mask(dev, mask);
-> +}
-> +EXPORT_SYMBOL(pcie_get_speed_cap_mask);
-> +
->  EXPORT_SYMBOL(pci_reenable_device);
->  EXPORT_SYMBOL(pci_enable_device_io);
->  EXPORT_SYMBOL(pci_enable_device_mem);
-> diff --git a/include/linux/pci.h b/include/linux/pci.h
-> index 2461033a..24a2f63 100644
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -1861,4 +1861,10 @@ static inline struct eeh_dev *pci_dev_to_eeh_dev(struct pci_dev *pdev)
->   */
->  struct pci_dev *pci_find_upstream_pcie_bridge(struct pci_dev *pdev);
->
-> +#define PCIE_SPEED_25 1
-> +#define PCIE_SPEED_50 2
-> +#define PCIE_SPEED_80 4
-> +
-> +extern int pcie_get_speed_cap_mask(struct pci_dev *dev, u32 *speed_mask);
-> +
->  #endif /* LINUX_PCI_H */
-> --
-> 1.7.4.4
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/Documentation/virtual/kvm/api.txt b/Documentation/virtual/kvm/api.txt
+index f045377..a1f2200 100644
+--- a/Documentation/virtual/kvm/api.txt
++++ b/Documentation/virtual/kvm/api.txt
+@@ -1807,6 +1807,7 @@ registers, find a list below:
+   PPC   | KVM_REG_PPC_TLB1PS	| 32
+   PPC   | KVM_REG_PPC_TLB2PS	| 32
+   PPC   | KVM_REG_PPC_TLB3PS	| 32
++  PPC   | KVM_REG_PPC_EPTCFG	| 32
+ 
+ ARM registers are mapped using the lower 32 bits.  The upper 16 of that
+ is the register group type, or coprocessor number:
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index 3b6cee3..8a48e68 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -504,6 +504,7 @@ struct kvm_vcpu_arch {
+ 	u32 tlbcfg[4];
+ 	u32 tlbps[4];
+ 	u32 mmucfg;
++	u32 eptcfg;
+ 	u32 epr;
+ 	u32 crit_save;
+ 	struct kvmppc_booke_debug_reg dbg_reg;
+diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
+index 7cfd13f..9d7fbf0 100644
+--- a/arch/powerpc/include/uapi/asm/kvm.h
++++ b/arch/powerpc/include/uapi/asm/kvm.h
+@@ -443,4 +443,5 @@ struct kvm_get_htab_header {
+ #define KVM_REG_PPC_TLB1PS	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0x97)
+ #define KVM_REG_PPC_TLB2PS	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0x98)
+ #define KVM_REG_PPC_TLB3PS	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0x99)
++#define KVM_REG_PPC_EPTCFG	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0x9a)
+ #endif /* __LINUX_KVM_POWERPC_H */
+diff --git a/arch/powerpc/kvm/e500.h b/arch/powerpc/kvm/e500.h
+index 795934d..6cfc669 100644
+--- a/arch/powerpc/kvm/e500.h
++++ b/arch/powerpc/kvm/e500.h
+@@ -24,6 +24,7 @@
+ #include <asm/tlb.h>
+ 
+ #define VCPU_FTR_MMU_V2		0
++#define VCPU_FTR_E_PT		1
+ 
+ #define E500_PID_NUM   3
+ #define E500_TLB_NUM   2
+@@ -309,6 +310,10 @@ static inline bool has_feature(const struct kvm_vcpu *vcpu,
+ 	case VCPU_FTR_MMU_V2:
+ 		has_ftr = ((vcpu->arch.mmucfg & MMUCFG_MAVN) == MMUCFG_MAVN_V2);
+ 		break;
++	case VCPU_FTR_E_PT:
++		has_ftr = ((vcpu->arch.tlbcfg[1] & TLBnCFG_IND) &&
++			   (vcpu->arch.tlbcfg[0] & TLBnCFG_PT));
++		break;
+ 	default:
+ 		has_ftr = false;
+ 	}
+diff --git a/arch/powerpc/kvm/e500_emulate.c b/arch/powerpc/kvm/e500_emulate.c
+index 12b8de2..b10a012 100644
+--- a/arch/powerpc/kvm/e500_emulate.c
++++ b/arch/powerpc/kvm/e500_emulate.c
+@@ -317,6 +317,15 @@ int kvmppc_core_emulate_mfspr(struct kvm_vcpu *vcpu, int sprn, ulong *spr_val)
+ 	case SPRN_MMUCFG:
+ 		*spr_val = vcpu->arch.mmucfg;
+ 		break;
++	case SPRN_EPTCFG:
++		if (!has_feature(vcpu, VCPU_FTR_MMU_V2))
++			return EMULATE_FAIL;
++		/*
++		 * Legacy Linux guests access EPTCFG register even if the E.PT
++		 * category is disabled in the VM. Give them a chance to live.
++		 */
++		*spr_val = vcpu->arch.eptcfg;
++		break;
+ 
+ 	/* extra exceptions */
+ 	case SPRN_IVOR32:
+diff --git a/arch/powerpc/kvm/e500_mmu.c b/arch/powerpc/kvm/e500_mmu.c
+index e354fa1..cf60db1 100644
+--- a/arch/powerpc/kvm/e500_mmu.c
++++ b/arch/powerpc/kvm/e500_mmu.c
+@@ -617,6 +617,8 @@ int kvmppc_get_one_reg_e500_tlb(struct kvm_vcpu *vcpu, u64 id,
+ 		*val = get_reg_val(id, vcpu->arch.shared->mas6);
+ 	case KVM_REG_PPC_MMUCFG:
+ 		*val = get_reg_val(id, vcpu->arch.mmucfg);
++	case KVM_REG_PPC_EPTCFG:
++		*val = get_reg_val(id, vcpu->arch.eptcfg);
+ 	case KVM_REG_PPC_TLB0CFG:
+ 	case KVM_REG_PPC_TLB1CFG:
+ 	case KVM_REG_PPC_TLB2CFG:
+@@ -668,6 +670,10 @@ int kvmppc_set_one_reg_e500_tlb(struct kvm_vcpu *vcpu, u64 id,
+ 			r = -EINVAL;
+ 		break;
+ 	}
++	case KVM_REG_PPC_EPTCFG:
++		if (set_reg_val(id, *val) != vcpu->arch.eptcfg)
++			r = -EINVAL;
++		break;
+ 	case KVM_REG_PPC_TLB0CFG:
+ 	case KVM_REG_PPC_TLB1CFG:
+ 	case KVM_REG_PPC_TLB2CFG:
+@@ -861,6 +867,11 @@ static int vcpu_mmu_init(struct kvm_vcpu *vcpu,
+ 	vcpu->arch.tlbcfg[1] |= params[1].ways << TLBnCFG_ASSOC_SHIFT;
+ 
+ 	if (has_feature(vcpu, VCPU_FTR_MMU_V2)) {
++		if (has_feature(vcpu, VCPU_FTR_E_PT))
++			vcpu->arch.eptcfg = mfspr(SPRN_EPTCFG);
++		else
++			vcpu->arch.eptcfg = 0;
++
+ 		vcpu->arch.tlbps[0] = mfspr(SPRN_TLB0PS);
+ 		vcpu->arch.tlbps[1] = mfspr(SPRN_TLB1PS);
+ 	}
+-- 
+1.7.4.1
