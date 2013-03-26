@@ -1,31 +1,20 @@
-Return-Path: <B40534@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0189.outbound.messaging.microsoft.com [213.199.154.189])
+Return-Path: <B38951@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8E12B2C0097
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2013 14:30:16 +1100 (EST)
-Received: from mail193-db8 (localhost [127.0.0.1])	by
- mail193-db8-R.bigfish.com (Postfix) with ESMTP id 3DAFD5800C6	for
- <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2013 03:30:03 +0000 (UTC)
-Received: from DB8EHSMHS008.bigfish.com (unknown [10.174.8.238])	by
- mail193-db8.bigfish.com (Postfix) with ESMTP id 685F5B00044	for
- <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2013 03:30:00 +0000 (UTC)
-From: Wang Dongsheng-B40534 <B40534@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH 2/3] powerpc/mpic: add global timer support
-Date: Tue, 26 Mar 2013 03:29:58 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259EBAA0F@039-SN2MPN1-022.039d.mgd.msft.net>
-References: <ABB05CD9C9F68C46A5CEDC7F15439259EB857A@039-SN2MPN1-022.039d.mgd.msft.net>
- (from B40534@freescale.com on Fri Mar 22 01:14:51 2013)
- <1363991395.24790.13@snotra>
-In-Reply-To: <1363991395.24790.13@snotra>
-Content-Type: text/plain; charset="us-ascii"
+ by ozlabs.org (Postfix) with ESMTPS id B7E052C009E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2013 15:04:57 +1100 (EST)
+From: Jia Hongtao <hongtao.jia@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
+Subject: [PATCH 1/2] powerpc/MPIC: Add get_version API both for internal and
+ external use
+Date: Tue, 26 Mar 2013 11:28:46 +0800
+Message-ID: <1364268527-32068-1-git-send-email-hongtao.jia@freescale.com>
 MIME-Version: 1.0
-Cc: Gala Kumar-B11780 <B11780@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+Content-Type: text/plain
+Cc: B07421@freescale.com, hongtao.jia@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,60 +24,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+MPIC version is useful information for both mpic_alloc() and mpic_init().
+The patch provide an API to get MPIC version for reusing the code.
+Also, some other IP block may need MPIC version for their own use.
+The API for external use is also provided.
 
+Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
+---
+ arch/powerpc/include/asm/mpic.h |  3 +++
+ arch/powerpc/sysdev/mpic.c      | 30 +++++++++++++++++++++++-------
+ 2 files changed, 26 insertions(+), 7 deletions(-)
 
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Saturday, March 23, 2013 6:30 AM
-> To: Wang Dongsheng-B40534
-> Cc: Wood Scott-B07421; Gala Kumar-B11780; linuxppc-dev@lists.ozlabs.org;
-> Li Yang-R58472
-> Subject: Re: [PATCH 2/3] powerpc/mpic: add global timer support
->=20
-> On 03/22/2013 01:14:51 AM, Wang Dongsheng-B40534 wrote:
-> >
-> >
-> > > -----Original Message-----
-> > > From: Wood Scott-B07421
-> > > Sent: Thursday, March 21, 2013 7:00 AM
-> > > To: Wang Dongsheng-B40534
-> > > Cc: Wood Scott-B07421; Gala Kumar-B11780;
-> > linuxppc-dev@lists.ozlabs.org;
-> > > Li Yang-R58472
-> > > Subject: Re: [PATCH 2/3] powerpc/mpic: add global timer support
-> > >
-> > > BTW, the input clock frequency has been similarly scaled, yet you
-> > don't
-> > > try to scrounge up that information to get further precision...
-> > >
-> > Let's go back patch, do you think the code is repeated?
-> > I will remove "if (!(priv->flags & FSL_GLOBAL_TIMER))" branch, there
-> > will be no redundant code.
->=20
-> I'd rather that branch be kept and the more complicated branch deleted,
-> and priv->timerfreq frequency be adjusted on initialization to account
-> for the scaler.
-
-static void convert_ticks_to_time(struct timer_group_priv *priv,
-                const u64 ticks, struct timeval *time)
-{
-        u64 tmp_sec;
-
-        time->tv_sec =3D (__kernel_time_t)div_u64(ticks, priv->timerfreq);
-        tmp_sec =3D (u64)time->tv_sec * (u64)priv->timerfreq;
-
-        time->tv_usec =3D (__kernel_suseconds_t)
-                div_u64((ticks - tmp_sec) * 1000000, priv->timerfreq);
-
-        return;
-}
-
-timer_group_get_freq() {
-	...
-	if (priv->flags & FSL_GLOBAL_TIMER) {
-		div =3D (1 << (MPIC_TIMER_TCR_CLKDIV_64 >> 8)) * 8;
-		priv->timerfreq /=3D div;
-	}
-	...
-}
-Do you want to do that?
+diff --git a/arch/powerpc/include/asm/mpic.h b/arch/powerpc/include/asm/mpic.h
+index c0f9ef9..95053d6 100644
+--- a/arch/powerpc/include/asm/mpic.h
++++ b/arch/powerpc/include/asm/mpic.h
+@@ -393,6 +393,9 @@ struct mpic
+ #define	MPIC_REGSET_STANDARD		MPIC_REGSET(0)	/* Original MPIC */
+ #define	MPIC_REGSET_TSI108		MPIC_REGSET(1)	/* Tsi108/109 PIC */
+ 
++/* Get the mpic version */
++extern u32 mpic_primary_get_version(void);
++
+ /* Allocate the controller structure and setup the linux irq descs
+  * for the range if interrupts passed in. No HW initialization is
+  * actually performed.
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index d30e6a6..d6b6fb6 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -1165,10 +1165,31 @@ static struct irq_domain_ops mpic_host_ops = {
+ 	.xlate = mpic_host_xlate,
+ };
+ 
++static u32 mpic_get_version(struct mpic *mpic)
++{
++	u32 brr1;
++
++	brr1 = _mpic_read(mpic->reg_type, &mpic->thiscpuregs,
++			MPIC_FSL_BRR1);
++
++	return brr1 & MPIC_FSL_BRR1_VER;
++}
++
+ /*
+  * Exported functions
+  */
+ 
++u32 mpic_primary_get_version(void)
++{
++	u32 brr1;
++	struct mpic *mpic = mpic_primary;
++
++	brr1 = _mpic_read(mpic->reg_type, &mpic->thiscpuregs,
++			MPIC_FSL_BRR1);
++
++	return brr1 & MPIC_FSL_BRR1_VER;
++}
++
+ struct mpic * __init mpic_alloc(struct device_node *node,
+ 				phys_addr_t phys_addr,
+ 				unsigned int flags,
+@@ -1315,7 +1336,6 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ 	mpic_map(mpic, mpic->paddr, &mpic->tmregs, MPIC_INFO(TIMER_BASE), 0x1000);
+ 
+ 	if (mpic->flags & MPIC_FSL) {
+-		u32 brr1;
+ 		int ret;
+ 
+ 		/*
+@@ -1326,9 +1346,7 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ 		mpic_map(mpic, mpic->paddr, &mpic->thiscpuregs,
+ 			 MPIC_CPU_THISBASE, 0x1000);
+ 
+-		brr1 = _mpic_read(mpic->reg_type, &mpic->thiscpuregs,
+-				MPIC_FSL_BRR1);
+-		fsl_version = brr1 & MPIC_FSL_BRR1_VER;
++		fsl_version = mpic_get_version(mpic);
+ 
+ 		/* Error interrupt mask register (EIMR) is required for
+ 		 * handling individual device error interrupts. EIMR
+@@ -1518,9 +1536,7 @@ void __init mpic_init(struct mpic *mpic)
+ 	mpic_cpu_write(MPIC_INFO(CPU_CURRENT_TASK_PRI), 0xf);
+ 
+ 	if (mpic->flags & MPIC_FSL) {
+-		u32 brr1 = _mpic_read(mpic->reg_type, &mpic->thiscpuregs,
+-				      MPIC_FSL_BRR1);
+-		u32 version = brr1 & MPIC_FSL_BRR1_VER;
++		u32 version = mpic_get_version(mpic);
+ 
+ 		/*
+ 		 * Timer group B is present at the latest in MPIC 3.1 (e.g.
+-- 
+1.8.0
