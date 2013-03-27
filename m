@@ -1,23 +1,25 @@
-Return-Path: <R1AAHA@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe006.messaging.microsoft.com [213.199.154.209])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5F22E2C00C8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2013 06:36:20 +1100 (EST)
-Date: Wed, 27 Mar 2013 14:32:36 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: <Yuantian.Tang@freescale.com>
-Subject: Re: [PATCH 3/3] cpufreq: Add cpufreq driver for Freescale e500mc SOCs
-Message-ID: <20130327143236.7cb4613b78ad18d79bfbcc57@freescale.com>
-In-Reply-To: <1364265391-26077-3-git-send-email-Yuantian.Tang@freescale.com>
-References: <1364265391-26077-1-git-send-email-Yuantian.Tang@freescale.com>
- <1364265391-26077-3-git-send-email-Yuantian.Tang@freescale.com>
+Return-Path: <hpa@zytor.com>
+Received: from mail.zytor.com (terminus.zytor.com [IPv6:2001:1868:205::10])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 9BE2D2C007C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2013 07:25:52 +1100 (EST)
+Message-ID: <51534942.5020009@zytor.com>
+Date: Wed, 27 Mar 2013 12:32:18 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: rjw@sisk.pl, linuxppc-dev@lists.ozlabs.org, cpufreq@vger.kernel.org,
- linux-pm@vger.kernel.org
+To: Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH 2/3] x86/mm/numa: use setup_nr_node_ids() instead of
+ opencoding.
+References: <1364319962-30967-1-git-send-email-cody@linux.vnet.ibm.com>
+ <1364319962-30967-3-git-send-email-cody@linux.vnet.ibm.com>
+ <CAE9FiQVSPdCqaLKapG4DJ1CXtPKb8F29=s_-e9OLpXP7yG1XTA@mail.gmail.com>
+In-Reply-To: <CAE9FiQVSPdCqaLKapG4DJ1CXtPKb8F29=s_-e9OLpXP7yG1XTA@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Cody P Schafer <cody@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,41 +29,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 26 Mar 2013 10:36:31 +0800
-<Yuantian.Tang@freescale.com> wrote:
+On 03/26/2013 10:56 AM, Yinghai Lu wrote:
+> 
+> For 1 and 2,
+> 
+> Acked-by: Yinghai Lu <yinghai@kernel.org>
+> 
 
-> +static int __init ppc_corenet_cpufreq_init(void)
-> +{
-> +	int ret = 0;
-> +	struct device_node  *np;
-> +	const struct of_device_id *match;
-> +
-> +	np = of_find_matching_node(NULL, node_matches);
-> +	if (!np)
-> +		return -ENODEV;
-> +
-> +	match = of_match_node(node_matches, np);
-> +	freq_data.cpus_per_cluster = (long)match->data;
-> +	mutex_init(&freq_data.cpufreq_lock);
-> +	of_node_put(np);
-> +
-> +	ret = cpufreq_register_driver(&ppc_corenet_cpufreq_driver);
-> +	if (ret)
-> +		return ret;
-> +
-> +	pr_info("Freescale PowerPC corenet CPU frequency scaling driver\n");
-> +
-> +	return ret;
-> +}
-> +
-> +static void __exit ppc_corenet_cpufreq_exit(void)
-> +{
-> +	cpufreq_unregister_driver(&ppc_corenet_cpufreq_driver);
-> +}
-> +
-> +module_init(ppc_corenet_cpufreq_init);
-> +module_exit(ppc_corenet_cpufreq_exit);
+Similarly:
 
-this needs to be a module_platform_driver.
+Acked-by: H. Peter Anvin <hpa@linux.intel.com>
 
-Kim
+	-hpa
