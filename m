@@ -1,25 +1,28 @@
-Return-Path: <pebolle@tiscali.nl>
-Received: from cpsmtpb-ews09.kpnxchange.com (cpsmtpb-ews09.kpnxchange.com
- [213.75.39.14]) by ozlabs.org (Postfix) with ESMTP id E66522C00C2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2013 23:56:02 +1100 (EST)
-Message-ID: <1364388957.1345.33.camel@x61.thuisdomein>
-Subject: Re: [PATCH] powerpc: remove PReP
-From: Paul Bolle <pebolle@tiscali.nl>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 27 Mar 2013 13:55:57 +0100
-In-Reply-To: <1364388152.1345.29.camel@x61.thuisdomein>
-References: <1363864206.1390.117.camel@x61.thuisdomein>
- <20130322042159.GC26908@concordia>
- <1364381223.1345.18.camel@x61.thuisdomein>
- <CAMuHMdVs-Xxu9e=8WZbTBXE1_+iYOBKODgj9_EKmVbZA3z=8JA@mail.gmail.com>
- <1364388152.1345.29.camel@x61.thuisdomein>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 9CA8B2C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2013 02:26:40 +1100 (EST)
+Message-ID: <1364397928.11644.41.camel@pasglop>
+Subject: Re: [PATCHv2 1/3] pci: added pcie_get_speed_cap_mask function
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Date: Wed, 27 Mar 2013 16:25:28 +0100
+In-Reply-To: <CAErSpo4rc=8mYgwuTO6693QCQJ9nsPsxmh7YAwxMygiVrPQR0A@mail.gmail.com>
+References: <1363757079-23550-1-git-send-email-lucaskt@linux.vnet.ibm.com>
+ <1363757079-23550-2-git-send-email-lucaskt@linux.vnet.ibm.com>
+ <CAErSpo4rc=8mYgwuTO6693QCQJ9nsPsxmh7YAwxMygiVrPQR0A@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linux-fbdev@vger.kernel.org,
- Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Rob Landley <rob@landley.net>,
- Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org
+Cc: David Airlie <airlied@linux.ie>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ DRI mailing list <dri-devel@lists.freedesktop.org>,
+ Alex Deucher <alexander.deucher@amd.com>,
+ Thadeu Cascardo <cascardo@linux.vnet.ibm.com>,
+ Lucas Kannebley Tavares <lucaskt@linux.vnet.ibm.com>,
+ Brian King <brking@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,19 +32,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-By the way, I get bounces from Adam's address:
-> I'm sorry to have to inform you that your message could not
-> be delivered to one or more recipients. It's attached below.
-> 
-> For further assistance, please send mail to <postmaster>
-> 
-> If you do so, please include this problem report. You can
-> delete your own text from the attached returned message.
-> 
-> <abelay@mit.edu>: 550 5.1.1 <abelay@mit.edu>... User unknown
+On Tue, 2013-03-26 at 12:39 -0600, Bjorn Helgaas wrote:
+> But we also know pdev is a PCIe device, and I think a PCIe device on a
+> root bus must be a "Root Complex Integrated Endpoint" (PCIe spec sec
+> 1.3.2.3).  Such a device does not have a link at all, so there's no
+> point in fiddling with its link speed.
 
-(It's now removed from the CC line.) Does anyone know what's going on
-here?
+This is where our IBM hypervisor makes things murky. It doesn't expose
+the PCIe parents (basically somewhat makes PCIe look like PCI except we
+still have the PCIe caps on the child devices, just no access to the
+parent device).
 
+It's garbage but can't be fixed (would break AIX :-)
 
-Paul Bolle
+However we might be able to populate the bus->max_bus_speed from some
+architecture specific quirk and have radeon use that.
+
+Cheers,
+Ben.
