@@ -1,24 +1,19 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-ie0-x235.google.com (mail-ie0-x235.google.com
- [IPv6:2607:f8b0:4001:c03::235])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 918F62C009F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2013 23:05:27 +1100 (EST)
-Received: by mail-ie0-f181.google.com with SMTP id 17so10047633iea.26
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2013 05:05:24 -0700 (PDT)
-MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1364381223.1345.18.camel@x61.thuisdomein>
+Return-Path: <pebolle@tiscali.nl>
+Received: from cpsmtpb-ews06.kpnxchange.com (cpsmtpb-ews06.kpnxchange.com
+ [213.75.39.9]) by ozlabs.org (Postfix) with ESMTP id 282A82C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2013 23:42:37 +1100 (EST)
+Message-ID: <1364388152.1345.29.camel@x61.thuisdomein>
+Subject: Re: [PATCH] powerpc: remove PReP
+From: Paul Bolle <pebolle@tiscali.nl>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Wed, 27 Mar 2013 13:42:32 +0100
+In-Reply-To: <CAMuHMdVs-Xxu9e=8WZbTBXE1_+iYOBKODgj9_EKmVbZA3z=8JA@mail.gmail.com>
 References: <1363864206.1390.117.camel@x61.thuisdomein>
  <20130322042159.GC26908@concordia>
  <1364381223.1345.18.camel@x61.thuisdomein>
-Date: Wed, 27 Mar 2013 13:05:24 +0100
-Message-ID: <CAMuHMdVs-Xxu9e=8WZbTBXE1_+iYOBKODgj9_EKmVbZA3z=8JA@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: remove PReP
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Paul Bolle <pebolle@tiscali.nl>
-Content-Type: text/plain; charset=UTF-8
+ <CAMuHMdVs-Xxu9e=8WZbTBXE1_+iYOBKODgj9_EKmVbZA3z=8JA@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 Cc: linux-fbdev@vger.kernel.org,
  Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
  linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
@@ -34,31 +29,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 27, 2013 at 11:47 AM, Paul Bolle <pebolle@tiscali.nl> wrote:
-> 3) I removed two files in documentation that are almost entirely PReP
-> specific. The remaining lines looked uninteresting.
+On Wed, 2013-03-27 at 13:05 +0100, Geert Uytterhoeven wrote:
+> This section is CHRP-specific. The cs4232 driver also worked on the
+> CHRP LongTrail.
+> But I don't remember if the parameter values above also applied to LongTrail.
+> I do remember it didn't work without specifing the right parameters, so you
+> probably want to keep this section.
 
-> --- a/Documentation/powerpc/sound.txt
-> +++ /dev/null
+My reasoning was quite simply that this file was 14 years old so that
+probably nobody is using that stuff anymore. Are people actually using
+CHRP (whatever that is)? Anyhow, cs4232 is mentioned in some other files
+too:
+    $ git grep -l -n cs4232 Documentation/ 
+    Documentation/powerpc/sound.txt
+    Documentation/sound/alsa/ALSA-Configuration.txt
+    Documentation/sound/alsa/alsa-parameters.txt
+    Documentation/sound/oss/Introduction
+    Documentation/sound/oss/Tropez+
 
-> -2. IBM CHRP
-> -
-> -  I have only tested this on the 43P-150.  Build the kernel with the cs4232
-> -  set as a module and load the module with irq=9 dma=1 dma2=2 io=0x550
+Could these few lines be dumped in one of these (except
+powerpc/sound.txt, of course)?
 
-This section is CHRP-specific. The cs4232 driver also worked on the
-CHRP LongTrail.
-But I don't remember if the parameter values above also applied to LongTrail.
-I do remember it didn't work without specifing the right parameters, so you
-probably want to keep this section.
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Paul Bolle
