@@ -1,36 +1,18 @@
-Return-Path: <B07421@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0185.outbound.messaging.microsoft.com [213.199.154.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C92B62C0084
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2013 04:11:51 +1100 (EST)
-Received: from mail51-db8 (localhost [127.0.0.1])	by mail51-db8-R.bigfish.com
- (Postfix) with ESMTP id E5161DA01A0	for
- <linuxppc-dev@lists.ozlabs.org>; Wed,
- 27 Mar 2013 17:11:41 +0000 (UTC)
-Received: from DB8EHSMHS027.bigfish.com (unknown [10.174.8.233])	by
- mail51-db8.bigfish.com (Postfix) with ESMTP id 77D7D3C0065	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2013 17:11:40 +0000 (UTC)
-Date: Wed, 27 Mar 2013 12:11:35 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 2/3] powerpc/mpic: add global timer support
-To: Wang Dongsheng-B40534 <B40534@freescale.com>
-References: <ABB05CD9C9F68C46A5CEDC7F15439259EB857A@039-SN2MPN1-022.039d.mgd.msft.net>
- <1363991395.24790.13@snotra>
- <ABB05CD9C9F68C46A5CEDC7F15439259EBAA0F@039-SN2MPN1-022.039d.mgd.msft.net>
- <1364319099.469.6@snotra>
- <ABB05CD9C9F68C46A5CEDC7F15439259EBB72D@039-SN2MPN1-022.039d.mgd.msft.net>
-In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F15439259EBB72D@039-SN2MPN1-022.039d.mgd.msft.net>
- (from B40534@freescale.com on Tue Mar 26 22:23:38 2013)
-Message-ID: <1364404295.31930.1@snotra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- Gala Kumar-B11780 <B11780@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ by ozlabs.org (Postfix) with ESMTP id 5AB672C00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2013 04:22:04 +1100 (EST)
+Subject: Re: [PATCH 4/7 v2] KVM: PPC: e500: Add support for EPTCFG register
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <1364335512-28426-5-git-send-email-mihai.caraman@freescale.com>
+Date: Wed, 27 Mar 2013 18:21:58 +0100
+Message-Id: <A7A78B5F-10C8-4136-AB2A-4CBA4FE2F9BB@suse.de>
+References: <1364335512-28426-1-git-send-email-mihai.caraman@freescale.com>
+ <1364335512-28426-5-git-send-email-mihai.caraman@freescale.com>
+To: Mihai Caraman <mihai.caraman@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,96 +22,162 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/26/2013 10:23:38 PM, Wang Dongsheng-B40534 wrote:
->=20
->=20
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Wednesday, March 27, 2013 1:32 AM
-> > To: Wang Dongsheng-B40534
-> > Cc: Wood Scott-B07421; Gala Kumar-B11780; =20
-> linuxppc-dev@lists.ozlabs.org;
-> > Li Yang-R58472
-> > Subject: Re: [PATCH 2/3] powerpc/mpic: add global timer support
-> >
-> > On 03/25/2013 10:29:58 PM, Wang Dongsheng-B40534 wrote:
-> > >
-> > >
-> > > > -----Original Message-----
-> > > > From: Wood Scott-B07421
-> > > > Sent: Saturday, March 23, 2013 6:30 AM
-> > > > To: Wang Dongsheng-B40534
-> > > > Cc: Wood Scott-B07421; Gala Kumar-B11780;
-> > > linuxppc-dev@lists.ozlabs.org;
-> > > > Li Yang-R58472
-> > > > Subject: Re: [PATCH 2/3] powerpc/mpic: add global timer support
-> > > >
-> > > > On 03/22/2013 01:14:51 AM, Wang Dongsheng-B40534 wrote:
-> > > > >
-> > > > >
-> > > > > > -----Original Message-----
-> > > > > > From: Wood Scott-B07421
-> > > > > > Sent: Thursday, March 21, 2013 7:00 AM
-> > > > > > To: Wang Dongsheng-B40534
-> > > > > > Cc: Wood Scott-B07421; Gala Kumar-B11780;
-> > > > > linuxppc-dev@lists.ozlabs.org;
-> > > > > > Li Yang-R58472
-> > > > > > Subject: Re: [PATCH 2/3] powerpc/mpic: add global timer =20
-> support
-> > > > > >
-> > > > > > BTW, the input clock frequency has been similarly scaled, =20
-> yet
-> > > you
-> > > > > don't
-> > > > > > try to scrounge up that information to get further =20
-> precision...
-> > > > > >
-> > > > > Let's go back patch, do you think the code is repeated?
-> > > > > I will remove "if (!(priv->flags & FSL_GLOBAL_TIMER))" branch,
-> > > there
-> > > > > will be no redundant code.
-> > > >
-> > > > I'd rather that branch be kept and the more complicated branch
-> > > deleted,
-> > > > and priv->timerfreq frequency be adjusted on initialization to
-> > > account
-> > > > for the scaler.
-> > >
-> > > static void convert_ticks_to_time(struct timer_group_priv *priv,
-> > >                 const u64 ticks, struct timeval *time) {
-> > >         u64 tmp_sec;
-> > >
-> > >         time->tv_sec =3D (__kernel_time_t)div_u64(ticks,
-> > > priv->timerfreq);
-> > >         tmp_sec =3D (u64)time->tv_sec * (u64)priv->timerfreq;
-> > >
-> > >         time->tv_usec =3D (__kernel_suseconds_t)
-> > >                 div_u64((ticks - tmp_sec) * 1000000, =20
-> priv->timerfreq);
-> > >
-> > >         return;
-> > > }
-> > >
-> > > timer_group_get_freq() {
-> > > 	...
-> > > 	if (priv->flags & FSL_GLOBAL_TIMER) {
-> > > 		div =3D (1 << (MPIC_TIMER_TCR_CLKDIV_64 >> 8)) * 8;
-> > > 		priv->timerfreq /=3D div;
-> > > 	}
-> > > 	...
-> > > }
-> > > Do you want to do that?
-> >
-> > 	if (priv->flags & FSL_GLOBAL_TIMER)
-> > 		priv->timerfreq /=3D 64;
-> >
-> > ...but otherwise yes.
-> Ok, I would like do this.
->=20
-> if (priv->flags & FSL_GLOBAL_TIMER) {
-> 	div =3D (1 << (MPIC_TIMER_TCR_CLKDIV_64 >> 8)) * 8;
-> 	priv->timerfreq /=3D div;
 
-Why?  What do you get out of that obfuscation?
+On 26.03.2013, at 23:05, Mihai Caraman wrote:
 
--Scott=
+> EPTCFG register defined by E.PT is accessed unconditionally by Linux =
+guests
+> in the presence of MAV 2.0. Support it now.
+>=20
+> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+> ---
+> v2:
+> - Use has_feature() function
+>=20
+> Documentation/virtual/kvm/api.txt   |    1 +
+> arch/powerpc/include/asm/kvm_host.h |    1 +
+> arch/powerpc/include/uapi/asm/kvm.h |    1 +
+> arch/powerpc/kvm/e500.h             |    5 +++++
+> arch/powerpc/kvm/e500_emulate.c     |    9 +++++++++
+> arch/powerpc/kvm/e500_mmu.c         |   11 +++++++++++
+> 6 files changed, 28 insertions(+), 0 deletions(-)
+>=20
+> diff --git a/Documentation/virtual/kvm/api.txt =
+b/Documentation/virtual/kvm/api.txt
+> index f045377..a1f2200 100644
+> --- a/Documentation/virtual/kvm/api.txt
+> +++ b/Documentation/virtual/kvm/api.txt
+> @@ -1807,6 +1807,7 @@ registers, find a list below:
+>   PPC   | KVM_REG_PPC_TLB1PS	| 32
+>   PPC   | KVM_REG_PPC_TLB2PS	| 32
+>   PPC   | KVM_REG_PPC_TLB3PS	| 32
+> +  PPC   | KVM_REG_PPC_EPTCFG	| 32
+>=20
+> ARM registers are mapped using the lower 32 bits.  The upper 16 of =
+that
+> is the register group type, or coprocessor number:
+> diff --git a/arch/powerpc/include/asm/kvm_host.h =
+b/arch/powerpc/include/asm/kvm_host.h
+> index 3b6cee3..8a48e68 100644
+> --- a/arch/powerpc/include/asm/kvm_host.h
+> +++ b/arch/powerpc/include/asm/kvm_host.h
+> @@ -504,6 +504,7 @@ struct kvm_vcpu_arch {
+> 	u32 tlbcfg[4];
+> 	u32 tlbps[4];
+> 	u32 mmucfg;
+> +	u32 eptcfg;
+> 	u32 epr;
+> 	u32 crit_save;
+> 	struct kvmppc_booke_debug_reg dbg_reg;
+> diff --git a/arch/powerpc/include/uapi/asm/kvm.h =
+b/arch/powerpc/include/uapi/asm/kvm.h
+> index 7cfd13f..9d7fbf0 100644
+> --- a/arch/powerpc/include/uapi/asm/kvm.h
+> +++ b/arch/powerpc/include/uapi/asm/kvm.h
+> @@ -443,4 +443,5 @@ struct kvm_get_htab_header {
+> #define KVM_REG_PPC_TLB1PS	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0x97)
+> #define KVM_REG_PPC_TLB2PS	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0x98)
+> #define KVM_REG_PPC_TLB3PS	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0x99)
+> +#define KVM_REG_PPC_EPTCFG	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0x9a)
+> #endif /* __LINUX_KVM_POWERPC_H */
+> diff --git a/arch/powerpc/kvm/e500.h b/arch/powerpc/kvm/e500.h
+> index 795934d..6cfc669 100644
+> --- a/arch/powerpc/kvm/e500.h
+> +++ b/arch/powerpc/kvm/e500.h
+> @@ -24,6 +24,7 @@
+> #include <asm/tlb.h>
+>=20
+> #define VCPU_FTR_MMU_V2		0
+> +#define VCPU_FTR_E_PT		1
+>=20
+> #define E500_PID_NUM   3
+> #define E500_TLB_NUM   2
+> @@ -309,6 +310,10 @@ static inline bool has_feature(const struct =
+kvm_vcpu *vcpu,
+> 	case VCPU_FTR_MMU_V2:
+> 		has_ftr =3D ((vcpu->arch.mmucfg & MMUCFG_MAVN) =3D=3D =
+MMUCFG_MAVN_V2);
+> 		break;
+> +	case VCPU_FTR_E_PT:
+> +		has_ftr =3D ((vcpu->arch.tlbcfg[1] & TLBnCFG_IND) &&
+> +			   (vcpu->arch.tlbcfg[0] & TLBnCFG_PT));
+> +		break;
+> 	default:
+> 		has_ftr =3D false;
+> 	}
+> diff --git a/arch/powerpc/kvm/e500_emulate.c =
+b/arch/powerpc/kvm/e500_emulate.c
+> index 12b8de2..b10a012 100644
+> --- a/arch/powerpc/kvm/e500_emulate.c
+> +++ b/arch/powerpc/kvm/e500_emulate.c
+> @@ -317,6 +317,15 @@ int kvmppc_core_emulate_mfspr(struct kvm_vcpu =
+*vcpu, int sprn, ulong *spr_val)
+> 	case SPRN_MMUCFG:
+> 		*spr_val =3D vcpu->arch.mmucfg;
+> 		break;
+> +	case SPRN_EPTCFG:
+> +		if (!has_feature(vcpu, VCPU_FTR_MMU_V2))
+> +			return EMULATE_FAIL;
+> +		/*
+> +		 * Legacy Linux guests access EPTCFG register even if =
+the E.PT
+> +		 * category is disabled in the VM. Give them a chance to =
+live.
+> +		 */
+> +		*spr_val =3D vcpu->arch.eptcfg;
+> +		break;
+>=20
+> 	/* extra exceptions */
+> 	case SPRN_IVOR32:
+> diff --git a/arch/powerpc/kvm/e500_mmu.c b/arch/powerpc/kvm/e500_mmu.c
+> index e354fa1..cf60db1 100644
+> --- a/arch/powerpc/kvm/e500_mmu.c
+> +++ b/arch/powerpc/kvm/e500_mmu.c
+> @@ -617,6 +617,8 @@ int kvmppc_get_one_reg_e500_tlb(struct kvm_vcpu =
+*vcpu, u64 id,
+> 		*val =3D get_reg_val(id, vcpu->arch.shared->mas6);
+> 	case KVM_REG_PPC_MMUCFG:
+> 		*val =3D get_reg_val(id, vcpu->arch.mmucfg);
+> +	case KVM_REG_PPC_EPTCFG:
+> +		*val =3D get_reg_val(id, vcpu->arch.eptcfg);
+> 	case KVM_REG_PPC_TLB0CFG:
+> 	case KVM_REG_PPC_TLB1CFG:
+> 	case KVM_REG_PPC_TLB2CFG:
+> @@ -668,6 +670,10 @@ int kvmppc_set_one_reg_e500_tlb(struct kvm_vcpu =
+*vcpu, u64 id,
+> 			r =3D -EINVAL;
+> 		break;
+> 	}
+> +	case KVM_REG_PPC_EPTCFG:
+> +		if (set_reg_val(id, *val) !=3D vcpu->arch.eptcfg)
+> +			r =3D -EINVAL;
+> +		break;
+> 	case KVM_REG_PPC_TLB0CFG:
+> 	case KVM_REG_PPC_TLB1CFG:
+> 	case KVM_REG_PPC_TLB2CFG:
+> @@ -861,6 +867,11 @@ static int vcpu_mmu_init(struct kvm_vcpu *vcpu,
+> 	vcpu->arch.tlbcfg[1] |=3D params[1].ways << TLBnCFG_ASSOC_SHIFT;
+>=20
+> 	if (has_feature(vcpu, VCPU_FTR_MMU_V2)) {
+> +		if (has_feature(vcpu, VCPU_FTR_E_PT))
+> +			vcpu->arch.eptcfg =3D mfspr(SPRN_EPTCFG);
+
+Can't we just always set it to 0?
+
+
+Alex
+
+> +		else
+> +			vcpu->arch.eptcfg =3D 0;
+> +
+> 		vcpu->arch.tlbps[0] =3D mfspr(SPRN_TLB0PS);
+> 		vcpu->arch.tlbps[1] =3D mfspr(SPRN_TLB1PS);
+> 	}
+> --=20
+> 1.7.4.1
+>=20
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
