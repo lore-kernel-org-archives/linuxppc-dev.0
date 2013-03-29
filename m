@@ -1,31 +1,19 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-oa0-f54.google.com (mail-oa0-f54.google.com
- [209.85.219.54])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 51C2F2C00A9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2013 15:50:56 +1100 (EST)
-Received: by mail-oa0-f54.google.com with SMTP id n12so172593oag.41
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2013 21:50:53 -0700 (PDT)
+Return-Path: <r61911@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe004.messaging.microsoft.com [216.32.180.14])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B0B832C00B6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2013 16:07:11 +1100 (EST)
+From: Roy Zang <tie-fei.zang@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/pci: fix 64 bit pci size issue
+Date: Fri, 29 Mar 2013 21:06:17 +0800
+Message-ID: <1364562377-7579-1-git-send-email-tie-fei.zang@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <D07C73A334FF604B95B3CBD2A545D07B0B119911@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1364464508-25393-1-git-send-email-Yuantian.Tang@freescale.com>
- <CAKohpomPubV=E_wCLyOR6X0PQNvrJpTc94950PEF+YUam9ituw@mail.gmail.com>
- <D07C73A334FF604B95B3CBD2A545D07B0B1178B6@039-SN2MPN1-013.039d.mgd.msft.net>
- <CAKohpom9=HmVDvSVvgPC1zdzHmd+YpMU85SW34b9jun1dp6+HA@mail.gmail.com>
- <D07C73A334FF604B95B3CBD2A545D07B0B119911@039-SN2MPN1-013.039d.mgd.msft.net>
-Date: Fri, 29 Mar 2013 10:20:53 +0530
-Message-ID: <CAKohponzY8Lfx=PRnBdcC4UebeUJyQAwXMDJfHt-ANE+E6w-tA@mail.gmail.com>
-Subject: Re: [PATCH 2/2 v2] cpufreq: Add cpufreq driver for Freescale e500mc
- SoCs
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Tang Yuantian-B29983 <B29983@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "rjw@sisk.pl" <rjw@sisk.pl>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>,
- "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain
+Cc: scottwood@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,10 +23,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 29 March 2013 10:17, Tang Yuantian-B29983 <B29983@freescale.com> wrote:
-> I thought it was OK here. Apparently, sizeof(*table) is better.
-> But kcalloc is OK.
+The size might be 64 bit, so use ilog2() instead of __ilog2() or
+__ilog2_u64().
 
-Yes yes, Kcalloc is okay... I have misread that part earlier when i
-suggested kzalloc.
-In last mail i was referring to sizeof() only.
+ilog2() can select 32bit or 64bit funciton automatically.
+
+Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+---
+ arch/powerpc/sysdev/fsl_pci.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 682084d..a0a1b76 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -106,7 +106,7 @@ static int setup_one_atmu(struct ccsr_pci __iomem *pci,
+ 		flags |= 0x10000000; /* enable relaxed ordering */
+ 
+ 	for (i = 0; size > 0; i++) {
+-		unsigned int bits = min(__ilog2(size),
++		unsigned int bits = min(ilog2(size),
+ 					__ffs(pci_addr | phys_addr));
+ 
+ 		if (index + i >= 5)
+@@ -196,7 +196,7 @@ static void setup_pci_atmu(struct pci_controller *hose,
+ 			out_be32(&pci->pow[j].powbar, (hose->io_base_phys >> 12));
+ 			/* Enable, IO R/W */
+ 			out_be32(&pci->pow[j].powar, 0x80088000
+-				| (__ilog2(hose->io_resource.end
++				| (ilog2(hose->io_resource.end
+ 				- hose->io_resource.start + 1) - 1));
+ 		}
+ 	}
+@@ -261,7 +261,7 @@ static void setup_pci_atmu(struct pci_controller *hose,
+ 	}
+ 
+ 	sz = min(mem, paddr_lo);
+-	mem_log = __ilog2_u64(sz);
++	mem_log = ilog2(sz);
+ 
+ 	/* PCIe can overmap inbound & outbound since RX & TX are separated */
+ 	if (early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP)) {
+@@ -290,7 +290,7 @@ static void setup_pci_atmu(struct pci_controller *hose,
+ 		 * SWIOTLB and access the full range of memory
+ 		 */
+ 		if (sz != mem) {
+-			mem_log = __ilog2_u64(mem);
++			mem_log = ilog2(mem);
+ 
+ 			/* Size window up if we dont fit in exact power-of-2 */
+ 			if ((1ull << mem_log) != mem)
+@@ -327,7 +327,7 @@ static void setup_pci_atmu(struct pci_controller *hose,
+ 		sz -= 1ull << mem_log;
+ 
+ 		if (sz) {
+-			mem_log = __ilog2_u64(sz);
++			mem_log = ilog2(sz);
+ 			piwar |= (mem_log - 1);
+ 
+ 			out_be32(&pci->piw[win_idx].pitar,  paddr >> 12);
+-- 
+1.7.9.5
