@@ -1,29 +1,24 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-oa0-f45.google.com (mail-oa0-f45.google.com
- [209.85.219.45])
+Return-Path: <computersforpeace@gmail.com>
+Received: from mail-vc0-f169.google.com (mail-vc0-f169.google.com
+ [209.85.220.169])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0EBDB2C009B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2013 14:17:01 +1100 (EST)
-Received: by mail-oa0-f45.google.com with SMTP id o6so146137oag.4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2013 20:16:58 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 85FE32C00AF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2013 15:29:00 +1100 (EST)
+Received: by mail-vc0-f169.google.com with SMTP id kw10so219815vcb.28
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2013 21:28:57 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <D07C73A334FF604B95B3CBD2A545D07B0B1178B6@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1364464508-25393-1-git-send-email-Yuantian.Tang@freescale.com>
- <CAKohpomPubV=E_wCLyOR6X0PQNvrJpTc94950PEF+YUam9ituw@mail.gmail.com>
- <D07C73A334FF604B95B3CBD2A545D07B0B1178B6@039-SN2MPN1-013.039d.mgd.msft.net>
-Date: Fri, 29 Mar 2013 08:46:58 +0530
-Message-ID: <CAKohpom9=HmVDvSVvgPC1zdzHmd+YpMU85SW34b9jun1dp6+HA@mail.gmail.com>
-Subject: Re: [PATCH 2/2 v2] cpufreq: Add cpufreq driver for Freescale e500mc
- SoCs
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Tang Yuantian-B29983 <B29983@freescale.com>
+In-Reply-To: <1364387100-23013-1-git-send-email-tie-fei.zang@freescale.com>
+References: <1364387100-23013-1-git-send-email-tie-fei.zang@freescale.com>
+Date: Thu, 28 Mar 2013 21:28:56 -0700
+Message-ID: <CAN8TOE-fpTYj5Z5VW=MbH6epK9Ymc+=uQkh7V6=k=76_DjouPA@mail.gmail.com>
+Subject: Re: [upstream] mtd/ifc: fix ifc driver memory release issue
+From: Brian Norris <computersforpeace@gmail.com>
+To: Roy Zang <tie-fei.zang@freescale.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: "rjw@sisk.pl" <rjw@sisk.pl>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>,
- "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Li Hao <b44421@freescale.com>,
+ linux-mtd@lists.infradead.org, scottwood@freescale.com, dwmw2@infradead.org,
+ Cao Yonghua <b43619@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,61 +28,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 29 March 2013 08:21, Tang Yuantian-B29983 <B29983@freescale.com> wrote:
->> > +static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy) {
->> > +       unsigned int cpu = policy->cpu;
->> > +       struct device_node *np;
->> > +       int i, count;
->> > +       struct clk *clk;
->> > +       struct cpufreq_frequency_table *table;
->> > +       struct cpu_data *data;
->> > +
->> > +       np = of_get_cpu_node(cpu, NULL);
->> > +       if (!np)
->> > +               return -ENODEV;
->> > +
->> > +       data = kzalloc(sizeof(struct cpu_data), GFP_KERNEL);
->>
->> I told you, you missed my comment earlier.
->>
->> You need to write: sizeof(*data) :(
->>
-> This is new added statement, what you told last time is about the next kcalloc()...
+On Wed, Mar 27, 2013 at 5:25 AM, Roy Zang <tie-fei.zang@freescale.com> wrote:
+> memory is allocated by devm_kzalloc, so release it using
+> devm_kfree() instead kfree();
 
-I said about using sizeof() in generic, I copied below from my first
-mail on this topic
+You are correct that it should not be freed with kfree(). But the
+correct solution is that it does not need to be freed (explicitly) at
+all. That's the whole point of the managed allocators (i.e.,
+devm_kzalloc()). Try this patch instead. Totally untested here.
 
-> +       table = kcalloc(count + 1,
+From: Brian Norris <computersforpeace@gmail.com>
+Date: Thu, 28 Mar 2013 21:20:27 -0700
+Subject: [PATCH] mtd: fsl_ifc_nand: remove incorrect kfree()
 
-kzalloc??
+The struct fsl_ifc_mtd is allocated with devm_kzalloc, so its memory
+is "managed" automatically by the kernel. That is, we do not need to
+free it explicitly; it will be freed when the device is removed. And we
+*certainly* shouldn't free it with a regular kfree().
 
-> +                       sizeof(struct cpufreq_frequency_table), GFP_KERNEL);
+Signed-off-by: Brian Norris <computersforpeace@gmail.com>
+---
+ drivers/mtd/nand/fsl_ifc_nand.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-sizeof(*table)
+diff --git a/drivers/mtd/nand/fsl_ifc_nand.c b/drivers/mtd/nand/fsl_ifc_nand.c
+index f1f7f12..180bfa7 100644
+--- a/drivers/mtd/nand/fsl_ifc_nand.c
++++ b/drivers/mtd/nand/fsl_ifc_nand.c
+@@ -908,7 +908,6 @@ static int fsl_ifc_chip_remove(struct fsl_ifc_mtd *priv)
 
-And you missed this one as you never replied to it. :)
+ 	ifc_nand_ctrl->chips[priv->bank] = NULL;
+ 	dev_set_drvdata(priv->dev, NULL);
+-	kfree(priv);
 
-> Are there some reasons that we can't use sizeof(struct cpu_data)
-> instead of sizeof(*data)?
-
-Documentation/CodiingStyle: Chapter 14: Allocating memory
-
->> > +       if (!table) {
->> > +               pr_err("%s: no memory\n", __func__);
->> > +               goto err_nomem2;
->> > +       }
->> > +
->> > +       for (i = cpu; i < freq_data.cpus_per_cluster + cpu; i++)
->> > +               cpumask_set_cpu(i, policy->cpus);
->>
->> I can see some regression here. Suppose you have two clusters of 4 cpus
->> each: (0123) and (4567).. Now at boot time above code will work perfectly
->> fine. Now you hot unplug 0,1,2,3 and then hotplug 3 in.
->>
->> Here, init would be called for cpu 3 and so you will end up saving 3456
->> in your policy->cpus
->>
->> :)
-> Good catch.. will fix.
-
-Thanks.
+ 	return 0;
+ }
+-- 
+1.7.9.5
