@@ -1,23 +1,24 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-ob0-x22f.google.com (mail-ob0-x22f.google.com
- [IPv6:2607:f8b0:4003:c01::22f])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 503842C00C8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2013 18:17:10 +1100 (EST)
-Received: by mail-ob0-f175.google.com with SMTP id va7so215988obc.6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2013 00:17:06 -0700 (PDT)
+Return-Path: <B38951@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0186.outbound.messaging.microsoft.com [213.199.154.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B5A1B2C00C8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2013 18:44:55 +1100 (EST)
+From: Jia Hongtao-B38951 <B38951@freescale.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "galak@kernel.crashing.org" <galak@kernel.crashing.org>, Wood Scott-B07421
+ <B07421@freescale.com>
+Subject: RE: [PATCH V2] powerpc/MPIC: Add get_version API both for internal
+ and external use
+Date: Fri, 29 Mar 2013 07:44:44 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01C2EBCC@039-SN1MPN1-003.039d.mgd.msft.net>
+References: <1364275690-26790-1-git-send-email-hongtao.jia@freescale.com>
+In-Reply-To: <1364275690-26790-1-git-send-email-hongtao.jia@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-In-Reply-To: <1364536350-23788-1-git-send-email-Yuantian.Tang@freescale.com>
-References: <1364536350-23788-1-git-send-email-Yuantian.Tang@freescale.com>
-Date: Fri, 29 Mar 2013 12:47:06 +0530
-Message-ID: <CAKohpo=4ypXkE=VDBHOWnLHG_x2cbh7=OGA=87MEMLyNaTi=xg@mail.gmail.com>
-Subject: Re: [PATCH v3] cpufreq: Add cpufreq driver for Freescale e500mc SoCs
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Yuantian.Tang@freescale.com
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: rjw@sisk.pl, linuxppc-dev@lists.ozlabs.org, cpufreq@vger.kernel.org,
- linux-pm@vger.kernel.org
+Cc: Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,96 +28,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 29 March 2013 11:22,  <Yuantian.Tang@freescale.com> wrote:
-> diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
+Hi Kumar and Scott,
+
+Any comments on these two patches?
+
+Thanks.
+-Hongtao.
+
+> -----Original Message-----
+> From: Jia Hongtao-B38951
+> Sent: Tuesday, March 26, 2013 1:28 PM
+> To: linuxppc-dev@lists.ozlabs.org; galak@kernel.crashing.org
+> Cc: Wood Scott-B07421; Li Yang-R58472; Jia Hongtao-B38951
+> Subject: [PATCH V2] powerpc/MPIC: Add get_version API both for internal
+> and external use
+>=20
+> MPIC version is useful information for both mpic_alloc() and mpic_init().
+> The patch provide an API to get MPIC version for reusing the code.
+> Also, some other IP block may need MPIC version for their own use.
+> The API for external use is also provided.
+>=20
+> Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> ---
+> Changes for V2:
+> * Using mpic_get_version() to implement mpic_primary_get_version()
+>=20
+>  arch/powerpc/include/asm/mpic.h |  3 +++
+>  arch/powerpc/sysdev/mpic.c      | 26 +++++++++++++++++++-------
+>  2 files changed, 22 insertions(+), 7 deletions(-)
+>=20
+> diff --git a/arch/powerpc/include/asm/mpic.h
+> b/arch/powerpc/include/asm/mpic.h index c0f9ef9..7d1222d 100644
+> --- a/arch/powerpc/include/asm/mpic.h
+> +++ b/arch/powerpc/include/asm/mpic.h
+> @@ -393,6 +393,9 @@ struct mpic
+>  #define	MPIC_REGSET_STANDARD		MPIC_REGSET(0)	/* Original
+> MPIC */
+>  #define	MPIC_REGSET_TSI108		MPIC_REGSET(1)	/* Tsi108/109
+> PIC */
+>=20
+> +/* Get the version of primary MPIC */
+> +extern u32 mpic_primary_get_version(void);
 > +
-
-Add following here for better debug prints (sorry, i should have done
-it earlier)
-
-#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-
-> +#include <linux/clk.h>
-> +#include <linux/cpu.h>
-> +#include <linux/cpufreq.h>
-> +#include <linux/errno.h>
-> +#include <linux/init.h>
-> +#include <linux/io.h>
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/mutex.h>
-> +#include <linux/of.h>
-> +#include <linux/slab.h>
-> +#include <linux/types.h>
+>  /* Allocate the controller structure and setup the linux irq descs
+>   * for the range if interrupts passed in. No HW initialization is
+>   * actually performed.
+> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+> index d30e6a6..c893a4b 100644
+> --- a/arch/powerpc/sysdev/mpic.c
+> +++ b/arch/powerpc/sysdev/mpic.c
+> @@ -1165,10 +1165,27 @@ static struct irq_domain_ops mpic_host_ops =3D {
+>  	.xlate =3D mpic_host_xlate,
+>  };
+>=20
+> +static u32 mpic_get_version(struct mpic *mpic) {
+> +	u32 brr1;
 > +
-
-> +static unsigned int    cpus_per_cluster;
-
-remove tab with space after int.
-
-> +static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
+> +	brr1 =3D _mpic_read(mpic->reg_type, &mpic->thiscpuregs,
+> +			MPIC_FSL_BRR1);
+> +
+> +	return brr1 & MPIC_FSL_BRR1_VER;
+> +}
+> +
+>  /*
+>   * Exported functions
+>   */
+>=20
+> +u32 mpic_primary_get_version(void)
 > +{
-> +       struct device_node *np;
-> +       int i, count, ret;
-> +       struct clk *clk;
-> +       struct cpufreq_frequency_table *table;
-> +       struct cpu_data *data;
-> +       unsigned int cpu = policy->cpu;
+> +	struct mpic *mpic =3D mpic_primary;
 > +
-> +       np = of_get_cpu_node(cpu, NULL);
-> +       if (!np)
-> +               return -ENODEV;
+> +	return mpic_get_version(mpic);
+> +}
 > +
-> +       data = kzalloc(sizeof(*data), GFP_KERNEL);
-> +       if (!data)
-> +               return -ENOMEM;
-> +
-> +       data->clk = of_clk_get(np, 0);
-
-what if this fails?
-
-> +       /* align the cpu id with cluster if any */
-> +       i = (cpu / cpus_per_cluster) * cpus_per_cluster;
-> +       for (count = 0; count < cpus_per_cluster; count++)
-> +               cpumask_set_cpu(i + count, policy->cpus);
-
-Better than before but i still see some regression with it :)
-
-What if cpu order in DT is changed a bit and so cpus boot with following
-order: 0 1 3 5 7 2 6 4
-
-And so you will end up grouping 0135 and 7264 :)
-
-See if topology_core_cpumask() gives you correct pairs.
-
-> +static int corenet_cpufreq_target(struct cpufreq_policy *policy,
-> +               unsigned int target_freq, unsigned int relation)
-> +{
-> +       struct cpufreq_freqs freqs;
-> +       unsigned int new;
-> +       struct clk *parent;
-> +       int ret;
-> +       struct cpu_data *data = per_cpu(cpu_data, policy->cpu);
-> +
-> +       cpufreq_frequency_table_target(policy, data->table,
-> +                       target_freq, relation, &new);
-> +
-> +       if (policy->cur == data->table[new].frequency)
-> +               return 0;
-> +
-> +       freqs.old = policy->cur;
-> +       freqs.new = data->table[new].frequency;
-> +       freqs.cpu = policy->cpu;
-> +
-> +       mutex_lock(&cpufreq_lock);
-> +       cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
-
-What i wanted here from you was:
-
-	for_each_cpu(freqs.cpu, policy->cpus)
-		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
-
-Which would be fixed later by my patch, but until then you must have correct
-code in your driver. What if my patchset is rejected :)
-
-Mostly good now. Probably V4 would be the last one :)
+>  struct mpic * __init mpic_alloc(struct device_node *node,
+>  				phys_addr_t phys_addr,
+>  				unsigned int flags,
+> @@ -1315,7 +1332,6 @@ struct mpic * __init mpic_alloc(struct device_node
+> *node,
+>  	mpic_map(mpic, mpic->paddr, &mpic->tmregs, MPIC_INFO(TIMER_BASE),
+> 0x1000);
+>=20
+>  	if (mpic->flags & MPIC_FSL) {
+> -		u32 brr1;
+>  		int ret;
+>=20
+>  		/*
+> @@ -1326,9 +1342,7 @@ struct mpic * __init mpic_alloc(struct device_node
+> *node,
+>  		mpic_map(mpic, mpic->paddr, &mpic->thiscpuregs,
+>  			 MPIC_CPU_THISBASE, 0x1000);
+>=20
+> -		brr1 =3D _mpic_read(mpic->reg_type, &mpic->thiscpuregs,
+> -				MPIC_FSL_BRR1);
+> -		fsl_version =3D brr1 & MPIC_FSL_BRR1_VER;
+> +		fsl_version =3D mpic_get_version(mpic);
+>=20
+>  		/* Error interrupt mask register (EIMR) is required for
+>  		 * handling individual device error interrupts. EIMR @@ -
+> 1518,9 +1532,7 @@ void __init mpic_init(struct mpic *mpic)
+>  	mpic_cpu_write(MPIC_INFO(CPU_CURRENT_TASK_PRI), 0xf);
+>=20
+>  	if (mpic->flags & MPIC_FSL) {
+> -		u32 brr1 =3D _mpic_read(mpic->reg_type, &mpic->thiscpuregs,
+> -				      MPIC_FSL_BRR1);
+> -		u32 version =3D brr1 & MPIC_FSL_BRR1_VER;
+> +		u32 version =3D mpic_get_version(mpic);
+>=20
+>  		/*
+>  		 * Timer group B is present at the latest in MPIC 3.1 (e.g.
+> --
+> 1.8.0
