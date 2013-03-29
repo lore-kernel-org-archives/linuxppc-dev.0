@@ -1,30 +1,33 @@
 Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 215692C00B9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2013 21:00:52 +1100 (EST)
+ (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 852192C0123
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2013 21:00:58 +1100 (EST)
 Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Fri, 29 Mar 2013 15:27:53 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 345A83940053
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2013 15:30:44 +0530 (IST)
+ Fri, 29 Mar 2013 15:26:50 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 5BC053940057
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2013 15:30:51 +0530 (IST)
 Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r2TA0aCe44236842
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2013 15:30:37 +0530
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r2TA0isb54788256
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2013 15:30:45 +0530
 Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
  by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r2TA0duM006112
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2013 21:00:41 +1100
+ r2TA0j9S006859
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2013 21:00:47 +1100
 From: Li Zhong <zhong@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
-Subject: [RFC PATCH v2 0/6] powerpc: Support context tracking for Power pSeries
-Date: Fri, 29 Mar 2013 18:00:15 +0800
-Message-Id: <1364551221-23177-1-git-send-email-zhong@linux.vnet.ibm.com>
+Subject: [RFC PATCH v2 1/6] powerpc: Syscall hooks for context tracking
+ subsystem
+Date: Fri, 29 Mar 2013 18:00:16 +0800
+Message-Id: <1364551221-23177-2-git-send-email-zhong@linux.vnet.ibm.com>
+In-Reply-To: <1364551221-23177-1-git-send-email-zhong@linux.vnet.ibm.com>
+References: <1364551221-23177-1-git-send-email-zhong@linux.vnet.ibm.com>
 Cc: Li Zhong <zhong@linux.vnet.ibm.com>, fweisbec@gmail.com, paulus@samba.org,
  paulmck@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -36,48 +39,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These patches try to support context tracking for Power arch, beginning with
-64-bit pSeries. The codes are ported from that of the x86_64, and in each
-patch, I listed the corresponding patch for x86.
+This is the syscall slow path hooks for context tracking subsystem,
+corresponding to
+[PATCH] x86: Syscall hooks for userspace RCU extended QS
+  commit bf5a3c13b939813d28ce26c01425054c740d6731
 
-Would you please help review and give your comments?
+TIF_MEMDIE is moved to the second 16-bits (with value 17), as it seems there
+is no asm code using it. TIF_NOHZ is added to _TIF_SYCALL_T_OR_A, so it is
+better for it to be in the same 16 bits with others in the group, so in the
+asm code, andi. with this group could work.
 
-v2:
+Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ arch/powerpc/include/asm/thread_info.h |    7 +++++--
+ arch/powerpc/kernel/ptrace.c           |    5 +++++
+ 2 files changed, 10 insertions(+), 2 deletions(-)
 
-I rebased the patches against 3.9-rcs, and also added a patch to replace
-the exception handling with the generic code in tip timers/nohz.
-
-I assume these patches would get in through powerpc tree, so I didn't combine
-the new patch (#6) with the original one (#2). So that if powerpc tree picks
-these, it could pick the first five patches, and apply patch #6 later
-when the dependency enters into powerpc tree (maybe on some 3.10-rcs).
-
-I'm also wondering whether it is possible for these to go through
-tip timers/nohz, so for now, patches #6 and #2 could be combined into one, and
-no need to  worry about the issues caused by arch/common code merging. And it
-might also make future changes easier.
-
-Thanks, Zhong
-
-Li Zhong (6):
-  powerpc: Syscall hooks for context tracking subsystem
-  powerpc: Exception hooks for context tracking subsystem
-  powerpc: Exit user context on notify resume
-  powerpc: Use the new schedule_user API on userspace preemption
-  powerpc: select HAVE_CONTEXT_TRACKING for pSeries
-  powerpc: Use generic code for exception handling
-
- arch/powerpc/include/asm/context_tracking.h |   10 +++
- arch/powerpc/include/asm/thread_info.h      |    7 ++-
- arch/powerpc/kernel/entry_64.S              |    3 +-
- arch/powerpc/kernel/ptrace.c                |    5 ++
- arch/powerpc/kernel/signal.c                |    5 ++
- arch/powerpc/kernel/traps.c                 |   91 ++++++++++++++++++++-------
- arch/powerpc/mm/fault.c                     |   16 ++++-
- arch/powerpc/mm/hash_utils_64.c             |   38 ++++++++---
- arch/powerpc/platforms/pseries/Kconfig      |    1 +
- 9 files changed, 140 insertions(+), 36 deletions(-)
- create mode 100644 arch/powerpc/include/asm/context_tracking.h
-
+diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
+index 406b7b9..414a261 100644
+--- a/arch/powerpc/include/asm/thread_info.h
++++ b/arch/powerpc/include/asm/thread_info.h
+@@ -97,7 +97,7 @@ static inline struct thread_info *current_thread_info(void)
+ #define TIF_PERFMON_CTXSW	6	/* perfmon needs ctxsw calls */
+ #define TIF_SYSCALL_AUDIT	7	/* syscall auditing active */
+ #define TIF_SINGLESTEP		8	/* singlestepping active */
+-#define TIF_MEMDIE		9	/* is terminating due to OOM killer */
++#define TIF_NOHZ		9	/* in adaptive nohz mode */
+ #define TIF_SECCOMP		10	/* secure computing */
+ #define TIF_RESTOREALL		11	/* Restore all regs (implies NOERROR) */
+ #define TIF_NOERROR		12	/* Force successful syscall return */
+@@ -106,6 +106,7 @@ static inline struct thread_info *current_thread_info(void)
+ #define TIF_SYSCALL_TRACEPOINT	15	/* syscall tracepoint instrumentation */
+ #define TIF_EMULATE_STACK_STORE	16	/* Is an instruction emulation
+ 						for stack store? */
++#define TIF_MEMDIE		17	/* is terminating due to OOM killer */
+ 
+ /* as above, but as bit values */
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+@@ -124,8 +125,10 @@ static inline struct thread_info *current_thread_info(void)
+ #define _TIF_UPROBE		(1<<TIF_UPROBE)
+ #define _TIF_SYSCALL_TRACEPOINT	(1<<TIF_SYSCALL_TRACEPOINT)
+ #define _TIF_EMULATE_STACK_STORE	(1<<TIF_EMULATE_STACK_STORE)
++#define _TIF_NOHZ		(1<<TIF_NOHZ)
+ #define _TIF_SYSCALL_T_OR_A	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | \
+-				 _TIF_SECCOMP | _TIF_SYSCALL_TRACEPOINT)
++				 _TIF_SECCOMP | _TIF_SYSCALL_TRACEPOINT | \
++				 _TIF_NOHZ)
+ 
+ #define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | _TIF_NEED_RESCHED | \
+ 				 _TIF_NOTIFY_RESUME | _TIF_UPROBE)
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index 245c1b6..0b7aad0 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -32,6 +32,7 @@
+ #include <trace/syscall.h>
+ #include <linux/hw_breakpoint.h>
+ #include <linux/perf_event.h>
++#include <linux/context_tracking.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/page.h>
+@@ -1778,6 +1779,8 @@ long do_syscall_trace_enter(struct pt_regs *regs)
+ {
+ 	long ret = 0;
+ 
++	user_exit();
++
+ 	secure_computing_strict(regs->gpr[0]);
+ 
+ 	if (test_thread_flag(TIF_SYSCALL_TRACE) &&
+@@ -1822,4 +1825,6 @@ void do_syscall_trace_leave(struct pt_regs *regs)
+ 	step = test_thread_flag(TIF_SINGLESTEP);
+ 	if (step || test_thread_flag(TIF_SYSCALL_TRACE))
+ 		tracehook_report_syscall_exit(regs, step);
++
++	user_enter();
+ }
 -- 
 1.7.9.5
