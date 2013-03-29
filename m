@@ -1,20 +1,19 @@
 Return-Path: <B07421@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe002.messaging.microsoft.com [216.32.180.12])
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2985F2C00CD
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2013 08:52:09 +1100 (EST)
-Date: Fri, 29 Mar 2013 16:51:59 -0500
+ by ozlabs.org (Postfix) with ESMTPS id A044C2C00CB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2013 08:54:42 +1100 (EST)
+Date: Fri, 29 Mar 2013 16:54:34 -0500
 From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH V2] powerpc/MPIC: Add get_version API both for internal
- and external use
+Subject: Re: [PATCH 2/2] powerpc/85xx: workaround for chips with MSI
+ hardware errata
 To: Jia Hongtao <hongtao.jia@freescale.com>
-References: <1364275690-26790-1-git-send-email-hongtao.jia@freescale.com>
-In-Reply-To: <1364275690-26790-1-git-send-email-hongtao.jia@freescale.com>
- (from hongtao.jia@freescale.com on Tue Mar 26 00:28:10 2013)
-Message-ID: <1364593919.13310.12@snotra>
+In-Reply-To: <1364268527-32068-2-git-send-email-hongtao.jia@freescale.com>
+ (from hongtao.jia@freescale.com on Mon Mar 25 22:28:47 2013)
+Message-ID: <1364594074.13310.13@snotra>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
 Cc: hongtao.jia@freescale.com, B07421@freescale.com,
@@ -28,69 +27,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/26/2013 12:28:10 AM, Jia Hongtao wrote:
-> MPIC version is useful information for both mpic_alloc() and =20
-> mpic_init().
-> The patch provide an API to get MPIC version for reusing the code.
-> Also, some other IP block may need MPIC version for their own use.
-> The API for external use is also provided.
+On 03/25/2013 10:28:47 PM, Jia Hongtao wrote:
+> The MPIC version 2.0 has a MSI errata (errata PIC1 of mpc8544), It =20
+> causes
+> that neither MSI nor MSI-X can work fine. This is a workaround to =20
+> allow
+> MSI-X to function properly.
 >=20
-> Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+> Signed-off-by: Liu Shuo <soniccat.liu@gmail.com>
 > Signed-off-by: Li Yang <leoli@freescale.com>
+> Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
 > ---
-> Changes for V2:
-> * Using mpic_get_version() to implement mpic_primary_get_version()
+>  arch/powerpc/sysdev/fsl_msi.c | 47 =20
+> ++++++++++++++++++++++++++++++++++++++++---
+>  1 file changed, 44 insertions(+), 3 deletions(-)
 >=20
->  arch/powerpc/include/asm/mpic.h |  3 +++
->  arch/powerpc/sysdev/mpic.c      | 26 +++++++++++++++++++-------
->  2 files changed, 22 insertions(+), 7 deletions(-)
+> diff --git a/arch/powerpc/sysdev/fsl_msi.c =20
+> b/arch/powerpc/sysdev/fsl_msi.c
+> index 178c994..d2f8040 100644
+> --- a/arch/powerpc/sysdev/fsl_msi.c
+> +++ b/arch/powerpc/sysdev/fsl_msi.c
+> @@ -28,6 +28,8 @@
+>  #include "fsl_msi.h"
+>  #include "fsl_pci.h"
 >=20
-> diff --git a/arch/powerpc/include/asm/mpic.h =20
-> b/arch/powerpc/include/asm/mpic.h
-> index c0f9ef9..7d1222d 100644
-> --- a/arch/powerpc/include/asm/mpic.h
-> +++ b/arch/powerpc/include/asm/mpic.h
-> @@ -393,6 +393,9 @@ struct mpic
->  #define	MPIC_REGSET_STANDARD		MPIC_REGSET(0)	/* =20
-> Original MPIC */
->  #define	MPIC_REGSET_TSI108		MPIC_REGSET(1)	/* =20
-> Tsi108/109 PIC */
->=20
-> +/* Get the version of primary MPIC */
-> +extern u32 mpic_primary_get_version(void);
-> +
->  /* Allocate the controller structure and setup the linux irq descs
->   * for the range if interrupts passed in. No HW initialization is
->   * actually performed.
-> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-> index d30e6a6..c893a4b 100644
-> --- a/arch/powerpc/sysdev/mpic.c
-> +++ b/arch/powerpc/sysdev/mpic.c
-> @@ -1165,10 +1165,27 @@ static struct irq_domain_ops mpic_host_ops =3D {
->  	.xlate =3D mpic_host_xlate,
->  };
->=20
-> +static u32 mpic_get_version(struct mpic *mpic)
+> +#define MSI_HW_ERRATA_ENDIAN 0x00000010
+
+This should probably be kept in the same place as the other =20
+msi->features definitions (e.g. FSL_PIC_IP_*).
+
+> +/* MPIC version 2.0 has erratum PIC1 */
+> +static int mpic_has_errata(void)
 > +{
-> +	u32 brr1;
+> +	if (mpic_primary_get_version() =3D=3D 0x0200)
+> +		return 1;
 > +
-> +	brr1 =3D _mpic_read(mpic->reg_type, &mpic->thiscpuregs,
-> +			MPIC_FSL_BRR1);
-> +
-> +	return brr1 & MPIC_FSL_BRR1_VER;
-> +}
-> +
->  /*
->   * Exported functions
->   */
->=20
-> +u32 mpic_primary_get_version(void)
-> +{
-> +	struct mpic *mpic =3D mpic_primary;
-> +
-> +	return mpic_get_version(mpic);
+> +	return 0;
 > +}
 
-So this just crashes if there is no mpic_primary or it's a non-FSL MPIC?
+mpic_has_erratum_pic1()
+
+> +	if ((features->fsl_pic_ip & FSL_PIC_IP_MASK) =3D=3D =20
+> FSL_PIC_IP_MPIC) {
+> +		rc =3D mpic_has_errata();
+> +		if (rc > 0) {
+> +			msi->feature |=3D MSI_HW_ERRATA_ENDIAN;
+> +		} else if (rc < 0) {
+> +			err =3D rc;
+> +			goto error_out;
+> +		}
+
+When would mpic_has_errata() ever return a negative value (maybe =20
+mpic_primary_get_version could fail, but you don't allow for that in =20
+the interface)?
+
+If you're not going to add a way for errors to be returned back, just =20
+do:
+
+if (mpic_has_erratum_pic1())
+	msi->feature |=3D MSI_HW_ERRATA_ENDIAN;
 
 -Scott=
