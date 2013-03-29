@@ -1,35 +1,37 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7CD9C2C00B7
- for <linuxppc-dev@ozlabs.org>; Fri, 29 Mar 2013 09:40:28 +1100 (EST)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Thu, 28 Mar 2013 16:40:26 -0600
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id CCA3CC90025
- for <linuxppc-dev@ozlabs.org>; Thu, 28 Mar 2013 18:40:23 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r2SMeL8R46661830
- for <linuxppc-dev@ozlabs.org>; Thu, 28 Mar 2013 18:40:22 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r2SMeL9a017125
- for <linuxppc-dev@ozlabs.org>; Thu, 28 Mar 2013 19:40:21 -0300
-Date: Thu, 28 Mar 2013 15:39:53 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
- Jiri Olsa <jolsa@redhat.com>
-Subject: perf test failures on Power
-Message-ID: <20130328223952.GA21777@us.ibm.com>
+Return-Path: <B40534@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe002.messaging.microsoft.com [216.32.180.12])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 5420A2C00BA
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2013 12:58:45 +1100 (EST)
+Received: from mail76-va3 (localhost [127.0.0.1])	by mail76-va3-R.bigfish.com
+ (Postfix) with ESMTP id 98B111C0176	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri,
+ 29 Mar 2013 01:58:39 +0000 (UTC)
+Received: from VA3EHSMHS031.bigfish.com (unknown [10.7.14.236])	by
+ mail76-va3.bigfish.com (Postfix) with ESMTP id 6FB76460557	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2013 01:58:36 +0000 (UTC)
+From: Wang Dongsheng-B40534 <B40534@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH 2/3] powerpc/mpic: add global timer support
+Date: Fri, 29 Mar 2013 01:58:31 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259EC5D47@039-SN2MPN1-021.039d.mgd.msft.net>
+References: <ABB05CD9C9F68C46A5CEDC7F15439259EB857A@039-SN2MPN1-022.039d.mgd.msft.net>
+ <1363991395.24790.13@snotra>
+ <ABB05CD9C9F68C46A5CEDC7F15439259EBAA0F@039-SN2MPN1-022.039d.mgd.msft.net>
+ <1364319099.469.6@snotra>
+ <ABB05CD9C9F68C46A5CEDC7F15439259EBB72D@039-SN2MPN1-022.039d.mgd.msft.net>
+ <1364404295.31930.1@snotra>
+ <ABB05CD9C9F68C46A5CEDC7F15439259EBBE13@039-SN2MPN1-022.039d.mgd.msft.net>
+ <1364500079.32327.10@snotra>
+In-Reply-To: <1364500079.32327.10@snotra>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Gala Kumar-B11780 <B11780@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,98 +43,133 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-The 'perf' tool has some built-in test cases and one of them checks to
-see if the symbols in vmlinux match those in /proc/kallsyms.
+> -----Original Message-----
+> From: Wood Scott-B07421
+> Sent: Friday, March 29, 2013 3:48 AM
+> To: Wang Dongsheng-B40534
+> Cc: Wood Scott-B07421; Gala Kumar-B11780; linuxppc-dev@lists.ozlabs.org;
+> Li Yang-R58472
+> Subject: Re: [PATCH 2/3] powerpc/mpic: add global timer support
+>=20
+> On 03/27/2013 09:29:26 PM, Wang Dongsheng-B40534 wrote:
+> >
+> >
+> > > -----Original Message-----
+> > > From: Wood Scott-B07421
+> > > Sent: Thursday, March 28, 2013 1:12 AM
+> > > To: Wang Dongsheng-B40534
+> > > Cc: Wood Scott-B07421; Gala Kumar-B11780;
+> > linuxppc-dev@lists.ozlabs.org;
+> > > Li Yang-R58472
+> > > Subject: Re: [PATCH 2/3] powerpc/mpic: add global timer support
+> > >
+> > > On 03/26/2013 10:23:38 PM, Wang Dongsheng-B40534 wrote:
+> > > >
+> > > >
+> > > > > -----Original Message-----
+> > > > > From: Wood Scott-B07421
+> > > > > Sent: Wednesday, March 27, 2013 1:32 AM
+> > > > > To: Wang Dongsheng-B40534
+> > > > > Cc: Wood Scott-B07421; Gala Kumar-B11780;
+> > > > linuxppc-dev@lists.ozlabs.org;
+> > > > > Li Yang-R58472
+> > > > > Subject: Re: [PATCH 2/3] powerpc/mpic: add global timer support
+> > > > >
+> > > > > On 03/25/2013 10:29:58 PM, Wang Dongsheng-B40534 wrote:
+> > > > > >
+> > > > > >
+> > > > > > > -----Original Message-----
+> > > > > > > From: Wood Scott-B07421
+> > > > > > > Sent: Saturday, March 23, 2013 6:30 AM
+> > > > > > > To: Wang Dongsheng-B40534
+> > > > > > > Cc: Wood Scott-B07421; Gala Kumar-B11780;
+> > > > > > linuxppc-dev@lists.ozlabs.org;
+> > > > > > > Li Yang-R58472
+> > > > > > > Subject: Re: [PATCH 2/3] powerpc/mpic: add global timer
+> > support
+> > > > > > >
+> > > > > > > On 03/22/2013 01:14:51 AM, Wang Dongsheng-B40534 wrote:
+> > > > > > > >
+> > > > > > > >
+> > > > > > > > > -----Original Message-----
+> > > > > > > > > From: Wood Scott-B07421
+> > > > > > > > > Sent: Thursday, March 21, 2013 7:00 AM
+> > > > > > > > > To: Wang Dongsheng-B40534
+> > > > > > > > > Cc: Wood Scott-B07421; Gala Kumar-B11780;
+> > > > > > > > linuxppc-dev@lists.ozlabs.org;
+> > > > > > > > > Li Yang-R58472
+> > > > > > > > > Subject: Re: [PATCH 2/3] powerpc/mpic: add global timer
+> > > > support
+> > > > > > > > >
+> > > > > > > > > BTW, the input clock frequency has been similarly
+> > scaled,
+> > > > yet
+> > > > > > you
+> > > > > > > > don't
+> > > > > > > > > try to scrounge up that information to get further
+> > > > precision...
+> > > > > > > > >
+> > > > > > > > Let's go back patch, do you think the code is repeated?
+> > > > > > > > I will remove "if (!(priv->flags & FSL_GLOBAL_TIMER))"
+> > branch,
+> > > > > > there
+> > > > > > > > will be no redundant code.
+> > > > > > >
+> > > > > > > I'd rather that branch be kept and the more complicated
+> > branch
+> > > > > > deleted,
+> > > > > > > and priv->timerfreq frequency be adjusted on initialization
+> > to
+> > > > > > account
+> > > > > > > for the scaler.
+> > > > > >
+> > > > > > static void convert_ticks_to_time(struct timer_group_priv
+> > *priv,
+> > > > > >                 const u64 ticks, struct timeval *time) {
+> > > > > >         u64 tmp_sec;
+> > > > > >
+> > > > > >         time->tv_sec =3D (__kernel_time_t)div_u64(ticks,
+> > > > > > priv->timerfreq);
+> > > > > >         tmp_sec =3D (u64)time->tv_sec * (u64)priv->timerfreq;
+> > > > > >
+> > > > > >         time->tv_usec =3D (__kernel_suseconds_t)
+> > > > > >                 div_u64((ticks - tmp_sec) * 1000000,
+> > > > priv->timerfreq);
+> > > > > >
+> > > > > >         return;
+> > > > > > }
+> > > > > >
+> > > > > > timer_group_get_freq() {
+> > > > > > 	...
+> > > > > > 	if (priv->flags & FSL_GLOBAL_TIMER) {
+> > > > > > 		div =3D (1 << (MPIC_TIMER_TCR_CLKDIV_64 >> 8)) *
+> > 8;
+> > > > > > 		priv->timerfreq /=3D div;
+> > > > > > 	}
+> > > > > > 	...
+> > > > > > }
+> > > > > > Do you want to do that?
+> > > > >
+> > > > > 	if (priv->flags & FSL_GLOBAL_TIMER)
+> > > > > 		priv->timerfreq /=3D 64;
+> > > > >
+> > > > > ...but otherwise yes.
+> > > > Ok, I would like do this.
+> > > >
+> > > > if (priv->flags & FSL_GLOBAL_TIMER) {
+> > > > 	div =3D (1 << (MPIC_TIMER_TCR_CLKDIV_64 >> 8)) * 8;
+> > > > 	priv->timerfreq /=3D div;
+> > >
+> > > Why?  What do you get out of that obfuscation?
+> > >
+> > Change MPIC_TIMER_TCR_CLKDIV_64 to MPIC_TIMER_TCR_CLKDIV
+>=20
+> OK, that would at least provide the ability to adjust the clock divider
+> in one place rather than two -- though I don't know why we'd ever need to
+> change the divider.
+>=20
+Thanks, next patch MPIC_TIMER_TCR_CLKDIV_64 will change to MPIC_TIMER_TCR_C=
+LKDIV. :)
 
-This test is failing on Power for several reasons. I fixed a couple of
-them (described briefly at the end of the mail) and these fixes take
-the test further.
-
-One pending failure is because maps in vmlinux differ from kallsyms.
-
-Here is some output:
-
-$ ./perf test -v 1
-
----
-Using /lib/modules/3.8.0-rc4-perf-core+/build/vmlinux for symbols
-
-0xc000000000001800: diff name v: machine_check_fwnmi k: machine_check_pSeries
-0xc000000000005780: diff name v: __end_interrupts k: system_call_entry_direct
-0xc000000000006800: diff name v: __end_handlers k: .do_hash_page
-0xc000000000009300: diff name v: __secondary_start k: copy_to_here
-0xc00000000063d7a0: diff name v: __kprobes_text_end k: .vdso_getcpu_init
-Maps only in vmlinux:
- c00000000063d804-c000000000642077 0 [kernel].cpuinit.text
- c000000000642078-c00000000064225f 0 [kernel].text.unlikely
- c000000000642260-c0000000007cffff 0 [kernel].meminit.text
- c0000000007d0000-c000000000812043 0 [kernel].init.text
- c000000000812044-d000000000f8ffff 0 [kernel].exit.text
-Maps in vmlinux with a different name in kallsyms:
----
-
-Looking a the first pair of differing symbols in kallsyms and vmlinux:
-
-	$ grep c000000000001800 /proc/kallsyms
-	c000000000001800 T machine_check_fwnmi
-	c000000000001800 t machine_check_pSeries
-
-	$ nm /boot/vmlinux-3.8.0-rc4-perf-core |grep c000000000001800 
-	c000000000001800 T machine_check_fwnmi
-	c000000000001800 t machine_check_pSeries
-
-Now perf attempts to "fixup" the duplicates (see choose_best_symbol() in
-tools/perf/util/symbol.c) and use heuristics to choose one from the pair
-and discard the other.
-
-When processing the pair of 'machine_check_fwnmi' and 'machine_check_pSeries'
-from kallsyms, it finds that they both have global binding and it chooses
-'machine_check_pSeries' based on the string length of the symbol name.
-
-When processing the same pair from vmlinux, it finds that 'machine_check_fwnmi'
-has the global binding and chooses that.
-
-Finally, when comparing the vmlinux symbols with kallsyms, this mismatch
-is shows up as a failure.
-
-Some questions:
-	- Is perf trying to choose one from the pair, so we have only one
-	  symbol to use when building a profile or call-graph ?
-
-	- Why do some symbols like 'machine_check_fwnmi' above, appear with
-	  global binding in /proc/kallsyms and local binding in vmlinux ?
-
-
-
-
-----
-Here are couple of other failures in 'perf test' on Power. I applied some
-quick fixes for these to expose the above failures.
-
-1. Look for .__start or _stext.
-
-    On powerpc, multiple symbols match the address of '_stext':
-
-        $ grep c000000000000000 /proc/kallsyms
-        c000000000000000 T .__start
-        c000000000000000 T _stext
-        c000000000000000 T _text
-
-   choose_best_symbol() discards all but .__start() because, ironically, it
-   has the least preceding underscores. The vmlinux test case later looks for
-   _stext and fails.
-
-   Quick fix, have the test case look for either _stext or .__start.
-
-2. In vmlinux, system call names have '.sys' or '_sys_'. 
-   In kallsyms, the names have '.SyS' or '_SyS_'
-
-    0xc000000000067660: diff name v: .sys_sched_get_priority_max k: .SyS_sched_get_priority_max
-    0xc000000000067690: diff name v: .sys_sched_get_priority_min k: .SyS_sched_get_priority_min
-    0xc0000000000f2650: diff name v: .compat_sys_waitid k: .compat_SyS_waitid
-    0xc0000000000f2780: diff name v: .compat_sys_wait4 k: .compat_SyS_wait4
-
-  	Quick fix: treat names as identical if they only differ in upper/lower
-	case of the substring 'sys'.
-
-	Curious though why kallsyms and vmlinux differ this way.
+div =3D (1 << (MPIC_TIMER_TCR_CLKDIV_64 >> 8)) * 8 --->> div =3D (1 << (MPI=
+C_TIMER_TCR_CLKDIV >> 8)) * 8;
