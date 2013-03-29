@@ -1,24 +1,26 @@
-Return-Path: <B29983@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D65DE2C00A9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2013 15:47:37 +1100 (EST)
-From: Tang Yuantian-B29983 <B29983@freescale.com>
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: RE: [PATCH 2/2 v2] cpufreq: Add cpufreq driver for Freescale e500mc
- SoCs
-Date: Fri, 29 Mar 2013 04:47:29 +0000
-Message-ID: <D07C73A334FF604B95B3CBD2A545D07B0B119911@039-SN2MPN1-013.039d.mgd.msft.net>
+Return-Path: <viresh.kumar@linaro.org>
+Received: from mail-oa0-f54.google.com (mail-oa0-f54.google.com
+ [209.85.219.54])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 51C2F2C00A9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2013 15:50:56 +1100 (EST)
+Received: by mail-oa0-f54.google.com with SMTP id n12so172593oag.41
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2013 21:50:53 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <D07C73A334FF604B95B3CBD2A545D07B0B119911@039-SN2MPN1-013.039d.mgd.msft.net>
 References: <1364464508-25393-1-git-send-email-Yuantian.Tang@freescale.com>
  <CAKohpomPubV=E_wCLyOR6X0PQNvrJpTc94950PEF+YUam9ituw@mail.gmail.com>
  <D07C73A334FF604B95B3CBD2A545D07B0B1178B6@039-SN2MPN1-013.039d.mgd.msft.net>
  <CAKohpom9=HmVDvSVvgPC1zdzHmd+YpMU85SW34b9jun1dp6+HA@mail.gmail.com>
-In-Reply-To: <CAKohpom9=HmVDvSVvgPC1zdzHmd+YpMU85SW34b9jun1dp6+HA@mail.gmail.com>
-Content-Type: text/plain; charset="gb2312"
-MIME-Version: 1.0
+ <D07C73A334FF604B95B3CBD2A545D07B0B119911@039-SN2MPN1-013.039d.mgd.msft.net>
+Date: Fri, 29 Mar 2013 10:20:53 +0530
+Message-ID: <CAKohponzY8Lfx=PRnBdcC4UebeUJyQAwXMDJfHt-ANE+E6w-tA@mail.gmail.com>
+Subject: Re: [PATCH 2/2 v2] cpufreq: Add cpufreq driver for Freescale e500mc
+ SoCs
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Tang Yuantian-B29983 <B29983@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: "rjw@sisk.pl" <rjw@sisk.pl>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  Li Yang-R58472 <r58472@freescale.com>,
@@ -33,47 +35,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogVmlyZXNoIEt1bWFyIFtt
-YWlsdG86dmlyZXNoLmt1bWFyQGxpbmFyby5vcmddDQo+IFNlbnQ6IDIwMTPE6jPUwjI5yNUgMTE6
-MTcNCj4gVG86IFRhbmcgWXVhbnRpYW4tQjI5OTgzDQo+IENjOiByandAc2lzay5wbDsgY3B1ZnJl
-cUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsNCj4gbGludXhwcGMt
-ZGV2QGxpc3RzLm96bGFicy5vcmc7IExpIFlhbmctUjU4NDcyDQo+IFN1YmplY3Q6IFJlOiBbUEFU
-Q0ggMi8yIHYyXSBjcHVmcmVxOiBBZGQgY3B1ZnJlcSBkcml2ZXIgZm9yIEZyZWVzY2FsZQ0KPiBl
-NTAwbWMgU29Dcw0KPiANCj4gT24gMjkgTWFyY2ggMjAxMyAwODoyMSwgVGFuZyBZdWFudGlhbi1C
-Mjk5ODMgPEIyOTk4M0BmcmVlc2NhbGUuY29tPiB3cm90ZToNCj4gPj4gPiArc3RhdGljIGludCBj
-b3JlbmV0X2NwdWZyZXFfY3B1X2luaXQoc3RydWN0IGNwdWZyZXFfcG9saWN5ICpwb2xpY3kpDQo+
-IHsNCj4gPj4gPiArICAgICAgIHVuc2lnbmVkIGludCBjcHUgPSBwb2xpY3ktPmNwdTsNCj4gPj4g
-PiArICAgICAgIHN0cnVjdCBkZXZpY2Vfbm9kZSAqbnA7DQo+ID4+ID4gKyAgICAgICBpbnQgaSwg
-Y291bnQ7DQo+ID4+ID4gKyAgICAgICBzdHJ1Y3QgY2xrICpjbGs7DQo+ID4+ID4gKyAgICAgICBz
-dHJ1Y3QgY3B1ZnJlcV9mcmVxdWVuY3lfdGFibGUgKnRhYmxlOw0KPiA+PiA+ICsgICAgICAgc3Ry
-dWN0IGNwdV9kYXRhICpkYXRhOw0KPiA+PiA+ICsNCj4gPj4gPiArICAgICAgIG5wID0gb2ZfZ2V0
-X2NwdV9ub2RlKGNwdSwgTlVMTCk7DQo+ID4+ID4gKyAgICAgICBpZiAoIW5wKQ0KPiA+PiA+ICsg
-ICAgICAgICAgICAgICByZXR1cm4gLUVOT0RFVjsNCj4gPj4gPiArDQo+ID4+ID4gKyAgICAgICBk
-YXRhID0ga3phbGxvYyhzaXplb2Yoc3RydWN0IGNwdV9kYXRhKSwgR0ZQX0tFUk5FTCk7DQo+ID4+
-DQo+ID4+IEkgdG9sZCB5b3UsIHlvdSBtaXNzZWQgbXkgY29tbWVudCBlYXJsaWVyLg0KPiA+Pg0K
-PiA+PiBZb3UgbmVlZCB0byB3cml0ZTogc2l6ZW9mKCpkYXRhKSA6KA0KPiA+Pg0KPiA+IFRoaXMg
-aXMgbmV3IGFkZGVkIHN0YXRlbWVudCwgd2hhdCB5b3UgdG9sZCBsYXN0IHRpbWUgaXMgYWJvdXQg
-dGhlIG5leHQNCj4ga2NhbGxvYygpLi4uDQo+IA0KPiBJIHNhaWQgYWJvdXQgdXNpbmcgc2l6ZW9m
-KCkgaW4gZ2VuZXJpYywgSSBjb3BpZWQgYmVsb3cgZnJvbSBteSBmaXJzdCBtYWlsDQo+IG9uIHRo
-aXMgdG9waWMNCj4gDQo+ID4gKyAgICAgICB0YWJsZSA9IGtjYWxsb2MoY291bnQgKyAxLA0KPiAN
-Cj4ga3phbGxvYz8/DQo+IA0KPiA+ICsgICAgICAgICAgICAgICAgICAgICAgIHNpemVvZihzdHJ1
-Y3QgY3B1ZnJlcV9mcmVxdWVuY3lfdGFibGUpLA0KPiA+ICsgR0ZQX0tFUk5FTCk7DQo+IA0KPiBz
-aXplb2YoKnRhYmxlKQ0KPiANCj4gQW5kIHlvdSBtaXNzZWQgdGhpcyBvbmUgYXMgeW91IG5ldmVy
-IHJlcGxpZWQgdG8gaXQuIDopDQpJIHRob3VnaHQgaXQgd2FzIE9LIGhlcmUuIEFwcGFyZW50bHks
-IHNpemVvZigqdGFibGUpIGlzIGJldHRlci4NCkJ1dCBrY2FsbG9jIGlzIE9LLg0KIA0KPiANCj4g
-PiBBcmUgdGhlcmUgc29tZSByZWFzb25zIHRoYXQgd2UgY2FuJ3QgdXNlIHNpemVvZihzdHJ1Y3Qg
-Y3B1X2RhdGEpDQo+ID4gaW5zdGVhZCBvZiBzaXplb2YoKmRhdGEpPw0KPiANCj4gRG9jdW1lbnRh
-dGlvbi9Db2RpaW5nU3R5bGU6IENoYXB0ZXIgMTQ6IEFsbG9jYXRpbmcgbWVtb3J5DQo+IA0KVGhh
-bmtzDQoNClJlZ2FyZHMsDQpZdWFudGlhbg0KDQo+ID4+ID4gKyAgICAgICBpZiAoIXRhYmxlKSB7
-DQo+ID4+ID4gKyAgICAgICAgICAgICAgIHByX2VycigiJXM6IG5vIG1lbW9yeVxuIiwgX19mdW5j
-X18pOw0KPiA+PiA+ICsgICAgICAgICAgICAgICBnb3RvIGVycl9ub21lbTI7DQo+ID4+ID4gKyAg
-ICAgICB9DQo+ID4+ID4gKw0KPiA+PiA+ICsgICAgICAgZm9yIChpID0gY3B1OyBpIDwgZnJlcV9k
-YXRhLmNwdXNfcGVyX2NsdXN0ZXIgKyBjcHU7IGkrKykNCj4gPj4gPiArICAgICAgICAgICAgICAg
-Y3B1bWFza19zZXRfY3B1KGksIHBvbGljeS0+Y3B1cyk7DQo+ID4+DQo+ID4+IEkgY2FuIHNlZSBz
-b21lIHJlZ3Jlc3Npb24gaGVyZS4gU3VwcG9zZSB5b3UgaGF2ZSB0d28gY2x1c3RlcnMgb2YgNA0K
-PiA+PiBjcHVzDQo+ID4+IGVhY2g6ICgwMTIzKSBhbmQgKDQ1NjcpLi4gTm93IGF0IGJvb3QgdGlt
-ZSBhYm92ZSBjb2RlIHdpbGwgd29yaw0KPiA+PiBwZXJmZWN0bHkgZmluZS4gTm93IHlvdSBob3Qg
-dW5wbHVnIDAsMSwyLDMgYW5kIHRoZW4gaG90cGx1ZyAzIGluLg0KPiA+Pg0KPiA+PiBIZXJlLCBp
-bml0IHdvdWxkIGJlIGNhbGxlZCBmb3IgY3B1IDMgYW5kIHNvIHlvdSB3aWxsIGVuZCB1cCBzYXZp
-bmcNCj4gPj4gMzQ1NiBpbiB5b3VyIHBvbGljeS0+Y3B1cw0KPiA+Pg0KPiA+PiA6KQ0KPiA+IEdv
-b2QgY2F0Y2guLiB3aWxsIGZpeC4NCj4gDQo+IFRoYW5rcy4NCg0K
+On 29 March 2013 10:17, Tang Yuantian-B29983 <B29983@freescale.com> wrote:
+> I thought it was OK here. Apparently, sizeof(*table) is better.
+> But kcalloc is OK.
+
+Yes yes, Kcalloc is okay... I have misread that part earlier when i
+suggested kzalloc.
+In last mail i was referring to sizeof() only.
