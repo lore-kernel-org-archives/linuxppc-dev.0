@@ -1,15 +1,25 @@
-Return-Path: <geoff@infradead.org>
-Message-ID: <1364603888.16937.62.camel@smoke>
-Subject: Re: [PATCH for 3.9] powerpc/ps3: Update ps3_defconfig
-From: Geoff Levand <geoff@infradead.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 29 Mar 2013 17:38:08 -0700
-In-Reply-To: <1363655503.1075.40.camel@smoke>
-References: <cover.1360810584.git.geoff@infradead.org>
- <1363655503.1075.40.camel@smoke>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: cbe-oss-dev@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <viresh.linux@gmail.com>
+Received: from mail-ve0-f179.google.com (mail-ve0-f179.google.com
+ [209.85.128.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2AC7B2C00DA
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Mar 2013 00:52:31 +1100 (EST)
+Received: by mail-ve0-f179.google.com with SMTP id cz11so1323114veb.10
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2013 06:52:29 -0700 (PDT)
+MIME-Version: 1.0
+Sender: viresh.linux@gmail.com
+In-Reply-To: <1364536350-23788-1-git-send-email-Yuantian.Tang@freescale.com>
+References: <1364536350-23788-1-git-send-email-Yuantian.Tang@freescale.com>
+Date: Sat, 30 Mar 2013 19:22:28 +0530
+Message-ID: <CAOh2x=k2cchYWnX0AitOjCOfP_mC-=cm2sm4qhrGv0S9ywzP2g@mail.gmail.com>
+Subject: Re: [PATCH v3] cpufreq: Add cpufreq driver for Freescale e500mc SoCs
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Yuantian.Tang@freescale.com
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linuxppc-dev@lists.ozlabs.org,
+ "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
+ Linux PM list <linux-pm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,28 +29,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
+On Fri, Mar 29, 2013 at 11:22 AM,  <Yuantian.Tang@freescale.com> wrote:
+> diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
 
-It would be nice if I could get this in for 3.9.  Did you miss it?
+> +static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
+> +{
 
-Thanks.
+> +       for (i = 0; i < count; i++) {
+> +               table[i].index = i;
 
--Geoff
+One more thing, you don't need to set index at all as you aren't using it.
+And cpufreq core never uses it.
 
-On Mon, 2013-03-18 at 18:11 -0700, Geoff Levand wrote:
-> Refresh and set CONFIG_RD_LZMA=y.
-> 
-> Signed-off-by: Geoff Levand <geoff@infradead.org>
-> ---
-> Hi Ben,
-> 
-> This sets CONFIG_RD_LZMA=y, which is needed to boot with
-> newer initrd images.
-> 
-> Please apply for 3.9.
-> 
-> Also available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/geoff/ps3-linux.git for-powerpc
-> 
-> -Geoff
+> +               clk = of_clk_get(data->parent, i);
+> +               table[i].frequency = clk_get_rate(clk) / 1000;
+> +       }
