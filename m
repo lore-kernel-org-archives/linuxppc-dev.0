@@ -1,19 +1,26 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id D14792C008E
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Mar 2013 20:51:55 +1100 (EST)
-Date: Sun, 31 Mar 2013 11:51:51 +0200
-From: Anatolij Gustschin <agust@denx.de>
-To: CF Studelec <cfoissac@studelec-sa.com>
-Subject: Re: MPC5121e, Linux, simple IO ports
-Message-ID: <20130331115151.50cdac0b@crub>
-In-Reply-To: <514ACAD6.6010909@studelec-sa.com>
-References: <514ACAD6.6010909@studelec-sa.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <B29983@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E2ABB2C00F7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Apr 2013 13:17:02 +1100 (EST)
+From: Tang Yuantian-B29983 <B29983@freescale.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: RE: [PATCH v3] cpufreq: Add cpufreq driver for Freescale e500mc SoCs
+Date: Mon, 1 Apr 2013 02:16:55 +0000
+Message-ID: <D07C73A334FF604B95B3CBD2A545D07B0B122EF7@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1364536350-23788-1-git-send-email-Yuantian.Tang@freescale.com>
+ <CAOh2x=k2cchYWnX0AitOjCOfP_mC-=cm2sm4qhrGv0S9ywzP2g@mail.gmail.com>
+In-Reply-To: <CAOh2x=k2cchYWnX0AitOjCOfP_mC-=cm2sm4qhrGv0S9ywzP2g@mail.gmail.com>
+Content-Type: text/plain; charset="gb2312"
+MIME-Version: 1.0
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>,
+ "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
+ Linux PM list <linux-pm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,71 +30,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
-
-On Thu, 21 Mar 2013 09:54:46 +0100
-CF Studelec <cfoissac@studelec-sa.com> wrote:
-
-> Hello,
-> 
-> This is a simple board base on mpc5121e MCU.
-> 
-> 
-> Gpio is detected: kernel is compiled with its support - i got
-> gpiochip_find_base: found new base @224 in dmesg - on kernel 3.0.4.
-> 
->  
-> But i'm unable to access it through /sys/class/gpio. I can successfully
-> export a pin (ie, if i type cat 224 > export, gpio224 is created), but i
-> can't successfully control it:
-> 
->  
-> 
-> echo "out" > /sys/class/gpio/gpio224/direction
-> 
-> cat /sys/class/gpio/gpio224/value
-> 
-> 0
-> 
-> echo 1 > /sys/class/gpio/gpio224/value
-> 
-> cat /sys/class/gpio/gpio224/value
-> 
-> 0
->
-> My need is a simple chipselect (well, 3 chipselect exactly ), for a
-> custom design. Running linux is mandatory. I suspect the MPC5121e to be
-> in the bad function mode, so:
-> 
-> - does anyone knows how to change mode ? What register can i acces and
-> how ? does it worths a try ?
-
-For GPIO0 - GPIO7 pins you additionally need to configure the pin mux
-for GPIO mode, see IO_CONTROL_GP register description in the manual.
-
-> - does anyone successfully performed simple IO control ?
-
-We use it all the time, i.e. as SD-Card detect and/or
-write-protect GPIOs, as SPI Chips-Select GPIOs, etc. It works.
-
-> Last thing, i have tryed to access internal registers through /dev/mem,
-> but no success. There are very few ressources available for this
-> microcontroler, but i'm stick to it. Perhaps anybody knows how to access
-> (read) internal registers with /proc or sys-fs ?
-
-Accessing registers using /dev/mem should work (tested using
-devmem2.c tool with recent v3.9-rc4 kernel. Should work with
-older kernels too).
-
-Alternatively (as a quick test) you could configure the registers
-under U-Boot using "mw" command, assuming you are using U-Boot as
-a bootloader.
-
-HTH,
-
-Anatolij
-
---
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0  Fax: +49-8142-66989-80 Email: office@denx.de
+DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IGNwdWZyZXEtb3duZXJAdmdl
+ci5rZXJuZWwub3JnIFttYWlsdG86Y3B1ZnJlcS1vd25lckB2Z2VyLmtlcm5lbC5vcmddDQo+IE9u
+IEJlaGFsZiBPZiBWaXJlc2ggS3VtYXINCj4gU2VudDogMjAxM8TqM9TCMzDI1SAyMTo1Mg0KPiBU
+bzogVGFuZyBZdWFudGlhbi1CMjk5ODMNCj4gQ2M6IFJhZmFlbCBKLiBXeXNvY2tpOyBjcHVmcmVx
+QHZnZXIua2VybmVsLm9yZzsgTGludXggUE0gbGlzdDsgbGludXhwcGMtDQo+IGRldkBsaXN0cy5v
+emxhYnMub3JnOyBMaSBZYW5nLVI1ODQ3Mg0KPiBTdWJqZWN0OiBSZTogW1BBVENIIHYzXSBjcHVm
+cmVxOiBBZGQgY3B1ZnJlcSBkcml2ZXIgZm9yIEZyZWVzY2FsZSBlNTAwbWMNCj4gU29Dcw0KPiAN
+Cj4gT24gRnJpLCBNYXIgMjksIDIwMTMgYXQgMTE6MjIgQU0sICA8WXVhbnRpYW4uVGFuZ0BmcmVl
+c2NhbGUuY29tPiB3cm90ZToNCj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL3BwYy1j
+b3JlbmV0LWNwdWZyZXEuYw0KPiA+IGIvZHJpdmVycy9jcHVmcmVxL3BwYy1jb3JlbmV0LWNwdWZy
+ZXEuYw0KPiANCj4gPiArc3RhdGljIGludCBjb3JlbmV0X2NwdWZyZXFfY3B1X2luaXQoc3RydWN0
+IGNwdWZyZXFfcG9saWN5ICpwb2xpY3kpIHsNCj4gDQo+ID4gKyAgICAgICBmb3IgKGkgPSAwOyBp
+IDwgY291bnQ7IGkrKykgew0KPiA+ICsgICAgICAgICAgICAgICB0YWJsZVtpXS5pbmRleCA9IGk7
+DQo+IA0KPiBPbmUgbW9yZSB0aGluZywgeW91IGRvbid0IG5lZWQgdG8gc2V0IGluZGV4IGF0IGFs
+bCBhcyB5b3UgYXJlbid0IHVzaW5nIGl0Lg0KPiBBbmQgY3B1ZnJlcSBjb3JlIG5ldmVyIHVzZXMg
+aXQuDQo+IA0KT0ssIG5vIHByb2JsZW0uDQoNClRoYW5rcywNCll1YW50aWFuDQoNCj4gPiArICAg
+ICAgICAgICAgICAgY2xrID0gb2ZfY2xrX2dldChkYXRhLT5wYXJlbnQsIGkpOw0KPiA+ICsgICAg
+ICAgICAgICAgICB0YWJsZVtpXS5mcmVxdWVuY3kgPSBjbGtfZ2V0X3JhdGUoY2xrKSAvIDEwMDA7
+DQo+ID4gKyAgICAgICB9DQo+IC0tDQo+IFRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBz
+ZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBjcHVmcmVxIiBpbiB0aGUNCj4gYm9keSBvZiBhIG1l
+c3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZyBNb3JlIG1ham9yZG9tbyBpbmZvIGF0
+DQo+IGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbA0KDQo=
