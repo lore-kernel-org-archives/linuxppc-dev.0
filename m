@@ -1,17 +1,25 @@
-Return-Path: <bigeasy@linutronix.de>
-Received: from custos.ou.linutronix.de (custos.ou.linutronix.de
- [212.62.202.73]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3424D2C00F7
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2013 01:07:30 +1100 (EST)
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH] powerpc/fsl-msi: use a different locklcass for the cascade
- interrupt
-Date: Tue,  2 Apr 2013 15:33:36 +0200
-Message-Id: <1364909616-59478-1-git-send-email-bigeasy@linutronix.de>
-Cc: tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Return-Path: <joro@8bytes.org>
+Received: from mail.8bytes.org (8bytes.org
+ [IPv6:2a01:238:4242:f000:64f:6c43:3523:e535])
+ by ozlabs.org (Postfix) with ESMTP id 582F92C0138
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2013 02:08:52 +1100 (EST)
+Received: from localhost (localhost [127.0.0.1])
+ by mail.8bytes.org (Postfix) with SMTP id D27BA12B0B4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Apr 2013 17:08:46 +0200 (CEST)
+Date: Tue, 2 Apr 2013 17:08:43 +0200
+From: Joerg Roedel <joro@8bytes.org>
+To: Varun Sethi <Varun.Sethi@freescale.com>
+Subject: Re: [PATCH 2/5 v11] powerpc: Add iommu domain pointer to device
+ archdata
+Message-ID: <20130402150842.GG15687@8bytes.org>
+References: <1364500442-20927-1-git-send-email-Varun.Sethi@freescale.com>
+ <1364500442-20927-3-git-send-email-Varun.Sethi@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1364500442-20927-3-git-send-email-Varun.Sethi@freescale.com>
+Cc: linux-kernel@vger.kernel.org, stuart.yoder@freescale.com,
+ iommu@lists.linux-foundation.org, scottwood@freescale.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,36 +29,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-lockdep thinks that it might deadlock because it grabs a lock of the
-same class while calling the generic_irq_handler(). This annotation will
-inform lockdep that it will not.
+On Fri, Mar 29, 2013 at 01:23:59AM +0530, Varun Sethi wrote:
+> Add an iommu domain pointer to device (powerpc) archdata.  Devices
+> are attached to iommu domains and this pointer provides a mechanism
+> to correlate between a device and the associated iommu domain.  This
+> field is set when a device is attached to a domain.
+> 
+> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
 
-Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
----
- arch/powerpc/sysdev/fsl_msi.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
-index 178c994..ab02db3 100644
---- a/arch/powerpc/sysdev/fsl_msi.c
-+++ b/arch/powerpc/sysdev/fsl_msi.c
-@@ -333,6 +333,8 @@ static int fsl_of_msi_remove(struct platform_device *ofdev)
- 	return 0;
- }
- 
-+static struct lock_class_key fsl_msi_irq_class;
-+
- static int fsl_msi_setup_hwirq(struct fsl_msi *msi, struct platform_device *dev,
- 			       int offset, int irq_index)
- {
-@@ -351,7 +353,7 @@ static int fsl_msi_setup_hwirq(struct fsl_msi *msi, struct platform_device *dev,
- 		dev_err(&dev->dev, "No memory for MSI cascade data\n");
- 		return -ENOMEM;
- 	}
--
-+	irq_set_lockdep_class(virt_msir, &fsl_msi_irq_class);
- 	msi->msi_virqs[irq_index] = virt_msir;
- 	cascade_data->index = offset;
- 	cascade_data->msi_data = msi;
--- 
-1.7.6.5
+This patch needs to be Acked by the PPC maintainers.
