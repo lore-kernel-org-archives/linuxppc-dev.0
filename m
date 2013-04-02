@@ -1,28 +1,24 @@
-Return-Path: <B08248@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe010.messaging.microsoft.com [216.32.180.30])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7EC262C0138
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2013 02:29:28 +1100 (EST)
-From: Yoder Stuart-B08248 <B08248@freescale.com>
-To: Sethi Varun-B16395 <B16395@freescale.com>, "joro@8bytes.org"
- <joro@8bytes.org>, Wood Scott-B07421 <B07421@freescale.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "galak@kernel.crashing.org" <galak@kernel.crashing.org>,
- "benh@kernel.crashing.org" <benh@kernel.crashing.org>
-Subject: RE: [PATCH 5/5 v11] iommu/fsl: Freescale PAMU driver and iommu
+Return-Path: <joro@8bytes.org>
+Received: from mail.8bytes.org (8bytes.org [85.214.48.195])
+ by ozlabs.org (Postfix) with ESMTP id A04F02C0165
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2013 03:18:20 +1100 (EST)
+Received: from localhost (localhost [127.0.0.1])
+ by mail.8bytes.org (Postfix) with SMTP id 150CA12B0AF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Apr 2013 18:18:16 +0200 (CEST)
+Date: Tue, 2 Apr 2013 18:18:13 +0200
+From: Joerg Roedel <joro@8bytes.org>
+To: Varun Sethi <Varun.Sethi@freescale.com>
+Subject: Re: [PATCH 5/5 v11] iommu/fsl: Freescale PAMU driver and iommu
  implementation.
-Date: Tue, 2 Apr 2013 15:29:19 +0000
-Message-ID: <9F6FE96B71CF29479FF1CDC8046E15035A0D34@039-SN1MPN1-003.039d.mgd.msft.net>
+Message-ID: <20130402161812.GI15687@8bytes.org>
 References: <1364500442-20927-1-git-send-email-Varun.Sethi@freescale.com>
  <1364500442-20927-6-git-send-email-Varun.Sethi@freescale.com>
-In-Reply-To: <1364500442-20927-6-git-send-email-Varun.Sethi@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1364500442-20927-6-git-send-email-Varun.Sethi@freescale.com>
+Cc: Alex Williamson <alex.williamson@redhat.com>, linux-kernel@vger.kernel.org,
+ stuart.yoder@freescale.com, iommu@lists.linux-foundation.org,
+ scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,110 +28,211 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Cc'ing Alex Williamson
 
-> -----Original Message-----
-> From: Sethi Varun-B16395
-> Sent: Thursday, March 28, 2013 2:54 PM
-> To: joro@8bytes.org; Yoder Stuart-B08248; Wood Scott-B07421; iommu@lists.=
-linux-foundation.org; linuxppc-
-> dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; galak@kernel.crashing=
-.org; benh@kernel.crashing.org
-> Cc: Sethi Varun-B16395
-> Subject: [PATCH 5/5 v11] iommu/fsl: Freescale PAMU driver and iommu imple=
-mentation.
->=20
-> Following is a brief description of the PAMU hardware:
-> PAMU determines what action to take and whether to authorize the action o=
-n
-> the basis of the memory address, a Logical IO Device Number (LIODN), and
-> PAACT table (logically) indexed by LIODN and address. Hardware devices wh=
-ich
-> need to access memory must provide an LIODN in addition to the memory add=
-ress.
->=20
-> Peripheral Access Authorization and Control Tables (PAACTs) are the prima=
-ry
-> data structures used by PAMU. A PAACT is a table of peripheral access
-> authorization and control entries (PAACE).Each PAACE defines the range of
-> I/O bus address space that is accessible by the LIOD and the associated a=
-ccess
-> capabilities.
->=20
-> There are two types of PAACTs: primary PAACT (PPAACT) and secondary PAACT
-> (SPAACT).A given physical I/O device may be able to act as one or more
-> independent logical I/O devices (LIODs). Each such logical I/O device is
-> assigned an identifier called logical I/O device number (LIODN). A LIODN =
-is
-> allocated a contiguous portion of the I/O bus address space called the DS=
-A window
-> for performing DSA operations. The DSA window may optionally be divided i=
-nto
-> multiple sub-windows, each of which may be used to map to a region in sys=
-tem
-> storage space. The first sub-window is referred to as the primary sub-win=
-dow
-> and the remaining are called secondary sub-windows.
->=20
-> This patch provides the PAMU driver (fsl_pamu.c) and the corresponding IO=
-MMU
-> API implementation (fsl_pamu_domain.c). The PAMU hardware driver (fsl_pam=
-u.c)
-> has been derived from the work done by Ashish Kalra and Timur Tabi.
->=20
-> Signed-off-by: Timur Tabi <<timur@tabi.org>
-> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
-> ---
-> changes in v11:
-> - changed iova to dma_addr_t in iova_to_phys API.
-> changes in v10:
-> - Support for new guts compatibe string for T4 & B4 devices.
-> - Modified comment about port ID and mentioned the errata number.
-> - Fixed the issue where data pointer was not freed in case of a an error.
-> - Pass data pointer while freeing irq.
-> - Whle initializing the SPAACE entry clear the valid bit.
-> changes in v9:
-> - Merged and createad a single function to delete
-> a device from domain list.
-> - Refactored the add_device API code.
-> - Renamed the paace and spaace init fucntions.
-> - Renamed functions for mapping windows and subwindows.
-> - Changed the MAX LIODN value to MAX value u-boot can
-> program.
-> - Hard coded maximum number of subwindows.
-> changes in v8:
-> - implemented the new API for window based IOMMUs.
-> changes in v7:
-> - Set max_subwidows in the geometry attribute.
-> - Add checking for maximum supported LIODN value.
-> - Use upper_32_bits and lower_32_bits macros while
->   intializing PAMU data structures.
-> changes in v6:
-> - Simplified complex conditional statements.
-> - Fixed indentation issues.
-> - Added comments for IOMMU API implementation.
-> changes in v5:
-> - Addressed comments from Timur.
-> changes in v4:
-> - Addressed comments from Timur and Scott.
-> changes in v3:
-> - Addressed comments by Kumar Gala
-> - dynamic fspi allocation
-> - fixed alignment check in map and unmap
->  arch/powerpc/sysdev/fsl_pci.h   |    5 +
->  drivers/iommu/Kconfig           |    8 +
->  drivers/iommu/Makefile          |    1 +
->  drivers/iommu/fsl_pamu.c        | 1269 +++++++++++++++++++++++++++++++++=
-++++++
->  drivers/iommu/fsl_pamu.h        |  405 +++++++++++++
->  drivers/iommu/fsl_pamu_domain.c | 1137 +++++++++++++++++++++++++++++++++=
-++
->  drivers/iommu/fsl_pamu_domain.h |   85 +++
->  7 files changed, 2910 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/iommu/fsl_pamu.c
->  create mode 100644 drivers/iommu/fsl_pamu.h
->  create mode 100644 drivers/iommu/fsl_pamu_domain.c
->  create mode 100644 drivers/iommu/fsl_pamu_domain.h
+Alex, can you please review the iommu-group part of this patch?
 
-Ack.
+My comments so far are below:
 
-Stuart
+On Fri, Mar 29, 2013 at 01:24:02AM +0530, Varun Sethi wrote:
+> +config FSL_PAMU
+> +	bool "Freescale IOMMU support"
+> +	depends on PPC_E500MC
+> +	select IOMMU_API
+> +	select GENERIC_ALLOCATOR
+> +	help
+> +	  Freescale PAMU support.
+
+A bit lame for a help text. Can you elaborate more what PAMU is and when
+it should be enabled?
+
+> +int pamu_enable_liodn(int liodn)
+> +{
+> +	struct paace *ppaace;
+> +
+> +	ppaace = pamu_get_ppaace(liodn);
+> +	if (!ppaace) {
+> +		pr_err("Invalid primary paace entry\n");
+> +		return -ENOENT;
+> +	}
+> +
+> +	if (!get_bf(ppaace->addr_bitfields, PPAACE_AF_WSE)) {
+> +		pr_err("liodn %d not configured\n", liodn);
+> +		return -EINVAL;
+> +	}
+> +
+> +	/* Ensure that all other stores to the ppaace complete first */
+> +	mb();
+> +
+> +	ppaace->addr_bitfields |= PAACE_V_VALID;
+> +	mb();
+
+Why is it sufficient to set the bit in a variable when enabling liodn
+but when disabling it set_bf needs to be called? This looks a bit
+assymetric.
+
+> +/* Derive the window size encoding for a particular PAACE entry */
+> +static unsigned int map_addrspace_size_to_wse(phys_addr_t addrspace_size)
+> +{
+> +	/* Bug if not a power of 2 */
+> +	BUG_ON((addrspace_size & (addrspace_size - 1)));
+
+Please use is_power_of_2 here.
+
+> +
+> +	/* window size is 2^(WSE+1) bytes */
+> +	return __ffs(addrspace_size >> PAMU_PAGE_SHIFT) + PAMU_PAGE_SHIFT - 1;
+
+The PAMU_PAGE_SHIFT shifting and adding looks redundant.
+
+> +	if ((win_size & (win_size - 1)) || win_size < PAMU_PAGE_SIZE) {
+> +		pr_err("window size too small or not a power of two %llx\n", win_size);
+> +		return -EINVAL;
+> +	}
+> +
+> +	if (win_addr & (win_size - 1)) {
+> +		pr_err("window address is not aligned with window size\n");
+> +		return -EINVAL;
+> +	}
+
+Again, use is_power_of_2 instead of hand-coding.
+
+> +	if (~stashid != 0)
+> +		set_bf(paace->impl_attr, PAACE_IA_CID, stashid);
+> +
+> +	smp_wmb();
+> +
+> +	if (enable)
+> +		paace->addr_bitfields |= PAACE_V_VALID;
+
+Havn't you written a helper funtion to set this bit?
+
+> +irqreturn_t pamu_av_isr(int irq, void *arg)
+> +{
+> +	struct pamu_isr_data *data = arg;
+> +	phys_addr_t phys;
+> +	unsigned int i, j;
+> +
+> +	pr_emerg("fsl-pamu: access violation interrupt\n");
+> +
+> +	for (i = 0; i < data->count; i++) {
+> +		void __iomem *p = data->pamu_reg_base + i * PAMU_OFFSET;
+> +		u32 pics = in_be32(p + PAMU_PICS);
+> +
+> +		if (pics & PAMU_ACCESS_VIOLATION_STAT) {
+> +			pr_emerg("POES1=%08x\n", in_be32(p + PAMU_POES1));
+> +			pr_emerg("POES2=%08x\n", in_be32(p + PAMU_POES2));
+> +			pr_emerg("AVS1=%08x\n", in_be32(p + PAMU_AVS1));
+> +			pr_emerg("AVS2=%08x\n", in_be32(p + PAMU_AVS2));
+> +			pr_emerg("AVA=%016llx\n", make64(in_be32(p + PAMU_AVAH),
+> +				in_be32(p + PAMU_AVAL)));
+> +			pr_emerg("UDAD=%08x\n", in_be32(p + PAMU_UDAD));
+> +			pr_emerg("POEA=%016llx\n", make64(in_be32(p + PAMU_POEAH),
+> +				in_be32(p + PAMU_POEAL)));
+> +
+> +			phys = make64(in_be32(p + PAMU_POEAH),
+> +				in_be32(p + PAMU_POEAL));
+> +
+> +			/* Assume that POEA points to a PAACE */
+> +			if (phys) {
+> +				u32 *paace = phys_to_virt(phys);
+> +
+> +				/* Only the first four words are relevant */
+> +				for (j = 0; j < 4; j++)
+> +					pr_emerg("PAACE[%u]=%08x\n", j, in_be32(paace + j));
+> +			}
+> +		}
+> +	}
+> +
+> +	panic("\n");
+
+A kernel panic seems like an over-reaction to an access violation.
+Besides the device that caused the violation the system should still
+work, no?
+
+> +#define make64(high, low) (((u64)(high) << 32) | (low))
+
+You redefined this make64 here.
+
+> +static int map_subwins(int liodn, struct fsl_dma_domain *dma_domain)
+> +{
+> +	struct dma_window *sub_win_ptr =
+> +				&dma_domain->win_arr[0];
+> +	int i, ret;
+> +	unsigned long rpn;
+> +
+> +	for (i = 0; i < dma_domain->win_cnt; i++) {
+> +		if (sub_win_ptr[i].valid) {
+> +			rpn = sub_win_ptr[i].paddr >>
+> +				 PAMU_PAGE_SHIFT;
+> +			spin_lock(&iommu_lock);
+
+IOMMU code might run in interrupt context, so please use
+spin_lock_irqsave for the iommu_lock.
+
+> +static void detach_device(struct device *dev, struct fsl_dma_domain *dma_domain)
+> +{
+> +	struct device_domain_info *info;
+> +	struct list_head *entry, *tmp;
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&dma_domain->domain_lock, flags);
+> +	/* Remove the device from the domain device list */
+> +	if (!list_empty(&dma_domain->devices)) {
+> +		list_for_each_safe(entry, tmp, &dma_domain->devices) {
+> +			info = list_entry(entry, struct device_domain_info, link);
+> +			if (!dev || (info->dev == dev))
+> +				remove_device_ref(info, dma_domain->win_cnt);
+> +		}
+> +	}
+> +	spin_unlock_irqrestore(&dma_domain->domain_lock, flags);
+
+list_empty check is not needed. You can also use
+list_for_each_entry_safe.
+
+> +static void attach_device(struct fsl_dma_domain *dma_domain, int liodn, struct device *dev)
+> +{
+> +	struct device_domain_info *info, *old_domain_info;
+> +
+> +	spin_lock(&device_domain_lock);
+> +	/*
+> +	 * Check here if the device is already attached to domain or not.
+> +	 * If the device is already attached to a domain detach it.
+> +	 */
+> +	old_domain_info = find_domain(dev);
+> +	if (old_domain_info && old_domain_info->domain != dma_domain) {
+> +		spin_unlock(&device_domain_lock);
+> +		detach_device(dev, old_domain_info->domain);
+> +		spin_lock(&device_domain_lock);
+> +	}
+> +
+> +	info = kmem_cache_zalloc(iommu_devinfo_cache, GFP_KERNEL);
+> +
+> +	info->dev = dev;
+> +	info->liodn = liodn;
+> +	info->domain = dma_domain;
+> +
+> +	list_add(&info->link, &dma_domain->devices);
+> +	/*
+> +	 * In case of devices with multiple LIODNs just store
+> +	 * the info for the first LIODN as all
+> +	 * LIODNs share the same domain
+> +	 */
+> +	if (!old_domain_info)
+> +		dev->archdata.iommu_domain = info;
+> +	spin_unlock(&device_domain_lock);
+
+Don't you have to tell the hardware that a device was added to a domain?
+I don't see that, what I am missing?
+
+> +static void swap_pci_ref(struct pci_dev **from, struct pci_dev *to)
+> +{
+> +	pci_dev_put(*from);
+> +	*from = to;
+> +}
+
+Hmm, looks like this function is re-implemented in a few IOMMU drivers.
+Want to use the chance to consolidate these implementations?
+
+
+	Joerg
