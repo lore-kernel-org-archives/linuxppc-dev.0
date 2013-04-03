@@ -4,19 +4,19 @@ Received: from co1outboundpool.messaging.microsoft.com
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AF4B62C0176
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2013 00:08:39 +1100 (EST)
-Received: from mail217-co1 (localhost [127.0.0.1])	by
- mail217-co1-R.bigfish.com (Postfix) with ESMTP id 0B64D1E0128	for
+ by ozlabs.org (Postfix) with ESMTPS id 22EFA2C0176
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2013 00:08:40 +1100 (EST)
+Received: from mail88-co1 (localhost [127.0.0.1])	by mail88-co1-R.bigfish.com
+ (Postfix) with ESMTP id C07792009B	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Apr 2013 13:08:34 +0000 (UTC)
+Received: from CO1EHSMHS019.bigfish.com (unknown [10.243.78.245])	by
+ mail88-co1.bigfish.com (Postfix) with ESMTP id 3FE4E6400B7	for
  <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2013 13:08:33 +0000 (UTC)
-Received: from CO1EHSMHS019.bigfish.com (unknown [10.243.78.246])	by
- mail217-co1.bigfish.com (Postfix) with ESMTP id 6BCF89C006C	for
- <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2013 13:08:31 +0000 (UTC)
 From: Zhao Chenhui <chenhui.zhao@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 11/17] powerpc/rcpm: add sleep feature for SoCs using RCPM
-Date: Wed, 3 Apr 2013 21:09:19 +0800
-Message-ID: <1364994565-16010-11-git-send-email-chenhui.zhao@freescale.com>
+Subject: [PATCH 12/17] powerpc/85xx: fix 64-bit support for cpu hotplug
+Date: Wed, 3 Apr 2013 21:09:20 +0800
+Message-ID: <1364994565-16010-12-git-send-email-chenhui.zhao@freescale.com>
 In-Reply-To: <1364994565-16010-1-git-send-email-chenhui.zhao@freescale.com>
 References: <1364994565-16010-1-git-send-email-chenhui.zhao@freescale.com>
 MIME-Version: 1.0
@@ -30,202 +30,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The SoCs which have a RCPM (Run Control/Power Management) module
-support power management feature. This patch implements sleep feature.
+From: Chen-Hui Zhao <chenhui.zhao@freescale.com>
 
-In sleep mode, the clocks of cores and unused IP blocks will be
-turned off. The IP blocks which are allowed to wake up the system
-are still running.
+* The paca[cpu].cpu_start is used as a signal to indicate if the cpu
+  should start. So it should be cleard in .cpu_die().
+* The limit memory routine only needs to be ran once at boot time
+  by the boot cpu. Prevent other cpus running it again.
+* Rearrange the code segment in smp_85xx_kick_cpu() to share codes
+  between PPC64 and PPC32 as far as possible.
 
 Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
 Signed-off-by: Li Yang <leoli@freescale.com>
+Signed-off-by: Andy Fleming <afleming@freescale.com>
 ---
- arch/powerpc/Kconfig                |    4 +-
- arch/powerpc/include/asm/fsl_guts.h |    1 +
- arch/powerpc/platforms/85xx/Kconfig |    1 +
- arch/powerpc/sysdev/Kconfig         |    5 ++
- arch/powerpc/sysdev/Makefile        |    1 +
- arch/powerpc/sysdev/fsl_rcpm.c      |  101 +++++++++++++++++++++++++++++++++++
- 6 files changed, 111 insertions(+), 2 deletions(-)
- create mode 100644 arch/powerpc/sysdev/fsl_rcpm.c
+ arch/powerpc/Kconfig              |    2 +-
+ arch/powerpc/kernel/smp.c         |    3 +++
+ arch/powerpc/mm/tlb_nohash.c      |    6 ++++--
+ arch/powerpc/platforms/85xx/smp.c |   23 +++++++++++------------
+ 4 files changed, 19 insertions(+), 15 deletions(-)
 
 diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index b6851be..0ad6e30 100644
+index 0ad6e30..aa5794b 100644
 --- a/arch/powerpc/Kconfig
 +++ b/arch/powerpc/Kconfig
-@@ -220,7 +220,7 @@ config ARCH_HIBERNATION_POSSIBLE
- config ARCH_SUSPEND_POSSIBLE
- 	def_bool y
- 	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200 || PPC_83xx || \
--		   (PPC_85xx && !PPC_E500MC) || PPC_86xx || PPC_PSERIES \
-+		   FSL_SOC_BOOKE || PPC_86xx || PPC_PSERIES \
- 		   || 44x || 40x
+@@ -347,7 +347,7 @@ config SWIOTLB
+ config HOTPLUG_CPU
+ 	bool "Support for enabling/disabling CPUs"
+ 	depends on SMP && HOTPLUG && (PPC_PSERIES || \
+-	PPC_PMAC || PPC_POWERNV || PPC_85xx)
++	PPC_PMAC || PPC_POWERNV || FSL_SOC_BOOKE)
+ 	---help---
+ 	  Say Y here to be able to disable and re-enable individual
+ 	  CPUs at runtime on SMP machines.
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 386c7ea..c8aa739 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -401,6 +401,9 @@ void generic_cpu_die(unsigned int cpu)
+ 		smp_rmb();
+ 		if (per_cpu(cpu_state, cpu) == CPU_DEAD) {
+ 			platform_cpu_die(cpu);
++#ifdef CONFIG_PPC64
++			paca[cpu].cpu_start = 0;
++#endif
+ 			return;
+ 		}
+ 		msleep(100);
+diff --git a/arch/powerpc/mm/tlb_nohash.c b/arch/powerpc/mm/tlb_nohash.c
+index 6888cad..de7bf06 100644
+--- a/arch/powerpc/mm/tlb_nohash.c
++++ b/arch/powerpc/mm/tlb_nohash.c
+@@ -627,8 +627,10 @@ static void __early_init_mmu(int boot_cpu)
+ 		num_cams = (mfspr(SPRN_TLB1CFG) & TLBnCFG_N_ENTRY) / 4;
+ 		linear_map_top = map_mem_in_cams(linear_map_top, num_cams);
  
- config PPC_DCR_NATIVE
-@@ -694,7 +694,7 @@ config FSL_PCI
- config FSL_PMC
- 	bool
- 	default y
--	depends on SUSPEND && (PPC_85xx || PPC_86xx)
-+	depends on SUSPEND && ((PPC_85xx && !PPC_E500MC) || PPC_86xx)
- 	help
- 	  Freescale MPC85xx/MPC86xx power management controller support
- 	  (suspend/resume). For MPC83xx see platforms/83xx/suspend.c
-diff --git a/arch/powerpc/include/asm/fsl_guts.h b/arch/powerpc/include/asm/fsl_guts.h
-index 4eac1cf..b8a08d5 100644
---- a/arch/powerpc/include/asm/fsl_guts.h
-+++ b/arch/powerpc/include/asm/fsl_guts.h
-@@ -124,6 +124,7 @@ struct ccsr_rcpm {
- 	u8	res0038[4];
- 	__be32	cwdtdsr;	/* 0x003c - Core watchdog detect status register */
- 	__be32	powmgtcsr;	/* 0x0040 - Power Mangement Control & Status Register */
-+#define RCPM_POWMGTCSR_SLP	0x00020000
- 	u8	res0044[12];
- 	__be32	ippdexpcr;	/* 0x0050 - IP Powerdown Exception Control Register */
- 	u8	res0054[16];
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index 31dc066..bb5e09a 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -8,6 +8,7 @@ menuconfig FSL_SOC_BOOKE
- 	select FSL_PCI if PCI
- 	select SERIAL_8250_EXTENDED if SERIAL_8250
- 	select SERIAL_8250_SHARE_IRQ if SERIAL_8250
-+	select FSL_CORENET_RCPM if SUSPEND && PPC_E500MC
- 	default y
- 
- if FSL_SOC_BOOKE
-diff --git a/arch/powerpc/sysdev/Kconfig b/arch/powerpc/sysdev/Kconfig
-index a84fecf..6c22d91 100644
---- a/arch/powerpc/sysdev/Kconfig
-+++ b/arch/powerpc/sysdev/Kconfig
-@@ -33,3 +33,8 @@ config SCOM_DEBUGFS
- config GE_FPGA
- 	bool
- 	default n
-+
-+config FSL_CORENET_RCPM
-+	bool
-+	help
-+	 This option enables support for RCPM (Run Control/Power Management).
-diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-index b0a518e..f12b856 100644
---- a/arch/powerpc/sysdev/Makefile
-+++ b/arch/powerpc/sysdev/Makefile
-@@ -18,6 +18,7 @@ obj-$(CONFIG_MMIO_NVRAM)	+= mmio_nvram.o
- obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o fsl_mpic_err.o
- obj-$(CONFIG_FSL_PCI)		+= fsl_pci.o $(fsl-msi-obj-y)
- obj-$(CONFIG_FSL_PMC)		+= fsl_pmc.o
-+obj-$(CONFIG_FSL_CORENET_RCPM)	+= fsl_rcpm.o
- obj-$(CONFIG_FSL_LBC)		+= fsl_lbc.o
- obj-$(CONFIG_FSL_IFC)		+= fsl_ifc.o
- obj-$(CONFIG_FSL_GTM)		+= fsl_gtm.o
-diff --git a/arch/powerpc/sysdev/fsl_rcpm.c b/arch/powerpc/sysdev/fsl_rcpm.c
-new file mode 100644
-index 0000000..fd789da
---- /dev/null
-+++ b/arch/powerpc/sysdev/fsl_rcpm.c
-@@ -0,0 +1,101 @@
-+/*
-+ * RCPM(Run Control/Power Management) support
-+ *
-+ * Copyright 2012-2013 Freescale Semiconductor Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+#include <linux/types.h>
-+#include <linux/errno.h>
-+#include <linux/suspend.h>
-+#include <linux/device.h>
-+#include <linux/delay.h>
-+#include <linux/of_platform.h>
-+
-+#include <asm/io.h>
-+#include <asm/cacheflush.h>
-+#include <asm/fsl_guts.h>
-+
-+static struct ccsr_rcpm __iomem *rcpm_regs;
-+
-+static int rcpm_suspend_enter(suspend_state_t state)
-+{
-+	int ret = 0;
-+
-+	switch (state) {
-+	case PM_SUSPEND_STANDBY:
-+
-+		flush_dcache_L1();
-+		flush_backside_L2_cache();
-+
-+		setbits32(&rcpm_regs->powmgtcsr, RCPM_POWMGTCSR_SLP);
-+
-+		/* At this point, the device is in sleep mode. */
-+
-+		/* Upon resume, wait for SLP bit to be clear. */
-+		ret = spin_event_timeout(
-+		  (in_be32(&rcpm_regs->powmgtcsr) & RCPM_POWMGTCSR_SLP) == 0,
-+		  10000, 10);
-+		if (!ret) {
-+			pr_err("%s: timeout waiting for SLP bit to be cleared\n",
-+				__func__);
-+			ret = -EINVAL;
+-		/* limit memory so we dont have linear faults */
+-		memblock_enforce_memory_limit(linear_map_top);
++		if (boot_cpu) {
++			/* limit memory so we dont have linear faults */
++			memblock_enforce_memory_limit(linear_map_top);
 +		}
-+		break;
-+
-+	default:
-+		ret = -EINVAL;
-+
-+	}
-+	return ret;
-+}
-+
-+static int rcpm_suspend_valid(suspend_state_t state)
-+{
-+	if (state == PM_SUSPEND_STANDBY)
-+		return 1;
-+	else
-+		return 0;
-+}
-+
-+static const struct platform_suspend_ops rcpm_suspend_ops = {
-+	.valid = rcpm_suspend_valid,
-+	.enter = rcpm_suspend_enter,
-+};
-+
-+static int rcpm_probe(struct platform_device *pdev)
-+{
-+	struct device_node *np = pdev->dev.of_node;
-+
-+	rcpm_regs = of_iomap(np, 0);
-+	if (!rcpm_regs)
-+		return -ENOMEM;
-+
-+	suspend_set_ops(&rcpm_suspend_ops);
-+
-+	dev_info(&pdev->dev, "Freescale RCPM driver\n");
-+	return 0;
-+}
-+
-+static const struct of_device_id rcpm_ids[] = {
-+	{ .compatible = "fsl,qoriq-rcpm-1.0", },
-+	{ },
-+};
-+
-+static struct platform_driver rcpm_driver = {
-+	.driver = {
-+		.name = "fsl-rcpm",
-+		.of_match_table = rcpm_ids,
-+	},
-+	.probe = rcpm_probe,
-+};
-+
-+static int __init rcpm_init(void)
-+{
-+	return platform_driver_register(&rcpm_driver);
-+}
-+
-+device_initcall(rcpm_init);
+ 
+ 		patch_exception(0x1c0, exc_data_tlb_miss_bolted_book3e);
+ 		patch_exception(0x1e0, exc_instruction_tlb_miss_bolted_book3e);
+diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
+index 04e9fb9..febca8f 100644
+--- a/arch/powerpc/platforms/85xx/smp.c
++++ b/arch/powerpc/platforms/85xx/smp.c
+@@ -259,10 +259,6 @@ static int __cpuinit smp_85xx_kick_cpu(int nr)
+ 		spin_table = phys_to_virt(*cpu_rel_addr);
+ 
+ 	local_irq_save(flags);
+-#ifdef CONFIG_PPC32
+-#ifdef CONFIG_HOTPLUG_CPU
+-	/* Corresponding to generic_set_cpu_dead() */
+-	generic_set_cpu_up(nr);
+ 
+ 	if (system_state == SYSTEM_RUNNING) {
+ 		/*
+@@ -306,12 +302,19 @@ static int __cpuinit smp_85xx_kick_cpu(int nr)
+ 		/*  clear the acknowledge status */
+ 		__secondary_hold_acknowledge = -1;
+ 	}
+-#endif
+ 	flush_spin_table(spin_table);
+ 	out_be32(&spin_table->pir, hw_cpu);
++#ifdef CONFIG_PPC32
+ 	out_be32(&spin_table->addr_l, __pa(__early_start));
++#else
++	out_be32(&spin_table->addr_h,
++		__pa(*(u64 *)generic_secondary_smp_init) >> 32);
++	out_be32(&spin_table->addr_l,
++		__pa(*(u64 *)generic_secondary_smp_init) & 0xffffffff);
++#endif
+ 	flush_spin_table(spin_table);
+ 
++#ifdef CONFIG_PPC32
+ 	/* Wait a bit for the CPU to ack. */
+ 	if (!spin_event_timeout(__secondary_hold_acknowledge == hw_cpu,
+ 					10000, 100)) {
+@@ -320,18 +323,14 @@ static int __cpuinit smp_85xx_kick_cpu(int nr)
+ 		ret = -ENOENT;
+ 		goto out;
+ 	}
+-out:
+ #else
+ 	smp_generic_kick_cpu(nr);
+-
+-	flush_spin_table(spin_table);
+-	out_be32(&spin_table->pir, hw_cpu);
+-	out_be64((u64 *)(&spin_table->addr_h),
+-	  __pa((u64)*((unsigned long long *)generic_secondary_smp_init)));
+-	flush_spin_table(spin_table);
+ #endif
++	/* Corresponding to generic_set_cpu_dead() */
++	generic_set_cpu_up(nr);
+ 	cur_booting_core = hw_cpu;
+ 
++out:
+ 	local_irq_restore(flags);
+ 
+ 	if (ioremappable)
 -- 
 1.7.3
