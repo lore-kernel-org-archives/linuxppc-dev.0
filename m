@@ -1,25 +1,20 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+Return-Path: <B38951@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe002.messaging.microsoft.com [213.199.154.140])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CAFC42C015C
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2013 12:52:45 +1100 (EST)
-Date: Tue, 2 Apr 2013 20:52:30 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 5/5 v11] iommu/fsl: Freescale PAMU driver and iommu
- implementation.
-To: Timur Tabi <timur@tabi.org>
-In-Reply-To: <CAOZdJXWS50mpgMYu8o8K11yQFU6y-vNwxd9zPkqSd7euGt7XQg@mail.gmail.com>
- (from timur@tabi.org on Tue Apr  2 20:35:54 2013)
-Message-ID: <1364953950.8690.4@snotra>
+ by ozlabs.org (Postfix) with ESMTPS id C21092C0145
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2013 13:40:56 +1100 (EST)
+From: Jia Hongtao <hongtao.jia@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
+Subject: [PATCH V3 1/2] powerpc/MPIC: Add get_version API both for internal
+ and external use
+Date: Wed, 3 Apr 2013 10:03:17 +0800
+Message-ID: <1364954598-31914-1-git-send-email-hongtao.jia@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: Joerg Roedel <joro@8bytes.org>, stuart.yoder@freescale.com,
- lkml <linux-kernel@vger.kernel.org>, iommu@lists.linux-foundation.org,
- Varun Sethi <Varun.Sethi@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: B07421@freescale.com, hongtao.jia@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,36 +24,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/02/2013 08:35:54 PM, Timur Tabi wrote:
-> On Tue, Apr 2, 2013 at 11:18 AM, Joerg Roedel <joro@8bytes.org> wrote:
->=20
-> > > +     panic("\n");
-> >
-> > A kernel panic seems like an over-reaction to an access violation.
->=20
-> We have no way to determining what code caused the violation, so we
-> can't just kill the process.  I agree it seems like overkill, but what
-> else should we do?  Does the IOMMU layer have a way for the IOMMU
-> driver to stop the device that caused the problem?
+MPIC version is useful information for both mpic_alloc() and mpic_init().
+The patch provide an API to get MPIC version for reusing the code.
+Also, some other IP block may need MPIC version for their own use.
+The API for external use is also provided.
 
-At a minimum, log a message and continue.  Probably turn off the LIODN, =20
-at least if it continues to be noisy (otherwise we could get stuck in =20
-an interrupt storm as you note).  Possibly let the user know somehow, =20
-especially if it's a VFIO domain.
+Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
+---
+Changes for V3:
+* change the name of function from mpic_primary_get_version() to
+  fsl_mpic_primary_get_version().
+* return 0 if mpic_primary is null.
 
-Don't take down the whole kernel.  It's not just overkill; it =20
-undermines VFIO's efforts to make it safe for users to control devices.
+ arch/powerpc/include/asm/mpic.h |  3 +++
+ arch/powerpc/sysdev/mpic.c      | 29 ++++++++++++++++++++++-------
+ 2 files changed, 25 insertions(+), 7 deletions(-)
 
-> > Besides the device that caused the violation the system should still
-> > work, no?
->=20
-> Not really.  The PAMU was designed to add IOMMU support to legacy
-> devices, which have no concept of an MMU.  If the PAMU detects an
-> access violation, there's no way for the device to recover, because it
-> has no idea that a violation has occurred.  It's going to keep on
-> writing to bad data.
-
-I think that's only the case for posted writes (or devices which fail =20
-to take a hint and stop even after they see an I/O error).
-
--Scott=
+diff --git a/arch/powerpc/include/asm/mpic.h b/arch/powerpc/include/asm/mpic.h
+index c0f9ef9..ea6bf72 100644
+--- a/arch/powerpc/include/asm/mpic.h
++++ b/arch/powerpc/include/asm/mpic.h
+@@ -393,6 +393,9 @@ struct mpic
+ #define	MPIC_REGSET_STANDARD		MPIC_REGSET(0)	/* Original MPIC */
+ #define	MPIC_REGSET_TSI108		MPIC_REGSET(1)	/* Tsi108/109 PIC */
+ 
++/* Get the version of primary MPIC */
++extern u32 fsl_mpic_primary_get_version(void);
++
+ /* Allocate the controller structure and setup the linux irq descs
+  * for the range if interrupts passed in. No HW initialization is
+  * actually performed.
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index d30e6a6..e793337 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -1165,10 +1165,30 @@ static struct irq_domain_ops mpic_host_ops = {
+ 	.xlate = mpic_host_xlate,
+ };
+ 
++static u32 mpic_get_version(struct mpic *mpic)
++{
++	u32 brr1;
++
++	brr1 = _mpic_read(mpic->reg_type, &mpic->thiscpuregs,
++			MPIC_FSL_BRR1);
++
++	return brr1 & MPIC_FSL_BRR1_VER;
++}
++
+ /*
+  * Exported functions
+  */
+ 
++u32 fsl_mpic_primary_get_version(void)
++{
++	struct mpic *mpic = mpic_primary;
++
++	if (mpic)
++		return mpic_get_version(mpic);
++
++	return 0;
++}
++
+ struct mpic * __init mpic_alloc(struct device_node *node,
+ 				phys_addr_t phys_addr,
+ 				unsigned int flags,
+@@ -1315,7 +1335,6 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ 	mpic_map(mpic, mpic->paddr, &mpic->tmregs, MPIC_INFO(TIMER_BASE), 0x1000);
+ 
+ 	if (mpic->flags & MPIC_FSL) {
+-		u32 brr1;
+ 		int ret;
+ 
+ 		/*
+@@ -1326,9 +1345,7 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ 		mpic_map(mpic, mpic->paddr, &mpic->thiscpuregs,
+ 			 MPIC_CPU_THISBASE, 0x1000);
+ 
+-		brr1 = _mpic_read(mpic->reg_type, &mpic->thiscpuregs,
+-				MPIC_FSL_BRR1);
+-		fsl_version = brr1 & MPIC_FSL_BRR1_VER;
++		fsl_version = mpic_get_version(mpic);
+ 
+ 		/* Error interrupt mask register (EIMR) is required for
+ 		 * handling individual device error interrupts. EIMR
+@@ -1518,9 +1535,7 @@ void __init mpic_init(struct mpic *mpic)
+ 	mpic_cpu_write(MPIC_INFO(CPU_CURRENT_TASK_PRI), 0xf);
+ 
+ 	if (mpic->flags & MPIC_FSL) {
+-		u32 brr1 = _mpic_read(mpic->reg_type, &mpic->thiscpuregs,
+-				      MPIC_FSL_BRR1);
+-		u32 version = brr1 & MPIC_FSL_BRR1_VER;
++		u32 version = mpic_get_version(mpic);
+ 
+ 		/*
+ 		 * Timer group B is present at the latest in MPIC 3.1 (e.g.
+-- 
+1.8.0
