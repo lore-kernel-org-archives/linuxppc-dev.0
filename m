@@ -1,22 +1,28 @@
-Return-Path: <B38951@freescale.com>
-Received: from db3outboundpool.messaging.microsoft.com
- (db3ehsobe003.messaging.microsoft.com [213.199.154.141])
+Return-Path: <B40534@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0188.outbound.messaging.microsoft.com [213.199.154.188])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 82C732C0145
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2013 13:40:58 +1100 (EST)
-From: Jia Hongtao <hongtao.jia@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
-Subject: [PATCH V2 2/2] powerpc/85xx: workaround for chips with MSI hardware
- errata
-Date: Wed, 3 Apr 2013 10:03:18 +0800
-Message-ID: <1364954598-31914-2-git-send-email-hongtao.jia@freescale.com>
-In-Reply-To: <1364954598-31914-1-git-send-email-hongtao.jia@freescale.com>
-References: <1364954598-31914-1-git-send-email-hongtao.jia@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 464482C011F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2013 13:49:32 +1100 (EST)
+Received: from mail113-db8 (localhost [127.0.0.1])	by
+ mail113-db8-R.bigfish.com (Postfix) with ESMTP id 0C9E3A01EE	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2013 02:49:26 +0000 (UTC)
+Received: from DB8EHSMHS032.bigfish.com (unknown [10.174.8.237])	by
+ mail113-db8.bigfish.com (Postfix) with ESMTP id CD13322004B	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2013 02:49:23 +0000 (UTC)
+From: Wang Dongsheng-B40534 <B40534@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH v2 1/4] powerpc/mpic: add irq_set_wake support
+Date: Wed, 3 Apr 2013 02:49:11 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259EDC21E@039-SN2MPN1-021.039d.mgd.msft.net>
+References: <1364884840-28635-1-git-send-email-dongsheng.wang@freescale.com>
+ <1364949416.24520.30@snotra>
+In-Reply-To: <1364949416.24520.30@snotra>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: B07421@freescale.com, hongtao.jia@freescale.com
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,106 +32,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The MPIC version 2.0 has a MSI errata (errata PIC1 of mpc8544), It causes
-that neither MSI nor MSI-X can work fine. This is a workaround to allow
-MSI-X to function properly.
 
-Signed-off-by: Liu Shuo <soniccat.liu@gmail.com>
-Signed-off-by: Li Yang <leoli@freescale.com>
-Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
----
-Changes for V2:
-* change the name of function mpic_has_errata() to mpic_has_erratum_pic1().
-* move MSI_HW_ERRATA_ENDIAN define to fsl_msi.h with all other defines.
 
- arch/powerpc/sysdev/fsl_msi.c | 40 +++++++++++++++++++++++++++++++++++++---
- arch/powerpc/sysdev/fsl_msi.h |  2 ++
- 2 files changed, 39 insertions(+), 3 deletions(-)
+> -----Original Message-----
+> From: Wood Scott-B07421
+> Sent: Wednesday, April 03, 2013 8:37 AM
+> To: Wang Dongsheng-B40534
+> Cc: linuxppc-dev@lists.ozlabs.org; Wang Dongsheng-B40534
+> Subject: Re: [PATCH v2 1/4] powerpc/mpic: add irq_set_wake support
+>=20
+> On 04/02/2013 01:40:37 AM, Wang Dongsheng wrote:
+> > Add irq_set_wake support. Just add IRQF_NO_SUSPEND to
+> > desc->action->flag.
+> > So the wake up interrupt will not be disable in suspend_device_irqs.
+> >
+> > Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> > ---
+> > v2:
+> > * Add: Check freescale chip in mpic_irq_set_wake().
+> > * Remove: Support mpic_irq_set_wake() in ht_chip.
+> >
+> >  arch/powerpc/sysdev/mpic.c | 18 ++++++++++++++++++
+> >  1 file changed, 18 insertions(+)
+> >
+> > diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+> > index 3b2efd4..50d1ee1 100644
+> > --- a/arch/powerpc/sysdev/mpic.c
+> > +++ b/arch/powerpc/sysdev/mpic.c
+> > @@ -920,6 +920,22 @@ int mpic_set_irq_type(struct irq_data *d,
+> > unsigned int flow_type)
+> >  	return IRQ_SET_MASK_OK_NOCOPY;
+> >  }
+> >
+> > +static int mpic_irq_set_wake(struct irq_data *d, unsigned int on) {
+> > +	struct irq_desc *desc =3D container_of(d, struct irq_desc,
+> > irq_data);
+> > +	struct mpic *mpic =3D mpic_from_irq_data(d);
+> > +
+> > +	if (!(mpic->flags & MPIC_FSL))
+> > +		return -EINVAL;
+>=20
+> I was thinking more along the lines of using MPIC_FSL during init to
+> decide whether to write this function to .irq_set_wake,
 
-diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
-index 178c994..ca1157a 100644
---- a/arch/powerpc/sysdev/fsl_msi.c
-+++ b/arch/powerpc/sysdev/fsl_msi.c
-@@ -98,8 +98,18 @@ static int fsl_msi_init_allocator(struct fsl_msi *msi_data)
- 
- static int fsl_msi_check_device(struct pci_dev *pdev, int nvec, int type)
- {
--	if (type == PCI_CAP_ID_MSIX)
--		pr_debug("fslmsi: MSI-X untested, trying anyway.\n");
-+	struct fsl_msi *msi;
-+
-+	if (type == PCI_CAP_ID_MSI) {
-+		/*
-+		 * MPIC version 2.0 has erratum PIC1. For now MSI
-+		 * could not work. So check to prevent MSI from
-+		 * being used on the board with this erratum.
-+		 */
-+		list_for_each_entry(msi, &msi_head, list)
-+			if (msi->feature & MSI_HW_ERRATA_ENDIAN)
-+				return -EINVAL;
-+	}
- 
- 	return 0;
- }
-@@ -142,7 +152,17 @@ static void fsl_compose_msi_msg(struct pci_dev *pdev, int hwirq,
- 	msg->address_lo = lower_32_bits(address);
- 	msg->address_hi = upper_32_bits(address);
- 
--	msg->data = hwirq;
-+	/*
-+	 * MPIC version 2.0 has erratum PIC1. It causes
-+	 * that neither MSI nor MSI-X can work fine.
-+	 * This is a workaround to allow MSI-X to function
-+	 * properly. It only works for MSI-X, we prevent
-+	 * MSI on buggy chips in fsl_msi_check_device().
-+	 */
-+	if (msi_data->feature & MSI_HW_ERRATA_ENDIAN)
-+		msg->data = __swab32(hwirq);
-+	else
-+		msg->data = hwirq;
- 
- 	pr_debug("%s: allocated srs: %d, ibs: %d\n",
- 		__func__, hwirq / IRQS_PER_MSI_REG, hwirq % IRQS_PER_MSI_REG);
-@@ -361,6 +381,15 @@ static int fsl_msi_setup_hwirq(struct fsl_msi *msi, struct platform_device *dev,
- 	return 0;
- }
- 
-+/* MPIC version 2.0 has erratum PIC1 */
-+static int mpic_has_erratum_pic1(void)
-+{
-+	if (fsl_mpic_primary_get_version() == 0x0200)
-+		return 1;
-+
-+	return 0;
-+}
-+
- static const struct of_device_id fsl_of_msi_ids[];
- static int fsl_of_msi_probe(struct platform_device *dev)
- {
-@@ -423,6 +452,11 @@ static int fsl_of_msi_probe(struct platform_device *dev)
- 
- 	msi->feature = features->fsl_pic_ip;
- 
-+	if ((features->fsl_pic_ip & FSL_PIC_IP_MASK) == FSL_PIC_IP_MPIC) {
-+		if (mpic_has_erratum_pic1())
-+			msi->feature |= MSI_HW_ERRATA_ENDIAN;
-+	}
-+
- 	/*
- 	 * Remember the phandle, so that we can match with any PCI nodes
- 	 * that have an "fsl,msi" property.
-diff --git a/arch/powerpc/sysdev/fsl_msi.h b/arch/powerpc/sysdev/fsl_msi.h
-index 8225f86..7389e8e 100644
---- a/arch/powerpc/sysdev/fsl_msi.h
-+++ b/arch/powerpc/sysdev/fsl_msi.h
-@@ -25,6 +25,8 @@
- #define FSL_PIC_IP_IPIC   0x00000002
- #define FSL_PIC_IP_VMPIC  0x00000003
- 
-+#define MSI_HW_ERRATA_ENDIAN 0x00000010
-+
- struct fsl_msi {
- 	struct irq_domain *irqhost;
- 
--- 
-1.8.0
+I think the static registration method is more reasonable. We must consider
+readability. And mpic_irq_set_wake() will not be frequent calls. So within=
+=20
+mpic_irq_set_wake() to decide is reasonable.
+
+> though that could probably wait until there's a second type of MPIC
+> that needs this (if ever).
+Even if the mpic_irq_set_wake() register in the first type of MPIC that is =
+not
+belong MPIC_FSL, the function can return errno. I think the errno should be
+"-ENXIO".
+See kernel/irq/manage.c, set_irq_wake_real() the return value.
+The desc->irq_data.chip->irq_set_wake is null, the errno is -ENXIO.
+
+s/-EINVAL/-ENXIO/
