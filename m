@@ -1,29 +1,29 @@
-Return-Path: <B07421@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D26F22C013E
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2013 11:37:05 +1100 (EST)
-Received: from mail75-co1 (localhost [127.0.0.1])	by mail75-co1-R.bigfish.com
- (Postfix) with ESMTP id 342B24801ED	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Apr 2013 00:37:00 +0000 (UTC)
-Received: from CO1EHSMHS006.bigfish.com (unknown [10.243.78.238])	by
- mail75-co1.bigfish.com (Postfix) with ESMTP id 6CDF270006B	for
- <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2013 00:36:59 +0000 (UTC)
-Date: Tue, 2 Apr 2013 19:36:56 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v2 1/4] powerpc/mpic: add irq_set_wake support
-To: Wang Dongsheng <dongsheng.wang@freescale.com>
-References: <1364884840-28635-1-git-send-email-dongsheng.wang@freescale.com>
-In-Reply-To: <1364884840-28635-1-git-send-email-dongsheng.wang@freescale.com>
- (from dongsheng.wang@freescale.com on Tue Apr  2 01:40:37 2013)
-Message-ID: <1364949416.24520.30@snotra>
+Return-Path: <timur@tabi.org>
+Received: from muin.pair.com (muin.pair.com [209.68.1.55])
+ by ozlabs.org (Postfix) with ESMTP id A2A162C0153
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2013 12:35:58 +1100 (EST)
+Received: from mail-lb0-f170.google.com (mail-lb0-f170.google.com
+ [209.85.217.170])
+ by muin.pair.com (Postfix) with ESMTPSA id E7ABB8FC30
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Apr 2013 21:35:55 -0400 (EDT)
+Received: by mail-lb0-f170.google.com with SMTP id x11so1087071lbi.15
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Apr 2013 18:35:54 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: linuxppc-dev@lists.ozlabs.org,
- Wang Dongsheng <dongsheng.wang@freescale.com>
+In-Reply-To: <20130402161812.GI15687@8bytes.org>
+References: <1364500442-20927-1-git-send-email-Varun.Sethi@freescale.com>
+ <1364500442-20927-6-git-send-email-Varun.Sethi@freescale.com>
+ <20130402161812.GI15687@8bytes.org>
+Date: Tue, 2 Apr 2013 20:35:54 -0500
+Message-ID: <CAOZdJXWS50mpgMYu8o8K11yQFU6y-vNwxd9zPkqSd7euGt7XQg@mail.gmail.com>
+Subject: Re: [PATCH 5/5 v11] iommu/fsl: Freescale PAMU driver and iommu
+ implementation.
+From: Timur Tabi <timur@tabi.org>
+To: Joerg Roedel <joro@8bytes.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: stuart.yoder@freescale.com, lkml <linux-kernel@vger.kernel.org>,
+ iommu@lists.linux-foundation.org, scottwood@freescale.com,
+ Varun Sethi <Varun.Sethi@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,41 +33,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/02/2013 01:40:37 AM, Wang Dongsheng wrote:
-> Add irq_set_wake support. Just add IRQF_NO_SUSPEND to =20
-> desc->action->flag.
-> So the wake up interrupt will not be disable in suspend_device_irqs.
->=20
-> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
-> ---
-> v2:
-> * Add: Check freescale chip in mpic_irq_set_wake().
-> * Remove: Support mpic_irq_set_wake() in ht_chip.
->=20
->  arch/powerpc/sysdev/mpic.c | 18 ++++++++++++++++++
->  1 file changed, 18 insertions(+)
->=20
-> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-> index 3b2efd4..50d1ee1 100644
-> --- a/arch/powerpc/sysdev/mpic.c
-> +++ b/arch/powerpc/sysdev/mpic.c
-> @@ -920,6 +920,22 @@ int mpic_set_irq_type(struct irq_data *d, =20
-> unsigned int flow_type)
->  	return IRQ_SET_MASK_OK_NOCOPY;
->  }
->=20
-> +static int mpic_irq_set_wake(struct irq_data *d, unsigned int on)
-> +{
-> +	struct irq_desc *desc =3D container_of(d, struct irq_desc, =20
-> irq_data);
-> +	struct mpic *mpic =3D mpic_from_irq_data(d);
-> +
-> +	if (!(mpic->flags & MPIC_FSL))
-> +		return -EINVAL;
+On Tue, Apr 2, 2013 at 11:18 AM, Joerg Roedel <joro@8bytes.org> wrote:
 
-I was thinking more along the lines of using MPIC_FSL during init to =20
-decide whether to write this function to .irq_set_wake, though that =20
-could probably wait until there's a second type of MPIC that needs this =20
-(if ever).
+> > +     panic("\n");
+>
+> A kernel panic seems like an over-reaction to an access violation.
 
--Scott=
+We have no way to determining what code caused the violation, so we
+can't just kill the process.  I agree it seems like overkill, but what
+else should we do?  Does the IOMMU layer have a way for the IOMMU
+driver to stop the device that caused the problem?
+
+> Besides the device that caused the violation the system should still
+> work, no?
+
+Not really.  The PAMU was designed to add IOMMU support to legacy
+devices, which have no concept of an MMU.  If the PAMU detects an
+access violation, there's no way for the device to recover, because it
+has no idea that a violation has occurred.  It's going to keep on
+writing to bad data.
+
+Maybe we need a mechanism where a driver can register a callback
+function to handle IOMMU exceptions?
+
+> > +     /*
+> > +      * In case of devices with multiple LIODNs just store
+> > +      * the info for the first LIODN as all
+> > +      * LIODNs share the same domain
+> > +      */
+> > +     if (!old_domain_info)
+> > +             dev->archdata.iommu_domain = info;
+> > +     spin_unlock(&device_domain_lock);
+>
+> Don't you have to tell the hardware that a device was added to a domain?
+> I don't see that, what I am missing?
+
+I'm not sure I understand.  What "hardware" do you think needs to be notified?
+
+The PAMU reads everything it needs from the PAACT, which we update.
+The PAMU does not know anything about the devices that it monitors,
+and the devices don't know anything about the PAMU.
