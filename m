@@ -4,19 +4,19 @@ Received: from co9outboundpool.messaging.microsoft.com
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B03502C0118
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2013 00:08:26 +1100 (EST)
-Received: from mail102-co9 (localhost [127.0.0.1])	by
- mail102-co9-R.bigfish.com (Postfix) with ESMTP id 6285334009F	for
- <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2013 13:08:22 +0000 (UTC)
-Received: from CO9EHSMHS029.bigfish.com (unknown [10.236.132.247])	by
- mail102-co9.bigfish.com (Postfix) with ESMTP id E0F263C0069	for
- <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2013 13:08:19 +0000 (UTC)
+ by ozlabs.org (Postfix) with ESMTPS id A65A92C0123
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2013 00:08:27 +1100 (EST)
+Received: from mail152-co9 (localhost [127.0.0.1])	by
+ mail152-co9-R.bigfish.com (Postfix) with ESMTP id A72A7180164	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2013 13:08:23 +0000 (UTC)
+Received: from CO9EHSMHS001.bigfish.com (unknown [10.236.132.240])	by
+ mail152-co9.bigfish.com (Postfix) with ESMTP id D1E1E20005A	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2013 13:08:21 +0000 (UTC)
 From: Zhao Chenhui <chenhui.zhao@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 05/17] fsl_pmc: Add API to enable device as wakeup event source
-Date: Wed, 3 Apr 2013 21:09:13 +0800
-Message-ID: <1364994565-16010-5-git-send-email-chenhui.zhao@freescale.com>
+Subject: [PATCH 06/17] pm: add power node to dts
+Date: Wed, 3 Apr 2013 21:09:14 +0800
+Message-ID: <1364994565-16010-6-git-send-email-chenhui.zhao@freescale.com>
 In-Reply-To: <1364994565-16010-1-git-send-email-chenhui.zhao@freescale.com>
 References: <1364994565-16010-1-git-send-email-chenhui.zhao@freescale.com>
 MIME-Version: 1.0
@@ -30,142 +30,319 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: chenhui zhao <chenhui.zhao@freescale.com>
+The Power Management device tree stub indicated that the platform
+supports Power Management feature.
 
-Add APIs for setting wakeup source and lossless Ethernet in low power modes.
-These APIs can be used by wake-on-packet feature.
-
-Signed-off-by: Dave Liu <daveliu@freescale.com>
-Signed-off-by: Li Yang <leoli@freescale.com>
-Signed-off-by: Jin Qing <b24347@freescale.com>
 Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
 ---
- arch/powerpc/sysdev/fsl_pmc.c |   71 ++++++++++++++++++++++++++++++++++++++++-
- arch/powerpc/sysdev/fsl_soc.h |    9 +++++
- 2 files changed, 79 insertions(+), 1 deletions(-)
+ arch/powerpc/boot/dts/fsl/mpc8536si-post.dtsi |   14 ++++++-
+ arch/powerpc/boot/dts/fsl/mpc8544si-post.dtsi |    2 +
+ arch/powerpc/boot/dts/fsl/mpc8548si-post.dtsi |    2 +
+ arch/powerpc/boot/dts/fsl/mpc8572si-post.dtsi |    2 +
+ arch/powerpc/boot/dts/fsl/p1010si-post.dtsi   |    8 ++++
+ arch/powerpc/boot/dts/fsl/p1020si-post.dtsi   |    5 +++
+ arch/powerpc/boot/dts/fsl/p1021si-post.dtsi   |    5 +++
+ arch/powerpc/boot/dts/fsl/p1022si-post.dtsi   |   11 ++++--
+ arch/powerpc/boot/dts/fsl/p2020si-post.dtsi   |   14 +++++++
+ arch/powerpc/boot/dts/fsl/pq3-power.dtsi      |   48 +++++++++++++++++++++++++
+ 10 files changed, 106 insertions(+), 5 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/fsl/pq3-power.dtsi
 
-diff --git a/arch/powerpc/sysdev/fsl_pmc.c b/arch/powerpc/sysdev/fsl_pmc.c
-index feede7d..ac0250c 100644
---- a/arch/powerpc/sysdev/fsl_pmc.c
-+++ b/arch/powerpc/sysdev/fsl_pmc.c
-@@ -34,6 +34,7 @@ struct pmc_regs {
- 	__be32 powmgtcsr;
- #define POWMGTCSR_SLP		0x00020000
- #define POWMGTCSR_DPSLP		0x00100000
-+#define POWMGTCSR_LOSSLESS	0x00400000
- 	__be32 res3[2];
- 	__be32 pmcdr;
+diff --git a/arch/powerpc/boot/dts/fsl/mpc8536si-post.dtsi b/arch/powerpc/boot/dts/fsl/mpc8536si-post.dtsi
+index c8b2daa..900f117 100644
+--- a/arch/powerpc/boot/dts/fsl/mpc8536si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/mpc8536si-post.dtsi
+@@ -199,6 +199,10 @@
+ 
+ /include/ "pq3-dma-0.dtsi"
+ /include/ "pq3-etsec1-0.dtsi"
++	enet0: ethernet@24000 {
++		fsl,wake-on-filer;
++		fsl,pmc-handle = <&etsec1_clk>;
++	};
+ /include/ "pq3-etsec1-timer-0.dtsi"
+ 
+ 	usb@22000 {
+@@ -222,9 +226,10 @@
+ 	};
+ 
+ /include/ "pq3-etsec1-2.dtsi"
+-
+-	ethernet@26000 {
++	enet2: ethernet@26000 {
+ 		cell-index = <1>;
++		fsl,wake-on-filer;
++		fsl,pmc-handle = <&etsec3_clk>;
+ 	};
+ 
+ 	usb@2b000 {
+@@ -249,4 +254,9 @@
+ 		reg = <0xe0000 0x1000>;
+ 		fsl,has-rstcr;
+ 	};
++
++/include/ "pq3-power.dtsi"
++	power@e0070 {
++		compatible = "fsl,mpc8536-pmc", "fsl,mpc8548-pmc";
++	};
  };
-@@ -43,6 +44,74 @@ static unsigned int pmc_flag;
- 
- #define PMC_SLEEP	0x1
- #define PMC_DEEP_SLEEP	0x2
-+#define PMC_LOSSLESS	0x4
+diff --git a/arch/powerpc/boot/dts/fsl/mpc8544si-post.dtsi b/arch/powerpc/boot/dts/fsl/mpc8544si-post.dtsi
+index b68eb11..ea7416a 100644
+--- a/arch/powerpc/boot/dts/fsl/mpc8544si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/mpc8544si-post.dtsi
+@@ -188,4 +188,6 @@
+ 		reg = <0xe0000 0x1000>;
+ 		fsl,has-rstcr;
+ 	};
 +
-+/**
-+ * mpc85xx_pmc_set_wake - enable devices as wakeup event source
-+ * @pdev: platform device affected
-+ * @enable: True to enable event generation; false to disable
++/include/ "pq3-power.dtsi"
+ };
+diff --git a/arch/powerpc/boot/dts/fsl/mpc8548si-post.dtsi b/arch/powerpc/boot/dts/fsl/mpc8548si-post.dtsi
+index 579d76c..dddb737 100644
+--- a/arch/powerpc/boot/dts/fsl/mpc8548si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/mpc8548si-post.dtsi
+@@ -156,4 +156,6 @@
+ 		reg = <0xe0000 0x1000>;
+ 		fsl,has-rstcr;
+ 	};
++
++/include/ "pq3-power.dtsi"
+ };
+diff --git a/arch/powerpc/boot/dts/fsl/mpc8572si-post.dtsi b/arch/powerpc/boot/dts/fsl/mpc8572si-post.dtsi
+index d44e25a..7313351 100644
+--- a/arch/powerpc/boot/dts/fsl/mpc8572si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/mpc8572si-post.dtsi
+@@ -193,4 +193,6 @@
+ 		reg = <0xe0000 0x1000>;
+ 		fsl,has-rstcr;
+ 	};
++
++/include/ "pq3-power.dtsi"
+ };
+diff --git a/arch/powerpc/boot/dts/fsl/p1010si-post.dtsi b/arch/powerpc/boot/dts/fsl/p1010si-post.dtsi
+index af12ead..01c8c33 100644
+--- a/arch/powerpc/boot/dts/fsl/p1010si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p1010si-post.dtsi
+@@ -171,6 +171,8 @@
+ 
+ /include/ "pq3-etsec2-0.dtsi"
+ 	enet0: ethernet@b0000 {
++		fsl,pmc-handle = <&etsec1_clk>;
++
+ 		queue-group@b0000 {
+ 			fsl,rx-bit-map = <0xff>;
+ 			fsl,tx-bit-map = <0xff>;
+@@ -179,6 +181,8 @@
+ 
+ /include/ "pq3-etsec2-1.dtsi"
+ 	enet1: ethernet@b1000 {
++		fsl,pmc-handle = <&etsec2_clk>;
++
+ 		queue-group@b1000 {
+ 			fsl,rx-bit-map = <0xff>;
+ 			fsl,tx-bit-map = <0xff>;
+@@ -187,6 +191,8 @@
+ 
+ /include/ "pq3-etsec2-2.dtsi"
+ 	enet2: ethernet@b2000 {
++		fsl,pmc-handle = <&etsec3_clk>;
++
+ 		queue-group@b2000 {
+ 			fsl,rx-bit-map = <0xff>;
+ 			fsl,tx-bit-map = <0xff>;
+@@ -199,4 +205,6 @@
+ 		reg = <0xe0000 0x1000>;
+ 		fsl,has-rstcr;
+ 	};
++
++/include/ "pq3-power.dtsi"
+ };
+diff --git a/arch/powerpc/boot/dts/fsl/p1020si-post.dtsi b/arch/powerpc/boot/dts/fsl/p1020si-post.dtsi
+index 68cc5e7..410e6e5 100644
+--- a/arch/powerpc/boot/dts/fsl/p1020si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p1020si-post.dtsi
+@@ -162,14 +162,17 @@
+ 
+ /include/ "pq3-etsec2-0.dtsi"
+ 	enet0: enet0_grp2: ethernet@b0000 {
++		fsl,pmc-handle = <&etsec1_clk>;
+ 	};
+ 
+ /include/ "pq3-etsec2-1.dtsi"
+ 	enet1: enet1_grp2: ethernet@b1000 {
++		fsl,pmc-handle = <&etsec2_clk>;
+ 	};
+ 
+ /include/ "pq3-etsec2-2.dtsi"
+ 	enet2: enet2_grp2: ethernet@b2000 {
++		fsl,pmc-handle = <&etsec3_clk>;
+ 	};
+ 
+ 	global-utilities@e0000 {
+@@ -177,6 +180,8 @@
+ 		reg = <0xe0000 0x1000>;
+ 		fsl,has-rstcr;
+ 	};
++
++/include/ "pq3-power.dtsi"
+ };
+ 
+ /include/ "pq3-etsec2-grp2-0.dtsi"
+diff --git a/arch/powerpc/boot/dts/fsl/p1021si-post.dtsi b/arch/powerpc/boot/dts/fsl/p1021si-post.dtsi
+index adb82fd..02df574 100644
+--- a/arch/powerpc/boot/dts/fsl/p1021si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p1021si-post.dtsi
+@@ -158,14 +158,17 @@
+ 
+ /include/ "pq3-etsec2-0.dtsi"
+ 	enet0: enet0_grp2: ethernet@b0000 {
++		fsl,pmc-handle = <&etsec1_clk>;
+ 	};
+ 
+ /include/ "pq3-etsec2-1.dtsi"
+ 	enet1: enet1_grp2: ethernet@b1000 {
++		fsl,pmc-handle = <&etsec2_clk>;
+ 	};
+ 
+ /include/ "pq3-etsec2-2.dtsi"
+ 	enet2: enet2_grp2: ethernet@b2000 {
++		fsl,pmc-handle = <&etsec3_clk>;
+ 	};
+ 
+ 	global-utilities@e0000 {
+@@ -173,6 +176,8 @@
+ 		reg = <0xe0000 0x1000>;
+ 		fsl,has-rstcr;
+ 	};
++
++/include/ "pq3-power.dtsi"
+ };
+ 
+ &qe {
+diff --git a/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi b/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi
+index e179803..c5343e7 100644
+--- a/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi
+@@ -223,10 +223,14 @@
+ 
+ /include/ "pq3-etsec2-0.dtsi"
+ 	enet0: enet0_grp2: ethernet@b0000 {
++		fsl,wake-on-filer;
++		fsl,pmc-handle = <&etsec1_clk>;
+ 	};
+ 
+ /include/ "pq3-etsec2-1.dtsi"
+ 	enet1: enet1_grp2: ethernet@b1000 {
++		fsl,wake-on-filer;
++		fsl,pmc-handle = <&etsec2_clk>;
+ 	};
+ 
+ 	global-utilities@e0000 {
+@@ -235,9 +239,10 @@
+ 		fsl,has-rstcr;
+ 	};
+ 
+-	power@e0070{
+-		compatible = "fsl,mpc8536-pmc", "fsl,mpc8548-pmc";
+-		reg = <0xe0070 0x20>;
++/include/ "pq3-power.dtsi"
++	power@e0070 {
++		compatible = "fsl,p1022-pmc", "fsl,mpc8536-pmc",
++				"fsl,mpc8548-pmc";
+ 	};
+ 
+ };
+diff --git a/arch/powerpc/boot/dts/fsl/p2020si-post.dtsi b/arch/powerpc/boot/dts/fsl/p2020si-post.dtsi
+index 884e01b..2c4787c 100644
+--- a/arch/powerpc/boot/dts/fsl/p2020si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p2020si-post.dtsi
+@@ -175,6 +175,10 @@
+ 		compatible = "fsl-usb2-dr-v1.6", "fsl-usb2-dr";
+ 	};
+ /include/ "pq3-etsec1-0.dtsi"
++	enet0: ethernet@24000 {
++		fsl,pmc-handle = <&etsec1_clk>;
++
++	};
+ /include/ "pq3-etsec1-timer-0.dtsi"
+ 
+ 	ptp_clock@24e00 {
+@@ -183,7 +187,15 @@
+ 
+ 
+ /include/ "pq3-etsec1-1.dtsi"
++	enet1: ethernet@25000 {
++		fsl,pmc-handle = <&etsec2_clk>;
++	};
++
+ /include/ "pq3-etsec1-2.dtsi"
++	enet2: ethernet@26000 {
++		fsl,pmc-handle = <&etsec3_clk>;
++	};
++
+ /include/ "pq3-esdhc-0.dtsi"
+ 	sdhc@2e000 {
+ 		compatible = "fsl,p2020-esdhc", "fsl,esdhc";
+@@ -198,4 +210,6 @@
+ 		reg = <0xe0000 0x1000>;
+ 		fsl,has-rstcr;
+ 	};
++
++/include/ "pq3-power.dtsi"
+ };
+diff --git a/arch/powerpc/boot/dts/fsl/pq3-power.dtsi b/arch/powerpc/boot/dts/fsl/pq3-power.dtsi
+new file mode 100644
+index 0000000..5a760b3
+--- /dev/null
++++ b/arch/powerpc/boot/dts/fsl/pq3-power.dtsi
+@@ -0,0 +1,48 @@
++/*
++ * PQ3 Power Management device tree stub
 + *
-+ * This enables the device as a wakeup event source, or disables it.
++ * Copyright 2012-2013 Freescale Semiconductor Inc.
 + *
-+ * RETURN VALUE:
-+ * 0 is returned on success
-+ * -EINVAL is returned if device is not supposed to wake up the system
-+ * Error code depending on the platform is returned if both the platform and
-+ * the native mechanism fail to enable the generation of wake-up events
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 + */
-+int mpc85xx_pmc_set_wake(struct platform_device *pdev, bool enable)
-+{
-+	int ret = 0;
-+	struct device_node *clk_np;
-+	u32 *prop;
-+	u32 pmcdr_mask;
 +
-+	if (!pmc_regs) {
-+		pr_err("%s: PMC is unavailable\n", __func__);
-+		return -ENODEV;
-+	}
++power@e0070 {
++	compatible = "fsl,mpc8548-pmc";
++	reg = <0xe0070 0x20>;
 +
-+	if (enable && !device_may_wakeup(&pdev->dev))
-+		return -EINVAL;
-+
-+	clk_np = of_parse_phandle(pdev->dev.of_node, "fsl,pmc-handle", 0);
-+	if (!clk_np)
-+		return -EINVAL;
-+
-+	prop = (u32 *)of_get_property(clk_np, "fsl,pmcdr-mask", NULL);
-+	if (!prop) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+	pmcdr_mask = be32_to_cpup(prop);
-+
-+	if (enable)
-+		/* clear to enable clock in low power mode */
-+		clrbits32(&pmc_regs->pmcdr, pmcdr_mask);
-+	else
-+		setbits32(&pmc_regs->pmcdr, pmcdr_mask);
-+
-+out:
-+	of_node_put(clk_np);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(mpc85xx_pmc_set_wake);
-+
-+/**
-+ * mpc85xx_pmc_set_lossless_ethernet - enable lossless ethernet
-+ * in (deep) sleep mode
-+ * @enable: True to enable event generation; false to disable
-+ */
-+void mpc85xx_pmc_set_lossless_ethernet(int enable)
-+{
-+	if (pmc_flag & PMC_LOSSLESS) {
-+		if (enable)
-+			setbits32(&pmc_regs->powmgtcsr,	POWMGTCSR_LOSSLESS);
-+		else
-+			clrbits32(&pmc_regs->powmgtcsr, POWMGTCSR_LOSSLESS);
-+	}
-+}
-+EXPORT_SYMBOL_GPL(mpc85xx_pmc_set_lossless_ethernet);
- 
- static int pmc_suspend_enter(suspend_state_t state)
- {
-@@ -117,7 +186,7 @@ static int pmc_probe(struct platform_device *pdev)
- 		pmc_flag |= PMC_DEEP_SLEEP;
- 
- 	if (of_device_is_compatible(np, "fsl,p1022-pmc"))
--		pmc_flag |= PMC_DEEP_SLEEP;
-+		pmc_flag |= PMC_DEEP_SLEEP | PMC_LOSSLESS;
- 
- 	suspend_set_ops(&pmc_suspend_ops);
- 
-diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/fsl_soc.h
-index 949377d..29a87ee 100644
---- a/arch/powerpc/sysdev/fsl_soc.h
-+++ b/arch/powerpc/sysdev/fsl_soc.h
-@@ -3,6 +3,7 @@
- #ifdef __KERNEL__
- 
- #include <asm/mmu.h>
-+#include <linux/platform_device.h>
- 
- struct spi_device;
- 
-@@ -21,6 +22,14 @@ struct device_node;
- 
- extern void fsl_rstcr_restart(char *cmd);
- 
-+#ifdef CONFIG_FSL_PMC
-+int mpc85xx_pmc_set_wake(struct platform_device *pdev, bool enable);
-+void mpc85xx_pmc_set_lossless_ethernet(int enable);
-+#else
-+#define mpc85xx_pmc_set_wake(pdev, enable)
-+#define mpc85xx_pmc_set_lossless_ethernet(enable)
-+#endif
-+
- #if defined(CONFIG_FB_FSL_DIU) || defined(CONFIG_FB_FSL_DIU_MODULE)
- 
- /* The different ports that the DIU can be connected to */
++	etsec1_clk: soc-clk@24 {
++		fsl,pmcdr-mask = <0x00000080>;
++	};
++	etsec2_clk: soc-clk@25 {
++		fsl,pmcdr-mask = <0x00000040>;
++	};
++	etsec3_clk: soc-clk@26 {
++		fsl,pmcdr-mask = <0x00000020>;
++	};
++};
 -- 
 1.7.3
