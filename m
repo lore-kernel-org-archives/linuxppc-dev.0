@@ -1,23 +1,22 @@
-Return-Path: <R65777@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 467282C0112
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2013 04:33:19 +1100 (EST)
-From: Bhushan Bharat-R65777 <R65777@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: RE: Clearing DBSR and DBCR0 in host handler.
-Date: Wed, 3 Apr 2013 17:33:12 +0000
-Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D06FBE995@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <6A3DF150A5B70D4F9B66A25E3F7C888D06FBE661@039-SN2MPN1-013.039d.mgd.msft.net>
- <C62C333B-D3CA-4AE2-B9DF-39E3CF73A3C5@kernel.crashing.org>
-In-Reply-To: <C62C333B-D3CA-4AE2-B9DF-39E3CF73A3C5@kernel.crashing.org>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Alexander Graf <agraf@suse.de>, Wood Scott-B07421 <B07421@freescale.com>
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 7D2D62C012D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2013 05:01:44 +1100 (EST)
+Message-ID: <1365012091.2882.252.camel@bling.home>
+Subject: Re: [PATCH 5/5 v11] iommu/fsl: Freescale PAMU driver and iommu
+ implementation.
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Joerg Roedel <joro@8bytes.org>
+Date: Wed, 03 Apr 2013 12:01:31 -0600
+In-Reply-To: <20130402161812.GI15687@8bytes.org>
+References: <1364500442-20927-1-git-send-email-Varun.Sethi@freescale.com>
+ <1364500442-20927-6-git-send-email-Varun.Sethi@freescale.com>
+ <20130402161812.GI15687@8bytes.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: stuart.yoder@freescale.com, linux-kernel@vger.kernel.org,
+ iommu@lists.linux-foundation.org, scottwood@freescale.com,
+ Varun Sethi <Varun.Sethi@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,61 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 2013-04-02 at 18:18 +0200, Joerg Roedel wrote:
+> Cc'ing Alex Williamson
+> 
+> Alex, can you please review the iommu-group part of this patch?
 
+Sure, it looks pretty reasonable.  AIUI, all PCI devices are below some
+kind of host bridge that is either new and supports partitioning or old
+and doesn't.  I don't know if that's a visibility or isolation
+requirement, perhaps PCI ACS-ish.  In the new host bridge case, each
+device gets a group.  This seems not to have any quirks for
+multifunction devices though.  On AMD and Intel IOMMUs we test
+multifunction device ACS support to determine whether all the functions
+should be in the same group.  Is there any reason to trust multifunction
+devices on PAMU?
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> Sent: Wednesday, April 03, 2013 9:41 PM
-> To: Bhushan Bharat-R65777
-> Cc: linuxppc-dev@lists.ozlabs.org; Benjamin Herrenschmidt; Alexander Graf=
-; Wood
-> Scott-B07421
-> Subject: Re: Clearing DBSR and DBCR0 in host handler.
->=20
->=20
-> On Apr 3, 2013, at 10:24 AM, Bhushan Bharat-R65777 wrote:
->=20
-> > Hi All,
-> >
-> > The kernel exception handling code for 32 bit (transfer_to_handler in
-> entry_32.S) clear DBSR and load DBCR0 with 0 (global_dbcr0 variable, whic=
-h is
-> zero) if user space used debug (DBCR0.IDM set).
-> >
-> > But I do not same (clearing DBCR0 and DBSR) in 64bit exception handler.=
- Is
-> this an issue or I am missing something?
-> >
-> > Thanks
-> > -Bharat
->=20
-> Are you having a problem with debug w/the 64-bit kernel?
+I also find it curious what happens to the iommu group of the host
+bridge.  In the partitionable case the host bridge group is removed, in
+the non-partitionable case the host bridge group becomes the group for
+the children, removing the host bridge.  It's unique to PAMU so far that
+these host bridges are even in an iommu group (x86 only adds pci
+devices), but I don't see it as necessarily wrong leaving it in either
+scenario.  Does it solve some problem to remove them from the groups?
+Thanks,
 
-No not any issue, I was looking into code where it saves/restores of debug =
-register. I observed the above said inconsistency in 32 bit and 64 bit.
-
->  The 32-bit kernel
-> supports several kernel level debug features that the 64-bit doesn't supp=
-ort.
-
-I am talking about the a user process debugging:
-	-  A user process is under debugging using gdb. So the h/w debug register =
-will have thread context.
-	-  An interrupt/exception happens in user process.
-	-  Now on 32 bit we clear the DBSR (pending events) and DBCR0 (so no new e=
-vents get captured). But on 64bit we do not follow same, Why it is so?
-	   Are we doing something extra on 32 bit or something is missing on 64 bi=
-t?=20
-	   Can it happen that on 64 bit some more debug events get captured and de=
-bug interrupts get fired if MSR.DE is set, which is undesired.=20
-
-Or I am missing something here ?
-
-Thanks
--Bharat
-
-> So if you are having an issue that might be more helpful to convey that j=
-ust
-> asking about exception code path.
->=20
-> - k
+Alex
