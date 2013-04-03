@@ -1,20 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 8E4122C0107
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2013 02:10:54 +1100 (EST)
-Subject: Re: [PATCH 02/17] powerpc/85xx: do not sync time base at boot time
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1364994565-16010-2-git-send-email-chenhui.zhao@freescale.com>
-Date: Wed, 3 Apr 2013 10:10:58 -0500
-Message-Id: <E5707E1B-20F9-495B-A83C-E115CDCEF4BE@kernel.crashing.org>
-References: <1364994565-16010-1-git-send-email-chenhui.zhao@freescale.com>
- <1364994565-16010-2-git-send-email-chenhui.zhao@freescale.com>
-To: Zhao Chenhui <chenhui.zhao@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <R65777@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0188.outbound.messaging.microsoft.com [213.199.154.188])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4F2F62C00D9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2013 02:24:19 +1100 (EST)
+From: Bhushan Bharat-R65777 <R65777@freescale.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Kumar
+ Gala <galak@kernel.crashing.org>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>
+Subject: Clearing DBSR and DBCR0 in host handler.
+Date: Wed, 3 Apr 2013 15:24:09 +0000
+Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D06FBE661@039-SN2MPN1-013.039d.mgd.msft.net>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: Wood Scott-B07421 <B07421@freescale.com>, Alexander Graf <agraf@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,23 +25,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi All,
 
-On Apr 3, 2013, at 8:09 AM, Zhao Chenhui wrote:
+The kernel exception handling code for 32 bit (transfer_to_handler in entry=
+_32.S) clear DBSR and load DBCR0 with 0 (global_dbcr0 variable, which is ze=
+ro) if user space used debug (DBCR0.IDM set).
 
-> From: Chen-Hui Zhao <chenhui.zhao@freescale.com>
->=20
-> The bootloader have done time base sync for all cores, so skip
-> the synchronization process at boot time of kernel.
->=20
-> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> Signed-off-by: Andy Fleming <afleming@freescale.com>
-> ---
-> arch/powerpc/platforms/85xx/smp.c |    8 ++++++++
-> 1 files changed, 8 insertions(+), 0 deletions(-)
+But I do not same (clearing DBCR0 and DBSR) in 64bit exception handler. Is =
+this an issue or I am missing something?
 
-What harm is there in doing the sync?  I'm sure there is another reason =
-you want to skip the TB sync that should be conveyed in the commit =
-message.
-
-- k=
+Thanks
+-Bharat
