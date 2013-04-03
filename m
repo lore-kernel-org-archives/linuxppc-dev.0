@@ -1,28 +1,26 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-oa0-f47.google.com (mail-oa0-f47.google.com
- [209.85.219.47])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 768982C009E
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2013 21:33:11 +1100 (EST)
-Received: by mail-oa0-f47.google.com with SMTP id o17so1313544oag.6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Apr 2013 03:33:08 -0700 (PDT)
+Return-Path: <B35336@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2CA392C00A9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2013 00:08:22 +1100 (EST)
+Received: from mail43-co9 (localhost [127.0.0.1])	by mail43-co9-R.bigfish.com
+ (Postfix) with ESMTP id A0EEDA40174	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Apr 2013 13:08:18 +0000 (UTC)
+Received: from CO9EHSMHS016.bigfish.com (unknown [10.236.132.254])	by
+ mail43-co9.bigfish.com (Postfix) with ESMTP id EF2EC30006E	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2013 13:08:16 +0000 (UTC)
+From: Zhao Chenhui <chenhui.zhao@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 02/17] powerpc/85xx: do not sync time base at boot time
+Date: Wed, 3 Apr 2013 21:09:10 +0800
+Message-ID: <1364994565-16010-2-git-send-email-chenhui.zhao@freescale.com>
+In-Reply-To: <1364994565-16010-1-git-send-email-chenhui.zhao@freescale.com>
+References: <1364994565-16010-1-git-send-email-chenhui.zhao@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <1364985034.16520.12.camel@pasglop>
-References: <cover.1364229828.git.viresh.kumar@linaro.org>
- <4180fd5b43906421fc155126e8b7bea5fb3ff375.1364229828.git.viresh.kumar@linaro.org>
- <CAKohpo=LOJ3DfaGzCm6a6ev2+dNUgEpJd+04pGMhdSpkyZNR9A@mail.gmail.com>
- <CAKohpomRMkKouiy+iJUiheTcPGCDVLbxppL5f4oc-WMu2E5T8g@mail.gmail.com>
- <1364985034.16520.12.camel@pasglop>
-Date: Wed, 3 Apr 2013 16:03:07 +0530
-Message-ID: <CAKohpo=4wOMbkwBPACDT0Pvb8KssSJbwwtSo3geGkHa2sygZUQ@mail.gmail.com>
-Subject: Re: [PATCH 9/9] powerpc: cpufreq: move cpufreq driver to
- drivers/cpufreq
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@lists.ozlabs.org,
- Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,8 +30,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 3 April 2013 16:00, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> I'm on vacation until end of April. No objection to the patch but
-> somebody needs to test it.
+From: Chen-Hui Zhao <chenhui.zhao@freescale.com>
 
-Any input on whom i can ask for that?
+The bootloader have done time base sync for all cores, so skip
+the synchronization process at boot time of kernel.
+
+Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
+Signed-off-by: Andy Fleming <afleming@freescale.com>
+---
+ arch/powerpc/platforms/85xx/smp.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
+index 6a17599..35dae8e 100644
+--- a/arch/powerpc/platforms/85xx/smp.c
++++ b/arch/powerpc/platforms/85xx/smp.c
+@@ -62,6 +62,10 @@ static void mpc85xx_give_timebase(void)
+ {
+ 	unsigned long flags;
+ 
++	/* only do time base sync when system is running */
++	if (system_state == SYSTEM_BOOTING)
++		return;
++
+ 	local_irq_save(flags);
+ 
+ 	while (!tb_req)
+@@ -85,6 +89,10 @@ static void mpc85xx_take_timebase(void)
+ {
+ 	unsigned long flags;
+ 
++	/* only do time base sync when system is running */
++	if (system_state == SYSTEM_BOOTING)
++		return;
++
+ 	local_irq_save(flags);
+ 
+ 	tb_req = 1;
+-- 
+1.7.3
