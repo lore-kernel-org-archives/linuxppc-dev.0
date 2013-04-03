@@ -4,21 +4,20 @@ Received: from co9outboundpool.messaging.microsoft.com
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2CA392C00A9
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2013 00:08:22 +1100 (EST)
-Received: from mail43-co9 (localhost [127.0.0.1])	by mail43-co9-R.bigfish.com
- (Postfix) with ESMTP id A0EEDA40174	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Apr 2013 13:08:18 +0000 (UTC)
-Received: from CO9EHSMHS016.bigfish.com (unknown [10.236.132.254])	by
- mail43-co9.bigfish.com (Postfix) with ESMTP id EF2EC30006E	for
+ by ozlabs.org (Postfix) with ESMTPS id 297D72C008C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2013 00:08:23 +1100 (EST)
+Received: from mail206-co9 (localhost [127.0.0.1])	by
+ mail206-co9-R.bigfish.com (Postfix) with ESMTP id 3ED97C00CC	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2013 13:08:18 +0000 (UTC)
+Received: from CO9EHSMHS027.bigfish.com (unknown [10.236.132.233])	by
+ mail206-co9.bigfish.com (Postfix) with ESMTP id 56C7B9800FE	for
  <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2013 13:08:16 +0000 (UTC)
 From: Zhao Chenhui <chenhui.zhao@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 02/17] powerpc/85xx: do not sync time base at boot time
-Date: Wed, 3 Apr 2013 21:09:10 +0800
-Message-ID: <1364994565-16010-2-git-send-email-chenhui.zhao@freescale.com>
-In-Reply-To: <1364994565-16010-1-git-send-email-chenhui.zhao@freescale.com>
-References: <1364994565-16010-1-git-send-email-chenhui.zhao@freescale.com>
+Subject: [PATCH 01/17] powerpc/85xx: fix a bug with the parameter of
+ mpic_reset_core()
+Date: Wed, 3 Apr 2013 21:09:09 +0800
+Message-ID: <1364994565-16010-1-git-send-email-chenhui.zhao@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,41 +31,26 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Chen-Hui Zhao <chenhui.zhao@freescale.com>
 
-The bootloader have done time base sync for all cores, so skip
-the synchronization process at boot time of kernel.
+mpic_reset_core() need a logical cpu number instead of physical.
 
 Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
 Signed-off-by: Li Yang <leoli@freescale.com>
-Signed-off-by: Andy Fleming <afleming@freescale.com>
 ---
- arch/powerpc/platforms/85xx/smp.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
+ arch/powerpc/platforms/85xx/smp.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
 diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
-index 6a17599..35dae8e 100644
+index 148c2f2..6a17599 100644
 --- a/arch/powerpc/platforms/85xx/smp.c
 +++ b/arch/powerpc/platforms/85xx/smp.c
-@@ -62,6 +62,10 @@ static void mpc85xx_give_timebase(void)
- {
- 	unsigned long flags;
+@@ -201,7 +201,7 @@ static int __cpuinit smp_85xx_kick_cpu(int nr)
+ 		 * We don't set the BPTR register here since it already points
+ 		 * to the boot page properly.
+ 		 */
+-		mpic_reset_core(hw_cpu);
++		mpic_reset_core(nr);
  
-+	/* only do time base sync when system is running */
-+	if (system_state == SYSTEM_BOOTING)
-+		return;
-+
- 	local_irq_save(flags);
- 
- 	while (!tb_req)
-@@ -85,6 +89,10 @@ static void mpc85xx_take_timebase(void)
- {
- 	unsigned long flags;
- 
-+	/* only do time base sync when system is running */
-+	if (system_state == SYSTEM_BOOTING)
-+		return;
-+
- 	local_irq_save(flags);
- 
- 	tb_req = 1;
+ 		/*
+ 		 * wait until core is ready...
 -- 
 1.7.3
