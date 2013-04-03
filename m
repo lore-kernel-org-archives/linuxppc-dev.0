@@ -1,25 +1,26 @@
-Return-Path: <B41889@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe006.messaging.microsoft.com [213.199.154.209])
+Return-Path: <B16395@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 585972C014F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2013 15:08:30 +1100 (EST)
-Message-ID: <515BAB44.9070001@freescale.com>
-Date: Wed, 3 Apr 2013 12:08:36 +0800
-From: Chen Yuanquan-B41889 <B41889@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 08A832C0148
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2013 16:12:25 +1100 (EST)
+From: Sethi Varun-B16395 <B16395@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>, Timur Tabi <timur@tabi.org>
+Subject: RE: [PATCH 5/5 v11] iommu/fsl: Freescale PAMU driver and iommu
+ implementation.
+Date: Wed, 3 Apr 2013 05:12:16 +0000
+Message-ID: <C5ECD7A89D1DC44195F34B25E172658D45040D@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <CAOZdJXWS50mpgMYu8o8K11yQFU6y-vNwxd9zPkqSd7euGt7XQg@mail.gmail.com>	(from
+ timur@tabi.org on Tue Apr  2 20:35:54 2013) <1364953950.8690.4@snotra>
+In-Reply-To: <1364953950.8690.4@snotra>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/pci: fix PCI-e devices rescan issue on powerpc
- platform
-References: <1364902014-943-1-git-send-email-Yuanquan.Chen@freescale.com>
- <1364915422.16520.8.camel@pasglop>
-In-Reply-To: <1364915422.16520.8.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: Yuanquan Chen <Yuanquan.Chen@freescale.com>, linux-pci@vger.kernel.org,
- bhelgaas@google.com, linuxppc-dev@lists.ozlabs.org,
- Hiroo Matsumoto <matsumoto.hiroo@jp.fujitsu.com>
+Cc: Joerg Roedel <joro@8bytes.org>, lkml <linux-kernel@vger.kernel.org>,
+ Yoder Stuart-B08248 <B08248@freescale.com>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,53 +30,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/02/2013 11:10 PM, Benjamin Herrenschmidt wrote:
-> On Tue, 2013-04-02 at 19:26 +0800, Yuanquan Chen wrote:
->> So we move the DMA & IRQ initialization code from pcibios_setup_devices() and
->> construct a new function pcibios_enable_device. We call this function in
->> pcibios_enable_device, which will be called by PCI-e rescan code. At the
->> meanwhile, we avoid the the impact on cardbus. I also validate this patch with
->> silicon's PCIe-sata which encounters the IRQ issue.
-> My worry is that this delays the setup of the IRQ and DMA to very late in
-> the process, possibly after the quirks have been run, which can be
-> problematic. We have platform hooks that might try to "fixup" specific
-> IRQ issues on some platforms (especially macs) which I worry might fail
-> if delayed that way (I may be wrong, I don't have a specific case in mind,
-> but I would feel better if we kept setting up these things earlier).
->
-> Cheers,
-> Ben.
->
 
-Hi Ben,
 
-I have checked all the quirk functions which are declared in kernel 
-arch/powerpc
-with command :
-grep DECLARE_PCI_FIXUP_ `find arch/powerpc/ *.[hc]`
+> -----Original Message-----
+> From: Wood Scott-B07421
+> Sent: Wednesday, April 03, 2013 7:23 AM
+> To: Timur Tabi
+> Cc: Joerg Roedel; Sethi Varun-B16395; lkml; Kumar Gala; Yoder Stuart-
+> B08248; iommu@lists.linux-foundation.org; Benjamin Herrenschmidt;
+> linuxppc-dev@lists.ozlabs.org
+> Subject: Re: [PATCH 5/5 v11] iommu/fsl: Freescale PAMU driver and iommu
+> implementation.
+>=20
+> On 04/02/2013 08:35:54 PM, Timur Tabi wrote:
+> > On Tue, Apr 2, 2013 at 11:18 AM, Joerg Roedel <joro@8bytes.org> wrote:
+> >
+> > > > +     panic("\n");
+> > >
+> > > A kernel panic seems like an over-reaction to an access violation.
+> >
+> > We have no way to determining what code caused the violation, so we
+> > can't just kill the process.  I agree it seems like overkill, but what
+> > else should we do?  Does the IOMMU layer have a way for the IOMMU
+> > driver to stop the device that caused the problem?
+>=20
+> At a minimum, log a message and continue.  Probably turn off the LIODN,
+> at least if it continues to be noisy (otherwise we could get stuck in an
+> interrupt storm as you note).  Possibly let the user know somehow,
+> especially if it's a VFIO domain.
+[Sethi Varun-B16395] Can definitely log the message and disable the LIODN (=
+to avoid an interrupt storm), but
+we definitely need a mechanism to inform vfio subsystem about the error. Al=
+so, disabling LIODN may not be a viable
+option with the new LIODN allocation scheme (where LIODN would be associate=
+d with a domain).
 
-All the quirk function are defined as DECLARE_PCI_FIXUP_EARLY , 
-DECLARE_PCI_FIXUP_HEADER
-and DECLARE_PCI_FIXUP_FINAL, except quirk_uli5229() in 
-arch/powerpc/platforms/fsl_uli1575.c, which is
-defined both as DECLARE_PCI_FIXUP_HEADER and DECLARE_PCI_FIXUP_RESUME. 
-So the quirk_uli5229()
-will also be called with PCI pm module. The quirk functions defined as 
-xxx_FINAL, HEADER and EARLY,
-will be called in the path:
+>=20
+> Don't take down the whole kernel.  It's not just overkill; it undermines
+> VFIO's efforts to make it safe for users to control devices.
+>=20
+> > > Besides the device that caused the violation the system should still
+> > > work, no?
+> >
+> > Not really.  The PAMU was designed to add IOMMU support to legacy
+> > devices, which have no concept of an MMU.  If the PAMU detects an
+> > access violation, there's no way for the device to recover, because it
+> > has no idea that a violation has occurred.  It's going to keep on
+> > writing to bad data.
+>=20
+> I think that's only the case for posted writes (or devices which fail to
+> take a hint and stop even after they see an I/O error).
+>=20
+[Sethi Varun-B16395] Even in the case where the guest driver detects a fail=
+ure, it may not be able to fix the problem without intervention from the VF=
+IO subsystem.
 
-pci_scan_child_bus()->pci_scan_slot()->pci_scan_single_device()->pci_scan_device()->pci_setup_device()
-->pci_device_add()
-
-the pci_scan_slot() is called earlier than pcibios_fixup_bus() even for 
-the first scan of PCI-e bus, so the quirk
-functions on powerpc platform is called before the DMA & IRQ fixup. So 
-in reality, the delay of DMA & IRQ fixup
-won't affect anything.
-
-Regards,
-Yuanquan
-
->
->
->
+-Varun
