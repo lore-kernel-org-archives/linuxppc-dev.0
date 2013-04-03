@@ -1,28 +1,25 @@
-Return-Path: <B40534@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0188.outbound.messaging.microsoft.com [213.199.154.188])
+Return-Path: <B41889@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe006.messaging.microsoft.com [213.199.154.209])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 464482C011F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2013 13:49:32 +1100 (EST)
-Received: from mail113-db8 (localhost [127.0.0.1])	by
- mail113-db8-R.bigfish.com (Postfix) with ESMTP id 0C9E3A01EE	for
- <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2013 02:49:26 +0000 (UTC)
-Received: from DB8EHSMHS032.bigfish.com (unknown [10.174.8.237])	by
- mail113-db8.bigfish.com (Postfix) with ESMTP id CD13322004B	for
- <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2013 02:49:23 +0000 (UTC)
-From: Wang Dongsheng-B40534 <B40534@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH v2 1/4] powerpc/mpic: add irq_set_wake support
-Date: Wed, 3 Apr 2013 02:49:11 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259EDC21E@039-SN2MPN1-021.039d.mgd.msft.net>
-References: <1364884840-28635-1-git-send-email-dongsheng.wang@freescale.com>
- <1364949416.24520.30@snotra>
-In-Reply-To: <1364949416.24520.30@snotra>
-Content-Type: text/plain; charset="us-ascii"
+ by ozlabs.org (Postfix) with ESMTPS id 585972C014F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2013 15:08:30 +1100 (EST)
+Message-ID: <515BAB44.9070001@freescale.com>
+Date: Wed, 3 Apr 2013 12:08:36 +0800
+From: Chen Yuanquan-B41889 <B41889@freescale.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/pci: fix PCI-e devices rescan issue on powerpc
+ platform
+References: <1364902014-943-1-git-send-email-Yuanquan.Chen@freescale.com>
+ <1364915422.16520.8.camel@pasglop>
+In-Reply-To: <1364915422.16520.8.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: Yuanquan Chen <Yuanquan.Chen@freescale.com>, linux-pci@vger.kernel.org,
+ bhelgaas@google.com, linuxppc-dev@lists.ozlabs.org,
+ Hiroo Matsumoto <matsumoto.hiroo@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,61 +29,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 04/02/2013 11:10 PM, Benjamin Herrenschmidt wrote:
+> On Tue, 2013-04-02 at 19:26 +0800, Yuanquan Chen wrote:
+>> So we move the DMA & IRQ initialization code from pcibios_setup_devices() and
+>> construct a new function pcibios_enable_device. We call this function in
+>> pcibios_enable_device, which will be called by PCI-e rescan code. At the
+>> meanwhile, we avoid the the impact on cardbus. I also validate this patch with
+>> silicon's PCIe-sata which encounters the IRQ issue.
+> My worry is that this delays the setup of the IRQ and DMA to very late in
+> the process, possibly after the quirks have been run, which can be
+> problematic. We have platform hooks that might try to "fixup" specific
+> IRQ issues on some platforms (especially macs) which I worry might fail
+> if delayed that way (I may be wrong, I don't have a specific case in mind,
+> but I would feel better if we kept setting up these things earlier).
+>
+> Cheers,
+> Ben.
+>
 
+Hi Ben,
 
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Wednesday, April 03, 2013 8:37 AM
-> To: Wang Dongsheng-B40534
-> Cc: linuxppc-dev@lists.ozlabs.org; Wang Dongsheng-B40534
-> Subject: Re: [PATCH v2 1/4] powerpc/mpic: add irq_set_wake support
->=20
-> On 04/02/2013 01:40:37 AM, Wang Dongsheng wrote:
-> > Add irq_set_wake support. Just add IRQF_NO_SUSPEND to
-> > desc->action->flag.
-> > So the wake up interrupt will not be disable in suspend_device_irqs.
-> >
-> > Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
-> > ---
-> > v2:
-> > * Add: Check freescale chip in mpic_irq_set_wake().
-> > * Remove: Support mpic_irq_set_wake() in ht_chip.
-> >
-> >  arch/powerpc/sysdev/mpic.c | 18 ++++++++++++++++++
-> >  1 file changed, 18 insertions(+)
-> >
-> > diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-> > index 3b2efd4..50d1ee1 100644
-> > --- a/arch/powerpc/sysdev/mpic.c
-> > +++ b/arch/powerpc/sysdev/mpic.c
-> > @@ -920,6 +920,22 @@ int mpic_set_irq_type(struct irq_data *d,
-> > unsigned int flow_type)
-> >  	return IRQ_SET_MASK_OK_NOCOPY;
-> >  }
-> >
-> > +static int mpic_irq_set_wake(struct irq_data *d, unsigned int on) {
-> > +	struct irq_desc *desc =3D container_of(d, struct irq_desc,
-> > irq_data);
-> > +	struct mpic *mpic =3D mpic_from_irq_data(d);
-> > +
-> > +	if (!(mpic->flags & MPIC_FSL))
-> > +		return -EINVAL;
->=20
-> I was thinking more along the lines of using MPIC_FSL during init to
-> decide whether to write this function to .irq_set_wake,
+I have checked all the quirk functions which are declared in kernel 
+arch/powerpc
+with command :
+grep DECLARE_PCI_FIXUP_ `find arch/powerpc/ *.[hc]`
 
-I think the static registration method is more reasonable. We must consider
-readability. And mpic_irq_set_wake() will not be frequent calls. So within=
-=20
-mpic_irq_set_wake() to decide is reasonable.
+All the quirk function are defined as DECLARE_PCI_FIXUP_EARLY , 
+DECLARE_PCI_FIXUP_HEADER
+and DECLARE_PCI_FIXUP_FINAL, except quirk_uli5229() in 
+arch/powerpc/platforms/fsl_uli1575.c, which is
+defined both as DECLARE_PCI_FIXUP_HEADER and DECLARE_PCI_FIXUP_RESUME. 
+So the quirk_uli5229()
+will also be called with PCI pm module. The quirk functions defined as 
+xxx_FINAL, HEADER and EARLY,
+will be called in the path:
 
-> though that could probably wait until there's a second type of MPIC
-> that needs this (if ever).
-Even if the mpic_irq_set_wake() register in the first type of MPIC that is =
-not
-belong MPIC_FSL, the function can return errno. I think the errno should be
-"-ENXIO".
-See kernel/irq/manage.c, set_irq_wake_real() the return value.
-The desc->irq_data.chip->irq_set_wake is null, the errno is -ENXIO.
+pci_scan_child_bus()->pci_scan_slot()->pci_scan_single_device()->pci_scan_device()->pci_setup_device()
+->pci_device_add()
 
-s/-EINVAL/-ENXIO/
+the pci_scan_slot() is called earlier than pcibios_fixup_bus() even for 
+the first scan of PCI-e bus, so the quirk
+functions on powerpc platform is called before the DMA & IRQ fixup. So 
+in reality, the delay of DMA & IRQ fixup
+won't affect anything.
+
+Regards,
+Yuanquan
+
+>
+>
+>
