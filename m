@@ -1,27 +1,23 @@
-Return-Path: <timur@tabi.org>
-Received: from muin.pair.com (muin.pair.com [209.68.1.55])
- by ozlabs.org (Postfix) with ESMTP id A2A162C0153
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2013 12:35:58 +1100 (EST)
-Received: from mail-lb0-f170.google.com (mail-lb0-f170.google.com
- [209.85.217.170])
- by muin.pair.com (Postfix) with ESMTPSA id E7ABB8FC30
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Apr 2013 21:35:55 -0400 (EDT)
-Received: by mail-lb0-f170.google.com with SMTP id x11so1087071lbi.15
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Apr 2013 18:35:54 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20130402161812.GI15687@8bytes.org>
-References: <1364500442-20927-1-git-send-email-Varun.Sethi@freescale.com>
- <1364500442-20927-6-git-send-email-Varun.Sethi@freescale.com>
- <20130402161812.GI15687@8bytes.org>
-Date: Tue, 2 Apr 2013 20:35:54 -0500
-Message-ID: <CAOZdJXWS50mpgMYu8o8K11yQFU6y-vNwxd9zPkqSd7euGt7XQg@mail.gmail.com>
+Return-Path: <B07421@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CAFC42C015C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2013 12:52:45 +1100 (EST)
+Date: Tue, 2 Apr 2013 20:52:30 -0500
+From: Scott Wood <scottwood@freescale.com>
 Subject: Re: [PATCH 5/5 v11] iommu/fsl: Freescale PAMU driver and iommu
  implementation.
-From: Timur Tabi <timur@tabi.org>
-To: Joerg Roedel <joro@8bytes.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: stuart.yoder@freescale.com, lkml <linux-kernel@vger.kernel.org>,
- iommu@lists.linux-foundation.org, scottwood@freescale.com,
+To: Timur Tabi <timur@tabi.org>
+In-Reply-To: <CAOZdJXWS50mpgMYu8o8K11yQFU6y-vNwxd9zPkqSd7euGt7XQg@mail.gmail.com>
+ (from timur@tabi.org on Tue Apr  2 20:35:54 2013)
+Message-ID: <1364953950.8690.4@snotra>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: Joerg Roedel <joro@8bytes.org>, stuart.yoder@freescale.com,
+ lkml <linux-kernel@vger.kernel.org>, iommu@lists.linux-foundation.org,
  Varun Sethi <Varun.Sethi@freescale.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,43 +29,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 2, 2013 at 11:18 AM, Joerg Roedel <joro@8bytes.org> wrote:
+On 04/02/2013 08:35:54 PM, Timur Tabi wrote:
+> On Tue, Apr 2, 2013 at 11:18 AM, Joerg Roedel <joro@8bytes.org> wrote:
+>=20
+> > > +     panic("\n");
+> >
+> > A kernel panic seems like an over-reaction to an access violation.
+>=20
+> We have no way to determining what code caused the violation, so we
+> can't just kill the process.  I agree it seems like overkill, but what
+> else should we do?  Does the IOMMU layer have a way for the IOMMU
+> driver to stop the device that caused the problem?
 
-> > +     panic("\n");
->
-> A kernel panic seems like an over-reaction to an access violation.
+At a minimum, log a message and continue.  Probably turn off the LIODN, =20
+at least if it continues to be noisy (otherwise we could get stuck in =20
+an interrupt storm as you note).  Possibly let the user know somehow, =20
+especially if it's a VFIO domain.
 
-We have no way to determining what code caused the violation, so we
-can't just kill the process.  I agree it seems like overkill, but what
-else should we do?  Does the IOMMU layer have a way for the IOMMU
-driver to stop the device that caused the problem?
+Don't take down the whole kernel.  It's not just overkill; it =20
+undermines VFIO's efforts to make it safe for users to control devices.
 
-> Besides the device that caused the violation the system should still
-> work, no?
+> > Besides the device that caused the violation the system should still
+> > work, no?
+>=20
+> Not really.  The PAMU was designed to add IOMMU support to legacy
+> devices, which have no concept of an MMU.  If the PAMU detects an
+> access violation, there's no way for the device to recover, because it
+> has no idea that a violation has occurred.  It's going to keep on
+> writing to bad data.
 
-Not really.  The PAMU was designed to add IOMMU support to legacy
-devices, which have no concept of an MMU.  If the PAMU detects an
-access violation, there's no way for the device to recover, because it
-has no idea that a violation has occurred.  It's going to keep on
-writing to bad data.
+I think that's only the case for posted writes (or devices which fail =20
+to take a hint and stop even after they see an I/O error).
 
-Maybe we need a mechanism where a driver can register a callback
-function to handle IOMMU exceptions?
-
-> > +     /*
-> > +      * In case of devices with multiple LIODNs just store
-> > +      * the info for the first LIODN as all
-> > +      * LIODNs share the same domain
-> > +      */
-> > +     if (!old_domain_info)
-> > +             dev->archdata.iommu_domain = info;
-> > +     spin_unlock(&device_domain_lock);
->
-> Don't you have to tell the hardware that a device was added to a domain?
-> I don't see that, what I am missing?
-
-I'm not sure I understand.  What "hardware" do you think needs to be notified?
-
-The PAMU reads everything it needs from the PAACT, which we update.
-The PAMU does not know anything about the devices that it monitors,
-and the devices don't know anything about the PAMU.
+-Scott=
