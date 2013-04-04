@@ -1,26 +1,31 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 9593F2C00A8
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2013 03:43:53 +1100 (EST)
-Message-ID: <1365093819.2882.301.camel@bling.home>
-Subject: Re: [PATCH 5/5 v11] iommu/fsl: Freescale PAMU driver and iommu
- implementation.
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Sethi Varun-B16395 <B16395@freescale.com>
-Date: Thu, 04 Apr 2013 10:43:39 -0600
-In-Reply-To: <C5ECD7A89D1DC44195F34B25E172658D459471@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1364500442-20927-1-git-send-email-Varun.Sethi@freescale.com>
- <1364500442-20927-6-git-send-email-Varun.Sethi@freescale.com>
- <20130402161812.GI15687@8bytes.org> <1365012091.2882.252.camel@bling.home>
- <C5ECD7A89D1DC44195F34B25E172658D45883B@039-SN2MPN1-013.039d.mgd.msft.net>
- <1365088930.2882.296.camel@bling.home>
- <C5ECD7A89D1DC44195F34B25E172658D459471@039-SN2MPN1-013.039d.mgd.msft.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>, Joerg Roedel <joro@8bytes.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Yoder Stuart-B08248 <B08248@freescale.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id EF6F02C00AB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2013 06:13:39 +1100 (EST)
+Subject: Re: [PATCH 2/5] powerpc/fsl-booke: Add initial silicon device tree
+ files for B4860 and B4420
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <E12D2F89F87F4A49B0320A4C2DE7E749151B05@039-SN2MPN1-011.039d.mgd.msft.net>
+Date: Thu, 4 Apr 2013 14:13:35 -0500
+Message-Id: <BF757FF6-067E-4A23-9A12-E510B5CE59A7@kernel.crashing.org>
+References: <1364886968-9634-1-git-send-email-shaveta@freescale.com>
+ <1364930341.24520.15@snotra>
+ <E12D2F89F87F4A49B0320A4C2DE7E74915165F@039-SN2MPN1-011.039d.mgd.msft.net>
+ <1365007194.25627.1@snotra>
+ <E12D2F89F87F4A49B0320A4C2DE7E749151B05@039-SN2MPN1-011.039d.mgd.msft.net>
+To: Leekha Shaveta-B20052 <B20052@freescale.com>
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ Mehresh Ramneek-B31383 <B31383@freescale.com>,
+ Zhao Chenhui-B35336 <B35336@freescale.com>,
+ Garg Vakul-B16394 <B16394@freescale.com>,
+ Lian Minghuan-B31939 <B31939@freescale.com>,
+ Tang Yuantian-B29983 <B29983@freescale.com>,
+ Fleming Andy-AFLEMING <afleming@freescale.com>,
+ Sethi Varun-B16395 <B16395@freescale.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,101 +36,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-04-04 at 16:35 +0000, Sethi Varun-B16395 wrote:
-> 
-> > -----Original Message-----
-> > From: Alex Williamson [mailto:alex.williamson@redhat.com]
-> > Sent: Thursday, April 04, 2013 8:52 PM
-> > To: Sethi Varun-B16395
-> > Cc: Joerg Roedel; Yoder Stuart-B08248; Wood Scott-B07421;
-> > iommu@lists.linux-foundation.org; linuxppc-dev@lists.ozlabs.org; linux-
-> > kernel@vger.kernel.org; galak@kernel.crashing.org;
-> > benh@kernel.crashing.org
-> > Subject: Re: [PATCH 5/5 v11] iommu/fsl: Freescale PAMU driver and iommu
-> > implementation.
-> > 
-> > On Thu, 2013-04-04 at 13:00 +0000, Sethi Varun-B16395 wrote:
-> > >
-> > > > -----Original Message-----
-> > > > From: Alex Williamson [mailto:alex.williamson@redhat.com]
-> > > > Sent: Wednesday, April 03, 2013 11:32 PM
-> > > > To: Joerg Roedel
-> > > > Cc: Sethi Varun-B16395; Yoder Stuart-B08248; Wood Scott-B07421;
-> > > > iommu@lists.linux-foundation.org; linuxppc-dev@lists.ozlabs.org;
-> > > > linux- kernel@vger.kernel.org; galak@kernel.crashing.org;
-> > > > benh@kernel.crashing.org
-> > > > Subject: Re: [PATCH 5/5 v11] iommu/fsl: Freescale PAMU driver and
-> > > > iommu implementation.
-> > > >
-> > > > On Tue, 2013-04-02 at 18:18 +0200, Joerg Roedel wrote:
-> > > > > Cc'ing Alex Williamson
-> > > > >
-> > > > > Alex, can you please review the iommu-group part of this patch?
-> > > >
-> > > > Sure, it looks pretty reasonable.  AIUI, all PCI devices are below
-> > > > some kind of host bridge that is either new and supports
-> > > > partitioning or old and doesn't.  I don't know if that's a
-> > > > visibility or isolation requirement, perhaps PCI ACS-ish.  In the
-> > > > new host bridge case, each device gets a group.  This seems not to
-> > > > have any quirks for multifunction devices though.  On AMD and Intel
-> > > > IOMMUs we test multifunction device ACS support to determine whether
-> > > > all the functions should be in the same group.  Is there any reason
-> > to trust multifunction devices on PAMU?
-> > > >
-> > > [Sethi Varun-B16395] In the case where we can partition endpoints we
-> > > can distinguish transactions based on the bus,device,function number
-> > > combination. This support is available in the PCIe controller (host
-> > > bridge).
-> > 
-> > So can x86 IOMMUs, that's the visibility aspect of IOMMU groups.
-> > Visibility alone doesn't necessarily imply that a device is isolated
-> > though.  A multifunction PCI device that doesn't expose ACS support may
-> > not isolate functions from each other.  For example a peer-to-peer DMA
-> > between functions may not be translated by the upstream IOMMU.  IOMMU
-> > groups should encompass both visibility and isolation.
-> [Sethi Varun-B16395] We can isolate the DMA access to the host based
-> on the to the pci bus,device,function number.
 
-The IOMMU can only isolate DMA that it can see.  A multifunction device
-may never expose peer-to-peer DMA to the upstream device, it's
-implementation specific.  The ACS flags allow that possibility to be
-controlled and prevented.
+On Apr 4, 2013, at 2:03 AM, Leekha Shaveta-B20052 wrote:
 
-> I thought that was enough to put devices in to separate iommu groups.
-> This is a PCIe controller property which allows us to partition PCIe
-> devices. But, what I can understand from your point is that we also
-> need to consider isolation at PCIe device level as well. I will check
-> for the case of multifunction devices.
-> 
-> > 
-> > > > I also find it curious what happens to the iommu group of the host
-> > > > bridge.  In the partitionable case the host bridge group is removed,
-> > > > in the non-partitionable case the host bridge group becomes the
-> > > > group for the children, removing the host bridge.  It's unique to
-> > > > PAMU so far that these host bridges are even in an iommu group (x86
-> > > > only adds pci devices), but I don't see it as necessarily wrong
-> > > > leaving it in either scenario.  Does it solve some problem to remove
-> > them from the groups?
-> > > > Thanks,
-> > > [Sethi Varun-B16395] The PCIe controller isn't a partitionable entity,
-> > > it would always be owned by the host.
-> > 
-> > Ownership of a device shouldn't play into the group context.  An IOMMU
-> > group should be defined by it's visibility and isolation from other
-> > devices.  Whether the PCIe controller is allowed to be handed to
-> > userspace is a question for VFIO.
-> [Sethi Varun-B16395] The problem is in the case, where we can't
-> partition PCIe devices. PCIe devices share the same device group as
-> the PCI controller. This becomes a problem while assigning the devices
-> to the guest, as you are required to unbind all the PCIe devices
-> including the controller from the host. PCIe controller can't be
-> unbound from the host, so we simply delete the controller iommu_group.
+>=20
+>=20
+> -----Original Message-----
+> From: Wood Scott-B07421=20
+> Sent: Wednesday, April 03, 2013 10:10 PM
+> To: Leekha Shaveta-B20052
+> Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org; Zhao =
+Chenhui-B35336; Lian Minghuan-B31939; Garg Vakul-B16394; Tang =
+Yuantian-B29983; Fleming Andy-AFLEMING; Mehresh Ramneek-B31383; Sethi =
+Varun-B16395
+> Subject: Re: [PATCH 2/5] powerpc/fsl-booke: Add initial silicon device =
+tree files for B4860 and B4420
+>=20
+> On 04/03/2013 01:42:14 AM, Leekha Shaveta-B20052 wrote:
+>>=20
+>>=20
+>> -----Original Message-----
+>> From: Wood Scott-B07421
+>> Sent: Wednesday, April 03, 2013 12:49 AM
+>> To: Leekha Shaveta-B20052
+>> Cc: linuxppc-dev@lists.ozlabs.org; Zhao Chenhui-B35336; Lian=20
+>> Minghuan-B31939; Leekha Shaveta-B20052; Garg Vakul-B16394; Tang=20
+>> Yuantian-B29983; Fleming Andy-AFLEMING; Mehresh Ramneek-B31383; Sethi
+>> Varun-B16395
+>> Subject: Re: [PATCH 2/5] powerpc/fsl-booke: Add initial silicon =
+device=20
+>> tree files for B4860 and B4420
+>>=20
+>> On 04/02/2013 02:16:05 AM, Shaveta Leekha wrote:
+>>> +/ {
+>>> +	compatible =3D "fsl,B4860";
+>>> +
+>>> +	cpus {
+>>> +		cpu1: PowerPC,e6500@1 {
+>>> +			device_type =3D "cpu";
+>>> +			reg =3D <2 3>;
+>>> +			next-level-cache =3D <&L2>;
+>>> +		};
+>>> +		cpu2: PowerPC,e6500@2 {
+>>> +			device_type =3D "cpu";
+>>> +			reg =3D <4 5>;
+>>> +			next-level-cache =3D <&L2>;
+>>> +		};
+>>> +		cpu3: PowerPC,e6500@3 {
+>>> +			device_type =3D "cpu";
+>>> +			reg =3D <6 7>;
+>>> +			next-level-cache =3D <&L2>;
+>>> +		};
+>>=20
+>> The unit addresses need to match "reg".
+>> [SL] You mean  "@1" should match to "reg =3D <2 3>" ?
+>=20
+> Yes, it should be "@2" for that node.
+>=20
+>> As each e6500 core in B4860 is dual- threaded, reg property here=20
+>> represents the thread's identifier in that PA core.
+>>=20
+>> So convention used in T4 and B4 is: core 0 having threads 0 and 1,
+>> 						Core 1 having <2 3> and
+>> so on....
+>=20
+> The convention used in device trees is that the unit address matches =
+the reg.
+>=20
+> -Scott
+> [SL] Ok, I can change that. Will make unit address as @2 for <2 3>, @4 =
+for <4 5> and so on....
+>=20
+> Kumar, please respond here, as I have followed the convention used in =
+T4 device tree files for
+> Dual-threaded cores.
 
-Unbinding devices is a VFIO implementation, it shouldn't leak into IOMMU
-groups.  Also note that VFIO has a driver white list where we can have
-exceptions to the rule.  I recently added pciehp to that list because
-the host driver provides functionality.  Being attached to the host
-driver means the device is not accessible to the user through VFIO, but
-other devices in the group are.  Thanks,
+Scott is correct, we probably need to fix the T4 dts.
 
-Alex
+- k=
