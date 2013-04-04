@@ -1,28 +1,25 @@
-Return-Path: <B08248@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 356342C0162
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2013 03:43:14 +1100 (EST)
-From: Yoder Stuart-B08248 <B08248@freescale.com>
-To: Alex Williamson <alex.williamson@redhat.com>, Sethi Varun-B16395
- <B16395@freescale.com>
-Subject: RE: [PATCH 5/5 v11] iommu/fsl: Freescale PAMU driver and iommu
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 9593F2C00A8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2013 03:43:53 +1100 (EST)
+Message-ID: <1365093819.2882.301.camel@bling.home>
+Subject: Re: [PATCH 5/5 v11] iommu/fsl: Freescale PAMU driver and iommu
  implementation.
-Date: Thu, 4 Apr 2013 16:43:03 +0000
-Message-ID: <9F6FE96B71CF29479FF1CDC8046E15035A26DD@039-SN1MPN1-003.039d.mgd.msft.net>
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Sethi Varun-B16395 <B16395@freescale.com>
+Date: Thu, 04 Apr 2013 10:43:39 -0600
+In-Reply-To: <C5ECD7A89D1DC44195F34B25E172658D459471@039-SN2MPN1-013.039d.mgd.msft.net>
 References: <1364500442-20927-1-git-send-email-Varun.Sethi@freescale.com>
  <1364500442-20927-6-git-send-email-Varun.Sethi@freescale.com>
  <20130402161812.GI15687@8bytes.org> <1365012091.2882.252.camel@bling.home>
  <C5ECD7A89D1DC44195F34B25E172658D45883B@039-SN2MPN1-013.039d.mgd.msft.net>
  <1365088930.2882.296.camel@bling.home>
-In-Reply-To: <1365088930.2882.296.camel@bling.home>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+ <C5ECD7A89D1DC44195F34B25E172658D459471@039-SN2MPN1-013.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 Cc: Wood Scott-B07421 <B07421@freescale.com>, Joerg Roedel <joro@8bytes.org>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Yoder Stuart-B08248 <B08248@freescale.com>,
  "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,74 +31,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQWxleCBXaWxsaWFtc29u
-IFttYWlsdG86YWxleC53aWxsaWFtc29uQHJlZGhhdC5jb21dDQo+IFNlbnQ6IFRodXJzZGF5LCBB
-cHJpbCAwNCwgMjAxMyAxMDoyMiBBTQ0KPiBUbzogU2V0aGkgVmFydW4tQjE2Mzk1DQo+IENjOiBK
-b2VyZyBSb2VkZWw7IFlvZGVyIFN0dWFydC1CMDgyNDg7IFdvb2QgU2NvdHQtQjA3NDIxOyBpb21t
-dUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZzsgbGludXhwcGMtDQo+IGRldkBsaXN0cy5vemxh
-YnMub3JnOyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBnYWxha0BrZXJuZWwuY3Jhc2hp
-bmcub3JnOyBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCA1
-LzUgdjExXSBpb21tdS9mc2w6IEZyZWVzY2FsZSBQQU1VIGRyaXZlciBhbmQgaW9tbXUgaW1wbGVt
-ZW50YXRpb24uDQo+IA0KPiBPbiBUaHUsIDIwMTMtMDQtMDQgYXQgMTM6MDAgKzAwMDAsIFNldGhp
-IFZhcnVuLUIxNjM5NSB3cm90ZToNCj4gPg0KPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0t
-LS0NCj4gPiA+IEZyb206IEFsZXggV2lsbGlhbXNvbiBbbWFpbHRvOmFsZXgud2lsbGlhbXNvbkBy
-ZWRoYXQuY29tXQ0KPiA+ID4gU2VudDogV2VkbmVzZGF5LCBBcHJpbCAwMywgMjAxMyAxMTozMiBQ
-TQ0KPiA+ID4gVG86IEpvZXJnIFJvZWRlbA0KPiA+ID4gQ2M6IFNldGhpIFZhcnVuLUIxNjM5NTsg
-WW9kZXIgU3R1YXJ0LUIwODI0ODsgV29vZCBTY290dC1CMDc0MjE7DQo+ID4gPiBpb21tdUBsaXN0
-cy5saW51eC1mb3VuZGF0aW9uLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGxp
-bnV4LQ0KPiA+ID4ga2VybmVsQHZnZXIua2VybmVsLm9yZzsgZ2FsYWtAa2VybmVsLmNyYXNoaW5n
-Lm9yZzsNCj4gPiA+IGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZw0KPiA+ID4gU3ViamVjdDogUmU6
-IFtQQVRDSCA1LzUgdjExXSBpb21tdS9mc2w6IEZyZWVzY2FsZSBQQU1VIGRyaXZlciBhbmQgaW9t
-bXUNCj4gPiA+IGltcGxlbWVudGF0aW9uLg0KPiA+ID4NCj4gPiA+IE9uIFR1ZSwgMjAxMy0wNC0w
-MiBhdCAxODoxOCArMDIwMCwgSm9lcmcgUm9lZGVsIHdyb3RlOg0KPiA+ID4gPiBDYydpbmcgQWxl
-eCBXaWxsaWFtc29uDQo+ID4gPiA+DQo+ID4gPiA+IEFsZXgsIGNhbiB5b3UgcGxlYXNlIHJldmll
-dyB0aGUgaW9tbXUtZ3JvdXAgcGFydCBvZiB0aGlzIHBhdGNoPw0KPiA+ID4NCj4gPiA+IFN1cmUs
-IGl0IGxvb2tzIHByZXR0eSByZWFzb25hYmxlLiAgQUlVSSwgYWxsIFBDSSBkZXZpY2VzIGFyZSBi
-ZWxvdyBzb21lDQo+ID4gPiBraW5kIG9mIGhvc3QgYnJpZGdlIHRoYXQgaXMgZWl0aGVyIG5ldyBh
-bmQgc3VwcG9ydHMgcGFydGl0aW9uaW5nIG9yIG9sZA0KPiA+ID4gYW5kIGRvZXNuJ3QuICBJIGRv
-bid0IGtub3cgaWYgdGhhdCdzIGEgdmlzaWJpbGl0eSBvciBpc29sYXRpb24NCj4gPiA+IHJlcXVp
-cmVtZW50LCBwZXJoYXBzIFBDSSBBQ1MtaXNoLiAgSW4gdGhlIG5ldyBob3N0IGJyaWRnZSBjYXNl
-LCBlYWNoDQo+ID4gPiBkZXZpY2UgZ2V0cyBhIGdyb3VwLiAgVGhpcyBzZWVtcyBub3QgdG8gaGF2
-ZSBhbnkgcXVpcmtzIGZvciBtdWx0aWZ1bmN0aW9uDQo+ID4gPiBkZXZpY2VzIHRob3VnaC4gIE9u
-IEFNRCBhbmQgSW50ZWwgSU9NTVVzIHdlIHRlc3QgbXVsdGlmdW5jdGlvbiBkZXZpY2UgQUNTDQo+
-ID4gPiBzdXBwb3J0IHRvIGRldGVybWluZSB3aGV0aGVyIGFsbCB0aGUgZnVuY3Rpb25zIHNob3Vs
-ZCBiZSBpbiB0aGUgc2FtZQ0KPiA+ID4gZ3JvdXAuICBJcyB0aGVyZSBhbnkgcmVhc29uIHRvIHRy
-dXN0IG11bHRpZnVuY3Rpb24gZGV2aWNlcyBvbiBQQU1VPw0KPiA+ID4NCj4gPiBbU2V0aGkgVmFy
-dW4tQjE2Mzk1XSBJbiB0aGUgY2FzZSB3aGVyZSB3ZSBjYW4gcGFydGl0aW9uIGVuZHBvaW50cyB3
-ZQ0KPiA+IGNhbiBkaXN0aW5ndWlzaCB0cmFuc2FjdGlvbnMgYmFzZWQgb24gdGhlIGJ1cyxkZXZp
-Y2UsZnVuY3Rpb24gbnVtYmVyDQo+ID4gY29tYmluYXRpb24uIFRoaXMgc3VwcG9ydCBpcyBhdmFp
-bGFibGUgaW4gdGhlIFBDSWUgY29udHJvbGxlciAoaG9zdA0KPiA+IGJyaWRnZSkuDQo+IA0KPiBT
-byBjYW4geDg2IElPTU1VcywgdGhhdCdzIHRoZSB2aXNpYmlsaXR5IGFzcGVjdCBvZiBJT01NVSBn
-cm91cHMuDQo+IFZpc2liaWxpdHkgYWxvbmUgZG9lc24ndCBuZWNlc3NhcmlseSBpbXBseSB0aGF0
-IGEgZGV2aWNlIGlzIGlzb2xhdGVkDQo+IHRob3VnaC4gIEEgbXVsdGlmdW5jdGlvbiBQQ0kgZGV2
-aWNlIHRoYXQgZG9lc24ndCBleHBvc2UgQUNTIHN1cHBvcnQgbWF5DQo+IG5vdCBpc29sYXRlIGZ1
-bmN0aW9ucyBmcm9tIGVhY2ggb3RoZXIuICBGb3IgZXhhbXBsZSBhIHBlZXItdG8tcGVlciBETUEN
-Cj4gYmV0d2VlbiBmdW5jdGlvbnMgbWF5IG5vdCBiZSB0cmFuc2xhdGVkIGJ5IHRoZSB1cHN0cmVh
-bSBJT01NVS4gIElPTU1VDQo+IGdyb3VwcyBzaG91bGQgZW5jb21wYXNzIGJvdGggdmlzaWJpbGl0
-eSBhbmQgaXNvbGF0aW9uLg0KPiANCj4gPiA+IEkgYWxzbyBmaW5kIGl0IGN1cmlvdXMgd2hhdCBo
-YXBwZW5zIHRvIHRoZSBpb21tdSBncm91cCBvZiB0aGUgaG9zdA0KPiA+ID4gYnJpZGdlLiAgSW4g
-dGhlIHBhcnRpdGlvbmFibGUgY2FzZSB0aGUgaG9zdCBicmlkZ2UgZ3JvdXAgaXMgcmVtb3ZlZCwg
-aW4NCj4gPiA+IHRoZSBub24tcGFydGl0aW9uYWJsZSBjYXNlIHRoZSBob3N0IGJyaWRnZSBncm91
-cCBiZWNvbWVzIHRoZSBncm91cCBmb3INCj4gPiA+IHRoZSBjaGlsZHJlbiwgcmVtb3ZpbmcgdGhl
-IGhvc3QgYnJpZGdlLiAgSXQncyB1bmlxdWUgdG8gUEFNVSBzbyBmYXIgdGhhdA0KPiA+ID4gdGhl
-c2UgaG9zdCBicmlkZ2VzIGFyZSBldmVuIGluIGFuIGlvbW11IGdyb3VwICh4ODYgb25seSBhZGRz
-IHBjaQ0KPiA+ID4gZGV2aWNlcyksIGJ1dCBJIGRvbid0IHNlZSBpdCBhcyBuZWNlc3NhcmlseSB3
-cm9uZyBsZWF2aW5nIGl0IGluIGVpdGhlcg0KPiA+ID4gc2NlbmFyaW8uICBEb2VzIGl0IHNvbHZl
-IHNvbWUgcHJvYmxlbSB0byByZW1vdmUgdGhlbSBmcm9tIHRoZSBncm91cHM/DQo+ID4gPiBUaGFu
-a3MsDQo+ID4gW1NldGhpIFZhcnVuLUIxNjM5NV0gVGhlIFBDSWUgY29udHJvbGxlciBpc24ndCBh
-IHBhcnRpdGlvbmFibGUgZW50aXR5LA0KPiA+IGl0IHdvdWxkIGFsd2F5cyBiZSBvd25lZCBieSB0
-aGUgaG9zdC4NCj4gDQo+IE93bmVyc2hpcCBvZiBhIGRldmljZSBzaG91bGRuJ3QgcGxheSBpbnRv
-IHRoZSBncm91cCBjb250ZXh0LiAgQW4gSU9NTVUNCj4gZ3JvdXAgc2hvdWxkIGJlIGRlZmluZWQg
-YnkgaXQncyB2aXNpYmlsaXR5IGFuZCBpc29sYXRpb24gZnJvbSBvdGhlcg0KPiBkZXZpY2VzLiAg
-V2hldGhlciB0aGUgUENJZSBjb250cm9sbGVyIGlzIGFsbG93ZWQgdG8gYmUgaGFuZGVkIHRvDQo+
-IHVzZXJzcGFjZSBpcyBhIHF1ZXN0aW9uIGZvciBWRklPLiAgVGhhbmtzLA0KDQpSaWdodCBub3cg
-dGhlIGFkZF9kZXZpY2UoKSBjYWxsYmFjayBnZXRzIGNhbGxlZCBmb3IgYWxsIHBsYXRmb3JtDQpk
-ZXZpY2VzIChpbmNsdWRpbmcgUENJIGNvbnRyb2xsZXIpIGFuZCBQQ0kgZGV2aWNlcy4gIFBDSSBj
-b250cm9sbGVycw0KYXJlIGEga2luZCBvZiBzcGVjaWFsIGNhc2UgaW4gdGhhdCB0aGVpciBkZXZp
-Y2UgdHJlZSBub2RlIGhhcyBhDQpwcm9wZXJ0eSBpbmRpY2F0aW5nIHRoYXQgaXQgaXMgRE1BIGNh
-cGFibGUuLi5idXQgaW4gZmFjdCB0aGUNClBDSSBjb250cm9sbGVyIGl0c2VsZiBkb2VzIG5vdCBE
-TUEsIGJ1dCBpdCdzIHRoZSBQQ0kgZW5kcG9pbnRzDQp1bmRlciBpdC4NCg0KU28sIGFzIHlvdSBu
-b3RlZCB0aGUgYnJpZGdlL2NvbnRyb2xsZXIgc2hvdWxkbid0IGJlIGluIGFuIElPTU1VDQpncm91
-cCBhbmQgc28gc2luY2UgdGhlIHBsYXRmb3JtICdhZGQgZGV2aWNlJyBjb2RlIGRpZG4ndCBzcGVj
-aWFsDQpjYXNlIFBDSSBjb250cm9sbGVycywgdGhpcyBwYXRjaCByZW1vdmVzIHRoZWlyIGdyb3Vw
-IGlmIGl0J3MgdGhlcmUuDQoNClN0dWFydA0K
+On Thu, 2013-04-04 at 16:35 +0000, Sethi Varun-B16395 wrote:
+> 
+> > -----Original Message-----
+> > From: Alex Williamson [mailto:alex.williamson@redhat.com]
+> > Sent: Thursday, April 04, 2013 8:52 PM
+> > To: Sethi Varun-B16395
+> > Cc: Joerg Roedel; Yoder Stuart-B08248; Wood Scott-B07421;
+> > iommu@lists.linux-foundation.org; linuxppc-dev@lists.ozlabs.org; linux-
+> > kernel@vger.kernel.org; galak@kernel.crashing.org;
+> > benh@kernel.crashing.org
+> > Subject: Re: [PATCH 5/5 v11] iommu/fsl: Freescale PAMU driver and iommu
+> > implementation.
+> > 
+> > On Thu, 2013-04-04 at 13:00 +0000, Sethi Varun-B16395 wrote:
+> > >
+> > > > -----Original Message-----
+> > > > From: Alex Williamson [mailto:alex.williamson@redhat.com]
+> > > > Sent: Wednesday, April 03, 2013 11:32 PM
+> > > > To: Joerg Roedel
+> > > > Cc: Sethi Varun-B16395; Yoder Stuart-B08248; Wood Scott-B07421;
+> > > > iommu@lists.linux-foundation.org; linuxppc-dev@lists.ozlabs.org;
+> > > > linux- kernel@vger.kernel.org; galak@kernel.crashing.org;
+> > > > benh@kernel.crashing.org
+> > > > Subject: Re: [PATCH 5/5 v11] iommu/fsl: Freescale PAMU driver and
+> > > > iommu implementation.
+> > > >
+> > > > On Tue, 2013-04-02 at 18:18 +0200, Joerg Roedel wrote:
+> > > > > Cc'ing Alex Williamson
+> > > > >
+> > > > > Alex, can you please review the iommu-group part of this patch?
+> > > >
+> > > > Sure, it looks pretty reasonable.  AIUI, all PCI devices are below
+> > > > some kind of host bridge that is either new and supports
+> > > > partitioning or old and doesn't.  I don't know if that's a
+> > > > visibility or isolation requirement, perhaps PCI ACS-ish.  In the
+> > > > new host bridge case, each device gets a group.  This seems not to
+> > > > have any quirks for multifunction devices though.  On AMD and Intel
+> > > > IOMMUs we test multifunction device ACS support to determine whether
+> > > > all the functions should be in the same group.  Is there any reason
+> > to trust multifunction devices on PAMU?
+> > > >
+> > > [Sethi Varun-B16395] In the case where we can partition endpoints we
+> > > can distinguish transactions based on the bus,device,function number
+> > > combination. This support is available in the PCIe controller (host
+> > > bridge).
+> > 
+> > So can x86 IOMMUs, that's the visibility aspect of IOMMU groups.
+> > Visibility alone doesn't necessarily imply that a device is isolated
+> > though.  A multifunction PCI device that doesn't expose ACS support may
+> > not isolate functions from each other.  For example a peer-to-peer DMA
+> > between functions may not be translated by the upstream IOMMU.  IOMMU
+> > groups should encompass both visibility and isolation.
+> [Sethi Varun-B16395] We can isolate the DMA access to the host based
+> on the to the pci bus,device,function number.
+
+The IOMMU can only isolate DMA that it can see.  A multifunction device
+may never expose peer-to-peer DMA to the upstream device, it's
+implementation specific.  The ACS flags allow that possibility to be
+controlled and prevented.
+
+> I thought that was enough to put devices in to separate iommu groups.
+> This is a PCIe controller property which allows us to partition PCIe
+> devices. But, what I can understand from your point is that we also
+> need to consider isolation at PCIe device level as well. I will check
+> for the case of multifunction devices.
+> 
+> > 
+> > > > I also find it curious what happens to the iommu group of the host
+> > > > bridge.  In the partitionable case the host bridge group is removed,
+> > > > in the non-partitionable case the host bridge group becomes the
+> > > > group for the children, removing the host bridge.  It's unique to
+> > > > PAMU so far that these host bridges are even in an iommu group (x86
+> > > > only adds pci devices), but I don't see it as necessarily wrong
+> > > > leaving it in either scenario.  Does it solve some problem to remove
+> > them from the groups?
+> > > > Thanks,
+> > > [Sethi Varun-B16395] The PCIe controller isn't a partitionable entity,
+> > > it would always be owned by the host.
+> > 
+> > Ownership of a device shouldn't play into the group context.  An IOMMU
+> > group should be defined by it's visibility and isolation from other
+> > devices.  Whether the PCIe controller is allowed to be handed to
+> > userspace is a question for VFIO.
+> [Sethi Varun-B16395] The problem is in the case, where we can't
+> partition PCIe devices. PCIe devices share the same device group as
+> the PCI controller. This becomes a problem while assigning the devices
+> to the guest, as you are required to unbind all the PCIe devices
+> including the controller from the host. PCIe controller can't be
+> unbound from the host, so we simply delete the controller iommu_group.
+
+Unbinding devices is a VFIO implementation, it shouldn't leak into IOMMU
+groups.  Also note that VFIO has a driver white list where we can have
+exceptions to the rule.  I recently added pciehp to that list because
+the host driver provides functionality.  Being attached to the host
+driver means the device is not accessible to the user through VFIO, but
+other devices in the group are.  Thanks,
+
+Alex
