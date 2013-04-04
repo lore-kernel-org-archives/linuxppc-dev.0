@@ -1,33 +1,22 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Return-Path: <chris.friesen@genband.com>
+Received: from exprod7og102.obsmtp.com (exprod7og102.obsmtp.com [64.18.2.157])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e33.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BF5EA2C00E7
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2013 08:58:26 +1100 (EST)
-Received: from /spool/local
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
- Thu, 4 Apr 2013 15:58:24 -0600
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
- [9.17.195.227])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 0C9133E40055
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2013 15:58:08 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r34LwKfV160246
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Apr 2013 15:58:20 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r34LwHjY010756
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Apr 2013 15:58:19 -0600
-Message-Id: <201304042158.r34LwGPg010714@d03av02.boulder.ibm.com>
-Subject: [PATCH 3/3] powerpc: Set default VGA device
-To: linux-pci@vger.kernel.org
-From: Brian King <brking@linux.vnet.ibm.com>
-Date: Thu, 04 Apr 2013 16:58:17 -0500
-Cc: klebers@linux.vnet.ibm.com, brking@linux.vnet.ibm.com,
- lucaskt@linux.vnet.ibm.com, bhelgaas@google.com, linuxppc-dev@lists.ozlabs.org
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 790B72C009D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2013 09:29:15 +1100 (EST)
+Message-ID: <515DFD87.7050303@genband.com>
+Date: Thu, 04 Apr 2013 16:24:07 -0600
+From: Chris Friesen <chris.friesen@genband.com>
+MIME-Version: 1.0
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: weird elf header issues, is it binutils or my linker script?
+References: <51545BF3.2090204@genband.com>
+ <1AEA14BF-7AFA-43F4-8082-F0D3031C60A8@kernel.crashing.org>
+ <5159A180.90000@genband.com>
+ <BFFF4F77-FA45-40B6-8836-EFF3A23A9480@kernel.crashing.org>
+In-Reply-To: <BFFF4F77-FA45-40B6-8836-EFF3A23A9480@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,45 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 04/02/2013 09:07 AM, Segher Boessenkool wrote:
 
-Add a PCI quirk for VGA devices on Power to set the default VGA device.
-Ensures a default VGA is always set if a graphics adapter is present,
-even if firmware did not initialize it. If more than one graphics
-adapter is present, ensure the one initialized by firmware is set
-as the default VGA device. This ensures that X autoconfiguration
-will work.
+>> What I don't understand is where the "/lib/ld.so.1" string is coming
+>> from and how the length gets set to the invalid value.
+>
+> It comes from the .interp input sections, i.e. the .interp sections in
+> the .o files you linked together. Perhaps you have more than one of
+> those?
 
-Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
----
+It turns out that the problem was in the linker script.  The linker 
+script was originally written for an older binutils.  With the newly 
+compiled object files there were some sections that were not explicitly 
+specified in the linker script so they were added automatically to the 
+interpreter section, bumping up the length.
 
- arch/powerpc/kernel/pci-common.c |   13 +++++++++++++
- 1 file changed, 13 insertions(+)
+A new linker script with explicit mention of those sections made the 
+interpreter section look as expected.
 
-diff -puN arch/powerpc/kernel/pci-common.c~powerpc_vga_default_device arch/powerpc/kernel/pci-common.c
---- linux/arch/powerpc/kernel/pci-common.c~powerpc_vga_default_device	2013-04-03 09:50:33.000000000 -0500
-+++ linux-bjking1/arch/powerpc/kernel/pci-common.c	2013-04-03 09:50:33.000000000 -0500
-@@ -30,6 +30,7 @@
- #include <linux/irq.h>
- #include <linux/vmalloc.h>
- #include <linux/slab.h>
-+#include <linux/vgaarb.h>
- 
- #include <asm/processor.h>
- #include <asm/io.h>
-@@ -1725,3 +1726,15 @@ static void fixup_hide_host_resource_fsl
- }
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_MOTOROLA, PCI_ANY_ID, fixup_hide_host_resource_fsl);
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_FREESCALE, PCI_ANY_ID, fixup_hide_host_resource_fsl);
-+
-+static void fixup_vga(struct pci_dev *pdev)
-+{
-+	u16 cmd;
-+
-+	pci_read_config_word(pdev, PCI_COMMAND, &cmd);
-+	if ((cmd & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY)) || !vga_default_device())
-+		vga_set_default_device(pdev);
-+
-+}
-+DECLARE_PCI_FIXUP_CLASS_FINAL(PCI_ANY_ID, PCI_ANY_ID,
-+			      PCI_CLASS_DISPLAY_VGA, 8, fixup_vga);
-_
+Chris
