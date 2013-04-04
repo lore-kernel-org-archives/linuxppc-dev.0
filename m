@@ -1,20 +1,25 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 4F9552C00A4
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2013 02:22:23 +1100 (EST)
-Message-ID: <1365088930.2882.296.camel@bling.home>
-Subject: Re: [PATCH 5/5 v11] iommu/fsl: Freescale PAMU driver and iommu
+Return-Path: <B16395@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B5E872C00A8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2013 03:35:50 +1100 (EST)
+From: Sethi Varun-B16395 <B16395@freescale.com>
+To: Alex Williamson <alex.williamson@redhat.com>
+Subject: RE: [PATCH 5/5 v11] iommu/fsl: Freescale PAMU driver and iommu
  implementation.
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Sethi Varun-B16395 <B16395@freescale.com>
-Date: Thu, 04 Apr 2013 09:22:10 -0600
-In-Reply-To: <C5ECD7A89D1DC44195F34B25E172658D45883B@039-SN2MPN1-013.039d.mgd.msft.net>
+Date: Thu, 4 Apr 2013 16:35:39 +0000
+Message-ID: <C5ECD7A89D1DC44195F34B25E172658D459471@039-SN2MPN1-013.039d.mgd.msft.net>
 References: <1364500442-20927-1-git-send-email-Varun.Sethi@freescale.com>
  <1364500442-20927-6-git-send-email-Varun.Sethi@freescale.com>
  <20130402161812.GI15687@8bytes.org> <1365012091.2882.252.camel@bling.home>
  <C5ECD7A89D1DC44195F34B25E172658D45883B@039-SN2MPN1-013.039d.mgd.msft.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ <1365088930.2882.296.camel@bling.home>
+In-Reply-To: <1365088930.2882.296.camel@bling.home>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 Cc: Wood Scott-B07421 <B07421@freescale.com>, Joerg Roedel <joro@8bytes.org>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  Yoder Stuart-B08248 <B08248@freescale.com>,
@@ -29,59 +34,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-04-04 at 13:00 +0000, Sethi Varun-B16395 wrote:
-> 
-> > -----Original Message-----
-> > From: Alex Williamson [mailto:alex.williamson@redhat.com]
-> > Sent: Wednesday, April 03, 2013 11:32 PM
-> > To: Joerg Roedel
-> > Cc: Sethi Varun-B16395; Yoder Stuart-B08248; Wood Scott-B07421;
-> > iommu@lists.linux-foundation.org; linuxppc-dev@lists.ozlabs.org; linux-
-> > kernel@vger.kernel.org; galak@kernel.crashing.org;
-> > benh@kernel.crashing.org
-> > Subject: Re: [PATCH 5/5 v11] iommu/fsl: Freescale PAMU driver and iommu
-> > implementation.
-> > 
-> > On Tue, 2013-04-02 at 18:18 +0200, Joerg Roedel wrote:
-> > > Cc'ing Alex Williamson
-> > >
-> > > Alex, can you please review the iommu-group part of this patch?
-> > 
-> > Sure, it looks pretty reasonable.  AIUI, all PCI devices are below some
-> > kind of host bridge that is either new and supports partitioning or old
-> > and doesn't.  I don't know if that's a visibility or isolation
-> > requirement, perhaps PCI ACS-ish.  In the new host bridge case, each
-> > device gets a group.  This seems not to have any quirks for multifunction
-> > devices though.  On AMD and Intel IOMMUs we test multifunction device ACS
-> > support to determine whether all the functions should be in the same
-> > group.  Is there any reason to trust multifunction devices on PAMU?
-> > 
-> [Sethi Varun-B16395] In the case where we can partition endpoints we
-> can distinguish transactions based on the bus,device,function number
-> combination. This support is available in the PCIe controller (host
-> bridge).
-
-So can x86 IOMMUs, that's the visibility aspect of IOMMU groups.
-Visibility alone doesn't necessarily imply that a device is isolated
-though.  A multifunction PCI device that doesn't expose ACS support may
-not isolate functions from each other.  For example a peer-to-peer DMA
-between functions may not be translated by the upstream IOMMU.  IOMMU
-groups should encompass both visibility and isolation.
-
-> > I also find it curious what happens to the iommu group of the host
-> > bridge.  In the partitionable case the host bridge group is removed, in
-> > the non-partitionable case the host bridge group becomes the group for
-> > the children, removing the host bridge.  It's unique to PAMU so far that
-> > these host bridges are even in an iommu group (x86 only adds pci
-> > devices), but I don't see it as necessarily wrong leaving it in either
-> > scenario.  Does it solve some problem to remove them from the groups?
-> > Thanks,
-> [Sethi Varun-B16395] The PCIe controller isn't a partitionable entity,
-> it would always be owned by the host.
-
-Ownership of a device shouldn't play into the group context.  An IOMMU
-group should be defined by it's visibility and isolation from other
-devices.  Whether the PCIe controller is allowed to be handed to
-userspace is a question for VFIO.  Thanks,
-
-Alex
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQWxleCBXaWxsaWFtc29u
+IFttYWlsdG86YWxleC53aWxsaWFtc29uQHJlZGhhdC5jb21dDQo+IFNlbnQ6IFRodXJzZGF5LCBB
+cHJpbCAwNCwgMjAxMyA4OjUyIFBNDQo+IFRvOiBTZXRoaSBWYXJ1bi1CMTYzOTUNCj4gQ2M6IEpv
+ZXJnIFJvZWRlbDsgWW9kZXIgU3R1YXJ0LUIwODI0ODsgV29vZCBTY290dC1CMDc0MjE7DQo+IGlv
+bW11QGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJz
+Lm9yZzsgbGludXgtDQo+IGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGdhbGFrQGtlcm5lbC5jcmFz
+aGluZy5vcmc7DQo+IGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BB
+VENIIDUvNSB2MTFdIGlvbW11L2ZzbDogRnJlZXNjYWxlIFBBTVUgZHJpdmVyIGFuZCBpb21tdQ0K
+PiBpbXBsZW1lbnRhdGlvbi4NCj4gDQo+IE9uIFRodSwgMjAxMy0wNC0wNCBhdCAxMzowMCArMDAw
+MCwgU2V0aGkgVmFydW4tQjE2Mzk1IHdyb3RlOg0KPiA+DQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1l
+c3NhZ2UtLS0tLQ0KPiA+ID4gRnJvbTogQWxleCBXaWxsaWFtc29uIFttYWlsdG86YWxleC53aWxs
+aWFtc29uQHJlZGhhdC5jb21dDQo+ID4gPiBTZW50OiBXZWRuZXNkYXksIEFwcmlsIDAzLCAyMDEz
+IDExOjMyIFBNDQo+ID4gPiBUbzogSm9lcmcgUm9lZGVsDQo+ID4gPiBDYzogU2V0aGkgVmFydW4t
+QjE2Mzk1OyBZb2RlciBTdHVhcnQtQjA4MjQ4OyBXb29kIFNjb3R0LUIwNzQyMTsNCj4gPiA+IGlv
+bW11QGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJz
+Lm9yZzsNCj4gPiA+IGxpbnV4LSBrZXJuZWxAdmdlci5rZXJuZWwub3JnOyBnYWxha0BrZXJuZWwu
+Y3Jhc2hpbmcub3JnOw0KPiA+ID4gYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnDQo+ID4gPiBTdWJq
+ZWN0OiBSZTogW1BBVENIIDUvNSB2MTFdIGlvbW11L2ZzbDogRnJlZXNjYWxlIFBBTVUgZHJpdmVy
+IGFuZA0KPiA+ID4gaW9tbXUgaW1wbGVtZW50YXRpb24uDQo+ID4gPg0KPiA+ID4gT24gVHVlLCAy
+MDEzLTA0LTAyIGF0IDE4OjE4ICswMjAwLCBKb2VyZyBSb2VkZWwgd3JvdGU6DQo+ID4gPiA+IENj
+J2luZyBBbGV4IFdpbGxpYW1zb24NCj4gPiA+ID4NCj4gPiA+ID4gQWxleCwgY2FuIHlvdSBwbGVh
+c2UgcmV2aWV3IHRoZSBpb21tdS1ncm91cCBwYXJ0IG9mIHRoaXMgcGF0Y2g/DQo+ID4gPg0KPiA+
+ID4gU3VyZSwgaXQgbG9va3MgcHJldHR5IHJlYXNvbmFibGUuICBBSVVJLCBhbGwgUENJIGRldmlj
+ZXMgYXJlIGJlbG93DQo+ID4gPiBzb21lIGtpbmQgb2YgaG9zdCBicmlkZ2UgdGhhdCBpcyBlaXRo
+ZXIgbmV3IGFuZCBzdXBwb3J0cw0KPiA+ID4gcGFydGl0aW9uaW5nIG9yIG9sZCBhbmQgZG9lc24n
+dC4gIEkgZG9uJ3Qga25vdyBpZiB0aGF0J3MgYQ0KPiA+ID4gdmlzaWJpbGl0eSBvciBpc29sYXRp
+b24gcmVxdWlyZW1lbnQsIHBlcmhhcHMgUENJIEFDUy1pc2guICBJbiB0aGUNCj4gPiA+IG5ldyBo
+b3N0IGJyaWRnZSBjYXNlLCBlYWNoIGRldmljZSBnZXRzIGEgZ3JvdXAuICBUaGlzIHNlZW1zIG5v
+dCB0bw0KPiA+ID4gaGF2ZSBhbnkgcXVpcmtzIGZvciBtdWx0aWZ1bmN0aW9uIGRldmljZXMgdGhv
+dWdoLiAgT24gQU1EIGFuZCBJbnRlbA0KPiA+ID4gSU9NTVVzIHdlIHRlc3QgbXVsdGlmdW5jdGlv
+biBkZXZpY2UgQUNTIHN1cHBvcnQgdG8gZGV0ZXJtaW5lIHdoZXRoZXINCj4gPiA+IGFsbCB0aGUg
+ZnVuY3Rpb25zIHNob3VsZCBiZSBpbiB0aGUgc2FtZSBncm91cC4gIElzIHRoZXJlIGFueSByZWFz
+b24NCj4gdG8gdHJ1c3QgbXVsdGlmdW5jdGlvbiBkZXZpY2VzIG9uIFBBTVU/DQo+ID4gPg0KPiA+
+IFtTZXRoaSBWYXJ1bi1CMTYzOTVdIEluIHRoZSBjYXNlIHdoZXJlIHdlIGNhbiBwYXJ0aXRpb24g
+ZW5kcG9pbnRzIHdlDQo+ID4gY2FuIGRpc3Rpbmd1aXNoIHRyYW5zYWN0aW9ucyBiYXNlZCBvbiB0
+aGUgYnVzLGRldmljZSxmdW5jdGlvbiBudW1iZXINCj4gPiBjb21iaW5hdGlvbi4gVGhpcyBzdXBw
+b3J0IGlzIGF2YWlsYWJsZSBpbiB0aGUgUENJZSBjb250cm9sbGVyIChob3N0DQo+ID4gYnJpZGdl
+KS4NCj4gDQo+IFNvIGNhbiB4ODYgSU9NTVVzLCB0aGF0J3MgdGhlIHZpc2liaWxpdHkgYXNwZWN0
+IG9mIElPTU1VIGdyb3Vwcy4NCj4gVmlzaWJpbGl0eSBhbG9uZSBkb2Vzbid0IG5lY2Vzc2FyaWx5
+IGltcGx5IHRoYXQgYSBkZXZpY2UgaXMgaXNvbGF0ZWQNCj4gdGhvdWdoLiAgQSBtdWx0aWZ1bmN0
+aW9uIFBDSSBkZXZpY2UgdGhhdCBkb2Vzbid0IGV4cG9zZSBBQ1Mgc3VwcG9ydCBtYXkNCj4gbm90
+IGlzb2xhdGUgZnVuY3Rpb25zIGZyb20gZWFjaCBvdGhlci4gIEZvciBleGFtcGxlIGEgcGVlci10
+by1wZWVyIERNQQ0KPiBiZXR3ZWVuIGZ1bmN0aW9ucyBtYXkgbm90IGJlIHRyYW5zbGF0ZWQgYnkg
+dGhlIHVwc3RyZWFtIElPTU1VLiAgSU9NTVUNCj4gZ3JvdXBzIHNob3VsZCBlbmNvbXBhc3MgYm90
+aCB2aXNpYmlsaXR5IGFuZCBpc29sYXRpb24uDQpbU2V0aGkgVmFydW4tQjE2Mzk1XSBXZSBjYW4g
+aXNvbGF0ZSB0aGUgRE1BIGFjY2VzcyB0byB0aGUgaG9zdCBiYXNlZCBvbiB0aGUgdG8gdGhlIHBj
+aSBidXMsZGV2aWNlLGZ1bmN0aW9uIG51bWJlci4NCkkgdGhvdWdodCB0aGF0IHdhcyBlbm91Z2gg
+dG8gcHV0IGRldmljZXMgaW4gdG8gc2VwYXJhdGUgaW9tbXUgZ3JvdXBzLiBUaGlzIGlzIGEgUENJ
+ZSBjb250cm9sbGVyIHByb3BlcnR5IHdoaWNoIGFsbG93cyB1cyB0byBwYXJ0aXRpb24gUENJZSBk
+ZXZpY2VzLiBCdXQsIHdoYXQgSSBjYW4gdW5kZXJzdGFuZCBmcm9tIHlvdXIgcG9pbnQgaXMgdGhh
+dCB3ZSBhbHNvIG5lZWQgdG8gY29uc2lkZXIgaXNvbGF0aW9uIGF0IFBDSWUgZGV2aWNlIGxldmVs
+IGFzIHdlbGwuIEkgd2lsbCBjaGVjayBmb3IgdGhlIGNhc2Ugb2YgbXVsdGlmdW5jdGlvbiBkZXZp
+Y2VzLg0KDQo+IA0KPiA+ID4gSSBhbHNvIGZpbmQgaXQgY3VyaW91cyB3aGF0IGhhcHBlbnMgdG8g
+dGhlIGlvbW11IGdyb3VwIG9mIHRoZSBob3N0DQo+ID4gPiBicmlkZ2UuICBJbiB0aGUgcGFydGl0
+aW9uYWJsZSBjYXNlIHRoZSBob3N0IGJyaWRnZSBncm91cCBpcyByZW1vdmVkLA0KPiA+ID4gaW4g
+dGhlIG5vbi1wYXJ0aXRpb25hYmxlIGNhc2UgdGhlIGhvc3QgYnJpZGdlIGdyb3VwIGJlY29tZXMg
+dGhlDQo+ID4gPiBncm91cCBmb3IgdGhlIGNoaWxkcmVuLCByZW1vdmluZyB0aGUgaG9zdCBicmlk
+Z2UuICBJdCdzIHVuaXF1ZSB0bw0KPiA+ID4gUEFNVSBzbyBmYXIgdGhhdCB0aGVzZSBob3N0IGJy
+aWRnZXMgYXJlIGV2ZW4gaW4gYW4gaW9tbXUgZ3JvdXAgKHg4Ng0KPiA+ID4gb25seSBhZGRzIHBj
+aSBkZXZpY2VzKSwgYnV0IEkgZG9uJ3Qgc2VlIGl0IGFzIG5lY2Vzc2FyaWx5IHdyb25nDQo+ID4g
+PiBsZWF2aW5nIGl0IGluIGVpdGhlciBzY2VuYXJpby4gIERvZXMgaXQgc29sdmUgc29tZSBwcm9i
+bGVtIHRvIHJlbW92ZQ0KPiB0aGVtIGZyb20gdGhlIGdyb3Vwcz8NCj4gPiA+IFRoYW5rcywNCj4g
+PiBbU2V0aGkgVmFydW4tQjE2Mzk1XSBUaGUgUENJZSBjb250cm9sbGVyIGlzbid0IGEgcGFydGl0
+aW9uYWJsZSBlbnRpdHksDQo+ID4gaXQgd291bGQgYWx3YXlzIGJlIG93bmVkIGJ5IHRoZSBob3N0
+Lg0KPiANCj4gT3duZXJzaGlwIG9mIGEgZGV2aWNlIHNob3VsZG4ndCBwbGF5IGludG8gdGhlIGdy
+b3VwIGNvbnRleHQuICBBbiBJT01NVQ0KPiBncm91cCBzaG91bGQgYmUgZGVmaW5lZCBieSBpdCdz
+IHZpc2liaWxpdHkgYW5kIGlzb2xhdGlvbiBmcm9tIG90aGVyDQo+IGRldmljZXMuICBXaGV0aGVy
+IHRoZSBQQ0llIGNvbnRyb2xsZXIgaXMgYWxsb3dlZCB0byBiZSBoYW5kZWQgdG8NCj4gdXNlcnNw
+YWNlIGlzIGEgcXVlc3Rpb24gZm9yIFZGSU8uDQpbU2V0aGkgVmFydW4tQjE2Mzk1XSBUaGUgcHJv
+YmxlbSBpcyBpbiB0aGUgY2FzZSwgd2hlcmUgd2UgY2FuJ3QgcGFydGl0aW9uIFBDSWUgZGV2aWNl
+cy4gUENJZSBkZXZpY2VzIHNoYXJlIHRoZSBzYW1lIGRldmljZSBncm91cCBhcyB0aGUgUENJIGNv
+bnRyb2xsZXIuIFRoaXMgYmVjb21lcyBhIHByb2JsZW0gd2hpbGUgYXNzaWduaW5nIHRoZSBkZXZp
+Y2VzIHRvIHRoZSBndWVzdCwgYXMgeW91IGFyZSByZXF1aXJlZCB0byB1bmJpbmQgYWxsIHRoZSBQ
+Q0llIGRldmljZXMgaW5jbHVkaW5nIHRoZSBjb250cm9sbGVyIGZyb20gdGhlIGhvc3QuIFBDSWUg
+Y29udHJvbGxlciBjYW4ndCBiZSB1bmJvdW5kIGZyb20gdGhlIGhvc3QsIHNvIHdlIHNpbXBseSBk
+ZWxldGUgdGhlIGNvbnRyb2xsZXIgaW9tbXVfZ3JvdXAuDQoNCi1WYXJ1bg0KIA0KDQo=
