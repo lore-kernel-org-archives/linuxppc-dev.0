@@ -1,36 +1,33 @@
-Return-Path: <azanella@linux.vnet.ibm.com>
-Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e24smtp04.br.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 887752C00AC
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2013 06:23:21 +1100 (EST)
+ (Client CN "e38.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0D2A02C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2013 08:58:22 +1100 (EST)
 Received: from /spool/local
- by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <azanella@linux.vnet.ibm.com>;
- Thu, 4 Apr 2013 16:23:12 -0300
-Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 0EB6B1DC004E
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2013 15:23:01 -0400 (EDT)
-Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
- by d24relay01.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r34JKaSP1368258
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Apr 2013 16:20:36 -0300
-Received: from d24av04.br.ibm.com (loopback [127.0.0.1])
- by d24av04.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r34HMjXW026283
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Apr 2013 14:22:46 -0300
-Message-ID: <515DD313.3050505@linux.vnet.ibm.com>
-Date: Thu, 04 Apr 2013 16:22:59 -0300
-From: Adhemerval Zanella <azanella@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] [RFC] powerpc: Add VDSO version of time
-References: <5148C2B3.6010408@linux.vnet.ibm.com>
- <1363755620.18880.27.camel@pasglop>
-In-Reply-To: <1363755620.18880.27.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+ for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
+ Thu, 4 Apr 2013 15:58:20 -0600
+Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
+ [9.17.195.226])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 250553E4003E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2013 15:58:05 -0600 (MDT)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r34LwFpo069544
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Apr 2013 15:58:15 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r34LwEee010547
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Apr 2013 15:58:14 -0600
+Message-Id: <201304042158.r34LwDHx010466@d03av02.boulder.ibm.com>
+Subject: [PATCH 1/3] pci: Export pci_dev_type
+To: linux-pci@vger.kernel.org
+From: Brian King <brking@linux.vnet.ibm.com>
+Date: Thu, 04 Apr 2013 16:58:13 -0500
+Cc: klebers@linux.vnet.ibm.com, brking@linux.vnet.ibm.com,
+ lucaskt@linux.vnet.ibm.com, bhelgaas@google.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,24 +37,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Benjamin,
 
-Any objection or request about this patch?
+Export pci_dev_type so that arch specific PCI probing code can
+initialize a new PCI device struct.
 
+Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+---
 
-On 20-03-2013 02:00, Benjamin Herrenschmidt wrote:
-> On Tue, 2013-03-19 at 16:55 -0300, Adhemerval Zanella wrote:
->> I focused on 64 bit kernel, do I need to provide a scheme for 32 bits
->> as well?
-> You did provide both 32 and 64-bit VDSO implementations so 32-bit
-> kernels should be covered.
->
-> Cheers,
-> Ben.
->
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
+ drivers/pci/pci.h   |    1 -
+ include/linux/pci.h |    1 +
+ 2 files changed, 1 insertion(+), 1 deletion(-)
+
+diff -puN drivers/pci/pci.h~pci_export_pci_dev_type drivers/pci/pci.h
+--- linux/drivers/pci/pci.h~pci_export_pci_dev_type	2013-04-02 17:01:25.000000000 -0500
++++ linux-bjking1/drivers/pci/pci.h	2013-04-02 17:02:31.000000000 -0500
+@@ -153,7 +153,6 @@ static inline int pci_no_d1d2(struct pci
+ }
+ extern struct device_attribute pci_dev_attrs[];
+ extern struct device_attribute pcibus_dev_attrs[];
+-extern struct device_type pci_dev_type;
+ extern struct bus_attribute pci_bus_attrs[];
+ 
+ 
+diff -puN include/linux/pci.h~pci_export_pci_dev_type include/linux/pci.h
+--- linux/include/linux/pci.h~pci_export_pci_dev_type	2013-04-02 17:01:59.000000000 -0500
++++ linux-bjking1/include/linux/pci.h	2013-04-02 17:02:29.000000000 -0500
+@@ -670,6 +670,7 @@ enum pcie_bus_config_types {
+ extern enum pcie_bus_config_types pcie_bus_config;
+ 
+ extern struct bus_type pci_bus_type;
++extern struct device_type pci_dev_type;
+ 
+ /* Do NOT directly access these two variables, unless you are arch specific pci
+  * code, or pci core code. */
+_
