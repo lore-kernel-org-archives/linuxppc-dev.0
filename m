@@ -1,31 +1,30 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 58E4E2C00C3
+ (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 766E32C00D1
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2013 16:58:23 +1100 (EST)
 Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 4 Apr 2013 11:25:18 +0530
+ Thu, 4 Apr 2013 11:24:35 +0530
 Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 5C8A1394004F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2013 11:28:18 +0530 (IST)
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id C19E21258023
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2013 11:29:38 +0530 (IST)
 Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
  by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r345wFB111862310
+ r345wFj710092922
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Apr 2013 11:28:15 +0530
 Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
  by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r345wFXP026676
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Apr 2013 05:58:16 GMT
+ r345wGAF026729
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Apr 2013 05:58:18 GMT
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V5 07/25] powerpc: Use encode avpn where we need only avpn
- values
-Date: Thu,  4 Apr 2013 11:27:45 +0530
-Message-Id: <1365055083-31956-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V5 11/25] powerpc: Print page size info during boot
+Date: Thu,  4 Apr 2013 11:27:49 +0530
+Message-Id: <1365055083-31956-12-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1365055083-31956-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1365055083-31956-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
@@ -41,124 +40,41 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-In all these cases we are doing something similar to
+This gives hint about different base and actual page size combination
+supported by the platform.
 
-HPTE_V_COMPARE(hpte_v, want_v) which ignores the HPTE_V_LARGE bit
-
-With MPSS support we would need actual page size to set HPTE_V_LARGE
-bit and that won't be available in most of these cases. Since we are ignoring
-HPTE_V_LARGE bit, use the  avpn value instead. There should not be any change
-in behaviour after this patch.
-
-Acked-by: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/hash_native_64.c        |    8 ++++----
- arch/powerpc/platforms/cell/beat_htab.c |   10 +++++-----
- arch/powerpc/platforms/ps3/htab.c       |    2 +-
- 3 files changed, 10 insertions(+), 10 deletions(-)
+ arch/powerpc/mm/hash_utils_64.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
-index ffc1e00..9d8983a 100644
---- a/arch/powerpc/mm/hash_native_64.c
-+++ b/arch/powerpc/mm/hash_native_64.c
-@@ -252,7 +252,7 @@ static long native_hpte_updatepp(unsigned long slot, unsigned long newpp,
- 	unsigned long hpte_v, want_v;
- 	int ret = 0;
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 56ff4bb..1f2ebbd 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -315,7 +315,7 @@ static int __init htab_dt_scan_page_sizes(unsigned long node,
+ 	prop = (u32 *)of_get_flat_dt_prop(node,
+ 					  "ibm,segment-page-sizes", &size);
+ 	if (prop != NULL) {
+-		DBG("Page sizes from device-tree:\n");
++		pr_info("Page sizes from device-tree:\n");
+ 		size /= 4;
+ 		cur_cpu_spec->mmu_features &= ~(MMU_FTR_16M_PAGE);
+ 		while(size > 0) {
+@@ -369,10 +369,10 @@ static int __init htab_dt_scan_page_sizes(unsigned long node,
+ 					       "shift=%d\n", base_shift, shift);
  
--	want_v = hpte_encode_v(vpn, psize, ssize);
-+	want_v = hpte_encode_avpn(vpn, psize, ssize);
- 
- 	DBG_LOW("    update(vpn=%016lx, avpnv=%016lx, group=%lx, newpp=%lx)",
- 		vpn, want_v & HPTE_V_AVPN, slot, newpp);
-@@ -288,7 +288,7 @@ static long native_hpte_find(unsigned long vpn, int psize, int ssize)
- 	unsigned long want_v, hpte_v;
- 
- 	hash = hpt_hash(vpn, mmu_psize_defs[psize].shift, ssize);
--	want_v = hpte_encode_v(vpn, psize, ssize);
-+	want_v = hpte_encode_avpn(vpn, psize, ssize);
- 
- 	/* Bolted mappings are only ever in the primary group */
- 	slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
-@@ -348,7 +348,7 @@ static void native_hpte_invalidate(unsigned long slot, unsigned long vpn,
- 
- 	DBG_LOW("    invalidate(vpn=%016lx, hash: %lx)\n", vpn, slot);
- 
--	want_v = hpte_encode_v(vpn, psize, ssize);
-+	want_v = hpte_encode_avpn(vpn, psize, ssize);
- 	native_lock_hpte(hptep);
- 	hpte_v = hptep->v;
- 
-@@ -520,7 +520,7 @@ static void native_flush_hash_range(unsigned long number, int local)
- 			slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
- 			slot += hidx & _PTEIDX_GROUP_IX;
- 			hptep = htab_address + slot;
--			want_v = hpte_encode_v(vpn, psize, ssize);
-+			want_v = hpte_encode_avpn(vpn, psize, ssize);
- 			native_lock_hpte(hptep);
- 			hpte_v = hptep->v;
- 			if (!HPTE_V_COMPARE(hpte_v, want_v) ||
-diff --git a/arch/powerpc/platforms/cell/beat_htab.c b/arch/powerpc/platforms/cell/beat_htab.c
-index 0f6f839..472f9a7 100644
---- a/arch/powerpc/platforms/cell/beat_htab.c
-+++ b/arch/powerpc/platforms/cell/beat_htab.c
-@@ -191,7 +191,7 @@ static long beat_lpar_hpte_updatepp(unsigned long slot,
- 	u64 dummy0, dummy1;
- 	unsigned long want_v;
- 
--	want_v = hpte_encode_v(vpn, psize, MMU_SEGSIZE_256M);
-+	want_v = hpte_encode_avpn(vpn, psize, MMU_SEGSIZE_256M);
- 
- 	DBG_LOW("    update: "
- 		"avpnv=%016lx, slot=%016lx, psize: %d, newpp %016lx ... ",
-@@ -228,7 +228,7 @@ static long beat_lpar_hpte_find(unsigned long vpn, int psize)
- 	unsigned long want_v, hpte_v;
- 
- 	hash = hpt_hash(vpn, mmu_psize_defs[psize].shift, MMU_SEGSIZE_256M);
--	want_v = hpte_encode_v(vpn, psize, MMU_SEGSIZE_256M);
-+	want_v = hpte_encode_avpn(vpn, psize, MMU_SEGSIZE_256M);
- 
- 	for (j = 0; j < 2; j++) {
- 		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
-@@ -283,7 +283,7 @@ static void beat_lpar_hpte_invalidate(unsigned long slot, unsigned long vpn,
- 
- 	DBG_LOW("    inval : slot=%lx, va=%016lx, psize: %d, local: %d\n",
- 		slot, va, psize, local);
--	want_v = hpte_encode_v(vpn, psize, MMU_SEGSIZE_256M);
-+	want_v = hpte_encode_avpn(vpn, psize, MMU_SEGSIZE_256M);
- 
- 	raw_spin_lock_irqsave(&beat_htab_lock, flags);
- 	dummy1 = beat_lpar_hpte_getword0(slot);
-@@ -372,7 +372,7 @@ static long beat_lpar_hpte_updatepp_v3(unsigned long slot,
- 	unsigned long want_v;
- 	unsigned long pss;
- 
--	want_v = hpte_encode_v(vpn, psize, MMU_SEGSIZE_256M);
-+	want_v = hpte_encode_avpn(vpn, psize, MMU_SEGSIZE_256M);
- 	pss = (psize == MMU_PAGE_4K) ? -1UL : mmu_psize_defs[psize].penc;
- 
- 	DBG_LOW("    update: "
-@@ -402,7 +402,7 @@ static void beat_lpar_hpte_invalidate_v3(unsigned long slot, unsigned long vpn,
- 
- 	DBG_LOW("    inval : slot=%lx, vpn=%016lx, psize: %d, local: %d\n",
- 		slot, vpn, psize, local);
--	want_v = hpte_encode_v(vpn, psize, MMU_SEGSIZE_256M);
-+	want_v = hpte_encode_avpn(vpn, psize, MMU_SEGSIZE_256M);
- 	pss = (psize == MMU_PAGE_4K) ? -1UL : mmu_psize_defs[psize].penc;
- 
- 	lpar_rc = beat_invalidate_htab_entry3(0, slot, want_v, pss);
-diff --git a/arch/powerpc/platforms/ps3/htab.c b/arch/powerpc/platforms/ps3/htab.c
-index d00d7b0..07a4bba 100644
---- a/arch/powerpc/platforms/ps3/htab.c
-+++ b/arch/powerpc/platforms/ps3/htab.c
-@@ -115,7 +115,7 @@ static long ps3_hpte_updatepp(unsigned long slot, unsigned long newpp,
- 	unsigned long flags;
- 	long ret;
- 
--	want_v = hpte_encode_v(vpn, psize, ssize);
-+	want_v = hpte_encode_avpn(vpn, psize, ssize);
- 
- 	spin_lock_irqsave(&ps3_htab_lock, flags);
- 
+ 				def->penc[idx] = penc;
+-				DBG(" %d: shift=%02x, sllp=%04lx, "
+-				    "avpnm=%08lx, tlbiel=%d, penc=%d\n",
+-				    idx, shift, def->sllp, def->avpnm,
+-				    def->tlbiel, def->penc[idx]);
++				pr_info("base_shift=%d: shift=%d, sllp=0x%04lx,"
++					" avpnm=0x%08lx, tlbiel=%d, penc=%d\n",
++					base_shift, shift, def->sllp,
++					def->avpnm, def->tlbiel, def->penc[idx]);
+ 			}
+ 		}
+ 		return 1;
 -- 
 1.7.10
