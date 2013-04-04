@@ -1,26 +1,18 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.10])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 386AF2C00BF
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2013 00:03:11 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 18/18] cpufreq: powerpc/platforms/cell: move cpufreq
- driver to drivers/cpufreq
-Date: Thu, 4 Apr 2013 13:02:09 +0000
-References: <cover.1365079581.git.viresh.kumar@linaro.org>
- <0f989533f2e47d4d632710029bf0273082bafee3.1365079581.git.viresh.kumar@linaro.org>
-In-Reply-To: <0f989533f2e47d4d632710029bf0273082bafee3.1365079581.git.viresh.kumar@linaro.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Message-Id: <201304041302.09995.arnd@arndb.de>
-Cc: robin.randhawa@arm.com, linux-pm@vger.kernel.org, patches@linaro.org,
- Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org,
- rjw@sisk.pl, Steve.Bannister@arm.com, arvind.chauhan@arm.com,
- linuxppc-dev@lists.ozlabs.org, linaro-kernel@lists.linaro.org,
- charles.garcia-tobin@arm.com
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ by ozlabs.org (Postfix) with ESMTP id AD4122C00A4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2013 00:25:32 +1100 (EST)
+Subject: Re: [PATCH] bookehv: Handle debug exception on guest exit
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <1363801557-27436-1-git-send-email-Bharat.Bhushan@freescale.com>
+Date: Thu, 4 Apr 2013 15:25:28 +0200
+Message-Id: <436085E0-D605-40C1-BCDF-EB4D24B01AFA@suse.de>
+References: <1363801557-27436-1-git-send-email-Bharat.Bhushan@freescale.com>
+To: Bharat Bhushan <r65777@freescale.com>
+Cc: scottwood@freescale.com, Bharat Bhushan <Bharat.Bhushan@freescale.com>,
+ linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,27 +22,180 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday 04 April 2013, Viresh Kumar wrote:
-> This patch moves cpufreq driver of powerpc platforms/cell to drivers/cpufreq.
-> 
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+On 20.03.2013, at 18:45, Bharat Bhushan wrote:
+
+> EPCR.DUVD controls whether the debug events can come in
+> hypervisor mode or not. When KVM guest is using the debug
+> resource then we do not want debug events to be captured
+> in guest entry/exit path. So we set EPCR.DUVD when entering
+> and clears EPCR.DUVD when exiting from guest.
+>=20
+> Debug instruction complete is a post-completion debug
+> exception but debug event gets posted on the basis of MSR
+> before the instruction is executed. Now if the instruction
+> switches the context from guest mode (MSR.GS =3D 1) to hypervisor
+> mode (MSR.GS =3D 0) then the xSRR0 points to first instruction of
+> KVM handler and xSRR1 points that MSR.GS is clear
+> (hypervisor context). Now as xSRR1.GS is used to decide whether
+> KVM handler will be invoked to handle the exception or host
+> host kernel debug handler will be invoked to handle the exception.
+> This leads to host kernel debug handler handling the exception
+> which should either be handled by KVM.
+>=20
+> This is tested on e500mc in 32 bit mode
+>=20
+> Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
 > ---
-> Compile Tested only.
-> 
->  arch/powerpc/platforms/cell/Kconfig                | 26 +---------------------
->  arch/powerpc/platforms/cell/Makefile               |  3 ---
->  drivers/cpufreq/Kconfig.powerpc                    | 18 +++++++++++++++
->  drivers/cpufreq/Makefile                           |  3 +++
->  .../cpufreq/ppc_cbe_cpufreq.c                      |  2 +-
->  .../cpufreq/ppc_cbe_cpufreq_pervasive.c            |  3 +--
->  .../cpufreq/ppc_cbe_cpufreq_pmi.c                  |  3 +--
->  .../linux/ppc_cbe_cpufreq.h                        |  4 ++--
+> v0:
+> - Do not apply this change for debug_crit as we do not know those =
+chips have issue or not.
+> - corrected 64bit case branching
+>=20
+> arch/powerpc/kernel/exceptions-64e.S |   29 =
+++++++++++++++++++++++++++++-
+> arch/powerpc/kernel/head_booke.h     |   26 ++++++++++++++++++++++++++
+> 2 files changed, 54 insertions(+), 1 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kernel/exceptions-64e.S =
+b/arch/powerpc/kernel/exceptions-64e.S
+> index 4684e33..8b26294 100644
+> --- a/arch/powerpc/kernel/exceptions-64e.S
+> +++ b/arch/powerpc/kernel/exceptions-64e.S
+> @@ -516,6 +516,33 @@ kernel_dbg_exc:
+> 	andis.	r15,r14,DBSR_IC@h
+> 	beq+	1f
+>=20
+> +#ifdef CONFIG_KVM_BOOKE_HV
+> +	/*
+> +	 * EPCR.DUVD controls whether the debug events can come in
+> +	 * hypervisor mode or not. When KVM guest is using the debug
+> +	 * resource then we do not want debug events to be captured
+> +	 * in guest entry/exit path. So we set EPCR.DUVD when entering
+> +	 * and clears EPCR.DUVD when exiting from guest.
+> +	 * Debug instruction complete is a post-completion debug
+> +	 * exception but debug event gets posted on the basis of MSR
+> +	 * before the instruction is executed. Now if the instruction
+> +	 * switches the context from guest mode (MSR.GS =3D 1) to =
+hypervisor
+> +	 * mode (MSR.GS =3D 0) then the xSRR0 points to first =
+instruction of
 
-Moving the files is good, but I don't see a reason to make the cbe_cpufreq.h
-header globally visible in include/linux/. Isn't it just used by as the
-interface between ppc_cbe_cpufreq_pmi.c  and ppc_cbe_cpufreq.c?
+Can't we just execute that code path with MSR.DE=3D0?
 
-	Arnd
+
+Alex
+
+> +	 * KVM handler and xSRR1 points that MSR.GS is clear
+> +	 * (hypervisor context). Now as xSRR1.GS is used to decide =
+whether
+> +	 * KVM handler will be invoked to handle the exception or host
+> +	 * host kernel debug handler will be invoked to handle the =
+exception.
+> +	 * This leads to host kernel debug handler handling the =
+exception
+> +	 * which should either be handled by KVM.
+> +	 */
+> +	mfspr	r10, SPRN_EPCR
+> +	andis.	r10,r10,SPRN_EPCR_DUVD@h
+> +	beq+	2f
+> +
+> +	andis.	r10,r9,MSR_GS@h
+> +	beq+	3f
+> +2:
+> +#endif
+> 	LOAD_REG_IMMEDIATE(r14,interrupt_base_book3e)
+> 	LOAD_REG_IMMEDIATE(r15,interrupt_end_book3e)
+> 	cmpld	cr0,r10,r14
+> @@ -523,7 +550,7 @@ kernel_dbg_exc:
+> 	blt+	cr0,1f
+> 	bge+	cr1,1f
+>=20
+> -	/* here it looks like we got an inappropriate debug exception. =
+*/
+> +3:	/* here it looks like we got an inappropriate debug exception. =
+*/
+> 	lis	r14,DBSR_IC@h		/* clear the IC event */
+> 	rlwinm	r11,r11,0,~MSR_DE	/* clear DE in the DSRR1 value =
+*/
+> 	mtspr	SPRN_DBSR,r14
+> diff --git a/arch/powerpc/kernel/head_booke.h =
+b/arch/powerpc/kernel/head_booke.h
+> index 5f051ee..edc6a3b 100644
+> --- a/arch/powerpc/kernel/head_booke.h
+> +++ b/arch/powerpc/kernel/head_booke.h
+> @@ -285,7 +285,33 @@ label:
+> 	mfspr	r10,SPRN_DBSR;		/* check single-step/branch =
+taken */  \
+> 	andis.	r10,r10,(DBSR_IC|DBSR_BT)@h;				 =
+     \
+> 	beq+	2f;							 =
+     \
+> +#ifdef CONFIG_KVM_BOOKE_HV						 =
+     \
+> +	/*								 =
+     \
+> +	 * EPCR.DUVD controls whether the debug events can come in	 =
+     \
+> +	 * hypervisor mode or not. When KVM guest is using the debug	 =
+     \
+> +	 * resource then we do not want debug events to be captured 	 =
+     \
+> +	 * in guest entry/exit path. So we set EPCR.DUVD when entering	 =
+     \
+> +	 * and clears EPCR.DUVD when exiting from guest.		 =
+     \
+> +	 * Debug instruction complete is a post-completion debug	 =
+     \
+> +	 * exception but debug event gets posted on the basis of MSR	 =
+     \
+> +	 * before the instruction is executed. Now if the instruction	 =
+     \
+> +	 * switches the context from guest mode (MSR.GS =3D 1) to =
+hypervisor    \
+> +	 * mode (MSR.GS =3D 0) then the xSRR0 points to first =
+instruction of    \
+> +	 * KVM handler and xSRR1 points that MSR.GS is clear 		 =
+     \
+> +	 * (hypervisor context). Now as xSRR1.GS is used to decide =
+whether    \
+> +	 * KVM handler will be invoked to handle the exception or host	 =
+     \
+> +	 * host kernel debug handler will be invoked to handle the =
+exception. \
+> +	 * This leads to host kernel debug handler handling the =
+exception     \
+> +	 * which should either be handled by KVM.			 =
+     \
+> +	 */								 =
+     \
+> +	mfspr	r10, SPRN_EPCR;						 =
+     \
+> +	andis.	r10,r10,SPRN_EPCR_DUVD@h;				 =
+     \
+> +	beq+	3f;							 =
+     \
+> 									 =
+     \
+> +	andis.	r10,r9,MSR_GS@h;				    	 =
+     \
+> +	beq+	1f;							 =
+     \
+> +3:									 =
+     \
+> +#endif									=
+      \
+> 	lis	r10,KERNELBASE@h;	/* check if exception in vectors =
+*/   \
+> 	ori	r10,r10,KERNELBASE@l;					 =
+     \
+> 	cmplw	r12,r10;						 =
+     \
+> --=20
+> 1.7.0.4
+>=20
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
