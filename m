@@ -1,18 +1,29 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- by ozlabs.org (Postfix) with ESMTP id AD4122C00A4
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2013 00:25:32 +1100 (EST)
-Subject: Re: [PATCH] bookehv: Handle debug exception on guest exit
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <1363801557-27436-1-git-send-email-Bharat.Bhushan@freescale.com>
-Date: Thu, 4 Apr 2013 15:25:28 +0200
-Message-Id: <436085E0-D605-40C1-BCDF-EB4D24B01AFA@suse.de>
-References: <1363801557-27436-1-git-send-email-Bharat.Bhushan@freescale.com>
-To: Bharat Bhushan <r65777@freescale.com>
-Cc: scottwood@freescale.com, Bharat Bhushan <Bharat.Bhushan@freescale.com>,
- linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+Return-Path: <viresh.kumar@linaro.org>
+Received: from mail-oa0-f47.google.com (mail-oa0-f47.google.com
+ [209.85.219.47])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 62A192C0085
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2013 00:50:35 +1100 (EST)
+Received: by mail-oa0-f47.google.com with SMTP id o17so2727122oag.20
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Apr 2013 06:50:32 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <201304041302.09995.arnd@arndb.de>
+References: <cover.1365079581.git.viresh.kumar@linaro.org>
+ <0f989533f2e47d4d632710029bf0273082bafee3.1365079581.git.viresh.kumar@linaro.org>
+ <201304041302.09995.arnd@arndb.de>
+Date: Thu, 4 Apr 2013 19:20:31 +0530
+Message-ID: <CAKohpok_ftPoME0tFRMWMM9A2mNSOpQSvbJut0=AzhCuB-Yjrg@mail.gmail.com>
+Subject: Re: [PATCH 18/18] cpufreq: powerpc/platforms/cell: move cpufreq
+ driver to drivers/cpufreq
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Content-Type: multipart/mixed; boundary=e89a8f64274e0e557204d9894144
+Cc: robin.randhawa@arm.com, linux-pm@vger.kernel.org, patches@linaro.org,
+ Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org,
+ rjw@sisk.pl, Steve.Bannister@arm.com, arvind.chauhan@arm.com,
+ linuxppc-dev@lists.ozlabs.org, linaro-kernel@lists.linaro.org,
+ charles.garcia-tobin@arm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,180 +33,236 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--e89a8f64274e0e557204d9894144
+Content-Type: text/plain; charset=ISO-8859-1
 
-On 20.03.2013, at 18:45, Bharat Bhushan wrote:
+On 4 April 2013 18:32, Arnd Bergmann <arnd@arndb.de> wrote:
+> Moving the files is good, but I don't see a reason to make the cbe_cpufreq.h
+> header globally visible in include/linux/. Isn't it just used by as the
+> interface between ppc_cbe_cpufreq_pmi.c  and ppc_cbe_cpufreq.c?
 
-> EPCR.DUVD controls whether the debug events can come in
-> hypervisor mode or not. When KVM guest is using the debug
-> resource then we do not want debug events to be captured
-> in guest entry/exit path. So we set EPCR.DUVD when entering
-> and clears EPCR.DUVD when exiting from guest.
->=20
-> Debug instruction complete is a post-completion debug
-> exception but debug event gets posted on the basis of MSR
-> before the instruction is executed. Now if the instruction
-> switches the context from guest mode (MSR.GS =3D 1) to hypervisor
-> mode (MSR.GS =3D 0) then the xSRR0 points to first instruction of
-> KVM handler and xSRR1 points that MSR.GS is clear
-> (hypervisor context). Now as xSRR1.GS is used to decide whether
-> KVM handler will be invoked to handle the exception or host
-> host kernel debug handler will be invoked to handle the exception.
-> This leads to host kernel debug handler handling the exception
-> which should either be handled by KVM.
->=20
-> This is tested on e500mc in 32 bit mode
->=20
-> Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
-> ---
-> v0:
-> - Do not apply this change for debug_crit as we do not know those =
-chips have issue or not.
-> - corrected 64bit case branching
->=20
-> arch/powerpc/kernel/exceptions-64e.S |   29 =
-++++++++++++++++++++++++++++-
-> arch/powerpc/kernel/head_booke.h     |   26 ++++++++++++++++++++++++++
-> 2 files changed, 54 insertions(+), 1 deletions(-)
->=20
-> diff --git a/arch/powerpc/kernel/exceptions-64e.S =
-b/arch/powerpc/kernel/exceptions-64e.S
-> index 4684e33..8b26294 100644
-> --- a/arch/powerpc/kernel/exceptions-64e.S
-> +++ b/arch/powerpc/kernel/exceptions-64e.S
-> @@ -516,6 +516,33 @@ kernel_dbg_exc:
-> 	andis.	r15,r14,DBSR_IC@h
-> 	beq+	1f
->=20
-> +#ifdef CONFIG_KVM_BOOKE_HV
-> +	/*
-> +	 * EPCR.DUVD controls whether the debug events can come in
-> +	 * hypervisor mode or not. When KVM guest is using the debug
-> +	 * resource then we do not want debug events to be captured
-> +	 * in guest entry/exit path. So we set EPCR.DUVD when entering
-> +	 * and clears EPCR.DUVD when exiting from guest.
-> +	 * Debug instruction complete is a post-completion debug
-> +	 * exception but debug event gets posted on the basis of MSR
-> +	 * before the instruction is executed. Now if the instruction
-> +	 * switches the context from guest mode (MSR.GS =3D 1) to =
-hypervisor
-> +	 * mode (MSR.GS =3D 0) then the xSRR0 points to first =
-instruction of
+When i moved it initially i thought it is also used by
+arch/powerpc/platforms/cell/cpufreq_spudemand.c and hence moved it
+to include/linux and never realized i am wrong..
 
-Can't we just execute that code path with MSR.DE=3D0?
+Here is the fixup (And attached complete patch: original+fixup for Rafael
+to apply):
+
+Compile tested only.
+
+---
+ drivers/cpufreq/ppc_cbe_cpufreq.c                    | 3 ++-
+ {include/linux => drivers/cpufreq}/ppc_cbe_cpufreq.h | 0
+ drivers/cpufreq/ppc_cbe_cpufreq_pervasive.c          | 3 ++-
+ drivers/cpufreq/ppc_cbe_cpufreq_pmi.c                | 3 ++-
+ 4 files changed, 6 insertions(+), 3 deletions(-)
+ rename {include/linux => drivers/cpufreq}/ppc_cbe_cpufreq.h (100%)
+
+diff --git a/drivers/cpufreq/ppc_cbe_cpufreq.c
+b/drivers/cpufreq/ppc_cbe_cpufreq.c
+index 138d88c..56e0c17 100644
+--- a/drivers/cpufreq/ppc_cbe_cpufreq.c
++++ b/drivers/cpufreq/ppc_cbe_cpufreq.c
+@@ -23,12 +23,13 @@
+ #include <linux/cpufreq.h>
+ #include <linux/module.h>
+ #include <linux/of_platform.h>
+-#include <linux/ppc_cbe_cpufreq.h>
+
+ #include <asm/machdep.h>
+ #include <asm/prom.h>
+ #include <asm/cell-regs.h>
+
++#include "ppc_cbe_cpufreq.h"
++
+ static DEFINE_MUTEX(cbe_switch_mutex);
 
 
-Alex
+diff --git a/include/linux/ppc_cbe_cpufreq.h b/drivers/cpufreq/ppc_cbe_cpufreq.h
+similarity index 100%
+rename from include/linux/ppc_cbe_cpufreq.h
+rename to drivers/cpufreq/ppc_cbe_cpufreq.h
+diff --git a/drivers/cpufreq/ppc_cbe_cpufreq_pervasive.c
+b/drivers/cpufreq/ppc_cbe_cpufreq_pervasive.c
+index 6708710..84d2f2c 100644
+--- a/drivers/cpufreq/ppc_cbe_cpufreq_pervasive.c
++++ b/drivers/cpufreq/ppc_cbe_cpufreq_pervasive.c
+@@ -25,12 +25,13 @@
 
-> +	 * KVM handler and xSRR1 points that MSR.GS is clear
-> +	 * (hypervisor context). Now as xSRR1.GS is used to decide =
-whether
-> +	 * KVM handler will be invoked to handle the exception or host
-> +	 * host kernel debug handler will be invoked to handle the =
-exception.
-> +	 * This leads to host kernel debug handler handling the =
-exception
-> +	 * which should either be handled by KVM.
-> +	 */
-> +	mfspr	r10, SPRN_EPCR
-> +	andis.	r10,r10,SPRN_EPCR_DUVD@h
-> +	beq+	2f
-> +
-> +	andis.	r10,r9,MSR_GS@h
-> +	beq+	3f
-> +2:
-> +#endif
-> 	LOAD_REG_IMMEDIATE(r14,interrupt_base_book3e)
-> 	LOAD_REG_IMMEDIATE(r15,interrupt_end_book3e)
-> 	cmpld	cr0,r10,r14
-> @@ -523,7 +550,7 @@ kernel_dbg_exc:
-> 	blt+	cr0,1f
-> 	bge+	cr1,1f
->=20
-> -	/* here it looks like we got an inappropriate debug exception. =
-*/
-> +3:	/* here it looks like we got an inappropriate debug exception. =
-*/
-> 	lis	r14,DBSR_IC@h		/* clear the IC event */
-> 	rlwinm	r11,r11,0,~MSR_DE	/* clear DE in the DSRR1 value =
-*/
-> 	mtspr	SPRN_DBSR,r14
-> diff --git a/arch/powerpc/kernel/head_booke.h =
-b/arch/powerpc/kernel/head_booke.h
-> index 5f051ee..edc6a3b 100644
-> --- a/arch/powerpc/kernel/head_booke.h
-> +++ b/arch/powerpc/kernel/head_booke.h
-> @@ -285,7 +285,33 @@ label:
-> 	mfspr	r10,SPRN_DBSR;		/* check single-step/branch =
-taken */  \
-> 	andis.	r10,r10,(DBSR_IC|DBSR_BT)@h;				 =
-     \
-> 	beq+	2f;							 =
-     \
-> +#ifdef CONFIG_KVM_BOOKE_HV						 =
-     \
-> +	/*								 =
-     \
-> +	 * EPCR.DUVD controls whether the debug events can come in	 =
-     \
-> +	 * hypervisor mode or not. When KVM guest is using the debug	 =
-     \
-> +	 * resource then we do not want debug events to be captured 	 =
-     \
-> +	 * in guest entry/exit path. So we set EPCR.DUVD when entering	 =
-     \
-> +	 * and clears EPCR.DUVD when exiting from guest.		 =
-     \
-> +	 * Debug instruction complete is a post-completion debug	 =
-     \
-> +	 * exception but debug event gets posted on the basis of MSR	 =
-     \
-> +	 * before the instruction is executed. Now if the instruction	 =
-     \
-> +	 * switches the context from guest mode (MSR.GS =3D 1) to =
-hypervisor    \
-> +	 * mode (MSR.GS =3D 0) then the xSRR0 points to first =
-instruction of    \
-> +	 * KVM handler and xSRR1 points that MSR.GS is clear 		 =
-     \
-> +	 * (hypervisor context). Now as xSRR1.GS is used to decide =
-whether    \
-> +	 * KVM handler will be invoked to handle the exception or host	 =
-     \
-> +	 * host kernel debug handler will be invoked to handle the =
-exception. \
-> +	 * This leads to host kernel debug handler handling the =
-exception     \
-> +	 * which should either be handled by KVM.			 =
-     \
-> +	 */								 =
-     \
-> +	mfspr	r10, SPRN_EPCR;						 =
-     \
-> +	andis.	r10,r10,SPRN_EPCR_DUVD@h;				 =
-     \
-> +	beq+	3f;							 =
-     \
-> 									 =
-     \
-> +	andis.	r10,r9,MSR_GS@h;				    	 =
-     \
-> +	beq+	1f;							 =
-     \
-> +3:									 =
-     \
-> +#endif									=
-      \
-> 	lis	r10,KERNELBASE@h;	/* check if exception in vectors =
-*/   \
-> 	ori	r10,r10,KERNELBASE@l;					 =
-     \
-> 	cmplw	r12,r10;						 =
-     \
-> --=20
-> 1.7.0.4
->=20
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+ #include <linux/io.h>
+ #include <linux/kernel.h>
+-#include <linux/ppc_cbe_cpufreq.h>
+ #include <linux/time.h>
+ #include <asm/machdep.h>
+ #include <asm/hw_irq.h>
+ #include <asm/cell-regs.h>
+
++#include "ppc_cbe_cpufreq.h"
++
+ /* to write to MIC register */
+ static u64 MIC_Slow_Fast_Timer_table[] = {
+ 	[0 ... 7] = 0x007fc00000000000ull,
+diff --git a/drivers/cpufreq/ppc_cbe_cpufreq_pmi.c
+b/drivers/cpufreq/ppc_cbe_cpufreq_pmi.c
+index 448b888..d29e8da 100644
+--- a/drivers/cpufreq/ppc_cbe_cpufreq_pmi.c
++++ b/drivers/cpufreq/ppc_cbe_cpufreq_pmi.c
+@@ -25,7 +25,6 @@
+ #include <linux/timer.h>
+ #include <linux/module.h>
+ #include <linux/of_platform.h>
+-#include <linux/ppc_cbe_cpufreq.h>
+
+ #include <asm/processor.h>
+ #include <asm/prom.h>
+@@ -36,6 +35,8 @@
+ #include <asm/time.h>
+ #endif
+
++#include "ppc_cbe_cpufreq.h"
++
+ static u8 pmi_slow_mode_limit[MAX_CBE];
+
+ bool cbe_cpufreq_has_pmi = false;
+
+--e89a8f64274e0e557204d9894144
+Content-Type: application/octet-stream;
+	name="0001-cpufreq-powerpc-platforms-cell-move-cpufreq-driver-t.patch"
+Content-Disposition: attachment;
+	filename="0001-cpufreq-powerpc-platforms-cell-move-cpufreq-driver-t.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_hf3zef4b0
+
+RnJvbSA0NzI3NWE2Yjg3NDM1OWYxYjQyZmJlYTNlOWQxMDM3MjA0OWVlNmM2IE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8NDcyNzVhNmI4NzQzNTlmMWI0MmZiZWEzZTlkMTAz
+NzIwNDllZTZjNi4xMzY1MDgzMzM2LmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
+VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogTW9uLCAyNSBNYXIg
+MjAxMyAxMToyMDoyMyArMDUzMApTdWJqZWN0OiBbUEFUQ0hdIGNwdWZyZXE6IHBvd2VycGMvcGxh
+dGZvcm1zL2NlbGw6IG1vdmUgY3B1ZnJlcSBkcml2ZXIgdG8KIGRyaXZlcnMvY3B1ZnJlcQoKVGhp
+cyBwYXRjaCBtb3ZlcyBjcHVmcmVxIGRyaXZlciBvZiBwb3dlcnBjIHBsYXRmb3Jtcy9jZWxsIHRv
+IGRyaXZlcnMvY3B1ZnJlcS4KCkNjOiBBcm5kIEJlcmdtYW5uIDxhcm5kQGFybmRiLmRlPgpDYzog
+QmVuamFtaW4gSGVycmVuc2NobWlkdCA8YmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnPgpDYzogbGlu
+dXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcKU2lnbmVkLW9mZi1ieTogVmlyZXNoIEt1bWFyIDx2
+aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KLS0tCiBhcmNoL3Bvd2VycGMvcGxhdGZvcm1zL2NlbGwv
+S2NvbmZpZyAgICAgICAgICAgICAgICB8IDI2ICstLS0tLS0tLS0tLS0tLS0tLS0tLS0KIGFyY2gv
+cG93ZXJwYy9wbGF0Zm9ybXMvY2VsbC9NYWtlZmlsZSAgICAgICAgICAgICAgIHwgIDMgLS0tCiBk
+cml2ZXJzL2NwdWZyZXEvS2NvbmZpZy5wb3dlcnBjICAgICAgICAgICAgICAgICAgICB8IDE4ICsr
+KysrKysrKysrKysrKwogZHJpdmVycy9jcHVmcmVxL01ha2VmaWxlICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgfCAgMyArKysKIC4uLi9jcHVmcmVxL3BwY19jYmVfY3B1ZnJlcS5jICAgICAgICAg
+ICAgICAgICAgICAgIHwgIDMgKystCiAuLi4vY3B1ZnJlcS9wcGNfY2JlX2NwdWZyZXEuaCAgICAg
+ICAgICAgICAgICAgICAgICB8ICA0ICsrLS0KIC4uLi9jcHVmcmVxL3BwY19jYmVfY3B1ZnJlcV9w
+ZXJ2YXNpdmUuYyAgICAgICAgICAgIHwgIDIgKy0KIC4uLi9jcHVmcmVxL3BwY19jYmVfY3B1ZnJl
+cV9wbWkuYyAgICAgICAgICAgICAgICAgIHwgIDIgKy0KIDggZmlsZXMgY2hhbmdlZCwgMjggaW5z
+ZXJ0aW9ucygrKSwgMzMgZGVsZXRpb25zKC0pCiByZW5hbWUgYXJjaC9wb3dlcnBjL3BsYXRmb3Jt
+cy9jZWxsL2NiZV9jcHVmcmVxLmMgPT4gZHJpdmVycy9jcHVmcmVxL3BwY19jYmVfY3B1ZnJlcS5j
+ICg5OSUpCiByZW5hbWUgYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy9jZWxsL2NiZV9jcHVmcmVxLmgg
+PT4gZHJpdmVycy9jcHVmcmVxL3BwY19jYmVfY3B1ZnJlcS5oICg4MiUpCiByZW5hbWUgYXJjaC9w
+b3dlcnBjL3BsYXRmb3Jtcy9jZWxsL2NiZV9jcHVmcmVxX3BlcnZhc2l2ZS5jID0+IGRyaXZlcnMv
+Y3B1ZnJlcS9wcGNfY2JlX2NwdWZyZXFfcGVydmFzaXZlLmMgKDk5JSkKIHJlbmFtZSBhcmNoL3Bv
+d2VycGMvcGxhdGZvcm1zL2NlbGwvY2JlX2NwdWZyZXFfcG1pLmMgPT4gZHJpdmVycy9jcHVmcmVx
+L3BwY19jYmVfY3B1ZnJlcV9wbWkuYyAoOTklKQoKZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9w
+bGF0Zm9ybXMvY2VsbC9LY29uZmlnIGIvYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy9jZWxsL0tjb25m
+aWcKaW5kZXggNTNhYWVmZS4uOTk3OGY1OSAxMDA2NDQKLS0tIGEvYXJjaC9wb3dlcnBjL3BsYXRm
+b3Jtcy9jZWxsL0tjb25maWcKKysrIGIvYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy9jZWxsL0tjb25m
+aWcKQEAgLTExMywzNCArMTEzLDEwIEBAIGNvbmZpZyBDQkVfVEhFUk0KIAlkZWZhdWx0IG0KIAlk
+ZXBlbmRzIG9uIENCRV9SQVMgJiYgU1BVX0JBU0UKIAotY29uZmlnIENCRV9DUFVGUkVRCi0JdHJp
+c3RhdGUgIkNCRSBmcmVxdWVuY3kgc2NhbGluZyIKLQlkZXBlbmRzIG9uIENCRV9SQVMgJiYgQ1BV
+X0ZSRVEKLQlkZWZhdWx0IG0KLQloZWxwCi0JICBUaGlzIGFkZHMgdGhlIGNwdWZyZXEgZHJpdmVy
+IGZvciBDZWxsIEJFIHByb2Nlc3NvcnMuCi0JICBGb3IgZGV0YWlscywgdGFrZSBhIGxvb2sgYXQg
+PGZpbGU6RG9jdW1lbnRhdGlvbi9jcHUtZnJlcS8+LgotCSAgSWYgeW91IGRvbid0IGhhdmUgc3Vj
+aCBwcm9jZXNzb3IsIHNheSBOCi0KLWNvbmZpZyBDQkVfQ1BVRlJFUV9QTUlfRU5BQkxFCi0JYm9v
+bCAiQ0JFIGZyZXF1ZW5jeSBzY2FsaW5nIHVzaW5nIFBNSSBpbnRlcmZhY2UiCi0JZGVwZW5kcyBv
+biBDQkVfQ1BVRlJFUQotCWRlZmF1bHQgbgotCWhlbHAKLQkgIFNlbGVjdCB0aGlzLCBpZiB5b3Ug
+d2FudCB0byB1c2UgdGhlIFBNSSBpbnRlcmZhY2UKLQkgIHRvIHN3aXRjaCBmcmVxdWVuY2llcy4g
+VXNpbmcgUE1JLCB0aGUKLQkgIHByb2Nlc3NvciB3aWxsIG5vdCBvbmx5IGJlIGFibGUgdG8gcnVu
+IGF0IGxvd2VyIHNwZWVkLAotCSAgYnV0IGFsc28gYXQgbG93ZXIgY29yZSB2b2x0YWdlLgotCi1j
+b25maWcgQ0JFX0NQVUZSRVFfUE1JCi0JdHJpc3RhdGUKLQlkZXBlbmRzIG9uIENCRV9DUFVGUkVR
+X1BNSV9FTkFCTEUKLQlkZWZhdWx0IENCRV9DUFVGUkVRCi0KIGNvbmZpZyBQUENfUE1JCiAJdHJp
+c3RhdGUKIAlkZWZhdWx0IHkKLQlkZXBlbmRzIG9uIENCRV9DUFVGUkVRX1BNSSB8fCBQUENfSUJN
+X0NFTExfUE9XRVJCVVRUT04KKwlkZXBlbmRzIG9uIENQVV9GUkVRX0NCRV9QTUkgfHwgUFBDX0lC
+TV9DRUxMX1BPV0VSQlVUVE9OCiAJaGVscAogCSAgUE1JIChQbGF0Zm9ybSBNYW5hZ2VtZW50IElu
+dGVycnVwdCkgaXMgYSB3YXkgdG8KIAkgIGNvbW11bmljYXRlIHdpdGggdGhlIEJNQyAoQmFzZWJv
+YXJkIE1hbmFnZW1lbnQgQ29udHJvbGxlcikuCmRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvcGxh
+dGZvcm1zL2NlbGwvTWFrZWZpbGUgYi9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zL2NlbGwvTWFrZWZp
+bGUKaW5kZXggYTRhODkzNS4uZmUwNTNlNyAxMDA2NDQKLS0tIGEvYXJjaC9wb3dlcnBjL3BsYXRm
+b3Jtcy9jZWxsL01ha2VmaWxlCisrKyBiL2FyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvY2VsbC9NYWtl
+ZmlsZQpAQCAtNSw5ICs1LDYgQEAgb2JqLSQoQ09ORklHX1BQQ19DRUxMX05BVElWRSkJCSs9IGlv
+bW11Lm8gc2V0dXAubyBzcGlkZXItcGljLm8gXAogb2JqLSQoQ09ORklHX0NCRV9SQVMpCQkJKz0g
+cmFzLm8KIAogb2JqLSQoQ09ORklHX0NCRV9USEVSTSkJCQkrPSBjYmVfdGhlcm1hbC5vCi1vYmot
+JChDT05GSUdfQ0JFX0NQVUZSRVFfUE1JKQkJKz0gY2JlX2NwdWZyZXFfcG1pLm8KLW9iai0kKENP
+TkZJR19DQkVfQ1BVRlJFUSkJCSs9IGNiZS1jcHVmcmVxLm8KLWNiZS1jcHVmcmVxLXkJCQkJKz0g
+Y2JlX2NwdWZyZXFfcGVydmFzaXZlLm8gY2JlX2NwdWZyZXEubwogb2JqLSQoQ09ORklHX0NCRV9D
+UFVGUkVRX1NQVV9HT1ZFUk5PUikJKz0gY3B1ZnJlcV9zcHVkZW1hbmQubwogCiBvYmotJChDT05G
+SUdfUFBDX0lCTV9DRUxMX1BPV0VSQlVUVE9OKQkrPSBjYmVfcG93ZXJidXR0b24ubwpkaWZmIC0t
+Z2l0IGEvZHJpdmVycy9jcHVmcmVxL0tjb25maWcucG93ZXJwYyBiL2RyaXZlcnMvY3B1ZnJlcS9L
+Y29uZmlnLnBvd2VycGMKaW5kZXggMmU1YTAwNy4uOWUxYWU5NCAxMDA2NDQKLS0tIGEvZHJpdmVy
+cy9jcHVmcmVxL0tjb25maWcucG93ZXJwYworKysgYi9kcml2ZXJzL2NwdWZyZXEvS2NvbmZpZy5w
+b3dlcnBjCkBAIC0xLDMgKzEsMjEgQEAKK2NvbmZpZyBDUFVfRlJFUV9DQkUKKwl0cmlzdGF0ZSAi
+Q0JFIGZyZXF1ZW5jeSBzY2FsaW5nIgorCWRlcGVuZHMgb24gQ0JFX1JBUyAmJiBQUENfQ0VMTAor
+CWRlZmF1bHQgbQorCWhlbHAKKwkgIFRoaXMgYWRkcyB0aGUgY3B1ZnJlcSBkcml2ZXIgZm9yIENl
+bGwgQkUgcHJvY2Vzc29ycy4KKwkgIEZvciBkZXRhaWxzLCB0YWtlIGEgbG9vayBhdCA8ZmlsZTpE
+b2N1bWVudGF0aW9uL2NwdS1mcmVxLz4uCisJICBJZiB5b3UgZG9uJ3QgaGF2ZSBzdWNoIHByb2Nl
+c3Nvciwgc2F5IE4KKworY29uZmlnIENQVV9GUkVRX0NCRV9QTUkKKwlib29sICJDQkUgZnJlcXVl
+bmN5IHNjYWxpbmcgdXNpbmcgUE1JIGludGVyZmFjZSIKKwlkZXBlbmRzIG9uIENQVV9GUkVRX0NC
+RQorCWRlZmF1bHQgbgorCWhlbHAKKwkgIFNlbGVjdCB0aGlzLCBpZiB5b3Ugd2FudCB0byB1c2Ug
+dGhlIFBNSSBpbnRlcmZhY2UgdG8gc3dpdGNoCisJICBmcmVxdWVuY2llcy4gVXNpbmcgUE1JLCB0
+aGUgcHJvY2Vzc29yIHdpbGwgbm90IG9ubHkgYmUgYWJsZSB0byBydW4gYXQKKwkgIGxvd2VyIHNw
+ZWVkLCBidXQgYWxzbyBhdCBsb3dlciBjb3JlIHZvbHRhZ2UuCisKIGNvbmZpZyBDUFVfRlJFUV9N
+QVBMRQogCWJvb2wgIlN1cHBvcnQgZm9yIE1hcGxlIDk3MEZYIEV2YWx1YXRpb24gQm9hcmQiCiAJ
+ZGVwZW5kcyBvbiBQUENfTUFQTEUKZGlmZiAtLWdpdCBhL2RyaXZlcnMvY3B1ZnJlcS9NYWtlZmls
+ZSBiL2RyaXZlcnMvY3B1ZnJlcS9NYWtlZmlsZQppbmRleCA3YjE2MDkyZi4uYmZlZmEyMiAxMDA2
+NDQKLS0tIGEvZHJpdmVycy9jcHVmcmVxL01ha2VmaWxlCisrKyBiL2RyaXZlcnMvY3B1ZnJlcS9N
+YWtlZmlsZQpAQCAtNzgsNiArNzgsOSBAQCBvYmotJChDT05GSUdfQVJDSF9URUdSQSkJCSs9IHRl
+Z3JhLWNwdWZyZXEubwogCiAjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
+IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjCiAjIFBvd2VyUEMgcGxh
+dGZvcm0gZHJpdmVycworb2JqLSQoQ09ORklHX0NQVV9GUkVRX0NCRSkJCSs9IHBwYy1jYmUtY3B1
+ZnJlcS5vCitwcGMtY2JlLWNwdWZyZXEteQkJCSs9IHBwY19jYmVfY3B1ZnJlcV9wZXJ2YXNpdmUu
+byBwcGNfY2JlX2NwdWZyZXEubworb2JqLSQoQ09ORklHX0NQVV9GUkVRX0NCRV9QTUkpCQkrPSBw
+cGNfY2JlX2NwdWZyZXFfcG1pLm8KIG9iai0kKENPTkZJR19DUFVfRlJFUV9NQVBMRSkJCSs9IG1h
+cGxlLWNwdWZyZXEubwogb2JqLSQoQ09ORklHX0NQVV9GUkVRX1BNQUMpCQkrPSBwbWFjMzItY3B1
+ZnJlcS5vCiBvYmotJChDT05GSUdfQ1BVX0ZSRVFfUE1BQzY0KQkJKz0gcG1hYzY0LWNwdWZyZXEu
+bwpkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy9jZWxsL2NiZV9jcHVmcmVxLmMg
+Yi9kcml2ZXJzL2NwdWZyZXEvcHBjX2NiZV9jcHVmcmVxLmMKc2ltaWxhcml0eSBpbmRleCA5OSUK
+cmVuYW1lIGZyb20gYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy9jZWxsL2NiZV9jcHVmcmVxLmMKcmVu
+YW1lIHRvIGRyaXZlcnMvY3B1ZnJlcS9wcGNfY2JlX2NwdWZyZXEuYwppbmRleCA3MThjNmEzLi5l
+NTc3YTFkIDEwMDY0NAotLS0gYS9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zL2NlbGwvY2JlX2NwdWZy
+ZXEuYworKysgYi9kcml2ZXJzL2NwdWZyZXEvcHBjX2NiZV9jcHVmcmVxLmMKQEAgLTI3LDcgKzI3
+LDggQEAKICNpbmNsdWRlIDxhc20vbWFjaGRlcC5oPgogI2luY2x1ZGUgPGFzbS9wcm9tLmg+CiAj
+aW5jbHVkZSA8YXNtL2NlbGwtcmVncy5oPgotI2luY2x1ZGUgImNiZV9jcHVmcmVxLmgiCisKKyNp
+bmNsdWRlICJwcGNfY2JlX2NwdWZyZXEuaCIKIAogc3RhdGljIERFRklORV9NVVRFWChjYmVfc3dp
+dGNoX211dGV4KTsKIApkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy9jZWxsL2Ni
+ZV9jcHVmcmVxLmggYi9kcml2ZXJzL2NwdWZyZXEvcHBjX2NiZV9jcHVmcmVxLmgKc2ltaWxhcml0
+eSBpbmRleCA4MiUKcmVuYW1lIGZyb20gYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy9jZWxsL2NiZV9j
+cHVmcmVxLmgKcmVuYW1lIHRvIGRyaXZlcnMvY3B1ZnJlcS9wcGNfY2JlX2NwdWZyZXEuaAppbmRl
+eCBjMWQ4NmJmLi5iNGMwMGE1IDEwMDY0NAotLS0gYS9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zL2Nl
+bGwvY2JlX2NwdWZyZXEuaAorKysgYi9kcml2ZXJzL2NwdWZyZXEvcHBjX2NiZV9jcHVmcmVxLmgK
+QEAgLTEsNSArMSw1IEBACiAvKgotICogY2JlX2NwdWZyZXEuaAorICogcHBjX2NiZV9jcHVmcmVx
+LmgKICAqCiAgKiBUaGlzIGZpbGUgY29udGFpbnMgdGhlIGRlZmluaXRpb25zIHVzZWQgYnkgdGhl
+IGNiZV9jcHVmcmVxIGRyaXZlci4KICAqCkBAIC0xNyw3ICsxNyw3IEBAIGludCBjYmVfY3B1ZnJl
+cV9nZXRfcG1vZGUoaW50IGNwdSk7CiAKIGludCBjYmVfY3B1ZnJlcV9zZXRfcG1vZGVfcG1pKGlu
+dCBjcHUsIHVuc2lnbmVkIGludCBwbW9kZSk7CiAKLSNpZiBkZWZpbmVkKENPTkZJR19DQkVfQ1BV
+RlJFUV9QTUkpIHx8IGRlZmluZWQoQ09ORklHX0NCRV9DUFVGUkVRX1BNSV9NT0RVTEUpCisjaWYg
+ZGVmaW5lZChDT05GSUdfQ1BVX0ZSRVFfQ0JFX1BNSSkgfHwgZGVmaW5lZChDT05GSUdfQ1BVX0ZS
+RVFfQ0JFX1BNSV9NT0RVTEUpCiBleHRlcm4gYm9vbCBjYmVfY3B1ZnJlcV9oYXNfcG1pOwogI2Vs
+c2UKICNkZWZpbmUgY2JlX2NwdWZyZXFfaGFzX3BtaSAoMCkKZGlmZiAtLWdpdCBhL2FyY2gvcG93
+ZXJwYy9wbGF0Zm9ybXMvY2VsbC9jYmVfY3B1ZnJlcV9wZXJ2YXNpdmUuYyBiL2RyaXZlcnMvY3B1
+ZnJlcS9wcGNfY2JlX2NwdWZyZXFfcGVydmFzaXZlLmMKc2ltaWxhcml0eSBpbmRleCA5OSUKcmVu
+YW1lIGZyb20gYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy9jZWxsL2NiZV9jcHVmcmVxX3BlcnZhc2l2
+ZS5jCnJlbmFtZSB0byBkcml2ZXJzL2NwdWZyZXEvcHBjX2NiZV9jcHVmcmVxX3BlcnZhc2l2ZS5j
+CmluZGV4IDIwNDcyZTQuLjg0ZDJmMmMgMTAwNjQ0Ci0tLSBhL2FyY2gvcG93ZXJwYy9wbGF0Zm9y
+bXMvY2VsbC9jYmVfY3B1ZnJlcV9wZXJ2YXNpdmUuYworKysgYi9kcml2ZXJzL2NwdWZyZXEvcHBj
+X2NiZV9jcHVmcmVxX3BlcnZhc2l2ZS5jCkBAIC0zMCw3ICszMCw3IEBACiAjaW5jbHVkZSA8YXNt
+L2h3X2lycS5oPgogI2luY2x1ZGUgPGFzbS9jZWxsLXJlZ3MuaD4KIAotI2luY2x1ZGUgImNiZV9j
+cHVmcmVxLmgiCisjaW5jbHVkZSAicHBjX2NiZV9jcHVmcmVxLmgiCiAKIC8qIHRvIHdyaXRlIHRv
+IE1JQyByZWdpc3RlciAqLwogc3RhdGljIHU2NCBNSUNfU2xvd19GYXN0X1RpbWVyX3RhYmxlW10g
+PSB7CmRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zL2NlbGwvY2JlX2NwdWZyZXFf
+cG1pLmMgYi9kcml2ZXJzL2NwdWZyZXEvcHBjX2NiZV9jcHVmcmVxX3BtaS5jCnNpbWlsYXJpdHkg
+aW5kZXggOTklCnJlbmFtZSBmcm9tIGFyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvY2VsbC9jYmVfY3B1
+ZnJlcV9wbWkuYwpyZW5hbWUgdG8gZHJpdmVycy9jcHVmcmVxL3BwY19jYmVfY3B1ZnJlcV9wbWku
+YwppbmRleCA2MGEwN2E0Li5kMjllOGRhIDEwMDY0NAotLS0gYS9hcmNoL3Bvd2VycGMvcGxhdGZv
+cm1zL2NlbGwvY2JlX2NwdWZyZXFfcG1pLmMKKysrIGIvZHJpdmVycy9jcHVmcmVxL3BwY19jYmVf
+Y3B1ZnJlcV9wbWkuYwpAQCAtMzUsNyArMzUsNyBAQAogI2luY2x1ZGUgPGFzbS90aW1lLmg+CiAj
+ZW5kaWYKIAotI2luY2x1ZGUgImNiZV9jcHVmcmVxLmgiCisjaW5jbHVkZSAicHBjX2NiZV9jcHVm
+cmVxLmgiCiAKIHN0YXRpYyB1OCBwbWlfc2xvd19tb2RlX2xpbWl0W01BWF9DQkVdOwogCi0tIAox
+LjcuMTIucmMyLjE4Lmc2MWI0NzJlCgo=
+--e89a8f64274e0e557204d9894144--
