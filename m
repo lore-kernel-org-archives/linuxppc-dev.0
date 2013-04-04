@@ -1,27 +1,34 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
- [212.227.126.186]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 57A512C00AC
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2013 01:48:34 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 18/18] cpufreq: powerpc/platforms/cell: move cpufreq
- driver to drivers/cpufreq
-Date: Thu, 4 Apr 2013 14:48:10 +0000
-References: <cover.1365079581.git.viresh.kumar@linaro.org>
- <201304041302.09995.arnd@arndb.de>
- <CAKohpok_ftPoME0tFRMWMM9A2mNSOpQSvbJut0=AzhCuB-Yjrg@mail.gmail.com>
-In-Reply-To: <CAKohpok_ftPoME0tFRMWMM9A2mNSOpQSvbJut0=AzhCuB-Yjrg@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Message-Id: <201304041448.11052.arnd@arndb.de>
-Cc: robin.randhawa@arm.com, linux-pm@vger.kernel.org, patches@linaro.org,
- Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org,
- rjw@sisk.pl, Steve.Bannister@arm.com, arvind.chauhan@arm.com,
- linuxppc-dev@lists.ozlabs.org, linaro-kernel@lists.linaro.org,
- charles.garcia-tobin@arm.com
+Return-Path: <mjw@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e33.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9ECBE2C00A7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2013 01:58:36 +1100 (EST)
+Received: from /spool/local
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mjw@linux.vnet.ibm.com>;
+ Thu, 4 Apr 2013 08:58:26 -0600
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+ [9.17.195.106])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 3009B3E40039
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2013 08:53:16 -0600 (MDT)
+Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
+ by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r34ErOHx382534
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Apr 2013 08:53:25 -0600
+Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r34Eu4VT030297
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Apr 2013 08:56:05 -0600
+Message-ID: <1365087197.12460.5.camel@lambeau>
+Subject: [PATCH] Adjunct partition test
+From: Michael Wolf <mjw@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Date: Thu, 04 Apr 2013 09:53:17 -0500
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Reply-To: mjw@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,19 +38,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday 04 April 2013, Viresh Kumar wrote:
-> 
-> On 4 April 2013 18:32, Arnd Bergmann <arnd@arndb.de> wrote:
-> > Moving the files is good, but I don't see a reason to make the cbe_cpufreq.h
-> > header globally visible in include/linux/. Isn't it just used by as the
-> > interface between ppc_cbe_cpufreq_pmi.c  and ppc_cbe_cpufreq.c?
-> 
-> When i moved it initially i thought it is also used by
-> arch/powerpc/platforms/cell/cpufreq_spudemand.c and hence moved it
-> to include/linux and never realized i am wrong..
-> 
-> Here is the fixup (And attached complete patch: original+fixup for Rafael
-> to apply):
+Some versions pHyp will perform the adjunct partition test before the
+ANDCOND test.  The result of this is that H_RESOURCE can be returned and
+cause the BUG_ON condition to occur.  So add a check for H_RESOURCE as
+well.
 
-
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Michael Wolf <mjw@linux.vnet.ibm.com>
+---
+diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+index c9a29da..724fa0b 100644
+--- a/arch/powerpc/platforms/pseries/lpar.c
++++ b/arch/powerpc/platforms/pseries/lpar.c
+@@ -185,7 +185,13 @@ static long pSeries_lpar_hpte_remove(unsigned long hpte_group)
+ 					   (0x1UL << 4), &dummy1, &dummy2);
+ 		if (lpar_rc == H_SUCCESS)
+ 			return i;
+-		BUG_ON(lpar_rc != H_NOT_FOUND);
++
++		/*
++		 * The test for adjunct partition is performed before the
++		 * ANDCOND test.  H_RESOURCE may be returned, so we need to
++		 * check for that as well.
++		 */
++		BUG_ON(lpar_rc != H_NOT_FOUND && lpar_rc != H_RESOURCE);
+ 
+ 		slot_offset++;
+ 		slot_offset &= 0x7;
