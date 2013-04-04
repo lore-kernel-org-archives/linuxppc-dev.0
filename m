@@ -1,23 +1,15 @@
-Return-Path: <B35336@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 045C52C00A4
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2013 12:20:49 +1100 (EST)
-From: Zhao Chenhui-B35336 <B35336@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: RE: [PATCH 02/17] powerpc/85xx: do not sync time base at boot time
-Date: Thu, 4 Apr 2013 01:20:40 +0000
-Message-ID: <7AA2FF042C086D469F577FA6723434DA2845D5@039-SN1MPN1-003.039d.mgd.msft.net>
-References: <1364994565-16010-1-git-send-email-chenhui.zhao@freescale.com>
- <1364994565-16010-2-git-send-email-chenhui.zhao@freescale.com>,
- <E5707E1B-20F9-495B-A83C-E115CDCEF4BE@kernel.crashing.org>
-In-Reply-To: <E5707E1B-20F9-495B-A83C-E115CDCEF4BE@kernel.crashing.org>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <paulus@ozlabs.org>
+Date: Thu, 4 Apr 2013 14:34:36 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 2/11] Add PRRN Event Handler
+Message-ID: <20130404033436.GC19443@drongo>
+References: <51509AE8.8070803@linux.vnet.ibm.com>
+ <51509CF0.10200@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <51509CF0.10200@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,34 +19,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=0A=
-No other reason. Just avoid doing it again at boot time in kernel.=0A=
-=0A=
--Chenhui=0A=
-=0A=
-________________________________________=0A=
-From: Kumar Gala [galak@kernel.crashing.org]=0A=
-Sent: Wednesday, April 03, 2013 23:10=0A=
-To: Zhao Chenhui-B35336=0A=
-Cc: linuxppc-dev@lists.ozlabs.org=0A=
-Subject: Re: [PATCH 02/17] powerpc/85xx: do not sync time base at boot time=
-=0A=
-=0A=
-On Apr 3, 2013, at 8:09 AM, Zhao Chenhui wrote:=0A=
-=0A=
-> From: Chen-Hui Zhao <chenhui.zhao@freescale.com>=0A=
->=0A=
-> The bootloader have done time base sync for all cores, so skip=0A=
-> the synchronization process at boot time of kernel.=0A=
->=0A=
-> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>=0A=
-> Signed-off-by: Li Yang <leoli@freescale.com>=0A=
-> Signed-off-by: Andy Fleming <afleming@freescale.com>=0A=
-> ---=0A=
-> arch/powerpc/platforms/85xx/smp.c |    8 ++++++++=0A=
-> 1 files changed, 8 insertions(+), 0 deletions(-)=0A=
-=0A=
-What harm is there in doing the sync?  I'm sure there is another reason you=
- want to skip the TB sync that should be conveyed in the commit message.=0A=
-=0A=
-- k=0A=
+On Mon, Mar 25, 2013 at 01:52:32PM -0500, Nathan Fontenot wrote:
+> From: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
+> 
+> A PRRN event is signaled via the RTAS event-scan mechanism, which
+> returns a Hot Plug Event message "fixed part" indicating "Platform
+> Resource Reassignment". In response to the Hot Plug Event message,
+> we must call ibm,update-nodes to determine which resources were
+> reassigned and then ibm,update-properties to obtain the new affinity
+> information about those resources.
+> 
+> The PRRN event-scan RTAS message contains only the "fixed part" with
+> the "Type" field set to the value 160 and no Extended Event Log. The
+> four-byte Extended Event Log Length field is repurposed (since no
+> Extended Event Log message is included) to pass the "scope" parameter
+> that causes the ibm,update-nodes to return the nodes affected by the
+> specific resource reassignment.
+> 
+> This patch adds a handler in rtasd for PRRN RTAS events. The function
+> pseries_devicetree_update() (from mobility.c) is used to make the
+> ibm,update-nodes/ibm,update-properties RTAS calls. Updating the NUMA maps
+> (handled by a subsequent patch) will require significant processing,
+> so pseries_devicetree_update() is called from an asynchronous workqueue
+> to allow rtasd to continue processing events. Since we flush all work
+> on the queue before handling any new work there should only be one event
+> in flight of being handled at a time.
+            ^^ "of" is superfluous
+
+In the worst case where PRRN events come close together in time, the
+flush_work will block for however long it takes to do this
+"significant processing", meaning that we're no better off using a
+workqueue.  Do we have any reason to think that these PRRN events will
+normally be widely spaced in time?  If so you should mention it in the
+patch description.
+
+Also, rtasd isn't actually a task, it's just a function that gets run
+via schedule_delayed_work_on() and re-schedules itself each time it
+runs.  Is there any deadlock possibility in calling flush_work from a
+work function?
+
+Paul.
