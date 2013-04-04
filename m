@@ -1,30 +1,36 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <azanella@linux.vnet.ibm.com>
+Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B53812C0195
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2013 06:14:01 +1100 (EST)
-Subject: Re: [PATCH 2/5] powerpc/fsl-booke: Add initial silicon device tree
- files for B4860 and B4420
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <E12D2F89F87F4A49B0320A4C2DE7E749151B18@039-SN2MPN1-011.039d.mgd.msft.net>
-Date: Thu, 4 Apr 2013 14:13:38 -0500
-Message-Id: <E3681803-00AE-4FBD-8BEA-E32C18F71A7E@kernel.crashing.org>
-References: <1364886968-9634-1-git-send-email-shaveta@freescale.com>
- <2E7EAABC-5A34-46D2-B4C8-80081AC1563F@kernel.crashing.org>
- <E12D2F89F87F4A49B0320A4C2DE7E749151B18@039-SN2MPN1-011.039d.mgd.msft.net>
-To: Leekha Shaveta-B20052 <B20052@freescale.com>
-Cc: Li Yang-R58472 <r58472@freescale.com>,
- Zhao Chenhui-B35336 <B35336@freescale.com>,
- Mehresh Ramneek-B31383 <B31383@freescale.com>,
- Garg Vakul-B16394 <B16394@freescale.com>,
- Lian Minghuan-B31939 <B31939@freescale.com>,
- Tang Yuantian-B29983 <B29983@freescale.com>,
- Fleming Andy-AFLEMING <afleming@freescale.com>,
- Sethi Varun-B16395 <B16395@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ (Client CN "e24smtp04.br.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 887752C00AC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2013 06:23:21 +1100 (EST)
+Received: from /spool/local
+ by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <azanella@linux.vnet.ibm.com>;
+ Thu, 4 Apr 2013 16:23:12 -0300
+Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id 0EB6B1DC004E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2013 15:23:01 -0400 (EDT)
+Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
+ by d24relay01.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r34JKaSP1368258
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Apr 2013 16:20:36 -0300
+Received: from d24av04.br.ibm.com (loopback [127.0.0.1])
+ by d24av04.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r34HMjXW026283
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Apr 2013 14:22:46 -0300
+Message-ID: <515DD313.3050505@linux.vnet.ibm.com>
+Date: Thu, 04 Apr 2013 16:22:59 -0300
+From: Adhemerval Zanella <azanella@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] [RFC] powerpc: Add VDSO version of time
+References: <5148C2B3.6010408@linux.vnet.ibm.com>
+ <1363755620.18880.27.camel@pasglop>
+In-Reply-To: <1363755620.18880.27.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,87 +40,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Benjamin,
 
-On Apr 4, 2013, at 2:10 AM, Leekha Shaveta-B20052 wrote:
+Any objection or request about this patch?
 
->=20
->=20
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
-> Sent: Wednesday, April 03, 2013 10:10 PM
-> To: Leekha Shaveta-B20052
-> Cc: linuxppc-dev@lists.ozlabs.org; Zhao Chenhui-B35336; Li =
-Yang-R58472; Tang Yuantian-B29983; Sethi Varun-B16395; Lian =
-Minghuan-B31939; Mehresh Ramneek-B31383; Fleming Andy-AFLEMING; Garg =
-Vakul-B16394
-> Subject: Re: [PATCH 2/5] powerpc/fsl-booke: Add initial silicon device =
-tree files for B4860 and B4420
->=20
->=20
-> On Apr 2, 2013, at 2:16 AM, Shaveta Leekha wrote:
->=20
->> B4860 and B4420 are similar that share some commonalities
->>=20
->> * common features have been added in b4si-pre.dtsi and b4si-post.dtsi
->> * differences are added in respective silicon files of B4860 and =
-B4420
->=20
-> What are the differences between B4860 & B4420, beyond # of cores?
-> [SL] have detailed the differences in board support patch sent in this =
-patch set.
-> Do I need to mention the differences here also?=20
->=20
->>=20
->> There are several things missing from the device trees of B4860 and =
-B4420:
->>=20
->> * DPAA related nodes (Qman, Bman, Fman, Rman)
->> * DSP related nodes/information
->=20
-> What about:
->=20
-> serdes, sfp [security fuse processor], thermal, gpio, maple, cpri, =
-quad timers,=20
-> [SL] I would prefer to add, what have been added in device tree so far =
-in patch description
-> As that is clear to me.
-> But as u suggested, I mentioned some of the nodes/things missing, =
-though the list is not
-> Exhaustive. Also I am not sure of, what would be added/required in =
-future in these device tree files.
->=20
-> Anyways, I can add all the things you have mentioned above.
-> Please tell if anything else is missing.
 
-I would add the trivial ones and just make sure the list is exhaustive =
-for the ones missing in the commit message.
-
->=20
-> Regards,
-> Shaveta
->=20
->>=20
->> Signed-off-by: Shaveta Leekha <shaveta@freescale.com>
->> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
->> Signed-off-by: Li Yang <leoli@freescale.com>
->> Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
->> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
->> Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
->> Signed-off-by: Ramneek Mehresh <ramneek.mehresh@freescale.com>
->> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->> Signed-off-by: Andy Fleming <afleming@freescale.com>
->> Signed-off-by: Vakul Garg <vakul@freescale.com>
->> ---
->> arch/powerpc/boot/dts/fsl/b4420si-post.dtsi |   94 ++++++++++
->> arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi  |   49 +++++
->> arch/powerpc/boot/dts/fsl/b4860si-post.dtsi |  138 ++++++++++++++
->> arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi  |   59 ++++++
->> arch/powerpc/boot/dts/fsl/b4si-post.dtsi    |  262 =
-+++++++++++++++++++++++++++
->> arch/powerpc/boot/dts/fsl/b4si-pre.dtsi     |   65 +++++++
->=20
-> Remove b4si-pre.dtsi, there isn't enough here to warrant not just =
-merging it into b4420si-pre.dtsi & b4860si-pre.dtsi
->=20
-
-- k
+On 20-03-2013 02:00, Benjamin Herrenschmidt wrote:
+> On Tue, 2013-03-19 at 16:55 -0300, Adhemerval Zanella wrote:
+>> I focused on 64 bit kernel, do I need to provide a scheme for 32 bits
+>> as well?
+> You did provide both 32 and 64-bit VDSO implementations so 32-bit
+> kernels should be covered.
+>
+> Cheers,
+> Ben.
+>
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
