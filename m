@@ -1,28 +1,29 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-da0-x232.google.com (mail-da0-x232.google.com
- [IPv6:2607:f8b0:400e:c00::232])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1A7CD2C0136
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2013 23:57:45 +1100 (EST)
-Received: by mail-da0-f50.google.com with SMTP id t1so1103171dae.23
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Apr 2013 05:57:40 -0700 (PDT)
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: rjw@sisk.pl
-Subject: [PATCH 18/18] cpufreq: powerpc/platforms/cell: move cpufreq driver to
- drivers/cpufreq
-Date: Thu,  4 Apr 2013 18:24:26 +0530
-Message-Id: <0f989533f2e47d4d632710029bf0273082bafee3.1365079581.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1365079581.git.viresh.kumar@linaro.org>
-References: <cover.1365079581.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1365079581.git.viresh.kumar@linaro.org>
-References: <cover.1365079581.git.viresh.kumar@linaro.org>
-Cc: robin.randhawa@arm.com, Arnd Bergmann <arnd@arndb.de>,
- linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>,
- patches@linaro.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org,
- cpufreq@vger.kernel.org, Steve.Bannister@arm.com, arvind.chauhan@arm.com,
- linuxppc-dev@lists.ozlabs.org, linaro-kernel@lists.linaro.org,
- charles.garcia-tobin@arm.com
+Return-Path: <B16395@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D83CB2C00A0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2013 00:00:36 +1100 (EST)
+From: Sethi Varun-B16395 <B16395@freescale.com>
+To: Alex Williamson <alex.williamson@redhat.com>, Joerg Roedel
+ <joro@8bytes.org>
+Subject: RE: [PATCH 5/5 v11] iommu/fsl: Freescale PAMU driver and iommu
+ implementation.
+Date: Thu, 4 Apr 2013 13:00:23 +0000
+Message-ID: <C5ECD7A89D1DC44195F34B25E172658D45883B@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1364500442-20927-1-git-send-email-Varun.Sethi@freescale.com>
+ <1364500442-20927-6-git-send-email-Varun.Sethi@freescale.com>
+ <20130402161812.GI15687@8bytes.org> <1365012091.2882.252.camel@bling.home>
+In-Reply-To: <1365012091.2882.252.camel@bling.home>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Yoder Stuart-B08248 <B08248@freescale.com>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,211 +33,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch moves cpufreq driver of powerpc platforms/cell to drivers/cpufreq.
-
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-Compile Tested only.
-
- arch/powerpc/platforms/cell/Kconfig                | 26 +---------------------
- arch/powerpc/platforms/cell/Makefile               |  3 ---
- drivers/cpufreq/Kconfig.powerpc                    | 18 +++++++++++++++
- drivers/cpufreq/Makefile                           |  3 +++
- .../cpufreq/ppc_cbe_cpufreq.c                      |  2 +-
- .../cpufreq/ppc_cbe_cpufreq_pervasive.c            |  3 +--
- .../cpufreq/ppc_cbe_cpufreq_pmi.c                  |  3 +--
- .../linux/ppc_cbe_cpufreq.h                        |  4 ++--
- 8 files changed, 27 insertions(+), 35 deletions(-)
- rename arch/powerpc/platforms/cell/cbe_cpufreq.c => drivers/cpufreq/ppc_cbe_cpufreq.c (99%)
- rename arch/powerpc/platforms/cell/cbe_cpufreq_pervasive.c => drivers/cpufreq/ppc_cbe_cpufreq_pervasive.c (98%)
- rename arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c => drivers/cpufreq/ppc_cbe_cpufreq_pmi.c (99%)
- rename arch/powerpc/platforms/cell/cbe_cpufreq.h => include/linux/ppc_cbe_cpufreq.h (82%)
-
-diff --git a/arch/powerpc/platforms/cell/Kconfig b/arch/powerpc/platforms/cell/Kconfig
-index 53aaefe..9978f59 100644
---- a/arch/powerpc/platforms/cell/Kconfig
-+++ b/arch/powerpc/platforms/cell/Kconfig
-@@ -113,34 +113,10 @@ config CBE_THERM
- 	default m
- 	depends on CBE_RAS && SPU_BASE
- 
--config CBE_CPUFREQ
--	tristate "CBE frequency scaling"
--	depends on CBE_RAS && CPU_FREQ
--	default m
--	help
--	  This adds the cpufreq driver for Cell BE processors.
--	  For details, take a look at <file:Documentation/cpu-freq/>.
--	  If you don't have such processor, say N
--
--config CBE_CPUFREQ_PMI_ENABLE
--	bool "CBE frequency scaling using PMI interface"
--	depends on CBE_CPUFREQ
--	default n
--	help
--	  Select this, if you want to use the PMI interface
--	  to switch frequencies. Using PMI, the
--	  processor will not only be able to run at lower speed,
--	  but also at lower core voltage.
--
--config CBE_CPUFREQ_PMI
--	tristate
--	depends on CBE_CPUFREQ_PMI_ENABLE
--	default CBE_CPUFREQ
--
- config PPC_PMI
- 	tristate
- 	default y
--	depends on CBE_CPUFREQ_PMI || PPC_IBM_CELL_POWERBUTTON
-+	depends on CPU_FREQ_CBE_PMI || PPC_IBM_CELL_POWERBUTTON
- 	help
- 	  PMI (Platform Management Interrupt) is a way to
- 	  communicate with the BMC (Baseboard Management Controller).
-diff --git a/arch/powerpc/platforms/cell/Makefile b/arch/powerpc/platforms/cell/Makefile
-index a4a8935..fe053e7 100644
---- a/arch/powerpc/platforms/cell/Makefile
-+++ b/arch/powerpc/platforms/cell/Makefile
-@@ -5,9 +5,6 @@ obj-$(CONFIG_PPC_CELL_NATIVE)		+= iommu.o setup.o spider-pic.o \
- obj-$(CONFIG_CBE_RAS)			+= ras.o
- 
- obj-$(CONFIG_CBE_THERM)			+= cbe_thermal.o
--obj-$(CONFIG_CBE_CPUFREQ_PMI)		+= cbe_cpufreq_pmi.o
--obj-$(CONFIG_CBE_CPUFREQ)		+= cbe-cpufreq.o
--cbe-cpufreq-y				+= cbe_cpufreq_pervasive.o cbe_cpufreq.o
- obj-$(CONFIG_CBE_CPUFREQ_SPU_GOVERNOR)	+= cpufreq_spudemand.o
- 
- obj-$(CONFIG_PPC_IBM_CELL_POWERBUTTON)	+= cbe_powerbutton.o
-diff --git a/drivers/cpufreq/Kconfig.powerpc b/drivers/cpufreq/Kconfig.powerpc
-index 2e5a007..9e1ae94 100644
---- a/drivers/cpufreq/Kconfig.powerpc
-+++ b/drivers/cpufreq/Kconfig.powerpc
-@@ -1,3 +1,21 @@
-+config CPU_FREQ_CBE
-+	tristate "CBE frequency scaling"
-+	depends on CBE_RAS && PPC_CELL
-+	default m
-+	help
-+	  This adds the cpufreq driver for Cell BE processors.
-+	  For details, take a look at <file:Documentation/cpu-freq/>.
-+	  If you don't have such processor, say N
-+
-+config CPU_FREQ_CBE_PMI
-+	bool "CBE frequency scaling using PMI interface"
-+	depends on CPU_FREQ_CBE
-+	default n
-+	help
-+	  Select this, if you want to use the PMI interface to switch
-+	  frequencies. Using PMI, the processor will not only be able to run at
-+	  lower speed, but also at lower core voltage.
-+
- config CPU_FREQ_MAPLE
- 	bool "Support for Maple 970FX Evaluation Board"
- 	depends on PPC_MAPLE
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index 7b16092f..bfefa22 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -78,6 +78,9 @@ obj-$(CONFIG_ARCH_TEGRA)		+= tegra-cpufreq.o
- 
- ##################################################################################
- # PowerPC platform drivers
-+obj-$(CONFIG_CPU_FREQ_CBE)		+= ppc-cbe-cpufreq.o
-+ppc-cbe-cpufreq-y			+= ppc_cbe_cpufreq_pervasive.o ppc_cbe_cpufreq.o
-+obj-$(CONFIG_CPU_FREQ_CBE_PMI)		+= ppc_cbe_cpufreq_pmi.o
- obj-$(CONFIG_CPU_FREQ_MAPLE)		+= maple-cpufreq.o
- obj-$(CONFIG_CPU_FREQ_PMAC)		+= pmac32-cpufreq.o
- obj-$(CONFIG_CPU_FREQ_PMAC64)		+= pmac64-cpufreq.o
-diff --git a/arch/powerpc/platforms/cell/cbe_cpufreq.c b/drivers/cpufreq/ppc_cbe_cpufreq.c
-similarity index 99%
-rename from arch/powerpc/platforms/cell/cbe_cpufreq.c
-rename to drivers/cpufreq/ppc_cbe_cpufreq.c
-index 718c6a3..6d7a51d 100644
---- a/arch/powerpc/platforms/cell/cbe_cpufreq.c
-+++ b/drivers/cpufreq/ppc_cbe_cpufreq.c
-@@ -23,11 +23,11 @@
- #include <linux/cpufreq.h>
- #include <linux/module.h>
- #include <linux/of_platform.h>
-+#include <linux/ppc_cbe_cpufreq.h>
- 
- #include <asm/machdep.h>
- #include <asm/prom.h>
- #include <asm/cell-regs.h>
--#include "cbe_cpufreq.h"
- 
- static DEFINE_MUTEX(cbe_switch_mutex);
- 
-diff --git a/arch/powerpc/platforms/cell/cbe_cpufreq_pervasive.c b/drivers/cpufreq/ppc_cbe_cpufreq_pervasive.c
-similarity index 98%
-rename from arch/powerpc/platforms/cell/cbe_cpufreq_pervasive.c
-rename to drivers/cpufreq/ppc_cbe_cpufreq_pervasive.c
-index 20472e4..6708710 100644
---- a/arch/powerpc/platforms/cell/cbe_cpufreq_pervasive.c
-+++ b/drivers/cpufreq/ppc_cbe_cpufreq_pervasive.c
-@@ -25,13 +25,12 @@
- 
- #include <linux/io.h>
- #include <linux/kernel.h>
-+#include <linux/ppc_cbe_cpufreq.h>
- #include <linux/time.h>
- #include <asm/machdep.h>
- #include <asm/hw_irq.h>
- #include <asm/cell-regs.h>
- 
--#include "cbe_cpufreq.h"
--
- /* to write to MIC register */
- static u64 MIC_Slow_Fast_Timer_table[] = {
- 	[0 ... 7] = 0x007fc00000000000ull,
-diff --git a/arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c b/drivers/cpufreq/ppc_cbe_cpufreq_pmi.c
-similarity index 99%
-rename from arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c
-rename to drivers/cpufreq/ppc_cbe_cpufreq_pmi.c
-index 60a07a4..448b888 100644
---- a/arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c
-+++ b/drivers/cpufreq/ppc_cbe_cpufreq_pmi.c
-@@ -25,6 +25,7 @@
- #include <linux/timer.h>
- #include <linux/module.h>
- #include <linux/of_platform.h>
-+#include <linux/ppc_cbe_cpufreq.h>
- 
- #include <asm/processor.h>
- #include <asm/prom.h>
-@@ -35,8 +36,6 @@
- #include <asm/time.h>
- #endif
- 
--#include "cbe_cpufreq.h"
--
- static u8 pmi_slow_mode_limit[MAX_CBE];
- 
- bool cbe_cpufreq_has_pmi = false;
-diff --git a/arch/powerpc/platforms/cell/cbe_cpufreq.h b/include/linux/ppc_cbe_cpufreq.h
-similarity index 82%
-rename from arch/powerpc/platforms/cell/cbe_cpufreq.h
-rename to include/linux/ppc_cbe_cpufreq.h
-index c1d86bf..b4c00a5 100644
---- a/arch/powerpc/platforms/cell/cbe_cpufreq.h
-+++ b/include/linux/ppc_cbe_cpufreq.h
-@@ -1,5 +1,5 @@
- /*
-- * cbe_cpufreq.h
-+ * ppc_cbe_cpufreq.h
-  *
-  * This file contains the definitions used by the cbe_cpufreq driver.
-  *
-@@ -17,7 +17,7 @@ int cbe_cpufreq_get_pmode(int cpu);
- 
- int cbe_cpufreq_set_pmode_pmi(int cpu, unsigned int pmode);
- 
--#if defined(CONFIG_CBE_CPUFREQ_PMI) || defined(CONFIG_CBE_CPUFREQ_PMI_MODULE)
-+#if defined(CONFIG_CPU_FREQ_CBE_PMI) || defined(CONFIG_CPU_FREQ_CBE_PMI_MODULE)
- extern bool cbe_cpufreq_has_pmi;
- #else
- #define cbe_cpufreq_has_pmi (0)
--- 
-1.7.12.rc2.18.g61b472e
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQWxleCBXaWxsaWFtc29u
+IFttYWlsdG86YWxleC53aWxsaWFtc29uQHJlZGhhdC5jb21dDQo+IFNlbnQ6IFdlZG5lc2RheSwg
+QXByaWwgMDMsIDIwMTMgMTE6MzIgUE0NCj4gVG86IEpvZXJnIFJvZWRlbA0KPiBDYzogU2V0aGkg
+VmFydW4tQjE2Mzk1OyBZb2RlciBTdHVhcnQtQjA4MjQ4OyBXb29kIFNjb3R0LUIwNzQyMTsNCj4g
+aW9tbXVAbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxh
+YnMub3JnOyBsaW51eC0NCj4ga2VybmVsQHZnZXIua2VybmVsLm9yZzsgZ2FsYWtAa2VybmVsLmNy
+YXNoaW5nLm9yZzsNCj4gYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnDQo+IFN1YmplY3Q6IFJlOiBb
+UEFUQ0ggNS81IHYxMV0gaW9tbXUvZnNsOiBGcmVlc2NhbGUgUEFNVSBkcml2ZXIgYW5kIGlvbW11
+DQo+IGltcGxlbWVudGF0aW9uLg0KPiANCj4gT24gVHVlLCAyMDEzLTA0LTAyIGF0IDE4OjE4ICsw
+MjAwLCBKb2VyZyBSb2VkZWwgd3JvdGU6DQo+ID4gQ2MnaW5nIEFsZXggV2lsbGlhbXNvbg0KPiA+
+DQo+ID4gQWxleCwgY2FuIHlvdSBwbGVhc2UgcmV2aWV3IHRoZSBpb21tdS1ncm91cCBwYXJ0IG9m
+IHRoaXMgcGF0Y2g/DQo+IA0KPiBTdXJlLCBpdCBsb29rcyBwcmV0dHkgcmVhc29uYWJsZS4gIEFJ
+VUksIGFsbCBQQ0kgZGV2aWNlcyBhcmUgYmVsb3cgc29tZQ0KPiBraW5kIG9mIGhvc3QgYnJpZGdl
+IHRoYXQgaXMgZWl0aGVyIG5ldyBhbmQgc3VwcG9ydHMgcGFydGl0aW9uaW5nIG9yIG9sZA0KPiBh
+bmQgZG9lc24ndC4gIEkgZG9uJ3Qga25vdyBpZiB0aGF0J3MgYSB2aXNpYmlsaXR5IG9yIGlzb2xh
+dGlvbg0KPiByZXF1aXJlbWVudCwgcGVyaGFwcyBQQ0kgQUNTLWlzaC4gIEluIHRoZSBuZXcgaG9z
+dCBicmlkZ2UgY2FzZSwgZWFjaA0KPiBkZXZpY2UgZ2V0cyBhIGdyb3VwLiAgVGhpcyBzZWVtcyBu
+b3QgdG8gaGF2ZSBhbnkgcXVpcmtzIGZvciBtdWx0aWZ1bmN0aW9uDQo+IGRldmljZXMgdGhvdWdo
+LiAgT24gQU1EIGFuZCBJbnRlbCBJT01NVXMgd2UgdGVzdCBtdWx0aWZ1bmN0aW9uIGRldmljZSBB
+Q1MNCj4gc3VwcG9ydCB0byBkZXRlcm1pbmUgd2hldGhlciBhbGwgdGhlIGZ1bmN0aW9ucyBzaG91
+bGQgYmUgaW4gdGhlIHNhbWUNCj4gZ3JvdXAuICBJcyB0aGVyZSBhbnkgcmVhc29uIHRvIHRydXN0
+IG11bHRpZnVuY3Rpb24gZGV2aWNlcyBvbiBQQU1VPw0KPiANCltTZXRoaSBWYXJ1bi1CMTYzOTVd
+IEluIHRoZSBjYXNlIHdoZXJlIHdlIGNhbiBwYXJ0aXRpb24gZW5kcG9pbnRzIHdlIGNhbiBkaXN0
+aW5ndWlzaCB0cmFuc2FjdGlvbnMgYmFzZWQgb24gdGhlIGJ1cyxkZXZpY2UsZnVuY3Rpb24gbnVt
+YmVyIGNvbWJpbmF0aW9uLiBUaGlzIHN1cHBvcnQgaXMgYXZhaWxhYmxlIGluIHRoZSBQQ0llIGNv
+bnRyb2xsZXIgKGhvc3QgYnJpZGdlKS4NCg0KPiBJIGFsc28gZmluZCBpdCBjdXJpb3VzIHdoYXQg
+aGFwcGVucyB0byB0aGUgaW9tbXUgZ3JvdXAgb2YgdGhlIGhvc3QNCj4gYnJpZGdlLiAgSW4gdGhl
+IHBhcnRpdGlvbmFibGUgY2FzZSB0aGUgaG9zdCBicmlkZ2UgZ3JvdXAgaXMgcmVtb3ZlZCwgaW4N
+Cj4gdGhlIG5vbi1wYXJ0aXRpb25hYmxlIGNhc2UgdGhlIGhvc3QgYnJpZGdlIGdyb3VwIGJlY29t
+ZXMgdGhlIGdyb3VwIGZvcg0KPiB0aGUgY2hpbGRyZW4sIHJlbW92aW5nIHRoZSBob3N0IGJyaWRn
+ZS4gIEl0J3MgdW5pcXVlIHRvIFBBTVUgc28gZmFyIHRoYXQNCj4gdGhlc2UgaG9zdCBicmlkZ2Vz
+IGFyZSBldmVuIGluIGFuIGlvbW11IGdyb3VwICh4ODYgb25seSBhZGRzIHBjaQ0KPiBkZXZpY2Vz
+KSwgYnV0IEkgZG9uJ3Qgc2VlIGl0IGFzIG5lY2Vzc2FyaWx5IHdyb25nIGxlYXZpbmcgaXQgaW4g
+ZWl0aGVyDQo+IHNjZW5hcmlvLiAgRG9lcyBpdCBzb2x2ZSBzb21lIHByb2JsZW0gdG8gcmVtb3Zl
+IHRoZW0gZnJvbSB0aGUgZ3JvdXBzPw0KPiBUaGFua3MsDQpbU2V0aGkgVmFydW4tQjE2Mzk1XSBU
+aGUgUENJZSBjb250cm9sbGVyIGlzbid0IGEgcGFydGl0aW9uYWJsZSBlbnRpdHksIGl0IHdvdWxk
+IGFsd2F5cyBiZSBvd25lZCBieSB0aGUgaG9zdC4NCg0KLVZhcnVuDQoNCg==
