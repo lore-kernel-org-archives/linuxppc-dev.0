@@ -1,29 +1,13 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-oa0-f47.google.com (mail-oa0-f47.google.com
- [209.85.219.47])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 62A192C0085
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2013 00:50:35 +1100 (EST)
-Received: by mail-oa0-f47.google.com with SMTP id o17so2727122oag.20
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Apr 2013 06:50:32 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <201304041302.09995.arnd@arndb.de>
-References: <cover.1365079581.git.viresh.kumar@linaro.org>
- <0f989533f2e47d4d632710029bf0273082bafee3.1365079581.git.viresh.kumar@linaro.org>
- <201304041302.09995.arnd@arndb.de>
-Date: Thu, 4 Apr 2013 19:20:31 +0530
-Message-ID: <CAKohpok_ftPoME0tFRMWMM9A2mNSOpQSvbJut0=AzhCuB-Yjrg@mail.gmail.com>
-Subject: Re: [PATCH 18/18] cpufreq: powerpc/platforms/cell: move cpufreq
- driver to drivers/cpufreq
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Content-Type: multipart/mixed; boundary=e89a8f64274e0e557204d9894144
-Cc: robin.randhawa@arm.com, linux-pm@vger.kernel.org, patches@linaro.org,
- Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org,
- rjw@sisk.pl, Steve.Bannister@arm.com, arvind.chauhan@arm.com,
- linuxppc-dev@lists.ozlabs.org, linaro-kernel@lists.linaro.org,
- charles.garcia-tobin@arm.com
+Return-Path: <matteo.facchinetti@sirius-es.it>
+Received: from ns1.gatteins.it (ns1.gatteins.it [193.58.239.94])
+ by ozlabs.org (Postfix) with ESMTP id B4CEC2C0085
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2013 00:57:40 +1100 (EST)
+From: Matteo Facchinetti <matteo.facchinetti@sirius-es.it>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3 3/3] powerpc/mpc512x: add platform code for MPC5125.
+Date: Thu,  4 Apr 2013 15:57:30 +0200
+Message-Id: <1365083850-25468-1-git-send-email-matteo.facchinetti@sirius-es.it>
+Cc: agust@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,236 +17,395 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---e89a8f64274e0e557204d9894144
-Content-Type: text/plain; charset=ISO-8859-1
+Tested on MPC5125 Tower evaluation board with
+mpc512x_defconfig compile configuration.
 
-On 4 April 2013 18:32, Arnd Bergmann <arnd@arndb.de> wrote:
-> Moving the files is good, but I don't see a reason to make the cbe_cpufreq.h
-> header globally visible in include/linux/. Isn't it just used by as the
-> interface between ppc_cbe_cpufreq_pmi.c  and ppc_cbe_cpufreq.c?
+In detail, supports for:
+- PSC / UART
+- RTC
+- ETH
+- DIU
+- I2C
 
-When i moved it initially i thought it is also used by
-arch/powerpc/platforms/cell/cpufreq_spudemand.c and hence moved it
-to include/linux and never realized i am wrong..
-
-Here is the fixup (And attached complete patch: original+fixup for Rafael
-to apply):
-
-Compile tested only.
-
+Signed-off-by: Matteo Facchinetti <matteo.facchinetti@sirius-es.it>
 ---
- drivers/cpufreq/ppc_cbe_cpufreq.c                    | 3 ++-
- {include/linux => drivers/cpufreq}/ppc_cbe_cpufreq.h | 0
- drivers/cpufreq/ppc_cbe_cpufreq_pervasive.c          | 3 ++-
- drivers/cpufreq/ppc_cbe_cpufreq_pmi.c                | 3 ++-
- 4 files changed, 6 insertions(+), 3 deletions(-)
- rename {include/linux => drivers/cpufreq}/ppc_cbe_cpufreq.h (100%)
+v2:
+ * change mpc512x_select_psc_compat() implementation
+      and fix it using const char* return
+ * drop device_type and port-number properties in mpc5125twr.dts
+ * add "fsl,mpc5121" and "fsl,mpc5125" in mpc512x dts files
+ * change reset module name in mpc5125twr.dts (different from mpc5121)
+---
+v3:
+ * fix i2c compatible in mpc5125twr.dts changing
+      from "fsl-i2c" to "fsl,mpc5121-i2c", "fsl-i2c"
+---
+ arch/powerpc/boot/dts/mpc5121ads.dts          |    2 +-
+ arch/powerpc/boot/dts/mpc5125twr.dts          |  233 +++++++++++++++++++++++++
+ arch/powerpc/boot/dts/pdm360ng.dts            |    2 +-
+ arch/powerpc/platforms/512x/clock.c           |    9 +-
+ arch/powerpc/platforms/512x/mpc512x.h         |    1 +
+ arch/powerpc/platforms/512x/mpc512x_generic.c |    1 +
+ arch/powerpc/platforms/512x/mpc512x_shared.c  |   20 ++-
+ 7 files changed, 264 insertions(+), 4 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/mpc5125twr.dts
 
-diff --git a/drivers/cpufreq/ppc_cbe_cpufreq.c
-b/drivers/cpufreq/ppc_cbe_cpufreq.c
-index 138d88c..56e0c17 100644
---- a/drivers/cpufreq/ppc_cbe_cpufreq.c
-+++ b/drivers/cpufreq/ppc_cbe_cpufreq.c
-@@ -23,12 +23,13 @@
- #include <linux/cpufreq.h>
- #include <linux/module.h>
- #include <linux/of_platform.h>
--#include <linux/ppc_cbe_cpufreq.h>
-
- #include <asm/machdep.h>
- #include <asm/prom.h>
- #include <asm/cell-regs.h>
-
-+#include "ppc_cbe_cpufreq.h"
+diff --git a/arch/powerpc/boot/dts/mpc5121ads.dts b/arch/powerpc/boot/dts/mpc5121ads.dts
+index f269b13..7d3cb79 100644
+--- a/arch/powerpc/boot/dts/mpc5121ads.dts
++++ b/arch/powerpc/boot/dts/mpc5121ads.dts
+@@ -13,7 +13,7 @@
+ 
+ / {
+ 	model = "mpc5121ads";
+-	compatible = "fsl,mpc5121ads";
++	compatible = "fsl,mpc5121ads", "fsl,mpc5121";
+ 
+ 	nfc@40000000 {
+ 		/*
+diff --git a/arch/powerpc/boot/dts/mpc5125twr.dts b/arch/powerpc/boot/dts/mpc5125twr.dts
+new file mode 100644
+index 0000000..4177b62
+--- /dev/null
++++ b/arch/powerpc/boot/dts/mpc5125twr.dts
+@@ -0,0 +1,233 @@
++/*
++ * STx/Freescale ADS5125 MPC5125 silicon
++ *
++ * Copyright (C) 2009 Freescale Semiconductor Inc. All rights reserved.
++ *
++ * Reworked by Matteo Facchinetti (engineering@sirius-es.it)
++ * Copyright (C) 2013 Sirius Electronic Systems
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
 +
- static DEFINE_MUTEX(cbe_switch_mutex);
-
-
-diff --git a/include/linux/ppc_cbe_cpufreq.h b/drivers/cpufreq/ppc_cbe_cpufreq.h
-similarity index 100%
-rename from include/linux/ppc_cbe_cpufreq.h
-rename to drivers/cpufreq/ppc_cbe_cpufreq.h
-diff --git a/drivers/cpufreq/ppc_cbe_cpufreq_pervasive.c
-b/drivers/cpufreq/ppc_cbe_cpufreq_pervasive.c
-index 6708710..84d2f2c 100644
---- a/drivers/cpufreq/ppc_cbe_cpufreq_pervasive.c
-+++ b/drivers/cpufreq/ppc_cbe_cpufreq_pervasive.c
-@@ -25,12 +25,13 @@
-
- #include <linux/io.h>
- #include <linux/kernel.h>
--#include <linux/ppc_cbe_cpufreq.h>
- #include <linux/time.h>
- #include <asm/machdep.h>
- #include <asm/hw_irq.h>
- #include <asm/cell-regs.h>
-
-+#include "ppc_cbe_cpufreq.h"
++/dts-v1/;
 +
- /* to write to MIC register */
- static u64 MIC_Slow_Fast_Timer_table[] = {
- 	[0 ... 7] = 0x007fc00000000000ull,
-diff --git a/drivers/cpufreq/ppc_cbe_cpufreq_pmi.c
-b/drivers/cpufreq/ppc_cbe_cpufreq_pmi.c
-index 448b888..d29e8da 100644
---- a/drivers/cpufreq/ppc_cbe_cpufreq_pmi.c
-+++ b/drivers/cpufreq/ppc_cbe_cpufreq_pmi.c
-@@ -25,7 +25,6 @@
- #include <linux/timer.h>
- #include <linux/module.h>
- #include <linux/of_platform.h>
--#include <linux/ppc_cbe_cpufreq.h>
-
- #include <asm/processor.h>
- #include <asm/prom.h>
-@@ -36,6 +35,8 @@
- #include <asm/time.h>
- #endif
-
-+#include "ppc_cbe_cpufreq.h"
++/ {
++	model = "mpc5125twr"; // In BSP "mpc5125ads"
++	compatible = "fsl,mpc5125ads", "fsl,mpc5125";
++	#address-cells = <1>;
++	#size-cells = <1>;
++	interrupt-parent = <&ipic>;
 +
- static u8 pmi_slow_mode_limit[MAX_CBE];
-
- bool cbe_cpufreq_has_pmi = false;
-
---e89a8f64274e0e557204d9894144
-Content-Type: application/octet-stream;
-	name="0001-cpufreq-powerpc-platforms-cell-move-cpufreq-driver-t.patch"
-Content-Disposition: attachment;
-	filename="0001-cpufreq-powerpc-platforms-cell-move-cpufreq-driver-t.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_hf3zef4b0
-
-RnJvbSA0NzI3NWE2Yjg3NDM1OWYxYjQyZmJlYTNlOWQxMDM3MjA0OWVlNmM2IE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8NDcyNzVhNmI4NzQzNTlmMWI0MmZiZWEzZTlkMTAz
-NzIwNDllZTZjNi4xMzY1MDgzMzM2LmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
-VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogTW9uLCAyNSBNYXIg
-MjAxMyAxMToyMDoyMyArMDUzMApTdWJqZWN0OiBbUEFUQ0hdIGNwdWZyZXE6IHBvd2VycGMvcGxh
-dGZvcm1zL2NlbGw6IG1vdmUgY3B1ZnJlcSBkcml2ZXIgdG8KIGRyaXZlcnMvY3B1ZnJlcQoKVGhp
-cyBwYXRjaCBtb3ZlcyBjcHVmcmVxIGRyaXZlciBvZiBwb3dlcnBjIHBsYXRmb3Jtcy9jZWxsIHRv
-IGRyaXZlcnMvY3B1ZnJlcS4KCkNjOiBBcm5kIEJlcmdtYW5uIDxhcm5kQGFybmRiLmRlPgpDYzog
-QmVuamFtaW4gSGVycmVuc2NobWlkdCA8YmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnPgpDYzogbGlu
-dXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcKU2lnbmVkLW9mZi1ieTogVmlyZXNoIEt1bWFyIDx2
-aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KLS0tCiBhcmNoL3Bvd2VycGMvcGxhdGZvcm1zL2NlbGwv
-S2NvbmZpZyAgICAgICAgICAgICAgICB8IDI2ICstLS0tLS0tLS0tLS0tLS0tLS0tLS0KIGFyY2gv
-cG93ZXJwYy9wbGF0Zm9ybXMvY2VsbC9NYWtlZmlsZSAgICAgICAgICAgICAgIHwgIDMgLS0tCiBk
-cml2ZXJzL2NwdWZyZXEvS2NvbmZpZy5wb3dlcnBjICAgICAgICAgICAgICAgICAgICB8IDE4ICsr
-KysrKysrKysrKysrKwogZHJpdmVycy9jcHVmcmVxL01ha2VmaWxlICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgfCAgMyArKysKIC4uLi9jcHVmcmVxL3BwY19jYmVfY3B1ZnJlcS5jICAgICAgICAg
-ICAgICAgICAgICAgIHwgIDMgKystCiAuLi4vY3B1ZnJlcS9wcGNfY2JlX2NwdWZyZXEuaCAgICAg
-ICAgICAgICAgICAgICAgICB8ICA0ICsrLS0KIC4uLi9jcHVmcmVxL3BwY19jYmVfY3B1ZnJlcV9w
-ZXJ2YXNpdmUuYyAgICAgICAgICAgIHwgIDIgKy0KIC4uLi9jcHVmcmVxL3BwY19jYmVfY3B1ZnJl
-cV9wbWkuYyAgICAgICAgICAgICAgICAgIHwgIDIgKy0KIDggZmlsZXMgY2hhbmdlZCwgMjggaW5z
-ZXJ0aW9ucygrKSwgMzMgZGVsZXRpb25zKC0pCiByZW5hbWUgYXJjaC9wb3dlcnBjL3BsYXRmb3Jt
-cy9jZWxsL2NiZV9jcHVmcmVxLmMgPT4gZHJpdmVycy9jcHVmcmVxL3BwY19jYmVfY3B1ZnJlcS5j
-ICg5OSUpCiByZW5hbWUgYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy9jZWxsL2NiZV9jcHVmcmVxLmgg
-PT4gZHJpdmVycy9jcHVmcmVxL3BwY19jYmVfY3B1ZnJlcS5oICg4MiUpCiByZW5hbWUgYXJjaC9w
-b3dlcnBjL3BsYXRmb3Jtcy9jZWxsL2NiZV9jcHVmcmVxX3BlcnZhc2l2ZS5jID0+IGRyaXZlcnMv
-Y3B1ZnJlcS9wcGNfY2JlX2NwdWZyZXFfcGVydmFzaXZlLmMgKDk5JSkKIHJlbmFtZSBhcmNoL3Bv
-d2VycGMvcGxhdGZvcm1zL2NlbGwvY2JlX2NwdWZyZXFfcG1pLmMgPT4gZHJpdmVycy9jcHVmcmVx
-L3BwY19jYmVfY3B1ZnJlcV9wbWkuYyAoOTklKQoKZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9w
-bGF0Zm9ybXMvY2VsbC9LY29uZmlnIGIvYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy9jZWxsL0tjb25m
-aWcKaW5kZXggNTNhYWVmZS4uOTk3OGY1OSAxMDA2NDQKLS0tIGEvYXJjaC9wb3dlcnBjL3BsYXRm
-b3Jtcy9jZWxsL0tjb25maWcKKysrIGIvYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy9jZWxsL0tjb25m
-aWcKQEAgLTExMywzNCArMTEzLDEwIEBAIGNvbmZpZyBDQkVfVEhFUk0KIAlkZWZhdWx0IG0KIAlk
-ZXBlbmRzIG9uIENCRV9SQVMgJiYgU1BVX0JBU0UKIAotY29uZmlnIENCRV9DUFVGUkVRCi0JdHJp
-c3RhdGUgIkNCRSBmcmVxdWVuY3kgc2NhbGluZyIKLQlkZXBlbmRzIG9uIENCRV9SQVMgJiYgQ1BV
-X0ZSRVEKLQlkZWZhdWx0IG0KLQloZWxwCi0JICBUaGlzIGFkZHMgdGhlIGNwdWZyZXEgZHJpdmVy
-IGZvciBDZWxsIEJFIHByb2Nlc3NvcnMuCi0JICBGb3IgZGV0YWlscywgdGFrZSBhIGxvb2sgYXQg
-PGZpbGU6RG9jdW1lbnRhdGlvbi9jcHUtZnJlcS8+LgotCSAgSWYgeW91IGRvbid0IGhhdmUgc3Vj
-aCBwcm9jZXNzb3IsIHNheSBOCi0KLWNvbmZpZyBDQkVfQ1BVRlJFUV9QTUlfRU5BQkxFCi0JYm9v
-bCAiQ0JFIGZyZXF1ZW5jeSBzY2FsaW5nIHVzaW5nIFBNSSBpbnRlcmZhY2UiCi0JZGVwZW5kcyBv
-biBDQkVfQ1BVRlJFUQotCWRlZmF1bHQgbgotCWhlbHAKLQkgIFNlbGVjdCB0aGlzLCBpZiB5b3Ug
-d2FudCB0byB1c2UgdGhlIFBNSSBpbnRlcmZhY2UKLQkgIHRvIHN3aXRjaCBmcmVxdWVuY2llcy4g
-VXNpbmcgUE1JLCB0aGUKLQkgIHByb2Nlc3NvciB3aWxsIG5vdCBvbmx5IGJlIGFibGUgdG8gcnVu
-IGF0IGxvd2VyIHNwZWVkLAotCSAgYnV0IGFsc28gYXQgbG93ZXIgY29yZSB2b2x0YWdlLgotCi1j
-b25maWcgQ0JFX0NQVUZSRVFfUE1JCi0JdHJpc3RhdGUKLQlkZXBlbmRzIG9uIENCRV9DUFVGUkVR
-X1BNSV9FTkFCTEUKLQlkZWZhdWx0IENCRV9DUFVGUkVRCi0KIGNvbmZpZyBQUENfUE1JCiAJdHJp
-c3RhdGUKIAlkZWZhdWx0IHkKLQlkZXBlbmRzIG9uIENCRV9DUFVGUkVRX1BNSSB8fCBQUENfSUJN
-X0NFTExfUE9XRVJCVVRUT04KKwlkZXBlbmRzIG9uIENQVV9GUkVRX0NCRV9QTUkgfHwgUFBDX0lC
-TV9DRUxMX1BPV0VSQlVUVE9OCiAJaGVscAogCSAgUE1JIChQbGF0Zm9ybSBNYW5hZ2VtZW50IElu
-dGVycnVwdCkgaXMgYSB3YXkgdG8KIAkgIGNvbW11bmljYXRlIHdpdGggdGhlIEJNQyAoQmFzZWJv
-YXJkIE1hbmFnZW1lbnQgQ29udHJvbGxlcikuCmRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvcGxh
-dGZvcm1zL2NlbGwvTWFrZWZpbGUgYi9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zL2NlbGwvTWFrZWZp
-bGUKaW5kZXggYTRhODkzNS4uZmUwNTNlNyAxMDA2NDQKLS0tIGEvYXJjaC9wb3dlcnBjL3BsYXRm
-b3Jtcy9jZWxsL01ha2VmaWxlCisrKyBiL2FyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvY2VsbC9NYWtl
-ZmlsZQpAQCAtNSw5ICs1LDYgQEAgb2JqLSQoQ09ORklHX1BQQ19DRUxMX05BVElWRSkJCSs9IGlv
-bW11Lm8gc2V0dXAubyBzcGlkZXItcGljLm8gXAogb2JqLSQoQ09ORklHX0NCRV9SQVMpCQkJKz0g
-cmFzLm8KIAogb2JqLSQoQ09ORklHX0NCRV9USEVSTSkJCQkrPSBjYmVfdGhlcm1hbC5vCi1vYmot
-JChDT05GSUdfQ0JFX0NQVUZSRVFfUE1JKQkJKz0gY2JlX2NwdWZyZXFfcG1pLm8KLW9iai0kKENP
-TkZJR19DQkVfQ1BVRlJFUSkJCSs9IGNiZS1jcHVmcmVxLm8KLWNiZS1jcHVmcmVxLXkJCQkJKz0g
-Y2JlX2NwdWZyZXFfcGVydmFzaXZlLm8gY2JlX2NwdWZyZXEubwogb2JqLSQoQ09ORklHX0NCRV9D
-UFVGUkVRX1NQVV9HT1ZFUk5PUikJKz0gY3B1ZnJlcV9zcHVkZW1hbmQubwogCiBvYmotJChDT05G
-SUdfUFBDX0lCTV9DRUxMX1BPV0VSQlVUVE9OKQkrPSBjYmVfcG93ZXJidXR0b24ubwpkaWZmIC0t
-Z2l0IGEvZHJpdmVycy9jcHVmcmVxL0tjb25maWcucG93ZXJwYyBiL2RyaXZlcnMvY3B1ZnJlcS9L
-Y29uZmlnLnBvd2VycGMKaW5kZXggMmU1YTAwNy4uOWUxYWU5NCAxMDA2NDQKLS0tIGEvZHJpdmVy
-cy9jcHVmcmVxL0tjb25maWcucG93ZXJwYworKysgYi9kcml2ZXJzL2NwdWZyZXEvS2NvbmZpZy5w
-b3dlcnBjCkBAIC0xLDMgKzEsMjEgQEAKK2NvbmZpZyBDUFVfRlJFUV9DQkUKKwl0cmlzdGF0ZSAi
-Q0JFIGZyZXF1ZW5jeSBzY2FsaW5nIgorCWRlcGVuZHMgb24gQ0JFX1JBUyAmJiBQUENfQ0VMTAor
-CWRlZmF1bHQgbQorCWhlbHAKKwkgIFRoaXMgYWRkcyB0aGUgY3B1ZnJlcSBkcml2ZXIgZm9yIENl
-bGwgQkUgcHJvY2Vzc29ycy4KKwkgIEZvciBkZXRhaWxzLCB0YWtlIGEgbG9vayBhdCA8ZmlsZTpE
-b2N1bWVudGF0aW9uL2NwdS1mcmVxLz4uCisJICBJZiB5b3UgZG9uJ3QgaGF2ZSBzdWNoIHByb2Nl
-c3Nvciwgc2F5IE4KKworY29uZmlnIENQVV9GUkVRX0NCRV9QTUkKKwlib29sICJDQkUgZnJlcXVl
-bmN5IHNjYWxpbmcgdXNpbmcgUE1JIGludGVyZmFjZSIKKwlkZXBlbmRzIG9uIENQVV9GUkVRX0NC
-RQorCWRlZmF1bHQgbgorCWhlbHAKKwkgIFNlbGVjdCB0aGlzLCBpZiB5b3Ugd2FudCB0byB1c2Ug
-dGhlIFBNSSBpbnRlcmZhY2UgdG8gc3dpdGNoCisJICBmcmVxdWVuY2llcy4gVXNpbmcgUE1JLCB0
-aGUgcHJvY2Vzc29yIHdpbGwgbm90IG9ubHkgYmUgYWJsZSB0byBydW4gYXQKKwkgIGxvd2VyIHNw
-ZWVkLCBidXQgYWxzbyBhdCBsb3dlciBjb3JlIHZvbHRhZ2UuCisKIGNvbmZpZyBDUFVfRlJFUV9N
-QVBMRQogCWJvb2wgIlN1cHBvcnQgZm9yIE1hcGxlIDk3MEZYIEV2YWx1YXRpb24gQm9hcmQiCiAJ
-ZGVwZW5kcyBvbiBQUENfTUFQTEUKZGlmZiAtLWdpdCBhL2RyaXZlcnMvY3B1ZnJlcS9NYWtlZmls
-ZSBiL2RyaXZlcnMvY3B1ZnJlcS9NYWtlZmlsZQppbmRleCA3YjE2MDkyZi4uYmZlZmEyMiAxMDA2
-NDQKLS0tIGEvZHJpdmVycy9jcHVmcmVxL01ha2VmaWxlCisrKyBiL2RyaXZlcnMvY3B1ZnJlcS9N
-YWtlZmlsZQpAQCAtNzgsNiArNzgsOSBAQCBvYmotJChDT05GSUdfQVJDSF9URUdSQSkJCSs9IHRl
-Z3JhLWNwdWZyZXEubwogCiAjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
-IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjCiAjIFBvd2VyUEMgcGxh
-dGZvcm0gZHJpdmVycworb2JqLSQoQ09ORklHX0NQVV9GUkVRX0NCRSkJCSs9IHBwYy1jYmUtY3B1
-ZnJlcS5vCitwcGMtY2JlLWNwdWZyZXEteQkJCSs9IHBwY19jYmVfY3B1ZnJlcV9wZXJ2YXNpdmUu
-byBwcGNfY2JlX2NwdWZyZXEubworb2JqLSQoQ09ORklHX0NQVV9GUkVRX0NCRV9QTUkpCQkrPSBw
-cGNfY2JlX2NwdWZyZXFfcG1pLm8KIG9iai0kKENPTkZJR19DUFVfRlJFUV9NQVBMRSkJCSs9IG1h
-cGxlLWNwdWZyZXEubwogb2JqLSQoQ09ORklHX0NQVV9GUkVRX1BNQUMpCQkrPSBwbWFjMzItY3B1
-ZnJlcS5vCiBvYmotJChDT05GSUdfQ1BVX0ZSRVFfUE1BQzY0KQkJKz0gcG1hYzY0LWNwdWZyZXEu
-bwpkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy9jZWxsL2NiZV9jcHVmcmVxLmMg
-Yi9kcml2ZXJzL2NwdWZyZXEvcHBjX2NiZV9jcHVmcmVxLmMKc2ltaWxhcml0eSBpbmRleCA5OSUK
-cmVuYW1lIGZyb20gYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy9jZWxsL2NiZV9jcHVmcmVxLmMKcmVu
-YW1lIHRvIGRyaXZlcnMvY3B1ZnJlcS9wcGNfY2JlX2NwdWZyZXEuYwppbmRleCA3MThjNmEzLi5l
-NTc3YTFkIDEwMDY0NAotLS0gYS9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zL2NlbGwvY2JlX2NwdWZy
-ZXEuYworKysgYi9kcml2ZXJzL2NwdWZyZXEvcHBjX2NiZV9jcHVmcmVxLmMKQEAgLTI3LDcgKzI3
-LDggQEAKICNpbmNsdWRlIDxhc20vbWFjaGRlcC5oPgogI2luY2x1ZGUgPGFzbS9wcm9tLmg+CiAj
-aW5jbHVkZSA8YXNtL2NlbGwtcmVncy5oPgotI2luY2x1ZGUgImNiZV9jcHVmcmVxLmgiCisKKyNp
-bmNsdWRlICJwcGNfY2JlX2NwdWZyZXEuaCIKIAogc3RhdGljIERFRklORV9NVVRFWChjYmVfc3dp
-dGNoX211dGV4KTsKIApkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy9jZWxsL2Ni
-ZV9jcHVmcmVxLmggYi9kcml2ZXJzL2NwdWZyZXEvcHBjX2NiZV9jcHVmcmVxLmgKc2ltaWxhcml0
-eSBpbmRleCA4MiUKcmVuYW1lIGZyb20gYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy9jZWxsL2NiZV9j
-cHVmcmVxLmgKcmVuYW1lIHRvIGRyaXZlcnMvY3B1ZnJlcS9wcGNfY2JlX2NwdWZyZXEuaAppbmRl
-eCBjMWQ4NmJmLi5iNGMwMGE1IDEwMDY0NAotLS0gYS9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zL2Nl
-bGwvY2JlX2NwdWZyZXEuaAorKysgYi9kcml2ZXJzL2NwdWZyZXEvcHBjX2NiZV9jcHVmcmVxLmgK
-QEAgLTEsNSArMSw1IEBACiAvKgotICogY2JlX2NwdWZyZXEuaAorICogcHBjX2NiZV9jcHVmcmVx
-LmgKICAqCiAgKiBUaGlzIGZpbGUgY29udGFpbnMgdGhlIGRlZmluaXRpb25zIHVzZWQgYnkgdGhl
-IGNiZV9jcHVmcmVxIGRyaXZlci4KICAqCkBAIC0xNyw3ICsxNyw3IEBAIGludCBjYmVfY3B1ZnJl
-cV9nZXRfcG1vZGUoaW50IGNwdSk7CiAKIGludCBjYmVfY3B1ZnJlcV9zZXRfcG1vZGVfcG1pKGlu
-dCBjcHUsIHVuc2lnbmVkIGludCBwbW9kZSk7CiAKLSNpZiBkZWZpbmVkKENPTkZJR19DQkVfQ1BV
-RlJFUV9QTUkpIHx8IGRlZmluZWQoQ09ORklHX0NCRV9DUFVGUkVRX1BNSV9NT0RVTEUpCisjaWYg
-ZGVmaW5lZChDT05GSUdfQ1BVX0ZSRVFfQ0JFX1BNSSkgfHwgZGVmaW5lZChDT05GSUdfQ1BVX0ZS
-RVFfQ0JFX1BNSV9NT0RVTEUpCiBleHRlcm4gYm9vbCBjYmVfY3B1ZnJlcV9oYXNfcG1pOwogI2Vs
-c2UKICNkZWZpbmUgY2JlX2NwdWZyZXFfaGFzX3BtaSAoMCkKZGlmZiAtLWdpdCBhL2FyY2gvcG93
-ZXJwYy9wbGF0Zm9ybXMvY2VsbC9jYmVfY3B1ZnJlcV9wZXJ2YXNpdmUuYyBiL2RyaXZlcnMvY3B1
-ZnJlcS9wcGNfY2JlX2NwdWZyZXFfcGVydmFzaXZlLmMKc2ltaWxhcml0eSBpbmRleCA5OSUKcmVu
-YW1lIGZyb20gYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy9jZWxsL2NiZV9jcHVmcmVxX3BlcnZhc2l2
-ZS5jCnJlbmFtZSB0byBkcml2ZXJzL2NwdWZyZXEvcHBjX2NiZV9jcHVmcmVxX3BlcnZhc2l2ZS5j
-CmluZGV4IDIwNDcyZTQuLjg0ZDJmMmMgMTAwNjQ0Ci0tLSBhL2FyY2gvcG93ZXJwYy9wbGF0Zm9y
-bXMvY2VsbC9jYmVfY3B1ZnJlcV9wZXJ2YXNpdmUuYworKysgYi9kcml2ZXJzL2NwdWZyZXEvcHBj
-X2NiZV9jcHVmcmVxX3BlcnZhc2l2ZS5jCkBAIC0zMCw3ICszMCw3IEBACiAjaW5jbHVkZSA8YXNt
-L2h3X2lycS5oPgogI2luY2x1ZGUgPGFzbS9jZWxsLXJlZ3MuaD4KIAotI2luY2x1ZGUgImNiZV9j
-cHVmcmVxLmgiCisjaW5jbHVkZSAicHBjX2NiZV9jcHVmcmVxLmgiCiAKIC8qIHRvIHdyaXRlIHRv
-IE1JQyByZWdpc3RlciAqLwogc3RhdGljIHU2NCBNSUNfU2xvd19GYXN0X1RpbWVyX3RhYmxlW10g
-PSB7CmRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zL2NlbGwvY2JlX2NwdWZyZXFf
-cG1pLmMgYi9kcml2ZXJzL2NwdWZyZXEvcHBjX2NiZV9jcHVmcmVxX3BtaS5jCnNpbWlsYXJpdHkg
-aW5kZXggOTklCnJlbmFtZSBmcm9tIGFyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvY2VsbC9jYmVfY3B1
-ZnJlcV9wbWkuYwpyZW5hbWUgdG8gZHJpdmVycy9jcHVmcmVxL3BwY19jYmVfY3B1ZnJlcV9wbWku
-YwppbmRleCA2MGEwN2E0Li5kMjllOGRhIDEwMDY0NAotLS0gYS9hcmNoL3Bvd2VycGMvcGxhdGZv
-cm1zL2NlbGwvY2JlX2NwdWZyZXFfcG1pLmMKKysrIGIvZHJpdmVycy9jcHVmcmVxL3BwY19jYmVf
-Y3B1ZnJlcV9wbWkuYwpAQCAtMzUsNyArMzUsNyBAQAogI2luY2x1ZGUgPGFzbS90aW1lLmg+CiAj
-ZW5kaWYKIAotI2luY2x1ZGUgImNiZV9jcHVmcmVxLmgiCisjaW5jbHVkZSAicHBjX2NiZV9jcHVm
-cmVxLmgiCiAKIHN0YXRpYyB1OCBwbWlfc2xvd19tb2RlX2xpbWl0W01BWF9DQkVdOwogCi0tIAox
-LjcuMTIucmMyLjE4Lmc2MWI0NzJlCgo=
---e89a8f64274e0e557204d9894144--
++	aliases {
++		gpio0 = &gpio0;
++		gpio1 = &gpio1;
++		ethernet0 = &eth0;
++	};
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		PowerPC,5125@0 {
++			device_type = "cpu";
++			reg = <0>;
++			d-cache-line-size = <0x20>;	// 32 bytes
++			i-cache-line-size = <0x20>;	// 32 bytes
++			d-cache-size = <0x8000>;	// L1, 32K
++			i-cache-size = <0x8000>;	// L1, 32K
++			timebase-frequency = <49500000>;// 49.5 MHz (csb/4)
++			bus-frequency = <198000000>;	// 198 MHz csb bus
++			clock-frequency = <396000000>;	// 396 MHz ppc core
++		};
++	};
++
++	memory {
++		device_type = "memory";
++		reg = <0x00000000 0x10000000>;	// 256MB at 0
++	};
++
++	sram@30000000 {
++		compatible = "fsl,mpc5121-sram";
++		reg = <0x30000000 0x08000>;		// 32K at 0x30000000
++	};
++
++	soc@80000000 {
++		compatible = "fsl,mpc5121-immr";
++		#address-cells = <1>;
++		#size-cells = <1>;
++		#interrupt-cells = <2>;
++		ranges = <0x0 0x80000000 0x400000>;
++		reg = <0x80000000 0x400000>;
++		bus-frequency = <66000000>;	// 66 MHz ips bus
++
++		// IPIC
++		// interrupts cell = <intr #, sense>
++		// sense values match linux IORESOURCE_IRQ_* defines:
++		// sense == 8: Level, low assertion
++		// sense == 2: Edge, high-to-low change
++		//
++		ipic: interrupt-controller@c00 {
++			compatible = "fsl,mpc5121-ipic", "fsl,ipic";
++			interrupt-controller;
++			#address-cells = <0>;
++			#interrupt-cells = <2>;
++			reg = <0xc00 0x100>;
++		};
++
++		rtc@a00 {	// Real time clock
++			compatible = "fsl,mpc5121-rtc";
++			reg = <0xa00 0x100>;
++			interrupts = <79 0x8 80 0x8>;
++		};
++
++		reset@e00 {	// Reset module
++			compatible = "fsl,mpc5125-reset";
++			reg = <0xe00 0x100>;
++		};
++
++		clock@f00 {	// Clock control
++			compatible = "fsl,mpc5121-clock";
++			reg = <0xf00 0x100>;
++		};
++
++		pmc@1000{  // Power Management Controller
++			compatible = "fsl,mpc5121-pmc";
++			reg = <0x1000 0x100>;
++			interrupts = <83 0x2>;
++		};
++
++		gpio0: gpio@1100 {
++			compatible = "fsl,mpc5125-gpio";
++			reg = <0x1100 0x080>;
++			interrupts = <78 0x8>;
++		};
++
++		gpio1: gpio@1180 {
++			compatible = "fsl,mpc5125-gpio";
++			reg = <0x1180 0x080>;
++			interrupts = <86 0x8>;
++		};
++
++		can@1300 { // CAN rev.2
++			compatible = "fsl,mpc5121-mscan";
++			interrupts = <12 0x8>;
++			reg = <0x1300 0x80>;
++		};
++
++		can@1380 {
++			compatible = "fsl,mpc5121-mscan";
++			interrupts = <13 0x8>;
++			reg = <0x1380 0x80>;
++		};
++
++		sdhc@1500 {
++			compatible = "fsl,mpc5121-sdhc";
++			interrupts = <8 0x8>;
++			reg = <0x1500 0x100>;
++		};
++
++		i2c@1700 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,mpc5121-i2c", "fsl-i2c";
++			reg = <0x1700 0x20>;
++			interrupts = <0x9 0x8>;
++		};
++
++		i2c@1720 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,mpc5121-i2c", "fsl-i2c";
++			reg = <0x1720 0x20>;
++			interrupts = <0xa 0x8>;
++		};
++
++		i2c@1740 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,mpc5121-i2c", "fsl-i2c";
++			reg = <0x1740 0x20>;
++			interrupts = <0xb 0x8>;
++		};
++
++		i2ccontrol@1760 {
++			compatible = "fsl,mpc5121-i2c-ctrl";
++			reg = <0x1760 0x8>;
++		};
++
++		diu@2100 {
++			compatible = "fsl,mpc5121-diu";
++			reg = <0x2100 0x100>;
++			interrupts = <64 0x8>;
++		};
++
++		mdio@2800 {
++			compatible = "fsl,mpc5121-fec-mdio";
++			reg = <0x2800 0x800>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			phy0: ethernet-phy@0 {
++				reg = <1>;
++			};
++		};
++
++		eth0: ethernet@2800 {
++			compatible = "fsl,mpc5125-fec";
++			reg = <0x2800 0x800>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <4 0x8>;
++			phy-handle = < &phy0 >;
++			phy-connection-type = "rmii";
++		};
++
++		// IO control
++		ioctl@a000 {
++			compatible = "fsl,mpc5125-ioctl";
++			reg = <0xA000 0x1000>;
++		};
++
++		usb@3000 {
++			compatible = "fsl,mpc5121-usb2-dr";
++			reg = <0x3000 0x400>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			interrupts = <43 0x8>;
++			dr_mode = "host";
++			phy_type = "ulpi";
++		};
++
++		// 5125 PSCs are not 52xx or 5121 PSC compatible
++		// PSC1 uart0 aka ttyPSC0
++		serial@11100 {
++			compatible = "fsl,mpc5125-psc-uart", "fsl,mpc5125-psc";
++			reg = <0x11100 0x100>;
++			interrupts = <40 0x8>;
++			fsl,rx-fifo-size = <16>;
++			fsl,tx-fifo-size = <16>;
++		};
++
++		// PSC9 uart1 aka ttyPSC1
++		serial@11900 {
++			compatible = "fsl,mpc5125-psc-uart", "fsl,mpc5125-psc";
++			reg = <0x11900 0x100>;
++			interrupts = <40 0x8>;
++			fsl,rx-fifo-size = <16>;
++			fsl,tx-fifo-size = <16>;
++		};
++
++		pscfifo@11f00 {
++			compatible = "fsl,mpc5121-psc-fifo";
++			reg = <0x11f00 0x100>;
++			interrupts = <40 0x8>;
++		};
++
++		dma@14000 {
++			compatible = "fsl,mpc5121-dma"; // BSP name: "mpc512x-dma2"
++			reg = <0x14000 0x1800>;
++			interrupts = <65 0x8>;
++		};
++	};
++};
+diff --git a/arch/powerpc/boot/dts/pdm360ng.dts b/arch/powerpc/boot/dts/pdm360ng.dts
+index 0b06947..7433740 100644
+--- a/arch/powerpc/boot/dts/pdm360ng.dts
++++ b/arch/powerpc/boot/dts/pdm360ng.dts
+@@ -17,7 +17,7 @@
+ 
+ / {
+ 	model = "pdm360ng";
+-	compatible = "ifm,pdm360ng";
++	compatible = "ifm,pdm360ng", "fsl,mpc5121";
+ 	#address-cells = <1>;
+ 	#size-cells = <1>;
+ 	interrupt-parent = <&ipic>;
+diff --git a/arch/powerpc/platforms/512x/clock.c b/arch/powerpc/platforms/512x/clock.c
+index 52d57d2..e504166 100644
+--- a/arch/powerpc/platforms/512x/clock.c
++++ b/arch/powerpc/platforms/512x/clock.c
+@@ -29,6 +29,8 @@
+ #include <asm/mpc5121.h>
+ #include <asm/clk_interface.h>
+ 
++#include "mpc512x.h"
++
+ #undef CLK_DEBUG
+ 
+ static int clocks_initialized;
+@@ -683,8 +685,13 @@ static void psc_clks_init(void)
+ 	struct device_node *np;
+ 	struct platform_device *ofdev;
+ 	u32 reg;
++	const char *psc_compat;
++
++	psc_compat = mpc512x_select_psc_compat();
++	if (!psc_compat)
++		return;
+ 
+-	for_each_compatible_node(np, NULL, "fsl,mpc5121-psc") {
++	for_each_compatible_node(np, NULL, psc_compat) {
+ 		if (!of_property_read_u32(np, "reg", &reg)) {
+ 			int pscnum = (reg & 0xf00) >> 8;
+ 			struct clk *clk = psc_dev_clk(pscnum);
+diff --git a/arch/powerpc/platforms/512x/mpc512x.h b/arch/powerpc/platforms/512x/mpc512x.h
+index c32b399..0a8e600 100644
+--- a/arch/powerpc/platforms/512x/mpc512x.h
++++ b/arch/powerpc/platforms/512x/mpc512x.h
+@@ -15,6 +15,7 @@ extern void __init mpc512x_init_IRQ(void);
+ extern void __init mpc512x_init(void);
+ extern int __init mpc5121_clk_init(void);
+ void __init mpc512x_declare_of_platform_devices(void);
++extern const char *mpc512x_select_psc_compat(void);
+ extern void mpc512x_restart(char *cmd);
+ 
+ #if defined(CONFIG_FB_FSL_DIU) || defined(CONFIG_FB_FSL_DIU_MODULE)
+diff --git a/arch/powerpc/platforms/512x/mpc512x_generic.c b/arch/powerpc/platforms/512x/mpc512x_generic.c
+index ca1ca66..1ca7b61 100644
+--- a/arch/powerpc/platforms/512x/mpc512x_generic.c
++++ b/arch/powerpc/platforms/512x/mpc512x_generic.c
+@@ -28,6 +28,7 @@
+  */
+ static const char * const board[] __initconst = {
+ 	"prt,prtlvt",
++	"fsl,mpc5125ads",
+ 	NULL
+ };
+ 
+diff --git a/arch/powerpc/platforms/512x/mpc512x_shared.c b/arch/powerpc/platforms/512x/mpc512x_shared.c
+index d30235b..1ef2fa1 100644
+--- a/arch/powerpc/platforms/512x/mpc512x_shared.c
++++ b/arch/powerpc/platforms/512x/mpc512x_shared.c
+@@ -350,6 +350,17 @@ void __init mpc512x_declare_of_platform_devices(void)
+ 
+ #define DEFAULT_FIFO_SIZE 16
+ 
++const char *mpc512x_select_psc_compat(void)
++{
++	if (of_machine_is_compatible("fsl,mpc5121"))
++		return "fsl,mpc5121-psc";
++
++	if (of_machine_is_compatible("fsl,mpc5125"))
++		return "fsl,mpc5125-psc";
++
++	return NULL;
++}
++
+ static unsigned int __init get_fifo_size(struct device_node *np,
+ 					 char *prop_name)
+ {
+@@ -375,9 +386,16 @@ void __init mpc512x_psc_fifo_init(void)
+ 	void __iomem *psc;
+ 	unsigned int tx_fifo_size;
+ 	unsigned int rx_fifo_size;
++	const char *psc_compat;
+ 	int fifobase = 0; /* current fifo address in 32 bit words */
+ 
+-	for_each_compatible_node(np, NULL, "fsl,mpc5121-psc") {
++	psc_compat = mpc512x_select_psc_compat();
++	if (!psc_compat) {
++		pr_err("%s: no compatible devices found\n", __func__);
++		return;
++	}
++
++	for_each_compatible_node(np, NULL, psc_compat) {
+ 		tx_fifo_size = get_fifo_size(np, "fsl,tx-fifo-size");
+ 		rx_fifo_size = get_fifo_size(np, "fsl,rx-fifo-size");
+ 
+-- 
+1.7.10.4
