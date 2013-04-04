@@ -1,29 +1,26 @@
-Return-Path: <B16395@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D83CB2C00A0
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2013 00:00:36 +1100 (EST)
-From: Sethi Varun-B16395 <B16395@freescale.com>
-To: Alex Williamson <alex.williamson@redhat.com>, Joerg Roedel
- <joro@8bytes.org>
-Subject: RE: [PATCH 5/5 v11] iommu/fsl: Freescale PAMU driver and iommu
- implementation.
-Date: Thu, 4 Apr 2013 13:00:23 +0000
-Message-ID: <C5ECD7A89D1DC44195F34B25E172658D45883B@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1364500442-20927-1-git-send-email-Varun.Sethi@freescale.com>
- <1364500442-20927-6-git-send-email-Varun.Sethi@freescale.com>
- <20130402161812.GI15687@8bytes.org> <1365012091.2882.252.camel@bling.home>
-In-Reply-To: <1365012091.2882.252.camel@bling.home>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.10])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 386AF2C00BF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2013 00:03:11 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 18/18] cpufreq: powerpc/platforms/cell: move cpufreq
+ driver to drivers/cpufreq
+Date: Thu, 4 Apr 2013 13:02:09 +0000
+References: <cover.1365079581.git.viresh.kumar@linaro.org>
+ <0f989533f2e47d4d632710029bf0273082bafee3.1365079581.git.viresh.kumar@linaro.org>
+In-Reply-To: <0f989533f2e47d4d632710029bf0273082bafee3.1365079581.git.viresh.kumar@linaro.org>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Yoder Stuart-B08248 <B08248@freescale.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Message-Id: <201304041302.09995.arnd@arndb.de>
+Cc: robin.randhawa@arm.com, linux-pm@vger.kernel.org, patches@linaro.org,
+ Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org,
+ rjw@sisk.pl, Steve.Bannister@arm.com, arvind.chauhan@arm.com,
+ linuxppc-dev@lists.ozlabs.org, linaro-kernel@lists.linaro.org,
+ charles.garcia-tobin@arm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,40 +30,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQWxleCBXaWxsaWFtc29u
-IFttYWlsdG86YWxleC53aWxsaWFtc29uQHJlZGhhdC5jb21dDQo+IFNlbnQ6IFdlZG5lc2RheSwg
-QXByaWwgMDMsIDIwMTMgMTE6MzIgUE0NCj4gVG86IEpvZXJnIFJvZWRlbA0KPiBDYzogU2V0aGkg
-VmFydW4tQjE2Mzk1OyBZb2RlciBTdHVhcnQtQjA4MjQ4OyBXb29kIFNjb3R0LUIwNzQyMTsNCj4g
-aW9tbXVAbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxh
-YnMub3JnOyBsaW51eC0NCj4ga2VybmVsQHZnZXIua2VybmVsLm9yZzsgZ2FsYWtAa2VybmVsLmNy
-YXNoaW5nLm9yZzsNCj4gYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnDQo+IFN1YmplY3Q6IFJlOiBb
-UEFUQ0ggNS81IHYxMV0gaW9tbXUvZnNsOiBGcmVlc2NhbGUgUEFNVSBkcml2ZXIgYW5kIGlvbW11
-DQo+IGltcGxlbWVudGF0aW9uLg0KPiANCj4gT24gVHVlLCAyMDEzLTA0LTAyIGF0IDE4OjE4ICsw
-MjAwLCBKb2VyZyBSb2VkZWwgd3JvdGU6DQo+ID4gQ2MnaW5nIEFsZXggV2lsbGlhbXNvbg0KPiA+
-DQo+ID4gQWxleCwgY2FuIHlvdSBwbGVhc2UgcmV2aWV3IHRoZSBpb21tdS1ncm91cCBwYXJ0IG9m
-IHRoaXMgcGF0Y2g/DQo+IA0KPiBTdXJlLCBpdCBsb29rcyBwcmV0dHkgcmVhc29uYWJsZS4gIEFJ
-VUksIGFsbCBQQ0kgZGV2aWNlcyBhcmUgYmVsb3cgc29tZQ0KPiBraW5kIG9mIGhvc3QgYnJpZGdl
-IHRoYXQgaXMgZWl0aGVyIG5ldyBhbmQgc3VwcG9ydHMgcGFydGl0aW9uaW5nIG9yIG9sZA0KPiBh
-bmQgZG9lc24ndC4gIEkgZG9uJ3Qga25vdyBpZiB0aGF0J3MgYSB2aXNpYmlsaXR5IG9yIGlzb2xh
-dGlvbg0KPiByZXF1aXJlbWVudCwgcGVyaGFwcyBQQ0kgQUNTLWlzaC4gIEluIHRoZSBuZXcgaG9z
-dCBicmlkZ2UgY2FzZSwgZWFjaA0KPiBkZXZpY2UgZ2V0cyBhIGdyb3VwLiAgVGhpcyBzZWVtcyBu
-b3QgdG8gaGF2ZSBhbnkgcXVpcmtzIGZvciBtdWx0aWZ1bmN0aW9uDQo+IGRldmljZXMgdGhvdWdo
-LiAgT24gQU1EIGFuZCBJbnRlbCBJT01NVXMgd2UgdGVzdCBtdWx0aWZ1bmN0aW9uIGRldmljZSBB
-Q1MNCj4gc3VwcG9ydCB0byBkZXRlcm1pbmUgd2hldGhlciBhbGwgdGhlIGZ1bmN0aW9ucyBzaG91
-bGQgYmUgaW4gdGhlIHNhbWUNCj4gZ3JvdXAuICBJcyB0aGVyZSBhbnkgcmVhc29uIHRvIHRydXN0
-IG11bHRpZnVuY3Rpb24gZGV2aWNlcyBvbiBQQU1VPw0KPiANCltTZXRoaSBWYXJ1bi1CMTYzOTVd
-IEluIHRoZSBjYXNlIHdoZXJlIHdlIGNhbiBwYXJ0aXRpb24gZW5kcG9pbnRzIHdlIGNhbiBkaXN0
-aW5ndWlzaCB0cmFuc2FjdGlvbnMgYmFzZWQgb24gdGhlIGJ1cyxkZXZpY2UsZnVuY3Rpb24gbnVt
-YmVyIGNvbWJpbmF0aW9uLiBUaGlzIHN1cHBvcnQgaXMgYXZhaWxhYmxlIGluIHRoZSBQQ0llIGNv
-bnRyb2xsZXIgKGhvc3QgYnJpZGdlKS4NCg0KPiBJIGFsc28gZmluZCBpdCBjdXJpb3VzIHdoYXQg
-aGFwcGVucyB0byB0aGUgaW9tbXUgZ3JvdXAgb2YgdGhlIGhvc3QNCj4gYnJpZGdlLiAgSW4gdGhl
-IHBhcnRpdGlvbmFibGUgY2FzZSB0aGUgaG9zdCBicmlkZ2UgZ3JvdXAgaXMgcmVtb3ZlZCwgaW4N
-Cj4gdGhlIG5vbi1wYXJ0aXRpb25hYmxlIGNhc2UgdGhlIGhvc3QgYnJpZGdlIGdyb3VwIGJlY29t
-ZXMgdGhlIGdyb3VwIGZvcg0KPiB0aGUgY2hpbGRyZW4sIHJlbW92aW5nIHRoZSBob3N0IGJyaWRn
-ZS4gIEl0J3MgdW5pcXVlIHRvIFBBTVUgc28gZmFyIHRoYXQNCj4gdGhlc2UgaG9zdCBicmlkZ2Vz
-IGFyZSBldmVuIGluIGFuIGlvbW11IGdyb3VwICh4ODYgb25seSBhZGRzIHBjaQ0KPiBkZXZpY2Vz
-KSwgYnV0IEkgZG9uJ3Qgc2VlIGl0IGFzIG5lY2Vzc2FyaWx5IHdyb25nIGxlYXZpbmcgaXQgaW4g
-ZWl0aGVyDQo+IHNjZW5hcmlvLiAgRG9lcyBpdCBzb2x2ZSBzb21lIHByb2JsZW0gdG8gcmVtb3Zl
-IHRoZW0gZnJvbSB0aGUgZ3JvdXBzPw0KPiBUaGFua3MsDQpbU2V0aGkgVmFydW4tQjE2Mzk1XSBU
-aGUgUENJZSBjb250cm9sbGVyIGlzbid0IGEgcGFydGl0aW9uYWJsZSBlbnRpdHksIGl0IHdvdWxk
-IGFsd2F5cyBiZSBvd25lZCBieSB0aGUgaG9zdC4NCg0KLVZhcnVuDQoNCg==
+On Thursday 04 April 2013, Viresh Kumar wrote:
+> This patch moves cpufreq driver of powerpc platforms/cell to drivers/cpufreq.
+> 
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> Compile Tested only.
+> 
+>  arch/powerpc/platforms/cell/Kconfig                | 26 +---------------------
+>  arch/powerpc/platforms/cell/Makefile               |  3 ---
+>  drivers/cpufreq/Kconfig.powerpc                    | 18 +++++++++++++++
+>  drivers/cpufreq/Makefile                           |  3 +++
+>  .../cpufreq/ppc_cbe_cpufreq.c                      |  2 +-
+>  .../cpufreq/ppc_cbe_cpufreq_pervasive.c            |  3 +--
+>  .../cpufreq/ppc_cbe_cpufreq_pmi.c                  |  3 +--
+>  .../linux/ppc_cbe_cpufreq.h                        |  4 ++--
+
+Moving the files is good, but I don't see a reason to make the cbe_cpufreq.h
+header globally visible in include/linux/. Isn't it just used by as the
+interface between ppc_cbe_cpufreq_pmi.c  and ppc_cbe_cpufreq.c?
+
+	Arnd
