@@ -1,31 +1,32 @@
 Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e38.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0D2A02C0098
+ (Client CN "e32.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1C2AC2C0099
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2013 08:58:22 +1100 (EST)
 Received: from /spool/local
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
- Thu, 4 Apr 2013 15:58:20 -0600
-Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
- [9.17.195.226])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 250553E4003E
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2013 15:58:05 -0600 (MDT)
+ Thu, 4 Apr 2013 15:58:19 -0600
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+ [9.17.195.227])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 3430BC40002
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2013 15:53:18 -0600 (MDT)
 Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r34LwFpo069544
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Apr 2013 15:58:15 -0600
+ by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r34LwGAY159008
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Apr 2013 15:58:16 -0600
 Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
  by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r34LwEee010547
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Apr 2013 15:58:14 -0600
-Message-Id: <201304042158.r34LwDHx010466@d03av02.boulder.ibm.com>
-Subject: [PATCH 1/3] pci: Export pci_dev_type
+ r34LwGAg010682
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Apr 2013 15:58:16 -0600
+Message-Id: <201304042158.r34LwEOV010607@d03av02.boulder.ibm.com>
+Subject: [PATCH 2/3] powerpc: Enable boot_vga sysfs attribute for graphics
+ adapters on Power
 To: linux-pci@vger.kernel.org
 From: Brian King <brking@linux.vnet.ibm.com>
-Date: Thu, 04 Apr 2013 16:58:13 -0500
+Date: Thu, 04 Apr 2013 16:58:15 -0500
 Cc: klebers@linux.vnet.ibm.com, brking@linux.vnet.ibm.com,
  lucaskt@linux.vnet.ibm.com, bhelgaas@google.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -38,36 +39,25 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Export pci_dev_type so that arch specific PCI probing code can
-initialize a new PCI device struct.
+Initialize dev->dev.type such that the PCI group attributes for boot_vga
+and SR-IOV can be displayed if appropriate. This fixes an issue seen on
+Power preventing X from auto initializing a graphics adapter when using KMS.
 
 Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
 ---
 
- drivers/pci/pci.h   |    1 -
- include/linux/pci.h |    1 +
- 2 files changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kernel/pci_of_scan.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-diff -puN drivers/pci/pci.h~pci_export_pci_dev_type drivers/pci/pci.h
---- linux/drivers/pci/pci.h~pci_export_pci_dev_type	2013-04-02 17:01:25.000000000 -0500
-+++ linux-bjking1/drivers/pci/pci.h	2013-04-02 17:02:31.000000000 -0500
-@@ -153,7 +153,6 @@ static inline int pci_no_d1d2(struct pci
- }
- extern struct device_attribute pci_dev_attrs[];
- extern struct device_attribute pcibus_dev_attrs[];
--extern struct device_type pci_dev_type;
- extern struct bus_attribute pci_bus_attrs[];
- 
- 
-diff -puN include/linux/pci.h~pci_export_pci_dev_type include/linux/pci.h
---- linux/include/linux/pci.h~pci_export_pci_dev_type	2013-04-02 17:01:59.000000000 -0500
-+++ linux-bjking1/include/linux/pci.h	2013-04-02 17:02:29.000000000 -0500
-@@ -670,6 +670,7 @@ enum pcie_bus_config_types {
- extern enum pcie_bus_config_types pcie_bus_config;
- 
- extern struct bus_type pci_bus_type;
-+extern struct device_type pci_dev_type;
- 
- /* Do NOT directly access these two variables, unless you are arch specific pci
-  * code, or pci core code. */
+diff -puN arch/powerpc/kernel/pci_of_scan.c~powerpc_set_pci_dev_type arch/powerpc/kernel/pci_of_scan.c
+--- linux/arch/powerpc/kernel/pci_of_scan.c~powerpc_set_pci_dev_type	2013-04-03 09:43:19.000000000 -0500
++++ linux-bjking1/arch/powerpc/kernel/pci_of_scan.c	2013-04-03 09:43:19.000000000 -0500
+@@ -141,6 +141,7 @@ struct pci_dev *of_create_pci_dev(struct
+ 	dev->dev.of_node = of_node_get(node);
+ 	dev->dev.parent = bus->bridge;
+ 	dev->dev.bus = &pci_bus_type;
++	dev->dev.type = &pci_dev_type;
+ 	dev->devfn = devfn;
+ 	dev->multifunction = 0;		/* maybe a lie? */
+ 	dev->needs_freset = 0;		/* pcie fundamental reset required */
 _
