@@ -1,19 +1,35 @@
-Return-Path: <chris.friesen@genband.com>
-Received: from exprod7og113.obsmtp.com (exprod7og113.obsmtp.com [64.18.2.179])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id C91802C008D
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2013 15:54:32 +1100 (EST)
-Message-ID: <515E58E6.9030802@genband.com>
-Date: Thu, 04 Apr 2013 22:53:58 -0600
-From: Chris Friesen <chris.friesen@genband.com>
+Return-Path: <B20052@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe003.messaging.microsoft.com [213.199.154.206])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A9F162C00C2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2013 16:23:56 +1100 (EST)
+From: Leekha Shaveta-B20052 <B20052@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: RE: [PATCH 2/5] powerpc/fsl-booke: Add initial silicon device tree
+ files for B4860 and B4420
+Date: Fri, 5 Apr 2013 05:23:43 +0000
+Message-ID: <E12D2F89F87F4A49B0320A4C2DE7E749151E18@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <1364886968-9634-1-git-send-email-shaveta@freescale.com>
+ <1364930341.24520.15@snotra>
+ <E12D2F89F87F4A49B0320A4C2DE7E74915165F@039-SN2MPN1-011.039d.mgd.msft.net>
+ <1365007194.25627.1@snotra>
+ <E12D2F89F87F4A49B0320A4C2DE7E749151B05@039-SN2MPN1-011.039d.mgd.msft.net>
+ <BF757FF6-067E-4A23-9A12-E510B5CE59A7@kernel.crashing.org>
+In-Reply-To: <BF757FF6-067E-4A23-9A12-E510B5CE59A7@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Segher Boessenkool <segher@kernel.crashing.org>
-Subject: powerpc userspace address space layout information
-Content-Type: text/plain; charset=ISO-8859-1
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ Mehresh Ramneek-B31383 <B31383@freescale.com>,
+ Zhao Chenhui-B35336 <B35336@freescale.com>,
+ Garg Vakul-B16394 <B16394@freescale.com>,
+ Lian Minghuan-B31939 <B31939@freescale.com>,
+ Tang Yuantian-B29983 <B29983@freescale.com>,
+ Fleming Andy-AFLEMING <afleming@freescale.com>,
+ Sethi Varun-B16395 <B16395@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,65 +40,93 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Hi,
 
-I'm running with glibc 2.11 on a 2.6.34 kernel.  32-bit userspace on 64-bit kernel.
-
-On a complicated process the memory map looks something like this:
-
-<vdso, executable, heap, etc.>
-5b2c000-f5b38000 r-xp 00000000 00:0f 3636                               /lib/libnss_files-2.11.1.so
-<lots of libraries snipped>
-f6026000-f6035000 ---p 00096000 00:0f 3628                               /lib/libkrb5.so.3.3
-<lots of libraries snipped>
-f7902000-f7905000 r-xp 00000000 00:0f 3607                               /lib/libdl-2.11.1.so
-f7905000-f7914000 ---p 00003000 00:0f 3607                               /lib/libdl-2.11.1.so
-f7914000-f7915000 r--p 00002000 00:0f 3607                               /lib/libdl-2.11.1.so
-f7915000-f7916000 rw-p 00003000 00:0f 3607                               /lib/libdl-2.11.1.so
-f7918000-f7919000 rw-p 00000000 00:00 0
-f7919000-f791a000 r--p 0001a000 00:0f 3646                               /lib/libpthread-2.11.1.so
-f791a000-f791b000 r--p 00001000 00:0f 2306001                            /path/to/binary
-f791b000-f791c000 r--p 00001000 00:0f 2306001                            /path/to/binary
-f791c000-f791d000 r--p 00001000 00:0f 2306001                            /path/to/binary
-f791d000-f7923000 rw-p 00000000 00:00 0
-f7923000-f7943000 r-xp 00000000 00:0f 13323                              /lib/ld-2.11.1.so
-f7943000-f7944000 r--p 00020000 00:0f 13323                              /lib/ld-2.11.1.so
-f7944000-f7945000 rw-p 00021000 00:0f 13323                              /lib/ld-2.11.1.so
-f9000000-fac01000 rw-p 00000000 00:00 0
-fac06000-fac07000 rw-s 00000000 00:04 327690                             /SYSV41050355 (deleted)
-fad00000-fae00000 rw-s 00000000 00:04 98307                              /SYSVee113d3f (deleted)
-fae00000-fb000000 rw-s 00000000 00:04 7503872                            /SYSVc5050355 (deleted)
-fb000000-fb200000 rw-s 00000000 00:04 7536641                            /SYSV5c050355 (deleted)
-fb200000-fb600000 rw-s 00000000 00:0d 30647                              /var/log/blah
-ffa8e000-ffab0000 rwxp 00000000 00:00 0                                  [stack]
+-----Original Message-----
+From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
+Sent: Friday, April 05, 2013 12:44 AM
+To: Leekha Shaveta-B20052
+Cc: Wood Scott-B07421; Zhao Chenhui-B35336; Mehresh Ramneek-B31383; Garg Va=
+kul-B16394; Lian Minghuan-B31939; Tang Yuantian-B29983; Fleming Andy-AFLEMI=
+NG; Sethi Varun-B16395; linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 2/5] powerpc/fsl-booke: Add initial silicon device tree=
+ files for B4860 and B4420
 
 
-I have a few questions I'm hoping someone can help me with.
+On Apr 4, 2013, at 2:03 AM, Leekha Shaveta-B20052 wrote:
 
-First, what determines where /lib/ld-2.11.1.so gets mapped? It seems like
-it never goes above 0xf8000000 or so.
+>=20
+>=20
+> -----Original Message-----
+> From: Wood Scott-B07421
+> Sent: Wednesday, April 03, 2013 10:10 PM
+> To: Leekha Shaveta-B20052
+> Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org; Zhao=20
+> Chenhui-B35336; Lian Minghuan-B31939; Garg Vakul-B16394; Tang=20
+> Yuantian-B29983; Fleming Andy-AFLEMING; Mehresh Ramneek-B31383; Sethi=20
+> Varun-B16395
+> Subject: Re: [PATCH 2/5] powerpc/fsl-booke: Add initial silicon device=20
+> tree files for B4860 and B4420
+>=20
+> On 04/03/2013 01:42:14 AM, Leekha Shaveta-B20052 wrote:
+>>=20
+>>=20
+>> -----Original Message-----
+>> From: Wood Scott-B07421
+>> Sent: Wednesday, April 03, 2013 12:49 AM
+>> To: Leekha Shaveta-B20052
+>> Cc: linuxppc-dev@lists.ozlabs.org; Zhao Chenhui-B35336; Lian=20
+>> Minghuan-B31939; Leekha Shaveta-B20052; Garg Vakul-B16394; Tang=20
+>> Yuantian-B29983; Fleming Andy-AFLEMING; Mehresh Ramneek-B31383; Sethi
+>> Varun-B16395
+>> Subject: Re: [PATCH 2/5] powerpc/fsl-booke: Add initial silicon=20
+>> device tree files for B4860 and B4420
+>>=20
+>> On 04/02/2013 02:16:05 AM, Shaveta Leekha wrote:
+>>> +/ {
+>>> +	compatible =3D "fsl,B4860";
+>>> +
+>>> +	cpus {
+>>> +		cpu1: PowerPC,e6500@1 {
+>>> +			device_type =3D "cpu";
+>>> +			reg =3D <2 3>;
+>>> +			next-level-cache =3D <&L2>;
+>>> +		};
+>>> +		cpu2: PowerPC,e6500@2 {
+>>> +			device_type =3D "cpu";
+>>> +			reg =3D <4 5>;
+>>> +			next-level-cache =3D <&L2>;
+>>> +		};
+>>> +		cpu3: PowerPC,e6500@3 {
+>>> +			device_type =3D "cpu";
+>>> +			reg =3D <6 7>;
+>>> +			next-level-cache =3D <&L2>;
+>>> +		};
+>>=20
+>> The unit addresses need to match "reg".
+>> [SL] You mean  "@1" should match to "reg =3D <2 3>" ?
+>=20
+> Yes, it should be "@2" for that node.
+>=20
+>> As each e6500 core in B4860 is dual- threaded, reg property here=20
+>> represents the thread's identifier in that PA core.
+>>=20
+>> So convention used in T4 and B4 is: core 0 having threads 0 and 1,
+>> 						Core 1 having <2 3> and
+>> so on....
+>=20
+> The convention used in device trees is that the unit address matches the =
+reg.
+>=20
+> -Scott
+> [SL] Ok, I can change that. Will make unit address as @2 for <2 3>, @4 fo=
+r <4 5> and so on....
+>=20
+> Kumar, please respond here, as I have followed the convention used in=20
+> T4 device tree files for Dual-threaded cores.
 
-Second, what is the mapping at 0xf9000000-0xfac01000?  Is this just empty
-space or is it reserved for something in particular?
+Scott is correct, we probably need to fix the T4 dts.
 
-Third, what's the most reliable way to ensure a block of addresses around
-0xf6000000 don't get used for shared libraries?  (We want to preserve
-those addresses for emulating hardware in a virtual machine.)  We have
-this working on an older system but after upgrading to new software the
-libraries now extend further down the address space.
-
-Any help is greatly appreciated.
-
-Chris
-
-
--- 
-
-Chris Friesen
-Software Designer
-
-500 Palladium Drive, Suite 2100
-Ottawa, Ontario K2N 1C2, Canada
-www.genband.com
-office:+1.343.883.2717
-chris.friesen@genband.com
+- k
+[SL] ok, will do it for B4
+Regards,
+Shaveta=20
