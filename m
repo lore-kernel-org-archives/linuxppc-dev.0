@@ -1,37 +1,23 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2A0EF2C00CF
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Apr 2013 02:38:55 +1100 (EST)
-Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
- Fri, 5 Apr 2013 11:38:50 -0400
-Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 21EBA38C8062
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2013 11:38:47 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r35Fclgq32112862
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Apr 2013 11:38:47 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r35FcjtU013011
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Apr 2013 11:38:46 -0400
-Message-ID: <515EEFFE.6050206@linux.vnet.ibm.com>
-Date: Fri, 05 Apr 2013 10:38:38 -0500
-From: Brian King <brking@linux.vnet.ibm.com>
+Return-Path: <B20052@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe006.messaging.microsoft.com [213.199.154.144])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 86D4C2C00D4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Apr 2013 02:43:32 +1100 (EST)
+From: Leekha Shaveta-B20052 <B20052@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: RE: [PATCH 1/4][v2] powerpc/fsl-booke: Add initial silicon device
+ tree files for B4860 and B4420
+Date: Fri, 5 Apr 2013 15:43:19 +0000
+Message-ID: <E12D2F89F87F4A49B0320A4C2DE7E7491521FF@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <1365143632-19362-1-git-send-email-shaveta@freescale.com>
+ <62911773-1FC6-49B5-993F-88DD0F8F845A@kernel.crashing.org>
+In-Reply-To: <62911773-1FC6-49B5-993F-88DD0F8F845A@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 3/3] powerpc: Set default VGA device
-References: <201304042158.r34LwGPg010714@d03av02.boulder.ibm.com>
- <20130405065238.GC5082@concordia>
-In-Reply-To: <20130405065238.GC5082@concordia>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: klebers@linux.vnet.ibm.com, linux-pci@vger.kernel.org, bhelgaas@google.com,
- linuxppc-dev@lists.ozlabs.org, lucaskt@linux.vnet.ibm.com
+Cc: "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,59 +27,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/05/2013 01:52 AM, Michael Ellerman wrote:
-> Hi Brian,
-> 
-> 
-> On Thu, Apr 04, 2013 at 04:58:17PM -0500, Brian King wrote:
->>
->> Add a PCI quirk for VGA devices on Power to set the default VGA device.
->> Ensures a default VGA is always set if a graphics adapter is present,
->> even if firmware did not initialize it. If more than one graphics
->> adapter is present, ensure the one initialized by firmware is set
->> as the default VGA device. This ensures that X autoconfiguration
->> will work.
-> 
-> So a few things:
-> 
->  - You are doing this on all power systems, not just pseries which is I
->    assume what you're testing on - that seems OK to me, but just
->    checking.
-
-Correct. I've only tested on pseries, but figured it would make sense for
-this to be more generic. I'm happy to make this pseries specific if that
-is preferred.
-
->  - What is the "initialized by firmware" test? Just that IO & MEM are
->    enabled?
-
-Correct. This is what the x86 code does. Alternatively, its possible
-there is a chosen attribute in the device tree we could look at.
-
->  - You potentially override an existing default, is that a problem? Can
->    the user set the default? (no AFAICS).
-
-I couldn't find anywhere that this could be set by the user and wanted to
-be able to handle both the case of a single adapter that wasn't initialized
-by firmware as well as the multi adapter case where only one of the adapters was
-initialized by firmware. I could have made this smarter so that we only
-override the default if the previous default was not initialized by firmware,
-but opted for the simpler patch.
-
->  - The x86 code is slightly different, they don't override an existing
->    default, why do we?
-
-I wanted to be able to handle the case of a single graphics adapter installed in a system
-that has not been initialized by firmware, since I have a system like this. This generally
-isn't something that x86 would need to do since all graphics adapters should have x86 boot
-code in them, but very few current graphics adapters have fcode in them today.
-
-Thanks,
-
-Brian
 
 
--- 
-Brian King
-Power Linux I/O
-IBM Linux Technology Center
+-----Original Message-----
+From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
+Sent: Friday, April 05, 2013 7:53 PM
+To: Leekha Shaveta-B20052
+Cc: linuxppc-dev@lists.ozlabs.org list
+Subject: Re: [PATCH 1/4][v2] powerpc/fsl-booke: Add initial silicon device =
+tree files for B4860 and B4420
+
+
+On Apr 5, 2013, at 1:33 AM, Shaveta Leekha wrote:
+
+> B4860 and B4420 are similar that share some commonalities
+>=20
+> * common features have been added in b4si-pre.dtsi and b4si-post.dtsi
+> * differences are added in respective silicon files of B4860 and B4420
+>=20
+> There are several things missing from the device trees of B4860 and B4420=
+:
+>=20
+> * DPAA related nodes (Qman, Bman, Fman, Rman)
+> * DSP related nodes/information
+> * serdes, sfp(security fuse processor), thermal, gpio, maple, cpri,=20
+> quad timers nodes
+>=20
+> Signed-off-by: Shaveta Leekha <shaveta@freescale.com>
+> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
+> Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
+> Signed-off-by: Ramneek Mehresh <ramneek.mehresh@freescale.com>
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> Signed-off-by: Andy Fleming <afleming@freescale.com>
+> Signed-off-by: Vakul Garg <vakul@freescale.com>
+> ---
+> v2:=20
+>  - incorporated review comments on commits message
+>  - change unit address of cpu nodes to match the reg property
+>=20
+> arch/powerpc/boot/dts/fsl/b4420si-post.dtsi |   94 ++++++++++
+> arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi  |   49 +++++
+> arch/powerpc/boot/dts/fsl/b4860si-post.dtsi |  138 ++++++++++++++
+> arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi  |   59 ++++++
+> arch/powerpc/boot/dts/fsl/b4si-post.dtsi    |  262 ++++++++++++++++++++++=
++++++
+> arch/powerpc/boot/dts/fsl/b4si-pre.dtsi     |   65 +++++++
+> 6 files changed, 667 insertions(+), 0 deletions(-) create mode 100644=20
+> arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
+> create mode 100644 arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi
+> create mode 100644 arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
+> create mode 100644 arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi
+> create mode 100644 arch/powerpc/boot/dts/fsl/b4si-post.dtsi
+> create mode 100644 arch/powerpc/boot/dts/fsl/b4si-pre.dtsi
+
+Is there a reason you didn't get rid of b4si-pre.dtsi and just merge it int=
+o b4860si-pre.dtsi & b4420-pre.dtsi?
+[SL] No particular reason. I have just tried to re-factored these files as =
+you have suggested. Hence managed the commonalities in B4 files and differe=
+nces in B4860's and B4420's respective files to reduce duplicity.
+
+Regards,
+Shaveta=20
+
+- k
