@@ -1,17 +1,27 @@
-Return-Path: <michael@ellerman.id.au>
-Date: Fri, 5 Apr 2013 18:06:00 +1100
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc: Add HWCAP2 aux entry
-Message-ID: <20130405070559.GE5082@concordia>
-References: <20130402212204.GA30438@linux.vnet.ibm.com>
+Return-Path: <R65777@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe003.messaging.microsoft.com [213.199.154.141])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 622FD2C00B1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2013 18:53:54 +1100 (EST)
+From: Bhushan Bharat-R65777 <R65777@freescale.com>
+To: Alexander Graf <agraf@suse.de>, Kumar Gala <galak@kernel.crashing.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: RE: [PATCH] bookehv: Handle debug exception on guest exit
+Date: Fri, 5 Apr 2013 07:53:43 +0000
+Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D06FC1773@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1363801557-27436-1-git-send-email-Bharat.Bhushan@freescale.com>
+ <436085E0-D605-40C1-BCDF-EB4D24B01AFA@suse.de>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D06FC04D4@039-SN2MPN1-013.039d.mgd.msft.net>
+In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D06FC04D4@039-SN2MPN1-013.039d.mgd.msft.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130402212204.GA30438@linux.vnet.ibm.com>
-Cc: michaele@au1.ibm.com, vda.linux@googlemail.com,
- Steve Munroe <sjmunroe@us.ibm.com>, linux-kernel@vger.kernel.org,
- paulus@samba.org, viro@zeniv.linux.org.uk, Ryan Arnold <ryanarn@us.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,141 +31,261 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi guys,
+Hi Kumar/Benh,
 
-Added some folks to CC, blame scripts/get_maintainer.pl.
+After further looking into the code I think that if we correct the vector r=
+ange below in DebugDebug handler then we do not need the change I provided =
+in this patch.
 
-Comment below ..
+Here is the snapshot for 32 bit (head_booke.h, same will be true for 64 bit=
+):
 
+#define DEBUG_DEBUG_EXCEPTION                                              =
+   \
+        START_EXCEPTION(DebugDebug);                                       =
+   \
+        DEBUG_EXCEPTION_PROLOG;                                            =
+   \
+                                                                           =
+   \
+        /*                                                                 =
+   \
+         * If there is a single step or branch-taken exception in an       =
+   \
+         * exception entry sequence, it was probably meant to apply to     =
+   \
+         * the code where the exception occurred (since exception entry    =
+   \
+         * doesn't turn off DE automatically).  We simulate the effect     =
+   \
+         * of turning off DE on entry to an exception handler by turning   =
+   \
+         * off DE in the DSRR1 value and clearing the debug status.        =
+   \
+         */                                                                =
+   \
+        mfspr   r10,SPRN_DBSR;          /* check single-step/branch taken *=
+/  \
+        andis.  r10,r10,(DBSR_IC|DBSR_BT)@h;                               =
+   \
+        beq+    2f;                                                        =
+   \
+                                                                           =
+   \
+        lis     r10,KERNELBASE@h;       /* check if exception in vectors */=
+   \
+        ori     r10,r10,KERNELBASE@l;                                      =
+   \
+        cmplw   r12,r10;                                                   =
+   \
+        blt+    2f;                     /* addr below exception vectors */ =
+   \
+                                                                           =
+   \
+        lis     r10,DebugDebug@h;                                        \
+        ori     r10,r10,DebugDebug@l;                                      =
+      \
 
-On Tue, Apr 02, 2013 at 02:22:05PM -0700, Nishanth Aravamudan wrote:
-> From: Michael Neuling <michael.neuling@au1.ibm.com>
-> 
-> We are currently out of free bits in AT_HWCAP. With POWER8, we have
-> several hardware features that we need to advertise. Tested on POWER and
-> x86.
-> 
-> Signed-off-by: Michael Neuling <michael.neuling@au1.ibm.com>
-> Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-> 
-> diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-> index fb3245e..ccadad6 100644
-> --- a/arch/powerpc/include/asm/cputable.h
-> +++ b/arch/powerpc/include/asm/cputable.h
-> @@ -52,6 +52,7 @@ struct cpu_spec {
->  	char		*cpu_name;
->  	unsigned long	cpu_features;		/* Kernel features */
->  	unsigned int	cpu_user_features;	/* Userland features */
-> +	unsigned int	cpu_user_features2;	/* Userland features v2 */
->  	unsigned int	mmu_features;		/* MMU features */
->  
->  	/* cache line sizes */
-> diff --git a/arch/powerpc/include/asm/elf.h b/arch/powerpc/include/asm/elf.h
-> index ac9790f..cc0655a 100644
-> --- a/arch/powerpc/include/asm/elf.h
-> +++ b/arch/powerpc/include/asm/elf.h
-> @@ -61,6 +61,7 @@ typedef elf_vrregset_t elf_fpxregset_t;
->     instruction set this cpu supports.  This could be done in userspace,
->     but it's not easy, and we've already done it here.  */
->  # define ELF_HWCAP	(cur_cpu_spec->cpu_user_features)
-> +# define ELF_HWCAP2	(cur_cpu_spec->cpu_user_features2)
->  
->  /* This yields a string that ld.so will use to load implementation
->     specific libraries for optimization.  This is more specific in
-> diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-> index 3939829..51adc23 100644
-> --- a/fs/binfmt_elf.c
-> +++ b/fs/binfmt_elf.c
-> @@ -140,6 +140,13 @@ static int padzero(unsigned long elf_bss)
->  #define ELF_BASE_PLATFORM NULL
->  #endif
->  
-> +/*
-> + * Most archs don't need this
-> + */
-> +#ifndef ELF_HWCAP2
-> +#define ELF_HWCAP2 (0)
-> +#endif
-> +
->  static int
->  create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
->  		unsigned long load_addr, unsigned long interp_load_addr)
-> @@ -240,6 +247,7 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
->  	NEW_AUX_ENT(AT_EGID, from_kgid_munged(cred->user_ns, cred->egid));
->   	NEW_AUX_ENT(AT_SECURE, security_bprm_secureexec(bprm));
->  	NEW_AUX_ENT(AT_RANDOM, (elf_addr_t)(unsigned long)u_rand_bytes);
-> +	NEW_AUX_ENT(AT_HWCAP2, ELF_HWCAP2);
+^^^^
+	Here we assume all exception vector ends at DebugDebug, which is not corre=
+ct.
+	We probably should get proper end by using some start_vector and end_vecto=
+r lebels
+	or at least use end at Ehvpriv (which is last defined in head_fsl_booke.S =
+for PowerPC. Is that correct?
 
+=09
+        cmplw   r12,r10;                                                   =
+   \
+        bgt+    2f;                     /* addr above exception vectors */ =
+   \
 
-Wouldn't it be safer to not emit AT_HWCAP2 unless it is defined by the arch?
-
-That way the change would only impact powerpc.
-
-
-cheers
-
+Thanks
+-Bharat
 
 
-> diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
-> index 9c13e02..0b553d3 100644
-> --- a/fs/binfmt_elf_fdpic.c
-> +++ b/fs/binfmt_elf_fdpic.c
-> @@ -469,6 +469,13 @@ error_kill:
->  #endif
->  
->  /*
-> + * Most archs don't need this
-> + */
-> +#ifndef ELF_HWCAP2
-> +#define ELF_HWCAP2 (0)
-> +#endif
-> +
-> +/*
->   * present useful information to the program by shovelling it onto the new
->   * process's stack
->   */
-> @@ -483,7 +490,6 @@ static int create_elf_fdpic_tables(struct linux_binprm *bprm,
->  	size_t platform_len = 0, len;
->  	char *k_platform, *k_base_platform;
->  	char __user *u_platform, *u_base_platform, *p;
-> -	long hwcap;
->  	int loop;
->  	int nr;	/* reset for each csp adjustment */
->  
-> @@ -502,8 +508,6 @@ static int create_elf_fdpic_tables(struct linux_binprm *bprm,
->  		return -EFAULT;
->  #endif
->  
-> -	hwcap = ELF_HWCAP;
-> -
->  	/*
->  	 * If this architecture has a platform capability string, copy it
->  	 * to userspace.  In some cases (Sparc), this info is impossible
-> @@ -617,7 +621,8 @@ static int create_elf_fdpic_tables(struct linux_binprm *bprm,
->  
->  	nr = 0;
->  	csp -= DLINFO_ITEMS * 2 * sizeof(unsigned long);
-> -	NEW_AUX_ENT(AT_HWCAP,	hwcap);
-> +	NEW_AUX_ENT(AT_HWCAP,	ELF_HWCAP);
-> +	NEW_AUX_ENT(AT_HWCAP2,	ELF_HWCAP2);
->  	NEW_AUX_ENT(AT_PAGESZ,	PAGE_SIZE);
->  	NEW_AUX_ENT(AT_CLKTCK,	CLOCKS_PER_SEC);
->  	NEW_AUX_ENT(AT_PHDR,	exec_params->ph_addr);
-> diff --git a/include/uapi/linux/auxvec.h b/include/uapi/linux/auxvec.h
-> index 61594d5..835c065 100644
-> --- a/include/uapi/linux/auxvec.h
-> +++ b/include/uapi/linux/auxvec.h
-> @@ -28,6 +28,7 @@
->  #define AT_BASE_PLATFORM 24	/* string identifying real platform, may
->  				 * differ from AT_PLATFORM. */
->  #define AT_RANDOM 25	/* address of 16 random bytes */
-> +#define AT_HWCAP2 26	/* extension of AT_HWCAP */
->  
->  #define AT_EXECFN  31	/* filename of program */
->  
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+> -----Original Message-----
+> From: kvm-ppc-owner@vger.kernel.org [mailto:kvm-ppc-owner@vger.kernel.org=
+] On
+> Behalf Of Bhushan Bharat-R65777
+> Sent: Thursday, April 04, 2013 8:29 PM
+> To: Alexander Graf
+> Cc: linuxppc-dev@lists.ozlabs.org; kvm@vger.kernel.org; kvm-ppc@vger.kern=
+el.org;
+> Wood Scott-B07421
+> Subject: RE: [PATCH] bookehv: Handle debug exception on guest exit
+>=20
+>=20
+>=20
+> > -----Original Message-----
+> > From: Alexander Graf [mailto:agraf@suse.de]
+> > Sent: Thursday, April 04, 2013 6:55 PM
+> > To: Bhushan Bharat-R65777
+> > Cc: linuxppc-dev@lists.ozlabs.org; kvm@vger.kernel.org;
+> > kvm-ppc@vger.kernel.org; Wood Scott-B07421; Bhushan Bharat-R65777
+> > Subject: Re: [PATCH] bookehv: Handle debug exception on guest exit
+> >
+> >
+> > On 20.03.2013, at 18:45, Bharat Bhushan wrote:
+> >
+> > > EPCR.DUVD controls whether the debug events can come in hypervisor
+> > > mode or not. When KVM guest is using the debug resource then we do
+> > > not want debug events to be captured in guest entry/exit path. So we
+> > > set EPCR.DUVD when entering and clears EPCR.DUVD when exiting from gu=
+est.
+> > >
+> > > Debug instruction complete is a post-completion debug exception but
+> > > debug event gets posted on the basis of MSR before the instruction
+> > > is executed. Now if the instruction switches the context from guest
+> > > mode (MSR.GS =3D 1) to hypervisor mode (MSR.GS =3D 0) then the xSRR0
+> > > points to first instruction of KVM handler and xSRR1 points that
+> > > MSR.GS is clear (hypervisor context). Now as xSRR1.GS is used to
+> > > decide whether KVM handler will be invoked to handle the exception
+> > > or host host kernel debug handler will be invoked to handle the excep=
+tion.
+> > > This leads to host kernel debug handler handling the exception which
+> > > should either be handled by KVM.
+> > >
+> > > This is tested on e500mc in 32 bit mode
+> > >
+> > > Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
+> > > ---
+> > > v0:
+> > > - Do not apply this change for debug_crit as we do not know those
+> > > chips have
+> > issue or not.
+> > > - corrected 64bit case branching
+> > >
+> > > arch/powerpc/kernel/exceptions-64e.S |   29 +++++++++++++++++++++++++=
++++-
+> > > arch/powerpc/kernel/head_booke.h     |   26 +++++++++++++++++++++++++=
++
+> > > 2 files changed, 54 insertions(+), 1 deletions(-)
+> > >
+> > > diff --git a/arch/powerpc/kernel/exceptions-64e.S
+> > > b/arch/powerpc/kernel/exceptions-64e.S
+> > > index 4684e33..8b26294 100644
+> > > --- a/arch/powerpc/kernel/exceptions-64e.S
+> > > +++ b/arch/powerpc/kernel/exceptions-64e.S
+> > > @@ -516,6 +516,33 @@ kernel_dbg_exc:
+> > > 	andis.	r15,r14,DBSR_IC@h
+> > > 	beq+	1f
+> > >
+> > > +#ifdef CONFIG_KVM_BOOKE_HV
+> > > +	/*
+> > > +	 * EPCR.DUVD controls whether the debug events can come in
+> > > +	 * hypervisor mode or not. When KVM guest is using the debug
+> > > +	 * resource then we do not want debug events to be captured
+> > > +	 * in guest entry/exit path. So we set EPCR.DUVD when entering
+> > > +	 * and clears EPCR.DUVD when exiting from guest.
+> > > +	 * Debug instruction complete is a post-completion debug
+> > > +	 * exception but debug event gets posted on the basis of MSR
+> > > +	 * before the instruction is executed. Now if the instruction
+> > > +	 * switches the context from guest mode (MSR.GS =3D 1) to hyperviso=
+r
+> > > +	 * mode (MSR.GS =3D 0) then the xSRR0 points to first instruction o=
+f
+> >
+> > Can't we just execute that code path with MSR.DE=3D0?
+>=20
+> Single stepping uses DBCR0.IC (instruction complete).
+> Can you describe how MSR.DE =3D 0 will work?
+>=20
+> >
+> >
+> > Alex
+> >
+> > > +	 * KVM handler and xSRR1 points that MSR.GS is clear
+> > > +	 * (hypervisor context). Now as xSRR1.GS is used to decide whether
+> > > +	 * KVM handler will be invoked to handle the exception or host
+> > > +	 * host kernel debug handler will be invoked to handle the exceptio=
+n.
+> > > +	 * This leads to host kernel debug handler handling the exception
+> > > +	 * which should either be handled by KVM.
+> > > +	 */
+> > > +	mfspr	r10, SPRN_EPCR
+> > > +	andis.	r10,r10,SPRN_EPCR_DUVD@h
+> > > +	beq+	2f
+> > > +
+> > > +	andis.	r10,r9,MSR_GS@h
+> > > +	beq+	3f
+> > > +2:
+> > > +#endif
+> > > 	LOAD_REG_IMMEDIATE(r14,interrupt_base_book3e)
+> > > 	LOAD_REG_IMMEDIATE(r15,interrupt_end_book3e)
+> > > 	cmpld	cr0,r10,r14
+> > > @@ -523,7 +550,7 @@ kernel_dbg_exc:
+> > > 	blt+	cr0,1f
+> > > 	bge+	cr1,1f
+> > >
+> > > -	/* here it looks like we got an inappropriate debug exception. */
+> > > +3:	/* here it looks like we got an inappropriate debug exception. */
+> > > 	lis	r14,DBSR_IC@h		/* clear the IC event */
+> > > 	rlwinm	r11,r11,0,~MSR_DE	/* clear DE in the DSRR1 value */
+> > > 	mtspr	SPRN_DBSR,r14
+> > > diff --git a/arch/powerpc/kernel/head_booke.h
+> > > b/arch/powerpc/kernel/head_booke.h
+> > > index 5f051ee..edc6a3b 100644
+> > > --- a/arch/powerpc/kernel/head_booke.h
+> > > +++ b/arch/powerpc/kernel/head_booke.h
+> > > @@ -285,7 +285,33 @@ label:
+> > > 	mfspr	r10,SPRN_DBSR;		/* check single-step/branch taken */  \
+> > > 	andis.	r10,r10,(DBSR_IC|DBSR_BT)@h;				      \
+> > > 	beq+	2f;							      \
+> > > +#ifdef CONFIG_KVM_BOOKE_HV						      \
+> > > +	/*								      \
+> > > +	 * EPCR.DUVD controls whether the debug events can come in	      \
+> > > +	 * hypervisor mode or not. When KVM guest is using the debug	      =
+\
+> > > +	 * resource then we do not want debug events to be captured 	      =
+\
+> > > +	 * in guest entry/exit path. So we set EPCR.DUVD when entering	    =
+  \
+> > > +	 * and clears EPCR.DUVD when exiting from guest.		      \
+> > > +	 * Debug instruction complete is a post-completion debug	      \
+> > > +	 * exception but debug event gets posted on the basis of MSR	      =
+\
+> > > +	 * before the instruction is executed. Now if the instruction	     =
+ \
+> > > +	 * switches the context from guest mode (MSR.GS =3D 1) to hyperviso=
+r    \
+> > > +	 * mode (MSR.GS =3D 0) then the xSRR0 points to first instruction o=
+f    \
+> > > +	 * KVM handler and xSRR1 points that MSR.GS is clear 		      \
+> > > +	 * (hypervisor context). Now as xSRR1.GS is used to decide whether =
+   \
+> > > +	 * KVM handler will be invoked to handle the exception or host	    =
+  \
+> > > +	 * host kernel debug handler will be invoked to handle the exceptio=
+n. \
+> > > +	 * This leads to host kernel debug handler handling the exception  =
+   \
+> > > +	 * which should either be handled by KVM.			      \
+> > > +	 */								      \
+> > > +	mfspr	r10, SPRN_EPCR;						      \
+> > > +	andis.	r10,r10,SPRN_EPCR_DUVD@h;				      \
+> > > +	beq+	3f;							      \
+> > > 									      \
+> > > +	andis.	r10,r9,MSR_GS@h;				    	      \
+> > > +	beq+	1f;							      \
+> > > +3:									      \
+> > > +#endif									      \
+> > > 	lis	r10,KERNELBASE@h;	/* check if exception in vectors */   \
+> > > 	ori	r10,r10,KERNELBASE@l;					      \
+> > > 	cmplw	r12,r10;						      \
+> > > --
+> > > 1.7.0.4
+> > >
+> > >
+> > > --
+> > > To unsubscribe from this list: send the line "unsubscribe kvm-ppc"
+> > > in the body of a message to majordomo@vger.kernel.org More majordomo
+> > > info at  http://vger.kernel.org/majordomo-info.html
+> >
+>=20
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in the=
+ body
+> of a message to majordomo@vger.kernel.org More majordomo info at
+> http://vger.kernel.org/majordomo-info.html
