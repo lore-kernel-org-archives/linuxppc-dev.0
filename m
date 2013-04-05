@@ -1,39 +1,26 @@
-Return-Path: <azanella@linux.vnet.ibm.com>
-Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e24smtp03.br.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0AADA2C00C8
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Apr 2013 05:51:05 +1100 (EST)
-Received: from /spool/local
- by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <azanella@linux.vnet.ibm.com>;
- Fri, 5 Apr 2013 15:50:56 -0300
-Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 52FD51DC0060
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2013 14:50:53 -0400 (EDT)
-Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
- by d24relay01.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r35ImRow1626244
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Apr 2013 15:48:27 -0300
-Received: from d24av01.br.ibm.com (loopback [127.0.0.1])
- by d24av01.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r35Ioqdl025801
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Apr 2013 15:50:52 -0300
-Received: from [9.78.145.152] ([9.78.145.152])
- by d24av01.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
- r35Iop7E025734
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Apr 2013 15:50:51 -0300
-Message-ID: <515F1CD1.1030108@linux.vnet.ibm.com>
-Date: Fri, 05 Apr 2013 15:49:53 -0300
-From: Adhemerval Zanella <azanella@linux.vnet.ibm.com>
+Return-Path: <bhelgaas@google.com>
+Received: from mail-oa0-f54.google.com (mail-oa0-f54.google.com
+ [209.85.219.54])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 26AA62C00E7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Apr 2013 07:11:24 +1100 (EST)
+Received: by mail-oa0-f54.google.com with SMTP id n12so4379821oag.27
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Apr 2013 13:11:22 -0700 (PDT)
 MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] [RFC] powerpc: Add VDSO version of time
-References: <5148C2B3.6010408@linux.vnet.ibm.com>
- <20130405062137.GA5082@concordia>
-In-Reply-To: <20130405062137.GA5082@concordia>
+In-Reply-To: <201304042158.r34LwEOV010607@d03av02.boulder.ibm.com>
+References: <201304042158.r34LwEOV010607@d03av02.boulder.ibm.com>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Fri, 5 Apr 2013 14:11:01 -0600
+Message-ID: <CAErSpo5ReUcSPvyBs_u0HLh=90anEREZn4p6EUX4yO52bDBaeg@mail.gmail.com>
+Subject: Re: [PATCH 2/3] powerpc: Enable boot_vga sysfs attribute for graphics
+ adapters on Power
+To: Brian King <brking@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ klebers@linux.vnet.ibm.com,
+ Lucas Kannebley Tavares <lucaskt@linux.vnet.ibm.com>,
+ sparclinux@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,32 +30,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/05/2013 03:21 AM, Michael Ellerman wrote:
-> On Tue, Mar 19, 2013 at 04:55:31PM -0300, Adhemerval Zanella wrote:
->> Hi all,
->>
->> This patch implement the time syscall as vDSO. I have a glibc patch
->> to use it as IFUNC (as latest gettimeofday patch). Below the perf
->> numbers:
->>
->> Baseline PPC32: 380 nsec
->> Baseline PPC64: 352 nsec
->> vdso PPC32:      20 nsec
->> vdso PPC64:      20 nsec
->>
->> I focused on 64 bit kernel, do I need to provide a scheme for 32 bits
->> as well?
-> You did provide a 32-bit implementation. I take it you haven't tested
-> that though? Can you test it?
-I haven't test it yet and I believe it won't be troublesome to do so.
+On Thu, Apr 4, 2013 at 3:58 PM, Brian King <brking@linux.vnet.ibm.com> wrote:
 >
-> What happens if I don't have the glibc patch?
-GLIBC current behavior is to use the syscall.
+> Initialize dev->dev.type such that the PCI group attributes for boot_vga
+> and SR-IOV can be displayed if appropriate. This fixes an issue seen on
+> Power preventing X from auto initializing a graphics adapter when using KMS.
+>
+> Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+> ---
+>
+>  arch/powerpc/kernel/pci_of_scan.c |    1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff -puN arch/powerpc/kernel/pci_of_scan.c~powerpc_set_pci_dev_type arch/powerpc/kernel/pci_of_scan.c
+> --- linux/arch/powerpc/kernel/pci_of_scan.c~powerpc_set_pci_dev_type    2013-04-03 09:43:19.000000000 -0500
+> +++ linux-bjking1/arch/powerpc/kernel/pci_of_scan.c     2013-04-03 09:43:19.000000000 -0500
+> @@ -141,6 +141,7 @@ struct pci_dev *of_create_pci_dev(struct
+>         dev->dev.of_node = of_node_get(node);
+>         dev->dev.parent = bus->bridge;
+>         dev->dev.bus = &pci_bus_type;
+> +       dev->dev.type = &pci_dev_type;
+>         dev->devfn = devfn;
+>         dev->multifunction = 0;         /* maybe a lie? */
+>         dev->needs_freset = 0;          /* pcie fundamental reset required */
 
->
-> cheers
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
+I think sparc has the same issue in its own copy of of_create_pci_dev().
+
+Of course, both of_create_pci_dev() implementations are basically
+copies of the generic pci_setup_device() that most arches use.  That's
+the reason why I wish sparc and powerpc had used config space
+accessors that hid the OF mangling internally so they could use the
+generic pci_setup_device() instead of cloning it.
+
+Of course, they don't, and that's too much work for fixing this issue,
+but if anybody wanted to work on that, I think it would be an
+interesting project.
+
+But what if you set dev->dev.type in alloc_pci_dev()?  I think if you
+did that, you wouldn't need to export "pci_dev_type," and  it should
+fix this for both powerpc and sparc.
+
+Bjorn
