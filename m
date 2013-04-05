@@ -1,25 +1,34 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-oa0-f41.google.com (mail-oa0-f41.google.com
- [209.85.219.41])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 476B02C018D
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Apr 2013 07:24:33 +1100 (EST)
-Received: by mail-oa0-f41.google.com with SMTP id f4so4391967oah.28
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Apr 2013 13:24:30 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <201304042158.r34LwGPg010714@d03av02.boulder.ibm.com>
-References: <201304042158.r34LwGPg010714@d03av02.boulder.ibm.com>
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Fri, 5 Apr 2013 14:24:09 -0600
-Message-ID: <CAErSpo4LsJjRkw6UektwqW8m1NXdU6BTjhTDA9eORM3z3qDcdA@mail.gmail.com>
-Subject: Re: [PATCH 3/3] powerpc: Set default VGA device
-To: Brian King <brking@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- klebers <klebers@linux.vnet.ibm.com>,
- Lucas Kannebley Tavares <lucaskt@linux.vnet.ibm.com>,
- sparclinux@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <mjw@linux.vnet.ibm.com>
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 15FBF2C0137
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Apr 2013 07:41:47 +1100 (EST)
+Received: from /spool/local
+ by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mjw@linux.vnet.ibm.com>;
+ Fri, 5 Apr 2013 16:41:45 -0400
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id DB2F938C8029
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2013 16:41:41 -0400 (EDT)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r35KffWe337184
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Apr 2013 16:41:41 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r35KffWE003119
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Apr 2013 16:41:41 -0400
+Message-ID: <1365194500.8578.8.camel@lambeau>
+Subject: [PATCH] powerpc: pSeries_lpar_hpte_remove fails from Adjunct
+ partition being performed before the ANDCOND test
+From: Michael Wolf <mjw@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Date: Fri, 05 Apr 2013 15:41:40 -0500
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Reply-To: mjw@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,65 +38,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Apr 4, 2013 at 3:58 PM, Brian King <brking@linux.vnet.ibm.com> wrote:
->
-> Add a PCI quirk for VGA devices on Power to set the default VGA device.
-> Ensures a default VGA is always set if a graphics adapter is present,
-> even if firmware did not initialize it. If more than one graphics
-> adapter is present, ensure the one initialized by firmware is set
-> as the default VGA device. This ensures that X autoconfiguration
-> will work.
->
-> Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
-> ---
->
->  arch/powerpc/kernel/pci-common.c |   13 +++++++++++++
->  1 file changed, 13 insertions(+)
->
-> diff -puN arch/powerpc/kernel/pci-common.c~powerpc_vga_default_device arch/powerpc/kernel/pci-common.c
-> --- linux/arch/powerpc/kernel/pci-common.c~powerpc_vga_default_device   2013-04-03 09:50:33.000000000 -0500
-> +++ linux-bjking1/arch/powerpc/kernel/pci-common.c      2013-04-03 09:50:33.000000000 -0500
-> @@ -30,6 +30,7 @@
->  #include <linux/irq.h>
->  #include <linux/vmalloc.h>
->  #include <linux/slab.h>
-> +#include <linux/vgaarb.h>
->
->  #include <asm/processor.h>
->  #include <asm/io.h>
-> @@ -1725,3 +1726,15 @@ static void fixup_hide_host_resource_fsl
->  }
->  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_MOTOROLA, PCI_ANY_ID, fixup_hide_host_resource_fsl);
->  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_FREESCALE, PCI_ANY_ID, fixup_hide_host_resource_fsl);
-> +
-> +static void fixup_vga(struct pci_dev *pdev)
-> +{
-> +       u16 cmd;
-> +
-> +       pci_read_config_word(pdev, PCI_COMMAND, &cmd);
-> +       if ((cmd & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY)) || !vga_default_device())
-> +               vga_set_default_device(pdev);
-> +
-> +}
-> +DECLARE_PCI_FIXUP_CLASS_FINAL(PCI_ANY_ID, PCI_ANY_ID,
-> +                             PCI_CLASS_DISPLAY_VGA, 8, fixup_vga);
+Some versions pHyp will perform the adjunct partition test before the
+ANDCOND test.  The result of this is that H_RESOURCE can be returned and
+cause the BUG_ON condition to occur. The HPTE is not removed.  So add a
+check for H_RESOURCE, it is ok if this HPTE is not removed as
+pSeries_lpar_hpte_remove is looking for an HPTE to remove and not a
+specific HPTE to remove.  So it is ok to just move on to the next slot
+and try again.
 
-This not really an arch-specific issue, so it's a shame to add another
-arch-specific quirk for it (in addition to the x86 and ia64 ones we
-already have).
-
-In b5e4efe7e0, Eiichiro Oiwa <eiichiro.oiwa.nm@hitachi.com> tried to
-make this quirk generic, but the implementation was naive and it
-didn't work for sparc64.  There's a good thread about the sparc issue
-at https://lkml.org/lkml/2006/10/19/17
-
-The outcome was to basically revert back to arch-specific quirks with
-6b5c76b8e2, but I think the generic version probably could have been
-made to work, possibly with a pcibios hook or something for anything
-that really is arch-dependent, like the shadowed ROM image.
-
-This particular patch is arch-specific, and I'm not going to try to
-nack it because I'm not the powerpc maintainer, but I will certainly
-try to help you if you want to push on making a generic version.
-
-Bjorn
+Signed-off-by: Michael Wolf <mjw@linux.vnet.ibm.com>
+---
+diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+index c9a29da..724fa0b 100644
+--- a/arch/powerpc/platforms/pseries/lpar.c
++++ b/arch/powerpc/platforms/pseries/lpar.c
+@@ -185,7 +185,13 @@ static long pSeries_lpar_hpte_remove(unsigned long hpte_group)
+ 					   (0x1UL << 4), &dummy1, &dummy2);
+ 		if (lpar_rc == H_SUCCESS)
+ 			return i;
+-		BUG_ON(lpar_rc != H_NOT_FOUND);
++
++		/*
++		 * The test for adjunct partition is performed before the
++		 * ANDCOND test.  H_RESOURCE may be returned, so we need to
++		 * check for that as well.
++		 */
++		BUG_ON(lpar_rc != H_NOT_FOUND && lpar_rc != H_RESOURCE);
+ 
+ 		slot_offset++;
+ 		slot_offset &= 0x7;
