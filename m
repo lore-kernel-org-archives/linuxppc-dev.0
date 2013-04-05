@@ -1,32 +1,17 @@
-Return-Path: <B16395@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0184.outbound.messaging.microsoft.com [213.199.154.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 40CFA2C009B
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2013 11:01:48 +1100 (EST)
-From: Sethi Varun-B16395 <B16395@freescale.com>
-To: Alex Williamson <alex.williamson@redhat.com>
-Subject: RE: [PATCH 5/5 v11] iommu/fsl: Freescale PAMU driver and iommu
- implementation.
-Date: Fri, 5 Apr 2013 00:01:38 +0000
-Message-ID: <C5ECD7A89D1DC44195F34B25E172658D45AC83@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1364500442-20927-1-git-send-email-Varun.Sethi@freescale.com>
- <1364500442-20927-6-git-send-email-Varun.Sethi@freescale.com>
- <20130402161812.GI15687@8bytes.org> <1365012091.2882.252.camel@bling.home>
- <C5ECD7A89D1DC44195F34B25E172658D45883B@039-SN2MPN1-013.039d.mgd.msft.net>
- <1365088930.2882.296.camel@bling.home>
- <C5ECD7A89D1DC44195F34B25E172658D459471@039-SN2MPN1-013.039d.mgd.msft.net>
- <1365093819.2882.301.camel@bling.home>
-In-Reply-To: <1365093819.2882.301.camel@bling.home>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <paulus@ozlabs.org>
+Date: Fri, 5 Apr 2013 13:50:25 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Li Zhong <zhong@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v2 2/6] powerpc: Exception hooks for context tracking
+ subsystem
+Message-ID: <20130405025025.GB22465@drongo>
+References: <1364551221-23177-1-git-send-email-zhong@linux.vnet.ibm.com>
+ <1364551221-23177-3-git-send-email-zhong@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>, Joerg Roedel <joro@8bytes.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Yoder Stuart-B08248 <B08248@freescale.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1364551221-23177-3-git-send-email-zhong@linux.vnet.ibm.com>
+Cc: fweisbec@gmail.com, paulmck@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,110 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQWxleCBXaWxsaWFtc29u
-IFttYWlsdG86YWxleC53aWxsaWFtc29uQHJlZGhhdC5jb21dDQo+IFNlbnQ6IFRodXJzZGF5LCBB
-cHJpbCAwNCwgMjAxMyAxMDoxNCBQTQ0KPiBUbzogU2V0aGkgVmFydW4tQjE2Mzk1DQo+IENjOiBK
-b2VyZyBSb2VkZWw7IFlvZGVyIFN0dWFydC1CMDgyNDg7IFdvb2QgU2NvdHQtQjA3NDIxOw0KPiBp
-b21tdUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFi
-cy5vcmc7IGxpbnV4LQ0KPiBrZXJuZWxAdmdlci5rZXJuZWwub3JnOyBnYWxha0BrZXJuZWwuY3Jh
-c2hpbmcub3JnOw0KPiBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmcNCj4gU3ViamVjdDogUmU6IFtQ
-QVRDSCA1LzUgdjExXSBpb21tdS9mc2w6IEZyZWVzY2FsZSBQQU1VIGRyaXZlciBhbmQgaW9tbXUN
-Cj4gaW1wbGVtZW50YXRpb24uDQo+IA0KPiBPbiBUaHUsIDIwMTMtMDQtMDQgYXQgMTY6MzUgKzAw
-MDAsIFNldGhpIFZhcnVuLUIxNjM5NSB3cm90ZToNCj4gPg0KPiA+ID4gLS0tLS1PcmlnaW5hbCBN
-ZXNzYWdlLS0tLS0NCj4gPiA+IEZyb206IEFsZXggV2lsbGlhbXNvbiBbbWFpbHRvOmFsZXgud2ls
-bGlhbXNvbkByZWRoYXQuY29tXQ0KPiA+ID4gU2VudDogVGh1cnNkYXksIEFwcmlsIDA0LCAyMDEz
-IDg6NTIgUE0NCj4gPiA+IFRvOiBTZXRoaSBWYXJ1bi1CMTYzOTUNCj4gPiA+IENjOiBKb2VyZyBS
-b2VkZWw7IFlvZGVyIFN0dWFydC1CMDgyNDg7IFdvb2QgU2NvdHQtQjA3NDIxOw0KPiA+ID4gaW9t
-bXVAbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMu
-b3JnOw0KPiA+ID4gbGludXgtIGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGdhbGFrQGtlcm5lbC5j
-cmFzaGluZy5vcmc7DQo+ID4gPiBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmcNCj4gPiA+IFN1Ympl
-Y3Q6IFJlOiBbUEFUQ0ggNS81IHYxMV0gaW9tbXUvZnNsOiBGcmVlc2NhbGUgUEFNVSBkcml2ZXIg
-YW5kDQo+ID4gPiBpb21tdSBpbXBsZW1lbnRhdGlvbi4NCj4gPiA+DQo+ID4gPiBPbiBUaHUsIDIw
-MTMtMDQtMDQgYXQgMTM6MDAgKzAwMDAsIFNldGhpIFZhcnVuLUIxNjM5NSB3cm90ZToNCj4gPiA+
-ID4NCj4gPiA+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gPiA+IEZyb206
-IEFsZXggV2lsbGlhbXNvbiBbbWFpbHRvOmFsZXgud2lsbGlhbXNvbkByZWRoYXQuY29tXQ0KPiA+
-ID4gPiA+IFNlbnQ6IFdlZG5lc2RheSwgQXByaWwgMDMsIDIwMTMgMTE6MzIgUE0NCj4gPiA+ID4g
-PiBUbzogSm9lcmcgUm9lZGVsDQo+ID4gPiA+ID4gQ2M6IFNldGhpIFZhcnVuLUIxNjM5NTsgWW9k
-ZXIgU3R1YXJ0LUIwODI0ODsgV29vZCBTY290dC1CMDc0MjE7DQo+ID4gPiA+ID4gaW9tbXVAbGlz
-dHMubGludXgtZm91bmRhdGlvbi5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOw0K
-PiA+ID4gPiA+IGxpbnV4LSBrZXJuZWxAdmdlci5rZXJuZWwub3JnOyBnYWxha0BrZXJuZWwuY3Jh
-c2hpbmcub3JnOw0KPiA+ID4gPiA+IGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZw0KPiA+ID4gPiA+
-IFN1YmplY3Q6IFJlOiBbUEFUQ0ggNS81IHYxMV0gaW9tbXUvZnNsOiBGcmVlc2NhbGUgUEFNVSBk
-cml2ZXINCj4gPiA+ID4gPiBhbmQgaW9tbXUgaW1wbGVtZW50YXRpb24uDQo+ID4gPiA+ID4NCj4g
-PiA+ID4gPiBPbiBUdWUsIDIwMTMtMDQtMDIgYXQgMTg6MTggKzAyMDAsIEpvZXJnIFJvZWRlbCB3
-cm90ZToNCj4gPiA+ID4gPiA+IENjJ2luZyBBbGV4IFdpbGxpYW1zb24NCj4gPiA+ID4gPiA+DQo+
-ID4gPiA+ID4gPiBBbGV4LCBjYW4geW91IHBsZWFzZSByZXZpZXcgdGhlIGlvbW11LWdyb3VwIHBh
-cnQgb2YgdGhpcyBwYXRjaD8NCj4gPiA+ID4gPg0KPiA+ID4gPiA+IFN1cmUsIGl0IGxvb2tzIHBy
-ZXR0eSByZWFzb25hYmxlLiAgQUlVSSwgYWxsIFBDSSBkZXZpY2VzIGFyZQ0KPiA+ID4gPiA+IGJl
-bG93IHNvbWUga2luZCBvZiBob3N0IGJyaWRnZSB0aGF0IGlzIGVpdGhlciBuZXcgYW5kIHN1cHBv
-cnRzDQo+ID4gPiA+ID4gcGFydGl0aW9uaW5nIG9yIG9sZCBhbmQgZG9lc24ndC4gIEkgZG9uJ3Qg
-a25vdyBpZiB0aGF0J3MgYQ0KPiA+ID4gPiA+IHZpc2liaWxpdHkgb3IgaXNvbGF0aW9uIHJlcXVp
-cmVtZW50LCBwZXJoYXBzIFBDSSBBQ1MtaXNoLiAgSW4NCj4gPiA+ID4gPiB0aGUgbmV3IGhvc3Qg
-YnJpZGdlIGNhc2UsIGVhY2ggZGV2aWNlIGdldHMgYSBncm91cC4gIFRoaXMgc2VlbXMNCj4gPiA+
-ID4gPiBub3QgdG8gaGF2ZSBhbnkgcXVpcmtzIGZvciBtdWx0aWZ1bmN0aW9uIGRldmljZXMgdGhv
-dWdoLiAgT24gQU1EDQo+ID4gPiA+ID4gYW5kIEludGVsIElPTU1VcyB3ZSB0ZXN0IG11bHRpZnVu
-Y3Rpb24gZGV2aWNlIEFDUyBzdXBwb3J0IHRvDQo+ID4gPiA+ID4gZGV0ZXJtaW5lIHdoZXRoZXIg
-YWxsIHRoZSBmdW5jdGlvbnMgc2hvdWxkIGJlIGluIHRoZSBzYW1lIGdyb3VwLg0KPiA+ID4gPiA+
-IElzIHRoZXJlIGFueSByZWFzb24NCj4gPiA+IHRvIHRydXN0IG11bHRpZnVuY3Rpb24gZGV2aWNl
-cyBvbiBQQU1VPw0KPiA+ID4gPiA+DQo+ID4gPiA+IFtTZXRoaSBWYXJ1bi1CMTYzOTVdIEluIHRo
-ZSBjYXNlIHdoZXJlIHdlIGNhbiBwYXJ0aXRpb24gZW5kcG9pbnRzDQo+ID4gPiA+IHdlIGNhbiBk
-aXN0aW5ndWlzaCB0cmFuc2FjdGlvbnMgYmFzZWQgb24gdGhlIGJ1cyxkZXZpY2UsZnVuY3Rpb24N
-Cj4gPiA+ID4gbnVtYmVyIGNvbWJpbmF0aW9uLiBUaGlzIHN1cHBvcnQgaXMgYXZhaWxhYmxlIGlu
-IHRoZSBQQ0llDQo+ID4gPiA+IGNvbnRyb2xsZXIgKGhvc3QgYnJpZGdlKS4NCj4gPiA+DQo+ID4g
-PiBTbyBjYW4geDg2IElPTU1VcywgdGhhdCdzIHRoZSB2aXNpYmlsaXR5IGFzcGVjdCBvZiBJT01N
-VSBncm91cHMuDQo+ID4gPiBWaXNpYmlsaXR5IGFsb25lIGRvZXNuJ3QgbmVjZXNzYXJpbHkgaW1w
-bHkgdGhhdCBhIGRldmljZSBpcyBpc29sYXRlZA0KPiA+ID4gdGhvdWdoLiAgQSBtdWx0aWZ1bmN0
-aW9uIFBDSSBkZXZpY2UgdGhhdCBkb2Vzbid0IGV4cG9zZSBBQ1Mgc3VwcG9ydA0KPiA+ID4gbWF5
-IG5vdCBpc29sYXRlIGZ1bmN0aW9ucyBmcm9tIGVhY2ggb3RoZXIuICBGb3IgZXhhbXBsZSBhDQo+
-ID4gPiBwZWVyLXRvLXBlZXIgRE1BIGJldHdlZW4gZnVuY3Rpb25zIG1heSBub3QgYmUgdHJhbnNs
-YXRlZCBieSB0aGUNCj4gPiA+IHVwc3RyZWFtIElPTU1VLiAgSU9NTVUgZ3JvdXBzIHNob3VsZCBl
-bmNvbXBhc3MgYm90aCB2aXNpYmlsaXR5IGFuZA0KPiBpc29sYXRpb24uDQo+ID4gW1NldGhpIFZh
-cnVuLUIxNjM5NV0gV2UgY2FuIGlzb2xhdGUgdGhlIERNQSBhY2Nlc3MgdG8gdGhlIGhvc3QgYmFz
-ZWQNCj4gPiBvbiB0aGUgdG8gdGhlIHBjaSBidXMsZGV2aWNlLGZ1bmN0aW9uIG51bWJlci4NCj4g
-DQo+IFRoZSBJT01NVSBjYW4gb25seSBpc29sYXRlIERNQSB0aGF0IGl0IGNhbiBzZWUuICBBIG11
-bHRpZnVuY3Rpb24gZGV2aWNlDQo+IG1heSBuZXZlciBleHBvc2UgcGVlci10by1wZWVyIERNQSB0
-byB0aGUgdXBzdHJlYW0gZGV2aWNlLCBpdCdzDQo+IGltcGxlbWVudGF0aW9uIHNwZWNpZmljLiAg
-VGhlIEFDUyBmbGFncyBhbGxvdyB0aGF0IHBvc3NpYmlsaXR5IHRvIGJlDQo+IGNvbnRyb2xsZWQg
-YW5kIHByZXZlbnRlZC4NCj4gDQo+ID4gSSB0aG91Z2h0IHRoYXQgd2FzIGVub3VnaCB0byBwdXQg
-ZGV2aWNlcyBpbiB0byBzZXBhcmF0ZSBpb21tdSBncm91cHMuDQo+ID4gVGhpcyBpcyBhIFBDSWUg
-Y29udHJvbGxlciBwcm9wZXJ0eSB3aGljaCBhbGxvd3MgdXMgdG8gcGFydGl0aW9uIFBDSWUNCj4g
-PiBkZXZpY2VzLiBCdXQsIHdoYXQgSSBjYW4gdW5kZXJzdGFuZCBmcm9tIHlvdXIgcG9pbnQgaXMg
-dGhhdCB3ZSBhbHNvDQo+ID4gbmVlZCB0byBjb25zaWRlciBpc29sYXRpb24gYXQgUENJZSBkZXZp
-Y2UgbGV2ZWwgYXMgd2VsbC4gSSB3aWxsIGNoZWNrDQo+ID4gZm9yIHRoZSBjYXNlIG9mIG11bHRp
-ZnVuY3Rpb24gZGV2aWNlcy4NCj4gPg0KPiA+ID4NCj4gPiA+ID4gPiBJIGFsc28gZmluZCBpdCBj
-dXJpb3VzIHdoYXQgaGFwcGVucyB0byB0aGUgaW9tbXUgZ3JvdXAgb2YgdGhlDQo+ID4gPiA+ID4g
-aG9zdCBicmlkZ2UuICBJbiB0aGUgcGFydGl0aW9uYWJsZSBjYXNlIHRoZSBob3N0IGJyaWRnZSBn
-cm91cCBpcw0KPiA+ID4gPiA+IHJlbW92ZWQsIGluIHRoZSBub24tcGFydGl0aW9uYWJsZSBjYXNl
-IHRoZSBob3N0IGJyaWRnZSBncm91cA0KPiA+ID4gPiA+IGJlY29tZXMgdGhlIGdyb3VwIGZvciB0
-aGUgY2hpbGRyZW4sIHJlbW92aW5nIHRoZSBob3N0IGJyaWRnZS4NCj4gPiA+ID4gPiBJdCdzIHVu
-aXF1ZSB0byBQQU1VIHNvIGZhciB0aGF0IHRoZXNlIGhvc3QgYnJpZGdlcyBhcmUgZXZlbiBpbg0K
-PiA+ID4gPiA+IGFuIGlvbW11IGdyb3VwICh4ODYgb25seSBhZGRzIHBjaSBkZXZpY2VzKSwgYnV0
-IEkgZG9uJ3Qgc2VlIGl0DQo+ID4gPiA+ID4gYXMgbmVjZXNzYXJpbHkgd3JvbmcgbGVhdmluZyBp
-dCBpbiBlaXRoZXIgc2NlbmFyaW8uICBEb2VzIGl0DQo+ID4gPiA+ID4gc29sdmUgc29tZSBwcm9i
-bGVtIHRvIHJlbW92ZQ0KPiA+ID4gdGhlbSBmcm9tIHRoZSBncm91cHM/DQo+ID4gPiA+ID4gVGhh
-bmtzLA0KPiA+ID4gPiBbU2V0aGkgVmFydW4tQjE2Mzk1XSBUaGUgUENJZSBjb250cm9sbGVyIGlz
-bid0IGEgcGFydGl0aW9uYWJsZQ0KPiA+ID4gPiBlbnRpdHksIGl0IHdvdWxkIGFsd2F5cyBiZSBv
-d25lZCBieSB0aGUgaG9zdC4NCj4gPiA+DQo+ID4gPiBPd25lcnNoaXAgb2YgYSBkZXZpY2Ugc2hv
-dWxkbid0IHBsYXkgaW50byB0aGUgZ3JvdXAgY29udGV4dC4gIEFuDQo+ID4gPiBJT01NVSBncm91
-cCBzaG91bGQgYmUgZGVmaW5lZCBieSBpdCdzIHZpc2liaWxpdHkgYW5kIGlzb2xhdGlvbiBmcm9t
-DQo+ID4gPiBvdGhlciBkZXZpY2VzLiAgV2hldGhlciB0aGUgUENJZSBjb250cm9sbGVyIGlzIGFs
-bG93ZWQgdG8gYmUgaGFuZGVkDQo+ID4gPiB0byB1c2Vyc3BhY2UgaXMgYSBxdWVzdGlvbiBmb3Ig
-VkZJTy4NCj4gPiBbU2V0aGkgVmFydW4tQjE2Mzk1XSBUaGUgcHJvYmxlbSBpcyBpbiB0aGUgY2Fz
-ZSwgd2hlcmUgd2UgY2FuJ3QNCj4gPiBwYXJ0aXRpb24gUENJZSBkZXZpY2VzLiBQQ0llIGRldmlj
-ZXMgc2hhcmUgdGhlIHNhbWUgZGV2aWNlIGdyb3VwIGFzDQo+ID4gdGhlIFBDSSBjb250cm9sbGVy
-LiBUaGlzIGJlY29tZXMgYSBwcm9ibGVtIHdoaWxlIGFzc2lnbmluZyB0aGUgZGV2aWNlcw0KPiA+
-IHRvIHRoZSBndWVzdCwgYXMgeW91IGFyZSByZXF1aXJlZCB0byB1bmJpbmQgYWxsIHRoZSBQQ0ll
-IGRldmljZXMNCj4gPiBpbmNsdWRpbmcgdGhlIGNvbnRyb2xsZXIgZnJvbSB0aGUgaG9zdC4gUENJ
-ZSBjb250cm9sbGVyIGNhbid0IGJlDQo+ID4gdW5ib3VuZCBmcm9tIHRoZSBob3N0LCBzbyB3ZSBz
-aW1wbHkgZGVsZXRlIHRoZSBjb250cm9sbGVyIGlvbW11X2dyb3VwLg0KPiANCj4gVW5iaW5kaW5n
-IGRldmljZXMgaXMgYSBWRklPIGltcGxlbWVudGF0aW9uLCBpdCBzaG91bGRuJ3QgbGVhayBpbnRv
-IElPTU1VDQo+IGdyb3Vwcy4gIEFsc28gbm90ZSB0aGF0IFZGSU8gaGFzIGEgZHJpdmVyIHdoaXRl
-IGxpc3Qgd2hlcmUgd2UgY2FuIGhhdmUNCj4gZXhjZXB0aW9ucyB0byB0aGUgcnVsZS4gIEkgcmVj
-ZW50bHkgYWRkZWQgcGNpZWhwIHRvIHRoYXQgbGlzdCBiZWNhdXNlIHRoZQ0KPiBob3N0IGRyaXZl
-ciBwcm92aWRlcyBmdW5jdGlvbmFsaXR5LiAgQmVpbmcgYXR0YWNoZWQgdG8gdGhlIGhvc3QgZHJp
-dmVyDQo+IG1lYW5zIHRoZSBkZXZpY2UgaXMgbm90IGFjY2Vzc2libGUgdG8gdGhlIHVzZXIgdGhy
-b3VnaCBWRklPLCBidXQgb3RoZXINCj4gZGV2aWNlcyBpbiB0aGUgZ3JvdXAgYXJlLiAgVGhhbmtz
-LA0KPiANCkFsc28sIGFzIFN0dWFydCBwb2ludGVkIG91dCB0aGUgUENJZSBjb250cm9sbGVyIGFy
-ZW4ndCB0aGUgYWN0dWFsIERNQSBkZXZpY2VzIChlbmRwb2ludHMgYXJlIHRoZSBhY3R1YWwgRE1B
-IGRldmljZXMpLiBTbywgd2UgcmVtb3ZlIHRoZSBkZXZpY2UgZ3JvdXAgYWxsb2NhdGVkIGZvciB0
-aGUgUENJZSBjb250cm9sbGVycy4NCg0KLVZhcnVuDQoNCg==
+On Fri, Mar 29, 2013 at 06:00:17PM +0800, Li Zhong wrote:
+> This is the exception hooks for context tracking subsystem, including
+> data access, program check, single step, instruction breakpoint, machine check,
+> alignment, fp unavailable, altivec assist, unknown exception, whose handlers
+> might use RCU.
+> 
+> This patch corresponds to
+> [PATCH] x86: Exception hooks for userspace RCU extended QS
+>   commit 6ba3c97a38803883c2eee489505796cb0a727122
+> 
+> Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
+
+Is there a reason why you didn't put the exception_exit() call in
+ret_from_except_lite in entry_64.S, and the exception_entry() call in
+EXCEPTION_PROLOG_COMMON?  That would seem to catch all these cases in
+a more centralized place.
+
+Also, I notice that with the exception_exit calls where they are, we
+can still deliver signals (thus possibly taking a page fault) or call
+schedule() for preemption after the exception_exit() call.  Is that
+OK, or is it a potential problem?
+
+Paul.
