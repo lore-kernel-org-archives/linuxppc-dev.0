@@ -1,23 +1,36 @@
-Return-Path: <B20052@freescale.com>
-Received: from db3outboundpool.messaging.microsoft.com
- (db3ehsobe006.messaging.microsoft.com [213.199.154.144])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 86D4C2C00D4
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Apr 2013 02:43:32 +1100 (EST)
-From: Leekha Shaveta-B20052 <B20052@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: RE: [PATCH 1/4][v2] powerpc/fsl-booke: Add initial silicon device
- tree files for B4860 and B4420
-Date: Fri, 5 Apr 2013 15:43:19 +0000
-Message-ID: <E12D2F89F87F4A49B0320A4C2DE7E7491521FF@039-SN2MPN1-011.039d.mgd.msft.net>
-References: <1365143632-19362-1-git-send-email-shaveta@freescale.com>
- <62911773-1FC6-49B5-993F-88DD0F8F845A@kernel.crashing.org>
-In-Reply-To: <62911773-1FC6-49B5-993F-88DD0F8F845A@kernel.crashing.org>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id EE8CE2C00D4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Apr 2013 02:43:34 +1100 (EST)
+Received: from /spool/local
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Fri, 5 Apr 2013 11:43:32 -0400
+Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 4BDB46E8066
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2013 11:43:26 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r35FhSn8296578
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Apr 2013 11:43:28 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r35FhPEv013355
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Apr 2013 11:43:25 -0400
+Message-ID: <515EF11C.5060401@linux.vnet.ibm.com>
+Date: Fri, 05 Apr 2013 10:43:24 -0500
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH v2 2/11] Add PRRN Event Handler
+References: <51509AE8.8070803@linux.vnet.ibm.com>
+ <51509CF0.10200@linux.vnet.ibm.com> <20130404033436.GC19443@drongo>
+In-Reply-To: <20130404033436.GC19443@drongo>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,69 +40,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 04/03/2013 10:34 PM, Paul Mackerras wrote:
+> On Mon, Mar 25, 2013 at 01:52:32PM -0500, Nathan Fontenot wrote:
+>> From: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
+>>
+>> A PRRN event is signaled via the RTAS event-scan mechanism, which
+>> returns a Hot Plug Event message "fixed part" indicating "Platform
+>> Resource Reassignment". In response to the Hot Plug Event message,
+>> we must call ibm,update-nodes to determine which resources were
+>> reassigned and then ibm,update-properties to obtain the new affinity
+>> information about those resources.
+>>
+>> The PRRN event-scan RTAS message contains only the "fixed part" with
+>> the "Type" field set to the value 160 and no Extended Event Log. The
+>> four-byte Extended Event Log Length field is repurposed (since no
+>> Extended Event Log message is included) to pass the "scope" parameter
+>> that causes the ibm,update-nodes to return the nodes affected by the
+>> specific resource reassignment.
+>>
+>> This patch adds a handler in rtasd for PRRN RTAS events. The function
+>> pseries_devicetree_update() (from mobility.c) is used to make the
+>> ibm,update-nodes/ibm,update-properties RTAS calls. Updating the NUMA maps
+>> (handled by a subsequent patch) will require significant processing,
+>> so pseries_devicetree_update() is called from an asynchronous workqueue
+>> to allow rtasd to continue processing events. Since we flush all work
+>> on the queue before handling any new work there should only be one event
+>> in flight of being handled at a time.
+>             ^^ "of" is superfluous
 
+will remove it.
 
------Original Message-----
-From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
-Sent: Friday, April 05, 2013 7:53 PM
-To: Leekha Shaveta-B20052
-Cc: linuxppc-dev@lists.ozlabs.org list
-Subject: Re: [PATCH 1/4][v2] powerpc/fsl-booke: Add initial silicon device =
-tree files for B4860 and B4420
+> 
+> In the worst case where PRRN events come close together in time, the
+> flush_work will block for however long it takes to do this
+> "significant processing", meaning that we're no better off using a
+> workqueue.  Do we have any reason to think that these PRRN events will
+> normally be widely spaced in time?  If so you should mention it in the
+> patch description.
 
+Yes. PRRN events can only be triggered from the HMC by an IBM tech who has
+to actualy log into a customer system and initiate the PRRN event. There
+is no method for a user to initiate a PRRN event. Given this is is safe
+to assume that these events will be widely spaced in time.
 
-On Apr 5, 2013, at 1:33 AM, Shaveta Leekha wrote:
+> 
+> Also, rtasd isn't actually a task, it's just a function that gets run
+> via schedule_delayed_work_on() and re-schedules itself each time it
+> runs.  Is there any deadlock possibility in calling flush_work from a
+> work function?
 
-> B4860 and B4420 are similar that share some commonalities
->=20
-> * common features have been added in b4si-pre.dtsi and b4si-post.dtsi
-> * differences are added in respective silicon files of B4860 and B4420
->=20
-> There are several things missing from the device trees of B4860 and B4420=
-:
->=20
-> * DPAA related nodes (Qman, Bman, Fman, Rman)
-> * DSP related nodes/information
-> * serdes, sfp(security fuse processor), thermal, gpio, maple, cpri,=20
-> quad timers nodes
->=20
-> Signed-off-by: Shaveta Leekha <shaveta@freescale.com>
-> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
-> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
-> Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
-> Signed-off-by: Ramneek Mehresh <ramneek.mehresh@freescale.com>
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> Signed-off-by: Andy Fleming <afleming@freescale.com>
-> Signed-off-by: Vakul Garg <vakul@freescale.com>
-> ---
-> v2:=20
->  - incorporated review comments on commits message
->  - change unit address of cpu nodes to match the reg property
->=20
-> arch/powerpc/boot/dts/fsl/b4420si-post.dtsi |   94 ++++++++++
-> arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi  |   49 +++++
-> arch/powerpc/boot/dts/fsl/b4860si-post.dtsi |  138 ++++++++++++++
-> arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi  |   59 ++++++
-> arch/powerpc/boot/dts/fsl/b4si-post.dtsi    |  262 ++++++++++++++++++++++=
-+++++
-> arch/powerpc/boot/dts/fsl/b4si-pre.dtsi     |   65 +++++++
-> 6 files changed, 667 insertions(+), 0 deletions(-) create mode 100644=20
-> arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
-> create mode 100644 arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi
-> create mode 100644 arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
-> create mode 100644 arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi
-> create mode 100644 arch/powerpc/boot/dts/fsl/b4si-post.dtsi
-> create mode 100644 arch/powerpc/boot/dts/fsl/b4si-pre.dtsi
+I don't know of any but I will investigate.
 
-Is there a reason you didn't get rid of b4si-pre.dtsi and just merge it int=
-o b4860si-pre.dtsi & b4420-pre.dtsi?
-[SL] No particular reason. I have just tried to re-factored these files as =
-you have suggested. Hence managed the commonalities in B4 files and differe=
-nces in B4860's and B4420's respective files to reduce duplicity.
-
-Regards,
-Shaveta=20
-
-- k
+Thanks for the feedback.
+-Nathan
