@@ -1,29 +1,35 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-ob0-x22a.google.com (mail-ob0-x22a.google.com
- [IPv6:2607:f8b0:4003:c01::22a])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7F80F2C0111
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Apr 2013 02:13:13 +1000 (EST)
-Received: by mail-ob0-f170.google.com with SMTP id uy19so2411954obc.15
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 06 Apr 2013 09:13:09 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1365235201.31207.9.camel@pasglop>
-References: <201304042158.r34LwEOV010607@d03av02.boulder.ibm.com>
- <CAErSpo5ReUcSPvyBs_u0HLh=90anEREZn4p6EUX4yO52bDBaeg@mail.gmail.com>
- <1365235201.31207.9.camel@pasglop>
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Sat, 6 Apr 2013 10:12:48 -0600
-Message-ID: <CAErSpo4oaG8-rPVXt=Qb3m3VT6DdkX15Gz8gqPenQTtsLnaM7w@mail.gmail.com>
-Subject: Re: [PATCH 2/3] powerpc: Enable boot_vga sysfs attribute for graphics
- adapters on Power
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 677CE2C0099
+ for <linuxppc-dev@ozlabs.org>; Sun,  7 Apr 2013 02:48:56 +1000 (EST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Sat, 6 Apr 2013 10:48:53 -0600
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id B47B6C9001D
+ for <linuxppc-dev@ozlabs.org>; Sat,  6 Apr 2013 12:48:49 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r36GmnrZ317194
+ for <linuxppc-dev@ozlabs.org>; Sat, 6 Apr 2013 12:48:49 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r36GmmCj002552
+ for <linuxppc-dev@ozlabs.org>; Sat, 6 Apr 2013 13:48:49 -0300
+Date: Sat, 6 Apr 2013 09:48:03 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- klebers@linux.vnet.ibm.com, sparclinux@vger.kernel.org,
- Lucas Kannebley Tavares <lucaskt@linux.vnet.ibm.com>,
- Brian King <brking@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] perf: Power7: Make CPI stack events available in sysfs
+Message-ID: <20130406164803.GA408@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,36 +39,119 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Apr 6, 2013 at 2:00 AM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Fri, 2013-04-05 at 14:11 -0600, Bjorn Helgaas wrote:
->>
->> I think sparc has the same issue in its own copy of
->> of_create_pci_dev().
->>
->> Of course, both of_create_pci_dev() implementations are basically
->> copies of the generic pci_setup_device() that most arches use.  That's
->> the reason why I wish sparc and powerpc had used config space
->> accessors that hid the OF mangling internally so they could use the
->> generic pci_setup_device() instead of cloning it.
->
-> I disagree :-) I want the config space accessors to actually do the
-> config space access (it might be necessary for some reasons, if anything
-> for diagnostic). Also one of the reasons we create devices that way
-> originally iirc, is that on older pre-PCIe setups, we could have cases
-> of a bridge showing up at function N > 0 without anything at function
-> 0.
->
-> We are also not allowed to mess with bridge BARs on old EADS bridges,
-> and similar issues where the hypervisor can get upset.
->
-> A "filtering" config space code would be a lot messier than just
-> creating them like we do.
+>From bdeacf7175241f6c79b5b2be0fa6b20b0d0b7d1c Mon Sep 17 00:00:00 2001
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Date: Sat, 6 Apr 2013 08:48:26 -0700
+Subject: [PATCH] perf: Power7: Make CPI stack events available in sysfs
 
-Yeah, maybe so.  I guess it's just hard for me to let go of ideas
-until I've tried myself and failed :)
+A set of Power7 events are often used for Cycles Per Instruction (CPI) stack
+analysis. Make these events available in sysfs (/sys/devices/cpu/events/) so
+they can be identified using their symbolic names:
 
-Anyway, I hope putting a little more into alloc_pci_dev() will resolve
-this particular issue.
+	perf stat -e 'cpu/PM_CMPLU_STALL_DCACHE_MISS/' /bin/ls
 
-Bjorn
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+---
+ arch/powerpc/perf/power7-pmu.c |   73 ++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 73 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/perf/power7-pmu.c b/arch/powerpc/perf/power7-pmu.c
+index 3c475d6..13c3f0e 100644
+--- a/arch/powerpc/perf/power7-pmu.c
++++ b/arch/powerpc/perf/power7-pmu.c
+@@ -62,6 +62,29 @@
+ #define	PME_PM_BRU_FIN			0x10068
+ #define	PME_PM_BRU_MPRED		0x400f6
+ 
++#define PME_PM_CMPLU_STALL_FXU			0x20014
++#define PME_PM_CMPLU_STALL_DIV			0x40014
++#define PME_PM_CMPLU_STALL_SCALAR		0x40012
++#define PME_PM_CMPLU_STALL_SCALAR_LONG		0x20018
++#define PME_PM_CMPLU_STALL_VECTOR		0x2001c
++#define PME_PM_CMPLU_STALL_VECTOR_LONG		0x4004a
++#define PME_PM_CMPLU_STALL_LSU			0x20012
++#define PME_PM_CMPLU_STALL_REJECT		0x40016
++#define PME_PM_CMPLU_STALL_ERAT_MISS		0x40018
++#define PME_PM_CMPLU_STALL_DCACHE_MISS		0x20016
++#define PME_PM_CMPLU_STALL_STORE		0x2004a
++#define PME_PM_CMPLU_STALL_THRD			0x1001c
++#define PME_PM_CMPLU_STALL_IFU			0x4004c
++#define PME_PM_CMPLU_STALL_BRU			0x4004e
++#define PME_PM_GCT_NOSLOT_IC_MISS		0x2001a
++#define PME_PM_GCT_NOSLOT_BR_MPRED		0x4001a
++#define PME_PM_GCT_NOSLOT_BR_MPRED_IC_MISS	0x4001c
++#define PME_PM_GRP_CMPL				0x30004
++#define PME_PM_1PLUS_PPC_CMPL			0x100f2
++#define PME_PM_CMPLU_STALL_DFU			0x2003c
++#define PME_PM_RUN_CYC				0x200f4
++#define PME_PM_RUN_INST_CMPL			0x400fa
++
+ /*
+  * Layout of constraint bits:
+  * 6666555555555544444444443333333333222222222211111111110000000000
+@@ -393,6 +416,31 @@ POWER_EVENT_ATTR(LD_MISS_L1,			LD_MISS_L1);
+ POWER_EVENT_ATTR(BRU_FIN,			BRU_FIN)
+ POWER_EVENT_ATTR(BRU_MPRED,			BRU_MPRED);
+ 
++POWER_EVENT_ATTR(CMPLU_STALL_FXU,		CMPLU_STALL_FXU);
++POWER_EVENT_ATTR(CMPLU_STALL_DIV,		CMPLU_STALL_DIV);
++POWER_EVENT_ATTR(CMPLU_STALL_SCALAR,		CMPLU_STALL_SCALAR);
++POWER_EVENT_ATTR(CMPLU_STALL_SCALAR_LONG,	CMPLU_STALL_SCALAR_LONG);
++POWER_EVENT_ATTR(CMPLU_STALL_VECTOR,		CMPLU_STALL_VECTOR);
++POWER_EVENT_ATTR(CMPLU_STALL_VECTOR_LONG,	CMPLU_STALL_VECTOR_LONG);
++POWER_EVENT_ATTR(CMPLU_STALL_LSU,		CMPLU_STALL_LSU);
++POWER_EVENT_ATTR(CMPLU_STALL_REJECT,		CMPLU_STALL_REJECT);
++
++POWER_EVENT_ATTR(CMPLU_STALL_ERAT_MISS,		CMPLU_STALL_ERAT_MISS);
++POWER_EVENT_ATTR(CMPLU_STALL_DCACHE_MISS,	CMPLU_STALL_DCACHE_MISS);
++POWER_EVENT_ATTR(CMPLU_STALL_STORE,		CMPLU_STALL_STORE);
++POWER_EVENT_ATTR(CMPLU_STALL_THRD,		CMPLU_STALL_THRD);
++POWER_EVENT_ATTR(CMPLU_STALL_IFU,		CMPLU_STALL_IFU);
++POWER_EVENT_ATTR(CMPLU_STALL_BRU,		CMPLU_STALL_BRU);
++POWER_EVENT_ATTR(GCT_NOSLOT_IC_MISS,		GCT_NOSLOT_IC_MISS);
++
++POWER_EVENT_ATTR(GCT_NOSLOT_BR_MPRED,		GCT_NOSLOT_BR_MPRED);
++POWER_EVENT_ATTR(GCT_NOSLOT_BR_MPRED_IC_MISS,	GCT_NOSLOT_BR_MPRED_IC_MISS);
++POWER_EVENT_ATTR(GRP_CMPL,			GRP_CMPL);
++POWER_EVENT_ATTR(1PLUS_PPC_CMPL,		1PLUS_PPC_CMPL);
++POWER_EVENT_ATTR(CMPLU_STALL_DFU,		CMPLU_STALL_DFU);
++POWER_EVENT_ATTR(RUN_CYC,			RUN_CYC);
++POWER_EVENT_ATTR(RUN_INST_CMPL,			RUN_INST_CMPL);
++
+ static struct attribute *power7_events_attr[] = {
+ 	GENERIC_EVENT_PTR(CYC),
+ 	GENERIC_EVENT_PTR(GCT_NOSLOT_CYC),
+@@ -411,6 +459,31 @@ static struct attribute *power7_events_attr[] = {
+ 	POWER_EVENT_PTR(LD_MISS_L1),
+ 	POWER_EVENT_PTR(BRU_FIN),
+ 	POWER_EVENT_PTR(BRU_MPRED),
++
++	POWER_EVENT_PTR(CMPLU_STALL_FXU),
++	POWER_EVENT_PTR(CMPLU_STALL_DIV),
++	POWER_EVENT_PTR(CMPLU_STALL_SCALAR),
++	POWER_EVENT_PTR(CMPLU_STALL_SCALAR_LONG),
++	POWER_EVENT_PTR(CMPLU_STALL_VECTOR),
++	POWER_EVENT_PTR(CMPLU_STALL_VECTOR_LONG),
++	POWER_EVENT_PTR(CMPLU_STALL_LSU),
++	POWER_EVENT_PTR(CMPLU_STALL_REJECT),
++
++	POWER_EVENT_PTR(CMPLU_STALL_ERAT_MISS),
++	POWER_EVENT_PTR(CMPLU_STALL_DCACHE_MISS),
++	POWER_EVENT_PTR(CMPLU_STALL_STORE),
++	POWER_EVENT_PTR(CMPLU_STALL_THRD),
++	POWER_EVENT_PTR(CMPLU_STALL_IFU),
++	POWER_EVENT_PTR(CMPLU_STALL_BRU),
++	POWER_EVENT_PTR(GCT_NOSLOT_IC_MISS),
++	POWER_EVENT_PTR(GCT_NOSLOT_BR_MPRED),
++
++	POWER_EVENT_PTR(GCT_NOSLOT_BR_MPRED_IC_MISS),
++	POWER_EVENT_PTR(GRP_CMPL),
++	POWER_EVENT_PTR(1PLUS_PPC_CMPL),
++	POWER_EVENT_PTR(CMPLU_STALL_DFU),
++	POWER_EVENT_PTR(RUN_CYC),
++	POWER_EVENT_PTR(RUN_INST_CMPL),
+ 	NULL
+ };
+ 
+-- 
+1.7.1
