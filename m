@@ -1,34 +1,25 @@
-Return-Path: <mjw@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 15FBF2C0137
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Apr 2013 07:41:47 +1100 (EST)
-Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mjw@linux.vnet.ibm.com>;
- Fri, 5 Apr 2013 16:41:45 -0400
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id DB2F938C8029
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2013 16:41:41 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r35KffWe337184
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Apr 2013 16:41:41 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r35KffWE003119
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Apr 2013 16:41:41 -0400
-Message-ID: <1365194500.8578.8.camel@lambeau>
-Subject: [PATCH] powerpc: pSeries_lpar_hpte_remove fails from Adjunct
- partition being performed before the ANDCOND test
-From: Michael Wolf <mjw@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Date: Fri, 05 Apr 2013 15:41:40 -0500
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id B63642C0107
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Apr 2013 19:00:14 +1100 (EST)
+Message-ID: <1365235201.31207.9.camel@pasglop>
+Subject: Re: [PATCH 2/3] powerpc: Enable boot_vga sysfs attribute for
+ graphics adapters on Power
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Date: Sat, 06 Apr 2013 10:00:01 +0200
+In-Reply-To: <CAErSpo5ReUcSPvyBs_u0HLh=90anEREZn4p6EUX4yO52bDBaeg@mail.gmail.com>
+References: <201304042158.r34LwEOV010607@d03av02.boulder.ibm.com>
+ <CAErSpo5ReUcSPvyBs_u0HLh=90anEREZn4p6EUX4yO52bDBaeg@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Reply-To: mjw@linux.vnet.ibm.com
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ klebers@linux.vnet.ibm.com, sparclinux@vger.kernel.org,
+ Lucas Kannebley Tavares <lucaskt@linux.vnet.ibm.com>,
+ Brian King <brking@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,32 +29,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some versions pHyp will perform the adjunct partition test before the
-ANDCOND test.  The result of this is that H_RESOURCE can be returned and
-cause the BUG_ON condition to occur. The HPTE is not removed.  So add a
-check for H_RESOURCE, it is ok if this HPTE is not removed as
-pSeries_lpar_hpte_remove is looking for an HPTE to remove and not a
-specific HPTE to remove.  So it is ok to just move on to the next slot
-and try again.
+On Fri, 2013-04-05 at 14:11 -0600, Bjorn Helgaas wrote:
+> 
+> I think sparc has the same issue in its own copy of
+> of_create_pci_dev().
+> 
+> Of course, both of_create_pci_dev() implementations are basically
+> copies of the generic pci_setup_device() that most arches use.  That's
+> the reason why I wish sparc and powerpc had used config space
+> accessors that hid the OF mangling internally so they could use the
+> generic pci_setup_device() instead of cloning it.
 
-Signed-off-by: Michael Wolf <mjw@linux.vnet.ibm.com>
----
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index c9a29da..724fa0b 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -185,7 +185,13 @@ static long pSeries_lpar_hpte_remove(unsigned long hpte_group)
- 					   (0x1UL << 4), &dummy1, &dummy2);
- 		if (lpar_rc == H_SUCCESS)
- 			return i;
--		BUG_ON(lpar_rc != H_NOT_FOUND);
-+
-+		/*
-+		 * The test for adjunct partition is performed before the
-+		 * ANDCOND test.  H_RESOURCE may be returned, so we need to
-+		 * check for that as well.
-+		 */
-+		BUG_ON(lpar_rc != H_NOT_FOUND && lpar_rc != H_RESOURCE);
- 
- 		slot_offset++;
- 		slot_offset &= 0x7;
+I disagree :-) I want the config space accessors to actually do the
+config space access (it might be necessary for some reasons, if anything
+for diagnostic). Also one of the reasons we create devices that way
+originally iirc, is that on older pre-PCIe setups, we could have cases
+of a bridge showing up at function N > 0 without anything at function
+0. 
+
+We are also not allowed to mess with bridge BARs on old EADS bridges,
+and similar issues where the hypervisor can get upset.
+
+A "filtering" config space code would be a lot messier than just
+creating them like we do.
+
+However we could/should probably make the code more common between
+powerpc and sparc and maybe move the bulk of it to a generic place more
+easily grepped by the PCI folks.
+
+> Of course, they don't, and that's too much work for fixing this issue,
+> but if anybody wanted to work on that, I think it would be an
+> interesting project.
+> 
+> But what if you set dev->dev.type in alloc_pci_dev()?  I think if you
+> did that, you wouldn't need to export "pci_dev_type," and  it should
+> fix this for both powerpc and sparc.
+
+Cheers,
+Ben.
