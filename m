@@ -1,25 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B63642C0107
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Apr 2013 19:00:14 +1100 (EST)
-Message-ID: <1365235201.31207.9.camel@pasglop>
-Subject: Re: [PATCH 2/3] powerpc: Enable boot_vga sysfs attribute for
- graphics adapters on Power
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Date: Sat, 06 Apr 2013 10:00:01 +0200
-In-Reply-To: <CAErSpo5ReUcSPvyBs_u0HLh=90anEREZn4p6EUX4yO52bDBaeg@mail.gmail.com>
-References: <201304042158.r34LwEOV010607@d03av02.boulder.ibm.com>
- <CAErSpo5ReUcSPvyBs_u0HLh=90anEREZn4p6EUX4yO52bDBaeg@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- klebers@linux.vnet.ibm.com, sparclinux@vger.kernel.org,
- Lucas Kannebley Tavares <lucaskt@linux.vnet.ibm.com>,
- Brian King <brking@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <geert@linux-m68k.org>
+Received: from wilson.telenet-ops.be (wilson.telenet-ops.be [195.130.132.42])
+ by ozlabs.org (Postfix) with ESMTP id 86C2D2C00F8
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Apr 2013 22:37:04 +1100 (EST)
+Received: from juliette.telenet-ops.be (juliette.telenet-ops.be
+ [195.130.137.74])
+ by wilson.telenet-ops.be (Postfix) with ESMTP id 9EB7034A6D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Apr 2013 13:26:42 +0200 (CEST)
+Date: Sat, 6 Apr 2013 13:26:41 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Sender: geert@linux-m68k.org
+To: Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: Build regressions/improvements in v3.9-rc5
+In-Reply-To: <alpine.DEB.2.00.1304061323250.9581@ayla.of.borg>
+Message-ID: <alpine.DEB.2.00.1304061324130.9593@ayla.of.borg>
+References: <alpine.DEB.2.00.1304061323250.9581@ayla.of.borg>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Linux/PPC Development <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,41 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-04-05 at 14:11 -0600, Bjorn Helgaas wrote:
-> 
-> I think sparc has the same issue in its own copy of
-> of_create_pci_dev().
-> 
-> Of course, both of_create_pci_dev() implementations are basically
-> copies of the generic pci_setup_device() that most arches use.  That's
-> the reason why I wish sparc and powerpc had used config space
-> accessors that hid the OF mangling internally so they could use the
-> generic pci_setup_device() instead of cloning it.
+On Sat, 6 Apr 2013, Geert Uytterhoeven wrote:
+> JFYI, when comparing v3.9-rc5 to v3.9-rc4[3], the summaries are:
+>   - build errors: +129/-0
 
-I disagree :-) I want the config space accessors to actually do the
-config space access (it might be necessary for some reasons, if anything
-for diagnostic). Also one of the reasons we create devices that way
-originally iirc, is that on older pre-PCIe setups, we could have cases
-of a bridge showing up at function N > 0 without anything at function
-0. 
+> Note that there may be false regressions, as some logs are incomplete.
+> Still, they're build errors/warnings.
 
-We are also not allowed to mess with bridge BARs on old EADS bridges,
-and similar issues where the hypervisor can get upset.
+I think the only real one (in powerpc-randconfig) is:
 
-A "filtering" config space code would be a lot messier than just
-creating them like we do.
++ arch/powerpc/kernel/tm.S: Error: unsupported relocation against THREAD_VR0:  => 323
++ arch/powerpc/kernel/tm.S: Error: unsupported relocation against THREAD_VSCR:  => 320
 
-However we could/should probably make the code more common between
-powerpc and sparc and maybe move the bulk of it to a generic place more
-easily grepped by the PCI folks.
+> [1] http://kisskb.ellerman.id.au/kisskb/head/6041/ (118 out of 117 configs)
+> [3] http://kisskb.ellerman.id.au/kisskb/head/6015/ (80 out of 117 configs)
 
-> Of course, they don't, and that's too much work for fixing this issue,
-> but if anybody wanted to work on that, I think it would be an
-> interesting project.
-> 
-> But what if you set dev->dev.type in alloc_pci_dev()?  I think if you
-> did that, you wouldn't need to export "pci_dev_type," and  it should
-> fix this for both powerpc and sparc.
+Gr{oetje,eeting}s,
 
-Cheers,
-Ben.
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
