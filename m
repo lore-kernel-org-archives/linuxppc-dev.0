@@ -1,29 +1,26 @@
-Return-Path: <B35336@freescale.com>
+Return-Path: <B40534@freescale.com>
 Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
+ (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 95D5B2C00A7
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Apr 2013 13:14:41 +1000 (EST)
-Received: from mail117-co9 (localhost [127.0.0.1])	by
- mail117-co9-R.bigfish.com (Postfix) with ESMTP id C55273000FD	for
- <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Apr 2013 03:14:36 +0000 (UTC)
-Received: from CO9EHSMHS005.bigfish.com (unknown [10.236.132.231])	by
- mail117-co9.bigfish.com (Postfix) with ESMTP id 0D58BD80056	for
- <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Apr 2013 03:14:36 +0000 (UTC)
-Date: Sun, 7 Apr 2013 11:15:56 +0800
-From: Zhao Chenhui <chenhui.zhao@freescale.com>
-To: Tang Yuantian-B29983 <B29983@freescale.com>
-Subject: Re: [PATCH 08/17] powerpc/85xx: add support to JOG feature using
- cpufreq interface
-Message-ID: <20130407031556.GA17885@localhost.localdomain>
-References: <1364994565-16010-1-git-send-email-chenhui.zhao@freescale.com>
- <1364994565-16010-8-git-send-email-chenhui.zhao@freescale.com>
- <D07C73A334FF604B95B3CBD2A545D07B0B1265B9@039-SN2MPN1-013.039d.mgd.msft.net>
+ by ozlabs.org (Postfix) with ESMTPS id EA76F2C00A9
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Apr 2013 13:40:46 +1000 (EST)
+Received: from mail128-co9 (localhost [127.0.0.1])	by
+ mail128-co9-R.bigfish.com (Postfix) with ESMTP id 4AAD8C0069	for
+ <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Apr 2013 03:40:42 +0000 (UTC)
+Received: from CO9EHSMHS002.bigfish.com (unknown [10.236.132.241])	by
+ mail128-co9.bigfish.com (Postfix) with ESMTP id 8423858005A	for
+ <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Apr 2013 03:40:41 +0000 (UTC)
+From: Wang Dongsheng-B40534 <B40534@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH v2 1/4] powerpc/mpic: add irq_set_wake support
+Date: Sun, 7 Apr 2013 03:40:36 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259EDDCCC@039-SN2MPN1-021.039d.mgd.msft.net>
+References: <1364884840-28635-1-git-send-email-dongsheng.wang@freescale.com>
+ <1364949416.24520.30@snotra>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-In-Reply-To: <D07C73A334FF604B95B3CBD2A545D07B0B1265B9@039-SN2MPN1-013.039d.mgd.msft.net>
 Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -34,57 +31,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Apr 07, 2013 at 10:30:41AM +0800, Tang Yuantian-B29983 wrote:
-> Also send this patch to cpufreq@vger.kernel.org and linux-pm@vger.kerne=
-l.org
-> And better to rebase it on git://git.kernel.org/pub/scm/linux/kernel/gi=
-t/rafael/linux-pm.git
+
+
+> -----Original Message-----
+> From: Wang Dongsheng-B40534
+> Sent: Wednesday, April 03, 2013 10:49 AM
+> To: Wood Scott-B07421
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Subject: RE: [PATCH v2 1/4] powerpc/mpic: add irq_set_wake support
 >=20
-> Thanks,
-> Yuantian
-
-OK. Thanks.
-
--Chenhui
-
+>=20
 >=20
 > > -----Original Message-----
-> > From: Linuxppc-dev [mailto:linuxppc-dev-
-> > bounces+b29983=3Dfreescale.com@lists.ozlabs.org] On Behalf Of Zhao Ch=
-enhui
-> > Sent: 2013=E5=B9=B44=E6=9C=883=E6=97=A5 21:09
-> > To: linuxppc-dev@lists.ozlabs.org
-> > Subject: [PATCH 08/17] powerpc/85xx: add support to JOG feature using
-> > cpufreq interface
-> >=20
-> > From: chenhui zhao <chenhui.zhao@freescale.com>
-> >=20
-> > Some MPC85xx SoCs like MPC8536 and P1022 have a JOG feature, which
-> > provides a dynamic mechanism to lower or raise the CPU core clock at
-> > runtime.
-> >=20
-> > This patch adds the support to change CPU frequency using the standar=
-d
-> > cpufreq interface. The ratio CORE to CCB can be 1:1(except MPC8536), =
-3:2,
-> > 2:1, 5:2, 3:1, 7:2 and 4:1.
-> >=20
-> > Two CPU cores on P1022 must not in the low power state during the
-> > frequency transition. The driver uses a flag to meet the requirement.
-> >=20
-> > The jog mode frequency transition process on the MPC8536 is similar t=
-o
-> > the deep sleep process. The driver need save the CPU state and restor=
-e it
-> > after CPU warm reset.
-> >=20
-> > Note:
-> >  * The I/O peripherals such as PCIe and eTSEC may lose packets during
-> >    the jog mode frequency transition.
-> >  * The driver doesn't support MPC8536 Rev 1.0 due to a JOG erratum.
-> >    Subsequent revisions of MPC8536 have corrected the erratum.
-> >=20
-> > Signed-off-by: Dave Liu <daveliu@freescale.com>
-> > Signed-off-by: Li Yang <leoli@freescale.com>
-> > Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
-> > Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+> > From: Wood Scott-B07421
+> > Sent: Wednesday, April 03, 2013 8:37 AM
+> > To: Wang Dongsheng-B40534
+> > Cc: linuxppc-dev@lists.ozlabs.org; Wang Dongsheng-B40534
+> > Subject: Re: [PATCH v2 1/4] powerpc/mpic: add irq_set_wake support
+> >
+> > On 04/02/2013 01:40:37 AM, Wang Dongsheng wrote:
+> > > Add irq_set_wake support. Just add IRQF_NO_SUSPEND to
+> > > desc->action->flag.
+> > > So the wake up interrupt will not be disable in suspend_device_irqs.
+> > >
+> > > Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> > > ---
+> > > v2:
+> > > * Add: Check freescale chip in mpic_irq_set_wake().
+> > > * Remove: Support mpic_irq_set_wake() in ht_chip.
+> > >
+> > >  arch/powerpc/sysdev/mpic.c | 18 ++++++++++++++++++
+> > >  1 file changed, 18 insertions(+)
+> > >
+> > > diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+> > > index 3b2efd4..50d1ee1 100644
+> > > --- a/arch/powerpc/sysdev/mpic.c
+> > > +++ b/arch/powerpc/sysdev/mpic.c
+> > > @@ -920,6 +920,22 @@ int mpic_set_irq_type(struct irq_data *d,
+> > > unsigned int flow_type)
+> > >  	return IRQ_SET_MASK_OK_NOCOPY;
+> > >  }
+> > >
+> > > +static int mpic_irq_set_wake(struct irq_data *d, unsigned int on) {
+> > > +	struct irq_desc *desc =3D container_of(d, struct irq_desc,
+> > > irq_data);
+> > > +	struct mpic *mpic =3D mpic_from_irq_data(d);
+> > > +
+> > > +	if (!(mpic->flags & MPIC_FSL))
+> > > +		return -EINVAL;
+> >
+> > I was thinking more along the lines of using MPIC_FSL during init to
+> > decide whether to write this function to .irq_set_wake,
+>=20
+> I think the static registration method is more reasonable. We must
+> consider readability. And mpic_irq_set_wake() will not be frequent calls.
+> So within
+> mpic_irq_set_wake() to decide is reasonable.
+>=20
+> > though that could probably wait until there's a second type of MPIC
+> > that needs this (if ever).
+> Even if the mpic_irq_set_wake() register in the first type of MPIC that
+> is not belong MPIC_FSL, the function can return errno. I think the errno
+> should be "-ENXIO".
+> See kernel/irq/manage.c, set_irq_wake_real() the return value.
+> The desc->irq_data.chip->irq_set_wake is null, the errno is -ENXIO.
+>=20
+> s/-EINVAL/-ENXIO/
+About patches, if there are no other suggestion I'll send the V3.
