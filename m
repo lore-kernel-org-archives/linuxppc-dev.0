@@ -1,27 +1,15 @@
-Return-Path: <B40534@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EA76F2C00A9
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Apr 2013 13:40:46 +1000 (EST)
-Received: from mail128-co9 (localhost [127.0.0.1])	by
- mail128-co9-R.bigfish.com (Postfix) with ESMTP id 4AAD8C0069	for
- <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Apr 2013 03:40:42 +0000 (UTC)
-Received: from CO9EHSMHS002.bigfish.com (unknown [10.236.132.241])	by
- mail128-co9.bigfish.com (Postfix) with ESMTP id 8423858005A	for
- <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Apr 2013 03:40:41 +0000 (UTC)
-From: Wang Dongsheng-B40534 <B40534@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH v2 1/4] powerpc/mpic: add irq_set_wake support
-Date: Sun, 7 Apr 2013 03:40:36 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259EDDCCC@039-SN2MPN1-021.039d.mgd.msft.net>
-References: <1364884840-28635-1-git-send-email-dongsheng.wang@freescale.com>
- <1364949416.24520.30@snotra>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <dgibson@ozlabs.org>
+Date: Sun, 7 Apr 2013 15:58:44 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Chris Friesen <chris.friesen@genband.com>
+Subject: Re: powerpc userspace address space layout information
+Message-ID: <20130407055844.GB17787@truffula.fritz.box>
+References: <515E58E6.9030802@genband.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="OwLcNYc0lM97+oe1"
+In-Reply-To: <515E58E6.9030802@genband.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,69 +20,115 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
+--OwLcNYc0lM97+oe1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> -----Original Message-----
-> From: Wang Dongsheng-B40534
-> Sent: Wednesday, April 03, 2013 10:49 AM
-> To: Wood Scott-B07421
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Subject: RE: [PATCH v2 1/4] powerpc/mpic: add irq_set_wake support
+On Thu, Apr 04, 2013 at 10:53:58PM -0600, Chris Friesen wrote:
+>=20
+> Hi,
+>=20
+> I'm running with glibc 2.11 on a 2.6.34 kernel.  32-bit userspace on 64-b=
+it kernel.
+>=20
+> On a complicated process the memory map looks something like this:
+>=20
+> <vdso, executable, heap, etc.>
+> 5b2c000-f5b38000 r-xp 00000000 00:0f 3636                               /=
+lib/libnss_files-2.11.1.so
+> <lots of libraries snipped>
+> f6026000-f6035000 ---p 00096000 00:0f 3628                               =
+/lib/libkrb5.so.3.3
+> <lots of libraries snipped>
+> f7902000-f7905000 r-xp 00000000 00:0f 3607                               =
+/lib/libdl-2.11.1.so
+> f7905000-f7914000 ---p 00003000 00:0f 3607                               =
+/lib/libdl-2.11.1.so
+> f7914000-f7915000 r--p 00002000 00:0f 3607                               =
+/lib/libdl-2.11.1.so
+> f7915000-f7916000 rw-p 00003000 00:0f 3607                               =
+/lib/libdl-2.11.1.so
+> f7918000-f7919000 rw-p 00000000 00:00 0
+> f7919000-f791a000 r--p 0001a000 00:0f 3646                               =
+/lib/libpthread-2.11.1.so
+> f791a000-f791b000 r--p 00001000 00:0f 2306001                            =
+/path/to/binary
+> f791b000-f791c000 r--p 00001000 00:0f 2306001                            =
+/path/to/binary
+> f791c000-f791d000 r--p 00001000 00:0f 2306001                            =
+/path/to/binary
+> f791d000-f7923000 rw-p 00000000 00:00 0
+> f7923000-f7943000 r-xp 00000000 00:0f 13323                              =
+/lib/ld-2.11.1.so
+> f7943000-f7944000 r--p 00020000 00:0f 13323                              =
+/lib/ld-2.11.1.so
+> f7944000-f7945000 rw-p 00021000 00:0f 13323                              =
+/lib/ld-2.11.1.so
+> f9000000-fac01000 rw-p 00000000 00:00 0
+> fac06000-fac07000 rw-s 00000000 00:04 327690                             =
+/SYSV41050355 (deleted)
+> fad00000-fae00000 rw-s 00000000 00:04 98307                              =
+/SYSVee113d3f (deleted)
+> fae00000-fb000000 rw-s 00000000 00:04 7503872                            =
+/SYSVc5050355 (deleted)
+> fb000000-fb200000 rw-s 00000000 00:04 7536641                            =
+/SYSV5c050355 (deleted)
+> fb200000-fb600000 rw-s 00000000 00:0d 30647                              =
+/var/log/blah
+> ffa8e000-ffab0000 rwxp 00000000 00:00 0                                  =
+[stack]
 >=20
 >=20
+> I have a few questions I'm hoping someone can help me with.
 >=20
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Wednesday, April 03, 2013 8:37 AM
-> > To: Wang Dongsheng-B40534
-> > Cc: linuxppc-dev@lists.ozlabs.org; Wang Dongsheng-B40534
-> > Subject: Re: [PATCH v2 1/4] powerpc/mpic: add irq_set_wake support
-> >
-> > On 04/02/2013 01:40:37 AM, Wang Dongsheng wrote:
-> > > Add irq_set_wake support. Just add IRQF_NO_SUSPEND to
-> > > desc->action->flag.
-> > > So the wake up interrupt will not be disable in suspend_device_irqs.
-> > >
-> > > Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
-> > > ---
-> > > v2:
-> > > * Add: Check freescale chip in mpic_irq_set_wake().
-> > > * Remove: Support mpic_irq_set_wake() in ht_chip.
-> > >
-> > >  arch/powerpc/sysdev/mpic.c | 18 ++++++++++++++++++
-> > >  1 file changed, 18 insertions(+)
-> > >
-> > > diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-> > > index 3b2efd4..50d1ee1 100644
-> > > --- a/arch/powerpc/sysdev/mpic.c
-> > > +++ b/arch/powerpc/sysdev/mpic.c
-> > > @@ -920,6 +920,22 @@ int mpic_set_irq_type(struct irq_data *d,
-> > > unsigned int flow_type)
-> > >  	return IRQ_SET_MASK_OK_NOCOPY;
-> > >  }
-> > >
-> > > +static int mpic_irq_set_wake(struct irq_data *d, unsigned int on) {
-> > > +	struct irq_desc *desc =3D container_of(d, struct irq_desc,
-> > > irq_data);
-> > > +	struct mpic *mpic =3D mpic_from_irq_data(d);
-> > > +
-> > > +	if (!(mpic->flags & MPIC_FSL))
-> > > +		return -EINVAL;
-> >
-> > I was thinking more along the lines of using MPIC_FSL during init to
-> > decide whether to write this function to .irq_set_wake,
->=20
-> I think the static registration method is more reasonable. We must
-> consider readability. And mpic_irq_set_wake() will not be frequent calls.
-> So within
-> mpic_irq_set_wake() to decide is reasonable.
->=20
-> > though that could probably wait until there's a second type of MPIC
-> > that needs this (if ever).
-> Even if the mpic_irq_set_wake() register in the first type of MPIC that
-> is not belong MPIC_FSL, the function can return errno. I think the errno
-> should be "-ENXIO".
-> See kernel/irq/manage.c, set_irq_wake_real() the return value.
-> The desc->irq_data.chip->irq_set_wake is null, the errno is -ENXIO.
->=20
-> s/-EINVAL/-ENXIO/
-About patches, if there are no other suggestion I'll send the V3.
+> First, what determines where /lib/ld-2.11.1.so gets mapped? It seems like
+> it never goes above 0xf8000000 or so.
+
+I think the mapping in of the ELF interpreter just calls the mmap()
+code without hint address, so it goes where get_unmapped_area() puts
+things by default, which can depend on a number of configuration settings.
+
+> Second, what is the mapping at 0xf9000000-0xfac01000?  Is this just empty
+> space or is it reserved for something in particular?
+
+Looks like anonymous memory, which could have been mapped by your
+program or any of the libraries.
+
+> Third, what's the most reliable way to ensure a block of addresses around
+> 0xf6000000 don't get used for shared libraries?  (We want to preserve
+> those addresses for emulating hardware in a virtual machine.)  We have
+> this working on an older system but after upgrading to new software the
+> libraries now extend further down the address space.
+
+The only reliable method I can think of would be to use a custom
+linker script to give your binary an extra program header specifying
+that virtual region to map.  In theory it can have zero size, and
+whatever mem size you need to avoid adding any data to the binary
+itself.  In practice you may need to set a (small) non-zero filesize,
+since some kernel versions had bugs handling segments with zero
+filesize.
+
+That would bring your program up with anonymous memory mapped across
+the "reserved" region.  You could then remap over it using MAP_FIXED
+for the stuff you really want.
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--OwLcNYc0lM97+oe1
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iEYEARECAAYFAlFhCxQACgkQaILKxv3ab8agDgCgiYD2FrtA1BaOYWKf0Iw/Z1Ac
+lL8An25M7QH2BmA76UlHUsbWN15hwn72
+=e3As
+-----END PGP SIGNATURE-----
+
+--OwLcNYc0lM97+oe1--
