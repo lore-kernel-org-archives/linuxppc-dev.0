@@ -1,16 +1,17 @@
 Return-Path: <michael@ellerman.id.au>
-Date: Mon, 8 Apr 2013 15:21:25 +1000
+Date: Mon, 8 Apr 2013 15:25:23 +1000
 From: Michael Ellerman <michael@ellerman.id.au>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [PATCH 3/3] powerpc: Set default VGA device
-Message-ID: <20130408052124.GA9550@concordia>
-References: <201304042158.r34LwGPg010714@d03av02.boulder.ibm.com>
- <CAErSpo4LsJjRkw6UektwqW8m1NXdU6BTjhTDA9eORM3z3qDcdA@mail.gmail.com>
+Subject: Re: [PATCH 2/3] powerpc: Enable boot_vga sysfs attribute for
+ graphics adapters on Power
+Message-ID: <20130408052522.GB9550@concordia>
+References: <201304042158.r34LwEOV010607@d03av02.boulder.ibm.com>
+ <CAErSpo5ReUcSPvyBs_u0HLh=90anEREZn4p6EUX4yO52bDBaeg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAErSpo4LsJjRkw6UektwqW8m1NXdU6BTjhTDA9eORM3z3qDcdA@mail.gmail.com>
+In-Reply-To: <CAErSpo5ReUcSPvyBs_u0HLh=90anEREZn4p6EUX4yO52bDBaeg@mail.gmail.com>
 Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- klebers <klebers@linux.vnet.ibm.com>, sparclinux@vger.kernel.org,
+ klebers@linux.vnet.ibm.com, sparclinux@vger.kernel.org,
  Lucas Kannebley Tavares <lucaskt@linux.vnet.ibm.com>,
  Brian King <brking@linux.vnet.ibm.com>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
@@ -23,55 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Apr 05, 2013 at 02:24:09PM -0600, Bjorn Helgaas wrote:
+On Fri, Apr 05, 2013 at 02:11:01PM -0600, Bjorn Helgaas wrote:
 > On Thu, Apr 4, 2013 at 3:58 PM, Brian King <brking@linux.vnet.ibm.com> wrote:
-> > @@ -1725,3 +1726,15 @@ static void fixup_hide_host_resource_fsl
-> >  }
-> >  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_MOTOROLA, PCI_ANY_ID, fixup_hide_host_resource_fsl);
-> >  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_FREESCALE, PCI_ANY_ID, fixup_hide_host_resource_fsl);
-> > +
-> > +static void fixup_vga(struct pci_dev *pdev)
-> > +{
-> > +       u16 cmd;
-> > +
-> > +       pci_read_config_word(pdev, PCI_COMMAND, &cmd);
-> > +       if ((cmd & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY)) || !vga_default_device())
-> > +               vga_set_default_device(pdev);
-> > +
-> > +}
-> > +DECLARE_PCI_FIXUP_CLASS_FINAL(PCI_ANY_ID, PCI_ANY_ID,
-> > +                             PCI_CLASS_DISPLAY_VGA, 8, fixup_vga);
+> >
+> > Initialize dev->dev.type such that the PCI group attributes for boot_vga
+> > and SR-IOV can be displayed if appropriate. This fixes an issue seen on
+> > Power preventing X from auto initializing a graphics adapter when using KMS.
+> >
+> > Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+> > ---
+> >
+> >  arch/powerpc/kernel/pci_of_scan.c |    1 +
+> >  1 file changed, 1 insertion(+)
+> >
+> > diff -puN arch/powerpc/kernel/pci_of_scan.c~powerpc_set_pci_dev_type arch/powerpc/kernel/pci_of_scan.c
+> > --- linux/arch/powerpc/kernel/pci_of_scan.c~powerpc_set_pci_dev_type    2013-04-03 09:43:19.000000000 -0500
+> > +++ linux-bjking1/arch/powerpc/kernel/pci_of_scan.c     2013-04-03 09:43:19.000000000 -0500
+> > @@ -141,6 +141,7 @@ struct pci_dev *of_create_pci_dev(struct
+> >         dev->dev.of_node = of_node_get(node);
+> >         dev->dev.parent = bus->bridge;
+> >         dev->dev.bus = &pci_bus_type;
+> > +       dev->dev.type = &pci_dev_type;
+> >         dev->devfn = devfn;
+> >         dev->multifunction = 0;         /* maybe a lie? */
+> >         dev->needs_freset = 0;          /* pcie fundamental reset required */
 > 
-> This not really an arch-specific issue, so it's a shame to add another
-> arch-specific quirk for it (in addition to the x86 and ia64 ones we
-> already have).
+> I think sparc has the same issue in its own copy of of_create_pci_dev().
 > 
-> In b5e4efe7e0, Eiichiro Oiwa <eiichiro.oiwa.nm@hitachi.com> tried to
-> make this quirk generic, but the implementation was naive and it
-> didn't work for sparc64.  There's a good thread about the sparc issue
-> at https://lkml.org/lkml/2006/10/19/17
+> Of course, both of_create_pci_dev() implementations are basically
+> copies of the generic pci_setup_device() that most arches use.  That's
+> the reason why I wish sparc and powerpc had used config space
+> accessors that hid the OF mangling internally so they could use the
+> generic pci_setup_device() instead of cloning it.
 > 
-> The outcome was to basically revert back to arch-specific quirks with
-> 6b5c76b8e2, but I think the generic version probably could have been
-> made to work, possibly with a pcibios hook or something for anything
-> that really is arch-dependent, like the shadowed ROM image.
+> Of course, they don't, and that's too much work for fixing this issue,
+> but if anybody wanted to work on that, I think it would be an
+> interesting project.
 > 
-> This particular patch is arch-specific, and I'm not going to try to
-> nack it because I'm not the powerpc maintainer, but I will certainly
-> try to help you if you want to push on making a generic version.
+> But what if you set dev->dev.type in alloc_pci_dev()?  I think if you
+> did that, you wouldn't need to export "pci_dev_type," and  it should
+> fix this for both powerpc and sparc.
 
-OK.
-
-Looking at x86, ia64 and ours, there's a fair bit of difference.
-
-x86/ia64 both walk up the parents checking PCI_BRIDGE_CTL_VGA, which
-powerpc doesn't (though maybe it should?).
-
-x86/ia64 set IORESOURCE_ROM_SHADOW, which powerpc doesn't.
-
-ia64 doesn't call vga_set_default_device(), x86 and powerpc do.
-
-So we'll merge this and maybe someone can tease out the common bits, but
-personally I don't see that there's an obvious chunk of generic logic.
+That sounds good, Brian can you confirm that works and send a new series
+using that technique.
 
 cheers
