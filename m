@@ -1,22 +1,19 @@
-Return-Path: <B20052@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 62CB02C00BB
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Apr 2013 14:48:18 +1000 (EST)
-From: Leekha Shaveta-B20052 <B20052@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: RE: [PATCH 1/4][v2] powerpc/fsl-booke: Add initial silicon device
- tree files for B4860 and B4420
-Date: Mon, 8 Apr 2013 04:48:10 +0000
-Message-ID: <E12D2F89F87F4A49B0320A4C2DE7E749152991@039-SN2MPN1-011.039d.mgd.msft.net>
-References: <1365143632-19362-1-git-send-email-shaveta@freescale.com>
- <62911773-1FC6-49B5-993F-88DD0F8F845A@kernel.crashing.org>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <michael@ellerman.id.au>
+Date: Mon, 8 Apr 2013 15:21:25 +1000
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [PATCH 3/3] powerpc: Set default VGA device
+Message-ID: <20130408052124.GA9550@concordia>
+References: <201304042158.r34LwGPg010714@d03av02.boulder.ibm.com>
+ <CAErSpo4LsJjRkw6UektwqW8m1NXdU6BTjhTDA9eORM3z3qDcdA@mail.gmail.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAErSpo4LsJjRkw6UektwqW8m1NXdU6BTjhTDA9eORM3z3qDcdA@mail.gmail.com>
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ klebers <klebers@linux.vnet.ibm.com>, sparclinux@vger.kernel.org,
+ Lucas Kannebley Tavares <lucaskt@linux.vnet.ibm.com>,
+ Brian King <brking@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,82 +23,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, Apr 05, 2013 at 02:24:09PM -0600, Bjorn Helgaas wrote:
+> On Thu, Apr 4, 2013 at 3:58 PM, Brian King <brking@linux.vnet.ibm.com> wrote:
+> > @@ -1725,3 +1726,15 @@ static void fixup_hide_host_resource_fsl
+> >  }
+> >  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_MOTOROLA, PCI_ANY_ID, fixup_hide_host_resource_fsl);
+> >  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_FREESCALE, PCI_ANY_ID, fixup_hide_host_resource_fsl);
+> > +
+> > +static void fixup_vga(struct pci_dev *pdev)
+> > +{
+> > +       u16 cmd;
+> > +
+> > +       pci_read_config_word(pdev, PCI_COMMAND, &cmd);
+> > +       if ((cmd & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY)) || !vga_default_device())
+> > +               vga_set_default_device(pdev);
+> > +
+> > +}
+> > +DECLARE_PCI_FIXUP_CLASS_FINAL(PCI_ANY_ID, PCI_ANY_ID,
+> > +                             PCI_CLASS_DISPLAY_VGA, 8, fixup_vga);
+> 
+> This not really an arch-specific issue, so it's a shame to add another
+> arch-specific quirk for it (in addition to the x86 and ia64 ones we
+> already have).
+> 
+> In b5e4efe7e0, Eiichiro Oiwa <eiichiro.oiwa.nm@hitachi.com> tried to
+> make this quirk generic, but the implementation was naive and it
+> didn't work for sparc64.  There's a good thread about the sparc issue
+> at https://lkml.org/lkml/2006/10/19/17
+> 
+> The outcome was to basically revert back to arch-specific quirks with
+> 6b5c76b8e2, but I think the generic version probably could have been
+> made to work, possibly with a pcibios hook or something for anything
+> that really is arch-dependent, like the shadowed ROM image.
+> 
+> This particular patch is arch-specific, and I'm not going to try to
+> nack it because I'm not the powerpc maintainer, but I will certainly
+> try to help you if you want to push on making a generic version.
 
+OK.
 
------Original Message-----
-From: Leekha Shaveta-B20052=20
-Sent: Friday, April 05, 2013 9:13 PM
-To: 'Kumar Gala'
-Cc: linuxppc-dev@lists.ozlabs.org list
-Subject: RE: [PATCH 1/4][v2] powerpc/fsl-booke: Add initial silicon device =
-tree files for B4860 and B4420
+Looking at x86, ia64 and ours, there's a fair bit of difference.
 
+x86/ia64 both walk up the parents checking PCI_BRIDGE_CTL_VGA, which
+powerpc doesn't (though maybe it should?).
 
+x86/ia64 set IORESOURCE_ROM_SHADOW, which powerpc doesn't.
 
------Original Message-----
-From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
-Sent: Friday, April 05, 2013 7:53 PM
-To: Leekha Shaveta-B20052
-Cc: linuxppc-dev@lists.ozlabs.org list
-Subject: Re: [PATCH 1/4][v2] powerpc/fsl-booke: Add initial silicon device =
-tree files for B4860 and B4420
+ia64 doesn't call vga_set_default_device(), x86 and powerpc do.
 
+So we'll merge this and maybe someone can tease out the common bits, but
+personally I don't see that there's an obvious chunk of generic logic.
 
-On Apr 5, 2013, at 1:33 AM, Shaveta Leekha wrote:
-
-> B4860 and B4420 are similar that share some commonalities
->=20
-> * common features have been added in b4si-pre.dtsi and b4si-post.dtsi
-> * differences are added in respective silicon files of B4860 and B4420
->=20
-> There are several things missing from the device trees of B4860 and B4420=
-:
->=20
-> * DPAA related nodes (Qman, Bman, Fman, Rman)
-> * DSP related nodes/information
-> * serdes, sfp(security fuse processor), thermal, gpio, maple, cpri,=20
-> quad timers nodes
->=20
-> Signed-off-by: Shaveta Leekha <shaveta@freescale.com>
-> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
-> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
-> Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
-> Signed-off-by: Ramneek Mehresh <ramneek.mehresh@freescale.com>
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> Signed-off-by: Andy Fleming <afleming@freescale.com>
-> Signed-off-by: Vakul Garg <vakul@freescale.com>
-> ---
-> v2:=20
->  - incorporated review comments on commits message
->  - change unit address of cpu nodes to match the reg property
->=20
-> arch/powerpc/boot/dts/fsl/b4420si-post.dtsi |   94 ++++++++++
-> arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi  |   49 +++++
-> arch/powerpc/boot/dts/fsl/b4860si-post.dtsi |  138 ++++++++++++++
-> arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi  |   59 ++++++
-> arch/powerpc/boot/dts/fsl/b4si-post.dtsi    |  262 ++++++++++++++++++++++=
-+++++
-> arch/powerpc/boot/dts/fsl/b4si-pre.dtsi     |   65 +++++++
-> 6 files changed, 667 insertions(+), 0 deletions(-) create mode 100644=20
-> arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
-> create mode 100644 arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi
-> create mode 100644 arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
-> create mode 100644 arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi
-> create mode 100644 arch/powerpc/boot/dts/fsl/b4si-post.dtsi
-> create mode 100644 arch/powerpc/boot/dts/fsl/b4si-pre.dtsi
-
-Is there a reason you didn't get rid of b4si-pre.dtsi and just merge it int=
-o b4860si-pre.dtsi & b4420-pre.dtsi?
-[SL] No particular reason. I have just tried to re-factored these files as =
-you have suggested. Hence managed the commonalities in B4 files and differe=
-nces in B4860's and B4420's respective files to reduce duplicity.
-
-Regards,
-Shaveta=20
-
-[SL] Kumar, please suggest.=20
-
-Regards,
-Shaveta
+cheers
