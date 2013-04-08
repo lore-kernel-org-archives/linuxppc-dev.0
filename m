@@ -1,19 +1,39 @@
-Return-Path: <imr@rtschenk.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+Return-Path: <zhong@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 76A082C00BD
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Apr 2013 18:21:06 +1000 (EST)
-From: Rojhalat Ibrahim <imr@rtschenk.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC][PATCH 1/2] powerpc/fsl-pci: Keep PCI SoC controller
- registers in
-Date: Mon, 08 Apr 2013 10:20:50 +0200
-Message-ID: <5358275.FTQmJ7Es6N@pcimr>
-In-Reply-To: <1363201636-7318-1-git-send-email-galak@kernel.crashing.org>
-References: <1363201636-7318-1-git-send-email-galak@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+ (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7C2FC2C00C0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Apr 2013 19:03:46 +1000 (EST)
+Received: from /spool/local
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
+ Mon, 8 Apr 2013 14:28:42 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 60655E004A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Apr 2013 14:35:26 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3893Znh6488400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Apr 2013 14:33:35 +0530
+Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3893b23027716
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Apr 2013 19:03:38 +1000
+Message-ID: <1365411814.2753.74.camel@ThinkPad-T5421.cn.ibm.com>
+Subject: Re: [RFC PATCH v2 2/6] powerpc: Exception hooks for context
+ tracking subsystem
+From: Li Zhong <zhong@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Date: Mon, 08 Apr 2013 17:03:34 +0800
+In-Reply-To: <20130405025025.GB22465@drongo>
+References: <1364551221-23177-1-git-send-email-zhong@linux.vnet.ibm.com>
+ <1364551221-23177-3-git-send-email-zhong@linux.vnet.ibm.com>
+ <20130405025025.GB22465@drongo>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: fweisbec@gmail.com, paulmck@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,197 +43,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday 13 March 2013 14:07:15 Kumar Gala wrote:
-> Move to keeping the SoC registers that control and config the PCI
-> controllers on FSL SoCs in the pci_controller struct.  This allows us to
-> not need to ioremap() the registers in multiple different places that
-> use them.
-> 
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+On Fri, 2013-04-05 at 13:50 +1100, Paul Mackerras wrote:
+> On Fri, Mar 29, 2013 at 06:00:17PM +0800, Li Zhong wrote:
+> > This is the exception hooks for context tracking subsystem, including
+> > data access, program check, single step, instruction breakpoint, machine check,
+> > alignment, fp unavailable, altivec assist, unknown exception, whose handlers
+> > might use RCU.
+> > 
+> > This patch corresponds to
+> > [PATCH] x86: Exception hooks for userspace RCU extended QS
+> >   commit 6ba3c97a38803883c2eee489505796cb0a727122
+> > 
+> > Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
 
-Acked-by: Rojhalat Ibrahim <imr@rtschenk.de>
 
+Hi Paul, 
 
-> ---
->  arch/powerpc/include/asm/pci-bridge.h |    5 ++-
->  arch/powerpc/sysdev/fsl_pci.c         |   69
-> ++++++++++++++------------------- 2 files changed, 34 insertions(+), 40
-> deletions(-)
+Thanks for your review! Please check my answers below, and correct me if
+any errors.
+
+> Is there a reason why you didn't put the exception_exit() call in
+> ret_from_except_lite in entry_64.S, and the exception_entry() call in
+> EXCEPTION_PROLOG_COMMON?  That would seem to catch all these cases in
+> a more centralized place.
+
+It seems to me that ret_from_except_lite and EXCEPTION_PROLOG_COMMON are
+also used by interrupts, where I think we don't need the hooks. So using
+this way could help to avoid adding overhead to these code path
+(interrupts, and some exit path of syscall). 
+
+And I think adding the hook on higher level code seems a little easier
+for reading and checking. It seems that some exceptions don't use
+EXCEPTION_PROLOG_COMMON, and some don't go ret_from_except_lite exit
+path (like fp unavailable might go directly to fast_exception_return ).
+Maybe fast_exception_return is a centralized place for us to return to
+user space? But it still adds some overheads which is not necessarily
+needed. 
+
+And I think it also makes the implementation here consistent with the
+style that x86 uses. 
+
+> Also, I notice that with the exception_exit calls where they are, we
+> can still deliver signals (thus possibly taking a page fault) or call
+> schedule() for preemption after the exception_exit() call.  Is that
+> OK, or is it a potential problem?
+
+If I understand correctly, I guess you are talking about the cases where
+we might return to user space without context state correctly being set
+as in user?
+
+There is user_enter() called in do_notify_resume() in patch #3, so after
+handling the signals we always call user_enter(). 
+
+There are also some changes of the context_tracking code from Frederic,
+which might be related: ( they are now in tip tree, and url of the
+patches for your convenience https://lkml.org/lkml/2013/3/1/266 )
+
+6c1e0256fad84a843d915414e4b5973b7443d48d
+context_tracking: Restore correct previous context state on exception
+exit. 
+
+With this patch, if a later exception happened after user_enter(),
+before the CPU actually returns to user space, the correct context
+state(in user) is saved and restored when handling the later exception. 
+
+Patch #6 converts the code to use these new APIs, which is currently not
+available in powerpc tree. 
+
+b22366cd54c6fe05db426f20adb10f461c19ec06
+context_tracking: Restore preempted context state after
+preempt_schedule_irq
+
+With this patch, the user context state could be correctly restored
+after schedule returns. 
+
+Thanks, Zhong
+
+> Paul.
 > 
-> diff --git a/arch/powerpc/include/asm/pci-bridge.h
-> b/arch/powerpc/include/asm/pci-bridge.h index 025a130..c0278f0 100644
-> --- a/arch/powerpc/include/asm/pci-bridge.h
-> +++ b/arch/powerpc/include/asm/pci-bridge.h
-> @@ -70,6 +70,8 @@ struct pci_controller {
->  	 *  BIG_ENDIAN - cfg_addr is a big endian register
->  	 *  BROKEN_MRM - the 440EPx/GRx chips have an errata that causes hangs on
->  	 *   the PLB4.  Effectively disable MRM commands by setting this.
-> +	 *  FSL_CFG_REG_LINK - Freescale controller version in which the PCIe
-> +	 *   link status is in a RC PCIe cfg register (vs being a SoC register)
->  	 */
->  #define PPC_INDIRECT_TYPE_SET_CFG_TYPE		0x00000001
->  #define PPC_INDIRECT_TYPE_EXT_REG		0x00000002
-> @@ -77,6 +79,7 @@ struct pci_controller {
->  #define PPC_INDIRECT_TYPE_NO_PCIE_LINK		0x00000008
->  #define PPC_INDIRECT_TYPE_BIG_ENDIAN		0x00000010
->  #define PPC_INDIRECT_TYPE_BROKEN_MRM		0x00000020
-> +#define PPC_INDIRECT_TYPE_FSL_CFG_REG_LINK	0x00000040
->  	u32 indirect_type;
->  	/* Currently, we limit ourselves to 1 IO range and 3 mem
->  	 * ranges since the common pci_bus structure can't handle more
-> @@ -90,9 +93,9 @@ struct pci_controller {
-> 
->  #ifdef CONFIG_PPC64
->  	unsigned long buid;
-> +#endif	/* CONFIG_PPC64 */
-> 
->  	void *private_data;
-> -#endif	/* CONFIG_PPC64 */
->  };
-> 
->  /* These are used for config access before all the PCI probing
-> diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-> index 3271177..41bbcc4 100644
-> --- a/arch/powerpc/sysdev/fsl_pci.c
-> +++ b/arch/powerpc/sysdev/fsl_pci.c
-> @@ -54,34 +54,22 @@ static void quirk_fsl_pcie_header(struct pci_dev *dev)
->  	return;
->  }
-> 
-> -static int __init fsl_pcie_check_link(struct pci_controller *hose,
-> -				  struct resource *rsrc)
-> +static int __init fsl_pcie_check_link(struct pci_controller *hose)
->  {
-> -	struct ccsr_pci __iomem *pci = NULL;
->  	u32 val;
-> 
-> -	/* for PCIe IP rev 3.0 or greater use CSR0 for link state */
-> -	if (rsrc) {
-> -		pr_debug("PCI memory map start 0x%016llx, size 0x%016llx\n",
-> -		    (u64)rsrc->start, (u64)rsrc->end - (u64)rsrc->start + 1);
-> -		pci = ioremap(rsrc->start, rsrc->end - rsrc->start + 1);
-> -		if (!pci) {
-> -			dev_err(hose->parent, "Unable to map PCIe registers\n");
-> -			return -ENOMEM;
-> -		}
-> -		if (in_be32(&pci->block_rev1) >= PCIE_IP_REV_3_0) {
-> -			val = (in_be32(&pci->pex_csr0) & PEX_CSR0_LTSSM_MASK)
-> -					>> PEX_CSR0_LTSSM_SHIFT;
-> -			if (val != PEX_CSR0_LTSSM_L0)
-> -				return 1;
-> -			iounmap(pci);
-> -			return 0;
-> -		}
-> -		iounmap(pci);
-> +	if (hose->indirect_type & PPC_INDIRECT_TYPE_FSL_CFG_REG_LINK) {
-> +		early_read_config_dword(hose, 0, 0, PCIE_LTSSM, &val);
-> +		if (val < PCIE_LTSSM_L0)
-> +			return 1;
-> +	} else {
-> +		struct ccsr_pci __iomem *pci = hose->private_data;
-> +		/* for PCIe IP rev 3.0 or greater use CSR0 for link state */
-> +		val = (in_be32(&pci->pex_csr0) & PEX_CSR0_LTSSM_MASK)
-> +				>> PEX_CSR0_LTSSM_SHIFT;
-> +		if (val != PEX_CSR0_LTSSM_L0)
-> +			return 1;
->  	}
-> -	early_read_config_dword(hose, 0, 0, PCIE_LTSSM, &val);
-> -	if (val < PCIE_LTSSM_L0)
-> -		return 1;
-> 
->  	return 0;
->  }
-> @@ -148,10 +136,9 @@ static int setup_one_atmu(struct ccsr_pci __iomem *pci,
-> }
-> 
->  /* atmu setup for fsl pci/pcie controller */
-> -static void setup_pci_atmu(struct pci_controller *hose,
-> -				  struct resource *rsrc)
-> +static void setup_pci_atmu(struct pci_controller *hose)
->  {
-> -	struct ccsr_pci __iomem *pci;
-> +	struct ccsr_pci __iomem *pci = hose->private_data;
->  	int i, j, n, mem_log, win_idx = 3, start_idx = 1, end_idx = 4;
->  	u64 mem, sz, paddr_hi = 0;
->  	u64 paddr_lo = ULLONG_MAX;
-> @@ -162,15 +149,6 @@ static void setup_pci_atmu(struct pci_controller *hose,
-> const u64 *reg;
->  	int len;
-> 
-> -	pr_debug("PCI memory map start 0x%016llx, size 0x%016llx\n",
-> -		 (u64)rsrc->start, (u64)resource_size(rsrc));
-> -
-> -	pci = ioremap(rsrc->start, resource_size(rsrc));
-> -	if (!pci) {
-> -	    dev_err(hose->parent, "Unable to map ATMU registers\n");
-> -	    return;
-> -	}
-> -
->  	if (early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP)) {
->  		if (in_be32(&pci->block_rev1) >= PCIE_IP_REV_2_2) {
->  			win_idx = 2;
-> @@ -451,6 +429,7 @@ int __init fsl_add_bridge(struct platform_device *pdev,
-> int is_primary) const int *bus_range;
->  	u8 hdr_type, progif;
->  	struct device_node *dev;
-> +	struct ccsr_pci __iomem *pci;
-> 
->  	dev = pdev->dev.of_node;
-> 
-> @@ -483,9 +462,19 @@ int __init fsl_add_bridge(struct platform_device *pdev,
-> int is_primary) hose->first_busno = bus_range ? bus_range[0] : 0x0;
->  	hose->last_busno = bus_range ? bus_range[1] : 0xff;
-> 
-> +	pr_debug("PCI memory map start 0x%016llx, size 0x%016llx\n",
-> +		 (u64)rsrc.start, (u64)resource_size(&rsrc));
-> +
-> +	pci = hose->private_data = ioremap(rsrc.start, resource_size(&rsrc));
-> +	if (!hose->private_data)
-> +		goto no_bridge;
-> +
->  	setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4,
->  		PPC_INDIRECT_TYPE_BIG_ENDIAN);
-> 
-> +	if (in_be32(&pci->block_rev1) < PCIE_IP_REV_3_0)
-> +		hose->indirect_type |= PPC_INDIRECT_TYPE_FSL_CFG_REG_LINK;
-> +
->  	if (early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP)) {
->  		/* For PCIE read HEADER_TYPE to identify controler mode */
->  		early_read_config_byte(hose, 0, 0, PCI_HEADER_TYPE, &hdr_type);
-> @@ -505,7 +494,7 @@ int __init fsl_add_bridge(struct platform_device *pdev,
-> int is_primary) if (early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP)) {
->  		hose->indirect_type |= PPC_INDIRECT_TYPE_EXT_REG |
->  			PPC_INDIRECT_TYPE_SURPRESS_PRIMARY_BUS;
-> -		if (fsl_pcie_check_link(hose, &rsrc))
-> +		if (fsl_pcie_check_link(hose))
->  			hose->indirect_type |= PPC_INDIRECT_TYPE_NO_PCIE_LINK;
->  	}
-> 
-> @@ -522,11 +511,12 @@ int __init fsl_add_bridge(struct platform_device
-> *pdev, int is_primary) pci_process_bridge_OF_ranges(hose, dev, is_primary);
-> 
->  	/* Setup PEX window registers */
-> -	setup_pci_atmu(hose, &rsrc);
-> +	setup_pci_atmu(hose);
-> 
->  	return 0;
-> 
->  no_bridge:
-> +	iounmap(hose->private_data);
->  	/* unmap cfg_data & cfg_addr separately if not on same page */
->  	if (((unsigned long)hose->cfg_data & PAGE_MASK) !=
->  	    ((unsigned long)hose->cfg_addr & PAGE_MASK))
-> @@ -703,11 +693,12 @@ static int __init mpc83xx_pcie_setup(struct
-> pci_controller *hose, WARN_ON(hose->dn->data);
->  	hose->dn->data = pcie;
->  	hose->ops = &mpc83xx_pcie_ops;
-> +	hose->indirect_type |= PPC_INDIRECT_TYPE_FSL_CFG_REG_LINK;
-> 
->  	out_le32(pcie->cfg_type0 + PEX_OUTWIN0_TAH, 0);
->  	out_le32(pcie->cfg_type0 + PEX_OUTWIN0_TAL, 0);
-> 
-> -	if (fsl_pcie_check_link(hose, NULL))
-> +	if (fsl_pcie_check_link(hose))
->  		hose->indirect_type |= PPC_INDIRECT_TYPE_NO_PCIE_LINK;
-> 
->  	return 0;
