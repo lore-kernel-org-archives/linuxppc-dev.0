@@ -1,30 +1,16 @@
-Return-Path: <B07421@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe006.messaging.microsoft.com [216.32.180.16])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 550572C0099
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2013 04:25:14 +1000 (EST)
-Date: Mon, 8 Apr 2013 13:24:56 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] powerpc: add Book E support to 64-bit hibernation
-To: Wang Dongsheng-B40534 <B40534@freescale.com>
-References: <1363949917.8238.25.camel@jlt4.sipsolutions.net>
- <1363990490.24790.12@snotra>
- <ABB05CD9C9F68C46A5CEDC7F15439259ED9C2E@039-SN2MPN1-021.039d.mgd.msft.net>
- <1364949294.24520.29@snotra>
- <ABB05CD9C9F68C46A5CEDC7F15439259EDC264@039-SN2MPN1-021.039d.mgd.msft.net>
- <1365020140.25627.9@snotra>
- <ABB05CD9C9F68C46A5CEDC7F15439259EDDCAE@039-SN2MPN1-021.039d.mgd.msft.net>
-In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F15439259EDDCAE@039-SN2MPN1-021.039d.mgd.msft.net>
- (from B40534@freescale.com on Sat Apr  6 22:01:45 2013)
-Message-ID: <1365445496.28843.4@snotra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- Johannes Berg <johannes@sipsolutions.net>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <pebolle@tiscali.nl>
+Received: from cpsmtpb-ews10.kpnxchange.com (cpsmtpb-ews10.kpnxchange.com
+ [213.75.39.15]) by ozlabs.org (Postfix) with ESMTP id DFD2A2C00A8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2013 05:35:16 +1000 (EST)
+Message-ID: <1365449711.1830.130.camel@x61.thuisdomein>
+Subject: [PATCH] powerpc: remove "config MPC10X_OPENPIC"
+From: Paul Bolle <pebolle@tiscali.nl>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>
+Date: Mon, 08 Apr 2013 21:35:11 +0200
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,75 +20,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/06/2013 10:01:45 PM, Wang Dongsheng-B40534 wrote:
->=20
->=20
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Thursday, April 04, 2013 4:16 AM
-> > To: Wang Dongsheng-B40534
-> > Cc: Wood Scott-B07421; Johannes Berg; linuxppc-dev@lists.ozlabs.org
-> > Subject: Re: [PATCH] powerpc: add Book E support to 64-bit =20
-> hibernation
-> >
-> > On 04/03/2013 12:36:41 AM, Wang Dongsheng-B40534 wrote:
-> > >
-> > >
-> > > > -----Original Message-----
-> > > > From: Wood Scott-B07421
-> > > > Sent: Wednesday, April 03, 2013 8:35 AM
-> > > > To: Wang Dongsheng-B40534
-> > > > Cc: Wood Scott-B07421; Johannes Berg; =20
-> linuxppc-dev@lists.ozlabs.org
-> > > > Subject: Re: [PATCH] powerpc: add Book E support to 64-bit
-> > > hibernation
-> > > >
-> > > > On 04/02/2013 12:28:40 AM, Wang Dongsheng-B40534 wrote:
-> > > > > Hi scott & Johannes,
-> > > > >
-> > > > > Thanks for reviewing.
-> > > > >
-> > > > > @scott, About this patch, could you please help ack this =20
-> patch?
-> > > >
-> > > > Please investigate the issue of whether we are loading kernel =20
-> module
-> > > > code in this step, and whether cache flushing is needed as a =20
-> result.
-> > > >
-> > > Sorry, I am not very clear what you mean.
-> > > When the kernel boot end, modprobe some xx.ko?
-> >
-> > Suppose, before the kernel was suspended, modules had been loaded.  =20
-> At
-> > what point do those modules get restored, and when does the cache =20
-> get
-> > flushed?
-> >
-> Before the kernel was suspended, modules had been loaded, the modules =20
-> is
-> already in memory.
+The last users of Kconfig symbol MPC10X_OPENPIC were removed in v2.6.27.
+Its Kconfig entry can be removed now.
 
-They *were* in memory, until the hardware was powered down.
+Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+---
+Untested.
 
-> And /lib/modules/* is belong to vfs.
+ arch/powerpc/platforms/embedded6xx/Kconfig | 5 -----
+ 1 file changed, 5 deletions(-)
 
-Huh?  I'm talking about modules that have been loaded, not where in the =20
-filesystem they were loaded from.  Loading a module is not like =20
-mmap()ing a file.
-
-> When suspend to disk, all used pages will be saved.(Include VFS, =20
-> Loaded modules)
-> When restore, the kernel will not modprobe again.
-
-Of course it won't modprobe again.  Still, at some point during the =20
-resume process, the code has to be loaded from disk into RAM.  What I =20
-don't know is if this is where that happens.
-
-> The non-bootcpu will restore all pages.(Include VFS, Loaded modules)
-
-I don't know what "non-bootcpu" has to do with anything.  What matters =20
-is what piece of code does the restoring, and if the cache flush =20
-properly happens then.
-
--Scott=
+diff --git a/arch/powerpc/platforms/embedded6xx/Kconfig b/arch/powerpc/platforms/embedded6xx/Kconfig
+index 5a8f50a9..302ba43 100644
+--- a/arch/powerpc/platforms/embedded6xx/Kconfig
++++ b/arch/powerpc/platforms/embedded6xx/Kconfig
+@@ -9,7 +9,6 @@ config LINKSTATION
+ 	select FSL_SOC
+ 	select PPC_UDBG_16550 if SERIAL_8250
+ 	select DEFAULT_UIMAGE
+-	select MPC10X_OPENPIC
+ 	select MPC10X_BRIDGE
+ 	help
+ 	  Select LINKSTATION if configuring for one of PPC- (MPC8241)
+@@ -24,7 +23,6 @@ config STORCENTER
+ 	select MPIC
+ 	select FSL_SOC
+ 	select PPC_UDBG_16550 if SERIAL_8250
+-	select MPC10X_OPENPIC
+ 	select MPC10X_BRIDGE
+ 	help
+ 	  Select STORCENTER if configuring for the iomega StorCenter
+@@ -84,9 +82,6 @@ config MV64X60
+ 	select PPC_INDIRECT_PCI
+ 	select CHECK_CACHE_COHERENCY
+ 
+-config MPC10X_OPENPIC
+-	bool
+-
+ config GAMECUBE_COMMON
+ 	bool
+ 
+-- 
+1.7.11.7
