@@ -1,39 +1,20 @@
-Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7C2FC2C00C0
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Apr 2013 19:03:46 +1000 (EST)
-Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Mon, 8 Apr 2013 14:28:42 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 60655E004A
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Apr 2013 14:35:26 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3893Znh6488400
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Apr 2013 14:33:35 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3893b23027716
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Apr 2013 19:03:38 +1000
-Message-ID: <1365411814.2753.74.camel@ThinkPad-T5421.cn.ibm.com>
-Subject: Re: [RFC PATCH v2 2/6] powerpc: Exception hooks for context
- tracking subsystem
-From: Li Zhong <zhong@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Date: Mon, 08 Apr 2013 17:03:34 +0800
-In-Reply-To: <20130405025025.GB22465@drongo>
-References: <1364551221-23177-1-git-send-email-zhong@linux.vnet.ibm.com>
- <1364551221-23177-3-git-send-email-zhong@linux.vnet.ibm.com>
- <20130405025025.GB22465@drongo>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: fweisbec@gmail.com, paulmck@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <B38951@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E766C2C00C0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Apr 2013 19:05:33 +1000 (EST)
+From: Jia Hongtao <hongtao.jia@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
+Subject: [PATCH V5] powerpc/85xx: Add machine check handler to fix PCIe
+ erratum on mpc85xx
+Date: Mon, 8 Apr 2013 16:26:54 +0800
+Message-ID: <1365409614-2634-1-git-send-email-hongtao.jia@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: B07421@freescale.com, hongtao.jia@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,81 +24,225 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-04-05 at 13:50 +1100, Paul Mackerras wrote:
-> On Fri, Mar 29, 2013 at 06:00:17PM +0800, Li Zhong wrote:
-> > This is the exception hooks for context tracking subsystem, including
-> > data access, program check, single step, instruction breakpoint, machine check,
-> > alignment, fp unavailable, altivec assist, unknown exception, whose handlers
-> > might use RCU.
-> > 
-> > This patch corresponds to
-> > [PATCH] x86: Exception hooks for userspace RCU extended QS
-> >   commit 6ba3c97a38803883c2eee489505796cb0a727122
-> > 
-> > Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
+A PCIe erratum of mpc85xx may causes a core hang when a link of PCIe
+goes down. when the link goes down, Non-posted transactions issued
+via the ATMU requiring completion result in an instruction stall.
+At the same time a machine-check exception is generated to the core
+to allow further processing by the handler. We implements the handler
+which skips the instruction caused the stall.
 
+This patch depends on patch:
+powerpc/85xx: Add platform_device declaration to fsl_pci.h
 
-Hi Paul, 
+Signed-off-by: Zhao Chenhui <b35336@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
+Signed-off-by: Liu Shuo <soniccat.liu@gmail.com>
+Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+---
+Changes for V4:
+* Fill rd with all-Fs if the skipped instruction is load and emulate the
+  instruction.
+* Let KVM/QEMU deal with the exception if the machine check comes from KVM.
 
-Thanks for your review! Please check my answers below, and correct me if
-any errors.
+ arch/powerpc/kernel/cpu_setup_fsl_booke.S |   2 +-
+ arch/powerpc/kernel/traps.c               |   3 +
+ arch/powerpc/sysdev/fsl_pci.c             | 121 ++++++++++++++++++++++++++++++
+ arch/powerpc/sysdev/fsl_pci.h             |   6 ++
+ 4 files changed, 131 insertions(+), 1 deletion(-)
 
-> Is there a reason why you didn't put the exception_exit() call in
-> ret_from_except_lite in entry_64.S, and the exception_entry() call in
-> EXCEPTION_PROLOG_COMMON?  That would seem to catch all these cases in
-> a more centralized place.
-
-It seems to me that ret_from_except_lite and EXCEPTION_PROLOG_COMMON are
-also used by interrupts, where I think we don't need the hooks. So using
-this way could help to avoid adding overhead to these code path
-(interrupts, and some exit path of syscall). 
-
-And I think adding the hook on higher level code seems a little easier
-for reading and checking. It seems that some exceptions don't use
-EXCEPTION_PROLOG_COMMON, and some don't go ret_from_except_lite exit
-path (like fp unavailable might go directly to fast_exception_return ).
-Maybe fast_exception_return is a centralized place for us to return to
-user space? But it still adds some overheads which is not necessarily
-needed. 
-
-And I think it also makes the implementation here consistent with the
-style that x86 uses. 
-
-> Also, I notice that with the exception_exit calls where they are, we
-> can still deliver signals (thus possibly taking a page fault) or call
-> schedule() for preemption after the exception_exit() call.  Is that
-> OK, or is it a potential problem?
-
-If I understand correctly, I guess you are talking about the cases where
-we might return to user space without context state correctly being set
-as in user?
-
-There is user_enter() called in do_notify_resume() in patch #3, so after
-handling the signals we always call user_enter(). 
-
-There are also some changes of the context_tracking code from Frederic,
-which might be related: ( they are now in tip tree, and url of the
-patches for your convenience https://lkml.org/lkml/2013/3/1/266 )
-
-6c1e0256fad84a843d915414e4b5973b7443d48d
-context_tracking: Restore correct previous context state on exception
-exit. 
-
-With this patch, if a later exception happened after user_enter(),
-before the CPU actually returns to user space, the correct context
-state(in user) is saved and restored when handling the later exception. 
-
-Patch #6 converts the code to use these new APIs, which is currently not
-available in powerpc tree. 
-
-b22366cd54c6fe05db426f20adb10f461c19ec06
-context_tracking: Restore preempted context state after
-preempt_schedule_irq
-
-With this patch, the user context state could be correctly restored
-after schedule returns. 
-
-Thanks, Zhong
-
-> Paul.
-> 
+diff --git a/arch/powerpc/kernel/cpu_setup_fsl_booke.S b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+index dcd8819..f1bde90 100644
+--- a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
++++ b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+@@ -66,7 +66,7 @@ _GLOBAL(__setup_cpu_e500v2)
+ 	bl	__e500_icache_setup
+ 	bl	__e500_dcache_setup
+ 	bl	__setup_e500_ivors
+-#ifdef CONFIG_FSL_RIO
++#if defined(CONFIG_FSL_RIO) || defined(CONFIG_FSL_PCI)
+ 	/* Ensure that RFXE is set */
+ 	mfspr	r3,SPRN_HID1
+ 	oris	r3,r3,HID1_RFXE@h
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index a008cf5..dd275a4 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -59,6 +59,7 @@
+ #include <asm/fadump.h>
+ #include <asm/switch_to.h>
+ #include <asm/debug.h>
++#include <sysdev/fsl_pci.h>
+ 
+ #if defined(CONFIG_DEBUGGER) || defined(CONFIG_KEXEC)
+ int (*__debugger)(struct pt_regs *regs) __read_mostly;
+@@ -556,6 +557,8 @@ int machine_check_e500(struct pt_regs *regs)
+ 	if (reason & MCSR_BUS_RBERR) {
+ 		if (fsl_rio_mcheck_exception(regs))
+ 			return 1;
++		if (fsl_pci_mcheck_exception(regs))
++			return 1;
+ 	}
+ 
+ 	printk("Machine check in kernel mode.\n");
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 682084d..48326cd 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -26,11 +26,14 @@
+ #include <linux/memblock.h>
+ #include <linux/log2.h>
+ #include <linux/slab.h>
++#include <linux/uaccess.h>
+ 
+ #include <asm/io.h>
+ #include <asm/prom.h>
+ #include <asm/pci-bridge.h>
++#include <asm/ppc-pci.h>
+ #include <asm/machdep.h>
++#include <asm/disassemble.h>
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_pci.h>
+ 
+@@ -826,6 +829,124 @@ u64 fsl_pci_immrbar_base(struct pci_controller *hose)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_E500
++
++#define OP_LWZ  32
++#define OP_LWZU 33
++#define OP_LBZ  34
++#define OP_LBZU 35
++#define OP_LHZ  40
++#define OP_LHZU 41
++#define OP_LHA  42
++#define OP_LHAU 43
++
++static int mcheck_handle_load(struct pt_regs *regs, u32 inst)
++{
++	unsigned int rd, ra, d;
++
++	rd = get_rt(inst);
++	ra = get_ra(inst);
++	d = get_d(inst);
++
++	switch (get_op(inst)) {
++	case OP_LWZ:
++		regs->gpr[rd] = 0xffffffff;
++		break;
++
++	case OP_LWZU:
++		regs->gpr[rd] = 0xffffffff;
++		regs->gpr[ra] += (s16)d;
++		break;
++
++	case OP_LBZ:
++		regs->gpr[rd] = 0xff;
++		break;
++
++	case OP_LBZU:
++		regs->gpr[rd] = 0xff;
++		regs->gpr[ra] += (s16)d;
++		break;
++
++	case OP_LHZ:
++		regs->gpr[rd] = 0xffff;
++		break;
++
++	case OP_LHZU:
++		regs->gpr[rd] = 0xffff;
++		regs->gpr[ra] += (s16)d;
++		break;
++
++	case OP_LHA:
++		regs->gpr[rd] = 0xffff;
++		break;
++
++	case OP_LHAU:
++		regs->gpr[rd] = 0xffff;
++		regs->gpr[ra] += (s16)d;
++		break;
++
++	default:
++		return 0;
++	}
++
++	return 1;
++}
++
++static int is_in_pci_mem_space(phys_addr_t addr)
++{
++	struct pci_controller *hose;
++	struct resource *res;
++	int i;
++
++	list_for_each_entry(hose, &hose_list, list_node) {
++		if (!early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP))
++			continue;
++
++		for (i = 0; i < 3; i++) {
++			res = &hose->mem_resources[i];
++			if ((res->flags & IORESOURCE_MEM) &&
++				addr >= res->start && addr <= res->end)
++				return 1;
++		}
++	}
++	return 0;
++}
++
++int fsl_pci_mcheck_exception(struct pt_regs *regs)
++{
++	u32 inst;
++	int ret;
++	phys_addr_t addr = 0;
++
++	/* Let KVM/QEMU deal with the exception */
++	if (regs->msr & MSR_GS)
++		return 0;
++
++#ifdef CONFIG_PHYS_64BIT
++	addr = mfspr(SPRN_MCARU);
++	addr <<= 32;
++#endif
++	addr += mfspr(SPRN_MCAR);
++
++	if (is_in_pci_mem_space(addr)) {
++		if (user_mode(regs)) {
++			pagefault_disable();
++			ret = get_user(regs->nip, &inst);
++			pagefault_enable();
++		} else {
++			ret = probe_kernel_address(regs->nip, inst);
++		}
++
++		if (mcheck_handle_load(regs, inst)) {
++			regs->nip += 4;
++			return 1;
++		}
++	}
++
++	return 0;
++}
++#endif
++
+ #if defined(CONFIG_FSL_SOC_BOOKE) || defined(CONFIG_PPC_86xx)
+ static const struct of_device_id pci_ids[] = {
+ 	{ .compatible = "fsl,mpc8540-pci", },
+diff --git a/arch/powerpc/sysdev/fsl_pci.h b/arch/powerpc/sysdev/fsl_pci.h
+index 851dd56..b0d01ea 100644
+--- a/arch/powerpc/sysdev/fsl_pci.h
++++ b/arch/powerpc/sysdev/fsl_pci.h
+@@ -115,5 +115,11 @@ static inline int mpc85xx_pci_err_probe(struct platform_device *op)
+ }
+ #endif
+ 
++#ifdef CONFIG_FSL_PCI
++extern int fsl_pci_mcheck_exception(struct pt_regs *);
++#else
++static inline int fsl_pci_mcheck_exception(struct pt_regs *regs) {return 0; }
++#endif
++
+ #endif /* __POWERPC_FSL_PCI_H */
+ #endif /* __KERNEL__ */
+-- 
+1.8.0
