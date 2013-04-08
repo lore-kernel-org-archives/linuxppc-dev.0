@@ -1,26 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 66F032C00C9
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Apr 2013 16:44:28 +1000 (EST)
-Message-ID: <1365403141.31207.16.camel@pasglop>
-Subject: Re: [PATCH 3/3] powerpc: Set default VGA device
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-Date: Mon, 08 Apr 2013 08:39:01 +0200
-In-Reply-To: <20130408052124.GA9550@concordia>
-References: <201304042158.r34LwGPg010714@d03av02.boulder.ibm.com>
- <CAErSpo4LsJjRkw6UektwqW8m1NXdU6BTjhTDA9eORM3z3qDcdA@mail.gmail.com>
- <20130408052124.GA9550@concordia>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.pcug.org.au [203.10.76.10])
+ by ozlabs.org (Postfix) with ESMTP id 72C342C00AD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Apr 2013 17:54:09 +1000 (EST)
+Date: Mon, 8 Apr 2013 17:54:02 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Linus <torvalds@linux-foundation.org>
+Subject: [git pull] Please pull another powerpc fix
+Message-Id: <20130408175402.8d12d92737b1722865db45d3@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: sparclinux@vger.kernel.org,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- klebers <klebers@linux.vnet.ibm.com>, Brian King <brking@linux.vnet.ibm.com>,
- Lucas Kannebley Tavares <lucaskt@linux.vnet.ibm.com>,
- Bjorn Helgaas <bhelgaas@google.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Mon__8_Apr_2013_17_54_02_+1000_+0rYtDrClgJo7Zpq"
+Cc: Michael Wolf <mjw@linux.vnet.ibm.com>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, paulus@samba.org,
+ LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,45 +23,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-04-08 at 15:21 +1000, Michael Ellerman wrote:
+--Signature=_Mon__8_Apr_2013_17_54_02_+1000_+0rYtDrClgJo7Zpq
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Looking at x86, ia64 and ours, there's a fair bit of difference.
-> 
-> x86/ia64 both walk up the parents checking PCI_BRIDGE_CTL_VGA, which
-> powerpc doesn't (though maybe it should?).
+The following changes since commit 875b7679abbb232b584f2eec59fa6e45690dd6c4:
 
-Unclear for several reasons.
+  Merge git://git.kernel.org/pub/scm/virt/kvm/kvm (2013-04-07 13:01:25 -070=
+0)
 
-That bit indicates that the bridge forwards the hard coded legacy VGA IO
-ports and memory aperture. These are not necessary to get modern video
-cards going. Only if legacy modes are used.
+are available in the git repository at:
 
-On x86, that tends to be the case (is it always even with EFI
-nowadays ?).
 
-On other architectures that is not necessarily the case. The firmware
-can (and will) initialize the card using MMIO entirely and even if
-possible disabling the legacy stuff, which means that turning those bits
-on in the bridge is also unnecessary.
+  git://git.kernel.org/pub/scm/linux/kernel/git/sfr/next-fixes.git tags/for=
+-linus
 
-In fact, on such setups, the isn't really a concept of a "primary" video
-card to begin with.
+for you to fetch changes up to 9fb2640159f9d4f5a2a9d60e490482d4cbecafdb:
 
-On the other hand, that also means that a video card initialized like
-that is pretty much out of the grasp of the vga arbiter which has no
-effect on it either.
+  powerpc: pSeries_lpar_hpte_remove fails from Adjunct partition being perf=
+ormed before the ANDCOND test (2013-04-08 15:19:09 +1000)
 
-Also be careful that while it may be relevant on x86, the VGA fwd bit is
-not on the PCIe root complex on IBM machines.
+----------------------------------------------------------------
+A single BUG_ON fix for a condition that could happen for machines with
+certain hardware installed.
 
-Finally, P8 has no IO space at all...
+----------------------------------------------------------------
+Michael Wolf (1):
+      powerpc: pSeries_lpar_hpte_remove fails from Adjunct partition being =
+performed before the ANDCOND test
 
-> x86/ia64 set IORESOURCE_ROM_SHADOW, which powerpc doesn't.
-> 
-> ia64 doesn't call vga_set_default_device(), x86 and powerpc do.
-> 
-> So we'll merge this and maybe someone can tease out the common bits, but
-> personally I don't see that there's an obvious chunk of generic logic.
+ arch/powerpc/platforms/pseries/lpar.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
+--=20
 Cheers,
-Ben.
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Mon__8_Apr_2013_17_54_02_+1000_+0rYtDrClgJo7Zpq
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJRYneaAAoJEECxmPOUX5FEjO8P/2GyzHtxbP+NaV77KyrTYMs3
+sWs2fgPCB0Wuz06XhGy5FZEamii+nf9cSDQX82rC2L5AcMbFr5wBfs04/6wy2ViA
+EzZ6LdN/o+FRs7HG0DTQdPtNtisAYNIp97BPZk926Tsp/pOUNgQLMR5L6Pwk37qP
+cDc4VnerwG8u6KjqupsInKe8ZDsj3mAPMdOQ2qImEIQ8fs9AxCJJgXaZR2fSZ7Ux
+fMOjqjw5lywdVw2wSUelgLFIQATITlWBGEpHtQPO327z+wEeq4yP7mRPferrMhfi
+Cmy0WeeFC/lbMvm/P0RhQPkwsm/BA87lSzkuh9siEdXjpXiYDeVZ4phgR4kxM04E
+zj2dy0ceT3huC2avj271X9tlLDXG72XnNQmu/kWi4vqtfiCnRBaYnXdzmCpdO+8s
+mRkwlbjUu+6VuesFZNkqRd8m83rUrKXhqGhyTYlXRx9SWAq3PCt5YfiUCTpbx6Om
+QrgyTcIJeiKpKplgbWc/0ic86hHMmFJwIXGCHXSmZVrIA/whqX32LzqtgWbdSod5
+3ONs0TtfSG5BvVmhvPHogeeA4AYSuy+zLPW/7zYNLbDQNBw0jJU5PB8izkiyPHSq
+yz4xVKmsGcDJDC9HIBdlix/IB5cdpWYGlwKNsLSFDhginlirliW6u1+ZUaOyQExP
+LSbSGhFcGgPfZqsuwdVz
+=WGP/
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__8_Apr_2013_17_54_02_+1000_+0rYtDrClgJo7Zpq--
