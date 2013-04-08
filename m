@@ -1,39 +1,25 @@
-Return-Path: <azanella@linux.vnet.ibm.com>
-Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e24smtp04.br.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D00AE2C00B8
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2013 00:06:16 +1000 (EST)
-Received: from /spool/local
- by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <azanella@linux.vnet.ibm.com>;
- Mon, 8 Apr 2013 11:06:10 -0300
-Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id C731D1DC0060
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Apr 2013 10:06:07 -0400 (EDT)
-Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
- by d24relay01.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r38E3dhR1892406
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Apr 2013 11:03:40 -0300
-Received: from d24av05.br.ibm.com (loopback [127.0.0.1])
- by d24av05.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r38E66Pf030984
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Apr 2013 11:06:06 -0300
-Received: from [9.8.14.240] ([9.8.14.240])
- by d24av05.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
- r38E66SD030974
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Apr 2013 11:06:06 -0300
-Message-ID: <5162CEBE.1020607@linux.vnet.ibm.com>
-Date: Mon, 08 Apr 2013 11:05:50 -0300
-From: Adhemerval Zanella <azanella@linux.vnet.ibm.com>
+Return-Path: <bhelgaas@google.com>
+Received: from mail-ob0-x22b.google.com (mail-ob0-x22b.google.com
+ [IPv6:2607:f8b0:4003:c01::22b])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CF8112C00A4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2013 03:20:33 +1000 (EST)
+Received: by mail-ob0-f171.google.com with SMTP id v19so2882268obq.30
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Apr 2013 10:20:28 -0700 (PDT)
 MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] [RFC] powerpc: Add VDSO version of time
-References: <5148C2B3.6010408@linux.vnet.ibm.com>
- <20130405062137.GA5082@concordia>
-In-Reply-To: <20130405062137.GA5082@concordia>
+In-Reply-To: <201304081305.r38D5765032748@d01av04.pok.ibm.com>
+References: <201304081305.r38D5765032748@d01av04.pok.ibm.com>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Mon, 8 Apr 2013 11:20:08 -0600
+Message-ID: <CAErSpo45Zok=cpVzvb8ugaoJCjJYQa7z1nOZTfZ6-q9buGFLFQ@mail.gmail.com>
+Subject: Re: [PATCH 1/2] pci: Set dev->dev.type in alloc_pci_dev
+To: Brian King <brking@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
+Cc: klebers <klebers@linux.vnet.ibm.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Lucas Kannebley Tavares <lucaskt@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,25 +29,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/05/2013 03:21 AM, Michael Ellerman wrote:
-> On Tue, Mar 19, 2013 at 04:55:31PM -0300, Adhemerval Zanella wrote:
->> Hi all,
->>
->> This patch implement the time syscall as vDSO. I have a glibc patch
->> to use it as IFUNC (as latest gettimeofday patch). Below the perf
->> numbers:
->>
->> Baseline PPC32: 380 nsec
->> Baseline PPC64: 352 nsec
->> vdso PPC32:      20 nsec
->> vdso PPC64:      20 nsec
->>
->> I focused on 64 bit kernel, do I need to provide a scheme for 32 bits
->> as well?
-> You did provide a 32-bit implementation. I take it you haven't tested
-> that though? Can you test it?
+On Mon, Apr 8, 2013 at 7:05 AM, Brian King <brking@linux.vnet.ibm.com> wrote:
+>
+> Set dev->dev.type in alloc_pci_dev so that archs that have their own
+> versions of pci_setup_device get this set properly in order to ensure
+> things like the boot_vga sysfs parameter get created as expected.
+>
+> Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
 
-Hi,
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
 
-I didn't build a 32 bit kernel, but I tested 32 bits binaries (that uses
-the VDSO32 implantation) without any issue. Performance gains are similar.
+Feel free to put this in the powerpc tree along with the "set default
+VGA device" patch.
+
+> ---
+>
+>  drivers/pci/probe.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff -puN drivers/pci/probe.c~pci_set_dev_type_early drivers/pci/probe.c
+> --- linux/drivers/pci/probe.c~pci_set_dev_type_early    2013-04-08 06:12:51.000000000 -0500
+> +++ linux-bjking1/drivers/pci/probe.c   2013-04-08 06:14:33.000000000 -0500
+> @@ -988,7 +988,6 @@ int pci_setup_device(struct pci_dev *dev
+>         dev->sysdata = dev->bus->sysdata;
+>         dev->dev.parent = dev->bus->bridge;
+>         dev->dev.bus = &pci_bus_type;
+> -       dev->dev.type = &pci_dev_type;
+>         dev->hdr_type = hdr_type & 0x7f;
+>         dev->multifunction = !!(hdr_type & 0x80);
+>         dev->error_state = pci_channel_io_normal;
+> @@ -1208,6 +1207,7 @@ struct pci_dev *alloc_pci_dev(void)
+>                 return NULL;
+>
+>         INIT_LIST_HEAD(&dev->bus_list);
+> +       dev->dev.type = &pci_dev_type;
+>
+>         return dev;
+>  }
+> _
+>
