@@ -1,24 +1,28 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-ob0-x22f.google.com (mail-ob0-x22f.google.com
- [IPv6:2607:f8b0:4003:c01::22f])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 75C922C00A2
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2013 19:47:14 +1000 (EST)
-Received: by mail-ob0-f175.google.com with SMTP id va7so6645380obc.6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Apr 2013 02:47:11 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1365496365-28450-1-git-send-email-Yuantian.Tang@freescale.com>
-References: <1365496365-28450-1-git-send-email-Yuantian.Tang@freescale.com>
-Date: Tue, 9 Apr 2013 15:17:11 +0530
-Message-ID: <CAKohpokVf0hCokDL62WeaUdYEBycf+Kh_cRgWxTR--_12xjEBA@mail.gmail.com>
-Subject: Re: [PATCH v4] cpufreq: powerpc: Add cpufreq driver for Freescale
+Return-Path: <B29983@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 5358D2C00BD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2013 20:04:17 +1000 (EST)
+From: Tang Yuantian-B29983 <B29983@freescale.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: RE: [PATCH v4] cpufreq: powerpc: Add cpufreq driver for Freescale
  e500mc SoCs
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Yuantian.Tang@freescale.com
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- cpufreq@vger.kernel.org, rjw@sisk.pl, linuxppc-dev@lists.ozlabs.org
+Date: Tue, 9 Apr 2013 10:04:11 +0000
+Message-ID: <D07C73A334FF604B95B3CBD2A545D07B0B12831E@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1365496365-28450-1-git-send-email-Yuantian.Tang@freescale.com>
+ <CAKohpokVf0hCokDL62WeaUdYEBycf+Kh_cRgWxTR--_12xjEBA@mail.gmail.com>
+In-Reply-To: <CAKohpokVf0hCokDL62WeaUdYEBycf+Kh_cRgWxTR--_12xjEBA@mail.gmail.com>
+Content-Type: text/plain; charset="gb2312"
+MIME-Version: 1.0
+Cc: Li Yang-R58472 <r58472@freescale.com>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
+ "rjw@sisk.pl" <rjw@sisk.pl>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,57 +32,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mostly good now, V5 should be the final one.
-
-On 9 April 2013 14:02,  <Yuantian.Tang@freescale.com> wrote:
-> diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
-
-> +static int corenet_cpufreq_target(struct cpufreq_policy *policy,
-> +               unsigned int target_freq, unsigned int relation)
-> +{
-> +       struct cpufreq_freqs freqs;
-> +       unsigned int new;
-> +       struct clk *parent;
-> +       int ret;
-> +       struct cpu_data *data = per_cpu(cpu_data, policy->cpu);
-> +
-> +       cpufreq_frequency_table_target(policy, data->table,
-> +                       target_freq, relation, &new);
-> +
-> +       if (policy->cur == data->table[new].frequency)
-> +               return 0;
-> +
-> +       freqs.old = policy->cur;
-> +       freqs.new = data->table[new].frequency;
-> +       freqs.cpu = policy->cpu;
-
-You don't need to set freqs.cpu..
-
-> +       mutex_lock(&cpufreq_lock);
-> +       cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
-> +
-> +       parent = of_clk_get(data->parent, new);
-> +       ret = clk_set_parent(data->clk, parent);
-> +       if (ret) {
-> +               freqs.new = freqs.old;
-> +               cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
-> +               mutex_unlock(&cpufreq_lock);
-> +               return ret;
-> +       }
-> +
-> +       cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
-> +       mutex_unlock(&cpufreq_lock);
-
-What about writing it as:
-
-+       ret = clk_set_parent(data->clk, parent);
-+       if (ret)
-+               freqs.new = freqs.old;
-+
-+       cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
-+       mutex_unlock(&cpufreq_lock);
-
-return ret;
-
-> +       return 0;
-> +}
+VGhhbmtzLCB5b3UgbWFrZSBteSBjb2RlIGxvb2sgYmV0dGVyIGVhY2ggcmV2aWV3Lg0KDQpUaGFu
+a3MsDQpZdWFudGlhbg0KDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTog
+VmlyZXNoIEt1bWFyIFttYWlsdG86dmlyZXNoLmt1bWFyQGxpbmFyby5vcmddDQo+IFNlbnQ6IDIw
+MTPE6jTUwjnI1SAxNzo0Nw0KPiBUbzogVGFuZyBZdWFudGlhbi1CMjk5ODMNCj4gQ2M6IHJqd0Bz
+aXNrLnBsOyBjcHVmcmVxQHZnZXIua2VybmVsLm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3Jn
+Ow0KPiBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBsaW51eHBwYy1kZXZAbGlzdHMub3ps
+YWJzLm9yZzsgTGkgWWFuZy0NCj4gUjU4NDcyDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjRdIGNw
+dWZyZXE6IHBvd2VycGM6IEFkZCBjcHVmcmVxIGRyaXZlciBmb3INCj4gRnJlZXNjYWxlIGU1MDBt
+YyBTb0NzDQo+IA0KPiBNb3N0bHkgZ29vZCBub3csIFY1IHNob3VsZCBiZSB0aGUgZmluYWwgb25l
+Lg0KPiANCj4gT24gOSBBcHJpbCAyMDEzIDE0OjAyLCAgPFl1YW50aWFuLlRhbmdAZnJlZXNjYWxl
+LmNvbT4gd3JvdGU6DQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvY3B1ZnJlcS9wcGMtY29yZW5l
+dC1jcHVmcmVxLmMNCj4gPiBiL2RyaXZlcnMvY3B1ZnJlcS9wcGMtY29yZW5ldC1jcHVmcmVxLmMN
+Cj4gDQo+ID4gK3N0YXRpYyBpbnQgY29yZW5ldF9jcHVmcmVxX3RhcmdldChzdHJ1Y3QgY3B1ZnJl
+cV9wb2xpY3kgKnBvbGljeSwNCj4gPiArICAgICAgICAgICAgICAgdW5zaWduZWQgaW50IHRhcmdl
+dF9mcmVxLCB1bnNpZ25lZCBpbnQgcmVsYXRpb24pIHsNCj4gPiArICAgICAgIHN0cnVjdCBjcHVm
+cmVxX2ZyZXFzIGZyZXFzOw0KPiA+ICsgICAgICAgdW5zaWduZWQgaW50IG5ldzsNCj4gPiArICAg
+ICAgIHN0cnVjdCBjbGsgKnBhcmVudDsNCj4gPiArICAgICAgIGludCByZXQ7DQo+ID4gKyAgICAg
+ICBzdHJ1Y3QgY3B1X2RhdGEgKmRhdGEgPSBwZXJfY3B1KGNwdV9kYXRhLCBwb2xpY3ktPmNwdSk7
+DQo+ID4gKw0KPiA+ICsgICAgICAgY3B1ZnJlcV9mcmVxdWVuY3lfdGFibGVfdGFyZ2V0KHBvbGlj
+eSwgZGF0YS0+dGFibGUsDQo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgdGFyZ2V0X2ZyZXEs
+IHJlbGF0aW9uLCAmbmV3KTsNCj4gPiArDQo+ID4gKyAgICAgICBpZiAocG9saWN5LT5jdXIgPT0g
+ZGF0YS0+dGFibGVbbmV3XS5mcmVxdWVuY3kpDQo+ID4gKyAgICAgICAgICAgICAgIHJldHVybiAw
+Ow0KPiA+ICsNCj4gPiArICAgICAgIGZyZXFzLm9sZCA9IHBvbGljeS0+Y3VyOw0KPiA+ICsgICAg
+ICAgZnJlcXMubmV3ID0gZGF0YS0+dGFibGVbbmV3XS5mcmVxdWVuY3k7DQo+ID4gKyAgICAgICBm
+cmVxcy5jcHUgPSBwb2xpY3ktPmNwdTsNCj4gDQo+IFlvdSBkb24ndCBuZWVkIHRvIHNldCBmcmVx
+cy5jcHUuLg0KPiANCj4gPiArICAgICAgIG11dGV4X2xvY2soJmNwdWZyZXFfbG9jayk7DQo+ID4g
+KyAgICAgICBjcHVmcmVxX25vdGlmeV90cmFuc2l0aW9uKHBvbGljeSwgJmZyZXFzLCBDUFVGUkVR
+X1BSRUNIQU5HRSk7DQo+ID4gKw0KPiA+ICsgICAgICAgcGFyZW50ID0gb2ZfY2xrX2dldChkYXRh
+LT5wYXJlbnQsIG5ldyk7DQo+ID4gKyAgICAgICByZXQgPSBjbGtfc2V0X3BhcmVudChkYXRhLT5j
+bGssIHBhcmVudCk7DQo+ID4gKyAgICAgICBpZiAocmV0KSB7DQo+ID4gKyAgICAgICAgICAgICAg
+IGZyZXFzLm5ldyA9IGZyZXFzLm9sZDsNCj4gPiArICAgICAgICAgICAgICAgY3B1ZnJlcV9ub3Rp
+ZnlfdHJhbnNpdGlvbihwb2xpY3ksICZmcmVxcywNCj4gQ1BVRlJFUV9QT1NUQ0hBTkdFKTsNCj4g
+PiArICAgICAgICAgICAgICAgbXV0ZXhfdW5sb2NrKCZjcHVmcmVxX2xvY2spOw0KPiA+ICsgICAg
+ICAgICAgICAgICByZXR1cm4gcmV0Ow0KPiA+ICsgICAgICAgfQ0KPiA+ICsNCj4gPiArICAgICAg
+IGNwdWZyZXFfbm90aWZ5X3RyYW5zaXRpb24ocG9saWN5LCAmZnJlcXMsIENQVUZSRVFfUE9TVENI
+QU5HRSk7DQo+ID4gKyAgICAgICBtdXRleF91bmxvY2soJmNwdWZyZXFfbG9jayk7DQo+IA0KPiBX
+aGF0IGFib3V0IHdyaXRpbmcgaXQgYXM6DQo+IA0KPiArICAgICAgIHJldCA9IGNsa19zZXRfcGFy
+ZW50KGRhdGEtPmNsaywgcGFyZW50KTsNCj4gKyAgICAgICBpZiAocmV0KQ0KPiArICAgICAgICAg
+ICAgICAgZnJlcXMubmV3ID0gZnJlcXMub2xkOw0KPiArDQo+ICsgICAgICAgY3B1ZnJlcV9ub3Rp
+ZnlfdHJhbnNpdGlvbihwb2xpY3ksICZmcmVxcywgQ1BVRlJFUV9QT1NUQ0hBTkdFKTsNCj4gKyAg
+ICAgICBtdXRleF91bmxvY2soJmNwdWZyZXFfbG9jayk7DQo+IA0KPiByZXR1cm4gcmV0Ow0KPiAN
+Cj4gPiArICAgICAgIHJldHVybiAwOw0KPiA+ICt9DQoNCg==
