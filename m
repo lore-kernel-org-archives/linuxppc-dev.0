@@ -1,22 +1,24 @@
-Return-Path: <geert@linux-m68k.org>
-Received: from winston.telenet-ops.be (winston.telenet-ops.be [195.130.137.75])
- by ozlabs.org (Postfix) with ESMTP id 3E8DA2C00F2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2013 07:07:06 +1000 (EST)
-Received: from gerard.telenet-ops.be (gerard.telenet-ops.be [195.130.132.48])
- by winston.telenet-ops.be (Postfix) with ESMTP id 26B6A1BC67B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2013 23:07:03 +0200 (CEST)
-Date: Tue, 9 Apr 2013 23:07:02 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Sender: geert@linux-m68k.org
-To: Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: Build regressions/improvements in v3.9-rc6
-In-Reply-To: <alpine.DEB.2.00.1304092304220.23715@ayla.of.borg>
-Message-ID: <alpine.DEB.2.00.1304092304550.23730@ayla.of.borg>
-References: <alpine.DEB.2.00.1304092304220.23715@ayla.of.borg>
+Return-Path: <R1AAHA@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 5A5AE2C00B6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2013 08:35:38 +1000 (EST)
+Date: Tue, 9 Apr 2013 17:31:58 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Vakul Garg <vakul@freescale.com>
+Subject: Re: [PATCH] powerpc/crypto: Add property for 'era' in SEC dts
+ crypto node
+Message-ID: <20130409173158.5eb44856b3304a34b6060dbf@freescale.com>
+In-Reply-To: <1365508233-26292-1-git-send-email-vakul@freescale.com>
+References: <1365508233-26292-1-git-send-email-vakul@freescale.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Linux/PPC Development <linuxppc-dev@lists.ozlabs.org>,
- linux-sh@vger.kernel.org
+Content-Type: text/plain; charset="US-ASCII"
+Cc: Shaveta Leekha <shaveta@freescale.com>, linux-kernel@vger.kernel.org,
+ Andy Fleming <afleming@freescale.com>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,32 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 9 Apr 2013, Geert Uytterhoeven wrote:
-> JFYI, when comparing v3.9-rc6 to v3.9-rc5[3], the summaries are:
->   - build errors: +8/-13
+On Tue, 9 Apr 2013 17:20:33 +0530
+Vakul Garg <vakul@freescale.com> wrote:
 
-Ignoring R_PPC64_REL24 truncated relocations, as usual:
+> The crypto node now contains a new property 'fsl,sec-era'.
+> This is required so that applications can retrieve era info without
+> having to be able to read SEC's register space.
+> 
+> Signed-off-by: Vakul Garg <vakul@freescale.com>
+> ---
+>  arch/powerpc/boot/dts/fsl/pq3-sec4.4-0.dtsi   |    1 +
+>  arch/powerpc/boot/dts/fsl/qoriq-sec4.0-0.dtsi |    1 +
+>  arch/powerpc/boot/dts/fsl/qoriq-sec4.2-0.dtsi |    1 +
+>  arch/powerpc/boot/dts/fsl/qoriq-sec5.0-0.dtsi |    1 +
+>  arch/powerpc/boot/dts/fsl/qoriq-sec5.2-0.dtsi |    1 +
+>  arch/powerpc/boot/dts/fsl/qoriq-sec5.3-0.dtsi |    1 +
+>  6 files changed, 6 insertions(+), 0 deletions(-)
 
-  + error: binder.c: undefined reference to `get_vm_area':  => .text+0x2fe8b8)
-  + error: binder.c: undefined reference to `map_vm_area':  => .text+0x2fa11c) 
-  + error: binder.c: undefined reference to `zap_page_range':  => .text+0x2fa354)
+missing p1023si-post.dtsi and qoriq-sec4.1-0.dtsi files.
 
-sh4/sh-randconfig
-
-  + error: cuboot-pq2.c: undefined reference to `fsl_get_immr':  => .text+0x314)
-
-powerpc-randconfig
-
-> [1] http://kisskb.ellerman.id.au/kisskb/head/6063/ (all 118 configs)
-> [3] http://kisskb.ellerman.id.au/kisskb/head/6041/ (all 118 configs)
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Kim
