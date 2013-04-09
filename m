@@ -1,22 +1,15 @@
 Return-Path: <B29983@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0189.outbound.messaging.microsoft.com [213.199.154.189])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E256F2C00BA
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2013 19:11:43 +1000 (EST)
 From: <Yuantian.Tang@freescale.com>
-To: <rjw@sisk.pl>
-Subject: [PATCH v4] cpufreq: powerpc: Add cpufreq driver for Freescale e500mc
- SoCs
-Date: Tue, 9 Apr 2013 16:32:45 +0800
-Message-ID: <1365496365-28450-1-git-send-email-Yuantian.Tang@freescale.com>
+To: <mturquette@linaro.org>
+Subject: [PATCH v3] clk: add PowerPC corenet clock driver support
+Date: Tue, 9 Apr 2013 16:46:26 +0800
+Message-ID: <1365497187-8305-1-git-send-email-Yuantian.Tang@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: linux-pm@vger.kernel.org, viresh.kumar@linaro.org,
- linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org,
- Tang Yuantian <Yuantian.Tang@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Cc: ulf.hansson@linaro.org, linux-doc@vger.kernel.org, viresh.kumar@linaro.org,
+ devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Tang Yuantian <Yuantian.Tang@freescale.com>, shawn.guo@linaro.org,
+ linuxppc-dev@lists.ozlabs.org, linus.walleij@linaro.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,324 +21,348 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Tang Yuantian <yuantian.tang@freescale.com>
 
-Add cpufreq driver for Freescale e500mc, e5500 and e6500 SoCs
-which are capable of changing the CPU frequency dynamically
+This adds the clock driver for Freescale PowerPC corenet
+series SoCs using common clock infrastructure.
 
 Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
 Signed-off-by: Li Yang <leoli@freescale.com>
 ---
-v4:
-	- rebase on bleeding-edge branch of Rafael's linux-pm.git 
-	- #define pr_fmt() for better debug prints
-	- use newest cpufreq_notify_transition()
-	- support CPU hotplug
-	- remove table[i].index as it is not used
-	- remove cpus_per_cluster
 v3:
-	- change sizeof(struct name).. to sizeof(*p)
-	- remove the struct cpufreq_data, use global variable instead
-	- resolve setting policy->cpus incorrectly
-	- add CPUFREQ_POSTCHANGE notifier when setting frequency error
+	- remove the module author and description
 v2:
-	- add depends on OF and COMMON_CLK in Kconfig
-	- use clk.h instead of clk-provider.h
-	- change per_cpu variable from struct to pointer
+	- add the document for device tree clock bindings
 
- drivers/cpufreq/Kconfig.powerpc       |  10 ++
- drivers/cpufreq/Makefile              |   1 +
- drivers/cpufreq/ppc-corenet-cpufreq.c | 254 ++++++++++++++++++++++++++++++++++
- 3 files changed, 265 insertions(+)
- create mode 100644 drivers/cpufreq/ppc-corenet-cpufreq.c
+ arch/powerpc/platforms/Kconfig.cputype |   1 +
+ drivers/clk/Kconfig                    |   7 +
+ drivers/clk/Makefile                   |   1 +
+ drivers/clk/clk-ppc-corenet.c          | 280 +++++++++++++++++++++++++++++++++
+ 4 files changed, 289 insertions(+)
+ create mode 100644 drivers/clk/clk-ppc-corenet.c
 
-diff --git a/drivers/cpufreq/Kconfig.powerpc b/drivers/cpufreq/Kconfig.powerpc
-index 9c926ca..88f629e 100644
---- a/drivers/cpufreq/Kconfig.powerpc
-+++ b/drivers/cpufreq/Kconfig.powerpc
-@@ -23,3 +23,13 @@ config CPU_FREQ_MAPLE
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index 18e3b76..cf065b8 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -158,6 +158,7 @@ config E500
+ config PPC_E500MC
+ 	bool "e500mc Support"
+ 	select PPC_FPU
++	select COMMON_CLK
+ 	depends on E500
  	help
- 	  This adds support for frequency switching on Maple 970FX
- 	  Evaluation Board and compatible boards (IBM JS2x blades).
-+
-+config PPC_CORENET_CPUFREQ
-+	tristate "CPU frequency scaling driver for Freescale E500MC SoCs"
-+	depends on PPC_E500MC && OF && COMMON_CLK
-+	select CPU_FREQ_TABLE
-+	select CLK_PPC_CORENET
-+	help
-+	  This adds the CPUFreq driver support for Freescale e500mc,
-+	  e5500 and e6500 series SoCs which are capable of changing
-+	  the CPU's frequency dynamically.
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index 6ad0b91..5125034 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -84,6 +84,7 @@ obj-$(CONFIG_CPU_FREQ_CBE)		+= ppc-cbe-cpufreq.o
- ppc-cbe-cpufreq-y			+= ppc_cbe_cpufreq_pervasive.o ppc_cbe_cpufreq.o
- obj-$(CONFIG_CPU_FREQ_CBE_PMI)		+= ppc_cbe_cpufreq_pmi.o
- obj-$(CONFIG_CPU_FREQ_MAPLE)		+= maple-cpufreq.o
-+obj-$(CONFIG_PPC_CORENET_CPUFREQ)   += ppc-corenet-cpufreq.o
+ 	  This must be enabled for running on e500mc (and derivatives
+diff --git a/drivers/clk/Kconfig b/drivers/clk/Kconfig
+index a47e6ee..6e2fd9c 100644
+--- a/drivers/clk/Kconfig
++++ b/drivers/clk/Kconfig
+@@ -63,6 +63,13 @@ config CLK_TWL6040
+ 	  McPDM. McPDM module is using the external bit clock on the McPDM bus
+ 	  as functional clock.
  
- ##################################################################################
- # Other platform drivers
-diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
++config CLK_PPC_CORENET
++	bool "Clock driver for PowerPC corenet platforms"
++	depends on PPC_E500MC && OF
++	---help---
++	  This adds the clock driver support for Freescale PowerPC corenet
++	  platforms using common clock framework.
++
+ endmenu
+ 
+ source "drivers/clk/mvebu/Kconfig"
+diff --git a/drivers/clk/Makefile b/drivers/clk/Makefile
+index 300d477..6720319 100644
+--- a/drivers/clk/Makefile
++++ b/drivers/clk/Makefile
+@@ -34,3 +34,4 @@ obj-$(CONFIG_X86)		+= x86/
+ obj-$(CONFIG_COMMON_CLK_WM831X) += clk-wm831x.o
+ obj-$(CONFIG_COMMON_CLK_MAX77686) += clk-max77686.o
+ obj-$(CONFIG_CLK_TWL6040)	+= clk-twl6040.o
++obj-$(CONFIG_CLK_PPC_CORENET)	+= clk-ppc-corenet.o
+diff --git a/drivers/clk/clk-ppc-corenet.c b/drivers/clk/clk-ppc-corenet.c
 new file mode 100644
-index 0000000..e230282
+index 0000000..a2d483f
 --- /dev/null
-+++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
-@@ -0,0 +1,254 @@
++++ b/drivers/clk/clk-ppc-corenet.c
+@@ -0,0 +1,280 @@
 +/*
 + * Copyright 2013 Freescale Semiconductor, Inc.
-+ *
-+ * CPU Frequency Scaling driver for Freescale PowerPC corenet SoCs.
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License version 2 as
 + * published by the Free Software Foundation.
++ *
++ * clock driver for Freescale PowerPC corenet SoCs.
 + */
-+
-+#define pr_fmt(fmt)	KBUILD_MODNAME ": " fmt
-+
-+#include <linux/clk.h>
-+#include <linux/cpufreq.h>
-+#include <linux/errno.h>
-+#include <linux/init.h>
++#include <linux/clk-provider.h>
++#include <linux/io.h>
 +#include <linux/kernel.h>
 +#include <linux/module.h>
-+#include <linux/mutex.h>
++#include <linux/of_platform.h>
 +#include <linux/of.h>
 +#include <linux/slab.h>
 +
-+/**
-+ * struct cpu_data - per CPU data struct
-+ * @clk: the clk of CPU
-+ * @parent: the parent node of cpu clock
-+ * @table: frequency table
-+ */
-+struct cpu_data {
-+	struct clk *clk;
-+	struct device_node *parent;
-+	struct cpufreq_frequency_table *table;
++struct cmux_clk {
++	struct clk_hw hw;
++	void __iomem *reg;
++	u32 flags;
 +};
 +
-+/* serialize frequency changes  */
-+static DEFINE_MUTEX(cpufreq_lock);
-+static DEFINE_PER_CPU(struct cpu_data *, cpu_data);
++#define PLL_KILL			BIT(31)
++#define	CLKSEL_SHIFT		27
++#define CLKSEL_ADJUST		BIT(0)
++#define to_cmux_clk(p)		container_of(p, struct cmux_clk, hw)
 +
-+static unsigned int corenet_cpufreq_get_speed(unsigned int cpu)
++static void __iomem *base;
++static unsigned int clocks_per_pll;
++
++static int cmux_set_parent(struct clk_hw *hw, u8 idx)
 +{
-+	struct cpu_data *data = per_cpu(cpu_data, cpu);
++	struct cmux_clk *clk = to_cmux_clk(hw);
++	u32 clksel;
 +
-+	return clk_get_rate(data->clk) / 1000;
++	clksel = ((idx / clocks_per_pll) << 2) + idx % clocks_per_pll;
++	if (clk->flags & CLKSEL_ADJUST)
++		clksel += 8;
++	clksel = (clksel & 0xf) << CLKSEL_SHIFT;
++	iowrite32be(clksel, clk->reg);
++
++	return 0;
 +}
 +
-+/* reduce the duplicated frequency in frequency table */
-+static void freq_table_redup(struct cpufreq_frequency_table *freq_table,
-+		int count)
++static u8 cmux_get_parent(struct clk_hw *hw)
 +{
-+	int i, j;
++	struct cmux_clk *clk = to_cmux_clk(hw);
++	u32 clksel;
 +
-+	for (i = 1; i < count; i++) {
-+		for (j = 0; j < i; j++) {
-+			if (freq_table[j].frequency == CPUFREQ_ENTRY_INVALID ||
-+					freq_table[j].frequency !=
-+					freq_table[i].frequency)
-+				continue;
++	clksel = ioread32be(clk->reg);
++	clksel = (clksel >> CLKSEL_SHIFT) & 0xf;
++	if (clk->flags & CLKSEL_ADJUST)
++		clksel -= 8;
++	clksel = (clksel >> 2) * clocks_per_pll + clksel % 4;
 +
-+			freq_table[i].frequency = CPUFREQ_ENTRY_INVALID;
-+			break;
-+		}
-+	}
++	return clksel;
 +}
 +
-+static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
++const struct clk_ops cmux_ops = {
++	.get_parent = cmux_get_parent,
++	.set_parent = cmux_set_parent,
++};
++
++static void __init core_mux_init(struct device_node *np)
 +{
-+	struct device_node *np;
-+	int i, count, ret;
 +	struct clk *clk;
-+	struct cpufreq_frequency_table *table;
-+	struct cpu_data *data;
-+	unsigned int cpu = policy->cpu;
++	struct clk_init_data init;
++	struct cmux_clk *cmux_clk;
++	struct device_node *node;
++	int rc, count, i;
++	u32	offset;
++	const char *clk_name;
++	const char **parent_names;
 +
-+	np = of_get_cpu_node(cpu, NULL);
-+	if (!np)
-+		return -ENODEV;
-+
-+	data = kzalloc(sizeof(*data), GFP_KERNEL);
-+	if (!data) {
-+		pr_err("%s: no memory\n", __func__);
-+		goto err_np;
++	rc = of_property_read_u32(np, "reg", &offset);
++	if (rc) {
++		pr_err("%s: could not get reg property\n", np->name);
++		return;
 +	}
 +
-+	data->clk = of_clk_get(np, 0);
-+	if (IS_ERR(data->clk)) {
-+		pr_err("%s: no clock information\n", __func__);
-+		goto err_nomem2;
++	/* get the input clock source count */
++	count = of_property_count_strings(np, "clock-names");
++	if (count < 0) {
++		pr_err("%s: get clock count error\n", np->name);
++		return;
++	}
++	parent_names = kzalloc((sizeof(char *) * count), GFP_KERNEL);
++	if (!parent_names) {
++		pr_err("%s: could not allocate parent_names\n", __func__);
++		return;
 +	}
 +
-+	data->parent = of_parse_phandle(np, "clocks", 0);
-+	if (!data->parent) {
-+		pr_err("%s: could not get clock information\n", __func__);
-+		goto err_nomem2;
++	for (i = 0; i < count; i++)
++		parent_names[i] = of_clk_get_parent_name(np, i);
++
++	cmux_clk = kzalloc(sizeof(struct cmux_clk), GFP_KERNEL);
++	if (!cmux_clk) {
++		pr_err("%s: could not allocate cmux_clk\n", __func__);
++		goto err_name;
++	}
++	cmux_clk->reg = base + offset;
++
++	node = of_find_compatible_node(NULL, NULL, "fsl,p4080-clockgen");
++	if (node && (offset >= 0x80))
++		cmux_clk->flags = CLKSEL_ADJUST;
++
++	rc = of_property_read_string_index(np, "clock-output-names",
++			0, &clk_name);
++	if (rc) {
++		pr_err("%s: read clock names error\n", np->name);
++		goto err_clk;
 +	}
 +
-+	count = of_property_count_strings(data->parent, "clock-names");
-+	table = kcalloc(count + 1, sizeof(*table), GFP_KERNEL);
-+	if (!table) {
-+		pr_err("%s: no memory\n", __func__);
-+		goto err_node;
++	init.name = clk_name;
++	init.ops = &cmux_ops;
++	init.parent_names = parent_names;
++	init.num_parents = count;
++	init.flags = 0;
++	cmux_clk->hw.init = &init;
++
++	clk = clk_register(NULL, &cmux_clk->hw);
++	if (IS_ERR(clk)) {
++		pr_err("%s: could not register clock\n", clk_name);
++		goto err_clk;
++	}
++
++	rc = of_clk_add_provider(np, of_clk_src_simple_get, clk);
++	if (rc) {
++		pr_err("Could not register clock provider for node:%s\n",
++			 np->name);
++		goto err_clk;
++	}
++	goto err_name;
++
++err_clk:
++	kfree(cmux_clk);
++err_name:
++	/* free *_names because they are reallocated when registered */
++	kfree(parent_names);
++}
++
++static void __init core_pll_init(struct device_node *np)
++{
++	u32 offset, mult;
++	int i, rc, count;
++	const char *clk_name, *parent_name;
++	struct clk_onecell_data *onecell_data;
++	struct clk      **subclks;
++
++	rc = of_property_read_u32(np, "reg", &offset);
++	if (rc) {
++		pr_err("%s: could not get reg property\n", np->name);
++		return;
++	}
++
++	/* get the multiple of PLL */
++	mult = ioread32be(base + offset);
++
++	/* check if this PLL is disabled */
++	if (mult & PLL_KILL) {
++		pr_debug("PLL:%s is disabled\n", np->name);
++		return;
++	}
++	mult = (mult >> 1) & 0x3f;
++
++	parent_name = of_clk_get_parent_name(np, 0);
++	if (!parent_name) {
++		pr_err("PLL: %s must have a parent\n", np->name);
++		return;
++	}
++
++	count = of_property_count_strings(np, "clock-output-names");
++	if (count < 0 || count > 4) {
++		pr_err("%s: clock is not supported\n", np->name);
++		return;
++	}
++
++	/* output clock number per PLL */
++	clocks_per_pll = count;
++
++	subclks = kzalloc(sizeof(struct clk *) * count, GFP_KERNEL);
++	if (!subclks) {
++		pr_err("%s: could not allocate subclks\n", __func__);
++		return;
++	}
++
++	onecell_data = kzalloc(sizeof(struct clk_onecell_data), GFP_KERNEL);
++	if (!onecell_data) {
++		pr_err("%s: could not allocate onecell_data\n", __func__);
++		goto err_clks;
 +	}
 +
 +	for (i = 0; i < count; i++) {
-+		clk = of_clk_get(data->parent, i);
-+		table[i].frequency = clk_get_rate(clk) / 1000;
-+	}
-+	freq_table_redup(table, count);
-+	table[i].frequency = CPUFREQ_TABLE_END;
++		rc = of_property_read_string_index(np, "clock-output-names",
++				i, &clk_name);
++		if (rc) {
++			pr_err("%s: could not get clock names\n", np->name);
++			goto err_cell;
++		}
 +
-+	/* set the min and max frequency properly */
-+	ret = cpufreq_frequency_table_cpuinfo(policy, table);
-+	if (ret) {
-+		pr_err("invalid frequency table: %d\n", ret);
-+		goto err_nomem1;
-+	}
++		/*
++		 * when count == 4, there are 4 output clocks:
++		 * /1, /2, /3, /4 respectively
++		 * when count < 4, there are at least 2 output clocks:
++		 * /1, /2, (/4, if count == 3) respectively.
++		 */
++		if (count == 4)
++			subclks[i] = clk_register_fixed_factor(NULL, clk_name,
++					parent_name, 0, mult, 1 + i);
++		else
 +
-+	data->table = table;
-+	per_cpu(cpu_data, cpu) = data;
++			subclks[i] = clk_register_fixed_factor(NULL, clk_name,
++					parent_name, 0, mult, 1 << i);
 +
-+#ifdef CONFIG_SMP
-+	/* update ->cpus if we have cluster, no harm if not */
-+	cpumask_copy(policy->cpus, cpu_core_mask(cpu));
-+#endif
-+
-+	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
-+	policy->cur = corenet_cpufreq_get_speed(policy->cpu);
-+
-+	cpufreq_frequency_table_get_attr(table, cpu);
-+	of_node_put(np);
-+
-+	return 0;
-+
-+err_nomem1:
-+	kfree(table);
-+err_node:
-+	of_node_put(data->parent);
-+err_nomem2:
-+	per_cpu(cpu_data, cpu) = NULL;
-+	kfree(data);
-+err_np:
-+	of_node_put(np);
-+
-+	return -ENODEV;
-+}
-+
-+static int __exit corenet_cpufreq_cpu_exit(struct cpufreq_policy *policy)
-+{
-+	struct cpu_data *data = per_cpu(cpu_data, policy->cpu);
-+
-+	cpufreq_frequency_table_put_attr(policy->cpu);
-+	of_node_put(data->parent);
-+	kfree(data->table);
-+	kfree(data);
-+	per_cpu(cpu_data, policy->cpu) = NULL;
-+
-+	return 0;
-+}
-+
-+static int corenet_cpufreq_verify(struct cpufreq_policy *policy)
-+{
-+	struct cpufreq_frequency_table *table =
-+		per_cpu(cpu_data, policy->cpu)->table;
-+
-+	return cpufreq_frequency_table_verify(policy, table);
-+}
-+
-+static int corenet_cpufreq_target(struct cpufreq_policy *policy,
-+		unsigned int target_freq, unsigned int relation)
-+{
-+	struct cpufreq_freqs freqs;
-+	unsigned int new;
-+	struct clk *parent;
-+	int ret;
-+	struct cpu_data *data = per_cpu(cpu_data, policy->cpu);
-+
-+	cpufreq_frequency_table_target(policy, data->table,
-+			target_freq, relation, &new);
-+
-+	if (policy->cur == data->table[new].frequency)
-+		return 0;
-+
-+	freqs.old = policy->cur;
-+	freqs.new = data->table[new].frequency;
-+	freqs.cpu = policy->cpu;
-+
-+	mutex_lock(&cpufreq_lock);
-+	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
-+
-+	parent = of_clk_get(data->parent, new);
-+	ret = clk_set_parent(data->clk, parent);
-+	if (ret) {
-+		freqs.new = freqs.old;
-+		cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
-+		mutex_unlock(&cpufreq_lock);
-+		return ret;
++		if (IS_ERR(subclks[i])) {
++			pr_err("%s: could not register clock\n", clk_name);
++			goto err_cell;
++		}
 +	}
 +
-+	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
-+	mutex_unlock(&cpufreq_lock);
++	onecell_data->clks = subclks;
++	onecell_data->clk_num = count;
 +
-+	return 0;
++	rc = of_clk_add_provider(np, of_clk_src_onecell_get, onecell_data);
++	if (rc) {
++		pr_err("Could not register clk provider for node:%s\n",
++			 np->name);
++		goto err_cell;
++	}
++
++	return;
++err_cell:
++	kfree(onecell_data);
++err_clks:
++	kfree(subclks);
 +}
 +
-+static struct freq_attr *corenet_cpufreq_attr[] = {
-+	&cpufreq_freq_attr_scaling_available_freqs,
-+	NULL,
++static const struct of_device_id clk_match[] __initconst = {
++	{ .compatible = "fixed-clock", .data = of_fixed_clk_setup, },
++	{ .compatible = "fsl,core-pll-clock", .data = core_pll_init, },
++	{ .compatible = "fsl,core-mux-clock", .data = core_mux_init, },
++	{}
 +};
 +
-+static struct cpufreq_driver ppc_corenet_cpufreq_driver = {
-+	.name		= "ppc_cpufreq",
-+	.owner		= THIS_MODULE,
-+	.flags		= CPUFREQ_CONST_LOOPS,
-+	.init		= corenet_cpufreq_cpu_init,
-+	.exit		= __exit_p(corenet_cpufreq_cpu_exit),
-+	.verify		= corenet_cpufreq_verify,
-+	.target		= corenet_cpufreq_target,
-+	.get		= corenet_cpufreq_get_speed,
-+	.attr		= corenet_cpufreq_attr,
-+};
++static int __init ppc_corenet_clk_probe(struct platform_device *pdev)
++{
++	struct device_node *np;
 +
-+static const struct of_device_id node_matches[] __initconst = {
++	np = pdev->dev.of_node;
++	base = of_iomap(np, 0);
++	if (!base) {
++		dev_err(&pdev->dev, "iomap error\n");
++		return -ENOMEM;
++	}
++	of_clk_init(clk_match);
++
++	return 0;
++}
++
++static const struct of_device_id ppc_clk_ids[] __initconst = {
 +	{ .compatible = "fsl,qoriq-clockgen-1.0", },
 +	{ .compatible = "fsl,qoriq-clockgen-2", },
 +	{}
 +};
 +
-+static int __init ppc_corenet_cpufreq_init(void)
++static struct platform_driver ppc_corenet_clk_driver = {
++	.driver = {
++		.name = "ppc_corenet_clock",
++		.owner = THIS_MODULE,
++		.of_match_table = ppc_clk_ids,
++	},
++	.probe = ppc_corenet_clk_probe,
++};
++
++static int __init ppc_corenet_clk_init(void)
 +{
-+	int ret = 0;
-+	struct device_node  *np;
-+
-+	np = of_find_matching_node(NULL, node_matches);
-+	if (!np)
-+		return -ENODEV;
-+
-+	of_node_put(np);
-+
-+	ret = cpufreq_register_driver(&ppc_corenet_cpufreq_driver);
-+	if (!ret)
-+		pr_info("Freescale PowerPC corenet CPU frequency scaling driver\n");
-+
-+	return ret;
++	return platform_driver_register(&ppc_corenet_clk_driver);
 +}
-+module_init(ppc_corenet_cpufreq_init);
-+
-+static void __exit ppc_corenet_cpufreq_exit(void)
-+{
-+	cpufreq_unregister_driver(&ppc_corenet_cpufreq_driver);
-+}
-+module_exit(ppc_corenet_cpufreq_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Tang Yuantian <Yuantian.Tang@freescale.com>");
-+MODULE_DESCRIPTION("cpufreq driver for Freescale e500mc series SoCs");
++subsys_initcall(ppc_corenet_clk_init);
 -- 
 1.8.0
