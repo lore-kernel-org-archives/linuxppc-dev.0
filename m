@@ -1,25 +1,11 @@
-Return-Path: <B10812@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3D8AA2C009D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2013 15:42:42 +1000 (EST)
-From: Aggrwal Poonam-B10812 <B10812@freescale.com>
-To: Leekha Shaveta-B20052 <B20052@freescale.com>, Kumar Gala
- <galak@kernel.crashing.org>
-Subject: RE: [PATCH 1/4][v2] powerpc/fsl-booke: Add initial silicon device
- tree files for B4860 and B4420
-Date: Tue, 9 Apr 2013 05:42:32 +0000
-Message-ID: <ACB6D0C0104CFF42A45A5D82A0DD4F3D0B268D40@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1365143632-19362-1-git-send-email-shaveta@freescale.com>
- <62911773-1FC6-49B5-993F-88DD0F8F845A@kernel.crashing.org>
- <E12D2F89F87F4A49B0320A4C2DE7E749152991@039-SN2MPN1-011.039d.mgd.msft.net>
-In-Reply-To: <E12D2F89F87F4A49B0320A4C2DE7E749152991@039-SN2MPN1-011.039d.mgd.msft.net>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: benh@kernel.crashing.org, sfr@canb.auug.org.au
+Subject: [PATCH] powerpc: fix compiling CONFIG_PPC_TRANSACTIONAL_MEM when
+ CONFIG_ALTIVEC=n
+Date: Tue, 09 Apr 2013 16:18:55 +1000
+Message-ID: <9087.1365488335@ale.ozlabs.ibm.com>
+Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,108 +15,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+We can't compile a kernel with CONFIG_ALTIVEC=n when
+CONFIG_PPC_TRANSACTIONAL_MEM=y.  We currently get:
 
+arch/powerpc/kernel/tm.S:320: Error: unsupported relocation against THREAD_VSCR
+arch/powerpc/kernel/tm.S:323: Error: unsupported relocation against THREAD_VR0
+arch/powerpc/kernel/tm.S:323: Error: unsupported relocation against THREAD_VR0
+etc.
 
-> -----Original Message-----
-> From: Linuxppc-dev [mailto:linuxppc-dev-
-> bounces+poonam.aggrwal=3Dfreescale.com@lists.ozlabs.org] On Behalf Of
-> Leekha Shaveta-B20052
-> Sent: Monday, April 08, 2013 10:18 AM
-> To: Kumar Gala
-> Cc: linuxppc-dev@lists.ozlabs.org list
-> Subject: RE: [PATCH 1/4][v2] powerpc/fsl-booke: Add initial silicon
-> device tree files for B4860 and B4420
->=20
->=20
->=20
-> -----Original Message-----
-> From: Leekha Shaveta-B20052
-> Sent: Friday, April 05, 2013 9:13 PM
-> To: 'Kumar Gala'
-> Cc: linuxppc-dev@lists.ozlabs.org list
-> Subject: RE: [PATCH 1/4][v2] powerpc/fsl-booke: Add initial silicon
-> device tree files for B4860 and B4420
->=20
->=20
->=20
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> Sent: Friday, April 05, 2013 7:53 PM
-> To: Leekha Shaveta-B20052
-> Cc: linuxppc-dev@lists.ozlabs.org list
-> Subject: Re: [PATCH 1/4][v2] powerpc/fsl-booke: Add initial silicon
-> device tree files for B4860 and B4420
->=20
->=20
-> On Apr 5, 2013, at 1:33 AM, Shaveta Leekha wrote:
->=20
-> > B4860 and B4420 are similar that share some commonalities
-> >
-> > * common features have been added in b4si-pre.dtsi and b4si-post.dtsi
-> > * differences are added in respective silicon files of B4860 and B4420
-> >
-> > There are several things missing from the device trees of B4860 and
-> B4420:
-> >
-> > * DPAA related nodes (Qman, Bman, Fman, Rman)
-> > * DSP related nodes/information
-> > * serdes, sfp(security fuse processor), thermal, gpio, maple, cpri,
-> > quad timers nodes
-> >
-> > Signed-off-by: Shaveta Leekha <shaveta@freescale.com>
-> > Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
-> > Signed-off-by: Li Yang <leoli@freescale.com>
-> > Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
-> > Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
-> > Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
-> > Signed-off-by: Ramneek Mehresh <ramneek.mehresh@freescale.com>
-> > Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> > Signed-off-by: Andy Fleming <afleming@freescale.com>
-> > Signed-off-by: Vakul Garg <vakul@freescale.com>
-> > ---
-> > v2:
-> >  - incorporated review comments on commits message
-> >  - change unit address of cpu nodes to match the reg property
-> >
-> > arch/powerpc/boot/dts/fsl/b4420si-post.dtsi |   94 ++++++++++
-> > arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi  |   49 +++++
-> > arch/powerpc/boot/dts/fsl/b4860si-post.dtsi |  138 ++++++++++++++
-> > arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi  |   59 ++++++
-> > arch/powerpc/boot/dts/fsl/b4si-post.dtsi    |  262
-> +++++++++++++++++++++++++++
-> > arch/powerpc/boot/dts/fsl/b4si-pre.dtsi     |   65 +++++++
-> > 6 files changed, 667 insertions(+), 0 deletions(-) create mode 100644
-> > arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
-> > create mode 100644 arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi
-> > create mode 100644 arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
-> > create mode 100644 arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi
-> > create mode 100644 arch/powerpc/boot/dts/fsl/b4si-post.dtsi
-> > create mode 100644 arch/powerpc/boot/dts/fsl/b4si-pre.dtsi
->=20
-> Is there a reason you didn't get rid of b4si-pre.dtsi and just merge it
-> into b4860si-pre.dtsi & b4420-pre.dtsi?
-> [SL] No particular reason. I have just tried to re-factored these files
-> as you have suggested. Hence managed the commonalities in B4 files and
-> differences in B4860's and B4420's respective files to reduce duplicity.
->=20
-> Regards,
-> Shaveta
->=20
-> [SL] Kumar, please suggest.
+The below fixes this with a sprinkling of #ifdefs.
 
-Please suggest , if this re-factoring for pre-si dtsi should not be require=
-d.
-This was done to keep things uniform.
+This was found by mpe with kisskb:
+  http://kisskb.ellerman.id.au/kisskb/buildresult/8539442/
 
-Accordingly we will send a re-spin if required.
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+sfr: this would be nice to get in 3.9.
 
-Regards
-Poonam
->=20
-> Regards,
-> Shaveta
->=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 59dd545..16e77a8 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -555,10 +555,12 @@ static inline void tm_recheckpoint_new_task(struct task_struct *new)
+ 		new->thread.regs->msr |=
+ 			(MSR_FP | new->thread.fpexc_mode);
+ 	}
++#ifdef CONFIG_ALTIVEC
+ 	if (msr & MSR_VEC) {
+ 		do_load_up_transact_altivec(&new->thread);
+ 		new->thread.regs->msr |= MSR_VEC;
+ 	}
++#endif
+ 	/* We may as well turn on VSX too since all the state is restored now */
+ 	if (msr & MSR_VSX)
+ 		new->thread.regs->msr |= MSR_VSX;
+diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
+index 3acb28e..95068bf 100644
+--- a/arch/powerpc/kernel/signal_32.c
++++ b/arch/powerpc/kernel/signal_32.c
+@@ -866,10 +866,12 @@ static long restore_tm_user_regs(struct pt_regs *regs,
+ 		do_load_up_transact_fpu(&current->thread);
+ 		regs->msr |= (MSR_FP | current->thread.fpexc_mode);
+ 	}
++#ifdef CONFIG_ALTIVEC
+ 	if (msr & MSR_VEC) {
+ 		do_load_up_transact_altivec(&current->thread);
+ 		regs->msr |= MSR_VEC;
+ 	}
++#endif
+ 
+ 	return 0;
+ }
+diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
+index 995f854..c179428 100644
+--- a/arch/powerpc/kernel/signal_64.c
++++ b/arch/powerpc/kernel/signal_64.c
+@@ -522,10 +522,12 @@ static long restore_tm_sigcontexts(struct pt_regs *regs,
+ 		do_load_up_transact_fpu(&current->thread);
+ 		regs->msr |= (MSR_FP | current->thread.fpexc_mode);
+ 	}
++#ifdef CONFIG_ALTIVEC
+ 	if (msr & MSR_VEC) {
+ 		do_load_up_transact_altivec(&current->thread);
+ 		regs->msr |= MSR_VEC;
+ 	}
++#endif
+ 
+ 	return err;
+ }
+diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
+index 84dbace..2da67e7 100644
+--- a/arch/powerpc/kernel/tm.S
++++ b/arch/powerpc/kernel/tm.S
+@@ -309,6 +309,7 @@ _GLOBAL(tm_recheckpoint)
+ 	or	r5, r6, r5			/* Set MSR.FP+.VSX/.VEC */
+ 	mtmsr	r5
+ 
++#ifdef CONFIG_ALTIVEC
+ 	/* FP and VEC registers:  These are recheckpointed from thread.fpr[]
+ 	 * and thread.vr[] respectively.  The thread.transact_fpr[] version
+ 	 * is more modern, and will be loaded subsequently by any FPUnavailable
+@@ -323,6 +324,7 @@ _GLOBAL(tm_recheckpoint)
+ 	REST_32VRS(0, r5, r3)			/* r5 scratch, r3 THREAD ptr */
+ 	ld	r5, THREAD_VRSAVE(r3)
+ 	mtspr	SPRN_VRSAVE, r5
++#endif
+ 
+ dont_restore_vec:
+ 	andi.	r0, r4, MSR_FP
