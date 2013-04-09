@@ -1,20 +1,12 @@
-Return-Path: <B16394@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0185.outbound.messaging.microsoft.com [213.199.154.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 54A632C00C2
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2013 21:54:43 +1000 (EST)
-From: Vakul Garg <vakul@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/crypto: Add property for 'era' in SEC dts crypto node
-Date: Tue, 9 Apr 2013 17:20:33 +0530
-Message-ID: <1365508233-26292-1-git-send-email-vakul@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Shaveta Leekha <shaveta@freescale.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Andy Fleming <afleming@freescale.com>
+Return-Path: <michael@ozlabs.org>
+From: Michael Ellerman <michael@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc/perf: Add an explict flag indicating presence of SLOT
+ field
+Date: Tue,  9 Apr 2013 23:41:50 +1000
+Message-Id: <1365514910-27067-1-git-send-email-michael@ellerman.id.au>
+Cc: sukadev@linux.vnet.ibm.com, Paul Mackerras <paulus@samba.org>,
+ Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,91 +16,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The crypto node now contains a new property 'fsl,sec-era'.
-This is required so that applications can retrieve era info without
-having to be able to read SEC's register space.
+In perf_ip_adjust() we potentially use the MMCRA[SLOT] field to adjust
+the reported IP of a sampled instruction.
 
-Signed-off-by: Vakul Garg <vakul@freescale.com>
+Currently the logic is written so that if the backend does NOT have
+the PPMU_ALT_SIPR flag set then we assume MMCRA[SLOT] exists.
+
+This is wrong on power7, where we have SIPR in the "alternate" location,
+but also have the MMCRA[SLOT] field. Furthermore on power8 we do not
+want to set ALT_SIPR (it's in a third location), and we also do not have
+MMCRA[SLOT].
+
+So add a new flag which only indicates whether MMCRA[SLOT] exists.
+
+Naively we'd set it on everything except power6/7, because they set
+ALT_SIPR, and we've reversed the polarity of the flag. But it's more
+complicated than that.
+
+mpc7450 is 32-bit, and uses its own version of perf_ip_adjust()
+which doesn't use MMCRA[SLOT], so it doesn't need the new flag set and
+the behaviour is unchanged.
+
+PPC970 (and I assume power4) don't have MMCRA[SLOT], so shouldn't have
+the new flag set. This is a behaviour change on those cpus, though we
+were probably getting lucky and the bits in question were 0.
+
+power5 and power5+ set the new flag, behaviour unchanged.
+
+power6 does not set the new flag, behaviour unchanged.
+
+power7 sets the new flag, which is a behaviour change.
+
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/boot/dts/fsl/pq3-sec4.4-0.dtsi   |    1 +
- arch/powerpc/boot/dts/fsl/qoriq-sec4.0-0.dtsi |    1 +
- arch/powerpc/boot/dts/fsl/qoriq-sec4.2-0.dtsi |    1 +
- arch/powerpc/boot/dts/fsl/qoriq-sec5.0-0.dtsi |    1 +
- arch/powerpc/boot/dts/fsl/qoriq-sec5.2-0.dtsi |    1 +
- arch/powerpc/boot/dts/fsl/qoriq-sec5.3-0.dtsi |    1 +
- 6 files changed, 6 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/fsl/pq3-sec4.4-0.dtsi b/arch/powerpc/boot/dts/fsl/pq3-sec4.4-0.dtsi
-index ffadcb5..bb3d826 100644
---- a/arch/powerpc/boot/dts/fsl/pq3-sec4.4-0.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/pq3-sec4.4-0.dtsi
-@@ -34,6 +34,7 @@
+I went mildly insane working out all the different cases in this patch, so
+any review appreciated.
+
+ arch/powerpc/include/asm/perf_event_server.h |    1 +
+ arch/powerpc/perf/core-book3s.c              |    3 ++-
+ arch/powerpc/perf/power5+-pmu.c              |    2 +-
+ arch/powerpc/perf/power5-pmu.c               |    1 +
+ arch/powerpc/perf/power7-pmu.c               |    2 +-
+ 5 files changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
+index d0aec72..7074aec 100644
+--- a/arch/powerpc/include/asm/perf_event_server.h
++++ b/arch/powerpc/include/asm/perf_event_server.h
+@@ -52,6 +52,7 @@ struct power_pmu {
+ #define PPMU_NO_SIPR		0x00000004 /* no SIPR/HV in MMCRA at all */
+ #define PPMU_NO_CONT_SAMPLING	0x00000008 /* no continuous sampling */
+ #define PPMU_SIAR_VALID		0x00000010 /* Processor has SIAR Valid bit */
++#define PPMU_HAS_SSLOT		0x00000020 /* Has sampled slot in MMCRA */
  
- crypto@30000 {
- 	compatible = "fsl,sec-v4.4", "fsl,sec-v4.0";
-+	fsl,sec-era = <3>;
- 	#address-cells = <1>;
- 	#size-cells = <1>;
- 	ranges		 = <0x0 0x30000 0x10000>;
-diff --git a/arch/powerpc/boot/dts/fsl/qoriq-sec4.0-0.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-sec4.0-0.dtsi
-index 0cbbac3..02bee5f 100644
---- a/arch/powerpc/boot/dts/fsl/qoriq-sec4.0-0.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/qoriq-sec4.0-0.dtsi
-@@ -34,6 +34,7 @@
+ /*
+  * Values for flags to get_alternatives()
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index 65362e9..eb64480 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -98,11 +98,12 @@ static inline unsigned long perf_ip_adjust(struct pt_regs *regs)
+ {
+ 	unsigned long mmcra = regs->dsisr;
  
- crypto: crypto@300000 {
- 	compatible = "fsl,sec-v4.0";
-+	fsl,sec-era = <1>;
- 	#address-cells = <1>;
- 	#size-cells = <1>;
- 	reg = <0x300000 0x10000>;
-diff --git a/arch/powerpc/boot/dts/fsl/qoriq-sec4.2-0.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-sec4.2-0.dtsi
-index 7990e0d..7f7574e 100644
---- a/arch/powerpc/boot/dts/fsl/qoriq-sec4.2-0.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/qoriq-sec4.2-0.dtsi
-@@ -34,6 +34,7 @@
+-	if ((mmcra & MMCRA_SAMPLE_ENABLE) && !(ppmu->flags & PPMU_ALT_SIPR)) {
++	if ((ppmu->flags & PPMU_HAS_SSLOT) && (mmcra & MMCRA_SAMPLE_ENABLE)) {
+ 		unsigned long slot = (mmcra & MMCRA_SLOT) >> MMCRA_SLOT_SHIFT;
+ 		if (slot > 1)
+ 			return 4 * (slot - 1);
+ 	}
++
+ 	return 0;
+ }
  
- crypto: crypto@300000 {
- 	compatible = "fsl,sec-v4.2", "fsl,sec-v4.0";
-+	fsl,sec-era = <3>;
- 	#address-cells = <1>;
- 	#size-cells = <1>;
- 	reg		 = <0x300000 0x10000>;
-diff --git a/arch/powerpc/boot/dts/fsl/qoriq-sec5.0-0.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-sec5.0-0.dtsi
-index ffd458f..e298efb 100644
---- a/arch/powerpc/boot/dts/fsl/qoriq-sec5.0-0.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/qoriq-sec5.0-0.dtsi
-@@ -34,6 +34,7 @@
+diff --git a/arch/powerpc/perf/power5+-pmu.c b/arch/powerpc/perf/power5+-pmu.c
+index a8757ba..b03b6dc 100644
+--- a/arch/powerpc/perf/power5+-pmu.c
++++ b/arch/powerpc/perf/power5+-pmu.c
+@@ -671,7 +671,7 @@ static struct power_pmu power5p_pmu = {
+ 	.get_alternatives	= power5p_get_alternatives,
+ 	.disable_pmc		= power5p_disable_pmc,
+ 	.limited_pmc_event	= power5p_limited_pmc_event,
+-	.flags			= PPMU_LIMITED_PMC5_6,
++	.flags			= PPMU_LIMITED_PMC5_6 | PPMU_HAS_SSLOT,
+ 	.n_generic		= ARRAY_SIZE(power5p_generic_events),
+ 	.generic_events		= power5p_generic_events,
+ 	.cache_events		= &power5p_cache_events,
+diff --git a/arch/powerpc/perf/power5-pmu.c b/arch/powerpc/perf/power5-pmu.c
+index e7f06eb..1e8ce42 100644
+--- a/arch/powerpc/perf/power5-pmu.c
++++ b/arch/powerpc/perf/power5-pmu.c
+@@ -615,6 +615,7 @@ static struct power_pmu power5_pmu = {
+ 	.n_generic		= ARRAY_SIZE(power5_generic_events),
+ 	.generic_events		= power5_generic_events,
+ 	.cache_events		= &power5_cache_events,
++	.flags			= PPMU_HAS_SSLOT,
+ };
  
- crypto: crypto@300000 {
- 	compatible = "fsl,sec-v5.0", "fsl,sec-v4.0";
-+	fsl,sec-era = <5>;
- 	#address-cells = <1>;
- 	#size-cells = <1>;
- 	reg		 = <0x300000 0x10000>;
-diff --git a/arch/powerpc/boot/dts/fsl/qoriq-sec5.2-0.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-sec5.2-0.dtsi
-index 7b2ab8a..33ff09d 100644
---- a/arch/powerpc/boot/dts/fsl/qoriq-sec5.2-0.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/qoriq-sec5.2-0.dtsi
-@@ -34,6 +34,7 @@
- 
- crypto: crypto@300000 {
- 	compatible = "fsl,sec-v5.2", "fsl,sec-v5.0", "fsl,sec-v4.0";
-+	fsl,sec-era = <5>;
- 	#address-cells = <1>;
- 	#size-cells = <1>;
- 	reg		 = <0x300000 0x10000>;
-diff --git a/arch/powerpc/boot/dts/fsl/qoriq-sec5.3-0.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-sec5.3-0.dtsi
-index 0339825..0877822 100644
---- a/arch/powerpc/boot/dts/fsl/qoriq-sec5.3-0.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/qoriq-sec5.3-0.dtsi
-@@ -34,6 +34,7 @@
- 
- crypto: crypto@300000 {
- 	compatible = "fsl,sec-v5.3", "fsl,sec-v5.0", "fsl,sec-v4.0";
-+	fsl,sec-era = <4>;
- 	#address-cells = <1>;
- 	#size-cells = <1>;
- 	reg		 = <0x300000 0x10000>;
+ static int __init init_power5_pmu(void)
+diff --git a/arch/powerpc/perf/power7-pmu.c b/arch/powerpc/perf/power7-pmu.c
+index 3c475d6..744a5cf 100644
+--- a/arch/powerpc/perf/power7-pmu.c
++++ b/arch/powerpc/perf/power7-pmu.c
+@@ -448,7 +448,7 @@ static struct power_pmu power7_pmu = {
+ 	.get_constraint		= power7_get_constraint,
+ 	.get_alternatives	= power7_get_alternatives,
+ 	.disable_pmc		= power7_disable_pmc,
+-	.flags			= PPMU_ALT_SIPR,
++	.flags			= PPMU_ALT_SIPR | PPMU_HAS_SSLOT,
+ 	.attr_groups		= power7_pmu_attr_groups,
+ 	.n_generic		= ARRAY_SIZE(power7_generic_events),
+ 	.generic_events		= power7_generic_events,
 -- 
-1.7.7.6
+1.7.10.4
