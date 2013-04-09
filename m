@@ -1,12 +1,20 @@
-Return-Path: <michael@ozlabs.org>
-From: Michael Ellerman <michael@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc/perf: Add an explict flag indicating presence of SLOT
- field
-Date: Tue,  9 Apr 2013 23:41:50 +1000
-Message-Id: <1365514910-27067-1-git-send-email-michael@ellerman.id.au>
-Cc: sukadev@linux.vnet.ibm.com, Paul Mackerras <paulus@samba.org>,
- Anton Blanchard <anton@samba.org>
+Return-Path: <chris.friesen@genband.com>
+Received: from exprod7og119.obsmtp.com (exprod7og119.obsmtp.com [64.18.2.16])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 0E2522C00B2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2013 00:31:39 +1000 (EST)
+Message-ID: <51642620.4050201@genband.com>
+Date: Tue, 09 Apr 2013 08:30:56 -0600
+From: Chris Friesen <chris.friesen@genband.com>
+MIME-Version: 1.0
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: powerpc userspace address space layout information
+References: <515E58E6.9030802@genband.com>
+ <20130407055844.GB17787@truffula.fritz.box>
+In-Reply-To: <20130407055844.GB17787@truffula.fritz.box>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,117 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In perf_ip_adjust() we potentially use the MMCRA[SLOT] field to adjust
-the reported IP of a sampled instruction.
+On 04/06/2013 11:58 PM, David Gibson wrote:
+> On Thu, Apr 04, 2013 at 10:53:58PM -0600, Chris Friesen wrote:
 
-Currently the logic is written so that if the backend does NOT have
-the PPMU_ALT_SIPR flag set then we assume MMCRA[SLOT] exists.
+>> Third, what's the most reliable way to ensure a block of addresses around
+>> 0xf6000000 don't get used for shared libraries?  (We want to preserve
+>> those addresses for emulating hardware in a virtual machine.)  We have
+>> this working on an older system but after upgrading to new software the
+>> libraries now extend further down the address space.
+>
+> The only reliable method I can think of would be to use a custom
+> linker script to give your binary an extra program header specifying
+> that virtual region to map.
 
-This is wrong on power7, where we have SIPR in the "alternate" location,
-but also have the MMCRA[SLOT] field. Furthermore on power8 we do not
-want to set ALT_SIPR (it's in a third location), and we also do not have
-MMCRA[SLOT].
+Thanks for your help.  We had started working on the custom linker 
+script while waiting to see if anyone would respond, so it's good to get 
+some validation that we picked the right solution.
 
-So add a new flag which only indicates whether MMCRA[SLOT] exists.
-
-Naively we'd set it on everything except power6/7, because they set
-ALT_SIPR, and we've reversed the polarity of the flag. But it's more
-complicated than that.
-
-mpc7450 is 32-bit, and uses its own version of perf_ip_adjust()
-which doesn't use MMCRA[SLOT], so it doesn't need the new flag set and
-the behaviour is unchanged.
-
-PPC970 (and I assume power4) don't have MMCRA[SLOT], so shouldn't have
-the new flag set. This is a behaviour change on those cpus, though we
-were probably getting lucky and the bits in question were 0.
-
-power5 and power5+ set the new flag, behaviour unchanged.
-
-power6 does not set the new flag, behaviour unchanged.
-
-power7 sets the new flag, which is a behaviour change.
-
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
-
-I went mildly insane working out all the different cases in this patch, so
-any review appreciated.
-
- arch/powerpc/include/asm/perf_event_server.h |    1 +
- arch/powerpc/perf/core-book3s.c              |    3 ++-
- arch/powerpc/perf/power5+-pmu.c              |    2 +-
- arch/powerpc/perf/power5-pmu.c               |    1 +
- arch/powerpc/perf/power7-pmu.c               |    2 +-
- 5 files changed, 6 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
-index d0aec72..7074aec 100644
---- a/arch/powerpc/include/asm/perf_event_server.h
-+++ b/arch/powerpc/include/asm/perf_event_server.h
-@@ -52,6 +52,7 @@ struct power_pmu {
- #define PPMU_NO_SIPR		0x00000004 /* no SIPR/HV in MMCRA at all */
- #define PPMU_NO_CONT_SAMPLING	0x00000008 /* no continuous sampling */
- #define PPMU_SIAR_VALID		0x00000010 /* Processor has SIAR Valid bit */
-+#define PPMU_HAS_SSLOT		0x00000020 /* Has sampled slot in MMCRA */
- 
- /*
-  * Values for flags to get_alternatives()
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 65362e9..eb64480 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -98,11 +98,12 @@ static inline unsigned long perf_ip_adjust(struct pt_regs *regs)
- {
- 	unsigned long mmcra = regs->dsisr;
- 
--	if ((mmcra & MMCRA_SAMPLE_ENABLE) && !(ppmu->flags & PPMU_ALT_SIPR)) {
-+	if ((ppmu->flags & PPMU_HAS_SSLOT) && (mmcra & MMCRA_SAMPLE_ENABLE)) {
- 		unsigned long slot = (mmcra & MMCRA_SLOT) >> MMCRA_SLOT_SHIFT;
- 		if (slot > 1)
- 			return 4 * (slot - 1);
- 	}
-+
- 	return 0;
- }
- 
-diff --git a/arch/powerpc/perf/power5+-pmu.c b/arch/powerpc/perf/power5+-pmu.c
-index a8757ba..b03b6dc 100644
---- a/arch/powerpc/perf/power5+-pmu.c
-+++ b/arch/powerpc/perf/power5+-pmu.c
-@@ -671,7 +671,7 @@ static struct power_pmu power5p_pmu = {
- 	.get_alternatives	= power5p_get_alternatives,
- 	.disable_pmc		= power5p_disable_pmc,
- 	.limited_pmc_event	= power5p_limited_pmc_event,
--	.flags			= PPMU_LIMITED_PMC5_6,
-+	.flags			= PPMU_LIMITED_PMC5_6 | PPMU_HAS_SSLOT,
- 	.n_generic		= ARRAY_SIZE(power5p_generic_events),
- 	.generic_events		= power5p_generic_events,
- 	.cache_events		= &power5p_cache_events,
-diff --git a/arch/powerpc/perf/power5-pmu.c b/arch/powerpc/perf/power5-pmu.c
-index e7f06eb..1e8ce42 100644
---- a/arch/powerpc/perf/power5-pmu.c
-+++ b/arch/powerpc/perf/power5-pmu.c
-@@ -615,6 +615,7 @@ static struct power_pmu power5_pmu = {
- 	.n_generic		= ARRAY_SIZE(power5_generic_events),
- 	.generic_events		= power5_generic_events,
- 	.cache_events		= &power5_cache_events,
-+	.flags			= PPMU_HAS_SSLOT,
- };
- 
- static int __init init_power5_pmu(void)
-diff --git a/arch/powerpc/perf/power7-pmu.c b/arch/powerpc/perf/power7-pmu.c
-index 3c475d6..744a5cf 100644
---- a/arch/powerpc/perf/power7-pmu.c
-+++ b/arch/powerpc/perf/power7-pmu.c
-@@ -448,7 +448,7 @@ static struct power_pmu power7_pmu = {
- 	.get_constraint		= power7_get_constraint,
- 	.get_alternatives	= power7_get_alternatives,
- 	.disable_pmc		= power7_disable_pmc,
--	.flags			= PPMU_ALT_SIPR,
-+	.flags			= PPMU_ALT_SIPR | PPMU_HAS_SSLOT,
- 	.attr_groups		= power7_pmu_attr_groups,
- 	.n_generic		= ARRAY_SIZE(power7_generic_events),
- 	.generic_events		= power7_generic_events,
--- 
-1.7.10.4
+Chris
