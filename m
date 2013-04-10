@@ -2,17 +2,17 @@ Return-Path: <kumagai-atsushi@mxc.nes.nec.co.jp>
 Received: from tyo200.gate.nec.co.jp (TYO200.gate.nec.co.jp [210.143.35.50])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 9438A2C013E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2013 17:17:24 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 0D3432C019A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2013 17:18:01 +1000 (EST)
 Received: from tyo202.gate.nec.co.jp ([10.7.69.202])
- by tyo200.gate.nec.co.jp (8.13.8/8.13.4) with ESMTP id r3A7HLBv023141
+ by tyo200.gate.nec.co.jp (8.13.8/8.13.4) with ESMTP id r3A7HxR8023153
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2013 16:17:21 +0900 (JST)
-Date: Wed, 10 Apr 2013 16:10:48 +0900
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2013 16:17:59 +0900 (JST)
+Date: Wed, 10 Apr 2013 16:10:52 +0900
 From: Atsushi Kumagai <kumagai-atsushi@mxc.nes.nec.co.jp>
 To: kexec@lists.infradead.org
-Subject: [RESEND PATCH 2/4] Use vmap_area_list to get vmalloc_start for i386.
-Message-Id: <20130410161048.44aa90f89ac7aae8ab259c84@mxc.nes.nec.co.jp>
+Subject: [RESEND PATCH 3/4] Use vmap_area_list to get vmalloc_start for ppc32.
+Message-Id: <20130410161052.f25fe041330732e3c2252305@mxc.nes.nec.co.jp>
 In-Reply-To: <20130410150524.804cd23b99a697f71146be67@mxc.nes.nec.co.jp>
 References: <20130410150524.804cd23b99a697f71146be67@mxc.nes.nec.co.jp>
 Mime-Version: 1.0
@@ -28,32 +28,23 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 From: Atsushi Kumagai <kumagai-atsushi@mxc.nes.nec.co.jp>
-Date: Thu, 14 Mar 2013 19:10:49 +0900
-Subject: [PATCH 2/4] Use vmap_area_list to get vmalloc_start for i386.
+Date: Fri, 15 Mar 2013 19:30:23 +0900
+Subject: [PATCH 3/4] Use vmap_area_list to get vmalloc_start for ppc32.
 
 Try to get vmalloc_start value from vmap_area_list first for
-newer i386 kernels.
+newer ppc32 kernels.
 
 Signed-off-by: Atsushi Kumagai <kumagai-atsushi@mxc.nes.nec.co.jp>
 ---
- arch/x86.c | 46 ++++++++++++++++++++++++++++++++--------------
- 1 file changed, 32 insertions(+), 14 deletions(-)
+ arch/ppc.c | 44 +++++++++++++++++++++++++++++++-------------
+ 1 file changed, 31 insertions(+), 13 deletions(-)
 
-diff --git a/arch/x86.c b/arch/x86.c
-index ef29e3c..e397905 100644
---- a/arch/x86.c
-+++ b/arch/x86.c
-@@ -70,7 +70,7 @@ remap_init(void)
- int
- get_machdep_info_x86(void)
- {
--	unsigned long vmlist, vmalloc_start;
-+	unsigned long vmlist, vmap_area_list, vmalloc_start;
- 
- 	/* PAE */
- 	if ((vt.mem_flags & MEMORY_X86_PAE)
-@@ -100,22 +100,40 @@ get_machdep_info_x86(void)
- 		return FALSE;
+diff --git a/arch/ppc.c b/arch/ppc.c
+index 2bc8d5f..a9b4812 100644
+--- a/arch/ppc.c
++++ b/arch/ppc.c
+@@ -44,22 +44,40 @@ get_machdep_info_ppc(void)
+ 	DEBUG_MSG("kernel_start : %lx\n", info->kernel_start);
  
  	/*
 -	 * For the compatibility, makedumpfile should run without the symbol
@@ -90,7 +81,7 @@ index ef29e3c..e397905 100644
 +	} else {
 +		/*
 +		 * For the compatibility, makedumpfile should run without the symbol
-+		 * used to get vmalloc_start value if they are not necessary.
++		 * vmlist and the offset of vm_struct.addr if they are not necessary.
 +		 */
  		return TRUE;
  	}
