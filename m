@@ -1,23 +1,34 @@
-Return-Path: <sfr@canb.auug.org.au>
-Date: Wed, 10 Apr 2013 21:09:50 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Tang Yuantian-B29983 <B29983@freescale.com>
-Subject: Re: [PATCH] of: remove the unnecessary of_node_put for
- of_parse_phandle_with_args()
-Message-Id: <20130410210950.972df35671f7fa5573ef2d7b@canb.auug.org.au>
-In-Reply-To: <D07C73A334FF604B95B3CBD2A545D07B0B128AE0@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1365490569-32455-1-git-send-email-Yuantian.Tang@freescale.com>
- <20130410190327.a70d4c3798509d664aef2f13@canb.auug.org.au>
- <D07C73A334FF604B95B3CBD2A545D07B0B128AE0@039-SN2MPN1-013.039d.mgd.msft.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Wed__10_Apr_2013_21_09_50_+1000_qXeBHYRWuh+e7ml+"
-Cc: "devicetree-discuss@lists.ozlabs.org"
- <devicetree-discuss@lists.ozlabs.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>
+Return-Path: <aruna@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DD7732C0089
+ for <linuxppc-dev@ozlabs.org>; Wed, 10 Apr 2013 17:21:00 +1000 (EST)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <aruna@linux.vnet.ibm.com>;
+ Wed, 10 Apr 2013 17:15:21 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 0BCC72BB0057
+ for <linuxppc-dev@ozlabs.org>; Wed, 10 Apr 2013 17:20:56 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3A77bDK41156714
+ for <linuxppc-dev@ozlabs.org>; Wed, 10 Apr 2013 17:07:37 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3A7Ks1t016133
+ for <linuxppc-dev@ozlabs.org>; Wed, 10 Apr 2013 17:20:55 +1000
+Subject: [PATCH 0/8] Nvram-to-pstore
+To: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org,
+ benh@kernel.crashing.org
+From: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
+Date: Wed, 10 Apr 2013 12:50:47 +0530
+Message-ID: <20130410071835.20150.56489.stgit@aruna-ThinkPad-T420>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: jkenisto@linux.vnet.ibm.com, mahesh@linux.vnet.ibm.com, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,44 +38,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Wed__10_Apr_2013_21_09_50_+1000_qXeBHYRWuh+e7ml+
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Currently the kernel provides the contents of p-series NVRAM only as a
+simple stream of bytes via /dev/nvram, which must be interpreted in user
+space by the nvram command in the powerpc-utils package.  This patch set
+exploits the pstore subsystem to expose each partition in NVRAM as a
+separate file in /dev/pstore. For instance Oops messages will stored in a
+file named [dmesg-nvram-2].
 
-Hi,
+---
 
-On Wed, 10 Apr 2013 09:06:11 +0000 Tang Yuantian-B29983 <B29983@freescale.c=
-om> wrote:
->
-> Yes, I already sent out the v2 patch.
-> Please see: http://patchwork.ozlabs.org/patch/235288/
+Aruna Balakrishnaiah (8):
+      Remove syslog prefix in uncompressed oops text
+      Add version and timestamp to oops header
+      Introduce generic read function to read nvram-partitions
+      Read/Write oops nvram partition via pstore
+      Read rtas partition via pstore
+      Distinguish between a os-partition and non-os partition
+      Read of-config partition via pstore
+      Read common partition via pstore
 
-Thanks.  I should read all my email before replying to it :-)
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+ arch/powerpc/platforms/pseries/nvram.c |  329 ++++++++++++++++++++++++++++----
+ fs/pstore/inode.c                      |    9 +
+ include/linux/pstore.h                 |    4 
+ 3 files changed, 304 insertions(+), 38 deletions(-)
 
---Signature=_Wed__10_Apr_2013_21_09_50_+1000_qXeBHYRWuh+e7ml+
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBCAAGBQJRZUh+AAoJEECxmPOUX5FEeAEP/0CDnfupqEJGQK/TSg8+gfG8
-jota7lb/iIaPnxryLAZRlkUC+qGvrd5ZPokbbZhYeDPcTuDGSqBuTBwtP03Fa05D
-Ihw5OkO17uJzcEcP0LBYvdHRcMxVNT1ag5nuT9Dk9phjTS++JQC85aBzatZJN+/i
-wEn37tbdHIOayb9HYHjA7/0e8dDx+QJdA9tag4lZ/dm0zD44KEF3ynUFbH2FeAQs
-03Ptkv6PKcWfmCniMGaODDauy4tmtFuLteOPx7rqLLX1zd/DRTsr6JdRup5S/8q+
-6g2TTr37xFd5hfCLE2QZPiIyxualsCgsWkVcfRFr22LGY5auNZ0oNd2IxP5CfArv
-pqxJtBzBxfDZ7mtAMZlhxeEzy3JetNPGWga9MJ7w/En97O9406f49dDZn+022m4N
-aSyJyTzR7q0NbvzzfMt+wEa6ntWiK1zs3Gixf1Do4a1cJ23rjqga3rpGMZwrSFwr
-DLmUdwJaVoORil0Hn1S5OfmGa+UwgL55raJYOmIcm3AmiOpw4zRtpUh/NCQuxsLY
-tzoZ3tQ5Ind0mc2mbgeUN+jFp9O0agjK6qM7pZi7K+t7kgaCvnPAWNR1Emvw5o98
-7gU67bByN+FjrOc2lRYFRzr7EQ/7GtmPMC59g+tAP8lK51wV8xNtywLb/3Zf9fZs
-fd53wL/NgPRUadbj9BxY
-=au+7
------END PGP SIGNATURE-----
-
---Signature=_Wed__10_Apr_2013_21_09_50_+1000_qXeBHYRWuh+e7ml+--
+-- 
