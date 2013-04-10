@@ -1,21 +1,18 @@
-Return-Path: <kumagai-atsushi@mxc.nes.nec.co.jp>
-Received: from tyo200.gate.nec.co.jp (TYO200.gate.nec.co.jp [210.143.35.50])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A21022C00B8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2013 19:00:06 +1000 (EST)
-Received: from tyo201.gate.nec.co.jp ([10.7.69.201])
- by tyo200.gate.nec.co.jp (8.13.8/8.13.4) with ESMTP id r3A7BDMC021961
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2013 16:11:13 +0900 (JST)
-Date: Wed, 10 Apr 2013 15:05:24 +0900
-From: Atsushi Kumagai <kumagai-atsushi@mxc.nes.nec.co.jp>
-To: kexec@lists.infradead.org
-Subject: [RESEND PATCH 0/4] Add support for vmap_area_list.
-Message-Id: <20130410150524.804cd23b99a697f71146be67@mxc.nes.nec.co.jp>
+Return-Path: <sfr@canb.auug.org.au>
+Date: Wed, 10 Apr 2013 19:03:27 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: <Yuantian.Tang@freescale.com>
+Subject: Re: [PATCH] of: remove the unnecessary of_node_put for
+ of_parse_phandle_with_args()
+Message-Id: <20130410190327.a70d4c3798509d664aef2f13@canb.auug.org.au>
+In-Reply-To: <1365490569-32455-1-git-send-email-Yuantian.Tang@freescale.com>
+References: <1365490569-32455-1-git-send-email-Yuantian.Tang@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Wed__10_Apr_2013_19_03_27_+1000_9m892t2Uqn+3AqyV"
+Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, rob.herring@calxeda.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,39 +22,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-# CCing linuxppc-dev to get advice on ppc for makedumpfile.
-# makedumpfile is a userspace utility to create a smaller dump file,
-# you can download it from the following URL.
-# http://sourceforge.net/projects/makedumpfile/
+--Signature=_Wed__10_Apr_2013_19_03_27_+1000_9m892t2Uqn+3AqyV
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
------
-Hello,
+Hi,
 
-This patchset is to work with "remove vm_struct list management":
+On Tue, 9 Apr 2013 14:56:09 +0800 <Yuantian.Tang@freescale.com> wrote:
+>
+> From: Tang Yuantian <yuantian.tang@freescale.com>
+>=20
+> As the function itself says it is caller's responsibility to call the
+> of_node_put().  So, remove it on success to keep the reference count
+> correct.
+>=20
+> Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+> ---
+>  drivers/of/base.c | 3 ---
+>  1 file changed, 3 deletions(-)
+>=20
+> diff --git a/drivers/of/base.c b/drivers/of/base.c
+> index 321d3ef..e8b4c28 100644
+> --- a/drivers/of/base.c
+> +++ b/drivers/of/base.c
+> @@ -1168,9 +1168,6 @@ static int __of_parse_phandle_with_args(const struc=
+t device_node *np,
+>  					out_args->args[i] =3D be32_to_cpup(list++);
+>  			}
+> =20
+> -			/* Found it! return success */
+> -			if (node)
+> -				of_node_put(node);
 
-  https://lkml.org/lkml/2013/3/13/40
+Actually, if out_args is NULL, you should do the of_node_put(node), so
+probably the correct fix is to add an "else" before the above "if" (and
+move the comment).
 
-In more detail, this patchset try to use vmap_area_list to get the
-start address of vmalloc region.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-I tested this on i386/x86_64, but I can't do it on other 
-architectures. So, please let me know if you find any problems.
+--Signature=_Wed__10_Apr_2013_19_03_27_+1000_9m892t2Uqn+3AqyV
+Content-Type: application/pgp-signature
 
----
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
 
-Atsushi Kumagai (4):
-      Introduce new symbols to look at the first vmap_area.
-      Use vmap_area_list to get vmalloc_start for i386.
-      Use vmap_area_list to get vmalloc_start for ppc32.
-      Use vmap_area_list to get vmalloc_start for ppc64.
+iQIbBAEBCAAGBQJRZSrfAAoJEECxmPOUX5FEshsP9j/SviOKe9soG62CzsCGGtr3
+6sIf7zvVuQmdb/AIrhzxwGOdESRn8MWqPjIoAHZUpAnStrkPF5q3dBVUx+aMERJD
+185Dmz3OoU0lpZHwNu5fNYAqVbNc/8hoU+EJc9unh/6zVTcBoxjSg4aTHj/tXbJt
+Z9pfCggA/hiKHrreO8wHLxt4XEYpyp+t6DYhNVM7PBiz21Of7Ve21SWQ4etxjRip
+geleVMs4ruyZ/QmnWld32ac9EwuiD+XeVKtT0fjofG5islE3xwLLPTdpJKB56wNm
+D2UfWu4yaZkXzRXdVdagChKCfCbOBMDfhrnJHQ5hGKJvPEfDBek1UN5tu30CDqJZ
+p9BtjaUbr+k4dKmsBX1sJCmWBuKK+b5N6BwJVu4BJCo5na00xVP8NY/5qyW0oMVL
+7djeLLv0c6NXXWMWRjvBvuTyB63V5/f9vQlksThX2WlJs7h21V56eq4gzjQps3Ur
+TkHFEfB7xtWdPDRmdH1+pKqXwId2lmWFcMlhVKcAC1sY3VMRtc9wUl3t8yb0SDCF
+k3taNF+DycVXb3KAF5+8/PRvs92nk7EhKEXa0ocK+l98R74U9TKSPMMiP5vByQvH
+RIjid/6TmAOPxYHPEl1ZHqam1V69YThHl76SFC+jnbGsiPfTtmrLsVNvS3R6bKnf
+xmU/r+9YRMZZHGH4agw=
+=QBxe
+-----END PGP SIGNATURE-----
 
- arch/ppc.c     | 46 ++++++++++++++++++++++++++++++++--------------
- arch/ppc64.c   | 46 ++++++++++++++++++++++++++++++++--------------
- arch/x86.c     | 46 ++++++++++++++++++++++++++++++++--------------
- makedumpfile.c |  9 +++++++++
- makedumpfile.h |  5 +++++
- 5 files changed, 110 insertions(+), 42 deletions(-)
-
-
-Thanks
-Atsushi Kumagai
+--Signature=_Wed__10_Apr_2013_19_03_27_+1000_9m892t2Uqn+3AqyV--
