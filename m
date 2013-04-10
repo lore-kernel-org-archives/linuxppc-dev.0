@@ -1,20 +1,15 @@
-Return-Path: <B38951@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe010.messaging.microsoft.com [216.32.180.30])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9610A2C00A8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2013 13:31:52 +1000 (EST)
-From: Jia Hongtao <hongtao.jia@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
-Subject: [PATCH V5] powerpc/MPIC: Add get_version API both for internal and
- external use
-Date: Wed, 10 Apr 2013 10:52:55 +0800
-Message-ID: <1365562375-11920-1-git-send-email-hongtao.jia@freescale.com>
+Return-Path: <B29983@freescale.com>
+From: <Yuantian.Tang@freescale.com>
+To: <grant.likely@secretlab.ca>
+Subject: [PATCH v2] of/base: release the node correctly in
+ of_parse_phandle_with_args()
+Date: Wed, 10 Apr 2013 11:36:39 +0800
+Message-ID: <1365564999-24427-1-git-send-email-Yuantian.Tang@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: B07421@freescale.com, hongtao.jia@freescale.com
+Cc: Tang Yuantian <Yuantian.Tang@freescale.com>,
+ devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, rob.herring@calxeda.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,114 +19,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-MPIC version is useful information for both mpic_alloc() and mpic_init().
-The patch provide an API to get MPIC version for reusing the code.
-Also, some other IP block may need MPIC version for their own use.
-The API for external use is also provided.
+From: Tang Yuantian <yuantian.tang@freescale.com>
 
-Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
-Signed-off-by: Li Yang <leoli@freescale.com>
+Call of_node_put() only when the out_args is NULL on success,
+or the node's reference count will not be correct because the caller
+will call of_node_put() again.
+
+Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
 ---
-V5:
-* add MPIC_FSL check for fsl_mpic_get_version().
+v2:
+	- modified the title and description. the 1st patch title is:
+	  of: remove the unnecessary of_node_put for of_parse_phandle_with_args()
+	  the 1st patch is not good enough.
 
-V4:
-* change the name of function from mpic_get_version() to
-  fsl_mpic_get_version().
+ drivers/of/base.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-V3:
-* change the name of function from mpic_primary_get_version() to
-  fsl_mpic_primary_get_version().
-* return 0 if mpic_primary is null.
-
-V2:
-* Using mpic_get_version() to implement mpic_primary_get_version()
-
- arch/powerpc/include/asm/mpic.h |  3 +++
- arch/powerpc/sysdev/mpic.c      | 32 +++++++++++++++++++++++++-------
- 2 files changed, 28 insertions(+), 7 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/mpic.h b/arch/powerpc/include/asm/mpic.h
-index c0f9ef9..ea6bf72 100644
---- a/arch/powerpc/include/asm/mpic.h
-+++ b/arch/powerpc/include/asm/mpic.h
-@@ -393,6 +393,9 @@ struct mpic
- #define	MPIC_REGSET_STANDARD		MPIC_REGSET(0)	/* Original MPIC */
- #define	MPIC_REGSET_TSI108		MPIC_REGSET(1)	/* Tsi108/109 PIC */
+diff --git a/drivers/of/base.c b/drivers/of/base.c
+index 321d3ef..ee94f64 100644
+--- a/drivers/of/base.c
++++ b/drivers/of/base.c
+@@ -1158,6 +1158,7 @@ static int __of_parse_phandle_with_args(const struct device_node *np,
+ 			if (!phandle)
+ 				goto err;
  
-+/* Get the version of primary MPIC */
-+extern u32 fsl_mpic_primary_get_version(void);
-+
- /* Allocate the controller structure and setup the linux irq descs
-  * for the range if interrupts passed in. No HW initialization is
-  * actually performed.
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index d30e6a6..47ef4ba 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -1165,10 +1165,33 @@ static struct irq_domain_ops mpic_host_ops = {
- 	.xlate = mpic_host_xlate,
- };
++			/* Found it! return success */
+ 			if (out_args) {
+ 				int i;
+ 				if (WARN_ON(count > MAX_PHANDLE_ARGS))
+@@ -1166,11 +1167,10 @@ static int __of_parse_phandle_with_args(const struct device_node *np,
+ 				out_args->args_count = count;
+ 				for (i = 0; i < count; i++)
+ 					out_args->args[i] = be32_to_cpup(list++);
++			} else if (node) {
++				of_node_put(node);
+ 			}
  
-+static u32 fsl_mpic_get_version(struct mpic *mpic)
-+{
-+	u32 brr1;
-+
-+	if (!(mpic->flags & MPIC_FSL))
-+		return 0;
-+
-+	brr1 = _mpic_read(mpic->reg_type, &mpic->thiscpuregs,
-+			MPIC_FSL_BRR1);
-+
-+	return brr1 & MPIC_FSL_BRR1_VER;
-+}
-+
- /*
-  * Exported functions
-  */
+-			/* Found it! return success */
+-			if (node)
+-				of_node_put(node);
+ 			return 0;
+ 		}
  
-+u32 fsl_mpic_primary_get_version(void)
-+{
-+	struct mpic *mpic = mpic_primary;
-+
-+	if (mpic)
-+		return fsl_mpic_get_version(mpic);
-+
-+	return 0;
-+}
-+
- struct mpic * __init mpic_alloc(struct device_node *node,
- 				phys_addr_t phys_addr,
- 				unsigned int flags,
-@@ -1315,7 +1338,6 @@ struct mpic * __init mpic_alloc(struct device_node *node,
- 	mpic_map(mpic, mpic->paddr, &mpic->tmregs, MPIC_INFO(TIMER_BASE), 0x1000);
- 
- 	if (mpic->flags & MPIC_FSL) {
--		u32 brr1;
- 		int ret;
- 
- 		/*
-@@ -1326,9 +1348,7 @@ struct mpic * __init mpic_alloc(struct device_node *node,
- 		mpic_map(mpic, mpic->paddr, &mpic->thiscpuregs,
- 			 MPIC_CPU_THISBASE, 0x1000);
- 
--		brr1 = _mpic_read(mpic->reg_type, &mpic->thiscpuregs,
--				MPIC_FSL_BRR1);
--		fsl_version = brr1 & MPIC_FSL_BRR1_VER;
-+		fsl_version = fsl_mpic_get_version(mpic);
- 
- 		/* Error interrupt mask register (EIMR) is required for
- 		 * handling individual device error interrupts. EIMR
-@@ -1518,9 +1538,7 @@ void __init mpic_init(struct mpic *mpic)
- 	mpic_cpu_write(MPIC_INFO(CPU_CURRENT_TASK_PRI), 0xf);
- 
- 	if (mpic->flags & MPIC_FSL) {
--		u32 brr1 = _mpic_read(mpic->reg_type, &mpic->thiscpuregs,
--				      MPIC_FSL_BRR1);
--		u32 version = brr1 & MPIC_FSL_BRR1_VER;
-+		u32 version = fsl_mpic_get_version(mpic);
- 
- 		/*
- 		 * Timer group B is present at the latest in MPIC 3.1 (e.g.
 -- 
 1.8.0
