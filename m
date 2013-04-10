@@ -1,25 +1,23 @@
-Return-Path: <B41889@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8F9C82C00CB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2013 19:08:31 +1000 (EST)
-Message-ID: <51652C20.2060105@freescale.com>
-Date: Wed, 10 Apr 2013 17:08:48 +0800
-From: Chen Yuanquan-B41889 <B41889@freescale.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/pci: fix PCI-e devices rescan issue on powerpc
- platform
-References: <1364902014-943-1-git-send-email-Yuanquan.Chen@freescale.com>
- <1364915422.16520.8.camel@pasglop> <515BAB44.9070001@freescale.com>
-In-Reply-To: <515BAB44.9070001@freescale.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: Yuanquan Chen <Yuanquan.Chen@freescale.com>, linux-pci@vger.kernel.org,
- bhelgaas@google.com, linuxppc-dev@lists.ozlabs.org,
- Hiroo Matsumoto <matsumoto.hiroo@jp.fujitsu.com>
+Return-Path: <sfr@canb.auug.org.au>
+Date: Wed, 10 Apr 2013 21:09:50 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Tang Yuantian-B29983 <B29983@freescale.com>
+Subject: Re: [PATCH] of: remove the unnecessary of_node_put for
+ of_parse_phandle_with_args()
+Message-Id: <20130410210950.972df35671f7fa5573ef2d7b@canb.auug.org.au>
+In-Reply-To: <D07C73A334FF604B95B3CBD2A545D07B0B128AE0@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1365490569-32455-1-git-send-email-Yuantian.Tang@freescale.com>
+ <20130410190327.a70d4c3798509d664aef2f13@canb.auug.org.au>
+ <D07C73A334FF604B95B3CBD2A545D07B0B128AE0@039-SN2MPN1-013.039d.mgd.msft.net>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Wed__10_Apr_2013_21_09_50_+1000_qXeBHYRWuh+e7ml+"
+Cc: "devicetree-discuss@lists.ozlabs.org"
+ <devicetree-discuss@lists.ozlabs.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,70 +27,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/03/2013 12:08 PM, Chen Yuanquan-B41889 wrote:
-> On 04/02/2013 11:10 PM, Benjamin Herrenschmidt wrote:
->> On Tue, 2013-04-02 at 19:26 +0800, Yuanquan Chen wrote:
->>> So we move the DMA & IRQ initialization code from 
->>> pcibios_setup_devices() and
->>> construct a new function pcibios_enable_device. We call this 
->>> function in
->>> pcibios_enable_device, which will be called by PCI-e rescan code. At 
->>> the
->>> meanwhile, we avoid the the impact on cardbus. I also validate this 
->>> patch with
->>> silicon's PCIe-sata which encounters the IRQ issue.
->> My worry is that this delays the setup of the IRQ and DMA to very 
->> late in
->> the process, possibly after the quirks have been run, which can be
->> problematic. We have platform hooks that might try to "fixup" specific
->> IRQ issues on some platforms (especially macs) which I worry might fail
->> if delayed that way (I may be wrong, I don't have a specific case in 
->> mind,
->> but I would feel better if we kept setting up these things earlier).
->>
->> Cheers,
->> Ben.
->>
->
-> Hi Ben,
->
-> I have checked all the quirk functions which are declared in kernel 
-> arch/powerpc
-> with command :
-> grep DECLARE_PCI_FIXUP_ `find arch/powerpc/ *.[hc]`
->
-> All the quirk function are defined as DECLARE_PCI_FIXUP_EARLY , 
-> DECLARE_PCI_FIXUP_HEADER
-> and DECLARE_PCI_FIXUP_FINAL, except quirk_uli5229() in 
-> arch/powerpc/platforms/fsl_uli1575.c, which is
-> defined both as DECLARE_PCI_FIXUP_HEADER and DECLARE_PCI_FIXUP_RESUME. 
-> So the quirk_uli5229()
-> will also be called with PCI pm module. The quirk functions defined as 
-> xxx_FINAL, HEADER and EARLY,
-> will be called in the path:
->
-> pci_scan_child_bus()->pci_scan_slot()->pci_scan_single_device()->pci_scan_device()->pci_setup_device() 
->
-> ->pci_device_add()
->
-> the pci_scan_slot() is called earlier than pcibios_fixup_bus() even 
-> for the first scan of PCI-e bus, so the quirk
-> functions on powerpc platform is called before the DMA & IRQ fixup. So 
-> in reality, the delay of DMA & IRQ fixup
-> won't affect anything.
->
-> Regards,
-> Yuanquan
->
+--Signature=_Wed__10_Apr_2013_21_09_50_+1000_qXeBHYRWuh+e7ml+
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hi Ben,
+Hi,
 
-How do you think about this? Do you have any comment?
-
-Thanks,
-Yuanquan
-
->>
->>
->>
+On Wed, 10 Apr 2013 09:06:11 +0000 Tang Yuantian-B29983 <B29983@freescale.c=
+om> wrote:
 >
+> Yes, I already sent out the v2 patch.
+> Please see: http://patchwork.ozlabs.org/patch/235288/
+
+Thanks.  I should read all my email before replying to it :-)
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Wed__10_Apr_2013_21_09_50_+1000_qXeBHYRWuh+e7ml+
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJRZUh+AAoJEECxmPOUX5FEeAEP/0CDnfupqEJGQK/TSg8+gfG8
+jota7lb/iIaPnxryLAZRlkUC+qGvrd5ZPokbbZhYeDPcTuDGSqBuTBwtP03Fa05D
+Ihw5OkO17uJzcEcP0LBYvdHRcMxVNT1ag5nuT9Dk9phjTS++JQC85aBzatZJN+/i
+wEn37tbdHIOayb9HYHjA7/0e8dDx+QJdA9tag4lZ/dm0zD44KEF3ynUFbH2FeAQs
+03Ptkv6PKcWfmCniMGaODDauy4tmtFuLteOPx7rqLLX1zd/DRTsr6JdRup5S/8q+
+6g2TTr37xFd5hfCLE2QZPiIyxualsCgsWkVcfRFr22LGY5auNZ0oNd2IxP5CfArv
+pqxJtBzBxfDZ7mtAMZlhxeEzy3JetNPGWga9MJ7w/En97O9406f49dDZn+022m4N
+aSyJyTzR7q0NbvzzfMt+wEa6ntWiK1zs3Gixf1Do4a1cJ23rjqga3rpGMZwrSFwr
+DLmUdwJaVoORil0Hn1S5OfmGa+UwgL55raJYOmIcm3AmiOpw4zRtpUh/NCQuxsLY
+tzoZ3tQ5Ind0mc2mbgeUN+jFp9O0agjK6qM7pZi7K+t7kgaCvnPAWNR1Emvw5o98
+7gU67bByN+FjrOc2lRYFRzr7EQ/7GtmPMC59g+tAP8lK51wV8xNtywLb/3Zf9fZs
+fd53wL/NgPRUadbj9BxY
+=au+7
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__10_Apr_2013_21_09_50_+1000_qXeBHYRWuh+e7ml+--
