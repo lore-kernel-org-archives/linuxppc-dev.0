@@ -1,17 +1,17 @@
 Return-Path: <B38951@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0186.outbound.messaging.microsoft.com [213.199.154.186])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A772B2C0092
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2013 12:35:18 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id B03532C00A8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2013 13:04:59 +1000 (EST)
 From: Jia Hongtao-B38951 <B38951@freescale.com>
 To: Wood Scott-B07421 <B07421@freescale.com>
 Subject: RE: [PATCH V4] powerpc/MPIC: Add get_version API both for internal
  and external use
-Date: Wed, 10 Apr 2013 02:35:13 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01C35559@039-SN1MPN1-003.039d.mgd.msft.net>
+Date: Wed, 10 Apr 2013 03:04:44 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01C3557B@039-SN1MPN1-003.039d.mgd.msft.net>
 References: <1365386514-14647-1-git-send-email-hongtao.jia@freescale.com>
  <1365561148.29365.0@snotra>
 In-Reply-To: <1365561148.29365.0@snotra>
@@ -60,9 +60,6 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 >=20
 > If it's not an FSL mpic, thiscpuregs->base will be NULL.  Please check
 > mpic->flags for MPIC_FSL.
-
-I will add the check soon.
-
 >=20
 > > +
 > >  /*
@@ -84,6 +81,24 @@ I will add the check soon.
 > Otherwise, this and the MSI-X patch look OK to me.
 >=20
 > -Scott
+
+
+Since all the functions including mpic_alloc() and mpic_init() do the
+check for MPIC_FSL before using fsl_mpic_get_version() I'd like to add
+check just for fsl_mpic_primary_get_version().
+
+It will be like this:
+u32 fsl_mpic_primary_get_version(void)
+{
+        struct mpic *mpic =3D mpic_primary;
+
+        if (mpic && (mpic->flags & MPIC_FSL))
+                return fsl_mpic_get_version(mpic);
+
+        return 0;
+}
+
+Could we reach an agreement here?
 
 Thanks.
 -Hongtao.
