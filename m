@@ -1,30 +1,20 @@
 Return-Path: <B38951@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe010.messaging.microsoft.com [216.32.180.30])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 22C692C00A8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2013 13:26:56 +1000 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH V4] powerpc/MPIC: Add get_version API both for internal
- and external use
-Date: Wed, 10 Apr 2013 03:26:17 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01C355EB@039-SN1MPN1-003.039d.mgd.msft.net>
-References: <1365386514-14647-1-git-send-email-hongtao.jia@freescale.com>
- <1365561148.29365.0@snotra>
- <412C8208B4A0464FA894C5F0C278CD5D01C3557B@039-SN1MPN1-003.039d.mgd.msft.net>
- <1365563255.29365.1@snotra>
- <412C8208B4A0464FA894C5F0C278CD5D01C35599@039-SN1MPN1-003.039d.mgd.msft.net>
- <1365563520.29365.2@snotra>
- <412C8208B4A0464FA894C5F0C278CD5D01C355B5@039-SN1MPN1-003.039d.mgd.msft.net>
- <1365564008.29365.3@snotra>
-In-Reply-To: <1365564008.29365.3@snotra>
-Content-Type: text/plain; charset="us-ascii"
+ by ozlabs.org (Postfix) with ESMTPS id 9610A2C00A8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2013 13:31:52 +1000 (EST)
+From: Jia Hongtao <hongtao.jia@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
+Subject: [PATCH V5] powerpc/MPIC: Add get_version API both for internal and
+ external use
+Date: Wed, 10 Apr 2013 10:52:55 +0800
+Message-ID: <1365562375-11920-1-git-send-email-hongtao.jia@freescale.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+Content-Type: text/plain
+Cc: B07421@freescale.com, hongtao.jia@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,100 +24,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+MPIC version is useful information for both mpic_alloc() and mpic_init().
+The patch provide an API to get MPIC version for reusing the code.
+Also, some other IP block may need MPIC version for their own use.
+The API for external use is also provided.
 
+Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
+---
+V5:
+* add MPIC_FSL check for fsl_mpic_get_version().
 
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Wednesday, April 10, 2013 11:20 AM
-> To: Jia Hongtao-B38951
-> Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org;
-> galak@kernel.crashing.org; Li Yang-R58472
-> Subject: Re: [PATCH V4] powerpc/MPIC: Add get_version API both for
-> internal and external use
->=20
-> On 04/09/2013 10:14:06 PM, Jia Hongtao-B38951 wrote:
-> >
-> >
-> > > -----Original Message-----
-> > > From: Wood Scott-B07421
-> > > Sent: Wednesday, April 10, 2013 11:12 AM
-> > > To: Jia Hongtao-B38951
-> > > Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org;
-> > > galak@kernel.crashing.org; Li Yang-R58472
-> > > Subject: Re: [PATCH V4] powerpc/MPIC: Add get_version API both for
-> > > internal and external use
-> > >
-> > > On 04/09/2013 10:10:37 PM, Jia Hongtao-B38951 wrote:
-> > > >
-> > > >
-> > > > > -----Original Message-----
-> > > > > From: Wood Scott-B07421
-> > > > > Sent: Wednesday, April 10, 2013 11:08 AM
-> > > > > To: Jia Hongtao-B38951
-> > > > > Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org;
-> > > > > galak@kernel.crashing.org; Li Yang-R58472
-> > > > > Subject: Re: [PATCH V4] powerpc/MPIC: Add get_version API both
-> > for
-> > > > > internal and external use
-> > > > >
-> > > > > On 04/09/2013 10:04:44 PM, Jia Hongtao-B38951 wrote:
-> > > > > > Since all the functions including mpic_alloc() and
-> > mpic_init() do
-> > > > the
-> > > > > > check for MPIC_FSL before using fsl_mpic_get_version() I'd
-> > like
-> > > > to add
-> > > > > > check just for fsl_mpic_primary_get_version().
-> > > > > >
-> > > > > > It will be like this:
-> > > > > > u32 fsl_mpic_primary_get_version(void)
-> > > > > > {
-> > > > > >         struct mpic *mpic =3D mpic_primary;
-> > > > > >
-> > > > > >         if (mpic && (mpic->flags & MPIC_FSL))
-> > > > > >                 return fsl_mpic_get_version(mpic);
-> > > > > >
-> > > > > >         return 0;
-> > > > > > }
-> > > > > >
-> > > > > > Could we reach an agreement here?
-> > > > >
-> > > > > Is there any particular reason?  It would be more robust and
-> > more
-> > > > > consistent if the check were done in fsl_mpic_get_version().
-> > > > >
-> > > > > -Scott
-> > > >
-> > > > I found out that all the functions using fsl_mpic_get_version()
-> > have
-> > > > already done the check. Adding the check in fsl_mpic_get_version()
-> > > > will cause duplicate check there. This is my consideration.
-> > >
-> > > Does that duplicate check cause any harm?
-> > >
-> > > -Scott
-> >
-> > No harm at all just not necessary.
->=20
-> Not *necessary*, but makes it more robust and more consistent.
->=20
-> > I wonder if I could add check in fsl_mpic_get_version() and remove
-> > all the
-> > check from functions in which using fsl_mpic_get_version()?
->=20
-> One of the two places that calls it is the place that maps thiscpuregs
-> in the first place, so no. :-)
+V4:
+* change the name of function from mpic_get_version() to
+  fsl_mpic_get_version().
 
-Reasonable enough.
-I will just add check in fsl_mpic_get_version().
+V3:
+* change the name of function from mpic_primary_get_version() to
+  fsl_mpic_primary_get_version().
+* return 0 if mpic_primary is null.
 
-Thanks.
--Hongtao.
+V2:
+* Using mpic_get_version() to implement mpic_primary_get_version()
 
->=20
-> The check in mpic_init() for the number of timers could perhaps have
-> the check removed if we're comfortable equating a version of zero with
-> a non-FSL MPIC.  This really isn't something that's worth worrying
-> about, though.
->=20
-> -Scott
+ arch/powerpc/include/asm/mpic.h |  3 +++
+ arch/powerpc/sysdev/mpic.c      | 32 +++++++++++++++++++++++++-------
+ 2 files changed, 28 insertions(+), 7 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/mpic.h b/arch/powerpc/include/asm/mpic.h
+index c0f9ef9..ea6bf72 100644
+--- a/arch/powerpc/include/asm/mpic.h
++++ b/arch/powerpc/include/asm/mpic.h
+@@ -393,6 +393,9 @@ struct mpic
+ #define	MPIC_REGSET_STANDARD		MPIC_REGSET(0)	/* Original MPIC */
+ #define	MPIC_REGSET_TSI108		MPIC_REGSET(1)	/* Tsi108/109 PIC */
+ 
++/* Get the version of primary MPIC */
++extern u32 fsl_mpic_primary_get_version(void);
++
+ /* Allocate the controller structure and setup the linux irq descs
+  * for the range if interrupts passed in. No HW initialization is
+  * actually performed.
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index d30e6a6..47ef4ba 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -1165,10 +1165,33 @@ static struct irq_domain_ops mpic_host_ops = {
+ 	.xlate = mpic_host_xlate,
+ };
+ 
++static u32 fsl_mpic_get_version(struct mpic *mpic)
++{
++	u32 brr1;
++
++	if (!(mpic->flags & MPIC_FSL))
++		return 0;
++
++	brr1 = _mpic_read(mpic->reg_type, &mpic->thiscpuregs,
++			MPIC_FSL_BRR1);
++
++	return brr1 & MPIC_FSL_BRR1_VER;
++}
++
+ /*
+  * Exported functions
+  */
+ 
++u32 fsl_mpic_primary_get_version(void)
++{
++	struct mpic *mpic = mpic_primary;
++
++	if (mpic)
++		return fsl_mpic_get_version(mpic);
++
++	return 0;
++}
++
+ struct mpic * __init mpic_alloc(struct device_node *node,
+ 				phys_addr_t phys_addr,
+ 				unsigned int flags,
+@@ -1315,7 +1338,6 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ 	mpic_map(mpic, mpic->paddr, &mpic->tmregs, MPIC_INFO(TIMER_BASE), 0x1000);
+ 
+ 	if (mpic->flags & MPIC_FSL) {
+-		u32 brr1;
+ 		int ret;
+ 
+ 		/*
+@@ -1326,9 +1348,7 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ 		mpic_map(mpic, mpic->paddr, &mpic->thiscpuregs,
+ 			 MPIC_CPU_THISBASE, 0x1000);
+ 
+-		brr1 = _mpic_read(mpic->reg_type, &mpic->thiscpuregs,
+-				MPIC_FSL_BRR1);
+-		fsl_version = brr1 & MPIC_FSL_BRR1_VER;
++		fsl_version = fsl_mpic_get_version(mpic);
+ 
+ 		/* Error interrupt mask register (EIMR) is required for
+ 		 * handling individual device error interrupts. EIMR
+@@ -1518,9 +1538,7 @@ void __init mpic_init(struct mpic *mpic)
+ 	mpic_cpu_write(MPIC_INFO(CPU_CURRENT_TASK_PRI), 0xf);
+ 
+ 	if (mpic->flags & MPIC_FSL) {
+-		u32 brr1 = _mpic_read(mpic->reg_type, &mpic->thiscpuregs,
+-				      MPIC_FSL_BRR1);
+-		u32 version = brr1 & MPIC_FSL_BRR1_VER;
++		u32 version = fsl_mpic_get_version(mpic);
+ 
+ 		/*
+ 		 * Timer group B is present at the latest in MPIC 3.1 (e.g.
+-- 
+1.8.0
