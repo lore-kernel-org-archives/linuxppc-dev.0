@@ -1,20 +1,25 @@
-Return-Path: <B29983@freescale.com>
-From: Tang Yuantian-B29983 <B29983@freescale.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: RE: [PATCH] of: remove the unnecessary of_node_put for
- of_parse_phandle_with_args()
-Date: Wed, 10 Apr 2013 09:06:11 +0000
-Message-ID: <D07C73A334FF604B95B3CBD2A545D07B0B128AE0@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1365490569-32455-1-git-send-email-Yuantian.Tang@freescale.com>
- <20130410190327.a70d4c3798509d664aef2f13@canb.auug.org.au>
-In-Reply-To: <20130410190327.a70d4c3798509d664aef2f13@canb.auug.org.au>
-Content-Type: text/plain; charset="gb2312"
+Return-Path: <B41889@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8F9C82C00CB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2013 19:08:31 +1000 (EST)
+Message-ID: <51652C20.2060105@freescale.com>
+Date: Wed, 10 Apr 2013 17:08:48 +0800
+From: Chen Yuanquan-B41889 <B41889@freescale.com>
 MIME-Version: 1.0
-Cc: "devicetree-discuss@lists.ozlabs.org"
- <devicetree-discuss@lists.ozlabs.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/pci: fix PCI-e devices rescan issue on powerpc
+ platform
+References: <1364902014-943-1-git-send-email-Yuanquan.Chen@freescale.com>
+ <1364915422.16520.8.camel@pasglop> <515BAB44.9070001@freescale.com>
+In-Reply-To: <515BAB44.9070001@freescale.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: Yuanquan Chen <Yuanquan.Chen@freescale.com>, linux-pci@vger.kernel.org,
+ bhelgaas@google.com, linuxppc-dev@lists.ozlabs.org,
+ Hiroo Matsumoto <matsumoto.hiroo@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,33 +29,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFN0ZXBoZW4gUm90aHdlbGwg
-W21haWx0bzpzZnJAY2FuYi5hdXVnLm9yZy5hdV0NCj4gU2VudDogMjAxM8TqNNTCMTDI1SAxNzow
-Mw0KPiBUbzogVGFuZyBZdWFudGlhbi1CMjk5ODMNCj4gQ2M6IGdyYW50Lmxpa2VseUBzZWNyZXRs
-YWIuY2E7IGRldmljZXRyZWUtZGlzY3Vzc0BsaXN0cy5vemxhYnMub3JnOw0KPiBsaW51eHBwYy1k
-ZXZAbGlzdHMub3psYWJzLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsNCj4gcm9i
-LmhlcnJpbmdAY2FseGVkYS5jb20NCj4gU3ViamVjdDogUmU6IFtQQVRDSF0gb2Y6IHJlbW92ZSB0
-aGUgdW5uZWNlc3Nhcnkgb2Zfbm9kZV9wdXQgZm9yDQo+IG9mX3BhcnNlX3BoYW5kbGVfd2l0aF9h
-cmdzKCkNCj4gDQo+IEhpLA0KPiANCj4gT24gVHVlLCA5IEFwciAyMDEzIDE0OjU2OjA5ICswODAw
-IDxZdWFudGlhbi5UYW5nQGZyZWVzY2FsZS5jb20+IHdyb3RlOg0KPiA+DQo+ID4gRnJvbTogVGFu
-ZyBZdWFudGlhbiA8eXVhbnRpYW4udGFuZ0BmcmVlc2NhbGUuY29tPg0KPiA+DQo+ID4gQXMgdGhl
-IGZ1bmN0aW9uIGl0c2VsZiBzYXlzIGl0IGlzIGNhbGxlcidzIHJlc3BvbnNpYmlsaXR5IHRvIGNh
-bGwgdGhlDQo+ID4gb2Zfbm9kZV9wdXQoKS4gIFNvLCByZW1vdmUgaXQgb24gc3VjY2VzcyB0byBr
-ZWVwIHRoZSByZWZlcmVuY2UgY291bnQNCj4gPiBjb3JyZWN0Lg0KPiA+DQo+ID4gU2lnbmVkLW9m
-Zi1ieTogVGFuZyBZdWFudGlhbiA8WXVhbnRpYW4uVGFuZ0BmcmVlc2NhbGUuY29tPg0KPiA+IC0t
-LQ0KPiA+ICBkcml2ZXJzL29mL2Jhc2UuYyB8IDMgLS0tDQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCAz
-IGRlbGV0aW9ucygtKQ0KPiA+DQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvb2YvYmFzZS5jIGIv
-ZHJpdmVycy9vZi9iYXNlLmMgaW5kZXgNCj4gPiAzMjFkM2VmLi5lOGI0YzI4IDEwMDY0NA0KPiA+
-IC0tLSBhL2RyaXZlcnMvb2YvYmFzZS5jDQo+ID4gKysrIGIvZHJpdmVycy9vZi9iYXNlLmMNCj4g
-PiBAQCAtMTE2OCw5ICsxMTY4LDYgQEAgc3RhdGljIGludCBfX29mX3BhcnNlX3BoYW5kbGVfd2l0
-aF9hcmdzKGNvbnN0DQo+IHN0cnVjdCBkZXZpY2Vfbm9kZSAqbnAsDQo+ID4gIAkJCQkJb3V0X2Fy
-Z3MtPmFyZ3NbaV0gPSBiZTMyX3RvX2NwdXAobGlzdCsrKTsNCj4gPiAgCQkJfQ0KPiA+DQo+ID4g
-LQkJCS8qIEZvdW5kIGl0ISByZXR1cm4gc3VjY2VzcyAqLw0KPiA+IC0JCQlpZiAobm9kZSkNCj4g
-PiAtCQkJCW9mX25vZGVfcHV0KG5vZGUpOw0KPiANCj4gQWN0dWFsbHksIGlmIG91dF9hcmdzIGlz
-IE5VTEwsIHlvdSBzaG91bGQgZG8gdGhlIG9mX25vZGVfcHV0KG5vZGUpLCBzbw0KPiBwcm9iYWJs
-eSB0aGUgY29ycmVjdCBmaXggaXMgdG8gYWRkIGFuICJlbHNlIiBiZWZvcmUgdGhlIGFib3ZlICJp
-ZiIgKGFuZA0KPiBtb3ZlIHRoZSBjb21tZW50KS4NCj4gDQoNClllcywgSSBhbHJlYWR5IHNlbnQg
-b3V0IHRoZSB2MiBwYXRjaC4NClBsZWFzZSBzZWU6IGh0dHA6Ly9wYXRjaHdvcmsub3psYWJzLm9y
-Zy9wYXRjaC8yMzUyODgvDQoNClJlZ2FyZHMsDQpZdWFudGlhbg0KDQo+IC0tDQo+IENoZWVycywN
-Cj4gU3RlcGhlbiBSb3Rod2VsbCAgICAgICAgICAgICAgICAgICAgc2ZyQGNhbmIuYXV1Zy5vcmcu
-YXUNCj4gaHR0cDovL3d3dy5jYW5iLmF1dWcub3JnLmF1L35zZnIvDQo=
+On 04/03/2013 12:08 PM, Chen Yuanquan-B41889 wrote:
+> On 04/02/2013 11:10 PM, Benjamin Herrenschmidt wrote:
+>> On Tue, 2013-04-02 at 19:26 +0800, Yuanquan Chen wrote:
+>>> So we move the DMA & IRQ initialization code from 
+>>> pcibios_setup_devices() and
+>>> construct a new function pcibios_enable_device. We call this 
+>>> function in
+>>> pcibios_enable_device, which will be called by PCI-e rescan code. At 
+>>> the
+>>> meanwhile, we avoid the the impact on cardbus. I also validate this 
+>>> patch with
+>>> silicon's PCIe-sata which encounters the IRQ issue.
+>> My worry is that this delays the setup of the IRQ and DMA to very 
+>> late in
+>> the process, possibly after the quirks have been run, which can be
+>> problematic. We have platform hooks that might try to "fixup" specific
+>> IRQ issues on some platforms (especially macs) which I worry might fail
+>> if delayed that way (I may be wrong, I don't have a specific case in 
+>> mind,
+>> but I would feel better if we kept setting up these things earlier).
+>>
+>> Cheers,
+>> Ben.
+>>
+>
+> Hi Ben,
+>
+> I have checked all the quirk functions which are declared in kernel 
+> arch/powerpc
+> with command :
+> grep DECLARE_PCI_FIXUP_ `find arch/powerpc/ *.[hc]`
+>
+> All the quirk function are defined as DECLARE_PCI_FIXUP_EARLY , 
+> DECLARE_PCI_FIXUP_HEADER
+> and DECLARE_PCI_FIXUP_FINAL, except quirk_uli5229() in 
+> arch/powerpc/platforms/fsl_uli1575.c, which is
+> defined both as DECLARE_PCI_FIXUP_HEADER and DECLARE_PCI_FIXUP_RESUME. 
+> So the quirk_uli5229()
+> will also be called with PCI pm module. The quirk functions defined as 
+> xxx_FINAL, HEADER and EARLY,
+> will be called in the path:
+>
+> pci_scan_child_bus()->pci_scan_slot()->pci_scan_single_device()->pci_scan_device()->pci_setup_device() 
+>
+> ->pci_device_add()
+>
+> the pci_scan_slot() is called earlier than pcibios_fixup_bus() even 
+> for the first scan of PCI-e bus, so the quirk
+> functions on powerpc platform is called before the DMA & IRQ fixup. So 
+> in reality, the delay of DMA & IRQ fixup
+> won't affect anything.
+>
+> Regards,
+> Yuanquan
+>
+
+Hi Ben,
+
+How do you think about this? Do you have any comment?
+
+Thanks,
+Yuanquan
+
+>>
+>>
+>>
+>
