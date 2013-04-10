@@ -2,22 +2,24 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 47D592C0177
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 01:21:27 +1000 (EST)
-Subject: Re: [RFC][PATCH 2/2] powerpc/fsl-pci Make PCIe hotplug work with
- Freescale
+ by ozlabs.org (Postfix) with ESMTPS id E6F162C00C6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 02:17:18 +1000 (EST)
+Subject: Re: [PATCH 1/4][v2] powerpc/fsl-booke: Add initial silicon device
+ tree files for B4860 and B4420
 Mime-Version: 1.0 (Apple Message framework v1278)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1636993.nIfPQTmF8g@pcimr>
-Date: Wed, 10 Apr 2013 10:18:13 -0500
-Message-Id: <9488E465-0205-430D-AC09-1A9000C864CE@kernel.crashing.org>
-References: <1363201636-7318-1-git-send-email-galak@kernel.crashing.org>
- <2139831.oouZXZo4xk@pcimr>
- <CE155C19-35DF-4394-9608-BF923B5DA6EB@kernel.crashing.org>
- <1636993.nIfPQTmF8g@pcimr>
-To: Rojhalat Ibrahim <imr@rtschenk.de>
-Cc: linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1365143632-19362-1-git-send-email-shaveta@freescale.com>
+Date: Wed, 10 Apr 2013 10:17:13 -0500
+Message-Id: <07FB6C49-0154-4B8D-9400-7E72DED1558B@kernel.crashing.org>
+References: <1365143632-19362-1-git-send-email-shaveta@freescale.com>
+To: Shaveta Leekha <shaveta@freescale.com>
+Cc: Zhao Chenhui <chenhui.zhao@freescale.com>,
+ Minghuan Lian <Minghuan.Lian@freescale.com>, Vakul Garg <vakul@freescale.com>,
+ Tang Yuantian <Yuantian.Tang@freescale.com>,
+ Andy Fleming <afleming@freescale.com>,
+ Ramneek Mehresh <ramneek.mehresh@freescale.com>,
+ Varun Sethi <Varun.Sethi@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,25 +30,54 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Apr 8, 2013, at 3:15 AM, Rojhalat Ibrahim wrote:
+On Apr 5, 2013, at 1:33 AM, Shaveta Leekha wrote:
 
-> Up to now the PCIe link status on Freescale PCIe controllers was only
-> checked once at boot time. So hotplug did not work. With this patch =
-the
-> link status is checked on every config read. PCIe devices not present =
-at
-> boot time are found after doing 'echo 1 >/sys/bus/pci/rescan'.
+> B4860 and B4420 are similar that share some commonalities
 >=20
-> Signed-off-by: Rojhalat Ibrahim <imr@rtschenk.de>
+> * common features have been added in b4si-pre.dtsi and b4si-post.dtsi
+> * differences are added in respective silicon files of B4860 and B4420
+>=20
+> There are several things missing from the device trees of B4860 and =
+B4420:
+>=20
+> * DPAA related nodes (Qman, Bman, Fman, Rman)
+> * DSP related nodes/information
+> * serdes, sfp(security fuse processor), thermal,
+>  gpio, maple, cpri, quad timers nodes
+>=20
+> Signed-off-by: Shaveta Leekha <shaveta@freescale.com>
+> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
+> Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
+> Signed-off-by: Ramneek Mehresh <ramneek.mehresh@freescale.com>
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> Signed-off-by: Andy Fleming <afleming@freescale.com>
+> Signed-off-by: Vakul Garg <vakul@freescale.com>
 > ---
-> arch/powerpc/include/asm/pci-bridge.h |    6 ++++
-> arch/powerpc/sysdev/fsl_pci.c         |   51 =
-+++++++++++++++++++++++++++++-----
-> arch/powerpc/sysdev/indirect_pci.c    |   10 ++----
-> 3 files changed, 54 insertions(+), 13 deletions(-)
+> v2:=20
+>    - incorporated review comments on commits message
+>    - change unit address of cpu nodes to match the reg property
 >=20
-> diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/pow
+> arch/powerpc/boot/dts/fsl/b4420si-post.dtsi |   94 ++++++++++
+> arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi  |   49 +++++
+> arch/powerpc/boot/dts/fsl/b4860si-post.dtsi |  138 ++++++++++++++
+> arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi  |   59 ++++++
+> arch/powerpc/boot/dts/fsl/b4si-post.dtsi    |  262 =
++++++++++++++++++++++++++++
+> arch/powerpc/boot/dts/fsl/b4si-pre.dtsi     |   65 +++++++
+> 6 files changed, 667 insertions(+), 0 deletions(-)
+> create mode 100644 arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
+> create mode 100644 arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi
+> create mode 100644 arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
+> create mode 100644 arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi
+> create mode 100644 arch/powerpc/boot/dts/fsl/b4si-post.dtsi
+> create mode 100644 arch/powerpc/boot/dts/fsl/b4si-pre.dtsi
+
+* merged b4si-pre.dtsi into b4860-pre.dtsi & b4420-pre.dtsi
+* Make some fixes to GUTs related nodes
 
 applied to next
 
-- k=
+- k
