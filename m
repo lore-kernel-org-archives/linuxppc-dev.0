@@ -1,39 +1,30 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+Return-Path: <toshi.kani@hp.com>
+Received: from g1t0029.austin.hp.com (g1t0029.austin.hp.com [15.216.28.36])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 684DF2C0082
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 03:50:05 +1000 (EST)
-Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 10 Apr 2013 23:15:30 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 1B88B125804F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2013 23:21:15 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3AHnjFJ62914584
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2013 23:19:46 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3AHnmtL030130
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 03:49:49 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: David Gibson <dwg@au1.ibm.com>
-Subject: Re: [PATCH -V5 08/25] powerpc: Decode the pte-lp-encoding bits
- correctly.
-In-Reply-To: <87li8qolej.fsf@linux.vnet.ibm.com>
-References: <1365055083-31956-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1365055083-31956-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20130410071915.GI8165@truffula.fritz.box>
- <87li8qolej.fsf@linux.vnet.ibm.com>
-Date: Wed, 10 Apr 2013 23:19:48 +0530
-Message-ID: <87bo9mnumb.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
+ (Client CN "smtp.hp.com",
+ Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DBC1D2C0158
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 03:50:19 +1000 (EST)
+Message-ID: <1365614999.32127.103.camel@misato.fc.hp.com>
+Subject: Re: [patch] mm, hotplug: avoid compiling memory hotremove functions
+ when disabled
+From: Toshi Kani <toshi.kani@hp.com>
+To: David Rientjes <rientjes@google.com>
+Date: Wed, 10 Apr 2013 11:29:59 -0600
+In-Reply-To: <alpine.DEB.2.02.1304092302540.3916@chino.kir.corp.google.com>
+References: <1365440996-30981-1-git-send-email-toshi.kani@hp.com>
+ <20130408134438.2a4388a07163e10a37158eed@linux-foundation.org>
+ <1365454703.32127.8.camel@misato.fc.hp.com>
+ <alpine.DEB.2.02.1304092155220.25293@chino.kir.corp.google.com>
+ <alpine.DEB.2.02.1304092302540.3916@chino.kir.corp.google.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Wen Congyang <wency@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
+ Tang Chen <tangchen@cn.fujitsu.com>, linux-mm@kvack.org,
+ Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>,
+ Paul Mackerras <paulus@samba.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,143 +34,379 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+On Tue, 2013-04-09 at 23:07 -0700, David Rientjes wrote:
+> __remove_pages() is only necessary for CONFIG_MEMORY_HOTREMOVE.  PowerPC
+> pseries will return -EOPNOTSUPP if unsupported.
+> 
+> Adding an #ifdef causes several other functions it depends on to also
+> become unnecessary, which saves in .text when disabled (it's disabled in
+> most defconfigs besides powerpc, including x86).  remove_memory_block()
+> becomes static since it is not referenced outside of
+> drivers/base/memory.c.
+> 
+> Build tested on x86 and powerpc with CONFIG_MEMORY_HOTREMOVE both enabled
+> and disabled.
+> 
+> Signed-off-by: David Rientjes <rientjes@google.com>
 
->>>  static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
->>> -			int *psize, int *ssize, unsigned long *vpn)
->>> +			int *psize, int *apsize, int *ssize, unsigned long *vpn)
->>>  {
->>>  	unsigned long avpn, pteg, vpi;
->>>  	unsigned long hpte_r = hpte->r;
->>>  	unsigned long hpte_v = hpte->v;
->>>  	unsigned long vsid, seg_off;
->>> -	int i, size, shift, penc;
->>> +	int i, size, a_size, shift, penc;
->>>  
->>> -	if (!(hpte_v & HPTE_V_LARGE))
->>> -		size = MMU_PAGE_4K;
->>> -	else {
->>> +	if (!(hpte_v & HPTE_V_LARGE)) {
->>> +		size   = MMU_PAGE_4K;
->>> +		a_size = MMU_PAGE_4K;
->>> +	} else {
->>>  		for (i = 0; i < LP_BITS; i++) {
->>>  			if ((hpte_r & LP_MASK(i+1)) == LP_MASK(i+1))
->>>  				break;
->>> @@ -388,19 +444,26 @@ static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
->>>  		penc = LP_MASK(i+1) >> LP_SHIFT;
->>>  		for (size = 0; size < MMU_PAGE_COUNT; size++) {
->>
->>>  
->>> -			/* 4K pages are not represented by LP */
->>> -			if (size == MMU_PAGE_4K)
->>> -				continue;
->>> -
->>>  			/* valid entries have a shift value */
->>>  			if (!mmu_psize_defs[size].shift)
->>>  				continue;
->>> +			for (a_size = 0; a_size < MMU_PAGE_COUNT; a_size++) {
->>
->> Can't you resize hpte_actual_psize() here instead of recoding the
->> lookup?
->
-> I thought about that, but re-coding avoided some repeated check. But
-> then, if I follow your review comments of avoiding hpte valid check etc, may
-> be I can reuse the hpte_actual_psize. Will try this. 
->
+Acked-by: Toshi Kani <toshi.kani@hp.com>
 
-How about below ?
+Thanks,
+-Toshi
 
-diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
-index 4427ca8..de235d5 100644
---- a/arch/powerpc/mm/hash_native_64.c
-+++ b/arch/powerpc/mm/hash_native_64.c
-@@ -271,19 +271,10 @@ static long native_hpte_remove(unsigned long hpte_group)
- 	return i;
- }
- 
--static inline int hpte_actual_psize(struct hash_pte *hptep, int psize)
-+static inline int __hpte_actual_psize(unsigned int lp, int psize)
- {
- 	int i, shift;
- 	unsigned int mask;
--	/* Look at the 8 bit LP value */
--	unsigned int lp = (hptep->r >> LP_SHIFT) & ((1 << LP_BITS) - 1);
--
--	if (!(hptep->v & HPTE_V_VALID))
--		return -1;
--
--	/* First check if it is large page */
--	if (!(hptep->v & HPTE_V_LARGE))
--		return MMU_PAGE_4K;
- 
- 	/* start from 1 ignoring MMU_PAGE_4K */
- 	for (i = 1; i < MMU_PAGE_COUNT; i++) {
-@@ -310,6 +301,21 @@ static inline int hpte_actual_psize(struct hash_pte *hptep, int psize)
- 	return -1;
- }
- 
-+static inline int hpte_actual_psize(struct hash_pte *hptep, int psize)
-+{
-+	/* Look at the 8 bit LP value */
-+	unsigned int lp = (hptep->r >> LP_SHIFT) & ((1 << LP_BITS) - 1);
-+
-+	if (!(hptep->v & HPTE_V_VALID))
-+		return -1;
-+
-+	/* First check if it is large page */
-+	if (!(hptep->v & HPTE_V_LARGE))
-+		return MMU_PAGE_4K;
-+
-+	return __hpte_actual_psize(lp, psize);
-+}
-+
- static long native_hpte_updatepp(unsigned long slot, unsigned long newpp,
- 				 unsigned long vpn, int psize, int ssize,
- 				 int local)
-@@ -530,7 +536,7 @@ static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
- 	unsigned long avpn, pteg, vpi;
- 	unsigned long hpte_v = hpte->v;
- 	unsigned long vsid, seg_off;
--	int size, a_size, shift, mask;
-+	int size, a_size, shift;
- 	/* Look at the 8 bit LP value */
- 	unsigned int lp = (hpte->r >> LP_SHIFT) & ((1 << LP_BITS) - 1);
- 
-@@ -544,33 +550,11 @@ static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
- 			if (!mmu_psize_defs[size].shift)
- 				continue;
- 
--			/* start from 1 ignoring MMU_PAGE_4K */
--			for (a_size = 1; a_size < MMU_PAGE_COUNT; a_size++) {
--
--				/* invalid penc */
--				if (mmu_psize_defs[size].penc[a_size] == -1)
--					continue;
--				/*
--				 * encoding bits per actual page size
--				 *        PTE LP     actual page size
--				 *    rrrr rrrz		>=8KB
--				 *    rrrr rrzz		>=16KB
--				 *    rrrr rzzz		>=32KB
--				 *    rrrr zzzz		>=64KB
--				 * .......
--				 */
--				shift = mmu_psize_defs[a_size].shift - LP_SHIFT;
--				if (shift > LP_BITS)
--					shift = LP_BITS;
--				mask = (1 << shift) - 1;
--				if ((lp & mask) ==
--				    mmu_psize_defs[size].penc[a_size]) {
--					goto out;
--				}
--			}
-+			a_size = __hpte_actual_psize(lp, size);
-+			if (a_size != -1)
-+				break;
- 		}
- 	}
--out:
- 	/* This works for all page sizes, and for 256M and 1T segments */
- 	*ssize = hpte_v >> HPTE_V_SSIZE_SHIFT;
- 	shift = mmu_psize_defs[size].shift;
+
+> ---
+>  arch/powerpc/platforms/pseries/hotplug-memory.c | 12 +++++
+>  drivers/base/memory.c                           | 44 +++++++--------
+>  include/linux/memory.h                          |  3 +-
+>  include/linux/memory_hotplug.h                  |  4 +-
+>  mm/memory_hotplug.c                             | 68 +++++++++++------------
+>  mm/sparse.c                                     | 72 +++++++++++++------------
+>  6 files changed, 113 insertions(+), 90 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
+> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+> @@ -72,6 +72,7 @@ unsigned long memory_block_size_bytes(void)
+>  	return get_memblock_size();
+>  }
+>  
+> +#ifdef CONFIG_MEMORY_HOTREMOVE
+>  static int pseries_remove_memblock(unsigned long base, unsigned int memblock_size)
+>  {
+>  	unsigned long start, start_pfn;
+> @@ -153,6 +154,17 @@ static int pseries_remove_memory(struct device_node *np)
+>  	ret = pseries_remove_memblock(base, lmb_size);
+>  	return ret;
+>  }
+> +#else
+> +static inline int pseries_remove_memblock(unsigned long base,
+> +					  unsigned int memblock_size)
+> +{
+> +	return -EOPNOTSUPP;
+> +}
+> +static inline int pseries_remove_memory(struct device_node *np)
+> +{
+> +	return -EOPNOTSUPP;
+> +}
+> +#endif /* CONFIG_MEMORY_HOTREMOVE */
+>  
+>  static int pseries_add_memory(struct device_node *np)
+>  {
+> diff --git a/drivers/base/memory.c b/drivers/base/memory.c
+> --- a/drivers/base/memory.c
+> +++ b/drivers/base/memory.c
+> @@ -93,16 +93,6 @@ int register_memory(struct memory_block *memory)
+>  	return error;
+>  }
+>  
+> -static void
+> -unregister_memory(struct memory_block *memory)
+> -{
+> -	BUG_ON(memory->dev.bus != &memory_subsys);
+> -
+> -	/* drop the ref. we got in remove_memory_block() */
+> -	kobject_put(&memory->dev.kobj);
+> -	device_unregister(&memory->dev);
+> -}
+> -
+>  unsigned long __weak memory_block_size_bytes(void)
+>  {
+>  	return MIN_MEMORY_BLOCK_SIZE;
+> @@ -637,8 +627,28 @@ static int add_memory_section(int nid, struct mem_section *section,
+>  	return ret;
+>  }
+>  
+> -int remove_memory_block(unsigned long node_id, struct mem_section *section,
+> -		int phys_device)
+> +/*
+> + * need an interface for the VM to add new memory regions,
+> + * but without onlining it.
+> + */
+> +int register_new_memory(int nid, struct mem_section *section)
+> +{
+> +	return add_memory_section(nid, section, NULL, MEM_OFFLINE, HOTPLUG);
+> +}
+> +
+> +#ifdef CONFIG_MEMORY_HOTREMOVE
+> +static void
+> +unregister_memory(struct memory_block *memory)
+> +{
+> +	BUG_ON(memory->dev.bus != &memory_subsys);
+> +
+> +	/* drop the ref. we got in remove_memory_block() */
+> +	kobject_put(&memory->dev.kobj);
+> +	device_unregister(&memory->dev);
+> +}
+> +
+> +static int remove_memory_block(unsigned long node_id,
+> +			       struct mem_section *section, int phys_device)
+>  {
+>  	struct memory_block *mem;
+>  
+> @@ -661,15 +671,6 @@ int remove_memory_block(unsigned long node_id, struct mem_section *section,
+>  	return 0;
+>  }
+>  
+> -/*
+> - * need an interface for the VM to add new memory regions,
+> - * but without onlining it.
+> - */
+> -int register_new_memory(int nid, struct mem_section *section)
+> -{
+> -	return add_memory_section(nid, section, NULL, MEM_OFFLINE, HOTPLUG);
+> -}
+> -
+>  int unregister_memory_section(struct mem_section *section)
+>  {
+>  	if (!present_section(section))
+> @@ -677,6 +678,7 @@ int unregister_memory_section(struct mem_section *section)
+>  
+>  	return remove_memory_block(0, section, 0);
+>  }
+> +#endif /* CONFIG_MEMORY_HOTREMOVE */
+>  
+>  /*
+>   * offline one memory block. If the memory block has been offlined, do nothing.
+> diff --git a/include/linux/memory.h b/include/linux/memory.h
+> --- a/include/linux/memory.h
+> +++ b/include/linux/memory.h
+> @@ -114,9 +114,10 @@ extern void unregister_memory_notifier(struct notifier_block *nb);
+>  extern int register_memory_isolate_notifier(struct notifier_block *nb);
+>  extern void unregister_memory_isolate_notifier(struct notifier_block *nb);
+>  extern int register_new_memory(int, struct mem_section *);
+> +#ifdef CONFIG_MEMORY_HOTREMOVE
+>  extern int unregister_memory_section(struct mem_section *);
+> +#endif
+>  extern int memory_dev_init(void);
+> -extern int remove_memory_block(unsigned long, struct mem_section *, int);
+>  extern int memory_notify(unsigned long val, void *v);
+>  extern int memory_isolate_notify(unsigned long val, void *v);
+>  extern struct memory_block *find_memory_block_hinted(struct mem_section *,
+> diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
+> --- a/include/linux/memory_hotplug.h
+> +++ b/include/linux/memory_hotplug.h
+> @@ -97,13 +97,13 @@ extern void __online_page_free(struct page *page);
+>  #ifdef CONFIG_MEMORY_HOTREMOVE
+>  extern bool is_pageblock_removable_nolock(struct page *page);
+>  extern int arch_remove_memory(u64 start, u64 size);
+> +extern int __remove_pages(struct zone *zone, unsigned long start_pfn,
+> +	unsigned long nr_pages);
+>  #endif /* CONFIG_MEMORY_HOTREMOVE */
+>  
+>  /* reasonably generic interface to expand the physical pages in a zone  */
+>  extern int __add_pages(int nid, struct zone *zone, unsigned long start_pfn,
+>  	unsigned long nr_pages);
+> -extern int __remove_pages(struct zone *zone, unsigned long start_pfn,
+> -	unsigned long nr_pages);
+>  
+>  #ifdef CONFIG_NUMA
+>  extern int memory_add_physaddr_to_nid(u64 start);
+> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+> --- a/mm/memory_hotplug.c
+> +++ b/mm/memory_hotplug.c
+> @@ -436,6 +436,40 @@ static int __meminit __add_section(int nid, struct zone *zone,
+>  	return register_new_memory(nid, __pfn_to_section(phys_start_pfn));
+>  }
+>  
+> +/*
+> + * Reasonably generic function for adding memory.  It is
+> + * expected that archs that support memory hotplug will
+> + * call this function after deciding the zone to which to
+> + * add the new pages.
+> + */
+> +int __ref __add_pages(int nid, struct zone *zone, unsigned long phys_start_pfn,
+> +			unsigned long nr_pages)
+> +{
+> +	unsigned long i;
+> +	int err = 0;
+> +	int start_sec, end_sec;
+> +	/* during initialize mem_map, align hot-added range to section */
+> +	start_sec = pfn_to_section_nr(phys_start_pfn);
+> +	end_sec = pfn_to_section_nr(phys_start_pfn + nr_pages - 1);
+> +
+> +	for (i = start_sec; i <= end_sec; i++) {
+> +		err = __add_section(nid, zone, i << PFN_SECTION_SHIFT);
+> +
+> +		/*
+> +		 * EEXIST is finally dealt with by ioresource collision
+> +		 * check. see add_memory() => register_memory_resource()
+> +		 * Warning will be printed if there is collision.
+> +		 */
+> +		if (err && (err != -EEXIST))
+> +			break;
+> +		err = 0;
+> +	}
+> +
+> +	return err;
+> +}
+> +EXPORT_SYMBOL_GPL(__add_pages);
+> +
+> +#ifdef CONFIG_MEMORY_HOTREMOVE
+>  /* find the smallest valid pfn in the range [start_pfn, end_pfn) */
+>  static int find_smallest_section_pfn(int nid, struct zone *zone,
+>  				     unsigned long start_pfn,
+> @@ -658,39 +692,6 @@ static int __remove_section(struct zone *zone, struct mem_section *ms)
+>  	return 0;
+>  }
+>  
+> -/*
+> - * Reasonably generic function for adding memory.  It is
+> - * expected that archs that support memory hotplug will
+> - * call this function after deciding the zone to which to
+> - * add the new pages.
+> - */
+> -int __ref __add_pages(int nid, struct zone *zone, unsigned long phys_start_pfn,
+> -			unsigned long nr_pages)
+> -{
+> -	unsigned long i;
+> -	int err = 0;
+> -	int start_sec, end_sec;
+> -	/* during initialize mem_map, align hot-added range to section */
+> -	start_sec = pfn_to_section_nr(phys_start_pfn);
+> -	end_sec = pfn_to_section_nr(phys_start_pfn + nr_pages - 1);
+> -
+> -	for (i = start_sec; i <= end_sec; i++) {
+> -		err = __add_section(nid, zone, i << PFN_SECTION_SHIFT);
+> -
+> -		/*
+> -		 * EEXIST is finally dealt with by ioresource collision
+> -		 * check. see add_memory() => register_memory_resource()
+> -		 * Warning will be printed if there is collision.
+> -		 */
+> -		if (err && (err != -EEXIST))
+> -			break;
+> -		err = 0;
+> -	}
+> -
+> -	return err;
+> -}
+> -EXPORT_SYMBOL_GPL(__add_pages);
+> -
+>  /**
+>   * __remove_pages() - remove sections of pages from a zone
+>   * @zone: zone from which pages need to be removed
+> @@ -726,6 +727,7 @@ int __remove_pages(struct zone *zone, unsigned long phys_start_pfn,
+>  	return ret;
+>  }
+>  EXPORT_SYMBOL_GPL(__remove_pages);
+> +#endif /* CONFIG_MEMORY_HOTREMOVE */
+>  
+>  int set_online_page_callback(online_page_callback_t callback)
+>  {
+> diff --git a/mm/sparse.c b/mm/sparse.c
+> --- a/mm/sparse.c
+> +++ b/mm/sparse.c
+> @@ -620,6 +620,7 @@ static void __kfree_section_memmap(struct page *memmap, unsigned long nr_pages)
+>  
+>  	vmemmap_free(start, end);
+>  }
+> +#ifdef CONFIG_MEMORY_HOTREMOVE
+>  static void free_map_bootmem(struct page *memmap, unsigned long nr_pages)
+>  {
+>  	unsigned long start = (unsigned long)memmap;
+> @@ -627,6 +628,7 @@ static void free_map_bootmem(struct page *memmap, unsigned long nr_pages)
+>  
+>  	vmemmap_free(start, end);
+>  }
+> +#endif /* CONFIG_MEMORY_HOTREMOVE */
+>  #else
+>  static struct page *__kmalloc_section_memmap(unsigned long nr_pages)
+>  {
+> @@ -664,6 +666,7 @@ static void __kfree_section_memmap(struct page *memmap, unsigned long nr_pages)
+>  			   get_order(sizeof(struct page) * nr_pages));
+>  }
+>  
+> +#ifdef CONFIG_MEMORY_HOTREMOVE
+>  static void free_map_bootmem(struct page *memmap, unsigned long nr_pages)
+>  {
+>  	unsigned long maps_section_nr, removing_section_nr, i;
+> @@ -690,40 +693,9 @@ static void free_map_bootmem(struct page *memmap, unsigned long nr_pages)
+>  			put_page_bootmem(page);
+>  	}
+>  }
+> +#endif /* CONFIG_MEMORY_HOTREMOVE */
+>  #endif /* CONFIG_SPARSEMEM_VMEMMAP */
+>  
+> -static void free_section_usemap(struct page *memmap, unsigned long *usemap)
+> -{
+> -	struct page *usemap_page;
+> -	unsigned long nr_pages;
+> -
+> -	if (!usemap)
+> -		return;
+> -
+> -	usemap_page = virt_to_page(usemap);
+> -	/*
+> -	 * Check to see if allocation came from hot-plug-add
+> -	 */
+> -	if (PageSlab(usemap_page) || PageCompound(usemap_page)) {
+> -		kfree(usemap);
+> -		if (memmap)
+> -			__kfree_section_memmap(memmap, PAGES_PER_SECTION);
+> -		return;
+> -	}
+> -
+> -	/*
+> -	 * The usemap came from bootmem. This is packed with other usemaps
+> -	 * on the section which has pgdat at boot time. Just keep it as is now.
+> -	 */
+> -
+> -	if (memmap) {
+> -		nr_pages = PAGE_ALIGN(PAGES_PER_SECTION * sizeof(struct page))
+> -			>> PAGE_SHIFT;
+> -
+> -		free_map_bootmem(memmap, nr_pages);
+> -	}
+> -}
+> -
+>  /*
+>   * returns the number of sections whose mem_maps were properly
+>   * set.  If this is <=0, then that means that the passed-in
+> @@ -800,6 +772,39 @@ static inline void clear_hwpoisoned_pages(struct page *memmap, int nr_pages)
+>  }
+>  #endif
+>  
+> +#ifdef CONFIG_MEMORY_HOTREMOVE
+> +static void free_section_usemap(struct page *memmap, unsigned long *usemap)
+> +{
+> +	struct page *usemap_page;
+> +	unsigned long nr_pages;
+> +
+> +	if (!usemap)
+> +		return;
+> +
+> +	usemap_page = virt_to_page(usemap);
+> +	/*
+> +	 * Check to see if allocation came from hot-plug-add
+> +	 */
+> +	if (PageSlab(usemap_page) || PageCompound(usemap_page)) {
+> +		kfree(usemap);
+> +		if (memmap)
+> +			__kfree_section_memmap(memmap, PAGES_PER_SECTION);
+> +		return;
+> +	}
+> +
+> +	/*
+> +	 * The usemap came from bootmem. This is packed with other usemaps
+> +	 * on the section which has pgdat at boot time. Just keep it as is now.
+> +	 */
+> +
+> +	if (memmap) {
+> +		nr_pages = PAGE_ALIGN(PAGES_PER_SECTION * sizeof(struct page))
+> +			>> PAGE_SHIFT;
+> +
+> +		free_map_bootmem(memmap, nr_pages);
+> +	}
+> +}
+> +
+>  void sparse_remove_one_section(struct zone *zone, struct mem_section *ms)
+>  {
+>  	struct page *memmap = NULL;
+> @@ -819,4 +824,5 @@ void sparse_remove_one_section(struct zone *zone, struct mem_section *ms)
+>  	clear_hwpoisoned_pages(memmap, PAGES_PER_SECTION);
+>  	free_section_usemap(memmap, usemap);
+>  }
+> -#endif
+> +#endif /* CONFIG_MEMORY_HOTREMOVE */
+> +#endif /* CONFIG_MEMORY_HOTPLUG */
