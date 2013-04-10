@@ -1,18 +1,38 @@
-Return-Path: <eparis@redhat.com>
-Received: from mx3-phx2.redhat.com (mx3-phx2.redhat.com [209.132.183.24])
- by ozlabs.org (Postfix) with ESMTP id 47B0F2C00C8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 04:07:40 +1000 (EST)
-Date: Wed, 10 Apr 2013 12:56:43 -0400 (EDT)
-From: Eric Paris <eparis@redhat.com>
-To: Anton Blanchard <anton@samba.org>
-Message-ID: <863511248.10928408.1365613003344.JavaMail.root@redhat.com>
-In-Reply-To: <20130109104815.2b85895a@kryten>
-References: <20130109104617.74e995a5@kryten> <20130109104815.2b85895a@kryten>
-Subject: Re: [PATCH 3/4] powerpc: Optimise 64bit syscall auditing entry path
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 002F42C00AC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 04:27:37 +1000 (EST)
+Received: from /spool/local
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 11 Apr 2013 04:20:07 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id BAE32357804E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 04:27:35 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3AIQt0512124538
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 04:26:55 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3AIQxkM014609
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 04:27:00 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH -V5 19/25] powerpc/THP: Differentiate THP PMD entries from
+ HUGETLB PMD entries
+In-Reply-To: <20130410072122.GC24786@concordia>
+References: <1365055083-31956-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1365055083-31956-20-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20130410072122.GC24786@concordia>
+Date: Wed, 10 Apr 2013 23:56:56 +0530
+Message-ID: <878v4qnswf.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org, viro@zeniv.linux.org.uk,
- linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,109 +42,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Patches 1 and 2 I applied for 3.10, but I'd really like to have someone who knows PPC ack 3 and 4.  Especially if there is a hope that it goes through my tree...
+Michael Ellerman <michael@ellerman.id.au> writes:
 
-Link to original messages for your ease of review...
+> On Thu, Apr 04, 2013 at 11:27:57AM +0530, Aneesh Kumar K.V wrote:
+>> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+>> 
+>> HUGETLB clear the top bit of PMD entries and use that to indicate
+>> a HUGETLB page directory. Since we store pfns in PMDs for THP,
+>> we would have the top bit cleared by default. Add the top bit mask
+>> for THP PMD entries and clear that when we are looking for pmd_pfn.
+>> 
+>> @@ -44,6 +44,14 @@ struct mm_struct;
+>>  #define PMD_HUGE_RPN_SHIFT	PTE_RPN_SHIFT
+>>  #define HUGE_PAGE_SIZE		(ASM_CONST(1) << 24)
+>>  #define HUGE_PAGE_MASK		(~(HUGE_PAGE_SIZE - 1))
+>> +/*
+>> + * HugeTLB looks at the top bit of the Linux page table entries to
+>> + * decide whether it is a huge page directory or not. Mark HUGE
+>> + * PMD to differentiate
+>> + */
+>> +#define PMD_HUGE_NOT_HUGETLB	(ASM_CONST(1) << 63)
+>> +#define PMD_ISHUGE		(_PMD_ISHUGE | PMD_HUGE_NOT_HUGETLB)
+>> +#define PMD_HUGE_PROTBITS	(0xfff | PMD_HUGE_NOT_HUGETLB)
+>>  
+>>  #ifndef __ASSEMBLY__
+>>  extern void hpte_need_hugepage_flush(struct mm_struct *mm, unsigned long addr,
+>> @@ -84,7 +93,8 @@ static inline unsigned long pmd_pfn(pmd_t pmd)
+>>  	/*
+>>  	 * Only called for hugepage pmd
+>>  	 */
+>> -	return pmd_val(pmd) >> PMD_HUGE_RPN_SHIFT;
+>> +	unsigned long val = pmd_val(pmd) & ~PMD_HUGE_PROTBITS;
+>> +	return val  >> PMD_HUGE_RPN_SHIFT;
+>>  }
+>
+> This is breaking the 32-bit build for me (pmac32_defconfig):
+>
+> arch/powerpc/include/asm/pgtable.h:123:2: error: left shift count >= width of type [-Werror]
+>
 
-http://marc.info/?l=linux-kernel&m=135768892320439&w=2
-http://marc.info/?l=linux-kernel&m=135768895320472&w=2
 
--Eric
 
------ Original Message -----
-> 
-> Add an assembly fast path for the syscall audit entry path on
-> 64bit. Some distros enable auditing by default which forces us
-> through the syscall auditing path even if there are no rules.
-> 
-> I wrote some test cases to validate the patch:
-> 
-> http://ozlabs.org/~anton/junkcode/audit_tests.tar.gz
-> 
-> And to test the performance I ran a simple null syscall
-> microbenchmark on a POWER7 box:
-> 
-> http://ozlabs.org/~anton/junkcode/null_syscall.c
-> 
-> Baseline: 949.2 cycles
-> Patched:  920.6 cycles
-> 
-> An improvement of 3%. Most of the potential gains are masked by
-> the syscall audit exit path which will be fixed in a
-> subsequent patch.
-> 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> ---
-> 
-> Index: b/arch/powerpc/kernel/entry_64.S
-> ===================================================================
-> --- a/arch/powerpc/kernel/entry_64.S
-> +++ b/arch/powerpc/kernel/entry_64.S
-> @@ -34,6 +34,12 @@
->  #include <asm/ftrace.h>
->  #include <asm/hw_irq.h>
->  
-> +/* Avoid __ASSEMBLER__'ifying <linux/audit.h> just for this.  */
-> +#include <linux/elf-em.h>
-> +#define AUDIT_ARCH_PPC		(EM_PPC)
-> +#define AUDIT_ARCH_PPC64	(EM_PPC64|__AUDIT_ARCH_64BIT)
-> +#define __AUDIT_ARCH_64BIT 0x80000000
-> +
->  /*
->   * System calls.
->   */
-> @@ -244,6 +250,10 @@ syscall_error:
->  	
->  /* Traced system call support */
->  syscall_dotrace:
-> +#ifdef CONFIG_AUDITSYSCALL
-> +	andi.	r11,r10,(_TIF_SYSCALL_T_OR_A & ~_TIF_SYSCALL_AUDIT)
-> +	beq	audit_entry
-> +#endif
->  	bl	.save_nvgprs
->  	addi	r3,r1,STACK_FRAME_OVERHEAD
->  	bl	.do_syscall_trace_enter
-> @@ -253,6 +263,7 @@ syscall_dotrace:
->  	 * for the call number to look up in the table (r0).
->  	 */
->  	mr	r0,r3
-> +.Laudit_entry_return:
->  	ld	r3,GPR3(r1)
->  	ld	r4,GPR4(r1)
->  	ld	r5,GPR5(r1)
-> @@ -264,6 +275,34 @@ syscall_dotrace:
->  	ld	r10,TI_FLAGS(r10)
->  	b	.Lsyscall_dotrace_cont
->  
-> +#ifdef CONFIG_AUDITSYSCALL
-> +audit_entry:
-> +	ld	r4,GPR0(r1)
-> +	ld	r5,GPR3(r1)
-> +	ld	r6,GPR4(r1)
-> +	ld	r7,GPR5(r1)
-> +	ld	r8,GPR6(r1)
-> +
-> +	andi.	r11,r10,_TIF_32BIT
-> +	beq	1f
-> +
-> +	lis	r3,AUDIT_ARCH_PPC@h
-> +	ori	r3,r3,AUDIT_ARCH_PPC@l
-> +	clrldi	r5,r5,32
-> +	clrldi	r6,r6,32
-> +	clrldi	r7,r7,32
-> +	clrldi	r8,r8,32
-> +	bl	.__audit_syscall_entry
-> +	ld	r0,GPR0(r1)
-> +	b	.Laudit_entry_return
-> +
-> +1:	lis	r3,AUDIT_ARCH_PPC64@h
-> +	ori	r3,r3,AUDIT_ARCH_PPC64@l
-> +	bl	.__audit_syscall_entry
-> +	ld	r0,GPR0(r1)
-> +	b	.Laudit_entry_return
-> +#endif
-> +
->  syscall_enosys:
->  	li	r3,-ENOSYS
->  	b	syscall_exit
-> 
+diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
+index 5617dee..30c765a 100644
+--- a/arch/powerpc/include/asm/pgtable.h
++++ b/arch/powerpc/include/asm/pgtable.h
+@@ -110,11 +110,6 @@ static inline int has_transparent_hugepage(void)
+ 	return 1;
+ }
+ 
+-#else
+-#define pmd_large(pmd)		0
+-#define has_transparent_hugepage() 0
+-#endif /* CONFIG_TRANSPARENT_HUGEPAGE */
+-
+ static inline unsigned long pmd_pfn(pmd_t pmd)
+ {
+ 	/*
+@@ -124,6 +119,11 @@ static inline unsigned long pmd_pfn(pmd_t pmd)
+ 	return val  >> PMD_HUGE_RPN_SHIFT;
+ }
+ 
++#else
++#define pmd_large(pmd)		0
++#define has_transparent_hugepage() 0
++#endif /* CONFIG_TRANSPARENT_HUGEPAGE */
++
+ static inline int pmd_young(pmd_t pmd)
+ {
+ 	return pmd_val(pmd) & PMD_HUGE_ACCESSED;
