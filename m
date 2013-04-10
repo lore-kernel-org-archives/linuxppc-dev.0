@@ -1,24 +1,23 @@
-Return-Path: <R1AAHA@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5A5AE2C00B6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2013 08:35:38 +1000 (EST)
-Date: Tue, 9 Apr 2013 17:31:58 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Vakul Garg <vakul@freescale.com>
-Subject: Re: [PATCH] powerpc/crypto: Add property for 'era' in SEC dts
- crypto node
-Message-ID: <20130409173158.5eb44856b3304a34b6060dbf@freescale.com>
-In-Reply-To: <1365508233-26292-1-git-send-email-vakul@freescale.com>
-References: <1365508233-26292-1-git-send-email-vakul@freescale.com>
+Return-Path: <shhuiw@gmail.com>
+Received: from mail-pd0-f177.google.com (mail-pd0-f177.google.com
+ [209.85.192.177])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 02C232C00BD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2013 10:46:41 +1000 (EST)
+Received: by mail-pd0-f177.google.com with SMTP id u11so3955700pdi.8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Apr 2013 17:46:39 -0700 (PDT)
+Message-ID: <5164B664.6070306@gmail.com>
+Date: Wed, 10 Apr 2013 08:46:28 +0800
+From: Wang Sheng-Hui <shhuiw@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: Shaveta Leekha <shaveta@freescale.com>, linux-kernel@vger.kernel.org,
- Andy Fleming <afleming@freescale.com>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "Suzuki K. Poulose" <suzuki@in.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] fadump: allow duplicate assignment to
+ /sys/kernel/fadump_registered
+ when it's assigned the desired value already
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,23 +27,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 9 Apr 2013 17:20:33 +0530
-Vakul Garg <vakul@freescale.com> wrote:
+When the fadump is enabled, we have /sys/kernel/fadump_enabled assigned 1.
+But sometimes we need to restart the fadump service by 'service kdump restart',
+in case the kdump script has added the fadump detect/support already.
+In current implementation, we cannot re-assign 1 to /sys/kernel/fadump_enabled
+if 1 is already set and we have added more logic check in the user space script.
 
-> The crypto node now contains a new property 'fsl,sec-era'.
-> This is required so that applications can retrieve era info without
-> having to be able to read SEC's register space.
-> 
-> Signed-off-by: Vakul Garg <vakul@freescale.com>
-> ---
->  arch/powerpc/boot/dts/fsl/pq3-sec4.4-0.dtsi   |    1 +
->  arch/powerpc/boot/dts/fsl/qoriq-sec4.0-0.dtsi |    1 +
->  arch/powerpc/boot/dts/fsl/qoriq-sec4.2-0.dtsi |    1 +
->  arch/powerpc/boot/dts/fsl/qoriq-sec5.0-0.dtsi |    1 +
->  arch/powerpc/boot/dts/fsl/qoriq-sec5.2-0.dtsi |    1 +
->  arch/powerpc/boot/dts/fsl/qoriq-sec5.3-0.dtsi |    1 +
->  6 files changed, 6 insertions(+), 0 deletions(-)
+I think we can enable the duplicate assignment to ease the user space tools,
+as long as the value is the right 1 or 0.
 
-missing p1023si-post.dtsi and qoriq-sec4.1-0.dtsi files.
+Signed-off-by: Wang Sheng-Hui <shhuiw@gmail.com>
+---
+  arch/powerpc/kernel/fadump.c |    8 ++------
+  1 file changed, 2 insertions(+), 6 deletions(-)
 
-Kim
+diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+index 06c8202..e1347e5 100644
+--- a/arch/powerpc/kernel/fadump.c
++++ b/arch/powerpc/kernel/fadump.c
+@@ -1140,18 +1140,14 @@ static ssize_t fadump_register_store(struct kobject *kobj,
+
+  	switch (buf[0]) {
+  	case '0':
+-		if (fw_dump.dump_registered == 0) {
+-			ret = -EINVAL;
++		if (fw_dump.dump_registered == 0)
+  			goto unlock_out;
+-		}
+  		/* Un-register Firmware-assisted dump */
+  		fadump_unregister_dump(&fdm);
+  		break;
+  	case '1':
+-		if (fw_dump.dump_registered == 1) {
+-			ret = -EINVAL;
++		if (fw_dump.dump_registered == 1)
+  			goto unlock_out;
+-		}
+  		/* Register Firmware-assisted dump */
+  		register_fadump();
+  		break;
+-- 
+1.7.10.4
