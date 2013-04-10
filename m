@@ -1,31 +1,33 @@
 Return-Path: <aruna@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DD7732C0089
- for <linuxppc-dev@ozlabs.org>; Wed, 10 Apr 2013 17:21:00 +1000 (EST)
+ (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D9F632C00E2
+ for <linuxppc-dev@ozlabs.org>; Wed, 10 Apr 2013 17:21:11 +1000 (EST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <aruna@linux.vnet.ibm.com>;
- Wed, 10 Apr 2013 17:15:21 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 0BCC72BB0057
- for <linuxppc-dev@ozlabs.org>; Wed, 10 Apr 2013 17:20:56 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3A77bDK41156714
- for <linuxppc-dev@ozlabs.org>; Wed, 10 Apr 2013 17:07:37 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3A7Ks1t016133
- for <linuxppc-dev@ozlabs.org>; Wed, 10 Apr 2013 17:20:55 +1000
-Subject: [PATCH 0/8] Nvram-to-pstore
+ Wed, 10 Apr 2013 17:12:11 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 73B4E2BB0050
+ for <linuxppc-dev@ozlabs.org>; Wed, 10 Apr 2013 17:21:08 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3A77ff852232290
+ for <linuxppc-dev@ozlabs.org>; Wed, 10 Apr 2013 17:07:41 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3A7L6Kn027767
+ for <linuxppc-dev@ozlabs.org>; Wed, 10 Apr 2013 17:21:07 +1000
+Subject: [PATCH 1/8] Remove syslog prefix in uncompressed oops text
 To: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org,
  benh@kernel.crashing.org
 From: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
-Date: Wed, 10 Apr 2013 12:50:47 +0530
-Message-ID: <20130410071835.20150.56489.stgit@aruna-ThinkPad-T420>
+Date: Wed, 10 Apr 2013 12:51:00 +0530
+Message-ID: <20130410072100.20150.74661.stgit@aruna-ThinkPad-T420>
+In-Reply-To: <20130410071835.20150.56489.stgit@aruna-ThinkPad-T420>
+References: <20130410071835.20150.56489.stgit@aruna-ThinkPad-T420>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: jkenisto@linux.vnet.ibm.com, mahesh@linux.vnet.ibm.com, anton@samba.org
@@ -38,29 +40,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently the kernel provides the contents of p-series NVRAM only as a
-simple stream of bytes via /dev/nvram, which must be interpreted in user
-space by the nvram command in the powerpc-utils package.  This patch set
-exploits the pstore subsystem to expose each partition in NVRAM as a
-separate file in /dev/pstore. For instance Oops messages will stored in a
-file named [dmesg-nvram-2].
+Removal of syslog prefix in the uncompressed oops text will
+help in capturing more oops data.
 
+Signed-off-by: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
+Reviewed-by: Jim Keniston <jkenisto@us.ibm.com>
 ---
+ arch/powerpc/platforms/pseries/nvram.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Aruna Balakrishnaiah (8):
-      Remove syslog prefix in uncompressed oops text
-      Add version and timestamp to oops header
-      Introduce generic read function to read nvram-partitions
-      Read/Write oops nvram partition via pstore
-      Read rtas partition via pstore
-      Distinguish between a os-partition and non-os partition
-      Read of-config partition via pstore
-      Read common partition via pstore
-
-
- arch/powerpc/platforms/pseries/nvram.c |  329 ++++++++++++++++++++++++++++----
- fs/pstore/inode.c                      |    9 +
- include/linux/pstore.h                 |    4 
- 3 files changed, 304 insertions(+), 38 deletions(-)
-
--- 
+diff --git a/arch/powerpc/platforms/pseries/nvram.c b/arch/powerpc/platforms/pseries/nvram.c
+index 8733a86..e54a8b7 100644
+--- a/arch/powerpc/platforms/pseries/nvram.c
++++ b/arch/powerpc/platforms/pseries/nvram.c
+@@ -619,7 +619,7 @@ static void oops_to_nvram(struct kmsg_dumper *dumper,
+ 	}
+ 	if (rc != 0) {
+ 		kmsg_dump_rewind(dumper);
+-		kmsg_dump_get_buffer(dumper, true,
++		kmsg_dump_get_buffer(dumper, false,
+ 				     oops_data, oops_data_sz, &text_len);
+ 		err_type = ERR_TYPE_KERNEL_PANIC;
+ 		*oops_len = (u16) text_len;
