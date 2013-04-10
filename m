@@ -1,19 +1,20 @@
-Return-Path: <R1AAHA@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
+Return-Path: <B07421@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 49AE72C00BD
- for <linuxppc-dev@ozlabs.org>; Thu, 11 Apr 2013 08:02:00 +1000 (EST)
-Date: Wed, 10 Apr 2013 16:58:28 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: <galak@kernel.crashing.org>
-Subject: [PATCH] powerpc/85xx: Fix MPC8536DS 36-bit device tree
-Message-ID: <20130410165828.ec0378afc7e7f17e8e47850e@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 245452C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 08:40:58 +1000 (EST)
+From: Scott Wood <scottwood@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH] powerpc/85xx: enable Silicon image 3132 PCIe to SATA
+ controller
+Date: Wed, 10 Apr 2013 17:40:49 -0500
+Message-ID: <1365633649-27046-1-git-send-email-scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,50 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Kumar Gala <galak@kernel.crashing.org>
+From: Roy ZANG <tie-fei.zang@freescale.com>
 
-The localbus node should be in at 0xfffe05000 not 0xffe05000.  Also
-fixed the names of the localbus and pci nodes to reflect the addresses
-they are actually at.
+Some 85xx board, for example, P1020RDB-PC has on board silicon image
+PCIe to SATA controller and when booting up, the filesystem will auto mount
+to the SATA disk. So enable silicon image 3132 pcie to sata controller
+by default
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
-note: this upstream submission extended to fix pci1.
+ arch/powerpc/configs/mpc85xx_defconfig     |    1 +
+ arch/powerpc/configs/mpc85xx_smp_defconfig |    1 +
+ 2 files changed, 2 insertions(+)
 
- arch/powerpc/boot/dts/mpc8536ds_36b.dts | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/boot/dts/mpc8536ds_36b.dts b/arch/powerpc/boot/dts/mpc8536ds_36b.dts
-index f8a3b34..6c723ee 100644
---- a/arch/powerpc/boot/dts/mpc8536ds_36b.dts
-+++ b/arch/powerpc/boot/dts/mpc8536ds_36b.dts
-@@ -32,7 +32,7 @@
- 		reg = <0 0 0 0>;	// Filled by U-Boot
- 	};
- 
--	lbc: localbus@ffe05000 {
-+	lbc: localbus@fffe05000 {
- 		reg = <0xf 0xffe05000 0 0x1000>;
- 
- 		ranges = <0x0 0x0 0xf 0xe8000000 0x08000000
-@@ -44,7 +44,7 @@
- 		ranges = <0x0 0xf 0xffe00000 0x100000>;
- 	};
- 
--	pci0: pci@ffe08000 {
-+	pci0: pci@fffe08000 {
- 		reg = <0xf 0xffe08000 0 0x1000>;
- 		ranges = <0x02000000 0 0xf0000000 0xc 0x00000000 0 0x10000000
- 			  0x01000000 0 0x00000000 0xf 0xffc00000 0 0x00010000>;
-@@ -59,7 +59,7 @@
- 			0x8800 0 0 4 &mpic 4 1 0 0>;
- 	};
- 
--	pci1: pcie@ffe09000 {
-+	pci1: pcie@fffe09000 {
- 		reg = <0xf 0xffe09000 0 0x1000>;
- 		ranges = <0x02000000 0 0xf8000000 0xc 0x18000000 0 0x08000000
- 			  0x01000000 0 0x00000000 0xf 0xffc20000 0 0x00010000>;
+diff --git a/arch/powerpc/configs/mpc85xx_defconfig b/arch/powerpc/configs/mpc85xx_defconfig
+index cf815e8..75f17cf 100644
+--- a/arch/powerpc/configs/mpc85xx_defconfig
++++ b/arch/powerpc/configs/mpc85xx_defconfig
+@@ -106,6 +106,7 @@ CONFIG_SCSI_LOGGING=y
+ CONFIG_ATA=y
+ CONFIG_SATA_AHCI=y
+ CONFIG_SATA_FSL=y
++CONFIG_SATA_SIL24=y
+ CONFIG_PATA_ALI=y
+ CONFIG_PATA_VIA=y
+ CONFIG_NETDEVICES=y
+diff --git a/arch/powerpc/configs/mpc85xx_smp_defconfig b/arch/powerpc/configs/mpc85xx_smp_defconfig
+index 8d00ea5b..64ae227 100644
+--- a/arch/powerpc/configs/mpc85xx_smp_defconfig
++++ b/arch/powerpc/configs/mpc85xx_smp_defconfig
+@@ -108,6 +108,7 @@ CONFIG_SCSI_LOGGING=y
+ CONFIG_ATA=y
+ CONFIG_SATA_AHCI=y
+ CONFIG_SATA_FSL=y
++CONFIG_SATA_SIL24=y
+ CONFIG_PATA_ALI=y
+ CONFIG_NETDEVICES=y
+ CONFIG_DUMMY=y
 -- 
-1.8.1.5
+1.7.9.5
