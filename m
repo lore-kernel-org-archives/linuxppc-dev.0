@@ -1,25 +1,40 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E6F162C00C6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 02:17:18 +1000 (EST)
-Subject: Re: [PATCH 1/4][v2] powerpc/fsl-booke: Add initial silicon device
- tree files for B4860 and B4420
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1365143632-19362-1-git-send-email-shaveta@freescale.com>
-Date: Wed, 10 Apr 2013 10:17:13 -0500
-Message-Id: <07FB6C49-0154-4B8D-9400-7E72DED1558B@kernel.crashing.org>
-References: <1365143632-19362-1-git-send-email-shaveta@freescale.com>
-To: Shaveta Leekha <shaveta@freescale.com>
-Cc: Zhao Chenhui <chenhui.zhao@freescale.com>,
- Minghuan Lian <Minghuan.Lian@freescale.com>, Vakul Garg <vakul@freescale.com>,
- Tang Yuantian <Yuantian.Tang@freescale.com>,
- Andy Fleming <afleming@freescale.com>,
- Ramneek Mehresh <ramneek.mehresh@freescale.com>,
- Varun Sethi <Varun.Sethi@freescale.com>, linuxppc-dev@lists.ozlabs.org
+ (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C676A2C00C8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 03:47:43 +1000 (EST)
+Received: from /spool/local
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 10 Apr 2013 23:14:24 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 25B831258051
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2013 23:18:58 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3AHlSsJ11010454
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2013 23:17:28 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3AHlUXd008698
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2013 17:47:31 GMT
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: David Gibson <dwg@au1.ibm.com>
+Subject: Re: [PATCH -V5 06/25] powerpc: Reduce PTE table memory wastage
+In-Reply-To: <87r4iiom8a.fsf@linux.vnet.ibm.com>
+References: <1365055083-31956-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1365055083-31956-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20130410044611.GF8165@truffula.fritz.box>
+ <8738uyq4om.fsf@linux.vnet.ibm.com>
+ <20130410070403.GH8165@truffula.fritz.box>
+ <87r4iiom8a.fsf@linux.vnet.ibm.com>
+Date: Wed, 10 Apr 2013 23:17:30 +0530
+Message-ID: <87eheinuq5.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,55 +44,250 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
 
-On Apr 5, 2013, at 1:33 AM, Shaveta Leekha wrote:
+> David Gibson <dwg@au1.ibm.com> writes:
+>
+>> On Wed, Apr 10, 2013 at 11:59:29AM +0530, Aneesh Kumar K.V wrote:
+>>> David Gibson <dwg@au1.ibm.com> writes:
+>>> > On Thu, Apr 04, 2013 at 11:27:44AM +0530, Aneesh Kumar K.V wrote:
+>> [snip]
+>>> >> @@ -97,13 +100,45 @@ void __destroy_context(int context_id)
+>>> >>  }
+>>> >>  EXPORT_SYMBOL_GPL(__destroy_context);
+>>> >>  
+>>> >> +#ifdef CONFIG_PPC_64K_PAGES
+>>> >> +static void destroy_pagetable_page(struct mm_struct *mm)
+>>> >> +{
+>>> >> +	int count;
+>>> >> +	struct page *page;
+>>> >> +
+>>> >> +	page = mm->context.pgtable_page;
+>>> >> +	if (!page)
+>>> >> +		return;
+>>> >> +
+>>> >> +	/* drop all the pending references */
+>>> >> +	count = atomic_read(&page->_mapcount) + 1;
+>>> >> +	/* We allow PTE_FRAG_NR(16) fragments from a PTE page */
+>>> >> +	count = atomic_sub_return(16 - count, &page->_count);
+>>> >
+>>> > You should really move PTE_FRAG_NR to a header so you can actually use
+>>> > it here rather than hard coding 16.
+>>> >
+>>> > It took me a fair while to convince myself that there is no race here
+>>> > with something altering mapcount and count between the atomic_read()
+>>> > and the atomic_sub_return().  It could do with a comment to explain
+>>> > why that is safe.
+>>> >
+>>> > Re-using the mapcount field for your index also seems odd, and it took
+>>> > me a while to convince myself that that's safe too.  Wouldn't it be
+>>> > simpler to store a pointer to the next sub-page in the mm_context
+>>> > instead? You can get from that to the struct page easily enough with a
+>>> > shift and pfn_to_page().
+>>> 
+>>> I found using _mapcount simpler in this case. I was looking at it not
+>>> as an index, but rather how may fragments are mapped/used already.
+>>
+>> Except that it's actually (#fragments - 1).  Using subpage pointer
+>> makes the fragments calculation (very slightly) harder, but the
+>> calculation of the table address easier.  More importantly it avoids
+>> adding effectively an extra variable - which is then shoehorned into a
+>> structure not really designed to hold it.
+>
+> Even with subpage pointer we would need mm->context.pgtable_page or
+> something similar. We don't add any other extra variable right ?. Let me
+> try what you are suggesting here and see if that make it simpler.
 
-> B4860 and B4420 are similar that share some commonalities
->=20
-> * common features have been added in b4si-pre.dtsi and b4si-post.dtsi
-> * differences are added in respective silicon files of B4860 and B4420
->=20
-> There are several things missing from the device trees of B4860 and =
-B4420:
->=20
-> * DPAA related nodes (Qman, Bman, Fman, Rman)
-> * DSP related nodes/information
-> * serdes, sfp(security fuse processor), thermal,
->  gpio, maple, cpri, quad timers nodes
->=20
-> Signed-off-by: Shaveta Leekha <shaveta@freescale.com>
-> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
-> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
-> Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
-> Signed-off-by: Ramneek Mehresh <ramneek.mehresh@freescale.com>
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> Signed-off-by: Andy Fleming <afleming@freescale.com>
-> Signed-off-by: Vakul Garg <vakul@freescale.com>
-> ---
-> v2:=20
->    - incorporated review comments on commits message
->    - change unit address of cpu nodes to match the reg property
->=20
-> arch/powerpc/boot/dts/fsl/b4420si-post.dtsi |   94 ++++++++++
-> arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi  |   49 +++++
-> arch/powerpc/boot/dts/fsl/b4860si-post.dtsi |  138 ++++++++++++++
-> arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi  |   59 ++++++
-> arch/powerpc/boot/dts/fsl/b4si-post.dtsi    |  262 =
-+++++++++++++++++++++++++++
-> arch/powerpc/boot/dts/fsl/b4si-pre.dtsi     |   65 +++++++
-> 6 files changed, 667 insertions(+), 0 deletions(-)
-> create mode 100644 arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
-> create mode 100644 arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi
-> create mode 100644 arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
-> create mode 100644 arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi
-> create mode 100644 arch/powerpc/boot/dts/fsl/b4si-post.dtsi
-> create mode 100644 arch/powerpc/boot/dts/fsl/b4si-pre.dtsi
 
-* merged b4si-pre.dtsi into b4860-pre.dtsi & b4420-pre.dtsi
-* Make some fixes to GUTs related nodes
+Here is what I ended up with. I will fold this in next update
 
-applied to next
-
-- k
+diff --git a/arch/powerpc/include/asm/mmu-book3e.h b/arch/powerpc/include/asm/mmu-book3e.h
+index affbd68..8bd560c 100644
+--- a/arch/powerpc/include/asm/mmu-book3e.h
++++ b/arch/powerpc/include/asm/mmu-book3e.h
+@@ -233,7 +233,7 @@ typedef struct {
+ #endif
+ #ifdef CONFIG_PPC_64K_PAGES
+ 	/* for 4K PTE fragment support */
+-	struct page *pgtable_page;
++	void *pte_frag;
+ #endif
+ } mm_context_t;
+ 
+diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
+index f51ed83..af73f06 100644
+--- a/arch/powerpc/include/asm/mmu-hash64.h
++++ b/arch/powerpc/include/asm/mmu-hash64.h
+@@ -511,7 +511,7 @@ typedef struct {
+ #endif /* CONFIG_PPC_ICSWX */
+ #ifdef CONFIG_PPC_64K_PAGES
+ 	/* for 4K PTE fragment support */
+-	struct page *pgtable_page;
++	void *pte_frag;
+ #endif
+ } mm_context_t;
+ 
+diff --git a/arch/powerpc/include/asm/pgalloc-64.h b/arch/powerpc/include/asm/pgalloc-64.h
+index 46c6ffa..7b7ac40 100644
+--- a/arch/powerpc/include/asm/pgalloc-64.h
++++ b/arch/powerpc/include/asm/pgalloc-64.h
+@@ -149,6 +149,16 @@ static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
+ }
+ 
+ #else /* if CONFIG_PPC_64K_PAGES */
++/*
++ * we support 16 fragments per PTE page.
++ */
++#define PTE_FRAG_NR	16
++/*
++ * We use a 2K PTE page fragment and another 2K for storing
++ * real_pte_t hash index
++ */
++#define PTE_FRAG_SIZE_SHIFT  12
++#define PTE_FRAG_SIZE (2 * PTRS_PER_PTE * sizeof(pte_t))
+ 
+ extern pte_t *page_table_alloc(struct mm_struct *, unsigned long, int);
+ extern void page_table_free(struct mm_struct *, unsigned long *, int);
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 27432fe..e379d3f 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -584,7 +584,7 @@ void __init setup_arch(char **cmdline_p)
+ 	init_mm.end_data = (unsigned long) _edata;
+ 	init_mm.brk = klimit;
+ #ifdef CONFIG_PPC_64K_PAGES
+-	init_mm.context.pgtable_page = NULL;
++	init_mm.context.pte_frag = NULL;
+ #endif
+ 	irqstack_early_init();
+ 	exc_lvl_early_init();
+diff --git a/arch/powerpc/mm/mmu_context_hash64.c b/arch/powerpc/mm/mmu_context_hash64.c
+index 87d96e5..8fe4bc9 100644
+--- a/arch/powerpc/mm/mmu_context_hash64.c
++++ b/arch/powerpc/mm/mmu_context_hash64.c
+@@ -23,6 +23,7 @@
+ #include <linux/slab.h>
+ 
+ #include <asm/mmu_context.h>
++#include <asm/pgalloc.h>
+ 
+ #include "icswx.h"
+ 
+@@ -86,7 +87,7 @@ int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
+ #endif /* CONFIG_PPC_ICSWX */
+ 
+ #ifdef CONFIG_PPC_64K_PAGES
+-	mm->context.pgtable_page = NULL;
++	mm->context.pte_frag = NULL;
+ #endif
+ 	return 0;
+ }
+@@ -103,16 +104,19 @@ EXPORT_SYMBOL_GPL(__destroy_context);
+ static void destroy_pagetable_page(struct mm_struct *mm)
+ {
+ 	int count;
++	void *pte_frag;
+ 	struct page *page;
+ 
+-	page = mm->context.pgtable_page;
+-	if (!page)
++	pte_frag = mm->context.pte_frag;
++	if (!pte_frag)
+ 		return;
+ 
++	page = virt_to_page(pte_frag);
+ 	/* drop all the pending references */
+-	count = atomic_read(&page->_mapcount) + 1;
+-	/* We allow PTE_FRAG_NR(16) fragments from a PTE page */
+-	count = atomic_sub_return(16 - count, &page->_count);
++	count = ((unsigned long )pte_frag &
++		 (PAGE_SIZE -1)) >> PTE_FRAG_SIZE_SHIFT;
++	/* We allow PTE_FRAG_NR fragments from a PTE page */
++	count = atomic_sub_return(PTE_FRAG_NR - count, &page->_count);
+ 	if (!count) {
+ 		pgtable_page_dtor(page);
+ 		page_mapcount_reset(page);
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index 34bc11f..d776614 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -352,66 +352,50 @@ struct page *pmd_page(pmd_t pmd)
+ }
+ 
+ #ifdef CONFIG_PPC_64K_PAGES
+-/*
+- * we support 16 fragments per PTE page. This is limited by how many
+- * bits we can pack in page->_mapcount. We use the first half for
+- * tracking the usage for rcu page table free.
+- */
+-#define PTE_FRAG_NR	16
+-/*
+- * We use a 2K PTE page fragment and another 2K for storing
+- * real_pte_t hash index
+- */
+-#define PTE_FRAG_SIZE (2 * PTRS_PER_PTE * sizeof(pte_t))
+-
+ static pte_t *get_from_cache(struct mm_struct *mm)
+ {
+-	int index;
+-	pte_t *ret = NULL;
+-	struct page *page;
++	void *ret = NULL;
+ 
+ 	spin_lock(&mm->page_table_lock);
+-	page = mm->context.pgtable_page;
+-	if (page) {
+-		void *p = page_address(page);
+-		index = atomic_add_return(1, &page->_mapcount);
+-		ret = (pte_t *) (p + (index * PTE_FRAG_SIZE));
++	ret = mm->context.pte_frag;
++	if (ret) {
++		ret += PTE_FRAG_SIZE;
+ 		/*
+ 		 * If we have taken up all the fragments mark PTE page NULL
+ 		 */
+-		if (index == PTE_FRAG_NR - 1)
+-			mm->context.pgtable_page = NULL;
++		if (((unsigned long )ret & (PAGE_SIZE - 1)) == 0)
++			ret = NULL;
++		mm->context.pte_frag = ret;
+ 	}
+ 	spin_unlock(&mm->page_table_lock);
+-	return ret;
++	return (pte_t *)ret;
+ }
+ 
+ static pte_t *__alloc_for_cache(struct mm_struct *mm, int kernel)
+ {
+-	pte_t *ret = NULL;
++	void *ret = NULL;
+ 	struct page *page = alloc_page(GFP_KERNEL | __GFP_NOTRACK |
+ 				       __GFP_REPEAT | __GFP_ZERO);
+ 	if (!page)
+ 		return NULL;
+ 
++	ret = page_address(page);
+ 	spin_lock(&mm->page_table_lock);
+ 	/*
+ 	 * If we find pgtable_page set, we return
+ 	 * the allocated page with single fragement
+ 	 * count.
+ 	 */
+-	if (likely(!mm->context.pgtable_page)) {
++	if (likely(!mm->context.pte_frag)) {
+ 		atomic_set(&page->_count, PTE_FRAG_NR);
+-		atomic_set(&page->_mapcount, 0);
+-		mm->context.pgtable_page = page;
++		mm->context.pte_frag = ret + PTE_FRAG_SIZE;
+ 	}
+ 	spin_unlock(&mm->page_table_lock);
+ 
+-	ret = (unsigned long *)page_address(page);
+ 	if (!kernel)
+ 		pgtable_page_ctor(page);
+ 
+-	return ret;
++	return (pte_t *)ret;
+ }
+ 
+ pte_t *page_table_alloc(struct mm_struct *mm, unsigned long vmaddr, int kernel)
