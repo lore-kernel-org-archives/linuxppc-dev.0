@@ -1,17 +1,16 @@
 Return-Path: <B02008@freescale.com>
 Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe002.messaging.microsoft.com [216.32.180.12])
+ (va3ehsobe010.messaging.microsoft.com [216.32.180.30])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 95AFB2C00E8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 20:08:22 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 1B3D32C00E2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 20:08:26 +1000 (EST)
 From: Mihai Caraman <mihai.caraman@freescale.com>
 To: <kvm-ppc@vger.kernel.org>
-Subject: [PATCH 6/8 v3] KVM: PPC: e500: Remove E.PT and E.HV.LRAT categories
- from VCPUs
-Date: Thu, 11 Apr 2013 13:03:12 +0300
-Message-ID: <1365674594-17410-7-git-send-email-mihai.caraman@freescale.com>
+Subject: [PATCH 8/8 v3] KVM: PPC: e500: Add e6500 core to Kconfig description
+Date: Thu, 11 Apr 2013 13:03:14 +0300
+Message-ID: <1365674594-17410-9-git-send-email-mihai.caraman@freescale.com>
 In-Reply-To: <1365674594-17410-1-git-send-email-mihai.caraman@freescale.com>
 References: <1365674594-17410-1-git-send-email-mihai.caraman@freescale.com>
 MIME-Version: 1.0
@@ -27,33 +26,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Embedded.Page Table (E.PT) category is not supported yet in e6500 kernel.
-Configure TLBnCFG to remove E.PT and E.HV.LRAT categories from VCPUs.
+Add e6500 core to Kconfig description.
 
 Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
 ---
 v3:
  - No change
 
- arch/powerpc/kvm/e500_mmu.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ arch/powerpc/kvm/Kconfig |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/kvm/e500_mmu.c b/arch/powerpc/kvm/e500_mmu.c
-index 1c1c5cb..c41a5a9 100644
---- a/arch/powerpc/kvm/e500_mmu.c
-+++ b/arch/powerpc/kvm/e500_mmu.c
-@@ -885,8 +885,12 @@ static int vcpu_mmu_init(struct kvm_vcpu *vcpu,
- 		vcpu->arch.tlbps[0] = mfspr(SPRN_TLB0PS);
- 		vcpu->arch.tlbps[1] = mfspr(SPRN_TLB1PS);
+diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
+index 63c67ec..4489520 100644
+--- a/arch/powerpc/kvm/Kconfig
++++ b/arch/powerpc/kvm/Kconfig
+@@ -136,15 +136,15 @@ config KVM_E500V2
+ 	  If unsure, say N.
  
-+		vcpu->arch.mmucfg &= ~MMUCFG_LRAT;
-+
- 		/* Guest mmu emulation currently doesn't handle E.PT */
- 		vcpu->arch.eptcfg = 0;
-+		vcpu->arch.tlbcfg[0] &= ~TLBnCFG_PT;
-+		vcpu->arch.tlbcfg[1] &= ~TLBnCFG_IND;
- 	}
+ config KVM_E500MC
+-	bool "KVM support for PowerPC E500MC/E5500 processors"
++	bool "KVM support for PowerPC E500MC/E5500/E6500 processors"
+ 	depends on PPC_E500MC
+ 	select KVM
+ 	select KVM_MMIO
+ 	select KVM_BOOKE_HV
+ 	select MMU_NOTIFIER
+ 	---help---
+-	  Support running unmodified E500MC/E5500 (32-bit) guest kernels in
+-	  virtual machines on E500MC/E5500 host processors.
++	  Support running unmodified E500MC/E5500/E6500 guest kernels in
++	  virtual machines on E500MC/E5500/E6500 host processors.
  
- 	return 0;
+ 	  This module provides access to the hardware capabilities through
+ 	  a character device node named /dev/kvm.
 -- 
 1.7.4.1
