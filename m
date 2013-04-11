@@ -1,30 +1,20 @@
-Return-Path: <b08248@gmail.com>
-Received: from mail-da0-x234.google.com (mail-da0-x234.google.com
- [IPv6:2607:f8b0:400e:c00::234])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1E43F2C00B8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Apr 2013 04:37:08 +1000 (EST)
-Received: by mail-da0-f52.google.com with SMTP id f10so795183dak.39
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 11:37:05 -0700 (PDT)
+Return-Path: <chris.friesen@genband.com>
+Received: from exprod7og120.obsmtp.com (exprod7og120.obsmtp.com [64.18.2.18])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 193EB2C00B8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Apr 2013 04:39:45 +1000 (EST)
+Message-ID: <51670344.2090101@genband.com>
+Date: Thu, 11 Apr 2013 12:39:00 -0600
+From: Chris Friesen <chris.friesen@genband.com>
 MIME-Version: 1.0
-In-Reply-To: <5A04ECFC-E828-4EBF-895B-043FC038ABB5@kernel.crashing.org>
-References: <1363801557-27436-1-git-send-email-Bharat.Bhushan@freescale.com>
- <436085E0-D605-40C1-BCDF-EB4D24B01AFA@suse.de>
- <6A3DF150A5B70D4F9B66A25E3F7C888D06FC04D4@039-SN2MPN1-013.039d.mgd.msft.net>
- <6A3DF150A5B70D4F9B66A25E3F7C888D06FC1773@039-SN2MPN1-013.039d.mgd.msft.net>
- <5A04ECFC-E828-4EBF-895B-043FC038ABB5@kernel.crashing.org>
-Date: Thu, 11 Apr 2013 13:37:05 -0500
-Message-ID: <CALRxmdD7ZWj4PM5VTZz_RimmgQAJCX=5yUx=H+7-W30r-PdTtA@mail.gmail.com>
-Subject: Re: [PATCH] bookehv: Handle debug exception on guest exit
-From: Stuart Yoder <b08248@gmail.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Wood Scott-B07421 <B07421@freescale.com>, KVM list <kvm@vger.kernel.org>,
- Alexander Graf <agraf@suse.de>, kvm-ppc <kvm-ppc@vger.kernel.org>,
- Yoder Stuart-B08248 <b08248@freescale.com>,
- Bhushan Bharat-R65777 <R65777@freescale.com>,
- linuxppc list <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: recommended method of netbooting kernel/dtb in u-boot?
+References: <5166DA49.5000907@genband.com>
+ <3B81A930-A4AB-4AA7-BC36-FCCE55D33C66@kernel.crashing.org>
+In-Reply-To: <3B81A930-A4AB-4AA7-BC36-FCCE55D33C66@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,56 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Apr 11, 2013 at 1:33 PM, Kumar Gala <galak@kernel.crashing.org> wrote:
+On 04/11/2013 12:12 PM, Kumar Gala wrote:
 >
-> On Apr 5, 2013, at 2:53 AM, Bhushan Bharat-R65777 wrote:
+> On Apr 11, 2013, at 10:44 AM, Chris Friesen wrote:
 >
->> Hi Kumar/Benh,
 >>
->> After further looking into the code I think that if we correct the vector range below in DebugDebug handler then we do not need the change I provided in this patch.
+>> Hi all,
 >>
->> Here is the snapshot for 32 bit (head_booke.h, same will be true for 64 bit):
+>> We've got a powerpc system that uses u-boot.  In our environment on
+>> bootup u-boot does a DHCP to get networking info, then uses TFTP to
+>> get the kernel, which then does DHCP again and NFS-mounts the
+>> initial root filesystem.
 >>
->> #define DEBUG_DEBUG_EXCEPTION                                                 \
->>        START_EXCEPTION(DebugDebug);                                          \
->>        DEBUG_EXCEPTION_PROLOG;                                               \
->>                                                                              \
->>        /*                                                                    \
->>         * If there is a single step or branch-taken exception in an          \
->>         * exception entry sequence, it was probably meant to apply to        \
->>         * the code where the exception occurred (since exception entry       \
->>         * doesn't turn off DE automatically).  We simulate the effect        \
->>         * of turning off DE on entry to an exception handler by turning      \
->>         * off DE in the DSRR1 value and clearing the debug status.           \
->>         */                                                                   \
->>        mfspr   r10,SPRN_DBSR;          /* check single-step/branch taken */  \
->>        andis.  r10,r10,(DBSR_IC|DBSR_BT)@h;                                  \
->>        beq+    2f;                                                           \
->>                                                                              \
->>        lis     r10,KERNELBASE@h;       /* check if exception in vectors */   \
->>        ori     r10,r10,KERNELBASE@l;                                         \
->>        cmplw   r12,r10;                                                      \
->>        blt+    2f;                     /* addr below exception vectors */    \
->>                                                                              \
->>        lis     r10,DebugDebug@h;                                        \
->>        ori     r10,r10,DebugDebug@l;                                            \
->>
->> ^^^^
->>       Here we assume all exception vector ends at DebugDebug, which is not correct.
->>       We probably should get proper end by using some start_vector and end_vector lebels
->>       or at least use end at Ehvpriv (which is last defined in head_fsl_booke.S for PowerPC. Is that correct?
->>
->>
->>        cmplw   r12,r10;                                                      \
->>        bgt+    2f;                     /* addr above exception vectors */    \
->>
->> Thanks
->> -Bharat
+>> What's the standard practice for this sort of thing when using
+>> device tree blobs?  Do most people use multi-file images or do they
+>> TFTP scripts to load and execute separate kernel/dtb files?
 >
-> I talked to Stuart and this general approach is good.  Just make sure to update both head_44x.S and head_fsl_booke.S.  Plus do this for both DEBUG_CRIT_EXCEPTION & DEBUG_DEBUG_EXCEPTION
+> We've normally just done multiple tftp fetches and one grabs dtb and
+> one grabs kernel.
 
-Also, it looks like 64-bit already handles this properly with symbols
-identifying the
-start/end of the vectors (exceptions-64e.S).
+Do you hardcode the path to the file in the firmware?  Or do you upload 
+a script that knows the path to the file?
 
-Stuart
+In our case the path to the boot file(s) depends on which slot the card 
+being booted has been inserted in.  The DHCP server knows what the path 
+is, so it can set dhcpd.conf appropriately, but we need to get that 
+information to the firmware on the card being booted.
+
+Chris
