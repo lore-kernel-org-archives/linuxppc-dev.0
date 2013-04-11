@@ -1,16 +1,16 @@
 Return-Path: <haokexin@gmail.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9C1502C00CC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 11:32:45 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 991172C00CB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 11:32:44 +1000 (EST)
 From: Kevin Hao <haokexin@gmail.com>
 To: Kumar Gala <galak@kernel.crashing.org>, Benjamin Herrenschmidt
  <benh@kernel.crashing.org>
-Subject: [PATCH 1/2] powerpc/irq: remove the unneeded flag PACA_IRQ_EE_EDGE
-Date: Thu, 11 Apr 2013 09:32:33 +0800
-Message-ID: <1365643954-20798-2-git-send-email-haokexin@gmail.com>
+Subject: [PATCH 2/2] powerpc/85xx: enable coreint for all the 64bit boards
+Date: Thu, 11 Apr 2013 09:32:34 +0800
+Message-ID: <1365643954-20798-3-git-send-email-haokexin@gmail.com>
 In-Reply-To: <1365643954-20798-1-git-send-email-haokexin@gmail.com>
 References: <1365643954-20798-1-git-send-email-haokexin@gmail.com>
 MIME-Version: 1.0
@@ -25,64 +25,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In order to support the Book3E external proxy, the flag
-PACA_IRQ_EE_EDGE was introduced in patch 7230c564 (powerpc: Rework
-lazy-interrupt handling). But it turns out that this is not needed.
-And it is also not used by any code in the current kernel. According
-to the PowerISA 2.0.6, the content of EPR (External Proxy Register)
-is valid until MSR[EE] is set to 1. Since we never enable the hard irq
-before replaying a external interrupt. That means we still can get
-the valid interrupt vector from EPR when replaying irq.
+With the patch 7230c564 (powerpc: Rework lazy-interrupt handling),
+it seems that the coreint works pretty well on the 85xx 64bit kernel.
+So use the coreint by default for these boards.
 
 Signed-off-by: Kevin Hao <haokexin@gmail.com>
 ---
- arch/powerpc/include/asm/hw_irq.h    | 1 -
- arch/powerpc/kernel/exceptions-64e.S | 1 -
- arch/powerpc/kernel/irq.c            | 8 --------
- 3 files changed, 10 deletions(-)
+ arch/powerpc/platforms/85xx/p5020_ds.c  | 5 -----
+ arch/powerpc/platforms/85xx/p5040_ds.c  | 5 -----
+ arch/powerpc/platforms/85xx/t4240_qds.c | 5 -----
+ 3 files changed, 15 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-index e45c494..8bf0789 100644
---- a/arch/powerpc/include/asm/hw_irq.h
-+++ b/arch/powerpc/include/asm/hw_irq.h
-@@ -24,7 +24,6 @@
- #define PACA_IRQ_DBELL		0x02
- #define PACA_IRQ_EE		0x04
- #define PACA_IRQ_DEC		0x08 /* Or FIT */
--#define PACA_IRQ_EE_EDGE	0x10 /* BookE only */
- 
- #endif /* CONFIG_PPC64 */
- 
-diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index 42a756e..64f2fbd 100644
---- a/arch/powerpc/kernel/exceptions-64e.S
-+++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -701,7 +701,6 @@ kernel_dbg_exc:
- .endm
- 
- masked_interrupt_book3e_0x500:
--	// XXX When adding support for EPR, use PACA_IRQ_EE_EDGE
- 	masked_interrupt_book3e PACA_IRQ_EE 1
- 
- masked_interrupt_book3e_0x900:
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 4f97fe3..dbc1c05 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -171,14 +171,6 @@ notrace unsigned int __check_irq_replay(void)
- 		return 0x500;
- 
- #ifdef CONFIG_PPC_BOOK3E
--	/* Finally check if an EPR external interrupt happened
--	 * this bit is typically set if we need to handle another
--	 * "edge" interrupt from within the MPIC "EPR" handler
--	 */
--	local_paca->irq_happened &= ~PACA_IRQ_EE_EDGE;
--	if (happened & PACA_IRQ_EE_EDGE)
--		return 0x500;
--
- 	local_paca->irq_happened &= ~PACA_IRQ_DBELL;
- 	if (happened & PACA_IRQ_DBELL)
- 		return 0x280;
+diff --git a/arch/powerpc/platforms/85xx/p5020_ds.c b/arch/powerpc/platforms/85xx/p5020_ds.c
+index 753a42c..39cfa40 100644
+--- a/arch/powerpc/platforms/85xx/p5020_ds.c
++++ b/arch/powerpc/platforms/85xx/p5020_ds.c
+@@ -75,12 +75,7 @@ define_machine(p5020_ds) {
+ #ifdef CONFIG_PCI
+ 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
+ #endif
+-/* coreint doesn't play nice with lazy EE, use legacy mpic for now */
+-#ifdef CONFIG_PPC64
+-	.get_irq		= mpic_get_irq,
+-#else
+ 	.get_irq		= mpic_get_coreint_irq,
+-#endif
+ 	.restart		= fsl_rstcr_restart,
+ 	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+diff --git a/arch/powerpc/platforms/85xx/p5040_ds.c b/arch/powerpc/platforms/85xx/p5040_ds.c
+index 1138185..f70e74c 100644
+--- a/arch/powerpc/platforms/85xx/p5040_ds.c
++++ b/arch/powerpc/platforms/85xx/p5040_ds.c
+@@ -66,12 +66,7 @@ define_machine(p5040_ds) {
+ #ifdef CONFIG_PCI
+ 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
+ #endif
+-/* coreint doesn't play nice with lazy EE, use legacy mpic for now */
+-#ifdef CONFIG_PPC64
+-	.get_irq		= mpic_get_irq,
+-#else
+ 	.get_irq		= mpic_get_coreint_irq,
+-#endif
+ 	.restart		= fsl_rstcr_restart,
+ 	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+diff --git a/arch/powerpc/platforms/85xx/t4240_qds.c b/arch/powerpc/platforms/85xx/t4240_qds.c
+index 5998e9f..91ead6b 100644
+--- a/arch/powerpc/platforms/85xx/t4240_qds.c
++++ b/arch/powerpc/platforms/85xx/t4240_qds.c
+@@ -75,12 +75,7 @@ define_machine(t4240_qds) {
+ #ifdef CONFIG_PCI
+ 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
+ #endif
+-/* coreint doesn't play nice with lazy EE, use legacy mpic for now */
+-#ifdef CONFIG_PPC64
+-	.get_irq		= mpic_get_irq,
+-#else
+ 	.get_irq		= mpic_get_coreint_irq,
+-#endif
+ 	.restart		= fsl_rstcr_restart,
+ 	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
 -- 
 1.8.1.4
