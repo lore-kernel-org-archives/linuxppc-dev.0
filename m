@@ -1,9 +1,12 @@
 Return-Path: <sebastian.hesselbarth@gmail.com>
 From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-Subject: [PATCH 0/2] net: mv643xx_eth: use managed clk and allocation
-Date: Thu, 11 Apr 2013 11:29:32 +0200
-Message-Id: <1365672574-31123-1-git-send-email-sebastian.hesselbarth@gmail.com>
+Subject: [PATCH 1/2] net: mv643xx_eth: add shared clk and cleanup existing clk
+ handling
+Date: Thu, 11 Apr 2013 11:29:33 +0200
+Message-Id: <1365672574-31123-2-git-send-email-sebastian.hesselbarth@gmail.com>
+In-Reply-To: <1365672574-31123-1-git-send-email-sebastian.hesselbarth@gmail.com>
+References: <1365672574-31123-1-git-send-email-sebastian.hesselbarth@gmail.com>
 Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>,
  Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
  linux-doc@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
@@ -21,28 +24,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With introduction of common clock framework and the ability to provide
-gated clocks, mv643xx_eth required calls to get and enable these clock
-gates on some platforms. Back then, common clock framework api wasn't
-safe for architectures without support for common clocks. This has
-changed now and there are also managed (devm_) counterparts for clock
-related functions.
+This patch adds an optional shared block clock to avoid lockups on
+clock gated controllers. Besides the new clock, clock handling for
+existing clocks is cleaned up and moved to devm_clk_get. Device
+tree binding documentation is updated for the new clocks property.
 
-The second patch in this series, also converts kzalloc to devm_kzalloc
-where applicable.
-
-Both patches have been sent to the corresponding mailing lists as
-individual patches before. To get the order required to apply them right,
-this patch set combines both patches into one set.
-
-Sebastian Hesselbarth (2):
-  net: mv643xx_eth: add shared clk and cleanup existing clk handling
-  net: mv643xx_eth: use managed devm_kzalloc
-
- Documentation/devicetree/bindings/marvell.txt |    3 ++
- drivers/net/ethernet/marvell/mv643xx_eth.c    |   44 +++++++++----------------
- 2 files changed, 18 insertions(+), 29 deletions(-)
-
+Signed-off-by: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 ---
 Cc: Grant Likely <grant.likely@secretlab.ca>
 Cc: Rob Herring <rob.herring@calxeda.com>
@@ -60,5 +47,111 @@ Cc: devicetree-discuss@lists.ozlabs.org
 Cc: linux-doc@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Cc: netdev@vger.kernel.org
+---
+ Documentation/devicetree/bindings/marvell.txt |    3 +++
+ drivers/net/ethernet/marvell/mv643xx_eth.c    |   27 ++++++++++---------------
+ 2 files changed, 14 insertions(+), 16 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/marvell.txt b/Documentation/devicetree/bindings/marvell.txt
+index f1533d9..f7a0da6 100644
+--- a/Documentation/devicetree/bindings/marvell.txt
++++ b/Documentation/devicetree/bindings/marvell.txt
+@@ -115,6 +115,9 @@ prefixed with the string "marvell,", for Marvell Technology Group Ltd.
+      - compatible : "marvell,mv64360-eth-block"
+      - reg : Offset and length of the register set for this block
+ 
++   Optional properties:
++     - clocks : Phandle to the clock control device and gate bit
++
+    Example Discovery Ethernet block node:
+      ethernet-block@2000 {
+ 	     #address-cells = <1>;
+diff --git a/drivers/net/ethernet/marvell/mv643xx_eth.c b/drivers/net/ethernet/marvell/mv643xx_eth.c
+index aedbd82..bbe6104 100644
+--- a/drivers/net/ethernet/marvell/mv643xx_eth.c
++++ b/drivers/net/ethernet/marvell/mv643xx_eth.c
+@@ -268,7 +268,7 @@ struct mv643xx_eth_shared_private {
+ 	int extended_rx_coal_limit;
+ 	int tx_bw_control;
+ 	int tx_csum_limit;
+-
++	struct clk *clk;
+ };
+ 
+ #define TX_BW_CONTROL_ABSENT		0
+@@ -410,9 +410,7 @@ struct mv643xx_eth_private {
+ 	/*
+ 	 * Hardware-specific parameters.
+ 	 */
+-#if defined(CONFIG_HAVE_CLK)
+ 	struct clk *clk;
+-#endif
+ 	unsigned int t_clk;
+ };
+ 
+@@ -2569,6 +2567,10 @@ static int mv643xx_eth_shared_probe(struct platform_device *pdev)
+ 	if (msp->base == NULL)
+ 		goto out_free;
+ 
++	msp->clk = devm_clk_get(&pdev->dev, NULL);
++	if (!IS_ERR(msp->clk))
++		clk_prepare_enable(msp->clk);
++
+ 	/*
+ 	 * (Re-)program MBUS remapping windows if we are asked to.
+ 	 */
+@@ -2595,6 +2597,8 @@ static int mv643xx_eth_shared_remove(struct platform_device *pdev)
+ 	struct mv643xx_eth_shared_private *msp = platform_get_drvdata(pdev);
+ 
+ 	iounmap(msp->base);
++	if (!IS_ERR(msp->clk))
++		clk_disable_unprepare(msp->clk);
+ 	kfree(msp);
+ 
+ 	return 0;
+@@ -2801,13 +2805,12 @@ static int mv643xx_eth_probe(struct platform_device *pdev)
+ 	 * it to override the default.
+ 	 */
+ 	mp->t_clk = 133000000;
+-#if defined(CONFIG_HAVE_CLK)
+-	mp->clk = clk_get(&pdev->dev, (pdev->id ? "1" : "0"));
++	mp->clk = devm_clk_get(&pdev->dev, NULL);
+ 	if (!IS_ERR(mp->clk)) {
+ 		clk_prepare_enable(mp->clk);
+ 		mp->t_clk = clk_get_rate(mp->clk);
+ 	}
+-#endif
++
+ 	set_params(mp, pd);
+ 	netif_set_real_num_tx_queues(dev, mp->txq_count);
+ 	netif_set_real_num_rx_queues(dev, mp->rxq_count);
+@@ -2889,12 +2892,8 @@ static int mv643xx_eth_probe(struct platform_device *pdev)
+ 	return 0;
+ 
+ out:
+-#if defined(CONFIG_HAVE_CLK)
+-	if (!IS_ERR(mp->clk)) {
++	if (!IS_ERR(mp->clk))
+ 		clk_disable_unprepare(mp->clk);
+-		clk_put(mp->clk);
+-	}
+-#endif
+ 	free_netdev(dev);
+ 
+ 	return err;
+@@ -2909,12 +2908,8 @@ static int mv643xx_eth_remove(struct platform_device *pdev)
+ 		phy_detach(mp->phy);
+ 	cancel_work_sync(&mp->tx_timeout_task);
+ 
+-#if defined(CONFIG_HAVE_CLK)
+-	if (!IS_ERR(mp->clk)) {
++	if (!IS_ERR(mp->clk))
+ 		clk_disable_unprepare(mp->clk);
+-		clk_put(mp->clk);
+-	}
+-#endif
+ 
+ 	free_netdev(mp->dev);
+ 
 -- 
 1.7.10.4
