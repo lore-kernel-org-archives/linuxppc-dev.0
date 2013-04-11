@@ -1,17 +1,17 @@
-Return-Path: <chris.friesen@genband.com>
-Received: from exprod7og125.obsmtp.com (exprod7og125.obsmtp.com [64.18.2.28])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id CA0F42C00C0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Apr 2013 09:21:53 +1000 (EST)
-Message-ID: <5167457E.1050205@genband.com>
-Date: Thu, 11 Apr 2013 17:21:34 -0600
-From: Chris Friesen <chris.friesen@genband.com>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: questions on CONFIG_PPC_ADV_DEBUG_REGS, DBCR0_BRT,
- and DBCR0_ACTIVE_EVENTS
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <sebastian.hesselbarth@gmail.com>
+From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Subject: [PATCH 0/2] net: mv643xx_eth: use managed clk and allocation
+Date: Thu, 11 Apr 2013 11:29:32 +0200
+Message-Id: <1365672574-31123-1-git-send-email-sebastian.hesselbarth@gmail.com>
+Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>,
+ Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
+ linux-doc@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
+ Paul Mackerras <paulus@samba.org>, Rob Landley <rob@landley.net>,
+ netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Florian Fainelli <florian@openwrt.org>,
+ Lennert Buytenhek <buytenh@wantstofly.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,29 +21,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+With introduction of common clock framework and the ability to provide
+gated clocks, mv643xx_eth required calls to get and enable these clock
+gates on some platforms. Back then, common clock framework api wasn't
+safe for architectures without support for common clocks. This has
+changed now and there are also managed (devm_) counterparts for clock
+related functions.
 
-Sorry for the bunch of emails, I'm working on some new stuff and running 
-into issues.
+The second patch in this series, also converts kzalloc to devm_kzalloc
+where applicable.
 
-For CONFIG_BOOKE it appears that DBCR0_ACTIVE_EVENTS includes DBCR0_ICMP 
-but not DBCR0_BRT.  Is that just because none of the code paths 
-currently using DBCR0_ACTIVE_EVENTS need to check DBCR0_BT?
+Both patches have been sent to the corresponding mailing lists as
+individual patches before. To get the order required to apply them right,
+this patch set combines both patches into one set.
 
-Also, in sys_debug_setcontext() why does SIG_DBG_BRANCH_TRACING return 
--EINVAL if CONFIG_PPC_ADV_DEBUG_REGS is set?  Would it not be possible 
-to use DBCR0_BRT?
+Sebastian Hesselbarth (2):
+  net: mv643xx_eth: add shared clk and cleanup existing clk handling
+  net: mv643xx_eth: use managed devm_kzalloc
 
-Thanks,
-Chris
+ Documentation/devicetree/bindings/marvell.txt |    3 ++
+ drivers/net/ethernet/marvell/mv643xx_eth.c    |   44 +++++++++----------------
+ 2 files changed, 18 insertions(+), 29 deletions(-)
 
+---
+Cc: Grant Likely <grant.likely@secretlab.ca>
+Cc: Rob Herring <rob.herring@calxeda.com>
+Cc: Rob Landley <rob@landley.net>
+Cc: Lennert Buytenhek <buytenh@wantstofly.org>
+Cc: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Cc: Andrew Lunn <andrew@lunn.ch>
+Cc: Jason Cooper <jason@lakedaemon.net>
+Cc: Florian Fainelli <florian@openwrt.org>
+Cc: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: devicetree-discuss@lists.ozlabs.org
+Cc: linux-doc@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: netdev@vger.kernel.org
 -- 
-
-Chris Friesen
-Software Designer
-
-500 Palladium Drive, Suite 2100
-Ottawa, Ontario K2N 1C2, Canada
-www.genband.com
-office:+1.343.883.2717
-chris.friesen@genband.com
+1.7.10.4
