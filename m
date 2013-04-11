@@ -1,16 +1,21 @@
 Return-Path: <sebastian.hesselbarth@gmail.com>
+Received: from mail-bk0-x22d.google.com (mail-bk0-x22d.google.com
+ [IPv6:2a00:1450:4008:c01::22d])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E63E02C00BB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 22:40:35 +1000 (EST)
+Received: by mail-bk0-f45.google.com with SMTP id j10so793124bkw.18
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 05:40:31 -0700 (PDT)
 From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-Subject: [PATCH v2 2/2] net: mv643xx_eth: use managed devm_kzalloc
-Date: Thu, 11 Apr 2013 11:29:34 +0200
-Message-Id: <1365672574-31123-3-git-send-email-sebastian.hesselbarth@gmail.com>
-In-Reply-To: <1365672574-31123-1-git-send-email-sebastian.hesselbarth@gmail.com>
-References: <1365672574-31123-1-git-send-email-sebastian.hesselbarth@gmail.com>
+Subject: [PATCH] net: mv643xx_eth: Add GRO support
+Date: Thu, 11 Apr 2013 14:40:23 +0200
+Message-Id: <1365684023-9967-1-git-send-email-sebastian.hesselbarth@gmail.com>
 Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>,
- Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
- linux-doc@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
- Paul Mackerras <paulus@samba.org>, Rob Landley <rob@landley.net>,
+ linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+ Soeren Moch <smoch@web.de>, Paul Mackerras <paulus@samba.org>,
+ linux-arm-kernel@lists.infradead.org, Dale Farnsworth <dale@farnsworth.org>,
  netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  Florian Fainelli <florian@openwrt.org>,
  Lennert Buytenhek <buytenh@wantstofly.org>
@@ -23,88 +28,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch moves shared private data kzalloc to managed devm_kzalloc and
-cleans now unneccessary kfree and error handling.
+This patch adds GRO support to mv643xx_eth by making it invoke
+napi_gro_receive instead of netif_receive_skb.
 
+Signed-off-by: Soeren Moch <smoch@web.de>
 Signed-off-by: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 ---
-Changes from v1:
-- replaced EADDRNOTAVAIL with ENOMEM on failing ioremap (Reported by
-  Sergei Shtylyov)
-
-Cc: Grant Likely <grant.likely@secretlab.ca>
-Cc: Rob Herring <rob.herring@calxeda.com>
-Cc: Rob Landley <rob@landley.net>
+Cc: "David S. Miller" <davem@davemloft.net>
 Cc: Lennert Buytenhek <buytenh@wantstofly.org>
-Cc: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 Cc: Andrew Lunn <andrew@lunn.ch>
 Cc: Jason Cooper <jason@lakedaemon.net>
 Cc: Florian Fainelli <florian@openwrt.org>
-Cc: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: devicetree-discuss@lists.ozlabs.org
-Cc: linux-doc@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
+Cc: Dale Farnsworth <dale@farnsworth.org>
 Cc: netdev@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org
 ---
- drivers/net/ethernet/marvell/mv643xx_eth.c |   17 ++++-------------
- 1 file changed, 4 insertions(+), 13 deletions(-)
+ drivers/net/ethernet/marvell/mv643xx_eth.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/marvell/mv643xx_eth.c b/drivers/net/ethernet/marvell/mv643xx_eth.c
-index bbe6104..305038f 100644
+index 305038f..c850d04 100644
 --- a/drivers/net/ethernet/marvell/mv643xx_eth.c
 +++ b/drivers/net/ethernet/marvell/mv643xx_eth.c
-@@ -2547,25 +2547,22 @@ static int mv643xx_eth_shared_probe(struct platform_device *pdev)
- 	struct mv643xx_eth_shared_private *msp;
- 	const struct mbus_dram_target_info *dram;
- 	struct resource *res;
--	int ret;
+@@ -604,7 +604,7 @@ static int rxq_process(struct rx_queue *rxq, int budget)
+ 			lro_receive_skb(&rxq->lro_mgr, skb, (void *)cmd_sts);
+ 			lro_flush_needed = 1;
+ 		} else
+-			netif_receive_skb(skb);
++			napi_gro_receive(&mp->napi, skb);
  
- 	if (!mv643xx_eth_version_printed++)
- 		pr_notice("MV-643xx 10/100/1000 ethernet driver version %s\n",
- 			  mv643xx_eth_driver_version);
+ 		continue;
  
--	ret = -EINVAL;
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	if (res == NULL)
--		goto out;
-+		return -EINVAL;
- 
--	ret = -ENOMEM;
--	msp = kzalloc(sizeof(*msp), GFP_KERNEL);
-+	msp = devm_kzalloc(&pdev->dev, sizeof(*msp), GFP_KERNEL);
- 	if (msp == NULL)
--		goto out;
-+		return -ENOMEM;
- 
- 	msp->base = ioremap(res->start, resource_size(res));
- 	if (msp->base == NULL)
--		goto out_free;
-+		return -ENOMEM;
- 
- 	msp->clk = devm_clk_get(&pdev->dev, NULL);
- 	if (!IS_ERR(msp->clk))
-@@ -2585,11 +2582,6 @@ static int mv643xx_eth_shared_probe(struct platform_device *pdev)
- 	platform_set_drvdata(pdev, msp);
- 
- 	return 0;
--
--out_free:
--	kfree(msp);
--out:
--	return ret;
- }
- 
- static int mv643xx_eth_shared_remove(struct platform_device *pdev)
-@@ -2599,7 +2591,6 @@ static int mv643xx_eth_shared_remove(struct platform_device *pdev)
- 	iounmap(msp->base);
- 	if (!IS_ERR(msp->clk))
- 		clk_disable_unprepare(msp->clk);
--	kfree(msp);
- 
- 	return 0;
- }
 -- 
 1.7.10.4
