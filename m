@@ -1,16 +1,16 @@
 Return-Path: <B02008@freescale.com>
 Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe004.messaging.microsoft.com [216.32.180.14])
+ (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 84B322C0105
+ by ozlabs.org (Postfix) with ESMTPS id CDC052C0110
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 20:08:19 +1000 (EST)
 From: Mihai Caraman <mihai.caraman@freescale.com>
 To: <kvm-ppc@vger.kernel.org>
-Subject: [PATCH 1/8 v3] KVM: PPC: Book3E: Refactor ONE_REG ioctl implementation
-Date: Thu, 11 Apr 2013 13:03:07 +0300
-Message-ID: <1365674594-17410-2-git-send-email-mihai.caraman@freescale.com>
+Subject: [PATCH 5/8] KVM: PPC: e500: Add support for EPTCFG register
+Date: Thu, 11 Apr 2013 13:03:11 +0300
+Message-ID: <1365674594-17410-6-git-send-email-mihai.caraman@freescale.com>
 In-Reply-To: <1365674594-17410-1-git-send-email-mihai.caraman@freescale.com>
 References: <1365674594-17410-1-git-send-email-mihai.caraman@freescale.com>
 MIME-Version: 1.0
@@ -26,268 +26,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Refactor Book3E ONE_REG ioctl implementation to use kvmppc_get_one_reg/
-kvmppc_set_one_reg delegation interface introduced by Book3S. This is
-necessary for MMU SPRs which are platform specifics.
-
-Get rid of useless case braces in the process.
+EPTCFG register defined by E.PT is accessed unconditionally by Linux guests
+in the presence of MAV 2.0. Emulate it now.
 
 Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
 ---
 v3:
- - Split ONE_REG ioctl refactoring in its own patch
+ - Initialize EPTCFG to 0 since E.PT is not supported now
 
- arch/powerpc/kvm/44x.c    |   12 +++++
- arch/powerpc/kvm/booke.c  |  102 ++++++++++++++++++++++++---------------------
- arch/powerpc/kvm/e500.c   |   12 +++++
- arch/powerpc/kvm/e500mc.c |   12 +++++
- 4 files changed, 91 insertions(+), 47 deletions(-)
+ Documentation/virtual/kvm/api.txt   |    1 +
+ arch/powerpc/include/asm/kvm_host.h |    1 +
+ arch/powerpc/include/uapi/asm/kvm.h |    1 +
+ arch/powerpc/kvm/e500_emulate.c     |    9 +++++++++
+ arch/powerpc/kvm/e500_mmu.c         |   12 ++++++++++++
+ 5 files changed, 24 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/kvm/44x.c b/arch/powerpc/kvm/44x.c
-index 3d7fd21..2f5c6b6 100644
---- a/arch/powerpc/kvm/44x.c
-+++ b/arch/powerpc/kvm/44x.c
-@@ -124,6 +124,18 @@ int kvmppc_core_set_sregs(struct kvm_vcpu *vcpu, struct kvm_sregs *sregs)
- 	return kvmppc_set_sregs_ivor(vcpu, sregs);
- }
+diff --git a/Documentation/virtual/kvm/api.txt b/Documentation/virtual/kvm/api.txt
+index f045377..a1f2200 100644
+--- a/Documentation/virtual/kvm/api.txt
++++ b/Documentation/virtual/kvm/api.txt
+@@ -1807,6 +1807,7 @@ registers, find a list below:
+   PPC   | KVM_REG_PPC_TLB1PS	| 32
+   PPC   | KVM_REG_PPC_TLB2PS	| 32
+   PPC   | KVM_REG_PPC_TLB3PS	| 32
++  PPC   | KVM_REG_PPC_EPTCFG	| 32
  
-+int kvmppc_get_one_reg(struct kvm_vcpu *vcpu, u64 id,
-+			union kvmppc_one_reg *val)
-+{
-+	return -EINVAL;
-+}
-+
-+int kvmppc_set_one_reg(struct kvm_vcpu *vcpu, u64 id,
-+		       union kvmppc_one_reg *val)
-+{
-+	return -EINVAL;
-+}
-+
- struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
- {
- 	struct kvmppc_vcpu_44x *vcpu_44x;
-diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index a49a68a..08f6540 100644
---- a/arch/powerpc/kvm/booke.c
-+++ b/arch/powerpc/kvm/booke.c
-@@ -1412,117 +1412,125 @@ int kvm_arch_vcpu_ioctl_set_sregs(struct kvm_vcpu *vcpu,
+ ARM registers are mapped using the lower 32 bits.  The upper 16 of that
+ is the register group type, or coprocessor number:
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index 3b6cee3..8a48e68 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -504,6 +504,7 @@ struct kvm_vcpu_arch {
+ 	u32 tlbcfg[4];
+ 	u32 tlbps[4];
+ 	u32 mmucfg;
++	u32 eptcfg;
+ 	u32 epr;
+ 	u32 crit_save;
+ 	struct kvmppc_booke_debug_reg dbg_reg;
+diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
+index 91341d9..7f4d191 100644
+--- a/arch/powerpc/include/uapi/asm/kvm.h
++++ b/arch/powerpc/include/uapi/asm/kvm.h
+@@ -446,5 +446,6 @@ struct kvm_get_htab_header {
+ #define KVM_REG_PPC_TLB1PS	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0x98)
+ #define KVM_REG_PPC_TLB2PS	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0x99)
+ #define KVM_REG_PPC_TLB3PS	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0x9a)
++#define KVM_REG_PPC_EPTCFG	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0x9b)
  
- int kvm_vcpu_ioctl_get_one_reg(struct kvm_vcpu *vcpu, struct kvm_one_reg *reg)
- {
--	int r = -EINVAL;
-+	int r = 0;
-+	union kvmppc_one_reg val;
-+	int size;
-+	long int i;
-+
-+	size = one_reg_size(reg->id);
-+	if (size > sizeof(val))
-+		return -EINVAL;
+ #endif /* __LINUX_KVM_POWERPC_H */
+diff --git a/arch/powerpc/kvm/e500_emulate.c b/arch/powerpc/kvm/e500_emulate.c
+index 12b8de2..b10a012 100644
+--- a/arch/powerpc/kvm/e500_emulate.c
++++ b/arch/powerpc/kvm/e500_emulate.c
+@@ -317,6 +317,15 @@ int kvmppc_core_emulate_mfspr(struct kvm_vcpu *vcpu, int sprn, ulong *spr_val)
+ 	case SPRN_MMUCFG:
+ 		*spr_val = vcpu->arch.mmucfg;
+ 		break;
++	case SPRN_EPTCFG:
++		if (!has_feature(vcpu, VCPU_FTR_MMU_V2))
++			return EMULATE_FAIL;
++		/*
++		 * Legacy Linux guests access EPTCFG register even if the E.PT
++		 * category is disabled in the VM. Give them a chance to live.
++		 */
++		*spr_val = vcpu->arch.eptcfg;
++		break;
  
- 	switch (reg->id) {
- 	case KVM_REG_PPC_IAC1:
- 	case KVM_REG_PPC_IAC2:
- 	case KVM_REG_PPC_IAC3:
--	case KVM_REG_PPC_IAC4: {
--		int iac = reg->id - KVM_REG_PPC_IAC1;
--		r = copy_to_user((u64 __user *)(long)reg->addr,
--				 &vcpu->arch.dbg_reg.iac[iac], sizeof(u64));
-+	case KVM_REG_PPC_IAC4:
-+		i = reg->id - KVM_REG_PPC_IAC1;
-+		val = get_reg_val(reg->id, vcpu->arch.dbg_reg.iac[i]);
+ 	/* extra exceptions */
+ 	case SPRN_IVOR32:
+diff --git a/arch/powerpc/kvm/e500_mmu.c b/arch/powerpc/kvm/e500_mmu.c
+index a863dc1..1c1c5cb 100644
+--- a/arch/powerpc/kvm/e500_mmu.c
++++ b/arch/powerpc/kvm/e500_mmu.c
+@@ -624,6 +624,9 @@ int kvmppc_get_one_reg_e500_tlb(struct kvm_vcpu *vcpu, u64 id,
+ 	case KVM_REG_PPC_MMUCFG:
+ 		*val = get_reg_val(id, vcpu->arch.mmucfg);
  		break;
--	}
- 	case KVM_REG_PPC_DAC1:
--	case KVM_REG_PPC_DAC2: {
--		int dac = reg->id - KVM_REG_PPC_DAC1;
--		r = copy_to_user((u64 __user *)(long)reg->addr,
--				 &vcpu->arch.dbg_reg.dac[dac], sizeof(u64));
-+	case KVM_REG_PPC_DAC2:
-+		i = reg->id - KVM_REG_PPC_DAC1;
-+		val = get_reg_val(reg->id, vcpu->arch.dbg_reg.dac[i]);
- 		break;
--	}
- 	case KVM_REG_PPC_EPR: {
- 		u32 epr = get_guest_epr(vcpu);
--		r = put_user(epr, (u32 __user *)(long)reg->addr);
-+		val = get_reg_val(reg->id, epr);
++	case KVM_REG_PPC_EPTCFG:
++		*val = get_reg_val(id, vcpu->arch.eptcfg);
++		break;
+ 	case KVM_REG_PPC_TLB0CFG:
+ 	case KVM_REG_PPC_TLB1CFG:
+ 	case KVM_REG_PPC_TLB2CFG:
+@@ -678,6 +681,12 @@ int kvmppc_set_one_reg_e500_tlb(struct kvm_vcpu *vcpu, u64 id,
+ 			r = -EINVAL;
  		break;
  	}
- #if defined(CONFIG_64BIT)
- 	case KVM_REG_PPC_EPCR:
--		r = put_user(vcpu->arch.epcr, (u32 __user *)(long)reg->addr);
-+		val = get_reg_val(reg->id, vcpu->arch.epcr);
- 		break;
- #endif
- 	case KVM_REG_PPC_TCR:
--		r = put_user(vcpu->arch.tcr, (u32 __user *)(long)reg->addr);
-+		val = get_reg_val(reg->id, vcpu->arch.tcr);
- 		break;
- 	case KVM_REG_PPC_TSR:
--		r = put_user(vcpu->arch.tsr, (u32 __user *)(long)reg->addr);
-+		val = get_reg_val(reg->id, vcpu->arch.tsr);
- 		break;
--	case KVM_REG_PPC_DEBUG_INST: {
--		u32 opcode = KVMPPC_INST_EHPRIV;
--		r = copy_to_user((u32 __user *)(long)reg->addr,
--				 &opcode, sizeof(u32));
-+	case KVM_REG_PPC_DEBUG_INST:
-+		val = get_reg_val(reg->id, KVMPPC_INST_EHPRIV);
- 		break;
--	}
- 	default:
-+		r = kvmppc_get_one_reg(vcpu, reg->id, &val);
- 		break;
++	case KVM_REG_PPC_EPTCFG: {
++		u32 reg = set_reg_val(id, *val);
++		if (reg != vcpu->arch.eptcfg)
++			r = -EINVAL;
++		break;
++	}
+ 	case KVM_REG_PPC_TLB0CFG:
+ 	case KVM_REG_PPC_TLB1CFG:
+ 	case KVM_REG_PPC_TLB2CFG:
+@@ -875,6 +884,9 @@ static int vcpu_mmu_init(struct kvm_vcpu *vcpu,
+ 	if (has_feature(vcpu, VCPU_FTR_MMU_V2)) {
+ 		vcpu->arch.tlbps[0] = mfspr(SPRN_TLB0PS);
+ 		vcpu->arch.tlbps[1] = mfspr(SPRN_TLB1PS);
++
++		/* Guest mmu emulation currently doesn't handle E.PT */
++		vcpu->arch.eptcfg = 0;
  	}
-+
-+	if (r)
-+		return r;
-+
-+	if (copy_to_user((char __user *)(unsigned long)reg->addr, &val, size))
-+		r = -EFAULT;
-+
- 	return r;
- }
  
- int kvm_vcpu_ioctl_set_one_reg(struct kvm_vcpu *vcpu, struct kvm_one_reg *reg)
- {
--	int r = -EINVAL;
-+	int r = 0;
-+	union kvmppc_one_reg val;
-+	int size;
-+	long int i;
-+
-+	size = one_reg_size(reg->id);
-+	if (size > sizeof(val))
-+		return -EINVAL;
-+
-+	if (copy_from_user(&val, (char __user *)(unsigned long)reg->addr, size))
-+		return -EFAULT;
- 
- 	switch (reg->id) {
- 	case KVM_REG_PPC_IAC1:
- 	case KVM_REG_PPC_IAC2:
- 	case KVM_REG_PPC_IAC3:
--	case KVM_REG_PPC_IAC4: {
--		int iac = reg->id - KVM_REG_PPC_IAC1;
--		r = copy_from_user(&vcpu->arch.dbg_reg.iac[iac],
--			     (u64 __user *)(long)reg->addr, sizeof(u64));
-+	case KVM_REG_PPC_IAC4:
-+		i = reg->id - KVM_REG_PPC_IAC1;
-+		vcpu->arch.dbg_reg.iac[i] = set_reg_val(reg->id, val);
- 		break;
--	}
- 	case KVM_REG_PPC_DAC1:
--	case KVM_REG_PPC_DAC2: {
--		int dac = reg->id - KVM_REG_PPC_DAC1;
--		r = copy_from_user(&vcpu->arch.dbg_reg.dac[dac],
--			     (u64 __user *)(long)reg->addr, sizeof(u64));
-+	case KVM_REG_PPC_DAC2:
-+		i = reg->id - KVM_REG_PPC_DAC1;
-+		vcpu->arch.dbg_reg.dac[i] = set_reg_val(reg->id, val);
- 		break;
--	}
- 	case KVM_REG_PPC_EPR: {
--		u32 new_epr;
--		r = get_user(new_epr, (u32 __user *)(long)reg->addr);
--		if (!r)
--			kvmppc_set_epr(vcpu, new_epr);
-+		u32 new_epr = set_reg_val(reg->id, val);
-+		kvmppc_set_epr(vcpu, new_epr);
- 		break;
- 	}
- #if defined(CONFIG_64BIT)
- 	case KVM_REG_PPC_EPCR: {
--		u32 new_epcr;
--		r = get_user(new_epcr, (u32 __user *)(long)reg->addr);
--		if (r == 0)
--			kvmppc_set_epcr(vcpu, new_epcr);
-+		u32 new_epcr = set_reg_val(reg->id, val);
-+		kvmppc_set_epcr(vcpu, new_epcr);
- 		break;
- 	}
- #endif
- 	case KVM_REG_PPC_OR_TSR: {
--		u32 tsr_bits;
--		r = get_user(tsr_bits, (u32 __user *)(long)reg->addr);
-+		u32 tsr_bits = set_reg_val(reg->id, val);
- 		kvmppc_set_tsr_bits(vcpu, tsr_bits);
- 		break;
- 	}
- 	case KVM_REG_PPC_CLEAR_TSR: {
--		u32 tsr_bits;
--		r = get_user(tsr_bits, (u32 __user *)(long)reg->addr);
-+		u32 tsr_bits = set_reg_val(reg->id, val);
- 		kvmppc_clr_tsr_bits(vcpu, tsr_bits);
- 		break;
- 	}
- 	case KVM_REG_PPC_TSR: {
--		u32 tsr;
--		r = get_user(tsr, (u32 __user *)(long)reg->addr);
-+		u32 tsr = set_reg_val(reg->id, val);
- 		kvmppc_set_tsr(vcpu, tsr);
- 		break;
- 	}
- 	case KVM_REG_PPC_TCR: {
--		u32 tcr;
--		r = get_user(tcr, (u32 __user *)(long)reg->addr);
-+		u32 tcr = set_reg_val(reg->id, val);
- 		kvmppc_set_tcr(vcpu, tcr);
- 		break;
- 	}
- 	default:
-+		r = kvmppc_set_one_reg(vcpu, reg->id, &val);
- 		break;
- 	}
-+
- 	return r;
- }
- 
-diff --git a/arch/powerpc/kvm/e500.c b/arch/powerpc/kvm/e500.c
-index 6dd4de7..576010f 100644
---- a/arch/powerpc/kvm/e500.c
-+++ b/arch/powerpc/kvm/e500.c
-@@ -425,6 +425,18 @@ int kvmppc_core_set_sregs(struct kvm_vcpu *vcpu, struct kvm_sregs *sregs)
- 	return kvmppc_set_sregs_ivor(vcpu, sregs);
- }
- 
-+int kvmppc_get_one_reg(struct kvm_vcpu *vcpu, u64 id,
-+			union kvmppc_one_reg *val)
-+{
-+	return -EINVAL;
-+}
-+
-+int kvmppc_set_one_reg(struct kvm_vcpu *vcpu, u64 id,
-+		       union kvmppc_one_reg *val)
-+{
-+	return -EINVAL;
-+}
-+
- struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
- {
- 	struct kvmppc_vcpu_e500 *vcpu_e500;
-diff --git a/arch/powerpc/kvm/e500mc.c b/arch/powerpc/kvm/e500mc.c
-index 1f89d26..b071bdc 100644
---- a/arch/powerpc/kvm/e500mc.c
-+++ b/arch/powerpc/kvm/e500mc.c
-@@ -255,6 +255,18 @@ int kvmppc_core_set_sregs(struct kvm_vcpu *vcpu, struct kvm_sregs *sregs)
- 	return kvmppc_set_sregs_ivor(vcpu, sregs);
- }
- 
-+int kvmppc_get_one_reg(struct kvm_vcpu *vcpu, u64 id,
-+			union kvmppc_one_reg *val)
-+{
-+	return -EINVAL;
-+}
-+
-+int kvmppc_set_one_reg(struct kvm_vcpu *vcpu, u64 id,
-+		       union kvmppc_one_reg *val)
-+{
-+	return -EINVAL;
-+}
-+
- struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
- {
- 	struct kvmppc_vcpu_e500 *vcpu_e500;
+ 	return 0;
 -- 
 1.7.4.1
