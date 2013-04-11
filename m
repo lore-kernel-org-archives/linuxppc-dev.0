@@ -1,28 +1,19 @@
-Return-Path: <eric.dumazet@gmail.com>
-Received: from mail-pa0-f45.google.com (mail-pa0-f45.google.com
- [209.85.220.45])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 676F62C0098
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Apr 2013 05:47:01 +1000 (EST)
-Received: by mail-pa0-f45.google.com with SMTP id kl13so1081197pab.4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 12:46:59 -0700 (PDT)
-Message-ID: <1365709617.3887.185.camel@edumazet-glaptop>
-Subject: Re: [PATCH] net: mv643xx_eth: remove deprecated inet_lro support
-From: Eric Dumazet <eric.dumazet@gmail.com>
-To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-Date: Thu, 11 Apr 2013 12:46:57 -0700
-In-Reply-To: <1365707488-28819-1-git-send-email-sebastian.hesselbarth@gmail.com>
-References: <1365707488-28819-1-git-send-email-sebastian.hesselbarth@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>,
- linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
- Soeren Moch <smoch@web.de>, Paul Mackerras <paulus@samba.org>,
- linux-arm-kernel@lists.infradead.org, Dale Farnsworth <dale@farnsworth.org>,
- Ben Hutchings <bhutchings@solarflare.com>, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Florian Fainelli <florian@openwrt.org>,
- Lennert Buytenhek <buytenh@wantstofly.org>, Willy Tarreau <w@1wt.eu>
+Return-Path: <iws@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+ by ozlabs.org (Postfix) with ESMTP id 4D71C2C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Apr 2013 05:58:11 +1000 (EST)
+Date: Thu, 11 Apr 2013 12:50:19 -0700
+From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+To: Chris Friesen <chris.friesen@genband.com>
+Subject: Re: recommended method of netbooting kernel/dtb in u-boot?
+Message-ID: <20130411195019.GA31025@ovro.caltech.edu>
+References: <5166DA49.5000907@genband.com>
+ <3B81A930-A4AB-4AA7-BC36-FCCE55D33C66@kernel.crashing.org>
+ <51670344.2090101@genband.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <51670344.2090101@genband.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,38 +23,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-04-11 at 21:11 +0200, Sebastian Hesselbarth wrote:
-> With recent support for GRO, there is no need to keep both LRO and
-> GRO. This patch therefore removes the deprecated inet_lro support
-> from mv643xx_eth. This is work is based on an experimental patch
-> provided by Eric Dumazet and Willy Tarreau.
+On Thu, Apr 11, 2013 at 12:39:00PM -0600, Chris Friesen wrote:
+> On 04/11/2013 12:12 PM, Kumar Gala wrote:
+> >
+> > On Apr 11, 2013, at 10:44 AM, Chris Friesen wrote:
+> >
+> >>
+> >> Hi all,
+> >>
+> >> We've got a powerpc system that uses u-boot.  In our environment on
+> >> bootup u-boot does a DHCP to get networking info, then uses TFTP to
+> >> get the kernel, which then does DHCP again and NFS-mounts the
+> >> initial root filesystem.
+> >>
+> >> What's the standard practice for this sort of thing when using
+> >> device tree blobs?  Do most people use multi-file images or do they
+> >> TFTP scripts to load and execute separate kernel/dtb files?
+> >
+> > We've normally just done multiple tftp fetches and one grabs dtb and
+> > one grabs kernel.
 > 
-> Signed-off-by: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-> Based-on-patch-by: Eric Dumazet <eric.dumazet@gmail.com>
-> Based-on-patch-by: Willy Tarreau <w@1wt.eu>
-> ---
-> Note: This patch is based upon recent cleanup patches and GRO support
-> patch for mv643xx_eth.
+> Do you hardcode the path to the file in the firmware?  Or do you upload 
+> a script that knows the path to the file?
 > 
-> Cc: "David S. Miller" <davem@davemloft.net>
-> Cc: Lennert Buytenhek <buytenh@wantstofly.org>
-> Cc: Andrew Lunn <andrew@lunn.ch>
-> Cc: Jason Cooper <jason@lakedaemon.net>
-> Cc: Florian Fainelli <florian@openwrt.org>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Dale Farnsworth <dale@farnsworth.org>
-> Cc: Ben Hutchings <bhutchings@solarflare.com>
-> Cc: Soeren Moch <smoch@web.de>
-> Cc: Eric Dumazet <eric.dumazet@gmail.com>
-> Cc: Willy Tarreau <w@1wt.eu>
-> Cc: netdev@vger.kernel.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-kernel@vger.kernel.org
-> ---
->  drivers/net/ethernet/marvell/mv643xx_eth.c |   97 +---------------------------
->  1 file changed, 3 insertions(+), 94 deletions(-)
+> In our case the path to the boot file(s) depends on which slot the card 
+> being booted has been inserted in.  The DHCP server knows what the path 
+> is, so it can set dhcpd.conf appropriately, but we need to get that 
+> information to the firmware on the card being booted.
+> 
 
-Seems fine to me, but you also could remove "select INET_LRO"
-from drivers/net/ethernet/marvell/Kconfig
+Hello Chris,
+
+I use a hardware setup which sounds similar to yours. The DHCP server
+controls which file is sent to each card.
+
+I use the FIT image format to combine a kernel, dtb, and initrd in one
+package. Then the U-Boot command "dhcp $address" sets up the network and
+tftp's the filename sent by the DHCP server. You don't need to invoke
+the U-Boot command "tftp" if you only have one image. "dhcp" is enough.
+
+I used the U-Boot doc/uImage.FIT/*.its examples to get started, and
+wrote my own custom .its file for my board. I don't use anything other
+than the vmlinux.bin.gz provided by the kernel build.
+
+Hope it helps,
+Ira
