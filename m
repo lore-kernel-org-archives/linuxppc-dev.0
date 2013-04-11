@@ -2,16 +2,17 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 201832C00B2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 23:34:12 +1000 (EST)
-Subject: Re: [PATCH] powerpc/crypto: removed qoriq-sec4.1-0.dtsi.
+ by ozlabs.org (Postfix) with ESMTPS id 3B84C2C00B2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 23:35:27 +1000 (EST)
+Subject: Re: [PATCHv2] powerpc/crypto: Add property for 'era' in SEC dts
+ crypto node
 Mime-Version: 1.0 (Apple Message framework v1278)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1365651819-23350-1-git-send-email-vakul@freescale.com>
-Date: Thu, 11 Apr 2013 08:33:52 -0500
-Message-Id: <DBED8846-60EE-41F8-B4C3-F24B3C1AB152@kernel.crashing.org>
-References: <1365651819-23350-1-git-send-email-vakul@freescale.com>
+In-Reply-To: <1365651923-24017-1-git-send-email-vakul@freescale.com>
+Date: Thu, 11 Apr 2013 08:34:01 -0500
+Message-Id: <7217580C-7107-4A96-9D8C-382AB68A19B0@kernel.crashing.org>
+References: <1365651923-24017-1-git-send-email-vakul@freescale.com>
 To: Vakul Garg <vakul@freescale.com>
 Cc: Shaveta Leekha <shaveta@freescale.com>, linux-kernel@vger.kernel.org,
  Andy Fleming <afleming@freescale.com>, Paul Mackerras <paulus@samba.org>,
@@ -26,17 +27,27 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Apr 10, 2013, at 10:43 PM, Vakul Garg wrote:
+On Apr 10, 2013, at 10:45 PM, Vakul Garg wrote:
 
-> Removing qoriq-sec4.1-0.dtsi as it is not used by any soc anymore.
->=20
+> The crypto node now contains a new property 'fsl,sec-era'.
+> This is required so that applications can retrieve era info without
+> having to be able to read SEC's register space.
+> 
 > Signed-off-by: Vakul Garg <vakul@freescale.com>
 > ---
-> arch/powerpc/boot/dts/fsl/qoriq-sec4.1-0.dtsi |  109 =
--------------------------
-> 1 files changed, 0 insertions(+), 109 deletions(-)
-> delete mode 100644 arch/powerpc/boot/dts/fsl/qoriq-sec4.1-0.dtsi
+> Changelog:
+> 
+> 	v2: Added era in p1023si-post.dtsi as per Kim's comments.
+> 
+> arch/powerpc/boot/dts/fsl/p1023si-post.dtsi   |    1 +
+> arch/powerpc/boot/dts/fsl/pq3-sec4.4-0.dtsi   |    1 +
+> arch/powerpc/boot/dts/fsl/qoriq-sec4.0-0.dtsi |    1 +
+> arch/powerpc/boot/dts/fsl/qoriq-sec4.2-0.dtsi |    1 +
+> arch/powerpc/boot/dts/fsl/qoriq-sec5.0-0.dtsi |    1 +
+> arch/powerpc/boot/dts/fsl/qoriq-sec5.2-0.dtsi |    1 +
+> arch/powerpc/boot/dts/fsl/qoriq-sec5.3-0.dtsi |    1 +
+> 7 files changed, 7 insertions(+), 0 deletions(-)
 
 applied to next
 
-- k=
+- k
