@@ -1,21 +1,38 @@
-Return-Path: <B16394@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0070A2C00D5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 13:49:40 +1000 (EST)
-From: Vakul Garg <vakul@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCHv2] powerpc/crypto: Add property for 'era' in SEC dts crypto
- node
-Date: Thu, 11 Apr 2013 09:15:23 +0530
-Message-ID: <1365651923-24017-1-git-send-email-vakul@freescale.com>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1D2D72C00CB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 15:12:07 +1000 (EST)
+Received: from /spool/local
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 11 Apr 2013 10:39:03 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 23888E004A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 10:43:51 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3B5BsHc11796750
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 10:41:54 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3B5BwY8000680
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 05:11:59 GMT
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: David Gibson <dwg@au1.ibm.com>
+Subject: Re: [PATCH -V5 12/25] powerpc: Return all the valid pte ecndoing in
+ KVM_PPC_GET_SMMU_INFO ioctl
+In-Reply-To: <20130411032447.GU8165@truffula.fritz.box>
+References: <1365055083-31956-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1365055083-31956-13-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20130411032447.GU8165@truffula.fritz.box>
+Date: Thu, 11 Apr 2013 10:41:57 +0530
+Message-ID: <874nfdodlu.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: Shaveta Leekha <shaveta@freescale.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Andy Fleming <afleming@freescale.com>
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,108 +42,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The crypto node now contains a new property 'fsl,sec-era'.
-This is required so that applications can retrieve era info without
-having to be able to read SEC's register space.
+David Gibson <dwg@au1.ibm.com> writes:
 
-Signed-off-by: Vakul Garg <vakul@freescale.com>
----
-Changelog:
+> On Thu, Apr 04, 2013 at 11:27:50AM +0530, Aneesh Kumar K.V wrote:
+>> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+>
+> Surely this can't be correct until the KVM H_ENTER implementation is
+> updated to cope with the MPSS page sizes.
 
-	v2: Added era in p1023si-post.dtsi as per Kim's comments.
+Why ? We are returning info regarding penc values for different
+combination. I would guess qemu to only use info related to base page
+size. Rest it can ignore right ?. Obviously i haven't tested this
+part. So let me know if I should drop this ?
 
- arch/powerpc/boot/dts/fsl/p1023si-post.dtsi   |    1 +
- arch/powerpc/boot/dts/fsl/pq3-sec4.4-0.dtsi   |    1 +
- arch/powerpc/boot/dts/fsl/qoriq-sec4.0-0.dtsi |    1 +
- arch/powerpc/boot/dts/fsl/qoriq-sec4.2-0.dtsi |    1 +
- arch/powerpc/boot/dts/fsl/qoriq-sec5.0-0.dtsi |    1 +
- arch/powerpc/boot/dts/fsl/qoriq-sec5.2-0.dtsi |    1 +
- arch/powerpc/boot/dts/fsl/qoriq-sec5.3-0.dtsi |    1 +
- 7 files changed, 7 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/boot/dts/fsl/p1023si-post.dtsi b/arch/powerpc/boot/dts/fsl/p1023si-post.dtsi
-index 941fa15..f1105bf 100644
---- a/arch/powerpc/boot/dts/fsl/p1023si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p1023si-post.dtsi
-@@ -148,6 +148,7 @@
- 
- 	crypto: crypto@300000 {
- 		compatible = "fsl,sec-v4.2", "fsl,sec-v4.0";
-+		fsl,sec-era = <3>;
- 		#address-cells = <1>;
- 		#size-cells = <1>;
- 		reg = <0x30000 0x10000>;
-diff --git a/arch/powerpc/boot/dts/fsl/pq3-sec4.4-0.dtsi b/arch/powerpc/boot/dts/fsl/pq3-sec4.4-0.dtsi
-index ffadcb5..bb3d826 100644
---- a/arch/powerpc/boot/dts/fsl/pq3-sec4.4-0.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/pq3-sec4.4-0.dtsi
-@@ -34,6 +34,7 @@
- 
- crypto@30000 {
- 	compatible = "fsl,sec-v4.4", "fsl,sec-v4.0";
-+	fsl,sec-era = <3>;
- 	#address-cells = <1>;
- 	#size-cells = <1>;
- 	ranges		 = <0x0 0x30000 0x10000>;
-diff --git a/arch/powerpc/boot/dts/fsl/qoriq-sec4.0-0.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-sec4.0-0.dtsi
-index 0cbbac3..02bee5f 100644
---- a/arch/powerpc/boot/dts/fsl/qoriq-sec4.0-0.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/qoriq-sec4.0-0.dtsi
-@@ -34,6 +34,7 @@
- 
- crypto: crypto@300000 {
- 	compatible = "fsl,sec-v4.0";
-+	fsl,sec-era = <1>;
- 	#address-cells = <1>;
- 	#size-cells = <1>;
- 	reg = <0x300000 0x10000>;
-diff --git a/arch/powerpc/boot/dts/fsl/qoriq-sec4.2-0.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-sec4.2-0.dtsi
-index 7990e0d..7f7574e 100644
---- a/arch/powerpc/boot/dts/fsl/qoriq-sec4.2-0.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/qoriq-sec4.2-0.dtsi
-@@ -34,6 +34,7 @@
- 
- crypto: crypto@300000 {
- 	compatible = "fsl,sec-v4.2", "fsl,sec-v4.0";
-+	fsl,sec-era = <3>;
- 	#address-cells = <1>;
- 	#size-cells = <1>;
- 	reg		 = <0x300000 0x10000>;
-diff --git a/arch/powerpc/boot/dts/fsl/qoriq-sec5.0-0.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-sec5.0-0.dtsi
-index ffd458f..e298efb 100644
---- a/arch/powerpc/boot/dts/fsl/qoriq-sec5.0-0.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/qoriq-sec5.0-0.dtsi
-@@ -34,6 +34,7 @@
- 
- crypto: crypto@300000 {
- 	compatible = "fsl,sec-v5.0", "fsl,sec-v4.0";
-+	fsl,sec-era = <5>;
- 	#address-cells = <1>;
- 	#size-cells = <1>;
- 	reg		 = <0x300000 0x10000>;
-diff --git a/arch/powerpc/boot/dts/fsl/qoriq-sec5.2-0.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-sec5.2-0.dtsi
-index 7b2ab8a..33ff09d 100644
---- a/arch/powerpc/boot/dts/fsl/qoriq-sec5.2-0.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/qoriq-sec5.2-0.dtsi
-@@ -34,6 +34,7 @@
- 
- crypto: crypto@300000 {
- 	compatible = "fsl,sec-v5.2", "fsl,sec-v5.0", "fsl,sec-v4.0";
-+	fsl,sec-era = <5>;
- 	#address-cells = <1>;
- 	#size-cells = <1>;
- 	reg		 = <0x300000 0x10000>;
-diff --git a/arch/powerpc/boot/dts/fsl/qoriq-sec5.3-0.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-sec5.3-0.dtsi
-index 0339825..0877822 100644
---- a/arch/powerpc/boot/dts/fsl/qoriq-sec5.3-0.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/qoriq-sec5.3-0.dtsi
-@@ -34,6 +34,7 @@
- 
- crypto: crypto@300000 {
- 	compatible = "fsl,sec-v5.3", "fsl,sec-v5.0", "fsl,sec-v4.0";
-+	fsl,sec-era = <4>;
- 	#address-cells = <1>;
- 	#size-cells = <1>;
- 	reg		 = <0x300000 0x10000>;
--- 
-1.7.7.6
+-aneesh
