@@ -1,26 +1,22 @@
 Return-Path: <sebastian.hesselbarth@gmail.com>
-Received: from mail-oa0-f46.google.com (mail-oa0-f46.google.com
- [209.85.219.46])
+Received: from mail-ea0-x232.google.com (mail-ea0-x232.google.com
+ [IPv6:2a00:1450:4013:c01::232])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B481C2C00C7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Apr 2013 02:59:15 +1000 (EST)
-Received: by mail-oa0-f46.google.com with SMTP id h2so381647oag.33
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 09:59:12 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20130411153256.GH1910@1wt.eu>
-References: <1365684023-9967-1-git-send-email-sebastian.hesselbarth@gmail.com>
- <20130411131333.GD1910@1wt.eu>
- <CABJ1b_TQDabT1J7ffo5cb1Th=71bcSduifMJaDpfVRiiHvtWDw@mail.gmail.com>
- <20130411150326.GA19978@1wt.eu>
- <CABJ1b_TRxm97DKJLP_h0VwMJvcYmSpjoJvtg1KvBNGah=VzqMQ@mail.gmail.com>
- <20130411153256.GH1910@1wt.eu>
-Date: Thu, 11 Apr 2013 18:59:11 +0200
-Message-ID: <CABJ1b_QaEJbuBsqx+J1Pkc7o66S_Rboa7Trnko1mXSK6-UZhfg@mail.gmail.com>
-Subject: Re: [PATCH] net: mv643xx_eth: Add GRO support
+ by ozlabs.org (Postfix) with ESMTPS id 338042C00B9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Apr 2013 04:07:24 +1000 (EST)
+Received: by mail-ea0-f178.google.com with SMTP id o10so896515eaj.37
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 11:07:20 -0700 (PDT)
+Message-ID: <5166FBD4.5020508@gmail.com>
+Date: Thu, 11 Apr 2013 20:07:16 +0200
 From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-To: Willy Tarreau <w@1wt.eu>
-Content-Type: text/plain; charset=ISO-8859-1
+MIME-Version: 1.0
+To: Ben Hutchings <bhutchings@solarflare.com>
+Subject: Re: [PATCH] net: mv643xx_eth: Add GRO support
+References: <1365684023-9967-1-git-send-email-sebastian.hesselbarth@gmail.com>
+ <1365702955.7355.5.camel@bwh-desktop.uk.solarflarecom.com>
+In-Reply-To: <1365702955.7355.5.camel@bwh-desktop.uk.solarflarecom.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>,
  linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
  Soeren Moch <smoch@web.de>, Paul Mackerras <paulus@samba.org>,
@@ -37,23 +33,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Apr 11, 2013 at 5:32 PM, Willy Tarreau <w@1wt.eu> wrote:
-> On Thu, Apr 11, 2013 at 05:27:03PM +0200, Sebastian Hesselbarth wrote:
->> I don't have a strong opinion on whether Soeren's or your proposal should
->> be submitted. But I insist on having one of them in, as GRO significantly
->> improves the common use case, is enabled by default, and not as
->> constrained as LRO.
+On 04/11/2013 07:55 PM, Ben Hutchings wrote:
+> On Thu, 2013-04-11 at 14:40 +0200, Sebastian Hesselbarth wrote:
+>> This patch adds GRO support to mv643xx_eth by making it invoke
+>> napi_gro_receive instead of netif_receive_skb.
 >
-> I agree, use yours first, but we should keep an eye on this. Since you have
-> everything to run a test, please try to see if you can get netperf to run
-> over IPv6, I'm sure the NIC doesn't handle it.
+> The inet_lro support should be removed at the same time; inet_lro is now
+> deprecated and there should be no need to keep both of them.
 
-Willy,
+Ben,
 
-out of curiosity I replayed all tests using netperf/netserver with -6 which
-enables ipv6. The overall results remain quite the same here:
-enabling support for GRO gives a huge improvement in achievable
-throughput, and the difference between Soeren's and your patch is
-neglectible.
+I agree on removing it asap, but I also like to see GRO support
+in. Maybe, we postpone lro removal just a little bit. I have just
+started to look at mv643xx_eth and remember Marvell Orion SoCs are
+not the only platform using it. I haven't heard a single word from
+ppc guys, yet.
+
+Willy just posted an experimental patch to remove lro. I'll have
+a look at it and test it out on Dove.
 
 Sebastian
