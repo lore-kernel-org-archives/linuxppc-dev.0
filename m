@@ -1,20 +1,31 @@
-Return-Path: <chris.friesen@genband.com>
-Received: from exprod7og120.obsmtp.com (exprod7og120.obsmtp.com [64.18.2.18])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 193EB2C00B8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Apr 2013 04:39:45 +1000 (EST)
-Message-ID: <51670344.2090101@genband.com>
-Date: Thu, 11 Apr 2013 12:39:00 -0600
-From: Chris Friesen <chris.friesen@genband.com>
+Return-Path: <b08248@gmail.com>
+Received: from mail-da0-x231.google.com (mail-da0-x231.google.com
+ [IPv6:2607:f8b0:400e:c00::231])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2C0FD2C00C2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Apr 2013 04:44:51 +1000 (EST)
+Received: by mail-da0-f49.google.com with SMTP id t11so787771daj.8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 11:44:49 -0700 (PDT)
 MIME-Version: 1.0
+In-Reply-To: <CALRxmdD7ZWj4PM5VTZz_RimmgQAJCX=5yUx=H+7-W30r-PdTtA@mail.gmail.com>
+References: <1363801557-27436-1-git-send-email-Bharat.Bhushan@freescale.com>
+ <436085E0-D605-40C1-BCDF-EB4D24B01AFA@suse.de>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D06FC04D4@039-SN2MPN1-013.039d.mgd.msft.net>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D06FC1773@039-SN2MPN1-013.039d.mgd.msft.net>
+ <5A04ECFC-E828-4EBF-895B-043FC038ABB5@kernel.crashing.org>
+ <CALRxmdD7ZWj4PM5VTZz_RimmgQAJCX=5yUx=H+7-W30r-PdTtA@mail.gmail.com>
+Date: Thu, 11 Apr 2013 13:44:49 -0500
+Message-ID: <CALRxmdDpwpy=SERuVe4JzUQz=vQYFrcydB7MaAF8KbYKWT5U-A@mail.gmail.com>
+Subject: Re: [PATCH] bookehv: Handle debug exception on guest exit
+From: Stuart Yoder <b08248@gmail.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: recommended method of netbooting kernel/dtb in u-boot?
-References: <5166DA49.5000907@genband.com>
- <3B81A930-A4AB-4AA7-BC36-FCCE55D33C66@kernel.crashing.org>
-In-Reply-To: <3B81A930-A4AB-4AA7-BC36-FCCE55D33C66@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Wood Scott-B07421 <B07421@freescale.com>, KVM list <kvm@vger.kernel.org>,
+ Alexander Graf <agraf@suse.de>, kvm-ppc <kvm-ppc@vger.kernel.org>,
+ Yoder Stuart-B08248 <b08248@freescale.com>,
+ Bhushan Bharat-R65777 <R65777@freescale.com>,
+ linuxppc list <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,31 +35,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/11/2013 12:12 PM, Kumar Gala wrote:
->
-> On Apr 11, 2013, at 10:44 AM, Chris Friesen wrote:
->
->>
->> Hi all,
->>
->> We've got a powerpc system that uses u-boot.  In our environment on
->> bootup u-boot does a DHCP to get networking info, then uses TFTP to
->> get the kernel, which then does DHCP again and NFS-mounts the
->> initial root filesystem.
->>
->> What's the standard practice for this sort of thing when using
->> device tree blobs?  Do most people use multi-file images or do they
->> TFTP scripts to load and execute separate kernel/dtb files?
->
-> We've normally just done multiple tftp fetches and one grabs dtb and
-> one grabs kernel.
+So the patch should look something like this (on a 3.8 kernel):
 
-Do you hardcode the path to the file in the firmware?  Or do you upload 
-a script that knows the path to the file?
+diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
+index 5f051ee..92b675a 100644
+--- a/arch/powerpc/kernel/head_booke.h
++++ b/arch/powerpc/kernel/head_booke.h
+@@ -286,13 +286,13 @@ label:
+        andis.  r10,r10,(DBSR_IC|DBSR_BT)@h;                                  \
+        beq+    2f;                                                           \
+                                                                              \
+-       lis     r10,KERNELBASE@h;       /* check if exception in vectors */   \
+-       ori     r10,r10,KERNELBASE@l;                                         \
++       lis     r10,interrupt_base@h;   /* check if exception in vectors */   \
++       ori     r10,r10,interrupt_base@l;
+        cmplw   r12,r10;                                                      \
+        blt+    2f;                     /* addr below exception vectors */    \
+                                                                              \
+-       lis     r10,DebugDebug@h;                                             \
+-       ori     r10,r10,DebugDebug@l;                                         \
++       lis     r10,interrupt_end@h;                                          \
++       ori     r10,r10,interrupt_end@l;
+        cmplw   r12,r10;                                                      \
+        bgt+    2f;                     /* addr above exception vectors */    \
+                                                                              \
+@@ -339,13 +339,13 @@ label:
+        andis.  r10,r10,(DBSR_IC|DBSR_BT)@h;                                  \
+        beq+    2f;                                                           \
+                                                                              \
+-       lis     r10,KERNELBASE@h;       /* check if exception in vectors */   \
+-       ori     r10,r10,KERNELBASE@l;                                         \
++       lis     r10,interrupt_base@h;   /* check if exception in vectors */   \
++       ori     r10,r10,interrupt_base@l;
+        cmplw   r12,r10;                                                      \
+        blt+    2f;                     /* addr below exception vectors */    \
+                                                                              \
+-       lis     r10,DebugCrit@h;                                              \
+-       ori     r10,r10,DebugCrit@l;                                          \
++       lis     r10,interrupt_end@h;                                          \
++       ori     r10,r10,interrupt_end@l;
+        cmplw   r12,r10;                                                      \
+        bgt+    2f;                     /* addr above exception vectors */    \
+                                                                              \
 
-In our case the path to the boot file(s) depends on which slot the card 
-being booted has been inserted in.  The DHCP server knows what the path 
-is, so it can set dhcpd.conf appropriately, but we need to get that 
-information to the firmware on the card being booted.
 
-Chris
+diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
+index 7a2e5e4..97e2671 100644
+--- a/arch/powerpc/kernel/head_44x.S
++++ b/arch/powerpc/kernel/head_44x.S
+@@ -769,6 +769,8 @@ finish_tlb_load_47x:
+         */
+        DEBUG_CRIT_EXCEPTION
+
++interrupt_end:
++
+ /*
+  * Global functions
+  */
+
+
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl
+index 58925b6..2c3e31d 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -605,6 +605,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
+        /* Embedded Hypervisor Privilege */
+        EXCEPTION(0, HV_PRIV, Ehvpriv, unknown_exception, EXC_XFER_EE)
+
++interrupt_end:
++
+ /*
+  * Local functions
+  */
