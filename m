@@ -1,25 +1,20 @@
 Return-Path: <B38951@freescale.com>
 Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe006.messaging.microsoft.com [213.199.154.209])
+ (am1ehsobe002.messaging.microsoft.com [213.199.154.205])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8E18A2C00E2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 19:15:02 +1000 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH V5] powerpc/85xx: Add machine check handler to fix PCIe
+ by ozlabs.org (Postfix) with ESMTPS id CE14E2C0163
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 19:15:32 +1000 (EST)
+From: Jia Hongtao <hongtao.jia@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
+Subject: [PATCH V6] powerpc/85xx: Add machine check handler to fix PCIe
  erratum on mpc85xx
-Date: Thu, 11 Apr 2013 09:14:51 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01C35D42@039-SN1MPN1-003.039d.mgd.msft.net>
-References: <1365409614-2634-1-git-send-email-hongtao.jia@freescale.com>
- (from hongtao.jia@freescale.com on Mon Apr  8 03:26:54 2013)
- <1365630703.8381.23@snotra>
-In-Reply-To: <1365630703.8381.23@snotra>
-Content-Type: text/plain; charset="us-ascii"
+Date: Thu, 11 Apr 2013 16:36:22 +0800
+Message-ID: <1365669382-18534-1-git-send-email-hongtao.jia@freescale.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+Content-Type: text/plain
+Cc: B07421@freescale.com, hongtao.jia@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,105 +24,288 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+A PCIe erratum of mpc85xx may causes a core hang when a link of PCIe
+goes down. when the link goes down, Non-posted transactions issued
+via the ATMU requiring completion result in an instruction stall.
+At the same time a machine-check exception is generated to the core
+to allow further processing by the handler. We implements the handler
+which skips the instruction caused the stall.
 
+This patch depends on patch:
+powerpc/85xx: Add platform_device declaration to fsl_pci.h
 
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Thursday, April 11, 2013 5:52 AM
-> To: Jia Hongtao-B38951
-> Cc: linuxppc-dev@lists.ozlabs.org; galak@kernel.crashing.org; Wood Scott-
-> B07421; Li Yang-R58472; Jia Hongtao-B38951
-> Subject: Re: [PATCH V5] powerpc/85xx: Add machine check handler to fix
-> PCIe erratum on mpc85xx
->=20
-> On 04/08/2013 03:26:54 AM, Jia Hongtao wrote:
-> > @@ -826,6 +829,124 @@ u64 fsl_pci_immrbar_base(struct pci_controller
-> > *hose)
-> >  	return 0;
-> >  }
-> >
-> > +#ifdef CONFIG_E500
-> > +
-> > +#define OP_LWZ  32
-> > +#define OP_LWZU 33
-> > +#define OP_LBZ  34
-> > +#define OP_LBZU 35
-> > +#define OP_LHZ  40
-> > +#define OP_LHZU 41
-> > +#define OP_LHA  42
-> > +#define OP_LHAU 43
->=20
-> Can you move these to asm/ppc-opcode.h (or possibly
-> asm/ppc-disassemble.h if we don't want to mix the two methods of
-> describing instructions)?
+Signed-off-by: Zhao Chenhui <b35336@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
+Signed-off-by: Liu Shuo <soniccat.liu@gmail.com>
+Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+---
+V5:
+* Move OP and XOP defines to a new header file: asm/ppc-disassemble.h
+* Add X UX BRX variant of load instruction emulation
+* Remove A variant of load instruction emulation
 
-Yes, mix the two methods is not appropriate.
-asm/ppc-disassemble.h is a nice choice.
+V4:
+* Fill rd with all-Fs if the skipped instruction is load and emulate the
+  instruction.
+* Let KVM/QEMU deal with the exception if the machine check comes from KVM.
 
->=20
-> > +static int mcheck_handle_load(struct pt_regs *regs, u32 inst)
-> > +{
-> > +	unsigned int rd, ra, d;
-> > +
-> > +	rd =3D get_rt(inst);
-> > +	ra =3D get_ra(inst);
-> > +	d =3D get_d(inst);
-> > +
-> > +	switch (get_op(inst)) {
-> > +	case OP_LWZ:
-> > +		regs->gpr[rd] =3D 0xffffffff;
-> > +		break;
-> > +
-> > +	case OP_LWZU:
-> > +		regs->gpr[rd] =3D 0xffffffff;
-> > +		regs->gpr[ra] +=3D (s16)d;
-> > +		break;
-> > +
-> > +	case OP_LBZ:
-> > +		regs->gpr[rd] =3D 0xff;
-> > +		break;
-> > +
-> > +	case OP_LBZU:
-> > +		regs->gpr[rd] =3D 0xff;
-> > +		regs->gpr[ra] +=3D (s16)d;
-> > +		break;
-> > +
-> > +	case OP_LHZ:
-> > +		regs->gpr[rd] =3D 0xffff;
-> > +		break;
-> > +
-> > +	case OP_LHZU:
-> > +		regs->gpr[rd] =3D 0xffff;
-> > +		regs->gpr[ra] +=3D (s16)d;
-> > +		break;
-> > +
-> > +	case OP_LHA:
-> > +		regs->gpr[rd] =3D 0xffff;
-> > +		break;
-> > +
-> > +	case OP_LHAU:
-> > +		regs->gpr[rd] =3D 0xffff;
-> > +		regs->gpr[ra] +=3D (s16)d;
-> > +		break;
->=20
-> The X and (especially for PCI) BRX versions are important -- probably
-> more so than the U versions.  I doubt we need the A variant.
+ arch/powerpc/include/asm/ppc-disassemble.h |  31 +++++++
+ arch/powerpc/kernel/cpu_setup_fsl_booke.S  |   2 +-
+ arch/powerpc/kernel/traps.c                |   3 +
+ arch/powerpc/sysdev/fsl_pci.c              | 140 +++++++++++++++++++++++++++++
+ arch/powerpc/sysdev/fsl_pci.h              |   6 ++
+ 5 files changed, 181 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/include/asm/ppc-disassemble.h
 
-Then I will add X and BRX variant and remove A variant.
-
->=20
-> If you do support the A variant, why are you not sign-extending the
-> value?
-
-Just curious, sign-extending the value means fill rd with 0xffffffff?
-
->=20
-> Is this erratum present on any 64-bit chips?
-
-No. This erratum only happened in e500 core chips.
-
->=20
-> -Scott
-
-Thanks.
--Hongtao
+diff --git a/arch/powerpc/include/asm/ppc-disassemble.h b/arch/powerpc/include/asm/ppc-disassemble.h
+new file mode 100644
+index 0000000..f9782b8
+--- /dev/null
++++ b/arch/powerpc/include/asm/ppc-disassemble.h
+@@ -0,0 +1,31 @@
++/*
++ * Copyright 2012-2013 Freescale Semiconductor, Inc.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ *
++ * provides opcode and xopcode images for use by emulating
++ * instructions
++ */
++#ifndef _ASM_POWERPC_PPC_DISASSEMBLE_H
++#define _ASM_POWERPC_PPC_DISASSEMBLE_H
++
++#define OP_LWZ  32
++#define OP_LWZU 33
++#define OP_LBZ  34
++#define OP_LBZU 35
++#define OP_LHZ  40
++#define OP_LHZU 41
++
++#define OP_31_XOP_LWZX      23
++#define OP_31_XOP_LWZUX     55
++#define OP_31_XOP_LBZX      87
++#define OP_31_XOP_LBZUX     119
++#define OP_31_XOP_LHZX      279
++#define OP_31_XOP_LHZUX     311
++#define OP_31_XOP_LWBRX     534
++#define OP_31_XOP_LHBRX     790
++
++#endif
+diff --git a/arch/powerpc/kernel/cpu_setup_fsl_booke.S b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+index dcd8819..f1bde90 100644
+--- a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
++++ b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+@@ -66,7 +66,7 @@ _GLOBAL(__setup_cpu_e500v2)
+ 	bl	__e500_icache_setup
+ 	bl	__e500_dcache_setup
+ 	bl	__setup_e500_ivors
+-#ifdef CONFIG_FSL_RIO
++#if defined(CONFIG_FSL_RIO) || defined(CONFIG_FSL_PCI)
+ 	/* Ensure that RFXE is set */
+ 	mfspr	r3,SPRN_HID1
+ 	oris	r3,r3,HID1_RFXE@h
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index a008cf5..dd275a4 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -59,6 +59,7 @@
+ #include <asm/fadump.h>
+ #include <asm/switch_to.h>
+ #include <asm/debug.h>
++#include <sysdev/fsl_pci.h>
+ 
+ #if defined(CONFIG_DEBUGGER) || defined(CONFIG_KEXEC)
+ int (*__debugger)(struct pt_regs *regs) __read_mostly;
+@@ -556,6 +557,8 @@ int machine_check_e500(struct pt_regs *regs)
+ 	if (reason & MCSR_BUS_RBERR) {
+ 		if (fsl_rio_mcheck_exception(regs))
+ 			return 1;
++		if (fsl_pci_mcheck_exception(regs))
++			return 1;
+ 	}
+ 
+ 	printk("Machine check in kernel mode.\n");
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 682084d..aaa54c5 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -26,11 +26,15 @@
+ #include <linux/memblock.h>
+ #include <linux/log2.h>
+ #include <linux/slab.h>
++#include <linux/uaccess.h>
+ 
+ #include <asm/io.h>
+ #include <asm/prom.h>
+ #include <asm/pci-bridge.h>
++#include <asm/ppc-pci.h>
+ #include <asm/machdep.h>
++#include <asm/disassemble.h>
++#include <asm/ppc-disassemble.h>
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_pci.h>
+ 
+@@ -826,6 +830,142 @@ u64 fsl_pci_immrbar_base(struct pci_controller *hose)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_E500
++static int mcheck_handle_load(struct pt_regs *regs, u32 inst)
++{
++	unsigned int rd, ra, rb, d;
++
++	rd = get_rt(inst);
++	ra = get_ra(inst);
++	rb = get_rb(inst);
++	d = get_d(inst);
++
++	switch (get_op(inst)) {
++	case 31:
++		switch (get_xop(inst)) {
++		case OP_31_XOP_LWZX:
++		case OP_31_XOP_LWBRX:
++			regs->gpr[rd] = 0xffffffff;
++			break;
++
++		case OP_31_XOP_LWZUX:
++			regs->gpr[rd] = 0xffffffff;
++			regs->gpr[ra] += regs->gpr[rb];
++			break;
++
++		case OP_31_XOP_LBZX:
++			regs->gpr[rd] = 0xff;
++			break;
++
++		case OP_31_XOP_LBZUX:
++			regs->gpr[rd] = 0xff;
++			regs->gpr[ra] += regs->gpr[rb];
++			break;
++
++		case OP_31_XOP_LHZX:
++		case OP_31_XOP_LHBRX:
++			regs->gpr[rd] = 0xffff;
++			break;
++
++		case OP_31_XOP_LHZUX:
++			regs->gpr[rd] = 0xffff;
++			regs->gpr[ra] += regs->gpr[rb];
++			break;
++
++		default:
++			return 0;
++		}
++		break;
++
++	case OP_LWZ:
++		regs->gpr[rd] = 0xffffffff;
++		break;
++
++	case OP_LWZU:
++		regs->gpr[rd] = 0xffffffff;
++		regs->gpr[ra] += (s16)d;
++		break;
++
++	case OP_LBZ:
++		regs->gpr[rd] = 0xff;
++		break;
++
++	case OP_LBZU:
++		regs->gpr[rd] = 0xff;
++		regs->gpr[ra] += (s16)d;
++		break;
++
++	case OP_LHZ:
++		regs->gpr[rd] = 0xffff;
++		break;
++
++	case OP_LHZU:
++		regs->gpr[rd] = 0xffff;
++		regs->gpr[ra] += (s16)d;
++		break;
++
++	default:
++		return 0;
++	}
++
++	return 1;
++}
++
++static int is_in_pci_mem_space(phys_addr_t addr)
++{
++	struct pci_controller *hose;
++	struct resource *res;
++	int i;
++
++	list_for_each_entry(hose, &hose_list, list_node) {
++		if (!early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP))
++			continue;
++
++		for (i = 0; i < 3; i++) {
++			res = &hose->mem_resources[i];
++			if ((res->flags & IORESOURCE_MEM) &&
++				addr >= res->start && addr <= res->end)
++				return 1;
++		}
++	}
++	return 0;
++}
++
++int fsl_pci_mcheck_exception(struct pt_regs *regs)
++{
++	u32 inst;
++	int ret;
++	phys_addr_t addr = 0;
++
++	/* Let KVM/QEMU deal with the exception */
++	if (regs->msr & MSR_GS)
++		return 0;
++
++#ifdef CONFIG_PHYS_64BIT
++	addr = mfspr(SPRN_MCARU);
++	addr <<= 32;
++#endif
++	addr += mfspr(SPRN_MCAR);
++
++	if (is_in_pci_mem_space(addr)) {
++		if (user_mode(regs)) {
++			pagefault_disable();
++			ret = get_user(regs->nip, &inst);
++			pagefault_enable();
++		} else {
++			ret = probe_kernel_address(regs->nip, inst);
++		}
++
++		if (mcheck_handle_load(regs, inst)) {
++			regs->nip += 4;
++			return 1;
++		}
++	}
++
++	return 0;
++}
++#endif
++
+ #if defined(CONFIG_FSL_SOC_BOOKE) || defined(CONFIG_PPC_86xx)
+ static const struct of_device_id pci_ids[] = {
+ 	{ .compatible = "fsl,mpc8540-pci", },
+diff --git a/arch/powerpc/sysdev/fsl_pci.h b/arch/powerpc/sysdev/fsl_pci.h
+index 851dd56..b0d01ea 100644
+--- a/arch/powerpc/sysdev/fsl_pci.h
++++ b/arch/powerpc/sysdev/fsl_pci.h
+@@ -115,5 +115,11 @@ static inline int mpc85xx_pci_err_probe(struct platform_device *op)
+ }
+ #endif
+ 
++#ifdef CONFIG_FSL_PCI
++extern int fsl_pci_mcheck_exception(struct pt_regs *);
++#else
++static inline int fsl_pci_mcheck_exception(struct pt_regs *regs) {return 0; }
++#endif
++
+ #endif /* __POWERPC_FSL_PCI_H */
+ #endif /* __KERNEL__ */
+-- 
+1.8.0
