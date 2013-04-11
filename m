@@ -1,20 +1,19 @@
-Return-Path: <B07421@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 245452C008F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 08:40:58 +1000 (EST)
-From: Scott Wood <scottwood@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH] powerpc/85xx: enable Silicon image 3132 PCIe to SATA
- controller
-Date: Wed, 10 Apr 2013 17:40:49 -0500
-Message-ID: <1365633649-27046-1-git-send-email-scottwood@freescale.com>
+Return-Path: <haokexin@gmail.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9E7A82C00CE
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 11:32:44 +1000 (EST)
+From: Kevin Hao <haokexin@gmail.com>
+To: Kumar Gala <galak@kernel.crashing.org>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>
+Subject: [PATCH 0/2] enable the coreint for the mpc85xx 64bit boards 
+Date: Thu, 11 Apr 2013 09:32:32 +0800
+Message-ID: <1365643954-20798-1-git-send-email-haokexin@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,43 +23,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Roy ZANG <tie-fei.zang@freescale.com>
+Hi,
 
-Some 85xx board, for example, P1020RDB-PC has on board silicon image
-PCIe to SATA controller and when booting up, the filesystem will auto mount
-to the SATA disk. So enable silicon image 3132 pcie to sata controller
-by default
+With the rework of the lazy EE, it seems that 64bit kernel works pretty
+well on mpc85xx 64bit boards with lazy EE enabled. So this patch series
+tries to enable the coreint for these boards by default. This passed
+the ltp test on a t4240qds board and is based on Kumar's next branch.
 
-Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
-Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/configs/mpc85xx_defconfig     |    1 +
- arch/powerpc/configs/mpc85xx_smp_defconfig |    1 +
- 2 files changed, 2 insertions(+)
+Kevin Hao (2):
+  powerpc/irq: remove the unneeded flag PACA_IRQ_EE_EDGE
+  powerpc/85xx: enable coreint for all the 64bit boards
 
-diff --git a/arch/powerpc/configs/mpc85xx_defconfig b/arch/powerpc/configs/mpc85xx_defconfig
-index cf815e8..75f17cf 100644
---- a/arch/powerpc/configs/mpc85xx_defconfig
-+++ b/arch/powerpc/configs/mpc85xx_defconfig
-@@ -106,6 +106,7 @@ CONFIG_SCSI_LOGGING=y
- CONFIG_ATA=y
- CONFIG_SATA_AHCI=y
- CONFIG_SATA_FSL=y
-+CONFIG_SATA_SIL24=y
- CONFIG_PATA_ALI=y
- CONFIG_PATA_VIA=y
- CONFIG_NETDEVICES=y
-diff --git a/arch/powerpc/configs/mpc85xx_smp_defconfig b/arch/powerpc/configs/mpc85xx_smp_defconfig
-index 8d00ea5b..64ae227 100644
---- a/arch/powerpc/configs/mpc85xx_smp_defconfig
-+++ b/arch/powerpc/configs/mpc85xx_smp_defconfig
-@@ -108,6 +108,7 @@ CONFIG_SCSI_LOGGING=y
- CONFIG_ATA=y
- CONFIG_SATA_AHCI=y
- CONFIG_SATA_FSL=y
-+CONFIG_SATA_SIL24=y
- CONFIG_PATA_ALI=y
- CONFIG_NETDEVICES=y
- CONFIG_DUMMY=y
+ arch/powerpc/include/asm/hw_irq.h       | 1 -
+ arch/powerpc/kernel/exceptions-64e.S    | 1 -
+ arch/powerpc/kernel/irq.c               | 8 --------
+ arch/powerpc/platforms/85xx/p5020_ds.c  | 5 -----
+ arch/powerpc/platforms/85xx/p5040_ds.c  | 5 -----
+ arch/powerpc/platforms/85xx/t4240_qds.c | 5 -----
+ 6 files changed, 25 deletions(-)
+
 -- 
-1.7.9.5
+1.8.1.4
+
+Thanks,
+Kevin
