@@ -1,37 +1,23 @@
-Return-Path: <lucaskt@linux.vnet.ibm.com>
-Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e24smtp05.br.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 09D112C00CA
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 23:14:00 +1000 (EST)
-Received: from /spool/local
- by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <lucaskt@linux.vnet.ibm.com>;
- Thu, 11 Apr 2013 10:13:53 -0300
-Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id 353ED3520066
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 09:13:50 -0400 (EDT)
-Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
- by d24relay02.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3BDCrqN40960012
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 10:12:53 -0300
-Received: from d24av03.br.ibm.com (loopback [127.0.0.1])
- by d24av03.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3BBEBep022645
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 08:14:12 -0300
-From: Lucas Kannebley Tavares <lucaskt@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Bjorn Helgaas <bhelgaas@google.com>, David Airlie <airlied@linux.ie>
-Subject: [PATCHv3 0/2] Speed Cap fixes for ppc64
-Date: Thu, 11 Apr 2013 10:13:12 -0300
-Message-Id: <1365685994-32603-1-git-send-email-lucaskt@linux.vnet.ibm.com>
-Cc: Kleber Sacilotto de Souza <klebers@linux.vnet.ibm.com>,
- Alex Deucher <alexander.deucher@amd.com>, Jerome Glisse <jglisse@redhat.com>,
- Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
- Lucas Kannebley Tavares <lucaskt@linux.vnet.ibm.com>,
- Brian King <brking@linux.vnet.ibm.com>
+Return-Path: <w@1wt.eu>
+Received: from 1wt.eu (1wt.eu [62.212.114.60])
+ by ozlabs.org (Postfix) with ESMTP id 286752C00C8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2013 23:19:50 +1000 (EST)
+Date: Thu, 11 Apr 2013 15:13:33 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Subject: Re: [PATCH] net: mv643xx_eth: Add GRO support
+Message-ID: <20130411131333.GD1910@1wt.eu>
+References: <1365684023-9967-1-git-send-email-sebastian.hesselbarth@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1365684023-9967-1-git-send-email-sebastian.hesselbarth@gmail.com>
+Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>,
+ linux-kernel@vger.kernel.org, Florian Fainelli <florian@openwrt.org>,
+ Soeren Moch <smoch@web.de>, Paul Mackerras <paulus@samba.org>,
+ Lennert Buytenhek <buytenh@wantstofly.org>,
+ Dale Farnsworth <dale@farnsworth.org>, netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,27 +27,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-After all the comments in the last patch series, I did a refactoring of what I was proposing and came up with this. Basically, now:
-  1. max_bus_speed is used to set the device to gen2 speeds
-  2. on power there's no longer a conflict between the pseries call and other architectures, because the overwrite is done via a ppc_md hook
-  3. radeon is using bus->max_bus_speed instead of drm_pcie_get_speed_cap_mask for gen2 capability detection
+Hi,
 
-The first patch consists of some architecture changes, such as adding a hook on powerpc for pci_root_bridge_prepare, so that pseries will initialize it to a function, while all other architectures get a NULL pointer. So that whenever whenever pci_create_root_bus is called, we'll get max_bus_speed properly setup from OpenFirmware.
+On Thu, Apr 11, 2013 at 02:40:23PM +0200, Sebastian Hesselbarth wrote:
+> This patch adds GRO support to mv643xx_eth by making it invoke
+> napi_gro_receive instead of netif_receive_skb.
+> 
+> Signed-off-by: Soeren Moch <smoch@web.de>
+> Signed-off-by: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+> ---
+> Cc: "David S. Miller" <davem@davemloft.net>
+> Cc: Lennert Buytenhek <buytenh@wantstofly.org>
+> Cc: Andrew Lunn <andrew@lunn.ch>
+> Cc: Jason Cooper <jason@lakedaemon.net>
+> Cc: Florian Fainelli <florian@openwrt.org>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Dale Farnsworth <dale@farnsworth.org>
+> Cc: netdev@vger.kernel.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: linux-kernel@vger.kernel.org
+> ---
+>  drivers/net/ethernet/marvell/mv643xx_eth.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/ethernet/marvell/mv643xx_eth.c b/drivers/net/ethernet/marvell/mv643xx_eth.c
+> index 305038f..c850d04 100644
+> --- a/drivers/net/ethernet/marvell/mv643xx_eth.c
+> +++ b/drivers/net/ethernet/marvell/mv643xx_eth.c
+> @@ -604,7 +604,7 @@ static int rxq_process(struct rx_queue *rxq, int budget)
+>  			lro_receive_skb(&rxq->lro_mgr, skb, (void *)cmd_sts);
+>  			lro_flush_needed = 1;
+>  		} else
+> -			netif_receive_skb(skb);
+> +			napi_gro_receive(&mp->napi, skb);
+>  
+>  		continue;
 
-The second patch consists of simple radeon changes not to call drm_get_pcie_speed_cap_mask anymore. I assume that on x86 machines, the max_bus_speed property will be properly set already.
+I remember having experimented with this on 3.6 a few months ago with this
+driver and finally switching back to something like this instead which
+showed better performance on my tests :
 
-Lucas Kannebley Tavares (2):
-  ppc64: perform proper max_bus_speed detection
-  radeon: use max_bus_speed to activate gen2 speeds
+               if (skb->ip_summed == CHECKSUM_UNNECESSARY)
+                       napi_gro_receive(napi, skb);
+               else
+                       netif_receive_skb(skb);
 
- arch/powerpc/include/asm/machdep.h     |    2 +
- arch/powerpc/kernel/pci-common.c       |    8 +++++
- arch/powerpc/platforms/pseries/pci.c   |   51 ++++++++++++++++++++++++++++++++
- arch/powerpc/platforms/pseries/setup.c |    4 ++
- drivers/gpu/drm/radeon/evergreen.c     |    9 +----
- drivers/gpu/drm/radeon/r600.c          |    8 +----
- drivers/gpu/drm/radeon/rv770.c         |    8 +----
- 7 files changed, 69 insertions(+), 21 deletions(-)
+Unfortunately I don't have more details as my commit message was rather
+short due to this resulting from experimentation. Did you verify that
+you did not lose any performance in various workloads ? I was playing
+with bridges at this time, it's possible that I got better performance
+on bridging with netif_receive_skb() than with napi_gro_receive().
 
--- 
-1.7.4.4
+Regards,
+Willy
