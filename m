@@ -1,24 +1,28 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (unknown
- [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
- by ozlabs.org (Postfix) with ESMTP id 2C08C2C00AC
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Apr 2013 05:05:51 +1000 (EST)
-Date: Fri, 12 Apr 2013 15:05:46 -0400 (EDT)
-Message-Id: <20130412.150546.1401935323621074376.davem@davemloft.net>
-To: eric.dumazet@gmail.com
-Subject: Re: [PATCH v2] net: mv643xx_eth: remove deprecated inet_lro support
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1365771339.4459.0.camel@edumazet-glaptop>
-References: <1365707488-28819-1-git-send-email-sebastian.hesselbarth@gmail.com>
- <1365758400-12565-1-git-send-email-sebastian.hesselbarth@gmail.com>
- <1365771339.4459.0.camel@edumazet-glaptop>
+Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
+Received: from plane.gmane.org (plane.gmane.org [80.91.229.3])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 0845C2C00B0
+ for <linuxppc-dev@ozlabs.org>; Sat, 13 Apr 2013 07:15:12 +1000 (EST)
+Received: from list by plane.gmane.org with local (Exim 4.69)
+ (envelope-from <glppe-linuxppc-embedded-2@m.gmane.org>)
+ id 1UQl4l-0000jx-9u
+ for linuxppc-dev@ozlabs.org; Fri, 12 Apr 2013 23:00:03 +0200
+Received: from static-66-160-121-125.t1.cavtel.net ([66.160.121.125])
+ by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+ id 1AlnuQ-0007hv-00
+ for <linuxppc-dev@ozlabs.org>; Fri, 12 Apr 2013 23:00:03 +0200
+Received: from solanchala by static-66-160-121-125.t1.cavtel.net with local
+ (Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
+ for <linuxppc-dev@ozlabs.org>; Fri, 12 Apr 2013 23:00:03 +0200
+To: linuxppc-dev@ozlabs.org
+From: Solan <solanchala@yahoo.com>
+Subject: Re: MPC 8260/70 MCC SI Clocking and TSA Sync
+Date: Fri, 12 Apr 2013 20:55:36 +0000 (UTC)
+Message-ID: <loom.20130412T225335-987@post.gmane.org>
+References: <20051003165435.70417.qmail@web34701.mail.mud.yahoo.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-7
-Cc: andrew@lunn.ch, jason@lakedaemon.net, linux-kernel@vger.kernel.org,
- w@1wt.eu, smoch@web.de, paulus@samba.org, linux-arm-kernel@lists.infradead.org,
- dale@farnsworth.org, bhutchings@solarflare.com, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, florian@openwrt.org, buytenh@wantstofly.org,
- sebastian.hesselbarth@gmail.com
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,26 +32,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogRXJpYyBEdW1hemV0IDxlcmljLmR1bWF6ZXRAZ21haWwuY29tPg0KRGF0ZTogRnJpLCAx
-MiBBcHIgMjAxMyAwNTo1NTozOSAtMDcwMA0KDQo+IE9uIEZyaSwgMjAxMy0wNC0xMiBhdCAxMToy
-MCArMDIwMCwgU2ViYXN0aWFuIEhlc3NlbGJhcnRoIHdyb3RlOg0KPj4gV2l0aCByZWNlbnQgc3Vw
-cG9ydCBmb3IgR1JPLCB0aGVyZSBpcyBubyBuZWVkIHRvIGtlZXAgYm90aCBMUk8gYW5kDQo+PiBH
-Uk8uIFRoaXMgcGF0Y2ggdGhlcmVmb3JlIHJlbW92ZXMgdGhlIGRlcHJlY2F0ZWQgaW5ldF9scm8g
-c3VwcG9ydA0KPj4gZnJvbSBtdjY0M3h4X2V0aC4gVGhpcyBpcyB3b3JrIGlzIGJhc2VkIG9uIGFu
-IGV4cGVyaW1lbnRhbCBwYXRjaA0KPj4gcHJvdmlkZWQgYnkgRXJpYyBEdW1hemV0IGFuZCBXaWxs
-eSBUYXJyZWF1Lg0KPj4gDQo+PiBTaWduZWQtb2ZmLWJ5OiBTZWJhc3RpYW4gSGVzc2VsYmFydGgg
-PHNlYmFzdGlhbi5oZXNzZWxiYXJ0aEBnbWFpbC5jb20+DQo+PiBCYXNlZC1vbi1wYXRjaC1ieTog
-RXJpYyBEdW1hemV0IDxlcmljLmR1bWF6ZXRAZ21haWwuY29tPg0KPj4gQmFzZWQtb24tcGF0Y2gt
-Ynk6IFdpbGx5IFRhcnJlYXUgPHdAMXd0LmV1Pg0KPj4gLS0tDQo+PiBDaGFuZ2VzIGZyb20gdjE6
-DQo+PiAtIGFsc28gcmVtb3ZlIElORVRfTFJPIGZyb20gS2NvbmZpZyAoUmVwb3J0ZWQgYnkgRXJp
-YyBEdW1hemV0KQ0KPiANCj4gVGhhbmtzIGZvciBmaW5pc2hpbmcgdGhpcyBwYXRjaA0KPiANCj4g
-U2lnbmVkLW9mZi1ieTogRXJpYyBEdW1hemV0IDxlZHVtYXpldEBnb29nbGUuY29tPg0KDQpBcHBs
-aWVkLCBidXQgdGhpcyBkcml2ZXIgaXMgZnVsbCBvZiBza2VsZXRvbnM6DQoNCmRyaXZlcnMvbmV0
-L2V0aGVybmV0L21hcnZlbGwvbXY2NDN4eF9ldGguYzogSW4gZnVuY3Rpb24goXJ4cV9yZWZpbGyi
-Og0KZHJpdmVycy9uZXQvZXRoZXJuZXQvbWFydmVsbC9tdjY0M3h4X2V0aC5jOjYxODoxOTogZXJy
-b3I6IGludmFsaWQgb3BlcmFuZHMgdG8gYmluYXJ5IC0gKGhhdmUgoXNrX2J1ZmZfZGF0YV90oiBh
-bmQgoXVuc2lnbmVkIGNoYXIgKqIpDQoNCndoaWNoIGlzOg0KDQoJCXNpemUgPSBza2ItPmVuZCAt
-IHNrYi0+ZGF0YTsNCg0KdGhhdCBpcyBhYnNvbHV0ZWx5IG5vdCBhIGxlZ2FsIGNvbXB1dGF0aW9u
-Lg0KDQpJdCBoYXBwZW5zIHRvIGJlIGluIHRoZSBvbmx5IGNvbmZpZ3VyYXRpb24gZm9yIHdoaWNo
-IHRoaXMgZHJpdmVyDQpjYW4gYmUgZW5hYmxlZCBpbiBLY29uZmlnIGJ1dCB0aGF0IGlzIG5vIGV4
-Y3VzZSBmb3IgaXQgOi0pDQo=
+Manish Joshi <mjoshi_blr <at> yahoo.com> writes:
+
+> 
+> 
+> Hi,
+>  
+> I am trying to bring up MCC (Multi Channel Communication controller) on 
+MPC8270 board for T1/E1.
+> The overall configuration looks fine since I am able to have a 
+communication properly if I do a T1 Cross over Loopback and tx/rx 
+HDLC data.
+> The things do not work smoothly if I connect my T1 line with an external 
+device and start HDLC.
+> I am seeing 'NO' (Rx Non-Octet Alligned Frame) errors in my rx buffers. 
+Sometimes I also see Rx abort errors.
+> I do not see this issue on the tx side i.e the external device does not 
+report any of these when I tx HDLC data to it.
+>  
+> Does anybody have any experience dealing with this ? 
+>  
+> As far as clocking and sync with TSA is concerned, I have just 
+configured 
+> CMXSI2CR register with 0x00 ( I have only TDM2A driven by CLK1) and 
+nothing else. 
+> Do I need to do something more for clocking etc? Also I am doing this 
+before SI initialisation.
+> I will also try doing it just after TDM init and see if it helps.
+> Please help.
+>  
+> Thanks,
+> -Manish
+>  
+>  
+>  
+>  
+> 
+> 		Yahoo! for GoodClick here to donate to the Hurricane 
+Katrina relief effort. 
+> 
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded <at> ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+
+Hi Manesh,
+Do you by chance have the linux driver you can share for implementing MCC 
+driver for MPC 8270. I am trying to implement a driver for enabling the 
+MCC on MPC 8250 and will be great to have a reference code.
+Regards,
+Solan
