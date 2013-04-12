@@ -1,34 +1,25 @@
-Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp05.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5D8A32C0229
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Apr 2013 12:18:09 +1000 (EST)
-Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Fri, 12 Apr 2013 12:13:20 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 7E9A53578052
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Apr 2013 12:18:07 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3C24Hx911796780
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Apr 2013 12:04:17 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3C2HafS019412
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Apr 2013 12:17:37 +1000
-From: Li Zhong <zhong@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH v2 4/4] powerpc: Try to insert the hptes repeatedly in
- kernel_map_linear_page()
-Date: Fri, 12 Apr 2013 10:17:00 +0800
-Message-Id: <1365733021-28912-5-git-send-email-zhong@linux.vnet.ibm.com>
-In-Reply-To: <1365733021-28912-1-git-send-email-zhong@linux.vnet.ibm.com>
-References: <1365733021-28912-1-git-send-email-zhong@linux.vnet.ibm.com>
-Cc: paulus@samba.org, Li Zhong <zhong@linux.vnet.ibm.com>
+Return-Path: <B38951@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0188.outbound.messaging.microsoft.com [213.199.154.188])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9961B2C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Apr 2013 13:05:28 +1000 (EST)
+From: Jia Hongtao-B38951 <B38951@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>, Wood Scott-B07421
+ <B07421@freescale.com>
+Subject: RE: [PATCH V6] powerpc/85xx: Add machine check handler to fix PCIe
+ erratum on mpc85xx
+Date: Fri, 12 Apr 2013 03:05:16 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01C3A4C4@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <1365669382-18534-1-git-send-email-hongtao.jia@freescale.com>
+ <A11571AB-BF5B-4943-A4DB-62C33D814165@kernel.crashing.org>
+In-Reply-To: <A11571AB-BF5B-4943-A4DB-62C33D814165@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,76 +29,196 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch tries to fix following issue when CONFIG_DEBUG_PAGEALLOC
-is enabled:
 
-[  543.075675] ------------[ cut here ]------------
-[  543.075701] kernel BUG at arch/powerpc/mm/hash_utils_64.c:1239!
-[  543.075714] Oops: Exception in kernel mode, sig: 5 [#1]
-[  543.075722] PREEMPT SMP NR_CPUS=16 DEBUG_PAGEALLOC NUMA pSeries
-[  543.075741] Modules linked in: binfmt_misc ehea
-[  543.075759] NIP: c000000000036eb0 LR: c000000000036ea4 CTR: c00000000005a594
-[  543.075771] REGS: c0000000a90832c0 TRAP: 0700   Not tainted  (3.8.0-next-20130222)
-[  543.075781] MSR: 8000000000029032 <SF,EE,ME,IR,DR,RI>  CR: 22224482  XER: 00000000
-[  543.075816] SOFTE: 0
-[  543.075823] CFAR: c00000000004c200
-[  543.075830] TASK = c0000000e506b750[23934] 'cc1' THREAD: c0000000a9080000 CPU: 1
-GPR00: 0000000000000001 c0000000a9083540 c000000000c600a8 ffffffffffffffff
-GPR04: 0000000000000050 fffffffffffffffa c0000000a90834e0 00000000004ff594
-GPR08: 0000000000000001 0000000000000000 000000009592d4d8 c000000000c86854
-GPR12: 0000000000000002 c000000006ead300 0000000000a51000 0000000000000001
-GPR16: f000000003354380 ffffffffffffffff ffffffffffffff80 0000000000000000
-GPR20: 0000000000000001 c000000000c600a8 0000000000000001 0000000000000001
-GPR24: 0000000003354380 c000000000000000 0000000000000000 c000000000b65950
-GPR28: 0000002000000000 00000000000cd50e 0000000000bf50d9 c000000000c7c230
-[  543.076005] NIP [c000000000036eb0] .kernel_map_pages+0x1e0/0x3f8
-[  543.076016] LR [c000000000036ea4] .kernel_map_pages+0x1d4/0x3f8
-[  543.076025] Call Trace:
-[  543.076033] [c0000000a9083540] [c000000000036ea4] .kernel_map_pages+0x1d4/0x3f8 (unreliable)
-[  543.076053] [c0000000a9083640] [c000000000167638] .get_page_from_freelist+0x6cc/0x8dc
-[  543.076067] [c0000000a9083800] [c000000000167a48] .__alloc_pages_nodemask+0x200/0x96c
-[  543.076082] [c0000000a90839c0] [c0000000001ade44] .alloc_pages_vma+0x160/0x1e4
-[  543.076098] [c0000000a9083a80] [c00000000018ce04] .handle_pte_fault+0x1b0/0x7e8
-[  543.076113] [c0000000a9083b50] [c00000000018d5a8] .handle_mm_fault+0x16c/0x1a0
-[  543.076129] [c0000000a9083c00] [c0000000007bf1dc] .do_page_fault+0x4d0/0x7a4
-[  543.076144] [c0000000a9083e30] [c0000000000090e8] handle_page_fault+0x10/0x30
-[  543.076155] Instruction dump:
-[  543.076163] 7c630038 78631d88 e80a0000 f8410028 7c0903a6 e91f01de e96a0010 e84a0008
-[  543.076192] 4e800421 e8410028 7c7107b4 7a200fe0 <0b000000> 7f63db78 48785781 60000000
-[  543.076224] ---[ end trace bd5807e8d6ae186b ]---
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> Sent: Thursday, April 11, 2013 9:47 PM
+> To: Jia Hongtao-B38951
+> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Li Yang-R58472
+> Subject: Re: [PATCH V6] powerpc/85xx: Add machine check handler to fix
+> PCIe erratum on mpc85xx
+>=20
+>=20
+> On Apr 11, 2013, at 3:36 AM, Jia Hongtao wrote:
+>=20
+> > A PCIe erratum of mpc85xx may causes a core hang when a link of PCIe
+> > goes down. when the link goes down, Non-posted transactions issued via
+> > the ATMU requiring completion result in an instruction stall.
+> > At the same time a machine-check exception is generated to the core to
+> > allow further processing by the handler. We implements the handler
+> > which skips the instruction caused the stall.
+> >
+> > This patch depends on patch:
+> > powerpc/85xx: Add platform_device declaration to fsl_pci.h
+> >
+> > Signed-off-by: Zhao Chenhui <b35336@freescale.com>
+> > Signed-off-by: Li Yang <leoli@freescale.com>
+> > Signed-off-by: Liu Shuo <soniccat.liu@gmail.com>
+> > Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+> > ---
+> > V5:
+> > * Move OP and XOP defines to a new header file: asm/ppc-disassemble.h
+> > * Add X UX BRX variant of load instruction emulation
+> > * Remove A variant of load instruction emulation
+> >
+> > V4:
+> > * Fill rd with all-Fs if the skipped instruction is load and emulate
+> > the  instruction.
+> > * Let KVM/QEMU deal with the exception if the machine check comes from
+> KVM.
+> >
+> > arch/powerpc/include/asm/ppc-disassemble.h |  31 +++++++
+> > arch/powerpc/kernel/cpu_setup_fsl_booke.S  |   2 +-
+> > arch/powerpc/kernel/traps.c                |   3 +
+> > arch/powerpc/sysdev/fsl_pci.c              | 140
+> +++++++++++++++++++++++++++++
+> > arch/powerpc/sysdev/fsl_pci.h              |   6 ++
+> > 5 files changed, 181 insertions(+), 1 deletion(-) create mode 100644
+> > arch/powerpc/include/asm/ppc-disassemble.h
+> >
+> > diff --git a/arch/powerpc/include/asm/ppc-disassemble.h
+> > b/arch/powerpc/include/asm/ppc-disassemble.h
+> > new file mode 100644
+> > index 0000000..f9782b8
+> > --- /dev/null
+> > +++ b/arch/powerpc/include/asm/ppc-disassemble.h
+> > @@ -0,0 +1,31 @@
+> > +/*
+> > + * Copyright 2012-2013 Freescale Semiconductor, Inc.
+> > + *
+> > + * This program is free software; you can redistribute it and/or
+> > + * modify it under the terms of the GNU General Public License
+> > + * as published by the Free Software Foundation; either version
+> > + * 2 of the License, or (at your option) any later version.
+> > + *
+> > + * provides opcode and xopcode images for use by emulating
+> > + * instructions
+> > + */
+> > +#ifndef _ASM_POWERPC_PPC_DISASSEMBLE_H #define
+> > +_ASM_POWERPC_PPC_DISASSEMBLE_H
+> > +
+>=20
+> This should really just be in asm/ppc-opcode.h
 
-Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
----
- arch/powerpc/mm/hash_utils_64.c |   10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+Hi Kumar and Scott,
 
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index a7f54f0..4b449a0 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -1272,7 +1272,7 @@ static void kernel_map_linear_page(unsigned long vaddr, unsigned long lmi)
- 	unsigned long vsid = get_kernel_vsid(vaddr, mmu_kernel_ssize);
- 	unsigned long vpn = hpt_vpn(vaddr, vsid, mmu_kernel_ssize);
- 	unsigned long mode = htab_convert_pte_flags(PAGE_KERNEL);
--	int ret;
-+	long ret;
- 
- 	hash = hpt_hash(vpn, PAGE_SHIFT, mmu_kernel_ssize);
- 	hpteg = ((hash & htab_hash_mask) * HPTES_PER_GROUP);
-@@ -1280,9 +1280,11 @@ static void kernel_map_linear_page(unsigned long vaddr, unsigned long lmi)
- 	/* Don't create HPTE entries for bad address */
- 	if (!vsid)
- 		return;
--	ret = ppc_md.hpte_insert(hpteg, vpn, __pa(vaddr),
--				 mode, 0,
--				 mmu_linear_psize, mmu_kernel_ssize);
-+
-+	ret = hpte_insert_repeating(hash, vpn, __pa(vaddr),
-+				    mode, mmu_linear_psize,
-+				    mmu_kernel_ssize);
-+
- 	BUG_ON (ret < 0);
- 	spin_lock(&linear_map_hash_lock);
- 	BUG_ON(linear_map_hash_slots[lmi] & 0x80);
--- 
-1.7.9.5
+This is the different method of describing instructions so I put them
+in a new file.
+
+But I agree that a patch to extract these from existing code is more
+well-organized.
+
+Is that OK if I extract these definitions from arch/powerpc/kvm/emulate.c
+to asm/ppc-opcode.h? Even though These definitions are different.
+
+Scott,
+What's your opinion on this?
+
+>=20
+> > +#define OP_LWZ  32
+> > +#define OP_LWZU 33
+> > +#define OP_LBZ  34
+> > +#define OP_LBZU 35
+> > +#define OP_LHZ  40
+> > +#define OP_LHZU 41
+> > +
+> > +#define OP_31_XOP_LWZX      23
+> > +#define OP_31_XOP_LWZUX     55
+> > +#define OP_31_XOP_LBZX      87
+> > +#define OP_31_XOP_LBZUX     119
+> > +#define OP_31_XOP_LHZX      279
+> > +#define OP_31_XOP_LHZUX     311
+> > +#define OP_31_XOP_LWBRX     534
+> > +#define OP_31_XOP_LHBRX     790
+> > +
+>=20
+> Also, submit a patch to extract these from existing code so we stop
+> duplicating them everywhere.
+>=20
+> > +#endif
+> > diff --git a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+> > b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+> > index dcd8819..f1bde90 100644
+> > --- a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+> > +++ b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+> > @@ -66,7 +66,7 @@ _GLOBAL(__setup_cpu_e500v2)
+> > 	bl	__e500_icache_setup
+> > 	bl	__e500_dcache_setup
+> > 	bl	__setup_e500_ivors
+> > -#ifdef CONFIG_FSL_RIO
+> > +#if defined(CONFIG_FSL_RIO) || defined(CONFIG_FSL_PCI)
+> > 	/* Ensure that RFXE is set */
+> > 	mfspr	r3,SPRN_HID1
+> > 	oris	r3,r3,HID1_RFXE@h
+> > diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+> > index a008cf5..dd275a4 100644
+> > --- a/arch/powerpc/kernel/traps.c
+> > +++ b/arch/powerpc/kernel/traps.c
+> > @@ -59,6 +59,7 @@
+> > #include <asm/fadump.h>
+> > #include <asm/switch_to.h>
+> > #include <asm/debug.h>
+> > +#include <sysdev/fsl_pci.h>
+> >
+> > #if defined(CONFIG_DEBUGGER) || defined(CONFIG_KEXEC) int
+> > (*__debugger)(struct pt_regs *regs) __read_mostly; @@ -556,6 +557,8 @@
+> > int machine_check_e500(struct pt_regs *regs)
+> > 	if (reason & MCSR_BUS_RBERR) {
+> > 		if (fsl_rio_mcheck_exception(regs))
+> > 			return 1;
+> > +		if (fsl_pci_mcheck_exception(regs))
+> > +			return 1;
+> > 	}
+> >
+> > 	printk("Machine check in kernel mode.\n"); diff --git
+> > a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c index
+> > 682084d..aaa54c5 100644
+> > --- a/arch/powerpc/sysdev/fsl_pci.c
+> > +++ b/arch/powerpc/sysdev/fsl_pci.c
+> > @@ -26,11 +26,15 @@
+> > #include <linux/memblock.h>
+> > #include <linux/log2.h>
+> > #include <linux/slab.h>
+> > +#include <linux/uaccess.h>
+> >
+> > #include <asm/io.h>
+> > #include <asm/prom.h>
+> > #include <asm/pci-bridge.h>
+> > +#include <asm/ppc-pci.h>
+>=20
+> what are you pulling in from ppc-pci.h?
+
+is_in_pci_mem_space() uses list_for_each_entry(hose, &hose_list, list_node)=
+.
+host_list defined in asm/ppc-pci.h.
+
+>=20
+> > #include <asm/machdep.h>
+> > +#include <asm/disassemble.h>
+> > +#include <asm/ppc-disassemble.h>
+> > #include <sysdev/fsl_soc.h>
+> > #include <sysdev/fsl_pci.h>
+> >
+> > @@ -826,6 +830,142 @@ u64 fsl_pci_immrbar_base(struct pci_controller
+> *hose)
+> > 	return 0;
+> > }
+> >
+> > +#ifdef CONFIG_E500
+> > +static int mcheck_handle_load(struct pt_regs *regs, u32 inst) {
+> > +	unsigned int rd, ra, rb, d;
+> > +
+> > +	rd =3D get_rt(inst);
+> > +	ra =3D get_ra(inst);
+> > +	rb =3D get_rb(inst);
+> > +	d =3D get_d(inst);
+> > +
+> > +	switch (get_op(inst)) {
+> > +	case 31:
+>=20
+> What about 64-bit loads (LD...)?
+
+This erratum only happened in E500 core chips in which there is no
+64-bit loads.
+
+- Hongtao
