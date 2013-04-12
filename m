@@ -1,25 +1,25 @@
 Return-Path: <B38951@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0188.outbound.messaging.microsoft.com [213.199.154.188])
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9961B2C009F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Apr 2013 13:05:28 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 8E5C22C0087
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Apr 2013 13:25:26 +1000 (EST)
 From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>, Wood Scott-B07421
+To: "galak@kernel.crashing.org" <galak@kernel.crashing.org>, Wood Scott-B07421
  <B07421@freescale.com>
-Subject: RE: [PATCH V6] powerpc/85xx: Add machine check handler to fix PCIe
- erratum on mpc85xx
-Date: Fri, 12 Apr 2013 03:05:16 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01C3A4C4@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1365669382-18534-1-git-send-email-hongtao.jia@freescale.com>
- <A11571AB-BF5B-4943-A4DB-62C33D814165@kernel.crashing.org>
-In-Reply-To: <A11571AB-BF5B-4943-A4DB-62C33D814165@kernel.crashing.org>
+Subject: RE: [PATCH V5] powerpc/MPIC: Add get_version API both for internal
+ and external use
+Date: Fri, 12 Apr 2013 03:25:13 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01C3C4F7@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <1365562375-11920-1-git-send-email-hongtao.jia@freescale.com>
+In-Reply-To: <1365562375-11920-1-git-send-email-hongtao.jia@freescale.com>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+ Li Yang-R58472 <r58472@freescale.com>,
+ Jia Hongtao-B38951 <B38951@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,196 +29,139 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Kumar,
+
+Scott reviewed this patch and MSI errata patch for weeks.
+Here is the link for MSI errata patch:
+http://patchwork.ozlabs.org/patch/233211/
+
+Could you please have a review and ACK them if they
+look good to you too?
+
+Thanks.
+- Hongtao
+
 
 > -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> Sent: Thursday, April 11, 2013 9:47 PM
-> To: Jia Hongtao-B38951
-> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Li Yang-R58472
-> Subject: Re: [PATCH V6] powerpc/85xx: Add machine check handler to fix
-> PCIe erratum on mpc85xx
+> From: Jia Hongtao-B38951
+> Sent: Wednesday, April 10, 2013 10:53 AM
+> To: linuxppc-dev@lists.ozlabs.org; galak@kernel.crashing.org
+> Cc: Wood Scott-B07421; Li Yang-R58472; Jia Hongtao-B38951
+> Subject: [PATCH V5] powerpc/MPIC: Add get_version API both for internal
+> and external use
 >=20
+> MPIC version is useful information for both mpic_alloc() and mpic_init().
+> The patch provide an API to get MPIC version for reusing the code.
+> Also, some other IP block may need MPIC version for their own use.
+> The API for external use is also provided.
 >=20
-> On Apr 11, 2013, at 3:36 AM, Jia Hongtao wrote:
+> Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> ---
+> V5:
+> * add MPIC_FSL check for fsl_mpic_get_version().
 >=20
-> > A PCIe erratum of mpc85xx may causes a core hang when a link of PCIe
-> > goes down. when the link goes down, Non-posted transactions issued via
-> > the ATMU requiring completion result in an instruction stall.
-> > At the same time a machine-check exception is generated to the core to
-> > allow further processing by the handler. We implements the handler
-> > which skips the instruction caused the stall.
-> >
-> > This patch depends on patch:
-> > powerpc/85xx: Add platform_device declaration to fsl_pci.h
-> >
-> > Signed-off-by: Zhao Chenhui <b35336@freescale.com>
-> > Signed-off-by: Li Yang <leoli@freescale.com>
-> > Signed-off-by: Liu Shuo <soniccat.liu@gmail.com>
-> > Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
-> > ---
-> > V5:
-> > * Move OP and XOP defines to a new header file: asm/ppc-disassemble.h
-> > * Add X UX BRX variant of load instruction emulation
-> > * Remove A variant of load instruction emulation
-> >
-> > V4:
-> > * Fill rd with all-Fs if the skipped instruction is load and emulate
-> > the  instruction.
-> > * Let KVM/QEMU deal with the exception if the machine check comes from
-> KVM.
-> >
-> > arch/powerpc/include/asm/ppc-disassemble.h |  31 +++++++
-> > arch/powerpc/kernel/cpu_setup_fsl_booke.S  |   2 +-
-> > arch/powerpc/kernel/traps.c                |   3 +
-> > arch/powerpc/sysdev/fsl_pci.c              | 140
-> +++++++++++++++++++++++++++++
-> > arch/powerpc/sysdev/fsl_pci.h              |   6 ++
-> > 5 files changed, 181 insertions(+), 1 deletion(-) create mode 100644
-> > arch/powerpc/include/asm/ppc-disassemble.h
-> >
-> > diff --git a/arch/powerpc/include/asm/ppc-disassemble.h
-> > b/arch/powerpc/include/asm/ppc-disassemble.h
-> > new file mode 100644
-> > index 0000000..f9782b8
-> > --- /dev/null
-> > +++ b/arch/powerpc/include/asm/ppc-disassemble.h
-> > @@ -0,0 +1,31 @@
-> > +/*
-> > + * Copyright 2012-2013 Freescale Semiconductor, Inc.
-> > + *
-> > + * This program is free software; you can redistribute it and/or
-> > + * modify it under the terms of the GNU General Public License
-> > + * as published by the Free Software Foundation; either version
-> > + * 2 of the License, or (at your option) any later version.
-> > + *
-> > + * provides opcode and xopcode images for use by emulating
-> > + * instructions
-> > + */
-> > +#ifndef _ASM_POWERPC_PPC_DISASSEMBLE_H #define
-> > +_ASM_POWERPC_PPC_DISASSEMBLE_H
-> > +
+> V4:
+> * change the name of function from mpic_get_version() to
+>   fsl_mpic_get_version().
 >=20
-> This should really just be in asm/ppc-opcode.h
-
-Hi Kumar and Scott,
-
-This is the different method of describing instructions so I put them
-in a new file.
-
-But I agree that a patch to extract these from existing code is more
-well-organized.
-
-Is that OK if I extract these definitions from arch/powerpc/kvm/emulate.c
-to asm/ppc-opcode.h? Even though These definitions are different.
-
-Scott,
-What's your opinion on this?
-
+> V3:
+> * change the name of function from mpic_primary_get_version() to
+>   fsl_mpic_primary_get_version().
+> * return 0 if mpic_primary is null.
 >=20
-> > +#define OP_LWZ  32
-> > +#define OP_LWZU 33
-> > +#define OP_LBZ  34
-> > +#define OP_LBZU 35
-> > +#define OP_LHZ  40
-> > +#define OP_LHZU 41
-> > +
-> > +#define OP_31_XOP_LWZX      23
-> > +#define OP_31_XOP_LWZUX     55
-> > +#define OP_31_XOP_LBZX      87
-> > +#define OP_31_XOP_LBZUX     119
-> > +#define OP_31_XOP_LHZX      279
-> > +#define OP_31_XOP_LHZUX     311
-> > +#define OP_31_XOP_LWBRX     534
-> > +#define OP_31_XOP_LHBRX     790
-> > +
+> V2:
+> * Using mpic_get_version() to implement mpic_primary_get_version()
 >=20
-> Also, submit a patch to extract these from existing code so we stop
-> duplicating them everywhere.
+>  arch/powerpc/include/asm/mpic.h |  3 +++
+>  arch/powerpc/sysdev/mpic.c      | 32 +++++++++++++++++++++++++-------
+>  2 files changed, 28 insertions(+), 7 deletions(-)
 >=20
-> > +#endif
-> > diff --git a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-> > b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-> > index dcd8819..f1bde90 100644
-> > --- a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-> > +++ b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-> > @@ -66,7 +66,7 @@ _GLOBAL(__setup_cpu_e500v2)
-> > 	bl	__e500_icache_setup
-> > 	bl	__e500_dcache_setup
-> > 	bl	__setup_e500_ivors
-> > -#ifdef CONFIG_FSL_RIO
-> > +#if defined(CONFIG_FSL_RIO) || defined(CONFIG_FSL_PCI)
-> > 	/* Ensure that RFXE is set */
-> > 	mfspr	r3,SPRN_HID1
-> > 	oris	r3,r3,HID1_RFXE@h
-> > diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> > index a008cf5..dd275a4 100644
-> > --- a/arch/powerpc/kernel/traps.c
-> > +++ b/arch/powerpc/kernel/traps.c
-> > @@ -59,6 +59,7 @@
-> > #include <asm/fadump.h>
-> > #include <asm/switch_to.h>
-> > #include <asm/debug.h>
-> > +#include <sysdev/fsl_pci.h>
-> >
-> > #if defined(CONFIG_DEBUGGER) || defined(CONFIG_KEXEC) int
-> > (*__debugger)(struct pt_regs *regs) __read_mostly; @@ -556,6 +557,8 @@
-> > int machine_check_e500(struct pt_regs *regs)
-> > 	if (reason & MCSR_BUS_RBERR) {
-> > 		if (fsl_rio_mcheck_exception(regs))
-> > 			return 1;
-> > +		if (fsl_pci_mcheck_exception(regs))
-> > +			return 1;
-> > 	}
-> >
-> > 	printk("Machine check in kernel mode.\n"); diff --git
-> > a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c index
-> > 682084d..aaa54c5 100644
-> > --- a/arch/powerpc/sysdev/fsl_pci.c
-> > +++ b/arch/powerpc/sysdev/fsl_pci.c
-> > @@ -26,11 +26,15 @@
-> > #include <linux/memblock.h>
-> > #include <linux/log2.h>
-> > #include <linux/slab.h>
-> > +#include <linux/uaccess.h>
-> >
-> > #include <asm/io.h>
-> > #include <asm/prom.h>
-> > #include <asm/pci-bridge.h>
-> > +#include <asm/ppc-pci.h>
+> diff --git a/arch/powerpc/include/asm/mpic.h
+> b/arch/powerpc/include/asm/mpic.h index c0f9ef9..ea6bf72 100644
+> --- a/arch/powerpc/include/asm/mpic.h
+> +++ b/arch/powerpc/include/asm/mpic.h
+> @@ -393,6 +393,9 @@ struct mpic
+>  #define	MPIC_REGSET_STANDARD		MPIC_REGSET(0)	/* Original
+> MPIC */
+>  #define	MPIC_REGSET_TSI108		MPIC_REGSET(1)	/* Tsi108/109
+> PIC */
 >=20
-> what are you pulling in from ppc-pci.h?
-
-is_in_pci_mem_space() uses list_for_each_entry(hose, &hose_list, list_node)=
-.
-host_list defined in asm/ppc-pci.h.
-
+> +/* Get the version of primary MPIC */
+> +extern u32 fsl_mpic_primary_get_version(void);
+> +
+>  /* Allocate the controller structure and setup the linux irq descs
+>   * for the range if interrupts passed in. No HW initialization is
+>   * actually performed.
+> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+> index d30e6a6..47ef4ba 100644
+> --- a/arch/powerpc/sysdev/mpic.c
+> +++ b/arch/powerpc/sysdev/mpic.c
+> @@ -1165,10 +1165,33 @@ static struct irq_domain_ops mpic_host_ops =3D {
+>  	.xlate =3D mpic_host_xlate,
+>  };
 >=20
-> > #include <asm/machdep.h>
-> > +#include <asm/disassemble.h>
-> > +#include <asm/ppc-disassemble.h>
-> > #include <sysdev/fsl_soc.h>
-> > #include <sysdev/fsl_pci.h>
-> >
-> > @@ -826,6 +830,142 @@ u64 fsl_pci_immrbar_base(struct pci_controller
-> *hose)
-> > 	return 0;
-> > }
-> >
-> > +#ifdef CONFIG_E500
-> > +static int mcheck_handle_load(struct pt_regs *regs, u32 inst) {
-> > +	unsigned int rd, ra, rb, d;
-> > +
-> > +	rd =3D get_rt(inst);
-> > +	ra =3D get_ra(inst);
-> > +	rb =3D get_rb(inst);
-> > +	d =3D get_d(inst);
-> > +
-> > +	switch (get_op(inst)) {
-> > +	case 31:
+> +static u32 fsl_mpic_get_version(struct mpic *mpic) {
+> +	u32 brr1;
+> +
+> +	if (!(mpic->flags & MPIC_FSL))
+> +		return 0;
+> +
+> +	brr1 =3D _mpic_read(mpic->reg_type, &mpic->thiscpuregs,
+> +			MPIC_FSL_BRR1);
+> +
+> +	return brr1 & MPIC_FSL_BRR1_VER;
+> +}
+> +
+>  /*
+>   * Exported functions
+>   */
 >=20
-> What about 64-bit loads (LD...)?
-
-This erratum only happened in E500 core chips in which there is no
-64-bit loads.
-
-- Hongtao
+> +u32 fsl_mpic_primary_get_version(void)
+> +{
+> +	struct mpic *mpic =3D mpic_primary;
+> +
+> +	if (mpic)
+> +		return fsl_mpic_get_version(mpic);
+> +
+> +	return 0;
+> +}
+> +
+>  struct mpic * __init mpic_alloc(struct device_node *node,
+>  				phys_addr_t phys_addr,
+>  				unsigned int flags,
+> @@ -1315,7 +1338,6 @@ struct mpic * __init mpic_alloc(struct device_node
+> *node,
+>  	mpic_map(mpic, mpic->paddr, &mpic->tmregs, MPIC_INFO(TIMER_BASE),
+> 0x1000);
+>=20
+>  	if (mpic->flags & MPIC_FSL) {
+> -		u32 brr1;
+>  		int ret;
+>=20
+>  		/*
+> @@ -1326,9 +1348,7 @@ struct mpic * __init mpic_alloc(struct device_node
+> *node,
+>  		mpic_map(mpic, mpic->paddr, &mpic->thiscpuregs,
+>  			 MPIC_CPU_THISBASE, 0x1000);
+>=20
+> -		brr1 =3D _mpic_read(mpic->reg_type, &mpic->thiscpuregs,
+> -				MPIC_FSL_BRR1);
+> -		fsl_version =3D brr1 & MPIC_FSL_BRR1_VER;
+> +		fsl_version =3D fsl_mpic_get_version(mpic);
+>=20
+>  		/* Error interrupt mask register (EIMR) is required for
+>  		 * handling individual device error interrupts. EIMR @@ -
+> 1518,9 +1538,7 @@ void __init mpic_init(struct mpic *mpic)
+>  	mpic_cpu_write(MPIC_INFO(CPU_CURRENT_TASK_PRI), 0xf);
+>=20
+>  	if (mpic->flags & MPIC_FSL) {
+> -		u32 brr1 =3D _mpic_read(mpic->reg_type, &mpic->thiscpuregs,
+> -				      MPIC_FSL_BRR1);
+> -		u32 version =3D brr1 & MPIC_FSL_BRR1_VER;
+> +		u32 version =3D fsl_mpic_get_version(mpic);
+>=20
+>  		/*
+>  		 * Timer group B is present at the latest in MPIC 3.1 (e.g.
+> --
+> 1.8.0
