@@ -1,30 +1,19 @@
-Return-Path: <liuj97@gmail.com>
-Received: from mail-pb0-f53.google.com (mail-pb0-f53.google.com
- [209.85.160.53])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 232F92C0084
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Apr 2013 01:41:50 +1000 (EST)
-Received: by mail-pb0-f53.google.com with SMTP id un15so1855470pbc.26
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Apr 2013 08:41:48 -0700 (PDT)
-From: Jiang Liu <liuj97@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>, Yinghai Lu <yinghai@kernel.org>
-Subject: [RFC PATCH v1 09/19] mm/PPC: prepare for killing
- free_all_bootmem_node()
-Date: Sat, 13 Apr 2013 23:36:29 +0800
-Message-Id: <1365867399-21323-10-git-send-email-jiang.liu@huawei.com>
-In-Reply-To: <1365867399-21323-1-git-send-email-jiang.liu@huawei.com>
-References: <1365867399-21323-1-git-send-email-jiang.liu@huawei.com>
-Cc: linux-arch@vger.kernel.org, David Howells <dhowells@redhat.com>,
- Jiang Liu <jiang.liu@huawei.com>, Wen Congyang <wency@cn.fujitsu.com>,
- linux-mm@kvack.org, Mark Salter <msalter@redhat.com>,
- linux-kernel@vger.kernel.org, Alexander Graf <agraf@suse.de>,
- Michal Hocko <mhocko@suse.cz>, Minchan Kim <minchan@kernel.org>,
- Paul Mackerras <paulus@samba.org>, Mel Gorman <mgorman@suse.de>,
- David Rientjes <rientjes@google.com>, "Suzuki K. Poulose" <suzuki@in.ibm.com>,
- linuxppc-dev@lists.ozlabs.org,
- KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
- Jianguo Wu <wujianguo@huawei.com>
+Return-Path: <haokexin@gmail.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A00902C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Apr 2013 15:40:22 +1000 (EST)
+From: Kevin Hao <haokexin@gmail.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH] powerpc/fsl-booke: add the reg property for pci bridge device
+ node for t4/b4xx boards
+Date: Sun, 14 Apr 2013 13:40:13 +0800
+Message-ID: <1365918013-12190-1-git-send-email-haokexin@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,47 +23,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Prepare for killing free_all_bootmem_node() by using
-free_all_bootmem().
+The reg property in the pci bridge device node is used to bind this
+device node to the pci bridge device. Then all the pci devices under
+this bridge could use the interrupt maps defined in this device node
+to do the irq translation. So if this property is missed, the pci
+traditional irq mechanism will not work.
 
-Signed-off-by: Jiang Liu <jiang.liu@huawei.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Alexander Graf <agraf@suse.de>
-Cc: "Suzuki K. Poulose" <suzuki@in.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Kevin Hao <haokexin@gmail.com>
 ---
- arch/powerpc/mm/mem.c |   16 +---------------
- 1 file changed, 1 insertion(+), 15 deletions(-)
+ arch/powerpc/boot/dts/fsl/b4si-post.dtsi    | 1 +
+ arch/powerpc/boot/dts/fsl/t4240si-post.dtsi | 4 ++++
+ 2 files changed, 5 insertions(+)
 
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 07663de..22e46db 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -305,22 +305,8 @@ void __init mem_init(void)
- #endif
- 
- 	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE);
--
--#ifdef CONFIG_NEED_MULTIPLE_NODES
--	{
--		pg_data_t *pgdat;
--
--		for_each_online_pgdat(pgdat)
--			if (pgdat->node_spanned_pages != 0) {
--				printk("freeing bootmem node %d\n",
--					pgdat->node_id);
--				free_all_bootmem_node(pgdat);
--			}
--	}
--#else
--	max_mapnr = max_pfn;
-+	set_max_mapnr(max_pfn);
- 	free_all_bootmem();
--#endif
- 
- #ifdef CONFIG_HIGHMEM
- 	{
+diff --git a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
+index c3e553a..7399154 100644
+--- a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
+@@ -53,6 +53,7 @@
+ 		#size-cells = <2>;
+ 		#address-cells = <3>;
+ 		device_type = "pci";
++		reg = <0 0 0 0 0>;
+ 		interrupts = <20 2 0 0>;
+ 		interrupt-map-mask = <0xf800 0 0 7>;
+ 		interrupt-map = <
+diff --git a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
+index e77e6ad..bd611a9 100644
+--- a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
+@@ -52,6 +52,7 @@
+ 		#size-cells = <2>;
+ 		#address-cells = <3>;
+ 		device_type = "pci";
++		reg = <0 0 0 0 0>;
+ 		interrupts = <20 2 0 0>;
+ 		interrupt-map-mask = <0xf800 0 0 7>;
+ 		interrupt-map = <
+@@ -77,6 +78,7 @@
+ 		#size-cells = <2>;
+ 		#address-cells = <3>;
+ 		device_type = "pci";
++		reg = <0 0 0 0 0>;
+ 		interrupts = <21 2 0 0>;
+ 		interrupt-map-mask = <0xf800 0 0 7>;
+ 		interrupt-map = <
+@@ -102,6 +104,7 @@
+ 		#size-cells = <2>;
+ 		#address-cells = <3>;
+ 		device_type = "pci";
++		reg = <0 0 0 0 0>;
+ 		interrupts = <22 2 0 0>;
+ 		interrupt-map-mask = <0xf800 0 0 7>;
+ 		interrupt-map = <
+@@ -127,6 +130,7 @@
+ 		#size-cells = <2>;
+ 		#address-cells = <3>;
+ 		device_type = "pci";
++		reg = <0 0 0 0 0>;
+ 		interrupts = <23 2 0 0>;
+ 		interrupt-map-mask = <0xf800 0 0 7>;
+ 		interrupt-map = <
 -- 
-1.7.9.5
+1.8.1.4
