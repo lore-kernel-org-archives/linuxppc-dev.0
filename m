@@ -1,19 +1,16 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A00902C0090
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Apr 2013 15:40:22 +1000 (EST)
-From: Kevin Hao <haokexin@gmail.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH] powerpc/fsl-booke: add the reg property for pci bridge device
- node for t4/b4xx boards
-Date: Sun, 14 Apr 2013 13:40:13 +0800
-Message-ID: <1365918013-12190-1-git-send-email-haokexin@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <joe@perches.com>
+Received: from labridge.com (perches-mx.perches.com [206.117.179.246])
+ (using SSLv3 with cipher DES-CBC3-SHA (168/168 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 0F8812C00A4
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Apr 2013 16:03:29 +1000 (EST)
+From: Joe Perches <joe@perches.com>
+To: netdev@vger.kernel.org
+Subject: [PATCH 0/3] freescale: Update logging style
+Date: Sat, 13 Apr 2013 22:03:16 -0700
+Message-Id: <cover.1365915548.git.joe@perches.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Fabio Estevam <festevam@gmail.com>,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,65 +20,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The reg property in the pci bridge device node is used to bind this
-device node to the pci bridge device. Then all the pci devices under
-this bridge could use the interrupt maps defined in this device node
-to do the irq translation. So if this property is missed, the pci
-traditional irq mechanism will not work.
+Convert various printk logging styles to current styles.
 
-Signed-off-by: Kevin Hao <haokexin@gmail.com>
----
- arch/powerpc/boot/dts/fsl/b4si-post.dtsi    | 1 +
- arch/powerpc/boot/dts/fsl/t4240si-post.dtsi | 4 ++++
- 2 files changed, 5 insertions(+)
+Uncompiled, untested.
 
-diff --git a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
-index c3e553a..7399154 100644
---- a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
-@@ -53,6 +53,7 @@
- 		#size-cells = <2>;
- 		#address-cells = <3>;
- 		device_type = "pci";
-+		reg = <0 0 0 0 0>;
- 		interrupts = <20 2 0 0>;
- 		interrupt-map-mask = <0xf800 0 0 7>;
- 		interrupt-map = <
-diff --git a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-index e77e6ad..bd611a9 100644
---- a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-@@ -52,6 +52,7 @@
- 		#size-cells = <2>;
- 		#address-cells = <3>;
- 		device_type = "pci";
-+		reg = <0 0 0 0 0>;
- 		interrupts = <20 2 0 0>;
- 		interrupt-map-mask = <0xf800 0 0 7>;
- 		interrupt-map = <
-@@ -77,6 +78,7 @@
- 		#size-cells = <2>;
- 		#address-cells = <3>;
- 		device_type = "pci";
-+		reg = <0 0 0 0 0>;
- 		interrupts = <21 2 0 0>;
- 		interrupt-map-mask = <0xf800 0 0 7>;
- 		interrupt-map = <
-@@ -102,6 +104,7 @@
- 		#size-cells = <2>;
- 		#address-cells = <3>;
- 		device_type = "pci";
-+		reg = <0 0 0 0 0>;
- 		interrupts = <22 2 0 0>;
- 		interrupt-map-mask = <0xf800 0 0 7>;
- 		interrupt-map = <
-@@ -127,6 +130,7 @@
- 		#size-cells = <2>;
- 		#address-cells = <3>;
- 		device_type = "pci";
-+		reg = <0 0 0 0 0>;
- 		interrupts = <23 2 0 0>;
- 		interrupt-map-mask = <0xf800 0 0 7>;
- 		interrupt-map = <
+Joe Perches (3):
+  fec: Convert printks to netdev_<level>
+  gianfar: Use netdev_<level> when possible
+  ucc_geth: Convert ugeth_<level> to pr_<level>
+
+ drivers/net/ethernet/freescale/fec_main.c         |  26 +-
+ drivers/net/ethernet/freescale/fec_mpc52xx.c      |  16 +-
+ drivers/net/ethernet/freescale/fec_ptp.c          |   2 +
+ drivers/net/ethernet/freescale/gianfar_ethtool.c  |  24 +-
+ drivers/net/ethernet/freescale/gianfar_ptp.c      |   3 +
+ drivers/net/ethernet/freescale/gianfar_sysfs.c    |   2 +-
+ drivers/net/ethernet/freescale/ucc_geth.c         | 881 ++++++++++------------
+ drivers/net/ethernet/freescale/ucc_geth_ethtool.c |  24 +-
+ 8 files changed, 441 insertions(+), 537 deletions(-)
+
 -- 
-1.8.1.4
+1.8.1.2.459.gbcd45b4.dirty
