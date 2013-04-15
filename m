@@ -1,12 +1,15 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Kumar Gala <galak@kernel.crashing.org>, sfr@canb.auug.org.au
-Subject: [PATCH] powerpc: fix usage of setup_pci_atmu()
-In-reply-to: <1363201636-7318-1-git-send-email-galak@kernel.crashing.org>
-References: <1363201636-7318-1-git-send-email-galak@kernel.crashing.org>
-Date: Mon, 15 Apr 2013 15:42:01 +1000
-Message-ID: <5881.1366004521@ale.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org
+Return-Path: <michael@ellerman.id.au>
+Date: Mon, 15 Apr 2013 16:15:09 +1000
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: Re: [PATCH] perf: Power7: Make CPI stack events available in sysfs
+Message-ID: <20130415061508.GD21147@concordia>
+References: <20130406164803.GA408@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130406164803.GA408@us.ibm.com>
+Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,31 +19,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Linux next is currently failing to compile mpc85xx_defconfig with:
-  arch/powerpc/sysdev/fsl_pci.c:944:2: error: too many arguments to function 'setup_pci_atmu'
+On Sat, Apr 06, 2013 at 09:48:03AM -0700, Sukadev Bhattiprolu wrote:
+> From bdeacf7175241f6c79b5b2be0fa6b20b0d0b7d1c Mon Sep 17 00:00:00 2001
+> From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> Date: Sat, 6 Apr 2013 08:48:26 -0700
+> Subject: [PATCH] perf: Power7: Make CPI stack events available in sysfs
+> 
+> A set of Power7 events are often used for Cycles Per Instruction (CPI) stack
+> analysis. Make these events available in sysfs (/sys/devices/cpu/events/) so
+> they can be identified using their symbolic names:
+> 
+> 	perf stat -e 'cpu/PM_CMPLU_STALL_DCACHE_MISS/' /bin/ls
 
-This is caused by (from Kumar's next branch):
-  commit 34642bbb3d12121333efcf4ea7dfe66685e403a1
-  Author: Kumar Gala <galak@kernel.crashing.org>
-  powerpc/fsl-pci: Keep PCI SoC controller registers in pci_controller
+Should we take these two via the powerpc tree? Or do you want to take
+them Arnaldo?
 
-Which changed definition of setup_pci_atmu() but didn't update one of
-the callers.  Below fixes this.
-
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
-Kumar: this is for your next tree
-
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 83918c3..a10a036 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -941,7 +941,7 @@ static int fsl_pci_resume(struct device *dev)
- 		return -ENODEV;
- 	}
- 
--	setup_pci_atmu(hose, &pci_rsrc);
-+	setup_pci_atmu(hose);
- 
- 	return 0;
- }
+cheers
