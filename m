@@ -1,36 +1,14 @@
-Return-Path: <aruna@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 25D272C00E1
- for <linuxppc-dev@ozlabs.org>; Mon, 15 Apr 2013 17:59:18 +1000 (EST)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <aruna@linux.vnet.ibm.com>;
- Mon, 15 Apr 2013 17:49:52 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id BCE862BB0057
- for <linuxppc-dev@ozlabs.org>; Mon, 15 Apr 2013 17:58:58 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3F7wcA26553928
- for <linuxppc-dev@ozlabs.org>; Mon, 15 Apr 2013 17:58:53 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3F7pvgk011579
- for <linuxppc-dev@ozlabs.org>; Mon, 15 Apr 2013 17:51:58 +1000
-Message-ID: <516BB199.1000408@linux.vnet.ibm.com>
-Date: Mon, 15 Apr 2013 13:21:53 +0530
-From: aruna <aruna@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 2/8] Add version and timestamp to oops header
+Return-Path: <michael@ellerman.id.au>
+Date: Mon, 15 Apr 2013 18:01:02 +1000
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
+Subject: Re: [PATCH 5/8] Read rtas partition via pstore
+Message-ID: <20130415080101.GF30156@concordia>
 References: <20130410071835.20150.56489.stgit@aruna-ThinkPad-T420>
- <20130410072112.20150.10281.stgit@aruna-ThinkPad-T420>
- <20130415073138.GB30156@concordia>
-In-Reply-To: <20130415073138.GB30156@concordia>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+ <20130410072327.20150.42189.stgit@aruna-ThinkPad-T420>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130410072327.20150.42189.stgit@aruna-ThinkPad-T420>
 Cc: jkenisto@linux.vnet.ibm.com, mahesh@linux.vnet.ibm.com,
  linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
  anton@samba.org
@@ -43,42 +21,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday 15 April 2013 01:01 PM, Michael Ellerman wrote:
-> On Wed, Apr 10, 2013 at 12:51:12PM +0530, Aruna Balakrishnaiah wrote:
->> Introduce version and timestamp information in the oops header.
->> oops_log_info (oops header) holds version (to distinguish between old
->> and new format oops header), length of the oops text
->> (compressed or uncompressed) and timestamp.
-> This needs a much more detailed explanation.
->
-> I think what you're doing is you're overlaying the new information so
-> that the version field in oops_log_info sits in the same location as the
-> length field in the old format. And then you're defining the version to
-> be a value that is an illegal length.
+On Wed, Apr 10, 2013 at 12:53:27PM +0530, Aruna Balakrishnaiah wrote:
+> This patch exploits pstore infrastructure to read the details
+> from NVRAM's rtas partition.
 
-Thats right.
+Does that mean it's exposed in the pstore filesystem?
 
-> So existing tools will refuse to dump new style partitions,
-> because they'll think the length is too large. You've tested that?
+> Signed-off-by: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
+> Reviewed-by: Jim Keniston <jkenisto@us.ibm.com>
+> ---
+>  arch/powerpc/platforms/pseries/nvram.c |   33 +++++++++++++++++++++++++-------
+>  fs/pstore/inode.c                      |    3 +++
+>  include/linux/pstore.h                 |    2 ++
+>  3 files changed, 31 insertions(+), 7 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/pseries/nvram.c b/arch/powerpc/platforms/pseries/nvram.c
+> index 82d32a2..d420b1d 100644
+> --- a/arch/powerpc/platforms/pseries/nvram.c
+> +++ b/arch/powerpc/platforms/pseries/nvram.c
+> @@ -144,9 +144,11 @@ static size_t oops_data_sz;
+>  #ifdef CONFIG_PSTORE
+>  static enum pstore_type_id nvram_type_ids[] = {
+>  	PSTORE_TYPE_DMESG,
+> +	PSTORE_TYPE_RTAS,
+>  	-1
+>  };
+>  static int read_type;
+> +static unsigned long last_rtas_event;
+>  #endif
+>  /* Compression parameters */
+>  #define COMPR_LEVEL 6
+> @@ -315,8 +317,13 @@ int nvram_write_error_log(char * buff, int length,
+>  {
+>  	int rc = nvram_write_os_partition(&rtas_log_partition, buff, length,
+>  						err_type, error_log_cnt);
+> -	if (!rc)
+> +	if (!rc) {
+>  		last_unread_rtas_event = get_seconds();
+> +#ifdef CONFIG_PSTORE
+> +		last_rtas_event = get_seconds();
+> +#endif
+> +	}
+> +
+>  	return rc;
+>  }
+>  
+> @@ -745,7 +752,7 @@ static int nvram_pstore_write(enum pstore_type_id type,
+>  }
+>  
+>  /*
+> - * Reads the oops/panic report.
+> + * Reads the oops/panic report and ibm,rtas-log partition.
+>   * Returns the length of the data we read from each partition.
+>   * Returns 0 if we've been called before.
+>   */
+> @@ -765,6 +772,12 @@ static ssize_t nvram_pstore_read(u64 *id, enum pstore_type_id *type,
+>  		part = &oops_log_partition;
+>  		*type = PSTORE_TYPE_DMESG;
+>  		break;
+> +	case PSTORE_TYPE_RTAS:
+> +		part = &rtas_log_partition;
+> +		*type = PSTORE_TYPE_RTAS;
+> +		time->tv_sec = last_rtas_event;
+> +		time->tv_nsec = 0;
+> +		break;
+>  	default:
+>  		return 0;
+>  	}
+> @@ -781,11 +794,17 @@ static ssize_t nvram_pstore_read(u64 *id, enum pstore_type_id *type,
+>  
+>  	*count = 0;
+>  	*id = id_no;
+> -	oops_hdr = (struct oops_log_info *)buff;
+> -	*buf = buff + sizeof(*oops_hdr);
+> -	time->tv_sec = oops_hdr->timestamp;
+> -	time->tv_nsec = 0;
+> -	return oops_hdr->report_length;
+> +
+> +	if (nvram_type_ids[read_type] == PSTORE_TYPE_DMESG) {
+> +		oops_hdr = (struct oops_log_info *)buff;
+> +		*buf = buff + sizeof(*oops_hdr);
+> +		time->tv_sec = oops_hdr->timestamp;
+> +		time->tv_nsec = 0;
+> +		return oops_hdr->report_length;
+> +	}
+> +
+> +	*buf = buff;
+> +	return part->size;
+>  }
+>  #else
+>  static int nvram_pstore_open(struct pstore_info *psi)
+> diff --git a/fs/pstore/inode.c b/fs/pstore/inode.c
+> index e4bcb2c..59b1454 100644
+> --- a/fs/pstore/inode.c
+> +++ b/fs/pstore/inode.c
+> @@ -324,6 +324,9 @@ int pstore_mkfile(enum pstore_type_id type, char *psname, u64 id, int count,
+>  	case PSTORE_TYPE_MCE:
+>  		sprintf(name, "mce-%s-%lld", psname, id);
+>  		break;
+> +	case PSTORE_TYPE_RTAS:
+> +		sprintf(name, "rtas-%s-%lld", psname, id);
+> +		break;
+>  	case PSTORE_TYPE_UNKNOWN:
+>  		sprintf(name, "unknown-%s-%lld", psname, id);
+>  		break;
+> diff --git a/include/linux/pstore.h b/include/linux/pstore.h
+> index 75d0176..4eb94c9 100644
+> --- a/include/linux/pstore.h
+> +++ b/include/linux/pstore.h
+> @@ -35,6 +35,8 @@ enum pstore_type_id {
+>  	PSTORE_TYPE_MCE		= 1,
+>  	PSTORE_TYPE_CONSOLE	= 2,
+>  	PSTORE_TYPE_FTRACE	= 3,
+> +	/* PPC64 partition types */
+> +	PSTORE_TYPE_RTAS	= 10,
+>  	PSTORE_TYPE_UNKNOWN	= 255
 
-Yeah, I have tested that.
+I think you should probably just continue at 4, and call it
+PSTORE_TYPE_PPC_RTAS. But you must get an ACK from the pstore
+maintainers for this and the previous hunk, and I don't see them on CC.
 
->
-> Updated tools will know about both formats, so will be able to handle
-> either old or new style partitions.
->
-> Is that correct?
-
-Yeah, thats correct.
-
->
-> And we're adding the timestamp just because we can and it'd be nice to
-> have?
-
-Thats right. And also, the main reason behind adding timestamp is
-it will be used when we create a pstore file for oops messages.
-The pstore file's timestamp will reflect the timestamp in the oops-header
-added during the crash.
-
-> cheers
->
+cheers
