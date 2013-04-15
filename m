@@ -1,22 +1,22 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.pcug.org.au [203.10.76.10])
- by ozlabs.org (Postfix) with ESMTP id 693572C0107
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2013 02:17:55 +1000 (EST)
-Date: Tue, 16 Apr 2013 02:17:47 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 1/2] powerpc: remove section changes from _GLOBAL() and
- friends
-Message-Id: <20130416021747.a9608ca92eb68495493e061b@canb.auug.org.au>
-In-Reply-To: <20130415233040.ca38e79ce08c519554baa865@canb.auug.org.au>
-References: <20121129105525.0e47b3b3e51aebe7ded3b7b6@canb.auug.org.au>
- <20130415120016.GB12701@concordia>
- <20130415233040.ca38e79ce08c519554baa865@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Tue__16_Apr_2013_02_17_47_+1000_.V8DgYf_wTu7xifZ"
-Cc: Alan Modra <amodra@au1.ibm.com>, ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <R1AAHA@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D8F5B2C0106
+ for <linuxppc-dev@ozlabs.org>; Tue, 16 Apr 2013 02:34:03 +1000 (EST)
+Date: Mon, 15 Apr 2013 11:30:17 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH] powerpc: fix usage of setup_pci_atmu()
+Message-ID: <20130415113017.69fd8dacd93264b9c9b54001@freescale.com>
+In-Reply-To: <5881.1366004521@ale.ozlabs.ibm.com>
+References: <1363201636-7318-1-git-send-email-galak@kernel.crashing.org>
+ <5881.1366004521@ale.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Cc: sfr@canb.auug.org.au, linux-next@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,67 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Tue__16_Apr_2013_02_17_47_+1000_.V8DgYf_wTu7xifZ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, 15 Apr 2013 15:42:01 +1000
+Michael Neuling <mikey@neuling.org> wrote:
 
-Hi Michael,
+> Linux next is currently failing to compile mpc85xx_defconfig with:
+>   arch/powerpc/sysdev/fsl_pci.c:944:2: error: too many arguments to function 'setup_pci_atmu'
+> 
+> This is caused by (from Kumar's next branch):
+>   commit 34642bbb3d12121333efcf4ea7dfe66685e403a1
+>   Author: Kumar Gala <galak@kernel.crashing.org>
+>   powerpc/fsl-pci: Keep PCI SoC controller registers in pci_controller
+> 
+> Which changed definition of setup_pci_atmu() but didn't update one of
+> the callers.  Below fixes this.
+> 
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> ---
+> Kumar: this is for your next tree
 
-On Mon, 15 Apr 2013 23:30:40 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
-wrote:
->
-> On Mon, 15 Apr 2013 22:00:17 +1000 Michael Ellerman <michael@ellerman.id.=
-au> wrote:
-> >
-> > On Thu, Nov 29, 2012 at 10:55:25AM +1100, Stephen Rothwell wrote:
-> > > These sometimes produce unexpected results and make it hard to put the
-> > > start up code (for 64 bit) into the .head.text section.
-> >=20
-> > ...
-> >=20
-> > > diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kern=
-el/head_fsl_booke.S
-> > > index 6f62a73..4ec5625 100644
-> > > --- a/arch/powerpc/kernel/head_fsl_booke.S
-> > > +++ b/arch/powerpc/kernel/head_fsl_booke.S
-> > > @@ -776,6 +776,8 @@ tlb_write_entry:
-> > >  	mfspr	r10, SPRN_SPRG_RSCRATCH0
-> > >  	rfi					/* Force context change */
-> > > =20
-> > > +	,text
-> > > +
-> >=20
-> > I'm assuming this should be .text ?
->=20
-> Indeed.  Oops :-)
+Reviewed-by: Kim Phillips <kim.phillips@freescale.com>
 
-BTW, those patches are almost certainly stale by now and would need to be
-redone before be included on the kernel proper.
+Thanks,
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Signature=_Tue__16_Apr_2013_02_17_47_+1000_.V8DgYf_wTu7xifZ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBCAAGBQJRbCgrAAoJEECxmPOUX5FEsAkP/1u9awx/v9DJwo0rcVAdXEL6
-kAH+WiqFEOwx01413YaEdwJlada14BaPxQ+pKsv21A+kbBKTBUyz0kvaMI/Iz51w
-ZoLNVW4rKE56Pr/TPPuRIffDEzULnqN1uDdTMq6HMU4MNPurOepWXar1jxHEyyoW
-EH5EdP/q53uQP6pVj3pphU8u0nymRUikLOgh9mwInNDEMPMfUm8MdJbSEZarN6K5
-nZ8WG0jDu9hlttBgdxmeyaTmeZ2usWACyQ3a4fgvpYXPWCIqx+SH6oviy+ms5s6G
-ziHQVws/Rref07r+PRHNEiOne+5EsutlPd9WDkHHQNQpq7uDtbq5YjIWlyWJTRIy
-cS4rfukf3K/a/dtiCrJaKG8RQjHD89zWbkyu5jdZgUF+ewjvTH67+QrspJrQjXIB
-lfkIGVHa4UxqSR6vZ0FK/3y1OjcX+PB9vcvS8oWpJZEw6Aidra3+GH0m/D9TAb3v
-dczXWvex848xleNKuoaW+enR57zUwWU+igiYRGVDQjwiICcBH4CrW7L6sPONrmS8
-2d/m5sEqmTbRPxa4k206r25ENB74dXZXipKEKR/rwNaFo5v16KFrua4JWVUKpPNd
-Ke5SlOYP9Zin5lSeUa0uuQKWl3BfEb9OG00nvhc6h6qHMTZue3NaHsrNO2t0DMrc
-+JtdxKxOoaSwRdhhFGJv
-=VYXS
------END PGP SIGNATURE-----
-
---Signature=_Tue__16_Apr_2013_02_17_47_+1000_.V8DgYf_wTu7xifZ--
+Kim
