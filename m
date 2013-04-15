@@ -1,15 +1,16 @@
 Return-Path: <michael@ellerman.id.au>
-Date: Mon, 15 Apr 2013 16:15:09 +1000
+Date: Mon, 15 Apr 2013 16:32:58 +1000
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH] perf: Power7: Make CPI stack events available in sysfs
-Message-ID: <20130415061508.GD21147@concordia>
-References: <20130406164803.GA408@us.ibm.com>
+To: Li Zhong <zhong@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v2 1/4] powerpc: Move the setting of rflags out of
+ loop in __hash_page_huge
+Message-ID: <20130415063258.GE21147@concordia>
+References: <1365733021-28912-1-git-send-email-zhong@linux.vnet.ibm.com>
+ <1365733021-28912-2-git-send-email-zhong@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130406164803.GA408@us.ibm.com>
-Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>, linuxppc-dev@ozlabs.org
+In-Reply-To: <1365733021-28912-2-git-send-email-zhong@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,19 +20,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Apr 06, 2013 at 09:48:03AM -0700, Sukadev Bhattiprolu wrote:
-> From bdeacf7175241f6c79b5b2be0fa6b20b0d0b7d1c Mon Sep 17 00:00:00 2001
-> From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> Date: Sat, 6 Apr 2013 08:48:26 -0700
-> Subject: [PATCH] perf: Power7: Make CPI stack events available in sysfs
-> 
-> A set of Power7 events are often used for Cycles Per Instruction (CPI) stack
-> analysis. Make these events available in sysfs (/sys/devices/cpu/events/) so
-> they can be identified using their symbolic names:
-> 
-> 	perf stat -e 'cpu/PM_CMPLU_STALL_DCACHE_MISS/' /bin/ls
+On Fri, Apr 12, 2013 at 10:16:57AM +0800, Li Zhong wrote:
+> It seems that rflags don't get changed in  the repeating loop, so move
+> it out of the loop.
 
-Should we take these two via the powerpc tree? Or do you want to take
-them Arnaldo?
+You've also changed the way new_pte is handled on repeat, but I think
+that's OK too.
 
 cheers
+
+> diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
+> index cecad34..edb4129 100644
+> --- a/arch/powerpc/mm/hugetlbpage-hash64.c
+> +++ b/arch/powerpc/mm/hugetlbpage-hash64.c
+> @@ -87,10 +87,6 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
+>  
+>  		pa = pte_pfn(__pte(old_pte)) << PAGE_SHIFT;
+>  
+> -repeat:
+> -		hpte_group = ((hash & htab_hash_mask) *
+> -			      HPTES_PER_GROUP) & ~0x7UL;
+> -
+>  		/* clear HPTE slot informations in new PTE */
+>  #ifdef CONFIG_PPC_64K_PAGES
+>  		new_pte = (new_pte & ~_PAGE_HPTEFLAGS) | _PAGE_HPTE_SUB0;
+
+ie. here new_pte was updated on repeat, but now it's not.
+
+> @@ -101,6 +97,10 @@ repeat:
+>  		rflags |= (new_pte & (_PAGE_WRITETHRU | _PAGE_NO_CACHE |
+>  				      _PAGE_COHERENT | _PAGE_GUARDED));
+>  
+> +repeat:
+> +		hpte_group = ((hash & htab_hash_mask) *
+> +			      HPTES_PER_GROUP) & ~0x7UL;
+> +
+>  		/* Insert into the hash table, primary slot */
+>  		slot = ppc_md.hpte_insert(hpte_group, vpn, pa, rflags, 0,
+>  					  mmu_psize, ssize);
