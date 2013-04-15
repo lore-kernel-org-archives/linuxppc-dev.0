@@ -1,39 +1,38 @@
 Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp03.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DDFE72C00DD
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2013 18:15:26 +1000 (EST)
+ (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BA6202C00EA
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2013 18:17:47 +1000 (EST)
 Received: from /spool/local
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Mon, 15 Apr 2013 13:41:21 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id E9D27E002D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2013 13:47:12 +0530 (IST)
+ Mon, 15 Apr 2013 13:43:36 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 82119E002D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2013 13:49:35 +0530 (IST)
 Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3F8FCJT8388878
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2013 13:45:12 +0530
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3F8HWr27340438
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2013 13:47:32 +0530
 Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
  by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3F8FGLT000621
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2013 18:15:17 +1000
-Message-ID: <1366013711.12424.33.camel@ThinkPad-T5421.cn.ibm.com>
-Subject: Re: [RFC PATCH v2 3/4] powerpc: Don't bolt the hpte in
- kernel_map_linear_page()
+ r3F8HXVI012611
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2013 18:17:34 +1000
+Message-ID: <1366013849.12424.36.camel@ThinkPad-T5421.cn.ibm.com>
+Subject: Re: [RFC PATCH v2 1/4] powerpc: Move the setting of rflags out of
+ loop in __hash_page_huge
 From: Li Zhong <zhong@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 15 Apr 2013 16:15:11 +0800
-In-Reply-To: <1366008995.24994.25.camel@pasglop>
+To: Michael Ellerman <michael@ellerman.id.au>
+Date: Mon, 15 Apr 2013 16:17:29 +0800
+In-Reply-To: <20130415063258.GE21147@concordia>
 References: <1365733021-28912-1-git-send-email-zhong@linux.vnet.ibm.com>
- <1365733021-28912-4-git-send-email-zhong@linux.vnet.ibm.com>
- <20130415035031.GA7494@iris.ozlabs.ibm.com>
- <1366008995.24994.25.camel@pasglop>
+ <1365733021-28912-2-git-send-email-zhong@linux.vnet.ibm.com>
+ <20130415063258.GE21147@concordia>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,63 +42,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-04-15 at 08:56 +0200, Benjamin Herrenschmidt wrote:
-> On Mon, 2013-04-15 at 13:50 +1000, Paul Mackerras wrote:
-> > On Fri, Apr 12, 2013 at 10:16:59AM +0800, Li Zhong wrote:
-> > > It seems that in kernel_unmap_linear_page(), it only checks whether there
-> > > is a map in the linear_map_hash_slots array, so seems we don't need bolt
-> > > the hpte.
-> > 
+On Mon, 2013-04-15 at 16:32 +1000, Michael Ellerman wrote:
+> On Fri, Apr 12, 2013 at 10:16:57AM +0800, Li Zhong wrote:
+> > It seems that rflags don't get changed in  the repeating loop, so move
+> > it out of the loop.
 
-Hi Paul, Ben
+> You've also changed the way new_pte is handled on repeat, but I think
+> that's OK too.
 
-Thank you both for the comments and detailed information. I'll keep it
-bolted in the next version. If you have time, please help to check
-whether my understanding below is correct.
+OK, I'll add it in the description :)
 
 Thanks, Zhong
 
-> > I don't exactly understand your rationale here, but I don't think it's
-> > safe not to have linear mapping pages bolted.  Basically, if a page
-> > will be used in the process of calling hash_page to demand-fault an
-> > HPTE into the hash table, then that page needs to be bolted, otherwise
-> > we can get an infinite recursion of HPT misses.  
-
-So the infinite recursion happens like below?
-
-        fault for PAGE A
-        
-        hash_page for PAGE A 
-        
-        some page B needed by hash_page processing removed by others,
-        before inserting the HPTE
-        
-        fault for PAGE B 
-        
-        hash_page for PAGE B and recursion for ever
-        
-
-> That includes all
-> > kernel stack pages, among other things, so I think we need to leave
-> > the HPTE_V_BOLTED in there.
+> cheers
 > 
-> I suspect Li's confusion comes from the fact that he doesn't realizes
-> that we might evict random hash slots. If the linear mapping hash
-> entries could only be thrown out via kernel_unmap_linear_page() then his
-> comment would make sense. However this isn't the case.
+> > diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
+> > index cecad34..edb4129 100644
+> > --- a/arch/powerpc/mm/hugetlbpage-hash64.c
+> > +++ b/arch/powerpc/mm/hugetlbpage-hash64.c
+> > @@ -87,10 +87,6 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
+> >  
+> >  		pa = pte_pfn(__pte(old_pte)) << PAGE_SHIFT;
+> >  
+> > -repeat:
+> > -		hpte_group = ((hash & htab_hash_mask) *
+> > -			      HPTES_PER_GROUP) & ~0x7UL;
+> > -
+> >  		/* clear HPTE slot informations in new PTE */
+> >  #ifdef CONFIG_PPC_64K_PAGES
+> >  		new_pte = (new_pte & ~_PAGE_HPTEFLAGS) | _PAGE_HPTE_SUB0;
 > 
-> Li: When faulting something in, if both the primary and secondary
-> buckets are full, we "somewhat randomly" evict the content of a slot and
-> replace it. However we only do that on non-bolted slots.
-
-So the code is implemented in ppc_md.hpte_remove(), may be called by
-__hash_huge_page(), and asm code htab_call_hpte_remove?
-
-> This is why the linear mapping (and the vmemmap) must be bolted.
-
-If not, it would result the infinite recursion like above?
-
-> Cheers,
-> Ben.
+> ie. here new_pte was updated on repeat, but now it's not.
 > 
+> > @@ -101,6 +97,10 @@ repeat:
+> >  		rflags |= (new_pte & (_PAGE_WRITETHRU | _PAGE_NO_CACHE |
+> >  				      _PAGE_COHERENT | _PAGE_GUARDED));
+> >  
+> > +repeat:
+> > +		hpte_group = ((hash & htab_hash_mask) *
+> > +			      HPTES_PER_GROUP) & ~0x7UL;
+> > +
+> >  		/* Insert into the hash table, primary slot */
+> >  		slot = ppc_md.hpte_insert(hpte_group, vpn, pa, rflags, 0,
+> >  					  mmu_psize, ssize);
 > 
