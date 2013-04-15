@@ -1,27 +1,36 @@
-Return-Path: <B16395@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0188.outbound.messaging.microsoft.com [213.199.154.188])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BC2102C00E3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2013 03:13:12 +1000 (EST)
-From: Sethi Varun-B16395 <B16395@freescale.com>
-To: Joerg Roedel <joro@8bytes.org>
-Subject: RE: [PATCH 1/3] iommu: Move swap_pci_ref function to pci.h.
-Date: Mon, 15 Apr 2013 17:13:01 +0000
-Message-ID: <C5ECD7A89D1DC44195F34B25E172658D486DF2@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1365966722-1804-1-git-send-email-Varun.Sethi@freescale.com>
- <20130415145834.GR6858@8bytes.org>
-In-Reply-To: <20130415145834.GR6858@8bytes.org>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 03E832C00EC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2013 06:22:33 +1000 (EST)
+Received: from /spool/local
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Mon, 15 Apr 2013 16:22:28 -0400
+Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 224226E838C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2013 16:12:25 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3FKCRtu65142796
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2013 16:12:27 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3FKCPe1024912
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2013 16:12:25 -0400
+Message-ID: <516C5F1B.9080308@linux.vnet.ibm.com>
+Date: Mon, 15 Apr 2013 15:12:11 -0500
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Yoder Stuart-B08248 <B08248@freescale.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "bhelgaas@google.com" <bhelgaas@google.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH v2 2/11] Add PRRN Event Handler
+References: <51509AE8.8070803@linux.vnet.ibm.com>
+ <51509CF0.10200@linux.vnet.ibm.com> <20130410083012.GD24786@concordia>
+In-Reply-To: <20130410083012.GD24786@concordia>
+Content-Type: text/plain; charset=windows-1252
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,32 +40,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fine, I will move it to iommu.h.
+On 04/10/2013 03:30 AM, Michael Ellerman wrote:
+> On Mon, Mar 25, 2013 at 01:52:32PM -0500, Nathan Fontenot wrote:
+>> From: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
+>>
+>> A PRRN event is signaled via the RTAS event-scan mechanism, which
+>> returns a Hot Plug Event message "fixed part" indicating "Platform
+>> Resource Reassignment". In response to the Hot Plug Event message,
+>> we must call ibm,update-nodes to determine which resources were
+>> reassigned and then ibm,update-properties to obtain the new affinity
+>> information about those resources.
+> ..
+> 
+>> Index: powerpc/arch/powerpc/kernel/rtasd.c
+>> ===================================================================
+>> --- powerpc.orig/arch/powerpc/kernel/rtasd.c	2013-03-20 08:24:14.000000000 -0500
+>> +++ powerpc/arch/powerpc/kernel/rtasd.c	2013-03-20 08:52:08.000000000 -0500
+>> @@ -87,6 +87,8 @@
+>>  			return "Resource Deallocation Event";
+>>  		case RTAS_TYPE_DUMP:
+>>  			return "Dump Notification Event";
+>> +		case RTAS_TYPE_PRRN:
+>> +			return "Platform Resource Reassignment Event";
+>>  	}
+>>  
+>>  	return rtas_type[0];
+>> @@ -265,7 +267,38 @@
+>>  		spin_unlock_irqrestore(&rtasd_log_lock, s);
+>>  		return;
+>>  	}
+>> +}
+>> +
+>> +static s32 update_scope;
+>> +
+>> +static void prrn_work_fn(struct work_struct *work)
+>> +{
+>> +	/*
+>> +	 * For PRRN, we must pass the negative of the scope value in
+>> +	 * the RTAS event.
+>> +	 */
+>> +	pseries_devicetree_update(-update_scope);
+>> +}
+>> +static DECLARE_WORK(prrn_work, prrn_work_fn);
+> 
+> This breaks the 32-bit build (ppc6xx_defconfig):
+> 
+> arch/powerpc/kernel/rtasd.c:280: undefined reference to `pseries_devicetree_update'
+> 
 
--Varun
+I'm not seeing this error. rtasd.c compilkes fine, but I am hitting another
+error later in the build that keeps it from finishing.
 
-> -----Original Message-----
-> From: Joerg Roedel [mailto:joro@8bytes.org]
-> Sent: Monday, April 15, 2013 8:29 PM
-> To: Sethi Varun-B16395
-> Cc: Yoder Stuart-B08248; Wood Scott-B07421; iommu@lists.linux-
-> foundation.org; linuxppc-dev@lists.ozlabs.org; linux-
-> kernel@vger.kernel.org; galak@kernel.crashing.org;
-> benh@kernel.crashing.org; bhelgaas@google.com
-> Subject: Re: [PATCH 1/3] iommu: Move swap_pci_ref function to pci.h.
->=20
-> On Mon, Apr 15, 2013 at 12:42:00AM +0530, Varun Sethi wrote:
-> > swap_pci_ref function is used by the IOMMU API code for swapping pci
-> > device pointers, while determining the iommu group for the device.
-> > Currently this function was being implemented for different IOMMU
-> drivers.
-> > This patch moves the function to pci.h so that the implementation can
-> > be shared across various IOMMU drivers.
->=20
-> The function is only used in IOMMU code, so I think its fine to keep it
-> there (unless Bjorn disagrees and wants it in PCI code).
->=20
->=20
-> 	Joerg
->=20
->=20
+arch/powerpc/platforms/52xx/mpc52xx_pic.c: In function ‘mpc52xx_irqhost_map’:
+arch/powerpc/platforms/52xx/mpc52xx_pic.c:343: error: ‘irqchip’ may be used uninitialized in this function
+
+
+-Nathan 
