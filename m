@@ -1,17 +1,39 @@
-Return-Path: <michael@ellerman.id.au>
-Date: Mon, 15 Apr 2013 18:01:02 +1000
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
-Subject: Re: [PATCH 5/8] Read rtas partition via pstore
-Message-ID: <20130415080101.GF30156@concordia>
-References: <20130410071835.20150.56489.stgit@aruna-ThinkPad-T420>
- <20130410072327.20150.42189.stgit@aruna-ThinkPad-T420>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130410072327.20150.42189.stgit@aruna-ThinkPad-T420>
-Cc: jkenisto@linux.vnet.ibm.com, mahesh@linux.vnet.ibm.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
- anton@samba.org
+Return-Path: <zhong@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp03.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DDFE72C00DD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2013 18:15:26 +1000 (EST)
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
+ Mon, 15 Apr 2013 13:41:21 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id E9D27E002D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2013 13:47:12 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3F8FCJT8388878
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2013 13:45:12 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3F8FGLT000621
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2013 18:15:17 +1000
+Message-ID: <1366013711.12424.33.camel@ThinkPad-T5421.cn.ibm.com>
+Subject: Re: [RFC PATCH v2 3/4] powerpc: Don't bolt the hpte in
+ kernel_map_linear_page()
+From: Li Zhong <zhong@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Mon, 15 Apr 2013 16:15:11 +0800
+In-Reply-To: <1366008995.24994.25.camel@pasglop>
+References: <1365733021-28912-1-git-send-email-zhong@linux.vnet.ibm.com>
+ <1365733021-28912-4-git-send-email-zhong@linux.vnet.ibm.com>
+ <20130415035031.GA7494@iris.ozlabs.ibm.com>
+ <1366008995.24994.25.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,124 +43,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 10, 2013 at 12:53:27PM +0530, Aruna Balakrishnaiah wrote:
-> This patch exploits pstore infrastructure to read the details
-> from NVRAM's rtas partition.
+On Mon, 2013-04-15 at 08:56 +0200, Benjamin Herrenschmidt wrote:
+> On Mon, 2013-04-15 at 13:50 +1000, Paul Mackerras wrote:
+> > On Fri, Apr 12, 2013 at 10:16:59AM +0800, Li Zhong wrote:
+> > > It seems that in kernel_unmap_linear_page(), it only checks whether there
+> > > is a map in the linear_map_hash_slots array, so seems we don't need bolt
+> > > the hpte.
+> > 
 
-Does that mean it's exposed in the pstore filesystem?
+Hi Paul, Ben
 
-> Signed-off-by: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
-> Reviewed-by: Jim Keniston <jkenisto@us.ibm.com>
-> ---
->  arch/powerpc/platforms/pseries/nvram.c |   33 +++++++++++++++++++++++++-------
->  fs/pstore/inode.c                      |    3 +++
->  include/linux/pstore.h                 |    2 ++
->  3 files changed, 31 insertions(+), 7 deletions(-)
+Thank you both for the comments and detailed information. I'll keep it
+bolted in the next version. If you have time, please help to check
+whether my understanding below is correct.
+
+Thanks, Zhong
+
+> > I don't exactly understand your rationale here, but I don't think it's
+> > safe not to have linear mapping pages bolted.  Basically, if a page
+> > will be used in the process of calling hash_page to demand-fault an
+> > HPTE into the hash table, then that page needs to be bolted, otherwise
+> > we can get an infinite recursion of HPT misses.  
+
+So the infinite recursion happens like below?
+
+        fault for PAGE A
+        
+        hash_page for PAGE A 
+        
+        some page B needed by hash_page processing removed by others,
+        before inserting the HPTE
+        
+        fault for PAGE B 
+        
+        hash_page for PAGE B and recursion for ever
+        
+
+> That includes all
+> > kernel stack pages, among other things, so I think we need to leave
+> > the HPTE_V_BOLTED in there.
 > 
-> diff --git a/arch/powerpc/platforms/pseries/nvram.c b/arch/powerpc/platforms/pseries/nvram.c
-> index 82d32a2..d420b1d 100644
-> --- a/arch/powerpc/platforms/pseries/nvram.c
-> +++ b/arch/powerpc/platforms/pseries/nvram.c
-> @@ -144,9 +144,11 @@ static size_t oops_data_sz;
->  #ifdef CONFIG_PSTORE
->  static enum pstore_type_id nvram_type_ids[] = {
->  	PSTORE_TYPE_DMESG,
-> +	PSTORE_TYPE_RTAS,
->  	-1
->  };
->  static int read_type;
-> +static unsigned long last_rtas_event;
->  #endif
->  /* Compression parameters */
->  #define COMPR_LEVEL 6
-> @@ -315,8 +317,13 @@ int nvram_write_error_log(char * buff, int length,
->  {
->  	int rc = nvram_write_os_partition(&rtas_log_partition, buff, length,
->  						err_type, error_log_cnt);
-> -	if (!rc)
-> +	if (!rc) {
->  		last_unread_rtas_event = get_seconds();
-> +#ifdef CONFIG_PSTORE
-> +		last_rtas_event = get_seconds();
-> +#endif
-> +	}
-> +
->  	return rc;
->  }
->  
-> @@ -745,7 +752,7 @@ static int nvram_pstore_write(enum pstore_type_id type,
->  }
->  
->  /*
-> - * Reads the oops/panic report.
-> + * Reads the oops/panic report and ibm,rtas-log partition.
->   * Returns the length of the data we read from each partition.
->   * Returns 0 if we've been called before.
->   */
-> @@ -765,6 +772,12 @@ static ssize_t nvram_pstore_read(u64 *id, enum pstore_type_id *type,
->  		part = &oops_log_partition;
->  		*type = PSTORE_TYPE_DMESG;
->  		break;
-> +	case PSTORE_TYPE_RTAS:
-> +		part = &rtas_log_partition;
-> +		*type = PSTORE_TYPE_RTAS;
-> +		time->tv_sec = last_rtas_event;
-> +		time->tv_nsec = 0;
-> +		break;
->  	default:
->  		return 0;
->  	}
-> @@ -781,11 +794,17 @@ static ssize_t nvram_pstore_read(u64 *id, enum pstore_type_id *type,
->  
->  	*count = 0;
->  	*id = id_no;
-> -	oops_hdr = (struct oops_log_info *)buff;
-> -	*buf = buff + sizeof(*oops_hdr);
-> -	time->tv_sec = oops_hdr->timestamp;
-> -	time->tv_nsec = 0;
-> -	return oops_hdr->report_length;
-> +
-> +	if (nvram_type_ids[read_type] == PSTORE_TYPE_DMESG) {
-> +		oops_hdr = (struct oops_log_info *)buff;
-> +		*buf = buff + sizeof(*oops_hdr);
-> +		time->tv_sec = oops_hdr->timestamp;
-> +		time->tv_nsec = 0;
-> +		return oops_hdr->report_length;
-> +	}
-> +
-> +	*buf = buff;
-> +	return part->size;
->  }
->  #else
->  static int nvram_pstore_open(struct pstore_info *psi)
-> diff --git a/fs/pstore/inode.c b/fs/pstore/inode.c
-> index e4bcb2c..59b1454 100644
-> --- a/fs/pstore/inode.c
-> +++ b/fs/pstore/inode.c
-> @@ -324,6 +324,9 @@ int pstore_mkfile(enum pstore_type_id type, char *psname, u64 id, int count,
->  	case PSTORE_TYPE_MCE:
->  		sprintf(name, "mce-%s-%lld", psname, id);
->  		break;
-> +	case PSTORE_TYPE_RTAS:
-> +		sprintf(name, "rtas-%s-%lld", psname, id);
-> +		break;
->  	case PSTORE_TYPE_UNKNOWN:
->  		sprintf(name, "unknown-%s-%lld", psname, id);
->  		break;
-> diff --git a/include/linux/pstore.h b/include/linux/pstore.h
-> index 75d0176..4eb94c9 100644
-> --- a/include/linux/pstore.h
-> +++ b/include/linux/pstore.h
-> @@ -35,6 +35,8 @@ enum pstore_type_id {
->  	PSTORE_TYPE_MCE		= 1,
->  	PSTORE_TYPE_CONSOLE	= 2,
->  	PSTORE_TYPE_FTRACE	= 3,
-> +	/* PPC64 partition types */
-> +	PSTORE_TYPE_RTAS	= 10,
->  	PSTORE_TYPE_UNKNOWN	= 255
+> I suspect Li's confusion comes from the fact that he doesn't realizes
+> that we might evict random hash slots. If the linear mapping hash
+> entries could only be thrown out via kernel_unmap_linear_page() then his
+> comment would make sense. However this isn't the case.
+> 
+> Li: When faulting something in, if both the primary and secondary
+> buckets are full, we "somewhat randomly" evict the content of a slot and
+> replace it. However we only do that on non-bolted slots.
 
-I think you should probably just continue at 4, and call it
-PSTORE_TYPE_PPC_RTAS. But you must get an ACK from the pstore
-maintainers for this and the previous hunk, and I don't see them on CC.
+So the code is implemented in ppc_md.hpte_remove(), may be called by
+__hash_huge_page(), and asm code htab_call_hpte_remove?
 
-cheers
+> This is why the linear mapping (and the vmemmap) must be bolted.
+
+If not, it would result the infinite recursion like above?
+
+> Cheers,
+> Ben.
+> 
+> 
