@@ -1,17 +1,16 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ipmail04.adl6.internode.on.net (ipmail04.adl6.internode.on.net
- [IPv6:2001:44b8:8060:ff02:300:1:6:4])
- by ozlabs.org (Postfix) with ESMTP id B68EB2C00AA
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2013 11:44:17 +1000 (EST)
-Message-ID: <18949a6b246ced7268c2d2831f931f01.squirrel@mignight.com>
-Date: Mon, 15 Apr 2013 01:44:14 -0000
-Subject: [PATCH] powerpc: Fix audit crash due to save/restore PPR changes
-From: "Alistair Popple" <alistair@popple.id.au>
-To: sfr@canb.auug.org.au,
- benh@kernel.crashing.org
+Return-Path: <paulus@ozlabs.org>
+Date: Mon, 15 Apr 2013 13:50:31 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Li Zhong <zhong@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v2 3/4] powerpc: Don't bolt the hpte in
+ kernel_map_linear_page()
+Message-ID: <20130415035031.GA7494@iris.ozlabs.ibm.com>
+References: <1365733021-28912-1-git-send-email-zhong@linux.vnet.ibm.com>
+ <1365733021-28912-4-git-send-email-zhong@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Cc: mikey@neuling.org, linuxppc-dev@lists.ozlabs.org, haren@linux.vnet.ibm.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1365733021-28912-4-git-send-email-zhong@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,47 +20,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The current mainline crashes when hitting userspace with the following:
+On Fri, Apr 12, 2013 at 10:16:59AM +0800, Li Zhong wrote:
+> It seems that in kernel_unmap_linear_page(), it only checks whether there
+> is a map in the linear_map_hash_slots array, so seems we don't need bolt
+> the hpte.
 
-kernel BUG at /home/alistair/Source/linux-stable/kernel/auditsc.c:1769!
-cpu 0x1: Vector: 700 (Program Check) at [c000000023883a60]
-    pc: c0000000001047a8: .__audit_syscall_entry+0x38/0x130
-    lr: c00000000000ed64: .do_syscall_trace_enter+0xc4/0x270
-    sp: c000000023883ce0
-   msr: 8000000000029032
-  current = 0xc000000023800000
-  paca    = 0xc00000000f080380   softe: 0        irq_happened: 0x01
-    pid   = 1629, comm = start_udev
-kernel BUG at /home/alistair/Source/linux-stable/kernel/auditsc.c:1769!
-enter ? for help
-[c000000023883d80] c00000000000ed64 .do_syscall_trace_enter+0xc4/0x270
-[c000000023883e30] c000000000009b08 syscall_dotrace+0xc/0x38
---- Exception: c00 (System Call) at 0000008010ec50dc
+I don't exactly understand your rationale here, but I don't think it's
+safe not to have linear mapping pages bolted.  Basically, if a page
+will be used in the process of calling hash_page to demand-fault an
+HPTE into the hash table, then that page needs to be bolted, otherwise
+we can get an infinite recursion of HPT misses.  That includes all
+kernel stack pages, among other things, so I think we need to leave
+the HPTE_V_BOLTED in there.
 
-Bisecting found the following patch caused it:
-
-commit 44e9309f1f357794b7ae93d5f3e3e6f11d2b8a7f
-Author: Haren Myneni <haren@linux.vnet.ibm.com>
-powerpc: Implement PPR save/restore
-
-It was found this patch corrupted r9 when calling
-SET_DEFAULT_THREAD_PPR()
-
-Using r10 as a scratch register instead of r9 solved the problem.
-
-Signed-off-by: Alistair Popple <alistair@popple.id.au>
-Acked-by: Michael Neuling <mikey@neuling.org>
----
-
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 256c5bf..3acb1a0 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -304,7 +304,7 @@ syscall_exit_work:
- 	subi	r12,r12,TI_FLAGS
-
- 4:	/* Anything else left to do? */
--	SET_DEFAULT_THREAD_PPR(r3, r9)		/* Set thread.ppr = 3 */
-+	SET_DEFAULT_THREAD_PPR(r3, r10)		/* Set thread.ppr = 3 */
- 	andi.	r0,r9,(_TIF_SYSCALL_T_OR_A|_TIF_SINGLESTEP)
- 	beq	.ret_from_except_lite
+Paul.
