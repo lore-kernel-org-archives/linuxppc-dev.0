@@ -1,40 +1,20 @@
-Return-Path: <aruna@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 176532C0106
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Apr 2013 17:59:53 +1000 (EST)
-Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <aruna@linux.vnet.ibm.com>;
- Tue, 16 Apr 2013 13:25:07 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id A26B5394005E
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Apr 2013 13:29:45 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3G7xdrs10944964
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Apr 2013 13:29:39 +0530
-Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3G7xiOG015287
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Apr 2013 17:59:45 +1000
-Message-ID: <516D04EF.6030803@linux.vnet.ibm.com>
-Date: Tue, 16 Apr 2013 13:29:43 +0530
-From: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 4/8] Read/Write oops nvram partition via pstore
-References: <20130410071835.20150.56489.stgit@aruna-ThinkPad-T420>
- <20130410072303.20150.61382.stgit@aruna-ThinkPad-T420>
- <20130415075555.GE30156@concordia> <516CEDB4.9090005@linux.vnet.ibm.com>
- <1366096475.24994.50.camel@pasglop>
-In-Reply-To: <1366096475.24994.50.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: jkenisto@linux.vnet.ibm.com, mahesh@linux.vnet.ibm.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
- anton@samba.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.pcug.org.au [203.10.76.10])
+ by ozlabs.org (Postfix) with ESMTP id 9140E2C0106
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2013 18:08:30 +1000 (EST)
+Date: Tue, 16 Apr 2013 18:08:26 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Linus <torvalds@linux-foundation.org>
+Subject: [git pull] Please pull one last set of fixes for powerpc for v3.9
+Message-Id: <20130416180826.ec3339c791d3f2311f1dc0f1@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Tue__16_Apr_2013_18_08_26_+1000_ETMYuHClz8=RvH/S"
+Cc: Michael Neuling <mikey@neuling.org>, Kevin Hao <haokexin@gmail.com>,
+ Tiejun Chen <tiejun.chen@windriver.com>,
+ Alistair Popple <alistair@popple.id.au>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,16 +24,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday 16 April 2013 12:44 PM, Benjamin Herrenschmidt wrote:
-> On Tue, 2013-04-16 at 11:50 +0530, Aruna Balakrishnaiah wrote:
->> Sure. I will have one #ifdef for declarations and one for function
->> definitions.
-> Declarations generally don't need #ifdef's
+--Signature=_Tue__16_Apr_2013_18_08_26_+1000_ETMYuHClz8=RvH/S
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Sorry by declarations I meant variable declarations (used by pstore) not function
-declarations.
+Hi Linus,
 
-> Cheers,
-> Ben.
->
->
+The following changes since commit e8f2b548de7ae65e17ee911e54712a3f26f69c60:
+
+  Merge branch 'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git=
+/viro/vfs (2013-04-09 12:22:49 -0700)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/sfr/next-fixes.git tags/for=
+-linus
+
+for you to fetch changes up to d8b92292408831d86ff7b781e66bf79301934b99:
+
+  powerpc: add a missing label in resume_kernel (2013-04-15 17:29:48 +1000)
+
+----------------------------------------------------------------
+Three regresions in the PowerPC code.  One from v3.7 the others from
+this merge window.
+
+Please pull - thanks a lot.
+
+----------------------------------------------------------------
+Alistair Popple (1):
+      powerpc: Fix audit crash due to save/restore PPR changes
+
+Kevin Hao (1):
+      powerpc: add a missing label in resume_kernel
+
+Michael Neuling (1):
+      powerpc: fix compiling CONFIG_PPC_TRANSACTIONAL_MEM when CONFIG_ALTIV=
+EC=3Dn
+
+ arch/powerpc/kernel/entry_64.S  | 4 ++--
+ arch/powerpc/kernel/process.c   | 2 ++
+ arch/powerpc/kernel/signal_32.c | 2 ++
+ arch/powerpc/kernel/signal_64.c | 2 ++
+ arch/powerpc/kernel/tm.S        | 2 ++
+ 5 files changed, 10 insertions(+), 2 deletions(-)
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Tue__16_Apr_2013_18_08_26_+1000_ETMYuHClz8=RvH/S
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJRbQb6AAoJEECxmPOUX5FEsXYP/R2BY93nAKeZA37DkzzRcZXv
+GpCe1Qzja0q4drcA8gVb2syl+8F0PpHG/zHraiIl1yUX/TorJsf16mP4KKC0fPB/
+Tu9R+5m7gGn48nQ+wa3ytoYnl77989h2C9UWzAveaXEg1tUzwSIzG153pCcWRxRf
+0wp6/4Au0s8Fm2da3xfEV9wvNUgfdocj2CcbRM9QdHYmd9kJOsT52rS0mo3SV3zS
+qTkCGR0YAQQBLW9yZeSQrqibQsOK3mWr6TEgKCFs9+CjSQB9DTdF260e0CDeNWsx
+bL8Wen1eTSvMbaE36ZmWJcGROf7XPsWj8XM4MypsFCM73W9MsRGfAX9Qj4Dq5Ktk
+pWNmKRcNfOECb2hbvK/zUEg9ETJnkl3sTGSKfQLIlxSCjJBuQrzYdldfESkupBJx
+4AXVfCr6m/CL12o//F1ctelsPV9LfmpiOQYeiKNZlIepH779gyIO5kvZCLubd9k9
+R12dz5BnvUiGv2rXAx+LTaqNCIqImTvqS6lHF6sRD2dyynSij1NSuakHX9rzTChx
+MnNjr2kbKdFRQjHEy4gRbWKncOS4xoveQ+Dl/S4XycC4gLjoWgdpuLXAeA2IqZE2
+GvN4rd8h45A3W8tBUHceV9egEzzLt26w5ot4LkOD7ij7/6m+U8PA1+RW41fAx3Uy
+YBcltbI/iCwD1ziPBdbZ
+=6Wwq
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__16_Apr_2013_18_08_26_+1000_ETMYuHClz8=RvH/S--
