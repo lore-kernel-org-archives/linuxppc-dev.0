@@ -1,34 +1,29 @@
-Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 157802C0240
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2013 12:53:52 +1000 (EST)
-Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Tue, 16 Apr 2013 08:18:05 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 42F06394004F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2013 08:23:45 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3G2rftR721266
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2013 08:23:41 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3G2rhaN029422
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2013 12:53:44 +1000
-From: Li Zhong <zhong@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH v3 3/3] powerpc: Try to insert the hptes repeatedly in
- kernel_map_linear_page()
-Date: Tue, 16 Apr 2013 10:53:20 +0800
-Message-Id: <1366080800-27885-3-git-send-email-zhong@linux.vnet.ibm.com>
-In-Reply-To: <1366080800-27885-1-git-send-email-zhong@linux.vnet.ibm.com>
-References: <1366080800-27885-1-git-send-email-zhong@linux.vnet.ibm.com>
-Cc: paulus@samba.org, Li Zhong <zhong@linux.vnet.ibm.com>
+Return-Path: <airlied@gmail.com>
+Received: from mail-ee0-f48.google.com (mail-ee0-f48.google.com [74.125.83.48])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 32B452C00E3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2013 13:17:27 +1000 (EST)
+Received: by mail-ee0-f48.google.com with SMTP id b15so17408eek.21
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2013 20:17:23 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <CAErSpo7vxSJix83DQcsARPWYWbx8UGxQ9FN61OtEJrEv7GhK=g@mail.gmail.com>
+References: <1365685994-32603-1-git-send-email-lucaskt@linux.vnet.ibm.com>
+ <1365685994-32603-3-git-send-email-lucaskt@linux.vnet.ibm.com>
+ <CAErSpo7vxSJix83DQcsARPWYWbx8UGxQ9FN61OtEJrEv7GhK=g@mail.gmail.com>
+Date: Tue, 16 Apr 2013 13:17:23 +1000
+Message-ID: <CAPM=9tywoBnCsY-WZp4_owidXZ8nLNvizagjfi-_hWkt8uKCjA@mail.gmail.com>
+Subject: Re: [PATCHv3 2/2] radeon: use max_bus_speed to activate gen2 speeds
+From: Dave Airlie <airlied@gmail.com>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: DRI mailing list <dri-devel@lists.freedesktop.org>,
+ Kleber Sacilotto de Souza <klebers@linux.vnet.ibm.com>,
+ Brian King <brking@linux.vnet.ibm.com>, Jerome Glisse <jglisse@redhat.com>,
+ Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
+ Lucas Kannebley Tavares <lucaskt@linux.vnet.ibm.com>,
+ Alex Deucher <alexander.deucher@amd.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,85 +33,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch fixes the following oops, which could be trigged by build the kernel
-with many concurrent threads, under CONFIG_DEBUG_PAGEALLOC.
+>>
+>> diff --git a/drivers/gpu/drm/radeon/evergreen.c b/drivers/gpu/drm/radeon/evergreen.c
+>> index 305a657..3291f62 100644
+>> --- a/drivers/gpu/drm/radeon/evergreen.c
+>> +++ b/drivers/gpu/drm/radeon/evergreen.c
+>> @@ -3855,8 +3855,7 @@ void evergreen_fini(struct radeon_device *rdev)
+>>
+>>  void evergreen_pcie_gen2_enable(struct radeon_device *rdev)
+>>  {
+>> -       u32 link_width_cntl, speed_cntl, mask;
+>> -       int ret;
+>> +       u32 link_width_cntl, speed_cntl;
+>>
+>>         if (radeon_pcie_gen2 == 0)
+>>                 return;
+>> @@ -3871,11 +3870,7 @@ void evergreen_pcie_gen2_enable(struct radeon_device *rdev)
+>>         if (ASIC_IS_X2(rdev))
+>>                 return;
+>>
+>> -       ret = drm_pcie_get_speed_cap_mask(rdev->ddev, &mask);
+>> -       if (ret != 0)
+>> -               return;
+>> -
+>> -       if (!(mask & DRM_PCIE_SPEED_50))
+>> +       if (rdev->pdev->bus->max_bus_speed < PCIE_SPEED_5_0GT)
+>
+> For devices on a root bus, we previously dereferenced a NULL pointer
+> in drm_pcie_get_speed_cap_mask() because pdev->bus->self is NULL on a
+> root bus.  (I think this is the original problem you tripped over,
+> Lucas.)
+>
+> These patches fix that problem.  On pseries, where the device *is* on
+> a root bus, your patches set max_bus_speed so this will work as
+> expected.  On most other systems, max_bus_speed for root buses will be
+> PCI_SPEED_UNKNOWN (set in pci_alloc_bus() and never updated because
+> most arches don't have code like the pseries code you're adding).
+>
+> PCI_SPEED_UNKNOWN = 0xff, so if we see another machine with a GPU on
+> the root bus, we'll attempt to enable Gen2 on the device even though
+> we have no idea what the bus will support.
+>
+> That's why I originally suggested skipping the Gen2 stuff if
+> "max_bus_speed == PCI_SPEED_UNKNOWN".  I was just being conservative,
+> thinking that it's better to have a functional but slow GPU rather
+> than the unknown (to me) effects of enabling Gen2 on a link that might
+> not support it.  But I'm fine with this being either way.
+>
+> It would be nice if we could get rid of drm_pcie_get_speed_cap_mask()
+> altogether.  It is exported, but I have no idea of anybody else uses
+> it.  Maybe it could at least be marked __deprecated now?
+>
+> I don't know who should take these patches.  They don't touch
+> drivers/pci, but I'd be happy to push them, given the appropriate ACKs
+> from DRM and powerpc folks.
+>
 
-hpte_insert() might return -1, indicating that the bucket (primary here)
-is full. We are not necessarily reporting a BUG in this case. Instead, we could
-try repeatedly (try secondary, remove and try again) until we find a slot.
+Acked-by: Dave Airlie <airlied@redhat.com>
 
-[  543.075675] ------------[ cut here ]------------
-[  543.075701] kernel BUG at arch/powerpc/mm/hash_utils_64.c:1239!
-[  543.075714] Oops: Exception in kernel mode, sig: 5 [#1]
-[  543.075722] PREEMPT SMP NR_CPUS=16 DEBUG_PAGEALLOC NUMA pSeries
-[  543.075741] Modules linked in: binfmt_misc ehea
-[  543.075759] NIP: c000000000036eb0 LR: c000000000036ea4 CTR: c00000000005a594
-[  543.075771] REGS: c0000000a90832c0 TRAP: 0700   Not tainted  (3.8.0-next-20130222)
-[  543.075781] MSR: 8000000000029032 <SF,EE,ME,IR,DR,RI>  CR: 22224482  XER: 00000000
-[  543.075816] SOFTE: 0
-[  543.075823] CFAR: c00000000004c200
-[  543.075830] TASK = c0000000e506b750[23934] 'cc1' THREAD: c0000000a9080000 CPU: 1
-GPR00: 0000000000000001 c0000000a9083540 c000000000c600a8 ffffffffffffffff
-GPR04: 0000000000000050 fffffffffffffffa c0000000a90834e0 00000000004ff594
-GPR08: 0000000000000001 0000000000000000 000000009592d4d8 c000000000c86854
-GPR12: 0000000000000002 c000000006ead300 0000000000a51000 0000000000000001
-GPR16: f000000003354380 ffffffffffffffff ffffffffffffff80 0000000000000000
-GPR20: 0000000000000001 c000000000c600a8 0000000000000001 0000000000000001
-GPR24: 0000000003354380 c000000000000000 0000000000000000 c000000000b65950
-GPR28: 0000002000000000 00000000000cd50e 0000000000bf50d9 c000000000c7c230
-[  543.076005] NIP [c000000000036eb0] .kernel_map_pages+0x1e0/0x3f8
-[  543.076016] LR [c000000000036ea4] .kernel_map_pages+0x1d4/0x3f8
-[  543.076025] Call Trace:
-[  543.076033] [c0000000a9083540] [c000000000036ea4] .kernel_map_pages+0x1d4/0x3f8 (unreliable)
-[  543.076053] [c0000000a9083640] [c000000000167638] .get_page_from_freelist+0x6cc/0x8dc
-[  543.076067] [c0000000a9083800] [c000000000167a48] .__alloc_pages_nodemask+0x200/0x96c
-[  543.076082] [c0000000a90839c0] [c0000000001ade44] .alloc_pages_vma+0x160/0x1e4
-[  543.076098] [c0000000a9083a80] [c00000000018ce04] .handle_pte_fault+0x1b0/0x7e8
-[  543.076113] [c0000000a9083b50] [c00000000018d5a8] .handle_mm_fault+0x16c/0x1a0
-[  543.076129] [c0000000a9083c00] [c0000000007bf1dc] .do_page_fault+0x4d0/0x7a4
-[  543.076144] [c0000000a9083e30] [c0000000000090e8] handle_page_fault+0x10/0x30
-[  543.076155] Instruction dump:
-[  543.076163] 7c630038 78631d88 e80a0000 f8410028 7c0903a6 e91f01de e96a0010 e84a0008
-[  543.076192] 4e800421 e8410028 7c7107b4 7a200fe0 <0b000000> 7f63db78 48785781 60000000
-[  543.076224] ---[ end trace bd5807e8d6ae186b ]---
+I'm happy to see these go via pci tree to avoid interdependent trees.
 
-Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
----
- arch/powerpc/mm/hash_utils_64.c |   13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
-
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index ead9fa8..1ed4419 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -1268,21 +1268,22 @@ repeat:
- #ifdef CONFIG_DEBUG_PAGEALLOC
- static void kernel_map_linear_page(unsigned long vaddr, unsigned long lmi)
- {
--	unsigned long hash, hpteg;
-+	unsigned long hash;
- 	unsigned long vsid = get_kernel_vsid(vaddr, mmu_kernel_ssize);
- 	unsigned long vpn = hpt_vpn(vaddr, vsid, mmu_kernel_ssize);
- 	unsigned long mode = htab_convert_pte_flags(PAGE_KERNEL);
--	int ret;
-+	long ret;
- 
- 	hash = hpt_hash(vpn, PAGE_SHIFT, mmu_kernel_ssize);
--	hpteg = ((hash & htab_hash_mask) * HPTES_PER_GROUP);
- 
- 	/* Don't create HPTE entries for bad address */
- 	if (!vsid)
- 		return;
--	ret = ppc_md.hpte_insert(hpteg, vpn, __pa(vaddr),
--				 mode, HPTE_V_BOLTED,
--				 mmu_linear_psize, mmu_kernel_ssize);
-+
-+	ret = hpte_insert_repeating(hash, vpn, __pa(vaddr), mode,
-+				    HPTE_V_BOLTED,
-+				    mmu_linear_psize, mmu_kernel_ssize);
-+
- 	BUG_ON (ret < 0);
- 	spin_lock(&linear_map_hash_lock);
- 	BUG_ON(linear_map_hash_slots[lmi] & 0x80);
--- 
-1.7.9.5
+Dave.
