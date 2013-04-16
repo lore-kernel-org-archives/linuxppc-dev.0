@@ -1,18 +1,18 @@
-Return-Path: <michael@ellerman.id.au>
-Date: Tue, 16 Apr 2013 18:33:11 +1000
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 1/2] powerpc: remove section changes from _GLOBAL() and
- friends
-Message-ID: <20130416083311.GA935@concordia>
-References: <20121129105525.0e47b3b3e51aebe7ded3b7b6@canb.auug.org.au>
- <20130415120016.GB12701@concordia>
- <20130415233040.ca38e79ce08c519554baa865@canb.auug.org.au>
- <20130416021747.a9608ca92eb68495493e061b@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130416021747.a9608ca92eb68495493e061b@canb.auug.org.au>
-Cc: Alan Modra <amodra@au1.ibm.com>, ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <Andrew.Murray@arm.com>
+From: Andrew Murray <Andrew.Murray@arm.com>
+To: linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v7 0/3] of/pci: Provide common support for PCI DT parsing
+Date: Tue, 16 Apr 2013 11:18:25 +0100
+Message-Id: <1366107508-12672-1-git-send-email-Andrew.Murray@arm.com>
+Cc: siva.kallam@samsung.com, linux-pci@vger.kernel.org,
+ linus.walleij@linaro.org, thierry.reding@avionic-design.de,
+ Liviu.Dudau@arm.com, paulus@samba.org, linux-samsung-soc@vger.kernel.org,
+ linux@arm.linux.org.uk, jg1.han@samsung.com, jgunthorpe@obsidianresearch.com,
+ thomas.abraham@linaro.org, arnd@arndb.de, devicetree-discuss@lists.ozlabs.org,
+ rob.herring@calxeda.com, kgene.kim@samsung.com, bhelgaas@google.com,
+ linux-arm-kernel@lists.infradead.org, thomas.petazzoni@free-electrons.com,
+ monstr@monstr.eu, linux-kernel@vger.kernel.org, suren.reddy@samsung.com,
+ Andrew Murray <Andrew.Murray@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,39 +22,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 16, 2013 at 02:17:47AM +1000, Stephen Rothwell wrote:
-> Hi Michael,
-> 
-> On Mon, 15 Apr 2013 23:30:40 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> >
-> > On Mon, 15 Apr 2013 22:00:17 +1000 Michael Ellerman <michael@ellerman.id.au> wrote:
-> > >
-> > > On Thu, Nov 29, 2012 at 10:55:25AM +1100, Stephen Rothwell wrote:
-> > > > These sometimes produce unexpected results and make it hard to put the
-> > > > start up code (for 64 bit) into the .head.text section.
-> > > 
-> > > ...
-> > > 
-> > > > diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-> > > > index 6f62a73..4ec5625 100644
-> > > > --- a/arch/powerpc/kernel/head_fsl_booke.S
-> > > > +++ b/arch/powerpc/kernel/head_fsl_booke.S
-> > > > @@ -776,6 +776,8 @@ tlb_write_entry:
-> > > >  	mfspr	r10, SPRN_SPRG_RSCRATCH0
-> > > >  	rfi					/* Force context change */
-> > > >  
-> > > > +	,text
-> > > > +
-> > > 
-> > > I'm assuming this should be .text ?
-> > 
-> > Indeed.  Oops :-)
-> 
-> BTW, those patches are almost certainly stale by now and would need to be
-> redone before be included on the kernel proper.
+This patchset factors out duplicated code associated with parsing PCI
+DT "ranges" properties across the architectures and introduces a
+"ranges" parser. This parser "of_pci_range_parser" can be used directly
+by ARM host bridge drivers enabling them to obtain ranges from device
+trees.
 
-Now you tell me. It's in my tree, and building, but potentially missing
-some .text annotations I guess. I'll rip it out until you send me a new
-version.
+I've included the Reviewed-by and Tested-by's received from v5/v6 in this
+patchset, earlier versions of this patchset (v3) have been tested-by:
 
-cheers
+Thierry Reding <thierry.reding@avionic-design.de>
+Jingoo Han <jg1.han@samsung.com>
+
+I've tested that this patchset builds and runs on ARM and that it builds on
+PowerPC and x86_64.
+
+Compared to the v6 sent by Andrew Murray, the following changes have
+been made in response to build errors/warnings:
+
+ * Inclusion of linux/of_address.h in of_pci.c as suggested by Michal
+   Simek to prevent compilation failures on Microblaze (and others) and his
+   ack.
+
+ * Use of externs, static inlines and a typo in linux/of_address.h in response
+   to linker errors (multiple defination) on x86_64 as spotted by a kbuild test
+   robot on (jcooper/linux.git mvebu/drivers)
+
+ * Add EXPORT_SYMBOL_GPL to of_pci_range_parser function to be consistent
+   with of_pci_process_ranges function
+
+Compared to the v5 sent by Andrew Murray, the following changes have
+been made:
+
+ * Use of CONFIG_64BIT instead of CONFIG_[a32bitarch] as suggested by
+   Rob Herring in drivers/of/of_pci.c
+
+ * Added forward declaration of struct pci_controller in linux/of_pci.h
+   to prevent compiler warning as suggested by Thomas Petazzoni
+
+ * Improved error checking (!range check), removal of unnecessary be32_to_cpup
+   call, improved formatting of struct of_pci_range_parser layout and
+   replacement of macro with a static inline. All suggested by Rob Herring.
+
+Compared to the v4 (incorrectly labelled v3) sent by Andrew Murray,
+the following changes have been made:
+
+ * Split the patch as suggested by Rob Herring
+
+Compared to the v3 sent by Andrew Murray, the following changes have
+been made:
+
+ * Unify and move duplicate pci_process_bridge_OF_ranges functions to
+   drivers/of/of_pci.c as suggested by Rob Herring
+
+ * Fix potential build errors with Microblaze/MIPS
+
+Compared to "[PATCH v5 01/17] of/pci: Provide support for parsing PCI DT
+ranges property", the following changes have been made:
+
+ * Correct use of IORESOURCE_* as suggested by Russell King
+
+ * Improved interface and naming as suggested by Thierry Reding
+
+Compared to the v2 sent by Andrew Murray, Thomas Petazzoni did:
+
+ * Add a memset() on the struct of_pci_range_iter when starting the
+   for loop in for_each_pci_range(). Otherwise, with an uninitialized
+   of_pci_range_iter, of_pci_process_ranges() may crash.
+
+ * Add parenthesis around 'res', 'np' and 'iter' in the
+   for_each_of_pci_range macro definitions. Otherwise, passing
+   something like &foobar as 'res' didn't work.
+
+ * Rebased on top of 3.9-rc2, which required fixing a few conflicts in
+   the Microblaze code.
+
+v2:
+  This follows on from suggestions made by Grant Likely
+  (marc.info/?l=linux-kernel&m=136079602806328)
+
+Andrew Murray (3):
+  of/pci: Unify pci_process_bridge_OF_ranges from Microblaze and
+    PowerPC
+  of/pci: Provide support for parsing PCI DT ranges property
+  of/pci: mips: convert to common of_pci_range_parser
+
+ arch/microblaze/include/asm/pci-bridge.h |    5 +-
+ arch/microblaze/pci/pci-common.c         |  192 ------------------------------
+ arch/mips/pci/pci.c                      |   50 +++------
+ arch/powerpc/include/asm/pci-bridge.h    |    5 +-
+ arch/powerpc/kernel/pci-common.c         |  192 ------------------------------
+ drivers/of/address.c                     |   67 +++++++++++
+ drivers/of/of_pci.c                      |  169 ++++++++++++++++++++++++++
+ include/linux/of_address.h               |   46 +++++++
+ include/linux/of_pci.h                   |    4 +
+ 9 files changed, 304 insertions(+), 426 deletions(-)
