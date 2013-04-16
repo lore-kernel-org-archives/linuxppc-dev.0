@@ -1,18 +1,23 @@
-Return-Path: <dhowells@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 0C7722C029A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2013 04:27:26 +1000 (EST)
-Subject: [PATCH 23/28] ppc: Clean up scanlog [RFC]
-To: linux-kernel@vger.kernel.org
-From: David Howells <dhowells@redhat.com>
-Date: Tue, 16 Apr 2013 19:27:22 +0100
-Message-ID: <20130416182722.27773.32105.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20130416182550.27773.89310.stgit@warthog.procyon.org.uk>
-References: <20130416182550.27773.89310.stgit@warthog.procyon.org.uk>
+Return-Path: <geert@linux-m68k.org>
+Received: from winston.telenet-ops.be (winston.telenet-ops.be [195.130.137.75])
+ by ozlabs.org (Postfix) with ESMTP id AF17B2C012F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2013 04:56:14 +1000 (EST)
+Received: from juliette.telenet-ops.be (juliette.telenet-ops.be
+ [195.130.137.74])
+ by winston.telenet-ops.be (Postfix) with ESMTP id 211531BD834
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2013 20:56:12 +0200 (CEST)
+Date: Tue, 16 Apr 2013 20:56:11 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Sender: geert@linux-m68k.org
+To: Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: Build regressions/improvements in v3.9-rc7
+In-Reply-To: <alpine.DEB.2.00.1304162052210.2338@ayla.of.borg>
+Message-ID: <alpine.DEB.2.00.1304162052420.2358@ayla.of.borg>
+References: <alpine.DEB.2.00.1304162052210.2338@ayla.of.borg>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- viro@zeniv.linux.org.uk, Paul Mackerras <paulus@samba.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Linux/PPC Development <linuxppc-dev@lists.ozlabs.org>,
+ linux-sh@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,105 +27,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Clean up the pseries scanlog driver's use of procfs:
+On Tue, 16 Apr 2013, Geert Uytterhoeven wrote:
+> JFYI, when comparing v3.9-rc7 to v3.9-rc6[3], the summaries are:
+>   - build errors: +8/-10
 
- (1) Don't need to save the proc_dir_entry pointer as we have the filename to
-     remove with.
+  + drivers/pcmcia/electra_cf.c: error: implicit declaration of function '__ioremap_at' [-Werror=implicit-function-declaration]:  => 225:2
+  + drivers/pcmcia/electra_cf.c: error: implicit declaration of function '__iounmap_at' [-Werror=implicit-function-declaration]:  => 316:3
+  + drivers/pcmcia/electra_cf.c: error: implicit declaration of function 'in_le32' [-Werror=implicit-function-declaration]:  => 70:2
+  + drivers/pcmcia/electra_cf.c: error: implicit declaration of function 'ioremap' [-Werror=implicit-function-declaration]:  => 213:2  + drivers/pcmcia/electra_cf.c: error: implicit declaration of function 'iounmap' [-Werror=implicit-function-declaration]:  => 318:3
+  + drivers/pcmcia/electra_cf.c: error: implicit declaration of function 'out_le32' [-Werror=implicit-function-declaration]:  => 147:2
 
- (2) Save the scan log buffer pointer in a static variable (there is only one
-     of it) and don't save it in the PDE (which doesn't have a destructor).
+powerpc-randconfig
 
-Signed-off-by: David Howells <dhowells@redhat.com>
-cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: Paul Mackerras <paulus@samba.org>
-cc: linuxppc-dev@lists.ozlabs.org
----
+>   - build warnings: +164/-34
 
- arch/powerpc/platforms/pseries/scanlog.c |   29 +++++++++++------------------
- 1 file changed, 11 insertions(+), 18 deletions(-)
+And my eye fell on this one:
 
-diff --git a/arch/powerpc/platforms/pseries/scanlog.c b/arch/powerpc/platforms/pseries/scanlog.c
-index cc220d2..b502ab6 100644
---- a/arch/powerpc/platforms/pseries/scanlog.c
-+++ b/arch/powerpc/platforms/pseries/scanlog.c
-@@ -41,12 +41,12 @@
- 
- 
- static unsigned int ibm_scan_log_dump;			/* RTAS token */
--static struct proc_dir_entry *proc_ppc64_scan_log_dump;	/* The proc file */
-+static unsigned int *scanlog_buffer;			/* The data buffer */
- 
- static ssize_t scanlog_read(struct file *file, char __user *buf,
- 			    size_t count, loff_t *ppos)
- {
--	unsigned int *data = PDE_DATA(file_inode(file));
-+	unsigned int *data = scanlog_buffer;
- 	int status;
- 	unsigned long len, off;
- 	unsigned int wait_time;
-@@ -134,7 +134,7 @@ static ssize_t scanlog_write(struct file * file, const char __user * buf,
- 
- static int scanlog_open(struct inode * inode, struct file * file)
- {
--	unsigned int *data = PDE_DATA(file_inode(file));
-+	unsigned int *data = scanlog_buffer;
- 
- 	if (data[0] != 0) {
- 		/* This imperfect test stops a second copy of the
-@@ -150,10 +150,9 @@ static int scanlog_open(struct inode * inode, struct file * file)
- 
- static int scanlog_release(struct inode * inode, struct file * file)
- {
--	unsigned int *data = PDE_DATA(file_inode(file));
-+	unsigned int *data = scanlog_buffer;
- 
- 	data[0] = 0;
--
- 	return 0;
- }
- 
-@@ -169,7 +168,6 @@ const struct file_operations scanlog_fops = {
- static int __init scanlog_init(void)
- {
- 	struct proc_dir_entry *ent;
--	void *data;
- 	int err = -ENOMEM;
- 
- 	ibm_scan_log_dump = rtas_token("ibm,scan-log-dump");
-@@ -177,29 +175,24 @@ static int __init scanlog_init(void)
- 		return -ENODEV;
- 
- 	/* Ideally we could allocate a buffer < 4G */
--	data = kzalloc(RTAS_DATA_BUF_SIZE, GFP_KERNEL);
--	if (!data)
-+	scanlog_buffer = kzalloc(RTAS_DATA_BUF_SIZE, GFP_KERNEL);
-+	if (!scanlog_buffer)
- 		goto err;
- 
--	ent = proc_create_data("powerpc/rtas/scan-log-dump", S_IRUSR, NULL,
--			       &scanlog_fops, data);
-+	ent = proc_create("powerpc/rtas/scan-log-dump", S_IRUSR, NULL,
-+			  &scanlog_fops);
- 	if (!ent)
- 		goto err;
--
--	proc_ppc64_scan_log_dump = ent;
--
- 	return 0;
- err:
--	kfree(data);
-+	kfree(scanlog_buffer);
- 	return err;
- }
- 
- static void __exit scanlog_cleanup(void)
- {
--	if (proc_ppc64_scan_log_dump) {
--		kfree(proc_ppc64_scan_log_dump->data);
--		remove_proc_entry("scan-log-dump", proc_ppc64_scan_log_dump->parent);
--	}
-+	remove_proc_entry("powerpc/rtas/scan-log-dump", NULL);
-+	kfree(scanlog_buffer);
- }
- 
- module_init(scanlog_init);
+  + include/math-emu/double.h: warning: "__LITTLE_ENDIAN" is not defined [-Wundef]:  => 59:5
+  + include/math-emu/single.h: warning: "__LITTLE_ENDIAN" is not defined [-Wundef]:  => 50:5
+
+sh-randconfig
+
+> [1] http://kisskb.ellerman.id.au/kisskb/head/6094/ (all 118 configs)
+> [3] http://kisskb.ellerman.id.au/kisskb/head/6063/ (all 118 configs)
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
