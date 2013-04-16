@@ -1,31 +1,31 @@
 Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D10052C0195
- for <linuxppc-dev@ozlabs.org>; Wed, 17 Apr 2013 01:54:54 +1000 (EST)
+ (Client CN "e23smtp08.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 629662C0253
+ for <linuxppc-dev@ozlabs.org>; Wed, 17 Apr 2013 01:55:06 +1000 (EST)
 Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 17 Apr 2013 01:47:49 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 7CC6F2BB0050
- for <linuxppc-dev@ozlabs.org>; Wed, 17 Apr 2013 01:54:38 +1000 (EST)
+ Wed, 17 Apr 2013 01:52:52 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id BC533357804E
+ for <linuxppc-dev@ozlabs.org>; Wed, 17 Apr 2013 01:55:03 +1000 (EST)
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3GFsWwO8126830
- for <linuxppc-dev@ozlabs.org>; Wed, 17 Apr 2013 01:54:32 +1000
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3GFf8nN30474318
+ for <linuxppc-dev@ozlabs.org>; Wed, 17 Apr 2013 01:41:08 +1000
 Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3GFsbw1027982
- for <linuxppc-dev@ozlabs.org>; Wed, 17 Apr 2013 01:54:38 +1000
+ r3GFsXlE027795
+ for <linuxppc-dev@ozlabs.org>; Wed, 17 Apr 2013 01:54:33 +1000
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH V2 4/5] powerpc, perf: Define BHRB generic functions,
- data and flags for POWER8
-Date: Tue, 16 Apr 2013 21:24:09 +0530
-Message-Id: <1366127650-1952-5-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH V2 2/5] powerpc,
+ perf: Add basic assembly code to read BHRB entries on POWER8
+Date: Tue, 16 Apr 2013 21:24:07 +0530
+Message-Id: <1366127650-1952-3-git-send-email-khandual@linux.vnet.ibm.com>
 In-Reply-To: <1366127650-1952-1-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1366127650-1952-1-git-send-email-khandual@linux.vnet.ibm.com>
 Cc: mikey@neuling.org
@@ -38,99 +38,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Defines BHRB functions, data and flags for POWER8
+This patch adds the basic assembly code to read BHRB entries
 
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
- arch/powerpc/perf/power8-pmu.c | 57 +++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 56 insertions(+), 1 deletion(-)
+ arch/powerpc/perf/Makefile |  2 +-
+ arch/powerpc/perf/bhrb.S   | 44 ++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 45 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/perf/bhrb.S
 
-diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
-index 106ae0b..153408c 100644
---- a/arch/powerpc/perf/power8-pmu.c
-+++ b/arch/powerpc/perf/power8-pmu.c
-@@ -109,6 +109,16 @@
- #define EVENT_IS_MARKED		(EVENT_MARKED_MASK << EVENT_MARKED_SHIFT)
- #define EVENT_PSEL_MASK		0xff	/* PMCxSEL value */
+diff --git a/arch/powerpc/perf/Makefile b/arch/powerpc/perf/Makefile
+index 472db18..510fae1 100644
+--- a/arch/powerpc/perf/Makefile
++++ b/arch/powerpc/perf/Makefile
+@@ -2,7 +2,7 @@ subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
  
-+/* MMCRA IFM bits - POWER8 */
-+#define	POWER8_MMCRA_IFM1		0x0000000040000000UL
-+#define	POWER8_MMCRA_IFM2		0x0000000080000000UL
-+#define	POWER8_MMCRA_IFM3		0x00000000C0000000UL
-+
-+#define ONLY_PLM \
-+	(PERF_SAMPLE_BRANCH_USER        |\
-+	 PERF_SAMPLE_BRANCH_KERNEL      |\
-+	 PERF_SAMPLE_BRANCH_HV)
-+
- /*
-  * Layout of constraint bits:
-  *
-@@ -428,6 +438,48 @@ static int power8_generic_events[] = {
- 	[PERF_COUNT_HW_BRANCH_MISSES] =			PM_BR_MPRED_CMPL,
- };
+ obj-$(CONFIG_PERF_EVENTS)	+= callchain.o
  
-+static u64 power8_bhrb_filter_map(u64 branch_sample_type)
-+{
-+	u64 pmu_bhrb_filter = 0;
-+	u64 br_privilege = branch_sample_type & ONLY_PLM;
+-obj-$(CONFIG_PPC_PERF_CTRS)	+= core-book3s.o
++obj-$(CONFIG_PPC_PERF_CTRS)	+= core-book3s.o bhrb.o
+ obj64-$(CONFIG_PPC_PERF_CTRS)	+= power4-pmu.o ppc970-pmu.o power5-pmu.o \
+ 				   power5+-pmu.o power6-pmu.o power7-pmu.o \
+ 				   power8-pmu.o
+diff --git a/arch/powerpc/perf/bhrb.S b/arch/powerpc/perf/bhrb.S
+new file mode 100644
+index 0000000..0e8a018
+--- /dev/null
++++ b/arch/powerpc/perf/bhrb.S
+@@ -0,0 +1,44 @@
++/*
++ * Basic assembly code to read BHRB entries
++ *
++ * Copyright 2013 Anshuman Khandual, IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++#include <asm/ppc_asm.h>
++#include <asm/ppc-opcode.h>
 +
-+	/* BHRB and regular PMU events share the same prvillege state
-+	 * filter configuration. BHRB is always recorded along with a
-+	 * regular PMU event. So privilege state filter criteria for BHRB
-+	 * and the companion PMU events has to be the same. As a default
-+	 * "perf record" tool sets all privillege bits ON when no filter
-+	 * criteria is provided in the command line. So as along as all
-+	 * privillege bits are ON or they are OFF, we are good to go.
-+	 */
-+	if ((br_privilege != 7) && (br_privilege != 0))
-+		return -1;
++	.text
 +
-+	/* No branch filter requested */
-+	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY)
-+		return pmu_bhrb_filter;
++.balign 8
 +
-+	/* Invalid branch filter options - HW does not support */
-+	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY_RETURN)
-+		return -1;
++/* r3 = n  (where n = [0-1023])
++ * The maximum number of BHRB entries supported with PPC_MFBHRBE instruction
++ * is 1024. We have limited number of table entries here as POWER8 implements
++ * 32 BHRB entries.
++ */
 +
-+	if (branch_sample_type & PERF_SAMPLE_BRANCH_IND_CALL)
-+		return -1;
++/* .global read_bhrb */
++_GLOBAL(read_bhrb)
++	cmpldi	r3,1023
++	bgt	1f
++	ld	r4,bhrb_table@got(r2)
++	sldi	r3,r3,3
++	add	r3,r4,r3
++	mtctr	r3
++	bctr
++1:	li	r3,0
++	blr
 +
-+	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY_CALL) {
-+		pmu_bhrb_filter |= POWER8_MMCRA_IFM1;
-+		return pmu_bhrb_filter;
-+	}
++#define MFBHRB_TABLE1(n) PPC_MFBHRBE(R3,n); blr
++#define MFBHRB_TABLE2(n) MFBHRB_TABLE1(n); MFBHRB_TABLE1(n+1)
++#define MFBHRB_TABLE4(n) MFBHRB_TABLE2(n); MFBHRB_TABLE2(n+2)
++#define MFBHRB_TABLE8(n) MFBHRB_TABLE4(n); MFBHRB_TABLE4(n+4)
++#define MFBHRB_TABLE16(n) MFBHRB_TABLE8(n); MFBHRB_TABLE8(n+8)
++#define MFBHRB_TABLE32(n) MFBHRB_TABLE16(n); MFBHRB_TABLE16(n+16)
 +
-+	/* Every thing else is unsupported */
-+	return -1;
-+}
-+
-+static void power8_config_bhrb(u64 pmu_bhrb_filter)
-+{
-+	/* Enable BHRB filter in PMU */
-+	mtspr(SPRN_MMCRA, (mfspr(SPRN_MMCRA) | pmu_bhrb_filter));
-+}
-+
- static struct power_pmu power8_pmu = {
- 	.name			= "POWER8",
- 	.n_counter		= 6,
-@@ -435,12 +487,15 @@ static struct power_pmu power8_pmu = {
- 	.add_fields		= POWER8_ADD_FIELDS,
- 	.test_adder		= POWER8_TEST_ADDER,
- 	.compute_mmcr		= power8_compute_mmcr,
-+	.config_bhrb		= power8_config_bhrb,
-+	.bhrb_filter_map	= power8_bhrb_filter_map,
- 	.get_constraint		= power8_get_constraint,
- 	.disable_pmc		= power8_disable_pmc,
--	.flags			= PPMU_HAS_SSLOT | PPMU_HAS_SIER,
-+	.flags			= PPMU_HAS_SSLOT | PPMU_HAS_SIER | PPMU_BHRB,
- 	.n_generic		= ARRAY_SIZE(power8_generic_events),
- 	.generic_events		= power8_generic_events,
- 	.attr_groups		= power8_pmu_attr_groups,
-+	.bhrb_nr		= 32,
- };
- 
- static int __init init_power8_pmu(void)
++bhrb_table:
++	MFBHRB_TABLE32(0)
 -- 
 1.7.11.7
