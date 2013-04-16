@@ -1,11 +1,20 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Tue, 16 Apr 2013 16:28:01 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Fix build errors with UP configs in HV-style KVM
-Message-ID: <20130416062801.GB27197@iris.ozlabs.ibm.com>
+Return-Path: <B29983@freescale.com>
+From: Tang Yuantian-B29983 <B29983@freescale.com>
+To: Tang Yuantian-B29983 <B29983@freescale.com>, "grant.likely@secretlab.ca"
+ <grant.likely@secretlab.ca>
+Subject: RE: [PATCH v2] of/base: release the node correctly in
+ of_parse_phandle_with_args()
+Date: Tue, 16 Apr 2013 06:54:40 +0000
+Message-ID: <D07C73A334FF604B95B3CBD2A545D07B0B144FD3@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1365564999-24427-1-git-send-email-Yuantian.Tang@freescale.com>
+In-Reply-To: <1365564999-24427-1-git-send-email-Yuantian.Tang@freescale.com>
+Content-Type: text/plain; charset="gb2312"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Cc: "devicetree-discuss@lists.ozlabs.org"
+ <devicetree-discuss@lists.ozlabs.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -15,70 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This fixes these errors when building UP with CONFIG_KVM_BOOK3S_64_HV=y:
-
-arch/powerpc/kvm/book3s_hv.c:1855:2: error: implicit declaration of function 'inhibit_secondary_onlining' [-Werror=implicit-function-declaration]
-arch/powerpc/kvm/book3s_hv.c:1862:2: error: implicit declaration of function 'uninhibit_secondary_onlining' [-Werror=implicit-function-declaration]
-cc1: all warnings being treated as errors
-
-and this error (with CONFIG_KVM_BOOK3S_64=m, or a vmlinux link error
-with CONFIG_KVM_BOOK3S_64=y):
-
-ERROR: "smp_send_reschedule" [arch/powerpc/kvm/kvm.ko] undefined!
-make[2]: *** [__modpost] Error 1
-
-The fix for the link error is suboptimal; ideally we want a self_ipi()
-function from irq.c, connected at least to the MPIC code, to initiate
-an IPI to this cpu.  The fix here at least lets the code build, and it
-will work, just with interrupts being delayed sometimes.
-
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
- arch/powerpc/include/asm/smp.h          |    2 ++
- arch/powerpc/kvm/book3s_hv_interrupts.S |    6 ++++++
- 2 files changed, 8 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
-index 195ce2a..ffbaabe 100644
---- a/arch/powerpc/include/asm/smp.h
-+++ b/arch/powerpc/include/asm/smp.h
-@@ -143,6 +143,8 @@ extern void __cpu_die(unsigned int cpu);
- /* for UP */
- #define hard_smp_processor_id()		get_hard_smp_processor_id(0)
- #define smp_setup_cpu_maps()
-+static inline void inhibit_secondary_onlining(void) {}
-+static inline void uninhibit_secondary_onlining(void) {}
- 
- #endif /* CONFIG_SMP */
- 
-diff --git a/arch/powerpc/kvm/book3s_hv_interrupts.S b/arch/powerpc/kvm/book3s_hv_interrupts.S
-index 84035a5..37f1cc4 100644
---- a/arch/powerpc/kvm/book3s_hv_interrupts.S
-+++ b/arch/powerpc/kvm/book3s_hv_interrupts.S
-@@ -122,11 +122,16 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_201)
- 	add	r8,r8,r7
- 	std	r8,HSTATE_DECEXP(r13)
- 
-+#ifdef CONFIG_SMP
- 	/*
- 	 * On PPC970, if the guest vcpu has an external interrupt pending,
- 	 * send ourselves an IPI so as to interrupt the guest once it
- 	 * enables interrupts.  (It must have interrupts disabled,
- 	 * otherwise we would already have delivered the interrupt.)
-+	 *
-+	 * XXX If this is a UP build, smp_send_reschedule is not available,
-+	 * so the interrupt will be delayed until the next time the vcpu
-+	 * enters the guest with interrupts enabled.
- 	 */
- BEGIN_FTR_SECTION
- 	ld	r0, VCPU_PENDING_EXC(r4)
-@@ -141,6 +146,7 @@ BEGIN_FTR_SECTION
- 	mr	r4, r31
- 32:
- END_FTR_SECTION_IFSET(CPU_FTR_ARCH_201)
-+#endif /* CONFIG_SMP */
- 
- 	/* Jump to partition switch code */
- 	bl	.kvmppc_hv_entry_trampoline
--- 
-1.7.10.4
+SGkgR3JhbnQubGlrZWx5LA0KDQpJIHJlYWxseSBwcmVjaWF0ZSBpZiB5b3UgY2FuIHNwZW5kIHNv
+bWUgdGltZXMgdG8gcmV2aWV3IHRoaXMgcGF0Y2guDQoNClRoYW5rcywNCll1YW50aWFuDQoNCj4g
+LS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogVGFuZyBZdWFudGlhbi1CMjk5ODMN
+Cj4gU2VudDogMjAxM8TqNNTCMTDI1SAxMTozNw0KPiBUbzogZ3JhbnQubGlrZWx5QHNlY3JldGxh
+Yi5jYQ0KPiBDYzogcm9iLmhlcnJpbmdAY2FseGVkYS5jb207IGRldmljZXRyZWUtZGlzY3Vzc0Bs
+aXN0cy5vemxhYnMub3JnOyBsaW51eC0NCj4ga2VybmVsQHZnZXIua2VybmVsLm9yZzsgbGludXhw
+cGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IFRhbmcgWXVhbnRpYW4tDQo+IEIyOTk4MzsgVGFuZyBZ
+dWFudGlhbi1CMjk5ODMNCj4gU3ViamVjdDogW1BBVENIIHYyXSBvZi9iYXNlOiByZWxlYXNlIHRo
+ZSBub2RlIGNvcnJlY3RseSBpbg0KPiBvZl9wYXJzZV9waGFuZGxlX3dpdGhfYXJncygpDQo+IA0K
+PiBGcm9tOiBUYW5nIFl1YW50aWFuIDx5dWFudGlhbi50YW5nQGZyZWVzY2FsZS5jb20+DQo+IA0K
+PiBDYWxsIG9mX25vZGVfcHV0KCkgb25seSB3aGVuIHRoZSBvdXRfYXJncyBpcyBOVUxMIG9uIHN1
+Y2Nlc3MsIG9yIHRoZQ0KPiBub2RlJ3MgcmVmZXJlbmNlIGNvdW50IHdpbGwgbm90IGJlIGNvcnJl
+Y3QgYmVjYXVzZSB0aGUgY2FsbGVyIHdpbGwgY2FsbA0KPiBvZl9ub2RlX3B1dCgpIGFnYWluLg0K
+PiANCj4gU2lnbmVkLW9mZi1ieTogVGFuZyBZdWFudGlhbiA8WXVhbnRpYW4uVGFuZ0BmcmVlc2Nh
+bGUuY29tPg0KPiAtLS0NCj4gdjI6DQo+IAktIG1vZGlmaWVkIHRoZSB0aXRsZSBhbmQgZGVzY3Jp
+cHRpb24uIHRoZSAxc3QgcGF0Y2ggdGl0bGUgaXM6DQo+IAkgIG9mOiByZW1vdmUgdGhlIHVubmVj
+ZXNzYXJ5IG9mX25vZGVfcHV0IGZvcg0KPiBvZl9wYXJzZV9waGFuZGxlX3dpdGhfYXJncygpDQo+
+IAkgIHRoZSAxc3QgcGF0Y2ggaXMgbm90IGdvb2QgZW5vdWdoLg0KPiANCj4gIGRyaXZlcnMvb2Yv
+YmFzZS5jIHwgNiArKystLS0NCj4gIDEgZmlsZSBjaGFuZ2VkLCAzIGluc2VydGlvbnMoKyksIDMg
+ZGVsZXRpb25zKC0pDQo+IA0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9vZi9iYXNlLmMgYi9kcml2
+ZXJzL29mL2Jhc2UuYyBpbmRleCAzMjFkM2VmLi5lZTk0ZjY0DQo+IDEwMDY0NA0KPiAtLS0gYS9k
+cml2ZXJzL29mL2Jhc2UuYw0KPiArKysgYi9kcml2ZXJzL29mL2Jhc2UuYw0KPiBAQCAtMTE1OCw2
+ICsxMTU4LDcgQEAgc3RhdGljIGludCBfX29mX3BhcnNlX3BoYW5kbGVfd2l0aF9hcmdzKGNvbnN0
+DQo+IHN0cnVjdCBkZXZpY2Vfbm9kZSAqbnAsDQo+ICAJCQlpZiAoIXBoYW5kbGUpDQo+ICAJCQkJ
+Z290byBlcnI7DQo+IA0KPiArCQkJLyogRm91bmQgaXQhIHJldHVybiBzdWNjZXNzICovDQo+ICAJ
+CQlpZiAob3V0X2FyZ3MpIHsNCj4gIAkJCQlpbnQgaTsNCj4gIAkJCQlpZiAoV0FSTl9PTihjb3Vu
+dCA+IE1BWF9QSEFORExFX0FSR1MpKSBAQCAtDQo+IDExNjYsMTEgKzExNjcsMTAgQEAgc3RhdGlj
+IGludCBfX29mX3BhcnNlX3BoYW5kbGVfd2l0aF9hcmdzKGNvbnN0IHN0cnVjdA0KPiBkZXZpY2Vf
+bm9kZSAqbnAsDQo+ICAJCQkJb3V0X2FyZ3MtPmFyZ3NfY291bnQgPSBjb3VudDsNCj4gIAkJCQlm
+b3IgKGkgPSAwOyBpIDwgY291bnQ7IGkrKykNCj4gIAkJCQkJb3V0X2FyZ3MtPmFyZ3NbaV0gPSBi
+ZTMyX3RvX2NwdXAobGlzdCsrKTsNCj4gKwkJCX0gZWxzZSBpZiAobm9kZSkgew0KPiArCQkJCW9m
+X25vZGVfcHV0KG5vZGUpOw0KPiAgCQkJfQ0KPiANCj4gLQkJCS8qIEZvdW5kIGl0ISByZXR1cm4g
+c3VjY2VzcyAqLw0KPiAtCQkJaWYgKG5vZGUpDQo+IC0JCQkJb2Zfbm9kZV9wdXQobm9kZSk7DQo+
+ICAJCQlyZXR1cm4gMDsNCj4gIAkJfQ0KPiANCj4gLS0NCj4gMS44LjANCg0K
