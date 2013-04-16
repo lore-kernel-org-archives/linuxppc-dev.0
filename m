@@ -1,24 +1,32 @@
-Return-Path: <B07421@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1AD872C0148
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2013 09:30:40 +1000 (EST)
-Date: Tue, 16 Apr 2013 18:30:21 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v3 1/4] powerpc/mpic: add irq_set_wake support
-To: Wang Dongsheng-B40534 <B40534@freescale.com>
-References: <1365474152-21524-1-git-send-email-dongsheng.wang@freescale.com>
- <ABB05CD9C9F68C46A5CEDC7F15439259EE77D8@039-SN2MPN1-021.039d.mgd.msft.net>
-In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F15439259EE77D8@039-SN2MPN1-021.039d.mgd.msft.net>
- (from B40534@freescale.com on Tue Apr 16 05:58:52 2013)
-Message-ID: <1366155021.23030.24@snotra>
+Return-Path: <mturquette@linaro.org>
+Received: from mail-da0-x235.google.com (mail-da0-x235.google.com
+ [IPv6:2607:f8b0:400e:c00::235])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 851C12C012F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2013 08:27:31 +1000 (EST)
+Received: by mail-da0-f53.google.com with SMTP id n34so449807dal.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2013 15:27:29 -0700 (PDT)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Tang Yuantian-B29983 <B29983@freescale.com>,
+ Tang Yuantian-B29983 <B29983@freescale.com>
+From: Mike Turquette <mturquette@linaro.org>
+In-Reply-To: <D07C73A334FF604B95B3CBD2A545D07B0B144FEF@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1365497187-8305-1-git-send-email-Yuantian.Tang@freescale.com>
+ <D07C73A334FF604B95B3CBD2A545D07B0B144FEF@039-SN2MPN1-013.039d.mgd.msft.net>
+Message-ID: <20130416222721.19887.3395@quantum>
+Subject: Re: RE: [PATCH v3] clk: add PowerPC corenet clock driver support
+Date: Tue, 16 Apr 2013 15:27:21 -0700
+Cc: "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>,
+ Li Yang-R58472 <r58472@freescale.com>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
+ "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>,
+ "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linus.walleij@linaro.org" <linus.walleij@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,93 +36,398 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-ACK
+Quoting Tang Yuantian-B29983 (2013-04-15 23:59:34)
+> Hi Mike,
+> =
 
--Scott
+> I really appreciate if you can spend some times to review this patch.
+> =
 
-On 04/16/2013 05:58:52 AM, Wang Dongsheng-B40534 wrote:
-> Hi scott,
->=20
-> Could you ACK these patches?
->=20
-> [PATCH v3 2/4] powerpc/mpic: add global timer support
-> [PATCH v3 3/4] powerpc/mpic: create mpic subsystem object
-> [PATCH v3 4/4] powerpc/fsl: add MPIC timer wakeup support
->=20
-> Thanks.
->=20
+
+Yauntian,
+
+Thanks for submitting this patch.  I have frozen the changes I plan to
+submit for 3.10, with the exception of any last-minute fixes.  I'll take
+a closer look at this after the merge window.
+
+Regards,
+Mike
+
+> Thanks,
+> Yuantian
+> =
+
+> =
+
 > > -----Original Message-----
-> > From: Wang Dongsheng-B40534
-> > Sent: Tuesday, April 09, 2013 10:22 AM
-> > To: Wood Scott-B07421
-> > Cc: linuxppc-dev@lists.ozlabs.org; Wang Dongsheng-B40534
-> > Subject: [PATCH v3 1/4] powerpc/mpic: add irq_set_wake support
-> >
-> > Add irq_set_wake support. Just add IRQF_NO_SUSPEND to =20
-> desc->action->flag.
-> > So the wake up interrupt will not be disable in suspend_device_irqs.
-> >
-> > Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> > From: Tang Yuantian-B29983
+> > Sent: 2013=E5=B9=B44=E6=9C=889=E6=97=A5 16:46
+> > To: mturquette@linaro.org
+> > Cc: linus.walleij@linaro.org; viresh.kumar@linaro.org;
+> > shawn.guo@linaro.org; ulf.hansson@linaro.org; linux-
+> > kernel@vger.kernel.org; devicetree-discuss@lists.ozlabs.org; linuxppc-
+> > dev@lists.ozlabs.org; linux-doc@vger.kernel.org; Tang Yuantian-B29983;
+> > Tang Yuantian-B29983; Li Yang-R58472
+> > Subject: [PATCH v3] clk: add PowerPC corenet clock driver support
+> > =
+
+> > From: Tang Yuantian <yuantian.tang@freescale.com>
+> > =
+
+> > This adds the clock driver for Freescale PowerPC corenet series SoCs
+> > using common clock infrastructure.
+> > =
+
+> > Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+> > Signed-off-by: Li Yang <leoli@freescale.com>
 > > ---
 > > v3:
-> > * Modify: Change "EINVAL" to "ENXIO" in mpic_irq_set_wake()
-> >
+> >       - remove the module author and description
 > > v2:
-> > * Add: Check freescale chip in mpic_irq_set_wake().
-> > * Remove: Support mpic_irq_set_wake() in ht_chip.
-> >
-> >  arch/powerpc/sysdev/mpic.c | 18 ++++++++++++++++++
-> >  1 file changed, 18 insertions(+)
-> >
-> > diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-> > index 3b2efd4..ae709d2 100644
-> > --- a/arch/powerpc/sysdev/mpic.c
-> > +++ b/arch/powerpc/sysdev/mpic.c
-> > @@ -920,6 +920,22 @@ int mpic_set_irq_type(struct irq_data *d, =20
-> unsigned
-> > int flow_type)
-> >  	return IRQ_SET_MASK_OK_NOCOPY;
-> >  }
-> >
-> > +static int mpic_irq_set_wake(struct irq_data *d, unsigned int on) {
-> > +	struct irq_desc *desc =3D container_of(d, struct irq_desc, =20
-> irq_data);
-> > +	struct mpic *mpic =3D mpic_from_irq_data(d);
+> >       - add the document for device tree clock bindings
+> > =
+
+> >  arch/powerpc/platforms/Kconfig.cputype |   1 +
+> >  drivers/clk/Kconfig                    |   7 +
+> >  drivers/clk/Makefile                   |   1 +
+> >  drivers/clk/clk-ppc-corenet.c          | 280
+> > +++++++++++++++++++++++++++++++++
+> >  4 files changed, 289 insertions(+)
+> >  create mode 100644 drivers/clk/clk-ppc-corenet.c
+> > =
+
+> > diff --git a/arch/powerpc/platforms/Kconfig.cputype
+> > b/arch/powerpc/platforms/Kconfig.cputype
+> > index 18e3b76..cf065b8 100644
+> > --- a/arch/powerpc/platforms/Kconfig.cputype
+> > +++ b/arch/powerpc/platforms/Kconfig.cputype
+> > @@ -158,6 +158,7 @@ config E500
+> >  config PPC_E500MC
+> >       bool "e500mc Support"
+> >       select PPC_FPU
+> > +     select COMMON_CLK
+> >       depends on E500
+> >       help
+> >         This must be enabled for running on e500mc (and derivatives diff
+> > --git a/drivers/clk/Kconfig b/drivers/clk/Kconfig index a47e6ee..6e2fd9c
+> > 100644
+> > --- a/drivers/clk/Kconfig
+> > +++ b/drivers/clk/Kconfig
+> > @@ -63,6 +63,13 @@ config CLK_TWL6040
+> >         McPDM. McPDM module is using the external bit clock on the McPDM
+> > bus
+> >         as functional clock.
+> > =
+
+> > +config CLK_PPC_CORENET
+> > +     bool "Clock driver for PowerPC corenet platforms"
+> > +     depends on PPC_E500MC && OF
+> > +     ---help---
+> > +       This adds the clock driver support for Freescale PowerPC corenet
+> > +       platforms using common clock framework.
 > > +
-> > +	if (!(mpic->flags & MPIC_FSL))
-> > +		return -ENXIO;
+> >  endmenu
+> > =
+
+> >  source "drivers/clk/mvebu/Kconfig"
+> > diff --git a/drivers/clk/Makefile b/drivers/clk/Makefile index
+> > 300d477..6720319 100644
+> > --- a/drivers/clk/Makefile
+> > +++ b/drivers/clk/Makefile
+> > @@ -34,3 +34,4 @@ obj-$(CONFIG_X86)           +=3D x86/
+> >  obj-$(CONFIG_COMMON_CLK_WM831X) +=3D clk-wm831x.o
+> >  obj-$(CONFIG_COMMON_CLK_MAX77686) +=3D clk-max77686.o
+> >  obj-$(CONFIG_CLK_TWL6040)    +=3D clk-twl6040.o
+> > +obj-$(CONFIG_CLK_PPC_CORENET)        +=3D clk-ppc-corenet.o
+> > diff --git a/drivers/clk/clk-ppc-corenet.c b/drivers/clk/clk-ppc-
+> > corenet.c new file mode 100644 index 0000000..a2d483f
+> > --- /dev/null
+> > +++ b/drivers/clk/clk-ppc-corenet.c
+> > @@ -0,0 +1,280 @@
+> > +/*
+> > + * Copyright 2013 Freescale Semiconductor, Inc.
+> > + *
+> > + * This program is free software; you can redistribute it and/or modify
+> > + * it under the terms of the GNU General Public License version 2 as
+> > + * published by the Free Software Foundation.
+> > + *
+> > + * clock driver for Freescale PowerPC corenet SoCs.
+> > + */
+> > +#include <linux/clk-provider.h>
+> > +#include <linux/io.h>
+> > +#include <linux/kernel.h>
+> > +#include <linux/module.h>
+> > +#include <linux/of_platform.h>
+> > +#include <linux/of.h>
+> > +#include <linux/slab.h>
 > > +
-> > +	if (on)
-> > +		desc->action->flags |=3D IRQF_NO_SUSPEND;
-> > +	else
-> > +		desc->action->flags &=3D ~IRQF_NO_SUSPEND;
+> > +struct cmux_clk {
+> > +     struct clk_hw hw;
+> > +     void __iomem *reg;
+> > +     u32 flags;
+> > +};
 > > +
-> > +	return 0;
+> > +#define PLL_KILL                     BIT(31)
+> > +#define      CLKSEL_SHIFT            27
+> > +#define CLKSEL_ADJUST                BIT(0)
+> > +#define to_cmux_clk(p)               container_of(p, struct cmux_clk, =
+hw)
+> > +
+> > +static void __iomem *base;
+> > +static unsigned int clocks_per_pll;
+> > +
+> > +static int cmux_set_parent(struct clk_hw *hw, u8 idx) {
+> > +     struct cmux_clk *clk =3D to_cmux_clk(hw);
+> > +     u32 clksel;
+> > +
+> > +     clksel =3D ((idx / clocks_per_pll) << 2) + idx % clocks_per_pll;
+> > +     if (clk->flags & CLKSEL_ADJUST)
+> > +             clksel +=3D 8;
+> > +     clksel =3D (clksel & 0xf) << CLKSEL_SHIFT;
+> > +     iowrite32be(clksel, clk->reg);
+> > +
+> > +     return 0;
 > > +}
 > > +
-> >  void mpic_set_vector(unsigned int virq, unsigned int vector)  {
-> >  	struct mpic *mpic =3D mpic_from_irq(virq); @@ -957,6 +973,7 @@ =20
-> static
-> > struct irq_chip mpic_irq_chip =3D {
-> >  	.irq_unmask	=3D mpic_unmask_irq,
-> >  	.irq_eoi	=3D mpic_end_irq,
-> >  	.irq_set_type	=3D mpic_set_irq_type,
-> > +	.irq_set_wake	=3D mpic_irq_set_wake,
-> >  };
-> >
-> >  #ifdef CONFIG_SMP
-> > @@ -971,6 +988,7 @@ static struct irq_chip mpic_tm_chip =3D {
-> >  	.irq_mask	=3D mpic_mask_tm,
-> >  	.irq_unmask	=3D mpic_unmask_tm,
-> >  	.irq_eoi	=3D mpic_end_irq,
-> > +	.irq_set_wake	=3D mpic_irq_set_wake,
-> >  };
-> >
-> >  #ifdef CONFIG_MPIC_U3_HT_IRQS
+> > +static u8 cmux_get_parent(struct clk_hw *hw) {
+> > +     struct cmux_clk *clk =3D to_cmux_clk(hw);
+> > +     u32 clksel;
+> > +
+> > +     clksel =3D ioread32be(clk->reg);
+> > +     clksel =3D (clksel >> CLKSEL_SHIFT) & 0xf;
+> > +     if (clk->flags & CLKSEL_ADJUST)
+> > +             clksel -=3D 8;
+> > +     clksel =3D (clksel >> 2) * clocks_per_pll + clksel % 4;
+> > +
+> > +     return clksel;
+> > +}
+> > +
+> > +const struct clk_ops cmux_ops =3D {
+> > +     .get_parent =3D cmux_get_parent,
+> > +     .set_parent =3D cmux_set_parent,
+> > +};
+> > +
+> > +static void __init core_mux_init(struct device_node *np) {
+> > +     struct clk *clk;
+> > +     struct clk_init_data init;
+> > +     struct cmux_clk *cmux_clk;
+> > +     struct device_node *node;
+> > +     int rc, count, i;
+> > +     u32     offset;
+> > +     const char *clk_name;
+> > +     const char **parent_names;
+> > +
+> > +     rc =3D of_property_read_u32(np, "reg", &offset);
+> > +     if (rc) {
+> > +             pr_err("%s: could not get reg property\n", np->name);
+> > +             return;
+> > +     }
+> > +
+> > +     /* get the input clock source count */
+> > +     count =3D of_property_count_strings(np, "clock-names");
+> > +     if (count < 0) {
+> > +             pr_err("%s: get clock count error\n", np->name);
+> > +             return;
+> > +     }
+> > +     parent_names =3D kzalloc((sizeof(char *) * count), GFP_KERNEL);
+> > +     if (!parent_names) {
+> > +             pr_err("%s: could not allocate parent_names\n", __func__);
+> > +             return;
+> > +     }
+> > +
+> > +     for (i =3D 0; i < count; i++)
+> > +             parent_names[i] =3D of_clk_get_parent_name(np, i);
+> > +
+> > +     cmux_clk =3D kzalloc(sizeof(struct cmux_clk), GFP_KERNEL);
+> > +     if (!cmux_clk) {
+> > +             pr_err("%s: could not allocate cmux_clk\n", __func__);
+> > +             goto err_name;
+> > +     }
+> > +     cmux_clk->reg =3D base + offset;
+> > +
+> > +     node =3D of_find_compatible_node(NULL, NULL, "fsl,p4080-clockgen"=
+);
+> > +     if (node && (offset >=3D 0x80))
+> > +             cmux_clk->flags =3D CLKSEL_ADJUST;
+> > +
+> > +     rc =3D of_property_read_string_index(np, "clock-output-names",
+> > +                     0, &clk_name);
+> > +     if (rc) {
+> > +             pr_err("%s: read clock names error\n", np->name);
+> > +             goto err_clk;
+> > +     }
+> > +
+> > +     init.name =3D clk_name;
+> > +     init.ops =3D &cmux_ops;
+> > +     init.parent_names =3D parent_names;
+> > +     init.num_parents =3D count;
+> > +     init.flags =3D 0;
+> > +     cmux_clk->hw.init =3D &init;
+> > +
+> > +     clk =3D clk_register(NULL, &cmux_clk->hw);
+> > +     if (IS_ERR(clk)) {
+> > +             pr_err("%s: could not register clock\n", clk_name);
+> > +             goto err_clk;
+> > +     }
+> > +
+> > +     rc =3D of_clk_add_provider(np, of_clk_src_simple_get, clk);
+> > +     if (rc) {
+> > +             pr_err("Could not register clock provider for node:%s\n",
+> > +                      np->name);
+> > +             goto err_clk;
+> > +     }
+> > +     goto err_name;
+> > +
+> > +err_clk:
+> > +     kfree(cmux_clk);
+> > +err_name:
+> > +     /* free *_names because they are reallocated when registered */
+> > +     kfree(parent_names);
+> > +}
+> > +
+> > +static void __init core_pll_init(struct device_node *np) {
+> > +     u32 offset, mult;
+> > +     int i, rc, count;
+> > +     const char *clk_name, *parent_name;
+> > +     struct clk_onecell_data *onecell_data;
+> > +     struct clk      **subclks;
+> > +
+> > +     rc =3D of_property_read_u32(np, "reg", &offset);
+> > +     if (rc) {
+> > +             pr_err("%s: could not get reg property\n", np->name);
+> > +             return;
+> > +     }
+> > +
+> > +     /* get the multiple of PLL */
+> > +     mult =3D ioread32be(base + offset);
+> > +
+> > +     /* check if this PLL is disabled */
+> > +     if (mult & PLL_KILL) {
+> > +             pr_debug("PLL:%s is disabled\n", np->name);
+> > +             return;
+> > +     }
+> > +     mult =3D (mult >> 1) & 0x3f;
+> > +
+> > +     parent_name =3D of_clk_get_parent_name(np, 0);
+> > +     if (!parent_name) {
+> > +             pr_err("PLL: %s must have a parent\n", np->name);
+> > +             return;
+> > +     }
+> > +
+> > +     count =3D of_property_count_strings(np, "clock-output-names");
+> > +     if (count < 0 || count > 4) {
+> > +             pr_err("%s: clock is not supported\n", np->name);
+> > +             return;
+> > +     }
+> > +
+> > +     /* output clock number per PLL */
+> > +     clocks_per_pll =3D count;
+> > +
+> > +     subclks =3D kzalloc(sizeof(struct clk *) * count, GFP_KERNEL);
+> > +     if (!subclks) {
+> > +             pr_err("%s: could not allocate subclks\n", __func__);
+> > +             return;
+> > +     }
+> > +
+> > +     onecell_data =3D kzalloc(sizeof(struct clk_onecell_data), GFP_KER=
+NEL);
+> > +     if (!onecell_data) {
+> > +             pr_err("%s: could not allocate onecell_data\n", __func__);
+> > +             goto err_clks;
+> > +     }
+> > +
+> > +     for (i =3D 0; i < count; i++) {
+> > +             rc =3D of_property_read_string_index(np, "clock-output-na=
+mes",
+> > +                             i, &clk_name);
+> > +             if (rc) {
+> > +                     pr_err("%s: could not get clock names\n", np->nam=
+e);
+> > +                     goto err_cell;
+> > +             }
+> > +
+> > +             /*
+> > +              * when count =3D=3D 4, there are 4 output clocks:
+> > +              * /1, /2, /3, /4 respectively
+> > +              * when count < 4, there are at least 2 output clocks:
+> > +              * /1, /2, (/4, if count =3D=3D 3) respectively.
+> > +              */
+> > +             if (count =3D=3D 4)
+> > +                     subclks[i] =3D clk_register_fixed_factor(NULL, cl=
+k_name,
+> > +                                     parent_name, 0, mult, 1 + i);
+> > +             else
+> > +
+> > +                     subclks[i] =3D clk_register_fixed_factor(NULL, cl=
+k_name,
+> > +                                     parent_name, 0, mult, 1 << i);
+> > +
+> > +             if (IS_ERR(subclks[i])) {
+> > +                     pr_err("%s: could not register clock\n", clk_name=
+);
+> > +                     goto err_cell;
+> > +             }
+> > +     }
+> > +
+> > +     onecell_data->clks =3D subclks;
+> > +     onecell_data->clk_num =3D count;
+> > +
+> > +     rc =3D of_clk_add_provider(np, of_clk_src_onecell_get, onecell_da=
+ta);
+> > +     if (rc) {
+> > +             pr_err("Could not register clk provider for node:%s\n",
+> > +                      np->name);
+> > +             goto err_cell;
+> > +     }
+> > +
+> > +     return;
+> > +err_cell:
+> > +     kfree(onecell_data);
+> > +err_clks:
+> > +     kfree(subclks);
+> > +}
+> > +
+> > +static const struct of_device_id clk_match[] __initconst =3D {
+> > +     { .compatible =3D "fixed-clock", .data =3D of_fixed_clk_setup, },
+> > +     { .compatible =3D "fsl,core-pll-clock", .data =3D core_pll_init, =
+},
+> > +     { .compatible =3D "fsl,core-mux-clock", .data =3D core_mux_init, =
+},
+> > +     {}
+> > +};
+> > +
+> > +static int __init ppc_corenet_clk_probe(struct platform_device *pdev) {
+> > +     struct device_node *np;
+> > +
+> > +     np =3D pdev->dev.of_node;
+> > +     base =3D of_iomap(np, 0);
+> > +     if (!base) {
+> > +             dev_err(&pdev->dev, "iomap error\n");
+> > +             return -ENOMEM;
+> > +     }
+> > +     of_clk_init(clk_match);
+> > +
+> > +     return 0;
+> > +}
+> > +
+> > +static const struct of_device_id ppc_clk_ids[] __initconst =3D {
+> > +     { .compatible =3D "fsl,qoriq-clockgen-1.0", },
+> > +     { .compatible =3D "fsl,qoriq-clockgen-2", },
+> > +     {}
+> > +};
+> > +
+> > +static struct platform_driver ppc_corenet_clk_driver =3D {
+> > +     .driver =3D {
+> > +             .name =3D "ppc_corenet_clock",
+> > +             .owner =3D THIS_MODULE,
+> > +             .of_match_table =3D ppc_clk_ids,
+> > +     },
+> > +     .probe =3D ppc_corenet_clk_probe,
+> > +};
+> > +
+> > +static int __init ppc_corenet_clk_init(void) {
+> > +     return platform_driver_register(&ppc_corenet_clk_driver);
+> > +}
+> > +subsys_initcall(ppc_corenet_clk_init);
 > > --
 > > 1.8.0
->=20
->=20
->=20
-
-=
