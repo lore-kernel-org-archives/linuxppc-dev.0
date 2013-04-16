@@ -1,21 +1,19 @@
 Return-Path: <dhowells@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 24AA02C0139
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2013 04:26:21 +1000 (EST)
-Subject: [PATCH 04/28] proc: Supply PDE attribute setting accessor functions
- [RFC]
+ by ozlabs.org (Postfix) with ESMTP id 775B42C01FA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2013 04:27:23 +1000 (EST)
+Subject: [PATCH 22/28] ppc: Clean up rtas_flash driver somewhat [RFC]
 To: linux-kernel@vger.kernel.org
 From: David Howells <dhowells@redhat.com>
-Date: Tue, 16 Apr 2013 19:26:06 +0100
-Message-ID: <20130416182606.27773.55054.stgit@warthog.procyon.org.uk>
+Date: Tue, 16 Apr 2013 19:27:17 +0100
+Message-ID: <20130416182716.27773.74530.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20130416182550.27773.89310.stgit@warthog.procyon.org.uk>
 References: <20130416182550.27773.89310.stgit@warthog.procyon.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Cc: alsa-devel@alsa-project.org, linux-pci@vger.kernel.org,
- linux-wireless@vger.kernel.org, netfilter-devel@vger.kernel.org,
- viro@zeniv.linux.org.uk, netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-media@vger.kernel.org
+Cc: Paul Mackerras <paulus@samba.org>, viro@zeniv.linux.org.uk,
+ linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,296 +23,719 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Supply accessor functions to set attributes in proc_dir_entry structs.
+Clean up some of the problems with the rtas_flash driver:
 
-The following are supplied: proc_set_size() and proc_set_user().
+ (1) It shouldn't fiddle with the internals of the procfs filesystem (altering
+     pde->count).
+
+ (2) If pid namespaces are in effect, then you can get multiple inodes
+     connected to a single pde, thereby rendering the pde->count > 2 test
+     useless.
+
+ (3) The pde->count fudging doesn't work for forked, dup'd or cloned file
+     descriptors, so add static mutexes and use them to wrap access to the
+     driver through read, write and release methods.
+
+ (4) The driver can only handle one device, so allocate most of the data
+     previously attached to the pde->data as static variables instead (though
+     allocate the validation data buffer with kmalloc).
+
+ (5) We don't need to save the pde pointers as long as we have the filenames
+     available for removal.
+
+ (6) Don't try to multiplex what the update file read method does based on the
+     filename.  Instead provide separate file ops and split the function.
+
+Whilst we're at it, tabulate the procfile information and loop through it when
+creating or destroying them rather than manually coding each one.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: Paul Mackerras <paulus@samba.org>
+cc: Anton Blanchard <anton@samba.org>
 cc: linuxppc-dev@lists.ozlabs.org
-cc: linux-media@vger.kernel.org
-cc: netdev@vger.kernel.org
-cc: linux-wireless@vger.kernel.org
-cc: linux-pci@vger.kernel.org
-cc: netfilter-devel@vger.kernel.org
-cc: alsa-devel@alsa-project.org
 ---
 
- arch/powerpc/kernel/proc_powerpc.c        |    2 +-
- arch/powerpc/platforms/pseries/reconfig.c |    2 +-
- drivers/media/pci/ttpci/av7110_ir.c       |    2 +-
- drivers/net/irda/vlsi_ir.c                |    2 +-
- drivers/net/wireless/airo.c               |   34 +++++++++--------------------
- drivers/pci/proc.c                        |    2 +-
- fs/proc/generic.c                         |   13 +++++++++++
- include/linux/proc_fs.h                   |    5 ++++
- kernel/configs.c                          |    2 +-
- kernel/profile.c                          |    2 +-
- net/netfilter/xt_recent.c                 |    3 +--
- sound/core/info.c                         |    2 +-
- 12 files changed, 38 insertions(+), 33 deletions(-)
+ arch/powerpc/kernel/rtas_flash.c |  446 +++++++++++++++++---------------------
+ 1 file changed, 200 insertions(+), 246 deletions(-)
 
-diff --git a/arch/powerpc/kernel/proc_powerpc.c b/arch/powerpc/kernel/proc_powerpc.c
-index 41d8ee9..feb8580 100644
---- a/arch/powerpc/kernel/proc_powerpc.c
-+++ b/arch/powerpc/kernel/proc_powerpc.c
-@@ -83,7 +83,7 @@ static int __init proc_ppc64_init(void)
- 			       &page_map_fops, vdso_data);
- 	if (!pde)
- 		return 1;
--	pde->size = PAGE_SIZE;
-+	proc_set_size(pde, PAGE_SIZE);
+diff --git a/arch/powerpc/kernel/rtas_flash.c b/arch/powerpc/kernel/rtas_flash.c
+index c642f01..8196bfb 100644
+--- a/arch/powerpc/kernel/rtas_flash.c
++++ b/arch/powerpc/kernel/rtas_flash.c
+@@ -102,9 +102,10 @@ static struct kmem_cache *flash_block_cache = NULL;
  
- 	return 0;
- }
-diff --git a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/platforms/pseries/reconfig.c
-index d6491bd..f93cdf5 100644
---- a/arch/powerpc/platforms/pseries/reconfig.c
-+++ b/arch/powerpc/platforms/pseries/reconfig.c
-@@ -452,7 +452,7 @@ static int proc_ppc64_create_ofdt(void)
+ #define FLASH_BLOCK_LIST_VERSION (1UL)
  
- 	ent = proc_create("powerpc/ofdt", S_IWUSR, NULL, &ofdt_fops);
- 	if (ent)
--		ent->size = 0;
-+		proc_set_size(ent, 0);
- 
- 	return 0;
- }
-diff --git a/drivers/media/pci/ttpci/av7110_ir.c b/drivers/media/pci/ttpci/av7110_ir.c
-index eb82286..0e763a7 100644
---- a/drivers/media/pci/ttpci/av7110_ir.c
-+++ b/drivers/media/pci/ttpci/av7110_ir.c
-@@ -375,7 +375,7 @@ int av7110_ir_init(struct av7110 *av7110)
- 	if (av_cnt == 1) {
- 		e = proc_create("av7110_ir", S_IWUSR, NULL, &av7110_ir_proc_fops);
- 		if (e)
--			e->size = 4 + 256 * sizeof(u16);
-+			proc_set_size(e, 4 + 256 * sizeof(u16));
- 	}
- 
- 	tasklet_init(&av7110->ir.ir_tasklet, av7110_emit_key, (unsigned long) &av7110->ir);
-diff --git a/drivers/net/irda/vlsi_ir.c b/drivers/net/irda/vlsi_ir.c
-index e22cd4e..5f47584 100644
---- a/drivers/net/irda/vlsi_ir.c
-+++ b/drivers/net/irda/vlsi_ir.c
-@@ -1678,7 +1678,7 @@ vlsi_irda_probe(struct pci_dev *pdev, const struct pci_device_id *id)
- 			IRDA_WARNING("%s: failed to create proc entry\n",
- 				     __func__);
- 		} else {
--			ent->size = 0;
-+			proc_set_size(ent, 0);
- 		}
- 		idev->proc_entry = ent;
- 	}
-diff --git a/drivers/net/wireless/airo.c b/drivers/net/wireless/airo.c
-index 66e398d..21d0233 100644
---- a/drivers/net/wireless/airo.c
-+++ b/drivers/net/wireless/airo.c
-@@ -4507,73 +4507,63 @@ static int setup_proc_entry( struct net_device *dev,
- 					    airo_entry);
- 	if (!apriv->proc_entry)
- 		goto fail;
--	apriv->proc_entry->uid = proc_kuid;
--	apriv->proc_entry->gid = proc_kgid;
-+	proc_set_user(apriv->proc_entry, proc_kuid, proc_kgid);
- 
- 	/* Setup the StatsDelta */
- 	entry = proc_create_data("StatsDelta", S_IRUGO & proc_perm,
- 				 apriv->proc_entry, &proc_statsdelta_ops, dev);
- 	if (!entry)
- 		goto fail_stats_delta;
--	entry->uid = proc_kuid;
--	entry->gid = proc_kgid;
-+	proc_set_user(entry, proc_kuid, proc_kgid);
- 
- 	/* Setup the Stats */
- 	entry = proc_create_data("Stats", S_IRUGO & proc_perm,
- 				 apriv->proc_entry, &proc_stats_ops, dev);
- 	if (!entry)
- 		goto fail_stats;
--	entry->uid = proc_kuid;
--	entry->gid = proc_kgid;
-+	proc_set_user(entry, proc_kuid, proc_kgid);
- 
- 	/* Setup the Status */
- 	entry = proc_create_data("Status", S_IRUGO & proc_perm,
- 				 apriv->proc_entry, &proc_status_ops, dev);
- 	if (!entry)
- 		goto fail_status;
--	entry->uid = proc_kuid;
--	entry->gid = proc_kgid;
-+	proc_set_user(entry, proc_kuid, proc_kgid);
- 
- 	/* Setup the Config */
- 	entry = proc_create_data("Config", proc_perm,
- 				 apriv->proc_entry, &proc_config_ops, dev);
- 	if (!entry)
- 		goto fail_config;
--	entry->uid = proc_kuid;
--	entry->gid = proc_kgid;
-+	proc_set_user(entry, proc_kuid, proc_kgid);
- 
- 	/* Setup the SSID */
- 	entry = proc_create_data("SSID", proc_perm,
- 				 apriv->proc_entry, &proc_SSID_ops, dev);
- 	if (!entry)
- 		goto fail_ssid;
--	entry->uid = proc_kuid;
--	entry->gid = proc_kgid;
-+	proc_set_user(entry, proc_kuid, proc_kgid);
- 
- 	/* Setup the APList */
- 	entry = proc_create_data("APList", proc_perm,
- 				 apriv->proc_entry, &proc_APList_ops, dev);
- 	if (!entry)
- 		goto fail_aplist;
--	entry->uid = proc_kuid;
--	entry->gid = proc_kgid;
-+	proc_set_user(entry, proc_kuid, proc_kgid);
- 
- 	/* Setup the BSSList */
- 	entry = proc_create_data("BSSList", proc_perm,
- 				 apriv->proc_entry, &proc_BSSList_ops, dev);
- 	if (!entry)
- 		goto fail_bsslist;
--	entry->uid = proc_kuid;
--	entry->gid = proc_kgid;
-+	proc_set_user(entry, proc_kuid, proc_kgid);
- 
- 	/* Setup the WepKey */
- 	entry = proc_create_data("WepKey", proc_perm,
- 				 apriv->proc_entry, &proc_wepkey_ops, dev);
- 	if (!entry)
- 		goto fail_wepkey;
--	entry->uid = proc_kuid;
--	entry->gid = proc_kgid;
--
-+	proc_set_user(entry, proc_kuid, proc_kgid);
- 	return 0;
- 
- fail_wepkey:
-@@ -5695,10 +5685,8 @@ static int __init airo_init_module( void )
- 
- 	airo_entry = proc_mkdir_mode("driver/aironet", airo_perm, NULL);
- 
--	if (airo_entry) {
--		airo_entry->uid = proc_kuid;
--		airo_entry->gid = proc_kgid;
--	}
-+	if (airo_entry)
-+		proc_set_user(airo_entry, proc_kuid, proc_kgid);
- 
- 	for (i = 0; i < 4 && io[i] && irq[i]; i++) {
- 		airo_print_info("", "Trying to configure ISA adapter at irq=%d "
-diff --git a/drivers/pci/proc.c b/drivers/pci/proc.c
-index 12e4fb5..7cde7c1 100644
---- a/drivers/pci/proc.c
-+++ b/drivers/pci/proc.c
-@@ -419,7 +419,7 @@ int pci_proc_attach_device(struct pci_dev *dev)
- 			     &proc_bus_pci_operations, dev);
- 	if (!e)
- 		return -ENOMEM;
--	e->size = dev->cfg_size;
-+	proc_set_size(e, dev->cfg_size);
- 	dev->procent = e;
- 
- 	return 0;
-diff --git a/fs/proc/generic.c b/fs/proc/generic.c
-index 1c07cad..5f6f6c3 100644
---- a/fs/proc/generic.c
-+++ b/fs/proc/generic.c
-@@ -498,6 +498,19 @@ out:
- 	return NULL;
- }
- EXPORT_SYMBOL(proc_create_data);
-+ 
-+void proc_set_size(struct proc_dir_entry *de, loff_t size)
-+{
-+	de->size = size;
-+}
-+EXPORT_SYMBOL(proc_set_size);
-+
-+void proc_set_user(struct proc_dir_entry *de, kuid_t uid, kgid_t gid)
-+{
-+	de->uid = uid;
-+	de->gid = gid;
-+}
-+EXPORT_SYMBOL(proc_set_user);
- 
- static void free_proc_entry(struct proc_dir_entry *de)
+-/* Local copy of the flash block list.
+- * We only allow one open of the flash proc file and create this
+- * list as we go.  The rtas_firmware_flash_list varable will be
++/*
++ * Local copy of the flash block list.
++ *
++ * The rtas_firmware_flash_list varable will be
+  * set once the data is fully read.
+  *
+  * For convenience as we build the list we use virtual addrs,
+@@ -125,23 +126,23 @@ struct rtas_update_flash_t
+ struct rtas_manage_flash_t
  {
-diff --git a/include/linux/proc_fs.h b/include/linux/proc_fs.h
-index 805edac..28a4d7e 100644
---- a/include/linux/proc_fs.h
-+++ b/include/linux/proc_fs.h
-@@ -130,6 +130,9 @@ static inline struct proc_dir_entry *proc_create(const char *name, umode_t mode,
- extern struct proc_dir_entry *proc_net_mkdir(struct net *net, const char *name,
- 	struct proc_dir_entry *parent);
+ 	int status;			/* Returned status */
+-	unsigned int op;		/* Reject or commit image */
+ };
  
-+extern void proc_set_size(struct proc_dir_entry *, loff_t);
-+extern void proc_set_user(struct proc_dir_entry *, kuid_t, kgid_t);
+ /* Status int must be first member of struct */
+ struct rtas_validate_flash_t
+ {
+ 	int status;		 	/* Returned status */	
+-	char buf[VALIDATE_BUF_SIZE]; 	/* Candidate image buffer */
++	char *buf;			/* Candidate image buffer */
+ 	unsigned int buf_size;		/* Size of image buf */
+ 	unsigned int update_results;	/* Update results token */
+ };
+ 
+-static DEFINE_SPINLOCK(flash_file_open_lock);
+-static struct proc_dir_entry *firmware_flash_pde;
+-static struct proc_dir_entry *firmware_update_pde;
+-static struct proc_dir_entry *validate_pde;
+-static struct proc_dir_entry *manage_pde;
++static struct rtas_update_flash_t rtas_update_flash_data;
++static struct rtas_manage_flash_t rtas_manage_flash_data;
++static struct rtas_validate_flash_t rtas_validate_flash_data;
++static DEFINE_MUTEX(rtas_update_flash_mutex);
++static DEFINE_MUTEX(rtas_manage_flash_mutex);
++static DEFINE_MUTEX(rtas_validate_flash_mutex);
+ 
+ /* Do simple sanity checks on the flash image. */
+ static int flash_list_valid(struct flash_block_list *flist)
+@@ -191,10 +192,10 @@ static void free_flash_list(struct flash_block_list *f)
+ 
+ static int rtas_flash_release(struct inode *inode, struct file *file)
+ {
+-	struct proc_dir_entry *dp = PDE(file_inode(file));
+-	struct rtas_update_flash_t *uf;
+-	
+-	uf = (struct rtas_update_flash_t *) dp->data;
++	struct rtas_update_flash_t *const uf = &rtas_update_flash_data;
 +
- extern struct file *proc_ns_fget(int fd);
- extern bool proc_ns_inode(struct inode *inode);
++	mutex_lock(&rtas_update_flash_mutex);
++
+ 	if (uf->flist) {    
+ 		/* File was opened in write mode for a new flash attempt */
+ 		/* Clear saved list */
+@@ -214,13 +215,14 @@ static int rtas_flash_release(struct inode *inode, struct file *file)
+ 		uf->flist = NULL;
+ 	}
  
-@@ -158,6 +161,8 @@ static inline struct proc_dir_entry *proc_mkdir(const char *name,
- 	struct proc_dir_entry *parent) {return NULL;}
- static inline struct proc_dir_entry *proc_mkdir_mode(const char *name,
- 	umode_t mode, struct proc_dir_entry *parent) { return NULL; }
-+static inline void proc_set_size(struct proc_dir_entry *de, loff_t size) {}
-+static inline void proc_set_user(struct proc_dir_entry *de, kuid_t uid, kgid_t gid) {}
- 
- struct tty_driver;
- static inline void proc_tty_register_driver(struct tty_driver *driver) {};
-diff --git a/kernel/configs.c b/kernel/configs.c
-index 42e8fa0..c18b1f1 100644
---- a/kernel/configs.c
-+++ b/kernel/configs.c
-@@ -79,7 +79,7 @@ static int __init ikconfig_init(void)
- 	if (!entry)
- 		return -ENOMEM;
- 
--	entry->size = kernel_config_data_size;
-+	proc_set_size(entry, kernel_config_data_size);
- 
+-	atomic_dec(&dp->count);
++	mutex_unlock(&rtas_update_flash_mutex);
  	return 0;
  }
-diff --git a/kernel/profile.c b/kernel/profile.c
-index 524ce5e..0bf4007 100644
---- a/kernel/profile.c
-+++ b/kernel/profile.c
-@@ -600,7 +600,7 @@ int __ref create_proc_profile(void) /* false positive from hotcpu_notifier */
- 			    NULL, &proc_profile_operations);
- 	if (!entry)
- 		return 0;
--	entry->size = (1+prof_len) * sizeof(atomic_t);
-+	proc_set_size(entry, (1 + prof_len) * sizeof(atomic_t));
- 	hotcpu_notifier(profile_cpu_callback, 0);
+ 
+-static void get_flash_status_msg(int status, char *buf)
++static size_t get_flash_status_msg(int status, char *buf)
+ {
+-	char *msg;
++	const char *msg;
++	size_t len;
+ 
+ 	switch (status) {
+ 	case FLASH_AUTH:
+@@ -242,34 +244,51 @@ static void get_flash_status_msg(int status, char *buf)
+ 		msg = "ready: firmware image ready for flash on reboot\n";
+ 		break;
+ 	default:
+-		sprintf(buf, "error: unexpected status value %d\n", status);
+-		return;
++		return sprintf(buf, "error: unexpected status value %d\n",
++			       status);
+ 	}
+ 
+-	strcpy(buf, msg);	
++	len = strlen(msg);
++	memcpy(buf, msg, len + 1);
++	return len;
+ }
+ 
+ /* Reading the proc file will show status (not the firmware contents) */
+-static ssize_t rtas_flash_read(struct file *file, char __user *buf,
+-			       size_t count, loff_t *ppos)
++static ssize_t rtas_flash_read_msg(struct file *file, char __user *buf,
++				   size_t count, loff_t *ppos)
+ {
+-	struct proc_dir_entry *dp = PDE(file_inode(file));
+-	struct rtas_update_flash_t *uf;
++	struct rtas_update_flash_t *const uf = &rtas_update_flash_data;
+ 	char msg[RTAS_MSG_MAXLEN];
++	size_t len;
++	int status;
+ 
+-	uf = dp->data;
++	mutex_lock(&rtas_update_flash_mutex);
++	status = uf->status;
++	mutex_unlock(&rtas_update_flash_mutex);
+ 
+-	if (!strcmp(dp->name, FIRMWARE_FLASH_NAME)) {
+-		get_flash_status_msg(uf->status, msg);
+-	} else {	   /* FIRMWARE_UPDATE_NAME */
+-		sprintf(msg, "%d\n", uf->status);
+-	}
++	/* Read as text message */
++	len = get_flash_status_msg(uf->status, msg);
++	return simple_read_from_buffer(buf, count, ppos, msg, len);
++}
++
++static ssize_t rtas_flash_read_num(struct file *file, char __user *buf,
++				   size_t count, loff_t *ppos)
++{
++	struct rtas_update_flash_t *const uf = &rtas_update_flash_data;
++	char msg[RTAS_MSG_MAXLEN];
++	int status;
+ 
++	mutex_lock(&rtas_update_flash_mutex);
++	status = uf->status;
++	mutex_unlock(&rtas_update_flash_mutex);
++
++	/* Read as number */
++	sprintf(msg, "%d\n", status);
+ 	return simple_read_from_buffer(buf, count, ppos, msg, strlen(msg));
+ }
+ 
+ /* constructor for flash_block_cache */
+-void rtas_block_ctor(void *ptr)
++static void rtas_block_ctor(void *ptr)
+ {
+ 	memset(ptr, 0, RTAS_BLK_SIZE);
+ }
+@@ -282,16 +301,15 @@ void rtas_block_ctor(void *ptr)
+ static ssize_t rtas_flash_write(struct file *file, const char __user *buffer,
+ 				size_t count, loff_t *off)
+ {
+-	struct proc_dir_entry *dp = PDE(file_inode(file));
+-	struct rtas_update_flash_t *uf;
++	struct rtas_update_flash_t *const uf = &rtas_update_flash_data;
+ 	char *p;
+-	int next_free;
++	int next_free, rc;
+ 	struct flash_block_list *fl;
+ 
+-	uf = (struct rtas_update_flash_t *) dp->data;
++	mutex_lock(&rtas_update_flash_mutex);
+ 
+ 	if (uf->status == FLASH_AUTH || count == 0)
+-		return count;	/* discard data */
++		goto out;	/* discard data */
+ 
+ 	/* In the case that the image is not ready for flashing, the memory
+ 	 * allocated for the block list will be freed upon the release of the 
+@@ -300,7 +318,7 @@ static ssize_t rtas_flash_write(struct file *file, const char __user *buffer,
+ 	if (uf->flist == NULL) {
+ 		uf->flist = kmem_cache_alloc(flash_block_cache, GFP_KERNEL);
+ 		if (!uf->flist)
+-			return -ENOMEM;
++			goto nomem;
+ 	}
+ 
+ 	fl = uf->flist;
+@@ -311,7 +329,7 @@ static ssize_t rtas_flash_write(struct file *file, const char __user *buffer,
+ 		/* Need to allocate another block_list */
+ 		fl->next = kmem_cache_alloc(flash_block_cache, GFP_KERNEL);
+ 		if (!fl->next)
+-			return -ENOMEM;
++			goto nomem;
+ 		fl = fl->next;
+ 		next_free = 0;
+ 	}
+@@ -320,52 +338,37 @@ static ssize_t rtas_flash_write(struct file *file, const char __user *buffer,
+ 		count = RTAS_BLK_SIZE;
+ 	p = kmem_cache_alloc(flash_block_cache, GFP_KERNEL);
+ 	if (!p)
+-		return -ENOMEM;
++		goto nomem;
+ 	
+ 	if(copy_from_user(p, buffer, count)) {
+ 		kmem_cache_free(flash_block_cache, p);
+-		return -EFAULT;
++		rc = -EFAULT;
++		goto error;
+ 	}
+ 	fl->blocks[next_free].data = p;
+ 	fl->blocks[next_free].length = count;
+ 	fl->num_blocks++;
+-
++out:
++	mutex_lock(&rtas_update_flash_mutex);
+ 	return count;
+-}
+-
+-static int rtas_excl_open(struct inode *inode, struct file *file)
+-{
+-	struct proc_dir_entry *dp = PDE(inode);
+-
+-	/* Enforce exclusive open with use count of PDE */
+-	spin_lock(&flash_file_open_lock);
+-	if (atomic_read(&dp->count) > 2) {
+-		spin_unlock(&flash_file_open_lock);
+-		return -EBUSY;
+-	}
+-
+-	atomic_inc(&dp->count);
+-	spin_unlock(&flash_file_open_lock);
+-	
+-	return 0;
+-}
+-
+-static int rtas_excl_release(struct inode *inode, struct file *file)
+-{
+-	struct proc_dir_entry *dp = PDE(inode);
+ 
+-	atomic_dec(&dp->count);
+-
+-	return 0;
++nomem:
++	rc = -ENOMEM;
++error:
++	mutex_lock(&rtas_update_flash_mutex);
++	return rc;
+ }
+ 
+-static void manage_flash(struct rtas_manage_flash_t *args_buf)
++/*
++ * Flash management routines.
++ */
++static void manage_flash(struct rtas_manage_flash_t *args_buf, unsigned int op)
+ {
+ 	s32 rc;
+ 
+ 	do {
+-		rc = rtas_call(rtas_token("ibm,manage-flash-image"), 1, 
+-			       1, NULL, args_buf->op);
++		rc = rtas_call(rtas_token("ibm,manage-flash-image"), 1, 1,
++			       NULL, op);
+ 	} while (rtas_busy_delay(rc));
+ 
+ 	args_buf->status = rc;
+@@ -374,40 +377,38 @@ static void manage_flash(struct rtas_manage_flash_t *args_buf)
+ static ssize_t manage_flash_read(struct file *file, char __user *buf,
+ 			       size_t count, loff_t *ppos)
+ {
+-	struct proc_dir_entry *dp = PDE(file_inode(file));
+-	struct rtas_manage_flash_t *args_buf;
++	struct rtas_manage_flash_t *const args_buf = &rtas_manage_flash_data;
+ 	char msg[RTAS_MSG_MAXLEN];
+-	int msglen;
++	int msglen, status;
+ 
+-	args_buf = dp->data;
+-	if (args_buf == NULL)
+-		return 0;
+-
+-	msglen = sprintf(msg, "%d\n", args_buf->status);
++	mutex_lock(&rtas_manage_flash_mutex);
++	status = args_buf->status;
++	mutex_unlock(&rtas_manage_flash_mutex);
+ 
++	msglen = sprintf(msg, "%d\n", status);
+ 	return simple_read_from_buffer(buf, count, ppos, msg, msglen);
+ }
+ 
+ static ssize_t manage_flash_write(struct file *file, const char __user *buf,
+ 				size_t count, loff_t *off)
+ {
+-	struct proc_dir_entry *dp = PDE(file_inode(file));
+-	struct rtas_manage_flash_t *args_buf;
+-	const char reject_str[] = "0";
+-	const char commit_str[] = "1";
++	struct rtas_manage_flash_t *const args_buf = &rtas_manage_flash_data;
++	static const char reject_str[] = "0";
++	static const char commit_str[] = "1";
+ 	char stkbuf[10];
+-	int op;
++	int op, rc;
++
++	mutex_lock(&rtas_manage_flash_mutex);
+ 
+-	args_buf = (struct rtas_manage_flash_t *) dp->data;
+ 	if ((args_buf->status == MANAGE_AUTH) || (count == 0))
+-		return count;
++		goto out;
+ 		
+ 	op = -1;
+ 	if (buf) {
+ 		if (count > 9) count = 9;
+-		if (copy_from_user (stkbuf, buf, count)) {
+-			return -EFAULT;
+-		}
++		rc = -EFAULT;
++		if (copy_from_user (stkbuf, buf, count))
++			goto error;
+ 		if (strncmp(stkbuf, reject_str, strlen(reject_str)) == 0) 
+ 			op = RTAS_REJECT_TMP_IMG;
+ 		else if (strncmp(stkbuf, commit_str, strlen(commit_str)) == 0) 
+@@ -417,12 +418,19 @@ static ssize_t manage_flash_write(struct file *file, const char __user *buf,
+ 	if (op == -1)   /* buf is empty, or contains invalid string */
+ 		return -EINVAL;
+ 
+-	args_buf->op = op;
+-	manage_flash(args_buf);
+-
++	manage_flash(args_buf, op);
++out:
++	mutex_unlock(&rtas_manage_flash_mutex);
+ 	return count;
++
++error:
++	mutex_unlock(&rtas_manage_flash_mutex);
++	return rc;
+ }
+ 
++/*
++ * Validation routines.
++ */
+ static void validate_flash(struct rtas_validate_flash_t *args_buf)
+ {
+ 	int token = rtas_token("ibm,validate-flash-image");
+@@ -462,14 +470,14 @@ static int get_validate_flash_msg(struct rtas_validate_flash_t *args_buf,
+ static ssize_t validate_flash_read(struct file *file, char __user *buf,
+ 			       size_t count, loff_t *ppos)
+ {
+-	struct proc_dir_entry *dp = PDE(file_inode(file));
+-	struct rtas_validate_flash_t *args_buf;
++	struct rtas_validate_flash_t *const args_buf =
++		&rtas_validate_flash_data;
+ 	char msg[RTAS_MSG_MAXLEN];
+ 	int msglen;
+ 
+-	args_buf = dp->data;
+-
++	mutex_lock(&rtas_validate_flash_mutex);
+ 	msglen = get_validate_flash_msg(args_buf, msg);
++	mutex_unlock(&rtas_validate_flash_mutex);
+ 
+ 	return simple_read_from_buffer(buf, count, ppos, msg, msglen);
+ }
+@@ -477,24 +485,18 @@ static ssize_t validate_flash_read(struct file *file, char __user *buf,
+ static ssize_t validate_flash_write(struct file *file, const char __user *buf,
+ 				    size_t count, loff_t *off)
+ {
+-	struct proc_dir_entry *dp = PDE(file_inode(file));
+-	struct rtas_validate_flash_t *args_buf;
++	struct rtas_validate_flash_t *const args_buf =
++		&rtas_validate_flash_data;
+ 	int rc;
+ 
+-	args_buf = (struct rtas_validate_flash_t *) dp->data;
+-
+-	if (dp->data == NULL) {
+-		dp->data = kmalloc(sizeof(struct rtas_validate_flash_t), 
+-				GFP_KERNEL);
+-		if (dp->data == NULL) 
+-			return -ENOMEM;
+-	}
++	mutex_lock(&rtas_validate_flash_mutex);
+ 
+ 	/* We are only interested in the first 4K of the
+ 	 * candidate image */
+ 	if ((*off >= VALIDATE_BUF_SIZE) || 
+ 		(args_buf->status == VALIDATE_AUTH)) {
+ 		*off += count;
++		mutex_unlock(&rtas_validate_flash_mutex);
+ 		return count;
+ 	}
+ 
+@@ -517,31 +519,29 @@ static ssize_t validate_flash_write(struct file *file, const char __user *buf,
+ 	*off += count;
+ 	rc = count;
+ done:
+-	if (rc < 0) {
+-		kfree(dp->data);
+-		dp->data = NULL;
+-	}
++	mutex_unlock(&rtas_validate_flash_mutex);
+ 	return rc;
+ }
+ 
+ static int validate_flash_release(struct inode *inode, struct file *file)
+ {
+-	struct proc_dir_entry *dp = PDE(file_inode(file));
+-	struct rtas_validate_flash_t *args_buf;
++	struct rtas_validate_flash_t *const args_buf =
++		&rtas_validate_flash_data;
+ 
+-	args_buf = (struct rtas_validate_flash_t *) dp->data;
++	mutex_lock(&rtas_validate_flash_mutex);
+ 
+ 	if (args_buf->status == VALIDATE_READY) {
+ 		args_buf->buf_size = VALIDATE_BUF_SIZE;
+ 		validate_flash(args_buf);
+ 	}
+ 
+-	/* The matching atomic_inc was in rtas_excl_open() */
+-	atomic_dec(&dp->count);
+-
++	mutex_unlock(&rtas_validate_flash_mutex);
  	return 0;
  }
-diff --git a/net/netfilter/xt_recent.c b/net/netfilter/xt_recent.c
-index 3db2d38..1e657cf 100644
---- a/net/netfilter/xt_recent.c
-+++ b/net/netfilter/xt_recent.c
-@@ -401,8 +401,7 @@ static int recent_mt_check(const struct xt_mtchk_param *par,
- 		ret = -ENOMEM;
- 		goto out;
+ 
++/*
++ * On-reboot flash update applicator.
++ */
+ static void rtas_flash_firmware(int reboot_type)
+ {
+ 	unsigned long image_size;
+@@ -634,75 +634,57 @@ static void rtas_flash_firmware(int reboot_type)
+ 	spin_unlock(&rtas_data_buf_lock);
+ }
+ 
+-static void remove_flash_pde(struct proc_dir_entry *dp)
+-{
+-	if (dp) {
+-		kfree(dp->data);
+-		remove_proc_entry(dp->name, dp->parent);
+-	}
+-}
+-
+-static int initialize_flash_pde_data(const char *rtas_call_name,
+-				     size_t buf_size,
+-				     struct proc_dir_entry *dp)
+-{
++/*
++ * Manifest of proc files to create
++ */
++struct rtas_flash_file {
++	const char *filename;
++	const char *rtas_call_name;
+ 	int *status;
+-	int token;
+-
+-	dp->data = kzalloc(buf_size, GFP_KERNEL);
+-	if (dp->data == NULL)
+-		return -ENOMEM;
+-
+-	/*
+-	 * This code assumes that the status int is the first member of the
+-	 * struct 
+-	 */
+-	status = (int *) dp->data;
+-	token = rtas_token(rtas_call_name);
+-	if (token == RTAS_UNKNOWN_SERVICE)
+-		*status = FLASH_AUTH;
+-	else
+-		*status = FLASH_NO_OP;
+-
+-	return 0;
+-}
+-
+-static struct proc_dir_entry *create_flash_pde(const char *filename,
+-					       const struct file_operations *fops)
+-{
+-	return proc_create(filename, S_IRUSR | S_IWUSR, NULL, fops);
+-}
+-
+-static const struct file_operations rtas_flash_operations = {
+-	.owner		= THIS_MODULE,
+-	.read		= rtas_flash_read,
+-	.write		= rtas_flash_write,
+-	.open		= rtas_excl_open,
+-	.release	= rtas_flash_release,
+-	.llseek		= default_llseek,
++	const struct file_operations fops;
+ };
+ 
+-static const struct file_operations manage_flash_operations = {
+-	.owner		= THIS_MODULE,
+-	.read		= manage_flash_read,
+-	.write		= manage_flash_write,
+-	.open		= rtas_excl_open,
+-	.release	= rtas_excl_release,
+-	.llseek		= default_llseek,
+-};
+-
+-static const struct file_operations validate_flash_operations = {
+-	.owner		= THIS_MODULE,
+-	.read		= validate_flash_read,
+-	.write		= validate_flash_write,
+-	.open		= rtas_excl_open,
+-	.release	= validate_flash_release,
+-	.llseek		= default_llseek,
++static const struct rtas_flash_file rtas_flash_files[] = {
++	{
++		.filename	= "powerpc/rtas/" FIRMWARE_FLASH_NAME,
++		.rtas_call_name	= "ibm,update-flash-64-and-reboot",
++		.status		= &rtas_update_flash_data.status,
++		.fops.read	= rtas_flash_read_msg,
++		.fops.write	= rtas_flash_write,
++		.fops.release	= rtas_flash_release,
++		.fops.llseek	= default_llseek,
++	},
++	{
++		.filename	= "powerpc/rtas/" FIRMWARE_UPDATE_NAME,
++		.rtas_call_name	= "ibm,update-flash-64-and-reboot",
++		.status		= &rtas_update_flash_data.status,
++		.fops.read	= rtas_flash_read_num,
++		.fops.write	= rtas_flash_write,
++		.fops.release	= rtas_flash_release,
++		.fops.llseek	= default_llseek,
++	},
++	{
++		.filename	= "powerpc/rtas/" VALIDATE_FLASH_NAME,
++		.rtas_call_name	= "ibm,validate-flash-image",
++		.status		= &rtas_validate_flash_data.status,
++		.fops.read	= manage_flash_read,
++		.fops.write	= manage_flash_write,
++		.fops.llseek	= default_llseek,
++	},
++	{
++		.filename	= "powerpc/rtas/" MANAGE_FLASH_NAME,
++		.rtas_call_name	= "ibm,manage-flash-image",
++		.status		= &rtas_manage_flash_data.status,
++		.fops.read	= validate_flash_read,
++		.fops.write	= validate_flash_write,
++		.fops.release	= validate_flash_release,
++		.fops.llseek	= default_llseek,
++	}
+ };
+ 
+ static int __init rtas_flash_init(void)
+ {
+-	int rc;
++	int i;
+ 
+ 	if (rtas_token("ibm,update-flash-64-and-reboot") ==
+ 		       RTAS_UNKNOWN_SERVICE) {
+@@ -710,93 +692,65 @@ static int __init rtas_flash_init(void)
+ 		return 1;
  	}
--	pde->uid = uid;
--	pde->gid = gid;
-+	proc_set_user(pde, uid, gid);
- #endif
- 	spin_lock_bh(&recent_lock);
- 	list_add_tail(&t->list, &recent_net->tables);
-diff --git a/sound/core/info.c b/sound/core/info.c
-index 3aa8864..c7f41c3 100644
---- a/sound/core/info.c
-+++ b/sound/core/info.c
-@@ -970,7 +970,7 @@ int snd_info_register(struct snd_info_entry * entry)
- 			mutex_unlock(&info_mutex);
- 			return -ENOMEM;
- 		}
--		p->size = entry->size;
-+		proc_set_size(p, entry->size);
+ 
+-	firmware_flash_pde = create_flash_pde("powerpc/rtas/"
+-					      FIRMWARE_FLASH_NAME,
+-					      &rtas_flash_operations);
+-	if (firmware_flash_pde == NULL) {
+-		rc = -ENOMEM;
+-		goto cleanup;
+-	}
++	rtas_validate_flash_data.buf = kzalloc(VALIDATE_BUF_SIZE, GFP_KERNEL);
++	if (!rtas_validate_flash_data.buf)
++		return -ENOMEM;
+ 
+-	rc = initialize_flash_pde_data("ibm,update-flash-64-and-reboot",
+-			 	       sizeof(struct rtas_update_flash_t), 
+-				       firmware_flash_pde);
+-	if (rc != 0)
+-		goto cleanup;
+-
+-	firmware_update_pde = create_flash_pde("powerpc/rtas/"
+-					       FIRMWARE_UPDATE_NAME,
+-					       &rtas_flash_operations);
+-	if (firmware_update_pde == NULL) {
+-		rc = -ENOMEM;
+-		goto cleanup;
++	flash_block_cache = kmem_cache_create("rtas_flash_cache",
++					      RTAS_BLK_SIZE, RTAS_BLK_SIZE, 0,
++					      rtas_block_ctor);
++	if (!flash_block_cache) {
++		printk(KERN_ERR "%s: failed to create block cache\n",
++				__func__);
++		goto enomem_buf;
  	}
- 	entry->p = p;
- 	if (entry->parent)
+ 
+-	rc = initialize_flash_pde_data("ibm,update-flash-64-and-reboot",
+-			 	       sizeof(struct rtas_update_flash_t), 
+-				       firmware_update_pde);
+-	if (rc != 0)
+-		goto cleanup;
+-
+-	validate_pde = create_flash_pde("powerpc/rtas/" VALIDATE_FLASH_NAME,
+-			      		&validate_flash_operations);
+-	if (validate_pde == NULL) {
+-		rc = -ENOMEM;
+-		goto cleanup;
+-	}
++	for (i = 0; i < ARRAY_SIZE(rtas_flash_files); i++) {
++		const struct rtas_flash_file *f = &rtas_flash_files[i];
++		int token;
+ 
+-	rc = initialize_flash_pde_data("ibm,validate-flash-image",
+-		                       sizeof(struct rtas_validate_flash_t), 
+-				       validate_pde);
+-	if (rc != 0)
+-		goto cleanup;
+-
+-	manage_pde = create_flash_pde("powerpc/rtas/" MANAGE_FLASH_NAME,
+-				      &manage_flash_operations);
+-	if (manage_pde == NULL) {
+-		rc = -ENOMEM;
+-		goto cleanup;
+-	}
++		if (!proc_create(f->filename, S_IRUSR | S_IWUSR, NULL, &f->fops))
++			goto enomem;
+ 
+-	rc = initialize_flash_pde_data("ibm,manage-flash-image",
+-			               sizeof(struct rtas_manage_flash_t),
+-				       manage_pde);
+-	if (rc != 0)
+-		goto cleanup;
++		/*
++		 * This code assumes that the status int is the first member of the
++		 * struct
++		 */
++		token = rtas_token(f->rtas_call_name);
++		if (token == RTAS_UNKNOWN_SERVICE)
++			*f->status = FLASH_AUTH;
++		else
++			*f->status = FLASH_NO_OP;
++	}
+ 
+ 	rtas_flash_term_hook = rtas_flash_firmware;
+-
+-	flash_block_cache = kmem_cache_create("rtas_flash_cache",
+-				RTAS_BLK_SIZE, RTAS_BLK_SIZE, 0,
+-				rtas_block_ctor);
+-	if (!flash_block_cache) {
+-		printk(KERN_ERR "%s: failed to create block cache\n",
+-				__func__);
+-		rc = -ENOMEM;
+-		goto cleanup;
+-	}
+ 	return 0;
+ 
+-cleanup:
+-	remove_flash_pde(firmware_flash_pde);
+-	remove_flash_pde(firmware_update_pde);
+-	remove_flash_pde(validate_pde);
+-	remove_flash_pde(manage_pde);
++enomem:
++	while (--i >= 0) {
++		const struct rtas_flash_file *f = &rtas_flash_files[i];
++		remove_proc_entry(f->filename, NULL);
++	}
+ 
+-	return rc;
++	kmem_cache_destroy(flash_block_cache);
++enomem_buf:
++	kfree(rtas_validate_flash_data.buf);
++	return -ENOMEM;
+ }
+ 
+ static void __exit rtas_flash_cleanup(void)
+ {
++	int i;
++
+ 	rtas_flash_term_hook = NULL;
+ 
+-	if (flash_block_cache)
+-		kmem_cache_destroy(flash_block_cache);
++	for (i = 0; i < ARRAY_SIZE(rtas_flash_files); i++) {
++		const struct rtas_flash_file *f = &rtas_flash_files[i];
++		remove_proc_entry(f->filename, NULL);
++	}
+ 
+-	remove_flash_pde(firmware_flash_pde);
+-	remove_flash_pde(firmware_update_pde);
+-	remove_flash_pde(validate_pde);
+-	remove_flash_pde(manage_pde);
++	kmem_cache_destroy(flash_block_cache);
++	kfree(rtas_validate_flash_data.buf);
+ }
+ 
+ module_init(rtas_flash_init);
