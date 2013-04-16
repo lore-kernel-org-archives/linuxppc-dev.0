@@ -1,34 +1,20 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 429DC2C0124
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Apr 2013 22:57:03 +1000 (EST)
-Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 16 Apr 2013 18:23:51 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 7C970E005E
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Apr 2013 18:28:51 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3GCunV763635660
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Apr 2013 18:26:49 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3GCus51001572
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Apr 2013 22:56:54 +1000
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/5] powerpc,
- perf: Add basic assembly code to read BHRB entries on POWER8
-Date: Tue, 16 Apr 2013 18:26:37 +0530
-Message-Id: <1366117000-10979-3-git-send-email-khandual@linux.vnet.ibm.com>
-In-Reply-To: <1366117000-10979-1-git-send-email-khandual@linux.vnet.ibm.com>
-References: <1366117000-10979-1-git-send-email-khandual@linux.vnet.ibm.com>
-Cc: mikey@neuling.org
+Return-Path: <B21989@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 282602C00E5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2013 23:08:17 +1000 (EST)
+From: Shaohui Xie <Shaohui.Xie@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
+Subject: [PATCH] powerpc/corenet/config: add missing SCSI configs for
+ corenet64_smp_defconfig
+Date: Tue, 16 Apr 2013 20:28:20 +0800
+Message-ID: <1366115300-19304-1-git-send-email-Shaohui.Xie@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Shaohui Xie <Shaohui.Xie@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,65 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
----
- arch/powerpc/perf/Makefile |  2 +-
- arch/powerpc/perf/bhrb.S   | 34 ++++++++++++++++++++++++++++++++++
- 2 files changed, 35 insertions(+), 1 deletion(-)
- create mode 100644 arch/powerpc/perf/bhrb.S
+Otherwise there will be no SCSI device nodes.
 
-diff --git a/arch/powerpc/perf/Makefile b/arch/powerpc/perf/Makefile
-index 472db18..510fae1 100644
---- a/arch/powerpc/perf/Makefile
-+++ b/arch/powerpc/perf/Makefile
-@@ -2,7 +2,7 @@ subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
- 
- obj-$(CONFIG_PERF_EVENTS)	+= callchain.o
- 
--obj-$(CONFIG_PPC_PERF_CTRS)	+= core-book3s.o
-+obj-$(CONFIG_PPC_PERF_CTRS)	+= core-book3s.o bhrb.o
- obj64-$(CONFIG_PPC_PERF_CTRS)	+= power4-pmu.o ppc970-pmu.o power5-pmu.o \
- 				   power5+-pmu.o power6-pmu.o power7-pmu.o \
- 				   power8-pmu.o
-diff --git a/arch/powerpc/perf/bhrb.S b/arch/powerpc/perf/bhrb.S
-new file mode 100644
-index 0000000..cffb815
---- /dev/null
-+++ b/arch/powerpc/perf/bhrb.S
-@@ -0,0 +1,34 @@
-+#include <asm/ppc_asm.h>
-+#include <asm/ppc-opcode.h>
-+
-+	.text
-+
-+.balign 8
-+
-+/* r3 = n  (where n = [0-1023])
-+ * The maximum number of BHRB entries supported with PPC_MFBHRBE instruction
-+ * is 1024. We have limited number of table entries here as POWER8 implements
-+ * 32 BHRB entries.
-+ */
-+
-+/* .global read_bhrb */
-+_GLOBAL(read_bhrb)
-+	cmpldi	r3,1023
-+	bgt	1f
-+	ld	r4,bhrb_table@got(r2)
-+	sldi	r3,r3,3
-+	add	r3,r4,r3
-+	mtctr	r3
-+	bctr
-+1:	li	r3,0
-+	blr
-+
-+#define MFBHRB_TABLE1(n) PPC_MFBHRBE(R3,n); blr
-+#define MFBHRB_TABLE2(n) MFBHRB_TABLE1(n); MFBHRB_TABLE1(n+1)
-+#define MFBHRB_TABLE4(n) MFBHRB_TABLE2(n); MFBHRB_TABLE2(n+2)
-+#define MFBHRB_TABLE8(n) MFBHRB_TABLE4(n); MFBHRB_TABLE4(n+4)
-+#define MFBHRB_TABLE16(n) MFBHRB_TABLE8(n); MFBHRB_TABLE8(n+8)
-+#define MFBHRB_TABLE32(n) MFBHRB_TABLE16(n); MFBHRB_TABLE16(n+16)
-+
-+bhrb_table:
-+	MFBHRB_TABLE32(0)
+Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+---
+ arch/powerpc/configs/corenet64_smp_defconfig |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
+index 83dcc6a..2333e9b 100644
+--- a/arch/powerpc/configs/corenet64_smp_defconfig
++++ b/arch/powerpc/configs/corenet64_smp_defconfig
+@@ -77,6 +77,13 @@ CONFIG_BLK_DEV_LOOP=y
+ CONFIG_BLK_DEV_RAM=y
+ CONFIG_BLK_DEV_RAM_SIZE=131072
+ CONFIG_EEPROM_LEGACY=y
++CONFIG_BLK_DEV_SD=y
++CONFIG_CHR_DEV_ST=y
++CONFIG_BLK_DEV_SR=y
++CONFIG_CHR_DEV_SG=y
++CONFIG_SCSI_MULTI_LUN=y
++CONFIG_SCSI_LOGGING=y
++CONFIG_SCSI_SPI_ATTRS=y
+ CONFIG_ATA=y
+ CONFIG_SATA_FSL=y
+ CONFIG_SATA_SIL24=y
 -- 
-1.7.11.7
+1.7.0.4
