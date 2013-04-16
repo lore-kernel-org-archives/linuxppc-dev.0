@@ -1,29 +1,35 @@
-Return-Path: <airlied@gmail.com>
-Received: from mail-ee0-f48.google.com (mail-ee0-f48.google.com [74.125.83.48])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 32B452C00E3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2013 13:17:27 +1000 (EST)
-Received: by mail-ee0-f48.google.com with SMTP id b15so17408eek.21
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2013 20:17:23 -0700 (PDT)
+Return-Path: <haren@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C6E4E2C00F7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2013 15:38:10 +1000 (EST)
+Received: from /spool/local
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <haren@linux.vnet.ibm.com>;
+ Tue, 16 Apr 2013 01:38:07 -0400
+Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 1BF5338C801A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2013 01:38:04 -0400 (EDT)
+Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
+ by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3G5c4dY327332
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2013 01:38:04 -0400
+Received: from d01av05.pok.ibm.com (loopback [127.0.0.1])
+ by d01av05.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3G5c3AC000664
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2013 01:38:03 -0400
+Message-ID: <516CE3B9.6030901@linux.vnet.ibm.com>
+Date: Mon, 15 Apr 2013 22:38:01 -0700
+From: Haren Myneni <haren@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <CAErSpo7vxSJix83DQcsARPWYWbx8UGxQ9FN61OtEJrEv7GhK=g@mail.gmail.com>
-References: <1365685994-32603-1-git-send-email-lucaskt@linux.vnet.ibm.com>
- <1365685994-32603-3-git-send-email-lucaskt@linux.vnet.ibm.com>
- <CAErSpo7vxSJix83DQcsARPWYWbx8UGxQ9FN61OtEJrEv7GhK=g@mail.gmail.com>
-Date: Tue, 16 Apr 2013 13:17:23 +1000
-Message-ID: <CAPM=9tywoBnCsY-WZp4_owidXZ8nLNvizagjfi-_hWkt8uKCjA@mail.gmail.com>
-Subject: Re: [PATCHv3 2/2] radeon: use max_bus_speed to activate gen2 speeds
-From: Dave Airlie <airlied@gmail.com>
-To: Bjorn Helgaas <bhelgaas@google.com>
+To: Alistair Popple <alistair@popple.id.au>
+Subject: Re: [PATCH] powerpc: Fix audit crash due to save/restore PPR changes
+References: <18949a6b246ced7268c2d2831f931f01.squirrel@mignight.com>
+In-Reply-To: <18949a6b246ced7268c2d2831f931f01.squirrel@mignight.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: DRI mailing list <dri-devel@lists.freedesktop.org>,
- Kleber Sacilotto de Souza <klebers@linux.vnet.ibm.com>,
- Brian King <brking@linux.vnet.ibm.com>, Jerome Glisse <jglisse@redhat.com>,
- Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
- Lucas Kannebley Tavares <lucaskt@linux.vnet.ibm.com>,
- Alex Deucher <alexander.deucher@amd.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: sfr@canb.auug.org.au, mikey@neuling.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,64 +39,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->>
->> diff --git a/drivers/gpu/drm/radeon/evergreen.c b/drivers/gpu/drm/radeon/evergreen.c
->> index 305a657..3291f62 100644
->> --- a/drivers/gpu/drm/radeon/evergreen.c
->> +++ b/drivers/gpu/drm/radeon/evergreen.c
->> @@ -3855,8 +3855,7 @@ void evergreen_fini(struct radeon_device *rdev)
->>
->>  void evergreen_pcie_gen2_enable(struct radeon_device *rdev)
->>  {
->> -       u32 link_width_cntl, speed_cntl, mask;
->> -       int ret;
->> +       u32 link_width_cntl, speed_cntl;
->>
->>         if (radeon_pcie_gen2 == 0)
->>                 return;
->> @@ -3871,11 +3870,7 @@ void evergreen_pcie_gen2_enable(struct radeon_device *rdev)
->>         if (ASIC_IS_X2(rdev))
->>                 return;
->>
->> -       ret = drm_pcie_get_speed_cap_mask(rdev->ddev, &mask);
->> -       if (ret != 0)
->> -               return;
->> -
->> -       if (!(mask & DRM_PCIE_SPEED_50))
->> +       if (rdev->pdev->bus->max_bus_speed < PCIE_SPEED_5_0GT)
->
-> For devices on a root bus, we previously dereferenced a NULL pointer
-> in drm_pcie_get_speed_cap_mask() because pdev->bus->self is NULL on a
-> root bus.  (I think this is the original problem you tripped over,
-> Lucas.)
->
-> These patches fix that problem.  On pseries, where the device *is* on
-> a root bus, your patches set max_bus_speed so this will work as
-> expected.  On most other systems, max_bus_speed for root buses will be
-> PCI_SPEED_UNKNOWN (set in pci_alloc_bus() and never updated because
-> most arches don't have code like the pseries code you're adding).
->
-> PCI_SPEED_UNKNOWN = 0xff, so if we see another machine with a GPU on
-> the root bus, we'll attempt to enable Gen2 on the device even though
-> we have no idea what the bus will support.
->
-> That's why I originally suggested skipping the Gen2 stuff if
-> "max_bus_speed == PCI_SPEED_UNKNOWN".  I was just being conservative,
-> thinking that it's better to have a functional but slow GPU rather
-> than the unknown (to me) effects of enabling Gen2 on a link that might
-> not support it.  But I'm fine with this being either way.
->
-> It would be nice if we could get rid of drm_pcie_get_speed_cap_mask()
-> altogether.  It is exported, but I have no idea of anybody else uses
-> it.  Maybe it could at least be marked __deprecated now?
->
-> I don't know who should take these patches.  They don't touch
-> drivers/pci, but I'd be happy to push them, given the appropriate ACKs
-> from DRM and powerpc folks.
->
+On 04/14/2013 06:44 PM, Alistair Popple wrote:
+> The current mainline crashes when hitting userspace with the following:
+> 
+> kernel BUG at /home/alistair/Source/linux-stable/kernel/auditsc.c:1769!
+> cpu 0x1: Vector: 700 (Program Check) at [c000000023883a60]
+>     pc: c0000000001047a8: .__audit_syscall_entry+0x38/0x130
+>     lr: c00000000000ed64: .do_syscall_trace_enter+0xc4/0x270
+>     sp: c000000023883ce0
+>    msr: 8000000000029032
+>   current = 0xc000000023800000
+>   paca    = 0xc00000000f080380   softe: 0        irq_happened: 0x01
+>     pid   = 1629, comm = start_udev
+> kernel BUG at /home/alistair/Source/linux-stable/kernel/auditsc.c:1769!
+> enter ? for help
+> [c000000023883d80] c00000000000ed64 .do_syscall_trace_enter+0xc4/0x270
+> [c000000023883e30] c000000000009b08 syscall_dotrace+0xc/0x38
+> --- Exception: c00 (System Call) at 0000008010ec50dc
+> 
+> Bisecting found the following patch caused it:
+> 
+> commit 44e9309f1f357794b7ae93d5f3e3e6f11d2b8a7f
+> Author: Haren Myneni <haren@linux.vnet.ibm.com>
+> powerpc: Implement PPR save/restore
+> 
+> It was found this patch corrupted r9 when calling
+> SET_DEFAULT_THREAD_PPR()
+> 
+> Using r10 as a scratch register instead of r9 solved the problem.
 
-Acked-by: Dave Airlie <airlied@redhat.com>
+Thanks for fixing. Sorry I missed it
 
-I'm happy to see these go via pci tree to avoid interdependent trees.
+Acked-by: Haren Myneni <haren@us.ibm.com>
 
-Dave.
+> 
+> Signed-off-by: Alistair Popple <alistair@popple.id.au>
+> Acked-by: Michael Neuling <mikey@neuling.org>
+> ---
+> 
+> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+> index 256c5bf..3acb1a0 100644
+> --- a/arch/powerpc/kernel/entry_64.S
+> +++ b/arch/powerpc/kernel/entry_64.S
+> @@ -304,7 +304,7 @@ syscall_exit_work:
+>  	subi	r12,r12,TI_FLAGS
+> 
+>  4:	/* Anything else left to do? */
+> -	SET_DEFAULT_THREAD_PPR(r3, r9)		/* Set thread.ppr = 3 */
+> +	SET_DEFAULT_THREAD_PPR(r3, r10)		/* Set thread.ppr = 3 */
+>  	andi.	r0,r9,(_TIF_SYSCALL_T_OR_A|_TIF_SINGLESTEP)
+>  	beq	.ret_from_except_lite
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
