@@ -1,17 +1,17 @@
 Return-Path: <B21989@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 282602C00E5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2013 23:08:17 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 051492C00FD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2013 23:27:45 +1000 (EST)
 From: Shaohui Xie <Shaohui.Xie@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
 Subject: [PATCH] powerpc/corenet/config: add missing SCSI configs for
  corenet64_smp_defconfig
-Date: Tue, 16 Apr 2013 20:28:20 +0800
-Message-ID: <1366115300-19304-1-git-send-email-Shaohui.Xie@freescale.com>
+Date: Tue, 16 Apr 2013 20:47:19 +0800
+Message-ID: <1366116439-19569-1-git-send-email-Shaohui.Xie@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Shaohui Xie <Shaohui.Xie@freescale.com>
@@ -28,6 +28,8 @@ Otherwise there will be no SCSI device nodes.
 
 Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
 ---
+resend due to patch work did not capture this patch.
+
  arch/powerpc/configs/corenet64_smp_defconfig |    7 +++++++
  1 files changed, 7 insertions(+), 0 deletions(-)
 
