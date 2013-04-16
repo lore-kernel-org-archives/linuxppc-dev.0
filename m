@@ -1,20 +1,23 @@
-Return-Path: <B21989@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 051492C00FD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2013 23:27:45 +1000 (EST)
-From: Shaohui Xie <Shaohui.Xie@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
-Subject: [PATCH] powerpc/corenet/config: add missing SCSI configs for
- corenet64_smp_defconfig
-Date: Tue, 16 Apr 2013 20:47:19 +0800
-Message-ID: <1366116439-19569-1-git-send-email-Shaohui.Xie@freescale.com>
+Return-Path: <jason@lakedaemon.net>
+Date: Tue, 16 Apr 2013 11:05:37 -0400
+From: Jason Cooper <jason@lakedaemon.net>
+To: Andrew Murray <Andrew.Murray@arm.com>
+Subject: Re: [PATCH v7 0/3] of/pci: Provide common support for PCI DT parsing
+Message-ID: <20130416150537.GC28693@titan.lakedaemon.net>
+References: <1366107508-12672-1-git-send-email-Andrew.Murray@arm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Shaohui Xie <Shaohui.Xie@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1366107508-12672-1-git-send-email-Andrew.Murray@arm.com>
+Cc: linux-mips@linux-mips.org, siva.kallam@samsung.com,
+ linux-pci@vger.kernel.org, linus.walleij@linaro.org,
+ thierry.reding@avionic-design.de, Liviu.Dudau@arm.com, paulus@samba.org,
+ linux-samsung-soc@vger.kernel.org, linux@arm.linux.org.uk, jg1.han@samsung.com,
+ jgunthorpe@obsidianresearch.com, thomas.abraham@linaro.org, arnd@arndb.de,
+ devicetree-discuss@lists.ozlabs.org, rob.herring@calxeda.com,
+ kgene.kim@samsung.com, bhelgaas@google.com,
+ linux-arm-kernel@lists.infradead.org, thomas.petazzoni@free-electrons.com,
+ monstr@monstr.eu, linux-kernel@vger.kernel.org, suren.reddy@samsung.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,32 +27,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Otherwise there will be no SCSI device nodes.
+On Tue, Apr 16, 2013 at 11:18:25AM +0100, Andrew Murray wrote:
+> This patchset factors out duplicated code associated with parsing PCI
+> DT "ranges" properties across the architectures and introduces a
+> "ranges" parser. This parser "of_pci_range_parser" can be used directly
+> by ARM host bridge drivers enabling them to obtain ranges from device
+> trees.
+> 
+> I've included the Reviewed-by and Tested-by's received from v5/v6 in this
+> patchset, earlier versions of this patchset (v3) have been tested-by:
+> 
+> Thierry Reding <thierry.reding@avionic-design.de>
+> Jingoo Han <jg1.han@samsung.com>
+> 
+> I've tested that this patchset builds and runs on ARM and that it builds on
+> PowerPC and x86_64.
 
-Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
----
-resend due to patch work did not capture this patch.
+Series replaces v6 in mvebu/drivers
 
- arch/powerpc/configs/corenet64_smp_defconfig |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+thx,
 
-diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
-index 83dcc6a..2333e9b 100644
---- a/arch/powerpc/configs/corenet64_smp_defconfig
-+++ b/arch/powerpc/configs/corenet64_smp_defconfig
-@@ -77,6 +77,13 @@ CONFIG_BLK_DEV_LOOP=y
- CONFIG_BLK_DEV_RAM=y
- CONFIG_BLK_DEV_RAM_SIZE=131072
- CONFIG_EEPROM_LEGACY=y
-+CONFIG_BLK_DEV_SD=y
-+CONFIG_CHR_DEV_ST=y
-+CONFIG_BLK_DEV_SR=y
-+CONFIG_CHR_DEV_SG=y
-+CONFIG_SCSI_MULTI_LUN=y
-+CONFIG_SCSI_LOGGING=y
-+CONFIG_SCSI_SPI_ATTRS=y
- CONFIG_ATA=y
- CONFIG_SATA_FSL=y
- CONFIG_SATA_SIL24=y
--- 
-1.7.0.4
+Jason.
+
+> 
+> Compared to the v6 sent by Andrew Murray, the following changes have
+> been made in response to build errors/warnings:
+> 
+>  * Inclusion of linux/of_address.h in of_pci.c as suggested by Michal
+>    Simek to prevent compilation failures on Microblaze (and others) and his
+>    ack.
+> 
+>  * Use of externs, static inlines and a typo in linux/of_address.h in response
+>    to linker errors (multiple defination) on x86_64 as spotted by a kbuild test
+>    robot on (jcooper/linux.git mvebu/drivers)
+> 
+>  * Add EXPORT_SYMBOL_GPL to of_pci_range_parser function to be consistent
+>    with of_pci_process_ranges function
