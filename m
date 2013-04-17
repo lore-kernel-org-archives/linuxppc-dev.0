@@ -1,21 +1,16 @@
-Return-Path: <chris.friesen@genband.com>
-Received: from exprod7og109.obsmtp.com (exprod7og109.obsmtp.com [64.18.2.171])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 8A5ED2C017F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2013 09:33:32 +1000 (EST)
-Message-ID: <516F30A6.5070408@genband.com>
-Date: Wed, 17 Apr 2013 17:30:46 -0600
-From: Chris Friesen <chris.friesen@genband.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: BUG: branch trace support for 64-bit Book-E (was Re: questions around
- Book III-E and branch trace)
-References: <516EED8D.3040304@genband.com>
-In-Reply-To: <516EED8D.3040304@genband.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub2.si.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+ by ozlabs.org (Postfix) with ESMTP id 4B4D42C017B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2013 09:36:07 +1000 (EST)
+Date: Thu, 18 Apr 2013 00:04:11 +0200
+Message-Id: <201304172204.r3HM4BmU024718@localhost.localdomain>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Vitaly Bordug <vitb@kernel.crashing.org>,
+ Marcelo Tosatti <marcelo@kvack.org>, Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH] Erroneous double irq_eoi() on CPM IRQ in MPC8xx
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,26 +20,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/17/2013 12:44 PM, Chris Friesen wrote:
-> Hi,
->
-> I'm trying to wrap my head around how linux handles branch tracing on
-> Book III-E. I think I understand how we set MSR[DE] and DBCR0[IDM|BT],
-> and how we handle fixing things up if an instruction being traced causes
-> an exception.
+irq_eoi() is already called by generic_handle_irq() so 
+it shall not be called a again
 
-While poking around looking for answers to my previous questions I seem 
-to have stumbled over a bug in branch tracing for 64-bit Book-E.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Commit ec097c8 added support for branch tracing for 32-bit code, but 
-didn't do the 64-bit path.  As it stands, debug_crit/debug_debug in 
-exceptions-64e.S only check DBSR_IC, so branch tracing will not get 
-fixed up and will die a horrible death (typically in a tbr exception 
-handler).
-
-I was banging my head trying to figure out why this wasn't working when 
-I finally clued in to the fact that head_booke.h only applied to the 
-32-bit implementation.  This might be something useful to put in a 
-comment up at the top of the file.
-
-Chris
+Index: linux/arch/powerpc/platforms/8xx/m8xx_setup.c
+===================================================================
+--- linux/arch/powerpc/platforms/8xx/m8xx_setup.c	(revision 4802)
++++ linux/arch/powerpc/platforms/8xx/m8xx_setup.c	(working copy)
+@@ -218,19 +218,12 @@
+ 
+ static void cpm_cascade(unsigned int irq, struct irq_desc *desc)
+ {
+-	struct irq_chip *chip;
+-	int cascade_irq;
++	struct irq_chip *chip = irq_desc_get_chip(desc);
++	int cascade_irq = cpm_get_irq());
+ 
+-	if ((cascade_irq = cpm_get_irq()) >= 0) {
+-		struct irq_desc *cdesc = irq_to_desc(cascade_irq);
+-
++	if (cascade_irq >= 0)
+ 		generic_handle_irq(cascade_irq);
+ 
+-		chip = irq_desc_get_chip(cdesc);
+-		chip->irq_eoi(&cdesc->irq_data);
+-	}
+-
+-	chip = irq_desc_get_chip(desc);
+ 	chip->irq_eoi(&desc->irq_data);
+ }
+ 
