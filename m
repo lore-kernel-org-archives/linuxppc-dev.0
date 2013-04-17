@@ -1,16 +1,39 @@
-Return-Path: <stern+517b9ca4@rowland.harvard.edu>
-Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
- by ozlabs.org (Postfix) with SMTP id 5A9692C010C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2013 01:10:31 +1000 (EST)
-Date: Wed, 17 Apr 2013 11:03:49 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-To: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-Subject: Re: [PATCH] usb: remove redundant tdi_reset
-In-Reply-To: <1366193026-20871-1-git-send-email-Shengzhou.Liu@freescale.com>
-Message-ID: <Pine.LNX.4.44L0.1304171054140.1623-100000@iolanthe.rowland.org>
+Return-Path: <linus.walleij@linaro.org>
+Received: from mail-ie0-x233.google.com (mail-ie0-x233.google.com
+ [IPv6:2607:f8b0:4001:c03::233])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A9C092C016B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2013 01:42:52 +1000 (EST)
+Received: by mail-ie0-f179.google.com with SMTP id 16so2049108iea.38
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2013 08:42:49 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, stable@kernel.org
+In-Reply-To: <1366107508-12672-4-git-send-email-Andrew.Murray@arm.com>
+References: <1366107508-12672-1-git-send-email-Andrew.Murray@arm.com>
+ <1366107508-12672-4-git-send-email-Andrew.Murray@arm.com>
+Date: Wed, 17 Apr 2013 17:42:48 +0200
+Message-ID: <CACRpkdbBaT1OKr5t8HW4+8y_wSDmGxmewAyVMekx8S-K9s3K8Q@mail.gmail.com>
+Subject: Re: [PATCH v7 3/3] of/pci: mips: convert to common of_pci_range_parser
+From: Linus Walleij <linus.walleij@linaro.org>
+To: Andrew Murray <Andrew.Murray@arm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-mips@linux-mips.org, siva.kallam@samsung.com,
+ linux-pci@vger.kernel.org, Thierry Reding <thierry.reding@avionic-design.de>,
+ Liviu.Dudau@arm.com, Paul Mackerras <paulus@samba.org>,
+ linux-samsung-soc <linux-samsung-soc@vger.kernel.org>,
+ Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ Jingoo Han <jg1.han@samsung.com>,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+ Thomas Abraham <thomas.abraham@linaro.org>, Arnd Bergmann <arnd@arndb.de>,
+ "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>,
+ Rob Herring <rob.herring@calxeda.com>, Kukjin Kim <kgene.kim@samsung.com>,
+ "bhelgaas@google.com" <bhelgaas@google.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ Michal Simek <monstr@monstr.eu>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ suren.reddy@samsung.com,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,38 +43,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 17 Apr 2013, Shengzhou Liu wrote:
+On Tue, Apr 16, 2013 at 12:18 PM, Andrew Murray <Andrew.Murray@arm.com> wrote:
 
-> We remove the redundant tdi_reset in ehci_setup since there
-> is already it in ehci_reset.
-> It was observed that the duplicated tdi_reset was causing
-> the PHY_CLK_VALID bit unstable.
-> 
-> Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-> ---
->  drivers/usb/host/ehci-hcd.c |    3 ---
->  1 files changed, 0 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/usb/host/ehci-hcd.c b/drivers/usb/host/ehci-hcd.c
-> index 416a6dc..83b5a17 100644
-> --- a/drivers/usb/host/ehci-hcd.c
-> +++ b/drivers/usb/host/ehci-hcd.c
-> @@ -670,9 +670,6 @@ int ehci_setup(struct usb_hcd *hcd)
->  	if (retval)
->  		return retval;
->  
-> -	if (ehci_is_TDI(ehci))
-> -		tdi_reset(ehci);
-> -
->  	ehci_reset(ehci);
->  
->  	return 0;
+> This patch converts the pci_load_of_ranges function to use the new common
+> of_pci_range_parser.
+>
+> Signed-off-by: Andrew Murray <Andrew.Murray@arm.com>
+> Signed-off-by: Liviu Dudau <Liviu.Dudau@arm.com>
+> Reviewed-by: Rob Herring <rob.herring@calxeda.com>
 
-Acked-by: Alan Stern <stern@rowland.harvard.edu>
+Tested-by: Linus Walleij <linus.walleij@linaro.org>
 
-This should be applied to stable kernels going back to 3.6.
-
-In case you are wondering why that redudant call was added, I did it
-because some of the PCI drivers (Intel and TDI) already had calls to
-tdi_reset.  The commit removed those calls, so the new one was added 
-in.
+Yours,
+Linus Walleij
