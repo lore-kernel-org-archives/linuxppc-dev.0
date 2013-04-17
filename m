@@ -1,21 +1,23 @@
-Return-Path: <timur@tabi.org>
-Message-ID: <516E870B.5010303@tabi.org>
-Date: Wed, 17 Apr 2013 06:27:07 -0500
-From: Timur Tabi <timur@tabi.org>
+Return-Path: <B19537@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7BA0E2C0158
+ for <linuxppc-dev@ozlabs.org>; Wed, 17 Apr 2013 21:46:47 +1000 (EST)
+From: Luo Zhenhua-B19537 <B19537@freescale.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: RE: [PATCH] Enable CONFIG_DEVTMPFS_MOUNT to ensure /dev can be
+ mounted correctly
+Date: Wed, 17 Apr 2013 11:46:40 +0000
+Message-ID: <CA452391058F6D4E9715FB2C29D9312A014D3107@039-SN2MPN1-021.039d.mgd.msft.net>
+References: <1365688591-5323-1-git-send-email-zhenhua.luo@freescale.com>
+ <20130415050129.GB21147@concordia>
+In-Reply-To: <20130415050129.GB21147@concordia>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: Tang Yuantian-B29983 <B29983@freescale.com>
-Subject: Re: [PATCH v2] of/base: release the node correctly in
- of_parse_phandle_with_args()
-References: <1365564999-24427-1-git-send-email-Yuantian.Tang@freescale.com>
- <CAOZdJXW8qKccGKic3R4o1aqJdbfHcBoAp62B4HPFnF=sUAEvuQ@mail.gmail.com>
- <D07C73A334FF604B95B3CBD2A545D07B0B1456B8@039-SN2MPN1-013.039d.mgd.msft.net>
- <516E1763.7040206@tabi.org>
- <D07C73A334FF604B95B3CBD2A545D07B0B1457D2@039-SN2MPN1-013.039d.mgd.msft.net>
-In-Reply-To: <D07C73A334FF604B95B3CBD2A545D07B0B1457D2@039-SN2MPN1-013.039d.mgd.msft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- lkml <linux-kernel@vger.kernel.org>, Rob Herring <rob.herring@calxeda.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,12 +27,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Tang Yuantian-B29983 wrote:
-> It was placed on ELSE statement originally, I moved it to IF statement.
-> Why is it so wrong?
+> -----Original Message-----
+> From: Michael Ellerman [mailto:michael@ellerman.id.au]
+> Sent: Monday, April 15, 2013 1:02 PM
+>=20
+> On Thu, Apr 11, 2013 at 09:56:30PM +0800, Zhenhua Luo wrote:
+> > When using recent udev, the /dev node mount requires
+> > CONFIG_DEVTMPFS_MOUNT is enabled in Kernel.
+>=20
+> Really?
+>=20
+> I know it makes life easier when you don't have an initramfs, but is it
+> actually required now?
+[Luo Zhenhua-B19537] I didn't use initramfs when the issue is found, I thin=
+k the option is required to be enabled.=20
 
-Because the logic of the comment applies to the else-condition, not the 
-if-condtion.
 
--- 
-Timur Tabi
+Best Regards,
+
+Zhenhua
