@@ -1,20 +1,21 @@
-Return-Path: <B36685@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DB5F62C0151
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2013 20:40:32 +1000 (EST)
-From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <stable@kernel.org>,
- <linux-usb@vger.kernel.org>
-Subject: [PATCH] usb: remove redundant tdi_reset
-Date: Wed, 17 Apr 2013 18:03:46 +0800
-Message-ID: <1366193026-20871-1-git-send-email-Shengzhou.Liu@freescale.com>
+Return-Path: <timur@tabi.org>
+Message-ID: <516E870B.5010303@tabi.org>
+Date: Wed, 17 Apr 2013 06:27:07 -0500
+From: Timur Tabi <timur@tabi.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+To: Tang Yuantian-B29983 <B29983@freescale.com>
+Subject: Re: [PATCH v2] of/base: release the node correctly in
+ of_parse_phandle_with_args()
+References: <1365564999-24427-1-git-send-email-Yuantian.Tang@freescale.com>
+ <CAOZdJXW8qKccGKic3R4o1aqJdbfHcBoAp62B4HPFnF=sUAEvuQ@mail.gmail.com>
+ <D07C73A334FF604B95B3CBD2A545D07B0B1456B8@039-SN2MPN1-013.039d.mgd.msft.net>
+ <516E1763.7040206@tabi.org>
+ <D07C73A334FF604B95B3CBD2A545D07B0B1457D2@039-SN2MPN1-013.039d.mgd.msft.net>
+In-Reply-To: <D07C73A334FF604B95B3CBD2A545D07B0B1457D2@039-SN2MPN1-013.039d.mgd.msft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ lkml <linux-kernel@vger.kernel.org>, Rob Herring <rob.herring@calxeda.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,29 +25,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We remove the redundant tdi_reset in ehci_setup since there
-is already it in ehci_reset.
-It was observed that the duplicated tdi_reset was causing
-the PHY_CLK_VALID bit unstable.
+Tang Yuantian-B29983 wrote:
+> It was placed on ELSE statement originally, I moved it to IF statement.
+> Why is it so wrong?
 
-Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
----
- drivers/usb/host/ehci-hcd.c |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
+Because the logic of the comment applies to the else-condition, not the 
+if-condtion.
 
-diff --git a/drivers/usb/host/ehci-hcd.c b/drivers/usb/host/ehci-hcd.c
-index 416a6dc..83b5a17 100644
---- a/drivers/usb/host/ehci-hcd.c
-+++ b/drivers/usb/host/ehci-hcd.c
-@@ -670,9 +670,6 @@ int ehci_setup(struct usb_hcd *hcd)
- 	if (retval)
- 		return retval;
- 
--	if (ehci_is_TDI(ehci))
--		tdi_reset(ehci);
--
- 	ehci_reset(ehci);
- 
- 	return 0;
 -- 
-1.7.0.4
+Timur Tabi
