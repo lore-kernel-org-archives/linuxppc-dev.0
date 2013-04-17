@@ -1,20 +1,39 @@
-Return-Path: <B29983@freescale.com>
-From: Tang Yuantian-B29983 <B29983@freescale.com>
-To: Timur Tabi <timur@tabi.org>
-Subject: RE: [PATCH v2] of/base: release the node correctly in
- of_parse_phandle_with_args()
-Date: Wed, 17 Apr 2013 04:49:20 +0000
-Message-ID: <D07C73A334FF604B95B3CBD2A545D07B0B1457D2@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1365564999-24427-1-git-send-email-Yuantian.Tang@freescale.com>
- <CAOZdJXW8qKccGKic3R4o1aqJdbfHcBoAp62B4HPFnF=sUAEvuQ@mail.gmail.com>
- <D07C73A334FF604B95B3CBD2A545D07B0B1456B8@039-SN2MPN1-013.039d.mgd.msft.net>
- <516E1763.7040206@tabi.org>
-In-Reply-To: <516E1763.7040206@tabi.org>
-Content-Type: text/plain; charset="gb2312"
+Return-Path: <aruna@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 054142C0151
+ for <linuxppc-dev@ozlabs.org>; Wed, 17 Apr 2013 15:19:39 +1000 (EST)
+Received: from /spool/local
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <aruna@linux.vnet.ibm.com>;
+ Wed, 17 Apr 2013 15:10:24 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id D13592BB0056
+ for <linuxppc-dev@ozlabs.org>; Wed, 17 Apr 2013 15:19:31 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3H5JOfG6029730
+ for <linuxppc-dev@ozlabs.org>; Wed, 17 Apr 2013 15:19:25 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3H5JTs4022415
+ for <linuxppc-dev@ozlabs.org>; Wed, 17 Apr 2013 15:19:29 +1000
+Message-ID: <516E30DC.5070601@linux.vnet.ibm.com>
+Date: Wed, 17 Apr 2013 10:49:24 +0530
+From: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- lkml <linux-kernel@vger.kernel.org>, Rob Herring <rob.herring@calxeda.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH 4/8] Read/Write oops nvram partition via pstore
+References: <20130410071835.20150.56489.stgit@aruna-ThinkPad-T420>
+ <20130410072303.20150.61382.stgit@aruna-ThinkPad-T420>
+ <20130415075555.GE30156@concordia> <516CEDB4.9090005@linux.vnet.ibm.com>
+In-Reply-To: <516CEDB4.9090005@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: jkenisto@linux.vnet.ibm.com, mahesh@linux.vnet.ibm.com,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
+ anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,18 +43,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogVGltdXIgVGFiaSBbbWFp
-bHRvOnRpbXVyQHRhYmkub3JnXQ0KPiBTZW50OiAyMDEzxOo01MIxN8jVIDExOjMxDQo+IFRvOiBU
-YW5nIFl1YW50aWFuLUIyOTk4Mw0KPiBDYzogR3JhbnQgTGlrZWx5OyBkZXZpY2V0cmVlLWRpc2N1
-c3M7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBsa21sOw0KPiBSb2IgSGVycmluZw0K
-PiBTdWJqZWN0OiBSZTogW1BBVENIIHYyXSBvZi9iYXNlOiByZWxlYXNlIHRoZSBub2RlIGNvcnJl
-Y3RseSBpbg0KPiBvZl9wYXJzZV9waGFuZGxlX3dpdGhfYXJncygpDQo+IA0KPiBUYW5nIFl1YW50
-aWFuLUIyOTk4MyB3cm90ZToNCj4gPj4gPk9uIFR1ZSwgQXByIDksIDIwMTMgYXQgMTA6MzYgUE0s
-PFl1YW50aWFuLlRhbmdAZnJlZXNjYWxlLmNvbT4gIHdyb3RlOg0KPiA+Pj4gPiA+DQo+ID4+PiA+
-ID4rICAgICAgICAgICAgICAgICAgICAgICAvKiBGb3VuZCBpdCEgcmV0dXJuIHN1Y2Nlc3MgKi8N
-Cj4gPj4gPg0KPiA+PiA+SSdtIHByZXR0eSBzdXJlIHRoaXMgY29tbWVudCBpcyBpbiB0aGUgd3Jv
-bmcgcGxhY2UuDQo+IA0KPiA+IEl0IGlzIG5vdCBwZXJmZWN0LCBidXQgYWNjZXB0YWJsZS4NCj4g
-DQo+IExpa2UgSSBzYWlkLCBJJ20gcHJldHR5IHN1cmUgaXQncyBpbiB0aGUgd3JvbmcgcGxhY2Uu
-DQo+IA0KDQpJdCB3YXMgcGxhY2VkIG9uIEVMU0Ugc3RhdGVtZW50IG9yaWdpbmFsbHksIEkgbW92
-ZWQgaXQgdG8gSUYgc3RhdGVtZW50Lg0KV2h5IGlzIGl0IHNvIHdyb25nPw0KDQpUaGFua3MsDQpZ
-dWFudGlhbg0K
+On Tuesday 16 April 2013 11:50 AM, Aruna Balakrishnaiah wrote:
+>
+> Currently with this patchset, pstore is not supporting compression of 
+> oops-messages
+> since it involves some changes in the pstore framework.
+>
+> big_oops_buf will hold the large part of oops data which will be compressed 
+> and put
+> to oops_buf.
+>
+> big_oops_buf: (1.45 of oops_partition_size)
+
+Sorry, big_oops_buf is (2.22 of oops_data_sz)
+
+where oops_data_sz is oops_partition_size - sizeof(oops_log_info).
+
+where oops_log_info is oops header.
+
+> _________________________
+> |  header |   oops-text |
+> |_________|_____________|
+>
+> <header> is added by the pstore.
+>
+> So in case compression fails:
+>
+> we would need to log the header + last few bytes of big_oops_buf to oops_buf.
+> oops_buf: (this is of oops_partition_size)
+>
+
+We would need to log the header + last oops_data_sz bytes of big_oops_buf to 
+oops_buf.
+So that we can have the header while throwing away the data that immediately
+follows it.
+
+> we need last few bytes of big_oops_buf as we need to log the recent messages of
+> printk buffer. For which we need to know the header size and it involves some
+> changes in the pstore framework.
+>
+
+Just communicating the header size from pstore would do the job for us.
+
+> I have the compression patches ready, will be posting it soon as a separate set.
+>
+>> cheers
+>>
+>
