@@ -1,32 +1,52 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D55442C01C0
- for <linuxppc-dev@ozlabs.org>; Thu, 18 Apr 2013 22:26:49 +1000 (EST)
-Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Thu, 18 Apr 2013 17:50:47 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id E0C19394005E
- for <linuxppc-dev@ozlabs.org>; Thu, 18 Apr 2013 17:56:32 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3ICQSmw8716616
- for <linuxppc-dev@ozlabs.org>; Thu, 18 Apr 2013 17:56:29 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3ICQVSw008560
- for <linuxppc-dev@ozlabs.org>; Thu, 18 Apr 2013 22:26:31 +1000
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH V3 0/5] powerpc,
- perf: BHRB based branch stack enablement on POWER8
-Date: Thu, 18 Apr 2013 17:56:11 +0530
-Message-Id: <1366287976-3900-1-git-send-email-khandual@linux.vnet.ibm.com>
-Cc: mikey@neuling.org
+Return-Path: <grant.likely@secretlab.ca>
+Received: from mail-wi0-x22e.google.com (mail-wi0-x22e.google.com
+ [IPv6:2a00:1450:400c:c05::22e])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A29102C01E6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2013 22:48:41 +1000 (EST)
+Received: by mail-wi0-f174.google.com with SMTP id m6so4011814wiv.13
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2013 05:48:36 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v7 1/3] of/pci: Unify pci_process_bridge_OF_ranges from
+ Microblaze and PowerPC
+To: Jason Cooper <jason@lakedaemon.net>
+In-Reply-To: <20130417162223.GC27197@titan.lakedaemon.net>
+References: <1366107508-12672-1-git-send-email-Andrew.Murray@arm.com>
+ <1366107508-12672-2-git-send-email-Andrew.Murray@arm.com>
+ <20130416103005.GB12726@arm.com> <20130417160015.777453E2B73@localhost>
+ <20130417161036.GB27197@titan.lakedaemon.net>
+ <CACxGe6sNk=wNinTcMHbJa5o-56Tyh=0CnFSEW+Hk-ujpjeg2gQ@mail.gmail.com>
+ <20130417162223.GC27197@titan.lakedaemon.net>
+Date: Thu, 18 Apr 2013 13:48:32 +0100
+Message-Id: <20130418124832.D2C733E118C@localhost>
+Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
+ "siva.kallam@samsung.com" <siva.kallam@samsung.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "linus.walleij@linaro.org" <linus.walleij@linaro.org>,
+ "thierry.reding@avionic-design.de" <thierry.reding@avionic-design.de>,
+ Liviu Dudau <Liviu.Dudau@arm.com>,
+ Gregory CLEMENT <gregory.clement@free-electrons.com>,
+ "paulus@samba.org" <paulus@samba.org>,
+ "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>,
+ "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>,
+ "jg1.han@samsung.com" <jg1.han@samsung.com>,
+ "jgunthorpe@obsidianresearch.com" <jgunthorpe@obsidianresearch.com>,
+ "thomas.abraham@linaro.org" <thomas.abraham@linaro.org>,
+ "arnd@arndb.de" <arnd@arndb.de>,
+ "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
+ "kgene.kim@samsung.com" <kgene.kim@samsung.com>, "bhelgaas@g
+ oogle.com" <bhelgaas@google.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "thomas.petazzoni@free-electrons.com" <thomas.petazzoni@free-electrons.com>,
+ "monstr@monstr.eu" <monstr@monstr.eu>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Andrew Lunn <andrew@lunn.ch>,
+ "suren.reddy@samsung.com" <suren.reddy@samsung.com>,
+ Olof Johansson <olof@lixom.net>, Andrew Murray <andrew.murray@arm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,63 +56,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-                Branch History Rolling Buffer (BHRB) is a new PMU feaure in IBM
-POWER8 processor which records the branch instructions inside the execution
-pipeline. This patchset enables the basic functionality of the feature through
-generic perf branch stack sampling framework.
+On Wed, 17 Apr 2013 12:22:23 -0400, Jason Cooper <jason@lakedaemon.net> wrote:
+> On Wed, Apr 17, 2013 at 05:17:48PM +0100, Grant Likely wrote:
+> > On Wed, Apr 17, 2013 at 5:10 PM, Jason Cooper <jason@lakedaemon.net> wrote:
+> > > On Wed, Apr 17, 2013 at 05:00:15PM +0100, Grant Likely wrote:
+> > >> On Tue, 16 Apr 2013 11:30:06 +0100, Andrew Murray <andrew.murray@arm.com> wrote:
+> > >> > On Tue, Apr 16, 2013 at 11:18:26AM +0100, Andrew Murray wrote:
+> > >> > > The pci_process_bridge_OF_ranges function, used to parse the "ranges"
+> > >> > > property of a PCI host device, is found in both Microblaze and PowerPC
+> > >> > > architectures. These implementations are nearly identical. This patch
+> > >> > > moves this common code to a common place.
+> > >> > >
+> > >> > > Signed-off-by: Andrew Murray <Andrew.Murray@arm.com>
+> > >> > > Signed-off-by: Liviu Dudau <Liviu.Dudau@arm.com>
+> > >> > > Reviewed-by: Rob Herring <rob.herring@calxeda.com>
+> > >> > > Tested-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+> > >> > > Tested-by: Linus Walleij <linus.walleij@linaro.org>
+> > >> > > Acked-by: Michal Simek <monstr@monstr.eu>
+> > >> > > ---
+> > >> > >  arch/microblaze/include/asm/pci-bridge.h |    5 +-
+> > >> > >  arch/microblaze/pci/pci-common.c         |  192 ----------------------------
+> > >> > >  arch/powerpc/include/asm/pci-bridge.h    |    5 +-
+> > >> > >  arch/powerpc/kernel/pci-common.c         |  192 ----------------------------
+> > >> >
+> > >> > Is there anyone on linuxppc-dev/linux-mips that can help test this patchset?
+> > >> >
+> > >> > I've tested that it builds on powerpc with a variety of configs (some which
+> > >> > include fsl_pci.c implementation). Though I don't have hardware to verify that
+> > >> > it works.
+> > >> >
+> > >> > I haven't tested this builds or runs on MIPS.
+> > >> >
+> > >> > You shouldn't see any difference in behaviour or new warnings and PCI devices
+> > >> > should continue to operate as before.
+> > >>
+> > >> I've got through a line-by-line comparison between powerpc, microblaze,
+> > >> and then new code. The differences are purely cosmetic, so I have
+> > >> absolutely no concerns about this patch. I've applied it to my tree.
+> > >
+> > > oops.  Due to the number of dependencies the mvebu-pcie series has (this
+> > > being one of them, we (arm-soc/mvebu) asked if we could take this
+> > > through our tree.  Rob Herring agreed to this several days ago.  Is this
+> > > a problem for you?
+> > >
+> > > It would truly (dogs and cats living together) upset the apple cart for
+> > > us at this stage to pipe these through a different tree...
+> > 
+> > Not a problem at all. I'll drop it.
+> 
+> Great!  Thanks.
 
-Sample output
--------------
-$./perf record -b top
-$./perf report
+You can add my Acked-by: Grant Likely <grant.likely@linaro.org> to the
+first patch. I've not reviewed out the second or third patches yet.
 
-Overhead  Command  Source Shared Object                           Source Symbol  Target Shared Object                        Target Symbol
-# ........  .......  ....................  ......................................  ....................  ...................................
-#
+None of this appears to be in linux-next yet. I've boot tested on
+PowerPC, but that isn't the same as an ack by the PowerPC maintainers.
+It is probably too late for the whole now since we're after -rc7.
+However, if you ask me to, I have absolutely no problem putting the
+first patch into my tree for v3.10 merging. I went over the patch
+line-by-line and am convinced that it is functionally identical.
 
-     7.82%      top  libc-2.11.2.so        [k] _IO_vfscanf                         libc-2.11.2.so        [k] _IO_vfscanf
-     6.17%      top  libc-2.11.2.so        [k] _IO_vfscanf                         [unknown]             [k] 00000000
-     2.37%      top  [unknown]             [k] 0xf7aafb30                          [unknown]             [k] 00000000
-     1.80%      top  [unknown]             [k] 0x0fe07978                          libc-2.11.2.so        [k] _IO_vfscanf
-     1.60%      top  libc-2.11.2.so        [k] _IO_vfscanf                         [kernel.kallsyms]     [k] .do_task_stat
-     1.20%      top  [kernel.kallsyms]     [k] .do_task_stat                       [kernel.kallsyms]     [k] .do_task_stat
-     1.02%      top  libc-2.11.2.so        [k] vfprintf                            libc-2.11.2.so        [k] vfprintf
-     0.92%      top  top                   [k] _init                               [unknown]             [k] 0x0fe037f4
+Let me know if you need me to do this.
 
-Changes in V2
---------------
-- Added copyright messages to the newly created files
-- Modified couple of commit messages
-
-Changes in V3
--------------
-- Incorporated review comments from Segher https://lkml.org/lkml/2013/4/16/350
-- Worked on a solution for review comment from Michael Ellerman https://lkml.org/lkml/2013/4/17/548
-	- Could not move updated cpu_hw_events structure from core-book3s.c file into perf_event_server.h
-          Because perf_event_server.h is pulled in first inside linux/perf_event.h before the definition of
-          perf_branch_entry structure. Thats the reason why perf_branch_entry definition is not available
-          inside perf_event_server.h where we define the array inside cpu_hw_events structure.
-
-	- Finally have pulled in the code from perf_event_bhrb.c into core-book3s.c
-
-- Improved documentation for the patchset
-
-
-Anshuman Khandual (5):
-  powerpc, perf: Add new BHRB related instructions for POWER8
-  powerpc, perf: Add basic assembly code to read BHRB entries on POWER8
-  powerpc, perf: Add new BHRB related generic functions, data and flags
-  powerpc, perf: Define BHRB generic functions, data and flags for POWER8
-  powerpc, perf: Enable branch stack sampling framework
-
- arch/powerpc/include/asm/perf_event_server.h |   7 ++
- arch/powerpc/include/asm/ppc-opcode.h        |   7 ++
- arch/powerpc/perf/Makefile                   |   2 +-
- arch/powerpc/perf/bhrb.S                     |  44 +++++++
- arch/powerpc/perf/core-book3s.c              | 167 ++++++++++++++++++++++++++-
- arch/powerpc/perf/power8-pmu.c               |  57 ++++++++-
- 6 files changed, 279 insertions(+), 5 deletions(-)
- create mode 100644 arch/powerpc/perf/bhrb.S
-
--- 
-1.7.11.7
+g.
