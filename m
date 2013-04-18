@@ -1,15 +1,38 @@
-Return-Path: <michael@ellerman.id.au>
-Date: Thu, 18 Apr 2013 11:46:00 +1000
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Li Zhong <zhong@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH powerpc] make CONFIG_NUMA depends on CONFIG_SMP
-Message-ID: <20130418014559.GB8261@concordia>
-References: <1338370318.3637.12.camel@ThinkPad-T420>
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 453CF2C017F
+ for <linuxppc-dev@ozlabs.org>; Thu, 18 Apr 2013 12:59:23 +1000 (EST)
+Received: from /spool/local
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Thu, 18 Apr 2013 12:47:43 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 18F8E2BB0054
+ for <linuxppc-dev@ozlabs.org>; Thu, 18 Apr 2013 12:59:12 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3I2ji1S11665826
+ for <linuxppc-dev@ozlabs.org>; Thu, 18 Apr 2013 12:45:44 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3I2xBWG005097
+ for <linuxppc-dev@ozlabs.org>; Thu, 18 Apr 2013 12:59:11 +1000
+Message-ID: <516F6165.9070205@linux.vnet.ibm.com>
+Date: Thu, 18 Apr 2013 08:28:45 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1338370318.3637.12.camel@ThinkPad-T420>
-Cc: PowerPC email list <linuxppc-dev@lists.ozlabs.org>,
- Paul Mackerras <paulus@samba.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH V2 5/5] powerpc,
+ perf: Enable branch stack sampling framework support with BHRB
+References: <1366127650-1952-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1366127650-1952-6-git-send-email-khandual@linux.vnet.ibm.com>
+ <20130417070852.GA29203@concordia> <516E9096.70906@linux.vnet.ibm.com>
+In-Reply-To: <516E9096.70906@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,15 +42,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 30, 2012 at 05:31:58PM +0800, Li Zhong wrote:
-> I'm not sure whether it makes sense to add this dependency to avoid
-> CONFI_NUMA && !CONFIG_SMP. 
+On 04/17/2013 05:37 PM, Anshuman Khandual wrote:
+> On 04/17/2013 12:38 PM, Michael Ellerman wrote:
+>> On Tue, Apr 16, 2013 at 09:24:10PM +0530, Anshuman Khandual wrote:
+>>> This patch provides basic enablement for perf branch stack sampling framework
+>>> on POWER8 processor with a new PMU feature called BHRB (Branch History Rolling
+>>> Buffer).
+>>>
+>>> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+>>> ---
+>>>  arch/powerpc/perf/core-book3s.c     | 96 +++++++++++++++++++++++++++++++++++--
+>>>  arch/powerpc/perf/perf_event_bhrb.c | 85 ++++++++++++++++++++++++++++++++
+>>>  2 files changed, 178 insertions(+), 3 deletions(-)
+>>>  create mode 100644 arch/powerpc/perf/perf_event_bhrb.c
+>>>
+>>> diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+>>> index 4ac6e64..f4d1347 100644
+>>> --- a/arch/powerpc/perf/core-book3s.c
+>>> +++ b/arch/powerpc/perf/core-book3s.c
+>>> @@ -19,6 +19,8 @@
+>>>  #include <asm/firmware.h>
+>>>  #include <asm/ptrace.h>
+>>>  
+>>> +#define BHRB_MAX_ENTRIES	32
+>>> +
+>>>  struct cpu_hw_events {
+>>>  	int n_events;
+>>>  	int n_percpu;
+>>> @@ -38,11 +40,21 @@ struct cpu_hw_events {
+>>>  
+>>>  	unsigned int group_flag;
+>>>  	int n_txn_start;
+>>> +
+>>> +	/* BHRB bits */
+>>> +	u64				bhrb_filter;	/* BHRB HW branch filter */
+>>> +	int				bhrb_users;
+>>> +	void				*bhrb_context;
+>>> +	struct	perf_branch_stack	bhrb_stack;
+>>> +	struct	perf_branch_entry	bhrb_entries[BHRB_MAX_ENTRIES];
+>>>  };
+>>> +
+>>>  DEFINE_PER_CPU(struct cpu_hw_events, cpu_hw_events);
+>>>  
+>>>  struct power_pmu *ppmu;
+>>>  
+>>> +#include "perf_event_bhrb.c"
+>>> +
+>>
+>> Um, why are you doing that?
+>>
 > 
-> I want to do this because I saw some build errors on next-tree when
-> compiling with CONFIG_SMP disabled, and it seems they are caused by some
-> codes under the CONFIG_NUMA #ifdefs.  
+> There was no specific reason for that.
+> 
 
-This seems to make sense to me. Can you please repost with a better
-changelog and a description of the actual build error you were seeing.
+Ahh, I remember it now. The function in the new file uses "cpu_hw_events" structure
+which is passed during "record_and_restart" data capture phase. Right now cpu_hw_events is
+not defined in the header file but inside core-book3s.c itself. Solution to this problem
+could be any of these.
 
-cheers
+(0) Move all the code from the new file perf_event_bhrb.c into core-book3s.c
+(1) Move cpu_hw_events structure to perf_event_server.h
+(2) Create additional BHRB processing function inside struct power_pmu and
+    define it for P8 inside power8_pmu.c
+
+Regards
+Anshuman
