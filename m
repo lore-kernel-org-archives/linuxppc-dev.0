@@ -1,16 +1,15 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub2.si.c-s.fr (pegase2.c-s.fr [93.17.235.10])
- by ozlabs.org (Postfix) with ESMTP id 4B4D42C017B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2013 09:36:07 +1000 (EST)
-Date: Thu, 18 Apr 2013 00:04:11 +0200
-Message-Id: <201304172204.r3HM4BmU024718@localhost.localdomain>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Vitaly Bordug <vitb@kernel.crashing.org>,
- Marcelo Tosatti <marcelo@kvack.org>, Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH] Erroneous double irq_eoi() on CPM IRQ in MPC8xx
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <michael@ellerman.id.au>
+Date: Thu, 18 Apr 2013 11:46:00 +1000
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Li Zhong <zhong@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH powerpc] make CONFIG_NUMA depends on CONFIG_SMP
+Message-ID: <20130418014559.GB8261@concordia>
+References: <1338370318.3637.12.camel@ThinkPad-T420>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1338370318.3637.12.camel@ThinkPad-T420>
+Cc: PowerPC email list <linuxppc-dev@lists.ozlabs.org>,
+ Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,35 +19,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-irq_eoi() is already called by generic_handle_irq() so 
-it shall not be called a again
+On Wed, May 30, 2012 at 05:31:58PM +0800, Li Zhong wrote:
+> I'm not sure whether it makes sense to add this dependency to avoid
+> CONFI_NUMA && !CONFIG_SMP. 
+> 
+> I want to do this because I saw some build errors on next-tree when
+> compiling with CONFIG_SMP disabled, and it seems they are caused by some
+> codes under the CONFIG_NUMA #ifdefs.  
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+This seems to make sense to me. Can you please repost with a better
+changelog and a description of the actual build error you were seeing.
 
-Index: linux/arch/powerpc/platforms/8xx/m8xx_setup.c
-===================================================================
---- linux/arch/powerpc/platforms/8xx/m8xx_setup.c	(revision 4802)
-+++ linux/arch/powerpc/platforms/8xx/m8xx_setup.c	(working copy)
-@@ -218,19 +218,12 @@
- 
- static void cpm_cascade(unsigned int irq, struct irq_desc *desc)
- {
--	struct irq_chip *chip;
--	int cascade_irq;
-+	struct irq_chip *chip = irq_desc_get_chip(desc);
-+	int cascade_irq = cpm_get_irq());
- 
--	if ((cascade_irq = cpm_get_irq()) >= 0) {
--		struct irq_desc *cdesc = irq_to_desc(cascade_irq);
--
-+	if (cascade_irq >= 0)
- 		generic_handle_irq(cascade_irq);
- 
--		chip = irq_desc_get_chip(cdesc);
--		chip->irq_eoi(&cdesc->irq_data);
--	}
--
--	chip = irq_desc_get_chip(desc);
- 	chip->irq_eoi(&desc->irq_data);
- }
- 
+cheers
