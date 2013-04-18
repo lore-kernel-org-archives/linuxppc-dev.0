@@ -1,20 +1,34 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id 9CA232C01E0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2013 17:50:08 +1000 (EST)
-Date: Thu, 18 Apr 2013 17:49:57 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: linux-next: manual merge of the ppc-temp tree with the metag tree
-Message-Id: <20130418174957.90176c7a0a6b95d3cb30a5a4@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Thu__18_Apr_2013_17_49_57_+1000_Z+HerTYRCOwE7F9y"
-Cc: Paul Bolle <pebolle@tiscali.nl>, James Hogan <james.hogan@imgtec.com>,
- linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A62F92C01C0
+ for <linuxppc-dev@ozlabs.org>; Thu, 18 Apr 2013 22:26:47 +1000 (EST)
+Received: from /spool/local
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Thu, 18 Apr 2013 17:51:16 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 35E9D1258053
+ for <linuxppc-dev@ozlabs.org>; Thu, 18 Apr 2013 17:58:04 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3ICQSJ831129800
+ for <linuxppc-dev@ozlabs.org>; Thu, 18 Apr 2013 17:56:29 +0530
+Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3ICQVNm008590
+ for <linuxppc-dev@ozlabs.org>; Thu, 18 Apr 2013 22:26:31 +1000
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH V3 4/5] powerpc, perf: Define BHRB generic functions,
+ data and flags for POWER8
+Date: Thu, 18 Apr 2013 17:56:15 +0530
+Message-Id: <1366287976-3900-5-git-send-email-khandual@linux.vnet.ibm.com>
+In-Reply-To: <1366287976-3900-1-git-send-email-khandual@linux.vnet.ibm.com>
+References: <1366287976-3900-1-git-send-email-khandual@linux.vnet.ibm.com>
+Cc: mikey@neuling.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,65 +38,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Thu__18_Apr_2013_17_49_57_+1000_Z+HerTYRCOwE7F9y
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This patch populates BHRB specific data for power_pmu structure. It
+also implements POWER8 specific BHRB filter and configuration functions.
 
-Hi Michael,
+Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+---
+ arch/powerpc/perf/power8-pmu.c | 57 +++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 56 insertions(+), 1 deletion(-)
 
-Today's linux-next merge of the ppc-temp tree got a conflict in
-arch/metag/mm/Kconfig between commit 2b8660ed3bfe ("memblock: Kill
-ARCH_POPULATES_NODE_MAP once more") from the metag tree and commit
-45b02f8d94e3 ("memblock: kill "config MAX_ACTIVE_REGIONS"") from the
-ppc-temp tree.
-
-I fixed it up (see below) and can carry the fix as necessary (no action
-is required).
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --cc arch/metag/mm/Kconfig
-index 794f26a,ccf2576..0000000
---- a/arch/metag/mm/Kconfig
-+++ b/arch/metag/mm/Kconfig
-@@@ -93,11 -93,9 +93,6 @@@ config ARCH_SPARSEMEM_ENABL
-  config ARCH_SPARSEMEM_DEFAULT
-  	def_bool y
- =20
-- config MAX_ACTIVE_REGIONS
-- 	int
-- 	default "2" if SPARSEMEM
-- 	default "1"
--=20
- -config ARCH_POPULATES_NODE_MAP
- -	def_bool y
- -
-  config ARCH_SELECT_MEMORY_MODEL
-  	def_bool y
- =20
-
---Signature=_Thu__18_Apr_2013_17_49_57_+1000_Z+HerTYRCOwE7F9y
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBCAAGBQJRb6WlAAoJEECxmPOUX5FEiLcP/1Iki+Dyh0p5FT74CXQWQomM
-76311xhkknGd4pY5l+gVQTfiT/GKsYziY2d6Ymy7mLC6UXLkhJ6NH430Kk2BbZHc
-cufSH1o0G4DOmNaZamIx6ZbsJn2UsV8YS79XGY+Jw9Z/wYAmWM66TEH7hpEe38Ru
-c7d59sEsaa1JQT8fNaeqvdEMgNmKzxuPdvuEhfxfNuxhjMOvs4kO41zfs+pVqcXJ
-ZhOz2fvTtcwBeh2ql5Ey5u6K5aZ4C951l1EyOYGO8PzQ7JdGISdhV/0ammeG0/JT
-2N3T9RgcEPPSGlwZjALMgYHWREH7Es94pp2ArpHC1hLSZ4BeI5oWwAlV1Ncn8uk4
-7wPmfVMy28xIyddHwEQdTL1k8lDU/stE/xidZTLy7f4S226FjUBKo2CdMOQESvAr
-I4p7XZnkUiF4aYKy4fL5tRTMIhIl4idTlgS9StyLIkiLB1+b8fVL/9yAMMV2liWq
-Nc5muTcMxHciRwFxBFXzgNUgHw7jenrKI8Xa2f6O7jLY3VoWYUdcv6U4kq0GcWex
-ZCJ2Fvivgq65wi7KXFQy27hjirRfZD+K3cetOatpmlVLEwItyIhUtyRmfFaoPTWc
-7ZLCrj7HENDUUMW9xrbhx60D0OWHHZIKeShrFbgxlAiLHY60uOySLJY6IyXoValB
-84QeOBnx0lF/ETva3ySG
-=2sxa
------END PGP SIGNATURE-----
-
---Signature=_Thu__18_Apr_2013_17_49_57_+1000_Z+HerTYRCOwE7F9y--
+diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
+index 106ae0b..153408c 100644
+--- a/arch/powerpc/perf/power8-pmu.c
++++ b/arch/powerpc/perf/power8-pmu.c
+@@ -109,6 +109,16 @@
+ #define EVENT_IS_MARKED		(EVENT_MARKED_MASK << EVENT_MARKED_SHIFT)
+ #define EVENT_PSEL_MASK		0xff	/* PMCxSEL value */
+ 
++/* MMCRA IFM bits - POWER8 */
++#define	POWER8_MMCRA_IFM1		0x0000000040000000UL
++#define	POWER8_MMCRA_IFM2		0x0000000080000000UL
++#define	POWER8_MMCRA_IFM3		0x00000000C0000000UL
++
++#define ONLY_PLM \
++	(PERF_SAMPLE_BRANCH_USER        |\
++	 PERF_SAMPLE_BRANCH_KERNEL      |\
++	 PERF_SAMPLE_BRANCH_HV)
++
+ /*
+  * Layout of constraint bits:
+  *
+@@ -428,6 +438,48 @@ static int power8_generic_events[] = {
+ 	[PERF_COUNT_HW_BRANCH_MISSES] =			PM_BR_MPRED_CMPL,
+ };
+ 
++static u64 power8_bhrb_filter_map(u64 branch_sample_type)
++{
++	u64 pmu_bhrb_filter = 0;
++	u64 br_privilege = branch_sample_type & ONLY_PLM;
++
++	/* BHRB and regular PMU events share the same prvillege state
++	 * filter configuration. BHRB is always recorded along with a
++	 * regular PMU event. So privilege state filter criteria for BHRB
++	 * and the companion PMU events has to be the same. As a default
++	 * "perf record" tool sets all privillege bits ON when no filter
++	 * criteria is provided in the command line. So as along as all
++	 * privillege bits are ON or they are OFF, we are good to go.
++	 */
++	if ((br_privilege != 7) && (br_privilege != 0))
++		return -1;
++
++	/* No branch filter requested */
++	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY)
++		return pmu_bhrb_filter;
++
++	/* Invalid branch filter options - HW does not support */
++	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY_RETURN)
++		return -1;
++
++	if (branch_sample_type & PERF_SAMPLE_BRANCH_IND_CALL)
++		return -1;
++
++	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY_CALL) {
++		pmu_bhrb_filter |= POWER8_MMCRA_IFM1;
++		return pmu_bhrb_filter;
++	}
++
++	/* Every thing else is unsupported */
++	return -1;
++}
++
++static void power8_config_bhrb(u64 pmu_bhrb_filter)
++{
++	/* Enable BHRB filter in PMU */
++	mtspr(SPRN_MMCRA, (mfspr(SPRN_MMCRA) | pmu_bhrb_filter));
++}
++
+ static struct power_pmu power8_pmu = {
+ 	.name			= "POWER8",
+ 	.n_counter		= 6,
+@@ -435,12 +487,15 @@ static struct power_pmu power8_pmu = {
+ 	.add_fields		= POWER8_ADD_FIELDS,
+ 	.test_adder		= POWER8_TEST_ADDER,
+ 	.compute_mmcr		= power8_compute_mmcr,
++	.config_bhrb		= power8_config_bhrb,
++	.bhrb_filter_map	= power8_bhrb_filter_map,
+ 	.get_constraint		= power8_get_constraint,
+ 	.disable_pmc		= power8_disable_pmc,
+-	.flags			= PPMU_HAS_SSLOT | PPMU_HAS_SIER,
++	.flags			= PPMU_HAS_SSLOT | PPMU_HAS_SIER | PPMU_BHRB,
+ 	.n_generic		= ARRAY_SIZE(power8_generic_events),
+ 	.generic_events		= power8_generic_events,
+ 	.attr_groups		= power8_pmu_attr_groups,
++	.bhrb_nr		= 32,
+ };
+ 
+ static int __init init_power8_pmu(void)
+-- 
+1.7.11.7
