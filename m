@@ -1,31 +1,16 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 41FD42C00FC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2013 15:34:12 +1000 (EST)
-Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Thu, 18 Apr 2013 01:34:03 -0400
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 4B7C338C801A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2013 01:34:00 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3I5Y0Nk291180
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2013 01:34:00 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3I5XxgQ016348
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2013 01:34:00 -0400
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/mm: Use tlbiel for 4KB pages
-Date: Thu, 18 Apr 2013 13:33:55 +0800
-Message-Id: <1366263235-7787-1-git-send-email-shangw@linux.vnet.ibm.com>
-Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
+Return-Path: <michael@ellerman.id.au>
+Date: Thu, 18 Apr 2013 15:58:42 +1000
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Adhemerval Zanella <azanella@linux.vnet.ibm.com>
+Subject: Re: [PATCH] [RFC] powerpc: Add VDSO version of time
+Message-ID: <20130418055842.GA14456@concordia>
+References: <5148C2B3.6010408@linux.vnet.ibm.com>
+ <20130405062137.GA5082@concordia>
+ <5162CEBE.1020607@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5162CEBE.1020607@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,29 +20,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The firmware should have supplied correct information for the kernel
-to figure out the page size array, which is traced by mmu_psize_defs[].
-Otherwise, the kernel will fail back to use solely 4KB page size
-and copy mmu_psize_defaults_old[] over to mmu_psize_defs[]. However,
-the "tlbiel" isn't enabled in mmu_psize_defaults_old[].
+On Mon, Apr 08, 2013 at 11:05:50AM -0300, Adhemerval Zanella wrote:
+> On 04/05/2013 03:21 AM, Michael Ellerman wrote:
+> > On Tue, Mar 19, 2013 at 04:55:31PM -0300, Adhemerval Zanella wrote:
+> >> Hi all,
+> >>
+> >> This patch implement the time syscall as vDSO. I have a glibc patch
+> >> to use it as IFUNC (as latest gettimeofday patch). Below the perf
+> >> numbers:
+> >>
+> >> Baseline PPC32: 380 nsec
+> >> Baseline PPC64: 352 nsec
+> >> vdso PPC32:      20 nsec
+> >> vdso PPC64:      20 nsec
+> >>
+> >> I focused on 64 bit kernel, do I need to provide a scheme for 32 bits
+> >> as well?
+> > You did provide a 32-bit implementation. I take it you haven't tested
+> > that though? Can you test it?
+> 
+> Hi,
+> 
+> I didn't build a 32 bit kernel, but I tested 32 bits binaries (that uses
+> the VDSO32 implantation) without any issue. Performance gains are similar.
 
-Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
----
- arch/powerpc/mm/hash_utils_64.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+OK. Please send an updated version of the patch which a changelog
+describing the testing you've done, and add your Signed-off-by to the
+patch.
 
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 2d4a20c..8675ae5 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -130,7 +130,7 @@ static struct mmu_psize_def mmu_psize_defaults_old[] = {
- 		.sllp	= 0,
- 		.penc	= 0,
- 		.avpnm	= 0,
--		.tlbiel = 0,
-+		.tlbiel = 1,
- 	},
- };
- 
--- 
-1.7.5.4
+cheers
