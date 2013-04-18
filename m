@@ -1,16 +1,19 @@
-Return-Path: <michael@ellerman.id.au>
-Date: Thu, 18 Apr 2013 15:58:42 +1000
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Adhemerval Zanella <azanella@linux.vnet.ibm.com>
-Subject: Re: [PATCH] [RFC] powerpc: Add VDSO version of time
-Message-ID: <20130418055842.GA14456@concordia>
-References: <5148C2B3.6010408@linux.vnet.ibm.com>
- <20130405062137.GA5082@concordia>
- <5162CEBE.1020607@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5162CEBE.1020607@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 732912C013A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2013 16:28:15 +1000 (EST)
+Message-ID: <1366266485.24994.79.camel@pasglop>
+Subject: Re: questions around Book III-E and branch trace
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Chris Friesen <chris.friesen@genband.com>
+Date: Thu, 18 Apr 2013 08:28:05 +0200
+In-Reply-To: <516EED8D.3040304@genband.com>
+References: <516EED8D.3040304@genband.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,32 +23,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Apr 08, 2013 at 11:05:50AM -0300, Adhemerval Zanella wrote:
-> On 04/05/2013 03:21 AM, Michael Ellerman wrote:
-> > On Tue, Mar 19, 2013 at 04:55:31PM -0300, Adhemerval Zanella wrote:
-> >> Hi all,
-> >>
-> >> This patch implement the time syscall as vDSO. I have a glibc patch
-> >> to use it as IFUNC (as latest gettimeofday patch). Below the perf
-> >> numbers:
-> >>
-> >> Baseline PPC32: 380 nsec
-> >> Baseline PPC64: 352 nsec
-> >> vdso PPC32:      20 nsec
-> >> vdso PPC64:      20 nsec
-> >>
-> >> I focused on 64 bit kernel, do I need to provide a scheme for 32 bits
-> >> as well?
-> > You did provide a 32-bit implementation. I take it you haven't tested
-> > that though? Can you test it?
-> 
+On Wed, 2013-04-17 at 12:44 -0600, Chris Friesen wrote:
 > Hi,
 > 
-> I didn't build a 32 bit kernel, but I tested 32 bits binaries (that uses
-> the VDSO32 implantation) without any issue. Performance gains are similar.
+> I'm trying to wrap my head around how linux handles branch tracing on 
+> Book III-E.  I think I understand how we set MSR[DE] and DBCR0[IDM|BT], 
+> and how we handle fixing things up if an instruction being traced causes 
+> an exception.
 
-OK. Please send an updated version of the patch which a changelog
-describing the testing you've done, and add your Signed-off-by to the
-patch.
+That code is a mess and it wouldn't surprise me if it was broken...
 
-cheers
+At this point, the people who care the most about it are FSL, so
+that's where you have the most chance to find a satisfactory answer.
+
+Cheers,
+Ben.
+
+> I have a few questions though:
+> 
+> 1) Does user_enable_block_step() have a bug in it?  The current code has
+> 
+> task->thread.dbcr0 = DBCR0_IDM | DBCR0_BT;
+> 
+> Should that be as follows (to match the singel-step case)?
+> 
+> task->thread.dbcr0 |= DBCR0_IDM | DBCR0_BT;
+> 
+> 
+> 2) Why doesn't DBCR0_ACTIVE_EVENTS include DBCR0_BT?
+> 
+> 
+> 3) In sys_debug_setcontext() why does SIG_DBG_BRANCH_TRACING return 
+> -EINVAL if CONFIG_PPC_ADV_DEBUG_REGS is set?  Would it not be possible 
+> to use DBCR0_BT?
+> 
+> Thanks,
+> Chris
+> 
+> 
