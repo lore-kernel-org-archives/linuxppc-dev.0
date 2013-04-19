@@ -1,16 +1,16 @@
 Return-Path: <B35336@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe006.messaging.microsoft.com [216.32.180.16])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 011392C04C4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2013 20:48:38 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 0B8F92C027C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2013 20:48:40 +1000 (EST)
 From: Zhao Chenhui <chenhui.zhao@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v2 15/15] powerpc/rcpm: add sleep support for T4/B4 chips
-Date: Fri, 19 Apr 2013 18:47:48 +0800
-Message-ID: <1366368468-29143-15-git-send-email-chenhui.zhao@freescale.com>
+Subject: [PATCH v2 12/15] powerpc/85xx: add time base sync support for e6500
+Date: Fri, 19 Apr 2013 18:47:45 +0800
+Message-ID: <1366368468-29143-12-git-send-email-chenhui.zhao@freescale.com>
 In-Reply-To: <1366368468-29143-1-git-send-email-chenhui.zhao@freescale.com>
 References: <1366368468-29143-1-git-send-email-chenhui.zhao@freescale.com>
 MIME-Version: 1.0
@@ -27,114 +27,133 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Chen-Hui Zhao <chenhui.zhao@freescale.com>
 
-RCPM unit controls the power managment of T4/B4 chips. Software can
-access RCPM registers to put specific thread/core in PH10/PH15/PH20/PH30
-state or put the device in LPM10/LPM20/LPM40 mode.
-
-The RCPM unit supports several wake up sources through internal timers
-and internal and external interrupts.
-
-When the device enter sleep state, it will be put in LPM20 mode.
-The command is "echo standby > /sys/power/state".
+For e6500, two threads in one core share one time base. Just need
+to do time base sync on first thread of one core, and skip it on
+the other thread.
 
 Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
 Signed-off-by: Li Yang <leoli@freescale.com>
 Signed-off-by: Andy Fleming <afleming@freescale.com>
 ---
- arch/powerpc/sysdev/fsl_rcpm.c |   54 +++++++++++++++++++++++++++++++++++++---
- 1 files changed, 50 insertions(+), 4 deletions(-)
+ arch/powerpc/platforms/85xx/smp.c |   52 +++++++++++++++++++++++++++++++-----
+ 1 files changed, 44 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/fsl_rcpm.c b/arch/powerpc/sysdev/fsl_rcpm.c
-index fd789da..10e5cb3 100644
---- a/arch/powerpc/sysdev/fsl_rcpm.c
-+++ b/arch/powerpc/sysdev/fsl_rcpm.c
-@@ -20,6 +20,7 @@
+diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
+index 74d8cde..5f3eee3 100644
+--- a/arch/powerpc/platforms/85xx/smp.c
++++ b/arch/powerpc/platforms/85xx/smp.c
+@@ -26,6 +26,7 @@
+ #include <asm/cacheflush.h>
+ #include <asm/dbell.h>
  #include <asm/fsl_guts.h>
++#include <asm/cputhreads.h>
  
- static struct ccsr_rcpm __iomem *rcpm_regs;
-+static struct ccsr_rcpm_v2 __iomem *rcpm2_regs;
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/mpic.h>
+@@ -45,6 +46,7 @@ static u64 timebase;
+ static int tb_req;
+ static int tb_valid;
+ static u32 cur_booting_core;
++static bool rcpmv2;
  
- static int rcpm_suspend_enter(suspend_state_t state)
- {
-@@ -53,6 +54,41 @@ static int rcpm_suspend_enter(suspend_state_t state)
- 	return ret;
+ #ifdef CONFIG_PPC_E500MC
+ /* get a physical mask of online cores and booting core */
+@@ -53,26 +55,40 @@ static inline u32 get_phy_cpu_mask(void)
+ 	u32 mask;
+ 	int cpu;
+ 
+-	mask = 1 << cur_booting_core;
+-	for_each_online_cpu(cpu)
+-		mask |= 1 << get_hard_smp_processor_id(cpu);
++	if (smt_capable()) {
++		/* two threads in one core share one time base */
++		mask = 1 << cpu_core_index_of_thread(cur_booting_core);
++		for_each_online_cpu(cpu)
++			mask |= 1 << cpu_core_index_of_thread(
++					get_hard_smp_processor_id(cpu));
++	} else {
++		mask = 1 << cur_booting_core;
++		for_each_online_cpu(cpu)
++			mask |= 1 << get_hard_smp_processor_id(cpu);
++	}
+ 
+ 	return mask;
  }
  
-+static int rcpm_v2_suspend_enter(suspend_state_t state)
-+{
-+	int ret = 0;
-+
-+	switch (state) {
-+	case PM_SUSPEND_STANDBY:
-+
-+		/* clear previous LPM20 status */
-+		setbits32(&rcpm2_regs->powmgtcsr, RCPM_POWMGTCSR_P_LPM20_ST);
-+		/* enter LPM20 status */
-+		setbits32(&rcpm2_regs->powmgtcsr, RCPM_POWMGTCSR_LPM20_RQ);
-+
-+		/* At this point, the device is in LPM20 status. */
-+
-+		/* resume ... */
-+		ret = spin_event_timeout(
-+		      (in_be32(&rcpm2_regs->powmgtcsr) & RCPM_POWMGTCSR_LPM20_ST)
-+		      == 0, 10000, 10);
-+		if (!ret) {
-+			pr_err("%s: timeout waiting for LPM20 bit to be cleared\n",
-+				__func__);
-+			ret = -EINVAL;
-+		}
-+
-+		break;
-+
-+	default:
-+		ret = -EINVAL;
-+
-+	}
-+
-+	return ret;
-+
-+}
-+
- static int rcpm_suspend_valid(suspend_state_t state)
+ static void mpc85xx_timebase_freeze(int freeze)
  {
- 	if (state == PM_SUSPEND_STANDBY)
-@@ -63,16 +99,25 @@ static int rcpm_suspend_valid(suspend_state_t state)
+-	struct ccsr_rcpm __iomem *rcpm = guts_regs;
++	u32 *addr;
+ 	u32 mask = get_phy_cpu_mask();
  
- static const struct platform_suspend_ops rcpm_suspend_ops = {
- 	.valid = rcpm_suspend_valid,
--	.enter = rcpm_suspend_enter,
- };
++	if (rcpmv2)
++		addr = &((struct ccsr_rcpm_v2 *)guts_regs)->pctbenr;
++	else
++		addr = &((struct ccsr_rcpm *)guts_regs)->ctbenr;
++
+ 	if (freeze)
+-		clrbits32(&rcpm->ctbenr, mask);
++		clrbits32(addr, mask);
+ 	else
+-		setbits32(&rcpm->ctbenr, mask);
++		setbits32(addr, mask);
  
- static int rcpm_probe(struct platform_device *pdev)
+-	/* read back to push the previos write */
+-	in_be32(&rcpm->ctbenr);
++	/* read back to push the previous write */
++	in_be32(addr);
+ }
++
+ #else
+ static void mpc85xx_timebase_freeze(int freeze)
  {
- 	struct device_node *np = pdev->dev.of_node;
+@@ -94,6 +110,16 @@ static void mpc85xx_give_timebase(void)
+ {
+ 	unsigned long flags;
  
--	rcpm_regs = of_iomap(np, 0);
--	if (!rcpm_regs)
--		return -ENOMEM;
-+	if (of_device_is_compatible(np, "fsl,qoriq-rcpm-2.0")) {
-+		rcpm2_regs = of_iomap(np, 0);
-+		if (!rcpm2_regs)
-+			return -ENOMEM;
++#ifdef CONFIG_PPC_E500MC
++	/*
++	 * If the booting thread is not the first thread of the core,
++	 * skip time base sync.
++	 */
++	if (smt_capable() &&
++		cur_booting_core != cpu_first_thread_sibling(cur_booting_core))
++		return;
++#endif
 +
-+		rcpm_suspend_ops.enter = rcpm_v2_suspend_enter;
-+	} else {
-+		rcpm_regs = of_iomap(np, 0);
-+		if (!rcpm_regs)
-+			return -ENOMEM;
+ 	local_irq_save(flags);
+ 
+ 	while (!tb_req)
+@@ -117,6 +143,12 @@ static void mpc85xx_take_timebase(void)
+ {
+ 	unsigned long flags;
+ 
++#ifdef CONFIG_PPC_E500MC
++	if (smt_capable() &&
++		cur_booting_core != cpu_first_thread_sibling(cur_booting_core))
++		return;
++#endif
 +
-+		rcpm_suspend_ops.enter = rcpm_suspend_enter;
-+	}
+ 	local_irq_save(flags);
  
- 	suspend_set_ops(&rcpm_suspend_ops);
- 
-@@ -82,6 +127,7 @@ static int rcpm_probe(struct platform_device *pdev)
- 
- static const struct of_device_id rcpm_ids[] = {
+ 	tb_req = 1;
+@@ -457,6 +489,7 @@ static const struct of_device_id mpc85xx_smp_guts_ids[] = {
+ 	{ .compatible = "fsl,p1023-guts", },
+ 	{ .compatible = "fsl,p2020-guts", },
  	{ .compatible = "fsl,qoriq-rcpm-1.0", },
 +	{ .compatible = "fsl,qoriq-rcpm-2.0", },
- 	{ },
+ 	{},
  };
  
+@@ -483,6 +516,9 @@ void __init mpc85xx_smp_init(void)
+ 
+ 	np = of_find_matching_node(NULL, mpc85xx_smp_guts_ids);
+ 	if (np) {
++		if (of_device_is_compatible(np, "fsl,qoriq-rcpm-2.0"))
++			rcpmv2 = true;
++
+ 		guts_regs = of_iomap(np, 0);
+ 		of_node_put(np);
+ 		if (!guts_regs) {
 -- 
 1.7.3
