@@ -1,30 +1,33 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B002A2C01FD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2013 19:33:01 +1000 (EST)
+ (Client CN "e34.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D64292C00DC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2013 19:33:08 +1000 (EST)
 Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Fri, 19 Apr 2013 05:32:55 -0400
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 5D6F838C801C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2013 05:32:52 -0400 (EDT)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3J9WpUn361238
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2013 05:32:52 -0400
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3J9Wpdm008085
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2013 03:32:51 -0600
+ Fri, 19 Apr 2013 03:33:05 -0600
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+ [9.17.195.227])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id DA3FD1FF0039
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2013 03:27:50 -0600 (MDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3J9WqDY150672
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2013 03:32:52 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3J9Wqfw022676
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2013 03:32:52 -0600
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/3] powerpc/powernv: Supports PHB3
-Date: Fri, 19 Apr 2013 17:32:43 +0800
-Message-Id: <1366363965-23281-1-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 2/3] powerpc/powernv: Configure IODA2 tables explicitly
+Date: Fri, 19 Apr 2013 17:32:44 +0800
+Message-Id: <1366363965-23281-2-git-send-email-shangw@linux.vnet.ibm.com>
+In-Reply-To: <1366363965-23281-1-git-send-email-shangw@linux.vnet.ibm.com>
+References: <1366363965-23281-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -35,220 +38,119 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch intends to initialize PHB3 during system boot stage. The
-flag "PNV_PHB_MODEL_PHB3" is introduced to differentiate IODA2
-compatible PHB3 from other types of PHBs.
+The PHB3, which is compatible with IODA2, have lots of tables (RTT/
+PETLV/PEST/IVT/RBA) in system memory and have corresponding BARs to
+trace the system memory address. The patch configures the addresses
+of variable tables explicitly through OPAL API.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c |   62 +++++++++++++++--------------
- arch/powerpc/platforms/powernv/pci.c      |    7 +++-
- arch/powerpc/platforms/powernv/pci.h      |    8 ++-
- 3 files changed, 43 insertions(+), 34 deletions(-)
+ arch/powerpc/include/asm/opal.h           |    5 +--
+ arch/powerpc/platforms/powernv/pci-ioda.c |   32 +++++++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/pci.h      |   25 ++++++++++++++++++++++
+ 3 files changed, 59 insertions(+), 3 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index a4b28f1..0af7ba0 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -491,9 +491,8 @@ int64_t opal_pci_map_pe_mmio_window(uint64_t phb_id, uint16_t pe_number,
+ 				    uint16_t window_type, uint16_t window_num,
+ 				    uint16_t segment_num);
+ int64_t opal_pci_set_phb_table_memory(uint64_t phb_id, uint64_t rtt_addr,
+-				      uint64_t ivt_addr, uint64_t ivt_len,
+-				      uint64_t reject_array_addr,
+-				      uint64_t peltv_addr);
++				      uint64_t peltv_addr, uint64_t pest_addr,
++				      uint64_t ivt_addr, uint64_t rba_addr);
+ int64_t opal_pci_set_pe(uint64_t phb_id, uint64_t pe_number, uint64_t bus_dev_func,
+ 			uint8_t bus_compare, uint8_t dev_compare, uint8_t func_compare,
+ 			uint8_t pe_action);
 diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 8e90e89..8993242 100644
+index 8993242..d8d5baa 100644
 --- a/arch/powerpc/platforms/powernv/pci-ioda.c
 +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -852,18 +852,19 @@ static u32 pnv_ioda_bdfn_to_pe(struct pnv_phb *phb, struct pci_bus *bus,
- 	return phb->ioda.pe_rmap[(bus->number << 8) | devfn];
- }
+@@ -998,6 +998,38 @@ void __init pnv_pci_init_ioda_phb(struct device_node *np, int ioda_type)
+ 	ppc_md.pcibios_window_alignment = pnv_pci_window_alignment;
+ 	pci_add_flags(PCI_REASSIGN_ALL_RSRC);
  
--void __init pnv_pci_init_ioda1_phb(struct device_node *np)
-+void __init pnv_pci_init_ioda_phb(struct device_node *np, int ioda_type)
- {
- 	struct pci_controller *hose;
- 	static int primary = 1;
- 	struct pnv_phb *phb;
- 	unsigned long size, m32map_off, iomap_off, pemap_off;
- 	const u64 *prop64;
-+	const u32 *prop32;
- 	u64 phb_id;
- 	void *aux;
- 	long rc;
- 
--	pr_info(" Initializing IODA OPAL PHB %s\n", np->full_name);
-+	pr_info(" Initializing IODA%d OPAL PHB %s\n", ioda_type, np->full_name);
- 
- 	prop64 = of_get_property(np, "ibm,opal-phbid", NULL);
- 	if (!prop64) {
-@@ -890,37 +891,34 @@ void __init pnv_pci_init_ioda1_phb(struct device_node *np)
- 	hose->last_busno = 0xff;
- 	hose->private_data = phb;
- 	phb->opal_id = phb_id;
--	phb->type = PNV_PHB_IODA1;
-+	phb->type = ioda_type;
- 
- 	/* Detect specific models for error handling */
- 	if (of_device_is_compatible(np, "ibm,p7ioc-pciex"))
- 		phb->model = PNV_PHB_MODEL_P7IOC;
-+	else if (of_device_is_compatible(np, "ibm,p8-pciex"))
-+		phb->model = PNV_PHB_MODEL_PHB3;
- 	else
- 		phb->model = PNV_PHB_MODEL_UNKNOWN;
- 
--	/* We parse "ranges" now since we need to deduce the register base
--	 * from the IO base
--	 */
-+	/* Parse 32-bit and IO ranges (if any) */
- 	pci_process_bridge_OF_ranges(phb->hose, np, primary);
- 	primary = 0;
- 
--	/* Magic formula from Milton */
-+	/* Get registers */
- 	phb->regs = of_iomap(np, 0);
- 	if (phb->regs == NULL)
- 		pr_err("  Failed to map registers !\n");
- 
--
--	/* XXX This is hack-a-thon. This needs to be changed so that:
--	 *  - we obtain stuff like PE# etc... from device-tree
--	 *  - we properly re-allocate M32 ourselves
--	 *    (the OFW one isn't very good)
--	 */
--
- 	/* Initialize more IODA stuff */
--	phb->ioda.total_pe = 128;
-+	prop32 = of_get_property(np, "ibm,opal-num-pes", NULL);
-+	if (!prop32)
-+		phb->ioda.total_pe = 1;
-+	else
-+		phb->ioda.total_pe = *prop32;
- 
- 	phb->ioda.m32_size = resource_size(&hose->mem_resources[0]);
--	/* OFW Has already off top 64k of M32 space (MSI space) */
-+	/* FW Has already off top 64k of M32 space (MSI space) */
- 	phb->ioda.m32_size += 0x10000;
- 
- 	phb->ioda.m32_segsize = phb->ioda.m32_size / phb->ioda.total_pe;
-@@ -930,7 +928,10 @@ void __init pnv_pci_init_ioda1_phb(struct device_node *np)
- 	phb->ioda.io_segsize = phb->ioda.io_size / phb->ioda.total_pe;
- 	phb->ioda.io_pci_base = 0; /* XXX calculate this ? */
- 
--	/* Allocate aux data & arrays */
-+	/* Allocate aux data & arrays
-+	 *
-+	 * XXX TODO: Don't allocate io segmap on PHB3
++	/*
++	 * Initialize variable tables for IODA2. We might share the table
++	 * size between firmware and Linux someday. For now, we have fixed
++	 * values for them
 +	 */
- 	size = _ALIGN_UP(phb->ioda.total_pe / 8, sizeof(unsigned long));
- 	m32map_off = size;
- 	size += phb->ioda.total_pe * sizeof(phb->ioda.m32_segmap[0]);
-@@ -960,7 +961,7 @@ void __init pnv_pci_init_ioda1_phb(struct device_node *np)
- 	hose->mem_resources[2].start = 0;
- 	hose->mem_resources[2].end = 0;
- 
--#if 0
-+#if 0 /* We should really do that ... */
- 	rc = opal_pci_set_phb_mem_window(opal->phb_id,
- 					 window_type,
- 					 window_num,
-@@ -974,16 +975,6 @@ void __init pnv_pci_init_ioda1_phb(struct device_node *np)
- 		phb->ioda.m32_size, phb->ioda.m32_segsize,
- 		phb->ioda.io_size, phb->ioda.io_segsize);
- 
--	if (phb->regs)  {
--		pr_devel(" BUID     = 0x%016llx\n", in_be64(phb->regs + 0x100));
--		pr_devel(" PHB2_CR  = 0x%016llx\n", in_be64(phb->regs + 0x160));
--		pr_devel(" IO_BAR   = 0x%016llx\n", in_be64(phb->regs + 0x170));
--		pr_devel(" IO_BAMR  = 0x%016llx\n", in_be64(phb->regs + 0x178));
--		pr_devel(" IO_SAR   = 0x%016llx\n", in_be64(phb->regs + 0x180));
--		pr_devel(" M32_BAR  = 0x%016llx\n", in_be64(phb->regs + 0x190));
--		pr_devel(" M32_BAMR = 0x%016llx\n", in_be64(phb->regs + 0x198));
--		pr_devel(" M32_SAR  = 0x%016llx\n", in_be64(phb->regs + 0x1a0));
--	}
- 	phb->hose->ops = &pnv_pci_ops;
- 
- 	/* Setup RID -> PE mapping function */
-@@ -1011,7 +1002,18 @@ void __init pnv_pci_init_ioda1_phb(struct device_node *np)
++	if (ioda_type == PNV_PHB_IODA2) {
++		phb->ioda.tbl_rtt = alloc_bootmem_align(PNV_PHB3_RTT_TBL_SIZE,
++						PNV_PHB3_RTT_TBL_SIZE);
++		phb->ioda.tbl_peltv = alloc_bootmem_align(PNV_PHB3_PELTV_TBL_SIZE,
++						PNV_PHB3_PELTV_TBL_SIZE);
++		phb->ioda.tbl_pest = alloc_bootmem_align(PNV_PHB3_PEST_TBL_SIZE,
++						PNV_PHB3_PEST_TBL_SIZE);
++		phb->ioda.tbl_ivt = alloc_bootmem_align(PNV_PHB3_IVT_TBL_SIZE,
++						PNV_PHB3_IVT_TBL_SIZE);
++		phb->ioda.tbl_rba = alloc_bootmem_align(PNV_PHB3_RBA_TBL_SIZE,
++						PNV_PHB3_RBA_TBL_SIZE);
++		if (!phb->ioda.tbl_rtt || !phb->ioda.tbl_peltv ||
++		    !phb->ioda.tbl_pest || !phb->ioda.tbl_ivt ||
++		    !phb->ioda.tbl_rba)
++			pr_warning("  No memory for IODA2 tables\n");
++		else {
++			rc = opal_pci_set_phb_table_memory(phb_id,
++					__pa(phb->ioda.tbl_rtt),
++					__pa(phb->ioda.tbl_peltv),
++					__pa(phb->ioda.tbl_pest),
++					__pa(phb->ioda.tbl_ivt),
++					__pa(phb->ioda.tbl_rba));
++			if (rc != OPAL_SUCCESS)
++				pr_warning("  Failed to set IODA2 tables\n");
++		}
++	}
++
+ 	/* Reset IODA tables to a clean state */
  	rc = opal_pci_reset(phb_id, OPAL_PCI_IODA_TABLE_RESET, OPAL_ASSERT_RESET);
  	if (rc)
- 		pr_warning("  OPAL Error %ld performing IODA table reset !\n", rc);
--	opal_pci_set_pe(phb_id, 0, 0, 7, 1, 1 , OPAL_MAP_PE);
-+
-+	/*
-+	 * On IODA1 map everything to PE#0, on IODA2 we assume the IODA reset
-+	 * has cleared the RTT which has the same effect
-+	 */
-+	if (ioda_type == PNV_PHB_IODA1)
-+		opal_pci_set_pe(phb_id, 0, 0, 7, 1, 1 , OPAL_MAP_PE);
-+}
-+
-+void pnv_pci_init_ioda2_phb(struct device_node *np)
-+{
-+	pnv_pci_init_ioda_phb(np, PNV_PHB_IODA2);
- }
- 
- void __init pnv_pci_init_ioda_hub(struct device_node *np)
-@@ -1034,6 +1036,6 @@ void __init pnv_pci_init_ioda_hub(struct device_node *np)
- 	for_each_child_of_node(np, phbn) {
- 		/* Look for IODA1 PHBs */
- 		if (of_device_is_compatible(phbn, "ibm,ioda-phb"))
--			pnv_pci_init_ioda1_phb(phbn);
-+			pnv_pci_init_ioda_phb(phbn, PNV_PHB_IODA1);
- 	}
- }
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index b8b8e0b..e088dc7 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -525,12 +525,13 @@ static void pnv_pci_dma_dev_setup(struct pci_dev *pdev)
- 		pnv_pci_dma_fallback_setup(hose, pdev);
- }
- 
--/* Fixup wrong class code in p7ioc root complex */
-+/* Fixup wrong class code in p7ioc and p8 root complex */
- static void pnv_p7ioc_rc_quirk(struct pci_dev *dev)
- {
- 	dev->class = PCI_CLASS_BRIDGE_PCI << 8;
- }
- DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_IBM, 0x3b9, pnv_p7ioc_rc_quirk);
-+DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_IBM, 0x2da, pnv_p7ioc_rc_quirk);
- 
- static int pnv_pci_probe_mode(struct pci_bus *bus)
- {
-@@ -591,6 +592,10 @@ void __init pnv_pci_init(void)
- 		if (!found_ioda)
- 			for_each_compatible_node(np, NULL, "ibm,p5ioc2")
- 				pnv_pci_init_p5ioc2_hub(np);
-+
-+		/* Look for ioda2 built-in PHB3's */
-+		for_each_compatible_node(np, NULL, "ibm,ioda2-phb")
-+			pnv_pci_init_ioda2_phb(np);
- 	}
- 
- 	/* Setup the linkage between OF nodes and PHBs */
 diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index 7cfb7c8..4ce91f5 100644
+index 4ce91f5..fcd5135 100644
 --- a/arch/powerpc/platforms/powernv/pci.h
 +++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -4,9 +4,9 @@
- struct pci_dn;
- 
- enum pnv_phb_type {
--	PNV_PHB_P5IOC2,
--	PNV_PHB_IODA1,
--	PNV_PHB_IODA2,
-+	PNV_PHB_P5IOC2	= 0,
-+	PNV_PHB_IODA1	= 1,
-+	PNV_PHB_IODA2	= 2,
+@@ -64,6 +64,24 @@ struct pnv_ioda_pe {
+ 	struct list_head	list;
  };
  
- /* Precise PHB model for error management */
-@@ -14,6 +14,7 @@ enum pnv_phb_model {
- 	PNV_PHB_MODEL_UNKNOWN,
- 	PNV_PHB_MODEL_P5IOC2,
- 	PNV_PHB_MODEL_P7IOC,
-+	PNV_PHB_MODEL_PHB3,
- };
++/*
++ * The sizes of variable PHB3 tables. The IVT table size is variable
++ * and depends on the IVE stride (16-bytes or 128-bytes)
++ */
++#define PNV_PHB3_IVT_TBL_IVE_16B
++
++#define PNV_PHB3_RTT_TBL_SIZE		0x20000
++#define PNV_PHB3_PELTV_TBL_SIZE		0x2000
++#define PNV_PHB3_PEST_TBL_SIZE		0x1000
++#ifdef PNV_PHB3_IVT_TBL_IVE_16B
++#define PNV_PHB3_IVT_TBL_SIZE		0x8000
++#define PNV_PHB3_IVT_TBL_STRIDE		2	/* double-words */
++#else
++#define PNV_PHB3_IVT_TBL_SIZE		0x40000
++#define PNV_PHB3_IVT_TBL_STRIDE		16	/* double-words */
++#endif
++#define PNV_PHB3_RBA_TBL_SIZE		0x1000
++
+ struct pnv_phb {
+ 	struct pci_controller	*hose;
+ 	enum pnv_phb_type	type;
+@@ -102,6 +120,13 @@ struct pnv_phb {
+ 			unsigned int		io_segsize;
+ 			unsigned int		io_pci_base;
  
- #define PNV_PCI_DIAG_BUF_SIZE	4096
-@@ -150,6 +151,7 @@ extern void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
- 				      u64 dma_offset);
- extern void pnv_pci_init_p5ioc2_hub(struct device_node *np);
- extern void pnv_pci_init_ioda_hub(struct device_node *np);
-+extern void pnv_pci_init_ioda2_phb(struct device_node *np);
++			/* Variable tables for IODA2 */
++			void			*tbl_rtt;
++			void			*tbl_peltv;
++			void			*tbl_pest;
++			void			*tbl_ivt;
++			void			*tbl_rba;
++
+ 			/* PE allocation bitmap */
+ 			unsigned long		*pe_alloc;
  
- 
- #endif /* __POWERNV_PCI_H */
 -- 
 1.7.5.4
