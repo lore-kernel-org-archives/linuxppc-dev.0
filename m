@@ -1,44 +1,19 @@
-Return-Path: <juhosg@openwrt.org>
-Received: from arrakis.dune.hu (arrakis.dune.hu [78.24.191.176])
- (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id CB9BC2C0203
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2013 17:29:36 +1000 (EST)
-Message-ID: <5170F016.6050502@openwrt.org>
-Date: Fri, 19 Apr 2013 09:19:50 +0200
-From: Gabor Juhos <juhosg@openwrt.org>
+Return-Path: <B25806@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 46F9A2C01F0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2013 18:09:32 +1000 (EST)
+From: Chunhe Lan <Chunhe.Lan@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/fsl: Enable CONFIG_E1000E in mpc85xx_smp_defconfig
+Date: Fri, 19 Apr 2013 16:13:18 +0800
+Message-ID: <1366359198-20133-1-git-send-email-Chunhe.Lan@freescale.com>
 MIME-Version: 1.0
-To: Jason Cooper <jason@lakedaemon.net>
-Subject: Re: [PATCH v7 3/3] of/pci: mips: convert to common of_pci_range_parser
-References: <1366107508-12672-1-git-send-email-Andrew.Murray@arm.com>
- <1366107508-12672-4-git-send-email-Andrew.Murray@arm.com>
- <CACRpkdbBaT1OKr5t8HW4+8y_wSDmGxmewAyVMekx8S-K9s3K8Q@mail.gmail.com>
- <20130418125910.GA17128@arm.com>
- <20130418130919.GI27197@titan.lakedaemon.net>
-In-Reply-To: <20130418130919.GI27197@titan.lakedaemon.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- "siva.kallam@samsung.com" <siva.kallam@samsung.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Linus Walleij <linus.walleij@linaro.org>,
- Thierry Reding <thierry.reding@avionic-design.de>,
- Liviu Dudau <Liviu.Dudau@arm.com>, Paul Mackerras <paulus@samba.org>,
- linux-samsung-soc <linux-samsung-soc@vger.kernel.org>,
- Russell King - ARM Linux <linux@arm.linux.org.uk>,
- Jingoo Han <jg1.han@samsung.com>,
- Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
- Thomas Abraham <thomas.abraham@linaro.org>, Arnd Bergmann <arnd@arndb.de>,
- "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- Kukjin Kim <kgene.kim@samsung.com>,
- "bhelgaas@google.com" <bhelgaas@google.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
- Michal Simek <monstr@monstr.eu>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "suren.reddy@samsung.com" <suren.reddy@samsung.com>,
- Andrew Murray <andrew.murray@arm.com>,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: Chunhe Lan <Chunhe.Lan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,28 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2013.04.18. 15:09 keltezéssel, Jason Cooper írta:
-> On Thu, Apr 18, 2013 at 01:59:10PM +0100, Andrew Murray wrote:
->> On Wed, Apr 17, 2013 at 04:42:48PM +0100, Linus Walleij wrote:
->>> On Tue, Apr 16, 2013 at 12:18 PM, Andrew Murray <Andrew.Murray@arm.com> wrote:
->>>
->>>> This patch converts the pci_load_of_ranges function to use the new common
->>>> of_pci_range_parser.
->>>>
->>>> Signed-off-by: Andrew Murray <Andrew.Murray@arm.com>
->>>> Signed-off-by: Liviu Dudau <Liviu.Dudau@arm.com>
->>>> Reviewed-by: Rob Herring <rob.herring@calxeda.com>
->>>
->>> Tested-by: Linus Walleij <linus.walleij@linaro.org>
->>
->> Jason - you may not have seen this, but here (Linus Walleij) is another Tested-by
->> to add to this patch in your tree (if you can).
-> 
-> Thanks, I saw it.  Unfortunately, the PR was already sent, and the branch
-> is now pulled into arm-soc.
+On the most boards of Freescale platform, they use the PCI-Express
+Intel(R) PRO/1000 gigabit ethernet card to work. So enable the
+corresponding driver for it.
 
-Sorry I had no time earlier, but I have tested this now on MIPS. The patch
-causes build errors unfortunately. Given the fact that this has been merged
-already, I will send a fixup patch.
+Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
+---
+ arch/powerpc/configs/mpc85xx_smp_defconfig |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
--Gabor
+diff --git a/arch/powerpc/configs/mpc85xx_smp_defconfig b/arch/powerpc/configs/mpc85xx_smp_defconfig
+index 8d00ea5b..6996ea3 100644
+--- a/arch/powerpc/configs/mpc85xx_smp_defconfig
++++ b/arch/powerpc/configs/mpc85xx_smp_defconfig
+@@ -114,6 +114,7 @@ CONFIG_DUMMY=y
+ CONFIG_FS_ENET=y
+ CONFIG_UCC_GETH=y
+ CONFIG_GIANFAR=y
++CONFIG_E1000E=y
+ CONFIG_MARVELL_PHY=y
+ CONFIG_DAVICOM_PHY=y
+ CONFIG_CICADA_PHY=y
+-- 
+1.7.6.5
