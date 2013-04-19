@@ -1,17 +1,18 @@
 Return-Path: <B35336@freescale.com>
 Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
+ (tx2ehsobe001.messaging.microsoft.com [65.55.88.11])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 406342C01B5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2013 20:48:15 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 794402C01B5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2013 20:48:17 +1000 (EST)
 From: Zhao Chenhui <chenhui.zhao@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v2 01/15] powerpc/85xx: cache operations for Freescale SoCs
- based on BOOK3E
-Date: Fri, 19 Apr 2013 18:47:34 +0800
-Message-ID: <1366368468-29143-1-git-send-email-chenhui.zhao@freescale.com>
+Subject: [PATCH v2 02/15] powerpc/85xx: add sleep and deep sleep support
+Date: Fri, 19 Apr 2013 18:47:35 +0800
+Message-ID: <1366368468-29143-2-git-send-email-chenhui.zhao@freescale.com>
+In-Reply-To: <1366368468-29143-1-git-send-email-chenhui.zhao@freescale.com>
+References: <1366368468-29143-1-git-send-email-chenhui.zhao@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: linux-kernel@vger.kernel.org
@@ -24,355 +25,836 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These cache operations support Freescale SoCs based on BOOK3E.
-Move L1 cache operations to fsl_booke_cache.S in order to maintain
-easily. And, add cache operations for backside L2 cache and platform cache.
+Some Freescale SoCs like MPC8536 and P1022 has the deep sleep mode
+in addtion to the sleep mode.
 
-The backside L2 cache appears on e500mc and e5500 core. The platform cache
-supported by this patch is L2 Look-Aside Cache, which appears on SoCs
-with e500v1/e500v2 core, such as MPC8572, P1020, etc.
+In sleep PM mode, the clocks of e500 core and unused IP blocks is
+turned off. IP blocks which are allowed to wake up the processor
+are still running.
+
+While in deep sleep PM mode, additionally, the power supply is
+removed from e500 core and most IP blocks. Only the blocks needed
+to wake up the chip out of deep sleep are ON.
+
+This patch supports 32-bit and 36-bit address space.
+
+The sleep mode is equal to the Standby state in Linux. The deep sleep
+mode is equal to the Suspend-to-RAM state of Linux Power Management.
+
+Command to enter sleep mode.
+  echo standby > /sys/power/state
+Command to enter deep sleep mode.
+  echo mem > /sys/power/state
 
 Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
 Signed-off-by: Li Yang <leoli@freescale.com>
 ---
- arch/powerpc/include/asm/cacheflush.h |    8 ++
- arch/powerpc/kernel/Makefile          |    1 +
- arch/powerpc/kernel/fsl_booke_cache.S |  210 +++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/head_fsl_booke.S  |   74 ------------
- 4 files changed, 219 insertions(+), 74 deletions(-)
- create mode 100644 arch/powerpc/kernel/fsl_booke_cache.S
+ arch/powerpc/platforms/85xx/Makefile |    1 +
+ arch/powerpc/platforms/85xx/sleep.S  |  621 ++++++++++++++++++++++++++++++++++
+ arch/powerpc/sysdev/fsl_pmc.c        |   98 +++++-
+ arch/powerpc/sysdev/fsl_soc.h        |    5 +
+ 4 files changed, 707 insertions(+), 18 deletions(-)
+ create mode 100644 arch/powerpc/platforms/85xx/sleep.S
 
-diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include/asm/cacheflush.h
-index b843e35..bc3f937 100644
---- a/arch/powerpc/include/asm/cacheflush.h
-+++ b/arch/powerpc/include/asm/cacheflush.h
-@@ -32,6 +32,14 @@ extern void flush_dcache_page(struct page *page);
+diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
+index 2eab37e..a35bab7 100644
+--- a/arch/powerpc/platforms/85xx/Makefile
++++ b/arch/powerpc/platforms/85xx/Makefile
+@@ -2,6 +2,7 @@
+ # Makefile for the PowerPC 85xx linux kernel.
+ #
+ obj-$(CONFIG_SMP) += smp.o
++obj-$(CONFIG_FSL_PMC)	+= sleep.o
  
- extern void __flush_disable_L1(void);
+ obj-y += common.o
  
-+#ifdef CONFIG_FSL_SOC_BOOKE
-+void flush_dcache_L1(void);
-+void flush_backside_L2_cache(void);
-+void disable_backside_L2_cache(void);
-+void flush_disable_L2(void);
-+void invalidate_enable_L2(void);
-+#endif
-+
- extern void __flush_icache_range(unsigned long, unsigned long);
- static inline void flush_icache_range(unsigned long start, unsigned long stop)
- {
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index f960a79..4acf739 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -87,6 +87,7 @@ extra-$(CONFIG_8xx)		:= head_8xx.o
- extra-y				+= vmlinux.lds
- 
- obj-$(CONFIG_RELOCATABLE_PPC32)	+= reloc_32.o
-+obj-$(CONFIG_FSL_SOC_BOOKE)	+= fsl_booke_cache.o
- 
- obj-$(CONFIG_PPC32)		+= entry_32.o setup_32.o
- obj-$(CONFIG_PPC64)		+= dma-iommu.o iommu.o
-diff --git a/arch/powerpc/kernel/fsl_booke_cache.S b/arch/powerpc/kernel/fsl_booke_cache.S
+diff --git a/arch/powerpc/platforms/85xx/sleep.S b/arch/powerpc/platforms/85xx/sleep.S
 new file mode 100644
-index 0000000..232c47b
+index 0000000..5a43adb
 --- /dev/null
-+++ b/arch/powerpc/kernel/fsl_booke_cache.S
-@@ -0,0 +1,210 @@
++++ b/arch/powerpc/platforms/85xx/sleep.S
+@@ -0,0 +1,621 @@
 +/*
-+ * Copyright 2009-2013 Freescale Semiconductor, Inc.
-+ *	Scott Wood <scottwood@freescale.com>
-+ *	Dave Liu <daveliu@freescale.com>
++ * Enter and leave deep sleep/sleep state on MPC85xx
 + *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
++ * Author: Scott Wood <scottwood@freescale.com>
++ *
++ * Copyright (C) 2006-2013 Freescale Semiconductor, Inc. All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
 + */
 +
-+#include <asm/reg.h>
 +#include <asm/page.h>
 +#include <asm/ppc_asm.h>
++#include <asm/reg.h>
 +#include <asm/asm-offsets.h>
++#include <asm/mmu.h>
++
++#define CCSR_ADDR		0xf0000000
++
++#define L2C_OFFSET		0x20000	/* L2 Cache Controller offset */
++
++#define BPTR_OFFSET		0x20 /* Boot Page Translation Register */
++#define BPTR_EN			0x80000000
++
++#define PMRCCR_OFFSET		0xe0084
++#define PMRCCR_VRCNT_PRE_MASK	0x1f000000
++#define PMRCCR_VRCNT_MASK	0x00ff0000
++
++#define POWMGTSCR_OFFSET	0xe0080
++#define POWMGTSCR_DPSLP		0x00100000 /* deep sleep mode */
++
++#define SS_TB		0x00
++#define SS_HID		0x08 /* 2 HIDs */
++#define SS_IAC		0x10 /* 2 IACs */
++#define SS_DAC		0x18 /* 2 DACs */
++#define SS_DBCR		0x20 /* 3 DBCRs */
++#define SS_PID		0x2c /* 3 PIDs */
++#define SS_SPRG		0x38 /* 8 SPRGs */
++#define SS_IVOR		0x58 /* 20 interrupt vectors */
++#define SS_TCR		0xa8
++#define SS_BUCSR	0xac
++#define SS_L1CSR	0xb0 /* 2 L1CSRs */
++#define SS_MSR		0xb8
++#define SS_USPRG	0xbc
++#define SS_GPREG	0xc0 /* r12-r31 */
++#define SS_LR		0x110
++#define SS_CR		0x114
++#define SS_SP		0x118
++#define SS_CURRENT	0x11c
++#define SS_IVPR		0x120
++#define SS_BPTR		0x124
++
++#define STATE_SAVE_SIZE 0x128
++
++	.section .data
++	.align	5
++mpc85xx_sleep_save_area:
++	.space	STATE_SAVE_SIZE
++ccsrbase_low:
++	.long	0
++ccsrbase_high:
++	.long	0
++powmgtreq:
++	.long	0
 +
 +	.section .text
++	.align	12
 +
-+/********    L1 Cache    ********/
++	/*
++	 * r3 = high word of physical address of CCSR
++	 * r4 = low word of physical address of CCSR
++	 * r5 = JOG or deep sleep request
++	 *      JOG-0x00200000, deep sleep-0x00100000
++	 */
++_GLOBAL(mpc85xx_enter_deep_sleep)
++	lis	r6, ccsrbase_low@ha
++	stw	r4, ccsrbase_low@l(r6)
++	lis	r6, ccsrbase_high@ha
++	stw	r3, ccsrbase_high@l(r6)
 +
-+/* flush L1 d-cache */
-+_GLOBAL(flush_dcache_L1)
-+	mfspr	r3,SPRN_L1CFG0
++	lis	r6, powmgtreq@ha
++	stw	r5, powmgtreq@l(r6)
 +
-+	rlwinm	r5,r3,9,3	/* Extract cache block size */
-+	twlgti	r5,1		/* Only 32 and 64 byte cache blocks
-+				 * are currently defined.
-+				 */
-+	li	r4,32
-+	subfic	r6,r5,2		/* r6 = log2(1KiB / cache block size) -
-+				 *      log2(number of ways)
-+				 */
-+	slw	r5,r4,r5	/* r5 = cache block size */
++	lis	r10, mpc85xx_sleep_save_area@h
++	ori	r10, r10, mpc85xx_sleep_save_area@l
 +
-+	rlwinm	r7,r3,0,0xff	/* Extract number of KiB in the cache */
-+	mulli	r7,r7,13	/* An 8-way cache will require 13
-+				 * loads per set.
-+				 */
-+	slw	r7,r7,r6
++	mfspr	r5, SPRN_HID0
++	mfspr	r6, SPRN_HID1
 +
-+	/* save off HID0 and set DCFA */
-+	mfspr	r8,SPRN_HID0
-+	ori	r9,r8,HID0_DCFA@l
-+	mtspr	SPRN_HID0,r9
-+	isync
++	stw	r5, SS_HID+0(r10)
++	stw	r6, SS_HID+4(r10)
 +
-+	LOAD_REG_IMMEDIATE(r4, KERNELBASE)
-+	mtctr	r7
++	mfspr	r4, SPRN_IAC1
++	mfspr	r5, SPRN_IAC2
++	mfspr	r6, SPRN_DAC1
++	mfspr	r7, SPRN_DAC2
 +
-+1:	lwz	r3,0(r4)	/* Load... */
-+	add	r4,r4,r5
-+	bdnz	1b
++	stw	r4, SS_IAC+0(r10)
++	stw	r5, SS_IAC+4(r10)
++	stw	r6, SS_DAC+0(r10)
++	stw	r7, SS_DAC+4(r10)
 +
-+	msync
-+	LOAD_REG_IMMEDIATE(r4, KERNELBASE)
-+	mtctr	r7
++	mfspr	r4, SPRN_DBCR0
++	mfspr	r5, SPRN_DBCR1
++	mfspr	r6, SPRN_DBCR2
 +
-+1:	dcbf	0,r4		/* ...and flush. */
-+	add	r4,r4,r5
-+	bdnz	1b
++	stw	r4, SS_DBCR+0(r10)
++	stw	r5, SS_DBCR+4(r10)
++	stw	r6, SS_DBCR+8(r10)
 +
-+	/* restore HID0 */
-+	mtspr	SPRN_HID0,r8
-+	isync
++	mfspr	r4, SPRN_PID0
++	mfspr	r5, SPRN_PID1
++	mfspr	r6, SPRN_PID2
 +
-+	blr
++	stw	r4, SS_PID+0(r10)
++	stw	r5, SS_PID+4(r10)
++	stw	r6, SS_PID+8(r10)
 +
-+/* Flush L1 d-cache, invalidate and disable d-cache and i-cache */
-+_GLOBAL(__flush_disable_L1)
-+	mflr	r10
-+	bl	flush_dcache_L1	/* Flush L1 d-cache */
-+	mtlr	r10
++	mfspr	r4, SPRN_SPRG0
++	mfspr	r5, SPRN_SPRG1
++	mfspr	r6, SPRN_SPRG2
++	mfspr	r7, SPRN_SPRG3
 +
-+	msync
-+	mfspr	r4, SPRN_L1CSR0	/* Invalidate and disable d-cache */
-+	li	r5, 2
-+	rlwimi	r4, r5, 0, 3
++	stw	r4, SS_SPRG+0x00(r10)
++	stw	r5, SS_SPRG+0x04(r10)
++	stw	r6, SS_SPRG+0x08(r10)
++	stw	r7, SS_SPRG+0x0c(r10)
 +
-+	msync
-+	isync
-+	mtspr	SPRN_L1CSR0, r4
-+	isync
++	mfspr	r4, SPRN_SPRG4
++	mfspr	r5, SPRN_SPRG5
++	mfspr	r6, SPRN_SPRG6
++	mfspr	r7, SPRN_SPRG7
 +
-+	msync
-+1:	mfspr	r4, SPRN_L1CSR0	/* Wait for the invalidate to finish */
-+	andi.	r4, r4, 2
++	stw	r4, SS_SPRG+0x10(r10)
++	stw	r5, SS_SPRG+0x14(r10)
++	stw	r6, SS_SPRG+0x18(r10)
++	stw	r7, SS_SPRG+0x1c(r10)
++
++	mfspr	r4, SPRN_IVPR
++	stw	r4, SS_IVPR(r10)
++
++	mfspr	r4, SPRN_IVOR0
++	mfspr	r5, SPRN_IVOR1
++	mfspr	r6, SPRN_IVOR2
++	mfspr	r7, SPRN_IVOR3
++
++	stw	r4, SS_IVOR+0x00(r10)
++	stw	r5, SS_IVOR+0x04(r10)
++	stw	r6, SS_IVOR+0x08(r10)
++	stw	r7, SS_IVOR+0x0c(r10)
++
++	mfspr	r4, SPRN_IVOR4
++	mfspr	r5, SPRN_IVOR5
++	mfspr	r6, SPRN_IVOR6
++	mfspr	r7, SPRN_IVOR7
++
++	stw	r4, SS_IVOR+0x10(r10)
++	stw	r5, SS_IVOR+0x14(r10)
++	stw	r6, SS_IVOR+0x18(r10)
++	stw	r7, SS_IVOR+0x1c(r10)
++
++	mfspr	r4, SPRN_IVOR8
++	mfspr	r5, SPRN_IVOR9
++	mfspr	r6, SPRN_IVOR10
++	mfspr	r7, SPRN_IVOR11
++
++	stw	r4, SS_IVOR+0x20(r10)
++	stw	r5, SS_IVOR+0x24(r10)
++	stw	r6, SS_IVOR+0x28(r10)
++	stw	r7, SS_IVOR+0x2c(r10)
++
++	mfspr	r4, SPRN_IVOR12
++	mfspr	r5, SPRN_IVOR13
++	mfspr	r6, SPRN_IVOR14
++	mfspr	r7, SPRN_IVOR15
++
++	stw	r4, SS_IVOR+0x30(r10)
++	stw	r5, SS_IVOR+0x34(r10)
++	stw	r6, SS_IVOR+0x38(r10)
++	stw	r7, SS_IVOR+0x3c(r10)
++
++	mfspr	r4, SPRN_IVOR32
++	mfspr	r5, SPRN_IVOR33
++	mfspr	r6, SPRN_IVOR34
++	mfspr	r7, SPRN_IVOR35
++
++	stw	r4, SS_IVOR+0x40(r10)
++	stw	r5, SS_IVOR+0x44(r10)
++	stw	r6, SS_IVOR+0x48(r10)
++	stw	r7, SS_IVOR+0x4c(r10)
++
++	mfspr	r4, SPRN_TCR
++	mfspr	r5, SPRN_BUCSR
++	mfspr	r6, SPRN_L1CSR0
++	mfspr	r7, SPRN_L1CSR1
++	mfspr	r8, SPRN_USPRG0
++
++	stw	r4, SS_TCR(r10)
++	stw	r5, SS_BUCSR(r10)
++	stw	r6, SS_L1CSR+0(r10)
++	stw	r7, SS_L1CSR+4(r10)
++	stw	r8, SS_USPRG+0(r10)
++
++	stmw	r12, SS_GPREG(r10)
++
++	mfmsr	r4
++	mflr	r5
++	mfcr	r6
++
++	stw	r4, SS_MSR(r10)
++	stw	r5, SS_LR(r10)
++	stw	r6, SS_CR(r10)
++	stw	r1, SS_SP(r10)
++	stw	r2, SS_CURRENT(r10)
++
++1:	mftbu	r4
++	mftb	r5
++	mftbu	r6
++	cmpw	r4, r6
 +	bne	1b
 +
-+	msync
-+	mfspr	r4, SPRN_L1CSR1	/* Invalidate and disable i-cache */
-+	li	r5, 2
-+	rlwimi	r4, r5, 0, 3
++	stw	r4, SS_TB+0(r10)
++	stw	r5, SS_TB+4(r10)
 +
-+	msync
++	lis	r5, ccsrbase_low@ha
++	lwz	r4, ccsrbase_low@l(r5)
++	lis	r5, ccsrbase_high@ha
++	lwz	r3, ccsrbase_high@l(r5)
++
++	/* Disable machine checks and critical exceptions */
++	mfmsr	r5
++	rlwinm	r5, r5, 0, ~MSR_CE
++	rlwinm	r5, r5, 0, ~MSR_ME
++	mtmsr	r5
 +	isync
++
++	/* Use TLB1[15] to map the CCSR at 0xf0000000 */
++	LOAD_REG_IMMEDIATE(r5, MAS0_TLBSEL(1) | MAS0_ESEL(15))
++	mtspr	SPRN_MAS0, r5
++	LOAD_REG_IMMEDIATE(r5,
++		MAS1_VALID | MAS1_IPROT | MAS1_TSIZE(BOOK3E_PAGESZ_1M))
++	mtspr	SPRN_MAS1, r5
++	LOAD_REG_IMMEDIATE(r5, CCSR_ADDR | MAS2_I | MAS2_M)
++	mtspr	SPRN_MAS2, r5
++	rlwinm	r5, r4, 0, MAS3_RPN
++	ori	r5, r5, (MAS3_SW | MAS3_SR)
++	mtspr	SPRN_MAS3, r5
++	mtspr	SPRN_MAS7, r3
++	isync
++	tlbwe
++	isync
++
++	LOAD_REG_IMMEDIATE(r3, CCSR_ADDR + BPTR_OFFSET)
++	lwz	r4, 0(r3)
++	stw	r4, SS_BPTR(r10)
++
++	LOAD_REG_IMMEDIATE(r3, CCSR_ADDR + L2C_OFFSET)
++	bl	flush_disable_L2
++	bl	__flush_disable_L1
++
++	/* Enable I-cache, so as not to upset the bus
++	 * with our loop.
++	 */
++	mfspr	r4, SPRN_L1CSR1
++	ori	r4, r4, L1CSR1_ICE
 +	mtspr	SPRN_L1CSR1, r4
 +	isync
-+	msync
 +
-+	blr
-+
-+/********    Backside L2 Cache    ********/
-+
-+#define SVR_P2040	0x821000
-+
-+need_L2_cache:
-+	/* skip L2 cache on P2040/P2040E as they have no L2 cache */
-+	mfspr	r3, SPRN_SVR
-+	/* shift right by 8 bits and clear E bit of SVR */
-+	rlwinm	r4, r3, 24, ~0x800
-+
-+	lis	r3, SVR_P2040@h
-+	ori	r3, r3, SVR_P2040@l
-+	cmpw	r4, r3
-+	beq	1f
-+
-+	/* If L2 cache is disabled, skip it */
-+	mfspr	r3, SPRN_L2CSR0
-+	andis.	r3, r3, L2CSR0_L2E@h
-+	beq	1f
-+
-+	li	r3, 0
-+	blr
-+1:
-+	li	r3, 1
-+	blr
-+
-+/* flush backside L2 cache */
-+_GLOBAL(flush_backside_L2_cache)
-+	mflr	r10
-+	bl	need_L2_cache
-+	mtlr	r10
-+	cmpwi	r3, 0
-+	bne	2f
-+
-+__flush_backside_L2_cache:
-+	/* Flush the L2 cache */
-+	mfspr	r3, SPRN_L2CSR0
-+	ori	r3, r3, L2CSR0_L2FL@l
-+	msync
++	/* Set boot page translation */
++	LOAD_REG_IMMEDIATE(r3, CCSR_ADDR + BPTR_OFFSET)
++	lis	r4, (mpc85xx_deep_resume - PAGE_OFFSET)@h
++	ori	r4, r4, (mpc85xx_deep_resume - PAGE_OFFSET)@l
++	rlwinm	r4, r4, 20, 12, 31
++	oris	r4, r4, BPTR_EN@h
++	stw	r4, 0(r3)
++	lwz	r4, 0(r3) /* read-back to flush write */
++	twi	0, r4, 0
 +	isync
-+	mtspr	SPRN_L2CSR0,r3
++
++	/* Disable the decrementer */
++	mfspr	r4, SPRN_TCR
++	rlwinm	r4, r4, 0, ~TCR_DIE
++	mtspr	SPRN_TCR, r4
++
++	mfspr	r4, SPRN_TSR
++	oris	r4, r4, TSR_DIS@h
++	mtspr	SPRN_TSR, r4
++
++	/* set PMRCCR[VRCNT] to wait power stable for 40ms */
++	LOAD_REG_IMMEDIATE(r3, CCSR_ADDR + PMRCCR_OFFSET)
++	lwz	r4, 0(r3)
++	li	r5, 0x12
++	rlwimi	r4, r5, 0, PMRCCR_VRCNT_PRE_MASK
++	li	r5, 0xa3
++	rlwimi	r4, r5, 0, PMRCCR_VRCNT_MASK
++	stw	r4, 0(r3)
++	lwz	r4, 0(r3)
++
++	/* set deep sleep bit in POWMGTSCR */
++	lis	r3, powmgtreq@ha
++	lwz	r8, powmgtreq@l(r3)
++	LOAD_REG_IMMEDIATE(r3, CCSR_ADDR + POWMGTSCR_OFFSET)
++	lwz	r4, 0(r3)
++	or	r4, r4, r8
++	stw	r4, 0(r3)
++	lwz	r4, 0(r3)		/* read-back to flush write */
++	twi	0, r4, 0
 +	isync
-+1:
-+	mfspr	r3,SPRN_L2CSR0
-+	andi.	r3, r3, L2CSR0_L2FL@l
++
++	mftb	r5
++1:	/* spin until either we enter deep sleep, or the sleep process is
++	 * aborted due to a pending wakeup event.  Wait some time between
++	 * accesses, so we don't flood the bus and prevent the pmc from
++	 * detecting an idle system.
++	 */
++
++	mftb	r4
++	subf	r7, r5, r4
++	cmpwi	r7, 1000
++	blt	1b
++	mr	r5, r4
++
++	lwz	r6, 0(r3)
++	andis.	r6, r6, POWMGTSCR_DPSLP@h
 +	bne	1b
++	b	2f
++
++2:	mfspr	r4, SPRN_PIR
++	andi.	r4, r4, 1
++99:	bne	99b
++
++	/* Establish a temporary 64MB 0->0 mapping in TLB1[1]. */
++	LOAD_REG_IMMEDIATE(r4, MAS0_TLBSEL(1) | MAS0_ESEL(1))
++	mtspr	SPRN_MAS0, r4
++	LOAD_REG_IMMEDIATE(r4,
++		MAS1_VALID | MAS1_IPROT | MAS1_TSIZE(BOOK3E_PAGESZ_64M))
++	mtspr	SPRN_MAS1, r4
++	li	r4, 0
++	mtspr	SPRN_MAS2, r4
++	li	r4, (MAS3_SX | MAS3_SW | MAS3_SR)
++	mtspr	SPRN_MAS3, r4
++	li	r4, 0
++	mtspr	SPRN_MAS7, r4
++	isync
++	tlbwe
++	isync
++
++	lis	r3, (3f - PAGE_OFFSET)@h
++	ori	r3, r3, (3f - PAGE_OFFSET)@l
++	mtctr	r3
++	bctr
++
++	/* Locate the resume vector in the last word of the current page. */
++	. = mpc85xx_enter_deep_sleep + 0xffc
++mpc85xx_deep_resume:
++	b	2b
++
++3:
++	/* Restore the contents of TLB1[0].  It is assumed that it covers
++	 * the currently executing code and the sleep save area, and that
++	 * it does not alias our temporary mapping (which is at virtual zero).
++	 */
++	lis	r3, (TLBCAM - PAGE_OFFSET)@h
++	ori	r3, r3, (TLBCAM - PAGE_OFFSET)@l
++
++	lwz	r4, 0(r3)
++	lwz	r5, 4(r3)
++	lwz	r6, 8(r3)
++	lwz	r7, 12(r3)
++	lwz	r8, 16(r3)
++
++	mtspr	SPRN_MAS0, r4
++	mtspr	SPRN_MAS1, r5
++	mtspr	SPRN_MAS2, r6
++	mtspr	SPRN_MAS3, r7
++	mtspr	SPRN_MAS7, r8
++
++	isync
++	tlbwe
++	isync
++
++	/* Access the ccsrbase address with TLB1[0] */
++	lis	r5, ccsrbase_low@ha
++	lwz	r4, ccsrbase_low@l(r5)
++	lis	r5, ccsrbase_high@ha
++	lwz	r3, ccsrbase_high@l(r5)
++
++	/* Use TLB1[15] to map the CCSR at 0xf0000000 */
++	LOAD_REG_IMMEDIATE(r5, MAS0_TLBSEL(1) | MAS0_ESEL(15))
++	mtspr	SPRN_MAS0, r5
++	LOAD_REG_IMMEDIATE(r5,
++		MAS1_VALID | MAS1_IPROT | MAS1_TSIZE(BOOK3E_PAGESZ_1M))
++	mtspr	SPRN_MAS1, r5
++	LOAD_REG_IMMEDIATE(r5, CCSR_ADDR | MAS2_I | MAS2_M)
++	mtspr	SPRN_MAS2, r5
++	rlwinm	r5, r4, 0, MAS3_RPN
++	ori	r5, r5, (MAS3_SW | MAS3_SR)
++	mtspr	SPRN_MAS3, r5
++	mtspr	SPRN_MAS7, r3
++	isync
++	tlbwe
++	isync
++
++	LOAD_REG_IMMEDIATE(r3, CCSR_ADDR + L2C_OFFSET)
++	bl	invalidate_enable_L2
++
++	/* Access the MEM(r10) with TLB1[0] */
++	lis	r10, mpc85xx_sleep_save_area@h
++	ori	r10, r10, mpc85xx_sleep_save_area@l
++
++	LOAD_REG_IMMEDIATE(r3, CCSR_ADDR + BPTR_OFFSET)
++	lwz	r4, SS_BPTR(r10)
++	stw	r4, 0(r3)		/* restore BPTR */
++
++	/* Program shift running space to PAGE_OFFSET */
++	mfmsr	r3
++	lis	r4, 1f@h
++	ori	r4, r4, 1f@l
++
++	mtsrr1	r3
++	mtsrr0	r4
++	rfi
++
++1:	/* Restore the rest of TLB1, in ascending order so that
++	 * the TLB1[1] gets invalidated first.
++	 *
++	 * XXX: It's better to invalidate the temporary mapping
++	 * TLB1[15] for CCSR before restore any TLB1 entry include 0.
++	 */
++	LOAD_REG_IMMEDIATE(r4, MAS0_TLBSEL(1) | MAS0_ESEL(15))
++	mtspr	SPRN_MAS0, r4
++	lis	r4, 0
++	mtspr	SPRN_MAS1, r4
++	isync
++	tlbwe
++	isync
++
++	lis	r3, (TLBCAM + 5*4 - 4)@h
++	ori	r3, r3, (TLBCAM + 5*4 - 4)@l
++	li	r4, 15
++	mtctr	r4
++
 +2:
-+	blr
++	lwz	r5, 4(r3)
++	lwz	r6, 8(r3)
++	lwz	r7, 12(r3)
++	lwz	r8, 16(r3)
++	lwzu	r9, 20(r3)
 +
-+/* flush and disable backside L2 cache */
-+_GLOBAL(disable_backside_L2_cache)
-+	mflr	r10
-+	bl	need_L2_cache
-+	mtlr	r10
-+	cmpwi	r3, 0
-+	bne	1f
++	mtspr	SPRN_MAS0, r5
++	mtspr	SPRN_MAS1, r6
++	mtspr	SPRN_MAS2, r7
++	mtspr	SPRN_MAS3, r8
++	mtspr	SPRN_MAS7, r9
 +
-+	mflr	r10
-+	bl	__flush_backside_L2_cache
-+	mtlr	r10
++	isync
++	tlbwe
++	isync
++	bdnz	2b
 +
-+	/* disable L2 cache */
-+	li	r3, 0
++	lis	r10, mpc85xx_sleep_save_area@h
++	ori	r10, r10, mpc85xx_sleep_save_area@l
++
++	lwz	r5, SS_HID+0(r10)
++	lwz	r6, SS_HID+4(r10)
++
++	isync
++	mtspr	SPRN_HID0, r5
++	isync
++
++	msync
++	mtspr	SPRN_HID1, r6
++	isync
++
++	lwz	r4, SS_IAC+0(r10)
++	lwz	r5, SS_IAC+4(r10)
++	lwz	r6, SS_DAC+0(r10)
++	lwz	r7, SS_DAC+4(r10)
++
++	mtspr	SPRN_IAC1, r4
++	mtspr	SPRN_IAC2, r5
++	mtspr	SPRN_DAC1, r6
++	mtspr	SPRN_DAC2, r7
++
++	lwz	r4, SS_DBCR+0(r10)
++	lwz	r5, SS_DBCR+4(r10)
++	lwz	r6, SS_DBCR+8(r10)
++
++	mtspr	SPRN_DBCR0, r4
++	mtspr	SPRN_DBCR1, r5
++	mtspr	SPRN_DBCR2, r6
++
++	lwz	r4, SS_PID+0(r10)
++	lwz	r5, SS_PID+4(r10)
++	lwz	r6, SS_PID+8(r10)
++
++	mtspr	SPRN_PID0, r4
++	mtspr	SPRN_PID1, r5
++	mtspr	SPRN_PID2, r6
++
++	lwz	r4, SS_SPRG+0x00(r10)
++	lwz	r5, SS_SPRG+0x04(r10)
++	lwz	r6, SS_SPRG+0x08(r10)
++	lwz	r7, SS_SPRG+0x0c(r10)
++
++	mtspr	SPRN_SPRG0, r4
++	mtspr	SPRN_SPRG1, r5
++	mtspr	SPRN_SPRG2, r6
++	mtspr	SPRN_SPRG3, r7
++
++	lwz	r4, SS_SPRG+0x10(r10)
++	lwz	r5, SS_SPRG+0x14(r10)
++	lwz	r6, SS_SPRG+0x18(r10)
++	lwz	r7, SS_SPRG+0x1c(r10)
++
++	mtspr	SPRN_SPRG4, r4
++	mtspr	SPRN_SPRG5, r5
++	mtspr	SPRN_SPRG6, r6
++	mtspr	SPRN_SPRG7, r7
++
++	lwz	r4, SS_IVPR(r10)
++	mtspr	SPRN_IVPR, r4
++
++	lwz	r4, SS_IVOR+0x00(r10)
++	lwz	r5, SS_IVOR+0x04(r10)
++	lwz	r6, SS_IVOR+0x08(r10)
++	lwz	r7, SS_IVOR+0x0c(r10)
++
++	mtspr	SPRN_IVOR0, r4
++	mtspr	SPRN_IVOR1, r5
++	mtspr	SPRN_IVOR2, r6
++	mtspr	SPRN_IVOR3, r7
++
++	lwz	r4, SS_IVOR+0x10(r10)
++	lwz	r5, SS_IVOR+0x14(r10)
++	lwz	r6, SS_IVOR+0x18(r10)
++	lwz	r7, SS_IVOR+0x1c(r10)
++
++	mtspr	SPRN_IVOR4, r4
++	mtspr	SPRN_IVOR5, r5
++	mtspr	SPRN_IVOR6, r6
++	mtspr	SPRN_IVOR7, r7
++
++	lwz	r4, SS_IVOR+0x20(r10)
++	lwz	r5, SS_IVOR+0x24(r10)
++	lwz	r6, SS_IVOR+0x28(r10)
++	lwz	r7, SS_IVOR+0x2c(r10)
++
++	mtspr	SPRN_IVOR8, r4
++	mtspr	SPRN_IVOR9, r5
++	mtspr	SPRN_IVOR10, r6
++	mtspr	SPRN_IVOR11, r7
++
++	lwz	r4, SS_IVOR+0x30(r10)
++	lwz	r5, SS_IVOR+0x34(r10)
++	lwz	r6, SS_IVOR+0x38(r10)
++	lwz	r7, SS_IVOR+0x3c(r10)
++
++	mtspr	SPRN_IVOR12, r4
++	mtspr	SPRN_IVOR13, r5
++	mtspr	SPRN_IVOR14, r6
++	mtspr	SPRN_IVOR15, r7
++
++	lwz	r4, SS_IVOR+0x40(r10)
++	lwz	r5, SS_IVOR+0x44(r10)
++	lwz	r6, SS_IVOR+0x48(r10)
++	lwz	r7, SS_IVOR+0x4c(r10)
++
++	mtspr	SPRN_IVOR32, r4
++	mtspr	SPRN_IVOR33, r5
++	mtspr	SPRN_IVOR34, r6
++	mtspr	SPRN_IVOR35, r7
++
++	lwz	r4, SS_TCR(r10)
++	lwz	r5, SS_BUCSR(r10)
++	lwz	r6, SS_L1CSR+0(r10)
++	lwz	r7, SS_L1CSR+4(r10)
++	lwz	r8, SS_USPRG+0(r10)
++
++	mtspr	SPRN_TCR, r4
++	mtspr	SPRN_BUCSR, r5
++
 +	msync
 +	isync
-+	mtspr	SPRN_L2CSR0, r3
++	mtspr	SPRN_L1CSR0, r6
 +	isync
-+1:
-+	blr
 +
-+/********    Platform Cache    ********/
-+
-+#define L2CTL_L2E	0x80000000
-+#define L2CTL_L2I	0x40000000
-+
-+/* r3 = base address of L2 controller registers */
-+_GLOBAL(flush_disable_L2)
-+	/* It's a write-through cache, so only invalidation is needed. */
-+	mbar
++	mtspr	SPRN_L1CSR1, r7
 +	isync
-+	lwz	r4, 0(r3)
-+	li	r5, 1
-+	rlwimi	r4, r5, 30, L2CTL_L2E | L2CTL_L2I
-+	stw	r4, 0(r3)
 +
-+	/* Wait for the invalidate to finish */
-+1:	lwz	r4, 0(r3)
-+	andis.	r4, r4, L2CTL_L2I@h
-+	bne	1b
-+	mbar
++	mtspr	SPRN_USPRG0, r8
 +
-+	blr
++	lmw	r12, SS_GPREG(r10)
 +
-+/* r3 = base address of L2 controller registers */
-+_GLOBAL(invalidate_enable_L2)
-+	mbar
++	lwz	r1, SS_SP(r10)
++	lwz	r2, SS_CURRENT(r10)
++	lwz	r4, SS_MSR(r10)
++	lwz	r5, SS_LR(r10)
++	lwz	r6, SS_CR(r10)
++
++	msync
++	mtmsr	r4
 +	isync
-+	lwz	r4, 0(r3)
-+	li	r5, 3
-+	rlwimi	r4, r5, 30, L2CTL_L2E | L2CTL_L2I
-+	stw	r4, 0(r3)
 +
-+	/* Wait for the invalidate to finish */
-+1:	lwz	r4, 0(r3)
-+	andis.	r4, r4, L2CTL_L2I@h
-+	bne	1b
-+	mbar
++	mtlr	r5
++	mtcr	r6
++
++	li	r4, 0
++	mtspr	SPRN_TBWL, r4
++
++	lwz	r4, SS_TB+0(r10)
++	lwz	r5, SS_TB+4(r10)
++
++	mtspr	SPRN_TBWU, r4
++	mtspr	SPRN_TBWL, r5
++
++	lis	r3, 1
++	mtdec	r3
 +
 +	blr
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index 6f62a73..58925b6 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -987,80 +987,6 @@ _GLOBAL(set_context)
- 	isync			/* Force context change */
- 	blr
+diff --git a/arch/powerpc/sysdev/fsl_pmc.c b/arch/powerpc/sysdev/fsl_pmc.c
+index 592a0f8..6c2c8b3 100644
+--- a/arch/powerpc/sysdev/fsl_pmc.c
++++ b/arch/powerpc/sysdev/fsl_pmc.c
+@@ -2,6 +2,7 @@
+  * Suspend/resume support
+  *
+  * Copyright 2009  MontaVista Software, Inc.
++ * Copyright 2010-2013 Freescale Semiconductor Inc.
+  *
+  * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
+  *
+@@ -19,39 +20,88 @@
+ #include <linux/delay.h>
+ #include <linux/device.h>
+ #include <linux/of_platform.h>
++#include <linux/pm.h>
++#include <asm/cacheflush.h>
++#include <asm/switch_to.h>
++
++#include <sysdev/fsl_soc.h>
  
--_GLOBAL(flush_dcache_L1)
--	mfspr	r3,SPRN_L1CFG0
--
--	rlwinm	r5,r3,9,3	/* Extract cache block size */
--	twlgti	r5,1		/* Only 32 and 64 byte cache blocks
--				 * are currently defined.
--				 */
--	li	r4,32
--	subfic	r6,r5,2		/* r6 = log2(1KiB / cache block size) -
--				 *      log2(number of ways)
--				 */
--	slw	r5,r4,r5	/* r5 = cache block size */
--
--	rlwinm	r7,r3,0,0xff	/* Extract number of KiB in the cache */
--	mulli	r7,r7,13	/* An 8-way cache will require 13
--				 * loads per set.
--				 */
--	slw	r7,r7,r6
--
--	/* save off HID0 and set DCFA */
--	mfspr	r8,SPRN_HID0
--	ori	r9,r8,HID0_DCFA@l
--	mtspr	SPRN_HID0,r9
--	isync
--
--	lis	r4,KERNELBASE@h
--	mtctr	r7
--
--1:	lwz	r3,0(r4)	/* Load... */
--	add	r4,r4,r5
--	bdnz	1b
--
--	msync
--	lis	r4,KERNELBASE@h
--	mtctr	r7
--
--1:	dcbf	0,r4		/* ...and flush. */
--	add	r4,r4,r5
--	bdnz	1b
--	
--	/* restore HID0 */
--	mtspr	SPRN_HID0,r8
--	isync
--
--	blr
--
--/* Flush L1 d-cache, invalidate and disable d-cache and i-cache */
--_GLOBAL(__flush_disable_L1)
--	mflr	r10
--	bl	flush_dcache_L1	/* Flush L1 d-cache */
--	mtlr	r10
--
--	mfspr	r4, SPRN_L1CSR0	/* Invalidate and disable d-cache */
--	li	r5, 2
--	rlwimi	r4, r5, 0, 3
--
--	msync
--	isync
--	mtspr	SPRN_L1CSR0, r4
--	isync
--
--1:	mfspr	r4, SPRN_L1CSR0	/* Wait for the invalidate to finish */
--	andi.	r4, r4, 2
--	bne	1b
--
--	mfspr	r4, SPRN_L1CSR1	/* Invalidate and disable i-cache */
--	li	r5, 2
--	rlwimi	r4, r5, 0, 3
--
--	mtspr	SPRN_L1CSR1, r4
--	isync
--
--	blr
--
- #ifdef CONFIG_SMP
- /* When we get here, r24 needs to hold the CPU # */
- 	.globl __secondary_start
+ struct pmc_regs {
++	/* 0xe0070: Device disable control register */
+ 	__be32 devdisr;
++	/* 0xe0074: 2nd Device disable control register */
+ 	__be32 devdisr2;
+-	__be32 :32;
+-	__be32 :32;
+-	__be32 pmcsr;
+-#define PMCSR_SLP	(1 << 17)
++	__be32 res1;
++	/* 0xe007c: Power Management Jog Control Register */
++	__be32 pmjcr;
++	/* 0xe0080: Power management control and status register */
++	__be32 powmgtcsr;
++#define POWMGTCSR_SLP		0x00020000
++#define POWMGTCSR_DPSLP		0x00100000
++	__be32 res3[2];
++	/* 0xe008c: Power management clock disable register */
++	__be32 pmcdr;
+ };
+ 
+-static struct device *pmc_dev;
+ static struct pmc_regs __iomem *pmc_regs;
++static unsigned int pmc_flag;
++
++#define PMC_SLEEP	0x1
++#define PMC_DEEP_SLEEP	0x2
+ 
+ static int pmc_suspend_enter(suspend_state_t state)
+ {
+-	int ret;
++	int ret = 0;
++
++	switch (state) {
++#ifdef CONFIG_PPC_85xx
++	case PM_SUSPEND_MEM:
++#ifdef CONFIG_SPE
++		enable_kernel_spe();
++#endif
++		enable_kernel_fp();
++
++		pr_debug("%s: Entering deep sleep\n", __func__);
++
++		mpc85xx_enter_deep_sleep(get_immrbase(), POWMGTCSR_DPSLP);
++
++		pr_debug("%s: Resumed from deep sleep\n", __func__);
++		break;
++#endif
++
++	case PM_SUSPEND_STANDBY:
++#ifdef CONFIG_FSL_SOC_BOOKE
++		flush_dcache_L1();
++#endif
++		setbits32(&pmc_regs->powmgtcsr, POWMGTCSR_SLP);
+ 
+-	setbits32(&pmc_regs->pmcsr, PMCSR_SLP);
+-	/* At this point, the CPU is asleep. */
++		/* At this point, the CPU is asleep. */
+ 
+-	/* Upon resume, wait for SLP bit to be clear. */
+-	ret = spin_event_timeout((in_be32(&pmc_regs->pmcsr) & PMCSR_SLP) == 0,
+-				 10000, 10) ? 0 : -ETIMEDOUT;
+-	if (ret)
+-		dev_err(pmc_dev, "tired waiting for SLP bit to clear\n");
++		/* Upon resume, wait for SLP bit to be clear. */
++		ret = spin_event_timeout(
++			(in_be32(&pmc_regs->powmgtcsr) & POWMGTCSR_SLP) == 0,
++			10000, 10);
++		if (!ret) {
++			pr_err("%s: timeout waiting for SLP bit to be cleared\n",
++				__func__);
++			ret = -EINVAL;
++		}
++		break;
++
++	default:
++		ret = -EINVAL;
++
++	}
+ 	return ret;
+ }
+ 
+ static int pmc_suspend_valid(suspend_state_t state)
+ {
+-	if (state != PM_SUSPEND_STANDBY)
++	if (((pmc_flag & PMC_SLEEP) && (state == PM_SUSPEND_STANDBY)) ||
++	    ((pmc_flag & PMC_DEEP_SLEEP) && (state == PM_SUSPEND_MEM)))
++		return 1;
++	else
+ 		return 0;
+-	return 1;
+ }
+ 
+ static const struct platform_suspend_ops pmc_suspend_ops = {
+@@ -59,14 +109,26 @@ static const struct platform_suspend_ops pmc_suspend_ops = {
+ 	.enter = pmc_suspend_enter,
+ };
+ 
+-static int pmc_probe(struct platform_device *ofdev)
++static int pmc_probe(struct platform_device *pdev)
+ {
+-	pmc_regs = of_iomap(ofdev->dev.of_node, 0);
++	struct device_node *np = pdev->dev.of_node;
++
++	pmc_regs = of_iomap(np, 0);
+ 	if (!pmc_regs)
+ 		return -ENOMEM;
+ 
+-	pmc_dev = &ofdev->dev;
++	pmc_flag = PMC_SLEEP;
++	if (of_device_is_compatible(np, "fsl,mpc8536-pmc"))
++		pmc_flag |= PMC_DEEP_SLEEP;
++
++	if (of_device_is_compatible(np, "fsl,p1022-pmc"))
++		pmc_flag |= PMC_DEEP_SLEEP;
++
+ 	suspend_set_ops(&pmc_suspend_ops);
++
++	pr_info("Freescale PMC driver: sleep(standby)%s\n",
++		(pmc_flag & PMC_DEEP_SLEEP) ? ", deep sleep(mem)" : "");
++
+ 	return 0;
+ }
+ 
+diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/fsl_soc.h
+index c6d0073..949377d 100644
+--- a/arch/powerpc/sysdev/fsl_soc.h
++++ b/arch/powerpc/sysdev/fsl_soc.h
+@@ -48,5 +48,10 @@ extern struct platform_diu_data_ops diu_ops;
+ void fsl_hv_restart(char *cmd);
+ void fsl_hv_halt(void);
+ 
++/*
++ * Cast the ccsrbar to 64-bit parameter so that the assembly
++ * code can be compatible with both 32-bit & 36-bit.
++ */
++extern void mpc85xx_enter_deep_sleep(u64 ccsrbar, u32 powmgtreq);
+ #endif
+ #endif
 -- 
 1.7.3
