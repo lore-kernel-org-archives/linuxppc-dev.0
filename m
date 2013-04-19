@@ -1,34 +1,20 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e34.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D64292C00DC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2013 19:33:08 +1000 (EST)
-Received: from /spool/local
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Fri, 19 Apr 2013 03:33:05 -0600
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
- [9.17.195.227])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id DA3FD1FF0039
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2013 03:27:50 -0600 (MDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3J9WqDY150672
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2013 03:32:52 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3J9Wqfw022676
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2013 03:32:52 -0600
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/3] powerpc/powernv: Configure IODA2 tables explicitly
-Date: Fri, 19 Apr 2013 17:32:44 +0800
-Message-Id: <1366363965-23281-2-git-send-email-shangw@linux.vnet.ibm.com>
-In-Reply-To: <1366363965-23281-1-git-send-email-shangw@linux.vnet.ibm.com>
-References: <1366363965-23281-1-git-send-email-shangw@linux.vnet.ibm.com>
-Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
+Return-Path: <B35336@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 406342C01B5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2013 20:48:15 +1000 (EST)
+From: Zhao Chenhui <chenhui.zhao@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH v2 01/15] powerpc/85xx: cache operations for Freescale SoCs
+ based on BOOK3E
+Date: Fri, 19 Apr 2013 18:47:34 +0800
+Message-ID: <1366368468-29143-1-git-send-email-chenhui.zhao@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,119 +24,355 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The PHB3, which is compatible with IODA2, have lots of tables (RTT/
-PETLV/PEST/IVT/RBA) in system memory and have corresponding BARs to
-trace the system memory address. The patch configures the addresses
-of variable tables explicitly through OPAL API.
+These cache operations support Freescale SoCs based on BOOK3E.
+Move L1 cache operations to fsl_booke_cache.S in order to maintain
+easily. And, add cache operations for backside L2 cache and platform cache.
 
-Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+The backside L2 cache appears on e500mc and e5500 core. The platform cache
+supported by this patch is L2 Look-Aside Cache, which appears on SoCs
+with e500v1/e500v2 core, such as MPC8572, P1020, etc.
+
+Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
 ---
- arch/powerpc/include/asm/opal.h           |    5 +--
- arch/powerpc/platforms/powernv/pci-ioda.c |   32 +++++++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/pci.h      |   25 ++++++++++++++++++++++
- 3 files changed, 59 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/cacheflush.h |    8 ++
+ arch/powerpc/kernel/Makefile          |    1 +
+ arch/powerpc/kernel/fsl_booke_cache.S |  210 +++++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/head_fsl_booke.S  |   74 ------------
+ 4 files changed, 219 insertions(+), 74 deletions(-)
+ create mode 100644 arch/powerpc/kernel/fsl_booke_cache.S
 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index a4b28f1..0af7ba0 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -491,9 +491,8 @@ int64_t opal_pci_map_pe_mmio_window(uint64_t phb_id, uint16_t pe_number,
- 				    uint16_t window_type, uint16_t window_num,
- 				    uint16_t segment_num);
- int64_t opal_pci_set_phb_table_memory(uint64_t phb_id, uint64_t rtt_addr,
--				      uint64_t ivt_addr, uint64_t ivt_len,
--				      uint64_t reject_array_addr,
--				      uint64_t peltv_addr);
-+				      uint64_t peltv_addr, uint64_t pest_addr,
-+				      uint64_t ivt_addr, uint64_t rba_addr);
- int64_t opal_pci_set_pe(uint64_t phb_id, uint64_t pe_number, uint64_t bus_dev_func,
- 			uint8_t bus_compare, uint8_t dev_compare, uint8_t func_compare,
- 			uint8_t pe_action);
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 8993242..d8d5baa 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -998,6 +998,38 @@ void __init pnv_pci_init_ioda_phb(struct device_node *np, int ioda_type)
- 	ppc_md.pcibios_window_alignment = pnv_pci_window_alignment;
- 	pci_add_flags(PCI_REASSIGN_ALL_RSRC);
+diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include/asm/cacheflush.h
+index b843e35..bc3f937 100644
+--- a/arch/powerpc/include/asm/cacheflush.h
++++ b/arch/powerpc/include/asm/cacheflush.h
+@@ -32,6 +32,14 @@ extern void flush_dcache_page(struct page *page);
  
-+	/*
-+	 * Initialize variable tables for IODA2. We might share the table
-+	 * size between firmware and Linux someday. For now, we have fixed
-+	 * values for them
-+	 */
-+	if (ioda_type == PNV_PHB_IODA2) {
-+		phb->ioda.tbl_rtt = alloc_bootmem_align(PNV_PHB3_RTT_TBL_SIZE,
-+						PNV_PHB3_RTT_TBL_SIZE);
-+		phb->ioda.tbl_peltv = alloc_bootmem_align(PNV_PHB3_PELTV_TBL_SIZE,
-+						PNV_PHB3_PELTV_TBL_SIZE);
-+		phb->ioda.tbl_pest = alloc_bootmem_align(PNV_PHB3_PEST_TBL_SIZE,
-+						PNV_PHB3_PEST_TBL_SIZE);
-+		phb->ioda.tbl_ivt = alloc_bootmem_align(PNV_PHB3_IVT_TBL_SIZE,
-+						PNV_PHB3_IVT_TBL_SIZE);
-+		phb->ioda.tbl_rba = alloc_bootmem_align(PNV_PHB3_RBA_TBL_SIZE,
-+						PNV_PHB3_RBA_TBL_SIZE);
-+		if (!phb->ioda.tbl_rtt || !phb->ioda.tbl_peltv ||
-+		    !phb->ioda.tbl_pest || !phb->ioda.tbl_ivt ||
-+		    !phb->ioda.tbl_rba)
-+			pr_warning("  No memory for IODA2 tables\n");
-+		else {
-+			rc = opal_pci_set_phb_table_memory(phb_id,
-+					__pa(phb->ioda.tbl_rtt),
-+					__pa(phb->ioda.tbl_peltv),
-+					__pa(phb->ioda.tbl_pest),
-+					__pa(phb->ioda.tbl_ivt),
-+					__pa(phb->ioda.tbl_rba));
-+			if (rc != OPAL_SUCCESS)
-+				pr_warning("  Failed to set IODA2 tables\n");
-+		}
-+	}
-+
- 	/* Reset IODA tables to a clean state */
- 	rc = opal_pci_reset(phb_id, OPAL_PCI_IODA_TABLE_RESET, OPAL_ASSERT_RESET);
- 	if (rc)
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index 4ce91f5..fcd5135 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -64,6 +64,24 @@ struct pnv_ioda_pe {
- 	struct list_head	list;
- };
+ extern void __flush_disable_L1(void);
  
-+/*
-+ * The sizes of variable PHB3 tables. The IVT table size is variable
-+ * and depends on the IVE stride (16-bytes or 128-bytes)
-+ */
-+#define PNV_PHB3_IVT_TBL_IVE_16B
-+
-+#define PNV_PHB3_RTT_TBL_SIZE		0x20000
-+#define PNV_PHB3_PELTV_TBL_SIZE		0x2000
-+#define PNV_PHB3_PEST_TBL_SIZE		0x1000
-+#ifdef PNV_PHB3_IVT_TBL_IVE_16B
-+#define PNV_PHB3_IVT_TBL_SIZE		0x8000
-+#define PNV_PHB3_IVT_TBL_STRIDE		2	/* double-words */
-+#else
-+#define PNV_PHB3_IVT_TBL_SIZE		0x40000
-+#define PNV_PHB3_IVT_TBL_STRIDE		16	/* double-words */
++#ifdef CONFIG_FSL_SOC_BOOKE
++void flush_dcache_L1(void);
++void flush_backside_L2_cache(void);
++void disable_backside_L2_cache(void);
++void flush_disable_L2(void);
++void invalidate_enable_L2(void);
 +#endif
-+#define PNV_PHB3_RBA_TBL_SIZE		0x1000
 +
- struct pnv_phb {
- 	struct pci_controller	*hose;
- 	enum pnv_phb_type	type;
-@@ -102,6 +120,13 @@ struct pnv_phb {
- 			unsigned int		io_segsize;
- 			unsigned int		io_pci_base;
+ extern void __flush_icache_range(unsigned long, unsigned long);
+ static inline void flush_icache_range(unsigned long start, unsigned long stop)
+ {
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index f960a79..4acf739 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -87,6 +87,7 @@ extra-$(CONFIG_8xx)		:= head_8xx.o
+ extra-y				+= vmlinux.lds
  
-+			/* Variable tables for IODA2 */
-+			void			*tbl_rtt;
-+			void			*tbl_peltv;
-+			void			*tbl_pest;
-+			void			*tbl_ivt;
-+			void			*tbl_rba;
+ obj-$(CONFIG_RELOCATABLE_PPC32)	+= reloc_32.o
++obj-$(CONFIG_FSL_SOC_BOOKE)	+= fsl_booke_cache.o
+ 
+ obj-$(CONFIG_PPC32)		+= entry_32.o setup_32.o
+ obj-$(CONFIG_PPC64)		+= dma-iommu.o iommu.o
+diff --git a/arch/powerpc/kernel/fsl_booke_cache.S b/arch/powerpc/kernel/fsl_booke_cache.S
+new file mode 100644
+index 0000000..232c47b
+--- /dev/null
++++ b/arch/powerpc/kernel/fsl_booke_cache.S
+@@ -0,0 +1,210 @@
++/*
++ * Copyright 2009-2013 Freescale Semiconductor, Inc.
++ *	Scott Wood <scottwood@freescale.com>
++ *	Dave Liu <daveliu@freescale.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
 +
- 			/* PE allocation bitmap */
- 			unsigned long		*pe_alloc;
++#include <asm/reg.h>
++#include <asm/page.h>
++#include <asm/ppc_asm.h>
++#include <asm/asm-offsets.h>
++
++	.section .text
++
++/********    L1 Cache    ********/
++
++/* flush L1 d-cache */
++_GLOBAL(flush_dcache_L1)
++	mfspr	r3,SPRN_L1CFG0
++
++	rlwinm	r5,r3,9,3	/* Extract cache block size */
++	twlgti	r5,1		/* Only 32 and 64 byte cache blocks
++				 * are currently defined.
++				 */
++	li	r4,32
++	subfic	r6,r5,2		/* r6 = log2(1KiB / cache block size) -
++				 *      log2(number of ways)
++				 */
++	slw	r5,r4,r5	/* r5 = cache block size */
++
++	rlwinm	r7,r3,0,0xff	/* Extract number of KiB in the cache */
++	mulli	r7,r7,13	/* An 8-way cache will require 13
++				 * loads per set.
++				 */
++	slw	r7,r7,r6
++
++	/* save off HID0 and set DCFA */
++	mfspr	r8,SPRN_HID0
++	ori	r9,r8,HID0_DCFA@l
++	mtspr	SPRN_HID0,r9
++	isync
++
++	LOAD_REG_IMMEDIATE(r4, KERNELBASE)
++	mtctr	r7
++
++1:	lwz	r3,0(r4)	/* Load... */
++	add	r4,r4,r5
++	bdnz	1b
++
++	msync
++	LOAD_REG_IMMEDIATE(r4, KERNELBASE)
++	mtctr	r7
++
++1:	dcbf	0,r4		/* ...and flush. */
++	add	r4,r4,r5
++	bdnz	1b
++
++	/* restore HID0 */
++	mtspr	SPRN_HID0,r8
++	isync
++
++	blr
++
++/* Flush L1 d-cache, invalidate and disable d-cache and i-cache */
++_GLOBAL(__flush_disable_L1)
++	mflr	r10
++	bl	flush_dcache_L1	/* Flush L1 d-cache */
++	mtlr	r10
++
++	msync
++	mfspr	r4, SPRN_L1CSR0	/* Invalidate and disable d-cache */
++	li	r5, 2
++	rlwimi	r4, r5, 0, 3
++
++	msync
++	isync
++	mtspr	SPRN_L1CSR0, r4
++	isync
++
++	msync
++1:	mfspr	r4, SPRN_L1CSR0	/* Wait for the invalidate to finish */
++	andi.	r4, r4, 2
++	bne	1b
++
++	msync
++	mfspr	r4, SPRN_L1CSR1	/* Invalidate and disable i-cache */
++	li	r5, 2
++	rlwimi	r4, r5, 0, 3
++
++	msync
++	isync
++	mtspr	SPRN_L1CSR1, r4
++	isync
++	msync
++
++	blr
++
++/********    Backside L2 Cache    ********/
++
++#define SVR_P2040	0x821000
++
++need_L2_cache:
++	/* skip L2 cache on P2040/P2040E as they have no L2 cache */
++	mfspr	r3, SPRN_SVR
++	/* shift right by 8 bits and clear E bit of SVR */
++	rlwinm	r4, r3, 24, ~0x800
++
++	lis	r3, SVR_P2040@h
++	ori	r3, r3, SVR_P2040@l
++	cmpw	r4, r3
++	beq	1f
++
++	/* If L2 cache is disabled, skip it */
++	mfspr	r3, SPRN_L2CSR0
++	andis.	r3, r3, L2CSR0_L2E@h
++	beq	1f
++
++	li	r3, 0
++	blr
++1:
++	li	r3, 1
++	blr
++
++/* flush backside L2 cache */
++_GLOBAL(flush_backside_L2_cache)
++	mflr	r10
++	bl	need_L2_cache
++	mtlr	r10
++	cmpwi	r3, 0
++	bne	2f
++
++__flush_backside_L2_cache:
++	/* Flush the L2 cache */
++	mfspr	r3, SPRN_L2CSR0
++	ori	r3, r3, L2CSR0_L2FL@l
++	msync
++	isync
++	mtspr	SPRN_L2CSR0,r3
++	isync
++1:
++	mfspr	r3,SPRN_L2CSR0
++	andi.	r3, r3, L2CSR0_L2FL@l
++	bne	1b
++2:
++	blr
++
++/* flush and disable backside L2 cache */
++_GLOBAL(disable_backside_L2_cache)
++	mflr	r10
++	bl	need_L2_cache
++	mtlr	r10
++	cmpwi	r3, 0
++	bne	1f
++
++	mflr	r10
++	bl	__flush_backside_L2_cache
++	mtlr	r10
++
++	/* disable L2 cache */
++	li	r3, 0
++	msync
++	isync
++	mtspr	SPRN_L2CSR0, r3
++	isync
++1:
++	blr
++
++/********    Platform Cache    ********/
++
++#define L2CTL_L2E	0x80000000
++#define L2CTL_L2I	0x40000000
++
++/* r3 = base address of L2 controller registers */
++_GLOBAL(flush_disable_L2)
++	/* It's a write-through cache, so only invalidation is needed. */
++	mbar
++	isync
++	lwz	r4, 0(r3)
++	li	r5, 1
++	rlwimi	r4, r5, 30, L2CTL_L2E | L2CTL_L2I
++	stw	r4, 0(r3)
++
++	/* Wait for the invalidate to finish */
++1:	lwz	r4, 0(r3)
++	andis.	r4, r4, L2CTL_L2I@h
++	bne	1b
++	mbar
++
++	blr
++
++/* r3 = base address of L2 controller registers */
++_GLOBAL(invalidate_enable_L2)
++	mbar
++	isync
++	lwz	r4, 0(r3)
++	li	r5, 3
++	rlwimi	r4, r5, 30, L2CTL_L2E | L2CTL_L2I
++	stw	r4, 0(r3)
++
++	/* Wait for the invalidate to finish */
++1:	lwz	r4, 0(r3)
++	andis.	r4, r4, L2CTL_L2I@h
++	bne	1b
++	mbar
++
++	blr
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index 6f62a73..58925b6 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -987,80 +987,6 @@ _GLOBAL(set_context)
+ 	isync			/* Force context change */
+ 	blr
  
+-_GLOBAL(flush_dcache_L1)
+-	mfspr	r3,SPRN_L1CFG0
+-
+-	rlwinm	r5,r3,9,3	/* Extract cache block size */
+-	twlgti	r5,1		/* Only 32 and 64 byte cache blocks
+-				 * are currently defined.
+-				 */
+-	li	r4,32
+-	subfic	r6,r5,2		/* r6 = log2(1KiB / cache block size) -
+-				 *      log2(number of ways)
+-				 */
+-	slw	r5,r4,r5	/* r5 = cache block size */
+-
+-	rlwinm	r7,r3,0,0xff	/* Extract number of KiB in the cache */
+-	mulli	r7,r7,13	/* An 8-way cache will require 13
+-				 * loads per set.
+-				 */
+-	slw	r7,r7,r6
+-
+-	/* save off HID0 and set DCFA */
+-	mfspr	r8,SPRN_HID0
+-	ori	r9,r8,HID0_DCFA@l
+-	mtspr	SPRN_HID0,r9
+-	isync
+-
+-	lis	r4,KERNELBASE@h
+-	mtctr	r7
+-
+-1:	lwz	r3,0(r4)	/* Load... */
+-	add	r4,r4,r5
+-	bdnz	1b
+-
+-	msync
+-	lis	r4,KERNELBASE@h
+-	mtctr	r7
+-
+-1:	dcbf	0,r4		/* ...and flush. */
+-	add	r4,r4,r5
+-	bdnz	1b
+-	
+-	/* restore HID0 */
+-	mtspr	SPRN_HID0,r8
+-	isync
+-
+-	blr
+-
+-/* Flush L1 d-cache, invalidate and disable d-cache and i-cache */
+-_GLOBAL(__flush_disable_L1)
+-	mflr	r10
+-	bl	flush_dcache_L1	/* Flush L1 d-cache */
+-	mtlr	r10
+-
+-	mfspr	r4, SPRN_L1CSR0	/* Invalidate and disable d-cache */
+-	li	r5, 2
+-	rlwimi	r4, r5, 0, 3
+-
+-	msync
+-	isync
+-	mtspr	SPRN_L1CSR0, r4
+-	isync
+-
+-1:	mfspr	r4, SPRN_L1CSR0	/* Wait for the invalidate to finish */
+-	andi.	r4, r4, 2
+-	bne	1b
+-
+-	mfspr	r4, SPRN_L1CSR1	/* Invalidate and disable i-cache */
+-	li	r5, 2
+-	rlwimi	r4, r5, 0, 3
+-
+-	mtspr	SPRN_L1CSR1, r4
+-	isync
+-
+-	blr
+-
+ #ifdef CONFIG_SMP
+ /* When we get here, r24 needs to hold the CPU # */
+ 	.globl __secondary_start
 -- 
-1.7.5.4
+1.7.3
