@@ -1,32 +1,40 @@
-Return-Path: <hegdevasant@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 059622C0168
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2013 21:48:26 +1000 (EST)
-Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
- Fri, 19 Apr 2013 17:13:17 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id C591D1258052
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2013 17:19:51 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3JBmDqU59900092
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2013 17:18:13 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3JBmJJU026041
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2013 21:48:19 +1000
-Subject: [PATCH RESEND] powerpc/rtas_flash: Free kmem upon module exit
-To: benh@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org, paulus@samba.org
-From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Date: Fri, 19 Apr 2013 17:18:09 +0530
-Message-ID: <20130419114737.20439.54937.stgit@hegdevasant>
+Return-Path: <jason@lakedaemon.net>
+Date: Sat, 20 Apr 2013 18:33:43 -0400
+From: Jason Cooper <jason@lakedaemon.net>
+To: Gabor Juhos <juhosg@openwrt.org>
+Subject: Re: [PATCH v7 3/3] of/pci: mips: convert to common of_pci_range_parser
+Message-ID: <20130420223343.GB25724@titan.lakedaemon.net>
+References: <1366107508-12672-1-git-send-email-Andrew.Murray@arm.com>
+ <1366107508-12672-4-git-send-email-Andrew.Murray@arm.com>
+ <CACRpkdbBaT1OKr5t8HW4+8y_wSDmGxmewAyVMekx8S-K9s3K8Q@mail.gmail.com>
+ <20130418125910.GA17128@arm.com>
+ <20130418130919.GI27197@titan.lakedaemon.net>
+ <5170F016.6050502@openwrt.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <5170F016.6050502@openwrt.org>
+Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
+ "siva.kallam@samsung.com" <siva.kallam@samsung.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ Thierry Reding <thierry.reding@avionic-design.de>,
+ Liviu Dudau <Liviu.Dudau@arm.com>, Paul Mackerras <paulus@samba.org>,
+ linux-samsung-soc <linux-samsung-soc@vger.kernel.org>,
+ Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ Jingoo Han <jg1.han@samsung.com>,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+ Thomas Abraham <thomas.abraham@linaro.org>, Arnd Bergmann <arnd@arndb.de>,
+ "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
+ Kukjin Kim <kgene.kim@samsung.com>,
+ "bhelgaas@google.com" <bhelgaas@google.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ Michal Simek <monstr@monstr.eu>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "suren.reddy@samsung.com" <suren.reddy@samsung.com>,
+ Andrew Murray <andrew.murray@arm.com>,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,36 +44,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Memory allocated to flash_block_list in rtas_flash_write
-is not freed during module exit. We hit below call trace
-if we unload rtas_flash module after loading new firmware
-image and before rebooting the system.
+On Fri, Apr 19, 2013 at 09:19:50AM +0200, Gabor Juhos wrote:
+> 2013.04.18. 15:09 keltez=E9ssel, Jason Cooper =EDrta:
+> > On Thu, Apr 18, 2013 at 01:59:10PM +0100, Andrew Murray wrote:
+> >> On Wed, Apr 17, 2013 at 04:42:48PM +0100, Linus Walleij wrote:
+> >>> On Tue, Apr 16, 2013 at 12:18 PM, Andrew Murray <Andrew.Murray@arm.=
+com> wrote:
+> >>>
+> >>>> This patch converts the pci_load_of_ranges function to use the new=
+ common
+> >>>> of_pci_range_parser.
+> >>>>
+> >>>> Signed-off-by: Andrew Murray <Andrew.Murray@arm.com>
+> >>>> Signed-off-by: Liviu Dudau <Liviu.Dudau@arm.com>
+> >>>> Reviewed-by: Rob Herring <rob.herring@calxeda.com>
+> >>>
+> >>> Tested-by: Linus Walleij <linus.walleij@linaro.org>
+> >>
+> >> Jason - you may not have seen this, but here (Linus Walleij) is anot=
+her Tested-by
+> >> to add to this patch in your tree (if you can).
+> >=20
+> > Thanks, I saw it.  Unfortunately, the PR was already sent, and the br=
+anch
+> > is now pulled into arm-soc.
+>=20
+> Sorry I had no time earlier, but I have tested this now on MIPS. The pa=
+tch
+> causes build errors unfortunately. Given the fact that this has been me=
+rged
+> already, I will send a fixup patch.
 
-Feb  6 08:42:10 eagle3 kernel: kmem_cache_destroy rtas_flash_cache: Slab cache still has objects
-Feb  6 08:42:10 eagle3 kernel: Call Trace:
-Feb  6 08:42:10 eagle3 kernel: [c00000001c303b40] [c000000000014940] .show_stack+0x70/0x1c0 (unreliable)
-Feb  6 08:42:10 eagle3 kernel: [c00000001c303bf0] [c000000000199bec] .kmem_cache_destroy+0x15c/0x170
-Feb  6 08:42:10 eagle3 kernel: [c00000001c303c90] [d000000006fa1208] .rtas_flash_cleanup+0x3c/0x80 [rtas_flash]
-Feb  6 08:42:10 eagle3 kernel: [c00000001c303e30] [c000000000009954] syscall_exit+0x0/0x94
+Olof has dropped this branch from arm-soc, plase post the build error
+and fix here so that it can be included in this series.
 
-Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/rtas_flash.c |    5 +++++
- 1 file changed, 5 insertions(+)
+thx,
 
-diff --git a/arch/powerpc/kernel/rtas_flash.c b/arch/powerpc/kernel/rtas_flash.c
-index c642f01..a7020d2 100644
---- a/arch/powerpc/kernel/rtas_flash.c
-+++ b/arch/powerpc/kernel/rtas_flash.c
-@@ -790,6 +790,11 @@ static void __exit rtas_flash_cleanup(void)
- {
- 	rtas_flash_term_hook = NULL;
- 
-+	if (rtas_firmware_flash_list) {
-+		free_flash_list(rtas_firmware_flash_list);
-+		rtas_firmware_flash_list = NULL;
-+	}
-+
- 	if (flash_block_cache)
- 		kmem_cache_destroy(flash_block_cache);
- 
+Jason.
