@@ -1,17 +1,14 @@
-Return-Path: <oleg@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 2E8C22C00D0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 02:50:54 +1000 (EST)
-Date: Sun, 21 Apr 2013 18:47:59 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Michael Neuling <mikey@neuling.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] ptrace/powerpc: dont flush_ptrace_hw_breakpoint() on fork()
-Message-ID: <20130421164759.GA5537@redhat.com>
+Return-Path: <michael@ellerman.id.au>
+Date: Mon, 22 Apr 2013 09:27:57 +1000
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+Subject: Re: [PATCH RESEND] powerpc/rtas_flash: Free kmem upon module exit
+Message-ID: <20130421232757.GA22246@concordia>
+References: <20130419114737.20439.54937.stgit@hegdevasant>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20130419114737.20439.54937.stgit@hegdevasant>
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,34 +18,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-arch_dup_task_struct() does flush_ptrace_hw_breakpoint(src), this
-destroys the parent's breakpoints for no reason. We should clear
-child->thread.ptrace_bps[] copied by dup_task_struct() instead.
+On Fri, Apr 19, 2013 at 05:18:09PM +0530, Vasant Hegde wrote:
+> Memory allocated to flash_block_list in rtas_flash_write
+> is not freed during module exit. We hit below call trace
+> if we unload rtas_flash module after loading new firmware
+> image and before rebooting the system.
 
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
-Acked-by: Michael Neuling <mikey@neuling.org>
+Why the resend? Did anything change?
 
---- x/arch/powerpc/kernel/process.c
-+++ x/arch/powerpc/kernel/process.c
-@@ -910,10 +910,6 @@ int arch_dup_task_struct(struct task_str
- 	flush_altivec_to_thread(src);
- 	flush_vsx_to_thread(src);
- 	flush_spe_to_thread(src);
--#ifdef CONFIG_HAVE_HW_BREAKPOINT
--	flush_ptrace_hw_breakpoint(src);
--#endif /* CONFIG_HAVE_HW_BREAKPOINT */
--
- 	*dst = *src;
- 	return 0;
- }
-@@ -984,6 +980,10 @@ int copy_thread(unsigned long clone_flag
- 	p->thread.ksp_limit = (unsigned long)task_stack_page(p) +
- 				_ALIGN_UP(sizeof(struct thread_info), 16);
- 
-+#ifdef CONFIG_HAVE_HW_BREAKPOINT
-+	p->thread.ptrace_bps[0] = NULL;
-+#endif
-+
- #ifdef CONFIG_PPC_STD_MMU_64
- 	if (mmu_has_feature(MMU_FTR_SLB)) {
- 		unsigned long sp_vsid;
+cheers
