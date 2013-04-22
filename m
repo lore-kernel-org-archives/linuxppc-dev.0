@@ -1,19 +1,19 @@
-Return-Path: <robherring2@gmail.com>
-From: Rob Herring <robherring2@gmail.com>
-To: linux-kernel@vger.kernel.org,
-	devicetree-discuss@lists.ozlabs.org
-Subject: [PATCH 1/5] ibmebus: convert of_platform_driver to platform_driver
-Date: Sun, 21 Apr 2013 21:13:14 -0500
-Message-Id: <1366596798-9457-2-git-send-email-robherring2@gmail.com>
-In-Reply-To: <1366596798-9457-1-git-send-email-robherring2@gmail.com>
-References: <1366596798-9457-1-git-send-email-robherring2@gmail.com>
-Cc: Roland Dreier <roland@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
- linux-rdma@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
- Christoph Raisch <raisch@de.ibm.com>, Hoang-Nam Nguyen <hnguyen@de.ibm.com>,
- Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
- netdev@vger.kernel.org, Grant Likely <grant.likely@linaro.org>,
- Paul Mackerras <paulus@samba.org>, Sean Hefty <sean.hefty@intel.com>,
- linuxppc-dev@lists.ozlabs.org, Hal Rosenstock <hal.rosenstock@gmail.com>
+Return-Path: <michael@ellerman.id.au>
+Date: Mon, 22 Apr 2013 12:45:46 +1000
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH V3 1/5] powerpc, perf: Add new BHRB related instructions
+ for POWER8
+Message-ID: <20130422024546.GA24739@concordia>
+References: <1366287976-3900-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1366287976-3900-2-git-send-email-khandual@linux.vnet.ibm.com>
+ <20130421234109.GC22246@concordia>
+ <14010.1366593223@ale.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <14010.1366593223@ale.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,185 +23,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Rob Herring <rob.herring@calxeda.com>
+On Mon, Apr 22, 2013 at 11:13:43AM +1000, Michael Neuling wrote:
+> Michael Ellerman <michael@ellerman.id.au> wrote:
+> 
+> > On Thu, Apr 18, 2013 at 05:56:12PM +0530, Anshuman Khandual wrote:
+> > > This patch adds new POWER8 instruction encoding for reading
+> > > the BHRB buffer entries and also clearing it. Encoding for
+> > > "clrbhrb" instruction is straight forward.
+> > 
+> > Which is "clear branch history rolling buffer" ?
+> > 
+> > > But "mfbhrbe"
+> > > encoding involves reading a certain index of BHRB buffer
+> > > into a particular GPR register.
+> > 
+> > And "Move from branch history rolling buffer entry" ?
+> > 
+> > > diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+> > > index 8752bc8..93ae5a1 100644
+> > > --- a/arch/powerpc/include/asm/ppc-opcode.h
+> > > +++ b/arch/powerpc/include/asm/ppc-opcode.h
+> > > @@ -82,6 +82,7 @@
+> > >  #define	__REGA0_R31	31
+> > >  
+> > >  /* sorted alphabetically */
+> > > +#define PPC_INST_BHRBE			0x7c00025c
+> > 
+> > I don't think you really need this, just use the literal value below.
+> 
+> The rest of the defines in this file do this, so Anshuman's right. 
 
-ibmebus is the last remaining user of of_platform_driver and the
-conversion to a regular platform driver is trivial.
+I don't see the point, but sure let's be consistent. Though in that case
+he should do the same for PPC_CLRBHRB below.
 
-Signed-off-by: Rob Herring <rob.herring@calxeda.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Hoang-Nam Nguyen <hnguyen@de.ibm.com>
-Cc: Christoph Raisch <raisch@de.ibm.com>
-Cc: Roland Dreier <roland@kernel.org>
-Cc: Sean Hefty <sean.hefty@intel.com>
-Cc: Hal Rosenstock <hal.rosenstock@gmail.com>
-Cc: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
-Cc: Grant Likely <grant.likely@linaro.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-rdma@vger.kernel.org
-Cc: netdev@vger.kernel.org
----
- arch/powerpc/include/asm/ibmebus.h        |    4 ++--
- arch/powerpc/kernel/ibmebus.c             |   22 ++++++++++------------
- drivers/infiniband/hw/ehca/ehca_main.c    |    5 ++---
- drivers/net/ethernet/ibm/ehea/ehea_main.c |    8 +++-----
- 4 files changed, 17 insertions(+), 22 deletions(-)
+> > > @@ -297,6 +298,12 @@
+> > >  #define PPC_NAP			stringify_in_c(.long PPC_INST_NAP)
+> > >  #define PPC_SLEEP		stringify_in_c(.long PPC_INST_SLEEP)
+> > >  
+> > > +/* BHRB instructions */
+> > > +#define PPC_CLRBHRB		stringify_in_c(.long 0x7c00035c)
+> > > +#define PPC_MFBHRBE(r, n)	stringify_in_c(.long PPC_INST_BHRBE | \
+> > > +						__PPC_RS(r) | \
+> > > +							(((n) & 0x1f) << 11))
+> > 
+> > Why are you not using ___PPC_RB(n) here ?
+> 
+> Actually, this is wrong.  The number field should be 10 bits (0x3ff),
+> not 5 (0x1f)  Anshuman please fix.
 
-diff --git a/arch/powerpc/include/asm/ibmebus.h b/arch/powerpc/include/asm/ibmebus.h
-index 1a9d9ae..088f95b 100644
---- a/arch/powerpc/include/asm/ibmebus.h
-+++ b/arch/powerpc/include/asm/ibmebus.h
-@@ -48,8 +48,8 @@
- 
- extern struct bus_type ibmebus_bus_type;
- 
--int ibmebus_register_driver(struct of_platform_driver *drv);
--void ibmebus_unregister_driver(struct of_platform_driver *drv);
-+int ibmebus_register_driver(struct platform_driver *drv);
-+void ibmebus_unregister_driver(struct platform_driver *drv);
- 
- int ibmebus_request_irq(u32 ist, irq_handler_t handler,
- 			unsigned long irq_flags, const char *devname,
-diff --git a/arch/powerpc/kernel/ibmebus.c b/arch/powerpc/kernel/ibmebus.c
-index 8220baa..16a7c23 100644
---- a/arch/powerpc/kernel/ibmebus.c
-+++ b/arch/powerpc/kernel/ibmebus.c
-@@ -205,7 +205,7 @@ static int ibmebus_create_devices(const struct of_device_id *matches)
- 	return ret;
- }
- 
--int ibmebus_register_driver(struct of_platform_driver *drv)
-+int ibmebus_register_driver(struct platform_driver *drv)
- {
- 	/* If the driver uses devices that ibmebus doesn't know, add them */
- 	ibmebus_create_devices(drv->driver.of_match_table);
-@@ -215,7 +215,7 @@ int ibmebus_register_driver(struct of_platform_driver *drv)
- }
- EXPORT_SYMBOL(ibmebus_register_driver);
- 
--void ibmebus_unregister_driver(struct of_platform_driver *drv)
-+void ibmebus_unregister_driver(struct platform_driver *drv)
- {
- 	driver_unregister(&drv->driver);
- }
-@@ -338,11 +338,10 @@ static int ibmebus_bus_bus_match(struct device *dev, struct device_driver *drv)
- static int ibmebus_bus_device_probe(struct device *dev)
- {
- 	int error = -ENODEV;
--	struct of_platform_driver *drv;
-+	struct platform_driver *drv;
- 	struct platform_device *of_dev;
--	const struct of_device_id *match;
- 
--	drv = to_of_platform_driver(dev->driver);
-+	drv = to_platform_driver(dev->driver);
- 	of_dev = to_platform_device(dev);
- 
- 	if (!drv->probe)
-@@ -350,9 +349,8 @@ static int ibmebus_bus_device_probe(struct device *dev)
- 
- 	of_dev_get(of_dev);
- 
--	match = of_match_device(drv->driver.of_match_table, dev);
--	if (match)
--		error = drv->probe(of_dev, match);
-+	if (of_driver_match_device(dev, dev->driver))
-+		error = drv->probe(of_dev);
- 	if (error)
- 		of_dev_put(of_dev);
- 
-@@ -362,7 +360,7 @@ static int ibmebus_bus_device_probe(struct device *dev)
- static int ibmebus_bus_device_remove(struct device *dev)
- {
- 	struct platform_device *of_dev = to_platform_device(dev);
--	struct of_platform_driver *drv = to_of_platform_driver(dev->driver);
-+	struct platform_driver *drv = to_platform_driver(dev->driver);
- 
- 	if (dev->driver && drv->remove)
- 		drv->remove(of_dev);
-@@ -372,7 +370,7 @@ static int ibmebus_bus_device_remove(struct device *dev)
- static void ibmebus_bus_device_shutdown(struct device *dev)
- {
- 	struct platform_device *of_dev = to_platform_device(dev);
--	struct of_platform_driver *drv = to_of_platform_driver(dev->driver);
-+	struct platform_driver *drv = to_platform_driver(dev->driver);
- 
- 	if (dev->driver && drv->shutdown)
- 		drv->shutdown(of_dev);
-@@ -419,7 +417,7 @@ struct device_attribute ibmebus_bus_device_attrs[] = {
- static int ibmebus_bus_legacy_suspend(struct device *dev, pm_message_t mesg)
- {
- 	struct platform_device *of_dev = to_platform_device(dev);
--	struct of_platform_driver *drv = to_of_platform_driver(dev->driver);
-+	struct platform_driver *drv = to_platform_driver(dev->driver);
- 	int ret = 0;
- 
- 	if (dev->driver && drv->suspend)
-@@ -430,7 +428,7 @@ static int ibmebus_bus_legacy_suspend(struct device *dev, pm_message_t mesg)
- static int ibmebus_bus_legacy_resume(struct device *dev)
- {
- 	struct platform_device *of_dev = to_platform_device(dev);
--	struct of_platform_driver *drv = to_of_platform_driver(dev->driver);
-+	struct platform_driver *drv = to_platform_driver(dev->driver);
- 	int ret = 0;
- 
- 	if (dev->driver && drv->resume)
-diff --git a/drivers/infiniband/hw/ehca/ehca_main.c b/drivers/infiniband/hw/ehca/ehca_main.c
-index f8a6291..982e3ef 100644
---- a/drivers/infiniband/hw/ehca/ehca_main.c
-+++ b/drivers/infiniband/hw/ehca/ehca_main.c
-@@ -713,8 +713,7 @@ static struct attribute_group ehca_dev_attr_grp = {
- 	.attrs = ehca_dev_attrs
- };
- 
--static int ehca_probe(struct platform_device *dev,
--		      const struct of_device_id *id)
-+static int ehca_probe(struct platform_device *dev)
- {
- 	struct ehca_shca *shca;
- 	const u64 *handle;
-@@ -937,7 +936,7 @@ static struct of_device_id ehca_device_table[] =
- };
- MODULE_DEVICE_TABLE(of, ehca_device_table);
- 
--static struct of_platform_driver ehca_driver = {
-+static struct platform_driver ehca_driver = {
- 	.probe       = ehca_probe,
- 	.remove      = ehca_remove,
- 	.driver = {
-diff --git a/drivers/net/ethernet/ibm/ehea/ehea_main.c b/drivers/net/ethernet/ibm/ehea/ehea_main.c
-index 328f47c..c6ecf70 100644
---- a/drivers/net/ethernet/ibm/ehea/ehea_main.c
-+++ b/drivers/net/ethernet/ibm/ehea/ehea_main.c
-@@ -98,8 +98,7 @@ static struct ehea_fw_handle_array ehea_fw_handles;
- static struct ehea_bcmc_reg_array ehea_bcmc_regs;
- 
- 
--static int ehea_probe_adapter(struct platform_device *dev,
--			      const struct of_device_id *id);
-+static int ehea_probe_adapter(struct platform_device *dev);
- 
- static int ehea_remove(struct platform_device *dev);
- 
-@@ -112,7 +111,7 @@ static struct of_device_id ehea_device_table[] = {
- };
- MODULE_DEVICE_TABLE(of, ehea_device_table);
- 
--static struct of_platform_driver ehea_driver = {
-+static struct platform_driver ehea_driver = {
- 	.driver = {
- 		.name = "ehea",
- 		.owner = THIS_MODULE,
-@@ -3255,8 +3254,7 @@ static void ehea_remove_device_sysfs(struct platform_device *dev)
- 	device_remove_file(&dev->dev, &dev_attr_remove_port);
- }
- 
--static int ehea_probe_adapter(struct platform_device *dev,
--			      const struct of_device_id *id)
-+static int ehea_probe_adapter(struct platform_device *dev)
- {
- 	struct ehea_adapter *adapter;
- 	const u64 *adapter_handle;
--- 
-1.7.10.4
+ACK.
+
+cheers
