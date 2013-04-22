@@ -1,38 +1,36 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Return-Path: <azanella@linux.vnet.ibm.com>
+Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1FE4E2C013C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 04:48:04 +1000 (EST)
+ (Client CN "e24smtp04.br.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 995E42C0155
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 05:30:11 +1000 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Mon, 22 Apr 2013 14:48:02 -0400
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id B7C92C9002A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 14:47:59 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3MIlw3V255944
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 14:47:59 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3MIluj3022566
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 15:47:56 -0300
-Received: from [9.41.105.123] ([9.41.105.123])
- by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
- r3MIltKp022430
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 15:47:55 -0300
-Message-ID: <517585DB.9040603@linux.vnet.ibm.com>
-Date: Mon, 22 Apr 2013 13:47:55 -0500
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <azanella@linux.vnet.ibm.com>;
+ Mon, 22 Apr 2013 16:30:04 -0300
+Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id E25401DC0060
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 15:30:00 -0400 (EDT)
+Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
+ by d24relay01.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3MJRKRD2785484
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 16:27:20 -0300
+Received: from d24av04.br.ibm.com (loopback [127.0.0.1])
+ by d24av04.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3MHTjNE026031
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 14:29:45 -0300
+Message-ID: <51758F9D.4010108@linux.vnet.ibm.com>
+Date: Mon, 22 Apr 2013 16:29:33 -0300
+From: Adhemerval Zanella <azanella@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 12/12]  Add /proc interface to control topology updates
-References: <51757951.2080007@linux.vnet.ibm.com>
-In-Reply-To: <51757951.2080007@linux.vnet.ibm.com>
+Subject: Re: [PATCH] [RFC] powerpc: Add VDSO version of time
+References: <5148C2B3.6010408@linux.vnet.ibm.com>
+ <20130419083835.37f1c180@kryten>
+In-Reply-To: <20130419083835.37f1c180@kryten>
 Content-Type: text/plain; charset=ISO-8859-1
+Cc: Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,153 +40,153 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There are instances in which we do not want topology updates to occur.
-In order to allow this a /proc interface (/proc/powerpc/topology_updates)
-is introduced so that topology updates can be enabled and disabled.
+On 04/18/2013 07:38 PM, Anton Blanchard wrote:
+> Since you are only reading one long you shouldn't need to check the
+> update count and loop, you will always see a consistent value. The
+> system call version of time() just does an unprotected load for example.
 
-This patch also adds a prrn_is_enabled() call so that PRRN events are
-handled in the kernel only if topology updating is enabled.
+Fixed.
 
-Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+> With the above change and with Michael's comments covered (decent
+> changelog entry and Signed-off-by):
+>
+> Acked-by: Anton Blanchard <anton@samba.org>
+
+Thanks for the review, below the updated patch:
+
+
+From: Adhemerval Zanella <azanella@linux.vnet.ibm.com>
+
+This patch implement the time syscall as vDSO. The performance speedups
+are:
+
+Baseline PPC32: 380 nsec
+Baseline PPC64: 350 nsec
+vdso PPC32:      20 nsec
+vsdo PPC64:      20 nsec
+
+Tested on 64 bit build with both 32 bit and 64 bit userland.
+
+Acked-by: Anton Blanchard <anton@samba.org>
+Signed-off-by: Adhemerval Zanella <azanella@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/topology.h |    5 ++
- arch/powerpc/kernel/rtasd.c         |    7 ++--
- arch/powerpc/mm/numa.c              |   62 +++++++++++++++++++++++++++++++++++-
- 3 files changed, 71 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/vdso.c                |    4 ++++
+ arch/powerpc/kernel/vdso32/gettimeofday.S |   26 ++++++++++++++++++++++++++
+ arch/powerpc/kernel/vdso32/vdso32.lds.S   |    1 +
+ arch/powerpc/kernel/vdso64/gettimeofday.S |   26 ++++++++++++++++++++++++++
+ arch/powerpc/kernel/vdso64/vdso64.lds.S   |    1 +
+ 5 files changed, 58 insertions(+), 0 deletions(-)
 
-Index: powerpc/arch/powerpc/mm/numa.c
-===================================================================
---- powerpc.orig/arch/powerpc/mm/numa.c	2013-04-22 09:46:13.000000000 -0500
-+++ powerpc/arch/powerpc/mm/numa.c	2013-04-22 09:51:10.000000000 -0500
-@@ -23,6 +23,9 @@
- #include <linux/cpuset.h>
- #include <linux/node.h>
- #include <linux/stop_machine.h>
-+#include <linux/proc_fs.h>
-+#include <linux/seq_file.h>
-+#include <linux/uaccess.h>
- #include <asm/sparsemem.h>
- #include <asm/prom.h>
- #include <asm/smp.h>
-@@ -1585,7 +1588,6 @@
- 
- 	return rc;
- }
--__initcall(start_topology_update);
+diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
+index 1b2076f..d4f463a 100644
+--- a/arch/powerpc/kernel/vdso.c
++++ b/arch/powerpc/kernel/vdso.c
+@@ -113,6 +113,10 @@ static struct vdso_patch_def vdso_patches[] = {
+ 		CPU_FTR_USE_TB, 0,
+ 		"__kernel_get_tbfreq", NULL
+ 	},
++	{
++		CPU_FTR_USE_TB, 0,
++		"__kernel_time", NULL
++	},
+ };
  
  /*
-  * Disable polling for VPHN associativity changes.
-@@ -1604,4 +1606,62 @@
- 
- 	return rc;
- }
-+
-+inline int prrn_is_enabled(void)
-+{
-+	return prrn_enabled;
-+}
-+
-+static int topology_read(struct seq_file *file, void *v)
-+{
-+	if (vphn_enabled || prrn_enabled)
-+		seq_puts(file, "on\n");
-+	else
-+		seq_puts(file, "off\n");
-+
-+	return 0;
-+}
-+
-+static int topology_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, topology_read, NULL);
-+}
-+
-+static ssize_t topology_write(struct file *file, const char __user *buf,
-+			      size_t count, loff_t *off)
-+{
-+	char kbuf[4]; /* "on" or "off" plus null. */
-+	int read_len;
-+
-+	read_len = count < 3 ? count : 3;
-+	if (copy_from_user(kbuf, buf, read_len))
-+		return -EINVAL;
-+
-+	kbuf[read_len] = '\0';
-+
-+	if (!strncmp(kbuf, "on", 2))
-+		start_topology_update();
-+	else if (!strncmp(kbuf, "off", 3))
-+		stop_topology_update();
-+	else
-+		return -EINVAL;
-+
-+	return count;
-+}
-+
-+static const struct file_operations topology_ops = {
-+	.read = seq_read,
-+	.write = topology_write,
-+	.open = topology_open,
-+	.release = single_release
-+};
-+
-+static int topology_update_init(void)
-+{
-+	start_topology_update();
-+	proc_create("powerpc/topology_updates", 644, NULL, &topology_ops);
-+
-+	return 0;
-+}
-+device_initcall(topology_update_init);
- #endif /* CONFIG_PPC_SPLPAR */
-Index: powerpc/arch/powerpc/include/asm/topology.h
-===================================================================
---- powerpc.orig/arch/powerpc/include/asm/topology.h	2013-04-18 09:09:21.000000000 -0500
-+++ powerpc/arch/powerpc/include/asm/topology.h	2013-04-22 09:51:10.000000000 -0500
-@@ -71,6 +71,7 @@
- #if defined(CONFIG_NUMA) && defined(CONFIG_PPC_SPLPAR)
- extern int start_topology_update(void);
- extern int stop_topology_update(void);
-+extern inline int prrn_is_enabled(void);
- #else
- static inline int start_topology_update(void)
- {
-@@ -80,6 +81,10 @@
- {
- 	return 0;
- }
-+static inline int prrn_is_enabled(void)
-+{
-+	return 0;
-+}
- #endif /* CONFIG_NUMA && CONFIG_PPC_SPLPAR */
- 
- #include <asm-generic/topology.h>
-Index: powerpc/arch/powerpc/kernel/rtasd.c
-===================================================================
---- powerpc.orig/arch/powerpc/kernel/rtasd.c	2013-04-18 09:09:21.000000000 -0500
-+++ powerpc/arch/powerpc/kernel/rtasd.c	2013-04-22 09:51:10.000000000 -0500
-@@ -29,6 +29,7 @@
- #include <asm/nvram.h>
- #include <linux/atomic.h>
- #include <asm/machdep.h>
-+#include <asm/topology.h>
+diff --git a/arch/powerpc/kernel/vdso32/gettimeofday.S b/arch/powerpc/kernel/vdso32/gettimeofday.S
+index 4ee09ee..27e2f62 100644
+--- a/arch/powerpc/kernel/vdso32/gettimeofday.S
++++ b/arch/powerpc/kernel/vdso32/gettimeofday.S
+@@ -181,6 +181,32 @@ V_FUNCTION_END(__kernel_clock_getres)
  
  
- static DEFINE_SPINLOCK(rtasd_log_lock);
-@@ -294,11 +295,13 @@
- {
- 	pSeries_log_error((char *)log, ERR_TYPE_RTAS_LOG, 0);
+ /*
++ * Exact prototype of time()
++ *
++ * time_t time(time *t);
++ *
++ */
++V_FUNCTION_BEGIN(__kernel_time)
++  .cfi_startproc
++	mflr	r12
++  .cfi_register lr,r12
++
++	mr	r11,r3			/* r11 holds t */
++	bl	__get_datapage@local
++	mr	r9, r3			/* datapage ptr in r9 */
++
++	lwz	r3,STAMP_XTIME+TSPEC_TV_SEC(r9)
++
++	cmplwi	r11,0			/* check if t is NULL */
++	beq	2f
++	stw	r3,0(r11)		/* store result at *t */
++2:	mtlr	r12
++	crclr	cr0*4+so
++	blr
++  .cfi_endproc
++V_FUNCTION_END(__kernel_time)
++
++/*
+  * This is the core of clock_gettime() and gettimeofday(),
+  * it returns the current time in r3 (seconds) and r4.
+  * On entry, r7 gives the resolution of r4, either USEC_PER_SEC
+diff --git a/arch/powerpc/kernel/vdso32/vdso32.lds.S b/arch/powerpc/kernel/vdso32/vdso32.lds.S
+index 43200ba..f223409 100644
+--- a/arch/powerpc/kernel/vdso32/vdso32.lds.S
++++ b/arch/powerpc/kernel/vdso32/vdso32.lds.S
+@@ -150,6 +150,7 @@ VERSION
+ #ifdef CONFIG_PPC64
+ 		__kernel_getcpu;
+ #endif
++		__kernel_time;
  
--	if (log->type == RTAS_TYPE_PRRN)
-+	if (log->type == RTAS_TYPE_PRRN) {
- 		/* For PRRN Events the extended log length is used to denote
- 		 * the scope for calling rtas update-nodes.
- 		 */
--		prrn_schedule_update(log->extended_log_length);
-+		if (prrn_is_enabled())
-+			prrn_schedule_update(log->extended_log_length);
-+	}
+ 	local: *;
+ 	};
+diff --git a/arch/powerpc/kernel/vdso64/gettimeofday.S b/arch/powerpc/kernel/vdso64/gettimeofday.S
+index e97a9a0..a76b4af 100644
+--- a/arch/powerpc/kernel/vdso64/gettimeofday.S
++++ b/arch/powerpc/kernel/vdso64/gettimeofday.S
+@@ -164,6 +164,32 @@ V_FUNCTION_BEGIN(__kernel_clock_getres)
+   .cfi_endproc
+ V_FUNCTION_END(__kernel_clock_getres)
  
- 	return;
- }
++/*
++ * Exact prototype of time()
++ *
++ * time_t time(time *t);
++ *
++ */
++V_FUNCTION_BEGIN(__kernel_time)
++  .cfi_startproc
++	mflr	r12
++  .cfi_register lr,r12
++
++	mr	r11,r3			/* r11 holds t */
++	bl	V_LOCAL_FUNC(__get_datapage)
++
++	ld	r4,STAMP_XTIME+TSPC64_TV_SEC(r3)
++
++	cmpldi	r11,0			/* check if t is NULL */
++	beq	2f
++	std	r4,0(r11)		/* store result at *t */
++2:	mtlr	r12
++	crclr	cr0*4+so
++	mr	r3,r4
++	blr
++  .cfi_endproc
++V_FUNCTION_END(__kernel_time)
++
+ 
+ /*
+  * This is the core of clock_gettime() and gettimeofday(),
+diff --git a/arch/powerpc/kernel/vdso64/vdso64.lds.S b/arch/powerpc/kernel/vdso64/vdso64.lds.S
+index e6c1758..e486381 100644
+--- a/arch/powerpc/kernel/vdso64/vdso64.lds.S
++++ b/arch/powerpc/kernel/vdso64/vdso64.lds.S
+@@ -147,6 +147,7 @@ VERSION
+ 		__kernel_sync_dicache_p5;
+ 		__kernel_sigtramp_rt64;
+ 		__kernel_getcpu;
++		__kernel_time;
+ 
+ 	local: *;
+ 	};
