@@ -1,42 +1,25 @@
-Return-Path: <andrew.murray@arm.com>
-Date: Mon, 22 Apr 2013 11:49:16 +0100
-From: Andrew Murray <andrew.murray@arm.com>
-To: Gabor Juhos <juhosg@openwrt.org>
-Subject: Re: [PATCH v7 3/3] of/pci: mips: convert to common of_pci_range_parser
-Message-ID: <20130422104916.GA17007@arm.com>
-References: <1366107508-12672-1-git-send-email-Andrew.Murray@arm.com>
- <1366107508-12672-4-git-send-email-Andrew.Murray@arm.com>
- <CACRpkdbBaT1OKr5t8HW4+8y_wSDmGxmewAyVMekx8S-K9s3K8Q@mail.gmail.com>
- <20130418125910.GA17128@arm.com>
- <20130418130919.GI27197@titan.lakedaemon.net>
- <5170F016.6050502@openwrt.org>
- <20130420223343.GB25724@titan.lakedaemon.net>
- <517394C6.2060407@openwrt.org>
+Return-Path: <B35336@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C41452C00CA
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:56:29 +1000 (EST)
+Date: Mon, 22 Apr 2013 18:56:01 +0800
+From: Zhao Chenhui <chenhui.zhao@freescale.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2 06/15] powerpc/85xx: add support to JOG feature using
+ cpufreq interface
+Message-ID: <20130422105601.GA32331@localhost.localdomain>
+References: <1366368468-29143-1-git-send-email-chenhui.zhao@freescale.com>
+ <1366368468-29143-6-git-send-email-chenhui.zhao@freescale.com>
+ <CAOh2x=mQt-GJa8Hc-zybKOKJBhi5jWVy5-UN57pGJDdE1PPx_g@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <517394C6.2060407@openwrt.org>
-Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- "siva.kallam@samsung.com" <siva.kallam@samsung.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Linus Walleij <linus.walleij@linaro.org>,
- Thierry Reding <thierry.reding@avionic-design.de>,
- Liviu Dudau <Liviu.Dudau@arm.com>, Paul Mackerras <paulus@samba.org>,
- linux-samsung-soc <linux-samsung-soc@vger.kernel.org>,
- Russell King - ARM Linux <linux@arm.linux.org.uk>,
- Jingoo Han <jg1.han@samsung.com>,
- Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
- Thomas Abraham <thomas.abraham@linaro.org>,
- Jason Cooper <jason@lakedaemon.net>, Arnd Bergmann <arnd@arndb.de>,
- "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- Kukjin Kim <kgene.kim@samsung.com>,
- "bhelgaas@google.com" <bhelgaas@google.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
- Michal Simek <monstr@monstr.eu>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "suren.reddy@samsung.com" <suren.reddy@samsung.com>,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <CAOh2x=mQt-GJa8Hc-zybKOKJBhi5jWVy5-UN57pGJDdE1PPx_g@mail.gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,30 +29,168 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Apr 21, 2013 at 08:27:02AM +0100, Gabor Juhos wrote:
-> Hi Jason,
+On Mon, Apr 22, 2013 at 08:55:35AM +0530, Viresh Kumar wrote:
+> On Fri, Apr 19, 2013 at 4:17 PM, Zhao Chenhui
+> <chenhui.zhao@freescale.com> wrote:
+> > diff --git a/drivers/cpufreq/mpc85xx-cpufreq.c b/drivers/cpufreq/mpc85xx-cpufreq.c
 > 
-> >> Sorry I had no time earlier, but I have tested this now on MIPS. The patch
-> >> causes build errors unfortunately. Given the fact that this has been merged
-> >> already, I will send a fixup patch.
-> > 
-> > Olof has dropped this branch from arm-soc, plase post the build error
-> > and fix here so that it can be included in this series.
+> > +#include <linux/module.h>
+> > +#include <linux/cpufreq.h>
+> > +#include <linux/of_platform.h>
+> > +#include <linux/suspend.h>
+> > +#include <linux/cpu.h>
+> > +#include <linux/time.h>
+> > +#include <linux/io.h>
+> > +#include <linux/smp.h>
 > 
-> I have posted the patch to Olof two days ago. It has been CC'd to you as well
-> but In case that it does not exists in your mailbox the patch can be found here:
+> Would be better to keep them in alphabetical order, so that we don't add
+> anything twice.
+
+Good idea.
+
 > 
-> https://patchwork.linux-mips.org/patch/5196/
+> > +static int mpc85xx_cpufreq_cpu_init(struct cpufreq_policy *policy)
+> > +{
+> > +       unsigned int i, cur_pll;
+> > +       int hw_cpu = get_hard_smp_processor_id(policy->cpu);
+> > +
+> > +       if (!cpu_present(policy->cpu))
 > 
-> However I can re-post the patch as a reply to this thread if you prefer that.
+> This can't happen and so no need to check it.
+> 
+> > +               return -ENODEV;
+> > +
+> > +       /* the latency of a transition, the unit is ns */
+> > +       policy->cpuinfo.transition_latency = 2000;
+> > +
+> > +       cur_pll = get_pll(hw_cpu);
+> > +
+> > +       /* initialize frequency table */
+> > +       pr_debug("core%d frequency table:\n", hw_cpu);
+> > +       for (i = 0; mpc85xx_freqs[i].frequency != CPUFREQ_TABLE_END; i++) {
+> > +               if (mpc85xx_freqs[i].index <= max_pll[hw_cpu]) {
+> > +                       /* The frequency unit is kHz. */
+> > +                       mpc85xx_freqs[i].frequency =
+> > +                               (sysfreq * mpc85xx_freqs[i].index / 2) / 1000;
+> > +               } else {
+> > +                       mpc85xx_freqs[i].frequency = CPUFREQ_ENTRY_INVALID;
+> > +               }
+> > +
+> > +               pr_debug("%d: %dkHz\n", i, mpc85xx_freqs[i].frequency);
+> > +
+> > +               if (mpc85xx_freqs[i].index == cur_pll)
+> > +                       policy->cur = mpc85xx_freqs[i].frequency;
+> > +       }
+> > +       pr_debug("current pll is at %d, and core freq is%d\n",
+> > +                       cur_pll, policy->cur);
+> > +
+> > +       cpufreq_frequency_table_get_attr(mpc85xx_freqs, policy->cpu);
+> > +
+> > +       /*
+> > +        * This ensures that policy->cpuinfo_min
+> > +        * and policy->cpuinfo_max are set correctly.
+> > +        */
+> > +       return cpufreq_frequency_table_cpuinfo(policy, mpc85xx_freqs);
+> 
+> Call cpufreq_frequency_table_get_attr() at the end after above call is
+> successful.
+> 
+> > +}
+> 
+> > +static int mpc85xx_cpufreq_target(struct cpufreq_policy *policy,
+> > +                             unsigned int target_freq,
+> > +                             unsigned int relation)
+> 
+> merge above two lines.
+> 
+> > +{
+> > +       struct cpufreq_freqs freqs;
+> > +       unsigned int new;
+> > +       int ret = 0;
+> > +
+> > +       if (!set_pll)
+> > +               return -ENODEV;
+> > +
+> > +       cpufreq_frequency_table_target(policy,
+> > +                                      mpc85xx_freqs,
+> > +                                      target_freq,
+> > +                                      relation,
+> > +                                      &new);
+> 
+> same.. merge all above to put it in a single line.
+> 
+> > +       freqs.old = policy->cur;
+> > +       freqs.new = mpc85xx_freqs[new].frequency;
+> > +       freqs.cpu = policy->cpu;
+> 
+> not required now.
+> 
+> > +       mutex_lock(&mpc85xx_switch_mutex);
+> > +       cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+> 
+> ditto. Rebase over latest code from linux-next. This call has changed.
+> 
+> > +       ret = set_pll(policy->cpu, mpc85xx_freqs[new].index);
+> > +       if (!ret) {
+> > +               pr_info("cpufreq: Setting core%d frequency to %d kHz and PLL ratio to %d:2\n",
+> > +                        policy->cpu, mpc85xx_freqs[new].frequency,
+> > +                        mpc85xx_freqs[new].index);
+> > +
+> > +               ppc_proc_freq = freqs.new * 1000ul;
+> > +       }
+> > +       cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
+> > +       mutex_unlock(&mpc85xx_switch_mutex);
+> > +
+> > +       return ret;
+> > +}
+> 
+> > +static int __init mpc85xx_jog_init(void)
+> > +{
+> > +       struct device_node *np;
+> > +       unsigned int svr;
+> > +
+> > +       np = of_find_matching_node(NULL, mpc85xx_jog_ids);
+> > +       if (!np)
+> > +               return -ENODEV;
+> > +
+> > +       guts = of_iomap(np, 0);
+> > +       if (!guts) {
+> > +               of_node_put(np);
+> > +               return -ENODEV;
+> > +       }
+> > +
+> > +       sysfreq = fsl_get_sys_freq();
+> > +
+> > +       if (of_device_is_compatible(np, "fsl,mpc8536-guts")) {
+> > +               svr = mfspr(SPRN_SVR);
+> > +               if ((svr & 0x7fff) == 0x10) {
+> > +                       pr_err("MPC8536 Rev 1.0 does not support cpufreq(JOG).\n");
+> > +                       of_node_put(np);
+> 
+> unmap too??
+> 
+> > +                       return -ENODEV;
+> > +               }
+> > +               mpc85xx_freqs = mpc8536_freqs_table;
+> > +               set_pll = mpc8536_set_pll;
+> > +               max_pll[0] = get_pll(0);
+> > +
+> > +       } else if (of_device_is_compatible(np, "fsl,p1022-guts")) {
+> > +               mpc85xx_freqs = p1022_freqs_table;
+> > +               set_pll = p1022_set_pll;
+> > +               max_pll[0] = get_pll(0);
+> > +               max_pll[1] = get_pll(1);
+> > +       }
+> > +
+> > +       pr_info("Freescale MPC85xx cpufreq(JOG) driver\n");
+> > +
+> > +       of_node_put(np);
+> > +       return cpufreq_register_driver(&mpc85xx_cpufreq_driver);
+> > +}
+> > +
+> > +device_initcall(mpc85xx_jog_init);
+> 
 
-As this branch was dropped I have updated my patchset to include Grant's recent
-feedback - I've also included Gabor's fixes to this patchset (and his sign-off).
+Thanks. I will fix them.
 
-If you include this new patchset in your branch the drivers that depend on it
-will need to be updated to reflect the new naming of functions as suggested by
-Grant.
-
-Thanks,
-
-Andrew Murray
+-Chenhui
