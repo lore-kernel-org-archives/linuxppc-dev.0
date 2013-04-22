@@ -1,19 +1,24 @@
-Return-Path: <michael@ellerman.id.au>
-Date: Tue, 23 Apr 2013 09:34:16 +1000
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Gavin Shan <shangw@linux.vnet.ibm.com>
-Subject: Re: [PATCH 3/3] powerpc/powernv: Patch MSI EOI handler on P8
-Message-ID: <20130422233415.GB17406@concordia>
-References: <1366363965-23281-1-git-send-email-shangw@linux.vnet.ibm.com>
- <1366363965-23281-3-git-send-email-shangw@linux.vnet.ibm.com>
- <20130421233436.GB22246@concordia>
- <20130422014533.GA7902@shangw.(null)>
- <20130422025636.GB24739@concordia>
- <20130422110617.GA21476@shangw.(null)>
+Return-Path: <B07421@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 286762C0120
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 09:50:24 +1000 (EST)
+Date: Mon, 22 Apr 2013 18:50:09 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 2/3 v13] iommu/fsl: Add additional iommu attributes
+ required by the PAMU driver.
+To: Varun Sethi <Varun.Sethi@freescale.com>
+In-Reply-To: <1366608716-1704-2-git-send-email-Varun.Sethi@freescale.com>
+ (from Varun.Sethi@freescale.com on Mon Apr 22 00:31:55 2013)
+Message-ID: <1366674609.10399.12@snotra>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20130422110617.GA21476@shangw.(null)>
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: stuart.yoder@freescale.com, joro@8bytes.org, linux-kernel@vger.kernel.org,
+ iommu@lists.linux-foundation.org, Varun Sethi <Varun.Sethi@freescale.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,76 +28,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Apr 22, 2013 at 07:06:17PM +0800, Gavin Shan wrote:
-> On Mon, Apr 22, 2013 at 12:56:37PM +1000, Michael Ellerman wrote:
-> >On Mon, Apr 22, 2013 at 09:45:33AM +0800, Gavin Shan wrote:
-> >> On Mon, Apr 22, 2013 at 09:34:36AM +1000, Michael Ellerman wrote:
-> >> >On Fri, Apr 19, 2013 at 05:32:45PM +0800, Gavin Shan wrote:
-> >> >> The EOI handler of MSI/MSI-X interrupts for P8 (PHB3) need additional
-> >> >> steps to handle the P/Q bits in IVE before EOIing the corresponding
-> >> >> interrupt. The patch changes the EOI handler to cover that.
-> >> 
-> >> Thanks for your time to review it, Michael. By the way, I think I need
-> >> rebase the patch since the patch fb1b55d654a7038ca6337fbf55839a308c9bc1a7
-> >> ("Using bitmap to manage MSI") has been merged to linux-next.
-> >> 
-> >> >> diff --git a/arch/powerpc/sysdev/xics/icp-native.c b/arch/powerpc/sysdev/xics/icp-native.c
-> >> >> index 48861d3..289355e 100644
-> >> >> --- a/arch/powerpc/sysdev/xics/icp-native.c
-> >> >> +++ b/arch/powerpc/sysdev/xics/icp-native.c
-> >> >> @@ -27,6 +27,10 @@
-> >> >>  #include <asm/xics.h>
-> >> >>  #include <asm/kvm_ppc.h>
-> >> >>  
-> >> >> +#if defined(CONFIG_PPC_POWERNV) && defined(CONFIG_PCI_MSI)
-> >> >> +extern int pnv_pci_msi_eoi(unsigned int hw_irq);
-> >> >> +#endif
-> >> >
-> >> >You don't need to #ifdef the extern. But it should be in a header, not
-> >> >here.
-> >> >
-> >> 
-> >> Ok. I'll put it into asm/xics.h, but I want to confirm we needn't
-> >> #ifdef when moving it to asm/xics.h?
-> >
-> >No you don't need it #ifdef'd. It's just extra noise in the file, and
-> >doesn't really add anything IMHO.
-> >
-> 
-> Michael, I'm a bit confused about your point. asm/xics.h is shared between
-> PowerNV and pSeries platform, and pnv_pci_msi_eoi() is only implemented on
-> PowerNV platform, so the code should look like this (with newly introduced
-> option - CONFIG_POWERNV_MSI)
-> 
-> #ifdef CONFIG_POWERNV_MSI
-> extern int pnv_pci_msi_eoi(unsigned int hw_irq);
-> #endif
+On 04/22/2013 12:31:55 AM, Varun Sethi wrote:
+> Added the following domain attributes for the FSL PAMU driver:
+> 1. Added new iommu stash attribute, which allows setting of the
+>    LIODN specific stash id parameter through IOMMU API.
+> 2. Added an attribute for enabling/disabling DMA to a particular
+>    memory window.
+> 3. Added domain attribute to check for PAMUV1 specific constraints.
+>=20
+> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
+> ---
+> v13 changes:
+> - created a new file include/linux/fsl_pamu_stash.h for stash
+> attributes.
+> v12 changes:
+> - Moved PAMU specifc stash ids and structures to PAMU header file.
+> - no change in v11.
+> - no change in v10.
+>  include/linux/fsl_pamu_stash.h |   39 =20
+> +++++++++++++++++++++++++++++++++++++++
+>  include/linux/iommu.h          |   16 ++++++++++++++++
+>  2 files changed, 55 insertions(+), 0 deletions(-)
+>  create mode 100644 include/linux/fsl_pamu_stash.h
+>=20
+> diff --git a/include/linux/fsl_pamu_stash.h =20
+> b/include/linux/fsl_pamu_stash.h
+> new file mode 100644
+> index 0000000..caa1b21
+> --- /dev/null
+> +++ b/include/linux/fsl_pamu_stash.h
+> @@ -0,0 +1,39 @@
+> +/*
+> + * This program is free software; you can redistribute it and/or =20
+> modify
+> + * it under the terms of the GNU General Public License, version 2, =20
+> as
+> + * published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  =20
+> 02110-1301, USA.
+> + *
+> + * Copyright (C) 2013 Freescale Semiconductor, Inc.
+> + *
+> + */
+> +
+> +#ifndef __FSL_PAMU_STASH_H
+> +#define __FSL_PAMU_STASH_H
+> +
+> +/* cache stash targets */
+> +enum pamu_stash_target {
+> +	PAMU_ATTR_CACHE_L1 =3D 1,
+> +	PAMU_ATTR_CACHE_L2,
+> +	PAMU_ATTR_CACHE_L3,
+> +};
+> +
+> +/*
+> + * This attribute allows configuring stashig specific parameters
+> + * in the PAMU hardware.
+> + */
+> +
+> +struct pamu_stash_attribute {
+> +	u32 	cpu;	/* cpu number */
+> +	u32 	cache;	/* cache to stash to: L1,L2,L3 */
+> +};
+> +
+> +#endif  /* __FSL_PAMU_STASH_H */
+> diff --git a/include/linux/iommu.h b/include/linux/iommu.h
+> index 2727810..c5dc2b9 100644
+> --- a/include/linux/iommu.h
+> +++ b/include/linux/iommu.h
+> @@ -57,10 +57,26 @@ struct iommu_domain {
+>  #define IOMMU_CAP_CACHE_COHERENCY	0x1
+>  #define IOMMU_CAP_INTR_REMAP		0x2	/* isolates device =20
+> intrs */
+>=20
+> +/*
+> + * Following constraints are specifc to PAMUV1:
 
-You can do that. But there's not much value added by adding an
-#ifdef around the extern.
+FSL_PAMUV1
 
-Assuming the body of pnv_pci_msi_eoi() is only available when
-CONFIG_POWERNV_MSI is defined (which is the whole point), imagine there
-is code in platforms/pseries which accidentally calls it.
+> + *  -aperture must be power of 2, and naturally aligned
+> + *  -number of windows must be power of 2, and address space size
+> + *   of each window is determined by aperture size / # of windows
+> + *  -the actual size of the mapped region of a window must be power
+> + *   of 2 starting with 4KB and physical address must be naturally
+> + *   aligned.
+> + * DOMAIN_ATTR_FSL_PAMUV1 corresponds to the above mentioned =20
+> contraints.
+> + * The caller can invoke iommu_domain_get_attr to check if the =20
+> underlying
+> + * iommu implementation supports these constraints.
+> + */
+> +
+>  enum iommu_attr {
+>  	DOMAIN_ATTR_GEOMETRY,
+>  	DOMAIN_ATTR_PAGING,
+>  	DOMAIN_ATTR_WINDOWS,
+> +	DOMAIN_ATTR_PAMU_STASH,
+> +	DOMAIN_ATTR_PAMU_ENABLE,
+> +	DOMAIN_ATTR_FSL_PAMUV1,
+>  	DOMAIN_ATTR_MAX,
 
-If we have the extern protected by an ifdef we will get a warning that
-we are calling an undeclared function, eg something like:
+Please be consistent on whether "PAMU" gets an "FSL_" namespace prefix =20
+(I'd prefer that it does).
 
-  pseries.c:30:2: warning: implicit declaration of function ‘pnv_pci_msi_eoi’ [-Wimplicit-function-declaration]
-
-But more importantly we will not be able to link the kernel, because the
-body of pnv_pci_msi_eoi() is missing (because CONFIG_POWERNV_MSI=n).
-
-If we have the extern visible in the header, ie. not inside #ifdef, then
-we will not see the warning because the compiler can see the
-declaration.
-
-But even so the kernel will still not link.
-
-So my point is that having the #ifdef around the extern just gives you
-an extra warning, which is not all that useful because you are going to
-notice anyway as soon as the kernel fails to link.
-
-Anyway it's a minor point so don't worry about it too much :)
-
-cheers
+-Scott=
