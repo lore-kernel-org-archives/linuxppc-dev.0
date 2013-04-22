@@ -2,29 +2,29 @@ Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E8BBD2C0147
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:01:50 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 3AA6C2C0157
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:01:51 +1000 (EST)
 Received: from /spool/local
  by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 22 Apr 2013 19:50:01 +1000
+ Mon, 22 Apr 2013 19:50:03 +1000
 Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id CCE502BB0023
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:01:44 +1000 (EST)
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id B4EE22BB0023
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:01:48 +1000 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
  by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3M9mBRW3932630
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 19:48:12 +1000
+ r3M9mFZ57930272
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 19:48:15 +1000
 Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3MA1hPc009964
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:01:43 +1000
+ r3MA1l8W010108
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:01:48 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, David Gibson <dwg@au1.ibm.com>
-Subject: [PATCH -V6 01/27] powerpc: Use signed formatting when printing error
-Date: Mon, 22 Apr 2013 15:30:35 +0530
-Message-Id: <1366624861-24948-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V6 02/27] powerpc: Save DAR and DSISR in pt_regs on MCE
+Date: Mon, 22 Apr 2013 15:30:36 +0530
+Message-Id: <1366624861-24948-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1366624861-24948-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1366624861-24948-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -40,27 +40,51 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-PAPR defines these errors as negative values. So print them accordingly
-for easy debugging.
+We were not saving DAR and DSISR on MCE. Save then and also print the values
+along with exception details in xmon.
 
 Acked-by: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/pseries/lpar.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kernel/exceptions-64s.S |    9 +++++++++
+ arch/powerpc/xmon/xmon.c             |    2 +-
+ 2 files changed, 10 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index 299731e..9b02ab1 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -155,7 +155,7 @@ static long pSeries_lpar_hpte_insert(unsigned long hpte_group,
- 	 */
- 	if (unlikely(lpar_rc != H_SUCCESS)) {
- 		if (!(vflags & HPTE_V_BOLTED))
--			pr_devel(" lpar err %lu\n", lpar_rc);
-+			pr_devel(" lpar err %ld\n", lpar_rc);
- 		return -2;
- 	}
- 	if (!(vflags & HPTE_V_BOLTED))
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 56bd923..7da3f94 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -688,9 +688,18 @@ slb_miss_user_pseries:
+ 	.align	7
+ 	.globl machine_check_common
+ machine_check_common:
++
++	mfspr	r10,SPRN_DAR
++	std	r10,PACA_EXGEN+EX_DAR(r13)
++	mfspr	r10,SPRN_DSISR
++	stw	r10,PACA_EXGEN+EX_DSISR(r13)
+ 	EXCEPTION_PROLOG_COMMON(0x200, PACA_EXMC)
+ 	FINISH_NAP
+ 	DISABLE_INTS
++	ld	r3,PACA_EXGEN+EX_DAR(r13)
++	lwz	r4,PACA_EXGEN+EX_DSISR(r13)
++	std	r3,_DAR(r1)
++	std	r4,_DSISR(r1)
+ 	bl	.save_nvgprs
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	bl	.machine_check_exception
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index 13f85de..51e237c 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -1430,7 +1430,7 @@ static void excprint(struct pt_regs *fp)
+ 	printf("    sp: %lx\n", fp->gpr[1]);
+ 	printf("   msr: %lx\n", fp->msr);
+ 
+-	if (trap == 0x300 || trap == 0x380 || trap == 0x600) {
++	if (trap == 0x300 || trap == 0x380 || trap == 0x600 || trap == 0x200) {
+ 		printf("   dar: %lx\n", fp->dar);
+ 		if (trap != 0x380)
+ 			printf(" dsisr: %lx\n", fp->dsisr);
 -- 
 1.7.10
