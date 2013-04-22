@@ -1,17 +1,17 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH V3 1/5] powerpc,
- perf: Add new BHRB related instructions for POWER8
-In-reply-to: <20130422024546.GA24739@concordia>
-References: <1366287976-3900-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1366287976-3900-2-git-send-email-khandual@linux.vnet.ibm.com>
- <20130421234109.GC22246@concordia> <14010.1366593223@ale.ozlabs.ibm.com>
- <20130422024546.GA24739@concordia>
-Date: Mon, 22 Apr 2013 12:50:03 +1000
-Message-ID: <14063.1366599003@ale.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Return-Path: <michael@ellerman.id.au>
+Date: Mon, 22 Apr 2013 12:56:37 +1000
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Subject: Re: [PATCH 3/3] powerpc/powernv: Patch MSI EOI handler on P8
+Message-ID: <20130422025636.GB24739@concordia>
+References: <1366363965-23281-1-git-send-email-shangw@linux.vnet.ibm.com>
+ <1366363965-23281-3-git-send-email-shangw@linux.vnet.ibm.com>
+ <20130421233436.GB22246@concordia>
+ <20130422014533.GA7902@shangw.(null)>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130422014533.GA7902@shangw.(null)>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,62 +21,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <michael@ellerman.id.au> wrote:
+On Mon, Apr 22, 2013 at 09:45:33AM +0800, Gavin Shan wrote:
+> On Mon, Apr 22, 2013 at 09:34:36AM +1000, Michael Ellerman wrote:
+> >On Fri, Apr 19, 2013 at 05:32:45PM +0800, Gavin Shan wrote:
+> >> The EOI handler of MSI/MSI-X interrupts for P8 (PHB3) need additional
+> >> steps to handle the P/Q bits in IVE before EOIing the corresponding
+> >> interrupt. The patch changes the EOI handler to cover that.
+> 
+> Thanks for your time to review it, Michael. By the way, I think I need
+> rebase the patch since the patch fb1b55d654a7038ca6337fbf55839a308c9bc1a7
+> ("Using bitmap to manage MSI") has been merged to linux-next.
+> 
+> >> diff --git a/arch/powerpc/sysdev/xics/icp-native.c b/arch/powerpc/sysdev/xics/icp-native.c
+> >> index 48861d3..289355e 100644
+> >> --- a/arch/powerpc/sysdev/xics/icp-native.c
+> >> +++ b/arch/powerpc/sysdev/xics/icp-native.c
+> >> @@ -27,6 +27,10 @@
+> >>  #include <asm/xics.h>
+> >>  #include <asm/kvm_ppc.h>
+> >>  
+> >> +#if defined(CONFIG_PPC_POWERNV) && defined(CONFIG_PCI_MSI)
+> >> +extern int pnv_pci_msi_eoi(unsigned int hw_irq);
+> >> +#endif
+> >
+> >You don't need to #ifdef the extern. But it should be in a header, not
+> >here.
+> >
+> 
+> Ok. I'll put it into asm/xics.h, but I want to confirm we needn't
+> #ifdef when moving it to asm/xics.h?
 
-> On Mon, Apr 22, 2013 at 11:13:43AM +1000, Michael Neuling wrote:
-> > Michael Ellerman <michael@ellerman.id.au> wrote:
-> > 
-> > > On Thu, Apr 18, 2013 at 05:56:12PM +0530, Anshuman Khandual wrote:
-> > > > This patch adds new POWER8 instruction encoding for reading
-> > > > the BHRB buffer entries and also clearing it. Encoding for
-> > > > "clrbhrb" instruction is straight forward.
-> > > 
-> > > Which is "clear branch history rolling buffer" ?
-> > > 
-> > > > But "mfbhrbe"
-> > > > encoding involves reading a certain index of BHRB buffer
-> > > > into a particular GPR register.
-> > > 
-> > > And "Move from branch history rolling buffer entry" ?
-> > > 
-> > > > diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-> > > > index 8752bc8..93ae5a1 100644
-> > > > --- a/arch/powerpc/include/asm/ppc-opcode.h
-> > > > +++ b/arch/powerpc/include/asm/ppc-opcode.h
-> > > > @@ -82,6 +82,7 @@
-> > > >  #define	__REGA0_R31	31
-> > > >  
-> > > >  /* sorted alphabetically */
-> > > > +#define PPC_INST_BHRBE			0x7c00025c
-> > > 
-> > > I don't think you really need this, just use the literal value below.
-> > 
-> > The rest of the defines in this file do this, so Anshuman's right. 
-> 
-> I don't see the point, but sure let's be consistent. Though in that case
-> he should do the same for PPC_CLRBHRB below.
+No you don't need it #ifdef'd. It's just extra noise in the file, and
+doesn't really add anything IMHO.
 
-Agreed.
-
-Mikey
-
-> 
-> > > > @@ -297,6 +298,12 @@
-> > > >  #define PPC_NAP			stringify_in_c(.long PPC_INST_NAP)
-> > > >  #define PPC_SLEEP		stringify_in_c(.long PPC_INST_SLEEP)
-> > > >  
-> > > > +/* BHRB instructions */
-> > > > +#define PPC_CLRBHRB		stringify_in_c(.long 0x7c00035c)
-> > > > +#define PPC_MFBHRBE(r, n)	stringify_in_c(.long PPC_INST_BHRBE | \
-> > > > +						__PPC_RS(r) | \
-> > > > +							(((n) & 0x1f) << 11))
-> > > 
-> > > Why are you not using ___PPC_RB(n) here ?
-> > 
-> > Actually, this is wrong.  The number field should be 10 bits (0x3ff),
-> > not 5 (0x1f)  Anshuman please fix.
-> 
-> ACK.
-> 
-> cheers
-> 
+cheers
