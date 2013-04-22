@@ -1,30 +1,30 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp05.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7DAE72C01E6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:01:57 +1000 (EST)
+ (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E215A2C01CD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:02:04 +1000 (EST)
 Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 22 Apr 2013 19:56:55 +1000
+ Mon, 22 Apr 2013 19:52:39 +1000
 Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id C9D302CE804A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:01:52 +1000 (EST)
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 239EC2CE804C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:01:57 +1000 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
  by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3MA1kQt33095856
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:01:46 +1000
+ r3MA1oxo37683332
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:01:50 +1000
 Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3MA1pCb010256
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:01:52 +1000
+ r3MA1utK010372
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:01:56 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, David Gibson <dwg@au1.ibm.com>
-Subject: [PATCH -V6 03/27] powerpc: Don't hard code the size of pte page
-Date: Mon, 22 Apr 2013 15:30:37 +0530
-Message-Id: <1366624861-24948-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V6 04/27] powerpc: Don't truncate pgd_index wrongly
+Date: Mon, 22 Apr 2013 15:30:38 +0530
+Message-Id: <1366624861-24948-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1366624861-24948-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1366624861-24948-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -40,54 +40,35 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-USE PTRS_PER_PTE to indicate the size of pte page. To support THP,
-later patches will be changing PTRS_PER_PTE value.
+With PGD_INDEX_SIZE set to 12 the existing macro doesn't work. Fix it to
+use PTRS_PER_PGD
 
-Acked-by: Paul Mackerras <paulus@samba.org>
+The idea originally was to have one more bit in the result of
+pgd_index() than PGD_INDEX_SIZE, so that if one had an address
+corresponding to the last PGD entry, and then incremented that address
+by PGD_SIZE, and took pgd_index() of that, you wouldn't end up with
+zero.  The commit that introduced that dates back to 2002, and the
+code that was sensitive to that edge case has long since been
+refactored (several times), so there is no need for it these days.
+
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/pgtable.h |    6 ++++++
- arch/powerpc/mm/hash_low_64.S      |    4 ++--
- 2 files changed, 8 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/pgtable-ppc64.h |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
-index a9cbd3b..4b52726 100644
---- a/arch/powerpc/include/asm/pgtable.h
-+++ b/arch/powerpc/include/asm/pgtable.h
-@@ -17,6 +17,12 @@ struct mm_struct;
- #  include <asm/pgtable-ppc32.h>
- #endif
+diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
+index 0182c20..e3d55f6f 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc64.h
++++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+@@ -167,8 +167,7 @@
+  * Find an entry in a page-table-directory.  We combine the address region
+  * (the high order N bits) and the pgd portion of the address.
+  */
+-/* to avoid overflow in free_pgtables we don't use PTRS_PER_PGD here */
+-#define pgd_index(address) (((address) >> (PGDIR_SHIFT)) & 0x1ff)
++#define pgd_index(address) (((address) >> (PGDIR_SHIFT)) & (PTRS_PER_PGD - 1))
  
-+/*
-+ * We save the slot number & secondary bit in the second half of the
-+ * PTE page. We use the 8 bytes per each pte entry.
-+ */
-+#define PTE_PAGE_HIDX_OFFSET (PTRS_PER_PTE * 8)
-+
- #ifndef __ASSEMBLY__
+ #define pgd_offset(mm, address)	 ((mm)->pgd + pgd_index(address))
  
- #include <asm/tlbflush.h>
-diff --git a/arch/powerpc/mm/hash_low_64.S b/arch/powerpc/mm/hash_low_64.S
-index 7443481..abdd5e2 100644
---- a/arch/powerpc/mm/hash_low_64.S
-+++ b/arch/powerpc/mm/hash_low_64.S
-@@ -490,7 +490,7 @@ END_FTR_SECTION(CPU_FTR_NOEXECUTE|CPU_FTR_COHERENT_ICACHE, CPU_FTR_NOEXECUTE)
- 	beq	htab_inval_old_hpte
- 
- 	ld	r6,STK_PARAM(R6)(r1)
--	ori	r26,r6,0x8000		/* Load the hidx mask */
-+	ori	r26,r6,PTE_PAGE_HIDX_OFFSET /* Load the hidx mask. */
- 	ld	r26,0(r26)
- 	addi	r5,r25,36		/* Check actual HPTE_SUB bit, this */
- 	rldcr.	r0,r31,r5,0		/* must match pgtable.h definition */
-@@ -607,7 +607,7 @@ htab_pte_insert_ok:
- 	sld	r4,r4,r5
- 	andc	r26,r26,r4
- 	or	r26,r26,r3
--	ori	r5,r6,0x8000
-+	ori	r5,r6,PTE_PAGE_HIDX_OFFSET
- 	std	r26,0(r5)
- 	lwsync
- 	std	r30,0(r6)
 -- 
 1.7.10
