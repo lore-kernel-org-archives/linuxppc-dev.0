@@ -1,14 +1,20 @@
-Return-Path: <andriy.shevchenko@linux.intel.com>
-Received: from mga14.intel.com (mga14.intel.com [143.182.124.37])
- by ozlabs.org (Postfix) with ESMTP id D452F2C0125
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 23:02:32 +1000 (EST)
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] macintosh: use %*ph to print small buffers
-Date: Mon, 22 Apr 2013 16:02:19 +0300
-Message-Id: <1366635739-11511-1-git-send-email-andriy.shevchenko@linux.intel.com>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Return-Path: <aarcange@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 8CA0A2C0130
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 01:43:59 +1000 (EST)
+Date: Mon, 22 Apr 2013 17:43:23 +0200
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH -V6 16/27] mm/THP: HPAGE_SHIFT is not a #define on some
+ arch
+Message-ID: <20130422154323.GA13442@redhat.com>
+References: <1366624861-24948-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1366624861-24948-17-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1366624861-24948-17-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <dwg@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,44 +24,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
----
- drivers/macintosh/smu.c     | 6 +-----
- drivers/macintosh/via-pmu.c | 5 +++--
- 2 files changed, 4 insertions(+), 7 deletions(-)
+On Mon, Apr 22, 2013 at 03:30:50PM +0530, Aneesh Kumar K.V wrote:
+> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+> 
+> On archs like powerpc that support different hugepage sizes, HPAGE_SHIFT
+> and other derived values like HPAGE_PMD_ORDER are not constants. So move
+> that to hugepage_init
+> 
+> Cc: Andrea Arcangeli <aarcange@redhat.com>
+> 
+> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-diff --git a/drivers/macintosh/smu.c b/drivers/macintosh/smu.c
-index 9c6b964..b3b2d36 100644
---- a/drivers/macintosh/smu.c
-+++ b/drivers/macintosh/smu.c
-@@ -120,11 +120,7 @@ static void smu_start_cmd(void)
- 
- 	DPRINTK("SMU: starting cmd %x, %d bytes data\n", cmd->cmd,
- 		cmd->data_len);
--	DPRINTK("SMU: data buffer: %02x %02x %02x %02x %02x %02x %02x %02x\n",
--		((u8 *)cmd->data_buf)[0], ((u8 *)cmd->data_buf)[1],
--		((u8 *)cmd->data_buf)[2], ((u8 *)cmd->data_buf)[3],
--		((u8 *)cmd->data_buf)[4], ((u8 *)cmd->data_buf)[5],
--		((u8 *)cmd->data_buf)[6], ((u8 *)cmd->data_buf)[7]);
-+	DPRINTK("SMU: data buffer: %8ph\n", cmd->data_buf);
- 
- 	/* Fill the SMU command buffer */
- 	smu->cmd_buf->cmd = cmd->cmd;
-diff --git a/drivers/macintosh/via-pmu.c b/drivers/macintosh/via-pmu.c
-index c31fbab..283e1b5 100644
---- a/drivers/macintosh/via-pmu.c
-+++ b/drivers/macintosh/via-pmu.c
-@@ -750,8 +750,9 @@ done_battery_state_smart(struct adb_request* req)
- 				voltage = (req->reply[8] << 8) | req->reply[9];
- 				break;
- 			default:
--				printk(KERN_WARNING "pmu.c : unrecognized battery info, len: %d, %02x %02x %02x %02x\n",
--					req->reply_len, req->reply[0], req->reply[1], req->reply[2], req->reply[3]);
-+				pr_warn("pmu.c: unrecognized battery info, "
-+					"len: %d, %4ph\n", req->reply_len,
-+							   req->reply);
- 				break;
- 		}
- 	}
--- 
-1.8.2.rc0.22.gb3600c3
+Reviewed-by: Andrea Arcangeli <aarcange@redhat.com>                                                                     
