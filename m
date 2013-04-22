@@ -1,19 +1,21 @@
-Return-Path: <r61911@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DCC292C00C4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:36:56 +1000 (EST)
-From: Roy Zang <tie-fei.zang@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/fsl-pci:fix incorrect iounmap pci hose->private_data
-Date: Tue, 23 Apr 2013 02:35:54 +0800
-Message-ID: <1366655754-19400-1-git-send-email-tie-fei.zang@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Yuanquan Chen <Yuanquan.Chen@freescale.com>
+Return-Path: <Andrew.Murray@arm.com>
+From: Andrew Murray <Andrew.Murray@arm.com>
+To: linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v8 3/3] of/pci: mips: convert to common of_pci_range_parser
+Date: Mon, 22 Apr 2013 11:41:35 +0100
+Message-Id: <1366627295-16964-4-git-send-email-Andrew.Murray@arm.com>
+In-Reply-To: <1366627295-16964-1-git-send-email-Andrew.Murray@arm.com>
+References: <1366627295-16964-1-git-send-email-Andrew.Murray@arm.com>
+Cc: siva.kallam@samsung.com, linux-pci@vger.kernel.org,
+ linus.walleij@linaro.org, thierry.reding@avionic-design.de,
+ Liviu.Dudau@arm.com, juhosg@openwrt.org, paulus@samba.org,
+ linux-samsung-soc@vger.kernel.org, linux@arm.linux.org.uk, jg1.han@samsung.com,
+ jgunthorpe@obsidianresearch.com, thomas.abraham@linaro.org, arnd@arndb.de,
+ devicetree-discuss@lists.ozlabs.org, rob.herring@calxeda.com,
+ kgene.kim@samsung.com, bhelgaas@google.com,
+ linux-arm-kernel@lists.infradead.org, thomas.petazzoni@free-electrons.com,
+ monstr@monstr.eu, linux-kernel@vger.kernel.org, suren.reddy@samsung.com,
+ Andrew Murray <Andrew.Murray@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,104 +25,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-pci hose->private_data will be used by other function, for example,
-fsl_pcie_check_link(), so do not iounmap it.
+This patch converts the pci_load_of_ranges function to use the new common
+of_pci_range_parser.
 
-fix the kerenl crash on T4240:
-
-Unable to handle kernel paging request for data at address
-0x8000080080060f14
-Faulting instruction address: 0xc000000000032554
-Oops: Kernel access of bad area, sig: 11 [#1]
-SMP NR_CPUS=24 T4240 QDS
-Modules linked in:
-NIP: c000000000032554 LR: c00000000003254c CTR: c00000000001e5c0
-REGS: c000000179143440 TRAP: 0300   Not tainted
-(3.8.8-rt2-00754-g951f064-dirt)
-MSR: 0000000080029000 <CE,EE,ME>  CR: 24adbe22  XER: 00000000
-SOFTE: 0
-DEAR: 8000080080060f14, ESR: 0000000000000000
-TASK = c00000017913d2c0[1] 'swapper/0' THREAD: c000000179140000 CPU: 2
-GPR00: c00000000003254c c0000001791436c0 c000000000ae2998
-0000000000000027
-GPR04: 0000000000000000 00000000000005a5 0000000000000000
-0000000000000002
-GPR08: 3030303038303038 c000000000a2d4d0 c000000000aebeb8
-c000000000af2998
-GPR12: 0000000024adbe22 c00000000fffa800 c000000000001be0
-0000000000000000
-GPR16: 0000000000000000 0000000000000000 0000000000000000
-0000000000000000
-GPR20: 0000000000000000 0000000000000000 0000000000000000
-c0000000009ddf70
-GPR24: c0000000009e8d40 c000000000af2998 c000000000b1529c
-c000000179143b40
-GPR28: c0000001799b4000 c000000179143c00 8000080080060000
-c000000000727ec8
-NIP [c000000000032554] .fsl_pcie_check_link+0x104/0x150
-LR [c00000000003254c] .fsl_pcie_check_link+0xfc/0x150
-Call Trace:
-[c0000001791436c0] [c00000000003254c] .fsl_pcie_check_link+0xfc/0x150
-(unreliab)
-[c000000179143a30] [c0000000000325d4]
-.fsl_indirect_read_config+0x34/0xb0
-[c000000179143ad0] [c0000000002c7ee8]
-.pci_bus_read_config_byte+0x88/0xd0
-[c000000179143b90] [c0000000009c0528] .pci_apply_final_quirks+0x9c/0x18c
-[c000000179143c40] [c00000000000142c] .do_one_initcall+0x5c/0x1f0
-[c000000179143cf0] [c0000000009a0bb4] .kernel_init_freeable+0x180/0x264
-[c000000179143db0] [c000000000001bfc] .kernel_init+0x1c/0x420
-[c000000179143e30] [c0000000000008b4] .ret_from_kernel_thread+0x64/0xb0
-Instruction dump:
-60000000 4bffffa0 ebc301d0 3fe2ffc4 3c62ffe0 3bff5530 38638a78 7fe4fb78
-7fc5f378 486ea77d 60000000 7c0004ac <801e0f14> 0c000000 4c00012c
-3c62ffe0
----[ end trace f841fbc03c9d2e1b ]---
-
-Kernel panic - not syncing: Attempted to kill init! exitcode=0x0000000b
-
-Rebooting in 180 seconds..
-
-Signed-off-by: Yuanquan Chen <Yuanquan.Chen@freescale.com>
-Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+Signed-off-by: Andrew Murray <Andrew.Murray@arm.com>
+Signed-off-by: Liviu Dudau <Liviu.Dudau@arm.com>
+Signed-off-by: Gabor Juhos <juhosg@openwrt.org>
+Reviewed-by: Rob Herring <rob.herring@calxeda.com>
+Reviewed-by: Grant Likely <grant.likely@secretlab.ca>
+Tested-by: Linus Walleij <linus.walleij@linaro.org>
 ---
-based on Kumar's next branch.
-tested on P3041 and T4240.
+ arch/mips/pci/pci.c |   51 +++++++++++++++++++--------------------------------
+ 1 files changed, 19 insertions(+), 32 deletions(-)
 
- arch/powerpc/sysdev/fsl_pci.c |   11 ++---------
- 1 file changed, 2 insertions(+), 9 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index f823304..c343edc 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -242,15 +242,11 @@ static void setup_pci_atmu(struct pci_controller *hose)
- 	paddr_hi -= hose->pci_mem_offset;
- 	paddr_lo -= hose->pci_mem_offset;
+diff --git a/arch/mips/pci/pci.c b/arch/mips/pci/pci.c
+index 0872f12..4b09ca8 100644
+--- a/arch/mips/pci/pci.c
++++ b/arch/mips/pci/pci.c
+@@ -122,51 +122,38 @@ static void pcibios_scanbus(struct pci_controller *hose)
+ #ifdef CONFIG_OF
+ void pci_load_of_ranges(struct pci_controller *hose, struct device_node *node)
+ {
+-	const __be32 *ranges;
+-	int rlen;
+-	int pna = of_n_addr_cells(node);
+-	int np = pna + 5;
++	struct of_pci_range range;
++	struct of_pci_range_parser parser;
++	u32 res_type;
  
--	if (paddr_hi == paddr_lo) {
-+	if (paddr_hi == paddr_lo)
- 		pr_err("%s: No outbound window space\n", name);
--		goto out;
--	}
+ 	pr_info("PCI host bridge %s ranges:\n", node->full_name);
+-	ranges = of_get_property(node, "ranges", &rlen);
+-	if (ranges == NULL)
+-		return;
+ 	hose->of_node = node;
  
--	if (paddr_lo == 0) {
-+	if (paddr_lo == 0)
- 		pr_err("%s: No space for inbound window\n", name);
--		goto out;
--	}
- 
- 	/* setup PCSRBAR/PEXCSRBAR */
- 	early_write_config_dword(hose, 0, 0, PCI_BASE_ADDRESS_0, 0xffffffff);
-@@ -395,9 +391,6 @@ static void setup_pci_atmu(struct pci_controller *hose)
- 		pr_info("%s: DMA window size is 0x%llx\n", name,
- 			(u64)hose->dma_window_size);
- 	}
+-	while ((rlen -= np * 4) >= 0) {
+-		u32 pci_space;
++	if (of_pci_range_parser_init(&parser, node))
++		return;
++
++	for_each_of_pci_range(&parser, &range) {
+ 		struct resource *res = NULL;
+-		u64 addr, size;
 -
--out:
--	iounmap(pci);
+-		pci_space = be32_to_cpup(&ranges[0]);
+-		addr = of_translate_address(node, ranges + 3);
+-		size = of_read_number(ranges + pna + 3, 2);
+-		ranges += np;
+-		switch ((pci_space >> 24) & 0x3) {
+-		case 1:		/* PCI IO space */
++
++		switch (range.flags & IORESOURCE_TYPE_BITS) {
++		case IORESOURCE_IO:
+ 			pr_info("  IO 0x%016llx..0x%016llx\n",
+-					addr, addr + size - 1);
++				range.cpu_addr,
++				range.cpu_addr + range.size - 1);
+ 			hose->io_map_base =
+-				(unsigned long)ioremap(addr, size);
++				(unsigned long)ioremap(range.cpu_addr,
++						       range.size);
+ 			res = hose->io_resource;
+-			res->flags = IORESOURCE_IO;
+ 			break;
+-		case 2:		/* PCI Memory space */
+-		case 3:		/* PCI 64 bits Memory space */
++		case IORESOURCE_MEM:
+ 			pr_info(" MEM 0x%016llx..0x%016llx\n",
+-					addr, addr + size - 1);
++				range.cpu_addr,
++				range.cpu_addr + range.size - 1);
+ 			res = hose->mem_resource;
+-			res->flags = IORESOURCE_MEM;
+ 			break;
+ 		}
+-		if (res != NULL) {
+-			res->start = addr;
+-			res->name = node->full_name;
+-			res->end = res->start + size - 1;
+-			res->parent = NULL;
+-			res->sibling = NULL;
+-			res->child = NULL;
+-		}
++		if (res != NULL)
++			of_pci_range_to_resource(&range, node, res);
+ 	}
  }
- 
- static void __init setup_pci_cmd(struct pci_controller *hose)
+ #endif
 -- 
-1.7.9.5
+1.7.0.4
