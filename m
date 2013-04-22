@@ -1,30 +1,31 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp05.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8AE1F2C0352
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:02:54 +1000 (EST)
+ (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 120DD2C00D6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:03:11 +1000 (EST)
 Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 22 Apr 2013 19:57:54 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 639EA357804E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:02:51 +1000 (EST)
+ Mon, 22 Apr 2013 19:51:23 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 2EB453578051
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:03:08 +1000 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3MA2EqM61997148
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:02:14 +1000
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3M9n5Y857278510
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 19:49:05 +1000
 Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3MA2J5f011355
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:02:20 +1000
+ r3MA2bok011871
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:02:37 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, David Gibson <dwg@au1.ibm.com>
-Subject: [PATCH -V6 09/27] powerpc: Reduce PTE table memory wastage
-Date: Mon, 22 Apr 2013 15:30:43 +0530
-Message-Id: <1366624861-24948-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V6 13/27] powerpc: print both base and actual page size on
+ hash failure
+Date: Mon, 22 Apr 2013 15:30:47 +0530
+Message-Id: <1366624861-24948-14-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1366624861-24948-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1366624861-24948-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -40,427 +41,82 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-We allocate one page for the last level of linux page table. With THP and
-large page size of 16MB, that would mean we are wasting large part
-of that page. To map 16MB area, we only need a PTE space of 2K with 64K
-page size. This patch reduce the space wastage by sharing the page
-allocated for the last level of linux page table with multiple pmd
-entries. We call these smaller chunks PTE page fragments and allocated
-page, PTE page.
-
-In order to support systems which doesn't have 64K HPTE support, we also
-add another 2K to PTE page fragment. The second half of the PTE fragments
-is used for storing slot and secondary bit information of an HPTE. With this
-we now have a 4K PTE fragment.
-
-We use a simple approach to share the PTE page. On allocation, we bump the
-PTE page refcount to 16 and share the PTE page with the next 16 pte alloc
-request. This should help in the node locality of the PTE page fragment,
-assuming that the immediate pte alloc request will mostly come from the
-same NUMA node. We don't try to reuse the freed PTE page fragment. Hence
-we could be waisting some space.
-
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/mmu-book3e.h |    4 ++
- arch/powerpc/include/asm/mmu-hash64.h |    4 ++
- arch/powerpc/include/asm/page.h       |    4 ++
- arch/powerpc/include/asm/pgalloc-64.h |   82 +++++++----------------
- arch/powerpc/kernel/setup_64.c        |    4 +-
- arch/powerpc/mm/mmu_context_hash64.c  |   37 +++++++++++
- arch/powerpc/mm/pgtable_64.c          |  118 +++++++++++++++++++++++++++++++++
- 7 files changed, 195 insertions(+), 58 deletions(-)
+ arch/powerpc/include/asm/mmu-hash64.h |    3 ++-
+ arch/powerpc/mm/hash_utils_64.c       |   12 +++++++-----
+ arch/powerpc/mm/hugetlbpage-hash64.c  |    2 +-
+ 3 files changed, 10 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mmu-book3e.h b/arch/powerpc/include/asm/mmu-book3e.h
-index 99d43e0..8bd560c 100644
---- a/arch/powerpc/include/asm/mmu-book3e.h
-+++ b/arch/powerpc/include/asm/mmu-book3e.h
-@@ -231,6 +231,10 @@ typedef struct {
- 	u64 high_slices_psize;  /* 4 bits per slice for now */
- 	u16 user_psize;         /* page size index */
- #endif
-+#ifdef CONFIG_PPC_64K_PAGES
-+	/* for 4K PTE fragment support */
-+	void *pte_frag;
-+#endif
- } mm_context_t;
- 
- /* Page size definitions, common between 32 and 64-bit
 diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
-index 05895cf..de9e577 100644
+index 18171a8..2accc96 100644
 --- a/arch/powerpc/include/asm/mmu-hash64.h
 +++ b/arch/powerpc/include/asm/mmu-hash64.h
-@@ -516,6 +516,10 @@ typedef struct {
- 	unsigned long acop;	/* mask of enabled coprocessor types */
- 	unsigned int cop_pid;	/* pid value used with coprocessors */
- #endif /* CONFIG_PPC_ICSWX */
-+#ifdef CONFIG_PPC_64K_PAGES
-+	/* for 4K PTE fragment support */
-+	void *pte_frag;
-+#endif
- } mm_context_t;
+@@ -342,7 +342,8 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		     unsigned int shift, unsigned int mmu_psize);
+ extern void hash_failure_debug(unsigned long ea, unsigned long access,
+ 			       unsigned long vsid, unsigned long trap,
+-			       int ssize, int psize, unsigned long pte);
++			       int ssize, int psize, int lpsize,
++			       unsigned long pte);
+ extern int htab_bolt_mapping(unsigned long vstart, unsigned long vend,
+ 			     unsigned long pstart, unsigned long prot,
+ 			     int psize, int ssize);
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index d98626a..33cdc3a 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -936,14 +936,14 @@ static inline int subpage_protection(struct mm_struct *mm, unsigned long ea)
  
- 
-diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-index 6faa416..c204ad1 100644
---- a/arch/powerpc/include/asm/page.h
-+++ b/arch/powerpc/include/asm/page.h
-@@ -372,7 +372,11 @@ void arch_free_page(struct page *page, int order);
- 
- struct vm_area_struct;
- 
-+#ifdef CONFIG_PPC_64K_PAGES
-+typedef pte_t *pgtable_t;
-+#else
- typedef struct page *pgtable_t;
-+#endif
- 
- #include <asm-generic/memory_model.h>
- #endif /* __ASSEMBLY__ */
-diff --git a/arch/powerpc/include/asm/pgalloc-64.h b/arch/powerpc/include/asm/pgalloc-64.h
-index d390123..91acb12 100644
---- a/arch/powerpc/include/asm/pgalloc-64.h
-+++ b/arch/powerpc/include/asm/pgalloc-64.h
-@@ -152,6 +152,23 @@ static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
- }
- 
- #else /* if CONFIG_PPC_64K_PAGES */
-+/*
-+ * we support 16 fragments per PTE page.
-+ */
-+#define PTE_FRAG_NR	16
-+/*
-+ * We use a 2K PTE page fragment and another 2K for storing
-+ * real_pte_t hash index
-+ */
-+#define PTE_FRAG_SIZE_SHIFT  12
-+#define PTE_FRAG_SIZE (2 * PTRS_PER_PTE * sizeof(pte_t))
-+
-+extern pte_t *page_table_alloc(struct mm_struct *, unsigned long, int);
-+extern void page_table_free(struct mm_struct *, unsigned long *, int);
-+extern void pgtable_free_tlb(struct mmu_gather *tlb, void *table, int shift);
-+#ifdef CONFIG_SMP
-+extern void __tlb_remove_table(void *_table);
-+#endif
- 
- #define pud_populate(mm, pud, pmd)	pud_set(pud, (unsigned long)pmd)
- 
-@@ -164,90 +181,42 @@ static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmd,
- static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
- 				pgtable_t pte_page)
+ void hash_failure_debug(unsigned long ea, unsigned long access,
+ 			unsigned long vsid, unsigned long trap,
+-			int ssize, int psize, unsigned long pte)
++			int ssize, int psize, int lpsize, unsigned long pte)
  {
--	pmd_populate_kernel(mm, pmd, page_address(pte_page));
-+	pmd_set(pmd, (unsigned long)pte_page);
+ 	if (!printk_ratelimit())
+ 		return;
+ 	pr_info("mm: Hashing failure ! EA=0x%lx access=0x%lx current=%s\n",
+ 		ea, access, current->comm);
+-	pr_info("    trap=0x%lx vsid=0x%lx ssize=%d psize=%d pte=0x%lx\n",
+-		trap, vsid, ssize, psize, pte);
++	pr_info("    trap=0x%lx vsid=0x%lx ssize=%d base psize=%d psize %d pte=0x%lx\n",
++		trap, vsid, ssize, psize, lpsize, pte);
  }
  
- static inline pgtable_t pmd_pgtable(pmd_t pmd)
- {
--	return pmd_page(pmd);
-+	return (pgtable_t)(pmd_val(pmd) & -sizeof(pte_t)*PTRS_PER_PTE);
- }
- 
- static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm,
- 					  unsigned long address)
- {
--	return (pte_t *)__get_free_page(GFP_KERNEL | __GFP_REPEAT | __GFP_ZERO);
-+	return (pte_t *)page_table_alloc(mm, address, 1);
- }
- 
- static inline pgtable_t pte_alloc_one(struct mm_struct *mm,
--				      unsigned long address)
-+					unsigned long address)
- {
--	struct page *page;
--	pte_t *pte;
--
--	pte = pte_alloc_one_kernel(mm, address);
--	if (!pte)
--		return NULL;
--	page = virt_to_page(pte);
--	pgtable_page_ctor(page);
--	return page;
-+	return (pgtable_t)page_table_alloc(mm, address, 0);
- }
- 
- static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
- {
--	free_page((unsigned long)pte);
-+	page_table_free(mm, (unsigned long *)pte, 1);
- }
- 
- static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
- {
--	pgtable_page_dtor(ptepage);
--	__free_page(ptepage);
-+	page_table_free(mm, (unsigned long *)ptepage, 0);
- }
- 
--static inline void pgtable_free(void *table, unsigned index_size)
--{
--	if (!index_size)
--		free_page((unsigned long)table);
--	else {
--		BUG_ON(index_size > MAX_PGTABLE_INDEX_SIZE);
--		kmem_cache_free(PGT_CACHE(index_size), table);
--	}
--}
--
--#ifdef CONFIG_SMP
--static inline void pgtable_free_tlb(struct mmu_gather *tlb,
--				    void *table, int shift)
--{
--	unsigned long pgf = (unsigned long)table;
--	BUG_ON(shift > MAX_PGTABLE_INDEX_SIZE);
--	pgf |= shift;
--	tlb_remove_table(tlb, (void *)pgf);
--}
--
--static inline void __tlb_remove_table(void *_table)
--{
--	void *table = (void *)((unsigned long)_table & ~MAX_PGTABLE_INDEX_SIZE);
--	unsigned shift = (unsigned long)_table & MAX_PGTABLE_INDEX_SIZE;
--
--	pgtable_free(table, shift);
--}
--#else /* !CONFIG_SMP */
--static inline void pgtable_free_tlb(struct mmu_gather *tlb,
--				    void *table, int shift)
--{
--	pgtable_free(table, shift);
--}
--#endif /* CONFIG_SMP */
--
- static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
- 				  unsigned long address)
- {
--	struct page *page = page_address(table);
--
- 	tlb_flush_pgtable(tlb, address);
--	pgtable_page_dtor(page);
--	pgtable_free_tlb(tlb, page, 0);
-+	pgtable_free_tlb(tlb, table, 0);
- }
--
- #endif /* CONFIG_PPC_64K_PAGES */
- 
- static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
-@@ -261,7 +230,6 @@ static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
- 	kmem_cache_free(PGT_CACHE(PMD_INDEX_SIZE), pmd);
- }
- 
--
- #define __pmd_free_tlb(tlb, pmd, addr)		      \
- 	pgtable_free_tlb(tlb, pmd, PMD_INDEX_SIZE)
+ /* Result code is:
+@@ -1116,7 +1116,7 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
+ 	 */
+ 	if (rc == -1)
+ 		hash_failure_debug(ea, access, vsid, trap, ssize, psize,
+-				   pte_val(*ptep));
++				   psize, pte_val(*ptep));
  #ifndef CONFIG_PPC_64K_PAGES
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 75fbaceb..e379d3f 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -583,7 +583,9 @@ void __init setup_arch(char **cmdline_p)
- 	init_mm.end_code = (unsigned long) _etext;
- 	init_mm.end_data = (unsigned long) _edata;
- 	init_mm.brk = klimit;
--	
-+#ifdef CONFIG_PPC_64K_PAGES
-+	init_mm.context.pte_frag = NULL;
-+#endif
- 	irqstack_early_init();
- 	exc_lvl_early_init();
- 	emergency_stack_init();
-diff --git a/arch/powerpc/mm/mmu_context_hash64.c b/arch/powerpc/mm/mmu_context_hash64.c
-index d1d1b92..178876ae 100644
---- a/arch/powerpc/mm/mmu_context_hash64.c
-+++ b/arch/powerpc/mm/mmu_context_hash64.c
-@@ -23,6 +23,7 @@
- #include <linux/slab.h>
+ 	DBG_LOW(" o-pte: %016lx\n", pte_val(*ptep));
+ #else
+@@ -1194,7 +1194,9 @@ void hash_preload(struct mm_struct *mm, unsigned long ea,
+ 	 */
+ 	if (rc == -1)
+ 		hash_failure_debug(ea, access, vsid, trap, ssize,
+-				   mm->context.user_psize, pte_val(*ptep));
++				   mm->context.user_psize,
++				   mm->context.user_psize,
++				   pte_val(*ptep));
  
- #include <asm/mmu_context.h>
-+#include <asm/pgalloc.h>
- 
- #include "icswx.h"
- 
-@@ -85,6 +86,9 @@ int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
- 	spin_lock_init(mm->context.cop_lockp);
- #endif /* CONFIG_PPC_ICSWX */
- 
-+#ifdef CONFIG_PPC_64K_PAGES
-+	mm->context.pte_frag = NULL;
-+#endif
- 	return 0;
+ 	local_irq_restore(flags);
  }
+diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
+index e0d52ee..06ecb55 100644
+--- a/arch/powerpc/mm/hugetlbpage-hash64.c
++++ b/arch/powerpc/mm/hugetlbpage-hash64.c
+@@ -129,7 +129,7 @@ repeat:
+ 		if (unlikely(slot == -2)) {
+ 			*ptep = __pte(old_pte);
+ 			hash_failure_debug(ea, access, vsid, trap, ssize,
+-					   mmu_psize, old_pte);
++					   mmu_psize, mmu_psize, old_pte);
+ 			return -1;
+ 		}
  
-@@ -96,13 +100,46 @@ void __destroy_context(int context_id)
- }
- EXPORT_SYMBOL_GPL(__destroy_context);
- 
-+#ifdef CONFIG_PPC_64K_PAGES
-+static void destroy_pagetable_page(struct mm_struct *mm)
-+{
-+	int count;
-+	void *pte_frag;
-+	struct page *page;
-+
-+	pte_frag = mm->context.pte_frag;
-+	if (!pte_frag)
-+		return;
-+
-+	page = virt_to_page(pte_frag);
-+	/* drop all the pending references */
-+	count = ((unsigned long)pte_frag & ~PAGE_MASK) >> PTE_FRAG_SIZE_SHIFT;
-+	/* We allow PTE_FRAG_NR fragments from a PTE page */
-+	count = atomic_sub_return(PTE_FRAG_NR - count, &page->_count);
-+	if (!count) {
-+		pgtable_page_dtor(page);
-+		free_hot_cold_page(page, 0);
-+	}
-+}
-+
-+#else
-+static inline void destroy_pagetable_page(struct mm_struct *mm)
-+{
-+	return;
-+}
-+#endif
-+
-+
- void destroy_context(struct mm_struct *mm)
- {
-+
- #ifdef CONFIG_PPC_ICSWX
- 	drop_cop(mm->context.acop, mm);
- 	kfree(mm->context.cop_lockp);
- 	mm->context.cop_lockp = NULL;
- #endif /* CONFIG_PPC_ICSWX */
-+
-+	destroy_pagetable_page(mm);
- 	__destroy_context(mm->context.id);
- 	subpage_prot_free(mm);
- 	mm->context.id = MMU_NO_CONTEXT;
-diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index 654258f..a854096 100644
---- a/arch/powerpc/mm/pgtable_64.c
-+++ b/arch/powerpc/mm/pgtable_64.c
-@@ -337,3 +337,121 @@ EXPORT_SYMBOL(__ioremap_at);
- EXPORT_SYMBOL(iounmap);
- EXPORT_SYMBOL(__iounmap);
- EXPORT_SYMBOL(__iounmap_at);
-+
-+#ifdef CONFIG_PPC_64K_PAGES
-+static pte_t *get_from_cache(struct mm_struct *mm)
-+{
-+	void *pte_frag, *ret;
-+
-+	spin_lock(&mm->page_table_lock);
-+	ret = mm->context.pte_frag;
-+	if (ret) {
-+		pte_frag = ret + PTE_FRAG_SIZE;
-+		/*
-+		 * If we have taken up all the fragments mark PTE page NULL
-+		 */
-+		if (((unsigned long)pte_frag & ~PAGE_MASK) == 0)
-+			pte_frag = NULL;
-+		mm->context.pte_frag = pte_frag;
-+	}
-+	spin_unlock(&mm->page_table_lock);
-+	return (pte_t *)ret;
-+}
-+
-+static pte_t *__alloc_for_cache(struct mm_struct *mm, int kernel)
-+{
-+	void *ret = NULL;
-+	struct page *page = alloc_page(GFP_KERNEL | __GFP_NOTRACK |
-+				       __GFP_REPEAT | __GFP_ZERO);
-+	if (!page)
-+		return NULL;
-+
-+	ret = page_address(page);
-+	spin_lock(&mm->page_table_lock);
-+	/*
-+	 * If we find pgtable_page set, we return
-+	 * the allocated page with single fragement
-+	 * count.
-+	 */
-+	if (likely(!mm->context.pte_frag)) {
-+		atomic_set(&page->_count, PTE_FRAG_NR);
-+		mm->context.pte_frag = ret + PTE_FRAG_SIZE;
-+	}
-+	spin_unlock(&mm->page_table_lock);
-+
-+	if (!kernel)
-+		pgtable_page_ctor(page);
-+
-+	return (pte_t *)ret;
-+}
-+
-+pte_t *page_table_alloc(struct mm_struct *mm, unsigned long vmaddr, int kernel)
-+{
-+	pte_t *pte;
-+
-+	pte = get_from_cache(mm);
-+	if (pte)
-+		return pte;
-+
-+	return __alloc_for_cache(mm, kernel);
-+}
-+
-+void page_table_free(struct mm_struct *mm, unsigned long *table, int kernel)
-+{
-+	struct page *page = virt_to_page(table);
-+	if (put_page_testzero(page)) {
-+		if (!kernel)
-+			pgtable_page_dtor(page);
-+		free_hot_cold_page(page, 0);
-+	}
-+}
-+
-+#ifdef CONFIG_SMP
-+static void page_table_free_rcu(void *table)
-+{
-+	struct page *page = virt_to_page(table);
-+	if (put_page_testzero(page)) {
-+		pgtable_page_dtor(page);
-+		free_hot_cold_page(page, 0);
-+	}
-+}
-+
-+void pgtable_free_tlb(struct mmu_gather *tlb, void *table, int shift)
-+{
-+	unsigned long pgf = (unsigned long)table;
-+
-+	BUG_ON(shift > MAX_PGTABLE_INDEX_SIZE);
-+	pgf |= shift;
-+	tlb_remove_table(tlb, (void *)pgf);
-+}
-+
-+void __tlb_remove_table(void *_table)
-+{
-+	void *table = (void *)((unsigned long)_table & ~MAX_PGTABLE_INDEX_SIZE);
-+	unsigned shift = (unsigned long)_table & MAX_PGTABLE_INDEX_SIZE;
-+
-+	if (!shift)
-+		/* PTE page needs special handling */
-+		page_table_free_rcu(table);
-+	else {
-+		BUG_ON(shift > MAX_PGTABLE_INDEX_SIZE);
-+		kmem_cache_free(PGT_CACHE(shift), table);
-+	}
-+}
-+#else
-+void pgtable_free_tlb(struct mmu_gather *tlb, void *table, int shift)
-+{
-+	if (!shift) {
-+		/* PTE page needs special handling */
-+		struct page *page = virt_to_page(table);
-+		if (put_page_testzero(page)) {
-+			pgtable_page_dtor(page);
-+			free_hot_cold_page(page, 0);
-+		}
-+	} else {
-+		BUG_ON(shift > MAX_PGTABLE_INDEX_SIZE);
-+		kmem_cache_free(PGT_CACHE(shift), table);
-+	}
-+}
-+#endif
-+#endif /* CONFIG_PPC_64K_PAGES */
 -- 
 1.7.10
