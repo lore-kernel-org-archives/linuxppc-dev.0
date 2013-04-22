@@ -1,31 +1,31 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 71EDD2C01E0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:02:19 +1000 (EST)
+ (Client CN "e23smtp08.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C094A2C01D4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:02:28 +1000 (EST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 22 Apr 2013 19:56:24 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 0A1CD2CE804D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:02:16 +1000 (EST)
+ Mon, 22 Apr 2013 20:00:11 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 975C12BB0051
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:02:24 +1000 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3MA29Pl43909136
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:02:09 +1000
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3M9mpOj59769054
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 19:48:51 +1000
 Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3MA2E9E011132
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:02:15 +1000
+ r3MA2Ncx011539
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:02:24 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, David Gibson <dwg@au1.ibm.com>
-Subject: [PATCH -V6 08/27] powerpc: Move the pte free routines from common
- header
-Date: Mon, 22 Apr 2013 15:30:42 +0530
-Message-Id: <1366624861-24948-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V6 10/27] powerpc: Use encode avpn where we need only avpn
+ values
+Date: Mon, 22 Apr 2013 15:30:44 +0530
+Message-Id: <1366624861-24948-11-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1366624861-24948-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1366624861-24948-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -41,350 +41,124 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-This patch moves the common code to 32/64 bit headers and also duplicate
-4K_PAGES and 64K_PAGES section. We will later change the 64 bit 64K_PAGES
-version to support smaller PTE fragments. The patch doesn't introduce
-any functional changes.
+In all these cases we are doing something similar to
+
+HPTE_V_COMPARE(hpte_v, want_v) which ignores the HPTE_V_LARGE bit
+
+With MPSS support we would need actual page size to set HPTE_V_LARGE
+bit and that won't be available in most of these cases. Since we are ignoring
+HPTE_V_LARGE bit, use the  avpn value instead. There should not be any change
+in behaviour after this patch.
 
 Acked-by: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/pgalloc-32.h |   45 ++++++++++
- arch/powerpc/include/asm/pgalloc-64.h |  157 ++++++++++++++++++++++++++++++---
- arch/powerpc/include/asm/pgalloc.h    |   46 +---------
- 3 files changed, 189 insertions(+), 59 deletions(-)
+ arch/powerpc/mm/hash_native_64.c        |    8 ++++----
+ arch/powerpc/platforms/cell/beat_htab.c |   10 +++++-----
+ arch/powerpc/platforms/ps3/htab.c       |    2 +-
+ 3 files changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pgalloc-32.h b/arch/powerpc/include/asm/pgalloc-32.h
-index 580cf73..27b2386 100644
---- a/arch/powerpc/include/asm/pgalloc-32.h
-+++ b/arch/powerpc/include/asm/pgalloc-32.h
-@@ -37,6 +37,17 @@ extern void pgd_free(struct mm_struct *mm, pgd_t *pgd);
- extern pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long addr);
- extern pgtable_t pte_alloc_one(struct mm_struct *mm, unsigned long addr);
+diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+index ffc1e00..9d8983a 100644
+--- a/arch/powerpc/mm/hash_native_64.c
++++ b/arch/powerpc/mm/hash_native_64.c
+@@ -252,7 +252,7 @@ static long native_hpte_updatepp(unsigned long slot, unsigned long newpp,
+ 	unsigned long hpte_v, want_v;
+ 	int ret = 0;
  
-+static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
-+{
-+	free_page((unsigned long)pte);
-+}
-+
-+static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
-+{
-+	pgtable_page_dtor(ptepage);
-+	__free_page(ptepage);
-+}
-+
- static inline void pgtable_free(void *table, unsigned index_size)
- {
- 	BUG_ON(index_size); /* 32-bit doesn't use this */
-@@ -45,4 +56,38 @@ static inline void pgtable_free(void *table, unsigned index_size)
+-	want_v = hpte_encode_v(vpn, psize, ssize);
++	want_v = hpte_encode_avpn(vpn, psize, ssize);
  
- #define check_pgt_cache()	do { } while (0)
+ 	DBG_LOW("    update(vpn=%016lx, avpnv=%016lx, group=%lx, newpp=%lx)",
+ 		vpn, want_v & HPTE_V_AVPN, slot, newpp);
+@@ -288,7 +288,7 @@ static long native_hpte_find(unsigned long vpn, int psize, int ssize)
+ 	unsigned long want_v, hpte_v;
  
-+#ifdef CONFIG_SMP
-+static inline void pgtable_free_tlb(struct mmu_gather *tlb,
-+				    void *table, int shift)
-+{
-+	unsigned long pgf = (unsigned long)table;
-+	BUG_ON(shift > MAX_PGTABLE_INDEX_SIZE);
-+	pgf |= shift;
-+	tlb_remove_table(tlb, (void *)pgf);
-+}
-+
-+static inline void __tlb_remove_table(void *_table)
-+{
-+	void *table = (void *)((unsigned long)_table & ~MAX_PGTABLE_INDEX_SIZE);
-+	unsigned shift = (unsigned long)_table & MAX_PGTABLE_INDEX_SIZE;
-+
-+	pgtable_free(table, shift);
-+}
-+#else
-+static inline void pgtable_free_tlb(struct mmu_gather *tlb,
-+				    void *table, int shift)
-+{
-+	pgtable_free(table, shift);
-+}
-+#endif
-+
-+static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
-+				  unsigned long address)
-+{
-+	struct page *page = page_address(table);
-+
-+	tlb_flush_pgtable(tlb, address);
-+	pgtable_page_dtor(page);
-+	pgtable_free_tlb(tlb, page, 0);
-+}
- #endif /* _ASM_POWERPC_PGALLOC_32_H */
-diff --git a/arch/powerpc/include/asm/pgalloc-64.h b/arch/powerpc/include/asm/pgalloc-64.h
-index 69e352a..d390123 100644
---- a/arch/powerpc/include/asm/pgalloc-64.h
-+++ b/arch/powerpc/include/asm/pgalloc-64.h
-@@ -75,8 +75,83 @@ static inline void pud_populate(struct mm_struct *mm, pud_t *pud, pmd_t *pmd)
- #define pmd_populate_kernel(mm, pmd, pte) pmd_set(pmd, (unsigned long)(pte))
- #define pmd_pgtable(pmd) pmd_page(pmd)
+ 	hash = hpt_hash(vpn, mmu_psize_defs[psize].shift, ssize);
+-	want_v = hpte_encode_v(vpn, psize, ssize);
++	want_v = hpte_encode_avpn(vpn, psize, ssize);
  
-+static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm,
-+					  unsigned long address)
-+{
-+	return (pte_t *)__get_free_page(GFP_KERNEL | __GFP_REPEAT | __GFP_ZERO);
-+}
-+
-+static inline pgtable_t pte_alloc_one(struct mm_struct *mm,
-+				      unsigned long address)
-+{
-+	struct page *page;
-+	pte_t *pte;
-+
-+	pte = pte_alloc_one_kernel(mm, address);
-+	if (!pte)
-+		return NULL;
-+	page = virt_to_page(pte);
-+	pgtable_page_ctor(page);
-+	return page;
-+}
-+
-+static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
-+{
-+	free_page((unsigned long)pte);
-+}
-+
-+static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
-+{
-+	pgtable_page_dtor(ptepage);
-+	__free_page(ptepage);
-+}
-+
-+static inline void pgtable_free(void *table, unsigned index_size)
-+{
-+	if (!index_size)
-+		free_page((unsigned long)table);
-+	else {
-+		BUG_ON(index_size > MAX_PGTABLE_INDEX_SIZE);
-+		kmem_cache_free(PGT_CACHE(index_size), table);
-+	}
-+}
-+
-+#ifdef CONFIG_SMP
-+static inline void pgtable_free_tlb(struct mmu_gather *tlb,
-+				    void *table, int shift)
-+{
-+	unsigned long pgf = (unsigned long)table;
-+	BUG_ON(shift > MAX_PGTABLE_INDEX_SIZE);
-+	pgf |= shift;
-+	tlb_remove_table(tlb, (void *)pgf);
-+}
-+
-+static inline void __tlb_remove_table(void *_table)
-+{
-+	void *table = (void *)((unsigned long)_table & ~MAX_PGTABLE_INDEX_SIZE);
-+	unsigned shift = (unsigned long)_table & MAX_PGTABLE_INDEX_SIZE;
-+
-+	pgtable_free(table, shift);
-+}
-+#else /* !CONFIG_SMP */
-+static inline void pgtable_free_tlb(struct mmu_gather *tlb,
-+				    void *table, int shift)
-+{
-+	pgtable_free(table, shift);
-+}
-+#endif /* CONFIG_SMP */
-+
-+static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
-+				  unsigned long address)
-+{
-+	struct page *page = page_address(table);
-+
-+	tlb_flush_pgtable(tlb, address);
-+	pgtable_page_dtor(page);
-+	pgtable_free_tlb(tlb, page, 0);
-+}
+ 	/* Bolted mappings are only ever in the primary group */
+ 	slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
+@@ -348,7 +348,7 @@ static void native_hpte_invalidate(unsigned long slot, unsigned long vpn,
  
--#else /* CONFIG_PPC_64K_PAGES */
-+#else /* if CONFIG_PPC_64K_PAGES */
+ 	DBG_LOW("    invalidate(vpn=%016lx, hash: %lx)\n", vpn, slot);
  
- #define pud_populate(mm, pud, pmd)	pud_set(pud, (unsigned long)pmd)
+-	want_v = hpte_encode_v(vpn, psize, ssize);
++	want_v = hpte_encode_avpn(vpn, psize, ssize);
+ 	native_lock_hpte(hptep);
+ 	hpte_v = hptep->v;
  
-@@ -86,31 +161,25 @@ static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmd,
- 	pmd_set(pmd, (unsigned long)pte);
- }
+@@ -520,7 +520,7 @@ static void native_flush_hash_range(unsigned long number, int local)
+ 			slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
+ 			slot += hidx & _PTEIDX_GROUP_IX;
+ 			hptep = htab_address + slot;
+-			want_v = hpte_encode_v(vpn, psize, ssize);
++			want_v = hpte_encode_avpn(vpn, psize, ssize);
+ 			native_lock_hpte(hptep);
+ 			hpte_v = hptep->v;
+ 			if (!HPTE_V_COMPARE(hpte_v, want_v) ||
+diff --git a/arch/powerpc/platforms/cell/beat_htab.c b/arch/powerpc/platforms/cell/beat_htab.c
+index 0f6f839..472f9a7 100644
+--- a/arch/powerpc/platforms/cell/beat_htab.c
++++ b/arch/powerpc/platforms/cell/beat_htab.c
+@@ -191,7 +191,7 @@ static long beat_lpar_hpte_updatepp(unsigned long slot,
+ 	u64 dummy0, dummy1;
+ 	unsigned long want_v;
  
--#define pmd_populate(mm, pmd, pte_page) \
--	pmd_populate_kernel(mm, pmd, page_address(pte_page))
--#define pmd_pgtable(pmd) pmd_page(pmd)
--
--#endif /* CONFIG_PPC_64K_PAGES */
--
--static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
-+static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
-+				pgtable_t pte_page)
- {
--	return kmem_cache_alloc(PGT_CACHE(PMD_INDEX_SIZE),
--				GFP_KERNEL|__GFP_REPEAT);
-+	pmd_populate_kernel(mm, pmd, page_address(pte_page));
- }
+-	want_v = hpte_encode_v(vpn, psize, MMU_SEGSIZE_256M);
++	want_v = hpte_encode_avpn(vpn, psize, MMU_SEGSIZE_256M);
  
--static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
-+static inline pgtable_t pmd_pgtable(pmd_t pmd)
- {
--	kmem_cache_free(PGT_CACHE(PMD_INDEX_SIZE), pmd);
-+	return pmd_page(pmd);
- }
+ 	DBG_LOW("    update: "
+ 		"avpnv=%016lx, slot=%016lx, psize: %d, newpp %016lx ... ",
+@@ -228,7 +228,7 @@ static long beat_lpar_hpte_find(unsigned long vpn, int psize)
+ 	unsigned long want_v, hpte_v;
  
- static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm,
- 					  unsigned long address)
- {
--        return (pte_t *)__get_free_page(GFP_KERNEL | __GFP_REPEAT | __GFP_ZERO);
-+	return (pte_t *)__get_free_page(GFP_KERNEL | __GFP_REPEAT | __GFP_ZERO);
- }
+ 	hash = hpt_hash(vpn, mmu_psize_defs[psize].shift, MMU_SEGSIZE_256M);
+-	want_v = hpte_encode_v(vpn, psize, MMU_SEGSIZE_256M);
++	want_v = hpte_encode_avpn(vpn, psize, MMU_SEGSIZE_256M);
  
- static inline pgtable_t pte_alloc_one(struct mm_struct *mm,
--					unsigned long address)
-+				      unsigned long address)
- {
- 	struct page *page;
- 	pte_t *pte;
-@@ -123,6 +192,17 @@ static inline pgtable_t pte_alloc_one(struct mm_struct *mm,
- 	return page;
- }
+ 	for (j = 0; j < 2; j++) {
+ 		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
+@@ -283,7 +283,7 @@ static void beat_lpar_hpte_invalidate(unsigned long slot, unsigned long vpn,
  
-+static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
-+{
-+	free_page((unsigned long)pte);
-+}
-+
-+static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
-+{
-+	pgtable_page_dtor(ptepage);
-+	__free_page(ptepage);
-+}
-+
- static inline void pgtable_free(void *table, unsigned index_size)
- {
- 	if (!index_size)
-@@ -133,6 +213,55 @@ static inline void pgtable_free(void *table, unsigned index_size)
- 	}
- }
+ 	DBG_LOW("    inval : slot=%lx, va=%016lx, psize: %d, local: %d\n",
+ 		slot, va, psize, local);
+-	want_v = hpte_encode_v(vpn, psize, MMU_SEGSIZE_256M);
++	want_v = hpte_encode_avpn(vpn, psize, MMU_SEGSIZE_256M);
  
-+#ifdef CONFIG_SMP
-+static inline void pgtable_free_tlb(struct mmu_gather *tlb,
-+				    void *table, int shift)
-+{
-+	unsigned long pgf = (unsigned long)table;
-+	BUG_ON(shift > MAX_PGTABLE_INDEX_SIZE);
-+	pgf |= shift;
-+	tlb_remove_table(tlb, (void *)pgf);
-+}
-+
-+static inline void __tlb_remove_table(void *_table)
-+{
-+	void *table = (void *)((unsigned long)_table & ~MAX_PGTABLE_INDEX_SIZE);
-+	unsigned shift = (unsigned long)_table & MAX_PGTABLE_INDEX_SIZE;
-+
-+	pgtable_free(table, shift);
-+}
-+#else /* !CONFIG_SMP */
-+static inline void pgtable_free_tlb(struct mmu_gather *tlb,
-+				    void *table, int shift)
-+{
-+	pgtable_free(table, shift);
-+}
-+#endif /* CONFIG_SMP */
-+
-+static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
-+				  unsigned long address)
-+{
-+	struct page *page = page_address(table);
-+
-+	tlb_flush_pgtable(tlb, address);
-+	pgtable_page_dtor(page);
-+	pgtable_free_tlb(tlb, page, 0);
-+}
-+
-+#endif /* CONFIG_PPC_64K_PAGES */
-+
-+static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
-+{
-+	return kmem_cache_alloc(PGT_CACHE(PMD_INDEX_SIZE),
-+				GFP_KERNEL|__GFP_REPEAT);
-+}
-+
-+static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
-+{
-+	kmem_cache_free(PGT_CACHE(PMD_INDEX_SIZE), pmd);
-+}
-+
-+
- #define __pmd_free_tlb(tlb, pmd, addr)		      \
- 	pgtable_free_tlb(tlb, pmd, PMD_INDEX_SIZE)
- #ifndef CONFIG_PPC_64K_PAGES
-diff --git a/arch/powerpc/include/asm/pgalloc.h b/arch/powerpc/include/asm/pgalloc.h
-index bf301ac..e9a9f60 100644
---- a/arch/powerpc/include/asm/pgalloc.h
-+++ b/arch/powerpc/include/asm/pgalloc.h
-@@ -3,6 +3,7 @@
- #ifdef __KERNEL__
+ 	raw_spin_lock_irqsave(&beat_htab_lock, flags);
+ 	dummy1 = beat_lpar_hpte_getword0(slot);
+@@ -372,7 +372,7 @@ static long beat_lpar_hpte_updatepp_v3(unsigned long slot,
+ 	unsigned long want_v;
+ 	unsigned long pss;
  
- #include <linux/mm.h>
-+#include <asm-generic/tlb.h>
+-	want_v = hpte_encode_v(vpn, psize, MMU_SEGSIZE_256M);
++	want_v = hpte_encode_avpn(vpn, psize, MMU_SEGSIZE_256M);
+ 	pss = (psize == MMU_PAGE_4K) ? -1UL : mmu_psize_defs[psize].penc;
  
- #ifdef CONFIG_PPC_BOOK3E
- extern void tlb_flush_pgtable(struct mmu_gather *tlb, unsigned long address);
-@@ -13,56 +14,11 @@ static inline void tlb_flush_pgtable(struct mmu_gather *tlb,
- }
- #endif /* !CONFIG_PPC_BOOK3E */
+ 	DBG_LOW("    update: "
+@@ -402,7 +402,7 @@ static void beat_lpar_hpte_invalidate_v3(unsigned long slot, unsigned long vpn,
  
--static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
--{
--	free_page((unsigned long)pte);
--}
--
--static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
--{
--	pgtable_page_dtor(ptepage);
--	__free_page(ptepage);
--}
--
- #ifdef CONFIG_PPC64
- #include <asm/pgalloc-64.h>
- #else
- #include <asm/pgalloc-32.h>
- #endif
+ 	DBG_LOW("    inval : slot=%lx, vpn=%016lx, psize: %d, local: %d\n",
+ 		slot, vpn, psize, local);
+-	want_v = hpte_encode_v(vpn, psize, MMU_SEGSIZE_256M);
++	want_v = hpte_encode_avpn(vpn, psize, MMU_SEGSIZE_256M);
+ 	pss = (psize == MMU_PAGE_4K) ? -1UL : mmu_psize_defs[psize].penc;
  
--#ifdef CONFIG_SMP
--struct mmu_gather;
--extern void tlb_remove_table(struct mmu_gather *, void *);
--
--static inline void pgtable_free_tlb(struct mmu_gather *tlb, void *table, int shift)
--{
--	unsigned long pgf = (unsigned long)table;
--	BUG_ON(shift > MAX_PGTABLE_INDEX_SIZE);
--	pgf |= shift;
--	tlb_remove_table(tlb, (void *)pgf);
--}
--
--static inline void __tlb_remove_table(void *_table)
--{
--	void *table = (void *)((unsigned long)_table & ~MAX_PGTABLE_INDEX_SIZE);
--	unsigned shift = (unsigned long)_table & MAX_PGTABLE_INDEX_SIZE;
--
--	pgtable_free(table, shift);
--}
--#else /* CONFIG_SMP */
--static inline void pgtable_free_tlb(struct mmu_gather *tlb, void *table, unsigned shift)
--{
--	pgtable_free(table, shift);
--}
--#endif /* !CONFIG_SMP */
--
--static inline void __pte_free_tlb(struct mmu_gather *tlb, struct page *ptepage,
--				  unsigned long address)
--{
--	tlb_flush_pgtable(tlb, address);
--	pgtable_page_dtor(ptepage);
--	pgtable_free_tlb(tlb, page_address(ptepage), 0);
--}
--
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_PGALLOC_H */
+ 	lpar_rc = beat_invalidate_htab_entry3(0, slot, want_v, pss);
+diff --git a/arch/powerpc/platforms/ps3/htab.c b/arch/powerpc/platforms/ps3/htab.c
+index 6cc5820..cd8f2fb 100644
+--- a/arch/powerpc/platforms/ps3/htab.c
++++ b/arch/powerpc/platforms/ps3/htab.c
+@@ -117,7 +117,7 @@ static long ps3_hpte_updatepp(unsigned long slot, unsigned long newpp,
+ 	unsigned long flags;
+ 	long ret;
+ 
+-	want_v = hpte_encode_v(vpn, psize, ssize);
++	want_v = hpte_encode_avpn(vpn, psize, ssize);
+ 
+ 	spin_lock_irqsave(&ps3_htab_lock, flags);
+ 
 -- 
 1.7.10
