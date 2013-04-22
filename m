@@ -1,38 +1,24 @@
-Return-Path: <andrew.murray@arm.com>
-Date: Mon, 22 Apr 2013 11:57:24 +0100
-From: Andrew Murray <andrew.murray@arm.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH v7 2/3] of/pci: Provide support for parsing PCI DT
- ranges property
-Message-ID: <20130422105724.GB17007@arm.com>
-References: <1366107508-12672-1-git-send-email-Andrew.Murray@arm.com>
- <1366107508-12672-3-git-send-email-Andrew.Murray@arm.com>
- <20130418134401.84AEE3E1319@localhost>
+Return-Path: <B35336@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe005.messaging.microsoft.com [213.199.154.208])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E4EBF2C14E3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:57:53 +1000 (EST)
+Date: Mon, 22 Apr 2013 18:57:28 +0800
+From: Zhao Chenhui <chenhui.zhao@freescale.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH v2 06/15] powerpc/85xx: add support to JOG feature using
+ cpufreq interface
+Message-ID: <20130422105727.GB32331@localhost.localdomain>
+References: <20130419110057.GC29421@localhost.localdomain>
+ <1657553.UtlPcXdK4G@vostro.rjw.lan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20130418134401.84AEE3E1319@localhost>
-Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- "siva.kallam@samsung.com" <siva.kallam@samsung.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "linus.walleij@linaro.org" <linus.walleij@linaro.org>,
- "thierry.reding@avionic-design.de" <thierry.reding@avionic-design.de>,
- Liviu Dudau <Liviu.Dudau@arm.com>, "paulus@samba.org" <paulus@samba.org>,
- "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>,
- "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>,
- "jg1.han@samsung.com" <jg1.han@samsung.com>,
- "jgunthorpe@obsidianresearch.com" <jgunthorpe@obsidianresearch.com>,
- "thomas.abraham@linaro.org" <thomas.abraham@linaro.org>,
- "arnd@arndb.de" <arnd@arndb.de>,
- "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- "kgene.kim@samsung.com" <kgene.kim@samsung.com>,
- "bhelgaas@google.com" <bhelgaas@google.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "thomas.petazzoni@free-electrons.com" <thomas.petazzoni@free-electrons.com>,
- "monstr@monstr.eu" <monstr@monstr.eu>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "suren.reddy@samsung.com" <suren.reddy@samsung.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1657553.UtlPcXdK4G@vostro.rjw.lan>
+Cc: linuxppc-dev@lists.ozlabs.org, cpufreq@vger.kernel.org,
+ linux-pm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,85 +28,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Apr 18, 2013 at 02:44:01PM +0100, Grant Likely wrote:
-> On Tue, 16 Apr 2013 11:18:27 +0100, Andrew Murray <Andrew.Murray@arm.com> wrote:
-
+On Mon, Apr 22, 2013 at 01:43:29AM +0200, Rafael J. Wysocki wrote:
+> On Friday, April 19, 2013 07:00:57 PM Zhao Chenhui wrote:
+> > ----- Forwarded message from Zhao Chenhui <chenhui.zhao@freescale.com> -----
+> > 
+> > Date: Fri, 19 Apr 2013 18:47:39 +0800
+> > From: Zhao Chenhui <chenhui.zhao@freescale.com>
+> > To: linuxppc-dev@lists.ozlabs.org
+> > CC: linux-kernel@vger.kernel.org
+> > Subject: [linuxppc-release] [PATCH v2 06/15] powerpc/85xx: add support to JOG feature using cpufreq interface
+> > X-Mailer: git-send-email 1.7.3
+> > 
+> > From: chenhui zhao <chenhui.zhao@freescale.com>
+> > 
+> > Some 85xx silicons like MPC8536 and P1022 have a JOG feature, which provides
+> > a dynamic mechanism to lower or raise the CPU core clock at runtime.
+> > 
+> > This patch adds the support to change CPU frequency using the standard
+> > cpufreq interface. The ratio CORE to CCB can be 1:1(except MPC8536), 3:2,
+> > 2:1, 5:2, 3:1, 7:2 and 4:1.
+> > 
+> > Two CPU cores on P1022 must not in the low power state during the frequency
+> > transition. The driver uses a atomic counter to meet the requirement.
+> > 
+> > The jog mode frequency transition process on the MPC8536 is similar to
+> > the deep sleep process. The driver need save the CPU state and restore
+> > it after CPU warm reset.
+> > 
+> > Note:
+> >  * The I/O peripherals such as PCIe and eTSEC may lose packets during
+> >    the jog mode frequency transition.
+> >  * The driver doesn't support MPC8536 Rev 1.0 due to a JOG erratum.
+> >    Subsequent revisions of MPC8536 have corrected the erratum.
+> > 
+> > Signed-off-by: Dave Liu <daveliu@freescale.com>
+> > Signed-off-by: Li Yang <leoli@freescale.com>
+> > Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
+> > Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+> > CC: Scott Wood <scottwood@freescale.com>
 > 
-> Acked-by: Grant Likely <grant.likely@secretlab.ca>
+> Well, I'd like someone from the PowerPC camp to comment on this before I take it.
 > 
-> But comments below...
-> 
-
-I've updated the patchset (now v8) to reflect your feedback, after a closer
-look...
-
-> > -
-> > -		pr_debug("pci_space: 0x%08x pci_addr:0x%016llx ",
-> > -				pci_space, pci_addr);
-> > -		pr_debug("cpu_addr:0x%016llx size:0x%016llx\n",
-> > -					cpu_addr, size);
-> > -
-> > -		ranges += np;
-> > +		pr_debug("pci_space: 0x%08x pci_addr: 0x%016llx ",
-> > +				range.pci_space, range.pci_addr);
-> > +		pr_debug("cpu_addr: 0x%016llx size: 0x%016llx\n",
-> > +				range.cpu_addr, range.size);
-> 
-> Nit: the patch changed whitespace on the pr_debug() statements, so even
-> though the first line of each is identical, they look different in the
-> patch.
+> Thanks,
+> Rafael
 > 
 
-Actually the first line isn't identical, the original file was inconsistent
-with its use of spaces between ':' and '0x%0' - my patch ensured that there
-was always a space. I guess this could have been done as a separate patch.
+OK. Thanks.
 
-> >  
-> >  		/* If we failed translation or got a zero-sized region
-> >  		 * (some FW try to feed us with non sensical zero sized regions
-> >  		 * such as power3 which look like some kind of attempt
-> >  		 * at exposing the VGA memory hole)
-> >  		 */
-> > -		if (cpu_addr == OF_BAD_ADDR || size == 0)
-> > +		if (range.cpu_addr == OF_BAD_ADDR || range.size == 0)
-> >  			continue;
-> 
-> Can this also be rolled into the parsing iterator?
-> 
-
-I decided not to do this. Mainly because ARM drivers use the parser directly
-(instead of pci_process_bridge_OF_ranges function) and it seemed perfectly
-valid for the parser to return a range of size 0 if that is what was present in
-the DT.
-
-> >  
-> > -		/* Now consume following elements while they are contiguous */
-> > -		for (; rlen >= np * sizeof(u32);
-> > -		     ranges += np, rlen -= np * 4) {
-> > -			if (ranges[0] != pci_space)
-> > -				break;
-> > -			pci_next = of_read_number(ranges + 1, 2);
-> > -			cpu_next = of_translate_address(dev, ranges + 3);
-> > -			if (pci_next != pci_addr + size ||
-> > -			    cpu_next != cpu_addr + size)
-> > -				break;
-> > -			size += of_read_number(ranges + pna + 3, 2);
-> > -		}
-> > -
-> >  		/* Act based on address space type */
-> >  		res = NULL;
-> > -		switch ((pci_space >> 24) & 0x3) {
-> > -		case 1:		/* PCI IO space */
-> > +		res_type = range.flags & IORESOURCE_TYPE_BITS;
-> > +		if (res_type == IORESOURCE_IO) {
-> 
-> Why the change from switch() to an if/else if sequence?
-
-I think this was an artifact of the patches evolution, I've reverted back to
-the switch.
-
-> 
-> But those are mostly nitpicks. If this is deferred to v3.10 then I would
-> suggest fixing them up and posting for another round of review.
-
-Andrew Murray
+-Chenhui
