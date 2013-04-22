@@ -1,34 +1,33 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8D76E2C053E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:03:39 +1000 (EST)
+ (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 62A1D2C0524
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:03:44 +1000 (EST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 22 Apr 2013 19:57:46 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 69FD42BB0023
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:03:37 +1000 (EST)
+ Mon, 22 Apr 2013 19:56:02 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 785E6357804E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:03:31 +1000 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3M9ntKV3539314
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 19:49:55 +1000
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3MA2tZ850921586
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:02:55 +1000
 Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3MA3aZG013383
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:03:36 +1000
+ r3MA2xT8012535
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:03:00 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, David Gibson <dwg@au1.ibm.com>
-Subject: [PATCH -V6 23/27] powerpc: Replace find_linux_pte with
- find_linux_pte_or_hugepte
-Date: Mon, 22 Apr 2013 15:30:57 +0530
-Message-Id: <1366624861-24948-24-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V6 16/27] mm/THP: HPAGE_SHIFT is not a #define on some arch
+Date: Mon, 22 Apr 2013 15:30:50 +0530
+Message-Id: <1366624861-24948-17-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1366624861-24948-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1366624861-24948-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
+Cc: Andrea Arcangeli <aarcange@redhat.com>, linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -41,216 +40,70 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-Replace find_linux_pte with find_linux_pte_or_hugepte and explicitly
-document why we don't need to handle transparent hugepages at callsites.
+On archs like powerpc that support different hugepage sizes, HPAGE_SHIFT
+and other derived values like HPAGE_PMD_ORDER are not constants. So move
+that to hugepage_init
 
+Cc: Andrea Arcangeli <aarcange@redhat.com>
+
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/pgtable-ppc64.h |   24 ------------------------
- arch/powerpc/kernel/io-workarounds.c     |   10 ++++++++--
- arch/powerpc/kvm/book3s_hv_rm_mmu.c      |    4 +++-
- arch/powerpc/mm/hash_utils_64.c          |    8 +++++++-
- arch/powerpc/mm/hugetlbpage.c            |    8 ++++++--
- arch/powerpc/mm/tlb_hash64.c             |    7 ++++++-
- arch/powerpc/platforms/pseries/eeh.c     |    7 ++++++-
- 7 files changed, 36 insertions(+), 32 deletions(-)
+ include/linux/huge_mm.h |    3 ---
+ mm/huge_memory.c        |    9 ++++++---
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
-index f0effab..97fc839 100644
---- a/arch/powerpc/include/asm/pgtable-ppc64.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-@@ -343,30 +343,6 @@ static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
+diff --git a/include/linux/huge_mm.h b/include/linux/huge_mm.h
+index ee1c244..bdc5aef 100644
+--- a/include/linux/huge_mm.h
++++ b/include/linux/huge_mm.h
+@@ -119,9 +119,6 @@ extern void __split_huge_page_pmd(struct vm_area_struct *vma,
+ 	} while (0)
+ extern void split_huge_page_pmd_mm(struct mm_struct *mm, unsigned long address,
+ 		pmd_t *pmd);
+-#if HPAGE_PMD_ORDER > MAX_ORDER
+-#error "hugepages can't be allocated by the buddy allocator"
+-#endif
+ extern int hugepage_madvise(struct vm_area_struct *vma,
+ 			    unsigned long *vm_flags, int advice);
+ extern void __vma_adjust_trans_huge(struct vm_area_struct *vma,
+diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+index e2f7f5aa..78bd84f 100644
+--- a/mm/huge_memory.c
++++ b/mm/huge_memory.c
+@@ -45,7 +45,7 @@ unsigned long transparent_hugepage_flags __read_mostly =
+ 	(1<<TRANSPARENT_HUGEPAGE_USE_ZERO_PAGE_FLAG);
  
- void pgtable_cache_add(unsigned shift, void (*ctor)(void *));
- void pgtable_cache_init(void);
--
--/*
-- * find_linux_pte returns the address of a linux pte for a given
-- * effective address and directory.  If not found, it returns zero.
-- */
--static inline pte_t *find_linux_pte(pgd_t *pgdir, unsigned long ea)
--{
--	pgd_t *pg;
--	pud_t *pu;
--	pmd_t *pm;
--	pte_t *pt = NULL;
--
--	pg = pgdir + pgd_index(ea);
--	if (!pgd_none(*pg)) {
--		pu = pud_offset(pg, ea);
--		if (!pud_none(*pu)) {
--			pm = pmd_offset(pu, ea);
--			if (pmd_present(*pm))
--				pt = pte_offset_kernel(pm, ea);
--		}
--	}
--	return pt;
--}
--
- pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea,
- 				 unsigned *shift);
- #endif /* __ASSEMBLY__ */
-diff --git a/arch/powerpc/kernel/io-workarounds.c b/arch/powerpc/kernel/io-workarounds.c
-index 50e90b7..e5263ab 100644
---- a/arch/powerpc/kernel/io-workarounds.c
-+++ b/arch/powerpc/kernel/io-workarounds.c
-@@ -55,6 +55,7 @@ static struct iowa_bus *iowa_pci_find(unsigned long vaddr, unsigned long paddr)
- 
- struct iowa_bus *iowa_mem_find_bus(const PCI_IO_ADDR addr)
- {
-+	unsigned shift;
- 	struct iowa_bus *bus;
- 	int token;
- 
-@@ -70,11 +71,16 @@ struct iowa_bus *iowa_mem_find_bus(const PCI_IO_ADDR addr)
- 		if (vaddr < PHB_IO_BASE || vaddr >= PHB_IO_END)
- 			return NULL;
- 
--		ptep = find_linux_pte(init_mm.pgd, vaddr);
-+		ptep = find_linux_pte_or_hugepte(init_mm.pgd, vaddr, &shift);
- 		if (ptep == NULL)
- 			paddr = 0;
--		else
-+		else {
-+			/*
-+			 * we don't have hugepages backing iomem
-+			 */
-+			BUG_ON(shift);
- 			paddr = pte_pfn(*ptep) << PAGE_SHIFT;
-+		}
- 		bus = iowa_pci_find(vaddr, paddr);
- 
- 		if (bus == NULL)
-diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-index 19c93ba..aa6a351 100644
---- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-+++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-@@ -24,13 +24,15 @@
- /* Translate address of a vmalloc'd thing to a linear map address */
- static void *real_vmalloc_addr(void *x)
- {
-+	unsigned shift;
- 	unsigned long addr = (unsigned long) x;
- 	pte_t *p;
- 
--	p = find_linux_pte(swapper_pg_dir, addr);
-+	p = find_linux_pte_or_hugepte(swapper_pg_dir, addr, &shift);
- 	if (!p || !pte_present(*p))
- 		return NULL;
- 	/* assume we don't have huge pages in vmalloc space... */
-+	BUG_ON(shift);
- 	addr = (pte_pfn(*p) << PAGE_SHIFT) | (addr & ~PAGE_MASK);
- 	return __va(addr);
- }
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index d0eb6d4..e942ae9 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -1131,6 +1131,7 @@ EXPORT_SYMBOL_GPL(hash_page);
- void hash_preload(struct mm_struct *mm, unsigned long ea,
- 		  unsigned long access, unsigned long trap)
- {
-+	int shift;
- 	unsigned long vsid;
- 	pgd_t *pgdir;
- 	pte_t *ptep;
-@@ -1152,10 +1153,15 @@ void hash_preload(struct mm_struct *mm, unsigned long ea,
- 	pgdir = mm->pgd;
- 	if (pgdir == NULL)
- 		return;
--	ptep = find_linux_pte(pgdir, ea);
-+	/*
-+	 * THP pages use update_mmu_cache_pmd. We don't do
-+	 * hash preload there. Hence can ignore THP here
-+	 */
-+	ptep = find_linux_pte_or_hugepte(pgdir, ea, &shift);
- 	if (!ptep)
- 		return;
- 
-+	BUG_ON(shift);
- #ifdef CONFIG_PPC_64K_PAGES
- 	/* If either _PAGE_4K_PFN or _PAGE_NO_CACHE is set (and we are on
- 	 * a 64K kernel), then we don't preload, hash_page() will take
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index a4b0fa5..d1dff8b 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -105,6 +105,7 @@ int pgd_huge(pgd_t pgd)
- 
- pte_t *huge_pte_offset(struct mm_struct *mm, unsigned long addr)
- {
-+	/* Only called for HugeTLB pages, hence can ignore THP */
- 	return find_linux_pte_or_hugepte(mm->pgd, addr, NULL);
- }
- 
-@@ -668,11 +669,14 @@ follow_huge_addr(struct mm_struct *mm, unsigned long address, int write)
- 	struct page *page;
- 	unsigned shift;
- 	unsigned long mask;
--
-+	/*
-+	 * Transparent hugepages are handled by generic code. We can skip them
-+	 * here.
-+	 */
- 	ptep = find_linux_pte_or_hugepte(mm->pgd, address, &shift);
- 
- 	/* Verify it is a huge page else bail. */
--	if (!ptep || !shift)
-+	if (!ptep || !shift || pmd_trans_huge((pmd_t)*ptep))
- 		return ERR_PTR(-EINVAL);
- 
- 	mask = (1UL << shift) - 1;
-diff --git a/arch/powerpc/mm/tlb_hash64.c b/arch/powerpc/mm/tlb_hash64.c
-index 023ec8a..56d9b85 100644
---- a/arch/powerpc/mm/tlb_hash64.c
-+++ b/arch/powerpc/mm/tlb_hash64.c
-@@ -189,6 +189,7 @@ void tlb_flush(struct mmu_gather *tlb)
- void __flush_hash_table_range(struct mm_struct *mm, unsigned long start,
- 			      unsigned long end)
- {
-+	int shift;
- 	unsigned long flags;
- 
- 	start = _ALIGN_DOWN(start, PAGE_SIZE);
-@@ -206,11 +207,15 @@ void __flush_hash_table_range(struct mm_struct *mm, unsigned long start,
- 	local_irq_save(flags);
- 	arch_enter_lazy_mmu_mode();
- 	for (; start < end; start += PAGE_SIZE) {
--		pte_t *ptep = find_linux_pte(mm->pgd, start);
-+		pte_t *ptep = find_linux_pte_or_hugepte(mm->pgd, start, &shift);
- 		unsigned long pte;
- 
- 		if (ptep == NULL)
- 			continue;
-+		/*
-+		 * We won't find hugepages here, this is iomem.
-+		 */
-+		BUG_ON(shift);
- 		pte = pte_val(*ptep);
- 		if (!(pte & _PAGE_HASHPTE))
- 			continue;
-diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
-index 6b73d6c..d2e76d2 100644
---- a/arch/powerpc/platforms/pseries/eeh.c
-+++ b/arch/powerpc/platforms/pseries/eeh.c
-@@ -258,12 +258,17 @@ void eeh_slot_error_detail(struct eeh_pe *pe, int severity)
+ /* default scan 8*512 pte (or vmas) every 30 second */
+-static unsigned int khugepaged_pages_to_scan __read_mostly = HPAGE_PMD_NR*8;
++static unsigned int khugepaged_pages_to_scan __read_mostly;
+ static unsigned int khugepaged_pages_collapsed;
+ static unsigned int khugepaged_full_scans;
+ static unsigned int khugepaged_scan_sleep_millisecs __read_mostly = 10000;
+@@ -60,7 +60,7 @@ static DECLARE_WAIT_QUEUE_HEAD(khugepaged_wait);
+  * it would have happened if the vma was large enough during page
+  * fault.
   */
- static inline unsigned long eeh_token_to_phys(unsigned long token)
- {
-+	int shift;
- 	pte_t *ptep;
- 	unsigned long pa;
+-static unsigned int khugepaged_max_ptes_none __read_mostly = HPAGE_PMD_NR-1;
++static unsigned int khugepaged_max_ptes_none __read_mostly;
  
--	ptep = find_linux_pte(init_mm.pgd, token);
-+	/*
-+	 * We won't find hugepages here, iomem
-+	 */
-+	ptep = find_linux_pte_or_hugepte(init_mm.pgd, token, &shift);
- 	if (!ptep)
- 		return token;
-+	BUG_ON(shift);
- 	pa = pte_pfn(*ptep) << PAGE_SHIFT;
+ static int khugepaged(void *none);
+ static int khugepaged_slab_init(void);
+@@ -620,11 +620,14 @@ static int __init hugepage_init(void)
+ 	int err;
+ 	struct kobject *hugepage_kobj;
  
- 	return pa | (token & (PAGE_SIZE-1));
+-	if (!has_transparent_hugepage()) {
++	if (!has_transparent_hugepage() || (HPAGE_PMD_ORDER > MAX_ORDER)) {
+ 		transparent_hugepage_flags = 0;
+ 		return -EINVAL;
+ 	}
+ 
++	khugepaged_pages_to_scan = HPAGE_PMD_NR*8;
++	khugepaged_max_ptes_none = HPAGE_PMD_NR-1;
++
+ 	err = hugepage_init_sysfs(&hugepage_kobj);
+ 	if (err)
+ 		return err;
 -- 
 1.7.10
