@@ -1,30 +1,31 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp09.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 618932C01AB
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:02:17 +1000 (EST)
+ (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 71EDD2C01E0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:02:19 +1000 (EST)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 22 Apr 2013 19:53:02 +1000
+ Mon, 22 Apr 2013 19:56:24 +1000
 Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 3969C2BB0023
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:02:12 +1000 (EST)
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 0A1CD2CE804D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:02:16 +1000 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
  by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3MA25Lk42729626
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:02:05 +1000
+ r3MA29Pl43909136
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:02:09 +1000
 Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3MA2Adf010961
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:02:11 +1000
+ r3MA2E9E011132
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:02:15 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, David Gibson <dwg@au1.ibm.com>
-Subject: [PATCH -V6 07/27] powerpc: Reduce the PTE_INDEX_SIZE
-Date: Mon, 22 Apr 2013 15:30:41 +0530
-Message-Id: <1366624861-24948-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V6 08/27] powerpc: Move the pte free routines from common
+ header
+Date: Mon, 22 Apr 2013 15:30:42 +0530
+Message-Id: <1366624861-24948-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1366624861-24948-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1366624861-24948-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -40,37 +41,350 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-This make one PMD cover 16MB range. That helps in easier implementation of THP
-on power. THP core code make use of one pmd entry to track the hugepage and
-the range mapped by a single pmd entry should be equal to the hugepage size
-supported by the hardware.
+This patch moves the common code to 32/64 bit headers and also duplicate
+4K_PAGES and 64K_PAGES section. We will later change the 64 bit 64K_PAGES
+version to support smaller PTE fragments. The patch doesn't introduce
+any functional changes.
 
-This also switch PGD to cover 16GB. That is needed so that we can simplify the
-hugetlb page walking code so that we have same pte format for explicit hugepage
-and THP hugepage.
-
+Acked-by: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/pgtable-ppc64-64k.h |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/pgalloc-32.h |   45 ++++++++++
+ arch/powerpc/include/asm/pgalloc-64.h |  157 ++++++++++++++++++++++++++++++---
+ arch/powerpc/include/asm/pgalloc.h    |   46 +---------
+ 3 files changed, 189 insertions(+), 59 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64-64k.h b/arch/powerpc/include/asm/pgtable-ppc64-64k.h
-index be4e287..45142d6 100644
---- a/arch/powerpc/include/asm/pgtable-ppc64-64k.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc64-64k.h
-@@ -4,10 +4,10 @@
- #include <asm-generic/pgtable-nopud.h>
+diff --git a/arch/powerpc/include/asm/pgalloc-32.h b/arch/powerpc/include/asm/pgalloc-32.h
+index 580cf73..27b2386 100644
+--- a/arch/powerpc/include/asm/pgalloc-32.h
++++ b/arch/powerpc/include/asm/pgalloc-32.h
+@@ -37,6 +37,17 @@ extern void pgd_free(struct mm_struct *mm, pgd_t *pgd);
+ extern pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long addr);
+ extern pgtable_t pte_alloc_one(struct mm_struct *mm, unsigned long addr);
  
++static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
++{
++	free_page((unsigned long)pte);
++}
++
++static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
++{
++	pgtable_page_dtor(ptepage);
++	__free_page(ptepage);
++}
++
+ static inline void pgtable_free(void *table, unsigned index_size)
+ {
+ 	BUG_ON(index_size); /* 32-bit doesn't use this */
+@@ -45,4 +56,38 @@ static inline void pgtable_free(void *table, unsigned index_size)
  
--#define PTE_INDEX_SIZE  12
--#define PMD_INDEX_SIZE  12
-+#define PTE_INDEX_SIZE  8
-+#define PMD_INDEX_SIZE  10
- #define PUD_INDEX_SIZE	0
--#define PGD_INDEX_SIZE  6
-+#define PGD_INDEX_SIZE  12
+ #define check_pgt_cache()	do { } while (0)
  
- #ifndef __ASSEMBLY__
- #define PTE_TABLE_SIZE	(sizeof(real_pte_t) << PTE_INDEX_SIZE)
++#ifdef CONFIG_SMP
++static inline void pgtable_free_tlb(struct mmu_gather *tlb,
++				    void *table, int shift)
++{
++	unsigned long pgf = (unsigned long)table;
++	BUG_ON(shift > MAX_PGTABLE_INDEX_SIZE);
++	pgf |= shift;
++	tlb_remove_table(tlb, (void *)pgf);
++}
++
++static inline void __tlb_remove_table(void *_table)
++{
++	void *table = (void *)((unsigned long)_table & ~MAX_PGTABLE_INDEX_SIZE);
++	unsigned shift = (unsigned long)_table & MAX_PGTABLE_INDEX_SIZE;
++
++	pgtable_free(table, shift);
++}
++#else
++static inline void pgtable_free_tlb(struct mmu_gather *tlb,
++				    void *table, int shift)
++{
++	pgtable_free(table, shift);
++}
++#endif
++
++static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
++				  unsigned long address)
++{
++	struct page *page = page_address(table);
++
++	tlb_flush_pgtable(tlb, address);
++	pgtable_page_dtor(page);
++	pgtable_free_tlb(tlb, page, 0);
++}
+ #endif /* _ASM_POWERPC_PGALLOC_32_H */
+diff --git a/arch/powerpc/include/asm/pgalloc-64.h b/arch/powerpc/include/asm/pgalloc-64.h
+index 69e352a..d390123 100644
+--- a/arch/powerpc/include/asm/pgalloc-64.h
++++ b/arch/powerpc/include/asm/pgalloc-64.h
+@@ -75,8 +75,83 @@ static inline void pud_populate(struct mm_struct *mm, pud_t *pud, pmd_t *pmd)
+ #define pmd_populate_kernel(mm, pmd, pte) pmd_set(pmd, (unsigned long)(pte))
+ #define pmd_pgtable(pmd) pmd_page(pmd)
+ 
++static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm,
++					  unsigned long address)
++{
++	return (pte_t *)__get_free_page(GFP_KERNEL | __GFP_REPEAT | __GFP_ZERO);
++}
++
++static inline pgtable_t pte_alloc_one(struct mm_struct *mm,
++				      unsigned long address)
++{
++	struct page *page;
++	pte_t *pte;
++
++	pte = pte_alloc_one_kernel(mm, address);
++	if (!pte)
++		return NULL;
++	page = virt_to_page(pte);
++	pgtable_page_ctor(page);
++	return page;
++}
++
++static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
++{
++	free_page((unsigned long)pte);
++}
++
++static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
++{
++	pgtable_page_dtor(ptepage);
++	__free_page(ptepage);
++}
++
++static inline void pgtable_free(void *table, unsigned index_size)
++{
++	if (!index_size)
++		free_page((unsigned long)table);
++	else {
++		BUG_ON(index_size > MAX_PGTABLE_INDEX_SIZE);
++		kmem_cache_free(PGT_CACHE(index_size), table);
++	}
++}
++
++#ifdef CONFIG_SMP
++static inline void pgtable_free_tlb(struct mmu_gather *tlb,
++				    void *table, int shift)
++{
++	unsigned long pgf = (unsigned long)table;
++	BUG_ON(shift > MAX_PGTABLE_INDEX_SIZE);
++	pgf |= shift;
++	tlb_remove_table(tlb, (void *)pgf);
++}
++
++static inline void __tlb_remove_table(void *_table)
++{
++	void *table = (void *)((unsigned long)_table & ~MAX_PGTABLE_INDEX_SIZE);
++	unsigned shift = (unsigned long)_table & MAX_PGTABLE_INDEX_SIZE;
++
++	pgtable_free(table, shift);
++}
++#else /* !CONFIG_SMP */
++static inline void pgtable_free_tlb(struct mmu_gather *tlb,
++				    void *table, int shift)
++{
++	pgtable_free(table, shift);
++}
++#endif /* CONFIG_SMP */
++
++static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
++				  unsigned long address)
++{
++	struct page *page = page_address(table);
++
++	tlb_flush_pgtable(tlb, address);
++	pgtable_page_dtor(page);
++	pgtable_free_tlb(tlb, page, 0);
++}
+ 
+-#else /* CONFIG_PPC_64K_PAGES */
++#else /* if CONFIG_PPC_64K_PAGES */
+ 
+ #define pud_populate(mm, pud, pmd)	pud_set(pud, (unsigned long)pmd)
+ 
+@@ -86,31 +161,25 @@ static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmd,
+ 	pmd_set(pmd, (unsigned long)pte);
+ }
+ 
+-#define pmd_populate(mm, pmd, pte_page) \
+-	pmd_populate_kernel(mm, pmd, page_address(pte_page))
+-#define pmd_pgtable(pmd) pmd_page(pmd)
+-
+-#endif /* CONFIG_PPC_64K_PAGES */
+-
+-static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
++static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
++				pgtable_t pte_page)
+ {
+-	return kmem_cache_alloc(PGT_CACHE(PMD_INDEX_SIZE),
+-				GFP_KERNEL|__GFP_REPEAT);
++	pmd_populate_kernel(mm, pmd, page_address(pte_page));
+ }
+ 
+-static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
++static inline pgtable_t pmd_pgtable(pmd_t pmd)
+ {
+-	kmem_cache_free(PGT_CACHE(PMD_INDEX_SIZE), pmd);
++	return pmd_page(pmd);
+ }
+ 
+ static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm,
+ 					  unsigned long address)
+ {
+-        return (pte_t *)__get_free_page(GFP_KERNEL | __GFP_REPEAT | __GFP_ZERO);
++	return (pte_t *)__get_free_page(GFP_KERNEL | __GFP_REPEAT | __GFP_ZERO);
+ }
+ 
+ static inline pgtable_t pte_alloc_one(struct mm_struct *mm,
+-					unsigned long address)
++				      unsigned long address)
+ {
+ 	struct page *page;
+ 	pte_t *pte;
+@@ -123,6 +192,17 @@ static inline pgtable_t pte_alloc_one(struct mm_struct *mm,
+ 	return page;
+ }
+ 
++static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
++{
++	free_page((unsigned long)pte);
++}
++
++static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
++{
++	pgtable_page_dtor(ptepage);
++	__free_page(ptepage);
++}
++
+ static inline void pgtable_free(void *table, unsigned index_size)
+ {
+ 	if (!index_size)
+@@ -133,6 +213,55 @@ static inline void pgtable_free(void *table, unsigned index_size)
+ 	}
+ }
+ 
++#ifdef CONFIG_SMP
++static inline void pgtable_free_tlb(struct mmu_gather *tlb,
++				    void *table, int shift)
++{
++	unsigned long pgf = (unsigned long)table;
++	BUG_ON(shift > MAX_PGTABLE_INDEX_SIZE);
++	pgf |= shift;
++	tlb_remove_table(tlb, (void *)pgf);
++}
++
++static inline void __tlb_remove_table(void *_table)
++{
++	void *table = (void *)((unsigned long)_table & ~MAX_PGTABLE_INDEX_SIZE);
++	unsigned shift = (unsigned long)_table & MAX_PGTABLE_INDEX_SIZE;
++
++	pgtable_free(table, shift);
++}
++#else /* !CONFIG_SMP */
++static inline void pgtable_free_tlb(struct mmu_gather *tlb,
++				    void *table, int shift)
++{
++	pgtable_free(table, shift);
++}
++#endif /* CONFIG_SMP */
++
++static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
++				  unsigned long address)
++{
++	struct page *page = page_address(table);
++
++	tlb_flush_pgtable(tlb, address);
++	pgtable_page_dtor(page);
++	pgtable_free_tlb(tlb, page, 0);
++}
++
++#endif /* CONFIG_PPC_64K_PAGES */
++
++static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
++{
++	return kmem_cache_alloc(PGT_CACHE(PMD_INDEX_SIZE),
++				GFP_KERNEL|__GFP_REPEAT);
++}
++
++static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
++{
++	kmem_cache_free(PGT_CACHE(PMD_INDEX_SIZE), pmd);
++}
++
++
+ #define __pmd_free_tlb(tlb, pmd, addr)		      \
+ 	pgtable_free_tlb(tlb, pmd, PMD_INDEX_SIZE)
+ #ifndef CONFIG_PPC_64K_PAGES
+diff --git a/arch/powerpc/include/asm/pgalloc.h b/arch/powerpc/include/asm/pgalloc.h
+index bf301ac..e9a9f60 100644
+--- a/arch/powerpc/include/asm/pgalloc.h
++++ b/arch/powerpc/include/asm/pgalloc.h
+@@ -3,6 +3,7 @@
+ #ifdef __KERNEL__
+ 
+ #include <linux/mm.h>
++#include <asm-generic/tlb.h>
+ 
+ #ifdef CONFIG_PPC_BOOK3E
+ extern void tlb_flush_pgtable(struct mmu_gather *tlb, unsigned long address);
+@@ -13,56 +14,11 @@ static inline void tlb_flush_pgtable(struct mmu_gather *tlb,
+ }
+ #endif /* !CONFIG_PPC_BOOK3E */
+ 
+-static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
+-{
+-	free_page((unsigned long)pte);
+-}
+-
+-static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
+-{
+-	pgtable_page_dtor(ptepage);
+-	__free_page(ptepage);
+-}
+-
+ #ifdef CONFIG_PPC64
+ #include <asm/pgalloc-64.h>
+ #else
+ #include <asm/pgalloc-32.h>
+ #endif
+ 
+-#ifdef CONFIG_SMP
+-struct mmu_gather;
+-extern void tlb_remove_table(struct mmu_gather *, void *);
+-
+-static inline void pgtable_free_tlb(struct mmu_gather *tlb, void *table, int shift)
+-{
+-	unsigned long pgf = (unsigned long)table;
+-	BUG_ON(shift > MAX_PGTABLE_INDEX_SIZE);
+-	pgf |= shift;
+-	tlb_remove_table(tlb, (void *)pgf);
+-}
+-
+-static inline void __tlb_remove_table(void *_table)
+-{
+-	void *table = (void *)((unsigned long)_table & ~MAX_PGTABLE_INDEX_SIZE);
+-	unsigned shift = (unsigned long)_table & MAX_PGTABLE_INDEX_SIZE;
+-
+-	pgtable_free(table, shift);
+-}
+-#else /* CONFIG_SMP */
+-static inline void pgtable_free_tlb(struct mmu_gather *tlb, void *table, unsigned shift)
+-{
+-	pgtable_free(table, shift);
+-}
+-#endif /* !CONFIG_SMP */
+-
+-static inline void __pte_free_tlb(struct mmu_gather *tlb, struct page *ptepage,
+-				  unsigned long address)
+-{
+-	tlb_flush_pgtable(tlb, address);
+-	pgtable_page_dtor(ptepage);
+-	pgtable_free_tlb(tlb, page_address(ptepage), 0);
+-}
+-
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_PGALLOC_H */
 -- 
 1.7.10
