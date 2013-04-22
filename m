@@ -1,25 +1,22 @@
-Return-Path: <viresh.linux@gmail.com>
-Received: from mail-vb0-x22e.google.com (mail-vb0-x22e.google.com
- [IPv6:2607:f8b0:400c:c02::22e])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0E8202C00AF
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 13:25:40 +1000 (EST)
-Received: by mail-vb0-f46.google.com with SMTP id 11so5354567vbe.5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Apr 2013 20:25:36 -0700 (PDT)
+Return-Path: <B16395@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe006.messaging.microsoft.com [216.32.180.16])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 047842C00E7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 15:40:38 +1000 (EST)
+From: Varun Sethi <Varun.Sethi@freescale.com>
+To: <joro@8bytes.org>, <iommu@lists.linux-foundation.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+ <galak@kernel.crashing.org>, <benh@kernel.crashing.org>,
+ <stuart.yoder@freescale.com>, <scottwood@freescale.com>
+Subject: [PATCH 1/3 v2] iommu: Move swap_pci_ref function to pci.h.
+Date: Mon, 22 Apr 2013 11:01:54 +0530
+Message-ID: <1366608716-1704-1-git-send-email-Varun.Sethi@freescale.com>
 MIME-Version: 1.0
-Sender: viresh.linux@gmail.com
-In-Reply-To: <1366368468-29143-6-git-send-email-chenhui.zhao@freescale.com>
-References: <1366368468-29143-1-git-send-email-chenhui.zhao@freescale.com>
- <1366368468-29143-6-git-send-email-chenhui.zhao@freescale.com>
-Date: Mon, 22 Apr 2013 08:55:35 +0530
-Message-ID: <CAOh2x=mQt-GJa8Hc-zybKOKJBhi5jWVy5-UN57pGJDdE1PPx_g@mail.gmail.com>
-Subject: Re: [PATCH v2 06/15] powerpc/85xx: add support to JOG feature using
- cpufreq interface
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Zhao Chenhui <chenhui.zhao@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Cc: Varun Sethi <Varun.Sethi@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,159 +26,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Apr 19, 2013 at 4:17 PM, Zhao Chenhui
-<chenhui.zhao@freescale.com> wrote:
-> diff --git a/drivers/cpufreq/mpc85xx-cpufreq.c b/drivers/cpufreq/mpc85xx-cpufreq.c
+swap_pci_ref function is used by the IOMMU API code for swapping pci device
+pointers, while determining the iommu group for the device.
+Currently this function was being implemented for different IOMMU drivers.
+This patch moves the function to a new file, drivers/iommu/pci.h so that the
+implementation can be shared across various IOMMU drivers.
 
-> +#include <linux/module.h>
-> +#include <linux/cpufreq.h>
-> +#include <linux/of_platform.h>
-> +#include <linux/suspend.h>
-> +#include <linux/cpu.h>
-> +#include <linux/time.h>
-> +#include <linux/io.h>
-> +#include <linux/smp.h>
+Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
+---
+v2 changes:
+- created a new file drivers/iommu/pci.h.
 
-Would be better to keep them in alphabetical order, so that we don't add
-anything twice.
+ drivers/iommu/amd_iommu.c   |    7 +------
+ drivers/iommu/intel-iommu.c |    7 +------
+ drivers/iommu/pci.h         |   29 +++++++++++++++++++++++++++++
+ 3 files changed, 31 insertions(+), 12 deletions(-)
+ create mode 100644 drivers/iommu/pci.h
 
-> +static int mpc85xx_cpufreq_cpu_init(struct cpufreq_policy *policy)
-> +{
-> +       unsigned int i, cur_pll;
-> +       int hw_cpu = get_hard_smp_processor_id(policy->cpu);
-> +
-> +       if (!cpu_present(policy->cpu))
-
-This can't happen and so no need to check it.
-
-> +               return -ENODEV;
-> +
-> +       /* the latency of a transition, the unit is ns */
-> +       policy->cpuinfo.transition_latency = 2000;
-> +
-> +       cur_pll = get_pll(hw_cpu);
-> +
-> +       /* initialize frequency table */
-> +       pr_debug("core%d frequency table:\n", hw_cpu);
-> +       for (i = 0; mpc85xx_freqs[i].frequency != CPUFREQ_TABLE_END; i++) {
-> +               if (mpc85xx_freqs[i].index <= max_pll[hw_cpu]) {
-> +                       /* The frequency unit is kHz. */
-> +                       mpc85xx_freqs[i].frequency =
-> +                               (sysfreq * mpc85xx_freqs[i].index / 2) / 1000;
-> +               } else {
-> +                       mpc85xx_freqs[i].frequency = CPUFREQ_ENTRY_INVALID;
-> +               }
-> +
-> +               pr_debug("%d: %dkHz\n", i, mpc85xx_freqs[i].frequency);
-> +
-> +               if (mpc85xx_freqs[i].index == cur_pll)
-> +                       policy->cur = mpc85xx_freqs[i].frequency;
-> +       }
-> +       pr_debug("current pll is at %d, and core freq is%d\n",
-> +                       cur_pll, policy->cur);
-> +
-> +       cpufreq_frequency_table_get_attr(mpc85xx_freqs, policy->cpu);
-> +
-> +       /*
-> +        * This ensures that policy->cpuinfo_min
-> +        * and policy->cpuinfo_max are set correctly.
-> +        */
-> +       return cpufreq_frequency_table_cpuinfo(policy, mpc85xx_freqs);
-
-Call cpufreq_frequency_table_get_attr() at the end after above call is
-successful.
-
-> +}
-
-> +static int mpc85xx_cpufreq_target(struct cpufreq_policy *policy,
-> +                             unsigned int target_freq,
-> +                             unsigned int relation)
-
-merge above two lines.
-
-> +{
-> +       struct cpufreq_freqs freqs;
-> +       unsigned int new;
-> +       int ret = 0;
-> +
-> +       if (!set_pll)
-> +               return -ENODEV;
-> +
-> +       cpufreq_frequency_table_target(policy,
-> +                                      mpc85xx_freqs,
-> +                                      target_freq,
-> +                                      relation,
-> +                                      &new);
-
-same.. merge all above to put it in a single line.
-
-> +       freqs.old = policy->cur;
-> +       freqs.new = mpc85xx_freqs[new].frequency;
-> +       freqs.cpu = policy->cpu;
-
-not required now.
-
-> +       mutex_lock(&mpc85xx_switch_mutex);
-> +       cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
-
-ditto. Rebase over latest code from linux-next. This call has changed.
-
-> +       ret = set_pll(policy->cpu, mpc85xx_freqs[new].index);
-> +       if (!ret) {
-> +               pr_info("cpufreq: Setting core%d frequency to %d kHz and PLL ratio to %d:2\n",
-> +                        policy->cpu, mpc85xx_freqs[new].frequency,
-> +                        mpc85xx_freqs[new].index);
-> +
-> +               ppc_proc_freq = freqs.new * 1000ul;
-> +       }
-> +       cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
-> +       mutex_unlock(&mpc85xx_switch_mutex);
-> +
-> +       return ret;
-> +}
-
-> +static int __init mpc85xx_jog_init(void)
-> +{
-> +       struct device_node *np;
-> +       unsigned int svr;
-> +
-> +       np = of_find_matching_node(NULL, mpc85xx_jog_ids);
-> +       if (!np)
-> +               return -ENODEV;
-> +
-> +       guts = of_iomap(np, 0);
-> +       if (!guts) {
-> +               of_node_put(np);
-> +               return -ENODEV;
-> +       }
-> +
-> +       sysfreq = fsl_get_sys_freq();
-> +
-> +       if (of_device_is_compatible(np, "fsl,mpc8536-guts")) {
-> +               svr = mfspr(SPRN_SVR);
-> +               if ((svr & 0x7fff) == 0x10) {
-> +                       pr_err("MPC8536 Rev 1.0 does not support cpufreq(JOG).\n");
-> +                       of_node_put(np);
-
-unmap too??
-
-> +                       return -ENODEV;
-> +               }
-> +               mpc85xx_freqs = mpc8536_freqs_table;
-> +               set_pll = mpc8536_set_pll;
-> +               max_pll[0] = get_pll(0);
-> +
-> +       } else if (of_device_is_compatible(np, "fsl,p1022-guts")) {
-> +               mpc85xx_freqs = p1022_freqs_table;
-> +               set_pll = p1022_set_pll;
-> +               max_pll[0] = get_pll(0);
-> +               max_pll[1] = get_pll(1);
-> +       }
-> +
-> +       pr_info("Freescale MPC85xx cpufreq(JOG) driver\n");
-> +
-> +       of_node_put(np);
-> +       return cpufreq_register_driver(&mpc85xx_cpufreq_driver);
-> +}
-> +
-> +device_initcall(mpc85xx_jog_init);
+diff --git a/drivers/iommu/amd_iommu.c b/drivers/iommu/amd_iommu.c
+index a7f6b04..2463464 100644
+--- a/drivers/iommu/amd_iommu.c
++++ b/drivers/iommu/amd_iommu.c
+@@ -46,6 +46,7 @@
+ #include "amd_iommu_proto.h"
+ #include "amd_iommu_types.h"
+ #include "irq_remapping.h"
++#include "pci.h"
+ 
+ #define CMD_SET_TYPE(cmd, t) ((cmd)->data[1] |= ((t) << 28))
+ 
+@@ -263,12 +264,6 @@ static bool check_device(struct device *dev)
+ 	return true;
+ }
+ 
+-static void swap_pci_ref(struct pci_dev **from, struct pci_dev *to)
+-{
+-	pci_dev_put(*from);
+-	*from = to;
+-}
+-
+ static struct pci_bus *find_hosted_bus(struct pci_bus *bus)
+ {
+ 	while (!bus->self) {
+diff --git a/drivers/iommu/intel-iommu.c b/drivers/iommu/intel-iommu.c
+index 6e0b9ff..81ad7b8 100644
+--- a/drivers/iommu/intel-iommu.c
++++ b/drivers/iommu/intel-iommu.c
+@@ -47,6 +47,7 @@
+ #include <asm/iommu.h>
+ 
+ #include "irq_remapping.h"
++#include "pci.h"
+ 
+ #define ROOT_SIZE		VTD_PAGE_SIZE
+ #define CONTEXT_SIZE		VTD_PAGE_SIZE
+@@ -4137,12 +4138,6 @@ static int intel_iommu_domain_has_cap(struct iommu_domain *domain,
+ 	return 0;
+ }
+ 
+-static void swap_pci_ref(struct pci_dev **from, struct pci_dev *to)
+-{
+-	pci_dev_put(*from);
+-	*from = to;
+-}
+-
+ #define REQ_ACS_FLAGS	(PCI_ACS_SV | PCI_ACS_RR | PCI_ACS_CR | PCI_ACS_UF)
+ 
+ static int intel_iommu_add_device(struct device *dev)
+diff --git a/drivers/iommu/pci.h b/drivers/iommu/pci.h
+new file mode 100644
+index 0000000..d460646
+--- /dev/null
++++ b/drivers/iommu/pci.h
+@@ -0,0 +1,29 @@
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License, version 2, as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
++ *
++ * Copyright (C) 2013 Red Hat, Inc.
++ * Copyright (C) 2013 Freescale Semiconductor, Inc.
++ *
++ */
++#ifndef __PCI_H
++#define __PCI_H
++
++/* Helper function for swapping pci device reference */
++static inline void swap_pci_ref(struct pci_dev **from, struct pci_dev *to)
++{
++	pci_dev_put(*from);
++	*from = to;
++}
++
++#endif  /* __PCI_H */
+-- 
+1.7.4.1
