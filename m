@@ -1,34 +1,19 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 12D8D2C0692
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:04:32 +1000 (EST)
-Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 22 Apr 2013 19:52:43 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 5A77E3578054
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:04:27 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3MA3ooK3998132
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:03:50 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3MA3tJ4013878
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:03:56 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, David Gibson <dwg@au1.ibm.com>
-Subject: [PATCH -V6 27/27] powerpc: Optimize hugepage invalidate
-Date: Mon, 22 Apr 2013 15:31:01 +0530
-Message-Id: <1366624861-24948-28-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1366624861-24948-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1366624861-24948-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <r61911@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DCC292C00C4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:36:56 +1000 (EST)
+From: Roy Zang <tie-fei.zang@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/fsl-pci:fix incorrect iounmap pci hose->private_data
+Date: Tue, 23 Apr 2013 02:35:54 +0800
+Message-ID: <1366655754-19400-1-git-send-email-tie-fei.zang@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Yuanquan Chen <Yuanquan.Chen@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,319 +23,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+pci hose->private_data will be used by other function, for example,
+fsl_pcie_check_link(), so do not iounmap it.
 
-Hugepage invalidate involves invalidating multiple hpte entries.
-Optimize the operation using H_BULK_REMOVE on lpar platforms.
-On native, reduce the number of tlb flush.
+fix the kerenl crash on T4240:
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Unable to handle kernel paging request for data at address
+0x8000080080060f14
+Faulting instruction address: 0xc000000000032554
+Oops: Kernel access of bad area, sig: 11 [#1]
+SMP NR_CPUS=24 T4240 QDS
+Modules linked in:
+NIP: c000000000032554 LR: c00000000003254c CTR: c00000000001e5c0
+REGS: c000000179143440 TRAP: 0300   Not tainted
+(3.8.8-rt2-00754-g951f064-dirt)
+MSR: 0000000080029000 <CE,EE,ME>  CR: 24adbe22  XER: 00000000
+SOFTE: 0
+DEAR: 8000080080060f14, ESR: 0000000000000000
+TASK = c00000017913d2c0[1] 'swapper/0' THREAD: c000000179140000 CPU: 2
+GPR00: c00000000003254c c0000001791436c0 c000000000ae2998
+0000000000000027
+GPR04: 0000000000000000 00000000000005a5 0000000000000000
+0000000000000002
+GPR08: 3030303038303038 c000000000a2d4d0 c000000000aebeb8
+c000000000af2998
+GPR12: 0000000024adbe22 c00000000fffa800 c000000000001be0
+0000000000000000
+GPR16: 0000000000000000 0000000000000000 0000000000000000
+0000000000000000
+GPR20: 0000000000000000 0000000000000000 0000000000000000
+c0000000009ddf70
+GPR24: c0000000009e8d40 c000000000af2998 c000000000b1529c
+c000000179143b40
+GPR28: c0000001799b4000 c000000179143c00 8000080080060000
+c000000000727ec8
+NIP [c000000000032554] .fsl_pcie_check_link+0x104/0x150
+LR [c00000000003254c] .fsl_pcie_check_link+0xfc/0x150
+Call Trace:
+[c0000001791436c0] [c00000000003254c] .fsl_pcie_check_link+0xfc/0x150
+(unreliab)
+[c000000179143a30] [c0000000000325d4]
+.fsl_indirect_read_config+0x34/0xb0
+[c000000179143ad0] [c0000000002c7ee8]
+.pci_bus_read_config_byte+0x88/0xd0
+[c000000179143b90] [c0000000009c0528] .pci_apply_final_quirks+0x9c/0x18c
+[c000000179143c40] [c00000000000142c] .do_one_initcall+0x5c/0x1f0
+[c000000179143cf0] [c0000000009a0bb4] .kernel_init_freeable+0x180/0x264
+[c000000179143db0] [c000000000001bfc] .kernel_init+0x1c/0x420
+[c000000179143e30] [c0000000000008b4] .ret_from_kernel_thread+0x64/0xb0
+Instruction dump:
+60000000 4bffffa0 ebc301d0 3fe2ffc4 3c62ffe0 3bff5530 38638a78 7fe4fb78
+7fc5f378 486ea77d 60000000 7c0004ac <801e0f14> 0c000000 4c00012c
+3c62ffe0
+---[ end trace f841fbc03c9d2e1b ]---
+
+Kernel panic - not syncing: Attempted to kill init! exitcode=0x0000000b
+
+Rebooting in 180 seconds..
+
+Signed-off-by: Yuanquan Chen <Yuanquan.Chen@freescale.com>
+Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
 ---
- arch/powerpc/include/asm/machdep.h    |    3 +
- arch/powerpc/mm/hash_native_64.c      |   78 ++++++++++++++++++++
- arch/powerpc/mm/pgtable_64.c          |   13 +++-
- arch/powerpc/platforms/pseries/lpar.c |  126 +++++++++++++++++++++++++++++++--
- 4 files changed, 210 insertions(+), 10 deletions(-)
+based on Kumar's next branch.
+tested on P3041 and T4240.
 
-diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index 3f3f691..5d1e7d2 100644
---- a/arch/powerpc/include/asm/machdep.h
-+++ b/arch/powerpc/include/asm/machdep.h
-@@ -56,6 +56,9 @@ struct machdep_calls {
- 	void            (*hpte_removebolted)(unsigned long ea,
- 					     int psize, int ssize);
- 	void		(*flush_hash_range)(unsigned long number, int local);
-+	void		(*hugepage_invalidate)(struct mm_struct *mm,
-+					       unsigned char *hpte_slot_array,
-+					       unsigned long addr, int psize);
+ arch/powerpc/sysdev/fsl_pci.c |   11 ++---------
+ 1 file changed, 2 insertions(+), 9 deletions(-)
+
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index f823304..c343edc 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -242,15 +242,11 @@ static void setup_pci_atmu(struct pci_controller *hose)
+ 	paddr_hi -= hose->pci_mem_offset;
+ 	paddr_lo -= hose->pci_mem_offset;
  
- 	/* special for kexec, to be called in real mode, linear mapping is
- 	 * destroyed as well */
-diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
-index 6a2aead..8ca178d 100644
---- a/arch/powerpc/mm/hash_native_64.c
-+++ b/arch/powerpc/mm/hash_native_64.c
-@@ -455,6 +455,83 @@ static void native_hpte_invalidate(unsigned long slot, unsigned long vpn,
- 	local_irq_restore(flags);
- }
+-	if (paddr_hi == paddr_lo) {
++	if (paddr_hi == paddr_lo)
+ 		pr_err("%s: No outbound window space\n", name);
+-		goto out;
+-	}
  
-+static void native_hugepage_invalidate(struct mm_struct *mm,
-+				       unsigned char *hpte_slot_array,
-+				       unsigned long addr, int psize)
-+{
-+	int ssize = 0, i;
-+	int lock_tlbie;
-+	struct hash_pte *hptep;
-+	int actual_psize = MMU_PAGE_16M;
-+	unsigned int max_hpte_count, valid;
-+	unsigned long flags, s_addr = addr;
-+	unsigned long hpte_v, want_v, shift;
-+	unsigned long hidx, vpn = 0, vsid, hash, slot;
-+
-+	shift = mmu_psize_defs[psize].shift;
-+	max_hpte_count = HUGE_PAGE_SIZE >> shift;
-+
-+	local_irq_save(flags);
-+	for (i = 0; i < max_hpte_count; i++) {
-+		/*
-+		 * 8 bits per each hpte entries
-+		 * 000| [ secondary group (one bit) | hidx (3 bits) | valid bit]
-+		 */
-+		valid = hpte_slot_array[i] & 0x1;
-+		if (!valid)
-+			continue;
-+		hidx =  hpte_slot_array[i]  >> 1;
-+
-+		/* get the vpn */
-+		addr = s_addr + (i * (1ul << shift));
-+		if (!is_kernel_addr(addr)) {
-+			ssize = user_segment_size(addr);
-+			vsid = get_vsid(mm->context.id, addr, ssize);
-+			WARN_ON(vsid == 0);
-+		} else {
-+			vsid = get_kernel_vsid(addr, mmu_kernel_ssize);
-+			ssize = mmu_kernel_ssize;
-+		}
-+
-+		vpn = hpt_vpn(addr, vsid, ssize);
-+		hash = hpt_hash(vpn, shift, ssize);
-+		if (hidx & _PTEIDX_SECONDARY)
-+			hash = ~hash;
-+
-+		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
-+		slot += hidx & _PTEIDX_GROUP_IX;
-+
-+		hptep = htab_address + slot;
-+		want_v = hpte_encode_avpn(vpn, psize, ssize);
-+		native_lock_hpte(hptep);
-+		hpte_v = hptep->v;
-+
-+		/* Even if we miss, we need to invalidate the TLB */
-+		if (!HPTE_V_COMPARE(hpte_v, want_v) || !(hpte_v & HPTE_V_VALID))
-+			native_unlock_hpte(hptep);
-+		else
-+			/* Invalidate the hpte. NOTE: this also unlocks it */
-+			hptep->v = 0;
-+	}
-+	/*
-+	 * Since this is a hugepage, we just need a single tlbie.
-+	 * use the last vpn.
-+	 */
-+	lock_tlbie = !mmu_has_feature(MMU_FTR_LOCKLESS_TLBIE);
-+	if (lock_tlbie)
-+		raw_spin_lock(&native_tlbie_lock);
-+
-+	asm volatile("ptesync":::"memory");
-+	__tlbie(vpn, psize, actual_psize, ssize);
-+	asm volatile("eieio; tlbsync; ptesync":::"memory");
-+
-+	if (lock_tlbie)
-+		raw_spin_unlock(&native_tlbie_lock);
-+
-+	local_irq_restore(flags);
-+}
-+
-+
- static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
- 			int *psize, int *apsize, int *ssize, unsigned long *vpn)
- {
-@@ -658,4 +735,5 @@ void __init hpte_init_native(void)
- 	ppc_md.hpte_remove	= native_hpte_remove;
- 	ppc_md.hpte_clear_all	= native_hpte_clear;
- 	ppc_md.flush_hash_range = native_flush_hash_range;
-+	ppc_md.hugepage_invalidate   = native_hugepage_invalidate;
- }
-diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index e0c2d09..1ed740a 100644
---- a/arch/powerpc/mm/pgtable_64.c
-+++ b/arch/powerpc/mm/pgtable_64.c
-@@ -659,6 +659,7 @@ void hpte_need_hugepage_flush(struct mm_struct *mm, unsigned long addr,
- {
- 	int ssize, i;
- 	unsigned long s_addr;
-+	int max_hpte_count;
- 	unsigned int psize, valid;
- 	unsigned char *hpte_slot_array;
- 	unsigned long hidx, vpn, vsid, hash, shift, slot;
-@@ -672,12 +673,18 @@ void hpte_need_hugepage_flush(struct mm_struct *mm, unsigned long addr,
- 	 * second half of the PMD
- 	 */
- 	hpte_slot_array = *(char **)(pmdp + PTRS_PER_PMD);
+-	if (paddr_lo == 0) {
++	if (paddr_lo == 0)
+ 		pr_err("%s: No space for inbound window\n", name);
+-		goto out;
+-	}
+ 
+ 	/* setup PCSRBAR/PEXCSRBAR */
+ 	early_write_config_dword(hose, 0, 0, PCI_BASE_ADDRESS_0, 0xffffffff);
+@@ -395,9 +391,6 @@ static void setup_pci_atmu(struct pci_controller *hose)
+ 		pr_info("%s: DMA window size is 0x%llx\n", name,
+ 			(u64)hose->dma_window_size);
+ 	}
 -
- 	/* get the base page size */
- 	psize = get_slice_psize(mm, s_addr);
--	shift = mmu_psize_defs[psize].shift;
- 
--	for (i = 0; i < (HUGE_PAGE_SIZE >> shift); i++) {
-+	if (ppc_md.hugepage_invalidate)
-+		return ppc_md.hugepage_invalidate(mm, hpte_slot_array,
-+						  s_addr, psize);
-+	/*
-+	 * No bluk hpte removal support, invalidate each entry
-+	 */
-+	shift = mmu_psize_defs[psize].shift;
-+	max_hpte_count = HUGE_PAGE_SIZE >> shift;
-+	for (i = 0; i < max_hpte_count; i++) {
- 		/*
- 		 * 8 bits per each hpte entries
- 		 * 000| [ secondary group (one bit) | hidx (3 bits) | valid bit]
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index 6d62072..58a31db 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -45,6 +45,13 @@
- #include "plpar_wrappers.h"
- #include "pseries.h"
- 
-+/* Flag bits for H_BULK_REMOVE */
-+#define HBR_REQUEST	0x4000000000000000UL
-+#define HBR_RESPONSE	0x8000000000000000UL
-+#define HBR_END		0xc000000000000000UL
-+#define HBR_AVPN	0x0200000000000000UL
-+#define HBR_ANDCOND	0x0100000000000000UL
-+
- 
- /* in hvCall.S */
- EXPORT_SYMBOL(plpar_hcall);
-@@ -345,6 +352,117 @@ static void pSeries_lpar_hpte_invalidate(unsigned long slot, unsigned long vpn,
- 	BUG_ON(lpar_rc != H_SUCCESS);
+-out:
+-	iounmap(pci);
  }
  
-+/*
-+ * Limit iterations holding pSeries_lpar_tlbie_lock to 3. We also need
-+ * to make sure that we avoid bouncing the hypervisor tlbie lock.
-+ */
-+#define PPC64_HUGE_HPTE_BATCH 12
-+
-+static void __pSeries_lpar_hugepage_invalidate(unsigned long *slot,
-+					     unsigned long *vpn, int count,
-+					     int psize, int ssize)
-+{
-+	unsigned long param[9];
-+	int i = 0, pix = 0, rc;
-+	unsigned long flags = 0;
-+	int lock_tlbie = !mmu_has_feature(MMU_FTR_LOCKLESS_TLBIE);
-+
-+	if (lock_tlbie)
-+		spin_lock_irqsave(&pSeries_lpar_tlbie_lock, flags);
-+
-+	for (i = 0; i < count; i++) {
-+
-+		if (!firmware_has_feature(FW_FEATURE_BULK_REMOVE)) {
-+			pSeries_lpar_hpte_invalidate(slot[i], vpn[i], psize,
-+						     ssize, 0);
-+		} else {
-+			param[pix] = HBR_REQUEST | HBR_AVPN | slot[i];
-+			param[pix+1] = hpte_encode_avpn(vpn[i], psize, ssize);
-+			pix += 2;
-+			if (pix == 8) {
-+				rc = plpar_hcall9(H_BULK_REMOVE, param,
-+						  param[0], param[1], param[2],
-+						  param[3], param[4], param[5],
-+						  param[6], param[7]);
-+				BUG_ON(rc != H_SUCCESS);
-+				pix = 0;
-+			}
-+		}
-+	}
-+	if (pix) {
-+		param[pix] = HBR_END;
-+		rc = plpar_hcall9(H_BULK_REMOVE, param, param[0], param[1],
-+				  param[2], param[3], param[4], param[5],
-+				  param[6], param[7]);
-+		BUG_ON(rc != H_SUCCESS);
-+	}
-+
-+	if (lock_tlbie)
-+		spin_unlock_irqrestore(&pSeries_lpar_tlbie_lock, flags);
-+}
-+
-+static void pSeries_lpar_hugepage_invalidate(struct mm_struct *mm,
-+				       unsigned char *hpte_slot_array,
-+				       unsigned long addr, int psize)
-+{
-+	int ssize = 0, i, index = 0;
-+	unsigned long s_addr = addr;
-+	unsigned int max_hpte_count, valid;
-+	unsigned long vpn_array[PPC64_HUGE_HPTE_BATCH];
-+	unsigned long slot_array[PPC64_HUGE_HPTE_BATCH];
-+	unsigned long shift, hidx, vpn = 0, vsid, hash, slot;
-+
-+	shift = mmu_psize_defs[psize].shift;
-+	max_hpte_count = HUGE_PAGE_SIZE >> shift;
-+
-+	for (i = 0; i < max_hpte_count; i++) {
-+		/*
-+		 * 8 bits per each hpte entries
-+		 * 000| [ secondary group (one bit) | hidx (3 bits) | valid bit]
-+		 */
-+		valid = hpte_slot_array[i] & 0x1;
-+		if (!valid)
-+			continue;
-+		hidx =  hpte_slot_array[i]  >> 1;
-+
-+		/* get the vpn */
-+		addr = s_addr + (i * (1ul << shift));
-+		if (!is_kernel_addr(addr)) {
-+			ssize = user_segment_size(addr);
-+			vsid = get_vsid(mm->context.id, addr, ssize);
-+			WARN_ON(vsid == 0);
-+		} else {
-+			vsid = get_kernel_vsid(addr, mmu_kernel_ssize);
-+			ssize = mmu_kernel_ssize;
-+		}
-+
-+		vpn = hpt_vpn(addr, vsid, ssize);
-+		hash = hpt_hash(vpn, shift, ssize);
-+		if (hidx & _PTEIDX_SECONDARY)
-+			hash = ~hash;
-+
-+		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
-+		slot += hidx & _PTEIDX_GROUP_IX;
-+
-+		slot_array[index] = slot;
-+		vpn_array[index] = vpn;
-+		if (index == PPC64_HUGE_HPTE_BATCH - 1) {
-+			/*
-+			 * Now do a bluk invalidate
-+			 */
-+			__pSeries_lpar_hugepage_invalidate(slot_array,
-+							   vpn_array,
-+							   PPC64_HUGE_HPTE_BATCH,
-+							   psize, ssize);
-+			index = 0;
-+		} else
-+			index++;
-+	}
-+	if (index)
-+		__pSeries_lpar_hugepage_invalidate(slot_array, vpn_array,
-+						   index, psize, ssize);
-+}
-+
- static void pSeries_lpar_hpte_removebolted(unsigned long ea,
- 					   int psize, int ssize)
- {
-@@ -360,13 +478,6 @@ static void pSeries_lpar_hpte_removebolted(unsigned long ea,
- 	pSeries_lpar_hpte_invalidate(slot, vpn, psize, ssize, 0);
- }
- 
--/* Flag bits for H_BULK_REMOVE */
--#define HBR_REQUEST	0x4000000000000000UL
--#define HBR_RESPONSE	0x8000000000000000UL
--#define HBR_END		0xc000000000000000UL
--#define HBR_AVPN	0x0200000000000000UL
--#define HBR_ANDCOND	0x0100000000000000UL
--
- /*
-  * Take a spinlock around flushes to avoid bouncing the hypervisor tlbie
-  * lock.
-@@ -452,6 +563,7 @@ void __init hpte_init_lpar(void)
- 	ppc_md.hpte_removebolted = pSeries_lpar_hpte_removebolted;
- 	ppc_md.flush_hash_range	= pSeries_lpar_flush_hash_range;
- 	ppc_md.hpte_clear_all   = pSeries_lpar_hptab_clear;
-+	ppc_md.hugepage_invalidate = pSeries_lpar_hugepage_invalidate;
- }
- 
- #ifdef CONFIG_PPC_SMLPAR
+ static void __init setup_pci_cmd(struct pci_controller *hose)
 -- 
-1.7.10
+1.7.9.5
