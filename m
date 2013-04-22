@@ -1,31 +1,30 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id F2D992C05ED
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:04:07 +1000 (EST)
+ (Client CN "e23smtp05.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A60052C0611
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:04:11 +1000 (EST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 22 Apr 2013 19:58:13 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 39CC3357804A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:04:04 +1000 (EST)
+ Mon, 22 Apr 2013 19:59:11 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 47776357804A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:04:09 +1000 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3M9o0fP41549910
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 19:50:00 +1000
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3M9nant43647054
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 19:49:36 +1000
 Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3MA3Vdj013292
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:03:32 +1000
+ r3MA3H7U013026
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:03:17 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, David Gibson <dwg@au1.ibm.com>
-Subject: [PATCH -V6 22/27] powerpc: Update find_linux_pte_or_hugepte to handle
- transparent hugepages
-Date: Mon, 22 Apr 2013 15:30:56 +0530
-Message-Id: <1366624861-24948-23-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V6 19/27] powerpc/THP: Double the PMD table size for THP
+Date: Mon, 22 Apr 2013 15:30:53 +0530
+Message-Id: <1366624861-24948-20-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1366624861-24948-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1366624861-24948-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -41,23 +40,91 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
+THP code does PTE page allocation along with large page request and deposit them
+for later use. This is to ensure that we won't have any failures when we split
+hugepages to regular pages.
+
+On powerpc we want to use the deposited PTE page for storing hash pte slot and
+secondary bit information for the HPTEs. We use the second half
+of the pmd table to save the deposted PTE page.
+
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/hugetlbpage.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/include/asm/pgalloc-64.h    |    6 +++---
+ arch/powerpc/include/asm/pgtable-ppc64.h |    6 +++++-
+ arch/powerpc/mm/init_64.c                |    9 ++++++---
+ 3 files changed, 14 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index 29d8534..a4b0fa5 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -949,7 +949,7 @@ pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea, unsigned *shift
- 			pdshift = PMD_SHIFT;
- 			pm = pmd_offset(pu, ea);
+diff --git a/arch/powerpc/include/asm/pgalloc-64.h b/arch/powerpc/include/asm/pgalloc-64.h
+index 91acb12..c756463 100644
+--- a/arch/powerpc/include/asm/pgalloc-64.h
++++ b/arch/powerpc/include/asm/pgalloc-64.h
+@@ -221,17 +221,17 @@ static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
  
--			if (pmd_huge(*pm)) {
-+			if (pmd_huge(*pm) || pmd_large(*pm)) {
- 				ret_pte = (pte_t *) pm;
- 				goto out;
- 			} else if (is_hugepd(pm))
+ static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
+ {
+-	return kmem_cache_alloc(PGT_CACHE(PMD_INDEX_SIZE),
++	return kmem_cache_alloc(PGT_CACHE(PMD_CACHE_INDEX),
+ 				GFP_KERNEL|__GFP_REPEAT);
+ }
+ 
+ static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
+ {
+-	kmem_cache_free(PGT_CACHE(PMD_INDEX_SIZE), pmd);
++	kmem_cache_free(PGT_CACHE(PMD_CACHE_INDEX), pmd);
+ }
+ 
+ #define __pmd_free_tlb(tlb, pmd, addr)		      \
+-	pgtable_free_tlb(tlb, pmd, PMD_INDEX_SIZE)
++	pgtable_free_tlb(tlb, pmd, PMD_CACHE_INDEX)
+ #ifndef CONFIG_PPC_64K_PAGES
+ #define __pud_free_tlb(tlb, pud, addr)		      \
+ 	pgtable_free_tlb(tlb, pud, PUD_INDEX_SIZE)
+diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
+index e3d55f6f..ab84332 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc64.h
++++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+@@ -20,7 +20,11 @@
+                 	    PUD_INDEX_SIZE + PGD_INDEX_SIZE + PAGE_SHIFT)
+ #define PGTABLE_RANGE (ASM_CONST(1) << PGTABLE_EADDR_SIZE)
+ 
+-
++#ifdef CONFIG_TRANSPARENT_HUGEPAGE
++#define PMD_CACHE_INDEX	(PMD_INDEX_SIZE + 1)
++#else
++#define PMD_CACHE_INDEX	PMD_INDEX_SIZE
++#endif
+ /*
+  * Define the address range of the kernel non-linear virtual area
+  */
+diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+index a56de85..97f741d 100644
+--- a/arch/powerpc/mm/init_64.c
++++ b/arch/powerpc/mm/init_64.c
+@@ -88,7 +88,11 @@ static void pgd_ctor(void *addr)
+ 
+ static void pmd_ctor(void *addr)
+ {
++#ifdef CONFIG_TRANSPARENT_HUGEPAGE
++	memset(addr, 0, PMD_TABLE_SIZE * 2);
++#else
+ 	memset(addr, 0, PMD_TABLE_SIZE);
++#endif
+ }
+ 
+ struct kmem_cache *pgtable_cache[MAX_PGTABLE_INDEX_SIZE];
+@@ -137,10 +141,9 @@ void pgtable_cache_add(unsigned shift, void (*ctor)(void *))
+ void pgtable_cache_init(void)
+ {
+ 	pgtable_cache_add(PGD_INDEX_SIZE, pgd_ctor);
+-	pgtable_cache_add(PMD_INDEX_SIZE, pmd_ctor);
+-	if (!PGT_CACHE(PGD_INDEX_SIZE) || !PGT_CACHE(PMD_INDEX_SIZE))
++	pgtable_cache_add(PMD_CACHE_INDEX, pmd_ctor);
++	if (!PGT_CACHE(PGD_INDEX_SIZE) || !PGT_CACHE(PMD_CACHE_INDEX))
+ 		panic("Couldn't allocate pgtable caches");
+-
+ 	/* In all current configs, when the PUD index exists it's the
+ 	 * same size as either the pgd or pmd index.  Verify that the
+ 	 * initialization above has also created a PUD cache.  This
 -- 
 1.7.10
