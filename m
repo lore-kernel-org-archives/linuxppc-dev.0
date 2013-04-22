@@ -1,30 +1,30 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E3ACD2C0297
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:02:45 +1000 (EST)
+ (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 94C0E2C019A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:02:52 +1000 (EST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 22 Apr 2013 19:50:58 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 87F282CE804A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:02:42 +1000 (EST)
+ Mon, 22 Apr 2013 19:53:27 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 91B1A2CE804A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:02:48 +1000 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3MA2aUg52297774
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:02:36 +1000
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3M9n6ab8651176
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 19:49:06 +1000
 Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3MA2f47011947
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:02:41 +1000
+ r3MA2kwH012146
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 20:02:48 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, David Gibson <dwg@au1.ibm.com>
-Subject: [PATCH -V6 14/27] powerpc: Print page size info during boot
-Date: Mon, 22 Apr 2013 15:30:48 +0530
-Message-Id: <1366624861-24948-15-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V6 15/27] powerpc: Update tlbie/tlbiel as per ISA doc
+Date: Mon, 22 Apr 2013 15:30:49 +0530
+Message-Id: <1366624861-24948-16-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1366624861-24948-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1366624861-24948-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -40,41 +40,82 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-This gives hint about different base and actual page size combination
-supported by the platform.
+Encode the actual page correctly in tlbie/tlbiel. This make sure we handle
+multiple page size segment correctly.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/hash_utils_64.c |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ arch/powerpc/mm/hash_native_64.c |   32 ++++++++++++++++++++++++++++++--
+ 1 file changed, 30 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 33cdc3a..d0eb6d4 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -316,7 +316,7 @@ static int __init htab_dt_scan_page_sizes(unsigned long node,
- 	prop = (u32 *)of_get_flat_dt_prop(node,
- 					  "ibm,segment-page-sizes", &size);
- 	if (prop != NULL) {
--		DBG("Page sizes from device-tree:\n");
-+		pr_info("Page sizes from device-tree:\n");
- 		size /= 4;
- 		cur_cpu_spec->mmu_features &= ~(MMU_FTR_16M_PAGE);
- 		while(size > 0) {
-@@ -370,10 +370,10 @@ static int __init htab_dt_scan_page_sizes(unsigned long node,
- 					       "shift=%d\n", base_shift, shift);
+diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+index bb920ee..6a2aead 100644
+--- a/arch/powerpc/mm/hash_native_64.c
++++ b/arch/powerpc/mm/hash_native_64.c
+@@ -61,7 +61,10 @@ static inline void __tlbie(unsigned long vpn, int psize, int apsize, int ssize)
  
- 				def->penc[idx] = penc;
--				DBG(" %d: shift=%02x, sllp=%04lx, "
--				    "avpnm=%08lx, tlbiel=%d, penc=%d\n",
--				    idx, shift, def->sllp, def->avpnm,
--				    def->tlbiel, def->penc[idx]);
-+				pr_info("base_shift=%d: shift=%d, sllp=0x%04lx,"
-+					" avpnm=0x%08lx, tlbiel=%d, penc=%d\n",
-+					base_shift, shift, def->sllp,
-+					def->avpnm, def->tlbiel, def->penc[idx]);
- 			}
- 		}
- 		return 1;
+ 	switch (psize) {
+ 	case MMU_PAGE_4K:
++		/* clear out bits after (52) [0....52.....63] */
++		va &= ~((1ul << (64 - 52)) - 1);
+ 		va |= ssize << 8;
++		va |= mmu_psize_defs[apsize].sllp << 6;
+ 		asm volatile(ASM_FTR_IFCLR("tlbie %0,0", PPC_TLBIE(%1,%0), %2)
+ 			     : : "r" (va), "r"(0), "i" (CPU_FTR_ARCH_206)
+ 			     : "memory");
+@@ -69,9 +72,20 @@ static inline void __tlbie(unsigned long vpn, int psize, int apsize, int ssize)
+ 	default:
+ 		/* We need 14 to 14 + i bits of va */
+ 		penc = mmu_psize_defs[psize].penc[apsize];
+-		va &= ~((1ul << mmu_psize_defs[psize].shift) - 1);
++		va &= ~((1ul << mmu_psize_defs[apsize].shift) - 1);
+ 		va |= penc << 12;
+ 		va |= ssize << 8;
++		/* Add AVAL part */
++		if (psize != apsize) {
++			/*
++			 * MPSS, 64K base page size and 16MB parge page size
++			 * We don't need all the bits, but rest of the bits
++			 * must be ignored by the processor.
++			 * vpn cover upto 65 bits of va. (0...65) and we need
++			 * 58..64 bits of va.
++			 */
++			va |= (vpn & 0xfe);
++		}
+ 		va |= 1; /* L */
+ 		asm volatile(ASM_FTR_IFCLR("tlbie %0,1", PPC_TLBIE(%1,%0), %2)
+ 			     : : "r" (va), "r"(0), "i" (CPU_FTR_ARCH_206)
+@@ -96,16 +110,30 @@ static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
+ 
+ 	switch (psize) {
+ 	case MMU_PAGE_4K:
++		/* clear out bits after(52) [0....52.....63] */
++		va &= ~((1ul << (64 - 52)) - 1);
+ 		va |= ssize << 8;
++		va |= mmu_psize_defs[apsize].sllp << 6;
+ 		asm volatile(".long 0x7c000224 | (%0 << 11) | (0 << 21)"
+ 			     : : "r"(va) : "memory");
+ 		break;
+ 	default:
+ 		/* We need 14 to 14 + i bits of va */
+ 		penc = mmu_psize_defs[psize].penc[apsize];
+-		va &= ~((1ul << mmu_psize_defs[psize].shift) - 1);
++		va &= ~((1ul << mmu_psize_defs[apsize].shift) - 1);
+ 		va |= penc << 12;
+ 		va |= ssize << 8;
++		/* Add AVAL part */
++		if (psize != apsize) {
++			/*
++			 * MPSS, 64K base page size and 16MB parge page size
++			 * We don't need all the bits, but rest of the bits
++			 * must be ignored by the processor.
++			 * vpn cover upto 65 bits of va. (0...65) and we need
++			 * 58..64 bits of va.
++			 */
++			va |= (vpn & 0xfe);
++		}
+ 		va |= 1; /* L */
+ 		asm volatile(".long 0x7c000224 | (%0 << 11) | (1 << 21)"
+ 			     : : "r"(va) : "memory");
 -- 
 1.7.10
