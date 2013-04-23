@@ -1,28 +1,39 @@
-Return-Path: <B16395@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 686FF2C06FE
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 14:45:46 +1000 (EST)
-From: Sethi Varun-B16395 <B16395@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH 2/3 v13] iommu/fsl: Add additional iommu attributes
- required by the PAMU driver.
-Date: Tue, 23 Apr 2013 04:45:39 +0000
-Message-ID: <C5ECD7A89D1DC44195F34B25E172658D4B3708@039-SN2MPN1-011.039d.mgd.msft.net>
-References: <1366608716-1704-2-git-send-email-Varun.Sethi@freescale.com>
- (from Varun.Sethi@freescale.com on Mon Apr 22 00:31:55 2013)
- <1366674609.10399.12@snotra>
-In-Reply-To: <1366674609.10399.12@snotra>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <ananth@in.ibm.com>
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e7.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8E0EF2C016A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 15:05:52 +1000 (EST)
+Received: from /spool/local
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ananth@in.ibm.com>;
+ Tue, 23 Apr 2013 01:05:46 -0400
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id D5C4D6E803C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 01:05:40 -0400 (EDT)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3N55hNS346768
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 01:05:43 -0400
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3N55g4o002377
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2013 23:05:43 -0600
+Date: Tue, 23 Apr 2013 10:35:40 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/rtas_flash: New return code to indicate FW
+ entitlement expiry
+Message-ID: <20130423050540.GA30690@in.ibm.com>
+References: <20130419114410.19115.35846.stgit@hegdevasant>
+ <1366677610.2886.8.camel@pasglop>
 MIME-Version: 1.0
-Cc: "joro@8bytes.org" <joro@8bytes.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Yoder Stuart-B08248 <B08248@freescale.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1366677610.2886.8.camel@pasglop>
+Cc: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>, paulus@samba.org,
+ linuxppc-dev@lists.ozlabs.org
+Reply-To: ananth@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,128 +43,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Apr 23, 2013 at 10:40:10AM +1000, Benjamin Herrenschmidt wrote:
+> On Fri, 2013-04-19 at 17:14 +0530, Vasant Hegde wrote:
+> > Add new return code to rtas_flash to indicate firmware entitlement
+> > expiry. This will be used by the update_flash script to return
+> > appropriate message to the user.
+> 
+> What's the point of that patch ? It adds a definition to a private .c
+> file not exposed to user space and doesn't do anything with it ...
 
+Ben,
 
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Tuesday, April 23, 2013 5:20 AM
-> To: Sethi Varun-B16395
-> Cc: joro@8bytes.org; iommu@lists.linux-foundation.org; linuxppc-
-> dev@lists.ozlabs.org; linux-kernel@vger.kernel.org;
-> galak@kernel.crashing.org; benh@kernel.crashing.org; Yoder Stuart-B08248;
-> Sethi Varun-B16395
-> Subject: Re: [PATCH 2/3 v13] iommu/fsl: Add additional iommu attributes
-> required by the PAMU driver.
->=20
-> On 04/22/2013 12:31:55 AM, Varun Sethi wrote:
-> > Added the following domain attributes for the FSL PAMU driver:
-> > 1. Added new iommu stash attribute, which allows setting of the
-> >    LIODN specific stash id parameter through IOMMU API.
-> > 2. Added an attribute for enabling/disabling DMA to a particular
-> >    memory window.
-> > 3. Added domain attribute to check for PAMUV1 specific constraints.
-> >
-> > Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
-> > ---
-> > v13 changes:
-> > - created a new file include/linux/fsl_pamu_stash.h for stash
-> > attributes.
-> > v12 changes:
-> > - Moved PAMU specifc stash ids and structures to PAMU header file.
-> > - no change in v11.
-> > - no change in v10.
-> >  include/linux/fsl_pamu_stash.h |   39
-> > +++++++++++++++++++++++++++++++++++++++
-> >  include/linux/iommu.h          |   16 ++++++++++++++++
-> >  2 files changed, 55 insertions(+), 0 deletions(-)  create mode 100644
-> > include/linux/fsl_pamu_stash.h
-> >
-> > diff --git a/include/linux/fsl_pamu_stash.h
-> > b/include/linux/fsl_pamu_stash.h new file mode 100644 index
-> > 0000000..caa1b21
-> > --- /dev/null
-> > +++ b/include/linux/fsl_pamu_stash.h
-> > @@ -0,0 +1,39 @@
-> > +/*
-> > + * This program is free software; you can redistribute it and/or
-> > modify
-> > + * it under the terms of the GNU General Public License, version 2,
-> > as
-> > + * published by the Free Software Foundation.
-> > + *
-> > + * This program is distributed in the hope that it will be useful,
-> > + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> > + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> > + * GNU General Public License for more details.
-> > + *
-> > + * You should have received a copy of the GNU General Public License
-> > + * along with this program; if not, write to the Free Software
-> > + * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
-> > 02110-1301, USA.
-> > + *
-> > + * Copyright (C) 2013 Freescale Semiconductor, Inc.
-> > + *
-> > + */
-> > +
-> > +#ifndef __FSL_PAMU_STASH_H
-> > +#define __FSL_PAMU_STASH_H
-> > +
-> > +/* cache stash targets */
-> > +enum pamu_stash_target {
-> > +	PAMU_ATTR_CACHE_L1 =3D 1,
-> > +	PAMU_ATTR_CACHE_L2,
-> > +	PAMU_ATTR_CACHE_L3,
-> > +};
-> > +
-> > +/*
-> > + * This attribute allows configuring stashig specific parameters
-> > + * in the PAMU hardware.
-> > + */
-> > +
-> > +struct pamu_stash_attribute {
-> > +	u32 	cpu;	/* cpu number */
-> > +	u32 	cache;	/* cache to stash to: L1,L2,L3 */
-> > +};
-> > +
-> > +#endif  /* __FSL_PAMU_STASH_H */
-> > diff --git a/include/linux/iommu.h b/include/linux/iommu.h index
-> > 2727810..c5dc2b9 100644
-> > --- a/include/linux/iommu.h
-> > +++ b/include/linux/iommu.h
-> > @@ -57,10 +57,26 @@ struct iommu_domain {
-> >  #define IOMMU_CAP_CACHE_COHERENCY	0x1
-> >  #define IOMMU_CAP_INTR_REMAP		0x2	/* isolates device
-> > intrs */
-> >
-> > +/*
-> > + * Following constraints are specifc to PAMUV1:
->=20
-> FSL_PAMUV1
->=20
-> > + *  -aperture must be power of 2, and naturally aligned
-> > + *  -number of windows must be power of 2, and address space size
-> > + *   of each window is determined by aperture size / # of windows
-> > + *  -the actual size of the mapped region of a window must be power
-> > + *   of 2 starting with 4KB and physical address must be naturally
-> > + *   aligned.
-> > + * DOMAIN_ATTR_FSL_PAMUV1 corresponds to the above mentioned
-> > contraints.
-> > + * The caller can invoke iommu_domain_get_attr to check if the
-> > underlying
-> > + * iommu implementation supports these constraints.
-> > + */
-> > +
-> >  enum iommu_attr {
-> >  	DOMAIN_ATTR_GEOMETRY,
-> >  	DOMAIN_ATTR_PAGING,
-> >  	DOMAIN_ATTR_WINDOWS,
-> > +	DOMAIN_ATTR_PAMU_STASH,
-> > +	DOMAIN_ATTR_PAMU_ENABLE,
-> > +	DOMAIN_ATTR_FSL_PAMUV1,
-> >  	DOMAIN_ATTR_MAX,
->=20
-> Please be consistent on whether "PAMU" gets an "FSL_" namespace prefix
-> (I'd prefer that it does).
-Submitted new version(v14) of the patch with updated attribute names.
+The userspace update_flash script invokes the rtas_flash module. With
+upcoming System p servers, the firmware will have the entitlement dates
+encoded in it and RTAS will return an error if the entitlement has
+expired. All we need from this module is for it to return that new error
+which will then be communicated to the user by the update_flash.
 
--Varun
+Ananth
