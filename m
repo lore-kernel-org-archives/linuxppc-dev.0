@@ -1,22 +1,23 @@
-Return-Path: <r61911@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
+Return-Path: <B35336@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 33F252C0137
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 19:38:03 +1000 (EST)
-Message-ID: <5176C6C4.4010005@freescale.com>
-Date: Wed, 24 Apr 2013 01:37:08 +0800
-From: Roy Zang <tie-fei.zang@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id CAC952C0142
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 19:53:59 +1000 (EST)
+Date: Tue, 23 Apr 2013 17:53:37 +0800
+From: Zhao Chenhui <chenhui.zhao@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>, Scott Wood
+ <scottwood@freescale.com>
+Subject: Re: [linuxppc-release] [PATCH v2 01/15] powerpc/85xx: cache
+ operations for Freescale SoCs based on BOOK3E
+Message-ID: <20130423095337.GA26010@localhost.localdomain>
+References: <1366368468-29143-1-git-send-email-chenhui.zhao@freescale.com>
 MIME-Version: 1.0
-To: Kevin Hao <haokexin@gmail.com>
-Subject: Re: [PATCH] powerpc/fsl-pci: don't unmap the PCI SoC controller
- registers in setup_pci_atmu
-References: <1365837281-27002-1-git-send-email-haokexin@gmail.com>
-In-Reply-To: <1365837281-27002-1-git-send-email-haokexin@gmail.com>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1366368468-29143-1-git-send-email-chenhui.zhao@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,53 +27,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/13/2013 03:14 PM, Kevin Hao wrote:
-> In patch 34642bbb (powerpc/fsl-pci: Keep PCI SoC controller registers in
-> pci_controller) we choose to keep the map of the PCI SoC controller
-> registers. But we missed to delete the unmap in setup_pci_atmu
-> function. This will cause the following call trace once we access
-> the PCI SoC controller registers later.
->
-> Unable to handle kernel paging request for data at address 0x8000080080040f14
-> Faulting instruction address: 0xc00000000002ea58
-> Oops: Kernel access of bad area, sig: 11 [#1]
-> SMP NR_CPUS=24 T4240 QDS
-> Modules linked in:
-> NIP: c00000000002ea58 LR: c00000000002eaf4 CTR: c00000000002eac0
-> REGS: c00000017e10b4a0 TRAP: 0300   Not tainted  (3.9.0-rc1-00052-gfa3529f-dirty)
-> MSR: 0000000080029000 <CE,EE,ME>  CR: 28adbe22  XER: 00000000
-> SOFTE: 0
-> DEAR: 8000080080040f14, ESR: 0000000000000000
-> TASK = c00000017e100000[1] 'swapper/0' THREAD: c00000017e108000 CPU: 2
-> GPR00: 0000000000000000 c00000017e10b720 c0000000009928d8 c00000017e578e00
-> GPR04: 0000000000000000 000000000000000c 0000000000000001 c00000017e10bb40
-> GPR08: 0000000000000000 8000080080040000 0000000000000000 0000000000000016
-> GPR12: 0000000088adbe22 c00000000fffa800 c000000000001ba0 0000000000000000
-> GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-> GPR20: 0000000000000000 0000000000000000 0000000000000000 c0000000008a5b70
-> GPR24: c0000000008af938 c0000000009a28d8 c0000000009bb5dc c00000017e10bb40
-> GPR28: c00000017e32a400 c00000017e10bc00 c00000017e32a400 c00000017e578e00
-> NIP [c00000000002ea58] .fsl_pcie_check_link+0x88/0xf0
-> LR [c00000000002eaf4] .fsl_indirect_read_config+0x34/0xb0
-> Call Trace:
-> [c00000017e10b720] [c00000017e10b7a0] 0xc00000017e10b7a0 (unreliable)
-> [c00000017e10ba30] [c00000000002eaf4] .fsl_indirect_read_config+0x34/0xb0
-> [c00000017e10bad0] [c00000000033aa08] .pci_bus_read_config_byte+0x88/0xd0
-> [c00000017e10bb90] [c00000000088d708] .pci_apply_final_quirks+0x9c/0x18c
-> [c00000017e10bc40] [c0000000000013dc] .do_one_initcall+0x5c/0x1f0
-> [c00000017e10bcf0] [c00000000086ebac] .kernel_init_freeable+0x180/0x26c
-> [c00000017e10bdb0] [c000000000001bbc] .kernel_init+0x1c/0x460
-> [c00000017e10be30] [c000000000000880] .ret_from_kernel_thread+0x64/0xe4
-> Instruction dump:
-> 38210310 2b800015 4fdde842 7c600026 5463fffe e8010010 7c0803a6 4e800020
-> 60000000 60000000 e92301d0 7c0004ac <80690f14> 0c030000 4c00012c 38210310
-> ---[ end trace 7a8fe0cbccb7d992 ]---
->
-> Kernel panic - not syncing: Attempted to kill init! exitcode=0x0000000b
->
-> Signed-off-by: Kevin Hao <haokexin@gmail.com>
+Hi Kumar, Scott,
+
+Do you have any comments on this set of patches?
+
+Best Regards,
+-Chenhui
+
+On Fri, Apr 19, 2013 at 06:47:34PM +0800, Zhao Chenhui wrote:
+> These cache operations support Freescale SoCs based on BOOK3E.
+> Move L1 cache operations to fsl_booke_cache.S in order to maintain
+> easily. And, add cache operations for backside L2 cache and platform cache.
+> 
+> The backside L2 cache appears on e500mc and e5500 core. The platform cache
+> supported by this patch is L2 Look-Aside Cache, which appears on SoCs
+> with e500v1/e500v2 core, such as MPC8572, P1020, etc.
+> 
+> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+> Signed-off-by: Li Yang <leoli@freescale.com>
 > ---
->
-acked.
-thanks.
-Roy
+>  arch/powerpc/include/asm/cacheflush.h |    8 ++
+>  arch/powerpc/kernel/Makefile          |    1 +
+>  arch/powerpc/kernel/fsl_booke_cache.S |  210 +++++++++++++++++++++++++++++++++
+>  arch/powerpc/kernel/head_fsl_booke.S  |   74 ------------
+>  4 files changed, 219 insertions(+), 74 deletions(-)
+>  create mode 100644 arch/powerpc/kernel/fsl_booke_cache.S
+> 
