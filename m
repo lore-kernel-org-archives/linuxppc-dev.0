@@ -2,19 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 04B1A2C0124
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 10:18:19 +1000 (EST)
-Message-ID: <1366676290.2886.3.camel@pasglop>
-Subject: Re: [PATCH v3 4/12] Move architecture vector definitions to prom.h
+ by ozlabs.org (Postfix) with ESMTPS id 7FD982C0160
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 10:27:00 +1000 (EST)
+Message-ID: <1366676584.2886.4.camel@pasglop>
+Subject: Re: [PATCH v2 7/11] Use stop machine to update cpu maps
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Tue, 23 Apr 2013 10:18:10 +1000
-In-Reply-To: <51758306.4000009@linux.vnet.ibm.com>
-References: <51757951.2080007@linux.vnet.ibm.com>
- <51758306.4000009@linux.vnet.ibm.com>
+Date: Tue, 23 Apr 2013 10:23:04 +1000
+In-Reply-To: <515F1673.7040304@linux.vnet.ibm.com>
+References: <51509AE8.8070803@linux.vnet.ibm.com>
+ <51509E3C.2030008@linux.vnet.ibm.com> <20130404044654.GH19443@drongo>
+ <515F1673.7040304@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,207 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-04-22 at 13:35 -0500, Nathan Fontenot wrote:
-> As part of handling handling PRRN events we will need to check the
-> vector 5 portion of the architecture bits reported in the device tree
-> to ensure that PRRN event handling is enabled. In order to do this
-> firmware_has_feature is updated (in a subsequent patch) to
-> make this check.  To avoid having to re-define bits in the architecture
-> vector the bits are moved to prom.h.
-> 
-> This patch is the first step in updating firmware_has_feature
-> by simply moving the bit definitions from prom_init.c to asm/prom.h.
-> There are no functional changes.
-> 
-> Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-> 
-> ---
->  arch/powerpc/include/asm/prom.h |   73 ++++++++++++++++++++++++++++++++++++++
->  arch/powerpc/kernel/prom_init.c |   75 +++-------------------------------------
->  2 files changed, 79 insertions(+), 69 deletions(-)
-> 
-> Index: powerpc/arch/powerpc/include/asm/prom.h
-> ===================================================================
-> --- powerpc.orig/arch/powerpc/include/asm/prom.h	2013-04-16 21:25:16.000000000 -0500
-> +++ powerpc/arch/powerpc/include/asm/prom.h	2013-04-17 13:43:13.000000000 -0500
-> @@ -74,6 +74,79 @@
->  #define DRCONF_MEM_AI_INVALID	0x00000040
->  #define DRCONF_MEM_RESERVED	0x00000080
->  
-> +#if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV)
-> +/
+On Fri, 2013-04-05 at 13:22 -0500, Nathan Fontenot wrote:
 
-The ifdef is unnecessary
+> Agreed, having to call stop_machine() for each cpu that gets updated is
+> pretty brutal. The plus side is that PRRN events should a rare occurrence 
+> and not cause too much pain.
 
-> + * There are two methods for telling firmware what our capabilities are.
-> + * Newer machines have an "ibm,client-architecture-support" method on the
-> + * root node.  For older machines, we have to call the "process-elf-header"
-> + * method in the /packages/elf-loader node, passing it a fake 32-bit
-> + * ELF header containing a couple of PT_NOTE sections that contain
-> + * structures that contain various information.
-> + */
-> +
-> +/* New method - extensible architecture description vector. */
-> +
-> +/* Option vector bits - generic bits in byte 1 */
-> +#define OV_IGNORE		0x80	/* ignore this vector */
-> +#define OV_CESSATION_POLICY	0x40	/* halt if unsupported option present*/
-> +
-> +/* Option vector 1: processor architectures supported */
-> +#define OV1_PPC_2_00		0x80	/* set if we support PowerPC 2.00 */
-> +#define OV1_PPC_2_01		0x40	/* set if we support PowerPC 2.01 */
-> +#define OV1_PPC_2_02		0x20	/* set if we support PowerPC 2.02 */
-> +#define OV1_PPC_2_03		0x10	/* set if we support PowerPC 2.03 */
-> +#define OV1_PPC_2_04		0x08	/* set if we support PowerPC 2.04 */
-> +#define OV1_PPC_2_05		0x04	/* set if we support PowerPC 2.05 */
-> +#define OV1_PPC_2_06		0x02	/* set if we support PowerPC 2.06 */
-> +#define OV1_PPC_2_07		0x01	/* set if we support PowerPC 2.07 */
-> +
-> +/* Option vector 2: Open Firmware options supported */
-> +#define OV2_REAL_MODE		0x20	/* set if we want OF in real mode */
-> +
-> +/* Option vector 3: processor options supported */
-> +#define OV3_FP			0x80	/* floating point */
-> +#define OV3_VMX			0x40	/* VMX/Altivec */
-> +#define OV3_DFP			0x20	/* decimal FP */
-> +
-> +/* Option vector 4: IBM PAPR implementation */
-> +#define OV4_MIN_ENT_CAP		0x01	/* minimum VP entitled capacity */
-> +
-> +/* Option vector 5: PAPR/OF options supported */
-> +#define OV5_LPAR		0x80	/* logical partitioning supported */
-> +#define OV5_SPLPAR		0x40	/* shared-processor LPAR supported */
-> +/* ibm,dynamic-reconfiguration-memory property supported */
-> +#define OV5_DRCONF_MEMORY	0x20
-> +#define OV5_LARGE_PAGES		0x10	/* large pages supported */
-> +#define OV5_DONATE_DEDICATE_CPU	0x02	/* donate dedicated CPU support */
-> +/* PCIe/MSI support.  Without MSI full PCIe is not supported */
-> +#ifdef CONFIG_PCI_MSI
-> +#define OV5_MSI			0x01	/* PCIe/MSI support */
-> +#else
-> +#define OV5_MSI			0x00
-> +#endif /* CONFIG_PCI_MSI */
-> +#ifdef CONFIG_PPC_SMLPAR
-> +#define OV5_CMO			0x80	/* Cooperative Memory Overcommitment */
-> +#define OV5_XCMO		0x40	/* Page Coalescing */
-> +#else
-> +#define OV5_CMO			0x00
-> +#define OV5_XCMO		0x00
-> +#endif
-> +#define OV5_TYPE1_AFFINITY	0x80	/* Type 1 NUMA affinity */
-> +#define OV5_PFO_HW_RNG		0x80	/* PFO Random Number Generator */
-> +#define OV5_PFO_HW_842		0x40	/* PFO Compression Accelerator */
-> +#define OV5_PFO_HW_ENCR		0x20	/* PFO Encryption Accelerator */
-> +#define OV5_SUB_PROCESSORS	0x01	/* 1,2,or 4 Sub-Processors supported */
-> +
-> +/* Option Vector 6: IBM PAPR hints */
-> +#define OV6_LINUX		0x02	/* Linux is our OS */
-> +
-> +/*
-> + * The architecture vector has an array of PVR mask/value pairs,
-> + * followed by # option vectors - 1, followed by the option vectors.
-> + */
-> +extern unsigned char ibm_architecture_vec[];
-> +#endif
-> +
->  /* These includes are put at the bottom because they may contain things
->   * that are overridden by this file.  Ideally they shouldn't be included
->   * by this file, but there are a bunch of .c files that currently depend
-> Index: powerpc/arch/powerpc/kernel/prom_init.c
-> ===================================================================
-> --- powerpc.orig/arch/powerpc/kernel/prom_init.c	2013-04-16 21:25:16.000000000 -0500
-> +++ powerpc/arch/powerpc/kernel/prom_init.c	2013-04-17 13:43:13.000000000 -0500
-> @@ -627,16 +627,11 @@
->  
->  #if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV)
->  /*
-> - * There are two methods for telling firmware what our capabilities are.
-> - * Newer machines have an "ibm,client-architecture-support" method on the
-> - * root node.  For older machines, we have to call the "process-elf-header"
-> - * method in the /packages/elf-loader node, passing it a fake 32-bit
-> - * ELF header containing a couple of PT_NOTE sections that contain
-> - * structures that contain various information.
-> - */
-> -
-> -/*
-> - * New method - extensible architecture description vector.
-> + * The architecture vector has an array of PVR mask/value pairs,
-> + * followed by # option vectors - 1, followed by the option vectors.
-> + *
-> + * See prom.h for the definition of the bits specified in the
-> + * achitecture vector.
->   *
->   * Because the description vector contains a mix of byte and word
->   * values, we declare it as an unsigned char array, and use this
-> @@ -645,65 +640,7 @@
->  #define W(x)	((x) >> 24) & 0xff, ((x) >> 16) & 0xff, \
->  		((x) >> 8) & 0xff, (x) & 0xff
->  
-> -/* Option vector bits - generic bits in byte 1 */
-> -#define OV_IGNORE		0x80	/* ignore this vector */
-> -#define OV_CESSATION_POLICY	0x40	/* halt if unsupported option present*/
-> -
-> -/* Option vector 1: processor architectures supported */
-> -#define OV1_PPC_2_00		0x80	/* set if we support PowerPC 2.00 */
-> -#define OV1_PPC_2_01		0x40	/* set if we support PowerPC 2.01 */
-> -#define OV1_PPC_2_02		0x20	/* set if we support PowerPC 2.02 */
-> -#define OV1_PPC_2_03		0x10	/* set if we support PowerPC 2.03 */
-> -#define OV1_PPC_2_04		0x08	/* set if we support PowerPC 2.04 */
-> -#define OV1_PPC_2_05		0x04	/* set if we support PowerPC 2.05 */
-> -#define OV1_PPC_2_06		0x02	/* set if we support PowerPC 2.06 */
-> -#define OV1_PPC_2_07		0x01	/* set if we support PowerPC 2.07 */
-> -
-> -/* Option vector 2: Open Firmware options supported */
-> -#define OV2_REAL_MODE		0x20	/* set if we want OF in real mode */
-> -
-> -/* Option vector 3: processor options supported */
-> -#define OV3_FP			0x80	/* floating point */
-> -#define OV3_VMX			0x40	/* VMX/Altivec */
-> -#define OV3_DFP			0x20	/* decimal FP */
-> -
-> -/* Option vector 4: IBM PAPR implementation */
-> -#define OV4_MIN_ENT_CAP		0x01	/* minimum VP entitled capacity */
-> -
-> -/* Option vector 5: PAPR/OF options supported */
-> -#define OV5_LPAR		0x80	/* logical partitioning supported */
-> -#define OV5_SPLPAR		0x40	/* shared-processor LPAR supported */
-> -/* ibm,dynamic-reconfiguration-memory property supported */
-> -#define OV5_DRCONF_MEMORY	0x20
-> -#define OV5_LARGE_PAGES		0x10	/* large pages supported */
-> -#define OV5_DONATE_DEDICATE_CPU 0x02	/* donate dedicated CPU support */
-> -/* PCIe/MSI support.  Without MSI full PCIe is not supported */
-> -#ifdef CONFIG_PCI_MSI
-> -#define OV5_MSI			0x01	/* PCIe/MSI support */
-> -#else
-> -#define OV5_MSI			0x00
-> -#endif /* CONFIG_PCI_MSI */
-> -#ifdef CONFIG_PPC_SMLPAR
-> -#define OV5_CMO			0x80	/* Cooperative Memory Overcommitment */
-> -#define OV5_XCMO			0x40	/* Page Coalescing */
-> -#else
-> -#define OV5_CMO			0x00
-> -#define OV5_XCMO			0x00
-> -#endif
-> -#define OV5_TYPE1_AFFINITY	0x80	/* Type 1 NUMA affinity */
-> -#define OV5_PFO_HW_RNG		0x80	/* PFO Random Number Generator */
-> -#define OV5_PFO_HW_842		0x40	/* PFO Compression Accelerator */
-> -#define OV5_PFO_HW_ENCR		0x20	/* PFO Encryption Accelerator */
-> -#define OV5_SUB_PROCESSORS	0x01    /* 1,2,or 4 Sub-Processors supported */
-> -
-> -/* Option Vector 6: IBM PAPR hints */
-> -#define OV6_LINUX		0x02	/* Linux is our OS */
-> -
-> -/*
-> - * The architecture vector has an array of PVR mask/value pairs,
-> - * followed by # option vectors - 1, followed by the option vectors.
-> - */
-> -static unsigned char ibm_architecture_vec[] = {
-> +unsigned char ibm_architecture_vec[] = {
->  	W(0xfffe0000), W(0x003a0000),	/* POWER5/POWER5+ */
->  	W(0xffff0000), W(0x003e0000),	/* POWER6 */
->  	W(0xffff0000), W(0x003f0000),	/* POWER7 */
+So that doesn't happen on VPHN changes ?
+
+> The current design ties into the of notification chain so that we can do
+> the affinity update when the affinity property in the device tree is updated.
+> Switching to doing one stop and updating all of the cpus would require a
+> design change....and....
 > 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> I went back and looked at the code again and there is another issue with
+> way this is done. Tying into the of notification chain is great for
+> being informed of when a property changes but the code (from patch 6/11)
+> 
+> +	case OF_RECONFIG_ADD_PROPERTY:
+> +	case OF_RECONFIG_UPDATE_PROPERTY:
+> +		update = (struct of_prop_reconfig *)data;
+> +		if (!of_prop_cmp(update->dn->type, "cpu")) {
+> +			u32 core_id;
+> +			of_property_read_u32(update->dn, "reg", &core_id);
+> +			stage_topology_update(core_id);
+> +			rc = NOTIFY_OK;
+> +		}
+> +		break;
+> 
+> Does not check to see which property is being updated and just assumes
+> the affinity is being updated. This code as is will do an affinity update
+> every time any property of a cpu is updated or added.
+> 
+> Since this needs an update I will also look at possibly doing this so
+> that we call stop_machine only once.
+
+Any new patch set ?
+
+Cheers,
+Ben.
