@@ -1,23 +1,25 @@
-Return-Path: <B35336@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CAC952C0142
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 19:53:59 +1000 (EST)
-Date: Tue, 23 Apr 2013 17:53:37 +0800
-From: Zhao Chenhui <chenhui.zhao@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>, Scott Wood
- <scottwood@freescale.com>
-Subject: Re: [linuxppc-release] [PATCH v2 01/15] powerpc/85xx: cache
- operations for Freescale SoCs based on BOOK3E
-Message-ID: <20130423095337.GA26010@localhost.localdomain>
-References: <1366368468-29143-1-git-send-email-chenhui.zhao@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1366368468-29143-1-git-send-email-chenhui.zhao@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id A768D2C013C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 20:05:35 +1000 (EST)
+Message-ID: <1366711520.2886.24.camel@pasglop>
+Subject: Re: [PATCH] powerpc/pci: fix PCI-e devices rescan issue on powerpc
+ platform
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Chen Yuanquan-B41889 <B41889@freescale.com>
+Date: Tue, 23 Apr 2013 20:05:20 +1000
+In-Reply-To: <517653D8.8000205@freescale.com>
+References: <1364902014-943-1-git-send-email-Yuanquan.Chen@freescale.com>
+ <1364915422.16520.8.camel@pasglop> <515BAB44.9070001@freescale.com>
+ <51652C20.2060105@freescale.com> <517653D8.8000205@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Bjorn Helgaas <bhelgaas@google.com>,
+ Yuanquan Chen <Yuanquan.Chen@freescale.com>,
+ Hiroo Matsumoto <matsumoto.hiroo@jp.fujitsu.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,29 +29,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Kumar, Scott,
+On Tue, 2013-04-23 at 17:26 +0800, Chen Yuanquan-B41889 wrote:
+> There's no response from Ben. How do you think about this patch?
+> What's 
+> your advice?
 
-Do you have any comments on this set of patches?
+Didn't Michael put your patch in -next while I was on vacation ? I'll
+check tomorrow.
 
-Best Regards,
--Chenhui
-
-On Fri, Apr 19, 2013 at 06:47:34PM +0800, Zhao Chenhui wrote:
-> These cache operations support Freescale SoCs based on BOOK3E.
-> Move L1 cache operations to fsl_booke_cache.S in order to maintain
-> easily. And, add cache operations for backside L2 cache and platform cache.
-> 
-> The backside L2 cache appears on e500mc and e5500 core. The platform cache
-> supported by this patch is L2 Look-Aside Cache, which appears on SoCs
-> with e500v1/e500v2 core, such as MPC8572, P1020, etc.
-> 
-> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> ---
->  arch/powerpc/include/asm/cacheflush.h |    8 ++
->  arch/powerpc/kernel/Makefile          |    1 +
->  arch/powerpc/kernel/fsl_booke_cache.S |  210 +++++++++++++++++++++++++++++++++
->  arch/powerpc/kernel/head_fsl_booke.S  |   74 ------------
->  4 files changed, 219 insertions(+), 74 deletions(-)
->  create mode 100644 arch/powerpc/kernel/fsl_booke_cache.S
-> 
+Cheers,
+Ben.
