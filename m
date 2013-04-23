@@ -2,20 +2,22 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 7FD982C0160
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 10:27:00 +1000 (EST)
-Message-ID: <1366676584.2886.4.camel@pasglop>
-Subject: Re: [PATCH v2 7/11] Use stop machine to update cpu maps
+ by ozlabs.org (Postfix) with ESMTPS id 157B92C0137
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 10:31:54 +1000 (EST)
+Message-ID: <1366677081.2886.7.camel@pasglop>
+Subject: Re: [Suggestion] PowerPC: kernel: memory access violation when
+ rtas_data_buf contents are more than 1026
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Tue, 23 Apr 2013 10:23:04 +1000
-In-Reply-To: <515F1673.7040304@linux.vnet.ibm.com>
-References: <51509AE8.8070803@linux.vnet.ibm.com>
- <51509E3C.2030008@linux.vnet.ibm.com> <20130404044654.GH19443@drongo>
- <515F1673.7040304@linux.vnet.ibm.com>
+To: Chen Gang <gang.chen@asianux.com>
+Date: Tue, 23 Apr 2013 10:31:21 +1000
+In-Reply-To: <516F7A7D.60206@asianux.com>
+References: <516F7A7D.60206@asianux.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
+Cc: "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "paulus@samba.org" <paulus@samba.org>, Al Viro <viro@zeniv.linux.org.uk>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,42 +27,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-04-05 at 13:22 -0500, Nathan Fontenot wrote:
-
-> Agreed, having to call stop_machine() for each cpu that gets updated is
-> pretty brutal. The plus side is that PRRN events should a rare occurrence 
-> and not cause too much pain.
-
-So that doesn't happen on VPHN changes ?
-
-> The current design ties into the of notification chain so that we can do
-> the affinity update when the affinity property in the device tree is updated.
-> Switching to doing one stop and updating all of the cpus would require a
-> design change....and....
+On Thu, 2013-04-18 at 12:45 +0800, Chen Gang wrote:
+> Hello Maintainers:
 > 
-> I went back and looked at the code again and there is another issue with
-> way this is done. Tying into the of notification chain is great for
-> being informed of when a property changes but the code (from patch 6/11)
 > 
-> +	case OF_RECONFIG_ADD_PROPERTY:
-> +	case OF_RECONFIG_UPDATE_PROPERTY:
-> +		update = (struct of_prop_reconfig *)data;
-> +		if (!of_prop_cmp(update->dn->type, "cpu")) {
-> +			u32 core_id;
-> +			of_property_read_u32(update->dn, "reg", &core_id);
-> +			stage_topology_update(core_id);
-> +			rc = NOTIFY_OK;
-> +		}
-> +		break;
+> in arch/powerpc/kernel/lparcfg.c, parse_system_parameter_string()
 > 
-> Does not check to see which property is being updated and just assumes
-> the affinity is being updated. This code as is will do an affinity update
-> every time any property of a cpu is updated or added.
+>   need set '\0' for 'local_buffer'.
 > 
-> Since this needs an update I will also look at possibly doing this so
-> that we call stop_machine only once.
+>   the reason is:
+>     SPLPAR_MAXLENGTH is 1026, RTAS_DATA_BUF_SIZE is 4096
+>     the contents of rtas_data_buf may truncated in memcpy (line 301).
+> 
+>     if contents are truncated.
+>       the splpar_strlen is more than 1026 (line 321)
+>       the while loop checking will not find the end of buffer (line 326)
+>       it will cause memory access violation.
+> 
+> 
+>   I find it by reading code, so please help check.
 
-Any new patch set ?
+And a signed-off-by please ?
 
 Cheers,
 Ben.
+
+>   thanks.
+> 
+> gchen.
+> 
+> -------------------------related fix patch--------------------------------------
+> 
+> diff --git a/arch/powerpc/kernel/lparcfg.c b/arch/powerpc/kernel/lparcfg.c
+> index 801a757..d92f387 100644
+> --- a/arch/powerpc/kernel/lparcfg.c
+> +++ b/arch/powerpc/kernel/lparcfg.c
+> @@ -299,6 +299,7 @@ static void parse_system_parameter_string(struct seq_file *m)
+>  				__pa(rtas_data_buf),
+>  				RTAS_DATA_BUF_SIZE);
+>  	memcpy(local_buffer, rtas_data_buf, SPLPAR_MAXLENGTH);
+> +	local_buffer[SPLPAR_MAXLENGTH - 1] = '\0';
+>  	spin_unlock(&rtas_data_buf_lock);
+>  
+>  	if (call_status != 0) {
+> 
+> 
+> 
+> -------------------------related source code------------------------------------
+> 
+> 
+> 283 static void parse_system_parameter_string(struct seq_file *m)
+> 284 {
+> 285         int call_status;
+> 286 
+> 287         unsigned char *local_buffer = kmalloc(SPLPAR_MAXLENGTH, GFP_KERNEL);
+> 288         if (!local_buffer) {
+> 289                 printk(KERN_ERR "%s %s kmalloc failure at line %d\n",
+> 290                        __FILE__, __func__, __LINE__);
+> 291                 return;
+> 292         }
+> 293 
+> 294         spin_lock(&rtas_data_buf_lock);
+> 295         memset(rtas_data_buf, 0, SPLPAR_MAXLENGTH);
+> 296         call_status = rtas_call(rtas_token("ibm,get-system-parameter"), 3, 1,
+> 297                                 NULL,
+> 298                                 SPLPAR_CHARACTERISTICS_TOKEN,
+> 299                                 __pa(rtas_data_buf),
+> 300                                 RTAS_DATA_BUF_SIZE);
+> 301         memcpy(local_buffer, rtas_data_buf, SPLPAR_MAXLENGTH);
+> 302         spin_unlock(&rtas_data_buf_lock);
+> 303         
+> 304         if (call_status != 0) {
+> 305                 printk(KERN_INFO
+> 306                        "%s %s Error calling get-system-parameter (0x%x)\n",
+> 307                        __FILE__, __func__, call_status);
+> 308         } else {       
+> 309                 int splpar_strlen;
+> 310                 int idx, w_idx;
+> 311                 char *workbuffer = kzalloc(SPLPAR_MAXLENGTH, GFP_KERNEL);
+> 312                 if (!workbuffer) { 
+> 313                         printk(KERN_ERR "%s %s kmalloc failure at line %d\n",
+> 314                                __FILE__, __func__, __LINE__);
+> 315                         kfree(local_buffer);
+> 316                         return;
+> 317                 }       
+> 318 #ifdef LPARCFG_DEBUG
+> 319                 printk(KERN_INFO "success calling get-system-parameter\n");
+> 320 #endif
+> 321                 splpar_strlen = local_buffer[0] * 256 + local_buffer[1];
+> 322                 local_buffer += 2;      /* step over strlen value */
+> 323 
+> 324                 w_idx = 0;
+> 325                 idx = 0;
+> 326                 while ((*local_buffer) && (idx < splpar_strlen)) {
+> 327                         workbuffer[w_idx++] = local_buffer[idx++];
+> 328                         if ((local_buffer[idx] == ',')
+> 329                             || (local_buffer[idx] == '\0')) {
+> 330                                 workbuffer[w_idx] = '\0';
+> 331                                 if (w_idx) {
+> 332                                         /* avoid the empty string */
+> 333                                         seq_printf(m, "%s\n", workbuffer);
+> 334                                 }
+> 335                                 memset(workbuffer, 0, SPLPAR_MAXLENGTH);
+> 336                                 idx++;  /* skip the comma */
+> 337                                 w_idx = 0;
+> 338                         } else if (local_buffer[idx] == '=') {
+> 339                                 /* code here to replace workbuffer contents
+> 340                                    with different keyword strings */
+> 341                                 if (0 == strcmp(workbuffer, "MaxEntCap")) {
+> 342                                         strcpy(workbuffer,
+> 343                                                "partition_max_entitled_capacity");
+> 344                                         w_idx = strlen(workbuffer);
+> 345                                 }
+> 346                                 if (0 == strcmp(workbuffer, "MaxPlatProcs")) {
+> 347                                         strcpy(workbuffer,
+> 348                                                "system_potential_processors");
+> 349                                         w_idx = strlen(workbuffer);
+> 350                                 }
+> 351                         }
+> 352                 }
+> 353                 kfree(workbuffer);
+> 354                 local_buffer -= 2;      /* back up over strlen value */
+> 355         }
+> 356         kfree(local_buffer);
+> 357 }
