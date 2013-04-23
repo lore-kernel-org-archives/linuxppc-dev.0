@@ -1,26 +1,23 @@
-Return-Path: <B16395@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AB17D2C04F7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 23:02:46 +1000 (EST)
-From: Sethi Varun-B16395 <B16395@freescale.com>
-To: Joerg Roedel <joro@8bytes.org>
-Subject: RE: [PATCH 1/3 v2] iommu: Move swap_pci_ref function to pci.h.
-Date: Tue, 23 Apr 2013 13:02:38 +0000
-Message-ID: <C5ECD7A89D1DC44195F34B25E172658D4B4A00@039-SN2MPN1-011.039d.mgd.msft.net>
-References: <1366691726-9023-1-git-send-email-Varun.Sethi@freescale.com>
- <20130423125827.GD2589@8bytes.org>
-In-Reply-To: <20130423125827.GD2589@8bytes.org>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <devurandom@gmx.net>
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+ by ozlabs.org (Postfix) with ESMTP id 7278F2C0118
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 23:17:04 +1000 (EST)
+Received: from mailout-de.gmx.net ([10.1.76.30]) by mrigmx.server.lan
+ (mrigmx001) with ESMTP (Nemesis) id 0Lu28G-1UbkaZ2XA6-011PQq for
+ <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 15:17:01 +0200
+From: Dennis Schridde <devurandom@gmx.net>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: PROBLEM: Only 2 of 4 cores used on IBM Cell blades and no threads
+ shown in spufs
+Date: Tue, 23 Apr 2013 15:16:53 +0200
+Message-ID: <3242341.cjDFP0lvB2@ernie>
+In-Reply-To: <20130423135155.7b307094@samson>
+References: <1470334.YUWOQ37ijW@ernie> <20130423091246.GA18195@concordia>
+ <20130423135155.7b307094@samson>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Yoder Stuart-B08248 <B08248@freescale.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: multipart/signed; boundary="nextPart5674710.Q5Vd7XBReF";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Cc: cbe-oss-dev@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org, arnd@arndb.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,30 +27,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thanks.
 
-> -----Original Message-----
-> From: iommu-bounces@lists.linux-foundation.org [mailto:iommu-
-> bounces@lists.linux-foundation.org] On Behalf Of Joerg Roedel
-> Sent: Tuesday, April 23, 2013 6:32 PM
-> To: Sethi Varun-B16395
-> Cc: galak@kernel.crashing.org; benh@kernel.crashing.org; Yoder Stuart-
-> B08248; linux-kernel@vger.kernel.org; iommu@lists.linux-foundation.org;
-> Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org
-> Subject: Re: [PATCH 1/3 v2] iommu: Move swap_pci_ref function to pci.h.
->=20
-> On Tue, Apr 23, 2013 at 10:05:24AM +0530, Varun Sethi wrote:
-> > +#ifndef __PCI_H
-> > +#define __PCI_H
->=20
-> Using __PCI_H is not a wise choice, it has certainly a high risk of a
-> collision. Anyway, I changed it to __IOMMU_PCI_H and applied the patch.
->=20
->=20
-> 	Joerg
->=20
->=20
-> _______________________________________________
-> iommu mailing list
-> iommu@lists.linux-foundation.org
-> https://lists.linuxfoundation.org/mailman/listinfo/iommu
+--nextPart5674710.Q5Vd7XBReF
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+
+Hello!
+
+Am Dienstag, 23. April 2013, 13:51:55 schrieb Dennis Schridde:
+> Am Tue, 23 Apr 2013 19:12:47 +1000
+> schrieb Michael Ellerman <michael@ellerman.id.au>:
+> > On Mon, Apr 22, 2013 at 06:44:13PM +0200, Dennis Schridde wrote:
+> > For me it is fixed by applying the following patch, it should be in
+> > v3.10:
+> I am currently compiling the patched kernel. Will report back with the
+> results later.
+
+Thanks! The patch has the intended result on my Linux 3.8.8 kernel. All 4 CPU 
+cores are now being used and the cellminer hashrate went up from 42Mh/s to 
+62Mh/s (with 2 PPE and 16 SPE threads, just as before).
+
+Could it be backported, especially to 3.8?
+
+Again - thanks for your work and quick reply,
+Dennis
+--nextPart5674710.Q5Vd7XBReF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iEYEABECAAYFAlF2icoACgkQjqfyF1DtJW63NQCfQbkJU48se11phziFgdIY2MSU
+31sAoJbuVwgbLs3D7n2HfVpXTb212wCD
+=bXA5
+-----END PGP SIGNATURE-----
+
+--nextPart5674710.Q5Vd7XBReF--
