@@ -1,20 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 60F342C022C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 01:27:22 +1000 (EST)
-Message-ID: <1366730708.12131.7.camel@pasglop>
-Subject: Re: [PATCH 5/5] powerpc/powernv: TCE invalidation for PHB3
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gavin Shan <shangw@linux.vnet.ibm.com>
-Date: Wed, 24 Apr 2013 01:25:08 +1000
-In-Reply-To: <1366715034-24594-6-git-send-email-shangw@linux.vnet.ibm.com>
-References: <1366715034-24594-1-git-send-email-shangw@linux.vnet.ibm.com>
- <1366715034-24594-6-git-send-email-shangw@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <devurandom@gmx.net>
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+ by ozlabs.org (Postfix) with ESMTP id 2C5332C011E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 04:14:13 +1000 (EST)
+Received: from mailout-de.gmx.net ([10.1.76.20]) by mrigmx.server.lan
+ (mrigmx001) with ESMTP (Nemesis) id 0Lbx3C-1Uttau2IYm-00jK0r for
+ <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 20:14:08 +0200
+From: Dennis Schridde <devurandom@gmx.net>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: PROBLEM: Only 2 of 4 cores used on IBM Cell blades and no threads
+ shown in spufs
+Date: Tue, 23 Apr 2013 20:13:56 +0200
+Message-ID: <1639058.AHCK50TIEC@ernie>
+In-Reply-To: <20130423132436.GB1078@concordia>
+References: <1470334.YUWOQ37ijW@ernie> <20130423132436.GB1078@concordia>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2742288.kJe894M9m4";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Cc: cbe-oss-dev@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org, arnd@arndb.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,20 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-04-23 at 19:03 +0800, Gavin Shan wrote:
->          * of flags if that becomes the case
->          */
->         if (tbl->it_type & TCE_PCI_SWINV_CREATE)
-> -               pnv_tce_invalidate(tbl, tces, tcep - 1);
-> +               phb->dma_tce_invalidate(tbl, tces, tcep - 1);
->  
->         return 0;
->  }
 
-TCE invalidate is very performance sensitive, we might be better off
-doing the if (ioda_type == PNV_PHB_IODA1) ... else ... here (which
-the CPU can generally predict) rather than a function pointer call
-which can be more tricky.
+--nextPart2742288.kJe894M9m4
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Cheers,
-Ben.
+Am Dienstag, 23. April 2013, 23:24:36 schrieb Michael Ellerman:
+> On Mon, Apr 22, 2013 at 06:44:13PM +0200, Dennis Schridde wrote:
+> > [1.] One line summary of the problem:
+> > .. no threads shown in spufs
+> 
+> So I think I've got this one fixed, this works for me, can you test it
+> please?
+Patch works - spu-top outputs threads and there are directories in /spu now.
+
+Please also backport this to 3.8, just like the IRQ and NUMA patches. :)
+
+Thanks!
+--Dennis
+--nextPart2742288.kJe894M9m4
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iEYEABECAAYFAlF2z2gACgkQjqfyF1DtJW7BxACaAt6fVZEW7VOHqSUbtJDcjcVv
+nLMAn3Lo1FPcBNHZ5hoAxrPQlVdvP8W4
+=UJmq
+-----END PGP SIGNATURE-----
+
+--nextPart2742288.kJe894M9m4--
