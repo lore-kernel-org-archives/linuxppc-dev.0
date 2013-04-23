@@ -1,12 +1,32 @@
-Return-Path: <jk@ozlabs.org>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Subject: [RFC, PATCH] powerpc/prom: Scan reserved-ranges node for memory
- reservations
-Message-Id: <1366726749.579300.273078516407.1.gpush@pablo>
+Return-Path: <hegdevasant@linux.vnet.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp09.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C45042C017E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 00:21:14 +1000 (EST)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
+ Wed, 24 Apr 2013 00:11:58 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 0BAEE357804E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 00:21:10 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3NE7RUu9830724
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 00:07:27 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3NEL9wi012871
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 00:21:09 +1000
+Subject: [PATCH v2 1/2] powerpc/rtas_flash: Update return token comments
 To: linuxppc-dev@lists.ozlabs.org
-From: Jeremy Kerr <jk@ozlabs.org>
-Date: Tue, 23 Apr 2013 22:19:09 +0800
+From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+Date: Tue, 23 Apr 2013 19:50:48 +0530
+Message-ID: <20130423141958.25932.5791.stgit@hegdevasant>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,70 +36,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Based on benh's proposal at
-https://lists.ozlabs.org/pipermail/linuxppc-dev/2012-September/101237.html,
-this change provides support for reserving memory from the
-reserved-ranges node at the root of the device tree.
+Add proper comment to ibm,validate-flash-image RTAS call
+update result tokens.
 
-We just call memblock_reserve on these ranges for now.
+Note: Only comment section is modified, no code change.
 
-Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
-
+Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 ---
- arch/powerpc/kernel/prom.c |   36 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 36 insertions(+)
+ arch/powerpc/kernel/rtas_flash.c |   27 ++++++++++++++++++++-------
+ 1 file changed, 20 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 8b6f7a9..1208c8f 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -559,6 +559,34 @@ void __init early_init_dt_setup_initrd_arch(unsigned long start,
- }
- #endif
+diff --git a/arch/powerpc/kernel/rtas_flash.c b/arch/powerpc/kernel/rtas_flash.c
+index a7020d2..bc97a21 100644
+--- a/arch/powerpc/kernel/rtas_flash.c
++++ b/arch/powerpc/kernel/rtas_flash.c
+@@ -57,13 +57,26 @@
+ #define VALIDATE_READY	       -1001 /* Firmware image ready for validation */
+ #define VALIDATE_PARAM_ERR     -3    /* RTAS Parameter Error */
+ #define VALIDATE_HW_ERR        -1    /* RTAS Hardware Error */
+-#define VALIDATE_TMP_UPDATE    0     /* Validate Return Status */
+-#define VALIDATE_FLASH_AUTH    1     /* Validate Return Status */
+-#define VALIDATE_INVALID_IMG   2     /* Validate Return Status */
+-#define VALIDATE_CUR_UNKNOWN   3     /* Validate Return Status */
+-#define VALIDATE_TMP_COMMIT_DL 4     /* Validate Return Status */
+-#define VALIDATE_TMP_COMMIT    5     /* Validate Return Status */
+-#define VALIDATE_TMP_UPDATE_DL 6     /* Validate Return Status */
++
++/* ibm,validate-flash-image update result tokens */
++#define VALIDATE_TMP_UPDATE    0     /* T side will be updated */
++#define VALIDATE_FLASH_AUTH    1     /* Partition does not have authority */
++#define VALIDATE_INVALID_IMG   2     /* Candidate image is not valid */
++#define VALIDATE_CUR_UNKNOWN   3     /* Current fixpack level is unknown */
++/*
++ * Current T side will be committed to P side before being replace with new
++ * image, and the new image is downlevel from current image
++ */
++#define VALIDATE_TMP_COMMIT_DL 4
++/*
++ * Current T side will be committed to P side before being replaced with new
++ * image
++ */
++#define VALIDATE_TMP_COMMIT    5
++/*
++ * T side will be updated with a downlevel image
++ */
++#define VALIDATE_TMP_UPDATE_DL 6
  
-+static bool __init early_reserve_mem_dt(void)
-+{
-+	unsigned long i, len, dt_root;
-+	const __be32 *prop;
-+
-+	dt_root = ((unsigned long)initial_boot_params) +
-+		be32_to_cpu(initial_boot_params->off_dt_struct);
-+
-+	prop = of_get_flat_dt_prop(dt_root, "reserved-ranges", &len);
-+
-+	if (!prop)
-+		return false;
-+
-+	/* Each reserved range is an (address,size) pair, 2 cells each */
-+	for (i = 0; i < len / sizeof(*prop);
-+			i += dt_root_addr_cells + dt_root_size_cells) {
-+		u64 base, size;
-+
-+		base = of_read_number(prop + (i * 4), 2);
-+		size = of_read_number(prop + (i * 4) + 2, 2);
-+
-+		if (size)
-+			memblock_reserve(base, size);
-+	}
-+
-+	return true;
-+}
-+
- static void __init early_reserve_mem(void)
- {
- 	u64 base, size;
-@@ -574,6 +602,14 @@ static void __init early_reserve_mem(void)
- 	self_size = initial_boot_params->totalsize;
- 	memblock_reserve(self_base, self_size);
- 
-+	/*
-+	 * Try looking for reserved-regions property in the DT first; if
-+	 * it's present, it'll contain all of the necessary reservation
-+	 * info
-+	 */
-+	if (early_reserve_mem_dt())
-+		return;
-+
- #ifdef CONFIG_BLK_DEV_INITRD
- 	/* then reserve the initrd, if any */
- 	if (initrd_start && (initrd_end > initrd_start))
+ /* ibm,manage-flash-image operation tokens */
+ #define RTAS_REJECT_TMP_IMG   0
