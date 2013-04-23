@@ -1,16 +1,24 @@
-Return-Path: <michael@ellerman.id.au>
-Date: Tue, 23 Apr 2013 12:49:51 +1000
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH v3 12/12] Add /proc interface to control topology updates
-Message-ID: <20130423024951.GA20902@concordia>
-References: <51757951.2080007@linux.vnet.ibm.com>
- <517585DB.9040603@linux.vnet.ibm.com>
- <20130423120026.85860c95d1c82582fa9a6ef5@canb.auug.org.au>
+Return-Path: <gang.chen@asianux.com>
+Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id ACE482C014F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 13:13:45 +1000 (EST)
+Message-ID: <5175FC36.4060308@asianux.com>
+Date: Tue, 23 Apr 2013 11:12:54 +0800
+From: Chen Gang <gang.chen@asianux.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130423120026.85860c95d1c82582fa9a6ef5@canb.auug.org.au>
-Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] PowerPC: kernel: memory access violation when rtas_data_buf
+ contents are more than 1026
+References: <516F7A7D.60206@asianux.com> <1366677081.2886.7.camel@pasglop>
+ <5175E85F.1040509@asianux.com>
+In-Reply-To: <5175E85F.1040509@asianux.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "paulus@samba.org" <paulus@samba.org>, Al Viro <viro@zeniv.linux.org.uk>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,18 +28,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 23, 2013 at 12:00:26PM +1000, Stephen Rothwell wrote:
-> Hi Nathan,
-> 
-> On Mon, 22 Apr 2013 13:47:55 -0500 Nathan Fontenot <nfont@linux.vnet.ibm.com> wrote:
-> >
-> >  #if defined(CONFIG_NUMA) && defined(CONFIG_PPC_SPLPAR)
-> >  extern int start_topology_update(void);
-> >  extern int stop_topology_update(void);
-> > +extern inline int prrn_is_enabled(void);
-> 
-> You really can't do "extern inline" with no body ...
 
-No you can't, and at least with my compiler it causes a build error.
+need set '\0' for 'local_buffer'.
 
-cheers
+SPLPAR_MAXLENGTH is 1026, RTAS_DATA_BUF_SIZE is 4096. so the contents of
+rtas_data_buf may truncated in memcpy.
+
+if contents are really truncated.
+  the splpar_strlen is more than 1026. the next while loop checking will
+  not find the end of buffer. that will cause memory access violation.
+
+
+Signed-off-by: Chen Gang <gang.chen@asianux.com>
+---
+ arch/powerpc/kernel/lparcfg.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/kernel/lparcfg.c b/arch/powerpc/kernel/lparcfg.c
+index 801a757..d92f387 100644
+--- a/arch/powerpc/kernel/lparcfg.c
++++ b/arch/powerpc/kernel/lparcfg.c
+@@ -299,6 +299,7 @@ static void parse_system_parameter_string(struct seq_file *m)
+ 				__pa(rtas_data_buf),
+ 				RTAS_DATA_BUF_SIZE);
+ 	memcpy(local_buffer, rtas_data_buf, SPLPAR_MAXLENGTH);
++	local_buffer[SPLPAR_MAXLENGTH - 1] = '\0';
+ 	spin_unlock(&rtas_data_buf_lock);
+ 
+ 	if (call_status != 0) {
+-- 
+1.7.7.6
