@@ -2,19 +2,23 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3B7D12C015F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 10:40:25 +1000 (EST)
-Message-ID: <1366677610.2886.8.camel@pasglop>
-Subject: Re: [PATCH] powerpc/rtas_flash: New return code to indicate FW
- entitlement expiry
+ by ozlabs.org (Postfix) with ESMTPS id 8CAEC2C0157
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 10:42:17 +1000 (EST)
+Message-ID: <1366677702.2886.9.camel@pasglop>
+Subject: Re: [PATCH] powerpc: Add HWCAP2 aux entry
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Date: Tue, 23 Apr 2013 10:40:10 +1000
-In-Reply-To: <20130419114410.19115.35846.stgit@hegdevasant>
-References: <20130419114410.19115.35846.stgit@hegdevasant>
+To: Michael Neuling <mikey@neuling.org>
+Date: Tue, 23 Apr 2013 10:41:42 +1000
+In-Reply-To: <32253.1366256478@ale.ozlabs.ibm.com>
+References: <20130402212204.GA30438@linux.vnet.ibm.com>
+ <20130405070559.GE5082@concordia> <27144.1366001074@ale.ozlabs.ibm.com>
+ <31546.1366255991@ale.ozlabs.ibm.com> <32253.1366256478@ale.ozlabs.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Cc: vda.linux@googlemail.com, Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, Steve Munroe <sjmunroe@us.ibm.com>,
+ paulus@samba.org, viro@zeniv.linux.org.uk, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, Ryan Arnold <ryanarn@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,31 +28,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-04-19 at 17:14 +0530, Vasant Hegde wrote:
-> Add new return code to rtas_flash to indicate firmware entitlement
-> expiry. This will be used by the update_flash script to return
-> appropriate message to the user.
+On Thu, 2013-04-18 at 13:41 +1000, Michael Neuling wrote:
+> akpm,
+> 
+> If you're happy with this, is it something you can take in your tree?
 
-What's the point of that patch ? It adds a definition to a private .c
-file not exposed to user space and doesn't do anything with it ...
+Andrew ? Or give me an ack ? :-) I'm happy to carry this, we need that
+rather urgently and we have the glibc folks on board.
 
+Cheers,
 Ben.
 
-> Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/kernel/rtas_flash.c |    1 +
->  1 file changed, 1 insertion(+)
+> Mikey
 > 
-> diff --git a/arch/powerpc/kernel/rtas_flash.c b/arch/powerpc/kernel/rtas_flash.c
-> index a7020d2..0a12c16 100644
-> --- a/arch/powerpc/kernel/rtas_flash.c
-> +++ b/arch/powerpc/kernel/rtas_flash.c
-> @@ -64,6 +64,7 @@
->  #define VALIDATE_TMP_COMMIT_DL 4     /* Validate Return Status */
->  #define VALIDATE_TMP_COMMIT    5     /* Validate Return Status */
->  #define VALIDATE_TMP_UPDATE_DL 6     /* Validate Return Status */
-> +#define VALIDATE_OUT_OF_WRNTY  7     /* Validate Return Status */
->  
->  /* ibm,manage-flash-image operation tokens */
->  #define RTAS_REJECT_TMP_IMG   0
+> Michael Neuling <mikey@neuling.org> wrote:
+> > We are currently out of free bits in AT_HWCAP. With POWER8, we have
+> > several hardware features that we need to advertise. 
+> > 
+> > Tested on POWER and x86.
+> > 
+> > Signed-off-by: Michael Neuling <michael@neuling.org>
+> > Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+> > ---
+> > 
+> > > Wouldn't it be safer to not emit AT_HWCAP2 unless it is defined by the arch?
+> > > 
+> > > That way the change would only impact powerpc.
+> > 
+> > Should be addressed with this version.
+> > 
+> > Mikey
+> > 
+> > diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+> > index fb3245e..ccadad6 100644
+> > --- a/arch/powerpc/include/asm/cputable.h
+> > +++ b/arch/powerpc/include/asm/cputable.h
+> > @@ -52,6 +52,7 @@ struct cpu_spec {
+> >  	char		*cpu_name;
+> >  	unsigned long	cpu_features;		/* Kernel features */
+> >  	unsigned int	cpu_user_features;	/* Userland features */
+> > +	unsigned int	cpu_user_features2;	/* Userland features v2 */
+> >  	unsigned int	mmu_features;		/* MMU features */
+> >  
+> >  	/* cache line sizes */
+> > diff --git a/arch/powerpc/include/asm/elf.h b/arch/powerpc/include/asm/elf.h
+> > index ac9790f..cc0655a 100644
+> > --- a/arch/powerpc/include/asm/elf.h
+> > +++ b/arch/powerpc/include/asm/elf.h
+> > @@ -61,6 +61,7 @@ typedef elf_vrregset_t elf_fpxregset_t;
+> >     instruction set this cpu supports.  This could be done in userspace,
+> >     but it's not easy, and we've already done it here.  */
+> >  # define ELF_HWCAP	(cur_cpu_spec->cpu_user_features)
+> > +# define ELF_HWCAP2	(cur_cpu_spec->cpu_user_features2)
+> >  
+> >  /* This yields a string that ld.so will use to load implementation
+> >     specific libraries for optimization.  This is more specific in
+> > diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+> > index 3939829..1f8b5d5 100644
+> > --- a/fs/binfmt_elf.c
+> > +++ b/fs/binfmt_elf.c
+> > @@ -240,6 +240,9 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
+> >  	NEW_AUX_ENT(AT_EGID, from_kgid_munged(cred->user_ns, cred->egid));
+> >   	NEW_AUX_ENT(AT_SECURE, security_bprm_secureexec(bprm));
+> >  	NEW_AUX_ENT(AT_RANDOM, (elf_addr_t)(unsigned long)u_rand_bytes);
+> > +#ifdef ELF_HWCAP2
+> > +	NEW_AUX_ENT(AT_HWCAP2, ELF_HWCAP2);
+> > +#endif
+> >  	NEW_AUX_ENT(AT_EXECFN, bprm->exec);
+> >  	if (k_platform) {
+> >  		NEW_AUX_ENT(AT_PLATFORM,
+> > diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
+> > index 9c13e02..bf2381d 100644
+> > --- a/fs/binfmt_elf_fdpic.c
+> > +++ b/fs/binfmt_elf_fdpic.c
+> > @@ -483,7 +483,6 @@ static int create_elf_fdpic_tables(struct linux_binprm *bprm,
+> >  	size_t platform_len = 0, len;
+> >  	char *k_platform, *k_base_platform;
+> >  	char __user *u_platform, *u_base_platform, *p;
+> > -	long hwcap;
+> >  	int loop;
+> >  	int nr;	/* reset for each csp adjustment */
+> >  
+> > @@ -502,8 +501,6 @@ static int create_elf_fdpic_tables(struct linux_binprm *bprm,
+> >  		return -EFAULT;
+> >  #endif
+> >  
+> > -	hwcap = ELF_HWCAP;
+> > -
+> >  	/*
+> >  	 * If this architecture has a platform capability string, copy it
+> >  	 * to userspace.  In some cases (Sparc), this info is impossible
+> > @@ -617,7 +614,10 @@ static int create_elf_fdpic_tables(struct linux_binprm *bprm,
+> >  
+> >  	nr = 0;
+> >  	csp -= DLINFO_ITEMS * 2 * sizeof(unsigned long);
+> > -	NEW_AUX_ENT(AT_HWCAP,	hwcap);
+> > +	NEW_AUX_ENT(AT_HWCAP,	ELF_HWCAP);
+> > +#ifdef ELF_HWCAP2
+> > +	NEW_AUX_ENT(AT_HWCAP2,	ELF_HWCAP2);
+> > +#endif
+> >  	NEW_AUX_ENT(AT_PAGESZ,	PAGE_SIZE);
+> >  	NEW_AUX_ENT(AT_CLKTCK,	CLOCKS_PER_SEC);
+> >  	NEW_AUX_ENT(AT_PHDR,	exec_params->ph_addr);
+> > diff --git a/include/uapi/linux/auxvec.h b/include/uapi/linux/auxvec.h
+> > index 61594d5..835c065 100644
+> > --- a/include/uapi/linux/auxvec.h
+> > +++ b/include/uapi/linux/auxvec.h
+> > @@ -28,6 +28,7 @@
+> >  #define AT_BASE_PLATFORM 24	/* string identifying real platform, may
+> >  				 * differ from AT_PLATFORM. */
+> >  #define AT_RANDOM 25	/* address of 16 random bytes */
+> > +#define AT_HWCAP2 26	/* extension of AT_HWCAP */
+> >  
+> >  #define AT_EXECFN  31	/* filename of program */
+> >  
+> > _______________________________________________
+> > Linuxppc-dev mailing list
+> > Linuxppc-dev@lists.ozlabs.org
+> > https://lists.ozlabs.org/listinfo/linuxppc-dev
+> > 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
