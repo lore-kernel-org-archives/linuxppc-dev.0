@@ -1,22 +1,34 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 0B3462C0169
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 15:32:45 +1000 (EST)
-Message-ID: <1366695150.2886.14.camel@pasglop>
-Subject: Re: [PATCH] powerpc/rtas_flash: New return code to indicate FW
- entitlement expiry
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: ananth@in.ibm.com
-Date: Tue, 23 Apr 2013 15:32:30 +1000
-In-Reply-To: <20130423050540.GA30690@in.ibm.com>
-References: <20130419114410.19115.35846.stgit@hegdevasant>
- <1366677610.2886.8.camel@pasglop> <20130423050540.GA30690@in.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org
+ (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3A3192C00B4
+ for <linuxppc-dev@ozlabs.org>; Tue, 23 Apr 2013 15:43:09 +1000 (EST)
+Received: from /spool/local
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Tue, 23 Apr 2013 11:09:50 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 53431394005B
+ for <linuxppc-dev@ozlabs.org>; Tue, 23 Apr 2013 11:13:03 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3N5gulg6947150
+ for <linuxppc-dev@ozlabs.org>; Tue, 23 Apr 2013 11:12:56 +0530
+Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3N5h1ev014821
+ for <linuxppc-dev@ozlabs.org>; Tue, 23 Apr 2013 15:43:02 +1000
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH V4 4/5] powerpc, perf: Define BHRB generic functions,
+ data and flags for POWER8
+Date: Tue, 23 Apr 2013 11:12:43 +0530
+Message-Id: <1366695764-3073-5-git-send-email-khandual@linux.vnet.ibm.com>
+In-Reply-To: <1366695764-3073-1-git-send-email-khandual@linux.vnet.ibm.com>
+References: <1366695764-3073-1-git-send-email-khandual@linux.vnet.ibm.com>
+Cc: mikey@neuling.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,30 +38,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-04-23 at 10:35 +0530, Ananth N Mavinakayanahalli wrote:
-> On Tue, Apr 23, 2013 at 10:40:10AM +1000, Benjamin Herrenschmidt wrote:
-> > On Fri, 2013-04-19 at 17:14 +0530, Vasant Hegde wrote:
-> > > Add new return code to rtas_flash to indicate firmware entitlement
-> > > expiry. This will be used by the update_flash script to return
-> > > appropriate message to the user.
-> > 
-> > What's the point of that patch ? It adds a definition to a private .c
-> > file not exposed to user space and doesn't do anything with it ...
-> 
-> Ben,
-> 
-> The userspace update_flash script invokes the rtas_flash module. With
-> upcoming System p servers, the firmware will have the entitlement dates
-> encoded in it and RTAS will return an error if the entitlement has
-> expired. All we need from this module is for it to return that new error
-> which will then be communicated to the user by the update_flash.
+This patch populates BHRB specific data for power_pmu structure. It
+also implements POWER8 specific BHRB filter and configuration functions.
 
-That doesn't answer my question :-)
+Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+---
+ arch/powerpc/perf/power8-pmu.c | 57 +++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 56 insertions(+), 1 deletion(-)
 
-What is the point of adding a #define to a piece of code without any user
-of that definition and in a file that isn't exposed to user space ?
-
-IE. What is the point of the patch ?
-
-Cheers,
-Ben.
+diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
+index 106ae0b..153408c 100644
+--- a/arch/powerpc/perf/power8-pmu.c
++++ b/arch/powerpc/perf/power8-pmu.c
+@@ -109,6 +109,16 @@
+ #define EVENT_IS_MARKED		(EVENT_MARKED_MASK << EVENT_MARKED_SHIFT)
+ #define EVENT_PSEL_MASK		0xff	/* PMCxSEL value */
+ 
++/* MMCRA IFM bits - POWER8 */
++#define	POWER8_MMCRA_IFM1		0x0000000040000000UL
++#define	POWER8_MMCRA_IFM2		0x0000000080000000UL
++#define	POWER8_MMCRA_IFM3		0x00000000C0000000UL
++
++#define ONLY_PLM \
++	(PERF_SAMPLE_BRANCH_USER        |\
++	 PERF_SAMPLE_BRANCH_KERNEL      |\
++	 PERF_SAMPLE_BRANCH_HV)
++
+ /*
+  * Layout of constraint bits:
+  *
+@@ -428,6 +438,48 @@ static int power8_generic_events[] = {
+ 	[PERF_COUNT_HW_BRANCH_MISSES] =			PM_BR_MPRED_CMPL,
+ };
+ 
++static u64 power8_bhrb_filter_map(u64 branch_sample_type)
++{
++	u64 pmu_bhrb_filter = 0;
++	u64 br_privilege = branch_sample_type & ONLY_PLM;
++
++	/* BHRB and regular PMU events share the same prvillege state
++	 * filter configuration. BHRB is always recorded along with a
++	 * regular PMU event. So privilege state filter criteria for BHRB
++	 * and the companion PMU events has to be the same. As a default
++	 * "perf record" tool sets all privillege bits ON when no filter
++	 * criteria is provided in the command line. So as along as all
++	 * privillege bits are ON or they are OFF, we are good to go.
++	 */
++	if ((br_privilege != 7) && (br_privilege != 0))
++		return -1;
++
++	/* No branch filter requested */
++	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY)
++		return pmu_bhrb_filter;
++
++	/* Invalid branch filter options - HW does not support */
++	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY_RETURN)
++		return -1;
++
++	if (branch_sample_type & PERF_SAMPLE_BRANCH_IND_CALL)
++		return -1;
++
++	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY_CALL) {
++		pmu_bhrb_filter |= POWER8_MMCRA_IFM1;
++		return pmu_bhrb_filter;
++	}
++
++	/* Every thing else is unsupported */
++	return -1;
++}
++
++static void power8_config_bhrb(u64 pmu_bhrb_filter)
++{
++	/* Enable BHRB filter in PMU */
++	mtspr(SPRN_MMCRA, (mfspr(SPRN_MMCRA) | pmu_bhrb_filter));
++}
++
+ static struct power_pmu power8_pmu = {
+ 	.name			= "POWER8",
+ 	.n_counter		= 6,
+@@ -435,12 +487,15 @@ static struct power_pmu power8_pmu = {
+ 	.add_fields		= POWER8_ADD_FIELDS,
+ 	.test_adder		= POWER8_TEST_ADDER,
+ 	.compute_mmcr		= power8_compute_mmcr,
++	.config_bhrb		= power8_config_bhrb,
++	.bhrb_filter_map	= power8_bhrb_filter_map,
+ 	.get_constraint		= power8_get_constraint,
+ 	.disable_pmc		= power8_disable_pmc,
+-	.flags			= PPMU_HAS_SSLOT | PPMU_HAS_SIER,
++	.flags			= PPMU_HAS_SSLOT | PPMU_HAS_SIER | PPMU_BHRB,
+ 	.n_generic		= ARRAY_SIZE(power8_generic_events),
+ 	.generic_events		= power8_generic_events,
+ 	.attr_groups		= power8_pmu_attr_groups,
++	.bhrb_nr		= 32,
+ };
+ 
+ static int __init init_power8_pmu(void)
+-- 
+1.7.11.7
