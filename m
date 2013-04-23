@@ -1,32 +1,23 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AF9BC2C0273
- for <linuxppc-dev@ozlabs.org>; Tue, 23 Apr 2013 15:43:24 +1000 (EST)
-Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 23 Apr 2013 11:07:48 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 4E1423940058
- for <linuxppc-dev@ozlabs.org>; Tue, 23 Apr 2013 11:13:02 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3N5gtqd8061282
- for <linuxppc-dev@ozlabs.org>; Tue, 23 Apr 2013 11:12:55 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3N5h0Ke014700
- for <linuxppc-dev@ozlabs.org>; Tue, 23 Apr 2013 15:43:01 +1000
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH V4 0/5] powerpc,
- perf: BHRB based branch stack enablement on POWER8
-Date: Tue, 23 Apr 2013 11:12:39 +0530
-Message-Id: <1366695764-3073-1-git-send-email-khandual@linux.vnet.ibm.com>
-Cc: mikey@neuling.org
+Return-Path: <r61911@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id AC77A2C05B3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 15:44:51 +1000 (EST)
+From: Zang Roy-R61911 <r61911@freescale.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH] powerpc/fsl-pci:fix incorrect iounmap pci
+ hose->private_data
+Date: Tue, 23 Apr 2013 05:44:42 +0000
+Message-ID: <3E027F8168735B46AC006B1D0C7BB0020B1B3930@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1366655754-19400-1-git-send-email-tie-fei.zang@freescale.com>
+In-Reply-To: <1366655754-19400-1-git-send-email-tie-fei.zang@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: Zang Roy-R61911 <r61911@freescale.com>,
+ Chen Yuanquan-B41889 <B41889@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,66 +27,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-                Branch History Rolling Buffer (BHRB) is a new PMU feaure in IBM
-POWER8 processor which records the branch instructions inside the execution
-pipeline. This patchset enables the basic functionality of the feature through
-generic perf branch stack sampling framework.
 
-Sample output
--------------
-$./perf record -b top
-$./perf report
 
-Overhead  Command  Source Shared Object                           Source Symbol  Target Shared Object                        Target Symbol
-# ........  .......  ....................  ......................................  ....................  ...................................
-#
-
-     7.82%      top  libc-2.11.2.so        [k] _IO_vfscanf                         libc-2.11.2.so        [k] _IO_vfscanf
-     6.17%      top  libc-2.11.2.so        [k] _IO_vfscanf                         [unknown]             [k] 00000000
-     2.37%      top  [unknown]             [k] 0xf7aafb30                          [unknown]             [k] 00000000
-     1.80%      top  [unknown]             [k] 0x0fe07978                          libc-2.11.2.so        [k] _IO_vfscanf
-     1.60%      top  libc-2.11.2.so        [k] _IO_vfscanf                         [kernel.kallsyms]     [k] .do_task_stat
-     1.20%      top  [kernel.kallsyms]     [k] .do_task_stat                       [kernel.kallsyms]     [k] .do_task_stat
-     1.02%      top  libc-2.11.2.so        [k] vfprintf                            libc-2.11.2.so        [k] vfprintf
-     0.92%      top  top                   [k] _init                               [unknown]             [k] 0x0fe037f4
-
-Changes in V2
---------------
-- Added copyright messages to the newly created files
-- Modified couple of commit messages
-
-Changes in V3
--------------
-- Incorporated review comments from Segher https://lkml.org/lkml/2013/4/16/350
-- Worked on a solution for review comment from Michael Ellerman https://lkml.org/lkml/2013/4/17/548
-	- Could not move updated cpu_hw_events structure from core-book3s.c file into perf_event_server.h
-          Because perf_event_server.h is pulled in first inside linux/perf_event.h before the definition of
-          perf_branch_entry structure. Thats the reason why perf_branch_entry definition is not available
-          inside perf_event_server.h where we define the array inside cpu_hw_events structure.
-
-	- Finally have pulled in the code from perf_event_bhrb.c into core-book3s.c
-
-- Improved documentation for the patchset
-
-Changes in V4
--------------
-- Incorporated review comments on V3 regarding new instruction encoding
-
-Anshuman Khandual (5):
-  powerpc, perf: Add new BHRB related instructions for POWER8
-  powerpc, perf: Add basic assembly code to read BHRB entries on POWER8
-  powerpc, perf: Add new BHRB related generic functions, data and flags
-  powerpc, perf: Define BHRB generic functions, data and flags for POWER8
-  powerpc, perf: Enable branch stack sampling framework
-
- arch/powerpc/include/asm/perf_event_server.h |   7 ++
- arch/powerpc/include/asm/ppc-opcode.h        |   8 ++
- arch/powerpc/perf/Makefile                   |   2 +-
- arch/powerpc/perf/bhrb.S                     |  44 +++++++
- arch/powerpc/perf/core-book3s.c              | 167 ++++++++++++++++++++++++++-
- arch/powerpc/perf/power8-pmu.c               |  57 ++++++++-
- 6 files changed, 280 insertions(+), 5 deletions(-)
- create mode 100644 arch/powerpc/perf/bhrb.S
-
--- 
-1.7.11.7
+> -----Original Message-----
+> From: Zang Roy-R61911
+> Sent: Tuesday, April 23, 2013 2:36 AM
+> To: linuxppc-dev@lists.ozlabs.org
+> Cc: galak@kernel.crashing.org; Zang Roy-R61911; Chen Yuanquan-B41889
+> Subject: [PATCH] powerpc/fsl-pci:fix incorrect iounmap pci hose-
+> >private_data
+>=20
+> pci hose->private_data will be used by other function, for example,
+> fsl_pcie_check_link(), so do not iounmap it.
+>=20
+> fix the kerenl crash on T4240:
+>=20
+> Unable to handle kernel paging request for data at address
+> 0x8000080080060f14
+> Faulting instruction address: 0xc000000000032554
+> Oops: Kernel access of bad area, sig: 11 [#1] SMP NR_CPUS=3D24 T4240 QDS
+> Modules linked in:
+> NIP: c000000000032554 LR: c00000000003254c CTR: c00000000001e5c0
+> REGS: c000000179143440 TRAP: 0300   Not tainted
+> (3.8.8-rt2-00754-g951f064-dirt)
+> MSR: 0000000080029000 <CE,EE,ME>  CR: 24adbe22  XER: 00000000
+> SOFTE: 0
+> DEAR: 8000080080060f14, ESR: 0000000000000000 TASK =3D c00000017913d2c0[1=
+]
+> 'swapper/0' THREAD: c000000179140000 CPU: 2
+> GPR00: c00000000003254c c0000001791436c0 c000000000ae2998
+> 0000000000000027
+> GPR04: 0000000000000000 00000000000005a5 0000000000000000
+> 0000000000000002
+> GPR08: 3030303038303038 c000000000a2d4d0 c000000000aebeb8
+> c000000000af2998
+> GPR12: 0000000024adbe22 c00000000fffa800 c000000000001be0
+> 0000000000000000
+> GPR16: 0000000000000000 0000000000000000 0000000000000000
+> 0000000000000000
+> GPR20: 0000000000000000 0000000000000000 0000000000000000
+> c0000000009ddf70
+> GPR24: c0000000009e8d40 c000000000af2998 c000000000b1529c
+> c000000179143b40
+> GPR28: c0000001799b4000 c000000179143c00 8000080080060000
+> c000000000727ec8
+> NIP [c000000000032554] .fsl_pcie_check_link+0x104/0x150 LR
+> [c00000000003254c] .fsl_pcie_check_link+0xfc/0x150 Call Trace:
+> [c0000001791436c0] [c00000000003254c] .fsl_pcie_check_link+0xfc/0x150
+> (unreliab)
+> [c000000179143a30] [c0000000000325d4]
+> .fsl_indirect_read_config+0x34/0xb0
+> [c000000179143ad0] [c0000000002c7ee8]
+> .pci_bus_read_config_byte+0x88/0xd0
+> [c000000179143b90] [c0000000009c0528] .pci_apply_final_quirks+0x9c/0x18c
+> [c000000179143c40] [c00000000000142c] .do_one_initcall+0x5c/0x1f0
+> [c000000179143cf0] [c0000000009a0bb4] .kernel_init_freeable+0x180/0x264
+> [c000000179143db0] [c000000000001bfc] .kernel_init+0x1c/0x420
+> [c000000179143e30] [c0000000000008b4] .ret_from_kernel_thread+0x64/0xb0
+> Instruction dump:
+> 60000000 4bffffa0 ebc301d0 3fe2ffc4 3c62ffe0 3bff5530 38638a78 7fe4fb78
+> 7fc5f378 486ea77d 60000000 7c0004ac <801e0f14> 0c000000 4c00012c 3c62ffe0
+> ---[ end trace f841fbc03c9d2e1b ]---
+>=20
+> Kernel panic - not syncing: Attempted to kill init! exitcode=3D0x0000000b
+>=20
+> Rebooting in 180 seconds..
+>=20
+> Signed-off-by: Yuanquan Chen <Yuanquan.Chen@freescale.com>
+> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+> ---
+> based on Kumar's next branch.
+> tested on P3041 and T4240.
+Please ignore this patch, I will send a v2 version.
+Thanks.
+Roy
