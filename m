@@ -1,11 +1,16 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <michael@ellerman.id.au>
+Date: Tue, 23 Apr 2013 22:16:21 +1000
 From: Michael Ellerman <michael@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc/cell: Only iterate over online nodes in
- cbe_init_pm_irq()
-Date: Tue, 23 Apr 2013 22:14:51 +1000
-Message-Id: <1366719291-29414-1-git-send-email-michael@ellerman.id.au>
-Cc: devurandom@gmx.net
+To: Dennis Schridde <devurandom@gmx.net>
+Subject: Re: PROBLEM: Only 2 of 4 cores used on IBM Cell blades and no
+ threads shown in spufs
+Message-ID: <20130423121620.GB27200@concordia>
+References: <1470334.YUWOQ37ijW@ernie>
+ <20130423140116.0a40c2c6@samson>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130423140116.0a40c2c6@samson>
+Cc: cbe-oss-dev@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org, arnd@arndb.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -15,44 +20,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-None of the cell platforms support CPU hotplug, so we should iterate
-only over online nodes when setting PMU interrupts.
+On Tue, Apr 23, 2013 at 02:01:16PM +0200, Dennis Schridde wrote:
+> Am Mon, 22 Apr 2013 18:44:13 +0200
+> schrieb Dennis Schridde <devurandom@gmx.net>:
+> > [4.] Kernel information
+> > 
+> > [4.1.] Kernel version (from /proc/version):
+> > I am using the Linux 3.8.8 kernel (vanilla-sources-3.8.8 on
+> > Gentoo/Linux): # cat /proc/version 
+> > Linux version 3.8.8 (root@blade00) (gcc version 4.7.2 (Gentoo
+> > 4.7.2-r1 p1.5, pie-0.5.5) ) #2 SMP Mon Apr 22 18:21:20 CEST 2013
+> 
+> Actually this is only partially correct.
+> 
+> I applied following patch by Grant Likely
+> <grant.likely@secretlab.ca> to fix some IRQ mapping problems:
 
-This also fixes a warning during boot when NODES_SHIFT is large enough:
+Ah yes, I forgot I also have basically the same patch. I've just sent it
+to the list.
 
-WARNING: at /scratch/michael/src/kmk/linus/kernel/irq/irqdomain.c:766
-...
-NIP [c0000000000db278] .irq_linear_revmap+0x30/0x58
-LR [c0000000000dc2a0] .irq_create_mapping+0x38/0x1a8
-Call Trace:
-[c0000003fc9c3af0] [c0000000000dc2a0] .irq_create_mapping+0x38/0x1a8 (unreliable)
-[c0000003fc9c3b80] [c000000000655c1c] .__machine_initcall_cell_cbe_init_pm_irq+0x84/0x158
-[c0000003fc9c3c20] [c00000000000afb4] .do_one_initcall+0x5c/0x1e0
-[c0000003fc9c3cd0] [c000000000644580] .kernel_init_freeable+0x238/0x328
-[c0000003fc9c3db0] [c00000000000b784] .kernel_init+0x1c/0x120
-[c0000003fc9c3e30] [c000000000009fb8] .ret_from_kernel_thread+0x64/0xac
+We appear to have a number of problems with the irq mapping on cell,
+that patch fixes the worst of them but there are more.
 
-This is caused by us overflowing our linear revmap because we're
-requesting too many interrupts.
-
-Reported-by: Dennis Schridde <devurandom@gmx.net>
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/platforms/cell/pmu.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/platforms/cell/pmu.c b/arch/powerpc/platforms/cell/pmu.c
-index 59c1a16..348a27b 100644
---- a/arch/powerpc/platforms/cell/pmu.c
-+++ b/arch/powerpc/platforms/cell/pmu.c
-@@ -382,7 +382,7 @@ static int __init cbe_init_pm_irq(void)
- 	unsigned int irq;
- 	int rc, node;
- 
--	for_each_node(node) {
-+	for_each_online_node(node) {
- 		irq = irq_create_mapping(NULL, IIC_IRQ_IOEX_PMI |
- 					       (node << IIC_IRQ_NODE_SHIFT));
- 		if (irq == NO_IRQ) {
--- 
-1.7.10.4
+cheers
