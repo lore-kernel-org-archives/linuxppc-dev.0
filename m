@@ -1,24 +1,20 @@
-Return-Path: <B07421@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 286762C0120
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 09:50:24 +1000 (EST)
-Date: Mon, 22 Apr 2013 18:50:09 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 2/3 v13] iommu/fsl: Add additional iommu attributes
- required by the PAMU driver.
-To: Varun Sethi <Varun.Sethi@freescale.com>
-In-Reply-To: <1366608716-1704-2-git-send-email-Varun.Sethi@freescale.com>
- (from Varun.Sethi@freescale.com on Mon Apr 22 00:31:55 2013)
-Message-ID: <1366674609.10399.12@snotra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: stuart.yoder@freescale.com, joro@8bytes.org, linux-kernel@vger.kernel.org,
- iommu@lists.linux-foundation.org, Varun Sethi <Varun.Sethi@freescale.com>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 3C0152C0149
+ for <linuxppc-dev@ozlabs.org>; Tue, 23 Apr 2013 10:16:40 +1000 (EST)
+Message-ID: <1366676147.2886.2.camel@pasglop>
+Subject: Re: [PATCH v3 1/12] Create a powerpc update_devicetree interface
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Tue, 23 Apr 2013 10:15:47 +1000
+In-Reply-To: <517581D4.7020104@linux.vnet.ibm.com>
+References: <51757951.2080007@linux.vnet.ibm.com>
+ <517581D4.7020104@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,115 +24,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/22/2013 12:31:55 AM, Varun Sethi wrote:
-> Added the following domain attributes for the FSL PAMU driver:
-> 1. Added new iommu stash attribute, which allows setting of the
->    LIODN specific stash id parameter through IOMMU API.
-> 2. Added an attribute for enabling/disabling DMA to a particular
->    memory window.
-> 3. Added domain attribute to check for PAMUV1 specific constraints.
->=20
-> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
-> ---
-> v13 changes:
-> - created a new file include/linux/fsl_pamu_stash.h for stash
-> attributes.
-> v12 changes:
-> - Moved PAMU specifc stash ids and structures to PAMU header file.
-> - no change in v11.
-> - no change in v10.
->  include/linux/fsl_pamu_stash.h |   39 =20
-> +++++++++++++++++++++++++++++++++++++++
->  include/linux/iommu.h          |   16 ++++++++++++++++
->  2 files changed, 55 insertions(+), 0 deletions(-)
->  create mode 100644 include/linux/fsl_pamu_stash.h
->=20
-> diff --git a/include/linux/fsl_pamu_stash.h =20
-> b/include/linux/fsl_pamu_stash.h
-> new file mode 100644
-> index 0000000..caa1b21
-> --- /dev/null
-> +++ b/include/linux/fsl_pamu_stash.h
-> @@ -0,0 +1,39 @@
-> +/*
-> + * This program is free software; you can redistribute it and/or =20
-> modify
-> + * it under the terms of the GNU General Public License, version 2, =20
-> as
-> + * published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program; if not, write to the Free Software
-> + * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  =20
-> 02110-1301, USA.
-> + *
-> + * Copyright (C) 2013 Freescale Semiconductor, Inc.
-> + *
-> + */
-> +
-> +#ifndef __FSL_PAMU_STASH_H
-> +#define __FSL_PAMU_STASH_H
-> +
-> +/* cache stash targets */
-> +enum pamu_stash_target {
-> +	PAMU_ATTR_CACHE_L1 =3D 1,
-> +	PAMU_ATTR_CACHE_L2,
-> +	PAMU_ATTR_CACHE_L3,
-> +};
-> +
-> +/*
-> + * This attribute allows configuring stashig specific parameters
-> + * in the PAMU hardware.
-> + */
-> +
-> +struct pamu_stash_attribute {
-> +	u32 	cpu;	/* cpu number */
-> +	u32 	cache;	/* cache to stash to: L1,L2,L3 */
-> +};
-> +
-> +#endif  /* __FSL_PAMU_STASH_H */
-> diff --git a/include/linux/iommu.h b/include/linux/iommu.h
-> index 2727810..c5dc2b9 100644
-> --- a/include/linux/iommu.h
-> +++ b/include/linux/iommu.h
-> @@ -57,10 +57,26 @@ struct iommu_domain {
->  #define IOMMU_CAP_CACHE_COHERENCY	0x1
->  #define IOMMU_CAP_INTR_REMAP		0x2	/* isolates device =20
-> intrs */
->=20
-> +/*
-> + * Following constraints are specifc to PAMUV1:
+On Mon, 2013-04-22 at 13:30 -0500, Nathan Fontenot wrote:
 
-FSL_PAMUV1
+> This patch exposes a method for updating the device tree via
+> ppc_md.update_devicetree that takes a single 32-bit value as a parameter.
+> For pseries platforms this is the existing pseries_devicetree_update routine
+> which is updated to take the new parameter which is a scope value
+> to indicate the the reason for making the rtas calls. This parameter is
+> required by the ibm,update-nodes/ibm,update-properties RTAS calls, and
+> the appropriate value is contained within the RTAS event for PRRN
+> notifications. In pseries_devicetree_update() it was previously
+> hard-coded to 1, the scope value for partition migration.
 
-> + *  -aperture must be power of 2, and naturally aligned
-> + *  -number of windows must be power of 2, and address space size
-> + *   of each window is determined by aperture size / # of windows
-> + *  -the actual size of the mapped region of a window must be power
-> + *   of 2 starting with 4KB and physical address must be naturally
-> + *   aligned.
-> + * DOMAIN_ATTR_FSL_PAMUV1 corresponds to the above mentioned =20
-> contraints.
-> + * The caller can invoke iommu_domain_get_attr to check if the =20
-> underlying
-> + * iommu implementation supports these constraints.
-> + */
+I think that's too much abstraction.... (see below)
+
+Also you add this helper:
+
+> Index: powerpc/arch/powerpc/kernel/rtas.c
+> ===================================================================
+> --- powerpc.orig/arch/powerpc/kernel/rtas.c	2013-03-08 19:23:06.000000000 -0600
+> +++ powerpc/arch/powerpc/kernel/rtas.c	2013-04-17 13:02:29.000000000 -0500
+> @@ -1085,3 +1085,13 @@
+>  	timebase = 0;
+>  	arch_spin_unlock(&timebase_lock);
+>  }
 > +
->  enum iommu_attr {
->  	DOMAIN_ATTR_GEOMETRY,
->  	DOMAIN_ATTR_PAGING,
->  	DOMAIN_ATTR_WINDOWS,
-> +	DOMAIN_ATTR_PAMU_STASH,
-> +	DOMAIN_ATTR_PAMU_ENABLE,
-> +	DOMAIN_ATTR_FSL_PAMUV1,
->  	DOMAIN_ATTR_MAX,
+> +int update_devicetree(s32 scope)
+> +{
+> +	int rc = 0;
+> +
+> +	if (ppc_md.update_devicetree)
+> +		rc = ppc_md.update_devicetree(scope);
+> +
+> +	return rc;
+> +}
 
-Please be consistent on whether "PAMU" gets an "FSL_" namespace prefix =20
-(I'd prefer that it does).
+But then don't use it afaik (you call directly ppc_md.update_... from
+prrn_work_fn().
 
--Scott=
+In the end, the caller (PRRN stuff), while in rtasd, is really pseries
+specific and the resulting update_device_tree() as well, so I don't
+think we need the ppc_md. hook in the middle with that "oddball" scope
+parameter which is not defined outside of pseries specific areas.
+
+In this case, it might be better to make sure the PRRN related stuff in
+rtasd is inside an ifdef CONFIG_PPC_PSERIES and have it call directly
+into pseries_update_devicetree().
+
+It makes the code somewhat easier to follow and I doubt anybody else
+will ever use that specific hook, at least not in its current form. If
+we need an abstraction later, we can add one then.
+
+Cheers,
+Ben.
