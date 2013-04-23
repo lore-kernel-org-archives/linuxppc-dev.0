@@ -2,30 +2,30 @@ Return-Path: <khandual@linux.vnet.ibm.com>
 Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 781182C013F
+ by ozlabs.org (Postfix) with ESMTPS id 7E9142C0142
  for <linuxppc-dev@ozlabs.org>; Tue, 23 Apr 2013 15:43:11 +1000 (EST)
 Received: from /spool/local
  by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 23 Apr 2013 11:09:34 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 63F4C394005C
- for <linuxppc-dev@ozlabs.org>; Tue, 23 Apr 2013 11:13:03 +0530 (IST)
+ Tue, 23 Apr 2013 11:09:36 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 338FE3940057
+ for <linuxppc-dev@ozlabs.org>; Tue, 23 Apr 2013 11:13:02 +0530 (IST)
 Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3N5gtrr59703440
- for <linuxppc-dev@ozlabs.org>; Tue, 23 Apr 2013 11:12:56 +0530
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3N5gwpD25755732
+ for <linuxppc-dev@ozlabs.org>; Tue, 23 Apr 2013 11:12:58 +0530
 Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
  by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3N5h0np014715
+ r3N5h04D014734
  for <linuxppc-dev@ozlabs.org>; Tue, 23 Apr 2013 15:43:01 +1000
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH V4 1/5] powerpc,
- perf: Add new BHRB related instructions for POWER8
-Date: Tue, 23 Apr 2013 11:12:40 +0530
-Message-Id: <1366695764-3073-2-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH V4 2/5] powerpc,
+ perf: Add basic assembly code to read BHRB entries on POWER8
+Date: Tue, 23 Apr 2013 11:12:41 +0530
+Message-Id: <1366695764-3073-3-git-send-email-khandual@linux.vnet.ibm.com>
 In-Reply-To: <1366695764-3073-1-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1366695764-3073-1-git-send-email-khandual@linux.vnet.ibm.com>
 Cc: mikey@neuling.org
@@ -38,48 +38,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds new POWER8 instruction encoding for reading
-and clearing Branch History Rolling Buffer entries. The new
-instruction 'mfbhrbe' (move from branch history rolling buffer
-entry) is used to read BHRB buffer entries and instruction
-'clrbhrb' (clear branch history rolling buffer) is used to
-clear the entire buffer. The instruction 'clrbhrb' has straight
-forward encoding. But the instruction encoding format for
-reading the BHRB entries is like 'mfbhrbe RT, BHRBE' where it
-takes two arguments, i.e the index for the BHRB buffer entry to
-read and a general purpose register to put the value which was
-read from the buffer entry.
+This patch adds the basic assembly code to read BHRB buffer. BHRB entries
+are valid only after a PMU interrupt has happened (when MMCR0[PMAO]=1)
+and BHRB has been freezed. BHRB read should not be attempted when it is
+still enabled (MMCR0[PMAE]=1) and getting updated, as this can produce
+non-deterministic results.
 
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/ppc-opcode.h | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ arch/powerpc/perf/Makefile |  2 +-
+ arch/powerpc/perf/bhrb.S   | 44 ++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 45 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/perf/bhrb.S
 
-diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-index 8752bc8..0c34e48 100644
---- a/arch/powerpc/include/asm/ppc-opcode.h
-+++ b/arch/powerpc/include/asm/ppc-opcode.h
-@@ -82,6 +82,8 @@
- #define	__REGA0_R31	31
+diff --git a/arch/powerpc/perf/Makefile b/arch/powerpc/perf/Makefile
+index 472db18..510fae1 100644
+--- a/arch/powerpc/perf/Makefile
++++ b/arch/powerpc/perf/Makefile
+@@ -2,7 +2,7 @@ subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
  
- /* sorted alphabetically */
-+#define PPC_INST_BHRBE			0x7c00025c
-+#define PPC_INST_CLRBHRB		0x7c00035c
- #define PPC_INST_DCBA			0x7c0005ec
- #define PPC_INST_DCBA_MASK		0xfc0007fe
- #define PPC_INST_DCBAL			0x7c2005ec
-@@ -297,6 +299,12 @@
- #define PPC_NAP			stringify_in_c(.long PPC_INST_NAP)
- #define PPC_SLEEP		stringify_in_c(.long PPC_INST_SLEEP)
+ obj-$(CONFIG_PERF_EVENTS)	+= callchain.o
  
-+/* BHRB instructions */
-+#define PPC_CLRBHRB		stringify_in_c(.long PPC_INST_CLRBHRB)
-+#define PPC_MFBHRBE(r, n)	stringify_in_c(.long PPC_INST_BHRBE | \
-+						__PPC_RT(r) | \
-+							(((n) & 0x3ff) << 11))
+-obj-$(CONFIG_PPC_PERF_CTRS)	+= core-book3s.o
++obj-$(CONFIG_PPC_PERF_CTRS)	+= core-book3s.o bhrb.o
+ obj64-$(CONFIG_PPC_PERF_CTRS)	+= power4-pmu.o ppc970-pmu.o power5-pmu.o \
+ 				   power5+-pmu.o power6-pmu.o power7-pmu.o \
+ 				   power8-pmu.o
+diff --git a/arch/powerpc/perf/bhrb.S b/arch/powerpc/perf/bhrb.S
+new file mode 100644
+index 0000000..d85f9a5
+--- /dev/null
++++ b/arch/powerpc/perf/bhrb.S
+@@ -0,0 +1,44 @@
++/*
++ * Basic assembly code to read BHRB entries
++ *
++ * Copyright 2013 Anshuman Khandual, IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++#include <asm/ppc_asm.h>
++#include <asm/ppc-opcode.h>
 +
- /* Transactional memory instructions */
- #define TRECHKPT		stringify_in_c(.long PPC_INST_TRECHKPT)
- #define TRECLAIM(r)		stringify_in_c(.long PPC_INST_TRECLAIM \
++	.text
++
++.balign 8
++
++/* r3 = n  (where n = [0-31])
++ * The maximum number of BHRB entries supported with PPC_MFBHRBE instruction
++ * is 1024. We have limited number of table entries here as POWER8 implements
++ * 32 BHRB entries.
++ */
++
++/* .global read_bhrb */
++_GLOBAL(read_bhrb)
++	cmpldi	r3,31
++	bgt	1f
++	ld	r4,bhrb_table@got(r2)
++	sldi	r3,r3,3
++	add	r3,r4,r3
++	mtctr	r3
++	bctr
++1:	li	r3,0
++	blr
++
++#define MFBHRB_TABLE1(n) PPC_MFBHRBE(R3,n); blr
++#define MFBHRB_TABLE2(n) MFBHRB_TABLE1(n); MFBHRB_TABLE1(n+1)
++#define MFBHRB_TABLE4(n) MFBHRB_TABLE2(n); MFBHRB_TABLE2(n+2)
++#define MFBHRB_TABLE8(n) MFBHRB_TABLE4(n); MFBHRB_TABLE4(n+4)
++#define MFBHRB_TABLE16(n) MFBHRB_TABLE8(n); MFBHRB_TABLE8(n+8)
++#define MFBHRB_TABLE32(n) MFBHRB_TABLE16(n); MFBHRB_TABLE16(n+16)
++
++bhrb_table:
++	MFBHRB_TABLE32(0)
 -- 
 1.7.11.7
