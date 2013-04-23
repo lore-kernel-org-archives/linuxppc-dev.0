@@ -1,16 +1,23 @@
-Return-Path: <michael@ellerman.id.au>
-Date: Tue, 23 Apr 2013 22:53:56 +1000
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Dennis Schridde <devurandom@gmx.net>
-Subject: Re: PROBLEM: Only 2 of 4 cores used on IBM Cell blades and no
- threads shown in spufs
-Message-ID: <20130423125355.GC27200@concordia>
-References: <1470334.YUWOQ37ijW@ernie> <20130423140116.0a40c2c6@samson>
- <20130423121620.GB27200@concordia> <2626925.UsNZfo6Rvj@ernie>
+Return-Path: <joro@8bytes.org>
+Received: from mail.8bytes.org (8bytes.org
+ [IPv6:2a01:238:4242:f000:64f:6c43:3523:e535])
+ by ozlabs.org (Postfix) with ESMTP id 805222C0168
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 23:02:03 +1000 (EST)
+Received: from localhost (localhost [127.0.0.1])
+ by mail.8bytes.org (Postfix) with SMTP id E6FFC12B044
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 15:01:56 +0200 (CEST)
+Date: Tue, 23 Apr 2013 15:01:54 +0200
+From: Joerg Roedel <joro@8bytes.org>
+To: Varun Sethi <Varun.Sethi@freescale.com>
+Subject: Re: [PATCH 1/3 v2] iommu: Move swap_pci_ref function to pci.h.
+Message-ID: <20130423125827.GD2589@8bytes.org>
+References: <1366691726-9023-1-git-send-email-Varun.Sethi@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <2626925.UsNZfo6Rvj@ernie>
-Cc: cbe-oss-dev@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org, arnd@arndb.de
+In-Reply-To: <1366691726-9023-1-git-send-email-Varun.Sethi@freescale.com>
+Cc: stuart.yoder@freescale.com, linux-kernel@vger.kernel.org,
+ iommu@lists.linux-foundation.org, scottwood@freescale.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,25 +27,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 23, 2013 at 02:41:18PM +0200, Dennis Schridde wrote:
-> Am Dienstag, 23. April 2013, 22:16:21 schrieb Michael Ellerman:
-> > On Tue, Apr 23, 2013 at 02:01:16PM +0200, Dennis Schridde wrote:
-> > > I applied following patch by Grant Likely
-> > > <grant.likely@secretlab.ca> to fix some IRQ mapping problems:
-> > Ah yes, I forgot I also have basically the same patch. I've just sent it
-> > to the list.
-> > 
-> > We appear to have a number of problems with the irq mapping on cell,
-> > that patch fixes the worst of them but there are more.
-> 
-> Yes, and it would be great if that patch could actually be merged (I have been 
-> using it since November, but Grant apparently never merged it) and maybe the 
-> other problems could be solved, too. I am willing to assist in debugging and 
-> testing.
+On Tue, Apr 23, 2013 at 10:05:24AM +0530, Varun Sethi wrote:
+> +#ifndef __PCI_H
+> +#define __PCI_H
 
-Yeah, it's not really Grant's patch to merge, so that's our fault. Ben
-will merge it this cycle via the powerpc tree.
+Using __PCI_H is not a wise choice, it has certainly a high risk of a
+collision. Anyway, I changed it to __IOMMU_PCI_H and applied the patch.
 
-I'll reply to your other mail on the other issues.
 
-cheers
+	Joerg
