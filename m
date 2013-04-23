@@ -1,24 +1,26 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail-bk0-x22a.google.com (mail-bk0-x22a.google.com
- [IPv6:2a00:1450:4008:c01::22a])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6D6902C0512
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 19:13:42 +1000 (EST)
-Received: by mail-bk0-f42.google.com with SMTP id jc3so156816bkc.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 02:13:36 -0700 (PDT)
-Date: Tue, 23 Apr 2013 17:13:27 +0800
-From: Kevin Hao <haokexin@gmail.com>
-To: Roy Zang <tie-fei.zang@freescale.com>
-Subject: Re: [PATCH v2] powerpc/fsl-pci:fix incorrect iounmap pci
- hose->private_data
-Message-ID: <20130423091327.GA23644@pek-khao-d1.corp.ad.wrs.com>
-References: <1366730283-14606-1-git-send-email-tie-fei.zang@freescale.com>
+Return-Path: <B41889@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7C9DB2C0142
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 19:27:47 +1000 (EST)
+Message-ID: <517653D8.8000205@freescale.com>
+Date: Tue, 23 Apr 2013 17:26:48 +0800
+From: Chen Yuanquan-B41889 <B41889@freescale.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="8t9RHnE3ZwKMSgU+"
-In-Reply-To: <1366730283-14606-1-git-send-email-tie-fei.zang@freescale.com>
-Cc: Yuanquan Chen <Yuanquan.Chen@freescale.com>, linuxppc-dev@lists.ozlabs.org
+To: Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [PATCH] powerpc/pci: fix PCI-e devices rescan issue on powerpc
+ platform
+References: <1364902014-943-1-git-send-email-Yuanquan.Chen@freescale.com>
+ <1364915422.16520.8.camel@pasglop> <515BAB44.9070001@freescale.com>
+ <51652C20.2060105@freescale.com>
+In-Reply-To: <51652C20.2060105@freescale.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: Yuanquan Chen <Yuanquan.Chen@freescale.com>,
+ Hiroo Matsumoto <matsumoto.hiroo@jp.fujitsu.com>, linux-pci@vger.kernel.org,
+ bhelgaas@google.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,141 +30,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 04/10/2013 05:08 PM, Chen Yuanquan-B41889 wrote:
+> On 04/03/2013 12:08 PM, Chen Yuanquan-B41889 wrote:
+>> On 04/02/2013 11:10 PM, Benjamin Herrenschmidt wrote:
+>>> On Tue, 2013-04-02 at 19:26 +0800, Yuanquan Chen wrote:
+>>>> So we move the DMA & IRQ initialization code from 
+>>>> pcibios_setup_devices() and
+>>>> construct a new function pcibios_enable_device. We call this 
+>>>> function in
+>>>> pcibios_enable_device, which will be called by PCI-e rescan code. 
+>>>> At the
+>>>> meanwhile, we avoid the the impact on cardbus. I also validate this 
+>>>> patch with
+>>>> silicon's PCIe-sata which encounters the IRQ issue.
+>>> My worry is that this delays the setup of the IRQ and DMA to very 
+>>> late in
+>>> the process, possibly after the quirks have been run, which can be
+>>> problematic. We have platform hooks that might try to "fixup" specific
+>>> IRQ issues on some platforms (especially macs) which I worry might fail
+>>> if delayed that way (I may be wrong, I don't have a specific case in 
+>>> mind,
+>>> but I would feel better if we kept setting up these things earlier).
+>>>
+>>> Cheers,
+>>> Ben.
+>>>
+>>
+>> Hi Ben,
+>>
+>> I have checked all the quirk functions which are declared in kernel 
+>> arch/powerpc
+>> with command :
+>> grep DECLARE_PCI_FIXUP_ `find arch/powerpc/ *.[hc]`
+>>
+>> All the quirk function are defined as DECLARE_PCI_FIXUP_EARLY , 
+>> DECLARE_PCI_FIXUP_HEADER
+>> and DECLARE_PCI_FIXUP_FINAL, except quirk_uli5229() in 
+>> arch/powerpc/platforms/fsl_uli1575.c, which is
+>> defined both as DECLARE_PCI_FIXUP_HEADER and 
+>> DECLARE_PCI_FIXUP_RESUME. So the quirk_uli5229()
+>> will also be called with PCI pm module. The quirk functions defined 
+>> as xxx_FINAL, HEADER and EARLY,
+>> will be called in the path:
+>>
+>> pci_scan_child_bus()->pci_scan_slot()->pci_scan_single_device()->pci_scan_device()->pci_setup_device() 
+>>
+>> ->pci_device_add()
+>>
+>> the pci_scan_slot() is called earlier than pcibios_fixup_bus() even 
+>> for the first scan of PCI-e bus, so the quirk
+>> functions on powerpc platform is called before the DMA & IRQ fixup. 
+>> So in reality, the delay of DMA & IRQ fixup
+>> won't affect anything.
+>>
+>> Regards,
+>> Yuanquan
+>>
+>
+> Hi Ben,
+>
+> How do you think about this? Do you have any comment?
+>
+> Thanks,
+> Yuanquan
+>
 
---8t9RHnE3ZwKMSgU+
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Bjorn,
 
-On Tue, Apr 23, 2013 at 11:18:03PM +0800, Roy Zang wrote:
-> pci hose->private_data will be used by other function, for example,
-> fsl_pcie_check_link(), so do not iounmap it.
-
-I already sent out a same patch ten days ago. :-)
-
-http://patchwork.ozlabs.org/patch/236293/
+There's no response from Ben. How do you think about this patch? What's 
+your advice?
 
 Thanks,
-Kevin
+Yuanquan
 
->=20
-> fix the kerenl crash on T4240:
->=20
-> Unable to handle kernel paging request for data at address
-> 0x8000080080060f14
-> Faulting instruction address: 0xc000000000032554
-> Oops: Kernel access of bad area, sig: 11 [#1]
-> SMP NR_CPUS=3D24 T4240 QDS
-> Modules linked in:
-> NIP: c000000000032554 LR: c00000000003254c CTR: c00000000001e5c0
-> REGS: c000000179143440 TRAP: 0300   Not tainted
-> (3.8.8-rt2-00754-g951f064-dirt)
-> MSR: 0000000080029000 <CE,EE,ME>  CR: 24adbe22  XER: 00000000
-> SOFTE: 0
-> DEAR: 8000080080060f14, ESR: 0000000000000000
-> TASK =3D c00000017913d2c0[1] 'swapper/0' THREAD: c000000179140000 CPU: 2
-> GPR00: c00000000003254c c0000001791436c0 c000000000ae2998
-> 0000000000000027
-> GPR04: 0000000000000000 00000000000005a5 0000000000000000
-> 0000000000000002
-> GPR08: 3030303038303038 c000000000a2d4d0 c000000000aebeb8
-> c000000000af2998
-> GPR12: 0000000024adbe22 c00000000fffa800 c000000000001be0
-> 0000000000000000
-> GPR16: 0000000000000000 0000000000000000 0000000000000000
-> 0000000000000000
-> GPR20: 0000000000000000 0000000000000000 0000000000000000
-> c0000000009ddf70
-> GPR24: c0000000009e8d40 c000000000af2998 c000000000b1529c
-> c000000179143b40
-> GPR28: c0000001799b4000 c000000179143c00 8000080080060000
-> c000000000727ec8
-> NIP [c000000000032554] .fsl_pcie_check_link+0x104/0x150
-> LR [c00000000003254c] .fsl_pcie_check_link+0xfc/0x150
-> Call Trace:
-> [c0000001791436c0] [c00000000003254c] .fsl_pcie_check_link+0xfc/0x150
-> (unreliab)
-> [c000000179143a30] [c0000000000325d4]
-> .fsl_indirect_read_config+0x34/0xb0
-> [c000000179143ad0] [c0000000002c7ee8]
-> .pci_bus_read_config_byte+0x88/0xd0
-> [c000000179143b90] [c0000000009c0528] .pci_apply_final_quirks+0x9c/0x18c
-> [c000000179143c40] [c00000000000142c] .do_one_initcall+0x5c/0x1f0
-> [c000000179143cf0] [c0000000009a0bb4] .kernel_init_freeable+0x180/0x264
-> [c000000179143db0] [c000000000001bfc] .kernel_init+0x1c/0x420
-> [c000000179143e30] [c0000000000008b4] .ret_from_kernel_thread+0x64/0xb0
-> Instruction dump:
-> 60000000 4bffffa0 ebc301d0 3fe2ffc4 3c62ffe0 3bff5530 38638a78 7fe4fb78
-> 7fc5f378 486ea77d 60000000 7c0004ac <801e0f14> 0c000000 4c00012c
-> 3c62ffe0
-> ---[ end trace f841fbc03c9d2e1b ]---
->=20
-> Kernel panic - not syncing: Attempted to kill init! exitcode=3D0x0000000b
->=20
-> Rebooting in 180 seconds..
->=20
-> Signed-off-by: Yuanquan Chen <Yuanquan.Chen@freescale.com>
-> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
-> ---
-> based on Kumar's next branch
-> v2:v1, fix the exit issue
->=20
->  arch/powerpc/sysdev/fsl_pci.c |    7 ++-----
->  1 file changed, 2 insertions(+), 5 deletions(-)
->=20
-> diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-> index f823304..cffe7ed 100644
-> --- a/arch/powerpc/sysdev/fsl_pci.c
-> +++ b/arch/powerpc/sysdev/fsl_pci.c
-> @@ -244,12 +244,12 @@ static void setup_pci_atmu(struct pci_controller *h=
-ose)
-> =20
->  	if (paddr_hi =3D=3D paddr_lo) {
->  		pr_err("%s: No outbound window space\n", name);
-> -		goto out;
-> +		return;
->  	}
-> =20
->  	if (paddr_lo =3D=3D 0) {
->  		pr_err("%s: No space for inbound window\n", name);
-> -		goto out;
-> +		return;
->  	}
-> =20
->  	/* setup PCSRBAR/PEXCSRBAR */
-> @@ -395,9 +395,6 @@ static void setup_pci_atmu(struct pci_controller *hos=
-e)
->  		pr_info("%s: DMA window size is 0x%llx\n", name,
->  			(u64)hose->dma_window_size);
->  	}
-> -
-> -out:
-> -	iounmap(pci);
->  }
-> =20
->  static void __init setup_pci_cmd(struct pci_controller *hose)
-> --=20
-> 1.7.9.5
->=20
->=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-
---8t9RHnE3ZwKMSgU+
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQEcBAEBAgAGBQJRdlC3AAoJEJNY7TDerrFxarEH/jaE8iU9am7sw6SvuqSozF8l
-/r2lq9pYc9alV5g3Jd4Wln0g1hQ/21X7AZj7YENwQaPcOT+Zwlk52O9vXXcGNqYw
-ouCkUyqIHBJOnQy1woKmNNFZIzrAL+vBLhKGmdAsVjNAPeTZclTzluVOu6bMtszU
-RARiHlS95Ff85m5xe0249Lmq3vcWsbkEoUlAOl5t01ixNIBGuo0NSXT5Es2GOVtz
-IgLkoSmR0GjX+Xo2EOU0pFL8/l5y2Rr61Uz7SdVelBgRKwOkgNHoMK/35S5miYFL
-blWTYVutOB6UKCRjtS6KIPsQqHfXpSY4bky/sS88CQxGt0pZyKAn9LfVlRSbAGs=
-=10DF
------END PGP SIGNATURE-----
-
---8t9RHnE3ZwKMSgU+--
+>>>
+>>>
+>>>
+>>
+>
+>
+>
