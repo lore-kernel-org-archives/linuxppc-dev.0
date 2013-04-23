@@ -1,28 +1,12 @@
-Return-Path: <B16395@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 67BD72C015B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 00:10:32 +1000 (EST)
-From: Sethi Varun-B16395 <B16395@freescale.com>
-To: Joerg Roedel <joro@8bytes.org>
-Subject: RE: [PATCH 2/3 v14] iommu/fsl: Add additional iommu attributes
- required by the PAMU driver.
-Date: Tue, 23 Apr 2013 14:10:25 +0000
-Message-ID: <C5ECD7A89D1DC44195F34B25E172658D4B4D9A@039-SN2MPN1-011.039d.mgd.msft.net>
-References: <1366691726-9023-1-git-send-email-Varun.Sethi@freescale.com>
- <1366691726-9023-2-git-send-email-Varun.Sethi@freescale.com>
- <20130423133837.GG17148@8bytes.org>
-In-Reply-To: <20130423133837.GG17148@8bytes.org>
+Return-Path: <jk@ozlabs.org>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Yoder Stuart-B08248 <B08248@freescale.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: [RFC, PATCH] powerpc/prom: Scan reserved-ranges node for memory
+ reservations
+Message-Id: <1366726749.579300.273078516407.1.gpush@pablo>
+To: linuxppc-dev@lists.ozlabs.org
+From: Jeremy Kerr <jk@ozlabs.org>
+Date: Tue, 23 Apr 2013 22:19:09 +0800
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,43 +16,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Based on benh's proposal at
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2012-September/101237.html,
+this change provides support for reserving memory from the
+reserved-ranges node at the root of the device tree.
 
+We just call memblock_reserve on these ranges for now.
 
-> -----Original Message-----
-> From: Joerg Roedel [mailto:joro@8bytes.org]
-> Sent: Tuesday, April 23, 2013 7:09 PM
-> To: Sethi Varun-B16395
-> Cc: iommu@lists.linux-foundation.org; linuxppc-dev@lists.ozlabs.org;
-> linux-kernel@vger.kernel.org; galak@kernel.crashing.org;
-> benh@kernel.crashing.org; Yoder Stuart-B08248; Wood Scott-B07421
-> Subject: Re: [PATCH 2/3 v14] iommu/fsl: Add additional iommu attributes
-> required by the PAMU driver.
->=20
-> On Tue, Apr 23, 2013 at 10:05:25AM +0530, Varun Sethi wrote:
-> > Added the following domain attributes for the FSL PAMU driver:
-> > 1. Added new iommu stash attribute, which allows setting of the
-> >    LIODN specific stash id parameter through IOMMU API.
-> > 2. Added an attribute for enabling/disabling DMA to a particular
-> >    memory window.
-> > 3. Added domain attribute to check for PAMUV1 specific constraints.
-> >
-> > Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
-> > ---
-> > v14 changes:
-> > - Add FSL prefix to PAMU attributes.
-> > v13 changes:
-> > - created a new file include/linux/fsl_pamu_stash.h for stash
-> > attributes.
-> > v12 changes:
-> > - Moved PAMU specifc stash ids and structures to PAMU header file.
-> > - no change in v11.
-> > - no change in v10.
-> >  include/linux/fsl_pamu_stash.h |   39
-> +++++++++++++++++++++++++++++++++++++++
->=20
-> Isn't asm/ for your architecture a better place for that header?
->=20
-I think it's fine to have the header under linux, actually I also the intel=
--iommu header under linux.
+Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 
--Varun
+---
+ arch/powerpc/kernel/prom.c |   36 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 36 insertions(+)
+
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 8b6f7a9..1208c8f 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -559,6 +559,34 @@ void __init early_init_dt_setup_initrd_arch(unsigned long start,
+ }
+ #endif
+ 
++static bool __init early_reserve_mem_dt(void)
++{
++	unsigned long i, len, dt_root;
++	const __be32 *prop;
++
++	dt_root = ((unsigned long)initial_boot_params) +
++		be32_to_cpu(initial_boot_params->off_dt_struct);
++
++	prop = of_get_flat_dt_prop(dt_root, "reserved-ranges", &len);
++
++	if (!prop)
++		return false;
++
++	/* Each reserved range is an (address,size) pair, 2 cells each */
++	for (i = 0; i < len / sizeof(*prop);
++			i += dt_root_addr_cells + dt_root_size_cells) {
++		u64 base, size;
++
++		base = of_read_number(prop + (i * 4), 2);
++		size = of_read_number(prop + (i * 4) + 2, 2);
++
++		if (size)
++			memblock_reserve(base, size);
++	}
++
++	return true;
++}
++
+ static void __init early_reserve_mem(void)
+ {
+ 	u64 base, size;
+@@ -574,6 +602,14 @@ static void __init early_reserve_mem(void)
+ 	self_size = initial_boot_params->totalsize;
+ 	memblock_reserve(self_base, self_size);
+ 
++	/*
++	 * Try looking for reserved-regions property in the DT first; if
++	 * it's present, it'll contain all of the necessary reservation
++	 * info
++	 */
++	if (early_reserve_mem_dt())
++		return;
++
+ #ifdef CONFIG_BLK_DEV_INITRD
+ 	/* then reserve the initrd, if any */
+ 	if (initrd_start && (initrd_end > initrd_start))
