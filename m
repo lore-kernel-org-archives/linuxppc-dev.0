@@ -1,21 +1,19 @@
 Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id D83D92C0164
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 11:52:45 +1000 (EST)
-Date: Tue, 23 Apr 2013 11:52:44 +1000
+Received: from members.tip.net.au (haggis.pcug.org.au [203.10.76.10])
+ by ozlabs.org (Postfix) with ESMTP id 70B922C015B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 12:00:28 +1000 (EST)
+Date: Tue, 23 Apr 2013 12:00:26 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 5/12] Update firmware_has_feature() to check
- architecture bits
-Message-Id: <20130423115244.ce0634dafb66601b407b3d9e@canb.auug.org.au>
-In-Reply-To: <517583B7.1070300@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 12/12]  Add /proc interface to control topology updates
+Message-Id: <20130423120026.85860c95d1c82582fa9a6ef5@canb.auug.org.au>
+In-Reply-To: <517585DB.9040603@linux.vnet.ibm.com>
 References: <51757951.2080007@linux.vnet.ibm.com>
- <517583B7.1070300@linux.vnet.ibm.com>
+ <517585DB.9040603@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pgp-signature";
  micalg="PGP-SHA256";
- boundary="Signature=_Tue__23_Apr_2013_11_52_44_+1000_bfbYjok/25fsTL3r"
+ boundary="Signature=_Tue__23_Apr_2013_12_00_26_+1000_piXMhFQCklcla152"
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,49 +24,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Tue__23_Apr_2013_11_52_44_+1000_bfbYjok/25fsTL3r
+--Signature=_Tue__23_Apr_2013_12_00_26_+1000_piXMhFQCklcla152
 Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi Nathan,
 
-On Mon, 22 Apr 2013 13:38:47 -0500 Nathan Fontenot <nfont@linux.vnet.ibm.co=
+On Mon, 22 Apr 2013 13:47:55 -0500 Nathan Fontenot <nfont@linux.vnet.ibm.co=
 m> wrote:
 >
-> +/* Option vector 5: PAPR/OF options supported
-> + * Thses bits are also used for the platform_has_feature() call so
+>  #if defined(CONFIG_NUMA) && defined(CONFIG_PPC_SPLPAR)
+>  extern int start_topology_update(void);
+>  extern int stop_topology_update(void);
+> +extern inline int prrn_is_enabled(void);
 
-You talk about platform_has_feature(), but that does not exist (I assume
-it existed in a previous version of the patch set).
-
-> +bool platform_has_feature(unsigned int);
-
-Ditto.
+You really can't do "extern inline" with no body ...
 
 --=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
---Signature=_Tue__23_Apr_2013_11_52_44_+1000_bfbYjok/25fsTL3r
+--Signature=_Tue__23_Apr_2013_12_00_26_+1000_piXMhFQCklcla152
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAEBCAAGBQJRdelsAAoJEECxmPOUX5FE8goP/jbebnt4rpkXBnrXNzm/d5mW
-xEw4mb55fxtTgNRZkMpojQOn0E3CQDclxP6ZhPO2Q5ju1yH/QIU4aXIQu7xc/RrW
-m/G0zGFufVDwyBK/YW2Ou3n39RYOBgBTMatsgnFnF1oMNccWsL29UGWsDGD4UYay
-Bor8JY52E8NpC0t4C49gzlEx1tVa6kkCpcHolq3xJmBegR5jlxvAOvpIO3oUspcN
-ECpWbEUy4iKX8mHZI12v5WNotGXhlRVAMhFi+Ds/YQifhLXFpsJkv5qLDEcxPBBN
-UQM9/e/TF19JDZ6UKfX47p3dEsMPpRoYQADCZBnei74RJmcR30EhcD0mVSNaPAWA
-mYHuvUzQSq+V7x/44IN3PcTzOvIpS3SB2lWYQjzq4Us0l249MD6k7LEN/ztdRw3d
-SjSNoZTwSkxvotDaSlO13OTYZNxbChDJJkI68kW3KX8QuYEj9baXrVs+0yg7K3Wm
-L78r0zEm5OJaDJf65wcxOAc2c5hbzhs/zxPHuXDusRMNJSkwW/gwKdGFvphskgKb
-WjcWjRdY9Kt5qtIheSfw0OHKp8SiYV4mCJnqJ4Q2cP0ZfdsFXnWPl9AM+8QVHEAQ
-tH9GmLLX9RS6uh1eCyts6VLC6VTzA8pUL+0NNLHZRjchUV9yhdMgsk75WRwWeWLe
-DkFrAT7dpKgS6FlxUQT5
-=rMPT
+iQIcBAEBCAAGBQJRdes6AAoJEECxmPOUX5FEtEkP/ihRkONER/dI/eFj1Yctxsbe
+xm838JDw1FsO4RzUcZl3oeeX0rT8WcPQU/Dym12OOj4aemiq7HmAeOvx/+zhVK+O
+T1anNdzj+braI4/utfbpf512od9kpUsuVHW6Livfc3nFcv+oplBK/mJ5zYmUzksV
++vEG7OXFU3+Ya7Qwv6XKaGPcxH9GUDRSK1yCCXnMiFTyN3m1fWU723W717fBlGkN
+S2LHnKFh4bjQhkgcXMZTXV+Z26UDYaj3h3FMbEljoShYntJ4xRghcIIoo2RmM7nw
+3J7W/CyTYdFOlS9R8aJMADYQae/eVlU+3cXZkoKsXnkbVc4pdljw043n4+2WaEY8
+NAHDRxxnBAD3DrNK72s0AQxnqco3tpTfnKp2zcZlnkYJpumkk461B1JhNcSiIE9T
+3aklU69E//IDgmogfCAq/sEXXc8oO2OHLILhSWocCzckchPYI7xodirdxIR3GINz
+zlEhdKroCc4ORYGEptawVSUNoqsKf1ZB0tuWSOmC/zSUq5v0CUSbLUXvr92JigQK
+3CVrblk9CHpetTg4Lt3P7lz1MtvywkdM25QMMulf9J2o8XcL03pbaGjNm3dC3c3v
+c5O0WYyCIKdojoRb7mwRuWPMIZvcRof/AOzIztvlaifp9/Yg08Po2W2cV/lxkcKP
+y2ItTLLUKh+tLGZXJ0Lc
+=XoMe
 -----END PGP SIGNATURE-----
 
---Signature=_Tue__23_Apr_2013_11_52_44_+1000_bfbYjok/25fsTL3r--
+--Signature=_Tue__23_Apr_2013_12_00_26_+1000_piXMhFQCklcla152--
