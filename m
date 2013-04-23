@@ -2,22 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 157B92C0137
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 10:31:54 +1000 (EST)
-Message-ID: <1366677081.2886.7.camel@pasglop>
-Subject: Re: [Suggestion] PowerPC: kernel: memory access violation when
- rtas_data_buf contents are more than 1026
+ by ozlabs.org (Postfix) with ESMTPS id 3B7D12C015F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2013 10:40:25 +1000 (EST)
+Message-ID: <1366677610.2886.8.camel@pasglop>
+Subject: Re: [PATCH] powerpc/rtas_flash: New return code to indicate FW
+ entitlement expiry
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Chen Gang <gang.chen@asianux.com>
-Date: Tue, 23 Apr 2013 10:31:21 +1000
-In-Reply-To: <516F7A7D.60206@asianux.com>
-References: <516F7A7D.60206@asianux.com>
+To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+Date: Tue, 23 Apr 2013 10:40:10 +1000
+In-Reply-To: <20130419114410.19115.35846.stgit@hegdevasant>
+References: <20130419114410.19115.35846.stgit@hegdevasant>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "paulus@samba.org" <paulus@samba.org>, Al Viro <viro@zeniv.linux.org.uk>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,127 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-04-18 at 12:45 +0800, Chen Gang wrote:
-> Hello Maintainers:
-> 
-> 
-> in arch/powerpc/kernel/lparcfg.c, parse_system_parameter_string()
-> 
->   need set '\0' for 'local_buffer'.
-> 
->   the reason is:
->     SPLPAR_MAXLENGTH is 1026, RTAS_DATA_BUF_SIZE is 4096
->     the contents of rtas_data_buf may truncated in memcpy (line 301).
-> 
->     if contents are truncated.
->       the splpar_strlen is more than 1026 (line 321)
->       the while loop checking will not find the end of buffer (line 326)
->       it will cause memory access violation.
-> 
-> 
->   I find it by reading code, so please help check.
+On Fri, 2013-04-19 at 17:14 +0530, Vasant Hegde wrote:
+> Add new return code to rtas_flash to indicate firmware entitlement
+> expiry. This will be used by the update_flash script to return
+> appropriate message to the user.
 
-And a signed-off-by please ?
+What's the point of that patch ? It adds a definition to a private .c
+file not exposed to user space and doesn't do anything with it ...
 
-Cheers,
 Ben.
 
->   thanks.
+> Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/kernel/rtas_flash.c |    1 +
+>  1 file changed, 1 insertion(+)
 > 
-> gchen.
-> 
-> -------------------------related fix patch--------------------------------------
-> 
-> diff --git a/arch/powerpc/kernel/lparcfg.c b/arch/powerpc/kernel/lparcfg.c
-> index 801a757..d92f387 100644
-> --- a/arch/powerpc/kernel/lparcfg.c
-> +++ b/arch/powerpc/kernel/lparcfg.c
-> @@ -299,6 +299,7 @@ static void parse_system_parameter_string(struct seq_file *m)
->  				__pa(rtas_data_buf),
->  				RTAS_DATA_BUF_SIZE);
->  	memcpy(local_buffer, rtas_data_buf, SPLPAR_MAXLENGTH);
-> +	local_buffer[SPLPAR_MAXLENGTH - 1] = '\0';
->  	spin_unlock(&rtas_data_buf_lock);
+> diff --git a/arch/powerpc/kernel/rtas_flash.c b/arch/powerpc/kernel/rtas_flash.c
+> index a7020d2..0a12c16 100644
+> --- a/arch/powerpc/kernel/rtas_flash.c
+> +++ b/arch/powerpc/kernel/rtas_flash.c
+> @@ -64,6 +64,7 @@
+>  #define VALIDATE_TMP_COMMIT_DL 4     /* Validate Return Status */
+>  #define VALIDATE_TMP_COMMIT    5     /* Validate Return Status */
+>  #define VALIDATE_TMP_UPDATE_DL 6     /* Validate Return Status */
+> +#define VALIDATE_OUT_OF_WRNTY  7     /* Validate Return Status */
 >  
->  	if (call_status != 0) {
-> 
-> 
-> 
-> -------------------------related source code------------------------------------
-> 
-> 
-> 283 static void parse_system_parameter_string(struct seq_file *m)
-> 284 {
-> 285         int call_status;
-> 286 
-> 287         unsigned char *local_buffer = kmalloc(SPLPAR_MAXLENGTH, GFP_KERNEL);
-> 288         if (!local_buffer) {
-> 289                 printk(KERN_ERR "%s %s kmalloc failure at line %d\n",
-> 290                        __FILE__, __func__, __LINE__);
-> 291                 return;
-> 292         }
-> 293 
-> 294         spin_lock(&rtas_data_buf_lock);
-> 295         memset(rtas_data_buf, 0, SPLPAR_MAXLENGTH);
-> 296         call_status = rtas_call(rtas_token("ibm,get-system-parameter"), 3, 1,
-> 297                                 NULL,
-> 298                                 SPLPAR_CHARACTERISTICS_TOKEN,
-> 299                                 __pa(rtas_data_buf),
-> 300                                 RTAS_DATA_BUF_SIZE);
-> 301         memcpy(local_buffer, rtas_data_buf, SPLPAR_MAXLENGTH);
-> 302         spin_unlock(&rtas_data_buf_lock);
-> 303         
-> 304         if (call_status != 0) {
-> 305                 printk(KERN_INFO
-> 306                        "%s %s Error calling get-system-parameter (0x%x)\n",
-> 307                        __FILE__, __func__, call_status);
-> 308         } else {       
-> 309                 int splpar_strlen;
-> 310                 int idx, w_idx;
-> 311                 char *workbuffer = kzalloc(SPLPAR_MAXLENGTH, GFP_KERNEL);
-> 312                 if (!workbuffer) { 
-> 313                         printk(KERN_ERR "%s %s kmalloc failure at line %d\n",
-> 314                                __FILE__, __func__, __LINE__);
-> 315                         kfree(local_buffer);
-> 316                         return;
-> 317                 }       
-> 318 #ifdef LPARCFG_DEBUG
-> 319                 printk(KERN_INFO "success calling get-system-parameter\n");
-> 320 #endif
-> 321                 splpar_strlen = local_buffer[0] * 256 + local_buffer[1];
-> 322                 local_buffer += 2;      /* step over strlen value */
-> 323 
-> 324                 w_idx = 0;
-> 325                 idx = 0;
-> 326                 while ((*local_buffer) && (idx < splpar_strlen)) {
-> 327                         workbuffer[w_idx++] = local_buffer[idx++];
-> 328                         if ((local_buffer[idx] == ',')
-> 329                             || (local_buffer[idx] == '\0')) {
-> 330                                 workbuffer[w_idx] = '\0';
-> 331                                 if (w_idx) {
-> 332                                         /* avoid the empty string */
-> 333                                         seq_printf(m, "%s\n", workbuffer);
-> 334                                 }
-> 335                                 memset(workbuffer, 0, SPLPAR_MAXLENGTH);
-> 336                                 idx++;  /* skip the comma */
-> 337                                 w_idx = 0;
-> 338                         } else if (local_buffer[idx] == '=') {
-> 339                                 /* code here to replace workbuffer contents
-> 340                                    with different keyword strings */
-> 341                                 if (0 == strcmp(workbuffer, "MaxEntCap")) {
-> 342                                         strcpy(workbuffer,
-> 343                                                "partition_max_entitled_capacity");
-> 344                                         w_idx = strlen(workbuffer);
-> 345                                 }
-> 346                                 if (0 == strcmp(workbuffer, "MaxPlatProcs")) {
-> 347                                         strcpy(workbuffer,
-> 348                                                "system_potential_processors");
-> 349                                         w_idx = strlen(workbuffer);
-> 350                                 }
-> 351                         }
-> 352                 }
-> 353                 kfree(workbuffer);
-> 354                 local_buffer -= 2;      /* back up over strlen value */
-> 355         }
-> 356         kfree(local_buffer);
-> 357 }
+>  /* ibm,manage-flash-image operation tokens */
+>  #define RTAS_REJECT_TMP_IMG   0
