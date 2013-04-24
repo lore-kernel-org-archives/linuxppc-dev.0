@@ -1,20 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 399A72C00BE
- for <linuxppc-dev@ozlabs.org>; Thu, 25 Apr 2013 02:37:14 +1000 (EST)
-Message-ID: <1366821417.2869.12.camel@pasglop>
-Subject: Re: [PATCH] powerpc: Add isync to copy_and_flush
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Neuling <michael.neuling@au1.ibm.com>
-Date: Thu, 25 Apr 2013 02:36:57 +1000
-In-Reply-To: <29244.1366799409@ale.ozlabs.ibm.com>
-References: <29244.1366799409@ale.ozlabs.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <akpm@linux-foundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id 4897B2C0103
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2013 05:36:25 +1000 (EST)
+Date: Wed, 24 Apr 2013 12:36:20 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Add HWCAP2 aux entry
+Message-Id: <20130424123620.07e1c32890e53f758b92742b@linux-foundation.org>
+In-Reply-To: <1366677702.2886.9.camel@pasglop>
+References: <20130402212204.GA30438@linux.vnet.ibm.com>
+ <20130405070559.GE5082@concordia>
+ <27144.1366001074@ale.ozlabs.ibm.com>
+ <31546.1366255991@ale.ozlabs.ibm.com>
+ <32253.1366256478@ale.ozlabs.ibm.com>
+ <1366677702.2886.9.camel@pasglop>
 Mime-Version: 1.0
-Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>, miltonm@realtime.net,
- Nishanth Aravamudan <nacc@us.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
+Cc: Michael Neuling <mikey@neuling.org>, vda.linux@googlemail.com,
+ Nishanth Aravamudan <nacc@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Steve Munroe <sjmunroe@us.ibm.com>, paulus@samba.org, viro@zeniv.linux.org.uk,
+ Ryan Arnold <ryanarn@us.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,14 +29,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-04-24 at 20:30 +1000, Michael Neuling wrote:
-> benh: we should get this in 3.9 ASAP.
+On Tue, 23 Apr 2013 10:41:42 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-Considering that the bug has been there *forever* I don't think I have a
-real standing to try to shove it down Linus throat as a "regression
-fix" :-)
+> On Thu, 2013-04-18 at 13:41 +1000, Michael Neuling wrote:
+> > akpm,
+> > 
+> > If you're happy with this, is it something you can take in your tree?
+> 
+> Andrew ? Or give me an ack ? :-) I'm happy to carry this, we need that
+> rather urgently and we have the glibc folks on board.
 
-I'll put the fix in 3.10 and let it trickle down to stable.
-
-Cheers,
-Ben.
+Looks good to me - please proceed with the patch.
