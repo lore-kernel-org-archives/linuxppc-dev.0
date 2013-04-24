@@ -1,39 +1,39 @@
-Return-Path: <qiudayu@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D66A72C009E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 18:37:01 +1000 (EST)
+ (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2CD5D2C00BE
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 19:08:13 +1000 (EST)
 Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <qiudayu@linux.vnet.ibm.com>;
- Wed, 24 Apr 2013 18:29:14 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 39F9D2CE8052
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 18:36:31 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3O8aOwC14156166
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 18:36:24 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3O8a7l0027044
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 18:36:08 +1000
-Message-ID: <51779972.8070101@linux.vnet.ibm.com>
-Date: Wed, 24 Apr 2013 16:36:02 +0800
-From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 24 Apr 2013 14:34:35 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 78D6D1258055
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 14:39:41 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3O981775767438
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 14:38:01 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3O984Cs027577
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 09:08:05 GMT
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Andrea Arcangeli <aarcange@redhat.com>
+Subject: Re: [PATCH -V6 18/27] mm/THP: withdraw the pgtable after pmdp related
+ operations
+In-Reply-To: <20130422154901.GC13442@redhat.com>
+References: <1366624861-24948-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1366624861-24948-19-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20130422154901.GC13442@redhat.com>
+Date: Wed, 24 Apr 2013 14:38:01 +0530
+Message-ID: <87a9oo2t5a.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: "attempt to move .org backwards" still show up
-References: <5177965D.9090406@linux.vnet.ibm.com>
- <20130424083142.GB26834@concordia>
-In-Reply-To: <20130424083142.GB26834@concordia>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: sfr@canb.auug.org.au, mikey@neuling.org, matt@ozlabs.org,
- gang.chen@asianux.com, linux-kernel@vger.kernel.org, paulus@samba.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <dwg@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,18 +43,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-于 2013/4/24 16:31, Michael Ellerman 写道:
-> On Wed, Apr 24, 2013 at 04:22:53PM +0800, Mike Qiu wrote:
->> Hi all
->>
->> I get an error message when I compile the source code in Power7 platform
->> use the newest upstream kernel.
-> Hi Mike,
->
-> It depends on what your .config is. What defconfig are you building?
->
-> cheers
->
-And I do know how to build the source code in this machine . . .
+Andrea Arcangeli <aarcange@redhat.com> writes:
 
-Thanks
+> Hi,
+>
+> On Mon, Apr 22, 2013 at 03:30:52PM +0530, Aneesh Kumar K.V wrote:
+>> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+>> 
+>> For architectures like ppc64 we look at deposited pgtable when
+>> calling pmdp_get_and_clear. So do the pgtable_trans_huge_withdraw
+>> after finishing pmdp related operations.
+>> 
+>> Cc: Andrea Arcangeli <aarcange@redhat.com>
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>> ---
+>>  mm/huge_memory.c |    3 ++-
+>>  1 file changed, 2 insertions(+), 1 deletion(-)
+>> 
+>> diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+>> index 84f3180..2a43782 100644
+>> --- a/mm/huge_memory.c
+>> +++ b/mm/huge_memory.c
+>> @@ -1363,9 +1363,10 @@ int zap_huge_pmd(struct mmu_gather *tlb, struct vm_area_struct *vma,
+>>  		struct page *page;
+>>  		pgtable_t pgtable;
+>>  		pmd_t orig_pmd;
+>> -		pgtable = pgtable_trans_huge_withdraw(tlb->mm, pmd);
+>> +
+>>  		orig_pmd = pmdp_get_and_clear(tlb->mm, addr, pmd);
+>>  		tlb_remove_pmd_tlb_entry(tlb, pmd, addr);
+>> +		pgtable = pgtable_trans_huge_withdraw(tlb->mm, pmd);
+>>  		if (is_huge_zero_pmd(orig_pmd)) {
+>>  			tlb->mm->nr_ptes--;
+>>  			spin_unlock(&tlb->mm->page_table_lock);
+>
+> I think here a comment inline (not only in the commit msg) is in
+> order. Otherwise it's hard to imagine others to be aware of this arch
+> detail when they will read the code later. So it would be prone to
+> break later without a comment.
+
+How about ?
+
+>From 7444a5eda33c00eea465b51c405cb830c57513b7 Mon Sep 17 00:00:00 2001
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Date: Wed, 6 Mar 2013 12:50:37 +0530
+Subject: [PATCH] mm/THP: withdraw the pgtable after pmdp related operations
+
+For architectures like ppc64 we look at deposited pgtable when
+calling pmdp_get_and_clear. So do the pgtable_trans_huge_withdraw
+after finishing pmdp related operations.
+
+Cc: Andrea Arcangeli <aarcange@redhat.com>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ mm/huge_memory.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+index 84f3180..21c5ebd 100644
+--- a/mm/huge_memory.c
++++ b/mm/huge_memory.c
+@@ -1363,9 +1363,15 @@ int zap_huge_pmd(struct mmu_gather *tlb, struct vm_area_struct *vma,
+ 		struct page *page;
+ 		pgtable_t pgtable;
+ 		pmd_t orig_pmd;
+-		pgtable = pgtable_trans_huge_withdraw(tlb->mm, pmd);
++		/*
++		 * For architectures like ppc64 we look at deposited pgtable
++		 * when calling pmdp_get_and_clear. So do the
++		 * pgtable_trans_huge_withdraw after finishing pmdp related
++		 * operations.
++		 */
+ 		orig_pmd = pmdp_get_and_clear(tlb->mm, addr, pmd);
+ 		tlb_remove_pmd_tlb_entry(tlb, pmd, addr);
++		pgtable = pgtable_trans_huge_withdraw(tlb->mm, pmd);
+ 		if (is_huge_zero_pmd(orig_pmd)) {
+ 			tlb->mm->nr_ptes--;
+ 			spin_unlock(&tlb->mm->page_table_lock);
+-- 
+1.7.10
