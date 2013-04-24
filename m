@@ -1,20 +1,12 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 62B9E2C010F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 13:13:09 +1000 (EST)
-Message-ID: <51774DC6.806@windriver.com>
-Date: Wed, 24 Apr 2013 11:13:10 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
+Return-Path: <jk@ozlabs.org>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/1] usb: ehci-fsl: set INCR8 mode only on MPC512x
-References: <1366772110-9620-1-git-send-email-tiejun.chen@windriver.com>
-In-Reply-To: <1366772110-9620-1-git-send-email-tiejun.chen@windriver.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [RFC, PATCH v2] powerpc/prom: Scan reserved-ranges node for memory
+ reservations
+Message-Id: <1366774481.239211.639433936348.1.gpush@pablo>
+To: linuxppc-dev@lists.ozlabs.org
+From: Jeremy Kerr <jk@ozlabs.org>
+Date: Wed, 24 Apr 2013 11:34:41 +0800
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,43 +16,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sorry, please ignore this temporarily since looks this is already covered in tree.
+Based on benh's proposal at
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2012-September/101237.html,
+this change provides support for reserving memory from the
+reserved-ranges node at the root of the device tree.
 
-I will look further into this to send another version.
+We just call memblock_reserve on these ranges for now.
 
-Tiejun
+Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 
-On 04/24/2013 10:55 AM, Tiejun Chen wrote:
-> commit 761bbcb7, "usb: ehci-fsl: set INCR8 mode for system bus interface
-> on MPC512x", introduced to fix one MPC5121e (M36P) Errata by setting
-> INCR8 mode for system bus interface on MPC512x, but we should make sure
-> this is only valid for MPC512x like other parts of this commit. Otherwise
-> this would issue other platforms as abnormal without this similar Errata.
->
-> Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
-> ---
->   drivers/usb/host/ehci-fsl.c |   10 +++++++++-
->   1 file changed, 9 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/usb/host/ehci-fsl.c b/drivers/usb/host/ehci-fsl.c
-> index d81d2fc..f4f2a7b 100644
-> --- a/drivers/usb/host/ehci-fsl.c
-> +++ b/drivers/usb/host/ehci-fsl.c
-> @@ -509,7 +509,15 @@ static int ehci_fsl_mpc512x_drv_resume(struct device *dev)
->   	ehci_writel(ehci, ISIPHYCTRL_PXE | ISIPHYCTRL_PHYE,
->   		    hcd->regs + FSL_SOC_USB_ISIPHYCTRL);
->
-> -	ehci_writel(ehci, SBUSCFG_INCR8, hcd->regs + FSL_SOC_USB_SBUSCFG);
-> +	if (of_device_is_compatible(dev->parent->of_node,
-> +				    "fsl,mpc5121-usb2-dr")) {
-> +		/*
-> +		 * set SBUSCFG:AHBBRST so that control msgs don't
-> +		 * fail when doing heavy PATA writes.
-> +		 */
-> +		ehci_writel(ehci, SBUSCFG_INCR8,
-> +			    hcd->regs + FSL_SOC_USB_SBUSCFG);
-> +	}
->
->   	/* restore EHCI registers */
->   	ehci_writel(ehci, pdata->pm_command, &ehci->regs->command);
->
+---
+v2: fix range property iteration
+
+---
+ arch/powerpc/kernel/prom.c |   36 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 36 insertions(+)
+
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 8b6f7a9..c77307e 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -559,6 +559,34 @@ void __init early_init_dt_setup_initrd_arch(unsigned long start,
+ }
+ #endif
+ 
++static bool __init early_reserve_mem_dt(void)
++{
++	unsigned long i, len, dt_root;
++	const __be32 *prop;
++
++	dt_root = ((unsigned long)initial_boot_params) +
++		be32_to_cpu(initial_boot_params->off_dt_struct);
++
++	prop = of_get_flat_dt_prop(dt_root, "reserved-ranges", &len);
++
++	if (!prop)
++		return false;
++
++	/* Each reserved range is an (address,size) pair, 2 cells each,
++	 * totalling 4 cells per range. */
++	for (i = 0; i < len / (sizeof(*prop) * 4); i++) {
++		u64 base, size;
++
++		base = of_read_number(prop + (i * 4) + 0, 2);
++		size = of_read_number(prop + (i * 4) + 2, 2);
++
++		if (size)
++			memblock_reserve(base, size);
++	}
++
++	return true;
++}
++
+ static void __init early_reserve_mem(void)
+ {
+ 	u64 base, size;
+@@ -574,6 +602,14 @@ static void __init early_reserve_mem(void)
+ 	self_size = initial_boot_params->totalsize;
+ 	memblock_reserve(self_base, self_size);
+ 
++	/*
++	 * Try looking for reserved-regions property in the DT first; if
++	 * it's present, it'll contain all of the necessary reservation
++	 * info
++	 */
++	if (early_reserve_mem_dt())
++		return;
++
+ #ifdef CONFIG_BLK_DEV_INITRD
+ 	/* then reserve the initrd, if any */
+ 	if (initrd_start && (initrd_end > initrd_start))
