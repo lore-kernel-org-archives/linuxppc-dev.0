@@ -1,23 +1,38 @@
-Return-Path: <B07421@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8938B2C0090
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2013 08:38:29 +1000 (EST)
-Date: Wed, 24 Apr 2013 17:38:16 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v2 12/15] powerpc/85xx: add time base sync support for
- e6500
-To: Zhao Chenhui <chenhui.zhao@freescale.com>
-In-Reply-To: <20130424112929.GC3172@localhost.localdomain> (from
- chenhui.zhao@freescale.com on Wed Apr 24 06:29:29 2013)
-Message-ID: <1366843096.17465.17@snotra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- r58472@freescale.com
+Return-Path: <lucaskt@linux.vnet.ibm.com>
+Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e24smtp05.br.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 67D622C00F6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2013 08:55:33 +1000 (EST)
+Received: from /spool/local
+ by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <lucaskt@linux.vnet.ibm.com>;
+ Wed, 24 Apr 2013 19:55:26 -0300
+Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id EBC641DC004E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 18:55:22 -0400 (EDT)
+Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
+ by d24relay02.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3OMsM2l33882330
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 19:54:22 -0300
+Received: from d24av01.br.ibm.com (loopback [127.0.0.1])
+ by d24av01.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3OMtLJR019984
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 19:55:22 -0300
+From: lucaskt@linux.vnet.ibm.com
+To: linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ "David Airlie <airlied@linux.ie> Michael Ellerman" <michael@ellerman.id.au>
+Subject: [PATCHv4 0/2] Speed Cap fixes for ppc64
+Date: Wed, 24 Apr 2013 19:54:48 -0300
+Message-Id: <1366844090-5492-1-git-send-email-lucaskt@linux.vnet.ibm.com>
+Cc: Kleber Sacilotto de Souza <klebers@linux.vnet.ibm.com>,
+ Alex Deucher <alexander.deucher@amd.com>, Jerome Glisse <jglisse@redhat.com>,
+ Lucas Kannebley Tavares <lucaskt@vnet.linux.ibm.com>,
+ Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
+ Brian King <brking@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,100 +42,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/24/2013 06:29:29 AM, Zhao Chenhui wrote:
-> On Tue, Apr 23, 2013 at 07:04:06PM -0500, Scott Wood wrote:
-> > On 04/19/2013 05:47:45 AM, Zhao Chenhui wrote:
-> > >From: Chen-Hui Zhao <chenhui.zhao@freescale.com>
-> > >
-> > >For e6500, two threads in one core share one time base. Just need
-> > >to do time base sync on first thread of one core, and skip it on
-> > >the other thread.
-> > >
-> > >Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
-> > >Signed-off-by: Li Yang <leoli@freescale.com>
-> > >Signed-off-by: Andy Fleming <afleming@freescale.com>
-> > >---
-> > > arch/powerpc/platforms/85xx/smp.c |   52
-> > >+++++++++++++++++++++++++++++++-----
-> > > 1 files changed, 44 insertions(+), 8 deletions(-)
-> > >
-> > >diff --git a/arch/powerpc/platforms/85xx/smp.c
-> > >b/arch/powerpc/platforms/85xx/smp.c
-> > >index 74d8cde..5f3eee3 100644
-> > >--- a/arch/powerpc/platforms/85xx/smp.c
-> > >+++ b/arch/powerpc/platforms/85xx/smp.c
-> > >@@ -26,6 +26,7 @@
-> > > #include <asm/cacheflush.h>
-> > > #include <asm/dbell.h>
-> > > #include <asm/fsl_guts.h>
-> > >+#include <asm/cputhreads.h>
-> > >
-> > > #include <sysdev/fsl_soc.h>
-> > > #include <sysdev/mpic.h>
-> > >@@ -45,6 +46,7 @@ static u64 timebase;
-> > > static int tb_req;
-> > > static int tb_valid;
-> > > static u32 cur_booting_core;
-> > >+static bool rcpmv2;
-> > >
-> > > #ifdef CONFIG_PPC_E500MC
-> > > /* get a physical mask of online cores and booting core */
-> > >@@ -53,26 +55,40 @@ static inline u32 get_phy_cpu_mask(void)
-> > > 	u32 mask;
-> > > 	int cpu;
-> > >
-> > >-	mask =3D 1 << cur_booting_core;
-> > >-	for_each_online_cpu(cpu)
-> > >-		mask |=3D 1 << get_hard_smp_processor_id(cpu);
-> > >+	if (smt_capable()) {
-> > >+		/* two threads in one core share one time base */
-> > >+		mask =3D 1 << cpu_core_index_of_thread(cur_booting_core);
-> > >+		for_each_online_cpu(cpu)
-> > >+			mask |=3D 1 << cpu_core_index_of_thread(
-> > >+					get_hard_smp_processor_id(cpu));
-> > >+	} else {
-> > >+		mask =3D 1 << cur_booting_core;
-> > >+		for_each_online_cpu(cpu)
-> > >+			mask |=3D 1 << get_hard_smp_processor_id(cpu);
-> > >+	}
-> >
-> > Where is smt_capable defined()?  I assume somewhere in the patchset
-> > but it's a pain to search 12 patches...
-> >
->=20
-> It is defined in arch/powerpc/include/asm/topology.h.
-> 	#define smt_capable()           (cpu_has_feature(CPU_FTR_SMT))
->=20
-> Thanks for your review again.
+From: Lucas Kannebley Tavares <lucaskt@vnet.linux.ibm.com>
 
-We shouldn't base it on CPU_FTR_SMT.  For example, e6500 doesn't claim =20
-that feature yet, except in our SDK kernel.  That doesn't change the =20
-topology of CPU numbering.
+This patch series does:
+  1. max_bus_speed is used to set the device to gen2 speeds
+  2. on power there's no longer a conflict between the pseries call and other architectures, because the overwrite is done via a ppc_md hook
+  3. radeon is using bus->max_bus_speed instead of drm_pcie_get_speed_cap_mask for gen2 capability detection
 
-> > Is this really about whether we're SMT-capable or whether we have
-> > rcpm v2?
-> >
-> > -Scott
->=20
-> I think this "if" statement can be removed. The =20
-> cpu_core_index_of_thread()
-> can return the correct cpu number with thread or without thread.
->=20
-> Like this:
-> static inline u32 get_phy_cpu_mask(void)
-> {
-> 	u32 mask;
-> 	int cpu;
->=20
-> 	mask =3D 1 << cpu_core_index_of_thread(cur_booting_core);
-> 	for_each_online_cpu(cpu)
-> 		mask |=3D 1 << cpu_core_index_of_thread(
-> 				get_hard_smp_processor_id(cpu));
->=20
-> 	return mask;
-> }
+And I've also added the changes proposed by Michael Ellerman:
+  1. Corrected Patch 1's comments
+  2. Moved forward function declarations to pseries.h header
+  3. Added forward references to struct pci_host_bridge, preventing compilation fails.
 
-Likewise, this will get it wrong if SMT is disabled or not yet =20
-implemented on a core.
+The first patch consists of some architecture changes, such as adding a hook on powerpc for pci_root_bridge_prepare, so that pseries will initialize it to a function, while all other architectures get a NULL pointer. So that whenever whenever pci_create_root_bus is called, we'll get max_bus_speed properly setup from OpenFirmware.
 
--Scott=
+The second patch consists of simple radeon changes not to call drm_get_pcie_speed_cap_mask anymore. I assume that on x86 machines, the max_bus_speed property will be properly set already.
+
+Lucas Kannebley Tavares (2):
+  ppc64: perform proper max_bus_speed detection
+  radeon: use max_bus_speed to activate gen2 speeds
+
+ arch/powerpc/include/asm/machdep.h       |  2 ++
+ arch/powerpc/kernel/pci-common.c         |  8 +++++
+ arch/powerpc/platforms/pseries/pci.c     | 51 ++++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/pseries/pseries.h |  4 +++
+ arch/powerpc/platforms/pseries/setup.c   |  2 ++
+ drivers/gpu/drm/radeon/evergreen.c       | 10 ++-----
+ drivers/gpu/drm/radeon/r600.c            |  9 ++----
+ drivers/gpu/drm/radeon/rv770.c           |  9 ++----
+ 8 files changed, 74 insertions(+), 21 deletions(-)
+
+-- 
+1.8.1.4
