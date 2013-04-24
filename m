@@ -2,25 +2,23 @@ Return-Path: <gang.chen@asianux.com>
 Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 0A8362C0118
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 17:41:38 +1000 (EST)
-Message-ID: <51778C82.2080807@asianux.com>
-Date: Wed, 24 Apr 2013 15:40:50 +0800
+ by ozlabs.org (Postfix) with ESMTPS id 86C1A2C00DE
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 17:46:18 +1000 (EST)
+Message-ID: <51778D97.4080409@asianux.com>
+Date: Wed, 24 Apr 2013 15:45:27 +0800
 From: Chen Gang <gang.chen@asianux.com>
 MIME-Version: 1.0
 To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Subject: Re: [PATCH] PowerPC: kernel: memory access violation when
- rtas_data_buf contents are more than 1026
-References: <516F7A7D.60206@asianux.com> <1366677081.2886.7.camel@pasglop>
- <5175E85F.1040509@asianux.com> <5175FC36.4060308@asianux.com>
- <51777B74.8040204@linux.vnet.ibm.com> <517783D8.6010701@asianux.com>
- <51778885.6090306@linux.vnet.ibm.com>
-In-Reply-To: <51778885.6090306@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+Subject: Re: [PATCH] arch/powerpc/kernel: using %12.12s instead of %12s for
+ avoiding memory overflow.
+References: <5100B53C.3030109@asianux.com> <512055D0.7050100@asianux.com>
+ <514FD2E0.5030805@asianux.com>
+In-Reply-To: <514FD2E0.5030805@asianux.com>
+Content-Type: text/plain; charset=GB2312
 Cc: "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>,
+ Michael Neuling <mikey@neuling.org>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "paulus@samba.org" <paulus@samba.org>, Al Viro <viro@zeniv.linux.org.uk>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,40 +28,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2013å¹´04æœˆ24æ—¥ 15:23, Vasant Hegde wrote:
-> On 04/24/2013 12:33 PM, Chen Gang wrote:
->> On 2013å¹´04æœˆ24æ—¥ 14:28, Vasant Hegde wrote:
->>> On 04/23/2013 08:42 AM, Chen Gang wrote:
->>>>
->>>> need set '\0' for 'local_buffer'.
->>>>
->>>> SPLPAR_MAXLENGTH is 1026, RTAS_DATA_BUF_SIZE is 4096. so the
->>>> contents of
->>>> rtas_data_buf may truncated in memcpy.
->>>>
->>>> if contents are really truncated.
->>>>     the splpar_strlen is more than 1026. the next while loop
->>>> checking will
->>>>     not find the end of buffer. that will cause memory access
->>>> violation.
->>>>
->>>
->>> Per parameter length in ibm,get-system-parameter RTAS call is limited to
->>> 1026 bytes (1024 bytes of data + 2 bytes  length). And 'rtas_data_buf'
->>> was set to 0 (first 1026 bytes) before call RTAS call. At the worst if
->>> we get junk in RTAS output length field helps to exit from the while
->>> loop. So I don't think we need this patch.
+Hello Vasant Hegde:
+
+How about this patch, is it OK ?
+
+Thanks.
+
+
+On 2013Äê03ÔÂ25ÈÕ 12:30, Chen Gang wrote:
+> Hello Maintainers:
+> 
+>   could you help check this patch whether is ok ?
+> 
+>   thanks.
+> 
+> 
+> On 2013Äê02ÔÂ17ÈÕ 12:00, Chen Gang wrote:
+>> Hello relative members:
 >>
->> Is get-system-parameter return the NUL terminated string ? if so, it
->> will no issue (just like your discription).
+>>   please give a glance to this patch, when you have time.
+>>
+>>   thanks.
+>>
+>>   :-)
+>>
+>> gchen.
+>>
+>>
+>> ÓÚ 2013Äê01ÔÂ24ÈÕ 12:14, Chen Gang Ð´µÀ:
+>>>
+>>>   for tmp_part->header.name:
+>>>     it is "Terminating null required only for names < 12 chars".
+>>>     so need to limit the %.12s for it in printk
+>>>
+>>>   additional info:
+>>>
+>>>     %12s  limit the width, not for the original string output length
+>>>           if name length is more than 12, it still can be fully displayed.
+>>>           if name length is less than 12, the ' ' will be filled before name.
+>>>
+>>>     %.12s truly limit the original string output length (precision)
+>>>
+>>>
+>>> Signed-off-by: Chen Gang <gang.chen@asianux.com>
+>>> ---
+>>>  arch/powerpc/kernel/nvram_64.c |    2 +-
+>>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>>
+>>> diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
+>>> index bec1e93..57bf6d2 100644
+>>> --- a/arch/powerpc/kernel/nvram_64.c
+>>> +++ b/arch/powerpc/kernel/nvram_64.c
+>>> @@ -202,7 +202,7 @@ static void __init nvram_print_partitions(char * label)
+>>>  	printk(KERN_WARNING "--------%s---------\n", label);
+>>>  	printk(KERN_WARNING "indx\t\tsig\tchks\tlen\tname\n");
+>>>  	list_for_each_entry(tmp_part, &nvram_partitions, partition) {
+>>> -		printk(KERN_WARNING "%4d    \t%02x\t%02x\t%d\t%12s\n",
+>>> +		printk(KERN_WARNING "%4d    \t%02x\t%02x\t%d\t%12.12s\n",
+>>>  		       tmp_part->index, tmp_part->header.signature,
+>>>  		       tmp_part->header.checksum, tmp_part->header.length,
+>>>  		       tmp_part->header.name);
+>>>
+>>
 >>
 > 
-> Length includes the length of the NULL. So (idx < splpar_strlen)
-> is safe. IMO existing code is proper.
+> 
 
-OK, since it is not an issue, I will try another patches for powerpc POWER7.
-
-  :-)
 
 -- 
 Chen Gang
