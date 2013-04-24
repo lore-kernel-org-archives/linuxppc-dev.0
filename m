@@ -1,21 +1,24 @@
-Return-Path: <Ian.Campbell@citrix.com>
-Received: from SMTP.EU.CITRIX.COM (smtp.eu.citrix.com [46.33.159.39])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "Cisco Appliance Demo Certificate",
- Issuer "Cisco Appliance Demo Certificate" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1FD152C011E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 21:02:16 +1000 (EST)
-Message-ID: <1366800525.20256.266.camel@zakaz.uk.xensource.com>
-Subject: [RFC] device-tree.git automatic sync from linux.git
-From: Ian Campbell <Ian.Campbell@citrix.com>
-To: <linux-kernel@vger.kernel.org>
-Date: Wed, 24 Apr 2013 11:48:45 +0100
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <B35336@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0E6892C00B9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 21:09:06 +1000 (EST)
+Date: Wed, 24 Apr 2013 19:08:17 +0800
+From: Zhao Chenhui <chenhui.zhao@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH v2 01/15] powerpc/85xx: cache operations for Freescale
+ SoCs based on BOOK3E
+Message-ID: <20130424110817.GA3172@localhost.localdomain>
+References: <1366368468-29143-1-git-send-email-chenhui.zhao@freescale.com>
+ <1366760770.5825.17@snotra>
 MIME-Version: 1.0
-Cc: linux-mips@linux-mips.org, linux-c6x-dev@linux-c6x.org,
- linux-xtensa@linux-xtensa.org, microblaze-uclinux@itee.uq.edu.au,
- x86@kernel.org, linux@lists.openrisc.net, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1366760770.5825.17@snotra>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ r58472@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,68 +28,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Tue, Apr 23, 2013 at 06:46:10PM -0500, Scott Wood wrote:
+> On 04/19/2013 05:47:34 AM, Zhao Chenhui wrote:
+> >These cache operations support Freescale SoCs based on BOOK3E.
+> >Move L1 cache operations to fsl_booke_cache.S in order to maintain
+> >easily. And, add cache operations for backside L2 cache and
+> >platform cache.
+> >
+> >The backside L2 cache appears on e500mc and e5500 core. The
+> >platform cache
+> >supported by this patch is L2 Look-Aside Cache, which appears on SoCs
+> >with e500v1/e500v2 core, such as MPC8572, P1020, etc.
+> >
+> >Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+> >Signed-off-by: Li Yang <leoli@freescale.com>
+> >---
+> > arch/powerpc/include/asm/cacheflush.h |    8 ++
+> > arch/powerpc/kernel/Makefile          |    1 +
+> > arch/powerpc/kernel/fsl_booke_cache.S |  210
+> >+++++++++++++++++++++++++++++++++
+> > arch/powerpc/kernel/head_fsl_booke.S  |   74 ------------
+> > 4 files changed, 219 insertions(+), 74 deletions(-)
+> > create mode 100644 arch/powerpc/kernel/fsl_booke_cache.S
+> >
+> >diff --git a/arch/powerpc/include/asm/cacheflush.h
+> >b/arch/powerpc/include/asm/cacheflush.h
+> >index b843e35..bc3f937 100644
+> >--- a/arch/powerpc/include/asm/cacheflush.h
+> >+++ b/arch/powerpc/include/asm/cacheflush.h
+> >@@ -32,6 +32,14 @@ extern void flush_dcache_page(struct page *page);
+> >
+> > extern void __flush_disable_L1(void);
+> >
+> >+#ifdef CONFIG_FSL_SOC_BOOKE
+> >+void flush_dcache_L1(void);
+> >+void flush_backside_L2_cache(void);
+> >+void disable_backside_L2_cache(void);
+> >+void flush_disable_L2(void);
+> >+void invalidate_enable_L2(void);
+> >+#endif
+> 
+> Don't ifdef prototypes unless there's a good reason, such as
+> providing an inline alternative.
 
-First off apologies for the large CC list -- I think this catches the
-arch list for all the arches with device tree source in the tree.
+I'll get rid of this "#ifdef".
 
-Various folks have expressed an interest in eventually splitting the
-device tree bindings out of the Linux git repository into a separate
-tree. This should help reduce the cross talk between the code and the
-bindings and to make it difficult to accidentally "co-evolve" the
-bindings and the code (i.e. break compatibility) etc. There are also
-other projects (such as Xen) which would also like to use device-tree as
-an OS agnostic description of the hardware.
+> 
+> Why do you have "flush_backside_L2_cache" and
+> "disable_backside_L2_cache" as something different from
+> "flush_disable_L2"?  The latter should flush whatever L2 is present.
+> Don't treat pre-corenet as the default.
+> 
 
-I was talking to Grant about this at this Spring's LinaroConnect in Hong
-Kong and as a first step he was interested in a device-tree.git
-repository which is automatically kept insync with the main Linux tree.
-Somehow I found myself volunteering to set up that tree.
+These L2 caches are very different. The backside L2 is integrated in
+the e500mc/e5500 core and controlled by SPR registers. But, the latter
+L2 cache is on the SoC and controlled by registers mapped in CCSR.
 
-An RFC repository can be found at:
-        http://xenbits.xen.org/gitweb/?p=people/ianc/device-tree-rebasing.git
+> Why do we even need to distinguish L1 from L2 at all?  Shouldn't the
+> function that gets exposed just be "flush and disable data caches
+> that are specific to this cpu"?  What should happen on e6500?
+> 
+> -Scott
 
-This is created using git filter-branch and retains the full history for
-the device tree source files up to v3.9-rc8.
+Yes. It is a good idea to use a set of uniform functions to operate the caches of
+e500/e500mc/e5500/e6500 and SoCs. I'll think over your comments.
 
-The master branch contains everything including the required build
-infrastructure while upstream/master and upstream/dts contain the most
-recently converted upstream master branch and the pristine converted
-version respectively. Each upstream tag T is paired with a tag T-dts
-which is the converted version of that tag.
+Thanks for you comments.
 
-Note that the tree will be potentially rebasing (hence the name) for the
-time being while I'm still smoothing out the conversion process.
-
-The paths to include in the conversion are described in
-scripts/rewrite-paths.sed. The generic cases are:
-        arch/ARCH/boot/dts/*.dts and *.dts? (for dtsi and dtsp etc)
-	arch/ARCH/boot/*.dts and *.dts?
-        arch/ARCH/include/dts/* (currently unused?)
-which become src/ARCH/*.dts and *.dts? plus src/ARCH/include/*
-
-There are also some special cases for some arches which don't follow
-this pattern and for older versions of the kernel which were less
-consistent. The paths were gleaned from git ls-tree + grep on every tag
-in the tree, so if a file was added and moved between two rcs then the
-original path may not be covered (so the move will look like it just
-adds the files).
-
-In principal this supports the new .dtsp files and includes the required
-include paths in the conversion but none of them seem to be in mainline
-yet, so we'll have to see!
-
-The initial conversion took in excess of 40 hours (running out of a
-ramdisk) so even if the result is stable in terms of commit ids etc a
-fresh conversion every time isn't an option for a ~daily sync so I had
-to create a slightly hacked around git-filter-branch (found in
-scripts/git-filter-branch) to support incremental filtering, which I
-intend to send to the git folks soon. 
-
-Please let me know what you think.
-
-Ian.
-
-[0] real    2533m32.142s
-    user    2393m35.039s
-    sys     343m44.385s
+-Chenhui
