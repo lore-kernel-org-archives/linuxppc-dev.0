@@ -1,12 +1,23 @@
-Return-Path: <jk@ozlabs.org>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Subject: [RFC, PATCH v2] powerpc/prom: Scan reserved-ranges node for memory
- reservations
-Message-Id: <1366774481.239211.639433936348.1.gpush@pablo>
-To: linuxppc-dev@lists.ozlabs.org
-From: Jeremy Kerr <jk@ozlabs.org>
-Date: Wed, 24 Apr 2013 11:34:41 +0800
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 4E6942C010D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 14:19:43 +1000 (EST)
+Message-ID: <1366777161.2869.0.camel@pasglop>
+Subject: Re: [PATCH 1/2] powerpc: Move opcode definitions from kvm/emulate.c
+ to asm/ppc-opcode.h
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jia Hongtao-B38951 <B38951@freescale.com>
+Date: Wed, 24 Apr 2013 14:19:21 +1000
+In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01C4A4B0@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <1366684776-10946-1-git-send-email-hongtao.jia@freescale.com>
+ <20130423052951.GB20902@concordia>
+ <412C8208B4A0464FA894C5F0C278CD5D01C4A4B0@039-SN1MPN1-002.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,73 +27,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Based on benh's proposal at
-https://lists.ozlabs.org/pipermail/linuxppc-dev/2012-September/101237.html,
-this change provides support for reserving memory from the
-reserved-ranges node at the root of the device tree.
+On Tue, 2013-04-23 at 06:36 +0000, Jia Hongtao-B38951 wrote:
+> These definitions are firstly used by KVM defined like OP_31_XOP_TRAP.
+> Two ways to extract these definitions for public use:
+> 
+> 1. Like this patch did. For keeping the KVM code that using these
+>    definitions unchanged we do not update them to match.
+> 
+> 2. Move these definitions to another .h file like my last patch did:
+>    http://patchwork.ozlabs.org/patch/235646/
+>    You can see the comments there.
 
-We just call memblock_reserve on these ranges for now.
+There's a better way ... but it's more work.
 
-Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
+All opcodes are based on a primary opcode and a potential secondary
+opcode. You could/should rework ppc-opcodes.h to in fact define them
+all that way as well, which would "reconcile" the KVM way and the
+existing stuff.
 
----
-v2: fix range property iteration
+Cheers,
+Ben.
 
----
- arch/powerpc/kernel/prom.c |   36 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 36 insertions(+)
-
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 8b6f7a9..c77307e 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -559,6 +559,34 @@ void __init early_init_dt_setup_initrd_arch(unsigned long start,
- }
- #endif
- 
-+static bool __init early_reserve_mem_dt(void)
-+{
-+	unsigned long i, len, dt_root;
-+	const __be32 *prop;
-+
-+	dt_root = ((unsigned long)initial_boot_params) +
-+		be32_to_cpu(initial_boot_params->off_dt_struct);
-+
-+	prop = of_get_flat_dt_prop(dt_root, "reserved-ranges", &len);
-+
-+	if (!prop)
-+		return false;
-+
-+	/* Each reserved range is an (address,size) pair, 2 cells each,
-+	 * totalling 4 cells per range. */
-+	for (i = 0; i < len / (sizeof(*prop) * 4); i++) {
-+		u64 base, size;
-+
-+		base = of_read_number(prop + (i * 4) + 0, 2);
-+		size = of_read_number(prop + (i * 4) + 2, 2);
-+
-+		if (size)
-+			memblock_reserve(base, size);
-+	}
-+
-+	return true;
-+}
-+
- static void __init early_reserve_mem(void)
- {
- 	u64 base, size;
-@@ -574,6 +602,14 @@ static void __init early_reserve_mem(void)
- 	self_size = initial_boot_params->totalsize;
- 	memblock_reserve(self_base, self_size);
- 
-+	/*
-+	 * Try looking for reserved-regions property in the DT first; if
-+	 * it's present, it'll contain all of the necessary reservation
-+	 * info
-+	 */
-+	if (early_reserve_mem_dt())
-+		return;
-+
- #ifdef CONFIG_BLK_DEV_INITRD
- 	/* then reserve the initrd, if any */
- 	if (initrd_start && (initrd_end > initrd_start))
+> Thanks.
+> -Hongtao
+> 
+> 
+> 
+> 
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
