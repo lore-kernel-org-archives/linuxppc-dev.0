@@ -1,17 +1,19 @@
 Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 64FA82C010F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 12:55:12 +1000 (EST)
-From: Tiejun Chen <tiejun.chen@windriver.com>
-To: <galak@kernel.crashing.org>
-Subject: [PATCH 1/1] usb: ehci-fsl: set INCR8 mode only on MPC512x
-Date: Wed, 24 Apr 2013 10:55:10 +0800
-Message-ID: <1366772110-9620-1-git-send-email-tiejun.chen@windriver.com>
+ by ozlabs.org (Postfix) with ESMTPS id 62B9E2C010F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 13:13:09 +1000 (EST)
+Message-ID: <51774DC6.806@windriver.com>
+Date: Wed, 24 Apr 2013 11:13:10 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/1] usb: ehci-fsl: set INCR8 mode only on MPC512x
+References: <1366772110-9620-1-git-send-email-tiejun.chen@windriver.com>
+In-Reply-To: <1366772110-9620-1-git-send-email-tiejun.chen@windriver.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,37 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-commit 761bbcb7, "usb: ehci-fsl: set INCR8 mode for system bus interface
-on MPC512x", introduced to fix one MPC5121e (M36P) Errata by setting
-INCR8 mode for system bus interface on MPC512x, but we should make sure
-this is only valid for MPC512x like other parts of this commit. Otherwise
-this would issue other platforms as abnormal without this similar Errata.
+Sorry, please ignore this temporarily since looks this is already covered in tree.
 
-Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
----
- drivers/usb/host/ehci-fsl.c |   10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+I will look further into this to send another version.
 
-diff --git a/drivers/usb/host/ehci-fsl.c b/drivers/usb/host/ehci-fsl.c
-index d81d2fc..f4f2a7b 100644
---- a/drivers/usb/host/ehci-fsl.c
-+++ b/drivers/usb/host/ehci-fsl.c
-@@ -509,7 +509,15 @@ static int ehci_fsl_mpc512x_drv_resume(struct device *dev)
- 	ehci_writel(ehci, ISIPHYCTRL_PXE | ISIPHYCTRL_PHYE,
- 		    hcd->regs + FSL_SOC_USB_ISIPHYCTRL);
- 
--	ehci_writel(ehci, SBUSCFG_INCR8, hcd->regs + FSL_SOC_USB_SBUSCFG);
-+	if (of_device_is_compatible(dev->parent->of_node,
-+				    "fsl,mpc5121-usb2-dr")) {
-+		/*
-+		 * set SBUSCFG:AHBBRST so that control msgs don't
-+		 * fail when doing heavy PATA writes.
-+		 */
-+		ehci_writel(ehci, SBUSCFG_INCR8,
-+			    hcd->regs + FSL_SOC_USB_SBUSCFG);
-+	}
- 
- 	/* restore EHCI registers */
- 	ehci_writel(ehci, pdata->pm_command, &ehci->regs->command);
--- 
-1.7.9.5
+Tiejun
+
+On 04/24/2013 10:55 AM, Tiejun Chen wrote:
+> commit 761bbcb7, "usb: ehci-fsl: set INCR8 mode for system bus interface
+> on MPC512x", introduced to fix one MPC5121e (M36P) Errata by setting
+> INCR8 mode for system bus interface on MPC512x, but we should make sure
+> this is only valid for MPC512x like other parts of this commit. Otherwise
+> this would issue other platforms as abnormal without this similar Errata.
+>
+> Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+> ---
+>   drivers/usb/host/ehci-fsl.c |   10 +++++++++-
+>   1 file changed, 9 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/usb/host/ehci-fsl.c b/drivers/usb/host/ehci-fsl.c
+> index d81d2fc..f4f2a7b 100644
+> --- a/drivers/usb/host/ehci-fsl.c
+> +++ b/drivers/usb/host/ehci-fsl.c
+> @@ -509,7 +509,15 @@ static int ehci_fsl_mpc512x_drv_resume(struct device *dev)
+>   	ehci_writel(ehci, ISIPHYCTRL_PXE | ISIPHYCTRL_PHYE,
+>   		    hcd->regs + FSL_SOC_USB_ISIPHYCTRL);
+>
+> -	ehci_writel(ehci, SBUSCFG_INCR8, hcd->regs + FSL_SOC_USB_SBUSCFG);
+> +	if (of_device_is_compatible(dev->parent->of_node,
+> +				    "fsl,mpc5121-usb2-dr")) {
+> +		/*
+> +		 * set SBUSCFG:AHBBRST so that control msgs don't
+> +		 * fail when doing heavy PATA writes.
+> +		 */
+> +		ehci_writel(ehci, SBUSCFG_INCR8,
+> +			    hcd->regs + FSL_SOC_USB_SBUSCFG);
+> +	}
+>
+>   	/* restore EHCI registers */
+>   	ehci_writel(ehci, pdata->pm_command, &ehci->regs->command);
+>
