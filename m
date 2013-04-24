@@ -1,16 +1,23 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Wed, 24 Apr 2013 16:29:32 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH -V6 23/27] powerpc: Replace find_linux_pte with
- find_linux_pte_or_hugepte
-Message-ID: <20130424062931.GB2073@drongo>
-References: <1366624861-24948-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1366624861-24948-24-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <B07421@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8938B2C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2013 08:38:29 +1000 (EST)
+Date: Wed, 24 Apr 2013 17:38:16 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH v2 12/15] powerpc/85xx: add time base sync support for
+ e6500
+To: Zhao Chenhui <chenhui.zhao@freescale.com>
+In-Reply-To: <20130424112929.GC3172@localhost.localdomain> (from
+ chenhui.zhao@freescale.com on Wed Apr 24 06:29:29 2013)
+Message-ID: <1366843096.17465.17@snotra>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1366624861-24948-24-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, David Gibson <dwg@au1.ibm.com>
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ r58472@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,33 +27,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Apr 22, 2013 at 03:30:57PM +0530, Aneesh Kumar K.V wrote:
-> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-> 
-> Replace find_linux_pte with find_linux_pte_or_hugepte and explicitly
-> document why we don't need to handle transparent hugepages at callsites.
+On 04/24/2013 06:29:29 AM, Zhao Chenhui wrote:
+> On Tue, Apr 23, 2013 at 07:04:06PM -0500, Scott Wood wrote:
+> > On 04/19/2013 05:47:45 AM, Zhao Chenhui wrote:
+> > >From: Chen-Hui Zhao <chenhui.zhao@freescale.com>
+> > >
+> > >For e6500, two threads in one core share one time base. Just need
+> > >to do time base sync on first thread of one core, and skip it on
+> > >the other thread.
+> > >
+> > >Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+> > >Signed-off-by: Li Yang <leoli@freescale.com>
+> > >Signed-off-by: Andy Fleming <afleming@freescale.com>
+> > >---
+> > > arch/powerpc/platforms/85xx/smp.c |   52
+> > >+++++++++++++++++++++++++++++++-----
+> > > 1 files changed, 44 insertions(+), 8 deletions(-)
+> > >
+> > >diff --git a/arch/powerpc/platforms/85xx/smp.c
+> > >b/arch/powerpc/platforms/85xx/smp.c
+> > >index 74d8cde..5f3eee3 100644
+> > >--- a/arch/powerpc/platforms/85xx/smp.c
+> > >+++ b/arch/powerpc/platforms/85xx/smp.c
+> > >@@ -26,6 +26,7 @@
+> > > #include <asm/cacheflush.h>
+> > > #include <asm/dbell.h>
+> > > #include <asm/fsl_guts.h>
+> > >+#include <asm/cputhreads.h>
+> > >
+> > > #include <sysdev/fsl_soc.h>
+> > > #include <sysdev/mpic.h>
+> > >@@ -45,6 +46,7 @@ static u64 timebase;
+> > > static int tb_req;
+> > > static int tb_valid;
+> > > static u32 cur_booting_core;
+> > >+static bool rcpmv2;
+> > >
+> > > #ifdef CONFIG_PPC_E500MC
+> > > /* get a physical mask of online cores and booting core */
+> > >@@ -53,26 +55,40 @@ static inline u32 get_phy_cpu_mask(void)
+> > > 	u32 mask;
+> > > 	int cpu;
+> > >
+> > >-	mask =3D 1 << cur_booting_core;
+> > >-	for_each_online_cpu(cpu)
+> > >-		mask |=3D 1 << get_hard_smp_processor_id(cpu);
+> > >+	if (smt_capable()) {
+> > >+		/* two threads in one core share one time base */
+> > >+		mask =3D 1 << cpu_core_index_of_thread(cur_booting_core);
+> > >+		for_each_online_cpu(cpu)
+> > >+			mask |=3D 1 << cpu_core_index_of_thread(
+> > >+					get_hard_smp_processor_id(cpu));
+> > >+	} else {
+> > >+		mask =3D 1 << cur_booting_core;
+> > >+		for_each_online_cpu(cpu)
+> > >+			mask |=3D 1 << get_hard_smp_processor_id(cpu);
+> > >+	}
+> >
+> > Where is smt_capable defined()?  I assume somewhere in the patchset
+> > but it's a pain to search 12 patches...
+> >
+>=20
+> It is defined in arch/powerpc/include/asm/topology.h.
+> 	#define smt_capable()           (cpu_has_feature(CPU_FTR_SMT))
+>=20
+> Thanks for your review again.
 
-> diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-> index 19c93ba..aa6a351 100644
-> --- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-> +++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-> @@ -24,13 +24,15 @@
->  /* Translate address of a vmalloc'd thing to a linear map address */
->  static void *real_vmalloc_addr(void *x)
->  {
-> +	unsigned shift;
->  	unsigned long addr = (unsigned long) x;
->  	pte_t *p;
->  
-> -	p = find_linux_pte(swapper_pg_dir, addr);
-> +	p = find_linux_pte_or_hugepte(swapper_pg_dir, addr, &shift);
->  	if (!p || !pte_present(*p))
->  		return NULL;
->  	/* assume we don't have huge pages in vmalloc space... */
-> +	BUG_ON(shift);
+We shouldn't base it on CPU_FTR_SMT.  For example, e6500 doesn't claim =20
+that feature yet, except in our SDK kernel.  That doesn't change the =20
+topology of CPU numbering.
 
-Please don't add BUG_ON in this file.  At this point we're basically
-still in guest context (though in real mode), and BUG_ON would cause a
-trap which we would handle very badly...
+> > Is this really about whether we're SMT-capable or whether we have
+> > rcpm v2?
+> >
+> > -Scott
+>=20
+> I think this "if" statement can be removed. The =20
+> cpu_core_index_of_thread()
+> can return the correct cpu number with thread or without thread.
+>=20
+> Like this:
+> static inline u32 get_phy_cpu_mask(void)
+> {
+> 	u32 mask;
+> 	int cpu;
+>=20
+> 	mask =3D 1 << cpu_core_index_of_thread(cur_booting_core);
+> 	for_each_online_cpu(cpu)
+> 		mask |=3D 1 << cpu_core_index_of_thread(
+> 				get_hard_smp_processor_id(cpu));
+>=20
+> 	return mask;
+> }
 
-Paul.
+Likewise, this will get it wrong if SMT is disabled or not yet =20
+implemented on a core.
+
+-Scott=
