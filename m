@@ -1,24 +1,15 @@
-Return-Path: <B07421@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BBD742C011C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 10:04:20 +1000 (EST)
-Date: Tue, 23 Apr 2013 19:04:06 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v2 12/15] powerpc/85xx: add time base sync support for
- e6500
-To: Zhao Chenhui <chenhui.zhao@freescale.com>
-References: <1366368468-29143-1-git-send-email-chenhui.zhao@freescale.com>
- <1366368468-29143-12-git-send-email-chenhui.zhao@freescale.com>
-In-Reply-To: <1366368468-29143-12-git-send-email-chenhui.zhao@freescale.com>
- (from chenhui.zhao@freescale.com on Fri Apr 19 05:47:45 2013)
-Message-ID: <1366761846.5825.21@snotra>
+Return-Path: <dwalker@fifo99.com>
+Received: from fifo99.com (fifo99.com [67.223.236.141])
+ by ozlabs.org (Postfix) with ESMTP id BEC5A2C010F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 10:50:49 +1000 (EST)
+Date: Tue, 23 Apr 2013 17:50:33 -0700
+From: Daniel Walker <dwalker@fifo99.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] arch: powerpc: mm: make mmap_64.c compile on 32bit powerpc
+Message-ID: <20130424005031.GA21337@fifo99.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,65 +19,336 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/19/2013 05:47:45 AM, Zhao Chenhui wrote:
-> From: Chen-Hui Zhao <chenhui.zhao@freescale.com>
->=20
-> For e6500, two threads in one core share one time base. Just need
-> to do time base sync on first thread of one core, and skip it on
-> the other thread.
->=20
-> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> Signed-off-by: Andy Fleming <afleming@freescale.com>
-> ---
->  arch/powerpc/platforms/85xx/smp.c |   52 =20
-> +++++++++++++++++++++++++++++++-----
->  1 files changed, 44 insertions(+), 8 deletions(-)
->=20
-> diff --git a/arch/powerpc/platforms/85xx/smp.c =20
-> b/arch/powerpc/platforms/85xx/smp.c
-> index 74d8cde..5f3eee3 100644
-> --- a/arch/powerpc/platforms/85xx/smp.c
-> +++ b/arch/powerpc/platforms/85xx/smp.c
-> @@ -26,6 +26,7 @@
->  #include <asm/cacheflush.h>
->  #include <asm/dbell.h>
->  #include <asm/fsl_guts.h>
-> +#include <asm/cputhreads.h>
->=20
->  #include <sysdev/fsl_soc.h>
->  #include <sysdev/mpic.h>
-> @@ -45,6 +46,7 @@ static u64 timebase;
->  static int tb_req;
->  static int tb_valid;
->  static u32 cur_booting_core;
-> +static bool rcpmv2;
->=20
->  #ifdef CONFIG_PPC_E500MC
->  /* get a physical mask of online cores and booting core */
-> @@ -53,26 +55,40 @@ static inline u32 get_phy_cpu_mask(void)
->  	u32 mask;
->  	int cpu;
->=20
-> -	mask =3D 1 << cur_booting_core;
-> -	for_each_online_cpu(cpu)
-> -		mask |=3D 1 << get_hard_smp_processor_id(cpu);
-> +	if (smt_capable()) {
-> +		/* two threads in one core share one time base */
-> +		mask =3D 1 << cpu_core_index_of_thread(cur_booting_core);
-> +		for_each_online_cpu(cpu)
-> +			mask |=3D 1 << cpu_core_index_of_thread(
-> +					get_hard_smp_processor_id(cpu));
-> +	} else {
-> +		mask =3D 1 << cur_booting_core;
-> +		for_each_online_cpu(cpu)
-> +			mask |=3D 1 << get_hard_smp_processor_id(cpu);
-> +	}
 
-Where is smt_capable defined()?  I assume somewhere in the patchset but =20
-it's a pain to search 12 patches...
 
-Is this really about whether we're SMT-capable or whether we have rcpm =20
-v2?
+There appears to be no good reason to keep this as 64bit only. It works
+on 32bit also, and has checks so that it can work correctly with 32bit
+binaries on 64bit hardware which is why I think this works.
 
--Scott=
+I tested this on qemu using the virtex-ml507 machine type.
+
+Before,
+
+/bin2 # ./test & cat /proc/${!}/maps
+00100000-00103000 r-xp 00000000 00:00 0          [vdso]
+10000000-10007000 r-xp 00000000 00:01 454        /bin2/test
+10017000-10018000 rw-p 00007000 00:01 454        /bin2/test
+48000000-48020000 r-xp 00000000 00:01 224        /lib/ld-2.11.3.so
+48021000-48023000 rw-p 00021000 00:01 224        /lib/ld-2.11.3.so
+bfd03000-bfd24000 rw-p 00000000 00:00 0          [stack]
+/bin2 # ./test & cat /proc/${!}/maps
+00100000-00103000 r-xp 00000000 00:00 0          [vdso]
+0fe6e000-0ffd8000 r-xp 00000000 00:01 214        /lib/libc-2.11.3.so
+0ffd8000-0ffe8000 ---p 0016a000 00:01 214        /lib/libc-2.11.3.so
+0ffe8000-0ffed000 rw-p 0016a000 00:01 214        /lib/libc-2.11.3.so
+0ffed000-0fff0000 rw-p 00000000 00:00 0
+10000000-10007000 r-xp 00000000 00:01 454        /bin2/test
+10017000-10018000 rw-p 00007000 00:01 454        /bin2/test
+48000000-48020000 r-xp 00000000 00:01 224        /lib/ld-2.11.3.so
+48020000-48021000 rw-p 00000000 00:00 0
+48021000-48023000 rw-p 00021000 00:01 224        /lib/ld-2.11.3.so
+bf98a000-bf9ab000 rw-p 00000000 00:00 0          [stack]
+/bin2 # ./test & cat /proc/${!}/maps
+00100000-00103000 r-xp 00000000 00:00 0          [vdso]
+0fe6e000-0ffd8000 r-xp 00000000 00:01 214        /lib/libc-2.11.3.so
+0ffd8000-0ffe8000 ---p 0016a000 00:01 214        /lib/libc-2.11.3.so
+0ffe8000-0ffed000 rw-p 0016a000 00:01 214        /lib/libc-2.11.3.so
+0ffed000-0fff0000 rw-p 00000000 00:00 0
+10000000-10007000 r-xp 00000000 00:01 454        /bin2/test
+10017000-10018000 rw-p 00007000 00:01 454        /bin2/test
+48000000-48020000 r-xp 00000000 00:01 224        /lib/ld-2.11.3.so
+48020000-48021000 rw-p 00000000 00:00 0
+48021000-48023000 rw-p 00021000 00:01 224        /lib/ld-2.11.3.so
+bfa54000-bfa75000 rw-p 00000000 00:00 0          [stack]
+
+After,
+
+bash-4.1# ./test & cat /proc/${!}/maps
+[7] 803
+00100000-00103000 r-xp 00000000 00:00 0          [vdso]
+10000000-10007000 r-xp 00000000 00:01 454        /bin2/test
+10017000-10018000 rw-p 00007000 00:01 454        /bin2/test
+b7eb0000-b7ed0000 r-xp 00000000 00:01 224        /lib/ld-2.11.3.so
+b7ed1000-b7ed3000 rw-p 00021000 00:01 224        /lib/ld-2.11.3.so
+bfbc0000-bfbe1000 rw-p 00000000 00:00 0          [stack]
+bash-4.1# ./test & cat /proc/${!}/maps
+[8] 805
+00100000-00103000 r-xp 00000000 00:00 0          [vdso]
+10000000-10007000 r-xp 00000000 00:01 454        /bin2/test
+10017000-10018000 rw-p 00007000 00:01 454        /bin2/test
+b7b03000-b7b23000 r-xp 00000000 00:01 224        /lib/ld-2.11.3.so
+b7b24000-b7b26000 rw-p 00021000 00:01 224        /lib/ld-2.11.3.so
+bfc27000-bfc48000 rw-p 00000000 00:00 0          [stack]
+bash-4.1# ./test & cat /proc/${!}/maps
+[9] 807
+00100000-00103000 r-xp 00000000 00:00 0          [vdso]
+10000000-10007000 r-xp 00000000 00:01 454        /bin2/test
+10017000-10018000 rw-p 00007000 00:01 454        /bin2/test
+b7f37000-b7f57000 r-xp 00000000 00:01 224        /lib/ld-2.11.3.so
+b7f58000-b7f5a000 rw-p 00021000 00:01 224        /lib/ld-2.11.3.so
+bff96000-bffb7000 rw-p 00000000 00:00 0          [stack]
+
+Signed-off-by: Daniel Walker <dwalker@fifo90.com>
+---
+ arch/powerpc/include/asm/processor.h |    2 -
+ arch/powerpc/mm/Makefile             |    5 +-
+ arch/powerpc/mm/mmap.c               |  101 ++++++++++++++++++++++++++++++++++
+ arch/powerpc/mm/mmap_64.c            |  101 ----------------------------------
+ 4 files changed, 103 insertions(+), 106 deletions(-)
+ create mode 100644 arch/powerpc/mm/mmap.c
+ delete mode 100644 arch/powerpc/mm/mmap_64.c
+
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index 7ff9eaa..6ef17bd 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -402,9 +402,7 @@ static inline void prefetchw(const void *x)
+ 
+ #define spin_lock_prefetch(x)	prefetchw(x)
+ 
+-#ifdef CONFIG_PPC64
+ #define HAVE_ARCH_PICK_MMAP_LAYOUT
+-#endif
+ 
+ #ifdef CONFIG_PPC64
+ static inline unsigned long get_clean_sp(struct pt_regs *regs, int is_32)
+diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
+index cf16b57..26f29a7 100644
+--- a/arch/powerpc/mm/Makefile
++++ b/arch/powerpc/mm/Makefile
+@@ -6,17 +6,16 @@ subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
+ 
+ ccflags-$(CONFIG_PPC64)	:= $(NO_MINIMAL_TOC)
+ 
+-obj-y				:= fault.o mem.o pgtable.o gup.o \
++obj-y				:= fault.o mem.o pgtable.o gup.o mmap.o \
+ 				   init_$(CONFIG_WORD_SIZE).o \
+ 				   pgtable_$(CONFIG_WORD_SIZE).o
+ obj-$(CONFIG_PPC_MMU_NOHASH)	+= mmu_context_nohash.o tlb_nohash.o \
+ 				   tlb_nohash_low.o
+ obj-$(CONFIG_PPC_BOOK3E)	+= tlb_low_$(CONFIG_WORD_SIZE)e.o
+-obj-$(CONFIG_PPC64)		+= mmap_64.o
+ hash64-$(CONFIG_PPC_NATIVE)	:= hash_native_64.o
+ obj-$(CONFIG_PPC_STD_MMU_64)	+= hash_utils_64.o \
+ 				   slb_low.o slb.o stab.o \
+-				   mmap_64.o $(hash64-y)
++				   $(hash64-y)
+ obj-$(CONFIG_PPC_STD_MMU_32)	+= ppc_mmu_32.o
+ obj-$(CONFIG_PPC_STD_MMU)	+= hash_low_$(CONFIG_WORD_SIZE).o \
+ 				   tlb_hash$(CONFIG_WORD_SIZE).o \
+diff --git a/arch/powerpc/mm/mmap.c b/arch/powerpc/mm/mmap.c
+new file mode 100644
+index 0000000..67a42ed
+--- /dev/null
++++ b/arch/powerpc/mm/mmap.c
+@@ -0,0 +1,101 @@
++/*
++ *  flexible mmap layout support
++ *
++ * Copyright 2003-2004 Red Hat Inc., Durham, North Carolina.
++ * All Rights Reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ *
++ *
++ * Started by Ingo Molnar <mingo@elte.hu>
++ */
++
++#include <linux/personality.h>
++#include <linux/mm.h>
++#include <linux/random.h>
++#include <linux/sched.h>
++
++/*
++ * Top of mmap area (just below the process stack).
++ *
++ * Leave at least a ~128 MB hole on 32bit applications.
++ *
++ * On 64bit applications we randomise the stack by 1GB so we need to
++ * space our mmap start address by a further 1GB, otherwise there is a
++ * chance the mmap area will end up closer to the stack than our ulimit
++ * requires.
++ */
++#define MIN_GAP32 (128*1024*1024)
++#define MIN_GAP64 ((128 + 1024)*1024*1024UL)
++#define MIN_GAP ((is_32bit_task()) ? MIN_GAP32 : MIN_GAP64)
++#define MAX_GAP (TASK_SIZE/6*5)
++
++static inline int mmap_is_legacy(void)
++{
++	if (current->personality & ADDR_COMPAT_LAYOUT)
++		return 1;
++
++	if (rlimit(RLIMIT_STACK) == RLIM_INFINITY)
++		return 1;
++
++	return sysctl_legacy_va_layout;
++}
++
++static unsigned long mmap_rnd(void)
++{
++	unsigned long rnd = 0;
++
++	if (current->flags & PF_RANDOMIZE) {
++		/* 8MB for 32bit, 1GB for 64bit */
++		if (is_32bit_task())
++			rnd = (long)(get_random_int() % (1<<(23-PAGE_SHIFT)));
++		else
++			rnd = (long)(get_random_int() % (1<<(30-PAGE_SHIFT)));
++	}
++	return rnd << PAGE_SHIFT;
++}
++
++static inline unsigned long mmap_base(void)
++{
++	unsigned long gap = rlimit(RLIMIT_STACK);
++
++	if (gap < MIN_GAP)
++		gap = MIN_GAP;
++	else if (gap > MAX_GAP)
++		gap = MAX_GAP;
++
++	return PAGE_ALIGN(TASK_SIZE - gap - mmap_rnd());
++}
++
++/*
++ * This function, called very early during the creation of a new
++ * process VM image, sets up which VM layout function to use:
++ */
++void arch_pick_mmap_layout(struct mm_struct *mm)
++{
++	/*
++	 * Fall back to the standard layout if the personality
++	 * bit is set, or if the expected stack growth is unlimited:
++	 */
++	if (mmap_is_legacy()) {
++		mm->mmap_base = TASK_UNMAPPED_BASE;
++		mm->get_unmapped_area = arch_get_unmapped_area;
++		mm->unmap_area = arch_unmap_area;
++	} else {
++		mm->mmap_base = mmap_base();
++		mm->get_unmapped_area = arch_get_unmapped_area_topdown;
++		mm->unmap_area = arch_unmap_area_topdown;
++	}
++}
+diff --git a/arch/powerpc/mm/mmap_64.c b/arch/powerpc/mm/mmap_64.c
+deleted file mode 100644
+index 67a42ed..0000000
+--- a/arch/powerpc/mm/mmap_64.c
++++ /dev/null
+@@ -1,101 +0,0 @@
+-/*
+- *  flexible mmap layout support
+- *
+- * Copyright 2003-2004 Red Hat Inc., Durham, North Carolina.
+- * All Rights Reserved.
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+- *
+- *
+- * Started by Ingo Molnar <mingo@elte.hu>
+- */
+-
+-#include <linux/personality.h>
+-#include <linux/mm.h>
+-#include <linux/random.h>
+-#include <linux/sched.h>
+-
+-/*
+- * Top of mmap area (just below the process stack).
+- *
+- * Leave at least a ~128 MB hole on 32bit applications.
+- *
+- * On 64bit applications we randomise the stack by 1GB so we need to
+- * space our mmap start address by a further 1GB, otherwise there is a
+- * chance the mmap area will end up closer to the stack than our ulimit
+- * requires.
+- */
+-#define MIN_GAP32 (128*1024*1024)
+-#define MIN_GAP64 ((128 + 1024)*1024*1024UL)
+-#define MIN_GAP ((is_32bit_task()) ? MIN_GAP32 : MIN_GAP64)
+-#define MAX_GAP (TASK_SIZE/6*5)
+-
+-static inline int mmap_is_legacy(void)
+-{
+-	if (current->personality & ADDR_COMPAT_LAYOUT)
+-		return 1;
+-
+-	if (rlimit(RLIMIT_STACK) == RLIM_INFINITY)
+-		return 1;
+-
+-	return sysctl_legacy_va_layout;
+-}
+-
+-static unsigned long mmap_rnd(void)
+-{
+-	unsigned long rnd = 0;
+-
+-	if (current->flags & PF_RANDOMIZE) {
+-		/* 8MB for 32bit, 1GB for 64bit */
+-		if (is_32bit_task())
+-			rnd = (long)(get_random_int() % (1<<(23-PAGE_SHIFT)));
+-		else
+-			rnd = (long)(get_random_int() % (1<<(30-PAGE_SHIFT)));
+-	}
+-	return rnd << PAGE_SHIFT;
+-}
+-
+-static inline unsigned long mmap_base(void)
+-{
+-	unsigned long gap = rlimit(RLIMIT_STACK);
+-
+-	if (gap < MIN_GAP)
+-		gap = MIN_GAP;
+-	else if (gap > MAX_GAP)
+-		gap = MAX_GAP;
+-
+-	return PAGE_ALIGN(TASK_SIZE - gap - mmap_rnd());
+-}
+-
+-/*
+- * This function, called very early during the creation of a new
+- * process VM image, sets up which VM layout function to use:
+- */
+-void arch_pick_mmap_layout(struct mm_struct *mm)
+-{
+-	/*
+-	 * Fall back to the standard layout if the personality
+-	 * bit is set, or if the expected stack growth is unlimited:
+-	 */
+-	if (mmap_is_legacy()) {
+-		mm->mmap_base = TASK_UNMAPPED_BASE;
+-		mm->get_unmapped_area = arch_get_unmapped_area;
+-		mm->unmap_area = arch_unmap_area;
+-	} else {
+-		mm->mmap_base = mmap_base();
+-		mm->get_unmapped_area = arch_get_unmapped_area_topdown;
+-		mm->unmap_area = arch_unmap_area_topdown;
+-	}
+-}
+-- 
+1.7.10.4
