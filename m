@@ -1,42 +1,18 @@
-Return-Path: <alistair@popple.id.au>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E7BF92C010F
- for <linuxppc-dev@ozlabs.org>; Wed, 24 Apr 2013 12:16:48 +1000 (EST)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <alistair@popple.id.au>;
- Wed, 24 Apr 2013 12:07:18 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 0C2D82CE8053
- for <linuxppc-dev@ozlabs.org>; Wed, 24 Apr 2013 12:16:42 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3O234YV11665720
- for <linuxppc-dev@ozlabs.org>; Wed, 24 Apr 2013 12:03:07 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3O2GcgM010413
- for <linuxppc-dev@ozlabs.org>; Wed, 24 Apr 2013 12:16:38 +1000
-Received: from ozlabs.au.ibm.com (ozlabs.au.ibm.com [9.190.163.12])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
- r3O2GcEO010410
- for <linuxppc-dev@ozlabs.org>; Wed, 24 Apr 2013 12:16:38 +1000
-Received: from mexican (haven.au.ibm.com [9.190.164.82])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 28575A010D
- for <linuxppc-dev@ozlabs.org>; Wed, 24 Apr 2013 12:16:38 +1000 (EST)
-Message-ID: <cone.1366769803.675979.7618.1000@mexican>
-From: Alistair Popple <alistair@popple.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Make =?UTF-8?Q?CONFIG=5FBOOTX?= an exclusive early debug
- option
-Date: Wed, 24 Apr 2013 12:16:43 +1000
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; delsp=yes; charset="UTF-8"
+ (Client CN "mail.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 64FA82C010F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 12:55:12 +1000 (EST)
+From: Tiejun Chen <tiejun.chen@windriver.com>
+To: <galak@kernel.crashing.org>
+Subject: [PATCH 1/1] usb: ehci-fsl: set INCR8 mode only on MPC512x
+Date: Wed, 24 Apr 2013 10:55:10 +0800
+Message-ID: <1366772110-9620-1-git-send-email-tiejun.chen@windriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,52 +22,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch makes the kernel configuration option "Support for early boot text
-console (BootX or OpenFirmware only)" an exclusive choice under the "Early
-debugging" menu. This prevents selection of two early debug consoles
-simultaneously which does not appear to be supported by the code in
-arch/powerpc/kernel/udbg.c.
+commit 761bbcb7, "usb: ehci-fsl: set INCR8 mode for system bus interface
+on MPC512x", introduced to fix one MPC5121e (M36P) Errata by setting
+INCR8 mode for system bus interface on MPC512x, but we should make sure
+this is only valid for MPC512x like other parts of this commit. Otherwise
+this would issue other platforms as abnormal without this similar Errata.
 
-Currently if two consoles are enabled the code in udbg.c selects one based on
-the order in which initialisation functions are called which seems fairly
-arbitrary.
-
-For example if both CONFIG_BOOTX_TEXT and CONFIG_PPC_EARLY_DEBUG_LPAR are
-enabled then the BootX console will be used. However if both CONFIG_BOOTX_TEXT
-and CONFIG_PPC_EARLY_DEBUG_PS3GELIC are selected then the latter will be used.
-
-Signed-off-by: Alistair Popple <alistair@popple.id.au>
+Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
 ---
+ drivers/usb/host/ehci-fsl.c |   10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-index 5416e28..659120c 100644
---- a/arch/powerpc/Kconfig.debug
-+++ b/arch/powerpc/Kconfig.debug
-@@ -122,13 +122,6 @@ config BDI_SWITCH
- 	  Unless you are intending to debug the kernel with one of these
- 	  machines, say N here.
-
--config BOOTX_TEXT
--	bool "Support for early boot text console (BootX or OpenFirmware only)"
--	depends on PPC_OF && PPC_BOOK3S
--	help
--	  Say Y here to see progress messages from the boot firmware in text
--	  mode. Requires either BootX or Open Firmware.
--
- config PPC_EARLY_DEBUG
- 	bool "Early debugging (dangerous)"
- 	help
-@@ -147,6 +140,13 @@ choice
- 	  enable debugging for the wrong type of machine your kernel
- 	  _will not boot_.
-
-+config BOOTX_TEXT
-+	bool "Support for early boot text console (BootX or OpenFirmware only)"
-+	depends on PPC_OF && PPC_BOOK3S
-+	help
-+	  Say Y here to see progress messages from the boot firmware in text
-+	  mode. Requires either BootX or Open Firmware.
-+
- config PPC_EARLY_DEBUG_LPAR
- 	bool "LPAR HV Console"
- 	depends on PPC_PSERIES
+diff --git a/drivers/usb/host/ehci-fsl.c b/drivers/usb/host/ehci-fsl.c
+index d81d2fc..f4f2a7b 100644
+--- a/drivers/usb/host/ehci-fsl.c
++++ b/drivers/usb/host/ehci-fsl.c
+@@ -509,7 +509,15 @@ static int ehci_fsl_mpc512x_drv_resume(struct device *dev)
+ 	ehci_writel(ehci, ISIPHYCTRL_PXE | ISIPHYCTRL_PHYE,
+ 		    hcd->regs + FSL_SOC_USB_ISIPHYCTRL);
+ 
+-	ehci_writel(ehci, SBUSCFG_INCR8, hcd->regs + FSL_SOC_USB_SBUSCFG);
++	if (of_device_is_compatible(dev->parent->of_node,
++				    "fsl,mpc5121-usb2-dr")) {
++		/*
++		 * set SBUSCFG:AHBBRST so that control msgs don't
++		 * fail when doing heavy PATA writes.
++		 */
++		ehci_writel(ehci, SBUSCFG_INCR8,
++			    hcd->regs + FSL_SOC_USB_SBUSCFG);
++	}
+ 
+ 	/* restore EHCI registers */
+ 	ehci_writel(ehci, pdata->pm_command, &ehci->regs->command);
+-- 
+1.7.9.5
