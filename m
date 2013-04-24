@@ -1,20 +1,25 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id ABC822C00AC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 16:47:33 +1000 (EST)
-From: Tiejun Chen <tiejun.chen@windriver.com>
-To: <galak@kernel.crashing.org>
-Subject: [RFC][PATCH 1/1] USB/EHCI: work for different PHY_CLK_VALID detecting
- order
-Date: Wed, 24 Apr 2013 14:47:35 +0800
-Message-ID: <1366786055-14671-1-git-send-email-tiejun.chen@windriver.com>
+Return-Path: <gang.chen@asianux.com>
+Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id A9D922C00EF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 17:04:44 +1000 (EST)
+Message-ID: <517783D8.6010701@asianux.com>
+Date: Wed, 24 Apr 2013 15:03:52 +0800
+From: Chen Gang <gang.chen@asianux.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+Subject: Re: [PATCH] PowerPC: kernel: memory access violation when
+ rtas_data_buf contents are more than 1026
+References: <516F7A7D.60206@asianux.com> <1366677081.2886.7.camel@pasglop>
+ <5175E85F.1040509@asianux.com> <5175FC36.4060308@asianux.com>
+ <51777B74.8040204@linux.vnet.ibm.com>
+In-Reply-To: <51777B74.8040204@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "paulus@samba.org" <paulus@samba.org>, Al Viro <viro@zeniv.linux.org.uk>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,49 +29,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Due to different controller issue of PHY_CLK_VALID in ULPI mode,
-in some cases, after set PHY_CLK_SEL, we should set
-USB_CTRL_USB_EN before checking PHY_CLK_VALID, otherwise
-PHY_CLK_VALID doesn't work.
+On 2013年04月24日 14:28, Vasant Hegde wrote:
+> On 04/23/2013 08:42 AM, Chen Gang wrote:
+>>
+>> need set '\0' for 'local_buffer'.
+>>
+>> SPLPAR_MAXLENGTH is 1026, RTAS_DATA_BUF_SIZE is 4096. so the contents of
+>> rtas_data_buf may truncated in memcpy.
+>>
+>> if contents are really truncated.
+>>    the splpar_strlen is more than 1026. the next while loop checking will
+>>    not find the end of buffer. that will cause memory access violation.
+>>
+> 
+> Per parameter length in ibm,get-system-parameter RTAS call is limited to
+> 1026 bytes (1024 bytes of data + 2 bytes  length). And 'rtas_data_buf'
+> was set to 0 (first 1026 bytes) before call RTAS call. At the worst if
+> we get junk in RTAS output length field helps to exit from the while
+> loop. So I don't think we need this patch.
 
-But in other cases USB_CTRL_USB_EN is already set previously and
-PHY_CLK_VALID is not valid once USB_CTRL_USB_EN is set. But
-since PHY_CLK_VALID is w1c, we can force clear USB_CTRL_USB_EN
-firstly after set PHY_CLK_SEL, then PHY_CLK_VALID status can
-be kept even we re-set USB_CTRL_USB_EN.
+Is get-system-parameter return the NUL terminated string ? if so, it
+will no issue (just like your discription).
 
-Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
----
- drivers/usb/host/ehci-fsl.c |   15 ++++++++++++---
- 1 file changed, 12 insertions(+), 3 deletions(-)
+If it will not return NUL terminated string, please see line 326:
 
-diff --git a/drivers/usb/host/ehci-fsl.c b/drivers/usb/host/ehci-fsl.c
-index d81d2fc..57f2aa0 100644
---- a/drivers/usb/host/ehci-fsl.c
-+++ b/drivers/usb/host/ehci-fsl.c
-@@ -234,11 +234,20 @@ static int ehci_fsl_setup_phy(struct usb_hcd *hcd,
- 			/* controller version 1.6 or above */
- 			setbits32(non_ehci + FSL_SOC_USB_CTRL,
- 					ULPI_PHY_CLK_SEL);
-+
- 			/*
--			 * Due to controller issue of PHY_CLK_VALID in ULPI
--			 * mode, we set USB_CTRL_USB_EN before checking
--			 * PHY_CLK_VALID, otherwise PHY_CLK_VALID doesn't work.
-+			 * Due to different controller issue of PHY_CLK_VALID
-+			 * in ULPI mode, in some cases we should set
-+			 * USB_CTRL_USB_EN before checking PHY_CLK_VALID,
-+			 * otherwise PHY_CLK_VALID doesn't work.
-+			 *
-+			 * But in other cases USB_CTRL_USB_EN is already set
-+			 * and PHY_CLK_VALID is not valid once USB_CTRL_USB_EN
-+			 * is set. But since PHY_CLK_VALID is w1c, we can force
-+			 * clear USB_CTRL_USB_EN firstly then PHY_CLK_VALID
-+			 * status can be kept even we re-set USB_CTRL_USB_EN.
- 			 */
-+			clrbits32(non_ehci + FSL_SOC_USB_CTRL, USB_CTRL_USB_EN);
- 			clrsetbits_be32(non_ehci + FSL_SOC_USB_CTRL,
- 					UTMI_PHY_EN, USB_CTRL_USB_EN);
- 		}
+  "while ((*local_buffer) && (idx < splpar_strlen))"
+  (when idx == 1024, *local_buffer is memory access violation).
+
+Since we use the first 2 bytes as length, and also be sure of the real
+length will never more than 1024, I suggest to:
+
+---------------------------patch begin--------------------------------
+
+diff --git a/arch/powerpc/kernel/lparcfg.c b/arch/powerpc/kernel/lparcfg.c
+index 801a757..f8bd7cf 100644
+--- a/arch/powerpc/kernel/lparcfg.c
++++ b/arch/powerpc/kernel/lparcfg.c
+@@ -323,7 +323,7 @@ static void parse_system_parameter_string(struct seq_file *m)
+ 
+ 		w_idx = 0;
+ 		idx = 0;
+-		while ((*local_buffer) && (idx < splpar_strlen)) {
++		while (idx < splpar_strlen) {
+ 			workbuffer[w_idx++] = local_buffer[idx++];
+ 			if ((local_buffer[idx] == ',')
+ 			    || (local_buffer[idx] == '\0')) {
+
+---------------------------patch end----------------------------------
+
+Thanks.
+
 -- 
-1.7.9.5
+Chen Gang
+
+Asianux Corporation
