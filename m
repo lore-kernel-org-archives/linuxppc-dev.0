@@ -1,15 +1,40 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Wed, 24 Apr 2013 15:47:35 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH -V6 05/27] powerpc: New hugepage directory format
-Message-ID: <20130424054734.GA2073@drongo>
-References: <1366624861-24948-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1366624861-24948-6-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <hegdevasant@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 101EB2C00A3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 16:29:21 +1000 (EST)
+Received: from /spool/local
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
+ Wed, 24 Apr 2013 16:19:31 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id C42FD2BB0051
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 16:28:18 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3O6SCJJ28377336
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 16:28:12 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3O6SHM9004456
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 16:28:17 +1000
+Message-ID: <51777B74.8040204@linux.vnet.ibm.com>
+Date: Wed, 24 Apr 2013 11:58:04 +0530
+From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1366624861-24948-6-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, David Gibson <dwg@au1.ibm.com>
+To: Chen Gang <gang.chen@asianux.com>
+Subject: Re: [PATCH] PowerPC: kernel: memory access violation when
+ rtas_data_buf contents are more than 1026
+References: <516F7A7D.60206@asianux.com> <1366677081.2886.7.camel@pasglop>
+ <5175E85F.1040509@asianux.com> <5175FC36.4060308@asianux.com>
+In-Reply-To: <5175FC36.4060308@asianux.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "paulus@samba.org" <paulus@samba.org>, Al Viro <viro@zeniv.linux.org.uk>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,48 +44,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Apr 22, 2013 at 03:30:39PM +0530, Aneesh Kumar K.V wrote:
-> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+On 04/23/2013 08:42 AM, Chen Gang wrote:
+>
+> need set '\0' for 'local_buffer'.
+>
+> SPLPAR_MAXLENGTH is 1026, RTAS_DATA_BUF_SIZE is 4096. so the contents of
+> rtas_data_buf may truncated in memcpy.
+>
+> if contents are really truncated.
+>    the splpar_strlen is more than 1026. the next while loop checking will
+>    not find the end of buffer. that will cause memory access violation.
+>
 
-[snip]
+Per parameter length in ibm,get-system-parameter RTAS call is limited to 1026 
+bytes (1024 bytes of data + 2 bytes  length). And 'rtas_data_buf' was set to 0 
+(first 1026 bytes) before call RTAS call. At the worst if we get junk in RTAS 
+output length field helps to exit from the while loop. So I don't think we need 
+this patch.
 
->  /*
-> - * Use the top bit of the higher-level page table entries to indicate whether
-> - * the entries we point to contain hugepages.  This works because we know that
-> - * the page tables live in kernel space.  If we ever decide to support having
-> - * page tables at arbitrary addresses, this breaks and will have to change.
-> - */
-> -#ifdef CONFIG_PPC64
-> -#define PD_HUGE 0x8000000000000000
-> -#else
-> -#define PD_HUGE 0x80000000
-> -#endif
+-Vasant
 
-I think this is a good thing to do ultimately, but if you do this you
-also need to fix arch/powerpc/kernel/head_fsl_booke.S:
-
-#ifdef CONFIG_PTE_64BIT
-#ifdef CONFIG_HUGETLB_PAGE
-#define FIND_PTE	\
-	rlwinm	r12, r10, 13, 19, 29;	/* Compute pgdir/pmd offset */	\
-	lwzx	r11, r12, r11;		/* Get pgd/pmd entry */		\
-	rlwinm.	r12, r11, 0, 0, 20;	/* Extract pt base address */	\
-	blt	1000f;			/* Normal non-huge page */	\
-	beq	2f;			/* Bail if no table */		\
-	oris	r11, r11, PD_HUGE@h;	/* Put back address bit */	\
-	andi.	r10, r11, HUGEPD_SHIFT_MASK@l; /* extract size field */	\
-	xor	r12, r10, r11;		/* drop size bits from pointer */ \
-	b	1001f;							\
-
-and this, from arch/powerpc/mm/tlb_low_64e.S:
-
-	cmpdi	cr0,r14,0
-	bge	tlb_miss_fault_bolted	/* Bad pgd entry or hugepage; bail */
-
-(of which there are several similar instances in that file).
-
-If you want to avoid fixing these bits of assembly code (and any
-others I missed in my quick scan), you'll need to keep the definition
-of PD_HUGE, at least on anything not 64-bit Book3S.
-
-Paul.
+>
+> Signed-off-by: Chen Gang<gang.chen@asianux.com>
+> ---
+>   arch/powerpc/kernel/lparcfg.c |    1 +
+>   1 files changed, 1 insertions(+), 0 deletions(-)
+>
+> diff --git a/arch/powerpc/kernel/lparcfg.c b/arch/powerpc/kernel/lparcfg.c
+> index 801a757..d92f387 100644
+> --- a/arch/powerpc/kernel/lparcfg.c
+> +++ b/arch/powerpc/kernel/lparcfg.c
+> @@ -299,6 +299,7 @@ static void parse_system_parameter_string(struct seq_file *m)
+>   				__pa(rtas_data_buf),
+>   				RTAS_DATA_BUF_SIZE);
+>   	memcpy(local_buffer, rtas_data_buf, SPLPAR_MAXLENGTH);
+> +	local_buffer[SPLPAR_MAXLENGTH - 1] = '\0';
+>   	spin_unlock(&rtas_data_buf_lock);
+>
+>   	if (call_status != 0) {
