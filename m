@@ -1,30 +1,31 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 965472C011B
+ (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id F2F552C011C
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 19:37:53 +1000 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Wed, 24 Apr 2013 05:37:51 -0400
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 0B91B6E803C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 05:37:46 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3O9bmdL63635688
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 05:37:48 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3O9bmVA003682
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 05:37:48 -0400
+ Wed, 24 Apr 2013 03:37:50 -0600
+Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
+ [9.17.195.226])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 2D6C31FF003F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 03:32:44 -0600 (MDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3O9bklJ132836
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 03:37:46 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3O9bjh4030572
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 03:37:46 -0600
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 6/7] powerpc/powernv: Build DMA space for PE on PHB3
-Date: Wed, 24 Apr 2013 17:37:38 +0800
-Message-Id: <1366796259-29412-7-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 2/7] powerpc/powernv: Retrieve IODA2 tables explicitly
+Date: Wed, 24 Apr 2013 17:37:34 +0800
+Message-Id: <1366796259-29412-3-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1366796259-29412-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1366796259-29412-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -37,141 +38,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch intends to build 32-bits DMA space for individual PEs on
-PHB3. The TVE# is recognized by the combo of PE# and fixed bits
-from DMA address, which is zero for 32-bits DMA space.
+The PHB3, which is compatible with IODA2, have lots of tables (RTT/
+PETLV/PEST/IVT/RBA) in system memory and have corresponding BARs to
+trace the system memory address. The tables have been allocated in
+firmware and exported through device-tree. The patch retrieves the
+tables explicitly.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c |  102 +++++++++++++++++++++++++++--
- 1 files changed, 96 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/opal.h           |    5 +--
+ arch/powerpc/platforms/powernv/pci-ioda.c |   35 +++++++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/pci.h      |   13 ++++++++++
+ 3 files changed, 50 insertions(+), 3 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index a4b28f1..0af7ba0 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -491,9 +491,8 @@ int64_t opal_pci_map_pe_mmio_window(uint64_t phb_id, uint16_t pe_number,
+ 				    uint16_t window_type, uint16_t window_num,
+ 				    uint16_t segment_num);
+ int64_t opal_pci_set_phb_table_memory(uint64_t phb_id, uint64_t rtt_addr,
+-				      uint64_t ivt_addr, uint64_t ivt_len,
+-				      uint64_t reject_array_addr,
+-				      uint64_t peltv_addr);
++				      uint64_t peltv_addr, uint64_t pest_addr,
++				      uint64_t ivt_addr, uint64_t rba_addr);
+ int64_t opal_pci_set_pe(uint64_t phb_id, uint64_t pe_number, uint64_t bus_dev_func,
+ 			uint8_t bus_compare, uint8_t dev_compare, uint8_t func_compare,
+ 			uint8_t pe_action);
 diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 9f4d323..6bc4648 100644
+index 3d4e958..0c15870 100644
 --- a/arch/powerpc/platforms/powernv/pci-ioda.c
 +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -589,9 +589,8 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
- 		 */
- 		tbl->it_busno = 0;
- 		tbl->it_index = (unsigned long)ioremap(be64_to_cpup(swinvp), 8);
--		tbl->it_type = TCE_PCI_SWINV_CREATE | TCE_PCI_SWINV_FREE;
--		if (phb->type == PNV_PHB_IODA1)
--			tbl->it_type |= TCE_PCI_SWINV_PAIR;
-+		tbl->it_type = TCE_PCI_SWINV_CREATE | TCE_PCI_SWINV_FREE |
-+			       TCE_PCI_SWINV_PAIR;
- 	}
- 	iommu_init_table(tbl, phb->hose->node);
- 
-@@ -609,6 +608,84 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
- 		__free_pages(tce_mem, get_order(TCE32_TABLE_SIZE * segs));
+@@ -852,6 +852,23 @@ static u32 pnv_ioda_bdfn_to_pe(struct pnv_phb *phb, struct pci_bus *bus,
+ 	return phb->ioda.pe_rmap[(bus->number << 8) | devfn];
  }
  
-+static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
-+				       struct pnv_ioda_pe *pe)
++static void __init pnv_pci_get_ioda2_table(struct device_node *np,
++					   const char *name,
++					   void **table,
++					   unsigned int *len)
 +{
-+	struct page *tce_mem = NULL;
-+	void *addr;
-+	const __be64 *swinvp;
-+	struct iommu_table *tbl;
-+	unsigned int tce_table_size, end;
-+	int64_t rc;
++	const u32 *prop32;
++	u64 base;
 +
-+	/* We shouldn't already have a 32-bit DMA associated */
-+	if (WARN_ON(pe->tce32_seg >= 0))
-+		return;
-+
-+	/* The PE will reserve all possible 32-bits space */
-+	pe->tce32_seg = 0;
-+	end = (1 << ilog2(phb->ioda.m32_pci_base));
-+	tce_table_size = (end / 0x1000) * 8;
-+	pe_info(pe, "Setting up 32-bit TCE table at 0..%08x\n",
-+		end);
-+
-+	/* Allocate TCE table */
-+	tce_mem = alloc_pages_node(phb->hose->node, GFP_KERNEL,
-+				   get_order(tce_table_size));
-+	if (!tce_mem) {
-+		pe_err(pe, "Failed to allocate a 32-bit TCE memory\n");
-+		goto fail;
++	prop32 = of_get_property(np, name, NULL);
++	if (prop32) {
++		base = be32_to_cpup(prop32);
++		base = base << 32 | be32_to_cpup(prop32 + 1);
++		*table = __va(base);
++		*len = be32_to_cpup(prop32 + 2);
 +	}
-+	addr = page_address(tce_mem);
-+	memset(addr, 0, tce_table_size);
-+
-+	/*
-+	 * Map TCE table through TVT. The TVE index is the PE number
-+	 * shifted by 1 bit for 32-bits DMA space.
-+	 */
-+	rc = opal_pci_map_pe_dma_window(phb->opal_id, pe->pe_number,
-+					pe->pe_number << 1, 1, __pa(addr),
-+					tce_table_size, 0x1000);
-+	if (rc) {
-+		pe_err(pe, "Failed to configure 32-bit TCE table,"
-+		       " err %ld\n", rc);
-+		goto fail;
-+	}
-+
-+	/* Setup linux iommu table */
-+	tbl = &pe->tce32_table;
-+	pnv_pci_setup_iommu_table(tbl, addr, tce_table_size, 0);
-+
-+	/* Hook the IOMMU table to PHB */
-+	tbl->sysdata = phb;
-+
-+	/* OPAL variant of PHB3 invalidated TCEs */
-+	swinvp = of_get_property(phb->hose->dn, "ibm,opal-tce-kill", NULL);
-+	if (swinvp) {
-+		/* We need a couple more fields -- an address and a data
-+		 * to or.  Since the bus is only printed out on table free
-+		 * errors, and on the first pass the data will be a relative
-+		 * bus number, print that out instead.
-+		 */
-+		tbl->it_busno = 0;
-+		tbl->it_index = (unsigned long)ioremap(be64_to_cpup(swinvp), 8);
-+		tbl->it_type = TCE_PCI_SWINV_CREATE | TCE_PCI_SWINV_FREE;
-+	}
-+	iommu_init_table(tbl, phb->hose->node);
-+
-+	if (pe->pdev)
-+		set_iommu_table_base(&pe->pdev->dev, tbl);
-+	else
-+		pnv_ioda_setup_bus_dma(pe, pe->pbus);
-+
-+	return;
-+fail:
-+	if (pe->tce32_seg >= 0)
-+		pe->tce32_seg = -1;
-+	if (tce_mem)
-+		__free_pages(tce_mem, get_order(tce_table_size));
 +}
 +
- static void pnv_ioda_setup_dma(struct pnv_phb *phb)
+ void __init pnv_pci_init_ioda_phb(struct device_node *np, int ioda_type)
  {
- 	struct pci_controller *hose = phb->hose;
-@@ -651,9 +728,22 @@ static void pnv_ioda_setup_dma(struct pnv_phb *phb)
- 			if (segs > remaining)
- 				segs = remaining;
- 		}
--		pe_info(pe, "DMA weight %d, assigned %d DMA32 segments\n",
--			pe->dma_weight, segs);
--		pnv_pci_ioda_setup_dma_pe(phb, pe, base, segs);
+ 	struct pci_controller *hose;
+@@ -998,6 +1015,24 @@ void __init pnv_pci_init_ioda_phb(struct device_node *np, int ioda_type)
+ 	ppc_md.pcibios_window_alignment = pnv_pci_window_alignment;
+ 	pci_add_flags(PCI_REASSIGN_ALL_RSRC);
+ 
++	/* Retrieve variable IODA2 tables */
++	if (ioda_type == PNV_PHB_IODA2) {
++		pnv_pci_get_ioda2_table(np, "ibm,opal-rtt-table",
++				&phb->ioda.tbl_rtt, &phb->ioda.rtt_len);
++		pnv_pci_get_ioda2_table(np, "ibm,opal-peltv-table",
++				&phb->ioda.tbl_peltv, &phb->ioda.peltv_len);
++		pnv_pci_get_ioda2_table(np, "ibm,opal-pest-table",
++				&phb->ioda.tbl_pest, &phb->ioda.pest_len);
++		pnv_pci_get_ioda2_table(np, "ibm,opal-ivt-table",
++				&phb->ioda.tbl_ivt, &phb->ioda.ivt_len);
++		pnv_pci_get_ioda2_table(np, "ibm,opal-rba-table",
++				&phb->ioda.tbl_rba, &phb->ioda.rba_len);
++		/* Get IVE stride */
++		prop32 = of_get_property(np, "ibm,opal-ive-stride", NULL);
++		if (prop32)
++			phb->ioda.ive_stride = be32_to_cpup(prop32);
++	}
 +
-+		/*
-+		 * For IODA2 compliant PHB3, we needn't care about the weight.
-+		 * The all available 32-bits DMA space will be assigned to
-+		 * the specific PE.
-+		 */
-+		if (phb->type == PNV_PHB_IODA1) {
-+			pe_info(pe, "DMA weight %d, assigned %d DMA32 segments\n",
-+				pe->dma_weight, segs);
-+			pnv_pci_ioda_setup_dma_pe(phb, pe, base, segs);
-+		} else {
-+			pe_info(pe, "Assign DMA32 space\n");
-+			segs = 0;
-+			pnv_pci_ioda2_setup_dma_pe(phb, pe);
-+		}
+ 	/* Reset IODA tables to a clean state */
+ 	rc = opal_pci_reset(phb_id, OPAL_PCI_IODA_TABLE_RESET, OPAL_ASSERT_RESET);
+ 	if (rc)
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index f6314d6..c048c29 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -100,6 +100,19 @@ struct pnv_phb {
+ 			unsigned int		io_segsize;
+ 			unsigned int		io_pci_base;
+ 
++			/* Variable tables for IODA2 */
++			void			*tbl_rtt;
++			void			*tbl_peltv;
++			void			*tbl_pest;
++			void			*tbl_ivt;
++			void			*tbl_rba;
++			unsigned int		ive_stride;
++			unsigned int		rtt_len;
++			unsigned int		peltv_len;
++			unsigned int		pest_len;
++			unsigned int		ivt_len;
++			unsigned int		rba_len;
 +
- 		remaining -= segs;
- 		base += segs;
- 	}
+ 			/* PE allocation bitmap */
+ 			unsigned long		*pe_alloc;
+ 
 -- 
 1.7.5.4
