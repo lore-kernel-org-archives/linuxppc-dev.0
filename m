@@ -1,27 +1,27 @@
 Return-Path: <qiudayu@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4DD9D2C0087
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 18:35:32 +1000 (EST)
+ (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D66A72C009E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 18:37:01 +1000 (EST)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <qiudayu@linux.vnet.ibm.com>;
- Wed, 24 Apr 2013 18:27:32 +1000
+ Wed, 24 Apr 2013 18:29:14 +1000
 Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 2A3EA2BB0053
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 18:35:20 +1000 (EST)
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 39F9D2CE8052
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 18:36:31 +1000 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
  by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3O8ZDQj1573228
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 18:35:13 +1000
+ r3O8aOwC14156166
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 18:36:24 +1000
 Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3O8ZIbS025750
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 18:35:19 +1000
-Message-ID: <51779941.8080403@linux.vnet.ibm.com>
-Date: Wed, 24 Apr 2013 16:35:13 +0800
+ r3O8a7l0027044
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 18:36:08 +1000
+Message-ID: <51779972.8070101@linux.vnet.ibm.com>
+Date: Wed, 24 Apr 2013 16:36:02 +0800
 From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: Michael Ellerman <michael@ellerman.id.au>
@@ -52,8 +52,9 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 > Hi Mike,
 >
 > It depends on what your .config is. What defconfig are you building?
-I just copy the config file from /boot/config.* to .config and use make 
-menuconfig
-change nothing by manually, then save.
+>
 > cheers
 >
+And I do know how to build the source code in this machine . . .
+
+Thanks
