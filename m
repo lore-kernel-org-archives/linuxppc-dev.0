@@ -1,20 +1,28 @@
-Return-Path: <tony@bakeyournoodle.com>
-Date: Thu, 25 Apr 2013 09:48:38 +1000
-From: Tony Breeds <tony@bakeyournoodle.com>
-To: lucaskt@linux.vnet.ibm.com
-Subject: Re: [PATCHv4 1/2] ppc64: perform proper max_bus_speed detection
-Message-ID: <20130424234838.GA1971@thor.bakeyournoodle.com>
-References: <1366844090-5492-1-git-send-email-lucaskt@linux.vnet.ibm.com>
- <1366844090-5492-2-git-send-email-lucaskt@linux.vnet.ibm.com>
+Return-Path: <keescook@google.com>
+Received: from mail-oa0-f41.google.com (mail-oa0-f41.google.com
+ [209.85.219.41])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 114572C0104
+ for <linuxppc-dev@ozlabs.org>; Thu, 25 Apr 2013 06:43:57 +1000 (EST)
+Received: by mail-oa0-f41.google.com with SMTP id g12so2174997oah.28
+ for <linuxppc-dev@ozlabs.org>; Wed, 24 Apr 2013 13:43:54 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="r5Pyd7+fXNt84Ff3"
-In-Reply-To: <1366844090-5492-2-git-send-email-lucaskt@linux.vnet.ibm.com>
-Cc: Kleber Sacilotto de Souza <klebers@linux.vnet.ibm.com>,
- Brian King <brking@linux.vnet.ibm.com>, dri-devel@lists.freedesktop.org,
- Alex Deucher <alexander.deucher@amd.com>, Jerome Glisse <jglisse@redhat.com>,
- Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
- Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org
+Sender: keescook@google.com
+In-Reply-To: <20130424062052.7341.18551.stgit@aruna-ThinkPad-T420>
+References: <20130424061807.7341.909.stgit@aruna-ThinkPad-T420>
+ <20130424062052.7341.18551.stgit@aruna-ThinkPad-T420>
+Date: Wed, 24 Apr 2013 13:43:54 -0700
+Message-ID: <CAGXu5jKCafNaLCOcvo2+eoVGuP0rGP3e_OOg-YdkCFT_zc8k9g@mail.gmail.com>
+Subject: Re: [PATCH v2 7/8] powerpc/pseries: Read of-config partition via
+ pstore
+From: Kees Cook <keescook@chromium.org>
+To: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: jkenisto@linux.vnet.ibm.com, Tony Luck <tony.luck@intel.com>,
+ Colin Cross <ccross@android.com>, LKML <linux-kernel@vger.kernel.org>,
+ Anton Vorontsov <cbouatmailru@gmail.com>, linuxppc-dev@ozlabs.org,
+ paulus@samba.org, anton@samba.org, mahesh@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,122 +32,170 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---r5Pyd7+fXNt84Ff3
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, Apr 24, 2013 at 07:54:49PM -0300, lucaskt@linux.vnet.ibm.com wrote:
-> From: Lucas Kannebley Tavares <lucaskt@linux.vnet.ibm.com>
->=20
-> On pseries machines the detection for max_bus_speed should be done
-> through an OpenFirmware property. This patch adds a function to perform
-> this detection and a hook to perform dynamic adding of the function only =
-for
-> pseries. This is done by overwriting the weak
-> pcibios_root_bridge_prepare function which is called by pci_create_root_b=
-us().
->=20
-> Signed-off-by: Lucas Kannebley Tavares <lucaskt@linux.vnet.ibm.com>
+On Tue, Apr 23, 2013 at 11:20 PM, Aruna Balakrishnaiah
+<aruna@linux.vnet.ibm.com> wrote:
+> This patch set exploits the pstore subsystem to read details of
+> of-config partition in NVRAM to a separate file in /dev/pstore.
+> For instance, of-config partition details will be stored in a
+> file named [of-nvram-5].
+>
+> Signed-off-by: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
+> Reviewed-by: Jim Keniston <jkenisto@us.ibm.com>
 > ---
->  arch/powerpc/include/asm/machdep.h       |  2 ++
->  arch/powerpc/kernel/pci-common.c         |  8 +++++
->  arch/powerpc/platforms/pseries/pci.c     | 51 ++++++++++++++++++++++++++=
-++++++
->  arch/powerpc/platforms/pseries/pseries.h |  4 +++
->  arch/powerpc/platforms/pseries/setup.c   |  2 ++
->  5 files changed, 67 insertions(+)
->=20
-> diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/as=
-m/machdep.h
-> index 3d6b410..8f558bf 100644
-> --- a/arch/powerpc/include/asm/machdep.h
-> +++ b/arch/powerpc/include/asm/machdep.h
-> @@ -107,6 +107,8 @@ struct machdep_calls {
->  	void		(*pcibios_fixup)(void);
->  	int		(*pci_probe_mode)(struct pci_bus *);
->  	void		(*pci_irq_fixup)(struct pci_dev *dev);
-> +	int		(*pcibios_root_bridge_prepare)(struct pci_host_bridge
-> +				*bridge);
-> =20
->  	/* To setup PHBs when using automatic OF platform driver for PCI */
->  	int		(*pci_setup_phb)(struct pci_controller *host);
-> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-c=
-ommon.c
-> index fa12ae4..80986cf 100644
-> --- a/arch/powerpc/kernel/pci-common.c
-> +++ b/arch/powerpc/kernel/pci-common.c
-> @@ -844,6 +844,14 @@ int pci_proc_domain(struct pci_bus *bus)
->  	return 1;
+>  arch/powerpc/platforms/pseries/nvram.c |   55 +++++++++++++++++++++++++++-----
+>  fs/pstore/inode.c                      |    3 ++
+>  include/linux/pstore.h                 |    1 +
+>  3 files changed, 50 insertions(+), 9 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/pseries/nvram.c b/arch/powerpc/platforms/pseries/nvram.c
+> index b118382..de448af 100644
+> --- a/arch/powerpc/platforms/pseries/nvram.c
+> +++ b/arch/powerpc/platforms/pseries/nvram.c
+> @@ -132,9 +132,16 @@ static size_t oops_data_sz;
+>  static struct z_stream_s stream;
+>
+>  #ifdef CONFIG_PSTORE
+> +static struct nvram_os_partition of_config_partition = {
+> +       .name = "of-config",
+> +       .index = -1,
+> +       .os_partition = false
+> +};
+> +
+>  static enum pstore_type_id nvram_type_ids[] = {
+>         PSTORE_TYPE_DMESG,
+>         PSTORE_TYPE_RTAS,
+> +       PSTORE_TYPE_OF,
+>         -1
+>  };
+>  static int read_type;
+> @@ -332,10 +339,15 @@ int nvram_read_partition(struct nvram_os_partition *part, char *buff,
+>
+>         tmp_index = part->index;
+>
+> -       rc = ppc_md.nvram_read((char *)&info, sizeof(struct err_log_info), &tmp_index);
+> -       if (rc <= 0) {
+> -               pr_err("%s: Failed nvram_read (%d)\n", __FUNCTION__, rc);
+> -               return rc;
+> +       if (part->os_partition) {
+> +               rc = ppc_md.nvram_read((char *)&info,
+> +                                       sizeof(struct err_log_info),
+> +                                       &tmp_index);
+> +               if (rc <= 0) {
+> +                       pr_err("%s: Failed nvram_read (%d)\n", __FUNCTION__,
+> +                                                                       rc);
+> +                       return rc;
+> +               }
+>         }
+>
+>         rc = ppc_md.nvram_read(buff, length, &tmp_index);
+> @@ -344,8 +356,10 @@ int nvram_read_partition(struct nvram_os_partition *part, char *buff,
+>                 return rc;
+>         }
+>
+> -       *error_log_cnt = info.seq_num;
+> -       *err_type = info.error_type;
+> +       if (part->os_partition) {
+> +               *error_log_cnt = info.seq_num;
+> +               *err_type = info.error_type;
+> +       }
+>
+>         return 0;
 >  }
-> =20
-> +int pcibios_root_bridge_prepare(struct pci_host_bridge *bridge)
-> +{
-> +	if (ppc_md.pcibios_root_bridge_prepare)
-> +		return ppc_md.pcibios_root_bridge_prepare(bridge);
-> +
-> +	return 0;
-> +}
-> +
->  /* This header fixup will do the resource fixup for all devices as they =
-are
->   * probed, but not for bridge ranges
+> @@ -516,7 +530,7 @@ static int nvram_pstore_write(enum pstore_type_id type,
+>  }
+>
+>  /*
+> - * Reads the oops/panic report and ibm,rtas-log partition.
+> + * Reads the oops/panic report, rtas and of-config partition.
+>   * Returns the length of the data we read from each partition.
+>   * Returns 0 if we've been called before.
 >   */
-> diff --git a/arch/powerpc/platforms/pseries/pci.c b/arch/powerpc/platform=
-s/pseries/pci.c
-> index 0b580f4..7f9c956 100644
-> --- a/arch/powerpc/platforms/pseries/pci.c
-> +++ b/arch/powerpc/platforms/pseries/pci.c
-> @@ -108,3 +108,54 @@ static void fixup_winbond_82c105(struct pci_dev* dev)
->  }
->  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_WINBOND, PCI_DEVICE_ID_WINBOND_82=
-C105,
->  			 fixup_winbond_82c105);
+> @@ -525,9 +539,11 @@ static ssize_t nvram_pstore_read(u64 *id, enum pstore_type_id *type,
+>                                 struct pstore_info *psi)
+>  {
+>         struct oops_log_info *oops_hdr;
+> -       unsigned int err_type, id_no;
+> +       unsigned int err_type, id_no, size = 0;
+>         struct nvram_os_partition *part = NULL;
+>         char *buff = NULL;
+> +       int sig = 0;
+> +       loff_t p;
+>
+>         read_type++;
+>
+> @@ -542,10 +558,29 @@ static ssize_t nvram_pstore_read(u64 *id, enum pstore_type_id *type,
+>                 time->tv_sec = last_rtas_event;
+>                 time->tv_nsec = 0;
+>                 break;
+> +       case PSTORE_TYPE_OF:
+> +               sig = NVRAM_SIG_OF;
+> +               part = &of_config_partition;
+> +               *type = PSTORE_TYPE_OF;
+> +               *id = PSTORE_TYPE_OF;
+> +               time->tv_sec = 0;
+> +               time->tv_nsec = 0;
+> +               break;
+>         default:
+>                 return 0;
+>         }
+>
+> +       if (!part->os_partition) {
+> +               p = nvram_find_partition(part->name, sig, &size);
+> +               if (p <= 0) {
+> +                       pr_err("nvram: Failed to find partition %s, "
+> +                               "err %d\n", part->name, (int)p);
+> +                       return 0;
+> +               }
+> +               part->index = p;
+> +               part->size = size;
+> +       }
 > +
-> +int pseries_root_bridge_prepare(struct pci_host_bridge *bridge)
-> +{
-> +	struct device_node *dn, *pdn;
-> +	struct pci_bus *bus;
-> +	const uint32_t *pcie_link_speed_stats;
+>         buff = kmalloc(part->size, GFP_KERNEL);
+>
+>         if (!buff)
+> @@ -557,7 +592,9 @@ static ssize_t nvram_pstore_read(u64 *id, enum pstore_type_id *type,
+>         }
+>
+>         *count = 0;
+> -       *id = id_no;
 > +
-> +	bus =3D bridge->bus;
-> +
-> +	dn =3D pcibios_get_phb_of_node(bus);
-> +	if (!dn)
-> +		return 0;
-> +
-> +	for (pdn =3D dn; pdn !=3D NULL; pdn =3D pdn->parent) {
-> +		pcie_link_speed_stats =3D (const uint32_t *) of_get_property(dn,
-> +			"ibm,pcie-link-speed-stats", NULL);
-> +		if (pcie_link_speed_stats)
-> +			break;
-> +	}
+> +       if (part->os_partition)
+> +               *id = id_no;
+>
+>         if (nvram_type_ids[read_type] == PSTORE_TYPE_DMESG) {
+>                 oops_hdr = (struct oops_log_info *)buff;
+> diff --git a/fs/pstore/inode.c b/fs/pstore/inode.c
+> index ec24f9c..8d4fb65 100644
+> --- a/fs/pstore/inode.c
+> +++ b/fs/pstore/inode.c
+> @@ -327,6 +327,9 @@ int pstore_mkfile(enum pstore_type_id type, char *psname, u64 id, int count,
+>         case PSTORE_TYPE_PPC_RTAS:
+>                 sprintf(name, "rtas-%s-%lld", psname, id);
+>                 break;
+> +       case PSTORE_TYPE_PPC_OF:
+> +               sprintf(name, "of-%s-%lld", psname, id);
+> +               break;
+>         case PSTORE_TYPE_UNKNOWN:
+>                 sprintf(name, "unknown-%s-%lld", psname, id);
+>                 break;
+> diff --git a/include/linux/pstore.h b/include/linux/pstore.h
+> index d7a8fe9..615dc18 100644
+> --- a/include/linux/pstore.h
+> +++ b/include/linux/pstore.h
+> @@ -37,6 +37,7 @@ enum pstore_type_id {
+>         PSTORE_TYPE_FTRACE      = 3,
+>         /* PPC64 partition types */
+>         PSTORE_TYPE_PPC_RTAS    = 4,
+> +       PSTORE_TYPE_PPC_OF      = 5,
+>         PSTORE_TYPE_UNKNOWN     = 255
+>  };
+>
+>
 
-Please use the helpers in include/linux/of.h rather than open coding
-this.
+Should this be named just "PSTORE_TYPE_OF" instead of "...PPC_OF"?
 
-Yours Tony
+-Kees
 
---r5Pyd7+fXNt84Ff3
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.13 (GNU/Linux)
-
-iQIcBAEBCAAGBQJReG9WAAoJEEsCiJRY75GKutgQALTbZM0NmKDyU4mnJk8puy7W
-vQ9ThCfhHr7RxEKEzSxKDW1JtzVyDNOrRFyKT9sfzcnuM4v5zRrfxZPws2JRm6Ub
-Xgt7bpSxjPAXOUX8tkj47Me/QcmugUBVNumiIEWI9zKyo9/18KUaRdXxpdTo5k+S
-B5LyQytSQQzbaguXW14inOa05cRHBOpgD+KhNcjQB2h6xGQf6HtLMrizOFYSQ2wH
-CMEj/qzZCZAEWSnIayXv/coQb7N1IsMa2meDDk8t5BVLX9HkJaFEEhB+1f5xQTb9
-e9e96cvPapVI52H2xuY6322d1ZhWyvAdA9ww/jjXcmktfWKnXz5LKxOiyCoFN5KM
-bwvt2kNN6VBgIIoTiCgG0/pZul4LSsWR+ZRPdo6p21tamusGTW72DprLuFZd+HCk
-VkgRfDN3ZPCXgiVnrmigyGhAazx0Y8mjxsyK+r5XC73rScrCHqrA77+nazqt/7yw
-/KdZWUIOckE2iBl+KcSxvvIwFdUXIYeu6BlLfsFq2MxbszJ3fDeFOL8OohgLH70k
-c07SyJ/w5lVQmowUUGPDeToP49KPvixzxGKO6bDm5g99Oh5AvAhYM4RPM/BlWKax
-BfaW1b3uuJsaWqCQ4/tTIJy9Ei/Wfm852y1Zc/nEyR010uuO8WkDX/7xWSr5m1i/
-+O5IWd9noA7h301EHm+z
-=Dpcw
------END PGP SIGNATURE-----
-
---r5Pyd7+fXNt84Ff3--
+--
+Kees Cook
+Chrome OS Security
