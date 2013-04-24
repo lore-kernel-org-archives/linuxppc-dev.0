@@ -1,35 +1,36 @@
 Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A34C32C0104
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2013 01:54:21 +1000 (EST)
+ (Client CN "e7.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B7B7E2C010F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2013 01:55:18 +1000 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Wed, 24 Apr 2013 11:54:18 -0400
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 0753538C801C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 11:54:15 -0400 (EDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3OFsEFU313512
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 11:54:14 -0400
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3OFrCpr021712
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 09:53:13 -0600
+ Wed, 24 Apr 2013 11:55:16 -0400
+Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 7E80638C8042
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 11:55:13 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3OFtDhZ258934
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 11:55:13 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3OFtD49026318
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 11:55:13 -0400
 Received: from [9.41.105.123] ([9.41.105.123])
- by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
- r3OFrB88021575
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 09:53:11 -0600
-Message-ID: <5177FFE6.4020603@linux.vnet.ibm.com>
-Date: Wed, 24 Apr 2013 10:53:10 -0500
+ by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
+ r3OFtBiF026171
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 11:55:12 -0400
+Message-ID: <5178005C.1070204@linux.vnet.ibm.com>
+Date: Wed, 24 Apr 2013 10:55:08 -0500
 From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 4/13] Move architecture vector definitions to prom.h
+Subject: [PATCH v4 5/13] Use ARRAY_SIZE to iterate over firmware_features_table
+ array
 References: <5177FB74.2050709@linux.vnet.ibm.com>
 In-Reply-To: <5177FB74.2050709@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -42,192 +43,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As part of handling of PRRN events we need to check vector 5 of the
-architecture vector bits reported in the device tree to ensure PRRN event
-handling is enabled. To do this firmware_has_feature() is updated (in a
-subsequent patch) to make this check vector 5 bits. To avoid having to
-re-define bits in the architecture vector the bit definitions are moved
-to prom.h.
+When iterating over the entries in firmware_features_table we only need
+to go over the actual number of entries in the array instead of declaring
+it to be bigger and checking to make sure there is a valid entry in every
+slot.
+
+This patch removes the FIRMWARE_MAX_FEATURES #define and replaces the
+array looping with the use of ARRAY_SIZE().
 
 Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-
 ---
- arch/powerpc/include/asm/prom.h |   71 +++++++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/prom_init.c |   75 +++-------------------------------------
- 2 files changed, 77 insertions(+), 69 deletions(-)
+ arch/powerpc/include/asm/firmware.h       |    1 -
+ arch/powerpc/platforms/pseries/firmware.c |    8 +++-----
+ 2 files changed, 3 insertions(+), 6 deletions(-)
 
-Index: powerpc/arch/powerpc/include/asm/prom.h
+Index: powerpc/arch/powerpc/include/asm/firmware.h
 ===================================================================
---- powerpc.orig/arch/powerpc/include/asm/prom.h	2013-04-23 12:54:23.000000000 -0500
-+++ powerpc/arch/powerpc/include/asm/prom.h	2013-04-23 13:56:15.000000000 -0500
-@@ -74,6 +74,77 @@
- #define DRCONF_MEM_AI_INVALID	0x00000040
- #define DRCONF_MEM_RESERVED	0x00000080
+--- powerpc.orig/arch/powerpc/include/asm/firmware.h	2013-04-23 14:17:16.000000000 -0500
++++ powerpc/arch/powerpc/include/asm/firmware.h	2013-04-23 14:19:54.000000000 -0500
+@@ -18,7 +18,6 @@
+ #include <asm/feature-fixups.h>
  
-+/*
-+ * There are two methods for telling firmware what our capabilities are.
-+ * Newer machines have an "ibm,client-architecture-support" method on the
-+ * root node.  For older machines, we have to call the "process-elf-header"
-+ * method in the /packages/elf-loader node, passing it a fake 32-bit
-+ * ELF header containing a couple of PT_NOTE sections that contain
-+ * structures that contain various information.
-+ */
-+
-+/* New method - extensible architecture description vector. */
-+
-+/* Option vector bits - generic bits in byte 1 */
-+#define OV_IGNORE		0x80	/* ignore this vector */
-+#define OV_CESSATION_POLICY	0x40	/* halt if unsupported option present*/
-+
-+/* Option vector 1: processor architectures supported */
-+#define OV1_PPC_2_00		0x80	/* set if we support PowerPC 2.00 */
-+#define OV1_PPC_2_01		0x40	/* set if we support PowerPC 2.01 */
-+#define OV1_PPC_2_02		0x20	/* set if we support PowerPC 2.02 */
-+#define OV1_PPC_2_03		0x10	/* set if we support PowerPC 2.03 */
-+#define OV1_PPC_2_04		0x08	/* set if we support PowerPC 2.04 */
-+#define OV1_PPC_2_05		0x04	/* set if we support PowerPC 2.05 */
-+#define OV1_PPC_2_06		0x02	/* set if we support PowerPC 2.06 */
-+#define OV1_PPC_2_07		0x01	/* set if we support PowerPC 2.07 */
-+
-+/* Option vector 2: Open Firmware options supported */
-+#define OV2_REAL_MODE		0x20	/* set if we want OF in real mode */
-+
-+/* Option vector 3: processor options supported */
-+#define OV3_FP			0x80	/* floating point */
-+#define OV3_VMX			0x40	/* VMX/Altivec */
-+#define OV3_DFP			0x20	/* decimal FP */
-+
-+/* Option vector 4: IBM PAPR implementation */
-+#define OV4_MIN_ENT_CAP		0x01	/* minimum VP entitled capacity */
-+
-+/* Option vector 5: PAPR/OF options supported */
-+#define OV5_LPAR		0x80	/* logical partitioning supported */
-+#define OV5_SPLPAR		0x40	/* shared-processor LPAR supported */
-+/* ibm,dynamic-reconfiguration-memory property supported */
-+#define OV5_DRCONF_MEMORY	0x20
-+#define OV5_LARGE_PAGES		0x10	/* large pages supported */
-+#define OV5_DONATE_DEDICATE_CPU	0x02	/* donate dedicated CPU support */
-+/* PCIe/MSI support.  Without MSI full PCIe is not supported */
-+#ifdef CONFIG_PCI_MSI
-+#define OV5_MSI			0x01	/* PCIe/MSI support */
-+#else
-+#define OV5_MSI			0x00
-+#endif /* CONFIG_PCI_MSI */
-+#ifdef CONFIG_PPC_SMLPAR
-+#define OV5_CMO			0x80	/* Cooperative Memory Overcommitment */
-+#define OV5_XCMO		0x40	/* Page Coalescing */
-+#else
-+#define OV5_CMO			0x00
-+#define OV5_XCMO		0x00
-+#endif
-+#define OV5_TYPE1_AFFINITY	0x80	/* Type 1 NUMA affinity */
-+#define OV5_PFO_HW_RNG		0x80	/* PFO Random Number Generator */
-+#define OV5_PFO_HW_842		0x40	/* PFO Compression Accelerator */
-+#define OV5_PFO_HW_ENCR		0x20	/* PFO Encryption Accelerator */
-+#define OV5_SUB_PROCESSORS	0x01	/* 1,2,or 4 Sub-Processors supported */
-+
-+/* Option Vector 6: IBM PAPR hints */
-+#define OV6_LINUX		0x02	/* Linux is our OS */
-+
-+/*
-+ * The architecture vector has an array of PVR mask/value pairs,
-+ * followed by # option vectors - 1, followed by the option vectors.
-+ */
-+extern unsigned char ibm_architecture_vec[];
-+
- /* These includes are put at the bottom because they may contain things
-  * that are overridden by this file.  Ideally they shouldn't be included
-  * by this file, but there are a bunch of .c files that currently depend
-Index: powerpc/arch/powerpc/kernel/prom_init.c
+ /* firmware feature bitmask values */
+-#define FIRMWARE_MAX_FEATURES 63
+ 
+ #define FW_FEATURE_PFT		ASM_CONST(0x0000000000000001)
+ #define FW_FEATURE_TCE		ASM_CONST(0x0000000000000002)
+Index: powerpc/arch/powerpc/platforms/pseries/firmware.c
 ===================================================================
---- powerpc.orig/arch/powerpc/kernel/prom_init.c	2013-04-23 12:54:23.000000000 -0500
-+++ powerpc/arch/powerpc/kernel/prom_init.c	2013-04-23 13:55:21.000000000 -0500
-@@ -627,16 +627,11 @@
+--- powerpc.orig/arch/powerpc/platforms/pseries/firmware.c	2013-04-23 14:17:16.000000000 -0500
++++ powerpc/arch/powerpc/platforms/pseries/firmware.c	2013-04-23 14:46:10.000000000 -0500
+@@ -39,7 +39,7 @@
+  * string must match.
+  */
+ static __initdata firmware_feature_t
+-firmware_features_table[FIRMWARE_MAX_FEATURES] = {
++firmware_features_table[] = {
+ 	{FW_FEATURE_PFT,		"hcall-pft"},
+ 	{FW_FEATURE_TCE,		"hcall-tce"},
+ 	{FW_FEATURE_SPRG0,		"hcall-sprg0"},
+@@ -77,12 +77,10 @@
+ 	pr_debug(" -> fw_feature_init()\n");
  
- #if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV)
- /*
-- * There are two methods for telling firmware what our capabilities are.
-- * Newer machines have an "ibm,client-architecture-support" method on the
-- * root node.  For older machines, we have to call the "process-elf-header"
-- * method in the /packages/elf-loader node, passing it a fake 32-bit
-- * ELF header containing a couple of PT_NOTE sections that contain
-- * structures that contain various information.
-- */
--
--/*
-- * New method - extensible architecture description vector.
-+ * The architecture vector has an array of PVR mask/value pairs,
-+ * followed by # option vectors - 1, followed by the option vectors.
-+ *
-+ * See prom.h for the definition of the bits specified in the
-+ * architecture vector.
-  *
-  * Because the description vector contains a mix of byte and word
-  * values, we declare it as an unsigned char array, and use this
-@@ -645,65 +640,7 @@
- #define W(x)	((x) >> 24) & 0xff, ((x) >> 16) & 0xff, \
- 		((x) >> 8) & 0xff, (x) & 0xff
- 
--/* Option vector bits - generic bits in byte 1 */
--#define OV_IGNORE		0x80	/* ignore this vector */
--#define OV_CESSATION_POLICY	0x40	/* halt if unsupported option present*/
--
--/* Option vector 1: processor architectures supported */
--#define OV1_PPC_2_00		0x80	/* set if we support PowerPC 2.00 */
--#define OV1_PPC_2_01		0x40	/* set if we support PowerPC 2.01 */
--#define OV1_PPC_2_02		0x20	/* set if we support PowerPC 2.02 */
--#define OV1_PPC_2_03		0x10	/* set if we support PowerPC 2.03 */
--#define OV1_PPC_2_04		0x08	/* set if we support PowerPC 2.04 */
--#define OV1_PPC_2_05		0x04	/* set if we support PowerPC 2.05 */
--#define OV1_PPC_2_06		0x02	/* set if we support PowerPC 2.06 */
--#define OV1_PPC_2_07		0x01	/* set if we support PowerPC 2.07 */
--
--/* Option vector 2: Open Firmware options supported */
--#define OV2_REAL_MODE		0x20	/* set if we want OF in real mode */
--
--/* Option vector 3: processor options supported */
--#define OV3_FP			0x80	/* floating point */
--#define OV3_VMX			0x40	/* VMX/Altivec */
--#define OV3_DFP			0x20	/* decimal FP */
--
--/* Option vector 4: IBM PAPR implementation */
--#define OV4_MIN_ENT_CAP		0x01	/* minimum VP entitled capacity */
--
--/* Option vector 5: PAPR/OF options supported */
--#define OV5_LPAR		0x80	/* logical partitioning supported */
--#define OV5_SPLPAR		0x40	/* shared-processor LPAR supported */
--/* ibm,dynamic-reconfiguration-memory property supported */
--#define OV5_DRCONF_MEMORY	0x20
--#define OV5_LARGE_PAGES		0x10	/* large pages supported */
--#define OV5_DONATE_DEDICATE_CPU 0x02	/* donate dedicated CPU support */
--/* PCIe/MSI support.  Without MSI full PCIe is not supported */
--#ifdef CONFIG_PCI_MSI
--#define OV5_MSI			0x01	/* PCIe/MSI support */
--#else
--#define OV5_MSI			0x00
--#endif /* CONFIG_PCI_MSI */
--#ifdef CONFIG_PPC_SMLPAR
--#define OV5_CMO			0x80	/* Cooperative Memory Overcommitment */
--#define OV5_XCMO			0x40	/* Page Coalescing */
--#else
--#define OV5_CMO			0x00
--#define OV5_XCMO			0x00
--#endif
--#define OV5_TYPE1_AFFINITY	0x80	/* Type 1 NUMA affinity */
--#define OV5_PFO_HW_RNG		0x80	/* PFO Random Number Generator */
--#define OV5_PFO_HW_842		0x40	/* PFO Compression Accelerator */
--#define OV5_PFO_HW_ENCR		0x20	/* PFO Encryption Accelerator */
--#define OV5_SUB_PROCESSORS	0x01    /* 1,2,or 4 Sub-Processors supported */
--
--/* Option Vector 6: IBM PAPR hints */
--#define OV6_LINUX		0x02	/* Linux is our OS */
--
--/*
-- * The architecture vector has an array of PVR mask/value pairs,
-- * followed by # option vectors - 1, followed by the option vectors.
-- */
--static unsigned char ibm_architecture_vec[] = {
-+unsigned char ibm_architecture_vec[] = {
- 	W(0xfffe0000), W(0x003a0000),	/* POWER5/POWER5+ */
- 	W(0xffff0000), W(0x003e0000),	/* POWER6 */
- 	W(0xffff0000), W(0x003f0000),	/* POWER7 */
+ 	for (s = hypertas; s < hypertas + len; s += strlen(s) + 1) {
+-		for (i = 0; i < FIRMWARE_MAX_FEATURES; i++) {
++		for (i = 0; i < ARRAY_SIZE(firmware_features_table); i++) {
+ 			const char *name = firmware_features_table[i].name;
+ 			size_t size;
+-			/* check value against table of strings */
+-			if (!name)
+-				continue;
++
+ 			/*
+ 			 * If there is a '*' at the end of name, only check
+ 			 * upto there
