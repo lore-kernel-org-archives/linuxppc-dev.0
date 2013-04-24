@@ -1,31 +1,32 @@
 Return-Path: <aruna@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D4CC42C04FC
- for <linuxppc-dev@ozlabs.org>; Wed, 24 Apr 2013 16:20:52 +1000 (EST)
+ (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 022CA2C0596
+ for <linuxppc-dev@ozlabs.org>; Wed, 24 Apr 2013 16:21:17 +1000 (EST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <aruna@linux.vnet.ibm.com>;
- Wed, 24 Apr 2013 16:14:41 +1000
+ Wed, 24 Apr 2013 16:13:00 +1000
 Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 3D82B2CE804A
- for <linuxppc-dev@ozlabs.org>; Wed, 24 Apr 2013 16:20:33 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 9EB8B2CE8051
+ for <linuxppc-dev@ozlabs.org>; Wed, 24 Apr 2013 16:20:50 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
  by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3O66wRb64356472
- for <linuxppc-dev@ozlabs.org>; Wed, 24 Apr 2013 16:06:58 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3O6KTgU020927
- for <linuxppc-dev@ozlabs.org>; Wed, 24 Apr 2013 16:20:32 +1000
-Subject: [PATCH v2 5/8] powerpc/pseries: Read rtas partition via pstore
+ r3O67FQd65208568
+ for <linuxppc-dev@ozlabs.org>; Wed, 24 Apr 2013 16:07:15 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3O6KlTC023593
+ for <linuxppc-dev@ozlabs.org>; Wed, 24 Apr 2013 16:20:49 +1000
+Subject: [PATCH v2 6/8] powerpc/pseries: Distinguish between a os-partition
+ and non-os partition
 To: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org,
  benh@kernel.crashing.org
 From: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
-Date: Wed, 24 Apr 2013 11:50:25 +0530
-Message-ID: <20130424062025.7341.55256.stgit@aruna-ThinkPad-T420>
+Date: Wed, 24 Apr 2013 11:50:34 +0530
+Message-ID: <20130424062034.7341.24533.stgit@aruna-ThinkPad-T420>
 In-Reply-To: <20130424061807.7341.909.stgit@aruna-ThinkPad-T420>
 References: <20130424061807.7341.909.stgit@aruna-ThinkPad-T420>
 MIME-Version: 1.0
@@ -42,118 +43,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch set exploits the pstore subsystem to read details of rtas partition
-in NVRAM to a separate file in /dev/pstore. For instance, rtas details will be
-stored in a file named [rtas-nvram-4].
+Introduce os_partition member in nvram_os_partition structure to identify
+if the partition is an os partition or not. This will be useful to handle
+non-os partitions of-config and common.
 
 Signed-off-by: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
 Reviewed-by: Jim Keniston <jkenisto@us.ibm.com>
 ---
- arch/powerpc/platforms/pseries/nvram.c |   33 +++++++++++++++++++++++++-------
- fs/pstore/inode.c                      |    3 +++
- include/linux/pstore.h                 |    2 ++
- 3 files changed, 31 insertions(+), 7 deletions(-)
+ arch/powerpc/platforms/pseries/nvram.c |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/platforms/pseries/nvram.c b/arch/powerpc/platforms/pseries/nvram.c
-index 9edec8e..8a7eefb 100644
+index 8a7eefb..b118382 100644
 --- a/arch/powerpc/platforms/pseries/nvram.c
 +++ b/arch/powerpc/platforms/pseries/nvram.c
-@@ -131,9 +131,11 @@ static struct z_stream_s stream;
- #ifdef CONFIG_PSTORE
- static enum pstore_type_id nvram_type_ids[] = {
- 	PSTORE_TYPE_DMESG,
-+	PSTORE_TYPE_RTAS,
- 	-1
- };
- static int read_type;
-+static unsigned long last_rtas_event;
- #endif
- 
- static ssize_t pSeries_nvram_read(char *buf, size_t count, loff_t *index)
-@@ -297,8 +299,13 @@ int nvram_write_error_log(char * buff, int length,
- {
- 	int rc = nvram_write_os_partition(&rtas_log_partition, buff, length,
- 						err_type, error_log_cnt);
--	if (!rc)
-+	if (!rc) {
- 		last_unread_rtas_event = get_seconds();
-+#ifdef CONFIG_PSTORE
-+		last_rtas_event = get_seconds();
-+#endif
-+	}
-+
- 	return rc;
- }
- 
-@@ -506,7 +513,7 @@ static int nvram_pstore_write(enum pstore_type_id type,
- }
- 
- /*
-- * Reads the oops/panic report.
-+ * Reads the oops/panic report and ibm,rtas-log partition.
-  * Returns the length of the data we read from each partition.
-  * Returns 0 if we've been called before.
-  */
-@@ -526,6 +533,12 @@ static ssize_t nvram_pstore_read(u64 *id, enum pstore_type_id *type,
- 		part = &oops_log_partition;
- 		*type = PSTORE_TYPE_DMESG;
- 		break;
-+	case PSTORE_TYPE_RTAS:
-+		part = &rtas_log_partition;
-+		*type = PSTORE_TYPE_RTAS;
-+		time->tv_sec = last_rtas_event;
-+		time->tv_nsec = 0;
-+		break;
- 	default:
- 		return 0;
- 	}
-@@ -542,11 +555,17 @@ static ssize_t nvram_pstore_read(u64 *id, enum pstore_type_id *type,
- 
- 	*count = 0;
- 	*id = id_no;
--	oops_hdr = (struct oops_log_info *)buff;
--	*buf = buff + sizeof(*oops_hdr);
--	time->tv_sec = oops_hdr->timestamp;
--	time->tv_nsec = 0;
--	return oops_hdr->report_length;
-+
-+	if (nvram_type_ids[read_type] == PSTORE_TYPE_DMESG) {
-+		oops_hdr = (struct oops_log_info *)buff;
-+		*buf = buff + sizeof(*oops_hdr);
-+		time->tv_sec = oops_hdr->timestamp;
-+		time->tv_nsec = 0;
-+		return oops_hdr->report_length;
-+	}
-+
-+	*buf = buff;
-+	return part->size;
- }
- 
- static struct pstore_info nvram_pstore_info = {
-diff --git a/fs/pstore/inode.c b/fs/pstore/inode.c
-index e4bcb2c..ec24f9c 100644
---- a/fs/pstore/inode.c
-+++ b/fs/pstore/inode.c
-@@ -324,6 +324,9 @@ int pstore_mkfile(enum pstore_type_id type, char *psname, u64 id, int count,
- 	case PSTORE_TYPE_MCE:
- 		sprintf(name, "mce-%s-%lld", psname, id);
- 		break;
-+	case PSTORE_TYPE_PPC_RTAS:
-+		sprintf(name, "rtas-%s-%lld", psname, id);
-+		break;
- 	case PSTORE_TYPE_UNKNOWN:
- 		sprintf(name, "unknown-%s-%lld", psname, id);
- 		break;
-diff --git a/include/linux/pstore.h b/include/linux/pstore.h
-index 75d0176..d7a8fe9 100644
---- a/include/linux/pstore.h
-+++ b/include/linux/pstore.h
-@@ -35,6 +35,8 @@ enum pstore_type_id {
- 	PSTORE_TYPE_MCE		= 1,
- 	PSTORE_TYPE_CONSOLE	= 2,
- 	PSTORE_TYPE_FTRACE	= 3,
-+	/* PPC64 partition types */
-+	PSTORE_TYPE_PPC_RTAS	= 4,
- 	PSTORE_TYPE_UNKNOWN	= 255
+@@ -53,20 +53,23 @@ struct nvram_os_partition {
+ 	int min_size;	/* minimum acceptable size (0 means req_size) */
+ 	long size;	/* size of data portion (excluding err_log_info) */
+ 	long index;	/* offset of data portion of partition */
++	bool os_partition; /* partition initialized by OS, not FW */
  };
  
+ static struct nvram_os_partition rtas_log_partition = {
+ 	.name = "ibm,rtas-log",
+ 	.req_size = 2079,
+ 	.min_size = 1055,
+-	.index = -1
++	.index = -1,
++	.os_partition = true
+ };
+ 
+ static struct nvram_os_partition oops_log_partition = {
+ 	.name = "lnx,oops-log",
+ 	.req_size = 4000,
+ 	.min_size = 2000,
+-	.index = -1
++	.index = -1,
++	.os_partition = true
+ };
+ 
+ static const char *pseries_nvram_os_partitions[] = {
