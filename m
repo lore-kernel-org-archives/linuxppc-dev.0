@@ -1,39 +1,33 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2CD5D2C00BE
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 19:08:13 +1000 (EST)
+ (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 5E8002C011A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 19:37:53 +1000 (EST)
 Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 24 Apr 2013 14:34:35 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 78D6D1258055
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 14:39:41 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3O981775767438
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 14:38:01 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3O984Cs027577
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 09:08:05 GMT
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Andrea Arcangeli <aarcange@redhat.com>
-Subject: Re: [PATCH -V6 18/27] mm/THP: withdraw the pgtable after pmdp related
- operations
-In-Reply-To: <20130422154901.GC13442@redhat.com>
-References: <1366624861-24948-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1366624861-24948-19-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20130422154901.GC13442@redhat.com>
-Date: Wed, 24 Apr 2013 14:38:01 +0530
-Message-ID: <87a9oo2t5a.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
- David Gibson <dwg@au1.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Wed, 24 Apr 2013 05:37:49 -0400
+Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id CD27F38C801A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 05:37:46 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3O9bkf162456014
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 05:37:46 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3O9bkYk003596
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 05:37:46 -0400
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 3/7] powerpc/powernv: Add option CONFIG_POWERNV_MSI
+Date: Wed, 24 Apr 2013 17:37:35 +0800
+Message-Id: <1366796259-29412-4-git-send-email-shangw@linux.vnet.ibm.com>
+In-Reply-To: <1366796259-29412-1-git-send-email-shangw@linux.vnet.ibm.com>
+References: <1366796259-29412-1-git-send-email-shangw@linux.vnet.ibm.com>
+Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,82 +37,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Andrea Arcangeli <aarcange@redhat.com> writes:
+As Michael Ellerman suggested, to add CONFIG_POWERNV_MSI for PowerNV
+platform. That's similar to CONFIG_PSERIES_MSI for pSeries platform.
+For now, we don't make it dependent on CONFIG_EEH since it's not ready
+to enable that yet.
 
-> Hi,
->
-> On Mon, Apr 22, 2013 at 03:30:52PM +0530, Aneesh Kumar K.V wrote:
->> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
->> 
->> For architectures like ppc64 we look at deposited pgtable when
->> calling pmdp_get_and_clear. So do the pgtable_trans_huge_withdraw
->> after finishing pmdp related operations.
->> 
->> Cc: Andrea Arcangeli <aarcange@redhat.com>
->> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->> ---
->>  mm/huge_memory.c |    3 ++-
->>  1 file changed, 2 insertions(+), 1 deletion(-)
->> 
->> diff --git a/mm/huge_memory.c b/mm/huge_memory.c
->> index 84f3180..2a43782 100644
->> --- a/mm/huge_memory.c
->> +++ b/mm/huge_memory.c
->> @@ -1363,9 +1363,10 @@ int zap_huge_pmd(struct mmu_gather *tlb, struct vm_area_struct *vma,
->>  		struct page *page;
->>  		pgtable_t pgtable;
->>  		pmd_t orig_pmd;
->> -		pgtable = pgtable_trans_huge_withdraw(tlb->mm, pmd);
->> +
->>  		orig_pmd = pmdp_get_and_clear(tlb->mm, addr, pmd);
->>  		tlb_remove_pmd_tlb_entry(tlb, pmd, addr);
->> +		pgtable = pgtable_trans_huge_withdraw(tlb->mm, pmd);
->>  		if (is_huge_zero_pmd(orig_pmd)) {
->>  			tlb->mm->nr_ptes--;
->>  			spin_unlock(&tlb->mm->page_table_lock);
->
-> I think here a comment inline (not only in the commit msg) is in
-> order. Otherwise it's hard to imagine others to be aware of this arch
-> detail when they will read the code later. So it would be prone to
-> break later without a comment.
+Apart from that, we also enable CONFIG_PPC_MSI_BITMAP on selecting
+CONFIG_POWERNV_MSI.
 
-How about ?
-
->From 7444a5eda33c00eea465b51c405cb830c57513b7 Mon Sep 17 00:00:00 2001
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Date: Wed, 6 Mar 2013 12:50:37 +0530
-Subject: [PATCH] mm/THP: withdraw the pgtable after pmdp related operations
-
-For architectures like ppc64 we look at deposited pgtable when
-calling pmdp_get_and_clear. So do the pgtable_trans_huge_withdraw
-after finishing pmdp related operations.
-
-Cc: Andrea Arcangeli <aarcange@redhat.com>
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- mm/huge_memory.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/powernv/Kconfig |    5 +++++
+ arch/powerpc/sysdev/Kconfig            |    1 +
+ 2 files changed, 6 insertions(+), 0 deletions(-)
 
-diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-index 84f3180..21c5ebd 100644
---- a/mm/huge_memory.c
-+++ b/mm/huge_memory.c
-@@ -1363,9 +1363,15 @@ int zap_huge_pmd(struct mmu_gather *tlb, struct vm_area_struct *vma,
- 		struct page *page;
- 		pgtable_t pgtable;
- 		pmd_t orig_pmd;
--		pgtable = pgtable_trans_huge_withdraw(tlb->mm, pmd);
-+		/*
-+		 * For architectures like ppc64 we look at deposited pgtable
-+		 * when calling pmdp_get_and_clear. So do the
-+		 * pgtable_trans_huge_withdraw after finishing pmdp related
-+		 * operations.
-+		 */
- 		orig_pmd = pmdp_get_and_clear(tlb->mm, addr, pmd);
- 		tlb_remove_pmd_tlb_entry(tlb, pmd, addr);
-+		pgtable = pgtable_trans_huge_withdraw(tlb->mm, pmd);
- 		if (is_huge_zero_pmd(orig_pmd)) {
- 			tlb->mm->nr_ptes--;
- 			spin_unlock(&tlb->mm->page_table_lock);
+diff --git a/arch/powerpc/platforms/powernv/Kconfig b/arch/powerpc/platforms/powernv/Kconfig
+index 74fea5c..d3e840d 100644
+--- a/arch/powerpc/platforms/powernv/Kconfig
++++ b/arch/powerpc/platforms/powernv/Kconfig
+@@ -8,6 +8,11 @@ config PPC_POWERNV
+ 	select PPC_PCI_CHOICE if EMBEDDED
+ 	default y
+ 
++config POWERNV_MSI
++	bool "Support PCI MSI on PowerNV platform"
++	depends on PCI_MSI
++	default y
++
+ config PPC_POWERNV_RTAS
+ 	depends on PPC_POWERNV
+ 	bool "Support for RTAS based PowerNV platforms such as BML"
+diff --git a/arch/powerpc/sysdev/Kconfig b/arch/powerpc/sysdev/Kconfig
+index a84fecf..ab4cb54 100644
+--- a/arch/powerpc/sysdev/Kconfig
++++ b/arch/powerpc/sysdev/Kconfig
+@@ -19,6 +19,7 @@ config PPC_MSI_BITMAP
+ 	default y if MPIC
+ 	default y if FSL_PCI
+ 	default y if PPC4xx_MSI
++	default y if POWERNV_MSI
+ 
+ source "arch/powerpc/sysdev/xics/Kconfig"
+ 
 -- 
-1.7.10
+1.7.5.4
