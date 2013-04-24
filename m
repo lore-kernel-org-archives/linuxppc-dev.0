@@ -1,25 +1,39 @@
-Return-Path: <gang.chen@asianux.com>
-Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
+Return-Path: <qiudayu@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 172902C00B5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 18:32:34 +1000 (EST)
-Message-ID: <5177986E.9020105@asianux.com>
-Date: Wed, 24 Apr 2013 16:31:42 +0800
-From: Chen Gang <gang.chen@asianux.com>
+ (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4DD9D2C0087
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 18:35:32 +1000 (EST)
+Received: from /spool/local
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <qiudayu@linux.vnet.ibm.com>;
+ Wed, 24 Apr 2013 18:27:32 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 2A3EA2BB0053
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 18:35:20 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3O8ZDQj1573228
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 18:35:13 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3O8ZIbS025750
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Apr 2013 18:35:19 +1000
+Message-ID: <51779941.8080403@linux.vnet.ibm.com>
+Date: Wed, 24 Apr 2013 16:35:13 +0800
+From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Subject: Re: [PATCH] arch/powerpc/kernel: using %12.12s instead of %12s for
- avoiding memory overflow.
-References: <5100B53C.3030109@asianux.com> <512055D0.7050100@asianux.com>
- <514FD2E0.5030805@asianux.com> <51778D97.4080409@asianux.com>
- <51779491.10307@linux.vnet.ibm.com> <51779588.1070203@linux.vnet.ibm.com>
-In-Reply-To: <51779588.1070203@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>,
- Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- paulus@samba.org
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: "attempt to move .org backwards" still show up
+References: <5177965D.9090406@linux.vnet.ibm.com>
+ <20130424083142.GB26834@concordia>
+In-Reply-To: <20130424083142.GB26834@concordia>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: sfr@canb.auug.org.au, mikey@neuling.org, matt@ozlabs.org,
+ gang.chen@asianux.com, linux-kernel@vger.kernel.org, paulus@samba.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,52 +43,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2013年04月24日 16:19, Vasant Hegde wrote:
->>>>>>     for tmp_part->header.name:
->>>>>> >>>>>       it is "Terminating null required only for names<   12 chars".
->>>>>> >>>>>       so need to limit the %.12s for it in printk
->>>>>> >>>>>
->>>>>> >>>>>     additional info:
->>>>>> >>>>>
->>>>>> >>>>>       %12s  limit the width, not for the original string output length
->>>>>> >>>>>             if name length is more than 12, it still can be fully displayed.
->>>>>> >>>>>             if name length is less than 12, the ' ' will be filled before name.
->>>>>> >>>>>
->>>>>> >>>>>       %.12s truly limit the original string output length (precision)
->>>>>> >>>>>
->>>>>> >>>>>
->>>>>> >>>>> Signed-off-by: Chen Gang<gang.chen@asianux.com>
->>>>>> >>>>> ---
->>>>>> >>>>>    arch/powerpc/kernel/nvram_64.c |    2 +-
->>>>>> >>>>>    1 file changed, 1 insertion(+), 1 deletion(-)
->>>>>> >>>>>
->>>>>> >>>>> diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
->>>>>> >>>>> index bec1e93..57bf6d2 100644
->>>>>> >>>>> --- a/arch/powerpc/kernel/nvram_64.c
->>>>>> >>>>> +++ b/arch/powerpc/kernel/nvram_64.c
->>>>>> >>>>> @@ -202,7 +202,7 @@ static void __init nvram_print_partitions(char * label)
->>>>>> >>>>>    	printk(KERN_WARNING "--------%s---------\n", label);
->>>>>> >>>>>    	printk(KERN_WARNING "indx\t\tsig\tchks\tlen\tname\n");
->>>>>> >>>>>    	list_for_each_entry(tmp_part,&nvram_partitions, partition) {
->>>>>> >>>>> -		printk(KERN_WARNING "%4d    \t%02x\t%02x\t%d\t%12s\n",
->>>>>> >>>>> +		printk(KERN_WARNING "%4d    \t%02x\t%02x\t%d\t%12.12s\n",
->> > 
->> > First, this code in inside NVRAM_DEBUG which is used only for debug purpose and
->> > AFAIK, all partition names are less than 20 character. So I don't think we need
-> Sorry.. I meant 12 character.
-
-Please see line 283:
-  "strncpy(part->header.name, "wwwwwwwwwwww", 12);"
-  (it is not a NUL terminated string, and the length is 12)
-
-And also, can we be sure that all partition names should be less than 12
-characters ?
-
-All together, I think we still need %12.12s to protect the memory.
-
-Thanks.
-
--- 
-Chen Gang
-
-Asianux Corporation
+于 2013/4/24 16:31, Michael Ellerman 写道:
+> On Wed, Apr 24, 2013 at 04:22:53PM +0800, Mike Qiu wrote:
+>> Hi all
+>>
+>> I get an error message when I compile the source code in Power7 platform
+>> use the newest upstream kernel.
+> Hi Mike,
+>
+> It depends on what your .config is. What defconfig are you building?
+I just copy the config file from /boot/config.* to .config and use make 
+menuconfig
+change nothing by manually, then save.
+> cheers
+>
