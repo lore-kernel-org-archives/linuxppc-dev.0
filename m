@@ -1,16 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Message-ID: <1366920741.2869.32.camel@pasglop>
+Return-Path: <robherring2@gmail.com>
+Message-ID: <517995D0.8020307@gmail.com>
+Date: Thu, 25 Apr 2013 15:45:04 -0500
+From: Rob Herring <robherring2@gmail.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH 1/5] ibmebus: convert of_platform_driver to platform_driver
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Rob Herring <robherring2@gmail.com>
-Date: Fri, 26 Apr 2013 06:12:21 +1000
-In-Reply-To: <517980B0.3000401@gmail.com>
 References: <1366596798-9457-1-git-send-email-robherring2@gmail.com>
  <1366596798-9457-2-git-send-email-robherring2@gmail.com>
  <CAL_JsqKDF=hPEM0Jz-zZSXBCXBZ=gBjLWL6QDvq+nFWkqY3DMw@mail.gmail.com>
  <1366911329.2869.31.camel@pasglop> <517980B0.3000401@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ <1366920741.2869.32.camel@pasglop>
+In-Reply-To: <1366920741.2869.32.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8
 Cc: Roland Dreier <roland@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
  linux-rdma@vger.kernel.org, netdev@vger.kernel.org,
  "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>,
@@ -29,36 +30,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-04-25 at 14:14 -0500, Rob Herring wrote:
-> On 04/25/2013 12:35 PM, Benjamin Herrenschmidt wrote:
-> > On Thu, 2013-04-25 at 10:23 -0500, Rob Herring wrote:
-> >> Ben, Can I have your Ack for this? The change is straightforward and
-> >> neither of the 2 drivers used the id parameter that is removed.
-> > 
-> > Didn't you get my mail about a compile failure caused by this patch ?
+On 04/25/2013 03:12 PM, Benjamin Herrenschmidt wrote:
+> On Thu, 2013-04-25 at 14:14 -0500, Rob Herring wrote:
+>> On 04/25/2013 12:35 PM, Benjamin Herrenschmidt wrote:
+
+[...]
+
+>> You need patch 2 of this series to fix this:
+>>
+>> driver core: move to_platform_driver to platform_device.h
+>>
+>> which as Arnd pointed out needs to come first. I've fixed that in my
+>> tree, but I don't think it warrants another post.
 > 
-> No, and I can't find any evidence of a mail in my inbox or in the list
-> archives.
+> Can I pull you tree from somewhere to test ?
 
-Odd...
+Here you go:
 
-> > 
- .../...
+git://sources.calxeda.com/kernel/linux.git of-platform-removal
 
-> You need patch 2 of this series to fix this:
-> 
-> driver core: move to_platform_driver to platform_device.h
-> 
-> which as Arnd pointed out needs to come first. I've fixed that in my
-> tree, but I don't think it warrants another post.
-
-Can I pull you tree from somewhere to test ?
-
-Cheers,
-Ben.
-
-> Rob
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Rob
