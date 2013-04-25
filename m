@@ -1,26 +1,18 @@
-Return-Path: <gang.chen@asianux.com>
-Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 5E0E52C00DC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2013 21:16:56 +1000 (EST)
-Message-ID: <51791076.9040405@asianux.com>
-Date: Thu, 25 Apr 2013 19:16:06 +0800
-From: Chen Gang <gang.chen@asianux.com>
+ (Client CN "mail.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 848322C00F7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2013 21:45:45 +1000 (EST)
+From: Tiejun Chen <tiejun.chen@windriver.com>
+To: <galak@kernel.crashing.org>
+Subject: [PATCH 1/1] kvm:book3e: Fix a build error
+Date: Thu, 25 Apr 2013 19:45:36 +0800
+Message-ID: <1366890336-4282-1-git-send-email-tiejun.chen@windriver.com>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: "attempt to move .org backwards" still show up
-References: <5177965D.9090406@linux.vnet.ibm.com>
- <20130424083142.GB26834@concordia> <51779941.8080403@linux.vnet.ibm.com>
- <30651.1366799858@ale.ozlabs.ibm.com> <1366807638.5911.2.camel@localhost>
- <5178816D.3000309@asianux.com> <5178ABA2.4030109@linux.vnet.ibm.com>
- <20130425062539.GA421@iris.ozlabs.ibm.com>
-In-Reply-To: <20130425062539.GA421@iris.ozlabs.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: sfr@canb.auug.org.au, Michael Neuling <mikey@neuling.org>, matt@ozlabs.org,
- linux-kernel@vger.kernel.org, Mike Qiu <qiudayu@linux.vnet.ibm.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,25 +22,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2013年04月25日 14:25, Paul Mackerras wrote:
-> On Thu, Apr 25, 2013 at 12:05:54PM +0800, Mike Qiu wrote:
->> > This has block my work now
->> > So I hope you can take a look ASAP
->> > Thanks
->> > :)
->> > 
->> > Mike
-> As a quick fix, turn on CONFIG_KVM_BOOK3S_64_HV.  That will eliminate
-> the immediate problem.
+Commit cd66cc2e, "powerpc/85xx: Add AltiVec support for e6500", adds
+support for AltiVec on a Book-E class processor, but while compiling 
+in the CONFIG_PPC_BOOK3E_64 and CONFIG_VIRTUALIZATION case, this
+introduce the following error:
 
-Yes, just as my original reply to Mike to bypass it, but get no reply, I
-guess he has to face the CONFIG_KVM_BOOK3S_64_PR.
+arch/powerpc/kernel/exceptions-64e.S:402: undefined reference to `kvmppc_handler_42_0x01B'
+arch/powerpc/kernel/built-in.o: In function `exc_altivec_assist_book3e':
+arch/powerpc/kernel/exceptions-64e.S:424: undefined reference to `kvmppc_handler_43_0x01B'
+make: *** [vmlinux] Error 1
 
-Now, I am just fixing it, when I finish one patch, please help check.
+Looks we should add these altivec kvm handlers.
 
-Thanks.
+Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+---
+ arch/powerpc/kvm/bookehv_interrupts.S |    5 +++++
+ 1 file changed, 5 insertions(+)
 
+diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
+index e8ed7d6..fa9c78a 100644
+--- a/arch/powerpc/kvm/bookehv_interrupts.S
++++ b/arch/powerpc/kvm/bookehv_interrupts.S
+@@ -319,6 +319,11 @@ kvm_handler BOOKE_INTERRUPT_DEBUG, EX_PARAMS(DBG), \
+ 	SPRN_DSRR0, SPRN_DSRR1, 0
+ kvm_handler BOOKE_INTERRUPT_DEBUG, EX_PARAMS(CRIT), \
+ 	SPRN_CSRR0, SPRN_CSRR1, 0
++/* altivec */
++kvm_handler BOOKE_INTERRUPT_ALTIVEC_UNAVAIL, EX_PARAMS(GEN), \
++	SPRN_SRR0, SPRN_SRR1, 0
++kvm_handler BOOKE_INTERRUPT_ALTIVEC_ASSIST, EX_PARAMS(GEN), \
++	SPRN_SRR0, SPRN_SRR1, 0
+ #else
+ /*
+  * For input register values, see arch/powerpc/include/asm/kvm_booke_hv_asm.h
 -- 
-Chen Gang
-
-Asianux Corporation
+1.7.9.5
