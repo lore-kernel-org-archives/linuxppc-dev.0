@@ -1,20 +1,38 @@
-Return-Path: <r63061@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C398C2C0107
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2013 17:54:44 +1000 (EST)
-From: Xie Xiaobo <X.Xie@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
-Subject: [PATCH] powerpc/85xx: Add TWR-P1025 board support
-Date: Thu, 25 Apr 2013 15:13:48 +0800
-Message-ID: <1366874028-18870-1-git-send-email-X.Xie@freescale.com>
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e7.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CAB3F2C00FB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2013 18:08:47 +1000 (EST)
+Received: from /spool/local
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Thu, 25 Apr 2013 04:08:44 -0400
+Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 3E866C9001E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2013 04:08:42 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3P88gcX239474
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2013 04:08:42 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3P88fDG017452
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2013 05:08:42 -0300
+Date: Thu, 25 Apr 2013 16:08:37 +0800
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 4/7] powerpc/powernv: Patch MSI EOI handler on P8
+Message-ID: <20130425080836.GA27415@shangw.(null)>
+References: <1366796259-29412-1-git-send-email-shangw@linux.vnet.ibm.com>
+ <1366796259-29412-5-git-send-email-shangw@linux.vnet.ibm.com>
+ <1366836580.2869.16.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Michael Johnston <michael.johnston@freescale.com>,
- Xie Xiaobo <X.Xie@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1366836580.2869.16.camel@pasglop>
+Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <shangw@linux.vnet.ibm.com>
+Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,631 +42,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-TWR-P1025 Overview
- -----------------
- 512Mbyte DDR3 (on board DDR)
- 64MB Nor Flash
- eTSEC1: Connected to RGMII PHY AR8035
- eTSEC3: Connected to RGMII PHY AR8035
- Two USB2.0 Type A
- One microSD Card slot
- One mini-PCIe slot
- One mini-USB TypeB dual UART
+On Thu, Apr 25, 2013 at 06:49:40AM +1000, Benjamin Herrenschmidt wrote:
+>On Wed, 2013-04-24 at 17:37 +0800, Gavin Shan wrote:
+>> The EOI handler of MSI/MSI-X interrupts for P8 (PHB3) need additional
+>> steps to handle the P/Q bits in IVE before EOIing the corresponding
+>> interrupt. The patch changes the EOI handler to cover that.
+>
+> .../...
+>
+>>  static void pnv_pci_init_ioda_msis(struct pnv_phb *phb)
+>>  {
+>>  	unsigned int count;
+>> @@ -667,6 +681,8 @@ static void pnv_pci_init_ioda_msis(struct pnv_phb *phb)
+>>  	}
+>>  
+>>  	phb->msi_setup = pnv_pci_ioda_msi_setup;
+>> +	if (phb->type == PNV_PHB_IODA2)
+>> +		phb->msi_eoi = pnv_pci_ioda_msi_eoi;
+>
+>Ouch, another function pointer call in a hot path...
+>
 
-Signed-off-by: Michael Johnston <michael.johnston@freescale.com>
-Signed-off-by: Xie Xiaobo <X.Xie@freescale.com>
----
- arch/powerpc/boot/dts/p1025twr.dtsi     | 244 ++++++++++++++++++++++++++++++++
- arch/powerpc/boot/dts/p1025twr_32b.dts  | 135 ++++++++++++++++++
- arch/powerpc/platforms/85xx/Kconfig     |   6 +
- arch/powerpc/platforms/85xx/Makefile    |   1 +
- arch/powerpc/platforms/85xx/twr_p102x.c | 176 +++++++++++++++++++++++
- 5 files changed, 562 insertions(+)
- create mode 100644 arch/powerpc/boot/dts/p1025twr.dtsi
- create mode 100644 arch/powerpc/boot/dts/p1025twr_32b.dts
- create mode 100644 arch/powerpc/platforms/85xx/twr_p102x.c
+Yeah. I've removed it in next version (not send out yet) :-)
 
-diff --git a/arch/powerpc/boot/dts/p1025twr.dtsi b/arch/powerpc/boot/dts/p1025twr.dtsi
-new file mode 100644
-index 0000000..0d550ad
---- /dev/null
-+++ b/arch/powerpc/boot/dts/p1025twr.dtsi
-@@ -0,0 +1,244 @@
-+/*
-+ * P1025 TWR Device Tree Source stub (no addresses or top-level ranges)
-+ *
-+ * Copyright 2013 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/{
-+       aliases {
-+		ethernet3 = &enet3;
-+		ethernet4 = &enet4;
-+       };
-+};
-+
-+&lbc {
-+	nor@0,0 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		compatible = "cfi-flash";
-+		reg = <0x0 0x0 0x4000000>;
-+		bank-width = <2>;
-+		device-width = <1>;
-+
-+		partition@0 {
-+			/* This location must not be altered  */
-+			/* 256KB for Vitesse 7385 Switch firmware */
-+			reg = <0x0 0x00040000>;
-+			label = "NOR Vitesse-7385 Firmware";
-+			read-only;
-+		};
-+
-+		partition@40000 {
-+			/* 256KB for DTB Image */
-+			reg = <0x00040000 0x00040000>;
-+			label = "NOR DTB Image";
-+		};
-+
-+		partition@80000 {
-+			/* 3.5 MB for Linux Kernel Image */
-+			reg = <0x00080000 0x00380000>;
-+			label = "NOR Linux Kernel Image";
-+		};
-+
-+		partition@400000 {
-+			/* 58.75MB for JFFS2 based Root file System */
-+			reg = <0x00400000 0x03ac0000>;
-+			label = "NOR JFFS2 Root File System";
-+		};
-+
-+		partition@ec0000 {
-+			/* This location must not be altered  */
-+			/* 256KB for QE ucode firmware*/
-+			reg = <0x03ec0000 0x00040000>;
-+			label = "NOR QE microcode firmware";
-+			read-only;
-+		};
-+
-+		partition@f00000 {
-+			/* This location must not be altered  */
-+			/* 512KB for u-boot Bootloader Image */
-+			/* 512KB for u-boot Environment Variables */
-+			reg = <0x03f00000 0x00100000>;
-+			label = "NOR U-Boot Image";
-+			read-only;
-+		};
-+	};
-+
-+	/* CS2 for Display */
-+	ssd1289@2,0 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		compatible = "ssd1289";
-+		reg = <0x2 0x0000 0x0002
-+		       0x2 0x0002 0x0002>;
-+	};
-+
-+};
-+
-+&soc {
-+	usb@22000 {
-+		phy_type = "ulpi";
-+	};
-+
-+	mdio@24000 {
-+		phy0: ethernet-phy@2 {
-+			interrupt-parent = <&mpic>;
-+			interrupts = <1 1>;
-+			reg = <0x2>;
-+		};
-+
-+		phy1: ethernet-phy@1 {
-+			interrupt-parent = <&mpic>;
-+			interrupts = <2 1>;
-+			reg = <0x1>;
-+		};
-+
-+		tbi0: tbi-phy@11 {
-+			reg = <0x11>;
-+			device_type = "tbi-phy";
-+		};
-+	};
-+
-+	mdio@25000 {
-+		tbi1: tbi-phy@11 {
-+			reg = <0x11>;
-+			device_type = "tbi-phy";
-+		};
-+	};
-+
-+	mdio@26000 {
-+		tbi2: tbi-phy@11 {
-+			reg = <0x11>;
-+			device_type = "tbi-phy";
-+		};
-+	};
-+
-+	enet0: ethernet@b0000 {
-+		phy-handle = <&phy0>;
-+		phy-connection-type = "rgmii-id";
-+
-+	};
-+
-+	enet1: ethernet@b1000 {
-+		status = "disabled";
-+	};
-+
-+	enet2: ethernet@b2000 {
-+		phy-handle = <&phy1>;
-+		phy-connection-type = "rgmii-id";
-+	};
-+
-+	par_io@e0100 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		reg = <0xe0100 0x60>;
-+		ranges = <0x0 0xe0100 0x60>;
-+		device_type = "par_io";
-+		num-ports = <3>;
-+		pio1: ucc_pin@01 {
-+			pio-map = <
-+		/* port  pin  dir  open_drain  assignment  has_irq */
-+				0x1  0x13 0x1  0x0  0x1  0x0    /* QE_MUX_MDC */
-+				0x1  0x14 0x3  0x0  0x1  0x0    /* QE_MUX_MDIO */
-+				0x0  0x17 0x2  0x0  0x2  0x0    /* CLK12 */
-+				0x0  0x18 0x2  0x0  0x1  0x0    /* CLK9 */
-+				0x0  0x7  0x1  0x0  0x2  0x0    /* ENET1_TXD0_SER1_TXD0 */
-+				0x0  0x9  0x1  0x0  0x2  0x0    /* ENET1_TXD1_SER1_TXD1 */
-+				0x0  0xb  0x1  0x0  0x2  0x0    /* ENET1_TXD2_SER1_TXD2 */
-+				0x0  0xc  0x1  0x0  0x2  0x0    /* ENET1_TXD3_SER1_TXD3 */
-+				0x0  0x6  0x2  0x0  0x2  0x0    /* ENET1_RXD0_SER1_RXD0 */
-+				0x0  0xa  0x2  0x0  0x2  0x0    /* ENET1_RXD1_SER1_RXD1 */
-+				0x0  0xe  0x2  0x0  0x2  0x0    /* ENET1_RXD2_SER1_RXD2 */
-+				0x0  0xf  0x2  0x0  0x2  0x0    /* ENET1_RXD3_SER1_RXD3 */
-+				0x0  0x5  0x1  0x0  0x2  0x0    /* ENET1_TX_EN_SER1_RTS_B */
-+				0x0  0xd  0x1  0x0  0x2  0x0    /* ENET1_TX_ER */
-+				0x0  0x4  0x2  0x0  0x2  0x0    /* ENET1_RX_DV_SER1_CTS_B */
-+				0x0  0x8  0x2  0x0  0x2  0x0    /* ENET1_RX_ER_SER1_CD_B */
-+				0x0  0x11 0x2  0x0  0x2  0x0    /* ENET1_CRS */
-+				0x0  0x10 0x2  0x0  0x2  0x0>;    /* ENET1_COL */
-+		};
-+
-+		pio2: ucc_pin@02 {
-+			pio-map = <
-+		/* port  pin  dir  open_drain  assignment  has_irq */
-+				0x1  0x13 0x1  0x0  0x1  0x0    /* QE_MUX_MDC */
-+				0x1  0x14 0x3  0x0  0x1  0x0    /* QE_MUX_MDIO */
-+				0x1  0xb  0x2  0x0  0x1  0x0    /* CLK13 */
-+				0x1  0x7  0x1  0x0  0x2  0x0    /* ENET5_TXD0_SER5_TXD0 */
-+				0x1  0xa  0x1  0x0  0x2  0x0    /* ENET5_TXD1_SER5_TXD1 */
-+				0x1  0x6  0x2  0x0  0x2  0x0    /* ENET5_RXD0_SER5_RXD0 */
-+				0x1  0x9  0x2  0x0  0x2  0x0    /* ENET5_RXD1_SER5_RXD1 */
-+				0x1  0x5  0x1  0x0  0x2  0x0    /* ENET5_TX_EN_SER5_RTS_B */
-+				0x1  0x4  0x2  0x0  0x2  0x0    /* ENET5_RX_DV_SER5_CTS_B */
-+				0x1  0x8  0x2  0x0  0x2  0x0>;    /* ENET5_RX_ER_SER5_CD_B */
-+		};
-+
-+		pio3: ucc_pin@03 {
-+			pio-map = <
-+		/* port  pin  dir  open_drain  assignment  has_irq */
-+				0x0  0x16 0x2  0x0  0x2  0x0    /* SER7_CD_B*/
-+				0x0  0x12 0x2  0x0  0x2  0x0    /* SER7_CTS_B*/
-+				0x0  0x13 0x1  0x0  0x2  0x0    /* SER7_RTS_B*/
-+				0x0  0x14 0x2  0x0  0x2  0x0    /* SER7_RXD0*/
-+				0x0  0x15 0x1  0x0  0x2  0x0>;    /* SER7_TXD0*/
-+		};
-+
-+		pio4: ucc_pin@04 {
-+			pio-map = <
-+		/* port  pin  dir  open_drain  assignment  has_irq */
-+				0x1  0x0  0x2  0x0  0x2  0x0    /* SER3_CD_B*/
-+				0x0  0x1c 0x2  0x0  0x2  0x0    /* SER3_CTS_B*/
-+				0x0  0x1d 0x1  0x0  0x2  0x0    /* SER3_RTS_B*/
-+				0x0  0x1e 0x2  0x0  0x2  0x0    /* SER3_RXD0*/
-+				0x0  0x1f 0x1  0x0  0x2  0x0>;    /* SER3_TXD0*/
-+		};
-+	};
-+};
-+
-+&qe {
-+	serial2: ucc@2600 {
-+		device_type = "serial";
-+		compatible = "ucc_uart";
-+		port-number = <0>;
-+		rx-clock-name = "brg6";
-+		tx-clock-name = "brg6";
-+		pio-handle = <&pio3>;
-+	};
-+
-+	serial3: ucc@2200 {
-+		device_type = "serial";
-+		compatible = "ucc_uart";
-+		port-number = <1>;
-+		rx-clock-name = "brg2";
-+		tx-clock-name = "brg2";
-+		pio-handle = <&pio4>;
-+	};
-+};
-diff --git a/arch/powerpc/boot/dts/p1025twr_32b.dts b/arch/powerpc/boot/dts/p1025twr_32b.dts
-new file mode 100644
-index 0000000..a3a5266
---- /dev/null
-+++ b/arch/powerpc/boot/dts/p1025twr_32b.dts
-@@ -0,0 +1,135 @@
-+/*
-+ * P1025 TWR Device Tree Source (32-bit address map)
-+ *
-+ * Copyright 2013 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/include/ "fsl/p1021si-pre.dtsi"
-+/ {
-+	model = "fsl,P1025";
-+	compatible = "fsl,TWR-P1025";
-+
-+	memory {
-+		device_type = "memory";
-+	};
-+
-+	lbc: localbus@ffe05000 {
-+		reg = <0 0xffe05000 0 0x1000>;
-+
-+		/* NOR Flash and SSD1289 */
-+		ranges = <0x0 0x0 0x0 0xec000000 0x04000000
-+			  0x2 0x0 0x0 0xe0000000 0x00020000>;
-+	};
-+
-+	soc: soc@ffe00000 {
-+		ranges = <0x0 0x0 0xffe00000 0x100000>;
-+	};
-+
-+	pci0: pcie@ffe09000 {
-+		ranges = <0x2000000 0x0 0xe0000000 0 0xa0000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0 0xffc10000 0x0 0x10000>;
-+		reg = <0 0xffe09000 0 0x1000>;
-+		pcie@0 {
-+			ranges = <0x2000000 0x0 0xe0000000
-+				  0x2000000 0x0 0xe0000000
-+				  0x0 0x20000000
-+
-+				  0x1000000 0x0 0x0
-+				  0x1000000 0x0 0x0
-+				  0x0 0x100000>;
-+		};
-+	};
-+
-+	pci1: pcie@ffe0a000 {
-+		reg = <0 0xffe0a000 0 0x1000>;
-+		ranges = <0x2000000 0x0 0xe0000000 0 0x80000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0 0xffc00000 0x0 0x10000>;
-+		pcie@0 {
-+			ranges = <0x2000000 0x0 0xe0000000
-+				  0x2000000 0x0 0xe0000000
-+				  0x0 0x20000000
-+
-+				  0x1000000 0x0 0x0
-+				  0x1000000 0x0 0x0
-+				  0x0 0x100000>;
-+		};
-+	};
-+
-+	qe: qe@ffe80000 {
-+		ranges = <0x0 0x0 0xffe80000 0x40000>;
-+		reg = <0 0xffe80000 0 0x480>;
-+		brg-frequency = <0>;
-+		bus-frequency = <0>;
-+		status = "disabled"; /* no firmware loaded */
-+
-+		enet3: ucc@2000 {
-+			device_type = "network";
-+			compatible = "ucc_geth";
-+			rx-clock-name = "clk12";
-+			tx-clock-name = "clk9";
-+			pio-handle = <&pio1>;
-+			phy-handle = <&qe_phy0>;
-+			phy-connection-type = "mii";
-+		};
-+
-+		mdio@2120 {
-+			qe_phy0: ethernet-phy@18 {
-+				interrupt-parent = <&mpic>;
-+				interrupts = <4 1 0 0>;
-+				reg = <0x18>;
-+				device_type = "ethernet-phy";
-+			};
-+			qe_phy1: ethernet-phy@19 {
-+				interrupt-parent = <&mpic>;
-+				interrupts = <5 1 0 0>;
-+				reg = <0x19>;
-+				device_type = "ethernet-phy";
-+			};
-+			tbi-phy@11 {
-+				reg = <0x11>;
-+				device_type = "tbi-phy";
-+			};
-+		};
-+
-+		enet4: ucc@2400 {
-+			device_type = "network";
-+			compatible = "ucc_geth";
-+			rx-clock-name = "none";
-+			tx-clock-name = "clk13";
-+			pio-handle = <&pio2>;
-+			phy-handle = <&qe_phy1>;
-+			phy-connection-type = "rmii";
-+		};
-+	};
-+};
-+
-+/include/ "p1025twr.dtsi"
-+/include/ "fsl/p1021si-post.dtsi"
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index 8f02b05..fe36689 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -117,6 +117,12 @@ config P1023_RDS
- 	help
- 	  This option enables support for the P1023 RDS board
- 
-+config TWR_P102x
-+	bool "Freescale TWR-P102x"
-+	select DEFAULT_UIMAGE
-+	help
-+	  This option enables support for the TWR-P1025 board.
-+
- config SOCRATES
- 	bool "Socrates"
- 	select DEFAULT_UIMAGE
-diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
-index 2eab37e..b8d9f66 100644
---- a/arch/powerpc/platforms/85xx/Makefile
-+++ b/arch/powerpc/platforms/85xx/Makefile
-@@ -17,6 +17,7 @@ obj-$(CONFIG_P1010_RDB)   += p1010rdb.o
- obj-$(CONFIG_P1022_DS)    += p1022_ds.o
- obj-$(CONFIG_P1022_RDK)   += p1022_rdk.o
- obj-$(CONFIG_P1023_RDS)   += p1023_rds.o
-+obj-$(CONFIG_TWR_P102x)   += twr_p102x.o
- obj-$(CONFIG_P2041_RDB)   += p2041_rdb.o corenet_ds.o
- obj-$(CONFIG_P3041_DS)    += p3041_ds.o corenet_ds.o
- obj-$(CONFIG_P4080_DS)    += p4080_ds.o corenet_ds.o
-diff --git a/arch/powerpc/platforms/85xx/twr_p102x.c b/arch/powerpc/platforms/85xx/twr_p102x.c
-new file mode 100644
-index 0000000..a5de4e0
---- /dev/null
-+++ b/arch/powerpc/platforms/85xx/twr_p102x.c
-@@ -0,0 +1,176 @@
-+/*
-+ * Copyright 2010-2011, 2013 Freescale Semiconductor, Inc.
-+ *
-+ * Author: Michael Johnston <michael.johnston@freescale.com>
-+ *
-+ * Description:
-+ * TWR-P102x Board Setup
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/errno.h>
-+#include <linux/pci.h>
-+#include <linux/delay.h>
-+#include <linux/module.h>
-+#include <linux/fsl_devices.h>
-+#include <linux/of_platform.h>
-+#include <linux/of_device.h>
-+#include <linux/memblock.h>
-+
-+#include <asm/time.h>
-+#include <asm/machdep.h>
-+#include <asm/pci-bridge.h>
-+#include <mm/mmu_decl.h>
-+#include <asm/prom.h>
-+#include <asm/udbg.h>
-+#include <asm/mpic.h>
-+#include <asm/qe.h>
-+#include <asm/qe_ic.h>
-+#include <asm/fsl_guts.h>
-+
-+#include <sysdev/fsl_soc.h>
-+#include <sysdev/fsl_pci.h>
-+#include "smp.h"
-+
-+#include "mpc85xx.h"
-+
-+static void __init twr_p1025_pic_init(void)
-+{
-+	struct mpic *mpic;
-+
-+#ifdef CONFIG_QUICC_ENGINE
-+	struct device_node *np;
-+#endif
-+
-+	mpic = mpic_alloc(NULL, 0, MPIC_BIG_ENDIAN |
-+			MPIC_SINGLE_DEST_CPU,
-+			0, 256, " OpenPIC  ");
-+
-+	BUG_ON(mpic == NULL);
-+	mpic_init(mpic);
-+
-+#ifdef CONFIG_QUICC_ENGINE
-+	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
-+	if (np) {
-+		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
-+				qe_ic_cascade_high_mpic);
-+		of_node_put(np);
-+	} else
-+		printk(KERN_ERR "Could not find qe-ic node\n");
-+#endif
-+}
-+
-+/* ************************************************************************
-+ *
-+ * Setup the architecture
-+ *
-+ */
-+static void __init twr_p1025_setup_arch(void)
-+{
-+#ifdef CONFIG_QUICC_ENGINE
-+	struct device_node *np;
-+#endif
-+
-+	if (ppc_md.progress)
-+		ppc_md.progress("twr_p1025_setup_arch()", 0);
-+
-+	mpc85xx_smp_init();
-+
-+	fsl_pci_assign_primary();
-+
-+#ifdef CONFIG_QUICC_ENGINE
-+	np = of_find_compatible_node(NULL, NULL, "fsl,qe");
-+
-+	if (!np) {
-+		np = of_find_node_by_name(NULL, "qe");
-+		if (!np) {
-+			printk(KERN_ERR "Could not find Quicc Engine node\n");
-+			goto qe_fail;
-+		}
-+	}
-+
-+	qe_reset();
-+	of_node_put(np);
-+
-+	np = of_find_node_by_name(NULL, "par_io");
-+	if (np) {
-+		struct device_node *ucc;
-+
-+		par_io_init(np);
-+		of_node_put(np);
-+
-+		for_each_node_by_name(ucc, "ucc")
-+			par_io_of_config(ucc);
-+	}
-+
-+#if defined(CONFIG_UCC_GETH) || defined(CONFIG_SERIAL_QE)
-+	if (machine_is(twr_p1025)) {
-+		struct ccsr_guts __iomem *guts;
-+
-+		np = of_find_node_by_name(NULL, "global-utilities");
-+		if (np) {
-+			guts = of_iomap(np, 0);
-+			if (!guts)
-+				pr_err("twr_p1025: could not map global utilities register\n");
-+			else {
-+			/* P1025 has pins muxed for QE and other functions. To
-+			 * enable QE UEC mode, we need to set bit QE0 for UCC1
-+			 * in Eth mode, QE0 and QE3 for UCC5 in Eth mode, QE9
-+			 * and QE12 for QE MII management signals in PMUXCR
-+			 * register.
-+			 */
-+
-+			printk(KERN_INFO "P1025 pinmux configured for QE\n");
-+
-+			/* Set QE mux bits in PMUXCR */
-+			setbits32(&guts->pmuxcr, MPC85xx_PMUXCR_QE(0) |
-+					MPC85xx_PMUXCR_QE(3) |
-+					MPC85xx_PMUXCR_QE(9) |
-+					MPC85xx_PMUXCR_QE(12));
-+			iounmap(guts);
-+
-+			/* Drive PB29 to CPLD low - CPLD will then change
-+			 * muxing from LBC to QE */
-+			par_io_config_pin(1, 29, 1, 0, 0, 0);
-+			par_io_data_set(1, 29, 0);
-+			}
-+			of_node_put(np);
-+		}
-+	}
-+#endif
-+
-+qe_fail:
-+#endif	/* CONFIG_QUICC_ENGINE */
-+
-+	printk(KERN_INFO "TWR-P1025 board from Freescale Semiconductor\n");
-+}
-+
-+machine_arch_initcall(twr_p1025, mpc85xx_common_publish_devices);
-+
-+static int __init twr_p1025_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
-+
-+	return of_flat_dt_is_compatible(root, "fsl,TWR-P1025");
-+
-+}
-+
-+define_machine(twr_p1025) {
-+	.name			= "TWR-P1025",
-+	.probe			= twr_p1025_probe,
-+	.setup_arch		= twr_p1025_setup_arch,
-+	.init_IRQ		= twr_p1025_pic_init,
-+#ifdef CONFIG_PCI
-+	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
-+#endif
-+	.get_irq		= mpic_get_irq,
-+	.restart		= fsl_rstcr_restart,
-+	.calibrate_decr		= generic_calibrate_decr,
-+	.progress		= udbg_progress,
-+};
--- 
-1.8.0
+>>  	phb->msi32_support = 1;
+>>  	pr_info("  Allocated bitmap for %d MSIs (base IRQ 0x%x)\n",
+>>  		count, phb->msi_base);
+>> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+>> index a11b5a6..ea6a93d 100644
+>> --- a/arch/powerpc/platforms/powernv/pci.c
+>> +++ b/arch/powerpc/platforms/powernv/pci.c
+>> @@ -115,6 +115,25 @@ static void pnv_teardown_msi_irqs(struct pci_dev *pdev)
+>>  		irq_dispose_mapping(entry->irq);
+>>  	}
+>>  }
+>> +
+>> +int pnv_pci_msi_eoi(unsigned int hw_irq)
+>> +{
+>> +	struct pci_controller *hose, *tmp;
+>> +	struct pnv_phb *phb = NULL;
+>> +
+>> +	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
+>> +		phb = hose->private_data;
+>> +		if (hw_irq >= phb->msi_base &&
+>> +		    hw_irq < phb->msi_base + phb->msi_bmp.irq_count) {
+>> +			if (!phb->msi_eoi)
+>> +				return -EEXIST;
+>> +			return phb->msi_eoi(phb, hw_irq);
+>> +		}
+>> +	}
+>> +
+>> +	/* For LSI interrupts, we needn't do it */
+>> +	return 0;
+>> +}
+>
+>And a list walk ... that's not right.
+>
+>Also, you do it for all XICS interrupts, including the non-PCI ones, the
+>LSIs, etc... only to figure out that some might not be MSIs later in
+>the loop.
+>
+>Why not instead look at changing the irq_chip for the MSIs ?
+>
+>IE. When setting up the MSIs for IODA2, use a different irq_chip which
+>is a copy of the original one with a different ->eoi callback, which
+>does the original xics eoi and then the OPAL stuff ?
+>
+>You might even be able to use something like container_of to get back
+>to the struct phb, no need to iterate them all.
+>
+
+Thanks for the detailed explaining, Ben.
+
+I found irq_data hasn't been fully utilized until this moment. I already
+have code to start use that. Firstly, "irq_data" is set to the PHB OPAL ID
+or invalid value (0xffs) during mapping stage (there, we call irq_set_chip_data()
+to trace the PHB OPAL ID or invalid value). Before EOIing the interrupt, we
+will check "irq_data" and do special handling on P/Q bits if it has valid value.
+With it, the "hot" path should be fast enough and the function pointer (mentioned
+above) can be removed.
+
+Thanks,
+Gavin
