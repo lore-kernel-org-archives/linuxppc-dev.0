@@ -1,28 +1,18 @@
-Return-Path: <gang.chen@asianux.com>
-Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
+Return-Path: <Andrew.Murray@arm.com>
+Received: from cam-smtp0.cambridge.arm.com (fw-tnat.cambridge.arm.com
+ [217.140.96.21])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3D2D22C00FF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2013 19:31:34 +1000 (EST)
-Message-ID: <5178F7C3.6070700@asianux.com>
-Date: Thu, 25 Apr 2013 17:30:43 +0800
-From: Chen Gang <gang.chen@asianux.com>
-MIME-Version: 1.0
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH] PowerPC: kernel: compiling issue, make additional room
- in exception vector area
-References: <5177965D.9090406@linux.vnet.ibm.com>
- <20130424083142.GB26834@concordia> <51779941.8080403@linux.vnet.ibm.com>
- <30651.1366799858@ale.ozlabs.ibm.com> <1366807638.5911.2.camel@localhost>
- <5178816D.3000309@asianux.com> <5178ABA2.4030109@linux.vnet.ibm.com>
- <5178E6C3.4060603@asianux.com> <1659.1366880440@ale.ozlabs.ibm.com>
- <5178F1BC.6050905@asianux.com>
-In-Reply-To: <5178F1BC.6050905@asianux.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: sfr@canb.auug.org.au, matt@ozlabs.org, linux-kernel@vger.kernel.org,
- Mike Qiu <qiudayu@linux.vnet.ibm.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 59D802C00FB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2013 19:49:58 +1000 (EST)
+From: Andrew Murray <Andrew.Murray@arm.com>
+To: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ microblaze-uclinux@itee.uq.edu.au
+Subject: [RFC PATCH 0/3] Unify definations of struct pci_controller
+Date: Thu, 25 Apr 2013 10:49:17 +0100
+Message-Id: <1366883360-14061-1-git-send-email-Andrew.Murray@arm.com>
+Cc: monstr@monstr.eu, arnd@arndb.de, linux-kernel@vger.kernel.org,
+ bhelgaas@google.com, Andrew Murray <Andrew.Murray@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,45 +22,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2013年04月25日 17:05, Chen Gang wrote:
-> On 2013年04月25日 17:00, Michael Neuling wrote:
->>>>
->>>> Signed-off-by: Chen Gang <gang.chen@asianux.com>
->>>> ---
->>>>  arch/powerpc/include/asm/kvm_asm.h   |    2 +-
->>>>  arch/powerpc/kernel/exceptions-64s.S |    6 +++---
->>>>  2 files changed, 4 insertions(+), 4 deletions(-)
->>>>
->>>> diff --git a/arch/powerpc/include/asm/kvm_asm.h b/arch/powerpc/include/asm/kvm_asm.h
->>>> index b9dd382..2c65bae 100644
->>>> --- a/arch/powerpc/include/asm/kvm_asm.h
->>>> +++ b/arch/powerpc/include/asm/kvm_asm.h
->>>> @@ -86,7 +86,7 @@
->>>>  #define BOOK3S_INTERRUPT_PROGRAM	0x700
->>>>  #define BOOK3S_INTERRUPT_FP_UNAVAIL	0x800
->>>>  #define BOOK3S_INTERRUPT_DECREMENTER	0x900
->>>> -#define BOOK3S_INTERRUPT_HV_DECREMENTER	0x980
->>>> +#define BOOK3S_INTERRUPT_HV_DECREMENTER	0x988
->> This is hardwird in the architecture.. you can't just move it
->>
-> 
+PowerPC and Microblaze have nearly identical definations of struct
+pci_controller - this patch unifies them in asm-generic to reduce
+code duplication and to allow new architectures to reuse.
 
-I think of a way to solve it: we just move the related code to another
-area, after enter the original entry (e.g. 0x900), we let it jump to
-that area to excuse the related code.
+This patchset follows and depends on "of/pci: Provide common
+support for PCI DT parsing" which provided common 'ranges' parsing
+code which uses an architecture defined struct pci_controller. This
+patch is currently in Jason Coopers mvebu-next/pcie branch.
 
-:-)
+It is hoped this will pave the way for providing common
+implementations of commonly duplicated functions found across the
+architectures such as pcibios_alloc|free_controller and
+pcibios_setup_phb_resources type functions.
 
-> OK, thank you, I need continue to fix it. It seems we have to read the
-> details to shrink one instruction (4 bytes), at least.
-> 
-> Welcome additional suggestions or completions.
-> 
-> Thanks.
-> 
+Andrew Murray (3):
+  powerpc: Move struct pci_controller to asm-generic
+  microblaze: Use asm-generic version of pci_controller
+  pci: Use common definations of INDIRECT_TYPE_*
 
-
--- 
-Chen Gang
-
-Asianux Corporation
+ arch/microblaze/include/asm/pci-bridge.h |   70 +-----------------------
+ arch/powerpc/include/asm/pci-bridge.h    |   82 ---------------------------
+ arch/powerpc/sysdev/fsl_pci.c            |   16 +++---
+ arch/powerpc/sysdev/indirect_pci.c       |   20 +++---
+ arch/powerpc/sysdev/ppc4xx_pci.c         |    4 +-
+ arch/powerpc/sysdev/xilinx_pci.c         |    2 +-
+ include/asm-generic/pci-bridge.h         |   90 ++++++++++++++++++++++++++++++
+ 7 files changed, 112 insertions(+), 172 deletions(-)
