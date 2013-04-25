@@ -1,22 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 41E682C0109
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2013 18:48:09 +1000 (EST)
-Message-ID: <1366879678.2869.25.camel@pasglop>
-Subject: Re: [PATCH 4/7] powerpc/powernv: Patch MSI EOI handler on P8
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gavin Shan <shangw@linux.vnet.ibm.com>
-Date: Thu, 25 Apr 2013 18:47:58 +1000
-In-Reply-To: <20130425081333.GA10637@shangw.(null)>
-References: <1366796259-29412-1-git-send-email-shangw@linux.vnet.ibm.com>
- <1366796259-29412-5-git-send-email-shangw@linux.vnet.ibm.com>
- <1366836580.2869.16.camel@pasglop> <20130425080836.GA27415@shangw.(null)>
- <20130425081333.GA10637@shangw.(null)>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Chen Gang <gang.chen@asianux.com>
+Subject: Re: [PATCH] PowerPC: kernel: compiling issue,
+ make additional room in exception vector area
+In-reply-to: <5178E6C3.4060603@asianux.com>
+References: <5177965D.9090406@linux.vnet.ibm.com>
+ <20130424083142.GB26834@concordia> <51779941.8080403@linux.vnet.ibm.com>
+ <30651.1366799858@ale.ozlabs.ibm.com> <1366807638.5911.2.camel@localhost>
+ <5178816D.3000309@asianux.com> <5178ABA2.4030109@linux.vnet.ibm.com>
+ <5178E6C3.4060603@asianux.com>
+Date: Thu, 25 Apr 2013 19:00:40 +1000
+Message-ID: <1659.1366880440@ale.ozlabs.ibm.com>
+Cc: sfr@canb.auug.org.au, matt@ozlabs.org, linux-kernel@vger.kernel.org,
+ Mike Qiu <qiudayu@linux.vnet.ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, paulus@samba.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,17 +24,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-04-25 at 16:13 +0800, Gavin Shan wrote:
-> It should be "chip_data" (not "irq_data"). Hopefully, you haven't
-> get time to see the reply. Otherwise, it would a bit confused ;-)
+Chen Gang <gang.chen@asianux.com> wrote:
 
-Doesn't ics-opal already use chip_data ?
+> 
+> When CONFIG_KVM_BOOK3S_64_PR is enabled,
+> MASKABLE_EXCEPTION_PSERIES(0x900 ...) will includes __KVMTEST, it will
+> exceed 0x980 which STD_EXCEPTION_HV(0x980 ...) will use, it will cause
+> compiling issue.
+> 
+> The related errors:
+> arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
+> arch/powerpc/kernel/exceptions-64s.S:258: Error: attempt to move .org backwards
+> make[1]: *** [arch/powerpc/kernel/head_64.o] Error 1
 
-I was thinking just duplicating the irq_chip (including chip_data) so it
-can be used by ics-opal just fine for all calls, just then overriding
-the eoi callback and using container_of to get to the PHB.
+This doesn't work at all.  It might compile but it's never going to
+actually work.
 
-Any reason that wouldn't work ?
+Comments below.
 
-Cheers,
-Ben.
+> 
+> 
+> Signed-off-by: Chen Gang <gang.chen@asianux.com>
+> ---
+>  arch/powerpc/include/asm/kvm_asm.h   |    2 +-
+>  arch/powerpc/kernel/exceptions-64s.S |    6 +++---
+>  2 files changed, 4 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/kvm_asm.h b/arch/powerpc/include/asm/kvm_asm.h
+> index b9dd382..2c65bae 100644
+> --- a/arch/powerpc/include/asm/kvm_asm.h
+> +++ b/arch/powerpc/include/asm/kvm_asm.h
+> @@ -86,7 +86,7 @@
+>  #define BOOK3S_INTERRUPT_PROGRAM	0x700
+>  #define BOOK3S_INTERRUPT_FP_UNAVAIL	0x800
+>  #define BOOK3S_INTERRUPT_DECREMENTER	0x900
+> -#define BOOK3S_INTERRUPT_HV_DECREMENTER	0x980
+> +#define BOOK3S_INTERRUPT_HV_DECREMENTER	0x988
+
+This is hardwird in the architecture.. you can't just move it
+
+>  #define BOOK3S_INTERRUPT_SYSCALL	0xc00
+>  #define BOOK3S_INTERRUPT_TRACE		0xd00
+>  #define BOOK3S_INTERRUPT_H_DATA_STORAGE	0xe00
+> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+> index e789ee7..bb0e677 100644
+> --- a/arch/powerpc/kernel/exceptions-64s.S
+> +++ b/arch/powerpc/kernel/exceptions-64s.S
+> @@ -255,7 +255,7 @@ hardware_interrupt_hv:
+>  	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0x800)
+>  
+>  	MASKABLE_EXCEPTION_PSERIES(0x900, 0x900, decrementer)
+> -	STD_EXCEPTION_HV(0x980, 0x982, hdecrementer)
+> +	STD_EXCEPTION_HV(0x988, 0x982, hdecrementer)
+
+Same here
+
+>  
+>  	MASKABLE_EXCEPTION_PSERIES(0xa00, 0xa00, doorbell_super)
+>  	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0xa00)
+> @@ -698,7 +698,7 @@ machine_check_common:
+>  
+>  	STD_EXCEPTION_COMMON_ASYNC(0x500, hardware_interrupt, do_IRQ)
+>  	STD_EXCEPTION_COMMON_ASYNC(0x900, decrementer, .timer_interrupt)
+> -	STD_EXCEPTION_COMMON(0x980, hdecrementer, .hdec_interrupt)
+> +	STD_EXCEPTION_COMMON(0x988, hdecrementer, .hdec_interrupt)
+
+... and here
+
+>  #ifdef CONFIG_PPC_DOORBELL
+>  	STD_EXCEPTION_COMMON_ASYNC(0xa00, doorbell_super, .doorbell_exception)
+>  #else
+> @@ -802,7 +802,7 @@ hardware_interrupt_relon_hv:
+>  	STD_RELON_EXCEPTION_PSERIES(0x4700, 0x700, program_check)
+>  	STD_RELON_EXCEPTION_PSERIES(0x4800, 0x800, fp_unavailable)
+>  	MASKABLE_RELON_EXCEPTION_PSERIES(0x4900, 0x900, decrementer)
+> -	STD_RELON_EXCEPTION_HV(0x4980, 0x982, hdecrementer)
+> +	STD_RELON_EXCEPTION_HV(0x4988, 0x982, hdecrementer)
+
+... and here
+
+>  	MASKABLE_RELON_EXCEPTION_PSERIES(0x4a00, 0xa00, doorbell_super)
+>  	STD_RELON_EXCEPTION_PSERIES(0x4b00, 0xb00, trap_0b)
+>  
+> -- 
+> 1.7.7.6
+> 
