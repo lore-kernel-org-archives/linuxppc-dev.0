@@ -1,18 +1,28 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+Return-Path: <gang.chen@asianux.com>
+Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 848322C00F7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2013 21:45:45 +1000 (EST)
-From: Tiejun Chen <tiejun.chen@windriver.com>
-To: <galak@kernel.crashing.org>
-Subject: [PATCH 1/1] kvm:book3e: Fix a build error
-Date: Thu, 25 Apr 2013 19:45:36 +0800
-Message-ID: <1366890336-4282-1-git-send-email-tiejun.chen@windriver.com>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 1EDE52C00F7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2013 21:52:01 +1000 (EST)
+Message-ID: <517918AB.4020508@asianux.com>
+Date: Thu, 25 Apr 2013 19:51:07 +0800
+From: Chen Gang <gang.chen@asianux.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+To: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+Subject: [PATCH v2] PowerPC: kernel: compiling issue, make additional room
+ in exception vector area
+References: <5177965D.9090406@linux.vnet.ibm.com>
+ <20130424083142.GB26834@concordia> <51779941.8080403@linux.vnet.ibm.com>
+ <30651.1366799858@ale.ozlabs.ibm.com> <1366807638.5911.2.camel@localhost>
+ <5178816D.3000309@asianux.com> <5178ABA2.4030109@linux.vnet.ibm.com>
+ <20130425062539.GA421@iris.ozlabs.ibm.com>
+In-Reply-To: <20130425062539.GA421@iris.ozlabs.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: sfr@canb.auug.org.au, Michael Neuling <mikey@neuling.org>, matt@ozlabs.org,
+ Chen Gang <gang.chen@asianux.com>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,38 +32,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit cd66cc2e, "powerpc/85xx: Add AltiVec support for e6500", adds
-support for AltiVec on a Book-E class processor, but while compiling 
-in the CONFIG_PPC_BOOK3E_64 and CONFIG_VIRTUALIZATION case, this
-introduce the following error:
 
-arch/powerpc/kernel/exceptions-64e.S:402: undefined reference to `kvmppc_handler_42_0x01B'
-arch/powerpc/kernel/built-in.o: In function `exc_altivec_assist_book3e':
-arch/powerpc/kernel/exceptions-64e.S:424: undefined reference to `kvmppc_handler_43_0x01B'
-make: *** [vmlinux] Error 1
+When CONFIG_KVM_BOOK3S_64_PR is enabled,
+MASKABLE_EXCEPTION_PSERIES(0x900 ...) will includes __KVMTEST, it will
+exceed 0x980 which STD_EXCEPTION_HV(0x980 ...) will use, it will cause
+compiling issue.
 
-Looks we should add these altivec kvm handlers.
+The related errors:
+arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
+arch/powerpc/kernel/exceptions-64s.S:258: Error: attempt to move .org backwards
+make[1]: *** [arch/powerpc/kernel/head_64.o] Error 1
 
-Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+The position 0x900 and 0x980 are solid, so can not move the position
+to make room larger. The final solution is to jump to another area to
+execute the related code.
+
+
+Signed-off-by: Chen Gang <gang.chen@asianux.com>
 ---
- arch/powerpc/kvm/bookehv_interrupts.S |    5 +++++
- 1 file changed, 5 insertions(+)
+ arch/powerpc/kernel/exceptions-64s.S |   12 +++++++++++-
+ 1 files changed, 11 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
-index e8ed7d6..fa9c78a 100644
---- a/arch/powerpc/kvm/bookehv_interrupts.S
-+++ b/arch/powerpc/kvm/bookehv_interrupts.S
-@@ -319,6 +319,11 @@ kvm_handler BOOKE_INTERRUPT_DEBUG, EX_PARAMS(DBG), \
- 	SPRN_DSRR0, SPRN_DSRR1, 0
- kvm_handler BOOKE_INTERRUPT_DEBUG, EX_PARAMS(CRIT), \
- 	SPRN_CSRR0, SPRN_CSRR1, 0
-+/* altivec */
-+kvm_handler BOOKE_INTERRUPT_ALTIVEC_UNAVAIL, EX_PARAMS(GEN), \
-+	SPRN_SRR0, SPRN_SRR1, 0
-+kvm_handler BOOKE_INTERRUPT_ALTIVEC_ASSIST, EX_PARAMS(GEN), \
-+	SPRN_SRR0, SPRN_SRR1, 0
- #else
- /*
-  * For input register values, see arch/powerpc/include/asm/kvm_booke_hv_asm.h
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index e789ee7..8997de2 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -254,7 +254,11 @@ hardware_interrupt_hv:
+ 	STD_EXCEPTION_PSERIES(0x800, 0x800, fp_unavailable)
+ 	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0x800)
+ 
+-	MASKABLE_EXCEPTION_PSERIES(0x900, 0x900, decrementer)
++	. = 0x900
++	.globl decrementer_pSeries
++decrementer_pSeries:
++	b	decrementer_pSeries_0
++
+ 	STD_EXCEPTION_HV(0x980, 0x982, hdecrementer)
+ 
+ 	MASKABLE_EXCEPTION_PSERIES(0xa00, 0xa00, doorbell_super)
+@@ -536,6 +540,12 @@ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_ARCH_206)
+ #endif
+ 
+ 	.align	7
++	/* moved from 0x900 */
++decrementer_pSeries_0:
++	_MASKABLE_EXCEPTION_PSERIES(0x900, decrementer,
++				    EXC_STD, SOFTEN_TEST_PR)
++
++	.align	7
+ 	/* moved from 0xe00 */
+ 	STD_EXCEPTION_HV_OOL(0xe02, h_data_storage)
+ 	KVM_HANDLER_SKIP(PACA_EXGEN, EXC_HV, 0xe02)
 -- 
-1.7.9.5
+1.7.7.6
