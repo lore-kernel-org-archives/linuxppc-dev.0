@@ -1,38 +1,41 @@
 Return-Path: <hegdevasant@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5C6BD2C00E8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2013 01:01:46 +1000 (EST)
+ (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0B5AF2C00CA
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2013 01:23:04 +1000 (EST)
 Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
- Fri, 26 Apr 2013 00:53:59 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id CA125357804A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2013 01:01:42 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3PF1ZFD22282372
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2013 01:01:36 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3PF1fCE019604
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2013 01:01:41 +1000
-Message-ID: <51794543.8060005@linux.vnet.ibm.com>
-Date: Thu, 25 Apr 2013 20:31:23 +0530
+ Thu, 25 Apr 2013 20:48:35 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id CDEB5E002D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2013 20:55:02 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3PFMqlH66125844
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2013 20:52:53 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3PFMsqx008126
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2013 01:22:55 +1000
+Message-ID: <51794A3C.3040406@linux.vnet.ibm.com>
+Date: Thu, 25 Apr 2013 20:52:36 +0530
 From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH 23/28] ppc: Clean up scanlog [RFC]
+Subject: Re: [PATCH 04/28] proc: Supply PDE attribute setting accessor
+ functions [RFC]
 References: <20130416182550.27773.89310.stgit@warthog.procyon.org.uk>
- <20130416182722.27773.32105.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20130416182722.27773.32105.stgit@warthog.procyon.org.uk>
+ <20130416182606.27773.55054.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20130416182606.27773.55054.stgit@warthog.procyon.org.uk>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-fsdevel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- viro@zeniv.linux.org.uk
+Cc: alsa-devel@alsa-project.org, linux-pci@vger.kernel.org,
+ linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+ netfilter-devel@vger.kernel.org, viro@zeniv.linux.org.uk,
+ netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-media@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,114 +45,305 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/16/2013 11:57 PM, David Howells wrote:
-> Clean up the pseries scanlog driver's use of procfs:
+On 04/16/2013 11:56 PM, David Howells wrote:
+> Supply accessor functions to set attributes in proc_dir_entry structs.
 >
->   (1) Don't need to save the proc_dir_entry pointer as we have the filename to
->       remove with.
+> The following are supplied: proc_set_size() and proc_set_user().
 >
->   (2) Save the scan log buffer pointer in a static variable (there is only one
->       of it) and don't save it in the PDE (which doesn't have a destructor).
+> Signed-off-by: David Howells<dhowells@redhat.com>
+> cc: linuxppc-dev@lists.ozlabs.org
+> cc: linux-media@vger.kernel.org
+> cc: netdev@vger.kernel.org
+> cc: linux-wireless@vger.kernel.org
+> cc: linux-pci@vger.kernel.org
+> cc: netfilter-devel@vger.kernel.org
+> cc: alsa-devel@alsa-project.org
+> ---
+>
+>   arch/powerpc/kernel/proc_powerpc.c        |    2 +-
+>   arch/powerpc/platforms/pseries/reconfig.c |    2 +-
 
-Changes looks good.
+arch/powerpc side changes looks good.
 
 -Vasant
 
+>   drivers/media/pci/ttpci/av7110_ir.c       |    2 +-
+>   drivers/net/irda/vlsi_ir.c                |    2 +-
+>   drivers/net/wireless/airo.c               |   34 +++++++++--------------------
+>   drivers/pci/proc.c                        |    2 +-
+>   fs/proc/generic.c                         |   13 +++++++++++
+>   include/linux/proc_fs.h                   |    5 ++++
+>   kernel/configs.c                          |    2 +-
+>   kernel/profile.c                          |    2 +-
+>   net/netfilter/xt_recent.c                 |    3 +--
+>   sound/core/info.c                         |    2 +-
+>   12 files changed, 38 insertions(+), 33 deletions(-)
 >
-> Signed-off-by: David Howells<dhowells@redhat.com>
-> cc: Benjamin Herrenschmidt<benh@kernel.crashing.org>
-> cc: Paul Mackerras<paulus@samba.org>
-> cc: linuxppc-dev@lists.ozlabs.org
-> ---
+> diff --git a/arch/powerpc/kernel/proc_powerpc.c b/arch/powerpc/kernel/proc_powerpc.c
+> index 41d8ee9..feb8580 100644
+> --- a/arch/powerpc/kernel/proc_powerpc.c
+> +++ b/arch/powerpc/kernel/proc_powerpc.c
+> @@ -83,7 +83,7 @@ static int __init proc_ppc64_init(void)
+>   			&page_map_fops, vdso_data);
+>   	if (!pde)
+>   		return 1;
+> -	pde->size = PAGE_SIZE;
+> +	proc_set_size(pde, PAGE_SIZE);
 >
->   arch/powerpc/platforms/pseries/scanlog.c |   29 +++++++++++------------------
->   1 file changed, 11 insertions(+), 18 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/pseries/scanlog.c b/arch/powerpc/platforms/pseries/scanlog.c
-> index cc220d2..b502ab6 100644
-> --- a/arch/powerpc/platforms/pseries/scanlog.c
-> +++ b/arch/powerpc/platforms/pseries/scanlog.c
-> @@ -41,12 +41,12 @@
->
->
->   static unsigned int ibm_scan_log_dump;			/* RTAS token */
-> -static struct proc_dir_entry *proc_ppc64_scan_log_dump;	/* The proc file */
-> +static unsigned int *scanlog_buffer;			/* The data buffer */
->
->   static ssize_t scanlog_read(struct file *file, char __user *buf,
->   			    size_t count, loff_t *ppos)
->   {
-> -	unsigned int *data = PDE_DATA(file_inode(file));
-> +	unsigned int *data = scanlog_buffer;
->   	int status;
->   	unsigned long len, off;
->   	unsigned int wait_time;
-> @@ -134,7 +134,7 @@ static ssize_t scanlog_write(struct file * file, const char __user * buf,
->
->   static int scanlog_open(struct inode * inode, struct file * file)
->   {
-> -	unsigned int *data = PDE_DATA(file_inode(file));
-> +	unsigned int *data = scanlog_buffer;
->
->   	if (data[0] != 0) {
->   		/* This imperfect test stops a second copy of the
-> @@ -150,10 +150,9 @@ static int scanlog_open(struct inode * inode, struct file * file)
->
->   static int scanlog_release(struct inode * inode, struct file * file)
->   {
-> -	unsigned int *data = PDE_DATA(file_inode(file));
-> +	unsigned int *data = scanlog_buffer;
->
->   	data[0] = 0;
-> -
 >   	return 0;
 >   }
+> diff --git a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/platforms/pseries/reconfig.c
+> index d6491bd..f93cdf5 100644
+> --- a/arch/powerpc/platforms/pseries/reconfig.c
+> +++ b/arch/powerpc/platforms/pseries/reconfig.c
+> @@ -452,7 +452,7 @@ static int proc_ppc64_create_ofdt(void)
 >
-> @@ -169,7 +168,6 @@ const struct file_operations scanlog_fops = {
->   static int __init scanlog_init(void)
->   {
->   	struct proc_dir_entry *ent;
-> -	void *data;
->   	int err = -ENOMEM;
+>   	ent = proc_create("powerpc/ofdt", S_IWUSR, NULL,&ofdt_fops);
+>   	if (ent)
+> -		ent->size = 0;
+> +		proc_set_size(ent, 0);
 >
->   	ibm_scan_log_dump = rtas_token("ibm,scan-log-dump");
-> @@ -177,29 +175,24 @@ static int __init scanlog_init(void)
->   		return -ENODEV;
->
->   	/* Ideally we could allocate a buffer<  4G */
-> -	data = kzalloc(RTAS_DATA_BUF_SIZE, GFP_KERNEL);
-> -	if (!data)
-> +	scanlog_buffer = kzalloc(RTAS_DATA_BUF_SIZE, GFP_KERNEL);
-> +	if (!scanlog_buffer)
->   		goto err;
->
-> -	ent = proc_create_data("powerpc/rtas/scan-log-dump", S_IRUSR, NULL,
-> -			&scanlog_fops, data);
-> +	ent = proc_create("powerpc/rtas/scan-log-dump", S_IRUSR, NULL,
-> +			&scanlog_fops);
->   	if (!ent)
->   		goto err;
-> -
-> -	proc_ppc64_scan_log_dump = ent;
-> -
 >   	return 0;
->   err:
-> -	kfree(data);
-> +	kfree(scanlog_buffer);
->   	return err;
 >   }
+> diff --git a/drivers/media/pci/ttpci/av7110_ir.c b/drivers/media/pci/ttpci/av7110_ir.c
+> index eb82286..0e763a7 100644
+> --- a/drivers/media/pci/ttpci/av7110_ir.c
+> +++ b/drivers/media/pci/ttpci/av7110_ir.c
+> @@ -375,7 +375,7 @@ int av7110_ir_init(struct av7110 *av7110)
+>   	if (av_cnt == 1) {
+>   		e = proc_create("av7110_ir", S_IWUSR, NULL,&av7110_ir_proc_fops);
+>   		if (e)
+> -			e->size = 4 + 256 * sizeof(u16);
+> +			proc_set_size(e, 4 + 256 * sizeof(u16));
+>   	}
 >
->   static void __exit scanlog_cleanup(void)
->   {
-> -	if (proc_ppc64_scan_log_dump) {
-> -		kfree(proc_ppc64_scan_log_dump->data);
-> -		remove_proc_entry("scan-log-dump", proc_ppc64_scan_log_dump->parent);
+>   	tasklet_init(&av7110->ir.ir_tasklet, av7110_emit_key, (unsigned long)&av7110->ir);
+> diff --git a/drivers/net/irda/vlsi_ir.c b/drivers/net/irda/vlsi_ir.c
+> index e22cd4e..5f47584 100644
+> --- a/drivers/net/irda/vlsi_ir.c
+> +++ b/drivers/net/irda/vlsi_ir.c
+> @@ -1678,7 +1678,7 @@ vlsi_irda_probe(struct pci_dev *pdev, const struct pci_device_id *id)
+>   			IRDA_WARNING("%s: failed to create proc entry\n",
+>   				     __func__);
+>   		} else {
+> -			ent->size = 0;
+> +			proc_set_size(ent, 0);
+>   		}
+>   		idev->proc_entry = ent;
+>   	}
+> diff --git a/drivers/net/wireless/airo.c b/drivers/net/wireless/airo.c
+> index 66e398d..21d0233 100644
+> --- a/drivers/net/wireless/airo.c
+> +++ b/drivers/net/wireless/airo.c
+> @@ -4507,73 +4507,63 @@ static int setup_proc_entry( struct net_device *dev,
+>   					    airo_entry);
+>   	if (!apriv->proc_entry)
+>   		goto fail;
+> -	apriv->proc_entry->uid = proc_kuid;
+> -	apriv->proc_entry->gid = proc_kgid;
+> +	proc_set_user(apriv->proc_entry, proc_kuid, proc_kgid);
+>
+>   	/* Setup the StatsDelta */
+>   	entry = proc_create_data("StatsDelta", S_IRUGO&  proc_perm,
+>   				 apriv->proc_entry,&proc_statsdelta_ops, dev);
+>   	if (!entry)
+>   		goto fail_stats_delta;
+> -	entry->uid = proc_kuid;
+> -	entry->gid = proc_kgid;
+> +	proc_set_user(entry, proc_kuid, proc_kgid);
+>
+>   	/* Setup the Stats */
+>   	entry = proc_create_data("Stats", S_IRUGO&  proc_perm,
+>   				 apriv->proc_entry,&proc_stats_ops, dev);
+>   	if (!entry)
+>   		goto fail_stats;
+> -	entry->uid = proc_kuid;
+> -	entry->gid = proc_kgid;
+> +	proc_set_user(entry, proc_kuid, proc_kgid);
+>
+>   	/* Setup the Status */
+>   	entry = proc_create_data("Status", S_IRUGO&  proc_perm,
+>   				 apriv->proc_entry,&proc_status_ops, dev);
+>   	if (!entry)
+>   		goto fail_status;
+> -	entry->uid = proc_kuid;
+> -	entry->gid = proc_kgid;
+> +	proc_set_user(entry, proc_kuid, proc_kgid);
+>
+>   	/* Setup the Config */
+>   	entry = proc_create_data("Config", proc_perm,
+>   				 apriv->proc_entry,&proc_config_ops, dev);
+>   	if (!entry)
+>   		goto fail_config;
+> -	entry->uid = proc_kuid;
+> -	entry->gid = proc_kgid;
+> +	proc_set_user(entry, proc_kuid, proc_kgid);
+>
+>   	/* Setup the SSID */
+>   	entry = proc_create_data("SSID", proc_perm,
+>   				 apriv->proc_entry,&proc_SSID_ops, dev);
+>   	if (!entry)
+>   		goto fail_ssid;
+> -	entry->uid = proc_kuid;
+> -	entry->gid = proc_kgid;
+> +	proc_set_user(entry, proc_kuid, proc_kgid);
+>
+>   	/* Setup the APList */
+>   	entry = proc_create_data("APList", proc_perm,
+>   				 apriv->proc_entry,&proc_APList_ops, dev);
+>   	if (!entry)
+>   		goto fail_aplist;
+> -	entry->uid = proc_kuid;
+> -	entry->gid = proc_kgid;
+> +	proc_set_user(entry, proc_kuid, proc_kgid);
+>
+>   	/* Setup the BSSList */
+>   	entry = proc_create_data("BSSList", proc_perm,
+>   				 apriv->proc_entry,&proc_BSSList_ops, dev);
+>   	if (!entry)
+>   		goto fail_bsslist;
+> -	entry->uid = proc_kuid;
+> -	entry->gid = proc_kgid;
+> +	proc_set_user(entry, proc_kuid, proc_kgid);
+>
+>   	/* Setup the WepKey */
+>   	entry = proc_create_data("WepKey", proc_perm,
+>   				 apriv->proc_entry,&proc_wepkey_ops, dev);
+>   	if (!entry)
+>   		goto fail_wepkey;
+> -	entry->uid = proc_kuid;
+> -	entry->gid = proc_kgid;
+> -
+> +	proc_set_user(entry, proc_kuid, proc_kgid);
+>   	return 0;
+>
+>   fail_wepkey:
+> @@ -5695,10 +5685,8 @@ static int __init airo_init_module( void )
+>
+>   	airo_entry = proc_mkdir_mode("driver/aironet", airo_perm, NULL);
+>
+> -	if (airo_entry) {
+> -		airo_entry->uid = proc_kuid;
+> -		airo_entry->gid = proc_kgid;
 > -	}
-> +	remove_proc_entry("powerpc/rtas/scan-log-dump", NULL);
-> +	kfree(scanlog_buffer);
->   }
+> +	if (airo_entry)
+> +		proc_set_user(airo_entry, proc_kuid, proc_kgid);
 >
->   module_init(scanlog_init);
+>   	for (i = 0; i<  4&&  io[i]&&  irq[i]; i++) {
+>   		airo_print_info("", "Trying to configure ISA adapter at irq=%d "
+> diff --git a/drivers/pci/proc.c b/drivers/pci/proc.c
+> index 12e4fb5..7cde7c1 100644
+> --- a/drivers/pci/proc.c
+> +++ b/drivers/pci/proc.c
+> @@ -419,7 +419,7 @@ int pci_proc_attach_device(struct pci_dev *dev)
+>   			&proc_bus_pci_operations, dev);
+>   	if (!e)
+>   		return -ENOMEM;
+> -	e->size = dev->cfg_size;
+> +	proc_set_size(e, dev->cfg_size);
+>   	dev->procent = e;
+>
+>   	return 0;
+> diff --git a/fs/proc/generic.c b/fs/proc/generic.c
+> index 1c07cad..5f6f6c3 100644
+> --- a/fs/proc/generic.c
+> +++ b/fs/proc/generic.c
+> @@ -498,6 +498,19 @@ out:
+>   	return NULL;
+>   }
+>   EXPORT_SYMBOL(proc_create_data);
+> +
+> +void proc_set_size(struct proc_dir_entry *de, loff_t size)
+> +{
+> +	de->size = size;
+> +}
+> +EXPORT_SYMBOL(proc_set_size);
+> +
+> +void proc_set_user(struct proc_dir_entry *de, kuid_t uid, kgid_t gid)
+> +{
+> +	de->uid = uid;
+> +	de->gid = gid;
+> +}
+> +EXPORT_SYMBOL(proc_set_user);
+>
+>   static void free_proc_entry(struct proc_dir_entry *de)
+>   {
+> diff --git a/include/linux/proc_fs.h b/include/linux/proc_fs.h
+> index 805edac..28a4d7e 100644
+> --- a/include/linux/proc_fs.h
+> +++ b/include/linux/proc_fs.h
+> @@ -130,6 +130,9 @@ static inline struct proc_dir_entry *proc_create(const char *name, umode_t mode,
+>   extern struct proc_dir_entry *proc_net_mkdir(struct net *net, const char *name,
+>   	struct proc_dir_entry *parent);
+>
+> +extern void proc_set_size(struct proc_dir_entry *, loff_t);
+> +extern void proc_set_user(struct proc_dir_entry *, kuid_t, kgid_t);
+> +
+>   extern struct file *proc_ns_fget(int fd);
+>   extern bool proc_ns_inode(struct inode *inode);
+>
+> @@ -158,6 +161,8 @@ static inline struct proc_dir_entry *proc_mkdir(const char *name,
+>   	struct proc_dir_entry *parent) {return NULL;}
+>   static inline struct proc_dir_entry *proc_mkdir_mode(const char *name,
+>   	umode_t mode, struct proc_dir_entry *parent) { return NULL; }
+> +static inline void proc_set_size(struct proc_dir_entry *de, loff_t size) {}
+> +static inline void proc_set_user(struct proc_dir_entry *de, kuid_t uid, kgid_t gid) {}
+>
+>   struct tty_driver;
+>   static inline void proc_tty_register_driver(struct tty_driver *driver) {};
+> diff --git a/kernel/configs.c b/kernel/configs.c
+> index 42e8fa0..c18b1f1 100644
+> --- a/kernel/configs.c
+> +++ b/kernel/configs.c
+> @@ -79,7 +79,7 @@ static int __init ikconfig_init(void)
+>   	if (!entry)
+>   		return -ENOMEM;
+>
+> -	entry->size = kernel_config_data_size;
+> +	proc_set_size(entry, kernel_config_data_size);
+>
+>   	return 0;
+>   }
+> diff --git a/kernel/profile.c b/kernel/profile.c
+> index 524ce5e..0bf4007 100644
+> --- a/kernel/profile.c
+> +++ b/kernel/profile.c
+> @@ -600,7 +600,7 @@ int __ref create_proc_profile(void) /* false positive from hotcpu_notifier */
+>   			    NULL,&proc_profile_operations);
+>   	if (!entry)
+>   		return 0;
+> -	entry->size = (1+prof_len) * sizeof(atomic_t);
+> +	proc_set_size(entry, (1 + prof_len) * sizeof(atomic_t));
+>   	hotcpu_notifier(profile_cpu_callback, 0);
+>   	return 0;
+>   }
+> diff --git a/net/netfilter/xt_recent.c b/net/netfilter/xt_recent.c
+> index 3db2d38..1e657cf 100644
+> --- a/net/netfilter/xt_recent.c
+> +++ b/net/netfilter/xt_recent.c
+> @@ -401,8 +401,7 @@ static int recent_mt_check(const struct xt_mtchk_param *par,
+>   		ret = -ENOMEM;
+>   		goto out;
+>   	}
+> -	pde->uid = uid;
+> -	pde->gid = gid;
+> +	proc_set_user(pde, uid, gid);
+>   #endif
+>   	spin_lock_bh(&recent_lock);
+>   	list_add_tail(&t->list,&recent_net->tables);
+> diff --git a/sound/core/info.c b/sound/core/info.c
+> index 3aa8864..c7f41c3 100644
+> --- a/sound/core/info.c
+> +++ b/sound/core/info.c
+> @@ -970,7 +970,7 @@ int snd_info_register(struct snd_info_entry * entry)
+>   			mutex_unlock(&info_mutex);
+>   			return -ENOMEM;
+>   		}
+> -		p->size = entry->size;
+> +		proc_set_size(p, entry->size);
+>   	}
+>   	entry->p = p;
+>   	if (entry->parent)
 >
 > _______________________________________________
 > Linuxppc-dev mailing list
