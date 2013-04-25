@@ -2,10 +2,10 @@ Return-Path: <gang.chen@asianux.com>
 Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3D03D2C00FF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2013 19:05:51 +1000 (EST)
-Message-ID: <5178F1BC.6050905@asianux.com>
-Date: Thu, 25 Apr 2013 17:05:00 +0800
+ by ozlabs.org (Postfix) with ESMTPS id 3D2D22C00FF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2013 19:31:34 +1000 (EST)
+Message-ID: <5178F7C3.6070700@asianux.com>
+Date: Thu, 25 Apr 2013 17:30:43 +0800
 From: Chen Gang <gang.chen@asianux.com>
 MIME-Version: 1.0
 To: Michael Neuling <mikey@neuling.org>
@@ -16,7 +16,8 @@ References: <5177965D.9090406@linux.vnet.ibm.com>
  <30651.1366799858@ale.ozlabs.ibm.com> <1366807638.5911.2.camel@localhost>
  <5178816D.3000309@asianux.com> <5178ABA2.4030109@linux.vnet.ibm.com>
  <5178E6C3.4060603@asianux.com> <1659.1366880440@ale.ozlabs.ibm.com>
-In-Reply-To: <1659.1366880440@ale.ozlabs.ibm.com>
+ <5178F1BC.6050905@asianux.com>
+In-Reply-To: <5178F1BC.6050905@asianux.com>
 Content-Type: text/plain; charset=UTF-8
 Cc: sfr@canb.auug.org.au, matt@ozlabs.org, linux-kernel@vger.kernel.org,
  Mike Qiu <qiudayu@linux.vnet.ibm.com>,
@@ -31,33 +32,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2013年04月25日 17:00, Michael Neuling wrote:
->> > 
->> > Signed-off-by: Chen Gang <gang.chen@asianux.com>
->> > ---
->> >  arch/powerpc/include/asm/kvm_asm.h   |    2 +-
->> >  arch/powerpc/kernel/exceptions-64s.S |    6 +++---
->> >  2 files changed, 4 insertions(+), 4 deletions(-)
->> > 
->> > diff --git a/arch/powerpc/include/asm/kvm_asm.h b/arch/powerpc/include/asm/kvm_asm.h
->> > index b9dd382..2c65bae 100644
->> > --- a/arch/powerpc/include/asm/kvm_asm.h
->> > +++ b/arch/powerpc/include/asm/kvm_asm.h
->> > @@ -86,7 +86,7 @@
->> >  #define BOOK3S_INTERRUPT_PROGRAM	0x700
->> >  #define BOOK3S_INTERRUPT_FP_UNAVAIL	0x800
->> >  #define BOOK3S_INTERRUPT_DECREMENTER	0x900
->> > -#define BOOK3S_INTERRUPT_HV_DECREMENTER	0x980
->> > +#define BOOK3S_INTERRUPT_HV_DECREMENTER	0x988
-> This is hardwird in the architecture.. you can't just move it
+On 2013年04月25日 17:05, Chen Gang wrote:
+> On 2013年04月25日 17:00, Michael Neuling wrote:
+>>>>
+>>>> Signed-off-by: Chen Gang <gang.chen@asianux.com>
+>>>> ---
+>>>>  arch/powerpc/include/asm/kvm_asm.h   |    2 +-
+>>>>  arch/powerpc/kernel/exceptions-64s.S |    6 +++---
+>>>>  2 files changed, 4 insertions(+), 4 deletions(-)
+>>>>
+>>>> diff --git a/arch/powerpc/include/asm/kvm_asm.h b/arch/powerpc/include/asm/kvm_asm.h
+>>>> index b9dd382..2c65bae 100644
+>>>> --- a/arch/powerpc/include/asm/kvm_asm.h
+>>>> +++ b/arch/powerpc/include/asm/kvm_asm.h
+>>>> @@ -86,7 +86,7 @@
+>>>>  #define BOOK3S_INTERRUPT_PROGRAM	0x700
+>>>>  #define BOOK3S_INTERRUPT_FP_UNAVAIL	0x800
+>>>>  #define BOOK3S_INTERRUPT_DECREMENTER	0x900
+>>>> -#define BOOK3S_INTERRUPT_HV_DECREMENTER	0x980
+>>>> +#define BOOK3S_INTERRUPT_HV_DECREMENTER	0x988
+>> This is hardwird in the architecture.. you can't just move it
+>>
 > 
 
-OK, thank you, I need continue to fix it. It seems we have to read the
-details to shrink one instruction (4 bytes), at least.
+I think of a way to solve it: we just move the related code to another
+area, after enter the original entry (e.g. 0x900), we let it jump to
+that area to excuse the related code.
 
-Welcome additional suggestions or completions.
+:-)
 
-Thanks.
+> OK, thank you, I need continue to fix it. It seems we have to read the
+> details to shrink one instruction (4 bytes), at least.
+> 
+> Welcome additional suggestions or completions.
+> 
+> Thanks.
+> 
+
 
 -- 
 Chen Gang
