@@ -1,37 +1,27 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CEBB62C00BE
- for <linuxppc-dev@ozlabs.org>; Fri, 26 Apr 2013 04:24:31 +1000 (EST)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Thu, 25 Apr 2013 12:24:29 -0600
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
- [9.17.195.228])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id DEFF419D8081
- for <linuxppc-dev@ozlabs.org>; Thu, 25 Apr 2013 12:24:20 -0600 (MDT)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3PIOMMQ089944
- for <linuxppc-dev@ozlabs.org>; Thu, 25 Apr 2013 12:24:23 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3PIOKUf032637
- for <linuxppc-dev@ozlabs.org>; Thu, 25 Apr 2013 12:24:21 -0600
-Date: Thu, 25 Apr 2013 11:24:06 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 4/4] powerpc/perf: Add support for SIER
-Message-ID: <20130425182406.GC28848@us.ibm.com>
-References: <1365582765-6939-1-git-send-email-michael@ellerman.id.au>
- <1365582765-6939-4-git-send-email-michael@ellerman.id.au>
+Return-Path: <bhelgaas@google.com>
+Received: from mail-vc0-f181.google.com (mail-vc0-f181.google.com
+ [209.85.220.181])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id EAF552C0114
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2013 05:09:11 +1000 (EST)
+Received: by mail-vc0-f181.google.com with SMTP id hr11so1800869vcb.26
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2013 12:09:08 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1365582765-6939-4-git-send-email-michael@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+In-Reply-To: <1366883360-14061-2-git-send-email-Andrew.Murray@arm.com>
+References: <1366883360-14061-1-git-send-email-Andrew.Murray@arm.com>
+ <1366883360-14061-2-git-send-email-Andrew.Murray@arm.com>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Thu, 25 Apr 2013 13:08:48 -0600
+Message-ID: <CAErSpo6+v_xAdEw+4Qg--QLXzG8B8UPK=eBLsoT8-dZi6xatGA@mail.gmail.com>
+Subject: Re: [RFC PATCH 1/3] powerpc: Move struct pci_controller to asm-generic
+To: Andrew Murray <Andrew.Murray@arm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Michal Simek <monstr@monstr.eu>, Arnd Bergmann <arnd@arndb.de>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ microblaze-uclinux@itee.uq.edu.au,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,87 +31,240 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman [michael@ellerman.id.au] wrote:
-| From: Michael Ellerman <michaele@au1.ibm.com>
-| 
-| On power8 we have a new SIER (Sampled Instruction Event Register), which
-| captures information about instructions when we have random sampling
-| enabled.
-| 
-| Add support for loading the SIER into pt_regs, overloading regs->dar.
-| Also set the new NO_SIPR flag in regs->result if we don't have SIPR.
-| 
-| Update regs_sihv/sipr() to look for SIPR/SIHV in SIER.
-| 
-| Signed-off-by: Michael Ellerman <michaele@au1.ibm.com>
-| ---
-|  arch/powerpc/include/asm/perf_event_server.h |    1 +
-|  arch/powerpc/perf/core-book3s.c              |   19 +++++++++++++++++++
-|  2 files changed, 20 insertions(+)
-| 
-| diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
-| index e287aef..a1a1ad8 100644
-| --- a/arch/powerpc/include/asm/perf_event_server.h
-| +++ b/arch/powerpc/include/asm/perf_event_server.h
-| @@ -53,6 +53,7 @@ struct power_pmu {
-|  #define PPMU_NO_CONT_SAMPLING	0x00000008 /* no continuous sampling */
-|  #define PPMU_SIAR_VALID		0x00000010 /* Processor has SIAR Valid bit */
-|  #define PPMU_HAS_SSLOT		0x00000020 /* Has sampled slot in MMCRA */
-| +#define PPMU_HAS_SIER		0x00000040 /* Has SIER */
-| 
-|  /*
-|   * Values for flags to get_alternatives()
-| diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-| index 4255b12..a4bbd4d 100644
-| --- a/arch/powerpc/perf/core-book3s.c
-| +++ b/arch/powerpc/perf/core-book3s.c
-| @@ -116,6 +116,9 @@ static bool regs_sihv(struct pt_regs *regs)
-|  {
-|  	unsigned long sihv = MMCRA_SIHV;
-| 
-| +	if (ppmu->flags & PPMU_HAS_SIER)
-| +		return !!(regs->dar & SIER_SIHV);
-| +
+On Thu, Apr 25, 2013 at 3:49 AM, Andrew Murray <Andrew.Murray@arm.com> wrote:
+> This patch moves struct pci_controller into asm-generic to allow
+> for use by other architectures thus reducing code duplication in
+> the kernel.
+>
+> Signed-off-by: Andrew Murray <Andrew.Murray@arm.com>
+> ---
+>  arch/powerpc/include/asm/pci-bridge.h |   87 +++++---------------------------
+>  include/asm-generic/pci-bridge.h      |   68 +++++++++++++++++++++++++
+>  2 files changed, 82 insertions(+), 73 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+> index 205bfba..163bd40 100644
+> --- a/arch/powerpc/include/asm/pci-bridge.h
+> +++ b/arch/powerpc/include/asm/pci-bridge.h
+> @@ -8,7 +8,6 @@
+>   * 2 of the License, or (at your option) any later version.
+>   */
+>  #include <linux/pci.h>
+> -#include <linux/list.h>
+>  #include <linux/ioport.h>
+>  #include <linux/of_pci.h>
+>  #include <asm-generic/pci-bridge.h>
+> @@ -16,85 +15,27 @@
+>  struct device_node;
+>
+>  /*
+> - * Structure of a PCI controller (host bridge)
+> + * Used for variants of PCI indirect handling and possible quirks:
+> + *  SET_CFG_TYPE - used on 4xx or any PHB that does explicit type0/1
+> + *  EXT_REG - provides access to PCI-e extended registers
+> + *  SURPRESS_PRIMARY_BUS - we suppress the setting of PCI_PRIMARY_BUS
 
-Were SIER_SIHV and SIER_SIPR defined in an earlier patch set ?
+s/SURPRESS/SUPRESS/ throughout.
 
-|  	if (ppmu->flags & PPMU_ALT_SIPR)
-|  		sihv = POWER6_MMCRA_SIHV;
-| 
-| @@ -126,6 +129,9 @@ static bool regs_sipr(struct pt_regs *regs)
-|  {
-|  	unsigned long sipr = MMCRA_SIPR;
-| 
-| +	if (ppmu->flags & PPMU_HAS_SIER)
-| +		return !!(regs->dar & SIER_SIPR);
-| +
-|  	if (ppmu->flags & PPMU_ALT_SIPR)
-|  		sipr = POWER6_MMCRA_SIPR;
-| 
-| @@ -184,6 +190,7 @@ static inline u32 perf_get_misc_flags(struct pt_regs *regs)
-|  /*
-|   * Overload regs->dsisr to store MMCRA so we only need to read it once
-|   * on each interrupt.
-| + * Overload regs->dar to store SIER if we have it.
-|   * Overload regs->result to specify whether we should use the MSR (result
-|   * is zero) or the SIAR (result is non zero).
-|   */
-| @@ -200,6 +207,18 @@ static inline void perf_read_regs(struct pt_regs *regs)
-|  		regs->result |= 2;
-| 
-|  	/*
-| +	 * On power8 if we're in random sampling mode, the SIER is updated.
-| +	 * If we're in continuous sampling mode, we don't have SIPR.
-| +	 */
-| +	if (ppmu->flags & PPMU_HAS_SIER) {
-| +		if (marked)
-| +			regs->dar = mfspr(SPRN_SIER);
-| +		else
-| +			regs->result |= 2;
+I'm not sure how generic these flags will end up being.  If they wind
+up in a shared header file, it seems like we might want a PCI_ prefix
+to anchor them.
 
-Can we use a helper, regs_set_no_sipr() to set this - since we set and
-test in more than one place ?
+> + *   on Freescale PCI-e controllers since they used the PCI_PRIMARY_BUS
+> + *   to determine which bus number to match on when generating type0
+> + *   config cycles
+> + *  NO_PCIE_LINK - the Freescale PCI-e controllers have issues with
+> + *   hanging if we don't have link and try to do config cycles to
+> + *   anything but the PHB.  Only allow talking to the PHB if this is
+> + *   set.
+> + *  BIG_ENDIAN - cfg_addr is a big endian register
+> + *  BROKEN_MRM - the 440EPx/GRx chips have an errata that causes hangs on
+> + *   the PLB4.  Effectively disable MRM commands by setting this.
+>   */
+> -struct pci_controller {
+> -       struct pci_bus *bus;
+> -       char is_dynamic;
+> -#ifdef CONFIG_PPC64
+> -       int node;
+> -#endif
+> -       struct device_node *dn;
+> -       struct list_head list_node;
+> -       struct device *parent;
+> -
+> -       int first_busno;
+> -       int last_busno;
+> -       int self_busno;
+> -       struct resource busn;
+> -
+> -       void __iomem *io_base_virt;
+> -#ifdef CONFIG_PPC64
+> -       void *io_base_alloc;
+> -#endif
+> -       resource_size_t io_base_phys;
+> -       resource_size_t pci_io_size;
+> -
+> -       /* Some machines (PReP) have a non 1:1 mapping of
+> -        * the PCI memory space in the CPU bus space
+> -        */
+> -       resource_size_t pci_mem_offset;
+> -
+> -       /* Some machines have a special region to forward the ISA
+> -        * "memory" cycles such as VGA memory regions. Left to 0
+> -        * if unsupported
+> -        */
+> -       resource_size_t isa_mem_phys;
+> -       resource_size_t isa_mem_size;
+> -
+> -       struct pci_ops *ops;
+> -       unsigned int __iomem *cfg_addr;
+> -       void __iomem *cfg_data;
+> -
+> -       /*
+> -        * Used for variants of PCI indirect handling and possible quirks:
+> -        *  SET_CFG_TYPE - used on 4xx or any PHB that does explicit type0/1
+> -        *  EXT_REG - provides access to PCI-e extended registers
+> -        *  SURPRESS_PRIMARY_BUS - we suppress the setting of PCI_PRIMARY_BUS
+> -        *   on Freescale PCI-e controllers since they used the PCI_PRIMARY_BUS
+> -        *   to determine which bus number to match on when generating type0
+> -        *   config cycles
+> -        *  NO_PCIE_LINK - the Freescale PCI-e controllers have issues with
+> -        *   hanging if we don't have link and try to do config cycles to
+> -        *   anything but the PHB.  Only allow talking to the PHB if this is
+> -        *   set.
+> -        *  BIG_ENDIAN - cfg_addr is a big endian register
+> -        *  BROKEN_MRM - the 440EPx/GRx chips have an errata that causes hangs on
+> -        *   the PLB4.  Effectively disable MRM commands by setting this.
+> -        */
+>  #define PPC_INDIRECT_TYPE_SET_CFG_TYPE         0x00000001
+>  #define PPC_INDIRECT_TYPE_EXT_REG              0x00000002
+>  #define PPC_INDIRECT_TYPE_SURPRESS_PRIMARY_BUS 0x00000004
+>  #define PPC_INDIRECT_TYPE_NO_PCIE_LINK         0x00000008
+>  #define PPC_INDIRECT_TYPE_BIG_ENDIAN           0x00000010
+>  #define PPC_INDIRECT_TYPE_BROKEN_MRM           0x00000020
+> -       u32 indirect_type;
+> -       /* Currently, we limit ourselves to 1 IO range and 3 mem
+> -        * ranges since the common pci_bus structure can't handle more
+> -        */
+> -       struct resource io_resource;
+> -       struct resource mem_resources[3];
+> -       int global_number;              /* PCI domain number */
+> -
+> -       resource_size_t dma_window_base_cur;
+> -       resource_size_t dma_window_size;
+> -
+> -#ifdef CONFIG_PPC64
+> -       unsigned long buid;
+> -
+> -       void *private_data;
+> -#endif /* CONFIG_PPC64 */
+> -};
+>
+>  /* These are used for config access before all the PCI probing
+>     has been done. */
+> diff --git a/include/asm-generic/pci-bridge.h b/include/asm-generic/pci-bridge.h
+> index 20db2e5..e58830e 100644
+> --- a/include/asm-generic/pci-bridge.h
+> +++ b/include/asm-generic/pci-bridge.h
+> @@ -9,6 +9,9 @@
+>
+>  #ifdef __KERNEL__
+>
+> +#include <linux/pci.h>
+> +#include <linux/list.h>
+> +
+>  enum {
+>         /* Force re-assigning all resources (ignore firmware
+>          * setup completely)
+> @@ -38,6 +41,71 @@ enum {
+>         PCI_SCAN_ALL_PCIE_DEVS  = 0x00000040,
+>  };
+>
+> +struct device_node;
+> +
+> +/*
+> + * Structure of a PCI controller (host bridge)
+> + */
+> +#if defined(CONFIG_PPC32) || defined(CONFIG_PPC64)
+> +struct pci_controller {
+> +       struct pci_bus *bus;
 
-Other than these nits, the patchset looks good.
+A lot of the information here (struct pci_bus *bus, first_/last_busno,
+busn, window information) is already in the struct pci_host_bridge,
+and I'm not sure it makes sense to duplicate it here.  I'd like to use
+that structure when it makes sense, and use the sysdata pointer, i.e.,
+the pointer to "struct pci_controller" here, for things that are truly
+arch-specific.
 
-Sukadev
+> +       char is_dynamic;
+> +#ifdef CONFIG_PPC64
+> +       int node;
+> +#endif
+> +       struct device_node *dn;
+> +       struct list_head list_node;
+> +       struct device *parent;
+> +
+> +       int first_busno;
+> +       int last_busno;
+> +       int self_busno;
+> +#if defined(CONFIG_PPC64) || defined(CONFIG_PPC32)
+> +       struct resource busn;
+> +#endif
+> +
+> +       void __iomem *io_base_virt;
+> +#ifdef CONFIG_PPC64
+> +       void *io_base_alloc;
+> +#endif
+> +       resource_size_t io_base_phys;
+> +       resource_size_t pci_io_size;
+> +
+> +       /* Some machines (PReP) have a non 1:1 mapping of
+> +        * the PCI memory space in the CPU bus space
+> +        */
+> +       resource_size_t pci_mem_offset;
+> +
+> +       /* Some machines have a special region to forward the ISA
+> +        * "memory" cycles such as VGA memory regions. Left to 0
+> +        * if unsupported
+> +        */
+> +       resource_size_t isa_mem_phys;
+> +       resource_size_t isa_mem_size;
+> +
+> +       struct pci_ops *ops;
+> +       unsigned int __iomem *cfg_addr;
+> +       void __iomem *cfg_data;
+> +
+> +       u32 indirect_type;
+> +       /* Currently, we limit ourselves to 1 IO range and 3 mem
+> +        * ranges since the common pci_bus structure can't handle more
+> +        */
+> +       struct resource io_resource;
+> +       struct resource mem_resources[3];
+
+pci_host_bridge has a list for apertures, which contains this
+information (and the offset between CPU and PCI bus addresses).
+
+> +       int global_number;              /* PCI domain number */
+
+The domain is a good candidate for going in the pci_host_bridge
+structure.  I'm not sure how to plumb it in there, but it is something
+that's pretty generic and I'd like to get rid of all the arch-specific
+pci_domain_nr() implementations that are really the same.
+
+> +
+> +       resource_size_t dma_window_base_cur;
+> +       resource_size_t dma_window_size;
+> +
+> +#ifdef CONFIG_PPC64
+> +       unsigned long buid;
+> +
+> +       void *private_data;
+> +#endif /* CONFIG_PPC64 */
+> +};
+> +#endif
+> +
+>  #ifdef CONFIG_PCI
+>  extern unsigned int pci_flags;
+>
+> --
+> 1.7.0.4
+>
