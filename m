@@ -1,30 +1,33 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 62BCB2C0100
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2013 15:21:13 +1000 (EST)
+ (Client CN "e38.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DD8542C010D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2013 15:21:14 +1000 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Fri, 26 Apr 2013 01:21:10 -0400
-Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 9AEB96E803A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2013 01:21:04 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3Q5L7R9311106
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2013 01:21:07 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3Q5L6CQ004981
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2013 02:21:07 -0300
+ Thu, 25 Apr 2013 23:21:11 -0600
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+ [9.17.195.107])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id D85FD19D8043
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2013 23:21:03 -0600 (MDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3Q5L9Ps074602
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2013 23:21:09 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3Q5L8xW027645
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2013 23:21:09 -0600
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 0/6] powerpc/powernv: PHB3 Support
-Date: Fri, 26 Apr 2013 13:20:56 +0800
-Message-Id: <1366953662-9473-1-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 2/6] powerpc/powernv: Add option CONFIG_POWERNV_MSI
+Date: Fri, 26 Apr 2013 13:20:58 +0800
+Message-Id: <1366953662-9473-3-git-send-email-shangw@linux.vnet.ibm.com>
+In-Reply-To: <1366953662-9473-1-git-send-email-shangw@linux.vnet.ibm.com>
+References: <1366953662-9473-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -35,53 +38,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patchset includes minimal support for PHB3. Initially, flag "PNV_PHB_IODA2"
-is introduced to differentiate IODA2 compliant PHB3 from other types of PHBs and
-do initialization accordingly for PHB3. Besides, variable IODA2 tables reside in
-system memory and we allocate them in kernel, then pass them to f/w and enable
-the corresponding BARs through OPAL API. The P/Q bits of IVE should be handled
-on PHB3 by software and the patchset intends to cover that as well.
+As Michael Ellerman suggested, to add CONFIG_POWERNV_MSI for PowerNV
+platform. That's similar to CONFIG_PSERIES_MSI for pSeries platform.
+For now, we don't make it dependent on CONFIG_EEH since it's not ready
+to enable that yet.
 
-NOTE: The first patch comes from Ben.
+Apart from that, we also enable CONFIG_PPC_MSI_BITMAP on selecting
+CONFIG_POWERNV_MSI.
 
-v3 -> v4
-	* Remove the patch to retrieve IODA2 table address/length since
-	  it's useless now
-	* Introduce IRQ chip for individual PHB and patch the handlers
-	  during MSI interrupt setup time according to Ben's suggestion
-	* Pass HW IRQ to opal_pci_msi_eoi()
-	* Remove "sysdata" from IOMMU table
-v2 -> v3
-	* Remove the unnecessary quirk. That's only useful with simics
-	* Do MSI EOI in single OPAL API opal_pci_msi_eoi()
-	* Use explicit branch to fully utilize CPU's prefetching engine
-	  while doing TCE invalidation
-	* Add one patch to fix invalid IOMMU table for PCI devices
-v1 -> v2
-	* Introduce CONFIG_POWERNV_MSI, which is similiar to CONFIG_PSERIES_MSI
-	* Enable CONFIG_PPC_MSI_BITMAP while selecting CONFIG_POWERNV_MSI
-	* Eleminate (struct pnv_phb::msi_count) since it has been removed in
-	  linux-next
-	* Replace (CONFIG_PPC_POWERNV && CONFIG_PCI_MSI) with CONFIG_POWERNV_MSI
-	* Move declaration of pnv_pci_msi_eoi() to asm/xics.h
-	* Remove unnecessary "#ifdef ... #endif" in icp-native.c
-	* Add support to invalidate TCE
-	* Let the IODA2 table allocated by firmware and kernel to retrieve them
-	  through device-tree
-
+Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
+ arch/powerpc/platforms/powernv/Kconfig |    5 +++++
+ arch/powerpc/sysdev/Kconfig            |    1 +
+ 2 files changed, 6 insertions(+), 0 deletions(-)
 
-arch/powerpc/include/asm/opal.h                |    7 +-
-arch/powerpc/include/asm/xics.h                |    1 +
-arch/powerpc/platforms/powernv/Kconfig         |    5 +
-arch/powerpc/platforms/powernv/opal-wrappers.S |    1 +
-arch/powerpc/platforms/powernv/pci-ioda.c      |  330 ++++++++++++++++++++----
-arch/powerpc/platforms/powernv/pci-p5ioc2.c    |    4 +-
-arch/powerpc/platforms/powernv/pci.c           |   56 +----
-arch/powerpc/platforms/powernv/pci.h           |   35 ++-
-arch/powerpc/sysdev/Kconfig                    |    1 +
-arch/powerpc/sysdev/xics/icp-native.c          |    2 +-
-10 files changed, 332 insertions(+), 110 deletions(-)
-
-Thanks,
-Gavin
+diff --git a/arch/powerpc/platforms/powernv/Kconfig b/arch/powerpc/platforms/powernv/Kconfig
+index 74fea5c..d3e840d 100644
+--- a/arch/powerpc/platforms/powernv/Kconfig
++++ b/arch/powerpc/platforms/powernv/Kconfig
+@@ -8,6 +8,11 @@ config PPC_POWERNV
+ 	select PPC_PCI_CHOICE if EMBEDDED
+ 	default y
+ 
++config POWERNV_MSI
++	bool "Support PCI MSI on PowerNV platform"
++	depends on PCI_MSI
++	default y
++
+ config PPC_POWERNV_RTAS
+ 	depends on PPC_POWERNV
+ 	bool "Support for RTAS based PowerNV platforms such as BML"
+diff --git a/arch/powerpc/sysdev/Kconfig b/arch/powerpc/sysdev/Kconfig
+index a84fecf..ab4cb54 100644
+--- a/arch/powerpc/sysdev/Kconfig
++++ b/arch/powerpc/sysdev/Kconfig
+@@ -19,6 +19,7 @@ config PPC_MSI_BITMAP
+ 	default y if MPIC
+ 	default y if FSL_PCI
+ 	default y if PPC4xx_MSI
++	default y if POWERNV_MSI
+ 
+ source "arch/powerpc/sysdev/xics/Kconfig"
+ 
+-- 
+1.7.5.4
