@@ -1,31 +1,31 @@
 Return-Path: <aruna@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DA4942C0204
- for <linuxppc-dev@ozlabs.org>; Fri, 26 Apr 2013 19:56:24 +1000 (EST)
+ (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DE0EE2C019E
+ for <linuxppc-dev@ozlabs.org>; Fri, 26 Apr 2013 19:56:26 +1000 (EST)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <aruna@linux.vnet.ibm.com>;
- Fri, 26 Apr 2013 19:48:25 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id C02C13578055
- for <linuxppc-dev@ozlabs.org>; Fri, 26 Apr 2013 19:56:11 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3Q9gPAn18808964
- for <linuxppc-dev@ozlabs.org>; Fri, 26 Apr 2013 19:42:25 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3Q9uANX009041
- for <linuxppc-dev@ozlabs.org>; Fri, 26 Apr 2013 19:56:11 +1000
-Subject: [PATCH 1/3] Retreive header size from pstore.
+ Fri, 26 Apr 2013 15:21:25 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id C8623E0053
+ for <linuxppc-dev@ozlabs.org>; Fri, 26 Apr 2013 15:28:28 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3Q9uI0p393660
+ for <linuxppc-dev@ozlabs.org>; Fri, 26 Apr 2013 15:26:18 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3Q9uG00027067
+ for <linuxppc-dev@ozlabs.org>; Fri, 26 Apr 2013 19:56:22 +1000
+Subject: [PATCH 2/3] powerpc/pseries: Re-organise the oops compression code
 To: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org,
  benh@kernel.crashing.org
 From: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
-Date: Fri, 26 Apr 2013 15:25:59 +0530
-Message-ID: <20130426095559.14323.86227.stgit@aruna-ThinkPad-T420>
+Date: Fri, 26 Apr 2013 15:26:14 +0530
+Message-ID: <20130426095614.14323.77770.stgit@aruna-ThinkPad-T420>
 In-Reply-To: <20130426094923.14323.80567.stgit@aruna-ThinkPad-T420>
 References: <20130426094923.14323.80567.stgit@aruna-ThinkPad-T420>
 MIME-Version: 1.0
@@ -42,68 +42,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-pstore_get_header_size will return the size of the header added by pstore
-while logging messages to the registered buffer.
+nvram_compress() and zip_oops() is used by the nvram_pstore_write
+API to compress oops messages hence re-organise the functions
+accordingly to avoid forward declarations.
 
 Signed-off-by: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
 ---
- fs/pstore/platform.c   |    7 ++++++-
- include/linux/pstore.h |    6 ++++++
- 2 files changed, 12 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/pseries/nvram.c |  104 ++++++++++++++++----------------
+ 1 file changed, 52 insertions(+), 52 deletions(-)
 
-diff --git a/fs/pstore/platform.c b/fs/pstore/platform.c
-index 86d1038..e8260ea 100644
---- a/fs/pstore/platform.c
-+++ b/fs/pstore/platform.c
-@@ -49,6 +49,7 @@ MODULE_PARM_DESC(update_ms, "milliseconds before pstore updates its content "
- 		 "corruption on Oopses)");
+diff --git a/arch/powerpc/platforms/pseries/nvram.c b/arch/powerpc/platforms/pseries/nvram.c
+index 14cc486..0159d74 100644
+--- a/arch/powerpc/platforms/pseries/nvram.c
++++ b/arch/powerpc/platforms/pseries/nvram.c
+@@ -486,6 +486,58 @@ static int clobbering_unread_rtas_event(void)
+ 						NVRAM_RTAS_READ_TIMEOUT);
+ }
  
- static int pstore_new_entry;
-+static int hsize;
- 
- static void pstore_timefunc(unsigned long);
- static DEFINE_TIMER(pstore_timer, pstore_timefunc, 0, 0);
-@@ -68,6 +69,11 @@ static char *backend;
- /* How much of the console log to snapshot */
- static unsigned long kmsg_bytes = 10240;
- 
-+int pstore_get_header_size(void)
++/* Derived from logfs_compress() */
++static int nvram_compress(const void *in, void *out, size_t inlen,
++							size_t outlen)
 +{
-+	return hsize;
++	int err, ret;
++
++	ret = -EIO;
++	err = zlib_deflateInit2(&stream, COMPR_LEVEL, Z_DEFLATED, WINDOW_BITS,
++						MEM_LEVEL, Z_DEFAULT_STRATEGY);
++	if (err != Z_OK)
++		goto error;
++
++	stream.next_in = in;
++	stream.avail_in = inlen;
++	stream.total_in = 0;
++	stream.next_out = out;
++	stream.avail_out = outlen;
++	stream.total_out = 0;
++
++	err = zlib_deflate(&stream, Z_FINISH);
++	if (err != Z_STREAM_END)
++		goto error;
++
++	err = zlib_deflateEnd(&stream);
++	if (err != Z_OK)
++		goto error;
++
++	if (stream.total_out >= stream.total_in)
++		goto error;
++
++	ret = stream.total_out;
++error:
++	return ret;
 +}
 +
- void pstore_set_kmsg_bytes(int bytes)
- {
- 	kmsg_bytes = bytes;
-@@ -147,7 +153,6 @@ static void pstore_dump(struct kmsg_dumper *dumper,
- 	while (total < kmsg_bytes) {
- 		char *dst;
- 		unsigned long size;
--		int hsize;
- 		size_t len;
- 
- 		dst = psinfo->buf;
-diff --git a/include/linux/pstore.h b/include/linux/pstore.h
-index 656699f..f43b64f 100644
---- a/include/linux/pstore.h
-+++ b/include/linux/pstore.h
-@@ -73,6 +73,7 @@ struct pstore_info {
- #ifdef CONFIG_PSTORE
- extern int pstore_register(struct pstore_info *);
- extern bool pstore_cannot_block_path(enum kmsg_dump_reason reason);
-+extern int pstore_get_header_size(void);
- #else
- static inline int
- pstore_register(struct pstore_info *psi)
-@@ -84,6 +85,11 @@ pstore_cannot_block_path(enum kmsg_dump_reason reason)
- {
- 	return false;
- }
-+static inline int
-+pstore_get_header_size(void)
++/* Compress the text from big_oops_buf into oops_buf. */
++static int zip_oops(size_t text_len)
 +{
++	struct oops_log_info *oops_hdr = (struct oops_log_info *)oops_buf;
++	int zipped_len = nvram_compress(big_oops_buf, oops_data, text_len,
++								oops_data_sz);
++	if (zipped_len < 0) {
++		pr_err("nvram: compression failed; returned %d\n", zipped_len);
++		pr_err("nvram: logging uncompressed oops/panic report\n");
++		return -1;
++	}
++	oops_hdr->version = OOPS_HDR_VERSION;
++	oops_hdr->report_length = (u16) zipped_len;
++	oops_hdr->timestamp = get_seconds();
 +	return 0;
 +}
- #endif
++
+ #ifdef CONFIG_PSTORE
+ static int nvram_pstore_open(struct pstore_info *psi)
+ {
+@@ -757,58 +809,6 @@ int __init pSeries_nvram_init(void)
+ }
  
- #endif /*_LINUX_PSTORE_H*/
+ 
+-/* Derived from logfs_compress() */
+-static int nvram_compress(const void *in, void *out, size_t inlen,
+-							size_t outlen)
+-{
+-	int err, ret;
+-
+-	ret = -EIO;
+-	err = zlib_deflateInit2(&stream, COMPR_LEVEL, Z_DEFLATED, WINDOW_BITS,
+-						MEM_LEVEL, Z_DEFAULT_STRATEGY);
+-	if (err != Z_OK)
+-		goto error;
+-
+-	stream.next_in = in;
+-	stream.avail_in = inlen;
+-	stream.total_in = 0;
+-	stream.next_out = out;
+-	stream.avail_out = outlen;
+-	stream.total_out = 0;
+-
+-	err = zlib_deflate(&stream, Z_FINISH);
+-	if (err != Z_STREAM_END)
+-		goto error;
+-
+-	err = zlib_deflateEnd(&stream);
+-	if (err != Z_OK)
+-		goto error;
+-
+-	if (stream.total_out >= stream.total_in)
+-		goto error;
+-
+-	ret = stream.total_out;
+-error:
+-	return ret;
+-}
+-
+-/* Compress the text from big_oops_buf into oops_buf. */
+-static int zip_oops(size_t text_len)
+-{
+-	struct oops_log_info *oops_hdr = (struct oops_log_info *)oops_buf;
+-	int zipped_len = nvram_compress(big_oops_buf, oops_data, text_len,
+-								oops_data_sz);
+-	if (zipped_len < 0) {
+-		pr_err("nvram: compression failed; returned %d\n", zipped_len);
+-		pr_err("nvram: logging uncompressed oops/panic report\n");
+-		return -1;
+-	}
+-	oops_hdr->version = OOPS_HDR_VERSION;
+-	oops_hdr->report_length = (u16) zipped_len;
+-	oops_hdr->timestamp = get_seconds();
+-	return 0;
+-}
+-
+ /*
+  * This is our kmsg_dump callback, called after an oops or panic report
+  * has been written to the printk buffer.  We want to capture as much
