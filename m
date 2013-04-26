@@ -1,23 +1,28 @@
-Return-Path: <B07421@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4A6252C0122
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2013 10:07:42 +1000 (EST)
-Date: Thu, 25 Apr 2013 19:07:24 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v2 12/15] powerpc/85xx: add time base sync support for
- e6500
-To: Zhao Chenhui <chenhui.zhao@freescale.com>
-In-Reply-To: <20130425002818.GE3172@localhost.localdomain> (from
- chenhui.zhao@freescale.com on Wed Apr 24 19:28:18 2013)
-Message-ID: <1366934844.30341.16@snotra>
+Return-Path: <gang.chen@asianux.com>
+Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id DD51B2C011D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2013 11:07:37 +1000 (EST)
+Message-ID: <5179D302.9060203@asianux.com>
+Date: Fri, 26 Apr 2013 09:06:10 +0800
+From: Chen Gang <gang.chen@asianux.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- r58472@freescale.com
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH v2] PowerPC: kernel: compiling issue, make additional
+ room in exception vector area
+References: <5177965D.9090406@linux.vnet.ibm.com>
+ <20130424083142.GB26834@concordia> <51779941.8080403@linux.vnet.ibm.com>
+ <30651.1366799858@ale.ozlabs.ibm.com> <1366807638.5911.2.camel@localhost>
+ <5178816D.3000309@asianux.com> <5178ABA2.4030109@linux.vnet.ibm.com>
+ <20130425062539.GA421@iris.ozlabs.ibm.com> <517918AB.4020508@asianux.com>
+ <30269.1366931768@ale.ozlabs.ibm.com>
+In-Reply-To: <30269.1366931768@ale.ozlabs.ibm.com>
+Content-Type: text/plain; charset=GB2312
+Cc: sfr@canb.auug.org.au, matt@ozlabs.org, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Mike Qiu <qiudayu@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,115 +32,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/24/2013 07:28:18 PM, Zhao Chenhui wrote:
-> On Wed, Apr 24, 2013 at 05:38:16PM -0500, Scott Wood wrote:
-> > On 04/24/2013 06:29:29 AM, Zhao Chenhui wrote:
-> > >On Tue, Apr 23, 2013 at 07:04:06PM -0500, Scott Wood wrote:
-> > >> On 04/19/2013 05:47:45 AM, Zhao Chenhui wrote:
-> > >> >From: Chen-Hui Zhao <chenhui.zhao@freescale.com>
-> > >> >
-> > >> >For e6500, two threads in one core share one time base. Just =20
-> need
-> > >> >to do time base sync on first thread of one core, and skip it on
-> > >> >the other thread.
-> > >> >
-> > >> >Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
-> > >> >Signed-off-by: Li Yang <leoli@freescale.com>
-> > >> >Signed-off-by: Andy Fleming <afleming@freescale.com>
-> > >> >---
-> > >> > arch/powerpc/platforms/85xx/smp.c |   52
-> > >> >+++++++++++++++++++++++++++++++-----
-> > >> > 1 files changed, 44 insertions(+), 8 deletions(-)
-> > >> >
-> > >> >diff --git a/arch/powerpc/platforms/85xx/smp.c
-> > >> >b/arch/powerpc/platforms/85xx/smp.c
-> > >> >index 74d8cde..5f3eee3 100644
-> > >> >--- a/arch/powerpc/platforms/85xx/smp.c
-> > >> >+++ b/arch/powerpc/platforms/85xx/smp.c
-> > >> >@@ -53,26 +55,40 @@ static inline u32 get_phy_cpu_mask(void)
-> > >> > 	u32 mask;
-> > >> > 	int cpu;
-> > >> >
-> > >> >-	mask =3D 1 << cur_booting_core;
-> > >> >-	for_each_online_cpu(cpu)
-> > >> >-		mask |=3D 1 << get_hard_smp_processor_id(cpu);
-> > >> >+	if (smt_capable()) {
-> > >> >+		/* two threads in one core share one time base =20
-> */
-> > >> >+		mask =3D 1 << =20
-> cpu_core_index_of_thread(cur_booting_core);
-> > >> >+		for_each_online_cpu(cpu)
-> > >> >+			mask |=3D 1 << cpu_core_index_of_thread(
-> > >> >+					=20
-> get_hard_smp_processor_id(cpu));
-> > >> >+	} else {
-> > >> >+		mask =3D 1 << cur_booting_core;
-> > >> >+		for_each_online_cpu(cpu)
-> > >> >+			mask |=3D 1 << =20
-> get_hard_smp_processor_id(cpu);
-> > >> >+	}
-> > >>
-> > >> Where is smt_capable defined()?  I assume somewhere in the =20
-> patchset
-> > >> but it's a pain to search 12 patches...
-> > >>
-> > >
-> > >It is defined in arch/powerpc/include/asm/topology.h.
-> > >	#define smt_capable()           (cpu_has_feature(CPU_FTR_SMT))
-> > >
-> > >Thanks for your review again.
-> >
-> > We shouldn't base it on CPU_FTR_SMT.  For example, e6500 doesn't
-> > claim that feature yet, except in our SDK kernel.  That doesn't
-> > change the topology of CPU numbering.
-> >
->=20
-> Then, where can I get the thread information? dts?
-> Or, wait for upstream of the thread suppport of e6500.
+On 2013Äê04ÔÂ26ÈÕ 07:16, Michael Neuling wrote:
+>> > diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+>> > index e789ee7..8997de2 100644
+>> > --- a/arch/powerpc/kernel/exceptions-64s.S
+>> > +++ b/arch/powerpc/kernel/exceptions-64s.S
+>> > @@ -254,7 +254,11 @@ hardware_interrupt_hv:
+>> >  	STD_EXCEPTION_PSERIES(0x800, 0x800, fp_unavailable)
+>> >  	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0x800)
+>> >  
+>> > -	MASKABLE_EXCEPTION_PSERIES(0x900, 0x900, decrementer)
+>> > +	. = 0x900
+>> > +	.globl decrementer_pSeries
+>> > +decrementer_pSeries:
+>> > +	b	decrementer_pSeries_0
+>> > +
+> Unfortunately you can't do this ether as we need to save the CFAR[1]
+> before it's overwritten by any branch. MASKABLE_EXCEPTION_PSERIES does
+> this.
+> 
 
-It's an inherent property of e6500 (outside of some virtualization =20
-scenarios, but you wouldn't run this code under a hypervisor) that you =20
-have two threads per core (whether Linux uses them or not).  Or you =20
-could read TMCFG0[NTHRD] if you know you're on a chip that has TMRs but =20
-aren't positive it's an e6500, but I wouldn't bother.  If we do ever =20
-have such a chip, there are probably other things that will need =20
-updating.
+Thanks for your checking.
 
-> > >static inline u32 get_phy_cpu_mask(void)
-> > >{
-> > >	u32 mask;
-> > >	int cpu;
-> > >
-> > >	mask =3D 1 << cpu_core_index_of_thread(cur_booting_core);
-> > >	for_each_online_cpu(cpu)
-> > >		mask |=3D 1 << cpu_core_index_of_thread(
-> > >				get_hard_smp_processor_id(cpu));
-> > >
-> > >	return mask;
-> > >}
-> >
-> > Likewise, this will get it wrong if SMT is disabled or not yet
-> > implemented on a core.
-> >
-> > -Scott
->=20
-> Let's look into cpu_core_index_of_thread() in =20
-> arch/powerpc/kernel/smp.c.
->=20
->   int cpu_core_index_of_thread(int cpu)
->   {
->       return cpu >> threads_shift;
->   }
->=20
-> If no thread, the threads_shift is equal to 0. It can work with no
-> thread.
+> CFAR is the Come From Register.  It saves the location of the last
+> branch and is hence overwritten by any branch.
+> 
 
-My point is that if threads are disabled, threads_shift will be 0, but =20
-e6500 cores will still be numbered 0, 2, 4, etc.
+Do we process it just like others done (e.g. 0x300, 0xe00, 0xe20 ...) ?
+	. = 0x900
+	.globl decrementer_pSeries
+decrementer_pSeries:
+ 	HMT_MEDIUM_PPR_DISCARD
+	SET_SCRATCH0(r13)
+	b decrementer_pSeries_0
 
-> Perhaps, I should submit this patch after the thread patches for =20
-> e6500.
+	...
 
-Why?
 
--Scott=
+> Thanks for trying.
+> 
+
+Not at all, before get fixed by other members, I should continue trying.
+
+-- 
+Chen Gang
+
+Asianux Corporation
