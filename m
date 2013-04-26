@@ -2,30 +2,30 @@ Return-Path: <shangw@linux.vnet.ibm.com>
 Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e35.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 19BF42C0123
+ by ozlabs.org (Postfix) with ESMTPS id 231C42C0126
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2013 15:21:16 +1000 (EST)
 Received: from /spool/local
  by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
  Thu, 25 Apr 2013 23:21:14 -0600
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
- [9.17.195.228])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 881BC3E40042
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2013 23:20:57 -0600 (MDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3Q5LBVm115598
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2013 23:21:11 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3Q5L9vN022674
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2013 23:21:10 -0600
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+ [9.17.195.227])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 7B17A3E4003F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2013 23:20:58 -0600 (MDT)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3Q5LCdw136200
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2013 23:21:12 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3Q5LBI9032320
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2013 23:21:12 -0600
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/6] powerpc/powernv: Patch MSI EOI handler on P8
-Date: Fri, 26 Apr 2013 13:20:59 +0800
-Message-Id: <1366953662-9473-4-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 5/6] powerpc/powernv: Build DMA space for PE on PHB3
+Date: Fri, 26 Apr 2013 13:21:01 +0800
+Message-Id: <1366953662-9473-6-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1366953662-9473-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1366953662-9473-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -38,199 +38,138 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The EOI handler of MSI/MSI-X interrupts for P8 (PHB3) need additional
-steps to handle the P/Q bits in IVE before EOIing the corresponding
-interrupt. The patch changes the EOI handler to cover that. we have
-individual IRQ chip in each PHB instance. During the MSI IRQ setup
-time, the IRQ chip is copied over from the original one for that IRQ,
-and the EOI handler is patched with the one that will handle the P/Q
-bits (As Ben suggested).
+The patch intends to build 32-bits DMA space for individual PEs on
+PHB3. The TVE# is recognized by the combo of PE# and fixed bits
+from DMA address, which is zero for 32-bits DMA space.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/opal.h                |    2 +
- arch/powerpc/include/asm/xics.h                |    1 +
- arch/powerpc/platforms/powernv/opal-wrappers.S |    1 +
- arch/powerpc/platforms/powernv/pci-ioda.c      |   38 ++++++++++++++++++++++-
- arch/powerpc/platforms/powernv/pci-p5ioc2.c    |    4 +-
- arch/powerpc/platforms/powernv/pci.c           |    2 +-
- arch/powerpc/platforms/powernv/pci.h           |    8 ++++-
- arch/powerpc/sysdev/xics/icp-native.c          |    2 +-
- 8 files changed, 50 insertions(+), 8 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c |   99 +++++++++++++++++++++++++++--
+ 1 files changed, 93 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index a4b28f1..b6c8b58 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -117,6 +117,7 @@ extern int opal_enter_rtas(struct rtas_args *args,
- #define OPAL_SET_SLOT_LED_STATUS		55
- #define OPAL_GET_EPOW_STATUS			56
- #define OPAL_SET_SYSTEM_ATTENTION_LED		57
-+#define OPAL_PCI_MSI_EOI			63
- 
- #ifndef __ASSEMBLY__
- 
-@@ -506,6 +507,7 @@ int64_t opal_pci_get_xive_reissue(uint64_t phb_id, uint32_t xive_number,
- 				  uint8_t *p_bit, uint8_t *q_bit);
- int64_t opal_pci_set_xive_reissue(uint64_t phb_id, uint32_t xive_number,
- 				  uint8_t p_bit, uint8_t q_bit);
-+int64_t opal_pci_msi_eoi(uint64_t phb_id, uint32_t hw_irq);
- int64_t opal_pci_set_xive_pe(uint64_t phb_id, uint32_t pe_number,
- 			     uint32_t xive_num);
- int64_t opal_get_xive_source(uint64_t phb_id, uint32_t xive_num,
-diff --git a/arch/powerpc/include/asm/xics.h b/arch/powerpc/include/asm/xics.h
-index 4ae9a09..282d43a 100644
---- a/arch/powerpc/include/asm/xics.h
-+++ b/arch/powerpc/include/asm/xics.h
-@@ -150,6 +150,7 @@ extern void xics_register_ics(struct ics *ics);
- extern void xics_teardown_cpu(void);
- extern void xics_kexec_teardown_cpu(int secondary);
- extern void xics_migrate_irqs_away(void);
-+extern void icp_native_eoi(struct irq_data *d);
- #ifdef CONFIG_SMP
- extern int xics_get_irq_server(unsigned int virq, const struct cpumask *cpumask,
- 			       unsigned int strict_check);
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index 3bb07e5..6fabe92 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -107,3 +107,4 @@ OPAL_CALL(opal_pci_mask_pe_error,		OPAL_PCI_MASK_PE_ERROR);
- OPAL_CALL(opal_set_slot_led_status,		OPAL_SET_SLOT_LED_STATUS);
- OPAL_CALL(opal_get_epow_status,			OPAL_GET_EPOW_STATUS);
- OPAL_CALL(opal_set_system_attention_led,	OPAL_SET_SYSTEM_ATTENTION_LED);
-+OPAL_CALL(opal_pci_msi_eoi,			OPAL_PCI_MSI_EOI);
 diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 3d4e958..3f88c51 100644
+index 1c7e808..04a37dc 100644
 --- a/arch/powerpc/platforms/powernv/pci-ioda.c
 +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -31,6 +31,7 @@
- #include <asm/opal.h>
- #include <asm/iommu.h>
- #include <asm/tce.h>
-+#include <asm/xics.h>
+@@ -600,9 +600,8 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+ 		 */
+ 		tbl->it_busno = 0;
+ 		tbl->it_index = (unsigned long)ioremap(be64_to_cpup(swinvp), 8);
+-		tbl->it_type = TCE_PCI_SWINV_CREATE | TCE_PCI_SWINV_FREE;
+-		if (phb->type == PNV_PHB_IODA1)
+-			tbl->it_type |= TCE_PCI_SWINV_PAIR;
++		tbl->it_type = TCE_PCI_SWINV_CREATE | TCE_PCI_SWINV_FREE |
++			       TCE_PCI_SWINV_PAIR;
+ 	}
+ 	iommu_init_table(tbl, phb->hose->node);
  
- #include "powernv.h"
- #include "pci.h"
-@@ -589,11 +590,27 @@ static void pnv_ioda_setup_dma(struct pnv_phb *phb)
+@@ -620,6 +619,81 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+ 		__free_pages(tce_mem, get_order(TCE32_TABLE_SIZE * segs));
  }
  
- #ifdef CONFIG_PCI_MSI
-+static void pnv_ioda2_msi_eoi(struct irq_data *d)
++static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
++				       struct pnv_ioda_pe *pe)
 +{
-+	unsigned int hw_irq = (unsigned int)irqd_to_hwirq(d);
-+	struct irq_chip *chip = irq_data_get_irq_chip(d);
-+	struct pnv_phb *phb = container_of(chip, struct pnv_phb,
-+					   ioda.irq_chip);
++	struct page *tce_mem = NULL;
++	void *addr;
++	const __be64 *swinvp;
++	struct iommu_table *tbl;
++	unsigned int tce_table_size, end;
 +	int64_t rc;
 +
-+	rc = opal_pci_msi_eoi(phb->opal_id, hw_irq);
-+	WARN_ON_ONCE(rc);
++	/* We shouldn't already have a 32-bit DMA associated */
++	if (WARN_ON(pe->tce32_seg >= 0))
++		return;
 +
-+	icp_native_eoi(d);
-+}
++	/* The PE will reserve all possible 32-bits space */
++	pe->tce32_seg = 0;
++	end = (1 << ilog2(phb->ioda.m32_pci_base));
++	tce_table_size = (end / 0x1000) * 8;
++	pe_info(pe, "Setting up 32-bit TCE table at 0..%08x\n",
++		end);
 +
- static int pnv_pci_ioda_msi_setup(struct pnv_phb *phb, struct pci_dev *dev,
--				  unsigned int hwirq, unsigned int is_64,
--				  struct msi_msg *msg)
-+				  unsigned int hwirq, unsigned int virq,
-+				  unsigned int is_64, struct msi_msg *msg)
- {
- 	struct pnv_ioda_pe *pe = pnv_ioda_get_pe(dev);
-+	struct irq_data *idata;
-+	struct irq_chip *ichip;
- 	unsigned int xive_num = hwirq - phb->msi_base;
- 	uint64_t addr64;
- 	uint32_t addr32, data;
-@@ -638,6 +655,23 @@ static int pnv_pci_ioda_msi_setup(struct pnv_phb *phb, struct pci_dev *dev,
- 	}
- 	msg->data = data;
- 
++	/* Allocate TCE table */
++	tce_mem = alloc_pages_node(phb->hose->node, GFP_KERNEL,
++				   get_order(tce_table_size));
++	if (!tce_mem) {
++		pe_err(pe, "Failed to allocate a 32-bit TCE memory\n");
++		goto fail;
++	}
++	addr = page_address(tce_mem);
++	memset(addr, 0, tce_table_size);
++
 +	/*
-+	 * Change the IRQ chip for the MSI interrupts on PHB3.
-+	 * The corresponding IRQ chip should be populated for
-+	 * the first time.
++	 * Map TCE table through TVT. The TVE index is the PE number
++	 * shifted by 1 bit for 32-bits DMA space.
 +	 */
-+	if (phb->type == PNV_PHB_IODA2) {
-+		if (!phb->ioda.irq_chip_init) {
-+			idata = irq_get_irq_data(virq);
-+			ichip = irq_data_get_irq_chip(idata);
-+			phb->ioda.irq_chip_init = 1;
-+			phb->ioda.irq_chip = *ichip;
-+			phb->ioda.irq_chip.irq_eoi = pnv_ioda2_msi_eoi;
-+		}
-+
-+		irq_set_chip(virq, &phb->ioda.irq_chip);
++	rc = opal_pci_map_pe_dma_window(phb->opal_id, pe->pe_number,
++					pe->pe_number << 1, 1, __pa(addr),
++					tce_table_size, 0x1000);
++	if (rc) {
++		pe_err(pe, "Failed to configure 32-bit TCE table,"
++		       " err %ld\n", rc);
++		goto fail;
 +	}
 +
- 	pr_devel("%s: %s-bit MSI on hwirq %x (xive #%d),"
- 		 " address=%x_%08x data=%x PE# %d\n",
- 		 pci_name(dev), is_64 ? "64" : "32", hwirq, xive_num,
-diff --git a/arch/powerpc/platforms/powernv/pci-p5ioc2.c b/arch/powerpc/platforms/powernv/pci-p5ioc2.c
-index d5c066e..92b37a0 100644
---- a/arch/powerpc/platforms/powernv/pci-p5ioc2.c
-+++ b/arch/powerpc/platforms/powernv/pci-p5ioc2.c
-@@ -42,8 +42,8 @@
- 
- #ifdef CONFIG_PCI_MSI
- static int pnv_pci_p5ioc2_msi_setup(struct pnv_phb *phb, struct pci_dev *dev,
--				    unsigned int hwirq, unsigned int is_64,
--				    struct msi_msg *msg)
-+				    unsigned int hwirq, unsigned int virq,
-+				    unsigned int is_64, struct msi_msg *msg)
- {
- 	if (WARN_ON(!is_64))
- 		return -ENXIO;
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index a11b5a6..861e185 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -84,7 +84,7 @@ static int pnv_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
- 			return -ENOMEM;
- 		}
- 		rc = phb->msi_setup(phb, pdev, phb->msi_base + hwirq,
--				    entry->msi_attrib.is_64, &msg);
-+				    virq, entry->msi_attrib.is_64, &msg);
- 		if (rc) {
- 			pr_warn("%s: Failed to setup MSI\n", pci_name(pdev));
- 			irq_dispose_mapping(virq);
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index f6314d6..3c552b3 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -79,8 +79,8 @@ struct pnv_phb {
- 	struct msi_bitmap	msi_bmp;
- #endif
- 	int (*msi_setup)(struct pnv_phb *phb, struct pci_dev *dev,
--			 unsigned int hwirq, unsigned int is_64,
--			 struct msi_msg *msg);
-+			 unsigned int hwirq, unsigned int virq,
-+			 unsigned int is_64, struct msi_msg *msg);
- 	void (*dma_dev_setup)(struct pnv_phb *phb, struct pci_dev *pdev);
- 	void (*fixup_phb)(struct pci_controller *hose);
- 	u32 (*bdfn_to_pe)(struct pnv_phb *phb, struct pci_bus *bus, u32 devfn);
-@@ -108,6 +108,10 @@ struct pnv_phb {
- 			unsigned int		*io_segmap;
- 			struct pnv_ioda_pe	*pe_array;
- 
-+			/* IRQ chip */
-+			int			irq_chip_init;
-+			struct irq_chip		irq_chip;
++	/* Setup linux iommu table */
++	tbl = &pe->tce32_table;
++	pnv_pci_setup_iommu_table(tbl, addr, tce_table_size, 0);
 +
- 			/* Sorted list of used PE's based
- 			 * on the sequence of creation
- 			 */
-diff --git a/arch/powerpc/sysdev/xics/icp-native.c b/arch/powerpc/sysdev/xics/icp-native.c
-index 48861d3..89db29d 100644
---- a/arch/powerpc/sysdev/xics/icp-native.c
-+++ b/arch/powerpc/sysdev/xics/icp-native.c
-@@ -81,7 +81,7 @@ static void icp_native_set_cpu_priority(unsigned char cppr)
- 	iosync();
- }
- 
--static void icp_native_eoi(struct irq_data *d)
-+void icp_native_eoi(struct irq_data *d)
++	/* OPAL variant of PHB3 invalidated TCEs */
++	swinvp = of_get_property(phb->hose->dn, "ibm,opal-tce-kill", NULL);
++	if (swinvp) {
++		/* We need a couple more fields -- an address and a data
++		 * to or.  Since the bus is only printed out on table free
++		 * errors, and on the first pass the data will be a relative
++		 * bus number, print that out instead.
++		 */
++		tbl->it_busno = 0;
++		tbl->it_index = (unsigned long)ioremap(be64_to_cpup(swinvp), 8);
++		tbl->it_type = TCE_PCI_SWINV_CREATE | TCE_PCI_SWINV_FREE;
++	}
++	iommu_init_table(tbl, phb->hose->node);
++
++	if (pe->pdev)
++		set_iommu_table_base(&pe->pdev->dev, tbl);
++	else
++		pnv_ioda_setup_bus_dma(pe, pe->pbus);
++
++	return;
++fail:
++	if (pe->tce32_seg >= 0)
++		pe->tce32_seg = -1;
++	if (tce_mem)
++		__free_pages(tce_mem, get_order(tce_table_size));
++}
++
+ static void pnv_ioda_setup_dma(struct pnv_phb *phb)
  {
- 	unsigned int hw_irq = (unsigned int)irqd_to_hwirq(d);
- 
+ 	struct pci_controller *hose = phb->hose;
+@@ -662,9 +736,22 @@ static void pnv_ioda_setup_dma(struct pnv_phb *phb)
+ 			if (segs > remaining)
+ 				segs = remaining;
+ 		}
+-		pe_info(pe, "DMA weight %d, assigned %d DMA32 segments\n",
+-			pe->dma_weight, segs);
+-		pnv_pci_ioda_setup_dma_pe(phb, pe, base, segs);
++
++		/*
++		 * For IODA2 compliant PHB3, we needn't care about the weight.
++		 * The all available 32-bits DMA space will be assigned to
++		 * the specific PE.
++		 */
++		if (phb->type == PNV_PHB_IODA1) {
++			pe_info(pe, "DMA weight %d, assigned %d DMA32 segments\n",
++				pe->dma_weight, segs);
++			pnv_pci_ioda_setup_dma_pe(phb, pe, base, segs);
++		} else {
++			pe_info(pe, "Assign DMA32 space\n");
++			segs = 0;
++			pnv_pci_ioda2_setup_dma_pe(phb, pe);
++		}
++
+ 		remaining -= segs;
+ 		base += segs;
+ 	}
 -- 
 1.7.5.4
