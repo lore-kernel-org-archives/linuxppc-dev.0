@@ -1,30 +1,26 @@
-Return-Path: <gang.chen@asianux.com>
-Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 6B68C2C00B5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2013 12:07:15 +1000 (EST)
-Message-ID: <5179E11F.8010007@asianux.com>
-Date: Fri, 26 Apr 2013 10:06:23 +0800
-From: Chen Gang <gang.chen@asianux.com>
+Return-Path: <B38951@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 5AE222C0113
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2013 12:41:28 +1000 (EST)
+From: Jia Hongtao-B38951 <B38951@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: RE: [PATCH 1/2] powerpc: Move opcode definitions from kvm/emulate.c
+ to asm/ppc-opcode.h
+Date: Fri, 26 Apr 2013 02:40:36 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01C4C229@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <1366684776-10946-1-git-send-email-hongtao.jia@freescale.com>
+ <20130423052951.GB20902@concordia>
+ <412C8208B4A0464FA894C5F0C278CD5D01C4A4B0@039-SN1MPN1-002.039d.mgd.msft.net>
+ <1366777161.2869.0.camel@pasglop>
+In-Reply-To: <1366777161.2869.0.camel@pasglop>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: Mike Qiu <qiudayu@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] PowerPC: kernel: compiling issue, make additional
- room in exception vector area
-References: <5177965D.9090406@linux.vnet.ibm.com>
- <20130424083142.GB26834@concordia> <51779941.8080403@linux.vnet.ibm.com>
- <30651.1366799858@ale.ozlabs.ibm.com> <1366807638.5911.2.camel@localhost>
- <5178816D.3000309@asianux.com> <5178ABA2.4030109@linux.vnet.ibm.com>
- <20130425062539.GA421@iris.ozlabs.ibm.com> <517918AB.4020508@asianux.com>
- <30269.1366931768@ale.ozlabs.ibm.com> <5179D302.9060203@asianux.com>
- <5179D5D8.8080102@asianux.com> <5179DA23.8000407@asianux.com>
- <5179E056.2000709@linux.vnet.ibm.com>
-In-Reply-To: <5179E056.2000709@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: sfr@canb.auug.org.au, Michael Neuling <mikey@neuling.org>, matt@ozlabs.org,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,33 +30,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2013年04月26日 10:03, Mike Qiu wrote:
-> �� 2013/4/26 9:36, Chen Gang д��:
->> > On 2013��04��26�� 09:18, Chen Gang wrote:
->>> >> On 2013��04��26�� 09:06, Chen Gang wrote:
->>>>> >>>> CFAR is the Come From Register.  It saves the location of the last
->>>>>> >>>>> branch and is hence overwritten by any branch.
->>>>>> >>>>>
->>>> >>> Do we process it just like others done (e.g. 0x300, 0xe00, 0xe20 ...) ?
->>>> >>> 	. = 0x900
->>>> >>> 	.globl decrementer_pSeries
->>>> >>> decrementer_pSeries:
->>>> >>>  	HMT_MEDIUM_PPR_DISCARD
->>>> >>> 	SET_SCRATCH0(r13)
->>>> >>> 	b decrementer_pSeries_0
->>>> >>>
->>>> >>> 	...
->>>> >>>
->>>> >>>
->> > Oh, it seems EXCEPTION_PROLOG_1 will save the regesters which related
->> > with CFAR, so I think need move EXCEPTION_PROLOG_1 to near 0x900.
-> I will try your diff V2, to see if the machine can boot up
-
-OK, thanks. (hope it can work)
-
-:-)
-
--- 
-Chen Gang
-
-Asianux Corporation
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmVuamFtaW4gSGVycmVu
+c2NobWlkdCBbbWFpbHRvOmJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZ10NCj4gU2VudDogV2VkbmVz
+ZGF5LCBBcHJpbCAyNCwgMjAxMyAxMjoxOSBQTQ0KPiBUbzogSmlhIEhvbmd0YW8tQjM4OTUxDQo+
+IENjOiBNaWNoYWVsIEVsbGVybWFuOyBXb29kIFNjb3R0LUIwNzQyMTsgbGludXhwcGMtZGV2QGxp
+c3RzLm96bGFicy5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCAxLzJdIHBvd2VycGM6IE1vdmUg
+b3Bjb2RlIGRlZmluaXRpb25zIGZyb20NCj4ga3ZtL2VtdWxhdGUuYyB0byBhc20vcHBjLW9wY29k
+ZS5oDQo+IA0KPiBPbiBUdWUsIDIwMTMtMDQtMjMgYXQgMDY6MzYgKzAwMDAsIEppYSBIb25ndGFv
+LUIzODk1MSB3cm90ZToNCj4gPiBUaGVzZSBkZWZpbml0aW9ucyBhcmUgZmlyc3RseSB1c2VkIGJ5
+IEtWTSBkZWZpbmVkIGxpa2UgT1BfMzFfWE9QX1RSQVAuDQo+ID4gVHdvIHdheXMgdG8gZXh0cmFj
+dCB0aGVzZSBkZWZpbml0aW9ucyBmb3IgcHVibGljIHVzZToNCj4gPg0KPiA+IDEuIExpa2UgdGhp
+cyBwYXRjaCBkaWQuIEZvciBrZWVwaW5nIHRoZSBLVk0gY29kZSB0aGF0IHVzaW5nIHRoZXNlDQo+
+ID4gICAgZGVmaW5pdGlvbnMgdW5jaGFuZ2VkIHdlIGRvIG5vdCB1cGRhdGUgdGhlbSB0byBtYXRj
+aC4NCj4gPg0KPiA+IDIuIE1vdmUgdGhlc2UgZGVmaW5pdGlvbnMgdG8gYW5vdGhlciAuaCBmaWxl
+IGxpa2UgbXkgbGFzdCBwYXRjaCBkaWQ6DQo+ID4gICAgaHR0cDovL3BhdGNod29yay5vemxhYnMu
+b3JnL3BhdGNoLzIzNTY0Ni8NCj4gPiAgICBZb3UgY2FuIHNlZSB0aGUgY29tbWVudHMgdGhlcmUu
+DQo+IA0KPiBUaGVyZSdzIGEgYmV0dGVyIHdheSAuLi4gYnV0IGl0J3MgbW9yZSB3b3JrLg0KPiAN
+Cj4gQWxsIG9wY29kZXMgYXJlIGJhc2VkIG9uIGEgcHJpbWFyeSBvcGNvZGUgYW5kIGEgcG90ZW50
+aWFsIHNlY29uZGFyeQ0KPiBvcGNvZGUuIFlvdSBjb3VsZC9zaG91bGQgcmV3b3JrIHBwYy1vcGNv
+ZGVzLmggdG8gaW4gZmFjdCBkZWZpbmUgdGhlbQ0KPiBhbGwgdGhhdCB3YXkgYXMgd2VsbCwgd2hp
+Y2ggd291bGQgInJlY29uY2lsZSIgdGhlIEtWTSB3YXkgYW5kIHRoZQ0KPiBleGlzdGluZyBzdHVm
+Zi4NCj4gDQo+IENoZWVycywNCj4gQmVuLg0KPiANCg0KQWdyZWUuIEJ1dCBJJ20gYWZyYWlkIHRv
+IHNheSB0aGF0IEknbSB0b28gYnVzeSB0byBkbyB0aGlzICJtb3JlIHdvcmsiDQpyaWdodCBub3cu
+IENvdWxkIHdlIGRlZmVyIHRoaXMgd29yayBmb3Igc29tZSB0aW1lPw0KDQpUaGFua3MuDQotIEhv
+bmd0YW8NCg==
