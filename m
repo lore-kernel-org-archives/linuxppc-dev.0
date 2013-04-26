@@ -1,18 +1,23 @@
-Return-Path: <chris.friesen@genband.com>
-Received: from exprod7og127.obsmtp.com (exprod7og127.obsmtp.com [64.18.2.210])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 316472C00F6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2013 09:34:10 +1000 (EST)
-Message-ID: <5179BD54.2000409@genband.com>
-Date: Thu, 25 Apr 2013 17:33:40 -0600
-From: Chris Friesen <chris.friesen@genband.com>
+Return-Path: <B07421@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4A6252C0122
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2013 10:07:42 +1000 (EST)
+Date: Thu, 25 Apr 2013 19:07:24 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH v2 12/15] powerpc/85xx: add time base sync support for
+ e6500
+To: Zhao Chenhui <chenhui.zhao@freescale.com>
+In-Reply-To: <20130425002818.GE3172@localhost.localdomain> (from
+ chenhui.zhao@freescale.com on Wed Apr 24 19:28:18 2013)
+Message-ID: <1366934844.30341.16@snotra>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: why does CONFIG_NONSTATIC_KERNEL affect the boot kernel?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ r58472@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,27 +27,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 04/24/2013 07:28:18 PM, Zhao Chenhui wrote:
+> On Wed, Apr 24, 2013 at 05:38:16PM -0500, Scott Wood wrote:
+> > On 04/24/2013 06:29:29 AM, Zhao Chenhui wrote:
+> > >On Tue, Apr 23, 2013 at 07:04:06PM -0500, Scott Wood wrote:
+> > >> On 04/19/2013 05:47:45 AM, Zhao Chenhui wrote:
+> > >> >From: Chen-Hui Zhao <chenhui.zhao@freescale.com>
+> > >> >
+> > >> >For e6500, two threads in one core share one time base. Just =20
+> need
+> > >> >to do time base sync on first thread of one core, and skip it on
+> > >> >the other thread.
+> > >> >
+> > >> >Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+> > >> >Signed-off-by: Li Yang <leoli@freescale.com>
+> > >> >Signed-off-by: Andy Fleming <afleming@freescale.com>
+> > >> >---
+> > >> > arch/powerpc/platforms/85xx/smp.c |   52
+> > >> >+++++++++++++++++++++++++++++++-----
+> > >> > 1 files changed, 44 insertions(+), 8 deletions(-)
+> > >> >
+> > >> >diff --git a/arch/powerpc/platforms/85xx/smp.c
+> > >> >b/arch/powerpc/platforms/85xx/smp.c
+> > >> >index 74d8cde..5f3eee3 100644
+> > >> >--- a/arch/powerpc/platforms/85xx/smp.c
+> > >> >+++ b/arch/powerpc/platforms/85xx/smp.c
+> > >> >@@ -53,26 +55,40 @@ static inline u32 get_phy_cpu_mask(void)
+> > >> > 	u32 mask;
+> > >> > 	int cpu;
+> > >> >
+> > >> >-	mask =3D 1 << cur_booting_core;
+> > >> >-	for_each_online_cpu(cpu)
+> > >> >-		mask |=3D 1 << get_hard_smp_processor_id(cpu);
+> > >> >+	if (smt_capable()) {
+> > >> >+		/* two threads in one core share one time base =20
+> */
+> > >> >+		mask =3D 1 << =20
+> cpu_core_index_of_thread(cur_booting_core);
+> > >> >+		for_each_online_cpu(cpu)
+> > >> >+			mask |=3D 1 << cpu_core_index_of_thread(
+> > >> >+					=20
+> get_hard_smp_processor_id(cpu));
+> > >> >+	} else {
+> > >> >+		mask =3D 1 << cur_booting_core;
+> > >> >+		for_each_online_cpu(cpu)
+> > >> >+			mask |=3D 1 << =20
+> get_hard_smp_processor_id(cpu);
+> > >> >+	}
+> > >>
+> > >> Where is smt_capable defined()?  I assume somewhere in the =20
+> patchset
+> > >> but it's a pain to search 12 patches...
+> > >>
+> > >
+> > >It is defined in arch/powerpc/include/asm/topology.h.
+> > >	#define smt_capable()           (cpu_has_feature(CPU_FTR_SMT))
+> > >
+> > >Thanks for your review again.
+> >
+> > We shouldn't base it on CPU_FTR_SMT.  For example, e6500 doesn't
+> > claim that feature yet, except in our SDK kernel.  That doesn't
+> > change the topology of CPU numbering.
+> >
+>=20
+> Then, where can I get the thread information? dts?
+> Or, wait for upstream of the thread suppport of e6500.
 
-Hi,
+It's an inherent property of e6500 (outside of some virtualization =20
+scenarios, but you wouldn't run this code under a hypervisor) that you =20
+have two threads per core (whether Linux uses them or not).  Or you =20
+could read TMCFG0[NTHRD] if you know you're on a chip that has TMRs but =20
+aren't positive it's an e6500, but I wouldn't bother.  If we do ever =20
+have such a chip, there are probably other things that will need =20
+updating.
 
-Looking at the kdump code for powerpc, I see that if 
-CONFIG_NONSTATIC_KERNEL is not set then the load address for the capture 
-kernel is fixed at 32MB.
+> > >static inline u32 get_phy_cpu_mask(void)
+> > >{
+> > >	u32 mask;
+> > >	int cpu;
+> > >
+> > >	mask =3D 1 << cpu_core_index_of_thread(cur_booting_core);
+> > >	for_each_online_cpu(cpu)
+> > >		mask |=3D 1 << cpu_core_index_of_thread(
+> > >				get_hard_smp_processor_id(cpu));
+> > >
+> > >	return mask;
+> > >}
+> >
+> > Likewise, this will get it wrong if SMT is disabled or not yet
+> > implemented on a core.
+> >
+> > -Scott
+>=20
+> Let's look into cpu_core_index_of_thread() in =20
+> arch/powerpc/kernel/smp.c.
+>=20
+>   int cpu_core_index_of_thread(int cpu)
+>   {
+>       return cpu >> threads_shift;
+>   }
+>=20
+> If no thread, the threads_shift is equal to 0. It can work with no
+> thread.
 
-Why is this?
+My point is that if threads are disabled, threads_shift will be 0, but =20
+e6500 cores will still be numbered 0, 2, 4, etc.
 
-When using a separate capture kernel I don't see why that should 
-restrict where I allocate space in the boot kernel.
+> Perhaps, I should submit this patch after the thread patches for =20
+> e6500.
 
-Chris
+Why?
 
--- 
-
-Chris Friesen
-Software Designer
-
-500 Palladium Drive, Suite 2100
-Ottawa, Ontario K2N 1C2, Canada
-www.genband.com
-office:+1.343.883.2717
-chris.friesen@genband.com
+-Scott=
