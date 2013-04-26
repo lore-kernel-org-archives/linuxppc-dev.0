@@ -1,26 +1,21 @@
-Return-Path: <B38951@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5AE222C0113
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2013 12:41:28 +1000 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: RE: [PATCH 1/2] powerpc: Move opcode definitions from kvm/emulate.c
- to asm/ppc-opcode.h
-Date: Fri, 26 Apr 2013 02:40:36 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01C4C229@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1366684776-10946-1-git-send-email-hongtao.jia@freescale.com>
- <20130423052951.GB20902@concordia>
- <412C8208B4A0464FA894C5F0C278CD5D01C4A4B0@039-SN1MPN1-002.039d.mgd.msft.net>
- <1366777161.2869.0.camel@pasglop>
-In-Reply-To: <1366777161.2869.0.camel@pasglop>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id DFA7A2C011D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2013 13:01:47 +1000 (EST)
+Date: Fri, 26 Apr 2013 13:01:40 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Subject: Re: [PATCH v4 2/13] Correct buffer parsing in update_dt_node()
+Message-Id: <20130426130140.bcde757c4321d198e578cda9@canb.auug.org.au>
+In-Reply-To: <5177FF10.4000508@linux.vnet.ibm.com>
+References: <5177FB74.2050709@linux.vnet.ibm.com>
+ <5177FF10.4000508@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Fri__26_Apr_2013_13_01_40_+1000_5dndtg=9bGz.4/C_"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,27 +25,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmVuamFtaW4gSGVycmVu
-c2NobWlkdCBbbWFpbHRvOmJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZ10NCj4gU2VudDogV2VkbmVz
-ZGF5LCBBcHJpbCAyNCwgMjAxMyAxMjoxOSBQTQ0KPiBUbzogSmlhIEhvbmd0YW8tQjM4OTUxDQo+
-IENjOiBNaWNoYWVsIEVsbGVybWFuOyBXb29kIFNjb3R0LUIwNzQyMTsgbGludXhwcGMtZGV2QGxp
-c3RzLm96bGFicy5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCAxLzJdIHBvd2VycGM6IE1vdmUg
-b3Bjb2RlIGRlZmluaXRpb25zIGZyb20NCj4ga3ZtL2VtdWxhdGUuYyB0byBhc20vcHBjLW9wY29k
-ZS5oDQo+IA0KPiBPbiBUdWUsIDIwMTMtMDQtMjMgYXQgMDY6MzYgKzAwMDAsIEppYSBIb25ndGFv
-LUIzODk1MSB3cm90ZToNCj4gPiBUaGVzZSBkZWZpbml0aW9ucyBhcmUgZmlyc3RseSB1c2VkIGJ5
-IEtWTSBkZWZpbmVkIGxpa2UgT1BfMzFfWE9QX1RSQVAuDQo+ID4gVHdvIHdheXMgdG8gZXh0cmFj
-dCB0aGVzZSBkZWZpbml0aW9ucyBmb3IgcHVibGljIHVzZToNCj4gPg0KPiA+IDEuIExpa2UgdGhp
-cyBwYXRjaCBkaWQuIEZvciBrZWVwaW5nIHRoZSBLVk0gY29kZSB0aGF0IHVzaW5nIHRoZXNlDQo+
-ID4gICAgZGVmaW5pdGlvbnMgdW5jaGFuZ2VkIHdlIGRvIG5vdCB1cGRhdGUgdGhlbSB0byBtYXRj
-aC4NCj4gPg0KPiA+IDIuIE1vdmUgdGhlc2UgZGVmaW5pdGlvbnMgdG8gYW5vdGhlciAuaCBmaWxl
-IGxpa2UgbXkgbGFzdCBwYXRjaCBkaWQ6DQo+ID4gICAgaHR0cDovL3BhdGNod29yay5vemxhYnMu
-b3JnL3BhdGNoLzIzNTY0Ni8NCj4gPiAgICBZb3UgY2FuIHNlZSB0aGUgY29tbWVudHMgdGhlcmUu
-DQo+IA0KPiBUaGVyZSdzIGEgYmV0dGVyIHdheSAuLi4gYnV0IGl0J3MgbW9yZSB3b3JrLg0KPiAN
-Cj4gQWxsIG9wY29kZXMgYXJlIGJhc2VkIG9uIGEgcHJpbWFyeSBvcGNvZGUgYW5kIGEgcG90ZW50
-aWFsIHNlY29uZGFyeQ0KPiBvcGNvZGUuIFlvdSBjb3VsZC9zaG91bGQgcmV3b3JrIHBwYy1vcGNv
-ZGVzLmggdG8gaW4gZmFjdCBkZWZpbmUgdGhlbQ0KPiBhbGwgdGhhdCB3YXkgYXMgd2VsbCwgd2hp
-Y2ggd291bGQgInJlY29uY2lsZSIgdGhlIEtWTSB3YXkgYW5kIHRoZQ0KPiBleGlzdGluZyBzdHVm
-Zi4NCj4gDQo+IENoZWVycywNCj4gQmVuLg0KPiANCg0KQWdyZWUuIEJ1dCBJJ20gYWZyYWlkIHRv
-IHNheSB0aGF0IEknbSB0b28gYnVzeSB0byBkbyB0aGlzICJtb3JlIHdvcmsiDQpyaWdodCBub3cu
-IENvdWxkIHdlIGRlZmVyIHRoaXMgd29yayBmb3Igc29tZSB0aW1lPw0KDQpUaGFua3MuDQotIEhv
-bmd0YW8NCg==
+--Signature=_Fri__26_Apr_2013_13_01_40_+1000_5dndtg=9bGz.4/C_
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Nathan,
+
+
+On Wed, 24 Apr 2013 10:49:36 -0500 Nathan Fontenot <nfont@linux.vnet.ibm.co=
+m> wrote:
+>
+> @@ -134,6 +134,7 @@
+>  	char *prop_data;
+>  	char *rtas_buf;
+>  	int update_properties_token;
+> +	u32 vd;
+> =20
+>  	update_properties_token =3D rtas_token("ibm,update-properties");
+>  	if (update_properties_token =3D=3D RTAS_UNKNOWN_SERVICE)
+> @@ -160,13 +161,24 @@
+> =20
+>  		prop_data =3D rtas_buf + sizeof(*upwa);
+> =20
+> -		for (i =3D 0; i < upwa->nprops; i++) {
+> +		/* The first element of the buffer is the path of the node
+> +		 * being updated in the form of a 8 byte string length
+                                                    ^^^^
+"bit" ?
+
+> +		 * followed by the string. Skip past this to get to the
+> +		 * properties being updated.
+> +		 */
+> +		vd =3D *prop_data++;
+> +		prop_data +=3D vd;
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Fri__26_Apr_2013_13_01_40_+1000_5dndtg=9bGz.4/C_
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJRee4UAAoJEECxmPOUX5FE1Q0P/AhSLKJsEXYkgwgavMVZr0cr
+JuHqhrc/sySCep+GYWKQPi/7E4OahOLVfEKCZTy1HD6h6bKPACLgonDNsiNk5XFt
+tDRF6Q1buaBG9HkB5w9NZkvcd/tH2AplrEGN7tE0oT0Gu42qZmiFgA4eawFCPfoK
+z60dtkOpGrjFDdsRXKy2geA6Vf6CkvwP7Z5QJ1x4O+DyKGOMLWNRgp8fmpxxOg/T
+7FWg6lJRbMh5ZpxVXIucBoFmQ9dcUOalTfi7vQU74NDxbaQ83cGr/cgqZ0UMsQnA
+j/zkTRON6CC2ztYDDYC95khnC17QcsPCyOmt6ynIx7TCQRFqcVhNGRyy7DrnKOtS
+RZ84U3v8e0Sq7OAOKGl5lbrPIqLQ8DSPMu7Zydr+YKziJDKpmLDcOEruNsyt3M+i
+UGaAfSAaed+0Dhcz8BdbWxUbZbTlHrm02JlOq0mxbTQf5YV9Dw7RACQfQbZYGWBY
+U2DbUXcLBMfENDC+P373rPsQgYvE5U5ULqlH+n9gQBBugOLu9Ib7pDDFMrHNcnqd
+ItUzm4K+QoeIIYHV7LFt4qc9BOgbLDEw0j48+c6omsj/Uo/SRlEsuFpC22PHzsz4
++Bxy7n2Yx7rPXt7S9O2cdKpXgcinMlO0XeDdVtYNtyJKCJFVXobcNOONAHdaXkbt
+6OJaoqeN4TkoY7YtIl9Q
+=+SCc
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__26_Apr_2013_13_01_40_+1000_5dndtg=9bGz.4/C_--
