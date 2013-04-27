@@ -1,26 +1,36 @@
-Return-Path: <B38951@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5F65A2C00FA
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2013 12:26:39 +1000 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>, Segher Boessenkool
- <segher@kernel.crashing.org>
-Subject: RE: [PATCH 2/2 V7] powerpc/85xx: Add machine check handler to fix
- PCIe erratum on mpc85xx
-Date: Sat, 27 Apr 2013 02:26:26 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01C4C76D@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1366684776-10946-1-git-send-email-hongtao.jia@freescale.com>
- <1366684776-10946-2-git-send-email-hongtao.jia@freescale.com>
- <CA5B8197-1A55-4E6E-AE0C-CD015D97EC83@kernel.crashing.org>
- <1366909096.30341.3@snotra>
-In-Reply-To: <1366909096.30341.3@snotra>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <chen.gang.flying.transformer@gmail.com>
+Received: from mail-pb0-x22c.google.com (mail-pb0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c01::22c])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BA7372C00F9
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2013 19:29:51 +1000 (EST)
+Received: by mail-pb0-f44.google.com with SMTP id wz17so1405649pbc.17
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2013 02:29:49 -0700 (PDT)
+Message-ID: <517B9A4D.1020502@gmail.com>
+Date: Sat, 27 Apr 2013 17:28:45 +0800
+From: Chen Gang F T <chen.gang.flying.transformer@gmail.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2] PowerPC: kernel: compiling issue, make additional
+ room in exception vector area
+References: <5177965D.9090406@linux.vnet.ibm.com>
+ <20130424083142.GB26834@concordia> <51779941.8080403@linux.vnet.ibm.com>
+ <30651.1366799858@ale.ozlabs.ibm.com> <1366807638.5911.2.camel@localhost>
+ <5178816D.3000309@asianux.com> <5178ABA2.4030109@linux.vnet.ibm.com>
+ <20130425062539.GA421@iris.ozlabs.ibm.com> <517918AB.4020508@asianux.com>
+ <30269.1366931768@ale.ozlabs.ibm.com> <5179D302.9060203@asianux.com>
+ <5179D5D8.8080102@asianux.com> <5179DA23.8000407@asianux.com>
+ <5179E056.2000709@linux.vnet.ibm.com> <5179E11F.8010007@asianux.com>
+ <5179EFB6.3090602@linux.vnet.ibm.com> <5179F39C.5020408@asianux.com>
+ <5179F7B8.5010701@asianux.com> <5179FA8E.9090501@linux.vnet.ibm.com>
+In-Reply-To: <5179FA8E.9090501@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: sfr@canb.auug.org.au, Michael Neuling <mikey@neuling.org>, matt@ozlabs.org,
+ Chen Gang <gang.chen@asianux.com>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,29 +40,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Friday, April 26, 2013 12:58 AM
-> To: Segher Boessenkool
-> Cc: Jia Hongtao-B38951; linuxppc-dev@lists.ozlabs.org;
-> galak@kernel.crashing.org; Wood Scott-B07421
-> Subject: Re: [PATCH 2/2 V7] powerpc/85xx: Add machine check handler to
-> fix PCIe erratum on mpc85xx
->=20
-> On 04/25/2013 10:31:51 AM, Segher Boessenkool wrote:
-> >> * Remove A variant of load instruction emulation
-> >
-> > Why is this?  You handle all other simple load insns, there is nothing
-> > special about LHA.  (I reviewed the V4 email thread, no reason for the
-> > chance is given there).
->=20
-> The LHA implementation in V5 was incorrect (didn't sign-extend).
->=20
-> -Scott
+On 2013年04月26日 11:54, Mike Qiu wrote:
+> 于 2013/4/26 11:42, Chen Gang 写道:
+>> On 2013年04月26日 11:25, Chen Gang wrote:
+>>> On 2013年04月26日 11:08, Mike Qiu wrote:
+>>>> 于 2013/4/26 10:06, Chen Gang 写道:
+>>>>> On 2013年04月26日 10:03, Mike Qiu wrote:
+>>>>>> �� 2013/4/26 9:36, Chen Gang д��:
+>>>>>>>> On 2013��04��26�� 09:18, Chen Gang wrote:
+>>>>>>>>>> On 2013��04��26�� 09:06, Chen Gang wrote:
+>>>>>>>>>>>>>> CFAR is the Come From Register.  It saves the location of the
+>>>>>>>>>>>>>> last
+>>>>>>>>>>>>>>>> branch and is hence overwritten by any branch.
+>>>>>>>>>>>>>>>>
+>>>>>>>>>>>> Do we process it just like others done (e.g. 0x300, 0xe00,
+>>>>>>>>>>>> 0xe20 ...) ?
+>>>>>>>>>>>>      . = 0x900
+>>>>>>>>>>>>      .globl decrementer_pSeries
+>>>>>>>>>>>> decrementer_pSeries:
+>>>>>>>>>>>>        HMT_MEDIUM_PPR_DISCARD
+>>>>>>>>>>>>      SET_SCRATCH0(r13)
+>>>>>>>>>>>>      b decrementer_pSeries_0
+>>>>>>>>>>>>
+>>>>>>>>>>>>      ...
+>>>>>>>>>>>>
+>>>>>>>>>>>>
+>>>>>>>> Oh, it seems EXCEPTION_PROLOG_1 will save the regesters which
+>>>>>>>> related
+>>>>>>>> with CFAR, so I think need move EXCEPTION_PROLOG_1 to near 0x900.
+>>>>>> I will try your diff V2, to see if the machine can boot up
+>>>>> OK, thanks. (hope it can work)
+>>>> It seems that the machine can be bootup in powernv mode, but I'm not
+>>>> sure if my machine call that module.
+>>>>
+>>>> At lease my machine can boot up
+>> Please reference commit number: 1707dd161349e6c54170c88d94fed012e3d224e3
+>> (1707dd1 powerpc: Save CFAR before branching in interrupt entry paths)
+>>
+>> What our diff v2 has done is just the fix for our patch v2 (just like
+>> the commit 1707dd1 has done).
+>>
+>> Please check, thanks.
+>>
+>> :-)
+> I will check this evening or tomorrow, I have something else to do this
+> afteroon.
 
-In former email you doubt whether we need A variant or not.
-Any particular reason for that?
-If not should I emulate all the A ARX AU AUX and AX variant?
+I think the diff v2 is correct, but is not the best one for this issue.
+
+I prefer the Paul's patch for this issue which has better performance
+
+:-)
+
 
 Thanks.
--Hongtao.
+
+-- 
+Chen Gang
+
+Flying Transformer
