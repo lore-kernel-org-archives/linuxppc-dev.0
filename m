@@ -1,31 +1,31 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 413542C00C2
+ (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4C0052C00C4
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 05:37:52 +1000 (EST)
 Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 29 Apr 2013 01:02:23 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id AAB48125805A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 01:09:25 +0530 (IST)
+ Mon, 29 Apr 2013 01:02:46 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 3A290E0059
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 01:09:56 +0530 (IST)
 Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3SJbcXp59310178
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 01:07:39 +0530
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3SJbgWx11469190
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 01:07:42 +0530
 Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
  by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3SJbh0C002980
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 05:37:44 +1000
+ r3SJbkSA003316
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 05:37:47 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, dwg@au1.ibm.com,
  linux-mm@kvack.org
-Subject: [PATCH -V7 01/18] mm/THP: HPAGE_SHIFT is not a #define on some arch
-Date: Mon, 29 Apr 2013 01:07:22 +0530
-Message-Id: <1367177859-7893-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V7 17/18] powerpc: Print page size info during boot
+Date: Mon, 29 Apr 2013 01:07:38 +0530
+Message-Id: <1367177859-7893-18-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1367177859-7893-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1367177859-7893-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -41,69 +41,41 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-On archs like powerpc that support different hugepage sizes, HPAGE_SHIFT
-and other derived values like HPAGE_PMD_ORDER are not constants. So move
-that to hugepage_init
+This gives hint about different base and actual page size combination
+supported by the platform.
 
-Reviewed-by: Andrea Arcangeli <aarcange@redhat.com>
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- include/linux/huge_mm.h | 3 ---
- mm/huge_memory.c        | 9 ++++++---
- 2 files changed, 6 insertions(+), 6 deletions(-)
+ arch/powerpc/mm/hash_utils_64.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/include/linux/huge_mm.h b/include/linux/huge_mm.h
-index ee1c244..bdc5aef 100644
---- a/include/linux/huge_mm.h
-+++ b/include/linux/huge_mm.h
-@@ -119,9 +119,6 @@ extern void __split_huge_page_pmd(struct vm_area_struct *vma,
- 	} while (0)
- extern void split_huge_page_pmd_mm(struct mm_struct *mm, unsigned long address,
- 		pmd_t *pmd);
--#if HPAGE_PMD_ORDER > MAX_ORDER
--#error "hugepages can't be allocated by the buddy allocator"
--#endif
- extern int hugepage_madvise(struct vm_area_struct *vma,
- 			    unsigned long *vm_flags, int advice);
- extern void __vma_adjust_trans_huge(struct vm_area_struct *vma,
-diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-index e2f7f5aa..78bd84f 100644
---- a/mm/huge_memory.c
-+++ b/mm/huge_memory.c
-@@ -45,7 +45,7 @@ unsigned long transparent_hugepage_flags __read_mostly =
- 	(1<<TRANSPARENT_HUGEPAGE_USE_ZERO_PAGE_FLAG);
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 33cdc3a..d0eb6d4 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -316,7 +316,7 @@ static int __init htab_dt_scan_page_sizes(unsigned long node,
+ 	prop = (u32 *)of_get_flat_dt_prop(node,
+ 					  "ibm,segment-page-sizes", &size);
+ 	if (prop != NULL) {
+-		DBG("Page sizes from device-tree:\n");
++		pr_info("Page sizes from device-tree:\n");
+ 		size /= 4;
+ 		cur_cpu_spec->mmu_features &= ~(MMU_FTR_16M_PAGE);
+ 		while(size > 0) {
+@@ -370,10 +370,10 @@ static int __init htab_dt_scan_page_sizes(unsigned long node,
+ 					       "shift=%d\n", base_shift, shift);
  
- /* default scan 8*512 pte (or vmas) every 30 second */
--static unsigned int khugepaged_pages_to_scan __read_mostly = HPAGE_PMD_NR*8;
-+static unsigned int khugepaged_pages_to_scan __read_mostly;
- static unsigned int khugepaged_pages_collapsed;
- static unsigned int khugepaged_full_scans;
- static unsigned int khugepaged_scan_sleep_millisecs __read_mostly = 10000;
-@@ -60,7 +60,7 @@ static DECLARE_WAIT_QUEUE_HEAD(khugepaged_wait);
-  * it would have happened if the vma was large enough during page
-  * fault.
-  */
--static unsigned int khugepaged_max_ptes_none __read_mostly = HPAGE_PMD_NR-1;
-+static unsigned int khugepaged_max_ptes_none __read_mostly;
- 
- static int khugepaged(void *none);
- static int khugepaged_slab_init(void);
-@@ -620,11 +620,14 @@ static int __init hugepage_init(void)
- 	int err;
- 	struct kobject *hugepage_kobj;
- 
--	if (!has_transparent_hugepage()) {
-+	if (!has_transparent_hugepage() || (HPAGE_PMD_ORDER > MAX_ORDER)) {
- 		transparent_hugepage_flags = 0;
- 		return -EINVAL;
- 	}
- 
-+	khugepaged_pages_to_scan = HPAGE_PMD_NR*8;
-+	khugepaged_max_ptes_none = HPAGE_PMD_NR-1;
-+
- 	err = hugepage_init_sysfs(&hugepage_kobj);
- 	if (err)
- 		return err;
+ 				def->penc[idx] = penc;
+-				DBG(" %d: shift=%02x, sllp=%04lx, "
+-				    "avpnm=%08lx, tlbiel=%d, penc=%d\n",
+-				    idx, shift, def->sllp, def->avpnm,
+-				    def->tlbiel, def->penc[idx]);
++				pr_info("base_shift=%d: shift=%d, sllp=0x%04lx,"
++					" avpnm=0x%08lx, tlbiel=%d, penc=%d\n",
++					base_shift, shift, def->sllp,
++					def->avpnm, def->tlbiel, def->penc[idx]);
+ 			}
+ 		}
+ 		return 1;
 -- 
 1.8.1.2
