@@ -1,31 +1,32 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E77D12C00BF
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 05:37:51 +1000 (EST)
+ (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3CAC12C00C0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 05:37:52 +1000 (EST)
 Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 29 Apr 2013 01:04:10 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 88B20E0055
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 01:09:56 +0530 (IST)
+ Mon, 29 Apr 2013 01:02:24 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 27FA9E0055
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 01:09:54 +0530 (IST)
 Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3SJbfc461210826
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3SJbeqo12583180
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 01:07:41 +0530
 Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
  by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3SJbknd003331
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 05:37:47 +1000
+ r3SJbi3k003022
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 05:37:44 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, dwg@au1.ibm.com,
  linux-mm@kvack.org
-Subject: [PATCH -V7 18/18] powerpc: Update tlbie/tlbiel as per ISA doc
-Date: Mon, 29 Apr 2013 01:07:39 +0530
-Message-Id: <1367177859-7893-19-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V7 03/18] mm/THP: withdraw the pgtable after pmdp related
+ operations
+Date: Mon, 29 Apr 2013 01:07:24 +0530
+Message-Id: <1367177859-7893-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1367177859-7893-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1367177859-7893-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -41,82 +42,36 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-Encode the actual page correctly in tlbie/tlbiel. This make sure we handle
-multiple page size segment correctly.
+For architectures like ppc64 we look at deposited pgtable when
+calling pmdp_get_and_clear. So do the pgtable_trans_huge_withdraw
+after finishing pmdp related operations.
 
+Reviewed-by: Andrea Arcangeli <aarcange@redhat.com>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/hash_native_64.c | 32 ++++++++++++++++++++++++++++++--
- 1 file changed, 30 insertions(+), 2 deletions(-)
+ mm/huge_memory.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
-index bb920ee..6a2aead 100644
---- a/arch/powerpc/mm/hash_native_64.c
-+++ b/arch/powerpc/mm/hash_native_64.c
-@@ -61,7 +61,10 @@ static inline void __tlbie(unsigned long vpn, int psize, int apsize, int ssize)
- 
- 	switch (psize) {
- 	case MMU_PAGE_4K:
-+		/* clear out bits after (52) [0....52.....63] */
-+		va &= ~((1ul << (64 - 52)) - 1);
- 		va |= ssize << 8;
-+		va |= mmu_psize_defs[apsize].sllp << 6;
- 		asm volatile(ASM_FTR_IFCLR("tlbie %0,0", PPC_TLBIE(%1,%0), %2)
- 			     : : "r" (va), "r"(0), "i" (CPU_FTR_ARCH_206)
- 			     : "memory");
-@@ -69,9 +72,20 @@ static inline void __tlbie(unsigned long vpn, int psize, int apsize, int ssize)
- 	default:
- 		/* We need 14 to 14 + i bits of va */
- 		penc = mmu_psize_defs[psize].penc[apsize];
--		va &= ~((1ul << mmu_psize_defs[psize].shift) - 1);
-+		va &= ~((1ul << mmu_psize_defs[apsize].shift) - 1);
- 		va |= penc << 12;
- 		va |= ssize << 8;
-+		/* Add AVAL part */
-+		if (psize != apsize) {
-+			/*
-+			 * MPSS, 64K base page size and 16MB parge page size
-+			 * We don't need all the bits, but rest of the bits
-+			 * must be ignored by the processor.
-+			 * vpn cover upto 65 bits of va. (0...65) and we need
-+			 * 58..64 bits of va.
-+			 */
-+			va |= (vpn & 0xfe);
-+		}
- 		va |= 1; /* L */
- 		asm volatile(ASM_FTR_IFCLR("tlbie %0,1", PPC_TLBIE(%1,%0), %2)
- 			     : : "r" (va), "r"(0), "i" (CPU_FTR_ARCH_206)
-@@ -96,16 +110,30 @@ static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
- 
- 	switch (psize) {
- 	case MMU_PAGE_4K:
-+		/* clear out bits after(52) [0....52.....63] */
-+		va &= ~((1ul << (64 - 52)) - 1);
- 		va |= ssize << 8;
-+		va |= mmu_psize_defs[apsize].sllp << 6;
- 		asm volatile(".long 0x7c000224 | (%0 << 11) | (0 << 21)"
- 			     : : "r"(va) : "memory");
- 		break;
- 	default:
- 		/* We need 14 to 14 + i bits of va */
- 		penc = mmu_psize_defs[psize].penc[apsize];
--		va &= ~((1ul << mmu_psize_defs[psize].shift) - 1);
-+		va &= ~((1ul << mmu_psize_defs[apsize].shift) - 1);
- 		va |= penc << 12;
- 		va |= ssize << 8;
-+		/* Add AVAL part */
-+		if (psize != apsize) {
-+			/*
-+			 * MPSS, 64K base page size and 16MB parge page size
-+			 * We don't need all the bits, but rest of the bits
-+			 * must be ignored by the processor.
-+			 * vpn cover upto 65 bits of va. (0...65) and we need
-+			 * 58..64 bits of va.
-+			 */
-+			va |= (vpn & 0xfe);
-+		}
- 		va |= 1; /* L */
- 		asm volatile(".long 0x7c000224 | (%0 << 11) | (1 << 21)"
- 			     : : "r"(va) : "memory");
+diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+index 84f3180..21c5ebd 100644
+--- a/mm/huge_memory.c
++++ b/mm/huge_memory.c
+@@ -1363,9 +1363,15 @@ int zap_huge_pmd(struct mmu_gather *tlb, struct vm_area_struct *vma,
+ 		struct page *page;
+ 		pgtable_t pgtable;
+ 		pmd_t orig_pmd;
+-		pgtable = pgtable_trans_huge_withdraw(tlb->mm, pmd);
++		/*
++		 * For architectures like ppc64 we look at deposited pgtable
++		 * when calling pmdp_get_and_clear. So do the
++		 * pgtable_trans_huge_withdraw after finishing pmdp related
++		 * operations.
++		 */
+ 		orig_pmd = pmdp_get_and_clear(tlb->mm, addr, pmd);
+ 		tlb_remove_pmd_tlb_entry(tlb, pmd, addr);
++		pgtable = pgtable_trans_huge_withdraw(tlb->mm, pmd);
+ 		if (is_huge_zero_pmd(orig_pmd)) {
+ 			tlb->mm->nr_ptes--;
+ 			spin_unlock(&tlb->mm->page_table_lock);
 -- 
 1.8.1.2
