@@ -2,7 +2,7 @@ Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4C0052C00C4
+ by ozlabs.org (Postfix) with ESMTPS id 48FF22C00C3
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 05:37:52 +1000 (EST)
 Received: from /spool/local
  by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
@@ -10,22 +10,22 @@ Received: from /spool/local
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
  Mon, 29 Apr 2013 01:02:46 +0530
 Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 3A290E0059
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 01:09:56 +0530 (IST)
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 3C686E0055
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 01:09:55 +0530 (IST)
 Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
  by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3SJbgWx11469190
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 01:07:42 +0530
+ r3SJbfEL52035678
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 01:07:41 +0530
 Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
  by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3SJbkSA003316
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 05:37:47 +1000
+ r3SJbihH003098
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 05:37:45 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, dwg@au1.ibm.com,
  linux-mm@kvack.org
-Subject: [PATCH -V7 17/18] powerpc: Print page size info during boot
-Date: Mon, 29 Apr 2013 01:07:38 +0530
-Message-Id: <1367177859-7893-18-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V7 07/18] powerpc: Don't truncate pgd_index wrongly
+Date: Mon, 29 Apr 2013 01:07:28 +0530
+Message-Id: <1367177859-7893-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1367177859-7893-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1367177859-7893-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -41,41 +41,35 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-This gives hint about different base and actual page size combination
-supported by the platform.
+With PGD_INDEX_SIZE set to 12 the existing macro doesn't work. Fix it to
+use PTRS_PER_PGD
+
+The idea originally was to have one more bit in the result of
+pgd_index() than PGD_INDEX_SIZE, so that if one had an address
+corresponding to the last PGD entry, and then incremented that address
+by PGD_SIZE, and took pgd_index() of that, you wouldn't end up with
+zero.  The commit that introduced that dates back to 2002, and the
+code that was sensitive to that edge case has long since been
+refactored (several times), so there is no need for it these days.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/hash_utils_64.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ arch/powerpc/include/asm/pgtable-ppc64.h | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 33cdc3a..d0eb6d4 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -316,7 +316,7 @@ static int __init htab_dt_scan_page_sizes(unsigned long node,
- 	prop = (u32 *)of_get_flat_dt_prop(node,
- 					  "ibm,segment-page-sizes", &size);
- 	if (prop != NULL) {
--		DBG("Page sizes from device-tree:\n");
-+		pr_info("Page sizes from device-tree:\n");
- 		size /= 4;
- 		cur_cpu_spec->mmu_features &= ~(MMU_FTR_16M_PAGE);
- 		while(size > 0) {
-@@ -370,10 +370,10 @@ static int __init htab_dt_scan_page_sizes(unsigned long node,
- 					       "shift=%d\n", base_shift, shift);
+diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
+index 0182c20..e3d55f6f 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc64.h
++++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+@@ -167,8 +167,7 @@
+  * Find an entry in a page-table-directory.  We combine the address region
+  * (the high order N bits) and the pgd portion of the address.
+  */
+-/* to avoid overflow in free_pgtables we don't use PTRS_PER_PGD here */
+-#define pgd_index(address) (((address) >> (PGDIR_SHIFT)) & 0x1ff)
++#define pgd_index(address) (((address) >> (PGDIR_SHIFT)) & (PTRS_PER_PGD - 1))
  
- 				def->penc[idx] = penc;
--				DBG(" %d: shift=%02x, sllp=%04lx, "
--				    "avpnm=%08lx, tlbiel=%d, penc=%d\n",
--				    idx, shift, def->sllp, def->avpnm,
--				    def->tlbiel, def->penc[idx]);
-+				pr_info("base_shift=%d: shift=%d, sllp=0x%04lx,"
-+					" avpnm=0x%08lx, tlbiel=%d, penc=%d\n",
-+					base_shift, shift, def->sllp,
-+					def->avpnm, def->tlbiel, def->penc[idx]);
- 			}
- 		}
- 		return 1;
+ #define pgd_offset(mm, address)	 ((mm)->pgd + pgd_index(address))
+ 
 -- 
 1.8.1.2
