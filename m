@@ -1,19 +1,12 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.pcug.org.au [203.10.76.10])
- by ozlabs.org (Postfix) with ESMTP id 994742C00BF
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 11:35:45 +1000 (EST)
-Date: Mon, 29 Apr 2013 11:35:40 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Subject: linux-next: manual merge of the vfs tree with the powerpc tree
-Message-Id: <20130429113540.55b2593d303bc2a9142919fc@canb.auug.org.au>
+Return-Path: <anton@samba.org>
+Date: Mon, 29 Apr 2013 11:52:00 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH] powerpc: Align p_toc
+Message-ID: <20130429115200.41aaf848@kryten>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Mon__29_Apr_2013_11_35_40_+1000_7twd2=FMfYKT3uPf"
-Cc: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- David Howells <dhowells@redhat.com>, linux-next@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,79 +16,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Mon__29_Apr_2013_11_35_40_+1000_7twd2=FMfYKT3uPf
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Al,
+p_toc is an 8 byte relative offset to the TOC that we place in the
+text section. This means it is only 4 byte aligned where it should
+be 8 byte aligned. Add an explicit alignment.
 
-Today's linux-next merge of the vfs tree got a conflict in
-arch/powerpc/kernel/rtas_flash.c between commit ad18a364f186
-("powerpc/rtas_flash: Free kmem upon module exit"),  from the powerpc
-tree and commit 5c0333c00ff6 ("ppc: Clean up rtas_flash driver somewhat")
-from the vfs tree.
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
-I fixed it up (see below) and can carry the fix as necessary (no action
-is required).
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --cc arch/powerpc/kernel/rtas_flash.c
-index a3e4034,8196bfb..0000000
---- a/arch/powerpc/kernel/rtas_flash.c
-+++ b/arch/powerpc/kernel/rtas_flash.c
-@@@ -806,20 -740,17 +758,22 @@@ enomem_buf
- =20
-  static void __exit rtas_flash_cleanup(void)
-  {
-+ 	int i;
-+=20
-  	rtas_flash_term_hook =3D NULL;
- =20
- +	if (rtas_firmware_flash_list) {
- +		free_flash_list(rtas_firmware_flash_list);
- +		rtas_firmware_flash_list =3D NULL;
- +	}
- +
-- 	if (flash_block_cache)
-- 		kmem_cache_destroy(flash_block_cache);
-+ 	for (i =3D 0; i < ARRAY_SIZE(rtas_flash_files); i++) {
-+ 		const struct rtas_flash_file *f =3D &rtas_flash_files[i];
-+ 		remove_proc_entry(f->filename, NULL);
-+ 	}
- =20
-- 	remove_flash_pde(firmware_flash_pde);
-- 	remove_flash_pde(firmware_update_pde);
-- 	remove_flash_pde(validate_pde);
-- 	remove_flash_pde(manage_pde);
-+ 	kmem_cache_destroy(flash_block_cache);
-+ 	kfree(rtas_validate_flash_data.buf);
-  }
- =20
-  module_init(rtas_flash_init);
-
---Signature=_Mon__29_Apr_2013_11_35_40_+1000_7twd2=FMfYKT3uPf
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBCAAGBQJRfc5sAAoJEECxmPOUX5FEwY8P/3/NCSy0xC1uFbWmhOhyh4uo
-bTeoLBIw67kh6HUQYimQm/vcAofREmoLVNTu8rkQ6XlGE/ZtRWqLsQQ2tujwgDHq
-LniVT38GqlfQyI+Ze2KlQJpxk3mJGyKgUHVMhzoDYLdSkDMCJp0a+lA2Ze9QY/Pc
-OyeaH38Qqu99U7vLJAIFUEhaA7BPs7byXIRa2AZ8j9Qgx941No+uzcQRNOjfU6yn
-yR2G9gfIghZpWOligNmlIKgyGqvQS9iPR1JHtSl572GgCZroycyDGle6VnqDR3k1
-ZEmoD5GJT4bRME8hhL70zEvRfazKTWcaREprx+g2yaxCR7uiDG579AXi4xWsWSRC
-zV/qF5eHuy1dUw+X6VQCi5a4lcAD1O4iChYP5x+Jf7LN3GiPvr6TBuYiCT0v7HD+
-27odo0HX49S5kOSW837tYCbXTHIffAYU7Te9uu39nCJTXnkBOXvnPj2EKSYSugM5
-7m47PDiZsKOn9NBnvkmlYKiDYuHso9F0c6aTwAtpvUAW65Sko65yUvExzCF+dkrj
-AgoEPDv6kTcCv1Xw5pi+ycrQuJrW+QZEai9apu+r6j7dfZziqGcKS29lYOwf8uWp
-MuF0XS5Hu2ixKCnw0ZIBzD0YtJDfYRNTHgyvij8TAkrc/d7m0pStcm0+SbbyC14b
-Gsle7wQ3FypJKPdzf1TK
-=1gIE
------END PGP SIGNATURE-----
-
---Signature=_Mon__29_Apr_2013_11_35_40_+1000_7twd2=FMfYKT3uPf--
+Index: b/arch/powerpc/kernel/head_64.S
+===================================================================
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -703,6 +703,7 @@ _GLOBAL(relative_toc)
+ 	mtlr	r0
+ 	blr
+ 
++.balign 8
+ p_toc:	.llong	__toc_start + 0x8000 - 0b
+ 
+ /*
