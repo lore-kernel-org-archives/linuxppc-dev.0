@@ -1,33 +1,14 @@
-Return-Path: <hegdevasant@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 94B712C00C1
- for <linuxppc-dev@ozlabs.org>; Mon, 29 Apr 2013 14:44:15 +1000 (EST)
-Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
- Mon, 29 Apr 2013 10:07:56 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 017DB125804E
- for <linuxppc-dev@ozlabs.org>; Mon, 29 Apr 2013 10:15:50 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3T4i3U460358824
- for <linuxppc-dev@ozlabs.org>; Mon, 29 Apr 2013 10:14:03 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3T4i9Tu026142
- for <linuxppc-dev@ozlabs.org>; Mon, 29 Apr 2013 14:44:09 +1000
-Subject: [PATCH] powerpc/rtas_flash: Fix bad memory access
+Return-Path: <alistair@popple.id.au>
+Received: from ipmail04.adl6.internode.on.net (ipmail04.adl6.internode.on.net
+ [IPv6:2001:44b8:8060:ff02:300:1:6:4])
+ by ozlabs.org (Postfix) with ESMTP id A99ED2C00A7
+ for <linuxppc-dev@ozlabs.org>; Mon, 29 Apr 2013 16:24:27 +1000 (EST)
+From: Alistair Popple <alistair@popple.id.au>
 To: linuxppc-dev@ozlabs.org
-From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Date: Mon, 29 Apr 2013 10:13:56 +0530
-Message-ID: <20130429044334.6828.34295.stgit@hegdevasant.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: paulus@samba.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc: Add an in memory udbg console
+Date: Mon, 29 Apr 2013 16:24:22 +1000
+Message-Id: <1367216662-16872-1-git-send-email-alistair@popple.id.au>
+Cc: Alistair Popple <alistair@popple.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,113 +18,187 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We use kmem_cache_alloc() to allocate memory to hold the new firmware
-which will be flashed. kmem_cache_alloc() calls rtas_block_ctor() to
-set memory to NULL. But these constructor is called only for newly
-allocated slabs.
+This patch adds a new udbg early debug console which utilises
+statically defined input and output buffers stored within the kernel
+BSS. It is primarily designed to assist with bring up of new hardware
+which may not have a working console but which has a method of
+reading/writing kernel memory.
 
-If we run below command multiple time without rebooting, allocator may
-allocate memory from the area which was free'd by kmem_cache_free and
-it will not call constructor. In this situation we may hit kernel oops.
-
-dd if=<fw image> of=/proc/ppc64/rtas/firmware_flash bs=4096
-
-
-oops message:
--------------
-[ 1602.399755] Oops: Kernel access of bad area, sig: 11 [#1]
-[ 1602.399772] SMP NR_CPUS=1024 NUMA pSeries
-[ 1602.399779] Modules linked in: rtas_flash nfsd lockd auth_rpcgss nfs_acl sunrpc fuse loop dm_mod sg ipv6 ses enclosure ehea ehci_pci ohci_hcd ehci_hcd usbcore sd_mod usb_common crc_t10dif scsi_dh_alua scsi_dh_emc scsi_dh_hp_sw scsi_dh_rdac scsi_dh ipr libata scsi_mod
-[ 1602.399817] NIP: d00000000a170b9c LR: d00000000a170b64 CTR: c00000000079cd58
-[ 1602.399823] REGS: c0000003b9937930 TRAP: 0300   Not tainted  (3.9.0-rc4-0.27-ppc64)
-[ 1602.399828] MSR: 8000000000009032 <SF,EE,ME,IR,DR,RI>  CR: 22000428  XER: 20000000
-[ 1602.399841] SOFTE: 1
-[ 1602.399844] CFAR: c000000000005f24
-[ 1602.399848] DAR: 8c2625a820631fef, DSISR: 40000000
-[ 1602.399852] TASK = c0000003b4520760[3655] 'dd' THREAD: c0000003b9934000 CPU: 3
-GPR00: 8c2625a820631fe7 c0000003b9937bb0 d00000000a179f28 d00000000a171f08
-GPR04: 0000000010040000 0000000000001000 c0000003b9937df0 c0000003b5fb2080
-GPR08: c0000003b58f7200 d00000000a179f28 c0000003b40058d4 c00000000079cd58
-GPR12: d00000000a171450 c000000007f40900 0000000000000005 0000000010178d20
-GPR16: 00000000100cb9d8 000000000000001d 0000000000000000 000000001003ffff
-GPR20: 0000000000000001 0000000000000000 00003fffa0b50d30 000000001001f010
-GPR24: 0000000010020888 0000000010040000 d00000000a171f08 d00000000a172808
-GPR28: 0000000000001000 0000000010040000 c0000003b4005880 8c2625a820631fe7
-[ 1602.399924] NIP [d00000000a170b9c] .rtas_flash_write+0x7c/0x1e8 [rtas_flash]
-[ 1602.399930] LR [d00000000a170b64] .rtas_flash_write+0x44/0x1e8 [rtas_flash]
-[ 1602.399934] Call Trace:
-[ 1602.399939] [c0000003b9937bb0] [d00000000a170b64] .rtas_flash_write+0x44/0x1e8 [rtas_flash] (unreliable)
-[ 1602.399948] [c0000003b9937c60] [c000000000282830] .proc_reg_write+0x90/0xe0
-[ 1602.399955] [c0000003b9937ce0] [c0000000001ff374] .vfs_write+0x114/0x238
-[ 1602.399961] [c0000003b9937d80] [c0000000001ff5d8] .SyS_write+0x70/0xe8
-[ 1602.399968] [c0000003b9937e30] [c000000000009cdc] syscall_exit+0x0/0xa0
-[ 1602.399973] Instruction dump:
-[ 1602.399977] eb698010 801b0028 2f80dcd6 419e00a4 2fbc0000 419e009c ebfb0030 2fbf0000
-[ 1602.399989] 409e0010 480000d8 60000000 7c1f0378 <e81f0008> 2fa00000 409efff4 e81f0000
-[ 1602.400012] ---[ end trace b4136d115dc31dac ]---
-[ 1602.402178]
-[ 1602.402185] Sending IPI to other CPUs
-[ 1602.403329] IPI complete
-
-This patch uses kmem_cache_zalloc() instead of kmem_cache_alloc() to
-allocate memory, which makes sure memory is set to 0 before using.
-Also removes rtas_block_ctor(), which is no longer required.
-
-Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+Signed-off-by: Alistair Popple <alistair@popple.id.au>
 ---
- arch/powerpc/kernel/rtas_flash.c |   14 ++++----------
- 1 file changed, 4 insertions(+), 10 deletions(-)
+ arch/powerpc/Kconfig.debug         |   23 ++++++++++
+ arch/powerpc/include/asm/udbg.h    |    1 +
+ arch/powerpc/kernel/udbg.c         |    3 ++
+ arch/powerpc/sysdev/Makefile       |    2 +
+ arch/powerpc/sysdev/udbg_memcons.c |   85 ++++++++++++++++++++++++++++++++++++
+ 5 files changed, 114 insertions(+)
+ create mode 100644 arch/powerpc/sysdev/udbg_memcons.c
 
-diff --git a/arch/powerpc/kernel/rtas_flash.c b/arch/powerpc/kernel/rtas_flash.c
-index 0a08c3b..d61a94c 100644
---- a/arch/powerpc/kernel/rtas_flash.c
-+++ b/arch/powerpc/kernel/rtas_flash.c
-@@ -286,12 +286,6 @@ static ssize_t rtas_flash_read(struct file *file, char __user *buf,
- 	return simple_read_from_buffer(buf, count, ppos, msg, strlen(msg));
- }
+diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+index 5416e28..863d877 100644
+--- a/arch/powerpc/Kconfig.debug
++++ b/arch/powerpc/Kconfig.debug
+@@ -262,8 +262,31 @@ config PPC_EARLY_DEBUG_OPAL_HVSI
+ 	  Select this to enable early debugging for the PowerNV platform
+ 	  using an "hvsi" console
  
--/* constructor for flash_block_cache */
--void rtas_block_ctor(void *ptr)
--{
--	memset(ptr, 0, RTAS_BLK_SIZE);
--}
--
- /* We could be much more efficient here.  But to keep this function
-  * simple we allocate a page to the block list no matter how small the
-  * count is.  If the system is low on memory it will be just as well
-@@ -316,7 +310,7 @@ static ssize_t rtas_flash_write(struct file *file, const char __user *buffer,
- 	 * proc file
- 	 */
- 	if (uf->flist == NULL) {
--		uf->flist = kmem_cache_alloc(flash_block_cache, GFP_KERNEL);
-+		uf->flist = kmem_cache_zalloc(flash_block_cache, GFP_KERNEL);
- 		if (!uf->flist)
- 			return -ENOMEM;
- 	}
-@@ -327,7 +321,7 @@ static ssize_t rtas_flash_write(struct file *file, const char __user *buffer,
- 	next_free = fl->num_blocks;
- 	if (next_free == FLASH_BLOCKS_PER_NODE) {
- 		/* Need to allocate another block_list */
--		fl->next = kmem_cache_alloc(flash_block_cache, GFP_KERNEL);
-+		fl->next = kmem_cache_zalloc(flash_block_cache, GFP_KERNEL);
- 		if (!fl->next)
- 			return -ENOMEM;
- 		fl = fl->next;
-@@ -336,7 +330,7 @@ static ssize_t rtas_flash_write(struct file *file, const char __user *buffer,
++config PPC_EARLY_DEBUG_MEMCONS
++	bool "In memory console"
++	help
++	  Select this to enable early debugging using an in memory console.
++	  This console provides input and output buffers stored within the
++	  kernel BSS and should be safe to select on any system. A debugger
++	  can then be used to read kernel output or send input to the console.
+ endchoice
  
- 	if (count > RTAS_BLK_SIZE)
- 		count = RTAS_BLK_SIZE;
--	p = kmem_cache_alloc(flash_block_cache, GFP_KERNEL);
-+	p = kmem_cache_zalloc(flash_block_cache, GFP_KERNEL);
- 	if (!p)
- 		return -ENOMEM;
- 	
-@@ -789,7 +783,7 @@ static int __init rtas_flash_init(void)
++config PPC_MEMCONS_OUTPUT_SIZE
++	int "In memory console output buffer size"
++	depends on PPC_EARLY_DEBUG_MEMCONS
++	default 4096
++	help
++	  Selects the size of the output buffer (in bytes) of the in memory
++	  console.
++
++config PPC_MEMCONS_INPUT_SIZE
++	int "In memory console input buffer size"
++	depends on PPC_EARLY_DEBUG_MEMCONS
++	default 128
++	help
++	  Selects the size of the input buffer (in bytes) of the in memory
++	  console.
++
+ config PPC_EARLY_DEBUG_OPAL
+ 	def_bool y
+ 	depends on PPC_EARLY_DEBUG_OPAL_RAW || PPC_EARLY_DEBUG_OPAL_HVSI
+diff --git a/arch/powerpc/include/asm/udbg.h b/arch/powerpc/include/asm/udbg.h
+index 5a7510e..dc59091 100644
+--- a/arch/powerpc/include/asm/udbg.h
++++ b/arch/powerpc/include/asm/udbg.h
+@@ -52,6 +52,7 @@ extern void __init udbg_init_40x_realmode(void);
+ extern void __init udbg_init_cpm(void);
+ extern void __init udbg_init_usbgecko(void);
+ extern void __init udbg_init_wsp(void);
++extern void __init udbg_init_memcons(void);
+ extern void __init udbg_init_ehv_bc(void);
+ extern void __init udbg_init_ps3gelic(void);
+ extern void __init udbg_init_debug_opal_raw(void);
+diff --git a/arch/powerpc/kernel/udbg.c b/arch/powerpc/kernel/udbg.c
+index f974849..efa5c93 100644
+--- a/arch/powerpc/kernel/udbg.c
++++ b/arch/powerpc/kernel/udbg.c
+@@ -64,6 +64,9 @@ void __init udbg_early_init(void)
+ 	udbg_init_usbgecko();
+ #elif defined(CONFIG_PPC_EARLY_DEBUG_WSP)
+ 	udbg_init_wsp();
++#elif defined(CONFIG_PPC_EARLY_DEBUG_MEMCONS)
++	/* In memory console */
++	udbg_init_memcons();
+ #elif defined(CONFIG_PPC_EARLY_DEBUG_EHV_BC)
+ 	udbg_init_ehv_bc();
+ #elif defined(CONFIG_PPC_EARLY_DEBUG_PS3GELIC)
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index b0a518e..99464a7 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -64,6 +64,8 @@ endif
  
- 	flash_block_cache = kmem_cache_create("rtas_flash_cache",
- 				RTAS_BLK_SIZE, RTAS_BLK_SIZE, 0,
--				rtas_block_ctor);
-+				NULL);
- 	if (!flash_block_cache) {
- 		printk(KERN_ERR "%s: failed to create block cache\n",
- 				__func__);
+ obj-$(CONFIG_PPC_SCOM)		+= scom.o
+ 
++obj-$(CONFIG_PPC_EARLY_DEBUG_MEMCONS)	+= udbg_memcons.o
++
+ subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
+ 
+ obj-$(CONFIG_PPC_XICS)		+= xics/
+diff --git a/arch/powerpc/sysdev/udbg_memcons.c b/arch/powerpc/sysdev/udbg_memcons.c
+new file mode 100644
+index 0000000..36f5c44
+--- /dev/null
++++ b/arch/powerpc/sysdev/udbg_memcons.c
+@@ -0,0 +1,85 @@
++/*
++ * A udbg backend which logs messages and reads input from in memory
++ * buffers.
++ *
++ * Copyright (C) 2003-2005 Anton Blanchard and Milton Miller, IBM Corp
++ * Copyright (C) 2013 Alistair Popple, IBM Corp
++ *
++ *      This program is free software; you can redistribute it and/or
++ *      modify it under the terms of the GNU General Public License
++ *      as published by the Free Software Foundation; either version
++ *      2 of the License, or (at your option) any later version.
++ */
++
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <asm/page.h>
++#include <asm/processor.h>
++#include <asm/udbg.h>
++
++struct memcons {
++	char *output_start;
++	char *output_pos;
++	char *output_end;
++	char *input_start;
++	char *input_pos;
++	char *input_end;
++};
++
++static char memcons_output[CONFIG_PPC_MEMCONS_OUTPUT_SIZE];
++static char memcons_input[CONFIG_PPC_MEMCONS_INPUT_SIZE];
++
++struct memcons memcons = {
++	.output_start = memcons_output,
++	.output_pos = memcons_output,
++	.output_end = &memcons_output[CONFIG_PPC_MEMCONS_OUTPUT_SIZE],
++	.input_start = memcons_input,
++	.input_pos = memcons_input,
++	.input_end = &memcons_input[CONFIG_PPC_MEMCONS_INPUT_SIZE],
++};
++
++void memcons_putc(char c)
++{
++	*memcons.output_pos++ = c;
++	if (memcons.output_pos >= memcons.output_end)
++		memcons.output_pos = memcons.output_start;
++}
++
++int memcons_getc_poll(void)
++{
++	char c;
++
++	if (*memcons.input_pos) {
++		c = *memcons.input_pos;
++		*memcons.input_pos++ = 0;
++
++		if (*memcons.input_pos == '\0' || memcons.input_pos >= memcons.input_end)
++			memcons.input_pos = memcons.input_start;
++
++		return c;
++	}
++
++	return -1;
++}
++
++int memcons_getc(void)
++{
++	int c;
++
++	while (1) {
++		c = memcons_getc_poll();
++		if (c == -1)
++			cpu_relax();
++		else
++			break;
++	}
++
++	return c;
++}
++
++void udbg_init_memcons(void)
++{
++	udbg_putc = memcons_putc;
++	udbg_getc = memcons_getc;
++	udbg_getc_poll = memcons_getc_poll;
++}
+-- 
+1.7.10.4
