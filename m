@@ -1,19 +1,33 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.pcug.org.au [203.10.76.10])
- by ozlabs.org (Postfix) with ESMTP id C9D4D2C0095
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 14:04:44 +1000 (EST)
-Date: Mon, 29 Apr 2013 14:04:33 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Tejun Heo <tj@kernel.org>
-Subject: linux-next: build failure after merge of the cgroup tree
-Message-Id: <20130429140433.92d05cd48b66ac323616d572@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Mon__29_Apr_2013_14_04_33_+1000_hYuiR+FI0xuOy/tt"
-Cc: linux-kernel@vger.kernel.org, Li Zefan <lizefan@huawei.com>,
- linux-next@vger.kernel.org, Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <hegdevasant@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 94B712C00C1
+ for <linuxppc-dev@ozlabs.org>; Mon, 29 Apr 2013 14:44:15 +1000 (EST)
+Received: from /spool/local
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
+ Mon, 29 Apr 2013 10:07:56 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 017DB125804E
+ for <linuxppc-dev@ozlabs.org>; Mon, 29 Apr 2013 10:15:50 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3T4i3U460358824
+ for <linuxppc-dev@ozlabs.org>; Mon, 29 Apr 2013 10:14:03 +0530
+Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3T4i9Tu026142
+ for <linuxppc-dev@ozlabs.org>; Mon, 29 Apr 2013 14:44:09 +1000
+Subject: [PATCH] powerpc/rtas_flash: Fix bad memory access
+To: linuxppc-dev@ozlabs.org
+From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+Date: Mon, 29 Apr 2013 10:13:56 +0530
+Message-ID: <20130429044334.6828.34295.stgit@hegdevasant.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: paulus@samba.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,94 +37,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Mon__29_Apr_2013_14_04_33_+1000_hYuiR+FI0xuOy/tt
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+We use kmem_cache_alloc() to allocate memory to hold the new firmware
+which will be flashed. kmem_cache_alloc() calls rtas_block_ctor() to
+set memory to NULL. But these constructor is called only for newly
+allocated slabs.
 
-Hi Tejun,
+If we run below command multiple time without rebooting, allocator may
+allocate memory from the area which was free'd by kmem_cache_free and
+it will not call constructor. In this situation we may hit kernel oops.
 
-After merging the cgroup tree, today's linux-next build (powerpc
-ppc64_defconfig) failed like this:
+dd if=<fw image> of=/proc/ppc64/rtas/firmware_flash bs=4096
 
-arch/powerpc/mm/numa.c: In function 'arch_update_cpu_topology':
-arch/powerpc/mm/numa.c:1465:2: error: implicit declaration of function 'kza=
-lloc' [-Werror=3Dimplicit-function-declaration]
-arch/powerpc/mm/numa.c:1465:10: error: assignment makes pointer from intege=
-r without a cast [-Werror]
-arch/powerpc/mm/numa.c:1497:2: error: implicit declaration of function 'kfr=
-ee' [-Werror=3Dimplicit-function-declaration]
 
-Caused by commit 30c05350c39d ("powerpc/pseries: Use stop machine to
-update cpu maps") from the powerpc tree interacting with (probably)
-commit ff794dea52ea ("cpuset: remove include of cgroup.h from cpuset.h")
-from the cgroup tree.  Removing includes from header files is fraught
-with danger ...
+oops message:
+-------------
+[ 1602.399755] Oops: Kernel access of bad area, sig: 11 [#1]
+[ 1602.399772] SMP NR_CPUS=1024 NUMA pSeries
+[ 1602.399779] Modules linked in: rtas_flash nfsd lockd auth_rpcgss nfs_acl sunrpc fuse loop dm_mod sg ipv6 ses enclosure ehea ehci_pci ohci_hcd ehci_hcd usbcore sd_mod usb_common crc_t10dif scsi_dh_alua scsi_dh_emc scsi_dh_hp_sw scsi_dh_rdac scsi_dh ipr libata scsi_mod
+[ 1602.399817] NIP: d00000000a170b9c LR: d00000000a170b64 CTR: c00000000079cd58
+[ 1602.399823] REGS: c0000003b9937930 TRAP: 0300   Not tainted  (3.9.0-rc4-0.27-ppc64)
+[ 1602.399828] MSR: 8000000000009032 <SF,EE,ME,IR,DR,RI>  CR: 22000428  XER: 20000000
+[ 1602.399841] SOFTE: 1
+[ 1602.399844] CFAR: c000000000005f24
+[ 1602.399848] DAR: 8c2625a820631fef, DSISR: 40000000
+[ 1602.399852] TASK = c0000003b4520760[3655] 'dd' THREAD: c0000003b9934000 CPU: 3
+GPR00: 8c2625a820631fe7 c0000003b9937bb0 d00000000a179f28 d00000000a171f08
+GPR04: 0000000010040000 0000000000001000 c0000003b9937df0 c0000003b5fb2080
+GPR08: c0000003b58f7200 d00000000a179f28 c0000003b40058d4 c00000000079cd58
+GPR12: d00000000a171450 c000000007f40900 0000000000000005 0000000010178d20
+GPR16: 00000000100cb9d8 000000000000001d 0000000000000000 000000001003ffff
+GPR20: 0000000000000001 0000000000000000 00003fffa0b50d30 000000001001f010
+GPR24: 0000000010020888 0000000010040000 d00000000a171f08 d00000000a172808
+GPR28: 0000000000001000 0000000010040000 c0000003b4005880 8c2625a820631fe7
+[ 1602.399924] NIP [d00000000a170b9c] .rtas_flash_write+0x7c/0x1e8 [rtas_flash]
+[ 1602.399930] LR [d00000000a170b64] .rtas_flash_write+0x44/0x1e8 [rtas_flash]
+[ 1602.399934] Call Trace:
+[ 1602.399939] [c0000003b9937bb0] [d00000000a170b64] .rtas_flash_write+0x44/0x1e8 [rtas_flash] (unreliable)
+[ 1602.399948] [c0000003b9937c60] [c000000000282830] .proc_reg_write+0x90/0xe0
+[ 1602.399955] [c0000003b9937ce0] [c0000000001ff374] .vfs_write+0x114/0x238
+[ 1602.399961] [c0000003b9937d80] [c0000000001ff5d8] .SyS_write+0x70/0xe8
+[ 1602.399968] [c0000003b9937e30] [c000000000009cdc] syscall_exit+0x0/0xa0
+[ 1602.399973] Instruction dump:
+[ 1602.399977] eb698010 801b0028 2f80dcd6 419e00a4 2fbc0000 419e009c ebfb0030 2fbf0000
+[ 1602.399989] 409e0010 480000d8 60000000 7c1f0378 <e81f0008> 2fa00000 409efff4 e81f0000
+[ 1602.400012] ---[ end trace b4136d115dc31dac ]---
+[ 1602.402178]
+[ 1602.402185] Sending IPI to other CPUs
+[ 1602.403329] IPI complete
 
-The former should have added an include of linux/slab.h to
-arch/powerpc/mm/numa.c.
+This patch uses kmem_cache_zalloc() instead of kmem_cache_alloc() to
+allocate memory, which makes sure memory is set to 0 before using.
+Also removes rtas_block_ctor(), which is no longer required.
 
-I have added the following merge fix patch for today (but it should be
-applied to the powerpc tree ASAP).
-
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Mon, 29 Apr 2013 14:01:44 +1000
-Subject: [PATCH] powerpc: numa.c: using kzalloc/kfree requires including
- slab.h
-
-fixes these build errors:
-
-arch/powerpc/mm/numa.c: In function 'arch_update_cpu_topology':
-arch/powerpc/mm/numa.c:1465:2: error: implicit declaration of function 'kza=
-lloc' [-Werror=3Dimplicit-function-declaration]
-arch/powerpc/mm/numa.c:1465:10: error: assignment makes pointer from intege=
-r without a cast [-Werror]
-arch/powerpc/mm/numa.c:1497:2: error: implicit declaration of function 'kfr=
-ee' [-Werror=3Dimplicit-function-declaration]
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/numa.c | 1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/kernel/rtas_flash.c |   14 ++++----------
+ 1 file changed, 4 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 2d13f90..490e39c 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -26,6 +26,7 @@
- #include <linux/proc_fs.h>
- #include <linux/seq_file.h>
- #include <linux/uaccess.h>
-+#include <linux/slab.h>
- #include <asm/sparsemem.h>
- #include <asm/prom.h>
- #include <asm/smp.h>
---=20
-1.8.1
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Signature=_Mon__29_Apr_2013_14_04_33_+1000_hYuiR+FI0xuOy/tt
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBCAAGBQJRffFRAAoJEECxmPOUX5FEzacP/jsGwiqZj6GlQgstb+DS6NQ7
-f2tW2Hi2aXmUokWOcwkrn55XpaGxt22wauQtwIVAkjYIpFS+QfCkpof/6niwrXiE
-7Tzyu8Cv4Y63eYTPn3Rtrj9MKTW7pHbnP/CK4jhvxmxGJzLMB+fEaFO46vLXkLbE
-RwgWskit8o1QDpoKOh9eSuOOd10xKlL6NDJwfRaISXTZdVKybNuB5pOfHTX8tdso
-Y0ZUe1hufiOkpR0TeHjjJka0MaTikxUnN5Aoi9yP4xca3FZ9R6T2RKcUPKlLEtPq
-FkViro0aecudpEvZpfH+QONt6Mneg2lyPEQftgPtV0E0yvtES1Is9JRHcQtLl62d
-S0DAaIgKMKRZiTWbn0GW7VcMhARRueLaiczJmVoIcFrIUqGZ/DNRiiYbrrqbK6r8
-zkfPw2h3GngJY9bEQUhd7Yis9Ray7b0w96iqmKwZUGyu7bRmbZhbYgnLtIRPJ33F
-mieCOfDOKuYauG5AteoCWRNAtsElCWF9JonlR5lBPOiGqDRKAe1VKlE+CE58KCbV
-HqZegbGh/GguCnqE9bXKAA3jZlycDCZiXvzn9LZm7t28pBAaq1rlLHp/UsGSP/lZ
-wds1fhG8zHGPd5pFL6fHGPOV08DK1TNWy7chXYVoZJB3TzO/gTSRabZnoLfzPQW7
-Z+WP+1FCTE0+FMtyeCAS
-=8K40
------END PGP SIGNATURE-----
-
---Signature=_Mon__29_Apr_2013_14_04_33_+1000_hYuiR+FI0xuOy/tt--
+diff --git a/arch/powerpc/kernel/rtas_flash.c b/arch/powerpc/kernel/rtas_flash.c
+index 0a08c3b..d61a94c 100644
+--- a/arch/powerpc/kernel/rtas_flash.c
++++ b/arch/powerpc/kernel/rtas_flash.c
+@@ -286,12 +286,6 @@ static ssize_t rtas_flash_read(struct file *file, char __user *buf,
+ 	return simple_read_from_buffer(buf, count, ppos, msg, strlen(msg));
+ }
+ 
+-/* constructor for flash_block_cache */
+-void rtas_block_ctor(void *ptr)
+-{
+-	memset(ptr, 0, RTAS_BLK_SIZE);
+-}
+-
+ /* We could be much more efficient here.  But to keep this function
+  * simple we allocate a page to the block list no matter how small the
+  * count is.  If the system is low on memory it will be just as well
+@@ -316,7 +310,7 @@ static ssize_t rtas_flash_write(struct file *file, const char __user *buffer,
+ 	 * proc file
+ 	 */
+ 	if (uf->flist == NULL) {
+-		uf->flist = kmem_cache_alloc(flash_block_cache, GFP_KERNEL);
++		uf->flist = kmem_cache_zalloc(flash_block_cache, GFP_KERNEL);
+ 		if (!uf->flist)
+ 			return -ENOMEM;
+ 	}
+@@ -327,7 +321,7 @@ static ssize_t rtas_flash_write(struct file *file, const char __user *buffer,
+ 	next_free = fl->num_blocks;
+ 	if (next_free == FLASH_BLOCKS_PER_NODE) {
+ 		/* Need to allocate another block_list */
+-		fl->next = kmem_cache_alloc(flash_block_cache, GFP_KERNEL);
++		fl->next = kmem_cache_zalloc(flash_block_cache, GFP_KERNEL);
+ 		if (!fl->next)
+ 			return -ENOMEM;
+ 		fl = fl->next;
+@@ -336,7 +330,7 @@ static ssize_t rtas_flash_write(struct file *file, const char __user *buffer,
+ 
+ 	if (count > RTAS_BLK_SIZE)
+ 		count = RTAS_BLK_SIZE;
+-	p = kmem_cache_alloc(flash_block_cache, GFP_KERNEL);
++	p = kmem_cache_zalloc(flash_block_cache, GFP_KERNEL);
+ 	if (!p)
+ 		return -ENOMEM;
+ 	
+@@ -789,7 +783,7 @@ static int __init rtas_flash_init(void)
+ 
+ 	flash_block_cache = kmem_cache_create("rtas_flash_cache",
+ 				RTAS_BLK_SIZE, RTAS_BLK_SIZE, 0,
+-				rtas_block_ctor);
++				NULL);
+ 	if (!flash_block_cache) {
+ 		printk(KERN_ERR "%s: failed to create block cache\n",
+ 				__func__);
