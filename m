@@ -1,35 +1,19 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E628A2C018D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 05:52:05 +1000 (EST)
-Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 29 Apr 2013 01:15:49 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 598243940023
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 01:22:01 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3SJpuPr11337998
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 01:21:56 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3SJpxvt002441
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 05:52:00 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, dwg@au1.ibm.com,
- linux-mm@kvack.org
-Subject: [PATCH -V7 10/10] powerpc: disable assert_pte_locked
-Date: Mon, 29 Apr 2013 01:21:51 +0530
-Message-Id: <1367178711-8232-11-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1367178711-8232-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1367178711-8232-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.pcug.org.au [203.10.76.10])
+ by ozlabs.org (Postfix) with ESMTP id 994742C00BF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 11:35:45 +1000 (EST)
+Date: Mon, 29 Apr 2013 11:35:40 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Subject: linux-next: manual merge of the vfs tree with the powerpc tree
+Message-Id: <20130429113540.55b2593d303bc2a9142919fc@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Mon__29_Apr_2013_11_35_40_+1000_7twd2=FMfYKT3uPf"
+Cc: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ David Howells <dhowells@redhat.com>, linux-next@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,39 +23,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+--Signature=_Mon__29_Apr_2013_11_35_40_+1000_7twd2=FMfYKT3uPf
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-With THP we set pmd to none, before we do pte_clear. Hence we can't
-walk page table to get the pte lock ptr and verify whether it is locked.
-THP do take pte lock before calling pte_clear. So we don't change the locking
-rules here. It is that we can't use page table walking to check whether
-pte locks are help with THP.
+Hi Al,
 
-NOTE: This needs to be re-written. Not to be merged upstream.
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/mm/pgtable.c | 2 ++
- 1 file changed, 2 insertions(+)
+Today's linux-next merge of the vfs tree got a conflict in
+arch/powerpc/kernel/rtas_flash.c between commit ad18a364f186
+("powerpc/rtas_flash: Free kmem upon module exit"),  from the powerpc
+tree and commit 5c0333c00ff6 ("ppc: Clean up rtas_flash driver somewhat")
+from the vfs tree.
 
-diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
-index 214130a..d77f94f 100644
---- a/arch/powerpc/mm/pgtable.c
-+++ b/arch/powerpc/mm/pgtable.c
-@@ -224,6 +224,7 @@ int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long address,
- #ifdef CONFIG_DEBUG_VM
- void assert_pte_locked(struct mm_struct *mm, unsigned long addr)
- {
-+#if 0
- 	pgd_t *pgd;
- 	pud_t *pud;
- 	pmd_t *pmd;
-@@ -237,6 +238,7 @@ void assert_pte_locked(struct mm_struct *mm, unsigned long addr)
- 	pmd = pmd_offset(pud, addr);
- 	BUG_ON(!pmd_present(*pmd));
- 	assert_spin_locked(pte_lockptr(mm, pmd));
-+#endif
- }
- #endif /* CONFIG_DEBUG_VM */
- 
--- 
-1.8.1.2
+I fixed it up (see below) and can carry the fix as necessary (no action
+is required).
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --cc arch/powerpc/kernel/rtas_flash.c
+index a3e4034,8196bfb..0000000
+--- a/arch/powerpc/kernel/rtas_flash.c
++++ b/arch/powerpc/kernel/rtas_flash.c
+@@@ -806,20 -740,17 +758,22 @@@ enomem_buf
+ =20
+  static void __exit rtas_flash_cleanup(void)
+  {
++ 	int i;
++=20
+  	rtas_flash_term_hook =3D NULL;
+ =20
+ +	if (rtas_firmware_flash_list) {
+ +		free_flash_list(rtas_firmware_flash_list);
+ +		rtas_firmware_flash_list =3D NULL;
+ +	}
+ +
+- 	if (flash_block_cache)
+- 		kmem_cache_destroy(flash_block_cache);
++ 	for (i =3D 0; i < ARRAY_SIZE(rtas_flash_files); i++) {
++ 		const struct rtas_flash_file *f =3D &rtas_flash_files[i];
++ 		remove_proc_entry(f->filename, NULL);
++ 	}
+ =20
+- 	remove_flash_pde(firmware_flash_pde);
+- 	remove_flash_pde(firmware_update_pde);
+- 	remove_flash_pde(validate_pde);
+- 	remove_flash_pde(manage_pde);
++ 	kmem_cache_destroy(flash_block_cache);
++ 	kfree(rtas_validate_flash_data.buf);
+  }
+ =20
+  module_init(rtas_flash_init);
+
+--Signature=_Mon__29_Apr_2013_11_35_40_+1000_7twd2=FMfYKT3uPf
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJRfc5sAAoJEECxmPOUX5FEwY8P/3/NCSy0xC1uFbWmhOhyh4uo
+bTeoLBIw67kh6HUQYimQm/vcAofREmoLVNTu8rkQ6XlGE/ZtRWqLsQQ2tujwgDHq
+LniVT38GqlfQyI+Ze2KlQJpxk3mJGyKgUHVMhzoDYLdSkDMCJp0a+lA2Ze9QY/Pc
+OyeaH38Qqu99U7vLJAIFUEhaA7BPs7byXIRa2AZ8j9Qgx941No+uzcQRNOjfU6yn
+yR2G9gfIghZpWOligNmlIKgyGqvQS9iPR1JHtSl572GgCZroycyDGle6VnqDR3k1
+ZEmoD5GJT4bRME8hhL70zEvRfazKTWcaREprx+g2yaxCR7uiDG579AXi4xWsWSRC
+zV/qF5eHuy1dUw+X6VQCi5a4lcAD1O4iChYP5x+Jf7LN3GiPvr6TBuYiCT0v7HD+
+27odo0HX49S5kOSW837tYCbXTHIffAYU7Te9uu39nCJTXnkBOXvnPj2EKSYSugM5
+7m47PDiZsKOn9NBnvkmlYKiDYuHso9F0c6aTwAtpvUAW65Sko65yUvExzCF+dkrj
+AgoEPDv6kTcCv1Xw5pi+ycrQuJrW+QZEai9apu+r6j7dfZziqGcKS29lYOwf8uWp
+MuF0XS5Hu2ixKCnw0ZIBzD0YtJDfYRNTHgyvij8TAkrc/d7m0pStcm0+SbbyC14b
+Gsle7wQ3FypJKPdzf1TK
+=1gIE
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__29_Apr_2013_11_35_40_+1000_7twd2=FMfYKT3uPf--
