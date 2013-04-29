@@ -1,24 +1,37 @@
-Return-Path: <Alexandre.Bounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1F6202C00BD
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 22:10:04 +1000 (EST)
-From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: RE: [PATCH 1/3] rapidio: make enumeration/discovery configurable
-Date: Mon, 29 Apr 2013 12:08:49 +0000
-Message-ID: <8D983423E7EDF846BB3056827B8CC5D14BC271B9@corpmail1.na.ads.idt.com>
-References: <1366813919-13766-1-git-send-email-alexandre.bounine@idt.com>
- <1366813919-13766-2-git-send-email-alexandre.bounine@idt.com>
- <20130426155325.09fbad8c382dc8c549d503d0@linux-foundation.org>
-In-Reply-To: <20130426155325.09fbad8c382dc8c549d503d0@linux-foundation.org>
-Content-Type: text/plain; charset="us-ascii"
+ (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C14DC2C00B9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 23:45:47 +1000 (EST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Mon, 29 Apr 2013 07:45:45 -0600
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 27743C90068
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 09:45:43 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3TDjhgT286832
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 09:45:43 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3TDjhX6018467
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 10:45:43 -0300
+Received: from [9.65.14.48] (sig-9-65-14-48.mts.ibm.com [9.65.14.48])
+ by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
+ r3TDjcp0018231
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 10:45:39 -0300
+Message-ID: <517E7980.1030601@linux.vnet.ibm.com>
+Date: Mon, 29 Apr 2013 08:45:36 -0500
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: Micha Nelissen <micha.nelissen@Prodrive.nl>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Andre van Herk <andre.van.herk@Prodrive.nl>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/pseries: correct builds break when CONFIG_SMP not
+ defined
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,51 +41,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 26 Apr 2013 6:53 PM Andrew Morton <akpm@linux-foundation.org> wrote=
-:
-> Subject: Re: [PATCH 1/3] rapidio: make enumeration/discovery
-> configurable
->=20
-> This Kconfig change makes my kbuild do Weird Things.
->=20
-> make mrproper ; yes "" | make allmodconfig ; make 2>/tmp/x
-... skip ...=20
-> :   DMA Engine support for RapidIO (RAPIDIO_DMA_ENGINE) [Y/n/?] y
-> :   RapidIO subsystem debug messages (RAPIDIO_DEBUG) [Y/n/?] y
-> :   Enumeration method [M/y/?] (NEW) aborted!
-> :
-> : Console input/output is redirected. Run 'make oldconfig' to update conf=
-iguration.
-> :
-> :   SYSHDR  arch/x86/syscalls/../include/generated/uapi/asm/unistd_32.h
-> :   SYSHDR  arch/x86/syscalls/../include/generated/uapi/asm/unistd_64.h
-> :   SYSHDR
-> arch/x86/syscalls/../include/generated/uapi/asm/unistd_x32.h
->=20
->=20
-> See the "Enumeration method [M/y/?] (NEW) aborted!"
->=20
-> Note that this only happens when make's stderr is redirected.
->=20
-> I've no idea what's going on here.  This appears to fix things:
->=20
-> --- a/drivers/rapidio/Kconfig~rapidio-make-enumeration-discovery-
-> configurable-fix
-> +++ a/drivers/rapidio/Kconfig
-> @@ -59,7 +59,7 @@ choice
->  	  If unsure, select Basic built-in.
->=20
->  config RAPIDIO_ENUM_BASIC
-> -	tristate "Basic"
-> +	bool "Basic"
->  	help
->  	  This option includes basic RapidIO fabric enumeration and
-> discovery
->  	  mechanism similar to one described in RapidIO specification
-> Annex 1.
->=20
-> but doesn't appear to be what you intended.
+Correct build failure for powerpc/pseries builds with CONFIG_SMP not defined.
 
-Goal is to build enumerator as a module or built-in.
-I will retest v2 of patches for this issue.
-There are some changes to Kconfig (removed AUTO_ENUM option).
+The function cpu_sibling_mask has no meaning (or definition) when CONFIG_SMP
+is not defined. Additionally, the updating of NUMA affinity for a CPU in a UP
+system doesn't really make sense.
+
+This patch ifdef's out the code making the affinity updates for PRRN events to
+fix the following build break.
+
+arch/powerpc/mm/numa.c: In function ‘stage_topology_update’:
+arch/powerpc/mm/numa.c:1535: error: implicit declaration of function ‘cpu_sibling_mask’
+arch/powerpc/mm/numa.c:1535: warning: passing argument 3 of ‘cpumask_or’ makes pointer from integer without a cast
+make[1]: *** [arch/powerpc/mm/numa.o] Error 1
+
+Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+---
+ arch/powerpc/mm/numa.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+Index: ppc-next/arch/powerpc/mm/numa.c
+===================================================================
+--- ppc-next.orig/arch/powerpc/mm/numa.c	2013-04-29 07:16:00.000000000 -0500
++++ ppc-next/arch/powerpc/mm/numa.c	2013-04-29 07:21:35.000000000 -0500
+@@ -1529,6 +1529,8 @@
+ 	mod_timer(&topology_timer, topology_timer.expires);
+ }
+ 
++#ifdef CONFIG_SMP
++
+ static void stage_topology_update(int core_id)
+ {
+ 	cpumask_or(&cpu_associativity_changes_mask,
+@@ -1562,6 +1564,8 @@
+ 	.notifier_call = dt_update_callback,
+ };
+ 
++#endif
++
+ /*
+  * Start polling for associativity changes.
+  */
+@@ -1573,7 +1577,9 @@
+ 		if (!prrn_enabled) {
+ 			prrn_enabled = 1;
+ 			vphn_enabled = 0;
++#ifdef CONFIG_SMP
+ 			rc = of_reconfig_notifier_register(&dt_update_nb);
++#endif
+ 		}
+ 	} else if (firmware_has_feature(FW_FEATURE_VPHN) &&
+ 		   get_lppaca()->shared_proc) {
+@@ -1598,7 +1604,9 @@
+ 
+ 	if (prrn_enabled) {
+ 		prrn_enabled = 0;
++#ifdef CONFIG_SMP
+ 		rc = of_reconfig_notifier_unregister(&dt_update_nb);
++#endif
+ 	} else if (vphn_enabled) {
+ 		vphn_enabled = 0;
+ 		rc = del_timer_sync(&topology_timer);
