@@ -1,14 +1,33 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ipmail04.adl6.internode.on.net (ipmail04.adl6.internode.on.net
- [IPv6:2001:44b8:8060:ff02:300:1:6:4])
- by ozlabs.org (Postfix) with ESMTP id A99ED2C00A7
- for <linuxppc-dev@ozlabs.org>; Mon, 29 Apr 2013 16:24:27 +1000 (EST)
-From: Alistair Popple <alistair@popple.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Add an in memory udbg console
-Date: Mon, 29 Apr 2013 16:24:22 +1000
-Message-Id: <1367216662-16872-1-git-send-email-alistair@popple.id.au>
-Cc: Alistair Popple <alistair@popple.id.au>
+Return-Path: <imunsie@au1.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp05.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C789B2C00C0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 18:18:00 +1000 (EST)
+Received: from /spool/local
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
+ Mon, 29 Apr 2013 18:12:51 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 8A2342CE804A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 18:17:55 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3T8HmW123396602
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 18:17:49 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3T8HslS002335
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 18:17:54 +1000
+From: "Ian Munsie" <imunsie@au1.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc: Fix missing doorbell IPIs during nap power saving
+Date: Mon, 29 Apr 2013 18:17:40 +1000
+Message-Id: <1367223460-4931-1-git-send-email-imunsie@au1.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Ian Munsie <imunsie@au1.ibm.com>,
+ stable@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,187 +37,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds a new udbg early debug console which utilises
-statically defined input and output buffers stored within the kernel
-BSS. It is primarily designed to assist with bring up of new hardware
-which may not have a working console but which has a method of
-reading/writing kernel memory.
+From: Ian Munsie <imunsie@au1.ibm.com>
 
-Signed-off-by: Alistair Popple <alistair@popple.id.au>
+If a doorbell IPI comes in while a thread is in nap power saving, the
+doorbell interrupt won't be replayed by the hardware since it is edge
+sensitive. Currently we are not replaying these interrupts in software,
+which can cause threads to miss IPIs that come in during power saving
+and eventually will result in an RCU warning from rcu_sched that it has
+detected a stalled CPU.
+
+This patch fixes the issue by testing if a doorbell caused the thread to
+come out of power saving and sets the corresponding bit in the paca to
+indicate a doorbell happened, which will then be handled by the existing
+interrupt replay code.
+
+This is not an issue with other interrupts that can wake a thread
+(external, decrementer) as they are level sensitive and will continue to
+be asserted by the hardware.
+
+Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 ---
- arch/powerpc/Kconfig.debug         |   23 ++++++++++
- arch/powerpc/include/asm/udbg.h    |    1 +
- arch/powerpc/kernel/udbg.c         |    3 ++
- arch/powerpc/sysdev/Makefile       |    2 +
- arch/powerpc/sysdev/udbg_memcons.c |   85 ++++++++++++++++++++++++++++++++++++
- 5 files changed, 114 insertions(+)
- create mode 100644 arch/powerpc/sysdev/udbg_memcons.c
+ arch/powerpc/include/asm/reg.h    |    5 ++++-
+ arch/powerpc/kernel/idle_power7.S |   23 +++++++++++++++++++----
+ 2 files changed, 23 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-index 5416e28..863d877 100644
---- a/arch/powerpc/Kconfig.debug
-+++ b/arch/powerpc/Kconfig.debug
-@@ -262,8 +262,31 @@ config PPC_EARLY_DEBUG_OPAL_HVSI
- 	  Select this to enable early debugging for the PowerNV platform
- 	  using an "hvsi" console
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 5c6fbe2..dd8a071 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -549,14 +549,17 @@
+ #define   SRR1_ISI_NOPT		0x40000000 /* ISI: Not found in hash */
+ #define   SRR1_ISI_N_OR_G	0x10000000 /* ISI: Access is no-exec or G */
+ #define   SRR1_ISI_PROT		0x08000000 /* ISI: Other protection fault */
+-#define   SRR1_WAKEMASK		0x00380000 /* reason for wakeup */
++#define   SRR1_WAKEMASK		0x003c0000 /* reason for wakeup [42:45] */
++#define   SRR1_WAKESHIFT	18
+ #define   SRR1_WAKESYSERR	0x00300000 /* System error */
+ #define   SRR1_WAKEEE		0x00200000 /* External interrupt */
+ #define   SRR1_WAKEMT		0x00280000 /* mtctrl */
+ #define	  SRR1_WAKEHMI		0x00280000 /* Hypervisor maintenance */
+ #define   SRR1_WAKEDEC		0x00180000 /* Decrementer interrupt */
++#define   SRR1_WAKEDBELLP	0x00140000 /* Privileged Doorbell */
+ #define   SRR1_WAKETHERM	0x00100000 /* Thermal management interrupt */
+ #define	  SRR1_WAKERESET	0x00100000 /* System reset */
++#define   SRR1_WAKEDBELLH	0x000c0000 /* Hypervisor Doorbell */
+ #define	  SRR1_WAKESTATE	0x00030000 /* Powersave exit mask [46:47] */
+ #define	  SRR1_WS_DEEPEST	0x00030000 /* Some resources not maintained,
+ 					  * may not be recoverable */
+diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
+index e11863f..c80bb4b 100644
+--- a/arch/powerpc/kernel/idle_power7.S
++++ b/arch/powerpc/kernel/idle_power7.S
+@@ -108,9 +108,7 @@ _GLOBAL(power7_wakeup_loss)
+ 	ld	r5,_NIP(r1)
+ 	addi	r1,r1,INT_FRAME_SIZE
+ 	mtcr	r3
+-	mtspr	SPRN_SRR1,r4
+-	mtspr	SPRN_SRR0,r5
+-	rfid
++	b	power7_wakeup_common
  
-+config PPC_EARLY_DEBUG_MEMCONS
-+	bool "In memory console"
-+	help
-+	  Select this to enable early debugging using an in memory console.
-+	  This console provides input and output buffers stored within the
-+	  kernel BSS and should be safe to select on any system. A debugger
-+	  can then be used to read kernel output or send input to the console.
- endchoice
- 
-+config PPC_MEMCONS_OUTPUT_SIZE
-+	int "In memory console output buffer size"
-+	depends on PPC_EARLY_DEBUG_MEMCONS
-+	default 4096
-+	help
-+	  Selects the size of the output buffer (in bytes) of the in memory
-+	  console.
+ _GLOBAL(power7_wakeup_noloss)
+ 	lbz	r0,PACA_NAPSTATELOST(r13)
+@@ -120,6 +118,23 @@ _GLOBAL(power7_wakeup_noloss)
+ 	ld	r4,_MSR(r1)
+ 	ld	r5,_NIP(r1)
+ 	addi	r1,r1,INT_FRAME_SIZE
+-	mtspr	SPRN_SRR1,r4
++	/* Fall through */
 +
-+config PPC_MEMCONS_INPUT_SIZE
-+	int "In memory console input buffer size"
-+	depends on PPC_EARLY_DEBUG_MEMCONS
-+	default 128
-+	help
-+	  Selects the size of the input buffer (in bytes) of the in memory
-+	  console.
++power7_wakeup_common:
++BEGIN_FTR_SECTION
++	mfspr	r3,SPRN_SRR1
++	extrdi	r3,r3,4,42 /* Extract SRR1_WAKEMASK */
++	cmpwi	r3,SRR1_WAKEDBELLH >> SRR1_WAKESHIFT
++	beq	1f
++	cmpwi	r3,SRR1_WAKEDBELLP >> SRR1_WAKESHIFT
++	bne	2f
 +
- config PPC_EARLY_DEBUG_OPAL
- 	def_bool y
- 	depends on PPC_EARLY_DEBUG_OPAL_RAW || PPC_EARLY_DEBUG_OPAL_HVSI
-diff --git a/arch/powerpc/include/asm/udbg.h b/arch/powerpc/include/asm/udbg.h
-index 5a7510e..dc59091 100644
---- a/arch/powerpc/include/asm/udbg.h
-+++ b/arch/powerpc/include/asm/udbg.h
-@@ -52,6 +52,7 @@ extern void __init udbg_init_40x_realmode(void);
- extern void __init udbg_init_cpm(void);
- extern void __init udbg_init_usbgecko(void);
- extern void __init udbg_init_wsp(void);
-+extern void __init udbg_init_memcons(void);
- extern void __init udbg_init_ehv_bc(void);
- extern void __init udbg_init_ps3gelic(void);
- extern void __init udbg_init_debug_opal_raw(void);
-diff --git a/arch/powerpc/kernel/udbg.c b/arch/powerpc/kernel/udbg.c
-index f974849..efa5c93 100644
---- a/arch/powerpc/kernel/udbg.c
-+++ b/arch/powerpc/kernel/udbg.c
-@@ -64,6 +64,9 @@ void __init udbg_early_init(void)
- 	udbg_init_usbgecko();
- #elif defined(CONFIG_PPC_EARLY_DEBUG_WSP)
- 	udbg_init_wsp();
-+#elif defined(CONFIG_PPC_EARLY_DEBUG_MEMCONS)
-+	/* In memory console */
-+	udbg_init_memcons();
- #elif defined(CONFIG_PPC_EARLY_DEBUG_EHV_BC)
- 	udbg_init_ehv_bc();
- #elif defined(CONFIG_PPC_EARLY_DEBUG_PS3GELIC)
-diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-index b0a518e..99464a7 100644
---- a/arch/powerpc/sysdev/Makefile
-+++ b/arch/powerpc/sysdev/Makefile
-@@ -64,6 +64,8 @@ endif
- 
- obj-$(CONFIG_PPC_SCOM)		+= scom.o
- 
-+obj-$(CONFIG_PPC_EARLY_DEBUG_MEMCONS)	+= udbg_memcons.o
++1:	/* Woken by a doorbell, set doorbell happened in paca */
++	lbz	r3,PACAIRQHAPPENED(r13)
++	ori	r3,r3,PACA_IRQ_DBELL
++	stb	r3,PACAIRQHAPPENED(r13)
++END_FTR_SECTION_IFSET(CPU_FTR_DBELL)
 +
- subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
- 
- obj-$(CONFIG_PPC_XICS)		+= xics/
-diff --git a/arch/powerpc/sysdev/udbg_memcons.c b/arch/powerpc/sysdev/udbg_memcons.c
-new file mode 100644
-index 0000000..36f5c44
---- /dev/null
-+++ b/arch/powerpc/sysdev/udbg_memcons.c
-@@ -0,0 +1,85 @@
-+/*
-+ * A udbg backend which logs messages and reads input from in memory
-+ * buffers.
-+ *
-+ * Copyright (C) 2003-2005 Anton Blanchard and Milton Miller, IBM Corp
-+ * Copyright (C) 2013 Alistair Popple, IBM Corp
-+ *
-+ *      This program is free software; you can redistribute it and/or
-+ *      modify it under the terms of the GNU General Public License
-+ *      as published by the Free Software Foundation; either version
-+ *      2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <asm/page.h>
-+#include <asm/processor.h>
-+#include <asm/udbg.h>
-+
-+struct memcons {
-+	char *output_start;
-+	char *output_pos;
-+	char *output_end;
-+	char *input_start;
-+	char *input_pos;
-+	char *input_end;
-+};
-+
-+static char memcons_output[CONFIG_PPC_MEMCONS_OUTPUT_SIZE];
-+static char memcons_input[CONFIG_PPC_MEMCONS_INPUT_SIZE];
-+
-+struct memcons memcons = {
-+	.output_start = memcons_output,
-+	.output_pos = memcons_output,
-+	.output_end = &memcons_output[CONFIG_PPC_MEMCONS_OUTPUT_SIZE],
-+	.input_start = memcons_input,
-+	.input_pos = memcons_input,
-+	.input_end = &memcons_input[CONFIG_PPC_MEMCONS_INPUT_SIZE],
-+};
-+
-+void memcons_putc(char c)
-+{
-+	*memcons.output_pos++ = c;
-+	if (memcons.output_pos >= memcons.output_end)
-+		memcons.output_pos = memcons.output_start;
-+}
-+
-+int memcons_getc_poll(void)
-+{
-+	char c;
-+
-+	if (*memcons.input_pos) {
-+		c = *memcons.input_pos;
-+		*memcons.input_pos++ = 0;
-+
-+		if (*memcons.input_pos == '\0' || memcons.input_pos >= memcons.input_end)
-+			memcons.input_pos = memcons.input_start;
-+
-+		return c;
-+	}
-+
-+	return -1;
-+}
-+
-+int memcons_getc(void)
-+{
-+	int c;
-+
-+	while (1) {
-+		c = memcons_getc_poll();
-+		if (c == -1)
-+			cpu_relax();
-+		else
-+			break;
-+	}
-+
-+	return c;
-+}
-+
-+void udbg_init_memcons(void)
-+{
-+	udbg_putc = memcons_putc;
-+	udbg_getc = memcons_getc;
-+	udbg_getc_poll = memcons_getc_poll;
-+}
++2:	mtspr   SPRN_SRR1,r4
+ 	mtspr	SPRN_SRR0,r5
+ 	rfid
 -- 
 1.7.10.4
