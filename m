@@ -1,25 +1,21 @@
-Return-Path: <htejun@gmail.com>
-Received: from mail-da0-x234.google.com (mail-da0-x234.google.com
- [IPv6:2607:f8b0:400e:c00::234])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9F1D82C00AA
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Apr 2013 08:55:20 +1000 (EST)
-Received: by mail-da0-f52.google.com with SMTP id j17so3150300dan.39
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 15:55:18 -0700 (PDT)
-Sender: Tejun Heo <htejun@gmail.com>
-Date: Mon, 29 Apr 2013 15:55:13 -0700
-From: Tejun Heo <tj@kernel.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: build failure after merge of the cgroup tree
-Message-ID: <20130429225513.GG2395@htj.dyndns.org>
-References: <20130429140433.92d05cd48b66ac323616d572@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130429140433.92d05cd48b66ac323616d572@canb.auug.org.au>
-Cc: linux-kernel@vger.kernel.org, Li Zefan <lizefan@huawei.com>,
- linux-next@vger.kernel.org, Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.pcug.org.au [203.10.76.10])
+ by ozlabs.org (Postfix) with ESMTP id 21C722C00AD
+ for <linuxppc-dev@ozlabs.org>; Tue, 30 Apr 2013 09:06:45 +1000 (EST)
+Date: Tue, 30 Apr 2013 09:06:36 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: fix usage of setup_pci_atmu()
+Message-Id: <20130430090636.5e06bbfc6db472e1e677cb0b@canb.auug.org.au>
+In-Reply-To: <5881.1366004521@ale.ozlabs.ibm.com>
+References: <1363201636-7318-1-git-send-email-galak@kernel.crashing.org>
+ <5881.1366004521@ale.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Tue__30_Apr_2013_09_06_36_+1000_W64OUeHgjdz5V5/F"
+Cc: linuxppc-dev@ozlabs.org, Michael Neuling <mikey@neuling.org>,
+ linux-next@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,31 +25,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+--Signature=_Tue__30_Apr_2013_09_06_36_+1000_W64OUeHgjdz5V5/F
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, Apr 29, 2013 at 02:04:33PM +1000, Stephen Rothwell wrote:
-> I have added the following merge fix patch for today (but it should be
-> applied to the powerpc tree ASAP).
-> 
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Mon, 29 Apr 2013 14:01:44 +1000
-> Subject: [PATCH] powerpc: numa.c: using kzalloc/kfree requires including
->  slab.h
-> 
-> fixes these build errors:
-> 
-> arch/powerpc/mm/numa.c: In function 'arch_update_cpu_topology':
-> arch/powerpc/mm/numa.c:1465:2: error: implicit declaration of function 'kzalloc' [-Werror=implicit-function-declaration]
-> arch/powerpc/mm/numa.c:1465:10: error: assignment makes pointer from integer without a cast [-Werror]
-> arch/powerpc/mm/numa.c:1497:2: error: implicit declaration of function 'kfree' [-Werror=implicit-function-declaration]
-> 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Hi Kumar,
 
-Acked-by: Tejun Heo <tj@kernel.org>
+On Mon, 15 Apr 2013 15:42:01 +1000 Michael Neuling <mikey@neuling.org> wrot=
+e:
+>
+> Linux next is currently failing to compile mpc85xx_defconfig with:
+>   arch/powerpc/sysdev/fsl_pci.c:944:2: error: too many arguments to funct=
+ion 'setup_pci_atmu'
+>=20
+> This is caused by (from Kumar's next branch):
+>   commit 34642bbb3d12121333efcf4ea7dfe66685e403a1
+>   Author: Kumar Gala <galak@kernel.crashing.org>
+>   powerpc/fsl-pci: Keep PCI SoC controller registers in pci_controller
+>=20
+> Which changed definition of setup_pci_atmu() but didn't update one of
+> the callers.  Below fixes this.
+>=20
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> ---
+> Kumar: this is for your next tree
+>=20
+> diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+> index 83918c3..a10a036 100644
+> --- a/arch/powerpc/sysdev/fsl_pci.c
+> +++ b/arch/powerpc/sysdev/fsl_pci.c
+> @@ -941,7 +941,7 @@ static int fsl_pci_resume(struct device *dev)
+>  		return -ENODEV;
+>  	}
+> =20
+> -	setup_pci_atmu(hose, &pci_rsrc);
+> +	setup_pci_atmu(hose);
+> =20
+>  	return 0;
+>  }
+>=20
 
-Benjamin, can you please pick this up?
+This is still not in your tree ...
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-Thanks a lot and sorry about the trouble.
+--Signature=_Tue__30_Apr_2013_09_06_36_+1000_W64OUeHgjdz5V5/F
+Content-Type: application/pgp-signature
 
--- 
-tejun
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJRfvz8AAoJEECxmPOUX5FE7e8P/0oIytPPeMTp3SQMhiThnp9H
+oydgN3VZrAzKee/pwpSQfxp+Sa6fdERHkOGiwgOuqwRxwOaSSuMS2Y3SaFiokEKh
+0Emzh63iO1S8oW6N+7kNRSiNMCfbDQTRh/KUee1Sy0aOjWW1AKJ7UwI9H960zvPG
+XCk2iUTeBU+UW5QAxiKSsbvt9dw/EVy602s0IggEdAgvsdF6p2k/XzqzyX3PpF46
+4J8z4um42qL8e16SANbHaLvvTSjaSLdZnOGLQEN+IS4qbjYfamMbIfdmqlMYwFvp
+BVfldWKqBOQBvmFUXH48BMLIoDs7Xu2y6JHgd8iBa64f3x+Lw3IBPoKUHOwst824
+bfJRjcQk+AkgqEgG2E0+XLovtepT6zvm8RWSxPIkfkmbT9ocNBQyVaiNhoQBMQjV
+0buvQql9CpJdVualbaWQ8AGzaRqYaPDrjjMbuzegi2/IULpIMlM05UnPkt7n5wFm
+0rY+nM1kAlxZCkxZztHLHwy3Rxukbxyp4FwSh30EOnULdWf9aDY9qxssHQX8DFPg
+U/rdDyduqQdsivjI4Nttcv5unwenUEajVocNeXs80ClBfoS4AezHhg0OvSkxydDX
+52v1bs5sccV1rmJ3ik/+MR1ozqIbaIwJr7RhAPTbwFdBHOniQKfhlO1YRiGl8WD4
+jQVMZMNP3APivIq9lcU5
+=mdcY
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__30_Apr_2013_09_06_36_+1000_W64OUeHgjdz5V5/F--
