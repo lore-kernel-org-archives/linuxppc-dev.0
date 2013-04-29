@@ -2,19 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 6E3DB2C0099
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Apr 2013 05:50:57 +1000 (EST)
-Subject: Re: [PATCH] powerpc/fsl-booke: add the reg property for pci bridge
- device node for t4/b4xx boards
+ by ozlabs.org (Postfix) with ESMTPS id C94412C01FB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Apr 2013 05:51:16 +1000 (EST)
+Subject: Re: [PATCH v2] powerpc/dts: Fix the dts for p1025rdb 36bit
 Mime-Version: 1.0 (Apple Message framework v1278)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1365918013-12190-1-git-send-email-haokexin@gmail.com>
-Date: Mon, 29 Apr 2013 14:50:51 -0500
-Message-Id: <258B986A-A498-4B5A-93C4-C26EA3034E7B@kernel.crashing.org>
-References: <1365918013-12190-1-git-send-email-haokexin@gmail.com>
-To: Kevin Hao <haokexin@gmail.com>
-Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <1364174586-26158-1-git-send-email-B32736@freescale.com>
+Date: Mon, 29 Apr 2013 14:51:05 -0500
+Message-Id: <D9496F15-CC30-4EA4-AC9B-BB359E6D0838@kernel.crashing.org>
+References: <1364174586-26158-1-git-send-email-B32736@freescale.com>
+To: Zhicheng Fan <B32736@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,20 +24,20 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Apr 14, 2013, at 12:40 AM, Kevin Hao wrote:
+On Mar 24, 2013, at 8:23 PM, Zhicheng Fan wrote:
 
-> The reg property in the pci bridge device node is used to bind this
-> device node to the pci bridge device. Then all the pci devices under
-> this bridge could use the interrupt maps defined in this device node
-> to do the irq translation. So if this property is missed, the pci
-> traditional irq mechanism will not work.
-> 
-> Signed-off-by: Kevin Hao <haokexin@gmail.com>
+> fix the following errors:
+> 	Error: arch/powerpc/boot/dts/p1025rdb.dtsi:326.2-3 label or =
+path, 'qe', not found
+> 	Error: arch/powerpc/boot/dts/fsl/p1021si-post.dtsi:242.2-3 label =
+or path, 'qe', not found
+> 	FATAL ERROR: Syntax error parsing input tree
+>=20
+> Signed-off-by: Zhicheng Fan <B32736@freescale.com>
 > ---
-> arch/powerpc/boot/dts/fsl/b4si-post.dtsi    | 1 +
-> arch/powerpc/boot/dts/fsl/t4240si-post.dtsi | 4 ++++
-> 2 files changed, 5 insertions(+)
+> arch/powerpc/boot/dts/p1025rdb_36b.dts |    5 +++++
+> 1 files changed, 5 insertions(+), 0 deletions(-)
 
 applied to next
 
-- k
+- k=
