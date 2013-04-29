@@ -1,23 +1,20 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail-da0-x22f.google.com (mail-da0-x22f.google.com
- [IPv6:2607:f8b0:400e:c00::22f])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5B3672C00C4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Apr 2013 00:07:02 +1000 (EST)
-Received: by mail-da0-f47.google.com with SMTP id p1so2933877dad.6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2013 07:06:57 -0700 (PDT)
-Date: Mon, 29 Apr 2013 07:06:55 -0700
-From: Greg KH <gregkh@linuxfoundation.org>
-To: Ian Munsie <imunsie@au1.ibm.com>
-Subject: Re: [PATCH] powerpc: Fix missing doorbell IPIs during nap power saving
-Message-ID: <20130429140655.GA18950@kroah.com>
-References: <1367223460-4931-1-git-send-email-imunsie@au1.ibm.com>
-MIME-Version: 1.0
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 626FD2C00AE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Apr 2013 05:47:14 +1000 (EST)
+Subject: Re: [PATCH] powerpc/fsl-pci: don't unmap the PCI SoC controller
+ registers in setup_pci_atmu
+Mime-Version: 1.0 (Apple Message framework v1278)
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1367223460-4931-1-git-send-email-imunsie@au1.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, stable@vger.kernel.org
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1365837281-27002-1-git-send-email-haokexin@gmail.com>
+Date: Mon, 29 Apr 2013 14:46:46 -0500
+Message-Id: <1E5EAD9C-0E2F-4B3D-9258-BC5865C46D76@kernel.crashing.org>
+References: <1365837281-27002-1-git-send-email-haokexin@gmail.com>
+To: Kevin Hao <haokexin@gmail.com>
+Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,32 +24,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Apr 29, 2013 at 06:17:40PM +1000, Ian Munsie wrote:
-> From: Ian Munsie <imunsie@au1.ibm.com>
-> 
-> If a doorbell IPI comes in while a thread is in nap power saving, the
-> doorbell interrupt won't be replayed by the hardware since it is edge
-> sensitive. Currently we are not replaying these interrupts in software,
-> which can cause threads to miss IPIs that come in during power saving
-> and eventually will result in an RCU warning from rcu_sched that it has
-> detected a stalled CPU.
-> 
-> This patch fixes the issue by testing if a doorbell caused the thread to
-> come out of power saving and sets the corresponding bit in the paca to
-> indicate a doorbell happened, which will then be handled by the existing
-> interrupt replay code.
-> 
-> This is not an issue with other interrupts that can wake a thread
-> (external, decrementer) as they are level sensitive and will continue to
-> be asserted by the hardware.
-> 
-> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 
+On Apr 13, 2013, at 2:14 AM, Kevin Hao wrote:
 
-<formletter>
+> In patch 34642bbb (powerpc/fsl-pci: Keep PCI SoC controller registers =
+in
+> pci_controller) we choose to keep the map of the PCI SoC controller
+> registers. But we missed to delete the unmap in setup_pci_atmu
+> function. This will cause the following call trace once we access
+> the PCI SoC controller registers later.
+>=20
+> Unable to handle kernel paging request for data at address =
+0x8000080080040f14
+> Faulting instruction address: 0xc00000000002ea58
+> Oops: Kernel access of bad area, sig: 11 [#1]
+> SMP NR_CPUS=3D24 T4240 QDS
+> Modules linked in:
+> NIP: c00000000002ea58 LR: c00000000002eaf4 CTR: c00000000002eac0
+> REGS: c00000017e10b4a0 TRAP: 0300   Not tainted  =
+(3.9.0-rc1-00052-gfa3529f-dirty)
+> MSR: 0000000080029000 <CE,EE,ME>  CR: 28adbe22  XER: 00000000
+> SOFTE: 0
+> DEAR: 8000080080040f14, ESR: 0000000000000000
+> TASK =3D c00000017e100000[1] 'swapper/0' THREAD: c00000017e108000 CPU: =
+2
+> GPR00: 0000000000000000 c00000017e10b720 c0000000009928d8 =
+c00000017e578e00
+> GPR04: 0000000000000000 000000000000000c 0000000000000001 =
+c00000017e10bb40
+> GPR08: 0000000000000000 8000080080040000 0000000000000000 =
+0000000000000016
+> GPR12: 0000000088adbe22 c00000000fffa800 c000000000001ba0 =
+0000000000000000
+> GPR16: 0000000000000000 0000000000000000 0000000000000000 =
+0000000000000000
+> GPR20: 0000000000000000 0000000000000000 0000000000000000 =
+c0000000008a5b70
+> GPR24: c0000000008af938 c0000000009a28d8 c0000000009bb5dc =
+c00000017e10bb40
+> GPR28: c00000017e32a400 c00000017e10bc00 c00000017e32a400 =
+c00000017e578e00
+> NIP [c00000000002ea58] .fsl_pcie_check_link+0x88/0xf0
+> LR [c00000000002eaf4] .fsl_indirect_read_config+0x34/0xb0
+> Call Trace:
+> [c00000017e10b720] [c00000017e10b7a0] 0xc00000017e10b7a0 (unreliable)
+> [c00000017e10ba30] [c00000000002eaf4] =
+.fsl_indirect_read_config+0x34/0xb0
+> [c00000017e10bad0] [c00000000033aa08] =
+.pci_bus_read_config_byte+0x88/0xd0
+> [c00000017e10bb90] [c00000000088d708] =
+.pci_apply_final_quirks+0x9c/0x18c
+> [c00000017e10bc40] [c0000000000013dc] .do_one_initcall+0x5c/0x1f0
+> [c00000017e10bcf0] [c00000000086ebac] =
+.kernel_init_freeable+0x180/0x26c
+> [c00000017e10bdb0] [c000000000001bbc] .kernel_init+0x1c/0x460
+> [c00000017e10be30] [c000000000000880] =
+.ret_from_kernel_thread+0x64/0xe4
+> Instruction dump:
+> 38210310 2b800015 4fdde842 7c600026 5463fffe e8010010 7c0803a6 =
+4e800020
+> 60000000 60000000 e92301d0 7c0004ac <80690f14> 0c030000 4c00012c =
+38210310
+> ---[ end trace 7a8fe0cbccb7d992 ]---
+>=20
+> Kernel panic - not syncing: Attempted to kill init! =
+exitcode=3D0x0000000b
+>=20
+> Signed-off-by: Kevin Hao <haokexin@gmail.com>
+> ---
+> This is based on Kumar's next branch.
+>=20
+> arch/powerpc/sysdev/fsl_pci.c | 7 ++-----
+> 1 file changed, 2 insertions(+), 5 deletions(-)
 
-This is not the correct way to submit patches for inclusion in the
-stable kernel tree.  Please read Documentation/stable_kernel_rules.txt
-for how to do this properly.
+applied to next
 
-</formletter>
+- k=
