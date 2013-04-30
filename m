@@ -1,27 +1,37 @@
-Return-Path: <B16395@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe003.messaging.microsoft.com [213.199.154.206])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 854932C00C2
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 May 2013 03:09:44 +1000 (EST)
-From: Sethi Varun-B16395 <B16395@freescale.com>
-To: "joro@8bytes.org" <joro@8bytes.org>, "iommu@lists.linux-foundation.org"
- <iommu@lists.linux-foundation.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, "galak@kernel.crashing.org"
- <galak@kernel.crashing.org>, "benh@kernel.crashing.org"
- <benh@kernel.crashing.org>, Yoder Stuart-B08248 <B08248@freescale.com>, Wood
- Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH 1/2 v15] iommu/fsl: Add additional iommu attributes
- required by the PAMU driver.
-Date: Tue, 30 Apr 2013 17:09:32 +0000
-Message-ID: <C5ECD7A89D1DC44195F34B25E172658D4CBC45@039-SN2MPN1-011.039d.mgd.msft.net>
-References: <1366803351-17429-1-git-send-email-Varun.Sethi@freescale.com>
-In-Reply-To: <1366803351-17429-1-git-send-email-Varun.Sethi@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 071502C00A7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 May 2013 03:21:09 +1000 (EST)
+Received: from /spool/local
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 30 Apr 2013 22:45:35 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id AF58C394004F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Apr 2013 22:51:02 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r3UHKvqh1573188
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Apr 2013 22:50:57 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r3UHL1CD032139
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 May 2013 03:21:01 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: David Gibson <dwg@au1.ibm.com>
+Subject: Re: [PATCH -V7 18/18] powerpc: Update tlbie/tlbiel as per ISA doc
+In-Reply-To: <20130430061522.GC20202@truffula.fritz.box>
+References: <1367177859-7893-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1367177859-7893-19-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20130430061522.GC20202@truffula.fritz.box>
+Date: Tue, 30 Apr 2013 22:51:00 +0530
+Message-ID: <87ppxc9bpf.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,126 +41,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Joerg,
-Would you take this patchset for 3.10 merge?
+David Gibson <dwg@au1.ibm.com> writes:
 
-Regards
-Varun
+> On Mon, Apr 29, 2013 at 01:07:39AM +0530, Aneesh Kumar K.V wrote:
+>> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+>> 
+>> Encode the actual page correctly in tlbie/tlbiel. This make sure we handle
+>> multiple page size segment correctly.
+>
+> As mentioned in previous comments, this commit message needs to give
+> much more detail about what precisely the existing implementation is
+> doing wrong.
+>
+>> 
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/mm/hash_native_64.c | 32 ++++++++++++++++++++++++++++++--
+>>  1 file changed, 30 insertions(+), 2 deletions(-)
+>> 
+>> diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+>> index bb920ee..6a2aead 100644
+>> --- a/arch/powerpc/mm/hash_native_64.c
+>> +++ b/arch/powerpc/mm/hash_native_64.c
+>> @@ -61,7 +61,10 @@ static inline void __tlbie(unsigned long vpn, int psize, int apsize, int ssize)
+>>  
+>>  	switch (psize) {
+>>  	case MMU_PAGE_4K:
+>> +		/* clear out bits after (52) [0....52.....63] */
+>> +		va &= ~((1ul << (64 - 52)) - 1);
+>>  		va |= ssize << 8;
+>> +		va |= mmu_psize_defs[apsize].sllp << 6;
+>>  		asm volatile(ASM_FTR_IFCLR("tlbie %0,0", PPC_TLBIE(%1,%0), %2)
+>>  			     : : "r" (va), "r"(0), "i" (CPU_FTR_ARCH_206)
+>>  			     : "memory");
+>> @@ -69,9 +72,20 @@ static inline void __tlbie(unsigned long vpn, int psize, int apsize, int ssize)
+>>  	default:
+>>  		/* We need 14 to 14 + i bits of va */
+>>  		penc = mmu_psize_defs[psize].penc[apsize];
+>> -		va &= ~((1ul << mmu_psize_defs[psize].shift) - 1);
+>> +		va &= ~((1ul << mmu_psize_defs[apsize].shift) - 1);
+>>  		va |= penc << 12;
+>>  		va |= ssize << 8;
+>> +		/* Add AVAL part */
+>> +		if (psize != apsize) {
+>> +			/*
+>> +			 * MPSS, 64K base page size and 16MB parge page size
+>> +			 * We don't need all the bits, but rest of the bits
+>> +			 * must be ignored by the processor.
+>> +			 * vpn cover upto 65 bits of va. (0...65) and we need
+>> +			 * 58..64 bits of va.
+>
+> I can't understand what this comment is saying.  Why do we need to do
+> something different in the psize != apsize case?
+>
+>> +			 */
+>> +			va |= (vpn & 0xfe);
+>> +		}
 
-> -----Original Message-----
-> From: Sethi Varun-B16395
-> Sent: Wednesday, April 24, 2013 5:06 PM
-> To: joro@8bytes.org; iommu@lists.linux-foundation.org; linuxppc-
-> dev@lists.ozlabs.org; linux-kernel@vger.kernel.org;
-> galak@kernel.crashing.org; benh@kernel.crashing.org; Yoder Stuart-B08248;
-> Wood Scott-B07421
-> Cc: Sethi Varun-B16395
-> Subject: [PATCH 1/2 v15] iommu/fsl: Add additional iommu attributes
-> required by the PAMU driver.
->=20
-> Added the following domain attributes for the FSL PAMU driver:
-> 1. Added new iommu stash attribute, which allows setting of the
->    LIODN specific stash id parameter through IOMMU API.
-> 2. Added an attribute for enabling/disabling DMA to a particular
->    memory window.
-> 3. Added domain attribute to check for PAMUV1 specific constraints.
->=20
-> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
-> ---
-> v15 changes:
-> - Moved fsl_pamu_stash.h under arch/powerpc/include/asm.
-> v14 changes:
-> - Add FSL prefix to PAMU attributes.
-> v13 changes:
-> - created a new file include/linux/fsl_pamu_stash.h for stash attributes.
-> v12 changes:
-> - Moved PAMU specifc stash ids and structures to PAMU header file.
-> - no change in v11.
-> - no change in v10.
->  arch/powerpc/include/asm/fsl_pamu_stash.h |   39
-> +++++++++++++++++++++++++++++
->  include/linux/iommu.h                     |   16 ++++++++++++
->  2 files changed, 55 insertions(+), 0 deletions(-)  create mode 100644
-> arch/powerpc/include/asm/fsl_pamu_stash.h
->=20
-> diff --git a/arch/powerpc/include/asm/fsl_pamu_stash.h
-> b/arch/powerpc/include/asm/fsl_pamu_stash.h
-> new file mode 100644
-> index 0000000..caa1b21
-> --- /dev/null
-> +++ b/arch/powerpc/include/asm/fsl_pamu_stash.h
-> @@ -0,0 +1,39 @@
-> +/*
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License, version 2, as
-> + * published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program; if not, write to the Free Software
-> + * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
-> USA.
-> + *
-> + * Copyright (C) 2013 Freescale Semiconductor, Inc.
-> + *
-> + */
-> +
-> +#ifndef __FSL_PAMU_STASH_H
-> +#define __FSL_PAMU_STASH_H
-> +
-> +/* cache stash targets */
-> +enum pamu_stash_target {
-> +	PAMU_ATTR_CACHE_L1 =3D 1,
-> +	PAMU_ATTR_CACHE_L2,
-> +	PAMU_ATTR_CACHE_L3,
-> +};
-> +
-> +/*
-> + * This attribute allows configuring stashig specific parameters
-> + * in the PAMU hardware.
-> + */
-> +
-> +struct pamu_stash_attribute {
-> +	u32 	cpu;	/* cpu number */
-> +	u32 	cache;	/* cache to stash to: L1,L2,L3 */
-> +};
-> +
-> +#endif  /* __FSL_PAMU_STASH_H */
-> diff --git a/include/linux/iommu.h b/include/linux/iommu.h index
-> 2727810..313d17a 100644
-> --- a/include/linux/iommu.h
-> +++ b/include/linux/iommu.h
-> @@ -57,10 +57,26 @@ struct iommu_domain {
->  #define IOMMU_CAP_CACHE_COHERENCY	0x1
->  #define IOMMU_CAP_INTR_REMAP		0x2	/* isolates device intrs */
->=20
-> +/*
-> + * Following constraints are specifc to FSL_PAMUV1:
-> + *  -aperture must be power of 2, and naturally aligned
-> + *  -number of windows must be power of 2, and address space size
-> + *   of each window is determined by aperture size / # of windows
-> + *  -the actual size of the mapped region of a window must be power
-> + *   of 2 starting with 4KB and physical address must be naturally
-> + *   aligned.
-> + * DOMAIN_ATTR_FSL_PAMUV1 corresponds to the above mentioned contraints.
-> + * The caller can invoke iommu_domain_get_attr to check if the
-> +underlying
-> + * iommu implementation supports these constraints.
-> + */
-> +
->  enum iommu_attr {
->  	DOMAIN_ATTR_GEOMETRY,
->  	DOMAIN_ATTR_PAGING,
->  	DOMAIN_ATTR_WINDOWS,
-> +	DOMAIN_ATTR_FSL_PAMU_STASH,
-> +	DOMAIN_ATTR_FSL_PAMU_ENABLE,
-> +	DOMAIN_ATTR_FSL_PAMUV1,
->  	DOMAIN_ATTR_MAX,
->  };
->=20
-> --
-> 1.7.4.1
+That is as per ISA doc. It says if base page size == actual page size,
+(RB)56:62 must be zeros, which must be ignored by the processor.
+Otherwise it should be filled with the selected bits of VA as explained above.
+
+We only support MPSS with base page size = 64K and actual page size = 16MB.
+
+-aneesh
