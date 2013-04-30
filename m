@@ -1,24 +1,18 @@
-Return-Path: <B07421@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0189.outbound.messaging.microsoft.com [213.199.154.189])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CC4BC2C00BD
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 May 2013 04:16:10 +1000 (EST)
-Date: Tue, 30 Apr 2013 13:15:51 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: ppc/sata-fsl: orphan config value: CONFIG_MPC8315_DS
-To: Anthony Foiani <tkil@scrye.com>
-In-Reply-To: <517F67AD.2010101@scrye.com> (from tkil@scrye.com on Tue Apr 30
- 01:41:49 2013)
-Message-ID: <1367345751.24133.0@snotra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: Li Yang-R58472 <r58472@freescale.com>, Jeff Garzik <jeff@garzik.org>,
- Adrian Bunk <bunk@stusta.de>, Anthony Foiani <tkil@scrye.com>,
- "Robert P.J.Day" <rpjday@crashcourse.ca>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <abounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E1BC02C00C7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 May 2013 07:27:52 +1000 (EST)
+From: Alexandre Bounine <alexandre.bounine@idt.com>
+To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 0/3] rapidio: changes to enumeration/discovery
+Date: Tue, 30 Apr 2013 17:25:52 -0400
+Message-Id: <1367357155-11586-1-git-send-email-alexandre.bounine@idt.com>
+Cc: Micha Nelissen <micha.nelissen@Prodrive.nl>,
+ Andre van Herk <andre.van.herk@Prodrive.nl>,
+ Alexandre Bounine <alexandre.bounine@idt.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,180 +22,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/30/2013 01:41:49 AM, Anthony Foiani wrote:
-> Apologies for resurrecting a very old thread, but...
->=20
-> On 05/30/2012 02:14 PM, Anthony Foiani wrote:
->>=20
->> Maybe someone who knows devtree really well could crank that out in a
->> few minutes... but I'm not that person.  :)
-> Well, I wasn't last year, but this year I decided that I didn't =20
-> care.  Took me about an hour, not a minute, but...
->=20
-> Having been bitten by this config symbol disappearing one more time, =20
-> please find attached my attempt at using information out of the =20
-> device tree to enable this hack.
->=20
-> Patch is against 3.4.36 or so; hopefully upstream hasn't diverged =20
-> very much.
->=20
-> Tested by me, so feel free to add that tag if required.
->=20
-> Thanks,
-> Anthony Foiani
+Systems that use RapidIO fabric may need to implement their own enumeration
+and discovery methods which are better suitable for needs of a target
+application.
 
-------quoted attachment =20
-"0001-sata-fsl-allow-device-tree-to-limit-sata-speed.patch"------
-> >From c0a85758a669b430c0a6af825e71d18a54ef88d0 Mon Sep 17 00:00:00 =20
-> 2001
-> From: Anthony Foiani <anthony.foiani@gmail.com>
-> Date: Mon, 29 Apr 2013 23:44:14 -0600
-> Subject: [PATCH] sata: fsl: allow device tree to limit sata speed.
->=20
-> There used to be an "orphan" config symbol (CONFIG_MPC8315_DS) that
-> would artificially limit SATA speed to generation 1 (1.5Gbps).
->=20
-> Since that config symbol got lost whenever any sort of configuration
-> was done, we instead extract the limitation from the device tree.
->=20
-> Signed-off-by: Anthony Foiani <anthony.foiani@gmail.com>
-> ---
->  .../devicetree/bindings/powerpc/fsl/board.txt      | 23 +++++++++++
->  drivers/ata/sata_fsl.c                             | 44 =20
-> ++++++++++++++++++----
->  2 files changed, 59 insertions(+), 8 deletions(-)
->=20
-> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/board.txt =20
-> b/Documentation/devicetree/bindings/powerpc/fsl/board.txt
-> index 380914e..6a30398 100644
-> --- a/Documentation/devicetree/bindings/powerpc/fsl/board.txt
-> +++ b/Documentation/devicetree/bindings/powerpc/fsl/board.txt
-> @@ -67,3 +67,26 @@ Example:
->  			gpio-controller;
->  		};
->  	};
-> +
-> +* Maximum SATA Generation workaround
-> +
-> +Some boards advertise SATA speeds that they cannot actually achieve.
-> +Previously, this was dealt with via the orphaned config symbol
-> +CONFIG_MPC8315_DS.  We now have a device tree property
-> +"fsl,sata-max-gen" to control this.  It should live within the "sata"
-> +block.
-> +
-> +Example:
-> +
-> +		sata@18000 {
-> +			compatible =3D "fsl,mpc8315-sata", "fsl,pq-sata";
-> +			reg =3D <0x18000 0x1000>;
-> +			cell-index =3D <1>;
-> +			interrupts =3D <44 0x8>;
-> +			interrupt-parent =3D <&ipic>;
-> +			fsl,sata-max-gen =3D <1>;
-> +		};
-> +
+The following set of patches is intended to simplify process of introduction of
+new RapidIO fabric enumeration/discovery methods.
 
-This might be OK for a new board, but adding it now means that people =20
-using existing device trees won't get the workaround.  It might be =20
-better to just put the knowledge in platform code.
+The first patch offers ability to add new RapidIO enumeration/discovery methods
+using kernel configuration options. This new configuration option mechanism
+allows to select statically linked or modular enumeration/discovery method(s)
+from the list of existing methods or use external module(s).
 
-> +By default, there is no limitation; if a value is given, it indicates
-> +the maximum "generation" that should be negotiated.  Gen 1 is =20
-> 1.5Gbps,
-> +Gen 2 is 3.0Gbps.
-> diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
-> index d6577b9..6d3ec47 100644
-> --- a/drivers/ata/sata_fsl.c
-> +++ b/drivers/ata/sata_fsl.c
-> @@ -274,6 +274,17 @@ struct sata_fsl_port_priv {
->  };
->=20
->  /*
-> + * speed negotiation.
-> + */
-> +
-> +enum {
-> +	SCR_SPEED_NEG_MASK	=3D 0xf0,
-> +	SCR_SPEED_NEG_UNLIMITED	=3D 0x00,
-> +	SCR_SPEED_NEG_GEN_1	=3D 0x10, /* 1.5Gbps max */
-> +	SCR_SPEED_NEG_GEN_2	=3D 0x20  /* 3.0Gbps max */
-> +};
-> +
-> +/*
->   * ata_port->host_set private data
->   */
->  struct sata_fsl_host_priv {
-> @@ -282,6 +293,7 @@ struct sata_fsl_host_priv {
->  	void __iomem *csr_base;
->  	int irq;
->  	int data_snoop;
-> +	u32 speed_neg;
->  	struct device_attribute intr_coalescing;
->  };
->=20
-> @@ -726,19 +738,23 @@ static int sata_fsl_port_start(struct ata_port =20
-> *ap)
->  	VPRINTK("HControl =3D 0x%x\n", ioread32(hcr_base + HCONTROL));
->  	VPRINTK("CHBA  =3D 0x%x\n", ioread32(hcr_base + CHBA));
->=20
-> -#ifdef CONFIG_MPC8315_DS
->  	/*
->  	 * Workaround for 8315DS board 3gbps link-up issue,
->  	 * currently limit SATA port to GEN1 speed
->  	 */
-> -	sata_fsl_scr_read(&ap->link, SCR_CONTROL, &temp);
-> -	temp &=3D ~(0xF << 4);
-> -	temp |=3D (0x1 << 4);
-> -	sata_fsl_scr_write(&ap->link, SCR_CONTROL, temp);
-> +	if ( host_priv->speed_neg !=3D SCR_SPEED_NEG_UNLIMITED )
-> +	{
->=20
-> -	sata_fsl_scr_read(&ap->link, SCR_CONTROL, &temp);
-> -	dev_warn(dev, "scr_control, speed limited to %x\n", temp);
-> -#endif
-> +		u32 orig;
-> +		sata_fsl_scr_read(&ap->link, SCR_CONTROL, &orig);
-> +		temp =3D ( ( orig                 & ~SCR_SPEED_NEG_MASK ) =20
-> |
-> +			 ( host_priv->speed_neg &  SCR_SPEED_NEG_MASK ) =20
-> );
-> +		sata_fsl_scr_write(&ap->link, SCR_CONTROL, temp);
-> +
-> +		sata_fsl_scr_read(&ap->link, SCR_CONTROL, &temp);
-> +		dev_warn(dev, "speed limited, scr_control 0x%x -> =20
-> 0x%x\n",
-> +			 orig, temp);
-> +	}
->=20
->  	return 0;
->  }
-> @@ -1437,6 +1453,18 @@ static int sata_fsl_probe(struct =20
-> platform_device *ofdev)
->  	else
->  		host_priv->data_snoop =3D DATA_SNOOP_ENABLE_V1;
->=20
-> +	if (!of_property_read_u32(ofdev->dev.of_node, =20
-> "fsl,sata-max-gen",
-> +				  &temp))
-> +	{
-> +		switch (temp)
-> +		{
-> +		case 1: host_priv->speed_neg =3D SCR_SPEED_NEG_GEN_1; =20
-> break;
-> +		case 2: host_priv->speed_neg =3D SCR_SPEED_NEG_GEN_2; =20
-> break;
-> +		}
-> +		dev_warn(&ofdev->dev, "speed limit set to gen %u =20
-> (0x%x)\n",
-> +			 temp, host_priv->speed_neg);
-> +	}
-> +
->  	/* allocate host structure */
->  	host =3D ata_host_alloc_pinfo(&ofdev->dev, ppi, =20
-> SATA_FSL_MAX_PORTS);
->  	if (!host) {
+This patch also updates the currently existing enumeration/discovery code to be
+used as a statically linked or modular method. The corresponding configuration
+option is named "Basic enumeration/discovery" method. This is the only one
+configuration option available today but new methods are expected to be
+introduced after adoption of provided patches.
 
-Please use standard Linux coding style, and submit the patch inline =20
-rather than as an attachment (e.g. use git send-email).
+The second patch address a long time complaint of RapidIO subsystem users
+regarding fabric enumeration/discovery start sequence. Existing implementation
+offers only a boot-time enumeration/discovery start which requires synchronized
+boot of all endpoints in RapidIO network. While it works for small closed
+configurations with limited number of endpoints, using this approach in systems
+with large number of endpoints is quite challenging.
 
--Scott=
+To eliminate requirement for synchronized start the second patch introduces
+RapidIO enumeration/discovery start from user space.
+
+For compatibility with the existing RapidIO subsystem implementation, automatic
+boot time enumeration/discovery start can be configured in by specifying
+"rio-scan.scan=1" command line parameter if statically linked basic enumeration
+method is selected.
+
+Changes since v1:
+	(1) Addressed comments made by Andrew Morton for v1:
+	  - reworked enumeration/discovery module initialization
+	  - added locking for list of mport devices
+	  - made mport list static
+	  - removed CONFIG_RAPIDIO_ENUM_AUTO option: not needed with new
+	    module initialization
+	  - added default value for "Enumeration method" choice in Kconfig
+
+Cc: Matt Porter <mporter@kernel.crashing.org>
+Cc: Li Yang <leoli@freescale.com>
+Cc: Kumar Gala <galak@kernel.crashing.org>
+Cc: Andre van Herk <andre.van.herk@Prodrive.nl>
+Cc: Micha Nelissen <micha.nelissen@Prodrive.nl>
+
+Alexandre Bounine (3):
+  rapidio: make enumeration/discovery configurable
+  rapidio: add enumeration/discovery start from user space
+  rapidio: documentation update for enumeration changes
+
+ Documentation/rapidio/rapidio.txt |  128 ++++++++++++++++++--
+ Documentation/rapidio/sysfs.txt   |   17 +++
+ drivers/rapidio/Kconfig           |   20 +++
+ drivers/rapidio/Makefile          |    3 +-
+ drivers/rapidio/rio-driver.c      |    8 ++
+ drivers/rapidio/rio-scan.c        |  190 +++++++++-------------------
+ drivers/rapidio/rio-sysfs.c       |   45 +++++++
+ drivers/rapidio/rio.c             |  246 +++++++++++++++++++++++++++++++++++-
+ drivers/rapidio/rio.h             |   13 ++-
+ include/linux/rio.h               |   18 +++-
+ include/linux/rio_drv.h           |    1 +
+ 11 files changed, 536 insertions(+), 153 deletions(-)
+
+-- 
+1.7.8.4
