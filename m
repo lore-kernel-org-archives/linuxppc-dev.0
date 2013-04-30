@@ -1,37 +1,24 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 071502C00A7
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 May 2013 03:21:09 +1000 (EST)
-Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 30 Apr 2013 22:45:35 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id AF58C394004F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Apr 2013 22:51:02 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r3UHKvqh1573188
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Apr 2013 22:50:57 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r3UHL1CD032139
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 May 2013 03:21:01 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: David Gibson <dwg@au1.ibm.com>
-Subject: Re: [PATCH -V7 18/18] powerpc: Update tlbie/tlbiel as per ISA doc
-In-Reply-To: <20130430061522.GC20202@truffula.fritz.box>
-References: <1367177859-7893-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1367177859-7893-19-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20130430061522.GC20202@truffula.fritz.box>
-Date: Tue, 30 Apr 2013 22:51:00 +0530
-Message-ID: <87ppxc9bpf.fsf@linux.vnet.ibm.com>
+Return-Path: <B07421@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0189.outbound.messaging.microsoft.com [213.199.154.189])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CC4BC2C00BD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 May 2013 04:16:10 +1000 (EST)
+Date: Tue, 30 Apr 2013 13:15:51 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: ppc/sata-fsl: orphan config value: CONFIG_MPC8315_DS
+To: Anthony Foiani <tkil@scrye.com>
+In-Reply-To: <517F67AD.2010101@scrye.com> (from tkil@scrye.com on Tue Apr 30
+ 01:41:49 2013)
+Message-ID: <1367345751.24133.0@snotra>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: Li Yang-R58472 <r58472@freescale.com>, Jeff Garzik <jeff@garzik.org>,
+ Adrian Bunk <bunk@stusta.de>, Anthony Foiani <tkil@scrye.com>,
+ "Robert P.J.Day" <rpjday@crashcourse.ca>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,67 +28,180 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-David Gibson <dwg@au1.ibm.com> writes:
+On 04/30/2013 01:41:49 AM, Anthony Foiani wrote:
+> Apologies for resurrecting a very old thread, but...
+>=20
+> On 05/30/2012 02:14 PM, Anthony Foiani wrote:
+>>=20
+>> Maybe someone who knows devtree really well could crank that out in a
+>> few minutes... but I'm not that person.  :)
+> Well, I wasn't last year, but this year I decided that I didn't =20
+> care.  Took me about an hour, not a minute, but...
+>=20
+> Having been bitten by this config symbol disappearing one more time, =20
+> please find attached my attempt at using information out of the =20
+> device tree to enable this hack.
+>=20
+> Patch is against 3.4.36 or so; hopefully upstream hasn't diverged =20
+> very much.
+>=20
+> Tested by me, so feel free to add that tag if required.
+>=20
+> Thanks,
+> Anthony Foiani
 
-> On Mon, Apr 29, 2013 at 01:07:39AM +0530, Aneesh Kumar K.V wrote:
->> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
->> 
->> Encode the actual page correctly in tlbie/tlbiel. This make sure we handle
->> multiple page size segment correctly.
->
-> As mentioned in previous comments, this commit message needs to give
-> much more detail about what precisely the existing implementation is
-> doing wrong.
->
->> 
->> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/mm/hash_native_64.c | 32 ++++++++++++++++++++++++++++++--
->>  1 file changed, 30 insertions(+), 2 deletions(-)
->> 
->> diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
->> index bb920ee..6a2aead 100644
->> --- a/arch/powerpc/mm/hash_native_64.c
->> +++ b/arch/powerpc/mm/hash_native_64.c
->> @@ -61,7 +61,10 @@ static inline void __tlbie(unsigned long vpn, int psize, int apsize, int ssize)
->>  
->>  	switch (psize) {
->>  	case MMU_PAGE_4K:
->> +		/* clear out bits after (52) [0....52.....63] */
->> +		va &= ~((1ul << (64 - 52)) - 1);
->>  		va |= ssize << 8;
->> +		va |= mmu_psize_defs[apsize].sllp << 6;
->>  		asm volatile(ASM_FTR_IFCLR("tlbie %0,0", PPC_TLBIE(%1,%0), %2)
->>  			     : : "r" (va), "r"(0), "i" (CPU_FTR_ARCH_206)
->>  			     : "memory");
->> @@ -69,9 +72,20 @@ static inline void __tlbie(unsigned long vpn, int psize, int apsize, int ssize)
->>  	default:
->>  		/* We need 14 to 14 + i bits of va */
->>  		penc = mmu_psize_defs[psize].penc[apsize];
->> -		va &= ~((1ul << mmu_psize_defs[psize].shift) - 1);
->> +		va &= ~((1ul << mmu_psize_defs[apsize].shift) - 1);
->>  		va |= penc << 12;
->>  		va |= ssize << 8;
->> +		/* Add AVAL part */
->> +		if (psize != apsize) {
->> +			/*
->> +			 * MPSS, 64K base page size and 16MB parge page size
->> +			 * We don't need all the bits, but rest of the bits
->> +			 * must be ignored by the processor.
->> +			 * vpn cover upto 65 bits of va. (0...65) and we need
->> +			 * 58..64 bits of va.
->
-> I can't understand what this comment is saying.  Why do we need to do
-> something different in the psize != apsize case?
->
->> +			 */
->> +			va |= (vpn & 0xfe);
->> +		}
+------quoted attachment =20
+"0001-sata-fsl-allow-device-tree-to-limit-sata-speed.patch"------
+> >From c0a85758a669b430c0a6af825e71d18a54ef88d0 Mon Sep 17 00:00:00 =20
+> 2001
+> From: Anthony Foiani <anthony.foiani@gmail.com>
+> Date: Mon, 29 Apr 2013 23:44:14 -0600
+> Subject: [PATCH] sata: fsl: allow device tree to limit sata speed.
+>=20
+> There used to be an "orphan" config symbol (CONFIG_MPC8315_DS) that
+> would artificially limit SATA speed to generation 1 (1.5Gbps).
+>=20
+> Since that config symbol got lost whenever any sort of configuration
+> was done, we instead extract the limitation from the device tree.
+>=20
+> Signed-off-by: Anthony Foiani <anthony.foiani@gmail.com>
+> ---
+>  .../devicetree/bindings/powerpc/fsl/board.txt      | 23 +++++++++++
+>  drivers/ata/sata_fsl.c                             | 44 =20
+> ++++++++++++++++++----
+>  2 files changed, 59 insertions(+), 8 deletions(-)
+>=20
+> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/board.txt =20
+> b/Documentation/devicetree/bindings/powerpc/fsl/board.txt
+> index 380914e..6a30398 100644
+> --- a/Documentation/devicetree/bindings/powerpc/fsl/board.txt
+> +++ b/Documentation/devicetree/bindings/powerpc/fsl/board.txt
+> @@ -67,3 +67,26 @@ Example:
+>  			gpio-controller;
+>  		};
+>  	};
+> +
+> +* Maximum SATA Generation workaround
+> +
+> +Some boards advertise SATA speeds that they cannot actually achieve.
+> +Previously, this was dealt with via the orphaned config symbol
+> +CONFIG_MPC8315_DS.  We now have a device tree property
+> +"fsl,sata-max-gen" to control this.  It should live within the "sata"
+> +block.
+> +
+> +Example:
+> +
+> +		sata@18000 {
+> +			compatible =3D "fsl,mpc8315-sata", "fsl,pq-sata";
+> +			reg =3D <0x18000 0x1000>;
+> +			cell-index =3D <1>;
+> +			interrupts =3D <44 0x8>;
+> +			interrupt-parent =3D <&ipic>;
+> +			fsl,sata-max-gen =3D <1>;
+> +		};
+> +
 
-That is as per ISA doc. It says if base page size == actual page size,
-(RB)56:62 must be zeros, which must be ignored by the processor.
-Otherwise it should be filled with the selected bits of VA as explained above.
+This might be OK for a new board, but adding it now means that people =20
+using existing device trees won't get the workaround.  It might be =20
+better to just put the knowledge in platform code.
 
-We only support MPSS with base page size = 64K and actual page size = 16MB.
+> +By default, there is no limitation; if a value is given, it indicates
+> +the maximum "generation" that should be negotiated.  Gen 1 is =20
+> 1.5Gbps,
+> +Gen 2 is 3.0Gbps.
+> diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
+> index d6577b9..6d3ec47 100644
+> --- a/drivers/ata/sata_fsl.c
+> +++ b/drivers/ata/sata_fsl.c
+> @@ -274,6 +274,17 @@ struct sata_fsl_port_priv {
+>  };
+>=20
+>  /*
+> + * speed negotiation.
+> + */
+> +
+> +enum {
+> +	SCR_SPEED_NEG_MASK	=3D 0xf0,
+> +	SCR_SPEED_NEG_UNLIMITED	=3D 0x00,
+> +	SCR_SPEED_NEG_GEN_1	=3D 0x10, /* 1.5Gbps max */
+> +	SCR_SPEED_NEG_GEN_2	=3D 0x20  /* 3.0Gbps max */
+> +};
+> +
+> +/*
+>   * ata_port->host_set private data
+>   */
+>  struct sata_fsl_host_priv {
+> @@ -282,6 +293,7 @@ struct sata_fsl_host_priv {
+>  	void __iomem *csr_base;
+>  	int irq;
+>  	int data_snoop;
+> +	u32 speed_neg;
+>  	struct device_attribute intr_coalescing;
+>  };
+>=20
+> @@ -726,19 +738,23 @@ static int sata_fsl_port_start(struct ata_port =20
+> *ap)
+>  	VPRINTK("HControl =3D 0x%x\n", ioread32(hcr_base + HCONTROL));
+>  	VPRINTK("CHBA  =3D 0x%x\n", ioread32(hcr_base + CHBA));
+>=20
+> -#ifdef CONFIG_MPC8315_DS
+>  	/*
+>  	 * Workaround for 8315DS board 3gbps link-up issue,
+>  	 * currently limit SATA port to GEN1 speed
+>  	 */
+> -	sata_fsl_scr_read(&ap->link, SCR_CONTROL, &temp);
+> -	temp &=3D ~(0xF << 4);
+> -	temp |=3D (0x1 << 4);
+> -	sata_fsl_scr_write(&ap->link, SCR_CONTROL, temp);
+> +	if ( host_priv->speed_neg !=3D SCR_SPEED_NEG_UNLIMITED )
+> +	{
+>=20
+> -	sata_fsl_scr_read(&ap->link, SCR_CONTROL, &temp);
+> -	dev_warn(dev, "scr_control, speed limited to %x\n", temp);
+> -#endif
+> +		u32 orig;
+> +		sata_fsl_scr_read(&ap->link, SCR_CONTROL, &orig);
+> +		temp =3D ( ( orig                 & ~SCR_SPEED_NEG_MASK ) =20
+> |
+> +			 ( host_priv->speed_neg &  SCR_SPEED_NEG_MASK ) =20
+> );
+> +		sata_fsl_scr_write(&ap->link, SCR_CONTROL, temp);
+> +
+> +		sata_fsl_scr_read(&ap->link, SCR_CONTROL, &temp);
+> +		dev_warn(dev, "speed limited, scr_control 0x%x -> =20
+> 0x%x\n",
+> +			 orig, temp);
+> +	}
+>=20
+>  	return 0;
+>  }
+> @@ -1437,6 +1453,18 @@ static int sata_fsl_probe(struct =20
+> platform_device *ofdev)
+>  	else
+>  		host_priv->data_snoop =3D DATA_SNOOP_ENABLE_V1;
+>=20
+> +	if (!of_property_read_u32(ofdev->dev.of_node, =20
+> "fsl,sata-max-gen",
+> +				  &temp))
+> +	{
+> +		switch (temp)
+> +		{
+> +		case 1: host_priv->speed_neg =3D SCR_SPEED_NEG_GEN_1; =20
+> break;
+> +		case 2: host_priv->speed_neg =3D SCR_SPEED_NEG_GEN_2; =20
+> break;
+> +		}
+> +		dev_warn(&ofdev->dev, "speed limit set to gen %u =20
+> (0x%x)\n",
+> +			 temp, host_priv->speed_neg);
+> +	}
+> +
+>  	/* allocate host structure */
+>  	host =3D ata_host_alloc_pinfo(&ofdev->dev, ppi, =20
+> SATA_FSL_MAX_PORTS);
+>  	if (!host) {
 
--aneesh
+Please use standard Linux coding style, and submit the patch inline =20
+rather than as an attachment (e.g. use git send-email).
+
+-Scott=
