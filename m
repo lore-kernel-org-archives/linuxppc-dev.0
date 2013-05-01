@@ -1,9 +1,9 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 2/3] powerpc: Turn on the EBB H/FSCR bits
-Date: Wed,  1 May 2013 16:17:03 +1000
-Message-Id: <1367389024-20391-3-git-send-email-mikey@neuling.org>
+Subject: [PATCH 3/3] powerpc: Context switch the new EBB SPRs
+Date: Wed,  1 May 2013 16:17:04 +1000
+Message-Id: <1367389024-20391-4-git-send-email-mikey@neuling.org>
 In-Reply-To: <1367389024-20391-1-git-send-email-mikey@neuling.org>
 References: <1367389024-20391-1-git-send-email-mikey@neuling.org>
 Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
@@ -17,50 +17,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This turns Event Based Branching (EBB) on in the Hypervisor Facility Status and
-Control Register (HFSCR) and Facility Status and Control Register (FSCR).
+From: Michael Ellerman <michael@ellerman.id.au>
 
+This context switches the new Event Based Branching (EBB) SPRs.  The three new
+SPRs are:
+  - Event Based Branch Handler Register (EBBHR)
+  - Event Based Branch Return Register (EBBRR)
+  - Branch Event Status and Control Register (BESCR)
+
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+Signed-off-by: Matt Evans <matt@ozlabs.org>
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/include/asm/reg.h        |    2 ++
- arch/powerpc/kernel/cpu_setup_power.S |    4 ++--
- 2 files changed, 4 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/processor.h |    3 +++
+ arch/powerpc/include/asm/reg.h       |    3 +++
+ arch/powerpc/kernel/asm-offsets.c    |    3 +++
+ arch/powerpc/kernel/entry_64.S       |   16 ++++++++++++++++
+ 4 files changed, 25 insertions(+)
 
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index 0a4cc5d..d7e67ca 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -281,6 +281,9 @@ struct thread_struct {
+ #endif
+ #ifdef CONFIG_PPC_BOOK3S_64
+ 	unsigned long	tar;
++	unsigned long	ebbrr;
++	unsigned long	ebbhr;
++	unsigned long	bescr;
+ #endif
+ };
+ 
 diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index 0b1ea1f..cd241ed 100644
+index cd241ed..fa8285b 100644
 --- a/arch/powerpc/include/asm/reg.h
 +++ b/arch/powerpc/include/asm/reg.h
-@@ -267,9 +267,11 @@
- #define SPRN_HSRR1	0x13B	/* Hypervisor Save/Restore 1 */
- #define SPRN_FSCR	0x099	/* Facility Status & Control Register */
- #define   FSCR_TAR	(1 << (63-55)) /* Enable Target Address Register */
-+#define   FSCR_EBB	(1 << (63-56)) /* Enable Event Based Branching */
- #define   FSCR_DSCR	(1 << (63-61)) /* Enable Data Stream Control Register */
- #define SPRN_HFSCR	0xbe	/* HV=1 Facility Status & Control Register */
- #define   HFSCR_TAR	(1 << (63-55)) /* Enable Target Address Register */
-+#define   HFSCR_EBB	(1 << (63-56)) /* Enable Event Based Branching */
- #define   HFSCR_TM	(1 << (63-58)) /* Enable Transactional Memory */
- #define   HFSCR_BHRB	(1 << (63-59)) /* Enable Branch History Rolling Buffer */
- #define   HFSCR_PM	(1 << (63-60)) /* Enable prob/priv access to PMU SPRs */
-diff --git a/arch/powerpc/kernel/cpu_setup_power.S b/arch/powerpc/kernel/cpu_setup_power.S
-index 256766d..2df2276 100644
---- a/arch/powerpc/kernel/cpu_setup_power.S
-+++ b/arch/powerpc/kernel/cpu_setup_power.S
-@@ -123,13 +123,13 @@ __init_LPCR:
+@@ -663,6 +663,9 @@
+ #define SPRN_MMCRH	316	/* Hypervisor monitor mode control register */
+ #define SPRN_MMCRS	894	/* Supervisor monitor mode control register */
+ #define SPRN_MMCRC	851	/* Core monitor mode control register */
++#define SPRN_EBBHR	804	/* Event based branch handler register */
++#define SPRN_EBBRR	805	/* Event based branch return register */
++#define SPRN_BESCR	806	/* Branch event status and control register */
  
- __init_FSCR:
- 	mfspr	r3,SPRN_FSCR
--	ori	r3,r3,FSCR_TAR|FSCR_DSCR
-+	ori	r3,r3,FSCR_TAR|FSCR_EBB|FSCR_DSCR
- 	mtspr	SPRN_FSCR,r3
- 	blr
+ #define SPRN_PMC1	787
+ #define SPRN_PMC2	788
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index b6c17ec..172233e 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -124,6 +124,9 @@ int main(void)
  
- __init_HFSCR:
- 	mfspr	r3,SPRN_HFSCR
--	ori	r3,r3,HFSCR_TAR|HFSCR_TM|HFSCR_BHRB|\
-+	ori	r3,r3,HFSCR_TAR|HFSCR_EBB|HFSCR_TM|HFSCR_BHRB|\
- 				HFSCR_DSCR|HFSCR_VECVSX|HFSCR_FP
- 	mtspr	SPRN_HFSCR,r3
- 	blr
+ #ifdef CONFIG_PPC_BOOK3S_64
+ 	DEFINE(THREAD_TAR, offsetof(struct thread_struct, tar));
++	DEFINE(THREAD_BESCR, offsetof(struct thread_struct, bescr));
++	DEFINE(THREAD_EBBHR, offsetof(struct thread_struct, ebbhr));
++	DEFINE(THREAD_EBBRR, offsetof(struct thread_struct, ebbrr));
+ #endif
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ 	DEFINE(PACATMSCRATCH, offsetof(struct paca_struct, tm_scratch));
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 7a6801f..3fe5259 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -458,6 +458,14 @@ BEGIN_FTR_SECTION
+ 	 */
+ 	mfspr	r0,SPRN_TAR
+ 	std	r0,THREAD_TAR(r3)
++
++	/* Event based branch registers */
++	mfspr	r0, SPRN_BESCR
++	std	r0, THREAD_BESCR(r3)
++	mfspr	r0, SPRN_EBBHR
++	std	r0, THREAD_EBBHR(r3)
++	mfspr	r0, SPRN_EBBRR
++	std	r0, THREAD_EBBRR(r3)
+ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ #endif
+ 
+@@ -545,6 +553,14 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_1T_SEGMENT)
+ 
+ #ifdef CONFIG_PPC_BOOK3S_64
+ BEGIN_FTR_SECTION
++	/* Event based branch registers */
++	ld	r0, THREAD_BESCR(r4)
++	mtspr	SPRN_BESCR, r0
++	ld	r0, THREAD_EBBHR(r4)
++	mtspr	SPRN_EBBHR, r0
++	ld	r0, THREAD_EBBRR(r4)
++	mtspr	SPRN_EBBRR, r0
++
+ 	ld	r0,THREAD_TAR(r4)
+ 	mtspr	SPRN_TAR,r0
+ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
 -- 
 1.7.10.4
