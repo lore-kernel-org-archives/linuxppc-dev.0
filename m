@@ -1,23 +1,25 @@
-Return-Path: <tkil@scrye.com>
-Received: from mail.scrye.com (scrye.com
- [IPv6:2001:470:b8bc:cafe:5054:ff:fedc:793f])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client CN "mail.scrye.com", Issuer "mail.scrye.com" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7B78A2C01EE
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 May 2013 12:07:03 +1000 (EST)
-Message-ID: <518078C0.7070805@scrye.com>
-Date: Tue, 30 Apr 2013 20:06:56 -0600
-From: Anthony Foiani <tkil@scrye.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: ppc/sata-fsl: orphan config value: CONFIG_MPC8315_DS
-References: <1367368958.24133.21@snotra>
-In-Reply-To: <1367368958.24133.21@snotra>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "Robert P.J.Day" <rpjday@crashcourse.ca>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>, Jeff Garzik <jeff@garzik.org>,
- Adrian Bunk <bunk@stusta.de>
+Return-Path: <eric.dumazet@gmail.com>
+Received: from mail-pb0-x231.google.com (mail-pb0-x231.google.com
+ [IPv6:2607:f8b0:400e:c01::231])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E17E12C00D1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 May 2013 12:24:26 +1000 (EST)
+Received: by mail-pb0-f49.google.com with SMTP id rp8so544298pbb.22
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Apr 2013 19:24:23 -0700 (PDT)
+Message-ID: <1367375060.11020.24.camel@edumazet-glaptop>
+Subject: Re: [PATCH net-next] af_unix: fix a fatal race with bit fields
+From: Eric Dumazet <eric.dumazet@gmail.com>
+To: Anton Blanchard <anton@samba.org>
+Date: Tue, 30 Apr 2013 19:24:20 -0700
+In-Reply-To: <20130501115103.58e40f37@kryten>
+References: <1367370761.11020.22.camel@edumazet-glaptop>
+ <20130501115103.58e40f37@kryten>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: amodra@gmail.com, netdev <netdev@vger.kernel.org>,
+ Ambrose Feinstein <ambrose@google.com>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,54 +29,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott --
+On Wed, 2013-05-01 at 11:51 +1000, Anton Blanchard wrote:
+> Hi Eric,
+> 
+> > From: Eric Dumazet <edumazet@google.com>
+> > 
+> > Using bit fields is dangerous on ppc64, as the compiler uses 64bit
+> > instructions to manipulate them. If the 64bit word includes any
+> > atomic_t or spinlock_t, we can lose critical concurrent changes.
+> > 
+> > This is happening in af_unix, where unix_sk(sk)->gc_candidate/
+> > gc_maybe_cycle/lock share the same 64bit word.
+> > 
+> > This leads to fatal deadlock, as one/several cpus spin forever
+> > on a spinlock that will never be available again.
+> 
+> I just spoke to Alan Modra and he suspects this is a compiler
+> bug. Can you give us your compiler version info?
 
-On 04/30/2013 06:42 PM, Scott Wood wrote:
-> I just meant that, for whatever boards you would have put this in the 
-> device tree, put it in platform code instead (if the platform file 
-> supports more than one board type, then check the compatible at the 
-> top of the device tree). 
+$ gcc-4.6.3-nolibc/powerpc64-linux/bin/powerpc64-linux-gcc -v
+Using built-in specs.
+COLLECT_GCC=gcc-4.6.3-nolibc/powerpc64-linux/bin/powerpc64-linux-gcc
+COLLECT_LTO_WRAPPER=/usr/local/google/home/edumazet/cross/gcc-4.6.3-nolibc/powerpc64-linux/bin/../libexec/gcc/powerpc64-linux/4.6.3/lto-wrapper
+Target: powerpc64-linux
+Configured with: /home/tony/buildall/src/gcc/configure
+--target=powerpc64-linux --host=x86_64-linux-gnu
+--build=x86_64-linux-gnu --enable-targets=all
+--prefix=/opt/cross/gcc-4.6.3-nolibc/powerpc64-linux/
+--enable-languages=c --with-newlib --without-headers
+--enable-sjlj-exceptions --with-system-libunwind --disable-nls
+--disable-threads --disable-shared --disable-libmudflap --disable-libssp
+--disable-libgomp --disable-decimal-float --enable-checking=release
+--with-mpfr=/home/tony/buildall/src/sys-x86_64
+--with-gmp=/home/tony/buildall/src/sys-x86_64 --disable-bootstrap
+--disable-libquadmath
+Thread model: single
+gcc version 4.6.3 (GCC) 
 
-I think I understand what you're suggesting.
 
-Instead of a new property name, I would instead check for my specific 
-board type (let's call it a foo-8315) in the top-level compatible list?  
-So I'd change my devtree to have this top-level compatible:
+$ cat try.c ; gcc-4.6.3-nolibc/powerpc64-linux/bin/powerpc64-linux-gcc
+-O2 -S try.c ; cat try.s
+struct s {
+	unsigned int lock;
+	unsigned int f1 : 1;
+	unsigned int f2 : 1;
+	void *ptr;
+} *p ;
 
-/ {
-     compatible = "example,foo-8315", "fsl,mpc8315erdb";
+showbug()
+{
+	p->lock++;
+	p->f1 = 1;
+}
+	.file	"try.c"
+	.section	".toc","aw"
+	.section	".text"
+	.section	".toc","aw"
+.LC0:
+	.tc p[TC],p
+	.section	".text"
+	.align 2
+	.globl showbug
+	.section	".opd","aw"
+	.align 3
+showbug:
+	.quad	.L.showbug,.TOC.@tocbase,0
+	.previous
+	.type	showbug, @function
+.L.showbug:
+	addis 9,2,.LC0@toc@ha
+	ld 9,.LC0@toc@l(9)
+	ld 9,0(9)
+	lwz 11,0(9)
+	addi 0,11,1
+	stw 0,0(9)
+	li 11,1
+	ld 0,0(9)
+	rldimi 0,11,31,32
+	std 0,0(9)
+	blr
+	.long 0
+	.byte 0,0,0,0,0,0,0,0
+	.size	showbug,.-.L.showbug
+	.comm	p,8,8
+	.ident	"GCC: (GNU) 4.6.3"
 
-If I saw that, I would then twiddle the bits as needed?
-
-MIght work, although having it in the sata block of the device tree has 
-the advantage of providing me exactly the OF node that I need (in 
-ofdev->dev.of_node).  I'd have to figure out how to traverse to the dev 
-tree root and then back down one to the root compat entry.  Probably not 
-impossible, but I was aiming for a fairly minimal patch.
-
-It would also be nice if we could unravel exactly why that 
-CONFIG_8315_DS ever showed up in the first place.  (The other "minimal" 
-aspect of my patch was to try to make changes only around that one area, 
-so that others could see that it was a simple change.)
-
-> Or do you mean that you would not set this on any board's device tree 
-> by default, and instead have users set it if they encounter problems? 
-
-No, I would expect to set it on all the boards, so using the 
-compatibility hack above would work.
-
-> Is this a custom board you're seeing it on?
-
-Not ours, but our vendor isn't very active on upstreaming things. (And 
-yes, had I know that 5 years ago, I could possibly have changed vendors, 
-or made upstreaming a part of the contract.  But at this point, we're 
-stuck with this vendor, and they're not going to fix it; so I'm trying 
-to fix it, and I'm trying to do the best job of upstreaming those fixes 
-that I can.)
-
-> git send-email can connect directly to an SMTP server.
-
-Ok, I'll play around with that.
-
-Thanks again,
-Anthony
+You can see "ld 0,0(9)" is used : its a 64 bit load.
