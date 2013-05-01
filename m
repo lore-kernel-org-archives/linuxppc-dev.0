@@ -1,25 +1,36 @@
-Return-Path: <eric.dumazet@gmail.com>
-Received: from mail-pd0-f176.google.com (mail-pd0-f176.google.com
- [209.85.192.176])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 096F72C00CF
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 May 2013 01:24:09 +1000 (EST)
-Received: by mail-pd0-f176.google.com with SMTP id r10so861307pdi.35
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 May 2013 08:24:06 -0700 (PDT)
-Message-ID: <1367421843.11020.43.camel@edumazet-glaptop>
-Subject: [PATCH v2 net-next] af_unix: fix a fatal race with bit fields
-From: Eric Dumazet <eric.dumazet@gmail.com>
-To: David Miller <davem@davemloft.net>
-Date: Wed, 01 May 2013 08:24:03 -0700
-In-Reply-To: <20130501.033650.703182794549888825.davem@davemloft.net>
-References: <1367370761.11020.22.camel@edumazet-glaptop>
- <1367372393.22115.6.camel@pasglop>
- <20130501.033650.703182794549888825.davem@davemloft.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org, ambrose@google.com,
- netdev@vger.kernel.org
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 657BD2C00BD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 May 2013 01:26:07 +1000 (EST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Wed, 1 May 2013 09:26:04 -0600
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 7247838C804F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 May 2013 11:26:00 -0400 (EDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r41FPx1b225620
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 May 2013 11:26:00 -0400
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r41FPuAv027731
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 May 2013 09:25:57 -0600
+Message-ID: <51813403.50508@linux.vnet.ibm.com>
+Date: Wed, 01 May 2013 10:25:55 -0500
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Robert Jennings <rcj@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Ben Herrenschmidt <benh@kernel.crashing.org>, stable@kernel.org
+Subject: Re: [PATCH] powerpc: Bring all threads online prior to
+ migration/hibernation
+References: <20130426213203.GC3698@linux.vnet.ibm.com>
+In-Reply-To: <20130426213203.GC3698@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,120 +40,243 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-05-01 at 03:36 -0400, David Miller wrote:
-> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Date: Wed, 01 May 2013 11:39:53 +1000
+On 04/26/2013 04:32 PM, Robert Jennings wrote:
+> With this patch before a migration/hibernation all threads present but
+> not online will be brought online.  After migration/hibernation those
+> threads are taken back offline.
 > 
-> > I'm not even completely certain bytes are safe to be honest, though
-> > probably more than bitfields. I'll poke our compiler people.
+> During migration/hibernation all online CPUs must call H_JOIN, this is
+> required by the hypervisor.  Without this patch, threads that are offline
+> (H_CEDE'd) will not be woken to make the H_JOIN call and the OS will be
+> deadlocked (all threads either JOIN'd or CEDE'd).
 > 
-> Older Alpha only has 32-bit and 64-bit loads and stores, so byte sized
-> accesses are not atomic, and therefore use racey read-modify-write
-> sequences.
 
-Right, so what about the following more general fix ?
+This fixes a long standing bug in partition migration.
 
-Thanks !
+Acked-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 
-[PATCH v2] af_unix: fix a fatal race with bit fields
+> Cc: <stable@kernel.org>
+> Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/rtas.h          |    2 +
+>  arch/powerpc/kernel/rtas.c               |   95 ++++++++++++++++++++++++++++++
+>  arch/powerpc/platforms/pseries/suspend.c |   22 +++++++
+>  3 files changed, 119 insertions(+)
+> 
+> diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+> index aef00c6..ee38f29 100644
+> --- a/arch/powerpc/include/asm/rtas.h
+> +++ b/arch/powerpc/include/asm/rtas.h
+> @@ -262,6 +262,8 @@ extern void rtas_progress(char *s, unsigned short hex);
+>  extern void rtas_initialize(void);
+>  extern int rtas_suspend_cpu(struct rtas_suspend_me_data *data);
+>  extern int rtas_suspend_last_cpu(struct rtas_suspend_me_data *data);
+> +extern int rtas_online_cpus_mask(cpumask_var_t cpus);
+> +extern int rtas_offline_cpus_mask(cpumask_var_t cpus);
+>  extern int rtas_ibm_suspend_me(struct rtas_args *);
+>  
+>  struct rtc_time;
+> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+> index 1fd6e7b..855ee98 100644
+> --- a/arch/powerpc/kernel/rtas.c
+> +++ b/arch/powerpc/kernel/rtas.c
+> @@ -19,6 +19,7 @@
+>  #include <linux/init.h>
+>  #include <linux/capability.h>
+>  #include <linux/delay.h>
+> +#include <linux/cpu.h>
+>  #include <linux/smp.h>
+>  #include <linux/completion.h>
+>  #include <linux/cpumask.h>
+> @@ -807,6 +808,77 @@ static void rtas_percpu_suspend_me(void *info)
+>  	__rtas_suspend_cpu((struct rtas_suspend_me_data *)info, 1);
+>  }
+>  
+> +enum rtas_cpu_state {
+> +	DOWN,
+> +	UP,
+> +};
+> +
+> +/* On return cpumask will be altered to indicate CPUs changed */
+> +static int rtas_cpu_state_change_mask(enum rtas_cpu_state state,
+> +				cpumask_var_t cpus)
+> +{
+> +	int cpu;
+> +	int cpuret = 0;
+> +	int ret = 0;
+> +
+> +	if (cpumask_empty(cpus))
+> +		return 0;
+> +
+> +	for_each_cpu(cpu, cpus) {
+> +		switch (state) {
+> +		case DOWN:
+> +			cpuret = cpu_down(cpu);
+> +			break;
+> +		case UP:
+> +			cpuret = cpu_up(cpu);
+> +			break;
+> +		}
+> +		if (cpuret) {
+> +			pr_debug("%s: cpu_%s for cpu#%d returned %d.\n",
+> +					__func__,
+> +					((state == UP) ? "up" : "down"),
+> +					cpu, cpuret);
+> +			if (!ret)
+> +				ret = cpuret;
+> +			if (state == UP) {
+> +				cpumask_shift_right(cpus, cpus, cpu);
+> +				cpumask_shift_left(cpus, cpus, cpu);
+> +				break;
+> +			} else
+> +				cpumask_clear_cpu(cpu, cpus);
+> +		}
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+> +int rtas_online_cpus_mask(cpumask_var_t cpus)
+> +{
+> +	int ret;
+> +
+> +	ret = rtas_cpu_state_change_mask(UP, cpus);
+> +
+> +	if (ret) {
+> +		cpumask_var_t tmp_mask;
+> +
+> +		if (!alloc_cpumask_var(&tmp_mask, GFP_TEMPORARY))
+> +			return ret;
+> +
+> +		cpumask_copy(tmp_mask, cpus);
+> +		rtas_offline_cpus_mask(tmp_mask);
+> +		free_cpumask_var(tmp_mask);
+> +	}
+> +
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL(rtas_online_cpus_mask);
+> +
+> +int rtas_offline_cpus_mask(cpumask_var_t cpus)
+> +{
+> +	return rtas_cpu_state_change_mask(DOWN, cpus);
+> +}
+> +EXPORT_SYMBOL(rtas_offline_cpus_mask);
+> +
+>  int rtas_ibm_suspend_me(struct rtas_args *args)
+>  {
+>  	long state;
+> @@ -814,6 +886,8 @@ int rtas_ibm_suspend_me(struct rtas_args *args)
+>  	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
+>  	struct rtas_suspend_me_data data;
+>  	DECLARE_COMPLETION_ONSTACK(done);
+> +	cpumask_var_t offline_mask;
+> +	int cpuret;
+>  
+>  	if (!rtas_service_present("ibm,suspend-me"))
+>  		return -ENOSYS;
+> @@ -837,11 +911,24 @@ int rtas_ibm_suspend_me(struct rtas_args *args)
+>  		return 0;
+>  	}
+>  
+> +	if (!alloc_cpumask_var(&offline_mask, GFP_TEMPORARY))
+> +		return -ENOMEM;
+> +
+>  	atomic_set(&data.working, 0);
+>  	atomic_set(&data.done, 0);
+>  	atomic_set(&data.error, 0);
+>  	data.token = rtas_token("ibm,suspend-me");
+>  	data.complete = &done;
+> +
+> +	/* All present CPUs must be online */
+> +	cpumask_andnot(offline_mask, cpu_present_mask, cpu_online_mask);
+> +	cpuret = rtas_online_cpus_mask(offline_mask);
+> +	if (cpuret) {
+> +		pr_err("%s: Could not bring present CPUs online.\n", __func__);
+> +		atomic_set(&data.error, cpuret);
+> +		goto out;
+> +	}
+> +
+>  	stop_topology_update();
+>  
+>  	/* Call function on all CPUs.  One of us will make the
+> @@ -857,6 +944,14 @@ int rtas_ibm_suspend_me(struct rtas_args *args)
+>  
+>  	start_topology_update();
+>  
+> +	/* Take down CPUs not online prior to suspend */
+> +	cpuret = rtas_offline_cpus_mask(offline_mask);
+> +	if (cpuret)
+> +		pr_warn("%s: Could not restore CPUs to offline state.\n",
+> +				__func__);
+> +
+> +out:
+> +	free_cpumask_var(offline_mask);
+>  	return atomic_read(&data.error);
+>  }
+>  #else /* CONFIG_PPC_PSERIES */
+> diff --git a/arch/powerpc/platforms/pseries/suspend.c b/arch/powerpc/platforms/pseries/suspend.c
+> index 47226e0..5f997e7 100644
+> --- a/arch/powerpc/platforms/pseries/suspend.c
+> +++ b/arch/powerpc/platforms/pseries/suspend.c
+> @@ -16,6 +16,7 @@
+>    * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+>    */
+>  
+> +#include <linux/cpu.h>
+>  #include <linux/delay.h>
+>  #include <linux/suspend.h>
+>  #include <linux/stat.h>
+> @@ -126,11 +127,15 @@ static ssize_t store_hibernate(struct device *dev,
+>  			       struct device_attribute *attr,
+>  			       const char *buf, size_t count)
+>  {
+> +	cpumask_var_t offline_mask;
+>  	int rc;
+>  
+>  	if (!capable(CAP_SYS_ADMIN))
+>  		return -EPERM;
+>  
+> +	if (!alloc_cpumask_var(&offline_mask, GFP_TEMPORARY))
+> +		return -ENOMEM;
+> +
+>  	stream_id = simple_strtoul(buf, NULL, 16);
+>  
+>  	do {
+> @@ -140,15 +145,32 @@ static ssize_t store_hibernate(struct device *dev,
+>  	} while (rc == -EAGAIN);
+>  
+>  	if (!rc) {
+> +		/* All present CPUs must be online */
+> +		cpumask_andnot(offline_mask, cpu_present_mask,
+> +				cpu_online_mask);
+> +		rc = rtas_online_cpus_mask(offline_mask);
+> +		if (rc) {
+> +			pr_err("%s: Could not bring present CPUs online.\n",
+> +					__func__);
+> +			goto out;
+> +		}
+> +
+>  		stop_topology_update();
+>  		rc = pm_suspend(PM_SUSPEND_MEM);
+>  		start_topology_update();
+> +
+> +		/* Take down CPUs not online prior to suspend */
+> +		if (!rtas_offline_cpus_mask(offline_mask))
+> +			pr_warn("%s: Could not restore CPUs to offline "
+> +					"state.\n", __func__);
+>  	}
+>  
+>  	stream_id = 0;
+>  
+>  	if (!rc)
+>  		rc = count;
+> +out:
+> +	free_cpumask_var(offline_mask);
+>  	return rc;
+>  }
+>  
 
-Using bit fields is dangerous on ppc64/sparc64, as the compiler [1]
-uses 64bit instructions to manipulate them.
-If the 64bit word includes any atomic_t or spinlock_t, we can lose
-critical concurrent changes.
 
-This is happening in af_unix, where unix_sk(sk)->gc_candidate/
-gc_maybe_cycle/lock share the same 64bit word.
-
-This leads to fatal deadlock, as one/several cpus spin forever
-on a spinlock that will never be available again.
-
-A safer way would be to use a long to store flags.
-This way we are sure compiler/arch wont do bad things.
-
-As we own unix_gc_lock spinlock when clearing or setting bits,
-we can use the non atomic __set_bit()/__clear_bit().
-
-recursion_level can share the same 64bit location with the spinlock,
-as it is set only with this spinlock held.
-
-[1] bug fixed in gcc-4.8.0 :
-http://gcc.gnu.org/bugzilla/show_bug.cgi?id=52080
-
-Reported-by: Ambrose Feinstein <ambrose@google.com>
-Signed-off-by: Eric Dumazet <edumazet@google.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
----
- include/net/af_unix.h |    5 +++--
- net/unix/garbage.c    |   12 ++++++------
- 2 files changed, 9 insertions(+), 8 deletions(-)
-
-diff --git a/include/net/af_unix.h b/include/net/af_unix.h
-index a8836e8..dbdfd2b 100644
---- a/include/net/af_unix.h
-+++ b/include/net/af_unix.h
-@@ -57,9 +57,10 @@ struct unix_sock {
- 	struct list_head	link;
- 	atomic_long_t		inflight;
- 	spinlock_t		lock;
--	unsigned int		gc_candidate : 1;
--	unsigned int		gc_maybe_cycle : 1;
- 	unsigned char		recursion_level;
-+	unsigned long		gc_flags;
-+#define UNIX_GC_CANDIDATE	0
-+#define UNIX_GC_MAYBE_CYCLE	1
- 	struct socket_wq	peer_wq;
- };
- #define unix_sk(__sk) ((struct unix_sock *)__sk)
-diff --git a/net/unix/garbage.c b/net/unix/garbage.c
-index d0f6545..9c6cc08 100644
---- a/net/unix/garbage.c
-+++ b/net/unix/garbage.c
-@@ -185,7 +185,7 @@ static void scan_inflight(struct sock *x, void (*func)(struct unix_sock *),
- 					 * have been added to the queues after
- 					 * starting the garbage collection
- 					 */
--					if (u->gc_candidate) {
-+					if (test_bit(UNIX_GC_CANDIDATE, &u->gc_flags)) {
- 						hit = true;
- 						func(u);
- 					}
-@@ -254,7 +254,7 @@ static void inc_inflight_move_tail(struct unix_sock *u)
- 	 * of the list, so that it's checked even if it was already
- 	 * passed over
- 	 */
--	if (u->gc_maybe_cycle)
-+	if (test_bit(UNIX_GC_MAYBE_CYCLE, &u->gc_flags))
- 		list_move_tail(&u->link, &gc_candidates);
- }
- 
-@@ -315,8 +315,8 @@ void unix_gc(void)
- 		BUG_ON(total_refs < inflight_refs);
- 		if (total_refs == inflight_refs) {
- 			list_move_tail(&u->link, &gc_candidates);
--			u->gc_candidate = 1;
--			u->gc_maybe_cycle = 1;
-+			__set_bit(UNIX_GC_CANDIDATE, &u->gc_flags);
-+			__set_bit(UNIX_GC_MAYBE_CYCLE, &u->gc_flags);
- 		}
- 	}
- 
-@@ -344,7 +344,7 @@ void unix_gc(void)
- 
- 		if (atomic_long_read(&u->inflight) > 0) {
- 			list_move_tail(&u->link, &not_cycle_list);
--			u->gc_maybe_cycle = 0;
-+			__clear_bit(UNIX_GC_MAYBE_CYCLE, &u->gc_flags);
- 			scan_children(&u->sk, inc_inflight_move_tail, NULL);
- 		}
- 	}
-@@ -356,7 +356,7 @@ void unix_gc(void)
- 	 */
- 	while (!list_empty(&not_cycle_list)) {
- 		u = list_entry(not_cycle_list.next, struct unix_sock, link);
--		u->gc_candidate = 0;
-+		__clear_bit(UNIX_GC_CANDIDATE, &u->gc_flags);
- 		list_move_tail(&u->link, &gc_inflight_list);
- 	}
- 
+-- 
+-Nathan
