@@ -1,26 +1,37 @@
-Return-Path: <amodra@gmail.com>
-Received: from mail-da0-x233.google.com (mail-da0-x233.google.com
- [IPv6:2607:f8b0:400e:c00::233])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 48F472C00CF
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 May 2013 13:54:36 +1000 (EST)
-Received: by mail-da0-f51.google.com with SMTP id g27so520401dan.38
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Apr 2013 20:54:32 -0700 (PDT)
-Date: Wed, 1 May 2013 13:24:25 +0930
-From: Alan Modra <amodra@gmail.com>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Subject: Re: [PATCH net-next] af_unix: fix a fatal race with bit fields
-Message-ID: <20130501035425.GD5221@bubble.grove.modra.org>
-References: <1367370761.11020.22.camel@edumazet-glaptop>
- <20130501115103.58e40f37@kryten>
- <1367375060.11020.24.camel@edumazet-glaptop>
+Return-Path: <hegdevasant@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 497592C00AB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 May 2013 15:02:09 +1000 (EST)
+Received: from /spool/local
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
+ Wed, 1 May 2013 10:26:10 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 5DA1AE004A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 May 2013 10:34:10 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r4151pWA10223976
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 May 2013 10:31:52 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r4151vNo015856
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 May 2013 05:01:58 GMT
+Message-ID: <5180A1AD.4060409@linux.vnet.ibm.com>
+Date: Wed, 01 May 2013 10:31:33 +0530
+From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1367375060.11020.24.camel@edumazet-glaptop>
-Cc: netdev <netdev@vger.kernel.org>, Ambrose Feinstein <ambrose@google.com>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: manual merge of the vfs tree with the powerpc tree
+References: <20130501120636.0e54681b2dfb7ebe6aeb27c4@canb.auug.org.au>
+In-Reply-To: <20130501120636.0e54681b2dfb7ebe6aeb27c4@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>,
+ linux-next@vger.kernel.org, Al Viro <viro@ZenIV.linux.org.uk>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,20 +41,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 30, 2013 at 07:24:20PM -0700, Eric Dumazet wrote:
-> 	li 11,1
-> 	ld 0,0(9)
-> 	rldimi 0,11,31,32
-> 	std 0,0(9)
-> 	blr
-> 	.ident	"GCC: (GNU) 4.6.3"
-> 
-> You can see "ld 0,0(9)" is used : its a 64 bit load.
+On 05/01/2013 07:36 AM, Stephen Rothwell wrote:
+> Hi Al,
+>
+> Today's linux-next merge of the vfs tree got a conflict in
+> arch/powerpc/kernel/rtas_flash.c between commit fb4696c39573
+> ("powerpc/rtas_flash: Fix bad memory access") from the powerpc tree and
+> commits ad18a364f186 ("powerpc/rtas_flash: Free kmem upon module exit")
+> and 2352ad01409d ("ppc: Clean up rtas_flash driver somewhat") from the
+> vfs tree.
+>
 
-Yup.  This is not a powerpc64 specific problem.  See
-http://gcc.gnu.org/bugzilla/show_bug.cgi?id=52080
-Fixed in 4.8.0 and 4.7.3.
+Stephen,
 
--- 
-Alan Modra
-Australia Development Lab, IBM
+As Ben mentioned earlier, there are outstanding comments from me which
+needs to be addressed by Dave, before its merged.
+
+
+-Vasant
+
+> I fixed it up (see below) and can carry the fix as necessary (no action
+> is required).
+>
