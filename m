@@ -1,13 +1,32 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 3/3] powerpc: Context switch the new EBB SPRs
-Date: Wed,  1 May 2013 16:17:04 +1000
-Message-Id: <1367389024-20391-4-git-send-email-mikey@neuling.org>
-In-Reply-To: <1367389024-20391-1-git-send-email-mikey@neuling.org>
-References: <1367389024-20391-1-git-send-email-mikey@neuling.org>
-Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- Matt Evans <matt@ozlabs.org>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id EBCD12C00C2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 May 2013 16:26:17 +1000 (EST)
+Received: from /spool/local
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 1 May 2013 11:51:06 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id B0A6FE0054
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 May 2013 11:58:23 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r416Q7CP7406072
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 May 2013 11:56:08 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r416QBDd024318
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 May 2013 06:26:12 GMT
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: [PATCH] powerpc: Fix build error for book3e
+Date: Wed,  1 May 2013 11:56:08 +0530
+Message-Id: <1367389568-25744-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,99 +36,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Michael Ellerman <michael@ellerman.id.au>
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-This context switches the new Event Based Branching (EBB) SPRs.  The three new
-SPRs are:
-  - Event Based Branch Handler Register (EBBHR)
-  - Event Based Branch Return Register (EBBRR)
-  - Branch Event Status and Control Register (BESCR)
+We moved the definition of shift_to_mmu_psize and mmu_psize_to_shift
+out of hugetlbpage.c in patch "powerpc: New hugepage directory format".
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-Signed-off-by: Matt Evans <matt@ozlabs.org>
-Signed-off-by: Michael Neuling <mikey@neuling.org>
+These functions are not related to hugetlbpage and we want to use them
+outside hugetlbpage.c We missed a definition for book3e when we moved
+these functions. Add similar functions to mmu-book3e.h
+
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/processor.h |    3 +++
- arch/powerpc/include/asm/reg.h       |    3 +++
- arch/powerpc/kernel/asm-offsets.c    |    3 +++
- arch/powerpc/kernel/entry_64.S       |   16 ++++++++++++++++
- 4 files changed, 25 insertions(+)
+ arch/powerpc/include/asm/mmu-book3e.h | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index 0a4cc5d..d7e67ca 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -281,6 +281,9 @@ struct thread_struct {
- #endif
- #ifdef CONFIG_PPC_BOOK3S_64
- 	unsigned long	tar;
-+	unsigned long	ebbrr;
-+	unsigned long	ebbhr;
-+	unsigned long	bescr;
- #endif
+diff --git a/arch/powerpc/include/asm/mmu-book3e.h b/arch/powerpc/include/asm/mmu-book3e.h
+index 8bd560c..936db36 100644
+--- a/arch/powerpc/include/asm/mmu-book3e.h
++++ b/arch/powerpc/include/asm/mmu-book3e.h
+@@ -215,6 +215,7 @@
+ #define TLBILX_T_CLASS3			7
+ 
+ #ifndef __ASSEMBLY__
++#include <asm/bug.h>
+ 
+ extern unsigned int tlbcam_index;
+ 
+@@ -254,6 +255,23 @@ struct mmu_psize_def
  };
+ extern struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT];
  
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index cd241ed..fa8285b 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -663,6 +663,9 @@
- #define SPRN_MMCRH	316	/* Hypervisor monitor mode control register */
- #define SPRN_MMCRS	894	/* Supervisor monitor mode control register */
- #define SPRN_MMCRC	851	/* Core monitor mode control register */
-+#define SPRN_EBBHR	804	/* Event based branch handler register */
-+#define SPRN_EBBRR	805	/* Event based branch return register */
-+#define SPRN_BESCR	806	/* Branch event status and control register */
- 
- #define SPRN_PMC1	787
- #define SPRN_PMC2	788
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index b6c17ec..172233e 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -124,6 +124,9 @@ int main(void)
- 
- #ifdef CONFIG_PPC_BOOK3S_64
- 	DEFINE(THREAD_TAR, offsetof(struct thread_struct, tar));
-+	DEFINE(THREAD_BESCR, offsetof(struct thread_struct, bescr));
-+	DEFINE(THREAD_EBBHR, offsetof(struct thread_struct, ebbhr));
-+	DEFINE(THREAD_EBBRR, offsetof(struct thread_struct, ebbrr));
- #endif
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- 	DEFINE(PACATMSCRATCH, offsetof(struct paca_struct, tm_scratch));
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 7a6801f..3fe5259 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -458,6 +458,14 @@ BEGIN_FTR_SECTION
- 	 */
- 	mfspr	r0,SPRN_TAR
- 	std	r0,THREAD_TAR(r3)
++static inline int shift_to_mmu_psize(unsigned int shift)
++{
++	int psize;
 +
-+	/* Event based branch registers */
-+	mfspr	r0, SPRN_BESCR
-+	std	r0, THREAD_BESCR(r3)
-+	mfspr	r0, SPRN_EBBHR
-+	std	r0, THREAD_EBBHR(r3)
-+	mfspr	r0, SPRN_EBBRR
-+	std	r0, THREAD_EBBRR(r3)
- END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
- #endif
- 
-@@ -545,6 +553,14 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_1T_SEGMENT)
- 
- #ifdef CONFIG_PPC_BOOK3S_64
- BEGIN_FTR_SECTION
-+	/* Event based branch registers */
-+	ld	r0, THREAD_BESCR(r4)
-+	mtspr	SPRN_BESCR, r0
-+	ld	r0, THREAD_EBBHR(r4)
-+	mtspr	SPRN_EBBHR, r0
-+	ld	r0, THREAD_EBBRR(r4)
-+	mtspr	SPRN_EBBRR, r0
++	for (psize = 0; psize < MMU_PAGE_COUNT; ++psize)
++		if (mmu_psize_defs[psize].shift == shift)
++			return psize;
++	return -1;
++}
 +
- 	ld	r0,THREAD_TAR(r4)
- 	mtspr	SPRN_TAR,r0
- END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
++static inline unsigned int mmu_psize_to_shift(unsigned int mmu_psize)
++{
++	if (mmu_psize_defs[mmu_psize].shift)
++		return mmu_psize_defs[mmu_psize].shift;
++	BUG();
++}
++
+ /* The page sizes use the same names as 64-bit hash but are
+  * constants
+  */
 -- 
-1.7.10.4
+1.8.1.2
