@@ -1,21 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 34AB82C00A4
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 May 2013 11:40:11 +1000 (EST)
-Message-ID: <1367372393.22115.6.camel@pasglop>
-Subject: Re: [PATCH net-next] af_unix: fix a fatal race with bit fields
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <anton@samba.org>
+Date: Wed, 1 May 2013 11:51:03 +1000
+From: Anton Blanchard <anton@samba.org>
 To: Eric Dumazet <eric.dumazet@gmail.com>
-Date: Wed, 01 May 2013 11:39:53 +1000
+Subject: Re: [PATCH net-next] af_unix: fix a fatal race with bit fields
+Message-ID: <20130501115103.58e40f37@kryten>
 In-Reply-To: <1367370761.11020.22.camel@edumazet-glaptop>
 References: <1367370761.11020.22.camel@edumazet-glaptop>
-Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: netdev <netdev@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org,
- Paul Mackerras <paulus@samba.org>, David Miller <davem@davemloft.net>,
- Ambrose Feinstein <ambrose@google.com>
+Content-Type: text/plain; charset=US-ASCII
+Cc: amodra@gmail.com, netdev <netdev@vger.kernel.org>,
+ Ambrose Feinstein <ambrose@google.com>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,7 +20,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-04-30 at 18:12 -0700, Eric Dumazet wrote:
+Hi Eric,
+
 > From: Eric Dumazet <edumazet@google.com>
 > 
 > Using bit fields is dangerous on ppc64, as the compiler uses 64bit
@@ -37,32 +33,22 @@ On Tue, 2013-04-30 at 18:12 -0700, Eric Dumazet wrote:
 > 
 > This leads to fatal deadlock, as one/several cpus spin forever
 > on a spinlock that will never be available again.
-> 
+
+I just spoke to Alan Modra and he suspects this is a compiler
+bug. Can you give us your compiler version info?
+
+Anton
+
 > Reported-by: Ambrose Feinstein <ambrose@google.com>
 > Signed-off-by: Eric Dumazet <edumazet@google.com>
 > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 > Cc: Paul Mackerras <paulus@samba.org>
 > ---
 > 
-> Could ppc64 experts confirm using byte is safe, or should we really add
-> a 32bit hole after the spinlock ? If so, I wonder how many other places
-> need a change...
-
-Wow, nice one !
-
-I'm not even completely certain bytes are safe to be honest, though
-probably more than bitfields. I'll poke our compiler people.
-
-The worry is of course how many more of these do we potentially have ? 
-We might be able to automate finding these issues with sparse, I
-suppose.
-
-Also I'd be surprised if ppc64 is the only one with that problem... what
-about sparc64 and arm64 ?
-
-Cheers,
-Ben.
-
+> Could ppc64 experts confirm using byte is safe, or should we really
+> add a 32bit hole after the spinlock ? If so, I wonder how many other
+> places need a change...
+> 
 >  include/net/af_unix.h |    4 ++--
 >  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
@@ -81,4 +67,10 @@ Ben.
 >  	unsigned char		recursion_level;
 >  	struct socket_wq	peer_wq;
 >  };
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
 > 
