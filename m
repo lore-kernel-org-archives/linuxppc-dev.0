@@ -1,19 +1,23 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.pcug.org.au [203.10.76.10])
- by ozlabs.org (Postfix) with ESMTP id 5DCCB2C00CF
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 May 2013 12:06:46 +1000 (EST)
-Date: Wed, 1 May 2013 12:06:36 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Subject: linux-next: manual merge of the vfs tree with the powerpc tree
-Message-Id: <20130501120636.0e54681b2dfb7ebe6aeb27c4@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Wed__1_May_2013_12_06_36_+1000_XYNZNJPro60xXbfT"
-Cc: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- David Howells <dhowells@redhat.com>, linux-next@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <tkil@scrye.com>
+Received: from mail.scrye.com (scrye.com
+ [IPv6:2001:470:b8bc:cafe:5054:ff:fedc:793f])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client CN "mail.scrye.com", Issuer "mail.scrye.com" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7B78A2C01EE
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 May 2013 12:07:03 +1000 (EST)
+Message-ID: <518078C0.7070805@scrye.com>
+Date: Tue, 30 Apr 2013 20:06:56 -0600
+From: Anthony Foiani <tkil@scrye.com>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: ppc/sata-fsl: orphan config value: CONFIG_MPC8315_DS
+References: <1367368958.24133.21@snotra>
+In-Reply-To: <1367368958.24133.21@snotra>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "Robert P.J.Day" <rpjday@crashcourse.ca>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>, Jeff Garzik <jeff@garzik.org>,
+ Adrian Bunk <bunk@stusta.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,186 +27,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Wed__1_May_2013_12_06_36_+1000_XYNZNJPro60xXbfT
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Scott --
 
-Hi Al,
+On 04/30/2013 06:42 PM, Scott Wood wrote:
+> I just meant that, for whatever boards you would have put this in the 
+> device tree, put it in platform code instead (if the platform file 
+> supports more than one board type, then check the compatible at the 
+> top of the device tree). 
 
-Today's linux-next merge of the vfs tree got a conflict in
-arch/powerpc/kernel/rtas_flash.c between commit fb4696c39573
-("powerpc/rtas_flash: Fix bad memory access") from the powerpc tree and
-commits ad18a364f186 ("powerpc/rtas_flash: Free kmem upon module exit")
-and 2352ad01409d ("ppc: Clean up rtas_flash driver somewhat") from the
-vfs tree.
+I think I understand what you're suggesting.
 
-I fixed it up (see below) and can carry the fix as necessary (no action
-is required).
+Instead of a new property name, I would instead check for my specific 
+board type (let's call it a foo-8315) in the top-level compatible list?  
+So I'd change my devtree to have this top-level compatible:
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+/ {
+     compatible = "example,foo-8315", "fsl,mpc8315erdb";
 
-diff --cc arch/powerpc/kernel/rtas_flash.c
-index 243e184,5b77026..0000000
---- a/arch/powerpc/kernel/rtas_flash.c
-+++ b/arch/powerpc/kernel/rtas_flash.c
-@@@ -310,9 -316,9 +328,9 @@@ static ssize_t rtas_flash_write(struct=20
-  	 * proc file
-  	 */
-  	if (uf->flist =3D=3D NULL) {
- -		uf->flist =3D kmem_cache_alloc(flash_block_cache, GFP_KERNEL);
- +		uf->flist =3D kmem_cache_zalloc(flash_block_cache, GFP_KERNEL);
-  		if (!uf->flist)
-- 			return -ENOMEM;
-+ 			goto nomem;
-  	}
- =20
-  	fl =3D uf->flist;
-@@@ -321,18 -327,18 +339,18 @@@
-  	next_free =3D fl->num_blocks;
-  	if (next_free =3D=3D FLASH_BLOCKS_PER_NODE) {
-  		/* Need to allocate another block_list */
- -		fl->next =3D kmem_cache_alloc(flash_block_cache, GFP_KERNEL);
- +		fl->next =3D kmem_cache_zalloc(flash_block_cache, GFP_KERNEL);
-  		if (!fl->next)
-- 			return -ENOMEM;
-+ 			goto nomem;
-  		fl =3D fl->next;
-  		next_free =3D 0;
-  	}
- =20
-  	if (count > RTAS_BLK_SIZE)
-  		count =3D RTAS_BLK_SIZE;
- -	p =3D kmem_cache_alloc(flash_block_cache, GFP_KERNEL);
- +	p =3D kmem_cache_zalloc(flash_block_cache, GFP_KERNEL);
-  	if (!p)
-- 		return -ENOMEM;
-+ 		goto nomem;
-  =09
-  	if(copy_from_user(p, buffer, count)) {
-  		kmem_cache_free(flash_block_cache, p);
-@@@ -722,65 -694,13 +706,13 @@@ static int __init rtas_flash_init(void
-  		return 1;
-  	}
- =20
-- 	firmware_flash_pde =3D create_flash_pde("powerpc/rtas/"
-- 					      FIRMWARE_FLASH_NAME,
-- 					      &rtas_flash_operations);
-- 	if (firmware_flash_pde =3D=3D NULL) {
-- 		rc =3D -ENOMEM;
-- 		goto cleanup;
-- 	}
--=20
-- 	rc =3D initialize_flash_pde_data("ibm,update-flash-64-and-reboot",
-- 			 	       sizeof(struct rtas_update_flash_t),=20
-- 				       firmware_flash_pde);
-- 	if (rc !=3D 0)
-- 		goto cleanup;
--=20
-- 	firmware_update_pde =3D create_flash_pde("powerpc/rtas/"
-- 					       FIRMWARE_UPDATE_NAME,
-- 					       &rtas_flash_operations);
-- 	if (firmware_update_pde =3D=3D NULL) {
-- 		rc =3D -ENOMEM;
-- 		goto cleanup;
-- 	}
--=20
-- 	rc =3D initialize_flash_pde_data("ibm,update-flash-64-and-reboot",
-- 			 	       sizeof(struct rtas_update_flash_t),=20
-- 				       firmware_update_pde);
-- 	if (rc !=3D 0)
-- 		goto cleanup;
--=20
-- 	validate_pde =3D create_flash_pde("powerpc/rtas/" VALIDATE_FLASH_NAME,
-- 			      		&validate_flash_operations);
-- 	if (validate_pde =3D=3D NULL) {
-- 		rc =3D -ENOMEM;
-- 		goto cleanup;
-- 	}
--=20
-- 	rc =3D initialize_flash_pde_data("ibm,validate-flash-image",
-- 		                       sizeof(struct rtas_validate_flash_t),=20
-- 				       validate_pde);
-- 	if (rc !=3D 0)
-- 		goto cleanup;
--=20
-- 	manage_pde =3D create_flash_pde("powerpc/rtas/" MANAGE_FLASH_NAME,
-- 				      &manage_flash_operations);
-- 	if (manage_pde =3D=3D NULL) {
-- 		rc =3D -ENOMEM;
-- 		goto cleanup;
-- 	}
--=20
-- 	rc =3D initialize_flash_pde_data("ibm,manage-flash-image",
-- 			               sizeof(struct rtas_manage_flash_t),
-- 				       manage_pde);
-- 	if (rc !=3D 0)
-- 		goto cleanup;
--=20
-- 	rtas_flash_term_hook =3D rtas_flash_firmware;
-+ 	rtas_validate_flash_data.buf =3D kzalloc(VALIDATE_BUF_SIZE, GFP_KERNEL);
-+ 	if (!rtas_validate_flash_data.buf)
-+ 		return -ENOMEM;
- =20
-  	flash_block_cache =3D kmem_cache_create("rtas_flash_cache",
- -					      RTAS_BLK_SIZE, RTAS_BLK_SIZE, 0,
- -					      rtas_block_ctor);
- +				RTAS_BLK_SIZE, RTAS_BLK_SIZE, 0,
- +				NULL);
-  	if (!flash_block_cache) {
-  		printk(KERN_ERR "%s: failed to create block cache\n",
-  				__func__);
-@@@ -800,20 -742,17 +754,22 @@@ enomem_buf
- =20
-  static void __exit rtas_flash_cleanup(void)
-  {
-+ 	int i;
-+=20
-  	rtas_flash_term_hook =3D NULL;
- =20
- +	if (rtas_firmware_flash_list) {
- +		free_flash_list(rtas_firmware_flash_list);
- +		rtas_firmware_flash_list =3D NULL;
- +	}
- +
-- 	if (flash_block_cache)
-- 		kmem_cache_destroy(flash_block_cache);
-+ 	for (i =3D 0; i < ARRAY_SIZE(rtas_flash_files); i++) {
-+ 		const struct rtas_flash_file *f =3D &rtas_flash_files[i];
-+ 		remove_proc_entry(f->filename, NULL);
-+ 	}
- =20
-- 	remove_flash_pde(firmware_flash_pde);
-- 	remove_flash_pde(firmware_update_pde);
-- 	remove_flash_pde(validate_pde);
-- 	remove_flash_pde(manage_pde);
-+ 	kmem_cache_destroy(flash_block_cache);
-+ 	kfree(rtas_validate_flash_data.buf);
-  }
- =20
-  module_init(rtas_flash_init);
+If I saw that, I would then twiddle the bits as needed?
 
---Signature=_Wed__1_May_2013_12_06_36_+1000_XYNZNJPro60xXbfT
-Content-Type: application/pgp-signature
+MIght work, although having it in the sata block of the device tree has 
+the advantage of providing me exactly the OF node that I need (in 
+ofdev->dev.of_node).  I'd have to figure out how to traverse to the dev 
+tree root and then back down one to the root compat entry.  Probably not 
+impossible, but I was aiming for a fairly minimal patch.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+It would also be nice if we could unravel exactly why that 
+CONFIG_8315_DS ever showed up in the first place.  (The other "minimal" 
+aspect of my patch was to try to make changes only around that one area, 
+so that others could see that it was a simple change.)
 
-iQIcBAEBCAAGBQJRgHisAAoJEECxmPOUX5FEjEQP/iXqmm1eo+FfSL6lbQrwpO69
-kfKyhQyB1fqd4IU1ZBcpnlClBMCcQlx4qIr8ox0M+fnhdaqXMgjwkeRJU1QtfDif
-FLBLPH4awi+DqODSXtUcL1zRSOfVW3GVhvFylYeXx2v9HpFHsw6irREZMrcLGWOF
-NpyXiWJjMsQOJYVYKjpdlsw+Z4nBURuPg1ddz1WwPNN1pqMUrS7r974Q+21l8C6j
-23FMqJWbMK21U0IeWORpKNpT8Q/vyXRK89EnIv20YUNGU2oRFPI+6AQDcIHW4dqb
-MpS4QxqkaNT2Jl6rNMZfFGXEuLfoD8r7xnjumoyBohgTPCl/W476sBfjYM0pmhQ0
-y1MwLC8doGN3LQAzH1tGWaYm4leYMDwFq3k7gqOIj8BkAOOUWx7vZXHrFLzrTCr1
-az1JRF7Ibbfb+MN8V5U+CtWxueIksrmhLxDV+RsJ1P/AaFqVZFa+Wv0B2pXhhkJ4
-z0AK5NUXUuaAIRMtJY+dkwp3BtnPgpSxq3jh24Uts1ton6ls7WaZaMBdTw+s5QAe
-V0V58JX6vi28khfNTYoKFUBSh6XPZYkLqZRyFwHWhd12ChTKeEZzyku+BlydDg1B
-wYwRPRwGT/b6gB3V3Z0NjTIGM+59c284Cks5ULGXpkcbqskaBSRcz7rRsVcYLrCB
-rfqXo/KJ2zgpWv5PPJXl
-=iJ+g
------END PGP SIGNATURE-----
+> Or do you mean that you would not set this on any board's device tree 
+> by default, and instead have users set it if they encounter problems? 
 
---Signature=_Wed__1_May_2013_12_06_36_+1000_XYNZNJPro60xXbfT--
+No, I would expect to set it on all the boards, so using the 
+compatibility hack above would work.
+
+> Is this a custom board you're seeing it on?
+
+Not ours, but our vendor isn't very active on upstreaming things. (And 
+yes, had I know that 5 years ago, I could possibly have changed vendors, 
+or made upstreaming a part of the contract.  But at this point, we're 
+stuck with this vendor, and they're not going to fix it; so I'm trying 
+to fix it, and I'm trying to do the best job of upstreaming those fixes 
+that I can.)
+
+> git send-email can connect directly to an SMTP server.
+
+Ok, I'll play around with that.
+
+Thanks again,
+Anthony
