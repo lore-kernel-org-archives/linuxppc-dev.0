@@ -1,12 +1,27 @@
-Return-Path: <jk@ozlabs.org>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <joro@8bytes.org>
+Received: from mail.8bytes.org (8bytes.org
+ [IPv6:2a01:238:4242:f000:64f:6c43:3523:e535])
+ by ozlabs.org (Postfix) with ESMTP id 274672C00AB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 May 2013 20:16:36 +1000 (EST)
+Received: from localhost (localhost [127.0.0.1])
+ by mail.8bytes.org (Postfix) with SMTP id 47D3D12AE9E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 May 2013 12:16:31 +0200 (CEST)
+Date: Thu, 2 May 2013 12:16:29 +0200
+From: "joro@8bytes.org" <joro@8bytes.org>
+To: Sethi Varun-B16395 <B16395@freescale.com>
+Subject: Re: [PATCH 1/2 v15] iommu/fsl: Add additional iommu attributes
+ required by the PAMU driver.
+Message-ID: <20130502101629.GA24440@8bytes.org>
+References: <1366803351-17429-1-git-send-email-Varun.Sethi@freescale.com>
+ <C5ECD7A89D1DC44195F34B25E172658D4CBC45@039-SN2MPN1-011.039d.mgd.msft.net>
 MIME-Version: 1.0
-Subject: [PATCH] powerpc/powernv: defer OPAL exception handler registration
-Message-Id: <1367483510.656290.229684042158.1.gpush@pablo>
-To: Ben Herrenschmidt <benh@kernel.crashing.org>
-From: Jeremy Kerr <jk@ozlabs.org>
-Date: Thu, 02 May 2013 16:31:50 +0800
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <C5ECD7A89D1DC44195F34B25E172658D4CBC45@039-SN2MPN1-011.039d.mgd.msft.net>
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Yoder Stuart-B08248 <B08248@freescale.com>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,58 +31,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently, the OPAL exception vectors are registered before the feature
-fixups are processed. This means that the now-firmware-owned vectors
-will likely be overwritten by the kernel.
+On Tue, Apr 30, 2013 at 05:09:32PM +0000, Sethi Varun-B16395 wrote:
+> Would you take this patchset for 3.10 merge?
 
-This change moves the exception registration code to an early initcall,
-rather than at machine_init time.
+Not this time. The final patch came in very late and is pretty big too.
+For code of that size I would like to have a few weeks more testing in
+next and probably also a non-Freescale Reviewed-by.
 
-Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 
----
- arch/powerpc/platforms/powernv/opal.c |   15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index aaa0dba..ade4463 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -34,7 +34,6 @@ int __init early_init_dt_scan_opal(unsigned long node,
- {
- 	const void *basep, *entryp;
- 	unsigned long basesz, entrysz;
--	u64 glue;
- 
- 	if (depth != 1 || strcmp(uname, "ibm,opal") != 0)
- 		return 0;
-@@ -61,6 +60,16 @@ int __init early_init_dt_scan_opal(unsigned long node,
- 		printk("OPAL V1 detected !\n");
- 	}
- 
-+	return 1;
-+}
-+
-+static int __init opal_register_exception_handlers(void)
-+{
-+	u64 glue;
-+
-+	if (!(powerpc_firmware_features & FW_FEATURE_OPAL))
-+		return -ENODEV;
-+
- 	/* Hookup some exception handlers. We use the fwnmi area at 0x7000
- 	 * to provide the glue space to OPAL
- 	 */
-@@ -74,9 +83,11 @@ int __init early_init_dt_scan_opal(unsigned long node,
- 	glue += 128;
- 	opal_register_exception_handler(OPAL_SOFTPATCH_HANDLER, 0, glue);
- 
--	return 1;
-+	return 0;
- }
- 
-+early_initcall(opal_register_exception_handlers);
-+
- int opal_get_chars(uint32_t vtermno, char *buf, int count)
- {
- 	s64 len, rc;
+	Joerg
