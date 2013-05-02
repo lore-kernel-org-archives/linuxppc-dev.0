@@ -1,39 +1,18 @@
-Return-Path: <rcj@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7A6902C00D3
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 May 2013 10:39:07 +1000 (EST)
-Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <rcj@linux.vnet.ibm.com>;
- Thu, 2 May 2013 10:31:38 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id C8F572CE804A
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 May 2013 10:39:03 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r420PBV33932378
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 May 2013 10:25:11 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r420d2Ym004663
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 May 2013 10:39:03 +1000
-Date: Wed, 1 May 2013 19:39:00 -0500
-From: Robert Jennings <rcj@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Bring all threads online prior to
- migration/hibernation
-Message-ID: <20130502003900.GA5009@linux.vnet.ibm.com>
-References: <20130426213203.GC3698@linux.vnet.ibm.com>
- <51813403.50508@linux.vnet.ibm.com>
- <1367442296.22115.48.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1367442296.22115.48.camel@pasglop>
-Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- stable@kernel.org
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id C5F062C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 May 2013 11:35:37 +1000 (EST)
+Message-ID: <1367458520.4389.6.camel@pasglop>
+Subject: net/eth/ibmveth: Fixup retrieval of MAC address
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: netdev@vger.kernel.org
+Date: Thu, 02 May 2013 11:35:20 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ David Miller <davem@davemloft.net>, David Gibson <dwg@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,259 +22,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Benjamin Herrenschmidt (benh@kernel.crashing.org) wrote:
-> On Wed, 2013-05-01 at 10:25 -0500, Nathan Fontenot wrote:
-> > On 04/26/2013 04:32 PM, Robert Jennings wrote:
-> > > With this patch before a migration/hibernation all threads present but
-> > > not online will be brought online.  After migration/hibernation those
-> > > threads are taken back offline.
-> > > 
-> > > During migration/hibernation all online CPUs must call H_JOIN, this is
-> > > required by the hypervisor.  Without this patch, threads that are offline
-> > > (H_CEDE'd) will not be woken to make the H_JOIN call and the OS will be
-> > > deadlocked (all threads either JOIN'd or CEDE'd).
-> > > 
-> > 
-> > This fixes a long standing bug in partition migration.
-> > 
-> > Acked-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-> 
-> I was about to apply this one but had to take it out of my branch as it
-> breaks the UP build. Can you send a new revision of the patch ? It's a
-> bug fix, I'll put it in at -rc1.
+Some ancient pHyp versions used to create a 8 bytes local-mac-address
+property in the device-tree instead of a 6 bytes one for veth.
 
-Yes, sorry.  I'll get you a fix for the -rc1 timeframe for sure.
+The Linux driver code to deal with that is an insane hack which also
+happens to break with some choices of MAC addresses in qemu by testing
+for a bit in the address rather than just looking at the size of the
+property.
 
-> Cheers,
-> Ben.
-> 
-> > > Cc: <stable@kernel.org>
-> > > Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
-> > > ---
-> > >  arch/powerpc/include/asm/rtas.h          |    2 +
-> > >  arch/powerpc/kernel/rtas.c               |   95 ++++++++++++++++++++++++++++++
-> > >  arch/powerpc/platforms/pseries/suspend.c |   22 +++++++
-> > >  3 files changed, 119 insertions(+)
-> > > 
-> > > diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
-> > > index aef00c6..ee38f29 100644
-> > > --- a/arch/powerpc/include/asm/rtas.h
-> > > +++ b/arch/powerpc/include/asm/rtas.h
-> > > @@ -262,6 +262,8 @@ extern void rtas_progress(char *s, unsigned short hex);
-> > >  extern void rtas_initialize(void);
-> > >  extern int rtas_suspend_cpu(struct rtas_suspend_me_data *data);
-> > >  extern int rtas_suspend_last_cpu(struct rtas_suspend_me_data *data);
-> > > +extern int rtas_online_cpus_mask(cpumask_var_t cpus);
-> > > +extern int rtas_offline_cpus_mask(cpumask_var_t cpus);
-> > >  extern int rtas_ibm_suspend_me(struct rtas_args *);
-> > >  
-> > >  struct rtc_time;
-> > > diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-> > > index 1fd6e7b..855ee98 100644
-> > > --- a/arch/powerpc/kernel/rtas.c
-> > > +++ b/arch/powerpc/kernel/rtas.c
-> > > @@ -19,6 +19,7 @@
-> > >  #include <linux/init.h>
-> > >  #include <linux/capability.h>
-> > >  #include <linux/delay.h>
-> > > +#include <linux/cpu.h>
-> > >  #include <linux/smp.h>
-> > >  #include <linux/completion.h>
-> > >  #include <linux/cpumask.h>
-> > > @@ -807,6 +808,77 @@ static void rtas_percpu_suspend_me(void *info)
-> > >  	__rtas_suspend_cpu((struct rtas_suspend_me_data *)info, 1);
-> > >  }
-> > >  
-> > > +enum rtas_cpu_state {
-> > > +	DOWN,
-> > > +	UP,
-> > > +};
-> > > +
-> > > +/* On return cpumask will be altered to indicate CPUs changed */
-> > > +static int rtas_cpu_state_change_mask(enum rtas_cpu_state state,
-> > > +				cpumask_var_t cpus)
-> > > +{
-> > > +	int cpu;
-> > > +	int cpuret = 0;
-> > > +	int ret = 0;
-> > > +
-> > > +	if (cpumask_empty(cpus))
-> > > +		return 0;
-> > > +
-> > > +	for_each_cpu(cpu, cpus) {
-> > > +		switch (state) {
-> > > +		case DOWN:
-> > > +			cpuret = cpu_down(cpu);
-> > > +			break;
-> > > +		case UP:
-> > > +			cpuret = cpu_up(cpu);
-> > > +			break;
-> > > +		}
-> > > +		if (cpuret) {
-> > > +			pr_debug("%s: cpu_%s for cpu#%d returned %d.\n",
-> > > +					__func__,
-> > > +					((state == UP) ? "up" : "down"),
-> > > +					cpu, cpuret);
-> > > +			if (!ret)
-> > > +				ret = cpuret;
-> > > +			if (state == UP) {
-> > > +				cpumask_shift_right(cpus, cpus, cpu);
-> > > +				cpumask_shift_left(cpus, cpus, cpu);
-> > > +				break;
-> > > +			} else
-> > > +				cpumask_clear_cpu(cpu, cpus);
-> > > +		}
-> > > +	}
-> > > +
-> > > +	return ret;
-> > > +}
-> > > +
-> > > +int rtas_online_cpus_mask(cpumask_var_t cpus)
-> > > +{
-> > > +	int ret;
-> > > +
-> > > +	ret = rtas_cpu_state_change_mask(UP, cpus);
-> > > +
-> > > +	if (ret) {
-> > > +		cpumask_var_t tmp_mask;
-> > > +
-> > > +		if (!alloc_cpumask_var(&tmp_mask, GFP_TEMPORARY))
-> > > +			return ret;
-> > > +
-> > > +		cpumask_copy(tmp_mask, cpus);
-> > > +		rtas_offline_cpus_mask(tmp_mask);
-> > > +		free_cpumask_var(tmp_mask);
-> > > +	}
-> > > +
-> > > +	return ret;
-> > > +}
-> > > +EXPORT_SYMBOL(rtas_online_cpus_mask);
-> > > +
-> > > +int rtas_offline_cpus_mask(cpumask_var_t cpus)
-> > > +{
-> > > +	return rtas_cpu_state_change_mask(DOWN, cpus);
-> > > +}
-> > > +EXPORT_SYMBOL(rtas_offline_cpus_mask);
-> > > +
-> > >  int rtas_ibm_suspend_me(struct rtas_args *args)
-> > >  {
-> > >  	long state;
-> > > @@ -814,6 +886,8 @@ int rtas_ibm_suspend_me(struct rtas_args *args)
-> > >  	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
-> > >  	struct rtas_suspend_me_data data;
-> > >  	DECLARE_COMPLETION_ONSTACK(done);
-> > > +	cpumask_var_t offline_mask;
-> > > +	int cpuret;
-> > >  
-> > >  	if (!rtas_service_present("ibm,suspend-me"))
-> > >  		return -ENOSYS;
-> > > @@ -837,11 +911,24 @@ int rtas_ibm_suspend_me(struct rtas_args *args)
-> > >  		return 0;
-> > >  	}
-> > >  
-> > > +	if (!alloc_cpumask_var(&offline_mask, GFP_TEMPORARY))
-> > > +		return -ENOMEM;
-> > > +
-> > >  	atomic_set(&data.working, 0);
-> > >  	atomic_set(&data.done, 0);
-> > >  	atomic_set(&data.error, 0);
-> > >  	data.token = rtas_token("ibm,suspend-me");
-> > >  	data.complete = &done;
-> > > +
-> > > +	/* All present CPUs must be online */
-> > > +	cpumask_andnot(offline_mask, cpu_present_mask, cpu_online_mask);
-> > > +	cpuret = rtas_online_cpus_mask(offline_mask);
-> > > +	if (cpuret) {
-> > > +		pr_err("%s: Could not bring present CPUs online.\n", __func__);
-> > > +		atomic_set(&data.error, cpuret);
-> > > +		goto out;
-> > > +	}
-> > > +
-> > >  	stop_topology_update();
-> > >  
-> > >  	/* Call function on all CPUs.  One of us will make the
-> > > @@ -857,6 +944,14 @@ int rtas_ibm_suspend_me(struct rtas_args *args)
-> > >  
-> > >  	start_topology_update();
-> > >  
-> > > +	/* Take down CPUs not online prior to suspend */
-> > > +	cpuret = rtas_offline_cpus_mask(offline_mask);
-> > > +	if (cpuret)
-> > > +		pr_warn("%s: Could not restore CPUs to offline state.\n",
-> > > +				__func__);
-> > > +
-> > > +out:
-> > > +	free_cpumask_var(offline_mask);
-> > >  	return atomic_read(&data.error);
-> > >  }
-> > >  #else /* CONFIG_PPC_PSERIES */
-> > > diff --git a/arch/powerpc/platforms/pseries/suspend.c b/arch/powerpc/platforms/pseries/suspend.c
-> > > index 47226e0..5f997e7 100644
-> > > --- a/arch/powerpc/platforms/pseries/suspend.c
-> > > +++ b/arch/powerpc/platforms/pseries/suspend.c
-> > > @@ -16,6 +16,7 @@
-> > >    * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-> > >    */
-> > >  
-> > > +#include <linux/cpu.h>
-> > >  #include <linux/delay.h>
-> > >  #include <linux/suspend.h>
-> > >  #include <linux/stat.h>
-> > > @@ -126,11 +127,15 @@ static ssize_t store_hibernate(struct device *dev,
-> > >  			       struct device_attribute *attr,
-> > >  			       const char *buf, size_t count)
-> > >  {
-> > > +	cpumask_var_t offline_mask;
-> > >  	int rc;
-> > >  
-> > >  	if (!capable(CAP_SYS_ADMIN))
-> > >  		return -EPERM;
-> > >  
-> > > +	if (!alloc_cpumask_var(&offline_mask, GFP_TEMPORARY))
-> > > +		return -ENOMEM;
-> > > +
-> > >  	stream_id = simple_strtoul(buf, NULL, 16);
-> > >  
-> > >  	do {
-> > > @@ -140,15 +145,32 @@ static ssize_t store_hibernate(struct device *dev,
-> > >  	} while (rc == -EAGAIN);
-> > >  
-> > >  	if (!rc) {
-> > > +		/* All present CPUs must be online */
-> > > +		cpumask_andnot(offline_mask, cpu_present_mask,
-> > > +				cpu_online_mask);
-> > > +		rc = rtas_online_cpus_mask(offline_mask);
-> > > +		if (rc) {
-> > > +			pr_err("%s: Could not bring present CPUs online.\n",
-> > > +					__func__);
-> > > +			goto out;
-> > > +		}
-> > > +
-> > >  		stop_topology_update();
-> > >  		rc = pm_suspend(PM_SUSPEND_MEM);
-> > >  		start_topology_update();
-> > > +
-> > > +		/* Take down CPUs not online prior to suspend */
-> > > +		if (!rtas_offline_cpus_mask(offline_mask))
-> > > +			pr_warn("%s: Could not restore CPUs to offline "
-> > > +					"state.\n", __func__);
-> > >  	}
-> > >  
-> > >  	stream_id = 0;
-> > >  
-> > >  	if (!rc)
-> > >  		rc = count;
-> > > +out:
-> > > +	free_cpumask_var(offline_mask);
-> > >  	return rc;
-> > >  }
-> > >  
-> > 
-> > 
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+Sanitize this by doing the latter instead.
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: <stable@vger.kernel.org>
+---
+
+I CC'ed stable bcs I'd like to switch qemu/kvm to 6-bytes properties as
+soon as possible. Unfortunately doing so breaks the horrible hack unless
+qemu has the right magic bit in the MAC which it may or may not have...
+
+diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
+index c859771..579a03e 100644
+--- a/drivers/net/ethernet/ibm/ibmveth.c
++++ b/drivers/net/ethernet/ibm/ibmveth.c
+@@ -1324,7 +1324,7 @@ static const struct net_device_ops ibmveth_netdev_ops = {
+ 
+ static int ibmveth_probe(struct vio_dev *dev, const struct vio_device_id *id)
+ {
+-	int rc, i;
++	int rc, i, mac_len;
+ 	struct net_device *netdev;
+ 	struct ibmveth_adapter *adapter;
+ 	unsigned char *mac_addr_p;
+@@ -1334,11 +1334,19 @@ static int ibmveth_probe(struct vio_dev *dev, const struct vio_device_id *id)
+ 		dev->unit_address);
+ 
+ 	mac_addr_p = (unsigned char *)vio_get_attribute(dev, VETH_MAC_ADDR,
+-							NULL);
++							&mac_len);
+ 	if (!mac_addr_p) {
+ 		dev_err(&dev->dev, "Can't find VETH_MAC_ADDR attribute\n");
+ 		return -EINVAL;
+ 	}
++	/* Workaround for old/broken pHyp */
++	if (mac_len == 8)
++		mac_addr_p += 2;
++	if (mac_len != 6) {
++		dev_err(&dev->dev, "VETH_MAC_ADDR attribute wrong len %d\n",
++			mac_len);
++		return -EINVAL;
++	}
+ 
+ 	mcastFilterSize_p = (unsigned int *)vio_get_attribute(dev,
+ 						VETH_MCAST_FILTER_SIZE, NULL);
+@@ -1363,17 +1371,6 @@ static int ibmveth_probe(struct vio_dev *dev, const struct vio_device_id *id)
+ 
+ 	netif_napi_add(netdev, &adapter->napi, ibmveth_poll, 16);
+ 
+-	/*
+-	 * Some older boxes running PHYP non-natively have an OF that returns
+-	 * a 8-byte local-mac-address field (and the first 2 bytes have to be
+-	 * ignored) while newer boxes' OF return a 6-byte field. Note that
+-	 * IEEE 1275 specifies that local-mac-address must be a 6-byte field.
+-	 * The RPA doc specifies that the first byte must be 10b, so we'll
+-	 * just look for it to solve this 8 vs. 6 byte field issue
+-	 */
+-	if ((*mac_addr_p & 0x3) != 0x02)
+-		mac_addr_p += 2;
+-
+ 	adapter->mac_addr = 0;
+ 	memcpy(&adapter->mac_addr, mac_addr_p, 6);
+ 
