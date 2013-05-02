@@ -1,27 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 561F32C00D3
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2013 07:11:44 +1000 (EST)
-Message-ID: <1367529089.4389.23.camel@pasglop>
-Subject: Re: [PATCH net-next] af_unix: fix a fatal race with bit fields
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stephen Hemminger <stephen@networkplumber.org>
-Date: Fri, 03 May 2013 07:11:29 +1000
-In-Reply-To: <20130501081054.267a7851@nehalam.linuxnetplumber.net>
-References: <1367370761.11020.22.camel@edumazet-glaptop>
- <20130501115103.58e40f37@kryten>
- <1367375060.11020.24.camel@edumazet-glaptop>
- <20130501035425.GD5221@bubble.grove.modra.org>
- <1367384672.11020.34.camel@edumazet-glaptop>
- <20130501081054.267a7851@nehalam.linuxnetplumber.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Eric Dumazet <eric.dumazet@gmail.com>, Alan Modra <amodra@gmail.com>,
- netdev <netdev@vger.kernel.org>, Ambrose Feinstein <ambrose@google.com>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>
+Return-Path: <B44306@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C59FB2C00A1
+ for <linuxppc-dev@ozlabs.org>; Fri,  3 May 2013 04:09:16 +1000 (EST)
+Received: from mail7-tx2 (localhost [127.0.0.1])	by mail7-tx2-R.bigfish.com
+ (Postfix) with ESMTP id A853F320382	for <linuxppc-dev@ozlabs.org>; Thu,  2
+ May 2013 18:09:13 +0000 (UTC)
+Received: from TX2EHSMHS011.bigfish.com (unknown [10.9.14.249])	by
+ mail7-tx2.bigfish.com (Postfix) with ESMTP id DE2E41A00EA	for
+ <linuxppc-dev@ozlabs.org>; Thu,  2 May 2013 18:08:43 +0000 (UTC)
+From: Lijun Pan <Lijun.Pan@freescale.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH 1/3] powerpc/perf: correct typos in counter enumeration
+Date: Thu, 2 May 2013 13:08:36 -0500
+Message-ID: <1367518118-9721-1-git-send-email-Lijun.Pan@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Lijun.Pan@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,19 +29,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-05-01 at 08:10 -0700, Stephen Hemminger wrote:
-> > These kind of errors are pretty hard to find, its a pity to spend
-> time
-> > on them.
-> 
-> There is a checkbin target inside arch/powerpc/Makefile
-> Shouldn't a check be added there to block building kernel with known
-> bad GCC versions?
+Signed-off-by: Lijun Pan <Lijun.Pan@freescale.com>
+---
+ arch/powerpc/include/asm/reg_fsl_emb.h |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-In this case that makes it all GCC versions except the *very
-latest* .... not practical.
-
-I suppose we should try to make sure that at least the next batch of
-enterprise distro get that fix on gcc side.
-
-Ben.
+diff --git a/arch/powerpc/include/asm/reg_fsl_emb.h b/arch/powerpc/include/asm/reg_fsl_emb.h
+index 77bb71c..1cf8ab0 100644
+--- a/arch/powerpc/include/asm/reg_fsl_emb.h
++++ b/arch/powerpc/include/asm/reg_fsl_emb.h
+@@ -17,8 +17,8 @@
+ /* Freescale Book E Performance Monitor APU Registers */
+ #define PMRN_PMC0	0x010	/* Performance Monitor Counter 0 */
+ #define PMRN_PMC1	0x011	/* Performance Monitor Counter 1 */
+-#define PMRN_PMC2	0x012	/* Performance Monitor Counter 1 */
+-#define PMRN_PMC3	0x013	/* Performance Monitor Counter 1 */
++#define PMRN_PMC2	0x012	/* Performance Monitor Counter 2 */
++#define PMRN_PMC3	0x013	/* Performance Monitor Counter 3 */
+ #define PMRN_PMLCA0	0x090	/* PM Local Control A0 */
+ #define PMRN_PMLCA1	0x091	/* PM Local Control A1 */
+ #define PMRN_PMLCA2	0x092	/* PM Local Control A2 */
+@@ -55,8 +55,8 @@
+ 
+ #define PMRN_UPMC0	0x000	/* User Performance Monitor Counter 0 */
+ #define PMRN_UPMC1	0x001	/* User Performance Monitor Counter 1 */
+-#define PMRN_UPMC2	0x002	/* User Performance Monitor Counter 1 */
+-#define PMRN_UPMC3	0x003	/* User Performance Monitor Counter 1 */
++#define PMRN_UPMC2	0x002	/* User Performance Monitor Counter 2 */
++#define PMRN_UPMC3	0x003	/* User Performance Monitor Counter 3 */
+ #define PMRN_UPMLCA0	0x080	/* User PM Local Control A0 */
+ #define PMRN_UPMLCA1	0x081	/* User PM Local Control A1 */
+ #define PMRN_UPMLCA2	0x082	/* User PM Local Control A2 */
+-- 
+1.7.9.7
