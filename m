@@ -1,42 +1,28 @@
-Return-Path: <klebers@linux.vnet.ibm.com>
-Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e24smtp05.br.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 625132C00A1
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2013 01:21:50 +1000 (EST)
-Received: from /spool/local
- by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <klebers@linux.vnet.ibm.com>;
- Thu, 2 May 2013 12:21:43 -0300
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id 678CC3520064
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 May 2013 11:21:41 -0400 (EDT)
-Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
- by d24relay03.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r42FKihc45219928
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 May 2013 12:20:45 -0300
-Received: from d24av02.br.ibm.com (loopback [127.0.0.1])
- by d24av02.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r42FLcDi018243
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 May 2013 12:21:40 -0300
-Message-ID: <51828481.2090406@linux.vnet.ibm.com>
-Date: Thu, 02 May 2013 12:21:37 -0300
-From: Kleber Sacilotto de Souza <klebers@linux.vnet.ibm.com>
+Return-Path: <B07421@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CF3172C00D0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2013 03:02:43 +1000 (EST)
+Date: Thu, 2 May 2013 12:02:25 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH net-next] af_unix: fix a fatal race with bit fields
+To: Alan Modra <amodra@gmail.com>
+References: <1367370761.11020.22.camel@edumazet-glaptop>
+ <20130501115103.58e40f37@kryten>
+ <1367375060.11020.24.camel@edumazet-glaptop>
+ <20130501035425.GD5221@bubble.grove.modra.org>
+In-Reply-To: <20130501035425.GD5221@bubble.grove.modra.org> (from
+ amodra@gmail.com on Tue Apr 30 22:54:25 2013)
+Message-ID: <1367514145.24411.8@snotra>
 MIME-Version: 1.0
-To: tony@bakeyournoodle.com
-Subject: Re: [PATCHv4 1/2] ppc64: perform proper max_bus_speed detection
-References: <1366844090-5492-1-git-send-email-lucaskt@linux.vnet.ibm.com>
- <1366844090-5492-2-git-send-email-lucaskt@linux.vnet.ibm.com>
- <20130424234838.GA1971@thor.bakeyournoodle.com>
- <51796928.2050406@linux.vnet.ibm.com>
-In-Reply-To: <51796928.2050406@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: David Airlie <airlied@linux.ie>, Brian King <brking@linux.vnet.ibm.com>,
- dri-devel@lists.freedesktop.org, Alex Deucher <alexander.deucher@amd.com>,
- Jerome Glisse <jglisse@redhat.com>,
- Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
- Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: Eric Dumazet <eric.dumazet@gmail.com>, netdev <netdev@vger.kernel.org>,
+ Ambrose Feinstein <ambrose@google.com>, Paul Mackerras <paulus@samba.org>,
+ Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,86 +32,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/25/2013 02:34 PM, Lucas Kannebley Tavares wrote:
-> On 04/24/2013 08:48 PM, Tony Breeds wrote:
->>> diff --git a/arch/powerpc/platforms/pseries/pci.c
->>> b/arch/powerpc/platforms/pseries/pci.c
->>> index 0b580f4..7f9c956 100644
->>> --- a/arch/powerpc/platforms/pseries/pci.c
->>> +++ b/arch/powerpc/platforms/pseries/pci.c
->>> @@ -108,3 +108,54 @@ static void fixup_winbond_82c105(struct pci_dev*
->>> dev)
->>>   }
->>>   DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_WINBOND,
->>> PCI_DEVICE_ID_WINBOND_82C105,
->>>                fixup_winbond_82c105);
->>> +
->>> +int pseries_root_bridge_prepare(struct pci_host_bridge *bridge)
->>> +{
->>> +    struct device_node *dn, *pdn;
->>> +    struct pci_bus *bus;
->>> +    const uint32_t *pcie_link_speed_stats;
->>> +
->>> +    bus = bridge->bus;
->>> +
->>> +    dn = pcibios_get_phb_of_node(bus);
->>> +    if (!dn)
->>> +        return 0;
->>> +
->>> +    for (pdn = dn; pdn != NULL; pdn = pdn->parent) {
->>> +        pcie_link_speed_stats = (const uint32_t *) of_get_property(dn,
->>> +            "ibm,pcie-link-speed-stats", NULL);
->>> +        if (pcie_link_speed_stats)
->>> +            break;
->>> +    }
->>
->> Please use the helpers in include/linux/of.h rather than open coding
->> this.
->>
->> Yours Tony
-> 
-> 
-> Hi Tony,
-> 
-> 
-> This is what I can find as an equivalent code:
-> 
->     for (pdn = dn; pdn != NULL; pdn = of_get_next_parent(pdn)) {
->         pcie_link_speed_stats = (const uint32_t *)
->             of_get_property(dn,
->                 "ibm,pcie-link-speed-stats", NULL);
->         if (pcie_link_speed_stats)
->             break;
->     }
-> 
-> is this your suggestion, or was it another approach that will have the
-> same result?
-> 
-> Thanks,
-> 
+On 04/30/2013 10:54:25 PM, Alan Modra wrote:
+> On Tue, Apr 30, 2013 at 07:24:20PM -0700, Eric Dumazet wrote:
+> > 	li 11,1
+> > 	ld 0,0(9)
+> > 	rldimi 0,11,31,32
+> > 	std 0,0(9)
+> > 	blr
+> > 	.ident	"GCC: (GNU) 4.6.3"
+> >
+> > You can see "ld 0,0(9)" is used : its a 64 bit load.
+>=20
+> Yup.  This is not a powerpc64 specific problem.  See
+> http://gcc.gnu.org/bugzilla/show_bug.cgi?id=3D52080
+> Fixed in 4.8.0 and 4.7.3.
 
-Hi Tony,
+FWIW (especially if a GCC version check is added), it seems to have =20
+been fixed as far back as 4.7.1, not just 4.7.3.
 
-It seems Lucas' change is a bit incomplete and is not handling the reference counter to
-the device_node correctly. Is the following change what you had in mind?
-
-
-	dn = pcibios_get_phb_of_node(bus);
-	if (!dn)
-		return 0;
-
-	for (pdn = dn; pdn != NULL; pdn = of_get_next_parent(pdn)) {
-		pcie_link_speed_stats = (const uint32_t *) of_get_property(pdn,
-			"ibm,pcie-link-speed-stats", NULL);
-		if (pcie_link_speed_stats)
-			break;
-	}
-
-	of_node_put(pdn);
-
-
-Thanks,
-
--- 
-Kleber Sacilotto de Souza
-IBM Linux Technology Center
+-Scott=
