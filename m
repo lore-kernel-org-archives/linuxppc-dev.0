@@ -1,16 +1,42 @@
-Return-Path: <a13xp0p0v88@gmail.com>
-From: Alexander Popov <a13xp0p0v88@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Anatolij Gustschin <agust@denx.de>,
- Grant Likely <grant.likely@linaro.org>,
- Rob Herring <rob.herring@calxeda.com>, Timur Tabi <timur@tabi.org>,
- Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH 2/2] powerpc/512x: DMA via LocalPlus Bus testing driver
-Date: Thu,  2 May 2013 19:23:15 +0400
-Message-Id: <1367508195-2420-1-git-send-email-a13xp0p0v88@gmail.com>
-Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Return-Path: <klebers@linux.vnet.ibm.com>
+Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e24smtp05.br.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 625132C00A1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2013 01:21:50 +1000 (EST)
+Received: from /spool/local
+ by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <klebers@linux.vnet.ibm.com>;
+ Thu, 2 May 2013 12:21:43 -0300
+Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id 678CC3520064
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 May 2013 11:21:41 -0400 (EDT)
+Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
+ by d24relay03.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r42FKihc45219928
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 May 2013 12:20:45 -0300
+Received: from d24av02.br.ibm.com (loopback [127.0.0.1])
+ by d24av02.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r42FLcDi018243
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 May 2013 12:21:40 -0300
+Message-ID: <51828481.2090406@linux.vnet.ibm.com>
+Date: Thu, 02 May 2013 12:21:37 -0300
+From: Kleber Sacilotto de Souza <klebers@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: tony@bakeyournoodle.com
+Subject: Re: [PATCHv4 1/2] ppc64: perform proper max_bus_speed detection
+References: <1366844090-5492-1-git-send-email-lucaskt@linux.vnet.ibm.com>
+ <1366844090-5492-2-git-send-email-lucaskt@linux.vnet.ibm.com>
+ <20130424234838.GA1971@thor.bakeyournoodle.com>
+ <51796928.2050406@linux.vnet.ibm.com>
+In-Reply-To: <51796928.2050406@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: David Airlie <airlied@linux.ie>, Brian King <brking@linux.vnet.ibm.com>,
+ dri-devel@lists.freedesktop.org, Alex Deucher <alexander.deucher@amd.com>,
+ Jerome Glisse <jglisse@redhat.com>,
+ Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
+ Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,336 +46,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This module tests Direct Memory Access to some device on LocalPlus Bus
-for Freescale MPC512x. In other words it tests the bundle
-of mpc512x_lpbfifo and mpc512x_dma drivers.
+On 04/25/2013 02:34 PM, Lucas Kannebley Tavares wrote:
+> On 04/24/2013 08:48 PM, Tony Breeds wrote:
+>>> diff --git a/arch/powerpc/platforms/pseries/pci.c
+>>> b/arch/powerpc/platforms/pseries/pci.c
+>>> index 0b580f4..7f9c956 100644
+>>> --- a/arch/powerpc/platforms/pseries/pci.c
+>>> +++ b/arch/powerpc/platforms/pseries/pci.c
+>>> @@ -108,3 +108,54 @@ static void fixup_winbond_82c105(struct pci_dev*
+>>> dev)
+>>>   }
+>>>   DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_WINBOND,
+>>> PCI_DEVICE_ID_WINBOND_82C105,
+>>>                fixup_winbond_82c105);
+>>> +
+>>> +int pseries_root_bridge_prepare(struct pci_host_bridge *bridge)
+>>> +{
+>>> +    struct device_node *dn, *pdn;
+>>> +    struct pci_bus *bus;
+>>> +    const uint32_t *pcie_link_speed_stats;
+>>> +
+>>> +    bus = bridge->bus;
+>>> +
+>>> +    dn = pcibios_get_phb_of_node(bus);
+>>> +    if (!dn)
+>>> +        return 0;
+>>> +
+>>> +    for (pdn = dn; pdn != NULL; pdn = pdn->parent) {
+>>> +        pcie_link_speed_stats = (const uint32_t *) of_get_property(dn,
+>>> +            "ibm,pcie-link-speed-stats", NULL);
+>>> +        if (pcie_link_speed_stats)
+>>> +            break;
+>>> +    }
+>>
+>> Please use the helpers in include/linux/of.h rather than open coding
+>> this.
+>>
+>> Yours Tony
+> 
+> 
+> Hi Tony,
+> 
+> 
+> This is what I can find as an equivalent code:
+> 
+>     for (pdn = dn; pdn != NULL; pdn = of_get_next_parent(pdn)) {
+>         pcie_link_speed_stats = (const uint32_t *)
+>             of_get_property(dn,
+>                 "ibm,pcie-link-speed-stats", NULL);
+>         if (pcie_link_speed_stats)
+>             break;
+>     }
+> 
+> is this your suggestion, or was it another approach that will have the
+> same result?
+> 
+> Thanks,
+> 
 
-This testing driver was multiply used with static RAM (CY62167EV30LL-45ZXI)
-which lives on LocalPlus Bus on our board. This testing driver was used
-instead of the original static RAM driver and it is an abnormal hack.
-That is why I just provide the driver code and don't modify any environment.
+Hi Tony,
 
-Signed-off-by: Alexander Popov <a13xp0p0v88@gmail.com>
----
- drivers/misc/mpc512x_lpbdma_test.c | 310 +++++++++++++++++++++++++++++++++++++
- 1 file changed, 310 insertions(+)
- create mode 100644 drivers/misc/mpc512x_lpbdma_test.c
+It seems Lucas' change is a bit incomplete and is not handling the reference counter to
+the device_node correctly. Is the following change what you had in mind?
 
-diff --git a/drivers/misc/mpc512x_lpbdma_test.c b/drivers/misc/mpc512x_lpbdma_test.c
-new file mode 100644
-index 0000000..4fdd052
---- /dev/null
-+++ b/drivers/misc/mpc512x_lpbdma_test.c
-@@ -0,0 +1,310 @@
-+/*
-+ * Tests for DMA via LocalPlus Bus for the Freescale MPC512x.
-+ *
-+ * Copyright (C) Promcontroller, 2013.
-+ * Author is Alexander Popov <a13xp0p0v88@gmail.com>.
-+ *
-+ * This module tests Direct Memory Access to the devices on LocalPlus Bus.
-+ *
-+ * This file is released under the GPLv2.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/of_platform.h>
-+#include <linux/io.h>
-+#include <linux/workqueue.h>
-+#include <linux/slab.h>
-+#include <linux/random.h>
-+#include <linux/string.h>
-+#include <asm/mpc5121.h>
-+
-+MODULE_AUTHOR("Alexander Popov <a13xp0p0v88@gmail.com>");
-+MODULE_LICENSE("GPL");
-+
-+#define DRV_NAME "mpc512x_lpbdma_test"
-+#define ENOUGH 131072
-+
-+static int repeat = 1;
-+
-+enum test_iteration_result {
-+	NEXT_TEST_PLEASE,
-+	TRANSFER_LAUNCHED,
-+	ALL_TESTS_DONE,
-+};
-+
-+static struct lpbdma_test_data {
-+	struct device *dev;
-+	struct resource r_io;
-+	void __iomem *bus_vaddr;
-+	void *ram_vaddr;
-+
-+	/* Current data */
-+	int current_repeat;
-+	int current_test_case;
-+	enum mpc512x_lpbfifo_req_dir current_dir;
-+	struct mpc512x_lpbfifo_request current_req;
-+} tt;
-+
-+static void lpbdma_prepare_next_iteration(void);
-+static void lpbdma_testing(struct work_struct *w);
-+static void lpbdma_test_callback(struct mpc512x_lpbfifo_request *req);
-+static enum test_iteration_result lpbdma_test_iteration(unsigned int test_case,
-+					enum mpc512x_lpbfifo_req_dir dir);
-+
-+static DECLARE_WORK(lpbdma_work, lpbdma_testing);
-+static struct workqueue_struct *wq;
-+
-+static void lpbdma_prepare_next_iteration(void)
-+{
-+	tt.current_repeat++;
-+
-+	if (tt.current_repeat > repeat) {
-+		tt.current_repeat = 1;
-+		if (tt.current_dir == MPC512X_LPBFIFO_REQ_DIR_READ)
-+			tt.current_dir = MPC512X_LPBFIFO_REQ_DIR_WRITE;
-+		else {
-+			tt.current_dir = MPC512X_LPBFIFO_REQ_DIR_READ;
-+			tt.current_test_case += 1;
-+		}
-+	}
-+}
-+
-+static void lpbdma_testing(struct work_struct *w)
-+{
-+	lpbdma_prepare_next_iteration();
-+	while (lpbdma_test_iteration(tt.current_test_case,
-+				tt.current_dir) == NEXT_TEST_PLEASE) {
-+		lpbdma_prepare_next_iteration();
-+	}
-+}
-+
-+static enum test_iteration_result lpbdma_test_iteration(unsigned int test_case,
-+					enum mpc512x_lpbfifo_req_dir dir)
-+{
-+	struct mpc512x_lpbfifo_request *req = &(tt.current_req);
-+	int will_work;
-+	unsigned int i;
-+	unsigned int bufn;
-+	u16 buf;
-+
-+	/* Prepare request for data transfer */
-+	req->cs = 0;
-+	req->bus_phys = tt.r_io.start;
-+	req->ram_virt = tt.ram_vaddr;
-+	req->dir = dir;
-+	req->callback = lpbdma_test_callback;
-+
-+	switch (test_case) {
-+	case 0:
-+		/* normal LPB_DEV <-> RAM transfer */
-+		will_work = 1;
-+		req->size = 32768;	/* 32 kBytes, for example */
-+		req->portsize = LPB_DEV_PORTSIZE_UNDEFINED;
-+		break;
-+	case 1:
-+		/* maximum size transfer */
-+		will_work = 1;
-+		req->size = 131068;	/* 128 kBytes - 4 Bytes */
-+		req->portsize = LPB_DEV_PORTSIZE_UNDEFINED;
-+		break;
-+	case 2:
-+		/* maximum transfer size is exceeded */
-+		will_work = 0;
-+		req->size = 133120;	/* 130 kBytes, for example */
-+		req->portsize = LPB_DEV_PORTSIZE_UNDEFINED;
-+		break;
-+	case 3:
-+		/* LPB_DEV has own FIFO register
-+		 * It's width is 8 bytes, for example */
-+		will_work = 1;
-+		req->size = 16384;	/* 16 kBytes, for example */
-+		req->portsize = LPB_DEV_PORTSIZE_8_BYTES;
-+		break;
-+	case 4:
-+		/* Ditto. But size is not aligned on portsize */
-+		will_work = 0;
-+		req->size = 16382;
-+		req->portsize = LPB_DEV_PORTSIZE_8_BYTES;
-+		break;
-+	case 5:
-+		/* size is not aligned on 4 */
-+		will_work = 0;
-+		req->size = 42;		/* eh! */
-+		req->portsize = LPB_DEV_PORTSIZE_UNDEFINED;
-+		break;
-+	case 6:
-+		/* ram address is not aligned on 4
-+		 * but is aligned on 2 */
-+		will_work = 1;
-+		req->ram_virt += 2;
-+		req->size = 65536;	/* 64 kBytes, for example */
-+		req->portsize = LPB_DEV_PORTSIZE_UNDEFINED;
-+		break;
-+	case 7:
-+		/* ram address is not aligned even on 2 */
-+		will_work = 1;
-+		req->ram_virt += 3;
-+		req->size = 8192;	/* 8 kBytes, for example */
-+		req->portsize = LPB_DEV_PORTSIZE_UNDEFINED;
-+		break;
-+	default:
-+		dev_info(tt.dev, "All tests are done\n");
-+		return ALL_TESTS_DONE;
-+	}
-+
-+	if (will_work) {
-+		/* prepare source data */
-+		if (dir == MPC512X_LPBFIFO_REQ_DIR_READ) {
-+			if (req->portsize == LPB_DEV_PORTSIZE_UNDEFINED)
-+				bufn = req->size / sizeof(buf);
-+			else
-+				bufn = req->portsize / sizeof(buf);
-+
-+			for (i = 0; i < bufn; i++) {
-+				get_random_bytes(&buf, sizeof(buf));
-+				out_be16(tt.bus_vaddr + i * sizeof(buf), buf);
-+			}
-+		} else
-+			get_random_bytes(req->ram_virt, req->size);
-+	}
-+
-+	if (mpc512x_lpbfifo_submit(req)) {
-+		/* submit failed */
-+		if (!will_work)
-+			dev_info(tt.dev, "Test %u.%i passed\n", test_case, dir);
-+		else
-+			dev_err(tt.dev, "TEST %u.%i FAILED\n", test_case, dir);
-+		return NEXT_TEST_PLEASE;
-+	} else {
-+		/* Request is submitted. Let's wait
-+		 * for lpbdma_test_callback() to be called */
-+		dev_info(tt.dev, "Test %u.%i is launched\n", test_case, dir);
-+		return TRANSFER_LAUNCHED;
-+	}
-+}
-+
-+static void lpbdma_test_callback(struct mpc512x_lpbfifo_request *req)
-+{
-+	int test_passed = 1;
-+	int i = 0;
-+	u16 val1, val2;
-+
-+	if (req->portsize != LPB_DEV_PORTSIZE_UNDEFINED &&
-+		req->dir == MPC512X_LPBFIFO_REQ_DIR_WRITE) {
-+		/* During that transfer the next portion of data
-+		 * overwrites the previous one.
-+		 * Let's check the last portion of data */
-+
-+		for (i = 0; i < req->portsize / sizeof(val1); i++) {
-+			val1 = in_be16(tt.bus_vaddr + i * sizeof(val1));
-+			/* Since req->ram_virt
-+			 * might not be aligned: */
-+			memcpy(&val2, req->ram_virt + req->size -
-+					req->portsize + i * sizeof(val2),
-+								sizeof(val2));
-+			if (val1 != val2) {
-+				test_passed = 0;
-+				dev_err(tt.dev, "ERROR: %i: %x != %x\n",
-+							i, val2, val1);
-+			}
-+		}
-+	} else {
-+		for (i = 0; i < req->size / sizeof(val1); i++) {
-+			if (req->portsize != LPB_DEV_PORTSIZE_UNDEFINED) {
-+				val1 = in_be16(tt.bus_vaddr +
-+					i * sizeof(val1) % req->portsize);
-+			} else
-+				val1 = in_be16(tt.bus_vaddr + i * sizeof(val1));
-+
-+			/* Ditto */
-+			memcpy(&val2, req->ram_virt + i * sizeof(val2),
-+							sizeof(val2));
-+
-+			if (val1 != val2) {
-+				test_passed = 0;
-+				dev_err(tt.dev, "ERROR: %i: %x != %x\n",
-+							i, val2, val1);
-+			}
-+		}
-+	}
-+
-+	if (test_passed)
-+		dev_info(tt.dev, "...Passed\n");
-+	else
-+		dev_err(tt.dev, "...FAILED\n");
-+
-+	/* Next test please */
-+	if (wq)
-+		queue_work(wq, &lpbdma_work);
-+}
-+
-+static int mpc512x_lpbdma_test_probe(struct platform_device *pdev)
-+{
-+	struct resource *rio_ptr = &tt.r_io;
-+	tt.dev = &pdev->dev;
-+
-+	if (of_address_to_resource(pdev->dev.of_node, 0, rio_ptr)) {
-+		dev_err(tt.dev, "can't find the resource\n");
-+		return 1;
-+	}
-+	dev_info(tt.dev, "Resource on LPB: 0x%x, size %u bytes\n",
-+				rio_ptr->start, resource_size(rio_ptr));
-+
-+	if (!request_mem_region(rio_ptr->start,
-+					resource_size(rio_ptr), DRV_NAME)) {
-+		dev_err(tt.dev, "can't request_mem_region\n");
-+		return 1;
-+	}
-+
-+	tt.bus_vaddr = ioremap(rio_ptr->start, resource_size(rio_ptr));
-+	if (!tt.bus_vaddr) {
-+		dev_err(tt.dev, "ioremap failed\n");
-+		release_mem_region(rio_ptr->start, resource_size(rio_ptr));
-+		return 1;
-+	}
-+
-+	tt.ram_vaddr = kmalloc(ENOUGH, GFP_DMA | GFP_KERNEL);
-+
-+	dev_info(tt.dev, "Let's go!\n");
-+
-+	tt.current_repeat = 0;
-+	tt.current_test_case = 0;
-+	tt.current_dir = MPC512X_LPBFIFO_REQ_DIR_READ;
-+
-+	wq = create_singlethread_workqueue("mpc512x_lpbdma_test");
-+	if (wq)
-+		queue_work(wq, &lpbdma_work);
-+
-+	return 0;
-+}
-+
-+static int mpc512x_lpbdma_test_remove(struct platform_device *pdev)
-+{
-+	if (wq)
-+		destroy_workqueue(wq);
-+
-+	release_mem_region(tt.r_io.start, resource_size(&tt.r_io));
-+	iounmap(tt.bus_vaddr);
-+	kfree(tt.ram_vaddr);
-+	return 0;
-+}
-+
-+static const struct of_device_id lpbdma_test_match[] = {
-+	{ .compatible = "tecon,mpc512x_lpbdma_test", },
-+	{},
-+};
-+
-+static struct platform_driver mpc512x_lpbdma_test_driver = {
-+	.probe = mpc512x_lpbdma_test_probe,
-+	.remove = mpc512x_lpbdma_test_remove,
-+	.driver = {
-+		.name = DRV_NAME,
-+		.owner = THIS_MODULE,
-+		.of_match_table = lpbdma_test_match,
-+	},
-+};
-+module_platform_driver(mpc512x_lpbdma_test_driver);
-+
-+module_param(repeat, int, 0);
+
+	dn = pcibios_get_phb_of_node(bus);
+	if (!dn)
+		return 0;
+
+	for (pdn = dn; pdn != NULL; pdn = of_get_next_parent(pdn)) {
+		pcie_link_speed_stats = (const uint32_t *) of_get_property(pdn,
+			"ibm,pcie-link-speed-stats", NULL);
+		if (pcie_link_speed_stats)
+			break;
+	}
+
+	of_node_put(pdn);
+
+
+Thanks,
+
 -- 
-1.7.11.3
+Kleber Sacilotto de Souza
+IBM Linux Technology Center
