@@ -1,25 +1,20 @@
-Return-Path: <B07421@freescale.com>
+Return-Path: <B08248@freescale.com>
 Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
+ (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 396CA2C00C9
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2013 03:04:00 +1000 (EST)
-Date: Thu, 2 May 2013 12:03:44 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 2/2 V8] powerpc/85xx: Add machine check handler to fix
- PCIe erratum on mpc85xx
-To: Jia Hongtao <hongtao.jia@freescale.com>
-References: <1367126408-12997-1-git-send-email-hongtao.jia@freescale.com>
- <1367126408-12997-2-git-send-email-hongtao.jia@freescale.com>
-In-Reply-To: <1367126408-12997-2-git-send-email-hongtao.jia@freescale.com>
- (from hongtao.jia@freescale.com on Sun Apr 28 00:20:08 2013)
-Message-ID: <1367514224.24411.10@snotra>
+ by ozlabs.org (Postfix) with ESMTPS id C2D912C00C4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2013 03:05:53 +1000 (EST)
+From: Yoder Stuart-B08248 <B08248@freescale.com>
+To: "galak@kernel.crashing.org" <galak@kernel.crashing.org>
+Subject: pci overmapping
+Date: Thu, 2 May 2013 17:05:42 +0000
+Message-ID: <9F6FE96B71CF29479FF1CDC8046E15035C8E18@039-SN1MPN1-002.039d.mgd.msft.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: B07421@freescale.com, hongtao.jia@freescale.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: Sethi Varun-B16395 <B16395@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,25 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/28/2013 12:20:08 AM, Jia Hongtao wrote:
-> A PCIe erratum of mpc85xx may causes a core hang when a link of PCIe
-> goes down. when the link goes down, Non-posted transactions issued
-> via the ATMU requiring completion result in an instruction stall.
-> At the same time a machine-check exception is generated to the core
-> to allow further processing by the handler. We implements the handler
-> which skips the instruction caused the stall.
->=20
-> This patch depends on patch:
-> powerpc/85xx: Add platform_device declaration to fsl_pci.h
->=20
-> Signed-off-by: Zhao Chenhui <b35336@freescale.com>
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> Signed-off-by: Liu Shuo <soniccat.liu@gmail.com>
-> Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
-> ---
-> V8:
-> * Add A variant load instruction emulation.
+Kumar,
 
-ACK
+In fsl_pci.c there is a change you made a while back:
+  "powerpc/fsl: Setup PCI inbound window based on actual amount of memory"
 
--Scott=
+...and there is this comment in the code:
+
+    /* PCIe can overmap inbound & outbound since RX & TX are separated */
+    if (early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP)) {
+
+You are implying that PCIe can overmap and PCI can't.  Why is
+that?   (I'm assuming that 'overmap' means that inbound window
+can extend beyond the end of ram.)
+
+We are facing an issue for a non-PCI express controller (i.e. without
+PCI_CAP_ID_EXP) emulated by QEMU.  In our case we need the ATMU
+window to extend beyond the end of ram, since the window size has
+to be a power of 2.
+
+Thanks,
+Stuart
