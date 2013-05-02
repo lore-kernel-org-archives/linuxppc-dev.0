@@ -1,18 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id C5F062C009F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 May 2013 11:35:37 +1000 (EST)
-Message-ID: <1367458520.4389.6.camel@pasglop>
-Subject: net/eth/ibmveth: Fixup retrieval of MAC address
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: netdev@vger.kernel.org
-Date: Thu, 02 May 2013 11:35:20 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- David Miller <davem@davemloft.net>, David Gibson <dwg@au1.ibm.com>
+Return-Path: <weiyj.lk@gmail.com>
+Received: from mail-bk0-x231.google.com (mail-bk0-x231.google.com
+ [IPv6:2a00:1450:4008:c01::231])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D3A1F2C00D9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 May 2013 15:17:35 +1000 (EST)
+Received: by mail-bk0-f49.google.com with SMTP id e19so84661bku.8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 May 2013 22:17:31 -0700 (PDT)
+MIME-Version: 1.0
+Date: Thu, 2 May 2013 13:17:31 +0800
+Message-ID: <CAPgLHd9S4JbRpB9ipzDyysWqAkismVMu2W=Z2mhuVHzJXv4NrQ@mail.gmail.com>
+Subject: [PATCH -next] kvm/ppc/mpic: fix missing unlock in set_base_addr()
+From: Wei Yongjun <weiyj.lk@gmail.com>
+To: mtosatti@redhat.com, gleb@redhat.com, agraf@suse.de,
+ benh@kernel.crashing.org, paulus@samba.org, scottwood@freescale.com
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: yongjun_wei@trendmicro.com.cn, linuxppc-dev@lists.ozlabs.org,
+ kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,73 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some ancient pHyp versions used to create a 8 bytes local-mac-address
-property in the device-tree instead of a 6 bytes one for veth.
+From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 
-The Linux driver code to deal with that is an insane hack which also
-happens to break with some choices of MAC addresses in qemu by testing
-for a bit in the address rather than just looking at the size of the
-property.
+Add the missing unlock before return from function set_base_addr()
+when disables the mapping.
 
-Sanitize this by doing the latter instead.
+Introduced by commit 5df554ad5b7522ea62b0ff9d5be35183494efc21
+(kvm/ppc/mpic: in-kernel MPIC emulation)
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: <stable@vger.kernel.org>
+Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 ---
+ arch/powerpc/kvm/mpic.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-I CC'ed stable bcs I'd like to switch qemu/kvm to 6-bytes properties as
-soon as possible. Unfortunately doing so breaks the horrible hack unless
-qemu has the right magic bit in the MAC which it may or may not have...
-
-diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-index c859771..579a03e 100644
---- a/drivers/net/ethernet/ibm/ibmveth.c
-+++ b/drivers/net/ethernet/ibm/ibmveth.c
-@@ -1324,7 +1324,7 @@ static const struct net_device_ops ibmveth_netdev_ops = {
+diff --git a/arch/powerpc/kvm/mpic.c b/arch/powerpc/kvm/mpic.c
+index f3148f8..0047a70 100644
+--- a/arch/powerpc/kvm/mpic.c
++++ b/arch/powerpc/kvm/mpic.c
+@@ -1475,8 +1475,8 @@ static int set_base_addr(struct openpic *opp, struct kvm_device_attr *attr)
  
- static int ibmveth_probe(struct vio_dev *dev, const struct vio_device_id *id)
- {
--	int rc, i;
-+	int rc, i, mac_len;
- 	struct net_device *netdev;
- 	struct ibmveth_adapter *adapter;
- 	unsigned char *mac_addr_p;
-@@ -1334,11 +1334,19 @@ static int ibmveth_probe(struct vio_dev *dev, const struct vio_device_id *id)
- 		dev->unit_address);
+ 	map_mmio(opp);
  
- 	mac_addr_p = (unsigned char *)vio_get_attribute(dev, VETH_MAC_ADDR,
--							NULL);
-+							&mac_len);
- 	if (!mac_addr_p) {
- 		dev_err(&dev->dev, "Can't find VETH_MAC_ADDR attribute\n");
- 		return -EINVAL;
- 	}
-+	/* Workaround for old/broken pHyp */
-+	if (mac_len == 8)
-+		mac_addr_p += 2;
-+	if (mac_len != 6) {
-+		dev_err(&dev->dev, "VETH_MAC_ADDR attribute wrong len %d\n",
-+			mac_len);
-+		return -EINVAL;
-+	}
- 
- 	mcastFilterSize_p = (unsigned int *)vio_get_attribute(dev,
- 						VETH_MCAST_FILTER_SIZE, NULL);
-@@ -1363,17 +1371,6 @@ static int ibmveth_probe(struct vio_dev *dev, const struct vio_device_id *id)
- 
- 	netif_napi_add(netdev, &adapter->napi, ibmveth_poll, 16);
- 
--	/*
--	 * Some older boxes running PHYP non-natively have an OF that returns
--	 * a 8-byte local-mac-address field (and the first 2 bytes have to be
--	 * ignored) while newer boxes' OF return a 6-byte field. Note that
--	 * IEEE 1275 specifies that local-mac-address must be a 6-byte field.
--	 * The RPA doc specifies that the first byte must be 10b, so we'll
--	 * just look for it to solve this 8 vs. 6 byte field issue
--	 */
--	if ((*mac_addr_p & 0x3) != 0x02)
--		mac_addr_p += 2;
--
- 	adapter->mac_addr = 0;
- 	memcpy(&adapter->mac_addr, mac_addr_p, 6);
+-	mutex_unlock(&opp->kvm->slots_lock);
+ out:
++	mutex_unlock(&opp->kvm->slots_lock);
+ 	return 0;
+ }
  
