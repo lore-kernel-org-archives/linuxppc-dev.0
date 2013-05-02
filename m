@@ -1,24 +1,39 @@
-Return-Path: <B07421@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DC0192C00C8
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 May 2013 10:13:28 +1000 (EST)
-Date: Wed, 1 May 2013 19:13:12 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: ppc/sata-fsl: orphan config value: CONFIG_MPC8315_DS
-To: Anthony Foiani <tkil@scrye.com>
-In-Reply-To: <5181A6CA.9090903@scrye.com> (from tkil@scrye.com on Wed May  1
- 18:35:38 2013)
-Message-ID: <1367453592.29231.18@snotra>
+Return-Path: <rcj@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7A6902C00D3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 May 2013 10:39:07 +1000 (EST)
+Received: from /spool/local
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <rcj@linux.vnet.ibm.com>;
+ Thu, 2 May 2013 10:31:38 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id C8F572CE804A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 May 2013 10:39:03 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r420PBV33932378
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 May 2013 10:25:11 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r420d2Ym004663
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 May 2013 10:39:03 +1000
+Date: Wed, 1 May 2013 19:39:00 -0500
+From: Robert Jennings <rcj@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Bring all threads online prior to
+ migration/hibernation
+Message-ID: <20130502003900.GA5009@linux.vnet.ibm.com>
+References: <20130426213203.GC3698@linux.vnet.ibm.com>
+ <51813403.50508@linux.vnet.ibm.com>
+ <1367442296.22115.48.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: "Robert P.J.Day" <rpjday@crashcourse.ca>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>, Jeff Garzik <jeff@garzik.org>,
- Adrian Bunk <bunk@stusta.de>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1367442296.22115.48.camel@pasglop>
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ stable@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,95 +43,259 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/01/2013 06:35:38 PM, Anthony Foiani wrote:
-> Scott --
->=20
-> Thanks again for the quick reply.
->=20
-> On 05/01/2013 12:05 PM, Scott Wood wrote:
->> On 04/30/2013 09:06:56 PM, Anthony Foiani wrote:
->>> Instead of a new property name, I would instead check for my =20
->>> specific board type (let's call it a foo-8315) in the top-level =20
->>> compatible list?  So I'd change my devtree to have this top-level =20
->>> compatible:
->>>=20
->>> / {
->>>     compatible =3D "example,foo-8315", "fsl,mpc8315erdb";
->>=20
->> It should really only have compatible =3D "example,foo-8315", since =20
->> it's not 100% compatible with fsl,mpc8315erdb (at least due to this =20
->> bug, but probably there are other differences as well).
->=20
-> Then I guess I don't understand the proper use of "compatible" (or is =20
-> the root node special?)
+* Benjamin Herrenschmidt (benh@kernel.crashing.org) wrote:
+> On Wed, 2013-05-01 at 10:25 -0500, Nathan Fontenot wrote:
+> > On 04/26/2013 04:32 PM, Robert Jennings wrote:
+> > > With this patch before a migration/hibernation all threads present but
+> > > not online will be brought online.  After migration/hibernation those
+> > > threads are taken back offline.
+> > > 
+> > > During migration/hibernation all online CPUs must call H_JOIN, this is
+> > > required by the hypervisor.  Without this patch, threads that are offline
+> > > (H_CEDE'd) will not be woken to make the H_JOIN call and the OS will be
+> > > deadlocked (all threads either JOIN'd or CEDE'd).
+> > > 
+> > 
+> > This fixes a long standing bug in partition migration.
+> > 
+> > Acked-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+> 
+> I was about to apply this one but had to take it out of my branch as it
+> breaks the UP build. Can you send a new revision of the patch ? It's a
+> bug fix, I'll put it in at -rc1.
 
-It's only special in that 100% compatibility is much less likely to be =20
-true of an entire system than of a particular component.
+Yes, sorry.  I'll get you a fix for the -rc1 timeframe for sure.
 
-> E.g., the DTS for the "parent" board (MPC8315ERDB) has multiple =20
-> entries for the crypto "compatible" value:
->=20
-> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/arch=
-/powerpc/boot/dts/mpc8315erdb.dts?id=3Drefs/tags/v3.9#n286
-> (or: *http://preview.tinyurl.com/btlqxgo* )
->=20
-> |		crypto@30000 {
-> 			compatible =3D "fsl,sec3.3", "fsl,sec3.1", =20
-> "fsl,sec3.0",
-> 				     "fsl,sec2.4", "fsl,sec2.2", =20
-> "fsl,sec2.1",
-> 				     "fsl,sec2.0";
-> 			reg =3D <0x30000 0x10000>;|
->=20
-> I read this as meaning: "if you have to ask if a certain feature is =20
-> compatible with some 'foo', then this board provides that =20
-> compatibility".  Not as "if a value is in the compatibility flag, =20
-> then it is 100% compatible with that value".  (Although maybe that's =20
-> true in the case of the SEC, so perhaps that a bad example.)
-
-AFAIK there is backwards compatibility with these SEC versions.  If =20
-not, they shouldn't be listed.
-
-> For what it's worth, the upstream vendor did have a separate =20
-> root-node "compatible" value -- which called a board-specific =20
-> function in a board-specific C file, both of which were direct cut & =20
-> paste copies from the MPC8315ERDB function / file.  My gut instinct =20
-> is that this degree of duplication is unhealthy and incorrect, but if =20
-> my solution is considered abuse of the device tree, then I can try to =20
-> do it a different way next time.
-
-It's quite possible to use the same C file for multiple similar boards =20
-with different compatibles.  This is done often, including =20
-mpc831x_erdb.c.
-
-> Given those diffs, it didn't seem much of a stretch to use compatible =20
-> =3D "fsl,mpc8315erdb"
-
-The criteria for claiming compatibility should be based in the hardware =20
-itself, not whether a particular file in Linux needs any changes.
-
->>>> Or do you mean that you would not set this on any board's device =20
->>>> tree by default, and instead have users set it if they encounter =20
->>>> problems?
->>>=20
->>> No, I would expect to set it on all the boards, so using the =20
->>> compatibility hack above would work.
->>=20
->> You mean all the boards that have the bug, which doesn't include any =20
->> upstream device tree, right?
-> As mentioned above, my primary concern is the use of these cards in =20
-> the project/product I'm working on.  My answer has been to apply this =20
-> fix (and the matching change to the device tree I supply as a part of =20
-> the boot image).  I feel that I'm trying to do the right thing by =20
-> getting some of these changes publicly visible, but I fear that I'll =20
-> also have to go down the route of "not enough time or money to =20
-> properly upstream it".
->=20
-> "doesn't include upstream device tree" ... no, the device tree was =20
-> supplied with the original set of patches from the vendor.
-
-I'm not saying that the device tree not being upstream is a problem -- =20
-actually the opposite, that it means we don't have compatibility to =20
-maintain with an already-accepted device tree.
-
--Scott=
+> Cheers,
+> Ben.
+> 
+> > > Cc: <stable@kernel.org>
+> > > Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
+> > > ---
+> > >  arch/powerpc/include/asm/rtas.h          |    2 +
+> > >  arch/powerpc/kernel/rtas.c               |   95 ++++++++++++++++++++++++++++++
+> > >  arch/powerpc/platforms/pseries/suspend.c |   22 +++++++
+> > >  3 files changed, 119 insertions(+)
+> > > 
+> > > diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+> > > index aef00c6..ee38f29 100644
+> > > --- a/arch/powerpc/include/asm/rtas.h
+> > > +++ b/arch/powerpc/include/asm/rtas.h
+> > > @@ -262,6 +262,8 @@ extern void rtas_progress(char *s, unsigned short hex);
+> > >  extern void rtas_initialize(void);
+> > >  extern int rtas_suspend_cpu(struct rtas_suspend_me_data *data);
+> > >  extern int rtas_suspend_last_cpu(struct rtas_suspend_me_data *data);
+> > > +extern int rtas_online_cpus_mask(cpumask_var_t cpus);
+> > > +extern int rtas_offline_cpus_mask(cpumask_var_t cpus);
+> > >  extern int rtas_ibm_suspend_me(struct rtas_args *);
+> > >  
+> > >  struct rtc_time;
+> > > diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+> > > index 1fd6e7b..855ee98 100644
+> > > --- a/arch/powerpc/kernel/rtas.c
+> > > +++ b/arch/powerpc/kernel/rtas.c
+> > > @@ -19,6 +19,7 @@
+> > >  #include <linux/init.h>
+> > >  #include <linux/capability.h>
+> > >  #include <linux/delay.h>
+> > > +#include <linux/cpu.h>
+> > >  #include <linux/smp.h>
+> > >  #include <linux/completion.h>
+> > >  #include <linux/cpumask.h>
+> > > @@ -807,6 +808,77 @@ static void rtas_percpu_suspend_me(void *info)
+> > >  	__rtas_suspend_cpu((struct rtas_suspend_me_data *)info, 1);
+> > >  }
+> > >  
+> > > +enum rtas_cpu_state {
+> > > +	DOWN,
+> > > +	UP,
+> > > +};
+> > > +
+> > > +/* On return cpumask will be altered to indicate CPUs changed */
+> > > +static int rtas_cpu_state_change_mask(enum rtas_cpu_state state,
+> > > +				cpumask_var_t cpus)
+> > > +{
+> > > +	int cpu;
+> > > +	int cpuret = 0;
+> > > +	int ret = 0;
+> > > +
+> > > +	if (cpumask_empty(cpus))
+> > > +		return 0;
+> > > +
+> > > +	for_each_cpu(cpu, cpus) {
+> > > +		switch (state) {
+> > > +		case DOWN:
+> > > +			cpuret = cpu_down(cpu);
+> > > +			break;
+> > > +		case UP:
+> > > +			cpuret = cpu_up(cpu);
+> > > +			break;
+> > > +		}
+> > > +		if (cpuret) {
+> > > +			pr_debug("%s: cpu_%s for cpu#%d returned %d.\n",
+> > > +					__func__,
+> > > +					((state == UP) ? "up" : "down"),
+> > > +					cpu, cpuret);
+> > > +			if (!ret)
+> > > +				ret = cpuret;
+> > > +			if (state == UP) {
+> > > +				cpumask_shift_right(cpus, cpus, cpu);
+> > > +				cpumask_shift_left(cpus, cpus, cpu);
+> > > +				break;
+> > > +			} else
+> > > +				cpumask_clear_cpu(cpu, cpus);
+> > > +		}
+> > > +	}
+> > > +
+> > > +	return ret;
+> > > +}
+> > > +
+> > > +int rtas_online_cpus_mask(cpumask_var_t cpus)
+> > > +{
+> > > +	int ret;
+> > > +
+> > > +	ret = rtas_cpu_state_change_mask(UP, cpus);
+> > > +
+> > > +	if (ret) {
+> > > +		cpumask_var_t tmp_mask;
+> > > +
+> > > +		if (!alloc_cpumask_var(&tmp_mask, GFP_TEMPORARY))
+> > > +			return ret;
+> > > +
+> > > +		cpumask_copy(tmp_mask, cpus);
+> > > +		rtas_offline_cpus_mask(tmp_mask);
+> > > +		free_cpumask_var(tmp_mask);
+> > > +	}
+> > > +
+> > > +	return ret;
+> > > +}
+> > > +EXPORT_SYMBOL(rtas_online_cpus_mask);
+> > > +
+> > > +int rtas_offline_cpus_mask(cpumask_var_t cpus)
+> > > +{
+> > > +	return rtas_cpu_state_change_mask(DOWN, cpus);
+> > > +}
+> > > +EXPORT_SYMBOL(rtas_offline_cpus_mask);
+> > > +
+> > >  int rtas_ibm_suspend_me(struct rtas_args *args)
+> > >  {
+> > >  	long state;
+> > > @@ -814,6 +886,8 @@ int rtas_ibm_suspend_me(struct rtas_args *args)
+> > >  	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
+> > >  	struct rtas_suspend_me_data data;
+> > >  	DECLARE_COMPLETION_ONSTACK(done);
+> > > +	cpumask_var_t offline_mask;
+> > > +	int cpuret;
+> > >  
+> > >  	if (!rtas_service_present("ibm,suspend-me"))
+> > >  		return -ENOSYS;
+> > > @@ -837,11 +911,24 @@ int rtas_ibm_suspend_me(struct rtas_args *args)
+> > >  		return 0;
+> > >  	}
+> > >  
+> > > +	if (!alloc_cpumask_var(&offline_mask, GFP_TEMPORARY))
+> > > +		return -ENOMEM;
+> > > +
+> > >  	atomic_set(&data.working, 0);
+> > >  	atomic_set(&data.done, 0);
+> > >  	atomic_set(&data.error, 0);
+> > >  	data.token = rtas_token("ibm,suspend-me");
+> > >  	data.complete = &done;
+> > > +
+> > > +	/* All present CPUs must be online */
+> > > +	cpumask_andnot(offline_mask, cpu_present_mask, cpu_online_mask);
+> > > +	cpuret = rtas_online_cpus_mask(offline_mask);
+> > > +	if (cpuret) {
+> > > +		pr_err("%s: Could not bring present CPUs online.\n", __func__);
+> > > +		atomic_set(&data.error, cpuret);
+> > > +		goto out;
+> > > +	}
+> > > +
+> > >  	stop_topology_update();
+> > >  
+> > >  	/* Call function on all CPUs.  One of us will make the
+> > > @@ -857,6 +944,14 @@ int rtas_ibm_suspend_me(struct rtas_args *args)
+> > >  
+> > >  	start_topology_update();
+> > >  
+> > > +	/* Take down CPUs not online prior to suspend */
+> > > +	cpuret = rtas_offline_cpus_mask(offline_mask);
+> > > +	if (cpuret)
+> > > +		pr_warn("%s: Could not restore CPUs to offline state.\n",
+> > > +				__func__);
+> > > +
+> > > +out:
+> > > +	free_cpumask_var(offline_mask);
+> > >  	return atomic_read(&data.error);
+> > >  }
+> > >  #else /* CONFIG_PPC_PSERIES */
+> > > diff --git a/arch/powerpc/platforms/pseries/suspend.c b/arch/powerpc/platforms/pseries/suspend.c
+> > > index 47226e0..5f997e7 100644
+> > > --- a/arch/powerpc/platforms/pseries/suspend.c
+> > > +++ b/arch/powerpc/platforms/pseries/suspend.c
+> > > @@ -16,6 +16,7 @@
+> > >    * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+> > >    */
+> > >  
+> > > +#include <linux/cpu.h>
+> > >  #include <linux/delay.h>
+> > >  #include <linux/suspend.h>
+> > >  #include <linux/stat.h>
+> > > @@ -126,11 +127,15 @@ static ssize_t store_hibernate(struct device *dev,
+> > >  			       struct device_attribute *attr,
+> > >  			       const char *buf, size_t count)
+> > >  {
+> > > +	cpumask_var_t offline_mask;
+> > >  	int rc;
+> > >  
+> > >  	if (!capable(CAP_SYS_ADMIN))
+> > >  		return -EPERM;
+> > >  
+> > > +	if (!alloc_cpumask_var(&offline_mask, GFP_TEMPORARY))
+> > > +		return -ENOMEM;
+> > > +
+> > >  	stream_id = simple_strtoul(buf, NULL, 16);
+> > >  
+> > >  	do {
+> > > @@ -140,15 +145,32 @@ static ssize_t store_hibernate(struct device *dev,
+> > >  	} while (rc == -EAGAIN);
+> > >  
+> > >  	if (!rc) {
+> > > +		/* All present CPUs must be online */
+> > > +		cpumask_andnot(offline_mask, cpu_present_mask,
+> > > +				cpu_online_mask);
+> > > +		rc = rtas_online_cpus_mask(offline_mask);
+> > > +		if (rc) {
+> > > +			pr_err("%s: Could not bring present CPUs online.\n",
+> > > +					__func__);
+> > > +			goto out;
+> > > +		}
+> > > +
+> > >  		stop_topology_update();
+> > >  		rc = pm_suspend(PM_SUSPEND_MEM);
+> > >  		start_topology_update();
+> > > +
+> > > +		/* Take down CPUs not online prior to suspend */
+> > > +		if (!rtas_offline_cpus_mask(offline_mask))
+> > > +			pr_warn("%s: Could not restore CPUs to offline "
+> > > +					"state.\n", __func__);
+> > >  	}
+> > >  
+> > >  	stream_id = 0;
+> > >  
+> > >  	if (!rc)
+> > >  		rc = count;
+> > > +out:
+> > > +	free_cpumask_var(offline_mask);
+> > >  	return rc;
+> > >  }
+> > >  
+> > 
+> > 
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
