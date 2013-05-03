@@ -1,22 +1,37 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 987672C00BD
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 May 2013 09:04:16 +1000 (EST)
-Message-ID: <1367622108.4389.129.camel@pasglop>
-Subject: Re: [PATCHv5 0/2] Speed Cap fixes for ppc64
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kleber Sacilotto de Souza <klebers@linux.vnet.ibm.com>
-Date: Sat, 04 May 2013 09:01:48 +1000
-In-Reply-To: <1367620993-27037-1-git-send-email-klebers@linux.vnet.ibm.com>
-References: <1367620993-27037-1-git-send-email-klebers@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: David Airlie <airlied@linux.ie>, dri-devel@lists.freedesktop.org,
- Brian King <brking@linux.vnet.ibm.com>, Jerome Glisse <jglisse@redhat.com>,
- Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
- Bjorn Helgaas <bhelgaas@google.com>, Alex Deucher <alexander.deucher@amd.com>,
+ (Client CN "e37.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 61DFD2C00D7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 May 2013 09:19:58 +1000 (EST)
+Received: from /spool/local
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Fri, 3 May 2013 17:19:50 -0600
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+ [9.17.195.227])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 5A3E93E4003F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2013 17:19:27 -0600 (MDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r43NJf6M109418
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 May 2013 17:19:41 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r43NJf9v021353
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 May 2013 17:19:41 -0600
+Date: Fri, 3 May 2013 16:19:34 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: [PATCH] arch/powerpc: advertise ISA2.07, HTM, DSCR, EBB and ISEL
+ bits in HWCAP2
+Message-ID: <20130503231933.GA29436@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: Michael Neuling <michael.neuling@au1.ibm.com>,
+ Michael R Meissner <mrmeissn@us.ibm.com>, sjmunroe@us.ibm.com,
+ bergner@us.ibm.com, Ryan Arnold <ryanarn@us.ibm.com>,
  linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,32 +42,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-05-03 at 19:43 -0300, Kleber Sacilotto de Souza wrote:
+Now that we have AT_HWCAP2 support, start exposing some of the new
+POWER8 features via it.
 
-> This patch series does:
->   1. max_bus_speed is used to set the device to gen2 speeds
->   2. on power there's no longer a conflict between the pseries call and other
-> architectures, because the overwrite is done via a ppc_md hook
->   3. radeon is using bus->max_bus_speed instead of drm_pcie_get_speed_cap_mask
-> for gen2 capability detection
-> 
-> The first patch consists of some architecture changes, such as adding a hook on
-> powerpc for pci_root_bridge_prepare, so that pseries will initialize it to a
-> function, while all other architectures get a NULL pointer. So that whenever
-> pci_create_root_bus is called, we'll get max_bus_speed properly setup from
-> OpenFirmware.
-> 
-> The second patch consists of simple radeon changes not to call
-> drm_get_pcie_speed_cap_mask anymore. I assume that on x86 machines,
-> the max_bus_speed property will be properly set already.
+Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
 
-So I'm ok with the approach now and I might even put the powerpc patch
-in for 3.10 since arguably we are fixing a nasty bug (uninitialized
-max_bus_speed).
+---
+Note: there are, I think, some Freescale processors that also should be
+updated to indicate they support ISEL, but I don't know which ones.
+Since this is a new feature bit (and vector), it seems like we can fix
+that up in a follow-on patch. Also, this is my first patch trying to
+manipulate these bits, so please let me know if I'm doing something
+wrong (for instance, I don't see any particular order to the bits in
+PPC_FEATURE_*)
 
-David, what's your feeling about the radeon change ? It would be nice if
-that could go in soon for various distro targets :-) On the other hand
-I'm not going to be pushy if you are not comfortable with it.
-
-Cheers,
-Ben.
+diff --git a/arch/powerpc/include/uapi/asm/cputable.h b/arch/powerpc/include/uapi/asm/cputable.h
+index ed9dd81..78db4e2 100644
+--- a/arch/powerpc/include/uapi/asm/cputable.h
++++ b/arch/powerpc/include/uapi/asm/cputable.h
+@@ -1,6 +1,7 @@
+ #ifndef _UAPI__ASM_POWERPC_CPUTABLE_H
+ #define _UAPI__ASM_POWERPC_CPUTABLE_H
+ 
++/* in AT_HWCAP */
+ #define PPC_FEATURE_32			0x80000000
+ #define PPC_FEATURE_64			0x40000000
+ #define PPC_FEATURE_601_INSTR		0x20000000
+@@ -33,4 +34,11 @@
+ #define PPC_FEATURE_TRUE_LE		0x00000002
+ #define PPC_FEATURE_PPC_LE		0x00000001
+ 
++/* in AT_HWCAP2 */
++#define PPC_FEATURE2_ARCH_2_07		0x80000000
++#define PPC_FEATURE2_HTM		0x40000000
++#define PPC_FEATURE2_DSCR		0x20000000
++#define PPC_FEATURE2_EBB		0x10000000
++#define PPC_FEATURE2_ISEL		0x08000000
++
+ #endif /* _UAPI__ASM_POWERPC_CPUTABLE_H */
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index ae9f433..871c741 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -102,6 +102,9 @@ extern void __restore_cpu_e6500(void);
+ 				 PPC_FEATURE_SMT | PPC_FEATURE_ICACHE_SNOOP | \
+ 				 PPC_FEATURE_TRUE_LE | \
+ 				 PPC_FEATURE_PSERIES_PERFMON_COMPAT)
++#define COMMON_USER2_POWER8	(PPC_FEATURE2_ARCH_2_07 | PPC_FEATURE2_HTM | \
++				 PPC_FEATURE2_DSCR | PPC_FEATURE2_EBB | \
++				 PPC_FEATURE2_ISEL)
+ #define COMMON_USER_PA6T	(COMMON_USER_PPC64 | PPC_FEATURE_PA6T |\
+ 				 PPC_FEATURE_TRUE_LE | \
+ 				 PPC_FEATURE_HAS_ALTIVEC_COMP)
+@@ -443,6 +446,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.cpu_name		= "POWER8 (architected)",
+ 		.cpu_features		= CPU_FTRS_POWER8,
+ 		.cpu_user_features	= COMMON_USER_POWER8,
++		.cpu_user_features2	= COMMON_USER2_POWER8,
+ 		.mmu_features		= MMU_FTRS_POWER8,
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
+@@ -492,6 +496,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.cpu_name		= "POWER8 (raw)",
+ 		.cpu_features		= CPU_FTRS_POWER8,
+ 		.cpu_user_features	= COMMON_USER_POWER8,
++		.cpu_user_features2	= COMMON_USER2_POWER8,
+ 		.mmu_features		= MMU_FTRS_POWER8,
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
