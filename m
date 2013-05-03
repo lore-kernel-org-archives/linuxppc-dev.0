@@ -1,39 +1,25 @@
-Return-Path: <klebers@linux.vnet.ibm.com>
-Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e24smtp04.br.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2E86D2C01B4
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 May 2013 08:44:10 +1000 (EST)
-Received: from /spool/local
- by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <klebers@linux.vnet.ibm.com>;
- Fri, 3 May 2013 19:44:06 -0300
-Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id B01041DC006C
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2013 18:44:03 -0400 (EDT)
-Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
- by d24relay01.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r43MfDUu704548
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 May 2013 19:41:13 -0300
-Received: from d24av02.br.ibm.com (loopback [127.0.0.1])
- by d24av02.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r43Mi2Jv007347
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 May 2013 19:44:03 -0300
-From: Kleber Sacilotto de Souza <klebers@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Bjorn Helgaas <bhelgaas@google.com>, David Airlie <airlied@linux.ie>,
- Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCHv5 2/2] radeon: use max_bus_speed to activate gen2 speeds
-Date: Fri,  3 May 2013 19:43:13 -0300
-Message-Id: <1367620993-27037-3-git-send-email-klebers@linux.vnet.ibm.com>
-In-Reply-To: <1367620993-27037-1-git-send-email-klebers@linux.vnet.ibm.com>
-References: <1367620993-27037-1-git-send-email-klebers@linux.vnet.ibm.com>
-Cc: Brian King <brking@linux.vnet.ibm.com>,
- Alex Deucher <alexander.deucher@amd.com>, Jerome Glisse <jglisse@redhat.com>,
- Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
- Kleber Sacilotto de Souza <klebers@linux.vnet.ibm.com>
+Return-Path: <B02008@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CE5882C00D6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 May 2013 08:59:41 +1000 (EST)
+From: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH] KVM: PPC: Book3E 64: Fix IRQs warnings and hangs
+Date: Fri, 3 May 2013 22:59:32 +0000
+Message-ID: <300B73AA675FCE4A93EB4FC1D42459FF3E9D81@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <300B73AA675FCE4A93EB4FC1D42459FF3E9B37@039-SN2MPN1-013.039d.mgd.msft.net>
+ (from B02008@freescale.com on Fri May  3 15:56:47 2013)
+ <1367618808.19391.11@snotra>
+In-Reply-To: <1367618808.19391.11@snotra>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,100 +29,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-radeon currently uses a drm function to get the speed capabilities for
-the bus, drm_pcie_get_speed_cap_mask. However, this is a non-standard
-method of performing this detection and this patch changes it to use
-the max_bus_speed attribute.
+> -----Original Message-----
+> From: Wood Scott-B07421
+> Sent: Saturday, May 04, 2013 1:07 AM
+> To: Caraman Mihai Claudiu-B02008
+> Cc: Wood Scott-B07421; kvm-ppc@vger.kernel.org; kvm@vger.kernel.org;
+> linuxppc-dev@lists.ozlabs.org
+> Subject: Re: [PATCH] KVM: PPC: Book3E 64: Fix IRQs warnings and hangs
+>=20
+> I replaced the two calls to kvmppc_lazy_ee_enable() with calls to
+> hard_irq_disable(), and it seems to be working fine.
 
-From: Lucas Kannebley Tavares <lucaskt@linux.vnet.ibm.com>
-Signed-off-by: Kleber Sacilotto de Souza <klebers@linux.vnet.ibm.com>
----
- drivers/gpu/drm/radeon/evergreen.c |   10 +++-------
- drivers/gpu/drm/radeon/r600.c      |    9 ++-------
- drivers/gpu/drm/radeon/rv770.c     |    9 ++-------
- 3 files changed, 7 insertions(+), 21 deletions(-)
+Please take a look on 'KVM: PPC64: booke: Hard disable interrupts when
+entering guest' RFC thread and see if your solution addresses Ben's
+comments.
 
-diff --git a/drivers/gpu/drm/radeon/evergreen.c b/drivers/gpu/drm/radeon/evergreen.c
-index 105bafb..3966696 100644
---- a/drivers/gpu/drm/radeon/evergreen.c
-+++ b/drivers/gpu/drm/radeon/evergreen.c
-@@ -4992,8 +4992,7 @@ void evergreen_fini(struct radeon_device *rdev)
- 
- void evergreen_pcie_gen2_enable(struct radeon_device *rdev)
- {
--	u32 link_width_cntl, speed_cntl, mask;
--	int ret;
-+	u32 link_width_cntl, speed_cntl;
- 
- 	if (radeon_pcie_gen2 == 0)
- 		return;
-@@ -5008,11 +5007,8 @@ void evergreen_pcie_gen2_enable(struct radeon_device *rdev)
- 	if (ASIC_IS_X2(rdev))
- 		return;
- 
--	ret = drm_pcie_get_speed_cap_mask(rdev->ddev, &mask);
--	if (ret != 0)
--		return;
--
--	if (!(mask & DRM_PCIE_SPEED_50))
-+	if ((rdev->pdev->bus->max_bus_speed != PCIE_SPEED_5_0GT) &&
-+		(rdev->pdev->bus->max_bus_speed != PCIE_SPEED_8_0GT))
- 		return;
- 
- 	speed_cntl = RREG32_PCIE_PORT(PCIE_LC_SPEED_CNTL);
-diff --git a/drivers/gpu/drm/radeon/r600.c b/drivers/gpu/drm/radeon/r600.c
-index 1a08008..b45e648 100644
---- a/drivers/gpu/drm/radeon/r600.c
-+++ b/drivers/gpu/drm/radeon/r600.c
-@@ -4631,8 +4631,6 @@ static void r600_pcie_gen2_enable(struct radeon_device *rdev)
- {
- 	u32 link_width_cntl, lanes, speed_cntl, training_cntl, tmp;
- 	u16 link_cntl2;
--	u32 mask;
--	int ret;
- 
- 	if (radeon_pcie_gen2 == 0)
- 		return;
-@@ -4651,11 +4649,8 @@ static void r600_pcie_gen2_enable(struct radeon_device *rdev)
- 	if (rdev->family <= CHIP_R600)
- 		return;
- 
--	ret = drm_pcie_get_speed_cap_mask(rdev->ddev, &mask);
--	if (ret != 0)
--		return;
--
--	if (!(mask & DRM_PCIE_SPEED_50))
-+	if ((rdev->pdev->bus->max_bus_speed != PCIE_SPEED_5_0GT) &&
-+		(rdev->pdev->bus->max_bus_speed != PCIE_SPEED_8_0GT))
- 		return;
- 
- 	speed_cntl = RREG32_PCIE_PORT(PCIE_LC_SPEED_CNTL);
-diff --git a/drivers/gpu/drm/radeon/rv770.c b/drivers/gpu/drm/radeon/rv770.c
-index 83f612a..a6af4aa 100644
---- a/drivers/gpu/drm/radeon/rv770.c
-+++ b/drivers/gpu/drm/radeon/rv770.c
-@@ -2113,8 +2113,6 @@ static void rv770_pcie_gen2_enable(struct radeon_device *rdev)
- {
- 	u32 link_width_cntl, lanes, speed_cntl, tmp;
- 	u16 link_cntl2;
--	u32 mask;
--	int ret;
- 
- 	if (radeon_pcie_gen2 == 0)
- 		return;
-@@ -2129,11 +2127,8 @@ static void rv770_pcie_gen2_enable(struct radeon_device *rdev)
- 	if (ASIC_IS_X2(rdev))
- 		return;
- 
--	ret = drm_pcie_get_speed_cap_mask(rdev->ddev, &mask);
--	if (ret != 0)
--		return;
--
--	if (!(mask & DRM_PCIE_SPEED_50))
-+	if ((rdev->pdev->bus->max_bus_speed != PCIE_SPEED_5_0GT) &&
-+		(rdev->pdev->bus->max_bus_speed != PCIE_SPEED_8_0GT))
- 		return;
- 
- 	DRM_INFO("enabling PCIE gen 2 link speeds, disable with radeon.pcie_gen2=0\n");
--- 
-1.7.1
+>=20
+> > > > > Where is the arch_local_irq_restore() instance you're talking
+> > about?
+> > > >
+> > > > ./arch/power/kernel/irq.c
+> > >
+> > > I meant the caller. :-P
+> >
+> > ./arch/powerpc/include/asm/hw_irq.h
+> >
+> >   55static inline unsigned long arch_local_irq_disable(void)
+> >   56{
+> >   57        unsigned long flags, zero;
+> >   58
+> >   59        asm volatile(
+> >   60                "li %1,0; lbz %0,%2(13); stb %1,%2(13)"
+> >   61                : "=3Dr" (flags), "=3D&r" (zero)
+> >   62                : "i" (offsetof(struct paca_struct, soft_enabled))
+> >   63                : "memory");
+> >   64
+> >   65        return flags;
+> >   66}
+> >   67
+> >   68extern void arch_local_irq_restore(unsigned long);
+> >   69
+> >   70static inline void arch_local_irq_enable(void)
+> >   71{
+> >   72        arch_local_irq_restore(1);
+> >   73}
+>=20
+> Sigh.  I meant the real caller, who's calling local_irq_restore().
+
+I'm not sure what you mean, arch_local_irq_restore() is called indirectly
+by local_irq_enable() in our case from handle_exit().
+
+-Mike
