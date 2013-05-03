@@ -1,27 +1,43 @@
-Return-Path: <a13xp0p0v88@gmail.com>
-Received: from mail-wg0-x22f.google.com (mail-wg0-x22f.google.com
- [IPv6:2a00:1450:400c:c00::22f])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B5CF02C0095
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2013 20:43:28 +1000 (EST)
-Received: by mail-wg0-f47.google.com with SMTP id e11so1421307wgh.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 May 2013 03:43:23 -0700 (PDT)
+Return-Path: <klebers@linux.vnet.ibm.com>
+Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e24smtp05.br.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DB9052C00D4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2013 21:56:07 +1000 (EST)
+Received: from /spool/local
+ by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <klebers@linux.vnet.ibm.com>;
+ Fri, 3 May 2013 08:55:53 -0300
+Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id 34A4D1DC006E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2013 07:55:50 -0400 (EDT)
+Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
+ by d24relay02.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r43BsjFE28967140
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 May 2013 08:54:46 -0300
+Received: from d24av05.br.ibm.com (loopback [127.0.0.1])
+ by d24av05.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r43Btl9N003824
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 May 2013 08:55:49 -0300
+Message-ID: <5183A5C4.4030706@linux.vnet.ibm.com>
+Date: Fri, 03 May 2013 08:55:48 -0300
+From: Kleber Sacilotto de Souza <klebers@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20130503085944.69ef751e@crub>
-References: <1367407689-16252-1-git-send-email-a13xp0p0v88@gmail.com>
- <20130502171452.GP1960@intel.com>
- <CAF0T0X7XBuL7a=8zwqMnLDB04-Tf=qhCLPZ4T29yNdN6mP5S2A@mail.gmail.com>
- <20130503085944.69ef751e@crub>
-Date: Fri, 3 May 2013 14:43:23 +0400
-Message-ID: <CAF0T0X5cRMvoZKQQUkQHTLjbzz1xi_1pvUiywsKb5BGvyMGvpg@mail.gmail.com>
-Subject: Re: [PATCH 1/1] powerpc: mpc512x_dma: add support for data transfers
- between memory and i/o memory
-From: Alexander Popov <a13xp0p0v88@gmail.com>
-To: Anatolij Gustschin <agust@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Vinod Koul <vinod.koul@intel.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Dan Williams <djbw@fb.com>
+To: tony@bakeyournoodle.com
+Subject: Re: [PATCHv4 1/2] ppc64: perform proper max_bus_speed detection
+References: <1366844090-5492-1-git-send-email-lucaskt@linux.vnet.ibm.com>
+ <1366844090-5492-2-git-send-email-lucaskt@linux.vnet.ibm.com>
+ <20130424234838.GA1971@thor.bakeyournoodle.com>
+ <51796928.2050406@linux.vnet.ibm.com> <51828481.2090406@linux.vnet.ibm.com>
+ <20130503064008.GB4260@thor.bakeyournoodle.com>
+In-Reply-To: <20130503064008.GB4260@thor.bakeyournoodle.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: David Airlie <airlied@linux.ie>, Brian King <brking@linux.vnet.ibm.com>,
+ dri-devel@lists.freedesktop.org, Alex Deucher <alexander.deucher@amd.com>,
+ Jerome Glisse <jglisse@redhat.com>,
+ Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
+ Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,20 +47,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Anatolij,
+On 05/03/2013 03:40 AM, Tony Breeds wrote:
+> On Thu, May 02, 2013 at 12:21:37PM -0300, Kleber Sacilotto de Souza wrote:
+> 
+>> Hi Tony,
+>>
+>> It seems Lucas' change is a bit incomplete and is not handling the reference counter to
+>> the device_node correctly. Is the following change what you had in mind?
+> 
+> Ahh Sorry I expected there would be a for_each_parent_of_node macro.
+> I did a quick grep and it seems that's not very common, so open coding
+> it should be fine.
+>  
+>>
+>> 	dn = pcibios_get_phb_of_node(bus);
+>> 	if (!dn)
+>> 		return 0;
+>>
+>> 	for (pdn = dn; pdn != NULL; pdn = of_get_next_parent(pdn)) {
+>> 		pcie_link_speed_stats = (const uint32_t *) of_get_property(pdn,
+>> 			"ibm,pcie-link-speed-stats", NULL);
+>> 		if (pcie_link_speed_stats)
+>> 			break;
+>> 	}
+>>
+>> 	of_node_put(pdn);
+> 
+> I think you need the of_node_put() in the body of the loop, otherwise
+> aren't you leaking refcounts?
 
-> Note that there is a patch for .device_prep_slave_sg() operation
-> for this driver as part of this series:
-> https://patchwork.kernel.org/patch/2368581/
-> https://patchwork.kernel.org/patch/2368591/
-Thanks, I haven't seen that patch.
-It's certainly what my SCLPC device driver needs
-(http://patchwork.ozlabs.org/patch/241010/).
-I will send the second version of it which uses .device_prep_slave_sg().
+of_get_next_parent() takes care of that. It does of_node_put() on the
+current node after doing of_node_get() on the parent.
 
-> maybe you can reuse and improve it.
-> Anatolij
-Should I propose my additions at https://patchwork.kernel.org/patch/2368591/ ?
 
-Best regards,
-Alexander
+Thanks,
+-- 
+Kleber Sacilotto de Souza
+IBM Linux Technology Center
