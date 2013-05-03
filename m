@@ -1,29 +1,26 @@
-Return-Path: <eric.dumazet@gmail.com>
-Received: from mail-pa0-f50.google.com (mail-pa0-f50.google.com
- [209.85.220.50])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id F3D662C00D7
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 May 2013 00:14:24 +1000 (EST)
-Received: by mail-pa0-f50.google.com with SMTP id fb10so944738pad.9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 May 2013 07:14:22 -0700 (PDT)
-Message-ID: <1367590455.29805.30.camel@edumazet-glaptop>
-Subject: Re: [PATCH net-next] af_unix: fix a fatal race with bit fields
-From: Eric Dumazet <eric.dumazet@gmail.com>
-To: Alan Modra <amodra@gmail.com>
-Date: Fri, 03 May 2013 07:14:15 -0700
-In-Reply-To: <20130503013136.GN5221@bubble.grove.modra.org>
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by ozlabs.org (Postfix) with SMTP id 250382C00DB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 May 2013 00:31:37 +1000 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 10418-06 for <linuxppc-dev@lists.ozlabs.org>;
+ Fri,  3 May 2013 15:31:32 +0100 (BST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="utf-8"
+Subject: RE: [PATCH net-next] af_unix: fix a fatal race with bit fields
+Date: Fri, 3 May 2013 15:29:50 +0100
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B7226@saturn3.aculab.com>
+In-Reply-To: <1367372393.22115.6.camel@pasglop>
 References: <1367370761.11020.22.camel@edumazet-glaptop>
- <20130501115103.58e40f37@kryten>
- <1367375060.11020.24.camel@edumazet-glaptop>
- <20130501035425.GD5221@bubble.grove.modra.org>
- <1367384672.11020.34.camel@edumazet-glaptop>
- <20130503013136.GN5221@bubble.grove.modra.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: netdev <netdev@vger.kernel.org>, Ambrose Feinstein <ambrose@google.com>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>
+ <1367372393.22115.6.camel@pasglop>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+ "Eric Dumazet" <eric.dumazet@gmail.com>
+Cc: netdev <netdev@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ Paul Mackerras <paulus@samba.org>, David Miller <davem@davemloft.net>,
+ Ambrose Feinstein <ambrose@google.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,28 +30,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-05-03 at 11:01 +0930, Alan Modra wrote:
-> On Tue, Apr 30, 2013 at 10:04:32PM -0700, Eric Dumazet wrote:
-> > These kind of errors are pretty hard to find, its a pity to spend time
-> > on them.
-> 
-> Well, yes.  From the first comment in gcc PR52080.  "For the following
-> testcase we generate a 8 byte RMW cycle on IA64 which causes locking
-> problems in the linux kernel btrfs filesystem."
-> 
-> Did someone fix btrfs, but not check other kernel locks?  Having now
-> hit the same problem again, have you checked that other kernel locks
-> don't have adjacent bit fields in the same 64-bit word?  And comment
-> the struct to ensure someone doesn't optimize those unsigned chars
-> back to bit fields.
-
-Not only spinlock, but atomic_t followed by bit fields.
-
-BTW, if a spinlock is followed by bit fields, but bit fields
-only changed when this spinlock is held, there is no problem, unless
-spinlock is a ticket spinlock.
-
-In af_unix, bug happens because the bit fields were changed without
-spinlock being held (another global spinlock is used instead)
-
-(ppc64 doesnt use ticket spinlocks yet)
+PiA+IENvdWxkIHBwYzY0IGV4cGVydHMgY29uZmlybSB1c2luZyBieXRlIGlzIHNhZmUsIG9yIHNo
+b3VsZCB3ZSByZWFsbHkgYWRkDQo+ID4gYSAzMmJpdCBob2xlIGFmdGVyIHRoZSBzcGlubG9jayA/
+IElmIHNvLCBJIHdvbmRlciBob3cgbWFueSBvdGhlciBwbGFjZXMNCj4gPiBuZWVkIGEgY2hhbmdl
+Li4uDQouLi4NCj4gQWxzbyBJJ2QgYmUgc3VycHJpc2VkIGlmIHBwYzY0IGlzIHRoZSBvbmx5IG9u
+ZSB3aXRoIHRoYXQgcHJvYmxlbS4uLiB3aGF0DQo+IGFib3V0IHNwYXJjNjQgYW5kIGFybTY0ID8N
+Cg0KRXZlbiB4ODYgY291bGQgYmUgYWZmZWN0ZWQuDQpUaGUgd2lkdGggb2YgdGhlIG1lbW9yeSBj
+eWNsZXMgdXNlZCBieSB0aGUgJ2JpdCBzZXQgYW5kIGJpdCBjbGVhcicNCmluc3RydWN0aW9ucyBp
+c24ndCBkb2N1bWVudGVkLiBUaGV5IGFyZSBjZXJ0YWlubHkgYWxsb3dlZCB0byBkbw0KUk1XIG9u
+IGFkamFjZW50IGJ5dGVzLg0KSSBkb24ndCByZW1lbWJlciB3aGV0aGVyIHRoZXkgYXJlIGNvbnN0
+cmFpbmVkIHRvIG9ubHkgZG8NCjMyYml0IGFjY2Vzc2VzLCBidXQgbm90aGluZyB1c2VkIHRvIHNh
+eSB0aGF0IHRoZXkgd291bGRuJ3QNCmRvIDMyYml0IG1pc2FsaWduZWQgb25lcyEgKGFsdGhvdWdo
+IEkgc3VzcGVjdCB0aGV5IG5ldmVyIGhhdmUpLg0KDQoJRGF2aWQNCg0K
