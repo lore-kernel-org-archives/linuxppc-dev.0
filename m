@@ -1,36 +1,37 @@
 Return-Path: <dwg@au1.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D7E4B2C00BC
+ (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DB6D62C00D8
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2013 15:30:40 +1000 (EST)
 Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <dwg@au1.ibm.com>;
- Fri, 3 May 2013 15:22:39 +1000
+ Fri, 3 May 2013 15:24:31 +1000
 Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 791F72BB0052
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 929172CE8054
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2013 15:30:35 +1000 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
  by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r435Gour19857610
+ r435GoQL18481328
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 May 2013 15:16:50 +1000
 Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r435UXgi029240
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 May 2013 15:30:35 +1000
-Date: Fri, 3 May 2013 15:15:28 +1000
+ r435UXQJ029214
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 May 2013 15:30:34 +1000
+Date: Fri, 3 May 2013 14:53:23 +1000
 From: David Gibson <dwg@au1.ibm.com>
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH -V7 08/10] powerpc/THP: Enable THP on PPC64
-Message-ID: <20130503051528.GT13041@truffula.fritz.box>
+Subject: Re: [PATCH -V7 04/10] powerpc: Update find_linux_pte_or_hugepte to
+ handle transparent hugepages
+Message-ID: <20130503045323.GP13041@truffula.fritz.box>
 References: <1367178711-8232-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1367178711-8232-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1367178711-8232-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="z118w8IfbP8nVdqq"
-In-Reply-To: <1367178711-8232-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ protocol="application/pgp-signature"; boundary="FmdPcZLZZW6lDAYm"
+In-Reply-To: <1367178711-8232-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -41,87 +42,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---z118w8IfbP8nVdqq
+--FmdPcZLZZW6lDAYm
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Apr 29, 2013 at 01:21:49AM +0530, Aneesh Kumar K.V wrote:
+On Mon, Apr 29, 2013 at 01:21:45AM +0530, Aneesh Kumar K.V wrote:
 > From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
->=20
-> We enable only if the we support 16MB page size.
+
+What's the difference in meaning between pmd_huge() and pmd_large()?
+
+
 >=20
 > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/include/asm/pgtable-ppc64.h |  3 +--
->  arch/powerpc/mm/pgtable_64.c             | 28 ++++++++++++++++++++++++++=
-++
->  2 files changed, 29 insertions(+), 2 deletions(-)
+>  arch/powerpc/mm/hugetlbpage.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >=20
-> diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/incl=
-ude/asm/pgtable-ppc64.h
-> index 97fc839..d65534b 100644
-> --- a/arch/powerpc/include/asm/pgtable-ppc64.h
-> +++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-> @@ -426,8 +426,7 @@ static inline unsigned long pmd_pfn(pmd_t pmd)
->  	return pmd_val(pmd) >> PTE_RPN_SHIFT;
->  }
+> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+> index 8601f2d..081c001 100644
+> --- a/arch/powerpc/mm/hugetlbpage.c
+> +++ b/arch/powerpc/mm/hugetlbpage.c
+> @@ -954,7 +954,7 @@ pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsign=
+ed long ea, unsigned *shift
+>  			pdshift =3D PMD_SHIFT;
+>  			pm =3D pmd_offset(pu, ea);
 > =20
-> -/* We will enable it in the last patch */
-> -#define has_transparent_hugepage() 0
-> +extern int has_transparent_hugepage(void);
->  #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
-> =20
->  static inline int pmd_young(pmd_t pmd)
-> diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-> index 54216c1..b742d6f 100644
-> --- a/arch/powerpc/mm/pgtable_64.c
-> +++ b/arch/powerpc/mm/pgtable_64.c
-> @@ -754,6 +754,34 @@ void update_mmu_cache_pmd(struct vm_area_struct *vma=
-, unsigned long addr,
->  	return;
->  }
-> =20
-> +int has_transparent_hugepage(void)
-> +{
-> +	if (!mmu_has_feature(MMU_FTR_16M_PAGE))
-> +		return 0;
-> +	/*
-> +	 * We support THP only if HPAGE_SHIFT is 16MB.
-> +	 */
-> +	if (!HPAGE_SHIFT || (HPAGE_SHIFT !=3D mmu_psize_defs[MMU_PAGE_16M].shif=
-t))
-> +		return 0;
-
-Again, THP should not be dependent on the value of HPAGE_SHIFT.  Just
-checking that mmu_psize_defsz[MMU_PAGE_16M].shift =3D=3D 24 should be
-sufficient (i.e. that 16M hugepages are supported).
-
-> +	/*
-> +	 * We need to make sure that we support 16MB hugepage in a segement
-> +	 * with base page size 64K or 4K. We only enable THP with a PAGE_SIZE
-> +	 * of 64K.
-> +	 */
-> +	/*
-> +	 * If we have 64K HPTE, we will be using that by default
-> +	 */
-> +	if (mmu_psize_defs[MMU_PAGE_64K].shift &&
-> +	    (mmu_psize_defs[MMU_PAGE_64K].penc[MMU_PAGE_16M] =3D=3D -1))
-> +		return 0;
-> +	/*
-> +	 * Ok we only have 4K HPTE
-> +	 */
-> +	if (mmu_psize_defs[MMU_PAGE_4K].penc[MMU_PAGE_16M] =3D=3D -1)
-> +		return 0;
-
-Except you don't actually support THP on 4K base page size yet.
-
-> +
-> +	return 1;
-> +}
->  #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
-> =20
->  pmd_t pmdp_get_and_clear(struct mm_struct *mm,
+> -			if (pmd_huge(*pm)) {
+> +			if (pmd_huge(*pm) || pmd_large(*pm)) {
+>  				ret_pte =3D (pte_t *) pm;
+>  				goto out;
+>  			} else if (is_hugepd(pm))
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -129,16 +80,16 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---z118w8IfbP8nVdqq
+--FmdPcZLZZW6lDAYm
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iEYEARECAAYFAlGDR/AACgkQaILKxv3ab8ZogACgjQBbHgA4ox8L/0q4Rxfr/WR8
-xtcAoIRmXw5iJe/bgi9g+eU13Too/AYu
-=EfrB
+iEYEARECAAYFAlGDQsIACgkQaILKxv3ab8YImACcDHu/Yfoj6P+E/cOG0SzhzP3I
+YNQAoJD5k+X43Mkyuz9g0ClwfAbcsa0Y
+=FggU
 -----END PGP SIGNATURE-----
 
---z118w8IfbP8nVdqq--
+--FmdPcZLZZW6lDAYm--
