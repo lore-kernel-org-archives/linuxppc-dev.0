@@ -1,27 +1,20 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
- by ozlabs.org (Postfix) with SMTP id C5C1D2C00BC
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 May 2013 01:45:34 +1000 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
- by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
- id 25142-10 for <linuxppc-dev@lists.ozlabs.org>;
- Fri,  3 May 2013 16:45:20 +0100 (BST)
+Return-Path: <B02008@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0185.outbound.messaging.microsoft.com [213.199.154.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 01EFF2C00DB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 May 2013 02:11:26 +1000 (EST)
+From: Mihai Caraman <mihai.caraman@freescale.com>
+To: <kvm-ppc@vger.kernel.org>
+Subject: [PATCH] KVM: PPC: Book3E 64: Fix IRQs warnings and hangs
+Date: Fri, 3 May 2013 19:11:10 +0300
+Message-ID: <1367597470-22214-1-git-send-email-mihai.caraman@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Subject: RE: [PATCH net-next] af_unix: fix a fatal race with bit fields
-Date: Fri, 3 May 2013 16:44:22 +0100
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B7227@saturn3.aculab.com>
-In-Reply-To: <1367593356.29805.37.camel@edumazet-glaptop>
-References: <1367370761.11020.22.camel@edumazet-glaptop>
- <1367372393.22115.6.camel@pasglop>
- <AE90C24D6B3A694183C094C60CF0A2F6026B7226@saturn3.aculab.com>
- <1367593356.29805.37.camel@edumazet-glaptop>
-From: "David Laight" <David.Laight@ACULAB.COM>
-To: "Eric Dumazet" <eric.dumazet@gmail.com>
-Cc: Ambrose Feinstein <ambrose@google.com>, Paul Mackerras <paulus@samba.org>,
- netdev <netdev@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org,
- David Miller <davem@davemloft.net>
+Content-Type: text/plain
+Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,41 +24,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiA+ID4gQWxzbyBJJ2QgYmUgc3VycHJpc2VkIGlmIHBwYzY0IGlzIHRoZSBvbmx5IG9uZSB3aXRo
-IHRoYXQgcHJvYmxlbS4uLiB3aGF0DQo+ID4gPiBhYm91dCBzcGFyYzY0IGFuZCBhcm02NCA/DQo+
-ID4NCj4gPiBFdmVuIHg4NiBjb3VsZCBiZSBhZmZlY3RlZC4NCj4gPiBUaGUgd2lkdGggb2YgdGhl
-IG1lbW9yeSBjeWNsZXMgdXNlZCBieSB0aGUgJ2JpdCBzZXQgYW5kIGJpdCBjbGVhcicNCj4gPiBp
-bnN0cnVjdGlvbnMgaXNuJ3QgZG9jdW1lbnRlZC4gVGhleSBhcmUgY2VydGFpbmx5IGFsbG93ZWQg
-dG8gZG8NCj4gPiBSTVcgb24gYWRqYWNlbnQgYnl0ZXMuDQo+ID4gSSBkb24ndCByZW1lbWJlciB3
-aGV0aGVyIHRoZXkgYXJlIGNvbnN0cmFpbmVkIHRvIG9ubHkgZG8NCj4gPiAzMmJpdCBhY2Nlc3Nl
-cywgYnV0IG5vdGhpbmcgdXNlZCB0byBzYXkgdGhhdCB0aGV5IHdvdWxkbid0DQo+ID4gZG8gMzJi
-aXQgbWlzYWxpZ25lZCBvbmVzISAoYWx0aG91Z2ggSSBzdXNwZWN0IHRoZXkgbmV2ZXIgaGF2ZSku
-DQo+IA0KPiB4ODYgaXMgbm90IGFmZmVjdGVkIChvciBlbHNlIHdlIHdvdWxkIGhhdmUgZm91bmQg
-dGhlIGJ1ZyBtdWNoIGVhcmxpZXIpDQo+IA0KPiBTZXR0aW5nIDEtYml0IGZpZWxkIHRvIG9uZS96
-ZXJvIHVzZXMgT1IvQU5EIGluc3RydWN0aW9ucy4NCj4gDQo+IG9yYiAgJDQsNzI0KCVyZWcpDQo+
-IA0KPiBkb2Vzbid0IGxvYWQvc3RvcmUgNjRiaXRzIGJ1dCA4Yml0cy4NCg0KSSB3YXMgdGhpbmtp
-bmcgb2YgY29kZSB0aGF0IG1pZ2h0IGJlIHVzaW5nIEJULCBCVEMsIEJUUiBvciBCVFMuDQpUaGVz
-ZSBhcmUgcHJvYmFibHkgdXNlZCB3aXRoIHRoZSAnbG9jaycgcHJlZml4IC0gd2hpY2ggd291bGQN
-CihJIHRoaW5rKSBtYWtlIHRoZW0gc2FmZS4NCg0KVGhlIGRvY3VtZW50ZWQgY29uc3RyYWludCBp
-cyBtb3JlIHNwZWNpZmljIHRoYW4gaXQgdXNlZCB0byBiZQ0KdGhlIEludGVsIHZlcnNpb24gcmVh
-ZHM6DQoNCiAgICBXaGVuIGFjY2Vzc2luZyBhIGJpdCBpbiBtZW1vcnksIHRoZSBwcm9jZXNzb3Ig
-bWF5IGFjY2VzcyA0IGJ5dGVzDQogICAgc3RhcnRpbmcgZnJvbSB0aGUgbWVtb3J5IGFkZHJlc3Mg
-Zm9yIGEgMzItYml0IG9wZXJhbmQgc2l6ZSwgdXNpbmcNCiAgICBieSB0aGUgZm9sbG93aW5nIHJl
-bGF0aW9uc2hpcDoNCiAgICAgICAgRWZmZWN0aXZlIEFkZHJlc3MgKyAoNCDiiJcgKEJpdE9mZnNl
-dCBESVYgMzIpKQ0KICAgIE9yLCBpdCBtYXkgYWNjZXNzIDIgYnl0ZXMgc3RhcnRpbmcgZnJvbSB0
-aGUgbWVtb3J5IGFkZHJlc3MgZm9yIGENCiAgICAxNi1iaXQgb3BlcmFuZCwgdXNpbmcgdGhpcyBy
-ZWxhdGlvbnNoaXA6DQogICAgICAgIEVmZmVjdGl2ZSBBZGRyZXNzICsgKDIg4oiXIChCaXRPZmZz
-ZXQgRElWIDE2KSkNCiAgICBJdCBtYXkgZG8gc28gZXZlbiB3aGVuIG9ubHkgYSBzaW5nbGUgYnl0
-ZSBuZWVkcyB0byBiZSBhY2Nlc3NlZCB0bw0KICAgIHJlYWNoIHRoZSBnaXZlbiBiaXQuDQogICAg
-V2hlbiB1c2luZyB0aGlzIGJpdCBhZGRyZXNzaW5nIG1lY2hhbmlzbSwgc29mdHdhcmUgc2hvdWxk
-IGF2b2lkDQogICAgcmVmZXJlbmNpbmcgYXJlYXMgb2YgbWVtb3J5IGNsb3NlIHRvIGFkZHJlc3Mg
-c3BhY2UgaG9sZXMuDQogICAgSW4gcGFydGljdWxhciwgaXQgc2hvdWxkIGF2b2lkIHJlZmVyZW5j
-ZXMgdG8gbWVtb3J5LW1hcHBlZCBJL08gcmVnaXN0ZXJzLg0KICAgIEluc3RlYWQsIHNvZnR3YXJl
-IHNob3VsZCB1c2UgdGhlIE1PViBpbnN0cnVjdGlvbnMgdG8gbG9hZCBmcm9tIG9yIHN0b3JlDQog
-ICAgdG8gdGhlc2UgYWRkcmVzc2VzLCBhbmQgdXNlIHRoZSByZWdpc3RlciBmb3JtIG9mIHRoZXNl
-IGluc3RydWN0aW9ucyB0bw0KICAgIG1hbmlwdWxhdGUgdGhlIGRhdGEuDQogICAgSW4gNjQtYml0
-IG1vZGUsIHRoZSBpbnN0cnVjdGlvbuKAmXMgZGVmYXVsdCBvcGVyYXRpb24gc2l6ZSBpcyAzMiBi
-aXRzLg0KICAgIFVzaW5nIGEgUkVYIHByZWZpeCBpbiB0aGUgZm9ybSBvZiBSRVguUiBwZXJtaXRz
-IGFjY2VzcyB0byBhZGRpdGlvbmFsDQogICAgcmVnaXN0ZXJzIChSOC1SMTUpLiBVc2luZyBhIFJF
-WCBwcmVmaXggaW4gdGhlIGZvcm0gb2YgUkVYLlcgcHJvbW90ZXMNCiAgICBvcGVyYXRpb24gdG8g
-NjQgYml0IG9wZXJhbmRzLg0KDQoJRGF2aWQNCg0KDQo=
+A change in the generic code highlighted that we were running with IRQs
+(soft) enabled on Book3E 64-bit when trying to restart interrupts from
+handle_exit(). This is a lesson to configure lockdep often :)
+
+There is no reason to exit guest with soft_enabled == 1, a local_irq_enable()
+call will do this for us so get rid of kvmppc_layz_ee() calls. With this fix
+we eliminate irqs_disabled() warnings and some guest and host hangs revealed
+under stress tests, but guests still exhibit some unresponsiveness.
+
+The unresponsiveness has to do with the fact that arch_local_irq_restore()
+does not guarantees to hard enable interrupts. To do so replace exception
+function calls like timer_interrupt() with irq_happened flags. The
+local_irq_enable() call takes care of replaying them and lets the interrupts
+hard enabled.
+
+Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+---
+ arch/powerpc/kvm/booke.c |    9 +++------
+ 1 files changed, 3 insertions(+), 6 deletions(-)
+
+diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+index 1020119..82f155e 100644
+--- a/arch/powerpc/kvm/booke.c
++++ b/arch/powerpc/kvm/booke.c
+@@ -673,7 +673,6 @@ int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
+ 		ret = s;
+ 		goto out;
+ 	}
+-	kvmppc_lazy_ee_enable();
+ 
+ 	kvm_guest_enter();
+ 
+@@ -789,16 +788,16 @@ static void kvmppc_restart_interrupt(struct kvm_vcpu *vcpu,
+ 	switch (exit_nr) {
+ 	case BOOKE_INTERRUPT_EXTERNAL:
+ 		kvmppc_fill_pt_regs(&regs);
+-		do_IRQ(&regs);
++		local_paca->irq_happened |= PACA_IRQ_EE;
+ 		break;
+ 	case BOOKE_INTERRUPT_DECREMENTER:
+ 		kvmppc_fill_pt_regs(&regs);
+-		timer_interrupt(&regs);
++		local_paca->irq_happened |= PACA_IRQ_DEC;
+ 		break;
+ #if defined(CONFIG_PPC_FSL_BOOK3E) || defined(CONFIG_PPC_BOOK3E_64)
+ 	case BOOKE_INTERRUPT_DOORBELL:
+ 		kvmppc_fill_pt_regs(&regs);
+-		doorbell_exception(&regs);
++		local_paca->irq_happened |= PACA_IRQ_DBELL;
+ 		break;
+ #endif
+ 	case BOOKE_INTERRUPT_MACHINE_CHECK:
+@@ -1148,8 +1147,6 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 		if (s <= 0) {
+ 			local_irq_enable();
+ 			r = (s << 2) | RESUME_HOST | (r & RESUME_FLAG_NV);
+-		} else {
+-			kvmppc_lazy_ee_enable();
+ 		}
+ 	}
+ 
+-- 
+1.7.4.1
