@@ -2,22 +2,21 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E6E542C00D7
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 May 2013 07:54:19 +1000 (EST)
-Message-ID: <1367618044.4389.117.camel@pasglop>
-Subject: Re: [PATCH -V7 09/10] powerpc: Optimize hugepage invalidate
+ by ozlabs.org (Postfix) with ESMTPS id 4295A2C00D6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 May 2013 08:03:43 +1000 (EST)
+Message-ID: <1367618610.4389.119.camel@pasglop>
+Subject: Re: [PATCH] KVM: PPC: Book3E 64: Fix IRQs warnings and hangs
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Date: Sat, 04 May 2013 07:54:04 +1000
-In-Reply-To: <87fvy351gc.fsf@linux.vnet.ibm.com>
-References: <1367178711-8232-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1367178711-8232-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20130503052846.GU13041@truffula.fritz.box>
- <87fvy351gc.fsf@linux.vnet.ibm.com>
+To: Alexander Graf <agraf@suse.de>
+Date: Sat, 04 May 2013 08:03:30 +1000
+In-Reply-To: <981DB739-E50F-488F-B2D8-916FDC2E1749@suse.de>
+References: <1367597470-22214-1-git-send-email-mihai.caraman@freescale.com>
+ <981DB739-E50F-488F-B2D8-916FDC2E1749@suse.de>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linux-mm@kvack.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
- David Gibson <dwg@au1.ibm.com>
+Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ "kvm@vger.kernel.org VIRTUAL MA..." <kvm@vger.kernel.org>,
+ kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,15 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2013-05-04 at 00:35 +0530, Aneesh Kumar K.V wrote:
+On Fri, 2013-05-03 at 18:24 +0200, Alexander Graf wrote:
+> > There is no reason to exit guest with soft_enabled == 1, a local_irq_enable()
+> > call will do this for us so get rid of kvmppc_layz_ee() calls. With this fix
+> > we eliminate irqs_disabled() warnings and some guest and host hangs revealed
+> > under stress tests, but guests still exhibit some unresponsiveness.
+> > 
+> > The unresponsiveness has to do with the fact that arch_local_irq_restore()
+> > does not guarantees to hard enable interrupts. To do so replace exception
+> > function calls like timer_interrupt() with irq_happened flags. The
+> > local_irq_enable() call takes care of replaying them and lets the interrupts
+> > hard enabled.
+> > 
+> > Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
 > 
-> if the firmware doesn't support lockless TLBIE, we need to do locking
-> at the guest side. pSeries_lpar_flush_hash_range does that.
+> Ben, could you please review?
 
-We don't "need" to ... it's an optimization because by experience the FW
-locking was horrible (and the HW locking is too).
+That does look like the right thing to do indeed.
 
-Beware however that the hash routines can take a lock too on
-"native" (instead of pHyp)...
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
+Cheers,
 Ben.
