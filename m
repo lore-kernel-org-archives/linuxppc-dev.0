@@ -1,33 +1,33 @@
 Return-Path: <klebers@linux.vnet.ibm.com>
-Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
+Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e24smtp05.br.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 201362C0188
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 May 2013 08:44:05 +1000 (EST)
+ (Client CN "e24smtp04.br.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2E86D2C01B4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 May 2013 08:44:10 +1000 (EST)
 Received: from /spool/local
- by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <klebers@linux.vnet.ibm.com>;
- Fri, 3 May 2013 19:44:01 -0300
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id A34881DC006A
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2013 18:43:59 -0400 (EDT)
+ Fri, 3 May 2013 19:44:06 -0300
+Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id B01041DC006C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2013 18:44:03 -0400 (EDT)
 Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
- by d24relay03.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r43Mh3ou37748796
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 May 2013 19:43:03 -0300
+ by d24relay01.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r43MfDUu704548
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 May 2013 19:41:13 -0300
 Received: from d24av02.br.ibm.com (loopback [127.0.0.1])
  by d24av02.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r43Mhwhl007252
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 May 2013 19:43:59 -0300
+ r43Mi2Jv007347
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 May 2013 19:44:03 -0300
 From: Kleber Sacilotto de Souza <klebers@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Bjorn Helgaas <bhelgaas@google.com>, David Airlie <airlied@linux.ie>,
  Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCHv5 1/2] ppc64: perform proper max_bus_speed detection
-Date: Fri,  3 May 2013 19:43:12 -0300
-Message-Id: <1367620993-27037-2-git-send-email-klebers@linux.vnet.ibm.com>
+Subject: [PATCHv5 2/2] radeon: use max_bus_speed to activate gen2 speeds
+Date: Fri,  3 May 2013 19:43:13 -0300
+Message-Id: <1367620993-27037-3-git-send-email-klebers@linux.vnet.ibm.com>
 In-Reply-To: <1367620993-27037-1-git-send-email-klebers@linux.vnet.ibm.com>
 References: <1367620993-27037-1-git-send-email-klebers@linux.vnet.ibm.com>
 Cc: Brian King <brking@linux.vnet.ibm.com>,
@@ -43,149 +43,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On pseries machines the detection for max_bus_speed should be done
-through an OpenFirmware property. This patch adds a function to perform
-this detection and a hook to perform dynamic adding of the function only
-for pseries. This is done by overwriting the weak
-pcibios_root_bridge_prepare function which is called by
-pci_create_root_bus().
+radeon currently uses a drm function to get the speed capabilities for
+the bus, drm_pcie_get_speed_cap_mask. However, this is a non-standard
+method of performing this detection and this patch changes it to use
+the max_bus_speed attribute.
 
 From: Lucas Kannebley Tavares <lucaskt@linux.vnet.ibm.com>
 Signed-off-by: Kleber Sacilotto de Souza <klebers@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/machdep.h       |    3 ++
- arch/powerpc/kernel/pci-common.c         |    8 ++++
- arch/powerpc/platforms/pseries/pci.c     |   53 ++++++++++++++++++++++++++++++
- arch/powerpc/platforms/pseries/pseries.h |    4 ++
- arch/powerpc/platforms/pseries/setup.c   |    2 +
- 5 files changed, 70 insertions(+), 0 deletions(-)
+ drivers/gpu/drm/radeon/evergreen.c |   10 +++-------
+ drivers/gpu/drm/radeon/r600.c      |    9 ++-------
+ drivers/gpu/drm/radeon/rv770.c     |    9 ++-------
+ 3 files changed, 7 insertions(+), 21 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index 3f3f691..92386fc 100644
---- a/arch/powerpc/include/asm/machdep.h
-+++ b/arch/powerpc/include/asm/machdep.h
-@@ -29,6 +29,7 @@ struct rtc_time;
- struct file;
- struct pci_controller;
- struct kimage;
-+struct pci_host_bridge;
+diff --git a/drivers/gpu/drm/radeon/evergreen.c b/drivers/gpu/drm/radeon/evergreen.c
+index 105bafb..3966696 100644
+--- a/drivers/gpu/drm/radeon/evergreen.c
++++ b/drivers/gpu/drm/radeon/evergreen.c
+@@ -4992,8 +4992,7 @@ void evergreen_fini(struct radeon_device *rdev)
  
- struct machdep_calls {
- 	char		*name;
-@@ -108,6 +109,8 @@ struct machdep_calls {
- 	void		(*pcibios_fixup)(void);
- 	int		(*pci_probe_mode)(struct pci_bus *);
- 	void		(*pci_irq_fixup)(struct pci_dev *dev);
-+	int		(*pcibios_root_bridge_prepare)(struct pci_host_bridge
-+				*bridge);
+ void evergreen_pcie_gen2_enable(struct radeon_device *rdev)
+ {
+-	u32 link_width_cntl, speed_cntl, mask;
+-	int ret;
++	u32 link_width_cntl, speed_cntl;
  
- 	/* To setup PHBs when using automatic OF platform driver for PCI */
- 	int		(*pci_setup_phb)(struct pci_controller *host);
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index f325dc9..d5811d8 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -845,6 +845,14 @@ int pci_proc_domain(struct pci_bus *bus)
- 	return 1;
- }
+ 	if (radeon_pcie_gen2 == 0)
+ 		return;
+@@ -5008,11 +5007,8 @@ void evergreen_pcie_gen2_enable(struct radeon_device *rdev)
+ 	if (ASIC_IS_X2(rdev))
+ 		return;
  
-+int pcibios_root_bridge_prepare(struct pci_host_bridge *bridge)
-+{
-+	if (ppc_md.pcibios_root_bridge_prepare)
-+		return ppc_md.pcibios_root_bridge_prepare(bridge);
-+
-+	return 0;
-+}
-+
- /* This header fixup will do the resource fixup for all devices as they are
-  * probed, but not for bridge ranges
-  */
-diff --git a/arch/powerpc/platforms/pseries/pci.c b/arch/powerpc/platforms/pseries/pci.c
-index 0b580f4..5f93856 100644
---- a/arch/powerpc/platforms/pseries/pci.c
-+++ b/arch/powerpc/platforms/pseries/pci.c
-@@ -108,3 +108,56 @@ static void fixup_winbond_82c105(struct pci_dev* dev)
- }
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_WINBOND, PCI_DEVICE_ID_WINBOND_82C105,
- 			 fixup_winbond_82c105);
-+
-+int pseries_root_bridge_prepare(struct pci_host_bridge *bridge)
-+{
-+	struct device_node *dn, *pdn;
-+	struct pci_bus *bus;
-+	const uint32_t *pcie_link_speed_stats;
-+
-+	bus = bridge->bus;
-+
-+	dn = pcibios_get_phb_of_node(bus);
-+	if (!dn)
-+		return 0;
-+
-+	for (pdn = dn; pdn != NULL; pdn = of_get_next_parent(pdn)) {
-+		pcie_link_speed_stats = (const uint32_t *) of_get_property(pdn,
-+			"ibm,pcie-link-speed-stats", NULL);
-+		if (pcie_link_speed_stats)
-+			break;
-+	}
-+
-+	of_node_put(pdn);
-+
-+	if (!pcie_link_speed_stats) {
-+		pr_err("no ibm,pcie-link-speed-stats property\n");
-+		return 0;
-+	}
-+
-+	switch (pcie_link_speed_stats[0]) {
-+	case 0x01:
-+		bus->max_bus_speed = PCIE_SPEED_2_5GT;
-+		break;
-+	case 0x02:
-+		bus->max_bus_speed = PCIE_SPEED_5_0GT;
-+		break;
-+	default:
-+		bus->max_bus_speed = PCI_SPEED_UNKNOWN;
-+		break;
-+	}
-+
-+	switch (pcie_link_speed_stats[1]) {
-+	case 0x01:
-+		bus->cur_bus_speed = PCIE_SPEED_2_5GT;
-+		break;
-+	case 0x02:
-+		bus->cur_bus_speed = PCIE_SPEED_5_0GT;
-+		break;
-+	default:
-+		bus->cur_bus_speed = PCI_SPEED_UNKNOWN;
-+		break;
-+	}
-+
-+	return 0;
-+}
-diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
-index 8af71e4..c2a3a25 100644
---- a/arch/powerpc/platforms/pseries/pseries.h
-+++ b/arch/powerpc/platforms/pseries/pseries.h
-@@ -63,4 +63,8 @@ extern int dlpar_detach_node(struct device_node *);
- /* Snooze Delay, pseries_idle */
- DECLARE_PER_CPU(long, smt_snooze_delay);
+-	ret = drm_pcie_get_speed_cap_mask(rdev->ddev, &mask);
+-	if (ret != 0)
+-		return;
+-
+-	if (!(mask & DRM_PCIE_SPEED_50))
++	if ((rdev->pdev->bus->max_bus_speed != PCIE_SPEED_5_0GT) &&
++		(rdev->pdev->bus->max_bus_speed != PCIE_SPEED_8_0GT))
+ 		return;
  
-+/* PCI root bridge prepare function override for pseries */
-+struct pci_host_bridge;
-+int pseries_root_bridge_prepare(struct pci_host_bridge *bridge);
-+
- #endif /* _PSERIES_PSERIES_H */
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index ac932a9..c11c823 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -466,6 +466,8 @@ static void __init pSeries_setup_arch(void)
- 	else
- 		ppc_md.enable_pmcs = power4_enable_pmcs;
+ 	speed_cntl = RREG32_PCIE_PORT(PCIE_LC_SPEED_CNTL);
+diff --git a/drivers/gpu/drm/radeon/r600.c b/drivers/gpu/drm/radeon/r600.c
+index 1a08008..b45e648 100644
+--- a/drivers/gpu/drm/radeon/r600.c
++++ b/drivers/gpu/drm/radeon/r600.c
+@@ -4631,8 +4631,6 @@ static void r600_pcie_gen2_enable(struct radeon_device *rdev)
+ {
+ 	u32 link_width_cntl, lanes, speed_cntl, training_cntl, tmp;
+ 	u16 link_cntl2;
+-	u32 mask;
+-	int ret;
  
-+	ppc_md.pcibios_root_bridge_prepare = pseries_root_bridge_prepare;
-+
- 	if (firmware_has_feature(FW_FEATURE_SET_MODE)) {
- 		long rc;
- 		if ((rc = pSeries_enable_reloc_on_exc()) != H_SUCCESS) {
+ 	if (radeon_pcie_gen2 == 0)
+ 		return;
+@@ -4651,11 +4649,8 @@ static void r600_pcie_gen2_enable(struct radeon_device *rdev)
+ 	if (rdev->family <= CHIP_R600)
+ 		return;
+ 
+-	ret = drm_pcie_get_speed_cap_mask(rdev->ddev, &mask);
+-	if (ret != 0)
+-		return;
+-
+-	if (!(mask & DRM_PCIE_SPEED_50))
++	if ((rdev->pdev->bus->max_bus_speed != PCIE_SPEED_5_0GT) &&
++		(rdev->pdev->bus->max_bus_speed != PCIE_SPEED_8_0GT))
+ 		return;
+ 
+ 	speed_cntl = RREG32_PCIE_PORT(PCIE_LC_SPEED_CNTL);
+diff --git a/drivers/gpu/drm/radeon/rv770.c b/drivers/gpu/drm/radeon/rv770.c
+index 83f612a..a6af4aa 100644
+--- a/drivers/gpu/drm/radeon/rv770.c
++++ b/drivers/gpu/drm/radeon/rv770.c
+@@ -2113,8 +2113,6 @@ static void rv770_pcie_gen2_enable(struct radeon_device *rdev)
+ {
+ 	u32 link_width_cntl, lanes, speed_cntl, tmp;
+ 	u16 link_cntl2;
+-	u32 mask;
+-	int ret;
+ 
+ 	if (radeon_pcie_gen2 == 0)
+ 		return;
+@@ -2129,11 +2127,8 @@ static void rv770_pcie_gen2_enable(struct radeon_device *rdev)
+ 	if (ASIC_IS_X2(rdev))
+ 		return;
+ 
+-	ret = drm_pcie_get_speed_cap_mask(rdev->ddev, &mask);
+-	if (ret != 0)
+-		return;
+-
+-	if (!(mask & DRM_PCIE_SPEED_50))
++	if ((rdev->pdev->bus->max_bus_speed != PCIE_SPEED_5_0GT) &&
++		(rdev->pdev->bus->max_bus_speed != PCIE_SPEED_8_0GT))
+ 		return;
+ 
+ 	DRM_INFO("enabling PCIE gen 2 link speeds, disable with radeon.pcie_gen2=0\n");
 -- 
 1.7.1
