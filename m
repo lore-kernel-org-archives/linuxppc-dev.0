@@ -1,25 +1,29 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 1B2822C00C4
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2013 23:52:28 +1000 (EST)
-Date: Fri, 3 May 2013 15:52:23 +0200
-From: Anatolij Gustschin <agust@denx.de>
-To: Alexander Popov <a13xp0p0v88@gmail.com>
-Subject: Re: [PATCH 1/1] powerpc: mpc512x_dma: add support for data
- transfers between memory and i/o memory
-Message-ID: <20130503155223.1eff1d9f@crub>
-In-Reply-To: <CAF0T0X5cRMvoZKQQUkQHTLjbzz1xi_1pvUiywsKb5BGvyMGvpg@mail.gmail.com>
-References: <1367407689-16252-1-git-send-email-a13xp0p0v88@gmail.com>
- <20130502171452.GP1960@intel.com>
- <CAF0T0X7XBuL7a=8zwqMnLDB04-Tf=qhCLPZ4T29yNdN6mP5S2A@mail.gmail.com>
- <20130503085944.69ef751e@crub>
- <CAF0T0X5cRMvoZKQQUkQHTLjbzz1xi_1pvUiywsKb5BGvyMGvpg@mail.gmail.com>
+Return-Path: <eric.dumazet@gmail.com>
+Received: from mail-pa0-f50.google.com (mail-pa0-f50.google.com
+ [209.85.220.50])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id F3D662C00D7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 May 2013 00:14:24 +1000 (EST)
+Received: by mail-pa0-f50.google.com with SMTP id fb10so944738pad.9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 May 2013 07:14:22 -0700 (PDT)
+Message-ID: <1367590455.29805.30.camel@edumazet-glaptop>
+Subject: Re: [PATCH net-next] af_unix: fix a fatal race with bit fields
+From: Eric Dumazet <eric.dumazet@gmail.com>
+To: Alan Modra <amodra@gmail.com>
+Date: Fri, 03 May 2013 07:14:15 -0700
+In-Reply-To: <20130503013136.GN5221@bubble.grove.modra.org>
+References: <1367370761.11020.22.camel@edumazet-glaptop>
+ <20130501115103.58e40f37@kryten>
+ <1367375060.11020.24.camel@edumazet-glaptop>
+ <20130501035425.GD5221@bubble.grove.modra.org>
+ <1367384672.11020.34.camel@edumazet-glaptop>
+ <20130503013136.GN5221@bubble.grove.modra.org>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Vinod Koul <vinod.koul@intel.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Dan Williams <djbw@fb.com>
+Cc: netdev <netdev@vger.kernel.org>, Ambrose Feinstein <ambrose@google.com>,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,38 +33,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Alexander,
-
-On Fri, 3 May 2013 14:43:23 +0400
-Alexander Popov <a13xp0p0v88@gmail.com> wrote:
-
-> Hello Anatolij,
+On Fri, 2013-05-03 at 11:01 +0930, Alan Modra wrote:
+> On Tue, Apr 30, 2013 at 10:04:32PM -0700, Eric Dumazet wrote:
+> > These kind of errors are pretty hard to find, its a pity to spend time
+> > on them.
 > 
-> > Note that there is a patch for .device_prep_slave_sg() operation
-> > for this driver as part of this series:
-> > https://patchwork.kernel.org/patch/2368581/
-> > https://patchwork.kernel.org/patch/2368591/
-> Thanks, I haven't seen that patch.
-> It's certainly what my SCLPC device driver needs
-> (http://patchwork.ozlabs.org/patch/241010/).
-> I will send the second version of it which uses .device_prep_slave_sg().
+> Well, yes.  From the first comment in gcc PR52080.  "For the following
+> testcase we generate a 8 byte RMW cycle on IA64 which causes locking
+> problems in the linux kernel btrfs filesystem."
 > 
-> > maybe you can reuse and improve it.
-> > Anatolij
-> Should I propose my additions at https://patchwork.kernel.org/patch/2368591/ ?
+> Did someone fix btrfs, but not check other kernel locks?  Having now
+> hit the same problem again, have you checked that other kernel locks
+> don't have adjacent bit fields in the same 64-bit word?  And comment
+> the struct to ensure someone doesn't optimize those unsigned chars
+> back to bit fields.
 
-Yes, I think so. I only used drivers new .device_prep_slave_sg()
-for SDHC DMA channel transfers up to now. Adding support for other
-peripherals would be good. With generic DMA DT bindings patch for
-this driver you can use
+Not only spinlock, but atomic_t followed by bit fields.
 
-    dmas = <&dma0 26>;
-    dma-names = "rx-tx";
+BTW, if a spinlock is followed by bit fields, but bit fields
+only changed when this spinlock is held, there is no problem, unless
+spinlock is a ticket spinlock.
 
-in your sclpc@10100 DT node and then
-dma_request_slave_channel(&pdev->dev, "rx-tx") in the lpbfifo
-driver.
+In af_unix, bug happens because the bit fields were changed without
+spinlock being held (another global spinlock is used instead)
 
-Thanks,
-
-Anatolij
+(ppc64 doesnt use ticket spinlocks yet)
