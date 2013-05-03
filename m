@@ -1,25 +1,23 @@
-Return-Path: <B02008@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CE5882C00D6
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 May 2013 08:59:41 +1000 (EST)
-From: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH] KVM: PPC: Book3E 64: Fix IRQs warnings and hangs
-Date: Fri, 3 May 2013 22:59:32 +0000
-Message-ID: <300B73AA675FCE4A93EB4FC1D42459FF3E9D81@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <300B73AA675FCE4A93EB4FC1D42459FF3E9B37@039-SN2MPN1-013.039d.mgd.msft.net>
- (from B02008@freescale.com on Fri May  3 15:56:47 2013)
- <1367618808.19391.11@snotra>
-In-Reply-To: <1367618808.19391.11@snotra>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 987672C00BD
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 May 2013 09:04:16 +1000 (EST)
+Message-ID: <1367622108.4389.129.camel@pasglop>
+Subject: Re: [PATCHv5 0/2] Speed Cap fixes for ppc64
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kleber Sacilotto de Souza <klebers@linux.vnet.ibm.com>
+Date: Sat, 04 May 2013 09:01:48 +1000
+In-Reply-To: <1367620993-27037-1-git-send-email-klebers@linux.vnet.ibm.com>
+References: <1367620993-27037-1-git-send-email-klebers@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: David Airlie <airlied@linux.ie>, dri-devel@lists.freedesktop.org,
+ Brian King <brking@linux.vnet.ibm.com>, Jerome Glisse <jglisse@redhat.com>,
+ Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
+ Bjorn Helgaas <bhelgaas@google.com>, Alex Deucher <alexander.deucher@amd.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,54 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Saturday, May 04, 2013 1:07 AM
-> To: Caraman Mihai Claudiu-B02008
-> Cc: Wood Scott-B07421; kvm-ppc@vger.kernel.org; kvm@vger.kernel.org;
-> linuxppc-dev@lists.ozlabs.org
-> Subject: Re: [PATCH] KVM: PPC: Book3E 64: Fix IRQs warnings and hangs
->=20
-> I replaced the two calls to kvmppc_lazy_ee_enable() with calls to
-> hard_irq_disable(), and it seems to be working fine.
+On Fri, 2013-05-03 at 19:43 -0300, Kleber Sacilotto de Souza wrote:
 
-Please take a look on 'KVM: PPC64: booke: Hard disable interrupts when
-entering guest' RFC thread and see if your solution addresses Ben's
-comments.
+> This patch series does:
+>   1. max_bus_speed is used to set the device to gen2 speeds
+>   2. on power there's no longer a conflict between the pseries call and other
+> architectures, because the overwrite is done via a ppc_md hook
+>   3. radeon is using bus->max_bus_speed instead of drm_pcie_get_speed_cap_mask
+> for gen2 capability detection
+> 
+> The first patch consists of some architecture changes, such as adding a hook on
+> powerpc for pci_root_bridge_prepare, so that pseries will initialize it to a
+> function, while all other architectures get a NULL pointer. So that whenever
+> pci_create_root_bus is called, we'll get max_bus_speed properly setup from
+> OpenFirmware.
+> 
+> The second patch consists of simple radeon changes not to call
+> drm_get_pcie_speed_cap_mask anymore. I assume that on x86 machines,
+> the max_bus_speed property will be properly set already.
 
->=20
-> > > > > Where is the arch_local_irq_restore() instance you're talking
-> > about?
-> > > >
-> > > > ./arch/power/kernel/irq.c
-> > >
-> > > I meant the caller. :-P
-> >
-> > ./arch/powerpc/include/asm/hw_irq.h
-> >
-> >   55static inline unsigned long arch_local_irq_disable(void)
-> >   56{
-> >   57        unsigned long flags, zero;
-> >   58
-> >   59        asm volatile(
-> >   60                "li %1,0; lbz %0,%2(13); stb %1,%2(13)"
-> >   61                : "=3Dr" (flags), "=3D&r" (zero)
-> >   62                : "i" (offsetof(struct paca_struct, soft_enabled))
-> >   63                : "memory");
-> >   64
-> >   65        return flags;
-> >   66}
-> >   67
-> >   68extern void arch_local_irq_restore(unsigned long);
-> >   69
-> >   70static inline void arch_local_irq_enable(void)
-> >   71{
-> >   72        arch_local_irq_restore(1);
-> >   73}
->=20
-> Sigh.  I meant the real caller, who's calling local_irq_restore().
+So I'm ok with the approach now and I might even put the powerpc patch
+in for 3.10 since arguably we are fixing a nasty bug (uninitialized
+max_bus_speed).
 
-I'm not sure what you mean, arch_local_irq_restore() is called indirectly
-by local_irq_enable() in our case from handle_exit().
+David, what's your feeling about the radeon change ? It would be nice if
+that could go in soon for various distro targets :-) On the other hand
+I'm not going to be pushy if you are not comfortable with it.
 
--Mike
+Cheers,
+Ben.
