@@ -1,21 +1,22 @@
-Return-Path: <bhutchings@solarflare.com>
-Received: from webmail.solarflare.com (webmail.solarflare.com [12.187.104.25])
+Return-Path: <B07421@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0188.outbound.messaging.microsoft.com [213.199.154.188])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "WEBMAIL.SOLARFLARE.COM",
- Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 18EDB2C00E2
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 May 2013 02:30:43 +1000 (EST)
-Message-ID: <1367598632.2756.3.camel@bwh-desktop.uk.solarflarecom.com>
-Subject: Re: net/eth/ibmveth: Fixup retrieval of MAC address
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 3 May 2013 17:30:32 +0100
-In-Reply-To: <1367458520.4389.6.camel@pasglop>
-References: <1367458520.4389.6.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2715C2C00E3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 May 2013 04:05:01 +1000 (EST)
+Date: Fri, 3 May 2013 13:04:47 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] KVM: PPC: Book3E 64: Fix IRQs warnings and hangs
+To: Mihai Caraman <mihai.caraman@freescale.com>
+In-Reply-To: <1367597470-22214-1-git-send-email-mihai.caraman@freescale.com>
+ (from mihai.caraman@freescale.com on Fri May  3 11:11:10 2013)
+Message-ID: <1367604287.19391.2@snotra>
 MIME-Version: 1.0
-Cc: netdev@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- David Miller <davem@davemloft.net>, David Gibson <dwg@au1.ibm.com>
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,41 +26,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-05-02 at 11:35 +1000, Benjamin Herrenschmidt wrote:
-> Some ancient pHyp versions used to create a 8 bytes local-mac-address
-> property in the device-tree instead of a 6 bytes one for veth.
-> 
-> The Linux driver code to deal with that is an insane hack which also
-> happens to break with some choices of MAC addresses in qemu by testing
-> for a bit in the address rather than just looking at the size of the
-> property.
-> 
-> Sanitize this by doing the latter instead.
-[...]
-> @@ -1334,11 +1334,19 @@ static int ibmveth_probe(struct vio_dev *dev, const struct vio_device_id *id)
->  		dev->unit_address);
->  
->  	mac_addr_p = (unsigned char *)vio_get_attribute(dev, VETH_MAC_ADDR,
-> -							NULL);
-> +							&mac_len);
->  	if (!mac_addr_p) {
->  		dev_err(&dev->dev, "Can't find VETH_MAC_ADDR attribute\n");
->  		return -EINVAL;
+On 05/03/2013 11:11:10 AM, Mihai Caraman wrote:
+> A change in the generic code highlighted that we were running with =20
+> IRQs
+> (soft) enabled on Book3E 64-bit when trying to restart interrupts from
+> handle_exit(). This is a lesson to configure lockdep often :)
+>=20
+> There is no reason to exit guest with soft_enabled =3D=3D 1, a =20
+> local_irq_enable()
+> call will do this for us so get rid of kvmppc_layz_ee() calls. With =20
+> this fix
+> we eliminate irqs_disabled() warnings and some guest and host hangs =20
+> revealed
+> under stress tests, but guests still exhibit some unresponsiveness.
+>=20
+> The unresponsiveness has to do with the fact that =20
+> arch_local_irq_restore()
+> does not guarantees to hard enable interrupts.
+
+Could you elaborate?  If the saved IRQ state was "enabled", why =20
+wouldn't arch_local_irq_restore() hard-enable IRQs?  The last thing it =20
+does is __hard_irq_enable().
+
+Where is the arch_local_irq_restore() instance you're talking about?
+
+> To do so replace exception
+> function calls like timer_interrupt() with irq_happened flags. The
+> local_irq_enable() call takes care of replaying them and lets the =20
+> interrupts
+> hard enabled.
+
+Not sure what you mean by "lets the interrupts hard enabled"... Do you =20
+mean the EE bit in regs->msr, as opposed to the EE bit in the current =20
+MSR?
+
+> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+> ---
+>  arch/powerpc/kvm/booke.c |    9 +++------
+>  1 files changed, 3 insertions(+), 6 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+> index 1020119..82f155e 100644
+> --- a/arch/powerpc/kvm/booke.c
+> +++ b/arch/powerpc/kvm/booke.c
+> @@ -673,7 +673,6 @@ int kvmppc_vcpu_run(struct kvm_run *kvm_run, =20
+> struct kvm_vcpu *vcpu)
+>  		ret =3D s;
+>  		goto out;
 >  	}
-> +	/* Workaround for old/broken pHyp */
-> +	if (mac_len == 8)
-> +		mac_addr_p += 2;
-> +	if (mac_len != 6) {
+> -	kvmppc_lazy_ee_enable();
+>=20
+>  	kvm_guest_enter();
+>=20
+> @@ -789,16 +788,16 @@ static void kvmppc_restart_interrupt(struct =20
+> kvm_vcpu *vcpu,
+>  	switch (exit_nr) {
+>  	case BOOKE_INTERRUPT_EXTERNAL:
+>  		kvmppc_fill_pt_regs(&regs);
+> -		do_IRQ(&regs);
+> +		local_paca->irq_happened |=3D PACA_IRQ_EE;
+>  		break;
+>  	case BOOKE_INTERRUPT_DECREMENTER:
+>  		kvmppc_fill_pt_regs(&regs);
+> -		timer_interrupt(&regs);
+> +		local_paca->irq_happened |=3D PACA_IRQ_DEC;
+>  		break;
+>  #if defined(CONFIG_PPC_FSL_BOOK3E) || defined(CONFIG_PPC_BOOK3E_64)
+>  	case BOOKE_INTERRUPT_DOORBELL:
+>  		kvmppc_fill_pt_regs(&regs);
+> -		doorbell_exception(&regs);
+> +		local_paca->irq_happened |=3D PACA_IRQ_DBELL;
+>  		break;
+>  #endif
 
-Missing 'else' before the second if?
+Aren't you breaking 32-bit here?
 
-> +		dev_err(&dev->dev, "VETH_MAC_ADDR attribute wrong len %d\n",
-> +			mac_len);
-> +		return -EINVAL;
-> +	}
-[...]
-
--- 
-Ben Hutchings, Staff Engineer, Solarflare
-Not speaking for my employer; that's the marketing department's job.
-They asked us to note that Solarflare product names are trademarked.
+-Scott=
