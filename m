@@ -1,24 +1,23 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:28:0:1:25:1])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3A7392C00D0
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2013 16:59:58 +1000 (EST)
-Date: Fri, 3 May 2013 08:59:44 +0200
-From: Anatolij Gustschin <agust@denx.de>
-To: Alexander Popov <a13xp0p0v88@gmail.com>
-Subject: Re: [PATCH 1/1] powerpc: mpc512x_dma: add support for data
- transfers between memory and i/o memory
-Message-ID: <20130503085944.69ef751e@crub>
-In-Reply-To: <CAF0T0X7XBuL7a=8zwqMnLDB04-Tf=qhCLPZ4T29yNdN6mP5S2A@mail.gmail.com>
-References: <1367407689-16252-1-git-send-email-a13xp0p0v88@gmail.com>
- <20130502171452.GP1960@intel.com>
- <CAF0T0X7XBuL7a=8zwqMnLDB04-Tf=qhCLPZ4T29yNdN6mP5S2A@mail.gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id 31DCC2C00D8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2013 18:19:19 +1000 (EST)
+Message-ID: <1367569143.4389.56.camel@pasglop>
+Subject: Re: [PATCH -V7 02/10] powerpc/THP: Implement transparent hugepages
+ for ppc64
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Gibson <dwg@au1.ibm.com>
+Date: Fri, 03 May 2013 18:19:03 +1000
+In-Reply-To: <20130503045201.GO13041@truffula.fritz.box>
+References: <1367178711-8232-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1367178711-8232-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20130503045201.GO13041@truffula.fritz.box>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Vinod Koul <vinod.koul@intel.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Dan Williams <djbw@fb.com>
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,21 +27,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 3 May 2013 10:28:02 +0400
-Alexander Popov <a13xp0p0v88@gmail.com> wrote:
+On Fri, 2013-05-03 at 14:52 +1000, David Gibson wrote:
+> Here, specifically, the fact that PAGE_BUSY is in PAGE_THP_HPTEFLAGS
+> is likely to be bad.  If the page is busy, it's in the middle of
+> update so can't stably be considered the same as anything.
 
-> Hello Vinod,
-> 
-> Thanks for the review.
-> I will return with improved and tested version 2.
+_PAGE_BUSY is more like a read lock. It means it's being hashed, so what
+is not stable is _PAGE_HASHPTE, slot index, _ACCESSED and _DIRTY. The
+rest is stable and usually is what pmd_same looks at (though I have a
+small doubt vs. _ACCESSED and _DIRTY but at least x86 doesn't care since
+they are updated by HW).
 
-Note that there is a patch for .device_prep_slave_sg() operation
-for this driver as part of this series:
-https://patchwork.kernel.org/patch/2368581/
-https://patchwork.kernel.org/patch/2368591/
-
-maybe you can reuse and improve it.
-
-Thanks,
-
-Anatolij
+Cheers,
+Ben.
