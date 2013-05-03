@@ -1,23 +1,24 @@
-Return-Path: <eric.dumazet@gmail.com>
-Received: from mail-pd0-f182.google.com (mail-pd0-f182.google.com
- [209.85.192.182])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 16A852C00DB
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 May 2013 01:02:47 +1000 (EST)
-Received: by mail-pd0-f182.google.com with SMTP id 3so958899pdj.27
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 May 2013 08:02:45 -0700 (PDT)
-Message-ID: <1367593356.29805.37.camel@edumazet-glaptop>
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by ozlabs.org (Postfix) with SMTP id C5C1D2C00BC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 May 2013 01:45:34 +1000 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 25142-10 for <linuxppc-dev@lists.ozlabs.org>;
+ Fri,  3 May 2013 16:45:20 +0100 (BST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="utf-8"
 Subject: RE: [PATCH net-next] af_unix: fix a fatal race with bit fields
-From: Eric Dumazet <eric.dumazet@gmail.com>
-To: David Laight <David.Laight@ACULAB.COM>
-Date: Fri, 03 May 2013 08:02:36 -0700
-In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6026B7226@saturn3.aculab.com>
+Date: Fri, 3 May 2013 16:44:22 +0100
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B7227@saturn3.aculab.com>
+In-Reply-To: <1367593356.29805.37.camel@edumazet-glaptop>
 References: <1367370761.11020.22.camel@edumazet-glaptop>
  <1367372393.22115.6.camel@pasglop>
  <AE90C24D6B3A694183C094C60CF0A2F6026B7226@saturn3.aculab.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ <1367593356.29805.37.camel@edumazet-glaptop>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: "Eric Dumazet" <eric.dumazet@gmail.com>
 Cc: Ambrose Feinstein <ambrose@google.com>, Paul Mackerras <paulus@samba.org>,
  netdev <netdev@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org,
  David Miller <davem@davemloft.net>
@@ -30,26 +31,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-05-03 at 15:29 +0100, David Laight wrote:
-> > > Could ppc64 experts confirm using byte is safe, or should we really add
-> > > a 32bit hole after the spinlock ? If so, I wonder how many other places
-> > > need a change...
-> ...
-> > Also I'd be surprised if ppc64 is the only one with that problem... what
-> > about sparc64 and arm64 ?
-> 
-> Even x86 could be affected.
-> The width of the memory cycles used by the 'bit set and bit clear'
-> instructions isn't documented. They are certainly allowed to do
-> RMW on adjacent bytes.
-> I don't remember whether they are constrained to only do
-> 32bit accesses, but nothing used to say that they wouldn't
-> do 32bit misaligned ones! (although I suspect they never have).
-
-x86 is not affected (or else we would have found the bug much earlier)
-
-Setting 1-bit field to one/zero uses OR/AND instructions.
-
-orb  $4,724(%reg)
-
-doesn't load/store 64bits but 8bits.
+PiA+ID4gQWxzbyBJJ2QgYmUgc3VycHJpc2VkIGlmIHBwYzY0IGlzIHRoZSBvbmx5IG9uZSB3aXRo
+IHRoYXQgcHJvYmxlbS4uLiB3aGF0DQo+ID4gPiBhYm91dCBzcGFyYzY0IGFuZCBhcm02NCA/DQo+
+ID4NCj4gPiBFdmVuIHg4NiBjb3VsZCBiZSBhZmZlY3RlZC4NCj4gPiBUaGUgd2lkdGggb2YgdGhl
+IG1lbW9yeSBjeWNsZXMgdXNlZCBieSB0aGUgJ2JpdCBzZXQgYW5kIGJpdCBjbGVhcicNCj4gPiBp
+bnN0cnVjdGlvbnMgaXNuJ3QgZG9jdW1lbnRlZC4gVGhleSBhcmUgY2VydGFpbmx5IGFsbG93ZWQg
+dG8gZG8NCj4gPiBSTVcgb24gYWRqYWNlbnQgYnl0ZXMuDQo+ID4gSSBkb24ndCByZW1lbWJlciB3
+aGV0aGVyIHRoZXkgYXJlIGNvbnN0cmFpbmVkIHRvIG9ubHkgZG8NCj4gPiAzMmJpdCBhY2Nlc3Nl
+cywgYnV0IG5vdGhpbmcgdXNlZCB0byBzYXkgdGhhdCB0aGV5IHdvdWxkbid0DQo+ID4gZG8gMzJi
+aXQgbWlzYWxpZ25lZCBvbmVzISAoYWx0aG91Z2ggSSBzdXNwZWN0IHRoZXkgbmV2ZXIgaGF2ZSku
+DQo+IA0KPiB4ODYgaXMgbm90IGFmZmVjdGVkIChvciBlbHNlIHdlIHdvdWxkIGhhdmUgZm91bmQg
+dGhlIGJ1ZyBtdWNoIGVhcmxpZXIpDQo+IA0KPiBTZXR0aW5nIDEtYml0IGZpZWxkIHRvIG9uZS96
+ZXJvIHVzZXMgT1IvQU5EIGluc3RydWN0aW9ucy4NCj4gDQo+IG9yYiAgJDQsNzI0KCVyZWcpDQo+
+IA0KPiBkb2Vzbid0IGxvYWQvc3RvcmUgNjRiaXRzIGJ1dCA4Yml0cy4NCg0KSSB3YXMgdGhpbmtp
+bmcgb2YgY29kZSB0aGF0IG1pZ2h0IGJlIHVzaW5nIEJULCBCVEMsIEJUUiBvciBCVFMuDQpUaGVz
+ZSBhcmUgcHJvYmFibHkgdXNlZCB3aXRoIHRoZSAnbG9jaycgcHJlZml4IC0gd2hpY2ggd291bGQN
+CihJIHRoaW5rKSBtYWtlIHRoZW0gc2FmZS4NCg0KVGhlIGRvY3VtZW50ZWQgY29uc3RyYWludCBp
+cyBtb3JlIHNwZWNpZmljIHRoYW4gaXQgdXNlZCB0byBiZQ0KdGhlIEludGVsIHZlcnNpb24gcmVh
+ZHM6DQoNCiAgICBXaGVuIGFjY2Vzc2luZyBhIGJpdCBpbiBtZW1vcnksIHRoZSBwcm9jZXNzb3Ig
+bWF5IGFjY2VzcyA0IGJ5dGVzDQogICAgc3RhcnRpbmcgZnJvbSB0aGUgbWVtb3J5IGFkZHJlc3Mg
+Zm9yIGEgMzItYml0IG9wZXJhbmQgc2l6ZSwgdXNpbmcNCiAgICBieSB0aGUgZm9sbG93aW5nIHJl
+bGF0aW9uc2hpcDoNCiAgICAgICAgRWZmZWN0aXZlIEFkZHJlc3MgKyAoNCDiiJcgKEJpdE9mZnNl
+dCBESVYgMzIpKQ0KICAgIE9yLCBpdCBtYXkgYWNjZXNzIDIgYnl0ZXMgc3RhcnRpbmcgZnJvbSB0
+aGUgbWVtb3J5IGFkZHJlc3MgZm9yIGENCiAgICAxNi1iaXQgb3BlcmFuZCwgdXNpbmcgdGhpcyBy
+ZWxhdGlvbnNoaXA6DQogICAgICAgIEVmZmVjdGl2ZSBBZGRyZXNzICsgKDIg4oiXIChCaXRPZmZz
+ZXQgRElWIDE2KSkNCiAgICBJdCBtYXkgZG8gc28gZXZlbiB3aGVuIG9ubHkgYSBzaW5nbGUgYnl0
+ZSBuZWVkcyB0byBiZSBhY2Nlc3NlZCB0bw0KICAgIHJlYWNoIHRoZSBnaXZlbiBiaXQuDQogICAg
+V2hlbiB1c2luZyB0aGlzIGJpdCBhZGRyZXNzaW5nIG1lY2hhbmlzbSwgc29mdHdhcmUgc2hvdWxk
+IGF2b2lkDQogICAgcmVmZXJlbmNpbmcgYXJlYXMgb2YgbWVtb3J5IGNsb3NlIHRvIGFkZHJlc3Mg
+c3BhY2UgaG9sZXMuDQogICAgSW4gcGFydGljdWxhciwgaXQgc2hvdWxkIGF2b2lkIHJlZmVyZW5j
+ZXMgdG8gbWVtb3J5LW1hcHBlZCBJL08gcmVnaXN0ZXJzLg0KICAgIEluc3RlYWQsIHNvZnR3YXJl
+IHNob3VsZCB1c2UgdGhlIE1PViBpbnN0cnVjdGlvbnMgdG8gbG9hZCBmcm9tIG9yIHN0b3JlDQog
+ICAgdG8gdGhlc2UgYWRkcmVzc2VzLCBhbmQgdXNlIHRoZSByZWdpc3RlciBmb3JtIG9mIHRoZXNl
+IGluc3RydWN0aW9ucyB0bw0KICAgIG1hbmlwdWxhdGUgdGhlIGRhdGEuDQogICAgSW4gNjQtYml0
+IG1vZGUsIHRoZSBpbnN0cnVjdGlvbuKAmXMgZGVmYXVsdCBvcGVyYXRpb24gc2l6ZSBpcyAzMiBi
+aXRzLg0KICAgIFVzaW5nIGEgUkVYIHByZWZpeCBpbiB0aGUgZm9ybSBvZiBSRVguUiBwZXJtaXRz
+IGFjY2VzcyB0byBhZGRpdGlvbmFsDQogICAgcmVnaXN0ZXJzIChSOC1SMTUpLiBVc2luZyBhIFJF
+WCBwcmVmaXggaW4gdGhlIGZvcm0gb2YgUkVYLlcgcHJvbW90ZXMNCiAgICBvcGVyYXRpb24gdG8g
+NjQgYml0IG9wZXJhbmRzLg0KDQoJRGF2aWQNCg0KDQo=
