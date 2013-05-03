@@ -1,24 +1,37 @@
-Return-Path: <B07421@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe005.messaging.microsoft.com [213.199.154.208])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CECB32C00A9
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 May 2013 08:06:57 +1000 (EST)
-Date: Fri, 3 May 2013 17:06:48 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] KVM: PPC: Book3E 64: Fix IRQs warnings and hangs
-To: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
-In-Reply-To: <300B73AA675FCE4A93EB4FC1D42459FF3E9B37@039-SN2MPN1-013.039d.mgd.msft.net>
- (from B02008@freescale.com on Fri May  3 15:56:47 2013)
-Message-ID: <1367618808.19391.11@snotra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
+Return-Path: <klebers@linux.vnet.ibm.com>
+Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e24smtp03.br.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 84DB62C00CF
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 May 2013 08:43:55 +1000 (EST)
+Received: from /spool/local
+ by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <klebers@linux.vnet.ibm.com>;
+ Fri, 3 May 2013 19:43:50 -0300
+Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id 324FC3520027
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2013 18:43:47 -0400 (EDT)
+Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
+ by d24relay02.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r43MghGZ37945538
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 May 2013 19:42:43 -0300
+Received: from d24av02.br.ibm.com (loopback [127.0.0.1])
+ by d24av02.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r43Mhjij007078
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 May 2013 19:43:46 -0300
+From: Kleber Sacilotto de Souza <klebers@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Bjorn Helgaas <bhelgaas@google.com>, David Airlie <airlied@linux.ie>,
+ Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCHv5 0/2] Speed Cap fixes for ppc64
+Date: Fri,  3 May 2013 19:43:11 -0300
+Message-Id: <1367620993-27037-1-git-send-email-klebers@linux.vnet.ibm.com>
+Cc: Brian King <brking@linux.vnet.ibm.com>,
+ Alex Deucher <alexander.deucher@amd.com>, Jerome Glisse <jglisse@redhat.com>,
+ Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
+ Kleber Sacilotto de Souza <klebers@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,82 +41,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/03/2013 03:56:47 PM, Caraman Mihai Claudiu-B02008 wrote:
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Friday, May 03, 2013 11:15 PM
-> > To: Caraman Mihai Claudiu-B02008
-> > Cc: Wood Scott-B07421; kvm-ppc@vger.kernel.org; kvm@vger.kernel.org;
-> > linuxppc-dev@lists.ozlabs.org
-> > Subject: Re: [PATCH] KVM: PPC: Book3E 64: Fix IRQs warnings and =20
-> hangs
-> >
-> > > > > The unresponsiveness has to do with the fact that
-> > > > > arch_local_irq_restore()
-> > > > > does not guarantees to hard enable interrupts.
-> > > >
-> > > > Could you elaborate?  If the saved IRQ state was "enabled", why
-> > > > wouldn't arch_local_irq_restore() hard-enable IRQs?  The last =20
-> thing
-> > > it
-> > > > does is __hard_irq_enable().
-> > >
-> > > 	if (!irq_happened)
-> > > 		return;
-> >
-> > OK, so the problem is that we're not setting PACA_IRQ_HARD_DIS when =20
-> we
-> > hard-disable interrupts?
->=20
-> We enter guest with local_irq_disable() which means soft disabled,
+This v5 of the patch series is based on v4 sent by Lucas Kannebley Tavares
+with a few changes:
 
-Hmm... I don't see any obvious breakage from that, but it makes me =20
-nervous.  I'd be more comfortable if we just hard-disabled interrupts =20
-there.
+  1. Fix a compilation warning on the code from the first patch, where it was
+missing a declaration of struct pci_host_bridge, used on the definition of
+the function pointer pcibios_root_bridge_prepare() in
+arch/powerpc/include/asm/machdep.h.
+  2. Incorporate some changes proposed by Tony Breeds in
+pseries_root_bridge_prepare().
 
-> when do we hard-disable interrupts?
+The following description of the changes was extrated from v4:
 
-Interrupts will be hard-disabled when we take an exception to exit =20
-guest state.
+This patch series does:
+  1. max_bus_speed is used to set the device to gen2 speeds
+  2. on power there's no longer a conflict between the pseries call and other
+architectures, because the overwrite is done via a ppc_md hook
+  3. radeon is using bus->max_bus_speed instead of drm_pcie_get_speed_cap_mask
+for gen2 capability detection
 
-> If we follow host exception handlers model
-> they set PACA_IRQ_EE/DEC/DBELL but not PACA_IRQ_HARD_DIS. Can you =20
-> give it
-> a try to see how KVM behaves with PACA_IRQ_HARD_DIS? I can't do it =20
-> right now.
+The first patch consists of some architecture changes, such as adding a hook on
+powerpc for pci_root_bridge_prepare, so that pseries will initialize it to a
+function, while all other architectures get a NULL pointer. So that whenever
+pci_create_root_bus is called, we'll get max_bus_speed properly setup from
+OpenFirmware.
 
-I replaced the two calls to kvmppc_lazy_ee_enable() with calls to =20
-hard_irq_disable(), and it seems to be working fine.
+The second patch consists of simple radeon changes not to call
+drm_get_pcie_speed_cap_mask anymore. I assume that on x86 machines,
+the max_bus_speed property will be properly set already.
 
-> > > > Where is the arch_local_irq_restore() instance you're talking =20
-> about?
-> > >
-> > > ./arch/power/kernel/irq.c
-> >
-> > I meant the caller. :-P
->=20
-> ./arch/powerpc/include/asm/hw_irq.h
->=20
->   55static inline unsigned long arch_local_irq_disable(void)
->   56{
->   57        unsigned long flags, zero;
->   58
->   59        asm volatile(
->   60                "li %1,0; lbz %0,%2(13); stb %1,%2(13)"
->   61                : "=3Dr" (flags), "=3D&r" (zero)
->   62                : "i" (offsetof(struct paca_struct, soft_enabled))
->   63                : "memory");
->   64
->   65        return flags;
->   66}
->   67
->   68extern void arch_local_irq_restore(unsigned long);
->   69
->   70static inline void arch_local_irq_enable(void)
->   71{
->   72        arch_local_irq_restore(1);
->   73}
+Kleber Sacilotto de Souza (2):
+  ppc64: perform proper max_bus_speed detection
+  radeon: use max_bus_speed to activate gen2 speeds
 
-Sigh.  I meant the real caller, who's calling local_irq_restore().
-
--Scott=
+ arch/powerpc/include/asm/machdep.h       |    3 ++
+ arch/powerpc/kernel/pci-common.c         |    8 ++++
+ arch/powerpc/platforms/pseries/pci.c     |   53 ++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/pseries/pseries.h |    4 ++
+ arch/powerpc/platforms/pseries/setup.c   |    2 +
+ drivers/gpu/drm/radeon/evergreen.c       |   10 ++----
+ drivers/gpu/drm/radeon/r600.c            |    9 +----
+ drivers/gpu/drm/radeon/rv770.c           |    9 +----
+ 8 files changed, 77 insertions(+), 21 deletions(-)
