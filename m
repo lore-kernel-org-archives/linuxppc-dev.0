@@ -1,26 +1,37 @@
-Return-Path: <B38951@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EA1CB2C00D8
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2013 12:04:04 +1000 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>, "galak@kernel.crashing.org"
- <galak@kernel.crashing.org>
-Subject: RE: [PATCH 2/2 V8] powerpc/85xx: Add machine check handler to fix
- PCIe erratum on mpc85xx
-Date: Fri, 3 May 2013 02:03:57 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01C4D727@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1367126408-12997-1-git-send-email-hongtao.jia@freescale.com>
- <1367126408-12997-2-git-send-email-hongtao.jia@freescale.com>
- <1367514224.24411.10@snotra>
-In-Reply-To: <1367514224.24411.10@snotra>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <dwg@au1.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp09.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E11612C00D7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2013 13:45:34 +1000 (EST)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <dwg@au1.ibm.com>;
+ Fri, 3 May 2013 13:35:59 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 67564357804E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2013 13:45:25 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r433jIxe23330846
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 May 2013 13:45:18 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r433jO49019719
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 May 2013 13:45:24 +1000
+Date: Fri, 3 May 2013 13:21:36 +1000
+From: David Gibson <dwg@au1.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH -V7 01/10] powerpc/THP: Double the PMD table size for THP
+Message-ID: <20130503032136.GN13041@truffula.fritz.box>
+References: <1367178711-8232-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1367178711-8232-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="rQ7Ovc9/RBrrr0/1"
+In-Reply-To: <1367178711-8232-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,49 +41,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--rQ7Ovc9/RBrrr0/1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Friday, May 03, 2013 1:04 AM
-> To: Jia Hongtao-B38951
-> Cc: linuxppc-dev@lists.ozlabs.org; galak@kernel.crashing.org; Wood Scott-
-> B07421; segher@kernel.crashing.org; Li Yang-R58472; Jia Hongtao-B38951
-> Subject: Re: [PATCH 2/2 V8] powerpc/85xx: Add machine check handler to
-> fix PCIe erratum on mpc85xx
+On Mon, Apr 29, 2013 at 01:21:42AM +0530, Aneesh Kumar K.V wrote:
+> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 >=20
-> On 04/28/2013 12:20:08 AM, Jia Hongtao wrote:
-> > A PCIe erratum of mpc85xx may causes a core hang when a link of PCIe
-> > goes down. when the link goes down, Non-posted transactions issued via
-> > the ATMU requiring completion result in an instruction stall.
-> > At the same time a machine-check exception is generated to the core to
-> > allow further processing by the handler. We implements the handler
-> > which skips the instruction caused the stall.
-> >
-> > This patch depends on patch:
-> > powerpc/85xx: Add platform_device declaration to fsl_pci.h
-> >
-> > Signed-off-by: Zhao Chenhui <b35336@freescale.com>
-> > Signed-off-by: Li Yang <leoli@freescale.com>
-> > Signed-off-by: Liu Shuo <soniccat.liu@gmail.com>
-> > Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
-> > ---
-> > V8:
-> > * Add A variant load instruction emulation.
+> THP code does PTE page allocation along with large page request and depos=
+it them
+> for later use. This is to ensure that we won't have any failures when we =
+split
+> hugepages to regular pages.
 >=20
-> ACK
+> On powerpc we want to use the deposited PTE page for storing hash pte slo=
+t and
+> secondary bit information for the HPTEs. We use the second half
+> of the pmd table to save the deposted PTE page.
 >=20
-> -Scott
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-Thanks for the review.
+So far so good.
 
-Hi Kumar,
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
-Could you please review these MSI and PCI hang errata patches?
-http://patchwork.ozlabs.org/patch/233211/
-http://patchwork.ozlabs.org/patch/235276/
-http://patchwork.ozlabs.org/patch/240238/
-http://patchwork.ozlabs.org/patch/240239/ (This patch)
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
-Thanks.
--Hongtao
+--rQ7Ovc9/RBrrr0/1
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iEYEARECAAYFAlGDLUAACgkQaILKxv3ab8Y4/gCbBGS54h8FzpwDUcxBIZiVJA77
+TSEAn16EgojWQZwLhiFEaI69hD+5Dzjs
+=qMQ1
+-----END PGP SIGNATURE-----
+
+--rQ7Ovc9/RBrrr0/1--
