@@ -1,40 +1,24 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp05.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0B6D12C00AD
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 May 2013 16:33:23 +1000 (EST)
-Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <dwg@au1.ibm.com>;
- Sat, 4 May 2013 16:28:10 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 8DA24357804A
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 May 2013 16:33:05 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r446JINT20119762
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 4 May 2013 16:19:19 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r446X4sI006348
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 4 May 2013 16:33:05 +1000
-Date: Sat, 4 May 2013 16:28:25 +1000
-From: David Gibson <dwg@au1.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH -V7 04/10] powerpc: Update find_linux_pte_or_hugepte to
- handle transparent hugepages
-Message-ID: <20130504062825.GY13041@truffula.fritz.box>
-References: <1367178711-8232-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1367178711-8232-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20130503045323.GP13041@truffula.fritz.box>
- <87ip2z51rn.fsf@linux.vnet.ibm.com>
+Return-Path: <B02008@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1FAE12C00D3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 May 2013 17:11:24 +1000 (EST)
+From: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>, Alexander Graf <agraf@suse.de>
+Subject: RE: [PATCH] kvm/ppc/booke64: Hard disable interrupts when entering
+ the guest
+Date: Sat, 4 May 2013 07:11:13 +0000
+Message-ID: <300B73AA675FCE4A93EB4FC1D42459FF3E9F9B@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1367624723-22456-1-git-send-email-scottwood@freescale.com>
+In-Reply-To: <1367624723-22456-1-git-send-email-scottwood@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="5OPIRG5sBUHnKBkK"
-In-Reply-To: <87ip2z51rn.fsf@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org, linux-mm@kvack.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,46 +28,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---5OPIRG5sBUHnKBkK
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Sat, May 04, 2013 at 12:28:20AM +0530, Aneesh Kumar K.V wrote:
-> David Gibson <dwg@au1.ibm.com> writes:
+> -----Original Message-----
+> From: Wood Scott-B07421
+> Sent: Saturday, May 04, 2013 2:45 AM
+> To: Alexander Graf
+> Cc: kvm-ppc@vger.kernel.org; kvm@vger.kernel.org; linuxppc-
+> dev@lists.ozlabs.org; Wood Scott-B07421; Caraman Mihai Claudiu-B02008
+> Subject: [PATCH] kvm/ppc/booke64: Hard disable interrupts when entering
+> the guest
 >=20
-> > On Mon, Apr 29, 2013 at 01:21:45AM +0530, Aneesh Kumar K.V wrote:
-> >> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-> >
-> > What's the difference in meaning between pmd_huge() and pmd_large()?
-> >
+> kvmppc_lazy_ee_enable() was causing interrupts to be soft-enabled
+> (albeit hard-disabled) in kvmppc_restart_interrupt().  This led to
+> warnings, and possibly breakage if the interrupt state was later saved
+> and then restored (leading to interrupts being hard-and-soft enabled
+> when they should be at least soft-disabled).
 >=20
-> #ifndef CONFIG_HUGETLB_PAGE
-> #define pmd_huge(x)	0
-> #endif
+> Simply removing kvmppc_lazy_ee_enable() leaves interrupts only
+> soft-disabled when we enter the guest, but they will be hard-disabled
+> when we exit the guest -- without PACA_IRQ_HARD_DIS ever being set, so
+> the local_irq_enable() fails to hard-enable.
+
+Just to mention one special case. may_hard_irq_enable() called from do_IRQ(=
+)
+and timer_interrupt() clears PACA_IRQ_HARD_DIS but it either hard-enable or=
+=20
+let PACA_IRQ_EE set which is enough for local_irq_enable() to hard-enable.
+
 >=20
-> Also pmd_large do check for THP PTE flag, and _PAGE_PRESENT.
+> While we could just set PACA_IRQ_HARD_DIS after an exit to compensate,
+> instead hard-disable interrupts before entering the guest.  This way,
+> we won't have to worry about interactions if we take an interrupt
+> during the guest entry code.  While I don't see any obvious
+> interactions, it could change in the future (e.g. it would be bad if
+> the non-hv code were used on 64-bit or if 32-bit guest lazy interrupt
+> disabling, since the non-hv code changes IVPR among other things).
+>=20
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> Cc: Mihai Caraman <mihai.caraman@freescale.com>
 
-I don't mean what's the code difference.  I mean what is the semantic
-difference between pmd_huge() and pmd_large() supposed to be - in
-words.
+Please add my signed-off, it builds on the same principle of interrupts
+soft-disabled to fix warnings and irq_happened flags to force interrupts
+hard-enabled ... and parts of the code ;)
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---5OPIRG5sBUHnKBkK
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iEYEARECAAYFAlGEqokACgkQaILKxv3ab8YR7ACeIEQXWQ200IRwwwUy4XG/QqnR
-VjkAn0XwLDa00t5eDnow51Yfq1F6Rc0V
-=R2xM
------END PGP SIGNATURE-----
-
---5OPIRG5sBUHnKBkK--
+-Mike
