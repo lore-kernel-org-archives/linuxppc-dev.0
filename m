@@ -1,27 +1,39 @@
-Return-Path: <benh@kernel.crashing.org>
-Message-ID: <1367721709.11982.37.camel@pasglop>
-Subject: Re: [PATCH v8 1/3] of/pci: Unify pci_process_bridge_OF_ranges from
- Microblaze and PowerPC
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andrew Murray <Andrew.Murray@arm.com>
-Date: Sun, 05 May 2013 12:41:49 +1000
-In-Reply-To: <1366627295-16964-2-git-send-email-Andrew.Murray@arm.com>
-References: <1366627295-16964-1-git-send-email-Andrew.Murray@arm.com>
- <1366627295-16964-2-git-send-email-Andrew.Murray@arm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-mips@linux-mips.org, siva.kallam@samsung.com,
- linux-pci@vger.kernel.org, linus.walleij@linaro.org,
- thierry.reding@avionic-design.de, Liviu.Dudau@arm.com, juhosg@openwrt.org,
- paulus@samba.org, linux-samsung-soc@vger.kernel.org, linux@arm.linux.org.uk,
- jg1.han@samsung.com, jgunthorpe@obsidianresearch.com,
- thomas.abraham@linaro.org, grant.likely@linaro.org,
- Rob Herring <robherring2@gmail.com>, arnd@arndb.de,
- devicetree-discuss@lists.ozlabs.org, kgene.kim@samsung.com,
- bhelgaas@google.com, linux-arm-kernel@lists.infradead.org,
- thomas.petazzoni@free-electrons.com, monstr@monstr.eu,
- linux-kernel@vger.kernel.org, suren.reddy@samsung.com,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <dwg@au1.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 003B82C00AC
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 May 2013 19:18:30 +1000 (EST)
+Received: from /spool/local
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <dwg@au1.ibm.com>;
+ Sun, 5 May 2013 19:10:19 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 835852CE804A
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 May 2013 19:18:05 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r45948v023724046
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 5 May 2013 19:04:08 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r459I4uk029943
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 5 May 2013 19:18:05 +1000
+Date: Sun, 5 May 2013 18:59:13 +1000
+From: David Gibson <dwg@au1.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH -V7 08/10] powerpc/THP: Enable THP on PPC64
+Message-ID: <20130505085913.GZ13041@truffula.fritz.box>
+References: <1367178711-8232-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1367178711-8232-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20130503051528.GT13041@truffula.fritz.box>
+ <87r4hn5274.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="5cXpu7evJfjLw2dJ"
+In-Reply-To: <87r4hn5274.fsf@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org, linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,36 +43,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-04-22 at 11:41 +0100, Andrew Murray wrote:
-> The pci_process_bridge_OF_ranges function, used to parse the "ranges"
-> property of a PCI host device, is found in both Microblaze and PowerPC
-> architectures. These implementations are nearly identical. This patch
-> moves this common code to a common place.
+--5cXpu7evJfjLw2dJ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-What's happening with this ? I'd like to avoid that patch for now
-as I'm doing some changes to pci_process_bridge_OF_ranges
-which are fairly urgent (I might even stick them in the current
-merge window) to deal with memory windows having separate offsets.
+On Sat, May 04, 2013 at 12:19:03AM +0530, Aneesh Kumar K.V wrote:
+> David Gibson <dwg@au1.ibm.com> writes:
+>=20
+> > On Mon, Apr 29, 2013 at 01:21:49AM +0530, Aneesh Kumar K.V wrote:
+> >> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+> >>=20
+> >> We enable only if the we support 16MB page size.
+> >>=20
+> >> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> >> ---
+> >>  arch/powerpc/include/asm/pgtable-ppc64.h |  3 +--
+> >>  arch/powerpc/mm/pgtable_64.c             | 28 +++++++++++++++++++++++=
++++++
+> >>  2 files changed, 29 insertions(+), 2 deletions(-)
+> >>=20
+> >> diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/i=
+nclude/asm/pgtable-ppc64.h
+> >> index 97fc839..d65534b 100644
+> >> --- a/arch/powerpc/include/asm/pgtable-ppc64.h
+> >> +++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+> >> @@ -426,8 +426,7 @@ static inline unsigned long pmd_pfn(pmd_t pmd)
+> >>  	return pmd_val(pmd) >> PTE_RPN_SHIFT;
+> >>  }
+> >> =20
+> >> -/* We will enable it in the last patch */
+> >> -#define has_transparent_hugepage() 0
+> >> +extern int has_transparent_hugepage(void);
+> >>  #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
+> >> =20
+> >>  static inline int pmd_young(pmd_t pmd)
+> >> diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64=
+=2Ec
+> >> index 54216c1..b742d6f 100644
+> >> --- a/arch/powerpc/mm/pgtable_64.c
+> >> +++ b/arch/powerpc/mm/pgtable_64.c
+> >> @@ -754,6 +754,34 @@ void update_mmu_cache_pmd(struct vm_area_struct *=
+vma, unsigned long addr,
+> >>  	return;
+> >>  }
+> >> =20
+> >> +int has_transparent_hugepage(void)
+> >> +{
+> >> +	if (!mmu_has_feature(MMU_FTR_16M_PAGE))
+> >> +		return 0;
+> >> +	/*
+> >> +	 * We support THP only if HPAGE_SHIFT is 16MB.
+> >> +	 */
+> >> +	if (!HPAGE_SHIFT || (HPAGE_SHIFT !=3D mmu_psize_defs[MMU_PAGE_16M].s=
+hift))
+> >> +		return 0;
+> >
+> > Again, THP should not be dependent on the value of HPAGE_SHIFT.  Just
+> > checking that mmu_psize_defsz[MMU_PAGE_16M].shift =3D=3D 24 should be
+> > sufficient (i.e. that 16M hugepages are supported).
+>=20
+> done
+>=20
+> +	/*
+> +	 * We support THP only if PMD_SIZE is 16MB.
+> +	 */
+> +	if (mmu_psize_defs[MMU_PAGE_16M].shift !=3D PMD_SHIFT)
+> +		return 0;
+> +	/*
 
-There's also a few hacks in there that are really ppc specific...
+Much better.
 
-I think the right long term approach is to change the way powerpc
-(and microblaze ?) initializes PCI host bridges. Move it away from
-setup_arch() (which is a PITA anyway since it's way too early) to
-an early init call of some sort, and encapsulate the new struct
-pci_host_bridge.
+> >> +	/*
+> >> +	 * We need to make sure that we support 16MB hugepage in a segement
+> >> +	 * with base page size 64K or 4K. We only enable THP with a PAGE_SIZE
+> >> +	 * of 64K.
+> >> +	 */
+> >> +	/*
+> >> +	 * If we have 64K HPTE, we will be using that by default
+> >> +	 */
+> >> +	if (mmu_psize_defs[MMU_PAGE_64K].shift &&
+> >> +	    (mmu_psize_defs[MMU_PAGE_64K].penc[MMU_PAGE_16M] =3D=3D -1))
+> >> +		return 0;
+> >> +	/*
+> >> +	 * Ok we only have 4K HPTE
+> >> +	 */
+> >> +	if (mmu_psize_defs[MMU_PAGE_4K].penc[MMU_PAGE_16M] =3D=3D -1)
+> >> +		return 0;
+> >
+> > Except you don't actually support THP on 4K base page size yet.
+>=20
+>=20
+> That is 64K linux page size and 4K HPTE . We do support that.
 
-We can then directly configure the host bridge windows rather
-than having this "intermediary" set of resources in our pci_controller
-and in fact move most of the fields from pci_controller to
-pci_host_bridge to the point where the former can remain as a
-simple platform specific wrapper if needed.
+Good point, sorry.
 
-So for new stuff (hint: DT based ARM PCI) or stuff that has to deal with
-a lot less archaic platforms (hint: Microblaze), I'd recommend going
-straight for that approach rather than perpetuating the PowerPC code
-which I'll try to deal with in the next few monthes.
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
-Cheers,
-Ben.
- 
+--5cXpu7evJfjLw2dJ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iEYEARECAAYFAlGGH2EACgkQaILKxv3ab8bnigCeKFI1fhVuTHSpWYl0L0zhgY74
+a3oAn26zV3cmsZVCffyAd7y4u+Le7z2s
+=tqZ7
+-----END PGP SIGNATURE-----
+
+--5cXpu7evJfjLw2dJ--
