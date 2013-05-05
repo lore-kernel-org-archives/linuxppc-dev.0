@@ -1,39 +1,24 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 003B82C00AC
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 May 2013 19:18:30 +1000 (EST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <dwg@au1.ibm.com>;
- Sun, 5 May 2013 19:10:19 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 835852CE804A
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 May 2013 19:18:05 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r45948v023724046
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 5 May 2013 19:04:08 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r459I4uk029943
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 5 May 2013 19:18:05 +1000
-Date: Sun, 5 May 2013 18:59:13 +1000
-From: David Gibson <dwg@au1.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH -V7 08/10] powerpc/THP: Enable THP on PPC64
-Message-ID: <20130505085913.GZ13041@truffula.fritz.box>
-References: <1367178711-8232-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1367178711-8232-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20130503051528.GT13041@truffula.fritz.box>
- <87r4hn5274.fsf@linux.vnet.ibm.com>
+Return-Path: <saysai.gajula@gmail.com>
+Received: from mail-ve0-x22d.google.com (mail-ve0-x22d.google.com
+ [IPv6:2607:f8b0:400c:c01::22d])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 767822C00D0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 May 2013 00:35:46 +1000 (EST)
+Received: by mail-ve0-f173.google.com with SMTP id ox1so2608506veb.4
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 May 2013 07:35:41 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="5cXpu7evJfjLw2dJ"
-In-Reply-To: <87r4hn5274.fsf@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org, linux-mm@kvack.org
+In-Reply-To: <1367438057.29231.9@snotra>
+References: <CAGstqXHrHWdiE=RvZ=1sV+=mPd9LiUZHL0gHPa89AVZRSND2Tg@mail.gmail.com>
+ <1367438057.29231.9@snotra>
+Date: Sun, 5 May 2013 20:05:41 +0530
+Message-ID: <CAGstqXHOxnxv8TZtX0A2XLnxpNnqCoO3ZRYOdpTr=y3Fsy7htQ@mail.gmail.com>
+Subject: Re: PowerPC, P2020RDB, application debug when the application is in
+ tight loop, Sysrq
+From: saikrishna gajula <saysai.gajula@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: multipart/alternative; boundary=047d7bf0c630a3fbe804dbf97faf
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,117 +28,154 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---5cXpu7evJfjLw2dJ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--047d7bf0c630a3fbe804dbf97faf
+Content-Type: text/plain; charset=ISO-8859-1
+
+Hi Scott,
+
+           Thanks for the information. "sysrq_enable_flag" is custom code
+introduced as part of  'y' hack implementation. I will check with the
+latest kernels to make use of "sysrq"  feature.
+
+Regrads,
+Sai
+
+
+On Thu, May 2, 2013 at 1:24 AM, Scott Wood <scottwood@freescale.com> wrote:
+
+> On 04/17/2013 12:04:10 AM, saikrishna gajula wrote:
+>
+>> HI All,
+>>
+>>              I am new to this group. I am working on Freescale P2020
+>> platform running linux 2.6.21.   I am looking for debug mechanism/utility,
+>> when a multi threaded application running on linux , appears to be hung (
+>> running in a tight loop,deadlock)  while not able to access the board
+>> through serial/SSH/Telnet.
+>>
+>>    I was looking at Magic sysrq option in linux to generate the stack,
+>> register dump when the application is hung. I am able to dump the call
+>> trace in normal working conditions. But i can't use  echo  t >
+>> /proc/sysrq-trigger and debug when the application hung.
+>>
+>>  I am using below piece of code(drivers/serial/8250.c) on P2020RDB to
+>> debug
+>> the application where in , in hung situation, when i press 'y'  followed
+>> by
+>> 't'  on serial console it should go to sysrq handler, and dump the call
+>> trace, but it is not happening.(simply board hung)
+>>
+>> {
+>>            if(sysrq_enable_flag)
+>>                   handle_sysrq(ch, up->port.info->tty);
+>>
+>>         sysrq_enable_flag = 0;
+>>
+>>         if(ch == 'y')
+>>             sysrq_enable_flag = 1;
+>> }
+>>
+>> It would be helpful if you provide any hint on the issue, or any other way
+>> to debug the application in hang situations.
+>>
+>
+> There's an erratum regarding breaks in Freescale's serial port
+> implementation that has been worked around in more recent kernels.  2.6.21
+> is six years old.  If you update to a kernel that has the workaround, or
+> backport the workaround yourself to your old kernel, you should be able to
+> use a break instead of hacking in a check for 'y'.
+>
+> Other than that, either the kernel is hung too badly to respond to serial
+> input at all (in which case use JTAG to debug) or there's something wrong
+> with your 'y' hack (sysrq_enable_flag doesn't even appear in current
+> kernels so I can't see if this is the case without digging through old
+> code).
+>
+> In any case, upgrade to a newer kernel -- maybe you're hitting a bug that
+> has been fixed since then.
+>
+> -Scott
+>
+
+--047d7bf0c630a3fbe804dbf97faf
+Content-Type: text/html; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On Sat, May 04, 2013 at 12:19:03AM +0530, Aneesh Kumar K.V wrote:
-> David Gibson <dwg@au1.ibm.com> writes:
->=20
-> > On Mon, Apr 29, 2013 at 01:21:49AM +0530, Aneesh Kumar K.V wrote:
-> >> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-> >>=20
-> >> We enable only if the we support 16MB page size.
-> >>=20
-> >> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> >> ---
-> >>  arch/powerpc/include/asm/pgtable-ppc64.h |  3 +--
-> >>  arch/powerpc/mm/pgtable_64.c             | 28 +++++++++++++++++++++++=
-+++++
-> >>  2 files changed, 29 insertions(+), 2 deletions(-)
-> >>=20
-> >> diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/i=
-nclude/asm/pgtable-ppc64.h
-> >> index 97fc839..d65534b 100644
-> >> --- a/arch/powerpc/include/asm/pgtable-ppc64.h
-> >> +++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-> >> @@ -426,8 +426,7 @@ static inline unsigned long pmd_pfn(pmd_t pmd)
-> >>  	return pmd_val(pmd) >> PTE_RPN_SHIFT;
-> >>  }
-> >> =20
-> >> -/* We will enable it in the last patch */
-> >> -#define has_transparent_hugepage() 0
-> >> +extern int has_transparent_hugepage(void);
-> >>  #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
-> >> =20
-> >>  static inline int pmd_young(pmd_t pmd)
-> >> diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64=
-=2Ec
-> >> index 54216c1..b742d6f 100644
-> >> --- a/arch/powerpc/mm/pgtable_64.c
-> >> +++ b/arch/powerpc/mm/pgtable_64.c
-> >> @@ -754,6 +754,34 @@ void update_mmu_cache_pmd(struct vm_area_struct *=
-vma, unsigned long addr,
-> >>  	return;
-> >>  }
-> >> =20
-> >> +int has_transparent_hugepage(void)
-> >> +{
-> >> +	if (!mmu_has_feature(MMU_FTR_16M_PAGE))
-> >> +		return 0;
-> >> +	/*
-> >> +	 * We support THP only if HPAGE_SHIFT is 16MB.
-> >> +	 */
-> >> +	if (!HPAGE_SHIFT || (HPAGE_SHIFT !=3D mmu_psize_defs[MMU_PAGE_16M].s=
-hift))
-> >> +		return 0;
-> >
-> > Again, THP should not be dependent on the value of HPAGE_SHIFT.  Just
-> > checking that mmu_psize_defsz[MMU_PAGE_16M].shift =3D=3D 24 should be
-> > sufficient (i.e. that 16M hugepages are supported).
->=20
-> done
->=20
-> +	/*
-> +	 * We support THP only if PMD_SIZE is 16MB.
-> +	 */
-> +	if (mmu_psize_defs[MMU_PAGE_16M].shift !=3D PMD_SHIFT)
-> +		return 0;
-> +	/*
+<div dir=3D"ltr"><div><div><div>Hi Scott,<br><br></div>=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0 Thanks for the information. &quot;sysrq_enable_flag&quot; is c=
+ustom code introduced as part of=A0 &#39;y&#39; hack implementation. I will=
+ check with the latest kernels to make use of &quot;sysrq&quot;=A0 feature.=
+<br>
+<br></div>Regrads,<br></div>Sai<br><div class=3D"gmail_extra"><br><br><div =
+class=3D"gmail_quote">On Thu, May 2, 2013 at 1:24 AM, Scott Wood <span dir=
+=3D"ltr">&lt;<a href=3D"mailto:scottwood@freescale.com" target=3D"_blank">s=
+cottwood@freescale.com</a>&gt;</span> wrote:<br>
+<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
+x #ccc solid;padding-left:1ex"><div class=3D"im">On 04/17/2013 12:04:10 AM,=
+ saikrishna gajula wrote:<br>
+<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
+x #ccc solid;padding-left:1ex">
+HI All,<br>
+<br>
+=A0 =A0 =A0 =A0 =A0 =A0 =A0I am new to this group. I am working on Freescal=
+e P2020<br>
+platform running linux 2.6.21. =A0 I am looking for debug mechanism/utility=
+,<br>
+when a multi threaded application running on linux , appears to be hung (<b=
+r>
+running in a tight loop,deadlock) =A0while not able to access the board<br>
+through serial/SSH/Telnet.<br>
+<br>
+=A0 =A0I was looking at Magic sysrq option in linux to generate the stack,<=
+br>
+register dump when the application is hung. I am able to dump the call<br>
+trace in normal working conditions. But i can&#39;t use =A0echo =A0t &gt;<b=
+r>
+/proc/sysrq-trigger and debug when the application hung.<br>
+<br>
+=A0I am using below piece of code(drivers/serial/8250.c) on P2020RDB to deb=
+ug<br>
+the application where in , in hung situation, when i press &#39;y&#39; =A0f=
+ollowed by<br>
+&#39;t&#39; =A0on serial console it should go to sysrq handler, and dump th=
+e call<br>
+trace, but it is not happening.(simply board hung)<br>
+<br>
+{<br>
+=A0 =A0 =A0 =A0 =A0 =A0if(sysrq_enable_flag)<br>
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 handle_sysrq(ch, up-&gt;port.info-&gt;t=
+ty);<br>
+<br>
+=A0 =A0 =A0 =A0 sysrq_enable_flag =3D 0;<br>
+<br>
+=A0 =A0 =A0 =A0 if(ch =3D=3D &#39;y&#39;)<br>
+=A0 =A0 =A0 =A0 =A0 =A0 sysrq_enable_flag =3D 1;<br>
+}<br>
+<br>
+It would be helpful if you provide any hint on the issue, or any other way<=
+br>
+to debug the application in hang situations.<br>
+</blockquote>
+<br></div>
+There&#39;s an erratum regarding breaks in Freescale&#39;s serial port impl=
+ementation that has been worked around in more recent kernels. =A02.6.21 is=
+ six years old. =A0If you update to a kernel that has the workaround, or ba=
+ckport the workaround yourself to your old kernel, you should be able to us=
+e a break instead of hacking in a check for &#39;y&#39;.<br>
 
-Much better.
+<br>
+Other than that, either the kernel is hung too badly to respond to serial i=
+nput at all (in which case use JTAG to debug) or there&#39;s something wron=
+g with your &#39;y&#39; hack (sysrq_enable_flag doesn&#39;t even appear in =
+current kernels so I can&#39;t see if this is the case without digging thro=
+ugh old code).<br>
 
-> >> +	/*
-> >> +	 * We need to make sure that we support 16MB hugepage in a segement
-> >> +	 * with base page size 64K or 4K. We only enable THP with a PAGE_SIZE
-> >> +	 * of 64K.
-> >> +	 */
-> >> +	/*
-> >> +	 * If we have 64K HPTE, we will be using that by default
-> >> +	 */
-> >> +	if (mmu_psize_defs[MMU_PAGE_64K].shift &&
-> >> +	    (mmu_psize_defs[MMU_PAGE_64K].penc[MMU_PAGE_16M] =3D=3D -1))
-> >> +		return 0;
-> >> +	/*
-> >> +	 * Ok we only have 4K HPTE
-> >> +	 */
-> >> +	if (mmu_psize_defs[MMU_PAGE_4K].penc[MMU_PAGE_16M] =3D=3D -1)
-> >> +		return 0;
-> >
-> > Except you don't actually support THP on 4K base page size yet.
->=20
->=20
-> That is 64K linux page size and 4K HPTE . We do support that.
+<br>
+In any case, upgrade to a newer kernel -- maybe you&#39;re hitting a bug th=
+at has been fixed since then.<span class=3D"HOEnZb"><font color=3D"#888888"=
+><br>
+<br>
+-Scott<br>
+</font></span></blockquote></div><br></div></div>
 
-Good point, sorry.
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---5cXpu7evJfjLw2dJ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iEYEARECAAYFAlGGH2EACgkQaILKxv3ab8bnigCeKFI1fhVuTHSpWYl0L0zhgY74
-a3oAn26zV3cmsZVCffyAd7y4u+Le7z2s
-=tqZ7
------END PGP SIGNATURE-----
-
---5cXpu7evJfjLw2dJ--
+--047d7bf0c630a3fbe804dbf97faf--
