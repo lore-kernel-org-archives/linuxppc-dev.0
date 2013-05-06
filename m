@@ -1,17 +1,19 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-f53.google.com (mail-pa0-f53.google.com
- [209.85.220.53])
+Received: from mail-pd0-f176.google.com (mail-pd0-f176.google.com
+ [209.85.192.176])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9B6D32C00DE
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 May 2013 17:22:23 +1000 (EST)
-Received: by mail-pa0-f53.google.com with SMTP id kq12so1872786pab.26
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 May 2013 00:22:21 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 6BA222C0138
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 May 2013 17:22:29 +1000 (EST)
+Received: by mail-pd0-f176.google.com with SMTP id x10so1861168pdj.35
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 May 2013 00:22:27 -0700 (PDT)
 From: aik@ozlabs.ru
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 0/5] VFIO PPC64: add VFIO support on POWERPC64
-Date: Mon,  6 May 2013 17:21:56 +1000
-Message-Id: <51875a2c.25ac440a.50d9.ffffe8eb@mx.google.com>
+Subject: [PATCH 1/5] iommu: Move initialization earlier
+Date: Mon,  6 May 2013 17:21:57 +1000
+Message-Id: <51875a31.25ac440a.50d9.ffffe8fd@mx.google.com>
+In-Reply-To: <1367824921-27151-1-git-send-email-y>
+References: <1367824921-27151-1-git-send-email-y>
 Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
  Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
  linux-kernel@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
@@ -28,50 +30,37 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-The series adds support for VFIO on POWERPC in user space (such as QEMU).
-The in-kernel real mode IOMMU support is added by another series posted
-separately.
+The iommu_init() call initializes IOMMU internal structures and data
+required for the API to function such as iommu_group_alloc().
+It is registered as a subsys_initcall.
 
-As the first and main aim of this series is the POWERNV platform support,
-the "Enable on POWERNV platform" patch goes first and introduces an API
-to be used by the VFIO IOMMU driver. The "Enable on pSeries platform" patch
-simply registers PHBs in the IOMMU subsystem and expects the API to be present,
-it enables VFIO support in fully emulated QEMU guests.
+One of the IOMMU users is a PCI subsystem on POWER which discovers new
+IOMMU tables during the PCI scan so the most logical place to call
+iommu_group_alloc() is when a new group is just discovered. However
+PCI scan is done from subsys_initcall hook as well, which makes
+use of the IOMMU API impossible.
 
-These patches were tested against 3.8 and the "iommu: Move initialization earlier"
-patch is already in 3.9 so I am including it here only for the reference.
+This moves IOMMU subsystem initialization one step earlier.
 
-Change log:
-* cleanups and minor fixes
-* added support for pSeries
-* separated from in-kernel IOMMU handling series (should make it easier to get sob'ed)
-* signed-off-by Paul Mackerras
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: David Gibson <david@gibson.dropbear.id.au>
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+ drivers/iommu/iommu.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Alexey Kardashevskiy (5):
-  iommu: Move initialization earlier
-  KVM: PPC: iommu: Add missing
-    kvm_iommu_map_pages/kvm_iommu_unmap_pages
-  powerpc/vfio: Enable on POWERNV platform
-  powerpc/vfio: Implement IOMMU driver for VFIO
-  powerpc/vfio: Enable on pSeries platform
-
- Documentation/vfio.txt                      |   63 +++++
- arch/powerpc/include/asm/iommu.h            |   26 ++
- arch/powerpc/include/asm/kvm_host.h         |   14 +
- arch/powerpc/kernel/iommu.c                 |  319 +++++++++++++++++++++++
- arch/powerpc/platforms/powernv/pci-ioda.c   |    1 +
- arch/powerpc/platforms/powernv/pci-p5ioc2.c |    5 +-
- arch/powerpc/platforms/powernv/pci.c        |    2 +
- arch/powerpc/platforms/pseries/iommu.c      |    4 +
- drivers/iommu/Kconfig                       |    8 +
- drivers/iommu/iommu.c                       |    2 +-
- drivers/vfio/Kconfig                        |    6 +
- drivers/vfio/Makefile                       |    1 +
- drivers/vfio/vfio.c                         |    1 +
- drivers/vfio/vfio_iommu_spapr_tce.c         |  377 +++++++++++++++++++++++++++
- include/uapi/linux/vfio.h                   |   34 +++
- 15 files changed, 861 insertions(+), 2 deletions(-)
- create mode 100644 drivers/vfio/vfio_iommu_spapr_tce.c
-
+diff --git a/drivers/iommu/iommu.c b/drivers/iommu/iommu.c
+index 5514dfa..0de83eb 100644
+--- a/drivers/iommu/iommu.c
++++ b/drivers/iommu/iommu.c
+@@ -890,7 +890,7 @@ static int __init iommu_init(void)
+ 
+ 	return 0;
+ }
+-subsys_initcall(iommu_init);
++arch_initcall(iommu_init);
+ 
+ int iommu_domain_get_attr(struct iommu_domain *domain,
+ 			  enum iommu_attr attr, void *data)
 -- 
 1.7.10.4
