@@ -1,18 +1,17 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from mail-yh0-x233.google.com (mail-yh0-x233.google.com
- [IPv6:2607:f8b0:4002:c01::233])
+Received: from mail-yh0-x229.google.com (mail-yh0-x229.google.com
+ [IPv6:2607:f8b0:4002:c01::229])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id F34FD2C0576
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 May 2013 17:26:27 +1000 (EST)
-Received: by mail-yh0-f51.google.com with SMTP id l109so672952yhq.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 May 2013 00:26:25 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 8F1202C0A4B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 May 2013 17:26:33 +1000 (EST)
+Received: by mail-yh0-f41.google.com with SMTP id i72so667558yha.28
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 May 2013 00:26:30 -0700 (PDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/6] powerpc: Prepare to support kernel handling of IOMMU
- map/unmap
-Date: Mon,  6 May 2013 17:25:54 +1000
-Message-Id: <1367825157-27231-4-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH 4/6] iommu: Add a function to find an iommu group by id
+Date: Mon,  6 May 2013 17:25:55 +1000
+Message-Id: <1367825157-27231-5-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1367825157-27231-1-git-send-email-aik@ozlabs.ru>
 References: <1367825157-27231-1-git-send-email-aik@ozlabs.ru>
 Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -29,133 +28,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The current VFIO-on-POWER implementation supports only user mode
-driven mapping, i.e. QEMU is sending requests to map/unmap pages.
-However this approach is really slow, so we want to move that to KVM.
-Since H_PUT_TCE can be extremely performance sensitive (especially with
-network adapters where each packet needs to be mapped/unmapped) we chose
-to implement that as a "fast" hypercall directly in "real
-mode" (processor still in the guest context but MMU off).
+As IOMMU groups are exposed to the user space by their numbers,
+the user space can use them in various kernel APIs so the kernel
+might need an API to find a group by its ID.
 
-To be able to do that, we need to provide some facilities to
-access the struct page count within that real mode environment as things
-like the sparsemem vmemmap mappings aren't accessible.
+As an example, QEMU VFIO on PPC64 platform needs it to associate
+a logical bus number (LIOBN) with a specific IOMMU group in order
+to support in-kernel handling of DMA map/unmap requests.
 
-This adds an API to increment/decrement page counter as
-get_user_pages API used for user mode mapping does not work
-in the real mode.
-
-CONFIG_SPARSEMEM_VMEMMAP and CONFIG_FLATMEM are supported.
+This adds the iommu_group_get_by_id(id) function which performs
+this search.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-Reviewed-by: Paul Mackerras <paulus@samba.org>
-Cc: David Gibson <david@gibson.dropbear.id.au>
 Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/include/asm/pgtable-ppc64.h |    4 ++
- arch/powerpc/mm/init_64.c                |   77 +++++++++++++++++++++++++++++-
- 2 files changed, 80 insertions(+), 1 deletion(-)
+ drivers/iommu/iommu.c |   29 +++++++++++++++++++++++++++++
+ include/linux/iommu.h |    1 +
+ 2 files changed, 30 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
-index 0182c20..4c56ede 100644
---- a/arch/powerpc/include/asm/pgtable-ppc64.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-@@ -377,6 +377,10 @@ static inline pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea,
+diff --git a/drivers/iommu/iommu.c b/drivers/iommu/iommu.c
+index ddbdaca..5514dfa 100644
+--- a/drivers/iommu/iommu.c
++++ b/drivers/iommu/iommu.c
+@@ -204,6 +204,35 @@ again:
  }
- #endif /* !CONFIG_HUGETLB_PAGE */
+ EXPORT_SYMBOL_GPL(iommu_group_alloc);
  
-+struct page *realmode_pfn_to_page(unsigned long pfn);
-+int realmode_get_page(struct page *page);
-+int realmode_put_page(struct page *page);
-+
- #endif /* __ASSEMBLY__ */
- 
- #endif /* _ASM_POWERPC_PGTABLE_PPC64_H_ */
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index 95a4529..838b8ae 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -297,5 +297,80 @@ int __meminit vmemmap_populate(struct page *start_page,
- 
- 	return 0;
- }
--#endif /* CONFIG_SPARSEMEM_VMEMMAP */
- 
-+/*
-+ * We do not have access to the sparsemem vmemmap, so we fallback to
-+ * walking the list of sparsemem blocks which we already maintain for
-+ * the sake of crashdump. In the long run, we might want to maintain
-+ * a tree if performance of that linear walk becomes a problem.
-+ *
-+ * Any of realmode_XXXX functions can fail due to:
-+ * 1) As real sparsemem blocks do not lay in RAM continously (they
-+ * are in virtual address space which is not available in the real mode),
-+ * the requested page struct can be split between blocks so get_page/put_page
-+ * may fail.
-+ * 2) When huge pages are used, the get_page/put_page API will fail
-+ * in real mode as the linked addresses in the page struct are virtual
-+ * too.
-+ * When 1) or 2) takes place, the API returns an error code to cause
-+ * an exit to kernel virtual mode where the operation will be completed.
-+ */
-+struct page *realmode_pfn_to_page(unsigned long pfn)
++struct iommu_group *iommu_group_get_by_id(int id)
 +{
-+	struct vmemmap_backing *vmem_back;
-+	struct page *page;
-+	unsigned long page_size = 1 << mmu_psize_defs[mmu_vmemmap_psize].shift;
-+	unsigned long pg_va = (unsigned long) pfn_to_page(pfn);
++	struct kobject *group_kobj;
++	struct iommu_group *group;
++	const char *name;
 +
-+	for (vmem_back = vmemmap_list; vmem_back; vmem_back = vmem_back->list) {
-+		if (pg_va < vmem_back->virt_addr)
-+			continue;
++	if (!iommu_group_kset)
++		return NULL;
 +
-+		/* Check that page struct is not split between real pages */
-+		if ((pg_va + sizeof(struct page)) >
-+				(vmem_back->virt_addr + page_size))
-+			return NULL;
++	name = kasprintf(GFP_KERNEL, "%d", id);
++	if (!name)
++		return NULL;
 +
-+		page = (struct page *) (vmem_back->phys + pg_va -
-+				vmem_back->virt_addr);
-+		return page;
-+	}
++	group_kobj = kset_find_obj(iommu_group_kset, name);
++	kfree(name);
 +
-+	return NULL;
++	if (!group_kobj)
++		return NULL;
++
++	group = container_of(group_kobj, struct iommu_group, kobj);
++	BUG_ON(group->id != id);
++
++	kobject_get(group->devices_kobj);
++	kobject_put(&group->kobj);
++
++	return group;
 +}
-+EXPORT_SYMBOL_GPL(realmode_pfn_to_page);
++EXPORT_SYMBOL_GPL(iommu_group_get_by_id);
 +
-+#elif defined(CONFIG_FLATMEM)
-+
-+struct page *realmode_pfn_to_page(unsigned long pfn)
-+{
-+	struct page *page = pfn_to_page(pfn);
-+	return page;
-+}
-+EXPORT_SYMBOL_GPL(realmode_pfn_to_page);
-+
-+#endif /* CONFIG_SPARSEMEM_VMEMMAP/CONFIG_FLATMEM */
-+
-+#if defined(CONFIG_SPARSEMEM_VMEMMAP) || defined(CONFIG_FLATMEM)
-+int realmode_get_page(struct page *page)
-+{
-+	if (PageTail(page))
-+		return -EAGAIN;
-+
-+	get_page(page);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(realmode_get_page);
-+
-+int realmode_put_page(struct page *page)
-+{
-+	if (PageCompound(page))
-+		return -EAGAIN;
-+
-+	put_page(page);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(realmode_put_page);
-+#endif
+ /**
+  * iommu_group_get_iommudata - retrieve iommu_data registered for a group
+  * @group: the group
+diff --git a/include/linux/iommu.h b/include/linux/iommu.h
+index f3b99e1..00e5d7d 100644
+--- a/include/linux/iommu.h
++++ b/include/linux/iommu.h
+@@ -113,6 +113,7 @@ struct iommu_ops {
+ extern int bus_set_iommu(struct bus_type *bus, struct iommu_ops *ops);
+ extern bool iommu_present(struct bus_type *bus);
+ extern struct iommu_domain *iommu_domain_alloc(struct bus_type *bus);
++extern struct iommu_group *iommu_group_get_by_id(int id);
+ extern void iommu_domain_free(struct iommu_domain *domain);
+ extern int iommu_attach_device(struct iommu_domain *domain,
+ 			       struct device *dev);
 -- 
 1.7.10.4
