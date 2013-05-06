@@ -1,21 +1,32 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id EA4B82C00AE
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 May 2013 18:03:04 +1000 (EST)
-Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id r46830bl020349
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 May 2013 03:03:01 -0500
-Message-ID: <1367827379.15842.26.camel@pasglop>
-Subject: Re: [PATCH 8/8] powerpc/topology: Fix spurr attribute permission
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Date: Mon, 06 May 2013 18:02:59 +1000
-In-Reply-To: <1367823055.15842.23.camel@pasglop>
-References: <1367823055.15842.23.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4A4A82C00E7
+ for <linuxppc-dev@ozlabs.org>; Mon,  6 May 2013 19:07:14 +1000 (EST)
+Received: from /spool/local
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Mon, 6 May 2013 14:30:38 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 516D91258023
+ for <linuxppc-dev@ozlabs.org>; Mon,  6 May 2013 14:38:53 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r469701I66977900
+ for <linuxppc-dev@ozlabs.org>; Mon, 6 May 2013 14:37:00 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r46976JO005230
+ for <linuxppc-dev@ozlabs.org>; Mon, 6 May 2013 19:07:07 +1000
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc,
+ perf: Fix processing conditions for invalid BHRB entries
+Date: Mon,  6 May 2013 14:36:46 +0530
+Message-Id: <1367831206-16331-1-git-send-email-khandual@linux.vnet.ibm.com>
+Cc: mikey@neuling.org, khandual@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,38 +36,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-05-06 at 16:50 +1000, Benjamin Herrenschmidt wrote:
-> We are registering the attribute with permission 0600 but it
-> doesn't have a store callback, which causes WARN_ON's during
-> boot. Fix the permission.
+Fixing some conditions during BHRB entry processing.
 
-Ignore the 8/8 in the subject, that's just me not cleaning
-things up properly :-)
+Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+---
+ arch/powerpc/perf/core-book3s.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-Cheers,
-Ben.
-
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
->  arch/powerpc/kernel/sysfs.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
-> index 3ce1f86..e68a845 100644
-> --- a/arch/powerpc/kernel/sysfs.c
-> +++ b/arch/powerpc/kernel/sysfs.c
-> @@ -180,7 +180,7 @@ SYSFS_PMCSETUP(dscr, SPRN_DSCR);
->  SYSFS_PMCSETUP(pir, SPRN_PIR);
->  
->  static DEVICE_ATTR(mmcra, 0600, show_mmcra, store_mmcra);
-> -static DEVICE_ATTR(spurr, 0600, show_spurr, NULL);
-> +static DEVICE_ATTR(spurr, 0400, show_spurr, NULL);
->  static DEVICE_ATTR(dscr, 0600, show_dscr, store_dscr);
->  static DEVICE_ATTR(purr, 0600, show_purr, store_purr);
->  static DEVICE_ATTR(pir, 0400, show_pir, NULL);
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index 09db68d..1de2756 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -1481,25 +1481,25 @@ void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
+ 			target = val & BHRB_TARGET;
+ 
+ 			/* Probable Missed entry: Not applicable for POWER8 */
+-			if ((addr == 0) && (target == 0) && (pred == 1)) {
++			if ((addr == 0) && (!target) && pred) {
+ 				r_index++;
+ 				continue;
+ 			}
+ 
+ 			/* Real Missed entry: Power8 based missed entry */
+-			if ((addr == 0) && (target == 1) && (pred == 1)) {
++			if ((addr == 0) && target && pred) {
+ 				r_index++;
+ 				continue;
+ 			}
+ 
+ 			/* Reserved condition: Not a valid entry  */
+-			if ((addr == 0) && (target == 1) && (pred == 0)) {
++			if ((addr == 0) && target && (!pred)) {
+ 				r_index++;
+ 				continue;
+ 			}
+ 
+ 			/* Is a target address */
+-			if (val & BHRB_TARGET) {
++			if (target) {
+ 				/* First address cannot be a target address */
+ 				if (r_index == 0) {
+ 					r_index++;
+-- 
+1.7.11.7
