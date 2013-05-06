@@ -1,35 +1,28 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e34.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2B70A2C00EC
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 May 2013 23:49:14 +1000 (EST)
-Received: from /spool/local
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Mon, 6 May 2013 07:49:10 -0600
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
- [9.17.195.106])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 2AB4019D8041
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 May 2013 07:44:35 -0600 (MDT)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r46DiUqa339384
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 May 2013 07:44:30 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r46DiOCu011365
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 May 2013 07:44:26 -0600
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org
-Subject: [PATCH 2/3] powerpc/powernv: Disable IO space for PCI buses
-Date: Mon,  6 May 2013 21:44:17 +0800
-Message-Id: <1367847858-6506-2-git-send-email-shangw@linux.vnet.ibm.com>
-In-Reply-To: <1367847858-6506-1-git-send-email-shangw@linux.vnet.ibm.com>
-References: <1367847858-6506-1-git-send-email-shangw@linux.vnet.ibm.com>
-Cc: bhelgaas@google.com, yinghai@kernel.org,
- Gavin Shan <shangw@linux.vnet.ibm.com>
+Return-Path: <alexdeucher@gmail.com>
+Received: from mail-ve0-x22e.google.com (mail-ve0-x22e.google.com
+ [IPv6:2607:f8b0:400c:c01::22e])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BA0132C01C0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2013 00:32:36 +1000 (EST)
+Received: by mail-ve0-f174.google.com with SMTP id pb11so3194874veb.19
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 May 2013 07:32:33 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1367622108.4389.129.camel@pasglop>
+References: <1367620993-27037-1-git-send-email-klebers@linux.vnet.ibm.com>
+ <1367622108.4389.129.camel@pasglop>
+Date: Mon, 6 May 2013 10:32:32 -0400
+Message-ID: <CADnq5_M9n0q4CucEhNqrJBjHsTh19ASsYr=nsUAJA_-mRr8qvQ@mail.gmail.com>
+Subject: Re: [PATCHv5 0/2] Speed Cap fixes for ppc64
+From: Alex Deucher <alexdeucher@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: dri-devel@lists.freedesktop.org,
+ Kleber Sacilotto de Souza <klebers@linux.vnet.ibm.com>,
+ Bjorn Helgaas <bhelgaas@google.com>, Jerome Glisse <jglisse@redhat.com>,
+ Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
+ Brian King <brking@linux.vnet.ibm.com>,
+ Alex Deucher <alexander.deucher@amd.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,104 +32,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch intends to set the special flag (PCI_BUS_FLAGS_NO_IO) for
-root buses so PCI core will skip assignment for IO stuff. Besides,
-we also clear the IO resources on all PCI devices for PHB3.
+On Fri, May 3, 2013 at 7:01 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Fri, 2013-05-03 at 19:43 -0300, Kleber Sacilotto de Souza wrote:
+>
+>> This patch series does:
+>>   1. max_bus_speed is used to set the device to gen2 speeds
+>>   2. on power there's no longer a conflict between the pseries call and other
+>> architectures, because the overwrite is done via a ppc_md hook
+>>   3. radeon is using bus->max_bus_speed instead of drm_pcie_get_speed_cap_mask
+>> for gen2 capability detection
+>>
+>> The first patch consists of some architecture changes, such as adding a hook on
+>> powerpc for pci_root_bridge_prepare, so that pseries will initialize it to a
+>> function, while all other architectures get a NULL pointer. So that whenever
+>> pci_create_root_bus is called, we'll get max_bus_speed properly setup from
+>> OpenFirmware.
+>>
+>> The second patch consists of simple radeon changes not to call
+>> drm_get_pcie_speed_cap_mask anymore. I assume that on x86 machines,
+>> the max_bus_speed property will be properly set already.
+>
+> So I'm ok with the approach now and I might even put the powerpc patch
+> in for 3.10 since arguably we are fixing a nasty bug (uninitialized
+> max_bus_speed).
+>
+> David, what's your feeling about the radeon change ? It would be nice if
+> that could go in soon for various distro targets :-) On the other hand
+> I'm not going to be pushy if you are not comfortable with it.
 
-Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/machdep.h        |    3 ++
- arch/powerpc/kernel/pci-common.c          |    7 +++++
- arch/powerpc/platforms/powernv/pci-ioda.c |   38 +++++++++++++++++++++++++++++
- 3 files changed, 48 insertions(+), 0 deletions(-)
+FWIW, the radeon change looks fine to me.
 
-diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index 3f3f691..ebc2ffd 100644
---- a/arch/powerpc/include/asm/machdep.h
-+++ b/arch/powerpc/include/asm/machdep.h
-@@ -220,6 +220,9 @@ struct machdep_calls {
- 	/* Called during PCI resource reassignment */
- 	resource_size_t (*pcibios_window_alignment)(struct pci_bus *, unsigned long type);
- 
-+	/* Called when adding PCI bus */
-+	void (*pcibios_add_bus)(struct pci_bus *);
-+
- 	/* Called to shutdown machine specific hardware not already controlled
- 	 * by other drivers.
- 	 */
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index f325dc9..7b8a6f1 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -120,6 +120,13 @@ resource_size_t pcibios_window_alignment(struct pci_bus *bus,
- 	return 1;
- }
- 
-+/* The function will be called while adding PCI bus to system */
-+void pcibios_add_bus(struct pci_bus *bus)
-+{
-+	if (ppc_md.pcibios_add_bus)
-+		ppc_md.pcibios_add_bus(bus);
-+}
-+
- static resource_size_t pcibios_io_size(const struct pci_controller *hose)
- {
- #ifdef CONFIG_PPC64
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 8c6c9cf..0c3fa29 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1015,6 +1015,40 @@ static resource_size_t pnv_pci_window_alignment(struct pci_bus *bus,
- 	return phb->ioda.io_segsize;
- }
- 
-+/*
-+ * The function will be called while adding PCI bus to the
-+ * system. In turn, we should set flag to indicate that the
-+ * root bus doesn't have IO resources.
-+ */
-+static void pnv_pci_add_bus(struct pci_bus *bus)
-+{
-+	struct pci_controller *hose = pci_bus_to_host(bus);
-+	struct pnv_phb *phb = hose->private_data;
-+
-+	/*
-+	 * We only need set the flag for root bus since the
-+	 * bus flags are copied over from parent to children
-+	 */
-+	if (pci_is_root_bus(bus) &&
-+	    phb->model == PNV_PHB_MODEL_PHB3)
-+		bus->bus_flags |= PCI_BUS_FLAGS_NO_IO;
-+}
-+
-+static void pnv_pci_fixup_resources(struct pci_dev *dev)
-+{
-+	int i;
-+	struct resource *res;
-+
-+	if (!(dev->bus->bus_flags & PCI_BUS_FLAGS_NO_IO))
-+		return;
-+
-+	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
-+		res = dev->resource + i;
-+		if (res->flags & IORESOURCE_IO)
-+			res->flags = 0;
-+	}
-+}
-+
- /* Prevent enabling devices for which we couldn't properly
-  * assign a PE
-  */
-@@ -1189,6 +1223,10 @@ void __init pnv_pci_init_ioda_phb(struct device_node *np, int ioda_type)
- 	ppc_md.pcibios_fixup = pnv_pci_ioda_fixup;
- 	ppc_md.pcibios_enable_device_hook = pnv_pci_enable_device_hook;
- 	ppc_md.pcibios_window_alignment = pnv_pci_window_alignment;
-+	if (ioda_type == PNV_PHB_IODA2) {
-+		ppc_md.pcibios_add_bus = pnv_pci_add_bus;
-+		ppc_md.pcibios_fixup_resources = pnv_pci_fixup_resources;
-+	}
- 	pci_add_flags(PCI_REASSIGN_ALL_RSRC);
- 
- 	/* Reset IODA tables to a clean state */
--- 
-1.7.5.4
+Alex
