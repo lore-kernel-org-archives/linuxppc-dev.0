@@ -1,12 +1,15 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: benh@kernel.crashing.org
-MIME-Version: 1.0
-Subject: [PATCH] powerpc: Fix single step emulation of 32bit overflowed
- branches
-Date: Mon, 06 May 2013 21:32:40 +1000
-Message-ID: <25892.1367839960@ale.ozlabs.ibm.com>
-Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <michael@ellerman.id.au>
+Message-ID: <1367844836.26741.1.camel@concordia>
+Subject: Re: [PATCH] powerpc, perf: Clear out branch entries to avoid any
+ previous stale values
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Date: Mon, 06 May 2013 22:53:56 +1000
+In-Reply-To: <1367827480-5375-1-git-send-email-khandual@linux.vnet.ibm.com>
+References: <1367827480-5375-1-git-send-email-khandual@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,20 +19,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Check truncate_if_32bit() on final write to nip.
+On Mon, 2013-05-06 at 13:34 +0530, Anshuman Khandual wrote:
+> The 'to' field inside branch entries might contain stale values from previous
+> PMU interrupt instances which had indirect branches. So clear all the values
+> before reading a fresh set of BHRB entries after a PMU interrupt.
+> 
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/perf/core-book3s.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+> index c627843..09db68d 100644
+> --- a/arch/powerpc/perf/core-book3s.c
+> +++ b/arch/powerpc/perf/core-book3s.c
+> @@ -1590,6 +1590,8 @@ static void record_and_restart(struct perf_event *event, unsigned long val,
+>  		if (event->attr.sample_type & PERF_SAMPLE_BRANCH_STACK) {
+>  			struct cpu_hw_events *cpuhw;
+>  			cpuhw = &__get_cpu_var(cpu_hw_events);
+> +			memset(cpuhw->bhrb_entries, 0,
+> +				sizeof(struct perf_branch_entry) * BHRB_MAX_ENTRIES);
+>  			power_pmu_bhrb_read(cpuhw);
+>  			data.br_stack = &cpuhw->bhrb_stack;
+>  		}
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
+Wouldn't it be just as effective, and less overhead, to set .to = 0; in
+the else branch in power_pmu_bhrb_read() ?
 
-diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-index e15c521..99c7fc1 100644
---- a/arch/powerpc/lib/sstep.c
-+++ b/arch/powerpc/lib/sstep.c
-@@ -580,7 +580,7 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
- 		if (instr & 1)
- 			regs->link = regs->nip;
- 		if (branch_taken(instr, regs))
--			regs->nip = imm;
-+			regs->nip = truncate_if_32bit(regs->msr, imm);
- 		return 1;
- #ifdef CONFIG_PPC64
- 	case 17:	/* sc */
+eg:
+
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index c627843..30af11a4 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -1516,6 +1516,7 @@ void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
+                        } else {
+                                /* Update address, flags for current entry */
+                                cpuhw->bhrb_entries[u_index].from = addr;
++                               cpuhw->bhrb_entries[u_index].to = 0;
+                                cpuhw->bhrb_entries[u_index].mispred = pred;
+                                cpuhw->bhrb_entries[u_index].predicted = ~pred;
+ 
+
+cheers
