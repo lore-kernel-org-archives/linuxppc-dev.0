@@ -1,23 +1,21 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from mail-pb0-x230.google.com (mail-pb0-x230.google.com
- [IPv6:2607:f8b0:400e:c01::230])
+Received: from mail-yh0-x230.google.com (mail-yh0-x230.google.com
+ [IPv6:2607:f8b0:4002:c01::230])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2452B2C013F
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 May 2013 17:22:52 +1000 (EST)
-Received: by mail-pb0-f48.google.com with SMTP id ma3so1840184pbc.35
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 May 2013 00:22:50 -0700 (PDT)
-From: aik@ozlabs.ru
+ by ozlabs.org (Postfix) with ESMTPS id E56712C0208
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 May 2013 17:26:10 +1000 (EST)
+Received: by mail-yh0-f48.google.com with SMTP id f35so672106yha.21
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 May 2013 00:26:07 -0700 (PDT)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 5/5] powerpc/vfio: Enable on pSeries platform
-Date: Mon,  6 May 2013 17:22:01 +1000
-Message-Id: <51875a49.25ac440a.50d9.ffffe93e@mx.google.com>
-In-Reply-To: <1367824921-27151-1-git-send-email-y>
-References: <1367824921-27151-1-git-send-email-y>
+Subject: [PATCH 0/6] KVM: PPC: IOMMU in-kernel handling
+Date: Mon,  6 May 2013 17:25:51 +1000
+Message-Id: <1367825157-27231-1-git-send-email-aik@ozlabs.ru>
 Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
  Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
- linux-kernel@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, linux-pci@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, Joerg Roedel <joerg.roedel@amd.com>,
  David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,81 +26,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
+This series is supposed to accelerate IOMMU operations in real and virtual
+mode in the host kernel for the KVM guest.
 
-The enables VFIO on the pSeries platform, enabling user space
-programs to access PCI devices directly.
+The first user is VFIO however this series does not contain any VFIO related
+code as the connection between VFIO and the new handlers is to be made in QEMU
+via ioctl to the KVM fd.
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: David Gibson <david@gibson.dropbear.id.au>
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
- arch/powerpc/platforms/pseries/iommu.c |    4 ++++
- drivers/iommu/Kconfig                  |    2 +-
- drivers/vfio/Kconfig                   |    2 +-
- 3 files changed, 6 insertions(+), 2 deletions(-)
+Although the series compiles, it does not make sense without VFIO patches which
+are posted separately.
 
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index e2685ba..e178acc 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -613,6 +613,7 @@ static void pci_dma_bus_setup_pSeries(struct pci_bus *bus)
- 
- 	iommu_table_setparms(pci->phb, dn, tbl);
- 	pci->iommu_table = iommu_init_table(tbl, pci->phb->node);
-+	iommu_register_group(tbl, pci_domain_nr(bus), 0);
- 
- 	/* Divide the rest (1.75GB) among the children */
- 	pci->phb->dma_window_size = 0x80000000ul;
-@@ -657,6 +658,7 @@ static void pci_dma_bus_setup_pSeriesLP(struct pci_bus *bus)
- 				   ppci->phb->node);
- 		iommu_table_setparms_lpar(ppci->phb, pdn, tbl, dma_window);
- 		ppci->iommu_table = iommu_init_table(tbl, ppci->phb->node);
-+		iommu_register_group(tbl, pci_domain_nr(bus), 0);
- 		pr_debug("  created table: %p\n", ppci->iommu_table);
- 	}
- }
-@@ -683,6 +685,7 @@ static void pci_dma_dev_setup_pSeries(struct pci_dev *dev)
- 				   phb->node);
- 		iommu_table_setparms(phb, dn, tbl);
- 		PCI_DN(dn)->iommu_table = iommu_init_table(tbl, phb->node);
-+		iommu_register_group(tbl, pci_domain_nr(phb->bus), 0);
- 		set_iommu_table_base(&dev->dev, PCI_DN(dn)->iommu_table);
- 		return;
- 	}
-@@ -1145,6 +1148,7 @@ static void pci_dma_dev_setup_pSeriesLP(struct pci_dev *dev)
- 				   pci->phb->node);
- 		iommu_table_setparms_lpar(pci->phb, pdn, tbl, dma_window);
- 		pci->iommu_table = iommu_init_table(tbl, pci->phb->node);
-+		iommu_register_group(tbl, pci_domain_nr(pci->phb->bus), 0);
- 		pr_debug("  created table: %p\n", pci->iommu_table);
- 	} else {
- 		pr_debug("  found DMA window, table: %p\n", pci->iommu_table);
-diff --git a/drivers/iommu/Kconfig b/drivers/iommu/Kconfig
-index 175e0f4..2d75ea0 100644
---- a/drivers/iommu/Kconfig
-+++ b/drivers/iommu/Kconfig
-@@ -189,7 +189,7 @@ config EXYNOS_IOMMU_DEBUG
- 
- config SPAPR_TCE_IOMMU
- 	bool "sPAPR TCE IOMMU Support"
--	depends on PPC_POWERNV
-+	depends on PPC_POWERNV || PPC_PSERIES
- 	select IOMMU_API
- 	help
- 	  Enables bits of IOMMU API required by VFIO. The iommu_ops
-diff --git a/drivers/vfio/Kconfig b/drivers/vfio/Kconfig
-index b464687..26b3d9d 100644
---- a/drivers/vfio/Kconfig
-+++ b/drivers/vfio/Kconfig
-@@ -12,7 +12,7 @@ menuconfig VFIO
- 	tristate "VFIO Non-Privileged userspace driver framework"
- 	depends on IOMMU_API
- 	select VFIO_IOMMU_TYPE1 if X86
--	select VFIO_IOMMU_SPAPR_TCE if PPC_POWERNV
-+	select VFIO_IOMMU_SPAPR_TCE if (PPC_POWERNV || PPC_PSERIES)
- 	help
- 	  VFIO provides a framework for secure userspace device drivers.
- 	  See Documentation/vfio.txt for more details.
+The "iommu: Add a function to find an iommu group by id" patch has already
+gone to linux-next (from iommu tree) but it is not in upstream yet so
+I am including it here for the reference.
+
+
+Alexey Kardashevskiy (6):
+  KVM: PPC: Make lookup_linux_pte public
+  KVM: PPC: Add support for multiple-TCE hcalls
+  powerpc: Prepare to support kernel handling of IOMMU map/unmap
+  iommu: Add a function to find an iommu group by id
+  KVM: PPC: Add support for IOMMU in-kernel handling
+  KVM: PPC: Add hugepage support for IOMMU in-kernel handling
+
+ Documentation/virtual/kvm/api.txt        |   43 +++
+ arch/powerpc/include/asm/kvm_host.h      |    4 +
+ arch/powerpc/include/asm/kvm_ppc.h       |   44 ++-
+ arch/powerpc/include/asm/pgtable-ppc64.h |    4 +
+ arch/powerpc/include/uapi/asm/kvm.h      |    7 +
+ arch/powerpc/kvm/book3s_64_vio.c         |  433 +++++++++++++++++++++++++++-
+ arch/powerpc/kvm/book3s_64_vio_hv.c      |  464 ++++++++++++++++++++++++++++--
+ arch/powerpc/kvm/book3s_hv.c             |   23 ++
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c      |    5 +-
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S  |    6 +
+ arch/powerpc/kvm/book3s_pr_papr.c        |   37 ++-
+ arch/powerpc/kvm/powerpc.c               |   15 +
+ arch/powerpc/mm/init_64.c                |   77 ++++-
+ drivers/iommu/iommu.c                    |   29 ++
+ include/linux/iommu.h                    |    1 +
+ include/uapi/linux/kvm.h                 |    3 +
+ 16 files changed, 1159 insertions(+), 36 deletions(-)
+
 -- 
 1.7.10.4
