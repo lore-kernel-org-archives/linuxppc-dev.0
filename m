@@ -1,30 +1,31 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7BE422C00F5
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 May 2013 23:44:41 +1000 (EST)
+ (Client CN "e34.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2B70A2C00EC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 May 2013 23:49:14 +1000 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Mon, 6 May 2013 09:44:38 -0400
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 4C96DC90028
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 May 2013 09:44:35 -0400 (EDT)
+ Mon, 6 May 2013 07:49:10 -0600
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+ [9.17.195.106])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 2AB4019D8041
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 May 2013 07:44:35 -0600 (MDT)
 Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r46DiZZb290254
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 May 2013 09:44:35 -0400
+ by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r46DiUqa339384
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 May 2013 07:44:30 -0600
 Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
  by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r46DiWvV012346
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 May 2013 07:44:34 -0600
+ r46DiOCu011365
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 May 2013 07:44:26 -0600
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org
-Subject: [PATCH 3/3] powerpc/powernv: Don't configure IO window on PHB3
-Date: Mon,  6 May 2013 21:44:18 +0800
-Message-Id: <1367847858-6506-3-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 2/3] powerpc/powernv: Disable IO space for PCI buses
+Date: Mon,  6 May 2013 21:44:17 +0800
+Message-Id: <1367847858-6506-2-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1367847858-6506-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1367847858-6506-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: bhelgaas@google.com, yinghai@kernel.org,
@@ -38,28 +39,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We needn't configure IO windows for the corresponding PEs on PHB3
-since that doesn't support IO.
+The patch intends to set the special flag (PCI_BUS_FLAGS_NO_IO) for
+root buses so PCI core will skip assignment for IO stuff. Besides,
+we also clear the IO resources on all PCI devices for PHB3.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+ arch/powerpc/include/asm/machdep.h        |    3 ++
+ arch/powerpc/kernel/pci-common.c          |    7 +++++
+ arch/powerpc/platforms/powernv/pci-ioda.c |   38 +++++++++++++++++++++++++++++
+ 3 files changed, 48 insertions(+), 0 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+index 3f3f691..ebc2ffd 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -220,6 +220,9 @@ struct machdep_calls {
+ 	/* Called during PCI resource reassignment */
+ 	resource_size_t (*pcibios_window_alignment)(struct pci_bus *, unsigned long type);
+ 
++	/* Called when adding PCI bus */
++	void (*pcibios_add_bus)(struct pci_bus *);
++
+ 	/* Called to shutdown machine specific hardware not already controlled
+ 	 * by other drivers.
+ 	 */
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index f325dc9..7b8a6f1 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -120,6 +120,13 @@ resource_size_t pcibios_window_alignment(struct pci_bus *bus,
+ 	return 1;
+ }
+ 
++/* The function will be called while adding PCI bus to system */
++void pcibios_add_bus(struct pci_bus *bus)
++{
++	if (ppc_md.pcibios_add_bus)
++		ppc_md.pcibios_add_bus(bus);
++}
++
+ static resource_size_t pcibios_io_size(const struct pci_controller *hose)
+ {
+ #ifdef CONFIG_PPC64
 diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 0c3fa29..b4f3edb 100644
+index 8c6c9cf..0c3fa29 100644
 --- a/arch/powerpc/platforms/powernv/pci-ioda.c
 +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -894,7 +894,9 @@ static void pnv_ioda_setup_pe_seg(struct pci_controller *hose,
- 		    res->start > res->end)
- 			continue;
+@@ -1015,6 +1015,40 @@ static resource_size_t pnv_pci_window_alignment(struct pci_bus *bus,
+ 	return phb->ioda.io_segsize;
+ }
  
--		if (res->flags & IORESOURCE_IO) {
-+		/* We needn't setup IO windows for PHB3 */
-+		if (!(pe->pbus->bus_flags & PCI_BUS_FLAGS_NO_IO) &&
-+		    res->flags & IORESOURCE_IO) {
- 			region.start = res->start - phb->ioda.io_pci_base;
- 			region.end   = res->end - phb->ioda.io_pci_base;
- 			index = region.start / phb->ioda.io_segsize;
++/*
++ * The function will be called while adding PCI bus to the
++ * system. In turn, we should set flag to indicate that the
++ * root bus doesn't have IO resources.
++ */
++static void pnv_pci_add_bus(struct pci_bus *bus)
++{
++	struct pci_controller *hose = pci_bus_to_host(bus);
++	struct pnv_phb *phb = hose->private_data;
++
++	/*
++	 * We only need set the flag for root bus since the
++	 * bus flags are copied over from parent to children
++	 */
++	if (pci_is_root_bus(bus) &&
++	    phb->model == PNV_PHB_MODEL_PHB3)
++		bus->bus_flags |= PCI_BUS_FLAGS_NO_IO;
++}
++
++static void pnv_pci_fixup_resources(struct pci_dev *dev)
++{
++	int i;
++	struct resource *res;
++
++	if (!(dev->bus->bus_flags & PCI_BUS_FLAGS_NO_IO))
++		return;
++
++	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
++		res = dev->resource + i;
++		if (res->flags & IORESOURCE_IO)
++			res->flags = 0;
++	}
++}
++
+ /* Prevent enabling devices for which we couldn't properly
+  * assign a PE
+  */
+@@ -1189,6 +1223,10 @@ void __init pnv_pci_init_ioda_phb(struct device_node *np, int ioda_type)
+ 	ppc_md.pcibios_fixup = pnv_pci_ioda_fixup;
+ 	ppc_md.pcibios_enable_device_hook = pnv_pci_enable_device_hook;
+ 	ppc_md.pcibios_window_alignment = pnv_pci_window_alignment;
++	if (ioda_type == PNV_PHB_IODA2) {
++		ppc_md.pcibios_add_bus = pnv_pci_add_bus;
++		ppc_md.pcibios_fixup_resources = pnv_pci_fixup_resources;
++	}
+ 	pci_add_flags(PCI_REASSIGN_ALL_RSRC);
+ 
+ 	/* Reset IODA tables to a clean state */
 -- 
 1.7.5.4
