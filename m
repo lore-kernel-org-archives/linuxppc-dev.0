@@ -1,22 +1,24 @@
 Return-Path: <B07421@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8E8D82C011D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2013 09:51:17 +1000 (EST)
-Date: Mon, 6 May 2013 18:50:57 -0500
+ by ozlabs.org (Postfix) with ESMTPS id D5AA22C0113
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2013 09:53:47 +1000 (EST)
+Date: Mon, 6 May 2013 18:53:38 -0500
 From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [RFC][KVM][PATCH 1/1] kvm:ppc:booke-64: soft-disable interrupts
-To: tiejun.chen <tiejun.chen@windriver.com>
-In-Reply-To: <51871FCD.9070900@windriver.com> (from
- tiejun.chen@windriver.com on Sun May  5 22:13:17 2013)
-Message-ID: <1367884257.3398.9@snotra>
+Subject: Re: [PATCH] kvm/ppc/booke64: Hard disable interrupts when entering
+ the guest
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1367787788.11982.58.camel@pasglop> (from
+ benh@kernel.crashing.org on Sun May  5 16:03:08 2013)
+Message-ID: <1367884418.3398.10@snotra>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: linuxppc-dev@lists.ozlabs.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
+Cc: kvm@vger.kernel.org, Alexander Graf <agraf@suse.de>,
+ kvm-ppc@vger.kernel.org, Mihai Caraman <mihai.caraman@freescale.com>,
+ Paul Mackerras <paulus@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,54 +28,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/05/2013 10:13:17 PM, tiejun.chen wrote:
-> On 05/06/2013 11:10 AM, Tiejun Chen wrote:
->> For the external interrupt, the decrementer exception and the =20
->> doorbell
->> excpetion, we also need to soft-disable interrupts while doing as =20
->> host
->> interrupt handlers since the DO_KVM hook is always performed to skip
->> EXCEPTION_COMMON then miss this original chance with the 'ints' =20
->> (INTS_DISABLE).
+On 05/05/2013 04:03:08 PM, Benjamin Herrenschmidt wrote:
+> On Fri, 2013-05-03 at 18:45 -0500, Scott Wood wrote:
+> > kvmppc_lazy_ee_enable() was causing interrupts to be soft-enabled
+> > (albeit hard-disabled) in kvmppc_restart_interrupt().  This led to
+> > warnings, and possibly breakage if the interrupt state was later =20
+> saved
+> > and then restored (leading to interrupts being hard-and-soft enabled
+> > when they should be at least soft-disabled).
+> >
+> > Simply removing kvmppc_lazy_ee_enable() leaves interrupts only
+> > soft-disabled when we enter the guest, but they will be =20
+> hard-disabled
+> > when we exit the guest -- without PACA_IRQ_HARD_DIS ever being set, =20
+> so
+> > the local_irq_enable() fails to hard-enable.
+> >
+> > While we could just set PACA_IRQ_HARD_DIS after an exit to =20
+> compensate,
+> > instead hard-disable interrupts before entering the guest.  This =20
+> way,
+> > we won't have to worry about interactions if we take an interrupt
+> > during the guest entry code.  While I don't see any obvious
+> > interactions, it could change in the future (e.g. it would be bad if
+> > the non-hv code were used on 64-bit or if 32-bit guest lazy =20
+> interrupt
+> > disabling, since the non-hv code changes IVPR among other things).
+>=20
+> Shouldn't the interrupts be marked soft-enabled (even if hard =20
+> disabled)
+> when entering the guest ?
+>=20
+> Ie. The last stage of entry will hard enable, so they should be
+> soft-enabled too... if not, latency trackers will consider the whole
+> guest periods as "interrupt disabled"...
 
-http://patchwork.ozlabs.org/patch/241344/
-http://patchwork.ozlabs.org/patch/241412/
+OK... I guess we already have that problem on 32-bit as well?
 
-:-)
+> Now, kvmppc_lazy_ee_enable() seems to be clearly bogus to me. It will
+> unconditionally set soft_enabled and clear irq_happened from a
+> soft-disabled state, thus potentially losing a pending event.
+>=20
+> Book3S "HV" seems to be keeping interrupts fully enabled all the way
+> until the asm hard disables, which would be fine except that I'm =20
+> worried
+> we are racy vs. need_resched & signals.
+>=20
+> One thing you may be able to do is call prep_irq_for_idle(). This will
+> tell you if something happened, giving you a chance to abort/re-enable
+> before you go the guest.
 
->> Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
->> ---
->>   arch/powerpc/kvm/bookehv_interrupts.S |    9 +++++++++
->>   1 file changed, 9 insertions(+)
->>=20
->> diff --git a/arch/powerpc/kvm/bookehv_interrupts.S =20
->> b/arch/powerpc/kvm/bookehv_interrupts.S
->> index e8ed7d6..2fd62bf 100644
->> --- a/arch/powerpc/kvm/bookehv_interrupts.S
->> +++ b/arch/powerpc/kvm/bookehv_interrupts.S
->> @@ -33,6 +33,8 @@
->>=20
->>   #ifdef CONFIG_64BIT
->>   #include <asm/exception-64e.h>
->> +#include <asm/hw_irq.h>
->> +#include <asm/irqflags.h>
->>   #else
->>   #include "../kernel/head_booke.h" /* for THREAD_NORMSAVE() */
->>   #endif
->> @@ -469,6 +471,13 @@ _GLOBAL(kvmppc_resume_host)
->>   	PPC_LL	r3, HOST_RUN(r1)
->>   	mr	r5, r14 /* intno */
->>   	mr	r14, r4 /* Save vcpu pointer. */
->> +#ifdef CONFIG_64BIT
->> +	/* Should we soft-disable interrupts? */
->> +	andi.	r6, r5, BOOKE_INTERRUPT_EXTERNAL | =20
->> BOOKE_INTERRUPT_DECREMENTER | BOOKE_INTERRUPT_DOORBELL
->> +	beq	skip_soft_dis
->> +	SOFT_DISABLE_INTS(r7,r8)
->> +skip_soft_dis:
->> +#endif
+As long as we go straight from IRQs fully enabled to hard-disabled, =20
+before we check for signals and such, I don't think we need that (and =20
+using it would raise the question of what to do on 32-bit).
 
-Why wouldn't we always disable them?  kvmppc_handle_exit() will enable =20
-interrupts when it's ready.
+What if we just take this patch, and add trace_hardirqs_on() just =20
+before entering the guest?  This would be similar to what the 32-bit =20
+non-KVM exception return code does (except it would be in C code).  =20
+Perhaps we could set soft_enabled as well, but then we'd have to clear =20
+it again before calling kvmppc_restart_interrupt() -- since the KVM =20
+exception handlers don't actually care about soft_enabled (it would =20
+just be for consistency), I'd rather just leave soft_enabled off.
+
+We also don't want PACA_IRQ_HARD_DIS to be cleared the way =20
+prep_irq_for_idle() does, because that's what lets the =20
+local_irq_enable() do the hard-enabling after we exit the guest.
 
 -Scott=
