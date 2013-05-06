@@ -1,42 +1,32 @@
-Return-Path: <ryanarn@us.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e38.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2AC702C00AE
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2013 05:15:10 +1000 (EST)
+ (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1F6672C0110
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2013 06:51:12 +1000 (EST)
 Received: from /spool/local
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ryanarn@us.ibm.com>;
- Mon, 6 May 2013 13:15:09 -0600
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
- [9.17.195.227])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 062FE19D8052
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 May 2013 13:14:57 -0600 (MDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r46JEkh3085932
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 May 2013 13:14:52 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r46JEkBR003470
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 May 2013 13:14:46 -0600
-In-Reply-To: <20130504004756.GA3532@linux.vnet.ibm.com>
-References: <20130503231933.GA29436@linux.vnet.ibm.com>
- <2889.1367625894@ale.ozlabs.ibm.com>
- <20130504004756.GA3532@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 1/4] powerpc/cputable: reserve bits in HWCAP2 for new
- features
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Message-ID: <OFA8304853.25190807-ON86257B63.0067EDA3-86257B63.00690C34@us.ibm.com>
-From: Ryan Arnold <ryanarn@us.ibm.com>
-Date: Mon, 6 May 2013 14:07:23 -0500
-MIME-Version: 1.0
-Content-type: multipart/alternative;
- Boundary="0__=09BBF1F0DFF46B338f9e8a93df938690918c09BBF1F0DFF46B33"
-Cc: Michael Neuling <mikey@neuling.org>,
- Michael R Meissner <mrmeissn@us.ibm.com>, Steve Munroe <sjmunroe@us.ibm.com>,
- Peter Bergner <bergner@us.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 7 May 2013 02:15:48 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id C5EF9E0057
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2013 02:23:23 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r46Koxi042139768
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 May 2013 02:20:59 +0530
+Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r46Kp5fh031137
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 May 2013 06:51:05 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: [PATCH] powerpc: Fix build errors STRICT_MM_TYPECHECKS
+Date: Tue,  7 May 2013 02:21:00 +0530
+Message-Id: <1367873460-12638-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,67 +36,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0__=09BBF1F0DFF46B338f9e8a93df938690918c09BBF1F0DFF46B33
-Content-type: text/plain; charset=US-ASCII
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-Hi Nish,
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/pte-hash64-64k.h | 2 +-
+ arch/powerpc/kernel/pci-common.c          | 5 ++---
+ arch/powerpc/mm/init_64.c                 | 3 ++-
+ 3 files changed, 5 insertions(+), 5 deletions(-)
 
-Nishanth Aravamudan <nacc@linux.vnet.ibm.com> wrote on 05/03/2013 07:47:56
-PM:
-> +/* in AT_HWCAP2 */
-> +#define PPC_FEATURE2_ARCH_2_07      0x80000000
-> +#define PPC_FEATURE2_HTM      0x40000000
-> +#define PPC_FEATURE2_DSCR      0x20000000
-> +#define PPC_FEATURE2_EBB      0x10000000
-> +#define PPC_FEATURE2_ISEL      0x08000000
-> +#define PPC_FEATURE2_TAR      0x04000000
-> +
->  #endif /* _UAPI__ASM_POWERPC_CPUTABLE_H */
-
-Following the existing naming convention in cputable.h, the features should
-probably be amended to the following:
-
-#define PPC_FEATURE2_ARCH_2_07      0x80000000
-#define PPC_FEATURE2_HAS_HTM        0x40000000
-#define PPC_FEATURE2_HAS_DSC        0x20000000
-#define PPC_FEATURE2_HAS_EBB        0x10000000
-#define PPC_FEATURE2_HAS_ISEL       0x08000000
-#define PPC_FEATURE2_HAS_TAR        0x04000000
-
-Notice that I changed DSCR to DSC.  The 'R' wasn't descriptive.
-
-Ryan S. Arnold
-IBM Linux Technology Center
---0__=09BBF1F0DFF46B338f9e8a93df938690918c09BBF1F0DFF46B33
-Content-type: text/html; charset=US-ASCII
-Content-Disposition: inline
-
-<html><body>
-<p><tt><font size="2">Hi Nish,</font></tt><br>
-<br>
-<tt><font size="2">Nishanth Aravamudan &lt;nacc@linux.vnet.ibm.com&gt; wrote on 05/03/2013 07:47:56 PM:<br>
-&gt; +/* in AT_HWCAP2 */<br>
-&gt; +#define PPC_FEATURE2_ARCH_2_07 &nbsp; &nbsp; &nbsp;0x80000000<br>
-&gt; +#define PPC_FEATURE2_HTM &nbsp; &nbsp; &nbsp;0x40000000<br>
-&gt; +#define PPC_FEATURE2_DSCR &nbsp; &nbsp; &nbsp;0x20000000<br>
-&gt; +#define PPC_FEATURE2_EBB &nbsp; &nbsp; &nbsp;0x10000000<br>
-&gt; +#define PPC_FEATURE2_ISEL &nbsp; &nbsp; &nbsp;0x08000000<br>
-&gt; +#define PPC_FEATURE2_TAR &nbsp; &nbsp; &nbsp;0x04000000<br>
-&gt; +<br>
-&gt; &nbsp;#endif /* _UAPI__ASM_POWERPC_CPUTABLE_H */</font></tt><br>
-<br>
-<tt><font size="2">Following the existing naming convention in cputable.h, the features should probably be amended to the following:</font></tt><br>
-<tt><font size="2"><br>
-#define PPC_FEATURE2_ARCH_2_07 &nbsp; &nbsp; &nbsp;0x80000000 </font></tt><br>
-<tt><font size="2">#define PPC_FEATURE2_HAS_HTM &nbsp; &nbsp; &nbsp; &nbsp;0x40000000</font></tt><br>
-<tt><font size="2">#define PPC_FEATURE2_HAS_DSC &nbsp; &nbsp; &nbsp; &nbsp;0x20000000</font></tt><br>
-<tt><font size="2">#define PPC_FEATURE2_HAS_EBB &nbsp; &nbsp; &nbsp; &nbsp;0x10000000</font></tt><br>
-<tt><font size="2">#define PPC_FEATURE2_HAS_ISEL &nbsp; &nbsp; &nbsp; 0x08000000</font></tt><br>
-<tt><font size="2">#define PPC_FEATURE2_HAS_TAR &nbsp; &nbsp; &nbsp; &nbsp;0x04000000</font></tt><br>
-<br>
-<tt><font size="2">Notice that I changed DSCR to DSC. &nbsp;The 'R' wasn't descriptive.</font></tt><br>
-<br>
-<tt><font size="2">Ryan S. Arnold</font></tt><br>
-<tt><font size="2">IBM Linux Technology Center</font></tt><br>
-</body></html>
---0__=09BBF1F0DFF46B338f9e8a93df938690918c09BBF1F0DFF46B33--
+diff --git a/arch/powerpc/include/asm/pte-hash64-64k.h b/arch/powerpc/include/asm/pte-hash64-64k.h
+index 7ad8ef1..98e27be 100644
+--- a/arch/powerpc/include/asm/pte-hash64-64k.h
++++ b/arch/powerpc/include/asm/pte-hash64-64k.h
+@@ -58,7 +58,7 @@
+  * generic accessors and iterators here
+  */
+ #define __real_pte(e,p) 	((real_pte_t) { \
+-			(e), ((e) & _PAGE_COMBO) ? \
++			(e), (pte_val(e) & _PAGE_COMBO) ? \
+ 				(pte_val(*((p) + PTRS_PER_PTE))) : 0 })
+ #define __rpte_to_hidx(r,index)	((pte_val((r).pte) & _PAGE_COMBO) ? \
+         (((r).hidx >> ((index)<<2)) & 0xf) : ((pte_val((r).pte) >> 12) & 0xf))
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index f325dc9..fd4b917 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -359,7 +359,6 @@ static pgprot_t __pci_mmap_set_pgprot(struct pci_dev *dev, struct resource *rp,
+ 				      enum pci_mmap_state mmap_state,
+ 				      int write_combine)
+ {
+-	unsigned long prot = pgprot_val(protection);
+ 
+ 	/* Write combine is always 0 on non-memory space mappings. On
+ 	 * memory space, if the user didn't pass 1, we check for a
+@@ -376,9 +375,9 @@ static pgprot_t __pci_mmap_set_pgprot(struct pci_dev *dev, struct resource *rp,
+ 
+ 	/* XXX would be nice to have a way to ask for write-through */
+ 	if (write_combine)
+-		return pgprot_noncached_wc(prot);
++		return pgprot_noncached_wc(protection);
+ 	else
+-		return pgprot_noncached(prot);
++		return pgprot_noncached(protection);
+ }
+ 
+ /*
+diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+index c9ec657..d0cd9e4 100644
+--- a/arch/powerpc/mm/init_64.c
++++ b/arch/powerpc/mm/init_64.c
+@@ -218,7 +218,8 @@ static void __meminit vmemmap_create_mapping(unsigned long start,
+ 					     unsigned long phys)
+ {
+ 	int  mapped = htab_bolt_mapping(start, start + page_size, phys,
+-					PAGE_KERNEL, mmu_vmemmap_psize,
++					pgprot_val(PAGE_KERNEL),
++					mmu_vmemmap_psize,
+ 					mmu_kernel_ssize);
+ 	BUG_ON(mapped < 0);
+ }
+-- 
+1.8.1.2
