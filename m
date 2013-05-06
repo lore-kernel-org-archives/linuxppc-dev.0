@@ -1,14 +1,21 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc,
- perf: Fix processing conditions for invalid BHRB entries
-In-reply-to: <5187A144.9080307@linux.vnet.ibm.com>
-References: <1367831206-16331-1-git-send-email-khandual@linux.vnet.ibm.com>
- <24261.1367838705@ale.ozlabs.ibm.com> <5187A144.9080307@linux.vnet.ibm.com>
-Date: Tue, 07 May 2013 07:22:51 +1000
-Message-ID: <26310.1367875371@ale.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id CD7192C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2013 07:33:20 +1000 (EST)
+Message-ID: <1367875982.15842.58.camel@pasglop>
+Subject: Re: [PATCH 2/3] powerpc/powernv: Disable IO space for PCI buses
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Date: Tue, 07 May 2013 07:33:02 +1000
+In-Reply-To: <1367847858-6506-2-git-send-email-shangw@linux.vnet.ibm.com>
+References: <1367847858-6506-1-git-send-email-shangw@linux.vnet.ibm.com>
+ <1367847858-6506-2-git-send-email-shangw@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: yinghai@kernel.org, linux-pci@vger.kernel.org, bhelgaas@google.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,118 +25,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote:
+On Mon, 2013-05-06 at 21:44 +0800, Gavin Shan wrote:
+> The patch intends to set the special flag (PCI_BUS_FLAGS_NO_IO) for
+> root buses so PCI core will skip assignment for IO stuff. Besides,
+> we also clear the IO resources on all PCI devices for PHB3.
 
-> On 05/06/2013 04:41 PM, Michael Neuling wrote:
-> > Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote:
-> > 
-> >> Fixing some conditions during BHRB entry processing.
-> > 
-> > I think we can simplify this a lot more... something like the below.
-> > 
-> 
-> I feel that the conditional handling of the invalid BHRB entries should be
-> present which would help us during the debug and also could be used for more
-> granular branch classification or error handling later on.
+Why the new hook ? Can't this be detected simply because there is
+no aperture in the pci_host_bridge with IORESOURCE_IO set in the flags ?
 
-If we need that, then we can add it later on.  You'd still need to
-modify the code to do any debug, branch classification or error handling
-as the code is now.  It's just an unnecessary place holder.  
+Ben.
 
-The code is unnecessarily verbose now.  This patch removes about 20
-lines of code and does the same thing.
-
-Mikey
-
+> Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/machdep.h        |    3 ++
+>  arch/powerpc/kernel/pci-common.c          |    7 +++++
+>  arch/powerpc/platforms/powernv/pci-ioda.c |   38 +++++++++++++++++++++++++++++
+>  3 files changed, 48 insertions(+), 0 deletions(-)
 > 
-> > Also, this marks the "to" address as all 1s, which is better poison
-> > value since it's possible to branch to/from 0x0.
-> >
-> 
-> Agreed.
-> 
-> 
-> > diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-> > index c627843..d410d65 100644
-> > --- a/arch/powerpc/perf/core-book3s.c
-> > +++ b/arch/powerpc/perf/core-book3s.c
-> > @@ -1463,65 +1463,45 @@ void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
-> >  {
-> >  	u64 val;
-> >  	u64 addr;
-> > -	int r_index, u_index, target, pred;
-> > +	int r_index, u_index, pred;
-> > 
-> >  	r_index = 0;
-> >  	u_index = 0;
-> >  	while (r_index < ppmu->bhrb_nr) {
-> >  		/* Assembly read function */
-> > -		val = read_bhrb(r_index);
-> > +		val = read_bhrb(r_index++);
-> > 
-> >  		/* Terminal marker: End of valid BHRB entries */
-> > -		if (val == 0) {
-> > +		if (!val) {
-> >  			break;
-> >  		} else {
-> >  			/* BHRB field break up */
-> >  			addr = val & BHRB_EA;
-> >  			pred = val & BHRB_PREDICTION;
-> > -			target = val & BHRB_TARGET;
-> > 
-> > -			/* Probable Missed entry: Not applicable for POWER8 */
-> > -			if ((addr == 0) && (target == 0) && (pred == 1)) {
-> > -				r_index++;
-> > +			if (!addr)
-> > +				/* invalid entry */
-> >  				continue;
-> > -			}
-> > -
-> > -			/* Real Missed entry: Power8 based missed entry */
-> > -			if ((addr == 0) && (target == 1) && (pred == 1)) {
-> > -				r_index++;
-> > -				continue;
-> > -			}
-> > 
-> > -			/* Reserved condition: Not a valid entry  */
-> > -			if ((addr == 0) && (target == 1) && (pred == 0)) {
-> > -				r_index++;
-> > -				continue;
-> > -			}
-> > -
-> > -			/* Is a target address */
-> >  			if (val & BHRB_TARGET) {
-> >  				/* First address cannot be a target address */
-> > -				if (r_index == 0) {
-> > -					r_index++;
-> > +				if (r_index == 0)
-> >  					continue;
-> > -				}
-> > 
-> >  				/* Update target address for the previous entry */
-> >  				cpuhw->bhrb_entries[u_index - 1].to = addr;
-> >  				cpuhw->bhrb_entries[u_index - 1].mispred = pred;
-> >  				cpuhw->bhrb_entries[u_index - 1].predicted = ~pred;
-> > -
-> > -				/* Dont increment u_index */
-> > -				r_index++;
-> >  			} else {
-> >  				/* Update address, flags for current entry */
-> >  				cpuhw->bhrb_entries[u_index].from = addr;
-> > +				cpuhw->bhrb_entries[u_index].to =
-> > +					0xffffffffffffffff;
-> >  				cpuhw->bhrb_entries[u_index].mispred = pred;
-> >  				cpuhw->bhrb_entries[u_index].predicted = ~pred;
-> > 
-> >  				/* Successfully popullated one entry */
-> >  				u_index++;
-> > -				r_index++;
-> >  			}
-> >  		}
-> >  	}
-> > _______________________________________________
-> > Linuxppc-dev mailing list
-> > Linuxppc-dev@lists.ozlabs.org
-> > https://lists.ozlabs.org/listinfo/linuxppc-dev
-> > 
-> 
+> diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+> index 3f3f691..ebc2ffd 100644
+> --- a/arch/powerpc/include/asm/machdep.h
+> +++ b/arch/powerpc/include/asm/machdep.h
+> @@ -220,6 +220,9 @@ struct machdep_calls {
+>  	/* Called during PCI resource reassignment */
+>  	resource_size_t (*pcibios_window_alignment)(struct pci_bus *, unsigned long type);
+>  
+> +	/* Called when adding PCI bus */
+> +	void (*pcibios_add_bus)(struct pci_bus *);
+> +
+>  	/* Called to shutdown machine specific hardware not already controlled
+>  	 * by other drivers.
+>  	 */
+> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+> index f325dc9..7b8a6f1 100644
+> --- a/arch/powerpc/kernel/pci-common.c
+> +++ b/arch/powerpc/kernel/pci-common.c
+> @@ -120,6 +120,13 @@ resource_size_t pcibios_window_alignment(struct pci_bus *bus,
+>  	return 1;
+>  }
+>  
+> +/* The function will be called while adding PCI bus to system */
+> +void pcibios_add_bus(struct pci_bus *bus)
+> +{
+> +	if (ppc_md.pcibios_add_bus)
+> +		ppc_md.pcibios_add_bus(bus);
+> +}
+> +
+>  static resource_size_t pcibios_io_size(const struct pci_controller *hose)
+>  {
+>  #ifdef CONFIG_PPC64
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index 8c6c9cf..0c3fa29 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -1015,6 +1015,40 @@ static resource_size_t pnv_pci_window_alignment(struct pci_bus *bus,
+>  	return phb->ioda.io_segsize;
+>  }
+>  
+> +/*
+> + * The function will be called while adding PCI bus to the
+> + * system. In turn, we should set flag to indicate that the
+> + * root bus doesn't have IO resources.
+> + */
+> +static void pnv_pci_add_bus(struct pci_bus *bus)
+> +{
+> +	struct pci_controller *hose = pci_bus_to_host(bus);
+> +	struct pnv_phb *phb = hose->private_data;
+> +
+> +	/*
+> +	 * We only need set the flag for root bus since the
+> +	 * bus flags are copied over from parent to children
+> +	 */
+> +	if (pci_is_root_bus(bus) &&
+> +	    phb->model == PNV_PHB_MODEL_PHB3)
+> +		bus->bus_flags |= PCI_BUS_FLAGS_NO_IO;
+> +}
+> +
+> +static void pnv_pci_fixup_resources(struct pci_dev *dev)
+> +{
+> +	int i;
+> +	struct resource *res;
+> +
+> +	if (!(dev->bus->bus_flags & PCI_BUS_FLAGS_NO_IO))
+> +		return;
+> +
+> +	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
+> +		res = dev->resource + i;
+> +		if (res->flags & IORESOURCE_IO)
+> +			res->flags = 0;
+> +	}
+> +}
+> +
+>  /* Prevent enabling devices for which we couldn't properly
+>   * assign a PE
+>   */
+> @@ -1189,6 +1223,10 @@ void __init pnv_pci_init_ioda_phb(struct device_node *np, int ioda_type)
+>  	ppc_md.pcibios_fixup = pnv_pci_ioda_fixup;
+>  	ppc_md.pcibios_enable_device_hook = pnv_pci_enable_device_hook;
+>  	ppc_md.pcibios_window_alignment = pnv_pci_window_alignment;
+> +	if (ioda_type == PNV_PHB_IODA2) {
+> +		ppc_md.pcibios_add_bus = pnv_pci_add_bus;
+> +		ppc_md.pcibios_fixup_resources = pnv_pci_fixup_resources;
+> +	}
+>  	pci_add_flags(PCI_REASSIGN_ALL_RSRC);
+>  
+>  	/* Reset IODA tables to a clean state */
