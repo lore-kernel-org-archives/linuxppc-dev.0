@@ -1,19 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 868CB2C00E7
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 May 2013 16:57:33 +1000 (EST)
-Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id r466ga4f017104
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 May 2013 01:42:37 -0500
-Message-ID: <1367822556.15842.13.camel@pasglop>
-Subject: [PATCH] powerpc/cell/spufs: Fix status attribute permission
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Date: Mon, 06 May 2013 16:42:36 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-f53.google.com (mail-pa0-f53.google.com
+ [209.85.220.53])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9B6D32C00DE
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 May 2013 17:22:23 +1000 (EST)
+Received: by mail-pa0-f53.google.com with SMTP id kq12so1872786pab.26
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 May 2013 00:22:21 -0700 (PDT)
+From: aik@ozlabs.ru
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0/5] VFIO PPC64: add VFIO support on POWERPC64
+Date: Mon,  6 May 2013 17:21:56 +1000
+Message-Id: <51875a2c.25ac440a.50d9.ffffe8eb@mx.google.com>
+Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, linux-pci@vger.kernel.org,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,25 +26,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We are registering the attribute with permission 0644 but it
-doesn't have a store callback, which causes WARN_ON's during
-boot. Fix the permission.
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/powerpc/platforms/cell/spu_base.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+The series adds support for VFIO on POWERPC in user space (such as QEMU).
+The in-kernel real mode IOMMU support is added by another series posted
+separately.
 
-diff --git a/arch/powerpc/platforms/cell/spu_base.c b/arch/powerpc/platforms/cell/spu_base.c
-index 8b12139..f85db3a 100644
---- a/arch/powerpc/platforms/cell/spu_base.c
-+++ b/arch/powerpc/platforms/cell/spu_base.c
-@@ -715,7 +715,7 @@ static ssize_t spu_stat_show(struct device *dev,
- 		spu->stats.libassist);
- }
- 
--static DEVICE_ATTR(stat, 0644, spu_stat_show, NULL);
-+static DEVICE_ATTR(stat, 0444, spu_stat_show, NULL);
- 
- #ifdef CONFIG_KEXEC
- 
+As the first and main aim of this series is the POWERNV platform support,
+the "Enable on POWERNV platform" patch goes first and introduces an API
+to be used by the VFIO IOMMU driver. The "Enable on pSeries platform" patch
+simply registers PHBs in the IOMMU subsystem and expects the API to be present,
+it enables VFIO support in fully emulated QEMU guests.
+
+These patches were tested against 3.8 and the "iommu: Move initialization earlier"
+patch is already in 3.9 so I am including it here only for the reference.
+
+Change log:
+* cleanups and minor fixes
+* added support for pSeries
+* separated from in-kernel IOMMU handling series (should make it easier to get sob'ed)
+* signed-off-by Paul Mackerras
+
+Alexey Kardashevskiy (5):
+  iommu: Move initialization earlier
+  KVM: PPC: iommu: Add missing
+    kvm_iommu_map_pages/kvm_iommu_unmap_pages
+  powerpc/vfio: Enable on POWERNV platform
+  powerpc/vfio: Implement IOMMU driver for VFIO
+  powerpc/vfio: Enable on pSeries platform
+
+ Documentation/vfio.txt                      |   63 +++++
+ arch/powerpc/include/asm/iommu.h            |   26 ++
+ arch/powerpc/include/asm/kvm_host.h         |   14 +
+ arch/powerpc/kernel/iommu.c                 |  319 +++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/pci-ioda.c   |    1 +
+ arch/powerpc/platforms/powernv/pci-p5ioc2.c |    5 +-
+ arch/powerpc/platforms/powernv/pci.c        |    2 +
+ arch/powerpc/platforms/pseries/iommu.c      |    4 +
+ drivers/iommu/Kconfig                       |    8 +
+ drivers/iommu/iommu.c                       |    2 +-
+ drivers/vfio/Kconfig                        |    6 +
+ drivers/vfio/Makefile                       |    1 +
+ drivers/vfio/vfio.c                         |    1 +
+ drivers/vfio/vfio_iommu_spapr_tce.c         |  377 +++++++++++++++++++++++++++
+ include/uapi/linux/vfio.h                   |   34 +++
+ 15 files changed, 861 insertions(+), 2 deletions(-)
+ create mode 100644 drivers/vfio/vfio_iommu_spapr_tce.c
+
+-- 
+1.7.10.4
