@@ -1,23 +1,13 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-ie0-x22b.google.com (mail-ie0-x22b.google.com
- [IPv6:2607:f8b0:4001:c03::22b])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 144612C00D8
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 May 2013 21:07:39 +1000 (EST)
-Received: by mail-ie0-f171.google.com with SMTP id e11so3910804iej.16
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 May 2013 04:07:36 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <1367822494.15842.12.camel@pasglop>
-References: <1367822494.15842.12.camel@pasglop>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 6 May 2013 12:07:15 +0100
-Message-ID: <CACxGe6uQx+u-9Vr0FeR86P82-e7hUrgVR-z=EqSwMgks+WG5Cg@mail.gmail.com>
-Subject: Re: [PATCH] irqdomain: Allow quiet failure mode
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc,
+ perf: Fix processing conditions for invalid BHRB entries
+In-reply-to: <1367831206-16331-1-git-send-email-khandual@linux.vnet.ibm.com>
+References: <1367831206-16331-1-git-send-email-khandual@linux.vnet.ibm.com>
+Date: Mon, 06 May 2013 21:11:45 +1000
+Message-ID: <24261.1367838705@ale.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,29 +17,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, May 6, 2013 at 7:41 AM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> Some interrupt controllers refuse to map interrupts marked as
-> "protected" by firwmare. Since we try to map everyting in the
-> device-tree on some platforms, we end up with a lot of nasty
-> WARN's in the boot log for what is a normal situation on those
-> machines.
->
-> This defines a specific return code (-EPERM) from the host map()
-> callback which cause irqdomain to fail silently.
->
-> MPIC is updated to return this when hitting a protected source
-> printing only a single line message for diagnostic purposes.
->
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->
->
-> Grant, I'm happy to merge that myself provided I have your ack,
-> it fixes an annoying problem on Cell introduced by previous changes
-> to irqdomain (not recent but users started to notice).
+Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote:
 
-Yes, please merge it since powerpc needs it.
+> Fixing some conditions during BHRB entry processing.
 
-Acked-by: Grant Likely <grant.likely@linaro.org>
+I think we can simplify this a lot more... something like the below.
 
-g.
+Also, this marks the "to" address as all 1s, which is better poison
+value since it's possible to branch to/from 0x0.
+
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index c627843..d410d65 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -1463,65 +1463,45 @@ void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
+ {
+ 	u64 val;
+ 	u64 addr;
+-	int r_index, u_index, target, pred;
++	int r_index, u_index, pred;
+ 
+ 	r_index = 0;
+ 	u_index = 0;
+ 	while (r_index < ppmu->bhrb_nr) {
+ 		/* Assembly read function */
+-		val = read_bhrb(r_index);
++		val = read_bhrb(r_index++);
+ 
+ 		/* Terminal marker: End of valid BHRB entries */
+-		if (val == 0) {
++		if (!val) {
+ 			break;
+ 		} else {
+ 			/* BHRB field break up */
+ 			addr = val & BHRB_EA;
+ 			pred = val & BHRB_PREDICTION;
+-			target = val & BHRB_TARGET;
+ 
+-			/* Probable Missed entry: Not applicable for POWER8 */
+-			if ((addr == 0) && (target == 0) && (pred == 1)) {
+-				r_index++;
++			if (!addr)
++				/* invalid entry */
+ 				continue;
+-			}
+-
+-			/* Real Missed entry: Power8 based missed entry */
+-			if ((addr == 0) && (target == 1) && (pred == 1)) {
+-				r_index++;
+-				continue;
+-			}
+ 
+-			/* Reserved condition: Not a valid entry  */
+-			if ((addr == 0) && (target == 1) && (pred == 0)) {
+-				r_index++;
+-				continue;
+-			}
+-
+-			/* Is a target address */
+ 			if (val & BHRB_TARGET) {
+ 				/* First address cannot be a target address */
+-				if (r_index == 0) {
+-					r_index++;
++				if (r_index == 0)
+ 					continue;
+-				}
+ 
+ 				/* Update target address for the previous entry */
+ 				cpuhw->bhrb_entries[u_index - 1].to = addr;
+ 				cpuhw->bhrb_entries[u_index - 1].mispred = pred;
+ 				cpuhw->bhrb_entries[u_index - 1].predicted = ~pred;
+-
+-				/* Dont increment u_index */
+-				r_index++;
+ 			} else {
+ 				/* Update address, flags for current entry */
+ 				cpuhw->bhrb_entries[u_index].from = addr;
++				cpuhw->bhrb_entries[u_index].to =
++					0xffffffffffffffff;
+ 				cpuhw->bhrb_entries[u_index].mispred = pred;
+ 				cpuhw->bhrb_entries[u_index].predicted = ~pred;
+ 
+ 				/* Successfully popullated one entry */
+ 				u_index++;
+-				r_index++;
+ 			}
+ 		}
+ 	}
