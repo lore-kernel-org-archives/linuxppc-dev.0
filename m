@@ -1,45 +1,23 @@
-Return-Path: <ryanarn@us.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e32.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0063B2C015B
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 May 2013 01:18:34 +1000 (EST)
-Received: from /spool/local
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ryanarn@us.ibm.com>;
- Tue, 7 May 2013 09:18:32 -0600
-Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
- [9.17.195.107])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id DF70A3E4008F
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2013 09:18:11 -0600 (MDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r47FIDnm058310
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 May 2013 09:18:15 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r47FI9NU001149
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 May 2013 09:18:09 -0600
-In-Reply-To: <1367876228.15842.62.camel@pasglop>
-References: <20130503231933.GA29436@linux.vnet.ibm.com>	
- <1367623431.4389.132.camel@pasglop>
- <20130503234019.GE8561@linux.vnet.ibm.com>	
- <OFBCA2593E.F64367AB-ON86257B63.004ED7A8-86257B63.00506FC6@us.ibm.com>
- <1367876228.15842.62.camel@pasglop>
-Subject: Re: [PATCH] arch/powerpc: advertise ISA2.07, HTM, DSCR,
- EBB and ISEL bits in HWCAP2
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <OF50BAF8AD.66579817-ON86257B64.00532B5A-86257B64.00535E3F@us.ibm.com>
-From: Ryan Arnold <ryanarn@us.ibm.com>
-Date: Tue, 7 May 2013 10:11:41 -0500
-MIME-Version: 1.0
-Content-type: multipart/alternative;
- Boundary="0__=09BBF1F7DFC0ADCA8f9e8a93df938690918c09BBF1F7DFC0ADCA"
-Cc: linuxppc-dev@lists.ozlabs.org, Michael R Meissner <mrmeissn@us.ibm.com>,
- Steve Munroe <sjmunroe@us.ibm.com>, Peter Bergner <bergner@us.ibm.com>,
- Michael Neuling <michael.neuling@au1.ibm.com>,
- Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Return-Path: <Andrew.Murray@arm.com>
+From: Andrew Murray <Andrew.Murray@arm.com>
+To: robherring2@gmail.com
+Subject: [PATCH v9 1/3] of/pci: Provide support for parsing PCI DT ranges
+ property
+Date: Tue,  7 May 2013 16:31:12 +0100
+Message-Id: <1367940674-11987-2-git-send-email-Andrew.Murray@arm.com>
+In-Reply-To: <1367940674-11987-1-git-send-email-Andrew.Murray@arm.com>
+References: <1367940674-11987-1-git-send-email-Andrew.Murray@arm.com>
+Cc: linux-mips@linux-mips.org, siva.kallam@samsung.com,
+ linus.walleij@linaro.org, thierry.reding@avionic-design.de,
+ Liviu.Dudau@arm.com, juhosg@openwrt.org, paulus@samba.org,
+ linux-samsung-soc@vger.kernel.org, linux@arm.linux.org.uk, jg1.han@samsung.com,
+ jgunthorpe@obsidianresearch.com, thomas.abraham@linaro.org,
+ linux-pci@vger.kernel.org, grant.likely@linaro.org, arnd@arndb.de,
+ devicetree-discuss@lists.ozlabs.org, kgene.kim@samsung.com,
+ bhelgaas@google.com, linux-arm-kernel@lists.infradead.org,
+ thomas.petazzoni@free-electrons.com, monstr@monstr.eu,
+ linux-kernel@vger.kernel.org, suren.reddy@samsung.com,
+ Andrew Murray <Andrew.Murray@arm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,92 +27,199 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0__=09BBF1F7DFC0ADCA8f9e8a93df938690918c09BBF1F7DFC0ADCA
-Content-type: text/plain; charset=US-ASCII
+This patch factors out common implementation patterns to reduce overall kernel
+code and provide a means for host bridge drivers to directly obtain struct
+resources from the DT's ranges property without relying on architecture specific
+DT handling. This will make it easier to write archiecture independent host bridge
+drivers and mitigate against further duplication of DT parsing code.
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 05/06/2013
-04:37:08 PM:
+This patch can be used in the following way:
 
-> Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> 05/06/2013 04:37 PM
->
-> To
->
-> Ryan Arnold/Rochester/IBM@IBMUS
->
-> cc
->
-> Nishanth Aravamudan <nacc@linux.vnet.ibm.com>, linuxppc-
-> dev@lists.ozlabs.org, Michael R Meissner/Cambridge/IBM@IBMUS,
-> Michael Neuling <michael.neuling@au1.ibm.com>, Peter Bergner/
-> Rochester/IBM@IBMUS, Steve Munroe/Rochester/IBM@IBMUS
->
-> Subject
->
-> Re: [PATCH] arch/powerpc: advertise ISA2.07, HTM, DSCR, EBB and ISEL
-> bits in HWCAP2
->
-> On Mon, 2013-05-06 at 09:38 -0500, Ryan Arnold wrote:
-> > My understanding was that these bits being 'on' is an indication of
-> > what features the hardware supports (or what the kernel emulates) and
-> > a not an indication of whether that facility is currently enabled or
-> > not.  If the hardware supports a particular feature but it is not
-> > enabled I'd expect that user-space usage of that feature would cause
-> > the kernel to trap on a facility availability exception (which is how
-> > Altivec/VMX is implemented, being defaulted to turned off).
->
-> Right but the discussion is about whether we should expose the bits
-> when the kernel doesn't have the ability to handle the feature :-)
->
-> IE. We need to remove the HTM feature if the kernel is compiled without
-> transactional memory support.
+	struct of_pci_range_parser parser;
+	struct of_pci_range range;
 
-Thanks for explaining. This is exactly how it should work.
+	if (of_pci_range_parser_init(&parser, np))
+		; //no ranges property
 
-Ryan
---0__=09BBF1F7DFC0ADCA8f9e8a93df938690918c09BBF1F7DFC0ADCA
-Content-type: text/html; charset=US-ASCII
-Content-Disposition: inline
+	for_each_of_pci_range(&parser, &range) {
 
-<html><body>
-<p><tt><font size="2">Benjamin Herrenschmidt &lt;benh@kernel.crashing.org&gt; wrote on 05/06/2013 04:37:08 PM:<br>
-<br>
-&gt; Benjamin Herrenschmidt &lt;benh@kernel.crashing.org&gt; </font></tt><br>
-<tt><font size="2">&gt; 05/06/2013 04:37 PM</font></tt><br>
-<tt><font size="2">&gt; <br>
-&gt; To</font></tt><br>
-<tt><font size="2">&gt; <br>
-&gt; Ryan Arnold/Rochester/IBM@IBMUS</font></tt><br>
-<tt><font size="2">&gt; <br>
-&gt; cc</font></tt><br>
-<tt><font size="2">&gt; <br>
-&gt; Nishanth Aravamudan &lt;nacc@linux.vnet.ibm.com&gt;, linuxppc-<br>
-&gt; dev@lists.ozlabs.org, Michael R Meissner/Cambridge/IBM@IBMUS, <br>
-&gt; Michael Neuling &lt;michael.neuling@au1.ibm.com&gt;, Peter Bergner/<br>
-&gt; Rochester/IBM@IBMUS, Steve Munroe/Rochester/IBM@IBMUS</font></tt><br>
-<tt><font size="2">&gt; <br>
-&gt; Subject</font></tt><br>
-<tt><font size="2">&gt; <br>
-&gt; Re: [PATCH] arch/powerpc: advertise ISA2.07, HTM, DSCR, EBB and ISEL<br>
-&gt; bits in HWCAP2</font></tt><br>
-<tt><font size="2">&gt; <br>
-&gt; On Mon, 2013-05-06 at 09:38 -0500, Ryan Arnold wrote:<br>
-&gt; &gt; My understanding was that these bits being 'on' is an indication of<br>
-&gt; &gt; what features the hardware supports (or what the kernel emulates) and<br>
-&gt; &gt; a not an indication of whether that facility is currently enabled or<br>
-&gt; &gt; not. &nbsp;If the hardware supports a particular feature but it is not<br>
-&gt; &gt; enabled I'd expect that user-space usage of that feature would cause<br>
-&gt; &gt; the kernel to trap on a facility availability exception (which is how<br>
-&gt; &gt; Altivec/VMX is implemented, being defaulted to turned off).<br>
-&gt; <br>
-&gt; Right but the discussion is about whether we should expose the bits<br>
-&gt; when the kernel doesn't have the ability to handle the feature :-)<br>
-&gt; <br>
-&gt; IE. We need to remove the HTM feature if the kernel is compiled without<br>
-&gt; transactional memory support.</font></tt><br>
-<br>
-<tt><font size="2">Thanks for explaining. This is exactly how it should work.</font></tt><br>
-<br>
-<tt><font size="2">Ryan</font></tt><br>
-</body></html>
---0__=09BBF1F7DFC0ADCA8f9e8a93df938690918c09BBF1F7DFC0ADCA--
+		/*
+			directly access properties of the address range, e.g.:
+			range.pci_space, range.pci_addr, range.cpu_addr,
+			range.size, range.flags
+
+			alternatively obtain a struct resource, e.g.:
+			struct resource res;
+			of_pci_range_to_resource(&range, np, &res);
+		*/
+	}
+
+Additionally the implementation takes care of adjacent ranges and merges them
+into a single range (as was the case with powerpc and microblaze).
+
+Signed-off-by: Andrew Murray <Andrew.Murray@arm.com>
+Signed-off-by: Liviu Dudau <Liviu.Dudau@arm.com>
+Signed-off-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Reviewed-by: Rob Herring <rob.herring@calxeda.com>
+Tested-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Tested-by: Linus Walleij <linus.walleij@linaro.org>
+Tested-by: Jingoo Han <jg1.han@samsung.com>
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
+---
+ drivers/of/address.c       |   67 ++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/of_address.h |   48 +++++++++++++++++++++++++++++++
+ 2 files changed, 115 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/of/address.c b/drivers/of/address.c
+index 04da786..fdd0636 100644
+--- a/drivers/of/address.c
++++ b/drivers/of/address.c
+@@ -227,6 +227,73 @@ int of_pci_address_to_resource(struct device_node *dev, int bar,
+ 	return __of_address_to_resource(dev, addrp, size, flags, NULL, r);
+ }
+ EXPORT_SYMBOL_GPL(of_pci_address_to_resource);
++
++int of_pci_range_parser_init(struct of_pci_range_parser *parser,
++				struct device_node *node)
++{
++	const int na = 3, ns = 2;
++	int rlen;
++
++	parser->node = node;
++	parser->pna = of_n_addr_cells(node);
++	parser->np = parser->pna + na + ns;
++
++	parser->range = of_get_property(node, "ranges", &rlen);
++	if (parser->range == NULL)
++		return -ENOENT;
++
++	parser->end = parser->range + rlen / sizeof(__be32);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(of_pci_range_parser_init);
++
++struct of_pci_range *of_pci_range_parser_one(struct of_pci_range_parser *parser,
++						struct of_pci_range *range)
++{
++	const int na = 3, ns = 2;
++
++	if (!range)
++		return NULL;
++
++	if (!parser->range || parser->range + parser->np > parser->end)
++		return NULL;
++
++	range->pci_space = parser->range[0];
++	range->flags = of_bus_pci_get_flags(parser->range);
++	range->pci_addr = of_read_number(parser->range + 1, ns);
++	range->cpu_addr = of_translate_address(parser->node,
++				parser->range + na);
++	range->size = of_read_number(parser->range + parser->pna + na, ns);
++
++	parser->range += parser->np;
++
++	/* Now consume following elements while they are contiguous */
++	while (parser->range + parser->np <= parser->end) {
++		u32 flags, pci_space;
++		u64 pci_addr, cpu_addr, size;
++
++		pci_space = be32_to_cpup(parser->range);
++		flags = of_bus_pci_get_flags(parser->range);
++		pci_addr = of_read_number(parser->range + 1, ns);
++		cpu_addr = of_translate_address(parser->node,
++				parser->range + na);
++		size = of_read_number(parser->range + parser->pna + na, ns);
++
++		if (flags != range->flags)
++			break;
++		if (pci_addr != range->pci_addr + range->size ||
++		    cpu_addr != range->cpu_addr + range->size)
++			break;
++
++		range->size += size;
++		parser->range += parser->np;
++	}
++
++	return range;
++}
++EXPORT_SYMBOL_GPL(of_pci_range_parser_one);
++
+ #endif /* CONFIG_PCI */
+ 
+ /*
+diff --git a/include/linux/of_address.h b/include/linux/of_address.h
+index 0506eb5..4c2e6f2 100644
+--- a/include/linux/of_address.h
++++ b/include/linux/of_address.h
+@@ -4,6 +4,36 @@
+ #include <linux/errno.h>
+ #include <linux/of.h>
+ 
++struct of_pci_range_parser {
++	struct device_node *node;
++	const __be32 *range;
++	const __be32 *end;
++	int np;
++	int pna;
++};
++
++struct of_pci_range {
++	u32 pci_space;
++	u64 pci_addr;
++	u64 cpu_addr;
++	u64 size;
++	u32 flags;
++};
++
++#define for_each_of_pci_range(parser, range) \
++	for (; of_pci_range_parser_one(parser, range);)
++
++static inline void of_pci_range_to_resource(struct of_pci_range *range,
++					    struct device_node *np,
++					    struct resource *res)
++{
++	res->flags = range->flags;
++	res->start = range->cpu_addr;
++	res->end = range->cpu_addr + range->size - 1;
++	res->parent = res->child = res->sibling = NULL;
++	res->name = np->full_name;
++}
++
+ #ifdef CONFIG_OF_ADDRESS
+ extern u64 of_translate_address(struct device_node *np, const __be32 *addr);
+ extern bool of_can_translate_address(struct device_node *dev);
+@@ -27,6 +57,11 @@ static inline unsigned long pci_address_to_pio(phys_addr_t addr) { return -1; }
+ #define pci_address_to_pio pci_address_to_pio
+ #endif
+ 
++extern int of_pci_range_parser_init(struct of_pci_range_parser *parser,
++			struct device_node *node);
++extern struct of_pci_range *of_pci_range_parser_one(
++					struct of_pci_range_parser *parser,
++					struct of_pci_range *range);
+ #else /* CONFIG_OF_ADDRESS */
+ #ifndef of_address_to_resource
+ static inline int of_address_to_resource(struct device_node *dev, int index,
+@@ -53,6 +88,19 @@ static inline const __be32 *of_get_address(struct device_node *dev, int index,
+ {
+ 	return NULL;
+ }
++
++static inline int of_pci_range_parser_init(struct of_pci_range_parser *parser,
++			struct device_node *node)
++{
++	return -1;
++}
++
++static inline struct of_pci_range *of_pci_range_parser_one(
++					struct of_pci_range_parser *parser,
++					struct of_pci_range *range)
++{
++	return NULL;
++}
+ #endif /* CONFIG_OF_ADDRESS */
+ 
+ 
+-- 
+1.7.0.4
