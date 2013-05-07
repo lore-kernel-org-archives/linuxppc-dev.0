@@ -1,24 +1,29 @@
-Return-Path: <B07421@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5F4652C021C
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2013 13:05:37 +1000 (EST)
-Date: Mon, 6 May 2013 22:05:26 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] kvm/ppc/booke64: Hard disable interrupts when entering
- the guest
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1367884994.29496.28.camel@pasglop> (from
- benh@kernel.crashing.org on Mon May  6 19:03:14 2013)
-Message-ID: <1367895926.3398.14@snotra>
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pd0-f171.google.com (mail-pd0-f171.google.com
+ [209.85.192.171])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1416C2C0141
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2013 13:29:01 +1000 (EST)
+Received: by mail-pd0-f171.google.com with SMTP id r11so83996pdi.16
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 May 2013 20:28:59 -0700 (PDT)
+Message-ID: <518874F3.50807@ozlabs.ru>
+Date: Tue, 07 May 2013 13:28:51 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+To: Alex Williamson <alex.williamson@redhat.com>
+Subject: Re: [PATCH 2/5] KVM: PPC: iommu: Add missing
+ kvm_iommu_map_pages/kvm_iommu_unmap_pages
+References: <1367824921-27151-1-git-send-email-y>
+ <51875a36.25ac440a.50d9.ffffe90d@mx.google.com>
+ <1367874436.2868.90.camel@ul30vt.home> <51884FA8.6010400@ozlabs.ru>
+ <1367890979.2868.93.camel@ul30vt.home>
+In-Reply-To: <1367890979.2868.93.camel@ul30vt.home>
+Content-Type: text/plain; charset=KOI8-R
 Cc: kvm@vger.kernel.org, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org, Mihai Caraman <mihai.caraman@freescale.com>,
- Paul Mackerras <paulus@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,64 +33,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/06/2013 07:03:14 PM, Benjamin Herrenschmidt wrote:
-> On Mon, 2013-05-06 at 18:53 -0500, Scott Wood wrote:
-> >
-> > > Ie. The last stage of entry will hard enable, so they should be
-> > > soft-enabled too... if not, latency trackers will consider the =20
-> whole
-> > > guest periods as "interrupt disabled"...
-> >
-> > OK... I guess we already have that problem on 32-bit as well?
->=20
-> 32-bit doesn't do lazy disable, so the situation is a lot easier =20
-> there.
+On 05/07/2013 11:42 AM, Alex Williamson wrote:
+> On Tue, 2013-05-07 at 10:49 +1000, Alexey Kardashevskiy wrote:
+>> On 05/07/2013 07:07 AM, Alex Williamson wrote:
+>>> On Mon, 2013-05-06 at 17:21 +1000, aik@ozlabs.ru wrote:
+>>>> From: Alexey Kardashevskiy <aik@ozlabs.ru>
+>>>>
+>>>> The IOMMU API implements groups creating/deletion, device binding
+>>>> and IOMMU map/unmap operations.
+>>>>
+>>>> The PowerPC implementation uses most of the API except map/unmap
+>>>> operations, which are implemented on POWER using hypercalls.
+>>>>
+>>>> However, in order to link a kernel with the CONFIG_IOMMU_API enabled,
+>>>> the empty kvm_iommu_map_pages/kvm_iommu_unmap_pages have to be
+>>>> defined, so this defines them.
+>>>>
+>>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>>>> Cc: David Gibson <david@gibson.dropbear.id.au>
+>>>> Signed-off-by: Paul Mackerras <paulus@samba.org>
+>>>> ---
+>>>>  arch/powerpc/include/asm/kvm_host.h |   14 ++++++++++++++
+>>>>  1 file changed, 14 insertions(+)
+>>>>
+>>>> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+>>>> index b6a047e..c025d91 100644
+>>>> --- a/arch/powerpc/include/asm/kvm_host.h
+>>>> +++ b/arch/powerpc/include/asm/kvm_host.h
+>>>> @@ -603,4 +603,18 @@ struct kvm_vcpu_arch {
+>>>>  
+>>>>  #define __KVM_HAVE_ARCH_WQP
+>>>>  
+>>>> +#ifdef CONFIG_IOMMU_API
+>>>> +/* POWERPC does not use IOMMU API for mapping/unmapping */
+>>>> +static inline int kvm_iommu_map_pages(struct kvm *kvm,
+>>>> +		struct kvm_memory_slot *slot)
+>>>> +{
+>>>> +	return 0;
+>>>> +}
+>>>> +
+>>>> +static inline void kvm_iommu_unmap_pages(struct kvm *kvm,
+>>>> +		struct kvm_memory_slot *slot)
+>>>> +{
+>>>> +}
+>>>> +#endif /* CONFIG_IOMMU_API */
+>>>> +
+>>>>  #endif /* __POWERPC_KVM_HOST_H__ */
+>>>
+>>> This is no longer needed, Gleb applied my patch for 3.10 that make all
+>>> of KVM device assignment dependent on a build config option and the top
+>>> level kvm_host.h now includes this when that is not set.  Thanks,
+>>
+>> Cannot find it, could you point me please where it is on github or
+>> git.kernel.org? Thanks.
+> 
+> http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=2a5bab1004729f3302c776e53ee7c895b98bb1ce
 
-Right, but it still currently enters the guest with interrupts marked =20
-as disabled, so we'd have the same latency tracker issue.
 
-> Another problem is that hard_irq_disable() doesn't call
-> trace_hardirqs_off()... We might want to fix that:
->=20
-> static inline void hard_irq_disable(void)
-> {
-> 	__hard_irq_disable();
-> 	if (get_paca()->soft_enabled)
-> 		trace_hardirqs_off();
-> 	get_paca()->soft_enabled =3D 0;
-> 	get_paca()->irq_happened |=3D PACA_IRQ_HARD_DIS;
-> }
+Yes, I confirm, this is patch is not need any more. Thanks!
 
-Is it possible there are places that assume the current behavior?
 
-> > We also don't want PACA_IRQ_HARD_DIS to be cleared the way
-> > prep_irq_for_idle() does, because that's what lets the
-> > local_irq_enable() do the hard-enabling after we exit the guest.
->=20
-> Then set it again. Don't leave the kernel in a state where =20
-> soft_enabled
-> is 1 and irq_happened is non-zero. It might work in the specific KVM
-> case we are looking at now because we know we are coming back via KVM
-> exit and putting things right again but it's fragile, somebody will =20
-> come
-> back and break it, etc...
 
-KVM is a pretty special case -- at least on booke, it's required that =20
-all exits from guest state go through the KVM exception code.  I think =20
-it's less likely that that changes, than something breaks in the code =20
-to fix up lazy ee state (especially since we've already seen the latter =20
-happen).
-
-I'll give it a shot, though.
-
-> If necessary, create (or improve existing) helpers that do the right
-> state adjustement. The cost of a couple of byte stores is negligible,
-> I'd rather you make sure everything remains in sync at all times.
-
-My concern was mainly about complexity -- it seemed simpler to just say =20
-that the during guest execution, CPU is in a special state that is not =20
-visible to anything that cares about lazy EE.  The fact that EE can =20
-actually be *off* and we still take the interrupt supports its =20
-specialness. :-)
-
--Scott=
+-- 
+Alexey
