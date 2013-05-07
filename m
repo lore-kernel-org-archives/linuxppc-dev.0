@@ -1,22 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 93DEC2C00FD
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2013 10:03:34 +1000 (EST)
-Message-ID: <1367884994.29496.28.camel@pasglop>
-Subject: Re: [PATCH] kvm/ppc/booke64: Hard disable interrupts when entering
- the guest
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-Date: Tue, 07 May 2013 10:03:14 +1000
-In-Reply-To: <1367884418.3398.10@snotra>
-References: <1367884418.3398.10@snotra>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-qc0-x232.google.com (mail-qc0-x232.google.com
+ [IPv6:2607:f8b0:400d:c01::232])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 189592C011A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2013 10:49:57 +1000 (EST)
+Received: by mail-qc0-f178.google.com with SMTP id l11so6882qcy.37
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 May 2013 17:49:53 -0700 (PDT)
+Message-ID: <51884FA8.6010400@ozlabs.ru>
+Date: Tue, 07 May 2013 10:49:44 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+MIME-Version: 1.0
+To: Alex Williamson <alex.williamson@redhat.com>
+Subject: Re: [PATCH 2/5] KVM: PPC: iommu: Add missing
+ kvm_iommu_map_pages/kvm_iommu_unmap_pages
+References: <1367824921-27151-1-git-send-email-y>
+ <51875a36.25ac440a.50d9.ffffe90d@mx.google.com>
+ <1367874436.2868.90.camel@ul30vt.home>
+In-Reply-To: <1367874436.2868.90.camel@ul30vt.home>
+Content-Type: text/plain; charset=KOI8-R
 Cc: kvm@vger.kernel.org, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org, Mihai Caraman <mihai.caraman@freescale.com>,
- Paul Mackerras <paulus@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,90 +32,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-05-06 at 18:53 -0500, Scott Wood wrote:
+On 05/07/2013 07:07 AM, Alex Williamson wrote:
+> On Mon, 2013-05-06 at 17:21 +1000, aik@ozlabs.ru wrote:
+>> From: Alexey Kardashevskiy <aik@ozlabs.ru>
+>>
+>> The IOMMU API implements groups creating/deletion, device binding
+>> and IOMMU map/unmap operations.
+>>
+>> The PowerPC implementation uses most of the API except map/unmap
+>> operations, which are implemented on POWER using hypercalls.
+>>
+>> However, in order to link a kernel with the CONFIG_IOMMU_API enabled,
+>> the empty kvm_iommu_map_pages/kvm_iommu_unmap_pages have to be
+>> defined, so this defines them.
+>>
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> Cc: David Gibson <david@gibson.dropbear.id.au>
+>> Signed-off-by: Paul Mackerras <paulus@samba.org>
+>> ---
+>>  arch/powerpc/include/asm/kvm_host.h |   14 ++++++++++++++
+>>  1 file changed, 14 insertions(+)
+>>
+>> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+>> index b6a047e..c025d91 100644
+>> --- a/arch/powerpc/include/asm/kvm_host.h
+>> +++ b/arch/powerpc/include/asm/kvm_host.h
+>> @@ -603,4 +603,18 @@ struct kvm_vcpu_arch {
+>>  
+>>  #define __KVM_HAVE_ARCH_WQP
+>>  
+>> +#ifdef CONFIG_IOMMU_API
+>> +/* POWERPC does not use IOMMU API for mapping/unmapping */
+>> +static inline int kvm_iommu_map_pages(struct kvm *kvm,
+>> +		struct kvm_memory_slot *slot)
+>> +{
+>> +	return 0;
+>> +}
+>> +
+>> +static inline void kvm_iommu_unmap_pages(struct kvm *kvm,
+>> +		struct kvm_memory_slot *slot)
+>> +{
+>> +}
+>> +#endif /* CONFIG_IOMMU_API */
+>> +
+>>  #endif /* __POWERPC_KVM_HOST_H__ */
 > 
-> > Ie. The last stage of entry will hard enable, so they should be
-> > soft-enabled too... if not, latency trackers will consider the whole
-> > guest periods as "interrupt disabled"...
-> 
-> OK... I guess we already have that problem on 32-bit as well?
+> This is no longer needed, Gleb applied my patch for 3.10 that make all
+> of KVM device assignment dependent on a build config option and the top
+> level kvm_host.h now includes this when that is not set.  Thanks,
 
-32-bit doesn't do lazy disable, so the situation is a lot easier there.
+Cannot find it, could you point me please where it is on github or
+git.kernel.org? Thanks.
 
-> > Now, kvmppc_lazy_ee_enable() seems to be clearly bogus to me. It will
-> > unconditionally set soft_enabled and clear irq_happened from a
-> > soft-disabled state, thus potentially losing a pending event.
-> > 
-> > Book3S "HV" seems to be keeping interrupts fully enabled all the way
-> > until the asm hard disables, which would be fine except that I'm  
-> > worried
-> > we are racy vs. need_resched & signals.
-> > 
-> > One thing you may be able to do is call prep_irq_for_idle(). This will
-> > tell you if something happened, giving you a chance to abort/re-enable
-> > before you go the guest.
-> 
-> As long as we go straight from IRQs fully enabled to hard-disabled,  
-> before we check for signals and such, I don't think we need that (and  
-> using it would raise the question of what to do on 32-bit).
 
-Except that you have to mark them as "soft enabled" before you enter the
-guest with interrupts on...
-
-But yes, I see your point. If interrupts are fully enabled and you call
-hard_irq_disable(), there should be no chance for anything to mess
-around with irq_happened.
-
-However if you set soft-enabled later on before the rfid that returns to
-the guest and sets EE, you *must* also clear PACA_IRQ_HARD_DIS in
-irq_happened. If you get that out of sync bad things will happen later
-on...
-
-To be sure all is well, you might want to
-WARN_ON(get_paca()->irq_happened == PACA_IRQ_HARD_DIS); (with a comment
-explaining why so).
-
-Another problem is that hard_irq_disable() doesn't call
-trace_hardirqs_off()... We might want to fix that:
-
-static inline void hard_irq_disable(void)
-{
-	__hard_irq_disable();
-	if (get_paca()->soft_enabled)
-		trace_hardirqs_off();
-	get_paca()->soft_enabled = 0;
-	get_paca()->irq_happened |= PACA_IRQ_HARD_DIS;
-}
-
-> What if we just take this patch, and add trace_hardirqs_on() just  
-> before entering the guest?
-
-You still want to set soft_enabled I'd say ... though I can see how you
-may get away without it as long as you call trace_hardirqs_off() right
-on the way back from the guest, but beware some lockdep bits will choke
-if they ever spot the discrepancy between the traced irq state and
-soft_enabled. I'd recommend you just keep it in sync.
-
->   This would be similar to what the 32-bit  
-> non-KVM exception return code does (except it would be in C code).   
-> Perhaps we could set soft_enabled as well, but then we'd have to clear  
-> it again before calling kvmppc_restart_interrupt() -- since the KVM  
-> exception handlers don't actually care about soft_enabled (it would  
-> just be for consistency), I'd rather just leave soft_enabled off.
-> 
-> We also don't want PACA_IRQ_HARD_DIS to be cleared the way  
-> prep_irq_for_idle() does, because that's what lets the  
-> local_irq_enable() do the hard-enabling after we exit the guest.
-
-Then set it again. Don't leave the kernel in a state where soft_enabled
-is 1 and irq_happened is non-zero. It might work in the specific KVM
-case we are looking at now because we know we are coming back via KVM
-exit and putting things right again but it's fragile, somebody will come
-back and break it, etc...
-
-If necessary, create (or improve existing) helpers that do the right
-state adjustement. The cost of a couple of byte stores is negligible,
-I'd rather you make sure everything remains in sync at all times.
-
-Cheers,
-Ben.
+-- 
+Alexey
