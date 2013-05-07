@@ -1,36 +1,18 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E61352C016B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2013 19:16:38 +1000 (EST)
-Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 7 May 2013 19:08:58 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id AB71C2BB004F
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2013 19:16:32 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r4792XBh12779608
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 May 2013 19:02:33 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r479GV56007503
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 May 2013 19:16:32 +1000
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc,
- cpu hotplug: Fix warning on boot regarding sysfs file permission
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Date: Tue, 07 May 2013 14:43:34 +0530
-Message-ID: <20130507091309.12448.70498.stgit@srivatsabhat.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: caiqian@redhat.com, gregkh@linuxfoundation.org, balbi@ti.com,
- paulus@samba.org, anton@samba.org,
- "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 308FC2C0171
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2013 20:10:59 +1000 (EST)
+Message-ID: <1367921451.25488.3.camel@pasglop>
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Tue, 07 May 2013 20:10:51 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,65 +22,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On boot, the following warning shows up on each CPU online operation:
+Hi Linus !
 
-------------[ cut here ]------------
-WARNING: at drivers/base/core.c:575
-Modules linked in:
-CPU: 0 PID: 1 Comm: swapper/0 Tainted: G        W    3.9.0+ #2
-task: c0000006fa180000 ti: c0000006fa200000 task.ti: c0000006fa200000
-NIP: c00000000053772c LR: c000000000537728 CTR: 0000000001764c5c
-REGS: c0000006fa203780 TRAP: 0700   Tainted: G        W     (3.9.0+)
-MSR: 8000000000029032 <SF,EE,ME,IR,DR,RI>  CR: 28000024  XER: 00000002
-SOFTE: 1
-CFAR: c0000000008a6994
+Here are a few more powerpc bits that I would like in 3.10. Mostly
+remaining bolts & screw tightening of power8 support such as actually
+exposing the new features via the previously added AT_HWCAP2, and a
+few fixes, some of them for problems exposed recently like irqdomain
+warnings or sysfs access permission issues, some exposed by power8
+hardware.
 
-GPR00: c000000000537728 c0000006fa203a00 c000000000dafaf0 0000000000000020
-GPR04: 0000000000000001 c000000000085d9c 0000000000000000 0000000000000002
-GPR08: 0000000000000000 c0000006fa180000 c0000006fa180000 c000000000e38804
-GPR12: 0000000000000000 c000000001db0000 c00000000000c1b0 0000000000000000
-GPR16: 0000000000000000 0000000000000000 0000000000000001 c000000000e44880
-GPR20: c000000000e44d18 c000000000c726a8 0000000000000000 0000000000000000
-GPR24: c000000000bab158 000000000000007e c000000000e68200 c000000000c71d48
-GPR28: c0000000130c0030 0000000000000002 c0000000130c0030 c000000000c71f58
-NIP [c00000000053772c] .device_create_file+0xac/0xc0
-LR [c000000000537728] .device_create_file+0xa8/0xc0
-PACATMSCRATCH [8000000000009032]
-Call Trace:
-[c0000006fa203a00] [c000000000537728] .device_create_file+0xa8/0xc0 (unreliable)
-[c0000006fa203a80] [c00000000089f3e4] .register_cpu_online+0x10c/0x238
-[c0000006fa203b30] [c000000000bc9a80] .topology_init+0x1fc/0x200
-[c0000006fa203c10] [c00000000000b870] .do_one_initcall+0x60/0x1e0
-[c0000006fa203cd0] [c000000000bc3fc0] .kernel_init_freeable+0x22c/0x310
-[c0000006fa203da0] [c00000000000c1cc] .kernel_init+0x1c/0x1c0
-[c0000006fa203e30] [c00000000000a170] .ret_from_kernel_thread+0x64/0x74
-Instruction dump:
-0fe00000 4bffffb8 60000000 60000000 60000000 e8040028 2fa00000 409eff98
-3c62ffd6 3863dc38 4836f221 60000000 <0fe00000> a13f0008 4bffff7c 60000000
----[ end trace b53dfda141d62ab0 ]---
+The only change outside of arch/powerpc is a small one to irqdomain.c
+to allow silent failure to fix a problem on Cell where we get a dozen
+WARN_ON's tripping at boot for what is basically a normal case.
+
+Grant Acked it but I forgot to put it in and didn't want to rebase.
+
+Cheers,
+Ben.
+
+The following changes since commit 01227a889ed56ae53aeebb9f93be9d54dd8b2de8:
+
+  Merge tag 'kvm-3.10-1' of git://git.kernel.org/pub/scm/virt/kvm/kvm (2013-05-05 14:47:31 -0700)
+
+are available in the git repository at:
 
 
-The problem is that the 'spurr' per-cpu sysfs file sports a write permission
-without the corresponding ->store() method. So remove the bogus write
-permission to fix the warning.
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git test
 
-Reported-by: CAI Qian <caiqian@redhat.com>
-Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
----
+for you to fetch changes up to 5737789c8340620d7b542d1d4e9b197de8eb2801:
 
- arch/powerpc/kernel/sysfs.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+  powerpc: Make hard_irq_disable() do the right thing vs. irq tracing (2013-05-07 17:13:57 +1000)
 
-diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
-index 3ce1f86..e68a845 100644
---- a/arch/powerpc/kernel/sysfs.c
-+++ b/arch/powerpc/kernel/sysfs.c
-@@ -180,7 +180,7 @@ SYSFS_PMCSETUP(dscr, SPRN_DSCR);
- SYSFS_PMCSETUP(pir, SPRN_PIR);
- 
- static DEVICE_ATTR(mmcra, 0600, show_mmcra, store_mmcra);
--static DEVICE_ATTR(spurr, 0600, show_spurr, NULL);
-+static DEVICE_ATTR(spurr, 0400, show_spurr, NULL);
- static DEVICE_ATTR(dscr, 0600, show_dscr, store_dscr);
- static DEVICE_ATTR(purr, 0600, show_purr, store_purr);
- static DEVICE_ATTR(pir, 0400, show_pir, NULL);
+----------------------------------------------------------------
+Anton Blanchard (1):
+      powerpc: Emulate non privileged DSCR read and write
+
+Benjamin Herrenschmidt (9):
+      powerpc/powerpnv: Properly handle failure starting CPUs
+      powerpc/pci: Don't add bogus empty resources to PHBs
+      powerpc/pnv: Fix "compatible" property for P8 PHB
+      irqdomain: Allow quiet failure mode
+      powerpc/cell/spufs: Fix status attribute permission
+      powerpc/cell/iommu: Improve error message for missing node
+      powerpc/pci: Support per-aperture memory offset
+      powerpc/topology: Fix spurr attribute permission
+      powerpc: Make hard_irq_disable() do the right thing vs. irq tracing
+
+Brian King (1):
+      powerpc/pseries: Force 32 bit MSIs for devices that require it
+
+Jeremy Kerr (1):
+      powerpc/powernv: Defer OPAL exception handler registration
+
+Kleber Sacilotto de Souza (1):
+      powerpc/pseries: Perform proper max_bus_speed detection
+
+Michael Neuling (1):
+      powerpc/tm: Fix null pointer deference in flush_hash_page
+
+Nishanth Aravamudan (4):
+      powerpc/cputable: Reserve bits in HWCAP2 for new features
+      powerpc/cputable: Advertise DSCR support on P7/P7+
+      powerpc/cputable: Advertise ISEL support on appropriate embedded processors
+      powerpc/cputable: Advertise support for ISEL/HTM/DSCR/TAR on POWER8
+
+ arch/powerpc/include/asm/cputable.h         |    2 +
+ arch/powerpc/include/asm/hw_irq.h           |   16 ++---
+ arch/powerpc/include/asm/machdep.h          |    3 +
+ arch/powerpc/include/asm/pci-bridge.h       |    8 +--
+ arch/powerpc/include/asm/ppc-opcode.h       |    4 ++
+ arch/powerpc/include/uapi/asm/cputable.h    |    9 +++
+ arch/powerpc/kernel/cputable.c              |   14 ++++
+ arch/powerpc/kernel/pci-common.c            |  101 ++++++++++-----------------
+ arch/powerpc/kernel/pci_32.c                |    2 +-
+ arch/powerpc/kernel/pci_64.c                |    2 +-
+ arch/powerpc/kernel/sysfs.c                 |    2 +-
+ arch/powerpc/kernel/traps.c                 |   10 ++-
+ arch/powerpc/mm/hash_utils_64.c             |    1 +
+ arch/powerpc/platforms/cell/iommu.c         |    2 +-
+ arch/powerpc/platforms/cell/spu_base.c      |    2 +-
+ arch/powerpc/platforms/embedded6xx/mpc10x.h |   11 ---
+ arch/powerpc/platforms/powermac/pci.c       |    2 +-
+ arch/powerpc/platforms/powernv/opal.c       |   15 +++-
+ arch/powerpc/platforms/powernv/pci-ioda.c   |   12 ++--
+ arch/powerpc/platforms/powernv/smp.c        |    4 +-
+ arch/powerpc/platforms/pseries/msi.c        |   21 +++++-
+ arch/powerpc/platforms/pseries/pci.c        |   53 ++++++++++++++
+ arch/powerpc/platforms/pseries/pseries.h    |    4 ++
+ arch/powerpc/platforms/pseries/setup.c      |    2 +
+ arch/powerpc/platforms/wsp/wsp_pci.c        |    2 +-
+ arch/powerpc/sysdev/fsl_pci.c               |   11 +--
+ arch/powerpc/sysdev/mpic.c                  |   14 +++-
+ arch/powerpc/sysdev/ppc4xx_pci.c            |   15 ++--
+ kernel/irq/irqdomain.c                      |   20 +++++-
+ 29 files changed, 236 insertions(+), 128 deletions(-)
