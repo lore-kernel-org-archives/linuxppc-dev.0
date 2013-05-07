@@ -1,29 +1,10 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pd0-f171.google.com (mail-pd0-f171.google.com
- [209.85.192.171])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1416C2C0141
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2013 13:29:01 +1000 (EST)
-Received: by mail-pd0-f171.google.com with SMTP id r11so83996pdi.16
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 May 2013 20:28:59 -0700 (PDT)
-Message-ID: <518874F3.50807@ozlabs.ru>
-Date: Tue, 07 May 2013 13:28:51 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-MIME-Version: 1.0
-To: Alex Williamson <alex.williamson@redhat.com>
-Subject: Re: [PATCH 2/5] KVM: PPC: iommu: Add missing
- kvm_iommu_map_pages/kvm_iommu_unmap_pages
-References: <1367824921-27151-1-git-send-email-y>
- <51875a36.25ac440a.50d9.ffffe90d@mx.google.com>
- <1367874436.2868.90.camel@ul30vt.home> <51884FA8.6010400@ozlabs.ru>
- <1367890979.2868.93.camel@ul30vt.home>
-In-Reply-To: <1367890979.2868.93.camel@ul30vt.home>
-Content-Type: text/plain; charset=KOI8-R
-Cc: kvm@vger.kernel.org, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <michael@ozlabs.org>
+From: Michael Ellerman <michael@ellerman.id.au>
+To: stable@vger.kernel.org
+Subject: [PATCH] powerpc: fix numa distance for form0 device tree
+Date: Tue,  7 May 2013 13:49:34 +1000
+Message-Id: <1367898574-20594-1-git-send-email-michael@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,66 +14,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/07/2013 11:42 AM, Alex Williamson wrote:
-> On Tue, 2013-05-07 at 10:49 +1000, Alexey Kardashevskiy wrote:
->> On 05/07/2013 07:07 AM, Alex Williamson wrote:
->>> On Mon, 2013-05-06 at 17:21 +1000, aik@ozlabs.ru wrote:
->>>> From: Alexey Kardashevskiy <aik@ozlabs.ru>
->>>>
->>>> The IOMMU API implements groups creating/deletion, device binding
->>>> and IOMMU map/unmap operations.
->>>>
->>>> The PowerPC implementation uses most of the API except map/unmap
->>>> operations, which are implemented on POWER using hypercalls.
->>>>
->>>> However, in order to link a kernel with the CONFIG_IOMMU_API enabled,
->>>> the empty kvm_iommu_map_pages/kvm_iommu_unmap_pages have to be
->>>> defined, so this defines them.
->>>>
->>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->>>> Cc: David Gibson <david@gibson.dropbear.id.au>
->>>> Signed-off-by: Paul Mackerras <paulus@samba.org>
->>>> ---
->>>>  arch/powerpc/include/asm/kvm_host.h |   14 ++++++++++++++
->>>>  1 file changed, 14 insertions(+)
->>>>
->>>> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
->>>> index b6a047e..c025d91 100644
->>>> --- a/arch/powerpc/include/asm/kvm_host.h
->>>> +++ b/arch/powerpc/include/asm/kvm_host.h
->>>> @@ -603,4 +603,18 @@ struct kvm_vcpu_arch {
->>>>  
->>>>  #define __KVM_HAVE_ARCH_WQP
->>>>  
->>>> +#ifdef CONFIG_IOMMU_API
->>>> +/* POWERPC does not use IOMMU API for mapping/unmapping */
->>>> +static inline int kvm_iommu_map_pages(struct kvm *kvm,
->>>> +		struct kvm_memory_slot *slot)
->>>> +{
->>>> +	return 0;
->>>> +}
->>>> +
->>>> +static inline void kvm_iommu_unmap_pages(struct kvm *kvm,
->>>> +		struct kvm_memory_slot *slot)
->>>> +{
->>>> +}
->>>> +#endif /* CONFIG_IOMMU_API */
->>>> +
->>>>  #endif /* __POWERPC_KVM_HOST_H__ */
->>>
->>> This is no longer needed, Gleb applied my patch for 3.10 that make all
->>> of KVM device assignment dependent on a build config option and the top
->>> level kvm_host.h now includes this when that is not set.  Thanks,
->>
->> Cannot find it, could you point me please where it is on github or
->> git.kernel.org? Thanks.
-> 
-> http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=2a5bab1004729f3302c776e53ee7c895b98bb1ce
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 
+Commit 7122beeee7bc1757682049780179d7c216dd1c83 upstream.
 
-Yes, I confirm, this is patch is not need any more. Thanks!
+The following commit breaks numa distance setup for old powerpc
+systems that use form0 encoding in device tree.
 
+commit 41eab6f88f24124df89e38067b3766b7bef06ddb
+powerpc/numa: Use form 1 affinity to setup node distance
 
+Device tree node /rtas/ibm,associativity-reference-points would
+index into /cpus/PowerPCxxxx/ibm,associativity based on form0 or
+form1 encoding detected by ibm,architecture-vec-5 property.
 
+All modern systems use form1 and current kernel code is correct.
+However, on older systems with form0 encoding, the numa distance
+will get hard coded as LOCAL_DISTANCE for all nodes.  This causes
+task scheduling anomaly since scheduler will skip building numa
+level domain (topmost domain with all cpus) if all numa distances
+are same.  (value of 'level' in sched_init_numa() will remain 0)
+
+Prior to the above commit:
+((from) == (to) ? LOCAL_DISTANCE : REMOTE_DISTANCE)
+
+Restoring compatible behavior with this patch for old powerpc systems
+with device tree where numa distance are encoded as form0.
+
+Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/mm/numa.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index bba87ca..6a252c4 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -201,7 +201,7 @@ int __node_distance(int a, int b)
+ 	int distance = LOCAL_DISTANCE;
+ 
+ 	if (!form1_affinity)
+-		return distance;
++		return ((a == b) ? LOCAL_DISTANCE : REMOTE_DISTANCE);
+ 
+ 	for (i = 0; i < distance_ref_points_depth; i++) {
+ 		if (distance_lookup_table[a][i] == distance_lookup_table[b][i])
 -- 
-Alexey
+1.7.10.4
