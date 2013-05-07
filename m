@@ -1,18 +1,39 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 308FC2C0171
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2013 20:10:59 +1000 (EST)
-Message-ID: <1367921451.25488.3.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
+Message-ID: <1367921958.25488.8.camel@pasglop>
+Subject: Re: [PATCH v8 1/3] of/pci: Unify pci_process_bridge_OF_ranges from
+ Microblaze and PowerPC
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Tue, 07 May 2013 20:10:51 +1000
+To: Andrew Murray <andrew.murray@arm.com>
+Date: Tue, 07 May 2013 20:19:18 +1000
+In-Reply-To: <20130507080142.GA8808@arm.com>
+References: <1366627295-16964-1-git-send-email-Andrew.Murray@arm.com>
+ <1366627295-16964-2-git-send-email-Andrew.Murray@arm.com>
+ <1367721709.11982.37.camel@pasglop> <20130507080142.GA8808@arm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
+ "siva.kallam@samsung.com" <siva.kallam@samsung.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "linus.walleij@linaro.org" <linus.walleij@linaro.org>,
+ "thierry.reding@avionic-design.de" <thierry.reding@avionic-design.de>,
+ Liviu Dudau <Liviu.Dudau@arm.com>, "juhosg@openwrt.org" <juhosg@openwrt.org>,
+ "paulus@samba.org" <paulus@samba.org>,
+ "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>,
+ "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>,
+ "jg1.han@samsung.com" <jg1.han@samsung.com>,
+ "jgunthorpe@obsidianresearch.com" <jgunthorpe@obsidianresearch.com>,
+ "thomas.abraham@linaro.org" <thomas.abraham@linaro.org>,
+ "grant.likely@linaro.org" <grant.likely@linaro.org>,
+ Rob Herring <robherring2@gmail.com>, "arnd@arndb.de" <arnd@arndb.de>,
+ "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>,
+ "kgene.kim@samsung.com" <kgene.kim@samsung.com>,
+ "bhelgaas@google.com" <bhelgaas@google.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "thomas.petazzoni@free-electrons.com" <thomas.petazzoni@free-electrons.com>,
+ "monstr@monstr.eu" <monstr@monstr.eu>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "suren.reddy@samsung.com" <suren.reddy@samsung.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,97 +43,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+On Tue, 2013-05-07 at 09:01 +0100, Andrew Murray wrote:
+> 
+> There were no objections to this latest revision until now and it is
+> currently sitting with Jason Cooper (mvebu-next/pcie). [1]
 
-Here are a few more powerpc bits that I would like in 3.10. Mostly
-remaining bolts & screw tightening of power8 support such as actually
-exposing the new features via the previously added AT_HWCAP2, and a
-few fixes, some of them for problems exposed recently like irqdomain
-warnings or sysfs access permission issues, some exposed by power8
-hardware.
+Ok, well I've just sent Linus a pull request for my changes so at least
+drop the powerpc changes from your tree for the time being.
 
-The only change outside of arch/powerpc is a small one to irqdomain.c
-to allow silent failure to fix a problem on Cell where we get a dozen
-WARN_ON's tripping at boot for what is basically a normal case.
+> This is a view that was also shared by Bjorn [2] when I attempted to
+> submit a patchset which moves struct pci_controller to asm-generic.
 
-Grant Acked it but I forgot to put it in and didn't want to rebase.
+Right, it's the logical way to go
+
+> The motativation for my patchsets were to give a way for ARM PCI host
+> bridge drivers to parse the DT ranges property, but this snow-balled
+> into unifying pci_process_bridge_OF_ranges.
+
+Which I understand, I would probably have done the same thing in your
+shoes :-)
+
+> My v8 patchset provides a of_pci_range_parser which is used directly
+> by a few ARM PCI DT host bridge drivers, this has been generally
+> accepted and tested. I don't see why this can't remain and so I'd
+> really like to keep this around. 
+
+Sure, no objection, in fact I should/could probably update my new code
+to use it as well.
+
+> Grant, Benjamin would you be happy for me to resubmit this series
+> which provides the of_pci_range_parser which will be used by the
+> separate implementations of pci_process_bridge_OF_ranges in
+> PowerPC/Microblaze?
+
+Sure, in fact feel free to update my new code if you have more bandwidth
+than I do, it should hit Linus tree soon hopefully unless he objects to
+me having a second pull request this merge window...
+
+> Benjamin are you able to still use of_pci_range_parser in your
+> 'Support per-aperture memory offset' patch?
+
+I see no reason why not. I just haven't looked into it much, I admit,
+being bogged down with a pile of new HW bringup in the lab etc...
 
 Cheers,
 Ben.
-
-The following changes since commit 01227a889ed56ae53aeebb9f93be9d54dd8b2de8:
-
-  Merge tag 'kvm-3.10-1' of git://git.kernel.org/pub/scm/virt/kvm/kvm (2013-05-05 14:47:31 -0700)
-
-are available in the git repository at:
-
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git test
-
-for you to fetch changes up to 5737789c8340620d7b542d1d4e9b197de8eb2801:
-
-  powerpc: Make hard_irq_disable() do the right thing vs. irq tracing (2013-05-07 17:13:57 +1000)
-
-----------------------------------------------------------------
-Anton Blanchard (1):
-      powerpc: Emulate non privileged DSCR read and write
-
-Benjamin Herrenschmidt (9):
-      powerpc/powerpnv: Properly handle failure starting CPUs
-      powerpc/pci: Don't add bogus empty resources to PHBs
-      powerpc/pnv: Fix "compatible" property for P8 PHB
-      irqdomain: Allow quiet failure mode
-      powerpc/cell/spufs: Fix status attribute permission
-      powerpc/cell/iommu: Improve error message for missing node
-      powerpc/pci: Support per-aperture memory offset
-      powerpc/topology: Fix spurr attribute permission
-      powerpc: Make hard_irq_disable() do the right thing vs. irq tracing
-
-Brian King (1):
-      powerpc/pseries: Force 32 bit MSIs for devices that require it
-
-Jeremy Kerr (1):
-      powerpc/powernv: Defer OPAL exception handler registration
-
-Kleber Sacilotto de Souza (1):
-      powerpc/pseries: Perform proper max_bus_speed detection
-
-Michael Neuling (1):
-      powerpc/tm: Fix null pointer deference in flush_hash_page
-
-Nishanth Aravamudan (4):
-      powerpc/cputable: Reserve bits in HWCAP2 for new features
-      powerpc/cputable: Advertise DSCR support on P7/P7+
-      powerpc/cputable: Advertise ISEL support on appropriate embedded processors
-      powerpc/cputable: Advertise support for ISEL/HTM/DSCR/TAR on POWER8
-
- arch/powerpc/include/asm/cputable.h         |    2 +
- arch/powerpc/include/asm/hw_irq.h           |   16 ++---
- arch/powerpc/include/asm/machdep.h          |    3 +
- arch/powerpc/include/asm/pci-bridge.h       |    8 +--
- arch/powerpc/include/asm/ppc-opcode.h       |    4 ++
- arch/powerpc/include/uapi/asm/cputable.h    |    9 +++
- arch/powerpc/kernel/cputable.c              |   14 ++++
- arch/powerpc/kernel/pci-common.c            |  101 ++++++++++-----------------
- arch/powerpc/kernel/pci_32.c                |    2 +-
- arch/powerpc/kernel/pci_64.c                |    2 +-
- arch/powerpc/kernel/sysfs.c                 |    2 +-
- arch/powerpc/kernel/traps.c                 |   10 ++-
- arch/powerpc/mm/hash_utils_64.c             |    1 +
- arch/powerpc/platforms/cell/iommu.c         |    2 +-
- arch/powerpc/platforms/cell/spu_base.c      |    2 +-
- arch/powerpc/platforms/embedded6xx/mpc10x.h |   11 ---
- arch/powerpc/platforms/powermac/pci.c       |    2 +-
- arch/powerpc/platforms/powernv/opal.c       |   15 +++-
- arch/powerpc/platforms/powernv/pci-ioda.c   |   12 ++--
- arch/powerpc/platforms/powernv/smp.c        |    4 +-
- arch/powerpc/platforms/pseries/msi.c        |   21 +++++-
- arch/powerpc/platforms/pseries/pci.c        |   53 ++++++++++++++
- arch/powerpc/platforms/pseries/pseries.h    |    4 ++
- arch/powerpc/platforms/pseries/setup.c      |    2 +
- arch/powerpc/platforms/wsp/wsp_pci.c        |    2 +-
- arch/powerpc/sysdev/fsl_pci.c               |   11 +--
- arch/powerpc/sysdev/mpic.c                  |   14 +++-
- arch/powerpc/sysdev/ppc4xx_pci.c            |   15 ++--
- kernel/irq/irqdomain.c                      |   20 +++++-
- 29 files changed, 236 insertions(+), 128 deletions(-)
