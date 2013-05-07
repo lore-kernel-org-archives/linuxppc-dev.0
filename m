@@ -1,16 +1,9 @@
-Return-Path: <michael@ellerman.id.au>
-Date: Tue, 7 May 2013 14:23:15 +1000
+Return-Path: <michael@ozlabs.org>
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH] powerpc: fix numa distance for form0 device tree
-Message-ID: <20130507042315.GC12079@concordia>
-References: <1367898574-20594-1-git-send-email-michael@ellerman.id.au>
- <20130507040614.GA19525@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130507040614.GA19525@kroah.com>
-Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>,
- stable@vger.kernel.org
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc: Make CONFIG_RTAS_PROC depend on CONFIG_PROC_FS
+Date: Tue,  7 May 2013 14:43:39 +1000
+Message-Id: <1367901819-24305-1-git-send-email-michael@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,43 +13,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, May 06, 2013 at 09:06:15PM -0700, Greg KH wrote:
-> On Tue, May 07, 2013 at 01:49:34PM +1000, Michael Ellerman wrote:
-> > From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-> > 
-> > Commit 7122beeee7bc1757682049780179d7c216dd1c83 upstream.
-> > 
-> > The following commit breaks numa distance setup for old powerpc
-> > systems that use form0 encoding in device tree.
-> > 
-> > commit 41eab6f88f24124df89e38067b3766b7bef06ddb
-> > powerpc/numa: Use form 1 affinity to setup node distance
-> > 
-> > Device tree node /rtas/ibm,associativity-reference-points would
-> > index into /cpus/PowerPCxxxx/ibm,associativity based on form0 or
-> > form1 encoding detected by ibm,architecture-vec-5 property.
-> > 
-> > All modern systems use form1 and current kernel code is correct.
-> > However, on older systems with form0 encoding, the numa distance
-> > will get hard coded as LOCAL_DISTANCE for all nodes.  This causes
-> > task scheduling anomaly since scheduler will skip building numa
-> > level domain (topmost domain with all cpus) if all numa distances
-> > are same.  (value of 'level' in sched_init_numa() will remain 0)
-> > 
-> > Prior to the above commit:
-> > ((from) == (to) ? LOCAL_DISTANCE : REMOTE_DISTANCE)
-> > 
-> > Restoring compatible behavior with this patch for old powerpc systems
-> > with device tree where numa distance are encoded as form0.
-> > 
-> > Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-> > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> > ---
-> >  arch/powerpc/mm/numa.c |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> What stable tree should this be applied to?
+We are getting build errors with CONFIG_PROC_FS=n:
 
-All of them please.
+arch/powerpc/kernel/rtas_flash.c
+   In function 'rtas_flash_init':
+  745:33: error: unused variable 'f' [-Werror=unused-variable]
 
-cheers
+But rtas_flash.c should not be built when CONFIG_PROC_FS=n, beacause all
+it does is provide a /proc interface to the RTAS flash routines.
+
+CONFIG_RTAS_FLASH already depends on CONFIG_RTAS_PROC, to indicate that
+it depends on the RTAS proc support, but CONFIG_RTAS_PROC does not
+depend on CONFIG_PROC_FS. So fix that.
+
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/platforms/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+index 34d224b..632444f 100644
+--- a/arch/powerpc/platforms/Kconfig
++++ b/arch/powerpc/platforms/Kconfig
+@@ -128,7 +128,7 @@ config PPC_RTAS_DAEMON
+ 
+ config RTAS_PROC
+ 	bool "Proc interface to RTAS"
+-	depends on PPC_RTAS
++	depends on PPC_RTAS && PROC_FS
+ 	default y
+ 
+ config RTAS_FLASH
+-- 
+1.7.10.4
