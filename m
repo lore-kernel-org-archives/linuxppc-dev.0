@@ -1,33 +1,21 @@
-Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 09DAD2C0135
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2013 12:33:09 +1000 (EST)
-Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Tue, 7 May 2013 07:57:00 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 7171D3940059
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2013 08:03:02 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r472WuZk58195976
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 May 2013 08:02:56 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r472X0K1032512
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 May 2013 12:33:00 +1000
-Message-ID: <1367893978.3083.13.camel@ThinkPad-T5421>
-Subject: [PATCH] powerpc: Fix  MAX_STACK_TRACE_ENTRIES too low warning again
-From: Li Zhong <zhong@linux.vnet.ibm.com>
-To: PowerPC email list <linuxppc-dev@lists.ozlabs.org>
-Date: Tue, 07 May 2013 10:32:58 +0800
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BE5CD2C0117
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2013 12:43:54 +1000 (EST)
+Message-ID: <51886A59.80807@windriver.com>
+Date: Tue, 7 May 2013 10:43:37 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [RFC][KVM][PATCH 1/1] kvm:ppc:booke-64: soft-disable interrupts
+References: <1367892390.3398.12@snotra>
+In-Reply-To: <1367892390.3398.12@snotra>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,56 +25,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Saw this warning again, and this time from the ret_from_fork path. 
+On 05/07/2013 10:06 AM, Scott Wood wrote:
+> On 05/06/2013 08:56:25 PM, tiejun.chen wrote:
+>> On 05/07/2013 07:50 AM, Scott Wood wrote:
+>>> On 05/05/2013 10:13:17 PM, tiejun.chen wrote:
+>>>> On 05/06/2013 11:10 AM, Tiejun Chen wrote:
+>>>>> For the external interrupt, the decrementer exception and the doorbell
+>>>>> excpetion, we also need to soft-disable interrupts while doing as host
+>>>>> interrupt handlers since the DO_KVM hook is always performed to skip
+>>>>> EXCEPTION_COMMON then miss this original chance with the 'ints'
+>>>>> (INTS_DISABLE).
+>>>
+>>> http://patchwork.ozlabs.org/patch/241344/
+>>> http://patchwork.ozlabs.org/patch/241412/
+>>>
+>>> :-)
+>>
+>> I'm observing the same behaviour as well:
+>>
+>>     WARN_ON_ONCE(!irqs_disabled());
+>
+> So, could you explain the benefits of your approach over what's being discussed
+> in those threads?
 
-It seems we could clear the back chain earlier in copy_thread(), which
-could cover both path, and also fix potential lockdep usage in
-schedule_tail(), or exception occurred before we clear the back chain.
+They're a long thread so I think I need to take time to see :)
 
-Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/entry_32.S |    2 --
- arch/powerpc/kernel/entry_64.S |    2 --
- arch/powerpc/kernel/process.c  |    1 +
- 3 files changed, 1 insertions(+), 4 deletions(-)
+>
+>>> Why wouldn't we always disable them?  kvmppc_handle_exit() will enable
+>>> interrupts when it's ready.
+>>
+>> This only disable soft interrupt for kvmppc_restart_interrupt() that restarts
+>> interrupts if they were meant for the host:
+>>
+>> a. SOFT_DISABLE_INTS() only for BOOKE_INTERRUPT_EXTERNAL |
+>> BOOKE_INTERRUPT_DECREMENTER | BOOKE_INTERRUPT_DOORBELL
+>
+> Those aren't the only exceptions that can end up going to the host.  We could
+> get a TLB miss that results in a heavyweight MMIO exit, etc.
 
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index e514de5..d22e73e 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -439,8 +439,6 @@ ret_from_fork:
- ret_from_kernel_thread:
- 	REST_NVGPRS(r1)
- 	bl	schedule_tail
--	li	r3,0
--	stw	r3,0(r1)
- 	mtlr	r14
- 	mr	r3,r15
- 	PPC440EP_ERR42
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 3fe5259..48e8a86 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -376,8 +376,6 @@ _GLOBAL(ret_from_fork)
- _GLOBAL(ret_from_kernel_thread)
- 	bl	.schedule_tail
- 	REST_NVGPRS(r1)
--	li	r3,0
--	std	r3,0(r1)
- 	ld	r14, 0(r14)
- 	mtlr	r14
- 	mr	r3,r15
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index ceb4e7b..2c9fc5e 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -973,6 +973,7 @@ int copy_thread(unsigned long clone_flags, unsigned long usp,
- 	 */
- 	sp -= sizeof(struct pt_regs);
- 	kregs = (struct pt_regs *) sp;
-+	kregs->gpr[1] = 0;
- 	sp -= STACK_FRAME_OVERHEAD;
- 	p->thread.ksp = sp;
- 	p->thread.ksp_limit = (unsigned long)task_stack_page(p) +
--- 
-1.7.1
+This is like host handler, so I'm just disabling soft interrupt during 
+kvmppc_restart_interrupt() for Doorbell interrupt/Decrementer Interrupt/External 
+Input Interrupt.
+
+I don't see anything should be disabled for any TLB exception in host handler.
+
+>
+> And I'd rather see any fix for this problem stay out of the asm code.
+
+We already have an appropriate SOFT_DISABLE_INTS so I think we can take this 
+easily :)
+
+>
+>> b. bl      kvmppc_handle_exit
+>>
+>> c. kvmppc_handle_exit()
+>> {
+>>         int r = RESUME_HOST;
+>>         int s;
+>>
+>>         /* update before a new last_exit_type is rewritten */
+>>         kvmppc_update_timing_stats(vcpu);
+>>
+>>         /* restart interrupts if they were meant for the host */
+>>         kvmppc_restart_interrupt(vcpu, exit_nr);
+>>
+>>         local_irq_enable();    ==> Enable again.
+>> ....
+>>
+>> And shouldn't we handle kvmppc_restart_interrupt() like the original HOST flow?
+>>
+>> #define MASKABLE_EXCEPTION(trapnum, intnum, label, hdlr, ack)           \
+>>         START_EXCEPTION(label);                                         \
+>>         NORMAL_EXCEPTION_PROLOG(trapnum, intnum, PROLOG_ADDITION_MASKABLE)\
+>>         EXCEPTION_COMMON(trapnum, PACA_EXGEN, *INTS_DISABLE*)             \
+>>     ...
+>
+> Could you elaborate on what you mean?
+
+In host handler, we always use MASKABLE_EXCEPTION() to define-to-handle some 
+exceptions: Doorbell interrupt/Decrementer Interrupt/External Input Interrupt:
+
+#define MASKABLE_EXCEPTION(trapnum, intnum, label, hdlr, ack)           \
+         START_EXCEPTION(label);                                         \
+         NORMAL_EXCEPTION_PROLOG(trapnum, intnum, PROLOG_ADDITION_MASKABLE)\
+         EXCEPTION_COMMON(trapnum, PACA_EXGEN, *INTS_DISABLE*)             \
+
+This would call INTS_DISABLE, which is equal to SOFT_DISABLE_INTS(), to disable 
+soft interrupt before call all associated handlers: 
+do_IRQ()/timer_interrupt()/doorbell_exception().
+
+But DO_KVM hook always skips INTS_DISABLE.
+
+So I think we also need to do INTS_DISABLE for kvmppc_restart_interrupt() since 
+actually that restarts interrupts for the host with a similar way as they are 
+called by host.
+
+Tiejun
