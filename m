@@ -1,22 +1,12 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B5EBB2C00AD
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2013 11:33:47 +1000 (EST)
-Message-ID: <518859F5.7020503@windriver.com>
-Date: Tue, 7 May 2013 09:33:41 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>, eranian@google.com
 MIME-Version: 1.0
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [v1][KVM][PATCH 1/1] kvm:ppc: enable doorbell exception with
- E500MC
-References: <1367808836-28635-1-git-send-email-tiejun.chen@windriver.com>
- <5187C521.2070904@suse.de>
-In-Reply-To: <5187C521.2070904@suse.de>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+Subject: Invalid perf_branch_entry.to entries question
+Date: Tue, 07 May 2013 11:35:28 +1000
+Message-ID: <25394.1367890528@ale.ozlabs.ibm.com>
+Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>, linux-kernel@vger.kernel.org,
+ Anshuman Khandual <anshuman.khandual@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,38 +16,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/06/2013 10:58 PM, Alexander Graf wrote:
-> On 05/06/2013 04:53 AM, Tiejun Chen wrote:
->> Actually E500MC also support doorbell exception, and CONFIG_PPC_E500MC
->> can cover BOOK3E/BOOK3E_64 as well.
->>
->> Signed-off-by: Tiejun Chen<tiejun.chen@windriver.com>
->> ---
->>   arch/powerpc/kvm/booke.c |    2 +-
->>   1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
->> index 1020119..dc1f590 100644
->> --- a/arch/powerpc/kvm/booke.c
->> +++ b/arch/powerpc/kvm/booke.c
->> @@ -795,7 +795,7 @@ static void kvmppc_restart_interrupt(struct kvm_vcpu *vcpu,
->>           kvmppc_fill_pt_regs(&regs);
->>           timer_interrupt(&regs);
->>           break;
->> -#if defined(CONFIG_PPC_FSL_BOOK3E) || defined(CONFIG_PPC_BOOK3E_64)
->> +#if defined(CONFIG_PPC_E500MC)
->
-> I suppose you mean CONFIG_KVM_E500MC here? Why didn't this work for you before?
+Peter & Stephane,
 
-This works for me.
+We are plumbing the POWER8 Branch History Rolling Buffer (BHRB) into
+struct perf_branch_entry.
 
-Here I just mean currently CONFIG_PPC_E500MC is always selected no matter what 
-CONFIG_PPC_FSL_BOOK3E or CONFIG_PPC_BOOK3E_64 is enabled. And especially, this 
-is already in the arch/powerpc/kvm/booke.c file, so I think one #ifdef 
-(CONFIG_PPC_E500MC) is enough and also makes sense.
+Sometimes on POWER8 we may not be able to fill out the "to" address.  We
+initially thought of just making this 0, but it's feasible that this
+could be a valid address to branch to. 
 
-> The ifdef above should cover the same range of CPUs.
+The other logical value to indicate an invalid entry would be all 1s
+which is not possible (on POWER at least).
 
-Or furthermore, the #ifdef CONFIG_PPC_DOORBELL is reasonable to cover this.
+Do you guys have a preference as to what we should use as an invalid
+entry?  This would have some consequences for the userspace tool also.
 
-Tiejun
+The alternative would be to add a flag alongside mispred/predicted to
+indicate the validity of the "to" address.
+
+Mikey
