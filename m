@@ -1,40 +1,19 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e37.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 986132C014B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2013 15:12:56 +1000 (EST)
-Received: from /spool/local
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Mon, 6 May 2013 23:12:54 -0600
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
- [9.17.195.228])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id BD3FB3E4003F
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 May 2013 23:12:36 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r475CpAx094250
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 May 2013 23:12:51 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r475CofK022959
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 May 2013 23:12:51 -0600
-Date: Tue, 7 May 2013 13:12:46 +0800
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 3/3] powerpc/powernv: Don't configure IO window on PHB3
-Message-ID: <20130507051246.GB31911@shangw.(null)>
-References: <1367847858-6506-1-git-send-email-shangw@linux.vnet.ibm.com>
- <1367847858-6506-3-git-send-email-shangw@linux.vnet.ibm.com>
- <1367876070.15842.60.camel@pasglop>
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 7 May 2013 15:05:14 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH 2/6] KVM: PPC: Add support for multiple-TCE hcalls
+Message-ID: <20130507050514.GN13692@truffula.fritz.box>
+References: <1367825157-27231-1-git-send-email-aik@ozlabs.ru>
+ <1367825157-27231-3-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1367876070.15842.60.camel@pasglop>
-Cc: yinghai@kernel.org, linux-pci@vger.kernel.org, bhelgaas@google.com,
- linuxppc-dev@lists.ozlabs.org, Gavin Shan <shangw@linux.vnet.ibm.com>
-Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="mkHYMT4O8DyWoHkb"
+In-Reply-To: <1367825157-27231-3-git-send-email-aik@ozlabs.ru>
+Cc: kvm@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>,
+ Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,20 +23,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 07, 2013 at 07:34:30AM +1000, Benjamin Herrenschmidt wrote:
->On Mon, 2013-05-06 at 21:44 +0800, Gavin Shan wrote:
->> We needn't configure IO windows for the corresponding PEs on PHB3
->> since that doesn't support IO.
->
->Here too, no need for such a flag, just check that
->pci_controller->io_resource.flags is 0.
->
->BTW. Please work on top of the patch I sent already that avoids adding
->bogus resources to pci_host_bridge when their flags are 0. I'll send
->it to Linus today.
->
 
-I've changed it accordingly on top of your patches in v2 :-)
+--mkHYMT4O8DyWoHkb
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
-Gavin
+On Mon, May 06, 2013 at 05:25:53PM +1000, Alexey Kardashevskiy wrote:
+> This adds real mode handlers for the H_PUT_TCE_INDIRECT and
+> H_STUFF_TCE hypercalls for QEMU emulated devices such as virtio
+> devices or emulated PCI.  These calls allow adding multiple entries
+> (up to 512) into the TCE table in one call which saves time on
+> transition to/from real mode.
+>=20
+> This adds a guest physical to host real address converter
+> and calls the existing H_PUT_TCE handler. The converting function
+> is going to be fully utilized by upcoming VFIO supporting patches.
+>=20
+> This also implements the KVM_CAP_PPC_MULTITCE capability,
+> so in order to support the functionality of this patch, QEMU
+> needs to query for this capability and set the "hcall-multi-tce"
+> hypertas property only if the capability is present, otherwise
+> there will be serious performance degradation.
+>=20
+> Cc: David Gibson <david@gibson.dropbear.id.au>
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Signed-off-by: Paul Mackerras <paulus@samba.org>
+
+Fwiw, it would be nice to get this patch merged, regardless of the
+rest of the VFIO/powerpc patches.
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--mkHYMT4O8DyWoHkb
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iEYEARECAAYFAlGIi4oACgkQaILKxv3ab8btKwCdHj3FzLAniahSk7sv0r3TlKo5
+NQYAn1Jd4jU6Ka7Lbpe9r7CWioi5AqFg
+=bJLO
+-----END PGP SIGNATURE-----
+
+--mkHYMT4O8DyWoHkb--
