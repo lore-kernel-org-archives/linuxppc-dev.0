@@ -1,23 +1,43 @@
-Return-Path: <Andrew.Murray@arm.com>
-From: Andrew Murray <Andrew.Murray@arm.com>
-To: robherring2@gmail.com
-Subject: [PATCH v9 3/3] of/pci: microblaze: convert to common
- of_pci_range_parser
-Date: Tue,  7 May 2013 16:31:14 +0100
-Message-Id: <1367940674-11987-4-git-send-email-Andrew.Murray@arm.com>
-In-Reply-To: <1367940674-11987-1-git-send-email-Andrew.Murray@arm.com>
-References: <1367940674-11987-1-git-send-email-Andrew.Murray@arm.com>
-Cc: linux-mips@linux-mips.org, siva.kallam@samsung.com,
- linus.walleij@linaro.org, thierry.reding@avionic-design.de,
- Liviu.Dudau@arm.com, juhosg@openwrt.org, paulus@samba.org,
- linux-samsung-soc@vger.kernel.org, linux@arm.linux.org.uk, jg1.han@samsung.com,
- jgunthorpe@obsidianresearch.com, thomas.abraham@linaro.org,
- linux-pci@vger.kernel.org, grant.likely@linaro.org, arnd@arndb.de,
- devicetree-discuss@lists.ozlabs.org, kgene.kim@samsung.com,
- bhelgaas@google.com, linux-arm-kernel@lists.infradead.org,
- thomas.petazzoni@free-electrons.com, monstr@monstr.eu,
- linux-kernel@vger.kernel.org, suren.reddy@samsung.com,
- Andrew Murray <Andrew.Murray@arm.com>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B7C412C016E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 May 2013 06:34:00 +1000 (EST)
+Received: from /spool/local
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Tue, 7 May 2013 16:33:55 -0400
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 1661138C8051
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2013 16:33:52 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r47KXp4L291634
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 May 2013 16:33:52 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r47KXpfI030923
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 May 2013 17:33:51 -0300
+Date: Tue, 7 May 2013 13:33:47 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] arch/powerpc: advertise ISA2.07, HTM, DSCR, EBB and ISEL
+ bits in HWCAP2
+Message-ID: <20130507203346.GA7307@linux.vnet.ibm.com>
+References: <20130503231933.GA29436@linux.vnet.ibm.com>
+ <1367623431.4389.132.camel@pasglop>
+ <20130503234019.GE8561@linux.vnet.ibm.com>
+ <OFBCA2593E.F64367AB-ON86257B63.004ED7A8-86257B63.00506FC6@us.ibm.com>
+ <1367876228.15842.62.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1367876228.15842.62.camel@pasglop>
+Cc: linuxppc-dev@lists.ozlabs.org, Michael R Meissner <mrmeissn@us.ibm.com>,
+ Steve Munroe <sjmunroe@us.ibm.com>, Peter Bergner <bergner@us.ibm.com>,
+ Ryan Arnold <ryanarn@us.ibm.com>,
+ Michael Neuling <michael.neuling@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,201 +47,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch converts the pci_load_of_ranges function to use the new common
-of_pci_range_parser.
+On 07.05.2013 [07:37:08 +1000], Benjamin Herrenschmidt wrote:
+> On Mon, 2013-05-06 at 09:38 -0500, Ryan Arnold wrote:
+> > My understanding was that these bits being 'on' is an indication of
+> > what features the hardware supports (or what the kernel emulates) and
+> > a not an indication of whether that facility is currently enabled or
+> > not.  If the hardware supports a particular feature but it is not
+> > enabled I'd expect that user-space usage of that feature would cause
+> > the kernel to trap on a facility availability exception (which is how
+> > Altivec/VMX is implemented, being defaulted to turned off).
+> 
+> Right but the discussion is about whether we should expose the bits
+> when the kernel doesn't have the ability to handle the feature :-)
+> 
+> IE. We need to remove the HTM feature if the kernel is compiled without
+> transactional memory support.
+> 
+> Similarily, Nish, you may need to check that we remove those bits if
+> pHyp has the partition in a mode that doesn't support them (P7
+> compatibility for example) for migration purposes.
 
-Signed-off-by: Andrew Murray <Andrew.Murray@arm.com>
-Signed-off-by: Liviu Dudau <Liviu.Dudau@arm.com>
----
- arch/microblaze/pci/pci-common.c |  106 ++++++++++++++------------------------
- 1 files changed, 38 insertions(+), 68 deletions(-)
+Yep, I'll need to talk with Mikey about this part. Will be a follow-on
+patch if needed. Minimally, the bit defines will stay the same, which is
+the important part to get going right now.
 
-diff --git a/arch/microblaze/pci/pci-common.c b/arch/microblaze/pci/pci-common.c
-index 9ea521e..ba9e4a1 100644
---- a/arch/microblaze/pci/pci-common.c
-+++ b/arch/microblaze/pci/pci-common.c
-@@ -658,67 +658,42 @@ void pci_resource_to_user(const struct pci_dev *dev, int bar,
- void pci_process_bridge_OF_ranges(struct pci_controller *hose,
- 				  struct device_node *dev, int primary)
- {
--	const u32 *ranges;
--	int rlen;
--	int pna = of_n_addr_cells(dev);
--	int np = pna + 5;
- 	int memno = 0, isa_hole = -1;
--	u32 pci_space;
--	unsigned long long pci_addr, cpu_addr, pci_next, cpu_next, size;
- 	unsigned long long isa_mb = 0;
- 	struct resource *res;
-+	struct of_pci_range range;
-+	struct of_pci_range_parser parser;
- 
- 	pr_info("PCI host bridge %s %s ranges:\n",
- 	       dev->full_name, primary ? "(primary)" : "");
- 
--	/* Get ranges property */
--	ranges = of_get_property(dev, "ranges", &rlen);
--	if (ranges == NULL)
-+	/* Check for ranges property */
-+	if (of_pci_range_parser_init(&parser, dev))
- 		return;
- 
--	/* Parse it */
- 	pr_debug("Parsing ranges property...\n");
--	while ((rlen -= np * 4) >= 0) {
-+	for_each_of_pci_range(&parser, &range) {
- 		/* Read next ranges element */
--		pci_space = ranges[0];
--		pci_addr = of_read_number(ranges + 1, 2);
--		cpu_addr = of_translate_address(dev, ranges + 3);
--		size = of_read_number(ranges + pna + 3, 2);
--
- 		pr_debug("pci_space: 0x%08x pci_addr:0x%016llx ",
--				pci_space, pci_addr);
-+				range.pci_space, range.pci_addr);
- 		pr_debug("cpu_addr:0x%016llx size:0x%016llx\n",
--					cpu_addr, size);
--
--		ranges += np;
-+					range.cpu_addr, range.size);
- 
- 		/* If we failed translation or got a zero-sized region
- 		 * (some FW try to feed us with non sensical zero sized regions
- 		 * such as power3 which look like some kind of attempt
- 		 * at exposing the VGA memory hole)
- 		 */
--		if (cpu_addr == OF_BAD_ADDR || size == 0)
-+		if (range.cpu_addr == OF_BAD_ADDR || range.size == 0)
- 			continue;
- 
--		/* Now consume following elements while they are contiguous */
--		for (; rlen >= np * sizeof(u32);
--		     ranges += np, rlen -= np * 4) {
--			if (ranges[0] != pci_space)
--				break;
--			pci_next = of_read_number(ranges + 1, 2);
--			cpu_next = of_translate_address(dev, ranges + 3);
--			if (pci_next != pci_addr + size ||
--			    cpu_next != cpu_addr + size)
--				break;
--			size += of_read_number(ranges + pna + 3, 2);
--		}
--
- 		/* Act based on address space type */
- 		res = NULL;
--		switch ((pci_space >> 24) & 0x3) {
--		case 1:		/* PCI IO space */
-+		switch (range.flags & IORESOURCE_TYPE_BITS) {
-+		case IORESOURCE_IO:
- 			pr_info("  IO 0x%016llx..0x%016llx -> 0x%016llx\n",
--			       cpu_addr, cpu_addr + size - 1, pci_addr);
-+				range.cpu_addr, range.cpu_addr + range.size - 1,
-+				range.pci_addr);
- 
- 			/* We support only one IO range */
- 			if (hose->pci_io_size) {
-@@ -726,11 +701,12 @@ void pci_process_bridge_OF_ranges(struct pci_controller *hose,
- 				continue;
- 			}
- 			/* On 32 bits, limit I/O space to 16MB */
--			if (size > 0x01000000)
--				size = 0x01000000;
-+			if (range.size > 0x01000000)
-+				range.size = 0x01000000;
- 
- 			/* 32 bits needs to map IOs here */
--			hose->io_base_virt = ioremap(cpu_addr, size);
-+			hose->io_base_virt = ioremap(range.cpu_addr,
-+						range.size);
- 
- 			/* Expect trouble if pci_addr is not 0 */
- 			if (primary)
-@@ -739,19 +715,20 @@ void pci_process_bridge_OF_ranges(struct pci_controller *hose,
- 			/* pci_io_size and io_base_phys always represent IO
- 			 * space starting at 0 so we factor in pci_addr
- 			 */
--			hose->pci_io_size = pci_addr + size;
--			hose->io_base_phys = cpu_addr - pci_addr;
-+			hose->pci_io_size = range.pci_addr + range.size;
-+			hose->io_base_phys = range.cpu_addr - range.pci_addr;
- 
- 			/* Build resource */
- 			res = &hose->io_resource;
--			res->flags = IORESOURCE_IO;
--			res->start = pci_addr;
-+			range.cpu_addr = range.pci_addr;
-+
- 			break;
--		case 2:		/* PCI Memory space */
--		case 3:		/* PCI 64 bits Memory space */
-+		case IORESOURCE_MEM:
- 			pr_info(" MEM 0x%016llx..0x%016llx -> 0x%016llx %s\n",
--			       cpu_addr, cpu_addr + size - 1, pci_addr,
--			       (pci_space & 0x40000000) ? "Prefetch" : "");
-+				range.cpu_addr, range.cpu_addr + range.size - 1,
-+				range.pci_addr,
-+				(range.pci_space & 0x40000000) ?
-+				"Prefetch" : "");
- 
- 			/* We support only 3 memory ranges */
- 			if (memno >= 3) {
-@@ -759,13 +736,13 @@ void pci_process_bridge_OF_ranges(struct pci_controller *hose,
- 				continue;
- 			}
- 			/* Handles ISA memory hole space here */
--			if (pci_addr == 0) {
--				isa_mb = cpu_addr;
-+			if (range.pci_addr == 0) {
-+				isa_mb = range.cpu_addr;
- 				isa_hole = memno;
- 				if (primary || isa_mem_base == 0)
--					isa_mem_base = cpu_addr;
--				hose->isa_mem_phys = cpu_addr;
--				hose->isa_mem_size = size;
-+					isa_mem_base = range.cpu_addr;
-+				hose->isa_mem_phys = range.cpu_addr;
-+				hose->isa_mem_size = range.size;
- 			}
- 
- 			/* We get the PCI/Mem offset from the first range or
-@@ -773,30 +750,23 @@ void pci_process_bridge_OF_ranges(struct pci_controller *hose,
- 			 * hole. If they don't match, bugger.
- 			 */
- 			if (memno == 0 ||
--			    (isa_hole >= 0 && pci_addr != 0 &&
-+			    (isa_hole >= 0 && range.pci_addr != 0 &&
- 			     hose->pci_mem_offset == isa_mb))
--				hose->pci_mem_offset = cpu_addr - pci_addr;
--			else if (pci_addr != 0 &&
--				 hose->pci_mem_offset != cpu_addr - pci_addr) {
-+				hose->pci_mem_offset = range.cpu_addr -
-+							range.pci_addr;
-+			else if (range.pci_addr != 0 &&
-+				 hose->pci_mem_offset != range.cpu_addr -
-+							range.pci_addr) {
- 				pr_info(" \\--> Skipped (offset mismatch) !\n");
- 				continue;
- 			}
- 
- 			/* Build resource */
- 			res = &hose->mem_resources[memno++];
--			res->flags = IORESOURCE_MEM;
--			if (pci_space & 0x40000000)
--				res->flags |= IORESOURCE_PREFETCH;
--			res->start = cpu_addr;
- 			break;
- 		}
--		if (res != NULL) {
--			res->name = dev->full_name;
--			res->end = res->start + size - 1;
--			res->parent = NULL;
--			res->sibling = NULL;
--			res->child = NULL;
--		}
-+		if (res != NULL)
-+			of_pci_range_to_resource(&range, dev, res);
- 	}
- 
- 	/* If there's an ISA hole and the pci_mem_offset is -not- matching
--- 
-1.7.0.4
+Thanks,
+Nish
