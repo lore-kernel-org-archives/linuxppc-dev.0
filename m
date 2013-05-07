@@ -1,19 +1,20 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BE5CD2C0117
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2013 12:43:54 +1000 (EST)
-Message-ID: <51886A59.80807@windriver.com>
-Date: Tue, 7 May 2013 10:43:37 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
+Return-Path: <B07421@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 63CB62C0136
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2013 13:05:05 +1000 (EST)
+Date: Mon, 6 May 2013 22:04:52 -0500
+From: Scott Wood <scottwood@freescale.com>
 Subject: Re: [RFC][KVM][PATCH 1/1] kvm:ppc:booke-64: soft-disable interrupts
-References: <1367892390.3398.12@snotra>
-In-Reply-To: <1367892390.3398.12@snotra>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
+To: tiejun.chen <tiejun.chen@windriver.com>
+In-Reply-To: <51886A59.80807@windriver.com> (from tiejun.chen@windriver.com
+ on Mon May  6 21:43:37 2013)
+Message-ID: <1367895892.3398.13@snotra>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
 Cc: linuxppc-dev@lists.ozlabs.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
  kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,99 +26,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/07/2013 10:06 AM, Scott Wood wrote:
-> On 05/06/2013 08:56:25 PM, tiejun.chen wrote:
->> On 05/07/2013 07:50 AM, Scott Wood wrote:
->>> On 05/05/2013 10:13:17 PM, tiejun.chen wrote:
->>>> On 05/06/2013 11:10 AM, Tiejun Chen wrote:
->>>>> For the external interrupt, the decrementer exception and the doorbell
->>>>> excpetion, we also need to soft-disable interrupts while doing as host
->>>>> interrupt handlers since the DO_KVM hook is always performed to skip
->>>>> EXCEPTION_COMMON then miss this original chance with the 'ints'
->>>>> (INTS_DISABLE).
->>>
->>> http://patchwork.ozlabs.org/patch/241344/
->>> http://patchwork.ozlabs.org/patch/241412/
->>>
->>> :-)
->>
->> I'm observing the same behaviour as well:
->>
->>     WARN_ON_ONCE(!irqs_disabled());
->
-> So, could you explain the benefits of your approach over what's being discussed
-> in those threads?
+On 05/06/2013 09:43:37 PM, tiejun.chen wrote:
+> On 05/07/2013 10:06 AM, Scott Wood wrote:
+>> On 05/06/2013 08:56:25 PM, tiejun.chen wrote:
+>>> On 05/07/2013 07:50 AM, Scott Wood wrote:
+>>>> On 05/05/2013 10:13:17 PM, tiejun.chen wrote:
+>>>>> On 05/06/2013 11:10 AM, Tiejun Chen wrote:
+>>>>>> For the external interrupt, the decrementer exception and the =20
+>>>>>> doorbell
+>>>>>> excpetion, we also need to soft-disable interrupts while doing =20
+>>>>>> as host
+>>>>>> interrupt handlers since the DO_KVM hook is always performed to =20
+>>>>>> skip
+>>>>>> EXCEPTION_COMMON then miss this original chance with the 'ints'
+>>>>>> (INTS_DISABLE).
+>>>>=20
+>>>> http://patchwork.ozlabs.org/patch/241344/
+>>>> http://patchwork.ozlabs.org/patch/241412/
+>>>>=20
+>>>> :-)
+>>>=20
+>>> I'm observing the same behaviour as well:
+>>>=20
+>>>     WARN_ON_ONCE(!irqs_disabled());
+>>=20
+>> So, could you explain the benefits of your approach over what's =20
+>> being discussed
+>> in those threads?
+>=20
+> They're a long thread so I think I need to take time to see :)
+>=20
+>>=20
+>>>> Why wouldn't we always disable them?  kvmppc_handle_exit() will =20
+>>>> enable
+>>>> interrupts when it's ready.
+>>>=20
+>>> This only disable soft interrupt for kvmppc_restart_interrupt() =20
+>>> that restarts
+>>> interrupts if they were meant for the host:
+>>>=20
+>>> a. SOFT_DISABLE_INTS() only for BOOKE_INTERRUPT_EXTERNAL |
+>>> BOOKE_INTERRUPT_DECREMENTER | BOOKE_INTERRUPT_DOORBELL
+>>=20
+>> Those aren't the only exceptions that can end up going to the host.  =20
+>> We could
+>> get a TLB miss that results in a heavyweight MMIO exit, etc.
+>=20
+> This is like host handler, so I'm just disabling soft interrupt =20
+> during kvmppc_restart_interrupt() for Doorbell interrupt/Decrementer =20
+> Interrupt/External Input Interrupt.
+>=20
+> I don't see anything should be disabled for any TLB exception in host =20
+> handler.
 
-They're a long thread so I think I need to take time to see :)
+Every exception type needs consistent lazy EE state once we hit the =20
+local_irq_enable() (or any other C code that cares).
 
->
->>> Why wouldn't we always disable them?  kvmppc_handle_exit() will enable
->>> interrupts when it's ready.
->>
->> This only disable soft interrupt for kvmppc_restart_interrupt() that restarts
->> interrupts if they were meant for the host:
->>
->> a. SOFT_DISABLE_INTS() only for BOOKE_INTERRUPT_EXTERNAL |
->> BOOKE_INTERRUPT_DECREMENTER | BOOKE_INTERRUPT_DOORBELL
->
-> Those aren't the only exceptions that can end up going to the host.  We could
-> get a TLB miss that results in a heavyweight MMIO exit, etc.
+Plus, if you're going to add code to make something conditional, you =20
+should have a good reason for making it conditional.  Being more like =20
+the 64-bit host handler for its own sake isn't good enough, especially =20
+if you introduce differences between 32 and 64 bit in the process.
 
-This is like host handler, so I'm just disabling soft interrupt during 
-kvmppc_restart_interrupt() for Doorbell interrupt/Decrementer Interrupt/External 
-Input Interrupt.
+>> And I'd rather see any fix for this problem stay out of the asm code.
+>=20
+> We already have an appropriate SOFT_DISABLE_INTS so I think we can =20
+> take this easily :)
 
-I don't see anything should be disabled for any TLB exception in host handler.
+An unconditional call to hard_irq_disable() at the beginning of =20
+kvmppc_handle_exit() should suffice.  I already have this in the next =20
+version of my patch that I'll be posting shortly.
 
->
-> And I'd rather see any fix for this problem stay out of the asm code.
+Note that we need this on 32-bit as well, so that trace_hardirqs_off() =20
+gets called.
 
-We already have an appropriate SOFT_DISABLE_INTS so I think we can take this 
-easily :)
-
->
->> b. bl      kvmppc_handle_exit
->>
->> c. kvmppc_handle_exit()
->> {
->>         int r = RESUME_HOST;
->>         int s;
->>
->>         /* update before a new last_exit_type is rewritten */
->>         kvmppc_update_timing_stats(vcpu);
->>
->>         /* restart interrupts if they were meant for the host */
->>         kvmppc_restart_interrupt(vcpu, exit_nr);
->>
->>         local_irq_enable();    ==> Enable again.
->> ....
->>
->> And shouldn't we handle kvmppc_restart_interrupt() like the original HOST flow?
->>
->> #define MASKABLE_EXCEPTION(trapnum, intnum, label, hdlr, ack)           \
->>         START_EXCEPTION(label);                                         \
->>         NORMAL_EXCEPTION_PROLOG(trapnum, intnum, PROLOG_ADDITION_MASKABLE)\
->>         EXCEPTION_COMMON(trapnum, PACA_EXGEN, *INTS_DISABLE*)             \
->>     ...
->
-> Could you elaborate on what you mean?
-
-In host handler, we always use MASKABLE_EXCEPTION() to define-to-handle some 
-exceptions: Doorbell interrupt/Decrementer Interrupt/External Input Interrupt:
-
-#define MASKABLE_EXCEPTION(trapnum, intnum, label, hdlr, ack)           \
-         START_EXCEPTION(label);                                         \
-         NORMAL_EXCEPTION_PROLOG(trapnum, intnum, PROLOG_ADDITION_MASKABLE)\
-         EXCEPTION_COMMON(trapnum, PACA_EXGEN, *INTS_DISABLE*)             \
-
-This would call INTS_DISABLE, which is equal to SOFT_DISABLE_INTS(), to disable 
-soft interrupt before call all associated handlers: 
-do_IRQ()/timer_interrupt()/doorbell_exception().
-
-But DO_KVM hook always skips INTS_DISABLE.
-
-So I think we also need to do INTS_DISABLE for kvmppc_restart_interrupt() since 
-actually that restarts interrupts for the host with a similar way as they are 
-called by host.
-
-Tiejun
+-Scott=
