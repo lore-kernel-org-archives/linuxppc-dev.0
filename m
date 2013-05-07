@@ -1,23 +1,20 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 7 May 2013 16:54:07 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH 5/6] KVM: PPC: Add support for IOMMU in-kernel handling
-Message-ID: <20130507065407.GT13692@truffula.fritz.box>
-References: <1367825157-27231-1-git-send-email-aik@ozlabs.ru>
- <1367825157-27231-6-git-send-email-aik@ozlabs.ru>
- <20130507052933.GP13692@truffula.fritz.box>
- <51889663.5060909@ozlabs.ru>
- <20130507060240.GQ13692@truffula.fritz.box>
- <51889EE5.5050807@ozlabs.ru>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="nNx5P6V1TPcCvZS+"
-In-Reply-To: <51889EE5.5050807@ozlabs.ru>
-Cc: kvm@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>,
- Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 45CE62C0138
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2013 17:04:13 +1000 (EST)
+Message-ID: <1367910242.5769.11.camel@pasglop>
+Subject: [PATCH] powerpc: Make hard_irq_disable() do the right thing vs. irq
+ tracing
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@lists.ozlabs.org
+Date: Tue, 07 May 2013 17:04:02 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Scott Wood <scottwood@freescale.com>,
+ Mihai Caraman <mihai.caraman@freescale.com>, kvm-ppc@vger.kernel.org,
+ Tiejun Chen <tiejun.chen@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,57 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+If hard_irq_disable() is called while interrupts are already soft-disabled
+(which is the most common case) all is already well.
 
---nNx5P6V1TPcCvZS+
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+However you can (and in some cases want) to call it while everything is
+enabled (to make sure you don't get a lazy even, for example before entry
+into KVM guests) and in this case we need to inform the irq tracer that
+the irqs are going off.
 
-On Tue, May 07, 2013 at 04:27:49PM +1000, Alexey Kardashevskiy wrote:
-> On 05/07/2013 04:02 PM, David Gibson wrote:
-> > On Tue, May 07, 2013 at 03:51:31PM +1000, Alexey Kardashevskiy wrote:
-> >> On 05/07/2013 03:29 PM, David Gibson wrote:
-> >>> On Mon, May 06, 2013 at 05:25:56PM +1000, Alexey Kardashevskiy wrote:
-[snip]
-> >>>> +#define DRIVER_VERSION	"0.1"
-> >>>> +#define DRIVER_AUTHOR	"Paul Mackerras, IBM Corp. <paulus@au1.ibm.co=
-m>"
-> >>>> +#define DRIVER_DESC	"POWERPC KVM driver"
-> >>>
-> >>> Really?
-> >>
-> >>
-> >> What is wrong here?
-> >=20
-> > Well, it seems entirely unrelated to the rest of the changes,=20
->=20
->=20
-> The patch adds a module parameter so I had to add those DRIVER_xxx.
+We have to change the inline into a macro to avoid an include circular
+dependency hell hole.
 
-Ah, ok.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-> > and not obviously accurate.
->=20
-> Let's fix it then. How? Paul signed it...
+Tested on pseries, Scott, I don't expect a problem with that patch especially
+since most callers already are soft disabled, so I'll merge it now along with
+my other pending stuff and you can simplify your KVM one.
 
-Fair enough then.
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---nNx5P6V1TPcCvZS+
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iEYEARECAAYFAlGIpQ8ACgkQaILKxv3ab8bw8wCeJIzUXP39MoqIIYNCRSM2lFms
-MrwAnRUZcsWIXk+2a5fFzU8vr0zpCi6v
-=x9Bz
------END PGP SIGNATURE-----
-
---nNx5P6V1TPcCvZS+--
+diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
+index e45c494..d615b28 100644
+--- a/arch/powerpc/include/asm/hw_irq.h
++++ b/arch/powerpc/include/asm/hw_irq.h
+@@ -95,15 +95,13 @@ static inline bool arch_irqs_disabled(void)
+ #define __hard_irq_disable()	__mtmsrd(local_paca->kernel_msr, 1)
+ #endif
+ 
+-static inline void hard_irq_disable(void)
+-{
+-	__hard_irq_disable();
+-	get_paca()->soft_enabled = 0;
+-	get_paca()->irq_happened |= PACA_IRQ_HARD_DIS;
+-}
+-
+-/* include/linux/interrupt.h needs hard_irq_disable to be a macro */
+-#define hard_irq_disable	hard_irq_disable
++#define hard_irq_disable()	do {			\
++	__hard_irq_disable();				\
++	if (local_paca->soft_enabled)			\
++		trace_hardirqs_off();			\
++	get_paca()->soft_enabled = 0;			\
++	get_paca()->irq_happened |= PACA_IRQ_HARD_DIS;	\
++} while(0)
+ 
+ static inline bool lazy_irq_pending(void)
+ {
