@@ -1,18 +1,15 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D6D4D2C015E
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2013 21:06:39 +1000 (EST)
-From: Tiejun Chen <tiejun.chen@windriver.com>
-To: <agraf@suse.de>, <scottwood@freescale.com>
-Subject: [v1][KVM][PATCH 1/1] kvm:ppc:booehv: direct ISI exception to Guest
-Date: Tue, 7 May 2013 19:06:30 +0800
-Message-ID: <1367924791-24394-1-git-send-email-tiejun.chen@windriver.com>
+Return-Path: <weiyj.lk@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+Date: Tue, 7 May 2013 21:46:36 +0800
+Message-ID: <CAPgLHd_AKxWd1bOKF9afGLKsQzyfueYV6b3SrAf_V7ut2bUQzQ@mail.gmail.com>
+Subject: [PATCH] powerpc/fsl_msi: fix error return code in fsl_of_msi_probe()
+From: Wei Yongjun <weiyj.lk@gmail.com>
+To: benh@kernel.crashing.org, paulus@samba.org, grant.likely@linaro.org,
+ rob.herring@calxeda.com, galak@kernel.crashing.org,
+ u.kleine-koenig@pengutronix.de, agraf@suse.de, gregkh@linuxfoundation.org
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: yongjun_wei@trendmicro.com.cn, linuxppc-dev@lists.ozlabs.org,
+ devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,48 +19,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We also can direct ISI exception to Guest like DSI.
+From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 
-Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+Fix to return a negative error code in the MSI bitmap alloc error
+handling case instead of 0, as done elsewhere in this function.
+
+Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 ---
- arch/powerpc/kvm/booke_emulate.c |    3 +++
- arch/powerpc/kvm/e500mc.c        |    3 ++-
- 2 files changed, 5 insertions(+), 1 deletion(-)
+ arch/powerpc/sysdev/fsl_msi.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/kvm/booke_emulate.c b/arch/powerpc/kvm/booke_emulate.c
-index 27a4b28..33b14e9 100644
---- a/arch/powerpc/kvm/booke_emulate.c
-+++ b/arch/powerpc/kvm/booke_emulate.c
-@@ -197,6 +197,9 @@ int kvmppc_booke_emulate_mtspr(struct kvm_vcpu *vcpu, int sprn, ulong spr_val)
- 		break;
- 	case SPRN_IVOR3:
- 		vcpu->arch.ivor[BOOKE_IRQPRIO_INST_STORAGE] = spr_val;
-+#ifdef CONFIG_KVM_BOOKE_HV
-+		mtspr(SPRN_GIVOR3, spr_val);
-+#endif
- 		break;
- 	case SPRN_IVOR4:
- 		vcpu->arch.ivor[BOOKE_IRQPRIO_EXTERNAL] = spr_val;
-diff --git a/arch/powerpc/kvm/e500mc.c b/arch/powerpc/kvm/e500mc.c
-index c3bdc0a..acf546a 100644
---- a/arch/powerpc/kvm/e500mc.c
-+++ b/arch/powerpc/kvm/e500mc.c
-@@ -123,6 +123,7 @@ void kvmppc_core_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
+index ab02db3..f45556a 100644
+--- a/arch/powerpc/sysdev/fsl_msi.c
++++ b/arch/powerpc/sysdev/fsl_msi.c
+@@ -370,7 +370,6 @@ static int fsl_of_msi_probe(struct platform_device *dev)
+ 	struct fsl_msi *msi;
+ 	struct resource res;
+ 	int err, i, j, irq_index, count;
+-	int rc;
+ 	const u32 *p;
+ 	const struct fsl_msi_feature *features;
+ 	int len;
+@@ -431,8 +430,8 @@ static int fsl_of_msi_probe(struct platform_device *dev)
+ 	 */
+ 	msi->phandle = dev->dev.of_node->phandle;
  
- 	mtspr(SPRN_GIVPR, vcpu->arch.ivpr);
- 	mtspr(SPRN_GIVOR2, vcpu->arch.ivor[BOOKE_IRQPRIO_DATA_STORAGE]);
-+	mtspr(SPRN_GIVOR3, vcpu->arch.ivor[BOOKE_IRQPRIO_INST_STORAGE]);
- 	mtspr(SPRN_GIVOR8, vcpu->arch.ivor[BOOKE_IRQPRIO_SYSCALL]);
- 	mtspr(SPRN_GSPRG0, (unsigned long)vcpu->arch.shared->sprg0);
- 	mtspr(SPRN_GSPRG1, (unsigned long)vcpu->arch.shared->sprg1);
-@@ -185,7 +186,7 @@ int kvmppc_core_vcpu_setup(struct kvm_vcpu *vcpu)
- 	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
- 
- 	vcpu->arch.shadow_epcr = SPRN_EPCR_DSIGS | SPRN_EPCR_DGTMI | \
--				 SPRN_EPCR_DUVD;
-+				 SPRN_EPCR_DUVD | SPRN_EPCR_ISIGS;
- #ifdef CONFIG_64BIT
- 	vcpu->arch.shadow_epcr |= SPRN_EPCR_ICM;
- #endif
--- 
-1.7.9.5
+-	rc = fsl_msi_init_allocator(msi);
+-	if (rc) {
++	err = fsl_msi_init_allocator(msi);
++	if (err) {
+ 		dev_err(&dev->dev, "Error allocating MSI bitmap\n");
+ 		goto error_out;
+ 	}
