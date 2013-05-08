@@ -1,16 +1,32 @@
-Return-Path: <abounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 23C352C011B
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 May 2013 23:34:17 +1000 (EST)
-From: Alexandre Bounine <alexandre.bounine@idt.com>
-To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] rapidio/tsi721: fix bug in MSI interrupt handling
-Date: Wed,  8 May 2013 09:31:47 -0400
-Message-Id: <1368019907-12587-1-git-send-email-alexandre.bounine@idt.com>
-Cc: Alexandre Bounine <alexandre.bounine@idt.com>
+Return-Path: <liuj97@gmail.com>
+Received: from mail-pa0-f46.google.com (mail-pa0-f46.google.com
+ [209.85.220.46])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 477B02C007C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 May 2013 01:56:44 +1000 (EST)
+Received: by mail-pa0-f46.google.com with SMTP id fa10so1424891pad.33
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 May 2013 08:56:41 -0700 (PDT)
+From: Jiang Liu <liuj97@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v5,
+ part4 31/41] mm/ppc: prepare for removing num_physpages and simplify
+ mem_init()
+Date: Wed,  8 May 2013 23:51:28 +0800
+Message-Id: <1368028298-7401-32-git-send-email-jiang.liu@huawei.com>
+In-Reply-To: <1368028298-7401-1-git-send-email-jiang.liu@huawei.com>
+References: <1368028298-7401-1-git-send-email-jiang.liu@huawei.com>
+Cc: linux-arch@vger.kernel.org,
+ James Bottomley <James.Bottomley@HansenPartnership.com>,
+ David Howells <dhowells@redhat.com>, Jiang Liu <jiang.liu@huawei.com>,
+ Wen Congyang <wency@cn.fujitsu.com>, linux-mm@kvack.org,
+ Mark Salter <msalter@redhat.com>, linux-kernel@vger.kernel.org,
+ Michal Hocko <mhocko@suse.cz>, Minchan Kim <minchan@kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Mel Gorman <mgorman@suse.de>,
+ David Rientjes <rientjes@google.com>, linuxppc-dev@lists.ozlabs.org,
+ Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
+ KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+ Jianguo Wu <wujianguo@huawei.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,52 +36,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fix bug in MSI interrupt handling which causes loss of event notifications.
+Prepare for removing num_physpages and simplify mem_init().
 
-Typical indication of lost MSI interrupts are stalled message and doorbell
-transfers between RapidIO endpoints. To avoid loss of MSI interrupts all
-interrupts from the device must be disabled on entering the interrupt handler
-routine and re-enabled when exiting it. Re-enabling device interrupts will
-trigger new MSI message(s) if Tsi721 registered new events since entering
-interrupt handler routine.
-
-This patch is applicable to kernel versions starting from v3.2.
-
-Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
-Cc: Matt Porter <mporter@kernel.crashing.org>
+Signed-off-by: Jiang Liu <jiang.liu@huawei.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org
 ---
- drivers/rapidio/devices/tsi721.c |   12 ++++++++++++
- 1 files changed, 12 insertions(+), 0 deletions(-)
+ arch/powerpc/mm/mem.c |   56 +++++++++++--------------------------------------
+ 1 file changed, 12 insertions(+), 44 deletions(-)
 
-diff --git a/drivers/rapidio/devices/tsi721.c b/drivers/rapidio/devices/tsi721.c
-index 6faba40..a8b2c23 100644
---- a/drivers/rapidio/devices/tsi721.c
-+++ b/drivers/rapidio/devices/tsi721.c
-@@ -471,6 +471,10 @@ static irqreturn_t tsi721_irqhandler(int irq, void *ptr)
- 	u32 intval;
- 	u32 ch_inte;
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index b890245..4e24f1c 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -299,46 +299,27 @@ void __init paging_init(void)
  
-+	/* For MSI mode disable all device-level interrupts */
-+	if (priv->flags & TSI721_USING_MSI)
-+		iowrite32(0, priv->regs + TSI721_DEV_INTE);
-+
- 	dev_int = ioread32(priv->regs + TSI721_DEV_INT);
- 	if (!dev_int)
- 		return IRQ_NONE;
-@@ -560,6 +564,14 @@ static irqreturn_t tsi721_irqhandler(int irq, void *ptr)
- 		}
- 	}
+ void __init mem_init(void)
+ {
+-#ifdef CONFIG_NEED_MULTIPLE_NODES
+-	int nid;
+-#endif
+-	pg_data_t *pgdat;
+-	unsigned long i;
+-	struct page *page;
+-	unsigned long reservedpages = 0, codesize, initsize, datasize, bsssize;
+-
+ #ifdef CONFIG_SWIOTLB
+ 	swiotlb_init(0);
  #endif
-+
-+	/* For MSI mode re-enable device-level interrupts */
-+	if (priv->flags & TSI721_USING_MSI) {
-+		dev_int = TSI721_DEV_INT_SR2PC_CH | TSI721_DEV_INT_SRIO |
-+			TSI721_DEV_INT_SMSG_CH | TSI721_DEV_INT_BDMA_CH;
-+		iowrite32(dev_int, priv->regs + TSI721_DEV_INTE);
-+	}
-+
- 	return IRQ_HANDLED;
- }
  
+-	num_physpages = memblock_phys_mem_size() >> PAGE_SHIFT;
+ 	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE);
+ 
+ #ifdef CONFIG_NEED_MULTIPLE_NODES
+-        for_each_online_node(nid) {
+-		if (NODE_DATA(nid)->node_spanned_pages != 0) {
+-			printk("freeing bootmem node %d\n", nid);
+-			free_all_bootmem_node(NODE_DATA(nid));
+-		}
++	{
++		pg_data_t *pgdat;
++
++		for_each_online_pgdat(pgdat)
++			if (pgdat->node_spanned_pages != 0) {
++				printk("freeing bootmem node %d\n",
++					pgdat->node_id);
++				free_all_bootmem_node(pgdat);
++			}
+ 	}
+ #else
+ 	max_mapnr = max_pfn;
+ 	free_all_bootmem();
+ #endif
+-	for_each_online_pgdat(pgdat) {
+-		for (i = 0; i < pgdat->node_spanned_pages; i++) {
+-			if (!pfn_valid(pgdat->node_start_pfn + i))
+-				continue;
+-			page = pgdat_page_nr(pgdat, i);
+-			if (PageReserved(page))
+-				reservedpages++;
+-		}
+-	}
+-
+-	codesize = (unsigned long)&_sdata - (unsigned long)&_stext;
+-	datasize = (unsigned long)&_edata - (unsigned long)&_sdata;
+-	initsize = (unsigned long)&__init_end - (unsigned long)&__init_begin;
+-	bsssize = (unsigned long)&__bss_stop - (unsigned long)&__bss_start;
+ 
+ #ifdef CONFIG_HIGHMEM
+ 	{
+@@ -348,13 +329,9 @@ void __init mem_init(void)
+ 		for (pfn = highmem_mapnr; pfn < max_mapnr; ++pfn) {
+ 			phys_addr_t paddr = (phys_addr_t)pfn << PAGE_SHIFT;
+ 			struct page *page = pfn_to_page(pfn);
+-			if (memblock_is_reserved(paddr))
+-				continue;
+-			free_highmem_page(page);
+-			reservedpages--;
++			if (!memblock_is_reserved(paddr))
++				free_highmem_page(page);
+ 		}
+-		printk(KERN_DEBUG "High memory: %luk\n",
+-		       totalhigh_pages << (PAGE_SHIFT-10));
+ 	}
+ #endif /* CONFIG_HIGHMEM */
+ 
+@@ -367,16 +344,7 @@ void __init mem_init(void)
+ 		(mfspr(SPRN_TLB1CFG) & TLBnCFG_N_ENTRY) - 1;
+ #endif
+ 
+-	printk(KERN_INFO "Memory: %luk/%luk available (%luk kernel code, "
+-	       "%luk reserved, %luk data, %luk bss, %luk init)\n",
+-		nr_free_pages() << (PAGE_SHIFT-10),
+-		num_physpages << (PAGE_SHIFT-10),
+-		codesize >> 10,
+-		reservedpages << (PAGE_SHIFT-10),
+-		datasize >> 10,
+-		bsssize >> 10,
+-		initsize >> 10);
+-
++	mem_init_print_info(NULL);
+ #ifdef CONFIG_PPC32
+ 	pr_info("Kernel virtual memory layout:\n");
+ 	pr_info("  * 0x%08lx..0x%08lx  : fixmap\n", FIXADDR_START, FIXADDR_TOP);
 -- 
-1.7.8.4
+1.7.9.5
