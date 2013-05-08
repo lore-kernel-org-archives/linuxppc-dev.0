@@ -1,19 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 08E632C0120
- for <linuxppc-dev@ozlabs.org>; Wed,  8 May 2013 14:15:29 +1000 (EST)
-Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id r484FOIe013136
- for <linuxppc-dev@ozlabs.org>; Tue, 7 May 2013 23:15:26 -0500
-Message-ID: <1367986524.25488.115.camel@pasglop>
-Subject: [PATCH] powerpc/powernv: Properly drop characters if console is closed
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Date: Wed, 08 May 2013 14:15:24 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <B02008@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 387BA2C010F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 May 2013 19:20:19 +1000 (EST)
+From: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
+To: tiejun.chen <tiejun.chen@windriver.com>, Wood Scott-B07421
+ <B07421@freescale.com>
+Subject: RE: [v1][KVM][PATCH 1/1] kvm:ppc:booehv: direct ISI exception to Guest
+Date: Wed, 8 May 2013 09:20:10 +0000
+Message-ID: <300B73AA675FCE4A93EB4FC1D42459FF3EFA26@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1367970043.3398.39@snotra> <5189B02E.3000109@windriver.com>
+In-Reply-To: <5189B02E.3000109@windriver.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "agraf@suse.de" <agraf@suse.de>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,37 +29,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If the firmware returns an error such as "closed" (or hardware
-error), we should drop characters.
-
-Currently we only do that when a firmware compatible with OPAL v2
-APIs is detected, in the code that calls opal_console_write_buffer_space(),
-which didn't exist with OPAL v1 (or didn't work).
-
-However, when enabling early debug consoles, the flag indicating
-that v2 is supported isn't set yet, causing us, in case of errors
-or closed console, to spin forever.
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/powerpc/platforms/powernv/opal.c |    7 +++++++
- 1 file changed, 7 insertions(+)
-
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index ade4463..12d9846 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -144,6 +144,13 @@ int opal_put_chars(uint32_t vtermno, const char *data, int total_len)
- 				rc == OPAL_BUSY_EVENT || rc == OPAL_SUCCESS)) {
- 		len = total_len;
- 		rc = opal_console_write(vtermno, &len, data);
-+
-+		/* Closed or other error drop */
-+		if (rc != OPAL_SUCCESS && rc != OPAL_BUSY &&
-+		    rc != OPAL_BUSY_EVENT) {
-+			written = total_len;
-+			break;
-+		}
- 		if (rc == OPAL_SUCCESS) {
- 			total_len -= len;
- 			data += len;
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBrdm0tb3duZXJAdmdlci5rZXJu
+ZWwub3JnIFttYWlsdG86a3ZtLW93bmVyQHZnZXIua2VybmVsLm9yZ10gT24NCj4gQmVoYWxmIE9m
+IHRpZWp1bi5jaGVuDQo+IFNlbnQ6IFdlZG5lc2RheSwgTWF5IDA4LCAyMDEzIDQ6NTQgQU0NCj4g
+VG86IFdvb2QgU2NvdHQtQjA3NDIxDQo+IENjOiBhZ3JhZkBzdXNlLmRlOyBrdm0tcHBjQHZnZXIu
+a2VybmVsLm9yZzsga3ZtQHZnZXIua2VybmVsLm9yZzsNCj4gbGludXhwcGMtZGV2QGxpc3RzLm96
+bGFicy5vcmcNCj4gU3ViamVjdDogUmU6IFt2MV1bS1ZNXVtQQVRDSCAxLzFdIGt2bTpwcGM6Ym9v
+ZWh2OiBkaXJlY3QgSVNJIGV4Y2VwdGlvbiB0bw0KPiBHdWVzdA0KPiANCj4gT24gMDUvMDgvMjAx
+MyAwNzo0MCBBTSwgU2NvdHQgV29vZCB3cm90ZToNCj4gPiBPbiAwNS8wNy8yMDEzIDA2OjA2OjMw
+IEFNLCBUaWVqdW4gQ2hlbiB3cm90ZToNCj4gPj4gV2UgYWxzbyBjYW4gZGlyZWN0IElTSSBleGNl
+cHRpb24gdG8gR3Vlc3QgbGlrZSBEU0kuDQo+ID4+DQo+ID4+IFNpZ25lZC1vZmYtYnk6IFRpZWp1
+biBDaGVuIDx0aWVqdW4uY2hlbkB3aW5kcml2ZXIuY29tPg0KPiA+PiAtLS0NCj4gPj4gIGFyY2gv
+cG93ZXJwYy9rdm0vYm9va2VfZW11bGF0ZS5jIHwgICAgMyArKysNCj4gPj4gIGFyY2gvcG93ZXJw
+Yy9rdm0vZTUwMG1jLmMgICAgICAgIHwgICAgMyArKy0NCj4gPj4gIDIgZmlsZXMgY2hhbmdlZCwg
+NSBpbnNlcnRpb25zKCspLCAxIGRlbGV0aW9uKC0pDQo+ID4NCj4gPiBBcmUgeW91IHNlZWluZyBh
+IHJlYWwgcGVyZm9ybWFuY2UgaW1wcm92ZW1lbnQgZnJvbSB0aGlzPyAgVGhpcyB3aWxsDQo+IGlu
+dGVyZmVyZQ0KPiANCj4gTm8uIEJ1dCBhZnRlciB3ZSByZWR1Y2UgdGhlIGV4aXQgdG8gaG9zdCwg
+c2hvdWxkbid0IHRoaXMgaW1wcm92ZQ0KPiBwZXJmb3JtYW5jZT8NCg0KV2UgbG9zZSBzb21lIGZs
+ZXhpYmlsaXR5IGZvciB0aGlzIHNvIGl0IG1ha2Ugc2Vuc2Ugb25seSBpZiB3ZSBnYWluDQptZWFz
+dXJhYmxlIGltcHJvdmVtZW50cy4NCg0KPiANCj4gPiBzb21ld2hhdCB3aXRoIHVzaW5nIHRoZSBW
+RiBiaXQsIGlmIHdlIHdlcmUgdG8gZXZlciBkbyBzbywgc2luY2UgVkYgb25seQ0KPiBhZmZlY3Rz
+DQo+IA0KPiBTb3JyeSwgd2hhdCBpcyB0aGUgVkYgeW91IHNhaWQ/DQoNClZGIHN0YW5kcyBmb3Ig
+dmlydHVhbGl6YXRpb24gZmF1bHQgc2VlIE1BUzhbVkZdIGFuZCB3ZSBtYXkgdXNlIGl0IGZvciB2
+aXJ0dWFsaXplZA0KTU1JTy4gVGhlIGh5cGVydmlzb3Igc2hvdWxkIGRlbnkgZXhlY3V0ZSBhY2Nl
+c3Mgb24gcGFnZXMgbWFya2VkIHdpdGggVkYuIEFjY29yZGluZ2x5DQppbiB0aGlzIGNhc2UgZ3Vl
+c3QgSVNJIGV4Y2VwdGlvbnMgc2hvdWxkIGJlIGhhbmRsZWQgYnkgdGhlIGh5cGVydmlzb3IuDQoN
+Ci1NaWtlDQoNCg==
