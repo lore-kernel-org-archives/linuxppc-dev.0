@@ -1,21 +1,23 @@
-Return-Path: <peter@programming.kicks-ass.net>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:4830:2446:ff00:4687:fcff:fea6:5117])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3A15C2C00F3
- for <linuxppc-dev@ozlabs.org>; Thu,  9 May 2013 02:01:13 +1000 (EST)
-Date: Wed, 8 May 2013 17:59:29 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: Invalid perf_branch_entry.to entries question
-Message-ID: <20130508155929.GA8459@dyad.programming.kicks-ass.net>
-References: <25394.1367890528@ale.ozlabs.ibm.com>
+Return-Path: <B07421@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1BD782C00F2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 May 2013 05:09:59 +1000 (EST)
+Date: Wed, 8 May 2013 14:09:45 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [v1][KVM][PATCH 1/1] kvm:ppc:booehv: direct ISI exception to Guest
+To: tiejun.chen <tiejun.chen@windriver.com>
+References: <1367970043.3398.39@snotra> <5189B02E.3000109@windriver.com>
+In-Reply-To: <5189B02E.3000109@windriver.com> (from
+ tiejun.chen@windriver.com on Tue May  7 20:53:50 2013)
+Message-ID: <1368040185.3398.53@snotra>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <25394.1367890528@ale.ozlabs.ibm.com>
-Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>, linux-kernel@vger.kernel.org,
- eranian@google.com, Anshuman Khandual <anshuman.khandual@in.ibm.com>
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: linuxppc-dev@lists.ozlabs.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,31 +27,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 07, 2013 at 11:35:28AM +1000, Michael Neuling wrote:
-> Peter & Stephane,
-> 
-> We are plumbing the POWER8 Branch History Rolling Buffer (BHRB) into
-> struct perf_branch_entry.
-> 
-> Sometimes on POWER8 we may not be able to fill out the "to" address.  
+On 05/07/2013 08:53:50 PM, tiejun.chen wrote:
+> On 05/08/2013 07:40 AM, Scott Wood wrote:
+>> On 05/07/2013 06:06:30 AM, Tiejun Chen wrote:
+>>> We also can direct ISI exception to Guest like DSI.
+>>>=20
+>>> Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+>>> ---
+>>>  arch/powerpc/kvm/booke_emulate.c |    3 +++
+>>>  arch/powerpc/kvm/e500mc.c        |    3 ++-
+>>>  2 files changed, 5 insertions(+), 1 deletion(-)
+>>=20
+>> Are you seeing a real performance improvement from this?  This will =20
+>> interfere
+>=20
+> No. But after we reduce the exit to host, shouldn't this improve =20
+> performance?
 
-Just because I'm curious.. however does that happen? Surely the CPU knows where
-next to fetch instructions?
+Not if ISIs are too rare to matter.
 
-> We
-> initially thought of just making this 0, but it's feasible that this
-> could be a valid address to branch to. 
-
-Right, while highly unlikely, x86 actually has some cases where 0 address is
-valid *shudder*..
-
-> The other logical value to indicate an invalid entry would be all 1s
-> which is not possible (on POWER at least).
-> 
-> Do you guys have a preference as to what we should use as an invalid
-> entry?  This would have some consequences for the userspace tool also.
-> 
-> The alternative would be to add a flag alongside mispred/predicted to
-> indicate the validity of the "to" address.
-
-Either would work with me I suppose.. Stephane do you have any preference?
+-Scott=
