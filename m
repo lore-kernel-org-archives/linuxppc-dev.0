@@ -1,27 +1,32 @@
 Return-Path: <R65777@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6C7312C00EC
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 May 2013 18:23:58 +1000 (EST)
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3A10B2C00E2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 May 2013 18:27:02 +1000 (EST)
 From: Bhushan Bharat-R65777 <R65777@freescale.com>
-To: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>, Wood Scott-B07421
- <B07421@freescale.com>, tiejun.chen <tiejun.chen@windriver.com>
+To: tiejun.chen <tiejun.chen@windriver.com>
 Subject: RE: [RFC][KVM][PATCH 1/1] kvm:ppc:booke-64: soft-disable interrupts
-Date: Thu, 9 May 2013 08:23:49 +0000
-Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D0700E64A@039-SN2MPN1-011.039d.mgd.msft.net>
-References: <51885F49.6060605@windriver.com> (from tiejun.chen@windriver.com
- on Mon May  6 20:56:25 2013) <1367892390.3398.12@snotra>
+Date: Thu, 9 May 2013 08:26:50 +0000
+Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D0700E697@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <51885F49.6060605@windriver.com> <1367892390.3398.12@snotra>
  <300B73AA675FCE4A93EB4FC1D42459FF3F00D0@039-SN2MPN1-013.039d.mgd.msft.net>
-In-Reply-To: <300B73AA675FCE4A93EB4FC1D42459FF3F00D0@039-SN2MPN1-013.039d.mgd.msft.net>
-Content-Type: text/plain; charset="us-ascii"
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0700E50E@039-SN2MPN1-011.039d.mgd.msft.net>
+ <518B54A6.1070505@windriver.com>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0700E563@039-SN2MPN1-011.039d.mgd.msft.net>
+ <20130509080813.GD2263@pek-khao-d1.corp.ad.wrs.com>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0700E5F5@039-SN2MPN1-011.039d.mgd.msft.net>
+ <518B5B9B.6020901@windriver.com>
+In-Reply-To: <518B5B9B.6020901@windriver.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "agraf@suse.de" <agraf@suse.de>,
+Cc: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>,
+ Kevin Hao <haokexin@gmail.com>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ Wood Scott-B07421 <B07421@freescale.com>, "agraf@suse.de" <agraf@suse.de>,
  "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,83 +36,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-> -----Original Message-----
-> From: Linuxppc-dev [mailto:linuxppc-dev-
-> bounces+bharat.bhushan=3Dfreescale.com@lists.ozlabs.org] On Behalf Of Car=
-aman
-> Mihai Claudiu-B02008
-> Sent: Wednesday, May 08, 2013 6:44 PM
-> To: Wood Scott-B07421; tiejun.chen
-> Cc: linuxppc-dev@lists.ozlabs.org; agraf@suse.de; kvm-ppc@vger.kernel.org=
-;
-> kvm@vger.kernel.org
-> Subject: RE: [RFC][KVM][PATCH 1/1] kvm:ppc:booke-64: soft-disable interru=
-pts
->=20
-> > > This only disable soft interrupt for kvmppc_restart_interrupt() that
-> > > restarts interrupts if they were meant for the host:
-> > >
-> > > a. SOFT_DISABLE_INTS() only for BOOKE_INTERRUPT_EXTERNAL |
-> > > BOOKE_INTERRUPT_DECREMENTER | BOOKE_INTERRUPT_DOORBELL
-> >
-> > Those aren't the only exceptions that can end up going to the host.
-> > We could get a TLB miss that results in a heavyweight MMIO exit, etc.
-> >
-> > > And shouldn't we handle kvmppc_restart_interrupt() like the original
-> > > HOST flow?
-> > >
-> > > #define MASKABLE_EXCEPTION(trapnum, intnum, label, hdlr,
-> > > ack)           \
-> > >
-> > > START_EXCEPTION(label);                                         \
-> > >         NORMAL_EXCEPTION_PROLOG(trapnum, intnum,
-> > > PROLOG_ADDITION_MASKABLE)\
-> > >         EXCEPTION_COMMON(trapnum, PACA_EXGEN,
-> > > *INTS_DISABLE*)             \
-> > > 	...
-> >
-> > Could you elaborate on what you mean?
->=20
-> I think Tiejun was saying that host has flags and replays only EE/DEC/DBE=
-LL
-> interrupts. There is special macro masked_interrupt_book3e in those excep=
-tion
-> handlers that sets paca->irq_happened.
->=20
-> The list of replied interrupts is limited to asynchronous noncritical int=
-errupts
-> which can be masked by MSR[EE] (therefore no TLB miss). Now on KVM book3e=
- we
-> don't want to put them in the irq_happened lazy state but rather to execu=
-te them
-> directly, so there is no reason for exception handling symmetry between h=
-ost and
-> guest.
-
-
-Another Question:=20
-
-The case is:=20
-
-Case 1)
- -> Local_irq_disable()  will set soft_enabled =3D 0
- -> Now Externel interrupt happens, there we set PACA_IRQ_EE in irq_happene=
-d, Also clears EE in SRR1 and rfi. So interrupts are hard disabled. No more=
- other interrupt gated by MSR.EE can happen. Looks like the idea here is to=
- not let a device keep on inserting interrupt till the interrupt condition =
-on device is cleared, right?
- -> local_irq_enable() - This checks that irq_happened is set, and replays
-
-Now the case 2)
-Case 2)
--> Local_irq_disable()  will set soft_enabled =3D 0
- -> Now DEC interrupt happens. We set PACA_IRQ_DEC in irq_happened, But do =
-not clear EE in SRR1 and rfi. So interrupts are not hard disabled.=20
- -> Now say EE interrupt happens, there we set PACA_IRQ_EE in irq_happened,=
- Also clears EE in SRR1 and rfi. So interrupts are hard disabled.=20
- -> local_irq_enable() - This checks that irq_happened is set.
-IIUC, it replays only one interrupt? is not it?
-
--Bharat
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogdGllanVuLmNoZW4gW21h
+aWx0bzp0aWVqdW4uY2hlbkB3aW5kcml2ZXIuY29tXQ0KPiBTZW50OiBUaHVyc2RheSwgTWF5IDA5
+LCAyMDEzIDE6NDggUE0NCj4gVG86IEJodXNoYW4gQmhhcmF0LVI2NTc3Nw0KPiBDYzogS2V2aW4g
+SGFvOyBDYXJhbWFuIE1paGFpIENsYXVkaXUtQjAyMDA4OyBrdm1Admdlci5rZXJuZWwub3JnOyBX
+b29kIFNjb3R0LQ0KPiBCMDc0MjE7IGFncmFmQHN1c2UuZGU7IGt2bS1wcGNAdmdlci5rZXJuZWwu
+b3JnOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0KPiBTdWJqZWN0OiBSZTogW1JGQ11b
+S1ZNXVtQQVRDSCAxLzFdIGt2bTpwcGM6Ym9va2UtNjQ6IHNvZnQtZGlzYWJsZSBpbnRlcnJ1cHRz
+DQo+IA0KPiBPbiAwNS8wOS8yMDEzIDA0OjEyIFBNLCBCaHVzaGFuIEJoYXJhdC1SNjU3Nzcgd3Jv
+dGU6DQo+ID4NCj4gPg0KPiA+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+PiBGcm9t
+OiBLZXZpbiBIYW8gW21haWx0bzpoYW9rZXhpbkBnbWFpbC5jb21dDQo+ID4+IFNlbnQ6IFRodXJz
+ZGF5LCBNYXkgMDksIDIwMTMgMTozOCBQTQ0KPiA+PiBUbzogQmh1c2hhbiBCaGFyYXQtUjY1Nzc3
+DQo+ID4+IENjOiB0aWVqdW4uY2hlbjsgQ2FyYW1hbiBNaWhhaSBDbGF1ZGl1LUIwMjAwODsga3Zt
+QHZnZXIua2VybmVsLm9yZzsNCj4gPj4gV29vZCBTY290dC0gQjA3NDIxOyBhZ3JhZkBzdXNlLmRl
+OyBrdm0tcHBjQHZnZXIua2VybmVsLm9yZzsNCj4gPj4gbGludXhwcGMtZGV2QGxpc3RzLm96bGFi
+cy5vcmcNCj4gPj4gU3ViamVjdDogUmU6IFtSRkNdW0tWTV1bUEFUQ0ggMS8xXSBrdm06cHBjOmJv
+b2tlLTY0OiBzb2Z0LWRpc2FibGUNCj4gPj4gaW50ZXJydXB0cw0KPiA+Pg0KPiA+PiBPbiBUaHUs
+IE1heSAwOSwgMjAxMyBhdCAwNzo1MTowOUFNICswMDAwLCBCaHVzaGFuIEJoYXJhdC1SNjU3Nzcg
+d3JvdGU6DQo+ID4+Pg0KPiA+Pj4NCj4gPj4+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0K
+PiA+Pj4+IEZyb206IHRpZWp1bi5jaGVuIFttYWlsdG86dGllanVuLmNoZW5Ad2luZHJpdmVyLmNv
+bV0NCj4gPj4+PiBTZW50OiBUaHVyc2RheSwgTWF5IDA5LCAyMDEzIDE6MTggUE0NCj4gPj4+PiBU
+bzogQmh1c2hhbiBCaGFyYXQtUjY1Nzc3DQo+ID4+Pj4gQ2M6IENhcmFtYW4gTWloYWkgQ2xhdWRp
+dS1CMDIwMDg7IFdvb2QgU2NvdHQtQjA3NDIxOyBsaW51eHBwYy0NCj4gPj4+PiBkZXZAbGlzdHMu
+b3psYWJzLm9yZzsgYWdyYWZAc3VzZS5kZTsga3ZtLXBwY0B2Z2VyLmtlcm5lbC5vcmc7DQo+ID4+
+Pj4ga3ZtQHZnZXIua2VybmVsLm9yZw0KPiA+Pj4+IFN1YmplY3Q6IFJlOiBbUkZDXVtLVk1dW1BB
+VENIIDEvMV0ga3ZtOnBwYzpib29rZS02NDogc29mdC1kaXNhYmxlDQo+ID4+Pj4gaW50ZXJydXB0
+cw0KPiA+Pj4+DQo+ID4+Pj4gT24gMDUvMDkvMjAxMyAwMzozMyBQTSwgQmh1c2hhbiBCaGFyYXQt
+UjY1Nzc3IHdyb3RlOg0KPiA+Pj4+Pg0KPiA+Pj4+Pg0KPiA+Pj4+Pj4gLS0tLS1PcmlnaW5hbCBN
+ZXNzYWdlLS0tLS0NCj4gPj4+Pj4+IEZyb206IExpbnV4cHBjLWRldiBbbWFpbHRvOmxpbnV4cHBj
+LWRldi0NCj4gPj4+Pj4+IGJvdW5jZXMrYmhhcmF0LmJodXNoYW49ZnJlZXNjYWxlLmNvbUBsaXN0
+cy5vemxhYnMub3JnXSBPbiBCZWhhbGYNCj4gPj4+Pj4+IGJvdW5jZXMrT2YgQ2FyYW1hbg0KPiA+
+Pj4+Pj4gTWloYWkgQ2xhdWRpdS1CMDIwMDgNCj4gPj4+Pj4+IFNlbnQ6IFdlZG5lc2RheSwgTWF5
+IDA4LCAyMDEzIDY6NDQgUE0NCj4gPj4+Pj4+IFRvOiBXb29kIFNjb3R0LUIwNzQyMTsgdGllanVu
+LmNoZW4NCj4gPj4+Pj4+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgYWdyYWZA
+c3VzZS5kZTsNCj4gPj4+Pj4+IGt2bS1wcGNAdmdlci5rZXJuZWwub3JnOyBrdm1Admdlci5rZXJu
+ZWwub3JnDQo+ID4+Pj4+PiBTdWJqZWN0OiBSRTogW1JGQ11bS1ZNXVtQQVRDSCAxLzFdIGt2bTpw
+cGM6Ym9va2UtNjQ6IHNvZnQtZGlzYWJsZQ0KPiA+Pj4+Pj4gaW50ZXJydXB0cw0KPiA+Pj4+Pj4N
+Cj4gPj4+Pj4+Pj4gVGhpcyBvbmx5IGRpc2FibGUgc29mdCBpbnRlcnJ1cHQgZm9yIGt2bXBwY19y
+ZXN0YXJ0X2ludGVycnVwdCgpDQo+ID4+Pj4+Pj4+IHRoYXQgcmVzdGFydHMgaW50ZXJydXB0cyBp
+ZiB0aGV5IHdlcmUgbWVhbnQgZm9yIHRoZSBob3N0Og0KPiA+Pj4+Pj4+Pg0KPiA+Pj4+Pj4+PiBh
+LiBTT0ZUX0RJU0FCTEVfSU5UUygpIG9ubHkgZm9yIEJPT0tFX0lOVEVSUlVQVF9FWFRFUk5BTCB8
+DQo+ID4+Pj4+Pj4+IEJPT0tFX0lOVEVSUlVQVF9ERUNSRU1FTlRFUiB8IEJPT0tFX0lOVEVSUlVQ
+VF9ET09SQkVMTA0KPiA+Pj4+Pj4+DQo+ID4+Pj4+Pj4gVGhvc2UgYXJlbid0IHRoZSBvbmx5IGV4
+Y2VwdGlvbnMgdGhhdCBjYW4gZW5kIHVwIGdvaW5nIHRvIHRoZSBob3N0Lg0KPiA+Pj4+Pj4+IFdl
+IGNvdWxkIGdldCBhIFRMQiBtaXNzIHRoYXQgcmVzdWx0cyBpbiBhIGhlYXZ5d2VpZ2h0IE1NSU8g
+ZXhpdCwgZXRjLg0KPiA+Pj4+Pj4+DQo+ID4+Pj4+Pj4+IEFuZCBzaG91bGRuJ3Qgd2UgaGFuZGxl
+IGt2bXBwY19yZXN0YXJ0X2ludGVycnVwdCgpIGxpa2UgdGhlDQo+ID4+Pj4+Pj4+IG9yaWdpbmFs
+IEhPU1QgZmxvdz8NCj4gPj4+Pj4+Pj4NCj4gPj4+Pj4+Pj4gI2RlZmluZSBNQVNLQUJMRV9FWENF
+UFRJT04odHJhcG51bSwgaW50bnVtLCBsYWJlbCwgaGRsciwNCj4gPj4+Pj4+Pj4gYWNrKSAgICAg
+ICAgICAgXA0KPiA+Pj4+Pj4+Pg0KPiA+Pj4+Pj4+PiBTVEFSVF9FWENFUFRJT04obGFiZWwpOyAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXA0KPiA+Pj4+Pj4+PiAgICAg
+ICAgICAgTk9STUFMX0VYQ0VQVElPTl9QUk9MT0codHJhcG51bSwgaW50bnVtLA0KPiA+Pj4+Pj4+
+PiBQUk9MT0dfQURESVRJT05fTUFTS0FCTEUpXA0KPiA+Pj4+Pj4+PiAgICAgICAgICAgRVhDRVBU
+SU9OX0NPTU1PTih0cmFwbnVtLCBQQUNBX0VYR0VOLA0KPiA+Pj4+Pj4+PiAqSU5UU19ESVNBQkxF
+KikgICAgICAgICAgICAgXA0KPiA+Pj4+Pj4+PiAJLi4uDQo+ID4+Pj4+Pj4NCj4gPj4+Pj4+PiBD
+b3VsZCB5b3UgZWxhYm9yYXRlIG9uIHdoYXQgeW91IG1lYW4/DQo+ID4+Pj4+Pg0KPiA+Pj4+Pj4g
+SSB0aGluayBUaWVqdW4gd2FzIHNheWluZyB0aGF0IGhvc3QgaGFzIGZsYWdzIGFuZCByZXBsYXlz
+IG9ubHkNCj4gPj4+Pj4+IEVFL0RFQy9EQkVMTCBpbnRlcnJ1cHRzLiBUaGVyZSBpcyBzcGVjaWFs
+IG1hY3JvDQo+ID4+Pj4+PiBtYXNrZWRfaW50ZXJydXB0X2Jvb2szZSBpbiB0aG9zZSBleGNlcHRp
+b24gaGFuZGxlcnMgdGhhdCBzZXRzDQo+ID4+Pj4+PiBwYWNhLQ0KPiA+Pj4+PiBpcnFfaGFwcGVu
+ZWQuDQo+ID4+Pj4+Pg0KPiA+Pj4+Pj4gVGhlIGxpc3Qgb2YgcmVwbGllZCBpbnRlcnJ1cHRzIGlz
+IGxpbWl0ZWQgdG8gYXN5bmNocm9ub3VzDQo+ID4+Pj4+PiBub25jcml0aWNhbCBpbnRlcnJ1cHRz
+IHdoaWNoIGNhbiBiZSBtYXNrZWQgYnkgTVNSW0VFXSAodGhlcmVmb3JlDQo+ID4+Pj4+PiBubyBU
+TEINCj4gPj4gbWlzcykuDQo+ID4+Pj4+DQo+ID4+Pj4+IEVtYmVkZGVkIFBlcmZtb24gaW50ZXJy
+dXB0IGlzIGFsc28gYXN5bmNocm9ub3VzLCBXaHkgdGhhdCBpcyBub3QNCj4gPj4+Pj4gaW4gdGhl
+IGxpc3QNCj4gPj4+PiBvZiBtYXNrZWQgaW50ZXJydXRzLg0KPiA+Pj4+DQo+ID4+Pj4gQXJlIHlv
+dSBzYXlpbmcgcGVyZm1vbj8gSWYgc28sIGl0cyBhbHNvIGluIHRoYXQgbGlzdDoNCj4gPj4+Pg0K
+PiA+Pj4+ICAgICAgICAgICBTVEFSVF9FWENFUFRJT04ocGVyZm1vbik7DQo+ID4+Pj4gICAgICAg
+ICAgIE5PUk1BTF9FWENFUFRJT05fUFJPTE9HKDB4MjYwLA0KPiBCT09LRV9JTlRFUlJVUFRfUEVS
+Rk9STUFOQ0VfTU9OSVRPUiwNCj4gPj4+PiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgUFJPTE9HX0FERElUSU9OX05PTkUpDQo+ID4+Pj4gICAgICAgICAgIEVYQ0VQVElPTl9DT01N
+T04oMHgyNjAsIFBBQ0FfRVhHRU4sIElOVFNfRElTQUJMRSkNCj4gPj4+DQo+ID4+PiBXaGVyZSBp
+dCBpcyByZWNvcmRlZCBpbiBwYWNhLT5pcnFfaGFwcG5lZCB0byBiZSByZXBsYXllZCBsYXRlciA/
+DQo+ID4+DQo+ID4+IEFjdHVhbGx5IHdlIGRvbid0IHdhbnQgcmVwbGF5IHRoZSBwZXJmbW9uIGlu
+dGVycnVwdCBsYXRlci4gV2Ugd291bGQNCj4gPj4gcnVuIGl0IGV2ZW4gc29mdCBpcnEgaXMgZGlz
+YWJsZWQgYW5kIGp1c3QgdHJlYXQgaXQgYXMgTk1JLiBQbGVhc2Ugc2VlDQo+ID4+IHRoZSBmb2xs
+b3dpbmcgZnVuY3Rpb24gcXVvdGVkIGZyb20gYXJjaC9wb3dlcnBjL3BlcmYvY29yZS1mc2wtZW1i
+LmM6DQo+ID4+ICAgIC8qDQo+ID4+ICAgICAqIElmIGludGVycnVwdHMgd2VyZSBzb2Z0LWRpc2Fi
+bGVkIHdoZW4gYSBQTVUgaW50ZXJydXB0IG9jY3VycywgdHJlYXQNCj4gPj4gICAgICogaXQgYXMg
+YW4gTk1JLg0KPiA+PiAgICAgKi8NCj4gPj4gICAgc3RhdGljIGlubGluZSBpbnQgcGVyZl9pbnRy
+X2lzX25taShzdHJ1Y3QgcHRfcmVncyAqcmVncykNCj4gPj4gICAgew0KPiA+PiAgICAjaWZkZWYg
+X19wb3dlcnBjNjRfXw0KPiA+PiAgICAgICAgICAgIHJldHVybiAhcmVncy0+c29mdGU7DQo+ID4+
+ICAgICNlbHNlDQo+ID4+ICAgICAgICAgICAgcmV0dXJuIDA7DQo+ID4+ICAgICNlbmRpZg0KPiA+
+PiAgICB9DQo+ID4NCj4gPiBJcyBpdCBiZWNhdXNlIHRoYXQgd2UgY2Fubm90IGFmZm9yZCB0byBs
+b3NlIHBlcmZtb24gaW50ZXJydXB0IGZvciBtb3JlDQo+IGFjY3VyYXRlIGNhcHR1cmluZyBvZiBk
+YXRhID8NCj4gDQo+ICAgICAgcG93ZXJwYy9wZXJmOiBlNTAwIHN1cHBvcnQNCj4gDQo+ICAgICAg
+VGhpcyBpbXBsZW1lbnRzIHBlcmZfZXZlbnQgc3VwcG9ydCBmb3IgdGhlIEZyZWVzY2FsZSBlbWJl
+ZGRlZCBwZXJmb3JtYW5jZQ0KPiAgICAgIG1vbml0b3IsIGJhc2VkIG9uIHRoZSBleGlzdGluZyBw
+ZXJmX2V2ZW50LmMgdGhhdCBzdXBwb3J0cyBzZXJ2ZXIvY2xhc3NpYw0KPiAgICAgIGNoaXBzLg0K
+PiANCj4gICAgICBTb21lIGxpbWl0YXRpb25zOg0KPiAgICAgIC0gUGVyZm9ybWFuY2UgbW9uaXRv
+ciBpbnRlcnJ1cHRzIGFyZSByZWd1bGFyIEVFIGludGVycnVwdHMsIGFuZCB0aHVzIHlvdQ0KPiAg
+ICAgICAgY2FuJ3QgcHJvZmlsZSBwbGFjZXMgd2l0aCBpbnRlcnJ1cHRzIGRpc2FibGVkLiAgV2Ug
+bWF5IHdhbnQgdG8gaW1wbGVtZW50DQo+ICAgICAgICBzb2Z0IElSUS1kaXNhYmxpbmcsIHdpdGgg
+cGVyZm1vbiBpbnRlcnJ1cHRzIGV4ZW1wdGVkIGFuZCB0cmVhdGVkIGFzIE5NSXMuDQoNCkFoaCwg
+dGhhdCBnaXZlcyB0aGUgYW5zd2VyIGFuZCBzYW1lIGFzIEkgZXhwZWN0ZWQgOikNCg0KLUJoYXJh
+dA0KDQo+IA0KPiBUaWVqdW4NCj4gDQo+ID4NCj4gPiAtQmhhcmF0DQo+ID4NCj4gPj4NCj4gPj4g
+VGhhbmtzLA0KPiA+PiBLZXZpbg0KPiA+Pg0KPiA+Pj4NCj4gPj4+Pg0KPiA+Pj4+IFRpZWp1bg0K
+PiA+Pj4+DQo+ID4+Pj4+DQo+ID4+Pj4+IC1CaGFyYXQNCj4gPj4+Pj4NCj4gPj4+Pj4+IE5vdyBv
+biBLVk0gYm9vazNlIHdlDQo+ID4+Pj4+PiBkb24ndCB3YW50IHRvIHB1dCB0aGVtIGluIHRoZSBp
+cnFfaGFwcGVuZWQgbGF6eSBzdGF0ZSBidXQgcmF0aGVyDQo+ID4+Pj4+PiB0byBleGVjdXRlIHRo
+ZW0gZGlyZWN0bHksIHNvIHRoZXJlIGlzIG5vIHJlYXNvbiBmb3IgZXhjZXB0aW9uDQo+ID4+Pj4+
+PiBoYW5kbGluZyBzeW1tZXRyeSBiZXR3ZWVuIGhvc3QgYW5kIGd1ZXN0Lg0KPiA+Pj4+Pj4NCj4g
+Pj4+Pj4+IC1NaWtlDQo+ID4+Pj4NCj4gPj4+DQo+ID4+PiBfX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fXw0KPiA+Pj4gTGludXhwcGMtZGV2IG1haWxpbmcgbGlz
+dA0KPiA+Pj4gTGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gPj4+IGh0dHBzOi8vbGlz
+dHMub3psYWJzLm9yZy9saXN0aW5mby9saW51eHBwYy1kZXYNCj4gPg0KPiA+DQo+ID4NCj4gDQoN
+Cg==
