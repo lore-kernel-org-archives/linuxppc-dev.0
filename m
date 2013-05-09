@@ -1,39 +1,26 @@
-Return-Path: <michael_barry@ie.ibm.com>
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e06smtp13.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 901B02C010A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 May 2013 08:03:09 +1000 (EST)
-Received: from /spool/local
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <michael_barry@ie.ibm.com>;
- Thu, 9 May 2013 22:59:52 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 1412B17D8017
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 May 2013 23:04:07 +0100 (BST)
-Received: from d06av12.portsmouth.uk.ibm.com (d06av12.portsmouth.uk.ibm.com
- [9.149.37.247])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r49M2p7536372648
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 May 2013 22:02:51 GMT
-Received: from d06av12.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av12.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r49M31Cg001552
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 May 2013 16:03:01 -0600
-Received: from d06ml093.portsmouth.uk.ibm.com (d06ml093.portsmouth.uk.ibm.com
- [9.149.104.171])
- by d06av12.portsmouth.uk.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
- r49M31VM001544
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 May 2013 16:03:01 -0600
-Subject: AUTO: Michael Barry is out of the office (returning 13/05/2013)
-From: Michael Barry <michael_barry@ie.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Message-ID: <OFDF84F7ED.BF7EF746-ON80257B66.00791C1F-80257B66.00791C1F@ie.ibm.com>
-Date: Thu, 9 May 2013 23:02:50 +0100
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id B41162C010A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 May 2013 08:07:10 +1000 (EST)
+Message-ID: <1368137220.3715.14.camel@pasglop>
+Subject: Re: [RFC][KVM][PATCH 1/1] kvm:ppc:booke-64: soft-disable interrupts
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+Date: Fri, 10 May 2013 08:07:00 +1000
+In-Reply-To: <1368134856.654.11@snotra>
+References: <1368134856.654.11@snotra>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ Caraman Mihai Claudiu-B02008 <B02008@freescale.com>,
+ "agraf@suse.de" <agraf@suse.de>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ "tiejun.chen" <tiejun.chen@windriver.com>,
+ Bhushan Bharat-R65777 <R65777@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,13 +30,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 2013-05-09 at 16:27 -0500, Scott Wood wrote:
+> On 05/09/2013 07:37:42 AM, Benjamin Herrenschmidt wrote:
+> > On Thu, 2013-05-09 at 17:44 +0800, tiejun.chen wrote:
+> > >
+> > > Actually in the case GS=1 even if EE=0, EXT/DEC/DBELL still occur  
+> > as I
+> > > recall.
+> > 
+> > Only if directed to the hypervisor.
+> 
+> This is always the case with KVM, right?  At least on booke...
 
-I am out of the office until 13/05/2013.
+Hrm, on A2 we could choose iirc. Well not DEC but EXT at least, I don't
+remember about DBELL.
 
+> > > > Case 1)
+> > > >   -> Local_irq_disable()  will set soft_enabled = 0
+> > > >   -> Now Externel interrupt happens, there we set PACA_IRQ_EE in
+> > > irq_happened, Also clears EE in SRR1 and rfi. So interrupts are hard
+> > > disabled. No more other interrupt gated by MSR.EE can happen. Looks
+> > > like the idea here is to not let a device keep on inserting  
+> > interrupt
+> > > till the interrupt condition on device is cleared, right?
+> > 
+> > The external interrupt line is level sensitive normally, so we have to
+> > mask MSR:EE in that case or the interrupt would keep re-occurring  
+> > (note
+> > that FSL has this concept of auto-acked interrupts via the on die MPIC
+> > for which you can potentially use PACA_IRQ_EE_EDGE instead and avoid
+> > having to mask MSR:EE).
+> 
+> Note that if we do this, we can no longer leave the interrupt vector in  
+> EPR, and would have to track (potentially multiple different) pending  
+> external interrupts in software.
 
+Right, you can have a little queue in the PACA and leave EE disabled if
+it's full. You can probably get away with a queue of 1 though :-)
 
-
-Note: This is an automated response to your message  "Linuxppc-dev Digest,
-Vol 105, Issue 55" sent on 09/05/2013 23:01:55.
-
-This is the only notification you will receive while this person is away.
+Cheers,
+Ben.
