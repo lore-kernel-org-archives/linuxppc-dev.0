@@ -1,9 +1,11 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 1/2] powerpc/pmu: Fix order of interpreting BHRB target entries
-Date: Thu,  9 May 2013 11:46:48 +1000
-Message-Id: <1368064009-13255-1-git-send-email-mikey@neuling.org>
+Subject: [PATCH 2/2] powerpc/perf: Fix setting of "to" addresses for BHRB
+Date: Thu,  9 May 2013 11:46:49 +1000
+Message-Id: <1368064009-13255-2-git-send-email-mikey@neuling.org>
+In-Reply-To: <1368064009-13255-1-git-send-email-mikey@neuling.org>
+References: <1368064009-13255-1-git-send-email-mikey@neuling.org>
 Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
  Anshuman Khandual <anshuman.khandual@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -15,133 +17,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The current Branch History Rolling Buffer (BHRB) code misinterprets the order
-of entries in the hardware buffer.  It assumes that a branch target address
-will be read _after_ its corresponding branch.  In reality the branch target
-comes before (lower mfbhrb entry) it's corresponding branch.
+Currently we only set the "to" address in the branch stack when the CPU
+explicitly gives us a value.  Unfortunately it only does this for XL form
+branches (eg blr, bctr, bctar) and not I and B form branches (eg b, bc).
 
-This is a rewrite of the code to take this into account.
+Fortunately if we read the instruction from memory we can extract the offset of
+a branch and calculate the target address.
+
+This adds a function power_pmu_bhrb_to() to calculate the target/to address of
+the corresponding I and B form branches.  It handles branches in both user and
+kernel spaces.  It also plumbs this into the perf brhb reading code.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/perf/core-book3s.c |   86 ++++++++++++++++++++-------------------
- 1 file changed, 45 insertions(+), 41 deletions(-)
+ arch/powerpc/perf/core-book3s.c |   32 +++++++++++++++++++++++++++++++-
+ 1 file changed, 31 insertions(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index c627843..2d81372 100644
+index 2d81372..37f652f 100644
 --- a/arch/powerpc/perf/core-book3s.c
 +++ b/arch/powerpc/perf/core-book3s.c
-@@ -1463,66 +1463,70 @@ void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
+@@ -13,11 +13,13 @@
+ #include <linux/perf_event.h>
+ #include <linux/percpu.h>
+ #include <linux/hardirq.h>
++#include <linux/uaccess.h>
+ #include <asm/reg.h>
+ #include <asm/pmc.h>
+ #include <asm/machdep.h>
+ #include <asm/firmware.h>
+ #include <asm/ptrace.h>
++#include <asm/code-patching.h>
+ 
+ #define BHRB_MAX_ENTRIES	32
+ #define BHRB_TARGET		0x0000000000000002
+@@ -1458,6 +1460,33 @@ struct pmu power_pmu = {
+ 	.flush_branch_stack = power_pmu_flush_branch_stack,
+ };
+ 
++/* Calculate the to address for a branch */
++static __u64 power_pmu_bhrb_to(u64 addr)
++{
++	unsigned int instr;
++	int ret;
++	__u64 target;
++
++	if (is_kernel_addr(addr))
++		return branch_target((unsigned int *)addr);
++
++	/* Userspace: need copy instruction here then translate it */
++	pagefault_disable();
++	ret = __get_user_inatomic(instr, (unsigned int *)addr);
++	if (ret) {
++		pagefault_enable();
++		return 0;
++	}
++	pagefault_enable();
++
++	target = branch_target(&instr);
++	if ((!target) || (instr & BRANCH_ABSOLUTE))
++		return target;
++
++	/* Translate relative branch target from kernel to user address */
++	return target - (unsigned long)&instr + addr;
++}
++
+ /* Processing BHRB entries */
+ void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
  {
- 	u64 val;
- 	u64 addr;
--	int r_index, u_index, target, pred;
-+	int r_index, u_index, pred;
- 
- 	r_index = 0;
- 	u_index = 0;
- 	while (r_index < ppmu->bhrb_nr) {
- 		/* Assembly read function */
--		val = read_bhrb(r_index);
--
--		/* Terminal marker: End of valid BHRB entries */
--		if (val == 0) {
-+		val = read_bhrb(r_index++);
-+		if (!val)
-+			/* Terminal marker: End of valid BHRB entries */
- 			break;
--		} else {
--			/* BHRB field break up */
-+		else {
- 			addr = val & BHRB_EA;
- 			pred = val & BHRB_PREDICTION;
--			target = val & BHRB_TARGET;
- 
--			/* Probable Missed entry: Not applicable for POWER8 */
--			if ((addr == 0) && (target == 0) && (pred == 1)) {
--				r_index++;
-+			if (!addr)
-+				/* invalid entry */
- 				continue;
--			}
- 
--			/* Real Missed entry: Power8 based missed entry */
--			if ((addr == 0) && (target == 1) && (pred == 1)) {
--				r_index++;
--				continue;
--			}
--
--			/* Reserved condition: Not a valid entry  */
--			if ((addr == 0) && (target == 1) && (pred == 0)) {
--				r_index++;
--				continue;
--			}
-+			/* Branches are read most recent first (ie. mfbhrb 0 is
-+			 * the most recent branch).
-+			 * There are two types of valid entries:
-+			 * 1) a target entry which is the to address of a
-+			 *    computed goto like a blr,bctr,btar.  The next
-+			 *    entry read from the bhrb will be branch
-+			 *    corresponding to this target (ie. the actual
-+			 *    blr/bctr/btar instruction).
-+			 * 2) a from address which is an actual branch.  If a
-+			 *    target entry proceeds this, then this is the
-+			 *    matching branch for that target.  If this is not
-+			 *    following a target entry, then this is a branch
-+			 *    where the target is given as an immediate field
-+			 *    in the instruction (ie. an i or b form branch).
-+			 *    In this case we need to read the instruction from
-+			 *    memory to determine the target/to address.
-+			 */
- 
--			/* Is a target address */
- 			if (val & BHRB_TARGET) {
--				/* First address cannot be a target address */
--				if (r_index == 0) {
--					r_index++;
--					continue;
--				}
--
--				/* Update target address for the previous entry */
--				cpuhw->bhrb_entries[u_index - 1].to = addr;
--				cpuhw->bhrb_entries[u_index - 1].mispred = pred;
--				cpuhw->bhrb_entries[u_index - 1].predicted = ~pred;
-+				/* Target branches use two entries
-+				 * (ie. computed gotos/XL form)
-+				 */
-+				cpuhw->bhrb_entries[u_index].to = addr;
-+				cpuhw->bhrb_entries[u_index].mispred = pred;
-+				cpuhw->bhrb_entries[u_index].predicted = ~pred;
- 
--				/* Dont increment u_index */
--				r_index++;
-+				/* Get from address in next entry */
-+				val = read_bhrb(r_index++);
-+				addr = val & BHRB_EA;
-+				if (val & BHRB_TARGET) {
-+					/* Shouldn't have two targets in a
-+					   row.. Reset index and try again */
-+					r_index--;
-+					addr = 0;
-+				}
-+				cpuhw->bhrb_entries[u_index].from = addr;
- 			} else {
--				/* Update address, flags for current entry */
-+				/* Branches to immediate field 
-+				   (ie I or B form) */
+@@ -1521,7 +1550,8 @@ void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
+ 				/* Branches to immediate field 
+ 				   (ie I or B form) */
  				cpuhw->bhrb_entries[u_index].from = addr;
-+				cpuhw->bhrb_entries[u_index].to = 0;
+-				cpuhw->bhrb_entries[u_index].to = 0;
++				cpuhw->bhrb_entries[u_index].to =
++					power_pmu_bhrb_to(addr);
  				cpuhw->bhrb_entries[u_index].mispred = pred;
  				cpuhw->bhrb_entries[u_index].predicted = ~pred;
--
--				/* Successfully popullated one entry */
--				u_index++;
--				r_index++;
  			}
-+			u_index++;
-+
- 		}
- 	}
- 	cpuhw->bhrb_stack.nr = u_index;
 -- 
 1.7.10.4
