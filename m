@@ -1,13 +1,27 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 2/2] powerpc/perf: Fix setting of "to" addresses for BHRB
-Date: Thu,  9 May 2013 11:46:49 +1000
-Message-Id: <1368064009-13255-2-git-send-email-mikey@neuling.org>
-In-Reply-To: <1368064009-13255-1-git-send-email-mikey@neuling.org>
-References: <1368064009-13255-1-git-send-email-mikey@neuling.org>
-Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- Anshuman Khandual <anshuman.khandual@in.ibm.com>
+Return-Path: <R65777@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe003.messaging.microsoft.com [213.199.154.206])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id EAD532C00ED
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 May 2013 17:33:47 +1000 (EST)
+From: Bhushan Bharat-R65777 <R65777@freescale.com>
+To: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>, Wood Scott-B07421
+ <B07421@freescale.com>, tiejun.chen <tiejun.chen@windriver.com>
+Subject: RE: [RFC][KVM][PATCH 1/1] kvm:ppc:booke-64: soft-disable interrupts
+Date: Thu, 9 May 2013 07:33:38 +0000
+Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D0700E50E@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <51885F49.6060605@windriver.com> (from tiejun.chen@windriver.com
+ on Mon May  6 20:56:25 2013) <1367892390.3398.12@snotra>
+ <300B73AA675FCE4A93EB4FC1D42459FF3F00D0@039-SN2MPN1-013.039d.mgd.msft.net>
+In-Reply-To: <300B73AA675FCE4A93EB4FC1D42459FF3F00D0@039-SN2MPN1-013.039d.mgd.msft.net>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "agraf@suse.de" <agraf@suse.de>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,83 +31,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently we only set the "to" address in the branch stack when the CPU
-explicitly gives us a value.  Unfortunately it only does this for XL form
-branches (eg blr, bctr, bctar) and not I and B form branches (eg b, bc).
 
-Fortunately if we read the instruction from memory we can extract the offset of
-a branch and calculate the target address.
 
-This adds a function power_pmu_bhrb_to() to calculate the target/to address of
-the corresponding I and B form branches.  It handles branches in both user and
-kernel spaces.  It also plumbs this into the perf brhb reading code.
+> -----Original Message-----
+> From: Linuxppc-dev [mailto:linuxppc-dev-
+> bounces+bharat.bhushan=3Dfreescale.com@lists.ozlabs.org] On Behalf Of Car=
+aman
+> Mihai Claudiu-B02008
+> Sent: Wednesday, May 08, 2013 6:44 PM
+> To: Wood Scott-B07421; tiejun.chen
+> Cc: linuxppc-dev@lists.ozlabs.org; agraf@suse.de; kvm-ppc@vger.kernel.org=
+;
+> kvm@vger.kernel.org
+> Subject: RE: [RFC][KVM][PATCH 1/1] kvm:ppc:booke-64: soft-disable interru=
+pts
+>=20
+> > > This only disable soft interrupt for kvmppc_restart_interrupt() that
+> > > restarts interrupts if they were meant for the host:
+> > >
+> > > a. SOFT_DISABLE_INTS() only for BOOKE_INTERRUPT_EXTERNAL |
+> > > BOOKE_INTERRUPT_DECREMENTER | BOOKE_INTERRUPT_DOORBELL
+> >
+> > Those aren't the only exceptions that can end up going to the host.
+> > We could get a TLB miss that results in a heavyweight MMIO exit, etc.
+> >
+> > > And shouldn't we handle kvmppc_restart_interrupt() like the original
+> > > HOST flow?
+> > >
+> > > #define MASKABLE_EXCEPTION(trapnum, intnum, label, hdlr,
+> > > ack)           \
+> > >
+> > > START_EXCEPTION(label);                                         \
+> > >         NORMAL_EXCEPTION_PROLOG(trapnum, intnum,
+> > > PROLOG_ADDITION_MASKABLE)\
+> > >         EXCEPTION_COMMON(trapnum, PACA_EXGEN,
+> > > *INTS_DISABLE*)             \
+> > > 	...
+> >
+> > Could you elaborate on what you mean?
+>=20
+> I think Tiejun was saying that host has flags and replays only EE/DEC/DBE=
+LL
+> interrupts. There is special macro masked_interrupt_book3e in those excep=
+tion
+> handlers that sets paca->irq_happened.
+>=20
+> The list of replied interrupts is limited to asynchronous noncritical int=
+errupts
+> which can be masked by MSR[EE] (therefore no TLB miss).
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
- arch/powerpc/perf/core-book3s.c |   32 +++++++++++++++++++++++++++++++-
- 1 file changed, 31 insertions(+), 1 deletion(-)
+Embedded Perfmon interrupt is also asynchronous, Why that is not in the lis=
+t of masked interruts.
 
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 2d81372..37f652f 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -13,11 +13,13 @@
- #include <linux/perf_event.h>
- #include <linux/percpu.h>
- #include <linux/hardirq.h>
-+#include <linux/uaccess.h>
- #include <asm/reg.h>
- #include <asm/pmc.h>
- #include <asm/machdep.h>
- #include <asm/firmware.h>
- #include <asm/ptrace.h>
-+#include <asm/code-patching.h>
- 
- #define BHRB_MAX_ENTRIES	32
- #define BHRB_TARGET		0x0000000000000002
-@@ -1458,6 +1460,33 @@ struct pmu power_pmu = {
- 	.flush_branch_stack = power_pmu_flush_branch_stack,
- };
- 
-+/* Calculate the to address for a branch */
-+static __u64 power_pmu_bhrb_to(u64 addr)
-+{
-+	unsigned int instr;
-+	int ret;
-+	__u64 target;
-+
-+	if (is_kernel_addr(addr))
-+		return branch_target((unsigned int *)addr);
-+
-+	/* Userspace: need copy instruction here then translate it */
-+	pagefault_disable();
-+	ret = __get_user_inatomic(instr, (unsigned int *)addr);
-+	if (ret) {
-+		pagefault_enable();
-+		return 0;
-+	}
-+	pagefault_enable();
-+
-+	target = branch_target(&instr);
-+	if ((!target) || (instr & BRANCH_ABSOLUTE))
-+		return target;
-+
-+	/* Translate relative branch target from kernel to user address */
-+	return target - (unsigned long)&instr + addr;
-+}
-+
- /* Processing BHRB entries */
- void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
- {
-@@ -1521,7 +1550,8 @@ void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
- 				/* Branches to immediate field 
- 				   (ie I or B form) */
- 				cpuhw->bhrb_entries[u_index].from = addr;
--				cpuhw->bhrb_entries[u_index].to = 0;
-+				cpuhw->bhrb_entries[u_index].to =
-+					power_pmu_bhrb_to(addr);
- 				cpuhw->bhrb_entries[u_index].mispred = pred;
- 				cpuhw->bhrb_entries[u_index].predicted = ~pred;
- 			}
--- 
-1.7.10.4
+-Bharat
+=20
+> Now on KVM book3e we
+> don't want to put them in the irq_happened lazy state but rather to execu=
+te them
+> directly, so there is no reason for exception handling symmetry between h=
+ost and
+> guest.
+>=20
+> -Mike
+>=20
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
