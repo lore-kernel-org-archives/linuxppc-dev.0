@@ -1,30 +1,25 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
- by ozlabs.org (Postfix) with SMTP id 9D9E62C00E3
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 May 2013 23:30:05 +1000 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
- by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
- id 24981-06 for <linuxppc-dev@lists.ozlabs.org>;
- Thu,  9 May 2013 14:29:57 +0100 (BST)
+Return-Path: <B16395@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2E2D52C00DB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 May 2013 23:47:36 +1000 (EST)
+From: Sethi Varun-B16395 <B16395@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH] powerpc/pci: Support per-aperture memory offset
+Date: Thu, 9 May 2013 13:47:38 +0000
+Message-ID: <C5ECD7A89D1DC44195F34B25E172658D4F01D0@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1367823016.15842.22.camel@pasglop>
+In-Reply-To: <1367823016.15842.22.camel@pasglop>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
-Subject: RE: [RFC][KVM][PATCH 1/1] kvm:ppc:booke-64: soft-disable interrupts
-Date: Thu, 9 May 2013 14:28:13 +0100
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B722F@saturn3.aculab.com>
-In-Reply-To: <1368103062.25488.193.camel@pasglop>
-References: <51885F49.6060605@windriver.com> (from tiejun.chen@windriver.com
- on Mon May 6 20:56:25 2013) <1367892390.3398.12@snotra>
- <300B73AA675FCE4A93EB4FC1D42459FF3F00D0@039-SN2MPN1-013.039d.mgd.msft.net>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0700E64A@039-SN2MPN1-011.039d.mgd.msft.net>
- <518B7014.1090508@windriver.com> <1368103062.25488.193.camel@pasglop>
-From: "David Laight" <David.Laight@ACULAB.COM>
-To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
- "tiejun.chen" <tiejun.chen@windriver.com>
-Cc: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>, kvm@vger.kernel.org,
- Wood Scott-B07421 <B07421@freescale.com>, agraf@suse.de,
- kvm-ppc@vger.kernel.org, Bhushan Bharat-R65777 <R65777@freescale.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ Wood Scott-B07421 <B07421@freescale.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Bjorn Helgaas <bhelgaas@google.com>, Andrew Murray <Andrew.Murray@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,22 +29,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Some MPIC implementations tend to generate a spurrious IRQ in the case
-> of level IRQs going away. IE. they still remember an event occurred =
-and
-> interrupt the processor, but on IACK return the spurious vector. =
-However
-> that isn't guaranteed to be the case and it is perfectly ok (and a =
-good
-> idea) for the PIC to just stop asserting the external interrupt line =
-if
-> the original device interrupt goes away (and it's configured as level
-> sensitive).
-
-That will happen if the IRQ goes away while the cpu is performing
-the IACK sequence.
-If the IRQ goes away while the cpu has interrupts masked then
-the cpu won't start the interrupt sequence and then try to
-read a vector when no interrupt is pending.
-
-	David
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmVuamFtaW4gSGVycmVu
+c2NobWlkdCBbbWFpbHRvOmJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZ10NCj4gU2VudDogTW9uZGF5
+LCBNYXkgMDYsIDIwMTMgMTI6MjAgUE0NCj4gVG86IGxpbnV4cHBjLWRldg0KPiBDYzogS3VtYXIg
+R2FsYTsgV29vZCBTY290dC1CMDc0MjE7IFNldGhpIFZhcnVuLUIxNjM5NTsgVGhvbWFzIFBldGF6
+em9uaTsNCj4gQW5kcmV3IE11cnJheTsgQmpvcm4gSGVsZ2FhczsgbGludXgtcGNpQHZnZXIua2Vy
+bmVsLm9yZw0KPiBTdWJqZWN0OiBbUEFUQ0hdIHBvd2VycGMvcGNpOiBTdXBwb3J0IHBlci1hcGVy
+dHVyZSBtZW1vcnkgb2Zmc2V0DQo+IA0KPiBUaGUgUENJIGNvcmUgc3VwcG9ydHMgYW4gb2Zmc2V0
+IHBlciBhcGVydHVyZSBub3dhZGF5cyBidXQgb3VyIGFyY2ggY29kZQ0KPiBzdGlsbCBoYXMgYSBz
+aW5nbGUgb2Zmc2V0IHBlciBob3N0IGJyaWRnZSByZXByZXNlbnRpbmcgdGhlIGRpZmZlcmVuY2UN
+Cj4gYmV0d2VuIENQVSBtZW1vcnkgYWRkcmVzc2VzIGFuZCBQQ0kgTU1JTyBhZGRyZXNzZXMuDQo+
+IA0KPiBUaGlzIGlzIGEgcHJvYmxlbSBhcyBuZXcgbWFjaGluZXMgYW5kIGh5cGVydmlzb3IgdmVy
+c2lvbnMgYXJlIGNvbWluZyBvdXQNCj4gd2hlcmUgdGhlIDY0LWJpdCB3aW5kb3dzIHdpbGwgaGF2
+ZSBhIGRpZmZlcmVudCBvZmZzZXQgKGJhc2ljYWxseSBtYXBwZWQNCj4gMToxKSBmcm9tIHRoZSAz
+Mi1iaXQgd2luZG93cy4NCj4gDQo+IFRoaXMgZml4ZXMgaXQgYnkgdXNpbmcgc2VwYXJhdGUgb2Zm
+c2V0cy4gSW4gdGhlIGxvbmcgcnVuLCB3ZSBwcm9iYWJseQ0KPiB3YW50IHRvIGdldCByaWQgb2Yg
+dGhhdCBpbnRlcm1lZGlhcnkgc3RydWN0IHBjaV9jb250cm9sbGVyIGFuZCBoYXZlIHRob3NlDQo+
+IGRpcmVjdGx5IHN0b3JlZCBpbnRvIHRoZSBwY2lfaG9zdF9icmlkZ2UgYXMgdGhleSBhcmUgcGFy
+c2VkIGJ1dCB0aGlzIHdpbGwNCj4gYmUgYSBtb3JlIGludmFzaXZlIGNoYW5nZS4NCj4gDQo+IFNp
+Z25lZC1vZmYtYnk6IEJlbmphbWluIEhlcnJlbnNjaG1pZHQgPGJlbmhAa2VybmVsLmNyYXNoaW5n
+Lm9yZz4NCj4gLS0tDQo+IA0KPiBOb3csIHRoaXMgaXMgYSBiaWcgb25lIGJ1dCBJJ2QgbGlrZSB0
+byBzdGlsbCBtZXJnZSBpdCBmb3IgMy4xMCBiZWNhdXNlDQo+IHdlJ3JlIGhhdmluZyBuZXcgbWFj
+aGluZSBjb21pbmcgdXAgKGFuZCBuZXcgdmVyc2lvbnMgb2YgcEh5cCBvbiBleGlzdGluZw0KPiBt
+YWNoaW5lcykgdGhhdCBhcmUgZ29pbmcgdG8gZXhwb3NlIE1NSU8gd2luZG93cyB3aXRoIGRpZmZl
+cmVudCBvZmZzZXRzDQo+IChiYXNpY2FsbHkgb3VyIDY0LWJpdCB3aW5kb3dzIGFyZSAxOjEgYW5k
+IG91ciAzMi1iaXQgd2luZG93cyByZW1hcHBlZCkuDQo+IA0KPiBJJ20gbm90IGV4cGVjdGluZyBh
+bnkgbWFqb3IgaXNzdWUgd2l0aCB0aGUgcGF0Y2gsIEkndmUgdGVzdGVkIGl0IG9uIHNvbWUNCj4g
+b2Ygb3VyIG1hY2hpbmVzIGhlcmUgYW5kIHdpbGwgdGVzdCBpdCBtb3JlIGR1cmluZyB0aGUgbmV4
+dCBjb3VwbGUgb2YgZGF5cw0KPiB0aGUgbm90YWJsZSB0aGluZyBpcyB0aGUgcmVtb3ZhbCBvZiBh
+ICJ3b3JrYXJvdW5kIiAvIGZhbGxiYWNrIG9uIDMyLWJpdA0KPiB0aGF0IEkgc3VzcGVjdCBvbmx5
+IGV2ZXIgbWF0dGVyZWQgZm9yIG1hY2hpbmVzIGxvbmcgdW5zdXBwb3J0ZWQgKFBSZVAgPykNCj4g
+YXMgSSBkb24ndCB0aGluayB3ZSBoYXZlIGFueXRoaW5nIHRoYXQgZG9lc24ndCBwb3B1bGF0ZSB0
+aGUgYnJpZGdlDQo+IHJlc291cmNlcyBhbmQgZXhwZWN0cyB0byB3b3JrIG5vd2FkYXlzIChvdGhl
+ciBzdHVmZiB3b3VsZCBicmVhayBhbnl3YXkpLg0KPiANCj4gVGhpcyBpcyBhbHNvIHdoeSBJJ20g
+TkFLJ2luZyB0aGUgcGF0Y2ggbWFraW5nDQo+IHBjaV9wcm9jZXNzX2JyaWRnZV9PRl9yYW5nZXMo
+KSBnZW5lcmljIHNpbmNlIEkgbmVlZCB0byBjaGFuZ2UgaXQgZm9yDQo+IHBvd2VycGMgYW5kIHRo
+aXMgaXNuJ3QgdGhlIHJpZ2h0IGxvbmcgdGVybSBhcHByb2FjaCAod2Ugc2hvdWxkICJtZXJnZSIN
+Cj4gcGNpX2NvbnRyb2xsZXIgJiBwY2lfaG9zdF9icmlkZ2UgaW5zdGVhZCBhbmQgZGlyZWN0bHkg
+cG9wdWxhdGUgdGhlDQo+IHBjaV9ob3N0X2JyaWRnZSBhcGVydHVyZXMpLg0KPiANCj4gSWYgSSBz
+ZWUgbm8gbWFqb3IgaXNzdWUgd2l0aCB0aGUgcGF0Y2ggZHVyaW5nIHRoZSBuZXh0IGZldyBkYXlz
+LCBJJ2xsDQo+IHNlbmQgaXQgdG8gTGludXMgd2l0aCBteSBuZXh0IHB1bGwgcmVxdWVzdCwgcHJv
+YmFibHkgYXQgLXJjMS4NCj4gDQo+IEt1bWFyLCBTY290dCwgU2V0aGksIHBsZWFzZSB0ZXN0IG9u
+IEZTTCBIVy4gSSdsbCB0YWtlIGNhcmUgb2YgbWFjcyBhbmQNCj4gNHh4IGluIGFkZGl0aW9uIHRv
+IHRoZSB2YXJpb3VzIElCTSBwcGM2NCBwbGF0Zm9ybXMuDQo+IA0KW1NldGhpIFZhcnVuLUIxNjM5
+NV0gVGVzdGVkIHBhdGNoIG9uIEZTTCBUNDI0MCwgUDQwODAsIFA1MDQwIGFuZCBQMTAyMCBib2Fy
+ZHMuDQoNCi1WYXJ1bg0K
