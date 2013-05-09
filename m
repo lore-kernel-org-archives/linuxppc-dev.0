@@ -1,22 +1,24 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 041AC2C00A0
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 May 2013 17:48:01 +1000 (EST)
-Message-ID: <518B54A6.1070505@windriver.com>
-Date: Thu, 9 May 2013 15:47:50 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
-MIME-Version: 1.0
-To: Bhushan Bharat-R65777 <R65777@freescale.com>
-Subject: Re: [RFC][KVM][PATCH 1/1] kvm:ppc:booke-64: soft-disable interrupts
+Return-Path: <R65777@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe002.messaging.microsoft.com [216.32.180.12])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9A4AB2C00EC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 May 2013 17:51:33 +1000 (EST)
+From: Bhushan Bharat-R65777 <R65777@freescale.com>
+To: tiejun.chen <tiejun.chen@windriver.com>
+Subject: RE: [RFC][KVM][PATCH 1/1] kvm:ppc:booke-64: soft-disable interrupts
+Date: Thu, 9 May 2013 07:51:09 +0000
+Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D0700E563@039-SN2MPN1-011.039d.mgd.msft.net>
 References: <51885F49.6060605@windriver.com> (from tiejun.chen@windriver.com
- on Mon May 6 20:56:25 2013) <1367892390.3398.12@snotra>
+ on Mon May  6 20:56:25 2013) <1367892390.3398.12@snotra>
  <300B73AA675FCE4A93EB4FC1D42459FF3F00D0@039-SN2MPN1-013.039d.mgd.msft.net>
  <6A3DF150A5B70D4F9B66A25E3F7C888D0700E50E@039-SN2MPN1-011.039d.mgd.msft.net>
-In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D0700E50E@039-SN2MPN1-011.039d.mgd.msft.net>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
+ <518B54A6.1070505@windriver.com>
+In-Reply-To: <518B54A6.1070505@windriver.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 Cc: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>,
  "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
  Wood Scott-B07421 <B07421@freescale.com>, "agraf@suse.de" <agraf@suse.de>,
@@ -31,67 +33,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/09/2013 03:33 PM, Bhushan Bharat-R65777 wrote:
->
->
->> -----Original Message-----
->> From: Linuxppc-dev [mailto:linuxppc-dev-
->> bounces+bharat.bhushan=freescale.com@lists.ozlabs.org] On Behalf Of Caraman
->> Mihai Claudiu-B02008
->> Sent: Wednesday, May 08, 2013 6:44 PM
->> To: Wood Scott-B07421; tiejun.chen
->> Cc: linuxppc-dev@lists.ozlabs.org; agraf@suse.de; kvm-ppc@vger.kernel.org;
->> kvm@vger.kernel.org
->> Subject: RE: [RFC][KVM][PATCH 1/1] kvm:ppc:booke-64: soft-disable interrupts
->>
->>>> This only disable soft interrupt for kvmppc_restart_interrupt() that
->>>> restarts interrupts if they were meant for the host:
->>>>
->>>> a. SOFT_DISABLE_INTS() only for BOOKE_INTERRUPT_EXTERNAL |
->>>> BOOKE_INTERRUPT_DECREMENTER | BOOKE_INTERRUPT_DOORBELL
->>>
->>> Those aren't the only exceptions that can end up going to the host.
->>> We could get a TLB miss that results in a heavyweight MMIO exit, etc.
->>>
->>>> And shouldn't we handle kvmppc_restart_interrupt() like the original
->>>> HOST flow?
->>>>
->>>> #define MASKABLE_EXCEPTION(trapnum, intnum, label, hdlr,
->>>> ack)           \
->>>>
->>>> START_EXCEPTION(label);                                         \
->>>>          NORMAL_EXCEPTION_PROLOG(trapnum, intnum,
->>>> PROLOG_ADDITION_MASKABLE)\
->>>>          EXCEPTION_COMMON(trapnum, PACA_EXGEN,
->>>> *INTS_DISABLE*)             \
->>>> 	...
->>>
->>> Could you elaborate on what you mean?
->>
->> I think Tiejun was saying that host has flags and replays only EE/DEC/DBELL
->> interrupts. There is special macro masked_interrupt_book3e in those exception
->> handlers that sets paca->irq_happened.
->>
->> The list of replied interrupts is limited to asynchronous noncritical interrupts
->> which can be masked by MSR[EE] (therefore no TLB miss).
->
-> Embedded Perfmon interrupt is also asynchronous, Why that is not in the list of masked interruts.
-
-Are you saying perfmon? If so, its also in that list:
-
-         START_EXCEPTION(perfmon);
-         NORMAL_EXCEPTION_PROLOG(0x260, BOOKE_INTERRUPT_PERFORMANCE_MONITOR,
-                                 PROLOG_ADDITION_NONE)
-         EXCEPTION_COMMON(0x260, PACA_EXGEN, INTS_DISABLE)
-
-Tiejun
-
->
-> -Bharat
->
->> Now on KVM book3e we
->> don't want to put them in the irq_happened lazy state but rather to execute them
->> directly, so there is no reason for exception handling symmetry between host and
->> guest.
->>
->> -Mike
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogdGllanVuLmNoZW4gW21h
+aWx0bzp0aWVqdW4uY2hlbkB3aW5kcml2ZXIuY29tXQ0KPiBTZW50OiBUaHVyc2RheSwgTWF5IDA5
+LCAyMDEzIDE6MTggUE0NCj4gVG86IEJodXNoYW4gQmhhcmF0LVI2NTc3Nw0KPiBDYzogQ2FyYW1h
+biBNaWhhaSBDbGF1ZGl1LUIwMjAwODsgV29vZCBTY290dC1CMDc0MjE7IGxpbnV4cHBjLQ0KPiBk
+ZXZAbGlzdHMub3psYWJzLm9yZzsgYWdyYWZAc3VzZS5kZTsga3ZtLXBwY0B2Z2VyLmtlcm5lbC5v
+cmc7DQo+IGt2bUB2Z2VyLmtlcm5lbC5vcmcNCj4gU3ViamVjdDogUmU6IFtSRkNdW0tWTV1bUEFU
+Q0ggMS8xXSBrdm06cHBjOmJvb2tlLTY0OiBzb2Z0LWRpc2FibGUgaW50ZXJydXB0cw0KPiANCj4g
+T24gMDUvMDkvMjAxMyAwMzozMyBQTSwgQmh1c2hhbiBCaGFyYXQtUjY1Nzc3IHdyb3RlOg0KPiA+
+DQo+ID4NCj4gPj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPj4gRnJvbTogTGludXhw
+cGMtZGV2IFttYWlsdG86bGludXhwcGMtZGV2LQ0KPiA+PiBib3VuY2VzK2JoYXJhdC5iaHVzaGFu
+PWZyZWVzY2FsZS5jb21AbGlzdHMub3psYWJzLm9yZ10gT24gQmVoYWxmIE9mDQo+ID4+IGJvdW5j
+ZXMrQ2FyYW1hbg0KPiA+PiBNaWhhaSBDbGF1ZGl1LUIwMjAwOA0KPiA+PiBTZW50OiBXZWRuZXNk
+YXksIE1heSAwOCwgMjAxMyA2OjQ0IFBNDQo+ID4+IFRvOiBXb29kIFNjb3R0LUIwNzQyMTsgdGll
+anVuLmNoZW4NCj4gPj4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBhZ3JhZkBz
+dXNlLmRlOw0KPiA+PiBrdm0tcHBjQHZnZXIua2VybmVsLm9yZzsga3ZtQHZnZXIua2VybmVsLm9y
+Zw0KPiA+PiBTdWJqZWN0OiBSRTogW1JGQ11bS1ZNXVtQQVRDSCAxLzFdIGt2bTpwcGM6Ym9va2Ut
+NjQ6IHNvZnQtZGlzYWJsZQ0KPiA+PiBpbnRlcnJ1cHRzDQo+ID4+DQo+ID4+Pj4gVGhpcyBvbmx5
+IGRpc2FibGUgc29mdCBpbnRlcnJ1cHQgZm9yIGt2bXBwY19yZXN0YXJ0X2ludGVycnVwdCgpDQo+
+ID4+Pj4gdGhhdCByZXN0YXJ0cyBpbnRlcnJ1cHRzIGlmIHRoZXkgd2VyZSBtZWFudCBmb3IgdGhl
+IGhvc3Q6DQo+ID4+Pj4NCj4gPj4+PiBhLiBTT0ZUX0RJU0FCTEVfSU5UUygpIG9ubHkgZm9yIEJP
+T0tFX0lOVEVSUlVQVF9FWFRFUk5BTCB8DQo+ID4+Pj4gQk9PS0VfSU5URVJSVVBUX0RFQ1JFTUVO
+VEVSIHwgQk9PS0VfSU5URVJSVVBUX0RPT1JCRUxMDQo+ID4+Pg0KPiA+Pj4gVGhvc2UgYXJlbid0
+IHRoZSBvbmx5IGV4Y2VwdGlvbnMgdGhhdCBjYW4gZW5kIHVwIGdvaW5nIHRvIHRoZSBob3N0Lg0K
+PiA+Pj4gV2UgY291bGQgZ2V0IGEgVExCIG1pc3MgdGhhdCByZXN1bHRzIGluIGEgaGVhdnl3ZWln
+aHQgTU1JTyBleGl0LCBldGMuDQo+ID4+Pg0KPiA+Pj4+IEFuZCBzaG91bGRuJ3Qgd2UgaGFuZGxl
+IGt2bXBwY19yZXN0YXJ0X2ludGVycnVwdCgpIGxpa2UgdGhlDQo+ID4+Pj4gb3JpZ2luYWwgSE9T
+VCBmbG93Pw0KPiA+Pj4+DQo+ID4+Pj4gI2RlZmluZSBNQVNLQUJMRV9FWENFUFRJT04odHJhcG51
+bSwgaW50bnVtLCBsYWJlbCwgaGRsciwNCj4gPj4+PiBhY2spICAgICAgICAgICBcDQo+ID4+Pj4N
+Cj4gPj4+PiBTVEFSVF9FWENFUFRJT04obGFiZWwpOyAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgXA0KPiA+Pj4+ICAgICAgICAgIE5PUk1BTF9FWENFUFRJT05fUFJPTE9H
+KHRyYXBudW0sIGludG51bSwNCj4gPj4+PiBQUk9MT0dfQURESVRJT05fTUFTS0FCTEUpXA0KPiA+
+Pj4+ICAgICAgICAgIEVYQ0VQVElPTl9DT01NT04odHJhcG51bSwgUEFDQV9FWEdFTiwNCj4gPj4+
+PiAqSU5UU19ESVNBQkxFKikgICAgICAgICAgICAgXA0KPiA+Pj4+IAkuLi4NCj4gPj4+DQo+ID4+
+PiBDb3VsZCB5b3UgZWxhYm9yYXRlIG9uIHdoYXQgeW91IG1lYW4/DQo+ID4+DQo+ID4+IEkgdGhp
+bmsgVGllanVuIHdhcyBzYXlpbmcgdGhhdCBob3N0IGhhcyBmbGFncyBhbmQgcmVwbGF5cyBvbmx5
+DQo+ID4+IEVFL0RFQy9EQkVMTCBpbnRlcnJ1cHRzLiBUaGVyZSBpcyBzcGVjaWFsIG1hY3JvDQo+
+ID4+IG1hc2tlZF9pbnRlcnJ1cHRfYm9vazNlIGluIHRob3NlIGV4Y2VwdGlvbiBoYW5kbGVycyB0
+aGF0IHNldHMgcGFjYS0NCj4gPmlycV9oYXBwZW5lZC4NCj4gPj4NCj4gPj4gVGhlIGxpc3Qgb2Yg
+cmVwbGllZCBpbnRlcnJ1cHRzIGlzIGxpbWl0ZWQgdG8gYXN5bmNocm9ub3VzIG5vbmNyaXRpY2Fs
+DQo+ID4+IGludGVycnVwdHMgd2hpY2ggY2FuIGJlIG1hc2tlZCBieSBNU1JbRUVdICh0aGVyZWZv
+cmUgbm8gVExCIG1pc3MpLg0KPiA+DQo+ID4gRW1iZWRkZWQgUGVyZm1vbiBpbnRlcnJ1cHQgaXMg
+YWxzbyBhc3luY2hyb25vdXMsIFdoeSB0aGF0IGlzIG5vdCBpbiB0aGUgbGlzdA0KPiBvZiBtYXNr
+ZWQgaW50ZXJydXRzLg0KPiANCj4gQXJlIHlvdSBzYXlpbmcgcGVyZm1vbj8gSWYgc28sIGl0cyBh
+bHNvIGluIHRoYXQgbGlzdDoNCj4gDQo+ICAgICAgICAgIFNUQVJUX0VYQ0VQVElPTihwZXJmbW9u
+KTsNCj4gICAgICAgICAgTk9STUFMX0VYQ0VQVElPTl9QUk9MT0coMHgyNjAsIEJPT0tFX0lOVEVS
+UlVQVF9QRVJGT1JNQU5DRV9NT05JVE9SLA0KPiAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICBQUk9MT0dfQURESVRJT05fTk9ORSkNCj4gICAgICAgICAgRVhDRVBUSU9OX0NPTU1PTigw
+eDI2MCwgUEFDQV9FWEdFTiwgSU5UU19ESVNBQkxFKQ0KDQpXaGVyZSBpdCBpcyByZWNvcmRlZCBp
+biBwYWNhLT5pcnFfaGFwcG5lZCB0byBiZSByZXBsYXllZCBsYXRlciA/DQoNCj4gDQo+IFRpZWp1
+bg0KPiANCj4gPg0KPiA+IC1CaGFyYXQNCj4gPg0KPiA+PiBOb3cgb24gS1ZNIGJvb2szZSB3ZQ0K
+PiA+PiBkb24ndCB3YW50IHRvIHB1dCB0aGVtIGluIHRoZSBpcnFfaGFwcGVuZWQgbGF6eSBzdGF0
+ZSBidXQgcmF0aGVyIHRvDQo+ID4+IGV4ZWN1dGUgdGhlbSBkaXJlY3RseSwgc28gdGhlcmUgaXMg
+bm8gcmVhc29uIGZvciBleGNlcHRpb24gaGFuZGxpbmcNCj4gPj4gc3ltbWV0cnkgYmV0d2VlbiBo
+b3N0IGFuZCBndWVzdC4NCj4gPj4NCj4gPj4gLU1pa2UNCj4gDQoNCg==
