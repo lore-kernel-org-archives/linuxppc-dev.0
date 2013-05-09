@@ -1,26 +1,27 @@
-Return-Path: <B31939@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D2BC42C00DC
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 May 2013 19:17:11 +1000 (EST)
-Received: from mail144-co1 (localhost [127.0.0.1])	by
- mail144-co1-R.bigfish.com (Postfix) with ESMTP id D2A6ECA01CF	for
- <linuxppc-dev@lists.ozlabs.org>; Thu,  9 May 2013 09:17:05 +0000 (UTC)
-Received: from CO1EHSMHS029.bigfish.com (unknown [10.243.78.250])	by
- mail144-co1.bigfish.com (Postfix) with ESMTP id A5153C8004A	for
- <linuxppc-dev@lists.ozlabs.org>; Thu,  9 May 2013 09:17:04 +0000 (UTC)
-From: Minghuan Lian <Minghuan.Lian@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/fsl: add property 'reg' to pcie@0 node
-Date: Wed, 8 May 2013 17:17:21 +0800
-Message-ID: <1368004641-12405-1-git-send-email-Minghuan.Lian@freescale.com>
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D51ED2C00DC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 May 2013 19:45:04 +1000 (EST)
+Message-ID: <518B7014.1090508@windriver.com>
+Date: Thu, 9 May 2013 17:44:52 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Minghuan Lian <Minghuan.Lian@freescale.com>,
- Zang Roy-R61911 <r61911@freescale.com>
+To: Bhushan Bharat-R65777 <R65777@freescale.com>
+Subject: Re: [RFC][KVM][PATCH 1/1] kvm:ppc:booke-64: soft-disable interrupts
+References: <51885F49.6060605@windriver.com> (from tiejun.chen@windriver.com
+ on Mon May 6 20:56:25 2013) <1367892390.3398.12@snotra>
+ <300B73AA675FCE4A93EB4FC1D42459FF3F00D0@039-SN2MPN1-013.039d.mgd.msft.net>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0700E64A@039-SN2MPN1-011.039d.mgd.msft.net>
+In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D0700E64A@039-SN2MPN1-011.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ Wood Scott-B07421 <B07421@freescale.com>, "agraf@suse.de" <agraf@suse.de>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,64 +31,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The property 'reg' is used to identify the PCIe device. if there is
-no 'reg' the PCI driver can not find PCI device node corresponding
-to PCI controller, and can not map the interrupts. So all the INTx
-interrupts can not be used.
+On 05/09/2013 04:23 PM, Bhushan Bharat-R65777 wrote:
+>
+>
+>> -----Original Message-----
+>> From: Linuxppc-dev [mailto:linuxppc-dev-
+>> bounces+bharat.bhushan=freescale.com@lists.ozlabs.org] On Behalf Of Caraman
+>> Mihai Claudiu-B02008
+>> Sent: Wednesday, May 08, 2013 6:44 PM
+>> To: Wood Scott-B07421; tiejun.chen
+>> Cc: linuxppc-dev@lists.ozlabs.org; agraf@suse.de; kvm-ppc@vger.kernel.org;
+>> kvm@vger.kernel.org
+>> Subject: RE: [RFC][KVM][PATCH 1/1] kvm:ppc:booke-64: soft-disable interrupts
+>>
+>>>> This only disable soft interrupt for kvmppc_restart_interrupt() that
+>>>> restarts interrupts if they were meant for the host:
+>>>>
+>>>> a. SOFT_DISABLE_INTS() only for BOOKE_INTERRUPT_EXTERNAL |
+>>>> BOOKE_INTERRUPT_DECREMENTER | BOOKE_INTERRUPT_DOORBELL
+>>>
+>>> Those aren't the only exceptions that can end up going to the host.
+>>> We could get a TLB miss that results in a heavyweight MMIO exit, etc.
+>>>
+>>>> And shouldn't we handle kvmppc_restart_interrupt() like the original
+>>>> HOST flow?
+>>>>
+>>>> #define MASKABLE_EXCEPTION(trapnum, intnum, label, hdlr,
+>>>> ack)           \
+>>>>
+>>>> START_EXCEPTION(label);                                         \
+>>>>          NORMAL_EXCEPTION_PROLOG(trapnum, intnum,
+>>>> PROLOG_ADDITION_MASKABLE)\
+>>>>          EXCEPTION_COMMON(trapnum, PACA_EXGEN,
+>>>> *INTS_DISABLE*)             \
+>>>> 	...
+>>>
+>>> Could you elaborate on what you mean?
+>>
+>> I think Tiejun was saying that host has flags and replays only EE/DEC/DBELL
+>> interrupts. There is special macro masked_interrupt_book3e in those exception
+>> handlers that sets paca->irq_happened.
+>>
+>> The list of replied interrupts is limited to asynchronous noncritical interrupts
+>> which can be masked by MSR[EE] (therefore no TLB miss). Now on KVM book3e we
+>> don't want to put them in the irq_happened lazy state but rather to execute them
+>> directly, so there is no reason for exception handling symmetry between host and
+>> guest.
+>
+>
+> Another Question:
+>
+> The case is:
+>
 
-Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
----
- arch/powerpc/boot/dts/fsl/b4si-post.dtsi    | 1 +
- arch/powerpc/boot/dts/fsl/t4240si-post.dtsi | 4 ++++
- 2 files changed, 5 insertions(+)
+Actually in the case GS=1 even if EE=0, EXT/DEC/DBELL still occur as I recall.
 
-diff --git a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
-index 7399154..d82c8da 100644
---- a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
-@@ -49,6 +49,7 @@
- 	interrupts = <20 2 0 0>;
- 	fsl,iommu-parent = <&pamu0>;
- 	pcie@0 {
-+		reg = <0 0 0 0 0>;
- 		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
-diff --git a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-index bd611a9..3a6179f 100644
---- a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-@@ -48,6 +48,7 @@
- 	bus-range = <0x0 0xff>;
- 	interrupts = <20 2 0 0>;
- 	pcie@0 {
-+		reg = <0 0 0 0 0>;
- 		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
-@@ -74,6 +75,7 @@
- 	bus-range = <0 0xff>;
- 	interrupts = <21 2 0 0>;
- 	pcie@0 {
-+		reg = <0 0 0 0 0>;
- 		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
-@@ -100,6 +102,7 @@
- 	bus-range = <0x0 0xff>;
- 	interrupts = <22 2 0 0>;
- 	pcie@0 {
-+		reg = <0 0 0 0 0>;
- 		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
-@@ -126,6 +129,7 @@
- 	bus-range = <0x0 0xff>;
- 	interrupts = <23 2 0 0>;
- 	pcie@0 {
-+		reg = <0 0 0 0 0>;
- 		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
--- 
-1.8.1.2
+> Case 1)
+>   -> Local_irq_disable()  will set soft_enabled = 0
+>   -> Now Externel interrupt happens, there we set PACA_IRQ_EE in irq_happened, Also clears EE in SRR1 and rfi. So interrupts are hard disabled. No more other interrupt gated by MSR.EE can happen. Looks like the idea here is to not let a device keep on inserting interrupt till the interrupt condition on device is cleared, right?
+
+I don't understand "the interrupt condition on device is cleared" here.
+
+I think regardless if you clear the device interrupt status, the system still 
+receive a pending interrupt once EE or GS = 1.
+
+>   -> local_irq_enable() - This checks that irq_happened is set, and replays
+
+ret_from_except also check to replay.
+
+>
+> Now the case 2)
+> Case 2)
+> -> Local_irq_disable()  will set soft_enabled = 0
+>   -> Now DEC interrupt happens. We set PACA_IRQ_DEC in irq_happened, But do not clear EE in SRR1 and rfi. So interrupts are not hard disabled.
+>   -> Now say EE interrupt happens, there we set PACA_IRQ_EE in irq_happened, Also clears EE in SRR1 and rfi. So interrupts are hard disabled.
+>   -> local_irq_enable() - This checks that irq_happened is set.
+> IIUC, it replays only one interrupt? is not it?
+
+After anyone is replayed in arch_local_irq_restore(), we will set soft/hard 
+interrupt there:
+
+set_soft_enabled(1);
+__hard_irq_enable();
+
+Then any pending interrupt can be executed now.
+
+Additionally, ret_from_except probably check to replay all.
+
+Tiejun
