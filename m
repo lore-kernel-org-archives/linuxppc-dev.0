@@ -1,29 +1,29 @@
-Return-Path: <B02008@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 153F42C00DC
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 May 2013 22:37:15 +1000 (EST)
-From: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
-To: tiejun.chen <tiejun.chen@windriver.com>
-Subject: RE: [v1][KVM][PATCH 1/1] kvm:ppc:booehv: direct ISI exception to Guest
-Date: Thu, 9 May 2013 12:36:14 +0000
-Message-ID: <300B73AA675FCE4A93EB4FC1D42459FF3F80D6@039-SN2MPN1-012.039d.mgd.msft.net>
-References: <1367970043.3398.39@snotra> <5189B02E.3000109@windriver.com>
- <300B73AA675FCE4A93EB4FC1D42459FF3EFA26@039-SN2MPN1-013.039d.mgd.msft.net>
- <518A1AD8.3090103@windriver.com> <518B7913.6010302@windriver.com>
- <300B73AA675FCE4A93EB4FC1D42459FF3F7FBE@039-SN2MPN1-012.039d.mgd.msft.net>
- <518B8B2A.1020103@windriver.com>
-In-Reply-To: <518B8B2A.1020103@windriver.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "agraf@suse.de" <agraf@suse.de>,
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id AD0EF2C0040
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 May 2013 22:37:54 +1000 (EST)
+Message-ID: <1368103062.25488.193.camel@pasglop>
+Subject: Re: [RFC][KVM][PATCH 1/1] kvm:ppc:booke-64: soft-disable interrupts
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "tiejun.chen" <tiejun.chen@windriver.com>
+Date: Thu, 09 May 2013 22:37:42 +1000
+In-Reply-To: <518B7014.1090508@windriver.com>
+References: <51885F49.6060605@windriver.com>
+ (from tiejun.chen@windriver.com on Mon May 6 20:56:25 2013)
+ <1367892390.3398.12@snotra>
+ <300B73AA675FCE4A93EB4FC1D42459FF3F00D0@039-SN2MPN1-013.039d.mgd.msft.net>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0700E64A@039-SN2MPN1-011.039d.mgd.msft.net>
+ <518B7014.1090508@windriver.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ Wood Scott-B07421 <B07421@freescale.com>, "agraf@suse.de" <agraf@suse.de>,
  "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>
+ Bhushan Bharat-R65777 <R65777@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,20 +33,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiB0aWVqdW4uY2hlbiBbbWFpbHRv
-OnRpZWp1bi5jaGVuQHdpbmRyaXZlci5jb21dDQo+IFNlbnQ6IFRodXJzZGF5LCBNYXkgMDksIDIw
-MTMgMjo0MCBQTQ0KPiBUbzogQ2FyYW1hbiBNaWhhaSBDbGF1ZGl1LUIwMjAwOA0KPiBDYzogV29v
-ZCBTY290dC1CMDc0MjE7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBhZ3JhZkBzdXNl
-LmRlOyBrdm0tDQo+IHBwY0B2Z2VyLmtlcm5lbC5vcmc7IGt2bUB2Z2VyLmtlcm5lbC5vcmcNCj4g
-U3ViamVjdDogUmU6IFt2MV1bS1ZNXVtQQVRDSCAxLzFdIGt2bTpwcGM6Ym9vZWh2OiBkaXJlY3Qg
-SVNJIGV4Y2VwdGlvbiB0bw0KPiBHdWVzdA0KPiANCj4gT24gMDUvMDkvMjAxMyAwNzozNCBQTSwg
-Q2FyYW1hbiBNaWhhaSBDbGF1ZGl1LUIwMjAwOCB3cm90ZToNCj4gPj4+PiBWRiBzdGFuZHMgZm9y
-IHZpcnR1YWxpemF0aW9uIGZhdWx0IHNlZSBNQVM4W1ZGXSBhbmQgd2UgbWF5IHVzZSBpdA0KPiBm
-b3INCj4gPj4gdmlydHVhbGl6ZWQNCj4gPj4NCj4gPj4gTG9va3MgS1ZNIFBQQyBoYXZlIG5vIHRo
-aXMgbWVjaGFuaXNtIGN1cnJlbnRseSBzaW5jZSBJIGRvbid0IGZpbmQNCj4gTUFTOF9WRg0KPiA+
-PiBpcw0KPiA+PiB1c2VkIGluIGtlcm5lbCwgcmlnaHQ/DQo+ID4NCj4gPiBZZXMgYnV0ICd3ZSBt
-YXkgdXNlIGl0JyBpbiB0aGUgZmVhdHVyZSwgSSBoYXZlIGEgZnVuY3Rpb25hbCBQT0Mgd2l0aA0K
-PiBWRi4NCj4gDQo+IEFueSBJTyBwZXJmb3JtYW5jZSB0byBiZSBpbXByb3ZlZCB3aXRoIHRoaXMg
-UE9DPw0KDQpWRiBhcHByb2FjaCBwdXRzIG1vcmUgc3RyZXNzIG9uIEhXIFRMQiBzbyBJIGRpZCBu
-b3QgYWR2YW5jZSB3aXRoIHBlcmZvcm1hbmNlDQptZWFzdXJlbWVudHMgdGhvdWdoIGl0IG1heSB3
-b3J0aCB0byBkbyBpdC4NCg0KLU1pa2UNCg==
+On Thu, 2013-05-09 at 17:44 +0800, tiejun.chen wrote:
+> 
+> Actually in the case GS=1 even if EE=0, EXT/DEC/DBELL still occur as I
+> recall.
+
+Only if directed to the hypervisor.
+
+> > Case 1)
+> >   -> Local_irq_disable()  will set soft_enabled = 0
+> >   -> Now Externel interrupt happens, there we set PACA_IRQ_EE in
+> irq_happened, Also clears EE in SRR1 and rfi. So interrupts are hard
+> disabled. No more other interrupt gated by MSR.EE can happen. Looks
+> like the idea here is to not let a device keep on inserting interrupt
+> till the interrupt condition on device is cleared, right?
+
+The external interrupt line is level sensitive normally, so we have to
+mask MSR:EE in that case or the interrupt would keep re-occurring (note
+that FSL has this concept of auto-acked interrupts via the on die MPIC
+for which you can potentially use PACA_IRQ_EE_EDGE instead and avoid
+having to mask MSR:EE).
+
+> I don't understand "the interrupt condition on device is cleared"
+> here.
+
+Well, the external interrupt line will remain asserted until the device
+(via the PIC) stops interrupting the processor :-) Either because we
+mask at the PIC level (or raise the priority) or because the condition
+goes away.
+ 
+> I think regardless if you clear the device interrupt status, the
+> system still  receive a pending interrupt once EE or GS = 1.
+
+Why ? Depends on your PIC actually but if it's a sane one, it won't
+"remember" a level interrupt that is gone. An edge interrupt is a
+different matter and is latched.
+
+Some MPIC implementations tend to generate a spurrious IRQ in the case
+of level IRQs going away. IE. they still remember an event occurred and
+interrupt the processor, but on IACK return the spurious vector. However
+that isn't guaranteed to be the case and it is perfectly ok (and a good
+idea) for the PIC to just stop asserting the external interrupt line if
+the original device interrupt goes away (and it's configured as level
+sensitive).
+ 
+You might notice that we try to re-hard-enable (while still soft
+disabled) as soon as we have gone get_irq in do_IRQ. This is because
+fetching the interrupt normally also masks it (either by masking at the
+source or by raisin the processor interrupt priority depending on the
+specific PIC) so we know we can re-hard enable. 
+
+> >   -> local_irq_enable() - This checks that irq_happened is set, and
+> replays
+> 
+> ret_from_except also check to replay.
+
+ret_from_except checks because it essentially can act as an implicit
+local_irq_enable.
+
+> > Now the case 2)
+> > Case 2)
+> > -> Local_irq_disable()  will set soft_enabled = 0
+> >   -> Now DEC interrupt happens. We set PACA_IRQ_DEC in irq_happened,
+> But do not clear EE in SRR1 and rfi. So interrupts are not hard
+> disabled.
+
+Right. We move the decrementer to its maximum value however since on
+most implementations, it will continue interrupting the processor while
+it's top bit is set (and effectively act as a level sensitive
+interrupt).
+
+Again, the goal here is to run as much as possible with interrupts hard
+enabled which allow better perf sampling.
+
+> >   -> Now say EE interrupt happens, there we set PACA_IRQ_EE in
+> irq_happened, Also clears EE in SRR1 and rfi. So interrupts are hard
+> disabled.
+> >   -> local_irq_enable() - This checks that irq_happened is set.
+> > IIUC, it replays only one interrupt? is not it?
+
+It replays one interrupt, but interrupt are still disabled during the
+replay. Upon return from the replayed interrupt, the ret_from_except
+will see the other one and replay it too.
+
+> After anyone is replayed in arch_local_irq_restore(), we will set
+> soft/hard 
+> interrupt there:
+> 
+> set_soft_enabled(1);
+> __hard_irq_enable();
+> 
+> Then any pending interrupt can be executed now.
+> 
+> Additionally, ret_from_except probably check to replay all.
+> 
+> Tiejun
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
