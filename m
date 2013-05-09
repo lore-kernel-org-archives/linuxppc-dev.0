@@ -1,33 +1,29 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 02DF92C00E4
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 May 2013 22:27:12 +1000 (EST)
-Message-ID: <1368102412.25488.182.camel@pasglop>
-Subject: Re: [RFC][KVM][PATCH 1/1] kvm:ppc:booke-64: soft-disable interrupts
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kevin Hao <haokexin@gmail.com>
-Date: Thu, 09 May 2013 22:26:52 +1000
-In-Reply-To: <20130509082112.GE2263@pek-khao-d1.corp.ad.wrs.com>
-References: <51885F49.6060605@windriver.com> <1367892390.3398.12@snotra>
- <300B73AA675FCE4A93EB4FC1D42459FF3F00D0@039-SN2MPN1-013.039d.mgd.msft.net>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0700E50E@039-SN2MPN1-011.039d.mgd.msft.net>
- <518B54A6.1070505@windriver.com>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0700E563@039-SN2MPN1-011.039d.mgd.msft.net>
- <20130509080813.GD2263@pek-khao-d1.corp.ad.wrs.com>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0700E5F5@039-SN2MPN1-011.039d.mgd.msft.net>
- <20130509082112.GE2263@pek-khao-d1.corp.ad.wrs.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <B02008@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 153F42C00DC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 May 2013 22:37:15 +1000 (EST)
+From: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
+To: tiejun.chen <tiejun.chen@windriver.com>
+Subject: RE: [v1][KVM][PATCH 1/1] kvm:ppc:booehv: direct ISI exception to Guest
+Date: Thu, 9 May 2013 12:36:14 +0000
+Message-ID: <300B73AA675FCE4A93EB4FC1D42459FF3F80D6@039-SN2MPN1-012.039d.mgd.msft.net>
+References: <1367970043.3398.39@snotra> <5189B02E.3000109@windriver.com>
+ <300B73AA675FCE4A93EB4FC1D42459FF3EFA26@039-SN2MPN1-013.039d.mgd.msft.net>
+ <518A1AD8.3090103@windriver.com> <518B7913.6010302@windriver.com>
+ <300B73AA675FCE4A93EB4FC1D42459FF3F7FBE@039-SN2MPN1-012.039d.mgd.msft.net>
+ <518B8B2A.1020103@windriver.com>
+In-Reply-To: <518B8B2A.1020103@windriver.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- Caraman Mihai Claudiu-B02008 <B02008@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  "agraf@suse.de" <agraf@suse.de>,
  "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- "tiejun.chen" <tiejun.chen@windriver.com>,
- Bhushan Bharat-R65777 <R65777@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,18 +33,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-05-09 at 16:21 +0800, Kevin Hao wrote:
-> > Is it because that we cannot afford to lose perfmon interrupt for
-> more accurate capturing of data ?
-> 
-> Yes, I think this will definitely improve the perf sample quality.
-
-This is one of the primary reason why we implemented lazy disabling in
-the first place and why I recently reworked it to decrease the periods
-where we are hard disabled.
-
-The other reasons are that storing bytes to the PACA is faster than
-manipulating EE on many processors.
-
-Cheers,
-Ben.
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiB0aWVqdW4uY2hlbiBbbWFpbHRv
+OnRpZWp1bi5jaGVuQHdpbmRyaXZlci5jb21dDQo+IFNlbnQ6IFRodXJzZGF5LCBNYXkgMDksIDIw
+MTMgMjo0MCBQTQ0KPiBUbzogQ2FyYW1hbiBNaWhhaSBDbGF1ZGl1LUIwMjAwOA0KPiBDYzogV29v
+ZCBTY290dC1CMDc0MjE7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBhZ3JhZkBzdXNl
+LmRlOyBrdm0tDQo+IHBwY0B2Z2VyLmtlcm5lbC5vcmc7IGt2bUB2Z2VyLmtlcm5lbC5vcmcNCj4g
+U3ViamVjdDogUmU6IFt2MV1bS1ZNXVtQQVRDSCAxLzFdIGt2bTpwcGM6Ym9vZWh2OiBkaXJlY3Qg
+SVNJIGV4Y2VwdGlvbiB0bw0KPiBHdWVzdA0KPiANCj4gT24gMDUvMDkvMjAxMyAwNzozNCBQTSwg
+Q2FyYW1hbiBNaWhhaSBDbGF1ZGl1LUIwMjAwOCB3cm90ZToNCj4gPj4+PiBWRiBzdGFuZHMgZm9y
+IHZpcnR1YWxpemF0aW9uIGZhdWx0IHNlZSBNQVM4W1ZGXSBhbmQgd2UgbWF5IHVzZSBpdA0KPiBm
+b3INCj4gPj4gdmlydHVhbGl6ZWQNCj4gPj4NCj4gPj4gTG9va3MgS1ZNIFBQQyBoYXZlIG5vIHRo
+aXMgbWVjaGFuaXNtIGN1cnJlbnRseSBzaW5jZSBJIGRvbid0IGZpbmQNCj4gTUFTOF9WRg0KPiA+
+PiBpcw0KPiA+PiB1c2VkIGluIGtlcm5lbCwgcmlnaHQ/DQo+ID4NCj4gPiBZZXMgYnV0ICd3ZSBt
+YXkgdXNlIGl0JyBpbiB0aGUgZmVhdHVyZSwgSSBoYXZlIGEgZnVuY3Rpb25hbCBQT0Mgd2l0aA0K
+PiBWRi4NCj4gDQo+IEFueSBJTyBwZXJmb3JtYW5jZSB0byBiZSBpbXByb3ZlZCB3aXRoIHRoaXMg
+UE9DPw0KDQpWRiBhcHByb2FjaCBwdXRzIG1vcmUgc3RyZXNzIG9uIEhXIFRMQiBzbyBJIGRpZCBu
+b3QgYWR2YW5jZSB3aXRoIHBlcmZvcm1hbmNlDQptZWFzdXJlbWVudHMgdGhvdWdoIGl0IG1heSB3
+b3J0aCB0byBkbyBpdC4NCg0KLU1pa2UNCg==
