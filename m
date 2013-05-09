@@ -1,28 +1,39 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <michael_barry@ie.ibm.com>
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 9DC8D2C00F4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 May 2013 08:01:53 +1000 (EST)
-Message-ID: <1368136898.3715.12.camel@pasglop>
-Subject: Re: [RFC][KVM][PATCH 1/1] kvm:ppc:booke-64: soft-disable interrupts
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Laight <David.Laight@ACULAB.COM>
-Date: Fri, 10 May 2013 08:01:38 +1000
-In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6026B722F@saturn3.aculab.com>
-References: <51885F49.6060605@windriver.com>
- (from tiejun.chen@windriver.com on Mon May 6 20:56:25 2013)
- <1367892390.3398.12@snotra>
- <300B73AA675FCE4A93EB4FC1D42459FF3F00D0@039-SN2MPN1-013.039d.mgd.msft.net>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0700E64A@039-SN2MPN1-011.039d.mgd.msft.net>
- <518B7014.1090508@windriver.com> <1368103062.25488.193.camel@pasglop>
- <AE90C24D6B3A694183C094C60CF0A2F6026B722F@saturn3.aculab.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>, kvm@vger.kernel.org,
- Caraman Mihai Claudiu-B02008 <B02008@freescale.com>, agraf@suse.de,
- kvm-ppc@vger.kernel.org, "tiejun.chen" <tiejun.chen@windriver.com>,
- Bhushan Bharat-R65777 <R65777@freescale.com>, linuxppc-dev@lists.ozlabs.org
+ (Client CN "e06smtp13.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 901B02C010A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 May 2013 08:03:09 +1000 (EST)
+Received: from /spool/local
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <michael_barry@ie.ibm.com>;
+ Thu, 9 May 2013 22:59:52 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 1412B17D8017
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 May 2013 23:04:07 +0100 (BST)
+Received: from d06av12.portsmouth.uk.ibm.com (d06av12.portsmouth.uk.ibm.com
+ [9.149.37.247])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r49M2p7536372648
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 May 2013 22:02:51 GMT
+Received: from d06av12.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av12.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r49M31Cg001552
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 May 2013 16:03:01 -0600
+Received: from d06ml093.portsmouth.uk.ibm.com (d06ml093.portsmouth.uk.ibm.com
+ [9.149.104.171])
+ by d06av12.portsmouth.uk.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
+ r49M31VM001544
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 May 2013 16:03:01 -0600
+Subject: AUTO: Michael Barry is out of the office (returning 13/05/2013)
+From: Michael Barry <michael_barry@ie.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Message-ID: <OFDF84F7ED.BF7EF746-ON80257B66.00791C1F-80257B66.00791C1F@ie.ibm.com>
+Date: Thu, 9 May 2013 23:02:50 +0100
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,19 +43,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-05-09 at 14:28 +0100, David Laight wrote:
-> That will happen if the IRQ goes away while the cpu is performing
-> the IACK sequence.
-> If the IRQ goes away while the cpu has interrupts masked then
-> the cpu won't start the interrupt sequence and then try to
-> read a vector when no interrupt is pending.
 
-Right, and get a spurrious vector which shouldn't be a big deal.
+I am out of the office until 13/05/2013.
 
-We tend to call that a "short interrupt". There have been many other
-cases of short interrupts in the past, for example on some MPICs, when
-distribution is enabled, they occasionally shoot an interrupt to more
-than one CPU at once :-)
 
-Cheers,
-Ben.
+
+
+Note: This is an automated response to your message  "Linuxppc-dev Digest,
+Vol 105, Issue 55" sent on 09/05/2013 23:01:55.
+
+This is the only notification you will receive while this person is away.
