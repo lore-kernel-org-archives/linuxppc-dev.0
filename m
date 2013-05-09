@@ -1,30 +1,16 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 41A8A2C00E4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 May 2013 00:14:03 +1000 (EST)
-From: "Chen, Tiejun" <Tiejun.Chen@windriver.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: RE: [RFC][KVM][PATCH 1/1] kvm:ppc:booke-64: soft-disable interrupts
-Date: Thu, 9 May 2013 14:13:54 +0000
-Message-ID: <82C960D7DF4A1F47B94FC1C67A29BEE36694AC3C@ALA-MBB.corp.ad.wrs.com>
-References: <51885F49.6060605@windriver.com>	 (from
- tiejun.chen@windriver.com on Mon May  6 20:56:25 2013)
- <1367892390.3398.12@snotra>
- <300B73AA675FCE4A93EB4FC1D42459FF3F00D0@039-SN2MPN1-013.039d.mgd.msft.net>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0700E64A@039-SN2MPN1-011.039d.mgd.msft.net>
- <518B7014.1090508@windriver.com> <1368103062.25488.193.camel@pasglop>
-In-Reply-To: <1368103062.25488.193.camel@pasglop>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- Wood Scott-B07421 <B07421@freescale.com>, "agraf@suse.de" <agraf@suse.de>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- Bhushan Bharat-R65777 <R65777@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <abounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CBF8A2C00C4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 May 2013 00:23:02 +1000 (EST)
+From: Alexandre Bounine <alexandre.bounine@idt.com>
+To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] rapidio/switches: remove tsi500 driver
+Date: Thu,  9 May 2013 10:20:47 -0400
+Message-Id: <1368109247-16914-1-git-send-email-alexandre.bounine@idt.com>
+Cc: Alexandre Bounine <alexandre.bounine@idt.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,81 +20,130 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org]=20
-> Sent: Thursday, May 09, 2013 8:38 PM
-> To: Chen, Tiejun
-> Cc: Bhushan Bharat-R65777; Caraman Mihai Claudiu-B02008; Wood=20
-> Scott-B07421; linuxppc-dev@lists.ozlabs.org; agraf@suse.de;=20
-> kvm-ppc@vger.kernel.org; kvm@vger.kernel.org
-> Subject: Re: [RFC][KVM][PATCH 1/1] kvm:ppc:booke-64:=20
-> soft-disable interrupts
->=20
-> On Thu, 2013-05-09 at 17:44 +0800, tiejun.chen wrote:
-> >=20
-> > Actually in the case GS=3D1 even if EE=3D0, EXT/DEC/DBELL still=20
-> occur as I=20
-> > recall.
->=20
-> Only if directed to the hypervisor.
+Remove the driver for Tsi500 Parallel RapidIO switch because this device is
+not available for several years. Since the first introduction of Tsi500,
+the parallel RapidIO interface was replaced by the serial RapidIO (sRIO)
+and therefore there is no value in keeping this driver.
 
-Yes, this is our current booehv design with EPCR[EXTGS] =3D 0.
+Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
+Cc: Matt Porter <mporter@kernel.crashing.org>
+Cc: Li Yang <leoli@freescale.com>
+Cc: Kumar Gala <galak@kernel.crashing.org>
+---
+ drivers/rapidio/switches/Kconfig  |    7 ---
+ drivers/rapidio/switches/Makefile |    1 -
+ drivers/rapidio/switches/tsi500.c |   78 -------------------------------------
+ 3 files changed, 0 insertions(+), 86 deletions(-)
+ delete mode 100644 drivers/rapidio/switches/tsi500.c
 
->=20
-> > > Case 1)
-> > >   -> Local_irq_disable()  will set soft_enabled =3D 0
-> > >   -> Now Externel interrupt happens, there we set PACA_IRQ_EE in
-> > irq_happened, Also clears EE in SRR1 and rfi. So interrupts=20
-> are hard=20
-> > disabled. No more other interrupt gated by MSR.EE can happen. Looks=20
-> > like the idea here is to not let a device keep on inserting=20
-> interrupt=20
-> > till the interrupt condition on device is cleared, right?
->=20
-> The external interrupt line is level sensitive normally, so=20
-> we have to mask MSR:EE in that case or the interrupt would=20
-> keep re-occurring (note that FSL has this concept of=20
-> auto-acked interrupts via the on die MPIC for which you can=20
-> potentially use PACA_IRQ_EE_EDGE instead and avoid having to=20
-> mask MSR:EE).
->=20
-> > I don't understand "the interrupt condition on device is cleared"
-> > here.
->=20
-> Well, the external interrupt line will remain asserted until=20
-> the device (via the PIC) stops interrupting the processor :-)=20
-
-Yes, the device keeps on interrupting the interrupt until the device clear =
-its interrupted condition.
-
-> Either because we mask at the PIC level (or raise the=20
-> priority) or because the condition goes away.
-> =20
-> > I think regardless if you clear the device interrupt status, the=20
-> > system still  receive a pending interrupt once EE or GS =3D 1.
->=20
-> Why ? Depends on your PIC actually but if it's a sane one, it=20
-> won't "remember" a level interrupt that is gone. An edge=20
-> interrupt is a different matter and is latched.
-
-But the interrupt controller like MPIC should leave this irq as pending if =
-we don't ACK/EOI this irq at all if we just clear the device, right?
-
->=20
-> Some MPIC implementations tend to generate a spurrious IRQ in=20
-> the case of level IRQs going away. IE. they still remember an=20
-> event occurred and interrupt the processor, but on IACK=20
-> return the spurious vector. However that isn't guaranteed to=20
-
-Yes, this is just what I mean. No matter if this vector is still valid, the=
- external interrupt exception always occur once EE =3D 1 again.
-
-> be the case and it is perfectly ok (and a good
-> idea) for the PIC to just stop asserting the external=20
-> interrupt line if the original device interrupt goes away=20
-> (and it's configured as level sensitive).
-
-I don't remember MPIC can work with this way. So I'd like to look the manua=
-l again :)
-
-Tiejun=
+diff --git a/drivers/rapidio/switches/Kconfig b/drivers/rapidio/switches/Kconfig
+index f47fee5..62d4a06 100644
+--- a/drivers/rapidio/switches/Kconfig
++++ b/drivers/rapidio/switches/Kconfig
+@@ -26,10 +26,3 @@ config RAPIDIO_CPS_GEN2
+ 	default n
+ 	---help---
+ 	  Includes support for ITD CPS Gen.2 serial RapidIO switches.
+-
+-config RAPIDIO_TSI500
+-	bool "Tsi500 Parallel RapidIO switch support"
+-	depends on RAPIDIO
+-	default n
+-	---help---
+-	  Includes support for IDT Tsi500 parallel RapidIO switch.
+diff --git a/drivers/rapidio/switches/Makefile b/drivers/rapidio/switches/Makefile
+index c4d3acc..051cc6b 100644
+--- a/drivers/rapidio/switches/Makefile
++++ b/drivers/rapidio/switches/Makefile
+@@ -5,5 +5,4 @@
+ obj-$(CONFIG_RAPIDIO_TSI57X)	+= tsi57x.o
+ obj-$(CONFIG_RAPIDIO_CPS_XX)	+= idtcps.o
+ obj-$(CONFIG_RAPIDIO_TSI568)	+= tsi568.o
+-obj-$(CONFIG_RAPIDIO_TSI500)	+= tsi500.o
+ obj-$(CONFIG_RAPIDIO_CPS_GEN2)	+= idt_gen2.o
+diff --git a/drivers/rapidio/switches/tsi500.c b/drivers/rapidio/switches/tsi500.c
+deleted file mode 100644
+index 914eddd..0000000
+--- a/drivers/rapidio/switches/tsi500.c
++++ /dev/null
+@@ -1,78 +0,0 @@
+-/*
+- * RapidIO Tsi500 switch support
+- *
+- * Copyright 2009-2010 Integrated Device Technology, Inc.
+- * Alexandre Bounine <alexandre.bounine@idt.com>
+- *  - Modified switch operations initialization.
+- *
+- * Copyright 2005 MontaVista Software, Inc.
+- * Matt Porter <mporter@kernel.crashing.org>
+- *
+- * This program is free software; you can redistribute  it and/or modify it
+- * under  the terms of  the GNU General  Public License as published by the
+- * Free Software Foundation;  either version 2 of the  License, or (at your
+- * option) any later version.
+- */
+-
+-#include <linux/rio.h>
+-#include <linux/rio_drv.h>
+-#include <linux/rio_ids.h>
+-#include "../rio.h"
+-
+-static int
+-tsi500_route_add_entry(struct rio_mport *mport, u16 destid, u8 hopcount, u16 table, u16 route_destid, u8 route_port)
+-{
+-	int i;
+-	u32 offset = 0x10000 + 0xa00 + ((route_destid / 2)&~0x3);
+-	u32 result;
+-
+-	if (table == 0xff) {
+-		rio_mport_read_config_32(mport, destid, hopcount, offset, &result);
+-		result &= ~(0xf << (4*(route_destid & 0x7)));
+-		for (i=0;i<4;i++)
+-			rio_mport_write_config_32(mport, destid, hopcount, offset + (0x20000*i), result | (route_port << (4*(route_destid & 0x7))));
+-	}
+-	else {
+-		rio_mport_read_config_32(mport, destid, hopcount, offset + (0x20000*table), &result);
+-		result &= ~(0xf << (4*(route_destid & 0x7)));
+-		rio_mport_write_config_32(mport, destid, hopcount, offset + (0x20000*table), result | (route_port << (4*(route_destid & 0x7))));
+-	}
+-
+-	return 0;
+-}
+-
+-static int
+-tsi500_route_get_entry(struct rio_mport *mport, u16 destid, u8 hopcount, u16 table, u16 route_destid, u8 *route_port)
+-{
+-	int ret = 0;
+-	u32 offset = 0x10000 + 0xa00 + ((route_destid / 2)&~0x3);
+-	u32 result;
+-
+-	if (table == 0xff)
+-		rio_mport_read_config_32(mport, destid, hopcount, offset, &result);
+-	else
+-		rio_mport_read_config_32(mport, destid, hopcount, offset + (0x20000*table), &result);
+-
+-	result &= 0xf << (4*(route_destid & 0x7));
+-	*route_port = result >> (4*(route_destid & 0x7));
+-	if (*route_port > 3)
+-		ret = -1;
+-
+-	return ret;
+-}
+-
+-static int tsi500_switch_init(struct rio_dev *rdev, int do_enum)
+-{
+-	pr_debug("RIO: %s for %s\n", __func__, rio_name(rdev));
+-	rdev->rswitch->add_entry = tsi500_route_add_entry;
+-	rdev->rswitch->get_entry = tsi500_route_get_entry;
+-	rdev->rswitch->clr_table = NULL;
+-	rdev->rswitch->set_domain = NULL;
+-	rdev->rswitch->get_domain = NULL;
+-	rdev->rswitch->em_init = NULL;
+-	rdev->rswitch->em_handle = NULL;
+-
+-	return 0;
+-}
+-
+-DECLARE_RIO_SWITCH_INIT(RIO_VID_TUNDRA, RIO_DID_TSI500, tsi500_switch_init);
+-- 
+1.7.8.4
