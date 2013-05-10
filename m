@@ -1,20 +1,24 @@
 Return-Path: <B07421@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 948282C0188
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 May 2013 13:10:01 +1000 (EST)
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BC59C2C0199
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 May 2013 13:10:04 +1000 (EST)
 From: Scott Wood <scottwood@freescale.com>
 To: Alexander Graf <agraf@suse.de>, Benjamin Herrenschmidt
  <benh@kernel.crashing.org>
-Subject: [PATCH v2 0/4] kvm/ppc: interrupt disabling fixes
-Date: Thu, 9 May 2013 22:09:40 -0500
-Message-ID: <1368155384-11035-1-git-send-email-scottwood@freescale.com>
+Subject: [PATCH v2 1/4] powerpc: hard_irq_disable(): Call trace_hardirqs_off
+ after disabling
+Date: Thu, 9 May 2013 22:09:41 -0500
+Message-ID: <1368155384-11035-2-git-send-email-scottwood@freescale.com>
+In-Reply-To: <1368155384-11035-1-git-send-email-scottwood@freescale.com>
+References: <1368155384-11035-1-git-send-email-scottwood@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,26 +28,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-v2:
- - Split into separate changes
- - Rebase on top of (and fix a bug in) powerpc: Make hard_irq_disable()
-   do the right thing vs. irq tracing
- - Move interrupt diasbling/enabling into kvmppc_handle_exit
+lockdep.c has this:
+        /*
+         * So we're supposed to get called after you mask local IRQs,
+         * but for some reason the hardware doesn't quite think you did
+         * a proper job.
+         */
+	if (DEBUG_LOCKS_WARN_ON(!irqs_disabled()))
+		return;
 
-Based on Ben's next branch.
+Since irqs_disabled() is based on soft_enabled(), that (not just the
+hard EE bit) needs to be 0 before we call trace_hardirqs_off.
 
-Scott Wood (4):
-  powerpc: hard_irq_disable(): Call trace_hardirqs_off after disabling
-  kvm/ppc/booke64: Fix lazy ee handling in kvmppc_handle_exit()
-  kvm/ppc: Call trace_hardirqs_on before entry
-  kvm/ppc: IRQ disabling cleanup
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+ arch/powerpc/include/asm/hw_irq.h |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
- arch/powerpc/include/asm/hw_irq.h  |    5 +++--
- arch/powerpc/include/asm/kvm_ppc.h |   17 ++++++++++++++---
- arch/powerpc/kvm/book3s_pr.c       |   16 +++++-----------
- arch/powerpc/kvm/booke.c           |   18 +++++++++---------
- arch/powerpc/kvm/powerpc.c         |   23 ++++++++---------------
- 5 files changed, 39 insertions(+), 40 deletions(-)
-
+diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
+index d615b28..ba713f1 100644
+--- a/arch/powerpc/include/asm/hw_irq.h
++++ b/arch/powerpc/include/asm/hw_irq.h
+@@ -96,11 +96,12 @@ static inline bool arch_irqs_disabled(void)
+ #endif
+ 
+ #define hard_irq_disable()	do {			\
++	u8 _was_enabled = get_paca()->soft_enabled;	\
+ 	__hard_irq_disable();				\
+-	if (local_paca->soft_enabled)			\
+-		trace_hardirqs_off();			\
+ 	get_paca()->soft_enabled = 0;			\
+ 	get_paca()->irq_happened |= PACA_IRQ_HARD_DIS;	\
++	if (_was_enabled)				\
++		trace_hardirqs_off();			\
+ } while(0)
+ 
+ static inline bool lazy_irq_pending(void)
 -- 
 1.7.10.4
