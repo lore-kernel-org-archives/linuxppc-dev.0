@@ -2,16 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 0BB942C00AB
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 May 2013 07:50:00 +1000 (EST)
-Message-ID: <1368222580.4524.52.camel@pasglop>
+ by ozlabs.org (Postfix) with ESMTPS id 1E8552C00FC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 May 2013 07:50:44 +1000 (EST)
+Message-ID: <1368222633.4524.53.camel@pasglop>
 Subject: Re: [RFC][KVM][PATCH 1/1] kvm:ppc:booke-64: soft-disable interrupts
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Kevin Hao <haokexin@gmail.com>
-Date: Sat, 11 May 2013 07:49:40 +1000
-In-Reply-To: <20130510141213.GA31597@pek-khao-d1.corp.ad.wrs.com>
+Date: Sat, 11 May 2013 07:50:33 +1000
+In-Reply-To: <1368222580.4524.52.camel@pasglop>
 References: <1368134856.654.11@snotra> <1368137220.3715.14.camel@pasglop>
  <20130510141213.GA31597@pek-khao-d1.corp.ad.wrs.com>
+ <1368222580.4524.52.camel@pasglop>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: Wood Scott-B07421 <B07421@freescale.com>,
@@ -32,18 +33,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-05-10 at 22:12 +0800, Kevin Hao wrote:
-> So I would assume you will not pick up these two patches, right?
-> http://patchwork.ozlabs.org/patch/235530/
-> http://patchwork.ozlabs.org/patch/235532/
-> 
-> Anyway it is more easier to enable the external proxy by using this method.
-> But if you insist, I can respin a patch to use the method you suggested
-> since it will definitely reduce the window where the irq is hard disabled.
+On Sat, 2013-05-11 at 07:49 +1000, Benjamin Herrenschmidt wrote:
+> I would keep the EE_EDGE bit definition. I have no objection to a gradual
+> approach however for the other one where we apply it as is now to enable
+> coreint while you do a rework to make it better :-)
 
-I would keep the EE_EDGE bit definition. I have no objection to a gradual
-approach however for the other one where we apply it as is now to enable
-coreint while you do a rework to make it better :-)
+Note also that I generally don't apply FSL related patches directly, I
+rely on Kumar Gala picking them up so he's the one ultimately making
+that choice.
 
 Cheers,
 Ben.
