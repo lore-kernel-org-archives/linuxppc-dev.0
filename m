@@ -1,22 +1,25 @@
-Return-Path: <ben@decadent.org.uk>
-Received: from shadbolt.e.decadent.org.uk (shadbolt.e.decadent.org.uk
- [88.96.1.126])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id BA3EA2C0132
- for <linuxppc-dev@ozlabs.org>; Fri, 10 May 2013 15:07:37 +1000 (EST)
-Message-ID: <1368161157.17344.17.camel@deadeye.wl.decadent.org.uk>
-Subject: Re: [PATCH] powerpc: fix numa distance for form0 device tree
-From: Ben Hutchings <ben@decadent.org.uk>
-To: Michael Ellerman <michael@ellerman.id.au>
-Date: Fri, 10 May 2013 05:45:57 +0100
-In-Reply-To: <1367898574-20594-1-git-send-email-michael@ellerman.id.au>
-References: <1367898574-20594-1-git-send-email-michael@ellerman.id.au>
-Content-Type: multipart/signed; micalg="pgp-sha512";
- protocol="application/pgp-signature"; boundary="=-TfOxGqPStzk6bi1fF3N1"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>,
- stable@vger.kernel.org
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 15DE92C00CD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 May 2013 15:31:43 +1000 (EST)
+Message-ID: <518C8634.6010004@windriver.com>
+Date: Fri, 10 May 2013 13:31:32 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
+MIME-Version: 1.0
+To: Bhushan Bharat-R65777 <R65777@freescale.com>
+Subject: Re: [PATCH v2 4/4] kvm/ppc: IRQ disabling cleanup
+References: <1368155384-11035-1-git-send-email-scottwood@freescale.com>
+ <1368155384-11035-5-git-send-email-scottwood@freescale.com>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0700F859@039-SN2MPN1-011.039d.mgd.msft.net>
+In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D0700F859@039-SN2MPN1-011.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>, Alexander Graf <agraf@suse.de>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,45 +29,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+>> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+>> index 4e05f8c..f8659aa 100644
+>> --- a/arch/powerpc/kvm/powerpc.c
+>> +++ b/arch/powerpc/kvm/powerpc.c
+>> @@ -64,12 +64,14 @@ int kvmppc_prepare_to_enter(struct kvm_vcpu *vcpu)
+>>   {
+>>   	int r = 1;
+>>
+>> -	WARN_ON_ONCE(!irqs_disabled());
+>> +	WARN_ON(irqs_disabled());
+>> +	hard_irq_disable();
+>
+> Here we hard disable in kvmppc_prepare_to_enter(), so my comment in other patch about interrupt loss is no more valid.
+>
+> So here
+>    MSR.EE = 0
+>    local_paca->soft_enabled = 0
+>    local_paca->irq_happened |= PACA_IRQ_HARD_DIS;
+>
+>> +
+>>   	while (true) {
+>>   		if (need_resched()) {
+>>   			local_irq_enable();
+>
+> This will make the state:
+>    MSR.EE = 1
+>    local_paca->soft_enabled = 1
+>    local_paca->irq_happened = PACA_IRQ_HARD_DIS;  //same as before
 
---=-TfOxGqPStzk6bi1fF3N1
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Why is this same the above state? local_irq_enable() can call 
+__check_irq_replay() to clear PACA_IRQ_HARD_DIS.
 
-On Tue, 2013-05-07 at 13:49 +1000, Michael Ellerman wrote:
-> From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
->=20
-> Commit 7122beeee7bc1757682049780179d7c216dd1c83 upstream.
-[...]
+>
+> Is that a valid state where interrupts are fully enabled and irq_happend in not 0?
+>
+>>   			cond_resched();
+>> -			local_irq_disable();
+>> +			hard_irq_disable();
+>>   			continue;
+>>   		}
+>>
+>> @@ -95,7 +97,7 @@ int kvmppc_prepare_to_enter(struct kvm_vcpu *vcpu)
+>>   			local_irq_enable();
+>>   			trace_kvm_check_requests(vcpu);
+>>   			r = kvmppc_core_check_requests(vcpu);
+>> -			local_irq_disable();
+>> +			hard_irq_disable();
+>>   			if (r > 0)
+>>   				continue;
+>>   			break;
+>> @@ -108,21 +110,14 @@ int kvmppc_prepare_to_enter(struct kvm_vcpu *vcpu)
+>>   		}
+>>
+>>   #ifdef CONFIG_PPC64
+>> -		/* lazy EE magic */
+>> -		hard_irq_disable();
+>> -		if (lazy_irq_pending()) {
+>> -			/* Got an interrupt in between, try again */
+>> -			local_irq_enable();
+>> -			local_irq_disable();
+>> -			kvm_guest_exit();
+>> -			continue;
+>> -		}
+>> +		WARN_ON(lazy_irq_pending());
+>>   #endif
+>>
+>>   		kvm_guest_enter();
+>> -		break;
+>> +		return r;
+>>   	}
+>>
+>> +	local_irq_enable();
+>>   	return r;
+>>   }
+>
+>
+> int kvmppc_core_prepare_to_enter(struct kvm_vcpu *vcpu)
+> {
+>          int r = 0;
+>          WARN_ON_ONCE(!irqs_disabled());
+>
+>          kvmppc_core_check_exceptions(vcpu);
+>
+>          if (vcpu->requests) {
+>                  /* Exception delivery raised request; start over */
+>                  return 1;
+>          }
+>
+>          if (vcpu->arch.shared->msr & MSR_WE) {
+>                  local_irq_enable();
+>                  kvm_vcpu_block(vcpu);
+>                  clear_bit(KVM_REQ_UNHALT, &vcpu->requests);
+>                  local_irq_disable();
+> ^^^
+> We do not require hard_irq_disable() here?
 
-Queued up for 3.2, thanks.
+Between kvmppc_core_prepare_to_enter() and kvmppc_prepare_to_enter(), as I 
+recall Scott had some discussions with Ben earlier.
 
-Ben.
+Tiejun
 
---=20
-Ben Hutchings
-For every action, there is an equal and opposite criticism. - Harrison
-
---=-TfOxGqPStzk6bi1fF3N1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIVAwUAUYx7hee/yOyVhhEJAQqB9A//ei/9S3sTg5ddK+YvKMtyLA83sZJvlhlv
-gZ4ZfwQ01VZU7u28KUZHSxKrHsQ2II2vITAq9zVTqHHK46f1ofUgrzagJwLtAUdO
-dPjmdFKj72wLlT6r5i17qd63owB80Z7no8rjDN54EOVfaSmw+mYlV78wDrKlTnod
-xtyokBFRI8ReoiEPqZhd6FU/+cwKs01yTMmap9SW2OxDzmKjdmqN4COmxmBkKRzO
-nBn+Pbyio1QnrYtBwGpQsUcTQr7LaoLULiQ7d2jG9wv5Wd9vifl+0ResI297MBhh
-lEkWOvK/Ji7qkgcuvvIt3DgPKp4SUbHztJSlyLyVJS/DcZgbj6xLTeULkI8hNBqT
-Ub+dwHIfpjs19X1hSQ7doFz103FnCIv1YqUaPxzqFSfmpejzD6waDftZG8ARavir
-odveQfYRDMC+4sMrcr+T0qnZG4ut0ZBtqhvRxWZfA3/6hyr5egk1+0msA1ocCj92
-hwgrCIUvIIHimUBDqjiPIYsxOD8U4lWwdUJgWEretjglmgTnSmlDN1j1s+PHxgeg
-4CtEZ5r/Dg9Ie52+mgYlBJbVQ3W3grq0/7RMNrRpa+Cl94q+UiwNt/Z86eI8ecdF
-/GFDrWQD+t40qfVab87/1gTKvRDeJCPGQiWsApck71UyZ2qT9Pz4Hne3MTsC45wL
-jbeOr6OAmI8=
-=oVVH
------END PGP SIGNATURE-----
-
---=-TfOxGqPStzk6bi1fF3N1--
+>
