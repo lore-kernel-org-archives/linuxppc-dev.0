@@ -1,26 +1,22 @@
-Return-Path: <R65777@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1B93F2C023E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 May 2013 15:01:53 +1000 (EST)
-From: Bhushan Bharat-R65777 <R65777@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>, Alexander Graf <agraf@suse.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: RE: [PATCH v2 4/4] kvm/ppc: IRQ disabling cleanup
-Date: Fri, 10 May 2013 05:01:38 +0000
-Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D0700F859@039-SN2MPN1-011.039d.mgd.msft.net>
-References: <1368155384-11035-1-git-send-email-scottwood@freescale.com>
- <1368155384-11035-5-git-send-email-scottwood@freescale.com>
-In-Reply-To: <1368155384-11035-5-git-send-email-scottwood@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
+Return-Path: <ben@decadent.org.uk>
+Received: from shadbolt.e.decadent.org.uk (shadbolt.e.decadent.org.uk
+ [88.96.1.126])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id BA3EA2C0132
+ for <linuxppc-dev@ozlabs.org>; Fri, 10 May 2013 15:07:37 +1000 (EST)
+Message-ID: <1368161157.17344.17.camel@deadeye.wl.decadent.org.uk>
+Subject: Re: [PATCH] powerpc: fix numa distance for form0 device tree
+From: Ben Hutchings <ben@decadent.org.uk>
+To: Michael Ellerman <michael@ellerman.id.au>
+Date: Fri, 10 May 2013 05:45:57 +0100
+In-Reply-To: <1367898574-20594-1-git-send-email-michael@ellerman.id.au>
+References: <1367898574-20594-1-git-send-email-michael@ellerman.id.au>
+Content-Type: multipart/signed; micalg="pgp-sha512";
+ protocol="application/pgp-signature"; boundary="=-TfOxGqPStzk6bi1fF3N1"
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>,
+ stable@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,234 +27,44 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
+--=-TfOxGqPStzk6bi1fF3N1
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-> -----Original Message-----
-> From: kvm-ppc-owner@vger.kernel.org [mailto:kvm-ppc-owner@vger.kernel.org=
-] On
-> Behalf Of Scott Wood
-> Sent: Friday, May 10, 2013 8:40 AM
-> To: Alexander Graf; Benjamin Herrenschmidt
-> Cc: kvm-ppc@vger.kernel.org; kvm@vger.kernel.org; linuxppc-dev@lists.ozla=
-bs.org;
-> Wood Scott-B07421
-> Subject: [PATCH v2 4/4] kvm/ppc: IRQ disabling cleanup
+On Tue, 2013-05-07 at 13:49 +1000, Michael Ellerman wrote:
+> From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 >=20
-> Simplify the handling of lazy EE by going directly from fully-enabled
-> to hard-disabled.  This replaces the lazy_irq_pending() check
-> (including its misplaced kvm_guest_exit() call).
->=20
-> As suggested by Tiejun Chen, move the interrupt disabling into
-> kvmppc_prepare_to_enter() rather than have each caller do it.  Also
-> move the IRQ enabling on heavyweight exit into
-> kvmppc_prepare_to_enter().
->=20
-> Don't move kvmppc_fix_ee_before_entry() into kvmppc_prepare_to_enter(),
-> so that the caller can avoid marking interrupts enabled earlier than
-> necessary (e.g. book3s_pr waits until after FP save/restore is done).
->=20
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> ---
->  arch/powerpc/include/asm/kvm_ppc.h |    6 ++++++
->  arch/powerpc/kvm/book3s_pr.c       |   12 +++---------
->  arch/powerpc/kvm/booke.c           |    9 ++-------
->  arch/powerpc/kvm/powerpc.c         |   21 ++++++++-------------
->  4 files changed, 19 insertions(+), 29 deletions(-)
->=20
-> diff --git a/arch/powerpc/include/asm/kvm_ppc.h
-> b/arch/powerpc/include/asm/kvm_ppc.h
-> index 6885846..e4474f8 100644
-> --- a/arch/powerpc/include/asm/kvm_ppc.h
-> +++ b/arch/powerpc/include/asm/kvm_ppc.h
-> @@ -404,6 +404,12 @@ static inline void kvmppc_fix_ee_before_entry(void)
->  	trace_hardirqs_on();
->=20
->  #ifdef CONFIG_PPC64
-> +	/*
-> +	 * To avoid races, the caller must have gone directly from having
-> +	 * interrupts fully-enabled to hard-disabled.
-> +	 */
-> +	WARN_ON(local_paca->irq_happened !=3D PACA_IRQ_HARD_DIS);
-> +
->  	/* Only need to enable IRQs by hard enabling them after this */
->  	local_paca->irq_happened =3D 0;
->  	local_paca->soft_enabled =3D 1;
-> diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-> index 0b97ce4..e61e39e 100644
-> --- a/arch/powerpc/kvm/book3s_pr.c
-> +++ b/arch/powerpc/kvm/book3s_pr.c
-> @@ -884,14 +884,11 @@ program_interrupt:
->  		 * and if we really did time things so badly, then we just exit
->  		 * again due to a host external interrupt.
->  		 */
-> -		local_irq_disable();
->  		s =3D kvmppc_prepare_to_enter(vcpu);
-> -		if (s <=3D 0) {
-> -			local_irq_enable();
-> +		if (s <=3D 0)
->  			r =3D s;
-> -		} else {
-> +		else
->  			kvmppc_fix_ee_before_entry();
-> -		}
->  	}
->=20
->  	trace_kvm_book3s_reenter(r, vcpu);
-> @@ -1121,12 +1118,9 @@ int kvmppc_vcpu_run(struct kvm_run *kvm_run, struc=
-t
-> kvm_vcpu *vcpu)
->  	 * really did time things so badly, then we just exit again due to
->  	 * a host external interrupt.
->  	 */
-> -	local_irq_disable();
->  	ret =3D kvmppc_prepare_to_enter(vcpu);
-> -	if (ret <=3D 0) {
-> -		local_irq_enable();
-> +	if (ret <=3D 0)
->  		goto out;
-> -	}
->=20
->  	/* Save FPU state in stack */
->  	if (current->thread.regs->msr & MSR_FP)
-> diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-> index eb89b83..f7c0111 100644
-> --- a/arch/powerpc/kvm/booke.c
-> +++ b/arch/powerpc/kvm/booke.c
-> @@ -666,10 +666,8 @@ int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct
-> kvm_vcpu *vcpu)
->  		return -EINVAL;
->  	}
->=20
-> -	local_irq_disable();
->  	s =3D kvmppc_prepare_to_enter(vcpu);
->  	if (s <=3D 0) {
-> -		local_irq_enable();
->  		ret =3D s;
->  		goto out;
->  	}
-> @@ -1148,14 +1146,11 @@ int kvmppc_handle_exit(struct kvm_run *run, struc=
-t
-> kvm_vcpu *vcpu,
->  	 * aren't already exiting to userspace for some other reason.
->  	 */
->  	if (!(r & RESUME_HOST)) {
-> -		local_irq_disable();
+> Commit 7122beeee7bc1757682049780179d7c216dd1c83 upstream.
+[...]
 
-Ok, Now we do not soft disable before kvmppc_prapare_to_enter().
+Queued up for 3.2, thanks.
 
->  		s =3D kvmppc_prepare_to_enter(vcpu);
-> -		if (s <=3D 0) {
-> -			local_irq_enable();
-> +		if (s <=3D 0)
->  			r =3D (s << 2) | RESUME_HOST | (r & RESUME_FLAG_NV);
-> -		} else {
-> +		else
->  			kvmppc_fix_ee_before_entry();
-> -		}
->  	}
->=20
->  	return r;
-> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-> index 4e05f8c..f8659aa 100644
-> --- a/arch/powerpc/kvm/powerpc.c
-> +++ b/arch/powerpc/kvm/powerpc.c
-> @@ -64,12 +64,14 @@ int kvmppc_prepare_to_enter(struct kvm_vcpu *vcpu)
->  {
->  	int r =3D 1;
->=20
-> -	WARN_ON_ONCE(!irqs_disabled());
-> +	WARN_ON(irqs_disabled());
-> +	hard_irq_disable();
+Ben.
 
-Here we hard disable in kvmppc_prepare_to_enter(), so my comment in other p=
-atch about interrupt loss is no more valid.
+--=20
+Ben Hutchings
+For every action, there is an equal and opposite criticism. - Harrison
 
-So here
-  MSR.EE =3D 0
-  local_paca->soft_enabled =3D 0
-  local_paca->irq_happened |=3D PACA_IRQ_HARD_DIS;
+--=-TfOxGqPStzk6bi1fF3N1
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-> +
->  	while (true) {
->  		if (need_resched()) {
->  			local_irq_enable();
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
 
-This will make the state:
-  MSR.EE =3D 1
-  local_paca->soft_enabled =3D 1
-  local_paca->irq_happened =3D PACA_IRQ_HARD_DIS;  //same as before
+iQIVAwUAUYx7hee/yOyVhhEJAQqB9A//ei/9S3sTg5ddK+YvKMtyLA83sZJvlhlv
+gZ4ZfwQ01VZU7u28KUZHSxKrHsQ2II2vITAq9zVTqHHK46f1ofUgrzagJwLtAUdO
+dPjmdFKj72wLlT6r5i17qd63owB80Z7no8rjDN54EOVfaSmw+mYlV78wDrKlTnod
+xtyokBFRI8ReoiEPqZhd6FU/+cwKs01yTMmap9SW2OxDzmKjdmqN4COmxmBkKRzO
+nBn+Pbyio1QnrYtBwGpQsUcTQr7LaoLULiQ7d2jG9wv5Wd9vifl+0ResI297MBhh
+lEkWOvK/Ji7qkgcuvvIt3DgPKp4SUbHztJSlyLyVJS/DcZgbj6xLTeULkI8hNBqT
+Ub+dwHIfpjs19X1hSQ7doFz103FnCIv1YqUaPxzqFSfmpejzD6waDftZG8ARavir
+odveQfYRDMC+4sMrcr+T0qnZG4ut0ZBtqhvRxWZfA3/6hyr5egk1+0msA1ocCj92
+hwgrCIUvIIHimUBDqjiPIYsxOD8U4lWwdUJgWEretjglmgTnSmlDN1j1s+PHxgeg
+4CtEZ5r/Dg9Ie52+mgYlBJbVQ3W3grq0/7RMNrRpa+Cl94q+UiwNt/Z86eI8ecdF
+/GFDrWQD+t40qfVab87/1gTKvRDeJCPGQiWsApck71UyZ2qT9Pz4Hne3MTsC45wL
+jbeOr6OAmI8=
+=oVVH
+-----END PGP SIGNATURE-----
 
-Is that a valid state where interrupts are fully enabled and irq_happend in=
- not 0?
-
->  			cond_resched();
-> -			local_irq_disable();
-> +			hard_irq_disable();
->  			continue;
->  		}
->=20
-> @@ -95,7 +97,7 @@ int kvmppc_prepare_to_enter(struct kvm_vcpu *vcpu)
->  			local_irq_enable();
->  			trace_kvm_check_requests(vcpu);
->  			r =3D kvmppc_core_check_requests(vcpu);
-> -			local_irq_disable();
-> +			hard_irq_disable();
->  			if (r > 0)
->  				continue;
->  			break;
-> @@ -108,21 +110,14 @@ int kvmppc_prepare_to_enter(struct kvm_vcpu *vcpu)
->  		}
->=20
->  #ifdef CONFIG_PPC64
-> -		/* lazy EE magic */
-> -		hard_irq_disable();
-> -		if (lazy_irq_pending()) {
-> -			/* Got an interrupt in between, try again */
-> -			local_irq_enable();
-> -			local_irq_disable();
-> -			kvm_guest_exit();
-> -			continue;
-> -		}
-> +		WARN_ON(lazy_irq_pending());
->  #endif
->=20
->  		kvm_guest_enter();
-> -		break;
-> +		return r;
->  	}
->=20
-> +	local_irq_enable();
->  	return r;
->  }
-
-
-int kvmppc_core_prepare_to_enter(struct kvm_vcpu *vcpu)
-{
-        int r =3D 0;
-        WARN_ON_ONCE(!irqs_disabled());
-
-        kvmppc_core_check_exceptions(vcpu);
-
-        if (vcpu->requests) {
-                /* Exception delivery raised request; start over */
-                return 1;
-        }
-
-        if (vcpu->arch.shared->msr & MSR_WE) {
-                local_irq_enable();
-                kvm_vcpu_block(vcpu);
-                clear_bit(KVM_REQ_UNHALT, &vcpu->requests);
-                local_irq_disable();
-^^^
-We do not require hard_irq_disable() here?
-
--Bharat
-
->  #endif /* CONFIG_KVM_BOOK3S_64_HV */
-> --
-> 1.7.10.4
->=20
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--=-TfOxGqPStzk6bi1fF3N1--
