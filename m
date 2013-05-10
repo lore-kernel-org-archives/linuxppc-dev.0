@@ -1,25 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id CB7C32C00E3
- for <linuxppc-dev@ozlabs.org>; Fri, 10 May 2013 21:52:18 +1000 (EST)
-Message-ID: <1368186695.4524.27.camel@pasglop>
-Subject: Re: Invalid perf_branch_entry.to entries question
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Neuling <mikey@neuling.org>
-Date: Fri, 10 May 2013 21:51:35 +1000
-In-Reply-To: <CAEjGV6x1=6iFUwQs6=5GY75-J9ZZzs8=CKE=+MGxdwoKycs9jA@mail.gmail.com>
-References: <25394.1367890528@ale.ozlabs.ibm.com>
- <20130508155929.GA8459@dyad.programming.kicks-ass.net>
- <14691.1368052755@ale.ozlabs.ibm.com>
- <20130510104352.GF31235@dyad.programming.kicks-ass.net>
- <CAEjGV6x1=6iFUwQs6=5GY75-J9ZZzs8=CKE=+MGxdwoKycs9jA@mail.gmail.com>
+Return-Path: <dedekind1@gmail.com>
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+ by ozlabs.org (Postfix) with ESMTP id 9F8482C00A5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 May 2013 22:29:05 +1000 (EST)
+Message-ID: <1368189108.26780.156.camel@sauron.fi.intel.com>
+Subject: Re: [upstream] mtd/ifc: fix ifc driver memory release issue
+From: Artem Bityutskiy <dedekind1@gmail.com>
+To: Brian Norris <computersforpeace@gmail.com>
+Date: Fri, 10 May 2013 15:31:48 +0300
+In-Reply-To: <CAN8TOE-fpTYj5Z5VW=MbH6epK9Ymc+=uQkh7V6=k=76_DjouPA@mail.gmail.com>
+References: <1364387100-23013-1-git-send-email-tie-fei.zang@freescale.com>
+ <CAN8TOE-fpTYj5Z5VW=MbH6epK9Ymc+=uQkh7V6=k=76_DjouPA@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Linux PPC dev <linuxppc-dev@ozlabs.org>, linux-kernel@vger.kernel.org,
- eranian@google.com, Anshuman Khandual <anshuman.khandual@in.ibm.com>
+Cc: Li Hao <b44421@freescale.com>, linux-mtd@lists.infradead.org,
+ scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org, dwmw2@infradead.org,
+ Cao Yonghua <b43619@freescale.com>
+Reply-To: dedekind1@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,21 +25,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-05-10 at 20:50 +1000, Michael Neuling wrote:
-> The buffer is in the core (not main memory) and hence only has limited
-> entries.  So skipping entries that can hopefully be determined in
-> other ways means we can log more branches.
+On Thu, 2013-03-28 at 21:28 -0700, Brian Norris wrote:
+> On Wed, Mar 27, 2013 at 5:25 AM, Roy Zang <tie-fei.zang@freescale.com> wrote:
+> > memory is allocated by devm_kzalloc, so release it using
+> > devm_kfree() instead kfree();
 > 
-> That being said, it's a PITA for the kernel ;-)
+> You are correct that it should not be freed with kfree(). But the
+> correct solution is that it does not need to be freed (explicitly) at
+> all. That's the whole point of the managed allocators (i.e.,
+> devm_kzalloc()). Try this patch instead. Totally untested here.
 
-I would suggest flagging them. As you mention, the code might have been
-modified since the sample was taken. Even if it still looks like a
-branch and you can compute the "To" address it might not be the right
-one ... at least userspace should be notified that this specific sample
-is to handle with care.
+Pushed to l2-mtd.git, thanks!
 
-And if you just can't read the instruction or it's not a branch anymore,
-then stick a -1 in there, no way it can be a valid branch address :-)
-
-Cheers,
-Ben.
+-- 
+Best Regards,
+Artem Bityutskiy
