@@ -1,39 +1,20 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e7.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 47FEA2C00C8
- for <linuxppc-dev@ozlabs.org>; Sun, 12 May 2013 08:31:43 +1000 (EST)
-Received: from /spool/local
- by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Sat, 11 May 2013 18:31:40 -0400
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 2D8246E803F
- for <linuxppc-dev@ozlabs.org>; Sat, 11 May 2013 18:31:34 -0400 (EDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r4BMVanA331232
- for <linuxppc-dev@ozlabs.org>; Sat, 11 May 2013 18:31:37 -0400
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r4BMVaTb032169
- for <linuxppc-dev@ozlabs.org>; Sat, 11 May 2013 16:31:36 -0600
-Date: Sat, 11 May 2013 15:31:11 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] perf: Power7: Make CPI stack events available in sysfs
-Message-ID: <20130511223111.GA30064@us.ibm.com>
-References: <20130406164803.GA408@us.ibm.com>
- <20130415061508.GD21147@concordia>
- <20130422155505.GA26169@us.ibm.com>
+Return-Path: <haokexin@gmail.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 64C1D2C00C4
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 May 2013 09:26:37 +1000 (EST)
+From: Kevin Hao <haokexin@gmail.com>
+To: Kumar Gala <galak@kernel.crashing.org>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>
+Subject: [PATCH 0/4] enable the PACA_IRQ_EE_EDGE support for book3e
+Date: Sun, 12 May 2013 07:26:20 +0800
+Message-ID: <1368314784-971-1-git-send-email-haokexin@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130422155505.GA26169@us.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Content-Type: text/plain
+Cc: Scott Wood <scottwood@freescale.com>,
+ linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,28 +24,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sukadev Bhattiprolu [sukadev@linux.vnet.ibm.com] wrote:
-| Michael Ellerman [michael@ellerman.id.au] wrote:
-| | On Sat, Apr 06, 2013 at 09:48:03AM -0700, Sukadev Bhattiprolu wrote:
-| | > From bdeacf7175241f6c79b5b2be0fa6b20b0d0b7d1c Mon Sep 17 00:00:00 2001
-| | > From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-| | > Date: Sat, 6 Apr 2013 08:48:26 -0700
-| | > Subject: [PATCH] perf: Power7: Make CPI stack events available in sysfs
-| | > 
-| | > A set of Power7 events are often used for Cycles Per Instruction (CPI) stack
-| | > analysis. Make these events available in sysfs (/sys/devices/cpu/events/) so
-| | > they can be identified using their symbolic names:
-| | > 
-| | > 	perf stat -e 'cpu/PM_CMPLU_STALL_DCACHE_MISS/' /bin/ls
-| | 
-| | Should we take these two via the powerpc tree? Or do you want to take
-| | them Arnaldo?
-| 
-| I think it can go through powerpc tree since it is all arch-specific.
-| 
+Hi,
 
-Ben, Paul,
+In the current kernel, the external proxy works pretty well with the lazy
+EE. But it still treat the external input interrupt as level sensitive
+and would hard disable the irq while a interrupt occurs with irq soft
+disabled. This patch series enables PACA_IRQ_EE_EDGE support for book3e
+and will leave the irq still hard enabled while a external interrupt
+occurs with soft irq disabled. This passed the boot test on T4240QDS
+board.
 
-Any comments on this patch ?
+---
+Kevin Hao (4):
+  powerpc/book3e: introduce external_input_edge exception handler for
+    64bit kernel
+  powerpc: move the patch_exception to a common place
+  powerpc: use patch_exception to update the debug exception handler
+  powerpc/fsl-book3e: enable the external_input_edge exception handler
 
-	https://lkml.org/lkml/2013/4/6/169
+ arch/powerpc/include/asm/code-patching.h |  7 +++++++
+ arch/powerpc/include/asm/paca.h          |  1 +
+ arch/powerpc/kernel/asm-offsets.c        |  1 +
+ arch/powerpc/kernel/entry_64.S           |  2 ++
+ arch/powerpc/kernel/exceptions-64e.S     | 26 +++++++++++++++++++++++---
+ arch/powerpc/kernel/irq.c                | 12 ++++++------
+ arch/powerpc/kernel/paca.c               |  3 +++
+ arch/powerpc/kernel/setup_64.c           |  6 +-----
+ arch/powerpc/lib/code-patching.c         | 15 +++++++++++++++
+ arch/powerpc/mm/tlb_nohash.c             | 19 -------------------
+ arch/powerpc/platforms/85xx/corenet_ds.c |  9 ++++++++-
+ arch/powerpc/sysdev/mpic.c               |  8 ++++++++
+ 12 files changed, 75 insertions(+), 34 deletions(-)
+
+Thanks,
+Kevin
+-- 
+1.8.1.4
