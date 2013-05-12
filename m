@@ -1,31 +1,31 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3BB832C00B8
+ (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2BEC22C00AF
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2013 02:14:44 +1000 (EST)
 Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sun, 12 May 2013 21:39:09 +0530
+ Sun, 12 May 2013 21:39:07 +0530
 Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id B792F394004F
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 May 2013 21:44:37 +0530 (IST)
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id B9CC7394002D
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 May 2013 21:44:40 +0530 (IST)
 Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
  by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r4CGEVNP14811640
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 May 2013 21:44:31 +0530
+ r4CGEYmi57409714
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 May 2013 21:44:34 +0530
 Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
  by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r4CGEZcF023329
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2013 02:14:36 +1000
+ r4CGEdCl023659
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2013 02:14:39 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, dwg@au1.ibm.com
-Subject: [PATCH -V8 03/18] mm/THP: Use the right function when updating access
- flags
-Date: Sun, 12 May 2013 21:44:10 +0530
-Message-Id: <1368375265-19593-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V8 18/18] powerpc: disable assert_pte_locked for
+ collapse_huge_page
+Date: Sun, 12 May 2013 21:44:25 +0530
+Message-Id: <1368375265-19593-19-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1368375265-19593-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1368375265-19593-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -41,29 +41,35 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-We should use pmdp_set_access_flags to update access flags. Archs like powerpc
-use extra checks(_PAGE_BUSY) when updating a hugepage PTE. A set_pmd_at doesn't
-do those checks. We should use set_pmd_at only when updating a none hugepage PTE.
+With THP we set pmd to none, before we do pte_clear. Hence we can't
+walk page table to get the pte lock ptr and verify whether it is locked.
+THP do take pte lock before calling pte_clear. So we don't change the locking
+rules here. It is that we can't use page table walking to check whether
+pte locks are held with THP.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- mm/huge_memory.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ arch/powerpc/mm/pgtable.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-index 49cb001..a43d736 100644
---- a/mm/huge_memory.c
-+++ b/mm/huge_memory.c
-@@ -1265,7 +1265,9 @@ struct page *follow_trans_huge_pmd(struct vm_area_struct *vma,
- 		 * young bit, instead of the current set_pmd_at.
- 		 */
- 		_pmd = pmd_mkyoung(pmd_mkdirty(*pmd));
--		set_pmd_at(mm, addr & HPAGE_PMD_MASK, pmd, _pmd);
-+		if (pmdp_set_access_flags(vma, addr & HPAGE_PMD_MASK,
-+					  pmd, _pmd,  1))
-+			update_mmu_cache_pmd(vma, addr, pmd);
- 	}
- 	if ((flags & FOLL_MLOCK) && (vma->vm_flags & VM_LOCKED)) {
- 		if (page->mapping && trylock_page(page)) {
+diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+index 214130a..edda589 100644
+--- a/arch/powerpc/mm/pgtable.c
++++ b/arch/powerpc/mm/pgtable.c
+@@ -235,6 +235,14 @@ void assert_pte_locked(struct mm_struct *mm, unsigned long addr)
+ 	pud = pud_offset(pgd, addr);
+ 	BUG_ON(pud_none(*pud));
+ 	pmd = pmd_offset(pud, addr);
++	/*
++	 * khugepaged to collapse normal pages to hugepage, first set
++	 * pmd to none to force page fault/gup to take mmap_sem. After
++	 * pmd is set to none, we do a pte_clear which does this assertion
++	 * so if we find pmd none, return.
++	 */
++	if (pmd_none(*pmd))
++		return;
+ 	BUG_ON(!pmd_present(*pmd));
+ 	assert_spin_locked(pte_lockptr(mm, pmd));
+ }
 -- 
 1.8.1.2
