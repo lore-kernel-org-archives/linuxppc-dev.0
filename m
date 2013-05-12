@@ -1,31 +1,31 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 355C32C00B5
+ (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 28C332C00AE
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2013 02:14:44 +1000 (EST)
 Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sun, 12 May 2013 21:38:46 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 40A913940023
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 May 2013 21:44:38 +0530 (IST)
+ Sun, 12 May 2013 21:39:05 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 3F3B4E0055
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 May 2013 21:47:01 +0530 (IST)
 Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r4CGEWw75702074
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 May 2013 21:44:32 +0530
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r4CGEWts8913160
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 May 2013 21:44:33 +0530
 Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
  by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r4CGEaSX023348
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2013 02:14:36 +1000
+ r4CGEalU023389
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2013 02:14:37 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, dwg@au1.ibm.com
-Subject: [PATCH -V8 05/18] mm/THP: withdraw the pgtable after pmdp related
- operations
-Date: Sun, 12 May 2013 21:44:12 +0530
-Message-Id: <1368375265-19593-6-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V8 07/18] mm/THP: deposit the transpare huge pgtable before
+ set_pmd
+Date: Sun, 12 May 2013 21:44:14 +0530
+Message-Id: <1368375265-19593-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1368375265-19593-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1368375265-19593-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -41,36 +41,59 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-For architectures like ppc64 we look at deposited pgtable when
-calling pmdp_get_and_clear. So do the pgtable_trans_huge_withdraw
-after finishing pmdp related operations.
+Architectures like powerpc use the deposited pgtable to store
+hash index values. We need to make the deposted pgtable visible
+to other cpus before we are ready to take a hash fault.
 
-Reviewed-by: Andrea Arcangeli <aarcange@redhat.com>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- mm/huge_memory.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ mm/huge_memory.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-index 69f4153..5d99b2f 100644
+index 5d99b2f..cc47b29 100644
 --- a/mm/huge_memory.c
 +++ b/mm/huge_memory.c
-@@ -1360,9 +1360,15 @@ int zap_huge_pmd(struct mmu_gather *tlb, struct vm_area_struct *vma,
- 		struct page *page;
- 		pgtable_t pgtable;
- 		pmd_t orig_pmd;
--		pgtable = pgtable_trans_huge_withdraw(tlb->mm, pmd);
-+		/*
-+		 * For architectures like ppc64 we look at deposited pgtable
-+		 * when calling pmdp_get_and_clear. So do the
-+		 * pgtable_trans_huge_withdraw after finishing pmdp related
-+		 * operations.
-+		 */
- 		orig_pmd = pmdp_get_and_clear(tlb->mm, addr, pmd);
- 		tlb_remove_pmd_tlb_entry(tlb, pmd, addr);
-+		pgtable = pgtable_trans_huge_withdraw(tlb->mm, pmd);
- 		if (is_huge_zero_pmd(orig_pmd)) {
- 			tlb->mm->nr_ptes--;
- 			spin_unlock(&tlb->mm->page_table_lock);
+@@ -729,8 +729,8 @@ static int __do_huge_pmd_anonymous_page(struct mm_struct *mm,
+ 		pmd_t entry;
+ 		entry = mk_huge_pmd(page, vma);
+ 		page_add_new_anon_rmap(page, vma, haddr);
+-		set_pmd_at(mm, haddr, pmd, entry);
+ 		pgtable_trans_huge_deposit(mm, pmd, pgtable);
++		set_pmd_at(mm, haddr, pmd, entry);
+ 		add_mm_counter(mm, MM_ANONPAGES, HPAGE_PMD_NR);
+ 		mm->nr_ptes++;
+ 		spin_unlock(&mm->page_table_lock);
+@@ -771,8 +771,8 @@ static bool set_huge_zero_page(pgtable_t pgtable, struct mm_struct *mm,
+ 	entry = mk_pmd(zero_page, vma->vm_page_prot);
+ 	entry = pmd_wrprotect(entry);
+ 	entry = pmd_mkhuge(entry);
+-	set_pmd_at(mm, haddr, pmd, entry);
+ 	pgtable_trans_huge_deposit(mm, pmd, pgtable);
++	set_pmd_at(mm, haddr, pmd, entry);
+ 	mm->nr_ptes++;
+ 	return true;
+ }
+@@ -916,8 +916,8 @@ int copy_huge_pmd(struct mm_struct *dst_mm, struct mm_struct *src_mm,
+ 
+ 	pmdp_set_wrprotect(src_mm, addr, src_pmd);
+ 	pmd = pmd_mkold(pmd_wrprotect(pmd));
+-	set_pmd_at(dst_mm, addr, dst_pmd, pmd);
+ 	pgtable_trans_huge_deposit(dst_mm, dst_pmd, pgtable);
++	set_pmd_at(dst_mm, addr, dst_pmd, pmd);
+ 	dst_mm->nr_ptes++;
+ 
+ 	ret = 0;
+@@ -2362,9 +2362,9 @@ static void collapse_huge_page(struct mm_struct *mm,
+ 	spin_lock(&mm->page_table_lock);
+ 	BUG_ON(!pmd_none(*pmd));
+ 	page_add_new_anon_rmap(new_page, vma, address);
++	pgtable_trans_huge_deposit(mm, pmd, pgtable);
+ 	set_pmd_at(mm, address, pmd, _pmd);
+ 	update_mmu_cache_pmd(vma, address, pmd);
+-	pgtable_trans_huge_deposit(mm, pmd, pgtable);
+ 	spin_unlock(&mm->page_table_lock);
+ 
+ 	*hpage = NULL;
 -- 
 1.8.1.2
