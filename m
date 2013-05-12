@@ -1,31 +1,33 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp08.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 915532C008C
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 May 2013 18:33:30 +1000 (EST)
+ (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1F47F2C00AA
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2013 02:14:44 +1000 (EST)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sun, 12 May 2013 18:31:04 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id A0AAB3578017
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 May 2013 18:33:26 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r4C8XJAK11468926
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 May 2013 18:33:19 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r4C8XPxV002277
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 May 2013 18:33:26 +1000
+ Sun, 12 May 2013 21:38:48 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 758F53940053
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 May 2013 21:44:39 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r4CGEVDm2884046
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 May 2013 21:44:31 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r4CGEbvq023488
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2013 02:14:38 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: [PATCH] powerpc/mm: Use the correct mask value when looking at
- pgtable address
-Date: Sun, 12 May 2013 14:03:19 +0530
-Message-Id: <1368347599-24242-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, dwg@au1.ibm.com
+Subject: [PATCH -V8 11/18] powerpc: Update find_linux_pte_or_hugepte to handle
+ transparent hugepages
+Date: Sun, 12 May 2013 21:44:18 +0530
+Message-Id: <1368375265-19593-12-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1368375265-19593-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1368375265-19593-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,26 +41,72 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-Our pgtable are 2*sizeof(pte_t)*PTRS_PER_PTE which is PTE_FRAG_SIZE.
-Instead of depending on frag size, mask with PMD_MASKED_BITS.
-
+Reviewed-by: David Gibson <dwg@au1.ibm.com>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/pgalloc-64.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/mm/hugetlbpage.c | 32 ++++++++++++++++++++++++++------
+ 1 file changed, 26 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pgalloc-64.h b/arch/powerpc/include/asm/pgalloc-64.h
-index 91acb12..b66ae72 100644
---- a/arch/powerpc/include/asm/pgalloc-64.h
-+++ b/arch/powerpc/include/asm/pgalloc-64.h
-@@ -186,7 +186,7 @@ static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index 2865077..4928204 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -936,30 +936,50 @@ pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea, unsigned *shift
  
- static inline pgtable_t pmd_pgtable(pmd_t pmd)
- {
--	return (pgtable_t)(pmd_val(pmd) & -sizeof(pte_t)*PTRS_PER_PTE);
-+	return (pgtable_t)(pmd_val(pmd) & ~PMD_MASKED_BITS);
- }
+ 	pg = pgdir + pgd_index(ea);
  
- static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm,
+-	if (pgd_huge(*pg)) {
++	/*
++	 * we should first check for none. That takes care of a
++	 * a parallel hugetlb or THP pagefault moving none entries
++	 * to respective types.
++	 */
++	if (pgd_none(*pg))
++		return NULL;
++	else if (pgd_huge(*pg)) {
+ 		ret_pte = (pte_t *) pg;
+ 		goto out;
+ 	} else if (is_hugepd(pg))
+ 		hpdp = (hugepd_t *)pg;
+-	else if (!pgd_none(*pg)) {
++	else {
+ 		pdshift = PUD_SHIFT;
+ 		pu = pud_offset(pg, ea);
+ 
+-		if (pud_huge(*pu)) {
++		if (pud_none(*pu))
++			return NULL;
++		else if (pud_huge(*pu)) {
+ 			ret_pte = (pte_t *) pu;
+ 			goto out;
+ 		} else if (is_hugepd(pu))
+ 			hpdp = (hugepd_t *)pu;
+-		else if (!pud_none(*pu)) {
++		else {
+ 			pdshift = PMD_SHIFT;
+ 			pm = pmd_offset(pu, ea);
++			/*
++			 * A hugepage collapse is captured by pmd_none, because
++			 * it mark the pmd none and do a hpte invalidate.
++			 *
++			 * A hugepage split is captured by pmd_trans_splitting
++			 * because we mark the pmd trans splitting and do a
++			 * hpte invalidate
++			 *
++			 */
++			if (pmd_none(*pm) || pmd_trans_splitting(*pm))
++				return NULL;
+ 
+-			if (pmd_huge(*pm)) {
++			if (pmd_huge(*pm) || pmd_large(*pm)) {
+ 				ret_pte = (pte_t *) pm;
+ 				goto out;
+ 			} else if (is_hugepd(pm))
+ 				hpdp = (hugepd_t *)pm;
+-			else if (!pmd_none(*pm))
++			else
+ 				return pte_offset_kernel(pm, ea);
+ 		}
+ 	}
 -- 
 1.8.1.2
