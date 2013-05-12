@@ -1,31 +1,35 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1CD7D2C00A9
+ (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 189B32C00A8
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2013 02:14:44 +1000 (EST)
 Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sun, 12 May 2013 21:40:38 +0530
+ Sun, 12 May 2013 21:37:53 +0530
 Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 31349394002D
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 May 2013 21:44:35 +0530 (IST)
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id C590B394002D
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 May 2013 21:44:39 +0530 (IST)
 Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
  by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r4CGEQQA10617246
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 May 2013 21:44:26 +0530
+ r4CGEVp97733578
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 May 2013 21:44:31 +0530
 Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
  by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r4CGEXKm023249
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2013 02:14:33 +1000
+ r4CGEbCe023514
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2013 02:14:38 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, dwg@au1.ibm.com
-Subject: [PATCH -V8 00/18] THP support for PPC64
-Date: Sun, 12 May 2013 21:44:07 +0530
-Message-Id: <1368375265-19593-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH -V8 12/18] powerpc: Replace find_linux_pte with
+ find_linux_pte_or_hugepte
+Date: Sun, 12 May 2013 21:44:19 +0530
+Message-Id: <1368375265-19593-13-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1368375265-19593-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1368375265-19593-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,212 +39,215 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-This is the second patchset needed to support THP on ppc64. Some of the changes
-included in this series are tricky in that it changes the powerpc linux page table
-walk subtly. We also overload few of the pte flags for ptes at PMD level (huge
-page PTEs).
+Replace find_linux_pte with find_linux_pte_or_hugepte and explicitly
+document why we don't need to handle transparent hugepages at callsites.
 
-The below patches are also sent as a seperate patch series to linux-mm
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/pgtable-ppc64.h | 24 ------------------------
+ arch/powerpc/kernel/io-workarounds.c     | 10 ++++++++--
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c      |  2 +-
+ arch/powerpc/mm/hash_utils_64.c          |  8 +++++++-
+ arch/powerpc/mm/hugetlbpage.c            |  8 ++++++--
+ arch/powerpc/mm/tlb_hash64.c             |  9 +++++++--
+ arch/powerpc/platforms/pseries/eeh.c     |  7 ++++++-
+ 7 files changed, 35 insertions(+), 33 deletions(-)
 
-[PATCH -V8 02/18] mm/THP: Use pmd_populate to update the pmd with
-[PATCH -V8 03/18] mm/THP: Use the right function when updating access
-[PATCH -V8 04/18] mm/THP: Add pmd args to pgtable deposit and
-[PATCH -V8 05/18] mm/THP: withdraw the pgtable after pmdp related
-[PATCH -V8 06/18] mm/THP: Don't use HPAGE_SHIFT in transparent
-[PATCH -V8 07/18] mm/THP: deposit the transpare huge pgtable before
-
-
-The below fixes is also sent to linuxppc-devel as an independent patch.
-[PATCH -V8 01/18] powerpc/mm: Use the correct mask value when looking
-
-I am adding the above patches in this series for easier testing.
-
-Some numbers:
-
-The latency measurements code from Anton  found at
-http://ozlabs.org/~anton/junkcode/latency2001.c
-
-64K page size (With THP support)
---------------------------
-[root@llmp24l02 test]# ./latency2001 8G
- 8589934592    428.49 cycles    120.50 ns
-[root@llmp24l02 test]# ./latency2001 -l 8G
- 8589934592    471.16 cycles    132.50 ns
-[root@llmp24l02 test]# echo never > /sys/kernel/mm/transparent_hugepage/enabled 
-[root@llmp24l02 test]# ./latency2001 8G
- 8589934592    766.52 cycles    215.56 ns
-[root@llmp24l02 test]# 
-
-4K page size (No THP support for 4K)
-----------------------------
-[root@llmp24l02 test]# ./latency2001 8G
- 8589934592    814.88 cycles    229.16 ns
-[root@llmp24l02 test]# ./latency2001 -l 8G
- 8589934592    463.69 cycles    130.40 ns
-[root@llmp24l02 test]# 
-
-We are close to hugetlbfs in latency and we can achieve this with zero
-config/page reservation. Most of the allocations above are fault allocated.
-
-Another test that does 50000000 random access over 1GB area goes from
-2.65 seconds to 1.07 seconds with this patchset.
-
-split_huge_page impact:
----------------------
-To look at the performance impact of large page invalidate, I tried the below
-experiment. The test involved, accessing a large contiguous region of memory
-location as below
-
-    for (i = 0; i < size; i += PAGE_SIZE)
-	data[i] = i;
-
-We wanted to access the data in sequential order so that we look at the
-worst case THP performance. Accesing the data in sequential order implies
-we have the Page table cached and overhead of TLB miss is as minimal as
-possible. We also don't touch the entire page, because that can result in
-cache evict.
-
-After we touched the full range as above, we now call mprotect on each
-of that page. A mprotect will result in a hugepage split. This should
-allow us to measure the impact of hugepage split.
-
-    for (i = 0; i < size; i += PAGE_SIZE)
-	 mprotect(&data[i], PAGE_SIZE, PROT_READ);
-
-Split hugepage impact: 
----------------------
-THP enabled: 2.851561705 seconds for test completion
-THP disable: 3.599146098 seconds for test completion
-
-We are 20.7% better than non THP case even when we have all the large pages split.
-
-Detailed output:
-
-THP enabled:
----------------------------------------
-[root@llmp24l02 ~]# cat /proc/vmstat  | grep thp
-thp_fault_alloc 0
-thp_fault_fallback 0
-thp_collapse_alloc 0
-thp_collapse_alloc_failed 0
-thp_split 0
-thp_zero_page_alloc 0
-thp_zero_page_alloc_failed 0
-[root@llmp24l02 ~]# /root/thp/tools/perf/perf stat -e page-faults,dTLB-load-misses ./split-huge-page-mpro 20G                                                                      
-time taken to touch all the data in ns: 2763096913 
-
- Performance counter stats for './split-huge-page-mpro 20G':
-
-	     1,581 page-faults                                                 
-	     3,159 dTLB-load-misses                                            
-
-       2.851561705 seconds time elapsed
-
-[root@llmp24l02 ~]# 
-[root@llmp24l02 ~]# cat /proc/vmstat  | grep thp
-thp_fault_alloc 1279
-thp_fault_fallback 0
-thp_collapse_alloc 0
-thp_collapse_alloc_failed 0
-thp_split 1279
-thp_zero_page_alloc 0
-thp_zero_page_alloc_failed 0
-[root@llmp24l02 ~]# 
-
-    77.05%  split-huge-page  [kernel.kallsyms]     [k] .clear_user_page                        
-     7.10%  split-huge-page  [kernel.kallsyms]     [k] .perf_event_mmap_ctx                    
-     1.51%  split-huge-page  split-huge-page-mpro  [.] 0x0000000000000a70                      
-     0.96%  split-huge-page  [unknown]             [H] 0x000000000157e3bc                      
-     0.81%  split-huge-page  [kernel.kallsyms]     [k] .up_write                               
-     0.76%  split-huge-page  [kernel.kallsyms]     [k] .perf_event_mmap                        
-     0.76%  split-huge-page  [kernel.kallsyms]     [k] .down_write                             
-     0.74%  split-huge-page  [kernel.kallsyms]     [k] .lru_add_page_tail                      
-     0.61%  split-huge-page  [kernel.kallsyms]     [k] .split_huge_page                        
-     0.59%  split-huge-page  [kernel.kallsyms]     [k] .change_protection                      
-     0.51%  split-huge-page  [kernel.kallsyms]     [k] .release_pages                          
-
-     0.96%  split-huge-page  [unknown]             [H] 0x000000000157e3bc                      
-	    |          
-	    |--79.44%-- reloc_start
-	    |          |          
-	    |          |--86.54%-- .__pSeries_lpar_hugepage_invalidate
-	    |          |          .pSeries_lpar_hugepage_invalidate
-	    |          |          .hpte_need_hugepage_flush
-	    |          |          .split_huge_page
-	    |          |          .__split_huge_page_pmd
-	    |          |          .vma_adjust
-	    |          |          .vma_merge
-	    |          |          .mprotect_fixup
-	    |          |          .SyS_mprotect
-
-THP disabled:
----------------
-[root@llmp24l02 ~]# echo never > /sys/kernel/mm/transparent_hugepage/enabled
-[root@llmp24l02 ~]# /root/thp/tools/perf/perf stat -e page-faults,dTLB-load-misses ./split-huge-page-mpro 20G
-time taken to touch all the data in ns: 3513767220 
-
- Performance counter stats for './split-huge-page-mpro 20G':
-
-	  3,27,726 page-faults                                                 
-	  3,29,654 dTLB-load-misses                                            
-
-       3.599146098 seconds time elapsed
-
-[root@llmp24l02 ~]#
-
-Changes from V7:
-* Address review feedback.
-* mm/ patches also posted as a seperate series to linux-mm list
-* Fixes for races against split/collapse and page table walk.
-* Updated comments regarding locking details
-
-Changes from V6:
-* split the patch series into two patchset.
-* Address review feedback.
-
-Changes from V5:
-* Address review comments
-* Added new patch to not use hugepd for explcit hugepages. Explicit hugepaes
-  now use PTE format similar to transparent hugepages.
-* We don't use page->_mapcount for tracking free PTE frags in a PTE page.
-* rebased to a86d52667d8eda5de39393ce737794403bdce1eb
-* Tested with libhugetlbfs test suite
-
-Changes from V4:
-* Fix bad page error in page_table_alloc
-  BUG: Bad page state in process stream  pfn:f1a59
-  page:f0000000034dc378 count:1 mapcount:0 mapping:          (null) index:0x0
-  [c000000f322c77d0] [c00000000015e198] .bad_page+0xe8/0x140
-  [c000000f322c7860] [c00000000015e3c4] .free_pages_prepare+0x1d4/0x1e0
-  [c000000f322c7910] [c000000000160450] .free_hot_cold_page+0x50/0x230
-  [c000000f322c79c0] [c00000000003ad18] .page_table_alloc+0x168/0x1c0
-
-Changes from V3:
-* PowerNV boot fixes
-
-Change from V2:
-* Change patch "powerpc: Reduce PTE table memory wastage" to use much simpler approach
-  for PTE page sharing.
-* Changes to handle huge pages in KVM code.
-* Address other review comments
-
-Changes from V1
-* Address review comments
-* More patch split
-* Add batch hpte invalidate for hugepages.
-
-Changes from RFC V2:
-* Address review comments
-* More code cleanup and patch split
-
-Changes from RFC V1:
-* HugeTLB fs now works
-* Compile issues fixed
-* rebased to v3.8
-* Patch series reorded so that ppc64 cleanups and MM THP changes are moved
-  early in the series. This should help in picking those patches early.
-
-Thanks,
--aneesh
+diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
+index 74ce13b..69cb52b 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc64.h
++++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+@@ -343,30 +343,6 @@ static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
+ 
+ void pgtable_cache_add(unsigned shift, void (*ctor)(void *));
+ void pgtable_cache_init(void);
+-
+-/*
+- * find_linux_pte returns the address of a linux pte for a given
+- * effective address and directory.  If not found, it returns zero.
+- */
+-static inline pte_t *find_linux_pte(pgd_t *pgdir, unsigned long ea)
+-{
+-	pgd_t *pg;
+-	pud_t *pu;
+-	pmd_t *pm;
+-	pte_t *pt = NULL;
+-
+-	pg = pgdir + pgd_index(ea);
+-	if (!pgd_none(*pg)) {
+-		pu = pud_offset(pg, ea);
+-		if (!pud_none(*pu)) {
+-			pm = pmd_offset(pu, ea);
+-			if (pmd_present(*pm))
+-				pt = pte_offset_kernel(pm, ea);
+-		}
+-	}
+-	return pt;
+-}
+-
+ #endif /* __ASSEMBLY__ */
+ 
+ /*
+diff --git a/arch/powerpc/kernel/io-workarounds.c b/arch/powerpc/kernel/io-workarounds.c
+index 50e90b7..e5263ab 100644
+--- a/arch/powerpc/kernel/io-workarounds.c
++++ b/arch/powerpc/kernel/io-workarounds.c
+@@ -55,6 +55,7 @@ static struct iowa_bus *iowa_pci_find(unsigned long vaddr, unsigned long paddr)
+ 
+ struct iowa_bus *iowa_mem_find_bus(const PCI_IO_ADDR addr)
+ {
++	unsigned shift;
+ 	struct iowa_bus *bus;
+ 	int token;
+ 
+@@ -70,11 +71,16 @@ struct iowa_bus *iowa_mem_find_bus(const PCI_IO_ADDR addr)
+ 		if (vaddr < PHB_IO_BASE || vaddr >= PHB_IO_END)
+ 			return NULL;
+ 
+-		ptep = find_linux_pte(init_mm.pgd, vaddr);
++		ptep = find_linux_pte_or_hugepte(init_mm.pgd, vaddr, &shift);
+ 		if (ptep == NULL)
+ 			paddr = 0;
+-		else
++		else {
++			/*
++			 * we don't have hugepages backing iomem
++			 */
++			BUG_ON(shift);
+ 			paddr = pte_pfn(*ptep) << PAGE_SHIFT;
++		}
+ 		bus = iowa_pci_find(vaddr, paddr);
+ 
+ 		if (bus == NULL)
+diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+index 6dcbb49..dcf892d 100644
+--- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
++++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+@@ -27,7 +27,7 @@ static void *real_vmalloc_addr(void *x)
+ 	unsigned long addr = (unsigned long) x;
+ 	pte_t *p;
+ 
+-	p = find_linux_pte(swapper_pg_dir, addr);
++	p = find_linux_pte_or_hugepte(swapper_pg_dir, addr, NULL);
+ 	if (!p || !pte_present(*p))
+ 		return NULL;
+ 	/* assume we don't have huge pages in vmalloc space... */
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 88ac0ee..49b9cb7 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -1131,6 +1131,7 @@ EXPORT_SYMBOL_GPL(hash_page);
+ void hash_preload(struct mm_struct *mm, unsigned long ea,
+ 		  unsigned long access, unsigned long trap)
+ {
++	int shift;
+ 	unsigned long vsid;
+ 	pgd_t *pgdir;
+ 	pte_t *ptep;
+@@ -1152,10 +1153,15 @@ void hash_preload(struct mm_struct *mm, unsigned long ea,
+ 	pgdir = mm->pgd;
+ 	if (pgdir == NULL)
+ 		return;
+-	ptep = find_linux_pte(pgdir, ea);
++	/*
++	 * THP pages use update_mmu_cache_pmd. We don't do
++	 * hash preload there. Hence can ignore THP here
++	 */
++	ptep = find_linux_pte_or_hugepte(pgdir, ea, &shift);
+ 	if (!ptep)
+ 		return;
+ 
++	BUG_ON(shift);
+ #ifdef CONFIG_PPC_64K_PAGES
+ 	/* If either _PAGE_4K_PFN or _PAGE_NO_CACHE is set (and we are on
+ 	 * a 64K kernel), then we don't preload, hash_page() will take
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index 4928204..8add580 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -105,6 +105,7 @@ int pgd_huge(pgd_t pgd)
+ 
+ pte_t *huge_pte_offset(struct mm_struct *mm, unsigned long addr)
+ {
++	/* Only called for hugetlbfs pages, hence can ignore THP */
+ 	return find_linux_pte_or_hugepte(mm->pgd, addr, NULL);
+ }
+ 
+@@ -673,11 +674,14 @@ follow_huge_addr(struct mm_struct *mm, unsigned long address, int write)
+ 	struct page *page;
+ 	unsigned shift;
+ 	unsigned long mask;
+-
++	/*
++	 * Transparent hugepages are handled by generic code. We can skip them
++	 * here.
++	 */
+ 	ptep = find_linux_pte_or_hugepte(mm->pgd, address, &shift);
+ 
+ 	/* Verify it is a huge page else bail. */
+-	if (!ptep || !shift)
++	if (!ptep || !shift || pmd_trans_huge(*(pmd_t *)ptep))
+ 		return ERR_PTR(-EINVAL);
+ 
+ 	mask = (1UL << shift) - 1;
+diff --git a/arch/powerpc/mm/tlb_hash64.c b/arch/powerpc/mm/tlb_hash64.c
+index fe07f57..089afb1 100644
+--- a/arch/powerpc/mm/tlb_hash64.c
++++ b/arch/powerpc/mm/tlb_hash64.c
+@@ -189,6 +189,7 @@ void tlb_flush(struct mmu_gather *tlb)
+ void __flush_hash_table_range(struct mm_struct *mm, unsigned long start,
+ 			      unsigned long end)
+ {
++	int hugepage_shift;
+ 	unsigned long flags;
+ 
+ 	start = _ALIGN_DOWN(start, PAGE_SIZE);
+@@ -206,7 +207,8 @@ void __flush_hash_table_range(struct mm_struct *mm, unsigned long start,
+ 	local_irq_save(flags);
+ 	arch_enter_lazy_mmu_mode();
+ 	for (; start < end; start += PAGE_SIZE) {
+-		pte_t *ptep = find_linux_pte(mm->pgd, start);
++		pte_t *ptep = find_linux_pte_or_hugepte(mm->pgd, start,
++							&hugepage_shift);
+ 		unsigned long pte;
+ 
+ 		if (ptep == NULL)
+@@ -214,7 +216,10 @@ void __flush_hash_table_range(struct mm_struct *mm, unsigned long start,
+ 		pte = pte_val(*ptep);
+ 		if (!(pte & _PAGE_HASHPTE))
+ 			continue;
+-		hpte_need_flush(mm, start, ptep, pte, 0);
++		if (unlikely(hugepage_shift && pmd_trans_huge(*(pmd_t *)pte)))
++			hpte_do_hugepage_flush(mm, start, (pmd_t *)pte);
++		else
++			hpte_need_flush(mm, start, ptep, pte, 0);
+ 	}
+ 	arch_leave_lazy_mmu_mode();
+ 	local_irq_restore(flags);
+diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
+index 6b73d6c..d2e76d2 100644
+--- a/arch/powerpc/platforms/pseries/eeh.c
++++ b/arch/powerpc/platforms/pseries/eeh.c
+@@ -258,12 +258,17 @@ void eeh_slot_error_detail(struct eeh_pe *pe, int severity)
+  */
+ static inline unsigned long eeh_token_to_phys(unsigned long token)
+ {
++	int shift;
+ 	pte_t *ptep;
+ 	unsigned long pa;
+ 
+-	ptep = find_linux_pte(init_mm.pgd, token);
++	/*
++	 * We won't find hugepages here, iomem
++	 */
++	ptep = find_linux_pte_or_hugepte(init_mm.pgd, token, &shift);
+ 	if (!ptep)
+ 		return token;
++	BUG_ON(shift);
+ 	pa = pte_pfn(*ptep) << PAGE_SHIFT;
+ 
+ 	return pa | (token & (PAGE_SIZE-1));
+-- 
+1.8.1.2
