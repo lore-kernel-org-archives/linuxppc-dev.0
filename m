@@ -1,15 +1,24 @@
-Return-Path: <agordeev@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 3D0ED2C009F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2013 20:56:32 +1000 (EST)
-Date: Mon, 13 May 2013 12:57:49 +0200
-From: Alexander Gordeev <agordeev@redhat.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 1/1] powerpc: Fix irq_set_affinity() return values
-Message-ID: <20130513105748.GA27077@dhcp-26-207.brq.redhat.com>
+Return-Path: <paubert@iram.es>
+Received: from marchena.puc.rediris.es (marchena.puc.rediris.es
+ [IPv6:2001:720:418:ca00::4])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id B4CBD2C00A8
+ for <linuxppc-dev@ozlabs.org>; Mon, 13 May 2013 23:13:04 +1000 (EST)
+Date: Mon, 13 May 2013 15:12:37 +0200
+From: Gabriel Paubert <paubert@iram.es>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH] powerpc: provide __bswapdi2
+Message-ID: <20130513131237.GA16647@visitor2.iram.es>
+References: <1368220707.3378.57.camel@shinybook.infradead.org>
+ <9813.1368428999@ale.ozlabs.ibm.com>
+ <1368441187.24723.38.camel@i7.infradead.org>
+ <1368441493.24723.41.camel@i7.infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1368441493.24723.41.camel@i7.infradead.org>
+Cc: linuxppc-dev@ozlabs.org, Michael Neuling <mikey@neuling.org>,
+ viro@zeniv.linux.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,71 +28,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Alexander Gordeev <agordeev@redhat.com>
----
- arch/powerpc/platforms/wsp/ics.c    |    2 +-
- arch/powerpc/sysdev/ehv_pic.c       |    2 +-
- arch/powerpc/sysdev/mpic.c          |    2 +-
- arch/powerpc/sysdev/xics/ics-opal.c |    2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)
+On Mon, May 13, 2013 at 11:38:13AM +0100, David Woodhouse wrote:
+> On Mon, 2013-05-13 at 11:33 +0100, David Woodhouse wrote:
+> > 
+> > On Mon, 2013-05-13 at 09:33 +0200, Gabriel Paubert wrote:
+> > > Actually, I'd swap the two mr instructions to never
+> > > have an instruction that uses the result from the
+> > > previous one. 
+> > 
+> > Bad GCC. No biscuit.
+> > 
+> > Should we file a PR? 
+> 
+> Maybe not. If you tell it to tune for an in-order machine like Cell, it
+> swaps them round. Although now I'm confused about which of POWER[567]
+> were in-order:
 
-diff --git a/arch/powerpc/platforms/wsp/ics.c b/arch/powerpc/platforms/wsp/ics.c
-index 97fe82e..2d3b1dd 100644
---- a/arch/powerpc/platforms/wsp/ics.c
-+++ b/arch/powerpc/platforms/wsp/ics.c
-@@ -361,7 +361,7 @@ static int wsp_chip_set_affinity(struct irq_data *d,
- 	xive = xive_set_server(xive, get_irq_server(ics, hw_irq));
- 	wsp_ics_set_xive(ics, hw_irq, xive);
- 
--	return 0;
-+	return IRQ_SET_MASK_OK;
- }
- 
- static struct irq_chip wsp_irq_chip = {
-diff --git a/arch/powerpc/sysdev/ehv_pic.c b/arch/powerpc/sysdev/ehv_pic.c
-index 6e0e100..9cd0e60 100644
---- a/arch/powerpc/sysdev/ehv_pic.c
-+++ b/arch/powerpc/sysdev/ehv_pic.c
-@@ -81,7 +81,7 @@ int ehv_pic_set_affinity(struct irq_data *d, const struct cpumask *dest,
- 	ev_int_set_config(src, config, prio, cpuid);
- 	spin_unlock_irqrestore(&ehv_pic_lock, flags);
- 
--	return 0;
-+	return IRQ_SET_MASK_OK;
- }
- 
- static unsigned int ehv_pic_type_to_vecpri(unsigned int type)
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index d30e6a6..20f6625 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -836,7 +836,7 @@ int mpic_set_affinity(struct irq_data *d, const struct cpumask *cpumask,
- 			       mpic_physmask(mask));
- 	}
- 
--	return 0;
-+	return IRQ_SET_MASK_OK;
- }
- 
- static unsigned int mpic_type_to_vecpri(struct mpic *mpic, unsigned int type)
-diff --git a/arch/powerpc/sysdev/xics/ics-opal.c b/arch/powerpc/sysdev/xics/ics-opal.c
-index f7e8609..39d7221 100644
---- a/arch/powerpc/sysdev/xics/ics-opal.c
-+++ b/arch/powerpc/sysdev/xics/ics-opal.c
-@@ -148,7 +148,7 @@ static int ics_opal_set_affinity(struct irq_data *d,
- 		       __func__, d->irq, hw_irq, server, rc);
- 		return -1;
- 	}
--	return 0;
-+	return IRQ_SET_MASK_OK;
- }
- 
- static struct irq_chip ics_opal_irq_chip = {
--- 
-1.7.7.6
+It was Power6 IIRC. On this kind of fine point, don't rely too much
+on what GCC produces.
 
+> 
+> [dwmw2@i7 ~]$ powerpc64-linux-gnu-gcc -O2 -S -o- bswapdi2.c -m32  | grep -B1 mr
+> 	rlwimi 11,3,24,16,23
+> 	mr 4,11
+> 	mr 3,10
+> [dwmw2@i7 ~]$ powerpc64-linux-gnu-gcc -O2 -S -o- bswapdi2.c -m32 -mtune=cell | grep -B1 mr
+> 	rlwimi 11,3,24,16,23
+> 	mr 3,10
+> 	mr 4,11
+> [dwmw2@i7 ~]$ powerpc64-linux-gnu-gcc -O2 -S -o- bswapdi2.c -m32 -mtune=power5 | grep -B1 mr
+> 	rlwimi 11,3,24,16,23
+> 	mr 3,10
+> 	mr 4,11
+> [dwmw2@i7 ~]$ powerpc64-linux-gnu-gcc -O2 -S -o- bswapdi2.c -m32 -mtune=power6 | grep -B1 mr
+> 	rlwimi 11,3,24,16,23
+> 	mr 4,11
+> 	mr 3,10
+> [dwmw2@i7 ~]$ powerpc64-linux-gnu-gcc -O2 -S -o- bswapdi2.c -m32 -mtune=power7 | grep -B1 mr
+> 	rlwimi 11,3,24,16,23
+> 	mr 4,11
+> 	mr 3,10
 
--- 
-Regards,
-Alexander Gordeev
-agordeev@redhat.com
+I don't know of any processor in which putting the mr 3,10 first can cause stalls, so
+even a generic tuning should put it first.
+
+	Gabriel
