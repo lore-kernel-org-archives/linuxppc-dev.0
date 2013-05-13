@@ -3,17 +3,24 @@ Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mail1.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4DD742C0097
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2013 12:00:49 +1000 (EST)
-From: Tiejun Chen <tiejun.chen@windriver.com>
-To: <agraf@suse.de>, <scottwood@freescale.com>
-Subject: [v3][KVM][PATCH 1/1] kvm:ppc: control doorbell exception with
- CONFIG_PPC_DOORBELL
-Date: Mon, 13 May 2013 10:00:45 +0800
-Message-ID: <1368410445-4969-1-git-send-email-tiejun.chen@windriver.com>
+ by ozlabs.org (Postfix) with ESMTPS id 515E12C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2013 12:04:38 +1000 (EST)
+Message-ID: <51904A30.8010408@windriver.com>
+Date: Mon, 13 May 2013 10:04:32 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+To: Alexander Graf <agraf@suse.de>, Caraman Mihai Claudiu-B02008
+ <B02008@freescale.com>
+Subject: Re: [v1][KVM][PATCH 1/1] kvm:ppc:booehv: direct ISI exception to Guest
+References: <1368213757.19683.10@snotra>
+ <F3847E9E-D4F6-4727-B3A6-42C68797F5CF@suse.de>
+In-Reply-To: <F3847E9E-D4F6-4727-B3A6-42C68797F5CF@suse.de>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: Scott Wood <scottwood@freescale.com>,
+ Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,35 +30,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We can only use CONFIG_PPC_DOORBELL to control whether
-the doorbell exception should be enabled.
+On 05/11/2013 03:39 AM, Alexander Graf wrote:
+>
+>
+> Am 10.05.2013 um 21:22 schrieb Scott Wood <scottwood@freescale.com>:
+>
+>> On 05/10/2013 12:57:33 PM, Alexander Graf wrote:
+>>> Could you guys please collect performance data during the next weeks on both guest-directed ISIs as well as VF MMIOs (preferably with in-kernel MMIO), so that we can decide on the direction that's worth going towards?
+>>
+>> Collecting data on VF MMIO would require implementing it (or at least salvaging and fixing some old code), which is not a high priority at the moment.  If we do implement VF in the future we could always undo the direct ISI change, but it would still be nice to know if there's any real benefit in the first place.
+>
+> Mike sounded like he had an almost working poc, which is good enough to collect rough numbers.
 
-Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
----
-v3:
+Which can the test case be adopted?
 
-Just imporve the patch head.
+Mike,
 
-v2: 
+If you already have a good case for your poc, please share that with me. Then 
+I'd like to run that.
 
-Use CONFIG_PPC_DOORBELL to replace CONFIG_KVM_E500MC as that control condition.
+Tiejun
 
-
- arch/powerpc/kvm/booke.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index ac7ab08..2d063c7 100644
---- a/arch/powerpc/kvm/booke.c
-+++ b/arch/powerpc/kvm/booke.c
-@@ -794,7 +794,7 @@ static void kvmppc_restart_interrupt(struct kvm_vcpu *vcpu,
- 		kvmppc_fill_pt_regs(&regs);
- 		timer_interrupt(&regs);
- 		break;
--#if defined(CONFIG_PPC_FSL_BOOK3E) || defined(CONFIG_PPC_BOOK3E_64)
-+#if defined(CONFIG_PPC_DOORBELL)
- 	case BOOKE_INTERRUPT_DOORBELL:
- 		kvmppc_fill_pt_regs(&regs);
- 		doorbell_exception(&regs);
--- 
-1.7.9.5
+>
+> And yes, changes like these should always get at least basic performance numbers along with them, regardless of drawbacks.
+>
+>
+> Alex
+>
+>>
+>> FWIW, I doubt that the "more stress on HW TLB" will be significant.
+>>
+>> -Scott
+>
