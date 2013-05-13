@@ -1,26 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 903492C008E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2013 20:02:01 +1000 (EST)
-Message-ID: <1368439305.19924.38.camel@pasglop>
-Subject: Re: [RFC PATCH v3 2/5] powerpc: Exception hooks for context
- tracking subsystem
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Li Zhong <zhong@linux.vnet.ibm.com>
-Date: Mon, 13 May 2013 20:01:45 +1000
-In-Reply-To: <1368438380.2618.52.camel@ThinkPad-T5421>
-References: <1368422493-9831-1-git-send-email-zhong@linux.vnet.ibm.com>
- <1368422493-9831-3-git-send-email-zhong@linux.vnet.ibm.com>
- <1368424667.19924.26.camel@pasglop>
- <1368434680.2618.33.camel@ThinkPad-T5421>
- <1368435991.19924.35.camel@pasglop>
- <1368438380.2618.52.camel@ThinkPad-T5421>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: fweisbec@gmail.com, linux-kernel@vger.kernel.org, paulus@samba.org,
- paulmck@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH v3] powerpc: provide __bswapdi2
+Date: Mon, 13 May 2013 20:23:38 +1000
+Message-Id: <1368440618-27383-1-git-send-email-mikey@neuling.org>
+In-Reply-To: <20130513073319.GA5886@visitor2.iram.es>
+References: <20130513073319.GA5886@visitor2.iram.es>
+Cc: mikey@neuling.org, David Woodhouse <David.Woodhouse@intel.com>,
+ linuxppc-dev@lists.ozlabs.org, viro@zeniv.linux.org.uk,
+ David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,15 +18,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-05-13 at 17:46 +0800, Li Zhong wrote:
-> > hash_page() won't start a new RCU, at least not in its current incarnation,
-> > the only thing I can see it ever doing would be to take some RCU read locks one
-> > day (it doesn't today).
-> 
-> Seems I added the hooks because of the trace point of hcall
-> entry/exit ...
+From: David Woodhouse <David.Woodhouse@intel.com>
 
-Oh I see, and trace points use RCU ... ok, leave it there then.
+Some versions of GCC apparently expect this to be provided by libgcc.
 
-Cheers,
-Ben.
+Updates from Mikey to fix 32 bit version and adding "r" to registers.
+
+Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+Fixes from Gabriel.
+
+ arch/powerpc/kernel/misc_32.S   |   11 +++++++++++
+ arch/powerpc/kernel/misc_64.S   |   11 +++++++++++
+ arch/powerpc/kernel/ppc_ksyms.c |    3 ++-
+ 3 files changed, 24 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index 19e096b..e469f30 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -657,6 +657,17 @@ _GLOBAL(__ucmpdi2)
+ 	li	r3,2
+ 	blr
+ 
++_GLOBAL(__bswapdi2)
++	rotlwi  r9,r4,8
++	rotlwi  r10,r3,8
++	rlwimi  r9,r4,24,0,7
++	rlwimi  r10,r3,24,0,7
++	rlwimi  r9,r4,24,16,23
++	rlwimi  r10,r3,24,16,23
++	mr      r3,r9
++	mr      r4,r10
++	blr
++
+ _GLOBAL(abs)
+ 	srawi	r4,r3,31
+ 	xor	r3,r3,r4
+diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
+index 5cfa800..6820e45 100644
+--- a/arch/powerpc/kernel/misc_64.S
++++ b/arch/powerpc/kernel/misc_64.S
+@@ -234,6 +234,17 @@ _GLOBAL(__flush_dcache_icache)
+ 	isync
+ 	blr
+ 
++_GLOBAL(__bswapdi2)
++	srdi	r8,r3,32
++	rlwinm	r7,r3,8,0xffffffff
++	rlwimi	r7,r3,24,0,7
++	rlwinm	r9,r8,8,0xffffffff
++	rlwimi	r7,r3,24,16,23
++	rlwimi	r9,r8,24,0,7
++	rlwimi	r9,r8,24,16,23
++	sldi	r7,r7,32
++	or	r3,r7,r9
++	blr
+ 
+ #if defined(CONFIG_PPC_PMAC) || defined(CONFIG_PPC_MAPLE)
+ /*
+diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
+index 78b8766..c296665 100644
+--- a/arch/powerpc/kernel/ppc_ksyms.c
++++ b/arch/powerpc/kernel/ppc_ksyms.c
+@@ -143,7 +143,8 @@ EXPORT_SYMBOL(__lshrdi3);
+ int __ucmpdi2(unsigned long long, unsigned long long);
+ EXPORT_SYMBOL(__ucmpdi2);
+ #endif
+-
++long long __bswapdi2(long long);
++EXPORT_SYMBOL(__bswapdi2);
+ EXPORT_SYMBOL(memcpy);
+ EXPORT_SYMBOL(memset);
+ EXPORT_SYMBOL(memmove);
+-- 
+1.7.10.4
