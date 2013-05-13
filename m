@@ -3,19 +3,20 @@ Received: from merlin.infradead.org (merlin.infradead.org
  [IPv6:2001:4978:20e::2])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 99E542C00A5
- for <linuxppc-dev@ozlabs.org>; Mon, 13 May 2013 20:33:12 +1000 (EST)
-Message-ID: <1368441187.24723.38.camel@i7.infradead.org>
+ by ozlabs.org (Postfix) with ESMTPS id 5AE972C00A8
+ for <linuxppc-dev@ozlabs.org>; Mon, 13 May 2013 20:38:22 +1000 (EST)
+Message-ID: <1368441493.24723.41.camel@i7.infradead.org>
 Subject: Re: [PATCH] powerpc: provide __bswapdi2
 From: David Woodhouse <dwmw2@infradead.org>
 To: Michael Neuling <mikey@neuling.org>
-Date: Mon, 13 May 2013 11:33:07 +0100
-In-Reply-To: <9813.1368428999@ale.ozlabs.ibm.com>
+Date: Mon, 13 May 2013 11:38:13 +0100
+In-Reply-To: <1368441187.24723.38.camel@i7.infradead.org>
 References: <1368220707.3378.57.camel@shinybook.infradead.org>
  <9813.1368428999@ale.ozlabs.ibm.com>
+ <1368441187.24723.38.camel@i7.infradead.org>
 Content-Type: multipart/signed; micalg="sha-1";
  protocol="application/x-pkcs7-signature";
- boundary="=-kCK4vT79EeEH0yCV35Xt"
+ boundary="=-JYFB9jK/qZjJQ7xrljjc"
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, viro@zeniv.linux.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,54 +29,59 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-kCK4vT79EeEH0yCV35Xt
+--=-JYFB9jK/qZjJQ7xrljjc
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, 2013-05-13 at 17:09 +1000, Michael Neuling wrote:
+On Mon, 2013-05-13 at 11:33 +0100, David Woodhouse wrote:
 >=20
-> This doesn't work for me but the below does:
- ...
+> On Mon, 2013-05-13 at 09:33 +0200, Gabriel Paubert wrote:
+> > Actually, I'd swap the two mr instructions to never
+> > have an instruction that uses the result from the
+> > previous one.=20
 >=20
-> stolen from GCC -02 output of:
->   unsigned long long __bswapdi2(unsigned long long x)
+> Bad GCC. No biscuit.
+>=20
+> Should we file a PR?=20
 
-Hm, so was mine:
+Maybe not. If you tell it to tune for an in-order machine like Cell, it
+swaps them round. Although now I'm confused about which of POWER[567]
+were in-order:
 
-[dwmw2@i7 ~]$ powerpc64-linux-gnu-gcc -O2 -S -o- bswapdi2.c -m32
-	.file	"bswapdi2.c"
-	.section	".text"
-	.align 2
-	.p2align 4,,15
-	.globl __bswapdi2
-	.type	__bswapdi2, @function
-__bswapdi2:
-	rlwinm 10,4,8,0xffffffff
-	rlwinm 11,3,8,0xffffffff
-	rlwimi 10,4,24,0,7
-	rlwimi 11,3,24,0,7
-	rlwimi 10,4,24,16,23
+[dwmw2@i7 ~]$ powerpc64-linux-gnu-gcc -O2 -S -o- bswapdi2.c -m32  | grep -B=
+1 mr
 	rlwimi 11,3,24,16,23
 	mr 4,11
 	mr 3,10
-	blr
-	.size	__bswapdi2,.-__bswapdi2
-	.ident	"GCC: (GNU) 4.7.2 20121105 (Red Hat 4.7.2-2.aa.20121114svn)"
+[dwmw2@i7 ~]$ powerpc64-linux-gnu-gcc -O2 -S -o- bswapdi2.c -m32 -mtune=3Dc=
+ell | grep -B1 mr
+	rlwimi 11,3,24,16,23
+	mr 3,10
+	mr 4,11
+[dwmw2@i7 ~]$ powerpc64-linux-gnu-gcc -O2 -S -o- bswapdi2.c -m32 -mtune=3Dp=
+ower5 | grep -B1 mr
+	rlwimi 11,3,24,16,23
+	mr 3,10
+	mr 4,11
+[dwmw2@i7 ~]$ powerpc64-linux-gnu-gcc -O2 -S -o- bswapdi2.c -m32 -mtune=3Dp=
+ower6 | grep -B1 mr
+	rlwimi 11,3,24,16,23
+	mr 4,11
+	mr 3,10
+[dwmw2@i7 ~]$ powerpc64-linux-gnu-gcc -O2 -S -o- bswapdi2.c -m32 -mtune=3Dp=
+ower7 | grep -B1 mr
+	rlwimi 11,3,24,16,23
+	mr 4,11
+	mr 3,10
 
-On Mon, 2013-05-13 at 09:33 +0200, Gabriel Paubert wrote:
-> Actually, I'd swap the two mr instructions to never
-> have an instruction that uses the result from the
-> previous one.=20
 
-Bad GCC. No biscuit.
 
-Should we file a PR?=20
 
 --=20
 David Woodhouse                            Open Source Technology Centre
 David.Woodhouse@intel.com                              Intel Corporation
 
---=-kCK4vT79EeEH0yCV35Xt
+--=-JYFB9jK/qZjJQ7xrljjc
 Content-Type: application/x-pkcs7-signature; name="smime.p7s"
 Content-Disposition: attachment; filename="smime.p7s"
 Content-Transfer-Encoding: base64
@@ -169,18 +175,18 @@ bhXkgdT2t1V1bNAxggNvMIIDawIBATCBlDCBjDELMAkGA1UEBhMCSUwxFjAUBgNVBAoTDVN0YXJ0
 Q29tIEx0ZC4xKzApBgNVBAsTIlNlY3VyZSBEaWdpdGFsIENlcnRpZmljYXRlIFNpZ25pbmcxODA2
 BgNVBAMTL1N0YXJ0Q29tIENsYXNzIDEgUHJpbWFyeSBJbnRlcm1lZGlhdGUgQ2xpZW50IENBAgMG
 hc4wCQYFKw4DAhoFAKCCAa8wGAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUx
-DxcNMTMwNTEzMTAzMzA3WjAjBgkqhkiG9w0BCQQxFgQUKwRZaFnSKi3nhKsUAqR+StdfijUwgaUG
+DxcNMTMwNTEzMTAzODEzWjAjBgkqhkiG9w0BCQQxFgQUj/MlL28AIyyuddvBHQPKDsqgKXwwgaUG
 CSsGAQQBgjcQBDGBlzCBlDCBjDELMAkGA1UEBhMCSUwxFjAUBgNVBAoTDVN0YXJ0Q29tIEx0ZC4x
 KzApBgNVBAsTIlNlY3VyZSBEaWdpdGFsIENlcnRpZmljYXRlIFNpZ25pbmcxODA2BgNVBAMTL1N0
 YXJ0Q29tIENsYXNzIDEgUHJpbWFyeSBJbnRlcm1lZGlhdGUgQ2xpZW50IENBAgMGhc4wgacGCyqG
 SIb3DQEJEAILMYGXoIGUMIGMMQswCQYDVQQGEwJJTDEWMBQGA1UEChMNU3RhcnRDb20gTHRkLjEr
 MCkGA1UECxMiU2VjdXJlIERpZ2l0YWwgQ2VydGlmaWNhdGUgU2lnbmluZzE4MDYGA1UEAxMvU3Rh
 cnRDb20gQ2xhc3MgMSBQcmltYXJ5IEludGVybWVkaWF0ZSBDbGllbnQgQ0ECAwaFzjANBgkqhkiG
-9w0BAQEFAASCAQAOvXtqkUPDvGic6RbFW4/nN2udmJ/BjwFWppJ9cNribvQapQ47F/L63S8JMk7Z
-EvXpTONylVF30Vt/s34AW0NGJlHwD2xiKbRO+DS1/63qtffn4wgVHosG74WcD0+TrLO+CmIXEP2F
-K9dlVolqRlJO3ARYxHb+rwc8xwbukfyns0I3pS6t+sg5oqPN8TTn3HQCRBixMUMUmLs3E2J5bNZ0
-+liXdBByWcKSNJAS8V6S6Mq0a2Np3ctBXfY9LubZ+ubFIwDXbvgLOq/UX+i1K6Tgzd+z8teTkTZ+
-XvhPNGkdtK8r98LrzoQ5BTZckfdZV4XOnzT+AzjYee7Fh3VsoSb4AAAAAAAA
+9w0BAQEFAASCAQBPQFJLbjdKtuQoUzspHCmIeV74eutQtpaS2/xMSOxs+xE+hDI8pL3iuRrcLFwB
+M/vrUXxG+Qtk4s/HMON5GxDRETq16enOnRTx140AUZ7nQ6jwUNM0obxFmUcwFpSedNEuTi9tFBNc
+Yqu4rve7s93MP5PhK44kwoIlEisQj3igzZXJJcLmC/g6BpqM2ePaSjczGVCWHT8ZCK7zE3Pz2ckz
+L7GvfUQGAl3YDfqVvjnZTVXdktwlt+n7Uwkl1d0S3ooXFaG+D1VW5/Ab9VCHqhjumJj/eLZFU3fP
+jvTUdSiYGK87Rc5aQjpTd4uMeL+iftpOH7a+RaLmxkADpEH8jDi7AAAAAAAA
 
 
---=-kCK4vT79EeEH0yCV35Xt--
+--=-JYFB9jK/qZjJQ7xrljjc--
