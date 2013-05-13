@@ -1,37 +1,33 @@
-Return-Path: <monstr@monstr.eu>
-Received: from mail-ea0-x235.google.com (mail-ea0-x235.google.com
- [IPv6:2a00:1450:4013:c01::235])
+Return-Path: <liuj97@gmail.com>
+Received: from mail-pa0-f46.google.com (mail-pa0-f46.google.com
+ [209.85.220.46])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2840F2C0098
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2013 02:00:04 +1000 (EST)
-Received: by mail-ea0-f181.google.com with SMTP id a11so1411439eae.12
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2013 09:00:00 -0700 (PDT)
-Message-ID: <51910DDF.9010202@monstr.eu>
-Date: Mon, 13 May 2013 17:59:27 +0200
-From: Michal Simek <monstr@monstr.eu>
-MIME-Version: 1.0
-To: Ian Campbell <Ian.Campbell@citrix.com>
-Subject: Re: [RFC] device-tree.git automatic sync from linux.git
-References: <1366800525.20256.266.camel@zakaz.uk.xensource.com>
- <5190900D.5020408@monstr.eu> <1368446352.537.81.camel@zakaz.uk.xensource.com>
-In-Reply-To: <1368446352.537.81.camel@zakaz.uk.xensource.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="----enig2QBCIIVXWHHJKPXUNXKHP"
-Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- "linux-c6x-dev@linux-c6x.org" <linux-c6x-dev@linux-c6x.org>,
- Arnd Bergmann <arnd@arndb.de>,
- "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
- "microblaze-uclinux@itee.uq.edu.au" <microblaze-uclinux@itee.uq.edu.au>,
- "x86@kernel.org" <x86@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Rob Herring <rob.herring@calxeda.com>,
- "linux@lists.openrisc.net" <linux@lists.openrisc.net>,
- Olof Johansson <olof@lixom.net>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-Reply-To: monstr@monstr.eu
+ by ozlabs.org (Postfix) with ESMTPS id 7D56C2C00A8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2013 02:09:09 +1000 (EST)
+Received: by mail-pa0-f46.google.com with SMTP id fa10so4770224pad.19
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2013 09:09:07 -0700 (PDT)
+From: Jiang Liu <liuj97@gmail.com>
+To: Bjorn Helgaas <bhelgaas@google.com>,
+	Yinghai Lu <yinghai@kernel.org>
+Subject: [PATCH v2,
+ part 1 3/9] PCI: Convert alloc_pci_dev(void) to pci_alloc_dev(bus)
+ instead
+Date: Tue, 14 May 2013 00:08:27 +0800
+Message-Id: <1368461313-4371-4-git-send-email-jiang.liu@huawei.com>
+In-Reply-To: <1368461313-4371-1-git-send-email-jiang.liu@huawei.com>
+References: <1368461313-4371-1-git-send-email-jiang.liu@huawei.com>
+Cc: Neela Syam Kolli <megaraidlinux@lsi.com>, sparclinux@vger.kernel.org,
+ Toshi Kani <toshi.kani@hp.com>, Jiang Liu <jiang.liu@huawei.com>,
+ linux-scsi@vger.kernel.org, David Airlie <airlied@linux.ie>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org,
+ "James E.J. Bottomley" <JBottomley@parallels.com>,
+ "Rafael J . Wysocki" <rjw@sisk.pl>, Yijing Wang <wangyijing@huawei.com>,
+ linux-pci@vger.kernel.org, Gu Zheng <guz.fnst@cn.fujitsu.com>,
+ Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>,
+ Myron Stowe <myron.stowe@redhat.com>, "David S. Miller" <davem@davemloft.net>,
+ Jiang Liu <liuj97@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,187 +37,177 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
-------enig2QBCIIVXWHHJKPXUNXKHP
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+From: Gu Zheng <guz.fnst@cn.fujitsu.com>
 
-On 05/13/2013 01:59 PM, Ian Campbell wrote:
-> On Mon, 2013-05-13 at 08:02 +0100, Michal Simek wrote:
->> Just small overview it is a Xilinx soft core cpu where you can even se=
-tup
->> some parameters for core itself - multiplier, divider, BS, fpu, cache =
-sizes, etc.
->> You have to also compose the whole system and every platform/configura=
-tion is different
->> because you can setup addresses, IP on the bus, IRQs, etc.
->> Based on this configuration we have created tcl script which is able t=
-o generate
->> DTS directly from Xilinx design tool and it is working quite well for =
-several years
->> and everybody just use it without any problem.
->=20
-> That sounds very neat!
->=20
-> Does this tcl script live in the kernel tree? If so would you think it
-> would make sense for it to also migrate to device-tree.git? I'm not at
-> all sure if that makes sense but if you think it does please let me kno=
-w
-> which paths need top be carried over.
+<marker to prevent gmail from removing below "From:">
+From: Gu Zheng <guz.fnst@cn.fujitsu.com>
 
-No. This script is here.
-https://github.com/Xilinx/device-tree/tree/master-next
+Use the new pci_alloc_dev(bus) to replace the existing using of
+alloc_pci_dev(void).
 
-It is tightly connected to Xilinx design tool that's why I don't think it=
- is useful
-to add it to any other tree.
+v2:
+  Follow Bjorn's correction to move pci_bus_put() to
+  pci_release_dev() instead.
 
+Signed-off-by: Gu Zheng <guz.fnst@cn.fujitsu.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: David Airlie <airlied@linux.ie>
+Cc: Neela Syam Kolli <megaraidlinux@lsi.com>
+Cc: "James E.J. Bottomley" <JBottomley@parallels.com>
+Cc: Yinghai Lu <yinghai@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org
+Cc: sparclinux@vger.kernel.org
+Cc: linux-pci@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org
+Signed-off-by: Jiang Liu <jiang.liu@huawei.com>
+---
+ arch/powerpc/kernel/pci_of_scan.c | 3 +--
+ arch/sparc/kernel/pci.c           | 3 +--
+ drivers/char/agp/alpha-agp.c      | 2 +-
+ drivers/char/agp/parisc-agp.c     | 2 +-
+ drivers/pci/iov.c                 | 8 +++++---
+ drivers/pci/probe.c               | 4 ++--
+ drivers/scsi/megaraid.c           | 2 +-
+ 7 files changed, 12 insertions(+), 12 deletions(-)
 
->> As you see in your repo there is only one microblaze DTS which is for =
-one of mine
->> ancient configuration which none used.
->> It means from microblaze point of view we can simple remove it from ma=
-inline kernel
->> because it is useless.
->=20
-> That will then naturally get propagated over to device-tree.git.
-
-I will think about it for a while and probably just remove it through my =
-microblaze tree.
-
-
->> I also care about arm zynq platform where situation is partially diffe=
-rent because
->> zynq is fixed block but you can add others thing to programmable logic=
-=2E
->> It means for zynq case we are almost in the same situation where every=
- zynq based
->> platform is using different configuration and that's why fpgas are so =
-great.
->>
->> It means for zynq case everybody will need different DTS but will be j=
-ust good
->> to describe or show binding.
->> Currently we have just one dts for zc702 xilinx reference board.
->>
->> Let's move to my point.
->> Based on our experience all xilinx boards don't depend on any dts in t=
-he linux kernel
->> and our users just understand the reason why they should use our tcl s=
-cript for
->> DTS generation.
->>
->> Back to your point about moving DTSes out of the kernel.
->=20
-> I suppose you are now commenting on the Phase II bit where maintenance
-> of the DTS moves out of linux.git into device-tree.git, rather than
-> Phase I work, which is creating a split repo which is automatically
-> synchronised from linux.git but maintenance remains in linux.git, i.e.
-> what I'm doing here.
-
-ok.
-
->>  For microblaze - no problem
->> just do it. For arm zynq this is more problematic because there is wei=
-rd binding
->> for ARM. For example PMU which is out of bus and should be probably in=
- cpu node.
->> Also scu devices, scutimers, watchdog which lie on the bus for our cas=
-e and we
->> need to use PPI interrupt cpu mask. Different clock binding, maybe pin=
-mux binding, etc.
->>
->> It means from my point of view if binding is correct, no problem to mo=
-ve it
->> out of the kernel. If a kernel patch change binding, it is worth for m=
-e to change
->> dts in the kernel too to reflect this change and track this change too=
-=2E
->> My proposal is, let's clean all DTSes in the arm kernel that all platf=
-orm use
->> the same binding where all platforms are just correctly described.
->=20
-> AIUI this split/move isn't intended to change the existing policy, whic=
-h
-> is already that DTS files are supposed to remain compatible across
-> kernel versions and that "flag days" are to be avoided. The split is
-> supposed to make it harder (if not impossible) to accidentally break
-> that policy.
->=20
-> On the other hand I suppose there is an argument to be made for clearin=
-g
-> up the cruft *before* making the split.
->=20
-> Ultimately I think this will be up to Grant & co.
-
-ok.
-
->> The reaching this point I would suggest that for arm, arm-soc maintain=
-ers should
->> keep eyes on any dts binding change and all these changes require ACK =
-from Rob or Grant
->> (like device-tree maintainers).
->=20
-> Yes, once we move onto Phase II I don't expect it will end up being me
-> that is the DTS maintainer -- I expect the maintenance will remain with=
-
-> those who take care of it in linux.git today.
->=20
-> My involvement in Phase I is really just to help out with the transitio=
-n
-> (ulterior motive: the Xen project would also like to use these DTS
-> files...) not to perform a "land grab" or take over maintenance etc. I
-> certainly don't think I am the right person to become the long term
-> maintainer of device-tree.git!
-
-Ok. I see you point right now in connection to different project where
-your Phase I make more sense.
-Our flow, because of a lot of flexibility in fpga word, is more based on =
-DTS which
-we don't have in hand and everyone has to maintain it.
-Starting to using not correct DTSes by another project will be problemati=
-c.
-
-It is good step but it suggests that they can start to use it but one cha=
-nge
-in the kernel binging will caused that it breaks another project.
-
-=46rom my point of view this Phase I is good to do for DTSes which are co=
-rrect.
-Then another project can be sure that they won't change a lot.
-
-I have the same experience with our DTS driven Qemu that it works when de=
-scription
-is stable but till that time it is just pain because you need to be sure
-that all binding changes are also done in Qemu.
-
-Thanks,
-Michal
-
-
-
-
---=20
-Michal Simek, Ing. (M.Eng), OpenPGP -> KeyID: FE3D1F91
-w: www.monstr.eu p: +42-0-721842854
-Maintainer of Linux kernel - Microblaze cpu - http://www.monstr.eu/fdt/
-Maintainer of Linux kernel - Xilinx Zynq ARM architecture
-Microblaze U-BOOT custodian and responsible for u-boot arm zynq platform
-
-
-
-------enig2QBCIIVXWHHJKPXUNXKHP
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iEYEARECAAYFAlGRDd8ACgkQykllyylKDCGFzQCePFBRbg/OcSwBeAYF2oGtJKFW
-1mYAnRe5RQ9LxobNjuSS0LY/Fm4y6PtI
-=k6P2
------END PGP SIGNATURE-----
-
-------enig2QBCIIVXWHHJKPXUNXKHP--
+diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
+index 2a67e9b..24d01c4 100644
+--- a/arch/powerpc/kernel/pci_of_scan.c
++++ b/arch/powerpc/kernel/pci_of_scan.c
+@@ -128,7 +128,7 @@ struct pci_dev *of_create_pci_dev(struct device_node *node,
+ 	const char *type;
+ 	struct pci_slot *slot;
+ 
+-	dev = alloc_pci_dev();
++	dev = pci_alloc_dev(bus);
+ 	if (!dev)
+ 		return NULL;
+ 	type = of_get_property(node, "device_type", NULL);
+@@ -137,7 +137,6 @@ struct pci_dev *of_create_pci_dev(struct device_node *node,
+ 
+ 	pr_debug("    create device, devfn: %x, type: %s\n", devfn, type);
+ 
+-	dev->bus = bus;
+ 	dev->dev.of_node = of_node_get(node);
+ 	dev->dev.parent = bus->bridge;
+ 	dev->dev.bus = &pci_bus_type;
+diff --git a/arch/sparc/kernel/pci.c b/arch/sparc/kernel/pci.c
+index baf4366..e5871fb 100644
+--- a/arch/sparc/kernel/pci.c
++++ b/arch/sparc/kernel/pci.c
+@@ -254,7 +254,7 @@ static struct pci_dev *of_create_pci_dev(struct pci_pbm_info *pbm,
+ 	const char *type;
+ 	u32 class;
+ 
+-	dev = alloc_pci_dev();
++	dev = pci_alloc_dev(bus);
+ 	if (!dev)
+ 		return NULL;
+ 
+@@ -281,7 +281,6 @@ static struct pci_dev *of_create_pci_dev(struct pci_pbm_info *pbm,
+ 		printk("    create device, devfn: %x, type: %s\n",
+ 		       devfn, type);
+ 
+-	dev->bus = bus;
+ 	dev->sysdata = node;
+ 	dev->dev.parent = bus->bridge;
+ 	dev->dev.bus = &pci_bus_type;
+diff --git a/drivers/char/agp/alpha-agp.c b/drivers/char/agp/alpha-agp.c
+index dd84af4..199b8e9 100644
+--- a/drivers/char/agp/alpha-agp.c
++++ b/drivers/char/agp/alpha-agp.c
+@@ -174,7 +174,7 @@ alpha_core_agp_setup(void)
+ 	/*
+ 	 * Build a fake pci_dev struct
+ 	 */
+-	pdev = alloc_pci_dev();
++	pdev = pci_alloc_dev(NULL);
+ 	if (!pdev)
+ 		return -ENOMEM;
+ 	pdev->vendor = 0xffff;
+diff --git a/drivers/char/agp/parisc-agp.c b/drivers/char/agp/parisc-agp.c
+index 94821ab..bf5d247 100644
+--- a/drivers/char/agp/parisc-agp.c
++++ b/drivers/char/agp/parisc-agp.c
+@@ -333,7 +333,7 @@ parisc_agp_setup(void __iomem *ioc_hpa, void __iomem *lba_hpa)
+ 	struct agp_bridge_data *bridge;
+ 	int error = 0;
+ 
+-	fake_bridge_dev = alloc_pci_dev();
++	fake_bridge_dev = pci_alloc_dev(NULL);
+ 	if (!fake_bridge_dev) {
+ 		error = -ENOMEM;
+ 		goto fail;
+diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
+index ee599f2..24134cd 100644
+--- a/drivers/pci/iov.c
++++ b/drivers/pci/iov.c
+@@ -75,18 +75,20 @@ static int virtfn_add(struct pci_dev *dev, int id, int reset)
+ 	struct pci_dev *virtfn;
+ 	struct resource *res;
+ 	struct pci_sriov *iov = dev->sriov;
++	struct pci_bus *bus;
+ 
+-	virtfn = alloc_pci_dev();
++	virtfn = pci_alloc_dev(NULL);
+ 	if (!virtfn)
+ 		return -ENOMEM;
+ 
+ 	mutex_lock(&iov->dev->sriov->lock);
+-	virtfn->bus = virtfn_add_bus(dev->bus, virtfn_bus(dev, id));
+-	if (!virtfn->bus) {
++	bus = virtfn_add_bus(dev->bus, virtfn_bus(dev, id));
++	if (!bus) {
+ 		kfree(virtfn);
+ 		mutex_unlock(&iov->dev->sriov->lock);
+ 		return -ENOMEM;
+ 	}
++	virtfn->bus = pci_bus_get(bus);
+ 	virtfn->devfn = virtfn_devfn(dev, id);
+ 	virtfn->vendor = dev->vendor;
+ 	pci_read_config_word(dev, iov->pos + PCI_SRIOV_VF_DID, &virtfn->device);
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index 4f0bc0a..bc075a3 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -1131,6 +1131,7 @@ static void pci_release_dev(struct device *dev)
+ 	struct pci_dev *pci_dev;
+ 
+ 	pci_dev = to_pci_dev(dev);
++	pci_bus_put(pci_dev->bus);
+ 	pci_release_capabilities(pci_dev);
+ 	pci_release_of_node(pci_dev);
+ 	kfree(pci_dev);
+@@ -1269,11 +1270,10 @@ static struct pci_dev *pci_scan_device(struct pci_bus *bus, int devfn)
+ 	if (!pci_bus_read_dev_vendor_id(bus, devfn, &l, 60*1000))
+ 		return NULL;
+ 
+-	dev = alloc_pci_dev();
++	dev = pci_alloc_dev(bus);
+ 	if (!dev)
+ 		return NULL;
+ 
+-	dev->bus = bus;
+ 	dev->devfn = devfn;
+ 	dev->vendor = l & 0xffff;
+ 	dev->device = (l >> 16) & 0xffff;
+diff --git a/drivers/scsi/megaraid.c b/drivers/scsi/megaraid.c
+index 9504ec0..e1660ca 100644
+--- a/drivers/scsi/megaraid.c
++++ b/drivers/scsi/megaraid.c
+@@ -2025,7 +2025,7 @@ megaraid_abort_and_reset(adapter_t *adapter, Scsi_Cmnd *cmd, int aor)
+ static inline int
+ make_local_pdev(adapter_t *adapter, struct pci_dev **pdev)
+ {
+-	*pdev = alloc_pci_dev();
++	*pdev = pci_alloc_dev(NULL);
+ 
+ 	if( *pdev == NULL ) return -1;
+ 
+-- 
+1.8.1.2
