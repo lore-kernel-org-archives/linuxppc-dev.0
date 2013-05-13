@@ -1,25 +1,23 @@
-Return-Path: <BATV+c4082d03efd24913c683+3550+infradead.org+dwmw2@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:4830:2446:ff00:4687:fcff:fea6:5117])
+Return-Path: <BATV+4abcda8cb0f4326d7808+3550+infradead.org+dwmw2@merlin.srs.infradead.org>
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:4978:20e::2])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 2FADD2C00A7
- for <linuxppc-dev@ozlabs.org>; Mon, 13 May 2013 20:27:42 +1000 (EST)
-Message-ID: <1368440850.24723.32.camel@i7.infradead.org>
+ by ozlabs.org (Postfix) with ESMTPS id 99E542C00A5
+ for <linuxppc-dev@ozlabs.org>; Mon, 13 May 2013 20:33:12 +1000 (EST)
+Message-ID: <1368441187.24723.38.camel@i7.infradead.org>
 Subject: Re: [PATCH] powerpc: provide __bswapdi2
 From: David Woodhouse <dwmw2@infradead.org>
-To: Alan Modra <amodra@gmail.com>
-Date: Mon, 13 May 2013 11:27:30 +0100
-In-Reply-To: <20130513072013.GD5221@bubble.grove.modra.org>
+To: Michael Neuling <mikey@neuling.org>
+Date: Mon, 13 May 2013 11:33:07 +0100
+In-Reply-To: <9813.1368428999@ale.ozlabs.ibm.com>
 References: <1368220707.3378.57.camel@shinybook.infradead.org>
- <20130513164819.1c9331b9@kryten>
- <20130513072013.GD5221@bubble.grove.modra.org>
+ <9813.1368428999@ale.ozlabs.ibm.com>
 Content-Type: multipart/signed; micalg="sha-1";
  protocol="application/x-pkcs7-signature";
- boundary="=-XD7jfcfiRUNPsdKqNadV"
+ boundary="=-kCK4vT79EeEH0yCV35Xt"
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>,
- viro@zeniv.linux.org.uk
+Cc: linuxppc-dev@ozlabs.org, viro@zeniv.linux.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,22 +28,54 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-XD7jfcfiRUNPsdKqNadV
+--=-kCK4vT79EeEH0yCV35Xt
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, 2013-05-13 at 16:50 +0930, Alan Modra wrote:
-> I did a little digging, and it looks like gcc-4.4 will emit __bswapdi2
-> calls.  Support in rs6000.md appeared 2009-06-25.
+On Mon, 2013-05-13 at 17:09 +1000, Michael Neuling wrote:
+>=20
+> This doesn't work for me but the below does:
+ ...
+>=20
+> stolen from GCC -02 output of:
+>   unsigned long long __bswapdi2(unsigned long long x)
 
-That's where it was seen. I don't have anything that ancient any more so
-it didn't show up in my testing, but Al saw it on a Debian system.
+Hm, so was mine:
+
+[dwmw2@i7 ~]$ powerpc64-linux-gnu-gcc -O2 -S -o- bswapdi2.c -m32
+	.file	"bswapdi2.c"
+	.section	".text"
+	.align 2
+	.p2align 4,,15
+	.globl __bswapdi2
+	.type	__bswapdi2, @function
+__bswapdi2:
+	rlwinm 10,4,8,0xffffffff
+	rlwinm 11,3,8,0xffffffff
+	rlwimi 10,4,24,0,7
+	rlwimi 11,3,24,0,7
+	rlwimi 10,4,24,16,23
+	rlwimi 11,3,24,16,23
+	mr 4,11
+	mr 3,10
+	blr
+	.size	__bswapdi2,.-__bswapdi2
+	.ident	"GCC: (GNU) 4.7.2 20121105 (Red Hat 4.7.2-2.aa.20121114svn)"
+
+On Mon, 2013-05-13 at 09:33 +0200, Gabriel Paubert wrote:
+> Actually, I'd swap the two mr instructions to never
+> have an instruction that uses the result from the
+> previous one.=20
+
+Bad GCC. No biscuit.
+
+Should we file a PR?=20
 
 --=20
 David Woodhouse                            Open Source Technology Centre
 David.Woodhouse@intel.com                              Intel Corporation
 
---=-XD7jfcfiRUNPsdKqNadV
+--=-kCK4vT79EeEH0yCV35Xt
 Content-Type: application/x-pkcs7-signature; name="smime.p7s"
 Content-Disposition: attachment; filename="smime.p7s"
 Content-Transfer-Encoding: base64
@@ -139,18 +169,18 @@ bhXkgdT2t1V1bNAxggNvMIIDawIBATCBlDCBjDELMAkGA1UEBhMCSUwxFjAUBgNVBAoTDVN0YXJ0
 Q29tIEx0ZC4xKzApBgNVBAsTIlNlY3VyZSBEaWdpdGFsIENlcnRpZmljYXRlIFNpZ25pbmcxODA2
 BgNVBAMTL1N0YXJ0Q29tIENsYXNzIDEgUHJpbWFyeSBJbnRlcm1lZGlhdGUgQ2xpZW50IENBAgMG
 hc4wCQYFKw4DAhoFAKCCAa8wGAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUx
-DxcNMTMwNTEzMTAyNzMwWjAjBgkqhkiG9w0BCQQxFgQUiHrcRv5viWv3o1+R2sa/bDonf8swgaUG
+DxcNMTMwNTEzMTAzMzA3WjAjBgkqhkiG9w0BCQQxFgQUKwRZaFnSKi3nhKsUAqR+StdfijUwgaUG
 CSsGAQQBgjcQBDGBlzCBlDCBjDELMAkGA1UEBhMCSUwxFjAUBgNVBAoTDVN0YXJ0Q29tIEx0ZC4x
 KzApBgNVBAsTIlNlY3VyZSBEaWdpdGFsIENlcnRpZmljYXRlIFNpZ25pbmcxODA2BgNVBAMTL1N0
 YXJ0Q29tIENsYXNzIDEgUHJpbWFyeSBJbnRlcm1lZGlhdGUgQ2xpZW50IENBAgMGhc4wgacGCyqG
 SIb3DQEJEAILMYGXoIGUMIGMMQswCQYDVQQGEwJJTDEWMBQGA1UEChMNU3RhcnRDb20gTHRkLjEr
 MCkGA1UECxMiU2VjdXJlIERpZ2l0YWwgQ2VydGlmaWNhdGUgU2lnbmluZzE4MDYGA1UEAxMvU3Rh
 cnRDb20gQ2xhc3MgMSBQcmltYXJ5IEludGVybWVkaWF0ZSBDbGllbnQgQ0ECAwaFzjANBgkqhkiG
-9w0BAQEFAASCAQA33x4PeDfGp58CVQTBsuAsyAiWibiT/EKQVnAuoifAPT5D3IsRbxfITwgspVK3
-uGnYLALeyfVNac9yMtGViLXWBLWAUnYHmPu+IM7Wpn02zJ6zZZ+jGqwJk9TVgfG2BA28lKMdcOgg
-9MwUsi0/7uAKtwuLaXXpQTML6GwlM4z1jNDoG4pJRgzSw57KpwigrJuE3B84yWI4USosFoGauaK5
-Vb1YIhzfIpH2x43tuDvG0hi4O1deMLdTWwSW35pdHs+gMQ3yCivLhkOUpPPOknhkbmkit8s/dF6U
-qQVKM31Yv5UrBAI9ZD1/cLQh20+MpcUCb+FgTw7QK483NZ79Sy1hAAAAAAAA
+9w0BAQEFAASCAQAOvXtqkUPDvGic6RbFW4/nN2udmJ/BjwFWppJ9cNribvQapQ47F/L63S8JMk7Z
+EvXpTONylVF30Vt/s34AW0NGJlHwD2xiKbRO+DS1/63qtffn4wgVHosG74WcD0+TrLO+CmIXEP2F
+K9dlVolqRlJO3ARYxHb+rwc8xwbukfyns0I3pS6t+sg5oqPN8TTn3HQCRBixMUMUmLs3E2J5bNZ0
++liXdBByWcKSNJAS8V6S6Mq0a2Np3ctBXfY9LubZ+ubFIwDXbvgLOq/UX+i1K6Tgzd+z8teTkTZ+
+XvhPNGkdtK8r98LrzoQ5BTZckfdZV4XOnzT+AzjYee7Fh3VsoSb4AAAAAAAA
 
 
---=-XD7jfcfiRUNPsdKqNadV--
+--=-kCK4vT79EeEH0yCV35Xt--
