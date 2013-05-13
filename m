@@ -1,22 +1,33 @@
-Return-Path: <geert@linux-m68k.org>
-Received: from winston.telenet-ops.be (winston.telenet-ops.be [195.130.137.75])
- by ozlabs.org (Postfix) with ESMTP id 93F492C00A5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2013 06:47:18 +1000 (EST)
-Received: from gerard.telenet-ops.be (gerard.telenet-ops.be [195.130.132.48])
- by winston.telenet-ops.be (Postfix) with ESMTP id 1FB3E1BCB47
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 May 2013 22:47:15 +0200 (CEST)
-Date: Sun, 12 May 2013 22:47:14 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Sender: geert@linux-m68k.org
-To: Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: Build regressions/improvements in v3.10-rc1 (powerpc)
-In-Reply-To: <alpine.DEB.2.00.1305122239040.5463@ayla.of.borg>
-Message-ID: <alpine.DEB.2.00.1305122246440.5463@ayla.of.borg>
-References: <alpine.DEB.2.00.1305122130270.3789@ayla.of.borg>
- <alpine.DEB.2.00.1305122239040.5463@ayla.of.borg>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Linux/PPC Development <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <anton@au1.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 609812C00A4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2013 11:05:02 +1000 (EST)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <anton@au1.ibm.com>;
+ Mon, 13 May 2013 10:58:43 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 728652BB0023
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2013 11:04:57 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r4D0p0u720906122
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2013 10:51:00 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r4D14v0K020855
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2013 11:04:57 +1000
+Date: Mon, 13 May 2013 11:04:53 +1000
+From: Anton Blanchard <anton@au1.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH] powerpc/kexec: Fix kexec when using VMX optimised memcpy
+Message-ID: <20130513110453.02a2d748@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,29 +37,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 12 May 2013, Geert Uytterhoeven wrote:
-> However, the full list of errors isn't that unmanageable, so I'm following
-> up with a digested list...
 
-arch/powerpc/kernel/fadump.c:408:2: error: 'crashing_cpu' undeclared (first use in this function): 1 errors in 1 logs
-arch/powerpc/kernel/fadump.c:410:2: error: implicit declaration of function 'crash_save_vmcoreinfo' [-Werror=implicit-function-declaration]: 1 errors in 1 logs
-arch/powerpc/kernel/fadump.c:513:22: error: storage size of 'prstatus' isn't known: 1 errors in 1 logs
-arch/powerpc/kernel/fadump.c:520:2: error: implicit declaration of function 'elf_core_copy_kernel_regs' [-Werror=implicit-function-declaration]: 1 errors in 1 logs
-arch/powerpc/kernel/fadump.c:521:36: error: 'KEXEC_CORE_NOTE_NAME' undeclared (first use in this function): 1 errors in 1 logs
-arch/powerpc/kernel/fadump.c:624:49: error: 'note_buf_t' undeclared (first use in this function): 1 errors in 1 logs
-arch/powerpc/kernel/fadump.c:872:2: error: implicit declaration of function 'paddr_vmcoreinfo_note' [-Werror=implicit-function-declaration]: 1 errors in 1 logs
-arch/powerpc/kernel/fadump.c:874:18: error: 'vmcoreinfo_max_size' undeclared (first use in this function): 1 errors in 1 logs
-arch/powerpc/platforms/cell/spufs/inode.c:623:16: error: incompatible types when assigning to type 'kuid_t' from type 'int': 1 errors in 1 logs
-arch/powerpc/platforms/cell/spufs/inode.c:628:16: error: incompatible types when assigning to type 'kgid_t' from type 'int': 1 errors in 1 logs
-	v3.10-rc1/powerpc/powerpc-randconfig
+commit b3f271e86e5a (powerpc: POWER7 optimised memcpy using VMX and
+enhanced prefetch) uses VMX when it is safe to do so (ie not in
+interrupt). It also looks at the task struct to decide if we have to
+save the current tasks' VMX state.
 
-Gr{oetje,eeting}s,
+kexec calls memcpy() at a point where the task struct may have been
+overwritten by the new kexec segments. If it has been overwritten
+then when memcpy -> enable_altivec looks up current->thread.regs->msr
+we get a cryptic oops or lockup.
 
-						Geert
+I also notice we aren't initialising thread_info->cpu, which means
+smp_processor_id is broken. Fix that too.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Signed-off-by: Anton Blanchard <anton@samba.org>
+Cc: <stable@vger.kernel.org> # 3.6+
+---
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Index: b/arch/powerpc/kernel/machine_kexec_64.c
+===================================================================
+--- a/arch/powerpc/kernel/machine_kexec_64.c
++++ b/arch/powerpc/kernel/machine_kexec_64.c
+@@ -17,6 +17,7 @@
+ #include <linux/errno.h>
+ #include <linux/kernel.h>
+ #include <linux/cpu.h>
++#include <linux/hardirq.h>
+ 
+ #include <asm/page.h>
+ #include <asm/current.h>
+@@ -335,10 +338,13 @@ void default_machine_kexec(struct kimage
+ 	pr_debug("kexec: Starting switchover sequence.\n");
+ 
+ 	/* switch to a staticly allocated stack.  Based on irq stack code.
++	 * We setup preempt_count to avoid using VMX in memcpy.
+ 	 * XXX: the task struct will likely be invalid once we do the copy!
+ 	 */
+ 	kexec_stack.thread_info.task = current_thread_info()->task;
+ 	kexec_stack.thread_info.flags = 0;
++	kexec_stack.thread_info.preempt_count = HARDIRQ_OFFSET;
++	kexec_stack.thread_info.cpu = current_thread_info()->cpu;
+ 
+ 	/* We need a static PACA, too; copy this CPU's PACA over and switch to
+ 	 * it.  Also poison per_cpu_offset to catch anyone using non-static
