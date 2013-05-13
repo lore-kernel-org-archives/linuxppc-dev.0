@@ -1,22 +1,34 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 6CAAF2C0092
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2013 15:58:01 +1000 (EST)
-Message-ID: <1368424667.19924.26.camel@pasglop>
-Subject: Re: [RFC PATCH v3 2/5] powerpc: Exception hooks for context
- tracking subsystem
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Li Zhong <zhong@linux.vnet.ibm.com>
-Date: Mon, 13 May 2013 15:57:47 +1000
-In-Reply-To: <1368422493-9831-3-git-send-email-zhong@linux.vnet.ibm.com>
-References: <1368422493-9831-1-git-send-email-zhong@linux.vnet.ibm.com>
- <1368422493-9831-3-git-send-email-zhong@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: fweisbec@gmail.com, linux-kernel@vger.kernel.org, paulus@samba.org,
- paulmck@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Return-Path: <viresh.kumar@linaro.org>
+Received: from mail-ob0-x22c.google.com (mail-ob0-x22c.google.com
+ [IPv6:2607:f8b0:4003:c01::22c])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 064EC2C009E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2013 16:04:20 +1000 (EST)
+Received: by mail-ob0-f172.google.com with SMTP id fb19so4983082obc.17
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 May 2013 23:04:16 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <CAKohpo=SFauMyczEnxO_p_KQVQeznL+0V-FmLDtGmzL1Uv2iuA@mail.gmail.com>
+References: <cover.1365079581.git.viresh.kumar@linaro.org>
+ <027e8f1d4ac8de6351115f15a408431558510abb.1365079581.git.viresh.kumar@linaro.org>
+ <CAKohpokGkZ9m0v1QaoXEv1m0mZqY70adWpXf3edQGmZnToRRcg@mail.gmail.com>
+ <CAKohpokpiw3zS32oDL+T09ToOQxc28w=2R2up5T3h3c2Agc0wg@mail.gmail.com>
+ <CAKohpo=SFauMyczEnxO_p_KQVQeznL+0V-FmLDtGmzL1Uv2iuA@mail.gmail.com>
+Date: Mon, 13 May 2013 11:34:16 +0530
+Message-ID: <CAKohponBfXsy21RTik+jWMukL_VnDNXOL7xmj4sEBF3HEBXqpQ@mail.gmail.com>
+Subject: Re: [PATCH 17/18] cpufreq: powerpc: move cpufreq driver to
+ drivers/cpufreq
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ deepthi@linux.vnet.ibm.com
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: robin.randhawa@arm.com, linux-pm@vger.kernel.org,
+ Viresh Kumar <viresh.kumar@linaro.org>, patches@linaro.org,
+ Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org,
+ rjw@sisk.pl, Steve.Bannister@arm.com, Paul Mackerras <paulus@samba.org>,
+ Olof Johansson <olof@lixom.net>, arvind.chauhan@arm.com,
+ linuxppc-dev@lists.ozlabs.org, linaro-kernel@lists.linaro.org,
+ charles.garcia-tobin@arm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,230 +38,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-05-13 at 13:21 +0800, Li Zhong wrote:
->  	int recover = 0;
-> +	enum ctx_state prev_state;
-> +
-> +	prev_state = exception_enter();
+On 22 April 2013 12:19, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 9 April 2013 14:05, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> On 5 April 2013 12:16, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>> On 4 April 2013 18:24, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>>> This patch moves cpufreq driver of powerpc platform to drivers/cpufreq.
+>>>>
+>>>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>>>> Cc: Paul Mackerras <paulus@samba.org>
+>>>> Cc: Olof Johansson <olof@lixom.net>
+>>>> Cc: linuxppc-dev@lists.ozlabs.org
+>>>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>>> ---
+>>>> Compile Tested only.
+>>>>
+>>>>  arch/powerpc/platforms/Kconfig                     | 31 ----------------------
+>>>>  arch/powerpc/platforms/pasemi/Makefile             |  1 -
+>>>>  arch/powerpc/platforms/powermac/Makefile           |  2 --
+>>>>  drivers/cpufreq/Kconfig.powerpc                    | 26 ++++++++++++++++++
+>>>>  drivers/cpufreq/Makefile                           |  3 +++
+>>>>  .../cpufreq.c => drivers/cpufreq/pasemi-cpufreq.c  |  0
+>>>>  .../cpufreq/pmac32-cpufreq.c                       |  0
+>>>>  .../cpufreq/pmac64-cpufreq.c                       |  0
+>>>>  8 files changed, 29 insertions(+), 34 deletions(-)
+>>>>  rename arch/powerpc/platforms/pasemi/cpufreq.c => drivers/cpufreq/pasemi-cpufreq.c (100%)
+>>>>  rename arch/powerpc/platforms/powermac/cpufreq_32.c => drivers/cpufreq/pmac32-cpufreq.c (100%)
+>>>>  rename arch/powerpc/platforms/powermac/cpufreq_64.c => drivers/cpufreq/pmac64-cpufreq.c (100%)
+>>>
+>>> Hi Deepthi,
+>>>
+>>> Can you help testing this please?
+>>
+>> Ping!!
+>
+> Ping!!
 
-Please make it nicer:
+Hi Benjamin,
 
-	enum ctx_state prev_state = exception_enter();
-	int recover = 0;
- 
->  	__get_cpu_var(irq_stat).mce_exceptions++;
->  
-> @@ -683,7 +687,7 @@ void machine_check_exception(struct pt_regs *regs)
->  		recover = cur_cpu_spec->machine_check(regs);
->  
->  	if (recover > 0)
-> -		return;
-> +		goto exit;
-
-I'm no fan of "exit" as a label as it's otherwise a libc function (I
-know there is no relationship here but I just find that annoying).
-
-I usually use "bail"
-
->  #if defined(CONFIG_8xx) && defined(CONFIG_PCI)
->  	/* the qspan pci read routines can cause machine checks -- Cort
-> @@ -693,20 +697,23 @@ void machine_check_exception(struct pt_regs *regs)
->  	 * -- BenH
->  	 */
->  	bad_page_fault(regs, regs->dar, SIGBUS);
-> -	return;
-> +	goto exit;
->  #endif
->  
->  	if (debugger_fault_handler(regs))
-> -		return;
-> +		goto exit;
->  
->  	if (check_io_access(regs))
-> -		return;
-> +		goto exit;
->  
->  	die("Machine check", regs, SIGBUS);
->  
->  	/* Must die if the interrupt is not recoverable */
->  	if (!(regs->msr & MSR_RI))
->  		panic("Unrecoverable Machine check");
-> +
-> +exit:
-> +	exception_exit(prev_state);
->  }
->  
->  void SMIException(struct pt_regs *regs)
-> @@ -716,20 +723,31 @@ void SMIException(struct pt_regs *regs)
->  
->  void unknown_exception(struct pt_regs *regs)
->  {
-> +	enum ctx_state prev_state;
-> +	prev_state = exception_enter();
-> +
-
-Same cosmetic comment for all other cases
-
- ..../...
-
->  #include <asm/firmware.h>
->  #include <asm/page.h>
-> @@ -193,8 +194,8 @@ static int mm_fault_error(struct pt_regs *regs, unsigned long addr, int fault)
->   * The return value is 0 if the fault was handled, or the signal
->   * number if this is a kernel fault that can't be handled here.
->   */
-> -int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
-> -			    unsigned long error_code)
-> +static int __kprobes __do_page_fault(struct pt_regs *regs,
-> +				unsigned long address, unsigned long error_code)
->  {
->  	struct vm_area_struct * vma;
->  	struct mm_struct *mm = current->mm;
-> @@ -475,6 +476,17 @@ bad_area_nosemaphore:
->  
->  }
->  
-> +int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
-> +			    unsigned long error_code)
-> +{
-> +	int ret;
-> +	enum ctx_state prev_state;
-> +	prev_state = exception_enter();
-> +	ret = __do_page_fault(regs, address, error_code);
-> +	exception_exit(prev_state);
-> +	return ret;
-> +}
-
-Any reason why you didn't use the same wrapping trick in traps.c ? I'd
-rather we stay consistent in the way we do things between the two files.
-
->  /*
->   * bad_page_fault is called when we have a bad access from the kernel.
->   * It is called from the DSI and ISI handlers in head.S and from some
-> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-> index 88ac0ee..d92fb26 100644
-> --- a/arch/powerpc/mm/hash_utils_64.c
-> +++ b/arch/powerpc/mm/hash_utils_64.c
-> @@ -33,6 +33,7 @@
->  #include <linux/init.h>
->  #include <linux/signal.h>
->  #include <linux/memblock.h>
-> +#include <linux/context_tracking.h>
->  
->  #include <asm/processor.h>
->  #include <asm/pgtable.h>
-> @@ -962,6 +963,9 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
->  	const struct cpumask *tmp;
->  	int rc, user_region = 0, local = 0;
->  	int psize, ssize;
-> +	enum ctx_state prev_state;
-> +
-> +	prev_state = exception_enter();
->  
->  	DBG_LOW("hash_page(ea=%016lx, access=%lx, trap=%lx\n",
->  		ea, access, trap);
-> @@ -973,7 +977,8 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
->  		mm = current->mm;
->  		if (! mm) {
->  			DBG_LOW(" user region with no mm !\n");
-> -			return 1;
-> +			rc = 1;
-> +			goto exit;
->  		}
->  		psize = get_slice_psize(mm, ea);
->  		ssize = user_segment_size(ea);
-> @@ -992,19 +997,23 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
->  		/* Not a valid range
->  		 * Send the problem up to do_page_fault 
->  		 */
-> -		return 1;
-> +		rc = 1;
-> +		goto exit;
->  	}
->  	DBG_LOW(" mm=%p, mm->pgdir=%p, vsid=%016lx\n", mm, mm->pgd, vsid);
->  
->  	/* Bad address. */
->  	if (!vsid) {
->  		DBG_LOW("Bad address!\n");
-> -		return 1;
-> +		rc = 1;
-> +		goto exit;
->  	}
->  	/* Get pgdir */
->  	pgdir = mm->pgd;
-> -	if (pgdir == NULL)
-> -		return 1;
-> +	if (pgdir == NULL) {
-> +		rc = 1;
-> +		goto exit;
-> +	}
->  
->  	/* Check CPU locality */
->  	tmp = cpumask_of(smp_processor_id());
-> @@ -1027,7 +1036,8 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
->  	ptep = find_linux_pte_or_hugepte(pgdir, ea, &hugeshift);
->  	if (ptep == NULL || !pte_present(*ptep)) {
->  		DBG_LOW(" no PTE !\n");
-> -		return 1;
-> +		rc = 1;
-> +		goto exit;
->  	}
->  
->  	/* Add _PAGE_PRESENT to the required access perm */
-> @@ -1038,13 +1048,16 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
->  	 */
->  	if (access & ~pte_val(*ptep)) {
->  		DBG_LOW(" no access !\n");
-> -		return 1;
-> +		rc = 1;
-> +		goto exit;
->  	}
->  
->  #ifdef CONFIG_HUGETLB_PAGE
-> -	if (hugeshift)
-> -		return __hash_page_huge(ea, access, vsid, ptep, trap, local,
-> +	if (hugeshift) {
-> +		rc = __hash_page_huge(ea, access, vsid, ptep, trap, local,
->  					ssize, hugeshift, psize);
-> +		goto exit;
-> +	}
->  #endif /* CONFIG_HUGETLB_PAGE */
->  
->  #ifndef CONFIG_PPC_64K_PAGES
-> @@ -1124,6 +1137,8 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
->  		pte_val(*(ptep + PTRS_PER_PTE)));
->  #endif
->  	DBG_LOW(" -> rc=%d\n", rc);
-> +exit:
-> +	exception_exit(prev_state);
->  	return rc;
->  }
->  EXPORT_SYMBOL_GPL(hash_page);
-> @@ -1259,6 +1274,9 @@ void flush_hash_range(unsigned long number, int local)
->   */
->  void low_hash_fault(struct pt_regs *regs, unsigned long address, int rc)
->  {
-> +	enum ctx_state prev_state;
-> +	prev_state = exception_enter();
-> +
->  	if (user_mode(regs)) {
->  #ifdef CONFIG_PPC_SUBPAGE_PROT
->  		if (rc == -2)
-> @@ -1268,6 +1286,8 @@ void low_hash_fault(struct pt_regs *regs, unsigned long address, int rc)
->  			_exception(SIGBUS, regs, BUS_ADRERR, address);
->  	} else
->  		bad_page_fault(regs, address, SIGBUS);
-> +
-> +	exception_exit(prev_state);
->  }
-
-So the above comes from the return of hash page following an error, it's
-technically the same exception. I don't know if that matters however.
-Also some exceptions are directly handled in asm such as SLB misses,
-again I don't know if that matters as I'm not familiar with what the
-context tracing code is actually doing.
- 
->  long hpte_insert_repeating(unsigned long hash, unsigned long vpn,
-
-Cheers,
-Ben.
+Hope you are back from your vacations. Can you give it a try now?
