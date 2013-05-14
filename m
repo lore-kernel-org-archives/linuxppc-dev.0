@@ -2,31 +2,27 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id CAD622C009E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2013 10:33:16 +1000 (EST)
-Message-ID: <1368577954.31689.63.camel@pasglop>
-Subject: Re: [PATCH v5, part4 31/41] mm/ppc: prepare for removing
- num_physpages and simplify mem_init()
+ by ozlabs.org (Postfix) with ESMTPS id 5DCD22C00C5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2013 10:43:49 +1000 (EST)
+Message-ID: <1368574202.31689.54.camel@pasglop>
+Subject: Re: [RFC PATCH v2, part 2 09/18] PCI, PPC: use hotplug-safe
+ iterators to walk PCI buses
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Jiang Liu <liuj97@gmail.com>
-Date: Wed, 15 May 2013 10:32:34 +1000
-In-Reply-To: <1368028298-7401-32-git-send-email-jiang.liu@huawei.com>
-References: <1368028298-7401-1-git-send-email-jiang.liu@huawei.com>
- <1368028298-7401-32-git-send-email-jiang.liu@huawei.com>
+Date: Wed, 15 May 2013 09:30:02 +1000
+In-Reply-To: <1368550322-1045-9-git-send-email-jiang.liu@huawei.com>
+References: <1368550322-1045-1-git-send-email-jiang.liu@huawei.com>
+ <1368550322-1045-9-git-send-email-jiang.liu@huawei.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linux-arch@vger.kernel.org,
- James Bottomley <James.Bottomley@HansenPartnership.com>,
- David Howells <dhowells@redhat.com>, Jiang Liu <jiang.liu@huawei.com>,
- Wen Congyang <wency@cn.fujitsu.com>, linux-mm@kvack.org,
- Mark Salter <msalter@redhat.com>, linux-kernel@vger.kernel.org,
- Michal Hocko <mhocko@suse.cz>, Minchan Kim <minchan@kernel.org>,
- Paul Mackerras <paulus@samba.org>, Mel Gorman <mgorman@suse.de>,
- David Rientjes <rientjes@google.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
- KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
- Jianguo Wu <wujianguo@huawei.com>
+Cc: Toshi Kani <toshi.kani@hp.com>, Jiang Liu <jiang.liu@huawei.com>,
+ Myron Stowe <myron.stowe@redhat.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rjw@sisk.pl>,
+ Gu Zheng <guz.fnst@cn.fujitsu.com>, Yijing Wang <wangyijing@huawei.com>,
+ Bill Pemberton <wfp5p@virginia.edu>, Paul Mackerras <paulus@samba.org>,
+ linux-pci@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>,
+ Yinghai Lu <yinghai@kernel.org>, Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,121 +32,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-05-08 at 23:51 +0800, Jiang Liu wrote:
-> Prepare for removing num_physpages and simplify mem_init().
+On Wed, 2013-05-15 at 00:51 +0800, Jiang Liu wrote:
+> Enhance PPC architecture specific code to use hotplug-safe iterators
+> to walk PCI buses.
 
-No objection, I haven't had a chance to actually build/boot test though.
+I was about to ack it but then I saw:
 
-BTW. A recommended way of doing so which is pretty easy even if you
-don't have access to powerpc hardware nowadays is to use
-qemu-system-ppc64 with -M pseries.
-
-You can find cross compilers for the kernel on kernel.org and you can
-feed qemu with some distro installer ISO.
-
-Cheers,
-Ben.
-
-> Signed-off-by: Jiang Liu <jiang.liu@huawei.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-kernel@vger.kernel.org
-> ---
->  arch/powerpc/mm/mem.c |   56 +++++++++++--------------------------------------
->  1 file changed, 12 insertions(+), 44 deletions(-)
-> 
-> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-> index b890245..4e24f1c 100644
-> --- a/arch/powerpc/mm/mem.c
-> +++ b/arch/powerpc/mm/mem.c
-> @@ -299,46 +299,27 @@ void __init paging_init(void)
->  
->  void __init mem_init(void)
+> diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
+> index 51a133a..a41c6dd 100644
+> --- a/arch/powerpc/kernel/pci_64.c
+> +++ b/arch/powerpc/kernel/pci_64.c
+> @@ -208,7 +208,6 @@ long sys_pciconfig_iobase(long which, unsigned long in_bus,
+>  			  unsigned long in_devfn)
 >  {
-> -#ifdef CONFIG_NEED_MULTIPLE_NODES
-> -	int nid;
-> -#endif
-> -	pg_data_t *pgdat;
-> -	unsigned long i;
-> -	struct page *page;
-> -	unsigned long reservedpages = 0, codesize, initsize, datasize, bsssize;
+>  	struct pci_controller* hose;
+> -	struct list_head *ln;
+>  	struct pci_bus *bus = NULL;
+>  	struct device_node *hose_node;
+>  
+> @@ -229,18 +228,16 @@ long sys_pciconfig_iobase(long which, unsigned long in_bus,
+>  	/* That syscall isn't quite compatible with PCI domains, but it's
+>  	 * used on pre-domains setup. We return the first match
+>  	 */
 > -
->  #ifdef CONFIG_SWIOTLB
->  	swiotlb_init(0);
->  #endif
->  
-> -	num_physpages = memblock_phys_mem_size() >> PAGE_SHIFT;
->  	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE);
->  
->  #ifdef CONFIG_NEED_MULTIPLE_NODES
-> -        for_each_online_node(nid) {
-> -		if (NODE_DATA(nid)->node_spanned_pages != 0) {
-> -			printk("freeing bootmem node %d\n", nid);
-> -			free_all_bootmem_node(NODE_DATA(nid));
-> -		}
-> +	{
-> +		pg_data_t *pgdat;
-> +
-> +		for_each_online_pgdat(pgdat)
-> +			if (pgdat->node_spanned_pages != 0) {
-> +				printk("freeing bootmem node %d\n",
-> +					pgdat->node_id);
-> +				free_all_bootmem_node(pgdat);
-> +			}
->  	}
->  #else
->  	max_mapnr = max_pfn;
->  	free_all_bootmem();
->  #endif
-> -	for_each_online_pgdat(pgdat) {
-> -		for (i = 0; i < pgdat->node_spanned_pages; i++) {
-> -			if (!pfn_valid(pgdat->node_start_pfn + i))
-> -				continue;
-> -			page = pgdat_page_nr(pgdat, i);
-> -			if (PageReserved(page))
-> -				reservedpages++;
-> -		}
+> -	for (ln = pci_root_buses.next; ln != &pci_root_buses; ln = ln->next) {
+> -		bus = pci_bus_b(ln);
+> -		if (in_bus >= bus->number && in_bus <= bus->busn_res.end)
+> +	for_each_pci_root_bus(bus)
+> +		if (in_bus >= bus->number && in_bus <= bus->busn_res.end &&
+> +		    bus->dev.of_node)
+>  			break;
+> -		bus = NULL;
 > -	}
-> -
-> -	codesize = (unsigned long)&_sdata - (unsigned long)&_stext;
-> -	datasize = (unsigned long)&_edata - (unsigned long)&_sdata;
-> -	initsize = (unsigned long)&__init_end - (unsigned long)&__init_begin;
-> -	bsssize = (unsigned long)&__bss_stop - (unsigned long)&__bss_start;
->  
->  #ifdef CONFIG_HIGHMEM
->  	{
-> @@ -348,13 +329,9 @@ void __init mem_init(void)
->  		for (pfn = highmem_mapnr; pfn < max_mapnr; ++pfn) {
->  			phys_addr_t paddr = (phys_addr_t)pfn << PAGE_SHIFT;
->  			struct page *page = pfn_to_page(pfn);
-> -			if (memblock_is_reserved(paddr))
-> -				continue;
-> -			free_highmem_page(page);
-> -			reservedpages--;
-> +			if (!memblock_is_reserved(paddr))
-> +				free_highmem_page(page);
->  		}
-> -		printk(KERN_DEBUG "High memory: %luk\n",
-> -		       totalhigh_pages << (PAGE_SHIFT-10));
->  	}
->  #endif /* CONFIG_HIGHMEM */
->  
-> @@ -367,16 +344,7 @@ void __init mem_init(void)
->  		(mfspr(SPRN_TLB1CFG) & TLBnCFG_N_ENTRY) - 1;
->  #endif
->  
-> -	printk(KERN_INFO "Memory: %luk/%luk available (%luk kernel code, "
-> -	       "%luk reserved, %luk data, %luk bss, %luk init)\n",
-> -		nr_free_pages() << (PAGE_SHIFT-10),
-> -		num_physpages << (PAGE_SHIFT-10),
-> -		codesize >> 10,
-> -		reservedpages << (PAGE_SHIFT-10),
-> -		datasize >> 10,
-> -		bsssize >> 10,
-> -		initsize >> 10);
-> -
-> +	mem_init_print_info(NULL);
->  #ifdef CONFIG_PPC32
->  	pr_info("Kernel virtual memory layout:\n");
->  	pr_info("  * 0x%08lx..0x%08lx  : fixmap\n", FIXADDR_START, FIXADDR_TOP);
+> -	if (bus == NULL || bus->dev.of_node == NULL)
+> +	if (bus == NULL)
+>  		return -ENODEV;
+
+You just removed the NULL check for the of_node field...
+ 
+>  	hose_node = bus->dev.of_node;
+>  	hose = PCI_DN(hose_node)->phb;
+
+Which is dereferrenced here.	
+
+> +	pci_bus_put(bus);
+
+On the other hand, the whole thing can probably be using
+pci_bus_to_host() instead.... the above code is bitrotted.
+
+>  	switch (which) {
+>  	case IOBASE_BRIDGE_NUMBER:
+ 
+Cheeers,
+Ben.
