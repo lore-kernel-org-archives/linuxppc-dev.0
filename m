@@ -1,25 +1,32 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail-pd0-f172.google.com (mail-pd0-f172.google.com
- [209.85.192.172])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0FED92C00B0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2013 12:03:28 +1000 (EST)
-Received: by mail-pd0-f172.google.com with SMTP id 6so4830429pdd.31
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 May 2013 19:03:26 -0700 (PDT)
-Date: Tue, 14 May 2013 10:03:17 +0800
-From: Kevin Hao <haokexin@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 1/4] powerpc/book3e: introduce external_input_edge
- exception handler for 64bit kernel
-Message-ID: <20130514020317.GB21564@pek-khao-d1.corp.ad.wrs.com>
-References: <1368314784-971-2-git-send-email-haokexin@gmail.com>
- <1368460037.8202.8@snotra>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="MfFXiAuoTsnnDAfZ"
-In-Reply-To: <1368460037.8202.8@snotra>
-Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <zhong@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D86232C00B9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2013 12:16:56 +1000 (EST)
+Received: from /spool/local
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
+ Tue, 14 May 2013 07:40:56 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 41B4C125804F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2013 07:48:40 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r4E2Gix56947082
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2013 07:46:44 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r4E2GlW6022431
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2013 02:16:48 GMT
+From: Li Zhong <zhong@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Subject: [RFC PATCH v4 0/5] powerpc: Support context tracking for Power pSeries
+Date: Tue, 14 May 2013 10:16:39 +0800
+Message-Id: <1368497804-21706-1-git-send-email-zhong@linux.vnet.ibm.com>
+Cc: Li Zhong <zhong@linux.vnet.ibm.com>, fweisbec@gmail.com, paulus@samba.org,
+ paulmck@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,66 +36,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+These patches try to support context tracking for Power arch, beginning with
+64-bit pSeries. The codes are ported from that of the x86_64, and in each
+patch, I listed the corresponding patch for x86.
 
---MfFXiAuoTsnnDAfZ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+v4:
+fixed some cosmetic issues suggested by Ben.
 
-On Mon, May 13, 2013 at 10:47:17AM -0500, Scott Wood wrote:
-> On 05/11/2013 06:26:21 PM, Kevin Hao wrote:
-> >In the external proxy facility mode, the interrupt is automatically
-> >acknowledged with the same effect as reading the IACK register. So
-> >this makes external input interrupt more like edge sensitive. That
-> >means we can leave the irq hard enabled when it occurs with irq soft
-> >disabled just like the dec and doorbell interrupt. But the External
-> >Proxy Register(EPR) is only considered valid from the time that the
-> >external interrupt occurs until MSR[EE] is set to 1. So we have to
-> >save the EPR before irq hard enabled.
->=20
-> Is it really worth it?
+Li Zhong (5):
+  powerpc: Syscall hooks for context tracking subsystem
+  powerpc: Exception hooks for context tracking subsystem
+  powerpc: Exit user context on notify resume
+  powerpc: Use the new schedule_user API on userspace preemption
+  powerpc: select HAVE_CONTEXT_TRACKING for pSeries
 
-Maybe. :-)
-Compare with the current kernel:
-  * The overhead is that we need additional load & store the contents of
-    the EPR from/to PACA.
-  * The bonus is we keep the irq hard enabled when a external interrupt occ=
-urs
-    with irq soft-disabled. As I know we should leave the irq hard enabled =
-as
-    much as possible. This is also the primary reason that we introduce the
-    Lazy EE.
+ arch/powerpc/include/asm/context_tracking.h |   10 ++++
+ arch/powerpc/include/asm/thread_info.h      |    7 ++-
+ arch/powerpc/kernel/entry_64.S              |    3 +-
+ arch/powerpc/kernel/ptrace.c                |    5 ++
+ arch/powerpc/kernel/signal.c                |    5 ++
+ arch/powerpc/kernel/traps.c                 |   80 +++++++++++++++++++--------
+ arch/powerpc/mm/fault.c                     |   41 +++++++++-----
+ arch/powerpc/mm/hash_utils_64.c             |   36 +++++++++---
+ arch/powerpc/platforms/pseries/Kconfig      |    1 +
+ 9 files changed, 140 insertions(+), 48 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/context_tracking.h
 
->  Are you having a real-world problem with
-> profilability as things stand, that this resolves?
-
-No.=20
-
->  We should
-> already be no worse off than non-external-proxy hardware...
-
-Yes, I agree. But we can leverage the advantage of external proxy and
-make it even more better.
-
-Thanks,
-Kevin
-
->=20
-> -Scott
-
---MfFXiAuoTsnnDAfZ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQEcBAEBAgAGBQJRkZtlAAoJEJNY7TDerrFx108H/2K4/0cE9S90o1iCIbob+GUr
-+u6Ck3qPkNYRYJxChn4vaDuFWpApTzb+HELt0vsFAJVZDT/fTgzjhLrCRvFF8LkK
-pAfs9X8GlSSc1EpXnLzizo6xdrMEvUwvkteEJLahqvZ4fkR+UZO4AtRtRfdXh3fD
-1BdO5tjT1xKFWLXvA+AHDLfeWYH8n8uV+3O6dB7iBagy/nAVanbTynBZ9O6TpIvU
-eI/MZqLQ6U+Tz2O6gupKiu8c+bZvKZIIx1IVHK/TuZRQmwZ0PUJ6axReWEZfl8EM
-YnztDgW3TfNPotuUsDWP1HnLXbjI4jAmMC34AWx1QpU+Gzie10dQjwONS6s18Sc=
-=Rc8b
------END PGP SIGNATURE-----
-
---MfFXiAuoTsnnDAfZ--
+-- 
+1.7.9.5
