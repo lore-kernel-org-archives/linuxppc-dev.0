@@ -1,26 +1,18 @@
-Return-Path: <B40534@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7926B2C00B3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2013 19:03:39 +1000 (EST)
-From: Wang Dongsheng-B40534 <B40534@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: RE: [PATCH v3 1/4] powerpc/mpic: add irq_set_wake support
-Date: Tue, 14 May 2013 09:03:53 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259F2AFDB@039-SN2MPN1-022.039d.mgd.msft.net>
-References: <1365474152-21524-1-git-send-email-dongsheng.wang@freescale.com>
- <ABB05CD9C9F68C46A5CEDC7F15439259EE77D8@039-SN2MPN1-021.039d.mgd.msft.net>
- <1366155021.23030.24@snotra>
- <ABB05CD9C9F68C46A5CEDC7F15439259F2581C@039-SN2MPN1-022.039d.mgd.msft.net>
- <1368421223.19924.16.camel@pasglop>
-In-Reply-To: <1368421223.19924.16.camel@pasglop>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 9E4312C00A4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2013 19:58:06 +1000 (EST)
+Message-ID: <1368525476.31689.29.camel@pasglop>
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Tue, 14 May 2013 19:57:56 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,61 +22,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-VGhhbmtzIGJlbi4gOikNCg0KLSBkb25nc2hlbmcuDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdl
-LS0tLS0NCj4gRnJvbTogQmVuamFtaW4gSGVycmVuc2NobWlkdCBbbWFpbHRvOmJlbmhAa2VybmVs
-LmNyYXNoaW5nLm9yZ10NCj4gU2VudDogTW9uZGF5LCBNYXkgMTMsIDIwMTMgMTowMCBQTQ0KPiBU
-bzogV2FuZyBEb25nc2hlbmctQjQwNTM0DQo+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJz
-Lm9yZzsgV29vZCBTY290dC1CMDc0MjE7DQo+IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmcNCj4g
-U3ViamVjdDogUmU6IFtQQVRDSCB2MyAxLzRdIHBvd2VycGMvbXBpYzogYWRkIGlycV9zZXRfd2Fr
-ZSBzdXBwb3J0DQo+IA0KPiBPbiBNb24sIDIwMTMtMDUtMTMgYXQgMDQ6MjUgKzAwMDAsIFdhbmcg
-RG9uZ3NoZW5nLUI0MDUzNCB3cm90ZToNCj4gPiBIaSBCZW5qYW1pbiwNCj4gPg0KPiA+IENvdWxk
-IHlvdSBhcHBseSB0aGVzZSBwYXRjaGVzPw0KPiANCj4gSSdsbCBoYXZlIGEgbG9vaywgSSB3YXMg
-YXNzdW1pbmcgS3VtYXIgd291bGQgdGFrZSB0aGVtIGJ1dCBzaW5jZSBub3QgSSdsbA0KPiBxdWV1
-ZSB0aGVtIHVwLg0KPiANCj4gQ2hlZXJzLA0KPiBCZW4uDQo+IA0KPiA+IFNjb3R0IGFscmVhZHkg
-QUNLLg0KPiA+DQo+ID4gW3YzLDEvNF0gcG93ZXJwYy9tcGljOiBhZGQgaXJxX3NldF93YWtlIHN1
-cHBvcnQNCj4gPiBodHRwOi8vcGF0Y2h3b3JrLm96bGFicy5vcmcvcGF0Y2gvMjM0OTM0Lw0KPiA+
-DQo+ID4gW3YzLDIvNF0gcG93ZXJwYy9tcGljOiBhZGQgZ2xvYmFsIHRpbWVyIHN1cHBvcnQNCj4g
-PiBodHRwOi8vcGF0Y2h3b3JrLm96bGFicy5vcmcvcGF0Y2gvMjM0OTM1Lw0KPiA+DQo+ID4gW3Yz
-LDMvNF0gcG93ZXJwYy9tcGljOiBjcmVhdGUgbXBpYyBzdWJzeXN0ZW0gb2JqZWN0DQo+ID4gaHR0
-cDovL3BhdGNod29yay5vemxhYnMub3JnL3BhdGNoLzIzNDkzNi8NCj4gPg0KPiA+IFt2Myw0LzRd
-IHBvd2VycGMvZnNsOiBhZGQgTVBJQyB0aW1lciB3YWtldXAgc3VwcG9ydA0KPiA+IGh0dHA6Ly9w
-YXRjaHdvcmsub3psYWJzLm9yZy9wYXRjaC8yMzQ5MzcvDQo+ID4NCj4gPiBUaGFua3MuDQo+ID4N
-Cj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBXYW5nIERvbmdz
-aGVuZy1CNDA1MzQNCj4gPiA+IFNlbnQ6IEZyaWRheSwgTWF5IDAzLCAyMDEzIDk6NTQgQU0NCj4g
-PiA+IFRvOiAnZ2FsYWtAa2VybmVsLmNyYXNoaW5nLm9yZycNCj4gPiA+IENjOiAnbGludXhwcGMt
-ZGV2QGxpc3RzLm96bGFicy5vcmcnOyBXb29kIFNjb3R0LUIwNzQyMTsNCj4gPiA+ICdiZW5oQGtl
-cm5lbC5jcmFzaGluZy5vcmcnDQo+ID4gPiBTdWJqZWN0OiBSRTogW1BBVENIIHYzIDEvNF0gcG93
-ZXJwYy9tcGljOiBhZGQgaXJxX3NldF93YWtlIHN1cHBvcnQNCj4gPiA+DQo+ID4gPiBIaSBLdW1h
-ciwNCj4gPiA+DQo+ID4gPiBDb3VsZCB5b3UgYXBwbHkgdGhlc2UgcGF0Y2hlcz8NCj4gPiA+DQo+
-ID4gPiBUaGFua3MuDQo+ID4gPg0KPiA+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0K
-PiA+ID4gPiBGcm9tOiBXYW5nIERvbmdzaGVuZy1CNDA1MzQNCj4gPiA+ID4gU2VudDogVHVlc2Rh
-eSwgQXByaWwgMjMsIDIwMTMgNjoxMCBQTQ0KPiA+ID4gPiBUbzogZ2FsYWtAa2VybmVsLmNyYXNo
-aW5nLm9yZw0KPiA+ID4gPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IFdvb2Qg
-U2NvdHQtQjA3NDIxDQo+ID4gPiA+IFN1YmplY3Q6IFJFOiBbUEFUQ0ggdjMgMS80XSBwb3dlcnBj
-L21waWM6IGFkZCBpcnFfc2V0X3dha2Ugc3VwcG9ydA0KPiA+ID4gPg0KPiA+ID4gPiBIaSBLdW1h
-ciwNCj4gPiA+ID4NCj4gPiA+ID4gQ291bGQgeW91IGFwcGx5IHRoZXNlIHBhdGNoZXM/DQo+ID4g
-PiA+DQo+ID4gPiA+IFRoYW5rcy4NCj4gPiA+ID4NCj4gPiA+ID4gW3YzLDEvNF0gcG93ZXJwYy9t
-cGljOiBhZGQgaXJxX3NldF93YWtlIHN1cHBvcnQNCj4gPiA+ID4gaHR0cDovL3BhdGNod29yay5v
-emxhYnMub3JnL3BhdGNoLzIzNDkzNC8NCj4gPiA+ID4NCj4gPiA+ID4gW3YzLDIvNF0gcG93ZXJw
-Yy9tcGljOiBhZGQgZ2xvYmFsIHRpbWVyIHN1cHBvcnQNCj4gPiA+ID4gaHR0cDovL3BhdGNod29y
-ay5vemxhYnMub3JnL3BhdGNoLzIzNDkzNS8NCj4gPiA+ID4NCj4gPiA+ID4gW3YzLDMvNF0gcG93
-ZXJwYy9tcGljOiBjcmVhdGUgbXBpYyBzdWJzeXN0ZW0gb2JqZWN0DQo+ID4gPiA+IGh0dHA6Ly9w
-YXRjaHdvcmsub3psYWJzLm9yZy9wYXRjaC8yMzQ5MzYvDQo+ID4gPiA+DQo+ID4gPiA+IFt2Myw0
-LzRdIHBvd2VycGMvZnNsOiBhZGQgTVBJQyB0aW1lciB3YWtldXAgc3VwcG9ydA0KPiA+ID4gPiBo
-dHRwOi8vcGF0Y2h3b3JrLm96bGFicy5vcmcvcGF0Y2gvMjM0OTM3Lw0KPiA+ID4gPg0KPiA+ID4g
-Pg0KPiA+ID4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiA+ID4gRnJvbTog
-V29vZCBTY290dC1CMDc0MjENCj4gPiA+ID4gPiBTZW50OiBXZWRuZXNkYXksIEFwcmlsIDE3LCAy
-MDEzIDc6MzAgQU0NCj4gPiA+ID4gPiBUbzogV2FuZyBEb25nc2hlbmctQjQwNTM0DQo+ID4gPiA+
-ID4gQ2M6IFdvb2QgU2NvdHQtQjA3NDIxOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsN
-Cj4gPiA+ID4gPiBnYWxha0BrZXJuZWwuY3Jhc2hpbmcub3JnDQo+ID4gPiA+ID4gU3ViamVjdDog
-UmU6IFtQQVRDSCB2MyAxLzRdIHBvd2VycGMvbXBpYzogYWRkIGlycV9zZXRfd2FrZQ0KPiA+ID4g
-PiA+IHN1cHBvcnQNCj4gPiA+ID4gPg0KPiA+ID4gPiA+IEFDSw0KPiA+ID4gPiA+DQo+ID4gPiA+
-ID4gLVNjb3R0DQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBPbiAwNC8xNi8yMDEzIDA1OjU4OjUyIEFN
-LCBXYW5nIERvbmdzaGVuZy1CNDA1MzQgd3JvdGU6DQo+ID4gPiA+ID4gPiBIaSBzY290dCwNCj4g
-PiA+ID4gPiA+DQo+ID4gPiA+ID4gPiBDb3VsZCB5b3UgQUNLIHRoZXNlIHBhdGNoZXM/DQo+ID4g
-PiA+ID4gPg0KPiA+ID4gPiA+ID4gW1BBVENIIHYzIDIvNF0gcG93ZXJwYy9tcGljOiBhZGQgZ2xv
-YmFsIHRpbWVyIHN1cHBvcnQgW1BBVENIDQo+ID4gPiA+ID4gPiB2MyAzLzRdDQo+ID4gPiA+ID4g
-PiBwb3dlcnBjL21waWM6IGNyZWF0ZSBtcGljIHN1YnN5c3RlbSBvYmplY3QgW1BBVENIIHYzIDQv
-NF0NCj4gPiA+ID4gPiA+IHBvd2VycGMvZnNsOiBhZGQgTVBJQyB0aW1lciB3YWtldXAgc3VwcG9y
-dA0KPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+IFRoYW5rcy4NCj4gPiA+ID4gPiA+DQo+IA0KPiAN
-Cg0K
+Hi Linus !
+
+Here are some more powerpc fixes to apply to 3.10. This is mostly bug
+fixes (some of them regressions, some of them I deemed worth merging
+now) along with some patches from Li Zhong hooking up the new
+context tracking stuff (for the new full NO_HZ)
+
+Cheers,
+Ben.
+
+The following changes since commit 5737789c8340620d7b542d1d4e9b197de8eb2801:
+
+  powerpc: Make hard_irq_disable() do the right thing vs. irq tracing (2013-05-07 17:13:57 +1000)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+for you to fetch changes up to e34166ad63eac4d0fa98b4c4ed7a98202a18faef:
+
+  powerpc: Set show_unhandled_signals to 1 by default (2013-05-14 18:01:04 +1000)
+
+----------------------------------------------------------------
+Alexander Gordeev (1):
+      powerpc: Fix irq_set_affinity() return values
+
+Alistair Popple (1):
+      powerpc: Add an in memory udbg console
+
+Aneesh Kumar K.V (2):
+      powerpc/mm: Use the correct mask value when looking at pgtable address
+      powerpc: Fix build errors STRICT_MM_TYPECHECKS
+
+Anton Blanchard (1):
+      powerpc/kexec: Fix kexec when using VMX optimised memcpy
+
+Benjamin Herrenschmidt (5):
+      powerpc/powernv: Properly drop characters if console is closed
+      powerpc/powernv: Improve kexec reliability
+      powerpc/powernv: Detect OPAL v3 API version
+      powerpc/powernv: Fix starting of secondary CPUs on OPALv2 and v3
+      powerpc: Set show_unhandled_signals to 1 by default
+
+David Woodhouse (1):
+      powerpc: Provide __bswapdi2
+
+Li Zhong (6):
+      powerpc: Fix MAX_STACK_TRACE_ENTRIES too low warning again
+      powerpc: Syscall hooks for context tracking subsystem
+      powerpc: Exception hooks for context tracking subsystem
+      powerpc: Exit user context on notify resume
+      powerpc: Use the new schedule_user API on userspace preemption
+      powerpc: select HAVE_CONTEXT_TRACKING for pSeries
+
+Michael Ellerman (1):
+      powerpc: Make CONFIG_RTAS_PROC depend on CONFIG_PROC_FS
+
+Michael Neuling (3):
+      powerpc/perf: Move BHRB code into CONFIG_PPC64 region
+      powerpc/pmu: Fix order of interpreting BHRB target entries
+      powerpc/perf: Fix setting of "to" addresses for BHRB
+
+Robert Jennings (1):
+      powerpc: Bring all threads online prior to migration/hibernation
+
+Scott Wood (2):
+      powerpc: hard_irq_disable(): Call trace_hardirqs_off after disabling
+      powerpc/booke64: Fix kernel hangs at kernel_dbg_exc
+
+Vasant Hegde (1):
+      powerpc/rtas_flash: Fix validate_flash buffer overflow issue
+
+ arch/powerpc/Kconfig.debug                  |   23 +++
+ arch/powerpc/include/asm/context_tracking.h |   10 +
+ arch/powerpc/include/asm/firmware.h         |    4 +-
+ arch/powerpc/include/asm/hw_irq.h           |    5 +-
+ arch/powerpc/include/asm/opal.h             |    5 +-
+ arch/powerpc/include/asm/pgalloc-64.h       |    2 +-
+ arch/powerpc/include/asm/pte-hash64-64k.h   |    2 +-
+ arch/powerpc/include/asm/rtas.h             |    2 +
+ arch/powerpc/include/asm/thread_info.h      |    7 +-
+ arch/powerpc/include/asm/udbg.h             |    1 +
+ arch/powerpc/kernel/entry_32.S              |    2 -
+ arch/powerpc/kernel/entry_64.S              |    5 +-
+ arch/powerpc/kernel/exceptions-64e.S        |    8 +-
+ arch/powerpc/kernel/machine_kexec_64.c      |    4 +
+ arch/powerpc/kernel/misc_32.S               |   11 ++
+ arch/powerpc/kernel/misc_64.S               |   11 ++
+ arch/powerpc/kernel/pci-common.c            |    5 +-
+ arch/powerpc/kernel/ppc_ksyms.c             |    3 +-
+ arch/powerpc/kernel/process.c               |    8 +
+ arch/powerpc/kernel/ptrace.c                |    5 +
+ arch/powerpc/kernel/rtas.c                  |  113 +++++++++++
+ arch/powerpc/kernel/rtas_flash.c            |   10 +-
+ arch/powerpc/kernel/signal.c                |    7 +-
+ arch/powerpc/kernel/traps.c                 |   80 +++++---
+ arch/powerpc/kernel/udbg.c                  |    3 +
+ arch/powerpc/mm/fault.c                     |   41 ++--
+ arch/powerpc/mm/hash_utils_64.c             |   36 +++-
+ arch/powerpc/mm/init_64.c                   |    3 +-
+ arch/powerpc/perf/core-book3s.c             |  280 +++++++++++++++------------
+ arch/powerpc/platforms/Kconfig              |    2 +-
+ arch/powerpc/platforms/powernv/opal.c       |   30 ++-
+ arch/powerpc/platforms/powernv/pci-ioda.c   |    9 +
+ arch/powerpc/platforms/powernv/pci.c        |   12 ++
+ arch/powerpc/platforms/powernv/pci.h        |    2 +
+ arch/powerpc/platforms/powernv/powernv.h    |    2 +
+ arch/powerpc/platforms/powernv/setup.c      |   16 +-
+ arch/powerpc/platforms/powernv/smp.c        |   62 +++++-
+ arch/powerpc/platforms/pseries/Kconfig      |    1 +
+ arch/powerpc/platforms/pseries/suspend.c    |   22 +++
+ arch/powerpc/platforms/wsp/ics.c            |    2 +-
+ arch/powerpc/sysdev/Makefile                |    2 +
+ arch/powerpc/sysdev/ehv_pic.c               |    2 +-
+ arch/powerpc/sysdev/mpic.c                  |    2 +-
+ arch/powerpc/sysdev/udbg_memcons.c          |  105 ++++++++++
+ arch/powerpc/sysdev/xics/ics-opal.c         |    2 +-
+ 45 files changed, 763 insertions(+), 206 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/context_tracking.h
+ create mode 100644 arch/powerpc/sysdev/udbg_memcons.c
