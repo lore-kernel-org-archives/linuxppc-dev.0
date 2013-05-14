@@ -1,19 +1,21 @@
-Return-Path: <B07421@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0252.outbound.messaging.microsoft.com [213.199.154.252])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 67E9B2C009E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2013 10:15:07 +1000 (EST)
-From: Scott Wood <scottwood@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH] powerpc/booke64: fix kernel hangs at kernel_dbg_exc
-Date: Mon, 13 May 2013 19:14:53 -0500
-Message-ID: <1368490493-24606-1-git-send-email-scottwood@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.pcug.org.au [203.10.76.10])
+ by ozlabs.org (Postfix) with ESMTP id 68CE82C00A5
+ for <linuxppc-dev@ozlabs.org>; Tue, 14 May 2013 11:09:32 +1000 (EST)
+Date: Tue, 14 May 2013 11:09:24 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH] powerpc: provide __bswapdi2
+Message-Id: <20130514110924.091b7177d22d69e19478a134@canb.auug.org.au>
+In-Reply-To: <9813.1368428999@ale.ozlabs.ibm.com>
+References: <1368220707.3378.57.camel@shinybook.infradead.org>
+ <9813.1368428999@ale.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Tue__14_May_2013_11_09_24_+1000_+IqJP=hLnDPol+ai"
+Cc: linuxppc-dev@ozlabs.org, David Woodhouse <dwmw2@infradead.org>,
+ viro@zeniv.linux.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,89 +25,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-MSR_DE is not cleared on entry to the kernel, and we don't clear it
-explicitly outside of debug code.  If we have MSR_DE set in
-prime_debug_regs(), and the new thread has events enabled in DBCR0
-(e.g.  ICMP is set in thread->dbsr0, even though it was cleared in the
-real DBCR0 when the thread got scheduled out), we'll end up taking a
-debug exception in the kernel when DBCR0 is loaded.  DSRR0 will not
-point to an exception vector, and the kernel ends up hanging at
-kernel_dbg_exc.  Fix this by always clearing MSR_DE when we load new
-debug state.
+--Signature=_Tue__14_May_2013_11_09_24_+1000_+IqJP=hLnDPol+ai
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Another observed source of kernel_dbg_exc hangs is with the branch
-taken event.  If this event is active, but we take a non-debug trap
-(e.g. a TLB miss or an asynchronous interrupt) before the next branch.
-We end up taking a branch-taken debug exception on the initial branch
-instruction of the exception vector, but because the debug exception is
-DBSR_BT rather than DBSR_IC we branch to kernel_dbg_exc before even
-checking the DSRR0 address.  Fix this by checking for DBSR_BT as well
-as DBSR_IC, which is what 32-bit does and what the comments suggest was
-intended in the 64-bit code as well.
+Hi Mikey,
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
- arch/powerpc/kernel/exceptions-64e.S |    8 ++++----
- arch/powerpc/kernel/process.c        |    7 +++++++
- 2 files changed, 11 insertions(+), 4 deletions(-)
+On Mon, 13 May 2013 17:09:59 +1000 Michael Neuling <mikey@neuling.org> wrot=
+e:
+>
+> This doesn't work for me but the below does:
+>=20
+> _GLOBAL(__bswapdi2)
+> 	rotlwi  r9,r4,8
+> 	rotlwi  r10,r3,8
+> 	rlwimi  r9,r4,24,0,7
+> 	rlwimi  r10,r3,24,0,7
+> 	rlwimi  r9,r4,24,16,23
+> 	rlwimi  r10,r3,24,16,23
+> 	mr      r4,r10
+> 	mr      r3,r9
+> 	blr
+>=20
+> stolen from GCC -02 output of:
+>   unsigned long long __bswapdi2(unsigned long long x)
+>   {
+> 	 return ((x & 0x00000000000000ffULL) << 56) |
+> 		((x & 0x000000000000ff00ULL) << 40) |
+> 		((x & 0x0000000000ff0000ULL) << 24) |
+> 		((x & 0x00000000ff000000ULL) <<  8) |
+> 		((x & 0x000000ff00000000ULL) >>  8) |
+> 		((x & 0x0000ff0000000000ULL) >> 24) |
+> 		((x & 0x00ff000000000000ULL) >> 40) |
+> 		((x & 0xff00000000000000ULL) >> 56);
+>   }
 
-diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index 42a756e..645170a 100644
---- a/arch/powerpc/kernel/exceptions-64e.S
-+++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -489,7 +489,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
- 	 */
- 
- 	mfspr	r14,SPRN_DBSR		/* check single-step/branch taken */
--	andis.	r15,r14,DBSR_IC@h
-+	andis.	r15,r14,(DBSR_IC|DBSR_BT)@h
- 	beq+	1f
- 
- 	LOAD_REG_IMMEDIATE(r14,interrupt_base_book3e)
-@@ -500,7 +500,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
- 	bge+	cr1,1f
- 
- 	/* here it looks like we got an inappropriate debug exception. */
--	lis	r14,DBSR_IC@h		/* clear the IC event */
-+	lis	r14,(DBSR_IC|DBSR_BT)@h		/* clear the event */
- 	rlwinm	r11,r11,0,~MSR_DE	/* clear DE in the CSRR1 value */
- 	mtspr	SPRN_DBSR,r14
- 	mtspr	SPRN_CSRR1,r11
-@@ -555,7 +555,7 @@ kernel_dbg_exc:
- 	 */
- 
- 	mfspr	r14,SPRN_DBSR		/* check single-step/branch taken */
--	andis.	r15,r14,DBSR_IC@h
-+	andis.	r15,r14,(DBSR_IC|DBSR_BT)@h
- 	beq+	1f
- 
- 	LOAD_REG_IMMEDIATE(r14,interrupt_base_book3e)
-@@ -566,7 +566,7 @@ kernel_dbg_exc:
- 	bge+	cr1,1f
- 
- 	/* here it looks like we got an inappropriate debug exception. */
--	lis	r14,DBSR_IC@h		/* clear the IC event */
-+	lis	r14,(DBSR_IC|DBSR_BT)@h		/* clear the event */
- 	rlwinm	r11,r11,0,~MSR_DE	/* clear DE in the DSRR1 value */
- 	mtspr	SPRN_DBSR,r14
- 	mtspr	SPRN_DSRR1,r11
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index ceb4e7b..912fe3c 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -339,6 +339,13 @@ static void set_debug_reg_defaults(struct thread_struct *thread)
- 
- static void prime_debug_regs(struct thread_struct *thread)
- {
-+	/*
-+	 * We could have inherited MSR_DE from userspace, since
-+	 * it doesn't get cleared on exception entry.  Make sure
-+	 * MSR_DE is clear before we enable any debug events.
-+	 */
-+	mtmsr(mfmsr() & ~MSR_DE);
-+
- 	mtspr(SPRN_IAC1, thread->iac1);
- 	mtspr(SPRN_IAC2, thread->iac2);
- #if CONFIG_PPC_ADV_DEBUG_IACS > 2
--- 
-1.7.10.4
+So, if we are just stealing the output of gcc, why not just use the C
+version (at least for 32 bit)?
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Tue__14_May_2013_11_09_24_+1000_+IqJP=hLnDPol+ai
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJRkY7EAAoJEECxmPOUX5FENQQP/0EEIm9kqWXiskauhNko36Ir
+KZRaTPEIzdLVlcEwOfuPYmJENBXpP5HOGYWfVJGUgrJ0ynRiAC1UUKXW60DVlSxP
+D6Pf/UvnZxRUfhmZT6jWuUU0nGuMXO0RqwyFkJ37XdoXPre3F07cbUVoex2vapmo
+tMX+PavCq5KXrRMMQDXU7oZKvepfiRpuwHuiPr3uE0pdDp1KaebsKK6LSQY/8GVj
+ktU/LON5AtLyTMjYqxv7RK00QKmfD7x8qGITbLEHn3YKPGwV4fTlwWg6Nt+zc/lV
+TwtBmAFkcaZWVkk1U6KImZMHXz9/Twu79vLE77oc2GU7Fo7JviO+ftYgandItcLH
+2MDkY1Jy9sNedSkHjuQAhWgTsAleNmnpB4T9C8GkhOrNTG1WO54PFK/Z9r8Pu+Db
+/a4Ba3X3TIGUPGcu5mlzSTHlV0q6tDlkU2FQ1F1YODcL3PD5xEBXh+Qjbca/8xOn
+q90K9snIraOBxV1TPjFMS4uNWZUPVJ8EdZxvoVUEMQ5wsAzoXaPBZEMKZ6xxQx1g
+tQFWBanlGYzexoaejClG+FBM0mlUPWdYaU14WkqzlNLOBRb0x4/PGGMGxBGwReCp
+aIK6BPW+4d3EJA12xBdU1ZTpZYymibJCicN90hoFZ04hGoORCr/4EWz8lA8Qqb/r
+278t+BZfDUxN5cCvwola
+=RY/a
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__14_May_2013_11_09_24_+1000_+IqJP=hLnDPol+ai--
