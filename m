@@ -1,9 +1,10 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH v3 1/3] powerpc/perf: Move BHRB code into CONFIG_PPC64 region
-Date: Tue, 14 May 2013 14:44:56 +1000
-Message-Id: <1368506698-22400-2-git-send-email-mikey@neuling.org>
+Subject: [PATCH v3 2/3] powerpc/pmu: Fix order of interpreting BHRB target
+ entries
+Date: Tue, 14 May 2013 14:44:57 +1000
+Message-Id: <1368506698-22400-3-git-send-email-mikey@neuling.org>
 In-Reply-To: <1368506698-22400-1-git-send-email-mikey@neuling.org>
 References: <1368506698-22400-1-git-send-email-mikey@neuling.org>
 In-Reply-To: <9911.1368179795@ale.ozlabs.ibm.com>
@@ -19,257 +20,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The new Branch History Rolling buffer (BHRB) code is only useful on 64bit
-processors, so move it into the #ifdef CONFIG_PPC64 region.
+The current Branch History Rolling Buffer (BHRB) code misinterprets the order
+of entries in the hardware buffer.  It assumes that a branch target address
+will be read _after_ its corresponding branch.  In reality the branch target
+comes before (lower mfbhrb entry) it's corresponding branch.
 
-This avoids code bloat on 32bit systems.
+This is a rewrite of the code to take this into account.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/perf/core-book3s.c |  248 ++++++++++++++++++++-------------------
- 1 file changed, 127 insertions(+), 121 deletions(-)
+ arch/powerpc/perf/core-book3s.c |   89 ++++++++++++++++++++-------------------
+ 1 file changed, 46 insertions(+), 43 deletions(-)
 
 diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index c627843..843bb8b 100644
+index 843bb8b..3fdfe45 100644
 --- a/arch/powerpc/perf/core-book3s.c
 +++ b/arch/powerpc/perf/core-book3s.c
-@@ -100,6 +100,10 @@ static inline int siar_valid(struct pt_regs *regs)
- 	return 1;
+@@ -363,72 +363,75 @@ void power_pmu_flush_branch_stack(void)
+ 		power_pmu_bhrb_reset();
  }
  
-+static inline void power_pmu_bhrb_enable(struct perf_event *event) {}
-+static inline void power_pmu_bhrb_disable(struct perf_event *event) {}
-+void power_pmu_flush_branch_stack(void) {}
-+static inline void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw) {}
- #endif /* CONFIG_PPC32 */
- 
- static bool regs_use_siar(struct pt_regs *regs)
-@@ -308,6 +312,129 @@ static inline int siar_valid(struct pt_regs *regs)
- 	return 1;
- }
- 
-+
-+/* Reset all possible BHRB entries */
-+static void power_pmu_bhrb_reset(void)
-+{
-+	asm volatile(PPC_CLRBHRB);
-+}
-+
-+static void power_pmu_bhrb_enable(struct perf_event *event)
-+{
-+	struct cpu_hw_events *cpuhw = &__get_cpu_var(cpu_hw_events);
-+
-+	if (!ppmu->bhrb_nr)
-+		return;
-+
-+	/* Clear BHRB if we changed task context to avoid data leaks */
-+	if (event->ctx->task && cpuhw->bhrb_context != event->ctx) {
-+		power_pmu_bhrb_reset();
-+		cpuhw->bhrb_context = event->ctx;
-+	}
-+	cpuhw->bhrb_users++;
-+}
-+
-+static void power_pmu_bhrb_disable(struct perf_event *event)
-+{
-+	struct cpu_hw_events *cpuhw = &__get_cpu_var(cpu_hw_events);
-+
-+	if (!ppmu->bhrb_nr)
-+		return;
-+
-+	cpuhw->bhrb_users--;
-+	WARN_ON_ONCE(cpuhw->bhrb_users < 0);
-+
-+	if (!cpuhw->disabled && !cpuhw->bhrb_users) {
-+		/* BHRB cannot be turned off when other
-+		 * events are active on the PMU.
-+		 */
-+
-+		/* avoid stale pointer */
-+		cpuhw->bhrb_context = NULL;
-+	}
-+}
-+
-+/* Called from ctxsw to prevent one process's branch entries to
-+ * mingle with the other process's entries during context switch.
-+ */
-+void power_pmu_flush_branch_stack(void)
-+{
-+	if (ppmu->bhrb_nr)
-+		power_pmu_bhrb_reset();
-+}
-+
-+
-+/* Processing BHRB entries */
-+static void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
-+{
-+	u64 val;
-+	u64 addr;
-+	int r_index, u_index, target, pred;
-+
-+	r_index = 0;
-+	u_index = 0;
-+	while (r_index < ppmu->bhrb_nr) {
-+		/* Assembly read function */
-+		val = read_bhrb(r_index);
-+
-+		/* Terminal marker: End of valid BHRB entries */
-+		if (val == 0) {
-+			break;
-+		} else {
-+			/* BHRB field break up */
-+			addr = val & BHRB_EA;
-+			pred = val & BHRB_PREDICTION;
-+			target = val & BHRB_TARGET;
-+
-+			/* Probable Missed entry: Not applicable for POWER8 */
-+			if ((addr == 0) && (target == 0) && (pred == 1)) {
-+				r_index++;
-+				continue;
-+			}
-+
-+			/* Real Missed entry: Power8 based missed entry */
-+			if ((addr == 0) && (target == 1) && (pred == 1)) {
-+				r_index++;
-+				continue;
-+			}
-+
-+			/* Reserved condition: Not a valid entry  */
-+			if ((addr == 0) && (target == 1) && (pred == 0)) {
-+				r_index++;
-+				continue;
-+			}
-+
-+			/* Is a target address */
-+			if (val & BHRB_TARGET) {
-+				/* First address cannot be a target address */
-+				if (r_index == 0) {
-+					r_index++;
-+					continue;
-+				}
-+
-+				/* Update target address for the previous entry */
-+				cpuhw->bhrb_entries[u_index - 1].to = addr;
-+				cpuhw->bhrb_entries[u_index - 1].mispred = pred;
-+				cpuhw->bhrb_entries[u_index - 1].predicted = ~pred;
-+
-+				/* Dont increment u_index */
-+				r_index++;
-+			} else {
-+				/* Update address, flags for current entry */
-+				cpuhw->bhrb_entries[u_index].from = addr;
-+				cpuhw->bhrb_entries[u_index].mispred = pred;
-+				cpuhw->bhrb_entries[u_index].predicted = ~pred;
-+
-+				/* Successfully popullated one entry */
-+				u_index++;
-+				r_index++;
-+			}
-+		}
-+	}
-+	cpuhw->bhrb_stack.nr = u_index;
-+	return;
-+}
-+
- #endif /* CONFIG_PPC64 */
- 
- static void perf_event_interrupt(struct pt_regs *regs);
-@@ -904,47 +1031,6 @@ static int collect_events(struct perf_event *group, int max_count,
- 	return n;
- }
- 
--/* Reset all possible BHRB entries */
--static void power_pmu_bhrb_reset(void)
--{
--	asm volatile(PPC_CLRBHRB);
--}
 -
--void power_pmu_bhrb_enable(struct perf_event *event)
--{
--	struct cpu_hw_events *cpuhw = &__get_cpu_var(cpu_hw_events);
--
--	if (!ppmu->bhrb_nr)
--		return;
--
--	/* Clear BHRB if we changed task context to avoid data leaks */
--	if (event->ctx->task && cpuhw->bhrb_context != event->ctx) {
--		power_pmu_bhrb_reset();
--		cpuhw->bhrb_context = event->ctx;
--	}
--	cpuhw->bhrb_users++;
--}
--
--void power_pmu_bhrb_disable(struct perf_event *event)
--{
--	struct cpu_hw_events *cpuhw = &__get_cpu_var(cpu_hw_events);
--
--	if (!ppmu->bhrb_nr)
--		return;
--
--	cpuhw->bhrb_users--;
--	WARN_ON_ONCE(cpuhw->bhrb_users < 0);
--
--	if (!cpuhw->disabled && !cpuhw->bhrb_users) {
--		/* BHRB cannot be turned off when other
--		 * events are active on the PMU.
--		 */
--
--		/* avoid stale pointer */
--		cpuhw->bhrb_context = NULL;
--	}
--}
--
- /*
-  * Add a event to the PMU.
-  * If all events are not already frozen, then we disable and
-@@ -1180,15 +1266,6 @@ int power_pmu_commit_txn(struct pmu *pmu)
- 	return 0;
- }
- 
--/* Called from ctxsw to prevent one process's branch entries to
-- * mingle with the other process's entries during context switch.
-- */
--void power_pmu_flush_branch_stack(void)
--{
--	if (ppmu->bhrb_nr)
--		power_pmu_bhrb_reset();
--}
--
- /*
-  * Return 1 if we might be able to put event on a limited PMC,
-  * or 0 if not.
-@@ -1458,77 +1535,6 @@ struct pmu power_pmu = {
- 	.flush_branch_stack = power_pmu_flush_branch_stack,
- };
- 
--/* Processing BHRB entries */
--void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
--{
--	u64 val;
--	u64 addr;
+ /* Processing BHRB entries */
+-static void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
++void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
+ {
+ 	u64 val;
+ 	u64 addr;
 -	int r_index, u_index, target, pred;
--
--	r_index = 0;
--	u_index = 0;
--	while (r_index < ppmu->bhrb_nr) {
--		/* Assembly read function */
++	int r_index, u_index, pred;
+ 
+ 	r_index = 0;
+ 	u_index = 0;
+ 	while (r_index < ppmu->bhrb_nr) {
+ 		/* Assembly read function */
 -		val = read_bhrb(r_index);
 -
 -		/* Terminal marker: End of valid BHRB entries */
 -		if (val == 0) {
--			break;
++		val = read_bhrb(r_index++);
++		if (!val)
++			/* Terminal marker: End of valid BHRB entries */
+ 			break;
 -		} else {
 -			/* BHRB field break up */
--			addr = val & BHRB_EA;
--			pred = val & BHRB_PREDICTION;
++		else {
+ 			addr = val & BHRB_EA;
+ 			pred = val & BHRB_PREDICTION;
 -			target = val & BHRB_TARGET;
--
+ 
 -			/* Probable Missed entry: Not applicable for POWER8 */
 -			if ((addr == 0) && (target == 0) && (pred == 1)) {
 -				r_index++;
--				continue;
++			if (!addr)
++				/* invalid entry */
+ 				continue;
 -			}
--
+ 
 -			/* Real Missed entry: Power8 based missed entry */
 -			if ((addr == 0) && (target == 1) && (pred == 1)) {
 -				r_index++;
@@ -281,9 +88,26 @@ index c627843..843bb8b 100644
 -				r_index++;
 -				continue;
 -			}
--
++			/* Branches are read most recent first (ie. mfbhrb 0 is
++			 * the most recent branch).
++			 * There are two types of valid entries:
++			 * 1) a target entry which is the to address of a
++			 *    computed goto like a blr,bctr,btar.  The next
++			 *    entry read from the bhrb will be branch
++			 *    corresponding to this target (ie. the actual
++			 *    blr/bctr/btar instruction).
++			 * 2) a from address which is an actual branch.  If a
++			 *    target entry proceeds this, then this is the
++			 *    matching branch for that target.  If this is not
++			 *    following a target entry, then this is a branch
++			 *    where the target is given as an immediate field
++			 *    in the instruction (ie. an i or b form branch).
++			 *    In this case we need to read the instruction from
++			 *    memory to determine the target/to address.
++			 */
+ 
 -			/* Is a target address */
--			if (val & BHRB_TARGET) {
+ 			if (val & BHRB_TARGET) {
 -				/* First address cannot be a target address */
 -				if (r_index == 0) {
 -					r_index++;
@@ -294,27 +118,42 @@ index c627843..843bb8b 100644
 -				cpuhw->bhrb_entries[u_index - 1].to = addr;
 -				cpuhw->bhrb_entries[u_index - 1].mispred = pred;
 -				cpuhw->bhrb_entries[u_index - 1].predicted = ~pred;
--
++				/* Target branches use two entries
++				 * (ie. computed gotos/XL form)
++				 */
++				cpuhw->bhrb_entries[u_index].to = addr;
++				cpuhw->bhrb_entries[u_index].mispred = pred;
++				cpuhw->bhrb_entries[u_index].predicted = ~pred;
+ 
 -				/* Dont increment u_index */
 -				r_index++;
--			} else {
++				/* Get from address in next entry */
++				val = read_bhrb(r_index++);
++				addr = val & BHRB_EA;
++				if (val & BHRB_TARGET) {
++					/* Shouldn't have two targets in a
++					   row.. Reset index and try again */
++					r_index--;
++					addr = 0;
++				}
++				cpuhw->bhrb_entries[u_index].from = addr;
+ 			} else {
 -				/* Update address, flags for current entry */
--				cpuhw->bhrb_entries[u_index].from = addr;
--				cpuhw->bhrb_entries[u_index].mispred = pred;
--				cpuhw->bhrb_entries[u_index].predicted = ~pred;
++				/* Branches to immediate field 
++				   (ie I or B form) */
+ 				cpuhw->bhrb_entries[u_index].from = addr;
++				cpuhw->bhrb_entries[u_index].to = 0;
+ 				cpuhw->bhrb_entries[u_index].mispred = pred;
+ 				cpuhw->bhrb_entries[u_index].predicted = ~pred;
 -
 -				/* Successfully popullated one entry */
 -				u_index++;
 -				r_index++;
--			}
--		}
--	}
--	cpuhw->bhrb_stack.nr = u_index;
--	return;
--}
--
- /*
-  * A counter has overflowed; update its count and record
-  * things if requested.  Note that interrupts are hard-disabled
+ 			}
++			u_index++;
++
+ 		}
+ 	}
+ 	cpuhw->bhrb_stack.nr = u_index;
 -- 
 1.7.10.4
