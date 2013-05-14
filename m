@@ -1,26 +1,25 @@
 Return-Path: <B40534@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0189.outbound.messaging.microsoft.com [213.199.154.189])
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 165C72C00A8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2013 18:59:36 +1000 (EST)
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7926B2C00B3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2013 19:03:39 +1000 (EST)
 From: Wang Dongsheng-B40534 <B40534@freescale.com>
-To: "anton.vorontsov@linaro.org" <anton.vorontsov@linaro.org>
-Subject: RE: [PATCH] powerpc/mpc85xx: fix non-bootcpu cannot up after
- hibernation resume
-Date: Tue, 14 May 2013 08:59:13 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259F2AFC3@039-SN2MPN1-022.039d.mgd.msft.net>
-References: <1368518756-9850-1-git-send-email-dongsheng.wang@freescale.com>
-In-Reply-To: <1368518756-9850-1-git-send-email-dongsheng.wang@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: RE: [PATCH v3 1/4] powerpc/mpic: add irq_set_wake support
+Date: Tue, 14 May 2013 09:03:53 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259F2AFDB@039-SN2MPN1-022.039d.mgd.msft.net>
+References: <1365474152-21524-1-git-send-email-dongsheng.wang@freescale.com>
+ <ABB05CD9C9F68C46A5CEDC7F15439259EE77D8@039-SN2MPN1-021.039d.mgd.msft.net>
+ <1366155021.23030.24@snotra>
+ <ABB05CD9C9F68C46A5CEDC7F15439259F2581C@039-SN2MPN1-022.039d.mgd.msft.net>
+ <1368421223.19924.16.camel@pasglop>
+In-Reply-To: <1368421223.19924.16.camel@pasglop>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Cc: Wood Scott-B07421 <B07421@freescale.com>,
- Li Yang-R58472 <r58472@freescale.com>,
- Zhao Chenhui-B35336 <B35336@freescale.com>, "rjw@sisk.pl" <rjw@sisk.pl>,
- "paulus@samba.org" <paulus@samba.org>,
- "johannes@sipsolutions.net" <johannes@sipsolutions.net>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,66 +30,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I send to a wrong email address "Anton Vorontsov <avorontsov@ru.mvista.com>=
-"
-
-Add Anton Vorontsov <anton.vorontsov@linaro.org> to this email.
-
-Thanks all.
-
-> -----Original Message-----
-> From: Wang Dongsheng-B40534
-> Sent: Tuesday, May 14, 2013 4:06 PM
-> To: avorontsov@ru.mvista.com
-> Cc: paulus@samba.org; rjw@sisk.pl; benh@kernel.crashing.org;
-> johannes@sipsolutions.net; Wood Scott-B07421; Li Yang-R58472; Zhao
-> Chenhui-B35336; linuxppc-dev@lists.ozlabs.org; Wang Dongsheng-B40534
-> Subject: [PATCH] powerpc/mpc85xx: fix non-bootcpu cannot up after
-> hibernation resume
->=20
-> This problem belongs to the core synchronization issues.
-> The cpu1 already updated spin_table values, but bootcore cannot get
-> this value in time.
->=20
-> After bootcpu hibiernation restore the pages. we are now running
-> with the kernel data of the old kernel fully restored. if we reset
-> the non-bootcpus that will be reset cache(tlb), the non-bootcpus
-> will get new address(map virtual and physical address spaces).
-> but bootcpu tlb cache still use boot kernel data, so we need to
-> invalidate the bootcpu tlb cache make it to get new main memory data.
->=20
-> log:
-> Enabling non-boot CPUs ...
-> smp_85xx_kick_cpu: timeout waiting for core 1 to reset
-> smp: failed starting cpu 1 (rc -2)
-> Error taking CPU1 up: -2
->=20
-> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
->=20
-> diff --git a/arch/powerpc/kernel/swsusp_booke.S
-> b/arch/powerpc/kernel/swsusp_booke.S
-> index 11a3930..9503249 100644
-> --- a/arch/powerpc/kernel/swsusp_booke.S
-> +++ b/arch/powerpc/kernel/swsusp_booke.S
-> @@ -141,6 +141,19 @@ _GLOBAL(swsusp_arch_resume)
->  	lis	r11,swsusp_save_area@h
->  	ori	r11,r11,swsusp_save_area@l
->=20
-> +	/*
-> +	 * The boot core get a virtual address, when the boot process,
-> +	 * the virtual address corresponds to a physical address. After
-> +	 * hibernation resume memory snapshots, The corresponding
-> +	 * relationship between the virtual memory and physical memory
-> +	 * might change again. We need to get a new page table. So we
-> +	 * need to invalidate TLB after resume pages.
-> +	 *
-> +	 * Invalidations TLB Using tlbilx/tlbivax/MMUCSR0.
-> +	 * tlbilx used here.
-> +	 */
-> +	bl	_tlbil_all
-> +
->  	lwz	r4,SL_SPRG0(r11)
->  	mtsprg	0,r4
->  	lwz	r4,SL_SPRG1(r11)
-> --
-> 1.8.0
+VGhhbmtzIGJlbi4gOikNCg0KLSBkb25nc2hlbmcuDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdl
+LS0tLS0NCj4gRnJvbTogQmVuamFtaW4gSGVycmVuc2NobWlkdCBbbWFpbHRvOmJlbmhAa2VybmVs
+LmNyYXNoaW5nLm9yZ10NCj4gU2VudDogTW9uZGF5LCBNYXkgMTMsIDIwMTMgMTowMCBQTQ0KPiBU
+bzogV2FuZyBEb25nc2hlbmctQjQwNTM0DQo+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJz
+Lm9yZzsgV29vZCBTY290dC1CMDc0MjE7DQo+IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmcNCj4g
+U3ViamVjdDogUmU6IFtQQVRDSCB2MyAxLzRdIHBvd2VycGMvbXBpYzogYWRkIGlycV9zZXRfd2Fr
+ZSBzdXBwb3J0DQo+IA0KPiBPbiBNb24sIDIwMTMtMDUtMTMgYXQgMDQ6MjUgKzAwMDAsIFdhbmcg
+RG9uZ3NoZW5nLUI0MDUzNCB3cm90ZToNCj4gPiBIaSBCZW5qYW1pbiwNCj4gPg0KPiA+IENvdWxk
+IHlvdSBhcHBseSB0aGVzZSBwYXRjaGVzPw0KPiANCj4gSSdsbCBoYXZlIGEgbG9vaywgSSB3YXMg
+YXNzdW1pbmcgS3VtYXIgd291bGQgdGFrZSB0aGVtIGJ1dCBzaW5jZSBub3QgSSdsbA0KPiBxdWV1
+ZSB0aGVtIHVwLg0KPiANCj4gQ2hlZXJzLA0KPiBCZW4uDQo+IA0KPiA+IFNjb3R0IGFscmVhZHkg
+QUNLLg0KPiA+DQo+ID4gW3YzLDEvNF0gcG93ZXJwYy9tcGljOiBhZGQgaXJxX3NldF93YWtlIHN1
+cHBvcnQNCj4gPiBodHRwOi8vcGF0Y2h3b3JrLm96bGFicy5vcmcvcGF0Y2gvMjM0OTM0Lw0KPiA+
+DQo+ID4gW3YzLDIvNF0gcG93ZXJwYy9tcGljOiBhZGQgZ2xvYmFsIHRpbWVyIHN1cHBvcnQNCj4g
+PiBodHRwOi8vcGF0Y2h3b3JrLm96bGFicy5vcmcvcGF0Y2gvMjM0OTM1Lw0KPiA+DQo+ID4gW3Yz
+LDMvNF0gcG93ZXJwYy9tcGljOiBjcmVhdGUgbXBpYyBzdWJzeXN0ZW0gb2JqZWN0DQo+ID4gaHR0
+cDovL3BhdGNod29yay5vemxhYnMub3JnL3BhdGNoLzIzNDkzNi8NCj4gPg0KPiA+IFt2Myw0LzRd
+IHBvd2VycGMvZnNsOiBhZGQgTVBJQyB0aW1lciB3YWtldXAgc3VwcG9ydA0KPiA+IGh0dHA6Ly9w
+YXRjaHdvcmsub3psYWJzLm9yZy9wYXRjaC8yMzQ5MzcvDQo+ID4NCj4gPiBUaGFua3MuDQo+ID4N
+Cj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBXYW5nIERvbmdz
+aGVuZy1CNDA1MzQNCj4gPiA+IFNlbnQ6IEZyaWRheSwgTWF5IDAzLCAyMDEzIDk6NTQgQU0NCj4g
+PiA+IFRvOiAnZ2FsYWtAa2VybmVsLmNyYXNoaW5nLm9yZycNCj4gPiA+IENjOiAnbGludXhwcGMt
+ZGV2QGxpc3RzLm96bGFicy5vcmcnOyBXb29kIFNjb3R0LUIwNzQyMTsNCj4gPiA+ICdiZW5oQGtl
+cm5lbC5jcmFzaGluZy5vcmcnDQo+ID4gPiBTdWJqZWN0OiBSRTogW1BBVENIIHYzIDEvNF0gcG93
+ZXJwYy9tcGljOiBhZGQgaXJxX3NldF93YWtlIHN1cHBvcnQNCj4gPiA+DQo+ID4gPiBIaSBLdW1h
+ciwNCj4gPiA+DQo+ID4gPiBDb3VsZCB5b3UgYXBwbHkgdGhlc2UgcGF0Y2hlcz8NCj4gPiA+DQo+
+ID4gPiBUaGFua3MuDQo+ID4gPg0KPiA+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0K
+PiA+ID4gPiBGcm9tOiBXYW5nIERvbmdzaGVuZy1CNDA1MzQNCj4gPiA+ID4gU2VudDogVHVlc2Rh
+eSwgQXByaWwgMjMsIDIwMTMgNjoxMCBQTQ0KPiA+ID4gPiBUbzogZ2FsYWtAa2VybmVsLmNyYXNo
+aW5nLm9yZw0KPiA+ID4gPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IFdvb2Qg
+U2NvdHQtQjA3NDIxDQo+ID4gPiA+IFN1YmplY3Q6IFJFOiBbUEFUQ0ggdjMgMS80XSBwb3dlcnBj
+L21waWM6IGFkZCBpcnFfc2V0X3dha2Ugc3VwcG9ydA0KPiA+ID4gPg0KPiA+ID4gPiBIaSBLdW1h
+ciwNCj4gPiA+ID4NCj4gPiA+ID4gQ291bGQgeW91IGFwcGx5IHRoZXNlIHBhdGNoZXM/DQo+ID4g
+PiA+DQo+ID4gPiA+IFRoYW5rcy4NCj4gPiA+ID4NCj4gPiA+ID4gW3YzLDEvNF0gcG93ZXJwYy9t
+cGljOiBhZGQgaXJxX3NldF93YWtlIHN1cHBvcnQNCj4gPiA+ID4gaHR0cDovL3BhdGNod29yay5v
+emxhYnMub3JnL3BhdGNoLzIzNDkzNC8NCj4gPiA+ID4NCj4gPiA+ID4gW3YzLDIvNF0gcG93ZXJw
+Yy9tcGljOiBhZGQgZ2xvYmFsIHRpbWVyIHN1cHBvcnQNCj4gPiA+ID4gaHR0cDovL3BhdGNod29y
+ay5vemxhYnMub3JnL3BhdGNoLzIzNDkzNS8NCj4gPiA+ID4NCj4gPiA+ID4gW3YzLDMvNF0gcG93
+ZXJwYy9tcGljOiBjcmVhdGUgbXBpYyBzdWJzeXN0ZW0gb2JqZWN0DQo+ID4gPiA+IGh0dHA6Ly9w
+YXRjaHdvcmsub3psYWJzLm9yZy9wYXRjaC8yMzQ5MzYvDQo+ID4gPiA+DQo+ID4gPiA+IFt2Myw0
+LzRdIHBvd2VycGMvZnNsOiBhZGQgTVBJQyB0aW1lciB3YWtldXAgc3VwcG9ydA0KPiA+ID4gPiBo
+dHRwOi8vcGF0Y2h3b3JrLm96bGFicy5vcmcvcGF0Y2gvMjM0OTM3Lw0KPiA+ID4gPg0KPiA+ID4g
+Pg0KPiA+ID4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiA+ID4gRnJvbTog
+V29vZCBTY290dC1CMDc0MjENCj4gPiA+ID4gPiBTZW50OiBXZWRuZXNkYXksIEFwcmlsIDE3LCAy
+MDEzIDc6MzAgQU0NCj4gPiA+ID4gPiBUbzogV2FuZyBEb25nc2hlbmctQjQwNTM0DQo+ID4gPiA+
+ID4gQ2M6IFdvb2QgU2NvdHQtQjA3NDIxOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsN
+Cj4gPiA+ID4gPiBnYWxha0BrZXJuZWwuY3Jhc2hpbmcub3JnDQo+ID4gPiA+ID4gU3ViamVjdDog
+UmU6IFtQQVRDSCB2MyAxLzRdIHBvd2VycGMvbXBpYzogYWRkIGlycV9zZXRfd2FrZQ0KPiA+ID4g
+PiA+IHN1cHBvcnQNCj4gPiA+ID4gPg0KPiA+ID4gPiA+IEFDSw0KPiA+ID4gPiA+DQo+ID4gPiA+
+ID4gLVNjb3R0DQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBPbiAwNC8xNi8yMDEzIDA1OjU4OjUyIEFN
+LCBXYW5nIERvbmdzaGVuZy1CNDA1MzQgd3JvdGU6DQo+ID4gPiA+ID4gPiBIaSBzY290dCwNCj4g
+PiA+ID4gPiA+DQo+ID4gPiA+ID4gPiBDb3VsZCB5b3UgQUNLIHRoZXNlIHBhdGNoZXM/DQo+ID4g
+PiA+ID4gPg0KPiA+ID4gPiA+ID4gW1BBVENIIHYzIDIvNF0gcG93ZXJwYy9tcGljOiBhZGQgZ2xv
+YmFsIHRpbWVyIHN1cHBvcnQgW1BBVENIDQo+ID4gPiA+ID4gPiB2MyAzLzRdDQo+ID4gPiA+ID4g
+PiBwb3dlcnBjL21waWM6IGNyZWF0ZSBtcGljIHN1YnN5c3RlbSBvYmplY3QgW1BBVENIIHYzIDQv
+NF0NCj4gPiA+ID4gPiA+IHBvd2VycGMvZnNsOiBhZGQgTVBJQyB0aW1lciB3YWtldXAgc3VwcG9y
+dA0KPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+IFRoYW5rcy4NCj4gPiA+ID4gPiA+DQo+IA0KPiAN
+Cg0K
