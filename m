@@ -2,16 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B29E72C00B0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2013 15:53:31 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 761992C00C1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2013 15:54:13 +1000 (EST)
 Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id r4E5rQnA030187
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2013 00:53:27 -0500
-Message-ID: <1368510806.31689.13.camel@pasglop>
-Subject: [PATCH 1/2] powerpc/powernv: Detect OPAL v3 API version
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id r4E5s8bM030241
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2013 00:54:09 -0500
+Message-ID: <1368510848.31689.14.camel@pasglop>
+Subject: [PATCH 2/2] powerpc/powernv: Fix starting of secondary CPUs on
+ OPALv2 and v3
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Date: Tue, 14 May 2013 15:53:26 +1000
+Date: Tue, 14 May 2013 15:54:08 +1000
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,82 +24,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Future firmwares will support that new version. We need that
-to properly fix CPU starting under OPAL with kexec.
+The current code fails to handle kexec on OPALv2. This fixes it
+and adds code to improve the situation on OPALv3 where we can
+query the CPU status from the firmware and decide what to do
+based on that.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/include/asm/firmware.h    |    4 +++-
- arch/powerpc/include/asm/opal.h        |    3 ++-
- arch/powerpc/platforms/powernv/opal.c  |    6 +++++-
- arch/powerpc/platforms/powernv/setup.c |    4 +++-
- 4 files changed, 13 insertions(+), 4 deletions(-)
+ arch/powerpc/platforms/powernv/smp.c |   62 ++++++++++++++++++++++++++++++----
+ 1 file changed, 56 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
-index 0df5464..681bc03 100644
---- a/arch/powerpc/include/asm/firmware.h
-+++ b/arch/powerpc/include/asm/firmware.h
-@@ -52,6 +52,7 @@
- #define FW_FEATURE_BEST_ENERGY	ASM_CONST(0x0000000080000000)
- #define FW_FEATURE_TYPE1_AFFINITY ASM_CONST(0x0000000100000000)
- #define FW_FEATURE_PRRN		ASM_CONST(0x0000000200000000)
-+#define FW_FEATURE_OPALv3	ASM_CONST(0x0000000400000000)
+diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
+index 6a3ecca..88c9459 100644
+--- a/arch/powerpc/platforms/powernv/smp.c
++++ b/arch/powerpc/platforms/powernv/smp.c
+@@ -71,18 +71,68 @@ int pnv_smp_kick_cpu(int nr)
  
- #ifndef __ASSEMBLY__
+ 	BUG_ON(nr < 0 || nr >= NR_CPUS);
  
-@@ -69,7 +70,8 @@ enum {
- 		FW_FEATURE_SET_MODE | FW_FEATURE_BEST_ENERGY |
- 		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN,
- 	FW_FEATURE_PSERIES_ALWAYS = 0,
--	FW_FEATURE_POWERNV_POSSIBLE = FW_FEATURE_OPAL | FW_FEATURE_OPALv2,
-+	FW_FEATURE_POWERNV_POSSIBLE = FW_FEATURE_OPAL | FW_FEATURE_OPALv2 |
-+		FW_FEATURE_OPALv3,
- 	FW_FEATURE_POWERNV_ALWAYS = 0,
- 	FW_FEATURE_PS3_POSSIBLE = FW_FEATURE_LPAR | FW_FEATURE_PS3_LV1,
- 	FW_FEATURE_PS3_ALWAYS = FW_FEATURE_LPAR | FW_FEATURE_PS3_LV1,
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index b2906ad..cbb9305 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -243,7 +243,8 @@ enum OpalMCE_TlbErrorType {
+-	/* On OPAL v2 the CPU are still spinning inside OPAL itself,
+-	 * get them back now
++	/*
++	 * If we already started or OPALv2 is not supported, we just
++	 * kick the CPU via the PACA
+ 	 */
+-	if (!paca[nr].cpu_start && firmware_has_feature(FW_FEATURE_OPALv2)) {
+-		pr_devel("OPAL: Starting CPU %d (HW 0x%x)...\n", nr, pcpu);
+-		rc = opal_start_cpu(pcpu, start_here);
++	if (paca[nr].cpu_start || !firmware_has_feature(FW_FEATURE_OPALv2))
++		goto kick;
++
++	/*
++	 * At this point, the CPU can either be spinning on the way in
++	 * from kexec or be inside OPAL waiting to be started for the
++	 * first time. OPAL v3 allows us to query OPAL to know if it
++	 * has the CPUs, so we do that
++	 */
++	if (firmware_has_feature(FW_FEATURE_OPALv3)) {
++		uint8_t status;
++
++		rc = opal_query_cpu_status(pcpu, &status);
+ 		if (rc != OPAL_SUCCESS) {
+-			pr_warn("OPAL Error %ld starting CPU %d\n",
++			pr_warn("OPAL Error %ld querying CPU %d state\n",
+ 				rc, nr);
+ 			return -ENODEV;
+ 		}
++
++		/*
++		 * Already started, just kick it, probably coming from
++		 * kexec and spinning
++		 */
++		if (status == OPAL_THREAD_STARTED)
++			goto kick;
++
++		/*
++		 * Available/inactive, let's kick it
++		 */
++		if (status == OPAL_THREAD_INACTIVE) {
++			pr_devel("OPAL: Starting CPU %d (HW 0x%x)...\n",
++				 nr, pcpu);
++			rc = opal_start_cpu(pcpu, start_here);
++			if (rc != OPAL_SUCCESS) {
++				pr_warn("OPAL Error %ld starting CPU %d\n",
++					rc, nr);
++				return -ENODEV;
++			}
++		} else {
++			/*
++			 * An unavailable CPU (or any other unknown status)
++			 * shouldn't be started. It should also
++			 * not be in the possible map but currently it can
++			 * happen
++			 */
++			pr_devel("OPAL: CPU %d (HW 0x%x) is unavailable"
++				 " (status %d)...\n", nr, pcpu, status);
++			return -ENODEV;
++		}
++	} else {
++		/*
++		 * On OPAL v2, we just kick it and hope for the best,
++		 * we must not test the error from opal_start_cpu() or
++		 * we would fail to get CPUs from kexec.
++		 */
++		opal_start_cpu(pcpu, start_here);
+ 	}
++ kick:
+ 	return smp_generic_kick_cpu(nr);
+ }
  
- enum OpalThreadStatus {
- 	OPAL_THREAD_INACTIVE = 0x0,
--	OPAL_THREAD_STARTED = 0x1
-+	OPAL_THREAD_STARTED = 0x1,
-+	OPAL_THREAD_UNAVAILABLE = 0x2 /* opal-v3 */
- };
- 
- enum OpalPciBusCompare {
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 27907cb..628c564 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -56,7 +56,11 @@ int __init early_init_dt_scan_opal(unsigned long node,
- 		 opal.entry, entryp, entrysz);
- 
- 	powerpc_firmware_features |= FW_FEATURE_OPAL;
--	if (of_flat_dt_is_compatible(node, "ibm,opal-v2")) {
-+	if (of_flat_dt_is_compatible(node, "ibm,opal-v3")) {
-+		powerpc_firmware_features |= FW_FEATURE_OPALv2;
-+		powerpc_firmware_features |= FW_FEATURE_OPALv3;
-+		printk("OPAL V3 detected !\n");
-+	} else if (of_flat_dt_is_compatible(node, "ibm,opal-v2")) {
- 		powerpc_firmware_features |= FW_FEATURE_OPALv2;
- 		printk("OPAL V2 detected !\n");
- 	} else {
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index c20381c..d4459bf 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -78,7 +78,9 @@ static void pnv_show_cpuinfo(struct seq_file *m)
- 	if (root)
- 		model = of_get_property(root, "model", NULL);
- 	seq_printf(m, "machine\t\t: PowerNV %s\n", model);
--	if (firmware_has_feature(FW_FEATURE_OPALv2))
-+	if (firmware_has_feature(FW_FEATURE_OPALv3))
-+		seq_printf(m, "firmware\t: OPAL v3\n");
-+	else if (firmware_has_feature(FW_FEATURE_OPALv2))
- 		seq_printf(m, "firmware\t: OPAL v2\n");
- 	else if (firmware_has_feature(FW_FEATURE_OPAL))
- 		seq_printf(m, "firmware\t: OPAL v1\n");
