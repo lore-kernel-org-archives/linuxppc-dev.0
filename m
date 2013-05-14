@@ -1,19 +1,19 @@
-Return-Path: <R58495@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
+Return-Path: <B07421@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0252.outbound.messaging.microsoft.com [213.199.154.252])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0466A2C026D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2013 07:27:18 +1000 (EST)
-From: York Sun <yorksun@freescale.com>
-To: <albrecht.dress@arcor.de>
-Subject: [PATCH RFC] power/mpc85xx: Add delay after enabling I2C master
-Date: Mon, 13 May 2013 14:27:08 -0700
-Message-ID: <1368480428-23926-1-git-send-email-yorksun@freescale.com>
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 67E9B2C009E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2013 10:15:07 +1000 (EST)
+From: Scott Wood <scottwood@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH] powerpc/booke64: fix kernel hangs at kernel_dbg_exc
+Date: Mon, 13 May 2013 19:14:53 -0500
+Message-ID: <1368490493-24606-1-git-send-email-scottwood@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,56 +23,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Erratum A-006037 indicates I2C controller executes the write to I2CCR only
-after it sees SCL idle for 64K cycle of internal I2C controller clocks. If
-during this waiting period, I2C controller is disabled (I2CCR[MEN] set to
-0), then the controller could end in bad state, and hang the future access
-to I2C register.
+MSR_DE is not cleared on entry to the kernel, and we don't clear it
+explicitly outside of debug code.  If we have MSR_DE set in
+prime_debug_regs(), and the new thread has events enabled in DBCR0
+(e.g.  ICMP is set in thread->dbsr0, even though it was cleared in the
+real DBCR0 when the thread got scheduled out), we'll end up taking a
+debug exception in the kernel when DBCR0 is loaded.  DSRR0 will not
+point to an exception vector, and the kernel ends up hanging at
+kernel_dbg_exc.  Fix this by always clearing MSR_DE when we load new
+debug state.
 
-The mpc_i2c_fixup() function tries to recover the bus from a stalled state
-where the 9th clock pulse wasn't generated. However, this workaround
-disables and enables I2C controller without meeting waiting requirement of
-this erratum.
+Another observed source of kernel_dbg_exc hangs is with the branch
+taken event.  If this event is active, but we take a non-debug trap
+(e.g. a TLB miss or an asynchronous interrupt) before the next branch.
+We end up taking a branch-taken debug exception on the initial branch
+instruction of the exception vector, but because the debug exception is
+DBSR_BT rather than DBSR_IC we branch to kernel_dbg_exc before even
+checking the DSRR0 address.  Fix this by checking for DBSR_BT as well
+as DBSR_IC, which is what 32-bit does and what the comments suggest was
+intended in the 64-bit code as well.
 
-This erratum applies to some 85xx SoCs. It is safe to apply to all of them
-for mpc_i2c_fixup().
-
-Signed-off-by: York Sun <yorksun@freescale.com>
+Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
-I'd like to get rid of the #ifdef if mpc5121 is OK with the longer delay.
+ arch/powerpc/kernel/exceptions-64e.S |    8 ++++----
+ arch/powerpc/kernel/process.c        |    7 +++++++
+ 2 files changed, 11 insertions(+), 4 deletions(-)
 
- drivers/i2c/busses/i2c-mpc.c |   11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
-index a69459e..3e540ca 100644
---- a/drivers/i2c/busses/i2c-mpc.c
-+++ b/drivers/i2c/busses/i2c-mpc.c
-@@ -105,7 +105,12 @@ static irqreturn_t mpc_i2c_isr(int irq, void *dev_id)
- static void mpc_i2c_fixup(struct mpc_i2c *i2c)
+diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+index 42a756e..645170a 100644
+--- a/arch/powerpc/kernel/exceptions-64e.S
++++ b/arch/powerpc/kernel/exceptions-64e.S
+@@ -489,7 +489,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+ 	 */
+ 
+ 	mfspr	r14,SPRN_DBSR		/* check single-step/branch taken */
+-	andis.	r15,r14,DBSR_IC@h
++	andis.	r15,r14,(DBSR_IC|DBSR_BT)@h
+ 	beq+	1f
+ 
+ 	LOAD_REG_IMMEDIATE(r14,interrupt_base_book3e)
+@@ -500,7 +500,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+ 	bge+	cr1,1f
+ 
+ 	/* here it looks like we got an inappropriate debug exception. */
+-	lis	r14,DBSR_IC@h		/* clear the IC event */
++	lis	r14,(DBSR_IC|DBSR_BT)@h		/* clear the event */
+ 	rlwinm	r11,r11,0,~MSR_DE	/* clear DE in the CSRR1 value */
+ 	mtspr	SPRN_DBSR,r14
+ 	mtspr	SPRN_CSRR1,r11
+@@ -555,7 +555,7 @@ kernel_dbg_exc:
+ 	 */
+ 
+ 	mfspr	r14,SPRN_DBSR		/* check single-step/branch taken */
+-	andis.	r15,r14,DBSR_IC@h
++	andis.	r15,r14,(DBSR_IC|DBSR_BT)@h
+ 	beq+	1f
+ 
+ 	LOAD_REG_IMMEDIATE(r14,interrupt_base_book3e)
+@@ -566,7 +566,7 @@ kernel_dbg_exc:
+ 	bge+	cr1,1f
+ 
+ 	/* here it looks like we got an inappropriate debug exception. */
+-	lis	r14,DBSR_IC@h		/* clear the IC event */
++	lis	r14,(DBSR_IC|DBSR_BT)@h		/* clear the event */
+ 	rlwinm	r11,r11,0,~MSR_DE	/* clear DE in the DSRR1 value */
+ 	mtspr	SPRN_DBSR,r14
+ 	mtspr	SPRN_DSRR1,r11
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index ceb4e7b..912fe3c 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -339,6 +339,13 @@ static void set_debug_reg_defaults(struct thread_struct *thread)
+ 
+ static void prime_debug_regs(struct thread_struct *thread)
  {
- 	int k;
--	u32 delay_val = 1000000 / i2c->real_clk + 1;
-+	u32 delay_val;
-+#ifdef CONFIG_PPC_85xx
-+	delay_val = 65536 / (fsl_get_sys_freq() / 2000000);	/* 64K cycle */
-+#else
-+	delay_val = 1000000 / i2c->real_clk + 1;
-+#endif
- 
- 	if (delay_val < 2)
- 		delay_val = 2;
-@@ -115,7 +120,11 @@ static void mpc_i2c_fixup(struct mpc_i2c *i2c)
- 		writeccr(i2c, CCR_MSTA | CCR_MTX | CCR_MEN);
- 		udelay(delay_val);
- 		writeccr(i2c, CCR_MEN);
-+#ifdef CONFIG_PPC_85xx
-+		udelay(delay_val);
-+#else
- 		udelay(delay_val << 1);
-+#endif
- 	}
- }
- 
++	/*
++	 * We could have inherited MSR_DE from userspace, since
++	 * it doesn't get cleared on exception entry.  Make sure
++	 * MSR_DE is clear before we enable any debug events.
++	 */
++	mtmsr(mfmsr() & ~MSR_DE);
++
+ 	mtspr(SPRN_IAC1, thread->iac1);
+ 	mtspr(SPRN_IAC2, thread->iac2);
+ #if CONFIG_PPC_ADV_DEBUG_IACS > 2
 -- 
-1.7.9.5
+1.7.10.4
