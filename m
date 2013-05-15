@@ -1,41 +1,32 @@
-Return-Path: <yhlu.kernel@gmail.com>
-Received: from mail-ie0-x234.google.com (mail-ie0-x234.google.com
- [IPv6:2607:f8b0:4001:c03::234])
+Return-Path: <liuj97@gmail.com>
+Received: from mail-pa0-f45.google.com (mail-pa0-f45.google.com
+ [209.85.220.45])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5A00F2C00A9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 00:58:48 +1000 (EST)
-Received: by mail-ie0-f180.google.com with SMTP id ar20so3949758iec.11
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2013 07:58:44 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 82DD32C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 01:08:00 +1000 (EST)
+Received: by mail-pa0-f45.google.com with SMTP id lj1so1593331pab.32
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2013 08:07:58 -0700 (PDT)
+Message-ID: <5193A4C7.1040607@gmail.com>
+Date: Wed, 15 May 2013 23:07:51 +0800
+From: Liu Jiang <liuj97@gmail.com>
 MIME-Version: 1.0
-Sender: yhlu.kernel@gmail.com
-In-Reply-To: <51939FB1.20203@gmail.com>
-References: <1368461313-4371-1-git-send-email-jiang.liu@huawei.com>
- <1368461313-4371-4-git-send-email-jiang.liu@huawei.com>
- <CAE9FiQVKKKmZRQ8CcKCzU8Gqzwb5SjWYagVB2OZiRqbSWXVpiw@mail.gmail.com>
- <5191F53E.4000305@cn.fujitsu.com> <51925136.5050302@gmail.com>
- <CAE9FiQWO-jR5y35kKiW0m6gVR54ZyRsBsdhP4BmFLSsDzCS3rA@mail.gmail.com>
- <51926CF6.1050706@gmail.com>
- <CAE9FiQWXN_ETRFPb5oFx-6LXyuHviX3h3NXCQKjcxtv2Uma-JA@mail.gmail.com>
- <51939E16.9090105@gmail.com>
- <CAE9FiQUXrOmN0rkvOwE1G_acEGY3-gouzaXjBMT7EE6uAqvuZA@mail.gmail.com>
- <51939FB1.20203@gmail.com>
-Date: Wed, 15 May 2013 07:58:44 -0700
-Message-ID: <CAE9FiQVCSm14S0A1sVWewc7UX-dyOmu9aq1UwqdPZK6qSmbFxQ@mail.gmail.com>
-Subject: Re: [PATCH v2, part 1 3/9] PCI: Convert alloc_pci_dev(void) to
- pci_alloc_dev(bus) instead
-From: Yinghai Lu <yinghai@kernel.org>
-To: Liu Jiang <liuj97@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- "Rafael J . Wysocki" <rjw@sisk.pl>, linuxppc-dev@lists.ozlabs.org,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
- "David S. Miller" <davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Bjorn Helgaas <bhelgaas@google.com>, Paul Mackerras <paulus@samba.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Gu Zheng <guz.fnst@cn.fujitsu.com>, Myron Stowe <myron.stowe@redhat.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC PATCH v2, part 2 09/18] PCI, PPC: use hotplug-safe iterators
+ to walk PCI buses
+References: <1368550322-1045-1-git-send-email-jiang.liu@huawei.com>
+ <1368550322-1045-9-git-send-email-jiang.liu@huawei.com>
+ <1368574202.31689.54.camel@pasglop>
+In-Reply-To: <1368574202.31689.54.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: Toshi Kani <toshi.kani@hp.com>, Jiang Liu <jiang.liu@huawei.com>,
+ Myron Stowe <myron.stowe@redhat.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rjw@sisk.pl>,
+ Gu Zheng <guz.fnst@cn.fujitsu.com>, Yijing Wang <wangyijing@huawei.com>,
+ Bill Pemberton <wfp5p@virginia.edu>, Paul Mackerras <paulus@samba.org>,
+ linux-pci@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>,
+ Yinghai Lu <yinghai@kernel.org>, Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,42 +36,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 15, 2013 at 7:46 AM, Liu Jiang <liuj97@gmail.com> wrote:
-> On Wed 15 May 2013 10:43:02 PM CST, Yinghai Lu wrote:
->>
+On 05/15/2013 07:30 AM, Benjamin Herrenschmidt wrote:
+> On Wed, 2013-05-15 at 00:51 +0800, Jiang Liu wrote:
+>> Enhance PPC architecture specific code to use hotplug-safe iterators
+>> to walk PCI buses.
+> I was about to ack it but then I saw:
 >
->> that is another bug, let of guy handle it.
->>
->> Yinghai
+>> diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
+>> index 51a133a..a41c6dd 100644
+>> --- a/arch/powerpc/kernel/pci_64.c
+>> +++ b/arch/powerpc/kernel/pci_64.c
+>> @@ -208,7 +208,6 @@ long sys_pciconfig_iobase(long which, unsigned long in_bus,
+>>   			  unsigned long in_devfn)
+>>   {
+>>   	struct pci_controller* hose;
+>> -	struct list_head *ln;
+>>   	struct pci_bus *bus = NULL;
+>>   	struct device_node *hose_node;
+>>   
+>> @@ -229,18 +228,16 @@ long sys_pciconfig_iobase(long which, unsigned long in_bus,
+>>   	/* That syscall isn't quite compatible with PCI domains, but it's
+>>   	 * used on pre-domains setup. We return the first match
+>>   	 */
+>> -
+>> -	for (ln = pci_root_buses.next; ln != &pci_root_buses; ln = ln->next) {
+>> -		bus = pci_bus_b(ln);
+>> -		if (in_bus >= bus->number && in_bus <= bus->busn_res.end)
+>> +	for_each_pci_root_bus(bus)
+>> +		if (in_bus >= bus->number && in_bus <= bus->busn_res.end &&
+>> +		    bus->dev.of_node)
+>>   			break;
+>> -		bus = NULL;
+>> -	}
+>> -	if (bus == NULL || bus->dev.of_node == NULL)
+>> +	if (bus == NULL)
+>>   		return -ENODEV;
+> You just removed the NULL check for the of_node field...
+Hi Benjamin,
+     Thanks for review.
+     I just moved the "bus->dev.of_node == NULL" into the above 
+for_each_pci_root_bus()
+loop:)
+     Will send you another version according to your suggestion to use 
+pci_bus_to_host()
+to simplify the code.
+Regards!
+Gerry
+
+>   
+>>   	hose_node = bus->dev.of_node;
+>>   	hose = PCI_DN(hose_node)->phb;
+> Which is dereferrenced here.	
 >
-> Hi Yinghai,
->       I don't know any OF exports, could you please help to CC
-> some OF experts?
-
-powerpc and sparc are using that.
-
-Ben,
-
-in drivers/pci/probe.c::pci_scan_device() there is
-
-        pci_set_of_node(dev);
-
-        if (pci_setup_device(dev)) {
-                kfree(dev);
-                return NULL;
-        }
-
-so if pci_setup_device fails, there is one dev reference is not release.
-
-please check you can just move down pci_set_of_node down after that
-failing path, like
-
-
-        if (pci_setup_device(dev)) {
-                kfree(dev);
-                return NULL;
-        }
-
-        pci_set_of_node(dev);
-
-Yinghai
+>> +	pci_bus_put(bus);
+> On the other hand, the whole thing can probably be using
+> pci_bus_to_host() instead.... the above code is bitrotted.
+>
+>>   	switch (which) {
+>>   	case IOBASE_BRIDGE_NUMBER:
+>   
+> Cheeers,
+> Ben.
+>
+>
