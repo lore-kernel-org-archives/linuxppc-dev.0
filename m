@@ -1,43 +1,42 @@
-Return-Path: <klebers@linux.vnet.ibm.com>
-Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e24smtp04.br.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CEF1B2C008E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2013 23:12:23 +1000 (EST)
-Received: from /spool/local
- by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <klebers@linux.vnet.ibm.com>;
- Wed, 15 May 2013 10:12:18 -0300
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 90F7A1DC006A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2013 09:12:16 -0400 (EDT)
-Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
- by d24relay03.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r4FDBG8v47054986
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2013 10:11:16 -0300
-Received: from d24av05.br.ibm.com (loopback [127.0.0.1])
- by d24av05.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r4FDCBPr015775
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2013 10:12:15 -0300
-Message-ID: <519389AA.8090707@linux.vnet.ibm.com>
-Date: Wed, 15 May 2013 10:12:10 -0300
-From: Kleber Sacilotto de Souza <klebers@linux.vnet.ibm.com>
+Return-Path: <liuj97@gmail.com>
+Received: from mail-pd0-f181.google.com (mail-pd0-f181.google.com
+ [209.85.192.181])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4B3A42C00A4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 00:39:28 +1000 (EST)
+Received: by mail-pd0-f181.google.com with SMTP id p11so1416770pdj.40
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2013 07:39:25 -0700 (PDT)
+Message-ID: <51939E16.9090105@gmail.com>
+Date: Wed, 15 May 2013 22:39:18 +0800
+From: Liu Jiang <liuj97@gmail.com>
 MIME-Version: 1.0
-To: Alex Deucher <alexdeucher@gmail.com>
-Subject: Re: [PATCHv5 0/2] Speed Cap fixes for ppc64
-References: <1367620993-27037-1-git-send-email-klebers@linux.vnet.ibm.com>
- <1367622108.4389.129.camel@pasglop>
- <CADnq5_M9n0q4CucEhNqrJBjHsTh19ASsYr=nsUAJA_-mRr8qvQ@mail.gmail.com>
- <519380FF.4020703@linux.vnet.ibm.com>
- <CADnq5_POXuoDUQ3CX2GnYUzxE4SEoVyQq_k3tHdO2TnvDdXOUQ@mail.gmail.com>
-In-Reply-To: <CADnq5_POXuoDUQ3CX2GnYUzxE4SEoVyQq_k3tHdO2TnvDdXOUQ@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: David Airlie <airlied@linux.ie>, dri-devel@lists.freedesktop.org,
- Bjorn Helgaas <bhelgaas@google.com>, Jerome Glisse <jglisse@redhat.com>,
- Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
- Brian King <brking@linux.vnet.ibm.com>,
- Alex Deucher <alexander.deucher@amd.com>, linuxppc-dev@lists.ozlabs.org
+To: Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH v2,
+ part 1 3/9] PCI: Convert alloc_pci_dev(void) to pci_alloc_dev(bus)
+ instead
+References: <1368461313-4371-1-git-send-email-jiang.liu@huawei.com>
+ <1368461313-4371-4-git-send-email-jiang.liu@huawei.com>
+ <CAE9FiQVKKKmZRQ8CcKCzU8Gqzwb5SjWYagVB2OZiRqbSWXVpiw@mail.gmail.com>
+ <5191F53E.4000305@cn.fujitsu.com> <51925136.5050302@gmail.com>
+ <CAE9FiQWO-jR5y35kKiW0m6gVR54ZyRsBsdhP4BmFLSsDzCS3rA@mail.gmail.com>
+ <51926CF6.1050706@gmail.com>
+ <CAE9FiQWXN_ETRFPb5oFx-6LXyuHviX3h3NXCQKjcxtv2Uma-JA@mail.gmail.com>
+In-Reply-To: <CAE9FiQWXN_ETRFPb5oFx-6LXyuHviX3h3NXCQKjcxtv2Uma-JA@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: Neela Syam Kolli <megaraidlinux@lsi.com>,
+ "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
+ Toshi Kani <toshi.kani@hp.com>, Jiang Liu <jiang.liu@huawei.com>,
+ Linux-Scsi <linux-scsi@vger.kernel.org>, David Airlie <airlied@linux.ie>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "James E.J. Bottomley" <jbottomley@parallels.com>,
+ "Rafael J . Wysocki" <rjw@sisk.pl>, Bjorn Helgaas <bhelgaas@google.com>,
+ Yijing Wang <wangyijing@huawei.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Gu Zheng <guz.fnst@cn.fujitsu.com>, Paul Mackerras <paulus@samba.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Myron Stowe <myron.stowe@redhat.com>, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,75 +46,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/15/2013 09:58 AM, Alex Deucher wrote:
-> On Wed, May 15, 2013 at 8:35 AM, Kleber Sacilotto de Souza
-> <klebers@linux.vnet.ibm.com> wrote:
->> On 05/06/2013 11:32 AM, Alex Deucher wrote:
+On Wed 15 May 2013 02:52:51 AM CST, Yinghai Lu wrote:
+> On Tue, May 14, 2013 at 9:57 AM, Liu Jiang <liuj97@gmail.com> wrote:
+>> On Tue 14 May 2013 11:10:33 PM CST, Yinghai Lu wrote:
 >>>
->>> On Fri, May 3, 2013 at 7:01 PM, Benjamin Herrenschmidt
->>> <benh@kernel.crashing.org> wrote:
+>>> On Tue, May 14, 2013 at 7:59 AM, Liu Jiang <liuj97@gmail.com> wrote:
 >>>>
->>>> On Fri, 2013-05-03 at 19:43 -0300, Kleber Sacilotto de Souza wrote:
+>>>> On 05/14/2013 04:26 PM, Gu Zheng wrote:
+>>>>       I suggest to use pci_release_dev() instead because it also needs to
+>>>> release OF related resources.
+>>>> I will update it in next version.
 >>>>
->>>>> This patch series does:
->>>>>     1. max_bus_speed is used to set the device to gen2 speeds
->>>>>     2. on power there's no longer a conflict between the pseries call and
->>>>> other
->>>>> architectures, because the overwrite is done via a ppc_md hook
->>>>>     3. radeon is using bus->max_bus_speed instead of
->>>>> drm_pcie_get_speed_cap_mask
->>>>> for gen2 capability detection
->>>>>
->>>>> The first patch consists of some architecture changes, such as adding a
->>>>> hook on
->>>>> powerpc for pci_root_bridge_prepare, so that pseries will initialize it
->>>>> to a
->>>>> function, while all other architectures get a NULL pointer. So that
->>>>> whenever
->>>>> pci_create_root_bus is called, we'll get max_bus_speed properly setup
->>>>> from
->>>>> OpenFirmware.
->>>>>
->>>>> The second patch consists of simple radeon changes not to call
->>>>> drm_get_pcie_speed_cap_mask anymore. I assume that on x86 machines,
->>>>> the max_bus_speed property will be properly set already.
+>>>> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+>>>> index bc075a3..2ac6338 100644
+>>>> --- a/drivers/pci/probe.c
+>>>> +++ b/drivers/pci/probe.c
+>>>> @@ -1281,7 +1281,7 @@ static struct pci_dev *pci_scan_device(struct
+>>>> pci_bus
+>>>> *bus
+>>>>           pci_set_of_node(dev);
 >>>>
->>>>
->>>> So I'm ok with the approach now and I might even put the powerpc patch
->>>> in for 3.10 since arguably we are fixing a nasty bug (uninitialized
->>>> max_bus_speed).
->>>>
->>>> David, what's your feeling about the radeon change ? It would be nice if
->>>> that could go in soon for various distro targets :-) On the other hand
->>>> I'm not going to be pushy if you are not comfortable with it.
+>>>>           if (pci_setup_device(dev)) {
+>>>> -               kfree(dev);
+>>>> +               pci_release_dev(&dev->dev);
+>>>>                   return NULL;
 >>>
 >>>
->>> FWIW, the radeon change looks fine to me.
+>>> no, should move pci_set_of_node calling into pci_setup_device.
 >>>
->>> Alex
->>>
+>>> Yinghai
 >>
->> Hi David,
 >>
->> Are you planning to accept the radeon patch? If yes, can we still expect it
->> to make it for 3.10?
->>
->> As Ben mentioned, we have some distro targets to make and it would be nice
->> to have an outlook of the upstream acceptance to start the conversations
->> with those distros.
+>> I'm not sure whether we should call pci_set_of_node() for SR-IOV devices
+>> too,
+>> any suggestions here?
 >
-> Is the rest of this series already upstream?  I don't see a problem
-> pulling it in if the rest of the patches are in Dave's tree.  Dave, do
-> you want to grab this, or do you wan me to pull it in through my tree?
+> or just move down pci_set_of_node after pci_setup_device?
 >
-> Alex
+> anyway that is another bug.
 >
-
-The powerpc patch was applied by Ben and is already upstream.
-
-
-Thanks,
-
--- 
-Kleber Sacilotto de Souza
-IBM Linux Technology Center
+> Yinghai
+I'm not familiar with the OF logic and can't make sure whether 
+pci_setup_device()
+has dependency on dev->of_node. Feel it's more safe to call 
+pci_release_of_node()
+on failing path instead of tuning call-site of pci_set_of_node().
