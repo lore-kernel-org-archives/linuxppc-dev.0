@@ -1,41 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 08C7B2C009D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 07:30:23 +1000 (EST)
-Message-ID: <1368653371.9603.18.camel@pasglop>
-Subject: Re: [PATCH v2, part 1 3/9] PCI: Convert alloc_pci_dev(void) to
- pci_alloc_dev(bus) instead
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Liu Jiang <liuj97@gmail.com>
-Date: Thu, 16 May 2013 07:29:31 +1000
-In-Reply-To: <51939FB1.20203@gmail.com>
-References: <1368461313-4371-1-git-send-email-jiang.liu@huawei.com>
- <1368461313-4371-4-git-send-email-jiang.liu@huawei.com>
- <CAE9FiQVKKKmZRQ8CcKCzU8Gqzwb5SjWYagVB2OZiRqbSWXVpiw@mail.gmail.com>
- <5191F53E.4000305@cn.fujitsu.com> <51925136.5050302@gmail.com>
- <CAE9FiQWO-jR5y35kKiW0m6gVR54ZyRsBsdhP4BmFLSsDzCS3rA@mail.gmail.com>
- <51926CF6.1050706@gmail.com>
- <CAE9FiQWXN_ETRFPb5oFx-6LXyuHviX3h3NXCQKjcxtv2Uma-JA@mail.gmail.com>
- <51939E16.9090105@gmail.com>
- <CAE9FiQUXrOmN0rkvOwE1G_acEGY3-gouzaXjBMT7EE6uAqvuZA@mail.gmail.com>
- <51939FB1.20203@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Neela Syam Kolli <megaraidlinux@lsi.com>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
- Toshi Kani <toshi.kani@hp.com>, Linux-Scsi <linux-scsi@vger.kernel.org>,
- Myron Stowe <myron.stowe@redhat.com>, David Airlie <airlied@linux.ie>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "James E.J. Bottomley" <jbottomley@parallels.com>,
- "Rafael J . Wysocki" <rjw@sisk.pl>, Bjorn Helgaas <bhelgaas@google.com>,
- Yijing Wang <wangyijing@huawei.com>, Paul Mackerras <paulus@samba.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Gu Zheng <guz.fnst@cn.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>,
- Yinghai Lu <yinghai@kernel.org>, "David
- S. Miller" <davem@davemloft.net>, Jiang Liu <jiang.liu@huawei.com>
+Return-Path: <B07421@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4A1A52C00DA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 07:30:36 +1000 (EST)
+Date: Wed, 15 May 2013 16:30:26 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 1/4] powerpc/book3e: introduce external_input_edge
+ exception handler for 64bit kernel
+To: Kevin Hao <haokexin@gmail.com>
+In-Reply-To: <20130514020317.GB21564@pek-khao-d1.corp.ad.wrs.com> (from
+ haokexin@gmail.com on Mon May 13 21:03:17 2013)
+Message-ID: <1368653426.8202.34@snotra>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,12 +26,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-05-15 at 22:46 +0800, Liu Jiang wrote:
->        I don't know any OF exports, could you please help to CC
-> some OF experts?
+On 05/13/2013 09:03:17 PM, Kevin Hao wrote:
+> On Mon, May 13, 2013 at 10:47:17AM -0500, Scott Wood wrote:
+> > On 05/11/2013 06:26:21 PM, Kevin Hao wrote:
+> > >In the external proxy facility mode, the interrupt is automatically
+> > >acknowledged with the same effect as reading the IACK register. So
+> > >this makes external input interrupt more like edge sensitive. That
+> > >means we can leave the irq hard enabled when it occurs with irq =20
+> soft
+> > >disabled just like the dec and doorbell interrupt. But the External
+> > >Proxy Register(EPR) is only considered valid from the time that the
+> > >external interrupt occurs until MSR[EE] is set to 1. So we have to
+> > >save the EPR before irq hard enabled.
+> >
+> > Is it really worth it?
+>=20
+> Maybe. :-)
+> Compare with the current kernel:
+>   * The overhead is that we need additional load & store the contents =20
+> of
+>     the EPR from/to PACA.
 
-I wrote that code I think. Sorry, I've missed the beginning of the
-thread, what is the problem ?
+There's also mental overhead of the extra complexity.  The lazy EE =20
+stuff is already fiddly enough (e.g. the recent KVM patches).
 
-Cheers,
-Ben.
+>   * The bonus is we keep the irq hard enabled when a external =20
+> interrupt occurs
+>     with irq soft-disabled. As I know we should leave the irq hard =20
+> enabled as
+>     much as possible. This is also the primary reason that we =20
+> introduce the
+>     Lazy EE.
+
+I don't think "as much as possible" is a good way to look at it, so =20
+much as "as much as is practical", balanced by also wanting to keep the =20
+code as simple as is practical.
+
+-Scott=
