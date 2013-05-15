@@ -1,30 +1,30 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e7.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 516912C00AD
+ (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4AF142C00A5
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2013 13:35:14 +1000 (EST)
 Received: from /spool/local
- by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Tue, 14 May 2013 23:35:08 -0400
+ Tue, 14 May 2013 23:35:11 -0400
 Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id F30B86E8028
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2013 23:35:02 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 542426E8039
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2013 23:35:06 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
  by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r4F3Z6XY259632
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2013 23:35:06 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r4F3Z5a2001227
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2013 23:35:05 -0400
+ r4F3Z9bD308796
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2013 23:35:09 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r4F3Z8I3006442
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2013 00:35:09 -0300
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 02/22] powerpc/eeh: Function to tranverse PCI devices
-Date: Wed, 15 May 2013 11:34:38 +0800
-Message-Id: <1368588898-16224-3-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 08/22] powerpc/eeh: Refactor eeh_reset_pe_once()
+Date: Wed, 15 May 2013 11:34:44 +0800
+Message-Id: <1368588898-16224-9-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1368588898-16224-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1368588898-16224-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -37,86 +37,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For EEH on PowerNV platform, the PCI devices will be probed to
-check if they support EEH functionality. Different from the case
-of EEH for pSeries platform, we will probe real PCI device instead
-of device tree node for EEH capability on PowerNV platform.
-
-The patch introduces function eeh_pci_dev_traverse() to traverse
-PCI devices for the indicated PCI bus from top to bottom.
+The patch changes the criteria used to judge if the PE has been
+resetted successfully. We needn't the PE status is exactly equal
+to the combo: (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE).
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h           |    3 ++
- arch/powerpc/platforms/pseries/eeh_dev.c |   35 ++++++++++++++++++++++++++++++
- 2 files changed, 38 insertions(+), 0 deletions(-)
+ arch/powerpc/platforms/pseries/eeh.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index e32c3c5..eeaeab6 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -183,6 +183,7 @@ static inline void eeh_unlock(void)
- #define EEH_MAX_ALLOWED_FREEZES 5
+diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
+index 39d2ea6..ffe34c4 100644
+--- a/arch/powerpc/platforms/pseries/eeh.c
++++ b/arch/powerpc/platforms/pseries/eeh.c
+@@ -527,7 +527,6 @@ static void eeh_reset_pe_once(struct eeh_pe *pe)
+ 	 * Partitionable Endpoint trumps hot-reset.
+   	 */
+ 	eeh_pe_dev_traverse(pe, eeh_set_dev_freset, &freset);
+-
+ 	if (freset)
+ 		eeh_ops->reset(pe, EEH_RESET_FUNDAMENTAL);
+ 	else
+@@ -565,6 +564,7 @@ static void eeh_reset_pe_once(struct eeh_pe *pe)
+  */
+ int eeh_reset_pe(struct eeh_pe *pe)
+ {
++	int flags = (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE);
+ 	int i, rc;
  
- typedef void *(*eeh_traverse_func)(void *data, void *flag);
-+typedef void *(*eeh_pci_traverse_func)(struct pci_dev *dev, void *flag);
- int eeh_phb_pe_create(struct pci_controller *phb);
- int eeh_add_to_parent_pe(struct eeh_dev *edev);
- int eeh_rmv_from_parent_pe(struct eeh_dev *edev, int purge_pe);
-@@ -191,6 +192,8 @@ void *eeh_pe_dev_traverse(struct eeh_pe *root,
- void eeh_pe_restore_bars(struct eeh_pe *pe);
- struct pci_bus *eeh_pe_bus_get(struct eeh_pe *pe);
+ 	/* Take three shots at resetting the bus */
+@@ -572,7 +572,7 @@ int eeh_reset_pe(struct eeh_pe *pe)
+ 		eeh_reset_pe_once(pe);
  
-+void eeh_pci_dev_traverse(struct pci_bus *bus,
-+		eeh_pci_traverse_func fn, void *flag);
- void *eeh_dev_init(struct device_node *dn, void *data);
- void eeh_dev_phb_init_dynamic(struct pci_controller *phb);
- int __init eeh_ops_register(struct eeh_ops *ops);
-diff --git a/arch/powerpc/platforms/pseries/eeh_dev.c b/arch/powerpc/platforms/pseries/eeh_dev.c
-index 1efa28f..12c445d 100644
---- a/arch/powerpc/platforms/pseries/eeh_dev.c
-+++ b/arch/powerpc/platforms/pseries/eeh_dev.c
-@@ -41,6 +41,41 @@
- #include <asm/pci-bridge.h>
- #include <asm/ppc-pci.h>
+ 		rc = eeh_ops->wait_state(pe, PCI_BUS_RESET_WAIT_MSEC);
+-		if (rc == (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE))
++		if ((rc & flags) == flags)
+ 			return 0;
  
-+
-+/**
-+ * eeh_pci_dev_traverse - Traverse PCI devices for the indicated bus
-+ * @bus: PCI bus
-+ * @fn: callback function
-+ * @flag: extra flag
-+ *
-+ * The function traverses the PCI devices for the indicated PCI bus
-+ * from top to bottom fashion until the supplied callback function
-+ * returns non-zero value on the specific PCI device.
-+ */
-+void eeh_pci_dev_traverse(struct pci_bus *bus,
-+		eeh_pci_traverse_func fn, void *flag)
-+{
-+	struct pci_dev *dev;
-+	void *ret;
-+
-+	if (!bus)
-+		return;
-+
-+	/*
-+	 * We should make sure the parent devices are scanned
-+	 * prior to the child devices so that the parent PE
-+	 * could be created before the child PEs.
-+	 */
-+	list_for_each_entry(dev, &bus->devices, bus_list) {
-+		ret = fn(dev, flag);
-+		if (ret)
-+			return;
-+
-+		if (dev->subordinate)
-+			eeh_pci_dev_traverse(dev->subordinate, fn, flag);
-+	}
-+}
-+
- /**
-  * eeh_dev_init - Create EEH device according to OF node
-  * @dn: device node
+ 		if (rc < 0) {
 -- 
 1.7.5.4
