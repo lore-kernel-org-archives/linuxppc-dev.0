@@ -1,33 +1,32 @@
-Return-Path: <guz.fnst@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id 472CC2C00B3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2013 18:42:18 +1000 (EST)
-Message-ID: <5191F53E.4000305@cn.fujitsu.com>
-Date: Tue, 14 May 2013 16:26:38 +0800
-From: Gu Zheng <guz.fnst@cn.fujitsu.com>
-MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH v2,
- part 1 3/9] PCI: Convert alloc_pci_dev(void) to pci_alloc_dev(bus)
- instead
-References: <1368461313-4371-1-git-send-email-jiang.liu@huawei.com>
- <1368461313-4371-4-git-send-email-jiang.liu@huawei.com>
- <CAE9FiQVKKKmZRQ8CcKCzU8Gqzwb5SjWYagVB2OZiRqbSWXVpiw@mail.gmail.com>
-In-Reply-To: <CAE9FiQVKKKmZRQ8CcKCzU8Gqzwb5SjWYagVB2OZiRqbSWXVpiw@mail.gmail.com>
-Content-Type: multipart/mixed; boundary="------------070509020701090400080103"
-Cc: Neela Syam Kolli <megaraidlinux@lsi.com>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
- Toshi Kani <toshi.kani@hp.com>, Jiang Liu <jiang.liu@huawei.com>,
- Linux-Scsi <linux-scsi@vger.kernel.org>, David Airlie <airlied@linux.ie>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "James E.J. Bottomley" <JBottomley@parallels.com>,
- "Rafael J . Wysocki" <rjw@sisk.pl>, Yijing Wang <wangyijing@huawei.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Bjorn Helgaas <bhelgaas@google.com>, Paul Mackerras <paulus@samba.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Myron Stowe <myron.stowe@redhat.com>, "David S. Miller" <davem@davemloft.net>,
- Jiang Liu <liuj97@gmail.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id CAD622C009E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2013 10:33:16 +1000 (EST)
+Message-ID: <1368577954.31689.63.camel@pasglop>
+Subject: Re: [PATCH v5, part4 31/41] mm/ppc: prepare for removing
+ num_physpages and simplify mem_init()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jiang Liu <liuj97@gmail.com>
+Date: Wed, 15 May 2013 10:32:34 +1000
+In-Reply-To: <1368028298-7401-32-git-send-email-jiang.liu@huawei.com>
+References: <1368028298-7401-1-git-send-email-jiang.liu@huawei.com>
+ <1368028298-7401-32-git-send-email-jiang.liu@huawei.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linux-arch@vger.kernel.org,
+ James Bottomley <James.Bottomley@HansenPartnership.com>,
+ David Howells <dhowells@redhat.com>, Jiang Liu <jiang.liu@huawei.com>,
+ Wen Congyang <wency@cn.fujitsu.com>, linux-mm@kvack.org,
+ Mark Salter <msalter@redhat.com>, linux-kernel@vger.kernel.org,
+ Michal Hocko <mhocko@suse.cz>, Minchan Kim <minchan@kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Mel Gorman <mgorman@suse.de>,
+ David Rientjes <rientjes@google.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
+ KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+ Jianguo Wu <wujianguo@huawei.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,230 +36,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------070509020701090400080103
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=ISO-8859-1
+On Wed, 2013-05-08 at 23:51 +0800, Jiang Liu wrote:
+> Prepare for removing num_physpages and simplify mem_init().
 
-On 05/14/2013 01:23 AM, Yinghai Lu wrote:
+No objection, I haven't had a chance to actually build/boot test though.
 
-> On Mon, May 13, 2013 at 9:08 AM, Jiang Liu <liuj97@gmail.com> wrote:
->> From: Gu Zheng <guz.fnst@cn.fujitsu.com>
->> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
->> index 4f0bc0a..bc075a3 100644
->> --- a/drivers/pci/probe.c
->> +++ b/drivers/pci/probe.c
->> @@ -1131,6 +1131,7 @@ static void pci_release_dev(struct device *dev)
->>         struct pci_dev *pci_dev;
->>
->>         pci_dev = to_pci_dev(dev);
->> +       pci_bus_put(pci_dev->bus);
->>         pci_release_capabilities(pci_dev);
->>         pci_release_of_node(pci_dev);
->>         kfree(pci_dev);
->> @@ -1269,11 +1270,10 @@ static struct pci_dev *pci_scan_device(struct pci_bus *bus, int devfn)
->>         if (!pci_bus_read_dev_vendor_id(bus, devfn, &l, 60*1000))
->>                 return NULL;
->>
->> -       dev = alloc_pci_dev();
->> +       dev = pci_alloc_dev(bus);
->>         if (!dev)
->>                 return NULL;
->>
->> -       dev->bus = bus;
->>         dev->devfn = devfn;
->>         dev->vendor = l & 0xffff;
->>         dev->device = (l >> 16) & 0xffff;
+BTW. A recommended way of doing so which is pretty easy even if you
+don't have access to powerpc hardware nowadays is to use
+qemu-system-ppc64 with -M pseries.
+
+You can find cross compilers for the kernel on kernel.org and you can
+feed qemu with some distro installer ISO.
+
+Cheers,
+Ben.
+
+> Signed-off-by: Jiang Liu <jiang.liu@huawei.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: linux-kernel@vger.kernel.org
+> ---
+>  arch/powerpc/mm/mem.c |   56 +++++++++++--------------------------------------
+>  1 file changed, 12 insertions(+), 44 deletions(-)
 > 
-> in pci_setup_device() fail path, it release the ref to that bus.
-
-Yes, you're right, we need to release the bus' ref if pci_setup_device() failed.
-Thanks for your correction.:)
-
-Best regards,
-Gu
-
-> 
-> Yinghai
-> 
-
-
-
---------------070509020701090400080103
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain;
- name="Convert-alloc_pci_dev-void-to-pci_alloc_dev-v3.patch"
-Content-Disposition: attachment;
- filename*0="Convert-alloc_pci_dev-void-to-pci_alloc_dev-v3.patch"
-
->From 7add6d9e70919b95be2debde2f58fc31d26c75bf Mon Sep 17 00:00:00 2001
-From: Gu Zheng <guz.fnst@cn.fujitsu.com>
-Date: Tue, 14 May 2013 16:11:07 +0800
-Subject: [PATCH v3] PCI: Convert alloc_pci_dev(void) to pci_alloc_dev(bus) instead
-
-v3:
-  Follow Yinghai's correction to release the bus' ref
-  in pci_setup_device() fail path.
-
-v2:
-  Follow Bjorn's correction to move pci_bus_put() to
-  pci_release_dev() instead.
-
-Signed-off-by: Gu Zheng <guz.fnst@cn.fujitsu.com>
----
- arch/powerpc/kernel/pci_of_scan.c |    3 +--
- arch/sparc/kernel/pci.c           |    3 +--
- drivers/char/agp/alpha-agp.c      |    2 +-
- drivers/char/agp/parisc-agp.c     |    2 +-
- drivers/pci/iov.c                 |    8 +++++---
- drivers/pci/probe.c               |    5 +++--
- drivers/scsi/megaraid.c           |    2 +-
- 7 files changed, 13 insertions(+), 12 deletions(-)
-
-diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
-index 2a67e9b..24d01c4 100644
---- a/arch/powerpc/kernel/pci_of_scan.c
-+++ b/arch/powerpc/kernel/pci_of_scan.c
-@@ -128,7 +128,7 @@ struct pci_dev *of_create_pci_dev(struct device_node *node,
- 	const char *type;
- 	struct pci_slot *slot;
- 
--	dev = alloc_pci_dev();
-+	dev = pci_alloc_dev(bus);
- 	if (!dev)
- 		return NULL;
- 	type = of_get_property(node, "device_type", NULL);
-@@ -137,7 +137,6 @@ struct pci_dev *of_create_pci_dev(struct device_node *node,
- 
- 	pr_debug("    create device, devfn: %x, type: %s\n", devfn, type);
- 
--	dev->bus = bus;
- 	dev->dev.of_node = of_node_get(node);
- 	dev->dev.parent = bus->bridge;
- 	dev->dev.bus = &pci_bus_type;
-diff --git a/arch/sparc/kernel/pci.c b/arch/sparc/kernel/pci.c
-index baf4366..e5871fb 100644
---- a/arch/sparc/kernel/pci.c
-+++ b/arch/sparc/kernel/pci.c
-@@ -254,7 +254,7 @@ static struct pci_dev *of_create_pci_dev(struct pci_pbm_info *pbm,
- 	const char *type;
- 	u32 class;
- 
--	dev = alloc_pci_dev();
-+	dev = pci_alloc_dev(bus);
- 	if (!dev)
- 		return NULL;
- 
-@@ -281,7 +281,6 @@ static struct pci_dev *of_create_pci_dev(struct pci_pbm_info *pbm,
- 		printk("    create device, devfn: %x, type: %s\n",
- 		       devfn, type);
- 
--	dev->bus = bus;
- 	dev->sysdata = node;
- 	dev->dev.parent = bus->bridge;
- 	dev->dev.bus = &pci_bus_type;
-diff --git a/drivers/char/agp/alpha-agp.c b/drivers/char/agp/alpha-agp.c
-index dd84af4..199b8e9 100644
---- a/drivers/char/agp/alpha-agp.c
-+++ b/drivers/char/agp/alpha-agp.c
-@@ -174,7 +174,7 @@ alpha_core_agp_setup(void)
- 	/*
- 	 * Build a fake pci_dev struct
- 	 */
--	pdev = alloc_pci_dev();
-+	pdev = pci_alloc_dev(NULL);
- 	if (!pdev)
- 		return -ENOMEM;
- 	pdev->vendor = 0xffff;
-diff --git a/drivers/char/agp/parisc-agp.c b/drivers/char/agp/parisc-agp.c
-index 94821ab..bf5d247 100644
---- a/drivers/char/agp/parisc-agp.c
-+++ b/drivers/char/agp/parisc-agp.c
-@@ -333,7 +333,7 @@ parisc_agp_setup(void __iomem *ioc_hpa, void __iomem *lba_hpa)
- 	struct agp_bridge_data *bridge;
- 	int error = 0;
- 
--	fake_bridge_dev = alloc_pci_dev();
-+	fake_bridge_dev = pci_alloc_dev(NULL);
- 	if (!fake_bridge_dev) {
- 		error = -ENOMEM;
- 		goto fail;
-diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
-index c93071d..2652ca0 100644
---- a/drivers/pci/iov.c
-+++ b/drivers/pci/iov.c
-@@ -75,18 +75,20 @@ static int virtfn_add(struct pci_dev *dev, int id, int reset)
- 	struct pci_dev *virtfn;
- 	struct resource *res;
- 	struct pci_sriov *iov = dev->sriov;
-+	struct pci_bus *bus;
- 
--	virtfn = alloc_pci_dev();
-+	virtfn = pci_alloc_dev(NULL);
- 	if (!virtfn)
- 		return -ENOMEM;
- 
- 	mutex_lock(&iov->dev->sriov->lock);
--	virtfn->bus = virtfn_add_bus(dev->bus, virtfn_bus(dev, id));
--	if (!virtfn->bus) {
-+	bus = virtfn_add_bus(dev->bus, virtfn_bus(dev, id));
-+	if (!bus) {
- 		kfree(virtfn);
- 		mutex_unlock(&iov->dev->sriov->lock);
- 		return -ENOMEM;
- 	}
-+	virtfn->bus = pci_bus_get(bus);
- 	virtfn->devfn = virtfn_devfn(dev, id);
- 	virtfn->vendor = dev->vendor;
- 	pci_read_config_word(dev, iov->pos + PCI_SRIOV_VF_DID, &virtfn->device);
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index 70f10fa..db8dadc 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -1130,6 +1130,7 @@ static void pci_release_dev(struct device *dev)
- 	struct pci_dev *pci_dev;
- 
- 	pci_dev = to_pci_dev(dev);
-+	pci_bus_put(pci_dev->bus);
- 	pci_release_capabilities(pci_dev);
- 	pci_release_of_node(pci_dev);
- 	kfree(pci_dev);
-@@ -1263,11 +1264,10 @@ static struct pci_dev *pci_scan_device(struct pci_bus *bus, int devfn)
- 	if (!pci_bus_read_dev_vendor_id(bus, devfn, &l, 60*1000))
- 		return NULL;
- 
--	dev = alloc_pci_dev();
-+	dev = pci_alloc_dev(bus);
- 	if (!dev)
- 		return NULL;
- 
--	dev->bus = bus;
- 	dev->devfn = devfn;
- 	dev->vendor = l & 0xffff;
- 	dev->device = (l >> 16) & 0xffff;
-@@ -1275,6 +1275,7 @@ static struct pci_dev *pci_scan_device(struct pci_bus *bus, int devfn)
- 	pci_set_of_node(dev);
- 
- 	if (pci_setup_device(dev)) {
-+		pci_bus_put(bus);
- 		kfree(dev);
- 		return NULL;
- 	}
-diff --git a/drivers/scsi/megaraid.c b/drivers/scsi/megaraid.c
-index 846f475f..90c95a3 100644
---- a/drivers/scsi/megaraid.c
-+++ b/drivers/scsi/megaraid.c
-@@ -2026,7 +2026,7 @@ megaraid_abort_and_reset(adapter_t *adapter, Scsi_Cmnd *cmd, int aor)
- static inline int
- make_local_pdev(adapter_t *adapter, struct pci_dev **pdev)
- {
--	*pdev = alloc_pci_dev();
-+	*pdev = pci_alloc_dev(NULL);
- 
- 	if( *pdev == NULL ) return -1;
- 
--- 
-1.7.7
-
-
---------------070509020701090400080103--
+> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+> index b890245..4e24f1c 100644
+> --- a/arch/powerpc/mm/mem.c
+> +++ b/arch/powerpc/mm/mem.c
+> @@ -299,46 +299,27 @@ void __init paging_init(void)
+>  
+>  void __init mem_init(void)
+>  {
+> -#ifdef CONFIG_NEED_MULTIPLE_NODES
+> -	int nid;
+> -#endif
+> -	pg_data_t *pgdat;
+> -	unsigned long i;
+> -	struct page *page;
+> -	unsigned long reservedpages = 0, codesize, initsize, datasize, bsssize;
+> -
+>  #ifdef CONFIG_SWIOTLB
+>  	swiotlb_init(0);
+>  #endif
+>  
+> -	num_physpages = memblock_phys_mem_size() >> PAGE_SHIFT;
+>  	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE);
+>  
+>  #ifdef CONFIG_NEED_MULTIPLE_NODES
+> -        for_each_online_node(nid) {
+> -		if (NODE_DATA(nid)->node_spanned_pages != 0) {
+> -			printk("freeing bootmem node %d\n", nid);
+> -			free_all_bootmem_node(NODE_DATA(nid));
+> -		}
+> +	{
+> +		pg_data_t *pgdat;
+> +
+> +		for_each_online_pgdat(pgdat)
+> +			if (pgdat->node_spanned_pages != 0) {
+> +				printk("freeing bootmem node %d\n",
+> +					pgdat->node_id);
+> +				free_all_bootmem_node(pgdat);
+> +			}
+>  	}
+>  #else
+>  	max_mapnr = max_pfn;
+>  	free_all_bootmem();
+>  #endif
+> -	for_each_online_pgdat(pgdat) {
+> -		for (i = 0; i < pgdat->node_spanned_pages; i++) {
+> -			if (!pfn_valid(pgdat->node_start_pfn + i))
+> -				continue;
+> -			page = pgdat_page_nr(pgdat, i);
+> -			if (PageReserved(page))
+> -				reservedpages++;
+> -		}
+> -	}
+> -
+> -	codesize = (unsigned long)&_sdata - (unsigned long)&_stext;
+> -	datasize = (unsigned long)&_edata - (unsigned long)&_sdata;
+> -	initsize = (unsigned long)&__init_end - (unsigned long)&__init_begin;
+> -	bsssize = (unsigned long)&__bss_stop - (unsigned long)&__bss_start;
+>  
+>  #ifdef CONFIG_HIGHMEM
+>  	{
+> @@ -348,13 +329,9 @@ void __init mem_init(void)
+>  		for (pfn = highmem_mapnr; pfn < max_mapnr; ++pfn) {
+>  			phys_addr_t paddr = (phys_addr_t)pfn << PAGE_SHIFT;
+>  			struct page *page = pfn_to_page(pfn);
+> -			if (memblock_is_reserved(paddr))
+> -				continue;
+> -			free_highmem_page(page);
+> -			reservedpages--;
+> +			if (!memblock_is_reserved(paddr))
+> +				free_highmem_page(page);
+>  		}
+> -		printk(KERN_DEBUG "High memory: %luk\n",
+> -		       totalhigh_pages << (PAGE_SHIFT-10));
+>  	}
+>  #endif /* CONFIG_HIGHMEM */
+>  
+> @@ -367,16 +344,7 @@ void __init mem_init(void)
+>  		(mfspr(SPRN_TLB1CFG) & TLBnCFG_N_ENTRY) - 1;
+>  #endif
+>  
+> -	printk(KERN_INFO "Memory: %luk/%luk available (%luk kernel code, "
+> -	       "%luk reserved, %luk data, %luk bss, %luk init)\n",
+> -		nr_free_pages() << (PAGE_SHIFT-10),
+> -		num_physpages << (PAGE_SHIFT-10),
+> -		codesize >> 10,
+> -		reservedpages << (PAGE_SHIFT-10),
+> -		datasize >> 10,
+> -		bsssize >> 10,
+> -		initsize >> 10);
+> -
+> +	mem_init_print_info(NULL);
+>  #ifdef CONFIG_PPC32
+>  	pr_info("Kernel virtual memory layout:\n");
+>  	pr_info("  * 0x%08lx..0x%08lx  : fixmap\n", FIXADDR_START, FIXADDR_TOP);
