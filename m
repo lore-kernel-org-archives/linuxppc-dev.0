@@ -1,16 +1,21 @@
-Return-Path: <pebolle@tiscali.nl>
-Received: from cpsmtpb-ews07.kpnxchange.com (cpsmtpb-ews07.kpnxchange.com
- [213.75.39.10]) by ozlabs.org (Postfix) with ESMTP id 0CEE92C008F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2013 19:34:20 +1000 (EST)
-Message-ID: <1368609661.1350.185.camel@x61.thuisdomein>
-Subject: [PATCH] powerpc: remove dependency on MV64360
-From: Paul Bolle <pebolle@tiscali.nl>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>
-Date: Wed, 15 May 2013 11:21:01 +0200
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 8EDB62C00A8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2013 19:48:51 +1000 (EST)
+Message-ID: <1368611324.3659.0.camel@pasglop>
+Subject: Re: [PATCH v1 00/22] powerpc/eeh: Enhance converting EEH dev
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Date: Wed, 15 May 2013 19:48:44 +1000
+In-Reply-To: <20130515084740.GA22813@shangw.(null)>
+References: <1368588898-16224-1-git-send-email-shangw@linux.vnet.ibm.com>
+ <1368590264.31689.69.camel@pasglop> <20130515053049.GA28780@shangw.(null)>
+ <1368597537.31689.70.camel@pasglop> <20130515084740.GA22813@shangw.(null)>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,30 +25,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The Kconfig entry that allows to "Distribute interrupts on all CPUs by
-default" has a (negative) dependency on MV64360. But that Kconfig symbol
-was removed in v2.6.27, which means that this dependency has evaluated
-to true ever since. It can be removed too.
+On Wed, 2013-05-15 at 16:47 +0800, Gavin Shan wrote:
+> 
+> Ok. Ben. Could you please point me the source code of the error
+> injection framework? :-)
+> I think you're not talking about userland utility "errinject".
 
-Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
----
-Tested by grepping the tree.
+It's minimal, it's just the stuff in lib/fault-inject which provides
+a framework for exposing attributes for injecting errors along with the
+tool in tools/testing/fault-injection, at least that's my understanding.
 
- arch/powerpc/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Or we can just add stuff under debugfs/powerpc, which is what I did
+for wsp.
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index c33e3ad..9a822d9 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -404,7 +404,7 @@ config FA_DUMP
- 
- config IRQ_ALL_CPUS
- 	bool "Distribute interrupts on all CPUs by default"
--	depends on SMP && !MV64360
-+	depends on SMP
- 	help
- 	  This option gives the kernel permission to distribute IRQs across
- 	  multiple CPUs.  Saying N here will route all IRQs to the first
--- 
-1.7.11.7
+Cheers,
+Ben.
