@@ -1,30 +1,32 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e7.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 54CCE2C00A5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2013 13:35:09 +1000 (EST)
+ (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 5CB892C00B2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2013 13:35:12 +1000 (EST)
 Received: from /spool/local
- by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Tue, 14 May 2013 23:35:06 -0400
-Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 1007738C804A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2013 23:35:05 -0400 (EDT)
+ Tue, 14 May 2013 23:35:09 -0400
+Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id ECBCEC90042
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2013 23:35:06 -0400 (EDT)
 Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r4F3Z5nD307776
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2013 23:35:05 -0400
+ by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r4F3Z74m43909228
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2013 23:35:07 -0400
 Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
  by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r4F3Z3nY006083
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2013 00:35:05 -0300
+ r4F3Z6Dn006323
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2013 00:35:06 -0300
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v1 00/22] powerpc/eeh: Enhance converting EEH dev
-Date: Wed, 15 May 2013 11:34:36 +0800
-Message-Id: <1368588898-16224-1-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 05/22] powerpc/eeh: Trace PCI bus from PE
+Date: Wed, 15 May 2013 11:34:41 +0800
+Message-Id: <1368588898-16224-6-git-send-email-shangw@linux.vnet.ibm.com>
+In-Reply-To: <1368588898-16224-1-git-send-email-shangw@linux.vnet.ibm.com>
+References: <1368588898-16224-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -35,63 +37,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Initially, the series of patches is built based on 3.10.RC1 and the patchset
-doesn't intend to enable EEH functionality for PHB3 for now.
+There're several types of PEs can be supported for now: PHB, Bus
+and Device dependent PE. For PCI bus dependent PE, tracing the
+corresponding PCI bus from PE (struct eeh_pe) would make the code
+more efficient. The patch also enables the retrieval of PCI bus based
+on the PCI device dependent PE.
 
-The series of patches intends to support EEH for PowerNV platform. The EEH
-core already supports multiple probe methods: device tree nodes and PCI
-devices. For EEH on PowerNV, we're using PCI devices to do EEH probe, which
-is different from the probe type used on pSeries platform. Another point I
-should mention is that the overall EEH would be split up to 3 layers: EEH
-core, platform layer and I/O chip layer. It would make the EEH on PowerNV
-platform can achieve more flexibility and support more I/O chips in future.
-Besides, the EEH event can be produced by detecting 0xFF's from reading
-PCI config or I/O registers, or from interrupts dedicated for EEH error
-reporting. So we have to handle the EEH error interrupts. On the other hand,
-the EEH events will be processed by EEH core like pSeries platform does.
-
-We don't have existing utility (e.g. errinjct) to test the patchset. In order
-to conduct the test, you need copy over the eeh-debug.c to PowerNV platform
-directory and change the makefile accordingly. Please contact me to get the
-eeh-debug.c if you want run the test case. After that, you need write P7IOC
-registers explicitly to trigger frozen PE or fenced PHB explicitly as the
-following example shows. The patchset has been verified on Firebird-L machine
-where I have 2 Emulex ethernet card on PHB#6. I keep pinging to one of the
-ethernet cards from external and then use following commands to produce frozen
-PE or fenced PHB errors. Eventually, the errors can be recovered and the ethernet
-card is reachable after temporary connection lost.
-
-Trigger frozen PE:
-
-        echo "0xD10 0x0000000002000000" > /proc/IODA/PHB6/REG
-        sleep 1
-        echo "0xD10 0x0000000000000000" > /proc/IODA/PHB6/REG
-
-Trigger fenced PHB:
-
-        echo "0xD10 0x8000000000000000" > /proc/IODA/PHB6/REG
-
+Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
+ arch/powerpc/include/asm/eeh.h          |    1 +
+ arch/powerpc/platforms/pseries/eeh_pe.c |   25 ++++++++++++++++++++++++-
+ 2 files changed, 25 insertions(+), 1 deletions(-)
 
-arch/powerpc/include/asm/eeh.h                 |   29 ++-
-arch/powerpc/include/asm/eeh_event.h           |    6 +-
-arch/powerpc/include/asm/opal.h                |  110 ++++-
-arch/powerpc/kernel/rtas_pci.c                 |    3 +-
-arch/powerpc/platforms/powernv/Makefile        |    1 +
-arch/powerpc/platforms/powernv/eeh-ioda.c      |  519 ++++++++++++++++++++++++
-arch/powerpc/platforms/powernv/eeh-powernv.c   |  380 +++++++++++++++++
-arch/powerpc/platforms/powernv/opal-wrappers.S |    2 +
-arch/powerpc/platforms/powernv/opal.c          |    6 +
-arch/powerpc/platforms/powernv/pci-err.c       |  475 ++++++++++++++++++++++
-arch/powerpc/platforms/powernv/pci-ioda.c      |   17 +-
-arch/powerpc/platforms/powernv/pci-p5ioc2.c    |    6 +-
-arch/powerpc/platforms/powernv/pci.c           |   41 ++-
-arch/powerpc/platforms/powernv/pci.h           |   22 +
-arch/powerpc/platforms/pseries/eeh.c           |   61 +++-
-arch/powerpc/platforms/pseries/eeh_dev.c       |   35 ++
-arch/powerpc/platforms/pseries/eeh_event.c     |   12 +-
-arch/powerpc/platforms/pseries/eeh_pe.c        |   31 ++-
-18 files changed, 1712 insertions(+), 44 deletions(-)
-
-Thanks,
-Gavin
+diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+index 9230aa4..557d82a 100644
+--- a/arch/powerpc/include/asm/eeh.h
++++ b/arch/powerpc/include/asm/eeh.h
+@@ -62,6 +62,7 @@ struct eeh_pe {
+ 	int check_count;		/* Times of ignored error	*/
+ 	int freeze_count;		/* Times of froze up		*/
+ 	int false_positives;		/* Times of reported #ff's	*/
++	struct pci_bus *bus;		/* Top PCI bus for bus PE	*/
+ 	struct eeh_pe *parent;		/* Parent PE			*/
+ 	struct list_head child_list;	/* Link PE to the child list	*/
+ 	struct list_head edevs;		/* Link list of EEH devices	*/
+diff --git a/arch/powerpc/platforms/pseries/eeh_pe.c b/arch/powerpc/platforms/pseries/eeh_pe.c
+index 93ed9cb..03f8223 100644
+--- a/arch/powerpc/platforms/pseries/eeh_pe.c
++++ b/arch/powerpc/platforms/pseries/eeh_pe.c
+@@ -304,6 +304,7 @@ static struct eeh_pe *eeh_pe_get_parent(struct eeh_dev *edev)
+ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ {
+ 	struct eeh_pe *pe, *parent;
++	struct eeh_dev *first_edev;
+ 
+ 	eeh_lock();
+ 
+@@ -326,6 +327,21 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ 		pe->type = EEH_PE_BUS;
+ 		edev->pe = pe;
+ 
++		/*
++		 * For PCI bus sensitive PE, we can reset the parent
++		 * bridge in order for hot-reset. However, the PCI
++		 * devices including the associated EEH devices might
++		 * be removed when EEH core is doing recovery. So that
++		 * won't safe to retrieve the bridge through downstream
++		 * EEH device. We have to trace the parent PCI bus, then
++		 * the parent bridge explicitly.
++		 */
++		if (eeh_probe_mode_dev() && !pe->bus) {
++			first_edev = list_first_entry(&pe->edevs,
++						struct eeh_dev, list);
++			pe->bus = eeh_dev_to_pci_dev(first_edev)->bus;
++		}
++
+ 		/* Put the edev to PE */
+ 		list_add_tail(&edev->list, &pe->edevs);
+ 		eeh_unlock();
+@@ -639,13 +655,20 @@ struct pci_bus *eeh_pe_bus_get(struct eeh_pe *pe)
+ 
+ 	if (pe->type & EEH_PE_PHB) {
+ 		bus = pe->phb->bus;
+-	} else if (pe->type & EEH_PE_BUS) {
++	} else if (pe->type & EEH_PE_BUS ||
++		   pe->type & EEH_PE_DEVICE) {
++		if (pe->bus) {
++			bus = pe->bus;
++			goto out;
++		}
++
+ 		edev = list_first_entry(&pe->edevs, struct eeh_dev, list);
+ 		pdev = eeh_dev_to_pci_dev(edev);
+ 		if (pdev)
+ 			bus = pdev->bus;
+ 	}
+ 
++out:
+ 	eeh_unlock();
+ 
+ 	return bus;
+-- 
+1.7.5.4
