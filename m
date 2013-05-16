@@ -1,9 +1,11 @@
 Return-Path: <michael@ozlabs.org>
 From: Michael Ellerman <michael@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 1/2] powerpc/perf: Revert to original NO_SIPR logic
-Date: Thu, 16 May 2013 16:19:30 +1000
-Message-Id: <1368685171-1948-1-git-send-email-michael@ellerman.id.au>
+Subject: [PATCH 2/2] powerpc/perf: Add missing SIER support
+Date: Thu, 16 May 2013 16:19:31 +1000
+Message-Id: <1368685171-1948-2-git-send-email-michael@ellerman.id.au>
+In-Reply-To: <1368685171-1948-1-git-send-email-michael@ellerman.id.au>
+References: <1368685171-1948-1-git-send-email-michael@ellerman.id.au>
 Cc: sukadev@linux.vnet.ibm.com, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -14,89 +16,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a revert and then some of commit 860aad7 "Add regs_no_sipr()".
-This workaround was only needed on early chip versions.
+Commit 8f61aa3 "Add support for SIER" missed updates to siar_valid()
+and perf_get_data_addr().
 
-As before NO_SIPR becomes a static flag of the PMU struct.
+In both cases we need to check the SIER instead of mmcra.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/perf/core-book3s.c |   30 ++++++------------------------
- 1 file changed, 6 insertions(+), 24 deletions(-)
+ arch/powerpc/perf/core-book3s.c |   37 +++++++++++++++++++++++++------------
+ 1 file changed, 25 insertions(+), 12 deletions(-)
 
 diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 426180b..b2f873b 100644
+index b2f873b..845c867 100644
 --- a/arch/powerpc/perf/core-book3s.c
 +++ b/arch/powerpc/perf/core-book3s.c
-@@ -110,7 +110,7 @@ static inline void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw) {}
- 
- static bool regs_use_siar(struct pt_regs *regs)
+@@ -136,22 +136,30 @@ static inline unsigned long perf_ip_adjust(struct pt_regs *regs)
+  * If we're not doing instruction sampling, give them the SDAR
+  * (sampled data address).  If we are doing instruction sampling, then
+  * only give them the SDAR if it corresponds to the instruction
+- * pointed to by SIAR; this is indicated by the [POWER6_]MMCRA_SDSYNC or
+- * the [POWER7P_]MMCRA_SDAR_VALID bit in MMCRA.
++ * pointed to by SIAR; this is indicated by the [POWER6_]MMCRA_SDSYNC, the
++ * [POWER7P_]MMCRA_SDAR_VALID bit in MMCRA, or the SDAR_VALID bit in SIER.
+  */
+ static inline void perf_get_data_addr(struct pt_regs *regs, u64 *addrp)
  {
--	return !!(regs->result & 1);
-+	return !!regs->result;
- }
+ 	unsigned long mmcra = regs->dsisr;
+-	unsigned long sdsync;
++	bool sdar_valid;
  
- /*
-@@ -181,11 +181,6 @@ static bool regs_sipr(struct pt_regs *regs)
- 	return !!(regs->dsisr & sipr);
- }
- 
--static bool regs_no_sipr(struct pt_regs *regs)
--{
--	return !!(regs->result & 2);
--}
--
- static inline u32 perf_flags_from_msr(struct pt_regs *regs)
- {
- 	if (regs->msr & MSR_PR)
-@@ -208,7 +203,7 @@ static inline u32 perf_get_misc_flags(struct pt_regs *regs)
- 	 * SIAR which should give slightly more reliable
- 	 * results
- 	 */
--	if (regs_no_sipr(regs)) {
-+	if (ppmu->flags & PPMU_NO_SIPR) {
- 		unsigned long siar = mfspr(SPRN_SIAR);
- 		if (siar >= PAGE_OFFSET)
- 			return PERF_RECORD_MISC_KERNEL;
-@@ -239,22 +234,9 @@ static inline void perf_read_regs(struct pt_regs *regs)
- 	int use_siar;
- 
- 	regs->dsisr = mmcra;
--	regs->result = 0;
--
--	if (ppmu->flags & PPMU_NO_SIPR)
--		regs->result |= 2;
--
--	/*
--	 * On power8 if we're in random sampling mode, the SIER is updated.
--	 * If we're in continuous sampling mode, we don't have SIPR.
--	 */
--	if (ppmu->flags & PPMU_HAS_SIER) {
--		if (marked)
--			regs->dar = mfspr(SPRN_SIER);
--		else
--			regs->result |= 2;
--	}
- 
+-	if (ppmu->flags & PPMU_SIAR_VALID)
+-		sdsync = POWER7P_MMCRA_SDAR_VALID;
+-	else if (ppmu->flags & PPMU_ALT_SIPR)
+-		sdsync = POWER6_MMCRA_SDSYNC;
+-	else
+-		sdsync = MMCRA_SDSYNC;
 +	if (ppmu->flags & PPMU_HAS_SIER)
-+		regs->dar = mfspr(SPRN_SIER);
++		sdar_valid = regs->dar & SIER_SDAR_VALID;
++	else {
++		unsigned long sdsync;
++
++		if (ppmu->flags & PPMU_SIAR_VALID)
++			sdsync = POWER7P_MMCRA_SDAR_VALID;
++		else if (ppmu->flags & PPMU_ALT_SIPR)
++			sdsync = POWER6_MMCRA_SDSYNC;
++		else
++			sdsync = MMCRA_SDSYNC;
  
- 	/*
- 	 * If this isn't a PMU exception (eg a software event) the SIAR is
-@@ -279,12 +261,12 @@ static inline void perf_read_regs(struct pt_regs *regs)
- 		use_siar = 1;
- 	else if ((ppmu->flags & PPMU_NO_CONT_SAMPLING))
- 		use_siar = 0;
--	else if (!regs_no_sipr(regs) && regs_sipr(regs))
-+	else if (!(ppmu->flags & PPMU_NO_SIPR) && regs_sipr(regs))
- 		use_siar = 0;
- 	else
- 		use_siar = 1;
- 
--	regs->result |= use_siar;
-+	regs->result = use_siar;
+-	if (!(mmcra & MMCRA_SAMPLE_ENABLE) || (mmcra & sdsync))
++		sdar_valid = mmcra & sdsync;
++	}
++
++	if (!(mmcra & MMCRA_SAMPLE_ENABLE) || sdar_valid)
+ 		*addrp = mfspr(SPRN_SDAR);
  }
  
- /*
+@@ -290,8 +298,13 @@ static inline int siar_valid(struct pt_regs *regs)
+ 	unsigned long mmcra = regs->dsisr;
+ 	int marked = mmcra & MMCRA_SAMPLE_ENABLE;
+ 
+-	if ((ppmu->flags & PPMU_SIAR_VALID) && marked)
+-		return mmcra & POWER7P_MMCRA_SIAR_VALID;
++	if (marked) {
++		if (ppmu->flags & PPMU_HAS_SIER)
++			return regs->dar & SIER_SIAR_VALID;
++
++		if (ppmu->flags & PPMU_SIAR_VALID)
++			return mmcra & POWER7P_MMCRA_SIAR_VALID;
++	}
+ 
+ 	return 1;
+ }
 -- 
 1.7.10.4
