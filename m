@@ -1,19 +1,37 @@
-Return-Path: <mkl@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
- [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id F2E332C00C0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 23:42:55 +1000 (EST)
-From: Marc Kleine-Budde <mkl@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] can: flexcan: allow compilation on arm and powerpc
-Date: Thu, 16 May 2013 15:42:36 +0200
-Message-Id: <1368711756-22324-1-git-send-email-mkl@pengutronix.de>
-Cc: Arnd Bergmann <arnd@arndb.de>, Sascha Hauer <s.hauer@pengutronix.de>,
- U Bhaskar-B22300 <B22300@freescale.com>, linux-can@vger.kernel.org,
- Marc Kleine-Budde <mkl@pengutronix.de>, Shawn Guo <shawn.guo@linaro.org>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Return-Path: <timur@tabi.org>
+Received: from muin.pair.com (muin.pair.com [209.68.1.55])
+ by ozlabs.org (Postfix) with ESMTP id 1BCA12C014A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 May 2013 00:56:30 +1000 (EST)
+Received: from mail-vb0-f50.google.com (mail-vb0-f50.google.com
+ [209.85.212.50])
+ by muin.pair.com (Postfix) with ESMTPSA id 414418FC3F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 10:56:27 -0400 (EDT)
+Received: by mail-vb0-f50.google.com with SMTP id w15so334629vbb.37
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 07:56:26 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1368687133.9603.51.camel@pasglop>
+References: <1368679657.9603.32.camel@pasglop>
+ <1368683156.9603.34.camel@pasglop>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0701C307@039-SN2MPN1-012.039d.mgd.msft.net>
+ <3E027F8168735B46AC006B1D0C7BB0020B1E040F@039-SN2MPN1-011.039d.mgd.msft.net>
+ <1368684547.9603.38.camel@pasglop> <51947A00.9010504@windriver.com>
+ <1368685307.9603.39.camel@pasglop> <51947E35.30808@windriver.com>
+ <1368686426.9603.49.camel@pasglop> <5194800D.3010606@windriver.com>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0701C498@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1368687133.9603.51.camel@pasglop>
+Date: Thu, 16 May 2013 09:56:26 -0500
+Message-ID: <CAOZdJXU79kqEGk_nqv1NSzna7c=bgwSv+6WFgaTVjR4Rj4cZVg@mail.gmail.com>
+Subject: Re: SATA FSL and upstreaming
+From: Timur Tabi <timur@tabi.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Xie Shaohui-B21989 <B21989@freescale.com>,
+ Liu Qiang-B32616 <B32616@freescale.com>,
+ Zang Roy-R61911 <r61911@freescale.com>,
+ "tiejun.chen" <tiejun.chen@windriver.com>,
+ Fleming Andy-AFLEMING <afleming@freescale.com>,
+ Bhushan Bharat-R65777 <R65777@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,165 +41,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch removes the Kconfig symbols HAVE_CAN_FLEXCAN and
-IMX_HAVE_PLATFORM_FLEXCAN from arch/{arm,powerpc} and allowing compilation on
-all arm and powerpc platforms.
+On Thu, May 16, 2013 at 1:52 AM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+>> 3) run " pix altbak" command
+>>
+>> 4) check you are on bank4
+>
+> It stays on bank 0
 
-This brings a bigger compile time coverage and removes the following dependency
-warning found by Arnd Bergmann:
-
-    warning: (SOC_IMX28 && SOC_IMX25 && SOC_IMX35 && IMX_HAVE_PLATFORM_FLEXCAN &&
-        SOC_IMX53 && SOC_IMX6Q) selects HAVE_CAN_FLEXCAN
-    which has unmet direct dependencies (NET && CAN && CAN_DEV)
-
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Shawn Guo <shawn.guo@linaro.org>
-Cc: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: Kumar Gala <galak@kernel.crashing.org>
-Cc: U Bhaskar-B22300 <B22300@freescale.com>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Marc Kleine-Budde <mkl@pengutronix.de>
----
-Hello,
-
-if the arm and powerpc people are okay with this, I'm taking this patch (and
-then will go upstream via David Miller's net-next).
-
-regards,
-Marc
-
- arch/arm/mach-imx/Kconfig         | 8 --------
- arch/arm/mach-imx/devices/Kconfig | 4 ----
- arch/arm/mach-mxs/Kconfig         | 1 -
- arch/powerpc/Kconfig              | 1 -
- drivers/net/can/Kconfig           | 5 +----
- 5 files changed, 1 insertion(+), 18 deletions(-)
-
-diff --git a/arch/arm/mach-imx/Kconfig b/arch/arm/mach-imx/Kconfig
-index ba44328..239d084 100644
---- a/arch/arm/mach-imx/Kconfig
-+++ b/arch/arm/mach-imx/Kconfig
-@@ -111,7 +111,6 @@ config SOC_IMX25
- 	select ARCH_MXC_IOMUX_V3
- 	select COMMON_CLK
- 	select CPU_ARM926T
--	select HAVE_CAN_FLEXCAN if CAN
- 	select MXC_AVIC
- 
- config SOC_IMX27
-@@ -137,7 +136,6 @@ config SOC_IMX35
- 	select ARCH_MXC_IOMUX_V3
- 	select COMMON_CLK
- 	select CPU_V6K
--	select HAVE_CAN_FLEXCAN if CAN
- 	select HAVE_EPIT
- 	select MXC_AVIC
- 	select SMP_ON_UP if SMP
-@@ -208,7 +206,6 @@ comment "MX25 platforms:"
- 
- config MACH_MX25_3DS
- 	bool "Support MX25PDK (3DS) Platform"
--	select IMX_HAVE_PLATFORM_FLEXCAN
- 	select IMX_HAVE_PLATFORM_FSL_USB2_UDC
- 	select IMX_HAVE_PLATFORM_IMX2_WDT
- 	select IMX_HAVE_PLATFORM_IMXDI_RTC
-@@ -223,7 +220,6 @@ config MACH_MX25_3DS
- 
- config MACH_EUKREA_CPUIMX25SD
- 	bool "Support Eukrea CPUIMX25 Platform"
--	select IMX_HAVE_PLATFORM_FLEXCAN
- 	select IMX_HAVE_PLATFORM_FSL_USB2_UDC
- 	select IMX_HAVE_PLATFORM_IMX2_WDT
- 	select IMX_HAVE_PLATFORM_IMXDI_RTC
-@@ -629,7 +625,6 @@ comment "MX35 platforms:"
- 
- config MACH_PCM043
- 	bool "Support Phytec pcm043 (i.MX35) platforms"
--	select IMX_HAVE_PLATFORM_FLEXCAN
- 	select IMX_HAVE_PLATFORM_FSL_USB2_UDC
- 	select IMX_HAVE_PLATFORM_IMX2_WDT
- 	select IMX_HAVE_PLATFORM_IMX_I2C
-@@ -665,7 +660,6 @@ config MACH_MX35_3DS
- 
- config MACH_EUKREA_CPUIMX35SD
- 	bool "Support Eukrea CPUIMX35 Platform"
--	select IMX_HAVE_PLATFORM_FLEXCAN
- 	select IMX_HAVE_PLATFORM_FSL_USB2_UDC
- 	select IMX_HAVE_PLATFORM_IMX2_WDT
- 	select IMX_HAVE_PLATFORM_IMX_I2C
-@@ -776,7 +770,6 @@ comment "Device tree only"
- 
- config	SOC_IMX53
- 	bool "i.MX53 support"
--	select HAVE_CAN_FLEXCAN if CAN
- 	select HAVE_IMX_SRC
- 	select IMX_HAVE_PLATFORM_IMX2_WDT
- 	select PINCTRL
-@@ -799,7 +792,6 @@ config SOC_IMX6Q
- 	select CPU_V7
- 	select HAVE_ARM_SCU if SMP
- 	select HAVE_ARM_TWD if LOCAL_TIMERS
--	select HAVE_CAN_FLEXCAN if CAN
- 	select HAVE_IMX_ANATOP
- 	select HAVE_IMX_GPC
- 	select HAVE_IMX_MMDC
-diff --git a/arch/arm/mach-imx/devices/Kconfig b/arch/arm/mach-imx/devices/Kconfig
-index 3dd2b1b..b0a629d 100644
---- a/arch/arm/mach-imx/devices/Kconfig
-+++ b/arch/arm/mach-imx/devices/Kconfig
-@@ -2,10 +2,6 @@ config IMX_HAVE_PLATFORM_FEC
- 	bool
- 	default y if ARCH_MX25 || SOC_IMX27 || SOC_IMX35 || SOC_IMX51 || SOC_IMX53
- 
--config IMX_HAVE_PLATFORM_FLEXCAN
--	bool
--	select HAVE_CAN_FLEXCAN if CAN
--
- config IMX_HAVE_PLATFORM_FSL_USB2_UDC
- 	bool
- 
-diff --git a/arch/arm/mach-mxs/Kconfig b/arch/arm/mach-mxs/Kconfig
-index 4dc2fbb..ce6e7d6 100644
---- a/arch/arm/mach-mxs/Kconfig
-+++ b/arch/arm/mach-mxs/Kconfig
-@@ -11,7 +11,6 @@ config SOC_IMX28
- 	select ARM_AMBA
- 	select ARM_CPU_SUSPEND if PM
- 	select CPU_ARM926T
--	select HAVE_CAN_FLEXCAN if CAN
- 	select HAVE_PWM
- 	select PINCTRL_IMX28
- 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index c33e3ad..7754c6b 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -674,7 +674,6 @@ config SBUS
- 
- config FSL_SOC
- 	bool
--	select HAVE_CAN_FLEXCAN if NET && CAN
- 
- config FSL_PCI
-  	bool
-diff --git a/drivers/net/can/Kconfig b/drivers/net/can/Kconfig
-index e456b70..3c06947 100644
---- a/drivers/net/can/Kconfig
-+++ b/drivers/net/can/Kconfig
-@@ -102,12 +102,9 @@ config CAN_JANZ_ICAN3
- 	  This driver can also be built as a module. If so, the module will be
- 	  called janz-ican3.ko.
- 
--config HAVE_CAN_FLEXCAN
--	bool
--
- config CAN_FLEXCAN
- 	tristate "Support for Freescale FLEXCAN based chips"
--	depends on HAVE_CAN_FLEXCAN
-+	depends on ARM || PPC
- 	---help---
- 	  Say Y here if you want to support for Freescale FlexCAN.
- 
--- 
-1.8.2.rc2
+pix altbank
