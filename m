@@ -1,17 +1,15 @@
-Return-Path: <R65777@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D07952C007E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 17:25:07 +1000 (EST)
-From: Bhushan Bharat-R65777 <R65777@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Zang Roy-R61911
- <r61911@freescale.com>
-Subject: RE: SATA FSL and upstreaming
-Date: Thu, 16 May 2013 07:25:27 +0000
-Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D0701C5A6@039-SN2MPN1-012.039d.mgd.msft.net>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id B0A272C0139
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 17:26:50 +1000 (EST)
+Message-ID: <1368689199.9603.58.camel@pasglop>
+Subject: Re: SATA FSL and upstreaming
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Bhushan Bharat-R65777 <R65777@freescale.com>
+Date: Thu, 16 May 2013 17:26:39 +1000
+In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D0701C52E@039-SN2MPN1-012.039d.mgd.msft.net>
 References: <1368679657.9603.32.camel@pasglop>
  <1368683156.9603.34.camel@pasglop>
  <6A3DF150A5B70D4F9B66A25E3F7C888D0701C307@039-SN2MPN1-012.039d.mgd.msft.net>
@@ -24,14 +22,15 @@ References: <1368679657.9603.32.camel@pasglop>
  <1368687218.9603.52.camel@pasglop>
  <3E027F8168735B46AC006B1D0C7BB0020B1E05BC@039-SN2MPN1-011.039d.mgd.msft.net>
  <1368687941.9603.56.camel@pasglop>
-In-Reply-To: <1368687941.9603.56.camel@pasglop>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: "tiejun.chen" <tiejun.chen@windriver.com>,
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0701C52E@039-SN2MPN1-012.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Xie Shaohui-B21989 <B21989@freescale.com>,
+ Liu Qiang-B32616 <B32616@freescale.com>,
+ Zang Roy-R61911 <r61911@freescale.com>,
+ "tiejun.chen" <tiejun.chen@windriver.com>,
  Fleming Andy-AFLEMING <afleming@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Xie Shaohui-B21989 <B21989@freescale.com>,
- Liu Qiang-B32616 <B32616@freescale.com>
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,67 +40,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-QmVuLA0KDQpJZiB5b3UgYXJlIHVzaW5nIFNESzEuMyBhbmQgbGF0ZXIgdGhlbiB0aGUgc3VwcG9y
-dCBmb3IgcDUwMjBkcyByZXYgMS4wIHN1cHBvcnQgaXMgcmVtb3ZlZC4NClNvIHVzZSBlYXJsaWVy
-IHNkayBmb3IgcmV2IDEuMCBvciB3YWl0IGZvciByZXYyLjAgOikNCg0KVGhhbmtzDQotQmhhcmF0
-DQoNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBCZW5qYW1pbiBIZXJy
-ZW5zY2htaWR0IFttYWlsdG86YmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnXQ0KPiBTZW50OiBUaHVy
-c2RheSwgTWF5IDE2LCAyMDEzIDEyOjM2IFBNDQo+IFRvOiBaYW5nIFJveS1SNjE5MTENCj4gQ2M6
-IEJodXNoYW4gQmhhcmF0LVI2NTc3NzsgdGllanVuLmNoZW47IExpdSBRaWFuZy1CMzI2MTY7IEZs
-ZW1pbmcgQW5keS1BRkxFTUlORzsNCj4gbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IFhp
-ZSBTaGFvaHVpLUIyMTk4OQ0KPiBTdWJqZWN0OiBSZTogU0FUQSBGU0wgYW5kIHVwc3RyZWFtaW5n
-DQo+IA0KPiBPbiBUaHUsIDIwMTMtMDUtMTYgYXQgMDc6MDEgKzAwMDAsIFphbmcgUm95LVI2MTkx
-MSB3cm90ZToNCj4gDQo+ID4gSSBqdXN0IHRyaWVkIHlvdXIgUkNXLiBvbmUgZTEwMDAgY2FyZCB3
-b3JrcyBpbiBzbG90Ny4NCj4gPiB3ZSBtYXkgbmVlZCB0byBjaGVjayBvdGhlcnMgLi4uDQo+IA0K
-PiBUcmllZCA0IGFuZCA3IC4uLg0KPiANCj4gTm90ZSB0aGF0IHRoaXMgKnVzZWQqIHRvIHdvcmsu
-IExhc3QgeWVhciBJIGhhZCB0aGlzIG1hY2hpbmUgdXAgd2l0aCAyIGNhcmRzDQo+IGRvaW5nIHRo
-aW5ncy4gTm90IHN1cmUgd2hhdCBjaGFuZ2VkLCBpdCdzIHBvc3NpYmxlIHRoYXQgdGhlIERJUCBn
-b3QNCj4gaW5hZHZlcnRlbnRseSBjaGFuZ2VkLiBPciBzb21lYm9keSBzdG9sZSBhIGp1bXBlciBm
-cm9tIGl0IGluIHRoZSBsYWIgOi0pDQo+IA0KPiA+IFUtQm9vdCAyMDEzLjAxLTAwMDc4LWcyNzQx
-Yzk5IChNYXkgMDMgMjAxMyAtIDAwOjIwOjQxKQ0KPiA+DQo+ID4gQ1BVMDogIFA1MDIwRSwgVmVy
-c2lvbjogMi4wLCAoMHg4MjI4MDAyMCkNCj4gPiBDb3JlOiAgRTU1MDAsIFZlcnNpb246IDEuMiwg
-KDB4ODAyNDAwMTIpIENsb2NrIENvbmZpZ3VyYXRpb246DQo+ID4gICAgICAgIENQVTA6MjAwMCBN
-SHosIENQVTE6MjAwMCBNSHosDQo+ID4gICAgICAgIENDQjo4MDAgIE1IeiwNCj4gPiAgICAgICAg
-RERSOjY2Ni42NjcgTUh6ICgxMzMzLjMzMyBNVC9zIGRhdGEgcmF0ZSkgKEFzeW5jaHJvbm91cyks
-IExCQzoxMDAgIE1Ieg0KPiA+ICAgICAgICBGTUFOMTogNjAwIE1Ieg0KPiA+ICAgICAgICBRTUFO
-OiAgNDAwIE1Ieg0KPiA+ICAgICAgICBQTUU6ICAgNDAwIE1Ieg0KPiA+IEwxOiAgICBELWNhY2hl
-IDMyIGtCIGVuYWJsZWQNCj4gPiAgICAgICAgSS1jYWNoZSAzMiBrQiBlbmFibGVkDQo+ID4gUmVz
-ZXQgQ29uZmlndXJhdGlvbiBXb3JkIChSQ1cpOg0KPiA+ICAgICAgICAwMDAwMDAwMDogMGM1NDAw
-MDAgMDAwMDAwMDAgMWUxMjAwMDAgMDAwMDAwMDANCj4gPiAgICAgICAgMDAwMDAwMTA6IGQ4OTg0
-YTAxIDAzMDAyMDAwIGRlODAwMDAwIDQxMDAwMDAwDQo+ID4gICAgICAgIDAwMDAwMDIwOiAwMDAw
-MDAwMCAwMDAwMDAwMCAwMDAwMDAwMCAxMDA3MDAwMA0KPiA+ICAgICAgICAwMDAwMDAzMDogMDAw
-MDAwMDAgMDAwMDAwMDAgMDAwMDAwMDAgMDAwMDAwMDANCj4gDQo+IE15IFJDVyBpcyBpZGVudGlj
-YWwNCj4gDQo+ID4gQm9hcmQ6IFA1MDIwRFMsIFN5cyBJRDogMHgxYywgU3lzIFZlcjogMHgwMiwg
-RlBHQSBWZXI6IDB4MDQsIHZCYW5rOiA0DQo+IA0KPiBNaW5lIGlzOg0KPiBCb2FyZDogUDUwMjBE
-UywgU3lzIElEOiAweDFjLCBTeXMgVmVyOiAweDEyLCBGUEdBIFZlcjogMHgwNSwgdkJhbms6IDQN
-Cj4gDQo+ID4gU0VSREVTIFJlZmVyZW5jZSBDbG9ja3M6IEJhbmsxPTEwME1oeiBCYW5rMj0xMjVN
-aHogQmFuazM9MTI1TWh6DQo+IA0KPiBTYW1lLg0KPiANCj4gPiBJMkM6ICAgcmVhZHkNCj4gPiBT
-UEk6ICAgcmVhZHkNCj4gPiBEUkFNOiAgSW5pdGlhbGl6aW5nLi4uLnVzaW5nIFNQRA0KPiA+IERl
-dGVjdGVkIFVESU1NIGktRElNTQ0KPiA+IERldGVjdGVkIFVESU1NIGktRElNTQ0KPiA+IDIgR2lC
-IGxlZnQgdW5tYXBwZWQNCj4gPiA0IEdpQiAoRERSMywgNjQtYml0LCBDTD05LCBFQ0Mgb24pDQo+
-ID4gICAgICAgIEREUiBDb250cm9sbGVyIEludGVybGVhdmluZyBNb2RlOiBjYWNoZSBsaW5lDQo+
-ID4gICAgICAgIEREUiBDaGlwLVNlbGVjdCBJbnRlcmxlYXZpbmcgTW9kZTogQ1MwK0NTMSBUZXN0
-aW5nIDB4MDAwMDAwMDAgLQ0KPiA+IDB4N2ZmZmZmZmYgVGVzdGluZyAweDgwMDAwMDAwIC0gMHhm
-ZmZmZmZmZiBSZW1hcCBERFIgMiBHaUIgbGVmdA0KPiA+IHVubWFwcGVkDQo+ID4NCj4gPiBQT1NU
-IG1lbW9yeSBQQVNTRUQNCj4gPiBGbGFzaDogMTI4IE1pQg0KPiA+IEwyOiAgICA1MTIgS0IgZW5h
-YmxlZA0KPiA+IENvcmVuZXQgUGxhdGZvcm0gQ2FjaGU6IDIwNDggS0IgZW5hYmxlZA0KPiA+IFNS
-SU8xOiBkaXNhYmxlZA0KPiA+IFNSSU8yOiBkaXNhYmxlZA0KPiA+IE5BTkQ6ICAxMDI0IE1pQg0K
-PiA+IE1NQzogIEZTTF9TREhDOiAwDQo+ID4gRUVQUk9NOiBJbnZhbGlkIElEIChmZiBmZiBmZiBm
-ZikNCj4gPiBQQ0llMTogUm9vdCBDb21wbGV4LCB4MiwgcmVncyBAIDB4ZmUyMDAwMDANCj4gPiAg
-IDAxOjAwLjAgICAgIC0gODA4NjoxMDVlIC0gTmV0d29yayBjb250cm9sbGVyDQo+ID4gICAwMTow
-MC4xICAgICAtIDgwODY6MTA1ZSAtIE5ldHdvcmsgY29udHJvbGxlcg0KPiA+IFBDSWUxOiBCdXMg
-MDAgLSAwMQ0KPiA+IFBDSWUyOiBkaXNhYmxlZA0KPiA+IFBDSWUzOiBSb290IENvbXBsZXgsIG5v
-IGxpbmssIHJlZ3MgQCAweGZlMjAyMDAwDQo+ID4gUENJZTM6IEJ1cyAwMiAtIDAyDQo+ID4gUENJ
-ZTQ6IGRpc2FibGVkDQo+IA0KPiBBbmQgSSBuZXZlciBzZWUgYW55dGhpbmcgaGVyZSBhbnltb3Jl
-Li4uDQo+IA0KPiA+IEluOiAgICBzZXJpYWwNCj4gPiBPdXQ6ICAgc2VyaWFsDQo+ID4gRXJyOiAg
-IHNlcmlhbA0KPiA+IE5ldDogICBJbml0aWFsaXppbmcgRm1hbg0KPiA+IEZtYW4xOiBVcGxvYWRp
-bmcgbWljcm9jb2RlIHZlcnNpb24gMTA2LjEuNiBQSFkgcmVzZXQgdGltZWQgb3V0IFBIWQ0KPiA+
-IHJlc2V0IHRpbWVkIG91dCBQSFkgcmVzZXQgdGltZWQgb3V0IFBIWSByZXNldCB0aW1lZCBvdXQN
-Cj4gPiBlMTAwMDogMDA6MTU6MTc6MTY6Y2U6YjgNCj4gPiAgICAgICAgZTEwMDA6IDAwOjE1OjE3
-OjE2OmNlOmI5DQo+ID4gICAgICAgIEZNMUBEVFNFQzEsIEZNMUBEVFNFQzIsIEZNMUBEVFNFQzMs
-IEZNMUBEVFNFQzQgW1BSSU1FXSwNCj4gPiBGTTFARFRTRUM1LCBGTTFAVEdFQzEsIGUxMDAwIzAN
-Cj4gPiBXYXJuaW5nOiBlMTAwMCMwIE1BQyBhZGRyZXNzZXMgZG9uJ3QgbWF0Y2g6DQo+ID4gQWRk
-cmVzcyBpbiBTUk9NIGlzICAgICAgICAgMDA6MTU6MTc6MTY6Y2U6YjgNCj4gPiBBZGRyZXNzIGlu
-IGVudmlyb25tZW50IGlzICAwMDoxYjoyMTo2ODo1ZTpkNCAsIGUxMDAwIzENCj4gPiBXYXJuaW5n
-OiBlMTAwMCMxIHVzaW5nIE1BQyBhZGRyZXNzIGZyb20gbmV0IGRldmljZQ0KPiA+DQo+ID4gPT4N
-Cj4gDQo+IA0KDQo=
+On Thu, 2013-05-16 at 07:13 +0000, Bhushan Bharat-R65777 wrote:
+> Ben, Which SDK you are using?
+
+QorIQ-SDK-V1.3.2-PPC64E5500-20130325-yocto.iso
+
+Cheers,
+Ben.
