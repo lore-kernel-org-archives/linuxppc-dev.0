@@ -1,36 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B0A272C0139
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 17:26:50 +1000 (EST)
-Message-ID: <1368689199.9603.58.camel@pasglop>
-Subject: Re: SATA FSL and upstreaming
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Bhushan Bharat-R65777 <R65777@freescale.com>
-Date: Thu, 16 May 2013 17:26:39 +1000
-In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D0701C52E@039-SN2MPN1-012.039d.mgd.msft.net>
-References: <1368679657.9603.32.camel@pasglop>
- <1368683156.9603.34.camel@pasglop>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0701C307@039-SN2MPN1-012.039d.mgd.msft.net>
- <3E027F8168735B46AC006B1D0C7BB0020B1E040F@039-SN2MPN1-011.039d.mgd.msft.net>
- <1368684547.9603.38.camel@pasglop> <51947A00.9010504@windriver.com>
- <1368685307.9603.39.camel@pasglop> <51947E35.30808@windriver.com>
- <1368686426.9603.49.camel@pasglop> <5194800D.3010606@windriver.com>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0701C498@039-SN2MPN1-012.039d.mgd.msft.net>
- <3E027F8168735B46AC006B1D0C7BB0020B1E056D@039-SN2MPN1-011.039d.mgd.msft.net>
- <1368687218.9603.52.camel@pasglop>
- <3E027F8168735B46AC006B1D0C7BB0020B1E05BC@039-SN2MPN1-011.039d.mgd.msft.net>
- <1368687941.9603.56.camel@pasglop>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0701C52E@039-SN2MPN1-012.039d.mgd.msft.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Xie Shaohui-B21989 <B21989@freescale.com>,
- Liu Qiang-B32616 <B32616@freescale.com>,
- Zang Roy-R61911 <r61911@freescale.com>,
- "tiejun.chen" <tiejun.chen@windriver.com>,
- Fleming Andy-AFLEMING <afleming@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <haokexin@gmail.com>
+Received: from mail-pd0-f175.google.com (mail-pd0-f175.google.com
+ [209.85.192.175])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 289902C009E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 18:43:39 +1000 (EST)
+Received: by mail-pd0-f175.google.com with SMTP id y14so2118377pdi.6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 01:43:37 -0700 (PDT)
+Date: Thu, 16 May 2013 16:43:29 +0800
+From: Kevin Hao <haokexin@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 1/4] powerpc/book3e: introduce external_input_edge
+ exception handler for 64bit kernel
+Message-ID: <20130516084329.GF18214@pek-khao-d1.corp.ad.wrs.com>
+References: <20130514020317.GB21564@pek-khao-d1.corp.ad.wrs.com>
+ <1368653426.8202.34@snotra>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="cpvLTH7QU4gwfq3S"
+In-Reply-To: <1368653426.8202.34@snotra>
+Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,10 +29,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-05-16 at 07:13 +0000, Bhushan Bharat-R65777 wrote:
-> Ben, Which SDK you are using?
 
-QorIQ-SDK-V1.3.2-PPC64E5500-20130325-yocto.iso
+--cpvLTH7QU4gwfq3S
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Cheers,
-Ben.
+On Wed, May 15, 2013 at 04:30:26PM -0500, Scott Wood wrote:
+> On 05/13/2013 09:03:17 PM, Kevin Hao wrote:
+> >On Mon, May 13, 2013 at 10:47:17AM -0500, Scott Wood wrote:
+> >> On 05/11/2013 06:26:21 PM, Kevin Hao wrote:
+> >> >In the external proxy facility mode, the interrupt is automatically
+> >> >acknowledged with the same effect as reading the IACK register. So
+> >> >this makes external input interrupt more like edge sensitive. That
+> >> >means we can leave the irq hard enabled when it occurs with irq
+> >soft
+> >> >disabled just like the dec and doorbell interrupt. But the External
+> >> >Proxy Register(EPR) is only considered valid from the time that the
+> >> >external interrupt occurs until MSR[EE] is set to 1. So we have to
+> >> >save the EPR before irq hard enabled.
+> >>
+> >> Is it really worth it?
+> >
+> >Maybe. :-)
+> >Compare with the current kernel:
+> >  * The overhead is that we need additional load & store the
+> >contents of
+> >    the EPR from/to PACA.
+>=20
+> There's also mental overhead of the extra complexity.
+
+Yes, I agree. But since we already have the support for the edge sensitive
+interrupt such as doorbell, decrementer, adding another one doesn't really
+introduce much code complexity in my opinion.
+
+>  The lazy EE
+> stuff is already fiddly enough (e.g. the recent KVM patches).
+
+:-)
+
+>=20
+> >  * The bonus is we keep the irq hard enabled when a external
+> >interrupt occurs
+> >    with irq soft-disabled. As I know we should leave the irq hard
+> >enabled as
+> >    much as possible. This is also the primary reason that we
+> >introduce the
+> >    Lazy EE.
+>=20
+> I don't think "as much as possible" is a good way to look at it, so
+> much as "as much as is practical", balanced by also wanting to keep
+> the code as simple as is practical.
+
+Yes, I also like simple. That is why I make the following patch first.
+http://patchwork.ozlabs.org/patch/235530/
+
+But it seems that Ben doesn't like it. And it also seem not so difficulty
+to support the external interrupt as edge sensitive for external proxy,
+so I scratch these patches. It seems that you and Ben have different
+view about this issue. Anyway I have no strong preference for these two
+ways and will leave it to you guys to determine which way we like to adopt.
+
+Thanks,
+Kevin
+
+>=20
+> -Scott
+
+--cpvLTH7QU4gwfq3S
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQEcBAEBAgAGBQJRlJwxAAoJEJNY7TDerrFxZR4H/jv4CX/j6tbiSvGQnpJNf83W
+bPAJRw6rnS80xEWi+eKFvAxreHK2TBLje2Cen9OMDeEY2VjK9zzNluB2x64/2i5S
+gdyVkRGHLBGAOm2as39vF2JhKVT3yMmqMNLYSJGREnpqlFCD7BKvkZ+PdJMZwOWy
+fFXUsAd671+LXgsczuprYcsPQBFJ5tLw8BiqFXuHh8X3TJiX4XA5I+5lsaFQ+8Bm
+RZCpJagKLpxq9f6oSVkoq4B4hqEmNfTirBPloowaPIrwFD4mNqCpSZ9IMVe6uG1w
+T4kPKqzMaVz2sGt2CZHzU2xlzg3RUJIlB9kaepdXkEpbOh13EyYUkjGSq2Hv6YQ=
+=lthD
+-----END PGP SIGNATURE-----
+
+--cpvLTH7QU4gwfq3S--
