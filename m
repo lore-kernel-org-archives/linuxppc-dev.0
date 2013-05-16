@@ -1,18 +1,33 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 3/3] perf, x86,
- lbr: Demand proper privileges for PERF_SAMPLE_BRANCH_KERNEL
-In-reply-to: <20130516090916.GF19669@dyad.programming.kicks-ass.net>
-References: <20130503121122.931661809@chello.nl>
- <20130503121256.230745028@chello.nl>
- <CABPqkBTvcQAyXfeiJwpPsNtbs4ffsVguXE631dK_rbzHpwBdOg@mail.gmail.com>
- <20130516090916.GF19669@dyad.programming.kicks-ass.net>
-Date: Thu, 16 May 2013 20:15:17 +1000
-Message-ID: <8578.1368699317@ale.ozlabs.ibm.com>
-Cc: "ak@linux.intel.com" <ak@linux.intel.com>,
- LKML <linux-kernel@vger.kernel.org>, Stephane Eranian <eranian@google.com>,
- Linux PPC dev <linuxppc-dev@ozlabs.org>, Ingo Molnar <mingo@kernel.org>
+Return-Path: <zhong@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id F1E6C2C00BB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 20:20:54 +1000 (EST)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
+ Thu, 16 May 2013 15:45:00 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id E188FE0053
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 15:53:05 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r4GAKUoD10092904
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 15:50:30 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r4GAKVMb008983
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 20:20:32 +1000
+Message-ID: <1368699626.2618.183.camel@ThinkPad-T5421>
+Subject: [RFC PATCH powerpc] Set cpu sibling mask before online cpu
+From: Li Zhong <zhong@linux.vnet.ibm.com>
+To: PowerPC email list <linuxppc-dev@lists.ozlabs.org>
+Date: Thu, 16 May 2013 18:20:26 +0800
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,75 +37,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Peter Zijlstra <peterz@infradead.org> wrote:
+It seems following race is possible:
 
-> On Wed, May 15, 2013 at 03:37:22PM +0200, Stephane Eranian wrote:
-> > On Fri, May 3, 2013 at 2:11 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > > We should always have proper privileges when requesting kernel data.
-> > >
-> > > Cc: Andi Kleen <ak@linux.intel.com>
-> > > Cc: eranian@google.com
-> > > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > > Link: http://lkml.kernel.org/n/tip-v0x9ky3ahzr6nm3c6ilwrili@git.kernel.org
-> > > ---
-> > >  arch/x86/kernel/cpu/perf_event_intel_lbr.c |    5 ++++-
-> > >  1 file changed, 4 insertions(+), 1 deletion(-)
-> > >
-> > > --- a/arch/x86/kernel/cpu/perf_event_intel_lbr.c
-> > > +++ b/arch/x86/kernel/cpu/perf_event_intel_lbr.c
-> > > @@ -318,8 +318,11 @@ static void intel_pmu_setup_sw_lbr_filte
-> > >         if (br_type & PERF_SAMPLE_BRANCH_USER)
-> > >                 mask |= X86_BR_USER;
-> > >
-> > > -       if (br_type & PERF_SAMPLE_BRANCH_KERNEL)
-> > > +       if (br_type & PERF_SAMPLE_BRANCH_KERNEL) {
-> > > +               if (perf_paranoid_kernel() && !capable(CAP_SYS_ADMIN))
-> > > +                       return -EACCES;
-> > >                 mask |= X86_BR_KERNEL;
-> > > +       }
-> > >
-> > This will prevent regular users from capturing kernel -> kernel branches.
-> > But it won't prevent users from getting kernel -> user branches. Thus
-> > some kernel address will still be captured. I guess they could be eliminated
-> > by the sw_filter.
-> > 
-> > When using LBR priv level filtering, the filter applies to the branch target
-> > only.
-> 
-> How about something like the below? It also adds the branch flags
-> Mikey wanted for PowerPC.
+	cpu0					cpux
+smp_init->cpu_up->_cpu_up
+	__cpu_up
+		kick_cpu(1)
+-------------------------------------------------------------------------
+		waiting online			...
+		...				notify CPU_STARTING
+							set cpux active
+						set cpux online
+-------------------------------------------------------------------------
+		finish waiting online
+		...
+sched_init_smp
+	init_sched_domains(cpu_active_mask)
+		build_sched_domains
+						set cpux sibling info
+-------------------------------------------------------------------------
 
-Peter,
+Execution of cpu0 and cpux could be concurrent between two separator
+lines.
+			
+So if the cpux sibling information was set too late (normally
+impossible, but could be triggered by adding some delay in
+start_secondary, after setting cpu online), build_sched_domains()
+running on cpu0 might see cpux active, with an empty sibling mask, then
+cause some bad address accessing like following:
 
-BTW PowerPC also has the ability to filter on conditional branches.  Any
-chance we could add something like the follow to perf also?
+[    0.099855] Unable to handle kernel paging request for data at address 0xc00000038518078f
+[    0.099868] Faulting instruction address: 0xc0000000000b7a64
+[    0.099883] Oops: Kernel access of bad area, sig: 11 [#1]
+[    0.099895] PREEMPT SMP NR_CPUS=16 DEBUG_PAGEALLOC NUMA pSeries
+[    0.099922] Modules linked in:
+[    0.099940] CPU: 0 PID: 1 Comm: swapper/0 Not tainted 3.10.0-rc1-00120-gb973425-dirty #16
+[    0.099956] task: c0000001fed80000 ti: c0000001fed7c000 task.ti: c0000001fed7c000
+[    0.099971] NIP: c0000000000b7a64 LR: c0000000000b7a40 CTR: c0000000000b4934
+[    0.099985] REGS: c0000001fed7f760 TRAP: 0300   Not tainted  (3.10.0-rc1-00120-gb973425-dirty)
+[    0.099997] MSR: 8000000000009032 <SF,EE,ME,IR,DR,RI>  CR: 24272828  XER: 20000003
+[    0.100045] SOFTE: 1
+[    0.100053] CFAR: c000000000445ee8
+[    0.100064] DAR: c00000038518078f, DSISR: 40000000
+[    0.100073] 
+GPR00: 0000000000000080 c0000001fed7f9e0 c000000000c84d48 0000000000000010 
+GPR04: 0000000000000010 0000000000000000 c0000001fc55e090 0000000000000000 
+GPR08: ffffffffffffffff c000000000b80b30 c000000000c962d8 00000003845ffc5f 
+GPR12: 0000000000000000 c00000000f33d000 c00000000000b9e4 0000000000000000 
+GPR16: 0000000000000000 0000000000000000 0000000000000001 0000000000000000 
+GPR20: c000000000ccf750 0000000000000000 c000000000c94d48 c0000001fc504000 
+GPR24: c0000001fc504000 c0000001fecef848 c000000000c94d48 c000000000ccf000 
+GPR28: c0000001fc522090 0000000000000010 c0000001fecef848 c0000001fed7fae0 
+[    0.100293] NIP [c0000000000b7a64] .get_group+0x84/0xc4
+[    0.100307] LR [c0000000000b7a40] .get_group+0x60/0xc4
+[    0.100318] Call Trace:
+[    0.100332] [c0000001fed7f9e0] [c0000000000dbce4] .lock_is_held+0xa8/0xd0 (unreliable)
+[    0.100354] [c0000001fed7fa70] [c0000000000bf62c] .build_sched_domains+0x728/0xd14
+[    0.100375] [c0000001fed7fbe0] [c000000000af67bc] .sched_init_smp+0x4fc/0x654
+[    0.100394] [c0000001fed7fce0] [c000000000adce24] .kernel_init_freeable+0x17c/0x30c
+[    0.100413] [c0000001fed7fdb0] [c00000000000ba08] .kernel_init+0x24/0x12c
+[    0.100431] [c0000001fed7fe30] [c000000000009f74] .ret_from_kernel_thread+0x5c/0x68
+[    0.100445] Instruction dump:
+[    0.100456] 38800010 38a00000 4838e3f5 60000000 7c6307b4 2fbf0000 419e0040 3d220001 
+[    0.100496] 78601f24 39491590 e93e0008 7d6a002a <7d69582a> f97f0000 7d4a002a e93e0010 
+[    0.100559] ---[ end trace 31fd0ba7d8756001 ]---
 
-Mikey
+This patch tries to move the sibling maps updating before
+notify_cpu_starting() and cpu online, and a write barrier there to make
+sure sibling maps are updated before active and online mask. 
 
-diff --git a/include/uapi/linux/perf_event.h b/include/uapi/linux/perf_event.h
-index fb104e5..891c769 100644
---- a/include/uapi/linux/perf_event.h
-+++ b/include/uapi/linux/perf_event.h
-@@ -157,8 +157,9 @@ enum perf_branch_sample_type {
- 	PERF_SAMPLE_BRANCH_ANY_CALL	= 1U << 4, /* any call branch */
- 	PERF_SAMPLE_BRANCH_ANY_RETURN	= 1U << 5, /* any return branch */
- 	PERF_SAMPLE_BRANCH_IND_CALL	= 1U << 6, /* indirect calls */
-+	PERF_SAMPLE_BRANCH_CONDITIONAL  = 1U << 7, /* conditional branches */
+Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/smp.c |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index ee7ac5e..c765937 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -637,12 +637,10 @@ __cpuinit void start_secondary(void *unused)
  
--	PERF_SAMPLE_BRANCH_MAX		= 1U << 7, /* non-ABI */
-+	PERF_SAMPLE_BRANCH_MAX		= 1U << 8, /* non-ABI */
- };
+ 	vdso_getcpu_init();
+ #endif
+-	notify_cpu_starting(cpu);
+-	set_cpu_online(cpu, true);
+ 	/* Update sibling maps */
+ 	base = cpu_first_thread_sibling(cpu);
+ 	for (i = 0; i < threads_per_core; i++) {
+-		if (cpu_is_offline(base + i))
++		if (cpu_is_offline(base + i) && (cpu != base + i))
+ 			continue;
+ 		cpumask_set_cpu(cpu, cpu_sibling_mask(base + i));
+ 		cpumask_set_cpu(base + i, cpu_sibling_mask(cpu));
+@@ -667,6 +665,10 @@ __cpuinit void start_secondary(void *unused)
+ 	}
+ 	of_node_put(l2_cache);
  
- #define PERF_SAMPLE_BRANCH_PLM_ALL \
-diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-index cdf58ec..5b0b89d 100644
---- a/tools/perf/builtin-record.c
-+++ b/tools/perf/builtin-record.c
-@@ -676,6 +676,7 @@ static const struct branch_mode branch_modes[] = {
- 	BRANCH_OPT("any_call", PERF_SAMPLE_BRANCH_ANY_CALL),
- 	BRANCH_OPT("any_ret", PERF_SAMPLE_BRANCH_ANY_RETURN),
- 	BRANCH_OPT("ind_call", PERF_SAMPLE_BRANCH_IND_CALL),
-+	BRANCH_OPT("cnd", PERF_SAMPLE_BRANCH_CONDITIONAL),
- 	BRANCH_END
- };
++	smp_wmb();
++	notify_cpu_starting(cpu);
++	set_cpu_online(cpu, true);
++
+ 	local_irq_enable();
  
+ 	cpu_startup_entry(CPUHP_ONLINE);
