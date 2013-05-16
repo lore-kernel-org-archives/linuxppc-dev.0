@@ -1,45 +1,42 @@
-Return-Path: <liuj97@gmail.com>
-Received: from mail-pa0-f52.google.com (mail-pa0-f52.google.com
- [209.85.220.52])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1C5022C00A9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 09:47:10 +1000 (EST)
-Received: by mail-pa0-f52.google.com with SMTP id bg2so1953204pad.39
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2013 16:47:07 -0700 (PDT)
-Message-ID: <51941E71.8010309@gmail.com>
-Date: Thu, 16 May 2013 07:46:57 +0800
-From: Liu Jiang <liuj97@gmail.com>
-MIME-Version: 1.0
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e37.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C3F7A2C009E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 12:44:35 +1000 (EST)
+Received: from /spool/local
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Wed, 15 May 2013 20:44:32 -0600
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+ [9.17.195.107])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 1FF033E4003F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2013 20:44:14 -0600 (MDT)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r4G2iTTk078718
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2013 20:44:29 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r4G2iSl6030731
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2013 20:44:29 -0600
+Date: Thu, 16 May 2013 10:44:25 +0800
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v2,
- part 1 3/9] PCI: Convert alloc_pci_dev(void) to pci_alloc_dev(bus)
- instead
-References: <1368461313-4371-1-git-send-email-jiang.liu@huawei.com>
- <1368461313-4371-4-git-send-email-jiang.liu@huawei.com>
- <CAE9FiQVKKKmZRQ8CcKCzU8Gqzwb5SjWYagVB2OZiRqbSWXVpiw@mail.gmail.com>
- <5191F53E.4000305@cn.fujitsu.com> <51925136.5050302@gmail.com>
- <CAE9FiQWO-jR5y35kKiW0m6gVR54ZyRsBsdhP4BmFLSsDzCS3rA@mail.gmail.com>
- <51926CF6.1050706@gmail.com>
- <CAE9FiQWXN_ETRFPb5oFx-6LXyuHviX3h3NXCQKjcxtv2Uma-JA@mail.gmail.com>
- <51939E16.9090105@gmail.com>
- <CAE9FiQUXrOmN0rkvOwE1G_acEGY3-gouzaXjBMT7EE6uAqvuZA@mail.gmail.com>
- <51939FB1.20203@gmail.com> <1368653371.9603.18.camel@pasglop>
-In-Reply-To: <1368653371.9603.18.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Neela Syam Kolli <megaraidlinux@lsi.com>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
- Toshi Kani <toshi.kani@hp.com>, Linux-Scsi <linux-scsi@vger.kernel.org>,
- Myron Stowe <myron.stowe@redhat.com>, David Airlie <airlied@linux.ie>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "James E.J. Bottomley" <jbottomley@parallels.com>,
- "Rafael J . Wysocki" <rjw@sisk.pl>, Bjorn Helgaas <bhelgaas@google.com>,
- Yijing Wang <wangyijing@huawei.com>, Paul Mackerras <paulus@samba.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Gu Zheng <guz.fnst@cn.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>,
- Yinghai Lu <yinghai@kernel.org>, "David S. Miller" <davem@davemloft.net>,
- Jiang Liu <jiang.liu@huawei.com>
+Subject: Re: [PATCH v1 00/22] powerpc/eeh: Enhance converting EEH dev
+Message-ID: <20130516024425.GA29423@shangw.(null)>
+References: <1368588898-16224-1-git-send-email-shangw@linux.vnet.ibm.com>
+ <1368590264.31689.69.camel@pasglop>
+ <20130515053049.GA28780@shangw.(null)>
+ <1368597537.31689.70.camel@pasglop>
+ <20130515084740.GA22813@shangw.(null)>
+ <1368611324.3659.0.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1368611324.3659.0.camel@pasglop>
+Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <shangw@linux.vnet.ibm.com>
+Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,28 +46,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu 16 May 2013 05:29:31 AM CST, Benjamin Herrenschmidt wrote:
-> On Wed, 2013-05-15 at 22:46 +0800, Liu Jiang wrote:
->>         I don't know any OF exports, could you please help to CC
->> some OF experts?
+On Wed, May 15, 2013 at 07:48:44PM +1000, Benjamin Herrenschmidt wrote:
+>On Wed, 2013-05-15 at 16:47 +0800, Gavin Shan wrote:
+>> 
+>> Ok. Ben. Could you please point me the source code of the error
+>> injection framework? :-)
+>> I think you're not talking about userland utility "errinject".
 >
-> I wrote that code I think. Sorry, I've missed the beginning of the
-> thread, what is the problem ?
+>It's minimal, it's just the stuff in lib/fault-inject which provides
+>a framework for exposing attributes for injecting errors along with the
+>tool in tools/testing/fault-injection, at least that's my understanding.
 >
-> Cheers,
-> Ben.
+>Or we can just add stuff under debugfs/powerpc, which is what I did
+>for wsp.
 >
->
-Hi,
-     Just found a little memory leak issue that we should call 
-pci_release_of_node()
-on error recovery path in function pci_scan_device().
-        pci_set_of_node(dev);
 
-        if (pci_setup_device(dev)) {
-                kfree(dev);
-                return NULL;
-        }
+Thanks, Ben. I will look into that (probably next week) and hook something
+there :-)
 
-Regards!
-Gerry
+Thanks,
+Gavin
