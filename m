@@ -1,15 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 0CA012C0040
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 17:05:51 +1000 (EST)
-Message-ID: <1368687941.9603.56.camel@pasglop>
-Subject: Re: SATA FSL and upstreaming
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Zang Roy-R61911 <r61911@freescale.com>
-Date: Thu, 16 May 2013 17:05:41 +1000
-In-Reply-To: <3E027F8168735B46AC006B1D0C7BB0020B1E05BC@039-SN2MPN1-011.039d.mgd.msft.net>
+Return-Path: <R65777@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2F4682C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 17:12:56 +1000 (EST)
+From: Bhushan Bharat-R65777 <R65777@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Zang Roy-R61911
+ <r61911@freescale.com>
+Subject: RE: SATA FSL and upstreaming
+Date: Thu, 16 May 2013 07:13:15 +0000
+Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D0701C52E@039-SN2MPN1-012.039d.mgd.msft.net>
 References: <1368679657.9603.32.camel@pasglop>
  <1368683156.9603.34.camel@pasglop>
  <6A3DF150A5B70D4F9B66A25E3F7C888D0701C307@039-SN2MPN1-012.039d.mgd.msft.net>
@@ -21,14 +23,15 @@ References: <1368679657.9603.32.camel@pasglop>
  <3E027F8168735B46AC006B1D0C7BB0020B1E056D@039-SN2MPN1-011.039d.mgd.msft.net>
  <1368687218.9603.52.camel@pasglop>
  <3E027F8168735B46AC006B1D0C7BB0020B1E05BC@039-SN2MPN1-011.039d.mgd.msft.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Xie Shaohui-B21989 <B21989@freescale.com>,
- Liu Qiang-B32616 <B32616@freescale.com>,
- "tiejun.chen" <tiejun.chen@windriver.com>,
+ <1368687941.9603.56.camel@pasglop>
+In-Reply-To: <1368687941.9603.56.camel@pasglop>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "tiejun.chen" <tiejun.chen@windriver.com>,
  Fleming Andy-AFLEMING <afleming@freescale.com>,
- Bhushan Bharat-R65777 <R65777@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Xie Shaohui-B21989 <B21989@freescale.com>,
+ Liu Qiang-B32616 <B32616@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,97 +41,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-05-16 at 07:01 +0000, Zang Roy-R61911 wrote:
-
-> I just tried your RCW. one e1000 card works in slot7.
-> we may need to check others ...
-
-Tried 4 and 7 ...
-
-Note that this *used* to work. Last year I had this machine up with 2
-cards doing things. Not sure what changed, it's possible that the DIP
-got inadvertently changed. Or somebody stole a jumper from it in the
-lab :-)
-
-> U-Boot 2013.01-00078-g2741c99 (May 03 2013 - 00:20:41)
-> 
-> CPU0:  P5020E, Version: 2.0, (0x82280020)
-> Core:  E5500, Version: 1.2, (0x80240012)
-> Clock Configuration:
->        CPU0:2000 MHz, CPU1:2000 MHz, 
->        CCB:800  MHz,
->        DDR:666.667 MHz (1333.333 MT/s data rate) (Asynchronous), LBC:100  MHz
->        FMAN1: 600 MHz
->        QMAN:  400 MHz
->        PME:   400 MHz
-> L1:    D-cache 32 kB enabled
->        I-cache 32 kB enabled
-> Reset Configuration Word (RCW):
->        00000000: 0c540000 00000000 1e120000 00000000
->        00000010: d8984a01 03002000 de800000 41000000
->        00000020: 00000000 00000000 00000000 10070000
->        00000030: 00000000 00000000 00000000 00000000
-
-My RCW is identical
-
-> Board: P5020DS, Sys ID: 0x1c, Sys Ver: 0x02, FPGA Ver: 0x04, vBank: 4
-
-Mine is:
-Board: P5020DS, Sys ID: 0x1c, Sys Ver: 0x12, FPGA Ver: 0x05, vBank: 4                                                        
-
-> SERDES Reference Clocks: Bank1=100Mhz Bank2=125Mhz Bank3=125Mhz 
-
-Same.
-
-> I2C:   ready
-> SPI:   ready
-> DRAM:  Initializing....using SPD
-> Detected UDIMM i-DIMM
-> Detected UDIMM i-DIMM
-> 2 GiB left unmapped
-> 4 GiB (DDR3, 64-bit, CL=9, ECC on)
->        DDR Controller Interleaving Mode: cache line
->        DDR Chip-Select Interleaving Mode: CS0+CS1
-> Testing 0x00000000 - 0x7fffffff
-> Testing 0x80000000 - 0xffffffff
-> Remap DDR 2 GiB left unmapped
-> 
-> POST memory PASSED
-> Flash: 128 MiB
-> L2:    512 KB enabled
-> Corenet Platform Cache: 2048 KB enabled
-> SRIO1: disabled
-> SRIO2: disabled
-> NAND:  1024 MiB
-> MMC:  FSL_SDHC: 0
-> EEPROM: Invalid ID (ff ff ff ff)
-> PCIe1: Root Complex, x2, regs @ 0xfe200000
->   01:00.0     - 8086:105e - Network controller
->   01:00.1     - 8086:105e - Network controller
-> PCIe1: Bus 00 - 01
-> PCIe2: disabled
-> PCIe3: Root Complex, no link, regs @ 0xfe202000
-> PCIe3: Bus 02 - 02
-> PCIe4: disabled
-
-And I never see anything here anymore...
-
-> In:    serial
-> Out:   serial
-> Err:   serial
-> Net:   Initializing Fman
-> Fman1: Uploading microcode version 106.1.6
-> PHY reset timed out
-> PHY reset timed out
-> PHY reset timed out
-> PHY reset timed out
-> e1000: 00:15:17:16:ce:b8
->        e1000: 00:15:17:16:ce:b9
->        FM1@DTSEC1, FM1@DTSEC2, FM1@DTSEC3, FM1@DTSEC4 [PRIME], FM1@DTSEC5, FM1@TGEC1, e1000#0
-> Warning: e1000#0 MAC addresses don't match:
-> Address in SROM is         00:15:17:16:ce:b8
-> Address in environment is  00:1b:21:68:5e:d4
-> , e1000#1
-> Warning: e1000#1 using MAC address from net device
-> 
-> =>
+QmVuLCBXaGljaCBTREsgeW91IGFyZSB1c2luZz8NCg0KLUJoYXJhdA0KDQo+IC0tLS0tT3JpZ2lu
+YWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IEJlbmphbWluIEhlcnJlbnNjaG1pZHQgW21haWx0bzpi
+ZW5oQGtlcm5lbC5jcmFzaGluZy5vcmddDQo+IFNlbnQ6IFRodXJzZGF5LCBNYXkgMTYsIDIwMTMg
+MTI6MzYgUE0NCj4gVG86IFphbmcgUm95LVI2MTkxMQ0KPiBDYzogQmh1c2hhbiBCaGFyYXQtUjY1
+Nzc3OyB0aWVqdW4uY2hlbjsgTGl1IFFpYW5nLUIzMjYxNjsgRmxlbWluZyBBbmR5LUFGTEVNSU5H
+Ow0KPiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgWGllIFNoYW9odWktQjIxOTg5DQo+
+IFN1YmplY3Q6IFJlOiBTQVRBIEZTTCBhbmQgdXBzdHJlYW1pbmcNCj4gDQo+IE9uIFRodSwgMjAx
+My0wNS0xNiBhdCAwNzowMSArMDAwMCwgWmFuZyBSb3ktUjYxOTExIHdyb3RlOg0KPiANCj4gPiBJ
+IGp1c3QgdHJpZWQgeW91ciBSQ1cuIG9uZSBlMTAwMCBjYXJkIHdvcmtzIGluIHNsb3Q3Lg0KPiA+
+IHdlIG1heSBuZWVkIHRvIGNoZWNrIG90aGVycyAuLi4NCj4gDQo+IFRyaWVkIDQgYW5kIDcgLi4u
+DQo+IA0KPiBOb3RlIHRoYXQgdGhpcyAqdXNlZCogdG8gd29yay4gTGFzdCB5ZWFyIEkgaGFkIHRo
+aXMgbWFjaGluZSB1cCB3aXRoIDIgY2FyZHMNCj4gZG9pbmcgdGhpbmdzLiBOb3Qgc3VyZSB3aGF0
+IGNoYW5nZWQsIGl0J3MgcG9zc2libGUgdGhhdCB0aGUgRElQIGdvdA0KPiBpbmFkdmVydGVudGx5
+IGNoYW5nZWQuIE9yIHNvbWVib2R5IHN0b2xlIGEganVtcGVyIGZyb20gaXQgaW4gdGhlIGxhYiA6
+LSkNCj4gDQo+ID4gVS1Cb290IDIwMTMuMDEtMDAwNzgtZzI3NDFjOTkgKE1heSAwMyAyMDEzIC0g
+MDA6MjA6NDEpDQo+ID4NCj4gPiBDUFUwOiAgUDUwMjBFLCBWZXJzaW9uOiAyLjAsICgweDgyMjgw
+MDIwKQ0KPiA+IENvcmU6ICBFNTUwMCwgVmVyc2lvbjogMS4yLCAoMHg4MDI0MDAxMikgQ2xvY2sg
+Q29uZmlndXJhdGlvbjoNCj4gPiAgICAgICAgQ1BVMDoyMDAwIE1IeiwgQ1BVMToyMDAwIE1IeiwN
+Cj4gPiAgICAgICAgQ0NCOjgwMCAgTUh6LA0KPiA+ICAgICAgICBERFI6NjY2LjY2NyBNSHogKDEz
+MzMuMzMzIE1UL3MgZGF0YSByYXRlKSAoQXN5bmNocm9ub3VzKSwgTEJDOjEwMCAgTUh6DQo+ID4g
+ICAgICAgIEZNQU4xOiA2MDAgTUh6DQo+ID4gICAgICAgIFFNQU46ICA0MDAgTUh6DQo+ID4gICAg
+ICAgIFBNRTogICA0MDAgTUh6DQo+ID4gTDE6ICAgIEQtY2FjaGUgMzIga0IgZW5hYmxlZA0KPiA+
+ICAgICAgICBJLWNhY2hlIDMyIGtCIGVuYWJsZWQNCj4gPiBSZXNldCBDb25maWd1cmF0aW9uIFdv
+cmQgKFJDVyk6DQo+ID4gICAgICAgIDAwMDAwMDAwOiAwYzU0MDAwMCAwMDAwMDAwMCAxZTEyMDAw
+MCAwMDAwMDAwMA0KPiA+ICAgICAgICAwMDAwMDAxMDogZDg5ODRhMDEgMDMwMDIwMDAgZGU4MDAw
+MDAgNDEwMDAwMDANCj4gPiAgICAgICAgMDAwMDAwMjA6IDAwMDAwMDAwIDAwMDAwMDAwIDAwMDAw
+MDAwIDEwMDcwMDAwDQo+ID4gICAgICAgIDAwMDAwMDMwOiAwMDAwMDAwMCAwMDAwMDAwMCAwMDAw
+MDAwMCAwMDAwMDAwMA0KPiANCj4gTXkgUkNXIGlzIGlkZW50aWNhbA0KPiANCj4gPiBCb2FyZDog
+UDUwMjBEUywgU3lzIElEOiAweDFjLCBTeXMgVmVyOiAweDAyLCBGUEdBIFZlcjogMHgwNCwgdkJh
+bms6IDQNCj4gDQo+IE1pbmUgaXM6DQo+IEJvYXJkOiBQNTAyMERTLCBTeXMgSUQ6IDB4MWMsIFN5
+cyBWZXI6IDB4MTIsIEZQR0EgVmVyOiAweDA1LCB2QmFuazogNA0KPiANCj4gPiBTRVJERVMgUmVm
+ZXJlbmNlIENsb2NrczogQmFuazE9MTAwTWh6IEJhbmsyPTEyNU1oeiBCYW5rMz0xMjVNaHoNCj4g
+DQo+IFNhbWUuDQo+IA0KPiA+IEkyQzogICByZWFkeQ0KPiA+IFNQSTogICByZWFkeQ0KPiA+IERS
+QU06ICBJbml0aWFsaXppbmcuLi4udXNpbmcgU1BEDQo+ID4gRGV0ZWN0ZWQgVURJTU0gaS1ESU1N
+DQo+ID4gRGV0ZWN0ZWQgVURJTU0gaS1ESU1NDQo+ID4gMiBHaUIgbGVmdCB1bm1hcHBlZA0KPiA+
+IDQgR2lCIChERFIzLCA2NC1iaXQsIENMPTksIEVDQyBvbikNCj4gPiAgICAgICAgRERSIENvbnRy
+b2xsZXIgSW50ZXJsZWF2aW5nIE1vZGU6IGNhY2hlIGxpbmUNCj4gPiAgICAgICAgRERSIENoaXAt
+U2VsZWN0IEludGVybGVhdmluZyBNb2RlOiBDUzArQ1MxIFRlc3RpbmcgMHgwMDAwMDAwMCAtDQo+
+ID4gMHg3ZmZmZmZmZiBUZXN0aW5nIDB4ODAwMDAwMDAgLSAweGZmZmZmZmZmIFJlbWFwIEREUiAy
+IEdpQiBsZWZ0DQo+ID4gdW5tYXBwZWQNCj4gPg0KPiA+IFBPU1QgbWVtb3J5IFBBU1NFRA0KPiA+
+IEZsYXNoOiAxMjggTWlCDQo+ID4gTDI6ICAgIDUxMiBLQiBlbmFibGVkDQo+ID4gQ29yZW5ldCBQ
+bGF0Zm9ybSBDYWNoZTogMjA0OCBLQiBlbmFibGVkDQo+ID4gU1JJTzE6IGRpc2FibGVkDQo+ID4g
+U1JJTzI6IGRpc2FibGVkDQo+ID4gTkFORDogIDEwMjQgTWlCDQo+ID4gTU1DOiAgRlNMX1NESEM6
+IDANCj4gPiBFRVBST006IEludmFsaWQgSUQgKGZmIGZmIGZmIGZmKQ0KPiA+IFBDSWUxOiBSb290
+IENvbXBsZXgsIHgyLCByZWdzIEAgMHhmZTIwMDAwMA0KPiA+ICAgMDE6MDAuMCAgICAgLSA4MDg2
+OjEwNWUgLSBOZXR3b3JrIGNvbnRyb2xsZXINCj4gPiAgIDAxOjAwLjEgICAgIC0gODA4NjoxMDVl
+IC0gTmV0d29yayBjb250cm9sbGVyDQo+ID4gUENJZTE6IEJ1cyAwMCAtIDAxDQo+ID4gUENJZTI6
+IGRpc2FibGVkDQo+ID4gUENJZTM6IFJvb3QgQ29tcGxleCwgbm8gbGluaywgcmVncyBAIDB4ZmUy
+MDIwMDANCj4gPiBQQ0llMzogQnVzIDAyIC0gMDINCj4gPiBQQ0llNDogZGlzYWJsZWQNCj4gDQo+
+IEFuZCBJIG5ldmVyIHNlZSBhbnl0aGluZyBoZXJlIGFueW1vcmUuLi4NCj4gDQo+ID4gSW46ICAg
+IHNlcmlhbA0KPiA+IE91dDogICBzZXJpYWwNCj4gPiBFcnI6ICAgc2VyaWFsDQo+ID4gTmV0OiAg
+IEluaXRpYWxpemluZyBGbWFuDQo+ID4gRm1hbjE6IFVwbG9hZGluZyBtaWNyb2NvZGUgdmVyc2lv
+biAxMDYuMS42IFBIWSByZXNldCB0aW1lZCBvdXQgUEhZDQo+ID4gcmVzZXQgdGltZWQgb3V0IFBI
+WSByZXNldCB0aW1lZCBvdXQgUEhZIHJlc2V0IHRpbWVkIG91dA0KPiA+IGUxMDAwOiAwMDoxNTox
+NzoxNjpjZTpiOA0KPiA+ICAgICAgICBlMTAwMDogMDA6MTU6MTc6MTY6Y2U6YjkNCj4gPiAgICAg
+ICAgRk0xQERUU0VDMSwgRk0xQERUU0VDMiwgRk0xQERUU0VDMywgRk0xQERUU0VDNCBbUFJJTUVd
+LA0KPiA+IEZNMUBEVFNFQzUsIEZNMUBUR0VDMSwgZTEwMDAjMA0KPiA+IFdhcm5pbmc6IGUxMDAw
+IzAgTUFDIGFkZHJlc3NlcyBkb24ndCBtYXRjaDoNCj4gPiBBZGRyZXNzIGluIFNST00gaXMgICAg
+ICAgICAwMDoxNToxNzoxNjpjZTpiOA0KPiA+IEFkZHJlc3MgaW4gZW52aXJvbm1lbnQgaXMgIDAw
+OjFiOjIxOjY4OjVlOmQ0ICwgZTEwMDAjMQ0KPiA+IFdhcm5pbmc6IGUxMDAwIzEgdXNpbmcgTUFD
+IGFkZHJlc3MgZnJvbSBuZXQgZGV2aWNlDQo+ID4NCj4gPiA9Pg0KPiANCj4gDQoNCg==
