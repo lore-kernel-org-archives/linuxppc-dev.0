@@ -1,25 +1,18 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail-pd0-f175.google.com (mail-pd0-f175.google.com
- [209.85.192.175])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 289902C009E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 18:43:39 +1000 (EST)
-Received: by mail-pd0-f175.google.com with SMTP id y14so2118377pdi.6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 01:43:37 -0700 (PDT)
-Date: Thu, 16 May 2013 16:43:29 +0800
-From: Kevin Hao <haokexin@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 1/4] powerpc/book3e: introduce external_input_edge
- exception handler for 64bit kernel
-Message-ID: <20130516084329.GF18214@pek-khao-d1.corp.ad.wrs.com>
-References: <20130514020317.GB21564@pek-khao-d1.corp.ad.wrs.com>
- <1368653426.8202.34@snotra>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="cpvLTH7QU4gwfq3S"
-In-Reply-To: <1368653426.8202.34@snotra>
-Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 3/3] perf, x86,
+ lbr: Demand proper privileges for PERF_SAMPLE_BRANCH_KERNEL
+In-reply-to: <20130516090916.GF19669@dyad.programming.kicks-ass.net>
+References: <20130503121122.931661809@chello.nl>
+ <20130503121256.230745028@chello.nl>
+ <CABPqkBTvcQAyXfeiJwpPsNtbs4ffsVguXE631dK_rbzHpwBdOg@mail.gmail.com>
+ <20130516090916.GF19669@dyad.programming.kicks-ass.net>
+Date: Thu, 16 May 2013 20:09:36 +1000
+Message-ID: <8166.1368698976@ale.ozlabs.ibm.com>
+Cc: "ak@linux.intel.com" <ak@linux.intel.com>,
+ LKML <linux-kernel@vger.kernel.org>, Stephane Eranian <eranian@google.com>,
+ Linux PPC dev <linuxppc-dev@ozlabs.org>, Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,86 +22,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Peter Zijlstra <peterz@infradead.org> wrote:
 
---cpvLTH7QU4gwfq3S
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> On Wed, May 15, 2013 at 03:37:22PM +0200, Stephane Eranian wrote:
+> > On Fri, May 3, 2013 at 2:11 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> > > We should always have proper privileges when requesting kernel data.
+> > >
+> > > Cc: Andi Kleen <ak@linux.intel.com>
+> > > Cc: eranian@google.com
+> > > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > > Link: http://lkml.kernel.org/n/tip-v0x9ky3ahzr6nm3c6ilwrili@git.kernel.org
+> > > ---
+> > >  arch/x86/kernel/cpu/perf_event_intel_lbr.c |    5 ++++-
+> > >  1 file changed, 4 insertions(+), 1 deletion(-)
+> > >
+> > > --- a/arch/x86/kernel/cpu/perf_event_intel_lbr.c
+> > > +++ b/arch/x86/kernel/cpu/perf_event_intel_lbr.c
+> > > @@ -318,8 +318,11 @@ static void intel_pmu_setup_sw_lbr_filte
+> > >         if (br_type & PERF_SAMPLE_BRANCH_USER)
+> > >                 mask |= X86_BR_USER;
+> > >
+> > > -       if (br_type & PERF_SAMPLE_BRANCH_KERNEL)
+> > > +       if (br_type & PERF_SAMPLE_BRANCH_KERNEL) {
+> > > +               if (perf_paranoid_kernel() && !capable(CAP_SYS_ADMIN))
+> > > +                       return -EACCES;
+> > >                 mask |= X86_BR_KERNEL;
+> > > +       }
+> > >
+> > This will prevent regular users from capturing kernel -> kernel branches.
+> > But it won't prevent users from getting kernel -> user branches. Thus
+> > some kernel address will still be captured. I guess they could be eliminated
+> > by the sw_filter.
+> > 
+> > When using LBR priv level filtering, the filter applies to the branch target
+> > only.
+> 
+> How about something like the below? It also adds the branch flags
+> Mikey wanted for PowerPC.
+> 
+> ---
+>  arch/x86/kernel/cpu/perf_event_intel_lbr.c | 12 +++++++++---
+>  include/linux/perf_event.h                 | 10 +++++++---
+>  2 files changed, 16 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/cpu/perf_event_intel_lbr.c b/arch/x86/kernel/cpu/perf_event_intel_lbr.c
+> index d978353..f44d635 100644
+> --- a/arch/x86/kernel/cpu/perf_event_intel_lbr.c
+> +++ b/arch/x86/kernel/cpu/perf_event_intel_lbr.c
+> @@ -585,17 +585,23 @@ intel_pmu_lbr_filter(struct cpu_hw_events *cpuc)
+>  
+>  		/* if type does not correspond, then discard */
+>  		if (type == X86_BR_NONE || (br_sel & type) != type) {
+> -			cpuc->lbr_entries[i].from = 0;
+> +			cpuc->lbr_entries[i].__delete = 1;
+>  			compress = true;
+>  		}
+> +
+> +		/* hide kernel addresses if we're not privileged  */
+> +		if (!(br_sel & X86_BR_KERNEL) && kernel_ip(from)) {
+> +			cpuc->lbr_entries[i].from = -1L;
+> +			cpuc->lbr_entries[i].invalid_from = 1;
+> +		}
+>  	}
+>  
+>  	if (!compress)
+>  		return;
+>  
+> -	/* remove all entries with from=0 */
+> +	/* remove all entries with __delete */
+>  	for (i = 0; i < cpuc->lbr_stack.nr; ) {
+> -		if (!cpuc->lbr_entries[i].from) {
+> +		if (cpuc->lbr_entries[i].__delete) {
+>  			j = i;
+>  			while (++j < cpuc->lbr_stack.nr)
+>  				cpuc->lbr_entries[j-1] = cpuc->lbr_entries[j];
+> diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
+> index f463a46..7acf1c9 100644
+> --- a/include/linux/perf_event.h
+> +++ b/include/linux/perf_event.h
+> @@ -77,9 +77,13 @@ struct perf_raw_record {
+>  struct perf_branch_entry {
+>  	__u64	from;
+>  	__u64	to;
+> -	__u64	mispred:1,  /* target mispredicted */
+> -		predicted:1,/* target predicted */
+> -		reserved:62;
+> +	__u64	mispred:1,	/* target mispredicted		*/
+> +		predicted:1,	/* target predicted		*/
+> +		invalid_to:1,	/* @to isn't to be trusted	*/
+> +		invalid_from:1, /* @from isn't to be trusted	*/
 
-On Wed, May 15, 2013 at 04:30:26PM -0500, Scott Wood wrote:
-> On 05/13/2013 09:03:17 PM, Kevin Hao wrote:
-> >On Mon, May 13, 2013 at 10:47:17AM -0500, Scott Wood wrote:
-> >> On 05/11/2013 06:26:21 PM, Kevin Hao wrote:
-> >> >In the external proxy facility mode, the interrupt is automatically
-> >> >acknowledged with the same effect as reading the IACK register. So
-> >> >this makes external input interrupt more like edge sensitive. That
-> >> >means we can leave the irq hard enabled when it occurs with irq
-> >soft
-> >> >disabled just like the dec and doorbell interrupt. But the External
-> >> >Proxy Register(EPR) is only considered valid from the time that the
-> >> >external interrupt occurs until MSR[EE] is set to 1. So we have to
-> >> >save the EPR before irq hard enabled.
-> >>
-> >> Is it really worth it?
-> >
-> >Maybe. :-)
-> >Compare with the current kernel:
-> >  * The overhead is that we need additional load & store the
-> >contents of
-> >    the EPR from/to PACA.
->=20
-> There's also mental overhead of the extra complexity.
+Thanks Peter.  One possible issue...
 
-Yes, I agree. But since we already have the support for the edge sensitive
-interrupt such as doorbell, decrementer, adding another one doesn't really
-introduce much code complexity in my opinion.
+When the kernel has to read the branch from memory, there is no way for
+it to know that it's the same one that the HW actually executed.  Hence
+there's a possibility that the to address is invalid but we can't tell
+for sure.
 
->  The lazy EE
-> stuff is already fiddly enough (e.g. the recent KVM patches).
+I'm happy to just ignore that and mark calculated to address as valid,
+unless you think it would be worthwhile extra information to pass onto
+the user?
 
-:-)
+If we wanted this extra fidelity we could add a possibly_invalid_to:1
+flag to your patch but I'm not sure it's worth it to be honest.
 
->=20
-> >  * The bonus is we keep the irq hard enabled when a external
-> >interrupt occurs
-> >    with irq soft-disabled. As I know we should leave the irq hard
-> >enabled as
-> >    much as possible. This is also the primary reason that we
-> >introduce the
-> >    Lazy EE.
->=20
-> I don't think "as much as possible" is a good way to look at it, so
-> much as "as much as is practical", balanced by also wanting to keep
-> the code as simple as is practical.
-
-Yes, I also like simple. That is why I make the following patch first.
-http://patchwork.ozlabs.org/patch/235530/
-
-But it seems that Ben doesn't like it. And it also seem not so difficulty
-to support the external interrupt as edge sensitive for external proxy,
-so I scratch these patches. It seems that you and Ben have different
-view about this issue. Anyway I have no strong preference for these two
-ways and will leave it to you guys to determine which way we like to adopt.
-
-Thanks,
-Kevin
-
->=20
-> -Scott
-
---cpvLTH7QU4gwfq3S
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQEcBAEBAgAGBQJRlJwxAAoJEJNY7TDerrFxZR4H/jv4CX/j6tbiSvGQnpJNf83W
-bPAJRw6rnS80xEWi+eKFvAxreHK2TBLje2Cen9OMDeEY2VjK9zzNluB2x64/2i5S
-gdyVkRGHLBGAOm2as39vF2JhKVT3yMmqMNLYSJGREnpqlFCD7BKvkZ+PdJMZwOWy
-fFXUsAd671+LXgsczuprYcsPQBFJ5tLw8BiqFXuHh8X3TJiX4XA5I+5lsaFQ+8Bm
-RZCpJagKLpxq9f6oSVkoq4B4hqEmNfTirBPloowaPIrwFD4mNqCpSZ9IMVe6uG1w
-T4kPKqzMaVz2sGt2CZHzU2xlzg3RUJIlB9kaepdXkEpbOh13EyYUkjGSq2Hv6YQ=
-=lthD
------END PGP SIGNATURE-----
-
---cpvLTH7QU4gwfq3S--
+mikey
