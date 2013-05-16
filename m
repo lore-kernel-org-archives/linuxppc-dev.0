@@ -1,30 +1,30 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6DF252C00D4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 16:35:44 +1000 (EST)
-Message-ID: <51947E35.30808@windriver.com>
-Date: Thu, 16 May 2013 14:35:33 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 288132C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 16:37:12 +1000 (EST)
+Message-ID: <1368686221.9603.48.camel@pasglop>
 Subject: Re: SATA FSL and upstreaming
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Bhushan Bharat-R65777 <R65777@freescale.com>
+Date: Thu, 16 May 2013 16:37:01 +1000
+In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D0701C409@039-SN2MPN1-012.039d.mgd.msft.net>
 References: <1368679657.9603.32.camel@pasglop>
  <1368683156.9603.34.camel@pasglop>
  <6A3DF150A5B70D4F9B66A25E3F7C888D0701C307@039-SN2MPN1-012.039d.mgd.msft.net>
  <3E027F8168735B46AC006B1D0C7BB0020B1E040F@039-SN2MPN1-011.039d.mgd.msft.net>
- <1368684547.9603.38.camel@pasglop> <51947A00.9010504@windriver.com>
- <1368685307.9603.39.camel@pasglop>
-In-Reply-To: <1368685307.9603.39.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: Xie Shaohui-B21989 <B21989@freescale.com>,
- Liu Qiang-B32616 <B32616@freescale.com>,
- Zang Roy-R61911 <r61911@freescale.com>,
+ <1368684547.9603.38.camel@pasglop>
+ <3E027F8168735B46AC006B1D0C7BB0020B1E0442@039-SN2MPN1-011.039d.mgd.msft.net>
+ <1368685428.9603.41.camel@pasglop>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0701C409@039-SN2MPN1-012.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Liu Qiang-B32616 <B32616@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  Fleming Andy-AFLEMING <afleming@freescale.com>,
- Bhushan Bharat-R65777 <R65777@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ Zang Roy-R61911 <r61911@freescale.com>,
+ Xie Shaohui-B21989 <B21989@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,31 +34,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/16/2013 02:21 PM, Benjamin Herrenschmidt wrote:
-> On Thu, 2013-05-16 at 14:17 +0800, tiejun.chen wrote:
->> I think you can use Bharat's RCW, which seems RR_HXAPNSP_0x36, then
->> please take
->> a look at this:
->
-> Ok, how do I update my RCW to bse Bharat's ?
+On Thu, 2013-05-16 at 06:33 +0000, Bhushan Bharat-R65777 wrote:
+> protect off 0xec000000 +$filesize; erase 0xec000000 +$filesize; cp.b
+> 0x1000000 0xec000000 $filesize
 
+BTW, is it normal that the network in uboot is *extremely* unreliable ?
+It takes dozens of tries if not more for it to "kick in", then it
+eventually works.
 
-Firstly please check which flash bank is used since we have to know where should 
-be updated RCW.
+I've given on dhcp and using fixed IPs but that doesn't help, tftp fails
+several times until it eventually work ... if I'm in a lucky day.
 
-What is SW7[1:4]?
-
-Or we have another simple way in u-boot prompt:
-
-=> md.b ffdf002c
-ffdf002c: 4f 00 fe 00 39 00 00 00 00 00 00 00 00 00 00 00    O...9...........
-...
-
-This means we're on bank4.
-
->
-> Any DIP switch setting I need to be aware of ?
-
-No.
-
-Tiejun
+Cheers,
+Ben.
