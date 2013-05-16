@@ -1,21 +1,31 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E50D42C02A0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 16:31:13 +1000 (EST)
-Message-ID: <1368685863.9603.45.camel@pasglop>
-Subject: Re: SATA FSL and upstreaming
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Xie Shaohui-B21989 <B21989@freescale.com>
-Date: Thu, 16 May 2013 16:31:03 +1000
-In-Reply-To: <ED492CCEAF882048BC2237DE806547C90B1B1801@039-SN2MPN1-011.039d.mgd.msft.net>
+Return-Path: <R65777@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe006.messaging.microsoft.com [216.32.180.16])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E92352C009E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 16:32:41 +1000 (EST)
+From: Bhushan Bharat-R65777 <R65777@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Zang Roy-R61911
+ <r61911@freescale.com>
+Subject: RE: SATA FSL and upstreaming
+Date: Thu, 16 May 2013 06:33:00 +0000
+Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D0701C409@039-SN2MPN1-012.039d.mgd.msft.net>
 References: <1368679657.9603.32.camel@pasglop>
- <ED492CCEAF882048BC2237DE806547C90B1B1801@039-SN2MPN1-011.039d.mgd.msft.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Fleming Andy-AFLEMING <afleming@freescale.com>
+ <1368683156.9603.34.camel@pasglop>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0701C307@039-SN2MPN1-012.039d.mgd.msft.net>
+ <3E027F8168735B46AC006B1D0C7BB0020B1E040F@039-SN2MPN1-011.039d.mgd.msft.net>
+ <1368684547.9603.38.camel@pasglop>
+ <3E027F8168735B46AC006B1D0C7BB0020B1E0442@039-SN2MPN1-011.039d.mgd.msft.net>
+ <1368685428.9603.41.camel@pasglop>
+In-Reply-To: <1368685428.9603.41.camel@pasglop>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: Liu Qiang-B32616 <B32616@freescale.com>,
+ Fleming Andy-AFLEMING <afleming@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Xie Shaohui-B21989 <B21989@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,63 +35,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-05-16 at 06:24 +0000, Xie Shaohui-B21989 wrote:
-> Hi, Ben,
-> 
-> Since the p5020ds you tested is a rev1 chip, I think the most possibility that SATA not work
-> is due to a SATA erratum, which is fixed in rev1.1, we have a policy that patches for errata that 
-> are present only on early silicon revisions, typically only rev1 silicon will not send upstream.
-> You can find the patch at below link:
-> http://git.freescale.com/git/cgit.cgi/ppc/sdk/linux.git/commit/?id=b79a8a0528b8a0008cb76f339806b1200b5d8f63
-
-Well, the chip I have is rev1... since I'm the maintainer I might pull a
-"Linus" and just apply the damn patch to make it work for me :-) Though
-I'm being told that a rev2 chip is on its way to me ... I'll wait a few
-more days see if that arrives.
-
-Cheers,
-Ben.
-
-> Since it is not sent to upstream, it may need to be rebased if apply it to latest tree.
-> 
-> Also there might be another issue(SATA & USB) if you test 64 bit kernel on p5020ds with DRR > 4G, we have a patch
-> Sent to upstream, but not accepted yet. Link as below:
-> http://patchwork.ozlabs.org/patch/179828/
-> 
-> There are online documents of SDK, for the p5020ds hardware please see the link:
-> http://www.freescale.com/infocenter/index.jsp?topic=%2FQORIQSDK%2F2989554.html
-> 
-> 
-> Best Regards, 
-> Shaohui Xie
-> > -----Original Message-----
-> > From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org]
-> > Sent: Thursday, May 16, 2013 12:48 PM
-> > To: Liu Qiang-B32616; Xie Shaohui-B21989; Fleming Andy-AFLEMING
-> > Cc: linuxppc-dev@lists.ozlabs.org; Kumar Gala
-> > Subject: SATA FSL and upstreaming
-> > 
-> > Hi folks !
-> > 
-> > So I was trying to use my 5020ds to test some stuff today. Since I hadn't
-> > used it in a while, I decided to "upgrade" it to the latest NOR etc...
-> > 
-> > Interestingly I discovered that the SATA (which was supposedly dead on
-> > the rev1 chip) was actually working with the SDK kernel, while it's still
-> > completely busted upstream.
-> > 
-> > A quick git compare shows about 5 or 6 commits in the SDK tree, some as
-> > old as 2011, fixing various erratas in that chip, that never made their
-> > way upstream.
-> > 
-> > Any reason for that ? Being GPL, I can submit them to Tejun myself but it
-> > would be better form if you guys did :-)
-> > 
-> > BTW. Also what's the status with getting the network working upstream ?
-> > Even if sub-standard the code could at least go into staging...
-> > 
-> > Cheers,
-> > Ben.
-> > 
-> > 
-> 
+VHJ5Og0KDQpGcm9tIGJhbmsgMA0KLS0tLS0tLS0tLS0tDQoNCnRmdHAgMHgxMDAwMDAwICByY3df
+MnNnbWlpXzE1MDBtaHouYmluDQpwcm90ZWN0IG9mZiAweGVjMDAwMDAwICskZmlsZXNpemU7IGVy
+YXNlIDB4ZWMwMDAwMDAgKyRmaWxlc2l6ZTsgY3AuYiAweDEwMDAwMDAgMHhlYzAwMDAwMCAkZmls
+ZXNpemUNCg0KDQpUaGFua3MNCi1CaGFyYXQNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0t
+LQ0KPiBGcm9tOiBCZW5qYW1pbiBIZXJyZW5zY2htaWR0IFttYWlsdG86YmVuaEBrZXJuZWwuY3Jh
+c2hpbmcub3JnXQ0KPiBTZW50OiBUaHVyc2RheSwgTWF5IDE2LCAyMDEzIDExOjU0IEFNDQo+IFRv
+OiBaYW5nIFJveS1SNjE5MTENCj4gQ2M6IEJodXNoYW4gQmhhcmF0LVI2NTc3NzsgTGl1IFFpYW5n
+LUIzMjYxNjsgRmxlbWluZyBBbmR5LUFGTEVNSU5HOyBsaW51eHBwYy0NCj4gZGV2QGxpc3RzLm96
+bGFicy5vcmc7IFhpZSBTaGFvaHVpLUIyMTk4OQ0KPiBTdWJqZWN0OiBSZTogU0FUQSBGU0wgYW5k
+IHVwc3RyZWFtaW5nDQo+IA0KPiBPbiBUaHUsIDIwMTMtMDUtMTYgYXQgMDY6MTcgKzAwMDAsIFph
+bmcgUm95LVI2MTkxMSB3cm90ZToNCj4gPiBEbyB5b3UgdHJ5IHNsb3Q3Pw0KPiA+IFBDSWUxIGNv
+bm5lY3RzIHRvIHNsb3Q3IGRpcmVjdGx5Lg0KPiANCj4gSSB0cmllZCBhbGwgc2xvdHMuIE5vbmUg
+b2YgdGhlbSBzZWVzIGFueSBjYXJkLiBUaGUgY2FyZCBhbHNvIGRvZXNuJ3Qgc2VlbSB0byBiZQ0K
+PiBwb3dlcmVkIHVwIChub25lIG9mIHRoZSBMRURzIGJsaW5rLCBpdCdzIGFuIGUxMDAwIHNpbmNl
+IEkgZG9uJ3QgaGF2ZSBuZXR3b3JraW5nDQo+IHdpdGggdXBzdHJlYW0pLg0KPiANCj4gSSBhbHNv
+IHRyaWVkIGEgZGlmZmVyZW50IGNhcmQgYW5kIHVib290IGlzIHByZXR0eSBhZGFtYW50IGF0IHNh
+eWluZyAibm8gbGluayIgOi0NCj4gKQ0KPiANCj4gSSdsbCB0cnkgdG8gdXBkYXRlIHRoZSBSQ1cg
+d2hlbiBJIGtub3cgaG93IHRvIGRvIGl0IDotKQ0KPiANCj4gQ2hlZXJzLA0KPiBCZW4uDQo+IA0K
+PiA+IFJveQ0KPiA+DQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gRnJv
+bTogQmVuamFtaW4gSGVycmVuc2NobWlkdCBbbWFpbHRvOmJlbmhAa2VybmVsLmNyYXNoaW5nLm9y
+Z10NCj4gPiA+IFNlbnQ6IFRodXJzZGF5LCBNYXkgMTYsIDIwMTMgMjowOSBQTQ0KPiA+ID4gVG86
+IFphbmcgUm95LVI2MTkxMQ0KPiA+ID4gQ2M6IEJodXNoYW4gQmhhcmF0LVI2NTc3NzsgTGl1IFFp
+YW5nLUIzMjYxNjsgRmxlbWluZyBBbmR5LUFGTEVNSU5HOw0KPiA+ID4gbGludXhwcGMtZGV2QGxp
+c3RzLm96bGFicy5vcmc7IFhpZSBTaGFvaHVpLUIyMTk4OQ0KPiA+ID4gU3ViamVjdDogUmU6IFNB
+VEEgRlNMIGFuZCB1cHN0cmVhbWluZw0KPiA+ID4NCj4gPiA+IE9uIFRodSwgMjAxMy0wNS0xNiBh
+dCAwNjowNSArMDAwMCwgWmFuZyBSb3ktUjYxOTExIHdyb3RlOg0KPiA+ID4gPiBJIGRvIG5vdCBz
+dWdnZXN0IGNoYW5naW5nIHRoZSBSQ1cuIElmIHRoZSBSQ1cgaXMgYnJva2VuIG9uIEJlbidzDQo+
+ID4gPiA+IHNpZGUsIGl0IGlzIG5vdCBlYXN5IHRvIHJlY292ZXIgZm9yIGhpbS4NCj4gPiA+ID4g
+TGV0J3MgY2hlY2sgdGhlIFUtYm9vdCBvdXRwdXQgZmlyc3QuDQo+ID4gPg0KPiA+ID4gVS1Cb290
+IDIwMTMuMDEtMDAwMDktZzdiY2Q3ZjQgKE1hciAxNCAyMDEzIC0gMTQ6MjM6MTYpDQo+ID4gPg0K
+PiA+ID4gQ1BVMDogIFA1MDIwRSwgVmVyc2lvbjogMS4wLCAoMHg4MjI4MDAxMCkNCj4gPiA+IENv
+cmU6ICBFNTUwMCwgVmVyc2lvbjogMS4wLCAoMHg4MDI0MDAxMCkgQ2xvY2sgQ29uZmlndXJhdGlv
+bjoNCj4gPiA+ICAgICAgICBDUFUwOjIwMDAgTUh6LCBDUFUxOjIwMDAgTUh6LA0KPiA+ID4gICAg
+ICAgIENDQjo4MDAgIE1IeiwNCj4gPiA+ICAgICAgICBERFI6NjY2LjY2NyBNSHogKDEzMzMuMzMz
+IE1UL3MgZGF0YSByYXRlKSAoQXN5bmNocm9ub3VzKSwNCj4gPiA+IExCQzoxMDAgTUh6DQo+ID4g
+PiAgICAgICAgRk1BTjE6IDYwMCBNSHoNCj4gPiA+ICAgICAgICBRTUFOOiAgNDAwIE1Ieg0KPiA+
+ID4gICAgICAgIFBNRTogICA0MDAgTUh6DQo+ID4gPiBMMTogICAgRC1jYWNoZSAzMiBrQiBlbmFi
+bGVkDQo+ID4gPiAgICAgICAgSS1jYWNoZSAzMiBrQiBlbmFibGVkDQo+ID4gPiBCb2FyZDogUDUw
+MjBEUywgU3lzIElEOiAweDFjLCBTeXMgVmVyOiAweDEyLCBGUEdBIFZlcjogMHgwNSwgdkJhbms6
+DQo+ID4gPiAwIFJlc2V0IENvbmZpZ3VyYXRpb24gV29yZCAoUkNXKToNCj4gPiA+ICAgICAgICAw
+MDAwMDAwMDogMGM1NDAwMDAgMDAwMDAwMDAgMWUxMjAwMDAgMDAwMDAwMDANCj4gPiA+ICAgICAg
+ICAwMDAwMDAxMDogZDg5ODRhMDEgMDMwMDIwMDAgZGU4MDAwMDAgNDEwMDAwMDANCj4gPiA+ICAg
+ICAgICAwMDAwMDAyMDogMDAwMDAwMDAgMDAwMDAwMDAgMDAwMDAwMDAgMTAwNzAwMDANCj4gPiA+
+ICAgICAgICAwMDAwMDAzMDogMDAwMDAwMDAgMDAwMDAwMDAgMDAwMDAwMDAgMDAwMDAwMDAgU0VS
+REVTDQo+ID4gPiBSZWZlcmVuY2UgQ2xvY2tzOiBCYW5rMT0xMDBNaHogQmFuazI9MTI1TWh6IEJh
+bmszPTEyNU1oeg0KPiA+ID4gSTJDOiAgIHJlYWR5DQo+ID4gPiBTUEk6ICAgcmVhZHkNCj4gPiA+
+IERSQU06ICBJbml0aWFsaXppbmcuLi4udXNpbmcgU1BEDQo+ID4gPiBEZXRlY3RlZCBVRElNTSBp
+LURJTU0NCj4gPiA+IERldGVjdGVkIFVESU1NIGktRElNTQ0KPiA+ID4gMiBHaUIgbGVmdCB1bm1h
+cHBlZA0KPiA+ID4gNCBHaUIgKEREUjMsIDY0LWJpdCwgQ0w9OSwgRUNDIG9uKQ0KPiA+ID4gICAg
+ICAgIEREUiBDb250cm9sbGVyIEludGVybGVhdmluZyBNb2RlOiBjYWNoZSBsaW5lDQo+ID4gPiAg
+ICAgICAgRERSIENoaXAtU2VsZWN0IEludGVybGVhdmluZyBNb2RlOiBDUzArQ1MxIFRlc3Rpbmcg
+MHgwMDAwMDAwMA0KPiA+ID4gLSAweDdmZmZmZmZmIFRlc3RpbmcgMHg4MDAwMDAwMCAtIDB4ZmZm
+ZmZmZmYgUmVtYXAgRERSIDIgR2lCIGxlZnQNCj4gPiA+IHVubWFwcGVkDQo+ID4gPg0KPiA+ID4g
+UE9TVCBtZW1vcnkgUEFTU0VEDQo+ID4gPiBGbGFzaDogMTI4IE1pQg0KPiA+ID4gTDI6ICAgIDUx
+MiBLQiBlbmFibGVkDQo+ID4gPiBDb3JlbmV0IFBsYXRmb3JtIENhY2hlOiAyMDQ4IEtCIGVuYWJs
+ZWQNCj4gPiA+IFNSSU8xOiBkaXNhYmxlZA0KPiA+ID4gU1JJTzI6IGRpc2FibGVkDQo+ID4gPiBO
+QU5EOiAgMTAyNCBNaUINCj4gPiA+IE1NQzogIEZTTF9TREhDOiAwDQo+ID4gPiBFRVBST006IE5Y
+SUQgdjENCj4gPiA+IFBDSWUxOiBSb290IENvbXBsZXgsIG5vIGxpbmssIHJlZ3MgQCAweGZlMjAw
+MDAwDQo+ID4gPiBQQ0llMTogQnVzIDAwIC0gMDANCj4gPiA+IFBDSWUyOiBkaXNhYmxlZA0KPiA+
+ID4gUENJZTM6IFJvb3QgQ29tcGxleCwgbm8gbGluaywgcmVncyBAIDB4ZmUyMDIwMDANCj4gPiA+
+IFBDSWUzOiBCdXMgMDEgLSAwMQ0KPiA+ID4gUENJZTQ6IGRpc2FibGVkDQo+ID4gPiBJbjogICAg
+c2VyaWFsDQo+ID4gPiBPdXQ6ICAgc2VyaWFsDQo+ID4gPiBFcnI6ICAgc2VyaWFsDQo+ID4gPiBO
+ZXQ6ICAgSW5pdGlhbGl6aW5nIEZtYW4NCj4gPiA+IEZtYW4xOiBVcGxvYWRpbmcgbWljcm9jb2Rl
+IHZlcnNpb24gMTA2LjEuNyBQSFkgcmVzZXQgdGltZWQgb3V0IFBIWQ0KPiA+ID4gcmVzZXQgdGlt
+ZWQgb3V0IFBIWSByZXNldCB0aW1lZCBvdXQgUEhZIHJlc2V0IHRpbWVkIG91dCBGTTFARFRTRUMx
+LA0KPiA+ID4gRk0xQERUU0VDMiwgRk0xQERUU0VDMywgRk0xQERUU0VDNCwgRk0xQERUU0VDNSwg
+Rk0xQFRHRUMxIEhpdCBhbnkNCj4gPiA+IGtleSB0byBzdG9wIGF1dG9ib290OiAgMCA9Pg0KPiA+
+ID4NCj4gPiA+IENoZWVycywNCj4gPiA+IEJlbi4NCj4gPiA+DQo+ID4gPg0KPiA+DQo+IA0KPiAN
+Cg0K
