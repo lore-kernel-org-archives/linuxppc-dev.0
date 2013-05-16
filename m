@@ -1,18 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id C96452C0098
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 14:47:52 +1000 (EST)
-Message-ID: <1368679657.9603.32.camel@pasglop>
-Subject: SATA FSL and upstreaming
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Qiang Liu <qiang.liu@freescale.com>, Shaohui Xie
- <Shaohui.Xie@freescale.com>, Andy Fleming <afleming@freescale.com>
-Date: Thu, 16 May 2013 14:47:37 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <R65777@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0249.outbound.messaging.microsoft.com [213.199.154.249])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C4FF82C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 15:25:40 +1000 (EST)
+From: Bharat Bhushan <r65777@freescale.com>
+To: <galak@kernel.crashing.org>, <benh@kernel.crashing.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>,
+ <stuart.yoder@freescale.com>, <James.Yang@freescale.com>
+Subject: [PATCH] powerpc: Make ptrace work reliably
+Date: Thu, 16 May 2013 10:59:49 +0530
+Message-ID: <1368682191-4225-1-git-send-email-Bharat.Bhushan@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Bharat Bhushan <bharat.bhushan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,25 +25,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi folks !
+From: Bharat Bhushan <bharat.bhushan@freescale.com>
 
-So I was trying to use my 5020ds to test some stuff today. Since I
-hadn't used it in a while, I decided to "upgrade" it to the latest NOR
-etc...
+Bharat Bhushan (2):
+  powerpc: debug control and status registers are 32bit
+=> This patch makes debug control and status registers as 32bit as they are.
+   This does not fix anything
 
-Interestingly I discovered that the SATA (which was supposedly dead on
-the rev1 chip) was actually working with the SDK kernel, while it's
-still completely busted upstream.
+  powerpc: restore dbcr0 on user space exit
+=> This patch fixes the ptrace reliability issue. The description is the patch
+   describes one of the case where it does not work reliably
 
-A quick git compare shows about 5 or 6 commits in the SDK tree, some as
-old as 2011, fixing various erratas in that chip, that never made their
-way upstream.
-
-Any reason for that ? Being GPL, I can submit them to Tejun myself but
-it would be better form if you guys did :-)
-
-BTW. Also what's the status with getting the network working upstream ?
-Even if sub-standard the code could at least go into staging...
-
-Cheers,
-Ben.
+ arch/powerpc/include/asm/processor.h |    8 ++++----
+ arch/powerpc/kernel/asm-offsets.c    |    1 +
+ arch/powerpc/kernel/entry_64.S       |   24 ++++++++++++++++++++----
+ 3 files changed, 25 insertions(+), 8 deletions(-)
