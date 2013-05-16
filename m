@@ -1,12 +1,30 @@
-Return-Path: <michael@ozlabs.org>
-From: Michael Ellerman <michael@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 2/2] powerpc/perf: Add missing SIER support
-Date: Thu, 16 May 2013 16:19:31 +1000
-Message-Id: <1368685171-1948-2-git-send-email-michael@ellerman.id.au>
-In-Reply-To: <1368685171-1948-1-git-send-email-michael@ellerman.id.au>
-References: <1368685171-1948-1-git-send-email-michael@ellerman.id.au>
-Cc: sukadev@linux.vnet.ibm.com, Paul Mackerras <paulus@samba.org>
+Return-Path: <r61911@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 611AA2C0238
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 16:20:53 +1000 (EST)
+From: Zang Roy-R61911 <r61911@freescale.com>
+To: tiejun.chen <tiejun.chen@windriver.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>
+Subject: RE: SATA FSL and upstreaming
+Date: Thu, 16 May 2013 06:20:45 +0000
+Message-ID: <3E027F8168735B46AC006B1D0C7BB0020B1E0461@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <1368679657.9603.32.camel@pasglop>
+ <1368683156.9603.34.camel@pasglop>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0701C307@039-SN2MPN1-012.039d.mgd.msft.net>
+ <3E027F8168735B46AC006B1D0C7BB0020B1E040F@039-SN2MPN1-011.039d.mgd.msft.net>
+ <1368684547.9603.38 <51947A00.9010504@windriver.com>
+In-Reply-To: <51947A00.9010504@windriver.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: Liu Qiang-B32616 <B32616@freescale.com>,
+ Fleming Andy-AFLEMING <afleming@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Xie Shaohui-B21989 <B21989@freescale.com>,
+ Bhushan Bharat-R65777 <R65777@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,76 +34,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 8f61aa3 "Add support for SIER" missed updates to siar_valid()
-and perf_get_data_addr().
-
-In both cases we need to check the SIER instead of mmcra.
-
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/perf/core-book3s.c |   37 +++++++++++++++++++++++++------------
- 1 file changed, 25 insertions(+), 12 deletions(-)
-
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index b2f873b..845c867 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -136,22 +136,30 @@ static inline unsigned long perf_ip_adjust(struct pt_regs *regs)
-  * If we're not doing instruction sampling, give them the SDAR
-  * (sampled data address).  If we are doing instruction sampling, then
-  * only give them the SDAR if it corresponds to the instruction
-- * pointed to by SIAR; this is indicated by the [POWER6_]MMCRA_SDSYNC or
-- * the [POWER7P_]MMCRA_SDAR_VALID bit in MMCRA.
-+ * pointed to by SIAR; this is indicated by the [POWER6_]MMCRA_SDSYNC, the
-+ * [POWER7P_]MMCRA_SDAR_VALID bit in MMCRA, or the SDAR_VALID bit in SIER.
-  */
- static inline void perf_get_data_addr(struct pt_regs *regs, u64 *addrp)
- {
- 	unsigned long mmcra = regs->dsisr;
--	unsigned long sdsync;
-+	bool sdar_valid;
- 
--	if (ppmu->flags & PPMU_SIAR_VALID)
--		sdsync = POWER7P_MMCRA_SDAR_VALID;
--	else if (ppmu->flags & PPMU_ALT_SIPR)
--		sdsync = POWER6_MMCRA_SDSYNC;
--	else
--		sdsync = MMCRA_SDSYNC;
-+	if (ppmu->flags & PPMU_HAS_SIER)
-+		sdar_valid = regs->dar & SIER_SDAR_VALID;
-+	else {
-+		unsigned long sdsync;
-+
-+		if (ppmu->flags & PPMU_SIAR_VALID)
-+			sdsync = POWER7P_MMCRA_SDAR_VALID;
-+		else if (ppmu->flags & PPMU_ALT_SIPR)
-+			sdsync = POWER6_MMCRA_SDSYNC;
-+		else
-+			sdsync = MMCRA_SDSYNC;
- 
--	if (!(mmcra & MMCRA_SAMPLE_ENABLE) || (mmcra & sdsync))
-+		sdar_valid = mmcra & sdsync;
-+	}
-+
-+	if (!(mmcra & MMCRA_SAMPLE_ENABLE) || sdar_valid)
- 		*addrp = mfspr(SPRN_SDAR);
- }
- 
-@@ -290,8 +298,13 @@ static inline int siar_valid(struct pt_regs *regs)
- 	unsigned long mmcra = regs->dsisr;
- 	int marked = mmcra & MMCRA_SAMPLE_ENABLE;
- 
--	if ((ppmu->flags & PPMU_SIAR_VALID) && marked)
--		return mmcra & POWER7P_MMCRA_SIAR_VALID;
-+	if (marked) {
-+		if (ppmu->flags & PPMU_HAS_SIER)
-+			return regs->dar & SIER_SIAR_VALID;
-+
-+		if (ppmu->flags & PPMU_SIAR_VALID)
-+			return mmcra & POWER7P_MMCRA_SIAR_VALID;
-+	}
- 
- 	return 1;
- }
--- 
-1.7.10.4
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogdGllanVuLmNoZW4gW21h
+aWx0bzp0aWVqdW4uY2hlbkB3aW5kcml2ZXIuY29tXQ0KPiBTZW50OiBUaHVyc2RheSwgTWF5IDE2
+LCAyMDEzIDI6MTggUE0NCj4gVG86IEJlbmphbWluIEhlcnJlbnNjaG1pZHQNCj4gQ2M6IFphbmcg
+Um95LVI2MTkxMTsgTGl1IFFpYW5nLUIzMjYxNjsgRmxlbWluZyBBbmR5LUFGTEVNSU5HOyBsaW51
+eHBwYy0NCj4gZGV2QGxpc3RzLm96bGFicy5vcmc7IFhpZSBTaGFvaHVpLUIyMTk4OTsgQmh1c2hh
+biBCaGFyYXQtUjY1Nzc3DQo+IFN1YmplY3Q6IFJlOiBTQVRBIEZTTCBhbmQgdXBzdHJlYW1pbmcN
+Cj4gDQo+IE9uIDA1LzE2LzIwMTMgMDI6MDkgUE0sIEJlbmphbWluIEhlcnJlbnNjaG1pZHQgd3Jv
+dGU6DQo+ID4gT24gVGh1LCAyMDEzLTA1LTE2IGF0IDA2OjA1ICswMDAwLCBaYW5nIFJveS1SNjE5
+MTEgd3JvdGU6DQo+ID4+IEkgZG8gbm90IHN1Z2dlc3QgY2hhbmdpbmcgdGhlIFJDVy4gSWYgdGhl
+IFJDVyBpcyBicm9rZW4gb24gQmVuJ3MNCj4gPj4gc2lkZSwgaXQgaXMgbm90IGVhc3kgdG8gcmVj
+b3ZlciBmb3IgaGltLg0KPiA+PiBMZXQncyBjaGVjayB0aGUgVS1ib290IG91dHB1dCBmaXJzdC4N
+Cj4gPg0KPiA+IFUtQm9vdCAyMDEzLjAxLTAwMDA5LWc3YmNkN2Y0IChNYXIgMTQgMjAxMyAtIDE0
+OjIzOjE2KQ0KPiA+DQo+ID4gQ1BVMDogIFA1MDIwRSwgVmVyc2lvbjogMS4wLCAoMHg4MjI4MDAx
+MCkNCj4gPiBDb3JlOiAgRTU1MDAsIFZlcnNpb246IDEuMCwgKDB4ODAyNDAwMTApIENsb2NrIENv
+bmZpZ3VyYXRpb246DQo+ID4gICAgICAgICBDUFUwOjIwMDAgTUh6LCBDUFUxOjIwMDAgTUh6LA0K
+PiA+ICAgICAgICAgQ0NCOjgwMCAgTUh6LA0KPiA+ICAgICAgICAgRERSOjY2Ni42NjcgTUh6ICgx
+MzMzLjMzMyBNVC9zIGRhdGEgcmF0ZSkgKEFzeW5jaHJvbm91cyksDQo+IExCQzoxMDAgIE1Ieg0K
+PiA+ICAgICAgICAgRk1BTjE6IDYwMCBNSHoNCj4gPiAgICAgICAgIFFNQU46ICA0MDAgTUh6DQo+
+ID4gICAgICAgICBQTUU6ICAgNDAwIE1Ieg0KPiA+IEwxOiAgICBELWNhY2hlIDMyIGtCIGVuYWJs
+ZWQNCj4gPiAgICAgICAgIEktY2FjaGUgMzIga0IgZW5hYmxlZA0KPiA+IEJvYXJkOiBQNTAyMERT
+LCBTeXMgSUQ6IDB4MWMsIFN5cyBWZXI6IDB4MTIsIEZQR0EgVmVyOiAweDA1LCB2QmFuazogMA0K
+PiA+IFJlc2V0IENvbmZpZ3VyYXRpb24gV29yZCAoUkNXKToNCj4gPiAgICAgICAgIDAwMDAwMDAw
+OiAwYzU0MDAwMCAwMDAwMDAwMCAxZTEyMDAwMCAwMDAwMDAwMA0KPiA+ICAgICAgICAgMDAwMDAw
+MTA6IGQ4OTg0YTAxIDAzMDAyMDAwIGRlODAwMDAwIDQxMDAwMDAwDQo+ID4gICAgICAgICAwMDAw
+MDAyMDogMDAwMDAwMDAgMDAwMDAwMDAgMDAwMDAwMDAgMTAwNzAwMDANCj4gPiAgICAgICAgIDAw
+MDAwMDMwOiAwMDAwMDAwMCAwMDAwMDAwMCAwMDAwMDAwMCAwMDAwMDAwMA0KPiANCj4gSSB0aGlu
+ayB5b3UgY2FuIHVzZSBCaGFyYXQncyBSQ1csIHdoaWNoIHNlZW1zIFJSX0hYQVBOU1BfMHgzNiwg
+dGhlbg0KPiBwbGVhc2UgdGFrZSBhIGxvb2sgYXQgdGhpczoNCldoeT8NCkJlbidzIG9uIGJvYXJk
+IFJDVyBwcm90b2NvbCBpcyAweDM2LCB3aGljaCBzaG91bGQgd29yayBmb3IgUENJZTEgKHNsb3Qg
+NykgYW5kIFBDSWUzIChzbG90NCkuDQpSb3kNCg==
