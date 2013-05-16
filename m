@@ -1,27 +1,29 @@
-Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:4830:2446:ff00:4687:fcff:fea6:5117])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 723452C00E5
- for <linuxppc-dev@ozlabs.org>; Thu, 16 May 2013 21:17:20 +1000 (EST)
-Date: Thu, 16 May 2013 13:16:34 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH 3/3] perf, x86, lbr: Demand proper privileges for
- PERF_SAMPLE_BRANCH_KERNEL
-Message-ID: <20130516111634.GA15314@twins.programming.kicks-ass.net>
-References: <20130503121122.931661809@chello.nl>
- <20130503121256.230745028@chello.nl>
- <CABPqkBTvcQAyXfeiJwpPsNtbs4ffsVguXE631dK_rbzHpwBdOg@mail.gmail.com>
- <20130516090916.GF19669@dyad.programming.kicks-ass.net>
- <8578.1368699317@ale.ozlabs.ibm.com>
+Return-Path: <mst@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 052152C026E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 21:17:27 +1000 (EST)
+Date: Thu, 16 May 2013 14:15:36 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v2 07/10] powerpc: uaccess s/might_sleep/might_fault/
+Message-ID: <2aa6c3da21a28120126732b5e0b4ecd6cba8ca3b.1368702323.git.mst@redhat.com>
+References: <cover.1368702323.git.mst@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <8578.1368699317@ale.ozlabs.ibm.com>
-Cc: "ak@linux.intel.com" <ak@linux.intel.com>,
- LKML <linux-kernel@vger.kernel.org>, Stephane Eranian <eranian@google.com>,
- Linux PPC dev <linuxppc-dev@ozlabs.org>, Ingo Molnar <mingo@kernel.org>
+In-Reply-To: <cover.1368702323.git.mst@redhat.com>
+Cc: linux-m32r-ja@ml.linux-m32r.org, kvm@vger.kernel.org,
+ Peter Zijlstra <peterz@infradead.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ David Howells <dhowells@redhat.com>, linux-mm@kvack.org,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ linux-arch@vger.kernel.org, linux-am33-list@redhat.com,
+ Hirokazu Takata <takata@linux-m32r.org>, x86@kernel.org,
+ Ingo Molnar <mingo@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
+ microblaze-uclinux@itee.uq.edu.au, Chris Metcalf <cmetcalf@tilera.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Michal Simek <monstr@monstr.eu>, linux-m32r@ml.linux-m32r.org,
+ Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,42 +33,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 16, 2013 at 08:15:17PM +1000, Michael Neuling wrote:
-> Peter,
-> 
-> BTW PowerPC also has the ability to filter on conditional branches.  Any
-> chance we could add something like the follow to perf also?
-> 
+The only reason uaccess routines might sleep
+is if they fault. Make this explicit.
 
-I don't see an immediate problem with that except that we on x86 need to
-implement that in the software filter. Stephane do you see any
-fundamental issue with that?
+Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+---
+ arch/powerpc/include/asm/uaccess.h | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-> 
-> diff --git a/include/uapi/linux/perf_event.h b/include/uapi/linux/perf_event.h
-> index fb104e5..891c769 100644
-> --- a/include/uapi/linux/perf_event.h
-> +++ b/include/uapi/linux/perf_event.h
-> @@ -157,8 +157,9 @@ enum perf_branch_sample_type {
->  	PERF_SAMPLE_BRANCH_ANY_CALL	= 1U << 4, /* any call branch */
->  	PERF_SAMPLE_BRANCH_ANY_RETURN	= 1U << 5, /* any return branch */
->  	PERF_SAMPLE_BRANCH_IND_CALL	= 1U << 6, /* indirect calls */
-> +	PERF_SAMPLE_BRANCH_CONDITIONAL  = 1U << 7, /* conditional branches */
->  
-> -	PERF_SAMPLE_BRANCH_MAX		= 1U << 7, /* non-ABI */
-> +	PERF_SAMPLE_BRANCH_MAX		= 1U << 8, /* non-ABI */
->  };
->  
->  #define PERF_SAMPLE_BRANCH_PLM_ALL \
-> diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-> index cdf58ec..5b0b89d 100644
-> --- a/tools/perf/builtin-record.c
-> +++ b/tools/perf/builtin-record.c
-> @@ -676,6 +676,7 @@ static const struct branch_mode branch_modes[] = {
->  	BRANCH_OPT("any_call", PERF_SAMPLE_BRANCH_ANY_CALL),
->  	BRANCH_OPT("any_ret", PERF_SAMPLE_BRANCH_ANY_RETURN),
->  	BRANCH_OPT("ind_call", PERF_SAMPLE_BRANCH_IND_CALL),
-> +	BRANCH_OPT("cnd", PERF_SAMPLE_BRANCH_CONDITIONAL),
->  	BRANCH_END
->  };
->  
+diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+index 4db4959..9485b43 100644
+--- a/arch/powerpc/include/asm/uaccess.h
++++ b/arch/powerpc/include/asm/uaccess.h
+@@ -178,7 +178,7 @@ do {								\
+ 	long __pu_err;						\
+ 	__typeof__(*(ptr)) __user *__pu_addr = (ptr);		\
+ 	if (!is_kernel_addr((unsigned long)__pu_addr))		\
+-		might_sleep();					\
++		might_fault();					\
+ 	__chk_user_ptr(ptr);					\
+ 	__put_user_size((x), __pu_addr, (size), __pu_err);	\
+ 	__pu_err;						\
+@@ -188,7 +188,7 @@ do {								\
+ ({									\
+ 	long __pu_err = -EFAULT;					\
+ 	__typeof__(*(ptr)) __user *__pu_addr = (ptr);			\
+-	might_sleep();							\
++	might_fault();							\
+ 	if (access_ok(VERIFY_WRITE, __pu_addr, size))			\
+ 		__put_user_size((x), __pu_addr, (size), __pu_err);	\
+ 	__pu_err;							\
+@@ -268,7 +268,7 @@ do {								\
+ 	const __typeof__(*(ptr)) __user *__gu_addr = (ptr);	\
+ 	__chk_user_ptr(ptr);					\
+ 	if (!is_kernel_addr((unsigned long)__gu_addr))		\
+-		might_sleep();					\
++		might_fault();					\
+ 	__get_user_size(__gu_val, __gu_addr, (size), __gu_err);	\
+ 	(x) = (__typeof__(*(ptr)))__gu_val;			\
+ 	__gu_err;						\
+@@ -282,7 +282,7 @@ do {								\
+ 	const __typeof__(*(ptr)) __user *__gu_addr = (ptr);	\
+ 	__chk_user_ptr(ptr);					\
+ 	if (!is_kernel_addr((unsigned long)__gu_addr))		\
+-		might_sleep();					\
++		might_fault();					\
+ 	__get_user_size(__gu_val, __gu_addr, (size), __gu_err);	\
+ 	(x) = (__typeof__(*(ptr)))__gu_val;			\
+ 	__gu_err;						\
+@@ -294,7 +294,7 @@ do {								\
+ 	long __gu_err = -EFAULT;					\
+ 	unsigned long  __gu_val = 0;					\
+ 	const __typeof__(*(ptr)) __user *__gu_addr = (ptr);		\
+-	might_sleep();							\
++	might_fault();							\
+ 	if (access_ok(VERIFY_READ, __gu_addr, (size)))			\
+ 		__get_user_size(__gu_val, __gu_addr, (size), __gu_err);	\
+ 	(x) = (__typeof__(*(ptr)))__gu_val;				\
+@@ -419,14 +419,14 @@ static inline unsigned long __copy_to_user_inatomic(void __user *to,
+ static inline unsigned long __copy_from_user(void *to,
+ 		const void __user *from, unsigned long size)
+ {
+-	might_sleep();
++	might_fault();
+ 	return __copy_from_user_inatomic(to, from, size);
+ }
+ 
+ static inline unsigned long __copy_to_user(void __user *to,
+ 		const void *from, unsigned long size)
+ {
+-	might_sleep();
++	might_fault();
+ 	return __copy_to_user_inatomic(to, from, size);
+ }
+ 
+@@ -434,7 +434,7 @@ extern unsigned long __clear_user(void __user *addr, unsigned long size);
+ 
+ static inline unsigned long clear_user(void __user *addr, unsigned long size)
+ {
+-	might_sleep();
++	might_fault();
+ 	if (likely(access_ok(VERIFY_WRITE, addr, size)))
+ 		return __clear_user(addr, size);
+ 	if ((unsigned long)addr < TASK_SIZE) {
+-- 
+MST
