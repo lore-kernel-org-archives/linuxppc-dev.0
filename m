@@ -1,29 +1,29 @@
-Return-Path: <r61911@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B86B12C0098
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 16:17:46 +1000 (EST)
-From: Zang Roy-R61911 <r61911@freescale.com>
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 853962C00B7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 16:17:47 +1000 (EST)
+Message-ID: <51947A00.9010504@windriver.com>
+Date: Thu, 16 May 2013 14:17:36 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
+MIME-Version: 1.0
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: RE: SATA FSL and upstreaming
-Date: Thu, 16 May 2013 06:17:38 +0000
-Message-ID: <3E027F8168735B46AC006B1D0C7BB0020B1E0442@039-SN2MPN1-011.039d.mgd.msft.net>
+Subject: Re: SATA FSL and upstreaming
 References: <1368679657.9603.32.camel@pasglop>
  <1368683156.9603.34.camel@pasglop>
  <6A3DF150A5B70D4F9B66A25E3F7C888D0701C307@039-SN2MPN1-012.039d.mgd.msft.net>
  <3E027F8168735B46AC006B1D0C7BB0020B1E040F@039-SN2MPN1-011.039d.mgd.msft.net>
  <1368684547.9603.38.camel@pasglop>
 In-Reply-To: <1368684547.9603.38.camel@pasglop>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: Liu Qiang-B32616 <B32616@freescale.com>,
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: Xie Shaohui-B21989 <B21989@freescale.com>,
+ Liu Qiang-B32616 <B32616@freescale.com>,
+ Zang Roy-R61911 <r61911@freescale.com>,
  Fleming Andy-AFLEMING <afleming@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Xie Shaohui-B21989 <B21989@freescale.com>,
- Bhushan Bharat-R65777 <R65777@freescale.com>
+ Bhushan Bharat-R65777 <R65777@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,49 +33,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RG8geW91IHRyeSBzbG90Nz8NClBDSWUxIGNvbm5lY3RzIHRvIHNsb3Q3IGRpcmVjdGx5Lg0KUm95
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmVuamFtaW4gSGVycmVu
-c2NobWlkdCBbbWFpbHRvOmJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZ10NCj4gU2VudDogVGh1cnNk
-YXksIE1heSAxNiwgMjAxMyAyOjA5IFBNDQo+IFRvOiBaYW5nIFJveS1SNjE5MTENCj4gQ2M6IEJo
-dXNoYW4gQmhhcmF0LVI2NTc3NzsgTGl1IFFpYW5nLUIzMjYxNjsgRmxlbWluZyBBbmR5LUFGTEVN
-SU5HOw0KPiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgWGllIFNoYW9odWktQjIxOTg5
-DQo+IFN1YmplY3Q6IFJlOiBTQVRBIEZTTCBhbmQgdXBzdHJlYW1pbmcNCj4gDQo+IE9uIFRodSwg
-MjAxMy0wNS0xNiBhdCAwNjowNSArMDAwMCwgWmFuZyBSb3ktUjYxOTExIHdyb3RlOg0KPiA+IEkg
-ZG8gbm90IHN1Z2dlc3QgY2hhbmdpbmcgdGhlIFJDVy4gSWYgdGhlIFJDVyBpcyBicm9rZW4gb24g
-QmVuJ3Mgc2lkZSwNCj4gPiBpdCBpcyBub3QgZWFzeSB0byByZWNvdmVyIGZvciBoaW0uDQo+ID4g
-TGV0J3MgY2hlY2sgdGhlIFUtYm9vdCBvdXRwdXQgZmlyc3QuDQo+IA0KPiBVLUJvb3QgMjAxMy4w
-MS0wMDAwOS1nN2JjZDdmNCAoTWFyIDE0IDIwMTMgLSAxNDoyMzoxNikNCj4gDQo+IENQVTA6ICBQ
-NTAyMEUsIFZlcnNpb246IDEuMCwgKDB4ODIyODAwMTApDQo+IENvcmU6ICBFNTUwMCwgVmVyc2lv
-bjogMS4wLCAoMHg4MDI0MDAxMCkNCj4gQ2xvY2sgQ29uZmlndXJhdGlvbjoNCj4gICAgICAgIENQ
-VTA6MjAwMCBNSHosIENQVTE6MjAwMCBNSHosDQo+ICAgICAgICBDQ0I6ODAwICBNSHosDQo+ICAg
-ICAgICBERFI6NjY2LjY2NyBNSHogKDEzMzMuMzMzIE1UL3MgZGF0YSByYXRlKSAoQXN5bmNocm9u
-b3VzKSwgTEJDOjEwMA0KPiBNSHoNCj4gICAgICAgIEZNQU4xOiA2MDAgTUh6DQo+ICAgICAgICBR
-TUFOOiAgNDAwIE1Ieg0KPiAgICAgICAgUE1FOiAgIDQwMCBNSHoNCj4gTDE6ICAgIEQtY2FjaGUg
-MzIga0IgZW5hYmxlZA0KPiAgICAgICAgSS1jYWNoZSAzMiBrQiBlbmFibGVkDQo+IEJvYXJkOiBQ
-NTAyMERTLCBTeXMgSUQ6IDB4MWMsIFN5cyBWZXI6IDB4MTIsIEZQR0EgVmVyOiAweDA1LCB2QmFu
-azogMA0KPiBSZXNldCBDb25maWd1cmF0aW9uIFdvcmQgKFJDVyk6DQo+ICAgICAgICAwMDAwMDAw
-MDogMGM1NDAwMDAgMDAwMDAwMDAgMWUxMjAwMDAgMDAwMDAwMDANCj4gICAgICAgIDAwMDAwMDEw
-OiBkODk4NGEwMSAwMzAwMjAwMCBkZTgwMDAwMCA0MTAwMDAwMA0KPiAgICAgICAgMDAwMDAwMjA6
-IDAwMDAwMDAwIDAwMDAwMDAwIDAwMDAwMDAwIDEwMDcwMDAwDQo+ICAgICAgICAwMDAwMDAzMDog
-MDAwMDAwMDAgMDAwMDAwMDAgMDAwMDAwMDAgMDAwMDAwMDANCj4gU0VSREVTIFJlZmVyZW5jZSBD
-bG9ja3M6IEJhbmsxPTEwME1oeiBCYW5rMj0xMjVNaHogQmFuazM9MTI1TWh6DQo+IEkyQzogICBy
-ZWFkeQ0KPiBTUEk6ICAgcmVhZHkNCj4gRFJBTTogIEluaXRpYWxpemluZy4uLi51c2luZyBTUEQN
-Cj4gRGV0ZWN0ZWQgVURJTU0gaS1ESU1NDQo+IERldGVjdGVkIFVESU1NIGktRElNTQ0KPiAyIEdp
-QiBsZWZ0IHVubWFwcGVkDQo+IDQgR2lCIChERFIzLCA2NC1iaXQsIENMPTksIEVDQyBvbikNCj4g
-ICAgICAgIEREUiBDb250cm9sbGVyIEludGVybGVhdmluZyBNb2RlOiBjYWNoZSBsaW5lDQo+ICAg
-ICAgICBERFIgQ2hpcC1TZWxlY3QgSW50ZXJsZWF2aW5nIE1vZGU6IENTMCtDUzENCj4gVGVzdGlu
-ZyAweDAwMDAwMDAwIC0gMHg3ZmZmZmZmZg0KPiBUZXN0aW5nIDB4ODAwMDAwMDAgLSAweGZmZmZm
-ZmZmDQo+IFJlbWFwIEREUiAyIEdpQiBsZWZ0IHVubWFwcGVkDQo+IA0KPiBQT1NUIG1lbW9yeSBQ
-QVNTRUQNCj4gRmxhc2g6IDEyOCBNaUINCj4gTDI6ICAgIDUxMiBLQiBlbmFibGVkDQo+IENvcmVu
-ZXQgUGxhdGZvcm0gQ2FjaGU6IDIwNDggS0IgZW5hYmxlZA0KPiBTUklPMTogZGlzYWJsZWQNCj4g
-U1JJTzI6IGRpc2FibGVkDQo+IE5BTkQ6ICAxMDI0IE1pQg0KPiBNTUM6ICBGU0xfU0RIQzogMA0K
-PiBFRVBST006IE5YSUQgdjENCj4gUENJZTE6IFJvb3QgQ29tcGxleCwgbm8gbGluaywgcmVncyBA
-IDB4ZmUyMDAwMDANCj4gUENJZTE6IEJ1cyAwMCAtIDAwDQo+IFBDSWUyOiBkaXNhYmxlZA0KPiBQ
-Q0llMzogUm9vdCBDb21wbGV4LCBubyBsaW5rLCByZWdzIEAgMHhmZTIwMjAwMA0KPiBQQ0llMzog
-QnVzIDAxIC0gMDENCj4gUENJZTQ6IGRpc2FibGVkDQo+IEluOiAgICBzZXJpYWwNCj4gT3V0OiAg
-IHNlcmlhbA0KPiBFcnI6ICAgc2VyaWFsDQo+IE5ldDogICBJbml0aWFsaXppbmcgRm1hbg0KPiBG
-bWFuMTogVXBsb2FkaW5nIG1pY3JvY29kZSB2ZXJzaW9uIDEwNi4xLjcNCj4gUEhZIHJlc2V0IHRp
-bWVkIG91dA0KPiBQSFkgcmVzZXQgdGltZWQgb3V0DQo+IFBIWSByZXNldCB0aW1lZCBvdXQNCj4g
-UEhZIHJlc2V0IHRpbWVkIG91dA0KPiBGTTFARFRTRUMxLCBGTTFARFRTRUMyLCBGTTFARFRTRUMz
-LCBGTTFARFRTRUM0LCBGTTFARFRTRUM1LCBGTTFAVEdFQzENCj4gSGl0IGFueSBrZXkgdG8gc3Rv
-cCBhdXRvYm9vdDogIDANCj4gPT4NCj4gDQo+IENoZWVycywNCj4gQmVuLg0KPiANCj4gDQoNCg==
+On 05/16/2013 02:09 PM, Benjamin Herrenschmidt wrote:
+> On Thu, 2013-05-16 at 06:05 +0000, Zang Roy-R61911 wrote:
+>> I do not suggest changing the RCW. If the RCW is broken on Ben's side,
+>> it is not easy to recover for him.
+>> Let's check the U-boot output first.
+>
+> U-Boot 2013.01-00009-g7bcd7f4 (Mar 14 2013 - 14:23:16)
+>
+> CPU0:  P5020E, Version: 1.0, (0x82280010)
+> Core:  E5500, Version: 1.0, (0x80240010)
+> Clock Configuration:
+>         CPU0:2000 MHz, CPU1:2000 MHz,
+>         CCB:800  MHz,
+>         DDR:666.667 MHz (1333.333 MT/s data rate) (Asynchronous), LBC:100  MHz
+>         FMAN1: 600 MHz
+>         QMAN:  400 MHz
+>         PME:   400 MHz
+> L1:    D-cache 32 kB enabled
+>         I-cache 32 kB enabled
+> Board: P5020DS, Sys ID: 0x1c, Sys Ver: 0x12, FPGA Ver: 0x05, vBank: 0
+> Reset Configuration Word (RCW):
+>         00000000: 0c540000 00000000 1e120000 00000000
+>         00000010: d8984a01 03002000 de800000 41000000
+>         00000020: 00000000 00000000 00000000 10070000
+>         00000030: 00000000 00000000 00000000 00000000
+
+I think you can use Bharat's RCW, which seems RR_HXAPNSP_0x36, then please take 
+a look at this:
+
+The RCW directories names for the p5020ds board conform to the following naming
+convention:
+
+ab_bcdefghi_j:
+
+a = 'R' if RGMII@DTSEC4 is supported / 'N' if not available/not used
+b = 'R' if RGMII@DTSEC5 is supported / 'N" if not available/not used
+
+c = What is available in Slot 1 or SATA
+d = What is available in Slot 2
+e = What is available in Slot 3
+f = What is available in Slot 4
+g = What is available in Slot 5
+h = What is available in Slot 6
+i = What is available in Slot 7
+
+For the Slots (c..i):
+  'N' if not available/not used
+  'P' if PCIe
+  'X' if XAUI
+  'R' if SRIO
+  'S' if SGMII
+  'H' if SATA
+  'A' is AURORA
+
+j = 'hex value of serdes protocol value'
+
+So NR_HXAPNSP_0x36 means:
+  - no RGMII@DTSEC4
+  - RGMII@DTSEC5
+  - SATA [Slot 1 not used]
+  - XAUI on Slot 2
+  - AURORA on Slot 3
+  - PCIE on Slot 4
+  - SGMII on Slot 6
+  - PCIE on Slot 7
+
+Slot 5 is not used, and the SERDES Protocol is 0x36.
+
+So slot 7 and slot 4 can be as PCIe slot.
+
+Tiejun
+
+> SERDES Reference Clocks: Bank1=100Mhz Bank2=125Mhz Bank3=125Mhz
+> I2C:   ready
+> SPI:   ready
+> DRAM:  Initializing....using SPD
+> Detected UDIMM i-DIMM
+> Detected UDIMM i-DIMM
+> 2 GiB left unmapped
+> 4 GiB (DDR3, 64-bit, CL=9, ECC on)
+>         DDR Controller Interleaving Mode: cache line
+>         DDR Chip-Select Interleaving Mode: CS0+CS1
+> Testing 0x00000000 - 0x7fffffff
+> Testing 0x80000000 - 0xffffffff
+> Remap DDR 2 GiB left unmapped
+>
+> POST memory PASSED
+> Flash: 128 MiB
+> L2:    512 KB enabled
+> Corenet Platform Cache: 2048 KB enabled
+> SRIO1: disabled
+> SRIO2: disabled
+> NAND:  1024 MiB
+> MMC:  FSL_SDHC: 0
+> EEPROM: NXID v1
+> PCIe1: Root Complex, no link, regs @ 0xfe200000
+> PCIe1: Bus 00 - 00
+> PCIe2: disabled
+> PCIe3: Root Complex, no link, regs @ 0xfe202000
+> PCIe3: Bus 01 - 01
+> PCIe4: disabled
+> In:    serial
+> Out:   serial
+> Err:   serial
+> Net:   Initializing Fman
+> Fman1: Uploading microcode version 106.1.7
+> PHY reset timed out
+> PHY reset timed out
+> PHY reset timed out
+> PHY reset timed out
+> FM1@DTSEC1, FM1@DTSEC2, FM1@DTSEC3, FM1@DTSEC4, FM1@DTSEC5, FM1@TGEC1
+> Hit any key to stop autoboot:  0
+> =>
+>
+> Cheers,
+> Ben.
+>
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
+>
