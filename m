@@ -8,8 +8,8 @@ References: <20130503121122.931661809@chello.nl>
  <20130503121256.230745028@chello.nl>
  <CABPqkBTvcQAyXfeiJwpPsNtbs4ffsVguXE631dK_rbzHpwBdOg@mail.gmail.com>
  <20130516090916.GF19669@dyad.programming.kicks-ass.net>
-Date: Thu, 16 May 2013 20:09:36 +1000
-Message-ID: <8166.1368698976@ale.ozlabs.ibm.com>
+Date: Thu, 16 May 2013 20:15:17 +1000
+Message-ID: <8578.1368699317@ale.ozlabs.ibm.com>
 Cc: "ak@linux.intel.com" <ak@linux.intel.com>,
  LKML <linux-kernel@vger.kernel.org>, Stephane Eranian <eranian@google.com>,
  Linux PPC dev <linuxppc-dev@ozlabs.org>, Ingo Molnar <mingo@kernel.org>
@@ -59,71 +59,38 @@ Peter Zijlstra <peterz@infradead.org> wrote:
 > 
 > How about something like the below? It also adds the branch flags
 > Mikey wanted for PowerPC.
-> 
-> ---
->  arch/x86/kernel/cpu/perf_event_intel_lbr.c | 12 +++++++++---
->  include/linux/perf_event.h                 | 10 +++++++---
->  2 files changed, 16 insertions(+), 6 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/cpu/perf_event_intel_lbr.c b/arch/x86/kernel/cpu/perf_event_intel_lbr.c
-> index d978353..f44d635 100644
-> --- a/arch/x86/kernel/cpu/perf_event_intel_lbr.c
-> +++ b/arch/x86/kernel/cpu/perf_event_intel_lbr.c
-> @@ -585,17 +585,23 @@ intel_pmu_lbr_filter(struct cpu_hw_events *cpuc)
->  
->  		/* if type does not correspond, then discard */
->  		if (type == X86_BR_NONE || (br_sel & type) != type) {
-> -			cpuc->lbr_entries[i].from = 0;
-> +			cpuc->lbr_entries[i].__delete = 1;
->  			compress = true;
->  		}
-> +
-> +		/* hide kernel addresses if we're not privileged  */
-> +		if (!(br_sel & X86_BR_KERNEL) && kernel_ip(from)) {
-> +			cpuc->lbr_entries[i].from = -1L;
-> +			cpuc->lbr_entries[i].invalid_from = 1;
-> +		}
->  	}
->  
->  	if (!compress)
->  		return;
->  
-> -	/* remove all entries with from=0 */
-> +	/* remove all entries with __delete */
->  	for (i = 0; i < cpuc->lbr_stack.nr; ) {
-> -		if (!cpuc->lbr_entries[i].from) {
-> +		if (cpuc->lbr_entries[i].__delete) {
->  			j = i;
->  			while (++j < cpuc->lbr_stack.nr)
->  				cpuc->lbr_entries[j-1] = cpuc->lbr_entries[j];
-> diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
-> index f463a46..7acf1c9 100644
-> --- a/include/linux/perf_event.h
-> +++ b/include/linux/perf_event.h
-> @@ -77,9 +77,13 @@ struct perf_raw_record {
->  struct perf_branch_entry {
->  	__u64	from;
->  	__u64	to;
-> -	__u64	mispred:1,  /* target mispredicted */
-> -		predicted:1,/* target predicted */
-> -		reserved:62;
-> +	__u64	mispred:1,	/* target mispredicted		*/
-> +		predicted:1,	/* target predicted		*/
-> +		invalid_to:1,	/* @to isn't to be trusted	*/
-> +		invalid_from:1, /* @from isn't to be trusted	*/
 
-Thanks Peter.  One possible issue...
+Peter,
 
-When the kernel has to read the branch from memory, there is no way for
-it to know that it's the same one that the HW actually executed.  Hence
-there's a possibility that the to address is invalid but we can't tell
-for sure.
+BTW PowerPC also has the ability to filter on conditional branches.  Any
+chance we could add something like the follow to perf also?
 
-I'm happy to just ignore that and mark calculated to address as valid,
-unless you think it would be worthwhile extra information to pass onto
-the user?
+Mikey
 
-If we wanted this extra fidelity we could add a possibly_invalid_to:1
-flag to your patch but I'm not sure it's worth it to be honest.
-
-mikey
+diff --git a/include/uapi/linux/perf_event.h b/include/uapi/linux/perf_event.h
+index fb104e5..891c769 100644
+--- a/include/uapi/linux/perf_event.h
++++ b/include/uapi/linux/perf_event.h
+@@ -157,8 +157,9 @@ enum perf_branch_sample_type {
+ 	PERF_SAMPLE_BRANCH_ANY_CALL	= 1U << 4, /* any call branch */
+ 	PERF_SAMPLE_BRANCH_ANY_RETURN	= 1U << 5, /* any return branch */
+ 	PERF_SAMPLE_BRANCH_IND_CALL	= 1U << 6, /* indirect calls */
++	PERF_SAMPLE_BRANCH_CONDITIONAL  = 1U << 7, /* conditional branches */
+ 
+-	PERF_SAMPLE_BRANCH_MAX		= 1U << 7, /* non-ABI */
++	PERF_SAMPLE_BRANCH_MAX		= 1U << 8, /* non-ABI */
+ };
+ 
+ #define PERF_SAMPLE_BRANCH_PLM_ALL \
+diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
+index cdf58ec..5b0b89d 100644
+--- a/tools/perf/builtin-record.c
++++ b/tools/perf/builtin-record.c
+@@ -676,6 +676,7 @@ static const struct branch_mode branch_modes[] = {
+ 	BRANCH_OPT("any_call", PERF_SAMPLE_BRANCH_ANY_CALL),
+ 	BRANCH_OPT("any_ret", PERF_SAMPLE_BRANCH_ANY_RETURN),
+ 	BRANCH_OPT("ind_call", PERF_SAMPLE_BRANCH_IND_CALL),
++	BRANCH_OPT("cnd", PERF_SAMPLE_BRANCH_CONDITIONAL),
+ 	BRANCH_END
+ };
+ 
