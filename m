@@ -1,29 +1,10 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 853962C00B7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 16:17:47 +1000 (EST)
-Message-ID: <51947A00.9010504@windriver.com>
-Date: Thu, 16 May 2013 14:17:36 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: SATA FSL and upstreaming
-References: <1368679657.9603.32.camel@pasglop>
- <1368683156.9603.34.camel@pasglop>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0701C307@039-SN2MPN1-012.039d.mgd.msft.net>
- <3E027F8168735B46AC006B1D0C7BB0020B1E040F@039-SN2MPN1-011.039d.mgd.msft.net>
- <1368684547.9603.38.camel@pasglop>
-In-Reply-To: <1368684547.9603.38.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: Xie Shaohui-B21989 <B21989@freescale.com>,
- Liu Qiang-B32616 <B32616@freescale.com>,
- Zang Roy-R61911 <r61911@freescale.com>,
- Fleming Andy-AFLEMING <afleming@freescale.com>,
- Bhushan Bharat-R65777 <R65777@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <michael@ozlabs.org>
+From: Michael Ellerman <michael@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH 1/2] powerpc/perf: Revert to original NO_SIPR logic
+Date: Thu, 16 May 2013 16:19:30 +1000
+Message-Id: <1368685171-1948-1-git-send-email-michael@ellerman.id.au>
+Cc: sukadev@linux.vnet.ibm.com, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,127 +14,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/16/2013 02:09 PM, Benjamin Herrenschmidt wrote:
-> On Thu, 2013-05-16 at 06:05 +0000, Zang Roy-R61911 wrote:
->> I do not suggest changing the RCW. If the RCW is broken on Ben's side,
->> it is not easy to recover for him.
->> Let's check the U-boot output first.
->
-> U-Boot 2013.01-00009-g7bcd7f4 (Mar 14 2013 - 14:23:16)
->
-> CPU0:  P5020E, Version: 1.0, (0x82280010)
-> Core:  E5500, Version: 1.0, (0x80240010)
-> Clock Configuration:
->         CPU0:2000 MHz, CPU1:2000 MHz,
->         CCB:800  MHz,
->         DDR:666.667 MHz (1333.333 MT/s data rate) (Asynchronous), LBC:100  MHz
->         FMAN1: 600 MHz
->         QMAN:  400 MHz
->         PME:   400 MHz
-> L1:    D-cache 32 kB enabled
->         I-cache 32 kB enabled
-> Board: P5020DS, Sys ID: 0x1c, Sys Ver: 0x12, FPGA Ver: 0x05, vBank: 0
-> Reset Configuration Word (RCW):
->         00000000: 0c540000 00000000 1e120000 00000000
->         00000010: d8984a01 03002000 de800000 41000000
->         00000020: 00000000 00000000 00000000 10070000
->         00000030: 00000000 00000000 00000000 00000000
+This is a revert and then some of commit 860aad7 "Add regs_no_sipr()".
+This workaround was only needed on early chip versions.
 
-I think you can use Bharat's RCW, which seems RR_HXAPNSP_0x36, then please take 
-a look at this:
+As before NO_SIPR becomes a static flag of the PMU struct.
 
-The RCW directories names for the p5020ds board conform to the following naming
-convention:
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/perf/core-book3s.c |   30 ++++++------------------------
+ 1 file changed, 6 insertions(+), 24 deletions(-)
 
-ab_bcdefghi_j:
-
-a = 'R' if RGMII@DTSEC4 is supported / 'N' if not available/not used
-b = 'R' if RGMII@DTSEC5 is supported / 'N" if not available/not used
-
-c = What is available in Slot 1 or SATA
-d = What is available in Slot 2
-e = What is available in Slot 3
-f = What is available in Slot 4
-g = What is available in Slot 5
-h = What is available in Slot 6
-i = What is available in Slot 7
-
-For the Slots (c..i):
-  'N' if not available/not used
-  'P' if PCIe
-  'X' if XAUI
-  'R' if SRIO
-  'S' if SGMII
-  'H' if SATA
-  'A' is AURORA
-
-j = 'hex value of serdes protocol value'
-
-So NR_HXAPNSP_0x36 means:
-  - no RGMII@DTSEC4
-  - RGMII@DTSEC5
-  - SATA [Slot 1 not used]
-  - XAUI on Slot 2
-  - AURORA on Slot 3
-  - PCIE on Slot 4
-  - SGMII on Slot 6
-  - PCIE on Slot 7
-
-Slot 5 is not used, and the SERDES Protocol is 0x36.
-
-So slot 7 and slot 4 can be as PCIe slot.
-
-Tiejun
-
-> SERDES Reference Clocks: Bank1=100Mhz Bank2=125Mhz Bank3=125Mhz
-> I2C:   ready
-> SPI:   ready
-> DRAM:  Initializing....using SPD
-> Detected UDIMM i-DIMM
-> Detected UDIMM i-DIMM
-> 2 GiB left unmapped
-> 4 GiB (DDR3, 64-bit, CL=9, ECC on)
->         DDR Controller Interleaving Mode: cache line
->         DDR Chip-Select Interleaving Mode: CS0+CS1
-> Testing 0x00000000 - 0x7fffffff
-> Testing 0x80000000 - 0xffffffff
-> Remap DDR 2 GiB left unmapped
->
-> POST memory PASSED
-> Flash: 128 MiB
-> L2:    512 KB enabled
-> Corenet Platform Cache: 2048 KB enabled
-> SRIO1: disabled
-> SRIO2: disabled
-> NAND:  1024 MiB
-> MMC:  FSL_SDHC: 0
-> EEPROM: NXID v1
-> PCIe1: Root Complex, no link, regs @ 0xfe200000
-> PCIe1: Bus 00 - 00
-> PCIe2: disabled
-> PCIe3: Root Complex, no link, regs @ 0xfe202000
-> PCIe3: Bus 01 - 01
-> PCIe4: disabled
-> In:    serial
-> Out:   serial
-> Err:   serial
-> Net:   Initializing Fman
-> Fman1: Uploading microcode version 106.1.7
-> PHY reset timed out
-> PHY reset timed out
-> PHY reset timed out
-> PHY reset timed out
-> FM1@DTSEC1, FM1@DTSEC2, FM1@DTSEC3, FM1@DTSEC4, FM1@DTSEC5, FM1@TGEC1
-> Hit any key to stop autoboot:  0
-> =>
->
-> Cheers,
-> Ben.
->
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
->
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index 426180b..b2f873b 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -110,7 +110,7 @@ static inline void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw) {}
+ 
+ static bool regs_use_siar(struct pt_regs *regs)
+ {
+-	return !!(regs->result & 1);
++	return !!regs->result;
+ }
+ 
+ /*
+@@ -181,11 +181,6 @@ static bool regs_sipr(struct pt_regs *regs)
+ 	return !!(regs->dsisr & sipr);
+ }
+ 
+-static bool regs_no_sipr(struct pt_regs *regs)
+-{
+-	return !!(regs->result & 2);
+-}
+-
+ static inline u32 perf_flags_from_msr(struct pt_regs *regs)
+ {
+ 	if (regs->msr & MSR_PR)
+@@ -208,7 +203,7 @@ static inline u32 perf_get_misc_flags(struct pt_regs *regs)
+ 	 * SIAR which should give slightly more reliable
+ 	 * results
+ 	 */
+-	if (regs_no_sipr(regs)) {
++	if (ppmu->flags & PPMU_NO_SIPR) {
+ 		unsigned long siar = mfspr(SPRN_SIAR);
+ 		if (siar >= PAGE_OFFSET)
+ 			return PERF_RECORD_MISC_KERNEL;
+@@ -239,22 +234,9 @@ static inline void perf_read_regs(struct pt_regs *regs)
+ 	int use_siar;
+ 
+ 	regs->dsisr = mmcra;
+-	regs->result = 0;
+-
+-	if (ppmu->flags & PPMU_NO_SIPR)
+-		regs->result |= 2;
+-
+-	/*
+-	 * On power8 if we're in random sampling mode, the SIER is updated.
+-	 * If we're in continuous sampling mode, we don't have SIPR.
+-	 */
+-	if (ppmu->flags & PPMU_HAS_SIER) {
+-		if (marked)
+-			regs->dar = mfspr(SPRN_SIER);
+-		else
+-			regs->result |= 2;
+-	}
+ 
++	if (ppmu->flags & PPMU_HAS_SIER)
++		regs->dar = mfspr(SPRN_SIER);
+ 
+ 	/*
+ 	 * If this isn't a PMU exception (eg a software event) the SIAR is
+@@ -279,12 +261,12 @@ static inline void perf_read_regs(struct pt_regs *regs)
+ 		use_siar = 1;
+ 	else if ((ppmu->flags & PPMU_NO_CONT_SAMPLING))
+ 		use_siar = 0;
+-	else if (!regs_no_sipr(regs) && regs_sipr(regs))
++	else if (!(ppmu->flags & PPMU_NO_SIPR) && regs_sipr(regs))
+ 		use_siar = 0;
+ 	else
+ 		use_siar = 1;
+ 
+-	regs->result |= use_siar;
++	regs->result = use_siar;
+ }
+ 
+ /*
+-- 
+1.7.10.4
