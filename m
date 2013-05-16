@@ -1,26 +1,21 @@
-Return-Path: <r61911@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id F02FC2C009E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 16:05:32 +1000 (EST)
-From: Zang Roy-R61911 <r61911@freescale.com>
-To: Bhushan Bharat-R65777 <R65777@freescale.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Liu Qiang-B32616 <B32616@freescale.com>
-Subject: RE: SATA FSL and upstreaming
-Date: Thu, 16 May 2013 06:05:22 +0000
-Message-ID: <3E027F8168735B46AC006B1D0C7BB0020B1E040F@039-SN2MPN1-011.039d.mgd.msft.net>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 720242C009E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 16:07:01 +1000 (EST)
+Message-ID: <1368684411.9603.37.camel@pasglop>
+Subject: Re: SATA FSL and upstreaming
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "tiejun.chen" <tiejun.chen@windriver.com>
+Date: Thu, 16 May 2013 16:06:51 +1000
+In-Reply-To: <519474E4.9030705@windriver.com>
 References: <1368679657.9603.32.camel@pasglop>
- <1368683156.9603.34.camel@pasglop>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0701C307@039-SN2MPN1-012.039d.mgd.msft.net>
-In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D0701C307@039-SN2MPN1-012.039d.mgd.msft.net>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Fleming Andy-AFLEMING <afleming@freescale.com>,
- Xie Shaohui-B21989 <B21989@freescale.com>
+ <1368683156.9603.34.camel@pasglop> <519474E4.9030705@windriver.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Qiang Liu <qiang.liu@freescale.com>, Andy Fleming <afleming@freescale.com>,
+ linuxppc-dev@lists.ozlabs.org, Shaohui Xie <Shaohui.Xie@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,50 +25,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 2013-05-16 at 13:55 +0800, tiejun.chen wrote:
+> This should depend on the RCW.
+> 
+> As I recall, slot 7 or slot 4 can be configured to support PCIe for
+> P5020DS. And 
+> you can know this information according to RCW's README.
 
+Somebody can hand hold me on irc ?
 
-> -----Original Message-----
-> From: Linuxppc-dev [mailto:linuxppc-dev-bounces+tie-
-> fei.zang=3Dfreescale.com@lists.ozlabs.org] On Behalf Of Bhushan Bharat-
-> R65777
-> Sent: Thursday, May 16, 2013 2:02 PM
-> To: Benjamin Herrenschmidt; Liu Qiang-B32616
-> Cc: Fleming Andy-AFLEMING; linuxppc-dev@lists.ozlabs.org; Xie Shaohui-
-> B21989
-> Subject: RE: SATA FSL and upstreaming
->=20
->=20
->=20
-> > -----Original Message-----
-> > From: Linuxppc-dev [mailto:linuxppc-dev-
-> > bounces+bharat.bhushan=3Dfreescale.com@lists.ozlabs.org] On Behalf Of
-> > bounces+Benjamin
-> > Herrenschmidt
-> > Sent: Thursday, May 16, 2013 11:16 AM
-> > To: Liu Qiang-B32616
-> > Cc: linuxppc-dev@lists.ozlabs.org; Fleming Andy-AFLEMING; Xie
-> > Shaohui-B21989
-> > Subject: Re: SATA FSL and upstreaming
-> >
-> > On Thu, 2013-05-16 at 14:47 +1000, Benjamin Herrenschmidt wrote:
-> > > Hi folks !
-> > >
-> > > So I was trying to use my 5020ds to test some stuff today. Since I
-> > > hadn't used it in a while, I decided to "upgrade" it to the latest
-> > > NOR etc...
-> >
-> > On another note, I can't seem to get any PCIe card recognized in any
-> slot...
-> >
-> > Can you give me an example config of the DIP switches that is known to
-> > work with some slots ? Is there some EEPROM config needed ? If yes,
-> > any pointers ? (I can't quite make sense of either u-boot or the doc
-> there).
->=20
-> Can you give RCW dump?
-> Or can try the attached RCW.
-I do not suggest changing the RCW. If the RCW is broken on Ben's side, it i=
-s not easy to recover for him.
-Let's check the U-boot output first.
-Thanks.
-Roy
+Cheers,
+Ben.
