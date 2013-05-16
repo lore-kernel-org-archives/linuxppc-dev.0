@@ -1,15 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A77952C00A9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 16:59:29 +1000 (EST)
-Message-ID: <1368687558.9603.54.camel@pasglop>
-Subject: Re: SATA FSL and upstreaming
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Zang Roy-R61911 <r61911@freescale.com>
-Date: Thu, 16 May 2013 16:59:18 +1000
-In-Reply-To: <3E027F8168735B46AC006B1D0C7BB0020B1E056D@039-SN2MPN1-011.039d.mgd.msft.net>
+Return-Path: <r61911@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3BED92C00A8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 17:01:09 +1000 (EST)
+From: Zang Roy-R61911 <r61911@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: RE: SATA FSL and upstreaming
+Date: Thu, 16 May 2013 07:01:01 +0000
+Message-ID: <3E027F8168735B46AC006B1D0C7BB0020B1E05BC@039-SN2MPN1-011.039d.mgd.msft.net>
 References: <1368679657.9603.32.camel@pasglop>
  <1368683156.9603.34.camel@pasglop>
  <6A3DF150A5B70D4F9B66A25E3F7C888D0701C307@039-SN2MPN1-012.039d.mgd.msft.net>
@@ -19,8 +20,10 @@ References: <1368679657.9603.32.camel@pasglop>
  <1368686426.9603.49.camel@pasglop> <5194800D.3010606@windriver.com>
  <6A3DF150A5B70D4F9B66A25E3F7C888D0701C498@039-SN2MPN1-012.039d.mgd.msft.net>
  <3E027F8168735B46AC006B1D0C7BB0020B1E056D@039-SN2MPN1-011.039d.mgd.msft.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ <1368687218.9603.52.camel@pasglop>
+In-Reply-To: <1368687218.9603.52.camel@pasglop>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 Cc: Xie Shaohui-B21989 <B21989@freescale.com>,
  Liu Qiang-B32616 <B32616@freescale.com>,
  "tiejun.chen" <tiejun.chen@windriver.com>,
@@ -36,14 +39,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ok, so I found this one on the SDK ISO: rcw_15g_2000mhz.bin
-
-I flashed that, did pix altbank, I'm now booted from Bank 4 ... and PCIe
-is still showing nothing. I have cards in slots 4 and 7 (assuming that's
-the right numbering, ie, 7 is the top one).
-
-Are we sure we don't have a problem with some DIP ? I saw some of them
-control some SERDES stuff (SW5 iirc)
-
-Cheers,
-Ben.
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmVuamFtaW4gSGVycmVu
+c2NobWlkdCBbbWFpbHRvOmJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZ10NCj4gU2VudDogVGh1cnNk
+YXksIE1heSAxNiwgMjAxMyAyOjU0IFBNDQo+IFRvOiBaYW5nIFJveS1SNjE5MTENCj4gQ2M6IEJo
+dXNoYW4gQmhhcmF0LVI2NTc3NzsgdGllanVuLmNoZW47IExpdSBRaWFuZy1CMzI2MTY7IEZsZW1p
+bmcgQW5keS0NCj4gQUZMRU1JTkc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBYaWUg
+U2hhb2h1aS1CMjE5ODkNCj4gU3ViamVjdDogUmU6IFNBVEEgRlNMIGFuZCB1cHN0cmVhbWluZw0K
+PiANCj4gT24gVGh1LCAyMDEzLTA1LTE2IGF0IDA2OjQ5ICswMDAwLCBaYW5nIFJveS1SNjE5MTEg
+d3JvdGU6DQo+ID4NCj4gDQo+ID4gUGxlYXNlIGFsc28gcHJvdmlkZSBhIFJDVyBiaW5hcnkgdG8g
+QmVuLCBpZiB5b3VyIGd1eXMgaW5zaXN0IHVwZGF0aW5nDQo+IHRoZSBSQ1cuDQo+IA0KPiByaWdo
+dCwgSSBqdXN0IG5vdGljZWQgaXQncyBhc2NpaSA6LSkgVGhhdCBpc24ndCBnb2luZyB0byB3b3Jr
+IHdlbGwuLi4NCkkganVzdCB0cmllZCB5b3VyIFJDVy4gb25lIGUxMDAwIGNhcmQgd29ya3MgaW4g
+c2xvdDcuDQp3ZSBtYXkgbmVlZCB0byBjaGVjayBvdGhlcnMgLi4uDQpVLUJvb3QgMjAxMy4wMS0w
+MDA3OC1nMjc0MWM5OSAoTWF5IDAzIDIwMTMgLSAwMDoyMDo0MSkNCg0KQ1BVMDogIFA1MDIwRSwg
+VmVyc2lvbjogMi4wLCAoMHg4MjI4MDAyMCkNCkNvcmU6ICBFNTUwMCwgVmVyc2lvbjogMS4yLCAo
+MHg4MDI0MDAxMikNCkNsb2NrIENvbmZpZ3VyYXRpb246DQogICAgICAgQ1BVMDoyMDAwIE1Ieiwg
+Q1BVMToyMDAwIE1IeiwgDQogICAgICAgQ0NCOjgwMCAgTUh6LA0KICAgICAgIEREUjo2NjYuNjY3
+IE1IeiAoMTMzMy4zMzMgTVQvcyBkYXRhIHJhdGUpIChBc3luY2hyb25vdXMpLCBMQkM6MTAwICBN
+SHoNCiAgICAgICBGTUFOMTogNjAwIE1Ieg0KICAgICAgIFFNQU46ICA0MDAgTUh6DQogICAgICAg
+UE1FOiAgIDQwMCBNSHoNCkwxOiAgICBELWNhY2hlIDMyIGtCIGVuYWJsZWQNCiAgICAgICBJLWNh
+Y2hlIDMyIGtCIGVuYWJsZWQNClJlc2V0IENvbmZpZ3VyYXRpb24gV29yZCAoUkNXKToNCiAgICAg
+ICAwMDAwMDAwMDogMGM1NDAwMDAgMDAwMDAwMDAgMWUxMjAwMDAgMDAwMDAwMDANCiAgICAgICAw
+MDAwMDAxMDogZDg5ODRhMDEgMDMwMDIwMDAgZGU4MDAwMDAgNDEwMDAwMDANCiAgICAgICAwMDAw
+MDAyMDogMDAwMDAwMDAgMDAwMDAwMDAgMDAwMDAwMDAgMTAwNzAwMDANCiAgICAgICAwMDAwMDAz
+MDogMDAwMDAwMDAgMDAwMDAwMDAgMDAwMDAwMDAgMDAwMDAwMDANCkJvYXJkOiBQNTAyMERTLCBT
+eXMgSUQ6IDB4MWMsIFN5cyBWZXI6IDB4MDIsIEZQR0EgVmVyOiAweDA0LCB2QmFuazogNA0KU0VS
+REVTIFJlZmVyZW5jZSBDbG9ja3M6IEJhbmsxPTEwME1oeiBCYW5rMj0xMjVNaHogQmFuazM9MTI1
+TWh6IA0KSTJDOiAgIHJlYWR5DQpTUEk6ICAgcmVhZHkNCkRSQU06ICBJbml0aWFsaXppbmcuLi4u
+dXNpbmcgU1BEDQpEZXRlY3RlZCBVRElNTSBpLURJTU0NCkRldGVjdGVkIFVESU1NIGktRElNTQ0K
+MiBHaUIgbGVmdCB1bm1hcHBlZA0KNCBHaUIgKEREUjMsIDY0LWJpdCwgQ0w9OSwgRUNDIG9uKQ0K
+ICAgICAgIEREUiBDb250cm9sbGVyIEludGVybGVhdmluZyBNb2RlOiBjYWNoZSBsaW5lDQogICAg
+ICAgRERSIENoaXAtU2VsZWN0IEludGVybGVhdmluZyBNb2RlOiBDUzArQ1MxDQpUZXN0aW5nIDB4
+MDAwMDAwMDAgLSAweDdmZmZmZmZmDQpUZXN0aW5nIDB4ODAwMDAwMDAgLSAweGZmZmZmZmZmDQpS
+ZW1hcCBERFIgMiBHaUIgbGVmdCB1bm1hcHBlZA0KDQpQT1NUIG1lbW9yeSBQQVNTRUQNCkZsYXNo
+OiAxMjggTWlCDQpMMjogICAgNTEyIEtCIGVuYWJsZWQNCkNvcmVuZXQgUGxhdGZvcm0gQ2FjaGU6
+IDIwNDggS0IgZW5hYmxlZA0KU1JJTzE6IGRpc2FibGVkDQpTUklPMjogZGlzYWJsZWQNCk5BTkQ6
+ICAxMDI0IE1pQg0KTU1DOiAgRlNMX1NESEM6IDANCkVFUFJPTTogSW52YWxpZCBJRCAoZmYgZmYg
+ZmYgZmYpDQpQQ0llMTogUm9vdCBDb21wbGV4LCB4MiwgcmVncyBAIDB4ZmUyMDAwMDANCiAgMDE6
+MDAuMCAgICAgLSA4MDg2OjEwNWUgLSBOZXR3b3JrIGNvbnRyb2xsZXINCiAgMDE6MDAuMSAgICAg
+LSA4MDg2OjEwNWUgLSBOZXR3b3JrIGNvbnRyb2xsZXINClBDSWUxOiBCdXMgMDAgLSAwMQ0KUENJ
+ZTI6IGRpc2FibGVkDQpQQ0llMzogUm9vdCBDb21wbGV4LCBubyBsaW5rLCByZWdzIEAgMHhmZTIw
+MjAwMA0KUENJZTM6IEJ1cyAwMiAtIDAyDQpQQ0llNDogZGlzYWJsZWQNCkluOiAgICBzZXJpYWwN
+Ck91dDogICBzZXJpYWwNCkVycjogICBzZXJpYWwNCk5ldDogICBJbml0aWFsaXppbmcgRm1hbg0K
+Rm1hbjE6IFVwbG9hZGluZyBtaWNyb2NvZGUgdmVyc2lvbiAxMDYuMS42DQpQSFkgcmVzZXQgdGlt
+ZWQgb3V0DQpQSFkgcmVzZXQgdGltZWQgb3V0DQpQSFkgcmVzZXQgdGltZWQgb3V0DQpQSFkgcmVz
+ZXQgdGltZWQgb3V0DQplMTAwMDogMDA6MTU6MTc6MTY6Y2U6YjgNCiAgICAgICBlMTAwMDogMDA6
+MTU6MTc6MTY6Y2U6YjkNCiAgICAgICBGTTFARFRTRUMxLCBGTTFARFRTRUMyLCBGTTFARFRTRUMz
+LCBGTTFARFRTRUM0IFtQUklNRV0sIEZNMUBEVFNFQzUsIEZNMUBUR0VDMSwgZTEwMDAjMA0KV2Fy
+bmluZzogZTEwMDAjMCBNQUMgYWRkcmVzc2VzIGRvbid0IG1hdGNoOg0KQWRkcmVzcyBpbiBTUk9N
+IGlzICAgICAgICAgMDA6MTU6MTc6MTY6Y2U6YjgNCkFkZHJlc3MgaW4gZW52aXJvbm1lbnQgaXMg
+IDAwOjFiOjIxOjY4OjVlOmQ0DQosIGUxMDAwIzENCldhcm5pbmc6IGUxMDAwIzEgdXNpbmcgTUFD
+IGFkZHJlc3MgZnJvbSBuZXQgZGV2aWNlDQoNCj0+DQo=
