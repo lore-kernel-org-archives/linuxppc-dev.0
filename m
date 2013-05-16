@@ -1,18 +1,20 @@
 Return-Path: <R65777@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0249.outbound.messaging.microsoft.com [213.199.154.249])
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C4FF82C0098
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 15:25:40 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 095332C00A5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 15:25:42 +1000 (EST)
 From: Bharat Bhushan <r65777@freescale.com>
 To: <galak@kernel.crashing.org>, <benh@kernel.crashing.org>,
  <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>,
  <stuart.yoder@freescale.com>, <James.Yang@freescale.com>
-Subject: [PATCH] powerpc: Make ptrace work reliably
-Date: Thu, 16 May 2013 10:59:49 +0530
-Message-ID: <1368682191-4225-1-git-send-email-Bharat.Bhushan@freescale.com>
+Subject: [PATCH] powerpc: debug control and status registers are 32bit
+Date: Thu, 16 May 2013 10:59:50 +0530
+Message-ID: <1368682191-4225-2-git-send-email-Bharat.Bhushan@freescale.com>
+In-Reply-To: <1368682191-4225-1-git-send-email-Bharat.Bhushan@freescale.com>
+References: <1368682191-4225-1-git-send-email-Bharat.Bhushan@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Bharat Bhushan <bharat.bhushan@freescale.com>
@@ -25,18 +27,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Bharat Bhushan <bharat.bhushan@freescale.com>
-
-Bharat Bhushan (2):
-  powerpc: debug control and status registers are 32bit
-=> This patch makes debug control and status registers as 32bit as they are.
-   This does not fix anything
-
-  powerpc: restore dbcr0 on user space exit
-=> This patch fixes the ptrace reliability issue. The description is the patch
-   describes one of the case where it does not work reliably
-
+Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
+---
  arch/powerpc/include/asm/processor.h |    8 ++++----
- arch/powerpc/kernel/asm-offsets.c    |    1 +
- arch/powerpc/kernel/entry_64.S       |   24 ++++++++++++++++++++----
- 3 files changed, 25 insertions(+), 8 deletions(-)
+ 1 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index d7e67ca..5213577 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -168,10 +168,10 @@ struct thread_struct {
+ 	 * The following help to manage the use of Debug Control Registers
+ 	 * om the BookE platforms.
+ 	 */
+-	unsigned long	dbcr0;
+-	unsigned long	dbcr1;
++	uint32_t	dbcr0;
++	uint32_t	dbcr1;
+ #ifdef CONFIG_BOOKE
+-	unsigned long	dbcr2;
++	uint32_t	dbcr2;
+ #endif
+ 	/*
+ 	 * The stored value of the DBSR register will be the value at the
+@@ -179,7 +179,7 @@ struct thread_struct {
+ 	 * user (will never be written to) and has value while helping to
+ 	 * describe the reason for the last debug trap.  Torez
+ 	 */
+-	unsigned long	dbsr;
++	uint32_t	dbsr;
+ 	/*
+ 	 * The following will contain addresses used by debug applications
+ 	 * to help trace and trap on particular address locations.
+-- 
+1.5.6.5
