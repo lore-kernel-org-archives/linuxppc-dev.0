@@ -1,32 +1,30 @@
-Return-Path: <r61911@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0249.outbound.messaging.microsoft.com [213.199.154.249])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1005C2C00D4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 16:35:43 +1000 (EST)
-From: Zang Roy-R61911 <r61911@freescale.com>
-To: Bhushan Bharat-R65777 <R65777@freescale.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>
-Subject: RE: SATA FSL and upstreaming
-Date: Thu, 16 May 2013 06:35:34 +0000
-Message-ID: <3E027F8168735B46AC006B1D0C7BB0020B1E04F3@039-SN2MPN1-011.039d.mgd.msft.net>
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6DF252C00D4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 16:35:44 +1000 (EST)
+Message-ID: <51947E35.30808@windriver.com>
+Date: Thu, 16 May 2013 14:35:33 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: SATA FSL and upstreaming
 References: <1368679657.9603.32.camel@pasglop>
  <1368683156.9603.34.camel@pasglop>
  <6A3DF150A5B70D4F9B66A25E3F7C888D0701C307@039-SN2MPN1-012.039d.mgd.msft.net>
  <3E027F8168735B46AC006B1D0C7BB0020B1E040F@039-SN2MPN1-011.039d.mgd.msft.net>
- <1368684547.9603.38.camel@pasglop>
- <3E027F8168735B46AC006B1D0C7BB0020B1E0442@039-SN2MPN1-011.039d.mgd.msft.net>
- <1368685428.9603.41.camel@pasglop>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0701C409@039-SN2MPN1-012.039d.mgd.msft.net>
-In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D0701C409@039-SN2MPN1-012.039d.mgd.msft.net>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: Liu Qiang-B32616 <B32616@freescale.com>,
+ <1368684547.9603.38.camel@pasglop> <51947A00.9010504@windriver.com>
+ <1368685307.9603.39.camel@pasglop>
+In-Reply-To: <1368685307.9603.39.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: Xie Shaohui-B21989 <B21989@freescale.com>,
+ Liu Qiang-B32616 <B32616@freescale.com>,
+ Zang Roy-R61911 <r61911@freescale.com>,
  Fleming Andy-AFLEMING <afleming@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Xie Shaohui-B21989 <B21989@freescale.com>
+ Bhushan Bharat-R65777 <R65777@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,14 +34,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmh1c2hhbiBCaGFyYXQt
-UjY1Nzc3DQo+IFNlbnQ6IFRodXJzZGF5LCBNYXkgMTYsIDIwMTMgMjozMyBQTQ0KPiBUbzogQmVu
-amFtaW4gSGVycmVuc2NobWlkdDsgWmFuZyBSb3ktUjYxOTExDQo+IENjOiBMaXUgUWlhbmctQjMy
-NjE2OyBGbGVtaW5nIEFuZHktQUZMRU1JTkc7IGxpbnV4cHBjLQ0KPiBkZXZAbGlzdHMub3psYWJz
-Lm9yZzsgWGllIFNoYW9odWktQjIxOTg5DQo+IFN1YmplY3Q6IFJFOiBTQVRBIEZTTCBhbmQgdXBz
-dHJlYW1pbmcNCj4gDQo+IFRyeToNCj4gDQo+IEZyb20gYmFuayAwDQo+IC0tLS0tLS0tLS0tLQ0K
-PiANCj4gdGZ0cCAweDEwMDAwMDAgIHJjd18yc2dtaWlfMTUwMG1oei5iaW4NCj4gcHJvdGVjdCBv
-ZmYgMHhlYzAwMDAwMCArJGZpbGVzaXplOyBlcmFzZSAweGVjMDAwMDAwICskZmlsZXNpemU7IGNw
-LmINCj4gMHgxMDAwMDAwIDB4ZWMwMDAwMDAgJGZpbGVzaXplDQpZb3UgbmVlZCB0byB0ZWxsIEJl
-biAgdGhhdCB0aGlzIGlzIGZvciBiYW5rIDQgcmN3Lg0KQW5kIGhvdyB0byBzd2l0Y2ggdG8gYmFu
-azQuDQpSb3kNCg==
+On 05/16/2013 02:21 PM, Benjamin Herrenschmidt wrote:
+> On Thu, 2013-05-16 at 14:17 +0800, tiejun.chen wrote:
+>> I think you can use Bharat's RCW, which seems RR_HXAPNSP_0x36, then
+>> please take
+>> a look at this:
+>
+> Ok, how do I update my RCW to bse Bharat's ?
+
+
+Firstly please check which flash bank is used since we have to know where should 
+be updated RCW.
+
+What is SW7[1:4]?
+
+Or we have another simple way in u-boot prompt:
+
+=> md.b ffdf002c
+ffdf002c: 4f 00 fe 00 39 00 00 00 00 00 00 00 00 00 00 00    O...9...........
+...
+
+This means we're on bank4.
+
+>
+> Any DIP switch setting I need to be aware of ?
+
+No.
+
+Tiejun
