@@ -1,17 +1,16 @@
-Return-Path: <R65777@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
+Return-Path: <r61911@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe006.messaging.microsoft.com [213.199.154.209])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2F4682C0099
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 17:12:56 +1000 (EST)
-From: Bhushan Bharat-R65777 <R65777@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Zang Roy-R61911
- <r61911@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id CB9032C0087
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 17:17:22 +1000 (EST)
+From: Zang Roy-R61911 <r61911@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: RE: SATA FSL and upstreaming
-Date: Thu, 16 May 2013 07:13:15 +0000
-Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D0701C52E@039-SN2MPN1-012.039d.mgd.msft.net>
+Date: Thu, 16 May 2013 07:17:12 +0000
+Message-ID: <3E027F8168735B46AC006B1D0C7BB0020B1E0770@039-SN2MPN1-011.039d.mgd.msft.net>
 References: <1368679657.9603.32.camel@pasglop>
  <1368683156.9603.34.camel@pasglop>
  <6A3DF150A5B70D4F9B66A25E3F7C888D0701C307@039-SN2MPN1-012.039d.mgd.msft.net>
@@ -21,17 +20,16 @@ References: <1368679657.9603.32.camel@pasglop>
  <1368686426.9603.49.camel@pasglop> <5194800D.3010606@windriver.com>
  <6A3DF150A5B70D4F9B66A25E3F7C888D0701C498@039-SN2MPN1-012.039d.mgd.msft.net>
  <3E027F8168735B46AC006B1D0C7BB0020B1E056D@039-SN2MPN1-011.039d.mgd.msft.net>
- <1368687218.9603.52.camel@pasglop>
- <3E027F8168735B46AC006B1D0C7BB0020B1E05BC@039-SN2MPN1-011.039d.mgd.msft.net>
- <1368687941.9603.56.camel@pasglop>
-In-Reply-To: <1368687941.9603.56.camel@pasglop>
-Content-Type: text/plain; charset="utf-8"
+ <1368687558.9603.54.camel@pasglop>
+In-Reply-To: <1368687558.9603.54.camel@pasglop>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Cc: "tiejun.chen" <tiejun.chen@windriver.com>,
+Cc: Xie Shaohui-B21989 <B21989@freescale.com>,
+ Liu Qiang-B32616 <B32616@freescale.com>,
+ "tiejun.chen" <tiejun.chen@windriver.com>,
  Fleming Andy-AFLEMING <afleming@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Xie Shaohui-B21989 <B21989@freescale.com>,
- Liu Qiang-B32616 <B32616@freescale.com>
+ Bhushan Bharat-R65777 <R65777@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,64 +39,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-QmVuLCBXaGljaCBTREsgeW91IGFyZSB1c2luZz8NCg0KLUJoYXJhdA0KDQo+IC0tLS0tT3JpZ2lu
-YWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IEJlbmphbWluIEhlcnJlbnNjaG1pZHQgW21haWx0bzpi
-ZW5oQGtlcm5lbC5jcmFzaGluZy5vcmddDQo+IFNlbnQ6IFRodXJzZGF5LCBNYXkgMTYsIDIwMTMg
-MTI6MzYgUE0NCj4gVG86IFphbmcgUm95LVI2MTkxMQ0KPiBDYzogQmh1c2hhbiBCaGFyYXQtUjY1
-Nzc3OyB0aWVqdW4uY2hlbjsgTGl1IFFpYW5nLUIzMjYxNjsgRmxlbWluZyBBbmR5LUFGTEVNSU5H
-Ow0KPiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgWGllIFNoYW9odWktQjIxOTg5DQo+
-IFN1YmplY3Q6IFJlOiBTQVRBIEZTTCBhbmQgdXBzdHJlYW1pbmcNCj4gDQo+IE9uIFRodSwgMjAx
-My0wNS0xNiBhdCAwNzowMSArMDAwMCwgWmFuZyBSb3ktUjYxOTExIHdyb3RlOg0KPiANCj4gPiBJ
-IGp1c3QgdHJpZWQgeW91ciBSQ1cuIG9uZSBlMTAwMCBjYXJkIHdvcmtzIGluIHNsb3Q3Lg0KPiA+
-IHdlIG1heSBuZWVkIHRvIGNoZWNrIG90aGVycyAuLi4NCj4gDQo+IFRyaWVkIDQgYW5kIDcgLi4u
-DQo+IA0KPiBOb3RlIHRoYXQgdGhpcyAqdXNlZCogdG8gd29yay4gTGFzdCB5ZWFyIEkgaGFkIHRo
-aXMgbWFjaGluZSB1cCB3aXRoIDIgY2FyZHMNCj4gZG9pbmcgdGhpbmdzLiBOb3Qgc3VyZSB3aGF0
-IGNoYW5nZWQsIGl0J3MgcG9zc2libGUgdGhhdCB0aGUgRElQIGdvdA0KPiBpbmFkdmVydGVudGx5
-IGNoYW5nZWQuIE9yIHNvbWVib2R5IHN0b2xlIGEganVtcGVyIGZyb20gaXQgaW4gdGhlIGxhYiA6
-LSkNCj4gDQo+ID4gVS1Cb290IDIwMTMuMDEtMDAwNzgtZzI3NDFjOTkgKE1heSAwMyAyMDEzIC0g
-MDA6MjA6NDEpDQo+ID4NCj4gPiBDUFUwOiAgUDUwMjBFLCBWZXJzaW9uOiAyLjAsICgweDgyMjgw
-MDIwKQ0KPiA+IENvcmU6ICBFNTUwMCwgVmVyc2lvbjogMS4yLCAoMHg4MDI0MDAxMikgQ2xvY2sg
-Q29uZmlndXJhdGlvbjoNCj4gPiAgICAgICAgQ1BVMDoyMDAwIE1IeiwgQ1BVMToyMDAwIE1IeiwN
-Cj4gPiAgICAgICAgQ0NCOjgwMCAgTUh6LA0KPiA+ICAgICAgICBERFI6NjY2LjY2NyBNSHogKDEz
-MzMuMzMzIE1UL3MgZGF0YSByYXRlKSAoQXN5bmNocm9ub3VzKSwgTEJDOjEwMCAgTUh6DQo+ID4g
-ICAgICAgIEZNQU4xOiA2MDAgTUh6DQo+ID4gICAgICAgIFFNQU46ICA0MDAgTUh6DQo+ID4gICAg
-ICAgIFBNRTogICA0MDAgTUh6DQo+ID4gTDE6ICAgIEQtY2FjaGUgMzIga0IgZW5hYmxlZA0KPiA+
-ICAgICAgICBJLWNhY2hlIDMyIGtCIGVuYWJsZWQNCj4gPiBSZXNldCBDb25maWd1cmF0aW9uIFdv
-cmQgKFJDVyk6DQo+ID4gICAgICAgIDAwMDAwMDAwOiAwYzU0MDAwMCAwMDAwMDAwMCAxZTEyMDAw
-MCAwMDAwMDAwMA0KPiA+ICAgICAgICAwMDAwMDAxMDogZDg5ODRhMDEgMDMwMDIwMDAgZGU4MDAw
-MDAgNDEwMDAwMDANCj4gPiAgICAgICAgMDAwMDAwMjA6IDAwMDAwMDAwIDAwMDAwMDAwIDAwMDAw
-MDAwIDEwMDcwMDAwDQo+ID4gICAgICAgIDAwMDAwMDMwOiAwMDAwMDAwMCAwMDAwMDAwMCAwMDAw
-MDAwMCAwMDAwMDAwMA0KPiANCj4gTXkgUkNXIGlzIGlkZW50aWNhbA0KPiANCj4gPiBCb2FyZDog
-UDUwMjBEUywgU3lzIElEOiAweDFjLCBTeXMgVmVyOiAweDAyLCBGUEdBIFZlcjogMHgwNCwgdkJh
-bms6IDQNCj4gDQo+IE1pbmUgaXM6DQo+IEJvYXJkOiBQNTAyMERTLCBTeXMgSUQ6IDB4MWMsIFN5
-cyBWZXI6IDB4MTIsIEZQR0EgVmVyOiAweDA1LCB2QmFuazogNA0KPiANCj4gPiBTRVJERVMgUmVm
-ZXJlbmNlIENsb2NrczogQmFuazE9MTAwTWh6IEJhbmsyPTEyNU1oeiBCYW5rMz0xMjVNaHoNCj4g
-DQo+IFNhbWUuDQo+IA0KPiA+IEkyQzogICByZWFkeQ0KPiA+IFNQSTogICByZWFkeQ0KPiA+IERS
-QU06ICBJbml0aWFsaXppbmcuLi4udXNpbmcgU1BEDQo+ID4gRGV0ZWN0ZWQgVURJTU0gaS1ESU1N
-DQo+ID4gRGV0ZWN0ZWQgVURJTU0gaS1ESU1NDQo+ID4gMiBHaUIgbGVmdCB1bm1hcHBlZA0KPiA+
-IDQgR2lCIChERFIzLCA2NC1iaXQsIENMPTksIEVDQyBvbikNCj4gPiAgICAgICAgRERSIENvbnRy
-b2xsZXIgSW50ZXJsZWF2aW5nIE1vZGU6IGNhY2hlIGxpbmUNCj4gPiAgICAgICAgRERSIENoaXAt
-U2VsZWN0IEludGVybGVhdmluZyBNb2RlOiBDUzArQ1MxIFRlc3RpbmcgMHgwMDAwMDAwMCAtDQo+
-ID4gMHg3ZmZmZmZmZiBUZXN0aW5nIDB4ODAwMDAwMDAgLSAweGZmZmZmZmZmIFJlbWFwIEREUiAy
-IEdpQiBsZWZ0DQo+ID4gdW5tYXBwZWQNCj4gPg0KPiA+IFBPU1QgbWVtb3J5IFBBU1NFRA0KPiA+
-IEZsYXNoOiAxMjggTWlCDQo+ID4gTDI6ICAgIDUxMiBLQiBlbmFibGVkDQo+ID4gQ29yZW5ldCBQ
-bGF0Zm9ybSBDYWNoZTogMjA0OCBLQiBlbmFibGVkDQo+ID4gU1JJTzE6IGRpc2FibGVkDQo+ID4g
-U1JJTzI6IGRpc2FibGVkDQo+ID4gTkFORDogIDEwMjQgTWlCDQo+ID4gTU1DOiAgRlNMX1NESEM6
-IDANCj4gPiBFRVBST006IEludmFsaWQgSUQgKGZmIGZmIGZmIGZmKQ0KPiA+IFBDSWUxOiBSb290
-IENvbXBsZXgsIHgyLCByZWdzIEAgMHhmZTIwMDAwMA0KPiA+ICAgMDE6MDAuMCAgICAgLSA4MDg2
-OjEwNWUgLSBOZXR3b3JrIGNvbnRyb2xsZXINCj4gPiAgIDAxOjAwLjEgICAgIC0gODA4NjoxMDVl
-IC0gTmV0d29yayBjb250cm9sbGVyDQo+ID4gUENJZTE6IEJ1cyAwMCAtIDAxDQo+ID4gUENJZTI6
-IGRpc2FibGVkDQo+ID4gUENJZTM6IFJvb3QgQ29tcGxleCwgbm8gbGluaywgcmVncyBAIDB4ZmUy
-MDIwMDANCj4gPiBQQ0llMzogQnVzIDAyIC0gMDINCj4gPiBQQ0llNDogZGlzYWJsZWQNCj4gDQo+
-IEFuZCBJIG5ldmVyIHNlZSBhbnl0aGluZyBoZXJlIGFueW1vcmUuLi4NCj4gDQo+ID4gSW46ICAg
-IHNlcmlhbA0KPiA+IE91dDogICBzZXJpYWwNCj4gPiBFcnI6ICAgc2VyaWFsDQo+ID4gTmV0OiAg
-IEluaXRpYWxpemluZyBGbWFuDQo+ID4gRm1hbjE6IFVwbG9hZGluZyBtaWNyb2NvZGUgdmVyc2lv
-biAxMDYuMS42IFBIWSByZXNldCB0aW1lZCBvdXQgUEhZDQo+ID4gcmVzZXQgdGltZWQgb3V0IFBI
-WSByZXNldCB0aW1lZCBvdXQgUEhZIHJlc2V0IHRpbWVkIG91dA0KPiA+IGUxMDAwOiAwMDoxNTox
-NzoxNjpjZTpiOA0KPiA+ICAgICAgICBlMTAwMDogMDA6MTU6MTc6MTY6Y2U6YjkNCj4gPiAgICAg
-ICAgRk0xQERUU0VDMSwgRk0xQERUU0VDMiwgRk0xQERUU0VDMywgRk0xQERUU0VDNCBbUFJJTUVd
-LA0KPiA+IEZNMUBEVFNFQzUsIEZNMUBUR0VDMSwgZTEwMDAjMA0KPiA+IFdhcm5pbmc6IGUxMDAw
-IzAgTUFDIGFkZHJlc3NlcyBkb24ndCBtYXRjaDoNCj4gPiBBZGRyZXNzIGluIFNST00gaXMgICAg
-ICAgICAwMDoxNToxNzoxNjpjZTpiOA0KPiA+IEFkZHJlc3MgaW4gZW52aXJvbm1lbnQgaXMgIDAw
-OjFiOjIxOjY4OjVlOmQ0ICwgZTEwMDAjMQ0KPiA+IFdhcm5pbmc6IGUxMDAwIzEgdXNpbmcgTUFD
-IGFkZHJlc3MgZnJvbSBuZXQgZGV2aWNlDQo+ID4NCj4gPiA9Pg0KPiANCj4gDQoNCg==
+
+
+> -----Original Message-----
+> From: Linuxppc-dev [mailto:linuxppc-dev-bounces+tie-
+> fei.zang=3Dfreescale.com@lists.ozlabs.org] On Behalf Of Benjamin
+> Herrenschmidt
+> Sent: Thursday, May 16, 2013 2:59 PM
+> To: Zang Roy-R61911
+> Cc: Xie Shaohui-B21989; Liu Qiang-B32616; tiejun.chen; Fleming Andy-
+> AFLEMING; Bhushan Bharat-R65777; linuxppc-dev@lists.ozlabs.org
+> Subject: Re: SATA FSL and upstreaming
+>=20
+> Ok, so I found this one on the SDK ISO: rcw_15g_2000mhz.bin
+>=20
+> I flashed that, did pix altbank, I'm now booted from Bank 4 ... and PCIe
+> is still showing nothing. I have cards in slots 4 and 7 (assuming that's
+> the right numbering, ie, 7 is the top one).
+Right.
+>=20
+> Are we sure we don't have a problem with some DIP ? I saw some of them
+> control some SERDES stuff (SW5 iirc)
+Your serdes1 clock is 100MHz,which is correct.
+Slot7 (PCIe1) does not need extra DIP to make it work.
+Maybe you also need to update the U-boot.
+Roy
