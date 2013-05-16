@@ -1,22 +1,29 @@
-Return-Path: <B21989@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1C5912C0572
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 16:24:14 +1000 (EST)
-From: Xie Shaohui-B21989 <B21989@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Fleming Andy-AFLEMING
- <afleming@freescale.com>
-Subject: RE: SATA FSL and upstreaming
-Date: Thu, 16 May 2013 06:24:06 +0000
-Message-ID: <ED492CCEAF882048BC2237DE806547C90B1B1801@039-SN2MPN1-011.039d.mgd.msft.net>
-References: <1368679657.9603.32.camel@pasglop>
-In-Reply-To: <1368679657.9603.32.camel@pasglop>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4E1C72C0121
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 16:25:18 +1000 (EST)
+Message-ID: <51947BC3.9040208@windriver.com>
+Date: Thu, 16 May 2013 14:25:07 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Zang Roy-R61911 <r61911@freescale.com>
+Subject: Re: SATA FSL and upstreaming
+References: <1368679657.9603.32.camel@pasglop>
+ <1368683156.9603.34.camel@pasglop>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0701C307@039-SN2MPN1-012.039d.mgd.msft.net>
+ <3E027F8168735B46AC006B1D0C7BB0020B1E040F@039-SN2MPN1-011.039d.mgd.msft.net>
+ <1368684547.9603.38 <51947A00.9010504@windriver.com>
+ <3E027F8168735B46AC006B1D0C7BB0020B1E0461@039-SN2MPN1-011.039d.mgd.msft.net>
+In-Reply-To: <3E027F8168735B46AC006B1D0C7BB0020B1E0461@039-SN2MPN1-011.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: Liu Qiang-B32616 <B32616@freescale.com>,
+ Xie Shaohui-B21989 <B21989@freescale.com>,
+ Fleming Andy-AFLEMING <afleming@freescale.com>,
+ Bhushan Bharat-R65777 <R65777@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,40 +33,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGksIEJlbiwNCg0KU2luY2UgdGhlIHA1MDIwZHMgeW91IHRlc3RlZCBpcyBhIHJldjEgY2hpcCwg
-SSB0aGluayB0aGUgbW9zdCBwb3NzaWJpbGl0eSB0aGF0IFNBVEEgbm90IHdvcmsNCmlzIGR1ZSB0
-byBhIFNBVEEgZXJyYXR1bSwgd2hpY2ggaXMgZml4ZWQgaW4gcmV2MS4xLCB3ZSBoYXZlIGEgcG9s
-aWN5IHRoYXQgcGF0Y2hlcyBmb3IgZXJyYXRhIHRoYXQgDQphcmUgcHJlc2VudCBvbmx5IG9uIGVh
-cmx5IHNpbGljb24gcmV2aXNpb25zLCB0eXBpY2FsbHkgb25seSByZXYxIHNpbGljb24gd2lsbCBu
-b3Qgc2VuZCB1cHN0cmVhbS4NCllvdSBjYW4gZmluZCB0aGUgcGF0Y2ggYXQgYmVsb3cgbGluazoN
-Cmh0dHA6Ly9naXQuZnJlZXNjYWxlLmNvbS9naXQvY2dpdC5jZ2kvcHBjL3Nkay9saW51eC5naXQv
-Y29tbWl0Lz9pZD1iNzlhOGEwNTI4YjhhMDAwOGNiNzZmMzM5ODA2YjEyMDBiNWQ4ZjYzDQoNClNp
-bmNlIGl0IGlzIG5vdCBzZW50IHRvIHVwc3RyZWFtLCBpdCBtYXkgbmVlZCB0byBiZSByZWJhc2Vk
-IGlmIGFwcGx5IGl0IHRvIGxhdGVzdCB0cmVlLg0KDQpBbHNvIHRoZXJlIG1pZ2h0IGJlIGFub3Ro
-ZXIgaXNzdWUoU0FUQSAmIFVTQikgaWYgeW91IHRlc3QgNjQgYml0IGtlcm5lbCBvbiBwNTAyMGRz
-IHdpdGggRFJSID4gNEcsIHdlIGhhdmUgYSBwYXRjaA0KU2VudCB0byB1cHN0cmVhbSwgYnV0IG5v
-dCBhY2NlcHRlZCB5ZXQuIExpbmsgYXMgYmVsb3c6DQpodHRwOi8vcGF0Y2h3b3JrLm96bGFicy5v
-cmcvcGF0Y2gvMTc5ODI4Lw0KDQpUaGVyZSBhcmUgb25saW5lIGRvY3VtZW50cyBvZiBTREssIGZv
-ciB0aGUgcDUwMjBkcyBoYXJkd2FyZSBwbGVhc2Ugc2VlIHRoZSBsaW5rOg0KaHR0cDovL3d3dy5m
-cmVlc2NhbGUuY29tL2luZm9jZW50ZXIvaW5kZXguanNwP3RvcGljPSUyRlFPUklRU0RLJTJGMjk4
-OTU1NC5odG1sDQoNCg0KQmVzdCBSZWdhcmRzLCANClNoYW9odWkgWGllDQo+IC0tLS0tT3JpZ2lu
-YWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IEJlbmphbWluIEhlcnJlbnNjaG1pZHQgW21haWx0bzpi
-ZW5oQGtlcm5lbC5jcmFzaGluZy5vcmddDQo+IFNlbnQ6IFRodXJzZGF5LCBNYXkgMTYsIDIwMTMg
-MTI6NDggUE0NCj4gVG86IExpdSBRaWFuZy1CMzI2MTY7IFhpZSBTaGFvaHVpLUIyMTk4OTsgRmxl
-bWluZyBBbmR5LUFGTEVNSU5HDQo+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsg
-S3VtYXIgR2FsYQ0KPiBTdWJqZWN0OiBTQVRBIEZTTCBhbmQgdXBzdHJlYW1pbmcNCj4gDQo+IEhp
-IGZvbGtzICENCj4gDQo+IFNvIEkgd2FzIHRyeWluZyB0byB1c2UgbXkgNTAyMGRzIHRvIHRlc3Qg
-c29tZSBzdHVmZiB0b2RheS4gU2luY2UgSSBoYWRuJ3QNCj4gdXNlZCBpdCBpbiBhIHdoaWxlLCBJ
-IGRlY2lkZWQgdG8gInVwZ3JhZGUiIGl0IHRvIHRoZSBsYXRlc3QgTk9SIGV0Yy4uLg0KPiANCj4g
-SW50ZXJlc3RpbmdseSBJIGRpc2NvdmVyZWQgdGhhdCB0aGUgU0FUQSAod2hpY2ggd2FzIHN1cHBv
-c2VkbHkgZGVhZCBvbg0KPiB0aGUgcmV2MSBjaGlwKSB3YXMgYWN0dWFsbHkgd29ya2luZyB3aXRo
-IHRoZSBTREsga2VybmVsLCB3aGlsZSBpdCdzIHN0aWxsDQo+IGNvbXBsZXRlbHkgYnVzdGVkIHVw
-c3RyZWFtLg0KPiANCj4gQSBxdWljayBnaXQgY29tcGFyZSBzaG93cyBhYm91dCA1IG9yIDYgY29t
-bWl0cyBpbiB0aGUgU0RLIHRyZWUsIHNvbWUgYXMNCj4gb2xkIGFzIDIwMTEsIGZpeGluZyB2YXJp
-b3VzIGVycmF0YXMgaW4gdGhhdCBjaGlwLCB0aGF0IG5ldmVyIG1hZGUgdGhlaXINCj4gd2F5IHVw
-c3RyZWFtLg0KPiANCj4gQW55IHJlYXNvbiBmb3IgdGhhdCA/IEJlaW5nIEdQTCwgSSBjYW4gc3Vi
-bWl0IHRoZW0gdG8gVGVqdW4gbXlzZWxmIGJ1dCBpdA0KPiB3b3VsZCBiZSBiZXR0ZXIgZm9ybSBp
-ZiB5b3UgZ3V5cyBkaWQgOi0pDQo+IA0KPiBCVFcuIEFsc28gd2hhdCdzIHRoZSBzdGF0dXMgd2l0
-aCBnZXR0aW5nIHRoZSBuZXR3b3JrIHdvcmtpbmcgdXBzdHJlYW0gPw0KPiBFdmVuIGlmIHN1Yi1z
-dGFuZGFyZCB0aGUgY29kZSBjb3VsZCBhdCBsZWFzdCBnbyBpbnRvIHN0YWdpbmcuLi4NCj4gDQo+
-IENoZWVycywNCj4gQmVuLg0KPiANCj4gDQoNCg==
+On 05/16/2013 02:20 PM, Zang Roy-R61911 wrote:
+>
+>
+>> -----Original Message-----
+>> From: tiejun.chen [mailto:tiejun.chen@windriver.com]
+>> Sent: Thursday, May 16, 2013 2:18 PM
+>> To: Benjamin Herrenschmidt
+>> Cc: Zang Roy-R61911; Liu Qiang-B32616; Fleming Andy-AFLEMING; linuxppc-
+>> dev@lists.ozlabs.org; Xie Shaohui-B21989; Bhushan Bharat-R65777
+>> Subject: Re: SATA FSL and upstreaming
+>>
+>> On 05/16/2013 02:09 PM, Benjamin Herrenschmidt wrote:
+>>> On Thu, 2013-05-16 at 06:05 +0000, Zang Roy-R61911 wrote:
+>>>> I do not suggest changing the RCW. If the RCW is broken on Ben's
+>>>> side, it is not easy to recover for him.
+>>>> Let's check the U-boot output first.
+>>>
+>>> U-Boot 2013.01-00009-g7bcd7f4 (Mar 14 2013 - 14:23:16)
+>>>
+>>> CPU0:  P5020E, Version: 1.0, (0x82280010)
+>>> Core:  E5500, Version: 1.0, (0x80240010) Clock Configuration:
+>>>          CPU0:2000 MHz, CPU1:2000 MHz,
+>>>          CCB:800  MHz,
+>>>          DDR:666.667 MHz (1333.333 MT/s data rate) (Asynchronous),
+>> LBC:100  MHz
+>>>          FMAN1: 600 MHz
+>>>          QMAN:  400 MHz
+>>>          PME:   400 MHz
+>>> L1:    D-cache 32 kB enabled
+>>>          I-cache 32 kB enabled
+>>> Board: P5020DS, Sys ID: 0x1c, Sys Ver: 0x12, FPGA Ver: 0x05, vBank: 0
+>>> Reset Configuration Word (RCW):
+>>>          00000000: 0c540000 00000000 1e120000 00000000
+>>>          00000010: d8984a01 03002000 de800000 41000000
+>>>          00000020: 00000000 00000000 00000000 10070000
+>>>          00000030: 00000000 00000000 00000000 00000000
+>>
+>> I think you can use Bharat's RCW, which seems RR_HXAPNSP_0x36, then
+>> please take a look at this:
+> Why?
+
+I just believe Bharat should pick a proper RCW from SDK.
+
+> Ben's on board RCW protocol is 0x36, which should work for PCIe1 (slot 7) and PCIe3 (slot4).
+
+Didn't you see I'm also saying to use slot 7 and slot 4?
+
+Tiejun
