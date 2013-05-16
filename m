@@ -1,33 +1,19 @@
-Return-Path: <cmetcalf@tilera.com>
-Received: from USMAMAIL.TILERA.COM (usmamail.tilera.com [12.216.194.151])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "usmamail.tilera.com",
- Issuer "Go Daddy Secure Certification Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4C17C2C0160
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 23:38:58 +1000 (EST)
-Message-ID: <5194E021.8080906@tilera.com>
-Date: Thu, 16 May 2013 09:33:21 -0400
-From: Chris Metcalf <cmetcalf@tilera.com>
-MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Subject: Re: [PATCH v2 08/10] tile: uaccess s/might_sleep/might_fault/
-References: <cover.1368702323.git.mst@redhat.com>
- <018bba1e097552bc4054e6d90e3f03e7c9a632bb.1368702323.git.mst@redhat.com>
-In-Reply-To: <018bba1e097552bc4054e6d90e3f03e7c9a632bb.1368702323.git.mst@redhat.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linux-m32r-ja@ml.linux-m32r.org, kvm@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- David Howells <dhowells@redhat.com>, linux-mm@kvack.org,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- linux-arch@vger.kernel.org, linux-am33-list@redhat.com,
- Hirokazu Takata <takata@linux-m32r.org>, x86@kernel.org,
- Ingo Molnar <mingo@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
- microblaze-uclinux@itee.uq.edu.au, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>,
- linux-m32r@ml.linux-m32r.org, linux-kernel@vger.kernel.org,
- Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <mkl@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+ [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id F2E332C00C0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2013 23:42:55 +1000 (EST)
+From: Marc Kleine-Budde <mkl@pengutronix.de>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] can: flexcan: allow compilation on arm and powerpc
+Date: Thu, 16 May 2013 15:42:36 +0200
+Message-Id: <1368711756-22324-1-git-send-email-mkl@pengutronix.de>
+Cc: Arnd Bergmann <arnd@arndb.de>, Sascha Hauer <s.hauer@pengutronix.de>,
+ U Bhaskar-B22300 <B22300@freescale.com>, linux-can@vger.kernel.org,
+ Marc Kleine-Budde <mkl@pengutronix.de>, Shawn Guo <shawn.guo@linaro.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,18 +23,165 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 5/16/2013 7:15 AM, Michael S. Tsirkin wrote:
-> The only reason uaccess routines might sleep
-> is if they fault. Make this explicit.
->
-> Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
-> ---
->  arch/tile/include/asm/uaccess.h | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
+This patch removes the Kconfig symbols HAVE_CAN_FLEXCAN and
+IMX_HAVE_PLATFORM_FLEXCAN from arch/{arm,powerpc} and allowing compilation on
+all arm and powerpc platforms.
 
-Acked-by: Chris Metcalf <cmetcalf@tilera.com>
+This brings a bigger compile time coverage and removes the following dependency
+warning found by Arnd Bergmann:
 
+    warning: (SOC_IMX28 && SOC_IMX25 && SOC_IMX35 && IMX_HAVE_PLATFORM_FLEXCAN &&
+        SOC_IMX53 && SOC_IMX6Q) selects HAVE_CAN_FLEXCAN
+    which has unmet direct dependencies (NET && CAN && CAN_DEV)
+
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Shawn Guo <shawn.guo@linaro.org>
+Cc: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: Kumar Gala <galak@kernel.crashing.org>
+Cc: U Bhaskar-B22300 <B22300@freescale.com>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Marc Kleine-Budde <mkl@pengutronix.de>
+---
+Hello,
+
+if the arm and powerpc people are okay with this, I'm taking this patch (and
+then will go upstream via David Miller's net-next).
+
+regards,
+Marc
+
+ arch/arm/mach-imx/Kconfig         | 8 --------
+ arch/arm/mach-imx/devices/Kconfig | 4 ----
+ arch/arm/mach-mxs/Kconfig         | 1 -
+ arch/powerpc/Kconfig              | 1 -
+ drivers/net/can/Kconfig           | 5 +----
+ 5 files changed, 1 insertion(+), 18 deletions(-)
+
+diff --git a/arch/arm/mach-imx/Kconfig b/arch/arm/mach-imx/Kconfig
+index ba44328..239d084 100644
+--- a/arch/arm/mach-imx/Kconfig
++++ b/arch/arm/mach-imx/Kconfig
+@@ -111,7 +111,6 @@ config SOC_IMX25
+ 	select ARCH_MXC_IOMUX_V3
+ 	select COMMON_CLK
+ 	select CPU_ARM926T
+-	select HAVE_CAN_FLEXCAN if CAN
+ 	select MXC_AVIC
+ 
+ config SOC_IMX27
+@@ -137,7 +136,6 @@ config SOC_IMX35
+ 	select ARCH_MXC_IOMUX_V3
+ 	select COMMON_CLK
+ 	select CPU_V6K
+-	select HAVE_CAN_FLEXCAN if CAN
+ 	select HAVE_EPIT
+ 	select MXC_AVIC
+ 	select SMP_ON_UP if SMP
+@@ -208,7 +206,6 @@ comment "MX25 platforms:"
+ 
+ config MACH_MX25_3DS
+ 	bool "Support MX25PDK (3DS) Platform"
+-	select IMX_HAVE_PLATFORM_FLEXCAN
+ 	select IMX_HAVE_PLATFORM_FSL_USB2_UDC
+ 	select IMX_HAVE_PLATFORM_IMX2_WDT
+ 	select IMX_HAVE_PLATFORM_IMXDI_RTC
+@@ -223,7 +220,6 @@ config MACH_MX25_3DS
+ 
+ config MACH_EUKREA_CPUIMX25SD
+ 	bool "Support Eukrea CPUIMX25 Platform"
+-	select IMX_HAVE_PLATFORM_FLEXCAN
+ 	select IMX_HAVE_PLATFORM_FSL_USB2_UDC
+ 	select IMX_HAVE_PLATFORM_IMX2_WDT
+ 	select IMX_HAVE_PLATFORM_IMXDI_RTC
+@@ -629,7 +625,6 @@ comment "MX35 platforms:"
+ 
+ config MACH_PCM043
+ 	bool "Support Phytec pcm043 (i.MX35) platforms"
+-	select IMX_HAVE_PLATFORM_FLEXCAN
+ 	select IMX_HAVE_PLATFORM_FSL_USB2_UDC
+ 	select IMX_HAVE_PLATFORM_IMX2_WDT
+ 	select IMX_HAVE_PLATFORM_IMX_I2C
+@@ -665,7 +660,6 @@ config MACH_MX35_3DS
+ 
+ config MACH_EUKREA_CPUIMX35SD
+ 	bool "Support Eukrea CPUIMX35 Platform"
+-	select IMX_HAVE_PLATFORM_FLEXCAN
+ 	select IMX_HAVE_PLATFORM_FSL_USB2_UDC
+ 	select IMX_HAVE_PLATFORM_IMX2_WDT
+ 	select IMX_HAVE_PLATFORM_IMX_I2C
+@@ -776,7 +770,6 @@ comment "Device tree only"
+ 
+ config	SOC_IMX53
+ 	bool "i.MX53 support"
+-	select HAVE_CAN_FLEXCAN if CAN
+ 	select HAVE_IMX_SRC
+ 	select IMX_HAVE_PLATFORM_IMX2_WDT
+ 	select PINCTRL
+@@ -799,7 +792,6 @@ config SOC_IMX6Q
+ 	select CPU_V7
+ 	select HAVE_ARM_SCU if SMP
+ 	select HAVE_ARM_TWD if LOCAL_TIMERS
+-	select HAVE_CAN_FLEXCAN if CAN
+ 	select HAVE_IMX_ANATOP
+ 	select HAVE_IMX_GPC
+ 	select HAVE_IMX_MMDC
+diff --git a/arch/arm/mach-imx/devices/Kconfig b/arch/arm/mach-imx/devices/Kconfig
+index 3dd2b1b..b0a629d 100644
+--- a/arch/arm/mach-imx/devices/Kconfig
++++ b/arch/arm/mach-imx/devices/Kconfig
+@@ -2,10 +2,6 @@ config IMX_HAVE_PLATFORM_FEC
+ 	bool
+ 	default y if ARCH_MX25 || SOC_IMX27 || SOC_IMX35 || SOC_IMX51 || SOC_IMX53
+ 
+-config IMX_HAVE_PLATFORM_FLEXCAN
+-	bool
+-	select HAVE_CAN_FLEXCAN if CAN
+-
+ config IMX_HAVE_PLATFORM_FSL_USB2_UDC
+ 	bool
+ 
+diff --git a/arch/arm/mach-mxs/Kconfig b/arch/arm/mach-mxs/Kconfig
+index 4dc2fbb..ce6e7d6 100644
+--- a/arch/arm/mach-mxs/Kconfig
++++ b/arch/arm/mach-mxs/Kconfig
+@@ -11,7 +11,6 @@ config SOC_IMX28
+ 	select ARM_AMBA
+ 	select ARM_CPU_SUSPEND if PM
+ 	select CPU_ARM926T
+-	select HAVE_CAN_FLEXCAN if CAN
+ 	select HAVE_PWM
+ 	select PINCTRL_IMX28
+ 
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index c33e3ad..7754c6b 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -674,7 +674,6 @@ config SBUS
+ 
+ config FSL_SOC
+ 	bool
+-	select HAVE_CAN_FLEXCAN if NET && CAN
+ 
+ config FSL_PCI
+  	bool
+diff --git a/drivers/net/can/Kconfig b/drivers/net/can/Kconfig
+index e456b70..3c06947 100644
+--- a/drivers/net/can/Kconfig
++++ b/drivers/net/can/Kconfig
+@@ -102,12 +102,9 @@ config CAN_JANZ_ICAN3
+ 	  This driver can also be built as a module. If so, the module will be
+ 	  called janz-ican3.ko.
+ 
+-config HAVE_CAN_FLEXCAN
+-	bool
+-
+ config CAN_FLEXCAN
+ 	tristate "Support for Freescale FLEXCAN based chips"
+-	depends on HAVE_CAN_FLEXCAN
++	depends on ARM || PPC
+ 	---help---
+ 	  Say Y here if you want to support for Freescale FlexCAN.
+ 
 -- 
-Chris Metcalf, Tilera Corp.
-http://www.tilera.com
+1.8.2.rc2
