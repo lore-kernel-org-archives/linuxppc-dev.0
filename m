@@ -1,14 +1,19 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: benh@kernel.crashing.org
-Subject: [PATCH] powerpc/hw_breakpoints: Add DABRX cpu feature
-In-reply-to: <30348.1368764834@ale.ozlabs.ibm.com>
-References: <3F431E22-B7A9-4FCF-B34F-DC171A643E05@jpl.nasa.gov>
- <30348.1368764834@ale.ozlabs.ibm.com>
-Date: Fri, 17 May 2013 16:27:31 +1000
-Message-ID: <9649.1368772051@ale.ozlabs.ibm.com>
-Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>, "Gorelik,
- Jacob \(335F\)" <jacob.gorelik@jpl.nasa.gov>
+Return-Path: <a13xp0p0v88@gmail.com>
+MIME-Version: 1.0
+In-Reply-To: <20130517011523.GA9555@kroah.com>
+References: <1367508195-2420-1-git-send-email-a13xp0p0v88@gmail.com>
+ <20130517011523.GA9555@kroah.com>
+Date: Fri, 17 May 2013 10:53:58 +0400
+Message-ID: <CAF0T0X5RuT-7Zg9HG=tAG8CE+BLfYDv=m8vPEi2j9en5KqRkWg@mail.gmail.com>
+Subject: Re: [PATCH 2/2] powerpc/512x: DMA via LocalPlus Bus testing driver
+From: Alexander Popov <a13xp0p0v88@gmail.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Arnd Bergmann <arnd@arndb.de>, devicetree-discuss@lists.ozlabs.org,
+ Timur Tabi <timur@tabi.org>, Rob Herring <rob.herring@calxeda.com>,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ Grant Likely <grant.likely@linaro.org>, Anatolij Gustschin <agust@denx.de>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,97 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some CPUs have a DABR but not DABRX.  Configuration are:
-- No 32bit CPUs have DABRX but some have DABR.
-- POWER4+ and below have the DABR but no DABRX.
-- 970 and POWER5 and above have DABR and DABRX.
-- POWER8 has DAWR, hence no DABRX.
+2013/5/17 Greg Kroah-Hartman <gregkh@linuxfoundation.org>:
+> On Thu, May 02, 2013 at 07:23:15PM +0400, Alexander Popov wrote:
+>> This module tests Direct Memory Access to some device on LocalPlus Bus
+>> for Freescale MPC512x. In other words it tests the bundle
+>> of mpc512x_lpbfifo and mpc512x_dma drivers.
+>>
+>> This testing driver was multiply used with static RAM (CY62167EV30LL-45ZXI)
+>> which lives on LocalPlus Bus on our board. This testing driver was used
+>> instead of the original static RAM driver and it is an abnormal hack.
+>> That is why I just provide the driver code and don't modify any environment.
+>>
+>
+> You obviously didn't test your testing driver to see if it would build
+> in the kernel source tree :(
+>
+> Care to try again?
 
-This introduces CPU_FTR_DABRX and sets it on appropriate CPUs.  We use
-the top 64 bits for CPU FTR bits since only 64 bit CPUs have this.
+Hello Greg,
+thanks for your comment.
 
-Processors that don't have the DABRX will still work as they will fall
-back to software filtering these breakpoints via perf_exclude_event().
+You are right, this testing driver will not be built in the kernel source tree,
+because I intentionally didn't send patches for the corresponding
+Makefile, Kconfig and dts.
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
-Reported-by: "Gorelik, Jacob (335F)" <jacob.gorelik@jpl.nasa.gov>
-cc: stable@vger.kernel.org (v3.9 only)
+I would try to explain the reason once again:
 
-diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index 26807e5..6f3887d 100644
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -176,6 +176,7 @@ extern const char *powerpc_base_platform;
- #define CPU_FTR_CFAR			LONG_ASM_CONST(0x0100000000000000)
- #define	CPU_FTR_HAS_PPR			LONG_ASM_CONST(0x0200000000000000)
- #define CPU_FTR_DAWR			LONG_ASM_CONST(0x0400000000000000)
-+#define CPU_FTR_DABRX			LONG_ASM_CONST(0x0800000000000000)
- 
- #ifndef __ASSEMBLY__
- 
-@@ -394,19 +395,20 @@ extern const char *powerpc_base_platform;
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | CPU_FTR_ARCH_201 | \
- 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_CAN_NAP | CPU_FTR_MMCRA | \
- 	    CPU_FTR_CP_USE_DCBTZ | CPU_FTR_STCX_CHECKS_ADDRESS | \
--	    CPU_FTR_HVMODE)
-+	    CPU_FTR_HVMODE | CPU_FTR_DABRX)
- #define CPU_FTRS_POWER5	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
- 	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_PURR | \
--	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB)
-+	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_DABRX)
- #define CPU_FTRS_POWER6 (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
- 	    CPU_FTR_COHERENT_ICACHE | \
- 	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
- 	    CPU_FTR_DSCR | CPU_FTR_UNALIGNED_LD_STD | \
--	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_CFAR)
-+	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_CFAR | \
-+	    CPU_FTR_DABRX)
- #define CPU_FTRS_POWER7 (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | CPU_FTR_ARCH_206 |\
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
-@@ -415,7 +417,7 @@ extern const char *powerpc_base_platform;
- 	    CPU_FTR_DSCR | CPU_FTR_SAO  | CPU_FTR_ASYM_SMT | \
- 	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
- 	    CPU_FTR_ICSWX | CPU_FTR_CFAR | CPU_FTR_HVMODE | \
--	    CPU_FTR_VMX_COPY | CPU_FTR_HAS_PPR)
-+	    CPU_FTR_VMX_COPY | CPU_FTR_HAS_PPR | CPU_FTR_DABRX)
- #define CPU_FTRS_POWER8 (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | CPU_FTR_ARCH_206 |\
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
-@@ -430,14 +432,15 @@ extern const char *powerpc_base_platform;
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
- 	    CPU_FTR_PAUSE_ZERO  | CPU_FTR_CELL_TB_BUG | CPU_FTR_CP_USE_DCBTZ | \
--	    CPU_FTR_UNALIGNED_LD_STD)
-+	    CPU_FTR_UNALIGNED_LD_STD | CPU_FTR_DABRX)
- #define CPU_FTRS_PA6T (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_ALTIVEC_COMP | \
--	    CPU_FTR_PURR | CPU_FTR_REAL_LE)
-+	    CPU_FTR_PURR | CPU_FTR_REAL_LE | CPU_FTR_DABRX)
- #define CPU_FTRS_COMPATIBLE	(CPU_FTR_USE_TB | CPU_FTR_PPCAS_ARCH_V2)
- 
- #define CPU_FTRS_A2 (CPU_FTR_USE_TB | CPU_FTR_SMT | CPU_FTR_DBELL | \
--		     CPU_FTR_NOEXECUTE | CPU_FTR_NODSISRALIGN | CPU_FTR_ICSWX)
-+		     CPU_FTR_NOEXECUTE | CPU_FTR_NODSISRALIGN | \
-+		     CPU_FTR_ICSWX | CPU_FTR_DABRX )
- 
- #ifdef __powerpc64__
- #ifdef CONFIG_PPC_BOOK3E
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index a902723..b0f3e3f 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -399,7 +399,8 @@ static inline int __set_dabr(unsigned long dabr, unsigned long dabrx)
- static inline int __set_dabr(unsigned long dabr, unsigned long dabrx)
- {
- 	mtspr(SPRN_DABR, dabr);
--	mtspr(SPRN_DABRX, dabrx);
-+	if (cpu_has_feature(CPU_FTR_DABRX))
-+		mtspr(SPRN_DABRX, dabrx);
- 	return 0;
- }
- #else
+I multiply used this testing driver with static RAM (CY62167EV30LL-45ZXI)
+to test mpc512x_lpbfifo driver (which is [PATCH 1/2]:
+https://patchwork.kernel.org/patch/2511941/ ).
+I used this testing driver _instead_ of the original static RAM driver
+and it is an abnormal hack.
+Because it breaks the usual work of static RAM.
+That's why I just provided the code of this testing driver and didn't
+modify Makefile, Kconfig and dts.
+
+I hoped that the code of this testing driver will help to review
+mpc512x_lpbfifo in the first part of this patch.
+Thanks.
+
+Best regards,
+Alexander.
