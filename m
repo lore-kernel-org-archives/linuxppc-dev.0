@@ -1,28 +1,34 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-pd0-f177.google.com (mail-pd0-f177.google.com
- [209.85.192.177])
+Return-Path: <eranian@google.com>
+Received: from mail-ob0-x22c.google.com (mail-ob0-x22c.google.com
+ [IPv6:2607:f8b0:4003:c01::22c])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 387072C00DC
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 May 2013 02:05:28 +1000 (EST)
-Received: by mail-pd0-f177.google.com with SMTP id g10so3441513pdj.22
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 May 2013 09:05:26 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 3DFDC2C00A6
+ for <linuxppc-dev@ozlabs.org>; Sat, 18 May 2013 07:39:49 +1000 (EST)
+Received: by mail-ob0-f172.google.com with SMTP id tb18so5245045obb.3
+ for <linuxppc-dev@ozlabs.org>; Fri, 17 May 2013 14:39:46 -0700 (PDT)
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1368095819-11011-9-git-send-email-yefremov.denis@gmail.com>
-References: <1368086241-9357-1-git-send-email-yefremov.denis@gmail.com>
- <1368095819-11011-9-git-send-email-yefremov.denis@gmail.com>
-Date: Fri, 17 May 2013 18:05:25 +0200
-Message-ID: <CAMuHMdUU5+WJnYER8kO2Ne2iaBQESYp_bbBMTLDvTEJchDu15A@mail.gmail.com>
-Subject: Re: [PATCH 20/21] powerpc/ps3: remove inline marking of EXPORT_SYMBOL
- functions
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Denis Efremov <yefremov.denis@gmail.com>
+In-Reply-To: <20130517113922.GF5162@dyad.programming.kicks-ass.net>
+References: <20130503121122.931661809@chello.nl>
+ <20130503121256.230745028@chello.nl>
+ <CABPqkBTvcQAyXfeiJwpPsNtbs4ffsVguXE631dK_rbzHpwBdOg@mail.gmail.com>
+ <20130516090916.GF19669@dyad.programming.kicks-ass.net>
+ <8578.1368699317@ale.ozlabs.ibm.com>
+ <20130516111634.GA15314@twins.programming.kicks-ass.net>
+ <CABPqkBSCXJN7gLK_e_Q3YVVVFVGS78fo4j2z0+MmriqoXszH+w@mail.gmail.com>
+ <20130517111232.GE5162@dyad.programming.kicks-ass.net>
+ <29969.1368790328@ale.ozlabs.ibm.com>
+ <20130517113922.GF5162@dyad.programming.kicks-ass.net>
+Date: Fri, 17 May 2013 23:39:46 +0200
+Message-ID: <CABPqkBSSg8Sfpa5xG-DCpX-qY22qeRVtwzVPTPD4K=3DmS5dUA@mail.gmail.com>
+Subject: Re: [PATCH 3/3] perf, x86,
+ lbr: Demand proper privileges for PERF_SAMPLE_BRANCH_KERNEL
+From: Stephane Eranian <eranian@google.com>
+To: Peter Zijlstra <peterz@infradead.org>
 Content-Type: text/plain; charset=UTF-8
-Cc: Geoff Levand <geoff@infradead.org>, Jiri Kosina <trivial@kernel.org>,
- ldv-project@linuxtesting.org,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Michael Neuling <mikey@neuling.org>,
+ "ak@linux.intel.com" <ak@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>,
+ Linux PPC dev <linuxppc-dev@ozlabs.org>, Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,44 +38,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 9, 2013 at 12:36 PM, Denis Efremov <yefremov.denis@gmail.com> wrote:
-> EXPORT_SYMBOL and inline directives are contradictory to each other.
-> The patch fixes this inconsistency.
+On Fri, May 17, 2013 at 1:39 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Fri, May 17, 2013 at 09:32:08PM +1000, Michael Neuling wrote:
+>> Peter Zijlstra <peterz@infradead.org> wrote:
 >
-> Found by Linux Driver Verification project (linuxtesting.org).
+>> > Wouldn't it be mostly conditional branches that are the primary control flow
+>> > and can get predicted wrong? I mean, I'm sure someone will miss-predict an
+>> > unconditional branch but its not like we care about people with such
+>> > afflictions do we?
+>>
+>> You could mispredict the target address of a computed goto.  You'd know
+>> it was taken but not know target address until later in the pipeline.
 >
-> Signed-off-by: Denis Efremov <yefremov.denis@gmail.com>
-> ---
->  arch/powerpc/platforms/ps3/spu.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> Oh right, computed targets could indeed be mis predicted. I was more thinking
+> about jumps with immediate values.
 >
-> diff --git a/arch/powerpc/platforms/ps3/spu.c b/arch/powerpc/platforms/ps3/spu.c
-> index e17fa14..a0bca05 100644
-> --- a/arch/powerpc/platforms/ps3/spu.c
-> +++ b/arch/powerpc/platforms/ps3/spu.c
-> @@ -143,7 +143,7 @@ static void _dump_areas(unsigned int spe_id, unsigned long priv2,
->         pr_debug("%s:%d: shadow:  %lxh\n", func, line, shadow);
->  }
+>> On this, the POWER8 branch history buffer tells us two things about the
+>> prediction status.
+>>   1) if the branch was predicted taken/not taken correctly
+>>   2) if the target address was predicted correctly or not (for computed
+>>      gotos only)
+>> So we'd actually like more prediction bits too :-D
 >
-> -inline u64 ps3_get_spe_id(void *arg)
-> +u64 ps3_get_spe_id(void *arg)
->  {
->         return spu_pdata(arg)->spe_id;
->  }
+> So if I understand this right, 1) maps to the predicted flags we have; 2)
+> would be new stuff?
+>
+> We don't really have anything like that on x86, but I suppose if you make the
+> thing optional and present a 'useful' use-case implemented in userspace code
+> we could take it :-)
+>
+>> > Anyway, since PPC people thought it worth baking into hardware,
+>> > presumably they have a compelling use case. Mikey could you see if you
+>> > can retrieve that from someone in the know? It might be interesting.
+>>
+>> I don't think we can mispredict a non-conditional non-computed but I'll
+>> have to check with the HW folks.
+>
+> I was mostly wondering about the use-case for the conditional filter. Stephane
+> didn't think it useful, clearly your hardware guys thought different :-)
 
-FYI, this symbol is not used in mainline.
-
-IIRC, it's used for profiling only. Any chance the profile code will
-ever make it
-in mainline?
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+>From my experience talking with compiler people, they care about ALL
+the branches
+and not the conditional so much. They use LBR to do basic block profiling.
