@@ -1,33 +1,24 @@
-Return-Path: <peter@programming.kicks-ass.net>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:4830:2446:ff00:4687:fcff:fea6:5117])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 9F4C32C00C7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 May 2013 04:44:54 +1000 (EST)
-Date: Thu, 16 May 2013 20:40:41 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Subject: Re: [PATCH v2 10/10] kernel: might_fault does not imply might_sleep
-Message-ID: <20130516184041.GP19669@dyad.programming.kicks-ass.net>
-References: <cover.1368702323.git.mst@redhat.com>
- <1f85dc8e6a0149677563a2dfb4cef9a9c7eaa391.1368702323.git.mst@redhat.com>
+Return-Path: <shawn.guo@linaro.org>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B077F2C00A5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 May 2013 12:04:04 +1000 (EST)
+Date: Fri, 17 May 2013 10:03:52 +0800
+From: Shawn Guo <shawn.guo@linaro.org>
+To: Marc Kleine-Budde <mkl@pengutronix.de>
+Subject: Re: [PATCH] can: flexcan: allow compilation on arm and powerpc
+Message-ID: <20130517020351.GE3893@S2101-09.ap.freescale.net>
+References: <1368711756-22324-1-git-send-email-mkl@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1f85dc8e6a0149677563a2dfb4cef9a9c7eaa391.1368702323.git.mst@redhat.com>
-Cc: linux-m32r-ja@ml.linux-m32r.org, kvm@vger.kernel.org,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- David Howells <dhowells@redhat.com>, linux-mm@kvack.org,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- linux-arch@vger.kernel.org, linux-am33-list@redhat.com,
- Hirokazu Takata <takata@linux-m32r.org>, x86@kernel.org,
- Ingo Molnar <mingo@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
- microblaze-uclinux@itee.uq.edu.au, Chris Metcalf <cmetcalf@tilera.com>,
- rostedt@goodmis.org, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>,
- linux-m32r@ml.linux-m32r.org, linux-kernel@vger.kernel.org,
- Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1368711756-22324-1-git-send-email-mkl@pengutronix.de>
+Cc: Arnd Bergmann <arnd@arndb.de>, Sascha Hauer <s.hauer@pengutronix.de>,
+ U Bhaskar-B22300 <B22300@freescale.com>, linux-kernel@vger.kernel.org,
+ linux-can@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,85 +28,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 16, 2013 at 02:16:10PM +0300, Michael S. Tsirkin wrote:
-> There are several ways to make sure might_fault
-> calling function does not sleep.
-> One is to use it on kernel or otherwise locked memory - apparently
-> nfs/sunrpc does this. As noted by Ingo, this is handled by the
-> migh_fault() implementation in mm/memory.c but not the one in
-> linux/kernel.h so in the current code might_fault() schedules
-> differently depending on CONFIG_PROVE_LOCKING, which is an undesired
-> semantical side effect.
-> 
-> Another is to call pagefault_disable: in this case the page fault
-> handler will go to fixups processing and we get an error instead of
-> sleeping, so the might_sleep annotation is a false positive.
-> vhost driver wants to do this now in order to reuse socket ops
-> under a spinlock (and fall back on slower thread handler
-> on error).
+Hi Marc,
 
-Are you using the assumption that spin_lock() implies preempt_disable() implies
-pagefault_disable()? Note that this assumption isn't valid for -rt where the
-spinlock becomes preemptible but we'll not disable pagefaults.
+On Thu, May 16, 2013 at 03:42:36PM +0200, Marc Kleine-Budde wrote:
+> This patch removes the Kconfig symbols HAVE_CAN_FLEXCAN and
+> IMX_HAVE_PLATFORM_FLEXCAN from arch/{arm,powerpc} and allowing compilation on
+> all arm and powerpc platforms.
 
-> Address both issues by:
-> 	- dropping the unconditional call to might_sleep
-> 	  from the fast might_fault code in linux/kernel.h
-> 	- checking for pagefault_disable() in the
-> 	  CONFIG_PROVE_LOCKING implementation
-> 
-> Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
-> ---
->  include/linux/kernel.h |  1 -
->  mm/memory.c            | 14 +++++++++-----
->  2 files changed, 9 insertions(+), 6 deletions(-)
-> 
-> diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-> index e96329c..322b065 100644
-> --- a/include/linux/kernel.h
-> +++ b/include/linux/kernel.h
-> @@ -198,7 +198,6 @@ void might_fault(void);
->  #else
->  static inline void might_fault(void)
->  {
-> -	might_sleep();
+I'm generally fine with the approach.  But with Kconfig symbol
+IMX_HAVE_PLATFORM_FLEXCAN removed, how does the build of
+platform-flexcan.o work?
 
-This removes potential resched points for PREEMPT_VOLUNTARY -- was that
-intentional?
+arch/arm/mach-imx/devices/Makefile:obj-$(CONFIG_IMX_HAVE_PLATFORM_FLEXCAN) += platform-flexcan.o
 
->  }
->  #endif
->  
-> diff --git a/mm/memory.c b/mm/memory.c
-> index 6dc1882..1b8327b 100644
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -4222,13 +4222,17 @@ void might_fault(void)
->  	if (segment_eq(get_fs(), KERNEL_DS))
->  		return;
->  
-> -	might_sleep();
->  	/*
-> -	 * it would be nicer only to annotate paths which are not under
-> -	 * pagefault_disable, however that requires a larger audit and
-> -	 * providing helpers like get_user_atomic.
-> +	 * It would be nicer to annotate paths which are under preempt_disable
-> +	 * but not under pagefault_disable, however that requires a new flag
-> +	 * for differentiating between the two.
-
--rt has this, pagefault_disable() doesn't change the preempt count but pokes
-at task_struct::pagefault_disable.
-
->  	 */
-> -	if (!in_atomic() && current->mm)
-> +	if (in_atomic())
-> +		return;
-> +
-> +	might_sleep();
-> +
-> +	if (current->mm)
->  		might_lock_read(&current->mm->mmap_sem);
->  }
->  EXPORT_SYMBOL(might_fault);
-> -- 
-> MST
+Shawn
