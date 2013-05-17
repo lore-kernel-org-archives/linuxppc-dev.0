@@ -1,22 +1,28 @@
-Return-Path: <devurandom@gmx.net>
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
- by ozlabs.org (Postfix) with ESMTP id 7135E2C00C7
- for <linuxppc-dev@ozlabs.org>; Sat, 18 May 2013 01:50:20 +1000 (EST)
-Received: from mailout-de.gmx.net ([10.1.76.1]) by mrigmx.server.lan
- (mrigmx001) with ESMTP (Nemesis) id 0MRQbm-1V5wLx0GPQ-00SiZp for
- <linuxppc-dev@ozlabs.org>; Fri, 17 May 2013 17:45:13 +0200
-From: Dennis Schridde <devurandom@gmx.net>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/cell: Only iterate over online nodes in
- cbe_init_pm_irq()
-Date: Fri, 17 May 2013 17:45:05 +0200
-Message-ID: <5021824.e1KI2ptoeP@ernie>
-In-Reply-To: <1366719291-29414-1-git-send-email-michael@ellerman.id.au>
-References: <1366719291-29414-1-git-send-email-michael@ellerman.id.au>
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-pd0-f177.google.com (mail-pd0-f177.google.com
+ [209.85.192.177])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 387072C00DC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 May 2013 02:05:28 +1000 (EST)
+Received: by mail-pd0-f177.google.com with SMTP id g10so3441513pdj.22
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 May 2013 09:05:26 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5153770.BfjdujrCCe";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Cc: linuxppc-dev@ozlabs.org
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1368095819-11011-9-git-send-email-yefremov.denis@gmail.com>
+References: <1368086241-9357-1-git-send-email-yefremov.denis@gmail.com>
+ <1368095819-11011-9-git-send-email-yefremov.denis@gmail.com>
+Date: Fri, 17 May 2013 18:05:25 +0200
+Message-ID: <CAMuHMdUU5+WJnYER8kO2Ne2iaBQESYp_bbBMTLDvTEJchDu15A@mail.gmail.com>
+Subject: Re: [PATCH 20/21] powerpc/ps3: remove inline marking of EXPORT_SYMBOL
+ functions
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Denis Efremov <yefremov.denis@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Geoff Levand <geoff@infradead.org>, Jiri Kosina <trivial@kernel.org>,
+ ldv-project@linuxtesting.org,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,70 +32,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---nextPart5153770.BfjdujrCCe
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-Hello!
-
-Just wanted to remind you: The patchto fix cbe_init_pm_irq() that Michael and 
-Grant sent me is still not included in Linux 3.8.12.
-
---Dennis
-
-Am Dienstag, 23. April 2013, 22:14:51 schrieb Michael Ellerman:
-> None of the cell platforms support CPU hotplug, so we should iterate
-> only over online nodes when setting PMU interrupts.
-> 
-> This also fixes a warning during boot when NODES_SHIFT is large enough:
-> 
-> WARNING: at /scratch/michael/src/kmk/linus/kernel/irq/irqdomain.c:766
-> ...
-> NIP [c0000000000db278] .irq_linear_revmap+0x30/0x58
-> LR [c0000000000dc2a0] .irq_create_mapping+0x38/0x1a8
-> Call Trace:
-> [c0000003fc9c3af0] [c0000000000dc2a0] .irq_create_mapping+0x38/0x1a8
-> (unreliable) [c0000003fc9c3b80] [c000000000655c1c]
-> .__machine_initcall_cell_cbe_init_pm_irq+0x84/0x158 [c0000003fc9c3c20]
-> [c00000000000afb4] .do_one_initcall+0x5c/0x1e0
-> [c0000003fc9c3cd0] [c000000000644580] .kernel_init_freeable+0x238/0x328
-> [c0000003fc9c3db0] [c00000000000b784] .kernel_init+0x1c/0x120
-> [c0000003fc9c3e30] [c000000000009fb8] .ret_from_kernel_thread+0x64/0xac
-> 
-> This is caused by us overflowing our linear revmap because we're
-> requesting too many interrupts.
-> 
-> Reported-by: Dennis Schridde <devurandom@gmx.net>
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+On Thu, May 9, 2013 at 12:36 PM, Denis Efremov <yefremov.denis@gmail.com> wrote:
+> EXPORT_SYMBOL and inline directives are contradictory to each other.
+> The patch fixes this inconsistency.
+>
+> Found by Linux Driver Verification project (linuxtesting.org).
+>
+> Signed-off-by: Denis Efremov <yefremov.denis@gmail.com>
 > ---
->  arch/powerpc/platforms/cell/pmu.c |    2 +-
+>  arch/powerpc/platforms/ps3/spu.c | 2 +-
 >  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/platforms/cell/pmu.c
-> b/arch/powerpc/platforms/cell/pmu.c index 59c1a16..348a27b 100644
-> --- a/arch/powerpc/platforms/cell/pmu.c
-> +++ b/arch/powerpc/platforms/cell/pmu.c
-> @@ -382,7 +382,7 @@ static int __init cbe_init_pm_irq(void)
->  	unsigned int irq;
->  	int rc, node;
-> 
-> -	for_each_node(node) {
-> +	for_each_online_node(node) {
->  		irq = irq_create_mapping(NULL, IIC_IRQ_IOEX_PMI |
->  					       (node << IIC_IRQ_NODE_SHIFT));
->  		if (irq == NO_IRQ) {
---nextPart5153770.BfjdujrCCe
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+>
+> diff --git a/arch/powerpc/platforms/ps3/spu.c b/arch/powerpc/platforms/ps3/spu.c
+> index e17fa14..a0bca05 100644
+> --- a/arch/powerpc/platforms/ps3/spu.c
+> +++ b/arch/powerpc/platforms/ps3/spu.c
+> @@ -143,7 +143,7 @@ static void _dump_areas(unsigned int spe_id, unsigned long priv2,
+>         pr_debug("%s:%d: shadow:  %lxh\n", func, line, shadow);
+>  }
+>
+> -inline u64 ps3_get_spe_id(void *arg)
+> +u64 ps3_get_spe_id(void *arg)
+>  {
+>         return spu_pdata(arg)->spe_id;
+>  }
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
+FYI, this symbol is not used in mainline.
 
-iEYEABECAAYFAlGWUIUACgkQjqfyF1DtJW76twCfXPZGCUaUtKz4o1v/CPv+FpvM
-PboAni1Z+/GlWA8TPPqrTRc9tXSXpfPQ
-=mx24
------END PGP SIGNATURE-----
+IIRC, it's used for profiling only. Any chance the profile code will
+ever make it
+in mainline?
 
---nextPart5153770.BfjdujrCCe--
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
