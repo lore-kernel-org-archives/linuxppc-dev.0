@@ -1,14 +1,9 @@
-Return-Path: <eranian@google.com>
-Received: from mail-ob0-x22c.google.com (mail-ob0-x22c.google.com
- [IPv6:2607:f8b0:4003:c01::22c])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3DFDC2C00A6
- for <linuxppc-dev@ozlabs.org>; Sat, 18 May 2013 07:39:49 +1000 (EST)
-Received: by mail-ob0-f172.google.com with SMTP id tb18so5245045obb.3
- for <linuxppc-dev@ozlabs.org>; Fri, 17 May 2013 14:39:46 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20130517113922.GF5162@dyad.programming.kicks-ass.net>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Stephane Eranian <eranian@google.com>
+Subject: Re: [PATCH 3/3] perf, x86,
+ lbr: Demand proper privileges for PERF_SAMPLE_BRANCH_KERNEL
+In-reply-to: <CABPqkBSSg8Sfpa5xG-DCpX-qY22qeRVtwzVPTPD4K=3DmS5dUA@mail.gmail.com>
 References: <20130503121122.931661809@chello.nl>
  <20130503121256.230745028@chello.nl>
  <CABPqkBTvcQAyXfeiJwpPsNtbs4ffsVguXE631dK_rbzHpwBdOg@mail.gmail.com>
@@ -19,15 +14,11 @@ References: <20130503121122.931661809@chello.nl>
  <20130517111232.GE5162@dyad.programming.kicks-ass.net>
  <29969.1368790328@ale.ozlabs.ibm.com>
  <20130517113922.GF5162@dyad.programming.kicks-ass.net>
-Date: Fri, 17 May 2013 23:39:46 +0200
-Message-ID: <CABPqkBSSg8Sfpa5xG-DCpX-qY22qeRVtwzVPTPD4K=3DmS5dUA@mail.gmail.com>
-Subject: Re: [PATCH 3/3] perf, x86,
- lbr: Demand proper privileges for PERF_SAMPLE_BRANCH_KERNEL
-From: Stephane Eranian <eranian@google.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: Michael Neuling <mikey@neuling.org>,
- "ak@linux.intel.com" <ak@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>,
+ <CABPqkBSSg8Sfpa5xG-DCpX-qY22qeRVtwzVPTPD4K=3DmS5dUA@mail.gmail.com>
+Date: Sat, 18 May 2013 08:14:52 +1000
+Message-ID: <30065.1368828892@ale.ozlabs.ibm.com>
+Cc: "ak@linux.intel.com" <ak@linux.intel.com>,
+ Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
  Linux PPC dev <linuxppc-dev@ozlabs.org>, Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -38,45 +29,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, May 17, 2013 at 1:39 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Fri, May 17, 2013 at 09:32:08PM +1000, Michael Neuling wrote:
->> Peter Zijlstra <peterz@infradead.org> wrote:
->
->> > Wouldn't it be mostly conditional branches that are the primary control flow
->> > and can get predicted wrong? I mean, I'm sure someone will miss-predict an
->> > unconditional branch but its not like we care about people with such
->> > afflictions do we?
->>
->> You could mispredict the target address of a computed goto.  You'd know
->> it was taken but not know target address until later in the pipeline.
->
-> Oh right, computed targets could indeed be mis predicted. I was more thinking
-> about jumps with immediate values.
->
->> On this, the POWER8 branch history buffer tells us two things about the
->> prediction status.
->>   1) if the branch was predicted taken/not taken correctly
->>   2) if the target address was predicted correctly or not (for computed
->>      gotos only)
->> So we'd actually like more prediction bits too :-D
->
-> So if I understand this right, 1) maps to the predicted flags we have; 2)
-> would be new stuff?
->
-> We don't really have anything like that on x86, but I suppose if you make the
-> thing optional and present a 'useful' use-case implemented in userspace code
-> we could take it :-)
->
->> > Anyway, since PPC people thought it worth baking into hardware,
->> > presumably they have a compelling use case. Mikey could you see if you
->> > can retrieve that from someone in the know? It might be interesting.
->>
->> I don't think we can mispredict a non-conditional non-computed but I'll
->> have to check with the HW folks.
->
-> I was mostly wondering about the use-case for the conditional filter. Stephane
-> didn't think it useful, clearly your hardware guys thought different :-)
+Stephane Eranian <eranian@google.com> wrote:
 
->From my experience talking with compiler people, they care about ALL
-the branches
-and not the conditional so much. They use LBR to do basic block profiling.
+> On Fri, May 17, 2013 at 1:39 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> > On Fri, May 17, 2013 at 09:32:08PM +1000, Michael Neuling wrote:
+> >> Peter Zijlstra <peterz@infradead.org> wrote:
+> >
+> >> > Wouldn't it be mostly conditional branches that are the primary control flow
+> >> > and can get predicted wrong? I mean, I'm sure someone will miss-predict an
+> >> > unconditional branch but its not like we care about people with such
+> >> > afflictions do we?
+> >>
+> >> You could mispredict the target address of a computed goto.  You'd know
+> >> it was taken but not know target address until later in the pipeline.
+> >
+> > Oh right, computed targets could indeed be mis predicted. I was more thinking
+> > about jumps with immediate values.
+> >
+> >> On this, the POWER8 branch history buffer tells us two things about the
+> >> prediction status.
+> >>   1) if the branch was predicted taken/not taken correctly
+> >>   2) if the target address was predicted correctly or not (for computed
+> >>      gotos only)
+> >> So we'd actually like more prediction bits too :-D
+> >
+> > So if I understand this right, 1) maps to the predicted flags we have; 2)
+> > would be new stuff?
+> >
+> > We don't really have anything like that on x86, but I suppose if you make the
+> > thing optional and present a 'useful' use-case implemented in userspace code
+> > we could take it :-)
+> >
+> >> > Anyway, since PPC people thought it worth baking into hardware,
+> >> > presumably they have a compelling use case. Mikey could you see if you
+> >> > can retrieve that from someone in the know? It might be interesting.
+> >>
+> >> I don't think we can mispredict a non-conditional non-computed but I'll
+> >> have to check with the HW folks.
+> >
+> > I was mostly wondering about the use-case for the conditional filter. Stephane
+> > didn't think it useful, clearly your hardware guys thought different :-)
+> 
+> From my experience talking with compiler people, they care about ALL
+> the branches and not the conditional so much. They use LBR to do basic
+> block profiling.
+
+OK.  I don't have a good handle on what's useful for compilers or JITs
+right now.  I'm just plumbing through what's possible.
+
+Mikey
