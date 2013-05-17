@@ -1,13 +1,14 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
-To: "Gorelik, Jacob (335F)" <jacob.gorelik@jpl.nasa.gov>
-Subject: Re: powerpc: Hardware breakpoints rewrite to handle non DABR
- breakpoint registers
-In-reply-to: <3F431E22-B7A9-4FCF-B34F-DC171A643E05@jpl.nasa.gov>
+To: benh@kernel.crashing.org
+Subject: [PATCH] powerpc/hw_breakpoints: Add DABRX cpu feature
+In-reply-to: <30348.1368764834@ale.ozlabs.ibm.com>
 References: <3F431E22-B7A9-4FCF-B34F-DC171A643E05@jpl.nasa.gov>
-Date: Fri, 17 May 2013 14:27:14 +1000
-Message-ID: <30348.1368764834@ale.ozlabs.ibm.com>
-Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>
+ <30348.1368764834@ale.ozlabs.ibm.com>
+Date: Fri, 17 May 2013 16:27:31 +1000
+Message-ID: <9649.1368772051@ale.ozlabs.ibm.com>
+Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>, "Gorelik,
+ Jacob \(335F\)" <jacob.gorelik@jpl.nasa.gov>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,69 +18,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Some CPUs have a DABR but not DABRX.  Configuration are:
+- No 32bit CPUs have DABRX but some have DABR.
+- POWER4+ and below have the DABR but no DABRX.
+- 970 and POWER5 and above have DABR and DABRX.
+- POWER8 has DAWR, hence no DABRX.
 
-> I assume you are the right person to ask this question. 
+This introduces CPU_FTR_DABRX and sets it on appropriate CPUs.  We use
+the top 64 bits for CPU FTR bits since only 64 bit CPUs have this.
 
-Yep I am but adding linuxppc-dev mailing list to CC anyway.
+Processors that don't have the DABRX will still work as they will fall
+back to software filtering these breakpoints via perf_exclude_event().
 
-> We are running the Linux kernel version 3.8.13 on a PPC750FX 32-bit
-> based board without any problems; however, when I tried to boot
-> version 3.9.2 on the same board, I get the following error:
-> 
-> Mount-cache hash table entries: 512
-> Oops: Exception in kernel mode, sig: 4 [#1]
-> BRE750FX
-> Modules linked in:
-> NIP: c0007210 LR: c00072ac CTR: c00403c0
-> REGS: c039be90 TRAP: 0700   Not tainted  (3.9.0-svn1447)
-> MSR: 00081032 <ME,IR,DR,RI>  CR: 22000082  XER: 00000000
-> TASK = c03833a8[0] 'swapper' THREAD: c039a000
-> GPR00: c029466c c039bf40 c03833a8 00000000 00000000 00000001 00000000 00000000 
-> GPR08: c0383fe4 00000000 00000000 00000000 42000022 1001a6e4 00000000 100ce000 
-> GPR16: 00000000 00000001 00000000 00000024 00000001 c02a0000 c03a0000 c02a0000 
-> GPR24: c0386864 00000004 c038796c c039a000 cf4303d0 c0386490 c0386490 c03833a8 
-> NIP [c0007210] set_breakpoint+0x48/0x54
-> LR [c00072ac] __switch_to+0x90/0x98
-> Call Trace:
-> [c039bf40] [c00404e4] pick_next_task_fair+0x124/0x1c0 (unreliable)
-> [c039bf60] [c029466c] __schedule+0x17c/0x358
-> [c039bfa0] [c0294ad0] schedule_preempt_disabled+0x10/0x20
-> [c039bfb0] [c0004090] rest_init+0x60/0x70
-> [c039bfc0] [c035ed60] start_kernel+0x2c4/0x2d8
-> [c039bff0] [00003438] 0x3438
-> Instruction dump:
-> 2f890000 81630004 80e30000 5483077e 5484ef7e 91480000 91680004 7c633b78 
-> 419e000c 7d2903a6 4e800420 7c75fba6 <7c97fba6> 38600000 4e800020 9421ffe0 
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+Reported-by: "Gorelik, Jacob (335F)" <jacob.gorelik@jpl.nasa.gov>
+cc: stable@vger.kernel.org (v3.9 only)
 
-Last two instruction here are:
-
-	7c 75 fb a6 	mtspr   1013,r3
-	7c 97 fb a6 	mtspr   1015,r4 ****
-
-The SPR 1015 is the dabrx.
-
-Looking at the 970FX docs, it has the DABR but not DABRX.  I didn't
-realise that this config ever existed so I'm going to have to code
-something up to fix it.
-
-Meanwhile the below should get you going.  Let me know if it works.
-
-This patch is not for upstream.
-
-Not-at-all-signed-off-by: Michael Neuling <mikey@neuling.org> :-)
-
-Mikey
-
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index 26807e5..6f3887d 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -176,6 +176,7 @@ extern const char *powerpc_base_platform;
+ #define CPU_FTR_CFAR			LONG_ASM_CONST(0x0100000000000000)
+ #define	CPU_FTR_HAS_PPR			LONG_ASM_CONST(0x0200000000000000)
+ #define CPU_FTR_DAWR			LONG_ASM_CONST(0x0400000000000000)
++#define CPU_FTR_DABRX			LONG_ASM_CONST(0x0800000000000000)
+ 
+ #ifndef __ASSEMBLY__
+ 
+@@ -394,19 +395,20 @@ extern const char *powerpc_base_platform;
+ 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | CPU_FTR_ARCH_201 | \
+ 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_CAN_NAP | CPU_FTR_MMCRA | \
+ 	    CPU_FTR_CP_USE_DCBTZ | CPU_FTR_STCX_CHECKS_ADDRESS | \
+-	    CPU_FTR_HVMODE)
++	    CPU_FTR_HVMODE | CPU_FTR_DABRX)
+ #define CPU_FTRS_POWER5	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
+ 	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_PURR | \
+-	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB)
++	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_DABRX)
+ #define CPU_FTRS_POWER6 (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
+ 	    CPU_FTR_COHERENT_ICACHE | \
+ 	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
+ 	    CPU_FTR_DSCR | CPU_FTR_UNALIGNED_LD_STD | \
+-	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_CFAR)
++	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_CFAR | \
++	    CPU_FTR_DABRX)
+ #define CPU_FTRS_POWER7 (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | CPU_FTR_ARCH_206 |\
+ 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
+@@ -415,7 +417,7 @@ extern const char *powerpc_base_platform;
+ 	    CPU_FTR_DSCR | CPU_FTR_SAO  | CPU_FTR_ASYM_SMT | \
+ 	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
+ 	    CPU_FTR_ICSWX | CPU_FTR_CFAR | CPU_FTR_HVMODE | \
+-	    CPU_FTR_VMX_COPY | CPU_FTR_HAS_PPR)
++	    CPU_FTR_VMX_COPY | CPU_FTR_HAS_PPR | CPU_FTR_DABRX)
+ #define CPU_FTRS_POWER8 (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | CPU_FTR_ARCH_206 |\
+ 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
+@@ -430,14 +432,15 @@ extern const char *powerpc_base_platform;
+ 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
+ 	    CPU_FTR_PAUSE_ZERO  | CPU_FTR_CELL_TB_BUG | CPU_FTR_CP_USE_DCBTZ | \
+-	    CPU_FTR_UNALIGNED_LD_STD)
++	    CPU_FTR_UNALIGNED_LD_STD | CPU_FTR_DABRX)
+ #define CPU_FTRS_PA6T (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_ALTIVEC_COMP | \
+-	    CPU_FTR_PURR | CPU_FTR_REAL_LE)
++	    CPU_FTR_PURR | CPU_FTR_REAL_LE | CPU_FTR_DABRX)
+ #define CPU_FTRS_COMPATIBLE	(CPU_FTR_USE_TB | CPU_FTR_PPCAS_ARCH_V2)
+ 
+ #define CPU_FTRS_A2 (CPU_FTR_USE_TB | CPU_FTR_SMT | CPU_FTR_DBELL | \
+-		     CPU_FTR_NOEXECUTE | CPU_FTR_NODSISRALIGN | CPU_FTR_ICSWX)
++		     CPU_FTR_NOEXECUTE | CPU_FTR_NODSISRALIGN | \
++		     CPU_FTR_ICSWX | CPU_FTR_DABRX )
+ 
+ #ifdef __powerpc64__
+ #ifdef CONFIG_PPC_BOOK3E
 diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index a902723..df9eb8e 100644
+index a902723..b0f3e3f 100644
 --- a/arch/powerpc/kernel/process.c
 +++ b/arch/powerpc/kernel/process.c
-@@ -399,7 +399,6 @@ static inline int __set_dabr(unsigned long dabr, unsigned lo
+@@ -399,7 +399,8 @@ static inline int __set_dabr(unsigned long dabr, unsigned long dabrx)
  static inline int __set_dabr(unsigned long dabr, unsigned long dabrx)
  {
-        mtspr(SPRN_DABR, dabr);
--       mtspr(SPRN_DABRX, dabrx);
-        return 0;
+ 	mtspr(SPRN_DABR, dabr);
+-	mtspr(SPRN_DABRX, dabrx);
++	if (cpu_has_feature(CPU_FTR_DABRX))
++		mtspr(SPRN_DABRX, dabrx);
+ 	return 0;
  }
  #else
