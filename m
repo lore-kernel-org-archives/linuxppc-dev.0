@@ -1,36 +1,31 @@
-Return-Path: <eranian@google.com>
-Received: from mail-oa0-f43.google.com (mail-oa0-f43.google.com
- [209.85.219.43])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 24ACB2C0040
- for <linuxppc-dev@ozlabs.org>; Sat, 18 May 2013 08:59:14 +1000 (EST)
-Received: by mail-oa0-f43.google.com with SMTP id o6so5757977oag.2
- for <linuxppc-dev@ozlabs.org>; Fri, 17 May 2013 15:59:12 -0700 (PDT)
+Return-Path: <mst@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 995582C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 May 2013 19:36:52 +1000 (EST)
+Date: Sun, 19 May 2013 12:35:26 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v2 10/10] kernel: might_fault does not imply might_sleep
+Message-ID: <20130519093526.GD19883@redhat.com>
+References: <cover.1368702323.git.mst@redhat.com>
+ <1f85dc8e6a0149677563a2dfb4cef9a9c7eaa391.1368702323.git.mst@redhat.com>
+ <20130516184041.GP19669@dyad.programming.kicks-ass.net>
 MIME-Version: 1.0
-In-Reply-To: <30065.1368828892@ale.ozlabs.ibm.com>
-References: <20130503121122.931661809@chello.nl>
- <20130503121256.230745028@chello.nl>
- <CABPqkBTvcQAyXfeiJwpPsNtbs4ffsVguXE631dK_rbzHpwBdOg@mail.gmail.com>
- <20130516090916.GF19669@dyad.programming.kicks-ass.net>
- <8578.1368699317@ale.ozlabs.ibm.com>
- <20130516111634.GA15314@twins.programming.kicks-ass.net>
- <CABPqkBSCXJN7gLK_e_Q3YVVVFVGS78fo4j2z0+MmriqoXszH+w@mail.gmail.com>
- <20130517111232.GE5162@dyad.programming.kicks-ass.net>
- <29969.1368790328@ale.ozlabs.ibm.com>
- <20130517113922.GF5162@dyad.programming.kicks-ass.net>
- <CABPqkBSSg8Sfpa5xG-DCpX-qY22qeRVtwzVPTPD4K=3DmS5dUA@mail.gmail.com>
- <30065.1368828892@ale.ozlabs.ibm.com>
-Date: Sat, 18 May 2013 00:59:11 +0200
-Message-ID: <CABPqkBSX+BVHz5NnQnaa7tmU6D5DdpS21XWxVPQ_gaX-OOpZHA@mail.gmail.com>
-Subject: Re: [PATCH 3/3] perf, x86,
- lbr: Demand proper privileges for PERF_SAMPLE_BRANCH_KERNEL
-From: Stephane Eranian <eranian@google.com>
-To: Michael Neuling <mikey@neuling.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: "ak@linux.intel.com" <ak@linux.intel.com>,
- Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
- Linux PPC dev <linuxppc-dev@ozlabs.org>, Ingo Molnar <mingo@kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130516184041.GP19669@dyad.programming.kicks-ass.net>
+Cc: linux-m32r-ja@ml.linux-m32r.org, kvm@vger.kernel.org,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ David Howells <dhowells@redhat.com>, linux-mm@kvack.org,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ linux-arch@vger.kernel.org, linux-am33-list@redhat.com,
+ Hirokazu Takata <takata@linux-m32r.org>, x86@kernel.org,
+ Ingo Molnar <mingo@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
+ microblaze-uclinux@itee.uq.edu.au, Chris Metcalf <cmetcalf@tilera.com>,
+ rostedt@goodmis.org, Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>,
+ linux-m32r@ml.linux-m32r.org, linux-kernel@vger.kernel.org,
+ Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,53 +35,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, May 18, 2013 at 12:14 AM, Michael Neuling <mikey@neuling.org> wrote:
-> Stephane Eranian <eranian@google.com> wrote:
->
->> On Fri, May 17, 2013 at 1:39 PM, Peter Zijlstra <peterz@infradead.org> wrote:
->> > On Fri, May 17, 2013 at 09:32:08PM +1000, Michael Neuling wrote:
->> >> Peter Zijlstra <peterz@infradead.org> wrote:
->> >
->> >> > Wouldn't it be mostly conditional branches that are the primary control flow
->> >> > and can get predicted wrong? I mean, I'm sure someone will miss-predict an
->> >> > unconditional branch but its not like we care about people with such
->> >> > afflictions do we?
->> >>
->> >> You could mispredict the target address of a computed goto.  You'd know
->> >> it was taken but not know target address until later in the pipeline.
->> >
->> > Oh right, computed targets could indeed be mis predicted. I was more thinking
->> > about jumps with immediate values.
->> >
->> >> On this, the POWER8 branch history buffer tells us two things about the
->> >> prediction status.
->> >>   1) if the branch was predicted taken/not taken correctly
->> >>   2) if the target address was predicted correctly or not (for computed
->> >>      gotos only)
->> >> So we'd actually like more prediction bits too :-D
->> >
->> > So if I understand this right, 1) maps to the predicted flags we have; 2)
->> > would be new stuff?
->> >
->> > We don't really have anything like that on x86, but I suppose if you make the
->> > thing optional and present a 'useful' use-case implemented in userspace code
->> > we could take it :-)
->> >
->> >> > Anyway, since PPC people thought it worth baking into hardware,
->> >> > presumably they have a compelling use case. Mikey could you see if you
->> >> > can retrieve that from someone in the know? It might be interesting.
->> >>
->> >> I don't think we can mispredict a non-conditional non-computed but I'll
->> >> have to check with the HW folks.
->> >
->> > I was mostly wondering about the use-case for the conditional filter. Stephane
->> > didn't think it useful, clearly your hardware guys thought different :-)
->>
->> From my experience talking with compiler people, they care about ALL
->> the branches and not the conditional so much. They use LBR to do basic
->> block profiling.
->
-> OK.  I don't have a good handle on what's useful for compilers or JITs
-> right now.  I'm just plumbing through what's possible.
->
-I understand. It is okay to extend the interface.
+On Thu, May 16, 2013 at 08:40:41PM +0200, Peter Zijlstra wrote:
+> On Thu, May 16, 2013 at 02:16:10PM +0300, Michael S. Tsirkin wrote:
+> > There are several ways to make sure might_fault
+> > calling function does not sleep.
+> > One is to use it on kernel or otherwise locked memory - apparently
+> > nfs/sunrpc does this. As noted by Ingo, this is handled by the
+> > migh_fault() implementation in mm/memory.c but not the one in
+> > linux/kernel.h so in the current code might_fault() schedules
+> > differently depending on CONFIG_PROVE_LOCKING, which is an undesired
+> > semantical side effect.
+> > 
+> > Another is to call pagefault_disable: in this case the page fault
+> > handler will go to fixups processing and we get an error instead of
+> > sleeping, so the might_sleep annotation is a false positive.
+> > vhost driver wants to do this now in order to reuse socket ops
+> > under a spinlock (and fall back on slower thread handler
+> > on error).
+> 
+> Are you using the assumption that spin_lock() implies preempt_disable() implies
+> pagefault_disable()? Note that this assumption isn't valid for -rt where the
+> spinlock becomes preemptible but we'll not disable pagefaults.
+
+No, I was not assuming that. What I'm trying to say is that a caller
+that does something like this under a spinlock:
+	preempt_disable
+	pagefault_disable
+	error = copy_to_user
+	pagefault_enable
+	preempt_enable_no_resched
+
+is not doing anything wrong and should not get a warning,
+as long as error is handled correctly later.
+Right?
+
+> > Address both issues by:
+> > 	- dropping the unconditional call to might_sleep
+> > 	  from the fast might_fault code in linux/kernel.h
+> > 	- checking for pagefault_disable() in the
+> > 	  CONFIG_PROVE_LOCKING implementation
+> > 
+> > Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+> > ---
+> >  include/linux/kernel.h |  1 -
+> >  mm/memory.c            | 14 +++++++++-----
+> >  2 files changed, 9 insertions(+), 6 deletions(-)
+> > 
+> > diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+> > index e96329c..322b065 100644
+> > --- a/include/linux/kernel.h
+> > +++ b/include/linux/kernel.h
+> > @@ -198,7 +198,6 @@ void might_fault(void);
+> >  #else
+> >  static inline void might_fault(void)
+> >  {
+> > -	might_sleep();
+> 
+> This removes potential resched points for PREEMPT_VOLUNTARY -- was that
+> intentional?
+
+No it's a bug. Thanks for pointing this out.
+OK so I guess it should be might_sleep_if(!in_atomic())
+and this means might_fault would have to move from linux/kernel.h to
+linux/uaccess.h, since in_atomic() is in linux/hardirq.h
+
+Makes sense?
+
+> >  }
+> >  #endif
+> >  
+> > diff --git a/mm/memory.c b/mm/memory.c
+> > index 6dc1882..1b8327b 100644
+> > --- a/mm/memory.c
+> > +++ b/mm/memory.c
+> > @@ -4222,13 +4222,17 @@ void might_fault(void)
+> >  	if (segment_eq(get_fs(), KERNEL_DS))
+> >  		return;
+> >  
+> > -	might_sleep();
+> >  	/*
+> > -	 * it would be nicer only to annotate paths which are not under
+> > -	 * pagefault_disable, however that requires a larger audit and
+> > -	 * providing helpers like get_user_atomic.
+> > +	 * It would be nicer to annotate paths which are under preempt_disable
+> > +	 * but not under pagefault_disable, however that requires a new flag
+> > +	 * for differentiating between the two.
+> 
+> -rt has this, pagefault_disable() doesn't change the preempt count but pokes
+> at task_struct::pagefault_disable.
+
+Good to know.
+
+So maybe we can import this at least for CONFIG_PROVE_LOCKING?
+To make the patch smaller I'd prefer doing both for now,
+this way this patchset does not have to poke in too many
+mm internals.
+I can try doing that - unless
+someone else has plans to merge this part soon anyway?
+
+> >  	 */
+> > -	if (!in_atomic() && current->mm)
+> > +	if (in_atomic())
+> > +		return;
+> > +
+> > +	might_sleep();
+> > +
+> > +	if (current->mm)
+> >  		might_lock_read(&current->mm->mmap_sem);
+> >  }
+> >  EXPORT_SYMBOL(might_fault);
+> > -- 
+> > MST
