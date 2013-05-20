@@ -1,12 +1,36 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp09.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 286702C0092
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2013 14:27:51 +1000 (EST)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 21 May 2013 01:25:13 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 06141357804A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2013 14:27:42 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r4K4DRVn23527546
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2013 14:13:28 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r4K4Rewn011340
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2013 14:27:41 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Michael Neuling <mikey@neuling.org>
 Subject: Re: [PATCH 1/2] powerpc: use smp_rmb when looking at deposisted
  pgtable to store hash index
-In-reply-to: <1368778503-23230-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <26735.1369012726@ale.ozlabs.ibm.com>
 References: <1368778503-23230-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Date: Mon, 20 May 2013 11:18:46 +1000
-Message-ID: <26735.1369012726@ale.ozlabs.ibm.com>
+ <26735.1369012726@ale.ozlabs.ibm.com>
+Date: Mon, 20 May 2013 09:57:38 +0530
+Message-ID: <87vc6e9sxx.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, dwg@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -17,97 +41,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
+Michael Neuling <mikey@neuling.org> writes:
 
-> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-> 
-> We need to use smb_rmb when looking at hpte slot array. Otherwise we could
-> reorder the hpte_slot array load bfore even we marked the pmd trans huge.
+> Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
+>
+>> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+>> 
+>> We need to use smb_rmb when looking at hpte slot array. Otherwise we could
+>> reorder the hpte_slot array load bfore even we marked the pmd trans huge.
+>
+> Does this need to go back into the stable series?
+>
 
-Does this need to go back into the stable series?
+No the changes are not yet upstream. hpte_slot_array changes are in the
+THP series. I didn't want to post the entire series again with the 
+above two patches. 
 
-Mikey
-
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/pgtable-ppc64.h | 15 +++++++++++++++
->  arch/powerpc/mm/hugepage-hash64.c        |  6 +-----
->  arch/powerpc/mm/pgtable_64.c             |  6 +-----
->  3 files changed, 17 insertions(+), 10 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
-> index d046289..46db094 100644
-> --- a/arch/powerpc/include/asm/pgtable-ppc64.h
-> +++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-> @@ -10,6 +10,7 @@
->  #else
->  #include <asm/pgtable-ppc64-4k.h>
->  #endif
-> +#include <asm/barrier.h>
->  
->  #define FIRST_USER_ADDRESS	0
->  
-> @@ -393,6 +394,20 @@ static inline void mark_hpte_slot_valid(unsigned char *hpte_slot_array,
->  	hpte_slot_array[index] = hidx << 4 | 0x1 << 3;
->  }
->  
-> +static inline char *get_hpte_slot_array(pmd_t *pmdp)
-> +{
-> +	/*
-> +	 * The hpte hindex is stored in the pgtable whose address is in the
-> +	 * second half of the PMD
-> +	 *
-> +	 * Order this load with the test for pmd_trans_huge in the caller
-> +	 */
-> +	smp_rmb();
-> +	return *(char **)(pmdp + PTRS_PER_PMD);
-> +
-> +
-> +}
-> +
->  extern void hpte_do_hugepage_flush(struct mm_struct *mm, unsigned long addr,
->  				   pmd_t *pmdp);
->  #ifdef CONFIG_TRANSPARENT_HUGEPAGE
-> diff --git a/arch/powerpc/mm/hugepage-hash64.c b/arch/powerpc/mm/hugepage-hash64.c
-> index e430766..c3ba3d5 100644
-> --- a/arch/powerpc/mm/hugepage-hash64.c
-> +++ b/arch/powerpc/mm/hugepage-hash64.c
-> @@ -84,11 +84,7 @@ int __hash_page_thp(unsigned long ea, unsigned long access, unsigned long vsid,
->  
->  	vpn = hpt_vpn(ea, vsid, ssize);
->  	hash = hpt_hash(vpn, shift, ssize);
-> -	/*
-> -	 * The hpte hindex are stored in the pgtable whose address is in the
-> -	 * second half of the PMD
-> -	 */
-> -	hpte_slot_array = *(char **)(pmdp + PTRS_PER_PMD);
-> +	hpte_slot_array = get_hpte_slot_array(pmdp);
->  
->  	valid = hpte_valid(hpte_slot_array, index);
->  	if (valid) {
-> diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-> index 8dd7c83..19d6734 100644
-> --- a/arch/powerpc/mm/pgtable_64.c
-> +++ b/arch/powerpc/mm/pgtable_64.c
-> @@ -701,11 +701,7 @@ void hpte_do_hugepage_flush(struct mm_struct *mm, unsigned long addr,
->  	 * Flush all the hptes mapping this hugepage
->  	 */
->  	s_addr = addr & HPAGE_PMD_MASK;
-> -	/*
-> -	 * The hpte hindex are stored in the pgtable whose address is in the
-> -	 * second half of the PMD
-> -	 */
-> -	hpte_slot_array = *(char **)(pmdp + PTRS_PER_PMD);
-> +	hpte_slot_array = get_hpte_slot_array(pmdp);
->  	/*
->  	 * IF we try to do a HUGE PTE update after a withdraw is done.
->  	 * we will find the below NULL. This happens when we do
-> -- 
-> 1.8.1.2
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+-aneesh
