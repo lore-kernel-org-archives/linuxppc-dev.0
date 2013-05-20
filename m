@@ -1,22 +1,26 @@
-Return-Path: <adam@os.inf.tu-dresden.de>
-Received: from os.inf.tu-dresden.de (os.inf.tu-dresden.de
- [IPv6:2002:8d4c:3001:48::99])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mkl@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+ [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id AF9952C0091
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2013 01:36:18 +1000 (EST)
-Received: from erwin.inf.tu-dresden.de ([141.76.48.80]
- helo=os.inf.tu-dresden.de)
- by os.inf.tu-dresden.de with esmtps (TLSv1:DHE-RSA-AES128-SHA:128) (Exim
- 4.80.1) id 1UeRmw-0004im-BX
- for linuxppc-dev@lists.ozlabs.org; Mon, 20 May 2013 17:14:14 +0200
-Date: Mon, 20 May 2013 17:14:11 +0200
-From: Adam Lackorzynski <adam@os.inf.tu-dresden.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Build failure with 3.9.3 (Regression 3.9.2->3.9.3)
-Message-ID: <20130520151411.GD27420@os.inf.tu-dresden.de>
+ by ozlabs.org (Postfix) with ESMTPS id 0BB512C00A3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2013 02:06:53 +1000 (EST)
+Message-ID: <519A4A00.8000109@pengutronix.de>
+Date: Mon, 20 May 2013 18:06:24 +0200
+From: Marc Kleine-Budde <mkl@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+To: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [PATCH v2] can: flexcan: remove HAVE_CAN_FLEXCAN Kconfig symbol
+References: <1368781157-4646-1-git-send-email-mkl@pengutronix.de>
+ <20130517090949.GI8607@S2101-09.ap.freescale.net>
+In-Reply-To: <20130517090949.GI8607@S2101-09.ap.freescale.net>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="----enig2LNJKRDFSKBTBRHDHOKQV"
+Cc: Arnd Bergmann <arnd@arndb.de>, Sascha Hauer <s.hauer@pengutronix.de>,
+ U Bhaskar-B22300 <B22300@freescale.com>, linux-kernel@vger.kernel.org,
+ linux-can@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,26 +30,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+------enig2LNJKRDFSKBTBRHDHOKQV
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
-3.9.3 introduced the following build failure:
+On 05/17/2013 11:09 AM, Shawn Guo wrote:
+> On Fri, May 17, 2013 at 10:59:17AM +0200, Marc Kleine-Budde wrote:
+>> This patch removes the Kconfig symbol HAVE_CAN_FLEXCAN from arch/{arm,=
+powerpc}
+>> and allowing compilation unconditionally on all arm and powerpc platfo=
+rms.
+>>
+>> This brings a bigger compile time coverage and removes the following d=
+ependency
+>> warning found by Arnd Bergmann:
+>>
+>>     warning: (SOC_IMX28 && SOC_IMX25 && SOC_IMX35 && IMX_HAVE_PLATFORM=
+_FLEXCAN &&
+>>         SOC_IMX53 && SOC_IMX6Q) selects HAVE_CAN_FLEXCAN
+>>     which has unmet direct dependencies (NET && CAN && CAN_DEV)
+>>
+>> Cc: Arnd Bergmann <arnd@arndb.de>
+>> Cc: Shawn Guo <shawn.guo@linaro.org>
+>=20
+> Acked-by: Shawn Guo <shawn.guo@linaro.org>
 
-  CC      arch/powerpc/kernel/rtas.o
-arch/powerpc/kernel/rtas.c: In function =E2=80=98rtas_cpu_state_change_mask=
-=E2=80=99:
-arch/powerpc/kernel/rtas.c:843:4: error: implicit declaration of function =
-=E2=80=98cpu_down=E2=80=99 [-Werror=3Dimplicit-function-declaration]
-cc1: all warnings being treated as errors
-make[1]: *** [arch/powerpc/kernel/rtas.o] Error 1
-make: *** [arch/powerpc/kernel] Error 2
+Thanks.
 
-My kernel config has CONFIG_HOTPLUG_CPU off, that's why cpu_down is not
-defined. Shall CONFIG_HOTPLUG_CPU just be enabled or should the code in
-rtas.c be adapted?
+An Acked-by by the powerpc people would be fine. However, if nobody
+doesn't object, I'm sending this patch via linux-can and net-next upstrea=
+m.
 
+regards,
+Marc
 
-Thanks,
-Adam
 --=20
-Adam                 adam@os.inf.tu-dresden.de
-  Lackorzynski         http://os.inf.tu-dresden.de/~adam/
+Pengutronix e.K.                  | Marc Kleine-Budde           |
+Industrial Linux Solutions        | Phone: +49-231-2826-924     |
+Vertretung West/Dortmund          | Fax:   +49-5121-206917-5555 |
+Amtsgericht Hildesheim, HRA 2686  | http://www.pengutronix.de   |
+
+
+------enig2LNJKRDFSKBTBRHDHOKQV
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iEYEARECAAYFAlGaSgAACgkQjTAFq1RaXHPbDwCgk97qatZ4r84KYI1L6zCJRWrf
+ECcAn0ydqy6yQnEKnxiTWViJ/p+wR2Wt
+=J2Zm
+-----END PGP SIGNATURE-----
+
+------enig2LNJKRDFSKBTBRHDHOKQV--
