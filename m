@@ -1,34 +1,22 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-oa0-f50.google.com (mail-oa0-f50.google.com
- [209.85.219.50])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D13702C009D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2013 14:40:58 +1000 (EST)
-Received: by mail-oa0-f50.google.com with SMTP id l20so7175001oag.37
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 May 2013 21:40:56 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <CAKohponBfXsy21RTik+jWMukL_VnDNXOL7xmj4sEBF3HEBXqpQ@mail.gmail.com>
-References: <cover.1365079581.git.viresh.kumar@linaro.org>
- <027e8f1d4ac8de6351115f15a408431558510abb.1365079581.git.viresh.kumar@linaro.org>
- <CAKohpokGkZ9m0v1QaoXEv1m0mZqY70adWpXf3edQGmZnToRRcg@mail.gmail.com>
- <CAKohpokpiw3zS32oDL+T09ToOQxc28w=2R2up5T3h3c2Agc0wg@mail.gmail.com>
- <CAKohpo=SFauMyczEnxO_p_KQVQeznL+0V-FmLDtGmzL1Uv2iuA@mail.gmail.com>
- <CAKohponBfXsy21RTik+jWMukL_VnDNXOL7xmj4sEBF3HEBXqpQ@mail.gmail.com>
-Date: Mon, 20 May 2013 10:10:56 +0530
-Message-ID: <CAKohpo=DoWB+E-bgWCUVec5Y8wsfEu0V43Pg5mHzqep8yn0_JA@mail.gmail.com>
-Subject: Re: [PATCH 17/18] cpufreq: powerpc: move cpufreq driver to
- drivers/cpufreq
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- deepthi@linux.vnet.ibm.com
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: robin.randhawa@arm.com, linux-pm@vger.kernel.org, patches@linaro.org,
- Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org,
- rjw@sisk.pl, Steve.Bannister@arm.com, Paul Mackerras <paulus@samba.org>,
- Olof Johansson <olof@lixom.net>, arvind.chauhan@arm.com,
- linuxppc-dev@lists.ozlabs.org, linaro-kernel@lists.linaro.org,
- charles.garcia-tobin@arm.com
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id EC2792C009D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2013 16:28:54 +1000 (EST)
+Message-ID: <1369031318.6387.1.camel@pasglop>
+Subject: Re: [PATCH 1/2] powerpc: use smp_rmb when looking at deposisted
+ pgtable to store hash index
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Date: Mon, 20 May 2013 16:28:38 +1000
+In-Reply-To: <87vc6e9sxx.fsf@linux.vnet.ibm.com>
+References: <1368778503-23230-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <26735.1369012726@ale.ozlabs.ibm.com> <87vc6e9sxx.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, Michael Neuling <mikey@neuling.org>,
+ paulus@samba.org, dwg@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,44 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 13 May 2013 11:34, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 22 April 2013 12:19, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> On 9 April 2013 14:05, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->>> On 5 April 2013 12:16, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->>>> On 4 April 2013 18:24, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->>>>> This patch moves cpufreq driver of powerpc platform to drivers/cpufreq.
->>>>>
->>>>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->>>>> Cc: Paul Mackerras <paulus@samba.org>
->>>>> Cc: Olof Johansson <olof@lixom.net>
->>>>> Cc: linuxppc-dev@lists.ozlabs.org
->>>>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->>>>> ---
->>>>> Compile Tested only.
->>>>>
->>>>>  arch/powerpc/platforms/Kconfig                     | 31 ----------------------
->>>>>  arch/powerpc/platforms/pasemi/Makefile             |  1 -
->>>>>  arch/powerpc/platforms/powermac/Makefile           |  2 --
->>>>>  drivers/cpufreq/Kconfig.powerpc                    | 26 ++++++++++++++++++
->>>>>  drivers/cpufreq/Makefile                           |  3 +++
->>>>>  .../cpufreq.c => drivers/cpufreq/pasemi-cpufreq.c  |  0
->>>>>  .../cpufreq/pmac32-cpufreq.c                       |  0
->>>>>  .../cpufreq/pmac64-cpufreq.c                       |  0
->>>>>  8 files changed, 29 insertions(+), 34 deletions(-)
->>>>>  rename arch/powerpc/platforms/pasemi/cpufreq.c => drivers/cpufreq/pasemi-cpufreq.c (100%)
->>>>>  rename arch/powerpc/platforms/powermac/cpufreq_32.c => drivers/cpufreq/pmac32-cpufreq.c (100%)
->>>>>  rename arch/powerpc/platforms/powermac/cpufreq_64.c => drivers/cpufreq/pmac64-cpufreq.c (100%)
->>>>
->>>> Hi Deepthi,
->>>>
->>>> Can you help testing this please?
->>>
->>> Ping!!
->>
->> Ping!!
->
-> Hi Benjamin,
->
-> Hope you are back from your vacations. Can you give it a try now?
+On Mon, 2013-05-20 at 09:57 +0530, Aneesh Kumar K.V wrote:
+> Michael Neuling <mikey@neuling.org> writes:
+> 
+> > Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
+> >
+> >> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+> >> 
+> >> We need to use smb_rmb when looking at hpte slot array. Otherwise we could
+> >> reorder the hpte_slot array load bfore even we marked the pmd trans huge.
+> >
+> > Does this need to go back into the stable series?
+> >
+> 
+> No the changes are not yet upstream. hpte_slot_array changes are in the
+> THP series. I didn't want to post the entire series again with the 
+> above two patches. 
 
-Ping!!
+Note that any patch that adds such a rmb should have a very clear
+description of what is the corresponding wmb. It's almost never right to
+have one without the other. IE. What is it that you are ordering
+against.
+
+Cheers,
+Ben.
