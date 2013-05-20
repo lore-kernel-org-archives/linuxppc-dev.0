@@ -1,39 +1,12 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2FA612C00A1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2013 19:26:31 +1000 (EST)
-Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 20 May 2013 19:13:31 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id BADA32BB0054
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2013 19:26:22 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r4K9QFSL22544546
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2013 19:26:15 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r4K9QMYt021490
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2013 19:26:22 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] powerpc: use smp_rmb when looking at deposisted
- pgtable to store hash index
-In-Reply-To: <1369031318.6387.1.camel@pasglop>
-References: <1368778503-23230-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <26735.1369012726@ale.ozlabs.ibm.com> <87vc6e9sxx.fsf@linux.vnet.ibm.com>
- <1369031318.6387.1.camel@pasglop>
-Date: Mon, 20 May 2013 14:56:18 +0530
-Message-ID: <87a9nq57et.fsf@linux.vnet.ibm.com>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: benh@kernel.crashing.org
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, Michael Neuling <mikey@neuling.org>,
- paulus@samba.org, dwg@au1.ibm.com
+Subject: [PATCH] powerpc/tm: Abort transactions on emulation and alignment
+ faults
+Date: Mon, 20 May 2013 21:07:54 +1000
+Message-ID: <23571.1369048074@ale.ozlabs.ibm.com>
+Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>, matt@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,36 +16,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+If we are emulating an instruction inside an active user transaction that
+touches memory, the kernel can't emulate it as it operates in transactional
+suspend context.  We need to abort these transactions and send them back to
+userspace for the hardware to rollback.
 
-> On Mon, 2013-05-20 at 09:57 +0530, Aneesh Kumar K.V wrote:
->> Michael Neuling <mikey@neuling.org> writes:
->> 
->> > Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
->> >
->> >> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
->> >> 
->> >> We need to use smb_rmb when looking at hpte slot array. Otherwise we could
->> >> reorder the hpte_slot array load bfore even we marked the pmd trans huge.
->> >
->> > Does this need to go back into the stable series?
->> >
->> 
->> No the changes are not yet upstream. hpte_slot_array changes are in the
->> THP series. I didn't want to post the entire series again with the 
->> above two patches. 
->
-> Note that any patch that adds such a rmb should have a very clear
-> description of what is the corresponding wmb. It's almost never right to
-> have one without the other. IE. What is it that you are ordering
-> against.
+We can service these if the user transaction is in suspend mode, since the
+kernel will operate in the same suspend context.
 
-Will update the commit message. Some of that smb_wmb() are in the
-core THP, and the others in ppc64 code. Will update with more info.
+This adds a check to all alignment faults and to specific instruction
+emulations (only string instructions for now).  If the user process is in an
+active (non-suspended) transaction, we abort the transaction go back to
+userspace allowing the HW to roll back the transaction and tell the user of the
+failure.  This also adds new tm abort cause codes to report the reason of the
+persistent error to the user.
 
-When we deposit pgtable we use pgtable_trans_huge_deposit that calls
-related smb_wmb(). When we read pgtable via pgtable_trans_huge_withdraw,
-core THP code does the related smb_wmb() after setting the right
-PTE information in the pgtable.
+Crappy test case here http://neuling.org/devel/junkcode/aligntm.c
 
--aneesh
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index a613651..2f20a40 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -121,6 +121,8 @@
+ #define TM_CAUSE_SYSCALL	0xf9 /* Persistent */
+ #define TM_CAUSE_MISC		0xf6
+ #define TM_CAUSE_SIGNAL		0xf4
++#define TM_CAUSE_ALIGNMENT	0xf2
++#define TM_CAUSE_EMULATE	0xf0
+ 
+ #if defined(CONFIG_PPC_BOOK3S_64)
+ #define MSR_64BIT	MSR_SF
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index a7a648f..245c1e1 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -53,6 +53,7 @@
+ #ifdef CONFIG_PPC64
+ #include <asm/firmware.h>
+ #include <asm/processor.h>
++#include <asm/tm.h>
+ #endif
+ #include <asm/kexec.h>
+ #include <asm/ppc-opcode.h>
+@@ -932,6 +933,28 @@ static int emulate_isel(struct pt_regs *regs, u32 instword)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
++static inline bool tm_abort_check(struct pt_regs *regs, int cause)
++{
++        /* If we're emulating a load/store in an active transaction, we cannot
++         * emulate it as the kernel operates in transaction suspended context.
++         * We need to abort the transaction.  This creates a persistent TM
++         * abort so tell the user what caused it with a new code.
++	 */
++	if (MSR_TM_TRANSACTIONAL(regs->msr)) {
++		tm_enable();
++		tm_abort(cause);
++		return true;
++	}
++	return false;
++}
++#else
++static inline bool tm_abort_check(struct pt_regs *regs, int reason)
++{
++	return false;
++}
++#endif
++
+ static int emulate_instruction(struct pt_regs *regs)
+ {
+ 	u32 instword;
+@@ -971,6 +994,8 @@ static int emulate_instruction(struct pt_regs *regs)
+ 
+ 	/* Emulate load/store string insn. */
+ 	if ((instword & PPC_INST_STRING_GEN_MASK) == PPC_INST_STRING) {
++		if (tm_abort_check(regs, TM_CAUSE_EMULATE))
++			return -EINVAL;
+ 		PPC_WARN_EMULATED(string, regs);
+ 		return emulate_string_inst(regs, instword);
+ 	}
+@@ -1147,7 +1172,10 @@ void alignment_exception(struct pt_regs *regs)
+ 	/* We restore the interrupt state now */
+ 	if (!arch_irq_disabled_regs(regs))
+ 		local_irq_enable();
+-
++	
++	if (tm_abort_check(regs, TM_CAUSE_ALIGNMENT))
++		goto bail;
++		
+ 	/* we don't implement logging of alignment exceptions */
+ 	if (!(current->thread.align_ctl & PR_UNALIGN_SIGBUS))
+ 		fixed = fix_alignment(regs);
