@@ -1,18 +1,20 @@
 Return-Path: <bhelgaas@google.com>
-Received: from mail-ie0-x232.google.com (mail-ie0-x232.google.com
- [IPv6:2607:f8b0:4001:c03::232])
+Received: from mail-ia0-x22e.google.com (mail-ia0-x22e.google.com
+ [IPv6:2607:f8b0:4001:c02::22e])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1F05F2C00E8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2013 09:19:14 +1000 (EST)
-Received: by mail-ie0-f178.google.com with SMTP id b11so14618870iee.23
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2013 16:19:11 -0700 (PDT)
-Subject: [PATCH 1/2] powerpc/PCI: Use PCI_UNKNOWN for unknown power state
+ by ozlabs.org (Postfix) with ESMTPS id DBCC22C0183
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2013 09:19:20 +1000 (EST)
+Received: by mail-ia0-f174.google.com with SMTP id r13so6390482iar.33
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2013 16:19:18 -0700 (PDT)
+Subject: [PATCH 2/2] sparc/PCI: Use PCI_UNKNOWN for unknown power state
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, "David S. Miller" <davem@davemloft.net>
 From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Mon, 20 May 2013 17:19:09 -0600
-Message-ID: <20130520231909.32416.81752.stgit@bhelgaas-glaptop>
+Date: Mon, 20 May 2013 17:19:16 -0600
+Message-ID: <20130520231916.32416.7318.stgit@bhelgaas-glaptop>
+In-Reply-To: <20130520231909.32416.81752.stgit@bhelgaas-glaptop>
+References: <20130520231909.32416.81752.stgit@bhelgaas-glaptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: sparclinux@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
@@ -32,16 +34,16 @@ generic version of this code, pci_setup_device(), uses PCI_UNKNOWN.
 
 Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 ---
- arch/powerpc/kernel/pci_of_scan.c |    2 +-
+ arch/sparc/kernel/pci.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
-index 2a67e9b..d2d407d 100644
---- a/arch/powerpc/kernel/pci_of_scan.c
-+++ b/arch/powerpc/kernel/pci_of_scan.c
-@@ -165,7 +165,7 @@ struct pci_dev *of_create_pci_dev(struct device_node *node,
- 	pr_debug("    class: 0x%x\n", dev->class);
- 	pr_debug("    revision: 0x%x\n", dev->revision);
+diff --git a/arch/sparc/kernel/pci.c b/arch/sparc/kernel/pci.c
+index baf4366..972892a 100644
+--- a/arch/sparc/kernel/pci.c
++++ b/arch/sparc/kernel/pci.c
+@@ -327,7 +327,7 @@ static struct pci_dev *of_create_pci_dev(struct pci_pbm_info *pbm,
+ 	if ((dev->class >> 8) == PCI_CLASS_STORAGE_IDE)
+ 		pci_set_master(dev);
  
 -	dev->current_state = 4;		/* unknown power state */
 +	dev->current_state = PCI_UNKNOWN;	/* unknown power state */
