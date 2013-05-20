@@ -1,22 +1,21 @@
-Return-Path: <michael.neuling@au1.ibm.com>
-Received: from localhost.localdomain (localhost [127.0.0.1])
- by ozlabs.org (Postfix) with ESMTP id F1A502C00EB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2013 09:41:45 +1000 (EST)
-From: Michael Neuling <michael.neuling@au1.ibm.com>
-To: will_schmidt@vnet.ibm.com
-Subject: Re: [PATCH v2 2/4] powerpc/cputable: advertise DSCR support on P7/P7+
-In-reply-to: <1369062258.18289.3.camel@brimstone>
-References: <20130503231933.GA29436@linux.vnet.ibm.com>
- <2889.1367625894@ale.ozlabs.ibm.com>
- <20130504004756.GA3532@linux.vnet.ibm.com>
- <20130504004838.GB3532@linux.vnet.ibm.com>
- <1369062258.18289.3.camel@brimstone>
-Date: Tue, 21 May 2013 09:41:45 +1000
-Message-ID: <2921.1369093305@ale.ozlabs.ibm.com>
-Cc: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
- Steve Munroe <sjmunroe@us.ibm.com>, Peter Bergner <bergner@us.ibm.com>,
- Ryan Arnold <ryanarn@us.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Michael R Meissner <mrmeissn@us.ibm.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 820462C0226
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2013 09:42:15 +1000 (EST)
+Message-ID: <1369093321.6387.24.camel@pasglop>
+Subject: Re: [PATCH 1/2] powerpc/PCI: Use PCI_UNKNOWN for unknown power state
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Date: Tue, 21 May 2013 09:42:01 +1000
+In-Reply-To: <20130520231909.32416.81752.stgit@bhelgaas-glaptop>
+References: <20130520231909.32416.81752.stgit@bhelgaas-glaptop>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linux-pci@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+ Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,99 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Will Schmidt <will_schmidt@vnet.ibm.com> wrote:
+On Mon, 2013-05-20 at 17:19 -0600, Bjorn Helgaas wrote:
+> Previously we initialized dev->current_state to 4 (PCI_D3cold), but I think
+> we wanted PCI_UNKNOWN (5) here based on the comment and the fact that the
+> generic version of this code, pci_setup_device(), uses PCI_UNKNOWN.
+> 
+> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+> ---
 
-> On Fri, 2013-05-03 at 17:48 -0700, Nishanth Aravamudan wrote:
-> > Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
-> > 
-> > diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-> > index ae9f433..a792157 100644
-> > --- a/arch/powerpc/kernel/cputable.c
-> > +++ b/arch/powerpc/kernel/cputable.c
-> > @@ -98,6 +98,7 @@ extern void __restore_cpu_e6500(void);
-> >  				 PPC_FEATURE_SMT | PPC_FEATURE_ICACHE_SNOOP | \
-> >  				 PPC_FEATURE_TRUE_LE | \
-> >  				 PPC_FEATURE_PSERIES_PERFMON_COMPAT)
-> > +#define COMMON_USER2_POWER7	(PPC_FEATURE2_DSCR)
-> >  #define COMMON_USER_POWER8	(COMMON_USER_PPC64 | PPC_FEATURE_ARCH_2_06 |\
-> >  				 PPC_FEATURE_SMT | PPC_FEATURE_ICACHE_SNOOP | \
-> >  				 PPC_FEATURE_TRUE_LE | \
-> > @@ -428,6 +429,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
-> >  		.cpu_name		= "POWER7 (architected)",
-> >  		.cpu_features		= CPU_FTRS_POWER7,
-> >  		.cpu_user_features	= COMMON_USER_POWER7,
-> > +		.cpu_user_features2	= COMMON_USER2_POWER7,
-> >  		.mmu_features		= MMU_FTRS_POWER7,
-> >  		.icache_bsize		= 128,
-> >  		.dcache_bsize		= 128,
-> > @@ -458,6 +460,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
-> >  		.cpu_name		= "POWER7 (raw)",
-> >  		.cpu_features		= CPU_FTRS_POWER7,
-> >  		.cpu_user_features	= COMMON_USER_POWER7,
-> > +		.cpu_user_features2	= COMMON_USER2_POWER7,
-> >  		.mmu_features		= MMU_FTRS_POWER7,
-> >  		.icache_bsize		= 128,
-> >  		.dcache_bsize		= 128,
-> > @@ -475,6 +478,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
-> >  		.cpu_name		= "POWER7+ (raw)",
-> >  		.cpu_features		= CPU_FTRS_POWER7,
-> >  		.cpu_user_features	= COMMON_USER_POWER7,
-> > +		.cpu_user_features	= COMMON_USER2_POWER7,
-> 
-> ^ Oops here, I think.    Please consider applying this on top.
-> Untested, but seems obvious.
-> 
-> Fix a typo in setting COMMON_USER2_POWER7 bits to .cpu_user_features2
-> cpu specs table.
+Ack. Do you send to Linus or should I ?
 
-Nice catch.  Thanks
+Thanks.
 
-Acked-by: Michael Neuling <mikey@neuling.org>
+Cheers,
+Ben.
 
-
+>  arch/powerpc/kernel/pci_of_scan.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> Signed-off-by: Will Schmidt <will_schmidt@vnet.ibm.com>
-> 
-> 
-> diff --git a/arch/powerpc/kernel/cputable.c
-> b/arch/powerpc/kernel/cputable.c
-> index c60bbec..51eecb5 100644
-> --- a/arch/powerpc/kernel/cputable.c
-> +++ b/arch/powerpc/kernel/cputable.c
-> @@ -482,7 +482,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
->                 .cpu_name               = "POWER7+ (raw)",
->                 .cpu_features           = CPU_FTRS_POWER7,
->                 .cpu_user_features      = COMMON_USER_POWER7,
-> -               .cpu_user_features      = COMMON_USER2_POWER7,
-> +               .cpu_user_features2     = COMMON_USER2_POWER7,
->                 .mmu_features           = MMU_FTRS_POWER7,
->                 .icache_bsize           = 128,
->                 .dcache_bsize           = 128,
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> >  		.mmu_features		= MMU_FTRS_POWER7,
-> >  		.icache_bsize		= 128,
-> >  		.dcache_bsize		= 128,
-> > 
-> > _______________________________________________
-> > Linuxppc-dev mailing list
-> > Linuxppc-dev@lists.ozlabs.org
-> > https://lists.ozlabs.org/listinfo/linuxppc-dev
-> > 
-> 
-> 
+> diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
+> index 2a67e9b..d2d407d 100644
+> --- a/arch/powerpc/kernel/pci_of_scan.c
+> +++ b/arch/powerpc/kernel/pci_of_scan.c
+> @@ -165,7 +165,7 @@ struct pci_dev *of_create_pci_dev(struct device_node *node,
+>  	pr_debug("    class: 0x%x\n", dev->class);
+>  	pr_debug("    revision: 0x%x\n", dev->revision);
+>  
+> -	dev->current_state = 4;		/* unknown power state */
+> +	dev->current_state = PCI_UNKNOWN;	/* unknown power state */
+>  	dev->error_state = pci_channel_io_normal;
+>  	dev->dma_mask = 0xffffffff;
+>  
