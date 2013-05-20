@@ -1,26 +1,18 @@
-Return-Path: <mkl@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
- [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 0BB512C00A3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2013 02:06:53 +1000 (EST)
-Message-ID: <519A4A00.8000109@pengutronix.de>
-Date: Mon, 20 May 2013 18:06:24 +0200
-From: Marc Kleine-Budde <mkl@pengutronix.de>
-MIME-Version: 1.0
-To: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH v2] can: flexcan: remove HAVE_CAN_FLEXCAN Kconfig symbol
-References: <1368781157-4646-1-git-send-email-mkl@pengutronix.de>
- <20130517090949.GI8607@S2101-09.ap.freescale.net>
-In-Reply-To: <20130517090949.GI8607@S2101-09.ap.freescale.net>
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="----enig2LNJKRDFSKBTBRHDHOKQV"
-Cc: Arnd Bergmann <arnd@arndb.de>, Sascha Hauer <s.hauer@pengutronix.de>,
- U Bhaskar-B22300 <B22300@freescale.com>, linux-kernel@vger.kernel.org,
- linux-can@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Return-Path: <peterhuewe@gmx.de>
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
+ by ozlabs.org (Postfix) with ESMTP id 1AAD92C00CA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2013 05:34:05 +1000 (EST)
+Received: from mailout-de.gmx.net ([10.1.76.28]) by mrigmx.server.lan
+ (mrigmx002) with ESMTP (Nemesis) id 0MEYeV-1UgvcB46sj-00Fn9c for
+ <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2013 21:34:03 +0200
+From: Peter Huewe <peterhuewe@gmx.de>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH] powerpc/platforms/83xx/mcu_mpc8349emitx: Use
+ module_i2c_driver to register driver
+Date: Mon, 20 May 2013 21:39:09 +0200
+Message-Id: <1369078749-3197-1-git-send-email-peterhuewe@gmx.de>
+Cc: Peter Huewe <peterhuewe@gmx.de>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,60 +22,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
-------enig2LNJKRDFSKBTBRHDHOKQV
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: quoted-printable
+Removing some boilerplate by using module_i2c_driver instead of calling
+register and unregister in the otherwise empty init/exit functions
 
-On 05/17/2013 11:09 AM, Shawn Guo wrote:
-> On Fri, May 17, 2013 at 10:59:17AM +0200, Marc Kleine-Budde wrote:
->> This patch removes the Kconfig symbol HAVE_CAN_FLEXCAN from arch/{arm,=
-powerpc}
->> and allowing compilation unconditionally on all arm and powerpc platfo=
-rms.
->>
->> This brings a bigger compile time coverage and removes the following d=
-ependency
->> warning found by Arnd Bergmann:
->>
->>     warning: (SOC_IMX28 && SOC_IMX25 && SOC_IMX35 && IMX_HAVE_PLATFORM=
-_FLEXCAN &&
->>         SOC_IMX53 && SOC_IMX6Q) selects HAVE_CAN_FLEXCAN
->>     which has unmet direct dependencies (NET && CAN && CAN_DEV)
->>
->> Cc: Arnd Bergmann <arnd@arndb.de>
->> Cc: Shawn Guo <shawn.guo@linaro.org>
->=20
-> Acked-by: Shawn Guo <shawn.guo@linaro.org>
+Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+---
+ arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c | 13 +------------
+ 1 file changed, 1 insertion(+), 12 deletions(-)
 
-Thanks.
-
-An Acked-by by the powerpc people would be fine. However, if nobody
-doesn't object, I'm sending this patch via linux-can and net-next upstrea=
-m.
-
-regards,
-Marc
-
---=20
-Pengutronix e.K.                  | Marc Kleine-Budde           |
-Industrial Linux Solutions        | Phone: +49-231-2826-924     |
-Vertretung West/Dortmund          | Fax:   +49-5121-206917-5555 |
-Amtsgericht Hildesheim, HRA 2686  | http://www.pengutronix.de   |
-
-
-------enig2LNJKRDFSKBTBRHDHOKQV
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iEYEARECAAYFAlGaSgAACgkQjTAFq1RaXHPbDwCgk97qatZ4r84KYI1L6zCJRWrf
-ECcAn0ydqy6yQnEKnxiTWViJ/p+wR2Wt
-=J2Zm
------END PGP SIGNATURE-----
-
-------enig2LNJKRDFSKBTBRHDHOKQV--
+diff --git a/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c b/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
+index 624cb51..4b8ea95 100644
+--- a/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
++++ b/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
+@@ -231,18 +231,7 @@ static struct i2c_driver mcu_driver = {
+ 	.id_table = mcu_ids,
+ };
+ 
+-static int __init mcu_init(void)
+-{
+-	return i2c_add_driver(&mcu_driver);
+-}
+-module_init(mcu_init);
+-
+-static void __exit mcu_exit(void)
+-{
+-	i2c_del_driver(&mcu_driver);
+-}
+-module_exit(mcu_exit);
+-
++module_i2c_driver(mcu_driver);
+ MODULE_DESCRIPTION("Power Management and GPIO expander driver for "
+ 		   "MPC8349E-mITX-compatible MCU");
+ MODULE_AUTHOR("Anton Vorontsov <avorontsov@ru.mvista.com>");
+-- 
+1.8.1.5
