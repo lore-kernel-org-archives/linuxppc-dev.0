@@ -1,37 +1,34 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp09.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 286702C0092
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2013 14:27:51 +1000 (EST)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 21 May 2013 01:25:13 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 06141357804A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2013 14:27:42 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r4K4DRVn23527546
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2013 14:13:28 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r4K4Rewn011340
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2013 14:27:41 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH 1/2] powerpc: use smp_rmb when looking at deposisted
- pgtable to store hash index
-In-Reply-To: <26735.1369012726@ale.ozlabs.ibm.com>
-References: <1368778503-23230-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <26735.1369012726@ale.ozlabs.ibm.com>
-Date: Mon, 20 May 2013 09:57:38 +0530
-Message-ID: <87vc6e9sxx.fsf@linux.vnet.ibm.com>
+Return-Path: <viresh.kumar@linaro.org>
+Received: from mail-oa0-f50.google.com (mail-oa0-f50.google.com
+ [209.85.219.50])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D13702C009D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2013 14:40:58 +1000 (EST)
+Received: by mail-oa0-f50.google.com with SMTP id l20so7175001oag.37
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 May 2013 21:40:56 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, dwg@au1.ibm.com
+In-Reply-To: <CAKohponBfXsy21RTik+jWMukL_VnDNXOL7xmj4sEBF3HEBXqpQ@mail.gmail.com>
+References: <cover.1365079581.git.viresh.kumar@linaro.org>
+ <027e8f1d4ac8de6351115f15a408431558510abb.1365079581.git.viresh.kumar@linaro.org>
+ <CAKohpokGkZ9m0v1QaoXEv1m0mZqY70adWpXf3edQGmZnToRRcg@mail.gmail.com>
+ <CAKohpokpiw3zS32oDL+T09ToOQxc28w=2R2up5T3h3c2Agc0wg@mail.gmail.com>
+ <CAKohpo=SFauMyczEnxO_p_KQVQeznL+0V-FmLDtGmzL1Uv2iuA@mail.gmail.com>
+ <CAKohponBfXsy21RTik+jWMukL_VnDNXOL7xmj4sEBF3HEBXqpQ@mail.gmail.com>
+Date: Mon, 20 May 2013 10:10:56 +0530
+Message-ID: <CAKohpo=DoWB+E-bgWCUVec5Y8wsfEu0V43Pg5mHzqep8yn0_JA@mail.gmail.com>
+Subject: Re: [PATCH 17/18] cpufreq: powerpc: move cpufreq driver to
+ drivers/cpufreq
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ deepthi@linux.vnet.ibm.com
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: robin.randhawa@arm.com, linux-pm@vger.kernel.org, patches@linaro.org,
+ Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org,
+ rjw@sisk.pl, Steve.Bannister@arm.com, Paul Mackerras <paulus@samba.org>,
+ Olof Johansson <olof@lixom.net>, arvind.chauhan@arm.com,
+ linuxppc-dev@lists.ozlabs.org, linaro-kernel@lists.linaro.org,
+ charles.garcia-tobin@arm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,20 +38,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Neuling <mikey@neuling.org> writes:
-
-> Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
+On 13 May 2013 11:34, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 22 April 2013 12:19, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> On 9 April 2013 14:05, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>> On 5 April 2013 12:16, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>>> On 4 April 2013 18:24, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>>>> This patch moves cpufreq driver of powerpc platform to drivers/cpufreq.
+>>>>>
+>>>>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>>>>> Cc: Paul Mackerras <paulus@samba.org>
+>>>>> Cc: Olof Johansson <olof@lixom.net>
+>>>>> Cc: linuxppc-dev@lists.ozlabs.org
+>>>>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>>>> ---
+>>>>> Compile Tested only.
+>>>>>
+>>>>>  arch/powerpc/platforms/Kconfig                     | 31 ----------------------
+>>>>>  arch/powerpc/platforms/pasemi/Makefile             |  1 -
+>>>>>  arch/powerpc/platforms/powermac/Makefile           |  2 --
+>>>>>  drivers/cpufreq/Kconfig.powerpc                    | 26 ++++++++++++++++++
+>>>>>  drivers/cpufreq/Makefile                           |  3 +++
+>>>>>  .../cpufreq.c => drivers/cpufreq/pasemi-cpufreq.c  |  0
+>>>>>  .../cpufreq/pmac32-cpufreq.c                       |  0
+>>>>>  .../cpufreq/pmac64-cpufreq.c                       |  0
+>>>>>  8 files changed, 29 insertions(+), 34 deletions(-)
+>>>>>  rename arch/powerpc/platforms/pasemi/cpufreq.c => drivers/cpufreq/pasemi-cpufreq.c (100%)
+>>>>>  rename arch/powerpc/platforms/powermac/cpufreq_32.c => drivers/cpufreq/pmac32-cpufreq.c (100%)
+>>>>>  rename arch/powerpc/platforms/powermac/cpufreq_64.c => drivers/cpufreq/pmac64-cpufreq.c (100%)
+>>>>
+>>>> Hi Deepthi,
+>>>>
+>>>> Can you help testing this please?
+>>>
+>>> Ping!!
+>>
+>> Ping!!
 >
->> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
->> 
->> We need to use smb_rmb when looking at hpte slot array. Otherwise we could
->> reorder the hpte_slot array load bfore even we marked the pmd trans huge.
+> Hi Benjamin,
 >
-> Does this need to go back into the stable series?
->
+> Hope you are back from your vacations. Can you give it a try now?
 
-No the changes are not yet upstream. hpte_slot_array changes are in the
-THP series. I didn't want to post the entire series again with the 
-above two patches. 
-
--aneesh
+Ping!!
