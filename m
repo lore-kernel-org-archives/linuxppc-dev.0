@@ -1,22 +1,25 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from mail-ie0-x22d.google.com (mail-ie0-x22d.google.com
- [IPv6:2607:f8b0:4001:c03::22d])
+Received: from mail-ob0-x235.google.com (mail-ob0-x235.google.com
+ [IPv6:2607:f8b0:4003:c01::235])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 996622C013B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2013 13:33:39 +1000 (EST)
-Received: by mail-ie0-f173.google.com with SMTP id k5so358458iea.18
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2013 20:33:37 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 7B00E2C0691
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2013 13:35:00 +1000 (EST)
+Received: by mail-ob0-f181.google.com with SMTP id dn14so186602obc.12
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2013 20:34:57 -0700 (PDT)
+Message-ID: <519AEB59.4040105@ozlabs.ru>
+Date: Tue, 21 May 2013 13:34:49 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/3] powerpc/vfio: Enable on pSeries platform
-Date: Tue, 21 May 2013 13:33:11 +1000
-Message-Id: <1369107191-28547-4-git-send-email-aik@ozlabs.ru>
-In-Reply-To: <1369107191-28547-1-git-send-email-aik@ozlabs.ru>
+MIME-Version: 1.0
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH 0/5 v2] VFIO PPC64: add VFIO support on POWERPC64
 References: <1369107191-28547-1-git-send-email-aik@ozlabs.ru>
-Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
- linux-kernel@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <1369107191-28547-1-git-send-email-aik@ozlabs.ru>
+Content-Type: text/plain; charset=KOI8-R
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,79 +29,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The enables VFIO on the pSeries platform, enabling user space
-programs to access PCI devices directly.
+Oops, wrong subject (cut-n-paste) :)
+There are 3 patches, not 5.
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: David Gibson <david@gibson.dropbear.id.au>
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
- arch/powerpc/platforms/pseries/iommu.c |    4 ++++
- drivers/iommu/Kconfig                  |    2 +-
- drivers/vfio/Kconfig                   |    2 +-
- 3 files changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 86ae364..23fc1dc 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -614,6 +614,7 @@ static void pci_dma_bus_setup_pSeries(struct pci_bus *bus)
- 
- 	iommu_table_setparms(pci->phb, dn, tbl);
- 	pci->iommu_table = iommu_init_table(tbl, pci->phb->node);
-+	iommu_register_group(tbl, pci_domain_nr(bus), 0);
- 
- 	/* Divide the rest (1.75GB) among the children */
- 	pci->phb->dma_window_size = 0x80000000ul;
-@@ -658,6 +659,7 @@ static void pci_dma_bus_setup_pSeriesLP(struct pci_bus *bus)
- 				   ppci->phb->node);
- 		iommu_table_setparms_lpar(ppci->phb, pdn, tbl, dma_window);
- 		ppci->iommu_table = iommu_init_table(tbl, ppci->phb->node);
-+		iommu_register_group(tbl, pci_domain_nr(bus), 0);
- 		pr_debug("  created table: %p\n", ppci->iommu_table);
- 	}
- }
-@@ -684,6 +686,7 @@ static void pci_dma_dev_setup_pSeries(struct pci_dev *dev)
- 				   phb->node);
- 		iommu_table_setparms(phb, dn, tbl);
- 		PCI_DN(dn)->iommu_table = iommu_init_table(tbl, phb->node);
-+		iommu_register_group(tbl, pci_domain_nr(phb->bus), 0);
- 		set_iommu_table_base(&dev->dev, PCI_DN(dn)->iommu_table);
- 		return;
- 	}
-@@ -1184,6 +1187,7 @@ static void pci_dma_dev_setup_pSeriesLP(struct pci_dev *dev)
- 				   pci->phb->node);
- 		iommu_table_setparms_lpar(pci->phb, pdn, tbl, dma_window);
- 		pci->iommu_table = iommu_init_table(tbl, pci->phb->node);
-+		iommu_register_group(tbl, pci_domain_nr(pci->phb->bus), 0);
- 		pr_debug("  created table: %p\n", pci->iommu_table);
- 	} else {
- 		pr_debug("  found DMA window, table: %p\n", pci->iommu_table);
-diff --git a/drivers/iommu/Kconfig b/drivers/iommu/Kconfig
-index 3f3abde..01730b2 100644
---- a/drivers/iommu/Kconfig
-+++ b/drivers/iommu/Kconfig
-@@ -263,7 +263,7 @@ config SHMOBILE_IOMMU_L1SIZE
- 
- config SPAPR_TCE_IOMMU
- 	bool "sPAPR TCE IOMMU Support"
--	depends on PPC_POWERNV
-+	depends on PPC_POWERNV || PPC_PSERIES
- 	select IOMMU_API
- 	help
- 	  Enables bits of IOMMU API required by VFIO. The iommu_ops
-diff --git a/drivers/vfio/Kconfig b/drivers/vfio/Kconfig
-index b464687..26b3d9d 100644
---- a/drivers/vfio/Kconfig
-+++ b/drivers/vfio/Kconfig
-@@ -12,7 +12,7 @@ menuconfig VFIO
- 	tristate "VFIO Non-Privileged userspace driver framework"
- 	depends on IOMMU_API
- 	select VFIO_IOMMU_TYPE1 if X86
--	select VFIO_IOMMU_SPAPR_TCE if PPC_POWERNV
-+	select VFIO_IOMMU_SPAPR_TCE if (PPC_POWERNV || PPC_PSERIES)
- 	help
- 	  VFIO provides a framework for secure userspace device drivers.
- 	  See Documentation/vfio.txt for more details.
+On 05/21/2013 01:33 PM, Alexey Kardashevskiy wrote:
+> The series adds support for VFIO on POWERPC in user space (such as QEMU).
+> The in-kernel real mode IOMMU support is added by another series posted
+> separately.
+> 
+> As the first and main aim of this series is the POWERNV platform support,
+> the "Enable on POWERNV platform" patch goes first and introduces an API
+> to be used by the VFIO IOMMU driver. The "Enable on pSeries platform" patch
+> simply registers PHBs in the IOMMU subsystem and expects the API to be present,
+> it enables VFIO support in fully emulated QEMU guests.
+> 
+> The main change is that this series was changed and tested against v3.10-rc1.
+> It also contains some bugfixes which are mentioned (if any) in the patch messages.
+> 
+> Alexey Kardashevskiy (3):
+>   powerpc/vfio: Enable on POWERNV platform
+>   powerpc/vfio: Implement IOMMU driver for VFIO
+>   powerpc/vfio: Enable on pSeries platform
+
+
 -- 
-1.7.10.4
+Alexey
