@@ -1,18 +1,17 @@
 Return-Path: <sebastian.hesselbarth@gmail.com>
-Received: from mail-ea0-x22c.google.com (mail-ea0-x22c.google.com
- [IPv6:2a00:1450:4013:c01::22c])
+Received: from mail-ea0-x233.google.com (mail-ea0-x233.google.com
+ [IPv6:2a00:1450:4013:c01::233])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 662A42C00D5
+ by ozlabs.org (Postfix) with ESMTPS id EA6A32C00C9
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 02:42:22 +1000 (EST)
-Received: by mail-ea0-f172.google.com with SMTP id d10so537167eaj.17
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2013 09:42:18 -0700 (PDT)
+Received: by mail-ea0-f179.google.com with SMTP id z16so532960ead.38
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2013 09:42:19 -0700 (PDT)
 From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-Subject: [PATCH v4 08/12] ARM: orion5x: add gigabit ethernet and mvmdio device
- tree nodes
-Date: Tue, 21 May 2013 18:41:46 +0200
-Message-Id: <1369154510-4927-9-git-send-email-sebastian.hesselbarth@gmail.com>
+Subject: [PATCH v4 09/12] ARM: dove: remove legacy mv643xx_eth setup
+Date: Tue, 21 May 2013 18:41:47 +0200
+Message-Id: <1369154510-4927-10-git-send-email-sebastian.hesselbarth@gmail.com>
 In-Reply-To: <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
 References: <1367854420-8006-1-git-send-email-sebastian.hesselbarth@gmail.com>
  <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
@@ -29,16 +28,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds mv643xx_eth and mvmdio device tree nodes for DT enabled
-Orion5x boards. Phy nodes are also added with reg property set on a
-per-board basis.
+With DT support for mv643xx_eth we do not need legacy platform_data
+based setup for DT enabled boards anymore.
 
 Signed-off-by: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 ---
-Changelog:
-v3->v4:
-- convert to new device tree binding
-
 Cc: David Miller <davem@davemloft.net>
 Cc: Lennert Buytenhek <buytenh@wantstofly.org>
 Cc: Jason Cooper <jason@lakedaemon.net>
@@ -49,73 +43,42 @@ Cc: linux-arm-kernel@lists.infradead.org
 Cc: linuxppc-dev@lists.ozlabs.org
 Cc: linux-kernel@vger.kernel.org
 ---
- .../dts/orion5x-lacie-ethernet-disk-mini-v2.dts    |   17 ++++++++++++
- arch/arm/boot/dts/orion5x.dtsi                     |   29 ++++++++++++++++++++
- 2 files changed, 46 insertions(+)
+ arch/arm/mach-dove/board-dt.c |    9 ---------
+ 1 file changed, 9 deletions(-)
 
-diff --git a/arch/arm/boot/dts/orion5x-lacie-ethernet-disk-mini-v2.dts b/arch/arm/boot/dts/orion5x-lacie-ethernet-disk-mini-v2.dts
-index 0077fc8..c7e2efd 100644
---- a/arch/arm/boot/dts/orion5x-lacie-ethernet-disk-mini-v2.dts
-+++ b/arch/arm/boot/dts/orion5x-lacie-ethernet-disk-mini-v2.dts
-@@ -53,3 +53,20 @@
- 		};
- 	};
- };
-+
-+&mdio {
-+	status = "okay";
-+
-+	&ethphy: ethernet-phy {
-+		device-type = "ethernet-phy";
-+		reg = <8>;
-+	};
-+};
-+
-+&eth {
-+	status = "okay";
-+
-+	ethernet-port@0 {
-+		phy-handle = <&ethphy>;
-+	};
-+};
-diff --git a/arch/arm/boot/dts/orion5x.dtsi b/arch/arm/boot/dts/orion5x.dtsi
-index 892c64e..6fe45d5 100644
---- a/arch/arm/boot/dts/orion5x.dtsi
-+++ b/arch/arm/boot/dts/orion5x.dtsi
-@@ -132,5 +132,34 @@
- 			interrupts = <28>;
- 			status = "okay";
- 		};
-+
-+		mdio: mdio-bus@72004 {
-+			compatible = "marvell,orion-mdio";
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0x72004 0x84>;
-+			interrupts = <22>;
-+			status = "disabled";
-+
-+			/* add phy nodes in board file */
-+		};
-+
-+		eth: ethernet-controller@72000 {
-+			compatible = "marvell,orion-eth";
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0x72000 0x4000>;
-+			marvell,tx-checksum-limit = <1600>;
-+			status = "disabled";
-+
-+			ethernet-port@0 {
-+				device_type = "network";
-+				compatible = "marvell,orion-eth-port";
-+				reg = <0>;
-+				/* overwrite MAC address in bootloader */
-+				local-mac-address = [00 00 00 00 00 00];
-+				/* set phy-handle property in board file */
-+			};
-+		};
- 	};
- };
+diff --git a/arch/arm/mach-dove/board-dt.c b/arch/arm/mach-dove/board-dt.c
+index 0b14280..048e942 100644
+--- a/arch/arm/mach-dove/board-dt.c
++++ b/arch/arm/mach-dove/board-dt.c
+@@ -34,10 +34,6 @@ static void __init dove_legacy_clk_init(void)
+ 	clkspec.np = np;
+ 	clkspec.args_count = 1;
+ 
+-	clkspec.args[0] = CLOCK_GATING_BIT_GBE;
+-	orion_clkdev_add(NULL, "mv643xx_eth_port.0",
+-			 of_clk_get_from_provider(&clkspec));
+-
+ 	clkspec.args[0] = CLOCK_GATING_BIT_PCIE0;
+ 	orion_clkdev_add("0", "pcie",
+ 			 of_clk_get_from_provider(&clkspec));
+@@ -53,10 +49,6 @@ static void __init dove_of_clk_init(void)
+ 	dove_legacy_clk_init();
+ }
+ 
+-static struct mv643xx_eth_platform_data dove_dt_ge00_data = {
+-	.phy_addr = MV643XX_ETH_PHY_ADDR_DEFAULT,
+-};
+-
+ static void __init dove_dt_init(void)
+ {
+ 	pr_info("Dove 88AP510 SoC\n");
+@@ -70,7 +62,6 @@ static void __init dove_dt_init(void)
+ 	dove_of_clk_init();
+ 
+ 	/* Internal devices not ported to DT yet */
+-	dove_ge00_init(&dove_dt_ge00_data);
+ 	dove_pcie_init(1, 1);
+ 
+ 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
 -- 
 1.7.10.4
