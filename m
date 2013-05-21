@@ -1,18 +1,25 @@
-Return-Path: <agordeev@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 5CEC72C00AB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 00:45:02 +1000 (EST)
-Date: Tue, 21 May 2013 16:45:49 +0200
-From: Alexander Gordeev <agordeev@redhat.com>
-To: Mike Qiu <qiudayu@linux.vnet.ibm.com>
-Subject: Re: [PATCH 0/3] Enable multiple MSI feature in pSeries
-Message-ID: <20130521144548.GB21632@dhcp-26-207.brq.redhat.com>
-References: <1358235536-32741-1-git-send-email-qiudayu@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1358235536-32741-1-git-send-email-qiudayu@linux.vnet.ibm.com>
-Cc: tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Return-Path: <sebastian.hesselbarth@gmail.com>
+Received: from mail-ea0-x22e.google.com (mail-ea0-x22e.google.com
+ [IPv6:2a00:1450:4013:c01::22e])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 17D952C00B9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 02:42:18 +1000 (EST)
+Received: by mail-ea0-f174.google.com with SMTP id z7so553287eaf.33
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2013 09:42:14 -0700 (PDT)
+From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Subject: [PATCH v4 01/12] net: mv643xx_eth: use phy_disconnect instead of
+ phy_detach
+Date: Tue, 21 May 2013 18:41:39 +0200
+Message-Id: <1369154510-4927-2-git-send-email-sebastian.hesselbarth@gmail.com>
+In-Reply-To: <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
+References: <1367854420-8006-1-git-send-email-sebastian.hesselbarth@gmail.com>
+ <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
+Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ David Miller <davem@davemloft.net>, Lennert Buytenhek <buytenh@wantstofly.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,32 +29,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 15, 2013 at 03:38:53PM +0800, Mike Qiu wrote:
-> The test results is shown by 'cat /proc/interrups':
->           CPU0       CPU1       CPU2       CPU3       
-> 16:     240458     261601     226310     200425      XICS Level     IPI
-> 17:          0          0          0          0      XICS Level     RAS_EPOW
-> 18:         10          0          3          2      XICS Level     hvc_console
-> 19:     122182      28481      28527      28864      XICS Level     ibmvscsi
-> 20:        506    7388226        108        118      XICS Level     eth0
-> 21:          6          5          5          5      XICS Level     host1-0
-> 22:        817        814        816        813      XICS Level     host1-1
+Using a separated mdio bus driver with mvmdio, phy_detach on network device
+removal will not stop the phy and finally lead to NULL pointer dereference
+in mvmdio due to non-existent network device. Use phy_disconnect instead
+to properly stop phy device from accessing network device prior removal of
+the network device.
 
-Hi Mike,
+Signed-off-by: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+---
+Note: I observed this behavior when removing a modular mv643xx_eth driver
+after attaching it to a phy handled by (also modular) mvmdio. The mvmdio
+conversion has been done in
 
-I am curious if pSeries firmware allows changing affinity masks independently
-for multiple MSIs? I.e. in your example, would it be possible to assign IRQ21
-and IRQ22 to different CPUs?
+commit c3a07134e6aa5b93a37f72ffa3d11fadf72bf757
+ ("mv643xx_eth: convert to use the Marvell Orion MDIO driver")
 
-Thanks!
+and should go back any -stable version with that commit (propably only 3.9)
 
-> LOC:     398077     316725     231882     203049   Local timer interrupts
-> SPU:       1659        919        961        903   Spurious interrupts
-> CNT:          0          0          0          0   Performance
-> monitoring interrupts
-> MCE:          0          0          0          0   Machine check exceptions
+@David: I am not sure if the above description is sufficient for a -stable
+patch, if you need more, like actual kernel failure, I am sure I can reproduce
+it.
 
+Cc: David Miller <davem@davemloft.net>
+Cc: Lennert Buytenhek <buytenh@wantstofly.org>
+Cc: Jason Cooper <jason@lakedaemon.net>
+Cc: Andrew Lunn <andrew@lunn.ch>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: netdev@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org
+---
+ drivers/net/ethernet/marvell/mv643xx_eth.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/marvell/mv643xx_eth.c b/drivers/net/ethernet/marvell/mv643xx_eth.c
+index d0afeea..ef3454c 100644
+--- a/drivers/net/ethernet/marvell/mv643xx_eth.c
++++ b/drivers/net/ethernet/marvell/mv643xx_eth.c
+@@ -2805,7 +2805,7 @@ static int mv643xx_eth_remove(struct platform_device *pdev)
+ 
+ 	unregister_netdev(mp->dev);
+ 	if (mp->phy != NULL)
+-		phy_detach(mp->phy);
++		phy_disconnect(mp->phy);
+ 	cancel_work_sync(&mp->tx_timeout_task);
+ 
+ 	if (!IS_ERR(mp->clk))
 -- 
-Regards,
-Alexander Gordeev
-agordeev@redhat.com
+1.7.10.4
