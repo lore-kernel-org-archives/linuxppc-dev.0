@@ -1,24 +1,15 @@
-Return-Path: <sebastian.hesselbarth@gmail.com>
-Received: from mail-ea0-x22f.google.com (mail-ea0-x22f.google.com
- [IPv6:2a00:1450:4013:c01::22f])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EA5A82C00CA
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 02:42:24 +1000 (EST)
-Received: by mail-ea0-f175.google.com with SMTP id h10so536999eaj.20
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2013 09:42:21 -0700 (PDT)
-From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-Subject: [PATCH v4 12/12] ARM: orion5x: remove legacy mv643xx_eth board setup
-Date: Tue, 21 May 2013 18:41:50 +0200
-Message-Id: <1369154510-4927-13-git-send-email-sebastian.hesselbarth@gmail.com>
-In-Reply-To: <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
-References: <1367854420-8006-1-git-send-email-sebastian.hesselbarth@gmail.com>
- <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
-Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- David Miller <davem@davemloft.net>, Lennert Buytenhek <buytenh@wantstofly.org>
+Return-Path: <wsa@the-dreams.de>
+Received: from pokefinder.org (sauhun.de [89.238.76.85])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 929B82C00B0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 04:44:30 +1000 (EST)
+From: Wolfram Sang <wsa@the-dreams.de>
+To: linux-i2c@vger.kernel.org
+Subject: [PATCH 1/2] drivers/macintosh: Remove obsolete cleanup for clientdata
+Date: Tue, 21 May 2013 20:45:40 +0200
+Message-Id: <1369161945-26671-1-git-send-email-wsa@the-dreams.de>
+Cc: linuxppc-dev@lists.ozlabs.org, Wolfram Sang <wsa@the-dreams.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,59 +19,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With DT support for mv643xx_eth we do not need legacy platform_data
-based setup for DT enabled boards. This patch removes eth setup
-for all orion5x DT board files.
+A few new i2c-drivers came into the kernel which clear the clientdata-pointer
+on exit or error. This is obsolete meanwhile, the core will do it.
 
-Signed-off-by: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
 ---
-Cc: David Miller <davem@davemloft.net>
-Cc: Lennert Buytenhek <buytenh@wantstofly.org>
-Cc: Jason Cooper <jason@lakedaemon.net>
-Cc: Andrew Lunn <andrew@lunn.ch>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: netdev@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org
----
- arch/arm/mach-orion5x/edmini_v2-setup.c |   10 ----------
- 1 file changed, 10 deletions(-)
+ drivers/macintosh/windfarm_smu_sat.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/arch/arm/mach-orion5x/edmini_v2-setup.c b/arch/arm/mach-orion5x/edmini_v2-setup.c
-index 1476155..d9de926 100644
---- a/arch/arm/mach-orion5x/edmini_v2-setup.c
-+++ b/arch/arm/mach-orion5x/edmini_v2-setup.c
-@@ -24,7 +24,6 @@
- #include <linux/pci.h>
- #include <linux/irq.h>
- #include <linux/mtd/physmap.h>
--#include <linux/mv643xx_eth.h>
- #include <linux/leds.h>
- #include <linux/gpio_keys.h>
- #include <linux/input.h>
-@@ -96,14 +95,6 @@ static struct platform_device edmini_v2_nor_flash = {
- };
+diff --git a/drivers/macintosh/windfarm_smu_sat.c b/drivers/macintosh/windfarm_smu_sat.c
+index d87f5ee..ad6223e 100644
+--- a/drivers/macintosh/windfarm_smu_sat.c
++++ b/drivers/macintosh/windfarm_smu_sat.c
+@@ -343,7 +343,6 @@ static int wf_sat_remove(struct i2c_client *client)
+ 		wf_unregister_sensor(&sens->sens);
+ 	}
+ 	sat->i2c = NULL;
+-	i2c_set_clientdata(client, NULL);
+ 	kref_put(&sat->ref, wf_sat_release);
  
- /*****************************************************************************
-- * Ethernet
-- ****************************************************************************/
--
--static struct mv643xx_eth_platform_data edmini_v2_eth_data = {
--	.phy_addr	= 8,
--};
--
--/*****************************************************************************
-  * RTC 5C372a on I2C bus
-  ****************************************************************************/
- 
-@@ -152,7 +143,6 @@ void __init edmini_v2_init(void)
- 	 * Configure peripherals.
- 	 */
- 	orion5x_ehci0_init();
--	orion5x_eth_init(&edmini_v2_eth_data);
- 
- 	mvebu_mbus_add_window("devbus-boot", EDMINI_V2_NOR_BOOT_BASE,
- 			      EDMINI_V2_NOR_BOOT_SIZE);
+ 	return 0;
 -- 
 1.7.10.4
