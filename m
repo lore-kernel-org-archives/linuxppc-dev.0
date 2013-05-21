@@ -1,18 +1,17 @@
 Return-Path: <sebastian.hesselbarth@gmail.com>
-Received: from mail-ea0-x22e.google.com (mail-ea0-x22e.google.com
- [IPv6:2a00:1450:4013:c01::22e])
+Received: from mail-ee0-f53.google.com (mail-ee0-f53.google.com [74.125.83.53])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4F8C22C00A4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 02:42:19 +1000 (EST)
-Received: by mail-ea0-f174.google.com with SMTP id z7so553306eaf.33
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2013 09:42:16 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 356272C00C3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 02:42:20 +1000 (EST)
+Received: by mail-ee0-f53.google.com with SMTP id c1so559653eek.40
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2013 09:42:17 -0700 (PDT)
 From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-Subject: [PATCH v4 04/12] net: mv643xx_eth: use of_phy_connect if phy_node
- present
-Date: Tue, 21 May 2013 18:41:42 +0200
-Message-Id: <1369154510-4927-5-git-send-email-sebastian.hesselbarth@gmail.com>
+Subject: [PATCH v4 06/12] ARM: dove: add gigabit ethernet and mvmdio device
+ tree nodes
+Date: Tue, 21 May 2013 18:41:44 +0200
+Message-Id: <1369154510-4927-7-git-send-email-sebastian.hesselbarth@gmail.com>
 In-Reply-To: <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
 References: <1367854420-8006-1-git-send-email-sebastian.hesselbarth@gmail.com>
  <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
@@ -29,11 +28,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This connects to a phy node passed to the port device instead of probing
-the phy by phy_addr.
+This patch adds orion-eth and mvmdio device tree nodes for DT enabled
+Dove boards. As there is only one ethernet controller on Dove, a default
+phy node is also added with a note to set its reg property on a per-board
+basis.
 
 Signed-off-by: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 ---
+Changelog:
+v3->v4:
+- convert to new device tree binding
+
 Cc: David Miller <davem@davemloft.net>
 Cc: Lennert Buytenhek <buytenh@wantstofly.org>
 Cc: Jason Cooper <jason@lakedaemon.net>
@@ -42,57 +47,74 @@ Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: netdev@vger.kernel.org
 Cc: linux-arm-kernel@lists.infradead.org
 Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org       
+Cc: linux-kernel@vger.kernel.org
 ---
- drivers/net/ethernet/marvell/mv643xx_eth.c |   25 ++++++++++++++++++-------
- 1 file changed, 18 insertions(+), 7 deletions(-)
+ arch/arm/boot/dts/dove-cubox.dts |    7 +++++++
+ arch/arm/boot/dts/dove.dtsi      |   35 +++++++++++++++++++++++++++++++++++
+ 2 files changed, 42 insertions(+)
 
-diff --git a/drivers/net/ethernet/marvell/mv643xx_eth.c b/drivers/net/ethernet/marvell/mv643xx_eth.c
-index e658ebd..0f5c3c2 100644
---- a/drivers/net/ethernet/marvell/mv643xx_eth.c
-+++ b/drivers/net/ethernet/marvell/mv643xx_eth.c
-@@ -60,6 +60,7 @@
- #include <linux/types.h>
- #include <linux/slab.h>
- #include <linux/clk.h>
-+#include <linux/of_mdio.h>
+diff --git a/arch/arm/boot/dts/dove-cubox.dts b/arch/arm/boot/dts/dove-cubox.dts
+index 7e3065a..02618fa 100644
+--- a/arch/arm/boot/dts/dove-cubox.dts
++++ b/arch/arm/boot/dts/dove-cubox.dts
+@@ -49,6 +49,13 @@
+ &uart0 { status = "okay"; };
+ &sata0 { status = "okay"; };
+ &i2c0 { status = "okay"; };
++&mdio { status = "okay"; };
++&eth { status = "okay"; };
++
++&ethphy {
++	compatible = "marvell,88e1310";
++	reg = <1>;
++};
  
- static char mv643xx_eth_driver_name[] = "mv643xx_eth";
- static char mv643xx_eth_driver_version[] = "1.4";
-@@ -2715,17 +2716,27 @@ static int mv643xx_eth_probe(struct platform_device *pdev)
- 	netif_set_real_num_tx_queues(dev, mp->txq_count);
- 	netif_set_real_num_rx_queues(dev, mp->rxq_count);
- 
--	if (pd->phy_addr != MV643XX_ETH_PHY_NONE) {
-+	err = 0;
-+	if (pd->phy_node) {
-+		mp->phy = of_phy_connect(mp->dev, pd->phy_node,
-+					 mv643xx_eth_adjust_link, 0,
-+					 PHY_INTERFACE_MODE_GMII);
-+		if (!mp->phy)
-+			err = -ENODEV;
-+	} else if (pd->phy_addr != MV643XX_ETH_PHY_NONE) {
- 		mp->phy = phy_scan(mp, pd->phy_addr);
- 
--		if (IS_ERR(mp->phy)) {
-+		if (IS_ERR(mp->phy))
- 			err = PTR_ERR(mp->phy);
--			if (err == -ENODEV)
--				err = -EPROBE_DEFER;
--			goto out;
--		}
--		phy_init(mp, pd->speed, pd->duplex);
-+		else
-+			phy_init(mp, pd->speed, pd->duplex);
- 	}
-+	if (err == -ENODEV) {
-+		err = -EPROBE_DEFER;
-+		goto out;
-+	}
-+	if (err)
-+		goto out;
- 
- 	SET_ETHTOOL_OPS(dev, &mv643xx_eth_ethtool_ops);
- 
+ &sdio0 {
+ 	status = "okay";
+diff --git a/arch/arm/boot/dts/dove.dtsi b/arch/arm/boot/dts/dove.dtsi
+index 6cab468..8612658 100644
+--- a/arch/arm/boot/dts/dove.dtsi
++++ b/arch/arm/boot/dts/dove.dtsi
+@@ -258,5 +258,40 @@
+ 				dmacap,xor;
+ 			};
+ 		};
++
++		mdio: mdio-bus@72004 {
++			compatible = "marvell,orion-mdio";
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x72004 0x84>;
++			interrupts = <30>;
++			clocks = <&gate_clk 2>;
++			status = "disabled";
++
++			ethphy: ethernet-phy {
++				device-type = "ethernet-phy";
++				/* set phy address in board file */
++			};
++		};
++
++		eth: ethernet-controller@72000 {
++			compatible = "marvell,orion-eth";
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x72000 0x4000>;
++			clocks = <&gate_clk 2>;
++			marvell,tx-checksum-limit = <1600>;
++			status = "disabled";
++
++			ethernet-port@0 {
++				device_type = "network";
++				compatible = "marvell,orion-eth-port";
++				reg = <0>;
++				interrupts = <29>;
++				/* overwrite MAC address in bootloader */
++				local-mac-address = [00 00 00 00 00 00];
++				phy-handle = <&ethphy>;
++			};
++		};
+ 	};
+ };
 -- 
 1.7.10.4
