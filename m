@@ -1,21 +1,33 @@
-Return-Path: <B07421@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 35EA82C0091
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 07:44:14 +1000 (EST)
-Date: Tue, 21 May 2013 16:44:03 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: SATA hang on 8315E triggered by heavy flash write?
-To: Anthony Foiani <tkil@scrye.com>
-In-Reply-To: <gsj1oirve.fsf@dworkin.scrye.com> (from tkil@scrye.com on Wed
- May 15 03:12:21 2013)
-Message-ID: <1369172643.1374.15@scott-Lenovo-G560>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: linuxppc-dev@lists.ozlabs.org, Shaohui.Xie@freescale.com
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E22B22C009D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 07:54:12 +1000 (EST)
+Received: from /spool/local
+ by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
+ Tue, 21 May 2013 17:54:08 -0400
+Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 6AE2D38C8045
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2013 17:54:06 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r4LLs6cv323478
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2013 17:54:06 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r4LLs6HD026221
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2013 18:54:06 -0300
+Message-Id: <201305212154.r4LLs4Zu026123@d01av03.pok.ibm.com>
+Subject: [PATCH 1/1] powerpc: Force 32 bit MSIs on systems lacking firmware
+ support
+To: benh@kernel.crashing.org
+From: Brian King <brking@linux.vnet.ibm.com>
+Date: Tue, 21 May 2013 16:54:04 -0500
+Cc: klebers@linux.vnet.ibm.com, brking@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,78 +37,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/15/2013 03:12:21 AM, Anthony Foiani wrote:
-> At this point, /dev/sda is pretty much unusable, and I have to do at
-> least a reboot to recover.  (I don't recall if I had to do a power
-> cycle at this point, though.)
->=20
-> I suspect that it is related to errata eLBC-A001 (from MPC8315E Chip
-> Errata, Rev. 3, 09/2011):
->=20
->   eLBC-A001:
->=20
->   Simultaneous FCM and GPCM or UPM operation may erroneously trigger
->   bus monitor timeout
->=20
->   Description: Devices: MPC8315E, MPC8314E
->   When the FCM is in the middle of a long transaction, such as NAND
->   erase or write, another transaction on the GPCM or UPM triggers the
->   bus monitor to start immediately for the GPCM or UPM, even though
->   the GPCM or UPM is still waiting for the FCM to finish and has not
->   yet started its transaction. If the bus monitor timeout value is not
->   programmed for a sufficiently large value, the local bus monitor may
->   time out. This timeout corrupts the current NAND Flash operation and
->   terminate the GPCM or UPM operation.
->=20
->   Impact: Local bus monitor may time out unexpectedly and corrupt the
->   NAND transaction.
->=20
->   Workaround: Set the local bus monitor timeout value to the maximum
->   by setting LBCR[BMT] =3D 0 and LBCR[BMTPS] =3D 0xF.
->=20
->   Fix plan: No plans to fix
->=20
-> But it seems that erratum is already fixed:
->=20
->   http://patchwork.ozlabs.org/patch/96339/
->   (git patch d08e44570e)
->=20
-> Am I reading that correctly?
 
-Yes, that erratum has been worked around.
+Recent commit e61133dda480062d221f09e4fc18f66763f8ecd0 added support
+for a new firmware feature to force an adapter to use 32 bit MSIs.
+However, this firmware is not available for all systems. The hack below
+allows devices needing 32 bit MSIs to work on these systems as well.
+It is careful to only enable this on Gen2 slots, which should limit
+this to configurations where this hack is needed and tested to work.
 
-> (I'm already writing only one flash
-> sector at a time, but it might be that even a single 0x10000-byte
-> sector takes long enough to trigger the issue.)
+Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+---
 
-I don't think this erratum is relevant.  Unlike NAND, NOR flash does =20
-not involve holding the localbus for extended periods of time.  I also =20
-don't see how it would interact with SATA, which is separate from the =20
-localbus.  Are you seeing any errors on the localbus, or just on SATA?
+ arch/powerpc/platforms/pseries/msi.c |   31 +++++++++++++++++++++++++++----
+ 1 file changed, 27 insertions(+), 4 deletions(-)
 
-> I also verified that
-> I have the relevant property in my device tree:
->=20
->   localbus@e0005000 {
->     ...
->     compatible =3D "fsl,mpc8315-elbc", "fsl,elbc", "simple-bus";
->=20
-> So, my questions are:
->=20
-> 1. Is anyone else seeing something like this?
->=20
-> 2. Is there an obvious way for our code to detect that we're in the
->    middle of error recovery, so we can not write to the disk until
->    recovery is complete?
->=20
-> 3. Is there any chance that the 1.5Gbps limiting code might have
->    exacerbated the problems?
->=20
-> 4. Should I open a support request with Freescale, or if someone from
->    Freescale is already reading this, could you look to see if anyone
->    else has reported it?
-
-Hopefully Shaohui (our SATA person) can answer these.  If you don't get =20
-an answer, go ahead and open an official support request.
-
--Scott=
+diff -puN arch/powerpc/platforms/pseries/msi.c~powerpc_32bit_msi_hack_on_papr arch/powerpc/platforms/pseries/msi.c
+--- linux/arch/powerpc/platforms/pseries/msi.c~powerpc_32bit_msi_hack_on_papr	2013-05-15 10:44:46.000000000 -0500
++++ linux-bjking1/arch/powerpc/platforms/pseries/msi.c	2013-05-20 15:24:52.000000000 -0500
+@@ -397,10 +397,11 @@ static int check_msix_entries(struct pci
+ static int rtas_setup_msi_irqs(struct pci_dev *pdev, int nvec_in, int type)
+ {
+ 	struct pci_dn *pdn;
+-	int hwirq, virq, i, rc;
++	int hwirq, virq, i, rc = -1;
+ 	struct msi_desc *entry;
+ 	struct msi_msg msg;
+ 	int nvec = nvec_in;
++	int use_32bit_msi_hack = 0;
+ 
+ 	pdn = get_pdn(pdev);
+ 	if (!pdn)
+@@ -428,15 +429,37 @@ static int rtas_setup_msi_irqs(struct pc
+ 	 */
+ again:
+ 	if (type == PCI_CAP_ID_MSI) {
+-		if (pdn->force_32bit_msi)
++		if (pdn->force_32bit_msi) {
+ 			rc = rtas_change_msi(pdn, RTAS_CHANGE_32MSI_FN, nvec);
+-		else
++			if (rc < 0) {
++				/* We only want to run the 32 bit MSI hack below if
++				 the max bus speed is Gen2 speed. */
++				if (pdev->bus->max_bus_speed != PCIE_SPEED_5_0GT)
++					return rc;
++
++				use_32bit_msi_hack = 1;
++			}
++		}
++
++		if (rc < 0)
+ 			rc = rtas_change_msi(pdn, RTAS_CHANGE_MSI_FN, nvec);
+ 
+-		if (rc < 0 && !pdn->force_32bit_msi) {
++		if (rc < 0) {
+ 			pr_debug("rtas_msi: trying the old firmware call.\n");
+ 			rc = rtas_change_msi(pdn, RTAS_CHANGE_FN, nvec);
+ 		}
++
++		if (use_32bit_msi_hack && rc > 0) {
++			int pos;
++			u32 addr_hi, addr_lo;
++
++			dev_info(&pdev->dev, "rtas_msi: No 32 bit MSI firmware support, forcing 32 bit MSI\n");
++			pos = pci_find_capability(pdev, PCI_CAP_ID_MSI);
++			pci_read_config_dword(pdev, pos + PCI_MSI_ADDRESS_HI, &addr_hi);
++			addr_lo = 0xffff0000 | ((addr_hi >> (48 - 32)) << 4);
++			pci_write_config_dword(pdev, pos + PCI_MSI_ADDRESS_LO, addr_lo);
++			pci_write_config_dword(pdev, pos + PCI_MSI_ADDRESS_HI, 0);
++		}
+ 	} else
+ 		rc = rtas_change_msi(pdn, RTAS_CHANGE_MSIX_FN, nvec);
+ 
+_
