@@ -1,16 +1,15 @@
 Return-Path: <haokexin@gmail.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B7FB92C00A7
+ by ozlabs.org (Postfix) with ESMTPS id 33D5A2C00BD
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2013 22:05:52 +1000 (EST)
 From: Kevin Hao <haokexin@gmail.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 1/3] powerpc/mpc85xx: remove the unneeded pci init functions
- for corenet ds board
-Date: Tue, 21 May 2013 20:04:58 +0800
-Message-ID: <1369137900-5748-2-git-send-email-haokexin@gmail.com>
+Subject: [PATCH 2/3] powerpc/fsl-pci: fix the unreachable warning message
+Date: Tue, 21 May 2013 20:04:59 +0800
+Message-ID: <1369137900-5748-3-git-send-email-haokexin@gmail.com>
 In-Reply-To: <1369137900-5748-1-git-send-email-haokexin@gmail.com>
 References: <1369137900-5748-1-git-send-email-haokexin@gmail.com>
 MIME-Version: 1.0
@@ -25,35 +24,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The function pci_devs_phb_init is invoked more earlier than we really
-probe the pci controller, so it does nothing at all. And we also don't
-need the pci_dn stuff for the fsl powerpc64 boards, just remove it.
-
-It also seems that we don't support ISA on all the current corenet ds
-boards. So picking a primary bus seems useless, remove that function
-too.
+The (1ull << mem_log) is never greater than mem unless mem_log++;
 
 Signed-off-by: Kevin Hao <haokexin@gmail.com>
 ---
- arch/powerpc/platforms/85xx/corenet_ds.c | 6 ------
- 1 file changed, 6 deletions(-)
+ arch/powerpc/sysdev/fsl_pci.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/85xx/corenet_ds.c b/arch/powerpc/platforms/85xx/corenet_ds.c
-index c59c617..aa3690b 100644
---- a/arch/powerpc/platforms/85xx/corenet_ds.c
-+++ b/arch/powerpc/platforms/85xx/corenet_ds.c
-@@ -53,12 +53,6 @@ void __init corenet_ds_setup_arch(void)
- {
- 	mpc85xx_smp_init();
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 028ac1f..3833c8f 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -305,10 +305,10 @@ static void setup_pci_atmu(struct pci_controller *hose)
+ 	if (early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP)) {
+ 		/* Size window to exact size if power-of-two or one size up */
+ 		if ((1ull << mem_log) != mem) {
++			mem_log++;
+ 			if ((1ull << mem_log) > mem)
+ 				pr_info("%s: Setting PCI inbound window "
+ 					"greater than memory size\n", name);
+-			mem_log++;
+ 		}
  
--#if defined(CONFIG_PCI) && defined(CONFIG_PPC64)
--	pci_devs_phb_init();
--#endif
--
--	fsl_pci_assign_primary();
--
- 	swiotlb_detect_4g();
- 
- 	pr_info("%s board from Freescale Semiconductor\n", ppc_md.name);
+ 		piwar |= ((mem_log - 1) & PIWAR_SZ_MASK);
 -- 
 1.8.1.4
