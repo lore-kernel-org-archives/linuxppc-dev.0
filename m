@@ -1,33 +1,23 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E22B22C009D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 07:54:12 +1000 (EST)
-Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
- Tue, 21 May 2013 17:54:08 -0400
-Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 6AE2D38C8045
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2013 17:54:06 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r4LLs6cv323478
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2013 17:54:06 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r4LLs6HD026221
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2013 18:54:06 -0300
-Message-Id: <201305212154.r4LLs4Zu026123@d01av03.pok.ibm.com>
-Subject: [PATCH 1/1] powerpc: Force 32 bit MSIs on systems lacking firmware
- support
-To: benh@kernel.crashing.org
-From: Brian King <brking@linux.vnet.ibm.com>
-Date: Tue, 21 May 2013 16:54:04 -0500
-Cc: klebers@linux.vnet.ibm.com, brking@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <andrew@lunn.ch>
+Received: from londo.lunn.ch (londo.lunn.ch [IPv6:2001:1620:f9f:1000::1])
+ by ozlabs.org (Postfix) with ESMTP id 45B102C00C8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 04:08:03 +1000 (EST)
+Date: Tue, 21 May 2013 19:48:49 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Subject: Re: [PATCH v4 06/12] ARM: dove: add gigabit ethernet and mvmdio
+ device tree nodes
+Message-ID: <20130521174849.GL26249@lunn.ch>
+References: <1367854420-8006-1-git-send-email-sebastian.hesselbarth@gmail.com>
+ <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
+ <1369154510-4927-7-git-send-email-sebastian.hesselbarth@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1369154510-4927-7-git-send-email-sebastian.hesselbarth@gmail.com>
+Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ David Miller <davem@davemloft.net>, Lennert Buytenhek <buytenh@wantstofly.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,75 +27,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, May 21, 2013 at 06:41:44PM +0200, Sebastian Hesselbarth wrote:
+> This patch adds orion-eth and mvmdio device tree nodes for DT enabled
+> Dove boards. As there is only one ethernet controller on Dove, a default
+> phy node is also added with a note to set its reg property on a per-board
+> basis.
+> 
+> Signed-off-by: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+> ---
+> Changelog:
+> v3->v4:
+> - convert to new device tree binding
+> 
+> Cc: David Miller <davem@davemloft.net>
+> Cc: Lennert Buytenhek <buytenh@wantstofly.org>
+> Cc: Jason Cooper <jason@lakedaemon.net>
+> Cc: Andrew Lunn <andrew@lunn.ch>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: netdev@vger.kernel.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: linux-kernel@vger.kernel.org
+> ---
+>  arch/arm/boot/dts/dove-cubox.dts |    7 +++++++
+>  arch/arm/boot/dts/dove.dtsi      |   35 +++++++++++++++++++++++++++++++++++
+>  2 files changed, 42 insertions(+)
+> 
+> diff --git a/arch/arm/boot/dts/dove-cubox.dts b/arch/arm/boot/dts/dove-cubox.dts
+> index 7e3065a..02618fa 100644
+> --- a/arch/arm/boot/dts/dove-cubox.dts
+> +++ b/arch/arm/boot/dts/dove-cubox.dts
+> @@ -49,6 +49,13 @@
+>  &uart0 { status = "okay"; };
+>  &sata0 { status = "okay"; };
+>  &i2c0 { status = "okay"; };
+> +&mdio { status = "okay"; };
+> +&eth { status = "okay"; };
+> +
+> +&ethphy {
+> +	compatible = "marvell,88e1310";
+> +	reg = <1>;
+> +};
+>  
+>  &sdio0 {
+>  	status = "okay";
+> diff --git a/arch/arm/boot/dts/dove.dtsi b/arch/arm/boot/dts/dove.dtsi
+> index 6cab468..8612658 100644
+> --- a/arch/arm/boot/dts/dove.dtsi
+> +++ b/arch/arm/boot/dts/dove.dtsi
+> @@ -258,5 +258,40 @@
+>  				dmacap,xor;
+>  			};
+>  		};
+> +
+> +		mdio: mdio-bus@72004 {
+> +			compatible = "marvell,orion-mdio";
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			reg = <0x72004 0x84>;
+> +			interrupts = <30>;
+> +			clocks = <&gate_clk 2>;
+> +			status = "disabled";
+> +
+> +			ethphy: ethernet-phy {
+> +				device-type = "ethernet-phy";
+> +				/* set phy address in board file */
+> +			};
+> +		};
+> +
+> +		eth: ethernet-controller@72000 {
+> +			compatible = "marvell,orion-eth";
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			reg = <0x72000 0x4000>;
+> +			clocks = <&gate_clk 2>;
+> +			marvell,tx-checksum-limit = <1600>;
+> +			status = "disabled";
+> +
+> +			ethernet-port@0 {
+> +				device_type = "network";
+> +				compatible = "marvell,orion-eth-port";
+> +				reg = <0>;
+> +				interrupts = <29>;
+> +				/* overwrite MAC address in bootloader */
+> +				local-mac-address = [00 00 00 00 00 00];
 
-Recent commit e61133dda480062d221f09e4fc18f66763f8ecd0 added support
-for a new firmware feature to force an adapter to use 32 bit MSIs.
-However, this firmware is not available for all systems. The hack below
-allows devices needing 32 bit MSIs to work on these systems as well.
-It is careful to only enable this on Gen2 slots, which should limit
-this to configurations where this hack is needed and tested to work.
+Hi Sebastian
 
-Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
----
+Its probably a good idea to set the local administration bit in this
+MAC address. i.e. first byte is 02.
 
- arch/powerpc/platforms/pseries/msi.c |   31 +++++++++++++++++++++++++++----
- 1 file changed, 27 insertions(+), 4 deletions(-)
-
-diff -puN arch/powerpc/platforms/pseries/msi.c~powerpc_32bit_msi_hack_on_papr arch/powerpc/platforms/pseries/msi.c
---- linux/arch/powerpc/platforms/pseries/msi.c~powerpc_32bit_msi_hack_on_papr	2013-05-15 10:44:46.000000000 -0500
-+++ linux-bjking1/arch/powerpc/platforms/pseries/msi.c	2013-05-20 15:24:52.000000000 -0500
-@@ -397,10 +397,11 @@ static int check_msix_entries(struct pci
- static int rtas_setup_msi_irqs(struct pci_dev *pdev, int nvec_in, int type)
- {
- 	struct pci_dn *pdn;
--	int hwirq, virq, i, rc;
-+	int hwirq, virq, i, rc = -1;
- 	struct msi_desc *entry;
- 	struct msi_msg msg;
- 	int nvec = nvec_in;
-+	int use_32bit_msi_hack = 0;
- 
- 	pdn = get_pdn(pdev);
- 	if (!pdn)
-@@ -428,15 +429,37 @@ static int rtas_setup_msi_irqs(struct pc
- 	 */
- again:
- 	if (type == PCI_CAP_ID_MSI) {
--		if (pdn->force_32bit_msi)
-+		if (pdn->force_32bit_msi) {
- 			rc = rtas_change_msi(pdn, RTAS_CHANGE_32MSI_FN, nvec);
--		else
-+			if (rc < 0) {
-+				/* We only want to run the 32 bit MSI hack below if
-+				 the max bus speed is Gen2 speed. */
-+				if (pdev->bus->max_bus_speed != PCIE_SPEED_5_0GT)
-+					return rc;
-+
-+				use_32bit_msi_hack = 1;
-+			}
-+		}
-+
-+		if (rc < 0)
- 			rc = rtas_change_msi(pdn, RTAS_CHANGE_MSI_FN, nvec);
- 
--		if (rc < 0 && !pdn->force_32bit_msi) {
-+		if (rc < 0) {
- 			pr_debug("rtas_msi: trying the old firmware call.\n");
- 			rc = rtas_change_msi(pdn, RTAS_CHANGE_FN, nvec);
- 		}
-+
-+		if (use_32bit_msi_hack && rc > 0) {
-+			int pos;
-+			u32 addr_hi, addr_lo;
-+
-+			dev_info(&pdev->dev, "rtas_msi: No 32 bit MSI firmware support, forcing 32 bit MSI\n");
-+			pos = pci_find_capability(pdev, PCI_CAP_ID_MSI);
-+			pci_read_config_dword(pdev, pos + PCI_MSI_ADDRESS_HI, &addr_hi);
-+			addr_lo = 0xffff0000 | ((addr_hi >> (48 - 32)) << 4);
-+			pci_write_config_dword(pdev, pos + PCI_MSI_ADDRESS_LO, addr_lo);
-+			pci_write_config_dword(pdev, pos + PCI_MSI_ADDRESS_HI, 0);
-+		}
- 	} else
- 		rc = rtas_change_msi(pdn, RTAS_CHANGE_MSIX_FN, nvec);
- 
-_
+    Andrew
