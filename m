@@ -1,23 +1,22 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 3/3] perf, x86,
- lbr: Demand proper privileges for PERF_SAMPLE_BRANCH_KERNEL
-In-reply-to: <20130517111232.GE5162@dyad.programming.kicks-ass.net>
-References: <20130503121122.931661809@chello.nl>
- <20130503121256.230745028@chello.nl>
- <CABPqkBTvcQAyXfeiJwpPsNtbs4ffsVguXE631dK_rbzHpwBdOg@mail.gmail.com>
- <20130516090916.GF19669@dyad.programming.kicks-ass.net>
- <8578.1368699317@ale.ozlabs.ibm.com>
- <20130516111634.GA15314@twins.programming.kicks-ass.net>
- <CABPqkBSCXJN7gLK_e_Q3YVVVFVGS78fo4j2z0+MmriqoXszH+w@mail.gmail.com>
- <20130517111232.GE5162@dyad.programming.kicks-ass.net>
-Date: Tue, 21 May 2013 15:41:35 +1000
-Message-ID: <10224.1369114895@ale.ozlabs.ibm.com>
-Cc: "ak@linux.intel.com" <ak@linux.intel.com>,
- LKML <linux-kernel@vger.kernel.org>,
- anshuman Stephane Eranian <eranian@google.com>,
- Linux PPC dev <linuxppc-dev@ozlabs.org>, Ingo Molnar <mingo@kernel.org>
+Return-Path: <gang.chen@asianux.com>
+Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 100472C00BA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2013 15:49:54 +1000 (EST)
+Message-ID: <519B0ACA.6090008@asianux.com>
+Date: Tue, 21 May 2013 13:48:58 +0800
+From: Chen Gang <gang.chen@asianux.com>
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ "paulus@samba.org" <paulus@samba.org>, zhangyanfei@cn.fujitsu.com,
+ Jiri Kosina <jkosina@suse.cz>, Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH] PowerPC: kernel: need return the related error code when
+ failure occurs.
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,61 +26,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Peter Zijlstra <peterz@infradead.org> wrote:
 
-> On Thu, May 16, 2013 at 05:36:11PM +0200, Stephane Eranian wrote:
-> > On Thu, May 16, 2013 at 1:16 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> > > On Thu, May 16, 2013 at 08:15:17PM +1000, Michael Neuling wrote:
-> > >> Peter,
-> > >>
-> > >> BTW PowerPC also has the ability to filter on conditional branches.  Any
-> > >> chance we could add something like the follow to perf also?
-> > >>
-> > >
-> > > I don't see an immediate problem with that except that we on x86 need to
-> > > implement that in the software filter. Stephane do you see any
-> > > fundamental issue with that?
-> > >
-> > On X86, the LBR cannot filter on conditional in HW. Thus as Peter said, it would
-> > have to be done in SW. I did not add that because I think those branches are
-> > not necessarily useful for tools.
-> 
-> Wouldn't it be mostly conditional branches that are the primary control flow
-> and can get predicted wrong? I mean, I'm sure someone will miss-predict an
-> unconditional branch but its not like we care about people with such
-> afflictions do we?
-> 
-> Anyway, since PPC people thought it worth baking into hardware, presumably they
-> have a compelling use case. Mikey could you see if you can retrieve that from
-> someone in the know? It might be interesting.
-> 
-> Also, it looks like its trivial to add to x86, you seem to have already done
-> all the hard work by having X86_BR_JCC.
-> 
-> The only missing piece would be:
+When error occurs, need return the related error code to let upper
+caller know about it.
 
-Peter,
+ppc_md.nvram_size() can return the error code (e.g. core99_nvram_size()
+in 'arch/powerpc/platforms/powermac/nvram.c').
 
-Can we add your signed-off-by on this?
+And when '*ppos >= size', need return -ESPIPE (Illegal seek)
 
-We are cleaning up our series for conditional branches and would like to
-add this as part of the post.
-
-Mikey
+The original related patch: "f9ce299 [PATCH] powerpc: fix large nvram
+access"
 
 
-> 
-> --- a/arch/x86/kernel/cpu/perf_event_intel_lbr.c
-> +++ b/arch/x86/kernel/cpu/perf_event_intel_lbr.c
-> @@ -337,6 +337,10 @@ static int intel_pmu_setup_sw_lbr_filter
->  
->  	if (br_type & PERF_SAMPLE_BRANCH_IND_CALL)
->  		mask |= X86_BR_IND_CALL;
-> +
-> +	if (br_type & PERF_SAMPLE_BRANCH_CONDITIONAL)
-> +		mask |= X86_BR_JCC;
-> +
->  	/*
->  	 * stash actual user request into reg, it may
->  	 * be used by fixup code for some CPU
-> 
+Signed-off-by: Chen Gang <gang.chen@asianux.com>
+---
+ arch/powerpc/kernel/nvram_64.c |    9 +++++++--
+ 1 files changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
+index 48fbc2b..db2a636 100644
+--- a/arch/powerpc/kernel/nvram_64.c
++++ b/arch/powerpc/kernel/nvram_64.c
+@@ -88,10 +88,15 @@ static ssize_t dev_nvram_read(struct file *file, char __user *buf,
+ 	if (!ppc_md.nvram_size)
+ 		goto out;
+ 
+-	ret = 0;
+ 	size = ppc_md.nvram_size();
+-	if (*ppos >= size || size < 0)
++	if (size < 0) {
++		ret = size;
+ 		goto out;
++	}
++	if (*ppos >= size) {
++		ret = -ESPIPE;
++		goto out;
++	}
+ 
+ 	count = min_t(size_t, count, size - *ppos);
+ 	count = min(count, PAGE_SIZE);
+-- 
+1.7.7.6
