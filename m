@@ -1,17 +1,17 @@
 Return-Path: <sebastian.hesselbarth@gmail.com>
-Received: from mail-ea0-x232.google.com (mail-ea0-x232.google.com
- [IPv6:2a00:1450:4013:c01::232])
+Received: from mail-ee0-f43.google.com (mail-ee0-f43.google.com [74.125.83.43])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DE6C32C00B9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 02:42:20 +1000 (EST)
-Received: by mail-ea0-f178.google.com with SMTP id q16so552873ead.23
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2013 09:42:17 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 9DB042C00C9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 02:42:21 +1000 (EST)
+Received: by mail-ee0-f43.google.com with SMTP id d41so561703eek.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2013 09:42:18 -0700 (PDT)
 From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-Subject: [PATCH v4 05/12] net: mv643xx_eth: add DT parsing support
-Date: Tue, 21 May 2013 18:41:43 +0200
-Message-Id: <1369154510-4927-6-git-send-email-sebastian.hesselbarth@gmail.com>
+Subject: [PATCH v4 07/12] ARM: kirkwood: add gigabit ethernet and mvmdio
+ device tree nodes
+Date: Tue, 21 May 2013 18:41:45 +0200
+Message-Id: <1369154510-4927-8-git-send-email-sebastian.hesselbarth@gmail.com>
 In-Reply-To: <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
 References: <1367854420-8006-1-git-send-email-sebastian.hesselbarth@gmail.com>
  <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
@@ -28,43 +28,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds device tree parsing support for the shared driver of mv643xx_eth.
-As the bindings are slightly different from current PPC bindings new binding
-documentation is also added. Following PPC-style device setup, the shared
-driver now also adds port platform_devices and sets up port platform_data.
+This patch adds mv643xx_eth and mvmdio device tree nodes for DT enabled
+Kirkwood boards. Phy nodes are also added with reg property set on a
+per-board basis.
 
 Signed-off-by: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 ---
-Note: Although different, device tree bindings are compatible with PPC
-bindings. As I do not have access to any PPC platform using mv643xx_eth,
-I leave conversion ("phy" vs "phy-handle") and compatible string name
-up to PPC guys.
-
-Due to hang reports for modular built mvmdio and mv643xx_eth, I have
-tested module loading/unloading/reloading on CuBox (Dove) and Dockstar
-(Kirkwood) without any issues for the whole patch set.
-
 Changelog:
 v3->v4:
-- separation of independent patches (phy, of_mdio, devm)
-- stand-alone device tree binding compatible to existing mv64x60 binding
-- device node match for shared driver only
-- device node registration for port drivers
-- properly return -EPROBE_DEFER on missing of phy (Reported by Simon Baatz)
-
-v2->v3:
-- rebase on top of mv643xx_eth clean-ups
-- do not reparse existing platform_data
-- use managed devm_kzalloc for parsed platform_data
-- use of_property_read_u32 where applicable
-- add phy_node to platform_data
-- use of_connect_phy if DT phy node was found
-
-v1->v2:
-- properly ifdef of_platform_bus_probe with CONFIG_OF
-- handle of_platform_bus_probe errors and cleanup accordingly
-- use of_property_read_u32 where applicable
-- parse "duplex" and "speed" property in PHY-less configuration
+- convert to new device tree binding
+- fix phy addr of kirkwood-ts219-6282.dts (Reported by Andrew Lunn)
+- fix mvmdio interrupt (Reported by Simon Baatz)
 
 Cc: David Miller <davem@davemloft.net>
 Cc: Lennert Buytenhek <buytenh@wantstofly.org>
@@ -76,316 +50,636 @@ Cc: linux-arm-kernel@lists.infradead.org
 Cc: linuxppc-dev@lists.ozlabs.org
 Cc: linux-kernel@vger.kernel.org
 ---
- .../devicetree/bindings/net/marvell-orion-net.txt  |   83 +++++++++++
- drivers/net/ethernet/marvell/mv643xx_eth.c         |  152 +++++++++++++++++++-
- 2 files changed, 231 insertions(+), 4 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/net/marvell-orion-net.txt
+ arch/arm/boot/dts/kirkwood-cloudbox.dts            |   16 ++++++
+ arch/arm/boot/dts/kirkwood-dnskw.dtsi              |   16 ++++++
+ arch/arm/boot/dts/kirkwood-dockstar.dts            |   17 +++++++
+ arch/arm/boot/dts/kirkwood-dreamplug.dts           |   28 +++++++++++
+ arch/arm/boot/dts/kirkwood-goflexnet.dts           |   16 ++++++
+ .../arm/boot/dts/kirkwood-guruplug-server-plus.dts |   30 +++++++++++
+ arch/arm/boot/dts/kirkwood-ib62x0.dts              |   16 ++++++
+ arch/arm/boot/dts/kirkwood-iconnect.dts            |   16 ++++++
+ arch/arm/boot/dts/kirkwood-iomega_ix2_200.dts      |   24 +++++++++
+ arch/arm/boot/dts/kirkwood-is2.dts                 |    2 +
+ arch/arm/boot/dts/kirkwood-km_kirkwood.dts         |   16 ++++++
+ arch/arm/boot/dts/kirkwood-lsxl.dtsi               |   28 +++++++++++
+ arch/arm/boot/dts/kirkwood-mplcec4.dts             |   27 ++++++++++
+ .../boot/dts/kirkwood-netgear_readynas_duo_v2.dts  |   16 ++++++
+ arch/arm/boot/dts/kirkwood-ns2-common.dtsi         |   16 ++++++
+ arch/arm/boot/dts/kirkwood-ns2.dts                 |    2 +
+ arch/arm/boot/dts/kirkwood-ns2lite.dts             |    2 +
+ arch/arm/boot/dts/kirkwood-ns2max.dts              |    2 +
+ arch/arm/boot/dts/kirkwood-ns2mini.dts             |    2 +
+ arch/arm/boot/dts/kirkwood-openblocks_a6.dts       |   16 ++++++
+ arch/arm/boot/dts/kirkwood-topkick.dts             |   16 ++++++
+ arch/arm/boot/dts/kirkwood-ts219-6281.dts          |    4 +-
+ arch/arm/boot/dts/kirkwood-ts219-6282.dts          |    4 +-
+ arch/arm/boot/dts/kirkwood-ts219.dtsi              |   16 ++++++
+ arch/arm/boot/dts/kirkwood.dtsi                    |   52 ++++++++++++++++++++
+ 25 files changed, 398 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/net/marvell-orion-net.txt b/Documentation/devicetree/bindings/net/marvell-orion-net.txt
-new file mode 100644
-index 0000000..23ffd57
---- /dev/null
-+++ b/Documentation/devicetree/bindings/net/marvell-orion-net.txt
-@@ -0,0 +1,83 @@
-+Marvell Orion/Discovery ethernet controller
-+=============================================
+diff --git a/arch/arm/boot/dts/kirkwood-cloudbox.dts b/arch/arm/boot/dts/kirkwood-cloudbox.dts
+index 5f21d4e..03e1b68 100644
+--- a/arch/arm/boot/dts/kirkwood-cloudbox.dts
++++ b/arch/arm/boot/dts/kirkwood-cloudbox.dts
+@@ -87,3 +87,19 @@
+ 		gpios = <&gpio0 17 0>;
+ 	};
+ };
 +
-+The Marvell Discovery ethernet controller can be found on Marvell Orion SoCs
-+(Kirkwood, Dove, Orion5x, and Discovery Innovation) and as part of Marvell
-+Discovery system controller chips (mv64[345]60).
++&mdio {
++	status = "okay";
 +
-+The Discovery ethernet controller is described with two levels of nodes. The
-+first level describes the ethernet controller itself and the second level
-+describes up to 3 ethernet port nodes within that controller. The reason for
-+the multiple levels is that the port registers are interleaved within a single
-+set of controller registers. Each port node describes port-specific properties.
-+
-+Note: The above separation is only true for Discovery system controllers.
-+For Orion SoCs we stick to the separation, although there each controller has
-+only one port associated. Multiple ports are implemented as multiple single-port
-+controllers.
-+
-+* Ethernet controller node
-+
-+Required controller properties:
-+ - #address-cells: shall be 1.
-+ - #size-cells: shall be 0.
-+ - compatible: shall be "marvell,orion-eth".
-+ - reg: address and length of the controller registers.
-+
-+Optional controller properties:
-+ - clocks: phandle reference to the controller clock.
-+ - marvell,tx-checksum-limit: max tx packet size for hardware checksum.
-+
-+* Ethernet port node
-+
-+Required port properties:
-+ - device_type: shall be "network".
-+ - compatible: shall be "marvell,orion-eth-port".
-+ - reg: port number relative to ethernet controller, shall be 0, 1, or 2.
-+ - interrupts: port interrupt.
-+ - local-mac-address: 6 bytes MAC address.
-+
-+Optional port properties:
-+ - marvell,tx-queue-size: size of the transmit ring buffer.
-+ - marvell,tx-sram-addr: address of transmit descriptor buffer located in SRAM.
-+ - marvell,tx-sram-size: size of transmit descriptor buffer located in SRAM.
-+ - marvell,rx-queue-size: size of the receive ring buffer.
-+ - marvell,rx-sram-addr: address of receive descriptor buffer located in SRAM.
-+ - marvell,rx-sram-size: size of receive descriptor buffer located in SRAM.
-+
-+and
-+
-+ - phy-handle: phandle reference to ethernet PHY.
-+
-+or
-+
-+ - speed: port speed if no PHY connected.
-+ - duplex: port mode if no PHY connected.
-+
-+* Node example:
-+
-+mdio-bus {
-+	...
-+	ethphy: ethernet-phy@8 {
++	ethphy0: ethernet-phy@0 {
 +		device_type = "ethernet-phy";
-+		...
-+	};
-+};
-+
-+eth: ethernet-controller@72000 {
-+	compatible = "marvell,orion-eth";
-+	#address-cells = <1>;
-+	#size-cells = <0>;
-+	reg = <0x72000 0x2000>;
-+	clocks = <&gate_clk 2>;
-+	marvell,tx-checksum-limit = <1600>;
-+
-+	ethernet@0 {
-+		device_type = "network";
-+		compatible = "marvell,orion-eth-port";
 +		reg = <0>;
-+		interrupts = <29>;
-+		phy-handle = <&ethphy>;
-+		local-mac-address = [00 00 00 00 00 00];
 +	};
 +};
-diff --git a/drivers/net/ethernet/marvell/mv643xx_eth.c b/drivers/net/ethernet/marvell/mv643xx_eth.c
-index 0f5c3c2..f2c229c 100644
---- a/drivers/net/ethernet/marvell/mv643xx_eth.c
-+++ b/drivers/net/ethernet/marvell/mv643xx_eth.c
-@@ -60,6 +60,9 @@
- #include <linux/types.h>
- #include <linux/slab.h>
- #include <linux/clk.h>
-+#include <linux/of.h>
-+#include <linux/of_irq.h>
-+#include <linux/of_net.h>
- #include <linux/of_mdio.h>
- 
- static char mv643xx_eth_driver_name[] = "mv643xx_eth";
-@@ -2451,13 +2454,147 @@ static void infer_hw_params(struct mv643xx_eth_shared_private *msp)
- 	}
- }
- 
-+#if defined(CONFIG_OF)
-+static const struct of_device_id mv643xx_eth_shared_ids[] = {
-+	{ .compatible = "marvell,orion-eth", },
-+	{ }
++
++&eth0 {
++	status = "okay";
++	ethernet0-port@0 {
++		phy-handle = <&ethphy0>;
++	};
 +};
-+MODULE_DEVICE_TABLE(of, mv643xx_eth_shared_ids);
-+#endif
+diff --git a/arch/arm/boot/dts/kirkwood-dnskw.dtsi b/arch/arm/boot/dts/kirkwood-dnskw.dtsi
+index 6875ac0..7c8bc17 100644
+--- a/arch/arm/boot/dts/kirkwood-dnskw.dtsi
++++ b/arch/arm/boot/dts/kirkwood-dnskw.dtsi
+@@ -217,3 +217,19 @@
+ 		};
+ 	};
+ };
 +
-+#if defined(CONFIG_OF) && !defined(CONFIG_MV64X60)
-+#define mv643xx_eth_property(_np, _name, _v)				\
-+	do {								\
-+		u32 tmp;						\
-+		if (!of_property_read_u32(_np, "marvell," _name, &tmp))	\
-+			_v = tmp;					\
-+	} while (0)
++&mdio {
++	status = "okay";
 +
-+static struct platform_device *port_platdev[3];
++	ethphy0: ethernet-phy@8 {
++		device_type = "ethernet-phy";
++		reg = <8>;
++	};
++};
 +
-+static int mv643xx_eth_shared_of_add_port(struct platform_device *pdev,
-+					  struct device_node *pnp)
-+{
-+	struct platform_device *ppdev;
-+	struct mv643xx_eth_platform_data ppd;
-+	struct resource res;
-+	const char *mac_addr;
-+	int ret;
++&eth0 {
++	status = "okay";
++	ethernet0-port@0 {
++		phy-handle = <&ethphy0>;
++	};
++};
+diff --git a/arch/arm/boot/dts/kirkwood-dockstar.dts b/arch/arm/boot/dts/kirkwood-dockstar.dts
+index 0196cf6..b5aebbc 100644
+--- a/arch/arm/boot/dts/kirkwood-dockstar.dts
++++ b/arch/arm/boot/dts/kirkwood-dockstar.dts
+@@ -91,3 +91,20 @@
+ 		};
+ 	};
+ };
 +
-+	memset(&ppd, 0, sizeof(ppd));
-+	ppd.shared = pdev;
++&mdio {
++	status = "okay";
 +
-+	memset(&res, 0, sizeof(res));
-+	if (!of_irq_to_resource(pnp, 0, &res)) {
-+		dev_err(&pdev->dev, "missing interrupt on %s\n", pnp->name);
-+		return -EINVAL;
-+	}
++	ethphy0: ethernet-phy@0 {
++		device_type = "ethernet-phy";
++		compatible = "marvell,88e1116";
++		reg = <0>;
++	};
++};
 +
-+	if (of_property_read_u32(pnp, "reg", &ppd.port_number)) {
-+		dev_err(&pdev->dev, "missing reg property on %s\n", pnp->name);
-+		return -EINVAL;
-+	}
++&eth0 {
++	status = "okay";
++	ethernet0-port@0 {
++		phy-handle = <&ethphy0>;
++	};
++};
+diff --git a/arch/arm/boot/dts/kirkwood-dreamplug.dts b/arch/arm/boot/dts/kirkwood-dreamplug.dts
+index 289e51d..e0c93d4 100644
+--- a/arch/arm/boot/dts/kirkwood-dreamplug.dts
++++ b/arch/arm/boot/dts/kirkwood-dreamplug.dts
+@@ -99,3 +99,31 @@
+ 		};
+ 	};
+ };
 +
-+	if (ppd.port_number >= 3) {
-+		dev_err(&pdev->dev, "invalid reg property on %s\n", pnp->name);
-+		return -EINVAL;
-+	}
++&mdio {
++	status = "okay";
 +
-+	mac_addr = of_get_mac_address(pnp);
-+	if (mac_addr)
-+		memcpy(ppd.mac_addr, mac_addr, 6);
++	ethphy0: ethernet-phy@0 {
++		device_type = "ethernet-phy";
++		reg = <0>;
++	};
 +
-+	mv643xx_eth_property(pnp, "tx-queue-size", ppd.tx_queue_size);
-+	mv643xx_eth_property(pnp, "tx-sram-addr", ppd.tx_sram_addr);
-+	mv643xx_eth_property(pnp, "tx-sram-size", ppd.tx_sram_size);
-+	mv643xx_eth_property(pnp, "rx-queue-size", ppd.rx_queue_size);
-+	mv643xx_eth_property(pnp, "rx-sram-addr", ppd.rx_sram_addr);
-+	mv643xx_eth_property(pnp, "rx-sram-size", ppd.rx_sram_size);
++	ethphy1: ethernet-phy@1 {
++		device_type = "ethernet-phy";
++		reg = <1>;
++	};
++};
 +
-+	ppd.phy_node = of_parse_phandle(pnp, "phy-handle", 0);
-+	if (!ppd.phy_node) {
-+		ppd.phy_addr = MV643XX_ETH_PHY_NONE;
-+		of_property_read_u32(pnp, "speed", &ppd.speed);
-+		of_property_read_u32(pnp, "duplex", &ppd.duplex);
-+	}
++&eth0 {
++	status = "okay";
++	ethernet0-port@0 {
++		phy-handle = <&ethphy0>;
++	};
++};
 +
-+	ppdev = platform_device_alloc(MV643XX_ETH_NAME, ppd.port_number);
-+	if (!ppdev)
-+		return -ENOMEM;
-+	ppdev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
++&eth1 {
++	status = "okay";
++	ethernet1-port@0 {
++		phy-handle = <&ethphy1>;
++	};
++};
+diff --git a/arch/arm/boot/dts/kirkwood-goflexnet.dts b/arch/arm/boot/dts/kirkwood-goflexnet.dts
+index c3573be..aba5849 100644
+--- a/arch/arm/boot/dts/kirkwood-goflexnet.dts
++++ b/arch/arm/boot/dts/kirkwood-goflexnet.dts
+@@ -170,3 +170,19 @@
+ 		};
+ 	};
+ };
 +
-+	ret = platform_device_add_resources(ppdev, &res, 1);
-+	if (ret)
-+		goto port_err;
++&mdio {
++	status = "okay";
 +
-+	ret = platform_device_add_data(ppdev, &ppd, sizeof(ppd));
-+	if (ret)
-+		goto port_err;
++	ethphy0: ethernet-phy@0 {
++		device_type = "ethernet-phy";
++		reg = <0>;
++	};
++};
 +
-+	ret = platform_device_add(ppdev);
-+	if (ret)
-+		goto port_err;
++&eth0 {
++	status = "okay";
++	ethernet0-port@0 {
++		phy-handle = <&ethphy0>;
++	};
++};
+diff --git a/arch/arm/boot/dts/kirkwood-guruplug-server-plus.dts b/arch/arm/boot/dts/kirkwood-guruplug-server-plus.dts
+index 44fd97d..210dfb9 100644
+--- a/arch/arm/boot/dts/kirkwood-guruplug-server-plus.dts
++++ b/arch/arm/boot/dts/kirkwood-guruplug-server-plus.dts
+@@ -96,3 +96,33 @@
+ 		};
+ 	};
+ };
 +
-+	port_platdev[ppd.port_number] = ppdev;
++&mdio {
++	status = "okay";
 +
-+	return 0;
++	ethphy0: ethernet-phy@0 {
++		device_type = "ethernet-phy";
++		compatible = "marvell,88e1121";
++		reg = <0>;
++	};
 +
-+port_err:
-+	platform_device_put(ppdev);
-+	return ret;
-+}
++	ethphy1: ethernet-phy@1 {
++		device_type = "ethernet-phy";
++		compatible = "marvell,88e1121";
++		reg = <1>;
++	};
++};
 +
-+static int mv643xx_eth_shared_of_probe(struct platform_device *pdev)
-+{
-+	struct mv643xx_eth_shared_platform_data *pd;
-+	struct device_node *pnp, *np = pdev->dev.of_node;
-+	int ret;
++&eth0 {
++	status = "okay";
++	ethernet0-port@0 {
++		phy-handle = <&ethphy0>;
++	};
++};
 +
-+	/* bail out if not registered from DT */
-+	if (!np)
-+		return 0;
-+
-+	pd = devm_kzalloc(&pdev->dev, sizeof(*pd), GFP_KERNEL);
-+	if (!pd)
-+		return -ENOMEM;
-+	pdev->dev.platform_data = pd;
-+
-+	mv643xx_eth_property(np, "tx-checksum-limit", pd->tx_csum_limit);
-+
-+	for_each_available_child_of_node(np, pnp) {
-+		ret = mv643xx_eth_shared_of_add_port(pdev, pnp);
-+		if (ret)
-+			return ret;
-+	}
-+	return 0;
-+}
-+
-+static void mv643xx_eth_shared_of_remove(void)
-+{
-+	int n;
-+
-+	for (n = 0; n < 3; n++) {
-+		platform_device_del(port_platdev[n]);
-+		port_platdev[n] = NULL;
-+	}
-+}
-+#else
-+static int mv643xx_eth_shared_of_probe(struct platform_device *pdev)
-+{
-+	return 0
-+}
-+
-+#define mv643xx_eth_shared_of_remove()
-+#endif
-+
- static int mv643xx_eth_shared_probe(struct platform_device *pdev)
- {
- 	static int mv643xx_eth_version_printed;
--	struct mv643xx_eth_shared_platform_data *pd = pdev->dev.platform_data;
-+	struct mv643xx_eth_shared_platform_data *pd;
- 	struct mv643xx_eth_shared_private *msp;
- 	const struct mbus_dram_target_info *dram;
- 	struct resource *res;
-+	int ret;
++&eth1 {
++	status = "okay";
++	ethernet1-port@0 {
++		phy-handle = <&ethphy1>;
++	};
++};
+diff --git a/arch/arm/boot/dts/kirkwood-ib62x0.dts b/arch/arm/boot/dts/kirkwood-ib62x0.dts
+index 5335b1a..fff3e65 100644
+--- a/arch/arm/boot/dts/kirkwood-ib62x0.dts
++++ b/arch/arm/boot/dts/kirkwood-ib62x0.dts
+@@ -119,3 +119,19 @@
  
- 	if (!mv643xx_eth_version_printed++)
- 		pr_notice("MV-643xx 10/100/1000 ethernet driver version %s\n",
-@@ -2470,6 +2607,7 @@ static int mv643xx_eth_shared_probe(struct platform_device *pdev)
- 	msp = devm_kzalloc(&pdev->dev, sizeof(*msp), GFP_KERNEL);
- 	if (msp == NULL)
- 		return -ENOMEM;
-+	platform_set_drvdata(pdev, msp);
  
- 	msp->base = devm_ioremap(&pdev->dev, res->start, resource_size(res));
- 	if (msp->base == NULL)
-@@ -2486,12 +2624,15 @@ static int mv643xx_eth_shared_probe(struct platform_device *pdev)
- 	if (dram)
- 		mv643xx_eth_conf_mbus_windows(msp, dram);
- 
-+	ret = mv643xx_eth_shared_of_probe(pdev);
-+	if (ret)
-+		return ret;
-+	pd = pdev->dev.platform_data;
+ };
 +
- 	msp->tx_csum_limit = (pd != NULL && pd->tx_csum_limit) ?
- 					pd->tx_csum_limit : 9 * 1024;
- 	infer_hw_params(msp);
- 
--	platform_set_drvdata(pdev, msp);
--
- 	return 0;
- }
- 
-@@ -2499,9 +2640,9 @@ static int mv643xx_eth_shared_remove(struct platform_device *pdev)
- {
- 	struct mv643xx_eth_shared_private *msp = platform_get_drvdata(pdev);
- 
-+	mv643xx_eth_shared_of_remove();
- 	if (!IS_ERR(msp->clk))
- 		clk_disable_unprepare(msp->clk);
--
- 	return 0;
- }
- 
-@@ -2511,6 +2652,7 @@ static struct platform_driver mv643xx_eth_shared_driver = {
- 	.driver = {
- 		.name	= MV643XX_ETH_SHARED_NAME,
- 		.owner	= THIS_MODULE,
-+		.of_match_table = of_match_ptr(mv643xx_eth_shared_ids),
- 	},
++&mdio {
++	status = "okay";
++
++	ethphy0: ethernet-phy@8 {
++		device_type = "ethernet-phy";
++		reg = <8>;
++	};
++};
++
++&eth0 {
++	status = "okay";
++	ethernet0-port@0 {
++		phy-handle = <&ethphy0>;
++	};
++};
+diff --git a/arch/arm/boot/dts/kirkwood-iconnect.dts b/arch/arm/boot/dts/kirkwood-iconnect.dts
+index 12ccf74..cfaf6bc 100644
+--- a/arch/arm/boot/dts/kirkwood-iconnect.dts
++++ b/arch/arm/boot/dts/kirkwood-iconnect.dts
+@@ -168,3 +168,19 @@
+ 		};
+ 	};
+ };
++
++&mdio {
++	status = "okay";
++
++	ethphy0: ethernet-phy@11 {
++		device_type = "ethernet-phy";
++		reg = <11>;
++	};
++};
++
++&eth0 {
++	status = "okay";
++	ethernet0-port@0 {
++		phy-handle = <&ethphy0>;
++	};
++};
+diff --git a/arch/arm/boot/dts/kirkwood-iomega_ix2_200.dts b/arch/arm/boot/dts/kirkwood-iomega_ix2_200.dts
+index 3694e94..315f095 100644
+--- a/arch/arm/boot/dts/kirkwood-iomega_ix2_200.dts
++++ b/arch/arm/boot/dts/kirkwood-iomega_ix2_200.dts
+@@ -191,3 +191,27 @@
+ 		};
+ 	};
+ };
++
++&mdio {
++	status = "okay";
++
++	ethphy1: ethernet-phy@11 {
++		device_type = "ethernet-phy";
++		reg = <11>;
++	};
++};
++
++&eth0 {
++	status = "okay";
++	ethernet0-port@0 {
++		speed = <1000>;
++		duplex = <1>;
++	};
++};
++
++&eth1 {
++	status = "okay";
++	ethernet1-port@0 {
++		phy-handle = <&ethphy1>;
++	};
++};
+diff --git a/arch/arm/boot/dts/kirkwood-is2.dts b/arch/arm/boot/dts/kirkwood-is2.dts
+index 0bdce0a..2e5fe72 100644
+--- a/arch/arm/boot/dts/kirkwood-is2.dts
++++ b/arch/arm/boot/dts/kirkwood-is2.dts
+@@ -28,3 +28,5 @@
+ 		};
+ 	};
+ };
++
++&ethphy0 { reg = <8>; };
+diff --git a/arch/arm/boot/dts/kirkwood-km_kirkwood.dts b/arch/arm/boot/dts/kirkwood-km_kirkwood.dts
+index 5bbd054..f9194b1 100644
+--- a/arch/arm/boot/dts/kirkwood-km_kirkwood.dts
++++ b/arch/arm/boot/dts/kirkwood-km_kirkwood.dts
+@@ -43,3 +43,19 @@
+ 		};
+ 	};
+ };
++
++&mdio {
++	status = "okay";
++
++	ethphy0: ethernet-phy@0 {
++		device_type = "ethernet-phy";
++		reg = <0>;
++	};
++};
++
++&eth0 {
++	status = "okay";
++	ethernet0-port@0 {
++		phy-handle = <&ethphy0>;
++	};
++};
+diff --git a/arch/arm/boot/dts/kirkwood-lsxl.dtsi b/arch/arm/boot/dts/kirkwood-lsxl.dtsi
+index 37d45c4..dcc6470 100644
+--- a/arch/arm/boot/dts/kirkwood-lsxl.dtsi
++++ b/arch/arm/boot/dts/kirkwood-lsxl.dtsi
+@@ -201,3 +201,31 @@
+ 		};
+ 	};
+ };
++
++&mdio {
++	status = "okay";
++
++	ethphy0: ethernet-phy@0 {
++		device_type = "ethernet-phy";
++		reg = <0>;
++	};
++
++	ethphy1: ethernet-phy@8 {
++		device_type = "ethernet-phy";
++		reg = <8>;
++	};
++};
++
++&eth0 {
++	status = "okay";
++	ethernet0-port@0 {
++		phy-handle = <&ethphy0>;
++	};
++};
++
++&eth1 {
++	status = "okay";
++	ethernet1-port@0 {
++		phy-handle = <&ethphy1>;
++	};
++};
+diff --git a/arch/arm/boot/dts/kirkwood-mplcec4.dts b/arch/arm/boot/dts/kirkwood-mplcec4.dts
+index 7588241..ceac0de 100644
+--- a/arch/arm/boot/dts/kirkwood-mplcec4.dts
++++ b/arch/arm/boot/dts/kirkwood-mplcec4.dts
+@@ -182,3 +182,30 @@
+ 	};
  };
  
-@@ -2710,6 +2852,8 @@ static int mv643xx_eth_probe(struct platform_device *pdev)
- 	if (!IS_ERR(mp->clk)) {
- 		clk_prepare_enable(mp->clk);
- 		mp->t_clk = clk_get_rate(mp->clk);
-+	} else if (!IS_ERR(mp->shared->clk)) {
-+		mp->t_clk = clk_get_rate(mp->shared->clk);
- 	}
++&mdio {
++	status = "okay";
++
++	ethphy0: ethernet-phy@1 {
++		device_type = "ethernet-phy";
++		reg = <1>;
++	};
++
++	ethphy1: ethernet-phy@2 {
++		device_type = "ethernet-phy";
++		reg = <2>;
++	};
++};
++
++&eth0 {
++	status = "okay";
++	ethernet0-port@0 {
++		phy-handle = <&ethphy0>;
++	};
++};
++
++&eth1 {
++	status = "okay";
++	ethernet1-port@0 {
++		phy-handle = <&ethphy1>;
++	};
++};
+diff --git a/arch/arm/boot/dts/kirkwood-netgear_readynas_duo_v2.dts b/arch/arm/boot/dts/kirkwood-netgear_readynas_duo_v2.dts
+index 1ca66ab..b66b2cd 100644
+--- a/arch/arm/boot/dts/kirkwood-netgear_readynas_duo_v2.dts
++++ b/arch/arm/boot/dts/kirkwood-netgear_readynas_duo_v2.dts
+@@ -178,3 +178,19 @@
+                 };
+         };
+ };
++
++&mdio {
++	status = "okay";
++
++	ethphy0: ethernet-phy@0 {
++		device_type = "ethernet-phy";
++		reg = <0>;
++	};
++};
++
++&eth0 {
++	status = "okay";
++	ethernet0-port@0 {
++		phy-handle = <&ethphy0>;
++	};
++};
+diff --git a/arch/arm/boot/dts/kirkwood-ns2-common.dtsi b/arch/arm/boot/dts/kirkwood-ns2-common.dtsi
+index 6affd92..6a48bfd 100644
+--- a/arch/arm/boot/dts/kirkwood-ns2-common.dtsi
++++ b/arch/arm/boot/dts/kirkwood-ns2-common.dtsi
+@@ -82,3 +82,19 @@
+ 	};
  
- 	set_params(mp, pd);
+ };
++
++&mdio {
++	status = "okay";
++
++	ethphy0: ethernet-phy {
++		device_type = "ethernet-phy";
++                /* overwrite reg property in board file */
++	};
++};
++
++&eth0 {
++	status = "okay";
++	ethernet0-port@0 {
++		phy-handle = <&ethphy0>;
++	};
++};
+diff --git a/arch/arm/boot/dts/kirkwood-ns2.dts b/arch/arm/boot/dts/kirkwood-ns2.dts
+index f2d36ecf..8ffd552 100644
+--- a/arch/arm/boot/dts/kirkwood-ns2.dts
++++ b/arch/arm/boot/dts/kirkwood-ns2.dts
+@@ -28,3 +28,5 @@
+ 		};
+ 	};
+ };
++
++&ethphy0 { reg = <8>; };
+diff --git a/arch/arm/boot/dts/kirkwood-ns2lite.dts b/arch/arm/boot/dts/kirkwood-ns2lite.dts
+index b02eb4e..16332f8 100644
+--- a/arch/arm/boot/dts/kirkwood-ns2lite.dts
++++ b/arch/arm/boot/dts/kirkwood-ns2lite.dts
+@@ -28,3 +28,5 @@
+ 		};
+ 	};
+ };
++
++&ethphy0 { reg = <0>; };
+diff --git a/arch/arm/boot/dts/kirkwood-ns2max.dts b/arch/arm/boot/dts/kirkwood-ns2max.dts
+index bcec4d6..68d767d 100644
+--- a/arch/arm/boot/dts/kirkwood-ns2max.dts
++++ b/arch/arm/boot/dts/kirkwood-ns2max.dts
+@@ -47,3 +47,5 @@
+ 		};
+ 	};
+ };
++
++&ethphy0 { reg = <8>; };
+diff --git a/arch/arm/boot/dts/kirkwood-ns2mini.dts b/arch/arm/boot/dts/kirkwood-ns2mini.dts
+index adab1ab..5b1b17b 100644
+--- a/arch/arm/boot/dts/kirkwood-ns2mini.dts
++++ b/arch/arm/boot/dts/kirkwood-ns2mini.dts
+@@ -48,3 +48,5 @@
+ 		};
+ 	};
+ };
++
++&ethphy0 { reg = <0>; };
+diff --git a/arch/arm/boot/dts/kirkwood-openblocks_a6.dts b/arch/arm/boot/dts/kirkwood-openblocks_a6.dts
+index d27f724..f8be3e3 100644
+--- a/arch/arm/boot/dts/kirkwood-openblocks_a6.dts
++++ b/arch/arm/boot/dts/kirkwood-openblocks_a6.dts
+@@ -210,3 +210,19 @@
+ 		};
+         };
+ };
++
++&mdio {
++	status = "okay";
++
++	ethphy0: ethernet-phy@0 {
++		device_type = "ethernet-phy";
++		reg = <0>;
++	};
++};
++
++&eth0 {
++	status = "okay";
++	ethernet0-port@0 {
++		phy-handle = <&ethphy0>;
++	};
++};
+diff --git a/arch/arm/boot/dts/kirkwood-topkick.dts b/arch/arm/boot/dts/kirkwood-topkick.dts
+index 66eb45b..34eacf2 100644
+--- a/arch/arm/boot/dts/kirkwood-topkick.dts
++++ b/arch/arm/boot/dts/kirkwood-topkick.dts
+@@ -201,3 +201,19 @@
+ 		};
+ 	};
+ };
++
++&mdio {
++	status = "okay";
++
++	ethphy0: ethernet-phy@0 {
++		device_type = "ethernet-phy";
++		reg = <0>;
++	};
++};
++
++&eth0 {
++	status = "okay";
++	ethernet0-port@0 {
++		phy-handle = <&ethphy0>;
++	};
++};
+diff --git a/arch/arm/boot/dts/kirkwood-ts219-6281.dts b/arch/arm/boot/dts/kirkwood-ts219-6281.dts
+index 8295c83..0bd67bf 100644
+--- a/arch/arm/boot/dts/kirkwood-ts219-6281.dts
++++ b/arch/arm/boot/dts/kirkwood-ts219-6281.dts
+@@ -49,4 +49,6 @@
+ 			gpios = <&gpio0 16 1>;
+ 		};
+ 	};
+-};
+\ No newline at end of file
++};
++
++&ethphy0 { reg = <8>; };
+diff --git a/arch/arm/boot/dts/kirkwood-ts219-6282.dts b/arch/arm/boot/dts/kirkwood-ts219-6282.dts
+index df3f95d..a675278 100644
+--- a/arch/arm/boot/dts/kirkwood-ts219-6282.dts
++++ b/arch/arm/boot/dts/kirkwood-ts219-6282.dts
+@@ -49,4 +49,6 @@
+ 			gpios = <&gpio1 5 1>;
+ 		};
+ 	};
+-};
+\ No newline at end of file
++};
++
++&ethphy0 { reg = <0>; };
+diff --git a/arch/arm/boot/dts/kirkwood-ts219.dtsi b/arch/arm/boot/dts/kirkwood-ts219.dtsi
+index 64ea27c..68fe091 100644
+--- a/arch/arm/boot/dts/kirkwood-ts219.dtsi
++++ b/arch/arm/boot/dts/kirkwood-ts219.dtsi
+@@ -76,3 +76,19 @@
+ 		};
+ 	};
+ };
++
++&mdio {
++	status = "okay";
++
++	ethphy0: ethernet-phy {
++		device_type = "ethernet-phy";
++                /* overwrite reg property in board file */
++	};
++};
++
++&eth0 {
++	status = "okay";
++	ethernet0-port@0 {
++		phy-handle = <&ethphy0>;
++	};
++};
+diff --git a/arch/arm/boot/dts/kirkwood.dtsi b/arch/arm/boot/dts/kirkwood.dtsi
+index fada7e6..7c2b690 100644
+--- a/arch/arm/boot/dts/kirkwood.dtsi
++++ b/arch/arm/boot/dts/kirkwood.dtsi
+@@ -202,5 +202,57 @@
+ 			clocks = <&gate_clk 4>;
+ 			status = "disabled";
+ 		};
++
++		mdio: mdio-bus@72004 {
++			compatible = "marvell,orion-mdio";
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x72004 0x84>;
++			interrupts = <46>;
++			clocks = <&gate_clk 0>;
++			status = "disabled";
++
++			/* add phy nodes in board file */
++		};
++
++		eth0: ethernet-controller@72000 {
++			compatible = "marvell,orion-eth";
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x72000 0x4000>;
++			clocks = <&gate_clk 0>;
++			marvell,tx-checksum-limit = <1600>;
++			status = "disabled";
++
++			ethernet0-port@0 {
++				device_type = "network";
++				compatible = "marvell,orion-eth-port";
++				reg = <0>;
++				interrupts = <11>;
++				/* overwrite MAC address in bootloader */
++				local-mac-address = [00 00 00 00 00 00];
++				/* set phy-handle property in board file */
++			};
++		};
++
++		eth1: ethernet-controller@76000 {
++			compatible = "marvell,orion-eth";
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x76000 0x4000>;
++			clocks = <&gate_clk 19>;
++			marvell,tx-checksum-limit = <1600>;
++			status = "disabled";
++
++			ethernet1-port@1 {
++				device_type = "network";
++				compatible = "marvell,orion-eth-port";
++				reg = <1>;
++				interrupts = <15>;
++				/* overwrite MAC address in bootloader */
++				local-mac-address = [00 00 00 00 00 00];
++				/* set phy-handle property in board file */
++			};
++		};
+ 	};
+ };
 -- 
 1.7.10.4
