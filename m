@@ -1,13 +1,32 @@
-Return-Path: <B29983@freescale.com>
-From: <Yuantian.Tang@freescale.com>
-To: <mturquette@linaro.org>
-Subject: [PATCH] clk/mpc85xx: Update the compatible string
-Date: Wed, 22 May 2013 16:22:19 +0800
-Message-ID: <1369210939-25087-1-git-send-email-Yuantian.Tang@freescale.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+ [212.227.126.187]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id CE3CA2C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 19:25:56 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [PATCH v2 00/10] uaccess: better might_sleep/might_fault behavior
+Date: Wed, 22 May 2013 11:25:36 +0200
+References: <cover.1368702323.git.mst@redhat.com>
+In-Reply-To: <cover.1368702323.git.mst@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Tang Yuantian <Yuantian.Tang@freescale.com>,
- devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <201305221125.36284.arnd@arndb.de>
+Cc: linux-m32r-ja@ml.linux-m32r.org, kvm@vger.kernel.org,
+ Peter Zijlstra <peterz@infradead.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ David Howells <dhowells@redhat.com>, linux-mm@kvack.org,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ linux-arch@vger.kernel.org, linux-am33-list@redhat.com,
+ Hirokazu Takata <takata@linux-m32r.org>, x86@kernel.org,
+ Ingo Molnar <mingo@redhat.com>, microblaze-uclinux@itee.uq.edu.au,
+ Chris Metcalf <cmetcalf@tilera.com>, Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>,
+ linux-m32r@ml.linux-m32r.org, linux-kernel@vger.kernel.org,
+ Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,28 +36,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Tang Yuantian <yuantian.tang@freescale.com>
+On Thursday 16 May 2013, Michael S. Tsirkin wrote:
+> This improves the might_fault annotations used
+> by uaccess routines:
+> 
+> 1. The only reason uaccess routines might sleep
+>    is if they fault. Make this explicit for
+>    all architectures.
+> 2. Accesses (e.g through socket ops) to kernel memory
+>    with KERNEL_DS like net/sunrpc does will never sleep.
+>    Remove an unconditinal might_sleep in the inline
+>    might_fault in kernel.h
+>    (used when PROVE_LOCKING is not set).
+> 3. Accesses with pagefault_disable return EFAULT
+>    but won't cause caller to sleep.
+>    Check for that and avoid might_sleep when
+>    PROVE_LOCKING is set.
+> 
+> I'd like these changes to go in for the benefit of
+> the vhost driver where we want to call socket ops
+> under a spinlock, and fall back on slower thread handler
+> on error.
 
-The compatible string of clock is changed from *-2 to *-2.0
-on chassis 2. So updated it accordingly.
+Hi Michael,
 
-Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
----
- drivers/clk/clk-ppc-corenet.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I have recently stumbled over a related topic, which is the highly
+inconsistent placement of might_fault() or might_sleep() in certain
+classes of uaccess functions. Your patches seem completely reasonable,
+but it would be good to also fix the other problem, at least on
+the architectures we most care about.
 
-diff --git a/drivers/clk/clk-ppc-corenet.c b/drivers/clk/clk-ppc-corenet.c
-index a2d483f..e958707 100644
---- a/drivers/clk/clk-ppc-corenet.c
-+++ b/drivers/clk/clk-ppc-corenet.c
-@@ -260,7 +260,7 @@ static int __init ppc_corenet_clk_probe(struct platform_device *pdev)
- 
- static const struct of_device_id ppc_clk_ids[] __initconst = {
- 	{ .compatible = "fsl,qoriq-clockgen-1.0", },
--	{ .compatible = "fsl,qoriq-clockgen-2", },
-+	{ .compatible = "fsl,qoriq-clockgen-2.0", },
- 	{}
- };
- 
--- 
-1.8.0
+Given the most commonly used functions and a couple of architectures
+I'm familiar with, these are the ones that currently call might_fault()
+
+			x86-32	x86-64	arm	arm64	powerpc	s390	generic
+copy_to_user		-	x	-	-	-	x	x
+copy_from_user		-	x	-	-	-	x	x
+put_user		x	x	x	x	x	x	x
+get_user		x	x	x	x	x	x	x
+__copy_to_user		x	x	-	-	x	-	-
+__copy_from_user	x	x	-	-	x	-	-
+__put_user		-	-	x	-	x	-	-
+__get_user		-	-	x	-	x	-	-
+
+WTF?
+
+Calling might_fault() for every __get_user/__put_user is rather expensive
+because it turns what should be a single instruction (plus fixup) into an
+external function call.
+
+My feeling is that we should do might_fault() only in access_ok() to get
+the right balance.
+
+	Arnd
