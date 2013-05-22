@@ -1,46 +1,21 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1378C2C00A6
- for <linuxppc-dev@ozlabs.org>; Thu, 23 May 2013 00:52:17 +1000 (EST)
-Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 22 May 2013 20:16:17 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 75A903940023
- for <linuxppc-dev@ozlabs.org>; Wed, 22 May 2013 20:22:11 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r4MEprO1917892
- for <linuxppc-dev@ozlabs.org>; Wed, 22 May 2013 20:21:54 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r4MEpxL8001982
- for <linuxppc-dev@ozlabs.org>; Wed, 22 May 2013 14:52:00 GMT
-Message-ID: <519CDB6E.6020508@linux.vnet.ibm.com>
-Date: Wed, 22 May 2013 20:21:26 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Return-Path: <andrew@lunn.ch>
+Received: from londo.lunn.ch (londo.lunn.ch [IPv6:2001:1620:f9f:1000::1])
+ by ozlabs.org (Postfix) with ESMTP id D0D202C007A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2013 02:17:01 +1000 (EST)
+Date: Wed, 22 May 2013 18:16:21 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Subject: Re: [PATCH v4 00/12] net: mv643xx_eth DT support and fixes
+Message-ID: <20130522161621.GM2824@lunn.ch>
+References: <1367854420-8006-1-git-send-email-sebastian.hesselbarth@gmail.com>
+ <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
 MIME-Version: 1.0
-To: Stephane Eranian <eranian@google.com>
-Subject: Re: [PATCH 3/3] perf, x86,
- lbr: Demand proper privileges for PERF_SAMPLE_BRANCH_KERNEL
-References: <20130503121122.931661809@chello.nl>
- <20130503121256.230745028@chello.nl>
- <CABPqkBTvcQAyXfeiJwpPsNtbs4ffsVguXE631dK_rbzHpwBdOg@mail.gmail.com>
- <20130516090916.GF19669@dyad.programming.kicks-ass.net>
- <8578.1368699317@ale.ozlabs.ibm.com>
- <CABPqkBRpbh4BO7cMBysE+E+n5E_o_KesEhEZ3Wq49B3MeW786A@mail.gmail.com>
- <519C68FC.2060304@linux.vnet.ibm.com>
- <CABPqkBT+MqCyJHL_d6Wqjz321vxOxqS4AFKUH3D342Urq7ZBzQ@mail.gmail.com>
-In-Reply-To: <CABPqkBT+MqCyJHL_d6Wqjz321vxOxqS4AFKUH3D342Urq7ZBzQ@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Michael Neuling <mikey@neuling.org>,
- "ak@linux.intel.com" <ak@linux.intel.com>,
- Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
- Linux PPC dev <linuxppc-dev@ozlabs.org>, Ingo Molnar <mingo@kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
+Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ David Miller <davem@davemloft.net>, Lennert Buytenhek <buytenh@wantstofly.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,120 +25,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/22/2013 05:53 PM, Stephane Eranian wrote:
-> Hi,
-> 
-> 
-> 
-> On Wed, May 22, 2013 at 8:43 AM, Anshuman Khandual
-> <khandual@linux.vnet.ibm.com> wrote:
->> On 05/21/2013 07:25 PM, Stephane Eranian wrote:
->>> On Thu, May 16, 2013 at 12:15 PM, Michael Neuling <mikey@neuling.org> wrote:
->>>> Peter Zijlstra <peterz@infradead.org> wrote:
->>>>
->>>>> On Wed, May 15, 2013 at 03:37:22PM +0200, Stephane Eranian wrote:
->>>>>> On Fri, May 3, 2013 at 2:11 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
->>>>>>> We should always have proper privileges when requesting kernel data.
->>>>>>>
->>>>>>> Cc: Andi Kleen <ak@linux.intel.com>
->>>>>>> Cc: eranian@google.com
->>>>>>> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
->>>>>>> Link: http://lkml.kernel.org/n/tip-v0x9ky3ahzr6nm3c6ilwrili@git.kernel.org
->>>>>>> ---
->>>>>>>  arch/x86/kernel/cpu/perf_event_intel_lbr.c |    5 ++++-
->>>>>>>  1 file changed, 4 insertions(+), 1 deletion(-)
->>>>>>>
->>>>>>> --- a/arch/x86/kernel/cpu/perf_event_intel_lbr.c
->>>>>>> +++ b/arch/x86/kernel/cpu/perf_event_intel_lbr.c
->>>>>>> @@ -318,8 +318,11 @@ static void intel_pmu_setup_sw_lbr_filte
->>>>>>>         if (br_type & PERF_SAMPLE_BRANCH_USER)
->>>>>>>                 mask |= X86_BR_USER;
->>>>>>>
->>>>>>> -       if (br_type & PERF_SAMPLE_BRANCH_KERNEL)
->>>>>>> +       if (br_type & PERF_SAMPLE_BRANCH_KERNEL) {
->>>>>>> +               if (perf_paranoid_kernel() && !capable(CAP_SYS_ADMIN))
->>>>>>> +                       return -EACCES;
->>>>>>>                 mask |= X86_BR_KERNEL;
->>>>>>> +       }
->>>>>>>
->>>>>> This will prevent regular users from capturing kernel -> kernel branches.
->>>>>> But it won't prevent users from getting kernel -> user branches. Thus
->>>>>> some kernel address will still be captured. I guess they could be eliminated
->>>>>> by the sw_filter.
->>>>>>
->>>>>> When using LBR priv level filtering, the filter applies to the branch target
->>>>>> only.
->>>>>
->>>>> How about something like the below? It also adds the branch flags
->>>>> Mikey wanted for PowerPC.
->>>>
->>>> Peter,
->>>>
->>>> BTW PowerPC also has the ability to filter on conditional branches.  Any
->>>> chance we could add something like the follow to perf also?
->>>>
->>>> Mikey
->>>>
->>>> diff --git a/include/uapi/linux/perf_event.h b/include/uapi/linux/perf_event.h
->>>> index fb104e5..891c769 100644
->>>> --- a/include/uapi/linux/perf_event.h
->>>> +++ b/include/uapi/linux/perf_event.h
->>>> @@ -157,8 +157,9 @@ enum perf_branch_sample_type {
->>>>         PERF_SAMPLE_BRANCH_ANY_CALL     = 1U << 4, /* any call branch */
->>>>         PERF_SAMPLE_BRANCH_ANY_RETURN   = 1U << 5, /* any return branch */
->>>>         PERF_SAMPLE_BRANCH_IND_CALL     = 1U << 6, /* indirect calls */
->>>> +       PERF_SAMPLE_BRANCH_CONDITIONAL  = 1U << 7, /* conditional branches */
->>>>
->>> I would use PERF_SAMPLE_BRANCH_COND here.
->>>
->>>> -       PERF_SAMPLE_BRANCH_MAX          = 1U << 7, /* non-ABI */
->>>> +       PERF_SAMPLE_BRANCH_MAX          = 1U << 8, /* non-ABI */
->>>>  };
->>>>
->>>>  #define PERF_SAMPLE_BRANCH_PLM_ALL \
->>>> diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
->>>> index cdf58ec..5b0b89d 100644
->>>> --- a/tools/perf/builtin-record.c
->>>> +++ b/tools/perf/builtin-record.c
->>>> @@ -676,6 +676,7 @@ static const struct branch_mode branch_modes[] = {
->>>>         BRANCH_OPT("any_call", PERF_SAMPLE_BRANCH_ANY_CALL),
->>>>         BRANCH_OPT("any_ret", PERF_SAMPLE_BRANCH_ANY_RETURN),
->>>>         BRANCH_OPT("ind_call", PERF_SAMPLE_BRANCH_IND_CALL),
->>>> +       BRANCH_OPT("cnd", PERF_SAMPLE_BRANCH_CONDITIONAL),
->>>
->>> use "cond"
->>>
->>>>         BRANCH_END
->>>>  };
->>>>
->>>
->>> And if you do this, you also need to update the x86
->>> perf_event_intel_lbr.c mapping
->>> tables to fill out the entries for PERF_SAMPLE_BRANCH_COND:
->>>
->>>         [PERF_SAMPLE_BRANCH_COND]       = LBR_JCC,
->>>
->>> And you also need to update intel_pmu_setup_sw_lbr_filter()
->>> to handle the conversion to x86 instructions:
->>>
->>>        if (br_type & PERF_SAMPLE_BRANCH_COND)
->>>                 mask |= X86_BR_JCC;
->>>
->>>
->>> You also need to update the perf-record.txt documentation to list cond
->>> as a possible
->>> branch filter.
->>
->> Hey Stephane,
->>
->> I have incorporated all the review comments into the patch series
->> https://lkml.org/lkml/2013/5/22/51.
->>
-> I don't see how you can compile Patch 3/5:
-> 
-> + BRANCH_OPT("cond", PERF_SAMPLE_BRANCH_CONDITIONAL),
-> 
-> Needs to be PERF_SAMPLE_BRANCH_COND.
-> 
+On Tue, May 21, 2013 at 06:41:38PM +0200, Sebastian Hesselbarth wrote:
+> This patch set picks up work by Florian Fainelli bringing full DT
+> support to mv643xx_eth and Marvell SoCs using it.
 
-Ahh, sorry missed it, will fix it.
+Hi Sebastian
+
+I tested on my QNAP and topkick. Works great.
+
+Tested-by: Andrew Lunn <andrew@lunn.ch>
+
+   Andrew
