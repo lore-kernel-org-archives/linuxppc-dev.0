@@ -1,35 +1,30 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+Return-Path: <jason@lakedaemon.net>
+Received: from mho-01-ewr.mailhop.org (mho-03-ewr.mailhop.org [204.13.248.66])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D00912C00AB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2013 02:58:29 +1000 (EST)
-Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 22 May 2013 22:22:36 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id C98913940058
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 22:28:26 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r4MGwHxL11796888
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 22:28:17 +0530
-Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r4MGwMSA020867
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2013 02:58:24 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, dwg@au1.ibm.com
-Subject: [PATCH -V9 19/20] powerpc: use smp_rmb when looking at deposisted
- pgtable to store hash index
-Date: Wed, 22 May 2013 22:27:51 +0530
-Message-Id: <1369241872-15700-20-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1369241872-15700-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1369241872-15700-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 1DE0C2C030D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2013 03:02:05 +1000 (EST)
+Date: Wed, 22 May 2013 13:01:57 -0400
+From: Jason Cooper <jason@lakedaemon.net>
+To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Subject: Re: [PATCH v4 06/12] ARM: dove: add gigabit ethernet and mvmdio
+ device tree nodes
+Message-ID: <20130522170157.GF31290@titan.lakedaemon.net>
+References: <1367854420-8006-1-git-send-email-sebastian.hesselbarth@gmail.com>
+ <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
+ <1369154510-4927-7-git-send-email-sebastian.hesselbarth@gmail.com>
+ <20130521174849.GL26249@lunn.ch> <519C9333.20609@gmail.com>
+ <519C9822.9040909@windriver.com> <519C9A66.3050807@gmail.com>
+ <20130522131010.GB31290@titan.lakedaemon.net>
+ <20130522165908.GB12320@obsidianresearch.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130522165908.GB12320@obsidianresearch.com>
+Cc: Andrew Lunn <andrew@lunn.ch>, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, "tiejun.chen" <tiejun.chen@windriver.com>,
+ Lennert Buytenhek <buytenh@wantstofly.org>, linuxppc-dev@lists.ozlabs.org,
+ David Miller <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org,
+ Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,86 +34,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+On Wed, May 22, 2013 at 10:59:08AM -0600, Jason Gunthorpe wrote:
+> On Wed, May 22, 2013 at 09:10:10AM -0400, Jason Cooper wrote:
+> 
+> > iirc, our solution to this was to parse the ATAGs for the mac addr and
+> > update the appended dtb.  This way, module load and unload would work
+> > without loosing the mac address.  I believe Jason Gunthorpe has a patch
+> > to atags_to_fdt() for this...  This should allow us to get rid of the
+> > clocks hack.
+> 
+> Sorry, no, we don't use ATAGs here, our platforms start the kernel
+> with a correct DTB that has the correct mac address to use. My patch
+> was to have the driver accept it, and I think Sebastian has already
+> got that functionality...
 
-We need to use smb_rmb when looking at hpte slot array. Otherwise we could
-reorder the hpte_slot array load bfore even we marked the pmd trans huge.
-Related smb_wmb()s is done in pgtable_trans_huge_deposit when we deposit
-a pgtable.
+Yes, you're right.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/pgtable-ppc64.h | 15 +++++++++++++++
- arch/powerpc/mm/hugepage-hash64.c        |  6 +-----
- arch/powerpc/mm/pgtable_64.c             |  6 +-----
- 3 files changed, 17 insertions(+), 10 deletions(-)
+thx,
 
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
-index d046289..46db094 100644
---- a/arch/powerpc/include/asm/pgtable-ppc64.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-@@ -10,6 +10,7 @@
- #else
- #include <asm/pgtable-ppc64-4k.h>
- #endif
-+#include <asm/barrier.h>
- 
- #define FIRST_USER_ADDRESS	0
- 
-@@ -393,6 +394,20 @@ static inline void mark_hpte_slot_valid(unsigned char *hpte_slot_array,
- 	hpte_slot_array[index] = hidx << 4 | 0x1 << 3;
- }
- 
-+static inline char *get_hpte_slot_array(pmd_t *pmdp)
-+{
-+	/*
-+	 * The hpte hindex is stored in the pgtable whose address is in the
-+	 * second half of the PMD
-+	 *
-+	 * Order this load with the test for pmd_trans_huge in the caller
-+	 */
-+	smp_rmb();
-+	return *(char **)(pmdp + PTRS_PER_PMD);
-+
-+
-+}
-+
- extern void hpte_do_hugepage_flush(struct mm_struct *mm, unsigned long addr,
- 				   pmd_t *pmdp);
- #ifdef CONFIG_TRANSPARENT_HUGEPAGE
-diff --git a/arch/powerpc/mm/hugepage-hash64.c b/arch/powerpc/mm/hugepage-hash64.c
-index e430766..c3ba3d5 100644
---- a/arch/powerpc/mm/hugepage-hash64.c
-+++ b/arch/powerpc/mm/hugepage-hash64.c
-@@ -84,11 +84,7 @@ int __hash_page_thp(unsigned long ea, unsigned long access, unsigned long vsid,
- 
- 	vpn = hpt_vpn(ea, vsid, ssize);
- 	hash = hpt_hash(vpn, shift, ssize);
--	/*
--	 * The hpte hindex are stored in the pgtable whose address is in the
--	 * second half of the PMD
--	 */
--	hpte_slot_array = *(char **)(pmdp + PTRS_PER_PMD);
-+	hpte_slot_array = get_hpte_slot_array(pmdp);
- 
- 	valid = hpte_valid(hpte_slot_array, index);
- 	if (valid) {
-diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index 8dd7c83..19d6734 100644
---- a/arch/powerpc/mm/pgtable_64.c
-+++ b/arch/powerpc/mm/pgtable_64.c
-@@ -701,11 +701,7 @@ void hpte_do_hugepage_flush(struct mm_struct *mm, unsigned long addr,
- 	 * Flush all the hptes mapping this hugepage
- 	 */
- 	s_addr = addr & HPAGE_PMD_MASK;
--	/*
--	 * The hpte hindex are stored in the pgtable whose address is in the
--	 * second half of the PMD
--	 */
--	hpte_slot_array = *(char **)(pmdp + PTRS_PER_PMD);
-+	hpte_slot_array = get_hpte_slot_array(pmdp);
- 	/*
- 	 * IF we try to do a HUGE PTE update after a withdraw is done.
- 	 * we will find the below NULL. This happens when we do
--- 
-1.8.1.2
+Jason.
