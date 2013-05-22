@@ -1,21 +1,9 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E41B72C0096
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 10:16:01 +1000 (EST)
-Message-ID: <1369181713.6387.79.camel@pasglop>
-Subject: Re: [PATCH 0/3] Enable multiple MSI feature in pSeries
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alexander Gordeev <agordeev@redhat.com>
-Date: Wed, 22 May 2013 10:15:13 +1000
-In-Reply-To: <20130521144548.GB21632@dhcp-26-207.brq.redhat.com>
-References: <1358235536-32741-1-git-send-email-qiudayu@linux.vnet.ibm.com>
- <20130521144548.GB21632@dhcp-26-207.brq.redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, tglx@linutronix.de,
- Mike Qiu <qiudayu@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
+Return-Path: <michael@ozlabs.org>
+From: Michael Ellerman <michael@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc: Context switch more PMU related SPRs
+Date: Wed, 22 May 2013 12:31:12 +1000
+Message-Id: <1369189872-17660-1-git-send-email-michael@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,35 +13,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-05-21 at 16:45 +0200, Alexander Gordeev wrote:
-> On Tue, Jan 15, 2013 at 03:38:53PM +0800, Mike Qiu wrote:
-> > The test results is shown by 'cat /proc/interrups':
-> >           CPU0       CPU1       CPU2       CPU3       
-> > 16:     240458     261601     226310     200425      XICS Level     IPI
-> > 17:          0          0          0          0      XICS Level     RAS_EPOW
-> > 18:         10          0          3          2      XICS Level     hvc_console
-> > 19:     122182      28481      28527      28864      XICS Level     ibmvscsi
-> > 20:        506    7388226        108        118      XICS Level     eth0
-> > 21:          6          5          5          5      XICS Level     host1-0
-> > 22:        817        814        816        813      XICS Level     host1-1
-> 
-> Hi Mike,
-> 
-> I am curious if pSeries firmware allows changing affinity masks independently
-> for multiple MSIs? I.e. in your example, would it be possible to assign IRQ21
-> and IRQ22 to different CPUs?
+In commit 9353374 "Context switch the new EBB SPRs" we added support for
+context switching some new EBB SPRs. However despite four of us signing
+off on that patch we missed some. To be fair these are not actually new
+SPRs, but they are now potentially user accessible so need to be context
+switched.
 
-Yes. Each interrupt has its own affinity, whether it's an MSI or not,
-the affinity is not driven by the address.
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/include/asm/processor.h |    6 ++++++
+ arch/powerpc/kernel/asm-offsets.c    |    6 ++++++
+ arch/powerpc/kernel/entry_64.S       |   28 ++++++++++++++++++++++++++++
+ 3 files changed, 40 insertions(+)
 
-Cheers,
-Ben.
-
-> Thanks!
-> 
-> > LOC:     398077     316725     231882     203049   Local timer interrupts
-> > SPU:       1659        919        961        903   Spurious interrupts
-> > CNT:          0          0          0          0   Performance
-> > monitoring interrupts
-> > MCE:          0          0          0          0   Machine check exceptions
-> 
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index d7e67ca..594db6b 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -284,6 +284,12 @@ struct thread_struct {
+ 	unsigned long	ebbrr;
+ 	unsigned long	ebbhr;
+ 	unsigned long	bescr;
++	unsigned long	siar;
++	unsigned long	sdar;
++	unsigned long	sier;
++	unsigned long	mmcr0;
++	unsigned long	mmcr2;
++	unsigned long	mmcra;
+ #endif
+ };
+ 
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index b51a97c..6f16ffa 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -127,6 +127,12 @@ int main(void)
+ 	DEFINE(THREAD_BESCR, offsetof(struct thread_struct, bescr));
+ 	DEFINE(THREAD_EBBHR, offsetof(struct thread_struct, ebbhr));
+ 	DEFINE(THREAD_EBBRR, offsetof(struct thread_struct, ebbrr));
++	DEFINE(THREAD_SIAR, offsetof(struct thread_struct, siar));
++	DEFINE(THREAD_SDAR, offsetof(struct thread_struct, sdar));
++	DEFINE(THREAD_SIER, offsetof(struct thread_struct, sier));
++	DEFINE(THREAD_MMCR0, offsetof(struct thread_struct, mmcr0));
++	DEFINE(THREAD_MMCR2, offsetof(struct thread_struct, mmcr2));
++	DEFINE(THREAD_MMCRA, offsetof(struct thread_struct, mmcra));
+ #endif
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ 	DEFINE(PACATMSCRATCH, offsetof(struct paca_struct, tm_scratch));
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 51cfb8f..0e9095e 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -465,6 +465,20 @@ BEGIN_FTR_SECTION
+ 	std	r0, THREAD_EBBHR(r3)
+ 	mfspr	r0, SPRN_EBBRR
+ 	std	r0, THREAD_EBBRR(r3)
++
++	/* PMU registers made user read/(write) by EBB */
++	mfspr	r0, SPRN_SIAR
++	std	r0, THREAD_SIAR(r3)
++	mfspr	r0, SPRN_SDAR
++	std	r0, THREAD_SDAR(r3)
++	mfspr	r0, SPRN_SIER
++	std	r0, THREAD_SIER(r3)
++	mfspr	r0, SPRN_MMCR0
++	std	r0, THREAD_MMCR0(r3)
++	mfspr	r0, SPRN_MMCR2
++	std	r0, THREAD_MMCR2(r3)
++	mfspr	r0, SPRN_MMCRA
++	std	r0, THREAD_MMCRA(r3)
+ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ #endif
+ 
+@@ -560,6 +574,20 @@ BEGIN_FTR_SECTION
+ 	ld	r0, THREAD_EBBRR(r4)
+ 	mtspr	SPRN_EBBRR, r0
+ 
++	/* PMU registers made user read/(write) by EBB */
++	ld	r0, THREAD_SIAR(r4)
++	mtspr	SPRN_SIAR, r0
++	ld	r0, THREAD_SDAR(r4)
++	mtspr	SPRN_SDAR, r0
++	ld	r0, THREAD_SIER(r4)
++	mtspr	SPRN_SIER, r0
++	ld	r0, THREAD_MMCR0(r4)
++	mtspr	SPRN_MMCR0, r0
++	ld	r0, THREAD_MMCR2(r4)
++	mtspr	SPRN_MMCR2, r0
++	ld	r0, THREAD_MMCRA(r4)
++	mtspr	SPRN_MMCRA, r0
++
+ 	ld	r0,THREAD_TAR(r4)
+ 	mtspr	SPRN_TAR,r0
+ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+-- 
+1.7.10.4
