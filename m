@@ -2,30 +2,30 @@ Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6559A2C00A7
+ by ozlabs.org (Postfix) with ESMTPS id 5CE3C2C00A3
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2013 02:58:27 +1000 (EST)
 Received: from /spool/local
  by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 22 May 2013 22:21:43 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 6F72E394004D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 22:28:20 +0530 (IST)
+ Wed, 22 May 2013 22:21:45 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id CF91B1258054
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 22:30:19 +0530 (IST)
 Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r4MGwB7Q59506820
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 22:28:11 +0530
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r4MGwGSS9109920
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 22:28:16 +0530
 Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
  by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r4MGwG51020399
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2013 02:58:18 +1000
+ r4MGwJMU020623
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2013 02:58:20 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, dwg@au1.ibm.com
-Subject: [PATCH -V9 01/20] mm/THP: Use pmd_populate to update the pmd with
- pgtable_t pointer
-Date: Wed, 22 May 2013 22:27:33 +0530
-Message-Id: <1369241872-15700-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V9 12/20] powerpc: Update gup_pmd_range to handle transparent
+ hugepages
+Date: Wed, 22 May 2013 22:27:44 +0530
+Message-Id: <1369241872-15700-13-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1369241872-15700-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1369241872-15700-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -41,34 +41,38 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-We should not use set_pmd_at to update pmd_t with pgtable_t pointer. set_pmd_at
-is used to set pmd with huge pte entries and architectures like ppc64, clear
-few flags from the pte when saving a new entry. Without this change we observe
-bad pte errors like below on ppc64 with THP enabled.
-
-BUG: Bad page map in process ld mm=0xc000001ee39f4780 pte:7fc3f37848000001 pmd:c000001ec0000000
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- mm/huge_memory.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ arch/powerpc/mm/gup.c | 15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
 
-diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-index 03a89a2..362c329 100644
---- a/mm/huge_memory.c
-+++ b/mm/huge_memory.c
-@@ -2325,7 +2325,12 @@ static void collapse_huge_page(struct mm_struct *mm,
- 		pte_unmap(pte);
- 		spin_lock(&mm->page_table_lock);
- 		BUG_ON(!pmd_none(*pmd));
--		set_pmd_at(mm, address, pmd, _pmd);
+diff --git a/arch/powerpc/mm/gup.c b/arch/powerpc/mm/gup.c
+index 4b921af..3d36fd7 100644
+--- a/arch/powerpc/mm/gup.c
++++ b/arch/powerpc/mm/gup.c
+@@ -66,9 +66,20 @@ static int gup_pmd_range(pud_t pud, unsigned long addr, unsigned long end,
+ 		pmd_t pmd = *pmdp;
+ 
+ 		next = pmd_addr_end(addr, end);
+-		if (pmd_none(pmd))
 +		/*
-+		 * We can only use set_pmd_at when establishing
-+		 * hugepmds and never for establishing regular pmds that
-+		 * points to regular pagetables. Use pmd_populate for that
++		 * The pmd_trans_splitting() check below explains why
++		 * pmdp_splitting_flush has to flush the tlb, to stop
++		 * this gup-fast code from running while we set the
++		 * splitting bit in the pmd. Returning zero will take
++		 * the slow path that will call wait_split_huge_page()
++		 * if the pmd is still in splitting state. gup-fast
++		 * can't because it has irq disabled and
++		 * wait_split_huge_page() would never return as the
++		 * tlb flush IPI wouldn't run.
 +		 */
-+		pmd_populate(mm, pmd, pmd_pgtable(_pmd));
- 		spin_unlock(&mm->page_table_lock);
- 		anon_vma_unlock_write(vma->anon_vma);
- 		goto out;
++		if (pmd_none(pmd) || pmd_trans_splitting(pmd))
+ 			return 0;
+-		if (pmd_huge(pmd)) {
++		if (pmd_huge(pmd) || pmd_large(pmd)) {
+ 			if (!gup_hugepte((pte_t *)pmdp, PMD_SIZE, addr, next,
+ 					 write, pages, nr))
+ 				return 0;
 -- 
 1.8.1.2
