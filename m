@@ -1,30 +1,30 @@
-Return-Path: <jason@lakedaemon.net>
-Received: from mho-01-ewr.mailhop.org (mho-03-ewr.mailhop.org [204.13.248.66])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id BABBD2C00A2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2013 04:49:43 +1000 (EST)
-Date: Wed, 22 May 2013 14:49:36 -0400
-From: Jason Cooper <jason@lakedaemon.net>
-To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-Subject: Re: [PATCH v4 06/12] ARM: dove: add gigabit ethernet and mvmdio
- device tree nodes
-Message-ID: <20130522184936.GK31290@titan.lakedaemon.net>
-References: <519C9333.20609@gmail.com> <519C9822.9040909@windriver.com>
- <519C9A66.3050807@gmail.com>
- <20130522131010.GB31290@titan.lakedaemon.net>
- <20130522165908.GB12320@obsidianresearch.com>
- <519D0143.1000203@gmail.com>
- <20130522173505.GH31290@titan.lakedaemon.net>
- <519D038C.9000605@gmail.com>
- <20130522174815.GI31290@titan.lakedaemon.net>
- <519D1204.4090701@gmail.com>
+Return-Path: <sebastian.hesselbarth@gmail.com>
+Received: from mail-ee0-f54.google.com (mail-ee0-f54.google.com [74.125.83.54])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1981B2C00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2013 04:51:37 +1000 (EST)
+Received: by mail-ee0-f54.google.com with SMTP id e50so1307415eek.27
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 11:51:33 -0700 (PDT)
+Message-ID: <519D13AE.4020807@gmail.com>
+Date: Wed, 22 May 2013 20:51:26 +0200
+From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <519D1204.4090701@gmail.com>
-Cc: Andrew Lunn <andrew@lunn.ch>, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org,
- Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Subject: Re: [PATCH v4 06/12] ARM: dove: add gigabit ethernet and mvmdio device
+ tree nodes
+References: <1367854420-8006-1-git-send-email-sebastian.hesselbarth@gmail.com>
+ <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
+ <1369154510-4927-7-git-send-email-sebastian.hesselbarth@gmail.com>
+ <20130521174849.GL26249@lunn.ch> <519C9333.20609@gmail.com>
+ <519C9822.9040909@windriver.com> <519C9A66.3050807@gmail.com>
+ <20130522131010.GB31290@titan.lakedaemon.net>
+ <20130522165908.GB12320@obsidianresearch.com> <519D0143.1000203@gmail.com>
+ <20130522182448.GA17206@obsidianresearch.com>
+In-Reply-To: <20130522182448.GA17206@obsidianresearch.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
  "tiejun.chen" <tiejun.chen@windriver.com>,
  Lennert Buytenhek <buytenh@wantstofly.org>, linuxppc-dev@lists.ozlabs.org,
  David Miller <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org
@@ -37,26 +37,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 22, 2013 at 08:44:20PM +0200, Sebastian Hesselbarth wrote:
-> On 05/22/2013 07:48 PM, Jason Cooper wrote:
-> >On Wed, May 22, 2013 at 07:42:36PM +0200, Sebastian Hesselbarth wrote:
-> >>Hmm, maybe a little bit too early. While restoring the MAC address now
-> >>works, another bug arises which I guess is related with phy setup
-> >>and aneg.
-> >>
-> >>Will investigate and update patch set accordingly.
-> >
-> >Cool, chances are, we should be able to take that patch in by itself for
-> >this merge window...
-> 
-> Which patch do you mean? The local-mac-address workaround will only be
-> available for DT mv643xx_eth because it uses the DT node to store the
-> MAC.
+On 05/22/2013 08:24 PM, Jason Gunthorpe wrote:
+> On Wed, May 22, 2013 at 07:32:51PM +0200, Sebastian Hesselbarth wrote:
+>> Not neccessary anyway, after talking Jason C in a Kirkwood-only
+>> workaround I prepared a patch that reads mac address registers early
+>> and stores it in the local-mac-address property.
+>
+> That sounds great, but, FWIW, our bootloaders don't set the MAC
+> address registers. Does the work around only trigger if the
+> local-mac-address property is 0?
 
-I thought you were replacing the unconditional ethernet clock grabbing
-with reading the mac from the registers and updating the dtb?  In
-mach-kirkwood/board-dt.c?
+I already thought about bootloaders not setting the register, but I will
+not start parsing 1001 places for a valid MAC only for those. Also
+reading the MAC address registers is default behavior of mv643xx_eth if
+no MAC address is passed through platform_data.
 
-confused. :-/
+But you are right, there is plenty of sanity checks in the workaround to
+ensure that local-mac-address is only overwritten by it when
+- you are on DT
+- there is no valid MAC address in that node (of_get_mac_address)
+- there is a local-mac-address property with a length of 6 bytes
 
-Jason.
+So this workaround only applies on DT booted kernels with no mac set in
+DT.
+
+Sebastian
