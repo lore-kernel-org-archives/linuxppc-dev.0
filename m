@@ -2,30 +2,30 @@ Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e28smtp03.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E974E2C00AD
+ by ozlabs.org (Postfix) with ESMTPS id 032322C00AE
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2013 02:58:27 +1000 (EST)
 Received: from /spool/local
  by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 22 May 2013 22:23:18 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id A96F0125804E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 22:30:18 +0530 (IST)
+ Wed, 22 May 2013 22:23:19 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id C9851125804E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 22:30:19 +0530 (IST)
 Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r4MGwFwu7078202
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 22:28:15 +0530
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r4MGwFBg63242386
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 22:28:16 +0530
 Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
  by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r4MGwJKD020570
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2013 02:58:20 +1000
+ r4MGwHow020476
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2013 02:58:19 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, dwg@au1.ibm.com
-Subject: [PATCH -V9 09/20] powerpc: move find_linux_pte_or_hugepte and
- gup_hugepte to common code
-Date: Wed, 22 May 2013 22:27:41 +0530
-Message-Id: <1369241872-15700-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V9 04/20] mm/THP: withdraw the pgtable after pmdp related
+ operations
+Date: Wed, 22 May 2013 22:27:36 +0530
+Message-Id: <1369241872-15700-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1369241872-15700-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1369241872-15700-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -41,368 +41,36 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-We will use this in the later patch for handling THP pages
+For architectures like ppc64 we look at deposited pgtable when
+calling pmdp_get_and_clear. So do the pgtable_trans_huge_withdraw
+after finishing pmdp related operations.
 
-Reviewed-by: David Gibson <dwg@au1.ibm.com>
+Reviewed-by: Andrea Arcangeli <aarcange@redhat.com>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/hugetlb.h       |   8 +-
- arch/powerpc/include/asm/pgtable-ppc64.h |  13 --
- arch/powerpc/include/asm/pgtable.h       |   2 +
- arch/powerpc/mm/Makefile                 |   2 +-
- arch/powerpc/mm/hugetlbpage.c            | 251 ++++++++++++++++---------------
- 5 files changed, 138 insertions(+), 138 deletions(-)
+ mm/huge_memory.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/hugetlb.h b/arch/powerpc/include/asm/hugetlb.h
-index f2498c8..d750336 100644
---- a/arch/powerpc/include/asm/hugetlb.h
-+++ b/arch/powerpc/include/asm/hugetlb.h
-@@ -191,8 +191,14 @@ static inline void flush_hugetlb_page(struct vm_area_struct *vma,
- 				      unsigned long vmaddr)
- {
- }
--#endif /* CONFIG_HUGETLB_PAGE */
- 
-+#define hugepd_shift(x) 0
-+static inline pte_t *hugepte_offset(hugepd_t *hpdp, unsigned long addr,
-+				    unsigned pdshift)
-+{
-+	return 0;
-+}
-+#endif /* CONFIG_HUGETLB_PAGE */
- 
- /*
-  * FSL Book3E platforms require special gpage handling - the gpages
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
-index d8642fb..74ce13b 100644
---- a/arch/powerpc/include/asm/pgtable-ppc64.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-@@ -367,19 +367,6 @@ static inline pte_t *find_linux_pte(pgd_t *pgdir, unsigned long ea)
- 	return pt;
- }
- 
--#ifdef CONFIG_HUGETLB_PAGE
--pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea,
--				 unsigned *shift);
--#else
--static inline pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea,
--					       unsigned *shift)
--{
--	if (shift)
--		*shift = 0;
--	return find_linux_pte(pgdir, ea);
--}
--#endif /* !CONFIG_HUGETLB_PAGE */
--
- #endif /* __ASSEMBLY__ */
- 
- /*
-diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
-index d53db93..959d575 100644
---- a/arch/powerpc/include/asm/pgtable.h
-+++ b/arch/powerpc/include/asm/pgtable.h
-@@ -224,6 +224,8 @@ extern int gup_hugepte(pte_t *ptep, unsigned long sz, unsigned long addr,
- #define pmd_large(pmd)		0
- #define has_transparent_hugepage() 0
- #endif
-+pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea,
-+				 unsigned *shift);
- #endif /* __ASSEMBLY__ */
- 
- #endif /* __KERNEL__ */
-diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
-index cf16b57..fde36e6 100644
---- a/arch/powerpc/mm/Makefile
-+++ b/arch/powerpc/mm/Makefile
-@@ -28,8 +28,8 @@ obj-$(CONFIG_44x)		+= 44x_mmu.o
- obj-$(CONFIG_PPC_FSL_BOOK3E)	+= fsl_booke_mmu.o
- obj-$(CONFIG_NEED_MULTIPLE_NODES) += numa.o
- obj-$(CONFIG_PPC_MM_SLICES)	+= slice.o
--ifeq ($(CONFIG_HUGETLB_PAGE),y)
- obj-y				+= hugetlbpage.o
-+ifeq ($(CONFIG_HUGETLB_PAGE),y)
- obj-$(CONFIG_PPC_STD_MMU_64)	+= hugetlbpage-hash64.o
- obj-$(CONFIG_PPC_BOOK3E_MMU)	+= hugetlbpage-book3e.o
- endif
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index 237c8e5..2865077 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -21,6 +21,9 @@
- #include <asm/pgalloc.h>
- #include <asm/tlb.h>
- #include <asm/setup.h>
-+#include <asm/hugetlb.h>
-+
-+#ifdef CONFIG_HUGETLB_PAGE
- 
- #define PAGE_SHIFT_64K	16
- #define PAGE_SHIFT_16M	24
-@@ -100,66 +103,6 @@ int pgd_huge(pgd_t pgd)
- }
- #endif
- 
--/*
-- * We have 4 cases for pgds and pmds:
-- * (1) invalid (all zeroes)
-- * (2) pointer to next table, as normal; bottom 6 bits == 0
-- * (3) leaf pte for huge page, bottom two bits != 00
-- * (4) hugepd pointer, bottom two bits == 00, next 4 bits indicate size of table
-- */
--pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea, unsigned *shift)
--{
--	pgd_t *pg;
--	pud_t *pu;
--	pmd_t *pm;
--	pte_t *ret_pte;
--	hugepd_t *hpdp = NULL;
--	unsigned pdshift = PGDIR_SHIFT;
--
--	if (shift)
--		*shift = 0;
--
--	pg = pgdir + pgd_index(ea);
--
--	if (pgd_huge(*pg)) {
--		ret_pte = (pte_t *) pg;
--		goto out;
--	} else if (is_hugepd(pg))
--		hpdp = (hugepd_t *)pg;
--	else if (!pgd_none(*pg)) {
--		pdshift = PUD_SHIFT;
--		pu = pud_offset(pg, ea);
--
--		if (pud_huge(*pu)) {
--			ret_pte = (pte_t *) pu;
--			goto out;
--		} else if (is_hugepd(pu))
--			hpdp = (hugepd_t *)pu;
--		else if (!pud_none(*pu)) {
--			pdshift = PMD_SHIFT;
--			pm = pmd_offset(pu, ea);
--
--			if (pmd_huge(*pm)) {
--				ret_pte = (pte_t *) pm;
--				goto out;
--			} else if (is_hugepd(pm))
--				hpdp = (hugepd_t *)pm;
--			else if (!pmd_none(*pm))
--				return pte_offset_kernel(pm, ea);
--		}
--	}
--	if (!hpdp)
--		return NULL;
--
--	ret_pte = hugepte_offset(hpdp, ea, pdshift);
--	pdshift = hugepd_shift(*hpdp);
--out:
--	if (shift)
--		*shift = pdshift;
--	return ret_pte;
--}
--EXPORT_SYMBOL_GPL(find_linux_pte_or_hugepte);
--
- pte_t *huge_pte_offset(struct mm_struct *mm, unsigned long addr)
- {
- 	return find_linux_pte_or_hugepte(mm->pgd, addr, NULL);
-@@ -753,69 +696,6 @@ follow_huge_pmd(struct mm_struct *mm, unsigned long address,
- 	return NULL;
- }
- 
--int gup_hugepte(pte_t *ptep, unsigned long sz, unsigned long addr,
--		unsigned long end, int write, struct page **pages, int *nr)
--{
--	unsigned long mask;
--	unsigned long pte_end;
--	struct page *head, *page, *tail;
--	pte_t pte;
--	int refs;
--
--	pte_end = (addr + sz) & ~(sz-1);
--	if (pte_end < end)
--		end = pte_end;
--
--	pte = *ptep;
--	mask = _PAGE_PRESENT | _PAGE_USER;
--	if (write)
--		mask |= _PAGE_RW;
--
--	if ((pte_val(pte) & mask) != mask)
--		return 0;
--
--	/* hugepages are never "special" */
--	VM_BUG_ON(!pfn_valid(pte_pfn(pte)));
--
--	refs = 0;
--	head = pte_page(pte);
--
--	page = head + ((addr & (sz-1)) >> PAGE_SHIFT);
--	tail = page;
--	do {
--		VM_BUG_ON(compound_head(page) != head);
--		pages[*nr] = page;
--		(*nr)++;
--		page++;
--		refs++;
--	} while (addr += PAGE_SIZE, addr != end);
--
--	if (!page_cache_add_speculative(head, refs)) {
--		*nr -= refs;
--		return 0;
--	}
--
--	if (unlikely(pte_val(pte) != pte_val(*ptep))) {
--		/* Could be optimized better */
--		*nr -= refs;
--		while (refs--)
--			put_page(head);
--		return 0;
--	}
--
--	/*
--	 * Any tail page need their mapcount reference taken before we
--	 * return.
--	 */
--	while (refs--) {
--		if (PageTail(tail))
--			get_huge_page_tail(tail);
--		tail++;
--	}
--
--	return 1;
--}
--
- static unsigned long hugepte_addr_end(unsigned long addr, unsigned long end,
- 				      unsigned long sz)
- {
-@@ -1032,3 +912,128 @@ void flush_dcache_icache_hugepage(struct page *page)
- 		}
- 	}
- }
-+
-+#endif /* CONFIG_HUGETLB_PAGE */
-+
-+/*
-+ * We have 4 cases for pgds and pmds:
-+ * (1) invalid (all zeroes)
-+ * (2) pointer to next table, as normal; bottom 6 bits == 0
-+ * (3) leaf pte for huge page, bottom two bits != 00
-+ * (4) hugepd pointer, bottom two bits == 00, next 4 bits indicate size of table
-+ */
-+pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea, unsigned *shift)
-+{
-+	pgd_t *pg;
-+	pud_t *pu;
-+	pmd_t *pm;
-+	pte_t *ret_pte;
-+	hugepd_t *hpdp = NULL;
-+	unsigned pdshift = PGDIR_SHIFT;
-+
-+	if (shift)
-+		*shift = 0;
-+
-+	pg = pgdir + pgd_index(ea);
-+
-+	if (pgd_huge(*pg)) {
-+		ret_pte = (pte_t *) pg;
-+		goto out;
-+	} else if (is_hugepd(pg))
-+		hpdp = (hugepd_t *)pg;
-+	else if (!pgd_none(*pg)) {
-+		pdshift = PUD_SHIFT;
-+		pu = pud_offset(pg, ea);
-+
-+		if (pud_huge(*pu)) {
-+			ret_pte = (pte_t *) pu;
-+			goto out;
-+		} else if (is_hugepd(pu))
-+			hpdp = (hugepd_t *)pu;
-+		else if (!pud_none(*pu)) {
-+			pdshift = PMD_SHIFT;
-+			pm = pmd_offset(pu, ea);
-+
-+			if (pmd_huge(*pm)) {
-+				ret_pte = (pte_t *) pm;
-+				goto out;
-+			} else if (is_hugepd(pm))
-+				hpdp = (hugepd_t *)pm;
-+			else if (!pmd_none(*pm))
-+				return pte_offset_kernel(pm, ea);
-+		}
-+	}
-+	if (!hpdp)
-+		return NULL;
-+
-+	ret_pte = hugepte_offset(hpdp, ea, pdshift);
-+	pdshift = hugepd_shift(*hpdp);
-+out:
-+	if (shift)
-+		*shift = pdshift;
-+	return ret_pte;
-+}
-+EXPORT_SYMBOL_GPL(find_linux_pte_or_hugepte);
-+
-+int gup_hugepte(pte_t *ptep, unsigned long sz, unsigned long addr,
-+		unsigned long end, int write, struct page **pages, int *nr)
-+{
-+	unsigned long mask;
-+	unsigned long pte_end;
-+	struct page *head, *page, *tail;
-+	pte_t pte;
-+	int refs;
-+
-+	pte_end = (addr + sz) & ~(sz-1);
-+	if (pte_end < end)
-+		end = pte_end;
-+
-+	pte = *ptep;
-+	mask = _PAGE_PRESENT | _PAGE_USER;
-+	if (write)
-+		mask |= _PAGE_RW;
-+
-+	if ((pte_val(pte) & mask) != mask)
-+		return 0;
-+
-+	/* hugepages are never "special" */
-+	VM_BUG_ON(!pfn_valid(pte_pfn(pte)));
-+
-+	refs = 0;
-+	head = pte_page(pte);
-+
-+	page = head + ((addr & (sz-1)) >> PAGE_SHIFT);
-+	tail = page;
-+	do {
-+		VM_BUG_ON(compound_head(page) != head);
-+		pages[*nr] = page;
-+		(*nr)++;
-+		page++;
-+		refs++;
-+	} while (addr += PAGE_SIZE, addr != end);
-+
-+	if (!page_cache_add_speculative(head, refs)) {
-+		*nr -= refs;
-+		return 0;
-+	}
-+
-+	if (unlikely(pte_val(pte) != pte_val(*ptep))) {
-+		/* Could be optimized better */
-+		*nr -= refs;
-+		while (refs--)
-+			put_page(head);
-+		return 0;
-+	}
-+
-+	/*
-+	 * Any tail page need their mapcount reference taken before we
-+	 * return.
-+	 */
-+	while (refs--) {
-+		if (PageTail(tail))
-+			get_huge_page_tail(tail);
-+		tail++;
-+	}
-+
-+	return 1;
-+}
+diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+index 6b785e1..5c4fac2 100644
+--- a/mm/huge_memory.c
++++ b/mm/huge_memory.c
+@@ -1360,9 +1360,15 @@ int zap_huge_pmd(struct mmu_gather *tlb, struct vm_area_struct *vma,
+ 		struct page *page;
+ 		pgtable_t pgtable;
+ 		pmd_t orig_pmd;
+-		pgtable = pgtable_trans_huge_withdraw(tlb->mm, pmd);
++		/*
++		 * For architectures like ppc64 we look at deposited pgtable
++		 * when calling pmdp_get_and_clear. So do the
++		 * pgtable_trans_huge_withdraw after finishing pmdp related
++		 * operations.
++		 */
+ 		orig_pmd = pmdp_get_and_clear(tlb->mm, addr, pmd);
+ 		tlb_remove_pmd_tlb_entry(tlb, pmd, addr);
++		pgtable = pgtable_trans_huge_withdraw(tlb->mm, pmd);
+ 		if (is_huge_zero_pmd(orig_pmd)) {
+ 			tlb->mm->nr_ptes--;
+ 			spin_unlock(&tlb->mm->page_table_lock);
 -- 
 1.8.1.2
