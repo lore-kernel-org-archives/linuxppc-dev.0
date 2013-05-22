@@ -1,32 +1,29 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
- [212.227.126.187]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id CE3CA2C007E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 19:25:56 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Subject: Re: [PATCH v2 00/10] uaccess: better might_sleep/might_fault behavior
-Date: Wed, 22 May 2013 11:25:36 +0200
-References: <cover.1368702323.git.mst@redhat.com>
-In-Reply-To: <cover.1368702323.git.mst@redhat.com>
+Return-Path: <sebastian.hesselbarth@gmail.com>
+Received: from mail-ea0-x232.google.com (mail-ea0-x232.google.com
+ [IPv6:2a00:1450:4013:c01::232])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2BA5F2C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 19:43:23 +1000 (EST)
+Received: by mail-ea0-f178.google.com with SMTP id q16so1032026ead.9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 02:43:19 -0700 (PDT)
+Message-ID: <519C9333.20609@gmail.com>
+Date: Wed, 22 May 2013 11:43:15 +0200
+From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <201305221125.36284.arnd@arndb.de>
-Cc: linux-m32r-ja@ml.linux-m32r.org, kvm@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- David Howells <dhowells@redhat.com>, linux-mm@kvack.org,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- linux-arch@vger.kernel.org, linux-am33-list@redhat.com,
- Hirokazu Takata <takata@linux-m32r.org>, x86@kernel.org,
- Ingo Molnar <mingo@redhat.com>, microblaze-uclinux@itee.uq.edu.au,
- Chris Metcalf <cmetcalf@tilera.com>, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>,
- linux-m32r@ml.linux-m32r.org, linux-kernel@vger.kernel.org,
- Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
- linuxppc-dev@lists.ozlabs.org
+To: Andrew Lunn <andrew@lunn.ch>
+Subject: Re: [PATCH v4 06/12] ARM: dove: add gigabit ethernet and mvmdio device
+ tree nodes
+References: <1367854420-8006-1-git-send-email-sebastian.hesselbarth@gmail.com>
+ <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
+ <1369154510-4927-7-git-send-email-sebastian.hesselbarth@gmail.com>
+ <20130521174849.GL26249@lunn.ch>
+In-Reply-To: <20130521174849.GL26249@lunn.ch>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Jason Cooper <jason@lakedaemon.net>, linux-kernel@vger.kernel.org,
+ Lennert Buytenhek <buytenh@wantstofly.org>, netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,56 +33,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday 16 May 2013, Michael S. Tsirkin wrote:
-> This improves the might_fault annotations used
-> by uaccess routines:
-> 
-> 1. The only reason uaccess routines might sleep
->    is if they fault. Make this explicit for
->    all architectures.
-> 2. Accesses (e.g through socket ops) to kernel memory
->    with KERNEL_DS like net/sunrpc does will never sleep.
->    Remove an unconditinal might_sleep in the inline
->    might_fault in kernel.h
->    (used when PROVE_LOCKING is not set).
-> 3. Accesses with pagefault_disable return EFAULT
->    but won't cause caller to sleep.
->    Check for that and avoid might_sleep when
->    PROVE_LOCKING is set.
-> 
-> I'd like these changes to go in for the benefit of
-> the vhost driver where we want to call socket ops
-> under a spinlock, and fall back on slower thread handler
-> on error.
+On 05/21/2013 07:48 PM, Andrew Lunn wrote:
+> On Tue, May 21, 2013 at 06:41:44PM +0200, Sebastian Hesselbarth wrote:
+>> This patch adds orion-eth and mvmdio device tree nodes for DT enabled
+>> Dove boards. As there is only one ethernet controller on Dove, a default
+>> phy node is also added with a note to set its reg property on a per-board
+>> basis.
+>>
+>> Signed-off-by: Sebastian Hesselbarth<sebastian.hesselbarth@gmail.com>
+>> ---
+...
+>> +			ethernet-port@0 {
+>> +				device_type = "network";
+>> +				compatible = "marvell,orion-eth-port";
+>> +				reg =<0>;
+>> +				interrupts =<29>;
+>> +				/* overwrite MAC address in bootloader */
+>> +				local-mac-address = [00 00 00 00 00 00];
+>
+> Hi Sebastian
+>
+> Its probably a good idea to set the local administration bit in this
+> MAC address. i.e. first byte is 02.
 
-Hi Michael,
+Andrew,
 
-I have recently stumbled over a related topic, which is the highly
-inconsistent placement of might_fault() or might_sleep() in certain
-classes of uaccess functions. Your patches seem completely reasonable,
-but it would be good to also fix the other problem, at least on
-the architectures we most care about.
+we just need an invalid address here to trigger the default behavior of
+the driver and load the MAC address from its register. As PPC binding
+documentation also has all zero, I just took it.
 
-Given the most commonly used functions and a couple of architectures
-I'm familiar with, these are the ones that currently call might_fault()
-
-			x86-32	x86-64	arm	arm64	powerpc	s390	generic
-copy_to_user		-	x	-	-	-	x	x
-copy_from_user		-	x	-	-	-	x	x
-put_user		x	x	x	x	x	x	x
-get_user		x	x	x	x	x	x	x
-__copy_to_user		x	x	-	-	x	-	-
-__copy_from_user	x	x	-	-	x	-	-
-__put_user		-	-	x	-	x	-	-
-__get_user		-	-	x	-	x	-	-
-
-WTF?
-
-Calling might_fault() for every __get_user/__put_user is rather expensive
-because it turns what should be a single instruction (plus fixup) into an
-external function call.
-
-My feeling is that we should do might_fault() only in access_ok() to get
-the right balance.
-
-	Arnd
+Sebastian
