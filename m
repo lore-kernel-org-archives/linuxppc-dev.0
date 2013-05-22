@@ -1,31 +1,31 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 89E1F2C00A4
+ (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D00912C00AB
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2013 02:58:29 +1000 (EST)
 Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 22 May 2013 22:21:12 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 4CED1394004D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 22:28:25 +0530 (IST)
+ Wed, 22 May 2013 22:22:36 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id C98913940058
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 22:28:26 +0530 (IST)
 Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r4MGwJvj3736030
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 22:28:19 +0530
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r4MGwHxL11796888
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 22:28:17 +0530
 Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
  by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r4MGwMws020890
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2013 02:58:23 +1000
+ r4MGwMSA020867
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2013 02:58:24 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, dwg@au1.ibm.com
-Subject: [PATCH -V9 20/20] powerpc: split hugepage when using subpage
- protection
-Date: Wed, 22 May 2013 22:27:52 +0530
-Message-Id: <1369241872-15700-21-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V9 19/20] powerpc: use smp_rmb when looking at deposisted
+ pgtable to store hash index
+Date: Wed, 22 May 2013 22:27:51 +0530
+Message-Id: <1369241872-15700-20-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1369241872-15700-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1369241872-15700-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -41,81 +41,84 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-We find all the overlapping vma and mark them such that we don't allocate
-hugepage in that range. Also we split existing huge page so that the
-normal page hash can be invalidated and new page faulted in with new
-protection bits.
+We need to use smb_rmb when looking at hpte slot array. Otherwise we could
+reorder the hpte_slot array load bfore even we marked the pmd trans huge.
+Related smb_wmb()s is done in pgtable_trans_huge_deposit when we deposit
+a pgtable.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/subpage-prot.c | 48 ++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 48 insertions(+)
+ arch/powerpc/include/asm/pgtable-ppc64.h | 15 +++++++++++++++
+ arch/powerpc/mm/hugepage-hash64.c        |  6 +-----
+ arch/powerpc/mm/pgtable_64.c             |  6 +-----
+ 3 files changed, 17 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/mm/subpage-prot.c b/arch/powerpc/mm/subpage-prot.c
-index 7c415dd..aa74acb 100644
---- a/arch/powerpc/mm/subpage-prot.c
-+++ b/arch/powerpc/mm/subpage-prot.c
-@@ -130,6 +130,53 @@ static void subpage_prot_clear(unsigned long addr, unsigned long len)
- 	up_write(&mm->mmap_sem);
+diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
+index d046289..46db094 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc64.h
++++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+@@ -10,6 +10,7 @@
+ #else
+ #include <asm/pgtable-ppc64-4k.h>
+ #endif
++#include <asm/barrier.h>
+ 
+ #define FIRST_USER_ADDRESS	0
+ 
+@@ -393,6 +394,20 @@ static inline void mark_hpte_slot_valid(unsigned char *hpte_slot_array,
+ 	hpte_slot_array[index] = hidx << 4 | 0x1 << 3;
  }
  
-+#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-+static int subpage_walk_pmd_entry(pmd_t *pmd, unsigned long addr,
-+				  unsigned long end, struct mm_walk *walk)
++static inline char *get_hpte_slot_array(pmd_t *pmdp)
 +{
-+	struct vm_area_struct *vma = walk->private;
-+	split_huge_page_pmd(vma, addr, pmd);
-+	return 0;
-+}
-+
-+static void subpage_mark_vma_nohuge(struct mm_struct *mm, unsigned long addr,
-+				    unsigned long len)
-+{
-+	struct vm_area_struct *vma;
-+	struct mm_walk subpage_proto_walk = {
-+		.mm = mm,
-+		.pmd_entry = subpage_walk_pmd_entry,
-+	};
-+
 +	/*
-+	 * We don't try too hard, we just mark all the vma in that range
-+	 * VM_NOHUGEPAGE and split them.
++	 * The hpte hindex is stored in the pgtable whose address is in the
++	 * second half of the PMD
++	 *
++	 * Order this load with the test for pmd_trans_huge in the caller
 +	 */
-+	vma = find_vma(mm, addr);
-+	/*
-+	 * If the range is in unmapped range, just return
-+	 */
-+	if (vma && ((addr + len) <= vma->vm_start))
-+		return;
++	smp_rmb();
++	return *(char **)(pmdp + PTRS_PER_PMD);
 +
-+	while (vma) {
-+		if (vma->vm_start >= (addr + len))
-+			break;
-+		vma->vm_flags |= VM_NOHUGEPAGE;
-+		subpage_proto_walk.private = vma;
-+		walk_page_range(vma->vm_start, vma->vm_end,
-+				&subpage_proto_walk);
-+		vma = vma->vm_next;
-+	}
-+}
-+#else
-+static void subpage_mark_vma_nohuge(struct mm_struct *mm, unsigned long addr,
-+				    unsigned long len)
-+{
-+	return;
-+}
-+#endif
 +
- /*
-  * Copy in a subpage protection map for an address range.
-  * The map has 2 bits per 4k subpage, so 32 bits per 64k page.
-@@ -168,6 +215,7 @@ long sys_subpage_prot(unsigned long addr, unsigned long len, u32 __user *map)
- 		return -EFAULT;
++}
++
+ extern void hpte_do_hugepage_flush(struct mm_struct *mm, unsigned long addr,
+ 				   pmd_t *pmdp);
+ #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+diff --git a/arch/powerpc/mm/hugepage-hash64.c b/arch/powerpc/mm/hugepage-hash64.c
+index e430766..c3ba3d5 100644
+--- a/arch/powerpc/mm/hugepage-hash64.c
++++ b/arch/powerpc/mm/hugepage-hash64.c
+@@ -84,11 +84,7 @@ int __hash_page_thp(unsigned long ea, unsigned long access, unsigned long vsid,
  
- 	down_write(&mm->mmap_sem);
-+	subpage_mark_vma_nohuge(mm, addr, len);
- 	for (limit = addr + len; addr < limit; addr = next) {
- 		next = pmd_addr_end(addr, limit);
- 		err = -ENOMEM;
+ 	vpn = hpt_vpn(ea, vsid, ssize);
+ 	hash = hpt_hash(vpn, shift, ssize);
+-	/*
+-	 * The hpte hindex are stored in the pgtable whose address is in the
+-	 * second half of the PMD
+-	 */
+-	hpte_slot_array = *(char **)(pmdp + PTRS_PER_PMD);
++	hpte_slot_array = get_hpte_slot_array(pmdp);
+ 
+ 	valid = hpte_valid(hpte_slot_array, index);
+ 	if (valid) {
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index 8dd7c83..19d6734 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -701,11 +701,7 @@ void hpte_do_hugepage_flush(struct mm_struct *mm, unsigned long addr,
+ 	 * Flush all the hptes mapping this hugepage
+ 	 */
+ 	s_addr = addr & HPAGE_PMD_MASK;
+-	/*
+-	 * The hpte hindex are stored in the pgtable whose address is in the
+-	 * second half of the PMD
+-	 */
+-	hpte_slot_array = *(char **)(pmdp + PTRS_PER_PMD);
++	hpte_slot_array = get_hpte_slot_array(pmdp);
+ 	/*
+ 	 * IF we try to do a HUGE PTE update after a withdraw is done.
+ 	 * we will find the below NULL. This happens when we do
 -- 
 1.8.1.2
