@@ -1,27 +1,31 @@
-Return-Path: <gmbnomis@gmail.com>
-Received: from mail-ea0-x22e.google.com (mail-ea0-x22e.google.com
- [IPv6:2a00:1450:4013:c01::22e])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C10EE2C00A2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2013 06:36:39 +1000 (EST)
-Received: by mail-ea0-f174.google.com with SMTP id z7so1345203eaf.5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 13:36:35 -0700 (PDT)
-Date: Wed, 22 May 2013 22:36:33 +0200
-From: Simon Baatz <gmbnomis@gmail.com>
-To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-Subject: Re: [PATCH v4 11/12] ARM: kirkwood: remove redundant DT board files
-Message-ID: <20130522203633.GA28394@schnuecks.de>
-References: <1367854420-8006-1-git-send-email-sebastian.hesselbarth@gmail.com>
- <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
- <1369154510-4927-12-git-send-email-sebastian.hesselbarth@gmail.com>
+Return-Path: <mst@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 0B2E22C00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2013 06:37:59 +1000 (EST)
+Date: Wed, 22 May 2013 23:36:45 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v2 10/10] kernel: might_fault does not imply might_sleep
+Message-ID: <20130522203645.GA28296@redhat.com>
+References: <cover.1368702323.git.mst@redhat.com>
+ <1f85dc8e6a0149677563a2dfb4cef9a9c7eaa391.1368702323.git.mst@redhat.com>
+ <20130516184041.GP19669@dyad.programming.kicks-ass.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1369154510-4927-12-git-send-email-sebastian.hesselbarth@gmail.com>
-Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- David Miller <davem@davemloft.net>, Lennert Buytenhek <buytenh@wantstofly.org>
+In-Reply-To: <20130516184041.GP19669@dyad.programming.kicks-ass.net>
+Cc: linux-m32r-ja@ml.linux-m32r.org, kvm@vger.kernel.org,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ David Howells <dhowells@redhat.com>, linux-mm@kvack.org,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ linux-arch@vger.kernel.org, linux-am33-list@redhat.com,
+ Hirokazu Takata <takata@linux-m32r.org>, x86@kernel.org,
+ Ingo Molnar <mingo@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
+ microblaze-uclinux@itee.uq.edu.au, Chris Metcalf <cmetcalf@tilera.com>,
+ rostedt@goodmis.org, Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>,
+ linux-m32r@ml.linux-m32r.org, linux-kernel@vger.kernel.org,
+ Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,174 +35,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Sebastian,
-
-On Tue, May 21, 2013 at 06:41:49PM +0200, Sebastian Hesselbarth wrote:
-> With DT support for mv643xx_eth, board specific init for some boards now
-> is unneccessary. Remove those board files, Kconfig entries, and
-> corresponding entries in kirkwood_defconfig.
+On Thu, May 16, 2013 at 08:40:41PM +0200, Peter Zijlstra wrote:
+> On Thu, May 16, 2013 at 02:16:10PM +0300, Michael S. Tsirkin wrote:
+> > There are several ways to make sure might_fault
+> > calling function does not sleep.
+> > One is to use it on kernel or otherwise locked memory - apparently
+> > nfs/sunrpc does this. As noted by Ingo, this is handled by the
+> > migh_fault() implementation in mm/memory.c but not the one in
+> > linux/kernel.h so in the current code might_fault() schedules
+> > differently depending on CONFIG_PROVE_LOCKING, which is an undesired
+> > semantical side effect.
+> > 
+> > Another is to call pagefault_disable: in this case the page fault
+> > handler will go to fixups processing and we get an error instead of
+> > sleeping, so the might_sleep annotation is a false positive.
+> > vhost driver wants to do this now in order to reuse socket ops
+> > under a spinlock (and fall back on slower thread handler
+> > on error).
 > 
-> Signed-off-by: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-> ---
-> Note: board-km_kirkwood.c is also removed, as Valentin Longchamp confirmed
-> the lock-up is not caused by accessing clock gating registers but rather
-> non-existent device registers. This will be addressed by dtsi separation
-> for kirkwood and bobcat SoC variants.
+> Are you using the assumption that spin_lock() implies preempt_disable() implies
+> pagefault_disable()? Note that this assumption isn't valid for -rt where the
+> spinlock becomes preemptible but we'll not disable pagefaults.
 > 
-> Changelog:
-> v3->v4:
-> - remove more boards that don't require board specific setup
+> > Address both issues by:
+> > 	- dropping the unconditional call to might_sleep
+> > 	  from the fast might_fault code in linux/kernel.h
+> > 	- checking for pagefault_disable() in the
+> > 	  CONFIG_PROVE_LOCKING implementation
+> > 
+> > Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+> > ---
+> >  include/linux/kernel.h |  1 -
+> >  mm/memory.c            | 14 +++++++++-----
+> >  2 files changed, 9 insertions(+), 6 deletions(-)
+> > 
+> > diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+> > index e96329c..322b065 100644
+> > --- a/include/linux/kernel.h
+> > +++ b/include/linux/kernel.h
+> > @@ -198,7 +198,6 @@ void might_fault(void);
+> >  #else
+> >  static inline void might_fault(void)
+> >  {
+> > -	might_sleep();
 > 
-> Cc: David Miller <davem@davemloft.net>
-> Cc: Lennert Buytenhek <buytenh@wantstofly.org>
-> Cc: Jason Cooper <jason@lakedaemon.net>
-> Cc: Andrew Lunn <andrew@lunn.ch>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: netdev@vger.kernel.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-kernel@vger.kernel.org
-> ---
->  arch/arm/configs/kirkwood_defconfig           |   16 ----
->  arch/arm/mach-kirkwood/Kconfig                |  117 -------------------------
->  arch/arm/mach-kirkwood/Makefile               |   16 ----
->  arch/arm/mach-kirkwood/board-dnskw.c          |    7 --
->  arch/arm/mach-kirkwood/board-dockstar.c       |   32 -------
->  arch/arm/mach-kirkwood/board-dreamplug.c      |   35 --------
->  arch/arm/mach-kirkwood/board-dt.c             |   38 --------
->  arch/arm/mach-kirkwood/board-goflexnet.c      |   34 -------
->  arch/arm/mach-kirkwood/board-guruplug.c       |   33 -------
->  arch/arm/mach-kirkwood/board-ib62x0.c         |   29 ------
->  arch/arm/mach-kirkwood/board-iconnect.c       |   10 ---
->  arch/arm/mach-kirkwood/board-iomega_ix2_200.c |   34 -------
->  arch/arm/mach-kirkwood/board-km_kirkwood.c    |   44 ----------
->  arch/arm/mach-kirkwood/board-lsxl.c           |   16 ----
->  arch/arm/mach-kirkwood/board-mplcec4.c        |   14 ---
->  arch/arm/mach-kirkwood/board-ns2.c            |   35 --------
->  arch/arm/mach-kirkwood/board-openblocks_a6.c  |   26 ------
->  arch/arm/mach-kirkwood/board-readynas.c       |    6 --
->  arch/arm/mach-kirkwood/board-ts219.c          |   13 ---
->  arch/arm/mach-kirkwood/board-usi_topkick.c    |   29 ------
->  20 files changed, 584 deletions(-)
->  delete mode 100644 arch/arm/mach-kirkwood/board-dockstar.c
->  delete mode 100644 arch/arm/mach-kirkwood/board-dreamplug.c
->  delete mode 100644 arch/arm/mach-kirkwood/board-goflexnet.c
->  delete mode 100644 arch/arm/mach-kirkwood/board-guruplug.c
->  delete mode 100644 arch/arm/mach-kirkwood/board-ib62x0.c
->  delete mode 100644 arch/arm/mach-kirkwood/board-iomega_ix2_200.c
->  delete mode 100644 arch/arm/mach-kirkwood/board-km_kirkwood.c
->  delete mode 100644 arch/arm/mach-kirkwood/board-ns2.c
->  delete mode 100644 arch/arm/mach-kirkwood/board-openblocks_a6.c
->  delete mode 100644 arch/arm/mach-kirkwood/board-usi_topkick.c
+> This removes potential resched points for PREEMPT_VOLUNTARY -- was that
+> intentional?
+
+OK so I'm thinking of going back to this idea:
+it has the advantage of being very simple,
+and just might make some workloads faster
+if they do lots of copy_XX_user in a loop.
+
+Will have to be tested of course - anyone
+has objections?
+
+> >  }
+> >  #endif
+> >  
+> > diff --git a/mm/memory.c b/mm/memory.c
+> > index 6dc1882..1b8327b 100644
+> > --- a/mm/memory.c
+> > +++ b/mm/memory.c
+> > @@ -4222,13 +4222,17 @@ void might_fault(void)
+> >  	if (segment_eq(get_fs(), KERNEL_DS))
+> >  		return;
+> >  
+> > -	might_sleep();
+> >  	/*
+> > -	 * it would be nicer only to annotate paths which are not under
+> > -	 * pagefault_disable, however that requires a larger audit and
+> > -	 * providing helpers like get_user_atomic.
+> > +	 * It would be nicer to annotate paths which are under preempt_disable
+> > +	 * but not under pagefault_disable, however that requires a new flag
+> > +	 * for differentiating between the two.
 > 
-...
-> diff --git a/arch/arm/mach-kirkwood/board-dt.c b/arch/arm/mach-kirkwood/board-dt.c
-> index 8db388a..a86b41c 100644
-> --- a/arch/arm/mach-kirkwood/board-dt.c
-> +++ b/arch/arm/mach-kirkwood/board-dt.c
-> @@ -104,59 +104,21 @@ static void __init kirkwood_dt_init(void)
->  	kexec_reinit = kirkwood_enable_pcie;
->  #endif
->  
-> -	if (of_machine_is_compatible("globalscale,dreamplug"))
-> -		dreamplug_init();
-> -
-> -	if (of_machine_is_compatible("globalscale,guruplug"))
-> -		guruplug_dt_init();
-> -
->  	if (of_machine_is_compatible("dlink,dns-kirkwood"))
->  		dnskw_init();
->  
-> -	if (of_machine_is_compatible("iom,iconnect"))
-> -		iconnect_init();
-> -
-> -	if (of_machine_is_compatible("raidsonic,ib-nas62x0"))
-> -		ib62x0_init();
-> -
->  	if (of_machine_is_compatible("qnap,ts219"))
->  		qnap_dt_ts219_init();
->  
-> -	if (of_machine_is_compatible("seagate,dockstar"))
-> -		dockstar_dt_init();
-> -
-> -	if (of_machine_is_compatible("seagate,goflexnet"))
-> -		goflexnet_init();
-> -
->  	if (of_machine_is_compatible("buffalo,lsxl"))
->  		lsxl_init();
->  
-> -	if (of_machine_is_compatible("iom,ix2-200"))
-> -		iomega_ix2_200_init();
-> -
-> -	if (of_machine_is_compatible("keymile,km_kirkwood"))
-> -		km_kirkwood_init();
-> -
-> -	if (of_machine_is_compatible("lacie,cloudbox") ||
-> -	    of_machine_is_compatible("lacie,inetspace_v2") ||
-> -	    of_machine_is_compatible("lacie,netspace_lite_v2") ||
-> -	    of_machine_is_compatible("lacie,netspace_max_v2") ||
-> -	    of_machine_is_compatible("lacie,netspace_mini_v2") ||
-> -	    of_machine_is_compatible("lacie,netspace_v2"))
-> -		ns2_init();
-> -
->  	if (of_machine_is_compatible("mpl,cec4"))
->  		mplcec4_init();
->  
->  	if (of_machine_is_compatible("netgear,readynas-duo-v2"))
->  		netgear_readynas_init();
->  
-> -	if (of_machine_is_compatible("plathome,openblocks-a6"))
-> -		openblocks_a6_init();
-> -
-> -	if (of_machine_is_compatible("usi,topkick"))
-> -		usi_topkick_init();
-> -
->  	of_platform_populate(NULL, kirkwood_dt_match_table, NULL, NULL);
->  }
-
-We still have:
-
-static const char * const kirkwood_dt_board_compat[] = {
-	"globalscale,dreamplug",
-	"globalscale,guruplug",
-	"dlink,dns-320",
-	"dlink,dns-325",
-	"iom,iconnect",
-	"raidsonic,ib-nas62x0",
-	"qnap,ts219",
-	"seagate,dockstar",
-	"seagate,goflexnet",
-	"buffalo,lsxl",
-	"iom,ix2-200",
-	"keymile,km_kirkwood",
-	"lacie,cloudbox",
-	"lacie,inetspace_v2",
-	"lacie,netspace_lite_v2",
-	"lacie,netspace_max_v2",
-	"lacie,netspace_mini_v2",
-	"lacie,netspace_v2",
-	"mpl,cec4",
-	"netgear,readynas-duo-v2",
-	"plathome,openblocks-a6",
-	"usi,topkick",
-	"zyxel,nsa310",
-	NULL
-};
-
-in that file. I think it does not make sense that we need to list
-boards here that can be described fully by DT. When adding such a
-board in the future, you will still need to adapt board-dt.c.
-
-Should we remove the boards that you removed above here as well and
-add
-
-	"marvell,kirkwood-88f6192",
-	"marvell,kirkwood-88f6281",
-	"marvell,kirkwood-88f6282",
-	"marvell,kirkwood-88f6283",
-	"marvell,kirkwood-88f6702",
-	"marvell,kirkwood-98DX4122",
-
-or even just state "marvell,kirkwood"?
-
-- Simon
+> -rt has this, pagefault_disable() doesn't change the preempt count but pokes
+> at task_struct::pagefault_disable.
+> 
+> >  	 */
+> > -	if (!in_atomic() && current->mm)
+> > +	if (in_atomic())
+> > +		return;
+> > +
+> > +	might_sleep();
+> > +
+> > +	if (current->mm)
+> >  		might_lock_read(&current->mm->mmap_sem);
+> >  }
+> >  EXPORT_SYMBOL(might_fault);
+> > -- 
+> > MST
