@@ -1,16 +1,21 @@
-Return-Path: <michael@ellerman.id.au>
-Date: Wed, 22 May 2013 13:37:42 +1000
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Dennis Schridde <devurandom@gmx.net>
-Subject: Re: PROBLEM: Only 2 of 4 cores used on IBM Cell blades and no
- threads shown in spufs
-Message-ID: <20130522033742.GA18345@concordia>
-References: <1470334.YUWOQ37ijW@ernie> <20130423091246.GA18195@concordia>
- <1401780.1HKOhdHcrh@ernie>
+Return-Path: <R65777@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D51562C00A1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 14:16:17 +1000 (EST)
+From: Bharat Bhushan <r65777@freescale.com>
+To: <galak@kernel.crashing.org>, <benh@kernel.crashing.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>,
+ <stuart.yoder@freescale.com>, <james.yang@freescale.com>
+Subject: [PATCH 0/2 v3] powerpc: Make ptrace work reliably
+Date: Wed, 22 May 2013 09:50:57 +0530
+Message-ID: <1369196459-17275-1-git-send-email-Bharat.Bhushan@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1401780.1HKOhdHcrh@ernie>
-Cc: cbe-oss-dev@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org, arnd@arndb.de
+Content-Type: text/plain
+Cc: Bharat Bhushan <bharat.bhushan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,16 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, May 17, 2013 at 05:46:52PM +0200, Dennis Schridde wrote:
-> Hello!
-> 
-> Am Dienstag, 23. April 2013, 19:12:47 schrieb Michael Ellerman:
-> > For me it is fixed by applying the following patch, it should be in v3.10:
-> > 
-> >   http://patchwork.ozlabs.org/patch/230103/
-> 
-> Can you please also backport this to 3.8? It is still missing in 3.8.12.
+From: Bharat Bhushan <bharat.bhushan@freescale.com>
 
-It's in 3.8.13.
+v2->v3
+ - Load PACACURRENT immediately after _MSR(r1), and load DBCR0
+   just after "beq resume_kernel 
+ - Added lat_sysycal results before and after the patch
 
-cheers
+v1->v2
+ - Subject line was missing 0/2, 1/2, 2/2
+
+Bharat Bhushan (2):
+  powerpc: debug control and status registers are 32bit
+=> This patch makes debug control and status registers as 32bit as they are.
+   This does not fix anything
+
+  powerpc: restore dbcr0 on user space exit
+=> This patch fixes the ptrace reliability issue. The description is the patch
+   describes one of the case where it does not work reliably
+
+ arch/powerpc/include/asm/processor.h |    8 ++++----
+ arch/powerpc/kernel/asm-offsets.c    |    1 +
+ arch/powerpc/kernel/entry_64.S       |   28 ++++++++++++++++++++++++----
+ 3 files changed, 29 insertions(+), 8 deletions(-)
