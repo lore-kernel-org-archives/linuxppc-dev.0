@@ -1,23 +1,22 @@
-Return-Path: <R65777@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C36B02C00FB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 14:16:30 +1000 (EST)
-From: Bharat Bhushan <r65777@freescale.com>
-To: <galak@kernel.crashing.org>, <benh@kernel.crashing.org>,
- <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>,
- <stuart.yoder@freescale.com>, <james.yang@freescale.com>
-Subject: [PATCH 2/2 v3] powerpc: restore dbcr0 on user space exit
-Date: Wed, 22 May 2013 09:50:59 +0530
-Message-ID: <1369196459-17275-3-git-send-email-Bharat.Bhushan@freescale.com>
-In-Reply-To: <1369196459-17275-1-git-send-email-Bharat.Bhushan@freescale.com>
-References: <1369196459-17275-1-git-send-email-Bharat.Bhushan@freescale.com>
+Return-Path: <tkil@scrye.com>
+Received: from mail.scrye.com (scrye.com
+ [IPv6:2001:470:b8bc:cafe:5054:ff:fedc:793f])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client CN "mail.scrye.com", Issuer "mail.scrye.com" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 16D132C017F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 14:17:04 +1000 (EST)
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: SATA hang on 8315E triggered by heavy flash write?
+From: Anthony Foiani <tkil@scrye.com>
+References: <1369172643.1374.15@scott-Lenovo-G560>
+Date: Tue, 21 May 2013 22:16:57 -0600
+In-Reply-To: <1369172643.1374.15@scott-Lenovo-G560> (Scott Wood's message of
+ "Tue\, 21 May 2013 16\:44\:03 -0500")
+Message-ID: <gppwj3ayu.fsf@dworkin.scrye.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Bharat Bhushan <bharat.bhushan@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org, Shaohui.Xie@freescale.com
+Reply-To: Anthony Foiani <tkil@scrye.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,109 +26,142 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On BookE (Branch taken + Single Step) is as same as Branch Taken
-on BookS and in Linux we simulate BookS behavior for BookE as well.
-When doing so, in Branch taken handling we want to set DBCR0_IC but
-we update the current->thread->dbcr0 and not DBCR0.
 
-Now on 64bit the current->thread.dbcr0 (and other debug registers)
-is synchronized ONLY on context switch flow. But after handling
-Branch taken in debug exception if we return back to user space
-without context switch then single stepping change (DBCR0_ICMP)
-does not get written in h/w DBCR0 and Instruction Complete exception
-does not happen.
+Scott --
 
-This fixes using ptrace reliably on BookE-PowerPC
+Scott Wood <scottwood@freescale.com> writes:
 
-lmbench latency test (lat_syscall) Results are (they varies a little
-on each run)
+> On 05/15/2013 03:12:21 AM, Anthony Foiani wrote:
+>> At this point, /dev/sda is pretty much unusable, and I have to do
+>> at least a reboot to recover.  (I don't recall if I had to do a
+>> power cycle at this point, though.)
 
-1) ./lat_syscall <action> /dev/shm/uImage
+For whatever it's worth, a hard boot (full power cycle) is indeed
+necessary at this point.
 
-action:	Open	read	write	stat	fstat	null
-Before:	3.8618	0.2017	0.2851	1.6789	0.2256	0.0856
-After:	3.8580	0.2017	0.2851	1.6955	0.2255	0.0856
+>> I suspect that it is related to errata eLBC-A001 (from MPC8315E
+>> Chip Errata, Rev. 3, 09/2011):
+>> ...
+>> But it seems that erratum is already fixed:
+>> 
+>>   http://patchwork.ozlabs.org/patch/96339/
+>>   (git patch d08e44570e)
+>> 
+>> Am I reading that correctly?
+>
+> Yes, that erratum has been worked around.
 
-1) ./lat_syscall -P 2 -N 10 <action> /dev/shm/uImage
-action:	Open	read	write	stat	fstat	null
-Before:	4.1388	0.2238	0.3066	1.7106	0.2256	0.0856
-After:	4.1413	0.2236	0.3062	1.7107	0.2256	0.0856
+Ok, thanks for the confirmation.
 
-Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
----
-v2->v3
- - Load PACACURRENT immediately after _MSR(r1), and load DBCR0
-   just after "beq resume_kernel 
- - Added lat_sysycal results before and after the patch
+>> (I'm already writing only one flash sector at a time, but it might
+>> be that even a single 0x10000-byte sector takes long enough to
+>> trigger the issue.)
+>
+> I don't think this erratum is relevant.  Unlike NAND, NOR flash does
+> not involve holding the localbus for extended periods of time.
 
-v1->v2
- - Subject line was not having 1/2
+I wasn't sure about the mechanism of the erratum, and it seemed
+awfully close, so I thought I'd go fishing.  Guess I missed.  :(
 
- arch/powerpc/kernel/asm-offsets.c |    1 +
- arch/powerpc/kernel/entry_64.S    |   28 ++++++++++++++++++++++++----
- 2 files changed, 25 insertions(+), 4 deletions(-)
+It is NOR writes, btw; I do both in my application, but the initial
+error always seems to occur during a NOR write.  (In this device,
+kernel + devtree go into NOR flash, ramdisk goes into NAND flash, and
+data goes to SSD... stop laughing.)
 
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index b51a97c..1e2f450 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -103,6 +103,7 @@ int main(void)
- #endif /* CONFIG_VSX */
- #ifdef CONFIG_PPC64
- 	DEFINE(KSP_VSID, offsetof(struct thread_struct, ksp_vsid));
-+	DEFINE(THREAD_DBCR0, offsetof(struct thread_struct, dbcr0));
- #else /* CONFIG_PPC64 */
- 	DEFINE(PGDIR, offsetof(struct thread_struct, pgdir));
- #if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 794889b..5b91d27 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -622,21 +622,41 @@ _GLOBAL(ret_from_except_lite)
- 
- 	CURRENT_THREAD_INFO(r9, r1)
- 	ld	r3,_MSR(r1)
-+#ifdef CONFIG_PPC_BOOK3E
-+	ld	r10,PACACURRENT(r13)
-+#endif /* CONFIG_PPC_BOOK3E */
- 	ld	r4,TI_FLAGS(r9)
- 	andi.	r3,r3,MSR_PR
- 	beq	resume_kernel
-+#ifdef CONFIG_PPC_BOOK3E
-+	lwz	r3,(THREAD+THREAD_DBCR0)(r10)
-+#endif /* CONFIG_PPC_BOOK3E */
- 
- 	/* Check current_thread_info()->flags */
- 	andi.	r0,r4,_TIF_USER_WORK_MASK
-+	bne	1f
-+#ifdef CONFIG_PPC_BOOK3E
-+	/*
-+	 * Check to see if the dbcr0 register is set up to debug.
-+	 * Use the internal debug mode bit to do this.
-+	 */
-+	andis.	r0,r3,DBCR0_IDM@h
- 	beq	restore
--
--	andi.	r0,r4,_TIF_NEED_RESCHED
--	beq	1f
-+	mfmsr	r0
-+	rlwinm	r0,r0,0,~MSR_DE	/* Clear MSR.DE */
-+	mtmsr	r0
-+	mtspr	SPRN_DBCR0,r3
-+	li	r10, -1
-+	mtspr	SPRN_DBSR,r10
-+	b	restore
-+#endif
-+1:	andi.	r0,r4,_TIF_NEED_RESCHED
-+	beq	2f
- 	bl	.restore_interrupts
- 	SCHEDULE_USER
- 	b	.ret_from_except_lite
- 
--1:	bl	.save_nvgprs
-+2:	bl	.save_nvgprs
- 	bl	.restore_interrupts
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	.do_notify_resume
--- 
-1.7.0.4
+Here's the most recent hang.  First, to compare the application log
+timestamps with the kernel log timestamps:
+
+  # mix of kernel and application log, note that kernel is about +12s.
+  +0.537506 main.0 [0]: rc: fork took 9.376ms
+  [   12.892323] PHY: mdio@e0024520:01 - Link is Up - 100/Full
+  +1.603034 main.0 [0]: schs: ctor: done
+
+The console output is:
+
+  # console log
+  [318334.294126] ata2.00: exception Emask 0x10 SAct 0x0 SErr 0x0 action 0xe frozen
+  [318334.301515] ata2.00: PHY RDY changed
+  [318334.305301] ata2.00: failed command: WRITE DMA
+  [318334.309991] ata2.00: cmd ca/00:08:b0:00:18/00:00:00:00:00/e1 tag 0 dma 4096 out
+  [318334.310015]          res 50/00:00:08:61:25/00:00:00:00:00/e1 Emask 0x10 (ATA bus error)
+  [318334.325689] ata2.00: status: { DRDY }
+  [318334.329717] ata2: hard resetting link
+  [318334.836038] ata2: Hardreset failed, not off-lined 0
+  [318334.848407] ata2: setting speed (in hard reset)
+  [318344.456050] ata2: No Signature Update
+  [318344.631916] ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+  [318344.638354] ata2.00: link online but device misclassified
+  [318349.643897] ata2.00: qc timeout (cmd 0xec)
+  [318349.648268] ata2.00: failed to IDENTIFY (I/O error, err_mask=0x4)
+  [318349.654562] ata2.00: revalidation failed (errno=-5)
+  [318349.659667] ata2: hard resetting link
+  [318350.163864] ata2: Hardreset failed, not off-lined 0
+  [318350.175869] ata2: setting speed (in hard reset)
+  [318359.771956] ata2: No Signature Update
+  [318359.947901] ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+  [318359.954342] ata2.00: link online but device misclassified
+  [318369.959921] ata2.00: qc timeout (cmd 0xec)
+  [318369.964279] ata2.00: failed to IDENTIFY (I/O error, err_mask=0x4)
+  [318369.970567] ata2.00: revalidation failed (errno=-5)
+  [318369.975658] ata2: hard resetting link
+  [318370.479933] ata2: Hardreset failed, not off-lined 0
+  [318370.491880] ata2: setting speed (in hard reset)
+  [318380.083892] ata2: No Signature Update
+
+And my application log:
+
+  # application log
+  +318320.957019 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x180000 from buf[0x80000]; attempt 1/3
+  +318322.498346 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x190000 from buf[0x90000]; attempt 1/3
+  +318323.849995 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x1a0000 from buf[0xa0000]; attempt 1/3
+  +318325.262559 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x1b0000 from buf[0xb0000]; attempt 1/3
+  +318326.703213 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x1c0000 from buf[0xc0000]; attempt 1/3
+
+> I also don't see how it would interact with SATA, which is separate
+> from the localbus.  
+
+No idea.  Is there some other shared resource that might be taxed by
+this type of load?
+
+I do get a few other errors, usually just once or twice per boot:
+
+  [ 4231.619368] NOHZ: local_softirq_pending 100
+  [ 4232.249935] NOHZ: local_softirq_pending 100
+  [ 4232.312241] NOHZ: local_softirq_pending 100
+  [ 4232.424523] NOHZ: local_softirq_pending 100
+  [ 4233.139146] NOHZ: local_softirq_pending 100
+  [ 4233.328540] NOHZ: local_softirq_pending 100
+  [ 4233.655909] NOHZ: local_softirq_pending 100
+  [ 4234.106578] NOHZ: local_softirq_pending 100
+  [ 4234.853966] NOHZ: local_softirq_pending 100
+  [ 4235.375208] NOHZ: local_softirq_pending 100
+  [11072.027818] hrtimer: interrupt took 126210 ns
+
+They seem harmless, though, and (as the timestamps indicate) the
+machine happily ran for 3-4 days after those issues.
+
+> Are you seeing any errors on the localbus, or just on SATA?
+
+I'm not seeing any errors in the console log -- but I'm not using the
+LBC for anything other than flash writes, SFAIK.  (Unless I2C is
+handled through the LBC, in which case, I have frequent (~50-100/s)
+small transactions all the time -- but the hangs always coincide with
+flash writes, and not with the I2C traffic that is going on all the
+time...)
+
+> Hopefully Shaohui (our SATA person) can answer these.  If you don't
+> get an answer, go ahead and open an official support request.
+
+I have a (lousy) workaround in hand: don't touch the disk during flash
+updates.  (The flash writes are software updates, which will hopefully
+be fairly rare once I'm done developing this thing.  Until then,
+though, I'm updating it multiple times a day, and have hit this quite
+a few times by now.)
+
+So there's no great hurry.  If Shaohui can find something in the next
+week or so, that'd be fantastic; otherwise, I'll open a request.
+
+Thanks again!
+
+Best regards,
+Anthony Foiani
