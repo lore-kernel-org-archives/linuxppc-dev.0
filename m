@@ -1,23 +1,21 @@
-Return-Path: <andrew@lunn.ch>
-Received: from londo.lunn.ch (londo.lunn.ch [IPv6:2001:1620:f9f:1000::1])
- by ozlabs.org (Postfix) with ESMTP id 45B102C00C8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 04:08:03 +1000 (EST)
-Date: Tue, 21 May 2013 19:48:49 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-Subject: Re: [PATCH v4 06/12] ARM: dove: add gigabit ethernet and mvmdio
- device tree nodes
-Message-ID: <20130521174849.GL26249@lunn.ch>
-References: <1367854420-8006-1-git-send-email-sebastian.hesselbarth@gmail.com>
- <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
- <1369154510-4927-7-git-send-email-sebastian.hesselbarth@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1369154510-4927-7-git-send-email-sebastian.hesselbarth@gmail.com>
-Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- David Miller <davem@davemloft.net>, Lennert Buytenhek <buytenh@wantstofly.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id E41B72C0096
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 10:16:01 +1000 (EST)
+Message-ID: <1369181713.6387.79.camel@pasglop>
+Subject: Re: [PATCH 0/3] Enable multiple MSI feature in pSeries
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alexander Gordeev <agordeev@redhat.com>
+Date: Wed, 22 May 2013 10:15:13 +1000
+In-Reply-To: <20130521144548.GB21632@dhcp-26-207.brq.redhat.com>
+References: <1358235536-32741-1-git-send-email-qiudayu@linux.vnet.ibm.com>
+ <20130521144548.GB21632@dhcp-26-207.brq.redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, tglx@linutronix.de,
+ Mike Qiu <qiudayu@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,94 +25,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 21, 2013 at 06:41:44PM +0200, Sebastian Hesselbarth wrote:
-> This patch adds orion-eth and mvmdio device tree nodes for DT enabled
-> Dove boards. As there is only one ethernet controller on Dove, a default
-> phy node is also added with a note to set its reg property on a per-board
-> basis.
+On Tue, 2013-05-21 at 16:45 +0200, Alexander Gordeev wrote:
+> On Tue, Jan 15, 2013 at 03:38:53PM +0800, Mike Qiu wrote:
+> > The test results is shown by 'cat /proc/interrups':
+> >           CPU0       CPU1       CPU2       CPU3       
+> > 16:     240458     261601     226310     200425      XICS Level     IPI
+> > 17:          0          0          0          0      XICS Level     RAS_EPOW
+> > 18:         10          0          3          2      XICS Level     hvc_console
+> > 19:     122182      28481      28527      28864      XICS Level     ibmvscsi
+> > 20:        506    7388226        108        118      XICS Level     eth0
+> > 21:          6          5          5          5      XICS Level     host1-0
+> > 22:        817        814        816        813      XICS Level     host1-1
 > 
-> Signed-off-by: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-> ---
-> Changelog:
-> v3->v4:
-> - convert to new device tree binding
+> Hi Mike,
 > 
-> Cc: David Miller <davem@davemloft.net>
-> Cc: Lennert Buytenhek <buytenh@wantstofly.org>
-> Cc: Jason Cooper <jason@lakedaemon.net>
-> Cc: Andrew Lunn <andrew@lunn.ch>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: netdev@vger.kernel.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-kernel@vger.kernel.org
-> ---
->  arch/arm/boot/dts/dove-cubox.dts |    7 +++++++
->  arch/arm/boot/dts/dove.dtsi      |   35 +++++++++++++++++++++++++++++++++++
->  2 files changed, 42 insertions(+)
+> I am curious if pSeries firmware allows changing affinity masks independently
+> for multiple MSIs? I.e. in your example, would it be possible to assign IRQ21
+> and IRQ22 to different CPUs?
+
+Yes. Each interrupt has its own affinity, whether it's an MSI or not,
+the affinity is not driven by the address.
+
+Cheers,
+Ben.
+
+> Thanks!
 > 
-> diff --git a/arch/arm/boot/dts/dove-cubox.dts b/arch/arm/boot/dts/dove-cubox.dts
-> index 7e3065a..02618fa 100644
-> --- a/arch/arm/boot/dts/dove-cubox.dts
-> +++ b/arch/arm/boot/dts/dove-cubox.dts
-> @@ -49,6 +49,13 @@
->  &uart0 { status = "okay"; };
->  &sata0 { status = "okay"; };
->  &i2c0 { status = "okay"; };
-> +&mdio { status = "okay"; };
-> +&eth { status = "okay"; };
-> +
-> +&ethphy {
-> +	compatible = "marvell,88e1310";
-> +	reg = <1>;
-> +};
->  
->  &sdio0 {
->  	status = "okay";
-> diff --git a/arch/arm/boot/dts/dove.dtsi b/arch/arm/boot/dts/dove.dtsi
-> index 6cab468..8612658 100644
-> --- a/arch/arm/boot/dts/dove.dtsi
-> +++ b/arch/arm/boot/dts/dove.dtsi
-> @@ -258,5 +258,40 @@
->  				dmacap,xor;
->  			};
->  		};
-> +
-> +		mdio: mdio-bus@72004 {
-> +			compatible = "marvell,orion-mdio";
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			reg = <0x72004 0x84>;
-> +			interrupts = <30>;
-> +			clocks = <&gate_clk 2>;
-> +			status = "disabled";
-> +
-> +			ethphy: ethernet-phy {
-> +				device-type = "ethernet-phy";
-> +				/* set phy address in board file */
-> +			};
-> +		};
-> +
-> +		eth: ethernet-controller@72000 {
-> +			compatible = "marvell,orion-eth";
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			reg = <0x72000 0x4000>;
-> +			clocks = <&gate_clk 2>;
-> +			marvell,tx-checksum-limit = <1600>;
-> +			status = "disabled";
-> +
-> +			ethernet-port@0 {
-> +				device_type = "network";
-> +				compatible = "marvell,orion-eth-port";
-> +				reg = <0>;
-> +				interrupts = <29>;
-> +				/* overwrite MAC address in bootloader */
-> +				local-mac-address = [00 00 00 00 00 00];
-
-Hi Sebastian
-
-Its probably a good idea to set the local administration bit in this
-MAC address. i.e. first byte is 02.
-
-    Andrew
+> > LOC:     398077     316725     231882     203049   Local timer interrupts
+> > SPU:       1659        919        961        903   Spurious interrupts
+> > CNT:          0          0          0          0   Performance
+> > monitoring interrupts
+> > MCE:          0          0          0          0   Machine check exceptions
+> 
