@@ -1,16 +1,23 @@
-Return-Path: <michael@ellerman.id.au>
-Message-ID: <1369206855.12874.9.camel@concordia>
-Subject: Re: [PATCH 1/2] powerpc, perf: Ignore separate BHRB privilege state
- filter request
-From: Michael Ellerman <michael@ellerman.id.au>
+Return-Path: <peterz@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:4830:2446:ff00:4687:fcff:fea6:5117])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 15D812C0082
+ for <linuxppc-dev@ozlabs.org>; Wed, 22 May 2013 17:53:32 +1000 (EST)
+Date: Wed, 22 May 2013 09:53:05 +0200
+From: Peter Zijlstra <peterz@infradead.org>
 To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Date: Wed, 22 May 2013 17:14:15 +1000
-In-Reply-To: <1369201667-9048-2-git-send-email-khandual@linux.vnet.ibm.com>
-References: <1369201667-9048-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1369201667-9048-2-git-send-email-khandual@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/5] powerpc, perf: Enable conditional branch filter for
+ POWER8
+Message-ID: <20130522075305.GN26912@twins.programming.kicks-ass.net>
+References: <1369203761-12649-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1369203761-12649-3-git-send-email-khandual@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1369203761-12649-3-git-send-email-khandual@linux.vnet.ibm.com>
+Cc: mikey@neuling.org, ak@linux.intel.com, linux-kernel@vger.kernel.org,
+ eranian@google.com, linuxppc-dev@ozlabs.org, mingo@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,60 +27,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-05-22 at 11:17 +0530, Anshuman Khandual wrote:
-> Completely ignore BHRB privilege state filter request as we are
-> already configuring MMCRA register with privilege state filtering
-> attribute for the accompanying PMU event. This would help achieve
-> cleaner user space interaction for BHRB.
-
-Your description from patch 0 should be here.
-
-
+On Wed, May 22, 2013 at 11:52:38AM +0530, Anshuman Khandual wrote:
+> Enables conditional branch filter support for POWER8
+> utilizing MMCRA register based filter and also invalidates
+> a BHRB branch filter combination involving conditional
+> branches.
+> 
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/perf/power8-pmu.c | 10 ++++++++++
+>  1 file changed, 10 insertions(+)
+> 
 > diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
-> index f7d1c4f..8ed323d 100644
+> index 8ed323d..e60b38f 100644
 > --- a/arch/powerpc/perf/power8-pmu.c
 > +++ b/arch/powerpc/perf/power8-pmu.c
-> @@ -525,16 +525,17 @@ static u64 power8_bhrb_filter_map(u64 branch_sample_type)
->  	u64 pmu_bhrb_filter = 0;
->  	u64 br_privilege = branch_sample_type & ONLY_PLM;
+> @@ -548,11 +548,21 @@ static u64 power8_bhrb_filter_map(u64 branch_sample_type)
+>  	if (branch_sample_type & PERF_SAMPLE_BRANCH_IND_CALL)
+>  		return -1;
 >  
-> -	/* BHRB and regular PMU events share the same prvillege state
-> +	/* BHRB and regular PMU events share the same prvilege state
-
-Please spell "privilege" correctly.
-
->  	 * filter configuration. BHRB is always recorded along with a
-> -	 * regular PMU event. So privilege state filter criteria for BHRB
-> -	 * and the companion PMU events has to be the same. As a default
-> -	 * "perf record" tool sets all privillege bits ON when no filter
-> -	 * criteria is provided in the command line. So as along as all
-> -	 * privillege bits are ON or they are OFF, we are good to go.
-> +	 * regular PMU event. So privilege state filter criteria for
-> +	 * the BHRB and the companion PMU events has to be the same.
-> +	 * Separate BHRB privillege state filter requests would be
-> +	 * ignored.
->  	 */
-
-This comment doesn't make sense to me with the updated code.
-
-It still says "privilege state filter criteria for the BHRB and the
-companion PMU events has to be the same".
-
-But they don't, right?
-
-What it should say is "we ignore the privilege bits in the branch sample
-type because they are handled by the underlying PMC configuration" - or
-something like that.
-
-> -	if ((br_privilege != 7) && (br_privilege != 0))
-> -		return -1;
+> +	/* Invalid branch filter combination - HW does not support */
+> +	if ((branch_sample_type & PERF_SAMPLE_BRANCH_ANY_CALL) &&
+> +			(branch_sample_type & PERF_SAMPLE_BRANCH_COND))
+> +		return -1;
 > +
-> +	if (br_privilege)
-> +		pr_info("BHRB privilege state filter request %llx ignored\n",
-> +								br_privilege);
+>  	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY_CALL) {
+>  		pmu_bhrb_filter |= POWER8_MMCRA_IFM1;
+>  		return pmu_bhrb_filter;
+>  	}
+>  
+> +	if (branch_sample_type & PERF_SAMPLE_BRANCH_COND) {
+> +		pmu_bhrb_filter |= POWER8_MMCRA_IFM3;
+> +		return pmu_bhrb_filter;
+> +	}
+> +
+>  	/* Every thing else is unsupported */
+>  	return -1;
+>  }
 
-Don't do that. Ignoring the br_privilege is either the right thing to do
-in which case we do it and print nothing, or it doesn't make sense and
-we reject it.
+So I suppose you've seen what x86 does in this case? ;-) I'm not saying
+you _have_ to do the software filter, but I would like the changelog to at
+least mention the issue.
 
-cheers
+In fact, I suppose that should have been in the original patches :/ as
+this patch series only adds the conditional branch support. 
