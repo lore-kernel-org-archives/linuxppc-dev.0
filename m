@@ -1,39 +1,44 @@
-Return-Path: <qiudayu@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E60892C00A1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 16:28:34 +1000 (EST)
+ (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 87DF32C009D
+ for <linuxppc-dev@ozlabs.org>; Wed, 22 May 2013 16:43:46 +1000 (EST)
 Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <qiudayu@linux.vnet.ibm.com>;
- Wed, 22 May 2013 16:20:33 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id E0A1B2BB0023
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 16:28:30 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r4M6SNEU18546864
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 16:28:23 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r4M6SULt023150
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 16:28:30 +1000
-Received: from [9.111.29.142] (win-q68h7f9m03i.cn.ibm.com [9.111.29.142])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
- r4M6SSEJ023096
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 16:28:29 +1000
-Message-ID: <519C6588.4090903@linux.vnet.ibm.com>
-Date: Wed, 22 May 2013 14:28:24 +0800
-From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Wed, 22 May 2013 12:07:54 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id DF5871258051
+ for <linuxppc-dev@ozlabs.org>; Wed, 22 May 2013 12:15:39 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r4M6hbQ966388094
+ for <linuxppc-dev@ozlabs.org>; Wed, 22 May 2013 12:13:37 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r4M6haSn019824
+ for <linuxppc-dev@ozlabs.org>; Wed, 22 May 2013 16:43:40 +1000
+Message-ID: <519C68FC.2060304@linux.vnet.ibm.com>
+Date: Wed, 22 May 2013 12:13:08 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/1] powerpc: Force 32 bit MSIs on systems lacking firmware
- support
-References: <201305212154.r4LLs4Zu026123@d01av03.pok.ibm.com>
-In-Reply-To: <201305212154.r4LLs4Zu026123@d01av03.pok.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Stephane Eranian <eranian@google.com>
+Subject: Re: [PATCH 3/3] perf, x86,
+ lbr: Demand proper privileges for PERF_SAMPLE_BRANCH_KERNEL
+References: <20130503121122.931661809@chello.nl>
+ <20130503121256.230745028@chello.nl>
+ <CABPqkBTvcQAyXfeiJwpPsNtbs4ffsVguXE631dK_rbzHpwBdOg@mail.gmail.com>
+ <20130516090916.GF19669@dyad.programming.kicks-ass.net>
+ <8578.1368699317@ale.ozlabs.ibm.com>
+ <CABPqkBRpbh4BO7cMBysE+E+n5E_o_KesEhEZ3Wq49B3MeW786A@mail.gmail.com>
+In-Reply-To: <CABPqkBRpbh4BO7cMBysE+E+n5E_o_KesEhEZ3Wq49B3MeW786A@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Michael Neuling <mikey@neuling.org>,
+ "ak@linux.intel.com" <ak@linux.intel.com>,
+ Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+ Linux PPC dev <linuxppc-dev@ozlabs.org>, Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,86 +48,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-于 2013/5/22 5:54, Brian King 写道:
-> Recent commit e61133dda480062d221f09e4fc18f66763f8ecd0 added support
-> for a new firmware feature to force an adapter to use 32 bit MSIs.
-> However, this firmware is not available for all systems. The hack below
-> allows devices needing 32 bit MSIs to work on these systems as well.
-> It is careful to only enable this on Gen2 slots, which should limit
-> this to configurations where this hack is needed and tested to work.
->
-> Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
-> ---
->
->   arch/powerpc/platforms/pseries/msi.c |   31 +++++++++++++++++++++++++++----
->   1 file changed, 27 insertions(+), 4 deletions(-)
->
-> diff -puN arch/powerpc/platforms/pseries/msi.c~powerpc_32bit_msi_hack_on_papr arch/powerpc/platforms/pseries/msi.c
-> --- linux/arch/powerpc/platforms/pseries/msi.c~powerpc_32bit_msi_hack_on_papr	2013-05-15 10:44:46.000000000 -0500
-> +++ linux-bjking1/arch/powerpc/platforms/pseries/msi.c	2013-05-20 15:24:52.000000000 -0500
-> @@ -397,10 +397,11 @@ static int check_msix_entries(struct pci
->   static int rtas_setup_msi_irqs(struct pci_dev *pdev, int nvec_in, int type)
->   {
->   	struct pci_dn *pdn;
-> -	int hwirq, virq, i, rc;
-> +	int hwirq, virq, i, rc = -1;
->   	struct msi_desc *entry;
->   	struct msi_msg msg;
->   	int nvec = nvec_in;
-> +	int use_32bit_msi_hack = 0;
->
->   	pdn = get_pdn(pdev);
->   	if (!pdn)
-> @@ -428,15 +429,37 @@ static int rtas_setup_msi_irqs(struct pc
->   	 */
->   again:
->   	if (type == PCI_CAP_ID_MSI) {
-> -		if (pdn->force_32bit_msi)
-> +		if (pdn->force_32bit_msi) {
->   			rc = rtas_change_msi(pdn, RTAS_CHANGE_32MSI_FN, nvec);
-> -		else
-> +			if (rc < 0) {
-> +				/* We only want to run the 32 bit MSI hack below if
-> +				 the max bus speed is Gen2 speed. */
-> +				if (pdev->bus->max_bus_speed != PCIE_SPEED_5_0GT)
-> +					return rc;
-> +
-> +				use_32bit_msi_hack = 1;
-> +			}
-> +		}
-> +
-> +		if (rc < 0)
->   			rc = rtas_change_msi(pdn, RTAS_CHANGE_MSI_FN, nvec);
->
-> -		if (rc < 0 && !pdn->force_32bit_msi) {
-> +		if (rc < 0) {
->   			pr_debug("rtas_msi: trying the old firmware call.\n");
->   			rc = rtas_change_msi(pdn, RTAS_CHANGE_FN, nvec);
->   		}
-> +
-> +		if (use_32bit_msi_hack && rc > 0) {
-> +			int pos;
-> +			u32 addr_hi, addr_lo;
-> +
-> +			dev_info(&pdev->dev, "rtas_msi: No 32 bit MSI firmware support, forcing 32 bit MSI\n");
-> +			pos = pci_find_capability(pdev, PCI_CAP_ID_MSI);
-> +			pci_read_config_dword(pdev, pos + PCI_MSI_ADDRESS_HI, &addr_hi);
-> +			addr_lo = 0xffff0000 | ((addr_hi >> (48 - 32)) << 4);
-> +			pci_write_config_dword(pdev, pos + PCI_MSI_ADDRESS_LO, addr_lo);
-> +			pci_write_config_dword(pdev, pos + PCI_MSI_ADDRESS_HI, 0);
-I think here you can use catched dev->msi_cap for better.
+On 05/21/2013 07:25 PM, Stephane Eranian wrote:
+> On Thu, May 16, 2013 at 12:15 PM, Michael Neuling <mikey@neuling.org> wrote:
+>> Peter Zijlstra <peterz@infradead.org> wrote:
+>>
+>>> On Wed, May 15, 2013 at 03:37:22PM +0200, Stephane Eranian wrote:
+>>>> On Fri, May 3, 2013 at 2:11 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+>>>>> We should always have proper privileges when requesting kernel data.
+>>>>>
+>>>>> Cc: Andi Kleen <ak@linux.intel.com>
+>>>>> Cc: eranian@google.com
+>>>>> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+>>>>> Link: http://lkml.kernel.org/n/tip-v0x9ky3ahzr6nm3c6ilwrili@git.kernel.org
+>>>>> ---
+>>>>>  arch/x86/kernel/cpu/perf_event_intel_lbr.c |    5 ++++-
+>>>>>  1 file changed, 4 insertions(+), 1 deletion(-)
+>>>>>
+>>>>> --- a/arch/x86/kernel/cpu/perf_event_intel_lbr.c
+>>>>> +++ b/arch/x86/kernel/cpu/perf_event_intel_lbr.c
+>>>>> @@ -318,8 +318,11 @@ static void intel_pmu_setup_sw_lbr_filte
+>>>>>         if (br_type & PERF_SAMPLE_BRANCH_USER)
+>>>>>                 mask |= X86_BR_USER;
+>>>>>
+>>>>> -       if (br_type & PERF_SAMPLE_BRANCH_KERNEL)
+>>>>> +       if (br_type & PERF_SAMPLE_BRANCH_KERNEL) {
+>>>>> +               if (perf_paranoid_kernel() && !capable(CAP_SYS_ADMIN))
+>>>>> +                       return -EACCES;
+>>>>>                 mask |= X86_BR_KERNEL;
+>>>>> +       }
+>>>>>
+>>>> This will prevent regular users from capturing kernel -> kernel branches.
+>>>> But it won't prevent users from getting kernel -> user branches. Thus
+>>>> some kernel address will still be captured. I guess they could be eliminated
+>>>> by the sw_filter.
+>>>>
+>>>> When using LBR priv level filtering, the filter applies to the branch target
+>>>> only.
+>>>
+>>> How about something like the below? It also adds the branch flags
+>>> Mikey wanted for PowerPC.
+>>
+>> Peter,
+>>
+>> BTW PowerPC also has the ability to filter on conditional branches.  Any
+>> chance we could add something like the follow to perf also?
+>>
+>> Mikey
+>>
+>> diff --git a/include/uapi/linux/perf_event.h b/include/uapi/linux/perf_event.h
+>> index fb104e5..891c769 100644
+>> --- a/include/uapi/linux/perf_event.h
+>> +++ b/include/uapi/linux/perf_event.h
+>> @@ -157,8 +157,9 @@ enum perf_branch_sample_type {
+>>         PERF_SAMPLE_BRANCH_ANY_CALL     = 1U << 4, /* any call branch */
+>>         PERF_SAMPLE_BRANCH_ANY_RETURN   = 1U << 5, /* any return branch */
+>>         PERF_SAMPLE_BRANCH_IND_CALL     = 1U << 6, /* indirect calls */
+>> +       PERF_SAMPLE_BRANCH_CONDITIONAL  = 1U << 7, /* conditional branches */
+>>
+> I would use PERF_SAMPLE_BRANCH_COND here.
+> 
+>> -       PERF_SAMPLE_BRANCH_MAX          = 1U << 7, /* non-ABI */
+>> +       PERF_SAMPLE_BRANCH_MAX          = 1U << 8, /* non-ABI */
+>>  };
+>>
+>>  #define PERF_SAMPLE_BRANCH_PLM_ALL \
+>> diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
+>> index cdf58ec..5b0b89d 100644
+>> --- a/tools/perf/builtin-record.c
+>> +++ b/tools/perf/builtin-record.c
+>> @@ -676,6 +676,7 @@ static const struct branch_mode branch_modes[] = {
+>>         BRANCH_OPT("any_call", PERF_SAMPLE_BRANCH_ANY_CALL),
+>>         BRANCH_OPT("any_ret", PERF_SAMPLE_BRANCH_ANY_RETURN),
+>>         BRANCH_OPT("ind_call", PERF_SAMPLE_BRANCH_IND_CALL),
+>> +       BRANCH_OPT("cnd", PERF_SAMPLE_BRANCH_CONDITIONAL),
+> 
+> use "cond"
+> 
+>>         BRANCH_END
+>>  };
+>>
+> 
+> And if you do this, you also need to update the x86
+> perf_event_intel_lbr.c mapping
+> tables to fill out the entries for PERF_SAMPLE_BRANCH_COND:
+> 
+>         [PERF_SAMPLE_BRANCH_COND]       = LBR_JCC,
+> 
+> And you also need to update intel_pmu_setup_sw_lbr_filter()
+> to handle the conversion to x86 instructions:
+> 
+>        if (br_type & PERF_SAMPLE_BRANCH_COND)
+>                 mask |= X86_BR_JCC;
+> 
+> 
+> You also need to update the perf-record.txt documentation to list cond
+> as a possible
+> branch filter.
 
-Thanks
-Mike
-> +		}
->   	} else
->   		rc = rtas_change_msi(pdn, RTAS_CHANGE_MSIX_FN, nvec);
->
-> _
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
->
+Hey Stephane,
+
+I have incorporated all the review comments into the patch series
+https://lkml.org/lkml/2013/5/22/51.
+
+Regards
+Anshuman
