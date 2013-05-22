@@ -1,30 +1,27 @@
-Return-Path: <mst@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 305232C0099
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 19:59:26 +1000 (EST)
-Date: Wed, 22 May 2013 12:58:18 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH v2 00/10] uaccess: better might_sleep/might_fault behavior
-Message-ID: <20130522095818.GB24931@redhat.com>
-References: <cover.1368702323.git.mst@redhat.com>
- <201305221125.36284.arnd@arndb.de>
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 193C72C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 20:04:51 +1000 (EST)
+Message-ID: <519C9822.9040909@windriver.com>
+Date: Wed, 22 May 2013 18:04:18 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <201305221125.36284.arnd@arndb.de>
-Cc: linux-m32r-ja@ml.linux-m32r.org, kvm@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- David Howells <dhowells@redhat.com>, linux-mm@kvack.org,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- linux-arch@vger.kernel.org, linux-am33-list@redhat.com,
- Hirokazu Takata <takata@linux-m32r.org>, x86@kernel.org,
- Ingo Molnar <mingo@redhat.com>, microblaze-uclinux@itee.uq.edu.au,
- Chris Metcalf <cmetcalf@tilera.com>, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>,
- linux-m32r@ml.linux-m32r.org, linux-kernel@vger.kernel.org,
- Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
- linuxppc-dev@lists.ozlabs.org
+To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Subject: Re: [PATCH v4 06/12] ARM: dove: add gigabit ethernet and mvmdio device
+ tree nodes
+References: <1367854420-8006-1-git-send-email-sebastian.hesselbarth@gmail.com>
+ <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
+ <1369154510-4927-7-git-send-email-sebastian.hesselbarth@gmail.com>
+ <20130521174849.GL26249@lunn.ch> <519C9333.20609@gmail.com>
+In-Reply-To: <519C9333.20609@gmail.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ David Miller <davem@davemloft.net>, Lennert Buytenhek <buytenh@wantstofly.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,69 +31,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 22, 2013 at 11:25:36AM +0200, Arnd Bergmann wrote:
-> On Thursday 16 May 2013, Michael S. Tsirkin wrote:
-> > This improves the might_fault annotations used
-> > by uaccess routines:
-> > 
-> > 1. The only reason uaccess routines might sleep
-> >    is if they fault. Make this explicit for
-> >    all architectures.
-> > 2. Accesses (e.g through socket ops) to kernel memory
-> >    with KERNEL_DS like net/sunrpc does will never sleep.
-> >    Remove an unconditinal might_sleep in the inline
-> >    might_fault in kernel.h
-> >    (used when PROVE_LOCKING is not set).
-> > 3. Accesses with pagefault_disable return EFAULT
-> >    but won't cause caller to sleep.
-> >    Check for that and avoid might_sleep when
-> >    PROVE_LOCKING is set.
-> > 
-> > I'd like these changes to go in for the benefit of
-> > the vhost driver where we want to call socket ops
-> > under a spinlock, and fall back on slower thread handler
-> > on error.
-> 
-> Hi Michael,
-> 
-> I have recently stumbled over a related topic, which is the highly
-> inconsistent placement of might_fault() or might_sleep() in certain
-> classes of uaccess functions. Your patches seem completely reasonable,
-> but it would be good to also fix the other problem, at least on
-> the architectures we most care about.
-> 
-> Given the most commonly used functions and a couple of architectures
-> I'm familiar with, these are the ones that currently call might_fault()
-> 
-> 			x86-32	x86-64	arm	arm64	powerpc	s390	generic
-> copy_to_user		-	x	-	-	-	x	x
-> copy_from_user		-	x	-	-	-	x	x
-> put_user		x	x	x	x	x	x	x
-> get_user		x	x	x	x	x	x	x
-> __copy_to_user		x	x	-	-	x	-	-
-> __copy_from_user	x	x	-	-	x	-	-
-> __put_user		-	-	x	-	x	-	-
-> __get_user		-	-	x	-	x	-	-
-> 
-> WTF?
+On 05/22/2013 05:43 PM, Sebastian Hesselbarth wrote:
+> On 05/21/2013 07:48 PM, Andrew Lunn wrote:
+>> On Tue, May 21, 2013 at 06:41:44PM +0200, Sebastian Hesselbarth wrote:
+>>> This patch adds orion-eth and mvmdio device tree nodes for DT enabled
+>>> Dove boards. As there is only one ethernet controller on Dove, a default
+>>> phy node is also added with a note to set its reg property on a per-board
+>>> basis.
+>>>
+>>> Signed-off-by: Sebastian Hesselbarth<sebastian.hesselbarth@gmail.com>
+>>> ---
+> ...
+>>> +            ethernet-port@0 {
+>>> +                device_type = "network";
+>>> +                compatible = "marvell,orion-eth-port";
+>>> +                reg =<0>;
+>>> +                interrupts =<29>;
+>>> +                /* overwrite MAC address in bootloader */
+>>> +                local-mac-address = [00 00 00 00 00 00];
+>>
+>> Hi Sebastian
+>>
+>> Its probably a good idea to set the local administration bit in this
+>> MAC address. i.e. first byte is 02.
+>
+> Andrew,
+>
+> we just need an invalid address here to trigger the default behavior of
+> the driver and load the MAC address from its register. As PPC binding
+> documentation also has all zero, I just took it.
 
-Yea.
+The truth is in PPC case, often we set the real mac address with some variables 
+like 'eth[x]addr' in u-boot prompt, then u-boot will parse that value to fill 
+the dtb. At last the associated driver can get the actual mac address from the 
+dtb. And especially for those older u-boot version, even you have to reset the 
+'local-mac-address' property in dts directly with the real mac address before 
+generate the dtb since the older u-boot have no this ability to fill dtb again 
+before pass the kernel.
 
-> Calling might_fault() for every __get_user/__put_user is rather expensive
-> because it turns what should be a single instruction (plus fixup) into an
-> external function call.
-
-You mean _cond_resched with CONFIG_PREEMPT_VOLUNTARY? Or do you
-mean when we build with PROVE_LOCKING?
-
-> My feeling is that we should do might_fault() only in access_ok() to get
-> the right balance.
-> 
-> 	Arnd
-
-Well access_ok is currently non-blocking I think - we'd have to audit
-all callers. There are some 200 of these in drivers and some
-1000 total so ... a bit risky.
-
--- 
-MST
+Tiejun
