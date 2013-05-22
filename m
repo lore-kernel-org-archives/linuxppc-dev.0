@@ -1,44 +1,16 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 87DF32C009D
- for <linuxppc-dev@ozlabs.org>; Wed, 22 May 2013 16:43:46 +1000 (EST)
-Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 22 May 2013 12:07:54 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id DF5871258051
- for <linuxppc-dev@ozlabs.org>; Wed, 22 May 2013 12:15:39 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r4M6hbQ966388094
- for <linuxppc-dev@ozlabs.org>; Wed, 22 May 2013 12:13:37 +0530
-Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r4M6haSn019824
- for <linuxppc-dev@ozlabs.org>; Wed, 22 May 2013 16:43:40 +1000
-Message-ID: <519C68FC.2060304@linux.vnet.ibm.com>
-Date: Wed, 22 May 2013 12:13:08 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Stephane Eranian <eranian@google.com>
-Subject: Re: [PATCH 3/3] perf, x86,
- lbr: Demand proper privileges for PERF_SAMPLE_BRANCH_KERNEL
-References: <20130503121122.931661809@chello.nl>
- <20130503121256.230745028@chello.nl>
- <CABPqkBTvcQAyXfeiJwpPsNtbs4ffsVguXE631dK_rbzHpwBdOg@mail.gmail.com>
- <20130516090916.GF19669@dyad.programming.kicks-ass.net>
- <8578.1368699317@ale.ozlabs.ibm.com>
- <CABPqkBRpbh4BO7cMBysE+E+n5E_o_KesEhEZ3Wq49B3MeW786A@mail.gmail.com>
-In-Reply-To: <CABPqkBRpbh4BO7cMBysE+E+n5E_o_KesEhEZ3Wq49B3MeW786A@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Michael Neuling <mikey@neuling.org>,
- "ak@linux.intel.com" <ak@linux.intel.com>,
- Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
- Linux PPC dev <linuxppc-dev@ozlabs.org>, Ingo Molnar <mingo@kernel.org>
+Return-Path: <michael@ellerman.id.au>
+Message-ID: <1369206855.12874.9.camel@concordia>
+Subject: Re: [PATCH 1/2] powerpc, perf: Ignore separate BHRB privilege state
+ filter request
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Date: Wed, 22 May 2013 17:14:15 +1000
+In-Reply-To: <1369201667-9048-2-git-send-email-khandual@linux.vnet.ibm.com>
+References: <1369201667-9048-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1369201667-9048-2-git-send-email-khandual@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,107 +20,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/21/2013 07:25 PM, Stephane Eranian wrote:
-> On Thu, May 16, 2013 at 12:15 PM, Michael Neuling <mikey@neuling.org> wrote:
->> Peter Zijlstra <peterz@infradead.org> wrote:
->>
->>> On Wed, May 15, 2013 at 03:37:22PM +0200, Stephane Eranian wrote:
->>>> On Fri, May 3, 2013 at 2:11 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
->>>>> We should always have proper privileges when requesting kernel data.
->>>>>
->>>>> Cc: Andi Kleen <ak@linux.intel.com>
->>>>> Cc: eranian@google.com
->>>>> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
->>>>> Link: http://lkml.kernel.org/n/tip-v0x9ky3ahzr6nm3c6ilwrili@git.kernel.org
->>>>> ---
->>>>>  arch/x86/kernel/cpu/perf_event_intel_lbr.c |    5 ++++-
->>>>>  1 file changed, 4 insertions(+), 1 deletion(-)
->>>>>
->>>>> --- a/arch/x86/kernel/cpu/perf_event_intel_lbr.c
->>>>> +++ b/arch/x86/kernel/cpu/perf_event_intel_lbr.c
->>>>> @@ -318,8 +318,11 @@ static void intel_pmu_setup_sw_lbr_filte
->>>>>         if (br_type & PERF_SAMPLE_BRANCH_USER)
->>>>>                 mask |= X86_BR_USER;
->>>>>
->>>>> -       if (br_type & PERF_SAMPLE_BRANCH_KERNEL)
->>>>> +       if (br_type & PERF_SAMPLE_BRANCH_KERNEL) {
->>>>> +               if (perf_paranoid_kernel() && !capable(CAP_SYS_ADMIN))
->>>>> +                       return -EACCES;
->>>>>                 mask |= X86_BR_KERNEL;
->>>>> +       }
->>>>>
->>>> This will prevent regular users from capturing kernel -> kernel branches.
->>>> But it won't prevent users from getting kernel -> user branches. Thus
->>>> some kernel address will still be captured. I guess they could be eliminated
->>>> by the sw_filter.
->>>>
->>>> When using LBR priv level filtering, the filter applies to the branch target
->>>> only.
->>>
->>> How about something like the below? It also adds the branch flags
->>> Mikey wanted for PowerPC.
->>
->> Peter,
->>
->> BTW PowerPC also has the ability to filter on conditional branches.  Any
->> chance we could add something like the follow to perf also?
->>
->> Mikey
->>
->> diff --git a/include/uapi/linux/perf_event.h b/include/uapi/linux/perf_event.h
->> index fb104e5..891c769 100644
->> --- a/include/uapi/linux/perf_event.h
->> +++ b/include/uapi/linux/perf_event.h
->> @@ -157,8 +157,9 @@ enum perf_branch_sample_type {
->>         PERF_SAMPLE_BRANCH_ANY_CALL     = 1U << 4, /* any call branch */
->>         PERF_SAMPLE_BRANCH_ANY_RETURN   = 1U << 5, /* any return branch */
->>         PERF_SAMPLE_BRANCH_IND_CALL     = 1U << 6, /* indirect calls */
->> +       PERF_SAMPLE_BRANCH_CONDITIONAL  = 1U << 7, /* conditional branches */
->>
-> I would use PERF_SAMPLE_BRANCH_COND here.
-> 
->> -       PERF_SAMPLE_BRANCH_MAX          = 1U << 7, /* non-ABI */
->> +       PERF_SAMPLE_BRANCH_MAX          = 1U << 8, /* non-ABI */
->>  };
->>
->>  #define PERF_SAMPLE_BRANCH_PLM_ALL \
->> diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
->> index cdf58ec..5b0b89d 100644
->> --- a/tools/perf/builtin-record.c
->> +++ b/tools/perf/builtin-record.c
->> @@ -676,6 +676,7 @@ static const struct branch_mode branch_modes[] = {
->>         BRANCH_OPT("any_call", PERF_SAMPLE_BRANCH_ANY_CALL),
->>         BRANCH_OPT("any_ret", PERF_SAMPLE_BRANCH_ANY_RETURN),
->>         BRANCH_OPT("ind_call", PERF_SAMPLE_BRANCH_IND_CALL),
->> +       BRANCH_OPT("cnd", PERF_SAMPLE_BRANCH_CONDITIONAL),
-> 
-> use "cond"
-> 
->>         BRANCH_END
->>  };
->>
-> 
-> And if you do this, you also need to update the x86
-> perf_event_intel_lbr.c mapping
-> tables to fill out the entries for PERF_SAMPLE_BRANCH_COND:
-> 
->         [PERF_SAMPLE_BRANCH_COND]       = LBR_JCC,
-> 
-> And you also need to update intel_pmu_setup_sw_lbr_filter()
-> to handle the conversion to x86 instructions:
-> 
->        if (br_type & PERF_SAMPLE_BRANCH_COND)
->                 mask |= X86_BR_JCC;
-> 
-> 
-> You also need to update the perf-record.txt documentation to list cond
-> as a possible
-> branch filter.
+On Wed, 2013-05-22 at 11:17 +0530, Anshuman Khandual wrote:
+> Completely ignore BHRB privilege state filter request as we are
+> already configuring MMCRA register with privilege state filtering
+> attribute for the accompanying PMU event. This would help achieve
+> cleaner user space interaction for BHRB.
 
-Hey Stephane,
+Your description from patch 0 should be here.
 
-I have incorporated all the review comments into the patch series
-https://lkml.org/lkml/2013/5/22/51.
 
-Regards
-Anshuman
+> diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
+> index f7d1c4f..8ed323d 100644
+> --- a/arch/powerpc/perf/power8-pmu.c
+> +++ b/arch/powerpc/perf/power8-pmu.c
+> @@ -525,16 +525,17 @@ static u64 power8_bhrb_filter_map(u64 branch_sample_type)
+>  	u64 pmu_bhrb_filter = 0;
+>  	u64 br_privilege = branch_sample_type & ONLY_PLM;
+>  
+> -	/* BHRB and regular PMU events share the same prvillege state
+> +	/* BHRB and regular PMU events share the same prvilege state
+
+Please spell "privilege" correctly.
+
+>  	 * filter configuration. BHRB is always recorded along with a
+> -	 * regular PMU event. So privilege state filter criteria for BHRB
+> -	 * and the companion PMU events has to be the same. As a default
+> -	 * "perf record" tool sets all privillege bits ON when no filter
+> -	 * criteria is provided in the command line. So as along as all
+> -	 * privillege bits are ON or they are OFF, we are good to go.
+> +	 * regular PMU event. So privilege state filter criteria for
+> +	 * the BHRB and the companion PMU events has to be the same.
+> +	 * Separate BHRB privillege state filter requests would be
+> +	 * ignored.
+>  	 */
+
+This comment doesn't make sense to me with the updated code.
+
+It still says "privilege state filter criteria for the BHRB and the
+companion PMU events has to be the same".
+
+But they don't, right?
+
+What it should say is "we ignore the privilege bits in the branch sample
+type because they are handled by the underlying PMC configuration" - or
+something like that.
+
+> -	if ((br_privilege != 7) && (br_privilege != 0))
+> -		return -1;
+> +
+> +	if (br_privilege)
+> +		pr_info("BHRB privilege state filter request %llx ignored\n",
+> +								br_privilege);
+
+Don't do that. Ignoring the br_privilege is either the right thing to do
+in which case we do it and print nothing, or it doesn't make sense and
+we reject it.
+
+cheers
