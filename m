@@ -1,28 +1,34 @@
-Return-Path: <jason@lakedaemon.net>
-Received: from mho-01-ewr.mailhop.org (mho-03-ewr.mailhop.org [204.13.248.66])
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+ [IPv6:2002:4e20:1eda::1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 15FA92C0096
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 23:10:16 +1000 (EST)
-Date: Wed, 22 May 2013 09:10:10 -0400
-From: Jason Cooper <jason@lakedaemon.net>
-To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
- Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-Subject: Re: [PATCH v4 06/12] ARM: dove: add gigabit ethernet and mvmdio
- device tree nodes
-Message-ID: <20130522131010.GB31290@titan.lakedaemon.net>
-References: <1367854420-8006-1-git-send-email-sebastian.hesselbarth@gmail.com>
- <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
- <1369154510-4927-7-git-send-email-sebastian.hesselbarth@gmail.com>
- <20130521174849.GL26249@lunn.ch> <519C9333.20609@gmail.com>
- <519C9822.9040909@windriver.com> <519C9A66.3050807@gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id DBB7A2C00A5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 23:52:52 +1000 (EST)
+Date: Wed, 22 May 2013 14:41:24 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH v2 00/10] uaccess: better might_sleep/might_fault behavior
+Message-ID: <20130522134124.GD18614@n2100.arm.linux.org.uk>
+References: <cover.1368702323.git.mst@redhat.com>
+ <201305221125.36284.arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <519C9A66.3050807@gmail.com>
-Cc: Andrew Lunn <andrew@lunn.ch>, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, "tiejun.chen" <tiejun.chen@windriver.com>,
- Lennert Buytenhek <buytenh@wantstofly.org>, linuxppc-dev@lists.ozlabs.org,
- David Miller <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org
+In-Reply-To: <201305221125.36284.arnd@arndb.de>
+Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: linux-m32r-ja@ml.linux-m32r.org, kvm@vger.kernel.org,
+ "Michael S. Tsirkin" <mst@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+ Will Deacon <will.deacon@arm.com>, David Howells <dhowells@redhat.com>,
+ linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, linux-arch@vger.kernel.org,
+ linux-am33-list@redhat.com, Hirokazu Takata <takata@linux-m32r.org>,
+ x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, microblaze-uclinux@itee.uq.edu.au,
+ Chris Metcalf <cmetcalf@tilera.com>, Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>,
+ linux-m32r@ml.linux-m32r.org, linux-kernel@vger.kernel.org,
+ Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,59 +38,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 22, 2013 at 12:13:58PM +0200, Sebastian Hesselbarth wrote:
-> On 05/22/2013 12:04 PM, tiejun.chen wrote:
-> >On 05/22/2013 05:43 PM, Sebastian Hesselbarth wrote:
-> >>On 05/21/2013 07:48 PM, Andrew Lunn wrote:
-> >>>On Tue, May 21, 2013 at 06:41:44PM +0200, Sebastian Hesselbarth wrote:
-> >>>>This patch adds orion-eth and mvmdio device tree nodes for DT enabled
-> >>>>Dove boards. As there is only one ethernet controller on Dove, a
-> >>>>default
-> >>>>phy node is also added with a note to set its reg property on a
-> >>>>per-board
-> >>>>basis.
-> >>>>
-> >>>>Signed-off-by: Sebastian Hesselbarth<sebastian.hesselbarth@gmail.com>
-> >>>>---
-> >>...
-> >>>>+ ethernet-port@0 {
-> >>>>+ device_type = "network";
-> >>>>+ compatible = "marvell,orion-eth-port";
-> >>>>+ reg =<0>;
-> >>>>+ interrupts =<29>;
-> >>>>+ /* overwrite MAC address in bootloader */
-> >>>>+ local-mac-address = [00 00 00 00 00 00];
-> >>>
-> >>>Hi Sebastian
-> >>>
-> >>>Its probably a good idea to set the local administration bit in this
-> >>>MAC address. i.e. first byte is 02.
-> >>
-> >>Andrew,
-> >>
-> >>we just need an invalid address here to trigger the default behavior of
-> >>the driver and load the MAC address from its register. As PPC binding
-> >>documentation also has all zero, I just took it.
-> >
-> >The truth is in PPC case, often we set the real mac address with some
-> >variables like 'eth[x]addr' in u-boot prompt, then u-boot will parse
-> >that value to fill the dtb. At last the associated driver can get the
-> >actual mac address from the dtb. And especially for those older u-boot
-> >version, even you have to reset the 'local-mac-address' property in dts
-> >directly with the real mac address before generate the dtb since the
-> >older u-boot have no this ability to fill dtb again before pass the kernel.
+On Wed, May 22, 2013 at 11:25:36AM +0200, Arnd Bergmann wrote:
+> Given the most commonly used functions and a couple of architectures
+> I'm familiar with, these are the ones that currently call might_fault()
 > 
-> Tiejun,
+> 			x86-32	x86-64	arm	arm64	powerpc	s390	generic
+> copy_to_user		-	x	-	-	-	x	x
+> copy_from_user		-	x	-	-	-	x	x
+> put_user		x	x	x	x	x	x	x
+> get_user		x	x	x	x	x	x	x
+> __copy_to_user		x	x	-	-	x	-	-
+> __copy_from_user	x	x	-	-	x	-	-
+> __put_user		-	-	x	-	x	-	-
+> __get_user		-	-	x	-	x	-	-
 > 
-> with Marvell SoCs it is no different, except that there is almost no dtb
-> support in their u-boot.
+> WTF?
 
-iirc, our solution to this was to parse the ATAGs for the mac addr and
-update the appended dtb.  This way, module load and unload would work
-without loosing the mac address.  I believe Jason Gunthorpe has a patch
-to atags_to_fdt() for this...  This should allow us to get rid of the
-clocks hack.
+I think your table is rather screwed - especially on ARM.  Tell me -
+how can __copy_to_user() use might_fault() but copy_to_user() not when
+copy_to_user() is implemented using __copy_to_user() ?  Same for
+copy_from_user() but the reverse argument - there's nothing special
+in our copy_from_user() which would make it do might_fault() when
+__copy_from_user() wouldn't.
 
-thx,
-
-Jason.
+The correct position for ARM is: our (__)?(pu|ge)t_user all use
+might_fault(), but (__)?copy_(to|from)_user do not.  Neither does
+(__)?clear_user.  We might want to fix those to use might_fault().
