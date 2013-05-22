@@ -1,33 +1,17 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:4978:20e::2])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 8EF652C009A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 20:19:28 +1000 (EST)
-Date: Wed, 22 May 2013 12:19:16 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH v2 00/10] uaccess: better might_sleep/might_fault behavior
-Message-ID: <20130522101916.GM18810@twins.programming.kicks-ass.net>
-References: <cover.1368702323.git.mst@redhat.com>
- <201305221125.36284.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <201305221125.36284.arnd@arndb.de>
-Cc: linux-m32r-ja@ml.linux-m32r.org, kvm@vger.kernel.org,
- "Michael S. Tsirkin" <mst@redhat.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- David Howells <dhowells@redhat.com>, linux-mm@kvack.org,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- linux-arch@vger.kernel.org, linux-am33-list@redhat.com,
- Hirokazu Takata <takata@linux-m32r.org>, x86@kernel.org,
- Ingo Molnar <mingo@redhat.com>, microblaze-uclinux@itee.uq.edu.au,
- Chris Metcalf <cmetcalf@tilera.com>, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>,
- linux-m32r@ml.linux-m32r.org, linux-kernel@vger.kernel.org,
- Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 2/5] powerpc,
+ perf: Enable conditional branch filter for POWER8
+In-reply-to: <20130522075305.GN26912@twins.programming.kicks-ass.net>
+References: <1369203761-12649-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1369203761-12649-3-git-send-email-khandual@linux.vnet.ibm.com>
+ <20130522075305.GN26912@twins.programming.kicks-ass.net>
+Date: Wed, 22 May 2013 20:20:24 +1000
+Message-ID: <1038.1369218024@ale.ozlabs.ibm.com>
+Cc: ak@linux.intel.com, linux-kernel@vger.kernel.org, eranian@google.com,
+ linuxppc-dev@ozlabs.org, mingo@kernel.org,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,11 +21,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 22, 2013 at 11:25:36AM +0200, Arnd Bergmann wrote:
-> Calling might_fault() for every __get_user/__put_user is rather expensive
-> because it turns what should be a single instruction (plus fixup) into an
-> external function call.
+Peter Zijlstra <peterz@infradead.org> wrote:
 
-We could hide it all behind CONFIG_DEBUG_ATOMIC_SLEEP just like
-might_sleep() is. I'm not sure there's a point to might_fault() when
-might_sleep() is a NOP.
+> On Wed, May 22, 2013 at 11:52:38AM +0530, Anshuman Khandual wrote:
+> > Enables conditional branch filter support for POWER8
+> > utilizing MMCRA register based filter and also invalidates
+> > a BHRB branch filter combination involving conditional
+> > branches.
+> > 
+> > Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> > ---
+> >  arch/powerpc/perf/power8-pmu.c | 10 ++++++++++
+> >  1 file changed, 10 insertions(+)
+> > 
+> > diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
+> > index 8ed323d..e60b38f 100644
+> > --- a/arch/powerpc/perf/power8-pmu.c
+> > +++ b/arch/powerpc/perf/power8-pmu.c
+> > @@ -548,11 +548,21 @@ static u64 power8_bhrb_filter_map(u64 branch_sample_type)
+> >  	if (branch_sample_type & PERF_SAMPLE_BRANCH_IND_CALL)
+> >  		return -1;
+> >  
+> > +	/* Invalid branch filter combination - HW does not support */
+> > +	if ((branch_sample_type & PERF_SAMPLE_BRANCH_ANY_CALL) &&
+> > +			(branch_sample_type & PERF_SAMPLE_BRANCH_COND))
+> > +		return -1;
+> > +
+> >  	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY_CALL) {
+> >  		pmu_bhrb_filter |= POWER8_MMCRA_IFM1;
+> >  		return pmu_bhrb_filter;
+> >  	}
+> >  
+> > +	if (branch_sample_type & PERF_SAMPLE_BRANCH_COND) {
+> > +		pmu_bhrb_filter |= POWER8_MMCRA_IFM3;
+> > +		return pmu_bhrb_filter;
+> > +	}
+> > +
+> >  	/* Every thing else is unsupported */
+> >  	return -1;
+> >  }
+> 
+> So I suppose you've seen what x86 does in this case? ;-) I'm not saying
+> you _have_ to do the software filter, but I would like the changelog to at
+> least mention the issue.
+> 
+> In fact, I suppose that should have been in the original patches :/ as
+> this patch series only adds the conditional branch support. 
+
+Anshuman,
+
+Now we have the branch reading and parsing code (for the "to" case), we
+should use that to do what Peter is suggesting.  
+
+Mikey
