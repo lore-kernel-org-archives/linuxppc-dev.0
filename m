@@ -1,33 +1,27 @@
-Return-Path: <mst@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 4C3062C00A2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2013 06:39:33 +1000 (EST)
-Date: Wed, 22 May 2013 23:38:31 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v2 10/10] kernel: might_fault does not imply might_sleep
-Message-ID: <20130522203831.GB28296@redhat.com>
-References: <cover.1368702323.git.mst@redhat.com>
- <1f85dc8e6a0149677563a2dfb4cef9a9c7eaa391.1368702323.git.mst@redhat.com>
- <20130516184041.GP19669@dyad.programming.kicks-ass.net>
- <20130519093526.GD19883@redhat.com>
- <20130521115734.GA9554@twins.programming.kicks-ass.net>
+Return-Path: <sebastian.hesselbarth@gmail.com>
+Received: from mail-ee0-f42.google.com (mail-ee0-f42.google.com [74.125.83.42])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4642E2C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2013 06:55:51 +1000 (EST)
+Received: by mail-ee0-f42.google.com with SMTP id c50so1478235eek.29
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 13:55:47 -0700 (PDT)
+Message-ID: <519D30CF.9040904@gmail.com>
+Date: Wed, 22 May 2013 22:55:43 +0200
+From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130521115734.GA9554@twins.programming.kicks-ass.net>
-Cc: linux-m32r-ja@ml.linux-m32r.org, kvm@vger.kernel.org,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- David Howells <dhowells@redhat.com>, linux-mm@kvack.org,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- linux-arch@vger.kernel.org, linux-am33-list@redhat.com,
- Hirokazu Takata <takata@linux-m32r.org>, x86@kernel.org,
- Ingo Molnar <mingo@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
- microblaze-uclinux@itee.uq.edu.au, Chris Metcalf <cmetcalf@tilera.com>,
- rostedt@goodmis.org, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>,
- linux-m32r@ml.linux-m32r.org, linux-kernel@vger.kernel.org,
- Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
- linuxppc-dev@lists.ozlabs.org
+To: Simon Baatz <gmbnomis@gmail.com>
+Subject: Re: [PATCH v4 11/12] ARM: kirkwood: remove redundant DT board files
+References: <1367854420-8006-1-git-send-email-sebastian.hesselbarth@gmail.com>
+ <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
+ <1369154510-4927-12-git-send-email-sebastian.hesselbarth@gmail.com>
+ <20130522203633.GA28394@schnuecks.de>
+In-Reply-To: <20130522203633.GA28394@schnuecks.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ David Miller <davem@davemloft.net>, Lennert Buytenhek <buytenh@wantstofly.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,127 +31,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 21, 2013 at 01:57:34PM +0200, Peter Zijlstra wrote:
-> On Sun, May 19, 2013 at 12:35:26PM +0300, Michael S. Tsirkin wrote:
-> > > > --- a/include/linux/kernel.h
-> > > > +++ b/include/linux/kernel.h
-> > > > @@ -198,7 +198,6 @@ void might_fault(void);
-> > > >  #else
-> > > >  static inline void might_fault(void)
-> > > >  {
-> > > > -	might_sleep();
-> > > 
-> > > This removes potential resched points for PREEMPT_VOLUNTARY -- was that
-> > > intentional?
-> > 
-> > No it's a bug. Thanks for pointing this out.
-> > OK so I guess it should be might_sleep_if(!in_atomic())
-> > and this means might_fault would have to move from linux/kernel.h to
-> > linux/uaccess.h, since in_atomic() is in linux/hardirq.h
-> > 
-> > Makes sense?
-> 
-> So the only difference between PROVE_LOCKING and not should be the
-> might_lock_read() thing; so how about something like this?
+On 05/22/2013 10:36 PM, Simon Baatz wrote:
+> Hi Sebastian,
+>
+> On Tue, May 21, 2013 at 06:41:49PM +0200, Sebastian Hesselbarth wrote:
+>> With DT support for mv643xx_eth, board specific init for some boards now
+>> is unneccessary. Remove those board files, Kconfig entries, and
+>> corresponding entries in kirkwood_defconfig.
+>>
+>> Signed-off-by: Sebastian Hesselbarth<sebastian.hesselbarth@gmail.com>
+>> ---
+>> Note: board-km_kirkwood.c is also removed, as Valentin Longchamp confirmed
+>> the lock-up is not caused by accessing clock gating registers but rather
+>> non-existent device registers. This will be addressed by dtsi separation
+>> for kirkwood and bobcat SoC variants.
+>>
+>> Changelog:
+>> v3->v4:
+>> - remove more boards that don't require board specific setup
+>>
+...
+> We still have:
+>
+> static const char * const kirkwood_dt_board_compat[] = {
+> 	"globalscale,dreamplug",
+> 	"globalscale,guruplug",
+> 	"dlink,dns-320",
+> 	"dlink,dns-325",
+> 	"iom,iconnect",
+> 	"raidsonic,ib-nas62x0",
+> 	"qnap,ts219",
+> 	"seagate,dockstar",
+> 	"seagate,goflexnet",
+> 	"buffalo,lsxl",
+> 	"iom,ix2-200",
+> 	"keymile,km_kirkwood",
+> 	"lacie,cloudbox",
+> 	"lacie,inetspace_v2",
+> 	"lacie,netspace_lite_v2",
+> 	"lacie,netspace_max_v2",
+> 	"lacie,netspace_mini_v2",
+> 	"lacie,netspace_v2",
+> 	"mpl,cec4",
+> 	"netgear,readynas-duo-v2",
+> 	"plathome,openblocks-a6",
+> 	"usi,topkick",
+> 	"zyxel,nsa310",
+> 	NULL
+> };
+>
+> in that file. I think it does not make sense that we need to list
+> boards here that can be described fully by DT. When adding such a
+> board in the future, you will still need to adapt board-dt.c.
 
-So the problem with the below is that might_fault is needed
-in asm/uaccess.h.
-I'm still trying various approaches but the dependencies there
-are very complex.
+True, will remove the redundant compatible strings for v5.
+Actually, if I am not missing something, all compatible strings except
+"marvell,kirkwood" are redundant as long as board.dts append it
+correctly.
 
-> ---
->  include/linux/kernel.h  |  7 ++-----
->  include/linux/uaccess.h | 26 ++++++++++++++++++++++++++
->  mm/memory.c             | 14 ++------------
->  3 files changed, 30 insertions(+), 17 deletions(-)
-> 
-> diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-> index e96329c..70812f4 100644
-> --- a/include/linux/kernel.h
-> +++ b/include/linux/kernel.h
-> @@ -194,12 +194,9 @@ extern int _cond_resched(void);
->  	})
->  
->  #ifdef CONFIG_PROVE_LOCKING
-> -void might_fault(void);
-> +void might_fault_lockdep(void);
->  #else
-> -static inline void might_fault(void)
-> -{
-> -	might_sleep();
-> -}
-> +static inline void might_fault_lockdep(void) { }
->  #endif
->  
->  extern struct atomic_notifier_head panic_notifier_list;
-> diff --git a/include/linux/uaccess.h b/include/linux/uaccess.h
-> index 5ca0951..50a2cc9 100644
-> --- a/include/linux/uaccess.h
-> +++ b/include/linux/uaccess.h
-> @@ -38,6 +38,32 @@ static inline void pagefault_enable(void)
->  	preempt_check_resched();
->  }
->  
-> +static inline bool __can_fault(void)
-> +{
-> +	/*
-> +	 * Some code (nfs/sunrpc) uses socket ops on kernel memory while
-> +	 * holding the mmap_sem, this is safe because kernel memory doesn't
-> +	 * get paged out, therefore we'll never actually fault, and the
-> +	 * below annotations will generate false positives.
-> +	 */
-> +	if (segment_eq(get_fs(), KERNEL_DS))
-> +		return false;
-> +
-> +	if (in_atomic() /* || pagefault_disabled() */)
-> +		return false;
-> +
-> +	return true;
-> +}
-> +
-> +static inline void might_fault(void)
-> +{
-> +	if (!__can_fault())
-> +		return;
-> +
-> +	might_sleep();
-> +	might_fault_lockdep();
-> +}
-> +
->  #ifndef ARCH_HAS_NOCACHE_UACCESS
->  
->  static inline unsigned long __copy_from_user_inatomic_nocache(void *to,
-> diff --git a/mm/memory.c b/mm/memory.c
-> index 6dc1882..266610c 100644
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -4211,19 +4211,9 @@ void print_vma_addr(char *prefix, unsigned long ip)
->  }
->  
->  #ifdef CONFIG_PROVE_LOCKING
-> -void might_fault(void)
-> +void might_fault_lockdep(void)
->  {
->  	/*
-> -	 * Some code (nfs/sunrpc) uses socket ops on kernel memory while
-> -	 * holding the mmap_sem, this is safe because kernel memory doesn't
-> -	 * get paged out, therefore we'll never actually fault, and the
-> -	 * below annotations will generate false positives.
-> -	 */
-> -	if (segment_eq(get_fs(), KERNEL_DS))
-> -		return;
-> -
-> -	might_sleep();
-> -	/*
->  	 * it would be nicer only to annotate paths which are not under
->  	 * pagefault_disable, however that requires a larger audit and
->  	 * providing helpers like get_user_atomic.
-> @@ -4231,7 +4221,7 @@ void might_fault(void)
->  	if (!in_atomic() && current->mm)
->  		might_lock_read(&current->mm->mmap_sem);
->  }
-> -EXPORT_SYMBOL(might_fault);
-> +EXPORT_SYMBOL(might_fault_lockdep);
->  #endif
->  
->  #if defined(CONFIG_TRANSPARENT_HUGEPAGE) || defined(CONFIG_HUGETLBFS)
+> Should we remove the boards that you removed above here as well and
+> add
+>
+> 	"marvell,kirkwood-88f6192",
+> 	"marvell,kirkwood-88f6281",
+> 	"marvell,kirkwood-88f6282",
+> 	"marvell,kirkwood-88f6283",
+> 	"marvell,kirkwood-88f6702",
+> 	"marvell,kirkwood-98DX4122",
+>
+> or even just state "marvell,kirkwood"?
+
+I would stick with "marvell,kirkwood" only. This is SoC init code and
+we do not distinguish variants here at all.
+
+Sebastian
