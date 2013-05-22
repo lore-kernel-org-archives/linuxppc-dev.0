@@ -1,21 +1,33 @@
-Return-Path: <geert@linux-m68k.org>
-Received: from wilson.telenet-ops.be (wilson.telenet-ops.be [195.130.132.42])
- by ozlabs.org (Postfix) with ESMTP id 8E03A2C00A5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2013 04:46:53 +1000 (EST)
-Received: from georges.telenet-ops.be (georges.telenet-ops.be [195.130.137.68])
- by wilson.telenet-ops.be (Postfix) with ESMTP id 38EE7341B0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 20:36:06 +0200 (CEST)
-Date: Wed, 22 May 2013 20:36:04 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Sender: geert@linux-m68k.org
-To: Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: Build regressions/improvements in v3.10-rc2
-In-Reply-To: <alpine.DEB.2.00.1305222034040.25309@ayla.of.borg>
-Message-ID: <alpine.DEB.2.00.1305222035230.25364@ayla.of.borg>
-References: <alpine.DEB.2.00.1305222034040.25309@ayla.of.borg>
+Return-Path: <jason@lakedaemon.net>
+Received: from mho-01-ewr.mailhop.org (mho-03-ewr.mailhop.org [204.13.248.66])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id BABBD2C00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2013 04:49:43 +1000 (EST)
+Date: Wed, 22 May 2013 14:49:36 -0400
+From: Jason Cooper <jason@lakedaemon.net>
+To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Subject: Re: [PATCH v4 06/12] ARM: dove: add gigabit ethernet and mvmdio
+ device tree nodes
+Message-ID: <20130522184936.GK31290@titan.lakedaemon.net>
+References: <519C9333.20609@gmail.com> <519C9822.9040909@windriver.com>
+ <519C9A66.3050807@gmail.com>
+ <20130522131010.GB31290@titan.lakedaemon.net>
+ <20130522165908.GB12320@obsidianresearch.com>
+ <519D0143.1000203@gmail.com>
+ <20130522173505.GH31290@titan.lakedaemon.net>
+ <519D038C.9000605@gmail.com>
+ <20130522174815.GI31290@titan.lakedaemon.net>
+ <519D1204.4090701@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Linux/PPC Development <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <519D1204.4090701@gmail.com>
+Cc: Andrew Lunn <andrew@lunn.ch>, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+ "tiejun.chen" <tiejun.chen@windriver.com>,
+ Lennert Buytenhek <buytenh@wantstofly.org>, linuxppc-dev@lists.ozlabs.org,
+ David Miller <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,26 +37,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 22 May 2013, Geert Uytterhoeven wrote:
-> JFYI, when comparing v3.10-rc2 to v3.10-rc1[3], the summaries are:
->   - build errors: +2/-13
+On Wed, May 22, 2013 at 08:44:20PM +0200, Sebastian Hesselbarth wrote:
+> On 05/22/2013 07:48 PM, Jason Cooper wrote:
+> >On Wed, May 22, 2013 at 07:42:36PM +0200, Sebastian Hesselbarth wrote:
+> >>Hmm, maybe a little bit too early. While restoring the MAC address now
+> >>works, another bug arises which I guess is related with phy setup
+> >>and aneg.
+> >>
+> >>Will investigate and update patch set accordingly.
+> >
+> >Cool, chances are, we should be able to take that patch in by itself for
+> >this merge window...
+> 
+> Which patch do you mean? The local-mac-address workaround will only be
+> available for DT mv643xx_eth because it uses the DT node to store the
+> MAC.
 
-One false positive due to a line concatenation, and
+I thought you were replacing the unconditional ethernet clock grabbing
+with reading the mac from the registers and updating the dtb?  In
+mach-kirkwood/board-dt.c?
 
-  + error: drivers/built-in.o: undefined reference to `il_pm_ops':  => .data+0x51ce4)
+confused. :-/
 
-powerpc-randconfig
-
-> [1] http://kisskb.ellerman.id.au/kisskb/head/6246/ (120 out of 118 configs)
-> [3] http://kisskb.ellerman.id.au/kisskb/head/6218/ (all 118 configs)
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Jason.
