@@ -1,34 +1,39 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+Return-Path: <qiudayu@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9EEB12C00A7
- for <linuxppc-dev@ozlabs.org>; Wed, 22 May 2013 15:48:23 +1000 (EST)
+ (Client CN "e28smtp03.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9D6DD2C007C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 15:57:43 +1000 (EST)
 Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 22 May 2013 11:12:03 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 63FF5E0053
- for <linuxppc-dev@ozlabs.org>; Wed, 22 May 2013 11:20:47 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r4M5m9hk1966366
- for <linuxppc-dev@ozlabs.org>; Wed, 22 May 2013 11:18:09 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r4M5mDLP017753
- for <linuxppc-dev@ozlabs.org>; Wed, 22 May 2013 15:48:13 +1000
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] powerpc,
- perf: Ignore separate BHRB privilege state filter request
-Date: Wed, 22 May 2013 11:17:46 +0530
-Message-Id: <1369201667-9048-2-git-send-email-khandual@linux.vnet.ibm.com>
-In-Reply-To: <1369201667-9048-1-git-send-email-khandual@linux.vnet.ibm.com>
-References: <1369201667-9048-1-git-send-email-khandual@linux.vnet.ibm.com>
-Cc: mikey@neuling.org
+ for <linuxppc-dev@lists.ozlabs.org> from <qiudayu@linux.vnet.ibm.com>;
+ Wed, 22 May 2013 11:22:36 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 2D48AE0054
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 11:30:10 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r4M5vVhJ58392732
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 11:27:31 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r4M5vZ1i004276
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 05:57:36 GMT
+Received: from [9.111.29.142] (win-q68h7f9m03i.cn.ibm.com [9.111.29.142])
+ by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
+ r4M5vWt0004127
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 05:57:33 GMT
+Message-ID: <519C5E48.8040401@linux.vnet.ibm.com>
+Date: Wed, 22 May 2013 13:57:28 +0800
+From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 0/3] Enable multiple MSI feature in pSeries
+References: <1358235536-32741-1-git-send-email-qiudayu@linux.vnet.ibm.com>
+ <20130521144548.GB21632@dhcp-26-207.brq.redhat.com>
+In-Reply-To: <20130521144548.GB21632@dhcp-26-207.brq.redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,45 +43,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Completely ignore BHRB privilege state filter request as we are
-already configuring MMCRA register with privilege state filtering
-attribute for the accompanying PMU event. This would help achieve
-cleaner user space interaction for BHRB.
+于 2013/5/21 22:45, Alexander Gordeev 写道:
+> On Tue, Jan 15, 2013 at 03:38:53PM +0800, Mike Qiu wrote:
+>> The test results is shown by 'cat /proc/interrups':
+>>            CPU0       CPU1       CPU2       CPU3
+>> 16:     240458     261601     226310     200425      XICS Level     IPI
+>> 17:          0          0          0          0      XICS Level     RAS_EPOW
+>> 18:         10          0          3          2      XICS Level     hvc_console
+>> 19:     122182      28481      28527      28864      XICS Level     ibmvscsi
+>> 20:        506    7388226        108        118      XICS Level     eth0
+>> 21:          6          5          5          5      XICS Level     host1-0
+>> 22:        817        814        816        813      XICS Level     host1-1
+> Hi Mike,
+>
+> I am curious if pSeries firmware allows changing affinity masks independently
+> for multiple MSIs? I.e. in your example, would it be possible to assign IRQ21
+> and IRQ22 to different CPUs?
+Yes, as Ben says, this is very different from other firmware :)
 
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
----
- arch/powerpc/perf/power8-pmu.c | 17 +++++++++--------
- 1 file changed, 9 insertions(+), 8 deletions(-)
-
-diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
-index f7d1c4f..8ed323d 100644
---- a/arch/powerpc/perf/power8-pmu.c
-+++ b/arch/powerpc/perf/power8-pmu.c
-@@ -525,16 +525,17 @@ static u64 power8_bhrb_filter_map(u64 branch_sample_type)
- 	u64 pmu_bhrb_filter = 0;
- 	u64 br_privilege = branch_sample_type & ONLY_PLM;
- 
--	/* BHRB and regular PMU events share the same prvillege state
-+	/* BHRB and regular PMU events share the same prvilege state
- 	 * filter configuration. BHRB is always recorded along with a
--	 * regular PMU event. So privilege state filter criteria for BHRB
--	 * and the companion PMU events has to be the same. As a default
--	 * "perf record" tool sets all privillege bits ON when no filter
--	 * criteria is provided in the command line. So as along as all
--	 * privillege bits are ON or they are OFF, we are good to go.
-+	 * regular PMU event. So privilege state filter criteria for
-+	 * the BHRB and the companion PMU events has to be the same.
-+	 * Separate BHRB privillege state filter requests would be
-+	 * ignored.
- 	 */
--	if ((br_privilege != 7) && (br_privilege != 0))
--		return -1;
-+
-+	if (br_privilege)
-+		pr_info("BHRB privilege state filter request %llx ignored\n",
-+								br_privilege);
- 
- 	/* No branch filter requested */
- 	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY)
--- 
-1.7.11.7
+Thanks
+Mike
+>
+> Thanks!
+>
+>> LOC:     398077     316725     231882     203049   Local timer interrupts
+>> SPU:       1659        919        961        903   Spurious interrupts
+>> CNT:          0          0          0          0   Performance
+>> monitoring interrupts
+>> MCE:          0          0          0          0   Machine check exceptions
