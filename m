@@ -1,19 +1,13 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 729AC2C0040
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 19:00:28 +1000 (EST)
-Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id r4M90MsB009743
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2013 04:00:23 -0500
-Message-ID: <1369213222.3870.14.camel@pasglop>
-Subject: [PATCH] powerpc/powernv: Build a zImage.epapr
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev@lists.ozlabs.org
-Date: Wed, 22 May 2013 19:00:22 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <B29983@freescale.com>
+From: <Yuantian.Tang@freescale.com>
+To: <mturquette@linaro.org>
+Subject: [PATCH] clk/mpc85xx: Update the compatible string
+Date: Wed, 22 May 2013 16:22:19 +0800
+Message-ID: <1369210939-25087-1-git-send-email-Yuantian.Tang@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Tang Yuantian <Yuantian.Tang@freescale.com>,
+ devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,23 +17,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The zImage.epapr wrapper allows to use zImages when booting via a flat
-device-tree which can be used on powernv.
+From: Tang Yuantian <yuantian.tang@freescale.com>
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+The compatible string of clock is changed from *-2 to *-2.0
+on chassis 2. So updated it accordingly.
+
+Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
 ---
+ drivers/clk/clk-ppc-corenet.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-TODO: Make the main zImage.pseries cope with an epapr boot...
-
-diff --git a/arch/powerpc/platforms/powernv/Kconfig b/arch/powerpc/platforms/powernv/Kconfig
-index 91bec0e..a18e9b7 100644
---- a/arch/powerpc/platforms/powernv/Kconfig
-+++ b/arch/powerpc/platforms/powernv/Kconfig
-@@ -6,6 +6,7 @@ config PPC_POWERNV
- 	select PPC_ICP_NATIVE
- 	select PPC_P7_NAP
- 	select PPC_PCI_CHOICE if EMBEDDED
-+	select EPAPR_BOOT
- 	default y
+diff --git a/drivers/clk/clk-ppc-corenet.c b/drivers/clk/clk-ppc-corenet.c
+index a2d483f..e958707 100644
+--- a/drivers/clk/clk-ppc-corenet.c
++++ b/drivers/clk/clk-ppc-corenet.c
+@@ -260,7 +260,7 @@ static int __init ppc_corenet_clk_probe(struct platform_device *pdev)
  
- config POWERNV_MSI
+ static const struct of_device_id ppc_clk_ids[] __initconst = {
+ 	{ .compatible = "fsl,qoriq-clockgen-1.0", },
+-	{ .compatible = "fsl,qoriq-clockgen-2", },
++	{ .compatible = "fsl,qoriq-clockgen-2.0", },
+ 	{}
+ };
+ 
+-- 
+1.8.0
