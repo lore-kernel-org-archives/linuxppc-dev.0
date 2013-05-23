@@ -1,19 +1,26 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id B79102C016A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 May 2013 00:56:32 +1000 (EST)
-Message-ID: <1369320984.2646.135.camel@ul30vt.home>
-Subject: Re: [PATCH 0/5 v2] VFIO PPC64: add VFIO support on POWERPC64
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Thu, 23 May 2013 08:56:24 -0600
-In-Reply-To: <1369107191-28547-1-git-send-email-aik@ozlabs.ru>
-References: <1369107191-28547-1-git-send-email-aik@ozlabs.ru>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <tkil@scrye.com>
+Received: from mail.scrye.com (scrye.com [75.148.32.185])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client CN "mail.scrye.com", Issuer "mail.scrye.com" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 50C3B2C00A4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 May 2013 01:11:03 +1000 (EST)
+To: Xie Shaohui-B21989 <B21989@freescale.com>
+Subject: Re: SATA hang on 8315E triggered by heavy flash write?
+From: Anthony Foiani <tkil@scrye.com>
+References: <1369172643.1374.15@scott-Lenovo-G560>
+ <gppwj3ayu.fsf@dworkin.scrye.com>
+ <ED492CCEAF882048BC2237DE806547C90B1DFA93@039-SN2MPN1-013.039d.mgd.msft.net>
+ <g8v362qg8.fsf@dworkin.scrye.com>
+ <ED492CCEAF882048BC2237DE806547C90B1E0FFA@039-SN2MPN1-013.039d.mgd.msft.net>
+Date: Thu, 23 May 2013 09:10:57 -0600
+In-Reply-To: <ED492CCEAF882048BC2237DE806547C90B1E0FFA@039-SN2MPN1-013.039d.mgd.msft.net>
+ (Xie Shaohui-B's message of "Thu\, 23 May 2013 06\:04\:15 +0000")
+Message-ID: <g4ndt3f5q.fsf@dworkin.scrye.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Reply-To: Anthony Foiani <tkil@scrye.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,45 +30,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-05-21 at 13:33 +1000, Alexey Kardashevskiy wrote:
-> The series adds support for VFIO on POWERPC in user space (such as QEMU).
-> The in-kernel real mode IOMMU support is added by another series posted
-> separately.
-> 
-> As the first and main aim of this series is the POWERNV platform support,
-> the "Enable on POWERNV platform" patch goes first and introduces an API
-> to be used by the VFIO IOMMU driver. The "Enable on pSeries platform" patch
-> simply registers PHBs in the IOMMU subsystem and expects the API to be present,
-> it enables VFIO support in fully emulated QEMU guests.
-> 
-> The main change is that this series was changed and tested against v3.10-rc1.
-> It also contains some bugfixes which are mentioned (if any) in the patch messages.
-> 
-> Alexey Kardashevskiy (3):
->   powerpc/vfio: Enable on POWERNV platform
->   powerpc/vfio: Implement IOMMU driver for VFIO
->   powerpc/vfio: Enable on pSeries platform
-> 
->  Documentation/vfio.txt                      |   63 +++++
->  arch/powerpc/include/asm/iommu.h            |   26 ++
->  arch/powerpc/kernel/iommu.c                 |  323 +++++++++++++++++++++++
->  arch/powerpc/platforms/powernv/pci-ioda.c   |    1 +
->  arch/powerpc/platforms/powernv/pci-p5ioc2.c |    5 +-
->  arch/powerpc/platforms/powernv/pci.c        |    2 +
->  arch/powerpc/platforms/pseries/iommu.c      |    4 +
->  drivers/iommu/Kconfig                       |    8 +
->  drivers/vfio/Kconfig                        |    6 +
->  drivers/vfio/Makefile                       |    1 +
->  drivers/vfio/vfio.c                         |    1 +
->  drivers/vfio/vfio_iommu_spapr_tce.c         |  377 +++++++++++++++++++++++++++
->  include/uapi/linux/vfio.h                   |   34 +++
->  13 files changed, 850 insertions(+), 1 deletion(-)
->  create mode 100644 drivers/vfio/vfio_iommu_spapr_tce.c
-> 
+Shaohui --
 
-These look ok to me, how do you want to integrate them?  Should I
-provide Acks on patches 2 & 3 and let them get pushed through the ppc
-tree or should I wait for patch 1 then push 2 & 3 through my tree?
-Thanks,
+Xie Shaohui-B21989 <B21989@freescale.com> writes:
 
-Alex
+> Thanks for the confirmation. 
+
+You're very welcome.
+
+> So it seems the NOR write break the signal Integrity of SATA.
+> I don't have schematic and board right now, could you please measure
+> signals related to NOR write to see if anything abnormal? Is the board
+> use FPGA or CPLD to control signal?
+
+I'll have to pass these questions on to my hardware vendor; I'm not
+equipped to do this level of hardware debugging (neither hardware nor
+knowledge!).
+
+> If stop NOR write, could the SATA recover and work?
+
+Earlier in my development, I was seeing this error and it would
+recover:
+
+  ata2: exception Emask 0x10 SAct 0x0 SErr 0x0 action 0xe frozen
+  ata2: PHY RDY changed
+  ata2: hard resetting link
+  ata2: Signature Update detected @ 0 msecs
+  ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+  ata2.00: configured for UDMA/133
+  ata2: EH complete
+
+At the current time, however, it seems that it does not recover.
+
+I don't know whether this is due to the speed limiting code, or if
+it's because we are doing more disk accesses (when the actual product
+is up and running).
+
+I can re-do the tests with the speed limit disabled, but I won't be
+able to get to that for a few hours yet.  You can read about the speed
+limit issues in this thread:
+
+  http://article.gmane.org/gmane.linux.ports.ppc.embedded/50652
+
+And my final patch (yes, a year later):
+
+  http://article.gmane.org/gmane.linux.ports.ppc.embedded/58969
+
+Please don't laugh too hard when you read it.  :)
+
+Thanks again for your help.  I'll try to get the results of testing
+w/o speed limit to you within a day or two.
+
+Best regards,
+Anthony Foiani
