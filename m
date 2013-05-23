@@ -1,30 +1,31 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.10])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <gang.chen@asianux.com>
+Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B73852C0098
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2013 19:44:48 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
+ by ozlabs.org (Postfix) with ESMTPS id 433A02C008A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2013 20:06:14 +1000 (EST)
+Message-ID: <519DE9D6.8000707@asianux.com>
+Date: Thu, 23 May 2013 18:05:10 +0800
+From: Chen Gang <gang.chen@asianux.com>
+MIME-Version: 1.0
 To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] arch: configuration,
- deleting 'CONFIG_BUG' since always need it.
-Date: Thu, 23 May 2013 11:39:37 +0200
+Subject: Re: [PATCH] arch: configuration, deleting 'CONFIG_BUG' since always
+ need it.
 References: <519DCBEF.3090208@asianux.com>
+ <CAMuHMdU7QuzgmWCH145p8PVebBzPo8DBAvbY+0AZa2cmGXmRHw@mail.gmail.com>
  <20130523090534.GJ18614@n2100.arm.linux.org.uk>
  <CAMuHMdWez-j1Maa3BD7ucmzv0_zFJnChERQiHFmkCaZUzG0_AA@mail.gmail.com>
 In-Reply-To: <CAMuHMdWez-j1Maa3BD7ucmzv0_zFJnChERQiHFmkCaZUzG0_AA@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Message-Id: <201305231139.38233.arnd@arndb.de>
+Content-Type: multipart/mixed; boundary="------------060108040408020204060404"
 Cc: Catalin Marinas <Catalin.Marinas@arm.com>,
- Linux-sh list <linux-sh@vger.kernel.org>, Chen Gang <gang.chen@asianux.com>,
+ Linux-sh list <linux-sh@vger.kernel.org>,
  Heiko Carstens <heiko.carstens@de.ibm.com>,
  "paulus@samba.org" <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
  Michel Lespinasse <walken@google.com>,
  Hans-Christian Egtvedt <egtvedt@samfundet.no>,
  Linux-Arch <linux-arch@vger.kernel.org>, linux-s390@vger.kernel.org,
  Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
  Yoshinori Sato <ysato@users.sourceforge.jp>,
  Richard Weinberger <richard@nod.at>, Helge Deller <deller@gmx.de>,
  the arch/x86 maintainers <x86@kernel.org>,
@@ -32,11 +33,10 @@ Cc: Catalin Marinas <Catalin.Marinas@arm.com>,
  "mingo@redhat.com" <mingo@redhat.com>,
  Frederic Weisbecker <fweisbec@gmail.com>,
  Paul McKenney <paulmck@linux.vnet.ibm.com>,
- =?utf-8?q?H=C3=A5vard_Skinnemoen?= <hskinnemoen@gmail.com>,
+ =?UTF-8?B?SMOldmFy?= =?UTF-8?B?ZCBTa2lubmVtb2Vu?= <hskinnemoen@gmail.com>,
  Serge Hallyn <serge.hallyn@canonical.com>, Mike Frysinger <vapier@gentoo.org>,
- uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
- Will Deacon <will.deacon@arm.com>, Jeff Dike <jdike@addtoit.com>,
- Akinobu Mita <akinobu.mita@gmail.com>,
+ Arnd Bergmann <arnd@arndb.de>, Will Deacon <will.deacon@arm.com>,
+ Jeff Dike <jdike@addtoit.com>, Akinobu Mita <akinobu.mita@gmail.com>,
  uml-user <user-mode-linux-user@lists.sourceforge.net>,
  "uclinux-dist-devel@blackfin.uclinux.org"
  <uclinux-dist-devel@blackfin.uclinux.org>,
@@ -59,38 +59,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday 23 May 2013, Geert Uytterhoeven wrote:
-> > The problem is: trying to fix that will mean the result is a larger
-> > kernel than if you just do the usual arch-implemented thing of placing
-> > an defined faulting instruction at the BUG() site - which defeats the
-> > purpose of turning off CONFIG_BUG.
-> 
+This is a multi-part message in MIME format.
+--------------060108040408020204060404
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+On 05/23/2013 05:12 PM, Geert Uytterhoeven wrote:
+> On Thu, May 23, 2013 at 11:05 AM, Russell King - ARM Linux
+> <linux@arm.linux.org.uk> wrote:
+>> > On Thu, May 23, 2013 at 10:40:29AM +0200, Geert Uytterhoeven wrote:
+>>> >> On Thu, May 23, 2013 at 9:57 AM, Chen Gang <gang.chen@asianux.com> wrote:
+>>>> >> > -config BUG
+>>>> >> > -       bool "BUG() support" if EXPERT
+>>>> >> > -       default y
+>>>> >> > -       help
+>>>> >> > -          Disabling this option eliminates support for BUG and WARN, reducing
+>>>> >> > -          the size of your kernel image and potentially quietly ignoring
+>>>> >> > -          numerous fatal conditions. You should only consider disabling this
+>>>> >> > -          option for embedded systems with no facilities for reporting errors.
+>>>> >> > -          Just say Y.
+>>> >>
+>>> >> ... It's about reducing memory size on devices where you can't show bug or
+>>> >> warning messages.
+>> >
+>> > And turning off CONFIG_BUG causes lots of warning messages at compile time
+>> > about functions which are returning nothing which shouldn't.
+>> >
+>> > The problem is: trying to fix that _will_ mean the result is a larger
+>> > kernel than if you just do the usual arch-implemented thing of placing
+>> > an defined faulting instruction at the BUG() site - which defeats the
+>> > purpose of turning off CONFIG_BUG.
 > Is __builtin_unreachable() working well these days?
-> 
 
-Hmm, I just tried the trivial patch below, which seemed to do the right thing.
-Needs a little more investigation, but that might actually be the correct
-solution. I thought that at some point __builtin_unreachable() was the same
-as "do {} while (1)", but this is not the case with the gcc I was using --
-it just tells gcc that we don't expect to ever get here.
+In fact, using __builtin_unreachable() is a standard way for
+architectures to implemented their own BUG() (e.g. x86, s390, powerpc,
+arm ...)
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Before __builtin_unreachable(), must need an inline asm instruction
+which architecture specific.
 
-diff --git a/include/asm-generic/bug.h b/include/asm-generic/bug.h
-index 7d10f96..9afff7d 100644
---- a/include/asm-generic/bug.h
-+++ b/include/asm-generic/bug.h
-@@ -108,11 +108,11 @@ extern void warn_slowpath_null(const char *file, const int line);
- 
- #else /* !CONFIG_BUG */
- #ifndef HAVE_ARCH_BUG
--#define BUG() do {} while(0)
-+#define BUG() __builtin_unreachable ()
- #endif
- 
- #ifndef HAVE_ARCH_BUG_ON
--#define BUG_ON(condition) do { if (condition) ; } while(0)
-+#define BUG_ON(condition) do { if (condition) __builtin_unreachable(); } while(0)
- #endif
- 
- #ifndef HAVE_ARCH_WARN_ON
+I have test using __builtin_unreachable() without an related asm
+instruction before, it prints many unexpected things (please see the
+attachment).
+
+So I think, it is not suitable to use it in "asm-generic/bug.h"
+
+
+Thanks.
+-- 
+Chen Gang
+
+Asianux Corporation
+
+--------------060108040408020204060404
+Content-Type: text/plain; charset=UTF-8;
+ name="test0.c"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="test0.c"
+
+I2luY2x1ZGUgPHN0ZGlvLmg+CiNpbmNsdWRlIDxzeXMvdHlwZXMuaD4KI2luY2x1ZGUgPGVy
+cm9yLmg+CiNpbmNsdWRlIDxlcnJuby5oPgojaW5jbHVkZSA8ZmNudGwuaD4KI2luY2x1ZGUg
+PHVuaXN0ZC5oPgojaW5jbHVkZSA8c3lzL3N0YXQuaD4KCmludCBtYWluKCkKewoJaW50IGZp
+bGU7CglpbnQgcmV0OwoJY2hhciBidWZbMHgxMDBdOwoKCWZpbGUgPSBvcGVuKCIvdG1wL3dv
+cmsuYyIsIE9fUkRPTkxZKTsKCWlmIChmaWxlID09IC0xKSB7CgkJcHJpbnRmKCJcbm9wZW4g
+ZmlsZSBmYWlsZWQuIGVycm5vID0gJWRcbiIsIGVycm5vKTsKCQlnb3RvIGVycjsKCX0gZWxz
+ZQoJCXByaW50ZigiXG5vcGVuIGZpbGUgc3VjY2VlZC5cbiIpOwoKCXByaW50ZigiYmVmb3Jl
+IHVucmVhY2hhYmxlXG4iKTsKCV9fYnVpbHRpbl91bnJlYWNoYWJsZSgpOwoJcHJpbnRmKCJh
+ZnRlciB1bnJlYWNoYWJsZVxuIik7CgoJaWYgKGxzZWVrKGZpbGUsIDEwLCBTRUVLX0VORCkg
+PCAwKSB7CgkJcHJpbnRmKCJcbmxzZWVrIGZpbGUgZmFpbGVkLiBlcnJubyA9ICVkXG4iLCBl
+cnJubyk7CgkJZ290byBlcnI7Cgl9CgoJcmV0ID0gcmVhZChmaWxlLCBidWYsIDB4MTAwKTsK
+CWlmIChyZXQgPCAwKSB7CgkJcHJpbnRmKCJcbjFzdCByZWFkIGZpbGUgZmFpbGVkLiBlcnJu
+byA9ICVkLCByZXQgPSAlZFxuIiwgZXJybm8sIHJldCk7CgkJZ290byBlcnI7Cgl9IGVsc2UK
+CQlwcmludGYoIlxuMXN0IHJlYWQgZmlsZSBzdWNjZWVkLiBlcnJubyA9ICVkLCByZXQgPSAl
+ZFxuIiwgZXJybm8sIHJldCk7CgoJcmV0ID0gcmVhZChmaWxlLCBidWYsIDB4MTAwKTsKCWlm
+IChyZXQgPCAwKSB7CgkJcHJpbnRmKCJcbjJuZCByZWFkIGZpbGUgZmFpbGVkLiBlcnJubyA9
+ICVkLCByZXQgPSAlZFxuIiwgZXJybm8sIHJldCk7CgkJZ290byBlcnI7Cgl9IGVsc2UKCQlw
+cmludGYoIlxuMm5kIHJlYWQgZmlsZSBzdWNjZWVkLiBlcnJubyA9ICVkLCByZXQgPSAlZFxu
+IiwgZXJybm8sIHJldCk7CgoJcmV0ID0gcmVhZChmaWxlLCBidWYsIDB4MTAwKTsKCWlmIChy
+ZXQgPCAwKSB7CgkJcHJpbnRmKCJcbjJyZCByZWFkIGZpbGUgZmFpbGVkLiBlcnJubyA9ICVk
+LCByZXQgPSAlZFxuIiwgZXJybm8sIHJldCk7CgkJZ290byBlcnI7Cgl9IGVsc2UKCQlwcmlu
+dGYoIlxuM3JkIHJlYWQgZmlsZSBzdWNjZWVkLiBlcnJubyA9ICVkLCByZXQgPSAlZFxuIiwg
+ZXJybm8sIHJldCk7CgoKCXJldHVybiAwOwplcnI6CglyZXR1cm4gLTE7Cn0KCg==
+--------------060108040408020204060404--
