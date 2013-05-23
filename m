@@ -1,27 +1,27 @@
-Return-Path: <tkil@scrye.com>
-Received: from mail.scrye.com (unknown [75.148.32.185])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client CN "mail.scrye.com", Issuer "mail.scrye.com" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 93E2D2C01FC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 May 2013 01:49:39 +1000 (EST)
-To: Xie Shaohui-B21989 <B21989@freescale.com>
-Subject: Re: SATA hang on 8315E triggered by heavy flash write?
-From: Anthony Foiani <tkil@scrye.com>
-References: <1369172643.1374.15@scott-Lenovo-G560>
- <gppwj3ayu.fsf@dworkin.scrye.com>
- <ED492CCEAF882048BC2237DE806547C90B1DFA93@039-SN2MPN1-013.039d.mgd.msft.net>
- <g8v362qg8.fsf@dworkin.scrye.com>
- <ED492CCEAF882048BC2237DE806547C90B1E0FFA@039-SN2MPN1-013.039d.mgd.msft.net>
- <g4ndt3f5q.fsf@dworkin.scrye.com>
-Date: Thu, 23 May 2013 09:49:34 -0600
-In-Reply-To: <g4ndt3f5q.fsf@dworkin.scrye.com> (Anthony Foiani's message of
- "Thu\, 23 May 2013 09\:10\:57 -0600")
-Message-ID: <gwqqp1ysx.fsf@dworkin.scrye.com>
+Return-Path: <jason@lakedaemon.net>
+Received: from mho-02-ewr.mailhop.org (mho-02-ewr.mailhop.org [204.13.248.72])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 035582C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 May 2013 02:01:39 +1000 (EST)
+Date: Thu, 23 May 2013 12:01:11 -0400
+From: Jason Cooper <jason@lakedaemon.net>
+To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Subject: Re: [PATCH 2/2] net: mv643xx_eth: proper initialization for
+ Kirkwood SoCs
+Message-ID: <20130523160111.GP31290@titan.lakedaemon.net>
+References: <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
+ <1369253042-15082-1-git-send-email-sebastian.hesselbarth@gmail.com>
+ <1369253042-15082-2-git-send-email-sebastian.hesselbarth@gmail.com>
+ <20130522201607.GA18823@obsidianresearch.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Reply-To: Anthony Foiani <tkil@scrye.com>
+In-Reply-To: <20130522201607.GA18823@obsidianresearch.com>
+Cc: Andrew Lunn <andrew@lunn.ch>, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
+ Lennert Buytenhek <buytenh@wantstofly.org>,
+ Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,89 +31,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Shaohui --
+Sebastian,
 
-Apologies, a minor clarification is needed:
+On Wed, May 22, 2013 at 02:16:07PM -0600, Jason Gunthorpe wrote:
+> On Wed, May 22, 2013 at 10:04:02PM +0200, Sebastian Hesselbarth wrote:
+> 
+> > Ethernet controllers found on Kirkwood SoCs not only suffer from loosing
+> > MAC address register contents on clock gating but also some important
+> > registers are reset to values that would break ethernet. This patch
+> 
+> FWIW, we found that the bootloader has to write to PSC1, the driver
+> doesn't work with the power on/reset value of the register. So I think
+> it is safe to assume that all kirkwood bootloaders alter the value.
+> 
+> Our systems write the value 0x00638488 to PSC1.
+> 
+> I looked at patching mv643xx_eth, but ran into the same complexity you
+> did, it isn't clear what variants of this IP block have the
+> register/etc.
+> 
+> > +	/* Kirkwood resets some registers on gated clocks. Especially
+> > +	 * CLK125_BYPASS_EN must be cleared but is not available on
+> > +	 * all other SoCs/System Controllers using this driver.
+> > +	 */
+> > +	if (of_machine_is_compatible("marvell,kirkwood"))
+> > +		wrlp(mp, PORT_SERIAL_CONTROL1,
+> > +		     rdlp(mp, PORT_SERIAL_CONTROL1) & ~CLK125_BYPASS_EN);
+> 
+> of_machine_is_compatible seems heavy handed, I would expect this to be
+> based on the compatible string of the ethernet node itself, not the
+> machine??
 
-Anthony Foiani <tkil@scrye.com> writes:
+Is there a model number variation between IP that needs this and IP that
+doesn't?  If not, I'm fine with of_machine_is_compatible().
 
-> Shaohui --
->
-> Xie Shaohui-B21989 <B21989@freescale.com> writes:
->
->> If stop NOR write, could the SATA recover and work?
->
-> Earlier in my development, I was seeing this error and it would
-> recover:
->
->   ata2: exception Emask 0x10 SAct 0x0 SErr 0x0 action 0xe frozen
->   ata2: PHY RDY changed
->   ata2: hard resetting link
->   ata2: Signature Update detected @ 0 msecs
->   ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
->   ata2.00: configured for UDMA/133
->   ata2: EH complete
+thx,
 
-In this case, it would recover *even as the NOR write continued*.
-
-Here's an example where it froze and recovered twice.  The application
-starts about 12s after the kernel, so 945s for the kernel should be
-933s for the application.
-
-Also, note that this case already has the speed limit code included
-(see message at 945.928702), so I don't think I need to do a separate
-test.
-
-  [console]
-  [  945.902543] ata2: exception Emask 0x10 SAct 0x0 SErr 0x0 action 0xe frozen
-  [  945.909584] ata2: PHY RDY changed
-  [  945.913048] ata2: hard resetting link
-  [  945.928702] ata2: setting speed (in hard reset)
-  [  945.939864] ata2: Signature Update detected @ 0 msecs
-  [  946.115888] ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
-  [  946.128548] ata2.00: configured for UDMA/133
-  [  946.133021] ata2: EH complete
-  [  952.537180] ata2: exception Emask 0x10 SAct 0x0 SErr 0x0 action 0xe frozen
-  [  952.544208] ata2: PHY RDY changed
-  [  952.547626] ata2: hard resetting link
-  [  952.558319] ata2: setting speed (in hard reset)
-  [  953.076730] ata2: Signature Update detected @ 508 msecs
-  [  953.251866] ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
-  [  953.259389] ata2.00: configured for UDMA/133
-  [  953.263892] ata2: EH complete
-
-  [application]
-  +924.152278 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x100000 from buf[0x0]; attempt 1/3
-  +925.599739 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x110000 from buf[0x10000]; attempt 1/3
-  +927.018239 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x120000 from buf[0x20000]; attempt 1/3
-  +928.414069 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x130000 from buf[0x30000]; attempt 1/3
-  +929.872850 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x140000 from buf[0x40000]; attempt 1/3
-  +931.341634 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x150000 from buf[0x50000]; attempt 1/3
-  +932.724024 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x160000 from buf[0x60000]; attempt 1/3
-  [first freeze is about here]
-  +934.146203 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x170000 from buf[0x70000]; attempt 1/3
-  +935.569069 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x180000 from buf[0x80000]; attempt 1/3
-  +936.875275 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x190000 from buf[0x90000]; attempt 1/3
-  +938.205302 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x1a0000 from buf[0xa0000]; attempt 1/3
-  +939.519662 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x1b0000 from buf[0xb0000]; attempt 1/3
-  +940.873656 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x1c0000 from buf[0xc0000]; attempt 1/3
-  [second freeze is about here]
-  +942.230740 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x1d0000 from buf[0xd0000]; attempt 1/3
-  +943.641994 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x1e0000 from buf[0xe0000]; attempt 1/3
-  +944.938454 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x1f0000 from buf[0xf0000]; attempt 1/3
-  +946.236491 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x200000 from buf[0x100000]; attempt 1/3
-  +947.607673 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x210000 from buf[0x110000]; attempt 1/3
-  +948.919213 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x220000 from buf[0x120000]; attempt 1/3
-  +950.151386 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x230000 from buf[0x130000]; attempt 1/3
-  +951.502522 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x240000 from buf[0x140000]; attempt 1/3
-  +952.851177 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x250000 from buf[0x150000]; attempt 1/3
-  +954.082897 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x260000 from buf[0x160000]; attempt 1/3
-  +955.315338 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x270000 from buf[0x170000]; attempt 1/3
-  +956.559639 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x280000 from buf[0x180000]; attempt 1/3
-  +957.845503 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x290000 from buf[0x190000]; attempt 1/3
-  +959.100007 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x2a0000 from buf[0x1a0000]; attempt 1/3
-  +960.347982 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x2b0000 from buf[0x1b0000]; attempt 1/3
-  +961.545344 sw-upd.0 [29]: fm: nor0: write: writing 0x10000 @0x2c0000 from buf[0x1c0000]; attempt 1/3
-
-Best regards,
-Anthony Foiani
+Jason.
