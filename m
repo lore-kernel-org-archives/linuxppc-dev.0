@@ -1,32 +1,30 @@
-Return-Path: <jgunthorpe@obsidianresearch.com>
-Received: from quartz.orcorp.ca (quartz.orcorp.ca [184.70.90.242])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 1DBF72C02A8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 May 2013 05:01:49 +1000 (EST)
-Date: Thu, 23 May 2013 13:01:40 -0600
-From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-To: Jason Cooper <jason@lakedaemon.net>
-Subject: Re: [PATCH 2/2] net: mv643xx_eth: proper initialization for Kirkwood
- SoCs
-Message-ID: <20130523190140.GA4010@obsidianresearch.com>
-References: <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
- <1369253042-15082-1-git-send-email-sebastian.hesselbarth@gmail.com>
- <1369253042-15082-2-git-send-email-sebastian.hesselbarth@gmail.com>
- <20130522201607.GA18823@obsidianresearch.com>
- <20130523160111.GP31290@titan.lakedaemon.net>
- <20130523171112.GB31281@obsidianresearch.com>
- <20130523172339.GQ31290@titan.lakedaemon.net>
- <20130523175357.GB2821@obsidianresearch.com>
- <20130523184028.GU31290@titan.lakedaemon.net>
+Return-Path: <anton@scarybugs.org>
+Received: from mail-pb0-x232.google.com (mail-pb0-x232.google.com
+ [IPv6:2607:f8b0:400e:c01::232])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id EE17C2C02A9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 May 2013 04:22:22 +1000 (EST)
+Received: by mail-pb0-f50.google.com with SMTP id wy17so3232660pbc.37
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2013 11:22:19 -0700 (PDT)
+Sender: Anton Vorontsov <anton@scarybugs.org>
+Date: Thu, 23 May 2013 10:33:32 -0700
+From: Anton Vorontsov <anton@enomsg.org>
+To: Wang Dongsheng-B40534 <B40534@freescale.com>
+Subject: Re: [PATCH] powerpc/mpc85xx: fix non-bootcpu cannot up after
+ hibernation resume
+Message-ID: <20130523173332.GC30160@teo>
+References: <1368518756-9850-1-git-send-email-dongsheng.wang@freescale.com>
+ <ABB05CD9C9F68C46A5CEDC7F15439259F2AFC3@039-SN2MPN1-022.039d.mgd.msft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130523184028.GU31290@titan.lakedaemon.net>
-Cc: Andrew Lunn <andrew@lunn.ch>, linux-kernel@vger.kernel.org,
- Lennert Buytenhek <buytenh@wantstofly.org>, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
- linux-arm-kernel@lists.infradead.org,
- Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F15439259F2AFC3@039-SN2MPN1-022.039d.mgd.msft.net>
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ Li Yang-R58472 <r58472@freescale.com>,
+ Zhao Chenhui-B35336 <B35336@freescale.com>, "rjw@sisk.pl" <rjw@sisk.pl>,
+ "paulus@samba.org" <paulus@samba.org>,
+ "johannes@sipsolutions.net" <johannes@sipsolutions.net>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,76 +34,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 23, 2013 at 02:40:28PM -0400, Jason Cooper wrote:
+Hi!
 
-> > But there is a larger problem here then just this one bit.
-> > 
-> > The PSC1 register must be set properly for the board layout, and today
-> > we rely on the bootloader to set it. In fact, even with Sebastian's
-> > change the ethernet port won't work without bootloader
-> > intervention. The PortReset bit should also be cleared by the driver
-> > (and it is only present on some variants of this IP block,
-> > apparently).
-> > 
-> > We know that some Marvell SOC's wack the ethernet registers when they
-> > clock gate, and the flip of Clk125Bypass is another symptom of this
-> > general problem.
-> > 
-> > So, long term, the PSC1 must be fully set by the driver, based on DT
-> > information describing the board (eg RGMII/MII/1000Base-X [SFP] Phy
-> > type), and the layout of this register seems to vary on a SOC by SOC
-> > basis.
-> > 
-> > Thus, I think it is appropriate to call this variant of the eth IP
-> > 'marvell,kirkwood-eth' which indicates that the register block follows
-> > the kirkwood manual and the PSC1 register specifically has the
-> > kirkwood layout.
+On Tue, May 14, 2013 at 08:59:13AM +0000, Wang Dongsheng-B40534 wrote:
+> I send to a wrong email address "Anton Vorontsov <avorontsov@ru.mvista.com>"
 > 
-> Ok, so mv643xx_eth would match both "marvell,orion-eth" and
-> "marvell,kirkwood-eth", then write to PSC1 iff it sees a node matching
-> "marvell,kirkwood-eth".  I'm not too keen on that, however, the matching
-> of the machine doesn't look to good, either.
+> Add Anton Vorontsov <anton.vorontsov@linaro.org> to this email.
 
-Why are you not keen on this? It seems like normal device driver
-practice, that is what the data field of of_device_id is typically
-used for..
+I don't have any means to test it, but the patch itself looks good and the
+description makes sense. So,
 
-There are more compatible strings than just kirkwood and orion in this
-driver, the whole TX_BW_CONTROL_OLD_LAYOUT/TX_BW_CONTROL_NEW_LAYOUT
-buisness (affecting PPC/MIPS) should also someday be captured with
-compatible strings rather than auto-detection too..
+Reviewed-by: Anton Vorontsov <anton@enomsg.org>
 
-> > The question is what other Marvell SOCs have the same PSC1 layout as
-> > kirkwood?
+Thanks!
+
 > 
-> I think marvell,psc1_reset = <>; gives us the most flexibility in
-> accurately describing the hardware.
-
-Agree, providing psc1_reset value is a good idea to setup the phy
-modes. If all 'orion' SOCs have the PSC1 value then we don't need the
-kirkwood differentiators, especially if things like the reset bit are
-in the same place.
-
-The same trick Sebastian used to capture the mac address could be used
-to capture the PSC1 value from the bootloader.
-
-Basically, I think any IP variants that have idential register layouts
-can share a compatible string, otherwise different layouts need
-different compatible strings, so the general format:
-
- compatible = "marvell,SOCNAME-eth", "marvell,<something>-eth";
-
-Seems very sane to me. At least this way if we discover more changes
-then the driver can match on the SOCNAME compatible string to find
-them.
-
-<someting> = orion for TX_BW_CONTROL_NEW_LAYOUT variants also seems
-reasonable..
-
-No idea what to call TX_BW_CONTROL_OLD_LAYOUT variants, or the PPC
-variants, not important right now it seems.
-
-(BTW, I wonder if the driver should ideally toggle PSC1 reset at some
-point????)
-
-Jason
+> Thanks all.
+> 
+> > -----Original Message-----
+> > From: Wang Dongsheng-B40534
+> > Sent: Tuesday, May 14, 2013 4:06 PM
+> > To: avorontsov@ru.mvista.com
+> > Cc: paulus@samba.org; rjw@sisk.pl; benh@kernel.crashing.org;
+> > johannes@sipsolutions.net; Wood Scott-B07421; Li Yang-R58472; Zhao
+> > Chenhui-B35336; linuxppc-dev@lists.ozlabs.org; Wang Dongsheng-B40534
+> > Subject: [PATCH] powerpc/mpc85xx: fix non-bootcpu cannot up after
+> > hibernation resume
+> > 
+> > This problem belongs to the core synchronization issues.
+> > The cpu1 already updated spin_table values, but bootcore cannot get
+> > this value in time.
+> > 
+> > After bootcpu hibiernation restore the pages. we are now running
+> > with the kernel data of the old kernel fully restored. if we reset
+> > the non-bootcpus that will be reset cache(tlb), the non-bootcpus
+> > will get new address(map virtual and physical address spaces).
+> > but bootcpu tlb cache still use boot kernel data, so we need to
+> > invalidate the bootcpu tlb cache make it to get new main memory data.
+> > 
+> > log:
+> > Enabling non-boot CPUs ...
+> > smp_85xx_kick_cpu: timeout waiting for core 1 to reset
+> > smp: failed starting cpu 1 (rc -2)
+> > Error taking CPU1 up: -2
+> > 
+> > Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> > 
+> > diff --git a/arch/powerpc/kernel/swsusp_booke.S
+> > b/arch/powerpc/kernel/swsusp_booke.S
+> > index 11a3930..9503249 100644
+> > --- a/arch/powerpc/kernel/swsusp_booke.S
+> > +++ b/arch/powerpc/kernel/swsusp_booke.S
+> > @@ -141,6 +141,19 @@ _GLOBAL(swsusp_arch_resume)
+> >  	lis	r11,swsusp_save_area@h
+> >  	ori	r11,r11,swsusp_save_area@l
+> > 
+> > +	/*
+> > +	 * The boot core get a virtual address, when the boot process,
+> > +	 * the virtual address corresponds to a physical address. After
+> > +	 * hibernation resume memory snapshots, The corresponding
+> > +	 * relationship between the virtual memory and physical memory
+> > +	 * might change again. We need to get a new page table. So we
+> > +	 * need to invalidate TLB after resume pages.
+> > +	 *
+> > +	 * Invalidations TLB Using tlbilx/tlbivax/MMUCSR0.
+> > +	 * tlbilx used here.
+> > +	 */
+> > +	bl	_tlbil_all
+> > +
+> >  	lwz	r4,SL_SPRG0(r11)
+> >  	mtsprg	0,r4
+> >  	lwz	r4,SL_SPRG1(r11)
+> > --
+> > 1.8.0
+> 
+> 
