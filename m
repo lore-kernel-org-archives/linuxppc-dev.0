@@ -1,20 +1,19 @@
 Return-Path: <eranian@google.com>
-Received: from mail-oa0-f54.google.com (mail-oa0-f54.google.com
- [209.85.219.54])
+Received: from mail-oa0-f45.google.com (mail-oa0-f45.google.com
+ [209.85.219.45])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E6A952C0090
- for <linuxppc-dev@ozlabs.org>; Thu, 23 May 2013 23:36:36 +1000 (EST)
-Received: by mail-oa0-f54.google.com with SMTP id o17so4370078oag.27
- for <linuxppc-dev@ozlabs.org>; Thu, 23 May 2013 06:36:33 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 4A6D42C0090
+ for <linuxppc-dev@ozlabs.org>; Thu, 23 May 2013 23:38:22 +1000 (EST)
+Received: by mail-oa0-f45.google.com with SMTP id j6so4330044oag.4
+ for <linuxppc-dev@ozlabs.org>; Thu, 23 May 2013 06:38:20 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <1369203761-12649-2-git-send-email-khandual@linux.vnet.ibm.com>
+In-Reply-To: <1369203761-12649-5-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1369203761-12649-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1369203761-12649-2-git-send-email-khandual@linux.vnet.ibm.com>
-Date: Thu, 23 May 2013 15:36:32 +0200
-Message-ID: <CABPqkBQqH7vz9Qgom=heL6N3JniFeZKciGbQfR0PjuK-NVA0-A@mail.gmail.com>
-Subject: Re: [PATCH 1/5] perf: New conditional branch filter criteria in
- branch stack sampling
+ <1369203761-12649-5-git-send-email-khandual@linux.vnet.ibm.com>
+Date: Thu, 23 May 2013 15:38:20 +0200
+Message-ID: <CABPqkBTP+eP8hMsL=HWJHUjK-pup_Q8OGUtJ7RSFXg1=SssrFA@mail.gmail.com>
+Subject: Re: [PATCH 4/5] x86, perf: Add conditional branch filtering support
 From: Stephane Eranian <eranian@google.com>
 To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=UTF-8
@@ -33,34 +32,52 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On Wed, May 22, 2013 at 8:22 AM, Anshuman Khandual
 <khandual@linux.vnet.ibm.com> wrote:
-> POWER8 PMU based BHRB supports filtering for conditional branches.
-> This patch introduces new branch filter PERF_SAMPLE_BRANCH_COND which
-> will extend the existing perf ABI. Other architectures can provide
-> this functionality with either HW filtering support (if present) or
-> with SW filtering of instructions.
+> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+>
+> This patch adds conditional branch filtering support,
+> enabling it for PERF_SAMPLE_BRANCH_COND in perf branch
+> stack sampling framework by utilizing an available
+> software filter X86_BR_JCC.
 >
 Reviewed-by: Stephane Eranian <eranian@google.com>
 
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 > Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 > ---
->  include/uapi/linux/perf_event.h | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+>  arch/x86/kernel/cpu/perf_event_intel_lbr.c | 6 ++++++
+>  1 file changed, 6 insertions(+)
 >
-> diff --git a/include/uapi/linux/perf_event.h b/include/uapi/linux/perf_event.h
-> index fb104e5..cb0de86 100644
-> --- a/include/uapi/linux/perf_event.h
-> +++ b/include/uapi/linux/perf_event.h
-> @@ -157,8 +157,9 @@ enum perf_branch_sample_type {
->         PERF_SAMPLE_BRANCH_ANY_CALL     = 1U << 4, /* any call branch */
->         PERF_SAMPLE_BRANCH_ANY_RETURN   = 1U << 5, /* any return branch */
->         PERF_SAMPLE_BRANCH_IND_CALL     = 1U << 6, /* indirect calls */
-> +       PERF_SAMPLE_BRANCH_COND         = 1U << 7, /* conditional branches */
+> diff --git a/arch/x86/kernel/cpu/perf_event_intel_lbr.c b/arch/x86/kernel/cpu/perf_event_intel_lbr.c
+> index d978353..a0d6387 100644
+> --- a/arch/x86/kernel/cpu/perf_event_intel_lbr.c
+> +++ b/arch/x86/kernel/cpu/perf_event_intel_lbr.c
+> @@ -337,6 +337,10 @@ static int intel_pmu_setup_sw_lbr_filter(struct perf_event *event)
 >
-> -       PERF_SAMPLE_BRANCH_MAX          = 1U << 7, /* non-ABI */
-> +       PERF_SAMPLE_BRANCH_MAX          = 1U << 8, /* non-ABI */
+>         if (br_type & PERF_SAMPLE_BRANCH_IND_CALL)
+>                 mask |= X86_BR_IND_CALL;
+> +
+> +       if (br_type & PERF_SAMPLE_BRANCH_COND)
+> +               mask |= X86_BR_JCC;
+> +
+>         /*
+>          * stash actual user request into reg, it may
+>          * be used by fixup code for some CPU
+> @@ -626,6 +630,7 @@ static const int nhm_lbr_sel_map[PERF_SAMPLE_BRANCH_MAX] = {
+>          * NHM/WSM erratum: must include IND_JMP to capture IND_CALL
+>          */
+>         [PERF_SAMPLE_BRANCH_IND_CALL] = LBR_IND_CALL | LBR_IND_JMP,
+> +       [PERF_SAMPLE_BRANCH_COND]     = LBR_JCC,
 >  };
 >
->  #define PERF_SAMPLE_BRANCH_PLM_ALL \
+>  static const int snb_lbr_sel_map[PERF_SAMPLE_BRANCH_MAX] = {
+> @@ -637,6 +642,7 @@ static const int snb_lbr_sel_map[PERF_SAMPLE_BRANCH_MAX] = {
+>         [PERF_SAMPLE_BRANCH_ANY_CALL]   = LBR_REL_CALL | LBR_IND_CALL
+>                                         | LBR_FAR,
+>         [PERF_SAMPLE_BRANCH_IND_CALL]   = LBR_IND_CALL,
+> +       [PERF_SAMPLE_BRANCH_COND]       = LBR_JCC,
+>  };
+>
+>  /* core */
 > --
 > 1.7.11.7
 >
