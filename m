@@ -1,58 +1,19 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-pa0-f48.google.com (mail-pa0-f48.google.com
- [209.85.220.48])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 98A2E2C00A1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 May 2013 00:10:07 +1000 (EST)
-Received: by mail-pa0-f48.google.com with SMTP id kp6so3010898pab.21
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2013 07:10:05 -0700 (PDT)
-MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <20130523125033.GP18614@n2100.arm.linux.org.uk>
-References: <519DCBEF.3090208@asianux.com> <201305231259.43750.arnd@arndb.de>
- <20130523112401.GO18614@n2100.arm.linux.org.uk>
- <201305231409.02359.arnd@arndb.de>
- <20130523125033.GP18614@n2100.arm.linux.org.uk>
-Date: Thu, 23 May 2013 16:10:04 +0200
-Message-ID: <CAMuHMdUzcBuDupe4Fa6XieziGPMpPKC_k8X8gUUmDvLJ+Fe=Hg@mail.gmail.com>
-Subject: Re: [PATCH] arch: configuration, deleting 'CONFIG_BUG' since always
- need it.
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Content-Type: text/plain; charset=UTF-8
-Cc: Catalin Marinas <Catalin.Marinas@arm.com>,
- Linux-sh list <linux-sh@vger.kernel.org>, Chen Gang <gang.chen@asianux.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- "paulus@samba.org" <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Michel Lespinasse <walken@google.com>,
- Hans-Christian Egtvedt <egtvedt@samfundet.no>,
- Linux-Arch <linux-arch@vger.kernel.org>, linux-s390@vger.kernel.org,
- uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- Richard Weinberger <richard@nod.at>, Helge Deller <deller@gmx.de>,
- the arch/x86 maintainers <x86@kernel.org>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- "mingo@redhat.com" <mingo@redhat.com>,
- Frederic Weisbecker <fweisbec@gmail.com>,
- Paul McKenney <paulmck@linux.vnet.ibm.com>,
- =?UTF-8?Q?H=C3=A5vard_Skinnemoen?= <hskinnemoen@gmail.com>,
- Serge Hallyn <serge.hallyn@canonical.com>, Mike Frysinger <vapier@gentoo.org>,
- Arnd Bergmann <arnd@arndb.de>, Will Deacon <will.deacon@arm.com>,
- Jeff Dike <jdike@addtoit.com>, Akinobu Mita <akinobu.mita@gmail.com>,
- uml-user <user-mode-linux-user@lists.sourceforge.net>,
- "uclinux-dist-devel@blackfin.uclinux.org"
- <uclinux-dist-devel@blackfin.uclinux.org>,
- Thomas Gleixner <tglx@linutronix.de>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Parisc List <linux-parisc@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Richard Kuo <rkuo@codeaurora.org>, Paul Mundt <lethal@linux-sh.org>,
- "Eric W. Biederman" <ebiederm@xmission.com>, linux-hexagon@vger.kernel.org,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
- Andrew Morton <akpm@linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- David Miller <davem@davemloft.net>
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id B79102C016A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 May 2013 00:56:32 +1000 (EST)
+Message-ID: <1369320984.2646.135.camel@ul30vt.home>
+Subject: Re: [PATCH 0/5 v2] VFIO PPC64: add VFIO support on POWERPC64
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Date: Thu, 23 May 2013 08:56:24 -0600
+In-Reply-To: <1369107191-28547-1-git-send-email-aik@ozlabs.ru>
+References: <1369107191-28547-1-git-send-email-aik@ozlabs.ru>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -62,35 +23,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 23, 2013 at 2:50 PM, Russell King - ARM Linux
-<linux@arm.linux.org.uk> wrote:
-> On Thu, May 23, 2013 at 02:09:02PM +0200, Arnd Bergmann wrote:
->> On Thursday 23 May 2013, Russell King - ARM Linux wrote:
->> > This is the problem you guys are missing - unreachable() means "we lose
->> > control of the CPU at this point".
->>
->> I'm absolutely aware of this. Again, the current behaviour of doing nothing
->> at all isn't very different from undefined behavior when you get when you
->> get to the end of a function returning a pointer without a "return" statement,
->> or when you return from a function that has determined that it is not safe
->> to continue.
->
-> Running off the end of a function like that is a different kettle of fish.
-> The execution path is still as the compiler intends - what isn't is that
-> the data returned is likely to be random trash.
->
-> That's _quite_ different from the CPU starting to execute the contents
-> of a literal data pool.
+On Tue, 2013-05-21 at 13:33 +1000, Alexey Kardashevskiy wrote:
+> The series adds support for VFIO on POWERPC in user space (such as QEMU).
+> The in-kernel real mode IOMMU support is added by another series posted
+> separately.
+> 
+> As the first and main aim of this series is the POWERNV platform support,
+> the "Enable on POWERNV platform" patch goes first and introduces an API
+> to be used by the VFIO IOMMU driver. The "Enable on pSeries platform" patch
+> simply registers PHBs in the IOMMU subsystem and expects the API to be present,
+> it enables VFIO support in fully emulated QEMU guests.
+> 
+> The main change is that this series was changed and tested against v3.10-rc1.
+> It also contains some bugfixes which are mentioned (if any) in the patch messages.
+> 
+> Alexey Kardashevskiy (3):
+>   powerpc/vfio: Enable on POWERNV platform
+>   powerpc/vfio: Implement IOMMU driver for VFIO
+>   powerpc/vfio: Enable on pSeries platform
+> 
+>  Documentation/vfio.txt                      |   63 +++++
+>  arch/powerpc/include/asm/iommu.h            |   26 ++
+>  arch/powerpc/kernel/iommu.c                 |  323 +++++++++++++++++++++++
+>  arch/powerpc/platforms/powernv/pci-ioda.c   |    1 +
+>  arch/powerpc/platforms/powernv/pci-p5ioc2.c |    5 +-
+>  arch/powerpc/platforms/powernv/pci.c        |    2 +
+>  arch/powerpc/platforms/pseries/iommu.c      |    4 +
+>  drivers/iommu/Kconfig                       |    8 +
+>  drivers/vfio/Kconfig                        |    6 +
+>  drivers/vfio/Makefile                       |    1 +
+>  drivers/vfio/vfio.c                         |    1 +
+>  drivers/vfio/vfio_iommu_spapr_tce.c         |  377 +++++++++++++++++++++++++++
+>  include/uapi/linux/vfio.h                   |   34 +++
+>  13 files changed, 850 insertions(+), 1 deletion(-)
+>  create mode 100644 drivers/vfio/vfio_iommu_spapr_tce.c
+> 
 
-I agree it's best to e.g. trap and reboot.
+These look ok to me, how do you want to integrate them?  Should I
+provide Acks on patches 2 & 3 and let them get pushed through the ppc
+tree or should I wait for patch 1 then push 2 & 3 through my tree?
+Thanks,
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Alex
