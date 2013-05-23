@@ -1,21 +1,23 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.10])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+ [IPv6:2002:4e20:1eda::1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A00E02C0099
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2013 22:13:24 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Russell King - ARM Linux" <linux@arm.linux.org.uk>
-Subject: Re: [PATCH] arch: configuration,
- deleting 'CONFIG_BUG' since always need it.
-Date: Thu, 23 May 2013 14:09:02 +0200
+ by ozlabs.org (Postfix) with ESMTPS id 9DCB62C00A7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2013 22:55:13 +1000 (EST)
+Date: Thu, 23 May 2013 13:50:33 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] arch: configuration, deleting 'CONFIG_BUG' since
+ always need it.
+Message-ID: <20130523125033.GP18614@n2100.arm.linux.org.uk>
 References: <519DCBEF.3090208@asianux.com> <201305231259.43750.arnd@arndb.de>
  <20130523112401.GO18614@n2100.arm.linux.org.uk>
-In-Reply-To: <20130523112401.GO18614@n2100.arm.linux.org.uk>
+ <201305231409.02359.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <201305231409.02359.arnd@arndb.de>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <201305231409.02359.arnd@arndb.de>
+Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
 Cc: Catalin Marinas <Catalin.Marinas@arm.com>,
  Linux-sh list <linux-sh@vger.kernel.org>, Chen Gang <gang.chen@asianux.com>,
  Heiko Carstens <heiko.carstens@de.ibm.com>,
@@ -31,7 +33,7 @@ Cc: Catalin Marinas <Catalin.Marinas@arm.com>,
  Geert Uytterhoeven <geert@linux-m68k.org>,
  Frederic Weisbecker <fweisbec@gmail.com>,
  Paul McKenney <paulmck@linux.vnet.ibm.com>,
- =?iso-8859-1?q?H=E5vard_Skinnemoen?= <hskinnemoen@gmail.com>,
+ =?iso-8859-1?Q?H=E5vard?= Skinnemoen <hskinnemoen@gmail.com>,
  Serge Hallyn <serge.hallyn@canonical.com>, Mike Frysinger <vapier@gentoo.org>,
  uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
  Will Deacon <will.deacon@arm.com>, Jeff Dike <jdike@addtoit.com>,
@@ -58,22 +60,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday 23 May 2013, Russell King - ARM Linux wrote:
-> This is the problem you guys are missing - unreachable() means "we lose
-> control of the CPU at this point".
+On Thu, May 23, 2013 at 02:09:02PM +0200, Arnd Bergmann wrote:
+> On Thursday 23 May 2013, Russell King - ARM Linux wrote:
+> > This is the problem you guys are missing - unreachable() means "we lose
+> > control of the CPU at this point".
+> 
+> I'm absolutely aware of this. Again, the current behaviour of doing nothing
+> at all isn't very different from undefined behavior when you get when you
+> get to the end of a function returning a pointer without a "return" statement,
+> or when you return from a function that has determined that it is not safe
+> to continue.
 
-I'm absolutely aware of this. Again, the current behaviour of doing nothing
-at all isn't very different from undefined behavior when you get when you
-get to the end of a function returning a pointer without a "return" statement,
-or when you return from a function that has determined that it is not safe
-to continue.
+Running off the end of a function like that is a different kettle of fish.
+The execution path is still as the compiler intends - what isn't is that
+the data returned is likely to be random trash.
 
-> If you have an embedded system and you've taken out all the printk()
-> stuff, you most certainly want the system to do something if you hit
-> an unexpected condition.
-
-I did not claim that it was a good idea to disable BUG(), all I said is
-that "random stuff may happen" is probably what Matt Mackall had in mind when
-he introduced the option.
-
-	Arnd
+That's _quite_ different from the CPU starting to execute the contents
+of a literal data pool.
