@@ -1,30 +1,35 @@
-Return-Path: <anton@scarybugs.org>
-Received: from mail-pb0-x232.google.com (mail-pb0-x232.google.com
- [IPv6:2607:f8b0:400e:c01::232])
+Return-Path: <sebastian.hesselbarth@gmail.com>
+Received: from mail-ea0-x22d.google.com (mail-ea0-x22d.google.com
+ [IPv6:2a00:1450:4013:c01::22d])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EE17C2C02A9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 May 2013 04:22:22 +1000 (EST)
-Received: by mail-pb0-f50.google.com with SMTP id wy17so3232660pbc.37
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2013 11:22:19 -0700 (PDT)
-Sender: Anton Vorontsov <anton@scarybugs.org>
-Date: Thu, 23 May 2013 10:33:32 -0700
-From: Anton Vorontsov <anton@enomsg.org>
-To: Wang Dongsheng-B40534 <B40534@freescale.com>
-Subject: Re: [PATCH] powerpc/mpc85xx: fix non-bootcpu cannot up after
- hibernation resume
-Message-ID: <20130523173332.GC30160@teo>
-References: <1368518756-9850-1-git-send-email-dongsheng.wang@freescale.com>
- <ABB05CD9C9F68C46A5CEDC7F15439259F2AFC3@039-SN2MPN1-022.039d.mgd.msft.net>
+ by ozlabs.org (Postfix) with ESMTPS id 0AAD32C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 May 2013 08:40:36 +1000 (EST)
+Received: by mail-ea0-f173.google.com with SMTP id n15so2260975ead.32
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2013 15:40:30 -0700 (PDT)
+Message-ID: <519E9ADA.3040204@gmail.com>
+Date: Fri, 24 May 2013 00:40:26 +0200
+From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F15439259F2AFC3@039-SN2MPN1-022.039d.mgd.msft.net>
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- Li Yang-R58472 <r58472@freescale.com>,
- Zhao Chenhui-B35336 <B35336@freescale.com>, "rjw@sisk.pl" <rjw@sisk.pl>,
- "paulus@samba.org" <paulus@samba.org>,
- "johannes@sipsolutions.net" <johannes@sipsolutions.net>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Jason Cooper <jason@lakedaemon.net>
+Subject: Re: [PATCH 2/2] net: mv643xx_eth: proper initialization for Kirkwood
+ SoCs
+References: <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
+ <1369253042-15082-1-git-send-email-sebastian.hesselbarth@gmail.com>
+ <1369253042-15082-2-git-send-email-sebastian.hesselbarth@gmail.com>
+ <20130522201607.GA18823@obsidianresearch.com>
+ <20130523160111.GP31290@titan.lakedaemon.net>
+ <20130523171112.GB31281@obsidianresearch.com>
+ <20130523172339.GQ31290@titan.lakedaemon.net>
+ <20130523175357.GB2821@obsidianresearch.com>
+ <20130523184028.GU31290@titan.lakedaemon.net>
+In-Reply-To: <20130523184028.GU31290@titan.lakedaemon.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Andrew Lunn <andrew@lunn.ch>, linux-kernel@vger.kernel.org,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+ Lennert Buytenhek <buytenh@wantstofly.org>, netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,78 +39,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi!
+On 05/23/2013 08:40 PM, Jason Cooper wrote:
+> On Thu, May 23, 2013 at 11:53:57AM -0600, Jason Gunthorpe wrote:
+>> On Thu, May 23, 2013 at 01:23:39PM -0400, Jason Cooper wrote:
+>>> Shouldn't it rather be
+>>>
+>>> 	compatible = "marvell,kirkwood-eth", "marvell,orion-eth";
+>>
+>> Not sure about orion-eth?
 
-On Tue, May 14, 2013 at 08:59:13AM +0000, Wang Dongsheng-B40534 wrote:
-> I send to a wrong email address "Anton Vorontsov <avorontsov@ru.mvista.com>"
-> 
-> Add Anton Vorontsov <anton.vorontsov@linaro.org> to this email.
+Jason, Jason,
 
-I don't have any means to test it, but the patch itself looks good and the
-description makes sense. So,
+sorry I didn't came back to this conversation earlier. I already
+reworked the patch to rely on 
+of_device_is_compatible(.."marvell,kirkwood-eth"..). This is a
+kirkwood only thing as other Orions cannot do clock gating or
+retain critcal register content (Dove). I will stick with orion-eth
+for all other and maybe introduce new compatible strings (and new
+fixes) as soon as issues surface.
 
-Reviewed-by: Anton Vorontsov <anton@enomsg.org>
+>>> I'm inclined to go with of_machine_is_compatible() since the only
+>>> concrete difference we know is that the tweak is needed on kirkwood and
+>>> nowhere else.
+>>
+>> But there is a larger problem here then just this one bit.
+>>
+>> The PSC1 register must be set properly for the board layout, and today
+>> we rely on the bootloader to set it. In fact, even with Sebastian's
+>> change the ethernet port won't work without bootloader
+>> intervention. The PortReset bit should also be cleared by the driver
+>> (and it is only present on some variants of this IP block,
+>> apparently).
 
-Thanks!
+Actually, fixing modular scenarios is only for the sake of multiarch
+someday. I don't see the point in running current kernel without eth
+compiled in _on a NAS SoC_ ;)
 
-> 
-> Thanks all.
-> 
-> > -----Original Message-----
-> > From: Wang Dongsheng-B40534
-> > Sent: Tuesday, May 14, 2013 4:06 PM
-> > To: avorontsov@ru.mvista.com
-> > Cc: paulus@samba.org; rjw@sisk.pl; benh@kernel.crashing.org;
-> > johannes@sipsolutions.net; Wood Scott-B07421; Li Yang-R58472; Zhao
-> > Chenhui-B35336; linuxppc-dev@lists.ozlabs.org; Wang Dongsheng-B40534
-> > Subject: [PATCH] powerpc/mpc85xx: fix non-bootcpu cannot up after
-> > hibernation resume
-> > 
-> > This problem belongs to the core synchronization issues.
-> > The cpu1 already updated spin_table values, but bootcore cannot get
-> > this value in time.
-> > 
-> > After bootcpu hibiernation restore the pages. we are now running
-> > with the kernel data of the old kernel fully restored. if we reset
-> > the non-bootcpus that will be reset cache(tlb), the non-bootcpus
-> > will get new address(map virtual and physical address spaces).
-> > but bootcpu tlb cache still use boot kernel data, so we need to
-> > invalidate the bootcpu tlb cache make it to get new main memory data.
-> > 
-> > log:
-> > Enabling non-boot CPUs ...
-> > smp_85xx_kick_cpu: timeout waiting for core 1 to reset
-> > smp: failed starting cpu 1 (rc -2)
-> > Error taking CPU1 up: -2
-> > 
-> > Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
-> > 
-> > diff --git a/arch/powerpc/kernel/swsusp_booke.S
-> > b/arch/powerpc/kernel/swsusp_booke.S
-> > index 11a3930..9503249 100644
-> > --- a/arch/powerpc/kernel/swsusp_booke.S
-> > +++ b/arch/powerpc/kernel/swsusp_booke.S
-> > @@ -141,6 +141,19 @@ _GLOBAL(swsusp_arch_resume)
-> >  	lis	r11,swsusp_save_area@h
-> >  	ori	r11,r11,swsusp_save_area@l
-> > 
-> > +	/*
-> > +	 * The boot core get a virtual address, when the boot process,
-> > +	 * the virtual address corresponds to a physical address. After
-> > +	 * hibernation resume memory snapshots, The corresponding
-> > +	 * relationship between the virtual memory and physical memory
-> > +	 * might change again. We need to get a new page table. So we
-> > +	 * need to invalidate TLB after resume pages.
-> > +	 *
-> > +	 * Invalidations TLB Using tlbilx/tlbivax/MMUCSR0.
-> > +	 * tlbilx used here.
-> > +	 */
-> > +	bl	_tlbil_all
-> > +
-> >  	lwz	r4,SL_SPRG0(r11)
-> >  	mtsprg	0,r4
-> >  	lwz	r4,SL_SPRG1(r11)
-> > --
-> > 1.8.0
-> 
-> 
+On Dockstar which I tested, clearing CLK125_BYPASS_EN to make it work
+after clock gating, it might be a coincidence that bootloader's PSC1
+setup matches reset value here - so please test the patch on other
+Kirkwood boards also.
+
+But, as long as no other issue arise, I will not start to modifiy
+mv643xx_eth out of the blue. I has been working for ages and breaking
+PPC is not my intention. There are other things David Miller already
+requested to get fixed and honestly I even thought about a fresh start
+for it. Maybe I'll come back to it when barebox gets it's driver
+someday.
+
+>> We know that some Marvell SOC's wack the ethernet registers when they
+>> clock gate, and the flip of Clk125Bypass is another symptom of this
+>> general problem.
+
+Which SoCs except Kirkwood? I cannot reproduce any of this behavior on
+Dove - and from what I can see from the FS of Orion5x or MV78x00 there
+are no clock gating registers.
+
+>> So, long term, the PSC1 must be fully set by the driver, based on DT
+>> information describing the board (eg RGMII/MII/1000Base-X [SFP] Phy
+>> type), and the layout of this register seems to vary on a SOC by SOC
+>> basis.
+
+Agree, but I tend to not go at it now. mv643xx_eth has never set up that
+registers and actually it never connects anything else than GMII phy (or 
+no phy at all). The latter is easy but the for the other, I like to
+give up that brain-dead multi-device driver and stick with one device
+for both shared and up to three ports. From what I can see from e.g.
+ixgbe or any other multi-port eth drivers they all attach the network
+device to a single (pci) device.
+
+>> Thus, I think it is appropriate to call this variant of the eth IP
+>> 'marvell,kirkwood-eth' which indicates that the register block follows
+>> the kirkwood manual and the PSC1 register specifically has the
+>> kirkwood layout.
+>
+> Ok, so mv643xx_eth would match both "marvell,orion-eth" and
+> "marvell,kirkwood-eth", then write to PSC1 iff it sees a node matching
+> "marvell,kirkwood-eth".  I'm not too keen on that, however, the matching
+> of the machine doesn't look to good, either.
+
+I didn't choose "marvell,mv643xx-eth" for two reasons
+(a) The DT layout is slightly different with phy-handle instead of phy
+and marvell prefixed properties. Choosing a compatible string that
+matches any PPC compatible string will cause driver racing with sysdev
+code to set up platform_data.
+
+(b) I chose to name the controller "orion-eth" and the port
+"orion-eth-port" .. PPC has "mv64360-eth" for the port and some 
+"mv64360-eth-block" or "-group" for the controller. IMHO not intuitive,
+but it just a name anyway.
+
+> Perhaps a better answer is to add a boolean, "marvell,kirkwood_psc1" and
+> check for that?
+>
+> Or, marvell,psc1_reset =<0xWWXXYYZZ>;
+
+For the _long_ run: Exploit either already present phy properties for
+MII and friends or introduce new marvell prefixed .. but not misuse DT
+for register values here. Each SoC should setup mv643xx_eth properly,
+but that should be based on a clean approach _and_ enough people willing
+to test that.
+
+I just have a Dockstar and Topkick which is running 24/7. I didn't even
+check if only 6281 suffers from it or also 6282 or maybe only some
+revisions of 6281. This patch is a fix, nothing more nothing
+less. If you have Kirkwoods around, please test if it suffers from
+loosing the MAC address and if it works after insmod with the fix
+installed.
+
+>> The question is what other Marvell SOCs have the same PSC1 layout as
+>> kirkwood?
+>
+> I think marvell,psc1_reset =<>; gives us the most flexibility in
+> accurately describing the hardware.
+
+IMHO using that is just another workaround for a broken driver. We
+could hack the whole register setup in DT as it would still accurately
+describe HW. Don't get me wrong, but I don't like it.
+
+Haven't checked how happy Linus Walleij is about pinctrl drivers with
+reg values hacked in lately.
+
+Sebastian
