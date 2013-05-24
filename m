@@ -1,13 +1,56 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Fri, 24 May 2013 11:42:21 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: kvm-ppc@vger.kernel.org, kvm@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH] KVM: PPC: Book3S: Add support for H_IPOLL and H_XIRR_X in
- XICS emulation
-Message-ID: <20130524014221.GA19310@iris.ozlabs.ibm.com>
+Return-Path: <gang.chen@asianux.com>
+Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id C7C362C00A1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 May 2013 12:14:36 +1000 (EST)
+Message-ID: <519ECCCF.8090909@asianux.com>
+Date: Fri, 24 May 2013 10:13:35 +0800
+From: Chen Gang <gang.chen@asianux.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Alexander Graf <agraf@suse.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] arch: configuration, deleting 'CONFIG_BUG' since always
+ need it.
+References: <519DCBEF.3090208@asianux.com> <201305231259.43750.arnd@arndb.de>
+ <20130523112401.GO18614@n2100.arm.linux.org.uk>
+ <201305231409.02359.arnd@arndb.de>
+ <20130523125033.GP18614@n2100.arm.linux.org.uk>
+ <CAMuHMdUzcBuDupe4Fa6XieziGPMpPKC_k8X8gUUmDvLJ+Fe=Hg@mail.gmail.com>
+In-Reply-To: <CAMuHMdUzcBuDupe4Fa6XieziGPMpPKC_k8X8gUUmDvLJ+Fe=Hg@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Catalin Marinas <Catalin.Marinas@arm.com>,
+ Linux-sh list <linux-sh@vger.kernel.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ "paulus@samba.org" <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ Michel Lespinasse <walken@google.com>,
+ Hans-Christian Egtvedt <egtvedt@samfundet.no>,
+ Linux-Arch <linux-arch@vger.kernel.org>, linux-s390@vger.kernel.org,
+ Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Richard Weinberger <richard@nod.at>, Helge Deller <deller@gmx.de>,
+ the arch/x86 maintainers <x86@kernel.org>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ "mingo@redhat.com" <mingo@redhat.com>,
+ Frederic Weisbecker <fweisbec@gmail.com>,
+ Paul McKenney <paulmck@linux.vnet.ibm.com>,
+ =?UTF-8?B?SMOldmFyZCBTa2lubmVtb2Vu?= <hskinnemoen@gmail.com>,
+ Serge Hallyn <serge.hallyn@canonical.com>, Mike Frysinger <vapier@gentoo.org>,
+ Arnd Bergmann <arnd@arndb.de>, Will Deacon <will.deacon@arm.com>,
+ Jeff Dike <jdike@addtoit.com>, Akinobu Mita <akinobu.mita@gmail.com>,
+ uml-user <user-mode-linux-user@lists.sourceforge.net>,
+ "uclinux-dist-devel@blackfin.uclinux.org"
+ <uclinux-dist-devel@blackfin.uclinux.org>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Parisc List <linux-parisc@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Richard Kuo <rkuo@codeaurora.org>, Paul Mundt <lethal@linux-sh.org>,
+ "Eric W. Biederman" <ebiederm@xmission.com>, linux-hexagon@vger.kernel.org,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,119 +60,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds the remaining two hypercalls defined by PAPR for manipulating
-the XICS interrupt controller, H_IPOLL and H_XIRR_X.  H_IPOLL returns
-information about the priority and pending interrupts for a virtual
-cpu, without changing any state.  H_XIRR_X is like H_XIRR in that it
-reads and acknowledges the highest-priority pending interrupt, but it
-also returns the timestamp (timebase register value) from when the
-interrupt was first received by the hypervisor.  Currently we just
-return the current time, since we don't do any software queueing of
-virtual interrupts inside the XICS emulation code.
+On 05/23/2013 10:10 PM, Geert Uytterhoeven wrote:
+> On Thu, May 23, 2013 at 2:50 PM, Russell King - ARM Linux
+> <linux@arm.linux.org.uk> wrote:
+>> > On Thu, May 23, 2013 at 02:09:02PM +0200, Arnd Bergmann wrote:
+>>> >> On Thursday 23 May 2013, Russell King - ARM Linux wrote:
+>>>> >> > This is the problem you guys are missing - unreachable() means "we lose
+>>>> >> > control of the CPU at this point".
+>>> >>
+>>> >> I'm absolutely aware of this. Again, the current behaviour of doing nothing
+>>> >> at all isn't very different from undefined behavior when you get when you
+>>> >> get to the end of a function returning a pointer without a "return" statement,
+>>> >> or when you return from a function that has determined that it is not safe
+>>> >> to continue.
+>> >
+>> > Running off the end of a function like that is a different kettle of fish.
+>> > The execution path is still as the compiler intends - what isn't is that
+>> > the data returned is likely to be random trash.
+>> >
+>> > That's _quite_ different from the CPU starting to execute the contents
+>> > of a literal data pool.
+> I agree it's best to e.g. trap and reboot.
 
-These hcalls are not currently used by Linux guests, but may be in
-future.
+After read the arch/*/include/asm/bug.h,
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
-Unfortunately I missed these two hcalls in the previous submissions.
-It would be good to get this patch into 3.10 so we don't have a
-kernel version with these calls missing from the API, in case future
-guest kernels want to use them.
+It seems panic() is not suitable for NOMMU platforms (only m68k use it,
+also need CONFIG_BUG and CONFIG_SUN3 enabled).
 
-Alex, given you're on vacation at the moment, are you OK with Ben
-taking this through his tree?
+And unreachable() is need followed with an asm inline instruction (arm,
+x86, powerpc mips...).
 
- arch/powerpc/include/asm/hvcall.h |    1 +
- arch/powerpc/kvm/book3s_hv.c      |    2 ++
- arch/powerpc/kvm/book3s_pr_papr.c |    2 ++
- arch/powerpc/kvm/book3s_xics.c    |   29 +++++++++++++++++++++++++++++
- 4 files changed, 34 insertions(+)
+And __builtin_trap() is "the mechanism used may vary from release to
+release so should not rely on any particular implementation" (ref to
+"http://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html", used by m68k,
+sparc, ia64).
 
-diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
-index cf4df8e..0c7f2bf 100644
---- a/arch/powerpc/include/asm/hvcall.h
-+++ b/arch/powerpc/include/asm/hvcall.h
-@@ -264,6 +264,7 @@
- #define H_GET_MPP		0x2D4
- #define H_HOME_NODE_ASSOCIATIVITY 0x2EC
- #define H_BEST_ENERGY		0x2F4
-+#define H_XIRR_X		0x2FC
- #define H_RANDOM		0x300
- #define H_COP			0x304
- #define H_GET_MPP_X		0x314
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 065c9df..7e2059e 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -562,6 +562,8 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
- 	case H_CPPR:
- 	case H_EOI:
- 	case H_IPI:
-+	case H_IPOLL:
-+	case H_XIRR_X:
- 		if (kvmppc_xics_enabled(vcpu)) {
- 			ret = kvmppc_xics_hcall(vcpu, req);
- 			break;
-diff --git a/arch/powerpc/kvm/book3s_pr_papr.c b/arch/powerpc/kvm/book3s_pr_papr.c
-index 3750e3c..91d4b45 100644
---- a/arch/powerpc/kvm/book3s_pr_papr.c
-+++ b/arch/powerpc/kvm/book3s_pr_papr.c
-@@ -292,6 +292,8 @@ int kvmppc_h_pr(struct kvm_vcpu *vcpu, unsigned long cmd)
- 	case H_CPPR:
- 	case H_EOI:
- 	case H_IPI:
-+	case H_IPOLL:
-+	case H_XIRR_X:
- 		if (kvmppc_xics_enabled(vcpu))
- 			return kvmppc_h_pr_xics_hcall(vcpu, cmd);
- 		break;
-diff --git a/arch/powerpc/kvm/book3s_xics.c b/arch/powerpc/kvm/book3s_xics.c
-index f7a1037..94c1dd4 100644
---- a/arch/powerpc/kvm/book3s_xics.c
-+++ b/arch/powerpc/kvm/book3s_xics.c
-@@ -650,6 +650,23 @@ static noinline int kvmppc_h_ipi(struct kvm_vcpu *vcpu, unsigned long server,
- 	return H_SUCCESS;
- }
- 
-+static int kvmppc_h_ipoll(struct kvm_vcpu *vcpu, unsigned long server)
-+{
-+	union kvmppc_icp_state state;
-+	struct kvmppc_icp *icp;
-+
-+	icp = vcpu->arch.icp;
-+	if (icp->server_num != server) {
-+		icp = kvmppc_xics_find_server(vcpu->kvm, server);
-+		if (!icp)
-+			return H_PARAMETER;
-+	}
-+	state = ACCESS_ONCE(icp->state);
-+	kvmppc_set_gpr(vcpu, 4, ((u32)state.cppr << 24) | state.xisr);
-+	kvmppc_set_gpr(vcpu, 5, state.mfrr);
-+	return H_SUCCESS;
-+}
-+
- static noinline void kvmppc_h_cppr(struct kvm_vcpu *vcpu, unsigned long cppr)
- {
- 	union kvmppc_icp_state old_state, new_state;
-@@ -787,6 +804,18 @@ int kvmppc_xics_hcall(struct kvm_vcpu *vcpu, u32 req)
- 	if (!xics || !vcpu->arch.icp)
- 		return H_HARDWARE;
- 
-+	/* These requests don't have real-mode implementations at present */
-+	switch (req) {
-+	case H_XIRR_X:
-+		res = kvmppc_h_xirr(vcpu);
-+		kvmppc_set_gpr(vcpu, 4, res);
-+		kvmppc_set_gpr(vcpu, 5, get_tb());
-+		return rc;
-+	case H_IPOLL:
-+		rc = kvmppc_h_ipoll(vcpu, kvmppc_get_gpr(vcpu, 4));
-+		return rc;
-+	}
-+
- 	/* Check for real mode returning too hard */
- 	if (xics->real_mode)
- 		return kvmppc_xics_rm_complete(vcpu, req);
+I can not find any *trap*() and *unreachable*() in "include/asm-generic/"
+
+I can not find any suitable implementation which 'generic' enough to add
+in "include/asm-generic/" (and in fact, CONFIG_BUG itself is not
+'generic' enough to be in "include/asm-generic/").
+
+
+At last, I still suggest to delete CONFIG_BUG, so most of architectures
+can skip this issue firstly.
+
+Then for specific architectures, also can get 3 benefits:
+
+a. the related maintainers can implement it as their own willing (not
+need discus it with another platform maintainers again);
+
+b. the related maintainers can free use the platform specific features
+(which can not be used in "include/asm-generic/");
+
+c. the related maintainers are more familiar their own architectures
+demands and requirements.
+
+
+
+----------- arch/m68k/include/asm/bug.h --------------------------------
+
+  1 #ifndef _M68K_BUG_H
+  2 #define _M68K_BUG_H
+  3
+  4 #ifdef CONFIG_MMU
+  5 #ifdef CONFIG_BUG
+  6 #ifdef CONFIG_DEBUG_BUGVERBOSE
+  7 #ifndef CONFIG_SUN3
+  8 #define BUG() do { \
+  9         printk("kernel BUG at %s:%d!\n", __FILE__, __LINE__); \
+ 10         __builtin_trap(); \
+ 11 } while (0)
+ 12 #else
+ 13 #define BUG() do { \
+ 14         printk("kernel BUG at %s:%d!\n", __FILE__, __LINE__); \
+ 15         panic("BUG!"); \
+ 16 } while (0)
+ 17 #endif
+ 18 #else
+ 19 #define BUG() do { \
+ 20         __builtin_trap(); \
+ 21 } while (0)
+ 22 #endif
+ 23
+ 24 #define HAVE_ARCH_BUG
+ 25 #endif
+ 26 #endif /* CONFIG_MMU */
+ 27
+ 28 #include <asm-generic/bug.h>
+ 29
+ 30 #endif
+
+
+
+
+Thanks.
 -- 
-1.7.10.4
+Chen Gang
+
+Asianux Corporation
