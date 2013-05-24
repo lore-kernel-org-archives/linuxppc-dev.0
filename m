@@ -1,57 +1,29 @@
-Return-Path: <gang.chen@asianux.com>
-Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id EA4982C016A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 May 2013 14:18:26 +1000 (EST)
-Message-ID: <519EE9D6.9010707@asianux.com>
-Date: Fri, 24 May 2013 12:17:26 +0800
-From: Chen Gang <gang.chen@asianux.com>
+Return-Path: <B40534@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A3E3F2C0077
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 May 2013 15:21:14 +1000 (EST)
+From: Wang Dongsheng-B40534 <B40534@freescale.com>
+To: Anton Vorontsov <anton@enomsg.org>
+Subject: RE: [PATCH] powerpc/mpc85xx: fix non-bootcpu cannot up after
+ hibernation resume
+Date: Fri, 24 May 2013 05:21:51 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259F566E1@039-SN2MPN1-021.039d.mgd.msft.net>
+References: <1368518756-9850-1-git-send-email-dongsheng.wang@freescale.com>
+ <ABB05CD9C9F68C46A5CEDC7F15439259F2AFC3@039-SN2MPN1-022.039d.mgd.msft.net>
+ <20130523173332.GC30160@teo>
+In-Reply-To: <20130523173332.GC30160@teo>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] arch: configuration, deleting 'CONFIG_BUG' since always
- need it.
-References: <519DCBEF.3090208@asianux.com> <201305231259.43750.arnd@arndb.de>
- <20130523112401.GO18614@n2100.arm.linux.org.uk>
- <201305231409.02359.arnd@arndb.de>
- <20130523125033.GP18614@n2100.arm.linux.org.uk>
- <CAMuHMdUzcBuDupe4Fa6XieziGPMpPKC_k8X8gUUmDvLJ+Fe=Hg@mail.gmail.com>
- <519ECCCF.8090909@asianux.com>
-In-Reply-To: <519ECCCF.8090909@asianux.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Catalin Marinas <Catalin.Marinas@arm.com>,
- Linux-sh list <linux-sh@vger.kernel.org>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- "paulus@samba.org" <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Michel Lespinasse <walken@google.com>,
- Hans-Christian Egtvedt <egtvedt@samfundet.no>,
- Linux-Arch <linux-arch@vger.kernel.org>, linux-s390@vger.kernel.org,
- Russell King - ARM Linux <linux@arm.linux.org.uk>,
- uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- Richard Weinberger <richard@nod.at>, Helge Deller <deller@gmx.de>,
- the arch/x86 maintainers <x86@kernel.org>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- "mingo@redhat.com" <mingo@redhat.com>,
- Frederic Weisbecker <fweisbec@gmail.com>,
- Paul McKenney <paulmck@linux.vnet.ibm.com>,
- =?UTF-8?B?SMOldmFyZCBTa2lubmVtb2Vu?= <hskinnemoen@gmail.com>,
- Serge Hallyn <serge.hallyn@canonical.com>, Mike Frysinger <vapier@gentoo.org>,
- Arnd Bergmann <arnd@arndb.de>, Will Deacon <will.deacon@arm.com>,
- Jeff Dike <jdike@addtoit.com>, Akinobu Mita <akinobu.mita@gmail.com>,
- uml-user <user-mode-linux-user@lists.sourceforge.net>,
- "uclinux-dist-devel@blackfin.uclinux.org"
- <uclinux-dist-devel@blackfin.uclinux.org>,
- Thomas Gleixner <tglx@linutronix.de>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Parisc List <linux-parisc@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Richard Kuo <rkuo@codeaurora.org>, Paul Mundt <lethal@linux-sh.org>,
- "Eric W. Biederman" <ebiederm@xmission.com>, linux-hexagon@vger.kernel.org,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
- Andrew Morton <akpm@linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- David Miller <davem@davemloft.net>
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ Li Yang-R58472 <r58472@freescale.com>,
+ Zhao Chenhui-B35336 <B35336@freescale.com>, "rjw@sisk.pl" <rjw@sisk.pl>,
+ "paulus@samba.org" <paulus@samba.org>,
+ "johannes@sipsolutions.net" <johannes@sipsolutions.net>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -61,126 +33,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/24/2013 10:13 AM, Chen Gang wrote:
-> On 05/23/2013 10:10 PM, Geert Uytterhoeven wrote:
->> On Thu, May 23, 2013 at 2:50 PM, Russell King - ARM Linux
->> <linux@arm.linux.org.uk> wrote:
->>>> On Thu, May 23, 2013 at 02:09:02PM +0200, Arnd Bergmann wrote:
->>>>>> On Thursday 23 May 2013, Russell King - ARM Linux wrote:
->>>>>>>> This is the problem you guys are missing - unreachable() means "we lose
->>>>>>>> control of the CPU at this point".
->>>>>>
->>>>>> I'm absolutely aware of this. Again, the current behaviour of doing nothing
->>>>>> at all isn't very different from undefined behavior when you get when you
->>>>>> get to the end of a function returning a pointer without a "return" statement,
->>>>>> or when you return from a function that has determined that it is not safe
->>>>>> to continue.
->>>>
->>>> Running off the end of a function like that is a different kettle of fish.
->>>> The execution path is still as the compiler intends - what isn't is that
->>>> the data returned is likely to be random trash.
->>>>
->>>> That's _quite_ different from the CPU starting to execute the contents
->>>> of a literal data pool.
->> I agree it's best to e.g. trap and reboot.
-> 
-
-In fact: if enable CONFIG_BUG, but not enable HAVE_ARCH_BUG, the
-default implementation is:
-
- 47 #ifndef HAVE_ARCH_BUG
- 48 #define BUG() do { \
- 49         printk("BUG: failure at %s:%d/%s()!\n", __FILE__, __LINE__, __func__); \
- 50         panic("BUG!"); \
- 51 } while (0)
- 52 #endif
-
-So if we delete CONFIG_BUG, the default implementation will be almost
-like panic(),  and in panic() itself, also calls printk() !!
-
-So...
-
-:-)
-
-
-
-> After read the arch/*/include/asm/bug.h,
-> 
-> It seems panic() is not suitable for NOMMU platforms (only m68k use it,
-> also need CONFIG_BUG and CONFIG_SUN3 enabled).
-> 
-> And unreachable() is need followed with an asm inline instruction (arm,
-> x86, powerpc mips...).
-> 
-> And __builtin_trap() is "the mechanism used may vary from release to
-> release so should not rely on any particular implementation" (ref to
-> "http://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html", used by m68k,
-> sparc, ia64).
-> 
-> I can not find any *trap*() and *unreachable*() in "include/asm-generic/"
-> 
-> I can not find any suitable implementation which 'generic' enough to add
-> in "include/asm-generic/" (and in fact, CONFIG_BUG itself is not
-> 'generic' enough to be in "include/asm-generic/").
-> 
-> 
-> At last, I still suggest to delete CONFIG_BUG, so most of architectures
-> can skip this issue firstly.
-> 
-> Then for specific architectures, also can get 3 benefits:
-> 
-> a. the related maintainers can implement it as their own willing (not
-> need discus it with another platform maintainers again);
-> 
-> b. the related maintainers can free use the platform specific features
-> (which can not be used in "include/asm-generic/");
-> 
-> c. the related maintainers are more familiar their own architectures
-> demands and requirements.
-> 
-> 
-> 
-> ----------- arch/m68k/include/asm/bug.h --------------------------------
-> 
->   1 #ifndef _M68K_BUG_H
->   2 #define _M68K_BUG_H
->   3
->   4 #ifdef CONFIG_MMU
->   5 #ifdef CONFIG_BUG
->   6 #ifdef CONFIG_DEBUG_BUGVERBOSE
->   7 #ifndef CONFIG_SUN3
->   8 #define BUG() do { \
->   9         printk("kernel BUG at %s:%d!\n", __FILE__, __LINE__); \
->  10         __builtin_trap(); \
->  11 } while (0)
->  12 #else
->  13 #define BUG() do { \
->  14         printk("kernel BUG at %s:%d!\n", __FILE__, __LINE__); \
->  15         panic("BUG!"); \
->  16 } while (0)
->  17 #endif
->  18 #else
->  19 #define BUG() do { \
->  20         __builtin_trap(); \
->  21 } while (0)
->  22 #endif
->  23
->  24 #define HAVE_ARCH_BUG
->  25 #endif
->  26 #endif /* CONFIG_MMU */
->  27
->  28 #include <asm-generic/bug.h>
->  29
->  30 #endif
-> 
-> 
-> 
-> 
-> Thanks.
-> 
-
-
--- 
-Chen Gang
-
-Asianux Corporation
+VGhhbmtzIGFudG9uLg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IEFu
+dG9uIFZvcm9udHNvdiBbbWFpbHRvOmFudG9uQHNjYXJ5YnVncy5vcmddIE9uIEJlaGFsZiBPZiBB
+bnRvbg0KPiBWb3JvbnRzb3YNCj4gU2VudDogRnJpZGF5LCBNYXkgMjQsIDIwMTMgMTozNCBBTQ0K
+PiBUbzogV2FuZyBEb25nc2hlbmctQjQwNTM0DQo+IENjOiBwYXVsdXNAc2FtYmEub3JnOyByandA
+c2lzay5wbDsgYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnOw0KPiBqb2hhbm5lc0BzaXBzb2x1dGlv
+bnMubmV0OyBXb29kIFNjb3R0LUIwNzQyMTsgTGkgWWFuZy1SNTg0NzI7IFpoYW8NCj4gQ2hlbmh1
+aS1CMzUzMzY7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQo+IFN1YmplY3Q6IFJlOiBb
+UEFUQ0hdIHBvd2VycGMvbXBjODV4eDogZml4IG5vbi1ib290Y3B1IGNhbm5vdCB1cCBhZnRlcg0K
+PiBoaWJlcm5hdGlvbiByZXN1bWUNCj4gDQo+IEhpIQ0KPiANCj4gT24gVHVlLCBNYXkgMTQsIDIw
+MTMgYXQgMDg6NTk6MTNBTSArMDAwMCwgV2FuZyBEb25nc2hlbmctQjQwNTM0IHdyb3RlOg0KPiA+
+IEkgc2VuZCB0byBhIHdyb25nIGVtYWlsIGFkZHJlc3MgIkFudG9uIFZvcm9udHNvdg0KPiA8YXZv
+cm9udHNvdkBydS5tdmlzdGEuY29tPiINCj4gPg0KPiA+IEFkZCBBbnRvbiBWb3JvbnRzb3YgPGFu
+dG9uLnZvcm9udHNvdkBsaW5hcm8ub3JnPiB0byB0aGlzIGVtYWlsLg0KPiANCj4gSSBkb24ndCBo
+YXZlIGFueSBtZWFucyB0byB0ZXN0IGl0LCBidXQgdGhlIHBhdGNoIGl0c2VsZiBsb29rcyBnb29k
+IGFuZA0KPiB0aGUgZGVzY3JpcHRpb24gbWFrZXMgc2Vuc2UuIFNvLA0KPiANCj4gUmV2aWV3ZWQt
+Ynk6IEFudG9uIFZvcm9udHNvdiA8YW50b25AZW5vbXNnLm9yZz4NCj4gDQo+IFRoYW5rcyENCj4g
+DQo+ID4NCj4gPiBUaGFua3MgYWxsLg0KPiA+DQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2Ut
+LS0tLQ0KPiA+ID4gRnJvbTogV2FuZyBEb25nc2hlbmctQjQwNTM0DQo+ID4gPiBTZW50OiBUdWVz
+ZGF5LCBNYXkgMTQsIDIwMTMgNDowNiBQTQ0KPiA+ID4gVG86IGF2b3JvbnRzb3ZAcnUubXZpc3Rh
+LmNvbQ0KPiA+ID4gQ2M6IHBhdWx1c0BzYW1iYS5vcmc7IHJqd0BzaXNrLnBsOyBiZW5oQGtlcm5l
+bC5jcmFzaGluZy5vcmc7DQo+ID4gPiBqb2hhbm5lc0BzaXBzb2x1dGlvbnMubmV0OyBXb29kIFNj
+b3R0LUIwNzQyMTsgTGkgWWFuZy1SNTg0NzI7IFpoYW8NCj4gPiA+IENoZW5odWktQjM1MzM2OyBs
+aW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgV2FuZyBEb25nc2hlbmctQjQwNTM0DQo+ID4g
+PiBTdWJqZWN0OiBbUEFUQ0hdIHBvd2VycGMvbXBjODV4eDogZml4IG5vbi1ib290Y3B1IGNhbm5v
+dCB1cCBhZnRlcg0KPiA+ID4gaGliZXJuYXRpb24gcmVzdW1lDQo+ID4gPg0KPiA+ID4gVGhpcyBw
+cm9ibGVtIGJlbG9uZ3MgdG8gdGhlIGNvcmUgc3luY2hyb25pemF0aW9uIGlzc3Vlcy4NCj4gPiA+
+IFRoZSBjcHUxIGFscmVhZHkgdXBkYXRlZCBzcGluX3RhYmxlIHZhbHVlcywgYnV0IGJvb3Rjb3Jl
+IGNhbm5vdCBnZXQNCj4gPiA+IHRoaXMgdmFsdWUgaW4gdGltZS4NCj4gPiA+DQo+ID4gPiBBZnRl
+ciBib290Y3B1IGhpYmllcm5hdGlvbiByZXN0b3JlIHRoZSBwYWdlcy4gd2UgYXJlIG5vdyBydW5u
+aW5nDQo+ID4gPiB3aXRoIHRoZSBrZXJuZWwgZGF0YSBvZiB0aGUgb2xkIGtlcm5lbCBmdWxseSBy
+ZXN0b3JlZC4gaWYgd2UgcmVzZXQNCj4gPiA+IHRoZSBub24tYm9vdGNwdXMgdGhhdCB3aWxsIGJl
+IHJlc2V0IGNhY2hlKHRsYiksIHRoZSBub24tYm9vdGNwdXMNCj4gPiA+IHdpbGwgZ2V0IG5ldyBh
+ZGRyZXNzKG1hcCB2aXJ0dWFsIGFuZCBwaHlzaWNhbCBhZGRyZXNzIHNwYWNlcykuDQo+ID4gPiBi
+dXQgYm9vdGNwdSB0bGIgY2FjaGUgc3RpbGwgdXNlIGJvb3Qga2VybmVsIGRhdGEsIHNvIHdlIG5l
+ZWQgdG8NCj4gPiA+IGludmFsaWRhdGUgdGhlIGJvb3RjcHUgdGxiIGNhY2hlIG1ha2UgaXQgdG8g
+Z2V0IG5ldyBtYWluIG1lbW9yeSBkYXRhLg0KPiA+ID4NCj4gPiA+IGxvZzoNCj4gPiA+IEVuYWJs
+aW5nIG5vbi1ib290IENQVXMgLi4uDQo+ID4gPiBzbXBfODV4eF9raWNrX2NwdTogdGltZW91dCB3
+YWl0aW5nIGZvciBjb3JlIDEgdG8gcmVzZXQNCj4gPiA+IHNtcDogZmFpbGVkIHN0YXJ0aW5nIGNw
+dSAxIChyYyAtMikNCj4gPiA+IEVycm9yIHRha2luZyBDUFUxIHVwOiAtMg0KPiA+ID4NCj4gPiA+
+IFNpZ25lZC1vZmYtYnk6IFdhbmcgRG9uZ3NoZW5nIDxkb25nc2hlbmcud2FuZ0BmcmVlc2NhbGUu
+Y29tPg0KPiA+ID4NCj4gPiA+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMva2VybmVsL3N3c3Vz
+cF9ib29rZS5TDQo+ID4gPiBiL2FyY2gvcG93ZXJwYy9rZXJuZWwvc3dzdXNwX2Jvb2tlLlMNCj4g
+PiA+IGluZGV4IDExYTM5MzAuLjk1MDMyNDkgMTAwNjQ0DQo+ID4gPiAtLS0gYS9hcmNoL3Bvd2Vy
+cGMva2VybmVsL3N3c3VzcF9ib29rZS5TDQo+ID4gPiArKysgYi9hcmNoL3Bvd2VycGMva2VybmVs
+L3N3c3VzcF9ib29rZS5TDQo+ID4gPiBAQCAtMTQxLDYgKzE0MSwxOSBAQCBfR0xPQkFMKHN3c3Vz
+cF9hcmNoX3Jlc3VtZSkNCj4gPiA+ICAJbGlzCXIxMSxzd3N1c3Bfc2F2ZV9hcmVhQGgNCj4gPiA+
+ICAJb3JpCXIxMSxyMTEsc3dzdXNwX3NhdmVfYXJlYUBsDQo+ID4gPg0KPiA+ID4gKwkvKg0KPiA+
+ID4gKwkgKiBUaGUgYm9vdCBjb3JlIGdldCBhIHZpcnR1YWwgYWRkcmVzcywgd2hlbiB0aGUgYm9v
+dCBwcm9jZXNzLA0KPiA+ID4gKwkgKiB0aGUgdmlydHVhbCBhZGRyZXNzIGNvcnJlc3BvbmRzIHRv
+IGEgcGh5c2ljYWwgYWRkcmVzcy4gQWZ0ZXINCj4gPiA+ICsJICogaGliZXJuYXRpb24gcmVzdW1l
+IG1lbW9yeSBzbmFwc2hvdHMsIFRoZSBjb3JyZXNwb25kaW5nDQo+ID4gPiArCSAqIHJlbGF0aW9u
+c2hpcCBiZXR3ZWVuIHRoZSB2aXJ0dWFsIG1lbW9yeSBhbmQgcGh5c2ljYWwgbWVtb3J5DQo+ID4g
+PiArCSAqIG1pZ2h0IGNoYW5nZSBhZ2Fpbi4gV2UgbmVlZCB0byBnZXQgYSBuZXcgcGFnZSB0YWJs
+ZS4gU28gd2UNCj4gPiA+ICsJICogbmVlZCB0byBpbnZhbGlkYXRlIFRMQiBhZnRlciByZXN1bWUg
+cGFnZXMuDQo+ID4gPiArCSAqDQo+ID4gPiArCSAqIEludmFsaWRhdGlvbnMgVExCIFVzaW5nIHRs
+YmlseC90bGJpdmF4L01NVUNTUjAuDQo+ID4gPiArCSAqIHRsYmlseCB1c2VkIGhlcmUuDQo+ID4g
+PiArCSAqLw0KPiA+ID4gKwlibAlfdGxiaWxfYWxsDQo+ID4gPiArDQo+ID4gPiAgCWx3eglyNCxT
+TF9TUFJHMChyMTEpDQo+ID4gPiAgCW10c3ByZwkwLHI0DQo+ID4gPiAgCWx3eglyNCxTTF9TUFJH
+MShyMTEpDQo+ID4gPiAtLQ0KPiA+ID4gMS44LjANCj4gPg0KPiA+DQoNCg==
