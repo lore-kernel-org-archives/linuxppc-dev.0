@@ -1,18 +1,41 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 7026B2C00AC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 May 2013 19:41:49 +1000 (EST)
-Message-ID: <1369388490.30145.16.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Fri, 24 May 2013 19:41:30 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <linus.walleij@linaro.org>
+Received: from mail-ie0-x236.google.com (mail-ie0-x236.google.com
+ [IPv6:2607:f8b0:4001:c03::236])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 959282C0174
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 May 2013 21:03:28 +1000 (EST)
+Received: by mail-ie0-f182.google.com with SMTP id a14so11674771iee.41
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 May 2013 04:03:25 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <519E9ADA.3040204@gmail.com>
+References: <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
+ <1369253042-15082-1-git-send-email-sebastian.hesselbarth@gmail.com>
+ <1369253042-15082-2-git-send-email-sebastian.hesselbarth@gmail.com>
+ <20130522201607.GA18823@obsidianresearch.com>
+ <20130523160111.GP31290@titan.lakedaemon.net>
+ <20130523171112.GB31281@obsidianresearch.com>
+ <20130523172339.GQ31290@titan.lakedaemon.net>
+ <20130523175357.GB2821@obsidianresearch.com>
+ <20130523184028.GU31290@titan.lakedaemon.net>
+ <519E9ADA.3040204@gmail.com>
+Date: Fri, 24 May 2013 13:03:25 +0200
+Message-ID: <CACRpkdbsicPkPAiaQCOg2mQF2Ce2dg_K=BKqqx=FCdAH7Y+QBg@mail.gmail.com>
+Subject: Re: [PATCH 2/2] net: mv643xx_eth: proper initialization for Kirkwood
+ SoCs
+From: Linus Walleij <linus.walleij@linaro.org>
+To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+ "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>,
+ Grant Likely <grant.likely@secretlab.ca>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+ Lennert Buytenhek <buytenh@wantstofly.org>,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+ David Miller <davem@davemloft.net>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,62 +45,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+On Fri, May 24, 2013 at 12:40 AM, Sebastian Hesselbarth
+<sebastian.hesselbarth@gmail.com> wrote:
+> On 05/23/2013 08:40 PM, Jason Cooper wrote:
 
-Here are a few more powerpc fixes for 3.10. Some more P8 related
-bits, a bunch of fixes for our P7+/P8 HW crypto drivers, some added
-workarounds for those radeons that don't do proper 64-bit MSIs and
-a couple of other trivialities by myself.
+>> I think marvell,psc1_reset =<>; gives us the most flexibility in
+>> accurately describing the hardware.
+>
+>
+> IMHO using that is just another workaround for a broken driver. We
+> could hack the whole register setup in DT as it would still accurately
+> describe HW. Don't get me wrong, but I don't like it.
+>
+> Haven't checked how happy Linus Walleij is about pinctrl drivers with
+> reg values hacked in lately.
 
-Cheers,
-Ben.
+One of the things I've been ranting about lately is that Linux
+subsystem maintainers have become de-facto device tree
+standard commite chairs. :-(
 
-The following changes since commit 519fe2ecb755b875d9814cdda19778c2e88c6901:
+So to the actual question:
 
-  Merge branch 'leds-fixes-3.10' of git://git.kernel.org/pub/scm/linux/kernel/git/cooloney/linux-leds (2013-05-21 11:41:07 -0700)
+In general I think we need to draw a line and define what we
+mean with "describing the hardware" in a device tree.
 
-are available in the git repository at:
+We have some consensus:
+- <reg> properties to describe regsiter BASE offset in physical
+  memory and size.
+- Resources like IRQ, DMA channel, regulator, GPIO pin control
+  handles, are passed using <&ampersand> notation.
 
+And so it goes on.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+When it comes to defining different registers and their individual
+bits and the meaning of these and/or default values, I personally
+think that is making things harder for developers rather than
+simplifying things. I know that pinctrl-single is anyway doing this
+and I was talked into accepting it under circumstances where
+developers are being passed opaque machine-generated
+data that would otherwise be translated into unreadable header
+files littering the kernel.
 
-for you to fetch changes up to f1dd153121dcb872ae6cba8d52bec97519eb7d97:
+For a coder it is definately better if the *driver* know these
+details, but whether that is possible seems to depend on things
+like hardware development process.
 
-  powerpc/pseries: Make 32-bit MSI quirk work on systems lacking firmware support (2013-05-24 18:16:54 +1000)
+IMO: if you want to go down that road, what you really want is not
+ever more expressible device trees, but real open firmware,
+or ACPI or UEFI that can interpret and run bytecode as some
+"bios" for you. With DT coming from OF maybe this is a natural
+progression of things, but one has to realize when we reach the
+point where what we really want is a bios. Then your time is
+likely better spent with Tianocore or something than with the
+kernel.
 
-----------------------------------------------------------------
-Benjamin Herrenschmidt (5):
-      powerpc: Fix TLB cleanup at boot on POWER8
-      powerpc/pci: Fix bogus message at boot about empty memory resources
-      powerpc/powernv: Fix condition for when to invalidate the TCE cache
-      powerpc: Make radeon 32-bit MSI quirk work on powernv
-      powerpc/powernv: Build a zImage.epapr
-
-Brian King (1):
-      powerpc/pseries: Make 32-bit MSI quirk work on systems lacking firmware support
-
-Kent Yoder (1):
-      drivers/crypto/nx: Fixes for multiple races and issues
-
-Michael Ellerman (1):
-      powerpc: Context switch more PMU related SPRs
-
- arch/powerpc/include/asm/pci-bridge.h     |    2 +
- arch/powerpc/include/asm/processor.h      |    6 +++
- arch/powerpc/kernel/asm-offsets.c         |    6 +++
- arch/powerpc/kernel/cpu_setup_power.S     |    8 ++-
- arch/powerpc/kernel/entry_64.S            |   28 +++++++++++
- arch/powerpc/kernel/pci-common.c          |    7 +--
- arch/powerpc/kernel/pci_64.c              |   10 ++++
- arch/powerpc/kernel/pci_dn.c              |    8 +++
- arch/powerpc/platforms/powernv/Kconfig    |    1 +
- arch/powerpc/platforms/powernv/pci-ioda.c |   27 +++++------
- arch/powerpc/platforms/powernv/pci.c      |    6 ++-
- arch/powerpc/platforms/pseries/msi.c      |   75 +++++++++++++++--------------
- drivers/crypto/nx/nx-aes-cbc.c            |    1 +
- drivers/crypto/nx/nx-aes-ecb.c            |    1 +
- drivers/crypto/nx/nx-aes-gcm.c            |    2 +-
- drivers/crypto/nx/nx-sha256.c             |    8 +--
- drivers/crypto/nx/nx-sha512.c             |    7 +--
- drivers/crypto/nx/nx.c                    |   38 +++------------
- 18 files changed, 146 insertions(+), 95 deletions(-)
+Yours,
+Linus Walleij
