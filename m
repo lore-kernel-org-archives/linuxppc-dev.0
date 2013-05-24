@@ -1,32 +1,39 @@
-Return-Path: <jason@lakedaemon.net>
-Received: from mho-01-ewr.mailhop.org (mho-03-ewr.mailhop.org [204.13.248.66])
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+ [IPv6:2002:4e20:1eda::1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 57C0F2C016A
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 May 2013 03:04:05 +1000 (EST)
-Date: Fri, 24 May 2013 13:03:35 -0400
-From: Jason Cooper <jason@lakedaemon.net>
-To: Andrew Lunn <andrew@lunn.ch>
+ by ozlabs.org (Postfix) with ESMTPS id CA5FB2C02B1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 May 2013 03:14:15 +1000 (EST)
+Date: Fri, 24 May 2013 18:13:00 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Jason Cooper <jason@lakedaemon.net>
 Subject: Re: [PATCH 2/2] net: mv643xx_eth: proper initialization for
  Kirkwood SoCs
-Message-ID: <20130524170335.GY31290@titan.lakedaemon.net>
+Message-ID: <20130524171300.GD18614@n2100.arm.linux.org.uk>
 References: <1369253042-15082-2-git-send-email-sebastian.hesselbarth@gmail.com>
  <20130522201607.GA18823@obsidianresearch.com>
  <20130523160111.GP31290@titan.lakedaemon.net>
  <20130523171112.GB31281@obsidianresearch.com>
  <20130523172339.GQ31290@titan.lakedaemon.net>
  <20130523175357.GB2821@obsidianresearch.com>
- <20130523184028.GU31290@titan.lakedaemon.net>
- <20130523190140.GA4010@obsidianresearch.com>
- <20130524164636.GV31290@titan.lakedaemon.net>
- <20130524165315.GX26249@lunn.ch>
+ <20130523184028.GU31290@titan.lakedaemon.net> <519E9ADA.3040204@gmail.com>
+ <CACRpkdbsicPkPAiaQCOg2mQF2Ce2dg_K=BKqqx=FCdAH7Y+QBg@mail.gmail.com>
+ <20130524170125.GX31290@titan.lakedaemon.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130524165315.GX26249@lunn.ch>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+In-Reply-To: <20130524170125.GX31290@titan.lakedaemon.net>
+Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Andrew Lunn <andrew@lunn.ch>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ David Miller <davem@davemloft.net>,
  Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
- Lennert Buytenhek <buytenh@wantstofly.org>, linuxppc-dev@lists.ozlabs.org,
- David Miller <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+ "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>,
+ Lennert Buytenhek <buytenh@wantstofly.org>,
  Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -37,22 +44,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, May 24, 2013 at 06:53:15PM +0200, Andrew Lunn wrote:
-> > > Why are you not keen on this? It seems like normal device driver
-> > > practice, that is what the data field of of_device_id is typically
-> > > used for..
-> > 
-> > I'm not keen on it because we don't have a document saying "All kirkwood
-> > SoCs need PSC1 set to X after reset."  We know it, but have we tested
-> > the 6282?
+On Fri, May 24, 2013 at 01:01:25PM -0400, Jason Cooper wrote:
+> On Fri, May 24, 2013 at 01:03:25PM +0200, Linus Walleij wrote:
+> > IMO: if you want to go down that road, what you really want is not
+> > ever more expressible device trees, but real open firmware,
+> > or ACPI or UEFI that can interpret and run bytecode as some
+> > "bios" for you. With DT coming from OF maybe this is a natural
+> > progression of things, but one has to realize when we reach the
+> > point where what we really want is a bios. Then your time is
+> > likely better spent with Tianocore or something than with the
+> > kernel.
 > 
-> 6282 looses its MAC address, that much i know. I've no idea about
-> PSC1, but if its MAC address behaviour is the same as 6281, is expect
-> PSC1 is the same.
+> shudder.  I like embedded systems because the *don't* have a bios.
 
-Do you have a board set up for testing you could try Sebastian's
-forthcoming series on (with "marvell,kirkwood-eth")?
+Then you're into scenarios like I have with my laptop, where - those
+of you who check the nightly build results will have noticed - one
+of my serial ports doesn't always exist.  That's because the ACPI data
+in the BIOS is *wrong*.  It reports that it has been enabled when it
+hasn't, and the disassembled byte code is at fault here.
 
-thx,
+The fix?  God knows.  As far as I'm concerned as a user, or even as an
+OS developer, it's unfixable without getting the ACPI data structures
+changed, and that's not something I can do.
 
-Jason.
+Do you really want that on ARM?  Given the fiasco with the location of
+the registers, are you sure you want to place more trust in that
+direction?  Does it give you a warm fuzzy feeling to know that you
+might have to work out some way to patch vendor supplied bytecode?
