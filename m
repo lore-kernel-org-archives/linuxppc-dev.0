@@ -1,15 +1,15 @@
 Return-Path: <jason@lakedaemon.net>
-Received: from mho-02-ewr.mailhop.org (mho-02-ewr.mailhop.org [204.13.248.72])
+Received: from mho-01-ewr.mailhop.org (mho-03-ewr.mailhop.org [204.13.248.66])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 743252C00A4
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 May 2013 02:47:11 +1000 (EST)
-Date: Fri, 24 May 2013 12:46:36 -0400
+ by ozlabs.org (Postfix) with ESMTPS id 20C492C00A4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 May 2013 02:54:07 +1000 (EST)
+Date: Fri, 24 May 2013 12:53:38 -0400
 From: Jason Cooper <jason@lakedaemon.net>
-To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 Subject: Re: [PATCH 2/2] net: mv643xx_eth: proper initialization for
  Kirkwood SoCs
-Message-ID: <20130524164636.GV31290@titan.lakedaemon.net>
+Message-ID: <20130524165338.GW31290@titan.lakedaemon.net>
 References: <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
  <1369253042-15082-1-git-send-email-sebastian.hesselbarth@gmail.com>
  <1369253042-15082-2-git-send-email-sebastian.hesselbarth@gmail.com>
@@ -19,15 +19,15 @@ References: <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
  <20130523172339.GQ31290@titan.lakedaemon.net>
  <20130523175357.GB2821@obsidianresearch.com>
  <20130523184028.GU31290@titan.lakedaemon.net>
- <20130523190140.GA4010@obsidianresearch.com>
+ <519E9ADA.3040204@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130523190140.GA4010@obsidianresearch.com>
+In-Reply-To: <519E9ADA.3040204@gmail.com>
 Cc: Andrew Lunn <andrew@lunn.ch>, linux-kernel@vger.kernel.org,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
  Lennert Buytenhek <buytenh@wantstofly.org>, netdev@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
- linux-arm-kernel@lists.infradead.org,
- Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,83 +37,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 23, 2013 at 01:01:40PM -0600, Jason Gunthorpe wrote:
-> On Thu, May 23, 2013 at 02:40:28PM -0400, Jason Cooper wrote:
-> 
-> > > But there is a larger problem here then just this one bit.
-> > > 
-> > > The PSC1 register must be set properly for the board layout, and today
-> > > we rely on the bootloader to set it. In fact, even with Sebastian's
-> > > change the ethernet port won't work without bootloader
-> > > intervention. The PortReset bit should also be cleared by the driver
-> > > (and it is only present on some variants of this IP block,
-> > > apparently).
-> > > 
-> > > We know that some Marvell SOC's wack the ethernet registers when they
-> > > clock gate, and the flip of Clk125Bypass is another symptom of this
-> > > general problem.
-> > > 
-> > > So, long term, the PSC1 must be fully set by the driver, based on DT
-> > > information describing the board (eg RGMII/MII/1000Base-X [SFP] Phy
-> > > type), and the layout of this register seems to vary on a SOC by SOC
-> > > basis.
-> > > 
-> > > Thus, I think it is appropriate to call this variant of the eth IP
-> > > 'marvell,kirkwood-eth' which indicates that the register block follows
-> > > the kirkwood manual and the PSC1 register specifically has the
-> > > kirkwood layout.
-> > 
-> > Ok, so mv643xx_eth would match both "marvell,orion-eth" and
-> > "marvell,kirkwood-eth", then write to PSC1 iff it sees a node matching
-> > "marvell,kirkwood-eth".  I'm not too keen on that, however, the matching
-> > of the machine doesn't look to good, either.
-> 
-> Why are you not keen on this? It seems like normal device driver
-> practice, that is what the data field of of_device_id is typically
-> used for..
+On Fri, May 24, 2013 at 12:40:26AM +0200, Sebastian Hesselbarth wrote:
+> On 05/23/2013 08:40 PM, Jason Cooper wrote:
+> >On Thu, May 23, 2013 at 11:53:57AM -0600, Jason Gunthorpe wrote:
+> >>On Thu, May 23, 2013 at 01:23:39PM -0400, Jason Cooper wrote:
+> >>>Shouldn't it rather be
+> >>>
+> >>>	compatible = "marvell,kirkwood-eth", "marvell,orion-eth";
+> >>
+> >>Not sure about orion-eth?
 
-I'm not keen on it because we don't have a document saying "All kirkwood
-SoCs need PSC1 set to X after reset."  We know it, but have we tested
-the 6282?
+Sorry, yep, one or the other.
 
-That being said, if "marvell,kirkwood-eth" is the best we can do for
-now, I'm all for it.  I would just like to be reasonably certain that
-the binding we are creating doesn't lock us into a difficult decision
-later.
+> Jason, Jason,
 
-> There are more compatible strings than just kirkwood and orion in this
-> driver, the whole TX_BW_CONTROL_OLD_LAYOUT/TX_BW_CONTROL_NEW_LAYOUT
-> buisness (affecting PPC/MIPS) should also someday be captured with
-> compatible strings rather than auto-detection too..
+For a second, I read this as "tsk tsk tsk..." ;-)
 
-Agreed.
+> sorry I didn't came back to this conversation earlier. I already
+> reworked the patch to rely on
+> of_device_is_compatible(.."marvell,kirkwood-eth"..). This is a
+> kirkwood only thing as other Orions cannot do clock gating or
+> retain critcal register content (Dove). I will stick with orion-eth
+> for all other and maybe introduce new compatible strings (and new
+> fixes) as soon as issues surface.
 
-> > > The question is what other Marvell SOCs have the same PSC1 layout as
-> > > kirkwood?
-> > 
-> > I think marvell,psc1_reset = <>; gives us the most flexibility in
-> > accurately describing the hardware.
-> 
-> Agree, providing psc1_reset value is a good idea to setup the phy
-> modes. If all 'orion' SOCs have the PSC1 value then we don't need the
-> kirkwood differentiators, especially if things like the reset bit are
-> in the same place.
-> 
-> The same trick Sebastian used to capture the mac address could be used
-> to capture the PSC1 value from the bootloader.
-> 
-> Basically, I think any IP variants that have idential register layouts
-> can share a compatible string, otherwise different layouts need
-> different compatible strings, so the general format:
-> 
->  compatible = "marvell,SOCNAME-eth", "marvell,<something>-eth";
-> 
-> Seems very sane to me. At least this way if we discover more changes
-> then the driver can match on the SOCNAME compatible string to find
-> them.
+Okay, as I mentioned to Jason, I would like to test 6282 before we
+settle on this path.  Other than that, I'm fine with it.
 
-After glancing a LinusW's email, I'm thinking this isn't the correct
-path.  I'll write more in my response to him.
+> >>>I'm inclined to go with of_machine_is_compatible() since the only
+> >>>concrete difference we know is that the tweak is needed on kirkwood and
+> >>>nowhere else.
+> >>
+> >>But there is a larger problem here then just this one bit.
+> >>
+> >>The PSC1 register must be set properly for the board layout, and today
+> >>we rely on the bootloader to set it. In fact, even with Sebastian's
+> >>change the ethernet port won't work without bootloader
+> >>intervention. The PortReset bit should also be cleared by the driver
+> >>(and it is only present on some variants of this IP block,
+> >>apparently).
+> 
+> Actually, fixing modular scenarios is only for the sake of multiarch
+> someday. I don't see the point in running current kernel without eth
+> compiled in _on a NAS SoC_ ;)
+
+Good point, but if the eth can be gated to save power, we shouldn't
+limit the user's ability just because the SoC is primarily in NAS's.
 
 thx,
 
