@@ -1,29 +1,42 @@
-Return-Path: <B40534@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A3E3F2C0077
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 May 2013 15:21:14 +1000 (EST)
-From: Wang Dongsheng-B40534 <B40534@freescale.com>
-To: Anton Vorontsov <anton@enomsg.org>
-Subject: RE: [PATCH] powerpc/mpc85xx: fix non-bootcpu cannot up after
- hibernation resume
-Date: Fri, 24 May 2013 05:21:51 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259F566E1@039-SN2MPN1-021.039d.mgd.msft.net>
-References: <1368518756-9850-1-git-send-email-dongsheng.wang@freescale.com>
- <ABB05CD9C9F68C46A5CEDC7F15439259F2AFC3@039-SN2MPN1-022.039d.mgd.msft.net>
- <20130523173332.GC30160@teo>
-In-Reply-To: <20130523173332.GC30160@teo>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <ebiederm@xmission.com>
+Received: from etrn.xmission.com (etrn.xmission.com [198.60.22.17])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 90BD42C0174
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 May 2013 16:40:13 +1000 (EST)
+From: ebiederm@xmission.com (Eric W. Biederman)
+References: <519DCBEF.3090208@asianux.com>
+Date: Thu, 23 May 2013 22:59:55 -0700
+In-Reply-To: <519DCBEF.3090208@asianux.com> (Chen Gang's message of "Thu, 23
+ May 2013 15:57:35 +0800")
+Message-ID: <877gio3okk.fsf@xmission.com>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- Li Yang-R58472 <r58472@freescale.com>,
- Zhao Chenhui-B35336 <B35336@freescale.com>, "rjw@sisk.pl" <rjw@sisk.pl>,
- "paulus@samba.org" <paulus@samba.org>,
- "johannes@sipsolutions.net" <johannes@sipsolutions.net>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Subject: Re: [PATCH] arch: configuration,
+ deleting 'CONFIG_BUG' since always need it.
+Cc: Catalin Marinas <Catalin.Marinas@arm.com>, linux-sh@vger.kernel.org,
+ heiko.carstens@de.ibm.com, "paulus@samba.org" <paulus@samba.org>,
+ hpa@zytor.com, walken@google.com, egtvedt@samfundet.no,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ user-mode-linux-devel@lists.sourceforge.net, ysato@users.sourceforge.jp,
+ richard@nod.at, deller@gmx.de, x86@kernel.org, jejb@parisc-linux.org,
+ "mingo@redhat.com" <mingo@redhat.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Frederic Weisbecker <fweisbec@gmail.com>, paulmck@linux.vnet.ibm.com,
+ hskinnemoen@gmail.com, Serge Hallyn <serge.hallyn@canonical.com>,
+ Mike Frysinger <vapier@gentoo.org>, Arnd Bergmann <arnd@arndb.de>,
+ Will Deacon <will.deacon@arm.com>, jdike@addtoit.com, akinobu.mita@gmail.com,
+ user-mode-linux-user@lists.sourceforge.net,
+ uclinux-dist-devel@blackfin.uclinux.org, Thomas Gleixner <tglx@linutronix.de>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ linux-parisc@vger.kernel.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ rkuo@codeaurora.org, lethal@linux-sh.org, linux-hexagon@vger.kernel.org,
+ schwidefsky@de.ibm.com, linux390@de.ibm.com,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,62 +46,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-VGhhbmtzIGFudG9uLg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IEFu
-dG9uIFZvcm9udHNvdiBbbWFpbHRvOmFudG9uQHNjYXJ5YnVncy5vcmddIE9uIEJlaGFsZiBPZiBB
-bnRvbg0KPiBWb3JvbnRzb3YNCj4gU2VudDogRnJpZGF5LCBNYXkgMjQsIDIwMTMgMTozNCBBTQ0K
-PiBUbzogV2FuZyBEb25nc2hlbmctQjQwNTM0DQo+IENjOiBwYXVsdXNAc2FtYmEub3JnOyByandA
-c2lzay5wbDsgYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnOw0KPiBqb2hhbm5lc0BzaXBzb2x1dGlv
-bnMubmV0OyBXb29kIFNjb3R0LUIwNzQyMTsgTGkgWWFuZy1SNTg0NzI7IFpoYW8NCj4gQ2hlbmh1
-aS1CMzUzMzY7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQo+IFN1YmplY3Q6IFJlOiBb
-UEFUQ0hdIHBvd2VycGMvbXBjODV4eDogZml4IG5vbi1ib290Y3B1IGNhbm5vdCB1cCBhZnRlcg0K
-PiBoaWJlcm5hdGlvbiByZXN1bWUNCj4gDQo+IEhpIQ0KPiANCj4gT24gVHVlLCBNYXkgMTQsIDIw
-MTMgYXQgMDg6NTk6MTNBTSArMDAwMCwgV2FuZyBEb25nc2hlbmctQjQwNTM0IHdyb3RlOg0KPiA+
-IEkgc2VuZCB0byBhIHdyb25nIGVtYWlsIGFkZHJlc3MgIkFudG9uIFZvcm9udHNvdg0KPiA8YXZv
-cm9udHNvdkBydS5tdmlzdGEuY29tPiINCj4gPg0KPiA+IEFkZCBBbnRvbiBWb3JvbnRzb3YgPGFu
-dG9uLnZvcm9udHNvdkBsaW5hcm8ub3JnPiB0byB0aGlzIGVtYWlsLg0KPiANCj4gSSBkb24ndCBo
-YXZlIGFueSBtZWFucyB0byB0ZXN0IGl0LCBidXQgdGhlIHBhdGNoIGl0c2VsZiBsb29rcyBnb29k
-IGFuZA0KPiB0aGUgZGVzY3JpcHRpb24gbWFrZXMgc2Vuc2UuIFNvLA0KPiANCj4gUmV2aWV3ZWQt
-Ynk6IEFudG9uIFZvcm9udHNvdiA8YW50b25AZW5vbXNnLm9yZz4NCj4gDQo+IFRoYW5rcyENCj4g
-DQo+ID4NCj4gPiBUaGFua3MgYWxsLg0KPiA+DQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2Ut
-LS0tLQ0KPiA+ID4gRnJvbTogV2FuZyBEb25nc2hlbmctQjQwNTM0DQo+ID4gPiBTZW50OiBUdWVz
-ZGF5LCBNYXkgMTQsIDIwMTMgNDowNiBQTQ0KPiA+ID4gVG86IGF2b3JvbnRzb3ZAcnUubXZpc3Rh
-LmNvbQ0KPiA+ID4gQ2M6IHBhdWx1c0BzYW1iYS5vcmc7IHJqd0BzaXNrLnBsOyBiZW5oQGtlcm5l
-bC5jcmFzaGluZy5vcmc7DQo+ID4gPiBqb2hhbm5lc0BzaXBzb2x1dGlvbnMubmV0OyBXb29kIFNj
-b3R0LUIwNzQyMTsgTGkgWWFuZy1SNTg0NzI7IFpoYW8NCj4gPiA+IENoZW5odWktQjM1MzM2OyBs
-aW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgV2FuZyBEb25nc2hlbmctQjQwNTM0DQo+ID4g
-PiBTdWJqZWN0OiBbUEFUQ0hdIHBvd2VycGMvbXBjODV4eDogZml4IG5vbi1ib290Y3B1IGNhbm5v
-dCB1cCBhZnRlcg0KPiA+ID4gaGliZXJuYXRpb24gcmVzdW1lDQo+ID4gPg0KPiA+ID4gVGhpcyBw
-cm9ibGVtIGJlbG9uZ3MgdG8gdGhlIGNvcmUgc3luY2hyb25pemF0aW9uIGlzc3Vlcy4NCj4gPiA+
-IFRoZSBjcHUxIGFscmVhZHkgdXBkYXRlZCBzcGluX3RhYmxlIHZhbHVlcywgYnV0IGJvb3Rjb3Jl
-IGNhbm5vdCBnZXQNCj4gPiA+IHRoaXMgdmFsdWUgaW4gdGltZS4NCj4gPiA+DQo+ID4gPiBBZnRl
-ciBib290Y3B1IGhpYmllcm5hdGlvbiByZXN0b3JlIHRoZSBwYWdlcy4gd2UgYXJlIG5vdyBydW5u
-aW5nDQo+ID4gPiB3aXRoIHRoZSBrZXJuZWwgZGF0YSBvZiB0aGUgb2xkIGtlcm5lbCBmdWxseSBy
-ZXN0b3JlZC4gaWYgd2UgcmVzZXQNCj4gPiA+IHRoZSBub24tYm9vdGNwdXMgdGhhdCB3aWxsIGJl
-IHJlc2V0IGNhY2hlKHRsYiksIHRoZSBub24tYm9vdGNwdXMNCj4gPiA+IHdpbGwgZ2V0IG5ldyBh
-ZGRyZXNzKG1hcCB2aXJ0dWFsIGFuZCBwaHlzaWNhbCBhZGRyZXNzIHNwYWNlcykuDQo+ID4gPiBi
-dXQgYm9vdGNwdSB0bGIgY2FjaGUgc3RpbGwgdXNlIGJvb3Qga2VybmVsIGRhdGEsIHNvIHdlIG5l
-ZWQgdG8NCj4gPiA+IGludmFsaWRhdGUgdGhlIGJvb3RjcHUgdGxiIGNhY2hlIG1ha2UgaXQgdG8g
-Z2V0IG5ldyBtYWluIG1lbW9yeSBkYXRhLg0KPiA+ID4NCj4gPiA+IGxvZzoNCj4gPiA+IEVuYWJs
-aW5nIG5vbi1ib290IENQVXMgLi4uDQo+ID4gPiBzbXBfODV4eF9raWNrX2NwdTogdGltZW91dCB3
-YWl0aW5nIGZvciBjb3JlIDEgdG8gcmVzZXQNCj4gPiA+IHNtcDogZmFpbGVkIHN0YXJ0aW5nIGNw
-dSAxIChyYyAtMikNCj4gPiA+IEVycm9yIHRha2luZyBDUFUxIHVwOiAtMg0KPiA+ID4NCj4gPiA+
-IFNpZ25lZC1vZmYtYnk6IFdhbmcgRG9uZ3NoZW5nIDxkb25nc2hlbmcud2FuZ0BmcmVlc2NhbGUu
-Y29tPg0KPiA+ID4NCj4gPiA+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMva2VybmVsL3N3c3Vz
-cF9ib29rZS5TDQo+ID4gPiBiL2FyY2gvcG93ZXJwYy9rZXJuZWwvc3dzdXNwX2Jvb2tlLlMNCj4g
-PiA+IGluZGV4IDExYTM5MzAuLjk1MDMyNDkgMTAwNjQ0DQo+ID4gPiAtLS0gYS9hcmNoL3Bvd2Vy
-cGMva2VybmVsL3N3c3VzcF9ib29rZS5TDQo+ID4gPiArKysgYi9hcmNoL3Bvd2VycGMva2VybmVs
-L3N3c3VzcF9ib29rZS5TDQo+ID4gPiBAQCAtMTQxLDYgKzE0MSwxOSBAQCBfR0xPQkFMKHN3c3Vz
-cF9hcmNoX3Jlc3VtZSkNCj4gPiA+ICAJbGlzCXIxMSxzd3N1c3Bfc2F2ZV9hcmVhQGgNCj4gPiA+
-ICAJb3JpCXIxMSxyMTEsc3dzdXNwX3NhdmVfYXJlYUBsDQo+ID4gPg0KPiA+ID4gKwkvKg0KPiA+
-ID4gKwkgKiBUaGUgYm9vdCBjb3JlIGdldCBhIHZpcnR1YWwgYWRkcmVzcywgd2hlbiB0aGUgYm9v
-dCBwcm9jZXNzLA0KPiA+ID4gKwkgKiB0aGUgdmlydHVhbCBhZGRyZXNzIGNvcnJlc3BvbmRzIHRv
-IGEgcGh5c2ljYWwgYWRkcmVzcy4gQWZ0ZXINCj4gPiA+ICsJICogaGliZXJuYXRpb24gcmVzdW1l
-IG1lbW9yeSBzbmFwc2hvdHMsIFRoZSBjb3JyZXNwb25kaW5nDQo+ID4gPiArCSAqIHJlbGF0aW9u
-c2hpcCBiZXR3ZWVuIHRoZSB2aXJ0dWFsIG1lbW9yeSBhbmQgcGh5c2ljYWwgbWVtb3J5DQo+ID4g
-PiArCSAqIG1pZ2h0IGNoYW5nZSBhZ2Fpbi4gV2UgbmVlZCB0byBnZXQgYSBuZXcgcGFnZSB0YWJs
-ZS4gU28gd2UNCj4gPiA+ICsJICogbmVlZCB0byBpbnZhbGlkYXRlIFRMQiBhZnRlciByZXN1bWUg
-cGFnZXMuDQo+ID4gPiArCSAqDQo+ID4gPiArCSAqIEludmFsaWRhdGlvbnMgVExCIFVzaW5nIHRs
-YmlseC90bGJpdmF4L01NVUNTUjAuDQo+ID4gPiArCSAqIHRsYmlseCB1c2VkIGhlcmUuDQo+ID4g
-PiArCSAqLw0KPiA+ID4gKwlibAlfdGxiaWxfYWxsDQo+ID4gPiArDQo+ID4gPiAgCWx3eglyNCxT
-TF9TUFJHMChyMTEpDQo+ID4gPiAgCW10c3ByZwkwLHI0DQo+ID4gPiAgCWx3eglyNCxTTF9TUFJH
-MShyMTEpDQo+ID4gPiAtLQ0KPiA+ID4gMS44LjANCj4gPg0KPiA+DQoNCg==
+Chen Gang <gang.chen@asianux.com> writes:
+
+> The crazy user can unset 'CONFIG_BUG' in menuconfig: "> General setup >
+> Configure standard kernel features (expert users) > BUG() Support".
+>
+> But in fact, we always need it, and quite a few of architectures have
+> already implemented it (e.g. alpha, arc, arm, avr32, blackfin, cris,
+> frv, ia64, m68k, mips, mn10300, parisc, powerpc, s390, sh, sparc, x86).
+>
+> And kernel also already has prepared a default effective implementation
+> for the architectures which is unwilling to implement it by themselves
+> (e.g. arm64, c6x, h8300, hexagon, m32r, metag, microblaze, openrisc,
+> score, tile, um, unicore32, xtensa).
+>
+> So need get rid of 'CONFIG_BUG', and let it always enabled everywhere.
+
+
+This looks like the right way to handle this to me.  If the BUG
+annotations are too big and not needed they should simply be deleted
+from the code base.  Disabling CONFIG_BUG which removes the BUG
+annotations from the binaries without modifying the source code seems
+like the wrong approach.
+
+Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
