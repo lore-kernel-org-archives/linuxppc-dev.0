@@ -1,20 +1,19 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id DE8ED2C00AA
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 May 2013 04:25:14 +1000 (EST)
-From: Anatolij Gustschin <agust@denx.de>
-To: linux-serial@vger.kernel.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH RESEND v2 2/2] serial/mpc52xx_uart: add MPC5125 PSC support
-Date: Fri, 24 May 2013 20:24:59 +0200
-Message-Id: <1369419899-2907-2-git-send-email-agust@denx.de>
-In-Reply-To: <1369419899-2907-1-git-send-email-agust@denx.de>
-References: <1369419899-2907-1-git-send-email-agust@denx.de>
-Cc: Matteo Facchinetti <matteo.facchinetti@sirius-es.it>,
- Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org,
- Vladimir Ermakov <vooon341@gmail.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Sat, 25 May 2013 12:45:24 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 3/4] KVM: PPC: Add support for IOMMU in-kernel handling
+Message-ID: <20130525024524.GA6112@boomeroo.fritz.box>
+References: <1369105607-20957-4-git-send-email-aik@ozlabs.ru>
+ <1369256817.1374.29@scott-Lenovo-G560>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="vtzGhvizbBRQ85DL"
+In-Reply-To: <1369256817.1374.29@scott-Lenovo-G560>
+Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Alexander Graf <agraf@suse.de>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,340 +23,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Matteo Facchinetti <matteo.facchinetti@sirius-es.it>
 
-Add MPC5125 PSC register layout structure, MPC5125 specific
-psc_ops function set and the compatible string.
+--vtzGhvizbBRQ85DL
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Vladimir Ermakov <vooon341@gmail.com>
-Signed-off-by: Matteo Facchinetti <matteo.facchinetti@sirius-es.it>
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
----
-Changes in v2:
- - split into two patches to simplify review
- - minor coding style changes 
- - revise commit log
+On Wed, May 22, 2013 at 04:06:57PM -0500, Scott Wood wrote:
+> On 05/20/2013 10:06:46 PM, Alexey Kardashevskiy wrote:
+> >diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+> >index 8465c2a..da6bf61 100644
+> >--- a/arch/powerpc/kvm/powerpc.c
+> >@@ -396,6 +396,7 @@ int kvm_dev_ioctl_check_extension(long ext)
+> >+++ b/arch/powerpc/kvm/powerpc.c
+> > 		break;
+> > #endif
+> > 	case KVM_CAP_SPAPR_MULTITCE:
+> >+	case KVM_CAP_SPAPR_TCE_IOMMU:
+> > 		r =3D 1;
+> > 		break;
+> > 	default:
+>=20
+> Don't advertise SPAPR capabilities if it's not book3s -- and
+> probably there's some additional limitation that would be
+> appropriate.
 
- arch/powerpc/include/asm/mpc52xx_psc.h |   49 +++++++
- drivers/tty/serial/mpc52xx_uart.c      |  241 ++++++++++++++++++++++++++++++++
- 2 files changed, 290 insertions(+)
+So, in the case of MULTITCE, that's not quite right.  PR KVM can
+emulate a PAPR system on a BookE machine, and there's no reason not to
+allow TCE acceleration as well.  We can't make it dependent on PAPR
+mode being selected, because that's enabled per-vcpu, whereas these
+capabilities are queried on the VM before the vcpus are created.
 
-diff --git a/arch/powerpc/include/asm/mpc52xx_psc.h b/arch/powerpc/include/asm/mpc52xx_psc.h
-index 2966df6..d0ece25 100644
---- a/arch/powerpc/include/asm/mpc52xx_psc.h
-+++ b/arch/powerpc/include/asm/mpc52xx_psc.h
-@@ -299,4 +299,53 @@ struct mpc512x_psc_fifo {
- #define rxdata_32 rxdata.rxdata_32
- };
- 
-+struct mpc5125_psc {
-+	u8		mr1;			/* PSC + 0x00 */
-+	u8		reserved0[3];
-+	u8		mr2;			/* PSC + 0x04 */
-+	u8		reserved1[3];
-+	struct {
-+		u16		status;		/* PSC + 0x08 */
-+		u8		reserved2[2];
-+		u8		clock_select;	/* PSC + 0x0c */
-+		u8		reserved3[3];
-+	} sr_csr;
-+	u8		command;		/* PSC + 0x10 */
-+	u8		reserved4[3];
-+	union {					/* PSC + 0x14 */
-+		u8		buffer_8;
-+		u16		buffer_16;
-+		u32		buffer_32;
-+	} buffer;
-+	struct {
-+		u8		ipcr;		/* PSC + 0x18 */
-+		u8		reserved5[3];
-+		u8		acr;		/* PSC + 0x1c */
-+		u8		reserved6[3];
-+	} ipcr_acr;
-+	struct {
-+		u16		isr;		/* PSC + 0x20 */
-+		u8		reserved7[2];
-+		u16		imr;		/* PSC + 0x24 */
-+		u8		reserved8[2];
-+	} isr_imr;
-+	u8		ctur;			/* PSC + 0x28 */
-+	u8		reserved9[3];
-+	u8		ctlr;			/* PSC + 0x2c */
-+	u8		reserved10[3];
-+	u32		ccr;			/* PSC + 0x30 */
-+	u32		ac97slots;		/* PSC + 0x34 */
-+	u32		ac97cmd;		/* PSC + 0x38 */
-+	u32		ac97data;		/* PSC + 0x3c */
-+	u8		reserved11[4];
-+	u8		ip;			/* PSC + 0x44 */
-+	u8		reserved12[3];
-+	u8		op1;			/* PSC + 0x48 */
-+	u8		reserved13[3];
-+	u8		op0;			/* PSC + 0x4c */
-+	u8		reserved14[3];
-+	u32		sicr;			/* PSC + 0x50 */
-+	u8		reserved15[4];	/* make eq. sizeof(mpc52xx_psc) */
-+};
-+
- #endif  /* __ASM_MPC52xx_PSC_H__ */
-diff --git a/drivers/tty/serial/mpc52xx_uart.c b/drivers/tty/serial/mpc52xx_uart.c
-index 5aa87ac..9c3eab5 100644
---- a/drivers/tty/serial/mpc52xx_uart.c
-+++ b/drivers/tty/serial/mpc52xx_uart.c
-@@ -658,6 +658,246 @@ static void mpc512x_psc_get_irq(struct uart_port *port, struct device_node *np)
- 	port->irqflags = IRQF_SHARED;
- 	port->irq = psc_fifoc_irq;
- }
-+#endif
-+
-+#ifdef CONFIG_PPC_MPC512x
-+
-+#define PSC_5125(port) ((struct mpc5125_psc __iomem *)((port)->membase))
-+#define FIFO_5125(port) ((struct mpc512x_psc_fifo __iomem *)(PSC_5125(port)+1))
-+
-+static void mpc5125_psc_fifo_init(struct uart_port *port)
-+{
-+	/* /32 prescaler */
-+	out_8(&PSC_5125(port)->mpc52xx_psc_clock_select, 0xdd);
-+
-+	out_be32(&FIFO_5125(port)->txcmd, MPC512x_PSC_FIFO_RESET_SLICE);
-+	out_be32(&FIFO_5125(port)->txcmd, MPC512x_PSC_FIFO_ENABLE_SLICE);
-+	out_be32(&FIFO_5125(port)->txalarm, 1);
-+	out_be32(&FIFO_5125(port)->tximr, 0);
-+
-+	out_be32(&FIFO_5125(port)->rxcmd, MPC512x_PSC_FIFO_RESET_SLICE);
-+	out_be32(&FIFO_5125(port)->rxcmd, MPC512x_PSC_FIFO_ENABLE_SLICE);
-+	out_be32(&FIFO_5125(port)->rxalarm, 1);
-+	out_be32(&FIFO_5125(port)->rximr, 0);
-+
-+	out_be32(&FIFO_5125(port)->tximr, MPC512x_PSC_FIFO_ALARM);
-+	out_be32(&FIFO_5125(port)->rximr, MPC512x_PSC_FIFO_ALARM);
-+}
-+
-+static int mpc5125_psc_raw_rx_rdy(struct uart_port *port)
-+{
-+	return !(in_be32(&FIFO_5125(port)->rxsr) & MPC512x_PSC_FIFO_EMPTY);
-+}
-+
-+static int mpc5125_psc_raw_tx_rdy(struct uart_port *port)
-+{
-+	return !(in_be32(&FIFO_5125(port)->txsr) & MPC512x_PSC_FIFO_FULL);
-+}
-+
-+static int mpc5125_psc_rx_rdy(struct uart_port *port)
-+{
-+	return in_be32(&FIFO_5125(port)->rxsr) &
-+	       in_be32(&FIFO_5125(port)->rximr) & MPC512x_PSC_FIFO_ALARM;
-+}
-+
-+static int mpc5125_psc_tx_rdy(struct uart_port *port)
-+{
-+	return in_be32(&FIFO_5125(port)->txsr) &
-+	       in_be32(&FIFO_5125(port)->tximr) & MPC512x_PSC_FIFO_ALARM;
-+}
-+
-+static int mpc5125_psc_tx_empty(struct uart_port *port)
-+{
-+	return in_be32(&FIFO_5125(port)->txsr) & MPC512x_PSC_FIFO_EMPTY;
-+}
-+
-+static void mpc5125_psc_stop_rx(struct uart_port *port)
-+{
-+	unsigned long rx_fifo_imr;
-+
-+	rx_fifo_imr = in_be32(&FIFO_5125(port)->rximr);
-+	rx_fifo_imr &= ~MPC512x_PSC_FIFO_ALARM;
-+	out_be32(&FIFO_5125(port)->rximr, rx_fifo_imr);
-+}
-+
-+static void mpc5125_psc_start_tx(struct uart_port *port)
-+{
-+	unsigned long tx_fifo_imr;
-+
-+	tx_fifo_imr = in_be32(&FIFO_5125(port)->tximr);
-+	tx_fifo_imr |= MPC512x_PSC_FIFO_ALARM;
-+	out_be32(&FIFO_5125(port)->tximr, tx_fifo_imr);
-+}
-+
-+static void mpc5125_psc_stop_tx(struct uart_port *port)
-+{
-+	unsigned long tx_fifo_imr;
-+
-+	tx_fifo_imr = in_be32(&FIFO_5125(port)->tximr);
-+	tx_fifo_imr &= ~MPC512x_PSC_FIFO_ALARM;
-+	out_be32(&FIFO_5125(port)->tximr, tx_fifo_imr);
-+}
-+
-+static void mpc5125_psc_rx_clr_irq(struct uart_port *port)
-+{
-+	out_be32(&FIFO_5125(port)->rxisr, in_be32(&FIFO_5125(port)->rxisr));
-+}
-+
-+static void mpc5125_psc_tx_clr_irq(struct uart_port *port)
-+{
-+	out_be32(&FIFO_5125(port)->txisr, in_be32(&FIFO_5125(port)->txisr));
-+}
-+
-+static void mpc5125_psc_write_char(struct uart_port *port, unsigned char c)
-+{
-+	out_8(&FIFO_5125(port)->txdata_8, c);
-+}
-+
-+static unsigned char mpc5125_psc_read_char(struct uart_port *port)
-+{
-+	return in_8(&FIFO_5125(port)->rxdata_8);
-+}
-+
-+static void mpc5125_psc_cw_disable_ints(struct uart_port *port)
-+{
-+	port->read_status_mask =
-+		in_be32(&FIFO_5125(port)->tximr) << 16 |
-+		in_be32(&FIFO_5125(port)->rximr);
-+	out_be32(&FIFO_5125(port)->tximr, 0);
-+	out_be32(&FIFO_5125(port)->rximr, 0);
-+}
-+
-+static void mpc5125_psc_cw_restore_ints(struct uart_port *port)
-+{
-+	out_be32(&FIFO_5125(port)->tximr,
-+		(port->read_status_mask >> 16) & 0x7f);
-+	out_be32(&FIFO_5125(port)->rximr, port->read_status_mask & 0x7f);
-+}
-+
-+static inline void mpc5125_set_divisor(struct mpc5125_psc __iomem *psc,
-+		u8 prescaler, unsigned int divisor)
-+{
-+	/* select prescaler */
-+	out_8(&psc->mpc52xx_psc_clock_select, prescaler);
-+	out_8(&psc->ctur, divisor >> 8);
-+	out_8(&psc->ctlr, divisor & 0xff);
-+}
-+
-+static unsigned int mpc5125_psc_set_baudrate(struct uart_port *port,
-+					     struct ktermios *new,
-+					     struct ktermios *old)
-+{
-+	unsigned int baud;
-+	unsigned int divisor;
-+
-+	/*
-+	 * Calculate with a /16 prescaler here.
-+	 */
-+
-+	/* uartclk contains the ips freq */
-+	baud = uart_get_baud_rate(port, new, old,
-+				  port->uartclk / (16 * 0xffff) + 1,
-+				  port->uartclk / 16);
-+	divisor = (port->uartclk + 8 * baud) / (16 * baud);
-+
-+	/* enable the /16 prescaler and set the divisor */
-+	mpc5125_set_divisor(PSC_5125(port), 0xdd, divisor);
-+	return baud;
-+}
-+
-+/*
-+ * MPC5125 have compatible PSC FIFO Controller.
-+ * Special init not needed.
-+ */
-+static u16 mpc5125_psc_get_status(struct uart_port *port)
-+{
-+	return in_be16(&PSC_5125(port)->mpc52xx_psc_status);
-+}
-+
-+static u8 mpc5125_psc_get_ipcr(struct uart_port *port)
-+{
-+	return in_8(&PSC_5125(port)->mpc52xx_psc_ipcr);
-+}
-+
-+static void mpc5125_psc_command(struct uart_port *port, u8 cmd)
-+{
-+	out_8(&PSC_5125(port)->command, cmd);
-+}
-+
-+static void mpc5125_psc_set_mode(struct uart_port *port, u8 mr1, u8 mr2)
-+{
-+	out_8(&PSC_5125(port)->mr1, mr1);
-+	out_8(&PSC_5125(port)->mr2, mr2);
-+}
-+
-+static void mpc5125_psc_set_rts(struct uart_port *port, int state)
-+{
-+	if (state & TIOCM_RTS)
-+		out_8(&PSC_5125(port)->op1, MPC52xx_PSC_OP_RTS);
-+	else
-+		out_8(&PSC_5125(port)->op0, MPC52xx_PSC_OP_RTS);
-+}
-+
-+static void mpc5125_psc_enable_ms(struct uart_port *port)
-+{
-+	struct mpc5125_psc __iomem *psc = PSC_5125(port);
-+
-+	/* clear D_*-bits by reading them */
-+	in_8(&psc->mpc52xx_psc_ipcr);
-+	/* enable CTS and DCD as IPC interrupts */
-+	out_8(&psc->mpc52xx_psc_acr, MPC52xx_PSC_IEC_CTS | MPC52xx_PSC_IEC_DCD);
-+
-+	port->read_status_mask |= MPC52xx_PSC_IMR_IPC;
-+	out_be16(&psc->mpc52xx_psc_imr, port->read_status_mask);
-+}
-+
-+static void mpc5125_psc_set_sicr(struct uart_port *port, u32 val)
-+{
-+	out_be32(&PSC_5125(port)->sicr, val);
-+}
-+
-+static void mpc5125_psc_set_imr(struct uart_port *port, u16 val)
-+{
-+	out_be16(&PSC_5125(port)->mpc52xx_psc_imr, val);
-+}
-+
-+static u8 mpc5125_psc_get_mr1(struct uart_port *port)
-+{
-+	return in_8(&PSC_5125(port)->mr1);
-+}
-+
-+static struct psc_ops mpc5125_psc_ops = {
-+	.fifo_init = mpc5125_psc_fifo_init,
-+	.raw_rx_rdy = mpc5125_psc_raw_rx_rdy,
-+	.raw_tx_rdy = mpc5125_psc_raw_tx_rdy,
-+	.rx_rdy = mpc5125_psc_rx_rdy,
-+	.tx_rdy = mpc5125_psc_tx_rdy,
-+	.tx_empty = mpc5125_psc_tx_empty,
-+	.stop_rx = mpc5125_psc_stop_rx,
-+	.start_tx = mpc5125_psc_start_tx,
-+	.stop_tx = mpc5125_psc_stop_tx,
-+	.rx_clr_irq = mpc5125_psc_rx_clr_irq,
-+	.tx_clr_irq = mpc5125_psc_tx_clr_irq,
-+	.write_char = mpc5125_psc_write_char,
-+	.read_char = mpc5125_psc_read_char,
-+	.cw_disable_ints = mpc5125_psc_cw_disable_ints,
-+	.cw_restore_ints = mpc5125_psc_cw_restore_ints,
-+	.set_baudrate = mpc5125_psc_set_baudrate,
-+	.clock = mpc512x_psc_clock,
-+	.fifoc_init = mpc512x_psc_fifoc_init,
-+	.fifoc_uninit = mpc512x_psc_fifoc_uninit,
-+	.get_irq = mpc512x_psc_get_irq,
-+	.handle_irq = mpc512x_psc_handle_irq,
-+	.get_status = mpc5125_psc_get_status,
-+	.get_ipcr = mpc5125_psc_get_ipcr,
-+	.command = mpc5125_psc_command,
-+	.set_mode = mpc5125_psc_set_mode,
-+	.set_rts = mpc5125_psc_set_rts,
-+	.enable_ms = mpc5125_psc_enable_ms,
-+	.set_sicr = mpc5125_psc_set_sicr,
-+	.set_imr = mpc5125_psc_set_imr,
-+	.get_mr1 = mpc5125_psc_get_mr1,
-+};
- 
- static struct psc_ops mpc512x_psc_ops = {
- 	.fifo_init = mpc512x_psc_fifo_init,
-@@ -1381,6 +1621,7 @@ static struct of_device_id mpc52xx_uart_of_match[] = {
- #endif
- #ifdef CONFIG_PPC_MPC512x
- 	{ .compatible = "fsl,mpc5121-psc-uart", .data = &mpc512x_psc_ops, },
-+	{ .compatible = "fsl,mpc5125-psc-uart", .data = &mpc5125_psc_ops, },
- #endif
- 	{},
- };
--- 
-1.7.9.5
+CAP_SPAPR_TCE_IOMMU should be dependent on the presence of suitable
+host side hardware (i.e. a PAPR style IOMMU), though.
+
+>=20
+> >@@ -1025,6 +1026,17 @@ long kvm_arch_vm_ioctl(struct file *filp,
+> > 		r =3D kvm_vm_ioctl_create_spapr_tce(kvm, &create_tce);
+> > 		goto out;
+> > 	}
+> >+	case KVM_CREATE_SPAPR_TCE_IOMMU: {
+> >+		struct kvm_create_spapr_tce_iommu create_tce_iommu;
+> >+		struct kvm *kvm =3D filp->private_data;
+> >+
+> >+		r =3D -EFAULT;
+> >+		if (copy_from_user(&create_tce_iommu, argp,
+> >+				sizeof(create_tce_iommu)))
+> >+			goto out;
+> >+		r =3D kvm_vm_ioctl_create_spapr_tce_iommu(kvm,
+> >&create_tce_iommu);
+> >+		goto out;
+> >+	}
+> > #endif /* CONFIG_PPC_BOOK3S_64 */
+> >
+> > #ifdef CONFIG_KVM_BOOK3S_64_HV
+> >diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+> >index 5a2afda..450c82a 100644
+> >--- a/include/uapi/linux/kvm.h
+> >+++ b/include/uapi/linux/kvm.h
+> >@@ -667,6 +667,7 @@ struct kvm_ppc_smmu_info {
+> > #define KVM_CAP_PPC_RTAS 91
+> > #define KVM_CAP_IRQ_XICS 92
+> > #define KVM_CAP_SPAPR_MULTITCE (0x110000 + 89)
+> >+#define KVM_CAP_SPAPR_TCE_IOMMU (0x110000 + 90)
+>=20
+> Hmm...
+
+Ah, yeah, that needs to be fixed.  Those were interim numbers so that
+we didn't have to keep changing our internal trees as new upstream
+ioctls got added to the list.  We need to get a proper number for the
+merge, though.
+
+> >@@ -939,6 +940,9 @@ struct kvm_s390_ucas_mapping {
+> > #define KVM_GET_DEVICE_ATTR	  _IOW(KVMIO,  0xe2, struct
+> >kvm_device_attr)
+> > #define KVM_HAS_DEVICE_ATTR	  _IOW(KVMIO,  0xe3, struct
+> >kvm_device_attr)
+> >
+> >+/* ioctl for SPAPR TCE IOMMU */
+> >+#define KVM_CREATE_SPAPR_TCE_IOMMU _IOW(KVMIO,  0xe4, struct
+> >kvm_create_spapr_tce_iommu)
+>=20
+> Shouldn't this go under the vm ioctl section?
+>=20
+> -Scott
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>=20
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--vtzGhvizbBRQ85DL
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iEYEARECAAYFAlGgJcQACgkQaILKxv3ab8ZmRACgiZkN+YrEJznPIdTXJnteWkWJ
+W5oAoI27k+GoJWKOu/aUyGPn2xr8Ofrm
+=UO/s
+-----END PGP SIGNATURE-----
+
+--vtzGhvizbBRQ85DL--
