@@ -1,29 +1,27 @@
-Return-Path: <liuj97@gmail.com>
-Received: from mail-pa0-f54.google.com (mail-pa0-f54.google.com
- [209.85.220.54])
+Return-Path: <sebastian.hesselbarth@gmail.com>
+Received: from mail-ee0-f51.google.com (mail-ee0-f51.google.com [74.125.83.51])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0EF6E2C00AF
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 May 2013 01:58:06 +1000 (EST)
-Received: by mail-pa0-f54.google.com with SMTP id kx1so6030803pab.13
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 May 2013 08:58:04 -0700 (PDT)
-From: Jiang Liu <liuj97@gmail.com>
-To: Bjorn Helgaas <bhelgaas@google.com>,
-	Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH v3, part2 10/20] PCI,
- PPC: use hotplug-safe iterators to walk PCI buses
-Date: Sun, 26 May 2013 23:53:07 +0800
-Message-Id: <1369583597-3801-11-git-send-email-jiang.liu@huawei.com>
-In-Reply-To: <1369583597-3801-1-git-send-email-jiang.liu@huawei.com>
-References: <1369583597-3801-1-git-send-email-jiang.liu@huawei.com>
-Cc: Gavin Shan <shangw@linux.vnet.ibm.com>, Toshi Kani <toshi.kani@hp.com>,
- Jiang Liu <jiang.liu@huawei.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rjw@sisk.pl>,
- Yijing Wang <wangyijing@huawei.com>, Bill Pemberton <wfp5p@virginia.edu>,
- linux-pci@vger.kernel.org, Gu Zheng <guz.fnst@cn.fujitsu.com>,
- Paul Mackerras <paulus@samba.org>, Myron Stowe <myron.stowe@redhat.com>,
- Jiang Liu <liuj97@gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id E1DA12C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 May 2013 06:07:08 +1000 (EST)
+Received: by mail-ee0-f51.google.com with SMTP id e51so3585125eek.10
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 May 2013 13:07:04 -0700 (PDT)
+Message-ID: <51A26B62.4050009@gmail.com>
+Date: Sun, 26 May 2013 22:06:58 +0200
+From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 1/2] ARM: kirkwood: proper retain MAC address workaround
+ on DT ethernet
+References: <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
+ <1369253042-15082-1-git-send-email-sebastian.hesselbarth@gmail.com>
+ <20130525.210441.818472895703230779.davem@davemloft.net>
+In-Reply-To: <20130525.210441.818472895703230779.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: andrew@lunn.ch, jason@lakedaemon.net, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, buytenh@wantstofly.org,
+ Grant Likely <grant.likely@linaro.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,88 +31,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Enhance PPC architecture specific code to use hotplug-safe iterators
-to walk PCI buses.
+On 05/26/2013 06:04 AM, David Miller wrote:
+> From: Sebastian Hesselbarth<sebastian.hesselbarth@gmail.com>
+> Date: Wed, 22 May 2013 22:04:01 +0200
+>
+>> +			memcpy((void *)p->value, reg, 6);
+>
+> This cast is completely unnecessary, non-void to void pointer casts
+> are automatic.
+>
+> If it is necessary, because p->value is const, then you are trying
+> to change something behind the OF layer's back and need to use
+> the appropriate interface to change the property contents.
 
-Signed-off-by: Jiang Liu <jiang.liu@huawei.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Grant Likely <grant.likely@secretlab.ca>
-Cc: Bill Pemberton <wfp5p@virginia.edu>
-Cc: Yinghai Lu <yinghai@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org
----
- arch/powerpc/kernel/pci-common.c |  4 ++--
- arch/powerpc/kernel/pci_64.c     | 22 ++++++++--------------
- 2 files changed, 10 insertions(+), 16 deletions(-)
+David,
 
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index f5c5c90..56ad3a4 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -1386,7 +1386,7 @@ void __init pcibios_resource_survey(void)
- 	struct pci_bus *b;
- 
- 	/* Allocate and assign resources */
--	list_for_each_entry(b, &pci_root_buses, node)
-+	for_each_pci_root_bus(b)
- 		pcibios_allocate_bus_resources(b);
- 	pcibios_allocate_resources(0);
- 	pcibios_allocate_resources(1);
-@@ -1396,7 +1396,7 @@ void __init pcibios_resource_survey(void)
- 	 * bus available resources to avoid allocating things on top of them
- 	 */
- 	if (!pci_has_flag(PCI_PROBE_ONLY)) {
--		list_for_each_entry(b, &pci_root_buses, node)
-+		for_each_pci_root_bus(b)
- 			pcibios_reserve_legacy_regions(b);
- 	}
- 
-diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-index 873050d..d71249b 100644
---- a/arch/powerpc/kernel/pci_64.c
-+++ b/arch/powerpc/kernel/pci_64.c
-@@ -207,10 +207,8 @@ void pcibios_setup_phb_io_space(struct pci_controller *hose)
- long sys_pciconfig_iobase(long which, unsigned long in_bus,
- 			  unsigned long in_devfn)
- {
--	struct pci_controller* hose;
--	struct list_head *ln;
--	struct pci_bus *bus = NULL;
--	struct device_node *hose_node;
-+	struct pci_controller* hose = NULL;
-+	struct pci_bus *bus;
- 
- 	/* Argh ! Please forgive me for that hack, but that's the
- 	 * simplest way to get existing XFree to not lockup on some
-@@ -229,19 +227,15 @@ long sys_pciconfig_iobase(long which, unsigned long in_bus,
- 	/* That syscall isn't quite compatible with PCI domains, but it's
- 	 * used on pre-domains setup. We return the first match
- 	 */
--
--	for (ln = pci_root_buses.next; ln != &pci_root_buses; ln = ln->next) {
--		bus = pci_bus_b(ln);
--		if (in_bus >= bus->number && in_bus <= bus->busn_res.end)
-+	for_each_pci_root_bus(bus)
-+		if (in_bus >= bus->number && in_bus <= bus->busn_res.end) {
-+			hose = pci_bus_to_host(bus);
-+			pci_bus_put(bus);
- 			break;
--		bus = NULL;
--	}
--	if (bus == NULL || bus->dev.of_node == NULL)
-+		}
-+	if (hose == NULL)
- 		return -ENODEV;
- 
--	hose_node = bus->dev.of_node;
--	hose = PCI_DN(hose_node)->phb;
--
- 	switch (which) {
- 	case IOBASE_BRIDGE_NUMBER:
- 		return (long)hose->first_busno;
--- 
-1.8.1.2
+good you mention it. I added Grant on Cc and will give a short
+sum-up why I casted the const from property->value away here.
+
+Maybe I overlooked the API for modifying the DT property but as
+far as I've seen - there is no API for modifying it. And yes,
+you are right, it is kind of an abuse of DT here.
+
+As Kirkwoods loose their MAC address on clock gating, I was looking
+for a place to store it early. (a) DT property "local-mac-address"
+looked as a good place as it will allow the driver to find it without
+any extra code. Of course, I am doing severaly sanity checks if it is
+safe to overwrite it, i.e. no other MAC set, property is there, long
+enough.
+
+If Grant also NACKs modifying the DT we basically have two more options
+left for Kirkwood: (b) have MAC stored early in two global arrays in
+board init and reference that from mv643xx_eth or (c) leave the clock
+ungated unconditionally on all Kirkwoods.
+
+I can live with all three, just name it and I prepare a final patch set.
+
+Sebastian
