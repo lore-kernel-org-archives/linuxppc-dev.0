@@ -1,23 +1,23 @@
-Return-Path: <pbonzini@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 314682C02FF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2013 00:42:07 +1000 (EST)
-Message-ID: <51A370AF.4090208@redhat.com>
-Date: Mon, 27 May 2013 16:41:51 +0200
-From: Paolo Bonzini <pbonzini@redhat.com>
-MIME-Version: 1.0
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH 3/4] KVM: PPC: Add support for IOMMU in-kernel handling
-References: <1369105607-20957-4-git-send-email-aik@ozlabs.ru>
- <1369256817.1374.29@scott-Lenovo-G560>
- <20130525024524.GA6112@boomeroo.fritz.box> <51A33418.40909@redhat.com>
- <51A36D28.7090202@ozlabs.ru>
-In-Reply-To: <51A36D28.7090202@ozlabs.ru>
-Content-Type: text/plain; charset=KOI8-R
-Cc: kvm@vger.kernel.org, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Scott Wood <scottwood@freescale.com>,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (unknown
+ [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
+ by ozlabs.org (Postfix) with ESMTP id DF57A2C02EE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2013 06:19:02 +1000 (EST)
+Date: Mon, 27 May 2013 13:18:57 -0700 (PDT)
+Message-Id: <20130527.131857.945196320286011406.davem@davemloft.net>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH 1/2] ARM: kirkwood: proper retain MAC address
+ workaround on DT ethernet
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1369655404.3557.33.camel@pasglop>
+References: <1369647565.3557.28.camel@pasglop> <51A33447.80305@gmail.com>
+ <1369655404.3557.33.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: andrew@lunn.ch, jason@lakedaemon.net, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, buytenh@wantstofly.org, grant.likely@linaro.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ sebastian.hesselbarth@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,46 +27,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Il 27/05/2013 16:26, Alexey Kardashevskiy ha scritto:
-> On 05/27/2013 08:23 PM, Paolo Bonzini wrote:
->> Il 25/05/2013 04:45, David Gibson ha scritto:
->>>>> +	case KVM_CREATE_SPAPR_TCE_IOMMU: {
->>>>> +		struct kvm_create_spapr_tce_iommu create_tce_iommu;
->>>>> +		struct kvm *kvm = filp->private_data;
->>>>> +
->>>>> +		r = -EFAULT;
->>>>> +		if (copy_from_user(&create_tce_iommu, argp,
->>>>> +				sizeof(create_tce_iommu)))
->>>>> +			goto out;
->>>>> +		r = kvm_vm_ioctl_create_spapr_tce_iommu(kvm,
->>>>> &create_tce_iommu);
->>>>> +		goto out;
->>>>> +	}
->>
->> Would it make sense to make this the only interface for creating TCEs?
->> That is, pass both a window_size and an IOMMU group id (or e.g. -1 for
->> no hardware IOMMU usage), and have a single ioctl for both cases?
->> There's some duplicated code between kvm_vm_ioctl_create_spapr_tce and
->> kvm_vm_ioctl_create_spapr_tce_iommu.
-> 
-> Just few bits. Is there really much sense in making one function from those
-> two? I tried, looked a bit messy.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Mon, 27 May 2013 21:50:04 +1000
 
-Cannot really tell without the userspace bits.  But ioctl proliferation
-is what the device and one_reg APIs were supposed to avoid...
-
->> KVM_CREATE_SPAPR_TCE could stay for backwards-compatibility, or you
->> could just use a new capability and drop the old ioctl.
+> It would be handy to be able to just do something like
 > 
-> The old capability+ioctl already exist for quite a while and few QEMU
-> versions supporting it were released so we do not want just drop it. So
-> then what is the benefit of having a new interface with support of both types?
+> 	of_set_property(node, name, ptr, len);
 > 
->>  I'm not sure
->> whether you're already considering the ABI to be stable for kvmppc.
-> 
-> Is any bit of KVM using it? Cannot see from Documentation/ABI.
+> However, that wouldn't help much with the allocation/leak problem,
+> though at least it would be easier to use. It could also *try* to re-use
+> the current allocation if the new content is of smaller or equal size.
 
-I mean the userspace ABI (ioctls).
-
-Paolo
+And this is so much better of an interface because it allows the
+OF implementation to decide how to deal with memory allocation
+and freeing.
