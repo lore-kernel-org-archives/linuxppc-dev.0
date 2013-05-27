@@ -1,25 +1,27 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.8])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A65B32C02FA
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 May 2013 22:47:45 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/2] ARM: kirkwood: proper retain MAC address workaround
- on DT ethernet
-Date: Mon, 27 May 2013 14:47:35 +0200
-Message-ID: <2255648.0KEmXfjCx5@wuerfel>
-In-Reply-To: <1369655404.3557.33.camel@pasglop>
-References: <1369253042-15082-1-git-send-email-sebastian.hesselbarth@gmail.com>
- <51A33447.80305@gmail.com> <1369655404.3557.33.camel@pasglop>
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pd0-f178.google.com (mail-pd0-f178.google.com
+ [209.85.192.178])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6167D2C02F8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2013 00:26:58 +1000 (EST)
+Received: by mail-pd0-f178.google.com with SMTP id w11so3623714pde.37
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 May 2013 07:26:56 -0700 (PDT)
+Message-ID: <51A36D28.7090202@ozlabs.ru>
+Date: Tue, 28 May 2013 00:26:48 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: andrew@lunn.ch, jason@lakedaemon.net, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org,
- grant.likely@linaro.org, David Miller <davem@davemloft.net>,
- buytenh@wantstofly.org,
- Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+To: Paolo Bonzini <pbonzini@redhat.com>
+Subject: Re: [PATCH 3/4] KVM: PPC: Add support for IOMMU in-kernel handling
+References: <1369105607-20957-4-git-send-email-aik@ozlabs.ru>
+ <1369256817.1374.29@scott-Lenovo-G560>
+ <20130525024524.GA6112@boomeroo.fritz.box> <51A33418.40909@redhat.com>
+In-Reply-To: <51A33418.40909@redhat.com>
+Content-Type: text/plain; charset=KOI8-R
+Cc: kvm@vger.kernel.org, Alexander Graf <agraf@suse.de>,
+ kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Scott Wood <scottwood@freescale.com>,
+ linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,13 +31,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday 27 May 2013 21:50:04 Benjamin Herrenschmidt wrote:
-> However, that wouldn't help much with the allocation/leak problem,
-> though at least it would be easier to use. It could also *try* to re-use
-> the current allocation if the new content is of smaller or equal size.
+On 05/27/2013 08:23 PM, Paolo Bonzini wrote:
+> Il 25/05/2013 04:45, David Gibson ha scritto:
+>>>> +	case KVM_CREATE_SPAPR_TCE_IOMMU: {
+>>>> +		struct kvm_create_spapr_tce_iommu create_tce_iommu;
+>>>> +		struct kvm *kvm = filp->private_data;
+>>>> +
+>>>> +		r = -EFAULT;
+>>>> +		if (copy_from_user(&create_tce_iommu, argp,
+>>>> +				sizeof(create_tce_iommu)))
+>>>> +			goto out;
+>>>> +		r = kvm_vm_ioctl_create_spapr_tce_iommu(kvm,
+>>>> &create_tce_iommu);
+>>>> +		goto out;
+>>>> +	}
+> 
+> Would it make sense to make this the only interface for creating TCEs?
+> That is, pass both a window_size and an IOMMU group id (or e.g. -1 for
+> no hardware IOMMU usage), and have a single ioctl for both cases?
+> There's some duplicated code between kvm_vm_ioctl_create_spapr_tce and
+> kvm_vm_ioctl_create_spapr_tce_iommu.
 
-I thought that dtc tried to aggressively save space by folding identical
-strings. If you tried to reuse a property that had its contents shared
-with another one, you would get interesting results I guess.
+Just few bits. Is there really much sense in making one function from those
+two? I tried, looked a bit messy.
 
-	Arnd
+> KVM_CREATE_SPAPR_TCE could stay for backwards-compatibility, or you
+> could just use a new capability and drop the old ioctl.
+
+The old capability+ioctl already exist for quite a while and few QEMU
+versions supporting it were released so we do not want just drop it. So
+then what is the benefit of having a new interface with support of both types?
+
+>  I'm not sure
+> whether you're already considering the ABI to be stable for kvmppc.
+
+Is any bit of KVM using it? Cannot see from Documentation/ABI.
+
+
+-- 
+Alexey
