@@ -1,27 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id ABAF62C02C6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 May 2013 21:52:31 +1000 (EST)
-Message-ID: <1369655404.3557.33.camel@pasglop>
-Subject: Re: [PATCH 1/2] ARM: kirkwood: proper retain MAC address workaround
- on DT ethernet
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-Date: Mon, 27 May 2013 21:50:04 +1000
-In-Reply-To: <51A33447.80305@gmail.com>
-References: <1369253042-15082-1-git-send-email-sebastian.hesselbarth@gmail.com>
- <20130525.210441.818472895703230779.davem@davemloft.net>
- <51A26B62.4050009@gmail.com>
- <20130527.022339.791886107453761860.davem@davemloft.net>
- <1369647565.3557.28.camel@pasglop> <51A33447.80305@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: andrew@lunn.ch, jason@lakedaemon.net, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, buytenh@wantstofly.org, grant.likely@linaro.org,
- linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
- linux-arm-kernel@lists.infradead.org
+Return-Path: <andriy.shevchenko@linux.intel.com>
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ by ozlabs.org (Postfix) with ESMTP id 183C12C01FC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 May 2013 22:14:51 +1000 (EST)
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: linux-kernel@vger.kernel.org, Vinod Koul <vinod.koul@intel.com>,
+ Dan Williams <djbw@fb.com>
+Subject: [PATCH 00/12] dma: various minor clean ups for slave drivers
+Date: Mon, 27 May 2013 15:14:30 +0300
+Message-Id: <1369656882-25241-1-git-send-email-andriy.shevchenko@linux.intel.com>
+Cc: Stephen Warren <swarren@wwwdotorg.org>, Shawn Guo <shawn.guo@linaro.org>,
+ Zhang Wei <zw@zh-kernel.org>, linux-tegra@vger.kernel.org,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,33 +21,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-05-27 at 12:24 +0200, Sebastian Hesselbarth wrote:
-> > There is an of_update_property(), we could change the name though,
-> yours
-> > is nicer :-)
-> 
-> Ben, David,
-> 
-> I had a quick look at sparc's of_set_property. Nothing special except
-> it
-> depends on OF_DYNAMIC at some place. Using of_update_property instead
-> should be the correct function to use. Thanks for the hint, I'll
-> update
-> the patches accordingly and send v5 hopefully by today.
+Here is a set of small independent patches that clean up or fix minor things
+across DMA slave drivers.
 
-The only thing is that of_update_property() is a bit awkward to use,
-requiring the caller to provide an allocated struct property with
-associated allocated content. It also leaks the old property which
-is annoying but we haven't sorted out how to deal with allocation
-of properties and property content yet.
+Andy Shevchenko (12):
+  imx-sdma: remove useless variable
+  mxs-dma: remove useless variable
+  edma: no need to assign residue to 0 explicitly
+  ep93xx_dma: remove useless use of lock
+  fsldma: remove useless use of lock
+  mmp_pdma: remove useless use of lock
+  mpc512x_dma: remove useless use of lock
+  pch_dma: remove useless use of lock
+  tegra20-apb-dma: remove useless use of lock
+  ipu_idmac: re-use dma_cookie_status()
+  mmp_tdma: set cookies as well when asked for tx status
+  txx9dmac: return DMA_SUCCESS immediately from device_tx_status()
 
-It would be handy to be able to just do something like
+ drivers/dma/edma.c            |  2 --
+ drivers/dma/ep93xx_dma.c      | 10 +---------
+ drivers/dma/fsldma.c          | 10 +---------
+ drivers/dma/imx-sdma.c        |  9 +++------
+ drivers/dma/ipu/ipu_idmac.c   |  5 +----
+ drivers/dma/mmp_pdma.c        | 10 +---------
+ drivers/dma/mmp_tdma.c        |  3 ++-
+ drivers/dma/mpc512x_dma.c     | 10 +---------
+ drivers/dma/mxs-dma.c         |  4 +---
+ drivers/dma/pch_dma.c         |  9 +--------
+ drivers/dma/tegra20-apb-dma.c |  8 +++-----
+ drivers/dma/txx9dmac.c        | 13 ++++++-------
+ 12 files changed, 21 insertions(+), 72 deletions(-)
 
-	of_set_property(node, name, ptr, len);
-
-However, that wouldn't help much with the allocation/leak problem,
-though at least it would be easier to use. It could also *try* to re-use
-the current allocation if the new content is of smaller or equal size.
-
-Cheers,
-Ben.
+-- 
+1.8.2.rc0.22.gb3600c3
