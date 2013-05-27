@@ -1,25 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 5B4FA2C030A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2013 08:59:55 +1000 (EST)
-Message-ID: <1369691284.3557.34.camel@pasglop>
-Subject: Re: [PATCH 1/2] ARM: kirkwood: proper retain MAC address workaround
- on DT ethernet
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Miller <davem@davemloft.net>
-Date: Tue, 28 May 2013 07:48:04 +1000
-In-Reply-To: <20130527.131857.945196320286011406.davem@davemloft.net>
-References: <1369647565.3557.28.camel@pasglop> <51A33447.80305@gmail.com>
- <1369655404.3557.33.camel@pasglop>
- <20130527.131857.945196320286011406.davem@davemloft.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: andrew@lunn.ch, jason@lakedaemon.net, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, buytenh@wantstofly.org, grant.likely@linaro.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- sebastian.hesselbarth@gmail.com
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] powerpc,
+ perf: Ignore separate BHRB privilege state filter request
+In-reply-to: <51A32F1F.5020109@linux.vnet.ibm.com>
+References: <1369201667-9048-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1369201667-9048-2-git-send-email-khandual@linux.vnet.ibm.com>
+ <1369206855.12874.9.camel@concordia> <519C88D9.30009@linux.vnet.ibm.com>
+ <51A32F1F.5020109@linux.vnet.ibm.com>
+Date: Tue, 28 May 2013 09:30:10 +1000
+Message-ID: <2684.1369697410@ale.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,23 +20,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-05-27 at 13:18 -0700, David Miller wrote:
-> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Date: Mon, 27 May 2013 21:50:04 +1000
-> 
-> > It would be handy to be able to just do something like
-> > 
-> >       of_set_property(node, name, ptr, len);
-> > 
-> > However, that wouldn't help much with the allocation/leak problem,
-> > though at least it would be easier to use. It could also *try* to re-use
-> > the current allocation if the new content is of smaller or equal size.
-> 
-> And this is so much better of an interface because it allows the
-> OF implementation to decide how to deal with memory allocation
-> and freeing.
+Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote:
 
-Absolutely, I'm not arguing that point.
+> On 05/22/2013 02:29 PM, Anshuman Khandual wrote:
+> >>
+> >> Your description from patch 0 should be here.
+> > Does it sound better ?
+> > 
+> >>
+> >>> -	if ((br_privilege != 7) && (br_privilege != 0))
+> >>> -		return -1;
+> >>> +
+> >>> +	if (br_privilege)
+> >>> +		pr_info("BHRB privilege state filter request %llx ignored\n",
+> >>> +								br_privilege);
+> >>
+> >> Don't do that. Ignoring the br_privilege is either the right thing to do
+> >> in which case we do it and print nothing,
+> > 
+> > 
+> > I thought the informational print would at least make the user aware
+> > of the fact that the separate filter request for BHRB went ignored.
+> > Can we add this some where in the documentation ?
+> 
+> So, what we decide here ? We will just ignore any separate BHRB
+> privilege state filter request without printing any informational
+> event or warning ?
 
-Cheers,
-Ben.
+Printing it on the console is pointless.  No one will read it.  
+
+If it's doing the filtering, then just drop the printk.  
+
+	/* BHRB and regular PMU events share the same privilege state
+	 * filter configuration. BHRB is always recorded along with a
+	 * regular PMU event. As the privilege state filter is handled
+	 * in the basic PMC configuration of the accompanying regular
+	 * PMU event, we ignore any separate BHRB specific request.
+	 */
+
+That updated comment I think make it clear.  
+
+So drop the printk and add the comment, and it's OK with me.
+
+Mikey
