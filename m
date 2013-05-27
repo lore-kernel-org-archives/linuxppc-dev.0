@@ -1,22 +1,24 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (unknown
- [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
- by ozlabs.org (Postfix) with ESMTP id 52EF62C02E9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2013 08:17:58 +1000 (EST)
-Date: Mon, 27 May 2013 15:17:44 -0700 (PDT)
-Message-Id: <20130527.151744.1526437556583356156.davem@davemloft.net>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH 1/2] ARM: kirkwood: proper retain MAC address
- workaround on DT ethernet
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1369691406.3557.35.camel@pasglop>
-References: <1369655404.3557.33.camel@pasglop> <2255648.0KEmXfjCx5@wuerfel>
- <1369691406.3557.35.camel@pasglop>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 5B4FA2C030A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2013 08:59:55 +1000 (EST)
+Message-ID: <1369691284.3557.34.camel@pasglop>
+Subject: Re: [PATCH 1/2] ARM: kirkwood: proper retain MAC address workaround
+ on DT ethernet
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Miller <davem@davemloft.net>
+Date: Tue, 28 May 2013 07:48:04 +1000
+In-Reply-To: <20130527.131857.945196320286011406.davem@davemloft.net>
+References: <1369647565.3557.28.camel@pasglop> <51A33447.80305@gmail.com>
+ <1369655404.3557.33.camel@pasglop>
+ <20130527.131857.945196320286011406.davem@davemloft.net>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: andrew@lunn.ch, jason@lakedaemon.net, arnd@arndb.de, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- grant.likely@linaro.org, linuxppc-dev@lists.ozlabs.org, buytenh@wantstofly.org,
+Cc: andrew@lunn.ch, jason@lakedaemon.net, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, buytenh@wantstofly.org, grant.likely@linaro.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
  sebastian.hesselbarth@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,23 +29,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 28 May 2013 07:50:06 +1000
-
-> On Mon, 2013-05-27 at 14:47 +0200, Arnd Bergmann wrote:
->> On Monday 27 May 2013 21:50:04 Benjamin Herrenschmidt wrote:
->> > However, that wouldn't help much with the allocation/leak problem,
->> > though at least it would be easier to use. It could also *try* to re-use
->> > the current allocation if the new content is of smaller or equal size.
->> 
->> I thought that dtc tried to aggressively save space by folding identical
->> strings. If you tried to reuse a property that had its contents shared
->> with another one, you would get interesting results I guess.
+On Mon, 2013-05-27 at 13:18 -0700, David Miller wrote:
+> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Date: Mon, 27 May 2013 21:50:04 +1000
 > 
-> It used to be only property names, unless that has changed in recent
-> dtc. But that's a good point, we probably want a flag in struct property
-> like we have for nodes, indicating whether it comes from the original
-> fdt data pool or not.
+> > It would be handy to be able to just do something like
+> > 
+> >       of_set_property(node, name, ptr, len);
+> > 
+> > However, that wouldn't help much with the allocation/leak problem,
+> > though at least it would be easier to use. It could also *try* to re-use
+> > the current allocation if the new content is of smaller or equal size.
+> 
+> And this is so much better of an interface because it allows the
+> OF implementation to decide how to deal with memory allocation
+> and freeing.
 
-This is similar to what the "OF_IS_DYNAMIC()" thing on sparc
-indicates.
+Absolutely, I'm not arguing that point.
+
+Cheers,
+Ben.
