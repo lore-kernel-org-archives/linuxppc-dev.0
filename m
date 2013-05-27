@@ -1,23 +1,20 @@
-Return-Path: <B32167@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D2FFE2C02B1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 May 2013 16:55:34 +1000 (EST)
-From: Jain Priyanka-B32167 <B32167@freescale.com>
-To: tiejun.chen <tiejun.chen@windriver.com>
-Subject: RE: [PATCH] powerpc/32bit,PREEMPT:Load TI_FLAGS to check NEED_RESCHED
-Date: Mon, 27 May 2013 06:55:09 +0000
-Message-ID: <AC83832D6324604BB08FAE5A33553F190B3B7A4C@039-SN2MPN1-012.039d.mgd.msft.net>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 669992C02EC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 May 2013 17:13:05 +1000 (EST)
+Message-ID: <1369638775.3557.12.camel@pasglop>
+Subject: Re: [PATCH] powerpc/32bit,PREEMPT:Load TI_FLAGS to check NEED_RESCHED
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Priyanka Jain <Priyanka.Jain@freescale.com>
+Date: Mon, 27 May 2013 17:12:55 +1000
+In-Reply-To: <1369636076-2644-1-git-send-email-Priyanka.Jain@freescale.com>
 References: <1369636076-2644-1-git-send-email-Priyanka.Jain@freescale.com>
- <51A300F4.80103@windriver.com>
-In-Reply-To: <51A300F4.80103@windriver.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: scottwood@freescale.com, "tiejun.chen" <tiejun.chen@windriver.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,62 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQpJZiB3ZSBnbyBzb21lIG1vcmUgbGluZXMgdXAgaW4gdGhlIHNhbWUgZmlsZSwgdGhlIGNvZGUg
-aXMgDQoNCnJlc3VtZV9rZXJuZWw6DQogICAgICAgIC8qIGNoZWNrIGN1cnJlbnRfdGhyZWFkX2lu
-Zm8sIF9USUZfRU1VTEFURV9TVEFDS19TVE9SRSAqLw0KICAgICAgICBDVVJSRU5UX1RIUkVBRF9J
-TkZPKHI5LCByMSkNCiAgICAgICAgbHd6ICAgICByOCxUSV9GTEFHUyhyOSkNCiAgICAgICAgYW5k
-aXMuICByOCxyOCxfVElGX0VNVUxBVEVfU1RBQ0tfU1RPUkVAaA0KICAgICAgICBiZXErICAgIDFm
-DQotLS0NCg0KQWZ0ZXIgZXhlY3V0aW9uIG9mIGFuZGlzLiBJbnN0cnVjdGlvbiwgcjggY29udGFp
-bnMgbG9naWNhbCBBTkQgcmVzdWx0IG9mIHI4IGFuZCBfVElGX0VNVUxBVEVfU1RBQ0tfU1RPUkUg
-YW5kIGl0IGFsc28gc2V0cyB0aGUgY29uZGl0aW9uIHJlZ2lzdGVyIGZsYWcuDQpJZiBiZXErIGlz
-IHRydWUsIGl0IHdpbGwganVtcCB0byBsYWJlbCAnMScgd2hpY2ggcG9pbnRzIHRvIHRoZSBjb2Rl
-IGNvbnRhaW5lZCBpbiB0aGUgcGF0Y2guIEluIHRoaXMgcGFydGljdWxhciBzY2VuYXJpbywgcjgg
-ZG9lcyBub3QgY29udGFpbnMgdGhlIGFwcHJvcHJpYXRlIHZhbHVlLg0KDQpSZWdhcmRzDQpQcml5
-YW5rYQ0KDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogdGllanVuLmNo
-ZW4gW21haWx0bzp0aWVqdW4uY2hlbkB3aW5kcml2ZXIuY29tXQ0KPiBTZW50OiBNb25kYXksIE1h
-eSAyNywgMjAxMyAxMjoxNSBQTQ0KPiBUbzogSmFpbiBQcml5YW5rYS1CMzIxNjcNCj4gQ2M6IGxp
-bnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBXb29kIFNjb3R0LUIwNzQyMQ0KPiBTdWJqZWN0
-OiBSZTogW1BBVENIXSBwb3dlcnBjLzMyYml0LFBSRUVNUFQ6TG9hZCBUSV9GTEFHUyB0byBjaGVj
-aw0KPiBORUVEX1JFU0NIRUQNCj4gDQo+IE9uIDA1LzI3LzIwMTMgMDI6MjcgUE0sIFByaXlhbmth
-IEphaW4gd3JvdGU6DQo+ID4gQWRkIGluc3RydWN0aW9uIHRvIGxvYWQgVElfRkxBR1MgaW4gcjgN
-Cj4gPg0KPiA+IFdoaWxlIHJldHVybmluZyBmcm9tIGV4Y2VwdGlvbiBoYW5kbGluZyBpbiBjYXNl
-IG9mIFBSRUVNUFQgZW5hYmxlZCwNCj4gPiBfVElGX05FRURfUkVTQ0hFRCBiaXQgaXMgY2hlY2tl
-ZCBpbiBUSV9GTEFHUyAodGhyZWFkX2luZm8gZmxhZykgb2YNCj4gPiBjdXJyZW50IHRhc2suIE9u
-bHkgaWYgdGhpcyBiaXQgaXMgc2V0LCBpdCBzaG91bGQgY29udGludWUgd2l0aCB0aGUNCj4gPiBw
-cm9jZXNzIG9mIGNhbGxpbmcgcHJlZW1wdF9zY2hlZHVsZV9pcnEoKSB0byBzY2hlZHVsZSBoaWdo
-ZXN0IHByaW9yaXR5DQo+ID4gdGFzayBpZiBhdmFpbGFibGUuDQo+ID4NCj4gPiBDdXJyZW50IGNv
-ZGUgYXNzdW1lcyB0aGF0IHI4IGNvbnRhaW5zIFRJX0ZMQUdTIGFuZCBjaGVjayB0aGlzIGZvcg0K
-PiA+IF9USUZfTkVFRF9SRVNDSEVELCBidXQgYXMgcjggaXMgbW9kaWZpZWQgaW4gdGhlIGNvZGUg
-d2hpY2ggZXhlY3V0ZXMNCj4gPiBiZWZvcmUNCj4gDQo+IENvdWxkIHlvdSBlbGFib3JhdGUgdGhp
-cyBzY2VuYXJpbz8gQXMgSSB0YWtlIGEgbG9vayBhdCB0aGlzIHBhdGg6DQo+IA0KPiAJLi4uDQo+
-ICAgICAgICAgIC8qIENsZWFyIF9USUZfRU1VTEFURV9TVEFDS19TVE9SRSBmbGFnICovDQo+ICAg
-ICAgICAgIGxpcyAgICAgcjExLF9USUZfRU1VTEFURV9TVEFDS19TVE9SRUBoDQo+ICAgICAgICAg
-IGFkZGkgICAgcjUscjksVElfRkxBR1MNCj4gMDogICAgICBsd2FyeCAgIHI4LDAscjUNCj4gICAg
-ICAgICAgYW5kYyAgICByOCxyOCxyMTENCj4gI2lmZGVmIENPTkZJR19JQk00MDVfRVJSNzcNCj4g
-ICAgICAgICAgZGNidCAgICAwLHI1DQo+ICNlbmRpZg0KPiAgICAgICAgICBzdHdjeC4gIHI4LDAs
-cjUNCj4gICAgICAgICAgYm5lLSAgICAwYg0KPiAxOg0KPiANCj4gI2lmZGVmIENPTkZJR19QUkVF
-TVBUDQo+ICAgICAgICAgIC8qIGNoZWNrIGN1cnJlbnRfdGhyZWFkX2luZm8tPnByZWVtcHRfY291
-bnQgKi8NCj4gICAgICAgICAgbHd6ICAgICByMCxUSV9QUkVFTVBUKHI5KQ0KPiAgICAgICAgICBj
-bXB3aSAgIDAscjAsMCAgICAgICAgICAvKiBpZiBub24temVybywganVzdCByZXN0b3JlIHJlZ3Mg
-YW5kDQo+IHJldHVybiAqLw0KPiAgICAgICAgICBibmUgICAgIHJlc3RvcmUNCj4gICAgICAgICAg
-YW5kaS4gICByOCxyOCxfVElGX05FRURfUkVTQ0hFRA0KPiAJLi4uDQo+IA0KPiBXaGVyZSBpcyBS
-OCBjbG9iYmVyZWQ/DQo+IA0KPiBUaWVqdW4NCj4gDQo+ID4gdGhpcyBjaGVjaywgcjggbm8gbG9u
-Z2VyIGNvbnRhaW5zIHRoZSBleHBlY3RlZCBUSV9GTEFHUyBpbmZvcm1hdGlvbi4NCj4gPg0KPiA+
-IEFzIGEgcmVzdWx0IGNoZWNrIGZvciBjb21wYXJpc29uIHdpdGggX1RJRl9ORUVEX1JFU0NIRUQg
-d2FzIGZhaWxpbmcNCj4gPiBldmVuIGlmIE5FRURfUkVTQ0hFRCBiaXQgaXMgc2V0IGluIHRoZSBj
-dXJyZW50IHRocmVhZF9pbmZvIGZsYWcuIER1ZQ0KPiA+IHRvIHRoaXMsDQo+ID4gcHJlZW1wdF9z
-Y2hlZHVsZV9pcnEoKSBhbmQgaW4gdHVybiBzY2hlZHVsZXIgd2FzIG5vdCBnZXR0aW5nIGNhbGxl
-ZA0KPiA+IGV2ZW4gaWYgaGlnaGVzdCBwcmlvcml0eSB0YXNrIGlzIHJlYWR5IGZvciBleGVjdXRp
-b24uDQo+ID4NCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IFByaXlhbmthIEphaW4gPFByaXlhbmth
-LkphaW5AZnJlZXNjYWxlLmNvbT4NCj4gPiAtLS0NCj4gPiAgIGFyY2gvcG93ZXJwYy9rZXJuZWwv
-ZW50cnlfMzIuUyB8ICAgIDEgKw0KPiA+ICAgMSBmaWxlcyBjaGFuZ2VkLCAxIGluc2VydGlvbnMo
-KyksIDAgZGVsZXRpb25zKC0pDQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2tl
-cm5lbC9lbnRyeV8zMi5TDQo+ID4gYi9hcmNoL3Bvd2VycGMva2VybmVsL2VudHJ5XzMyLlMgaW5k
-ZXggZDIyZTczZS4uMDIzOWM3ZiAxMDA2NDQNCj4gPiAtLS0gYS9hcmNoL3Bvd2VycGMva2VybmVs
-L2VudHJ5XzMyLlMNCj4gPiArKysgYi9hcmNoL3Bvd2VycGMva2VybmVsL2VudHJ5XzMyLlMNCj4g
-PiBAQCAtODg3LDYgKzg4Nyw3IEBAIHJlc3VtZV9rZXJuZWw6DQo+ID4gICAjaWZkZWYgQ09ORklH
-X1BSRUVNUFQNCj4gPiAgIAkvKiBjaGVjayBjdXJyZW50X3RocmVhZF9pbmZvLT5wcmVlbXB0X2Nv
-dW50ICovDQo+ID4gICAJbHd6CXIwLFRJX1BSRUVNUFQocjkpDQo+ID4gKwlsd3oJcjgsVElfRkxB
-R1MocjkpDQo+ID4gICAJY21wd2kJMCxyMCwwCQkvKiBpZiBub24temVybywganVzdCByZXN0b3Jl
-IHJlZ3MgYW5kDQo+IHJldHVybiAqLw0KPiA+ICAgCWJuZQlyZXN0b3JlDQo+ID4gICAJYW5kaS4J
-cjgscjgsX1RJRl9ORUVEX1JFU0NIRUQNCj4gPg0KPiANCg0K
+On Mon, 2013-05-27 at 11:57 +0530, Priyanka Jain wrote:
+> Add instruction to load TI_FLAGS in r8
+>     
+> While returning from exception handling in case of PREEMPT enabled,
+> _TIF_NEED_RESCHED bit is checked in TI_FLAGS (thread_info flag) of
+> current
+> task. Only if this bit is set, it should continue with the process of
+> calling preempt_schedule_irq() to schedule highest priority task if
+> available.
+>
+> Current code assumes that r8 contains TI_FLAGS and check this for
+> _TIF_NEED_RESCHED, but as r8 is modified in the code which executes
+> before
+> this check, r8 no longer contains the expected TI_FLAGS information.
+
+Hrm, the code was supposed to still have TI_FLAGS in r8 and mostly does
+until the 
+
+	andis.	r8,r8,_TIF_EMULATE_STACK_STORE@h
+
+Was added which clobbers it.
+
+Can't we just fix the above to use a different destination register ?
+r0 looks fair game at this point...
+ 
+> As a result check for comparison with _TIF_NEED_RESCHED was failing
+> even if
+> NEED_RESCHED bit is set in the current thread_info flag. Due to this,
+> preempt_schedule_irq() and in turn scheduler was not getting called
+> even if
+> highest priority task is ready for execution.
+
+Ben.
