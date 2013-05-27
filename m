@@ -1,23 +1,42 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <benh@au1.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 138712C007E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 May 2013 19:36:56 +1000 (EST)
-Message-ID: <1369647373.3557.25.camel@pasglop>
-Subject: Re: [PATCH v3-resend 07/11] powerpc: uaccess
- s/might_sleep/might_fault/
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Date: Mon, 27 May 2013 19:36:13 +1000
-In-Reply-To: <1369577426-26721-7-git-send-email-mst@redhat.com>
-References: <1369575487-26176-1-git-send-email-mst@redhat.com>
- <1369577426-26721-7-git-send-email-mst@redhat.com>
+ (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A13682C029D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 May 2013 19:38:46 +1000 (EST)
+Received: from /spool/local
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
+ Mon, 27 May 2013 19:29:49 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id B2F022BB0054
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 May 2013 19:38:33 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r4R9OJPQ14221468
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 May 2013 19:24:19 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r4R9cWZE005931
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 May 2013 19:38:33 +1000
+Message-ID: <1369647511.3557.27.camel@pasglop>
+Subject: Re: [PATCH 1/2] ARM: kirkwood: proper retain MAC address workaround
+ on DT ethernet
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Date: Mon, 27 May 2013 19:38:31 +1000
+In-Reply-To: <51A26B62.4050009@gmail.com>
+References: <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
+ <1369253042-15082-1-git-send-email-sebastian.hesselbarth@gmail.com>
+ <20130525.210441.818472895703230779.davem@davemloft.net>
+ <51A26B62.4050009@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Arnd Bergmann <arnd@arndb.de>, Peter Zijlstra <peterz@infradead.org>,
- linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: andrew@lunn.ch, jason@lakedaemon.net, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, buytenh@wantstofly.org,
+ Grant Likely <grant.likely@linaro.org>, linuxppc-dev@lists.ozlabs.org,
+ David Miller <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,101 +46,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2013-05-26 at 17:31 +0300, Michael S. Tsirkin wrote:
-> The only reason uaccess routines might sleep
-> is if they fault. Make this explicit.
-> 
-> Arnd Bergmann suggested that the following code
-> 	if (!is_kernel_addr((unsigned long)__pu_addr))
-> 		might_fault();
-> can be further simplified by adding a version of might_fault
-> that includes the kernel addr check.
-> 
-> Will be considered as a further optimization in future.
-> 
-> Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+On Sun, 2013-05-26 at 22:06 +0200, Sebastian Hesselbarth wrote:
 
-As long as Peter is happy with the general semantics of might_fault()
-and you have at least build-tested it, then I'm happy.
-
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-> ---
->  arch/powerpc/include/asm/uaccess.h | 16 ++++++++--------
->  1 file changed, 8 insertions(+), 8 deletions(-)
+> good you mention it. I added Grant on Cc and will give a short
+> sum-up why I casted the const from property->value away here.
 > 
-> diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-> index 4db4959..9485b43 100644
-> --- a/arch/powerpc/include/asm/uaccess.h
-> +++ b/arch/powerpc/include/asm/uaccess.h
-> @@ -178,7 +178,7 @@ do {								\
->  	long __pu_err;						\
->  	__typeof__(*(ptr)) __user *__pu_addr = (ptr);		\
->  	if (!is_kernel_addr((unsigned long)__pu_addr))		\
-> -		might_sleep();					\
-> +		might_fault();					\
->  	__chk_user_ptr(ptr);					\
->  	__put_user_size((x), __pu_addr, (size), __pu_err);	\
->  	__pu_err;						\
-> @@ -188,7 +188,7 @@ do {								\
->  ({									\
->  	long __pu_err = -EFAULT;					\
->  	__typeof__(*(ptr)) __user *__pu_addr = (ptr);			\
-> -	might_sleep();							\
-> +	might_fault();							\
->  	if (access_ok(VERIFY_WRITE, __pu_addr, size))			\
->  		__put_user_size((x), __pu_addr, (size), __pu_err);	\
->  	__pu_err;							\
-> @@ -268,7 +268,7 @@ do {								\
->  	const __typeof__(*(ptr)) __user *__gu_addr = (ptr);	\
->  	__chk_user_ptr(ptr);					\
->  	if (!is_kernel_addr((unsigned long)__gu_addr))		\
-> -		might_sleep();					\
-> +		might_fault();					\
->  	__get_user_size(__gu_val, __gu_addr, (size), __gu_err);	\
->  	(x) = (__typeof__(*(ptr)))__gu_val;			\
->  	__gu_err;						\
-> @@ -282,7 +282,7 @@ do {								\
->  	const __typeof__(*(ptr)) __user *__gu_addr = (ptr);	\
->  	__chk_user_ptr(ptr);					\
->  	if (!is_kernel_addr((unsigned long)__gu_addr))		\
-> -		might_sleep();					\
-> +		might_fault();					\
->  	__get_user_size(__gu_val, __gu_addr, (size), __gu_err);	\
->  	(x) = (__typeof__(*(ptr)))__gu_val;			\
->  	__gu_err;						\
-> @@ -294,7 +294,7 @@ do {								\
->  	long __gu_err = -EFAULT;					\
->  	unsigned long  __gu_val = 0;					\
->  	const __typeof__(*(ptr)) __user *__gu_addr = (ptr);		\
-> -	might_sleep();							\
-> +	might_fault();							\
->  	if (access_ok(VERIFY_READ, __gu_addr, (size)))			\
->  		__get_user_size(__gu_val, __gu_addr, (size), __gu_err);	\
->  	(x) = (__typeof__(*(ptr)))__gu_val;				\
-> @@ -419,14 +419,14 @@ static inline unsigned long __copy_to_user_inatomic(void __user *to,
->  static inline unsigned long __copy_from_user(void *to,
->  		const void __user *from, unsigned long size)
->  {
-> -	might_sleep();
-> +	might_fault();
->  	return __copy_from_user_inatomic(to, from, size);
->  }
->  
->  static inline unsigned long __copy_to_user(void __user *to,
->  		const void *from, unsigned long size)
->  {
-> -	might_sleep();
-> +	might_fault();
->  	return __copy_to_user_inatomic(to, from, size);
->  }
->  
-> @@ -434,7 +434,7 @@ extern unsigned long __clear_user(void __user *addr, unsigned long size);
->  
->  static inline unsigned long clear_user(void __user *addr, unsigned long size)
->  {
-> -	might_sleep();
-> +	might_fault();
->  	if (likely(access_ok(VERIFY_WRITE, addr, size)))
->  		return __clear_user(addr, size);
->  	if ((unsigned long)addr < TASK_SIZE) {
+> Maybe I overlooked the API for modifying the DT property but as
+> far as I've seen - there is no API for modifying it. And yes,
+> you are right, it is kind of an abuse of DT here.
+
+of_update_property(). That also makes sure that any notifiers
+is called and proc/device-tree is updated in the case where the property
+is new.
+
+> As Kirkwoods loose their MAC address on clock gating, I was looking
+> for a place to store it early. (a) DT property "local-mac-address"
+> looked as a good place as it will allow the driver to find it without
+> any extra code. Of course, I am doing severaly sanity checks if it is
+> safe to overwrite it, i.e. no other MAC set, property is there, long
+> enough.
+> 
+> If Grant also NACKs modifying the DT we basically have two more options
+> left for Kirkwood: (b) have MAC stored early in two global arrays in
+> board init and reference that from mv643xx_eth or (c) leave the clock
+> ungated unconditionally on all Kirkwoods.
+> 
+> I can live with all three, just name it and I prepare a final patch set.
+
+No, putting it in the DT makes sense, just use the right accessor.
+
+Cheers,
+Ben.
+
+> Sebastian
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
