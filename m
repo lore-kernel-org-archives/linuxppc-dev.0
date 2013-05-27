@@ -1,20 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 669992C02EC
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 May 2013 17:13:05 +1000 (EST)
-Message-ID: <1369638775.3557.12.camel@pasglop>
-Subject: Re: [PATCH] powerpc/32bit,PREEMPT:Load TI_FLAGS to check NEED_RESCHED
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Priyanka Jain <Priyanka.Jain@freescale.com>
-Date: Mon, 27 May 2013 17:12:55 +1000
-In-Reply-To: <1369636076-2644-1-git-send-email-Priyanka.Jain@freescale.com>
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7E6F42C02B3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 May 2013 17:18:54 +1000 (EST)
+Message-ID: <51A308D2.6040101@windriver.com>
+Date: Mon, 27 May 2013 15:18:42 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
+MIME-Version: 1.0
+To: Jain Priyanka-B32167 <B32167@freescale.com>
+Subject: Re: [PATCH] powerpc/32bit, PREEMPT:Load TI_FLAGS to check NEED_RESCHED
 References: <1369636076-2644-1-git-send-email-Priyanka.Jain@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: scottwood@freescale.com, "tiejun.chen" <tiejun.chen@windriver.com>,
- linuxppc-dev@lists.ozlabs.org
+ <51A300F4.80103@windriver.com>
+ <AC83832D6324604BB08FAE5A33553F190B3B7A4C@039-SN2MPN1-012.039d.mgd.msft.net>
+In-Reply-To: <AC83832D6324604BB08FAE5A33553F190B3B7A4C@039-SN2MPN1-012.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,36 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-05-27 at 11:57 +0530, Priyanka Jain wrote:
-> Add instruction to load TI_FLAGS in r8
->     
-> While returning from exception handling in case of PREEMPT enabled,
-> _TIF_NEED_RESCHED bit is checked in TI_FLAGS (thread_info flag) of
-> current
-> task. Only if this bit is set, it should continue with the process of
-> calling preempt_schedule_irq() to schedule highest priority task if
-> available.
+On 05/27/2013 02:55 PM, Jain Priyanka-B32167 wrote:
 >
-> Current code assumes that r8 contains TI_FLAGS and check this for
-> _TIF_NEED_RESCHED, but as r8 is modified in the code which executes
-> before
-> this check, r8 no longer contains the expected TI_FLAGS information.
+> If we go some more lines up in the same file, the code is
+>
+> resume_kernel:
+>          /* check current_thread_info, _TIF_EMULATE_STACK_STORE */
+>          CURRENT_THREAD_INFO(r9, r1)
+>          lwz     r8,TI_FLAGS(r9)
+>          andis.  r8,r8,_TIF_EMULATE_STACK_STORE@h
 
-Hrm, the code was supposed to still have TI_FLAGS in r8 and mostly does
-until the 
+Okay, but could you fix this directly like:
 
-	andis.	r8,r8,_TIF_EMULATE_STACK_STORE@h
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index e514de5..4498467 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -851,7 +851,7 @@ resume_kernel:
+         /* check current_thread_info, _TIF_EMULATE_STACK_STORE */
+         CURRENT_THREAD_INFO(r9, r1)
+         lwz     r8,TI_FLAGS(r9)
+-       andis.  r8,r8,_TIF_EMULATE_STACK_STORE@h
++       andis.  r0,r8,_TIF_EMULATE_STACK_STORE@h
+         beq+    1f
 
-Was added which clobbers it.
+         addi    r8,r1,INT_FRAME_SIZE    /* Get the kprobed function entry */
 
-Can't we just fix the above to use a different destination register ?
-r0 looks fair game at this point...
- 
-> As a result check for comparison with _TIF_NEED_RESCHED was failing
-> even if
-> NEED_RESCHED bit is set in the current thread_info flag. Due to this,
-> preempt_schedule_irq() and in turn scheduler was not getting called
-> even if
-> highest priority task is ready for execution.
-
-Ben.
+Tiejun
