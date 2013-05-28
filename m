@@ -1,24 +1,33 @@
-Return-Path: <B07421@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0186.outbound.messaging.microsoft.com [213.199.154.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 862902C032C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2013 03:46:08 +1000 (EST)
-Date: Tue, 28 May 2013 12:45:38 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 3/4] KVM: PPC: Add support for IOMMU in-kernel handling
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-In-Reply-To: <51A2C888.4050704@ozlabs.ru> (from aik@ozlabs.ru on Sun May 26
- 21:44:24 2013)
-Message-ID: <1369763138.18630.3@snotra>
+Return-Path: <jason@lakedaemon.net>
+Received: from mho-02-ewr.mailhop.org (mho-02-ewr.mailhop.org [204.13.248.72])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 256912C032A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2013 04:02:57 +1000 (EST)
+Date: Tue, 28 May 2013 14:02:27 -0400
+From: Jason Cooper <jason@lakedaemon.net>
+To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Subject: Re: [PATCH 2/2] net: mv643xx_eth: proper initialization for
+ Kirkwood SoCs
+Message-ID: <20130528180227.GY31290@titan.lakedaemon.net>
+References: <1369253042-15082-2-git-send-email-sebastian.hesselbarth@gmail.com>
+ <20130522201607.GA18823@obsidianresearch.com>
+ <20130523160111.GP31290@titan.lakedaemon.net>
+ <20130523171112.GB31281@obsidianresearch.com>
+ <20130523172339.GQ31290@titan.lakedaemon.net>
+ <20130523175357.GB2821@obsidianresearch.com>
+ <20130523184028.GU31290@titan.lakedaemon.net>
+ <20130523190140.GA4010@obsidianresearch.com>
+ <20130524164636.GV31290@titan.lakedaemon.net>
+ <20130524173306.GA30022@obsidianresearch.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: kvm@vger.kernel.org, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130524173306.GA30022@obsidianresearch.com>
+Cc: Andrew Lunn <andrew@lunn.ch>, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
+ Lennert Buytenhek <buytenh@wantstofly.org>,
+ Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,69 +37,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/26/2013 09:44:24 PM, Alexey Kardashevskiy wrote:
-> On 05/25/2013 12:45 PM, David Gibson wrote:
-> > On Wed, May 22, 2013 at 04:06:57PM -0500, Scott Wood wrote:
-> >> On 05/20/2013 10:06:46 PM, Alexey Kardashevskiy wrote:
-> >>> diff --git a/arch/powerpc/kvm/powerpc.c =20
-> b/arch/powerpc/kvm/powerpc.c
-> >>> index 8465c2a..da6bf61 100644
-> >>> --- a/arch/powerpc/kvm/powerpc.c
-> >>> @@ -396,6 +396,7 @@ int kvm_dev_ioctl_check_extension(long ext)
-> >>> +++ b/arch/powerpc/kvm/powerpc.c
-> >>> 		break;
-> >>> #endif
-> >>> 	case KVM_CAP_SPAPR_MULTITCE:
-> >>> +	case KVM_CAP_SPAPR_TCE_IOMMU:
-> >>> 		r =3D 1;
-> >>> 		break;
-> >>> 	default:
-> >>
-> >> Don't advertise SPAPR capabilities if it's not book3s -- and
-> >> probably there's some additional limitation that would be
-> >> appropriate.
-> >
-> > So, in the case of MULTITCE, that's not quite right.  PR KVM can
-> > emulate a PAPR system on a BookE machine, and there's no reason not =20
-> to
-> > allow TCE acceleration as well.  We can't make it dependent on PAPR
-> > mode being selected, because that's enabled per-vcpu, whereas these
-> > capabilities are queried on the VM before the vcpus are created.
-> >
-> > CAP_SPAPR_TCE_IOMMU should be dependent on the presence of suitable
-> > host side hardware (i.e. a PAPR style IOMMU), though.
->=20
->=20
-> The capability says that the ioctl is supported. If there is no IOMMU =20
-> group
-> registered, than it will fail with a reasonable error and nobody gets =20
-> hurt.
-> What is the problem?
+Jason,
 
-You could say that about a lot of the capabilities that just advertise =20
-the existence of new ioctls. :-)
+Sorry, I meant to get back to this earlier and it slipped off of my
+plate. :(
 
-Sometimes it's nice to know in advance whether it's supported, before =20
-actually requesting that something happen.
+On Fri, May 24, 2013 at 11:33:06AM -0600, Jason Gunthorpe wrote:
+> On Fri, May 24, 2013 at 12:46:36PM -0400, Jason Cooper wrote:
+> 
+> > > Why are you not keen on this? It seems like normal device driver
+> > > practice, that is what the data field of of_device_id is typically
+> > > used for..
+> > 
+> > I'm not keen on it because we don't have a document saying "All kirkwood
+> > SoCs need PSC1 set to X after reset."  We know it, but have we tested
+> > the 6282?
+> 
+> I disagree. The manul is very clear how PSC1 must be set for proper
+> operation. Clk125BypassEn bit is used only for loopback testing, it
+> should never set for driver operation. Similarly PortReset must be
+> cleared for driver operation.
+> 
+> It is always safe for the driver to clear these bits, if it knows they
+> are available.  In fact, I would argue the driver should always clear
+> these bits so that the bootloader isn't relied on to do it. It doesn't
+> matter if the SOC errantly sets the bit or not, it can *always* be
+> safely cleared.
 
-> >>> @@ -939,6 +940,9 @@ struct kvm_s390_ucas_mapping {
-> >>> #define KVM_GET_DEVICE_ATTR	  _IOW(KVMIO,  0xe2, struct
-> >>> kvm_device_attr)
-> >>> #define KVM_HAS_DEVICE_ATTR	  _IOW(KVMIO,  0xe3, struct
-> >>> kvm_device_attr)
-> >>>
-> >>> +/* ioctl for SPAPR TCE IOMMU */
-> >>> +#define KVM_CREATE_SPAPR_TCE_IOMMU _IOW(KVMIO,  0xe4, struct
-> >>> kvm_create_spapr_tce_iommu)
-> >>
-> >> Shouldn't this go under the vm ioctl section?
->=20
->=20
-> The KVM_CREATE_SPAPR_TCE_IOMMU ioctl (the version for emulated =20
-> devices) is
-> in this section so I decided to keep them together. Wrong?
+Great!
 
-You decided to keep KVM_CREATE_SPAPR_TCE_IOMMU together with =20
-KVM_CREATE_SPAPR_TCE_IOMMU?
+> Further, I compared my 88F6282/88F6283 manual against the public
+> 88F6180/88F619x/88F6281 spec and confirmed that the PSC1 layout is the
+> same.
 
--Scott=
+Even better.
+
+> So all of these SOC's can share a driver compatible string.
+
+Ok, "marvell,kirkwood-eth" works for me then.  I think Sebastian already
+has patches for that.
+
+> AFAICT the only reason the driver doesn't touch PSC1 today is because
+> the PSC1 was introduced in a later IP revision and its presence isn't
+> auto-detectable.
+
+Makes sense.
+
+> The last bit of the puzzle to get bootloader independence on kirkwood
+> is to encode the phy interface type (GMII/RGMII/BASE-X) in the DT so
+> the entire PSC1 can be set by the driver..
+
+Hmm, let's work on that separately, and later.  I've snowballed this
+attempt enough ;-)
+
+Thanks for digging into this for us,
+
+Jason.
