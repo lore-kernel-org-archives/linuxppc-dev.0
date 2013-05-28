@@ -1,21 +1,20 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
- [212.227.126.187]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <hpa@zytor.com>
+Received: from mail.zytor.com (terminus.zytor.com [IPv6:2001:1868:205::10])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id AE1F02C02C3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2013 01:49:07 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] arch: configuration,
- deleting 'CONFIG_BUG' since always need it.
-Date: Tue, 28 May 2013 17:43:52 +0200
-References: <519DCBEF.3090208@asianux.com> <20130528081910.GA29557@gmail.com>
- <51A4C564.4040301@zytor.com>
-In-Reply-To: <51A4C564.4040301@zytor.com>
+ by ozlabs.org (Postfix) with ESMTPS id 1E7352C02BA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2013 02:09:24 +1000 (EST)
+Message-ID: <51A4D618.3080208@zytor.com>
+Date: Tue, 28 May 2013 09:06:48 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <201305281743.52649.arnd@arndb.de>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] arch: configuration, deleting 'CONFIG_BUG' since always
+ need it.
+References: <519DCBEF.3090208@asianux.com> <20130528081910.GA29557@gmail.com>
+ <51A4C564.4040301@zytor.com> <201305281743.52649.arnd@arndb.de>
+In-Reply-To: <201305281743.52649.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: Catalin Marinas <Catalin.Marinas@arm.com>,
  Linux-sh list <linux-sh@vger.kernel.org>, Chen Gang <gang.chen@asianux.com>,
  Heiko Carstens <heiko.carstens@de.ibm.com>,
@@ -59,24 +58,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday 28 May 2013, H. Peter Anvin wrote:
-> On 05/28/2013 01:19 AM, Ingo Molnar wrote:
-> > 
-> > So I think the same principle applies to it as to any other debugging 
-> > code: it's fine to be able to turn debugging off. It's a performance 
-> > versus kernel robustness/determinism trade-off.
-> > 
+On 05/28/2013 08:43 AM, Arnd Bergmann wrote:
 > 
-> I suspect, rather, that BUG() should turn into a trap (or jump to a
-> death routine) under any circumstances.  The one thing that can be
-> omitted for small configurations are the annotations, which only serve
-> to output a more human-readable error message.
+> Right, that is what the patch I just posted does.
+> 
+> On a related note, I found that WARN_ON() can no longer be compiled
+> out since there is already code that relies on the side-effects of
+> the condition. I assume that was an intentional change I missed,
+> since it used to be defined so that you could remove it completely.
+> 
 
-Right, that is what the patch I just posted does.
+It is possible to define WARN_ON() as:
 
-On a related note, I found that WARN_ON() can no longer be compiled
-out since there is already code that relies on the side-effects of
-the condition. I assume that was an intentional change I missed,
-since it used to be defined so that you could remove it completely.
+#define WARN_ON(x) ((void)(x))
 
-	Arnd
+... which preserves side effects.
+
+	-hpa
