@@ -1,34 +1,32 @@
-Return-Path: <mingo.kernel.org@gmail.com>
-Received: from mail-wg0-x22c.google.com (mail-wg0-x22c.google.com
- [IPv6:2a00:1450:400c:c00::22c])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AAC5C2C02FF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2013 18:19:19 +1000 (EST)
-Received: by mail-wg0-f44.google.com with SMTP id a12so5166767wgh.35
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2013 01:19:14 -0700 (PDT)
-Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
-Date: Tue, 28 May 2013 10:19:10 +0200
-From: Ingo Molnar <mingo@kernel.org>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Return-Path: <gang.chen@asianux.com>
+Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id F1C7F2C030E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2013 20:26:43 +1000 (EST)
+Message-ID: <51A48628.9030105@asianux.com>
+Date: Tue, 28 May 2013 18:25:44 +0800
+From: Chen Gang <gang.chen@asianux.com>
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@kernel.org>
 Subject: Re: [PATCH] arch: configuration, deleting 'CONFIG_BUG' since always
  need it.
-Message-ID: <20130528081910.GA29557@gmail.com>
 References: <519DCBEF.3090208@asianux.com>
  <20130523090534.GJ18614@n2100.arm.linux.org.uk>
  <CAMuHMdWez-j1Maa3BD7ucmzv0_zFJnChERQiHFmkCaZUzG0_AA@mail.gmail.com>
  <201305231139.38233.arnd@arndb.de>
  <20130523100409.GK18614@n2100.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130523100409.GK18614@n2100.arm.linux.org.uk>
+ <20130528081910.GA29557@gmail.com>
+In-Reply-To: <20130528081910.GA29557@gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Cc: Catalin Marinas <Catalin.Marinas@arm.com>,
- Linux-sh list <linux-sh@vger.kernel.org>, Chen Gang <gang.chen@asianux.com>,
+ Linux-sh list <linux-sh@vger.kernel.org>,
  Heiko Carstens <heiko.carstens@de.ibm.com>,
  "paulus@samba.org" <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
  Michel Lespinasse <walken@google.com>,
  Hans-Christian Egtvedt <egtvedt@samfundet.no>,
  Linux-Arch <linux-arch@vger.kernel.org>, linux-s390@vger.kernel.org,
+ Russell King - ARM Linux <linux@arm.linux.org.uk>,
  uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
  Yoshinori Sato <ysato@users.sourceforge.jp>,
  Richard Weinberger <richard@nod.at>, Helge Deller <deller@gmx.de>,
@@ -65,55 +63,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-* Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
-
-> So, if you want to use this, then you should update the CONFIG_BUG text 
-> to include a warning to this effect:
+On 05/28/2013 04:19 PM, Ingo Molnar wrote:
+>> > And I come back to one of my previous arguments - is it not better to 
+>> > panic() if we hit one of these conditions so that the system can try to 
+>> > do a panic-reboot rather than continue blindly into the unknown?
+> It will often continue blindly into the unknown even if the compiler is 
+> happy ...
 > 
->      Warning: if CONFIG_BUG is turned off, and control flow reaches
->      a BUG(), the system behaviour will be undefined.
+
+For Server, it is necessary to always enable CONFIG_BUG and call panic()
+
+When analyzing core dump or KDB trap, we have to assume that the kernel
+has already "continued blindly", but lucky, we can get the core dump or
+KDB trap finally (sometimes, we really even can not get core dump or KDB
+trap).
+
+
+For PC, it is useless to disable CONFIG_BUG
+
+The PC memory has already large enough to skip the minimal size
+optimization. And its speed is also high enough to skip the speed
+improvement by minimal size optimization.
+
+
+For Embedded system, some of architectures may disable CONFIG_BUG.
+
+Embedded system are widely used in many area, so the requirement of each
+architectures for BUG() may be different,
+
+  some may need reboot as quickly as possible for urgent processing;
+  some may need dead looping in BUG() for avoid user amazing;
+    (if auto-reboot, users feel out of control, don't know what happens)
+  some may still need panic() just like Server requirements.
+  others may not care about it, just implement it as minimal size.
+
+
+
+> The only difference is that i
+
+t's "unpredictable" in a way not visible from
+> the C code: the code won't necessarily fall through the BUG() when hitting 
+> that condition - although in practice it probably will.
 > 
-> so that people can make an informed choice about this, because at the
-> moment:
-> 
->           Disabling this option eliminates support for BUG and WARN, reducing
->           the size of your kernel image and potentially quietly ignoring
->           numerous fatal conditions. You should only consider disabling this
->           option for embedded systems with no facilities for reporting errors.
->           Just say Y.
-> 
-> will become completely misleading.  Turning this option off will _not_ 
-> result in "quietly ignoring numerous fatal conditions".
+> So I think the same principle applies to it as to any other debugging 
+> code: it's fine to be able to turn debugging off. It's a performance 
+> versus kernel robustness/determinism trade-off.
 
-I'm fine with adding your text as a clarification - but I think 'quietly 
-ignoring fatal conditions' very much implies an undefined outcome if that 
-unexpected condition does occur: the code might crash, it might corrupt 
-memory or it might do some other unexpected thing.
+'minimal size' for BUG() is belongs to some of Embedded system specific
+features, it is not 'generic' enough to be in "include/asm-generic/".
 
-There are many other places that do a BUG_ON() of a NULL pointer or so, or 
-of a zero refcount, or a not held lock - and turning the BUG_ON() off 
-makes the code unpredictable _anyway_ - even if the compiler does not 
-notice an uninitialized variable.
+If we still provide the "disable CONFIG_BUG", some of 'crazy users'
+(e.g. randconfig) may make 'noise' to most of architectures.
 
-So pretty much any weakening of BUG_ON() _will_ make the kernel more 
-unpredictable.
+So we need not provide "disable CONFIG_BUG" features for all platforms,
+since most of architectures need not support it, and the architecture
+which really need minimal size, can implement it by itself as a
+architecture specific feature.
 
-> And I come back to one of my previous arguments - is it not better to 
-> panic() if we hit one of these conditions so that the system can try to 
-> do a panic-reboot rather than continue blindly into the unknown?
 
-It will often continue blindly into the unknown even if the compiler is 
-happy ...
 
-The only difference is that it's "unpredictable" in a way not visible from 
-the C code: the code won't necessarily fall through the BUG() when hitting 
-that condition - although in practice it probably will.
+Thanks.
+-- 
+Chen Gang
 
-So I think the same principle applies to it as to any other debugging 
-code: it's fine to be able to turn debugging off. It's a performance 
-versus kernel robustness/determinism trade-off.
-
-Thanks,
-
-	Ingo
+Asianux Corporation
