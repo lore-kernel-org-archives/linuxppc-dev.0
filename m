@@ -1,32 +1,28 @@
-Return-Path: <hpa@zytor.com>
-Received: from mail.zytor.com (terminus.zytor.com [IPv6:2001:1868:205::10])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+ [212.227.126.187]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id CEECF2C02B0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2013 01:07:53 +1000 (EST)
-Message-ID: <51A4C564.4040301@zytor.com>
-Date: Tue, 28 May 2013 07:55:32 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
+ by ozlabs.org (Postfix) with ESMTPS id AE1F02C02C3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2013 01:49:07 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] arch: configuration,
+ deleting 'CONFIG_BUG' since always need it.
+Date: Tue, 28 May 2013 17:43:52 +0200
+References: <519DCBEF.3090208@asianux.com> <20130528081910.GA29557@gmail.com>
+ <51A4C564.4040301@zytor.com>
+In-Reply-To: <51A4C564.4040301@zytor.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@kernel.org>
-Subject: Re: [PATCH] arch: configuration, deleting 'CONFIG_BUG' since always
- need it.
-References: <519DCBEF.3090208@asianux.com>
- <20130523090534.GJ18614@n2100.arm.linux.org.uk>
- <CAMuHMdWez-j1Maa3BD7ucmzv0_zFJnChERQiHFmkCaZUzG0_AA@mail.gmail.com>
- <201305231139.38233.arnd@arndb.de>
- <20130523100409.GK18614@n2100.arm.linux.org.uk>
- <20130528081910.GA29557@gmail.com>
-In-Reply-To: <20130528081910.GA29557@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <201305281743.52649.arnd@arndb.de>
 Cc: Catalin Marinas <Catalin.Marinas@arm.com>,
  Linux-sh list <linux-sh@vger.kernel.org>, Chen Gang <gang.chen@asianux.com>,
  Heiko Carstens <heiko.carstens@de.ibm.com>,
  "paulus@samba.org" <paulus@samba.org>, Michel Lespinasse <walken@google.com>,
- Hans-Christian Egtvedt <egtvedt@samfundet.no>,
+ Ingo Molnar <mingo@kernel.org>, Hans-Christian Egtvedt <egtvedt@samfundet.no>,
  Linux-Arch <linux-arch@vger.kernel.org>, linux-s390@vger.kernel.org,
  Russell King - ARM Linux <linux@arm.linux.org.uk>,
- uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
  Yoshinori Sato <ysato@users.sourceforge.jp>,
  Richard Weinberger <richard@nod.at>, Helge Deller <deller@gmx.de>,
  the arch/x86 maintainers <x86@kernel.org>,
@@ -37,8 +33,9 @@ Cc: Catalin Marinas <Catalin.Marinas@arm.com>,
  Paul McKenney <paulmck@linux.vnet.ibm.com>,
  H?vard Skinnemoen <hskinnemoen@gmail.com>,
  Serge Hallyn <serge.hallyn@canonical.com>, Mike Frysinger <vapier@gentoo.org>,
- Arnd Bergmann <arnd@arndb.de>, Will Deacon <will.deacon@arm.com>,
- Jeff Dike <jdike@addtoit.com>, Akinobu Mita <akinobu.mita@gmail.com>,
+ uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
+ Will Deacon <will.deacon@arm.com>, Jeff Dike <jdike@addtoit.com>,
+ Akinobu Mita <akinobu.mita@gmail.com>,
  uml-user <user-mode-linux-user@lists.sourceforge.net>,
  "uclinux-dist-devel@blackfin.uclinux.org"
  <uclinux-dist-devel@blackfin.uclinux.org>,
@@ -62,16 +59,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/28/2013 01:19 AM, Ingo Molnar wrote:
+On Tuesday 28 May 2013, H. Peter Anvin wrote:
+> On 05/28/2013 01:19 AM, Ingo Molnar wrote:
+> > 
+> > So I think the same principle applies to it as to any other debugging 
+> > code: it's fine to be able to turn debugging off. It's a performance 
+> > versus kernel robustness/determinism trade-off.
+> > 
 > 
-> So I think the same principle applies to it as to any other debugging 
-> code: it's fine to be able to turn debugging off. It's a performance 
-> versus kernel robustness/determinism trade-off.
-> 
+> I suspect, rather, that BUG() should turn into a trap (or jump to a
+> death routine) under any circumstances.  The one thing that can be
+> omitted for small configurations are the annotations, which only serve
+> to output a more human-readable error message.
 
-I suspect, rather, that BUG() should turn into a trap (or jump to a
-death routine) under any circumstances.  The one thing that can be
-omitted for small configurations are the annotations, which only serve
-to output a more human-readable error message.
+Right, that is what the patch I just posted does.
 
-	-hpa
+On a related note, I found that WARN_ON() can no longer be compiled
+out since there is already code that relies on the side-effects of
+the condition. I assume that was an intentional change I missed,
+since it used to be defined so that you could remove it completely.
+
+	Arnd
