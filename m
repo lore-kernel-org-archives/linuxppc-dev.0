@@ -1,33 +1,34 @@
-Return-Path: <jason@lakedaemon.net>
-Received: from mho-02-ewr.mailhop.org (mho-02-ewr.mailhop.org [204.13.248.72])
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 256912C032A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2013 04:02:57 +1000 (EST)
-Date: Tue, 28 May 2013 14:02:27 -0400
-From: Jason Cooper <jason@lakedaemon.net>
-To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-Subject: Re: [PATCH 2/2] net: mv643xx_eth: proper initialization for
- Kirkwood SoCs
-Message-ID: <20130528180227.GY31290@titan.lakedaemon.net>
-References: <1369253042-15082-2-git-send-email-sebastian.hesselbarth@gmail.com>
- <20130522201607.GA18823@obsidianresearch.com>
- <20130523160111.GP31290@titan.lakedaemon.net>
- <20130523171112.GB31281@obsidianresearch.com>
- <20130523172339.GQ31290@titan.lakedaemon.net>
- <20130523175357.GB2821@obsidianresearch.com>
- <20130523184028.GU31290@titan.lakedaemon.net>
- <20130523190140.GA4010@obsidianresearch.com>
- <20130524164636.GV31290@titan.lakedaemon.net>
- <20130524173306.GA30022@obsidianresearch.com>
+ (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8D3712C032E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2013 06:40:01 +1000 (EST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Tue, 28 May 2013 14:39:58 -0600
+Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 4379938C804D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2013 16:39:55 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r4SKds0K52101198
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2013 16:39:54 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r4SKdrpm028112
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2013 16:39:54 -0400
+Date: Tue, 28 May 2013 13:39:50 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: [PATCH] powerpc/cputable: fix oprofile_cpu_type on power8
+Message-ID: <20130528203950.GA30172@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130524173306.GA30022@obsidianresearch.com>
-Cc: Andrew Lunn <andrew@lunn.ch>, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
- Lennert Buytenhek <buytenh@wantstofly.org>,
- Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Cc: Maynard Johnson <mpjohn@us.ibm.com>,
+ Michael Neuling <michael.neuling@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,59 +38,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Jason,
+Maynard informed me that neither the oprofile kernel module nor oprofile
+userspace has been updated to support that "legacy" oprofile module
+interface for power8, which is indicated by "ppc64/power8." This results
+in no samples. The solution is to default to the "timer" type, instead.
+The raw entry also should be updated, as "ppc64/ibm-compat-v1" indicates
+to oprofile userspace to use "compatibility events" which are obsolete
+in ISA 2.07.
 
-Sorry, I meant to get back to this earlier and it slipped off of my
-plate. :(
+Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
 
-On Fri, May 24, 2013 at 11:33:06AM -0600, Jason Gunthorpe wrote:
-> On Fri, May 24, 2013 at 12:46:36PM -0400, Jason Cooper wrote:
-> 
-> > > Why are you not keen on this? It seems like normal device driver
-> > > practice, that is what the data field of of_device_id is typically
-> > > used for..
-> > 
-> > I'm not keen on it because we don't have a document saying "All kirkwood
-> > SoCs need PSC1 set to X after reset."  We know it, but have we tested
-> > the 6282?
-> 
-> I disagree. The manul is very clear how PSC1 must be set for proper
-> operation. Clk125BypassEn bit is used only for loopback testing, it
-> should never set for driver operation. Similarly PortReset must be
-> cleared for driver operation.
-> 
-> It is always safe for the driver to clear these bits, if it knows they
-> are available.  In fact, I would argue the driver should always clear
-> these bits so that the bootloader isn't relied on to do it. It doesn't
-> matter if the SOC errantly sets the bit or not, it can *always* be
-> safely cleared.
+---
+Ben, if this seems reasonable to you, it would be great to get this into
+3.10.
 
-Great!
-
-> Further, I compared my 88F6282/88F6283 manual against the public
-> 88F6180/88F619x/88F6281 spec and confirmed that the PSC1 layout is the
-> same.
-
-Even better.
-
-> So all of these SOC's can share a driver compatible string.
-
-Ok, "marvell,kirkwood-eth" works for me then.  I think Sebastian already
-has patches for that.
-
-> AFAICT the only reason the driver doesn't touch PSC1 today is because
-> the PSC1 was introduced in a later IP revision and its presence isn't
-> auto-detectable.
-
-Makes sense.
-
-> The last bit of the puzzle to get bootloader independence on kirkwood
-> is to encode the phy interface type (GMII/RGMII/BASE-X) in the DT so
-> the entire PSC1 can be set by the driver..
-
-Hmm, let's work on that separately, and later.  I've snowballed this
-attempt enough ;-)
-
-Thanks for digging into this for us,
-
-Jason.
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index c60bbec..b8808bc 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -453,7 +453,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
+ 		.oprofile_type		= PPC_OPROFILE_POWER4,
+-		.oprofile_cpu_type	= "ppc64/ibm-compat-v1",
++		.oprofile_cpu_type	= 0,
+ 		.cpu_setup		= __setup_cpu_power8,
+ 		.cpu_restore		= __restore_cpu_power8,
+ 		.platform		= "power8",
+@@ -506,7 +506,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.dcache_bsize		= 128,
+ 		.num_pmcs		= 6,
+ 		.pmc_type		= PPC_PMC_IBM,
+-		.oprofile_cpu_type	= "ppc64/power8",
++		.oprofile_cpu_type	= 0,
+ 		.oprofile_type		= PPC_OPROFILE_POWER4,
+ 		.cpu_setup		= __setup_cpu_power8,
+ 		.cpu_restore		= __restore_cpu_power8,
