@@ -1,34 +1,16 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8D3712C032E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2013 06:40:01 +1000 (EST)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Tue, 28 May 2013 14:39:58 -0600
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 4379938C804D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2013 16:39:55 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r4SKds0K52101198
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2013 16:39:54 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r4SKdrpm028112
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2013 16:39:54 -0400
-Date: Tue, 28 May 2013 13:39:50 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: [PATCH] powerpc/cputable: fix oprofile_cpu_type on power8
-Message-ID: <20130528203950.GA30172@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Maynard Johnson <mpjohn@us.ibm.com>,
- Michael Neuling <michael.neuling@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <linux@roeck-us.net>
+Received: from mail.active-venture.com (mail.active-venture.com
+ [67.228.131.205]) by ozlabs.org (Postfix) with ESMTP id 645922C030A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2013 03:41:39 +1000 (EST)
+From: Guenter Roeck <linux@roeck-us.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc/pci: Improve device hotplug initialization
+Date: Tue, 28 May 2013 10:35:14 -0700
+Message-Id: <1369762514-27352-1-git-send-email-linux@roeck-us.net>
+Cc: Yuanquan Chen <Yuanquan.Chen@freescale.com>,
+ Hiroo Matsumoto <matsumoto.hiroo@jp.fujitsu.com>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Guenter Roeck <linux@roeck-us.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,39 +20,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Maynard informed me that neither the oprofile kernel module nor oprofile
-userspace has been updated to support that "legacy" oprofile module
-interface for power8, which is indicated by "ppc64/power8." This results
-in no samples. The solution is to default to the "timer" type, instead.
-The raw entry also should be updated, as "ppc64/ibm-compat-v1" indicates
-to oprofile userspace to use "compatibility events" which are obsolete
-in ISA 2.07.
+Commit 37f02195b (powerpc/pci: fix PCI-e devices rescan issue on powerpc
+platform) fixes a problem with interrupt and DMA initialization on hot
+plugged devices. With this commit, interrupt and DMA initialization for
+hot plugged devices is handled in the pci device enable function.
 
-Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
+This approach has a couple of drawbacks. First, it creates two code paths
+for device initialization, one for hot plugged devices and another for devices
+known during the initial PCI scan. Second, the initialization code for hot
+plugged devices is only called when the device is enabled, ie typically
+in the probe function. Also, the platform specific setup code is called each
+time pci_enable_device() is called, not only once during device discovery,
+meaning it is actually called multiple times, once for devices discovered
+during the initial scan and again each time a driver is re-loaded.
 
+The visible result is that interrupt pins are only assigned to hot plugged
+devices when the device driver is loaded. Effectively this changes the PCI
+probe API, since pci_dev->irq and the device's dma configuration will now
+only be valid after pci_enable() was called at least once. A more subtle
+change is that platform specific PCI device setup is moved from device
+discovery into the driver's probe function, more specifically into the
+pci_enable_device() call.
+
+To fix the inconsistencies, replace pcibios_setup_device() with
+pcibios_add_device(). Drop explicit calls to pcibios_setup_device();
+this makes pcibios_setup_bus_devices() a noop function which could
+eventually be dropped. With this change, device initialization is called
+exactly once and consistently for both static and hot plugged devices.
+
+Since pcibios_add_device() is called from pci_device_add(), which initializes
+the numa node, drop the now redundant additional numa node initialization.
+
+Cc: Yuanquan Chen <Yuanquan.Chen@freescale.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Hiroo Matsumoto <matsumoto.hiroo@jp.fujitsu.com>
+Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
-Ben, if this seems reasonable to you, it would be great to get this into
-3.10.
+ arch/powerpc/kernel/pci-common.c |   25 ++++---------------------
+ 1 file changed, 4 insertions(+), 21 deletions(-)
 
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index c60bbec..b8808bc 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -453,7 +453,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.oprofile_type		= PPC_OPROFILE_POWER4,
--		.oprofile_cpu_type	= "ppc64/ibm-compat-v1",
-+		.oprofile_cpu_type	= 0,
- 		.cpu_setup		= __setup_cpu_power8,
- 		.cpu_restore		= __restore_cpu_power8,
- 		.platform		= "power8",
-@@ -506,7 +506,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.dcache_bsize		= 128,
- 		.num_pmcs		= 6,
- 		.pmc_type		= PPC_PMC_IBM,
--		.oprofile_cpu_type	= "ppc64/power8",
-+		.oprofile_cpu_type	= 0,
- 		.oprofile_type		= PPC_OPROFILE_POWER4,
- 		.cpu_setup		= __setup_cpu_power8,
- 		.cpu_restore		= __restore_cpu_power8,
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index 6053f03..41dd980 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -1004,13 +1004,8 @@ void pcibios_setup_bus_self(struct pci_bus *bus)
+ 		ppc_md.pci_dma_bus_setup(bus);
+ }
+ 
+-void pcibios_setup_device(struct pci_dev *dev)
++int pcibios_add_device(struct pci_dev *dev)
+ {
+-	/* Fixup NUMA node as it may not be setup yet by the generic
+-	 * code and is needed by the DMA init
+-	 */
+-	set_dev_node(&dev->dev, pcibus_to_node(dev->bus));
+-
+ 	/* Hook up default DMA ops */
+ 	set_dma_ops(&dev->dev, pci_dma_ops);
+ 	set_dma_offset(&dev->dev, PCI_DRAM_OFFSET);
+@@ -1023,24 +1018,16 @@ void pcibios_setup_device(struct pci_dev *dev)
+ 	pci_read_irq_line(dev);
+ 	if (ppc_md.pci_irq_fixup)
+ 		ppc_md.pci_irq_fixup(dev);
++
++	return 0;
+ }
+ 
+ void pcibios_setup_bus_devices(struct pci_bus *bus)
+ {
+-	struct pci_dev *dev;
+-
+ 	pr_debug("PCI: Fixup bus devices %d (%s)\n",
+ 		 bus->number, bus->self ? pci_name(bus->self) : "PHB");
+ 
+-	list_for_each_entry(dev, &bus->devices, bus_list) {
+-		/* Cardbus can call us to add new devices to a bus, so ignore
+-		 * those who are already fully discovered
+-		 */
+-		if (dev->is_added)
+-			continue;
+-
+-		pcibios_setup_device(dev);
+-	}
++	/* nothing to do */
+ }
+ 
+ void pcibios_set_master(struct pci_dev *dev)
+@@ -1479,10 +1466,6 @@ int pcibios_enable_device(struct pci_dev *dev, int mask)
+ 		if (ppc_md.pcibios_enable_device_hook(dev))
+ 			return -EINVAL;
+ 
+-	/* avoid pcie irq fix up impact on cardbus */
+-	if (dev->hdr_type != PCI_HEADER_TYPE_CARDBUS)
+-		pcibios_setup_device(dev);
+-
+ 	return pci_enable_resources(dev, mask);
+ }
+ 
+-- 
+1.7.9.7
