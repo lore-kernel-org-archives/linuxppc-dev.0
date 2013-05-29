@@ -1,18 +1,17 @@
 Return-Path: <sebastian.hesselbarth@gmail.com>
-Received: from mail-ea0-x235.google.com (mail-ea0-x235.google.com
- [IPv6:2a00:1450:4013:c01::235])
+Received: from mail-ea0-x231.google.com (mail-ea0-x231.google.com
+ [IPv6:2a00:1450:4013:c01::231])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2DC612C034F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2013 05:33:15 +1000 (EST)
-Received: by mail-ea0-f181.google.com with SMTP id a11so5475371eae.26
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2013 12:33:12 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 7C1D62C035E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2013 05:33:17 +1000 (EST)
+Received: by mail-ea0-f177.google.com with SMTP id q14so5574683eaj.36
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2013 12:33:13 -0700 (PDT)
 From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-Subject: [PATCH v5 05/13] net: mv643xx_eth: proper initialization for Kirkwood
- SoCs
-Date: Wed, 29 May 2013 21:32:47 +0200
-Message-Id: <1369855975-21489-6-git-send-email-sebastian.hesselbarth@gmail.com>
+Subject: [PATCH v5 06/13] net: mv643xx_eth: add DT parsing support
+Date: Wed, 29 May 2013 21:32:48 +0200
+Message-Id: <1369855975-21489-7-git-send-email-sebastian.hesselbarth@gmail.com>
 In-Reply-To: <1369855975-21489-1-git-send-email-sebastian.hesselbarth@gmail.com>
 References: <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
  <1369855975-21489-1-git-send-email-sebastian.hesselbarth@gmail.com>
@@ -29,28 +28,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ethernet controllers found on Kirkwood SoCs not only suffer from loosing
-MAC address register contents on clock gating but also some important
-registers are reset to values that would break ethernet. This patch
-clears the CLK125_BYPASS_EN bit for DT enabled Kirkwood only by using
-of_device_is_compatible() instead of #ifdefs. Non-DT Kirkwood is not
-affected as it installs a clock gating workaround because of the MAC
-address issue above. Other Orion SoCs do not suffer from register reset,
-do not have the bit in question, or do not have the register at all.
-Moreover, system controllers on PPC using this driver should also be
-protected from clearing that bit.
+This adds device tree parsing support for the shared driver of mv643xx_eth.
+As the bindings are slightly different from current PPC bindings new binding
+documentation is also added. Following PPC-style device setup, the shared
+driver now also adds port platform_devices and sets up port platform_data.
 
 Signed-off-by: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 ---
-Note: In contrast to the reset value of 0 for CLK125_BYPASS_EN bit as
-stated in Kirkwood datasheet, we confirmed that reset value is 1 instead.
-Either datasheet is wrong about it, there is some post-boot self-check or
-BootROM flips that bit.
+Note: Although different, device tree bindings are compatible with PPC
+bindings. As I do not have access to any PPC platform using mv643xx_eth,
+I leave conversion ("phy" vs "phy-handle") and compatible string name
+up to PPC guys.
 
-Changelog
-v4->v5:
-- check for device compatible instead of machine compatible
-  (Suggested by Jason Gunthorpe)
+Due to hang reports for modular built mvmdio and mv643xx_eth, I have
+tested module loading/unloading/reloading on CuBox (Dove) and Dockstar
+(Kirkwood) without any issues for the whole patch set.
+
+Changelog:
+v5->v4:
+- add Kirkwood specific compatible string
+
+v3->v4:
+- separation of independent patches (phy, of_mdio, devm)
+- stand-alone device tree binding compatible to existing mv64x60 binding
+- device node match for shared driver only
+- device node registration for port drivers
+- properly return -EPROBE_DEFER on missing of phy (Reported by Simon Baatz)
 
 Cc: David Miller <davem@davemloft.net>
 Cc: Lennert Buytenhek <buytenh@wantstofly.org>
@@ -62,37 +65,319 @@ Cc: linux-arm-kernel@lists.infradead.org
 Cc: linuxppc-dev@lists.ozlabs.org
 Cc: linux-kernel@vger.kernel.org
 ---
- drivers/net/ethernet/marvell/mv643xx_eth.c |   11 +++++++++++
- 1 file changed, 11 insertions(+)
+ .../devicetree/bindings/net/marvell-orion-net.txt  |   85 +++++++++++
+ drivers/net/ethernet/marvell/mv643xx_eth.c         |  153 +++++++++++++++++++-
+ 2 files changed, 234 insertions(+), 4 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/net/marvell-orion-net.txt
 
+diff --git a/Documentation/devicetree/bindings/net/marvell-orion-net.txt b/Documentation/devicetree/bindings/net/marvell-orion-net.txt
+new file mode 100644
+index 0000000..a73b79f
+--- /dev/null
++++ b/Documentation/devicetree/bindings/net/marvell-orion-net.txt
+@@ -0,0 +1,85 @@
++Marvell Orion/Discovery ethernet controller
++=============================================
++
++The Marvell Discovery ethernet controller can be found on Marvell Orion SoCs
++(Kirkwood, Dove, Orion5x, and Discovery Innovation) and as part of Marvell
++Discovery system controller chips (mv64[345]60).
++
++The Discovery ethernet controller is described with two levels of nodes. The
++first level describes the ethernet controller itself and the second level
++describes up to 3 ethernet port nodes within that controller. The reason for
++the multiple levels is that the port registers are interleaved within a single
++set of controller registers. Each port node describes port-specific properties.
++
++Note: The above separation is only true for Discovery system controllers.
++For Orion SoCs we stick to the separation, although there each controller has
++only one port associated. Multiple ports are implemented as multiple single-port
++controllers. As Kirkwood has some issues with proper initialization after reset,
++an extra compatible string is added for it.
++
++* Ethernet controller node
++
++Required controller properties:
++ - #address-cells: shall be 1.
++ - #size-cells: shall be 0.
++ - compatible: shall be one of "marvell,orion-eth", "marvell,kirkwood-eth".
++ - reg: address and length of the controller registers.
++
++Optional controller properties:
++ - clocks: phandle reference to the controller clock.
++ - marvell,tx-checksum-limit: max tx packet size for hardware checksum.
++
++* Ethernet port node
++
++Required port properties:
++ - device_type: shall be "network".
++ - compatible: shall be one of "marvell,orion-eth-port",
++      "marvell,kirkwood-eth-port".
++ - reg: port number relative to ethernet controller, shall be 0, 1, or 2.
++ - interrupts: port interrupt.
++ - local-mac-address: 6 bytes MAC address.
++
++Optional port properties:
++ - marvell,tx-queue-size: size of the transmit ring buffer.
++ - marvell,tx-sram-addr: address of transmit descriptor buffer located in SRAM.
++ - marvell,tx-sram-size: size of transmit descriptor buffer located in SRAM.
++ - marvell,rx-queue-size: size of the receive ring buffer.
++ - marvell,rx-sram-addr: address of receive descriptor buffer located in SRAM.
++ - marvell,rx-sram-size: size of receive descriptor buffer located in SRAM.
++
++and
++
++ - phy-handle: phandle reference to ethernet PHY.
++
++or
++
++ - speed: port speed if no PHY connected.
++ - duplex: port mode if no PHY connected.
++
++* Node example:
++
++mdio-bus {
++	...
++	ethphy: ethernet-phy@8 {
++		device_type = "ethernet-phy";
++		...
++	};
++};
++
++eth: ethernet-controller@72000 {
++	compatible = "marvell,orion-eth";
++	#address-cells = <1>;
++	#size-cells = <0>;
++	reg = <0x72000 0x2000>;
++	clocks = <&gate_clk 2>;
++	marvell,tx-checksum-limit = <1600>;
++
++	ethernet@0 {
++		device_type = "network";
++		compatible = "marvell,orion-eth-port";
++		reg = <0>;
++		interrupts = <29>;
++		phy-handle = <&ethphy>;
++		local-mac-address = [00 00 00 00 00 00];
++	};
++};
 diff --git a/drivers/net/ethernet/marvell/mv643xx_eth.c b/drivers/net/ethernet/marvell/mv643xx_eth.c
-index fa8c84a..5b375ee 100644
+index 5b375ee..5acaaad 100644
 --- a/drivers/net/ethernet/marvell/mv643xx_eth.c
 +++ b/drivers/net/ethernet/marvell/mv643xx_eth.c
-@@ -116,6 +116,8 @@ static char mv643xx_eth_driver_version[] = "1.4";
- #define  LINK_UP			0x00000002
- #define TXQ_COMMAND			0x0048
- #define TXQ_FIX_PRIO_CONF		0x004c
-+#define PORT_SERIAL_CONTROL1		0x004c
-+#define  CLK125_BYPASS_EN		0x00000010
- #define TX_BW_RATE			0x0050
- #define TX_BW_MTU			0x0058
- #define TX_BW_BURST			0x005c
-@@ -2701,6 +2703,15 @@ static int mv643xx_eth_probe(struct platform_device *pdev)
+@@ -60,6 +60,9 @@
+ #include <linux/types.h>
+ #include <linux/slab.h>
+ #include <linux/clk.h>
++#include <linux/of.h>
++#include <linux/of_irq.h>
++#include <linux/of_net.h>
+ #include <linux/of_mdio.h>
  
- 	mp->dev = dev;
+ static char mv643xx_eth_driver_name[] = "mv643xx_eth";
+@@ -2453,13 +2456,148 @@ static void infer_hw_params(struct mv643xx_eth_shared_private *msp)
+ 	}
+ }
  
-+	/* Kirkwood resets some registers on gated clocks. Especially
-+	 * CLK125_BYPASS_EN must be cleared but is not available on
-+	 * all other SoCs/System Controllers using this driver.
-+	 */
-+	if (of_device_is_compatible(pdev->dev.of_node,
-+				    "marvell,kirkwood-eth-port"))
-+		wrlp(mp, PORT_SERIAL_CONTROL1,
-+		     rdlp(mp, PORT_SERIAL_CONTROL1) & ~CLK125_BYPASS_EN);
++#if defined(CONFIG_OF)
++static const struct of_device_id mv643xx_eth_shared_ids[] = {
++	{ .compatible = "marvell,orion-eth", },
++	{ .compatible = "marvell,kirkwood-eth", },
++	{ }
++};
++MODULE_DEVICE_TABLE(of, mv643xx_eth_shared_ids);
++#endif
 +
- 	/*
- 	 * Start with a default rate, and if there is a clock, allow
- 	 * it to override the default.
++#if defined(CONFIG_OF) && !defined(CONFIG_MV64X60)
++#define mv643xx_eth_property(_np, _name, _v)				\
++	do {								\
++		u32 tmp;						\
++		if (!of_property_read_u32(_np, "marvell," _name, &tmp))	\
++			_v = tmp;					\
++	} while (0)
++
++static struct platform_device *port_platdev[3];
++
++static int mv643xx_eth_shared_of_add_port(struct platform_device *pdev,
++					  struct device_node *pnp)
++{
++	struct platform_device *ppdev;
++	struct mv643xx_eth_platform_data ppd;
++	struct resource res;
++	const char *mac_addr;
++	int ret;
++
++	memset(&ppd, 0, sizeof(ppd));
++	ppd.shared = pdev;
++
++	memset(&res, 0, sizeof(res));
++	if (!of_irq_to_resource(pnp, 0, &res)) {
++		dev_err(&pdev->dev, "missing interrupt on %s\n", pnp->name);
++		return -EINVAL;
++	}
++
++	if (of_property_read_u32(pnp, "reg", &ppd.port_number)) {
++		dev_err(&pdev->dev, "missing reg property on %s\n", pnp->name);
++		return -EINVAL;
++	}
++
++	if (ppd.port_number >= 3) {
++		dev_err(&pdev->dev, "invalid reg property on %s\n", pnp->name);
++		return -EINVAL;
++	}
++
++	mac_addr = of_get_mac_address(pnp);
++	if (mac_addr)
++		memcpy(ppd.mac_addr, mac_addr, 6);
++
++	mv643xx_eth_property(pnp, "tx-queue-size", ppd.tx_queue_size);
++	mv643xx_eth_property(pnp, "tx-sram-addr", ppd.tx_sram_addr);
++	mv643xx_eth_property(pnp, "tx-sram-size", ppd.tx_sram_size);
++	mv643xx_eth_property(pnp, "rx-queue-size", ppd.rx_queue_size);
++	mv643xx_eth_property(pnp, "rx-sram-addr", ppd.rx_sram_addr);
++	mv643xx_eth_property(pnp, "rx-sram-size", ppd.rx_sram_size);
++
++	ppd.phy_node = of_parse_phandle(pnp, "phy-handle", 0);
++	if (!ppd.phy_node) {
++		ppd.phy_addr = MV643XX_ETH_PHY_NONE;
++		of_property_read_u32(pnp, "speed", &ppd.speed);
++		of_property_read_u32(pnp, "duplex", &ppd.duplex);
++	}
++
++	ppdev = platform_device_alloc(MV643XX_ETH_NAME, ppd.port_number);
++	if (!ppdev)
++		return -ENOMEM;
++	ppdev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
++
++	ret = platform_device_add_resources(ppdev, &res, 1);
++	if (ret)
++		goto port_err;
++
++	ret = platform_device_add_data(ppdev, &ppd, sizeof(ppd));
++	if (ret)
++		goto port_err;
++
++	ret = platform_device_add(ppdev);
++	if (ret)
++		goto port_err;
++
++	port_platdev[ppd.port_number] = ppdev;
++
++	return 0;
++
++port_err:
++	platform_device_put(ppdev);
++	return ret;
++}
++
++static int mv643xx_eth_shared_of_probe(struct platform_device *pdev)
++{
++	struct mv643xx_eth_shared_platform_data *pd;
++	struct device_node *pnp, *np = pdev->dev.of_node;
++	int ret;
++
++	/* bail out if not registered from DT */
++	if (!np)
++		return 0;
++
++	pd = devm_kzalloc(&pdev->dev, sizeof(*pd), GFP_KERNEL);
++	if (!pd)
++		return -ENOMEM;
++	pdev->dev.platform_data = pd;
++
++	mv643xx_eth_property(np, "tx-checksum-limit", pd->tx_csum_limit);
++
++	for_each_available_child_of_node(np, pnp) {
++		ret = mv643xx_eth_shared_of_add_port(pdev, pnp);
++		if (ret)
++			return ret;
++	}
++	return 0;
++}
++
++static void mv643xx_eth_shared_of_remove(void)
++{
++	int n;
++
++	for (n = 0; n < 3; n++) {
++		platform_device_del(port_platdev[n]);
++		port_platdev[n] = NULL;
++	}
++}
++#else
++static int mv643xx_eth_shared_of_probe(struct platform_device *pdev)
++{
++	return 0
++}
++
++#define mv643xx_eth_shared_of_remove()
++#endif
++
+ static int mv643xx_eth_shared_probe(struct platform_device *pdev)
+ {
+ 	static int mv643xx_eth_version_printed;
+-	struct mv643xx_eth_shared_platform_data *pd = pdev->dev.platform_data;
++	struct mv643xx_eth_shared_platform_data *pd;
+ 	struct mv643xx_eth_shared_private *msp;
+ 	const struct mbus_dram_target_info *dram;
+ 	struct resource *res;
++	int ret;
+ 
+ 	if (!mv643xx_eth_version_printed++)
+ 		pr_notice("MV-643xx 10/100/1000 ethernet driver version %s\n",
+@@ -2472,6 +2610,7 @@ static int mv643xx_eth_shared_probe(struct platform_device *pdev)
+ 	msp = devm_kzalloc(&pdev->dev, sizeof(*msp), GFP_KERNEL);
+ 	if (msp == NULL)
+ 		return -ENOMEM;
++	platform_set_drvdata(pdev, msp);
+ 
+ 	msp->base = devm_ioremap(&pdev->dev, res->start, resource_size(res));
+ 	if (msp->base == NULL)
+@@ -2488,12 +2627,15 @@ static int mv643xx_eth_shared_probe(struct platform_device *pdev)
+ 	if (dram)
+ 		mv643xx_eth_conf_mbus_windows(msp, dram);
+ 
++	ret = mv643xx_eth_shared_of_probe(pdev);
++	if (ret)
++		return ret;
++	pd = pdev->dev.platform_data;
++
+ 	msp->tx_csum_limit = (pd != NULL && pd->tx_csum_limit) ?
+ 					pd->tx_csum_limit : 9 * 1024;
+ 	infer_hw_params(msp);
+ 
+-	platform_set_drvdata(pdev, msp);
+-
+ 	return 0;
+ }
+ 
+@@ -2501,9 +2643,9 @@ static int mv643xx_eth_shared_remove(struct platform_device *pdev)
+ {
+ 	struct mv643xx_eth_shared_private *msp = platform_get_drvdata(pdev);
+ 
++	mv643xx_eth_shared_of_remove();
+ 	if (!IS_ERR(msp->clk))
+ 		clk_disable_unprepare(msp->clk);
+-
+ 	return 0;
+ }
+ 
+@@ -2513,6 +2655,7 @@ static struct platform_driver mv643xx_eth_shared_driver = {
+ 	.driver = {
+ 		.name	= MV643XX_ETH_SHARED_NAME,
+ 		.owner	= THIS_MODULE,
++		.of_match_table = of_match_ptr(mv643xx_eth_shared_ids),
+ 	},
+ };
+ 
+@@ -2721,6 +2864,8 @@ static int mv643xx_eth_probe(struct platform_device *pdev)
+ 	if (!IS_ERR(mp->clk)) {
+ 		clk_prepare_enable(mp->clk);
+ 		mp->t_clk = clk_get_rate(mp->clk);
++	} else if (!IS_ERR(mp->shared->clk)) {
++		mp->t_clk = clk_get_rate(mp->shared->clk);
+ 	}
+ 
+ 	set_params(mp, pd);
 -- 
 1.7.10.4
