@@ -1,25 +1,23 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-f49.google.com (mail-pa0-f49.google.com
- [209.85.220.49])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8C64A2C032A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2013 10:20:49 +1000 (EST)
-Received: by mail-pa0-f49.google.com with SMTP id bi5so8481595pad.8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2013 17:20:47 -0700 (PDT)
-Message-ID: <51A549D9.3080605@ozlabs.ru>
-Date: Wed, 29 May 2013 10:20:41 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-MIME-Version: 1.0
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 18EA42C0342
+ for <linuxppc-dev@ozlabs.org>; Wed, 29 May 2013 10:41:31 +1000 (EST)
+Message-ID: <1369788078.3928.28.camel@pasglop>
+Subject: Re: [PATCH] KVM: PPC: Book3S: Add support for H_IPOLL and H_XIRR_X
+ in XICS emulation
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 3/4] KVM: PPC: Add support for IOMMU in-kernel handling
-References: <1369758773.18630.1@snotra>
-In-Reply-To: <1369758773.18630.1@snotra>
-Content-Type: text/plain; charset=KOI8-R
-Cc: kvm@vger.kernel.org, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Date: Wed, 29 May 2013 10:41:18 +1000
+In-Reply-To: <1369762902.18630.2@snotra>
+References: <1369762902.18630.2@snotra>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: kvm@vger.kernel.org, Gleb Natapov <gleb@redhat.com>,
+ Marcelo Tosatti <mtosatti@redhat.com>, Alexander Graf <agraf@suse.de>,
+ kvm-ppc@vger.kernel.org, linuxppc-dev@ozlabs.org,
+ Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,51 +27,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/29/2013 02:32 AM, Scott Wood wrote:
-> On 05/24/2013 09:45:24 PM, David Gibson wrote:
->> On Wed, May 22, 2013 at 04:06:57PM -0500, Scott Wood wrote:
->> > On 05/20/2013 10:06:46 PM, Alexey Kardashevskiy wrote:
->> > >diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
->> > >index 8465c2a..da6bf61 100644
->> > >--- a/arch/powerpc/kvm/powerpc.c
->> > >@@ -396,6 +396,7 @@ int kvm_dev_ioctl_check_extension(long ext)
->> > >+++ b/arch/powerpc/kvm/powerpc.c
->> > >         break;
->> > > #endif
->> > >     case KVM_CAP_SPAPR_MULTITCE:
->> > >+    case KVM_CAP_SPAPR_TCE_IOMMU:
->> > >         r = 1;
->> > >         break;
->> > >     default:
->> >
->> > Don't advertise SPAPR capabilities if it's not book3s -- and
->> > probably there's some additional limitation that would be
->> > appropriate.
->>
->> So, in the case of MULTITCE, that's not quite right.  PR KVM can
->> emulate a PAPR system on a BookE machine, and there's no reason not to
->> allow TCE acceleration as well.
+On Tue, 2013-05-28 at 12:41 -0500, Scott Wood wrote:
+
+> I believe Alex is staying far away from e-mail on his vacation.  He's  
+> asked me to fill in for him while he's gone.
 > 
-> That might (or might not; consider things like Altivec versus SPE opcode
-> conflict, whether unimplemented SPRs trap, behavior of unprivileged
-> SPRs/instructions, etc) be true in theory, but it's not currently a
-> supported configuration.  BookE KVM does not support emulating a different
-> CPU than the host.  In the unlikely case that ever changes to the point of
-> allowing PAPR guests on a BookE host, then we can revisit how to properly
-> determine whether the capability is supported, but for now the capability
-> will never be valid in the CONFIG_BOOKE case (though I'd rather see it
-> depend on an appropriate book3s symbol than depend on !BOOKE).
+> The patch itself seems reasonable (though I don't know much about XICS,  
+> and do have one question...), but I'll leave it up to Gleb/Marcelo/Ben  
+> if it should go in for 3.10 and via which tree.  I understand the  
+> desire to not have an incomplete ABI in a released version, but Linus  
+> is already grumbling about how much went into rc3, and you say the  
+> hcalls aren't currently used...  Are they likely to be used in any  
+> timeframe in which we'd reasonably care about 3.10? 
+
+Yes. I'd like to have them in. Their implementation is actually fairly
+trivial and they cannot be emulated by qemu if the rest of the XICS is
+in the kernel, so it's a problem.
+
+>  If so, would the  
+> effect of not having them implemented be such that it would be worse  
+> than not having in-kernel XICS at all?
+
+Well, that would mean that running that potential future kernel that
+uses them (or some other OS that already uses them) would not work
+without the user explicitly disable in kernel irq chip.
+
+> > @@ -787,6 +804,18 @@ int kvmppc_xics_hcall(struct kvm_vcpu *vcpu, u32  
+> > req)
+> >  	if (!xics || !vcpu->arch.icp)
+> >  		return H_HARDWARE;
+> > 
+> > +	/* These requests don't have real-mode implementations at  
+> > present */
+> > +	switch (req) {
+> > +	case H_XIRR_X:
+> > +		res = kvmppc_h_xirr(vcpu);
+> > +		kvmppc_set_gpr(vcpu, 4, res);
+> > +		kvmppc_set_gpr(vcpu, 5, get_tb());
+> > +		return rc;
+> > +	case H_IPOLL:
+> > +		rc = kvmppc_h_ipoll(vcpu, kvmppc_get_gpr(vcpu, 4));
+> > +		return rc;
+> > +	}
+> > +
+> >  	/* Check for real mode returning too hard */
+> >  	if (xics->real_mode)
+> >  		return kvmppc_xics_rm_complete(vcpu, req);
 > 
-> Or we could just leave it as is, and let it indicate whether the host
-> kernel supports the feature in general, with the user needing to understand
-> when it's applicable...  I'm a bit confused by the documentation, however
-> -- the MULTITCE capability was documented in the "capabilities that can be
-> enabled" section, but I don't see where it can be enabled.
+> Could you explain what's going on here relative to  
+> kvmppc_xics_rm_complete()?  What does "returning too hard" mean, and  
+> why must rm_action not be checked for these hcalls?
 
+This is related to how we handle some hcalls in real mode as a fast
+path. The real-mode stuff cannot handle cases that require for example a
+re-emit of the interrupt, a reject, etc... so in some cases, it returns
+H_TOO_HARD which causes KVM to exit and try to handle the hcall again in
+kernel virtual mode.
 
-True, it cannot be enabled (but it could be enabled a long time ago), it is
-either supported or not, I'll fix the documentation. Thanks!
+When doing so as the result of a XICS hcall, it sets a bit mask of
+"tasks" to handle in virtual mode (because it will have already
+partially done the operation, it cannot just re-play the whole hcall).
 
+So when real-mode is supported we must not just call the normal virtual
+mode version of the hcalls, we instead go to kvmppc_xics_rm_complete()
+to handle those "tasks".
 
--- 
-Alexey
+However, for those 2 "missing" hcalls, we have no real mode
+implementation at all (we didn't bother, we will do that later if
+needed, it's purely a performance issue). So we need to fully handle
+them in virtual mode, and we know there will be no "tasks" to handle in
+rm_complete.
+
+We could have done a real mode variant but we wanted to keep the patch
+as small as possible for 3.10.
+
+Cheers,
+Ben.
