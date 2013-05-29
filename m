@@ -1,23 +1,32 @@
-Return-Path: <B41889@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2B3DE2C0209
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2013 19:31:02 +1000 (EST)
-Message-ID: <51A5CAC1.6030800@freescale.com>
-Date: Wed, 29 May 2013 17:30:41 +0800
-From: Chen Yuanquan-B41889 <B41889@freescale.com>
-MIME-Version: 1.0
-To: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH] powerpc/pci: Improve device hotplug initialization
-References: <1369762514-27352-1-git-send-email-linux@roeck-us.net>
-In-Reply-To: <1369762514-27352-1-git-send-email-linux@roeck-us.net>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: Yuanquan Chen <Yuanquan.Chen@freescale.com>,
- Hiroo Matsumoto <matsumoto.hiroo@jp.fujitsu.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <liuj97@gmail.com>
+Received: from mail-pd0-f179.google.com (mail-pd0-f179.google.com
+ [209.85.192.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6A53D2C0327
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2013 00:00:03 +1000 (EST)
+Received: by mail-pd0-f179.google.com with SMTP id q11so8918613pdj.10
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2013 07:00:00 -0700 (PDT)
+From: Jiang Liu <liuj97@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v6,
+ part4 31/41] mm/ppc: prepare for removing num_physpages and simplify
+ mem_init()
+Date: Wed, 29 May 2013 21:57:49 +0800
+Message-Id: <1369835879-23553-32-git-send-email-jiang.liu@huawei.com>
+In-Reply-To: <1369835879-23553-1-git-send-email-jiang.liu@huawei.com>
+References: <1369835879-23553-1-git-send-email-jiang.liu@huawei.com>
+Cc: linux-arch@vger.kernel.org,
+ James Bottomley <James.Bottomley@HansenPartnership.com>,
+ David Howells <dhowells@redhat.com>, Jiang Liu <jiang.liu@huawei.com>,
+ Wen Congyang <wency@cn.fujitsu.com>, linux-mm@kvack.org,
+ Mark Salter <msalter@redhat.com>, linux-kernel@vger.kernel.org,
+ Michal Hocko <mhocko@suse.cz>, Minchan Kim <minchan@kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Mel Gorman <mgorman@suse.de>,
+ David Rientjes <rientjes@google.com>, linuxppc-dev@lists.ozlabs.org,
+ Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
+ KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+ Jianguo Wu <wujianguo@huawei.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,13 +36,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/29/2013 01:35 AM, Guenter Roeck wrote:
-> bios_add_device(). Drop explicit calls to pcibios_setup_device();
-> this makes pcibios_setup_bus_devices() a noop function which could
-> eve
+Prepare for removing num_physpages and simplify mem_init().
 
-Yeah, it's more reasonable to do the irq and DMA related initialization
-in one code path for all devices.
+Signed-off-by: Jiang Liu <jiang.liu@huawei.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org
+---
+ arch/powerpc/mm/mem.c | 56 +++++++++++----------------------------------------
+ 1 file changed, 12 insertions(+), 44 deletions(-)
 
-Regards,
-Yuanquan
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 3bcfc0d..49c18b6 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -299,46 +299,27 @@ void __init paging_init(void)
+ 
+ void __init mem_init(void)
+ {
+-#ifdef CONFIG_NEED_MULTIPLE_NODES
+-	int nid;
+-#endif
+-	pg_data_t *pgdat;
+-	unsigned long i;
+-	struct page *page;
+-	unsigned long reservedpages = 0, codesize, initsize, datasize, bsssize;
+-
+ #ifdef CONFIG_SWIOTLB
+ 	swiotlb_init(0);
+ #endif
+ 
+-	num_physpages = memblock_phys_mem_size() >> PAGE_SHIFT;
+ 	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE);
+ 
+ #ifdef CONFIG_NEED_MULTIPLE_NODES
+-        for_each_online_node(nid) {
+-		if (NODE_DATA(nid)->node_spanned_pages != 0) {
+-			printk("freeing bootmem node %d\n", nid);
+-			free_all_bootmem_node(NODE_DATA(nid));
+-		}
++	{
++		pg_data_t *pgdat;
++
++		for_each_online_pgdat(pgdat)
++			if (pgdat->node_spanned_pages != 0) {
++				printk("freeing bootmem node %d\n",
++					pgdat->node_id);
++				free_all_bootmem_node(pgdat);
++			}
+ 	}
+ #else
+ 	max_mapnr = max_pfn;
+ 	free_all_bootmem();
+ #endif
+-	for_each_online_pgdat(pgdat) {
+-		for (i = 0; i < pgdat->node_spanned_pages; i++) {
+-			if (!pfn_valid(pgdat->node_start_pfn + i))
+-				continue;
+-			page = pgdat_page_nr(pgdat, i);
+-			if (PageReserved(page))
+-				reservedpages++;
+-		}
+-	}
+-
+-	codesize = (unsigned long)&_sdata - (unsigned long)&_stext;
+-	datasize = (unsigned long)&_edata - (unsigned long)&_sdata;
+-	initsize = (unsigned long)&__init_end - (unsigned long)&__init_begin;
+-	bsssize = (unsigned long)&__bss_stop - (unsigned long)&__bss_start;
+ 
+ #ifdef CONFIG_HIGHMEM
+ 	{
+@@ -348,13 +329,9 @@ void __init mem_init(void)
+ 		for (pfn = highmem_mapnr; pfn < max_mapnr; ++pfn) {
+ 			phys_addr_t paddr = (phys_addr_t)pfn << PAGE_SHIFT;
+ 			struct page *page = pfn_to_page(pfn);
+-			if (memblock_is_reserved(paddr))
+-				continue;
+-			free_highmem_page(page);
+-			reservedpages--;
++			if (!memblock_is_reserved(paddr))
++				free_highmem_page(page);
+ 		}
+-		printk(KERN_DEBUG "High memory: %luk\n",
+-		       totalhigh_pages << (PAGE_SHIFT-10));
+ 	}
+ #endif /* CONFIG_HIGHMEM */
+ 
+@@ -367,16 +344,7 @@ void __init mem_init(void)
+ 		(mfspr(SPRN_TLB1CFG) & TLBnCFG_N_ENTRY) - 1;
+ #endif
+ 
+-	printk(KERN_INFO "Memory: %luk/%luk available (%luk kernel code, "
+-	       "%luk reserved, %luk data, %luk bss, %luk init)\n",
+-		nr_free_pages() << (PAGE_SHIFT-10),
+-		num_physpages << (PAGE_SHIFT-10),
+-		codesize >> 10,
+-		reservedpages << (PAGE_SHIFT-10),
+-		datasize >> 10,
+-		bsssize >> 10,
+-		initsize >> 10);
+-
++	mem_init_print_info(NULL);
+ #ifdef CONFIG_PPC32
+ 	pr_info("Kernel virtual memory layout:\n");
+ 	pr_info("  * 0x%08lx..0x%08lx  : fixmap\n", FIXADDR_START, FIXADDR_TOP);
+-- 
+1.8.1.2
