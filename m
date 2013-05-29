@@ -1,28 +1,27 @@
-Return-Path: <B44306@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe002.messaging.microsoft.com [213.199.154.205])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A8F7B2C00B1
- for <linuxppc-dev@ozlabs.org>; Thu, 30 May 2013 08:12:50 +1000 (EST)
-Received: from mail27-am1 (localhost [127.0.0.1])	by mail27-am1-R.bigfish.com
- (Postfix) with ESMTP id D22F53A00C7	for <linuxppc-dev@ozlabs.org>;
- Wed, 29 May 2013 22:12:46 +0000 (UTC)
-Received: from AM1EHSMHS004.bigfish.com (unknown [10.3.201.240])	by
- mail27-am1.bigfish.com (Postfix) with ESMTP id 145E7C004E	for
- <linuxppc-dev@ozlabs.org>; Wed, 29 May 2013 22:12:45 +0000 (UTC)
-From: Lijun Pan <Lijun.Pan@freescale.com>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 3/3] powerpc/perf: Add e6500 PMU driver
-Date: Wed, 29 May 2013 17:12:42 -0500
-Message-ID: <1369865562-29525-3-git-send-email-Lijun.Pan@freescale.com>
-In-Reply-To: <1369865562-29525-1-git-send-email-Lijun.Pan@freescale.com>
-References: <1369865562-29525-1-git-send-email-Lijun.Pan@freescale.com>
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pd0-f177.google.com (mail-pd0-f177.google.com
+ [209.85.192.177])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 469422C00AA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2013 09:10:42 +1000 (EST)
+Received: by mail-pd0-f177.google.com with SMTP id u11so9489792pdi.8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2013 16:10:40 -0700 (PDT)
+Message-ID: <51A68AE9.6070709@ozlabs.ru>
+Date: Thu, 30 May 2013 09:10:33 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Lijun.Pan@freescale.com, Poonam Aggrwal <Poonam.Aggrwal@freescale.com>,
- Priyanka Jain <Priyanka.Jain@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 3/4] KVM: PPC: Add support for IOMMU in-kernel handling
+References: <1369763138.18630.3@snotra> <51A53E20.3020205@ozlabs.ru>
+ <1369784115.18630.27@snotra> <51A547F0.8090406@ozlabs.ru>
+ <1369857949.18630.42@snotra>
+In-Reply-To: <1369857949.18630.42@snotra>
+Content-Type: text/plain; charset=KOI8-R
+Cc: kvm@vger.kernel.org, Alexander Graf <agraf@suse.de>,
+ kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,182 +31,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-e6500 core performance monitors has the following features:
-- 6 performance monitor counters
-- 512 events supported
-- no threshold events
+On 05/30/2013 06:05 AM, Scott Wood wrote:
+> On 05/28/2013 07:12:32 PM, Alexey Kardashevskiy wrote:
+>> On 05/29/2013 09:35 AM, Scott Wood wrote:
+>> > On 05/28/2013 06:30:40 PM, Alexey Kardashevskiy wrote:
+>> >> >> >>> @@ -939,6 +940,9 @@ struct kvm_s390_ucas_mapping {
+>> >> >> >>> #define KVM_GET_DEVICE_ATTR      _IOW(KVMIO,  0xe2, struct
+>> >> >> >>> kvm_device_attr)
+>> >> >> >>> #define KVM_HAS_DEVICE_ATTR      _IOW(KVMIO,  0xe3, struct
+>> >> >> >>> kvm_device_attr)
+>> >> >> >>>
+>> >> >> >>> +/* ioctl for SPAPR TCE IOMMU */
+>> >> >> >>> +#define KVM_CREATE_SPAPR_TCE_IOMMU _IOW(KVMIO,  0xe4, struct
+>> >> >> >>> kvm_create_spapr_tce_iommu)
+>> >> >> >>
+>> >> >> >> Shouldn't this go under the vm ioctl section?
+>> >> >>
+>> >> >>
+>> >> >> The KVM_CREATE_SPAPR_TCE_IOMMU ioctl (the version for emulated
+>> >> devices) is
+>> >> >> in this section so I decided to keep them together. Wrong?
+>> >> >
+>> >> > You decided to keep KVM_CREATE_SPAPR_TCE_IOMMU together with
+>> >> > KVM_CREATE_SPAPR_TCE_IOMMU?
+>> >>
+>> >> Yes.
+>> >
+>> > Sigh.  That's the same thing repeated.  There's only one IOCTL. 
+>> Nothing is
+>> > being "kept together".
+>>
+>> Sorry, I meant this ioctl - KVM_CREATE_SPAPR_TCE.
+> 
+> But you didn't put it in the same section as KVM_CREATE_SPAPR_TCE.  0xe0
+> begins a different section.
 
-e6500 PMU has more specific events (Data L1 cache misses, Instruction L1
-cache misses, etc ) than e500 PMU (which only had Data L1 cache reloads,
-etc). Where available, the more specific events have been used which will
-produce slightly different results than e500 PMU equivalents.
+It is not really obvious that there are sections as no comment defines
+those :) But yes, makes sense to move it up a bit and change the code to 0xad.
 
-Based on work done by Priyanka Jain
 
-Signed-off-by: Lijun Pan <Lijun.Pan@freescale.com>
-Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
-Signed-off-by: Poonam Aggrwal <Poonam.Aggrwal@freescale.com>
----
- arch/powerpc/include/asm/reg_fsl_emb.h |    4 +-
- arch/powerpc/perf/Makefile             |    2 +-
- arch/powerpc/perf/e6500-pmu.c          |  120 ++++++++++++++++++++++++++++++++
- 3 files changed, 124 insertions(+), 2 deletions(-)
- create mode 100644 arch/powerpc/perf/e6500-pmu.c
 
-diff --git a/arch/powerpc/include/asm/reg_fsl_emb.h b/arch/powerpc/include/asm/reg_fsl_emb.h
-index c51d52e..0e3ddf5 100644
---- a/arch/powerpc/include/asm/reg_fsl_emb.h
-+++ b/arch/powerpc/include/asm/reg_fsl_emb.h
-@@ -34,8 +34,10 @@
- #define PMLCA_FCM1	0x10000000	/* Freeze when PMM==1 */
- #define PMLCA_FCM0	0x08000000	/* Freeze when PMM==0 */
- #define PMLCA_CE	0x04000000	/* Condition Enable */
-+#define PMLCA_FGCS1	0x00000002	/* Freeze in guest state */
-+#define PMLCA_FGCS0	0x00000001	/* Freeze in hypervisor state */
- 
--#define PMLCA_EVENT_MASK 0x00ff0000	/* Event field */
-+#define PMLCA_EVENT_MASK 0x01ff0000	/* Event field */
- #define PMLCA_EVENT_SHIFT	16
- 
- #define PMRN_PMLCB0	0x110	/* PM Local Control B0 */
-diff --git a/arch/powerpc/perf/Makefile b/arch/powerpc/perf/Makefile
-index af3fac2..06dd8d5 100644
---- a/arch/powerpc/perf/Makefile
-+++ b/arch/powerpc/perf/Makefile
-@@ -8,7 +8,7 @@ obj64-$(CONFIG_PPC_PERF_CTRS)	+= power4-pmu.o ppc970-pmu.o power5-pmu.o \
- obj32-$(CONFIG_PPC_PERF_CTRS)	+= mpc7450-pmu.o
- 
- obj-$(CONFIG_FSL_EMB_PERF_EVENT) += core-fsl-emb.o
--obj-$(CONFIG_FSL_EMB_PERF_EVENT_E500) += e500-pmu.o
-+obj-$(CONFIG_FSL_EMB_PERF_EVENT_E500) += e500-pmu.o e6500-pmu.o
- 
- obj-$(CONFIG_PPC64)		+= $(obj64-y)
- obj-$(CONFIG_PPC32)		+= $(obj32-y)
-diff --git a/arch/powerpc/perf/e6500-pmu.c b/arch/powerpc/perf/e6500-pmu.c
-new file mode 100644
-index 0000000..e38ed1f
---- /dev/null
-+++ b/arch/powerpc/perf/e6500-pmu.c
-@@ -0,0 +1,120 @@
-+/*
-+ * Performance counter support for e6500 family processors.
-+ *
-+ * Based on e500-pmu.c
-+ * Copyright 2013 Freescale Semiconductor, Inc.
-+ * Copyright 2008-2009 Paul Mackerras, IBM Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <linux/string.h>
-+#include <linux/perf_event.h>
-+#include <asm/reg.h>
-+#include <asm/cputable.h>
-+
-+/*
-+ * Map of generic hardware event types to hardware events
-+ * Zero if unsupported
-+ */
-+static int e6500_generic_events[] = {
-+	[PERF_COUNT_HW_CPU_CYCLES] = 1,
-+	[PERF_COUNT_HW_INSTRUCTIONS] = 2,
-+	[PERF_COUNT_HW_CACHE_MISSES] = 221,
-+	[PERF_COUNT_HW_BRANCH_INSTRUCTIONS] = 12,
-+	[PERF_COUNT_HW_BRANCH_MISSES] = 15,
-+};
-+
-+#define C(x)	PERF_COUNT_HW_CACHE_##x
-+
-+/*
-+ * Table of generalized cache-related events.
-+ * 0 means not supported, -1 means nonsensical, other values
-+ * are event codes.
-+ */
-+static int e6500_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
-+	[C(L1D)] = {
-+				/*RESULT_ACCESS		RESULT_MISS */
-+		[C(OP_READ)] = {	27,		222	},
-+		[C(OP_WRITE)] = {	28,		223	},
-+		[C(OP_PREFETCH)] = {	29,		0	},
-+	},
-+	[C(L1I)] = {
-+				/*RESULT_ACCESS		RESULT_MISS */
-+		[C(OP_READ)] = {	2,		254	},
-+		[C(OP_WRITE)] = {	-1,		-1	},
-+		[C(OP_PREFETCH)] = {	37,		0	},
-+	},
-+	/*
-+	 * Assuming LL means L2, it's not a good match for this model.
-+	 * It does not have separate read/write events (but it does have
-+	 * separate instruction/data events).
-+	 */
-+	[C(LL)] = {
-+				/*RESULT_ACCESS		RESULT_MISS */
-+		[C(OP_READ)] = {	0,		0	},
-+		[C(OP_WRITE)] = {	0,		0	},
-+		[C(OP_PREFETCH)] = {	0,		0	},
-+	},
-+	/*
-+	 * There are data/instruction MMU misses, but that's a miss on
-+	 * the chip's internal level-one TLB which is probably not
-+	 * what the user wants.  Instead, unified level-two TLB misses
-+	 * are reported here.
-+	 */
-+	[C(DTLB)] = {
-+				/*RESULT_ACCESS		RESULT_MISS */
-+		[C(OP_READ)] = {	26,		66	},
-+		[C(OP_WRITE)] = {	-1,		-1	},
-+		[C(OP_PREFETCH)] = {	-1,		-1	},
-+	},
-+	[C(BPU)] = {
-+				/*RESULT_ACCESS		RESULT_MISS */
-+		[C(OP_READ)] = {	12,		15	},
-+		[C(OP_WRITE)] = {	-1,		-1	},
-+		[C(OP_PREFETCH)] = {	-1,		-1	},
-+	},
-+	[C(NODE)] = {
-+				/* RESULT_ACCESS	RESULT_MISS */
-+		[C(OP_READ)] = {	-1,		-1	},
-+		[C(OP_WRITE)] = {	-1,		-1	},
-+		[C(OP_PREFETCH)] = {	-1,		-1	},
-+	},
-+};
-+
-+static int num_events = 512;
-+
-+/* Upper half of event id is PMLCb, for threshold events */
-+static u64 e6500_xlate_event(u64 event_id)
-+{
-+	u32 event_low = (u32)event_id;
-+	if (event_low >= num_events ||
-+		(event_id & (FSL_EMB_EVENT_THRESHMUL | FSL_EMB_EVENT_THRESH)))
-+		return 0;
-+
-+	return FSL_EMB_EVENT_VALID;
-+}
-+
-+static struct fsl_emb_pmu e6500_pmu = {
-+	.name			= "e6500 family",
-+	.n_counter		= 6,
-+	.n_restricted		= 0,
-+	.xlate_event		= e6500_xlate_event,
-+	.n_generic		= ARRAY_SIZE(e6500_generic_events),
-+	.generic_events		= e6500_generic_events,
-+	.cache_events		= &e6500_cache_events,
-+};
-+
-+static int init_e6500_pmu(void)
-+{
-+	if (!cur_cpu_spec->oprofile_cpu_type ||
-+		strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc/e6500"))
-+		return -ENODEV;
-+
-+	return register_fsl_emb_pmu(&e6500_pmu);
-+}
-+
-+early_initcall(init_e6500_pmu);
 -- 
-1.7.9.7
+Alexey
