@@ -1,28 +1,25 @@
-Return-Path: <fweisbec@gmail.com>
-Received: from mail-wg0-x231.google.com (mail-wg0-x231.google.com
- [IPv6:2a00:1450:400c:c00::231])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C7E262C013D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2013 07:32:07 +1000 (EST)
-Received: by mail-wg0-f49.google.com with SMTP id y10so6708403wgg.4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2013 14:32:03 -0700 (PDT)
-Date: Wed, 29 May 2013 23:32:01 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC PATCH v3 0/5] powerpc: Support context tracking for Power
- pSeries
-Message-ID: <20130529213159.GD17419@somewhere>
-References: <1368422493-9831-1-git-send-email-zhong@linux.vnet.ibm.com>
- <1368424306.19924.20.camel@pasglop>
- <1368432193.2618.30.camel@ThinkPad-T5421>
- <1368435563.19924.28.camel@pasglop>
+Return-Path: <B44306@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2977B2C00B1
+ for <linuxppc-dev@ozlabs.org>; Thu, 30 May 2013 08:12:48 +1000 (EST)
+Received: from mail169-tx2 (localhost [127.0.0.1])	by
+ mail169-tx2-R.bigfish.com (Postfix) with ESMTP id 480C1400BB	for
+ <linuxppc-dev@ozlabs.org>; Wed, 29 May 2013 22:12:46 +0000 (UTC)
+Received: from TX2EHSMHS015.bigfish.com (unknown [10.9.14.240])	by
+ mail169-tx2.bigfish.com (Postfix) with ESMTP id 52BB21E004B	for
+ <linuxppc-dev@ozlabs.org>; Wed, 29 May 2013 22:12:44 +0000 (UTC)
+From: Lijun Pan <Lijun.Pan@freescale.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH 1/3] powerpc/perf: correct typos in counter enumeration
+Date: Wed, 29 May 2013 17:12:40 -0500
+Message-ID: <1369865562-29525-1-git-send-email-Lijun.Pan@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1368435563.19924.28.camel@pasglop>
-Cc: Li Zhong <zhong@linux.vnet.ibm.com>, Anton Blanchard <anton@au1.ibm.com>,
- linux-kernel@vger.kernel.org, paulus@samba.org, paulmck@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: Lijun.Pan@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,27 +29,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, May 13, 2013 at 06:59:23PM +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2013-05-13 at 16:03 +0800, Li Zhong wrote:
-> > 
-> > To my understanding, it is used to enable RCU user extended quiescent
-> > state, so RCU on that cpu doesn't need scheduler ticks. And together
-> > with some other code(already in 3.10), we are able to remove the ticks
-> > in some cases (e.g. only 1 task running on the cpu, with some other
-> > limitations).
-> 
-> Ok, sounds interesting. Once you fix the little cosmetic issue, I don't
-> see any reason not to merge them as it's basically wiring up an existing
-> feature (in that regard the patches are pretty straightforward) and I
-> assume the overhead is only there when you enable it.
+Signed-off-by: Lijun Pan <Lijun.Pan@freescale.com>
+---
+ arch/powerpc/include/asm/reg_fsl_emb.h |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-Yeah when CONFIG_RCU_USER_QS=n and CONFIG_VIRT_CPU_ACCOUNTING_GEN=n this
-should be zero overhead. And those configs are only needed for full dynticks.
-
-Thanks.
-
-> 
-> Cheers,
-> Ben.
-> 
-> 
+diff --git a/arch/powerpc/include/asm/reg_fsl_emb.h b/arch/powerpc/include/asm/reg_fsl_emb.h
+index 77bb71c..1cf8ab0 100644
+--- a/arch/powerpc/include/asm/reg_fsl_emb.h
++++ b/arch/powerpc/include/asm/reg_fsl_emb.h
+@@ -17,8 +17,8 @@
+ /* Freescale Book E Performance Monitor APU Registers */
+ #define PMRN_PMC0	0x010	/* Performance Monitor Counter 0 */
+ #define PMRN_PMC1	0x011	/* Performance Monitor Counter 1 */
+-#define PMRN_PMC2	0x012	/* Performance Monitor Counter 1 */
+-#define PMRN_PMC3	0x013	/* Performance Monitor Counter 1 */
++#define PMRN_PMC2	0x012	/* Performance Monitor Counter 2 */
++#define PMRN_PMC3	0x013	/* Performance Monitor Counter 3 */
+ #define PMRN_PMLCA0	0x090	/* PM Local Control A0 */
+ #define PMRN_PMLCA1	0x091	/* PM Local Control A1 */
+ #define PMRN_PMLCA2	0x092	/* PM Local Control A2 */
+@@ -55,8 +55,8 @@
+ 
+ #define PMRN_UPMC0	0x000	/* User Performance Monitor Counter 0 */
+ #define PMRN_UPMC1	0x001	/* User Performance Monitor Counter 1 */
+-#define PMRN_UPMC2	0x002	/* User Performance Monitor Counter 1 */
+-#define PMRN_UPMC3	0x003	/* User Performance Monitor Counter 1 */
++#define PMRN_UPMC2	0x002	/* User Performance Monitor Counter 2 */
++#define PMRN_UPMC3	0x003	/* User Performance Monitor Counter 3 */
+ #define PMRN_UPMLCA0	0x080	/* User PM Local Control A0 */
+ #define PMRN_UPMLCA1	0x081	/* User PM Local Control A1 */
+ #define PMRN_UPMLCA2	0x082	/* User PM Local Control A2 */
+-- 
+1.7.9.7
