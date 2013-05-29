@@ -1,20 +1,20 @@
-Return-Path: <libo.chen@huawei.com>
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
- (using TLSv1 with cipher DES-CBC3-SHA (168/168 bits))
- (Client CN "myname.my.domain", Issuer "www.mirapoint.com" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9203B2C0345
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2013 12:40:38 +1000 (EST)
-Message-ID: <51A568EC.2070103@huawei.com>
-Date: Wed, 29 May 2013 10:33:16 +0800
-From: Libo Chen <clbchenlibo.chen@huawei.com>
-MIME-Version: 1.0
-To: <timur@tabi.org>, Greg KH <gregkh@linuxfoundation.org>
-Subject: [PATCH] driver: tty: add missing unregister in err case
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: jslaby@suse.cz, linux-kernel@vger.kernel.org,
- Rob Herring <rob.herring@calxeda.com>, Li Zefan <lizefan@huawei.com>,
- linux-serial@vger.kernel.org, Grant Likely <grant.likely@linaro.org>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.pcug.org.au [203.10.76.10])
+ by ozlabs.org (Postfix) with ESMTP id 43A2E2C02A4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2013 17:31:34 +1000 (EST)
+Date: Wed, 29 May 2013 17:31:24 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Sergey Gerasimov <Sergey.Gerasimov@astrosoft-development.com>
+Subject: Re: [PATCH 1/1] Add a new platform tree for ib8315.
+Message-Id: <20130529173124.cf024a80cfcc67c07d428830@canb.auug.org.au>
+In-Reply-To: <1369657581-19869-1-git-send-email-Sergey.Gerasimov@astrosoft-development.com>
+References: <1369657581-19869-1-git-send-email-Sergey.Gerasimov@astrosoft-development.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Wed__29_May_2013_17_31_24_+1000_+/feZyxH.ssLQ.Fs"
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,30 +24,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--Signature=_Wed__29_May_2013_17_31_24_+1000_+/feZyxH.ssLQ.Fs
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-when platform_driver_register broken, we should unregister ucc_uart_driver
+Hi Sergey,
 
-Signed-off-by: Libo chen <libo.chen@huawei.com>
----
- drivers/tty/serial/ucc_uart.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+On Mon, 27 May 2013 14:26:21 +0200 Sergey Gerasimov <Sergey.Gerasimov@astro=
+soft-development.com> wrote:
+>
+>  arch/powerpc/configs/83xx/ib8315_defconfig | 2152 ++++++++++++++++++++++=
+++++++
 
-diff --git a/drivers/tty/serial/ucc_uart.c b/drivers/tty/serial/ucc_uart.c
-index 7355303..f86f447 100644
---- a/drivers/tty/serial/ucc_uart.c
-+++ b/drivers/tty/serial/ucc_uart.c
-@@ -1518,9 +1518,11 @@ static int __init ucc_uart_init(void)
- 	}
+Please submit the result of "make savedefconfig" instead of this as it
+will be much smaller.
 
- 	ret = platform_driver_register(&ucc_uart_of_driver);
--	if (ret)
-+	if (ret) {
- 		printk(KERN_ERR
- 		       "ucc-uart: could not register platform driver\n");
-+		uart_unregister_driver(&ucc_uart_driver);
-+	}
+Thanks.
 
- 	return ret;
- }
--- 
-1.7.1
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Wed__29_May_2013_17_31_24_+1000_+/feZyxH.ssLQ.Fs
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.20 (GNU/Linux)
+
+iQIcBAEBCAAGBQJRpa7QAAoJEECxmPOUX5FEjEYP/3yWukCbM906k1Xq3vGuBkjR
+BYSTtORlX75RhdygPNdXaFR61IDgev5bw7CBCmxD7NDPLlwsNA3HAteTjlygt8xV
+Q40tOVmQ9uboOC3GBA7IYxe5ELWh6hRMclffV0LxpWCr3hmO0uJyknS4tJJnp1u/
+YBX89lLMOXGt4IKSVtz0+tIyjwgCQlF5E9jnupu7I6BRxQkUWU4xoGhY8m+jkfKg
+drMZJQ/5k+PAHRR7gOBQNTApspFhCiVuDddsusvDVVXAf3sNigOOiFdNOg2uwAav
+gTNwQXO2MgcEshiDb/BEp3FBEZDJQ8eIg0/dsVKWjgFmGCxQla4sT8nefheII29K
+7N13VFab4brivhppRRRUHSQ3ZSOmgB+sXaw3WDgeaDDeGNVXz3/2rmB8KpHCG56P
+e00gelIpvrheCVdZxcdziY1goZILm8l5f1naH6r0NY19dnIEB1SwBY+cwBvFB0/W
+6B2bXbYTpDBD6vRfLi3NXCxCofP7lAEO1RfLEo6lp8JrjFPsA7NwpKOQR0QsKMRV
+Bk5sXIMuCj5sAN48R/ZL2wIPmzwCbBhOlpQsWd9cNN96MNBentHKYhq/VndAuebF
+YLc2wZMsJc6CkpH69k/qub0cf1eRIQ1Wl3lspt8Az21J+cKl6sWomlSc/y5XYlJp
+LNnZboOrDm5K3FD+130l
+=KyaI
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__29_May_2013_17_31_24_+1000_+/feZyxH.ssLQ.Fs--
