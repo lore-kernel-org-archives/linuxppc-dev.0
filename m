@@ -1,16 +1,23 @@
-Return-Path: <pebolle@tiscali.nl>
-Received: from cpsmtpb-ews08.kpnxchange.com (cpsmtpb-ews08.kpnxchange.com
- [213.75.39.13]) by ozlabs.org (Postfix) with ESMTP id B129D2C033A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2013 17:55:52 +1000 (EST)
-Message-ID: <1369814147.23034.9.camel@x61.thuisdomein>
-Subject: [PATCH] [TRIVIAL] Fix error typo "CONFIG_START_KERNEL"
-From: Paul Bolle <pebolle@tiscali.nl>
-To: Jiri Kosina <trivial@kernel.org>
-Date: Wed, 29 May 2013 09:55:47 +0200
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Return-Path: <B41889@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2B3DE2C0209
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2013 19:31:02 +1000 (EST)
+Message-ID: <51A5CAC1.6030800@freescale.com>
+Date: Wed, 29 May 2013 17:30:41 +0800
+From: Chen Yuanquan-B41889 <B41889@freescale.com>
+MIME-Version: 1.0
+To: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH] powerpc/pci: Improve device hotplug initialization
+References: <1369762514-27352-1-git-send-email-linux@roeck-us.net>
+In-Reply-To: <1369762514-27352-1-git-send-email-linux@roeck-us.net>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: Yuanquan Chen <Yuanquan.Chen@freescale.com>,
+ Hiroo Matsumoto <matsumoto.hiroo@jp.fujitsu.com>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,29 +27,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
----
-Untested. Please note that a quick scan of this code suggests that the
-preceding test should read
-    #if (CONFIG_LOWMEM_SIZE > (0xF0000000 - CONFIG_KERNEL_START))
+On 05/29/2013 01:35 AM, Guenter Roeck wrote:
+> bios_add_device(). Drop explicit calls to pcibios_setup_device();
+> this makes pcibios_setup_bus_devices() a noop function which could
+> eve
 
-But this fix is correct anyhow.
+Yeah, it's more reasonable to do the irq and DMA related initialization
+in one code path for all devices.
 
- arch/powerpc/mm/init_32.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
-index 01e2db9..d47d3da 100644
---- a/arch/powerpc/mm/init_32.c
-+++ b/arch/powerpc/mm/init_32.c
-@@ -52,7 +52,7 @@
- #if defined(CONFIG_KERNEL_START_BOOL) || defined(CONFIG_LOWMEM_SIZE_BOOL)
- /* The amount of lowmem must be within 0xF0000000 - KERNELBASE. */
- #if (CONFIG_LOWMEM_SIZE > (0xF0000000 - PAGE_OFFSET))
--#error "You must adjust CONFIG_LOWMEM_SIZE or CONFIG_START_KERNEL"
-+#error "You must adjust CONFIG_LOWMEM_SIZE or CONFIG_KERNEL_START"
- #endif
- #endif
- #define MAX_LOW_MEM	CONFIG_LOWMEM_SIZE
--- 
-1.7.11.7
+Regards,
+Yuanquan
