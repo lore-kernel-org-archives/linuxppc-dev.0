@@ -1,17 +1,16 @@
-Return-Path: <timur@tabi.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
- [71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 717DB2C0347
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2013 12:37:08 +1000 (EST)
-Message-ID: <51A569CE.6010100@tabi.org>
-Date: Tue, 28 May 2013 21:37:02 -0500
-From: Timur Tabi <timur@tabi.org>
+Return-Path: <libo.chen@huawei.com>
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
+ (using TLSv1 with cipher DES-CBC3-SHA (168/168 bits))
+ (Client CN "myname.my.domain", Issuer "www.mirapoint.com" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9203B2C0345
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2013 12:40:38 +1000 (EST)
+Message-ID: <51A568EC.2070103@huawei.com>
+Date: Wed, 29 May 2013 10:33:16 +0800
+From: Libo Chen <clbchenlibo.chen@huawei.com>
 MIME-Version: 1.0
-To: Libo Chen <clbchenlibo.chen@huawei.com>,
- Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH] driver: tty: add missing unregister in err case
-References: <51A568EC.2070103@huawei.com>
-In-Reply-To: <51A568EC.2070103@huawei.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: <timur@tabi.org>, Greg KH <gregkh@linuxfoundation.org>
+Subject: [PATCH] driver: tty: add missing unregister in err case
+Content-Type: text/plain; charset="ISO-8859-1"
 Cc: jslaby@suse.cz, linux-kernel@vger.kernel.org,
  Rob Herring <rob.herring@calxeda.com>, Li Zefan <lizefan@huawei.com>,
  linux-serial@vger.kernel.org, Grant Likely <grant.likely@linaro.org>,
@@ -25,14 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Libo Chen wrote:
-> when platform_driver_register broken, we should unregister ucc_uart_driver
->
-> Signed-off-by: Libo chen<libo.chen@huawei.com>
 
-Acked-by: Timur Tabi <timur@tabi.org>
+when platform_driver_register broken, we should unregister ucc_uart_driver
 
-Thanks for catching this.
+Signed-off-by: Libo chen <libo.chen@huawei.com>
+---
+ drivers/tty/serial/ucc_uart.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
+diff --git a/drivers/tty/serial/ucc_uart.c b/drivers/tty/serial/ucc_uart.c
+index 7355303..f86f447 100644
+--- a/drivers/tty/serial/ucc_uart.c
++++ b/drivers/tty/serial/ucc_uart.c
+@@ -1518,9 +1518,11 @@ static int __init ucc_uart_init(void)
+ 	}
+
+ 	ret = platform_driver_register(&ucc_uart_of_driver);
+-	if (ret)
++	if (ret) {
+ 		printk(KERN_ERR
+ 		       "ucc-uart: could not register platform driver\n");
++		uart_unregister_driver(&ucc_uart_driver);
++	}
+
+ 	return ret;
+ }
 -- 
-Timur Tabi
+1.7.1
