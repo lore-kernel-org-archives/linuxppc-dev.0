@@ -1,15 +1,15 @@
 Return-Path: <lig.fnst@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id A3CF52C0095
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2013 17:08:10 +1000 (EST)
 From: liguang <lig.fnst@cn.fujitsu.com>
-To: Arnd Bergmann <arnd@arndb.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc/smp: use '==' instead of '<' for  system_state
-Date: Thu, 30 May 2013 14:47:53 +0800
-Message-Id: <1369896473-23588-1-git-send-email-lig.fnst@cn.fujitsu.com>
-Cc: cbe-oss-dev@lists.ozlabs.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- Rob Herring <rob.herring@calxeda.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+Subject: [PATCH] powerpc/pseries: use 'true' instead of '1' for
+ orderly_poweroff
+Date: Thu, 30 May 2013 15:07:31 +0800
+Message-Id: <1369897651-23770-1-git-send-email-lig.fnst@cn.fujitsu.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  liguang <lig.fnst@cn.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,55 +20,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-'system_state < SYSTEM_RUNNING' will have same effect
-with 'system_state == SYSTEM_BOOTING', but the later
-one is more clearer.
+orderly_poweroff is expecting a bool parameter, so
+use 'ture' instead '1'
 
 Signed-off-by: liguang <lig.fnst@cn.fujitsu.com>
 ---
- arch/powerpc/platforms/cell/smp.c    |    2 +-
- arch/powerpc/platforms/powernv/smp.c |    2 +-
- arch/powerpc/platforms/pseries/smp.c |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+ arch/powerpc/platforms/pseries/ras.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/platforms/cell/smp.c b/arch/powerpc/platforms/cell/smp.c
-index d35dbbc..f75f6fc 100644
---- a/arch/powerpc/platforms/cell/smp.c
-+++ b/arch/powerpc/platforms/cell/smp.c
-@@ -142,7 +142,7 @@ static int smp_cell_cpu_bootable(unsigned int nr)
- 	 * during boot if the user requests it.  Odd-numbered
- 	 * cpus are assumed to be secondary threads.
- 	 */
--	if (system_state < SYSTEM_RUNNING &&
-+	if (system_state == SYSTEM_BOOTING &&
- 	    cpu_has_feature(CPU_FTR_SMT) &&
- 	    !smt_enabled_at_boot && cpu_thread_in_core(nr) != 0)
- 		return 0;
-diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
-index 88c9459..77784ae 100644
---- a/arch/powerpc/platforms/powernv/smp.c
-+++ b/arch/powerpc/platforms/powernv/smp.c
-@@ -51,7 +51,7 @@ static int pnv_smp_cpu_bootable(unsigned int nr)
- 	/* Special case - we inhibit secondary thread startup
- 	 * during boot if the user requests it.
- 	 */
--	if (system_state < SYSTEM_RUNNING && cpu_has_feature(CPU_FTR_SMT)) {
-+	if (system_state == SYSTEM_BOOTING && cpu_has_feature(CPU_FTR_SMT)) {
- 		if (!smt_enabled_at_boot && cpu_thread_in_core(nr) != 0)
- 			return 0;
- 		if (smt_enabled_at_boot
-diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
-index 12bc8c3..306643c 100644
---- a/arch/powerpc/platforms/pseries/smp.c
-+++ b/arch/powerpc/platforms/pseries/smp.c
-@@ -192,7 +192,7 @@ static int smp_pSeries_cpu_bootable(unsigned int nr)
- 	/* Special case - we inhibit secondary thread startup
- 	 * during boot if the user requests it.
- 	 */
--	if (system_state < SYSTEM_RUNNING && cpu_has_feature(CPU_FTR_SMT)) {
-+	if (system_state == SYSTEM_BOOTING && cpu_has_feature(CPU_FTR_SMT)) {
- 		if (!smt_enabled_at_boot && cpu_thread_in_core(nr) != 0)
- 			return 0;
- 		if (smt_enabled_at_boot
+diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
+index c4dfccd..79b9502 100644
+--- a/arch/powerpc/platforms/pseries/ras.c
++++ b/arch/powerpc/platforms/pseries/ras.c
+@@ -83,7 +83,7 @@ static void handle_system_shutdown(char event_modifier)
+ 	switch (event_modifier) {
+ 	case EPOW_SHUTDOWN_NORMAL:
+ 		pr_emerg("Firmware initiated power off");
+-		orderly_poweroff(1);
++		orderly_poweroff(true);
+ 		break;
+ 
+ 	case EPOW_SHUTDOWN_ON_UPS:
+@@ -95,13 +95,13 @@ static void handle_system_shutdown(char event_modifier)
+ 		pr_emerg("Loss of system critical functions reported by "
+ 			"firmware");
+ 		pr_emerg("Check RTAS error log for details");
+-		orderly_poweroff(1);
++		orderly_poweroff(true);
+ 		break;
+ 
+ 	case EPOW_SHUTDOWN_AMBIENT_TEMPERATURE_TOO_HIGH:
+ 		pr_emerg("Ambient temperature too high reported by firmware");
+ 		pr_emerg("Check RTAS error log for details");
+-		orderly_poweroff(1);
++		orderly_poweroff(true);
+ 		break;
+ 
+ 	default:
+@@ -162,7 +162,7 @@ void rtas_parse_epow_errlog(struct rtas_error_log *log)
+ 
+ 	case EPOW_SYSTEM_HALT:
+ 		pr_emerg("Firmware initiated power off");
+-		orderly_poweroff(1);
++		orderly_poweroff(ture);
+ 		break;
+ 
+ 	case EPOW_MAIN_ENCLOSURE:
 -- 
 1.7.2.5
