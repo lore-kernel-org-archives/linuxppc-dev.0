@@ -2,11 +2,11 @@ Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: benh@kernel.crashing.org
 MIME-Version: 1.0
-Subject: [PATCH] powerpc/pseries: Kill all prefetch streams on context switch
-Date: Thu, 30 May 2013 15:34:27 +1000
-Message-ID: <17925.1369892067@ale.ozlabs.ibm.com>
-Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>, anton@samba.org,
- miltonm@realtime.net
+Subject: [PATCH] powerpc/pseries: Improve stream generation comments in
+ copypage/user
+Date: Thu, 30 May 2013 15:34:29 +1000
+Message-ID: <17933.1369892069@ale.ozlabs.ibm.com>
+Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,51 +16,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On context switch, we should have no prefetch streams leak from one
-userspace process to another.  This frees up prefetch resources for the
-next process.
-
-Based on patch from Milton Miller.
+No code changes, just documenting what's happening a little better.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 
-diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-index cea8496..2f1b6c5 100644
---- a/arch/powerpc/include/asm/ppc_asm.h
-+++ b/arch/powerpc/include/asm/ppc_asm.h
-@@ -523,6 +523,17 @@ END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,946)
- #define PPC440EP_ERR42
+diff --git a/arch/powerpc/lib/copypage_power7.S b/arch/powerpc/lib/copypage_power7.S
+index 0ef75bf..395c594 100644
+--- a/arch/powerpc/lib/copypage_power7.S
++++ b/arch/powerpc/lib/copypage_power7.S
+@@ -28,13 +28,14 @@ _GLOBAL(copypage_power7)
+ 	 * aligned we don't need to clear the bottom 7 bits of either
+ 	 * address.
+ 	 */
+-	ori	r9,r3,1		/* stream=1 */
++	ori	r9,r3,1		/* stream=1 => to */
+ 
+ #ifdef CONFIG_PPC_64K_PAGES
+-	lis	r7,0x0E01	/* depth=7, units=512 */
++	lis	r7,0x0E01	/* depth=7
++				 * units/cachelines=512 */
+ #else
+ 	lis	r7,0x0E00	/* depth=7 */
+-	ori	r7,r7,0x1000	/* units=32 */
++	ori	r7,r7,0x1000	/* units/cachelines=32 */
  #endif
+ 	ori	r10,r7,1	/* stream=1 */
  
-+/* The following stops all load and store data streams associated with stream
-+ * ID (ie. streams created explicitly).  The embedded and server mnemonics for
-+ * dcbt are different so we use machine "power4" here explicitly.
-+ */
-+#define DCBT_STOP_ALL_STREAM_IDS(scratch)	\
-+.machine push ;					\
-+.machine "power4" ;				\
-+       lis     scratch,0x60000000@h;		\
-+       dcbt    r0,scratch,0b01010;		\
-+.machine pop
-+
- /*
-  * toreal/fromreal/tophys/tovirt macros. 32-bit BookE makes them
-  * keep the address intact to be compatible with code shared with
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 0e9095e..246b11c 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -501,6 +501,13 @@ BEGIN_FTR_SECTION
- 	ldarx	r6,0,r1
- END_FTR_SECTION_IFSET(CPU_FTR_STCX_CHECKS_ADDRESS)
+@@ -43,12 +44,14 @@ _GLOBAL(copypage_power7)
  
-+#ifdef CONFIG_PPC_BOOK3S
-+/* Cancel all explict user streams as they will have no use after context
-+ * switch and will stop the HW from creating streams itself
-+ */
-+	DCBT_STOP_ALL_STREAM_IDS(r6)
-+#endif
-+
- 	addi	r6,r4,-THREAD	/* Convert THREAD to 'current' */
- 	std	r6,PACACURRENT(r13)	/* Set new 'current' */
+ .machine push
+ .machine "power4"
+-	dcbt	r0,r4,0b01000
+-	dcbt	r0,r7,0b01010
+-	dcbtst	r0,r9,0b01000
+-	dcbtst	r0,r10,0b01010
++	/* setup read stream 0  */
++	dcbt	r0,r4,0b01000  	/* addr from */
++	dcbt	r0,r7,0b01010   /* length and depth from */
++	/* setup write stream 1 */
++	dcbtst	r0,r9,0b01000   /* addr to */
++	dcbtst	r0,r10,0b01010  /* length and depth to */
+ 	eieio
+-	dcbt	r0,r8,0b01010	/* GO */
++	dcbt	r0,r8,0b01010	/* all streams GO */
+ .machine pop
  
+ #ifdef CONFIG_ALTIVEC
+diff --git a/arch/powerpc/lib/copyuser_power7.S b/arch/powerpc/lib/copyuser_power7.S
+index 0d24ff1..d1f1179 100644
+--- a/arch/powerpc/lib/copyuser_power7.S
++++ b/arch/powerpc/lib/copyuser_power7.S
+@@ -318,12 +318,14 @@ err1;	stb	r0,0(r3)
+ 
+ .machine push
+ .machine "power4"
+-	dcbt	r0,r6,0b01000
+-	dcbt	r0,r7,0b01010
+-	dcbtst	r0,r9,0b01000
+-	dcbtst	r0,r10,0b01010
++	/* setup read stream 0 */
++	dcbt	r0,r6,0b01000   /* addr from */
++	dcbt	r0,r7,0b01010   /* length and depth from */
++	/* setup write stream 1 */
++	dcbtst	r0,r9,0b01000   /* addr to */
++	dcbtst	r0,r10,0b01010  /* length and depth to */
+ 	eieio
+-	dcbt	r0,r8,0b01010	/* GO */
++	dcbt	r0,r8,0b01010	/* all streams GO */
+ .machine pop
+ 
+ 	beq	cr1,.Lunwind_stack_nonvmx_copy
