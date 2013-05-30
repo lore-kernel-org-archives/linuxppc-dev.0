@@ -1,25 +1,27 @@
-Return-Path: <mturquette@linaro.org>
-Received: from mail-pb0-x22e.google.com (mail-pb0-x22e.google.com
- [IPv6:2607:f8b0:400e:c01::22e])
+Return-Path: <andy.shevchenko@gmail.com>
+Received: from mail-la0-x231.google.com (mail-la0-x231.google.com
+ [IPv6:2a00:1450:4010:c03::231])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 903692C0174
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2013 05:45:07 +1000 (EST)
-Received: by mail-pb0-f46.google.com with SMTP id rq2so930536pbb.5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2013 12:45:05 -0700 (PDT)
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id 96E412C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2013 04:32:24 +1000 (EST)
+Received: by mail-la0-f49.google.com with SMTP id fp13so586849lab.36
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2013 11:32:19 -0700 (PDT)
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>, 
-From: Mike Turquette <mturquette@linaro.org>
-In-Reply-To: <17C23704-7017-427C-A00F-CEFA6247D65D@kernel.crashing.org>
-References: <1369210939-25087-1-git-send-email-Yuantian.Tang@freescale.com>
- <20130530185732.4470.91176@quantum> <20130530192143.4470.23214@quantum>
- <17C23704-7017-427C-A00F-CEFA6247D65D@kernel.crashing.org>
-Message-ID: <20130530194451.4470.55599@quantum>
-Subject: Re: [PATCH] clk/mpc85xx: Update the compatible string
-Date: Thu, 30 May 2013 12:44:51 -0700
-Cc: Yuantian.Tang@freescale.com, devicetree-discuss@lists.ozlabs.org,
- linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20130530174727.GE3767@intel.com>
+References: <1369656882-25241-1-git-send-email-andriy.shevchenko@linux.intel.com>
+ <20130530174727.GE3767@intel.com>
+Date: Thu, 30 May 2013 21:32:19 +0300
+Message-ID: <CAHp75VcZCVskWnQuNeO4A0keZJS27vaWe5zTDomAgSa_ezyUQQ@mail.gmail.com>
+Subject: Re: [PATCH 00/12] dma: various minor clean ups for slave drivers
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+To: Vinod Koul <vinod.koul@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Shawn Guo <shawn.guo@linaro.org>, Stephen Warren <swarren@wwwdotorg.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Andy Shevchenko <andriy.shevchenko@linux.jf.intel.com>,
+ Zhang Wei <zw@zh-kernel.org>, Dan Williams <djbw@fb.com>,
+ linux-tegra@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,53 +31,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Quoting Kumar Gala (2013-05-30 12:26:38)
-> On May 30, 2013, at 2:21 PM, Mike Turquette wrote:
-> =
+On Thu, May 30, 2013 at 8:47 PM, Vinod Koul <vinod.koul@intel.com> wrote:
+> On Mon, May 27, 2013 at 03:14:30PM +0300, Andy Shevchenko wrote:
+>> Here is a set of small independent patches that clean up or fix minor things
+>> across DMA slave drivers.
+> The series looks fine. I am going to wait a day more and apply, pls speak up if
+> you disagree and ack if you agree
 
-> > Quoting Mike Turquette (2013-05-30 11:57:32)
-> >> Quoting Yuantian.Tang@freescale.com (2013-05-22 01:22:19)
-> >>> From: Tang Yuantian <yuantian.tang@freescale.com>
-> >>> =
+I'm not in hurry with it. Please, take your time and do whatever it requires.
+Thank you!
 
-> >>> The compatible string of clock is changed from *-2 to *-2.0
-> >>> on chassis 2. So updated it accordingly.
-> >>> =
-
-> >>> Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
-> >> =
-
-> >> Taken into clk-next.
-> >> =
-
-> > =
-
-> > One small nitpick.  I updated the $SUBJECT to:
-> > =
-
-> > clk: mpc85xx: Update the compatible string
-> > =
-
-> > The difference being "clk: mpc85xx:" versus "clk/mpc85xx:".  Please use
-> > the former format in the future.
-> > =
-
-> > Thanks,
-> > Mike
-> =
-
-> Mike,
-> =
-
-> If clk-ppc-corenet.c went into v3.10, than I think this fix is needed the=
-re and shouldn't wait til v3.11
-> =
-
-
-clk-ppc-corenet.c is first introduced in the current clk-next branch.
-It is not merged into Linus' tree yet.
-
-Regards,
-Mike
-
-> - k
+--
+With Best Regards,
+Andy Shevchenko
