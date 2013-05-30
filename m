@@ -1,30 +1,30 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5BCA22C008E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2013 18:24:19 +1000 (EST)
+ (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B116B2C016F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2013 18:24:20 +1000 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Thu, 30 May 2013 04:24:16 -0400
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id F2DAA6E803F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2013 04:24:09 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r4U8OD2n63111214
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2013 04:24:13 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r4U8OBx7012720
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2013 05:24:12 -0300
+ Thu, 30 May 2013 02:24:18 -0600
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 9D81538C801A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2013 04:24:15 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r4U8OG0N305016
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2013 04:24:16 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r4U8OF92032742
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2013 05:24:15 -0300
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 02/23] powerpc/eeh: Function to tranverse PCI devices
-Date: Thu, 30 May 2013 16:23:44 +0800
-Message-Id: <1369902245-5886-3-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 06/23] powerpc/eeh: Make eeh_init() public
+Date: Thu, 30 May 2013 16:23:48 +0800
+Message-Id: <1369902245-5886-7-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1369902245-5886-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1369902245-5886-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -37,86 +37,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For EEH on PowerNV platform, the PCI devices will be probed to
-check if they support EEH functionality. Different from the case
-of EEH for pSeries platform, we will probe real PCI device instead
-of device tree node for EEH capability on PowerNV platform.
-
-The patch introduces function eeh_pci_dev_traverse() to traverse
-PCI devices for the indicated PCI bus from top to bottom.
+For EEH on PowerNV platform, we will do EEH probe based on the
+real PCI devices. The PCI devices are available after PCI probe.
+So we have to call eeh_init() explicitly on PowerNV platform
+after PCI probe. The patch also does EEH probe for PowerNV platform
+in eeh_init().
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h           |    3 ++
- arch/powerpc/platforms/pseries/eeh_dev.c |   35 ++++++++++++++++++++++++++++++
- 2 files changed, 38 insertions(+), 0 deletions(-)
+ arch/powerpc/include/asm/eeh.h       |    6 ++++++
+ arch/powerpc/platforms/pseries/eeh.c |   23 +++++++++++++++++++++--
+ 2 files changed, 27 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index e32c3c5..eeaeab6 100644
+index 557d82a..1ff2aa9 100644
 --- a/arch/powerpc/include/asm/eeh.h
 +++ b/arch/powerpc/include/asm/eeh.h
-@@ -183,6 +183,7 @@ static inline void eeh_unlock(void)
- #define EEH_MAX_ALLOWED_FREEZES 5
- 
- typedef void *(*eeh_traverse_func)(void *data, void *flag);
-+typedef void *(*eeh_pci_traverse_func)(struct pci_dev *dev, void *flag);
- int eeh_phb_pe_create(struct pci_controller *phb);
- int eeh_add_to_parent_pe(struct eeh_dev *edev);
- int eeh_rmv_from_parent_pe(struct eeh_dev *edev, int purge_pe);
-@@ -191,6 +192,8 @@ void *eeh_pe_dev_traverse(struct eeh_pe *root,
- void eeh_pe_restore_bars(struct eeh_pe *pe);
- struct pci_bus *eeh_pe_bus_get(struct eeh_pe *pe);
- 
-+void eeh_pci_dev_traverse(struct pci_bus *bus,
-+		eeh_pci_traverse_func fn, void *flag);
+@@ -199,6 +199,7 @@ void eeh_pci_dev_traverse(struct pci_bus *bus,
+ 		eeh_pci_traverse_func fn, void *flag);
  void *eeh_dev_init(struct device_node *dn, void *data);
  void eeh_dev_phb_init_dynamic(struct pci_controller *phb);
++int __init eeh_init(void);
  int __init eeh_ops_register(struct eeh_ops *ops);
-diff --git a/arch/powerpc/platforms/pseries/eeh_dev.c b/arch/powerpc/platforms/pseries/eeh_dev.c
-index 1efa28f..12c445d 100644
---- a/arch/powerpc/platforms/pseries/eeh_dev.c
-+++ b/arch/powerpc/platforms/pseries/eeh_dev.c
-@@ -41,6 +41,41 @@
- #include <asm/pci-bridge.h>
- #include <asm/ppc-pci.h>
+ int __exit eeh_ops_unregister(const char *name);
+ unsigned long eeh_check_failure(const volatile void __iomem *token,
+@@ -227,6 +228,11 @@ void eeh_remove_bus_device(struct pci_dev *, int);
  
-+
-+/**
-+ * eeh_pci_dev_traverse - Traverse PCI devices for the indicated bus
-+ * @bus: PCI bus
-+ * @fn: callback function
-+ * @flag: extra flag
-+ *
-+ * The function traverses the PCI devices for the indicated PCI bus
-+ * from top to bottom fashion until the supplied callback function
-+ * returns non-zero value on the specific PCI device.
-+ */
-+void eeh_pci_dev_traverse(struct pci_bus *bus,
-+		eeh_pci_traverse_func fn, void *flag)
+ #else /* !CONFIG_EEH */
+ 
++static inline int eeh_init(void)
 +{
-+	struct pci_dev *dev;
-+	void *ret;
-+
-+	if (!bus)
-+		return;
-+
-+	/*
-+	 * We should make sure the parent devices are scanned
-+	 * prior to the child devices so that the parent PE
-+	 * could be created before the child PEs.
-+	 */
-+	list_for_each_entry(dev, &bus->devices, bus_list) {
-+		ret = fn(dev, flag);
-+		if (ret)
-+			return;
-+
-+		if (dev->subordinate)
-+			eeh_pci_dev_traverse(dev->subordinate, fn, flag);
-+	}
++	return 0;
 +}
 +
- /**
-  * eeh_dev_init - Create EEH device according to OF node
-  * @dn: device node
+ static inline void *eeh_dev_init(struct device_node *dn, void *data)
+ {
+ 	return NULL;
+diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
+index 6b73d6c..abe26f8 100644
+--- a/arch/powerpc/platforms/pseries/eeh.c
++++ b/arch/powerpc/platforms/pseries/eeh.c
+@@ -674,11 +674,21 @@ int __exit eeh_ops_unregister(const char *name)
+  * Even if force-off is set, the EEH hardware is still enabled, so that
+  * newer systems can boot.
+  */
+-static int __init eeh_init(void)
++int __init eeh_init(void)
+ {
+ 	struct pci_controller *hose, *tmp;
+ 	struct device_node *phb;
+-	int ret;
++	static int cnt = 0;
++	int ret = 0;
++
++	/*
++	 * We have to delay the initialization on PowerNV after
++	 * the PCI hierarchy tree has been built because the PEs
++	 * are figured out based on PCI devices instead of device
++	 * tree nodes
++	 */
++	if (machine_is(powernv) && cnt++ <= 0)
++		return ret;
+ 
+ 	/* call platform initialization function */
+ 	if (!eeh_ops) {
+@@ -700,6 +710,15 @@ static int __init eeh_init(void)
+ 			phb = hose->dn;
+ 			traverse_pci_devices(phb, eeh_ops->of_probe, NULL);
+ 		}
++	} else if (eeh_probe_mode_dev()) {
++		list_for_each_entry_safe(hose, tmp,
++			&hose_list, list_node) {
++			eeh_pci_dev_traverse(hose->bus, eeh_ops->dev_probe, NULL);
++		}
++	} else {
++		pr_warning("%s: Invalid probe mode %d\n",
++			__func__, eeh_probe_mode);
++		return -EINVAL;
+ 	}
+ 
+ 	if (eeh_subsystem_enabled)
 -- 
 1.7.5.4
