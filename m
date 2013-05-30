@@ -3,18 +3,28 @@ Received: from merlin.infradead.org (merlin.infradead.org
  [IPv6:2001:4978:20e::2])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 8F6292C00A1
- for <linuxppc-dev@ozlabs.org>; Fri, 31 May 2013 02:02:12 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id D0F6F2C0371
+ for <linuxppc-dev@ozlabs.org>; Fri, 31 May 2013 02:02:27 +1000 (EST)
 From: Arnaldo Carvalho de Melo <acme@infradead.org>
 To: Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 56/66] perf: Power7 Update testing ABI to list CPI-stack events
-Date: Thu, 30 May 2013 19:01:29 +0300
-Message-Id: <1369929699-8724-57-git-send-email-acme@infradead.org>
-In-Reply-To: <1369929699-8724-1-git-send-email-acme@infradead.org>
-References: <1369929699-8724-1-git-send-email-acme@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
- linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: [GIT PULL 00/66] perf/core improvements and fixes
+Date: Thu, 30 May 2013 19:00:33 +0300
+Message-Id: <1369929699-8724-1-git-send-email-acme@infradead.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+ Stephane Eranian <eranian@google.com>, linuxppc-dev@ozlabs.org,
+ Andi Kleen <andi@firstfloor.org>, Paul Mackerras <paulus@samba.org>,
+ Sam Ravnborg <sam@ravnborg.org>, Rabin Vincent <rabin@rab.in>,
+ Jiri Olsa <jolsa@redhat.com>,
+ Xiao Guangrong <xiaoguangrong@linux.vnet.ibm.com>,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+ Frederic Weisbecker <fweisbec@gmail.com>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Corey Ashford <cjashfor@linux.vnet.ibm.com>, Namhyung Kim <namhyung@gmail.com>,
+ Borislav Petkov <bp@alien8.de>, Runzhen Wang <runzhen@linux.vnet.ibm.com>,
+ William Cohen <wcohen@redhat.com>, Arnaldo Carvalho de Melo <acme@redhat.com>,
+ Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+ Pekka Enberg <penberg@kernel.org>, Minchan Kim <minchan@kernel.org>,
+ David Ahern <dsahern@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,68 +34,203 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+From: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
 
-Following patch added several Power7 events into /sys/devices/cpu/events.
-Document those events in the testing ABI.
+Hi Ingo,
 
-	https://lists.ozlabs.org/pipermail/linuxppc-dev/2013-April/105167.html
+	Please consider pulling,
 
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org
-Link: http://lkml.kernel.org/r/20130406170623.GA900@us.ibm.com
+- Arnaldo
+
+The following changes since commit c0ffaf3655fab1909a920c8f30ba1722932d01bb:
+
+  watchdog: Remove softlockup_thresh from Documentation (2013-05-28 11:28:20 +0200)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux tags/perf-core-for-mingo
+
+for you to fetch changes up to c3c44709b5095091216c06b8df83feddc01ba6b0:
+
+  perf tools: Add missing liblk.a dependency for python/perf.so (2013-05-30 17:36:16 +0300)
+
+----------------------------------------------------------------
+perf/core improvements and fixes:
+
+. Reset SIGTERM handler in workload child process, fix from David Ahern.
+
+. Handle death by SIGTERM in 'perf record', fix from David Ahern.
+
+. Fix printing of perf_event_paranoid message, from David Ahern.
+
+. Handle realloc failures in 'perf kvm', from David Ahern.
+
+. Fix divide by 0 in variance, from David Ahern.
+
+. Save parent pid in thread struct, from David Ahern.
+
+. Handle JITed code in shared memory, from Andi Kleen.
+
+. Makefile reorganization, prep work for Kconfig patches, from Jiri Olsa.
+
+. Fixes for 'perf diff', from Jiri Olsa.
+
+. Add automated make test suite, from Jiri Olsa.
+
+. 'perf tests' fixes from Jiri Olsa.
+
+. Remove some unused struct members, from Jiri Olsa.
+
+. Add missing liblk.a dependency for python/perf.so, fix from Jiri Olsa.
+
+. Respect CROSS_COMPILE in liblk.a, from Rabin Vincent.
+
+. Expand definition of sysfs format attribute, from Michael Ellerman.
+
+. No need to do locking when adding hists in perf report, only 'top'
+  needs that, from Namhyung Kim.
+
+. Sorting improvements, from Namhyung Kim.
+
+. Fix alignment of symbol column in in the hists browser (top, report)
+  when -v is given, from NAmhyung Kim.
+
+. Add --percent-limit option to 'top' and 'report', from Namhyung Kim.
+
+. Fix 'perf top' -E option behavior, from Namhyung Kim.
+
+. Fix bug in isupper() and islower(), from Sukadev Bhattiprolu.
+
+. Fix compile errors in bp_signal 'perf test', from Sukadev Bhattiprolu.
+
+. Make Power7 CPI stack events available in sysfs, from Sukadev Bhattiprolu.
+
 Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- .../testing/sysfs-bus-event_source-devices-events  | 32 ++++++++++++++++++----
- 1 file changed, 27 insertions(+), 5 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-bus-event_source-devices-events b/Documentation/ABI/testing/sysfs-bus-event_source-devices-events
-index 0adeb52..8b25ffb 100644
---- a/Documentation/ABI/testing/sysfs-bus-event_source-devices-events
-+++ b/Documentation/ABI/testing/sysfs-bus-event_source-devices-events
-@@ -27,14 +27,36 @@ Description:	Generic performance monitoring events
- 		"basename".
- 
- 
--What: 		/sys/devices/cpu/events/PM_LD_MISS_L1
--		/sys/devices/cpu/events/PM_LD_REF_L1
--		/sys/devices/cpu/events/PM_CYC
-+What: 		/sys/devices/cpu/events/PM_1PLUS_PPC_CMPL
- 		/sys/devices/cpu/events/PM_BRU_FIN
--		/sys/devices/cpu/events/PM_GCT_NOSLOT_CYC
- 		/sys/devices/cpu/events/PM_BRU_MPRED
--		/sys/devices/cpu/events/PM_INST_CMPL
- 		/sys/devices/cpu/events/PM_CMPLU_STALL
-+		/sys/devices/cpu/events/PM_CMPLU_STALL_BRU
-+		/sys/devices/cpu/events/PM_CMPLU_STALL_DCACHE_MISS
-+		/sys/devices/cpu/events/PM_CMPLU_STALL_DFU
-+		/sys/devices/cpu/events/PM_CMPLU_STALL_DIV
-+		/sys/devices/cpu/events/PM_CMPLU_STALL_ERAT_MISS
-+		/sys/devices/cpu/events/PM_CMPLU_STALL_FXU
-+		/sys/devices/cpu/events/PM_CMPLU_STALL_IFU
-+		/sys/devices/cpu/events/PM_CMPLU_STALL_LSU
-+		/sys/devices/cpu/events/PM_CMPLU_STALL_REJECT
-+		/sys/devices/cpu/events/PM_CMPLU_STALL_SCALAR
-+		/sys/devices/cpu/events/PM_CMPLU_STALL_SCALAR_LONG
-+		/sys/devices/cpu/events/PM_CMPLU_STALL_STORE
-+		/sys/devices/cpu/events/PM_CMPLU_STALL_THRD
-+		/sys/devices/cpu/events/PM_CMPLU_STALL_VECTOR
-+		/sys/devices/cpu/events/PM_CMPLU_STALL_VECTOR_LONG
-+		/sys/devices/cpu/events/PM_CYC
-+		/sys/devices/cpu/events/PM_GCT_NOSLOT_BR_MPRED
-+		/sys/devices/cpu/events/PM_GCT_NOSLOT_BR_MPRED_IC_MISS
-+		/sys/devices/cpu/events/PM_GCT_NOSLOT_CYC
-+		/sys/devices/cpu/events/PM_GCT_NOSLOT_IC_MISS
-+		/sys/devices/cpu/events/PM_GRP_CMPL
-+		/sys/devices/cpu/events/PM_INST_CMPL
-+		/sys/devices/cpu/events/PM_LD_MISS_L1
-+		/sys/devices/cpu/events/PM_LD_REF_L1
-+		/sys/devices/cpu/events/PM_RUN_CYC
-+		/sys/devices/cpu/events/PM_RUN_INST_CMPL
- 
- Date:		2013/01/08
- 
--- 
-1.8.1.4
+----------------------------------------------------------------
+Andi Kleen (1):
+      perf tools: Handle JITed code in shared memory
+
+Arnaldo Carvalho de Melo (3):
+      perf archive: Fix typo on Documentation
+      perf hists browser: Use sort__has_sym
+      perf test: Fix typo
+
+David Ahern (6):
+      perf record: handle death by SIGTERM
+      perf evsel: Fix printing of perf_event_paranoid message
+      perf kvm: Handle realloc failures
+      perf stats: Fix divide by 0 in variance
+      perf  tools: Save parent pid in thread struct
+      perf evlist: Reset SIGTERM handler in workload child process
+
+Jiri Olsa (32):
+      perf tools: Fix tab vs spaces issue in Makefile ifdef/endif
+      perf diff: Use internal rb tree for hists__precompute
+      perf hists: Rename hist_entry__add_pair arguments
+      perf tools: Add automated make test suite
+      perf tools: Move arch check into config/Makefile
+      perf tools: Move programs check into config/Makefile
+      perf tools: Move compiler and linker flags check into config/Makefile
+      perf tools: Move libelf check config into config/Makefile
+      perf tools: Move libdw check config into config/Makefile
+      perf tools: Move libunwind check config into config/Makefile
+      perf tools: Move libaudit check config into config/Makefile
+      perf tools: Move slang check config into config/Makefile
+      perf tools: Move gtk2 check config into config/Makefile
+      perf tools: Move libperl check config into config/Makefile
+      perf tools: Move libpython check config into config/Makefile
+      perf tools: Move libbfd check config into config/Makefile
+      perf tools: Move stdlib check config into config/Makefile
+      perf tools: Move libnuma check config into config/Makefile
+      perf tools: Move paths config into config/Makefile
+      perf tools: Final touches for CHK config move
+      perf tests: Fix attr test for record -d option
+      perf tests: Fix exclude_guest|exclude_host checking for attr tests
+      perf tools: Remove frozen from perf_header struct
+      perf tools: Remove cwdlen from struct perf_session
+      perf tools: Merge all *CFLAGS* make variable into CFLAGS
+      perf tools: Merge all *LDFLAGS* make variable into LDFLAGS
+      perf tools: Switch to full path C include directories
+      perf tools: Add NO_BIONIC variable to confiure bionic setup
+      perf tools: Replace tabs with spaces for all non-commands statements
+      perf tools: Replace multiple line assignment with multiple statements
+      perf tools: Remove '?=' Makefile STRIP assignment
+      perf tools: Add missing liblk.a dependency for python/perf.so
+
+Michael Ellerman (1):
+      perf: Expand definition of sysfs format attribute
+
+Namhyung Kim (18):
+      perf hists: Fix an invalid memory free on he->branch_info
+      perf hists: Free unused mem info of a matched hist entry
+      perf report: Fix alignment of symbol column when -v is given
+      perf sort: Introduce sort__mode variable
+      perf sort: Factor out common code in sort_dimension__add()
+      perf sort: Separate out memory-specific sort keys
+      perf sort: Consolidate sort_entry__setup_elide()
+      perf sort: Reorder HISTC_SRCLINE index
+      perf sort: Cleanup sort__has_sym setting
+      perf top: Use sort__has_sym
+      perf top: Fix -E option behavior
+      perf top: Fix percent output when no samples collected
+      perf top: Get rid of *_threaded() functions
+      perf hists: Move locking to its call-sites
+      perf report: Don't bother locking when adding hist entries
+      perf report: Add --percent-limit option
+      perf top: Add --percent-limit option
+      perf report: Add report.percent-limit config variable
+
+Rabin Vincent (1):
+      tools lib lk: Respect CROSS_COMPILE
+
+Sukadev Bhattiprolu (4):
+      perf tools: Fix bug in isupper() and islower()
+      perf tests: Fix compile errors in bp_signal files
+      perf: Power7: Make CPI stack events available in sysfs
+      perf: Power7 Update testing ABI to list CPI-stack events
+
+ .../testing/sysfs-bus-event_source-devices-events  |  32 +-
+ .../testing/sysfs-bus-event_source-devices-format  |   6 +
+ arch/powerpc/perf/power7-pmu.c                     |  73 +++
+ tools/lib/lk/Makefile                              |   3 +
+ tools/perf/Documentation/perf-archive.txt          |   2 +-
+ tools/perf/Documentation/perf-report.txt           |   4 +
+ tools/perf/Documentation/perf-top.txt              |   4 +
+ tools/perf/Makefile                                | 630 ++++-----------------
+ tools/perf/builtin-diff.c                          |  19 +-
+ tools/perf/builtin-kvm.c                           |   3 +
+ tools/perf/builtin-record.c                        |   2 +-
+ tools/perf/builtin-report.c                        | 102 ++--
+ tools/perf/builtin-top.c                           |  74 +--
+ tools/perf/config/Makefile                         | 477 ++++++++++++++++
+ tools/perf/tests/attr/base-record                  |   4 +-
+ tools/perf/tests/attr/base-stat                    |   4 +-
+ tools/perf/tests/attr/test-record-data             |   5 +-
+ tools/perf/tests/bp_signal.c                       |   6 +
+ tools/perf/tests/bp_signal_overflow.c              |   6 +
+ tools/perf/tests/builtin-test.c                    |   2 +-
+ tools/perf/tests/make                              | 138 +++++
+ tools/perf/ui/browsers/hists.c                     | 106 +++-
+ tools/perf/ui/gtk/hists.c                          |  13 +-
+ tools/perf/ui/stdio/hist.c                         |   7 +-
+ tools/perf/util/evlist.c                           |   2 +
+ tools/perf/util/evsel.c                            |   2 +-
+ tools/perf/util/header.c                           |   2 -
+ tools/perf/util/header.h                           |   1 -
+ tools/perf/util/hist.c                             |  96 ++--
+ tools/perf/util/hist.h                             |  16 +-
+ tools/perf/util/map.c                              |   1 +
+ tools/perf/util/session.h                          |   1 -
+ tools/perf/util/setup.py                           |   5 +-
+ tools/perf/util/sort.c                             | 128 +++--
+ tools/perf/util/sort.h                             |  36 +-
+ tools/perf/util/stat.c                             |   2 +-
+ tools/perf/util/thread.c                           |   4 +
+ tools/perf/util/thread.h                           |   1 +
+ tools/perf/util/top.c                              |  23 +-
+ tools/perf/util/top.h                              |   2 +-
+ tools/perf/util/util.h                             |   4 +-
+ 41 files changed, 1270 insertions(+), 778 deletions(-)
+ create mode 100644 tools/perf/config/Makefile
+ create mode 100644 tools/perf/tests/make
