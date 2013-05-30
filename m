@@ -2,16 +2,16 @@ Return-Path: <wolfking2000@msn.com>
 Received: from sam.nabble.com (sam.nabble.com [216.139.236.26])
  (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id ECEFB2C0091
- for <linuxppc-dev@ozlabs.org>; Thu, 30 May 2013 17:19:31 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id E27EE2C0085
+ for <linuxppc-dev@ozlabs.org>; Thu, 30 May 2013 17:32:38 +1000 (EST)
 Received: from tom.nabble.com ([192.168.236.105])
  by sam.nabble.com with esmtp (Exim 4.72)
- (envelope-from <wolfking2000@msn.com>) id 1Uhx8z-0003Ib-Pu
- for linuxppc-dev@ozlabs.org; Thu, 30 May 2013 00:19:29 -0700
-Date: Thu, 30 May 2013 00:19:29 -0700 (PDT)
+ (envelope-from <wolfking2000@msn.com>) id 1UhxLh-00072n-Au
+ for linuxppc-dev@ozlabs.org; Thu, 30 May 2013 00:32:37 -0700
+Date: Thu, 30 May 2013 00:32:37 -0700 (PDT)
 From: wolfking <wolfking2000@msn.com>
 To: linuxppc-dev@ozlabs.org
-Message-ID: <1369898369690-71782.post@n7.nabble.com>
+Message-ID: <1369899157331-71783.post@n7.nabble.com>
 In-Reply-To: <51A6EA1D.7080100@windriver.com>
 References: <1369885321567-71775.post@n7.nabble.com>
  <51A6EA1D.7080100@windriver.com>
@@ -27,21 +27,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-hi, tiejun.chen:
-  Thanks for replying.
-  I tried to use ioremap too, but it doesn't work. The ioport_map method
-succeeded
-under mpc8641d which is also a ppc.
-  In fact, I also tried using pci_iomap by imitating rtl8139's codes. The
-rtl8139's BAR0 
-is also a I/O mapped register and its code succeeded in accessing its
-registers by 
-using pci_iomap under sbc8548. But when I used pci_iomap for my PCIe card,
-its
-output is just the same with the method of using ioport_map. Any suggestion?
+(continued)
+  I traced the 8139too.c when it uses pci_iomap, the pci_iomap called the 
+ioport_map. The difference between 8139 and my PCIe card lies in the
+"port" value :
+void __iomem *ioport_map(unsigned long port, unsigned int len)
+{
+	return (void __iomem *) (port + _IO_BASE);
+}
+  in 8139too.c, the "port" value is 0x1000; for my PCIe card, the "port"
+value
+is 0xfefff000. And the value is got from pci_resource_start. So you see, the 
+8139 case doesn't overflow, my PICe overflows when _IO_BASE's value is 
+0xfd7fd000.
 
 
 
 --
-View this message in context: http://linuxppc.10917.n7.nabble.com/can-t-access-PCIe-card-under-sbc8548-tp71775p71782.html
+View this message in context: http://linuxppc.10917.n7.nabble.com/can-t-access-PCIe-card-under-sbc8548-tp71775p71783.html
 Sent from the linuxppc-dev mailing list archive at Nabble.com.
