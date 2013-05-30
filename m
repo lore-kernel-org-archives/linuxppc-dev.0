@@ -1,21 +1,23 @@
-Return-Path: <joe@perches.com>
-Received: from labridge.com (perches-mx.perches.com [206.117.179.246])
- (using SSLv3 with cipher DES-CBC3-SHA (168/168 bits))
+Return-Path: <wolfking2000@msn.com>
+Received: from sam.nabble.com (sam.nabble.com [216.139.236.26])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 6A1732C008E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2013 17:14:28 +1000 (EST)
-Message-ID: <1369898064.22004.134.camel@joe-AO722>
-Subject: Re: [PATCH] powerpc/pseries: use 'true' instead of '1' for
- orderly_poweroff
-From: Joe Perches <joe@perches.com>
-To: liguang <lig.fnst@cn.fujitsu.com>
-Date: Thu, 30 May 2013 00:14:24 -0700
-In-Reply-To: <1369897651-23770-1-git-send-email-lig.fnst@cn.fujitsu.com>
-References: <1369897651-23770-1-git-send-email-lig.fnst@cn.fujitsu.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+ by ozlabs.org (Postfix) with ESMTPS id ECEFB2C0091
+ for <linuxppc-dev@ozlabs.org>; Thu, 30 May 2013 17:19:31 +1000 (EST)
+Received: from tom.nabble.com ([192.168.236.105])
+ by sam.nabble.com with esmtp (Exim 4.72)
+ (envelope-from <wolfking2000@msn.com>) id 1Uhx8z-0003Ib-Pu
+ for linuxppc-dev@ozlabs.org; Thu, 30 May 2013 00:19:29 -0700
+Date: Thu, 30 May 2013 00:19:29 -0700 (PDT)
+From: wolfking <wolfking2000@msn.com>
+To: linuxppc-dev@ozlabs.org
+Message-ID: <1369898369690-71782.post@n7.nabble.com>
+In-Reply-To: <51A6EA1D.7080100@windriver.com>
+References: <1369885321567-71775.post@n7.nabble.com>
+ <51A6EA1D.7080100@windriver.com>
+Subject: Re: can't access PCIe card under sbc8548
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,20 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-05-30 at 15:07 +0800, liguang wrote:
-> orderly_poweroff is expecting a bool parameter, so
-> use 'ture' instead '1'
-[]
-> diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
-[]
-> @@ -162,7 +162,7 @@ void rtas_parse_epow_errlog(struct rtas_error_log *log)
->  
->  	case EPOW_SYSTEM_HALT:
->  		pr_emerg("Firmware initiated power off");
-> -		orderly_poweroff(1);
-> +		orderly_poweroff(ture);
->  		break;
+hi, tiejun.chen:
+  Thanks for replying.
+  I tried to use ioremap too, but it doesn't work. The ioport_map method
+succeeded
+under mpc8641d which is also a ppc.
+  In fact, I also tried using pci_iomap by imitating rtl8139's codes. The
+rtl8139's BAR0 
+is also a I/O mapped register and its code succeeded in accessing its
+registers by 
+using pci_iomap under sbc8548. But when I used pci_iomap for my PCIe card,
+its
+output is just the same with the method of using ioport_map. Any suggestion?
 
-Compile your patches _before_ submitting them please.
 
-"true" not "ture" here and in the commit message.
+
+--
+View this message in context: http://linuxppc.10917.n7.nabble.com/can-t-access-PCIe-card-under-sbc8548-tp71775p71782.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
