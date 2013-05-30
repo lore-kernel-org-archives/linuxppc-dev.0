@@ -1,25 +1,20 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail-pb0-x236.google.com (mail-pb0-x236.google.com
- [IPv6:2607:f8b0:400e:c01::236])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1B1EE2C007B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2013 13:25:36 +1000 (EST)
-Received: by mail-pb0-f54.google.com with SMTP id ro12so10183323pbb.41
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2013 20:25:34 -0700 (PDT)
-Date: Thu, 30 May 2013 11:25:25 +0800
-From: Kevin Hao <haokexin@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] powerpc/mpc85xx: match with the pci bus address used by
- u-boot for all p1_p2_rdb_pc boards
-Message-ID: <20130530032525.GA18702@pek-khao-d1.corp.ad.wrs.com>
-References: <1368685785-10677-1-git-send-email-haokexin@gmail.com>
- <1369781156.18630.24@snotra>
+Return-Path: <wolfking2000@msn.com>
+Received: from sam.nabble.com (sam.nabble.com [216.139.236.26])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id CBB492C007A
+ for <linuxppc-dev@ozlabs.org>; Thu, 30 May 2013 14:00:41 +1000 (EST)
+Received: from tom.nabble.com ([192.168.236.105])
+ by sam.nabble.com with esmtp (Exim 4.72)
+ (envelope-from <wolfking2000@msn.com>) id 1UhtkX-0000DT-OK
+ for linuxppc-dev@ozlabs.org; Wed, 29 May 2013 20:42:01 -0700
+Date: Wed, 29 May 2013 20:42:01 -0700 (PDT)
+From: wolfking <wolfking2000@msn.com>
+To: linuxppc-dev@ozlabs.org
+Message-ID: <1369885321567-71775.post@n7.nabble.com>
+Subject: can't access PCIe card under sbc8548
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="opJtzjQTFsWo+cga"
-In-Reply-To: <1369781156.18630.24@snotra>
-Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,85 +24,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+hi, all
+  I'm doing some developing on the windriver's sbc8548 board. The kernel I
+use
+is 3.6.10 and the u-boot version is 2012-10. I changed the board's
+configuration:
+the board now boot from the 64MB SODIMM Flash (not the default 8MB on-board
+Flash
+memory), and the PCI clock rate is changed to 33MHZ.
+  Now the trouble I am in is that: the PCI card (a NIC card rtl8139) can be 
+accessed OK, while the PCIe card can't work, that is, the kernel can't
+access
+its internal register. The kernel can correctly probe the PCIe card. its
+BAR0 
+is a I/O mapped register, I use ioport_map to map the BAR0 to kernel's
+address
+space, then use ioread8/iowrite8 to access its internal register, it doesn't
+work.
+I analyse the ioport_map function and find it just add the input parameter
+to
+a fixed _IO_BASE value, below is the function:
+void __iomem *ioport_map(unsigned long port, unsigned int len)
+{
+	return (void __iomem *) (port + _IO_BASE);
+}
+the _IO_BASE value under sbc8548 is 0xfd7fd000, the value of ioport_map
+paramenter 
+"port" is 0xfefff000. Obviously the add overflows, so the follow-up
+operations 
+can't succeed. The value of "port" is got from the function
+pci_resource_start.
+So I guess the kernel allocate a bad address to this PCIe card. How can I
+fix this?
+  I also plug this PCIe card into a freescale's board mpc8641-hpcn, try the
+same driver,
+I noticed ioport_map also meet overflow, but it does work fine. So I'm
+messed, :<
 
---opJtzjQTFsWo+cga
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Tue, May 28, 2013 at 05:45:56PM -0500, Scott Wood wrote:
-> On 05/16/2013 01:29:45 AM, Kevin Hao wrote:
-> >All these boards use the same configuration file p1_p2_rdb_pc.h in
-> >u-boot. So they have the same pci bus address set by the u-boot.
-> >But in some of these boards the bus address set in dtb don't match
-> >the one used by u-boot. And this will trigger a kernel bug in 32bit
-> >kernel and cause the pci device malfunction. For example, on a
-> >p2020rdb-pc board the u-boot use the 0xa0000000 as both bus address
-> >and cpu address for one pci controller and then assign bus address
-> >such as 0xa00004000 to some pci device. But in the kernel, the dtb
-> >set the bus address to 0xe0000000 and the cpu address to 0xa0000000.
-> >The kernel assumes mistakenly the assigned bus address 0xa0004000
-> >in pci device is correct and keep it unchanged. This will definitely
-> >cause the pci device malfunction. I have made two patches to fix
-> >this in the pci subsystem.
-> >http://patchwork.ozlabs.org/patch/243702/
-> >http://patchwork.ozlabs.org/patch/243703/
-> >
-> >But I still think it makes sense to set these bus address to match
-> >with the u-boot. This issue can't be reproduced on 36bit kernel.
-> >But I also tweak the 36bit dtb for the above reason.
->=20
-> IIRC the reason for using 0xe0000000 on all PCIe roots is to
-> maximize the memory that is DMA-addressable without involving
-> swiotlb.
 
-OK, this sounds reasonable. I can drop the changes for the 36bit dts. But f=
-or
-the 32bit dts, it does cause the kernel hang on my p2020rdb-pca board when =
-the
-SiI3132 driver probe the on-board pcie to sata controller. I think this iss=
-ue
-should apply to all these boards if it has a pci device plugged. So we shou=
-ld
-fix them ASAP.
-
->=20
-> Maybe U-Boot should be fixed?
-
-Maybe. I have created patch for kernel to detect this kind of mismatch betw=
-een
-kernel and bootloader and then try to reassign the bus address automaticall=
-y.
-https://git.kernel.org/cgit/linux/kernel/git/helgaas/pci.git/commit/?h=3Dne=
-xt&id=3Dcf4d1cf5ac5e7d2b886af6ed906ea0dcdc5b6855
-
-So with this patch the kernel should just work even without this patch and
-the fix for u-boot. But this patch is just queued for 3.11. So I wish we can
-tweak the 32bit dts to accommodate to the u-boot now so that we can make su=
-re
-that these boards are at least bootable for 3.10 or previous kernel. Then we
-can revert this patch for more DMA address space once the pci patch are
-merged into mainline.
-
-Thanks,
-Kevin
-
->=20
-> -Scott
-
---opJtzjQTFsWo+cga
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQEcBAEBAgAGBQJRpsalAAoJEJNY7TDerrFxHAUH/Aj8dGU8JNId9TSIrOCunTQL
-UN0ygDhHGIbHA0zBmoT3JFxK415mFDJ3R/OeS23F4XFgfbbK5jbAlPX+iUe3nA74
-H0A/bcE/2776TAFWd16u4o//SHZ9p1pLVju50V7rkIYcLjp9RicayZxB2d0D0BGP
-2trSGjnqviPDGiZmMmqCBv3BHAi2cbGMv6yKi49+3exmDKzc1JBTv8HASkBonQo0
-jVx7grHLV2ZuJQeLknU6SsJFbs3kG85FBsfRhSoIRFvYZdyFMPWGvxj/Zzg7G37P
-XkxV/VoAJHYT+PfpcmeV83dTzulh2Uye8MeSX6Vto8PLFw00ri71t+CtkjTQ1uA=
-=y8ic
------END PGP SIGNATURE-----
-
---opJtzjQTFsWo+cga--
+--
+View this message in context: http://linuxppc.10917.n7.nabble.com/can-t-access-PCIe-card-under-sbc8548-tp71775.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
