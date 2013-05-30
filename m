@@ -1,27 +1,25 @@
-Return-Path: <jason@lakedaemon.net>
-Received: from mho-01-ewr.mailhop.org (mho-03-ewr.mailhop.org [204.13.248.66])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 24F482C0089
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2013 05:37:39 +1000 (EST)
-Date: Thu, 30 May 2013 15:37:08 -0400
-From: Jason Cooper <jason@lakedaemon.net>
-To: Arnaud Ebalard <arno@natisbad.org>
-Subject: Re: [PATCH v5 12/13] ARM: kirkwood: remove redundant DT board files
-Message-ID: <20130530193708.GC31290@titan.lakedaemon.net>
-References: <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
- <1369855975-21489-1-git-send-email-sebastian.hesselbarth@gmail.com>
- <1369855975-21489-13-git-send-email-sebastian.hesselbarth@gmail.com>
- <8738t4q1kv.fsf@natisbad.org>
+Return-Path: <mturquette@linaro.org>
+Received: from mail-pb0-x22e.google.com (mail-pb0-x22e.google.com
+ [IPv6:2607:f8b0:400e:c01::22e])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 903692C0174
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2013 05:45:07 +1000 (EST)
+Received: by mail-pb0-f46.google.com with SMTP id rq2so930536pbb.5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2013 12:45:05 -0700 (PDT)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <8738t4q1kv.fsf@natisbad.org>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
- Andrew Lunn <andrew@lunn.ch>, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
- Lennert Buytenhek <buytenh@wantstofly.org>,
- Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+To: Kumar Gala <galak@kernel.crashing.org>, 
+From: Mike Turquette <mturquette@linaro.org>
+In-Reply-To: <17C23704-7017-427C-A00F-CEFA6247D65D@kernel.crashing.org>
+References: <1369210939-25087-1-git-send-email-Yuantian.Tang@freescale.com>
+ <20130530185732.4470.91176@quantum> <20130530192143.4470.23214@quantum>
+ <17C23704-7017-427C-A00F-CEFA6247D65D@kernel.crashing.org>
+Message-ID: <20130530194451.4470.55599@quantum>
+Subject: Re: [PATCH] clk/mpc85xx: Update the compatible string
+Date: Thu, 30 May 2013 12:44:51 -0700
+Cc: Yuantian.Tang@freescale.com, devicetree-discuss@lists.ozlabs.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,85 +29,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 30, 2013 at 11:06:08AM +0200, Arnaud Ebalard wrote:
-> Hi Jason and Sebastian,
-> 
-> Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com> writes:
-> 
-> > With DT support for mv643xx_eth board specific init for some boards now
-> > is unneccessary. Remove those board files, Kconfig entries, and
-> > corresponding entries in kirkwood_defconfig.
-> >
-> > Signed-off-by: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-> > ---
-> > Note: board-km_kirkwood.c is also removed, as Valentin Longchamp confirmed
-> > the lock-up is not caused by accessing clock gating registers but rather
-> > non-existent device registers. This will be addressed by dtsi separation
-> > for kirkwood and bobcat SoC variants.
-> >
-> > Changelog:
-> > v3->v4:
-> > - remove more boards that don't require board specific setup
-> >
-> > Cc: David Miller <davem@davemloft.net>
-> > Cc: Lennert Buytenhek <buytenh@wantstofly.org>
-> > Cc: Jason Cooper <jason@lakedaemon.net>
-> > Cc: Andrew Lunn <andrew@lunn.ch>
-> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > Cc: netdev@vger.kernel.org
-> > Cc: linux-arm-kernel@lists.infradead.org
-> > Cc: linuxppc-dev@lists.ozlabs.org
-> > Cc: linux-kernel@vger.kernel.org
-> > ---
-> >  arch/arm/configs/kirkwood_defconfig           |   16 ----
-> >  arch/arm/mach-kirkwood/Kconfig                |  117 -------------------------
-> >  arch/arm/mach-kirkwood/Makefile               |   16 ----
-> >  arch/arm/mach-kirkwood/board-dnskw.c          |    7 --
-> >  arch/arm/mach-kirkwood/board-dockstar.c       |   32 -------
-> >  arch/arm/mach-kirkwood/board-dreamplug.c      |   35 --------
-> >  arch/arm/mach-kirkwood/board-dt.c             |   62 +------------
-> >  arch/arm/mach-kirkwood/board-goflexnet.c      |   34 -------
-> >  arch/arm/mach-kirkwood/board-guruplug.c       |   33 -------
-> >  arch/arm/mach-kirkwood/board-ib62x0.c         |   29 ------
-> >  arch/arm/mach-kirkwood/board-iconnect.c       |   10 ---
-> >  arch/arm/mach-kirkwood/board-iomega_ix2_200.c |   34 -------
-> >  arch/arm/mach-kirkwood/board-km_kirkwood.c    |   44 ----------
-> >  arch/arm/mach-kirkwood/board-lsxl.c           |   16 ----
-> >  arch/arm/mach-kirkwood/board-mplcec4.c        |   14 ---
-> >  arch/arm/mach-kirkwood/board-ns2.c            |   35 --------
-> >  arch/arm/mach-kirkwood/board-openblocks_a6.c  |   26 ------
-> >  arch/arm/mach-kirkwood/board-readynas.c       |    6 --
-> 
-> Just a stupid note: With Thomas ongoing work to get mvebu-pcie driver in
-> place and enabled for kirkwood, some boards setup files will also lose
-> their pcie init routines, which may allow you to kill those additonal
-> files soon.
+Quoting Kumar Gala (2013-05-30 12:26:38)
+> On May 30, 2013, at 2:21 PM, Mike Turquette wrote:
+> =
 
-Yes, we're very excited about this ;-)
+> > Quoting Mike Turquette (2013-05-30 11:57:32)
+> >> Quoting Yuantian.Tang@freescale.com (2013-05-22 01:22:19)
+> >>> From: Tang Yuantian <yuantian.tang@freescale.com>
+> >>> =
 
-> For instance 6bd98481ab34 (arm: kirkwood: NETGEAR ReadyNAS Duo v2 init
-> PCIe via DT) currently sitting in jcooper/mvebu/pcie_kirkwood removes
-> the PCIE init routine in board-readynas.c, and yours remove ge00
-> init. With both applied, the whole file can go away.
-> 
-> AFAICT, this may be the case soon for:
-> 
->  arch/arm/mach-kirkwood/board-iconnect.c   (36e5722089)
->  arch/arm/mach-kirkwood/board-mplcec4.c    (9470fbfb8d)
->  arch/arm/mach-kirkwood/board-nsa310.c     (40fa8e5da2)
->  arch/arm/mach-kirkwood/board-readynas.c   (6bd98481ab)
->  arch/arm/mach-kirkwood/board-ts219.c      (259e234608)
+> >>> The compatible string of clock is changed from *-2 to *-2.0
+> >>> on chassis 2. So updated it accordingly.
+> >>> =
 
-Would you mind putting a patch together (for after v3.10 drops) to do
-this?  If you applied Sebastian's series on top of mvebu/pcie_kirkwood,
-that should get you almost there.  The last half of his series is going
-in after v3.10...
+> >>> Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+> >> =
 
-You may want to try merging in mvebu/boards and mvebu/soc.  Those have
-the changes to use dt for the restart and power-off drivers.  That'll
-allow us to empty out a few more board files.  mvebu/dt also has a patch
-from Valentin allowing us to remove the keymile board as well.
+> >> Taken into clk-next.
+> >> =
 
-thx,
+> > =
 
-Jason.
+> > One small nitpick.  I updated the $SUBJECT to:
+> > =
+
+> > clk: mpc85xx: Update the compatible string
+> > =
+
+> > The difference being "clk: mpc85xx:" versus "clk/mpc85xx:".  Please use
+> > the former format in the future.
+> > =
+
+> > Thanks,
+> > Mike
+> =
+
+> Mike,
+> =
+
+> If clk-ppc-corenet.c went into v3.10, than I think this fix is needed the=
+re and shouldn't wait til v3.11
+> =
+
+
+clk-ppc-corenet.c is first introduced in the current clk-next branch.
+It is not merged into Linus' tree yet.
+
+Regards,
+Mike
+
+> - k
