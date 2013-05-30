@@ -1,21 +1,20 @@
-Return-Path: <hughd@google.com>
-Received: from mail-pb0-x231.google.com (mail-pb0-x231.google.com
- [IPv6:2607:f8b0:400e:c01::231])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5D9862C0098
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2013 15:47:27 +1000 (EST)
-Received: by mail-pb0-f49.google.com with SMTP id rp8so10331906pbb.22
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2013 22:47:23 -0700 (PDT)
-Date: Wed, 29 May 2013 22:47:24 -0700 (PDT)
-From: Hugh Dickins <hughd@google.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: 3.10-rc ppc64 corrupts usermem when swapping
-Message-ID: <alpine.LNX.2.00.1305292148550.9560@eggly.anvils>
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 5F23B2C0082
+ for <linuxppc-dev@ozlabs.org>; Thu, 30 May 2013 15:56:31 +1000 (EST)
+Message-ID: <51A6EA1D.7080100@windriver.com>
+Date: Thu, 30 May 2013 13:56:45 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+To: wolfking <wolfking2000@msn.com>
+Subject: Re: can't access PCIe card under sbc8548
+References: <1369885321567-71775.post@n7.nabble.com>
+In-Reply-To: <1369885321567-71775.post@n7.nabble.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,41 +24,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Running my favourite swapping load (repeated make -j20 kernel builds
-in tmpfs in parallel with repeated make -j20 kernel builds in ext4 on
-loop on tmpfs file, all limited by mem=700M and swap 1.5G) on 3.10-rc
-on PowerMac G5, the test dies with corrupted usermem after a few hours.
+On 05/30/2013 11:42 AM, wolfking wrote:
+> hi, all
+>    I'm doing some developing on the windriver's sbc8548 board. The kernel I
+> use
+> is 3.6.10 and the u-boot version is 2012-10. I changed the board's
+> configuration:
+> the board now boot from the 64MB SODIMM Flash (not the default 8MB on-board
+> Flash
+> memory), and the PCI clock rate is changed to 33MHZ.
+>    Now the trouble I am in is that: the PCI card (a NIC card rtl8139) can be
+> accessed OK, while the PCIe card can't work, that is, the kernel can't
+> access
+> its internal register. The kernel can correctly probe the PCIe card. its
+> BAR0
+> is a I/O mapped register, I use ioport_map to map the BAR0 to kernel's
+> address
+> space, then use ioread8/iowrite8 to access its internal register, it doesn't
+> work.
+> I analyse the ioport_map function and find it just add the input parameter
+> to
+> a fixed _IO_BASE value, below is the function:
+> void __iomem *ioport_map(unsigned long port, unsigned int len)
+> {
+> 	return (void __iomem *) (port + _IO_BASE);
+> }
+> the _IO_BASE value under sbc8548 is 0xfd7fd000, the value of ioport_map
+> paramenter
+> "port" is 0xfefff000. Obviously the add overflows, so the follow-up
+> operations
+> can't succeed. The value of "port" is got from the function
+> pci_resource_start.
 
-Variously, segmentation fault or Binutils assertion fail or gcc Internal
-error in either or both builds: usually signs of swapping or TLB flushing
-gone wrong.  Sometimes the tmpfs build breaks first, sometimes the ext4 on
-loop on tmpfs, so at least it looks unrelated to loop.  No problem on x86.
+In PPC case I/O is memory-mapped, so you should use ioremap() instead of 
+ioport_map()..
 
-This is 64-bit kernel but 4k pages and old SuSE 11.1 32-bit userspace.
-
-I've just finished a manual bisection on arch/powerpc/mm (which might
-have been a wrong guess, but has paid off): the first bad commit is
-7e74c3921ad9610c0b49f28b8fc69f7480505841
-"powerpc: Fix hpte_decode to use the correct decoding for page sizes".
-
-I don't know if it's actually swapping to swap that's triggering the
-problem, or a more general page reclaim or TLB flush problem.  I hit
-it originally when trying to test Mel Gorman's pagevec series on top
-of 3.10-rc; and though I then reproduced it without that series, it
-did seem to take much longer: so I have been applying Mel's series to
-speed up each step of the bisection.  But if I went back again, might
-find it was just chance that I hit it sooner with Mel's series than
-without.  So, you're probably safe to ignore that detail, but I
-mention it just in case it turns out to have some relevance.
-
-Something else peculiar that I've been doing in these runs, may or may
-not be relevant: I've been running swapon and swapoff repeatedly in the
-background, so that we're doing swapoff even while busy building.
-
-I probably can't go into much more detail on the test (it's hard
-to get the balance right, to be swapping rather than OOMing or just
-running without reclaim), but can test any patches you'd like me to
-try (though it may take 24 hours for me to report back usefully).
-
-Thanks,
-Hugh
+Tiejun
