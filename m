@@ -1,27 +1,21 @@
-Return-Path: <hughd@google.com>
-Received: from mail-pd0-f182.google.com (mail-pd0-f182.google.com
- [209.85.192.182])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 149B32C0099
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2013 23:48:49 +1000 (EST)
-Received: by mail-pd0-f182.google.com with SMTP id g10so378727pdj.41
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2013 06:48:47 -0700 (PDT)
-Date: Thu, 30 May 2013 06:48:48 -0700 (PDT)
-From: Hugh Dickins <hughd@google.com>
-To: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Subject: Re: 3.10-rc ppc64 corrupts usermem when swapping
-In-Reply-To: <1369902786.3928.94.camel@pasglop>
-Message-ID: <alpine.LNX.2.00.1305300643150.10009@eggly.anvils>
-References: <alpine.LNX.2.00.1305292148550.9560@eggly.anvils>
- <1369897236.3928.93.camel@pasglop> <87vc60na89.fsf@linux.vnet.ibm.com>
- <1369902786.3928.94.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@au1.ibm.com>,
- Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id A508A2C009A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2013 00:21:28 +1000 (EST)
+Subject: Re: [PATCH] powerpc/mpc85xx: match with the pci bus address used by
+ u-boot for all p1_p2_rdb_pc boards
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1369781156.18630.24@snotra>
+Date: Thu, 30 May 2013 09:21:19 -0500
+Message-Id: <9845CB5F-0E99-49A5-A10B-CD2E2379E903@kernel.crashing.org>
+References: <1368685785-10677-1-git-send-email-haokexin@gmail.com>
+ <1369781156.18630.24@snotra>
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>, Kevin Hao <haokexin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,21 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 30 May 2013, Benjamin Herrenschmidt wrote:
-> On Thu, 2013-05-30 at 13:57 +0530, Aneesh Kumar K.V wrote:
-> > +               /* FIXME!!, will fail with when we enable hugepage
-> > support */
-> 
-> Just fix that to say "Transparent huge pages" as normal huge pages
-> should work fine unless I'm missing something.
-> 
-> Hugh, any chance you can give that a spin ? 
 
-Sure, it's now under way.  If all goes well, I'll give you a
-progress report in about 15 hours time; but given the variance in
-how long it took to hit, I won't feel fully confident until this
-time tomorrow, when I'll update you again.
+On May 28, 2013, at 5:45 PM, Scott Wood wrote:
 
-Thank you both for the great response!
+> On 05/16/2013 01:29:45 AM, Kevin Hao wrote:
+>> All these boards use the same configuration file p1_p2_rdb_pc.h in
+>> u-boot. So they have the same pci bus address set by the u-boot.
+>> But in some of these boards the bus address set in dtb don't match
+>> the one used by u-boot. And this will trigger a kernel bug in 32bit
+>> kernel and cause the pci device malfunction. For example, on a
+>> p2020rdb-pc board the u-boot use the 0xa0000000 as both bus address
+>> and cpu address for one pci controller and then assign bus address
+>> such as 0xa00004000 to some pci device. But in the kernel, the dtb
+>> set the bus address to 0xe0000000 and the cpu address to 0xa0000000.
+>> The kernel assumes mistakenly the assigned bus address 0xa0004000
+>> in pci device is correct and keep it unchanged. This will definitely
+>> cause the pci device malfunction. I have made two patches to fix
+>> this in the pci subsystem.
+>> http://patchwork.ozlabs.org/patch/243702/
+>> http://patchwork.ozlabs.org/patch/243703/
+>> But I still think it makes sense to set these bus address to match
+>> with the u-boot. This issue can't be reproduced on 36bit kernel.
+>> But I also tweak the 36bit dtb for the above reason.
+>=20
+> IIRC the reason for using 0xe0000000 on all PCIe roots is to maximize =
+the memory that is DMA-addressable without involving swiotlb.
+>=20
+> Maybe U-Boot should be fixed?
+>=20
+> -Scott
 
-Hugh
+I feel that u-boot was the way it is to allow accessing each bus from =
+the command line in u-boot w/o big changes for >32-bit addressing.
+
+Linux was able to handle the PCI bus addresses all being the same.
+
+- k=
