@@ -1,21 +1,16 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C10952C0099
- for <linuxppc-dev@ozlabs.org>; Thu, 30 May 2013 20:42:03 +1000 (EST)
-Message-ID: <51A72D04.2090203@windriver.com>
-Date: Thu, 30 May 2013 18:42:12 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
-MIME-Version: 1.0
-To: wolfking <wolfking2000@msn.com>
-Subject: Re: can't access PCIe card under sbc8548
-References: <1369885321567-71775.post@n7.nabble.com>
- <51A6EA1D.7080100@windriver.com> <1369899157331-71783.post@n7.nabble.com>
-In-Reply-To: <1369899157331-71783.post@n7.nabble.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <lig.fnst@cn.fujitsu.com>
+From: liguang <lig.fnst@cn.fujitsu.com>
+To: Arnd Bergmann <arnd@arndb.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] powerpc/smp: use '==' instead of '<' for  system_state
+Date: Thu, 30 May 2013 14:47:53 +0800
+Message-Id: <1369896473-23588-1-git-send-email-lig.fnst@cn.fujitsu.com>
+Cc: cbe-oss-dev@lists.ozlabs.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ Rob Herring <rob.herring@calxeda.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ liguang <lig.fnst@cn.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,25 +20,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/30/2013 03:32 PM, wolfking wrote:
-> (continued)
->    I traced the 8139too.c when it uses pci_iomap, the pci_iomap called the
-> ioport_map. The difference between 8139 and my PCIe card lies in the
-> "port" value :
-> void __iomem *ioport_map(unsigned long port, unsigned int len)
-> {
-> 	return (void __iomem *) (port + _IO_BASE);
+'system_state < SYSTEM_RUNNING' will have same effect
+with 'system_state == SYSTEM_BOOTING', but the later
+one is more clearer.
 
-_IO_BASE is equal to isa_io_base. So if this is not zero, I think there's a isa 
-bridge in your platform. So you can access these I/O ports based on that isa 
-bridge/bus with ioreadx/iowritex.
+Signed-off-by: liguang <lig.fnst@cn.fujitsu.com>
+---
+ arch/powerpc/platforms/cell/smp.c    |    2 +-
+ arch/powerpc/platforms/powernv/smp.c |    2 +-
+ arch/powerpc/platforms/pseries/smp.c |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-> }
->    in 8139too.c, the "port" value is 0x1000; for my PCIe card, the "port"
-> value
-> is 0xfefff000. And the value is got from pci_resource_start. So you see, the
-
-But this means the port is as memory-mapped so ioremap() should be workable in 
-this case. Then out_bex/in_bex should be fine.
-
-Tiejun
+diff --git a/arch/powerpc/platforms/cell/smp.c b/arch/powerpc/platforms/cell/smp.c
+index d35dbbc..f75f6fc 100644
+--- a/arch/powerpc/platforms/cell/smp.c
++++ b/arch/powerpc/platforms/cell/smp.c
+@@ -142,7 +142,7 @@ static int smp_cell_cpu_bootable(unsigned int nr)
+ 	 * during boot if the user requests it.  Odd-numbered
+ 	 * cpus are assumed to be secondary threads.
+ 	 */
+-	if (system_state < SYSTEM_RUNNING &&
++	if (system_state == SYSTEM_BOOTING &&
+ 	    cpu_has_feature(CPU_FTR_SMT) &&
+ 	    !smt_enabled_at_boot && cpu_thread_in_core(nr) != 0)
+ 		return 0;
+diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
+index 88c9459..77784ae 100644
+--- a/arch/powerpc/platforms/powernv/smp.c
++++ b/arch/powerpc/platforms/powernv/smp.c
+@@ -51,7 +51,7 @@ static int pnv_smp_cpu_bootable(unsigned int nr)
+ 	/* Special case - we inhibit secondary thread startup
+ 	 * during boot if the user requests it.
+ 	 */
+-	if (system_state < SYSTEM_RUNNING && cpu_has_feature(CPU_FTR_SMT)) {
++	if (system_state == SYSTEM_BOOTING && cpu_has_feature(CPU_FTR_SMT)) {
+ 		if (!smt_enabled_at_boot && cpu_thread_in_core(nr) != 0)
+ 			return 0;
+ 		if (smt_enabled_at_boot
+diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
+index 12bc8c3..306643c 100644
+--- a/arch/powerpc/platforms/pseries/smp.c
++++ b/arch/powerpc/platforms/pseries/smp.c
+@@ -192,7 +192,7 @@ static int smp_pSeries_cpu_bootable(unsigned int nr)
+ 	/* Special case - we inhibit secondary thread startup
+ 	 * during boot if the user requests it.
+ 	 */
+-	if (system_state < SYSTEM_RUNNING && cpu_has_feature(CPU_FTR_SMT)) {
++	if (system_state == SYSTEM_BOOTING && cpu_has_feature(CPU_FTR_SMT)) {
+ 		if (!smt_enabled_at_boot && cpu_thread_in_core(nr) != 0)
+ 			return 0;
+ 		if (smt_enabled_at_boot
+-- 
+1.7.2.5
