@@ -1,25 +1,20 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BCD7B2C007E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2013 00:43:40 +1000 (EST)
-Date: Thu, 30 May 2013 09:43:28 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] powerpc/mpc85xx: match with the pci bus address used by
- u-boot for all p1_p2_rdb_pc boards
-To: Kumar Gala <galak@kernel.crashing.org>
-References: <1368685785-10677-1-git-send-email-haokexin@gmail.com>
- <1369781156.18630.24@snotra>
- <9845CB5F-0E99-49A5-A10B-CD2E2379E903@kernel.crashing.org>
-In-Reply-To: <9845CB5F-0E99-49A5-A10B-CD2E2379E903@kernel.crashing.org>
- (from galak@kernel.crashing.org on Thu May 30 09:21:19 2013)
-Message-ID: <1369925008.14679.1@snotra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>, Kevin Hao <haokexin@gmail.com>
+Return-Path: <BATV+c6bcadfc260b0389574d+3567+infradead.org+acme@merlin.srs.infradead.org>
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:4978:20e::2])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 8C9DB2C00A0
+ for <linuxppc-dev@ozlabs.org>; Fri, 31 May 2013 02:02:12 +1000 (EST)
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH 55/66] perf: Power7: Make CPI stack events available in sysfs
+Date: Thu, 30 May 2013 19:01:28 +0300
+Message-Id: <1369929699-8724-56-git-send-email-acme@infradead.org>
+In-Reply-To: <1369929699-8724-1-git-send-email-acme@infradead.org>
+References: <1369929699-8724-1-git-send-email-acme@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
+ linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,49 +24,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/30/2013 09:21:19 AM, Kumar Gala wrote:
->=20
-> On May 28, 2013, at 5:45 PM, Scott Wood wrote:
->=20
-> > On 05/16/2013 01:29:45 AM, Kevin Hao wrote:
-> >> All these boards use the same configuration file p1_p2_rdb_pc.h in
-> >> u-boot. So they have the same pci bus address set by the u-boot.
-> >> But in some of these boards the bus address set in dtb don't match
-> >> the one used by u-boot. And this will trigger a kernel bug in 32bit
-> >> kernel and cause the pci device malfunction. For example, on a
-> >> p2020rdb-pc board the u-boot use the 0xa0000000 as both bus address
-> >> and cpu address for one pci controller and then assign bus address
-> >> such as 0xa00004000 to some pci device. But in the kernel, the dtb
-> >> set the bus address to 0xe0000000 and the cpu address to =20
-> 0xa0000000.
-> >> The kernel assumes mistakenly the assigned bus address 0xa0004000
-> >> in pci device is correct and keep it unchanged. This will =20
-> definitely
-> >> cause the pci device malfunction. I have made two patches to fix
-> >> this in the pci subsystem.
-> >> http://patchwork.ozlabs.org/patch/243702/
-> >> http://patchwork.ozlabs.org/patch/243703/
-> >> But I still think it makes sense to set these bus address to match
-> >> with the u-boot. This issue can't be reproduced on 36bit kernel.
-> >> But I also tweak the 36bit dtb for the above reason.
-> >
-> > IIRC the reason for using 0xe0000000 on all PCIe roots is to =20
-> maximize the memory that is DMA-addressable without involving swiotlb.
-> >
-> > Maybe U-Boot should be fixed?
-> >
-> > -Scott
->=20
-> I feel that u-boot was the way it is to allow accessing each bus from =20
-> the command line in u-boot w/o big changes for >32-bit addressing.
->=20
-> Linux was able to handle the PCI bus addresses all being the same.
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 
-It's a bit of a hack though, in that you're using the device tree to =20
-indicate how you want the hardware programmed rather than to describe =20
-the hardware or even what U-Boot's done to it, and in that you can't =20
-arbitrarily change what U-Boot chose -- it only works because you're =20
-picking an address that U-Boot used for one of the PCIe controllers and =20
-thus U-Boot covered it with a LAW.
+A set of Power7 events are often used for Cycles Per Instruction (CPI) stack
+analysis. Make these events available in sysfs (/sys/devices/cpu/events/) so
+they can be identified using their symbolic names:
 
--Scott=
+	perf stat -e 'cpu/PM_CMPLU_STALL_DCACHE_MISS/' /bin/ls
+
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Acked-by: Paul Mackerras <paulus@samba.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org
+Link: http://lkml.kernel.org/r/20130406164803.GA408@us.ibm.com
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ arch/powerpc/perf/power7-pmu.c | 73 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 73 insertions(+)
+
+diff --git a/arch/powerpc/perf/power7-pmu.c b/arch/powerpc/perf/power7-pmu.c
+index 3c475d6..13c3f0e 100644
+--- a/arch/powerpc/perf/power7-pmu.c
++++ b/arch/powerpc/perf/power7-pmu.c
+@@ -62,6 +62,29 @@
+ #define	PME_PM_BRU_FIN			0x10068
+ #define	PME_PM_BRU_MPRED		0x400f6
+ 
++#define PME_PM_CMPLU_STALL_FXU			0x20014
++#define PME_PM_CMPLU_STALL_DIV			0x40014
++#define PME_PM_CMPLU_STALL_SCALAR		0x40012
++#define PME_PM_CMPLU_STALL_SCALAR_LONG		0x20018
++#define PME_PM_CMPLU_STALL_VECTOR		0x2001c
++#define PME_PM_CMPLU_STALL_VECTOR_LONG		0x4004a
++#define PME_PM_CMPLU_STALL_LSU			0x20012
++#define PME_PM_CMPLU_STALL_REJECT		0x40016
++#define PME_PM_CMPLU_STALL_ERAT_MISS		0x40018
++#define PME_PM_CMPLU_STALL_DCACHE_MISS		0x20016
++#define PME_PM_CMPLU_STALL_STORE		0x2004a
++#define PME_PM_CMPLU_STALL_THRD			0x1001c
++#define PME_PM_CMPLU_STALL_IFU			0x4004c
++#define PME_PM_CMPLU_STALL_BRU			0x4004e
++#define PME_PM_GCT_NOSLOT_IC_MISS		0x2001a
++#define PME_PM_GCT_NOSLOT_BR_MPRED		0x4001a
++#define PME_PM_GCT_NOSLOT_BR_MPRED_IC_MISS	0x4001c
++#define PME_PM_GRP_CMPL				0x30004
++#define PME_PM_1PLUS_PPC_CMPL			0x100f2
++#define PME_PM_CMPLU_STALL_DFU			0x2003c
++#define PME_PM_RUN_CYC				0x200f4
++#define PME_PM_RUN_INST_CMPL			0x400fa
++
+ /*
+  * Layout of constraint bits:
+  * 6666555555555544444444443333333333222222222211111111110000000000
+@@ -393,6 +416,31 @@ POWER_EVENT_ATTR(LD_MISS_L1,			LD_MISS_L1);
+ POWER_EVENT_ATTR(BRU_FIN,			BRU_FIN)
+ POWER_EVENT_ATTR(BRU_MPRED,			BRU_MPRED);
+ 
++POWER_EVENT_ATTR(CMPLU_STALL_FXU,		CMPLU_STALL_FXU);
++POWER_EVENT_ATTR(CMPLU_STALL_DIV,		CMPLU_STALL_DIV);
++POWER_EVENT_ATTR(CMPLU_STALL_SCALAR,		CMPLU_STALL_SCALAR);
++POWER_EVENT_ATTR(CMPLU_STALL_SCALAR_LONG,	CMPLU_STALL_SCALAR_LONG);
++POWER_EVENT_ATTR(CMPLU_STALL_VECTOR,		CMPLU_STALL_VECTOR);
++POWER_EVENT_ATTR(CMPLU_STALL_VECTOR_LONG,	CMPLU_STALL_VECTOR_LONG);
++POWER_EVENT_ATTR(CMPLU_STALL_LSU,		CMPLU_STALL_LSU);
++POWER_EVENT_ATTR(CMPLU_STALL_REJECT,		CMPLU_STALL_REJECT);
++
++POWER_EVENT_ATTR(CMPLU_STALL_ERAT_MISS,		CMPLU_STALL_ERAT_MISS);
++POWER_EVENT_ATTR(CMPLU_STALL_DCACHE_MISS,	CMPLU_STALL_DCACHE_MISS);
++POWER_EVENT_ATTR(CMPLU_STALL_STORE,		CMPLU_STALL_STORE);
++POWER_EVENT_ATTR(CMPLU_STALL_THRD,		CMPLU_STALL_THRD);
++POWER_EVENT_ATTR(CMPLU_STALL_IFU,		CMPLU_STALL_IFU);
++POWER_EVENT_ATTR(CMPLU_STALL_BRU,		CMPLU_STALL_BRU);
++POWER_EVENT_ATTR(GCT_NOSLOT_IC_MISS,		GCT_NOSLOT_IC_MISS);
++
++POWER_EVENT_ATTR(GCT_NOSLOT_BR_MPRED,		GCT_NOSLOT_BR_MPRED);
++POWER_EVENT_ATTR(GCT_NOSLOT_BR_MPRED_IC_MISS,	GCT_NOSLOT_BR_MPRED_IC_MISS);
++POWER_EVENT_ATTR(GRP_CMPL,			GRP_CMPL);
++POWER_EVENT_ATTR(1PLUS_PPC_CMPL,		1PLUS_PPC_CMPL);
++POWER_EVENT_ATTR(CMPLU_STALL_DFU,		CMPLU_STALL_DFU);
++POWER_EVENT_ATTR(RUN_CYC,			RUN_CYC);
++POWER_EVENT_ATTR(RUN_INST_CMPL,			RUN_INST_CMPL);
++
+ static struct attribute *power7_events_attr[] = {
+ 	GENERIC_EVENT_PTR(CYC),
+ 	GENERIC_EVENT_PTR(GCT_NOSLOT_CYC),
+@@ -411,6 +459,31 @@ static struct attribute *power7_events_attr[] = {
+ 	POWER_EVENT_PTR(LD_MISS_L1),
+ 	POWER_EVENT_PTR(BRU_FIN),
+ 	POWER_EVENT_PTR(BRU_MPRED),
++
++	POWER_EVENT_PTR(CMPLU_STALL_FXU),
++	POWER_EVENT_PTR(CMPLU_STALL_DIV),
++	POWER_EVENT_PTR(CMPLU_STALL_SCALAR),
++	POWER_EVENT_PTR(CMPLU_STALL_SCALAR_LONG),
++	POWER_EVENT_PTR(CMPLU_STALL_VECTOR),
++	POWER_EVENT_PTR(CMPLU_STALL_VECTOR_LONG),
++	POWER_EVENT_PTR(CMPLU_STALL_LSU),
++	POWER_EVENT_PTR(CMPLU_STALL_REJECT),
++
++	POWER_EVENT_PTR(CMPLU_STALL_ERAT_MISS),
++	POWER_EVENT_PTR(CMPLU_STALL_DCACHE_MISS),
++	POWER_EVENT_PTR(CMPLU_STALL_STORE),
++	POWER_EVENT_PTR(CMPLU_STALL_THRD),
++	POWER_EVENT_PTR(CMPLU_STALL_IFU),
++	POWER_EVENT_PTR(CMPLU_STALL_BRU),
++	POWER_EVENT_PTR(GCT_NOSLOT_IC_MISS),
++	POWER_EVENT_PTR(GCT_NOSLOT_BR_MPRED),
++
++	POWER_EVENT_PTR(GCT_NOSLOT_BR_MPRED_IC_MISS),
++	POWER_EVENT_PTR(GRP_CMPL),
++	POWER_EVENT_PTR(1PLUS_PPC_CMPL),
++	POWER_EVENT_PTR(CMPLU_STALL_DFU),
++	POWER_EVENT_PTR(RUN_CYC),
++	POWER_EVENT_PTR(RUN_INST_CMPL),
+ 	NULL
+ };
+ 
+-- 
+1.8.1.4
