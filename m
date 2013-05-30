@@ -1,22 +1,20 @@
-Return-Path: <B07421@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DC4E52C0097
- for <linuxppc-dev@ozlabs.org>; Fri, 31 May 2013 02:29:31 +1000 (EST)
-Date: Thu, 30 May 2013 11:29:25 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: can't access PCIe card under sbc8548
-To: wolfking <wolfking2000@msn.com>
-References: <1369885321567-71775.post@n7.nabble.com>
-In-Reply-To: <1369885321567-71775.post@n7.nabble.com> (from
- wolfking2000@msn.com on Wed May 29 22:42:01 2013)
-Message-ID: <1369931365.14679.7@snotra>
+Return-Path: <vinod.koul@intel.com>
+Received: from mga14.intel.com (mga14.intel.com [143.182.124.37])
+ by ozlabs.org (Postfix) with ESMTP id 1FB1B2C0077
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2013 04:29:23 +1000 (EST)
+Date: Thu, 30 May 2013 23:17:27 +0530
+From: Vinod Koul <vinod.koul@intel.com>
+To: Andy Shevchenko <andriy.shevchenko@linux.jf.intel.com>
+Subject: Re: [PATCH 00/12] dma: various minor clean ups for slave drivers
+Message-ID: <20130530174727.GE3767@intel.com>
+References: <1369656882-25241-1-git-send-email-andriy.shevchenko@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1369656882-25241-1-git-send-email-andriy.shevchenko@linux.intel.com>
+Cc: Shawn Guo <shawn.guo@linaro.org>, Stephen Warren <swarren@wwwdotorg.org>,
+ linux-kernel@vger.kernel.org, Zhang Wei <zw@zh-kernel.org>,
+ Dan Williams <djbw@fb.com>, linux-tegra@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,59 +24,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/29/2013 10:42:01 PM, wolfking wrote:
-> hi, all
->   I'm doing some developing on the windriver's sbc8548 board. The =20
-> kernel I
-> use
-> is 3.6.10 and the u-boot version is 2012-10. I changed the board's
-> configuration:
-> the board now boot from the 64MB SODIMM Flash (not the default 8MB =20
-> on-board
-> Flash
-> memory), and the PCI clock rate is changed to 33MHZ.
->   Now the trouble I am in is that: the PCI card (a NIC card rtl8139) =20
-> can be
-> accessed OK, while the PCIe card can't work, that is, the kernel can't
-> access
-> its internal register. The kernel can correctly probe the PCIe card. =20
-> its
-> BAR0
-> is a I/O mapped register, I use ioport_map to map the BAR0 to kernel's
-> address
-> space, then use ioread8/iowrite8 to access its internal register, it =20
-> doesn't
-> work.
+On Mon, May 27, 2013 at 03:14:30PM +0300, Andy Shevchenko wrote:
+> Here is a set of small independent patches that clean up or fix minor things
+> across DMA slave drivers.
+The series looks fine. I am going to wait a day more and apply, pls speak up if
+you disagree and ack if you agree
 
-In what specific way does it not work?
+--
+~Vinod
+> 
+> Andy Shevchenko (12):
+>   imx-sdma: remove useless variable
+>   mxs-dma: remove useless variable
+>   edma: no need to assign residue to 0 explicitly
+>   ep93xx_dma: remove useless use of lock
+>   fsldma: remove useless use of lock
+>   mmp_pdma: remove useless use of lock
+>   mpc512x_dma: remove useless use of lock
+>   pch_dma: remove useless use of lock
+>   tegra20-apb-dma: remove useless use of lock
+>   ipu_idmac: re-use dma_cookie_status()
+>   mmp_tdma: set cookies as well when asked for tx status
+>   txx9dmac: return DMA_SUCCESS immediately from device_tx_status()
+> 
+>  drivers/dma/edma.c            |  2 --
+>  drivers/dma/ep93xx_dma.c      | 10 +---------
+>  drivers/dma/fsldma.c          | 10 +---------
+>  drivers/dma/imx-sdma.c        |  9 +++------
+>  drivers/dma/ipu/ipu_idmac.c   |  5 +----
+>  drivers/dma/mmp_pdma.c        | 10 +---------
+>  drivers/dma/mmp_tdma.c        |  3 ++-
+>  drivers/dma/mpc512x_dma.c     | 10 +---------
+>  drivers/dma/mxs-dma.c         |  4 +---
+>  drivers/dma/pch_dma.c         |  9 +--------
+>  drivers/dma/tegra20-apb-dma.c |  8 +++-----
+>  drivers/dma/txx9dmac.c        | 13 ++++++-------
+>  12 files changed, 21 insertions(+), 72 deletions(-)
+> 
+> -- 
+> 1.8.2.rc0.22.gb3600c3
+> 
 
-> I analyse the ioport_map function and find it just add the input =20
-> parameter
-> to
-> a fixed _IO_BASE value, below is the function:
-> void __iomem *ioport_map(unsigned long port, unsigned int len)
-> {
-> 	return (void __iomem *) (port + _IO_BASE);
-> }
-> the _IO_BASE value under sbc8548 is 0xfd7fd000, the value of =20
-> ioport_map
-> paramenter
-> "port" is 0xfefff000. Obviously the add overflows, so the follow-up
-> operations
-> can't succeed.
-
-Why can't it succeed?  Is there nothing mapped at 0xfc7fc000?
-
-> The value of "port" is got from the function
-> pci_resource_start.
-> So I guess the kernel allocate a bad address to this PCIe card. How =20
-> can I
-> fix this?
->   I also plug this PCIe card into a freescale's board mpc8641-hpcn, =20
-> try the
-> same driver,
-> I noticed ioport_map also meet overflow, but it does work fine.
-
-So don't focus on the overflow, but rather on the actual breakage.
-
--Scott=
+-- 
