@@ -1,19 +1,18 @@
 Return-Path: <haokexin@gmail.com>
-Received: from mail-pd0-f169.google.com (mail-pd0-f169.google.com
- [209.85.192.169])
+Received: from mail-pd0-f180.google.com (mail-pd0-f180.google.com
+ [209.85.192.180])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 058422C02A6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2013 16:41:19 +1000 (EST)
-Received: by mail-pd0-f169.google.com with SMTP id y11so1693928pdj.14
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2013 23:41:17 -0700 (PDT)
-Date: Fri, 31 May 2013 14:41:05 +0800
+ by ozlabs.org (Postfix) with ESMTPS id 31CD12C02A8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2013 16:44:00 +1000 (EST)
+Received: by mail-pd0-f180.google.com with SMTP id 14so1673337pdc.25
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2013 23:43:58 -0700 (PDT)
+Date: Fri, 31 May 2013 14:43:49 +0800
 From: Kevin Hao <haokexin@gmail.com>
-To: Scott Wood <scottwood@freescale.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
 Subject: Re: [PATCH 1/3] powerpc/mpc85xx: remove the unneeded pci init
  functions for corenet ds board
-Message-ID: <20130531064102.GB16514@pek-khao-d1.corp.ad.wrs.com>
+Message-ID: <20130531064348.GC16514@pek-khao-d1.corp.ad.wrs.com>
 References: <1369137900-5748-1-git-send-email-haokexin@gmail.com>
  <1369137900-5748-2-git-send-email-haokexin@gmail.com>
  <1369781529.18630.25@snotra>
@@ -21,7 +20,7 @@ References: <1369137900-5748-1-git-send-email-haokexin@gmail.com>
  <1369940099.14679.14@snotra>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="XF85m9dhOBO43t/C"
+ protocol="application/pgp-signature"; boundary="Pk6IbRAofICFmK5e"
 In-Reply-To: <1369940099.14679.14@snotra>
 Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,7 +33,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---XF85m9dhOBO43t/C
+--Pk6IbRAofICFmK5e
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
@@ -55,18 +54,6 @@ On Thu, May 30, 2013 at 01:54:59PM -0500, Scott Wood wrote:
 > >Do you know more about these bugs?
 >=20
 > Not off the top of my head -- either search the archives or ask Ben.
-
-Hi Ben,
-
-Could you shed some light on this issue? Do we really has the restriction
-that we have to pick one bus controller as primary even there is no
-ISA bus on the board? I did check the current code and found no code
-has a requirement for this. I also searched the archives and but found
-nothing useful. :-(
-
-Thanks,
-Kevin
-
 >=20
 > >>  fsl_pci_assign_primary() will arbitrarily pick one
 > >> to be primary if there's no ISA.  Have the bugs been fixed?
@@ -91,22 +78,29 @@ Kevin
 > >am wrong. :-)
 >=20
 > outx/inx can also be used for PCI I/O BARs.
+
+Yes, I know there is also PIO. But the value of isa_io_base doesn't
+have any effect for this.
+
+Thanks,
+Kevin
+
 >=20
 > -Scott
 
---XF85m9dhOBO43t/C
+--Pk6IbRAofICFmK5e
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.19 (GNU/Linux)
 
-iQEcBAEBAgAGBQJRqEX+AAoJEJNY7TDerrFxOEQIALmjy8hVNwLPbLTuoZMfQB5s
-vC5JAqXw6e/FX4Tt2Eg+CFaioqPr6Se3q3p4XxCSpQxiOHzyNXvzdHDSi7qxlKVu
-2Bi+gJxHbUEg5QgB+urnhvHisTaPgmiT2/GUJMe4+WymEdUdfcXLpIO7d0fBe8l2
-U8BkuLtunnfAkbxR7Yit3hyVhW89cVjgY6qGXM2tZVp6xQEo72Xd2CMpqBNN2anX
-dUPZBNUsAiHkJsL0MbJTpfKTnh10KaNJgtCD7MpzmPWzTUzjtAgGrTwrVyDyU4JY
-RhfEE/2d5cZ5tRFghPcfJpGEULQqAszMenknaKIVWA1hscdatmqMCGjNpgdfFQw=
-=hjvH
+iQEcBAEBAgAGBQJRqEakAAoJEJNY7TDerrFxd9oIAIvNMMUEiV1LOmMIzYNjpO7I
+ThOVr7YobqeLuegE++KwHA1SjgOZJWADbYSg0mx8+RGXf4CJf/7o6UAFV4DCtFpj
+ExXFc1MhDjEV0AKtwzzQ2Lq8fNShgSDWaZUNCOzUYt75i2dMzUgQZ3bSiYKVs1Fz
+c/nztLkLi2GpFaxdSOVmBHCCxDGj86A+TDgrGev9GN6eIWIbNgJm906sFCFtCCyd
+NG5S8sf7WI3WOdxc8PuTMSz9qpDwZ6vvLiw2tMqjdqlaOgPNzM0yIOwQITvJ8NGZ
+Qu+3MhkJOOYiuR6f1DU28HjRt7I58XojP3jpKsnyeMAQWy54+OHC2rcS3iUFQ1s=
+=eSmZ
 -----END PGP SIGNATURE-----
 
---XF85m9dhOBO43t/C--
+--Pk6IbRAofICFmK5e--
