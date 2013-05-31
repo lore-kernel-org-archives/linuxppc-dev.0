@@ -1,15 +1,15 @@
-Return-Path: <whitebox@nefkom.net>
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [PATCH] dtc: Ensure #line directives don't consume data from the
- next line
-References: <1370020450-18136-1-git-send-email-swarren@wwwdotorg.org>
-Date: Fri, 31 May 2013 19:38:57 +0200
-In-Reply-To: <1370020450-18136-1-git-send-email-swarren@wwwdotorg.org>
- (Stephen Warren's message of "Fri, 31 May 2013 11:14:10 -0600")
-Message-ID: <87sj13dp72.fsf@hase.home>
+Return-Path: <swarren@wwwdotorg.org>
+Message-ID: <51A8E0EE.1040305@wwwdotorg.org>
+Date: Fri, 31 May 2013 11:42:06 -0600
+From: Stephen Warren <swarren@wwwdotorg.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Andreas Schwab <schwab@linux-m68k.org>
+Subject: Re: [PATCH] dtc: Ensure #line directives don't consume data from
+ the next line
+References: <1370020450-18136-1-git-send-email-swarren@wwwdotorg.org>
+ <87sj13dp72.fsf@hase.home>
+In-Reply-To: <87sj13dp72.fsf@hase.home>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: mmarek@suse.cz, jdl@jdl.com, Stephen Warren <swarren@nvidia.com>,
  linux-kbuild@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
  linux-kernel@vger.kernel.org, rob.herring@calxeda.com,
@@ -23,15 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Stephen Warren <swarren@wwwdotorg.org> writes:
+On 05/31/2013 11:38 AM, Andreas Schwab wrote:
+> Stephen Warren <swarren@wwwdotorg.org> writes:
+> 
+>> Fix this by replacing {WS} with [ \t] so that it can't match line-breaks.
+> 
+> I think the other uses of {WS} shouldn't span lines either.
 
-> Fix this by replacing {WS} with [ \t] so that it can't match line-breaks.
+That is true, but only the optional occurrence /should/ matter. Any
+changes to the other occurrences would only affect malformed #line
+directives, whereas changing this one occurrence would also affect
+well-formed #line directives, due to the optional nature of the trailing
+flags field.
 
-I think the other uses of {WS} shouldn't span lines either.
-
-Andreas.
-
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Still, it may be reasonable just to change all the occurrences anyway.
+Does anyone have a strong opinion either way?
