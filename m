@@ -1,25 +1,28 @@
-Return-Path: <wolfking2000@msn.com>
-Received: from sam.nabble.com (sam.nabble.com [216.139.236.26])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 22FCB2C02A4
- for <linuxppc-dev@ozlabs.org>; Fri, 31 May 2013 12:27:10 +1000 (EST)
-Received: from tom.nabble.com ([192.168.236.105])
- by sam.nabble.com with esmtp (Exim 4.72)
- (envelope-from <wolfking2000@msn.com>) id 1UiF3d-0006Rr-1Y
- for linuxppc-dev@ozlabs.org; Thu, 30 May 2013 19:27:09 -0700
-Date: Thu, 30 May 2013 19:27:09 -0700 (PDT)
-From: wolfking <wolfking2000@msn.com>
-To: linuxppc-dev@ozlabs.org
-Message-ID: <1369967229031-71850.post@n7.nabble.com>
-In-Reply-To: <51A7FE17.2040803@windriver.com>
-References: <1369885321567-71775.post@n7.nabble.com>
- <51A6EA1D.7080100@windriver.com> <1369899157331-71783.post@n7.nabble.com>
- <51A72D04.2090203@windriver.com> <1369918188379-71827.post@n7.nabble.com>
- <1369931094.14679.6@snotra> <51A7FE17.2040803@windriver.com>
-Subject: Re: can't access PCIe card under sbc8548
+Return-Path: <hughd@google.com>
+Received: from mail-pb0-x22a.google.com (mail-pb0-x22a.google.com
+ [IPv6:2607:f8b0:400e:c01::22a])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E3C9C2C02AB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2013 15:05:28 +1000 (EST)
+Received: by mail-pb0-f42.google.com with SMTP id uo1so1592930pbc.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2013 22:05:25 -0700 (PDT)
+Date: Thu, 30 May 2013 22:05:23 -0700 (PDT)
+From: Hugh Dickins <hughd@google.com>
+To: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Subject: Re: 3.10-rc ppc64 corrupts usermem when swapping
+In-Reply-To: <alpine.LNX.2.00.1305300643150.10009@eggly.anvils>
+Message-ID: <alpine.LNX.2.00.1305302201200.12852@eggly.anvils>
+References: <alpine.LNX.2.00.1305292148550.9560@eggly.anvils>
+ <1369897236.3928.93.camel@pasglop> <87vc60na89.fsf@linux.vnet.ibm.com>
+ <1369902786.3928.94.camel@pasglop>
+ <alpine.LNX.2.00.1305300643150.10009@eggly.anvils>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@au1.ibm.com>,
+ Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,26 +32,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-hi, tiejun:
-  When I don't compile my pcie card driver(in kernel or as a driver), the
-kernel 
-auto allocate the resoures to my pcie card, here is the output:
+On Thu, 30 May 2013, Hugh Dickins wrote:
+> On Thu, 30 May 2013, Benjamin Herrenschmidt wrote:
+> > On Thu, 2013-05-30 at 13:57 +0530, Aneesh Kumar K.V wrote:
+> > > +               /* FIXME!!, will fail with when we enable hugepage
+> > > support */
+> > 
+> > Just fix that to say "Transparent huge pages" as normal huge pages
+> > should work fine unless I'm missing something.
+> > 
+> > Hugh, any chance you can give that a spin ? 
+> 
+> Sure, it's now under way.  If all goes well, I'll give you a
+> progress report in about 15 hours time; but given the variance in
+> how long it took to hit, I won't feel fully confident until this
+> time tomorrow, when I'll update you again.
 
-root@generic-powerpc-e500v2:~# cat /proc/ioports
-00000000-007fffff : /pci@e0008000
-  00000000-00000fff : Legacy IO
-  00001000-000010ff : 0000:00:11.0
-    00001000-000010ff : 8139too
-feffe000-ffffdfff : /pcie@e000a000
-  feffe000-ffffdfff : PCI Bus 0001:02
-    fefff000-fefff0ff : 0001:02:00.0
-    fefff100-fefff103 : 0001:02:00.0
+Still running fine.  I'll leave it running a few more hours to make
+sure, and then try switching to the patch Aneesh sent afterwards -
+or say if you'd prefer me to switch over to that one immediately.
 
-the "feffe000-ffffdfff " is the resources that the kernel allocates to my
-card.
-
-
-
---
-View this message in context: http://linuxppc.10917.n7.nabble.com/can-t-access-PCIe-card-under-sbc8548-tp71775p71850.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+Hugh
