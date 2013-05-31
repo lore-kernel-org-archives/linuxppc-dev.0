@@ -1,18 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 035C82C0084
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2013 09:22:14 +1000 (EST)
-Message-ID: <1370042526.3928.162.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Sat, 01 Jun 2013 09:22:06 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <B07421@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe001.messaging.microsoft.com [213.199.154.204])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BB79F2C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2013 09:27:33 +1000 (EST)
+Date: Fri, 31 May 2013 18:27:21 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 1/3] powerpc/mpc85xx: remove the unneeded pci init
+ functions for corenet ds board
+To: Kevin Hao <haokexin@gmail.com>
+In-Reply-To: <20130531064348.GC16514@pek-khao-d1.corp.ad.wrs.com> (from
+ haokexin@gmail.com on Fri May 31 01:43:49 2013)
+Message-ID: <1370042841.13614.19@snotra>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,103 +26,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+On 05/31/2013 01:43:49 AM, Kevin Hao wrote:
+> On Thu, May 30, 2013 at 01:54:59PM -0500, Scott Wood wrote:
+> > On 05/30/2013 05:20:34 AM, Kevin Hao wrote:
+> > >On Tue, May 28, 2013 at 05:52:09PM -0500, Scott Wood wrote:
+> > >> On 05/21/2013 07:04:58 AM, Kevin Hao wrote:
+> > >> >It also seems that we don't support ISA on all the current
+> > >corenet ds
+> > >> >boards. So picking a primary bus seems useless, remove that
+> > >function
+> > >> >too.
+> > >>
+> > >> IIRC that was due to some bugs in the PPC PCI code in the =20
+> absence of
+> > >> any primary bus.
+> > >
+> > >Do you know more about these bugs?
+> >
+> > Not off the top of my head -- either search the archives or ask Ben.
+> >
+> > >>  fsl_pci_assign_primary() will arbitrarily pick one
+> > >> to be primary if there's no ISA.  Have the bugs been fixed?
+> > >
+> > >I know there should be some reason that we put the
+> > >fsl_pci_assign_primary()
+> > >here. But frankly I am not sure what bugs this workaround try to
+> > >fix. For these
+> > >corenet boards picking one to be primary has no effect to the
+> > >64bit kernel.
+> > >And for 32bit kernel, the only effect of this is that isa_io_base
+> > >is set to the
+> > >io virtual base of the primary bus. But the isa_io_base only make
+> > >sense when
+> > >we do have a isa bus, so that we can access some well-known io
+> > >ports directly
+> > >by using outx/inx. But if we don't have isa bus on the board, the
+> > >value of
+> > >isa_io_base should make no sense at all. So we really don't need
+> > >to pick a
+> > >fake primary bus. Of course I may miss something, correct me if I
+> > >am wrong. :-)
+> >
+> > outx/inx can also be used for PCI I/O BARs.
+>=20
+> Yes, I know there is also PIO. But the value of isa_io_base doesn't
+> have any effect for this.
 
-Here are a few more fixes for powerpc 3.10. It's a bit more than I would
-have liked this late in the game but I suppose that's what happens with
-a brand new chip generation coming out.
+See this e-mail for some of the issues I was referring to with =20
+isa_io_base being zero:
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2012-June/098586.html
 
-A few regression fixes, some last minute fixes for new P8 features such
-as transactional memory,...
+Reading it again I'm not so sure that the problem is so much that we =20
+need a primary, as that somewhat bad things happen on non-primary =20
+buses, such as the possibility of assigning a zero BAR.  Some hardware =20
+(including QEMU's PCI emulation) cares about this, though most =20
+doesn't.  We only have one PCI bus under QEMU, so when we started =20
+picking an arbitrary bus to be primary, the problem went away because =20
+there was only one bus and therefore there was no non-primary bus.
 
-There's also one powerpc KVM patch that I requested that adds two
-missing functions to our in-kernel interrupt controller support which
-is itself a new 3.10 feature. These are defined by the base hypervisor
-specification. We didn't implement them originally because Linux doesn't
-use them but they are simple and I'm not comfortable having a
-half-implemented interface in 3.10 and having to deal with versionning
-etc... later when something starts needing those calls. They cannot be
-emulated in qemu when using in-kernel interrupt controller (not enough
-shared state).
-
-Cheers,
-Ben.
-
-The following changes since commit 58f8bbd2e39c3732c55698494338ee19a92c53a0:
-
-  Merge branch 'drm-fixes' of git://people.freedesktop.org/~airlied/linux (2013-05-28 10:11:34 -0700)
-
-are available in the git repository at:
-
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-for you to fetch changes up to 58a032c3b106adcd2b83b7e631de3b79f238cdd2:
-
-  powerpc/perf: Add missing SIER support (2013-06-01 08:29:29 +1000)
-
-----------------------------------------------------------------
-Aneesh Kumar K.V (1):
-      powerpc/mm: Always invalidate tlb on hpte invalidate and update
-
-Kevin Hao (2):
-      powerpc/pci: Remove the stale comments of pci_process_bridge_OF_ranges
-      powerpc/pci: Remove the unused variables in pci_process_bridge_OF_ranges
-
-Michael Ellerman (2):
-      powerpc/perf: Revert to original NO_SIPR logic
-      powerpc/perf: Add missing SIER support
-
-Michael Neuling (7):
-      powerpc/tm: Make room for hypervisor in abort cause codes
-      powerpc/tm: Update cause codes documentation
-      powerpc/tm: Abort on emulation and alignment faults
-      powerpc/tm: Move TM abort cause codes to uapi
-      powerpc/tm: Fix userspace stack corruption on signal delivery for active transactions
-      powerpc/pseries: Kill all prefetch streams on context switch
-      powerpc/pseries: Improve stream generation comments in copypage/user
-
-Nishanth Aravamudan (1):
-      powerpc/cputable: Fix oprofile_cpu_type on power8
-
-Paul Mackerras (1):
-      powerpc/kvm/book3s: Add support for H_IPOLL and H_XIRR_X in XICS emulation
-
-Priyanka Jain (1):
-      powerpc/32bit:Store temporary result in r0 instead of r8
-
-Srivatsa S. Bhat (1):
-      powerpc/pseries: Always enable CONFIG_HOTPLUG_CPU on PSERIES SMP
-
-chenhui zhao (1):
-      powerpc/mpic: Fix irq distribution problem when MPIC_SINGLE_DEST_CPU
-
- Documentation/powerpc/transactional_memory.txt |   27 +++++++++-
- arch/powerpc/include/asm/hvcall.h              |    1 +
- arch/powerpc/include/asm/ppc_asm.h             |   11 ++++
- arch/powerpc/include/asm/processor.h           |   13 ++---
- arch/powerpc/include/asm/reg.h                 |   11 ----
- arch/powerpc/include/asm/signal.h              |    3 ++
- arch/powerpc/include/asm/tm.h                  |    2 +
- arch/powerpc/include/uapi/asm/Kbuild           |    1 +
- arch/powerpc/include/uapi/asm/tm.h             |   18 +++++++
- arch/powerpc/kernel/cputable.c                 |    4 +-
- arch/powerpc/kernel/entry_32.S                 |    2 +-
- arch/powerpc/kernel/entry_64.S                 |    7 +++
- arch/powerpc/kernel/pci-common.c               |   14 +----
- arch/powerpc/kernel/signal.c                   |   40 +++++++++++++-
- arch/powerpc/kernel/signal.h                   |    2 +-
- arch/powerpc/kernel/signal_32.c                |   10 +---
- arch/powerpc/kernel/signal_64.c                |   23 +++-----
- arch/powerpc/kernel/traps.c                    |   29 ++++++++++
- arch/powerpc/kvm/book3s_hv.c                   |    2 +
- arch/powerpc/kvm/book3s_pr_papr.c              |    2 +
- arch/powerpc/kvm/book3s_xics.c                 |   29 ++++++++++
- arch/powerpc/lib/copypage_power7.S             |   19 ++++---
- arch/powerpc/lib/copyuser_power7.S             |   12 +++--
- arch/powerpc/mm/hash_native_64.c               |   30 ++++++++---
- arch/powerpc/perf/core-book3s.c                |   67 +++++++++++-------------
- arch/powerpc/platforms/pseries/Kconfig         |    2 +
- arch/powerpc/sysdev/mpic.c                     |    4 +-
- 27 files changed, 261 insertions(+), 124 deletions(-)
- create mode 100644 arch/powerpc/include/uapi/asm/tm.h
+-Scott=
