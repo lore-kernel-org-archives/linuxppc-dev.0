@@ -1,42 +1,18 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp09.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3E15E2C0090
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2013 08:23:09 +1000 (EST)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Sat, 1 Jun 2013 19:20:11 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 028A52BB0050
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2013 08:23:04 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r4VM8ZlR27656274
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 1 Jun 2013 08:08:35 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r4VMN36I016819
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 1 Jun 2013 08:23:03 +1000
-Message-ID: <1370038982.3928.147.camel@pasglop>
-Subject: Re: 3.10-rc ppc64 corrupts usermem when swapping
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Date: Sat, 01 Jun 2013 08:23:02 +1000
-In-Reply-To: <87ppw7mrx7.fsf@linux.vnet.ibm.com>
-References: <alpine.LNX.2.00.1305292148550.9560@eggly.anvils>
- <1369897236.3928.93.camel@pasglop> <87vc60na89.fsf@linux.vnet.ibm.com>
- <1369902786.3928.94.camel@pasglop>
- <alpine.LNX.2.00.1305300643150.10009@eggly.anvils>
- <alpine.LNX.2.00.1305302201200.12852@eggly.anvils>
- <1369978262.3928.111.camel@pasglop> <87ppw7mrx7.fsf@linux.vnet.ibm.com>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 035C82C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2013 09:22:14 +1000 (EST)
+Message-ID: <1370042526.3928.162.camel@pasglop>
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Sat, 01 Jun 2013 09:22:06 +1000
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@au1.ibm.com>,
- Hugh Dickins <hughd@google.com>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,30 +22,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-05-31 at 14:45 +0530, Aneesh Kumar K.V wrote:
+Hi Linus !
 
-> > The patch you are running on is what I'll send to Linus for 3.10 (+/-
-> > cosmetics). Aneesh second patch is a much larger rework which will be
-> > needed for THP but that will wait for 3.11. I'm happy for you to test it
-> > but I first want to make sure it's solid with the 3.10 fix :-)
+Here are a few more fixes for powerpc 3.10. It's a bit more than I would
+have liked this late in the game but I suppose that's what happens with
+a brand new chip generation coming out.
 
-BTW. One concern I still have is that Hugh identified the bad commit
-to be:
+A few regression fixes, some last minute fixes for new P8 features such
+as transactional memory,...
 
-7e74c3921ad9610c0b49f28b8fc69f7480505841
-"powerpc: Fix hpte_decode to use the correct decoding for page sizes".
-
-However, you introduce the return on HPTE not found earlier, in
-
-b1022fbd293564de91596b8775340cf41ad5214c
-"powerpc: Decode the pte-lp-encoding bits correctly."
-
-So while I'm still happy with the current band-aid for 3.10 and am
-about to send it to Linus, the above *does* seem to indicate that
-there is also something wrong with the "Fix hpte_decode..." commit,
-which might not actually get the page size right...
-
-Can you investigate ?
+There's also one powerpc KVM patch that I requested that adds two
+missing functions to our in-kernel interrupt controller support which
+is itself a new 3.10 feature. These are defined by the base hypervisor
+specification. We didn't implement them originally because Linux doesn't
+use them but they are simple and I'm not comfortable having a
+half-implemented interface in 3.10 and having to deal with versionning
+etc... later when something starts needing those calls. They cannot be
+emulated in qemu when using in-kernel interrupt controller (not enough
+shared state).
 
 Cheers,
 Ben.
+
+The following changes since commit 58f8bbd2e39c3732c55698494338ee19a92c53a0:
+
+  Merge branch 'drm-fixes' of git://people.freedesktop.org/~airlied/linux (2013-05-28 10:11:34 -0700)
+
+are available in the git repository at:
+
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+for you to fetch changes up to 58a032c3b106adcd2b83b7e631de3b79f238cdd2:
+
+  powerpc/perf: Add missing SIER support (2013-06-01 08:29:29 +1000)
+
+----------------------------------------------------------------
+Aneesh Kumar K.V (1):
+      powerpc/mm: Always invalidate tlb on hpte invalidate and update
+
+Kevin Hao (2):
+      powerpc/pci: Remove the stale comments of pci_process_bridge_OF_ranges
+      powerpc/pci: Remove the unused variables in pci_process_bridge_OF_ranges
+
+Michael Ellerman (2):
+      powerpc/perf: Revert to original NO_SIPR logic
+      powerpc/perf: Add missing SIER support
+
+Michael Neuling (7):
+      powerpc/tm: Make room for hypervisor in abort cause codes
+      powerpc/tm: Update cause codes documentation
+      powerpc/tm: Abort on emulation and alignment faults
+      powerpc/tm: Move TM abort cause codes to uapi
+      powerpc/tm: Fix userspace stack corruption on signal delivery for active transactions
+      powerpc/pseries: Kill all prefetch streams on context switch
+      powerpc/pseries: Improve stream generation comments in copypage/user
+
+Nishanth Aravamudan (1):
+      powerpc/cputable: Fix oprofile_cpu_type on power8
+
+Paul Mackerras (1):
+      powerpc/kvm/book3s: Add support for H_IPOLL and H_XIRR_X in XICS emulation
+
+Priyanka Jain (1):
+      powerpc/32bit:Store temporary result in r0 instead of r8
+
+Srivatsa S. Bhat (1):
+      powerpc/pseries: Always enable CONFIG_HOTPLUG_CPU on PSERIES SMP
+
+chenhui zhao (1):
+      powerpc/mpic: Fix irq distribution problem when MPIC_SINGLE_DEST_CPU
+
+ Documentation/powerpc/transactional_memory.txt |   27 +++++++++-
+ arch/powerpc/include/asm/hvcall.h              |    1 +
+ arch/powerpc/include/asm/ppc_asm.h             |   11 ++++
+ arch/powerpc/include/asm/processor.h           |   13 ++---
+ arch/powerpc/include/asm/reg.h                 |   11 ----
+ arch/powerpc/include/asm/signal.h              |    3 ++
+ arch/powerpc/include/asm/tm.h                  |    2 +
+ arch/powerpc/include/uapi/asm/Kbuild           |    1 +
+ arch/powerpc/include/uapi/asm/tm.h             |   18 +++++++
+ arch/powerpc/kernel/cputable.c                 |    4 +-
+ arch/powerpc/kernel/entry_32.S                 |    2 +-
+ arch/powerpc/kernel/entry_64.S                 |    7 +++
+ arch/powerpc/kernel/pci-common.c               |   14 +----
+ arch/powerpc/kernel/signal.c                   |   40 +++++++++++++-
+ arch/powerpc/kernel/signal.h                   |    2 +-
+ arch/powerpc/kernel/signal_32.c                |   10 +---
+ arch/powerpc/kernel/signal_64.c                |   23 +++-----
+ arch/powerpc/kernel/traps.c                    |   29 ++++++++++
+ arch/powerpc/kvm/book3s_hv.c                   |    2 +
+ arch/powerpc/kvm/book3s_pr_papr.c              |    2 +
+ arch/powerpc/kvm/book3s_xics.c                 |   29 ++++++++++
+ arch/powerpc/lib/copypage_power7.S             |   19 ++++---
+ arch/powerpc/lib/copyuser_power7.S             |   12 +++--
+ arch/powerpc/mm/hash_native_64.c               |   30 ++++++++---
+ arch/powerpc/perf/core-book3s.c                |   67 +++++++++++-------------
+ arch/powerpc/platforms/pseries/Kconfig         |    2 +
+ arch/powerpc/sysdev/mpic.c                     |    4 +-
+ 27 files changed, 261 insertions(+), 124 deletions(-)
+ create mode 100644 arch/powerpc/include/uapi/asm/tm.h
