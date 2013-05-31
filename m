@@ -1,30 +1,24 @@
-Return-Path: <hughd@google.com>
-Received: from mail-pb0-x231.google.com (mail-pb0-x231.google.com
- [IPv6:2607:f8b0:400e:c01::231])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B667C2C02EA
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2013 00:45:10 +1000 (EST)
-Received: by mail-pb0-f49.google.com with SMTP id rp8so2299513pbb.22
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2013 07:45:06 -0700 (PDT)
-Date: Fri, 31 May 2013 07:45:08 -0700 (PDT)
-From: Hugh Dickins <hughd@google.com>
-To: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Subject: Re: 3.10-rc ppc64 corrupts usermem when swapping
-In-Reply-To: <1369978262.3928.111.camel@pasglop>
-Message-ID: <alpine.LNX.2.00.1305310742001.13527@eggly.anvils>
-References: <alpine.LNX.2.00.1305292148550.9560@eggly.anvils>
- <1369897236.3928.93.camel@pasglop> <87vc60na89.fsf@linux.vnet.ibm.com>
- <1369902786.3928.94.camel@pasglop>
- <alpine.LNX.2.00.1305300643150.10009@eggly.anvils>
- <alpine.LNX.2.00.1305302201200.12852@eggly.anvils>
- <1369978262.3928.111.camel@pasglop>
+Return-Path: <swarren@wwwdotorg.org>
+Received: from avon.wwwdotorg.org (avon.wwwdotorg.org
+ [IPv6:2001:470:1f0f:bd7::2])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 975FF2C007C
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2013 02:15:02 +1000 (EST)
+Message-ID: <51A8CA15.4070504@wwwdotorg.org>
+Date: Fri, 31 May 2013 10:04:37 -0600
+From: Stephen Warren <swarren@wwwdotorg.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@au1.ibm.com>,
- Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- David Gibson <david@gibson.dropbear.id.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: DTB build failure due to preproccessing
+References: <1369996170.5199.68.camel@zakaz.uk.xensource.com>
+ <20130531114824.60D223E0901@localhost>
+In-Reply-To: <20130531114824.60D223E0901@localhost>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Michal Marek <mmarek@suse.cz>, JonLoeliger <jdl@jdl.com>,
+ Stephen Warren <swarren@nvidia.com>, Ian Campbell <Ian.Campbell@citrix.com>,
+ linux-kbuild@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+ Rob Herring <rob.herring@calxeda.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,24 +28,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 31 May 2013, Benjamin Herrenschmidt wrote:
-> On Thu, 2013-05-30 at 22:05 -0700, Hugh Dickins wrote:
-> > > Sure, it's now under way.  If all goes well, I'll give you a
-> > > progress report in about 15 hours time; but given the variance in
-> > > how long it took to hit, I won't feel fully confident until this
-> > > time tomorrow, when I'll update you again.
-> > 
-> > Still running fine.  I'll leave it running a few more hours to make
-> > sure, and then try switching to the patch Aneesh sent afterwards -
-> > or say if you'd prefer me to switch over to that one immediately.
+On 05/31/2013 05:48 AM, Grant Likely wrote:
+> On Fri, 31 May 2013 11:29:30 +0100, Ian Campbell <Ian.Campbell@citrix.com> wrote:
+>> This affects arch/powerpc/boot/dts/virtex440-ml510.dts but I think it is
+>> actually a more general issue:
+>>
+>>         $ make ARCH=powerpc CROSS_COMPILE=powerpc-linux- virtex440-ml510.dtb 
+>>           CC      scripts/mod/devicetable-offsets.s
+>>           GEN     scripts/mod/devicetable-offsets.h
+>>           HOSTCC  scripts/mod/file2alias.o
+>>           HOSTLD  scripts/mod/modpost
+>>           DTC     arch/powerpc/boot/virtex440-ml510.dtb
+>>         Error: arch/powerpc/boot/dts/virtex440-ml510.dts:374.6-7 syntax error
+>>         FATAL ERROR: Unable to parse input tree
+>>         make[1]: *** [arch/powerpc/boot/virtex440-ml510.dtb] Error 1
+>>         make: *** [virtex440-ml510.dtb] Error 2
+>>         
+>> Line 374 is the "IDSEL 0x16..." line here:
+>> 			interrupt-map = <
+>> 				/* IRQ mapping for pci slots and ALI M1533
+>> 				 ...
+>> 				 * management core also isn't used.
+>> 				 */
+>>
+>> 				/* IDSEL 0x16 / dev=6, bus=0 / PCI slot 3 */
+>> 				0x3000 0 0 1 &xps_intc_0 3 2
+>> 				0x3000 0 0 2 &xps_intc_0 2 2
+>> 				0x3000 0 0 3 &xps_intc_0 5 2
+>> 				0x3000 0 0 4 &xps_intc_0 4 2
+>>
+>> Which gets preprocessed into:
+>>            interrupt-map = <
+>>         # 375 "arch/powerpc/boot/dts/virtex440-ml510.dts"
+>>             0x3000 0 0 1 &xps_intc_0 3 2
+>>             0x3000 0 0 2 &xps_intc_0 2 2
+>>             0x3000 0 0 3 &xps_intc_0 5 2
+>>             0x3000 0 0 4 &xps_intc_0 4 2
+>>
+>> If I manually remove the "# 375 " line then that fixes the error
+>> (although there is then a subsequent one of the same type).
+>>
+>> I suppose this is a bug in dtc? It appears to have at least some
+>> awareness of these preprocessor line number comments since it manages to
+>> report the original source line number.
 > 
-> The patch you are running on is what I'll send to Linus for 3.10 (+/-
-> cosmetics). Aneesh second patch is a much larger rework which will be
-> needed for THP but that will wait for 3.11. I'm happy for you to test it
-> but I first want to make sure it's solid with the 3.10 fix :-)
+> dtc is only able to track line numbers when the native /include/
+> directive is used. The #include directive doesn't help it. It should be
+> added, but until it is the following patch solves the problem:
+> 
+> I've got this patch in my tree. Either Rob or I will push it to Linus in
+> the next few days.
+> 
+> g.
+> 
+> ---
+> commit d01dccdcb3ea8233b09efb9c24db9f057fbd3b37
+> Author: Grant Likely <grant.likely@linaro.org>
+> Date:   Fri May 31 12:45:18 2013 +0100
+> 
+>     dtc: Suppress cpp linemarker annotations
+>     
+>     DTC isn't able to parse cpp linemarker annotations, so suppress them in
+>     the cpp output by adding the -P flag to the cpp options.
 
-That makes sense.
-The first patch ran fine without incident for 25 hours, I say it's good.
-I've now stopped that run and started another with the second patch in.
+That's not true; it explicitly does have code to parse the line markers.
+I'll have to investigate why it isn't working in this case.
 
-Hugh
+If you apply this patch, then anyone who has switched to #include rther
+than /include/ will get incorrect line numbers in dtc error messages.
+Admittedly that's a smaller population right now though. Perhaps we
+should just do a kernel-wide conversion though.
