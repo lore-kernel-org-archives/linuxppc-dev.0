@@ -2,19 +2,25 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 762212C02CD
- for <linuxppc-dev@ozlabs.org>; Fri, 31 May 2013 20:01:19 +1000 (EST)
-Message-ID: <1369994474.3928.132.camel@pasglop>
-Subject: Re: can't access PCIe card under sbc8548
+ by ozlabs.org (Postfix) with ESMTPS id 31DD82C02F1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2013 20:11:32 +1000 (EST)
+Message-ID: <1369995080.3928.140.camel@pasglop>
+Subject: Re: [PATCH 1/3] powerpc/mpc85xx: remove the unneeded pci init
+ functions for corenet ds board
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: wolfking <wolfking2000@msn.com>
-Date: Fri, 31 May 2013 20:01:14 +1000
-In-Reply-To: <1369960818166-71847.post@n7.nabble.com>
-References: <1369885321567-71775.post@n7.nabble.com>
- <1369931365.14679.7@snotra> <1369960818166-71847.post@n7.nabble.com>
+To: Kevin Hao <haokexin@gmail.com>
+Date: Fri, 31 May 2013 20:11:20 +1000
+In-Reply-To: <20130531064102.GB16514@pek-khao-d1.corp.ad.wrs.com>
+References: <1369137900-5748-1-git-send-email-haokexin@gmail.com>
+ <1369137900-5748-2-git-send-email-haokexin@gmail.com>
+ <1369781529.18630.25@snotra>
+ <20130530102034.GB18702@pek-khao-d1.corp.ad.wrs.com>
+ <1369940099.14679.14@snotra>
+ <20130531064102.GB16514@pek-khao-d1.corp.ad.wrs.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: Scott Wood <scottwood@freescale.com>,
+ linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,24 +30,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-05-30 at 17:40 -0700, wolfking wrote:
-> hi, scott:
->   Thanks for replying!
-> > In what specific way does it not work?
->   when I use iowrite8 to write, things seem OK, the codes continue running,
->   when I use ioread8 to read, the console I use freezes. The console stops
->   responding.
-> > Why can't it succeed?  Is there nothing mapped at 0xfc7fc000?
->   My PCIe card's local bus register is at BAR0+0xC7, so the driver should
-> access 0xfc7fc027 and the following 7 bytes. But When I access the areas:
-> ioread8 just freezes. 
+On Fri, 2013-05-31 at 14:41 +0800, Kevin Hao wrote:
+> Hi Ben,
+> 
+> Could you shed some light on this issue? Do we really has the restriction
+> that we have to pick one bus controller as primary even there is no
+> ISA bus on the board? I did check the current code and found no code
+> has a requirement for this. I also searched the archives and but found
+> nothing useful. :-(
 
-That looks more like a HW error to me unless you are hitting completely
-the wrong system addresses.
+You can just pick the first one as primary... The reason we somewhat need
+a primary is related to how we handle IO space.
 
-What would be useful would be to add printk's to check what exact
-physical address pci_iomap ends up using and whether that matches
-to the iobase_phys of the PCI bridge + the BAR value of the card.
+We ioremap the IO space of all busses and assign the base of the primary
+one to a global "_IO_BASE". Then any "port" access is an offset from that
+which means that non-primary can end up having negative offsets. We fix
+up all resources, which works fine ... unless drivers do stupid casts
+and the wrap-around fails.
+
+The main reason we did that originally is because we still had a slew of
+x86 originated HW that would access hard wired IO ports, especially on things
+like CHRP machines, looking for things like 8259 PIC, legacy kbd controllers,
+UARTs, etc... at fixed IO port numbers.
+
+We still support some of these boxes (though I do wonder how long since
+somebody last booted a Pegasos) so I'm not quite yet keen on getting rid
+of that stuff...
 
 Cheers,
 Ben.
