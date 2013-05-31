@@ -1,21 +1,42 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <benh@au1.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A63032C0085
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2013 07:49:55 +1000 (EST)
-Message-ID: <1370036984.3928.144.camel@pasglop>
-Subject: Re: [PATCH] powerpc/sysfs: disable hotplug for the boot cpu
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Zhao Chenhui <chenhui.zhao@freescale.com>
-Date: Sat, 01 Jun 2013 07:49:44 +1000
-In-Reply-To: <1369727984-21505-2-git-send-email-chenhui.zhao@freescale.com>
-References: <1369727984-21505-1-git-send-email-chenhui.zhao@freescale.com>
- <1369727984-21505-2-git-send-email-chenhui.zhao@freescale.com>
+ (Client CN "e23smtp09.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3E15E2C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2013 08:23:09 +1000 (EST)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
+ Sat, 1 Jun 2013 19:20:11 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 028A52BB0050
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2013 08:23:04 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r4VM8ZlR27656274
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 1 Jun 2013 08:08:35 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r4VMN36I016819
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 1 Jun 2013 08:23:03 +1000
+Message-ID: <1370038982.3928.147.camel@pasglop>
+Subject: Re: 3.10-rc ppc64 corrupts usermem when swapping
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Date: Sat, 01 Jun 2013 08:23:02 +1000
+In-Reply-To: <87ppw7mrx7.fsf@linux.vnet.ibm.com>
+References: <alpine.LNX.2.00.1305292148550.9560@eggly.anvils>
+ <1369897236.3928.93.camel@pasglop> <87vc60na89.fsf@linux.vnet.ibm.com>
+ <1369902786.3928.94.camel@pasglop>
+ <alpine.LNX.2.00.1305300643150.10009@eggly.anvils>
+ <alpine.LNX.2.00.1305302201200.12852@eggly.anvils>
+ <1369978262.3928.111.camel@pasglop> <87ppw7mrx7.fsf@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@au1.ibm.com>,
+ Hugh Dickins <hughd@google.com>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,32 +46,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-05-28 at 15:59 +0800, Zhao Chenhui wrote:
-> Some features depend on the boot cpu, for instance, hibernate/suspend.
-> So disable hotplug for the boot cpu.
+On Fri, 2013-05-31 at 14:45 +0530, Aneesh Kumar K.V wrote:
 
-Don't we have code to "move" the boot CPU around when that happens ?
+> > The patch you are running on is what I'll send to Linus for 3.10 (+/-
+> > cosmetics). Aneesh second patch is a much larger rework which will be
+> > needed for THP but that will wait for 3.11. I'm happy for you to test it
+> > but I first want to make sure it's solid with the 3.10 fix :-)
 
+BTW. One concern I still have is that Hugh identified the bad commit
+to be:
+
+7e74c3921ad9610c0b49f28b8fc69f7480505841
+"powerpc: Fix hpte_decode to use the correct decoding for page sizes".
+
+However, you introduce the return on HPTE not found earlier, in
+
+b1022fbd293564de91596b8775340cf41ad5214c
+"powerpc: Decode the pte-lp-encoding bits correctly."
+
+So while I'm still happy with the current band-aid for 3.10 and am
+about to send it to Linus, the above *does* seem to indicate that
+there is also something wrong with the "Fix hpte_decode..." commit,
+which might not actually get the page size right...
+
+Can you investigate ?
+
+Cheers,
 Ben.
-
-> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
-> ---
->  arch/powerpc/kernel/sysfs.c |    4 +++-
->  1 files changed, 3 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
-> index e68a845..294b1c4e 100644
-> --- a/arch/powerpc/kernel/sysfs.c
-> +++ b/arch/powerpc/kernel/sysfs.c
-> @@ -655,8 +655,10 @@ static int __init topology_init(void)
->  		 * CPU.  For instance, the boot cpu might never be valid
->  		 * for hotplugging.
->  		 */
-> -		if (ppc_md.cpu_die)
-> +		if (ppc_md.cpu_die && cpu != boot_cpuid)
->  			c->hotpluggable = 1;
-> +		else
-> +			c->hotpluggable = 0;
->  
->  		if (cpu_online(cpu) || c->hotpluggable) {
->  			register_cpu(c, cpu);
