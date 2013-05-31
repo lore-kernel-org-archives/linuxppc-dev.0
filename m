@@ -1,20 +1,35 @@
-Return-Path: <Ian.Campbell@citrix.com>
-Received: from SMTP.EU.CITRIX.COM (smtp.eu.citrix.com [46.33.159.39])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "Cisco Appliance Demo Certificate",
- Issuer "Cisco Appliance Demo Certificate" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D64482C02A4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2013 20:29:45 +1000 (EST)
-Message-ID: <1369996170.5199.68.camel@zakaz.uk.xensource.com>
-Subject: DTB build failure due to preproccessing
-From: Ian Campbell <Ian.Campbell@citrix.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Date: Fri, 31 May 2013 11:29:30 +0100
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <viresh.kumar@linaro.org>
+Received: from mail-ob0-x232.google.com (mail-ob0-x232.google.com
+ [IPv6:2607:f8b0:4003:c01::232])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 169AA2C0302
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2013 20:50:36 +1000 (EST)
+Received: by mail-ob0-f178.google.com with SMTP id fb19so2657694obc.23
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2013 03:50:33 -0700 (PDT)
 MIME-Version: 1.0
-Cc: Michal Marek <mmarek@suse.cz>, JonLoeliger <jdl@jdl.com>, Stephen
- Warren <swarren@nvidia.com>, linux-kbuild@vger.kernel.org,
- Rob Herring <rob.herring@calxeda.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <CAKohpo=DoWB+E-bgWCUVec5Y8wsfEu0V43Pg5mHzqep8yn0_JA@mail.gmail.com>
+References: <cover.1365079581.git.viresh.kumar@linaro.org>
+ <027e8f1d4ac8de6351115f15a408431558510abb.1365079581.git.viresh.kumar@linaro.org>
+ <CAKohpokGkZ9m0v1QaoXEv1m0mZqY70adWpXf3edQGmZnToRRcg@mail.gmail.com>
+ <CAKohpokpiw3zS32oDL+T09ToOQxc28w=2R2up5T3h3c2Agc0wg@mail.gmail.com>
+ <CAKohpo=SFauMyczEnxO_p_KQVQeznL+0V-FmLDtGmzL1Uv2iuA@mail.gmail.com>
+ <CAKohponBfXsy21RTik+jWMukL_VnDNXOL7xmj4sEBF3HEBXqpQ@mail.gmail.com>
+ <CAKohpo=DoWB+E-bgWCUVec5Y8wsfEu0V43Pg5mHzqep8yn0_JA@mail.gmail.com>
+Date: Fri, 31 May 2013 16:20:33 +0530
+Message-ID: <CAKohpokgTmb6d79ipR9pV2iOfLSzngrPbMV3hFcuP64kbNYSQA@mail.gmail.com>
+Subject: Re: [PATCH 17/18] cpufreq: powerpc: move cpufreq driver to
+ drivers/cpufreq
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ deepthi@linux.vnet.ibm.com
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: robin.randhawa@arm.com, linux-pm@vger.kernel.org, patches@linaro.org,
+ Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org,
+ rjw@sisk.pl, Steve.Bannister@arm.com, Paul Mackerras <paulus@samba.org>,
+ Olof Johansson <olof@lixom.net>, arvind.chauhan@arm.com,
+ linuxppc-dev@lists.ozlabs.org, linaro-kernel@lists.linaro.org,
+ charles.garcia-tobin@arm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,46 +39,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This affects arch/powerpc/boot/dts/virtex440-ml510.dts but I think it is
-actually a more general issue:
+On 20 May 2013 10:10, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 13 May 2013 11:34, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> On 22 April 2013 12:19, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>> On 9 April 2013 14:05, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>>> On 5 April 2013 12:16, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>>>> On 4 April 2013 18:24, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>>>>> This patch moves cpufreq driver of powerpc platform to drivers/cpufreq.
+>>>>>>
+>>>>>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>>>>>> Cc: Paul Mackerras <paulus@samba.org>
+>>>>>> Cc: Olof Johansson <olof@lixom.net>
+>>>>>> Cc: linuxppc-dev@lists.ozlabs.org
+>>>>>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>>>>> ---
+>>>>>> Compile Tested only.
+>>>>>>
+>>>>>>  arch/powerpc/platforms/Kconfig                     | 31 ----------------------
+>>>>>>  arch/powerpc/platforms/pasemi/Makefile             |  1 -
+>>>>>>  arch/powerpc/platforms/powermac/Makefile           |  2 --
+>>>>>>  drivers/cpufreq/Kconfig.powerpc                    | 26 ++++++++++++++++++
+>>>>>>  drivers/cpufreq/Makefile                           |  3 +++
+>>>>>>  .../cpufreq.c => drivers/cpufreq/pasemi-cpufreq.c  |  0
+>>>>>>  .../cpufreq/pmac32-cpufreq.c                       |  0
+>>>>>>  .../cpufreq/pmac64-cpufreq.c                       |  0
+>>>>>>  8 files changed, 29 insertions(+), 34 deletions(-)
+>>>>>>  rename arch/powerpc/platforms/pasemi/cpufreq.c => drivers/cpufreq/pasemi-cpufreq.c (100%)
+>>>>>>  rename arch/powerpc/platforms/powermac/cpufreq_32.c => drivers/cpufreq/pmac32-cpufreq.c (100%)
+>>>>>>  rename arch/powerpc/platforms/powermac/cpufreq_64.c => drivers/cpufreq/pmac64-cpufreq.c (100%)
+>>>>>
+>>>>> Hi Deepthi,
+>>>>>
+>>>>> Can you help testing this please?
+>>>>
+>>>> Ping!!
+>>>
+>>> Ping!!
+>>
+>> Hi Benjamin,
+>>
+>> Hope you are back from your vacations. Can you give it a try now?
+>
+> Ping!!
 
-        $ make ARCH=powerpc CROSS_COMPILE=powerpc-linux- virtex440-ml510.dtb 
-          CC      scripts/mod/devicetable-offsets.s
-          GEN     scripts/mod/devicetable-offsets.h
-          HOSTCC  scripts/mod/file2alias.o
-          HOSTLD  scripts/mod/modpost
-          DTC     arch/powerpc/boot/virtex440-ml510.dtb
-        Error: arch/powerpc/boot/dts/virtex440-ml510.dts:374.6-7 syntax error
-        FATAL ERROR: Unable to parse input tree
-        make[1]: *** [arch/powerpc/boot/virtex440-ml510.dtb] Error 1
-        make: *** [virtex440-ml510.dtb] Error 2
-        
-Line 374 is the "IDSEL 0x16..." line here:
-			interrupt-map = <
-				/* IRQ mapping for pci slots and ALI M1533
-				 ...
-				 * management core also isn't used.
-				 */
-
-				/* IDSEL 0x16 / dev=6, bus=0 / PCI slot 3 */
-				0x3000 0 0 1 &xps_intc_0 3 2
-				0x3000 0 0 2 &xps_intc_0 2 2
-				0x3000 0 0 3 &xps_intc_0 5 2
-				0x3000 0 0 4 &xps_intc_0 4 2
-
-Which gets preprocessed into:
-           interrupt-map = <
-        # 375 "arch/powerpc/boot/dts/virtex440-ml510.dts"
-            0x3000 0 0 1 &xps_intc_0 3 2
-            0x3000 0 0 2 &xps_intc_0 2 2
-            0x3000 0 0 3 &xps_intc_0 5 2
-            0x3000 0 0 4 &xps_intc_0 4 2
-
-If I manually remove the "# 375 " line then that fixes the error
-(although there is then a subsequent one of the same type).
-
-I suppose this is a bug in dtc? It appears to have at least some
-awareness of these preprocessor line number comments since it manages to
-report the original source line number.
-
-Ian.
+Ping!!
