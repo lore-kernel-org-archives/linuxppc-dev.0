@@ -1,23 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id C96A92C008E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2013 15:44:21 +1000 (EST)
-Message-ID: <1369979047.3928.112.camel@pasglop>
-Subject: Re: [PATCH] powerpc/pci: Improve device hotplug initialization
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Guenter Roeck <linux@roeck-us.net>
-Date: Fri, 31 May 2013 15:44:07 +1000
-In-Reply-To: <20130531051423.GA15505@roeck-us.net>
-References: <1369762514-27352-1-git-send-email-linux@roeck-us.net>
- <51A5CAC1.6030800@freescale.com> <20130531051423.GA15505@roeck-us.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Yuanquan Chen <Yuanquan.Chen@freescale.com>,
- Hiroo Matsumoto <matsumoto.hiroo@jp.fujitsu.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Chen Yuanquan-B41889 <B41889@freescale.com>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <sebastian.hesselbarth@gmail.com>
+Received: from mail-wg0-x22f.google.com (mail-wg0-x22f.google.com
+ [IPv6:2a00:1450:400c:c00::22f])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 769262C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2013 16:29:07 +1000 (EST)
+Received: by mail-wg0-f47.google.com with SMTP id e11so909766wgh.14
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2013 23:29:03 -0700 (PDT)
+Message-ID: <51A8432A.4000602@gmail.com>
+Date: Fri, 31 May 2013 08:28:58 +0200
+From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH v5 00/13] net: mv643xx_eth DT support and fixes
+References: <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
+ <1369855975-21489-1-git-send-email-sebastian.hesselbarth@gmail.com>
+ <20130530.175549.407800685811475192.davem@davemloft.net>
+In-Reply-To: <20130530.175549.407800685811475192.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: andrew@lunn.ch, jason@lakedaemon.net, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, buytenh@wantstofly.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,21 +30,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-05-30 at 22:14 -0700, Guenter Roeck wrote:
-> On Wed, May 29, 2013 at 05:30:41PM +0800, Chen Yuanquan-B41889 wrote:
-> > On 05/29/2013 01:35 AM, Guenter Roeck wrote:
-> > >bios_add_device(). Drop explicit calls to pcibios_setup_device();
-> > >this makes pcibios_setup_bus_devices() a noop function which could
-> > >eve
-> > 
-> > Yeah, it's more reasonable to do the irq and DMA related initialization
-> > in one code path for all devices.
-> > 
-> Any comments / feedback on the code itself ?
+On 05/31/2013 02:55 AM, David Miller wrote:
+> From: Sebastian Hesselbarth<sebastian.hesselbarth@gmail.com>
+> Date: Wed, 29 May 2013 21:32:42 +0200
+>
+>> For the patches above I suggest to take Patches 1-6 through David
+>> Miller's branch, and Patches 7-12 through Jason Cooper's when the
+>> former have appeared on mainline linux. The patch set has been based
+>> on v3.10-rc3.
+>
+> Patches 1-6 applied to net-next, and patch #1 queued up for -stable.
 
-Sorry, I haven't had a chance to review it yet, I'm fairly bogged down
-at the moment. I want to tread carefully because the previous iteration
-of changing that stuff did break a few platforms in the end.
+David,
 
-Cheers,
-Ben.
+thanks for pulling these in. I finally found how to check if a patch
+already went into -stable. As Jason already said, the mdio patch that
+#1 fixes did not yet went into -stable. Can you unqueue it? Sorry for
+the confusion.
+
+Sebastian
