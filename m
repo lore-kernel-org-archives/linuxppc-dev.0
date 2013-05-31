@@ -1,29 +1,24 @@
-Return-Path: <jason@lakedaemon.net>
-Received: from mho-02-ewr.mailhop.org (mho-02-ewr.mailhop.org [204.13.248.72])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 4433F2C02C3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2013 21:55:25 +1000 (EST)
-Date: Fri, 31 May 2013 07:54:50 -0400
-From: Jason Cooper <jason@lakedaemon.net>
-To: Arnaud Ebalard <arno@natisbad.org>
-Subject: Re: [PATCH v5 12/13] ARM: kirkwood: remove redundant DT board files
-Message-ID: <20130531115450.GA3803@titan.lakedaemon.net>
-References: <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
- <1369855975-21489-1-git-send-email-sebastian.hesselbarth@gmail.com>
- <1369855975-21489-13-git-send-email-sebastian.hesselbarth@gmail.com>
- <8738t4q1kv.fsf@natisbad.org>
- <20130530193708.GC31290@titan.lakedaemon.net>
- <87txlknluf.fsf@natisbad.org>
+Return-Path: <Ian.Campbell@citrix.com>
+Received: from SMTP.EU.CITRIX.COM (smtp.eu.citrix.com [46.33.159.39])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "Cisco Appliance Demo Certificate",
+ Issuer "Cisco Appliance Demo Certificate" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 99BBE2C02C3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2013 21:58:57 +1000 (EST)
+Message-ID: <1370001530.5199.118.camel@zakaz.uk.xensource.com>
+Subject: Re: DTB build failure due to preproccessing
+From: Ian Campbell <Ian.Campbell@citrix.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Date: Fri, 31 May 2013 12:58:50 +0100
+In-Reply-To: <20130531114824.60D223E0901@localhost>
+References: <1369996170.5199.68.camel@zakaz.uk.xensource.com>
+ <20130531114824.60D223E0901@localhost>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87txlknluf.fsf@natisbad.org>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
- Andrew Lunn <andrew@lunn.ch>, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
- Lennert Buytenhek <buytenh@wantstofly.org>,
- Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Cc: Michal Marek <mmarek@suse.cz>, JonLoeliger <jdl@jdl.com>, Stephen
+ Warren <swarren@nvidia.com>, linux-kbuild@vger.kernel.org,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ Rob Herring <rob.herring@calxeda.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,73 +28,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Arnaud,
-
-On Fri, May 31, 2013 at 12:28:56AM +0200, Arnaud Ebalard wrote:
-> Hi,
+On Fri, 2013-05-31 at 12:48 +0100, Grant Likely wrote:
+> On Fri, 31 May 2013 11:29:30 +0100, Ian Campbell <Ian.Campbell@citrix.com> wrote:
+> > This affects arch/powerpc/boot/dts/virtex440-ml510.dts but I think it is
+> > actually a more general issue:
+> > 
+> >         $ make ARCH=powerpc CROSS_COMPILE=powerpc-linux- virtex440-ml510.dtb 
+> >           CC      scripts/mod/devicetable-offsets.s
+> >           GEN     scripts/mod/devicetable-offsets.h
+> >           HOSTCC  scripts/mod/file2alias.o
+> >           HOSTLD  scripts/mod/modpost
+> >           DTC     arch/powerpc/boot/virtex440-ml510.dtb
+> >         Error: arch/powerpc/boot/dts/virtex440-ml510.dts:374.6-7 syntax error
+> >         FATAL ERROR: Unable to parse input tree
+> >         make[1]: *** [arch/powerpc/boot/virtex440-ml510.dtb] Error 1
+> >         make: *** [virtex440-ml510.dtb] Error 2
+> >         
+> > Line 374 is the "IDSEL 0x16..." line here:
+> > 			interrupt-map = <
+> > 				/* IRQ mapping for pci slots and ALI M1533
+> > 				 ...
+> > 				 * management core also isn't used.
+> > 				 */
+> > 
+> > 				/* IDSEL 0x16 / dev=6, bus=0 / PCI slot 3 */
+> > 				0x3000 0 0 1 &xps_intc_0 3 2
+> > 				0x3000 0 0 2 &xps_intc_0 2 2
+> > 				0x3000 0 0 3 &xps_intc_0 5 2
+> > 				0x3000 0 0 4 &xps_intc_0 4 2
+> > 
+> > Which gets preprocessed into:
+> >            interrupt-map = <
+> >         # 375 "arch/powerpc/boot/dts/virtex440-ml510.dts"
+> >             0x3000 0 0 1 &xps_intc_0 3 2
+> >             0x3000 0 0 2 &xps_intc_0 2 2
+> >             0x3000 0 0 3 &xps_intc_0 5 2
+> >             0x3000 0 0 4 &xps_intc_0 4 2
+> > 
+> > If I manually remove the "# 375 " line then that fixes the error
+> > (although there is then a subsequent one of the same type).
+> > 
+> > I suppose this is a bug in dtc? It appears to have at least some
+> > awareness of these preprocessor line number comments since it manages to
+> > report the original source line number.
 > 
-> Jason Cooper <jason@lakedaemon.net> writes:
+> dtc is only able to track line numbers when the native /include/
+> directive is used. The #include directive doesn't help it. It should be
+> added, but until it is the following patch solves the problem:
 > 
-> >> For instance 6bd98481ab34 (arm: kirkwood: NETGEAR ReadyNAS Duo v2 init
-> >> PCIe via DT) currently sitting in jcooper/mvebu/pcie_kirkwood removes
-> >> the PCIE init routine in board-readynas.c, and yours remove ge00
-> >> init. With both applied, the whole file can go away.
-> >> 
-> >> AFAICT, this may be the case soon for:
-> >> 
-> >>  arch/arm/mach-kirkwood/board-iconnect.c   (36e5722089)
-> >>  arch/arm/mach-kirkwood/board-mplcec4.c    (9470fbfb8d)
-> >>  arch/arm/mach-kirkwood/board-nsa310.c     (40fa8e5da2)
-> >>  arch/arm/mach-kirkwood/board-readynas.c   (6bd98481ab)
-> >>  arch/arm/mach-kirkwood/board-ts219.c      (259e234608)
-> >
-> > Would you mind putting a patch together (for after v3.10 drops) to do
-> > this?  If you applied Sebastian's series on top of mvebu/pcie_kirkwood,
-> > that should get you almost there.  The last half of his series is going
-> > in after v3.10...
-> 
-> Something like the quick quilt-generated patch at the end of this email
-> (done after a dummy merge of Sebastian's set in mvebu/pcie_kirkwood)? 
+> I've got this patch in my tree. Either Rob or I will push it to Linus in
+> the next few days.
 
-yep.
+Thanks, I'll do something similar in my device-tree.git tree.
 
-> I will take a look at what remains after Sebastian's set hit one of
-> your branch but I guess he will have included most of what is in the
-> patch to help you with the merge.
-> 
-> Anyway, at the end here is what DT board files would remain:
-> 
-> $ ls -1 arch/arm/mach-kirkwood/board-*.c
-> arch/arm/mach-kirkwood/board-dnskw.c
-
-This one seems to just be setting a gpio to enable reboot after power
-failure.  Should be simple to move to DT.
-
-> arch/arm/mach-kirkwood/board-dt.c
-
-We obviously need this one. ;-)
-
-> arch/arm/mach-kirkwood/board-lsxl.c
-
-This is taken care of in mvebu/boards
-
-  391a16c ARM: Kirkwood: Convert LSXL to restart-poweroff driver.
-
-> arch/arm/mach-kirkwood/board-ts219.c
-
-Also in mvebu/boards
-
-  4350a47 ARM: Kirkwood: Make use of the QNAP Power off driver.
-
-> Just one question though: the removal of MACH_*_DT in Kconfig removes
-> the automatic selection of useful board specific options like
-> ARM_APPENDED_DTB, ARM_ATAG_DTB_COMPAT, POWER_RESET_RESTART,
-> POWER_RESET_QNAP. Is that expected?
-
-I would select POWER_RESET_QNAP and POWER_RESET_RESTART in Kconfig for
-ARCH_KIRKWOOD_DT, and put ARM_APPENDED_DTB and ARM_ATAG_DTB_COMPAT into
-the defconfig.
-
-thx,
-
-Jason.
+Ian
