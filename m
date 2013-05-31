@@ -1,20 +1,25 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0F14B2C029B
- for <linuxppc-dev@ozlabs.org>; Fri, 31 May 2013 11:34:04 +1000 (EST)
-Message-ID: <51A7FE17.2040803@windriver.com>
-Date: Fri, 31 May 2013 09:34:15 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
+Return-Path: <wolfking2000@msn.com>
+Received: from sam.nabble.com (sam.nabble.com [216.139.236.26])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 22FCB2C02A4
+ for <linuxppc-dev@ozlabs.org>; Fri, 31 May 2013 12:27:10 +1000 (EST)
+Received: from tom.nabble.com ([192.168.236.105])
+ by sam.nabble.com with esmtp (Exim 4.72)
+ (envelope-from <wolfking2000@msn.com>) id 1UiF3d-0006Rr-1Y
+ for linuxppc-dev@ozlabs.org; Thu, 30 May 2013 19:27:09 -0700
+Date: Thu, 30 May 2013 19:27:09 -0700 (PDT)
+From: wolfking <wolfking2000@msn.com>
+To: linuxppc-dev@ozlabs.org
+Message-ID: <1369967229031-71850.post@n7.nabble.com>
+In-Reply-To: <51A7FE17.2040803@windriver.com>
+References: <1369885321567-71775.post@n7.nabble.com>
+ <51A6EA1D.7080100@windriver.com> <1369899157331-71783.post@n7.nabble.com>
+ <51A72D04.2090203@windriver.com> <1369918188379-71827.post@n7.nabble.com>
+ <1369931094.14679.6@snotra> <51A7FE17.2040803@windriver.com>
 Subject: Re: can't access PCIe card under sbc8548
-References: <1369931094.14679.6@snotra>
-In-Reply-To: <1369931094.14679.6@snotra>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: wolfking <wolfking2000@msn.com>, linuxppc-dev@ozlabs.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,49 +29,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/31/2013 12:24 AM, Scott Wood wrote:
-> On 05/30/2013 07:49:48 AM, wolfking wrote:
->> tiejun.chen wrote
->> > On 05/30/2013 03:32 PM, wolfking wrote:
->> >> (continued)
->> >>    I traced the 8139too.c when it uses pci_iomap, the pci_iomap called
->> >> the
->> >> ioport_map. The difference between 8139 and my PCIe card lies in the
->> >> "port" value :
->> >> void __iomem *ioport_map(unsigned long port, unsigned int len)
->> >> {
->> >>     return (void __iomem *) (port + _IO_BASE);
->> >
->> > _IO_BASE is equal to isa_io_base. So if this is not zero, I think there's
->> > a isa
->> > bridge in your platform. So you can access these I/O ports based on that
->> > isa
->> > bridge/bus with ioreadx/iowritex.
->> >
->> > I tried ioread8/iowriet8 after ioremap, it doesn't work
->> >
->> >> }
->> >>    in 8139too.c, the "port" value is 0x1000; for my PCIe card, the "port"
->> >> value
->> >> is 0xfefff000. And the value is got from pci_resource_start. So you see,
->> >> the
->> >
->> > But this means the port is as memory-mapped
->
-> Are you sure?  It could mean that it's on a non-primary bus and I/O for this bus
+hi, tiejun:
+  When I don't compile my pcie card driver(in kernel or as a driver), the
+kernel 
+auto allocate the resoures to my pcie card, here is the output:
 
-We can take a further look at '/proc/ioports', '/proc/iomem' and other message.
+root@generic-powerpc-e500v2:~# cat /proc/ioports
+00000000-007fffff : /pci@e0008000
+  00000000-00000fff : Legacy IO
+  00001000-000010ff : 0000:00:11.0
+    00001000-000010ff : 8139too
+feffe000-ffffdfff : /pcie@e000a000
+  feffe000-ffffdfff : PCI Bus 0001:02
+    fefff000-fefff0ff : 0001:02:00.0
+    fefff100-fefff103 : 0001:02:00.0
 
-> is mapped at a lower address than the primary.  Just because the addition is
-> wrapping around doesn't mean it's wrong.
->
->> > so ioremap() should be workable in this case. Then out_bex/in_bex should be
->> fine.
->
-> ioremap() and out_bex/in_bex are not appropriate for PCI I/O regions (and
-> presumably that's what it is, if pci_iomap is calling ioport_map).  Big-endian
-> is not appropriate for PCI in any case.
+the "feffe000-ffffdfff " is the resources that the kernel allocates to my
+card.
 
-Yes, I should correct that PCI interprets all accesses as little-endian.
 
-Tiejun
+
+--
+View this message in context: http://linuxppc.10917.n7.nabble.com/can-t-access-PCIe-card-under-sbc8548-tp71775p71850.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
