@@ -1,23 +1,21 @@
-Return-Path: <wolfking2000@msn.com>
-Received: from sam.nabble.com (sam.nabble.com [216.139.236.26])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id BC7062C013D
- for <linuxppc-dev@ozlabs.org>; Fri, 31 May 2013 10:40:20 +1000 (EST)
-Received: from tom.nabble.com ([192.168.236.105])
- by sam.nabble.com with esmtp (Exim 4.72)
- (envelope-from <wolfking2000@msn.com>) id 1UiDOE-0005oh-5b
- for linuxppc-dev@ozlabs.org; Thu, 30 May 2013 17:40:18 -0700
-Date: Thu, 30 May 2013 17:40:18 -0700 (PDT)
-From: wolfking <wolfking2000@msn.com>
-To: linuxppc-dev@ozlabs.org
-Message-ID: <1369960818166-71847.post@n7.nabble.com>
-In-Reply-To: <1369931365.14679.7@snotra>
-References: <1369885321567-71775.post@n7.nabble.com>
- <1369931365.14679.7@snotra>
-Subject: Re: can't access PCIe card under sbc8548
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (unknown
+ [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
+ by ozlabs.org (Postfix) with ESMTP id A3ED72C0182
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2013 10:55:54 +1000 (EST)
+Date: Thu, 30 May 2013 17:55:49 -0700 (PDT)
+Message-Id: <20130530.175549.407800685811475192.davem@davemloft.net>
+To: sebastian.hesselbarth@gmail.com
+Subject: Re: [PATCH v5 00/13] net: mv643xx_eth DT support and fixes
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1369855975-21489-1-git-send-email-sebastian.hesselbarth@gmail.com>
+References: <1369154510-4927-1-git-send-email-sebastian.hesselbarth@gmail.com>
+ <1369855975-21489-1-git-send-email-sebastian.hesselbarth@gmail.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: andrew@lunn.ch, jason@lakedaemon.net, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, buytenh@wantstofly.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,19 +25,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-hi, scott:
-  Thanks for replying!
-> In what specific way does it not work?
-  when I use iowrite8 to write, things seem OK, the codes continue running,
-  when I use ioread8 to read, the console I use freezes. The console stops
-  responding.
-> Why can't it succeed?  Is there nothing mapped at 0xfc7fc000?
-  My PCIe card's local bus register is at BAR0+0xC7, so the driver should
-access 0xfc7fc027 and the following 7 bytes. But When I access the areas:
-ioread8 just freezes. 
+From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Date: Wed, 29 May 2013 21:32:42 +0200
 
+> For the patches above I suggest to take Patches 1-6 through David
+> Miller's branch, and Patches 7-12 through Jason Cooper's when the
+> former have appeared on mainline linux. The patch set has been based
+> on v3.10-rc3.
 
+Patches 1-6 applied to net-next, and patch #1 queued up for -stable.
 
---
-View this message in context: http://linuxppc.10917.n7.nabble.com/can-t-access-PCIe-card-under-sbc8548-tp71775p71847.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+Thanks!
