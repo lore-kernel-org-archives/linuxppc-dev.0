@@ -1,24 +1,24 @@
-Return-Path: <Ian.Campbell@citrix.com>
-Received: from SMTP.EU.CITRIX.COM (smtp.eu.citrix.com [46.33.159.39])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "Cisco Appliance Demo Certificate",
- Issuer "Cisco Appliance Demo Certificate" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 99BBE2C02C3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2013 21:58:57 +1000 (EST)
-Message-ID: <1370001530.5199.118.camel@zakaz.uk.xensource.com>
-Subject: Re: DTB build failure due to preproccessing
-From: Ian Campbell <Ian.Campbell@citrix.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 31 May 2013 12:58:50 +0100
-In-Reply-To: <20130531114824.60D223E0901@localhost>
-References: <1369996170.5199.68.camel@zakaz.uk.xensource.com>
- <20130531114824.60D223E0901@localhost>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <wolfking2000@msn.com>
+Received: from sam.nabble.com (sam.nabble.com [216.139.236.26])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 052C72C013D
+ for <linuxppc-dev@ozlabs.org>; Fri, 31 May 2013 22:46:10 +1000 (EST)
+Received: from tom.nabble.com ([192.168.236.105])
+ by sam.nabble.com with esmtp (Exim 4.72)
+ (envelope-from <wolfking2000@msn.com>) id 1UiOie-0007pN-G6
+ for linuxppc-dev@ozlabs.org; Fri, 31 May 2013 05:46:08 -0700
+Date: Fri, 31 May 2013 05:46:08 -0700 (PDT)
+From: wolfking <wolfking2000@msn.com>
+To: linuxppc-dev@ozlabs.org
+Message-ID: <1370004368473-71874.post@n7.nabble.com>
+In-Reply-To: <1369994474.3928.132.camel@pasglop>
+References: <1369885321567-71775.post@n7.nabble.com>
+ <1369931365.14679.7@snotra> <1369960818166-71847.post@n7.nabble.com>
+ <1369994474.3928.132.camel@pasglop>
+Subject: Re: can't access PCIe card under sbc8548
 MIME-Version: 1.0
-Cc: Michal Marek <mmarek@suse.cz>, JonLoeliger <jdl@jdl.com>, Stephen
- Warren <swarren@nvidia.com>, linux-kbuild@vger.kernel.org,
- linux-kernel <linux-kernel@vger.kernel.org>,
- Rob Herring <rob.herring@calxeda.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,57 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-05-31 at 12:48 +0100, Grant Likely wrote:
-> On Fri, 31 May 2013 11:29:30 +0100, Ian Campbell <Ian.Campbell@citrix.com> wrote:
-> > This affects arch/powerpc/boot/dts/virtex440-ml510.dts but I think it is
-> > actually a more general issue:
-> > 
-> >         $ make ARCH=powerpc CROSS_COMPILE=powerpc-linux- virtex440-ml510.dtb 
-> >           CC      scripts/mod/devicetable-offsets.s
-> >           GEN     scripts/mod/devicetable-offsets.h
-> >           HOSTCC  scripts/mod/file2alias.o
-> >           HOSTLD  scripts/mod/modpost
-> >           DTC     arch/powerpc/boot/virtex440-ml510.dtb
-> >         Error: arch/powerpc/boot/dts/virtex440-ml510.dts:374.6-7 syntax error
-> >         FATAL ERROR: Unable to parse input tree
-> >         make[1]: *** [arch/powerpc/boot/virtex440-ml510.dtb] Error 1
-> >         make: *** [virtex440-ml510.dtb] Error 2
-> >         
-> > Line 374 is the "IDSEL 0x16..." line here:
-> > 			interrupt-map = <
-> > 				/* IRQ mapping for pci slots and ALI M1533
-> > 				 ...
-> > 				 * management core also isn't used.
-> > 				 */
-> > 
-> > 				/* IDSEL 0x16 / dev=6, bus=0 / PCI slot 3 */
-> > 				0x3000 0 0 1 &xps_intc_0 3 2
-> > 				0x3000 0 0 2 &xps_intc_0 2 2
-> > 				0x3000 0 0 3 &xps_intc_0 5 2
-> > 				0x3000 0 0 4 &xps_intc_0 4 2
-> > 
-> > Which gets preprocessed into:
-> >            interrupt-map = <
-> >         # 375 "arch/powerpc/boot/dts/virtex440-ml510.dts"
-> >             0x3000 0 0 1 &xps_intc_0 3 2
-> >             0x3000 0 0 2 &xps_intc_0 2 2
-> >             0x3000 0 0 3 &xps_intc_0 5 2
-> >             0x3000 0 0 4 &xps_intc_0 4 2
-> > 
-> > If I manually remove the "# 375 " line then that fixes the error
-> > (although there is then a subsequent one of the same type).
-> > 
-> > I suppose this is a bug in dtc? It appears to have at least some
-> > awareness of these preprocessor line number comments since it manages to
-> > report the original source line number.
-> 
-> dtc is only able to track line numbers when the native /include/
-> directive is used. The #include directive doesn't help it. It should be
-> added, but until it is the following patch solves the problem:
-> 
-> I've got this patch in my tree. Either Rob or I will push it to Linus in
-> the next few days.
+hi, Herrenschmidt
+ Thanks for replying to this topic!
 
-Thanks, I'll do something similar in my device-tree.git tree.
+> That looks more like a HW error to me unless you are hitting completely 
+> the wrong system addresses.
+The HW is OK. If I plug this card into another ppc board: mpc86641-hpcn,
+it works fine. 
 
-Ian
+> What would be useful would be to add printk's to check what exact 
+> physical address pci_iomap ends up using and whether that matches 
+> to the iobase_phys of the PCI bridge + the BAR value of the card.
+Would you mind telling me at what position should I add the printk?
+I can only print pci_iomap's return address which is mentioned in 
+the previous mail, it is 0xfc7fc000. The following is part of the
+linux boot message:
+
+PCI host bridge /pcie@e000a000  ranges:
+ MEM 0x00000000a0000000..0x00000000afffffff -> 0x00000000a0000000 
+  IO 0x00000000e2800000..0x00000000ea7fffff -> 0x0000000000000000
+/pcie@e000a000: PCICSRBAR @ 0xfff00000
+
+ Is 0xe2800000 the iobase_phys of the PCI bridge?
+
+So any suggestion is appreciated!
+
+regards,
+wolfking.
+
+
+
+
+--
+View this message in context: http://linuxppc.10917.n7.nabble.com/can-t-access-PCIe-card-under-sbc8548-tp71775p71874.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
