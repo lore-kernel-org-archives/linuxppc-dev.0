@@ -1,22 +1,23 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B93792C01D4
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2013 22:12:37 +1000 (EST)
-From: Kevin Hao <haokexin@gmail.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH v2] powerpc/mpc85xx: match with the pci bus address used by
- u-boot for all p1_p2_rdb_pc boards
-Date: Sat, 1 Jun 2013 20:12:13 +0800
-Message-ID: <1370088733-6717-1-git-send-email-haokexin@gmail.com>
-In-Reply-To: <20130531075349.GA22164@pek-khao-d1.corp.ad.wrs.com>
-References: <20130531075349.GA22164@pek-khao-d1.corp.ad.wrs.com>
+Return-Path: <linux@roeck-us.net>
+Received: from mail.active-venture.com (mail.active-venture.com
+ [67.228.131.205]) by ozlabs.org (Postfix) with ESMTP id A62392C00A3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2013 23:57:37 +1000 (EST)
+Date: Sat, 1 Jun 2013 06:58:09 -0700
+From: Guenter Roeck <linux@roeck-us.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/pci: Improve device hotplug initialization
+Message-ID: <20130601135809.GA6395@roeck-us.net>
+References: <1369762514-27352-1-git-send-email-linux@roeck-us.net>
+ <51A5CAC1.6030800@freescale.com>
+ <20130531051423.GA15505@roeck-us.net>
+ <1369979047.3928.112.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Scott Wood <scottwood@freescale.com>,
- linuxppc <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1369979047.3928.112.camel@pasglop>
+Cc: Yuanquan Chen <Yuanquan.Chen@freescale.com>,
+ Hiroo Matsumoto <matsumoto.hiroo@jp.fujitsu.com>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Chen Yuanquan-B41889 <B41889@freescale.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,171 +27,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-All these boards use the same configuration file p1_p2_rdb_pc.h in
-u-boot. So they have the same pci bus address set by the u-boot.
-But in some of these boards the bus address set in dtb don't match
-the one used by u-boot. And this will trigger a kernel bug in 32bit
-kernel and cause the pci device malfunction. For example, on a
-p2020rdb-pc board the u-boot use the 0xa0000000 as both bus address
-and cpu address for one pci controller and then assign bus address
-such as 0xa00004000 to some pci device. But in the kernel, the dtb
-set the bus address to 0xe0000000 and the cpu address to 0xa0000000.
-The kernel assumes mistakenly the assigned bus address 0xa0004000
-in pci device is correct and keep it unchanged. This will definitely
-cause the pci device malfunction. I have made a patch to fix this
-in the pci subsystem.
-  https://git.kernel.org/cgit/linux/kernel/git/helgaas/pci.git/commit/?h=next&id=cf4d1cf5ac5e7d2b886af6ed906ea0dcdc5b6855
+On Fri, May 31, 2013 at 03:44:07PM +1000, Benjamin Herrenschmidt wrote:
+> On Thu, 2013-05-30 at 22:14 -0700, Guenter Roeck wrote:
+> > On Wed, May 29, 2013 at 05:30:41PM +0800, Chen Yuanquan-B41889 wrote:
+> > > On 05/29/2013 01:35 AM, Guenter Roeck wrote:
+> > > >bios_add_device(). Drop explicit calls to pcibios_setup_device();
+> > > >this makes pcibios_setup_bus_devices() a noop function which could
+> > > >eve
+> > > 
+> > > Yeah, it's more reasonable to do the irq and DMA related initialization
+> > > in one code path for all devices.
+> > > 
+> > Any comments / feedback on the code itself ?
+> 
+> Sorry, I haven't had a chance to review it yet, I'm fairly bogged down
+> at the moment. I want to tread carefully because the previous iteration
+> of changing that stuff did break a few platforms in the end.
+> 
+Hi Ben,
 
-Since it changed the general code and will need more time to merge
-into upstream. So I would like to tweak the 32bit dts of these boards
-first and make it available to kernel ASAP.
+the comment was actuially directed towards Yuanquan.
 
-The cpu address for the pci controller seems also not right in
-p1025rdb_32b/36b.dts. So fix it at the same time.
+No problem, take your time. I did my best to test it, but I agree that this is a
+critical area of the code, and it would be desirable to get additional scrutiny
+and test feedback.
 
-Signed-off-by: Kevin Hao <haokexin@gmail.com>
-Cc: stable@vger.kernel.org
----
-Hi Kumar,
+The code has been running in our system (P2020 and P5040) for several months.
+I was preparing a patch for upstream submission when I noticed commit 37f02195b.
+After testing ithis commit, I noticed the problems with it and wrote this patch,
+which aligns the code with our initial patch. I tested it as good as I could on
+our systems as well as with a P5040 evaluation board and an Intel GE PCIe
+card.
 
-I would like this to be merged into 3.10 since some boards which has
-an integrated PCIe device (such as p2020rdb-pca) is not bootable at all
-without this fix.
-
-v2:
-  * Remove the parts for the 36bit dts.
-  * Add stable to the CC.
-
- arch/powerpc/boot/dts/p1020mbg-pc_32b.dts | 4 ++--
- arch/powerpc/boot/dts/p1020utm-pc_32b.dts | 4 ++--
- arch/powerpc/boot/dts/p1024rdb_32b.dts    | 4 ++--
- arch/powerpc/boot/dts/p1025rdb_32b.dts    | 4 ++--
- arch/powerpc/boot/dts/p1025rdb_36b.dts    | 2 +-
- arch/powerpc/boot/dts/p2020rdb-pc_32b.dts | 4 ++--
- 6 files changed, 11 insertions(+), 11 deletions(-)
-
-diff --git a/arch/powerpc/boot/dts/p1020mbg-pc_32b.dts b/arch/powerpc/boot/dts/p1020mbg-pc_32b.dts
-index ab8f076..042bda5 100644
---- a/arch/powerpc/boot/dts/p1020mbg-pc_32b.dts
-+++ b/arch/powerpc/boot/dts/p1020mbg-pc_32b.dts
-@@ -56,7 +56,7 @@
- 
- 	pci0: pcie@ffe09000 {
- 		reg = <0x0 0xffe09000 0x0 0x1000>;
--		ranges = <0x2000000 0x0 0xe0000000 0x0 0xa0000000 0x0 0x20000000
-+		ranges = <0x2000000 0x0 0xa0000000 0x0 0xa0000000 0x0 0x20000000
- 			  0x1000000 0x0 0x00000000 0x0 0xffc10000 0x0 0x10000>;
- 		pcie@0 {
- 			ranges = <0x2000000 0x0 0xe0000000
-@@ -71,7 +71,7 @@
- 
- 	pci1: pcie@ffe0a000 {
- 		reg = <0x0 0xffe0a000 0x0 0x1000>;
--		ranges = <0x2000000 0x0 0xe0000000 0x0 0x80000000 0x0 0x20000000
-+		ranges = <0x2000000 0x0 0x80000000 0x0 0x80000000 0x0 0x20000000
- 			  0x1000000 0x0 0x00000000 0x0 0xffc00000 0x0 0x10000>;
- 		pcie@0 {
- 			ranges = <0x2000000 0x0 0xe0000000
-diff --git a/arch/powerpc/boot/dts/p1020utm-pc_32b.dts b/arch/powerpc/boot/dts/p1020utm-pc_32b.dts
-index 4bfdd89..27576eb 100644
---- a/arch/powerpc/boot/dts/p1020utm-pc_32b.dts
-+++ b/arch/powerpc/boot/dts/p1020utm-pc_32b.dts
-@@ -56,7 +56,7 @@
- 
- 	pci0: pcie@ffe09000 {
- 		reg = <0x0 0xffe09000 0x0 0x1000>;
--		ranges = <0x2000000 0x0 0xe0000000 0x0 0xa0000000 0x0 0x20000000
-+		ranges = <0x2000000 0x0 0xa0000000 0x0 0xa0000000 0x0 0x20000000
- 			  0x1000000 0x0 0x00000000 0x0 0xffc10000 0x0 0x10000>;
- 		pcie@0 {
- 			ranges = <0x2000000 0x0 0xe0000000
-@@ -71,7 +71,7 @@
- 
- 	pci1: pcie@ffe0a000 {
- 		reg = <0x0 0xffe0a000 0x0 0x1000>;
--		ranges = <0x2000000 0x0 0xe0000000 0x0 0x80000000 0x0 0x20000000
-+		ranges = <0x2000000 0x0 0x80000000 0x0 0x80000000 0x0 0x20000000
- 			  0x1000000 0x0 0x00000000 0x0 0xffc00000 0x0 0x10000>;
- 		pcie@0 {
- 			ranges = <0x2000000 0x0 0xe0000000
-diff --git a/arch/powerpc/boot/dts/p1024rdb_32b.dts b/arch/powerpc/boot/dts/p1024rdb_32b.dts
-index 90e803e..ede1af6 100644
---- a/arch/powerpc/boot/dts/p1024rdb_32b.dts
-+++ b/arch/powerpc/boot/dts/p1024rdb_32b.dts
-@@ -53,7 +53,7 @@
- 
- 	pci0: pcie@ffe09000 {
- 		reg = <0x0 0xffe09000 0 0x1000>;
--		ranges = <0x2000000 0x0 0xe0000000 0x0 0xa0000000 0x0 0x20000000
-+		ranges = <0x2000000 0x0 0xa0000000 0x0 0xa0000000 0x0 0x20000000
- 			  0x1000000 0x0 0x00000000 0x0 0xffc10000 0x0 0x10000>;
- 		pcie@0 {
- 			ranges = <0x2000000 0x0 0xe0000000
-@@ -68,7 +68,7 @@
- 
- 	pci1: pcie@ffe0a000 {
- 		reg = <0x0 0xffe0a000 0 0x1000>;
--		ranges = <0x2000000 0x0 0xe0000000 0x0 0x80000000 0x0 0x20000000
-+		ranges = <0x2000000 0x0 0x80000000 0x0 0x80000000 0x0 0x20000000
- 			  0x1000000 0x0 0x00000000 0x0 0xffc00000 0x0 0x10000>;
- 		pcie@0 {
- 			reg = <0x0 0x0 0x0 0x0 0x0>;
-diff --git a/arch/powerpc/boot/dts/p1025rdb_32b.dts b/arch/powerpc/boot/dts/p1025rdb_32b.dts
-index ac5729c..6ba7ddd 100644
---- a/arch/powerpc/boot/dts/p1025rdb_32b.dts
-+++ b/arch/powerpc/boot/dts/p1025rdb_32b.dts
-@@ -54,7 +54,7 @@
- 	};
- 
- 	pci0: pcie@ffe09000 {
--		ranges = <0x2000000 0x0 0xe0000000 0 0xe0000000 0x0 0x20000000
-+		ranges = <0x2000000 0x0 0xa0000000 0 0xa0000000 0x0 0x20000000
- 			  0x1000000 0x0 0x00000000 0 0xffc10000 0x0 0x10000>;
- 		reg = <0 0xffe09000 0 0x1000>;
- 		pcie@0 {
-@@ -70,7 +70,7 @@
- 
- 	pci1: pcie@ffe0a000 {
- 		reg = <0 0xffe0a000 0 0x1000>;
--		ranges = <0x2000000 0x0 0xe0000000 0 0xe0000000 0x0 0x20000000
-+		ranges = <0x2000000 0x0 0x80000000 0 0x80000000 0x0 0x20000000
- 			  0x1000000 0x0 0x00000000 0 0xffc00000 0x0 0x10000>;
- 		pcie@0 {
- 			ranges = <0x2000000 0x0 0xe0000000
-diff --git a/arch/powerpc/boot/dts/p1025rdb_36b.dts b/arch/powerpc/boot/dts/p1025rdb_36b.dts
-index 06deb6f..f7a9cf8 100644
---- a/arch/powerpc/boot/dts/p1025rdb_36b.dts
-+++ b/arch/powerpc/boot/dts/p1025rdb_36b.dts
-@@ -55,7 +55,7 @@
- 
- 	pci0: pcie@fffe09000 {
- 		reg = <0xf 0xffe09000 0 0x1000>;
--		ranges = <0x2000000 0x0 0xe0000000 0xe 0x20000000 0x0 0x20000000
-+		ranges = <0x2000000 0x0 0xe0000000 0xc 0x20000000 0x0 0x20000000
- 			  0x1000000 0x0 0x00000000 0xf 0xffc10000 0x0 0x10000>;
- 		pcie@0 {
- 			ranges = <0x2000000 0x0 0xe0000000
-diff --git a/arch/powerpc/boot/dts/p2020rdb-pc_32b.dts b/arch/powerpc/boot/dts/p2020rdb-pc_32b.dts
-index 57573bd..4ab21f8 100644
---- a/arch/powerpc/boot/dts/p2020rdb-pc_32b.dts
-+++ b/arch/powerpc/boot/dts/p2020rdb-pc_32b.dts
-@@ -63,7 +63,7 @@
- 
- 	pci1: pcie@ffe09000 {
- 		reg = <0 0xffe09000 0 0x1000>;
--		ranges = <0x2000000 0x0 0xe0000000 0 0xa0000000 0x0 0x20000000
-+		ranges = <0x2000000 0x0 0xa0000000 0 0xa0000000 0x0 0x20000000
- 			  0x1000000 0x0 0x00000000 0 0xffc10000 0x0 0x10000>;
- 		pcie@0 {
- 			ranges = <0x2000000 0x0 0xe0000000
-@@ -78,7 +78,7 @@
- 
- 	pci0: pcie@ffe0a000 {
- 		reg = <0 0xffe0a000 0 0x1000>;
--		ranges = <0x2000000 0x0 0xe0000000 0 0x80000000 0x0 0x20000000
-+		ranges = <0x2000000 0x0 0x80000000 0 0x80000000 0x0 0x20000000
- 			  0x1000000 0x0 0x00000000 0 0xffc00000 0x0 0x10000>;
- 		pcie@0 {
- 			ranges = <0x2000000 0x0 0xe0000000
--- 
-1.8.1.4
+Thanks,
+Guenter
