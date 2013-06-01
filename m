@@ -1,24 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 223032C00A3
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2013 09:41:11 +1000 (EST)
-Message-ID: <1370043630.3928.166.camel@pasglop>
-Subject: Re: [PATCH v2] can: flexcan: remove HAVE_CAN_FLEXCAN Kconfig symbol
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Marc Kleine-Budde <mkl@pengutronix.de>
-Date: Sat, 01 Jun 2013 09:40:30 +1000
-In-Reply-To: <519A4A00.8000109@pengutronix.de>
-References: <1368781157-4646-1-git-send-email-mkl@pengutronix.de>
- <20130517090949.GI8607@S2101-09.ap.freescale.net>
- <519A4A00.8000109@pengutronix.de>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Arnd Bergmann <arnd@arndb.de>, Sascha Hauer <s.hauer@pengutronix.de>,
- U Bhaskar-B22300 <B22300@freescale.com>, linux-kernel@vger.kernel.org,
- linux-can@vger.kernel.org, Shawn Guo <shawn.guo@linaro.org>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Return-Path: <dan.j.williams@gmail.com>
+Received: from mail-la0-x22b.google.com (mail-la0-x22b.google.com
+ [IPv6:2a00:1450:4010:c03::22b])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 91E8C2C008A
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2013 10:18:02 +1000 (EST)
+Received: by mail-la0-f43.google.com with SMTP id fe20so424675lab.30
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2013 17:17:58 -0700 (PDT)
+MIME-Version: 1.0
+Sender: dan.j.williams@gmail.com
+In-Reply-To: <20130530174727.GE3767@intel.com>
+References: <1369656882-25241-1-git-send-email-andriy.shevchenko@linux.intel.com>
+ <20130530174727.GE3767@intel.com>
+Date: Fri, 31 May 2013 17:09:51 -0700
+Message-ID: <CAA9_cmdNiLfJjv-8Mh-Xb1ifZb4aw_9NGCVW6aWsfq6BN-DYyQ@mail.gmail.com>
+Subject: Re: [PATCH 00/12] dma: various minor clean ups for slave drivers
+From: Dan Williams <djbw@fb.com>
+To: Vinod Koul <vinod.koul@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Shawn Guo <shawn.guo@linaro.org>, Stephen Warren <swarren@wwwdotorg.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Andy Shevchenko <andriy.shevchenko@linux.jf.intel.com>,
+ Zhang Wei <zw@zh-kernel.org>, linux-tegra@vger.kernel.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,32 +32,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-05-20 at 18:06 +0200, Marc Kleine-Budde wrote:
-> On 05/17/2013 11:09 AM, Shawn Guo wrote:
-> > On Fri, May 17, 2013 at 10:59:17AM +0200, Marc Kleine-Budde wrote:
-> >> This patch removes the Kconfig symbol HAVE_CAN_FLEXCAN from arch/{arm,powerpc}
-> >> and allowing compilation unconditionally on all arm and powerpc platforms.
-> >>
-> >> This brings a bigger compile time coverage and removes the following dependency
-> >> warning found by Arnd Bergmann:
-> >>
-> >>     warning: (SOC_IMX28 && SOC_IMX25 && SOC_IMX35 && IMX_HAVE_PLATFORM_FLEXCAN &&
-> >>         SOC_IMX53 && SOC_IMX6Q) selects HAVE_CAN_FLEXCAN
-> >>     which has unmet direct dependencies (NET && CAN && CAN_DEV)
-> >>
-> >> Cc: Arnd Bergmann <arnd@arndb.de>
-> >> Cc: Shawn Guo <shawn.guo@linaro.org>
-> > 
-> > Acked-by: Shawn Guo <shawn.guo@linaro.org>
-> 
-> Thanks.
-> 
-> An Acked-by by the powerpc people would be fine. However, if nobody
-> doesn't object, I'm sending this patch via linux-can and net-next upstream.
+On Thu, May 30, 2013 at 10:47 AM, Vinod Koul <vinod.koul@intel.com> wrote:
+> On Mon, May 27, 2013 at 03:14:30PM +0300, Andy Shevchenko wrote:
+>> Here is a set of small independent patches that clean up or fix minor things
+>> across DMA slave drivers.
+> The series looks fine. I am going to wait a day more and apply, pls speak up if
+> you disagree and ack if you agree
 
-Sorry, missed it, if it's still out there, add my
+Looks ok to me.  Reminds we can probably take this one step further
+and provide a generic implementation for the common case.  It's just a
+bit inconsistent though that some engines will poll the completion
+handler (try to advance the state of the last completed cookie)
+whereas others just assume things will be completed asynchronously.
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-Cheers,
-Ben.
+--
+Dan
