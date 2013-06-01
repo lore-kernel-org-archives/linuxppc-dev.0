@@ -2,21 +2,27 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id AA2312C007A
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2013 21:44:21 +1000 (EST)
-Message-ID: <1370087051.3766.40.camel@pasglop>
-Subject: Re: [PATCH] powerpc/mm: Always invalidate tlb on hpte invalidate
- and update
+ by ozlabs.org (Postfix) with ESMTPS id BEFDB2C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2013 21:47:26 +1000 (EST)
+Message-ID: <1370087236.3766.43.camel@pasglop>
+Subject: Re: [PATCH 1/3] powerpc/mpc85xx: remove the unneeded pci init
+ functions for corenet ds board
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-Date: Sat, 01 Jun 2013 21:44:11 +1000
-In-Reply-To: <20130601111908.GA16571@concordia>
-References: <1369998204-31490-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20130601111908.GA16571@concordia>
+To: Kevin Hao <haokexin@gmail.com>
+Date: Sat, 01 Jun 2013 21:47:16 +1000
+In-Reply-To: <20130601105936.GA1850@pek-khao-d1.corp.ad.wrs.com>
+References: <1369137900-5748-1-git-send-email-haokexin@gmail.com>
+ <1369137900-5748-2-git-send-email-haokexin@gmail.com>
+ <1369781529.18630.25@snotra>
+ <20130530102034.GB18702@pek-khao-d1.corp.ad.wrs.com>
+ <1369940099.14679.14@snotra>
+ <20130531064102.GB16514@pek-khao-d1.corp.ad.wrs.com>
+ <1369995080.3928.140.camel@pasglop>
+ <20130601105936.GA1850@pek-khao-d1.corp.ad.wrs.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Scott Wood <scottwood@freescale.com>,
+ linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,31 +32,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2013-06-01 at 21:19 +1000, Michael Ellerman wrote:
-> On Fri, May 31, 2013 at 04:33:24PM +0530, Aneesh Kumar K.V wrote:
-> > From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-> > 
-> > If a hash bucket gets full, we "evict" a more/less random entry from it.
-> > When we do that we don't invalidate the TLB (hpte_remove) because we assume
-> > the old translation is still technically "valid". This implies that when
-> > we are invalidating or updating pte, even if HPTE entry is not valid
-> > we should do a tlb invalidate.
-> > 
-> > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> 
-> Has this always been a bug? I assume not.
-> 
-> I'm asking because I have a kernel that's crashing and I'm wondering if
-> I might need this commit.
+On Sat, 2013-06-01 at 18:59 +0800, Kevin Hao wrote:
 
-Bug got introduced in either 
-b1022fbd293564de91596b8775340cf41ad5214c or
-7e74c3921ad9610c0b49f28b8fc69f7480505841, the jury is still out on
-that one :-)
+> The effect of this change is that the isa_io_base will be 0 and the IO
+> resource are equal to the virtual address of the IO space. But the IO
+> functions such as outx/inx should work as well. This is why I ask the
+> above question. What do you think about this? Are there any subtle bugs
+> that will be triggered by this?
 
-It's unlikely to crash the kernel however (it *can*, it's just unlikely).
+I don't see any obvious reason why that wouldn't work but like anything
+in that area, it needs a bit of testing & hammering to be sure ;-)
 
-Patch is good to have regardless...
+In fact it would work on pmac32 as well since those generally don't have
+legacy crap either.
+
+So I have no fundamental objection, it just needs testing. My worry is
+that we need to make sure we don't break old chrp and I don't have any
+to test with. I'm happy to drop support for stuff nobody uses anymore
+(we did drop PReP after all and I'm *that* close to drop power3) but as
+long as somebody is still using a CHRP RS6K or a Pegasos I can't quite
+drop those... And they do have legacy ISA crap to deal with.
 
 Cheers,
 Ben.
