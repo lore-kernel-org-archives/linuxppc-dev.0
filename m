@@ -1,28 +1,20 @@
-Return-Path: <dan.j.williams@gmail.com>
-Received: from mail-la0-x22b.google.com (mail-la0-x22b.google.com
- [IPv6:2a00:1450:4010:c03::22b])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 91E8C2C008A
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2013 10:18:02 +1000 (EST)
-Received: by mail-la0-f43.google.com with SMTP id fe20so424675lab.30
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2013 17:17:58 -0700 (PDT)
-MIME-Version: 1.0
-Sender: dan.j.williams@gmail.com
-In-Reply-To: <20130530174727.GE3767@intel.com>
-References: <1369656882-25241-1-git-send-email-andriy.shevchenko@linux.intel.com>
- <20130530174727.GE3767@intel.com>
-Date: Fri, 31 May 2013 17:09:51 -0700
-Message-ID: <CAA9_cmdNiLfJjv-8Mh-Xb1ifZb4aw_9NGCVW6aWsfq6BN-DYyQ@mail.gmail.com>
-Subject: Re: [PATCH 00/12] dma: various minor clean ups for slave drivers
-From: Dan Williams <djbw@fb.com>
-To: Vinod Koul <vinod.koul@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Shawn Guo <shawn.guo@linaro.org>, Stephen Warren <swarren@wwwdotorg.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Andy Shevchenko <andriy.shevchenko@linux.jf.intel.com>,
- Zhang Wei <zw@zh-kernel.org>, linux-tegra@vger.kernel.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id CD01A2C008E
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2013 14:13:12 +1000 (EST)
+Message-ID: <1370059983.3766.1.camel@pasglop>
+Subject: Re: [PATCH 02/23] powerpc/eeh: Function to tranverse PCI devices
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Date: Sat, 01 Jun 2013 14:13:03 +1000
+In-Reply-To: <1369902245-5886-3-git-send-email-shangw@linux.vnet.ibm.com>
+References: <1369902245-5886-1-git-send-email-shangw@linux.vnet.ibm.com>
+ <1369902245-5886-3-git-send-email-shangw@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,18 +24,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 30, 2013 at 10:47 AM, Vinod Koul <vinod.koul@intel.com> wrote:
-> On Mon, May 27, 2013 at 03:14:30PM +0300, Andy Shevchenko wrote:
->> Here is a set of small independent patches that clean up or fix minor things
->> across DMA slave drivers.
-> The series looks fine. I am going to wait a day more and apply, pls speak up if
-> you disagree and ack if you agree
+On Thu, 2013-05-30 at 16:23 +0800, Gavin Shan wrote:
+> For EEH on PowerNV platform, the PCI devices will be probed to
+> check if they support EEH functionality. Different from the case
+> of EEH for pSeries platform, we will probe real PCI device instead
+> of device tree node for EEH capability on PowerNV platform.
+> 
+> The patch introduces function eeh_pci_dev_traverse() to traverse
+> PCI devices for the indicated PCI bus from top to bottom.
 
-Looks ok to me.  Reminds we can probably take this one step further
-and provide a generic implementation for the common case.  It's just a
-bit inconsistent though that some engines will poll the completion
-handler (try to advance the state of the last completed cookie)
-whereas others just assume things will be completed asynchronously.
+This seems racy vs. hotplug etc... Any reason you can't use
+pci_walk_bus() from drivers/pci/bus.c ?
 
---
-Dan
+Cheers,
+Ben.
+
+> Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/eeh.h           |    3 ++
+>  arch/powerpc/platforms/pseries/eeh_dev.c |   35 ++++++++++++++++++++++++++++++
+>  2 files changed, 38 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+> index e32c3c5..eeaeab6 100644
+> --- a/arch/powerpc/include/asm/eeh.h
+> +++ b/arch/powerpc/include/asm/eeh.h
+> @@ -183,6 +183,7 @@ static inline void eeh_unlock(void)
+>  #define EEH_MAX_ALLOWED_FREEZES 5
+>  
+>  typedef void *(*eeh_traverse_func)(void *data, void *flag);
+> +typedef void *(*eeh_pci_traverse_func)(struct pci_dev *dev, void *flag);
+>  int eeh_phb_pe_create(struct pci_controller *phb);
+>  int eeh_add_to_parent_pe(struct eeh_dev *edev);
+>  int eeh_rmv_from_parent_pe(struct eeh_dev *edev, int purge_pe);
+> @@ -191,6 +192,8 @@ void *eeh_pe_dev_traverse(struct eeh_pe *root,
+>  void eeh_pe_restore_bars(struct eeh_pe *pe);
+>  struct pci_bus *eeh_pe_bus_get(struct eeh_pe *pe);
+>  
+> +void eeh_pci_dev_traverse(struct pci_bus *bus,
+> +		eeh_pci_traverse_func fn, void *flag);
+>  void *eeh_dev_init(struct device_node *dn, void *data);
+>  void eeh_dev_phb_init_dynamic(struct pci_controller *phb);
+>  int __init eeh_ops_register(struct eeh_ops *ops);
+> diff --git a/arch/powerpc/platforms/pseries/eeh_dev.c b/arch/powerpc/platforms/pseries/eeh_dev.c
+> index 1efa28f..12c445d 100644
+> --- a/arch/powerpc/platforms/pseries/eeh_dev.c
+> +++ b/arch/powerpc/platforms/pseries/eeh_dev.c
+> @@ -41,6 +41,41 @@
+>  #include <asm/pci-bridge.h>
+>  #include <asm/ppc-pci.h>
+>  
+> +
+> +/**
+> + * eeh_pci_dev_traverse - Traverse PCI devices for the indicated bus
+> + * @bus: PCI bus
+> + * @fn: callback function
+> + * @flag: extra flag
+> + *
+> + * The function traverses the PCI devices for the indicated PCI bus
+> + * from top to bottom fashion until the supplied callback function
+> + * returns non-zero value on the specific PCI device.
+> + */
+> +void eeh_pci_dev_traverse(struct pci_bus *bus,
+> +		eeh_pci_traverse_func fn, void *flag)
+> +{
+> +	struct pci_dev *dev;
+> +	void *ret;
+> +
+> +	if (!bus)
+> +		return;
+> +
+> +	/*
+> +	 * We should make sure the parent devices are scanned
+> +	 * prior to the child devices so that the parent PE
+> +	 * could be created before the child PEs.
+> +	 */
+> +	list_for_each_entry(dev, &bus->devices, bus_list) {
+> +		ret = fn(dev, flag);
+> +		if (ret)
+> +			return;
+> +
+> +		if (dev->subordinate)
+> +			eeh_pci_dev_traverse(dev->subordinate, fn, flag);
+> +	}
+> +}
+> +
+>  /**
+>   * eeh_dev_init - Create EEH device according to OF node
+>   * @dn: device node
