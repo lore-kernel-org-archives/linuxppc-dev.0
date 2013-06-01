@@ -2,16 +2,16 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 144722C009F
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2013 14:32:21 +1000 (EST)
-Message-ID: <1370061135.3766.14.camel@pasglop>
-Subject: Re: [PATCH 22/23] powerpc/eeh: Connect EEH error interrupt handle
+ by ozlabs.org (Postfix) with ESMTPS id 76F4F2C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2013 14:34:53 +1000 (EST)
+Message-ID: <1370061286.3766.17.camel@pasglop>
+Subject: Re: [PATCH 23/23] powerpc/eeh: Add debugfs entry to inject errors
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Gavin Shan <shangw@linux.vnet.ibm.com>
-Date: Sat, 01 Jun 2013 14:32:15 +1000
-In-Reply-To: <1369902245-5886-23-git-send-email-shangw@linux.vnet.ibm.com>
+Date: Sat, 01 Jun 2013 14:34:46 +1000
+In-Reply-To: <1369902245-5886-24-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1369902245-5886-1-git-send-email-shangw@linux.vnet.ibm.com>
- <1369902245-5886-23-git-send-email-shangw@linux.vnet.ibm.com>
+ <1369902245-5886-24-git-send-email-shangw@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -25,54 +25,89 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Thu, 2013-05-30 at 16:24 +0800, Gavin Shan wrote:
-> The EEH error interrupts should have been exported by firmware
-> through device tree. The OS already installed the interrupt
-> handler (opal_interrupt()) for them. The patch checks if we have
-> any existing EEH errors and wakes the kernel thread up to process
-> that if possible.
+> The patch intends to add debugfs entry powerpc/EEH/PHBx so that
+> the administrator can inject EEH errors to specified PCI host
+> bridge for testing purpose.
 
-Instead, please create a new notifier that opal interrupt calls whenever
-the return even state changes and have PCI "register" with it.
+Use a better naming for the debugfs files. Something like
+eeh_err_inject/pciNNNN, to be consistent with the general naming
+of PHBs in the system.
 
-Additionally, we want any caller of opal_poll_events() to instead call
-a wrapper that will also check for event changes and signal "clients".
+However, maybe it would be better to instead having something along
+the lines of a directory per PHB with a file in it for error injection ?
 
-Finally, we need a way to disable/enable that notifying via something
-like an atomic counter (no need to hard synchronize with pending calls)
-and use it for something like xmon to avoid calling all over the place
-when xmon polls for console input via udbg for example.
-
-This is a bit of work, I can give you a hand with it next week.
+That way we can stick more things in there that can become handy for
+debugging / diagnostics, such as register dumps etc...
 
 Cheers,
 Ben.
 
 > Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/platforms/powernv/opal.c |    6 ++++++
->  1 files changed, 6 insertions(+), 0 deletions(-)
+>  arch/powerpc/platforms/powernv/eeh-ioda.c |   36 ++++++++++++++++++++++++++++-
+>  1 files changed, 35 insertions(+), 1 deletions(-)
 > 
-> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-> index 628c564..cca78c9 100644
-> --- a/arch/powerpc/platforms/powernv/opal.c
-> +++ b/arch/powerpc/platforms/powernv/opal.c
-> @@ -18,6 +18,8 @@
->  #include <linux/slab.h>
->  #include <asm/opal.h>
->  #include <asm/firmware.h>
-> +#include <asm/io.h>
-> +#include <asm/eeh.h>
+> diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
+> index ec5c524..4cc9db7 100644
+> --- a/arch/powerpc/platforms/powernv/eeh-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
+> @@ -22,6 +22,7 @@
 >  
+>  #include <linux/bootmem.h>
+>  #include <linux/delay.h>
+> +#include <linux/debugfs.h>
+>  #include <linux/init.h>
+>  #include <linux/io.h>
+>  #include <linux/irq.h>
+> @@ -43,6 +44,29 @@
 >  #include "powernv.h"
+>  #include "pci.h"
 >  
-> @@ -296,6 +298,10 @@ static irqreturn_t opal_interrupt(int irq, void *data)
->  	uint64_t events;
+> +static struct dentry *ioda_eeh_dbgfs = NULL;
+> +
+> +static int ioda_eeh_dbgfs_set(void *data, u64 val)
+> +{
+> +	struct pci_controller *hose = data;
+> +	struct pnv_phb *phb = hose->private_data;
+> +
+> +	out_be64(phb->regs + 0xD10, val);
+> +	return 0;
+> +}
+> +
+> +static int ioda_eeh_dbgfs_get(void *data, u64 *val)
+> +{
+> +	struct pci_controller *hose = data;
+> +	struct pnv_phb *phb = hose->private_data;
+> +
+> +	*val = in_be64(phb->regs + 0xD10);
+> +	return 0;
+> +}
+> +
+> +DEFINE_SIMPLE_ATTRIBUTE(ioda_eeh_dbgfs_ops, ioda_eeh_dbgfs_get,
+> +			ioda_eeh_dbgfs_set, "0x%llx\n");
+> +
+>  /**
+>   * ioda_eeh_post_init - Chip dependent post initialization
+>   * @hose: PCI controller
+> @@ -54,10 +78,20 @@
+>  static int ioda_eeh_post_init(struct pci_controller *hose)
+>  {
+>  	struct pnv_phb *phb = hose->private_data;
+> +	char name[16];
+> +
+> +	/* Create EEH debugfs root if possible */
+> +	if (!ioda_eeh_dbgfs)
+> +		ioda_eeh_dbgfs = debugfs_create_dir("EEH", powerpc_debugfs_root);
 >  
->  	opal_handle_interrupt(virq_to_hw(irq), &events);
-> +#ifdef CONFIG_EEH
-> +	if (events & OPAL_EVENT_PCI_ERROR)
-> +		pci_err_event();
-> +#endif
+>  	/* FIXME: Enable it for PHB3 later */
+> -	if (phb->type == PNV_PHB_IODA1)
+> +	if (phb->type == PNV_PHB_IODA1) {
+> +		sprintf(name, "PHB%d", hose->global_number);
+> +		debugfs_create_file(name, 0600, ioda_eeh_dbgfs,
+> +				    hose, &ioda_eeh_dbgfs_ops);
+> +
+>  		phb->eeh_enabled = 1;
+> +	}
 >  
->  	/* XXX TODO: Do something with the events */
->  
+>  	return 0;
+>  }
