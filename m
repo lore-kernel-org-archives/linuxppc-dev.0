@@ -1,19 +1,27 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Sat, 1 Jun 2013 15:30:57 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [PATCH V2] dtc: ensure #line directives don't consume data from
- the next line
-Message-ID: <20130601053057.GB12059@boomeroo.fritz.box>
-References: <1370025184-23808-1-git-send-email-swarren@wwwdotorg.org>
+Return-Path: <mkl@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+ [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id D4A242C00A3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2013 18:32:29 +1000 (EST)
+Message-ID: <51A9B185.9030107@pengutronix.de>
+Date: Sat, 01 Jun 2013 10:32:05 +0200
+From: Marc Kleine-Budde <mkl@pengutronix.de>
 MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v2] can: flexcan: remove HAVE_CAN_FLEXCAN Kconfig symbol
+References: <1368781157-4646-1-git-send-email-mkl@pengutronix.de>
+ <20130517090949.GI8607@S2101-09.ap.freescale.net>
+ <519A4A00.8000109@pengutronix.de> <1370043630.3928.166.camel@pasglop>
+In-Reply-To: <1370043630.3928.166.camel@pasglop>
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="oC1+HKm2/end4ao3"
-In-Reply-To: <1370025184-23808-1-git-send-email-swarren@wwwdotorg.org>
-Cc: mmarek@suse.cz, jdl@jdl.com, Stephen Warren <swarren@nvidia.com>,
- linux-kbuild@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, rob.herring@calxeda.com,
- linuxppc-dev@lists.ozlabs.org
+ protocol="application/pgp-signature";
+ boundary="----enig2NQWWNTOEEGEOGHGFBKJG"
+Cc: Arnd Bergmann <arnd@arndb.de>, Sascha Hauer <s.hauer@pengutronix.de>,
+ U Bhaskar-B22300 <B22300@freescale.com>, linux-kernel@vger.kernel.org,
+ linux-can@vger.kernel.org, Shawn Guo <shawn.guo@linaro.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,57 +31,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---oC1+HKm2/end4ao3
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+------enig2NQWWNTOEEGEOGHGFBKJG
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, May 31, 2013 at 12:33:04PM -0600, Stephen Warren wrote:
-> From: Stephen Warren <swarren@nvidia.com>
+On 06/01/2013 01:40 AM, Benjamin Herrenschmidt wrote:
+> On Mon, 2013-05-20 at 18:06 +0200, Marc Kleine-Budde wrote:
+>> On 05/17/2013 11:09 AM, Shawn Guo wrote:
+>>> On Fri, May 17, 2013 at 10:59:17AM +0200, Marc Kleine-Budde wrote:
+>>>> This patch removes the Kconfig symbol HAVE_CAN_FLEXCAN from arch/{ar=
+m,powerpc}
+>>>> and allowing compilation unconditionally on all arm and powerpc plat=
+forms.
+>>>>
+>>>> This brings a bigger compile time coverage and removes the following=
+ dependency
+>>>> warning found by Arnd Bergmann:
+>>>>
+>>>>     warning: (SOC_IMX28 && SOC_IMX25 && SOC_IMX35 && IMX_HAVE_PLATFO=
+RM_FLEXCAN &&
+>>>>         SOC_IMX53 && SOC_IMX6Q) selects HAVE_CAN_FLEXCAN
+>>>>     which has unmet direct dependencies (NET && CAN && CAN_DEV)
+>>>>
+>>>> Cc: Arnd Bergmann <arnd@arndb.de>
+>>>> Cc: Shawn Guo <shawn.guo@linaro.org>
+>>>
+>>> Acked-by: Shawn Guo <shawn.guo@linaro.org>
+>>
+>> Thanks.
+>>
+>> An Acked-by by the powerpc people would be fine. However, if nobody
+>> doesn't object, I'm sending this patch via linux-can and net-next upst=
+ream.
 >=20
-> Previously, the #line parsing regex ended with ({WS}+[0-9]+)?. The {WS}
-> could match line-break characters. If the #line directive did not contain
-> the optional flags field at the end, this could cause any integer data on
-> the next line to be consumed as part of the #line directive parsing. This
-> could cause syntax errors (i.e. #line parsing consuming the leading 0
-> from a hex literal 0x1234, leaving x1234 to be parsed as cell data,
-> which is a syntax error), or invalid compilation results (i.e. simply
-> consuming literal 1234 as part of the #line processing, thus removing it
-> from the cell data).
+> Sorry, missed it, if it's still out there, add my
 >=20
-> Fix this by replacing {WS} with [ \t] so that it can't match line-breaks.
->=20
-> Convert all instances of {WS}, even though the other instances should be
-> irrelevant for any well-formed #line directive. This is done for
-> consistency and ultimate safety.
->=20
-> Reported-by: Ian Campbell <Ian.Campbell@citrix.com>
-> Signed-off-by: Stephen Warren <swarren@nvidia.com>
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Nice catch.
+Thanks,
 
-Acked-by: David Gibson <david@gibson.dropbear.id.au>
+Marc
 
-I'll pull it into my github tree.  Jon, please either apply directly
-or pull from my tree.
 
 --=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Pengutronix e.K.                  | Marc Kleine-Budde           |
+Industrial Linux Solutions        | Phone: +49-231-2826-924     |
+Vertretung West/Dortmund          | Fax:   +49-5121-206917-5555 |
+Amtsgericht Hildesheim, HRA 2686  | http://www.pengutronix.de   |
 
---oC1+HKm2/end4ao3
+
+------enig2NQWWNTOEEGEOGHGFBKJG
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iEYEARECAAYFAlGphxEACgkQaILKxv3ab8awPQCeL+iOBmgPbA5rnvnI6KTXMqxf
-W18AnjzJ4Pm02RaFdClj+TsWM5tqAJBo
-=zVV5
+iEYEARECAAYFAlGpsYkACgkQjTAFq1RaXHNZjACfRw3YJ9tBYhgOf2denmTVtsfC
+Ex4AoIUUJu5mxWre69cSk+SqByW5KXNE
+=aWez
 -----END PGP SIGNATURE-----
 
---oC1+HKm2/end4ao3--
+------enig2NQWWNTOEEGEOGHGFBKJG--
