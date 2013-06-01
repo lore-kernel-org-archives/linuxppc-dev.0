@@ -2,19 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 76F4F2C0091
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2013 14:34:53 +1000 (EST)
-Message-ID: <1370061286.3766.17.camel@pasglop>
-Subject: Re: [PATCH 23/23] powerpc/eeh: Add debugfs entry to inject errors
+ by ozlabs.org (Postfix) with ESMTPS id 9886F2C007E
+ for <linuxppc-dev@ozlabs.org>; Sat,  1 Jun 2013 14:40:33 +1000 (EST)
+Message-ID: <1370061602.3766.22.camel@pasglop>
+Subject: Re: [PATCH v3 0/8] Nvram-to-pstore
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gavin Shan <shangw@linux.vnet.ibm.com>
-Date: Sat, 01 Jun 2013 14:34:46 +1000
-In-Reply-To: <1369902245-5886-24-git-send-email-shangw@linux.vnet.ibm.com>
-References: <1369902245-5886-1-git-send-email-shangw@linux.vnet.ibm.com>
- <1369902245-5886-24-git-send-email-shangw@linux.vnet.ibm.com>
+To: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
+Date: Sat, 01 Jun 2013 14:40:02 +1000
+In-Reply-To: <20130425100952.21017.51799.stgit@aruna-ThinkPad-T420>
+References: <20130425100952.21017.51799.stgit@aruna-ThinkPad-T420>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: jkenisto@linux.vnet.ibm.com, tony.luck@intel.com, mahesh@linux.vnet.ibm.com,
+ cbouatmailru@gmail.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+ paulus@samba.org, anton@samba.org, ccross@android.com, keescook@chromium.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,90 +25,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-05-30 at 16:24 +0800, Gavin Shan wrote:
-> The patch intends to add debugfs entry powerpc/EEH/PHBx so that
-> the administrator can inject EEH errors to specified PCI host
-> bridge for testing purpose.
+On Thu, 2013-04-25 at 15:47 +0530, Aruna Balakrishnaiah wrote:
+> Currently the kernel provides the contents of p-series NVRAM only as a
+> simple stream of bytes via /dev/nvram, which must be interpreted in user
+> space by the nvram command in the powerpc-utils package. This patch set
+> exploits the pstore subsystem to expose each partition in NVRAM as a
+> separate file in /dev/pstore. For instance Oops messages will stored in a
+> file named [dmesg-nvram-2].
 
-Use a better naming for the debugfs files. Something like
-eeh_err_inject/pciNNNN, to be consistent with the general naming
-of PHBs in the system.
+We will need the same stuff for powernv. This is not a blocker for this
+patch series which I'm happy to apply (after I give it another round of
+review, hopefully today) but I would very much like you to, on top of
+this, start moving some of the basic pseries partition nvram handling
+to a generic place, along with your pstore bits, and use it on powernv
+as well.
 
-However, maybe it would be better to instead having something along
-the lines of a directory per PHB with a file in it for error injection ?
+In fact, this applies to at least all the BookS server platforms...
 
-That way we can stick more things in there that can become handy for
-debugging / diagnostics, such as register dumps etc...
+Things that come to mind:
+
+ - nvram_64.c duplicates generic_nvram.c as far as the user accessors
+are concerned, it should be possible to get rid of code there. Either
+the arch or the generic one (*)
+
+ - The nvram partition management should move to generic. While at it
+factor in the powermac variant (same stuff, mostly duplicated code)
+
+ - powernv wants all the goodies that pseries has, as does cell.
+
+(*) I wonder about that generic stuff... userspace might want to start
+doing things like resizing the common partition if not big enough etc...
+For that we might want to add more specific ioctl's. Is anybody other
+than us using generic_nvram ? I don't like adding ioctl's like that
+to a generic driver, maybe we could just make it call into something
+like arch_nvram_ioctl() and have an empty weak variant instead of the
+current ifdef game.
 
 Cheers,
 Ben.
 
-> Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/platforms/powernv/eeh-ioda.c |   36 ++++++++++++++++++++++++++++-
->  1 files changed, 35 insertions(+), 1 deletions(-)
+> Changes from v2:
+> 	- Fix renaming of pstore type ids in nvram.c
 > 
-> diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-> index ec5c524..4cc9db7 100644
-> --- a/arch/powerpc/platforms/powernv/eeh-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-> @@ -22,6 +22,7 @@
->  
->  #include <linux/bootmem.h>
->  #include <linux/delay.h>
-> +#include <linux/debugfs.h>
->  #include <linux/init.h>
->  #include <linux/io.h>
->  #include <linux/irq.h>
-> @@ -43,6 +44,29 @@
->  #include "powernv.h"
->  #include "pci.h"
->  
-> +static struct dentry *ioda_eeh_dbgfs = NULL;
-> +
-> +static int ioda_eeh_dbgfs_set(void *data, u64 val)
-> +{
-> +	struct pci_controller *hose = data;
-> +	struct pnv_phb *phb = hose->private_data;
-> +
-> +	out_be64(phb->regs + 0xD10, val);
-> +	return 0;
-> +}
-> +
-> +static int ioda_eeh_dbgfs_get(void *data, u64 *val)
-> +{
-> +	struct pci_controller *hose = data;
-> +	struct pnv_phb *phb = hose->private_data;
-> +
-> +	*val = in_be64(phb->regs + 0xD10);
-> +	return 0;
-> +}
-> +
-> +DEFINE_SIMPLE_ATTRIBUTE(ioda_eeh_dbgfs_ops, ioda_eeh_dbgfs_get,
-> +			ioda_eeh_dbgfs_set, "0x%llx\n");
-> +
->  /**
->   * ioda_eeh_post_init - Chip dependent post initialization
->   * @hose: PCI controller
-> @@ -54,10 +78,20 @@
->  static int ioda_eeh_post_init(struct pci_controller *hose)
->  {
->  	struct pnv_phb *phb = hose->private_data;
-> +	char name[16];
-> +
-> +	/* Create EEH debugfs root if possible */
-> +	if (!ioda_eeh_dbgfs)
-> +		ioda_eeh_dbgfs = debugfs_create_dir("EEH", powerpc_debugfs_root);
->  
->  	/* FIXME: Enable it for PHB3 later */
-> -	if (phb->type == PNV_PHB_IODA1)
-> +	if (phb->type == PNV_PHB_IODA1) {
-> +		sprintf(name, "PHB%d", hose->global_number);
-> +		debugfs_create_file(name, 0600, ioda_eeh_dbgfs,
-> +				    hose, &ioda_eeh_dbgfs_ops);
-> +
->  		phb->eeh_enabled = 1;
-> +	}
->  
->  	return 0;
->  }
+> Changes from v1:
+> 	- Reduce #ifdefs by and remove forward declarations of pstore callbacks
+> 	- Handle return value of nvram_write_os_partition
+> 	- Remove empty pstore callbacks and register pstore only when pstore
+> 	  is configured
+> ---
+> 
+> Aruna Balakrishnaiah (8):
+>       powerpc/pseries: Remove syslog prefix in uncompressed oops text
+>       powerpc/pseries: Add version and timestamp to oops header
+>       powerpc/pseries: Introduce generic read function to read nvram-partitions
+>       powerpc/pseries: Read/Write oops nvram partition via pstore
+>       powerpc/pseries: Read rtas partition via pstore
+>       powerpc/pseries: Distinguish between a os-partition and non-os partition
+>       powerpc/pseries: Read of-config partition via pstore
+>       powerpc/pseries: Read common partition via pstore
+> 
+> 
+>  arch/powerpc/platforms/pseries/nvram.c |  353 +++++++++++++++++++++++++++-----
+>  fs/pstore/inode.c                      |    9 +
+>  include/linux/pstore.h                 |    4 
+>  3 files changed, 313 insertions(+), 53 deletions(-)
+> 
