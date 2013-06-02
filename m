@@ -1,33 +1,43 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail-pd0-f181.google.com (mail-pd0-f181.google.com
- [209.85.192.181])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4245D2C009F
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Jun 2013 10:07:32 +1000 (EST)
-Received: by mail-pd0-f181.google.com with SMTP id bv13so3946484pdb.40
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 01 Jun 2013 17:07:29 -0700 (PDT)
-Date: Sun, 2 Jun 2013 08:07:20 +0800
-From: Kevin Hao <haokexin@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/3] powerpc/mpc85xx: remove the unneeded pci init
- functions for corenet ds board
-Message-ID: <20130602000720.GA22546@pek-khao-d1.corp.ad.wrs.com>
-References: <1369137900-5748-1-git-send-email-haokexin@gmail.com>
- <1369137900-5748-2-git-send-email-haokexin@gmail.com>
- <1369781529.18630.25@snotra>
- <20130530102034.GB18702@pek-khao-d1.corp.ad.wrs.com>
- <1369940099.14679.14@snotra>
- <20130531064102.GB16514@pek-khao-d1.corp.ad.wrs.com>
- <1369995080.3928.140.camel@pasglop>
- <20130601105936.GA1850@pek-khao-d1.corp.ad.wrs.com>
- <1370087236.3766.43.camel@pasglop>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7668E2C00AB
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Jun 2013 17:23:08 +1000 (EST)
+Received: from /spool/local
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Sun, 2 Jun 2013 12:48:32 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 34469125804F
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Jun 2013 12:55:04 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r527MqZq5833124
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 2 Jun 2013 12:52:53 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r527Mu3p016004
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 2 Jun 2013 17:22:56 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Subject: Re: 3.10-rc ppc64 corrupts usermem when swapping
+In-Reply-To: <1370038982.3928.147.camel@pasglop>
+References: <alpine.LNX.2.00.1305292148550.9560@eggly.anvils>
+ <1369897236.3928.93.camel@pasglop> <87vc60na89.fsf@linux.vnet.ibm.com>
+ <1369902786.3928.94.camel@pasglop>
+ <alpine.LNX.2.00.1305300643150.10009@eggly.anvils>
+ <alpine.LNX.2.00.1305302201200.12852@eggly.anvils>
+ <1369978262.3928.111.camel@pasglop> <87ppw7mrx7.fsf@linux.vnet.ibm.com>
+ <1370038982.3928.147.camel@pasglop>
+Date: Sun, 02 Jun 2013 12:52:56 +0530
+Message-ID: <8738t1c6y7.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="FL5UXtIhxfXey3p5"
-In-Reply-To: <1370087236.3766.43.camel@pasglop>
-Cc: Scott Wood <scottwood@freescale.com>,
- linuxppc <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@au1.ibm.com>,
+ Hugh Dickins <hughd@google.com>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,70 +47,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Benjamin Herrenschmidt <benh@au1.ibm.com> writes:
 
---FL5UXtIhxfXey3p5
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> On Fri, 2013-05-31 at 14:45 +0530, Aneesh Kumar K.V wrote:
+>
+>> > The patch you are running on is what I'll send to Linus for 3.10 (+/-
+>> > cosmetics). Aneesh second patch is a much larger rework which will be
+>> > needed for THP but that will wait for 3.11. I'm happy for you to test it
+>> > but I first want to make sure it's solid with the 3.10 fix :-)
+>
+> BTW. One concern I still have is that Hugh identified the bad commit
+> to be:
+>
+> 7e74c3921ad9610c0b49f28b8fc69f7480505841
+> "powerpc: Fix hpte_decode to use the correct decoding for page sizes".
+>
+> However, you introduce the return on HPTE not found earlier, in
+>
+> b1022fbd293564de91596b8775340cf41ad5214c
+> "powerpc: Decode the pte-lp-encoding bits correctly."
+>
+> So while I'm still happy with the current band-aid for 3.10 and am
+> about to send it to Linus, the above *does* seem to indicate that
+> there is also something wrong with the "Fix hpte_decode..." commit,
+> which might not actually get the page size right...
+>
+> Can you investigate ?
 
-On Sat, Jun 01, 2013 at 09:47:16PM +1000, Benjamin Herrenschmidt wrote:
-> On Sat, 2013-06-01 at 18:59 +0800, Kevin Hao wrote:
->=20
-> > The effect of this change is that the isa_io_base will be 0 and the IO
-> > resource are equal to the virtual address of the IO space. But the IO
-> > functions such as outx/inx should work as well. This is why I ask the
-> > above question. What do you think about this? Are there any subtle bugs
-> > that will be triggered by this?
->=20
-> I don't see any obvious reason why that wouldn't work but like anything
-> in that area, it needs a bit of testing & hammering to be sure ;-)
+7e74c3921ad9610c0b49f28b8fc69f7480505841 
+"powerpc: Fix hpte_decode to use the correct decoding for page sizes"
+changes should only impact hpte_decode. We don't change the details
+of hpte_actual_psize at all in this patch. That means we should see a
+difference only with kexec right ?.
 
-Agreed.
+Hugh,
 
->=20
-> In fact it would work on pmac32 as well since those generally don't have
-> legacy crap either.
->=20
-> So I have no fundamental objection, it just needs testing. My worry is
-> that we need to make sure we don't break old chrp and I don't have any
-> to test with.
+Will you be able to double check whether
+7e74c3921ad9610c0b49f28b8fc69f7480505841 is the bad commit. The one
+before that is what we changed in the patch that fixed your problem.
 
-Don't worry, my patch just drop the picking of primary bus for several
-fsl boards. All these changes are in board specific file, so it should
-have no affect to other boards at all.
-
-For the other boards which have the same issue, since this is not emergency,
-we don't want handle them in a rush.  So I would like to merge this patch
-first and then wait one or two kernel release cycle before handling the oth=
-ers
-to make sure that we don't break anything.
-
-Thanks,
-Kevin
-
-> I'm happy to drop support for stuff nobody uses anymore
-> (we did drop PReP after all and I'm *that* close to drop power3) but as
-> long as somebody is still using a CHRP RS6K or a Pegasos I can't quite
-> drop those... And they do have legacy ISA crap to deal with.
->=20
-> Cheers,
-> Ben.
->=20
->=20
-
---FL5UXtIhxfXey3p5
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQEcBAEBAgAGBQJRqoy4AAoJEJNY7TDerrFx3OYH/j8GUL0c6PmJANsKuthP0Dgq
-ipl0/gmCN4QlHmpszZ4wjKnhnisFBUsAEWnnj/lIDtKNubHp+dYQ7E3je1U0GaoU
-gHoLAdPoqtU4XvQmQqbYIrTHDf6/4BNjQW85JrwAkuDJSg8blY8DliFmBM2q4DYE
-9m/0e0cVFxeNYCC7dzbNeou5WzXNZ09D97jsp/Ra8LzeS4vKnpwOsmu3W0uZ3jQo
-lmFrSb655BYcubsqpKW1EmNW0elO/7tQ85gjtLgW1EgRVU87yDOJkZowzNUfDCnv
-c7tmBtCOjhR+upAv3/BfUjsld6YGle1fVUA5BbBYuDY9H/PWGbN52w2ha7rrUR4=
-=EE9x
------END PGP SIGNATURE-----
-
---FL5UXtIhxfXey3p5--
+-aneesh
