@@ -1,26 +1,23 @@
-Return-Path: <Ian.Campbell@citrix.com>
-Received: from SMTP.EU.CITRIX.COM (smtp.eu.citrix.com [46.33.159.39])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "Cisco Appliance Demo Certificate",
- Issuer "Cisco Appliance Demo Certificate" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 918AF2C0084
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jun 2013 19:44:08 +1000 (EST)
-Message-ID: <1370252643.11717.27.camel@zakaz.uk.xensource.com>
-Subject: Re: DTB build failure due to preproccessing
-From: Ian Campbell <Ian.Campbell@citrix.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 3 Jun 2013 10:44:03 +0100
-In-Reply-To: <CACxGe6vWtofRb3ysPueJ73e3O18vNegiLapcTg_JZ9eRmPL5BA@mail.gmail.com>
-References: <1369996170.5199.68.camel@zakaz.uk.xensource.com>
- <20130531114824.60D223E0901@localhost> <51A8CA15.4070504@wwwdotorg.org>
- <CACxGe6vWtofRb3ysPueJ73e3O18vNegiLapcTg_JZ9eRmPL5BA@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <B35336@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CFDC92C007B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jun 2013 20:43:32 +1000 (EST)
+Date: Mon, 3 Jun 2013 18:43:15 +0800
+From: Zhao Chenhui <chenhui.zhao@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/sysfs: disable hotplug for the boot cpu
+Message-ID: <20130603104315.GA1365@localhost.localdomain>
+References: <1369727984-21505-1-git-send-email-chenhui.zhao@freescale.com>
+ <1369727984-21505-2-git-send-email-chenhui.zhao@freescale.com>
+ <1370036984.3928.144.camel@pasglop>
 MIME-Version: 1.0
-Cc: Michal Marek <mmarek@suse.cz>, JonLoeliger <jdl@jdl.com>, Stephen
- Warren <swarren@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>,
- linux-kbuild@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
- Rob Herring <rob.herring@calxeda.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1370036984.3928.144.camel@pasglop>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,29 +27,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-05-31 at 17:31 +0100, Grant Likely wrote:
-> On Fri, May 31, 2013 at 5:04 PM, Stephen Warren <swarren@wwwdotorg.org> wrote:
-> > On 05/31/2013 05:48 AM, Grant Likely wrote:
-> >> ---
-> >> commit d01dccdcb3ea8233b09efb9c24db9f057fbd3b37
-> >> Author: Grant Likely <grant.likely@linaro.org>
-> >> Date:   Fri May 31 12:45:18 2013 +0100
-> >>
-> >>     dtc: Suppress cpp linemarker annotations
-> >>
-> >>     DTC isn't able to parse cpp linemarker annotations, so suppress them in
-> >>     the cpp output by adding the -P flag to the cpp options.
-> >
-> > That's not true; it explicitly does have code to parse the line markers.
-> > I'll have to investigate why it isn't working in this case.
-> >
-> > If you apply this patch, then anyone who has switched to #include rther
-> > than /include/ will get incorrect line numbers in dtc error messages.
-> > Admittedly that's a smaller population right now though. Perhaps we
-> > should just do a kernel-wide conversion though.
+On Sat, Jun 01, 2013 at 07:49:44AM +1000, Benjamin Herrenschmidt wrote:
+> On Tue, 2013-05-28 at 15:59 +0800, Zhao Chenhui wrote:
+> > Some features depend on the boot cpu, for instance, hibernate/suspend.
+> > So disable hotplug for the boot cpu.
 > 
-> My mistake. I tested the wrong thing. I've dropped the patch.
+> Don't we have code to "move" the boot CPU around when that happens ?
+> 
+> Ben.
+> 
 
-FWIW I've also dropped it from my device-tree.git tree.
+Currently, the code in generic_cpu_disable() likes this:
 
-Ian.
+        if (cpu == boot_cpuid)                                                 
+	                return -EBUSY;
+
+If the dying cpu is the boot cpu, it will return -EBUSY. In the subsequent error handling,
+cpu_notify_nofail(CPU_DOWN_FAILED) in _cpu_down() will be called. Unfortunately, some
+cpu notifier callbacks handled CPU_DOWN_PREPARE, but not CPU_DOWN_FAILED, such as sched_cpu_inactive().
+So it will cause issues.
+
+If we set the hotpluggable for the boot cpu, we can prevent user applications from disabling the boot cpu.
+
+-Chenhui
+
+> > Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+> > ---
+> >  arch/powerpc/kernel/sysfs.c |    4 +++-
+> >  1 files changed, 3 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+> > index e68a845..294b1c4e 100644
+> > --- a/arch/powerpc/kernel/sysfs.c
+> > +++ b/arch/powerpc/kernel/sysfs.c
+> > @@ -655,8 +655,10 @@ static int __init topology_init(void)
+> >  		 * CPU.  For instance, the boot cpu might never be valid
+> >  		 * for hotplugging.
+> >  		 */
+> > -		if (ppc_md.cpu_die)
+> > +		if (ppc_md.cpu_die && cpu != boot_cpuid)
+> >  			c->hotpluggable = 1;
+> > +		else
+> > +			c->hotpluggable = 0;
+> >  
+> >  		if (cpu_online(cpu) || c->hotpluggable) {
+> >  			register_cpu(c, cpu);
+> 
+> 
+> 
