@@ -1,30 +1,15 @@
-Return-Path: <hughd@google.com>
-Received: from mail-pa0-x234.google.com (mail-pa0-x234.google.com
- [IPv6:2607:f8b0:400e:c03::234])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C4C922C00AA
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jun 2013 04:19:20 +1000 (EST)
-Received: by mail-pa0-f52.google.com with SMTP id bg2so577758pad.25
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 02 Jun 2013 11:19:17 -0700 (PDT)
-Date: Sun, 2 Jun 2013 11:19:17 -0700 (PDT)
-From: Hugh Dickins <hughd@google.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: 3.10-rc ppc64 corrupts usermem when swapping
-In-Reply-To: <8738t1c6y7.fsf@linux.vnet.ibm.com>
-Message-ID: <alpine.LNX.2.00.1306021107290.16977@eggly.anvils>
-References: <alpine.LNX.2.00.1305292148550.9560@eggly.anvils>
- <1369897236.3928.93.camel@pasglop> <87vc60na89.fsf@linux.vnet.ibm.com>
- <1369902786.3928.94.camel@pasglop>
- <alpine.LNX.2.00.1305300643150.10009@eggly.anvils>
- <alpine.LNX.2.00.1305302201200.12852@eggly.anvils>
- <1369978262.3928.111.camel@pasglop> <87ppw7mrx7.fsf@linux.vnet.ibm.com>
- <1370038982.3928.147.camel@pasglop> <8738t1c6y7.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt <benh@au1.ibm.com>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@au1.ibm.com>,
- David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/pseries: Kill all prefetch streams on context
+ switch
+In-reply-to: <20130601151327.GA27644@concordia>
+References: <17925.1369892067@ale.ozlabs.ibm.com>
+ <20130601151327.GA27644@concordia>
+Date: Mon, 03 Jun 2013 10:42:19 +1000
+Message-ID: <15912.1370220139@ale.ozlabs.ibm.com>
+Cc: anton@samba.org, miltonm@realtime.net,
+ Linux PPC dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,52 +19,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2 Jun 2013, Aneesh Kumar K.V wrote:
-> Benjamin Herrenschmidt <benh@au1.ibm.com> writes:
-> > On Fri, 2013-05-31 at 14:45 +0530, Aneesh Kumar K.V wrote:
-> >
-> >> > The patch you are running on is what I'll send to Linus for 3.10 (+/-
-> >> > cosmetics). Aneesh second patch is a much larger rework which will be
-> >> > needed for THP but that will wait for 3.11. I'm happy for you to test it
-> >> > but I first want to make sure it's solid with the 3.10 fix :-)
-> >
-> > BTW. One concern I still have is that Hugh identified the bad commit
-> > to be:
-> >
-> > 7e74c3921ad9610c0b49f28b8fc69f7480505841
-> > "powerpc: Fix hpte_decode to use the correct decoding for page sizes".
-> >
-> > However, you introduce the return on HPTE not found earlier, in
-> >
-> > b1022fbd293564de91596b8775340cf41ad5214c
-> > "powerpc: Decode the pte-lp-encoding bits correctly."
-> >
-> > So while I'm still happy with the current band-aid for 3.10 and am
-> > about to send it to Linus, the above *does* seem to indicate that
-> > there is also something wrong with the "Fix hpte_decode..." commit,
-> > which might not actually get the page size right...
-> >
-> > Can you investigate ?
-> 
-> 7e74c3921ad9610c0b49f28b8fc69f7480505841 
-> "powerpc: Fix hpte_decode to use the correct decoding for page sizes"
-> changes should only impact hpte_decode. We don't change the details
-> of hpte_actual_psize at all in this patch. That means we should see a
-> difference only with kexec right ?.
-> 
-> Hugh,
-> 
-> Will you be able to double check whether
-> 7e74c3921ad9610c0b49f28b8fc69f7480505841 is the bad commit. The one
-> before that is what we changed in the patch that fixed your problem.
+Michael Ellerman <michael@ellerman.id.au> wrote:
 
-You are absolutely right.  I just set b1022fbd29 going, expecting
-to answer you tomorrow: but got a Segmentation fault in 20 minutes
-(quicker than ever seen before).  It looks as if I was running some
-other kernel for the last stage of my bisection: I can't see how that
-came about, but it's not very interesting now - you got it right.
+> On Thu, May 30, 2013 at 03:34:27PM +1000, Michael Neuling wrote:
+> > On context switch, we should have no prefetch streams leak from one
+> > userspace process to another.  This frees up prefetch resources for the
+> > next process.
+> > 
+> > Based on patch from Milton Miller.
+> > 
+> > Signed-off-by: Michael Neuling <mikey@neuling.org>
+> > 
+> > diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
+> > index cea8496..2f1b6c5 100644
+> > --- a/arch/powerpc/include/asm/ppc_asm.h
+> > +++ b/arch/powerpc/include/asm/ppc_asm.h
+> > @@ -523,6 +523,17 @@ END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,946)
+> >  #define PPC440EP_ERR42
+> >  #endif
+> >  
+> > +/* The following stops all load and store data streams associated with stream
+> > + * ID (ie. streams created explicitly).  The embedded and server mnemonics for
+> > + * dcbt are different so we use machine "power4" here explicitly.
+> > + */
+> > +#define DCBT_STOP_ALL_STREAM_IDS(scratch)	\
+> > +.machine push ;					\
+> > +.machine "power4" ;				\
+> > +       lis     scratch,0x60000000@h;		\
+> > +       dcbt    r0,scratch,0b01010;		\
+> > +.machine pop
+> 
+> I don't see why we need the macro, ie. just stick this code in
+> entry_64.S directly.
 
-Prior to trying that, I had been running your second patch, 9f70fd8cfe,
-and that tested out successfully for 50 hours before I stopped it.
+There's a decent chance we'll want to use this again at some point.  We
+also most stuck it in the error path of the power7 copy user loop but
+after consulting Anton and heavily reviewing the code, we decoded it
+shouldn't be needed.
 
-Hugh
+It's in Linus tree now anyway.
+
+Mikey
