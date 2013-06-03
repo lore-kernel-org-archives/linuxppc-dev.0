@@ -1,16 +1,24 @@
-Return-Path: <jdl@jdl.com>
-Message-Id: <E1UjUsY-0008Td-Bj@jdl.com>
-To: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [PATCH V2] dtc: ensure #line directives don't consume data from
- the next line
-In-reply-to: <1370025184-23808-1-git-send-email-swarren@wwwdotorg.org>
-References: <1370025184-23808-1-git-send-email-swarren@wwwdotorg.org>
-Date: Mon, 03 Jun 2013 08:32:54 -0500
-From: Jon Loeliger <jdl@jdl.com>
-Cc: mmarek@suse.cz, Stephen Warren <swarren@nvidia.com>,
- linux-kbuild@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, rob.herring@calxeda.com,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <jwboyer@gmail.com>
+Received: from mail-ie0-x229.google.com (mail-ie0-x229.google.com
+ [IPv6:2607:f8b0:4001:c03::229])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id EF3132C00A9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jun 2013 23:36:54 +1000 (EST)
+Received: by mail-ie0-f169.google.com with SMTP id 10so8547434ied.14
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Jun 2013 06:36:51 -0700 (PDT)
+Date: Mon, 3 Jun 2013 09:36:33 -0400
+From: Josh Boyer <jwboyer@gmail.com>
+To: Ian Campbell <ian.campbell@citrix.com>
+Subject: Re: [PATCH] powerpc/4xx: Fix warning in kilauea.dtb
+Message-ID: <20130603133633.GA18391@zod>
+References: <1370257224-23805-1-git-send-email-ian.campbell@citrix.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1370257224-23805-1-git-send-email-ian.campbell@citrix.com>
+Cc: Tirumala R Marri <tmarri@apm.com>, Rupjyoti Sarmah <rsarmah@apm.com>,
+ linux-kernel@vger.kernel.org, Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,31 +28,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> From: Stephen Warren <swarren@nvidia.com>
-> 
-> Previously, the #line parsing regex ended with ({WS}+[0-9]+)?. The {WS}
-> could match line-break characters. If the #line directive did not contain
-> the optional flags field at the end, this could cause any integer data on
-> the next line to be consumed as part of the #line directive parsing. This
-> could cause syntax errors (i.e. #line parsing consuming the leading 0
-> from a hex literal 0x1234, leaving x1234 to be parsed as cell data,
-> which is a syntax error), or invalid compilation results (i.e. simply
-> consuming literal 1234 as part of the #line processing, thus removing it
-> from the cell data).
-> 
-> Fix this by replacing {WS} with [ \t] so that it can't match line-breaks.
-> 
-> Convert all instances of {WS}, even though the other instances should be
-> irrelevant for any well-formed #line directive. This is done for
-> consistency and ultimate safety.
-> 
-> Reported-by: Ian Campbell <Ian.Campbell@citrix.com>
-> Signed-off-by: Stephen Warren <swarren@nvidia.com>
-> ---
-> v2: Convert all instances of {WS} in the regex.
+On Mon, Jun 03, 2013 at 12:00:24PM +0100, Ian Campbell wrote:
+>Currently I see:
+>  DTC     arch/powerpc/boot/kilauea.dtb
+>Warning (reg_format): "reg" property in /plb/ppc4xx-msi@C10000000 has invalid length (12 bytes) (#address-cells == 1, #size-cells == 1)
+>
+>It appears that unlike the other plarforms handled by 3fb7933850fa
+>"powerpc/4xx: Adding PCIe MSI support" this platform does not use address-cells=2.
 
-Applied.
+Right, it's a 405, not a 440.  I should have caught that in the initial
+review.
 
-Thanks!
+>Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+>Cc: Rupjyoti Sarmah <rsarmah@apm.com>
+>Cc: Tirumala R Marri <tmarri@apm.com>
+>Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
-jdl
+That address should bounce.  It hasn't been active in almost 2 years.
+
+>Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>Cc: Paul Mackerras <paulus@samba.org>
+>Cc: linuxppc-dev@lists.ozlabs.org
+>Cc: linux-kernel@vger.kernel.org
+
+Acked-by: Josh Boyer <jwboyer@gmail.com>
+
+>---
+> arch/powerpc/boot/dts/kilauea.dts |    2 +-
+> 1 file changed, 1 insertion(+), 1 deletion(-)
+>
+>diff --git a/arch/powerpc/boot/dts/kilauea.dts b/arch/powerpc/boot/dts/kilauea.dts
+>index 1613d6e..5ba7f01 100644
+>--- a/arch/powerpc/boot/dts/kilauea.dts
+>+++ b/arch/powerpc/boot/dts/kilauea.dts
+>@@ -406,7 +406,7 @@
+> 
+> 		MSI: ppc4xx-msi@C10000000 {
+> 			compatible = "amcc,ppc4xx-msi", "ppc4xx-msi";
+>-			reg = < 0x0 0xEF620000 0x100>;
+>+			reg = <0xEF620000 0x100>;
+> 			sdr-base = <0x4B0>;
+> 			msi-data = <0x00000000>;
+> 			msi-mask = <0x44440000>;
+>-- 
+>1.7.10.4
+>
+>_______________________________________________
+>Linuxppc-dev mailing list
+>Linuxppc-dev@lists.ozlabs.org
+>https://lists.ozlabs.org/listinfo/linuxppc-dev
