@@ -1,19 +1,17 @@
-Return-Path: <Ian.Campbell@citrix.com>
-Received: from SMTP.EU.CITRIX.COM (smtp.eu.citrix.com [46.33.159.39])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "Cisco Appliance Demo Certificate",
- Issuer "Cisco Appliance Demo Certificate" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AAF7E2C02F5
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jun 2013 21:01:00 +1000 (EST)
-From: Ian Campbell <ian.campbell@citrix.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc/boot: Ignore .dtb files.
-Date: Mon, 3 Jun 2013 12:00:56 +0100
-Message-ID: <1370257256-24045-1-git-send-email-ian.campbell@citrix.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- Ian Campbell <ian.campbell@citrix.com>
+Return-Path: <gsi@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 7A9DD2C00A4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jun 2013 21:18:43 +1000 (EST)
+From: Gerhard Sittig <gsi@denx.de>
+To: linuxppc-dev@lists.ozlabs.org,
+	linux-usb@vger.kernel.org
+Subject: [PATCH v1 1/1] mpc512x: silence a USB Kconfig dependency warning
+Date: Mon,  3 Jun 2013 13:18:06 +0200
+Message-Id: <1370258286-27905-1-git-send-email-gsi@denx.de>
+Cc: Gerhard Sittig <gsi@denx.de>, Anatolij Gustschin <agust@denx.de>,
+ Alan Stern <stern@rowland.harvard.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,26 +21,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org
----
- arch/powerpc/boot/.gitignore |    1 +
- 1 file changed, 1 insertion(+)
+the PPC_MPC512x config automatically selected USB_EHCI_BIG_ENDIAN_*
+switches, which made Kconfig warn about "unmet direct dependencies":
 
-diff --git a/arch/powerpc/boot/.gitignore b/arch/powerpc/boot/.gitignore
-index c32ae5c..8fa258e 100644
---- a/arch/powerpc/boot/.gitignore
-+++ b/arch/powerpc/boot/.gitignore
-@@ -16,6 +16,7 @@ mktree
- uImage
- cuImage.*
- dtbImage.*
-+*.dtb
- treeImage.*
- zImage
- zImage.initrd
+  scripts/kconfig/conf --silentoldconfig Kconfig
+  warning: (PPC_MPC512x && 440EPX) selects USB_EHCI_BIG_ENDIAN_DESC which has unmet direct dependencies (USB_SUPPORT && USB && USB_EHCI_HCD)
+  warning: (PPC_MPC512x && PPC_PS3 && PPC_CELLEB && 440EPX) selects USB_EHCI_BIG_ENDIAN_MMIO which has unmet direct dependencies (USB_SUPPORT && USB && USB_EHCI_HCD)
+  warning: (PPC_MPC512x && 440EPX) selects USB_EHCI_BIG_ENDIAN_DESC which has unmet direct dependencies (USB_SUPPORT && USB && USB_EHCI_HCD)
+  warning: (PPC_MPC512x && PPC_PS3 && PPC_CELLEB && 440EPX) selects USB_EHCI_BIG_ENDIAN_MMIO which has unmet direct dependencies (USB_SUPPORT && USB && USB_EHCI_HCD)
+
+make the selected entries additionally depend on USB_EHCI_HCD which
+silences the warning
+
+Signed-off-by: Gerhard Sittig <gsi@denx.de>
+---
+ arch/powerpc/platforms/512x/Kconfig |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/platforms/512x/Kconfig b/arch/powerpc/platforms/512x/Kconfig
+index aaf1edb..049fb7b 100644
+--- a/arch/powerpc/platforms/512x/Kconfig
++++ b/arch/powerpc/platforms/512x/Kconfig
+@@ -17,8 +17,8 @@ config PPC_MPC512x
+ 	select PPC_PCI_CHOICE
+ 	select FSL_PCI if PCI
+ 	select ARCH_WANT_OPTIONAL_GPIOLIB
+-	select USB_EHCI_BIG_ENDIAN_MMIO
+-	select USB_EHCI_BIG_ENDIAN_DESC
++	select USB_EHCI_BIG_ENDIAN_MMIO if USB_EHCI_HCD
++	select USB_EHCI_BIG_ENDIAN_DESC if USB_EHCI_HCD
+ 
+ config MPC5121_ADS
+ 	bool "Freescale MPC5121E ADS"
 -- 
 1.7.10.4
