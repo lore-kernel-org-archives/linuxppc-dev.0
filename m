@@ -1,15 +1,38 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/pseries: Kill all prefetch streams on context
- switch
-In-reply-to: <20130601151327.GA27644@concordia>
-References: <17925.1369892067@ale.ozlabs.ibm.com>
- <20130601151327.GA27644@concordia>
-Date: Mon, 03 Jun 2013 10:42:19 +1000
-Message-ID: <15912.1370220139@ale.ozlabs.ibm.com>
-Cc: anton@samba.org, miltonm@realtime.net,
- Linux PPC dev <linuxppc-dev@ozlabs.org>
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e7.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E217E2C009D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jun 2013 11:00:12 +1000 (EST)
+Received: from /spool/local
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Sun, 2 Jun 2013 21:00:09 -0400
+Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id DCAE9C9003E
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Jun 2013 21:00:05 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r531067v36110456
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 2 Jun 2013 21:00:06 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r53104XU021923
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 2 Jun 2013 21:00:06 -0400
+Date: Mon, 3 Jun 2013 09:00:02 +0800
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 02/23] powerpc/eeh: Function to tranverse PCI devices
+Message-ID: <20130603010002.GA7316@shangw.(null)>
+References: <1369902245-5886-1-git-send-email-shangw@linux.vnet.ibm.com>
+ <1369902245-5886-3-git-send-email-shangw@linux.vnet.ibm.com>
+ <1370059983.3766.1.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1370059983.3766.1.camel@pasglop>
+Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <shangw@linux.vnet.ibm.com>
+Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,44 +42,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <michael@ellerman.id.au> wrote:
+On Sat, Jun 01, 2013 at 02:13:03PM +1000, Benjamin Herrenschmidt wrote:
+>On Thu, 2013-05-30 at 16:23 +0800, Gavin Shan wrote:
+>> For EEH on PowerNV platform, the PCI devices will be probed to
+>> check if they support EEH functionality. Different from the case
+>> of EEH for pSeries platform, we will probe real PCI device instead
+>> of device tree node for EEH capability on PowerNV platform.
+>> 
+>> The patch introduces function eeh_pci_dev_traverse() to traverse
+>> PCI devices for the indicated PCI bus from top to bottom.
+>
+>This seems racy vs. hotplug etc... Any reason you can't use
+>pci_walk_bus() from drivers/pci/bus.c ?
+>
 
-> On Thu, May 30, 2013 at 03:34:27PM +1000, Michael Neuling wrote:
-> > On context switch, we should have no prefetch streams leak from one
-> > userspace process to another.  This frees up prefetch resources for the
-> > next process.
-> > 
-> > Based on patch from Milton Miller.
-> > 
-> > Signed-off-by: Michael Neuling <mikey@neuling.org>
-> > 
-> > diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-> > index cea8496..2f1b6c5 100644
-> > --- a/arch/powerpc/include/asm/ppc_asm.h
-> > +++ b/arch/powerpc/include/asm/ppc_asm.h
-> > @@ -523,6 +523,17 @@ END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,946)
-> >  #define PPC440EP_ERR42
-> >  #endif
-> >  
-> > +/* The following stops all load and store data streams associated with stream
-> > + * ID (ie. streams created explicitly).  The embedded and server mnemonics for
-> > + * dcbt are different so we use machine "power4" here explicitly.
-> > + */
-> > +#define DCBT_STOP_ALL_STREAM_IDS(scratch)	\
-> > +.machine push ;					\
-> > +.machine "power4" ;				\
-> > +       lis     scratch,0x60000000@h;		\
-> > +       dcbt    r0,scratch,0b01010;		\
-> > +.machine pop
-> 
-> I don't see why we need the macro, ie. just stick this code in
-> entry_64.S directly.
+Thanks, Ben. I'll use pci_walk_bus() in next version.
 
-There's a decent chance we'll want to use this again at some point.  We
-also most stuck it in the error path of the power7 copy user loop but
-after consulting Anton and heavily reviewing the code, we decoded it
-shouldn't be needed.
-
-It's in Linus tree now anyway.
-
-Mikey
+Thanks,
+Gavin
