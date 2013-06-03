@@ -1,23 +1,11 @@
-Return-Path: <B35336@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CFDC92C007B
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jun 2013 20:43:32 +1000 (EST)
-Date: Mon, 3 Jun 2013 18:43:15 +0800
-From: Zhao Chenhui <chenhui.zhao@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/sysfs: disable hotplug for the boot cpu
-Message-ID: <20130603104315.GA1365@localhost.localdomain>
-References: <1369727984-21505-1-git-send-email-chenhui.zhao@freescale.com>
- <1369727984-21505-2-git-send-email-chenhui.zhao@freescale.com>
- <1370036984.3928.144.camel@pasglop>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: benh@kernel.crashing.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1370036984.3928.144.camel@pasglop>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: powerpc/tm: Fix 32bit non-rt signal return
+Date: Mon, 03 Jun 2013 20:56:13 +1000
+Message-ID: <17963.1370256973@ale.ozlabs.ibm.com>
+Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>, matt@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,51 +15,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Jun 01, 2013 at 07:49:44AM +1000, Benjamin Herrenschmidt wrote:
-> On Tue, 2013-05-28 at 15:59 +0800, Zhao Chenhui wrote:
-> > Some features depend on the boot cpu, for instance, hibernate/suspend.
-> > So disable hotplug for the boot cpu.
-> 
-> Don't we have code to "move" the boot CPU around when that happens ?
-> 
-> Ben.
-> 
+Currently sys_sigreturn() is transactional memory unaware, hence if we take a
+32 bit signal without SIGINFO (non RT) inside a transaction, we don't restore
+the signal frame correctly on return.
 
-Currently, the code in generic_cpu_disable() likes this:
+This checks if the signal frame being restoring is an active transaction, and
+if so, it copies the additional state to the ptregs so it can be restored.
 
-        if (cpu == boot_cpuid)                                                 
-	                return -EBUSY;
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+cc: <stable@vger.kernel.org> # 3.9 only
 
-If the dying cpu is the boot cpu, it will return -EBUSY. In the subsequent error handling,
-cpu_notify_nofail(CPU_DOWN_FAILED) in _cpu_down() will be called. Unfortunately, some
-cpu notifier callbacks handled CPU_DOWN_PREPARE, but not CPU_DOWN_FAILED, such as sched_cpu_inactive().
-So it will cause issues.
-
-If we set the hotpluggable for the boot cpu, we can prevent user applications from disabling the boot cpu.
-
--Chenhui
-
-> > Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
-> > ---
-> >  arch/powerpc/kernel/sysfs.c |    4 +++-
-> >  1 files changed, 3 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
-> > index e68a845..294b1c4e 100644
-> > --- a/arch/powerpc/kernel/sysfs.c
-> > +++ b/arch/powerpc/kernel/sysfs.c
-> > @@ -655,8 +655,10 @@ static int __init topology_init(void)
-> >  		 * CPU.  For instance, the boot cpu might never be valid
-> >  		 * for hotplugging.
-> >  		 */
-> > -		if (ppc_md.cpu_die)
-> > +		if (ppc_md.cpu_die && cpu != boot_cpuid)
-> >  			c->hotpluggable = 1;
-> > +		else
-> > +			c->hotpluggable = 0;
-> >  
-> >  		if (cpu_online(cpu) || c->hotpluggable) {
-> >  			register_cpu(c, cpu);
-> 
-> 
-> 
+diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
+index 201385c..0bc961b 100644
+--- a/arch/powerpc/kernel/signal_32.c
++++ b/arch/powerpc/kernel/signal_32.c
+@@ -1481,16 +1481,22 @@ badframe:
+ long sys_sigreturn(int r3, int r4, int r5, int r6, int r7, int r8,
+ 		       struct pt_regs *regs)
+ {
++	struct sigframe __user *sf;
+ 	struct sigcontext __user *sc;
+ 	struct sigcontext sigctx;
+ 	struct mcontext __user *sr;
+ 	void __user *addr;
+ 	sigset_t set;
++#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
++	struct mcontext __user *mcp, *tm_mcp;
++	unsigned long msr_hi;
++#endif
+ 
+ 	/* Always make any pending restarted system calls return -EINTR */
+ 	current_thread_info()->restart_block.fn = do_no_restart_syscall;
+ 
+-	sc = (struct sigcontext __user *)(regs->gpr[1] + __SIGNAL_FRAMESIZE);
++	sf = (struct sigframe __user *)(regs->gpr[1] + __SIGNAL_FRAMESIZE);
++	sc = &sf->sctx;
+ 	addr = sc;
+ 	if (copy_from_user(&sigctx, sc, sizeof(sigctx)))
+ 		goto badframe;
+@@ -1507,12 +1513,23 @@ long sys_sigreturn(int r3, int r4, int r5, int r6, int r7, int r8,
+ #endif
+ 	set_current_blocked(&set);
+ 
+-	sr = (struct mcontext __user *)from_user_ptr(sigctx.regs);
+-	addr = sr;
+-	if (!access_ok(VERIFY_READ, sr, sizeof(*sr))
+-	    || restore_user_regs(regs, sr, 1))
++#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
++	mcp = (struct mcontext __user *)&sf->mctx;
++	tm_mcp = (struct mcontext __user *)&sf->mctx_transact;
++	if (__get_user(msr_hi, &mcp->mc_gregs[PT_MSR]))
+ 		goto badframe;
+-
++	if MSR_TM_ACTIVE(msr_hi<<32) {
++		if (restore_tm_user_regs(regs, mcp, tm_mcp))
++			goto badframe;
++	} else
++#endif
++	{
++		sr = (struct mcontext __user *)from_user_ptr(sigctx.regs);
++		addr = sr;
++		if (!access_ok(VERIFY_READ, sr, sizeof(*sr))
++		    || restore_user_regs(regs, sr, 1))
++			goto badframe;
++	}
+ 	set_thread_flag(TIF_RESTOREALL);
+ 	return 0;
+ 
