@@ -1,17 +1,16 @@
-Return-Path: <gsi@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 7A9DD2C00A4
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jun 2013 21:18:43 +1000 (EST)
-From: Gerhard Sittig <gsi@denx.de>
-To: linuxppc-dev@lists.ozlabs.org,
-	linux-usb@vger.kernel.org
-Subject: [PATCH v1 1/1] mpc512x: silence a USB Kconfig dependency warning
-Date: Mon,  3 Jun 2013 13:18:06 +0200
-Message-Id: <1370258286-27905-1-git-send-email-gsi@denx.de>
-Cc: Gerhard Sittig <gsi@denx.de>, Anatolij Gustschin <agust@denx.de>,
- Alan Stern <stern@rowland.harvard.edu>
+Return-Path: <jdl@jdl.com>
+Message-Id: <E1UjUsY-0008Td-Bj@jdl.com>
+To: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH V2] dtc: ensure #line directives don't consume data from
+ the next line
+In-reply-to: <1370025184-23808-1-git-send-email-swarren@wwwdotorg.org>
+References: <1370025184-23808-1-git-send-email-swarren@wwwdotorg.org>
+Date: Mon, 03 Jun 2013 08:32:54 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Cc: mmarek@suse.cz, Stephen Warren <swarren@nvidia.com>,
+ linux-kbuild@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, rob.herring@calxeda.com,
+ linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,37 +20,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-the PPC_MPC512x config automatically selected USB_EHCI_BIG_ENDIAN_*
-switches, which made Kconfig warn about "unmet direct dependencies":
+> From: Stephen Warren <swarren@nvidia.com>
+> 
+> Previously, the #line parsing regex ended with ({WS}+[0-9]+)?. The {WS}
+> could match line-break characters. If the #line directive did not contain
+> the optional flags field at the end, this could cause any integer data on
+> the next line to be consumed as part of the #line directive parsing. This
+> could cause syntax errors (i.e. #line parsing consuming the leading 0
+> from a hex literal 0x1234, leaving x1234 to be parsed as cell data,
+> which is a syntax error), or invalid compilation results (i.e. simply
+> consuming literal 1234 as part of the #line processing, thus removing it
+> from the cell data).
+> 
+> Fix this by replacing {WS} with [ \t] so that it can't match line-breaks.
+> 
+> Convert all instances of {WS}, even though the other instances should be
+> irrelevant for any well-formed #line directive. This is done for
+> consistency and ultimate safety.
+> 
+> Reported-by: Ian Campbell <Ian.Campbell@citrix.com>
+> Signed-off-by: Stephen Warren <swarren@nvidia.com>
+> ---
+> v2: Convert all instances of {WS} in the regex.
 
-  scripts/kconfig/conf --silentoldconfig Kconfig
-  warning: (PPC_MPC512x && 440EPX) selects USB_EHCI_BIG_ENDIAN_DESC which has unmet direct dependencies (USB_SUPPORT && USB && USB_EHCI_HCD)
-  warning: (PPC_MPC512x && PPC_PS3 && PPC_CELLEB && 440EPX) selects USB_EHCI_BIG_ENDIAN_MMIO which has unmet direct dependencies (USB_SUPPORT && USB && USB_EHCI_HCD)
-  warning: (PPC_MPC512x && 440EPX) selects USB_EHCI_BIG_ENDIAN_DESC which has unmet direct dependencies (USB_SUPPORT && USB && USB_EHCI_HCD)
-  warning: (PPC_MPC512x && PPC_PS3 && PPC_CELLEB && 440EPX) selects USB_EHCI_BIG_ENDIAN_MMIO which has unmet direct dependencies (USB_SUPPORT && USB && USB_EHCI_HCD)
+Applied.
 
-make the selected entries additionally depend on USB_EHCI_HCD which
-silences the warning
+Thanks!
 
-Signed-off-by: Gerhard Sittig <gsi@denx.de>
----
- arch/powerpc/platforms/512x/Kconfig |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/platforms/512x/Kconfig b/arch/powerpc/platforms/512x/Kconfig
-index aaf1edb..049fb7b 100644
---- a/arch/powerpc/platforms/512x/Kconfig
-+++ b/arch/powerpc/platforms/512x/Kconfig
-@@ -17,8 +17,8 @@ config PPC_MPC512x
- 	select PPC_PCI_CHOICE
- 	select FSL_PCI if PCI
- 	select ARCH_WANT_OPTIONAL_GPIOLIB
--	select USB_EHCI_BIG_ENDIAN_MMIO
--	select USB_EHCI_BIG_ENDIAN_DESC
-+	select USB_EHCI_BIG_ENDIAN_MMIO if USB_EHCI_HCD
-+	select USB_EHCI_BIG_ENDIAN_DESC if USB_EHCI_HCD
- 
- config MPC5121_ADS
- 	bool "Freescale MPC5121E ADS"
--- 
-1.7.10.4
+jdl
