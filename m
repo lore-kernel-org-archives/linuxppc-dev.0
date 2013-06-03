@@ -1,32 +1,23 @@
-Return-Path: <B07421@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0184.outbound.messaging.microsoft.com [213.199.154.184])
+Return-Path: <B02008@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 225B52C009D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2013 02:42:17 +1000 (EST)
-Date: Mon, 3 Jun 2013 11:42:03 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 1/3] powerpc/mpc85xx: remove the unneeded pci init
- functions for corenet ds board
-To: Kevin Hao <haokexin@gmail.com>
-References: <1369137900-5748-1-git-send-email-haokexin@gmail.com>
- <1369137900-5748-2-git-send-email-haokexin@gmail.com>
- <1369781529.18630.25@snotra>
- <20130530102034.GB18702@pek-khao-d1.corp.ad.wrs.com>
- <1369940099.14679.14@snotra>
- <20130531064102.GB16514@pek-khao-d1.corp.ad.wrs.com>
- <1369995080.3928.140.camel@pasglop>
- <20130601105936.GA1850@pek-khao-d1.corp.ad.wrs.com>
- <1370087236.3766.43.camel@pasglop>
- <20130602000720.GA22546@pek-khao-d1.corp.ad.wrs.com>
-In-Reply-To: <20130602000720.GA22546@pek-khao-d1.corp.ad.wrs.com> (from
- haokexin@gmail.com on Sat Jun  1 19:07:20 2013)
-Message-ID: <1370277723.21388.1@snotra>
+ by ozlabs.org (Postfix) with ESMTPS id 9861B2C009D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2013 06:54:40 +1000 (EST)
+From: Mihai Caraman <mihai.caraman@freescale.com>
+To: <kvm-ppc@vger.kernel.org>
+Subject: [RFC PATCH 1/6] KVM: PPC: Book3E: Fix AltiVec interrupt numbers and
+ build breakage
+Date: Mon, 3 Jun 2013 23:54:23 +0300
+Message-ID: <1370292868-2697-2-git-send-email-mihai.caraman@freescale.com>
+In-Reply-To: <1370292868-2697-1-git-send-email-mihai.caraman@freescale.com>
+References: <1370292868-2697-1-git-send-email-mihai.caraman@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,44 +27,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/01/2013 07:07:20 PM, Kevin Hao wrote:
-> On Sat, Jun 01, 2013 at 09:47:16PM +1000, Benjamin Herrenschmidt =20
-> wrote:
-> > On Sat, 2013-06-01 at 18:59 +0800, Kevin Hao wrote:
-> >
-> > > The effect of this change is that the isa_io_base will be 0 and =20
-> the IO
-> > > resource are equal to the virtual address of the IO space. But =20
-> the IO
-> > > functions such as outx/inx should work as well. This is why I ask =20
-> the
-> > > above question. What do you think about this? Are there any =20
-> subtle bugs
-> > > that will be triggered by this?
-> >
-> > I don't see any obvious reason why that wouldn't work but like =20
-> anything
-> > in that area, it needs a bit of testing & hammering to be sure ;-)
->=20
-> Agreed.
+Interrupt numbers defined for Book3E follows IVORs definition. Align
+BOOKE_INTERRUPT_ALTIVEC_UNAVAIL and BOOKE_INTERRUPT_ALTIVEC_ASSIST to this
+rule which also fixes the build breakage.
+IVORs 32 and 33 are shared so reflect this in the interrupts naming.
 
-Please include QEMU in your testing, as that was where breakage was =20
-observed that caused us to add the default primary.
+Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+---
+ arch/powerpc/include/asm/kvm_asm.h |   16 ++++++++++------
+ 1 files changed, 10 insertions(+), 6 deletions(-)
 
-> > In fact it would work on pmac32 as well since those generally don't =20
-> have
-> > legacy crap either.
-> >
-> > So I have no fundamental objection, it just needs testing. My worry =20
-> is
-> > that we need to make sure we don't break old chrp and I don't have =20
-> any
-> > to test with.
->=20
-> Don't worry, my patch just drop the picking of primary bus for several
-> fsl boards. All these changes are in board specific file, so it should
-> have no affect to other boards at all.
-
-Is anything actually fixed by this?
-
--Scott=
+diff --git a/arch/powerpc/include/asm/kvm_asm.h b/arch/powerpc/include/asm/kvm_asm.h
+index b9dd382..851bac7 100644
+--- a/arch/powerpc/include/asm/kvm_asm.h
++++ b/arch/powerpc/include/asm/kvm_asm.h
+@@ -54,8 +54,16 @@
+ #define BOOKE_INTERRUPT_DEBUG 15
+ 
+ /* E500 */
+-#define BOOKE_INTERRUPT_SPE_UNAVAIL 32
+-#define BOOKE_INTERRUPT_SPE_FP_DATA 33
++#define BOOKE_INTERRUPT_SPE_ALTIVEC_UNAVAIL 32
++#define BOOKE_INTERRUPT_SPE_FP_DATA_ALTIVEC_ASSIST 33
++/*
++ * TODO: Unify 32-bit and 64-bit kernel exception handlers to use same defines
++ */
++#define BOOKE_INTERRUPT_SPE_UNAVAIL BOOKE_INTERRUPT_SPE_ALTIVEC_UNAVAIL
++#define BOOKE_INTERRUPT_SPE_FP_DATA BOOKE_INTERRUPT_SPE_FP_DATA_ALTIVEC_ASSIST
++#define BOOKE_INTERRUPT_ALTIVEC_UNAVAIL BOOKE_INTERRUPT_SPE_ALTIVEC_UNAVAIL
++#define BOOKE_INTERRUPT_ALTIVEC_ASSIST \
++				BOOKE_INTERRUPT_SPE_FP_DATA_ALTIVEC_ASSIST
+ #define BOOKE_INTERRUPT_SPE_FP_ROUND 34
+ #define BOOKE_INTERRUPT_PERFORMANCE_MONITOR 35
+ #define BOOKE_INTERRUPT_DOORBELL 36
+@@ -67,10 +75,6 @@
+ #define BOOKE_INTERRUPT_HV_SYSCALL 40
+ #define BOOKE_INTERRUPT_HV_PRIV 41
+ 
+-/* altivec */
+-#define BOOKE_INTERRUPT_ALTIVEC_UNAVAIL 42
+-#define BOOKE_INTERRUPT_ALTIVEC_ASSIST 43
+-
+ /* book3s */
+ 
+ #define BOOK3S_INTERRUPT_SYSTEM_RESET	0x100
+-- 
+1.7.4.1
