@@ -1,24 +1,37 @@
-Return-Path: <linux@roeck-us.net>
-Received: from mail.active-venture.com (mail.active-venture.com
- [67.228.131.205]) by ozlabs.org (Postfix) with ESMTP id 3E96C2C00A8
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jun 2013 14:11:11 +1000 (EST)
-Date: Sun, 2 Jun 2013 21:11:42 -0700
-From: Guenter Roeck <linux@roeck-us.net>
-To: Chen Yuanquan-B41889 <B41889@freescale.com>
-Subject: Re: [PATCH] powerpc/pci: Improve device hotplug initialization
-Message-ID: <20130603041142.GA11874@roeck-us.net>
-References: <1369762514-27352-1-git-send-email-linux@roeck-us.net>
- <51A5CAC1.6030800@freescale.com>
- <20130531051423.GA15505@roeck-us.net>
- <1369979047.3928.112.camel@pasglop>
- <20130601135809.GA6395@roeck-us.net>
- <51ABFF5F.4020409@freescale.com>
+Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CE38C2C00AB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jun 2013 16:49:50 +1000 (EST)
+Received: from /spool/local
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+ Mon, 3 Jun 2013 12:12:01 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 7BE0BE0053
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jun 2013 12:22:26 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r536nZu03277266
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Jun 2013 12:19:36 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r536ndm8017312
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Jun 2013 16:49:39 +1000
+Message-ID: <51AC3BCB.5000002@linux.vnet.ibm.com>
+Date: Mon, 03 Jun 2013 12:16:35 +0530
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <51ABFF5F.4020409@freescale.com>
-Cc: Yuanquan Chen <Yuanquan.Chen@freescale.com>,
- Hiroo Matsumoto <matsumoto.hiroo@jp.fujitsu.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+To: gregkh@linuxfoundation.org
+Subject: Re: FAILED: patch "[PATCH] powerpc/pseries: Always enable
+ CONFIG_HOTPLUG_CPU on PSERIES" failed to apply to 3.9-stable tree
+References: <13701231324019@kroah.org>
+In-Reply-To: <13701231324019@kroah.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+ adam@os.inf.tu-dresden.de, stable@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,56 +41,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 03, 2013 at 10:28:47AM +0800, Chen Yuanquan-B41889 wrote:
-> On 06/01/2013 09:58 PM, Guenter Roeck wrote:
-> >On Fri, May 31, 2013 at 03:44:07PM +1000, Benjamin Herrenschmidt wrote:
-> >>On Thu, 2013-05-30 at 22:14 -0700, Guenter Roeck wrote:
-> >>>On Wed, May 29, 2013 at 05:30:41PM +0800, Chen Yuanquan-B41889 wrote:
-> >>>>On 05/29/2013 01:35 AM, Guenter Roeck wrote:
-> >>>>>bios_add_device(). Drop explicit calls to pcibios_setup_device();
-> >>>>>this makes pcibios_setup_bus_devices() a noop function which could
-> >>>>>eve
-> >>>>Yeah, it's more reasonable to do the irq and DMA related initialization
-> >>>>in one code path for all devices.
-> >>>>
-> >>>Any comments / feedback on the code itself ?
-> >>Sorry, I haven't had a chance to review it yet, I'm fairly bogged down
-> >>at the moment. I want to tread carefully because the previous iteration
-> >>of changing that stuff did break a few platforms in the end.
-> >>
-> >Hi Ben,
-> >
-> >the comment was actuially directed towards Yuanquan.
-> >
-> >No problem, take your time. I did my best to test it, but I agree that this is a
-> >critical area of the code, and it would be desirable to get additional scrutiny
-> >and test feedback.
-> >
-> >The code has been running in our system (P2020 and P5040) for several months.
-> >I was preparing a patch for upstream submission when I noticed commit 37f02195b.
-> >After testing ithis commit, I noticed the problems with it and wrote this patch,
-> >which aligns the code with our initial patch. I tested it as good as I could on
-> >our systems as well as with a P5040 evaluation board and an Intel GE PCIe
-> >card.
-> >
-> >Thanks,
-> >Guenter
-> >
+On 06/02/2013 03:15 AM, gregkh@linuxfoundation.org wrote:
 > 
-> Hi Guenter,
+> The patch below does not apply to the 3.9-stable tree.
+> If someone wants it applied there, or to any other stable or longterm
+> tree, then please email the backport, including the original git commit
+> id to <stable@vger.kernel.org>.
 > 
-> Your patch makes sure the initialization of DMA and irq in one code
-> path and also
-> avoids the initialization called two times(in pci bus scanning and
-> pci_enable_device()
-> in device driver) for no-hot-plugged pci device. It's much more reasonable!
-> 
-> I don't know why you also remove the function "set_dev_node()" ? As
-> I know, the
-> function just be called here. I think it should remain in your new function
-> pcibios_add_device().
-> 
-pcibios_add_device() is (only) called from pci_device_add(),
-which already calls set_dev_node().
 
-Guenter
+Please find the 3.9 backport below. Thank you!
+
+Regards,
+Srivatsa S. Bhat
+
+
+--------------------------------------------------------------------------
+
+From: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/pseries: Always enable CONFIG_HOTPLUG_CPU on PSERIES SMP
+
+commit f274ef8747d3be649bba8708696fb31cb00fa75a upstream.
+
+Adam Lackorzynski reported the following build failure on
+!CONFIG_HOTPLUG_CPU configuration:
+
+  CC      arch/powerpc/kernel/rtas.o
+arch/powerpc/kernel/rtas.c: In function ‘rtas_cpu_state_change_mask’:
+arch/powerpc/kernel/rtas.c:843:4: error: implicit declaration of function ‘cpu_down’ [-Werror=implicit-function-declaration]
+cc1: all warnings being treated as errors
+make[1]: *** [arch/powerpc/kernel/rtas.o] Error 1
+make: *** [arch/powerpc/kernel] Error 2
+
+The build fails because cpu_down() is defined only under CONFIG_HOTPLUG_CPU.
+
+Looking further, the mobility code in pseries is one of the call-sites which
+uses rtas_ibm_suspend_me(), which in turn calls rtas_cpu_state_change_mask().
+And the mobility code is unconditionally compiled-in (it does not fall under
+any Kconfig option). And commit 120496ac (powerpc: Bring all threads online
+prior to migration/hibernation) which introduced this build regression is
+critical for the proper functioning of the migration code. So it appears
+that the only solution to this problem is to enable CONFIG_HOTPLUG_CPU if
+SMP is enabled on PPC_PSERIES platforms. So make that change in the Kconfig.
+
+Reported-by: Adam Lackorzynski <adam@os.inf.tu-dresden.de>
+Cc: stable@vger.kernel.org
+Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+
+ arch/powerpc/platforms/pseries/Kconfig |    2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
+index 9a0941b..b9fd0d3 100644
+--- a/arch/powerpc/platforms/pseries/Kconfig
++++ b/arch/powerpc/platforms/pseries/Kconfig
+@@ -18,6 +18,8 @@ config PPC_PSERIES
+ 	select PPC_PCI_CHOICE if EXPERT
+ 	select ZLIB_DEFLATE
+ 	select PPC_DOORBELL
++	select HOTPLUG if SMP
++	select HOTPLUG_CPU if SMP
+ 	default y
+ 
+ config PPC_SPLPAR
