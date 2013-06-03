@@ -1,17 +1,16 @@
 Return-Path: <B02008@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9861B2C009D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2013 06:54:40 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id B3B032C02F1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2013 06:54:46 +1000 (EST)
 From: Mihai Caraman <mihai.caraman@freescale.com>
 To: <kvm-ppc@vger.kernel.org>
-Subject: [RFC PATCH 1/6] KVM: PPC: Book3E: Fix AltiVec interrupt numbers and
- build breakage
-Date: Mon, 3 Jun 2013 23:54:23 +0300
-Message-ID: <1370292868-2697-2-git-send-email-mihai.caraman@freescale.com>
+Subject: [RFC PATCH 5/6] KVM: PPC: Book3E: Add ONE_REG AltiVec support
+Date: Mon, 3 Jun 2013 23:54:27 +0300
+Message-ID: <1370292868-2697-6-git-send-email-mihai.caraman@freescale.com>
 In-Reply-To: <1370292868-2697-1-git-send-email-mihai.caraman@freescale.com>
 References: <1370292868-2697-1-git-send-email-mihai.caraman@freescale.com>
 MIME-Version: 1.0
@@ -27,49 +26,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Interrupt numbers defined for Book3E follows IVORs definition. Align
-BOOKE_INTERRUPT_ALTIVEC_UNAVAIL and BOOKE_INTERRUPT_ALTIVEC_ASSIST to this
-rule which also fixes the build breakage.
-IVORs 32 and 33 are shared so reflect this in the interrupts naming.
+Add ONE_REG support for AltiVec on Book3E.
 
 Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
 ---
- arch/powerpc/include/asm/kvm_asm.h |   16 ++++++++++------
- 1 files changed, 10 insertions(+), 6 deletions(-)
+ arch/powerpc/kvm/booke.c |   32 ++++++++++++++++++++++++++++++++
+ 1 files changed, 32 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_asm.h b/arch/powerpc/include/asm/kvm_asm.h
-index b9dd382..851bac7 100644
---- a/arch/powerpc/include/asm/kvm_asm.h
-+++ b/arch/powerpc/include/asm/kvm_asm.h
-@@ -54,8 +54,16 @@
- #define BOOKE_INTERRUPT_DEBUG 15
- 
- /* E500 */
--#define BOOKE_INTERRUPT_SPE_UNAVAIL 32
--#define BOOKE_INTERRUPT_SPE_FP_DATA 33
-+#define BOOKE_INTERRUPT_SPE_ALTIVEC_UNAVAIL 32
-+#define BOOKE_INTERRUPT_SPE_FP_DATA_ALTIVEC_ASSIST 33
-+/*
-+ * TODO: Unify 32-bit and 64-bit kernel exception handlers to use same defines
-+ */
-+#define BOOKE_INTERRUPT_SPE_UNAVAIL BOOKE_INTERRUPT_SPE_ALTIVEC_UNAVAIL
-+#define BOOKE_INTERRUPT_SPE_FP_DATA BOOKE_INTERRUPT_SPE_FP_DATA_ALTIVEC_ASSIST
-+#define BOOKE_INTERRUPT_ALTIVEC_UNAVAIL BOOKE_INTERRUPT_SPE_ALTIVEC_UNAVAIL
-+#define BOOKE_INTERRUPT_ALTIVEC_ASSIST \
-+				BOOKE_INTERRUPT_SPE_FP_DATA_ALTIVEC_ASSIST
- #define BOOKE_INTERRUPT_SPE_FP_ROUND 34
- #define BOOKE_INTERRUPT_PERFORMANCE_MONITOR 35
- #define BOOKE_INTERRUPT_DOORBELL 36
-@@ -67,10 +75,6 @@
- #define BOOKE_INTERRUPT_HV_SYSCALL 40
- #define BOOKE_INTERRUPT_HV_PRIV 41
- 
--/* altivec */
--#define BOOKE_INTERRUPT_ALTIVEC_UNAVAIL 42
--#define BOOKE_INTERRUPT_ALTIVEC_ASSIST 43
--
- /* book3s */
- 
- #define BOOK3S_INTERRUPT_SYSTEM_RESET	0x100
+diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+index 01eb635..019496d 100644
+--- a/arch/powerpc/kvm/booke.c
++++ b/arch/powerpc/kvm/booke.c
+@@ -1570,6 +1570,22 @@ int kvm_vcpu_ioctl_get_one_reg(struct kvm_vcpu *vcpu, struct kvm_one_reg *reg)
+ 	case KVM_REG_PPC_DEBUG_INST:
+ 		val = get_reg_val(reg->id, KVMPPC_INST_EHPRIV);
+ 		break;
++#ifdef CONFIG_ALTIVEC
++	case KVM_REG_PPC_VR0 ... KVM_REG_PPC_VR31:
++		if (!cpu_has_feature(CPU_FTR_ALTIVEC)) {
++			r = -ENXIO;
++			break;
++		}
++		val.vval = vcpu->arch.vr[reg->id - KVM_REG_PPC_VR0];
++		break;
++	case KVM_REG_PPC_VSCR:
++		if (!cpu_has_feature(CPU_FTR_ALTIVEC)) {
++			r = -ENXIO;
++			break;
++		}
++		val = get_reg_val(reg->id, vcpu->arch.vscr.u[3]);
++		break;
++#endif /* CONFIG_ALTIVEC */
+ 	default:
+ 		r = kvmppc_get_one_reg(vcpu, reg->id, &val);
+ 		break;
+@@ -1643,6 +1659,22 @@ int kvm_vcpu_ioctl_set_one_reg(struct kvm_vcpu *vcpu, struct kvm_one_reg *reg)
+ 		kvmppc_set_tcr(vcpu, tcr);
+ 		break;
+ 	}
++#ifdef CONFIG_ALTIVEC
++	case KVM_REG_PPC_VR0 ... KVM_REG_PPC_VR31:
++		if (!cpu_has_feature(CPU_FTR_ALTIVEC)) {
++			r = -ENXIO;
++			break;
++		}
++		vcpu->arch.vr[reg->id - KVM_REG_PPC_VR0] = val.vval;
++		break;
++	case KVM_REG_PPC_VSCR:
++		if (!cpu_has_feature(CPU_FTR_ALTIVEC)) {
++			r = -ENXIO;
++			break;
++		}
++		vcpu->arch.vscr.u[3] = set_reg_val(reg->id, val);
++		break;
++#endif /* CONFIG_ALTIVEC */
+ 	default:
+ 		r = kvmppc_set_one_reg(vcpu, reg->id, &val);
+ 		break;
 -- 
 1.7.4.1
