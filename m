@@ -1,44 +1,12 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e37.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D770C2C00AD
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2013 13:52:35 +1000 (EST)
-Received: from /spool/local
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Mon, 3 Jun 2013 21:52:32 -0600
-Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
- [9.17.195.226])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 9D3AA3E4004E
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jun 2013 21:52:13 -0600 (MDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r543qRT8091564
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Jun 2013 21:52:27 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r543qUDw029456
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Jun 2013 21:52:30 -0600
-Date: Tue, 4 Jun 2013 11:52:23 +0800
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: Robert Knight <knight@princeton.edu>,
- Brian King <brking@linux.vnet.ibm.com>,
- Wendy Xiong <wenxiong@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Gavin Shan <shangw@linux.vnet.ibm.com>
-Subject: Re: IBM OpenPower 720 ipr driver woes
-Message-ID: <20130604035223.GA27964@shangw.(null)>
-References: <51A61B82.5050508@princeton.edu>
- <51A644C2.5090300@linux.vnet.ibm.com>
- <51AD088C.8040803@princeton.edu>
- <20130604000130.GA25055@thor.bakeyournoodle.com>
- <51AD45A4.9080702@princeton.edu>
- <20130604031651.GA3373@thor.bakeyournoodle.com>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="1yeeQ81UyVL57Vl7"
-In-Reply-To: <20130604031651.GA3373@thor.bakeyournoodle.com>
-Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Return-Path: <michael@ozlabs.org>
+From: Michael Ellerman <michael@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc/perf: Fix deadlock caused by calling printk() in PMU
+ exception
+Date: Tue,  4 Jun 2013 14:20:57 +1000
+Message-Id: <1370319657-26753-1-git-send-email-michael@ellerman.id.au>
+Cc: Michael Neuling <mikey@neuling.org>, sukadev@linux.vnet.ibm.com,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,113 +16,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---1yeeQ81UyVL57Vl7
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+In commit bc09c21 "Fix finding overflowed PMC in interrupt" we added
+a printk() to the PMU exception handler. Unfortunately that is not safe.
 
-On Tue, Jun 04, 2013 at 01:16:52PM +1000, Tony Breeds wrote:
->On Mon, Jun 03, 2013 at 09:40:52PM -0400, Robert Knight wrote:
->> On 6/3/2013 8:01 PM, Tony Breeds wrote:
->> >On Mon, Jun 03, 2013 at 05:20:12PM -0400, Robert Knight wrote:
->> >
->> >>>Device tree struct  0x0000000004820000 -> 0x0000000004840000
->> >>>Calling quiesce...
->> >>>returning from prom_init
->> >>>[    1.376359] ehci-pci 0000:c8:01.2: can't setup
->> >Can you try adding "debug" to the kernel commandline.  We're missing a
->> >great chunk of detail. If you're starting from scratch either try F18 or
->> >the F19 Beta (if you're brave :))
->> >
->> >Yours Tony
->> So, two points.  Since I have no live disks, I can't copy the dmesg
->> output in dracut onto a disk and just sent it to you -- the only way
->> that I know to get it is cut and paste from a HMC console window
->> into a vi buffer.
->
->Okay, when I've been in that situation, I run "script" locally and then
->conenct to the HMC console.
->
->When you're done you can exit script adn then a file called typescript
->will exist in the directory you ran script in.
->
->It's a less overhead way of doign what you're already doing.
-> [    0.087097] NET: Registered protocol family 16
->
->> [    0.087144] pseries_eeh_init: RTAS service <ibm,get-config-addr-info2> and <i
->> bm,get-config-addr-info> invalid
->> [    0.087155] eeh_init: Failed to call platform init function (-22)
->
->Hmm this seems pretty strange to me.  Gavin are these RTAS tokens
->supported on older power5 boxes?
->
+The problem is that the PMU exception runs even when interrupts are soft
+disabled. We do this so that we can profile parts of the kernel that
+have interrupts soft-disabled.
 
-Yes, Tony. "ibm,get-config-addr-info" should be supported on Power5 box.
-Newer PowerBox (e.g. P7) should support "ibm,get-config-addr-info2"
+But by calling printk() from the exception handler, we can potentially
+deadlock in the printk code on logbuf_lock, eg:
 
-Please have a try on the attached patch, which is based on mainline (3.10).
+  [c00000038ba575c0] c000000000081928 .vprintk_emit+0xa8/0x540
+  [c00000038ba576a0] c0000000007bcde8 .printk+0x48/0x58
+  [c00000038ba57710] c000000000076504 .perf_event_interrupt+0x2d4/0x490
+  [c00000038ba57810] c00000000001f6f8 .performance_monitor_exception+0x48/0x60
+  [c00000038ba57880] c0000000000032cc performance_monitor_common+0x14c/0x180
+  --- Exception: f01 (Performance Monitor) at c0000000007b25d4 ._raw_spin_lock_irq
+  +0x64/0xc0
+  [c00000038ba57bf0] c00000000007ed90 .devkmsg_read+0xd0/0x5a0
+  [c00000038ba57d00] c0000000001c2934 .vfs_read+0xc4/0x1e0
+  [c00000038ba57d90] c0000000001c2cd8 .SyS_read+0x58/0xd0
+  [c00000038ba57e30] c000000000009d54 syscall_exit+0x0/0x98
+  --- Exception: c01 (System Call) at 00001fffffbf6f7c
+  SP (3ffff6d4de10) is in userspace
 
-Thanks,
-Gavin
+The fix is to not call printk() from the PMU exception handler. Instead
+add a counter to track spurious PMU interrupts and display them in
+/proc/interrupts.
 
-
-
---1yeeQ81UyVL57Vl7
-Content-Type: text/x-diff; charset=us-ascii
-Content-Disposition: attachment; filename="0001-powerpc-eeh-Don-t-check-RTAS-token-to-get-PE-addr.patch"
-
->From 04771628d53e1e6883063ed21bd6825ee9680366 Mon Sep 17 00:00:00 2001
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-Date: Tue, 4 Jun 2013 11:47:59 +0800
-Subject: [PATCH] powerpc/eeh: Don't check RTAS token to get PE addr
-
-RTAS token "ibm,get-config-addr-info" or ibm,get-config-addr-info2"
-are used to retrieve the PE address according to PCI address, which
-made up of domain/bus/slot/function. If we don't have those 2 tokens,
-the domain/bus/slot/function would be used as the address for EEH
-RTAS operations. Some older f/w might not have those 2 tokens and
-that blocks the EEH functionality to be initialized.
-
-The patch skips the check on those 2 tokens so we can bring up EEH
-functionality successfully. And domain/bus/slot/function will be
-used as address for EEH RTAS operations.
-
-Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+Cc: <stable@vger.kernel.org> # 3.9
 ---
- arch/powerpc/platforms/pseries/eeh_pseries.c |   12 +++++-------
- 1 files changed, 5 insertions(+), 7 deletions(-)
+ arch/powerpc/include/asm/hardirq.h |    1 +
+ arch/powerpc/kernel/irq.c          |    5 +++++
+ arch/powerpc/perf/core-book3s.c    |    5 +++--
+ 3 files changed, 9 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
-index 19506f9..b456b15 100644
---- a/arch/powerpc/platforms/pseries/eeh_pseries.c
-+++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
-@@ -83,7 +83,11 @@ static int pseries_eeh_init(void)
- 	ibm_configure_pe		= rtas_token("ibm,configure-pe");
- 	ibm_configure_bridge		= rtas_token("ibm,configure-bridge");
+tag: for-3.10
+
+diff --git a/arch/powerpc/include/asm/hardirq.h b/arch/powerpc/include/asm/hardirq.h
+index 3bdcfce..23b5c45 100644
+--- a/arch/powerpc/include/asm/hardirq.h
++++ b/arch/powerpc/include/asm/hardirq.h
+@@ -8,6 +8,7 @@ typedef struct {
+ 	unsigned int __softirq_pending;
+ 	unsigned int timer_irqs;
+ 	unsigned int pmu_irqs;
++	unsigned int pmu_spurious_irqs;
+ 	unsigned int mce_exceptions;
+ 	unsigned int spurious_irqs;
+ #ifdef CONFIG_PPC_DOORBELL
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 5cbcf4d..91f5d03 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -369,6 +369,11 @@ int arch_show_interrupts(struct seq_file *p, int prec)
+ 		seq_printf(p, "%10u ", per_cpu(irq_stat, j).pmu_irqs);
+ 	seq_printf(p, "  Performance monitoring interrupts\n");
  
--	/* necessary sanity check */
-+	/*
-+	 * Necessary sanity check. We needn't check "get-config-addr-info"
-+	 * and its variant since the old firmware probably support address
-+	 * of domain/bus/slot/function for EEH RTAS operations.
-+	 */
- 	if (ibm_set_eeh_option == RTAS_UNKNOWN_SERVICE) {
- 		pr_warning("%s: RTAS service <ibm,set-eeh-option> invalid\n",
- 			__func__);
-@@ -102,12 +106,6 @@ static int pseries_eeh_init(void)
- 		pr_warning("%s: RTAS service <ibm,slot-error-detail> invalid\n",
- 			__func__);
- 		return -EINVAL;
--	} else if (ibm_get_config_addr_info2 == RTAS_UNKNOWN_SERVICE &&
--		   ibm_get_config_addr_info == RTAS_UNKNOWN_SERVICE) {
--		pr_warning("%s: RTAS service <ibm,get-config-addr-info2> and "
--			"<ibm,get-config-addr-info> invalid\n",
--			__func__);
--		return -EINVAL;
- 	} else if (ibm_configure_pe == RTAS_UNKNOWN_SERVICE &&
- 		   ibm_configure_bridge == RTAS_UNKNOWN_SERVICE) {
- 		pr_warning("%s: RTAS service <ibm,configure-pe> and "
++	seq_printf(p, "%*s: ", prec, "PMS");
++	for_each_online_cpu(j)
++		seq_printf(p, "%10u ", per_cpu(irq_stat, j).pmu_irqs);
++	seq_printf(p, "  Performance monitoring interrupts (spurious)\n");
++
+ 	seq_printf(p, "%*s: ", prec, "MCE");
+ 	for_each_online_cpu(j)
+ 		seq_printf(p, "%10u ", per_cpu(irq_stat, j).mce_exceptions);
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index 845c867..3a71069 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -1758,8 +1758,9 @@ static void perf_event_interrupt(struct pt_regs *regs)
+ 			}
+ 		}
+ 	}
+-	if ((!found) && printk_ratelimit())
+-		printk(KERN_WARNING "Can't find PMC that caused IRQ\n");
++
++	if (!found)
++		__get_cpu_var(irq_stat).pmu_spurious_irqs++;
+ 
+ 	/*
+ 	 * Reset MMCR0 to its normal value.  This will set PMXE and
 -- 
-1.7.5.4
-
-
---1yeeQ81UyVL57Vl7--
+1.7.10.4
