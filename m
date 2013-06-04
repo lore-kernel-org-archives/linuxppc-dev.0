@@ -1,23 +1,24 @@
 Return-Path: <B07421@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe005.messaging.microsoft.com [213.199.154.208])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4D20A2C00A1
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 08:00:04 +1000 (EST)
-Date: Tue, 4 Jun 2013 16:59:46 -0500
+ by ozlabs.org (Postfix) with ESMTPS id 7E4AA2C0087
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 08:14:59 +1000 (EST)
+Date: Tue, 4 Jun 2013 17:14:48 -0500
 From: Scott Wood <scottwood@freescale.com>
-To: LEROY Christophe <christophe.leroy@c-s.fr>
-Subject: Re: Handling of IRQ in MPC8xx GPIO
-Message-ID: <20130604215946.GA21467@home.buserror.net>
-References: <201302211632.r1LGWaRr025445@localhost.localdomain>
+Subject: Re: [RFC PATCH 2/6] KVM: PPC: Book3E: Refactor SPE_FP exit handling
+To: Mihai Caraman <mihai.caraman@freescale.com>
+References: <1370292868-2697-1-git-send-email-mihai.caraman@freescale.com>
+ <1370292868-2697-3-git-send-email-mihai.caraman@freescale.com>
+In-Reply-To: <1370292868-2697-3-git-send-email-mihai.caraman@freescale.com>
+ (from mihai.caraman@freescale.com on Mon Jun  3 15:54:24 2013)
+Message-ID: <1370384088.748.17@snotra>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <201302211632.r1LGWaRr025445@localhost.localdomain>
-Cc: Marcelo Tosatti <marcelo@kvack.org>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,61 +28,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Feb 21, 2013 at 06:32:36AM -0000, LEROY Christophe wrote:
-> This patch allows the use IRQ to notify the change of GPIO status on the MPC8xx
-> CPM IO ports. This then allows to associate IRQs to GPIOs in the Device Tree. Ex:
-> 	CPM1_PIO_C: gpio-controller@960 {
-> 		#gpio-cells = <2>;
-> 		compatible = "fsl,cpm1-pario-bank-c";
-> 		reg = <0x960 0x10>;
-> 		interrupts = <255 255 255 255 1 2 6 9 10 11 14 15 23 24 26 31>;
-> 		interrupt-parent = <&CPM_PIC>;
-> 		gpio-controller;
-> 	};
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-[snip]
-> @@ -581,6 +588,30 @@
->  	spin_unlock_irqrestore(&cpm1_gc->lock, flags);
+On 06/03/2013 03:54:24 PM, Mihai Caraman wrote:
+> SPE_FP interrupts are shared with ALTIVEC. Refactor SPE_FP exit =20
+> handling
+> to detect KVM support for the featured unit at run-time, in order to
+> accommodate ALTIVEC later.
+>=20
+> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+> ---
+>  arch/powerpc/kvm/booke.c |   80 =20
+> ++++++++++++++++++++++++++++++++++------------
+>  1 files changed, 59 insertions(+), 21 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+> index 1020119..d082bbc 100644
+> --- a/arch/powerpc/kvm/booke.c
+> +++ b/arch/powerpc/kvm/booke.c
+> @@ -822,6 +822,15 @@ static void kvmppc_restart_interrupt(struct =20
+> kvm_vcpu *vcpu,
+>  	}
 >  }
->  
-> +static int __cpm1_gpio16_to_irq(struct of_mm_gpio_chip *mm_gc,
-> +		unsigned int gpio)
+>=20
+> +static inline bool kvmppc_supports_spe(void)
 > +{
-> +	struct cpm1_gpio16_chip *cpm1_gc = to_cpm1_gpio16_chip(mm_gc);
-> +
-> +	return cpm1_gc->irq[gpio] ? cpm1_gc->irq[gpio] : -ENXIO;
+> +#ifdef CONFIG_SPE
+> +		if (cpu_has_feature(CPU_FTR_SPE))
+> +			return true;
+> +#endif
+> +	return false;
 > +}
 
-If it's an internal function, why not just pass in cpm1_gc?
+Whitespace
 
-Or just open-code it, as it's a one-liner and you don't use it anywhere
-else.
+>  /**
+>   * kvmppc_handle_exit
+>   *
+> @@ -931,42 +940,71 @@ int kvmppc_handle_exit(struct kvm_run *run, =20
+> struct kvm_vcpu *vcpu,
+>  		r =3D RESUME_GUEST;
+>  		break;
+>=20
+> -#ifdef CONFIG_SPE
+>  	case BOOKE_INTERRUPT_SPE_UNAVAIL: {
+> -		if (vcpu->arch.shared->msr & MSR_SPE)
+> -			kvmppc_vcpu_enable_spe(vcpu);
+> -		else
+> -			kvmppc_booke_queue_irqprio(vcpu,
+> -						   =20
+> BOOKE_IRQPRIO_SPE_UNAVAIL);
+> +		/*
+> +		 * The interrupt is shared, KVM support for the =20
+> featured unit
+> +		 * is detected at run-time.
+> +		 */
 
-Or fix the gpio layer to use 0 to mean "no irq" rather than -ENXIO... :-)
+This is a decent comment for the changelog, but for the code itself it =20
+seems fairly obvious if you look at the definition of =20
+kvmppc_supports_spe().
 
-> diff -ur linux-3.7.9/kernel/irq/irqdomain.c linux/kernel/irq/irqdomain.c
-> --- linux-3.7.9/kernel/irq/irqdomain.c	2013-02-17 19:53:32.000000000 +0100
-> +++ linux/kernel/irq/irqdomain.c	2012-12-13 19:52:38.000000000 +0100
-> @@ -763,7 +763,8 @@
->  	BUG_ON(domain->revmap_type != IRQ_DOMAIN_MAP_LINEAR);
->  
->  	/* Check revmap bounds; complain if exceeded */
-> -	if (WARN_ON(hwirq >= domain->revmap_data.linear.size))
-> +	/* 255 is a trick to allow UNDEF value in DTS */
-> +	if (hwirq == 255 || WARN_ON(hwirq >= domain->revmap_data.linear.size))
->  		return 0;
+> +		bool handled =3D false;
+> +
+> +		if (kvmppc_supports_spe()) {
+> +#ifdef CONFIG_SPE
+> +			if (cpu_has_feature(CPU_FTR_SPE))
 
-NACK.  Besides the hackishness of it, 255 is valid for some interrupt
-controllers.
+Didn't you already check this using kvmppc_supports_spe()?
 
-If you need for a way to leave holes in an "interrupts" property, propose
-something non-hacky on devicetree-discuss@lists.ozlabs.org.
+>  	case BOOKE_INTERRUPT_SPE_FP_ROUND:
+> +#ifdef CONFIG_SPE
+>  		kvmppc_booke_queue_irqprio(vcpu, =20
+> BOOKE_IRQPRIO_SPE_FP_ROUND);
+>  		r =3D RESUME_GUEST;
+>  		break;
 
-Or, do what some other devices do, and have a different property that
-indicates which pins are connected, and only include those in the
-"interrupts" property.  See
-Documentation/devicetree/bindings/powerpc/fsl/mpic-msgr.txt and
-mpic-msgr-receive-mask as an example.
+Why not use kvmppc_supports_spe() here, for consistency?
 
--Scott
+-Scott=
