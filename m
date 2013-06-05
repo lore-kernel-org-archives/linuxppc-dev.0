@@ -1,12 +1,25 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: benh@kernel.crashing.org, Linux PPC dev <linuxppc-dev@ozlabs.org>,
- matt@ozlabs.org
-Subject: Re: powerpc/tm: Fix 32bit non-rt signal return
-In-reply-to: <17963.1370256973@ale.ozlabs.ibm.com>
-References: <17963.1370256973@ale.ozlabs.ibm.com>
-Date: Wed, 05 Jun 2013 17:25:37 +1000
-Message-ID: <11735.1370417137@ale.ozlabs.ibm.com>
+Return-Path: <B02008@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D22162C009C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 17:30:21 +1000 (EST)
+From: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [RFC PATCH 2/6] KVM: PPC: Book3E: Refactor SPE_FP exit handling
+Date: Wed, 5 Jun 2013 07:29:47 +0000
+Message-ID: <300B73AA675FCE4A93EB4FC1D42459FF44EBF7@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <1370292868-2697-1-git-send-email-mihai.caraman@freescale.com>
+ <1370292868-2697-3-git-send-email-mihai.caraman@freescale.com>
+ <1370384088.748.17@snotra>
+In-Reply-To: <1370384088.748.17@snotra>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,78 +29,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-benh,
+> > +		/*
+> > +		 * The interrupt is shared, KVM support for the
+> > featured unit
+> > +		 * is detected at run-time.
+> > +		 */
+>=20
+> This is a decent comment for the changelog, but for the code itself it
+> seems fairly obvious if you look at the definition of
+> kvmppc_supports_spe().
 
-Hold off on taking this for now... I'm seeing a crash with it on power7.
+I will move it to change log.
 
-Mikey
+>=20
+> > +		bool handled =3D false;
+> > +
+> > +		if (kvmppc_supports_spe()) {
+> > +#ifdef CONFIG_SPE
+> > +			if (cpu_has_feature(CPU_FTR_SPE))
+>=20
+> Didn't you already check this using kvmppc_supports_spe()?
 
-Michael Neuling <mikey@neuling.org> wrote:
-> Currently sys_sigreturn() is transactional memory unaware, hence if we take a
-> 32 bit signal without SIGINFO (non RT) inside a transaction, we don't restore
-> the signal frame correctly on return.
-> 
-> This checks if the signal frame being restoring is an active transaction, and
-> if so, it copies the additional state to the ptregs so it can be restored.
-> 
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> cc: <stable@vger.kernel.org> # 3.9 only
-> 
-> diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-> index 201385c..0bc961b 100644
-> --- a/arch/powerpc/kernel/signal_32.c
-> +++ b/arch/powerpc/kernel/signal_32.c
-> @@ -1481,16 +1481,22 @@ badframe:
->  long sys_sigreturn(int r3, int r4, int r5, int r6, int r7, int r8,
->  		       struct pt_regs *regs)
->  {
-> +	struct sigframe __user *sf;
->  	struct sigcontext __user *sc;
->  	struct sigcontext sigctx;
->  	struct mcontext __user *sr;
->  	void __user *addr;
->  	sigset_t set;
-> +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-> +	struct mcontext __user *mcp, *tm_mcp;
-> +	unsigned long msr_hi;
-> +#endif
->  
->  	/* Always make any pending restarted system calls return -EINTR */
->  	current_thread_info()->restart_block.fn = do_no_restart_syscall;
->  
-> -	sc = (struct sigcontext __user *)(regs->gpr[1] + __SIGNAL_FRAMESIZE);
-> +	sf = (struct sigframe __user *)(regs->gpr[1] + __SIGNAL_FRAMESIZE);
-> +	sc = &sf->sctx;
->  	addr = sc;
->  	if (copy_from_user(&sigctx, sc, sizeof(sigctx)))
->  		goto badframe;
-> @@ -1507,12 +1513,23 @@ long sys_sigreturn(int r3, int r4, int r5, int r6, int r7, int r8,
->  #endif
->  	set_current_blocked(&set);
->  
-> -	sr = (struct mcontext __user *)from_user_ptr(sigctx.regs);
-> -	addr = sr;
-> -	if (!access_ok(VERIFY_READ, sr, sizeof(*sr))
-> -	    || restore_user_regs(regs, sr, 1))
-> +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-> +	mcp = (struct mcontext __user *)&sf->mctx;
-> +	tm_mcp = (struct mcontext __user *)&sf->mctx_transact;
-> +	if (__get_user(msr_hi, &mcp->mc_gregs[PT_MSR]))
->  		goto badframe;
-> -
-> +	if MSR_TM_ACTIVE(msr_hi<<32) {
-> +		if (restore_tm_user_regs(regs, mcp, tm_mcp))
-> +			goto badframe;
-> +	} else
-> +#endif
-> +	{
-> +		sr = (struct mcontext __user *)from_user_ptr(sigctx.regs);
-> +		addr = sr;
-> +		if (!access_ok(VERIFY_READ, sr, sizeof(*sr))
-> +		    || restore_user_regs(regs, sr, 1))
-> +			goto badframe;
-> +	}
->  	set_thread_flag(TIF_RESTOREALL);
->  	return 0;
->  
-> 
+It makes sense with the next patch. It handles the improbable case of havin=
+g
+CONFIG_ALTIVEC and CONFIG_SPE defined:
+
+	if (kvmppc_supports_altivec() || kvmppc_supports_spe()).
+
+>=20
+> >  	case BOOKE_INTERRUPT_SPE_FP_ROUND:
+> > +#ifdef CONFIG_SPE
+> >  		kvmppc_booke_queue_irqprio(vcpu,
+> > BOOKE_IRQPRIO_SPE_FP_ROUND);
+> >  		r =3D RESUME_GUEST;
+> >  		break;
+>=20
+> Why not use kvmppc_supports_spe() here, for consistency?
+
+I added cpu_has_feature(CPU_FTR_SPE) for the case specified above, but here
+SPE_FP_ROUND is not shared with ALTIVEC. CONFIG_SPE is used in other places
+in KVM without this check, shouldn't be all or nothing?
+
+-Mike
