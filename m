@@ -1,30 +1,31 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B6A3C2C00AB
+ (Client CN "e36.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 33B222C02AC
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 17:34:44 +1000 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Wed, 5 Jun 2013 03:34:41 -0400
-Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 7DBC46E803C
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 03:34:35 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r557YdjC297322
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jun 2013 03:34:39 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r557Ybv8032500
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jun 2013 03:34:38 -0400
+ Wed, 5 Jun 2013 01:34:42 -0600
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+ [9.17.195.227])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 6DD5E1FF001E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 01:29:29 -0600 (MDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r557YjOI150732
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jun 2013 01:34:45 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r557Yd44007688
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jun 2013 01:34:39 -0600
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 06/27] powerpc/eeh: Make eeh_init() public
-Date: Wed,  5 Jun 2013 15:34:07 +0800
-Message-Id: <1370417668-16832-7-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 08/27] powerpc/eeh: Refactor eeh_reset_pe_once()
+Date: Wed,  5 Jun 2013 15:34:09 +0800
+Message-Id: <1370417668-16832-9-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1370417668-16832-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1370417668-16832-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -37,93 +38,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For EEH on PowerNV platform, we will do EEH probe based on the
-real PCI devices. The PCI devices are available after PCI probe.
-So we have to call eeh_init() explicitly on PowerNV platform
-after PCI probe. The patch also does EEH probe for PowerNV platform
-in eeh_init().
+We shouldn't check that the returned PE status is exactly equal to
+(EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE) but instead only check
+that they are both set.
 
+[benh: changelog]
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h       |    8 +++++++-
- arch/powerpc/platforms/pseries/eeh.c |   22 ++++++++++++++++++++--
- 2 files changed, 27 insertions(+), 3 deletions(-)
+ arch/powerpc/platforms/pseries/eeh.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 8ba1c39..72611fa 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -132,7 +132,7 @@ struct eeh_ops {
- 	char *name;
- 	int (*init)(void);
- 	void* (*of_probe)(struct device_node *dn, void *flag);
--	void* (*dev_probe)(struct pci_dev *dev, void *flag);
-+	int (*dev_probe)(struct pci_dev *dev, void *flag);
- 	int (*set_option)(struct eeh_pe *pe, int option);
- 	int (*get_pe_addr)(struct eeh_pe *pe);
- 	int (*get_state)(struct eeh_pe *pe, int *state);
-@@ -196,6 +196,7 @@ struct pci_bus *eeh_pe_bus_get(struct eeh_pe *pe);
- 
- void *eeh_dev_init(struct device_node *dn, void *data);
- void eeh_dev_phb_init_dynamic(struct pci_controller *phb);
-+int __init eeh_init(void);
- int __init eeh_ops_register(struct eeh_ops *ops);
- int __exit eeh_ops_unregister(const char *name);
- unsigned long eeh_check_failure(const volatile void __iomem *token,
-@@ -224,6 +225,11 @@ void eeh_remove_bus_device(struct pci_dev *, int);
- 
- #else /* !CONFIG_EEH */
- 
-+static inline int eeh_init(void)
-+{
-+	return 0;
-+}
-+
- static inline void *eeh_dev_init(struct device_node *dn, void *data)
- {
- 	return NULL;
 diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
-index 6b73d6c..dbc9d83 100644
+index ef3b02a..ba707104 100644
 --- a/arch/powerpc/platforms/pseries/eeh.c
 +++ b/arch/powerpc/platforms/pseries/eeh.c
-@@ -674,11 +674,21 @@ int __exit eeh_ops_unregister(const char *name)
-  * Even if force-off is set, the EEH hardware is still enabled, so that
-  * newer systems can boot.
+@@ -565,6 +565,7 @@ static void eeh_reset_pe_once(struct eeh_pe *pe)
   */
--static int __init eeh_init(void)
-+int __init eeh_init(void)
+ int eeh_reset_pe(struct eeh_pe *pe)
  {
- 	struct pci_controller *hose, *tmp;
- 	struct device_node *phb;
--	int ret;
-+	static int cnt = 0;
-+	int ret = 0;
-+
-+	/*
-+	 * We have to delay the initialization on PowerNV after
-+	 * the PCI hierarchy tree has been built because the PEs
-+	 * are figured out based on PCI devices instead of device
-+	 * tree nodes
-+	 */
-+	if (machine_is(powernv) && cnt++ <= 0)
-+		return ret;
++	int flags = (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE);
+ 	int i, rc;
  
- 	/* call platform initialization function */
- 	if (!eeh_ops) {
-@@ -700,6 +710,14 @@ static int __init eeh_init(void)
- 			phb = hose->dn;
- 			traverse_pci_devices(phb, eeh_ops->of_probe, NULL);
- 		}
-+	} else if (eeh_probe_mode_dev()) {
-+		list_for_each_entry_safe(hose, tmp,
-+			&hose_list, list_node)
-+			pci_walk_bus(hose->bus, eeh_ops->dev_probe, NULL);
-+	} else {
-+		pr_warning("%s: Invalid probe mode %d\n",
-+			__func__, eeh_probe_mode);
-+		return -EINVAL;
- 	}
+ 	/* Take three shots at resetting the bus */
+@@ -572,7 +573,7 @@ int eeh_reset_pe(struct eeh_pe *pe)
+ 		eeh_reset_pe_once(pe);
  
- 	if (eeh_subsystem_enabled)
+ 		rc = eeh_ops->wait_state(pe, PCI_BUS_RESET_WAIT_MSEC);
+-		if (rc == (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE))
++		if ((rc & flags) == flags)
+ 			return 0;
+ 
+ 		if (rc < 0) {
 -- 
 1.7.5.4
