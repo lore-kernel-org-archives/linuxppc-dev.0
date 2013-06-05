@@ -2,29 +2,30 @@ Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C04C92C016F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jun 2013 01:28:54 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id D90092C00B8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jun 2013 01:28:55 +1000 (EST)
 Received: from /spool/local
  by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 5 Jun 2013 20:51:01 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id B5C181258055
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 21:00:56 +0530 (IST)
+ Wed, 5 Jun 2013 20:51:04 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 715EA125804E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 21:00:59 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r55FSde81835292
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jun 2013 20:58:39 +0530
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r55FSjsj58654778
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jun 2013 20:58:46 +0530
 Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r55FSlln007065
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Jun 2013 01:28:47 +1000
+ r55FSntP007265
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Jun 2013 01:28:50 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V10 11/15] powerpc/THP: Enable THP on PPC64
-Date: Wed,  5 Jun 2013 20:58:35 +0530
-Message-Id: <1370446119-8837-12-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V10 15/15] powerpc: split hugepage when using subpage
+ protection
+Date: Wed,  5 Jun 2013 20:58:39 +0530
+Message-Id: <1370446119-8837-16-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1370446119-8837-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1370446119-8837-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -40,66 +41,81 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-We enable only if the we support 16MB page size.
+We find all the overlapping vma and mark them such that we don't allocate
+hugepage in that range. Also we split existing huge page so that the
+normal page hash can be invalidated and new page faulted in with new
+protection bits.
 
-Reviewed-by: David Gibson <dwg@au1.ibm.com>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/pgtable-ppc64.h |  3 +--
- arch/powerpc/mm/pgtable_64.c             | 29 +++++++++++++++++++++++++++++
- 2 files changed, 30 insertions(+), 2 deletions(-)
+ arch/powerpc/mm/subpage-prot.c | 48 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 48 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
-index 69cb52b..d046289 100644
---- a/arch/powerpc/include/asm/pgtable-ppc64.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-@@ -429,8 +429,7 @@ static inline int pmd_trans_splitting(pmd_t pmd)
- 	return 0;
+diff --git a/arch/powerpc/mm/subpage-prot.c b/arch/powerpc/mm/subpage-prot.c
+index 7c415dd..aa74acb 100644
+--- a/arch/powerpc/mm/subpage-prot.c
++++ b/arch/powerpc/mm/subpage-prot.c
+@@ -130,6 +130,53 @@ static void subpage_prot_clear(unsigned long addr, unsigned long len)
+ 	up_write(&mm->mmap_sem);
  }
  
--/* We will enable it in the last patch */
--#define has_transparent_hugepage() 0
-+extern int has_transparent_hugepage(void);
- #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
- 
- static inline pte_t pmd_pte(pmd_t pmd)
-diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index 90fa2a8..e5fead7 100644
---- a/arch/powerpc/mm/pgtable_64.c
-+++ b/arch/powerpc/mm/pgtable_64.c
-@@ -819,4 +819,33 @@ pmd_t pmdp_get_and_clear(struct mm_struct *mm,
- 	memset(pgtable, 0, PTE_FRAG_SIZE);
- 	return old_pmd;
- }
-+
-+int has_transparent_hugepage(void)
++#ifdef CONFIG_TRANSPARENT_HUGEPAGE
++static int subpage_walk_pmd_entry(pmd_t *pmd, unsigned long addr,
++				  unsigned long end, struct mm_walk *walk)
 +{
-+	if (!mmu_has_feature(MMU_FTR_16M_PAGE))
-+		return 0;
-+	/*
-+	 * We support THP only if PMD_SIZE is 16MB.
-+	 */
-+	if (mmu_psize_defs[MMU_PAGE_16M].shift != PMD_SHIFT)
-+		return 0;
-+	/*
-+	 * We need to make sure that we support 16MB hugepage in a segement
-+	 * with base page size 64K or 4K. We only enable THP with a PAGE_SIZE
-+	 * of 64K.
-+	 */
-+	/*
-+	 * If we have 64K HPTE, we will be using that by default
-+	 */
-+	if (mmu_psize_defs[MMU_PAGE_64K].shift &&
-+	    (mmu_psize_defs[MMU_PAGE_64K].penc[MMU_PAGE_16M] == -1))
-+		return 0;
-+	/*
-+	 * Ok we only have 4K HPTE
-+	 */
-+	if (mmu_psize_defs[MMU_PAGE_4K].penc[MMU_PAGE_16M] == -1)
-+		return 0;
-+
-+	return 1;
++	struct vm_area_struct *vma = walk->private;
++	split_huge_page_pmd(vma, addr, pmd);
++	return 0;
 +}
- #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
++
++static void subpage_mark_vma_nohuge(struct mm_struct *mm, unsigned long addr,
++				    unsigned long len)
++{
++	struct vm_area_struct *vma;
++	struct mm_walk subpage_proto_walk = {
++		.mm = mm,
++		.pmd_entry = subpage_walk_pmd_entry,
++	};
++
++	/*
++	 * We don't try too hard, we just mark all the vma in that range
++	 * VM_NOHUGEPAGE and split them.
++	 */
++	vma = find_vma(mm, addr);
++	/*
++	 * If the range is in unmapped range, just return
++	 */
++	if (vma && ((addr + len) <= vma->vm_start))
++		return;
++
++	while (vma) {
++		if (vma->vm_start >= (addr + len))
++			break;
++		vma->vm_flags |= VM_NOHUGEPAGE;
++		subpage_proto_walk.private = vma;
++		walk_page_range(vma->vm_start, vma->vm_end,
++				&subpage_proto_walk);
++		vma = vma->vm_next;
++	}
++}
++#else
++static void subpage_mark_vma_nohuge(struct mm_struct *mm, unsigned long addr,
++				    unsigned long len)
++{
++	return;
++}
++#endif
++
+ /*
+  * Copy in a subpage protection map for an address range.
+  * The map has 2 bits per 4k subpage, so 32 bits per 64k page.
+@@ -168,6 +215,7 @@ long sys_subpage_prot(unsigned long addr, unsigned long len, u32 __user *map)
+ 		return -EFAULT;
+ 
+ 	down_write(&mm->mmap_sem);
++	subpage_mark_vma_nohuge(mm, addr, len);
+ 	for (limit = addr + len; addr < limit; addr = next) {
+ 		next = pmd_addr_end(addr, limit);
+ 		err = -ENOMEM;
 -- 
 1.8.1.2
