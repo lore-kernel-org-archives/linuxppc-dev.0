@@ -1,25 +1,30 @@
-Return-Path: <knight@princeton.edu>
-Received: from skuld.princeton.edu (skuld.Princeton.EDU [128.112.173.239])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 57C222C02AF
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jun 2013 07:14:27 +1000 (EST)
-Message-ID: <51AFAA2C.5060304@princeton.edu>
-Date: Wed, 05 Jun 2013 17:14:20 -0400
-From: Robert Knight <knight@princeton.edu>
+Return-Path: <B44306@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0185.outbound.messaging.microsoft.com [213.199.154.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id EAC872C00A4
+ for <linuxppc-dev@ozlabs.org>; Thu,  6 Jun 2013 02:57:35 +1000 (EST)
+Received: from mail183-db8 (localhost [127.0.0.1])	by
+ mail183-db8-R.bigfish.com (Postfix) with ESMTP id 4B8856800C0	for
+ <linuxppc-dev@ozlabs.org>; Wed,  5 Jun 2013 16:57:32 +0000 (UTC)
+Received: from DB8EHSMHS016.bigfish.com (unknown [10.174.8.241])	by
+ mail183-db8.bigfish.com (Postfix) with ESMTP id CA3BA140048	for
+ <linuxppc-dev@ozlabs.org>; Wed,  5 Jun 2013 16:57:30 +0000 (UTC)
+From: Pan Lijun-B44306 <B44306@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH 2/3] powerpc/perf: add 2 additional performance monitor
+ counters for e6500 core
+Date: Wed, 5 Jun 2013 16:57:02 +0000
+Message-ID: <6D6F40098762114BA5B59621B6C64F20CD4D9B@039-SN2MPN1-012.039d.mgd.msft.net>
+References: <1369865562-29525-1-git-send-email-Lijun.Pan@freescale.com>
+ <1369865562-29525-2-git-send-email-Lijun.Pan@freescale.com>
+ <1370369443.748.8@snotra>
+In-Reply-To: <1370369443.748.8@snotra>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: Gavin Shan <shangw@linux.vnet.ibm.com>
-Subject: Re: IBM OpenPower 720 ipr driver woes
-References: <51A61B82.5050508@princeton.edu>
- <51A644C2.5090300@linux.vnet.ibm.com> <51AD088C.8040803@princeton.edu>
- <20130604000130.GA25055@thor.bakeyournoodle.com>
- <51AD45A4.9080702@princeton.edu>
- <20130604031651.GA3373@thor.bakeyournoodle.com>
- <20130604035223.GA27964@shangw.(null)>
-In-Reply-To: <20130604035223.GA27964@shangw.(null)>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Wendy Xiong <wenxiong@linux.vnet.ibm.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,47 +34,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 6/3/2013 11:52 PM, Gavin Shan wrote:
-> On Tue, Jun 04, 2013 at 01:16:52PM +1000, Tony Breeds wrote:
->> On Mon, Jun 03, 2013 at 09:40:52PM -0400, Robert Knight wrote:
->>> On 6/3/2013 8:01 PM, Tony Breeds wrote:
->>>> On Mon, Jun 03, 2013 at 05:20:12PM -0400, Robert Knight wrote:
->>>>
->>>>>> Device tree struct  0x0000000004820000 -> 0x0000000004840000
->>>>>> Calling quiesce...
->>>>>> returning from prom_init
->>>>>> [    1.376359] ehci-pci 0000:c8:01.2: can't setup
->>>> Can you try adding "debug" to the kernel commandline.  We're missing a
->>>> great chunk of detail. If you're starting from scratch either try F18 or
->>>> the F19 Beta (if you're brave :))
->>>>
->>>> Yours Tony
->>> So, two points.  Since I have no live disks, I can't copy the dmesg
->>> output in dracut onto a disk and just sent it to you -- the only way
->>> that I know to get it is cut and paste from a HMC console window
->>> into a vi buffer.
->> Okay, when I've been in that situation, I run "script" locally and then
->> conenct to the HMC console.
->>
->> When you're done you can exit script adn then a file called typescript
->> will exist in the directory you ran script in.
->>
->> It's a less overhead way of doign what you're already doing.
->> [    0.087097] NET: Registered protocol family 16
->>
->>> [    0.087144] pseries_eeh_init: RTAS service <ibm,get-config-addr-info2> and <i
->>> bm,get-config-addr-info> invalid
->>> [    0.087155] eeh_init: Failed to call platform init function (-22)
->> Hmm this seems pretty strange to me.  Gavin are these RTAS tokens
->> supported on older power5 boxes?
->>
-> Yes, Tony. "ibm,get-config-addr-info" should be supported on Power5 box.
-> Newer PowerBox (e.g. P7) should support "ibm,get-config-addr-info2"
->
-> Please have a try on the attached patch, which is based on mainline (3.10).
->
-> Thanks,
-> Gavin
->
->
-The system boots with that patch.  I applied it to kernel-3.8.11-100.
+
+
+> -----Original Message-----
+> From: Wood Scott-B07421
+> Sent: Tuesday, June 04, 2013 1:11 PM
+> To: Pan Lijun-B44306
+> Cc: linuxppc-dev@ozlabs.org; Pan Lijun-B44306
+> Subject: Re: [PATCH 2/3] powerpc/perf: add 2 additional performance
+> monitor counters for e6500 core
+>=20
+> On 05/29/2013 05:12:41 PM, Lijun Pan wrote:
+> > diff --git a/arch/powerpc/kernel/cputable.c
+> > b/arch/powerpc/kernel/cputable.c
+> > index cc39139..2d4eee2 100644
+> > --- a/arch/powerpc/kernel/cputable.c
+> > +++ b/arch/powerpc/kernel/cputable.c
+> > @@ -2073,7 +2073,7 @@ static struct cpu_spec __initdata cpu_specs[] =3D
+> > {
+> >  			MMU_FTR_USE_TLBILX,
+> >  		.icache_bsize		=3D 64,
+> >  		.dcache_bsize		=3D 64,
+> > -		.num_pmcs		=3D 4,
+> > +		.num_pmcs		=3D 6,
+> >  		.oprofile_cpu_type	=3D "ppc/e6500",
+> >  		.oprofile_type		=3D PPC_OPROFILE_FSL_EMB,
+> >  		.cpu_setup		=3D __setup_cpu_e6500,
+>=20
+> This will overflow MAX_HWEVENTS.  Please include "powerpc perf:
+> increase the perf HW events to 6" from our SDK tree before this patch
+> (be sure to change "powerpc perf" to "powerpc/perf" and remove the
+> gerrit tags when you do so).
+>=20
+> -Scott
+
+I have done that.
+-Lijun
