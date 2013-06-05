@@ -1,25 +1,23 @@
-Return-Path: <B02008@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0189.outbound.messaging.microsoft.com [213.199.154.189])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B66EB2C009F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 19:23:34 +1000 (EST)
-From: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [RFC PATCH 4/6] KVM: PPC: Book3E: Add AltiVec support
-Date: Wed, 5 Jun 2013 09:23:00 +0000
-Message-ID: <300B73AA675FCE4A93EB4FC1D42459FF44F1FA@039-SN2MPN1-011.039d.mgd.msft.net>
-References: <1370292868-2697-5-git-send-email-mihai.caraman@freescale.com>
- (from mihai.caraman@freescale.com on Mon Jun  3 15:54:26 2013)
- <1370385365.748.19@snotra>
-In-Reply-To: <1370385365.748.19@snotra>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id E22B52C0082
+ for <linuxppc-dev@ozlabs.org>; Wed,  5 Jun 2013 19:43:37 +1000 (EST)
+Message-ID: <1370425396.3766.219.camel@pasglop>
+Subject: Re: [PATCH v3 0/8] Nvram-to-pstore
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
+Date: Wed, 05 Jun 2013 19:43:16 +1000
+In-Reply-To: <51AEFE28.3040104@linux.vnet.ibm.com>
+References: <20130425100952.21017.51799.stgit@aruna-ThinkPad-T420>
+ <1370064348.3766.37.camel@pasglop> <51AEFE28.3040104@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: jkenisto@linux.vnet.ibm.com, tony.luck@intel.com, keescook@chromium.org,
+ mahesh@linux.vnet.ibm.com, ccross@android.com, linux-kernel@vger.kernel.org,
+ linuxppc-dev@ozlabs.org, paulus@samba.org, anton@samba.org,
+ cbouatmailru@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,45 +27,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> > + * Simulate AltiVec unavailable fault to load guest state
-> > + * from thread to AltiVec unit.
-> > + * It requires to be called with preemption disabled.
-> > + */
-> > +static inline void kvmppc_load_guest_altivec(struct kvm_vcpu *vcpu)
-> > +{
-> > +#ifdef CONFIG_ALTIVEC
-> > +	if (cpu_has_feature(CPU_FTR_ALTIVEC)) {
-> > +		if (!(current->thread.regs->msr & MSR_VEC)) {
-> > +			load_up_altivec(NULL);
-> > +			current->thread.regs->msr |=3D MSR_VEC;
-> > +		}
-> > +	}
-> > +#endif
->=20
-> Why not use kvmppc_supports_altivec()?  In fact, there's nothing
-> KVM-specific about these functions...
-
-I will do so, I had this code before kvmppc_supports_altivec() :)
-
-> >  static inline bool kvmppc_supports_spe(void)
-> >  {
-> >  #ifdef CONFIG_SPE
-> > @@ -947,7 +1016,7 @@ int kvmppc_handle_exit(struct kvm_run *run,
-> > struct kvm_vcpu *vcpu,
-> >  		 */
-> >  		bool handled =3D false;
+On Wed, 2013-06-05 at 14:30 +0530, Aruna Balakrishnaiah wrote:
+> Hi Ben,
+> 
+> On Saturday 01 June 2013 10:55 AM, Benjamin Herrenschmidt wrote:
+> > Another question...
 > >
-> > -		if (kvmppc_supports_spe()) {
-> > +		if (kvmppc_supports_altivec() || kvmppc_supports_spe())
-> > {
-> >  #ifdef CONFIG_SPE
-> >  			if (cpu_has_feature(CPU_FTR_SPE))
-> >  				if (vcpu->arch.shared->msr & MSR_SPE) {
->=20
-> The distinction between how you're handling SPE and Altivec here
-> doesn't really have anything to do with SPE versus Altivec -- it's
-> PR-mode versus HV-mode.
+> > Should the core pstore fail to unlink partitions that don't have
+> > an ->erase callback ? IE. Why would you let anyone erase the OFW
+> > common partition for example ? That means that userspace tools
+> > can no longer manipulate it but we certainly don't want to remove
+> > it from the nvram itself.
+> 
+> Since I do not have a callback for erase in nvram, pstore
+> simply unlinks the file and will not delete the partition.
 
-I was mislead by MSR_SPE bit, we should rename it as MSR_SPV.
+Right. My point is that it should probably refuse to unlink the file
+too. What's the point in letting the user remove the file, potentially
+making tools not working anymore, without any way to bring it back other
+than a reboot ?
 
--Mike
+unlink makes sense if it also removes the partition. If it doesn't it
+should just fail.
+
+> > That leads to a deeper concern. Looking at how efi-pstore works,
+> > it looks like they create a file for each var.
+> >
+> > This looks like something valuable we could do for something like
+> > the common partition since typically it's made of name,value pairs.
+> >
+> > However, pstore is a flat space, while we have patitions which
+> > themselves can be organized in name,value pairs (some at least)
+> >
+> > I wonder if it's time to introduce pstore directories... Or do
+> > we stick to our special tools to interpret/change the name,value
+> > pairs ?
+> 
+> Since pstore infrastructure creates the file in read-only mode
+> creating files for name, value pairs will not be useful to us.
+> So for now, we need to stick to our tools to interpret/change
+> the name,value pairs.
+> 
+> And also, pstore filenames are controlled by pstore infrastructure
+> so that would need quite some changes in the pstore infrastructure.
+> 
+> I think for now it would be better to dump the contents of common
+> partition as it is.
+
+Ok.
+
+> >
+> > Also do we want to add an ability to resize partitions ? Possibly
+> > based on how much is written to them ?
+> 
+> Yes it will be good to that.
+> 
+> If your fine with patchset apart from the filenames of-config and common
+> partitions. I will post the next version of it with powerpc prefix.
+
+Yes, I'm ok with it.
+
+Cheers,
+Ben.
+
+> >
+> > Cheers,
+> > Ben.
+> >
+> >
+> > _______________________________________________
+> > Linuxppc-dev mailing list
+> > Linuxppc-dev@lists.ozlabs.org
+> > https://lists.ozlabs.org/listinfo/linuxppc-dev
+> >
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
