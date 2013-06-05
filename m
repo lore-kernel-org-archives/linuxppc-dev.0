@@ -1,30 +1,31 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 33E912C0079
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 17:34:42 +1000 (EST)
+ (Client CN "e38.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E8DF32C00AB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 17:34:43 +1000 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Wed, 5 Jun 2013 03:34:40 -0400
-Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 7F5286E8028
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 03:34:34 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r557YcJn345764
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jun 2013 03:34:38 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r557YaaO002177
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jun 2013 03:34:37 -0400
+ Wed, 5 Jun 2013 01:34:41 -0600
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+ [9.17.195.106])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 1E62E19D803E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 01:34:30 -0600 (MDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r557YbJj195132
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jun 2013 01:34:37 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r557Ya2u007474
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jun 2013 01:34:37 -0600
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 05/27] powerpc/eeh: Trace PCI bus from PE
-Date: Wed,  5 Jun 2013 15:34:06 +0800
-Message-Id: <1370417668-16832-6-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 04/27] powerpc/eeh: Make eeh_pe_get() public
+Date: Wed,  5 Jun 2013 15:34:05 +0800
+Message-Id: <1370417668-16832-5-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1370417668-16832-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1370417668-16832-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -37,82 +38,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There're several types of PEs can be supported for now: PHB, Bus
-and Device dependent PE. For PCI bus dependent PE, tracing the
-corresponding PCI bus from PE (struct eeh_pe) would make the code
-more efficient. The patch also enables the retrieval of PCI bus based
-on the PCI bus dependent PE.
+While processing EEH event interrupt from P7IOC, we need function
+to retrieve the PE according to the indicated EEH device. The patch
+makes function eeh_pe_get() public so that other source files can call
+it for that purpose. Also, the patch fixes referring to wrong BDF
+(Bus/Device/Function) address while searching PE in function
+__eeh_pe_get().
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
  arch/powerpc/include/asm/eeh.h          |    1 +
- arch/powerpc/platforms/pseries/eeh_pe.c |   22 ++++++++++++++++++++++
- 2 files changed, 23 insertions(+), 0 deletions(-)
+ arch/powerpc/platforms/pseries/eeh_pe.c |    4 ++--
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index acdfcaa..8ba1c39 100644
+index 4ac6f70..acdfcaa 100644
 --- a/arch/powerpc/include/asm/eeh.h
 +++ b/arch/powerpc/include/asm/eeh.h
-@@ -62,6 +62,7 @@ struct eeh_pe {
- 	int check_count;		/* Times of ignored error	*/
- 	int freeze_count;		/* Times of froze up		*/
- 	int false_positives;		/* Times of reported #ff's	*/
-+	struct pci_bus *bus;		/* Top PCI bus for bus PE	*/
- 	struct eeh_pe *parent;		/* Parent PE			*/
- 	struct list_head child_list;	/* Link PE to the child list	*/
- 	struct list_head edevs;		/* Link list of EEH devices	*/
+@@ -185,6 +185,7 @@ static inline void eeh_unlock(void)
+ typedef void *(*eeh_traverse_func)(void *data, void *flag);
+ int eeh_phb_pe_create(struct pci_controller *phb);
+ struct eeh_pe *eeh_phb_pe_get(struct pci_controller *phb);
++struct eeh_pe *eeh_pe_get(struct eeh_dev *edev);
+ int eeh_add_to_parent_pe(struct eeh_dev *edev);
+ int eeh_rmv_from_parent_pe(struct eeh_dev *edev, int purge_pe);
+ void *eeh_pe_dev_traverse(struct eeh_pe *root,
 diff --git a/arch/powerpc/platforms/pseries/eeh_pe.c b/arch/powerpc/platforms/pseries/eeh_pe.c
-index 3d2dcf5..03f8223 100644
+index 71c4544..3d2dcf5 100644
 --- a/arch/powerpc/platforms/pseries/eeh_pe.c
 +++ b/arch/powerpc/platforms/pseries/eeh_pe.c
-@@ -304,6 +304,7 @@ static struct eeh_pe *eeh_pe_get_parent(struct eeh_dev *edev)
- int eeh_add_to_parent_pe(struct eeh_dev *edev)
+@@ -228,7 +228,7 @@ static void *__eeh_pe_get(void *data, void *flag)
+ 		return pe;
+ 
+ 	/* Try BDF address */
+-	if (edev->pe_config_addr &&
++	if (edev->config_addr &&
+ 	   (edev->config_addr == pe->config_addr))
+ 		return pe;
+ 
+@@ -246,7 +246,7 @@ static void *__eeh_pe_get(void *data, void *flag)
+  * which is composed of PCI bus/device/function number, or unified
+  * PE address.
+  */
+-static struct eeh_pe *eeh_pe_get(struct eeh_dev *edev)
++struct eeh_pe *eeh_pe_get(struct eeh_dev *edev)
  {
- 	struct eeh_pe *pe, *parent;
-+	struct eeh_dev *first_edev;
- 
- 	eeh_lock();
- 
-@@ -326,6 +327,21 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
- 		pe->type = EEH_PE_BUS;
- 		edev->pe = pe;
- 
-+		/*
-+		 * For PCI bus sensitive PE, we can reset the parent
-+		 * bridge in order for hot-reset. However, the PCI
-+		 * devices including the associated EEH devices might
-+		 * be removed when EEH core is doing recovery. So that
-+		 * won't safe to retrieve the bridge through downstream
-+		 * EEH device. We have to trace the parent PCI bus, then
-+		 * the parent bridge explicitly.
-+		 */
-+		if (eeh_probe_mode_dev() && !pe->bus) {
-+			first_edev = list_first_entry(&pe->edevs,
-+						struct eeh_dev, list);
-+			pe->bus = eeh_dev_to_pci_dev(first_edev)->bus;
-+		}
-+
- 		/* Put the edev to PE */
- 		list_add_tail(&edev->list, &pe->edevs);
- 		eeh_unlock();
-@@ -641,12 +657,18 @@ struct pci_bus *eeh_pe_bus_get(struct eeh_pe *pe)
- 		bus = pe->phb->bus;
- 	} else if (pe->type & EEH_PE_BUS ||
- 		   pe->type & EEH_PE_DEVICE) {
-+		if (pe->bus) {
-+			bus = pe->bus;
-+			goto out;
-+		}
-+
- 		edev = list_first_entry(&pe->edevs, struct eeh_dev, list);
- 		pdev = eeh_dev_to_pci_dev(edev);
- 		if (pdev)
- 			bus = pdev->bus;
- 	}
- 
-+out:
- 	eeh_unlock();
- 
- 	return bus;
+ 	struct eeh_pe *root = eeh_phb_pe_get(edev->phb);
+ 	struct eeh_pe *pe;
 -- 
 1.7.5.4
