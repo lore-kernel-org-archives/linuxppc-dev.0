@@ -1,40 +1,21 @@
-Return-Path: <aruna@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 28DB32C008F
- for <linuxppc-dev@ozlabs.org>; Wed,  5 Jun 2013 19:52:20 +1000 (EST)
-Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <aruna@linux.vnet.ibm.com>;
- Wed, 5 Jun 2013 15:15:53 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id E8E723940059
- for <linuxppc-dev@ozlabs.org>; Wed,  5 Jun 2013 15:22:14 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r559q4M08847750
- for <linuxppc-dev@ozlabs.org>; Wed, 5 Jun 2013 15:22:04 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r559qB8H014217
- for <linuxppc-dev@ozlabs.org>; Wed, 5 Jun 2013 19:52:12 +1000
-Message-ID: <51AF0A4A.9020106@linux.vnet.ibm.com>
-Date: Wed, 05 Jun 2013 15:22:10 +0530
-From: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
+Return-Path: <B29983@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CE8412C009E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 20:16:40 +1000 (EST)
+From: <Yuantian.Tang@freescale.com>
+To: <viresh.kumar@linaro.org>
+Subject: [PATCH v5] cpufreq: powerpc: Add cpufreq driver for Freescale e500mc
+ SoCs
+Date: Wed, 5 Jun 2013 17:30:48 +0800
+Message-ID: <1370424648-1082-1-git-send-email-Yuantian.Tang@freescale.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v3 0/8] Nvram-to-pstore
-References: <20130425100952.21017.51799.stgit@aruna-ThinkPad-T420>
- <1370064348.3766.37.camel@pasglop> <51AEFE28.3040104@linux.vnet.ibm.com>
- <1370425396.3766.219.camel@pasglop>
-In-Reply-To: <1370425396.3766.219.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: jkenisto@linux.vnet.ibm.com, tony.luck@intel.com, keescook@chromium.org,
- mahesh@linux.vnet.ibm.com, cbouatmailru@gmail.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
- anton@samba.org, ccross@android.com
+Content-Type: text/plain
+Cc: linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, rjw@sisk.pl,
+ Tang Yuantian <Yuantian.Tang@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,82 +25,457 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday 05 June 2013 03:13 PM, Benjamin Herrenschmidt wrote:
-> On Wed, 2013-06-05 at 14:30 +0530, Aruna Balakrishnaiah wrote:
->> Hi Ben,
->>
->> On Saturday 01 June 2013 10:55 AM, Benjamin Herrenschmidt wrote:
->>> Another question...
->>>
->>> Should the core pstore fail to unlink partitions that don't have
->>> an ->erase callback ? IE. Why would you let anyone erase the OFW
->>> common partition for example ? That means that userspace tools
->>> can no longer manipulate it but we certainly don't want to remove
->>> it from the nvram itself.
->> Since I do not have a callback for erase in nvram, pstore
->> simply unlinks the file and will not delete the partition.
-> Right. My point is that it should probably refuse to unlink the file
-> too. What's the point in letting the user remove the file, potentially
-> making tools not working anymore, without any way to bring it back other
-> than a reboot ?
->
-> unlink makes sense if it also removes the partition. If it doesn't it
-> should just fail.
+From: Tang Yuantian <yuantian.tang@freescale.com>
 
-Right, makes sense. Will create a patch to fix it in pstore.
+Add cpufreq driver for Freescale e500mc, e5500 and e6500 SoCs
+which are capable of changing the CPU frequency dynamically
 
->>> That leads to a deeper concern. Looking at how efi-pstore works,
->>> it looks like they create a file for each var.
->>>
->>> This looks like something valuable we could do for something like
->>> the common partition since typically it's made of name,value pairs.
->>>
->>> However, pstore is a flat space, while we have patitions which
->>> themselves can be organized in name,value pairs (some at least)
->>>
->>> I wonder if it's time to introduce pstore directories... Or do
->>> we stick to our special tools to interpret/change the name,value
->>> pairs ?
->> Since pstore infrastructure creates the file in read-only mode
->> creating files for name, value pairs will not be useful to us.
->> So for now, we need to stick to our tools to interpret/change
->> the name,value pairs.
->>
->> And also, pstore filenames are controlled by pstore infrastructure
->> so that would need quite some changes in the pstore infrastructure.
->>
->> I think for now it would be better to dump the contents of common
->> partition as it is.
-> Ok.
->
->>> Also do we want to add an ability to resize partitions ? Possibly
->>> based on how much is written to them ?
->> Yes it will be good to that.
->>
->> If your fine with patchset apart from the filenames of-config and common
->> partitions. I will post the next version of it with powerpc prefix.
-> Yes, I'm ok with it.
->
-> Cheers,
-> Ben.
->
->>> Cheers,
->>> Ben.
->>>
->>>
->>> _______________________________________________
->>> Linuxppc-dev mailing list
->>> Linuxppc-dev@lists.ozlabs.org
->>> https://lists.ozlabs.org/listinfo/linuxppc-dev
->>>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
+Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
+---
+v5:
+	- enhance the CPU hotplug case
+	- mask the disallowed CPU frequencies
+	- remove freqs.cpu = policy->cpu;
+	- refine the code style
+v4:
+	- rebase on bleeding-edge branch of Rafael's linux-pm.git 
+	- #define pr_fmt() for better debug prints
+	- use newest cpufreq_notify_transition()
+	- support CPU hotplug
+	- remove table[i].index as it is not used
+	- remove cpus_per_cluster
+v3:
+	- change sizeof(struct name).. to sizeof(*p)
+	- remove the struct cpufreq_data, use global variable instead
+	- resolve setting policy->cpus incorrectly
+	- add CPUFREQ_POSTCHANGE notifier when setting frequency error
+v2:
+	- add depends on OF and COMMON_CLK in Kconfig
+	- use clk.h instead of clk-provider.h
+	- change per_cpu variable from struct to pointer
+
+ drivers/cpufreq/Kconfig.powerpc       |  10 +
+ drivers/cpufreq/Makefile              |   1 +
+ drivers/cpufreq/ppc-corenet-cpufreq.c | 380 ++++++++++++++++++++++++++++++++++
+ 3 files changed, 391 insertions(+)
+ create mode 100644 drivers/cpufreq/ppc-corenet-cpufreq.c
+
+diff --git a/drivers/cpufreq/Kconfig.powerpc b/drivers/cpufreq/Kconfig.powerpc
+index 9c926ca..88f629e 100644
+--- a/drivers/cpufreq/Kconfig.powerpc
++++ b/drivers/cpufreq/Kconfig.powerpc
+@@ -23,3 +23,13 @@ config CPU_FREQ_MAPLE
+ 	help
+ 	  This adds support for frequency switching on Maple 970FX
+ 	  Evaluation Board and compatible boards (IBM JS2x blades).
++
++config PPC_CORENET_CPUFREQ
++	tristate "CPU frequency scaling driver for Freescale E500MC SoCs"
++	depends on PPC_E500MC && OF && COMMON_CLK
++	select CPU_FREQ_TABLE
++	select CLK_PPC_CORENET
++	help
++	  This adds the CPUFreq driver support for Freescale e500mc,
++	  e5500 and e6500 series SoCs which are capable of changing
++	  the CPU's frequency dynamically.
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index 315b923..c956094 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -79,6 +79,7 @@ obj-$(CONFIG_CPU_FREQ_CBE)		+= ppc-cbe-cpufreq.o
+ ppc-cbe-cpufreq-y			+= ppc_cbe_cpufreq_pervasive.o ppc_cbe_cpufreq.o
+ obj-$(CONFIG_CPU_FREQ_CBE_PMI)		+= ppc_cbe_cpufreq_pmi.o
+ obj-$(CONFIG_CPU_FREQ_MAPLE)		+= maple-cpufreq.o
++obj-$(CONFIG_PPC_CORENET_CPUFREQ)   += ppc-corenet-cpufreq.o
+ 
+ ##################################################################################
+ # Other platform drivers
+diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
+new file mode 100644
+index 0000000..3cae452
+--- /dev/null
++++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
+@@ -0,0 +1,380 @@
++/*
++ * Copyright 2013 Freescale Semiconductor, Inc.
++ *
++ * CPU Frequency Scaling driver for Freescale PowerPC corenet SoCs.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#define pr_fmt(fmt)	KBUILD_MODNAME ": " fmt
++
++#include <linux/clk.h>
++#include <linux/cpufreq.h>
++#include <linux/errno.h>
++#include <sysdev/fsl_soc.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/mutex.h>
++#include <linux/of.h>
++#include <linux/slab.h>
++#include <linux/smp.h>
++
++/**
++ * struct cpu_data - per CPU data struct
++ * @clk: the clk of CPU
++ * @parent: the parent node of cpu clock
++ * @table: frequency table
++ */
++struct cpu_data {
++	struct clk *clk;
++	struct device_node *parent;
++	struct cpufreq_frequency_table *table;
++};
++
++/**
++ * struct soc_data - SoC specific data
++ * @freq_mask: mask the disallowed frequencies
++ * @flag: unique flags
++ */
++struct soc_data {
++	u32 freq_mask[4];
++	u32 flag;
++};
++
++#define FREQ_MASK	1
++/* see hardware specification for the allowed frqeuencies */
++static const struct soc_data sdata[] = {
++	{ /* used by p2041 and p3041 */
++		.freq_mask = {0x8, 0x8, 0x2, 0x2},
++		.flag = FREQ_MASK,
++	},
++	{ /* used by p5020 */
++		.freq_mask = {0x8, 0x2},
++		.flag = FREQ_MASK,
++	},
++	{ /* used by p4080, p5040 */
++		.freq_mask = {0},
++		.flag = 0,
++	},
++};
++
++/*
++ * the minimum allowed core frequency, in Hz
++ * for chassis v1.0, >= platform frequency
++ * for chassis v2.0, >= platform frequency / 2
++ */
++static u32 min_cpufreq;
++static const u32 *fmask;
++
++/* serialize frequency changes  */
++static DEFINE_MUTEX(cpufreq_lock);
++static DEFINE_PER_CPU(struct cpu_data *, cpu_data);
++
++/* cpumask in a cluster */
++static DEFINE_PER_CPU(cpumask_var_t, cpu_mask);
++
++#ifndef CONFIG_SMP
++static inline const struct cpumask *cpu_core_mask(int cpu)
++{
++	return cpumask_of(0);
++}
++#endif
++
++static unsigned int corenet_cpufreq_get_speed(unsigned int cpu)
++{
++	struct cpu_data *data = per_cpu(cpu_data, cpu);
++
++	return clk_get_rate(data->clk) / 1000;
++}
++
++/* reduce the duplicated frequencies in frequency table */
++static void freq_table_redup(struct cpufreq_frequency_table *freq_table,
++		int count)
++{
++	int i, j;
++
++	for (i = 1; i < count; i++) {
++		for (j = 0; j < i; j++) {
++			if (freq_table[j].frequency == CPUFREQ_ENTRY_INVALID ||
++					freq_table[j].frequency !=
++					freq_table[i].frequency)
++				continue;
++
++			freq_table[i].frequency = CPUFREQ_ENTRY_INVALID;
++			break;
++		}
++	}
++}
++
++/* sort the frequencies in frequency table in descenting order */
++static void freq_table_sort(struct cpufreq_frequency_table *freq_table,
++		int count)
++{
++	int i, j, ind;
++	unsigned int freq, max_freq;
++	struct cpufreq_frequency_table table;
++	for (i = 0; i < count - 1; i++) {
++		max_freq = freq_table[i].frequency;
++		ind = i;
++		for (j = i + 1; j < count; j++) {
++			freq = freq_table[j].frequency;
++			if (freq == CPUFREQ_ENTRY_INVALID ||
++					freq <= max_freq)
++				continue;
++			ind = j;
++			max_freq = freq;
++		}
++
++		if (ind != i) {
++			/* exchange the frequencies */
++			table.driver_data = freq_table[i].driver_data;
++			table.frequency = freq_table[i].frequency;
++			freq_table[i].driver_data = freq_table[ind].driver_data;
++			freq_table[i].frequency = freq_table[ind].frequency;
++			freq_table[ind].driver_data = table.driver_data;
++			freq_table[ind].frequency = table.frequency;
++		}
++	}
++}
++
++static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
++{
++	struct device_node *np;
++	int i, count, ret;
++	u32 freq, mask;
++	struct clk *clk;
++	struct cpufreq_frequency_table *table;
++	struct cpu_data *data;
++	unsigned int cpu = policy->cpu;
++
++	np = of_get_cpu_node(cpu, NULL);
++	if (!np)
++		return -ENODEV;
++
++	data = kzalloc(sizeof(*data), GFP_KERNEL);
++	if (!data) {
++		pr_err("%s: no memory\n", __func__);
++		goto err_np;
++	}
++
++	data->clk = of_clk_get(np, 0);
++	if (IS_ERR(data->clk)) {
++		pr_err("%s: no clock information\n", __func__);
++		goto err_nomem2;
++	}
++
++	data->parent = of_parse_phandle(np, "clocks", 0);
++	if (!data->parent) {
++		pr_err("%s: could not get clock information\n", __func__);
++		goto err_nomem2;
++	}
++
++	count = of_property_count_strings(data->parent, "clock-names");
++	table = kcalloc(count + 1, sizeof(*table), GFP_KERNEL);
++	if (!table) {
++		pr_err("%s: no memory\n", __func__);
++		goto err_node;
++	}
++
++	if (fmask)
++		mask = fmask[get_hard_smp_processor_id(cpu)];
++	else
++		mask = 0x0;
++
++	for (i = 0; i < count; i++) {
++		clk = of_clk_get(data->parent, i);
++		freq = clk_get_rate(clk);
++		/*
++		 * the clock is valid if its frequency is not masked
++		 * and large than minimum allowed frequency.
++		 */
++		if (freq < min_cpufreq || (mask & (1 << i)))
++			table[i].frequency = CPUFREQ_ENTRY_INVALID;
++		else
++			table[i].frequency = freq / 1000;
++		table[i].driver_data = i;
++	}
++	freq_table_redup(table, count);
++	freq_table_sort(table, count);
++	table[i].frequency = CPUFREQ_TABLE_END;
++
++	/* set the min and max frequency properly */
++	ret = cpufreq_frequency_table_cpuinfo(policy, table);
++	if (ret) {
++		pr_err("invalid frequency table: %d\n", ret);
++		goto err_nomem1;
++	}
++
++	data->table = table;
++	per_cpu(cpu_data, cpu) = data;
++
++	/* update ->cpus if we have cluster, no harm if not */
++	cpumask_copy(policy->cpus, per_cpu(cpu_mask, cpu));
++	for_each_cpu(i, per_cpu(cpu_mask, cpu))
++		per_cpu(cpu_data, i) = data;
++
++	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
++	policy->cur = corenet_cpufreq_get_speed(policy->cpu);
++
++	cpufreq_frequency_table_get_attr(table, cpu);
++	of_node_put(np);
++
++	return 0;
++
++err_nomem1:
++	kfree(table);
++err_node:
++	of_node_put(data->parent);
++err_nomem2:
++	per_cpu(cpu_data, cpu) = NULL;
++	kfree(data);
++err_np:
++	of_node_put(np);
++
++	return -ENODEV;
++}
++
++static int __exit corenet_cpufreq_cpu_exit(struct cpufreq_policy *policy)
++{
++	struct cpu_data *data = per_cpu(cpu_data, policy->cpu);
++	unsigned int cpu;
++
++	cpufreq_frequency_table_put_attr(policy->cpu);
++	of_node_put(data->parent);
++	kfree(data->table);
++	kfree(data);
++
++	for_each_cpu(cpu, per_cpu(cpu_mask, policy->cpu))
++		per_cpu(cpu_data, cpu) = NULL;
++
++	return 0;
++}
++
++static int corenet_cpufreq_verify(struct cpufreq_policy *policy)
++{
++	struct cpufreq_frequency_table *table =
++		per_cpu(cpu_data, policy->cpu)->table;
++
++	return cpufreq_frequency_table_verify(policy, table);
++}
++
++static int corenet_cpufreq_target(struct cpufreq_policy *policy,
++		unsigned int target_freq, unsigned int relation)
++{
++	struct cpufreq_freqs freqs;
++	unsigned int new;
++	struct clk *parent;
++	int ret;
++	struct cpu_data *data = per_cpu(cpu_data, policy->cpu);
++
++	cpufreq_frequency_table_target(policy, data->table,
++			target_freq, relation, &new);
++
++	if (policy->cur == data->table[new].frequency)
++		return 0;
++
++	freqs.old = policy->cur;
++	freqs.new = data->table[new].frequency;
++
++	mutex_lock(&cpufreq_lock);
++	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
++
++	parent = of_clk_get(data->parent, data->table[new].driver_data);
++	ret = clk_set_parent(data->clk, parent);
++	if (ret)
++		freqs.new = freqs.old;
++
++	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
++	mutex_unlock(&cpufreq_lock);
++
++	return ret;
++}
++
++static struct freq_attr *corenet_cpufreq_attr[] = {
++	&cpufreq_freq_attr_scaling_available_freqs,
++	NULL,
++};
++
++static struct cpufreq_driver ppc_corenet_cpufreq_driver = {
++	.name		= "ppc_cpufreq",
++	.owner		= THIS_MODULE,
++	.flags		= CPUFREQ_CONST_LOOPS,
++	.init		= corenet_cpufreq_cpu_init,
++	.exit		= __exit_p(corenet_cpufreq_cpu_exit),
++	.verify		= corenet_cpufreq_verify,
++	.target		= corenet_cpufreq_target,
++	.get		= corenet_cpufreq_get_speed,
++	.attr		= corenet_cpufreq_attr,
++};
++
++static const struct of_device_id node_matches[] __initdata = {
++	{ .compatible = "fsl,p2041-clockgen", .data = &sdata[0], },
++	{ .compatible = "fsl,p3041-clockgen", .data = &sdata[0], },
++	{ .compatible = "fsl,p5020-clockgen", .data = &sdata[1], },
++	{ .compatible = "fsl,p4080-clockgen", .data = &sdata[2], },
++	{ .compatible = "fsl,p5040-clockgen", .data = &sdata[2], },
++	{ .compatible = "fsl,qoriq-clockgen-2.0", },
++	{}
++};
++
++static int __init ppc_corenet_cpufreq_init(void)
++{
++	int ret;
++	struct device_node  *np;
++	const struct of_device_id *match;
++	const struct soc_data *data;
++	unsigned int cpu;
++
++	np = of_find_matching_node(NULL, node_matches);
++	if (!np)
++		return -ENODEV;
++
++	for_each_possible_cpu(cpu) {
++		if (!alloc_cpumask_var(&per_cpu(cpu_mask, cpu), GFP_KERNEL))
++			goto err_mask;
++		cpumask_copy(per_cpu(cpu_mask, cpu), cpu_core_mask(cpu));
++	}
++
++	match = of_match_node(node_matches, np);
++	data = match->data;
++	if (data) {
++		if (data->flag)
++			fmask = data->freq_mask;
++		min_cpufreq = fsl_get_sys_freq();
++	} else {
++		min_cpufreq = fsl_get_sys_freq() / 2;
++	}
++
++	of_node_put(np);
++
++	ret = cpufreq_register_driver(&ppc_corenet_cpufreq_driver);
++	if (!ret)
++		pr_info("Freescale PowerPC corenet CPU frequency scaling driver\n");
++
++	return ret;
++
++err_mask:
++	for_each_possible_cpu(cpu)
++		free_cpumask_var(per_cpu(cpu_mask, cpu));
++
++	return -ENOMEM;
++}
++module_init(ppc_corenet_cpufreq_init);
++
++static void __exit ppc_corenet_cpufreq_exit(void)
++{
++	unsigned int cpu;
++
++	for_each_possible_cpu(cpu)
++		free_cpumask_var(per_cpu(cpu_mask, cpu));
++
++	cpufreq_unregister_driver(&ppc_corenet_cpufreq_driver);
++}
++module_exit(ppc_corenet_cpufreq_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Tang Yuantian <Yuantian.Tang@freescale.com>");
++MODULE_DESCRIPTION("cpufreq driver for Freescale e500mc series SoCs");
+-- 
+1.8.0
