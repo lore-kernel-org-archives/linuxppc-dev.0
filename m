@@ -1,31 +1,31 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1F3602C00AD
+ (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2171F2C00AF
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jun 2013 01:28:53 +1000 (EST)
 Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 5 Jun 2013 20:54:17 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 55D5DE004C
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 21:01:37 +0530 (IST)
+ Wed, 5 Jun 2013 20:52:03 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 397F3394004F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 20:58:49 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r55FSfCG11534740
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jun 2013 20:58:41 +0530
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r55FSdPR28836092
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jun 2013 20:58:39 +0530
 Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r55FSlgr007087
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Jun 2013 01:28:48 +1000
+ r55FSj8j006869
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Jun 2013 01:28:46 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V10 13/15] powerpc: disable assert_pte_locked for
- collapse_huge_page
-Date: Wed,  5 Jun 2013 20:58:37 +0530
-Message-Id: <1370446119-8837-14-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V10 05/15] powerpc: Update find_linux_pte_or_hugepte to
+ handle transparent hugepages
+Date: Wed,  5 Jun 2013 20:58:29 +0530
+Message-Id: <1370446119-8837-6-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1370446119-8837-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1370446119-8837-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -41,35 +41,72 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-With THP we set pmd to none, before we do pte_clear. Hence we can't
-walk page table to get the pte lock ptr and verify whether it is locked.
-THP do take pte lock before calling pte_clear. So we don't change the locking
-rules here. It is that we can't use page table walking to check whether
-pte locks are held with THP.
-
+Reviewed-by: David Gibson <dwg@au1.ibm.com>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/pgtable.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ arch/powerpc/mm/hugetlbpage.c | 32 ++++++++++++++++++++++++++------
+ 1 file changed, 26 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
-index 214130a..edda589 100644
---- a/arch/powerpc/mm/pgtable.c
-+++ b/arch/powerpc/mm/pgtable.c
-@@ -235,6 +235,14 @@ void assert_pte_locked(struct mm_struct *mm, unsigned long addr)
- 	pud = pud_offset(pgd, addr);
- 	BUG_ON(pud_none(*pud));
- 	pmd = pmd_offset(pud, addr);
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index 2865077..4928204 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -936,30 +936,50 @@ pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea, unsigned *shift
+ 
+ 	pg = pgdir + pgd_index(ea);
+ 
+-	if (pgd_huge(*pg)) {
 +	/*
-+	 * khugepaged to collapse normal pages to hugepage, first set
-+	 * pmd to none to force page fault/gup to take mmap_sem. After
-+	 * pmd is set to none, we do a pte_clear which does this assertion
-+	 * so if we find pmd none, return.
++	 * we should first check for none. That takes care of a
++	 * a parallel hugetlb or THP pagefault moving none entries
++	 * to respective types.
 +	 */
-+	if (pmd_none(*pmd))
-+		return;
- 	BUG_ON(!pmd_present(*pmd));
- 	assert_spin_locked(pte_lockptr(mm, pmd));
- }
++	if (pgd_none(*pg))
++		return NULL;
++	else if (pgd_huge(*pg)) {
+ 		ret_pte = (pte_t *) pg;
+ 		goto out;
+ 	} else if (is_hugepd(pg))
+ 		hpdp = (hugepd_t *)pg;
+-	else if (!pgd_none(*pg)) {
++	else {
+ 		pdshift = PUD_SHIFT;
+ 		pu = pud_offset(pg, ea);
+ 
+-		if (pud_huge(*pu)) {
++		if (pud_none(*pu))
++			return NULL;
++		else if (pud_huge(*pu)) {
+ 			ret_pte = (pte_t *) pu;
+ 			goto out;
+ 		} else if (is_hugepd(pu))
+ 			hpdp = (hugepd_t *)pu;
+-		else if (!pud_none(*pu)) {
++		else {
+ 			pdshift = PMD_SHIFT;
+ 			pm = pmd_offset(pu, ea);
++			/*
++			 * A hugepage collapse is captured by pmd_none, because
++			 * it mark the pmd none and do a hpte invalidate.
++			 *
++			 * A hugepage split is captured by pmd_trans_splitting
++			 * because we mark the pmd trans splitting and do a
++			 * hpte invalidate
++			 *
++			 */
++			if (pmd_none(*pm) || pmd_trans_splitting(*pm))
++				return NULL;
+ 
+-			if (pmd_huge(*pm)) {
++			if (pmd_huge(*pm) || pmd_large(*pm)) {
+ 				ret_pte = (pte_t *) pm;
+ 				goto out;
+ 			} else if (is_hugepd(pm))
+ 				hpdp = (hugepd_t *)pm;
+-			else if (!pmd_none(*pm))
++			else
+ 				return pte_offset_kernel(pm, ea);
+ 		}
+ 	}
 -- 
 1.8.1.2
