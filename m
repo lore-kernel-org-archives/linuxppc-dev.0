@@ -2,29 +2,29 @@ Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BF03E2C00A1
+ by ozlabs.org (Postfix) with ESMTPS id C04C92C016F
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jun 2013 01:28:54 +1000 (EST)
 Received: from /spool/local
  by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 5 Jun 2013 20:51:00 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 273151258055
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 21:00:55 +0530 (IST)
+ Wed, 5 Jun 2013 20:51:01 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id B5C181258055
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 21:00:56 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r55FSe4563897604
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jun 2013 20:58:40 +0530
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r55FSde81835292
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jun 2013 20:58:39 +0530
 Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r55FSj75006813
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Jun 2013 01:28:45 +1000
+ r55FSlln007065
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Jun 2013 01:28:47 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V10 02/15] powerpc/THP: Double the PMD table size for THP
-Date: Wed,  5 Jun 2013 20:58:26 +0530
-Message-Id: <1370446119-8837-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V10 11/15] powerpc/THP: Enable THP on PPC64
+Date: Wed,  5 Jun 2013 20:58:35 +0530
+Message-Id: <1370446119-8837-12-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1370446119-8837-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1370446119-8837-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -40,107 +40,66 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-THP code does PTE page allocation along with large page request and deposit them
-for later use. This is to ensure that we won't have any failures when we split
-hugepages to regular pages.
+We enable only if the we support 16MB page size.
 
-On powerpc we want to use the deposited PTE page for storing hash pte slot and
-secondary bit information for the HPTEs. We use the second half
-of the pmd table to save the deposted PTE page.
-
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+Reviewed-by: David Gibson <dwg@au1.ibm.com>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/pgalloc-64.h        | 6 +++---
- arch/powerpc/include/asm/pgtable-ppc64-64k.h | 3 ++-
- arch/powerpc/include/asm/pgtable-ppc64.h     | 6 +++++-
- arch/powerpc/mm/init_64.c                    | 9 ++++++---
- 4 files changed, 16 insertions(+), 8 deletions(-)
+ arch/powerpc/include/asm/pgtable-ppc64.h |  3 +--
+ arch/powerpc/mm/pgtable_64.c             | 29 +++++++++++++++++++++++++++++
+ 2 files changed, 30 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pgalloc-64.h b/arch/powerpc/include/asm/pgalloc-64.h
-index b66ae72..f65e27b 100644
---- a/arch/powerpc/include/asm/pgalloc-64.h
-+++ b/arch/powerpc/include/asm/pgalloc-64.h
-@@ -221,17 +221,17 @@ static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
- 
- static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
- {
--	return kmem_cache_alloc(PGT_CACHE(PMD_INDEX_SIZE),
-+	return kmem_cache_alloc(PGT_CACHE(PMD_CACHE_INDEX),
- 				GFP_KERNEL|__GFP_REPEAT);
- }
- 
- static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
- {
--	kmem_cache_free(PGT_CACHE(PMD_INDEX_SIZE), pmd);
-+	kmem_cache_free(PGT_CACHE(PMD_CACHE_INDEX), pmd);
- }
- 
- #define __pmd_free_tlb(tlb, pmd, addr)		      \
--	pgtable_free_tlb(tlb, pmd, PMD_INDEX_SIZE)
-+	pgtable_free_tlb(tlb, pmd, PMD_CACHE_INDEX)
- #ifndef CONFIG_PPC_64K_PAGES
- #define __pud_free_tlb(tlb, pud, addr)		      \
- 	pgtable_free_tlb(tlb, pud, PUD_INDEX_SIZE)
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64-64k.h b/arch/powerpc/include/asm/pgtable-ppc64-64k.h
-index 45142d6..a56b82f 100644
---- a/arch/powerpc/include/asm/pgtable-ppc64-64k.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc64-64k.h
-@@ -33,7 +33,8 @@
- #define PGDIR_MASK	(~(PGDIR_SIZE-1))
- 
- /* Bits to mask out from a PMD to get to the PTE page */
--#define PMD_MASKED_BITS		0x1ff
-+/* PMDs point to PTE table fragments which are 4K aligned.  */
-+#define PMD_MASKED_BITS		0xfff
- /* Bits to mask out from a PGD/PUD to get to the PMD page */
- #define PUD_MASKED_BITS		0x1ff
- 
 diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
-index e3d55f6f..ab84332 100644
+index 69cb52b..d046289 100644
 --- a/arch/powerpc/include/asm/pgtable-ppc64.h
 +++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-@@ -20,7 +20,11 @@
-                 	    PUD_INDEX_SIZE + PGD_INDEX_SIZE + PAGE_SHIFT)
- #define PGTABLE_RANGE (ASM_CONST(1) << PGTABLE_EADDR_SIZE)
- 
--
-+#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-+#define PMD_CACHE_INDEX	(PMD_INDEX_SIZE + 1)
-+#else
-+#define PMD_CACHE_INDEX	PMD_INDEX_SIZE
-+#endif
- /*
-  * Define the address range of the kernel non-linear virtual area
-  */
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index a90b9c4..d0cd9e4 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -88,7 +88,11 @@ static void pgd_ctor(void *addr)
- 
- static void pmd_ctor(void *addr)
- {
-+#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-+	memset(addr, 0, PMD_TABLE_SIZE * 2);
-+#else
- 	memset(addr, 0, PMD_TABLE_SIZE);
-+#endif
+@@ -429,8 +429,7 @@ static inline int pmd_trans_splitting(pmd_t pmd)
+ 	return 0;
  }
  
- struct kmem_cache *pgtable_cache[MAX_PGTABLE_INDEX_SIZE];
-@@ -137,10 +141,9 @@ void pgtable_cache_add(unsigned shift, void (*ctor)(void *))
- void pgtable_cache_init(void)
- {
- 	pgtable_cache_add(PGD_INDEX_SIZE, pgd_ctor);
--	pgtable_cache_add(PMD_INDEX_SIZE, pmd_ctor);
--	if (!PGT_CACHE(PGD_INDEX_SIZE) || !PGT_CACHE(PMD_INDEX_SIZE))
-+	pgtable_cache_add(PMD_CACHE_INDEX, pmd_ctor);
-+	if (!PGT_CACHE(PGD_INDEX_SIZE) || !PGT_CACHE(PMD_CACHE_INDEX))
- 		panic("Couldn't allocate pgtable caches");
--
- 	/* In all current configs, when the PUD index exists it's the
- 	 * same size as either the pgd or pmd index.  Verify that the
- 	 * initialization above has also created a PUD cache.  This
+-/* We will enable it in the last patch */
+-#define has_transparent_hugepage() 0
++extern int has_transparent_hugepage(void);
+ #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
+ 
+ static inline pte_t pmd_pte(pmd_t pmd)
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index 90fa2a8..e5fead7 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -819,4 +819,33 @@ pmd_t pmdp_get_and_clear(struct mm_struct *mm,
+ 	memset(pgtable, 0, PTE_FRAG_SIZE);
+ 	return old_pmd;
+ }
++
++int has_transparent_hugepage(void)
++{
++	if (!mmu_has_feature(MMU_FTR_16M_PAGE))
++		return 0;
++	/*
++	 * We support THP only if PMD_SIZE is 16MB.
++	 */
++	if (mmu_psize_defs[MMU_PAGE_16M].shift != PMD_SHIFT)
++		return 0;
++	/*
++	 * We need to make sure that we support 16MB hugepage in a segement
++	 * with base page size 64K or 4K. We only enable THP with a PAGE_SIZE
++	 * of 64K.
++	 */
++	/*
++	 * If we have 64K HPTE, we will be using that by default
++	 */
++	if (mmu_psize_defs[MMU_PAGE_64K].shift &&
++	    (mmu_psize_defs[MMU_PAGE_64K].penc[MMU_PAGE_16M] == -1))
++		return 0;
++	/*
++	 * Ok we only have 4K HPTE
++	 */
++	if (mmu_psize_defs[MMU_PAGE_4K].penc[MMU_PAGE_16M] == -1)
++		return 0;
++
++	return 1;
++}
+ #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
 -- 
 1.8.1.2
