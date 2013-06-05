@@ -1,30 +1,30 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 476B62C030B
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 17:34:52 +1000 (EST)
+ (Client CN "e7.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A1EF42C00A9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 17:34:54 +1000 (EST)
 Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Wed, 5 Jun 2013 01:34:50 -0600
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 3578C38C8045
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 03:34:46 -0400 (EDT)
+ Wed, 5 Jun 2013 03:34:52 -0400
+Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 62CAEC9003E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 03:34:48 -0400 (EDT)
 Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r557YkAm266790
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jun 2013 03:34:46 -0400
+ by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r557YmLJ238062
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jun 2013 03:34:48 -0400
 Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
  by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r557YkL7002557
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jun 2013 03:34:46 -0400
+ r557YmOi002643
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jun 2013 03:34:48 -0400
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 17/27] powerpc/eeh: I/O chip PE log and bridge setup
-Date: Wed,  5 Jun 2013 15:34:18 +0800
-Message-Id: <1370417668-16832-18-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 20/27] powerpc/eeh: Enable EEH check for config access
+Date: Wed,  5 Jun 2013 15:34:21 +0800
+Message-Id: <1370417668-16832-21-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1370417668-16832-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1370417668-16832-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -37,84 +37,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch adds backends to retrieve error log and configure p2p
-bridges for the indicated PE.
+The patch enables EEH check and let EEH core to process the EEH
+errors for PowerNV platform while accessing config space. Originally,
+the implementation already had mechanism to check EEH errors and
+tried to recover from them. However, we never let EEH core to handle
+the EEH errors.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/eeh-ioda.c |   57 ++++++++++++++++++++++++++++-
- 1 files changed, 55 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/powernv/pci.c |   41 +++++++++++++++++++++++++++++++++-
+ 1 files changed, 40 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-index e6c8c7f..cbef2d5 100644
---- a/arch/powerpc/platforms/powernv/eeh-ioda.c
-+++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-@@ -456,11 +456,64 @@ static int ioda_eeh_reset(struct eeh_pe *pe, int option)
- 	return ret;
- }
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index 20af220..5d787d6 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -32,6 +32,8 @@
+ #include <asm/iommu.h>
+ #include <asm/tce.h>
+ #include <asm/firmware.h>
++#include <asm/eeh_event.h>
++#include <asm/eeh.h>
  
-+/**
-+ * ioda_eeh_get_log - Retrieve error log
-+ * @pe: EEH PE
-+ * @severity: Severity level of the log
-+ * @drv_log: buffer to store the log
-+ * @len: space of the log buffer
-+ *
-+ * The function is used to retrieve error log from P7IOC.
-+ */
-+static int ioda_eeh_get_log(struct eeh_pe *pe, int severity,
-+		char *drv_log, unsigned long len)
-+{
-+	s64 ret;
-+	unsigned long flags;
-+	struct pci_controller *hose = pe->phb;
-+	struct pnv_phb *phb = hose->private_data;
-+
-+	spin_lock_irqsave(&phb->lock, flags);
-+
-+	ret = opal_pci_get_phb_diag_data2(phb->opal_id,
-+			phb->diag.blob, PNV_PCI_DIAG_BUF_SIZE);
-+	if (ret) {
-+		spin_unlock_irqrestore(&phb->lock, flags);
-+		pr_warning("%s: Failed to retrieve log for PHB#%x-PE#%x\n",
-+			__func__, hose->global_number, pe->addr);
-+		return -EIO;
-+	}
-+
+ #include "powernv.h"
+ #include "pci.h"
+@@ -259,6 +261,10 @@ static int pnv_pci_read_config(struct pci_bus *bus,
+ {
+ 	struct pci_controller *hose = pci_bus_to_host(bus);
+ 	struct pnv_phb *phb = hose->private_data;
++#ifdef CONFIG_EEH
++	struct device_node *busdn, *dn;
++	struct eeh_pe *phb_pe = NULL;
++#endif
+ 	u32 bdfn = (((uint64_t)bus->number) << 8) | devfn;
+ 	s64 rc;
+ 
+@@ -291,8 +297,35 @@ static int pnv_pci_read_config(struct pci_bus *bus,
+ 	cfg_dbg("pnv_pci_read_config bus: %x devfn: %x +%x/%x -> %08x\n",
+ 		bus->number, devfn, where, size, *val);
+ 
+-	/* Check if the PHB got frozen due to an error (no response) */
 +	/*
-+	 * FIXME: We probably need log the error in somewhere.
-+	 * Lets make it up in future.
++	 * Check if the specified PE has been put into frozen
++	 * state. On the other hand, we needn't do that while
++	 * the PHB has been put into frozen state because of
++	 * PHB-fatal errors.
 +	 */
-+	/* pr_info("%s", phb->diag.blob); */
++#ifdef CONFIG_EEH
++	phb_pe = eeh_phb_pe_get(hose);
++	if (phb_pe && (phb_pe->state & EEH_PE_ISOLATED))
++		return PCIBIOS_SUCCESSFUL;
 +
-+	spin_unlock_irqrestore(&phb->lock, flags);
++	if (phb->eeh_enabled) {
++		if (*val == EEH_IO_ERROR_VALUE(size)) {
++			busdn = pci_bus_to_OF_node(bus);
++			for (dn = busdn->child; dn; dn = dn->sibling) {
++				struct pci_dn *pdn = PCI_DN(dn);
 +
-+	return 0;
-+}
++				if (pdn && pdn->devfn == devfn &&
++					eeh_dev_check_failure(of_node_to_eeh_dev(dn),
++							EEH_EVENT_NORMAL))
++					return PCIBIOS_DEVICE_NOT_FOUND;
++			}
++		}
++	} else {
++		pnv_pci_config_check_eeh(phb, bus, bdfn);
++	}
++#else
+ 	pnv_pci_config_check_eeh(phb, bus, bdfn);
++#endif
+ 
+ 	return PCIBIOS_SUCCESSFUL;
+ }
+@@ -323,8 +356,14 @@ static int pnv_pci_write_config(struct pci_bus *bus,
+ 	default:
+ 		return PCIBIOS_FUNC_NOT_SUPPORTED;
+ 	}
 +
-+/**
-+ * ioda_eeh_configure_bridge - Configure the PCI bridges for the indicated PE
-+ * @pe: EEH PE
-+ *
-+ * For particular PE, it might have included PCI bridges. In order
-+ * to make the PE work properly, those PCI bridges should be configured
-+ * correctly. However, we need do nothing on P7IOC since the reset
-+ * function will do everything that should be covered by the function.
-+ */
-+static int ioda_eeh_configure_bridge(struct eeh_pe *pe)
-+{
-+	return 0;
-+}
-+
- struct pnv_eeh_ops ioda_eeh_ops = {
- 	.post_init		= ioda_eeh_post_init,
- 	.set_option		= ioda_eeh_set_option,
- 	.get_state		= ioda_eeh_get_state,
- 	.reset			= ioda_eeh_reset,
--	.get_log		= NULL,
--	.configure_bridge	= NULL
-+	.get_log		= ioda_eeh_get_log,
-+	.configure_bridge	= ioda_eeh_configure_bridge
- };
+ 	/* Check if the PHB got frozen due to an error (no response) */
++#ifdef CONFIG_EEH
++	if (!phb->eeh_enabled)
++		pnv_pci_config_check_eeh(phb, bus, bdfn);
++#else
+ 	pnv_pci_config_check_eeh(phb, bus, bdfn);
++#endif
+ 
+ 	return PCIBIOS_SUCCESSFUL;
+ }
 -- 
 1.7.5.4
