@@ -1,35 +1,24 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D90092C00B8
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jun 2013 01:28:55 +1000 (EST)
-Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 5 Jun 2013 20:51:04 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 715EA125804E
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 21:00:59 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r55FSjsj58654778
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jun 2013 20:58:46 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r55FSntP007265
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Jun 2013 01:28:50 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V10 15/15] powerpc: split hugepage when using subpage
- protection
-Date: Wed,  5 Jun 2013 20:58:39 +0530
-Message-Id: <1370446119-8837-16-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1370446119-8837-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by ozlabs.org (Postfix) with SMTP id 5B8252C00A1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jun 2013 01:42:49 +1000 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 27232-07 for <linuxppc-dev@lists.ozlabs.org>;
+ Wed,  5 Jun 2013 16:42:43 +0100 (BST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="Windows-1252"
+Subject: RE: [PATCH -V10 10/15] powerpc: Prevent gcc to re-read the pagetables
+Date: Wed, 5 Jun 2013 16:41:45 +0100
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B7271@saturn3.aculab.com>
+In-Reply-To: <1370446119-8837-11-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1370446119-8837-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+ <1370446119-8837-11-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ <benh@kernel.crashing.org>, <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,83 +28,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+>  	ptep =3D pte_offset_kernel(&pmd, addr);
+>  	do {
+> -		pte_t pte =3D *ptep;
+> +		pte_t pte =3D ACCESS_ONCE(*ptep);
 
-We find all the overlapping vma and mark them such that we don't allocate
-hugepage in that range. Also we split existing huge page so that the
-normal page hash can be invalidated and new page faulted in with new
-protection bits.
+Why not just define ptep as a 'pointer to volatile'?
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/mm/subpage-prot.c | 48 ++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 48 insertions(+)
-
-diff --git a/arch/powerpc/mm/subpage-prot.c b/arch/powerpc/mm/subpage-prot.c
-index 7c415dd..aa74acb 100644
---- a/arch/powerpc/mm/subpage-prot.c
-+++ b/arch/powerpc/mm/subpage-prot.c
-@@ -130,6 +130,53 @@ static void subpage_prot_clear(unsigned long addr, unsigned long len)
- 	up_write(&mm->mmap_sem);
- }
- 
-+#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-+static int subpage_walk_pmd_entry(pmd_t *pmd, unsigned long addr,
-+				  unsigned long end, struct mm_walk *walk)
-+{
-+	struct vm_area_struct *vma = walk->private;
-+	split_huge_page_pmd(vma, addr, pmd);
-+	return 0;
-+}
-+
-+static void subpage_mark_vma_nohuge(struct mm_struct *mm, unsigned long addr,
-+				    unsigned long len)
-+{
-+	struct vm_area_struct *vma;
-+	struct mm_walk subpage_proto_walk = {
-+		.mm = mm,
-+		.pmd_entry = subpage_walk_pmd_entry,
-+	};
-+
-+	/*
-+	 * We don't try too hard, we just mark all the vma in that range
-+	 * VM_NOHUGEPAGE and split them.
-+	 */
-+	vma = find_vma(mm, addr);
-+	/*
-+	 * If the range is in unmapped range, just return
-+	 */
-+	if (vma && ((addr + len) <= vma->vm_start))
-+		return;
-+
-+	while (vma) {
-+		if (vma->vm_start >= (addr + len))
-+			break;
-+		vma->vm_flags |= VM_NOHUGEPAGE;
-+		subpage_proto_walk.private = vma;
-+		walk_page_range(vma->vm_start, vma->vm_end,
-+				&subpage_proto_walk);
-+		vma = vma->vm_next;
-+	}
-+}
-+#else
-+static void subpage_mark_vma_nohuge(struct mm_struct *mm, unsigned long addr,
-+				    unsigned long len)
-+{
-+	return;
-+}
-+#endif
-+
- /*
-  * Copy in a subpage protection map for an address range.
-  * The map has 2 bits per 4k subpage, so 32 bits per 64k page.
-@@ -168,6 +215,7 @@ long sys_subpage_prot(unsigned long addr, unsigned long len, u32 __user *map)
- 		return -EFAULT;
- 
- 	down_write(&mm->mmap_sem);
-+	subpage_mark_vma_nohuge(mm, addr, len);
- 	for (limit = addr + len; addr < limit; addr = next) {
- 		next = pmd_addr_end(addr, limit);
- 		err = -ENOMEM;
--- 
-1.8.1.2
+	David
