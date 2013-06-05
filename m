@@ -1,28 +1,36 @@
-Return-Path: <B44306@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe004.messaging.microsoft.com [213.199.154.207])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DC9362C02CF
- for <linuxppc-dev@ozlabs.org>; Thu,  6 Jun 2013 06:01:45 +1000 (EST)
-Received: from mail42-am1 (localhost [127.0.0.1])	by mail42-am1-R.bigfish.com
- (Postfix) with ESMTP id 5CBDF34014A	for <linuxppc-dev@ozlabs.org>;
- Wed,  5 Jun 2013 20:01:42 +0000 (UTC)
-Received: from AM1EHSMHS006.bigfish.com (unknown [10.3.201.232])	by
- mail42-am1.bigfish.com (Postfix) with ESMTP id B261B3C0046	for
- <linuxppc-dev@ozlabs.org>; Wed,  5 Jun 2013 20:01:40 +0000 (UTC)
-From: Lijun Pan <Lijun.Pan@freescale.com>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 3/4] powerpc/perf: add 2 additional performance monitor
- counters for e6500 core
-Date: Wed, 5 Jun 2013 15:01:34 -0500
-Message-ID: <1370462495-30054-3-git-send-email-Lijun.Pan@freescale.com>
-In-Reply-To: <1370462495-30054-1-git-send-email-Lijun.Pan@freescale.com>
-References: <1370462495-30054-1-git-send-email-Lijun.Pan@freescale.com>
+Return-Path: <bhelgaas@google.com>
+Received: from mail-ob0-x234.google.com (mail-ob0-x234.google.com
+ [IPv6:2607:f8b0:4003:c01::234])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DD3842C02BB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jun 2013 06:07:43 +1000 (EST)
+Received: by mail-ob0-f180.google.com with SMTP id eh20so3405217obb.11
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Jun 2013 13:07:40 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Lijun.Pan@freescale.com
+In-Reply-To: <1369489718-25869-4-git-send-email-jiang.liu@huawei.com>
+References: <1369489718-25869-1-git-send-email-jiang.liu@huawei.com>
+ <1369489718-25869-4-git-send-email-jiang.liu@huawei.com>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Wed, 5 Jun 2013 14:07:18 -0600
+Message-ID: <CAErSpo6C-QMFCbMMivBE5TN4sEOFR_EyPmtN=OUNo8eN-+t=GQ@mail.gmail.com>
+Subject: Re: [PATCH v3, part1 03/10] PCI: Convert alloc_pci_dev(void) to
+ pci_alloc_dev(bus) instead
+To: Jiang Liu <liuj97@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Neela Syam Kolli <megaraidlinux@lsi.com>, sparclinux@vger.kernel.org,
+ Toshi Kani <toshi.kani@hp.com>, Jiang Liu <jiang.liu@huawei.com>,
+ "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+ David Airlie <airlied@linux.ie>, Myron Stowe <myron.stowe@redhat.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "James E.J. Bottomley" <JBottomley@parallels.com>,
+ "Rafael J . Wysocki" <rjw@sisk.pl>, Yijing Wang <wangyijing@huawei.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Gu Zheng <guz.fnst@cn.fujitsu.com>, Paul Mackerras <paulus@samba.org>,
+ Andrew Morton <akpm@linux-foundation.org>, Yinghai Lu <yinghai@kernel.org>,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,202 +40,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There are 6 counters in e6500 core instead of 4 in e500 core.
+On Sat, May 25, 2013 at 7:48 AM, Jiang Liu <liuj97@gmail.com> wrote:
+> From: Gu Zheng <guz.fnst@cn.fujitsu.com>
+>
+> Use the new pci_alloc_dev(bus) to replace the existing using of
+> alloc_pci_dev(void).
+> ...
 
-Signed-off-by: Lijun Pan <Lijun.Pan@freescale.com>
----
- arch/powerpc/include/asm/reg_fsl_emb.h   |   12 ++++++++++++
- arch/powerpc/kernel/cputable.c           |    2 +-
- arch/powerpc/oprofile/op_model_fsl_emb.c |   30 ++++++++++++++++++++++++++++++
- arch/powerpc/perf/core-fsl-emb.c         |   24 ++++++++++++++++++++++++
- 4 files changed, 67 insertions(+), 1 deletion(-)
+> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+> index 26df9c8..d5d18a0 100644
+> --- a/drivers/pci/probe.c
+> +++ b/drivers/pci/probe.c
+> @@ -1130,6 +1130,7 @@ static void pci_release_dev(struct device *dev)
+>         struct pci_dev *pci_dev;
+>
+>         pci_dev = to_pci_dev(dev);
+> +       pci_bus_put(pci_dev->bus);
+>         pci_release_capabilities(pci_dev);
+>         pci_release_of_node(pci_dev);
+>         kfree(pci_dev);
 
-diff --git a/arch/powerpc/include/asm/reg_fsl_emb.h b/arch/powerpc/include/asm/reg_fsl_emb.h
-index 1cf8ab0..c51d52e 100644
---- a/arch/powerpc/include/asm/reg_fsl_emb.h
-+++ b/arch/powerpc/include/asm/reg_fsl_emb.h
-@@ -19,10 +19,14 @@
- #define PMRN_PMC1	0x011	/* Performance Monitor Counter 1 */
- #define PMRN_PMC2	0x012	/* Performance Monitor Counter 2 */
- #define PMRN_PMC3	0x013	/* Performance Monitor Counter 3 */
-+#define PMRN_PMC4	0x014	/* Performance Monitor Counter 4 */
-+#define PMRN_PMC5	0x015	/* Performance Monitor Counter 5 */
- #define PMRN_PMLCA0	0x090	/* PM Local Control A0 */
- #define PMRN_PMLCA1	0x091	/* PM Local Control A1 */
- #define PMRN_PMLCA2	0x092	/* PM Local Control A2 */
- #define PMRN_PMLCA3	0x093	/* PM Local Control A3 */
-+#define PMRN_PMLCA4	0x094	/* PM Local Control A4 */
-+#define PMRN_PMLCA5	0x095	/* PM Local Control A5 */
- 
- #define PMLCA_FC	0x80000000	/* Freeze Counter */
- #define PMLCA_FCS	0x40000000	/* Freeze in Supervisor */
-@@ -38,6 +42,8 @@
- #define PMRN_PMLCB1	0x111	/* PM Local Control B1 */
- #define PMRN_PMLCB2	0x112	/* PM Local Control B2 */
- #define PMRN_PMLCB3	0x113	/* PM Local Control B3 */
-+#define PMRN_PMLCB4	0x114	/* PM Local Control B4 */
-+#define PMRN_PMLCB5	0x115	/* PM Local Control B5 */
- 
- #define PMLCB_THRESHMUL_MASK	0x0700	/* Threshold Multiple Field */
- #define PMLCB_THRESHMUL_SHIFT	8
-@@ -57,14 +63,20 @@
- #define PMRN_UPMC1	0x001	/* User Performance Monitor Counter 1 */
- #define PMRN_UPMC2	0x002	/* User Performance Monitor Counter 2 */
- #define PMRN_UPMC3	0x003	/* User Performance Monitor Counter 3 */
-+#define PMRN_UPMC4	0x004	/* User Performance Monitor Counter 4 */
-+#define PMRN_UPMC5	0x005	/* User Performance Monitor Counter 5 */
- #define PMRN_UPMLCA0	0x080	/* User PM Local Control A0 */
- #define PMRN_UPMLCA1	0x081	/* User PM Local Control A1 */
- #define PMRN_UPMLCA2	0x082	/* User PM Local Control A2 */
- #define PMRN_UPMLCA3	0x083	/* User PM Local Control A3 */
-+#define PMRN_UPMLCA4	0x084	/* User PM Local Control A4 */
-+#define PMRN_UPMLCA5	0x085	/* User PM Local Control A5 */
- #define PMRN_UPMLCB0	0x100	/* User PM Local Control B0 */
- #define PMRN_UPMLCB1	0x101	/* User PM Local Control B1 */
- #define PMRN_UPMLCB2	0x102	/* User PM Local Control B2 */
- #define PMRN_UPMLCB3	0x103	/* User PM Local Control B3 */
-+#define PMRN_UPMLCB4	0x104	/* User PM Local Control B4 */
-+#define PMRN_UPMLCB5	0x105	/* User PM Local Control B5 */
- #define PMRN_UPMGC0	0x180	/* User PM Global Control 0 */
- 
- 
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index cc39139..2d4eee2 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -2073,7 +2073,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 			MMU_FTR_USE_TLBILX,
- 		.icache_bsize		= 64,
- 		.dcache_bsize		= 64,
--		.num_pmcs		= 4,
-+		.num_pmcs		= 6,
- 		.oprofile_cpu_type	= "ppc/e6500",
- 		.oprofile_type		= PPC_OPROFILE_FSL_EMB,
- 		.cpu_setup		= __setup_cpu_e6500,
-diff --git a/arch/powerpc/oprofile/op_model_fsl_emb.c b/arch/powerpc/oprofile/op_model_fsl_emb.c
-index ccc1daa..2a82d3e 100644
---- a/arch/powerpc/oprofile/op_model_fsl_emb.c
-+++ b/arch/powerpc/oprofile/op_model_fsl_emb.c
-@@ -46,6 +46,12 @@ static inline u32 get_pmlca(int ctr)
- 		case 3:
- 			pmlca = mfpmr(PMRN_PMLCA3);
- 			break;
-+		case 4:
-+			pmlca = mfpmr(PMRN_PMLCA4);
-+			break;
-+		case 5:
-+			pmlca = mfpmr(PMRN_PMLCA5);
-+			break;
- 		default:
- 			panic("Bad ctr number\n");
- 	}
-@@ -68,6 +74,12 @@ static inline void set_pmlca(int ctr, u32 pmlca)
- 		case 3:
- 			mtpmr(PMRN_PMLCA3, pmlca);
- 			break;
-+		case 4:
-+			mtpmr(PMRN_PMLCA4, pmlca);
-+			break;
-+		case 5:
-+			mtpmr(PMRN_PMLCA5, pmlca);
-+			break;
- 		default:
- 			panic("Bad ctr number\n");
- 	}
-@@ -84,6 +96,10 @@ static inline unsigned int ctr_read(unsigned int i)
- 			return mfpmr(PMRN_PMC2);
- 		case 3:
- 			return mfpmr(PMRN_PMC3);
-+		case 4:
-+			return mfpmr(PMRN_PMC4);
-+		case 5:
-+			return mfpmr(PMRN_PMC5);
- 		default:
- 			return 0;
- 	}
-@@ -104,6 +120,12 @@ static inline void ctr_write(unsigned int i, unsigned int val)
- 		case 3:
- 			mtpmr(PMRN_PMC3, val);
- 			break;
-+		case 4:
-+			mtpmr(PMRN_PMC4, val);
-+			break;
-+		case 5:
-+			mtpmr(PMRN_PMC5, val);
-+			break;
- 		default:
- 			break;
- 	}
-@@ -133,6 +155,14 @@ static void init_pmc_stop(int ctr)
- 			mtpmr(PMRN_PMLCA3, pmlca);
- 			mtpmr(PMRN_PMLCB3, pmlcb);
- 			break;
-+		case 4:
-+			mtpmr(PMRN_PMLCA4, pmlca);
-+			mtpmr(PMRN_PMLCB4, pmlcb);
-+			break;
-+		case 5:
-+			mtpmr(PMRN_PMLCA5, pmlca);
-+			mtpmr(PMRN_PMLCB5, pmlcb);
-+			break;
- 		default:
- 			panic("Bad ctr number!\n");
- 	}
-diff --git a/arch/powerpc/perf/core-fsl-emb.c b/arch/powerpc/perf/core-fsl-emb.c
-index 0b13f74..d35ae52 100644
---- a/arch/powerpc/perf/core-fsl-emb.c
-+++ b/arch/powerpc/perf/core-fsl-emb.c
-@@ -70,6 +70,12 @@ static unsigned long read_pmc(int idx)
- 	case 3:
- 		val = mfpmr(PMRN_PMC3);
- 		break;
-+	case 4:
-+		val = mfpmr(PMRN_PMC4);
-+		break;
-+	case 5:
-+		val = mfpmr(PMRN_PMC5);
-+		break;
- 	default:
- 		printk(KERN_ERR "oops trying to read PMC%d\n", idx);
- 		val = 0;
-@@ -95,6 +101,12 @@ static void write_pmc(int idx, unsigned long val)
- 	case 3:
- 		mtpmr(PMRN_PMC3, val);
- 		break;
-+	case 4:
-+		mtpmr(PMRN_PMC4, val);
-+		break;
-+	case 5:
-+		mtpmr(PMRN_PMC5, val);
-+		break;
- 	default:
- 		printk(KERN_ERR "oops trying to write PMC%d\n", idx);
- 	}
-@@ -120,6 +132,12 @@ static void write_pmlca(int idx, unsigned long val)
- 	case 3:
- 		mtpmr(PMRN_PMLCA3, val);
- 		break;
-+	case 4:
-+		mtpmr(PMRN_PMLCA4, val);
-+		break;
-+	case 5:
-+		mtpmr(PMRN_PMLCA5, val);
-+		break;
- 	default:
- 		printk(KERN_ERR "oops trying to write PMLCA%d\n", idx);
- 	}
-@@ -145,6 +163,12 @@ static void write_pmlcb(int idx, unsigned long val)
- 	case 3:
- 		mtpmr(PMRN_PMLCB3, val);
- 		break;
-+	case 4:
-+		mtpmr(PMRN_PMLCB4, val);
-+		break;
-+	case 5:
-+		mtpmr(PMRN_PMLCB5, val);
-+		break;
- 	default:
- 		printk(KERN_ERR "oops trying to write PMLCB%d\n", idx);
- 	}
--- 
-1.7.9.7
+I think we should drop the pci_bus reference *last* (before the
+kfree).  Otherwise, we have to audit pci_release_capabilities() and
+pci_release_of_node() to make sure they don't use pci_dev->bus.
+
+I made this change on my branch already; just let me know if you object.
+
+Bjorn
