@@ -1,19 +1,36 @@
-Return-Path: <swarren@wwwdotorg.org>
-Message-ID: <51AF6C3A.5020609@wwwdotorg.org>
-Date: Wed, 05 Jun 2013 10:50:02 -0600
-From: Stephen Warren <swarren@wwwdotorg.org>
+Return-Path: <aruna@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7E5392C0082
+ for <linuxppc-dev@ozlabs.org>; Thu,  6 Jun 2013 04:50:58 +1000 (EST)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <aruna@linux.vnet.ibm.com>;
+ Thu, 6 Jun 2013 04:42:02 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 785B23578051
+ for <linuxppc-dev@ozlabs.org>; Thu,  6 Jun 2013 04:50:51 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r55Ioh6Q25297070
+ for <linuxppc-dev@ozlabs.org>; Thu, 6 Jun 2013 04:50:43 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r55Ioo0k006095
+ for <linuxppc-dev@ozlabs.org>; Thu, 6 Jun 2013 04:50:51 +1000
+Subject: [PATCH v4 0/8] Nvram-to-pstore
+To: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org,
+ benh@kernel.crashing.org
+From: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
+Date: Thu, 06 Jun 2013 00:20:39 +0530
+Message-ID: <20130605184756.25794.43872.stgit@aruna-ThinkPad-T420>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@linaro.org>,
- Rob Herring <rob.herring@calxeda.com>
-Subject: Re: [PATCH] dtc: ensure #line directives don't consume data from
- the next line
-References: <1370273816-19411-1-git-send-email-swarren@wwwdotorg.org>
-In-Reply-To: <1370273816-19411-1-git-send-email-swarren@wwwdotorg.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Michal Marek <mmarek@suse.cz>, jdl@jdl.com,
- Stephen Warren <swarren@nvidia.com>, Ian Campbell <Ian.Campbell@citrix.com>,
- linux-kbuild@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="utf-8"
+Cc: jkenisto@linux.vnet.ibm.com, tony.luck@intel.com, mahesh@linux.vnet.ibm.com,
+ cbouatmailru@gmail.com, anton@samba.org, ccross@android.com,
+ keescook@chromium.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,26 +40,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/03/2013 09:36 AM, Stephen Warren wrote:
-> From: Stephen Warren <swarren@nvidia.com>
-> 
-> Previously, the #line parsing regex ended with ({WS}+[0-9]+)?. The {WS}
-> could match line-break characters. If the #line directive did not contain
-> the optional flags field at the end, this could cause any integer data on
-> the next line to be consumed as part of the #line directive parsing. This
-> could cause syntax errors (i.e. #line parsing consuming the leading 0
-> from a hex literal 0x1234, leaving x1234 to be parsed as cell data,
-> which is a syntax error), or invalid compilation results (i.e. simply
-> consuming literal 1234 as part of the #line processing, thus removing it
-> from the cell data).
-> 
-> Fix this by replacing {WS} with [ \t] so that it can't match line-breaks.
-> 
-> Convert all instances of {WS}, even though the other instances should be
-> irrelevant for any well-formed #line directive. This is done for
-> consistency and ultimate safety.
-> 
-> This is a port of upstream dtc commit a1ee6f0 (with same subject) to the
-> kernel's copy of dtc.
+Currently the kernel provides the contents of p-series NVRAM only as a
+simple stream of bytes via /dev/nvram, which must be interpreted in user
+space by the nvram command in the powerpc-utils package. This patch set
+exploits the pstore subsystem to expose each partition in NVRAM as a
+separate file in /dev/pstore. For instance, Oops messages will be stored
+in a file named [dmesg-nvram-2].
 
-Rob, Grant, does this look OK to apply for v3.10-rc*?
+Changes from v3:
+	- Change filename prefix for of-config and common partition
+
+Changes from v2:
+	- Fix renaming of pstore type ids in nvram.c
+
+Changes from v1:
+	- Reduce #ifdefs by and remove forward declarations of pstore callbacks
+	- Handle return value of nvram_write_os_partition
+	- Remove empty pstore callbacks and register pstore only when pstore
+	  is configured
+---
+
+Aruna Balakrishnaiah (8):
+      powerpc/pseries: Remove syslog prefix in uncompressed oops text
+      powerpc/pseries: Add version and timestamp to oops header
+      powerpc/pseries: Introduce generic read function to read nvram-partitions
+      powerpc/pseries: Read/Write oops nvram partition via pstore
+      powerpc/pseries: Read rtas partition via pstore
+      powerpc/pseries: Distinguish between a os-partition and non-os partition
+      powerpc/pseries: Read of-config partition via pstore
+      powerpc/pseries: Read common partition via pstore
+
+
+ arch/powerpc/platforms/pseries/nvram.c |  353 +++++++++++++++++++++++++++-----
+ fs/pstore/inode.c                      |    9 +
+ include/linux/pstore.h                 |    4 
+ 3 files changed, 313 insertions(+), 53 deletions(-)
+
+-- 
