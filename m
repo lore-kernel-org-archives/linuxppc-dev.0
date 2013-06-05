@@ -1,19 +1,35 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id AECA32C0077
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jun 2013 10:13:12 +1000 (EST)
-Date: Wed, 5 Jun 2013 17:13:10 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH -V10 00/15] THP support for PPC64
-Message-Id: <20130605171310.065c6fe2a3313c69bcfa0fc8@linux-foundation.org>
-In-Reply-To: <1370475066.3766.249.camel@pasglop>
-References: <1370446119-8837-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1370475066.3766.249.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <wenxiong@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0FBD22C02F6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jun 2013 08:01:54 +1000 (EST)
+Received: from /spool/local
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <wenxiong@linux.vnet.ibm.com>;
+ Wed, 5 Jun 2013 18:01:51 -0400
+Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id C60A338C8042
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 18:01:47 -0400 (EDT)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r55M1mdc56688852
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jun 2013 18:01:48 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r55M1m5s021033
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jun 2013 18:01:48 -0400
+Date: Wed, 05 Jun 2013 18:01:45 -0400
+Message-ID: <20130605180145.Horde.HbMAPpir309Rr7VJiFkHOuA@imap.linux.ibm.com>
+From: wenxiong@linux.vnet.ibm.com
+To: Robert Knight <knight@princeton.edu>
+Subject: Re: IBM OpenPower 720 ipr driver woes
+References: <51A61B82.5050508@princeton.edu>
+In-Reply-To: <51A61B82.5050508@princeton.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed; DelSp=Yes
+MIME-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,35 +39,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 06 Jun 2013 09:31:06 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> On Wed, 2013-06-05 at 20:58 +0530, Aneesh Kumar K.V wrote:
-> > 
-> > This is the second patchset needed to support THP on ppc64. Some of the changes
-> > included in this series are tricky in that it changes the powerpc linux page table
-> > walk subtly. We also overload few of the pte flags for ptes at PMD level (huge
-> > page PTEs).
-> > 
-> > The related mm/ changes are already merged to Andrew's -mm tree.
-> 
-> If I am to put that into powerpc-next, I need the dependent mm/ changes as well.
-> 
-> Do you have them in the form of a separate git tree that is *exactly* (same SHA1s)
-> what is expected to go upstream via Andrew ?
-> 
-> Andrew, are they fully acked on your side and ready to go ?
+Quoting Robert Knight <knight@princeton.edu>:
 
-Not being on linuxppc-dev I'm at a bit of a loss here.
+> Sometime after kernel 3.3.4, Fedora 17 running on an IBM OpenPower  
+> 720 stopped being able to read the SCSI disks with an error  
+> concerning a return code -1.  In the updates since, it has not  
+> resumed working.
+>
+Can you tell me which kernel you saw this issue(I assumed that 3.3.4  
+works fine).
+Also can you check your system firmware for me?
 
-I assume we're referring to
-
-mm-thp-add-pmd-args-to-pgtable-deposit-and-withdraw-apis.patch
-mm-thp-withdraw-the-pgtable-after-pmdp-related-operations.patch
-mm-thp-withdraw-the-pgtable-after-pmdp-related-operations-fix.patch
-mm-thp-dont-use-hpage_shift-in-transparent-hugepage-code.patch
-mm-thp-deposit-the-transpare-huge-pgtable-before-set_pmd.patch
-
-?
-
-Yes, they're ready to go.  I'll squirt them over at you and will drop
-my copies when I see them turn up in linux-next.
+Thanks,
+Wendy
