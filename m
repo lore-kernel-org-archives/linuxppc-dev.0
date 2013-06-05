@@ -1,31 +1,30 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e36.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 33B222C02AC
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 17:34:44 +1000 (EST)
+ (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 614002C02C5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 17:34:46 +1000 (EST)
 Received: from /spool/local
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Wed, 5 Jun 2013 01:34:42 -0600
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
- [9.17.195.227])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 6DD5E1FF001E
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 01:29:29 -0600 (MDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r557YjOI150732
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jun 2013 01:34:45 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r557Yd44007688
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jun 2013 01:34:39 -0600
+ Wed, 5 Jun 2013 01:34:43 -0600
+Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 5B762C90042
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 03:34:40 -0400 (EDT)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r557YeSY267412
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jun 2013 03:34:40 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r557Ydbl002294
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jun 2013 03:34:40 -0400
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 08/27] powerpc/eeh: Refactor eeh_reset_pe_once()
-Date: Wed,  5 Jun 2013 15:34:09 +0800
-Message-Id: <1370417668-16832-9-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 09/27] powerpc/eeh: Delay EEH probe during hotplug
+Date: Wed,  5 Jun 2013 15:34:10 +0800
+Message-Id: <1370417668-16832-10-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1370417668-16832-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1370417668-16832-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -38,36 +37,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We shouldn't check that the returned PE status is exactly equal to
-(EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE) but instead only check
-that they are both set.
+While doing EEH recovery, the PCI devices of the problematic PE
+should be removed and then added to the system again. During the
+so-called hotplug event, the PCI devices of the problematic PE
+will be probed through early/late phase. We would delay EEH probe
+on late point for PowerNV platform since the PCI device isn't
+available in early phase.
 
-[benh: changelog]
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/pseries/eeh.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ arch/powerpc/platforms/pseries/eeh.c |   16 +++++++++++++++-
+ 1 files changed, 15 insertions(+), 1 deletions(-)
 
 diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
-index ef3b02a..ba707104 100644
+index ba707104..17d86d7 100644
 --- a/arch/powerpc/platforms/pseries/eeh.c
 +++ b/arch/powerpc/platforms/pseries/eeh.c
-@@ -565,6 +565,7 @@ static void eeh_reset_pe_once(struct eeh_pe *pe)
-  */
- int eeh_reset_pe(struct eeh_pe *pe)
+@@ -758,6 +758,14 @@ static void eeh_add_device_early(struct device_node *dn)
  {
-+	int flags = (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE);
- 	int i, rc;
+ 	struct pci_controller *phb;
  
- 	/* Take three shots at resetting the bus */
-@@ -572,7 +573,7 @@ int eeh_reset_pe(struct eeh_pe *pe)
- 		eeh_reset_pe_once(pe);
++	/*
++	 * If we're doing EEH probe based on PCI device, we
++	 * would delay the probe until late stage because
++	 * the PCI device isn't available this moment.
++	 */
++	if (!eeh_probe_mode_devtree())
++		return;
++
+ 	if (!of_node_to_eeh_dev(dn))
+ 		return;
+ 	phb = of_node_to_eeh_dev(dn)->phb;
+@@ -766,7 +774,6 @@ static void eeh_add_device_early(struct device_node *dn)
+ 	if (NULL == phb || 0 == phb->buid)
+ 		return;
  
- 		rc = eeh_ops->wait_state(pe, PCI_BUS_RESET_WAIT_MSEC);
--		if (rc == (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE))
-+		if ((rc & flags) == flags)
- 			return 0;
+-	/* FIXME: hotplug support on POWERNV */
+ 	eeh_ops->of_probe(dn, NULL);
+ }
  
- 		if (rc < 0) {
+@@ -817,6 +824,13 @@ static void eeh_add_device_late(struct pci_dev *dev)
+ 	edev->pdev = dev;
+ 	dev->dev.archdata.edev = edev;
+ 
++	/*
++	 * We have to do the EEH probe here because the PCI device
++	 * hasn't been created yet in the early stage.
++	 */
++	if (eeh_probe_mode_dev())
++		eeh_ops->dev_probe(dev, NULL);
++
+ 	eeh_addr_cache_insert_dev(dev);
+ }
+ 
 -- 
 1.7.5.4
