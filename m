@@ -2,29 +2,29 @@ Return-Path: <shangw@linux.vnet.ibm.com>
 Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 13EBF2C02F2
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 17:34:58 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id DC8EE2C029E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 17:34:59 +1000 (EST)
 Received: from /spool/local
  by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Wed, 5 Jun 2013 03:34:56 -0400
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id CF6926E8039
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 03:34:49 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r557YqDK57278678
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jun 2013 03:34:53 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r557YphL002758
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jun 2013 03:34:52 -0400
+ Wed, 5 Jun 2013 03:34:57 -0400
+Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id C7DEC6E8039
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 03:34:50 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r557YsZF295518
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jun 2013 03:34:54 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r557YrTV025331
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jun 2013 04:34:54 -0300
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 25/27] powerpc/eeh: Register OPAL notifier for PCI error
-Date: Wed,  5 Jun 2013 15:34:26 +0800
-Message-Id: <1370417668-16832-26-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 27/27] powerpc/eeh: Debugfs for error injection
+Date: Wed,  5 Jun 2013 15:34:28 +0800
+Message-Id: <1370417668-16832-28-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1370417668-16832-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1370417668-16832-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -37,54 +37,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch intends to register OPAL event notifier and process the
-PCI errors from firmware. If we have pending PCI errors, the kthread
-will be invoke to handle that in turn.
+The patch creates debugfs entries (powerpc/PCIxxxx/err_injct) for
+injecting EEH errors for testing purpose.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/pci-err.c |   15 +++++++++++++++
- 1 files changed, 15 insertions(+), 0 deletions(-)
+ arch/powerpc/platforms/powernv/eeh-ioda.c |   33 ++++++++++++++++++++++++++++-
+ 1 files changed, 32 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-err.c b/arch/powerpc/platforms/powernv/pci-err.c
-index bfc95c6..d77dd61 100644
---- a/arch/powerpc/platforms/powernv/pci-err.c
-+++ b/arch/powerpc/platforms/powernv/pci-err.c
-@@ -64,6 +64,12 @@ static struct semaphore pci_err_int_sem;
- static struct semaphore pci_err_seq_sem;
- static char *pci_err_diag;
+diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
+index cbef2d5..6b13405 100644
+--- a/arch/powerpc/platforms/powernv/eeh-ioda.c
++++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
+@@ -21,6 +21,7 @@
+  */
  
-+static void pci_err_event(u64 event)
+ #include <linux/bootmem.h>
++#include <linux/debugfs.h>
+ #include <linux/delay.h>
+ #include <linux/init.h>
+ #include <linux/io.h>
+@@ -43,6 +44,29 @@
+ #include "powernv.h"
+ #include "pci.h"
+ 
++#ifdef CONFIG_DEBUG_FS
++static int ioda_eeh_dbgfs_set(void *data, u64 val)
 +{
-+	/* Notify kthread to process error */
-+	up(&pci_err_int_sem);
++	struct pci_controller *hose = data;
++	struct pnv_phb *phb = hose->private_data;
++
++	out_be64(phb->regs + 0xD10, val);
++	return 0;
 +}
 +
- static void pci_err_take(void)
- {
- 	down(&pci_err_seq_sem);
-@@ -451,6 +457,14 @@ static int __init pci_err_init(void)
- 	sema_init(&pci_err_int_sem, 0);
- 	sema_init(&pci_err_seq_sem, 1);
- 
-+	/* Register OPAL event notifier */
-+	ret = opal_notifier_register(OPAL_EVENT_PCI_ERROR, pci_err_event);
-+	if (ret) {
-+		pr_err("%s: Failed to register OPAL notifier, rc=%d\n",
-+			__func__, ret);
-+		goto out;
-+	}
++static int ioda_eeh_dbgfs_get(void *data, u64 *val)
++{
++	struct pci_controller *hose = data;
++	struct pnv_phb *phb = hose->private_data;
 +
- 	/* Start kthread */
- 	pci_err_thread = kthread_run(pci_err_handler, NULL, "PCI_ERR");
- 	if (IS_ERR(pci_err_thread)) {
-@@ -459,6 +473,7 @@ static int __init pci_err_init(void)
- 			__func__, ret);
- 	}
++	*val = in_be64(phb->regs + 0xD10);
++	return 0;
++}
++
++DEFINE_SIMPLE_ATTRIBUTE(ioda_eeh_dbgfs_ops, ioda_eeh_dbgfs_get,
++			ioda_eeh_dbgfs_set, "0x%llx\n");
++#endif /* CONFIG_DEBUG_FS */
++
+ /**
+  * ioda_eeh_post_init - Chip dependent post initialization
+  * @hose: PCI controller
+@@ -56,8 +80,15 @@ static int ioda_eeh_post_init(struct pci_controller *hose)
+ 	struct pnv_phb *phb = hose->private_data;
  
-+out:
- 	free_page((unsigned long)pci_err_diag);
- 	return ret;
+ 	/* FIXME: Enable it for PHB3 later */
+-	if (phb->type == PNV_PHB_IODA1)
++	if (phb->type == PNV_PHB_IODA1) {
++#ifdef CONFIG_DEBUG_FS
++		if (phb->dbgfs)
++			debugfs_create_file("err_injct", 0600,
++				phb->dbgfs, hose, &ioda_eeh_dbgfs_ops);
++#endif
++
+ 		phb->eeh_enabled = 1;
++	}
+ 
+ 	return 0;
  }
 -- 
 1.7.5.4
