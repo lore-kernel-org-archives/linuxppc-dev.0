@@ -1,13 +1,21 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>, benh@kernel.crashing.org
-Subject: [PATCH] powerpc/power8: Fix oprofile and perf
-In-reply-to: <26267.1370406880@ale.ozlabs.ibm.com>
-References: <20130528203950.GA30172@linux.vnet.ibm.com>
- <26267.1370406880@ale.ozlabs.ibm.com>
-Date: Wed, 05 Jun 2013 15:38:54 +1000
-Message-ID: <31322.1370410734@ale.ozlabs.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Maynard Johnson <mpjohn@us.ibm.com>
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-ie0-x233.google.com (mail-ie0-x233.google.com
+ [IPv6:2607:f8b0:4001:c03::233])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1603D2C009A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 16:11:26 +1000 (EST)
+Received: by mail-ie0-f179.google.com with SMTP id c13so2690286ieb.10
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Jun 2013 23:11:24 -0700 (PDT)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 0/4 v3] KVM: PPC: IOMMU in-kernel handling
+Date: Wed,  5 Jun 2013 16:11:09 +1000
+Message-Id: <1370412673-1345-1-git-send-email-aik@ozlabs.ru>
+Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,43 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In 2ac6f42 powerpc/cputable: Fix oprofile_cpu_type on power8 
-we broke all power8 hw events.
+Ben, ping! :)
 
-This reverts this change and uses oprofile_type instead. Perf now works
-on POWER8 again and oprofile will revert to using timers on POWER8.
+This series has tiny fixes (capability and ioctl numbers,
+changed documentation, compile errors in some configuration).
+More details are in the commit messages.
+Rebased on v3.10-rc4.
 
-Kudos to mpe this fix.
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
-tag: for-3.10
+Alexey Kardashevskiy (4):
+  KVM: PPC: Add support for multiple-TCE hcalls
+  powerpc: Prepare to support kernel handling of IOMMU map/unmap
+  KVM: PPC: Add support for IOMMU in-kernel handling
+  KVM: PPC: Add hugepage support for IOMMU in-kernel handling
 
-v2: renamed patch
+ Documentation/virtual/kvm/api.txt        |   45 +++
+ arch/powerpc/include/asm/kvm_host.h      |    7 +
+ arch/powerpc/include/asm/kvm_ppc.h       |   40 ++-
+ arch/powerpc/include/asm/pgtable-ppc64.h |    4 +
+ arch/powerpc/include/uapi/asm/kvm.h      |    7 +
+ arch/powerpc/kvm/book3s_64_vio.c         |  398 ++++++++++++++++++++++++-
+ arch/powerpc/kvm/book3s_64_vio_hv.c      |  471 ++++++++++++++++++++++++++++--
+ arch/powerpc/kvm/book3s_hv.c             |   39 +++
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S  |    6 +
+ arch/powerpc/kvm/book3s_pr_papr.c        |   37 ++-
+ arch/powerpc/kvm/powerpc.c               |   15 +
+ arch/powerpc/mm/init_64.c                |   77 ++++-
+ include/uapi/linux/kvm.h                 |    3 +
+ 13 files changed, 1121 insertions(+), 28 deletions(-)
 
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index 1f0937d..2a45d0f 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -452,8 +452,8 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.mmu_features		= MMU_FTRS_POWER8,
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
--		.oprofile_type		= PPC_OPROFILE_POWER4,
--		.oprofile_cpu_type	= 0,
-+		.oprofile_type		= PPC_OPROFILE_INVALID,
-+		.oprofile_cpu_type	= "ppc64/ibm-compat-v1",
- 		.cpu_setup		= __setup_cpu_power8,
- 		.cpu_restore		= __restore_cpu_power8,
- 		.platform		= "power8",
-@@ -506,8 +506,8 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.dcache_bsize		= 128,
- 		.num_pmcs		= 6,
- 		.pmc_type		= PPC_PMC_IBM,
--		.oprofile_cpu_type	= 0,
--		.oprofile_type		= PPC_OPROFILE_POWER4,
-+		.oprofile_cpu_type	= "ppc64/power8",
-+		.oprofile_type		= PPC_OPROFILE_INVALID,
- 		.cpu_setup		= __setup_cpu_power8,
- 		.cpu_restore		= __restore_cpu_power8,
- 		.platform		= "power8",
+-- 
+1.7.10.4
