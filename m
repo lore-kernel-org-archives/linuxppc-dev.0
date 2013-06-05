@@ -1,12 +1,12 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>, benh@kernel.crashing.org
-Subject: [PATCH] powerpc/cputable: fix oprofile_cpu_type on power8
+Subject: [PATCH] powerpc/power8: Fix oprofile and perf
 In-reply-to: <26267.1370406880@ale.ozlabs.ibm.com>
 References: <20130528203950.GA30172@linux.vnet.ibm.com>
  <26267.1370406880@ale.ozlabs.ibm.com>
-Date: Wed, 05 Jun 2013 15:35:50 +1000
-Message-ID: <30711.1370410550@ale.ozlabs.ibm.com>
+Date: Wed, 05 Jun 2013 15:38:54 +1000
+Message-ID: <31322.1370410734@ale.ozlabs.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, Maynard Johnson <mpjohn@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,11 +26,10 @@ on POWER8 again and oprofile will revert to using timers on POWER8.
 Kudos to mpe this fix.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
-
 ---
 tag: for-3.10
 
-benh: disregard my previous revert request and apply this instead
+v2: renamed patch
 
 diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
 index 1f0937d..2a45d0f 100644
