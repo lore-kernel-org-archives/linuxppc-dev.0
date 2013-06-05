@@ -1,24 +1,20 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-ea0-x235.google.com (mail-ea0-x235.google.com
- [IPv6:2a00:1450:4013:c01::235])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9E8D52C029B
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jun 2013 09:03:17 +1000 (EST)
-Received: by mail-ea0-f181.google.com with SMTP id a11so1809223eae.26
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Jun 2013 16:03:11 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 1/3] irq: Set multiple MSI descriptor data for multiple
- IRQs
-To: Mike Qiu <qiudayu@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-In-Reply-To: <1358235536-32741-2-git-send-email-qiudayu@linux.vnet.ibm.com>
-References: <1358235536-32741-1-git-send-email-qiudayu@linux.vnet.ibm.com>
- <1358235536-32741-2-git-send-email-qiudayu@linux.vnet.ibm.com>
-Date: Thu, 06 Jun 2013 00:03:08 +0100
-Message-Id: <20130605230308.8CC093E10E4@localhost>
-Cc: tglx@linutronix.de, Mike Qiu <qiudayu@linux.vnet.ibm.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 0DB3A2C01D4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jun 2013 09:31:15 +1000 (EST)
+Message-ID: <1370475066.3766.249.camel@pasglop>
+Subject: Re: [PATCH -V10 00/15] THP support for PPC64
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Date: Thu, 06 Jun 2013 09:31:06 +1000
+In-Reply-To: <1370446119-8837-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1370446119-8837-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+ paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,36 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 15 Jan 2013 15:38:54 +0800, Mike Qiu <qiudayu@linux.vnet.ibm.com> wrote:
-> Multiple MSI only requires the IRQ in msi_desc entry to be set as
-> the value of irq_base.
+On Wed, 2013-06-05 at 20:58 +0530, Aneesh Kumar K.V wrote:
 > 
-> This patch implements the above mentioned technique.
+> This is the second patchset needed to support THP on ppc64. Some of the changes
+> included in this series are tricky in that it changes the powerpc linux page table
+> walk subtly. We also overload few of the pte flags for ptes at PMD level (huge
+> page PTEs).
 > 
-> Signed-off-by: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+> The related mm/ changes are already merged to Andrew's -mm tree.
 
-Hi Mike,
+If I am to put that into powerpc-next, I need the dependent mm/ changes as well.
 
-question below...
+Do you have them in the form of a separate git tree that is *exactly* (same SHA1s)
+what is expected to go upstream via Andrew ?
 
-> ---
-> +int irq_set_multiple_msi_desc(unsigned int irq_base, unsigned int nvec,
-> +				struct msi_desc *entry)
-> +{
-> +	unsigned long flags, i;
-> +	struct irq_desc *desc;
-> +
-> +	for (i = 0; i < nvec; i++) {
-> +		desc = irq_get_desc_lock(irq_base + i, &flags,
-> +					IRQ_GET_DESC_CHECK_GLOBAL);
-> +		if (!desc)
-> +			return -EINVAL;
-> +		desc->irq_data.msi_desc = entry;
-> +		if (i == 0 && entry)
-> +			entry->irq = irq_base;
+Andrew, are they fully acked on your side and ready to go ?
 
-It's not clear to me why this code only sets the irq value for the first
-desc. Why don't the other descs in the array want (irq_base + i) here? A
-comment describing what is going on would be appropriate and helpful.
-
-g.
+Cheers,
+Ben.
