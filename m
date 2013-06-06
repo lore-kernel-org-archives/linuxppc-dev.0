@@ -1,35 +1,31 @@
-Return-Path: <wenxiong@linux.vnet.ibm.com>
+Return-Path: <shangw@linux.vnet.ibm.com>
 Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0FBD22C02F6
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jun 2013 08:01:54 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id D3A302C009A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jun 2013 10:26:02 +1000 (EST)
 Received: from /spool/local
  by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <wenxiong@linux.vnet.ibm.com>;
- Wed, 5 Jun 2013 18:01:51 -0400
-Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id C60A338C8042
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 18:01:47 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r55M1mdc56688852
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jun 2013 18:01:48 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r55M1m5s021033
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jun 2013 18:01:48 -0400
-Date: Wed, 05 Jun 2013 18:01:45 -0400
-Message-ID: <20130605180145.Horde.HbMAPpir309Rr7VJiFkHOuA@imap.linux.ibm.com>
-From: wenxiong@linux.vnet.ibm.com
-To: Robert Knight <knight@princeton.edu>
-Subject: Re: IBM OpenPower 720 ipr driver woes
-References: <51A61B82.5050508@princeton.edu>
-In-Reply-To: <51A61B82.5050508@princeton.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed; DelSp=Yes
-MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+ for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Wed, 5 Jun 2013 20:25:59 -0400
+Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 4B0A7C9003E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2013 20:25:56 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r560Punf317154
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jun 2013 20:25:56 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r560PuqZ025885
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jun 2013 21:25:56 -0300
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2] powerpc/eeh: Don't check RTAS token to get PE addr
+Date: Thu,  6 Jun 2013 08:25:50 +0800
+Message-Id: <1370478350-16223-1-git-send-email-shangw@linux.vnet.ibm.com>
+Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,17 +35,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+RTAS token "ibm,get-config-addr-info" or ibm,get-config-addr-info2"
+are used to retrieve the PE address according to PCI address, which
+made up of domain/bus/slot/function. If we don't have those 2 tokens,
+the domain/bus/slot/function would be used as the address for EEH
+RTAS operations. Some older f/w might not have those 2 tokens and
+that blocks the EEH functionality to be initialized. It was introduced
+by commit e2af155c ("powerpc/eeh: pseries platform EEH initialization").
 
-Quoting Robert Knight <knight@princeton.edu>:
+The patch skips the check on those 2 tokens so we can bring up EEH
+functionality successfully. And domain/bus/slot/function will be
+used as address for EEH RTAS operations.
 
-> Sometime after kernel 3.3.4, Fedora 17 running on an IBM OpenPower  
-> 720 stopped being able to read the SCSI disks with an error  
-> concerning a return code -1.  In the updates since, it has not  
-> resumed working.
->
-Can you tell me which kernel you saw this issue(I assumed that 3.3.4  
-works fine).
-Also can you check your system firmware for me?
+Cc: <stable@vger.kernel.org> # v3.4+
+Reported-by: Robert Knight <knight@princeton.edu>
+Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+Tested-by: Robert Knight <knight@princeton.edu>
+---
+ arch/powerpc/platforms/pseries/eeh_pseries.c |   12 +++++-------
+ 1 files changed, 5 insertions(+), 7 deletions(-)
 
-Thanks,
-Wendy
+diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
+index 19506f9..b456b15 100644
+--- a/arch/powerpc/platforms/pseries/eeh_pseries.c
++++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+@@ -83,7 +83,11 @@ static int pseries_eeh_init(void)
+ 	ibm_configure_pe		= rtas_token("ibm,configure-pe");
+ 	ibm_configure_bridge		= rtas_token("ibm,configure-bridge");
+ 
+-	/* necessary sanity check */
++	/*
++	 * Necessary sanity check. We needn't check "get-config-addr-info"
++	 * and its variant since the old firmware probably support address
++	 * of domain/bus/slot/function for EEH RTAS operations.
++	 */
+ 	if (ibm_set_eeh_option == RTAS_UNKNOWN_SERVICE) {
+ 		pr_warning("%s: RTAS service <ibm,set-eeh-option> invalid\n",
+ 			__func__);
+@@ -102,12 +106,6 @@ static int pseries_eeh_init(void)
+ 		pr_warning("%s: RTAS service <ibm,slot-error-detail> invalid\n",
+ 			__func__);
+ 		return -EINVAL;
+-	} else if (ibm_get_config_addr_info2 == RTAS_UNKNOWN_SERVICE &&
+-		   ibm_get_config_addr_info == RTAS_UNKNOWN_SERVICE) {
+-		pr_warning("%s: RTAS service <ibm,get-config-addr-info2> and "
+-			"<ibm,get-config-addr-info> invalid\n",
+-			__func__);
+-		return -EINVAL;
+ 	} else if (ibm_configure_pe == RTAS_UNKNOWN_SERVICE &&
+ 		   ibm_configure_bridge == RTAS_UNKNOWN_SERVICE) {
+ 		pr_warning("%s: RTAS service <ibm,configure-pe> and "
+-- 
+1.7.5.4
