@@ -1,12 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 From: Michael Ellerman <michael@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc/perf: Fix deadlock caused by calling printk() in PMU
- exception
-Date: Thu,  6 Jun 2013 13:58:20 +1000
-Message-Id: <1370491100-781-1-git-send-email-michael@ellerman.id.au>
-Cc: Michael Neuling <mikey@neuling.org>, sukadev@linux.vnet.ibm.com,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
+Subject: [PATCH] powerpc: Partial revert of "Context switch more PMU related
+ SPRs"
+Date: Thu,  6 Jun 2013 14:03:36 +1000
+Message-Id: <1370491416-1807-1-git-send-email-michael@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,51 +14,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In commit bc09c21 "Fix finding overflowed PMC in interrupt" we added
-a printk() to the PMU exception handler. Unfortunately that is not safe.
+In commit 59affcd I added context switching of more PMU SPRs, because
+they are potentially exposed to userspace on Power8. However despite me
+being a smart arse in the commit message it's actually not correct. In
+particular it interacts badly with a global perf record.
 
-The problem is that the PMU exception may run even when interrupts are
-soft disabled, aka NMI context. We do this so that we can profile parts
-of the kernel that have interrupts soft-disabled.
-
-But by calling printk() from the exception handler, we can potentially
-deadlock in the printk code on logbuf_lock, eg:
-
-  [c00000038ba575c0] c000000000081928 .vprintk_emit+0xa8/0x540
-  [c00000038ba576a0] c0000000007bcde8 .printk+0x48/0x58
-  [c00000038ba57710] c000000000076504 .perf_event_interrupt+0x2d4/0x490
-  [c00000038ba57810] c00000000001f6f8 .performance_monitor_exception+0x48/0x60
-  [c00000038ba57880] c0000000000032cc performance_monitor_common+0x14c/0x180
-  --- Exception: f01 (Performance Monitor) at c0000000007b25d4 ._raw_spin_lock_irq
-  +0x64/0xc0
-  [c00000038ba57bf0] c00000000007ed90 .devkmsg_read+0xd0/0x5a0
-  [c00000038ba57d00] c0000000001c2934 .vfs_read+0xc4/0x1e0
-  [c00000038ba57d90] c0000000001c2cd8 .SyS_read+0x58/0xd0
-  [c00000038ba57e30] c000000000009d54 syscall_exit+0x0/0x98
-  --- Exception: c01 (System Call) at 00001fffffbf6f7c
-  SP (3ffff6d4de10) is in userspace
-
-Fix it by making sure we only call printk() when we are not in NMI
-context.
+We will have to do something more complicated, but that will have to
+wait for 3.11.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-Cc: <stable@vger.kernel.org> # 3.9
 ---
- arch/powerpc/perf/core-book3s.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kernel/entry_64.S |   28 ----------------------------
+ 1 file changed, 28 deletions(-)
 
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 845c867..29c6482 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -1758,7 +1758,7 @@ static void perf_event_interrupt(struct pt_regs *regs)
- 			}
- 		}
- 	}
--	if ((!found) && printk_ratelimit())
-+	if (!found && !nmi && printk_ratelimit())
- 		printk(KERN_WARNING "Can't find PMC that caused IRQ\n");
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 246b11c..8741c85 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -465,20 +465,6 @@ BEGIN_FTR_SECTION
+ 	std	r0, THREAD_EBBHR(r3)
+ 	mfspr	r0, SPRN_EBBRR
+ 	std	r0, THREAD_EBBRR(r3)
+-
+-	/* PMU registers made user read/(write) by EBB */
+-	mfspr	r0, SPRN_SIAR
+-	std	r0, THREAD_SIAR(r3)
+-	mfspr	r0, SPRN_SDAR
+-	std	r0, THREAD_SDAR(r3)
+-	mfspr	r0, SPRN_SIER
+-	std	r0, THREAD_SIER(r3)
+-	mfspr	r0, SPRN_MMCR0
+-	std	r0, THREAD_MMCR0(r3)
+-	mfspr	r0, SPRN_MMCR2
+-	std	r0, THREAD_MMCR2(r3)
+-	mfspr	r0, SPRN_MMCRA
+-	std	r0, THREAD_MMCRA(r3)
+ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ #endif
  
- 	/*
+@@ -581,20 +567,6 @@ BEGIN_FTR_SECTION
+ 	ld	r0, THREAD_EBBRR(r4)
+ 	mtspr	SPRN_EBBRR, r0
+ 
+-	/* PMU registers made user read/(write) by EBB */
+-	ld	r0, THREAD_SIAR(r4)
+-	mtspr	SPRN_SIAR, r0
+-	ld	r0, THREAD_SDAR(r4)
+-	mtspr	SPRN_SDAR, r0
+-	ld	r0, THREAD_SIER(r4)
+-	mtspr	SPRN_SIER, r0
+-	ld	r0, THREAD_MMCR0(r4)
+-	mtspr	SPRN_MMCR0, r0
+-	ld	r0, THREAD_MMCR2(r4)
+-	mtspr	SPRN_MMCR2, r0
+-	ld	r0, THREAD_MMCRA(r4)
+-	mtspr	SPRN_MMCRA, r0
+-
+ 	ld	r0,THREAD_TAR(r4)
+ 	mtspr	SPRN_TAR,r0
+ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
 -- 
 1.7.10.4
