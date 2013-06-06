@@ -1,38 +1,38 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 625922C009E
- for <linuxppc-dev@ozlabs.org>; Thu,  6 Jun 2013 16:05:10 +1000 (EST)
+ (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9ABD32C02EB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jun 2013 16:06:04 +1000 (EST)
 Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Thu, 6 Jun 2013 11:30:31 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 3C46AE0053
- for <linuxppc-dev@ozlabs.org>; Thu,  6 Jun 2013 11:37:47 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5664oMa9568606
- for <linuxppc-dev@ozlabs.org>; Thu, 6 Jun 2013 11:34:50 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5664wRN003818
- for <linuxppc-dev@ozlabs.org>; Thu, 6 Jun 2013 16:04:58 +1000
-Message-ID: <51B0266F.3090708@linux.vnet.ibm.com>
-Date: Thu, 06 Jun 2013 11:34:31 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 6 Jun 2013 15:57:31 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 1542E2BB0050
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jun 2013 16:05:51 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r565pFdm64749670
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Jun 2013 15:51:15 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5665nSi030212
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Jun 2013 16:05:49 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH -V10 00/15] THP support for PPC64
+In-Reply-To: <20130605171310.065c6fe2a3313c69bcfa0fc8@linux-foundation.org>
+References: <1370446119-8837-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1370475066.3766.249.camel@pasglop>
+ <20130605171310.065c6fe2a3313c69bcfa0fc8@linux-foundation.org>
+Date: Thu, 06 Jun 2013 11:35:47 +0530
+Message-ID: <8738svyds4.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH V2 1/2] powerpc, perf: Ignore separate BHRB privilege
- state filter request
-References: <1369716452-28689-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1369716452-28689-2-git-send-email-khandual@linux.vnet.ibm.com>
- <20699.1370494560@ale.ozlabs.ibm.com>
-In-Reply-To: <20699.1370494560@ale.ozlabs.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,75 +42,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/06/2013 10:26 AM, Michael Neuling wrote:
-> Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote:
-> 
->> Completely ignore BHRB privilege state filter request as we are
->> already configuring that with privilege state filtering attribute
->> for the accompanying PMU event. This would help achieve cleaner
->> user space interaction for BHRB.
->>
->> This patch fixes a situation like this
->>
->> Before patch:-
->> ------------
->> ./perf record -j any -e branch-misses:k ls
->> Error:
->> The sys_perf_event_open() syscall returned with 95 (Operation not supported) for event (branch-misses:k).
->> /bin/dmesg may provide additional information.
->> No CONFIG_PERF_EVENTS=y kernel support configured?
->>
->> Here 'perf record' actually copies over ':k' filter request into BHRB
->> privilege state filter config and our previous check in kernel would
->> fail that.
->>
->> After patch:-
->> -------------
->> ./perf record -j any -e branch-misses:k ls
->> perf  perf.data  perf.data.old  test-mmap-ring
->> [ perf record: Woken up 1 times to write data ]
->> [ perf record: Captured and wrote 0.002 MB perf.data (~102 samples) ]
->>
->> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/perf/power8-pmu.c | 12 ++++--------
->>  1 file changed, 4 insertions(+), 8 deletions(-)
->>
->> diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
->> index f7d1c4f..3a58416 100644
->> --- a/arch/powerpc/perf/power8-pmu.c
->> +++ b/arch/powerpc/perf/power8-pmu.c
->> @@ -525,16 +525,12 @@ static u64 power8_bhrb_filter_map(u64 branch_sample_type)
->>  	u64 pmu_bhrb_filter = 0;
->>  	u64 br_privilege = branch_sample_type & ONLY_PLM;
->>  
->> -	/* BHRB and regular PMU events share the same prvillege state
->> +	/* BHRB and regular PMU events share the same privilege state
->>  	 * filter configuration. BHRB is always recorded along with a
->> -	 * regular PMU event. So privilege state filter criteria for BHRB
->> -	 * and the companion PMU events has to be the same. As a default
->> -	 * "perf record" tool sets all privillege bits ON when no filter
->> -	 * criteria is provided in the command line. So as along as all
->> -	 * privillege bits are ON or they are OFF, we are good to go.
->> +	 * regular PMU event. As the privilege state filter is handled
->> +	 * in the basic PMC configuration of the accompanying regular
->> +	 * PMU event, we ignore any separate BHRB specific request.
->>  	 */
->> -	if ((br_privilege != 7) && (br_privilege != 0))
->> -		return -1;
-> 
-> br_privilege is now unused which causes this compile error.
-> 
-> arch/powerpc/perf/power8-pmu.c:526:6: error: unused variable ‘br_privilege’ [-Werror=unused-variable]
-> 
-> I assume since you didn't compile test this code, you also didn't
-> runtime test it either?!!?!?!?
+Andrew Morton <akpm@linux-foundation.org> writes:
 
+> On Thu, 06 Jun 2013 09:31:06 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+>
+>> On Wed, 2013-06-05 at 20:58 +0530, Aneesh Kumar K.V wrote:
+>> > 
+>> > This is the second patchset needed to support THP on ppc64. Some of the changes
+>> > included in this series are tricky in that it changes the powerpc linux page table
+>> > walk subtly. We also overload few of the pte flags for ptes at PMD level (huge
+>> > page PTEs).
+>> > 
+>> > The related mm/ changes are already merged to Andrew's -mm tree.
+>> 
+>> If I am to put that into powerpc-next, I need the dependent mm/ changes as well.
+>> 
+>> Do you have them in the form of a separate git tree that is *exactly* (same SHA1s)
+>> what is expected to go upstream via Andrew ?
+>> 
+>> Andrew, are they fully acked on your side and ready to go ?
+>
+> Not being on linuxppc-dev I'm at a bit of a loss here.
+>
+> I assume we're referring to
+>
+> mm-thp-add-pmd-args-to-pgtable-deposit-and-withdraw-apis.patch
+> mm-thp-withdraw-the-pgtable-after-pmdp-related-operations.patch
+> mm-thp-withdraw-the-pgtable-after-pmdp-related-operations-fix.patch
+> mm-thp-dont-use-hpage_shift-in-transparent-hugepage-code.patch
+> mm-thp-deposit-the-transpare-huge-pgtable-before-set_pmd.patch
+>
 
-Always compile with the cross compiler "ARCH=powerpc CROSS_COMPILE=powerpc64-linux-gnu- make"
-I copied over arch/powerpc/config/pseries_defconfig and compiled it. Some how it missed
-to be a 64 bit kernel config which resulted in shutting down compilation of arch/powerpc/perf/power8-pmu.c
-file. So never encountered this compiler warning message before. Will fix this.
+There is one more:
 
-Regards
-Anshuman
+mm/THP: Use the right function when updating access flags
+
+mm-thp-use-the-right-function-when-updating-access-flags.patc
+
+-aneesh
