@@ -1,26 +1,20 @@
-Return-Path: <B07421@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DCE532C008A
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jun 2013 08:42:48 +1000 (EST)
-Date: Thu, 6 Jun 2013 17:42:39 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH -V7 09/18] powerpc: Switch 16GB and 16MB explicit
- hugepages to a different page table format
-To: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-References: <1367177859-7893-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1367177859-7893-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1367177859-7893-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com> (from
- aneesh.kumar@linux.vnet.ibm.com on Sun Apr 28 14:37:30 2013)
-Message-ID: <1370558559.32518.4@snotra>
+Return-Path: <mikey@neuling.org>
+Received: from localhost.localdomain (localhost [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTP id B7B272C008E
+ for <linuxppc-dev@ozlabs.org>; Fri,  7 Jun 2013 09:46:54 +1000 (EST)
+From: Michael Neuling <mikey@neuling.org>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [PATCH V2 1/2] powerpc,
+ perf: Ignore separate BHRB privilege state filter request
+In-reply-to: <51B0266F.3090708@linux.vnet.ibm.com>
+References: <1369716452-28689-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1369716452-28689-2-git-send-email-khandual@linux.vnet.ibm.com>
+ <20699.1370494560@ale.ozlabs.ibm.com> <51B0266F.3090708@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: dwg@au1.ibm.com, linux-mm@kvack.org, paulus@samba.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=utf-8
+Date: Fri, 07 Jun 2013 09:46:54 +1000
+Message-ID: <31747.1370562414@ale.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,72 +24,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/28/2013 02:37:30 PM, Aneesh Kumar K.V wrote:
-> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
->=20
-> We will be switching PMD_SHIFT to 24 bits to facilitate THP =20
-> impmenetation.
-> With PMD_SHIFT set to 24, we now have 16MB huge pages allocated at =20
-> PGD level.
-> That means with 32 bit process we cannot allocate normal pages at
-> all, because we cover the entire address space with one pgd entry. =20
-> Fix this
-> by switching to a new page table format for hugepages. With the new =20
-> page table
-> format for 16GB and 16MB hugepages we won't allocate hugepage =20
-> directory. Instead
-> we encode the PTE information directly at the directory level. This =20
-> forces 16MB
-> hugepage at PMD level. This will also make the page take walk much =20
-> simpler later
-> when we add the THP support.
->=20
-> With the new table format we have 4 cases for pgds and pmds:
-> (1) invalid (all zeroes)
-> (2) pointer to next table, as normal; bottom 6 bits =3D=3D 0
-> (3) leaf pte for huge page, bottom two bits !=3D 00
-> (4) hugepd pointer, bottom two bits =3D=3D 00, next 4 bits indicate size =
-=20
-> of table
->=20
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/page.h    |   2 +
->  arch/powerpc/include/asm/pgtable.h |   2 +
->  arch/powerpc/mm/gup.c              |  18 +++-
->  arch/powerpc/mm/hugetlbpage.c      | 176 =20
-> +++++++++++++++++++++++++++++++------
->  4 files changed, 168 insertions(+), 30 deletions(-)
+Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote:
 
-After this patch, on 64-bit book3e (e5500, and thus 4K pages), I see =20
-messages like this after exiting a program that uses hugepages =20
-(specifically, qemu):
+> On 06/06/2013 10:26 AM, Michael Neuling wrote:
+> > Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote:
+> >=20
+> >> Completely ignore BHRB privilege state filter request as we are
+> >> already configuring that with privilege state filtering attribute
+> >> for the accompanying PMU event. This would help achieve cleaner
+> >> user space interaction for BHRB.
+> >>
+> >> This patch fixes a situation like this
+> >>
+> >> Before patch:-
+> >> ------------
+> >> ./perf record -j any -e branch-misses:k ls
+> >> Error:
+> >> The sys_perf_event_open() syscall returned with 95 (Operation not supp=
+orted) for event (branch-misses:k).
+> >> /bin/dmesg may provide additional information.
+> >> No CONFIG_PERF_EVENTS=3Dy kernel support configured?
+> >>
+> >> Here 'perf record' actually copies over ':k' filter request into BHRB
+> >> privilege state filter config and our previous check in kernel would
+> >> fail that.
+> >>
+> >> After patch:-
+> >> -------------
+> >> ./perf record -j any -e branch-misses:k ls
+> >> perf  perf.data  perf.data.old  test-mmap-ring
+> >> [ perf record: Woken up 1 times to write data ]
+> >> [ perf record: Captured and wrote 0.002 MB perf.data (~102 samples) ]
+> >>
+> >> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> >> ---
+> >>  arch/powerpc/perf/power8-pmu.c | 12 ++++--------
+> >>  1 file changed, 4 insertions(+), 8 deletions(-)
+> >>
+> >> diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8=
+-pmu.c
+> >> index f7d1c4f..3a58416 100644
+> >> --- a/arch/powerpc/perf/power8-pmu.c
+> >> +++ b/arch/powerpc/perf/power8-pmu.c
+> >> @@ -525,16 +525,12 @@ static u64 power8_bhrb_filter_map(u64 branch_sam=
+ple_type)
+> >>  	u64 pmu_bhrb_filter =3D 0;
+> >>  	u64 br_privilege =3D branch_sample_type & ONLY_PLM;
+> >>=20=20
+> >> -	/* BHRB and regular PMU events share the same prvillege state
+> >> +	/* BHRB and regular PMU events share the same privilege state
+> >>  	 * filter configuration. BHRB is always recorded along with a
+> >> -	 * regular PMU event. So privilege state filter criteria for BHRB
+> >> -	 * and the companion PMU events has to be the same. As a default
+> >> -	 * "perf record" tool sets all privillege bits ON when no filter
+> >> -	 * criteria is provided in the command line. So as along as all
+> >> -	 * privillege bits are ON or they are OFF, we are good to go.
+> >> +	 * regular PMU event. As the privilege state filter is handled
+> >> +	 * in the basic PMC configuration of the accompanying regular
+> >> +	 * PMU event, we ignore any separate BHRB specific request.
+> >>  	 */
+> >> -	if ((br_privilege !=3D 7) && (br_privilege !=3D 0))
+> >> -		return -1;
+> >=20
+> > br_privilege is now unused which causes this compile error.
+> >=20
+> > arch/powerpc/perf/power8-pmu.c:526:6: error: unused variable =E2=80=98b=
+r_privilege=E2=80=99 [-Werror=3Dunused-variable]
+> >=20
+> > I assume since you didn't compile test this code, you also didn't
+> > runtime test it either?!!?!?!?
+>=20
+>=20
+> Always compile with the cross compiler "ARCH=3Dpowerpc
+> CROSS_COMPILE=3Dpowerpc64-linux-gnu- make" I copied over
+> arch/powerpc/config/pseries_defconfig and compiled it. Some how it
+> missed to be a 64 bit kernel config which resulted in shutting down
+> compilation of arch/powerpc/perf/power8-pmu.c file. So never
+> encountered this compiler warning message before. Will fix this.
 
-/home/scott/fsl/git/linux/upstream/mm/memory.c:407: bad pmd =20
-40000001fc221516.
-/home/scott/fsl/git/linux/upstream/mm/memory.c:407: bad pmd =20
-40000001fc221516.
-/home/scott/fsl/git/linux/upstream/mm/memory.c:407: bad pmd =20
-40000001fc2214d6.
-/home/scott/fsl/git/linux/upstream/mm/memory.c:407: bad pmd =20
-40000001fc2214d6.
-/home/scott/fsl/git/linux/upstream/mm/memory.c:407: bad pmd =20
-40000001fc221916.
-/home/scott/fsl/git/linux/upstream/mm/memory.c:407: bad pmd =20
-40000001fc221916.
-/home/scott/fsl/git/linux/upstream/mm/memory.c:407: bad pmd =20
-40000001fc2218d6.
-/home/scott/fsl/git/linux/upstream/mm/memory.c:407: bad pmd =20
-40000001fc2218d6.
-/home/scott/fsl/git/linux/upstream/mm/memory.c:407: bad pmd =20
-40000001fc221496.
-/home/scott/fsl/git/linux/upstream/mm/memory.c:407: bad pmd =20
-40000001fc221496.
-/home/scott/fsl/git/linux/upstream/mm/memory.c:407: bad pmd =20
-40000001fc221856.
-/home/scott/fsl/git/linux/upstream/mm/memory.c:407: bad pmd =20
-40000001fc221856.
-/home/scott/fsl/git/linux/upstream/mm/memory.c:407: bad pmd =20
-40000001fc221816.
+I don't understand this at all... pseries_defconfig is a 64bit kernel.
 
--Scott=
+BTW. you don't need to copy it.  Just do "make pseries_defconfig && make
+vmlinux".
+
+Mikey
