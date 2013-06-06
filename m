@@ -1,27 +1,41 @@
-Return-Path: <B02008@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0188.outbound.messaging.microsoft.com [213.199.154.188])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 401982C0095
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jun 2013 19:43:20 +1000 (EST)
-From: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [RFC PATCH 0/6] KVM: PPC: Book3E: AltiVec support
-Date: Thu, 6 Jun 2013 09:42:44 +0000
-Message-ID: <300B73AA675FCE4A93EB4FC1D42459FF453564@039-SN2MPN1-011.039d.mgd.msft.net>
-References: <1370292868-2697-1-git-send-email-mihai.caraman@freescale.com>
- <1370381959.748.16@snotra>
- <300B73AA675FCE4A93EB4FC1D42459FF44EB49@039-SN2MPN1-011.039d.mgd.msft.net>
- <1370450103.26139.0@snotra>
-In-Reply-To: <1370450103.26139.0@snotra>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e7.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3396F2C009D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jun 2013 21:32:17 +1000 (EST)
+Received: from /spool/local
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
+ Thu, 6 Jun 2013 07:32:12 -0400
+Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id DCE2B38C8042
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jun 2013 07:32:09 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r56BWADG296328
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Jun 2013 07:32:10 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r56BW9F0012851
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Jun 2013 07:32:09 -0400
+Message-ID: <51B07336.7040609@linux.vnet.ibm.com>
+Date: Thu, 06 Jun 2013 06:32:06 -0500
+From: Brian King <brking@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- Alexander Graf <agraf@suse.de>
+To: Robert Knight <knight@princeton.edu>
+Subject: Re: IBM OpenPower 720 ipr driver woes
+References: <51A61B82.5050508@princeton.edu>
+ <51A644C2.5090300@linux.vnet.ibm.com> <51AD088C.8040803@princeton.edu>
+ <20130604000130.GA25055@thor.bakeyournoodle.com>
+ <51AD45A4.9080702@princeton.edu>
+ <20130604031651.GA3373@thor.bakeyournoodle.com>
+ <20130604035223.GA27964@shangw.(null)> <51AFAA2C.5060304@princeton.edu>
+In-Reply-To: <51AFAA2C.5060304@princeton.edu>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org, Wendy Xiong <wenxiong@linux.vnet.ibm.com>,
+ Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,27 +45,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> > > This looks like a bit much for 3.10 (certainly, subject lines like
-> > > "refactor" and "enhance" and "add support" aren't going to make
-> > Linus
-> > > happy given that we're past rc4) so I think we should apply
-> > > http://patchwork.ozlabs.org/patch/242896/ for 3.10.  Then for 3.11,
-> > > revert it after applying this patchset.
-> > >
-> >
-> > Why not 1/6 plus e6500 removal?
->=20
-> 1/6 is not a bugfix.
+On 06/05/2013 04:14 PM, Robert Knight wrote:
+> On 6/3/2013 11:52 PM, Gavin Shan wrote:
+>> On Tue, Jun 04, 2013 at 01:16:52PM +1000, Tony Breeds wrote:
+>>> On Mon, Jun 03, 2013 at 09:40:52PM -0400, Robert Knight wrote:
+>>>> On 6/3/2013 8:01 PM, Tony Breeds wrote:
+>>>>> On Mon, Jun 03, 2013 at 05:20:12PM -0400, Robert Knight wrote:
+>>>>>
+>>>>>>> Device tree struct  0x0000000004820000 -> 0x0000000004840000
+>>>>>>> Calling quiesce...
+>>>>>>> returning from prom_init
+>>>>>>> [    1.376359] ehci-pci 0000:c8:01.2: can't setup
+>>>>> Can you try adding "debug" to the kernel commandline.  We're missing a
+>>>>> great chunk of detail. If you're starting from scratch either try F18 or
+>>>>> the F19 Beta (if you're brave :))
+>>>>>
+>>>>> Yours Tony
+>>>> So, two points.  Since I have no live disks, I can't copy the dmesg
+>>>> output in dracut onto a disk and just sent it to you -- the only way
+>>>> that I know to get it is cut and paste from a HMC console window
+>>>> into a vi buffer.
+>>> Okay, when I've been in that situation, I run "script" locally and then
+>>> conenct to the HMC console.
+>>>
+>>> When you're done you can exit script adn then a file called typescript
+>>> will exist in the directory you ran script in.
+>>>
+>>> It's a less overhead way of doign what you're already doing.
+>>> [    0.087097] NET: Registered protocol family 16
+>>>
+>>>> [    0.087144] pseries_eeh_init: RTAS service <ibm,get-config-addr-info2> and <i
+>>>> bm,get-config-addr-info> invalid
+>>>> [    0.087155] eeh_init: Failed to call platform init function (-22)
+>>> Hmm this seems pretty strange to me.  Gavin are these RTAS tokens
+>>> supported on older power5 boxes?
+>>>
+>> Yes, Tony. "ibm,get-config-addr-info" should be supported on Power5 box.
+>> Newer PowerBox (e.g. P7) should support "ibm,get-config-addr-info2"
+>>
+>> Please have a try on the attached patch, which is based on mainline (3.10).
+>>
+>> Thanks,
+>> Gavin
+>>
+>>
+> The system boots with that patch.  I applied it to kernel-3.8.11-100.
 
-Not sure I get it. Isn't this a better fix for AltiVec build breakage:
+Does that patch resolve all your issues, or are there still issues with ipr remaining
+after applying the patch?
 
--#define BOOKE_INTERRUPT_ALTIVEC_UNAVAIL 42
--#define BOOKE_INTERRUPT_ALTIVEC_ASSIST 43
-+#define BOOKE_INTERRUPT_ALTIVEC_UNAVAIL 32
-+#define BOOKE_INTERRUPT_ALTIVEC_ASSIST 33
+Thanks,
 
-This removes the need for additional kvm_handlers. Obvious this doesn't mak=
-e
-AltiVec to work so we still need to disable e6500.
+Brian
 
--Mike
+-- 
+Brian King
+Power Linux I/O
+IBM Linux Technology Center
