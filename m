@@ -1,13 +1,28 @@
-Return-Path: <B29983@freescale.com>
-From: <Yuantian.Tang@freescale.com>
-To: <galak@kernel.crashing.org>
-Subject: [PATCH v3] powerpc/mpc85xx: Update the clock device tree nodes
-Date: Thu, 6 Jun 2013 09:06:51 +0800
-Message-ID: <1370480811-13700-1-git-send-email-Yuantian.Tang@freescale.com>
+Return-Path: <michael.neuling@gmail.com>
+Received: from mail-pd0-f177.google.com (mail-pd0-f177.google.com
+ [209.85.192.177])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0EC512C02CC
+ for <linuxppc-dev@ozlabs.org>; Thu,  6 Jun 2013 12:56:50 +1000 (EST)
+Received: by mail-pd0-f177.google.com with SMTP id u10so2712650pdi.36
+ for <linuxppc-dev@ozlabs.org>; Wed, 05 Jun 2013 19:56:48 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Tang Yuantian <Yuantian.Tang@freescale.com>,
- devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Sender: michael.neuling@gmail.com
+In-Reply-To: <aa015609319786835bcab445d507faa75c11f111.1369177867.git.luto@amacapital.net>
+References: <cover.1369177867.git.luto@amacapital.net>
+ <aa015609319786835bcab445d507faa75c11f111.1369177867.git.luto@amacapital.net>
+Date: Thu, 6 Jun 2013 12:56:47 +1000
+Message-ID: <CAEjGV6xcF776C6N6VxeMY0Vyk+X51oNixdbN42-xkWjQOaMEQA@mail.gmail.com>
+Subject: Re: [PATCH 5/5] net: Block MSG_CMSG_COMPAT in send(m)msg and
+ recv(m)msg
+From: Michael Neuling <mikey@neuling.org>
+To: Andy Lutomirski <luto@amacapital.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: netdev@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
+ Linux PPC dev <linuxppc-dev@ozlabs.org>, Anton Blanchard <anton@samba.org>,
+ trinity@vger.kernel.org, torvalds@linux-foundation.org,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,899 +32,154 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Tang Yuantian <yuantian.tang@freescale.com>
+On Thu, May 23, 2013 at 7:07 AM, Andy Lutomirski <luto@amacapital.net> wrote:
+> MSG_CMSG_COMPAT is (AFAIK) not intended to be part of the API --
+> it's a hack that steals a bit to indicate to other networking code
+> that a compat entry was used.  So don't allow it from a non-compat
+> syscall.
 
-The following SoCs will be affected: p2041, p3041, p4080,
-p5020, p5040, b4420, b4860, t4240
+Dave & Linus
 
-Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
-Signed-off-by: Li Yang <leoli@freescale.com>
----
-v3:
-	- fix typo
-v2:
-	- add t4240, b4420, b4860 support
-	- remove pll/4 clock from p2041, p3041 and p5020 board
+This is causing a regression on 64bit powerpc with 32bit usermode.
+When I hit userspace, udev is broken and I suspect all networking is
+broken as well.
 
- arch/powerpc/boot/dts/fsl/b4420si-post.dtsi |  32 ++++++++-
- arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi  |   2 +
- arch/powerpc/boot/dts/fsl/b4860si-post.dtsi |  32 ++++++++-
- arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi  |   4 ++
- arch/powerpc/boot/dts/fsl/p2041si-post.dtsi |  54 ++++++++++++++-
- arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi  |   4 ++
- arch/powerpc/boot/dts/fsl/p3041si-post.dtsi |  54 ++++++++++++++-
- arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi  |   4 ++
- arch/powerpc/boot/dts/fsl/p4080si-post.dtsi | 100 +++++++++++++++++++++++++++-
- arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi  |   8 +++
- arch/powerpc/boot/dts/fsl/p5020si-post.dtsi |  38 ++++++++++-
- arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi  |   2 +
- arch/powerpc/boot/dts/fsl/p5040si-post.dtsi |  54 ++++++++++++++-
- arch/powerpc/boot/dts/fsl/p5040si-pre.dtsi  |   4 ++
- arch/powerpc/boot/dts/fsl/t4240si-post.dtsi |  77 ++++++++++++++++++++-
- arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi  |  12 ++++
- 16 files changed, 473 insertions(+), 8 deletions(-)
+Can we please revert 1be374a0518a288147c6a7398792583200a67261 upstream?
 
-diff --git a/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
-index 5a6615d..b69d6e5 100644
---- a/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
-@@ -85,7 +85,37 @@
- 	};
- 
- 	clockgen: global-utilities@e1000 {
--		compatible = "fsl,b4420-clockgen", "fsl,qoriq-clockgen-2.0";
-+		compatible = "fsl,b4420-clockgen", "fsl,qoriq-clockgen-2.0",
-+				   "fixed-clock";
-+		clock-output-names = "sysclk";
-+		#clock-cells = <0>;
-+
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		pll0: pll0@800 {
-+			#clock-cells = <1>;
-+			reg = <0x800>;
-+			compatible = "fsl,core-pll-clock";
-+			clocks = <&clockgen>;
-+			clock-output-names = "pll0", "pll0-div2", "pll0-div4";
-+		};
-+		pll1: pll1@820 {
-+			#clock-cells = <1>;
-+			reg = <0x820>;
-+			compatible = "fsl,core-pll-clock";
-+			clocks = <&clockgen>;
-+			clock-output-names = "pll1", "pll1-div2", "pll1-div4";
-+		};
-+		mux0: mux0@0 {
-+			#clock-cells = <0>;
-+			reg = <0x0>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
-+				 <&pll1 0>, <&pll1 1>, <&pll1 2>;
-+			clock-names = "pll0_0", "pll0_1", "pll0_2",
-+				"pll1_0", "pll1_1", "pll1_2";
-+			clock-output-names = "cmux0";
-+		};
- 	};
- 
- 	rcpm: global-utilities@e2000 {
-diff --git a/arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi b/arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi
-index 7b4426e..a11126b 100644
---- a/arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi
-@@ -62,11 +62,13 @@
- 		cpu0: PowerPC,e6500@0 {
- 			device_type = "cpu";
- 			reg = <0 1>;
-+			clocks = <&mux0>;
- 			next-level-cache = <&L2>;
- 		};
- 		cpu1: PowerPC,e6500@2 {
- 			device_type = "cpu";
- 			reg = <2 3>;
-+			clocks = <&mux0>;
- 			next-level-cache = <&L2>;
- 		};
- 	};
-diff --git a/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
-index e5cf6c8..507a22d 100644
---- a/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
-@@ -129,7 +129,37 @@
- 	};
- 
- 	clockgen: global-utilities@e1000 {
--		compatible = "fsl,b4860-clockgen", "fsl,qoriq-clockgen-2.0";
-+		compatible = "fsl,b4860-clockgen", "fsl,qoriq-clockgen-2.0",
-+				   "fixed-clock";
-+		clock-output-names = "sysclk";
-+		#clock-cells = <0>;
-+
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		pll0: pll0@800 {
-+			#clock-cells = <1>;
-+			reg = <0x800>;
-+			compatible = "fsl,core-pll-clock";
-+			clocks = <&clockgen>;
-+			clock-output-names = "pll0", "pll0-div2", "pll0-div4";
-+		};
-+		pll1: pll1@820 {
-+			#clock-cells = <1>;
-+			reg = <0x820>;
-+			compatible = "fsl,core-pll-clock";
-+			clocks = <&clockgen>;
-+			clock-output-names = "pll1", "pll1-div2", "pll1-div4";
-+		};
-+		mux0: mux0@0 {
-+			#clock-cells = <0>;
-+			reg = <0x0>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
-+				 <&pll1 0>, <&pll1 1>, <&pll1 2>;
-+			clock-names = "pll0_0", "pll0_1", "pll0_2",
-+				"pll1_0", "pll1_1", "pll1_2";
-+			clock-output-names = "cmux0";
-+		};
- 	};
- 
- 	rcpm: global-utilities@e2000 {
-diff --git a/arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi b/arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi
-index 5263fa4..185a231 100644
---- a/arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi
-@@ -62,21 +62,25 @@
- 		cpu0: PowerPC,e6500@0 {
- 			device_type = "cpu";
- 			reg = <0 1>;
-+			clocks = <&mux0>;
- 			next-level-cache = <&L2>;
- 		};
- 		cpu1: PowerPC,e6500@2 {
- 			device_type = "cpu";
- 			reg = <2 3>;
-+			clocks = <&mux0>;
- 			next-level-cache = <&L2>;
- 		};
- 		cpu2: PowerPC,e6500@4 {
- 			device_type = "cpu";
- 			reg = <4 5>;
-+			clocks = <&mux0>;
- 			next-level-cache = <&L2>;
- 		};
- 		cpu3: PowerPC,e6500@6 {
- 			device_type = "cpu";
- 			reg = <6 7>;
-+			clocks = <&mux0>;
- 			next-level-cache = <&L2>;
- 		};
- 	};
-diff --git a/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi b/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
-index dc6cc5a..cdf1615 100644
---- a/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
-@@ -305,9 +305,61 @@
- 	};
- 
- 	clockgen: global-utilities@e1000 {
--		compatible = "fsl,p2041-clockgen", "fsl,qoriq-clockgen-1.0";
-+		compatible = "fsl,p2041-clockgen", "fsl,qoriq-clockgen-1.0",
-+				   "fixed-clock";
- 		reg = <0xe1000 0x1000>;
- 		clock-frequency = <0>;
-+		clock-output-names = "sysclk";
-+		#clock-cells = <0>;
-+
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		pll0: pll0@800 {
-+			#clock-cells = <1>;
-+			reg = <0x800>;
-+			compatible = "fsl,core-pll-clock";
-+			clocks = <&clockgen>;
-+			clock-output-names = "pll0", "pll0-div2";
-+		};
-+		pll1: pll1@820 {
-+			#clock-cells = <1>;
-+			reg = <0x820>;
-+			compatible = "fsl,core-pll-clock";
-+			clocks = <&clockgen>;
-+			clock-output-names = "pll1", "pll1-div2";
-+		};
-+		mux0: mux0@0 {
-+			#clock-cells = <0>;
-+			reg = <0x0>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
-+			clock-names = "pll0_0", "pll0_1", "pll1_0", "pll1_1";
-+			clock-output-names = "cmux0";
-+		};
-+		mux1: mux1@20 {
-+			#clock-cells = <0>;
-+			reg = <0x20>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
-+			clock-names = "pll0_0", "pll0_1", "pll1_0", "pll1_1";
-+			clock-output-names = "cmux1";
-+		};
-+		mux2: mux2@40 {
-+			#clock-cells = <0>;
-+			reg = <0x40>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
-+			clock-names = "pll0_0", "pll0_1", "pll1_0", "pll1_1";
-+			clock-output-names = "cmux2";
-+		};
-+		mux3: mux3@60 {
-+			#clock-cells = <0>;
-+			reg = <0x60>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
-+			clock-names = "pll0_0", "pll0_1", "pll1_0", "pll1_1";
-+			clock-output-names = "cmux3";
-+		};
- 	};
- 
- 	rcpm: global-utilities@e2000 {
-diff --git a/arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi
-index 7a2697d..22f3b14 100644
---- a/arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi
-@@ -81,6 +81,7 @@
- 		cpu0: PowerPC,e500mc@0 {
- 			device_type = "cpu";
- 			reg = <0>;
-+			clocks = <&mux0>;
- 			next-level-cache = <&L2_0>;
- 			L2_0: l2-cache {
- 				next-level-cache = <&cpc>;
-@@ -89,6 +90,7 @@
- 		cpu1: PowerPC,e500mc@1 {
- 			device_type = "cpu";
- 			reg = <1>;
-+			clocks = <&mux1>;
- 			next-level-cache = <&L2_1>;
- 			L2_1: l2-cache {
- 				next-level-cache = <&cpc>;
-@@ -97,6 +99,7 @@
- 		cpu2: PowerPC,e500mc@2 {
- 			device_type = "cpu";
- 			reg = <2>;
-+			clocks = <&mux2>;
- 			next-level-cache = <&L2_2>;
- 			L2_2: l2-cache {
- 				next-level-cache = <&cpc>;
-@@ -105,6 +108,7 @@
- 		cpu3: PowerPC,e500mc@3 {
- 			device_type = "cpu";
- 			reg = <3>;
-+			clocks = <&mux3>;
- 			next-level-cache = <&L2_3>;
- 			L2_3: l2-cache {
- 				next-level-cache = <&cpc>;
-diff --git a/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi b/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi
-index 3fa1e22..982cfae 100644
---- a/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi
-@@ -332,9 +332,61 @@
- 	};
- 
- 	clockgen: global-utilities@e1000 {
--		compatible = "fsl,p3041-clockgen", "fsl,qoriq-clockgen-1.0";
-+		compatible = "fsl,p3041-clockgen", "fsl,qoriq-clockgen-1.0",
-+				   "fixed-clock";
- 		reg = <0xe1000 0x1000>;
- 		clock-frequency = <0>;
-+		clock-output-names = "sysclk";
-+		#clock-cells = <0>;
-+
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		pll0: pll0@800 {
-+			#clock-cells = <1>;
-+			reg = <0x800>;
-+			compatible = "fsl,core-pll-clock";
-+			clocks = <&clockgen>;
-+			clock-output-names = "pll0", "pll0-div2";
-+		};
-+		pll1: pll1@820 {
-+			#clock-cells = <1>;
-+			reg = <0x820>;
-+			compatible = "fsl,core-pll-clock";
-+			clocks = <&clockgen>;
-+			clock-output-names = "pll1", "pll1-div2";
-+		};
-+		mux0: mux0@0 {
-+			#clock-cells = <0>;
-+			reg = <0x0>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
-+			clock-names = "pll0_0", "pll0_1", "pll1_0", "pll1_1";
-+			clock-output-names = "cmux0";
-+		};
-+		mux1: mux1@20 {
-+			#clock-cells = <0>;
-+			reg = <0x20>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
-+			clock-names = "pll0_0", "pll0_1", "pll1_0", "pll1_1";
-+			clock-output-names = "cmux1";
-+		};
-+		mux2: mux2@40 {
-+			#clock-cells = <0>;
-+			reg = <0x40>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
-+			clock-names = "pll0_0", "pll0_1", "pll1_0", "pll1_1";
-+			clock-output-names = "cmux2";
-+		};
-+		mux3: mux3@60 {
-+			#clock-cells = <0>;
-+			reg = <0x60>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
-+			clock-names = "pll0_0", "pll0_1", "pll1_0", "pll1_1";
-+			clock-output-names = "cmux3";
-+		};
- 	};
- 
- 	rcpm: global-utilities@e2000 {
-diff --git a/arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi
-index c9ca2c3..468e8be 100644
---- a/arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi
-@@ -82,6 +82,7 @@
- 		cpu0: PowerPC,e500mc@0 {
- 			device_type = "cpu";
- 			reg = <0>;
-+			clocks = <&mux0>;
- 			next-level-cache = <&L2_0>;
- 			L2_0: l2-cache {
- 				next-level-cache = <&cpc>;
-@@ -90,6 +91,7 @@
- 		cpu1: PowerPC,e500mc@1 {
- 			device_type = "cpu";
- 			reg = <1>;
-+			clocks = <&mux1>;
- 			next-level-cache = <&L2_1>;
- 			L2_1: l2-cache {
- 				next-level-cache = <&cpc>;
-@@ -98,6 +100,7 @@
- 		cpu2: PowerPC,e500mc@2 {
- 			device_type = "cpu";
- 			reg = <2>;
-+			clocks = <&mux2>;
- 			next-level-cache = <&L2_2>;
- 			L2_2: l2-cache {
- 				next-level-cache = <&cpc>;
-@@ -106,6 +109,7 @@
- 		cpu3: PowerPC,e500mc@3 {
- 			device_type = "cpu";
- 			reg = <3>;
-+			clocks = <&mux3>;
- 			next-level-cache = <&L2_3>;
- 			L2_3: l2-cache {
- 				next-level-cache = <&cpc>;
-diff --git a/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi b/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
-index 34769a7..eb3cd0d 100644
---- a/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
-@@ -352,9 +352,107 @@
- 	};
- 
- 	clockgen: global-utilities@e1000 {
--		compatible = "fsl,p4080-clockgen", "fsl,qoriq-clockgen-1.0";
-+		compatible = "fsl,p4080-clockgen", "fsl,qoriq-clockgen-1.0",
-+				   "fixed-clock";
- 		reg = <0xe1000 0x1000>;
- 		clock-frequency = <0>;
-+		clock-output-names = "sysclk";
-+		#clock-cells = <0>;
-+
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		pll0: pll0@800 {
-+			#clock-cells = <1>;
-+			reg = <0x800>;
-+			compatible = "fsl,core-pll-clock";
-+			clocks = <&clockgen>;
-+			clock-output-names = "pll0", "pll0-div2";
-+		};
-+		pll1: pll1@820 {
-+			#clock-cells = <1>;
-+			reg = <0x820>;
-+			compatible = "fsl,core-pll-clock";
-+			clocks = <&clockgen>;
-+			clock-output-names = "pll1", "pll1-div2";
-+		};
-+		pll2: pll2@840 {
-+			#clock-cells = <1>;
-+			reg = <0x840>;
-+			compatible = "fsl,core-pll-clock";
-+			clocks = <&clockgen>;
-+			clock-output-names = "pll2", "pll2-div2";
-+		};
-+		pll3: pll3@860 {
-+			#clock-cells = <1>;
-+			reg = <0x860>;
-+			compatible = "fsl,core-pll-clock";
-+			clocks = <&clockgen>;
-+			clock-output-names = "pll3", "pll3-div2";
-+		};
-+		mux0: mux0@0 {
-+			#clock-cells = <0>;
-+			reg = <0x0>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
-+			clock-names = "pll0_0", "pll0_1", "pll1_0", "pll1_1";
-+			clock-output-names = "cmux0";
-+		};
-+		mux1: mux1@20 {
-+			#clock-cells = <0>;
-+			reg = <0x20>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
-+			clock-names = "pll0_0", "pll0_1", "pll1_0", "pll1_1";
-+			clock-output-names = "cmux1";
-+		};
-+		mux2: mux2@40 {
-+			#clock-cells = <0>;
-+			reg = <0x40>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
-+			clock-names = "pll0_0", "pll0_1", "pll1_0", "pll1_1";
-+			clock-output-names = "cmux2";
-+		};
-+		mux3: mux3@60 {
-+			#clock-cells = <0>;
-+			reg = <0x60>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
-+			clock-names = "pll0_0", "pll0_1", "pll1_0", "pll1_1";
-+			clock-output-names = "cmux3";
-+		};
-+		mux4: mux4@80 {
-+			#clock-cells = <0>;
-+			reg = <0x80>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll2 0>, <&pll2 1>, <&pll3 0>, <&pll3 1>;
-+			clock-names = "pll2_0", "pll2_1", "pll3_0", "pll3_1";
-+			clock-output-names = "cmux4";
-+		};
-+		mux5: mux5@a0 {
-+			#clock-cells = <0>;
-+			reg = <0xa0>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll2 0>, <&pll2 1>, <&pll3 0>, <&pll3 1>;
-+			clock-names = "pll2_0", "pll2_1", "pll3_0", "pll3_1";
-+			clock-output-names = "cmux5";
-+		};
-+		mux6: mux6@c0 {
-+			#clock-cells = <0>;
-+			reg = <0xc0>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll2 0>, <&pll2 1>, <&pll3 0>, <&pll3 1>;
-+			clock-names = "pll2_0", "pll2_1", "pll3_0", "pll3_1";
-+			clock-output-names = "cmux6";
-+		};
-+		mux7: mux7@e0 {
-+			#clock-cells = <0>;
-+			reg = <0xe0>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll2 0>, <&pll2 1>, <&pll3 0>, <&pll3 1>;
-+			clock-names = "pll2_0", "pll2_1", "pll3_0", "pll3_1";
-+			clock-output-names = "cmux7";
-+		};
- 	};
- 
- 	rcpm: global-utilities@e2000 {
-diff --git a/arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi
-index 493d9a0..0040b5a 100644
---- a/arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi
-@@ -81,6 +81,7 @@
- 		cpu0: PowerPC,e500mc@0 {
- 			device_type = "cpu";
- 			reg = <0>;
-+			clocks = <&mux0>;
- 			next-level-cache = <&L2_0>;
- 			L2_0: l2-cache {
- 				next-level-cache = <&cpc>;
-@@ -89,6 +90,7 @@
- 		cpu1: PowerPC,e500mc@1 {
- 			device_type = "cpu";
- 			reg = <1>;
-+			clocks = <&mux1>;
- 			next-level-cache = <&L2_1>;
- 			L2_1: l2-cache {
- 				next-level-cache = <&cpc>;
-@@ -97,6 +99,7 @@
- 		cpu2: PowerPC,e500mc@2 {
- 			device_type = "cpu";
- 			reg = <2>;
-+			clocks = <&mux2>;
- 			next-level-cache = <&L2_2>;
- 			L2_2: l2-cache {
- 				next-level-cache = <&cpc>;
-@@ -105,6 +108,7 @@
- 		cpu3: PowerPC,e500mc@3 {
- 			device_type = "cpu";
- 			reg = <3>;
-+			clocks = <&mux3>;
- 			next-level-cache = <&L2_3>;
- 			L2_3: l2-cache {
- 				next-level-cache = <&cpc>;
-@@ -113,6 +117,7 @@
- 		cpu4: PowerPC,e500mc@4 {
- 			device_type = "cpu";
- 			reg = <4>;
-+			clocks = <&mux4>;
- 			next-level-cache = <&L2_4>;
- 			L2_4: l2-cache {
- 				next-level-cache = <&cpc>;
-@@ -121,6 +126,7 @@
- 		cpu5: PowerPC,e500mc@5 {
- 			device_type = "cpu";
- 			reg = <5>;
-+			clocks = <&mux5>;
- 			next-level-cache = <&L2_5>;
- 			L2_5: l2-cache {
- 				next-level-cache = <&cpc>;
-@@ -129,6 +135,7 @@
- 		cpu6: PowerPC,e500mc@6 {
- 			device_type = "cpu";
- 			reg = <6>;
-+			clocks = <&mux6>;
- 			next-level-cache = <&L2_6>;
- 			L2_6: l2-cache {
- 				next-level-cache = <&cpc>;
-@@ -137,6 +144,7 @@
- 		cpu7: PowerPC,e500mc@7 {
- 			device_type = "cpu";
- 			reg = <7>;
-+			clocks = <&mux7>;
- 			next-level-cache = <&L2_7>;
- 			L2_7: l2-cache {
- 				next-level-cache = <&cpc>;
-diff --git a/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi b/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi
-index bc3ae5a..bb98848 100644
---- a/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi
-@@ -337,9 +337,45 @@
- 	};
- 
- 	clockgen: global-utilities@e1000 {
--		compatible = "fsl,p5020-clockgen", "fsl,qoriq-clockgen-1.0";
-+		compatible = "fsl,p5020-clockgen", "fsl,qoriq-clockgen-1.0",
-+				   "fixed-clock";
- 		reg = <0xe1000 0x1000>;
- 		clock-frequency = <0>;
-+		clock-output-names = "sysclk";
-+		#clock-cells = <0>;
-+
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		pll0: pll0@800 {
-+			#clock-cells = <1>;
-+			reg = <0x800>;
-+			compatible = "fsl,core-pll-clock";
-+			clocks = <&clockgen>;
-+			clock-output-names = "pll0", "pll0-div2";
-+		};
-+		pll1: pll1@820 {
-+			#clock-cells = <1>;
-+			reg = <0x820>;
-+			compatible = "fsl,core-pll-clock";
-+			clocks = <&clockgen>;
-+			clock-output-names = "pll1", "pll1-div2";
-+		};
-+		mux0: mux0@0 {
-+			#clock-cells = <0>;
-+			reg = <0x0>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
-+			clock-names = "pll0_0", "pll0_1", "pll1_0", "pll1_1";
-+			clock-output-names = "cmux0";
-+		};
-+		mux1: mux1@20 {
-+			#clock-cells = <0>;
-+			reg = <0x20>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
-+			clock-names = "pll0_0", "pll0_1", "pll1_0", "pll1_1";
-+			clock-output-names = "cmux1";
-+		};
- 	};
- 
- 	rcpm: global-utilities@e2000 {
-diff --git a/arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi
-index 8df47fc..fe1a2e6 100644
---- a/arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi
-@@ -88,6 +88,7 @@
- 		cpu0: PowerPC,e5500@0 {
- 			device_type = "cpu";
- 			reg = <0>;
-+			clocks = <&mux0>;
- 			next-level-cache = <&L2_0>;
- 			L2_0: l2-cache {
- 				next-level-cache = <&cpc>;
-@@ -96,6 +97,7 @@
- 		cpu1: PowerPC,e5500@1 {
- 			device_type = "cpu";
- 			reg = <1>;
-+			clocks = <&mux1>;
- 			next-level-cache = <&L2_1>;
- 			L2_1: l2-cache {
- 				next-level-cache = <&cpc>;
-diff --git a/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi b/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi
-index a91897f..a22a889 100644
---- a/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi
-@@ -297,9 +297,61 @@
- 	};
- 
- 	clockgen: global-utilities@e1000 {
--		compatible = "fsl,p5040-clockgen", "fsl,qoriq-clockgen-1.0";
-+		compatible = "fsl,p5040-clockgen", "fsl,qoriq-clockgen-1.0",
-+				   "fixed-clock";
- 		reg = <0xe1000 0x1000>;
- 		clock-frequency = <0>;
-+		clock-output-names = "sysclk";
-+		#clock-cells = <0>;
-+
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		pll0: pll0@800 {
-+			#clock-cells = <1>;
-+			reg = <0x800>;
-+			compatible = "fsl,core-pll-clock";
-+			clocks = <&clockgen>;
-+			clock-output-names = "pll0", "pll0-div2";
-+		};
-+		pll1: pll1@820 {
-+			#clock-cells = <1>;
-+			reg = <0x820>;
-+			compatible = "fsl,core-pll-clock";
-+			clocks = <&clockgen>;
-+			clock-output-names = "pll1", "pll1-div2";
-+		};
-+		mux0: mux0@0 {
-+			#clock-cells = <0>;
-+			reg = <0x0>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
-+			clock-names = "pll0_0", "pll0_1", "pll1_0", "pll1_1";
-+			clock-output-names = "cmux0";
-+		};
-+		mux1: mux1@20 {
-+			#clock-cells = <0>;
-+			reg = <0x20>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
-+			clock-names = "pll0_0", "pll0_1", "pll1_0", "pll1_1";
-+			clock-output-names = "cmux1";
-+		};
-+		mux2: mux2@40 {
-+			#clock-cells = <0>;
-+			reg = <0x40>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
-+			clock-names = "pll0_0", "pll0_1", "pll1_0", "pll1_1";
-+			clock-output-names = "cmux2";
-+		};
-+		mux3: mux3@60 {
-+			#clock-cells = <0>;
-+			reg = <0x60>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
-+			clock-names = "pll0_0", "pll0_1", "pll1_0", "pll1_1";
-+			clock-output-names = "cmux3";
-+		};
- 	};
- 
- 	rcpm: global-utilities@e2000 {
-diff --git a/arch/powerpc/boot/dts/fsl/p5040si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p5040si-pre.dtsi
-index 40ca943..3674686 100644
---- a/arch/powerpc/boot/dts/fsl/p5040si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p5040si-pre.dtsi
-@@ -81,6 +81,7 @@
- 		cpu0: PowerPC,e5500@0 {
- 			device_type = "cpu";
- 			reg = <0>;
-+			clocks = <&mux0>;
- 			next-level-cache = <&L2_0>;
- 			L2_0: l2-cache {
- 				next-level-cache = <&cpc>;
-@@ -89,6 +90,7 @@
- 		cpu1: PowerPC,e5500@1 {
- 			device_type = "cpu";
- 			reg = <1>;
-+			clocks = <&mux1>;
- 			next-level-cache = <&L2_1>;
- 			L2_1: l2-cache {
- 				next-level-cache = <&cpc>;
-@@ -97,6 +99,7 @@
- 		cpu2: PowerPC,e5500@2 {
- 			device_type = "cpu";
- 			reg = <2>;
-+			clocks = <&mux2>;
- 			next-level-cache = <&L2_2>;
- 			L2_2: l2-cache {
- 				next-level-cache = <&cpc>;
-@@ -105,6 +108,7 @@
- 		cpu3: PowerPC,e5500@3 {
- 			device_type = "cpu";
- 			reg = <3>;
-+			clocks = <&mux3>;
- 			next-level-cache = <&L2_3>;
- 			L2_3: l2-cache {
- 				next-level-cache = <&cpc>;
-diff --git a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-index bd611a9..fadff2c 100644
---- a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-@@ -368,8 +368,83 @@
- 	};
- 
- 	clockgen: global-utilities@e1000 {
--		compatible = "fsl,t4240-clockgen", "fsl,qoriq-clockgen-2.0";
-+		compatible = "fsl,t4240-clockgen", "fsl,qoriq-clockgen-2.0",
-+				   "fixed-clock";
- 		reg = <0xe1000 0x1000>;
-+		clock-output-names = "sysclk";
-+		#clock-cells = <0>;
-+
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		pll0: pll0@800 {
-+			#clock-cells = <1>;
-+			reg = <0x800>;
-+			compatible = "fsl,core-pll-clock";
-+			clocks = <&clockgen>;
-+			clock-output-names = "pll0", "pll0-div2", "pll0-div4";
-+		};
-+		pll1: pll1@820 {
-+			#clock-cells = <1>;
-+			reg = <0x820>;
-+			compatible = "fsl,core-pll-clock";
-+			clocks = <&clockgen>;
-+			clock-output-names = "pll1", "pll1-div2", "pll1-div4";
-+		};
-+		pll2: pll2@840 {
-+			#clock-cells = <1>;
-+			reg = <0x840>;
-+			compatible = "fsl,core-pll-clock";
-+			clocks = <&clockgen>;
-+			clock-output-names = "pll2", "pll2-div2", "pll2-div4";
-+		};
-+		pll3: pll3@860 {
-+			#clock-cells = <1>;
-+			reg = <0x860>;
-+			compatible = "fsl,core-pll-clock";
-+			clocks = <&clockgen>;
-+			clock-output-names = "pll3", "pll3-div2", "pll3-div4";
-+		};
-+		pll4: pll4@880 {
-+			#clock-cells = <1>;
-+			reg = <0x880>;
-+			compatible = "fsl,core-pll-clock";
-+			clocks = <&clockgen>;
-+			clock-output-names = "pll4", "pll4-div2", "pll4-div4";
-+		};
-+		mux0: mux0@0 {
-+			#clock-cells = <0>;
-+			reg = <0x0>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
-+				 <&pll1 0>, <&pll1 1>, <&pll1 2>,
-+				 <&pll2 0>, <&pll2 1>, <&pll2 2>;
-+			clock-names = "pll0_0", "pll0_1", "pll0_2",
-+				"pll1_0", "pll1_1", "pll1_2",
-+				"pll2_0", "pll2_1", "pll2_2";
-+			clock-output-names = "cmux0";
-+		};
-+		mux1: mux1@20 {
-+			#clock-cells = <0>;
-+			reg = <0x20>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
-+				 <&pll1 0>, <&pll1 1>, <&pll1 2>,
-+				 <&pll2 0>, <&pll2 1>, <&pll2 2>;
-+			clock-names = "pll0_0", "pll0_1", "pll0_2",
-+				"pll1_0", "pll1_1", "pll1_2",
-+				"pll2_0", "pll2_1", "pll2_2";
-+			clock-output-names = "cmux1";
-+		};
-+		mux2: mux2@40 {
-+			#clock-cells = <0>;
-+			reg = <0x40>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll3 0>, <&pll3 1>, <&pll3 2>,
-+				 <&pll4 0>, <&pll4 1>, <&pll4 2>;
-+			clock-names = "pll3_0", "pll3_1", "pll3_2",
-+				"pll4_0", "pll4_1", "pll4_2";
-+			clock-output-names = "cmux2";
-+		};
- 	};
- 
- 	rcpm: global-utilities@e2000 {
-diff --git a/arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi
-index a93c55a..0b8ccc5 100644
---- a/arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi
-@@ -67,61 +67,73 @@
- 		cpu0: PowerPC,e6500@0 {
- 			device_type = "cpu";
- 			reg = <0 1>;
-+			clocks = <&mux0>;
- 			next-level-cache = <&L2_1>;
- 		};
- 		cpu1: PowerPC,e6500@2 {
- 			device_type = "cpu";
- 			reg = <2 3>;
-+			clocks = <&mux0>;
- 			next-level-cache = <&L2_1>;
- 		};
- 		cpu2: PowerPC,e6500@4 {
- 			device_type = "cpu";
- 			reg = <4 5>;
-+			clocks = <&mux0>;
- 			next-level-cache = <&L2_1>;
- 		};
- 		cpu3: PowerPC,e6500@6 {
- 			device_type = "cpu";
- 			reg = <6 7>;
-+			clocks = <&mux0>;
- 			next-level-cache = <&L2_1>;
- 		};
- 		cpu4: PowerPC,e6500@8 {
- 			device_type = "cpu";
- 			reg = <8 9>;
-+			clocks = <&mux1>;
- 			next-level-cache = <&L2_2>;
- 		};
- 		cpu5: PowerPC,e6500@10 {
- 			device_type = "cpu";
- 			reg = <10 11>;
-+			clocks = <&mux1>;
- 			next-level-cache = <&L2_2>;
- 		};
- 		cpu6: PowerPC,e6500@12 {
- 			device_type = "cpu";
- 			reg = <12 13>;
-+			clocks = <&mux1>;
- 			next-level-cache = <&L2_2>;
- 		};
- 		cpu7: PowerPC,e6500@14 {
- 			device_type = "cpu";
- 			reg = <14 15>;
-+			clocks = <&mux1>;
- 			next-level-cache = <&L2_2>;
- 		};
- 		cpu8: PowerPC,e6500@16 {
- 			device_type = "cpu";
- 			reg = <16 17>;
-+			clocks = <&mux2>;
- 			next-level-cache = <&L2_3>;
- 		};
- 		cpu9: PowerPC,e6500@18 {
- 			device_type = "cpu";
- 			reg = <18 19>;
-+			clocks = <&mux2>;
- 			next-level-cache = <&L2_3>;
- 		};
- 		cpu10: PowerPC,e6500@20 {
- 			device_type = "cpu";
- 			reg = <20 21>;
-+			clocks = <&mux2>;
- 			next-level-cache = <&L2_3>;
- 		};
- 		cpu11: PowerPC,e6500@22 {
- 			device_type = "cpu";
- 			reg = <22 23>;
-+			clocks = <&mux2>;
- 			next-level-cache = <&L2_3>;
- 		};
- 	};
--- 
-1.8.0
+Found via bisect.
+
+Mikey
+
+>
+> This prevents an oops when running this code:
+>
+> int main()
+> {
+>         int s;
+>         struct sockaddr_in addr;
+>         struct msghdr *hdr;
+>
+>         char *highpage = mmap((void*)(TASK_SIZE_MAX - 4096), 4096,
+>                               PROT_READ | PROT_WRITE,
+>                               MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
+>         if (highpage == MAP_FAILED)
+>                 err(1, "mmap");
+>
+>         s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+>         if (s == -1)
+>                 err(1, "socket");
+>
+>         addr.sin_family = AF_INET;
+>         addr.sin_port = htons(1);
+>         addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);This is upster
+
+>         if (connect(s, (struct sockaddr*)&addr, sizeof(addr)) != 0)
+>                 err(1, "connect");
+>
+>         void *evil = highpage + 4096 - COMPAT_MSGHDR_SIZE;
+>         printf("Evil address is %p\n", evil);
+>
+>         if (syscall(__NR_sendmmsg, s, evil, 1, MSG_CMSG_COMPAT) < 0)
+>                 err(1, "sendmmsg");
+>
+>         return 0;
+> }
+>
+> Cc: David S. Miller <davem@davemloft.net>
+> Signed-off-by: Andy Lutomirski <luto@amacapital.net>
+> ---
+>  net/socket.c | 33 +++++++++++++++++++++++++++++++--
+>  1 file changed, 31 insertions(+), 2 deletions(-)
+>
+> diff --git a/net/socket.c b/net/socket.c
+> index 88f759a..0e16888 100644
+> --- a/net/socket.c
+> +++ b/net/socket.c
+> @@ -2097,8 +2097,12 @@ SYSCALL_DEFINE3(sendmsg, int, fd, struct msghdr __user *, msg, unsigned int, fla
+>  {
+>         int fput_needed, err;
+>         struct msghdr msg_sys;
+> -       struct socket *sock = sockfd_lookup_light(fd, &err, &fput_needed);
+> +       struct socket *sock;
+> +
+> +       if (flags & MSG_CMSG_COMPAT)
+> +               return -EINVAL;
+>
+> +       sock = sockfd_lookup_light(fd, &err, &fput_needed);
+>         if (!sock)
+>                 goto out;
+>
+> @@ -2171,6 +2175,8 @@ int __sys_sendmmsg(int fd, struct mmsghdr __user *mmsg, unsigned int vlen,
+>  SYSCALL_DEFINE4(sendmmsg, int, fd, struct mmsghdr __user *, mmsg,
+>                 unsigned int, vlen, unsigned int, flags)
+>  {
+> +       if (flags & MSG_CMSG_COMPAT)
+> +               return -EINVAL;
+>         return __sys_sendmmsg(fd, mmsg, vlen, flags);
+>  }
+>
+> @@ -2271,8 +2277,12 @@ SYSCALL_DEFINE3(recvmsg, int, fd, struct msghdr __user *, msg,
+>  {
+>         int fput_needed, err;
+>         struct msghdr msg_sys;
+> -       struct socket *sock = sockfd_lookup_light(fd, &err, &fput_needed);
+> +       struct socket *sock;
+> +
+> +       if (flags & MSG_CMSG_COMPAT)
+> +               return -EINVAL;
+>
+> +       sock = sockfd_lookup_light(fd, &err, &fput_needed);
+>         if (!sock)
+>                 goto out;
+>
+> @@ -2397,6 +2407,9 @@ SYSCALL_DEFINE5(recvmmsg, int, fd, struct mmsghdr __user *, mmsg,
+>         int datagrams;
+>         struct timespec timeout_sys;
+>
+> +       if (flags & MSG_CMSG_COMPAT)
+> +               return -EINVAL;
+> +
+>         if (!timeout)
+>                 return __sys_recvmmsg(fd, mmsg, vlen, flags, NULL);
+>
+> @@ -2512,15 +2525,31 @@ SYSCALL_DEFINE2(socketcall, int, call, unsigned long __user *, args)
+>                                    (int __user *)a[4]);
+>                 break;
+>         case SYS_SENDMSG:
+> +               if (a[2] & MSG_CMSG_COMPAT) {
+> +                       err = -EINVAL;
+> +                       break;
+> +               }
+>                 err = sys_sendmsg(a0, (struct msghdr __user *)a1, a[2]);
+>                 break;
+>         case SYS_SENDMMSG:
+> +               if (a[3] & MSG_CMSG_COMPAT) {
+> +                       err = -EINVAL;
+> +                       break;
+> +               }
+>                 err = sys_sendmmsg(a0, (struct mmsghdr __user *)a1, a[2], a[3]);
+>                 break;
+>         case SYS_RECVMSG:
+> +               if (a[2] & MSG_CMSG_COMPAT) {
+> +                       err = -EINVAL;
+> +                       break;
+> +               }
+>                 err = sys_recvmsg(a0, (struct msghdr __user *)a1, a[2]);
+>                 break;
+>         case SYS_RECVMMSG:
+> +               if (a[3] & MSG_CMSG_COMPAT) {
+> +                       err = -EINVAL;
+> +                       break;
+> +               }
+>                 err = sys_recvmmsg(a0, (struct mmsghdr __user *)a1, a[2], a[3],
+>                                    (struct timespec __user *)a[4]);
+>                 break;
+> --
+> 1.8.1.4
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
