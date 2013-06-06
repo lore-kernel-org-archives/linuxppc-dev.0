@@ -1,30 +1,21 @@
-Return-Path: <B07421@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0189.outbound.messaging.microsoft.com [213.199.154.189])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 446602C009D
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jun 2013 05:58:04 +1000 (EST)
-Date: Thu, 6 Jun 2013 14:57:54 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [RFC PATCH 0/6] KVM: PPC: Book3E: AltiVec support
-To: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
-References: <1370292868-2697-1-git-send-email-mihai.caraman@freescale.com>
- <1370381959.748.16@snotra>
- <300B73AA675FCE4A93EB4FC1D42459FF44EB49@039-SN2MPN1-011.039d.mgd.msft.net>
- <1370450103.26139.0@snotra>
- <300B73AA675FCE4A93EB4FC1D42459FF453564@039-SN2MPN1-011.039d.mgd.msft.net>
-In-Reply-To: <300B73AA675FCE4A93EB4FC1D42459FF453564@039-SN2MPN1-011.039d.mgd.msft.net>
- (from B02008@freescale.com on Thu Jun  6 04:42:44 2013)
-Message-ID: <1370548674.21533.17@snotra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- Alexander Graf <agraf@suse.de>
+Return-Path: <davem@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 878DD2C0095
+ for <linuxppc-dev@ozlabs.org>; Fri,  7 Jun 2013 04:54:06 +1000 (EST)
+Date: Thu, 06 Jun 2013 11:53:52 -0700 (PDT)
+Message-Id: <20130606.115352.641926194470746732.davem@redhat.com>
+To: eric.dumazet@gmail.com
+Subject: Re: [PATCH] net: Unbreak compat_sys_{send,recv}msg
+From: David Miller <davem@redhat.com>
+In-Reply-To: <1370526337.24311.335.camel@edumazet-glaptop>
+References: <e3bf421e44c6d27817c15a8683612a49e093b419.1370496702.git.luto@amacapital.net>
+ <20130606.002625.223430401087826901.davem@davemloft.net>
+ <1370526337.24311.335.camel@edumazet-glaptop>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: mikey@neuling.org, netdev@vger.kernel.org, x86@kernel.org,
+ linux-kernel@vger.kernel.org, luto@amacapital.net, linuxppc-dev@ozlabs.org,
+ trinity@vger.kernel.org, torvalds@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,33 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/06/2013 04:42:44 AM, Caraman Mihai Claudiu-B02008 wrote:
-> > > > This looks like a bit much for 3.10 (certainly, subject lines =20
-> like
-> > > > "refactor" and "enhance" and "add support" aren't going to make
-> > > Linus
-> > > > happy given that we're past rc4) so I think we should apply
-> > > > http://patchwork.ozlabs.org/patch/242896/ for 3.10.  Then for =20
-> 3.11,
-> > > > revert it after applying this patchset.
-> > > >
-> > >
-> > > Why not 1/6 plus e6500 removal?
-> >
-> > 1/6 is not a bugfix.
->=20
-> Not sure I get it. Isn't this a better fix for AltiVec build breakage:
->=20
-> -#define BOOKE_INTERRUPT_ALTIVEC_UNAVAIL 42
-> -#define BOOKE_INTERRUPT_ALTIVEC_ASSIST 43
-> +#define BOOKE_INTERRUPT_ALTIVEC_UNAVAIL 32
-> +#define BOOKE_INTERRUPT_ALTIVEC_ASSIST 33
->=20
-> This removes the need for additional kvm_handlers. Obvious this =20
-> doesn't make
-> AltiVec to work so we still need to disable e6500.
+From: Eric Dumazet <eric.dumazet@gmail.com>
+Date: Thu, 06 Jun 2013 06:45:37 -0700
 
-OK, didn't realize you meant it as an alternative fix to what was in my =20
-patch.
+> On Thu, 2013-06-06 at 00:26 -0700, David Miller wrote:
+>> From: Andy Lutomirski <luto@amacapital.net>
+>> Date: Wed,  5 Jun 2013 22:38:26 -0700
+>> 
+>> > I broke them in this commit:
+>> > 
+>> >     commit 1be374a0518a288147c6a7398792583200a67261
+>> >     Author: Andy Lutomirski <luto@amacapital.net>
+>> >     Date:   Wed May 22 14:07:44 2013 -0700
+>> > 
+>> >         net: Block MSG_CMSG_COMPAT in send(m)msg and recv(m)msg
+>> > 
+>> > This patch adds __sys_sendmsg and __sys_sendmsg as common helpers that accept
+>> > MSG_CMSG_COMPAT and blocks MSG_CMSG_COMPAT at the syscall entrypoints.  It
+>> > also reverts some unnecessary checks in sys_socketcall.
+>> > 
+>> > Apparently I was suffering from underscore blindness the first time around.
+>> > 
+>> > Signed-off-by: Andy Lutomirski <luto@amacapital.net>
+>> 
+>> Eric, can you test this patch too?
+> 
+> Yes, this fixes the problem as well on x86_64
+> 
+> Tested-by: Eric Dumazet <edumazet@google.com>
 
--Scott=
+Applied, thanks.
