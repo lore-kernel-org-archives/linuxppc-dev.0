@@ -1,15 +1,38 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Andy Lutomirski <luto@amacapital.net>
-Subject: Re: [PATCH] net: Unbreak compat_sys_{send,recv}msg
-In-reply-to: <e3bf421e44c6d27817c15a8683612a49e093b419.1370496702.git.luto@amacapital.net>
-References: <20130606132926.f4161ddff87dc9a55e33a8ca@canb.auug.org.au>
- <e3bf421e44c6d27817c15a8683612a49e093b419.1370496702.git.luto@amacapital.net>
-Date: Thu, 06 Jun 2013 15:48:50 +1000
-Message-ID: <27619.1370497730@ale.ozlabs.ibm.com>
-Cc: netdev@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
- Linux PPC dev <linuxppc-dev@ozlabs.org>, trinity@vger.kernel.org,
- torvalds@linux-foundation.org, "David S. Miller" <davem@davemloft.net>
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 625922C009E
+ for <linuxppc-dev@ozlabs.org>; Thu,  6 Jun 2013 16:05:10 +1000 (EST)
+Received: from /spool/local
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Thu, 6 Jun 2013 11:30:31 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 3C46AE0053
+ for <linuxppc-dev@ozlabs.org>; Thu,  6 Jun 2013 11:37:47 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5664oMa9568606
+ for <linuxppc-dev@ozlabs.org>; Thu, 6 Jun 2013 11:34:50 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5664wRN003818
+ for <linuxppc-dev@ozlabs.org>; Thu, 6 Jun 2013 16:04:58 +1000
+Message-ID: <51B0266F.3090708@linux.vnet.ibm.com>
+Date: Thu, 06 Jun 2013 11:34:31 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH V2 1/2] powerpc, perf: Ignore separate BHRB privilege
+ state filter request
+References: <1369716452-28689-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1369716452-28689-2-git-send-email-khandual@linux.vnet.ibm.com>
+ <20699.1370494560@ale.ozlabs.ibm.com>
+In-Reply-To: <20699.1370494560@ale.ozlabs.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,279 +42,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Andy Lutomirski <luto@amacapital.net> wrote:
+On 06/06/2013 10:26 AM, Michael Neuling wrote:
+> Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote:
+> 
+>> Completely ignore BHRB privilege state filter request as we are
+>> already configuring that with privilege state filtering attribute
+>> for the accompanying PMU event. This would help achieve cleaner
+>> user space interaction for BHRB.
+>>
+>> This patch fixes a situation like this
+>>
+>> Before patch:-
+>> ------------
+>> ./perf record -j any -e branch-misses:k ls
+>> Error:
+>> The sys_perf_event_open() syscall returned with 95 (Operation not supported) for event (branch-misses:k).
+>> /bin/dmesg may provide additional information.
+>> No CONFIG_PERF_EVENTS=y kernel support configured?
+>>
+>> Here 'perf record' actually copies over ':k' filter request into BHRB
+>> privilege state filter config and our previous check in kernel would
+>> fail that.
+>>
+>> After patch:-
+>> -------------
+>> ./perf record -j any -e branch-misses:k ls
+>> perf  perf.data  perf.data.old  test-mmap-ring
+>> [ perf record: Woken up 1 times to write data ]
+>> [ perf record: Captured and wrote 0.002 MB perf.data (~102 samples) ]
+>>
+>> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/perf/power8-pmu.c | 12 ++++--------
+>>  1 file changed, 4 insertions(+), 8 deletions(-)
+>>
+>> diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
+>> index f7d1c4f..3a58416 100644
+>> --- a/arch/powerpc/perf/power8-pmu.c
+>> +++ b/arch/powerpc/perf/power8-pmu.c
+>> @@ -525,16 +525,12 @@ static u64 power8_bhrb_filter_map(u64 branch_sample_type)
+>>  	u64 pmu_bhrb_filter = 0;
+>>  	u64 br_privilege = branch_sample_type & ONLY_PLM;
+>>  
+>> -	/* BHRB and regular PMU events share the same prvillege state
+>> +	/* BHRB and regular PMU events share the same privilege state
+>>  	 * filter configuration. BHRB is always recorded along with a
+>> -	 * regular PMU event. So privilege state filter criteria for BHRB
+>> -	 * and the companion PMU events has to be the same. As a default
+>> -	 * "perf record" tool sets all privillege bits ON when no filter
+>> -	 * criteria is provided in the command line. So as along as all
+>> -	 * privillege bits are ON or they are OFF, we are good to go.
+>> +	 * regular PMU event. As the privilege state filter is handled
+>> +	 * in the basic PMC configuration of the accompanying regular
+>> +	 * PMU event, we ignore any separate BHRB specific request.
+>>  	 */
+>> -	if ((br_privilege != 7) && (br_privilege != 0))
+>> -		return -1;
+> 
+> br_privilege is now unused which causes this compile error.
+> 
+> arch/powerpc/perf/power8-pmu.c:526:6: error: unused variable ‘br_privilege’ [-Werror=unused-variable]
+> 
+> I assume since you didn't compile test this code, you also didn't
+> runtime test it either?!!?!?!?
 
-> I broke them in this commit:
-> 
->     commit 1be374a0518a288147c6a7398792583200a67261
->     Author: Andy Lutomirski <luto@amacapital.net>
->     Date:   Wed May 22 14:07:44 2013 -0700
-> 
->         net: Block MSG_CMSG_COMPAT in send(m)msg and recv(m)msg
-> 
-> This patch adds __sys_sendmsg and __sys_sendmsg as common helpers that accept
-> MSG_CMSG_COMPAT and blocks MSG_CMSG_COMPAT at the syscall entrypoints.  It
-> also reverts some unnecessary checks in sys_socketcall.
-> 
-> Apparently I was suffering from underscore blindness the first time around.
 
-FWIW This fixes the problem I was seeing with powerpc 32bit user on 64
-bit kernel.
+Always compile with the cross compiler "ARCH=powerpc CROSS_COMPILE=powerpc64-linux-gnu- make"
+I copied over arch/powerpc/config/pseries_defconfig and compiled it. Some how it missed
+to be a 64 bit kernel config which resulted in shutting down compilation of arch/powerpc/perf/power8-pmu.c
+file. So never encountered this compiler warning message before. Will fix this.
 
-Mikey
-
-> 
-> Signed-off-by: Andy Lutomirski <luto@amacapital.net>
-> ---
-> 
-> I've tested this a little, but I'm not sure I have a great test case.
-> 
-> If the decision is that it's better to leave this for the 3.11, I can send
-> a squashed version.  Note that the oops that this fixes is only an oops if
-> the other patches in the original series are applied.
-> 
-> (FWIW, I wasn't sure how to submit this stuff in the first place.  I submitted
-> some kernel hardening patches for the x86 tree that converted an access_ok
-> oddity in the net code into an actual oops.  In a bit of looking, I couldn't
-> find any failure mode other than a -EFAULT return without the other patches
-> applied.  This was clear in the patch series description but not in the
-> change log message for the net part.)
-> 
->  include/linux/socket.h |  3 +++
->  net/compat.c           | 13 +++++++--
->  net/socket.c           | 72 +++++++++++++++++++++++---------------------------
->  3 files changed, 47 insertions(+), 41 deletions(-)
-> 
-> diff --git a/include/linux/socket.h b/include/linux/socket.h
-> index 2b9f74b..e897bdc 100644
-> --- a/include/linux/socket.h
-> +++ b/include/linux/socket.h
-> @@ -321,6 +321,9 @@ extern int put_cmsg(struct msghdr*, int level, int type, int len, void *data);
->  
->  struct timespec;
->  
-> +/* The __sys_...msg variants allow MSG_CMSG_COMPAT */
-> +extern long __sys_recvmsg(int fd, struct msghdr __user *msg, unsigned flags);
-> +extern long __sys_sendmsg(int fd, struct msghdr __user *msg, unsigned flags);
->  extern int __sys_recvmmsg(int fd, struct mmsghdr __user *mmsg, unsigned int vlen,
->  			  unsigned int flags, struct timespec *timeout);
->  extern int __sys_sendmmsg(int fd, struct mmsghdr __user *mmsg,
-> diff --git a/net/compat.c b/net/compat.c
-> index 79ae884..f0a1ba6 100644
-> --- a/net/compat.c
-> +++ b/net/compat.c
-> @@ -734,19 +734,25 @@ static unsigned char nas[21] = {
->  
->  asmlinkage long compat_sys_sendmsg(int fd, struct compat_msghdr __user *msg, unsigned int flags)
->  {
-> -	return sys_sendmsg(fd, (struct msghdr __user *)msg, flags | MSG_CMSG_COMPAT);
-> +	if (flags & MSG_CMSG_COMPAT)
-> +		return -EINVAL;
-> +	return __sys_sendmsg(fd, (struct msghdr __user *)msg, flags | MSG_CMSG_COMPAT);
->  }
->  
->  asmlinkage long compat_sys_sendmmsg(int fd, struct compat_mmsghdr __user *mmsg,
->  				    unsigned int vlen, unsigned int flags)
->  {
-> +	if (flags & MSG_CMSG_COMPAT)
-> +		return -EINVAL;
->  	return __sys_sendmmsg(fd, (struct mmsghdr __user *)mmsg, vlen,
->  			      flags | MSG_CMSG_COMPAT);
->  }
->  
->  asmlinkage long compat_sys_recvmsg(int fd, struct compat_msghdr __user *msg, unsigned int flags)
->  {
-> -	return sys_recvmsg(fd, (struct msghdr __user *)msg, flags | MSG_CMSG_COMPAT);
-> +	if (flags & MSG_CMSG_COMPAT)
-> +		return -EINVAL;
-> +	return __sys_recvmsg(fd, (struct msghdr __user *)msg, flags | MSG_CMSG_COMPAT);
->  }
->  
->  asmlinkage long compat_sys_recv(int fd, void __user *buf, size_t len, unsigned int flags)
-> @@ -768,6 +774,9 @@ asmlinkage long compat_sys_recvmmsg(int fd, struct compat_mmsghdr __user *mmsg,
->  	int datagrams;
->  	struct timespec ktspec;
->  
-> +	if (flags & MSG_CMSG_COMPAT)
-> +		return -EINVAL;
-> +
->  	if (COMPAT_USE_64BIT_TIME)
->  		return __sys_recvmmsg(fd, (struct mmsghdr __user *)mmsg, vlen,
->  				      flags | MSG_CMSG_COMPAT,
-> diff --git a/net/socket.c b/net/socket.c
-> index 0e16888..e216502 100644
-> --- a/net/socket.c
-> +++ b/net/socket.c
-> @@ -1978,7 +1978,7 @@ struct used_address {
->  	unsigned int name_len;
->  };
->  
-> -static int __sys_sendmsg(struct socket *sock, struct msghdr __user *msg,
-> +static int ___sys_sendmsg(struct socket *sock, struct msghdr __user *msg,
->  			 struct msghdr *msg_sys, unsigned int flags,
->  			 struct used_address *used_address)
->  {
-> @@ -2093,26 +2093,30 @@ out:
->   *	BSD sendmsg interface
->   */
->  
-> -SYSCALL_DEFINE3(sendmsg, int, fd, struct msghdr __user *, msg, unsigned int, flags)
-> +long __sys_sendmsg(int fd, struct msghdr __user *msg, unsigned flags)
->  {
->  	int fput_needed, err;
->  	struct msghdr msg_sys;
->  	struct socket *sock;
->  
-> -	if (flags & MSG_CMSG_COMPAT)
-> -		return -EINVAL;
-> -
->  	sock = sockfd_lookup_light(fd, &err, &fput_needed);
->  	if (!sock)
->  		goto out;
->  
-> -	err = __sys_sendmsg(sock, msg, &msg_sys, flags, NULL);
-> +	err = ___sys_sendmsg(sock, msg, &msg_sys, flags, NULL);
->  
->  	fput_light(sock->file, fput_needed);
->  out:
->  	return err;
->  }
->  
-> +SYSCALL_DEFINE3(sendmsg, int, fd, struct msghdr __user *, msg, unsigned int, flags)
-> +{
-> +	if (flags & MSG_CMSG_COMPAT)
-> +		return -EINVAL;
-> +	return __sys_sendmsg(fd, msg, flags);
-> +}
-> +
->  /*
->   *	Linux sendmmsg interface
->   */
-> @@ -2143,15 +2147,16 @@ int __sys_sendmmsg(int fd, struct mmsghdr __user *mmsg, unsigned int vlen,
->  
->  	while (datagrams < vlen) {
->  		if (MSG_CMSG_COMPAT & flags) {
-> -			err = __sys_sendmsg(sock, (struct msghdr __user *)compat_entry,
-> -					    &msg_sys, flags, &used_address);
-> +			err = ___sys_sendmsg(sock, (struct msghdr __user *)compat_entry,
-> +					     &msg_sys, flags, &used_address);
->  			if (err < 0)
->  				break;
->  			err = __put_user(err, &compat_entry->msg_len);
->  			++compat_entry;
->  		} else {
-> -			err = __sys_sendmsg(sock, (struct msghdr __user *)entry,
-> -					    &msg_sys, flags, &used_address);
-> +			err = ___sys_sendmsg(sock,
-> +					     (struct msghdr __user *)entry,
-> +					     &msg_sys, flags, &used_address);
->  			if (err < 0)
->  				break;
->  			err = put_user(err, &entry->msg_len);
-> @@ -2180,7 +2185,7 @@ SYSCALL_DEFINE4(sendmmsg, int, fd, struct mmsghdr __user *, mmsg,
->  	return __sys_sendmmsg(fd, mmsg, vlen, flags);
->  }
->  
-> -static int __sys_recvmsg(struct socket *sock, struct msghdr __user *msg,
-> +static int ___sys_recvmsg(struct socket *sock, struct msghdr __user *msg,
->  			 struct msghdr *msg_sys, unsigned int flags, int nosec)
->  {
->  	struct compat_msghdr __user *msg_compat =
-> @@ -2272,27 +2277,31 @@ out:
->   *	BSD recvmsg interface
->   */
->  
-> -SYSCALL_DEFINE3(recvmsg, int, fd, struct msghdr __user *, msg,
-> -		unsigned int, flags)
-> +long __sys_recvmsg(int fd, struct msghdr __user *msg, unsigned flags)
->  {
->  	int fput_needed, err;
->  	struct msghdr msg_sys;
->  	struct socket *sock;
->  
-> -	if (flags & MSG_CMSG_COMPAT)
-> -		return -EINVAL;
-> -
->  	sock = sockfd_lookup_light(fd, &err, &fput_needed);
->  	if (!sock)
->  		goto out;
->  
-> -	err = __sys_recvmsg(sock, msg, &msg_sys, flags, 0);
-> +	err = ___sys_recvmsg(sock, msg, &msg_sys, flags, 0);
->  
->  	fput_light(sock->file, fput_needed);
->  out:
->  	return err;
->  }
->  
-> +SYSCALL_DEFINE3(recvmsg, int, fd, struct msghdr __user *, msg,
-> +		unsigned int, flags)
-> +{
-> +	if (flags & MSG_CMSG_COMPAT)
-> +		return -EINVAL;
-> +	return __sys_recvmsg(fd, msg, flags);
-> +}
-> +
->  /*
->   *     Linux recvmmsg interface
->   */
-> @@ -2330,17 +2339,18 @@ int __sys_recvmmsg(int fd, struct mmsghdr __user *mmsg, unsigned int vlen,
->  		 * No need to ask LSM for more than the first datagram.
->  		 */
->  		if (MSG_CMSG_COMPAT & flags) {
-> -			err = __sys_recvmsg(sock, (struct msghdr __user *)compat_entry,
-> -					    &msg_sys, flags & ~MSG_WAITFORONE,
-> -					    datagrams);
-> +			err = ___sys_recvmsg(sock, (struct msghdr __user *)compat_entry,
-> +					     &msg_sys, flags & ~MSG_WAITFORONE,
-> +					     datagrams);
->  			if (err < 0)
->  				break;
->  			err = __put_user(err, &compat_entry->msg_len);
->  			++compat_entry;
->  		} else {
-> -			err = __sys_recvmsg(sock, (struct msghdr __user *)entry,
-> -					    &msg_sys, flags & ~MSG_WAITFORONE,
-> -					    datagrams);
-> +			err = ___sys_recvmsg(sock,
-> +					     (struct msghdr __user *)entry,
-> +					     &msg_sys, flags & ~MSG_WAITFORONE,
-> +					     datagrams);
->  			if (err < 0)
->  				break;
->  			err = put_user(err, &entry->msg_len);
-> @@ -2525,31 +2535,15 @@ SYSCALL_DEFINE2(socketcall, int, call, unsigned long __user *, args)
->  				   (int __user *)a[4]);
->  		break;
->  	case SYS_SENDMSG:
-> -		if (a[2] & MSG_CMSG_COMPAT) {
-> -			err = -EINVAL;
-> -			break;
-> -		}
->  		err = sys_sendmsg(a0, (struct msghdr __user *)a1, a[2]);
->  		break;
->  	case SYS_SENDMMSG:
-> -		if (a[3] & MSG_CMSG_COMPAT) {
-> -			err = -EINVAL;
-> -			break;
-> -		}
->  		err = sys_sendmmsg(a0, (struct mmsghdr __user *)a1, a[2], a[3]);
->  		break;
->  	case SYS_RECVMSG:
-> -		if (a[2] & MSG_CMSG_COMPAT) {
-> -			err = -EINVAL;
-> -			break;
-> -		}
->  		err = sys_recvmsg(a0, (struct msghdr __user *)a1, a[2]);
->  		break;
->  	case SYS_RECVMMSG:
-> -		if (a[3] & MSG_CMSG_COMPAT) {
-> -			err = -EINVAL;
-> -			break;
-> -		}
->  		err = sys_recvmmsg(a0, (struct mmsghdr __user *)a1, a[2], a[3],
->  				   (struct timespec __user *)a[4]);
->  		break;
-> -- 
-> 1.8.1.4
-> 
+Regards
+Anshuman
