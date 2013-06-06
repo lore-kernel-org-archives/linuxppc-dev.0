@@ -1,14 +1,28 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH] powerpc/hw_breakpoints: Add DABRX cpu feature
-In-reply-to: <9649.1368772051@ale.ozlabs.ibm.com>
-References: <3F431E22-B7A9-4FCF-B34F-DC171A643E05@jpl.nasa.gov>
- <30348.1368764834@ale.ozlabs.ibm.com> <9649.1368772051@ale.ozlabs.ibm.com>
-Date: Thu, 06 Jun 2013 14:28:17 +1000
-Message-ID: <15283.1370492897@ale.ozlabs.ibm.com>
-Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>, "Gorelik,
- Jacob \(335F\)" <jacob.gorelik@jpl.nasa.gov>
+Return-Path: <eric.dumazet@gmail.com>
+Received: from mail-pb0-x231.google.com (mail-pb0-x231.google.com
+ [IPv6:2607:f8b0:400e:c01::231])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id EF99B2C02B6
+ for <linuxppc-dev@ozlabs.org>; Thu,  6 Jun 2013 14:35:29 +1000 (EST)
+Received: by mail-pb0-f49.google.com with SMTP id jt11so2699174pbb.8
+ for <linuxppc-dev@ozlabs.org>; Wed, 05 Jun 2013 21:35:27 -0700 (PDT)
+Message-ID: <1370493325.24311.332.camel@edumazet-glaptop>
+Subject: Re: [PATCH 5/5] net: Block MSG_CMSG_COMPAT in send(m)msg and
+ recv(m)msg
+From: Eric Dumazet <eric.dumazet@gmail.com>
+To: Michael Neuling <mikey@neuling.org>
+Date: Wed, 05 Jun 2013 21:35:25 -0700
+In-Reply-To: <CAEjGV6xcF776C6N6VxeMY0Vyk+X51oNixdbN42-xkWjQOaMEQA@mail.gmail.com>
+References: <cover.1369177867.git.luto@amacapital.net>
+ <aa015609319786835bcab445d507faa75c11f111.1369177867.git.luto@amacapital.net>
+ <CAEjGV6xcF776C6N6VxeMY0Vyk+X51oNixdbN42-xkWjQOaMEQA@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: netdev@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
+ Andy Lutomirski <luto@amacapital.net>, Linux PPC dev <linuxppc-dev@ozlabs.org>,
+ Anton Blanchard <anton@samba.org>, trinity@vger.kernel.org,
+ torvalds@linux-foundation.org, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,106 +32,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-benh, 
-
-FWIW this is fixing a regression from:
-  4474ef0 powerpc: Rework set_dabr so it can take a DABRX value as well
-
-Mikey
-
-Michael Neuling <mikey@neuling.org> wrote:
-
-> Some CPUs have a DABR but not DABRX.  Configuration are:
-> - No 32bit CPUs have DABRX but some have DABR.
-> - POWER4+ and below have the DABR but no DABRX.
-> - 970 and POWER5 and above have DABR and DABRX.
-> - POWER8 has DAWR, hence no DABRX.
+On Thu, 2013-06-06 at 12:56 +1000, Michael Neuling wrote:
+> On Thu, May 23, 2013 at 7:07 AM, Andy Lutomirski <luto@amacapital.net> wrote:
+> > MSG_CMSG_COMPAT is (AFAIK) not intended to be part of the API --
+> > it's a hack that steals a bit to indicate to other networking code
+> > that a compat entry was used.  So don't allow it from a non-compat
+> > syscall.
 > 
-> This introduces CPU_FTR_DABRX and sets it on appropriate CPUs.  We use
-> the top 64 bits for CPU FTR bits since only 64 bit CPUs have this.
+> Dave & Linus
 > 
-> Processors that don't have the DABRX will still work as they will fall
-> back to software filtering these breakpoints via perf_exclude_event().
+> This is causing a regression on 64bit powerpc with 32bit usermode.
+> When I hit userspace, udev is broken and I suspect all networking is
+> broken as well.
 > 
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> Reported-by: "Gorelik, Jacob (335F)" <jacob.gorelik@jpl.nasa.gov>
-> cc: stable@vger.kernel.org (v3.9 only)
+> Can we please revert 1be374a0518a288147c6a7398792583200a67261 upstream?
 > 
-> diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-> index 26807e5..6f3887d 100644
-> --- a/arch/powerpc/include/asm/cputable.h
-> +++ b/arch/powerpc/include/asm/cputable.h
-> @@ -176,6 +176,7 @@ extern const char *powerpc_base_platform;
->  #define CPU_FTR_CFAR			LONG_ASM_CONST(0x0100000000000000)
->  #define	CPU_FTR_HAS_PPR			LONG_ASM_CONST(0x0200000000000000)
->  #define CPU_FTR_DAWR			LONG_ASM_CONST(0x0400000000000000)
-> +#define CPU_FTR_DABRX			LONG_ASM_CONST(0x0800000000000000)
->  
->  #ifndef __ASSEMBLY__
->  
-> @@ -394,19 +395,20 @@ extern const char *powerpc_base_platform;
->  	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | CPU_FTR_ARCH_201 | \
->  	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_CAN_NAP | CPU_FTR_MMCRA | \
->  	    CPU_FTR_CP_USE_DCBTZ | CPU_FTR_STCX_CHECKS_ADDRESS | \
-> -	    CPU_FTR_HVMODE)
-> +	    CPU_FTR_HVMODE | CPU_FTR_DABRX)
->  #define CPU_FTRS_POWER5	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
->  	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
->  	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
->  	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_PURR | \
-> -	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB)
-> +	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_DABRX)
->  #define CPU_FTRS_POWER6 (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
->  	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
->  	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
->  	    CPU_FTR_COHERENT_ICACHE | \
->  	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
->  	    CPU_FTR_DSCR | CPU_FTR_UNALIGNED_LD_STD | \
-> -	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_CFAR)
-> +	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_CFAR | \
-> +	    CPU_FTR_DABRX)
->  #define CPU_FTRS_POWER7 (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
->  	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | CPU_FTR_ARCH_206 |\
->  	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
-> @@ -415,7 +417,7 @@ extern const char *powerpc_base_platform;
->  	    CPU_FTR_DSCR | CPU_FTR_SAO  | CPU_FTR_ASYM_SMT | \
->  	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
->  	    CPU_FTR_ICSWX | CPU_FTR_CFAR | CPU_FTR_HVMODE | \
-> -	    CPU_FTR_VMX_COPY | CPU_FTR_HAS_PPR)
-> +	    CPU_FTR_VMX_COPY | CPU_FTR_HAS_PPR | CPU_FTR_DABRX)
->  #define CPU_FTRS_POWER8 (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
->  	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | CPU_FTR_ARCH_206 |\
->  	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
-> @@ -430,14 +432,15 @@ extern const char *powerpc_base_platform;
->  	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
->  	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
->  	    CPU_FTR_PAUSE_ZERO  | CPU_FTR_CELL_TB_BUG | CPU_FTR_CP_USE_DCBTZ | \
-> -	    CPU_FTR_UNALIGNED_LD_STD)
-> +	    CPU_FTR_UNALIGNED_LD_STD | CPU_FTR_DABRX)
->  #define CPU_FTRS_PA6T (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
->  	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_ALTIVEC_COMP | \
-> -	    CPU_FTR_PURR | CPU_FTR_REAL_LE)
-> +	    CPU_FTR_PURR | CPU_FTR_REAL_LE | CPU_FTR_DABRX)
->  #define CPU_FTRS_COMPATIBLE	(CPU_FTR_USE_TB | CPU_FTR_PPCAS_ARCH_V2)
->  
->  #define CPU_FTRS_A2 (CPU_FTR_USE_TB | CPU_FTR_SMT | CPU_FTR_DBELL | \
-> -		     CPU_FTR_NOEXECUTE | CPU_FTR_NODSISRALIGN | CPU_FTR_ICSWX)
-> +		     CPU_FTR_NOEXECUTE | CPU_FTR_NODSISRALIGN | \
-> +		     CPU_FTR_ICSWX | CPU_FTR_DABRX )
->  
->  #ifdef __powerpc64__
->  #ifdef CONFIG_PPC_BOOK3E
-> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-> index a902723..b0f3e3f 100644
-> --- a/arch/powerpc/kernel/process.c
-> +++ b/arch/powerpc/kernel/process.c
-> @@ -399,7 +399,8 @@ static inline int __set_dabr(unsigned long dabr, unsigned long dabrx)
->  static inline int __set_dabr(unsigned long dabr, unsigned long dabrx)
->  {
->  	mtspr(SPRN_DABR, dabr);
-> -	mtspr(SPRN_DABRX, dabrx);
-> +	if (cpu_has_feature(CPU_FTR_DABRX))
-> +		mtspr(SPRN_DABRX, dabrx);
->  	return 0;
->  }
->  #else
+
+It seems to also break x86_64, if using 32bit usermode.
