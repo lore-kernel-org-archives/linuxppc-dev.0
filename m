@@ -1,34 +1,39 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 2F4AA2C009E
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jun 2013 13:52:33 +1000 (EST)
-Message-ID: <1370577138.3766.342.camel@pasglop>
-Subject: Re: SATA FSL and upstreaming
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Timur Tabi <timur@tabi.org>
-Date: Fri, 07 Jun 2013 13:52:18 +1000
-In-Reply-To: <CAOZdJXU79kqEGk_nqv1NSzna7c=bgwSv+6WFgaTVjR4Rj4cZVg@mail.gmail.com>
-References: <1368679657.9603.32.camel@pasglop>
- <1368683156.9603.34.camel@pasglop>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0701C307@039-SN2MPN1-012.039d.mgd.msft.net>
- <3E027F8168735B46AC006B1D0C7BB0020B1E040F@039-SN2MPN1-011.039d.mgd.msft.net>
- <1368684547.9603.38.camel@pasglop> <51947A00.9010504@windriver.com>
- <1368685307.9603.39.camel@pasglop> <51947E35.30808@windriver.com>
- <1368686426.9603.49.camel@pasglop> <5194800D.3010606@windriver.com>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0701C498@039-SN2MPN1-012.039d.mgd.msft.net>
- <1368687133.9603.51.camel@pasglop>
- <CAOZdJXU79kqEGk_nqv1NSzna7c=bgwSv+6WFgaTVjR4Rj4cZVg@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Xie Shaohui-B21989 <B21989@freescale.com>,
- Liu Qiang-B32616 <B32616@freescale.com>,
- Zang Roy-R61911 <r61911@freescale.com>,
- "tiejun.chen" <tiejun.chen@windriver.com>,
- Fleming Andy-AFLEMING <afleming@freescale.com>,
- Bhushan Bharat-R65777 <R65777@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D957F2C009C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jun 2013 13:55:36 +1000 (EST)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 7 Jun 2013 13:48:43 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id D25392BB0052
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jun 2013 13:55:30 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r573f2E426935396
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Jun 2013 13:41:03 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r573tSos024759
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Jun 2013 13:55:29 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH -V7 09/18] powerpc: Switch 16GB and 16MB explicit
+ hugepages to a different page table format
+In-Reply-To: <1370558559.32518.4@snotra>
+References: <1367177859-7893-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1367177859-7893-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1370558559.32518.4@snotra>
+Date: Fri, 07 Jun 2013 09:25:22 +0530
+Message-ID: <87zjv2wp5h.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linux-mm@kvack.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ dwg@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,23 +43,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-05-16 at 09:56 -0500, Timur Tabi wrote:
-> On Thu, May 16, 2013 at 1:52 AM, Benjamin Herrenschmidt
-> <benh@kernel.crashing.org> wrote:
-> >> 3) run " pix altbak" command
-> >>
-> >> 4) check you are on bank4
-> >
-> > It stays on bank 0
-> 
-> pix altbank
+Scott Wood <scottwood@freescale.com> writes:
 
-So I got the rev2 chip today, put it in, and PCI-E is still not getting
-a link. Since the LEDs of the e1000 aren't coming up at all, I *suspect*
-the slots are getting no power.
+> On 04/28/2013 02:37:30 PM, Aneesh Kumar K.V wrote:
+>> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+>> 
+>> We will be switching PMD_SHIFT to 24 bits to facilitate THP  
+>> impmenetation.
+>> With PMD_SHIFT set to 24, we now have 16MB huge pages allocated at  
+>> PGD level.
+>> That means with 32 bit process we cannot allocate normal pages at
+>> all, because we cover the entire address space with one pgd entry.  
+>> Fix this
+>> by switching to a new page table format for hugepages. With the new  
+>> page table
+>> format for 16GB and 16MB hugepages we won't allocate hugepage  
+>> directory. Instead
+>> we encode the PTE information directly at the directory level. This  
+>> forces 16MB
+>> hugepage at PMD level. This will also make the page take walk much  
+>> simpler later
+>> when we add the THP support.
+>> 
+>> With the new table format we have 4 cases for pgds and pmds:
+>> (1) invalid (all zeroes)
+>> (2) pointer to next table, as normal; bottom 6 bits == 0
+>> (3) leaf pte for huge page, bottom two bits != 00
+>> (4) hugepd pointer, bottom two bits == 00, next 4 bits indicate size  
+>> of table
+>> 
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/include/asm/page.h    |   2 +
+>>  arch/powerpc/include/asm/pgtable.h |   2 +
+>>  arch/powerpc/mm/gup.c              |  18 +++-
+>>  arch/powerpc/mm/hugetlbpage.c      | 176  
+>> +++++++++++++++++++++++++++++++------
+>>  4 files changed, 168 insertions(+), 30 deletions(-)
+>
+> After this patch, on 64-bit book3e (e5500, and thus 4K pages), I see  
+> messages like this after exiting a program that uses hugepages  
+> (specifically, qemu):
+>
+> /home/scott/fsl/git/linux/upstream/mm/memory.c:407: bad pmd  
+> 40000001fc221516.
+> /home/scott/fsl/git/linux/upstream/mm/memory.c:407: bad pmd  
+> 40000001fc221516.
+> /home/scott/fsl/git/linux/upstream/mm/memory.c:407: bad pmd  
+> 40000001fc2214d6.
+> /home/scott/fsl/git/linux/upstream/mm/memory.c:407: bad pmd  
+> 40000001fc2214d6.
+> /home/scott/fsl/git/linux/upstream/mm/memory.c:407: bad pmd  
+> 40000001fc221916.
+> /home/scott/fsl/git/linux/upstream/mm/memory.c:407: bad pmd  
+> 40000001fc221916.
+> /home/scott/fsl/git/linux/upstream/mm/memory.c:407: bad pmd  
+> 40000001fc2218d6.
+> /home/scott/fsl/git/linux/upstream/mm/memory.c:407: bad pmd  
+> 40000001fc2218d6.
+> /home/scott/fsl/git/linux/upstream/mm/memory.c:407: bad pmd  
+> 40000001fc221496.
+> /home/scott/fsl/git/linux/upstream/mm/memory.c:407: bad pmd  
+> 40000001fc221496.
+> /home/scott/fsl/git/linux/upstream/mm/memory.c:407: bad pmd  
+> 40000001fc221856.
+> /home/scott/fsl/git/linux/upstream/mm/memory.c:407: bad pmd  
+> 40000001fc221856.
+> /home/scott/fsl/git/linux/upstream/mm/memory.c:407: bad pmd  
+> 40000001fc221816.
 
-Is there a power control somewhere ? Maybe some DIP or jumpers that
-might have gone off ?
+hmm that implies some of the code paths are not properly #ifdef.
+The goal was to limit the new format CONFIG_PPC_BOOK3S_64 as seen in the
+definition of huge_pte_alloc. Can you send me the .config ?
 
-Cheers,
-Ben.
+-aneesh
