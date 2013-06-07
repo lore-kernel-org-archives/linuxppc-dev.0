@@ -1,26 +1,38 @@
-Return-Path: <rjw@sisk.pl>
-Received: from hydra.sisk.pl (hydra.sisk.pl [212.160.235.94])
- by ozlabs.org (Postfix) with ESMTP id 11F902C0098
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jun 2013 21:49:04 +1000 (EST)
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 17/18] cpufreq: powerpc: move cpufreq driver to
- drivers/cpufreq
-Date: Fri, 07 Jun 2013 13:58:05 +0200
-Message-ID: <36081985.E8ct76IG4n@vostro.rjw.lan>
-In-Reply-To: <CAKohpom=HvLwn7q9gicJXmHExoaDKKHcgQgT=1F0SKu3N3bXSg@mail.gmail.com>
-References: <cover.1365079581.git.viresh.kumar@linaro.org>
- <CAKohpokgTmb6d79ipR9pV2iOfLSzngrPbMV3hFcuP64kbNYSQA@mail.gmail.com>
- <CAKohpom=HvLwn7q9gicJXmHExoaDKKHcgQgT=1F0SKu3N3bXSg@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: deepthi@linux.vnet.ibm.com, Robin Randhawa <robin.randhawa@arm.com>,
- linux-pm@vger.kernel.org, patches@linaro.org, Liviu.Dudau@arm.com,
- linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Steve.Bannister@arm.com,
- Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
- Andrew Morton <akpm@linux-foundation.org>, arvind.chauhan@arm.com,
- linuxppc-dev@lists.ozlabs.org, linaro-kernel@lists.linaro.org,
- charles.garcia-tobin@arm.com
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id E4B2E2C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jun 2013 22:07:14 +1000 (EST)
+Message-ID: <1370606822.3766.379.camel@pasglop>
+Subject: Re: fsqrt
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "tiejun.chen" <tiejun.chen@windriver.com>
+Date: Fri, 07 Jun 2013 22:07:02 +1000
+In-Reply-To: <51B1A18A.6030002@windriver.com>
+References: <1368679657.9603.32.camel@pasglop>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0701C307@039-SN2MPN1-012.039d.mgd.msft.net>
+ <3E027F8168735B46AC006B1D0C7BB0020B1E040F@039-SN2MPN1-011.039d.mgd.msft.net>
+ <1368684547.9603.38.camel@pasglop> <51947A00.9010504@windriver.com>
+ <1368685307.9603.39.camel@pasglop> <51947E35.30808@windriver.com>
+ <1368686426.9603.49.camel@pasglop> <5194800D.3010606@windriver.com>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0701C498@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1368687133.9603.51.camel@pasglop>
+ <CAOZdJXU79kqEGk_nqv1NSzna7c=bgwSv+6WFgaTVjR4Rj4cZVg@mail.gmail.com>
+ <1370577138.3766.342.camel@pasglop> <1370579976.3766.345.camel@pasglop>
+ <3E027F8168735B46AC006B1D0C7BB0020B2135A0@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1370580426.3766.349.camel@pasglop>
+ <3E027F8168735B46AC006B1D0C7BB0020B213817@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1370590884.3766.357.camel@pasglop> <51B18FD0.5040909@windriver.com>
+ <1370595233.3766.360.camel@pasglop> <51B1A18A.6030002@windriver.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Xie Shaohui-B21989 <B21989@freescale.com>,
+ Liu Qiang-B32616 <B32616@freescale.com>,
+ Zang Roy-R61911 <r61911@freescale.com>, Timur Tabi <timur@tabi.org>,
+ Fleming Andy-AFLEMING <afleming@freescale.com>,
+ Bhushan Bharat-R65777 <R65777@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,73 +42,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Friday, June 07, 2013 10:48:21 AM Viresh Kumar wrote:
-> On 31 May 2013 16:20, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > On 20 May 2013 10:10, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >> On 13 May 2013 11:34, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >>> On 22 April 2013 12:19, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >>>> On 9 April 2013 14:05, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >>>>> On 5 April 2013 12:16, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >>>>>> On 4 April 2013 18:24, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >>>>>>> This patch moves cpufreq driver of powerpc platform to drivers/cpufreq.
-> >>>>>>>
-> >>>>>>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> >>>>>>> Cc: Paul Mackerras <paulus@samba.org>
-> >>>>>>> Cc: Olof Johansson <olof@lixom.net>
-> >>>>>>> Cc: linuxppc-dev@lists.ozlabs.org
-> >>>>>>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> >>>>>>> ---
-> >>>>>>> Compile Tested only.
-> >>>>>>>
-> >>>>>>>  arch/powerpc/platforms/Kconfig                     | 31 ----------------------
-> >>>>>>>  arch/powerpc/platforms/pasemi/Makefile             |  1 -
-> >>>>>>>  arch/powerpc/platforms/powermac/Makefile           |  2 --
-> >>>>>>>  drivers/cpufreq/Kconfig.powerpc                    | 26 ++++++++++++++++++
-> >>>>>>>  drivers/cpufreq/Makefile                           |  3 +++
-> >>>>>>>  .../cpufreq.c => drivers/cpufreq/pasemi-cpufreq.c  |  0
-> >>>>>>>  .../cpufreq/pmac32-cpufreq.c                       |  0
-> >>>>>>>  .../cpufreq/pmac64-cpufreq.c                       |  0
-> >>>>>>>  8 files changed, 29 insertions(+), 34 deletions(-)
-> >>>>>>>  rename arch/powerpc/platforms/pasemi/cpufreq.c => drivers/cpufreq/pasemi-cpufreq.c (100%)
-> >>>>>>>  rename arch/powerpc/platforms/powermac/cpufreq_32.c => drivers/cpufreq/pmac32-cpufreq.c (100%)
-> >>>>>>>  rename arch/powerpc/platforms/powermac/cpufreq_64.c => drivers/cpufreq/pmac64-cpufreq.c (100%)
-> >>>>>>
-> >>>>>> Hi Deepthi,
-> >>>>>>
-> >>>>>> Can you help testing this please?
-> >>>>>
-> >>>>> Ping!!
-> >>>>
-> >>>> Ping!!
+On Fri, 2013-06-07 at 17:02 +0800, tiejun.chen wrote:
+> On 06/07/2013 04:53 PM, Benjamin Herrenschmidt wrote:
+> > On Fri, 2013-06-07 at 15:46 +0800, tiejun.chen wrote:
+> >> On 06/07/2013 03:41 PM, Benjamin Herrenschmidt wrote:
+> >>> Another question...
 > >>>
-> >>> Hi Benjamin,
-> >>>
-> >>> Hope you are back from your vacations. Can you give it a try now?
+> >>> Do you guys happen to have a patch to emulate fsqrt in the kernel ?
 > >>
-> >> Ping!!
+> >> Seems this is already emulated:
+> >>
+> >> arch/powerpc/math-emu/fsqrt.c
+> >>
+> >> You can enable CONFIG_MATH_EMULATION to try.
 > >
-> > Ping!!
+> > Is math emu expected to work at all on top of a real FPU ? I though it
+> > didn't ... maybe I'm wrong.
 > 
-> Hi Rafael,
-> 
-> Its been more than 2 months now that this patch was first posted.
-> And the response from Maintainers isn't so great, irrespective of
-> how many times I pinged them.
-> 
-> This is what I think:
-> - It looked functionally correct to Benjamin but he wanted somebody
-> to actually test it.
-> - Arnd gave his Ack (So it looked functionally correct to him too)
-> - We can probably push this into linux-next now and see if somebody
-> complains of any breakage it has done. If not we can get it pushed for
-> 3.11.
+> As I understand often the real FPU can't support all float instructions, so we 
+> have to enable this to emulate those unsupported float instructions in that 
+> scenario.
 
-I agree, applied to bleeding-edge.
+Ok, two things come to mind here:
 
-Thanks,
-Rafael
+  - do_mathemu doesn't do giveup_fpu() so the FPU state might still be
+in the "live" FP registers and not in the thread_struct, so it can't
+work... unless I missed something.
 
+  - mathemu uses solely integers. For something like fsqrt it's going to
+suck a lot more than implementing using floating points in the kernel.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Cheers,
+Ben.
