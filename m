@@ -1,20 +1,47 @@
-Return-Path: <mikey@neuling.org>
-Received: from localhost.localdomain (localhost [127.0.0.1])
- by ozlabs.org (Postfix) with ESMTP id B7B272C008E
- for <linuxppc-dev@ozlabs.org>; Fri,  7 Jun 2013 09:46:54 +1000 (EST)
-From: Michael Neuling <mikey@neuling.org>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: Re: [PATCH V2 1/2] powerpc,
- perf: Ignore separate BHRB privilege state filter request
-In-reply-to: <51B0266F.3090708@linux.vnet.ibm.com>
-References: <1369716452-28689-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1369716452-28689-2-git-send-email-khandual@linux.vnet.ibm.com>
- <20699.1370494560@ale.ozlabs.ibm.com> <51B0266F.3090708@linux.vnet.ibm.com>
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A46952C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jun 2013 10:25:15 +1000 (EST)
+Received: from /spool/local
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Thu, 6 Jun 2013 20:25:11 -0400
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 1B015C90042
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jun 2013 20:25:07 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r570P7bL288352
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Jun 2013 20:25:07 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r570P5Hl022947
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Jun 2013 20:25:07 -0400
+Date: Fri, 7 Jun 2013 08:24:59 +0800
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: Robert Knight <knight@princeton.edu>
+Subject: Re: IBM OpenPower 720 ipr driver woes
+Message-ID: <20130607002459.GA5512@shangw.(null)>
+References: <51A61B82.5050508@princeton.edu>
+ <51A644C2.5090300@linux.vnet.ibm.com>
+ <51AD088C.8040803@princeton.edu>
+ <20130604000130.GA25055@thor.bakeyournoodle.com>
+ <51AD45A4.9080702@princeton.edu>
+ <20130604031651.GA3373@thor.bakeyournoodle.com>
+ <20130604035223.GA27964@shangw.(null)>
+ <51AFAA2C.5060304@princeton.edu>
+ <51B07336.7040609@linux.vnet.ibm.com>
+ <51B08311.3080406@princeton.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Date: Fri, 07 Jun 2013 09:46:54 +1000
-Message-ID: <31747.1370562414@ale.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <51B08311.3080406@princeton.edu>
+Cc: Brian King <brking@linux.vnet.ibm.com>,
+ Wendy Xiong <wenxiong@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Gavin Shan <shangw@linux.vnet.ibm.com>
+Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,87 +51,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote:
+On Thu, Jun 06, 2013 at 08:39:45AM -0400, Robert Knight wrote:
+>On 06/06/2013 07:32 AM, Brian King wrote:
+>>On 06/05/2013 04:14 PM, Robert Knight wrote:
+>>>On 6/3/2013 11:52 PM, Gavin Shan wrote:
+>>>>On Tue, Jun 04, 2013 at 01:16:52PM +1000, Tony Breeds wrote:
+>>>>>On Mon, Jun 03, 2013 at 09:40:52PM -0400, Robert Knight wrote:
+>>>>>>On 6/3/2013 8:01 PM, Tony Breeds wrote:
+>>>>>>>On Mon, Jun 03, 2013 at 05:20:12PM -0400, Robert Knight wrote:
 
-> On 06/06/2013 10:26 AM, Michael Neuling wrote:
-> > Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote:
-> >=20
-> >> Completely ignore BHRB privilege state filter request as we are
-> >> already configuring that with privilege state filtering attribute
-> >> for the accompanying PMU event. This would help achieve cleaner
-> >> user space interaction for BHRB.
-> >>
-> >> This patch fixes a situation like this
-> >>
-> >> Before patch:-
-> >> ------------
-> >> ./perf record -j any -e branch-misses:k ls
-> >> Error:
-> >> The sys_perf_event_open() syscall returned with 95 (Operation not supp=
-orted) for event (branch-misses:k).
-> >> /bin/dmesg may provide additional information.
-> >> No CONFIG_PERF_EVENTS=3Dy kernel support configured?
-> >>
-> >> Here 'perf record' actually copies over ':k' filter request into BHRB
-> >> privilege state filter config and our previous check in kernel would
-> >> fail that.
-> >>
-> >> After patch:-
-> >> -------------
-> >> ./perf record -j any -e branch-misses:k ls
-> >> perf  perf.data  perf.data.old  test-mmap-ring
-> >> [ perf record: Woken up 1 times to write data ]
-> >> [ perf record: Captured and wrote 0.002 MB perf.data (~102 samples) ]
-> >>
-> >> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-> >> ---
-> >>  arch/powerpc/perf/power8-pmu.c | 12 ++++--------
-> >>  1 file changed, 4 insertions(+), 8 deletions(-)
-> >>
-> >> diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8=
--pmu.c
-> >> index f7d1c4f..3a58416 100644
-> >> --- a/arch/powerpc/perf/power8-pmu.c
-> >> +++ b/arch/powerpc/perf/power8-pmu.c
-> >> @@ -525,16 +525,12 @@ static u64 power8_bhrb_filter_map(u64 branch_sam=
-ple_type)
-> >>  	u64 pmu_bhrb_filter =3D 0;
-> >>  	u64 br_privilege =3D branch_sample_type & ONLY_PLM;
-> >>=20=20
-> >> -	/* BHRB and regular PMU events share the same prvillege state
-> >> +	/* BHRB and regular PMU events share the same privilege state
-> >>  	 * filter configuration. BHRB is always recorded along with a
-> >> -	 * regular PMU event. So privilege state filter criteria for BHRB
-> >> -	 * and the companion PMU events has to be the same. As a default
-> >> -	 * "perf record" tool sets all privillege bits ON when no filter
-> >> -	 * criteria is provided in the command line. So as along as all
-> >> -	 * privillege bits are ON or they are OFF, we are good to go.
-> >> +	 * regular PMU event. As the privilege state filter is handled
-> >> +	 * in the basic PMC configuration of the accompanying regular
-> >> +	 * PMU event, we ignore any separate BHRB specific request.
-> >>  	 */
-> >> -	if ((br_privilege !=3D 7) && (br_privilege !=3D 0))
-> >> -		return -1;
-> >=20
-> > br_privilege is now unused which causes this compile error.
-> >=20
-> > arch/powerpc/perf/power8-pmu.c:526:6: error: unused variable =E2=80=98b=
-r_privilege=E2=80=99 [-Werror=3Dunused-variable]
-> >=20
-> > I assume since you didn't compile test this code, you also didn't
-> > runtime test it either?!!?!?!?
->=20
->=20
-> Always compile with the cross compiler "ARCH=3Dpowerpc
-> CROSS_COMPILE=3Dpowerpc64-linux-gnu- make" I copied over
-> arch/powerpc/config/pseries_defconfig and compiled it. Some how it
-> missed to be a 64 bit kernel config which resulted in shutting down
-> compilation of arch/powerpc/perf/power8-pmu.c file. So never
-> encountered this compiler warning message before. Will fix this.
+.../...
 
-I don't understand this at all... pseries_defconfig is a 64bit kernel.
+>Yes.  I've started rebuilding the kernel and I'm up to the module
+>building part, so I'd say it is solid.  Will this patch make it into
+>some version of the kernel?
+>
 
-BTW. you don't need to copy it.  Just do "make pseries_defconfig && make
-vmlinux".
+The patch is being pushed to mainline or linux-next, and backported
+to stable-kernel (v3.4+)
 
-Mikey
+
+>What was killing me was that it would not complete boot.  It now
+>does.  I see:
+>
+>[   11.934481] scsi 0:0:15:0: Resetting device
+>[   11.934813] ipr 0001:d0:01.0: Adapter being reset as a result of
+>error recovery.
+>
+>on each boot.  It does not appear to affect operation.
+>
+>Thank you and the rest of the team for your rapid and helpful responses.
+>
+
+Thanks,
+Gavin
