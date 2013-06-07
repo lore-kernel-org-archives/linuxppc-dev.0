@@ -2,44 +2,23 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 0E63E2C007A
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Jun 2013 09:30:28 +1000 (EST)
-Message-ID: <1370647812.3766.436.camel@pasglop>
-Subject: Re: fsqrt
+ by ozlabs.org (Postfix) with ESMTPS id 94CF82C00AD
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Jun 2013 09:33:49 +1000 (EST)
+Message-ID: <1370648019.3766.439.camel@pasglop>
+Subject: Re: FSL 64-bit DMA window question
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Date: Sat, 08 Jun 2013 09:30:12 +1000
-In-Reply-To: <1370647524.3766.433.camel@pasglop>
-References: <1368679657.9603.32.camel@pasglop>
- <1368683156.9603.34.camel@pasglop>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0701C307@039-SN2MPN1-012.039d.mgd.msft.net>
- <3E027F8168735B46AC006B1D0C7BB0020B1E040F@039-SN2MPN1-011.039d.mgd.msft.net>
- <1368684547.9603.38.camel@pasglop> <51947A00.9010504@windriver.com>
- <1368685307.9603.39.camel@pasglop> <51947E35.30808@windriver.com>
- <1368686426.9603.49.camel@pasglop> <5194800D.3010606@windriver.com>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0701C498@039-SN2MPN1-012.039d.mgd.msft.net>
- <1368687133.9603.51.camel@pasglop>
- <CAOZdJXU79kqEGk_nqv1NSzna7c=bgwSv+6WFgaTVjR4Rj4cZVg@mail.gmail.com>
- <1370577138.3766.342.camel@pasglop> <1370579976.3766.345.camel@pasglop>
- <3E027F8168735B46AC006B1D0C7BB0020B2135A0@039-SN2MPN1-012.039d.mgd.msft.net>
- <1370580426.3766.349.camel@pasglop>
- <3E027F8168735B46AC006B1D0C7BB0020B213817@039-SN2MPN1-012.039d.mgd.msft.net>
- <1370590884.3766.357.camel@pasglop>
- <3E027F8168735B46AC006B1D0C7BB0020B213A62@039-SN2MPN1-012.039d.mgd.msft.net>
- <137 0595190.3766 .359.camel@pasglop> <1370595557.3766.362.camel@pasglop>
- <AE90C24D6B3A694183C094C60CF0A2F6026B7279@saturn3.aculab.com>
- <1370607245.3766.386.camel@pasglop>
- <B90B185D-AC79-4A39-91F1-57F371D9D732@kernel.crashing.org>
- <1370647431.3766.432.camel@pasglop> <1370647524.3766.433.camel@pasglop>
+To: Scott Wood <scottwood@freescale.com>
+Date: Sat, 08 Jun 2013 09:33:39 +1000
+In-Reply-To: <1370647771.6813.19@snotra>
+References: <1370647771.6813.19@snotra>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: Xie Shaohui-B21989 <B21989@freescale.com>,
- Liu Qiang-B32616 <B32616@freescale.com>,
  Zang Roy-R61911 <r61911@freescale.com>, Timur Tabi <timur@tabi.org>,
  "tiejun.chen" <tiejun.chen@windriver.com>,
- David Laight <David.Laight@ACULAB.COM>,
  Fleming Andy-AFLEMING <afleming@freescale.com>,
- Bhushan Bharat-R65777 <R65777@freescale.com>, linuxppc-dev@lists.ozlabs.org
+ Bhushan Bharat-R65777 <R65777@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,31 +28,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2013-06-08 at 09:25 +1000, Benjamin Herrenschmidt wrote:
-> On Sat, 2013-06-08 at 09:23 +1000, Benjamin Herrenschmidt wrote:
-> > Ok, thinking out loud... looks like we might be able to just use existing 
-> > math-emu for that. From what I can tell, all it needs (other than enabling
-> > the config option), is a call to flush_fp_to_thread(current);
-> > 
-> > While talking math-emu... we seem to have some duplication between the
-> > code on do_mathemu which can be compiled without CONFIG_MATH_EMULATION and
-> > in this case only just emulates loads/stores/fmr and the code in
-> > arch/powerpc/kernel/softemu8xx.c.
-> > 
-> > Is there any reason we can't just get rid of the latter ?
-> 
-> Or just git completely rid of that "minimal emulation" ...
+On Fri, 2013-06-07 at 18:29 -0500, Scott Wood wrote:
 
-Right, looking more, the code really sucks. Either you use the existing
-apparent ability for MATH_EMU to operate in minimal mode, ie,
-load/store/fmr only (which seems to do exactly the same thing as the
-code in softemu8xx.c which we can then get rid of), or just get rid of
-that minimal mode alltogether.
+> I just meant that a PCIe device targeting something other than RAM,  
+> CCSR (it's not just MSIs that are mapped through the special window),  
+> or another PCIe is a rather unusual case -- not something that you'd  
+> see by just plugging in an ordinary PCIe card.  The tradeoff is that if  
+> we accommodate this strange use case, boards like the radeon would need  
+> to use swiotlb (once we fix the > versus >= bug) unless the user tweaks  
+> the DMA window.
 
-And while at it make it a general config option for all soft-emu
-processors (there is no bloody reason why that should be 8xx specfic) or
-just get rid of the whole concept of half-emulation.
+Yeah, well, swiotlb won't work for radeon anyway. It has its own
+"mmu" (a GART really) and will constantly want to pin pages in it,
+swiotlb will be at best a mess and at worst will just not work.
 
-Ie. CONFIG_MATH_EMULATION/CONFIG_MATH_HALF_ASSED_EMULATION
+> It may be best to stick with the default that makes everything work,  
+> even if a broken PCIe card ends up being a bit slower out of the box,  
+> even if the PCIe-to-MMIO use case is weird and would require custom  
+> setup anyway.  OTOH, did we ever care about 32-bit DMA being able to  
+> access MMIO?
 
+Not that I know of.
+
+> Hmm... Why are we using this special window at all?  Can't we just have  
+> one large identity mapping starting at zero, with the MSI window  
+> presumably taking precedence? 
+
+Then you'd have to reserve the RAM covered by the MSI window, not
+necessarily a big deal. It would also still allow swiotlb to work, so it
+actually doesn't seem like a bad idea if you don't have an actual /
+usable iommu.
+
+So if it works, I like that idea even better.
+
+>  The manual is a bit vague on whether  
+> inbound windows can overlap with priority... in EP mode it says it  
+> does, and the RC section is silent.  Do we currently ever overlap  
+> PCICSRBAR with a real window?
+
+Cheers,
 Ben.
