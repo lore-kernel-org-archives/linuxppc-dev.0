@@ -2,15 +2,16 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E4B2E2C0098
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jun 2013 22:07:14 +1000 (EST)
-Message-ID: <1370606822.3766.379.camel@pasglop>
-Subject: Re: fsqrt
+ by ozlabs.org (Postfix) with ESMTPS id 5F4BF2C009D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jun 2013 22:09:28 +1000 (EST)
+Message-ID: <1370606960.3766.381.camel@pasglop>
+Subject: Re: FSL 64-bit DMA window question
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "tiejun.chen" <tiejun.chen@windriver.com>
-Date: Fri, 07 Jun 2013 22:07:02 +1000
-In-Reply-To: <51B1A18A.6030002@windriver.com>
+To: Zang Roy-R61911 <r61911@freescale.com>
+Date: Fri, 07 Jun 2013 22:09:20 +1000
+In-Reply-To: <3E027F8168735B46AC006B1D0C7BB0020B213BF7@039-SN2MPN1-012.039d.mgd.msft.net>
 References: <1368679657.9603.32.camel@pasglop>
+ <1368683156.9603.34.camel@pasglop>
  <6A3DF150A5B70D4F9B66A25E3F7C888D0701C307@039-SN2MPN1-012.039d.mgd.msft.net>
  <3E027F8168735B46AC006B1D0C7BB0020B1E040F@039-SN2MPN1-011.039d.mgd.msft.net>
  <1368684547.9603.38.camel@pasglop> <51947A00.9010504@windriver.com>
@@ -21,15 +22,15 @@ References: <1368679657.9603.32.camel@pasglop>
  <CAOZdJXU79kqEGk_nqv1NSzna7c=bgwSv+6WFgaTVjR4Rj4cZVg@mail.gmail.com>
  <1370577138.3766.342.camel@pasglop> <1370579976.3766.345.camel@pasglop>
  <3E027F8168735B46AC006B1D0C7BB0020B2135A0@039-SN2MPN1-012.039d.mgd.msft.net>
- <1370580426.3766.349.camel@pasglop>
- <3E027F8168735B46AC006B1D0C7BB0020B213817@039-SN2MPN1-012.039d.mgd.msft.net>
- <1370590884.3766.357.camel@pasglop> <51B18FD0.5040909@windriver.com>
- <1370595233.3766.360.camel@pasglop> <51B1A18A.6030002@windriver.com>
+ <1370588727.3766.355.camel@pasglop>
+ <3E027F8168735B46AC006B1D0C7BB0020B213AA9@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1370595309.3766.361.camel@pasglop>
+ <3E027F8168735B46AC006B1D0C7BB0020B213BF7@039-SN2MPN1-012.039d.mgd.msft.net>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: Xie Shaohui-B21989 <B21989@freescale.com>,
- Liu Qiang-B32616 <B32616@freescale.com>,
- Zang Roy-R61911 <r61911@freescale.com>, Timur Tabi <timur@tabi.org>,
+ Liu Qiang-B32616 <B32616@freescale.com>, Timur Tabi <timur@tabi.org>,
+ "tiejun.chen" <tiejun.chen@windriver.com>,
  Fleming Andy-AFLEMING <afleming@freescale.com>,
  Bhushan Bharat-R65777 <R65777@freescale.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
@@ -42,35 +43,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-06-07 at 17:02 +0800, tiejun.chen wrote:
-> On 06/07/2013 04:53 PM, Benjamin Herrenschmidt wrote:
-> > On Fri, 2013-06-07 at 15:46 +0800, tiejun.chen wrote:
-> >> On 06/07/2013 03:41 PM, Benjamin Herrenschmidt wrote:
-> >>> Another question...
-> >>>
-> >>> Do you guys happen to have a patch to emulate fsqrt in the kernel ?
-> >>
-> >> Seems this is already emulated:
-> >>
-> >> arch/powerpc/math-emu/fsqrt.c
-> >>
-> >> You can enable CONFIG_MATH_EMULATION to try.
-> >
-> > Is math emu expected to work at all on top of a real FPU ? I though it
-> > didn't ... maybe I'm wrong.
+On Fri, 2013-06-07 at 09:44 +0000, Zang Roy-R61911 wrote:
 > 
-> As I understand often the real FPU can't support all float instructions, so we 
-> have to enable this to emulate those unsupported float instructions in that 
-> scenario.
+> > -----Original Message-----
+> > From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org]
+> > 
+> > On Fri, 2013-06-07 at 07:58 +0000, Zang Roy-R61911 wrote:
+> > >
+> > > > -----Original Message-----
+> > > > From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org]
+> > > >
+> > > > Hi Folks !
+> > > >
+> > > > Is there any specific reason why you chose 1T (40 bit) as the
+> > location of
+> > > > the 64-bit DMA window ?
+> > > >
+> > > > It happens that most current radeon adapters cannot DMA there, they
+> > have
+> > > > a 40-bit DMA limit. I seem to be getting things to work fine using a
+> > 39-
+> > > > bit window, but I suppose that might collide with something else ?
+> > > T4240 has 40bit physical address ability.
+> > > "
+> > > This chip's 40-bit, physical address map consists of local space and
+> > external address
+> > > space. For the local address map, 32 local access windows (LAWs) define
+> > mapping
+> > > within the local 40-bit (1 TB) address space. Inbound and outbound
+> > translation windows
+> > > can map the chip into a larger system address space such as the RapidIO
+> > or PCIe 64-bit
+> > > address environment. This functionality is included in the address
+> > translation and
+> > > mapping units (ATMUs).
+> > >
+> > > "
+> > > That should be the reason to set the DMA window to 40-bit.
+> > I see. However if the top half of that space isn't used by default with
+> > whatever is our current setup, it makes sense to move down the 64-bit
+> > DMA window to allow those adapters to function don't you think ?
+> Good to me.
+> 40 bit DMA will prevent your radeon video card from working. Right?
+> Your P5020 DS system only support 36 bit physical address.
 
-Ok, two things come to mind here:
+We should probably put the "64-bit DMA" address in the device-tree,
+that way if somebody wish to do differently they can.
+> > 
+> > I'm trying to turn those FSL boxes into nice ppc64 dev. workstations :-)
+> That is good. I'd like to see how long it will build a kernel ...
 
-  - do_mathemu doesn't do giveup_fpu() so the FPU state might still be
-in the "live" FP registers and not in the thread_struct, so it can't
-work... unless I missed something.
+I'll tell you when you send me a 24 cores e6500 :-)
 
-  - mathemu uses solely integers. For something like fsqrt it's going to
-suck a lot more than implementing using floating points in the kernel.
+In the meantime I'll build them on my 16-cores (64 threads) P7+ :-)
+
+I'm more thinking about how to seed general community developers with
+machines they can use to ensure things work fine on ppc64 without having
+to get them a rack in their basement...
 
 Cheers,
 Ben.
+
+> thanks.
+> Roy
