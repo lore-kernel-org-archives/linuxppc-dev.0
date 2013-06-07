@@ -2,14 +2,14 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 627C72C008E
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jun 2013 18:55:20 +1000 (EST)
-Message-ID: <1370595309.3766.361.camel@pasglop>
-Subject: Re: FSL 64-bit DMA window question
+ by ozlabs.org (Postfix) with ESMTPS id 7E9E02C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jun 2013 18:59:28 +1000 (EST)
+Message-ID: <1370595557.3766.362.camel@pasglop>
+Subject: Re: fsqrt
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Zang Roy-R61911 <r61911@freescale.com>
-Date: Fri, 07 Jun 2013 18:55:09 +1000
-In-Reply-To: <3E027F8168735B46AC006B1D0C7BB0020B213AA9@039-SN2MPN1-012.039d.mgd.msft.net>
+Date: Fri, 07 Jun 2013 18:59:17 +1000
+In-Reply-To: <1370595190.3766.359.camel@pasglop>
 References: <1368679657.9603.32.camel@pasglop>
  <1368683156.9603.34.camel@pasglop>
  <6A3DF150A5B70D4F9B66A25E3F7C888D0701C307@039-SN2MPN1-012.039d.mgd.msft.net>
@@ -22,8 +22,11 @@ References: <1368679657.9603.32.camel@pasglop>
  <CAOZdJXU79kqEGk_nqv1NSzna7c=bgwSv+6WFgaTVjR4Rj4cZVg@mail.gmail.com>
  <1370577138.3766.342.camel@pasglop> <1370579976.3766.345.camel@pasglop>
  <3E027F8168735B46AC006B1D0C7BB0020B2135A0@039-SN2MPN1-012.039d.mgd.msft.net>
- <1370588727.3766.355.camel@pasglop>
- <3E027F8168735B46AC006B1D0C7BB0020B213AA9@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1370580426.3766.349.camel@pasglop>
+ <3E027F8168735B46AC006B1D0C7BB0020B213817@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1370590884.3766.357.camel@pasglop>
+ <3E027F8168735B46AC006B1D0C7BB0020B213A62@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1370595190.3766.359.camel@pasglop>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: Xie Shaohui-B21989 <B21989@freescale.com>,
@@ -41,41 +44,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-06-07 at 07:58 +0000, Zang Roy-R61911 wrote:
-> 
-> > -----Original Message-----
-> > From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org]
-> > 
-> > Hi Folks !
-> > 
-> > Is there any specific reason why you chose 1T (40 bit) as the location of
-> > the 64-bit DMA window ?
-> > 
-> > It happens that most current radeon adapters cannot DMA there, they have
-> > a 40-bit DMA limit. I seem to be getting things to work fine using a 39-
-> > bit window, but I suppose that might collide with something else ?
-> T4240 has 40bit physical address ability.
-> "
-> This chip's 40-bit, physical address map consists of local space and external address
-> space. For the local address map, 32 local access windows (LAWs) define mapping
-> within the local 40-bit (1 TB) address space. Inbound and outbound translation windows
-> can map the chip into a larger system address space such as the RapidIO or PCIe 64-bit
-> address environment. This functionality is included in the address translation and
-> mapping units (ATMUs).
-> 
-> "
-> That should be the reason to set the DMA window to 40-bit.
+On Fri, 2013-06-07 at 18:53 +1000, Benjamin Herrenschmidt wrote:
 
-I see. However if the top half of that space isn't used by default with
-whatever is our current setup, it makes sense to move down the 64-bit
-DMA window to allow those adapters to function don't you think ?
+> +
+> +static double crackpot_sqrt(double val)
+> +{
+> +    int i;
+> +    float x, y;
+> +    const float f = 1.5F;
+> +
+> +    x = val * 0.5F;
+> +    y  = val;
+> +    i  = * ( int * ) &y;
+> +    i  = 0x5f3759df - ( i >> 1 );
+> +    y  = * ( float * ) &i;
+> +    y  = y * ( f - ( x * y * y ) );
+> +    y  = y * ( f - ( x * y * y ) );
+> +    return val * y;
+> +}
+> +
 
-I'm trying to turn those FSL boxes into nice ppc64 dev. workstations :-)
+For those interested, this is the Quake3 sqrt from Carmack ... there's
+plenty of literature about it one or two google clicks away :-)
 
 Cheers,
 Ben.
-
-> > 
-> > Can you guys consider changing the default ?
-> Any collide for 40bit?
-> Roy
