@@ -1,21 +1,19 @@
-Return-Path: <B07421@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0186.outbound.messaging.microsoft.com [213.199.154.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A56682C00AB
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Jun 2013 08:02:40 +1000 (EST)
-Date: Fri, 7 Jun 2013 17:02:20 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 409C72C013D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Jun 2013 08:10:06 +1000 (EST)
+Message-ID: <1370642994.3766.421.camel@pasglop>
 Subject: Re: FSL 64-bit DMA window question
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Scott Wood <scottwood@freescale.com>
+Date: Sat, 08 Jun 2013 08:09:54 +1000
+In-Reply-To: <1370642540.6813.16@snotra>
 References: <1370606960.3766.381.camel@pasglop> <1370642488.6813.15@snotra>
-In-Reply-To: <1370642488.6813.15@snotra> (from scottwood@freescale.com on
- Fri Jun  7 17:01:28 2013)
-Message-ID: <1370642540.6813.16@snotra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+ <1370642540.6813.16@snotra>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 Cc: Xie Shaohui-B21989 <B21989@freescale.com>,
  Zang Roy-R61911 <r61911@freescale.com>, Timur Tabi <timur@tabi.org>,
  "tiejun.chen" <tiejun.chen@windriver.com>,
@@ -31,82 +29,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/07/2013 05:01:28 PM, Scott Wood wrote:
-> On 06/07/2013 07:09:20 AM, Benjamin Herrenschmidt wrote:
->> On Fri, 2013-06-07 at 09:44 +0000, Zang Roy-R61911 wrote:
->> >
->> > > -----Original Message-----
->> > > From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org]
->> > >
->> > > On Fri, 2013-06-07 at 07:58 +0000, Zang Roy-R61911 wrote:
->> > > >
->> > > > > -----Original Message-----
->> > > > > From: Benjamin Herrenschmidt =20
->> [mailto:benh@kernel.crashing.org]
->> > > > >
->> > > > > Hi Folks !
->> > > > >
->> > > > > Is there any specific reason why you chose 1T (40 bit) as the
->> > > location of
->> > > > > the 64-bit DMA window ?
->> > > > >
->> > > > > It happens that most current radeon adapters cannot DMA =20
->> there, they
->> > > have
->> > > > > a 40-bit DMA limit. I seem to be getting things to work fine =20
->> using a
->> > > 39-
->> > > > > bit window, but I suppose that might collide with something =20
->> else ?
->> > > > T4240 has 40bit physical address ability.
->> > > > "
->> > > > This chip's 40-bit, physical address map consists of local =20
->> space and
->> > > external address
->> > > > space. For the local address map, 32 local access windows =20
->> (LAWs) define
->> > > mapping
->> > > > within the local 40-bit (1 TB) address space. Inbound and =20
->> outbound
->> > > translation windows
->> > > > can map the chip into a larger system address space such as =20
->> the RapidIO
->> > > or PCIe 64-bit
->> > > > address environment. This functionality is included in the =20
->> address
->> > > translation and
->> > > > mapping units (ATMUs).
->> > > >
->> > > > "
->> > > > That should be the reason to set the DMA window to 40-bit.
->> > > I see. However if the top half of that space isn't used by =20
->> default with
->> > > whatever is our current setup, it makes sense to move down the =20
->> 64-bit
->> > > DMA window to allow those adapters to function don't you think ?
->> > Good to me.
->> > 40 bit DMA will prevent your radeon video card from working. Right?
->> > Your P5020 DS system only support 36 bit physical address.
->>=20
->> We should probably put the "64-bit DMA" address in the device-tree,
->> that way if somebody wish to do differently they can.
->=20
-> I thought the device tree was for describing the hardware, rather =20
-> than configuration? :-)
-> A kernel command line option might be more appropriate, unless you =20
-> just mean describing the difference between e6500 (which supports 40 =20
-> bit addresses) and previous chips (which support 36 bits), rather =20
-> than an ability to move it earlier even on e6500.
->=20
-> That said, the current code looks broken -- it checks whether a card =20
-> can do 40-bit DMA, and if it can, it sets the DMA offset to (1ULL << =20
-> 40), thus requiring 41-bit DMA.  It should be > instead of >=3D in =20
-> fsl_pci_dma_set_mask.
->=20
-> Maybe we could by default use the size of actual RAM, rather than the =20
-> physical address space.  Then only odd scenarios such as DMA to =20
-> non-kernel-owned RAM would need manual adjustment (MSIs would still =20
-> go through the special window below 4G).
->=20
-> -Scott
-=
+On Fri, 2013-06-07 at 17:02 -0500, Scott Wood wrote:
+> O
+> > I thought the device tree was for describing the hardware, rather  
+> > than configuration? :-)
+
+A bit of both really. See things like /chosen etc...
+
+Also to what extent a MAC address is HW vs. configuration ? :-)
+
+The HW configuration for a given boards (ie, internal address map,
+location of the various bridge windows etc...) is a fairly common thing
+to put in a device-tree.
+
+If the PCI outbound windows are there (and they are), why not the
+inbound ones ? IE, it's not far fetched. 
+
+> > A kernel command line option might be more appropriate, unless you  
+> > just mean describing the difference between e6500 (which supports 40  
+> > bit addresses) and previous chips (which support 36 bits), rather  
+> > than an ability to move it earlier even on e6500.
+
+Well, so we could indeed locate it at 36 on e5500 and that would clear
+the current use case and break again on e6500... or we can make it
+depend on the overall address map of the board, which is described
+in the device-tree. IE, if you don't "locate" anything above 39-bit
+in our address map, then using 39 for the window is ok. IE. It's a
+choice. A server board setup that doesn't need gfx but want address
+space for some other things wouldn't care.
+
+A board wanting to use gfx (either desktop style, or some of the
+military applications I've seen using FSL chips and radeons) would chose
+the address map differently to allow the radeons to work.
+
+> > That said, the current code looks broken -- it checks whether a card  
+> > can do 40-bit DMA, and if it can, it sets the DMA offset to (1ULL <<  
+> > 40), thus requiring 41-bit DMA.  It should be > instead of >= in  
+> > fsl_pci_dma_set_mask.
+
+Yes, this was broken for a while, I remember mentioning it a while back
+but never actually sending a patch to fix it ... oops ;-)
+
+> > Maybe we could by default use the size of actual RAM, rather than the  
+> > physical address space.  Then only odd scenarios such as DMA to  
+> > non-kernel-owned RAM would need manual adjustment (MSIs would still  
+> > go through the special window below 4G).
+
+You also need to account for other on-chip MMIOs no ? Or do you never
+intend to let PCI devices hit them ?
+
+If not, then top of RAM aligned to the next power of two sounds like a
+great plan.
+
+Also, those radeons are *also* broken for 64-bit MSIs (they advertize
+support but are limited to 40-bit of address). We have added hacks to
+deal with that in pseries that I was thinking of generalizing.
+
+Cheers,
+Ben.
