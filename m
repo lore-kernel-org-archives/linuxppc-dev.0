@@ -2,14 +2,14 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3F6E52C008A
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jun 2013 17:05:41 +1000 (EST)
-Message-ID: <1370588727.3766.355.camel@pasglop>
-Subject: FSL 64-bit DMA window question
+ by ozlabs.org (Postfix) with ESMTPS id 793692C007A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jun 2013 17:41:35 +1000 (EST)
+Message-ID: <1370590884.3766.357.camel@pasglop>
+Subject: fsqrt
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Zang Roy-R61911 <r61911@freescale.com>
-Date: Fri, 07 Jun 2013 17:05:27 +1000
-In-Reply-To: <3E027F8168735B46AC006B1D0C7BB0020B2135A0@039-SN2MPN1-012.039d.mgd.msft.net>
+Date: Fri, 07 Jun 2013 17:41:24 +1000
+In-Reply-To: <3E027F8168735B46AC006B1D0C7BB0020B213817@039-SN2MPN1-012.039d.mgd.msft.net>
 References: <1368679657.9603.32.camel@pasglop>
  <1368683156.9603.34.camel@pasglop>
  <6A3DF150A5B70D4F9B66A25E3F7C888D0701C307@039-SN2MPN1-012.039d.mgd.msft.net>
@@ -22,6 +22,8 @@ References: <1368679657.9603.32.camel@pasglop>
  <CAOZdJXU79kqEGk_nqv1NSzna7c=bgwSv+6WFgaTVjR4Rj4cZVg@mail.gmail.com>
  <1370577138.3766.342.camel@pasglop> <1370579976.3766.345.camel@pasglop>
  <3E027F8168735B46AC006B1D0C7BB0020B2135A0@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1370580426.3766.349.camel@pasglop>
+ <3E027F8168735B46AC006B1D0C7BB0020B213817@039-SN2MPN1-012.039d.mgd.msft.net>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: Xie Shaohui-B21989 <B21989@freescale.com>,
@@ -39,16 +41,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Folks !
+Another question...
 
-Is there any specific reason why you chose 1T (40 bit) as the location
-of the 64-bit DMA window ?
+Do you guys happen to have a patch to emulate fsqrt in the kernel ?
 
-It happens that most current radeon adapters cannot DMA there, they have
-a 40-bit DMA limit. I seem to be getting things to work fine using a
-39-bit window, but I suppose that might collide with something else ?
-
-Can you guys consider changing the default ?
+Fedora 19 seems to be using it ... among others.
 
 Cheers,
 Ben.
