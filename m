@@ -1,16 +1,16 @@
-Return-Path: <r61911@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 63E772C009E
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jun 2013 17:45:56 +1000 (EST)
-From: Zang Roy-R61911 <r61911@freescale.com>
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2B9182C00A0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jun 2013 17:46:40 +1000 (EST)
+Message-ID: <51B18FD0.5040909@windriver.com>
+Date: Fri, 7 Jun 2013 15:46:24 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
+MIME-Version: 1.0
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: RE: fsqrt
-Date: Fri, 7 Jun 2013 07:45:19 +0000
-Message-ID: <3E027F8168735B46AC006B1D0C7BB0020B213A62@039-SN2MPN1-012.039d.mgd.msft.net>
+Subject: Re: fsqrt
 References: <1368679657.9603.32.camel@pasglop>
  <1368683156.9603.34.camel@pasglop>
  <6A3DF150A5B70D4F9B66A25E3F7C888D0701C307@039-SN2MPN1-012.039d.mgd.msft.net>
@@ -27,11 +27,10 @@ References: <1368679657.9603.32.camel@pasglop>
  <3E027F8168735B46AC006B1D0C7BB0020B213817@039-SN2MPN1-012.039d.mgd.msft.net>
  <1370590884.3766.357.camel@pasglop>
 In-Reply-To: <1370590884.3766.357.camel@pasglop>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"; format=flowed
 Cc: Xie Shaohui-B21989 <B21989@freescale.com>,
- Liu Qiang-B32616 <B32616@freescale.com>, Timur Tabi <timur@tabi.org>,
- "tiejun.chen" <tiejun.chen@windriver.com>,
+ Liu Qiang-B32616 <B32616@freescale.com>,
+ Zang Roy-R61911 <r61911@freescale.com>, Timur Tabi <timur@tabi.org>,
  Fleming Andy-AFLEMING <afleming@freescale.com>,
  Bhushan Bharat-R65777 <R65777@freescale.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
@@ -44,9 +43,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmVuamFtaW4gSGVycmVu
-c2NobWlkdCBbbWFpbHRvOmJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZ10NCj4gQW5vdGhlciBxdWVz
-dGlvbi4uLg0KPiANCj4gRG8geW91IGd1eXMgaGFwcGVuIHRvIGhhdmUgYSBwYXRjaCB0byBlbXVs
-YXRlIGZzcXJ0IGluIHRoZSBrZXJuZWwgPw0KPiANCj4gRmVkb3JhIDE5IHNlZW1zIHRvIGJlIHVz
-aW5nIGl0IC4uLiBhbW9uZyBvdGhlcnMuDQpZb3UgbWVhbiB0aGlzIG9uZQ0KYXJjaC9wb3dlcnBj
-L21hdGgtZW11L2ZzcXJ0LmMgPw0KWWVzLg0KUm95DQo=
+On 06/07/2013 03:41 PM, Benjamin Herrenschmidt wrote:
+> Another question...
+>
+> Do you guys happen to have a patch to emulate fsqrt in the kernel ?
+
+Seems this is already emulated:
+
+arch/powerpc/math-emu/fsqrt.c
+
+You can enable CONFIG_MATH_EMULATION to try.
+
+Tiejun
