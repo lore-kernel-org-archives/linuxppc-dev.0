@@ -1,40 +1,11 @@
-Return-Path: <r61911@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A7BFB2C0040
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jun 2013 19:44:50 +1000 (EST)
-From: Zang Roy-R61911 <r61911@freescale.com>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: RE: FSL 64-bit DMA window question
-Date: Fri, 7 Jun 2013 09:44:10 +0000
-Message-ID: <3E027F8168735B46AC006B1D0C7BB0020B213BF7@039-SN2MPN1-012.039d.mgd.msft.net>
-References: <1368679657.9603.32.camel@pasglop>
- <1368683156.9603.34.camel@pasglop>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0701C307@039-SN2MPN1-012.039d.mgd.msft.net>
- <3E027F8168735B46AC006B1D0C7BB0020B1E040F@039-SN2MPN1-011.039d.mgd.msft.net>
- <1368684547.9603.38.camel@pasglop> <51947A00.9010504@windriver.com>
- <1368685307.9603.39.camel@pasglop> <51947E35.30808@windriver.com>
- <1368686426.9603.49.camel@pasglop> <5194800D.3010606@windriver.com>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0701C498@039-SN2MPN1-012.039d.mgd.msft.net>
- <1368687133.9603.51.camel@pasglop>
- <CAOZdJXU79kqEGk_nqv1NSzna7c=bgwSv+6WFgaTVjR4Rj4cZVg@mail.gmail.com>
- <1370577138.3766.342.camel@pasglop> <1370579976.3766.345.camel@pasglop>
- <3E027F8168735B46AC006B1D0C7BB0020B2135A0@039-SN2MPN1-012.039d.mgd.msft.net>
- <1370588727.3766.355.camel@pasglop>
- <3E027F8168735B46AC006B1D0C7BB0020B213AA9@039-SN2MPN1-012.039d.mgd.msft.net>
- <1370595309.3766.361.camel@pasglop>
-In-Reply-To: <1370595309.3766.361.camel@pasglop>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: Xie Shaohui-B21989 <B21989@freescale.com>,
- Liu Qiang-B32616 <B32616@freescale.com>, Timur Tabi <timur@tabi.org>,
- "tiejun.chen" <tiejun.chen@windriver.com>,
- Fleming Andy-AFLEMING <afleming@freescale.com>,
- Bhushan Bharat-R65777 <R65777@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 1/5] powerpc/tm: Fix writing top half of MSR on 32 bit signals
+Date: Fri,  7 Jun 2013 20:36:25 +1000
+Message-Id: <1370601390-29065-1-git-send-email-mikey@neuling.org>
+Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
+ Matt Evans <matt@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,35 +15,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmVuamFtaW4gSGVycmVu
-c2NobWlkdCBbbWFpbHRvOmJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZ10NCj4gDQo+IE9uIEZyaSwg
-MjAxMy0wNi0wNyBhdCAwNzo1OCArMDAwMCwgWmFuZyBSb3ktUjYxOTExIHdyb3RlOg0KPiA+DQo+
-ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gRnJvbTogQmVuamFtaW4gSGVy
-cmVuc2NobWlkdCBbbWFpbHRvOmJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZ10NCj4gPiA+DQo+ID4g
-PiBIaSBGb2xrcyAhDQo+ID4gPg0KPiA+ID4gSXMgdGhlcmUgYW55IHNwZWNpZmljIHJlYXNvbiB3
-aHkgeW91IGNob3NlIDFUICg0MCBiaXQpIGFzIHRoZQ0KPiBsb2NhdGlvbiBvZg0KPiA+ID4gdGhl
-IDY0LWJpdCBETUEgd2luZG93ID8NCj4gPiA+DQo+ID4gPiBJdCBoYXBwZW5zIHRoYXQgbW9zdCBj
-dXJyZW50IHJhZGVvbiBhZGFwdGVycyBjYW5ub3QgRE1BIHRoZXJlLCB0aGV5DQo+IGhhdmUNCj4g
-PiA+IGEgNDAtYml0IERNQSBsaW1pdC4gSSBzZWVtIHRvIGJlIGdldHRpbmcgdGhpbmdzIHRvIHdv
-cmsgZmluZSB1c2luZyBhDQo+IDM5LQ0KPiA+ID4gYml0IHdpbmRvdywgYnV0IEkgc3VwcG9zZSB0
-aGF0IG1pZ2h0IGNvbGxpZGUgd2l0aCBzb21ldGhpbmcgZWxzZSA/DQo+ID4gVDQyNDAgaGFzIDQw
-Yml0IHBoeXNpY2FsIGFkZHJlc3MgYWJpbGl0eS4NCj4gPiAiDQo+ID4gVGhpcyBjaGlwJ3MgNDAt
-Yml0LCBwaHlzaWNhbCBhZGRyZXNzIG1hcCBjb25zaXN0cyBvZiBsb2NhbCBzcGFjZSBhbmQNCj4g
-ZXh0ZXJuYWwgYWRkcmVzcw0KPiA+IHNwYWNlLiBGb3IgdGhlIGxvY2FsIGFkZHJlc3MgbWFwLCAz
-MiBsb2NhbCBhY2Nlc3Mgd2luZG93cyAoTEFXcykgZGVmaW5lDQo+IG1hcHBpbmcNCj4gPiB3aXRo
-aW4gdGhlIGxvY2FsIDQwLWJpdCAoMSBUQikgYWRkcmVzcyBzcGFjZS4gSW5ib3VuZCBhbmQgb3V0
-Ym91bmQNCj4gdHJhbnNsYXRpb24gd2luZG93cw0KPiA+IGNhbiBtYXAgdGhlIGNoaXAgaW50byBh
-IGxhcmdlciBzeXN0ZW0gYWRkcmVzcyBzcGFjZSBzdWNoIGFzIHRoZSBSYXBpZElPDQo+IG9yIFBD
-SWUgNjQtYml0DQo+ID4gYWRkcmVzcyBlbnZpcm9ubWVudC4gVGhpcyBmdW5jdGlvbmFsaXR5IGlz
-IGluY2x1ZGVkIGluIHRoZSBhZGRyZXNzDQo+IHRyYW5zbGF0aW9uIGFuZA0KPiA+IG1hcHBpbmcg
-dW5pdHMgKEFUTVVzKS4NCj4gPg0KPiA+ICINCj4gPiBUaGF0IHNob3VsZCBiZSB0aGUgcmVhc29u
-IHRvIHNldCB0aGUgRE1BIHdpbmRvdyB0byA0MC1iaXQuDQo+IEkgc2VlLiBIb3dldmVyIGlmIHRo
-ZSB0b3AgaGFsZiBvZiB0aGF0IHNwYWNlIGlzbid0IHVzZWQgYnkgZGVmYXVsdCB3aXRoDQo+IHdo
-YXRldmVyIGlzIG91ciBjdXJyZW50IHNldHVwLCBpdCBtYWtlcyBzZW5zZSB0byBtb3ZlIGRvd24g
-dGhlIDY0LWJpdA0KPiBETUEgd2luZG93IHRvIGFsbG93IHRob3NlIGFkYXB0ZXJzIHRvIGZ1bmN0
-aW9uIGRvbid0IHlvdSB0aGluayA/DQpHb29kIHRvIG1lLg0KNDAgYml0IERNQSB3aWxsIHByZXZl
-bnQgeW91ciByYWRlb24gdmlkZW8gY2FyZCBmcm9tIHdvcmtpbmcuIFJpZ2h0Pw0KWW91ciBQNTAy
-MCBEUyBzeXN0ZW0gb25seSBzdXBwb3J0IDM2IGJpdCBwaHlzaWNhbCBhZGRyZXNzLg0KDQo+IA0K
-PiBJJ20gdHJ5aW5nIHRvIHR1cm4gdGhvc2UgRlNMIGJveGVzIGludG8gbmljZSBwcGM2NCBkZXYu
-IHdvcmtzdGF0aW9ucyA6LSkNClRoYXQgaXMgZ29vZC4gSSdkIGxpa2UgdG8gc2VlIGhvdyBsb25n
-IGl0IHdpbGwgYnVpbGQgYSBrZXJuZWwgLi4uDQp0aGFua3MuDQpSb3kNCg==
+The MSR TM controls are in the top 32 bits of the MSR hence on 32 bit signals,
+we stick the top half of the MSR in the checkpointed signal context so that the
+user can access it.
+
+Unfortunately, we don't currently write anything to the checkpointed signal
+context when coming in a from a non transactional process and hence the top MSR
+bits can contain junk.
+
+This updates the 32 bit signal handling code to always write something to the
+top MSR bits so that users know if the process is transactional or not and the
+kernel can use it on signal return.
+
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+ arch/powerpc/kernel/signal_32.c |   29 +++++++++++++++++++++--------
+ 1 file changed, 21 insertions(+), 8 deletions(-)
+
+diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
+index 201385c..5bc819f 100644
+--- a/arch/powerpc/kernel/signal_32.c
++++ b/arch/powerpc/kernel/signal_32.c
+@@ -407,7 +407,8 @@ inline unsigned long copy_transact_fpr_from_user(struct task_struct *task,
+  * altivec/spe instructions at some point.
+  */
+ static int save_user_regs(struct pt_regs *regs, struct mcontext __user *frame,
+-		int sigret, int ctx_has_vsx_region)
++			  struct mcontext __user *tm_frame, int sigret,
++			  int ctx_has_vsx_region)
+ {
+ 	unsigned long msr = regs->msr;
+ 
+@@ -475,6 +476,12 @@ static int save_user_regs(struct pt_regs *regs, struct mcontext __user *frame,
+ 
+ 	if (__put_user(msr, &frame->mc_gregs[PT_MSR]))
+ 		return 1;
++	/* We need to write 0 the MSR top 32 bits in the tm frame so that we
++	 * can check it on the restore to see if TM is active
++	 */
++	if (tm_frame && __put_user(0, &tm_frame->mc_gregs[PT_MSR]))
++		return 1;
++
+ 	if (sigret) {
+ 		/* Set up the sigreturn trampoline: li r0,sigret; sc */
+ 		if (__put_user(0x38000000UL + sigret, &frame->tramp[0])
+@@ -952,6 +959,7 @@ int handle_rt_signal32(unsigned long sig, struct k_sigaction *ka,
+ {
+ 	struct rt_sigframe __user *rt_sf;
+ 	struct mcontext __user *frame;
++	struct mcontext __user *tm_frame = NULL;
+ 	void __user *addr;
+ 	unsigned long newsp = 0;
+ 	int sigret;
+@@ -985,23 +993,24 @@ int handle_rt_signal32(unsigned long sig, struct k_sigaction *ka,
+ 	}
+ 
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
++	tm_frame = &rt_sf->uc_transact.uc_mcontext;
+ 	if (MSR_TM_ACTIVE(regs->msr)) {
+-		if (save_tm_user_regs(regs, &rt_sf->uc.uc_mcontext,
+-				      &rt_sf->uc_transact.uc_mcontext, sigret))
++		if (save_tm_user_regs(regs, frame, tm_frame, sigret))
+ 			goto badframe;
+ 	}
+ 	else
+ #endif
+-		if (save_user_regs(regs, frame, sigret, 1))
++	{
++		if (save_user_regs(regs, frame, tm_frame, sigret, 1))
+ 			goto badframe;
++	}
+ 	regs->link = tramp;
+ 
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ 	if (MSR_TM_ACTIVE(regs->msr)) {
+ 		if (__put_user((unsigned long)&rt_sf->uc_transact,
+ 			       &rt_sf->uc.uc_link)
+-		    || __put_user(to_user_ptr(&rt_sf->uc_transact.uc_mcontext),
+-				  &rt_sf->uc_transact.uc_regs))
++		    || __put_user((unsigned long)tm_frame, &rt_sf->uc_transact.uc_regs))
+ 			goto badframe;
+ 	}
+ 	else
+@@ -1170,7 +1179,7 @@ long sys_swapcontext(struct ucontext __user *old_ctx,
+ 		mctx = (struct mcontext __user *)
+ 			((unsigned long) &old_ctx->uc_mcontext & ~0xfUL);
+ 		if (!access_ok(VERIFY_WRITE, old_ctx, ctx_size)
+-		    || save_user_regs(regs, mctx, 0, ctx_has_vsx_region)
++		    || save_user_regs(regs, mctx, NULL, 0, ctx_has_vsx_region)
+ 		    || put_sigset_t(&old_ctx->uc_sigmask, &current->blocked)
+ 		    || __put_user(to_user_ptr(mctx), &old_ctx->uc_regs))
+ 			return -EFAULT;
+@@ -1392,6 +1401,7 @@ int handle_signal32(unsigned long sig, struct k_sigaction *ka,
+ {
+ 	struct sigcontext __user *sc;
+ 	struct sigframe __user *frame;
++	struct mcontext __user *tm_mctx = NULL;
+ 	unsigned long newsp = 0;
+ 	int sigret;
+ 	unsigned long tramp;
+@@ -1425,6 +1435,7 @@ int handle_signal32(unsigned long sig, struct k_sigaction *ka,
+ 	}
+ 
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
++	tm_mctx = &frame->mctx_transact;
+ 	if (MSR_TM_ACTIVE(regs->msr)) {
+ 		if (save_tm_user_regs(regs, &frame->mctx, &frame->mctx_transact,
+ 				      sigret))
+@@ -1432,8 +1443,10 @@ int handle_signal32(unsigned long sig, struct k_sigaction *ka,
+ 	}
+ 	else
+ #endif
+-		if (save_user_regs(regs, &frame->mctx, sigret, 1))
++	{
++		if (save_user_regs(regs, &frame->mctx, tm_mctx, sigret, 1))
+ 			goto badframe;
++	}
+ 
+ 	regs->link = tramp;
+ 
+-- 
+1.7.10.4
