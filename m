@@ -2,14 +2,14 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3F9C12C007E
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Jun 2013 09:24:15 +1000 (EST)
-Message-ID: <1370647431.3766.432.camel@pasglop>
+ by ozlabs.org (Postfix) with ESMTPS id 46A432C00AD
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Jun 2013 09:25:39 +1000 (EST)
+Message-ID: <1370647524.3766.433.camel@pasglop>
 Subject: Re: fsqrt
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Kumar Gala <galak@kernel.crashing.org>
-Date: Sat, 08 Jun 2013 09:23:51 +1000
-In-Reply-To: <B90B185D-AC79-4A39-91F1-57F371D9D732@kernel.crashing.org>
+Date: Sat, 08 Jun 2013 09:25:24 +1000
+In-Reply-To: <1370647431.3766.432.camel@pasglop>
 References: <1368679657.9603.32.camel@pasglop>
  <1368683156.9603.34.camel@pasglop>
  <6A3DF150A5B70D4F9B66A25E3F7C888D0701C307@039-SN2MPN1-012.039d.mgd.msft.net>
@@ -30,6 +30,7 @@ References: <1368679657.9603.32.camel@pasglop>
  <AE90C24D6B3A694183C094C60CF0A2F6026B7279@saturn3.aculab.com>
  <1370607245.3766.386.camel@pasglop>
  <B90B185D-AC79-4A39-91F1-57F371D9D732@kernel.crashing.org>
+ <1370647431.3766.432.camel@pasglop>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: Xie Shaohui-B21989 <B21989@freescale.com>,
@@ -48,30 +49,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-06-07 at 14:19 -0500, Kumar Gala wrote:
-> > I don't personally have the bandwidth to do a clean implementation (that
-> > handles FP exceptions, NaNs, FPSCR, etc...) but I believe it would be
-> > valuable if somebody else did (hint hint hint :-) since without this,
-> > Fedora ppc64 is basically going to be a non-started on those chips.
-> > 
-> > BTW. Did you guys (ie. FSL) finally add fsqrt to e6500 or it's still
-> > out ? 
-> > 
-> > Cheers,
-> > Ben.
+On Sat, 2013-06-08 at 09:23 +1000, Benjamin Herrenschmidt wrote:
+> Ok, thinking out loud... looks like we might be able to just use existing 
+> math-emu for that. From what I can tell, all it needs (other than enabling
+> the config option), is a call to flush_fp_to_thread(current);
 > 
-> Pretty sure fsqrt is still out of e6500.
+> While talking math-emu... we seem to have some duplication between the
+> code on do_mathemu which can be compiled without CONFIG_MATH_EMULATION and
+> in this case only just emulates loads/stores/fmr and the code in
+> arch/powerpc/kernel/softemu8xx.c.
+> 
+> Is there any reason we can't just get rid of the latter ?
 
-Ok, thinking out loud... looks like we might be able to just use existing 
-math-emu for that. From what I can tell, all it needs (other than enabling
-the config option), is a call to flush_fp_to_thread(current);
-
-While talking math-emu... we seem to have some duplication between the
-code on do_mathemu which can be compiled without CONFIG_MATH_EMULATION and
-in this case only just emulates loads/stores/fmr and the code in
-arch/powerpc/kernel/softemu8xx.c.
-
-Is there any reason we can't just get rid of the latter ?
+Or just git completely rid of that "minimal emulation" ...
 
 Cheers,
 Ben.
