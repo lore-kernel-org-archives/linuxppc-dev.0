@@ -1,15 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 1C59D2C0377
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jun 2013 14:47:19 +1000 (EST)
-Message-ID: <1370580426.3766.349.camel@pasglop>
-Subject: Re: SATA FSL and upstreaming
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Zang Roy-R61911 <r61911@freescale.com>
-Date: Fri, 07 Jun 2013 14:47:06 +1000
-In-Reply-To: <3E027F8168735B46AC006B1D0C7BB0020B2135A0@039-SN2MPN1-012.039d.mgd.msft.net>
+Return-Path: <r61911@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 25E2A2C009C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jun 2013 14:51:26 +1000 (EST)
+From: Zang Roy-R61911 <r61911@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: RE: SATA FSL and upstreaming
+Date: Fri, 7 Jun 2013 04:50:51 +0000
+Message-ID: <3E027F8168735B46AC006B1D0C7BB0020B213817@039-SN2MPN1-012.039d.mgd.msft.net>
 References: <1368679657.9603.32.camel@pasglop>
  <1368683156.9603.34.camel@pasglop>
  <6A3DF150A5B70D4F9B66A25E3F7C888D0701C307@039-SN2MPN1-012.039d.mgd.msft.net>
@@ -22,8 +23,10 @@ References: <1368679657.9603.32.camel@pasglop>
  <CAOZdJXU79kqEGk_nqv1NSzna7c=bgwSv+6WFgaTVjR4Rj4cZVg@mail.gmail.com>
  <1370577138.3766.342.camel@pasglop> <1370579976.3766.345.camel@pasglop>
  <3E027F8168735B46AC006B1D0C7BB0020B2135A0@039-SN2MPN1-012.039d.mgd.msft.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ <1370580426.3766.349.camel@pasglop>
+In-Reply-To: <1370580426.3766.349.camel@pasglop>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 Cc: Xie Shaohui-B21989 <B21989@freescale.com>,
  Liu Qiang-B32616 <B32616@freescale.com>, Timur Tabi <timur@tabi.org>,
  "tiejun.chen" <tiejun.chen@windriver.com>,
@@ -39,29 +42,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-06-07 at 04:45 +0000, Zang Roy-R61911 wrote:
-> 
-> > Forget it, reset all the jumpers to the default setup (found the doc !)
-> > and they come up now in slot 4 and 7. It also looks like uBoot now has an
-> > e1000 driver so I don't have to use fman (for which I believe there is
-> > still no upstream driver right ?)
-
-> fman in u-boot has been up streamed.  It should work.
-
-I don't care much about u-boot :-) It's the kernel that matters to me.
-
-> > 
-> > BTW. Is that normal during boot ?
-> > 
-> > Net:   Initializing Fman
-> > Fman1: Uploading microcode version 106.1.7 PHY reset timed out PHY reset
-> > timed out PHY reset timed out PHY reset timed out
-> You can ignore the timeout. 
-> Do you plug other card (for example SGMII card) on the board?
-
-No, only PCIe in slot 4 and 7.
-
-> u-boot detects some card in the slot and tries to init the PHY but fails.
-
-Cheers,
-Ben.
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmVuamFtaW4gSGVycmVu
+c2NobWlkdCBbbWFpbHRvOmJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZ10NCj4gU2VudDogRnJpZGF5
+LCBKdW5lIDA3LCAyMDEzIDEyOjQ3IFBNDQo+IFRvOiBaYW5nIFJveS1SNjE5MTENCj4gQ2M6IFRp
+bXVyIFRhYmk7IFhpZSBTaGFvaHVpLUIyMTk4OTsgTGl1IFFpYW5nLUIzMjYxNjsgdGllanVuLmNo
+ZW47DQo+IEZsZW1pbmcgQW5keS1BRkxFTUlORzsgQmh1c2hhbiBCaGFyYXQtUjY1Nzc3OyBsaW51
+eHBwYy0NCj4gZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gU3ViamVjdDogUmU6IFNBVEEgRlNMIGFu
+ZCB1cHN0cmVhbWluZw0KPiANCj4gT24gRnJpLCAyMDEzLTA2LTA3IGF0IDA0OjQ1ICswMDAwLCBa
+YW5nIFJveS1SNjE5MTEgd3JvdGU6DQo+ID4NCj4gPiA+IEZvcmdldCBpdCwgcmVzZXQgYWxsIHRo
+ZSBqdW1wZXJzIHRvIHRoZSBkZWZhdWx0IHNldHVwIChmb3VuZCB0aGUgZG9jDQo+ID4gPiAhKSBh
+bmQgdGhleSBjb21lIHVwIG5vdyBpbiBzbG90IDQgYW5kIDcuIEl0IGFsc28gbG9va3MgbGlrZSB1
+Qm9vdA0KPiA+ID4gbm93IGhhcyBhbiBlMTAwMCBkcml2ZXIgc28gSSBkb24ndCBoYXZlIHRvIHVz
+ZSBmbWFuIChmb3Igd2hpY2ggSQ0KPiA+ID4gYmVsaWV2ZSB0aGVyZSBpcyBzdGlsbCBubyB1cHN0
+cmVhbSBkcml2ZXIgcmlnaHQgPykNCj4gDQo+ID4gZm1hbiBpbiB1LWJvb3QgaGFzIGJlZW4gdXAg
+c3RyZWFtZWQuICBJdCBzaG91bGQgd29yay4NCj4gDQo+IEkgZG9uJ3QgY2FyZSBtdWNoIGFib3V0
+IHUtYm9vdCA6LSkgSXQncyB0aGUga2VybmVsIHRoYXQgbWF0dGVycyB0byBtZS4NCllvdSBzaG91
+bGQgbWF0dGVyIGEgd29ya2luZyBFdGhlcm5ldCBwb3J0IDotKSBpbiB1LWJvb3QuDQoNCj4gDQo+
+ID4gPg0KPiA+ID4gQlRXLiBJcyB0aGF0IG5vcm1hbCBkdXJpbmcgYm9vdCA/DQo+ID4gPg0KPiA+
+ID4gTmV0OiAgIEluaXRpYWxpemluZyBGbWFuDQo+ID4gPiBGbWFuMTogVXBsb2FkaW5nIG1pY3Jv
+Y29kZSB2ZXJzaW9uIDEwNi4xLjcgUEhZIHJlc2V0IHRpbWVkIG91dCBQSFkNCj4gPiA+IHJlc2V0
+IHRpbWVkIG91dCBQSFkgcmVzZXQgdGltZWQgb3V0IFBIWSByZXNldCB0aW1lZCBvdXQNCj4gPiBZ
+b3UgY2FuIGlnbm9yZSB0aGUgdGltZW91dC4NCj4gPiBEbyB5b3UgcGx1ZyBvdGhlciBjYXJkIChm
+b3IgZXhhbXBsZSBTR01JSSBjYXJkKSBvbiB0aGUgYm9hcmQ/DQo+IA0KPiBObywgb25seSBQQ0ll
+IGluIHNsb3QgNCBhbmQgNy4NCkdvIGFoZWFkIC4uLg0KVW5sZXNzIHRoZXJlIGlzIGEgY29tcGxl
+dGUgdS1ib290IGxvZywgSSBjYW4gY29tbWVudCBtb3JlLiBidXQgSSBkbyBub3QgdGhpbmsgaXQg
+aXMgdGhlIGZvY3VzIG5vdyAuLi4NCnRoYW5rcy4NClJveQ0K
