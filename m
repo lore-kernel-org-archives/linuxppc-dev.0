@@ -1,13 +1,44 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 5/5] powerpc/tm: Fix return of active 64bit signals
-Date: Fri,  7 Jun 2013 20:36:29 +1000
-Message-Id: <1370601390-29065-5-git-send-email-mikey@neuling.org>
-In-Reply-To: <1370601390-29065-1-git-send-email-mikey@neuling.org>
-References: <1370601390-29065-1-git-send-email-mikey@neuling.org>
-Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- Matt Evans <matt@ozlabs.org>
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by ozlabs.org (Postfix) with SMTP id D40BE2C009A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jun 2013 20:49:26 +1000 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 18008-10 for <linuxppc-dev@lists.ozlabs.org>;
+ Fri,  7 Jun 2013 11:49:21 +0100 (BST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="Windows-1252"
+Subject: RE: fsqrt
+Date: Fri, 7 Jun 2013 11:48:53 +0100
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B7279@saturn3.aculab.com>
+In-Reply-To: <1370595557.3766.362.camel@pasglop>
+References: <1368679657.9603.32.camel@pasglop>
+ <1368683156.9603.34.camel@pasglop>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0701C307@039-SN2MPN1-012.039d.mgd.msft.net>
+ <3E027F8168735B46AC006B1D0C7BB0020B1E040F@039-SN2MPN1-011.039d.mgd.msft.net>
+ <1368684547.9603.38.camel@pasglop> <51947A00.9010504@windriver.com>
+ <1368685307.9603.39.camel@pasglop> <51947E35.30808@windriver.com>
+ <1368686426.9603.49.camel@pasglop> <5194800D.3010606@windriver.com>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0701C498@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1368687133.9603.51.camel@pasglop>
+ <CAOZdJXU79kqEGk_nqv1NSzna7c=bgwSv+6WFgaTVjR4Rj4cZVg@mail.gmail.com>
+ <1370577138.3766.342.camel@pasglop> <1370579976.3766.345.camel@pasglop>
+ <3E027F8168735B46AC006B1D0C7BB0020B2135A0@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1370580426.3766.349.camel@pasglop>
+ <3E027F8168735B46AC006B1D0C7BB0020B213817@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1370590884.3766.357.camel@pasglop>
+ <3E027F8168735B46AC006B1D0C7BB0020B213A62@039-SN2MPN1-012.039d.mgd.msft.net>
+ <137 0595190.3766
+ .359.camel@pasglop> <1370595557.3766.362.camel@pasglop>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+ "Zang Roy-R61911" <r61911@freescale.com>
+Cc: Xie Shaohui-B21989 <B21989@freescale.com>,
+ Liu Qiang-B32616 <B32616@freescale.com>, Timur Tabi <timur@tabi.org>,
+ "tiejun.chen" <tiejun.chen@windriver.com>,
+ Fleming Andy-AFLEMING <afleming@freescale.com>,
+ Bhushan Bharat-R65777 <R65777@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,57 +48,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently we only restore signals which are transactionally suspended but it's
-possible that the transaction can be restored even when it's active.  Most
-likely this will result in a transactional rollback by the hardware as the
-transaction will have been doomed by an earlier treclaim.
+> > +
+> > +static double crackpot_sqrt(double val)
+> > +{
+> > +    int i;
+> > +    float x, y;
+> > +    const float f =3D 1.5F;
+> > +
+> > +    x =3D val * 0.5F;
+> > +    y  =3D val;
+> > +    i  =3D * ( int * ) &y;
+> > +    i  =3D 0x5f3759df - ( i >> 1 );
+> > +    y  =3D * ( float * ) &i;
+> > +    y  =3D y * ( f - ( x * y * y ) );
+> > +    y  =3D y * ( f - ( x * y * y ) );
+> > +    return val * y;
+> > +}
+> > +
+>=20
+> For those interested, this is the Quake3 sqrt from Carmack ... there's
+> plenty of literature about it one or two google clicks away :-)
 
-The current code is a legacy of earlier kernel implementations which did
-software rollback of active transactions in the kernel.  That code has now gone
-but we didn't correctly fix up this part of the signals code which still makes
-assumptions based on having software rollback.
+I guess that is a rough enough approximation for graphics.
 
-This changes the signal return code to always restore both contexts on 64 bit
-signal return.  It also ensures that the MSR TM bits are properly restored from
-the signal context which they are not currently.
+However it will be miscompiled unless i and y are put in a union.
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
- arch/powerpc/kernel/signal_64.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-index 3459473..887e99d 100644
---- a/arch/powerpc/kernel/signal_64.c
-+++ b/arch/powerpc/kernel/signal_64.c
-@@ -410,6 +410,10 @@ static long restore_tm_sigcontexts(struct pt_regs *regs,
- 
- 	/* get MSR separately, transfer the LE bit if doing signal return */
- 	err |= __get_user(msr, &sc->gp_regs[PT_MSR]);
-+	/* pull in MSR TM from user context */
-+	regs->msr = (regs->msr & ~MSR_TS_MASK) | (msr & MSR_TS_MASK);
-+
-+	/* pull in MSR LE from user context */
- 	regs->msr = (regs->msr & ~MSR_LE) | (msr & MSR_LE);
- 
- 	/* The following non-GPR non-FPR non-VR state is also checkpointed: */
-@@ -505,8 +509,6 @@ static long restore_tm_sigcontexts(struct pt_regs *regs,
- 	tm_enable();
- 	/* This loads the checkpointed FP/VEC state, if used */
- 	tm_recheckpoint(&current->thread, msr);
--	/* The task has moved into TM state S, so ensure MSR reflects this: */
--	regs->msr = (regs->msr & ~MSR_TS_MASK) | __MASK(33);
- 
- 	/* This loads the speculative FP/VEC state, if used */
- 	if (msr & MSR_FP) {
-@@ -654,7 +656,7 @@ int sys_rt_sigreturn(unsigned long r3, unsigned long r4, unsigned long r5,
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- 	if (__get_user(msr, &uc->uc_mcontext.gp_regs[PT_MSR]))
- 		goto badframe;
--	if (MSR_TM_SUSPENDED(msr)) {
-+	if (MSR_TM_ACTIVE(msr)) {
- 		/* We recheckpoint on return. */
- 		struct ucontext __user *uc_transact;
- 		if (__get_user(uc_transact, &uc->uc_link))
--- 
-1.7.10.4
+	David
