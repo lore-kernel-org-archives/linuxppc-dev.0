@@ -1,38 +1,36 @@
-Return-Path: <r61911@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 25E2A2C009C
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jun 2013 14:51:26 +1000 (EST)
-From: Zang Roy-R61911 <r61911@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: RE: SATA FSL and upstreaming
-Date: Fri, 7 Jun 2013 04:50:51 +0000
-Message-ID: <3E027F8168735B46AC006B1D0C7BB0020B213817@039-SN2MPN1-012.039d.mgd.msft.net>
-References: <1368679657.9603.32.camel@pasglop>
- <1368683156.9603.34.camel@pasglop>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0701C307@039-SN2MPN1-012.039d.mgd.msft.net>
- <3E027F8168735B46AC006B1D0C7BB0020B1E040F@039-SN2MPN1-011.039d.mgd.msft.net>
- <1368684547.9603.38.camel@pasglop> <51947A00.9010504@windriver.com>
- <1368685307.9603.39.camel@pasglop> <51947E35.30808@windriver.com>
- <1368686426.9603.49.camel@pasglop> <5194800D.3010606@windriver.com>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0701C498@039-SN2MPN1-012.039d.mgd.msft.net>
- <1368687133.9603.51.camel@pasglop>
- <CAOZdJXU79kqEGk_nqv1NSzna7c=bgwSv+6WFgaTVjR4Rj4cZVg@mail.gmail.com>
- <1370577138.3766.342.camel@pasglop> <1370579976.3766.345.camel@pasglop>
- <3E027F8168735B46AC006B1D0C7BB0020B2135A0@039-SN2MPN1-012.039d.mgd.msft.net>
- <1370580426.3766.349.camel@pasglop>
-In-Reply-To: <1370580426.3766.349.camel@pasglop>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <viresh.kumar@linaro.org>
+Received: from mail-oa0-x22f.google.com (mail-oa0-x22f.google.com
+ [IPv6:2607:f8b0:4003:c02::22f])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 432BE2C009D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jun 2013 15:18:27 +1000 (EST)
+Received: by mail-oa0-f47.google.com with SMTP id m1so894617oag.34
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Jun 2013 22:18:22 -0700 (PDT)
 MIME-Version: 1.0
-Cc: Xie Shaohui-B21989 <B21989@freescale.com>,
- Liu Qiang-B32616 <B32616@freescale.com>, Timur Tabi <timur@tabi.org>,
- "tiejun.chen" <tiejun.chen@windriver.com>,
- Fleming Andy-AFLEMING <afleming@freescale.com>,
- Bhushan Bharat-R65777 <R65777@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <CAKohpokgTmb6d79ipR9pV2iOfLSzngrPbMV3hFcuP64kbNYSQA@mail.gmail.com>
+References: <cover.1365079581.git.viresh.kumar@linaro.org>
+ <027e8f1d4ac8de6351115f15a408431558510abb.1365079581.git.viresh.kumar@linaro.org>
+ <CAKohpokGkZ9m0v1QaoXEv1m0mZqY70adWpXf3edQGmZnToRRcg@mail.gmail.com>
+ <CAKohpokpiw3zS32oDL+T09ToOQxc28w=2R2up5T3h3c2Agc0wg@mail.gmail.com>
+ <CAKohpo=SFauMyczEnxO_p_KQVQeznL+0V-FmLDtGmzL1Uv2iuA@mail.gmail.com>
+ <CAKohponBfXsy21RTik+jWMukL_VnDNXOL7xmj4sEBF3HEBXqpQ@mail.gmail.com>
+ <CAKohpo=DoWB+E-bgWCUVec5Y8wsfEu0V43Pg5mHzqep8yn0_JA@mail.gmail.com>
+ <CAKohpokgTmb6d79ipR9pV2iOfLSzngrPbMV3hFcuP64kbNYSQA@mail.gmail.com>
+Date: Fri, 7 Jun 2013 10:48:21 +0530
+Message-ID: <CAKohpom=HvLwn7q9gicJXmHExoaDKKHcgQgT=1F0SKu3N3bXSg@mail.gmail.com>
+Subject: Re: [PATCH 17/18] cpufreq: powerpc: move cpufreq driver to
+ drivers/cpufreq
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: deepthi@linux.vnet.ibm.com, Robin Randhawa <robin.randhawa@arm.com>,
+ linux-pm@vger.kernel.org, patches@linaro.org, Liviu.Dudau@arm.com,
+ linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Steve.Bannister@arm.com,
+ Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
+ Andrew Morton <akpm@linux-foundation.org>, arvind.chauhan@arm.com,
+ linuxppc-dev@lists.ozlabs.org, linaro-kernel@lists.linaro.org,
+ charles.garcia-tobin@arm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,28 +40,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmVuamFtaW4gSGVycmVu
-c2NobWlkdCBbbWFpbHRvOmJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZ10NCj4gU2VudDogRnJpZGF5
-LCBKdW5lIDA3LCAyMDEzIDEyOjQ3IFBNDQo+IFRvOiBaYW5nIFJveS1SNjE5MTENCj4gQ2M6IFRp
-bXVyIFRhYmk7IFhpZSBTaGFvaHVpLUIyMTk4OTsgTGl1IFFpYW5nLUIzMjYxNjsgdGllanVuLmNo
-ZW47DQo+IEZsZW1pbmcgQW5keS1BRkxFTUlORzsgQmh1c2hhbiBCaGFyYXQtUjY1Nzc3OyBsaW51
-eHBwYy0NCj4gZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gU3ViamVjdDogUmU6IFNBVEEgRlNMIGFu
-ZCB1cHN0cmVhbWluZw0KPiANCj4gT24gRnJpLCAyMDEzLTA2LTA3IGF0IDA0OjQ1ICswMDAwLCBa
-YW5nIFJveS1SNjE5MTEgd3JvdGU6DQo+ID4NCj4gPiA+IEZvcmdldCBpdCwgcmVzZXQgYWxsIHRo
-ZSBqdW1wZXJzIHRvIHRoZSBkZWZhdWx0IHNldHVwIChmb3VuZCB0aGUgZG9jDQo+ID4gPiAhKSBh
-bmQgdGhleSBjb21lIHVwIG5vdyBpbiBzbG90IDQgYW5kIDcuIEl0IGFsc28gbG9va3MgbGlrZSB1
-Qm9vdA0KPiA+ID4gbm93IGhhcyBhbiBlMTAwMCBkcml2ZXIgc28gSSBkb24ndCBoYXZlIHRvIHVz
-ZSBmbWFuIChmb3Igd2hpY2ggSQ0KPiA+ID4gYmVsaWV2ZSB0aGVyZSBpcyBzdGlsbCBubyB1cHN0
-cmVhbSBkcml2ZXIgcmlnaHQgPykNCj4gDQo+ID4gZm1hbiBpbiB1LWJvb3QgaGFzIGJlZW4gdXAg
-c3RyZWFtZWQuICBJdCBzaG91bGQgd29yay4NCj4gDQo+IEkgZG9uJ3QgY2FyZSBtdWNoIGFib3V0
-IHUtYm9vdCA6LSkgSXQncyB0aGUga2VybmVsIHRoYXQgbWF0dGVycyB0byBtZS4NCllvdSBzaG91
-bGQgbWF0dGVyIGEgd29ya2luZyBFdGhlcm5ldCBwb3J0IDotKSBpbiB1LWJvb3QuDQoNCj4gDQo+
-ID4gPg0KPiA+ID4gQlRXLiBJcyB0aGF0IG5vcm1hbCBkdXJpbmcgYm9vdCA/DQo+ID4gPg0KPiA+
-ID4gTmV0OiAgIEluaXRpYWxpemluZyBGbWFuDQo+ID4gPiBGbWFuMTogVXBsb2FkaW5nIG1pY3Jv
-Y29kZSB2ZXJzaW9uIDEwNi4xLjcgUEhZIHJlc2V0IHRpbWVkIG91dCBQSFkNCj4gPiA+IHJlc2V0
-IHRpbWVkIG91dCBQSFkgcmVzZXQgdGltZWQgb3V0IFBIWSByZXNldCB0aW1lZCBvdXQNCj4gPiBZ
-b3UgY2FuIGlnbm9yZSB0aGUgdGltZW91dC4NCj4gPiBEbyB5b3UgcGx1ZyBvdGhlciBjYXJkIChm
-b3IgZXhhbXBsZSBTR01JSSBjYXJkKSBvbiB0aGUgYm9hcmQ/DQo+IA0KPiBObywgb25seSBQQ0ll
-IGluIHNsb3QgNCBhbmQgNy4NCkdvIGFoZWFkIC4uLg0KVW5sZXNzIHRoZXJlIGlzIGEgY29tcGxl
-dGUgdS1ib290IGxvZywgSSBjYW4gY29tbWVudCBtb3JlLiBidXQgSSBkbyBub3QgdGhpbmsgaXQg
-aXMgdGhlIGZvY3VzIG5vdyAuLi4NCnRoYW5rcy4NClJveQ0K
+On 31 May 2013 16:20, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 20 May 2013 10:10, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> On 13 May 2013 11:34, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>> On 22 April 2013 12:19, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>>> On 9 April 2013 14:05, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>>>> On 5 April 2013 12:16, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>>>>> On 4 April 2013 18:24, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>>>>>> This patch moves cpufreq driver of powerpc platform to drivers/cpufreq.
+>>>>>>>
+>>>>>>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>>>>>>> Cc: Paul Mackerras <paulus@samba.org>
+>>>>>>> Cc: Olof Johansson <olof@lixom.net>
+>>>>>>> Cc: linuxppc-dev@lists.ozlabs.org
+>>>>>>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>>>>>> ---
+>>>>>>> Compile Tested only.
+>>>>>>>
+>>>>>>>  arch/powerpc/platforms/Kconfig                     | 31 ----------------------
+>>>>>>>  arch/powerpc/platforms/pasemi/Makefile             |  1 -
+>>>>>>>  arch/powerpc/platforms/powermac/Makefile           |  2 --
+>>>>>>>  drivers/cpufreq/Kconfig.powerpc                    | 26 ++++++++++++++++++
+>>>>>>>  drivers/cpufreq/Makefile                           |  3 +++
+>>>>>>>  .../cpufreq.c => drivers/cpufreq/pasemi-cpufreq.c  |  0
+>>>>>>>  .../cpufreq/pmac32-cpufreq.c                       |  0
+>>>>>>>  .../cpufreq/pmac64-cpufreq.c                       |  0
+>>>>>>>  8 files changed, 29 insertions(+), 34 deletions(-)
+>>>>>>>  rename arch/powerpc/platforms/pasemi/cpufreq.c => drivers/cpufreq/pasemi-cpufreq.c (100%)
+>>>>>>>  rename arch/powerpc/platforms/powermac/cpufreq_32.c => drivers/cpufreq/pmac32-cpufreq.c (100%)
+>>>>>>>  rename arch/powerpc/platforms/powermac/cpufreq_64.c => drivers/cpufreq/pmac64-cpufreq.c (100%)
+>>>>>>
+>>>>>> Hi Deepthi,
+>>>>>>
+>>>>>> Can you help testing this please?
+>>>>>
+>>>>> Ping!!
+>>>>
+>>>> Ping!!
+>>>
+>>> Hi Benjamin,
+>>>
+>>> Hope you are back from your vacations. Can you give it a try now?
+>>
+>> Ping!!
+>
+> Ping!!
+
+Hi Rafael,
+
+Its been more than 2 months now that this patch was first posted.
+And the response from Maintainers isn't so great, irrespective of
+how many times I pinged them.
+
+This is what I think:
+- It looked functionally correct to Benjamin but he wanted somebody
+to actually test it.
+- Arnd gave his Ack (So it looked functionally correct to him too)
+- We can probably push this into linux-next now and see if somebody
+complains of any breakage it has done. If not we can get it pushed for
+3.11.
+
+--
+viresh
