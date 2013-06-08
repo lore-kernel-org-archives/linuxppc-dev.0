@@ -2,15 +2,15 @@ Return-Path: <d6malek@digitaldans.com>
 Received: from digitaldans.com (digitaldans.com [69.36.177.99])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 6EBFD2C0096
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Jun 2013 10:30:25 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id AFB922C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Jun 2013 11:13:51 +1000 (EST)
 Content-Type: text/plain; charset=windows-1252
 Mime-Version: 1.0 (Mac OS X Mail 6.3 \(1503\))
 Subject: Re: fsqrt
 From: Dan Malek <d6malek@digitaldans.com>
-In-Reply-To: <1370647812.3766.436.camel@pasglop>
-Date: Fri, 7 Jun 2013 17:20:25 -0700
-Message-Id: <0CCB5C3E-E239-4269-B29C-93BF9D8201D6@digitaldans.com>
+In-Reply-To: <1370651667.3766.441.camel@pasglop>
+Date: Fri, 7 Jun 2013 18:13:43 -0700
+Message-Id: <4A771AC5-37F2-4EC2-A733-52FFAAAB3C92@digitaldans.com>
 References: <1368679657.9603.32.camel@pasglop>
  <1368683156.9603.34.camel@pasglop>
  <6A3DF150A5B70D4F9B66A25E3F7C888D0701C307@039-SN2MPN1-012.039d.mgd.msft.net>
@@ -27,16 +27,19 @@ References: <1368679657.9603.32.camel@pasglop>
  <3E027F8168735B46AC006B1D0C7BB0020B213817@039-SN2MPN1-012.039d.mgd.msft.net>
  <1370590884.3766.357.camel@pasglop>
  <3E027F8168735B46AC006B1D0C7BB0020B213A62@039-SN2MPN1-012.039d.mgd.msft.!
- net> <137 0595190.3766 .359.camel@pasglop> <1370595557.3766.362.camel@pasglop>
+ ! net> <137 0595190.3766 .359.camel@pasglop>
+ <1370595557.3766.362.camel@pasglop>
  <AE90C24D6B3A694183C094C60CF0A2F6026B7279@saturn3.aculab.com>
  <1370607245.3766.386.camel@pasglop>
  <B90B185D-AC79-4A39-91F1-57F371D9D732@kernel.crashing.org>
  <1370647431.3766.432.camel@pasglop> <1370647524.3766.433.camel@pasglop>
  <1370647812.3766.436.camel@pasglop>
+ <0CCB5C3E-E239-4269-B29C-93BF9D8201D6@digitaldans.com>
+ <1370651667.3766.441.camel@pasglop>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Zang Roy-R61911 <r61911@freescale.com>,
- Xie Shaohui-B21989 <B21989@freescale.com>,
- Liu Qiang-B32616 <B32616@freescale.com>, Timur Tabi <timur@tabi.org>,
+Cc: Xie Shaohui-B21989 <B21989@freescale.com>,
+ Liu Qiang-B32616 <B32616@freescale.com>,
+ Zang Roy-R61911 <r61911@freescale.com>, Timur Tabi <timur@tabi.org>,
  "tiejun.chen" <tiejun.chen@windriver.com>,
  David Laight <David.Laight@ACULAB.COM>,
  Fleming Andy-AFLEMING <afleming@freescale.com>,
@@ -51,36 +54,41 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Jun 7, 2013, at 4:30 PM, Benjamin Herrenschmidt =
+Hi Ben.
+
+On Jun 7, 2013, at 5:34 PM, Benjamin Herrenschmidt =
 <benh@kernel.crashing.org> wrote:
 
-> Right, looking more, the code really sucks.
+> The question is whether this is still relevant ?
 
-Hey!  :)
+The only answer I could provide is that it's dependent upon the =
+libraries and how the distributions are built.  It's also dependent upon =
+processors with hardware FP that don't implement all instructions in =
+hardware (who had that bright idea? :))  If distributions are fully all =
+soft-fp in user space or all hardware FP, it removes the one reason that =
+started the whole partial emulation option.
 
-> =85.  Either you use the existing
-> apparent ability for MATH_EMU to operate in minimal mode, ie,
-> load/store/fmr only (which seems to do exactly the same thing as the
-> code in softemu8xx.c which we can then get rid of), or just get rid of
-> that minimal mode altogether.
+> =85  And if the answer is
+> yes,
 
-The purpose for that "minimal code" was the signal handlers were =
-hand-coded assembly that always did the FPU load/store regardless of =
-compiler flags.  Over time, it became convenient to emulate a few =
-others, even with user space math emulation, for similar reasons.
+There are multiple options, but I believe they are solved today.  One is =
+the libraries coded with hardware load/store that are used by soft-fp, =
+another is hardware FP that doesn't implement all instructions in =
+hardware (which it seems is the basis of this thread, although I thought =
+was already solved).  The variation here is that in the first case you =
+have to read/write user space soft-fp stack "registers," while in the =
+latter you read/write real FP registers.  There used to be the third =
+variation where the stack was allocated and the emulation had to write =
+both places due to compiler function APIs or optimizations.  Of course, =
+then there is the full-up kernel emulation where hardware is entirely =
+lacking.
 
-> And while at it make it a general config option for all soft-emu
-> processors (there is no bloody reason why that should be 8xx specfic) =
-or
-> just get rid of the whole concept of half-emulation.
+> =85 we still want that "minimum" emulation of load/stores/fmr as an
+> option, is there any reason why we can't replace the one in softemu8xx
+> with the existing (and unused) equivalent in do_mathemu ?
 
-Looks like the code just evolved and the 8xx was never cleaned up.
-
-The partial emulation is a convenience for the libraries that may still =
-have FP instructions directly coded.  There are also permutations of =
-real FPU but not all instructions, and no FPU to consider for fetching =
-operands and storing results to be considered for the various =
-configuration options.
+It appears to me that 8xx custom code can be removed.  I guess I should =
+try to boot it up, if anyone even cares these days. :)
 
 Thanks.
 
