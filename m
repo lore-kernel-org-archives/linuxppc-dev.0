@@ -1,49 +1,20 @@
-Return-Path: <d6malek@digitaldans.com>
-Received: from digitaldans.com (digitaldans.com [69.36.177.99])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id AFB922C0098
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Jun 2013 11:13:51 +1000 (EST)
-Content-Type: text/plain; charset=windows-1252
-Mime-Version: 1.0 (Mac OS X Mail 6.3 \(1503\))
-Subject: Re: fsqrt
-From: Dan Malek <d6malek@digitaldans.com>
-In-Reply-To: <1370651667.3766.441.camel@pasglop>
-Date: Fri, 7 Jun 2013 18:13:43 -0700
-Message-Id: <4A771AC5-37F2-4EC2-A733-52FFAAAB3C92@digitaldans.com>
-References: <1368679657.9603.32.camel@pasglop>
- <1368683156.9603.34.camel@pasglop>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0701C307@039-SN2MPN1-012.039d.mgd.msft.net>
- <3E027F8168735B46AC006B1D0C7BB0020B1E040F@039-SN2MPN1-011.039d.mgd.msft.net>
- <1368684547.9603.38.camel@pasglop> <51947A00.9010504@windriver.com>
- <1368685307.9603.39.camel@pasglop> <51947E35.30808@windriver.com>
- <1368686426.9603.49.camel@pasglop> <5194800D.3010606@windriver.com>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0701C498@039-SN2MPN1-012.039d.mgd.msft.net>
- <1368687133.9603.51.camel@pasglop>
- <CAOZdJXU79kqEGk_nqv1NSzna7c=bgwSv+6WFgaTVjR4Rj4cZVg@mail.gmail.com>
- <1370577138.3766.342.camel@pasglop> <1370579976.3766.345.camel@pasglop>
- <3E027F8168735B46AC006B1D0C7BB0020B2135A0@039-SN2MPN1-012.039d.mgd.msft.net>
- <1370580426.3766.349.camel@pasglop>
- <3E027F8168735B46AC006B1D0C7BB0020B213817@039-SN2MPN1-012.039d.mgd.msft.net>
- <1370590884.3766.357.camel@pasglop>
- <3E027F8168735B46AC006B1D0C7BB0020B213A62@039-SN2MPN1-012.039d.mgd.msft.!
- ! net> <137 0595190.3766 .359.camel@pasglop>
- <1370595557.3766.362.camel@pasglop>
- <AE90C24D6B3A694183C094C60CF0A2F6026B7279@saturn3.aculab.com>
- <1370607245.3766.386.camel@pasglop>
- <B90B185D-AC79-4A39-91F1-57F371D9D732@kernel.crashing.org>
- <1370647431.3766.432.camel@pasglop> <1370647524.3766.433.camel@pasglop>
- <1370647812.3766.436.camel@pasglop>
- <0CCB5C3E-E239-4269-B29C-93BF9D8201D6@digitaldans.com>
- <1370651667.3766.441.camel@pasglop>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Xie Shaohui-B21989 <B21989@freescale.com>,
- Liu Qiang-B32616 <B32616@freescale.com>,
- Zang Roy-R61911 <r61911@freescale.com>, Timur Tabi <timur@tabi.org>,
- "tiejun.chen" <tiejun.chen@windriver.com>,
- David Laight <David.Laight@ACULAB.COM>,
- Fleming Andy-AFLEMING <afleming@freescale.com>,
- Bhushan Bharat-R65777 <R65777@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <linux@roeck-us.net>
+Received: from mail.active-venture.com (mail.active-venture.com
+ [67.228.131.205]) by ozlabs.org (Postfix) with ESMTP id 4880E2C008A
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Jun 2013 00:30:13 +1000 (EST)
+Date: Sat, 8 Jun 2013 07:30:55 -0700
+From: Guenter Roeck <linux@roeck-us.net>
+To: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: Linux 3.9.5 [patch to fix powerpc build error attached]
+Message-ID: <20130608143055.GA21207@roeck-us.net>
+References: <20130607195816.GA28479@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130607195816.GA28479@kroah.com>
+Cc: Michael Neuling <mikey@neuling.org>, torvalds@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ stable@vger.kernel.org, Paul Mackerras <paulus@samba.org>, lwn@lwn.net,
+ Andrew Morton <akpm@linux-foundation.org>, Jiri Slaby <jslaby@suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,43 +24,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, Jun 07, 2013 at 12:58:16PM -0700, Greg KH wrote:
+> I'm announcing the release of the 3.9.5 kernel.
+> 
+> All users of the 3.9 kernel series must upgrade.
+> 
+> The updated 3.9.y git tree can be found at:
+> 	git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git linux-3.9.y
+> and can be browsed at the normal kernel.org git web browser:
+> 	http://git.kernel.org/?p=linux/kernel/git/stable/linux-stable.git;a=summary
+> 
+Powerpc build is fixed with the following patch.
 
-Hi Ben.
+>From 8ce3edac0a86f103bd1037110662d5d80a42dd5b Mon Sep 17 00:00:00 2001
+From: Guenter Roeck <linux@roeck-us.net>
+Date: Sat, 8 Jun 2013 07:23:47 -0700
+Subject: [PATCH] powerpc: Fix build error in stable/3.9
 
-On Jun 7, 2013, at 5:34 PM, Benjamin Herrenschmidt =
-<benh@kernel.crashing.org> wrote:
+Commit e71c42189 (powerpc/tm: Abort on emulation and alignment faults)
+introduced a powerpc build error in 3.9.5.
 
-> The question is whether this is still relevant ?
+Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+---
+No upstream commit. Compile tested only.
 
-The only answer I could provide is that it's dependent upon the =
-libraries and how the distributions are built.  It's also dependent upon =
-processors with hardware FP that don't implement all instructions in =
-hardware (who had that bright idea? :))  If distributions are fully all =
-soft-fp in user space or all hardware FP, it removes the one reason that =
-started the whole partial emulation option.
+ arch/powerpc/kernel/traps.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> =85  And if the answer is
-> yes,
-
-There are multiple options, but I believe they are solved today.  One is =
-the libraries coded with hardware load/store that are used by soft-fp, =
-another is hardware FP that doesn't implement all instructions in =
-hardware (which it seems is the basis of this thread, although I thought =
-was already solved).  The variation here is that in the first case you =
-have to read/write user space soft-fp stack "registers," while in the =
-latter you read/write real FP registers.  There used to be the third =
-variation where the stack was allocated and the emulation had to write =
-both places due to compiler function APIs or optimizations.  Of course, =
-then there is the full-up kernel emulation where hardware is entirely =
-lacking.
-
-> =85 we still want that "minimum" emulation of load/stores/fmr as an
-> option, is there any reason why we can't replace the one in softemu8xx
-> with the existing (and unused) equivalent in do_mathemu ?
-
-It appears to me that 8xx custom code can be removed.  I guess I should =
-try to boot it up, if anyone even cares these days. :)
-
-Thanks.
-
-	-- Dan
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 1c22b2d..29857c6 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -1151,7 +1151,7 @@ void alignment_exception(struct pt_regs *regs)
+ 		local_irq_enable();
+ 
+ 	if (tm_abort_check(regs, TM_CAUSE_ALIGNMENT | TM_CAUSE_PERSISTENT))
+-		goto bail;
++		return;
+ 
+ 	/* we don't implement logging of alignment exceptions */
+ 	if (!(current->thread.align_ctl & PR_UNALIGN_SIGBUS))
+-- 
+1.7.9.7
