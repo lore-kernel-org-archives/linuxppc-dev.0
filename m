@@ -1,9 +1,10 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH v2 2/5] powerpc/tm: Fix 32 bit non-rt signals
-Date: Sun,  9 Jun 2013 21:23:16 +1000
-Message-Id: <1370776999-14108-2-git-send-email-mikey@neuling.org>
+Subject: [PATCH v2 3/5] powerpc/tm: Fix restoration of MSR on 32bit signal
+ return
+Date: Sun,  9 Jun 2013 21:23:17 +1000
+Message-Id: <1370776999-14108-3-git-send-email-mikey@neuling.org>
 In-Reply-To: <1370776999-14108-1-git-send-email-mikey@neuling.org>
 References: <1370776999-14108-1-git-send-email-mikey@neuling.org>
 Cc: linuxppc-dev@lists.ozlabs.org, Matt Evans <matt@ozlabs.org>
@@ -16,76 +17,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently sys_sigreturn() is TM unaware.  Therefore, if we take a 32 bit signal
-without SIGINFO (non RT) inside a transaction, on signal return we don't
-restore the signal frame correctly.
+Currently we clear out the MSR TM bits on signal return assuming that the
+signal should never return to an active transaction.
 
-This checks if the signal frame being restoring is an active transaction, and
-if so, it copies the additional state to ptregs so it can be restored.
+This is bogus as the user may do this.  It's most likely the transaction will
+be doomed due to a treclaim but that's a problem for the HW not the kernel.
+
+The current code is a legacy of earlier kernel implementations which did
+software rollback of active transactions in the kernel.  That code has now gone
+but we didn't correctly fix up this part of the signals code which still makes
+the assumption that it must be returning to a suspended transaction.
+
+This pulls out both MSR TM bits from the user supplied context rather than just
+setting TM suspend.  We pull out only the bits needed to ensure the user can't
+do anything dangerous to the MSR.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 cc: stable@vger.kernel.org (v3.9 only)
 ---
- arch/powerpc/kernel/signal_32.c |   30 +++++++++++++++++++++++++-----
- 1 file changed, 25 insertions(+), 5 deletions(-)
+ arch/powerpc/kernel/signal_32.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
 diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index 5bc819f..fa81462 100644
+index fa81462..364cb1e 100644
 --- a/arch/powerpc/kernel/signal_32.c
 +++ b/arch/powerpc/kernel/signal_32.c
-@@ -1494,16 +1494,22 @@ badframe:
- long sys_sigreturn(int r3, int r4, int r5, int r6, int r7, int r8,
- 		       struct pt_regs *regs)
+@@ -754,7 +754,7 @@ static long restore_tm_user_regs(struct pt_regs *regs,
+ 				 struct mcontext __user *tm_sr)
  {
-+	struct sigframe __user *sf;
- 	struct sigcontext __user *sc;
- 	struct sigcontext sigctx;
- 	struct mcontext __user *sr;
- 	void __user *addr;
- 	sigset_t set;
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+	struct mcontext __user *mcp, *tm_mcp;
-+	unsigned long msr_hi;
-+#endif
- 
- 	/* Always make any pending restarted system calls return -EINTR */
- 	current_thread_info()->restart_block.fn = do_no_restart_syscall;
- 
--	sc = (struct sigcontext __user *)(regs->gpr[1] + __SIGNAL_FRAMESIZE);
-+	sf = (struct sigframe __user *)(regs->gpr[1] + __SIGNAL_FRAMESIZE);
-+	sc = &sf->sctx;
- 	addr = sc;
- 	if (copy_from_user(&sigctx, sc, sizeof(sigctx)))
- 		goto badframe;
-@@ -1520,11 +1526,25 @@ long sys_sigreturn(int r3, int r4, int r5, int r6, int r7, int r8,
+ 	long err;
+-	unsigned long msr;
++	unsigned long msr, msr_hi;
+ #ifdef CONFIG_VSX
+ 	int i;
  #endif
- 	set_current_blocked(&set);
+@@ -859,8 +859,11 @@ static long restore_tm_user_regs(struct pt_regs *regs,
+ 	tm_enable();
+ 	/* This loads the checkpointed FP/VEC state, if used */
+ 	tm_recheckpoint(&current->thread, msr);
+-	/* The task has moved into TM state S, so ensure MSR reflects this */
+-	regs->msr = (regs->msr & ~MSR_TS_MASK) | MSR_TS_S;
++	/* Get the top half of the MSR */
++	if (__get_user(msr_hi, &tm_sr->mc_gregs[PT_MSR]))
++		return 1;
++	/* Pull in MSR TM from user context */
++	regs->msr = (regs->msr & ~MSR_TS_MASK) | ((msr_hi<<32) & MSR_TS_MASK);
  
--	sr = (struct mcontext __user *)from_user_ptr(sigctx.regs);
--	addr = sr;
--	if (!access_ok(VERIFY_READ, sr, sizeof(*sr))
--	    || restore_user_regs(regs, sr, 1))
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+	mcp = (struct mcontext __user *)&sf->mctx;
-+	tm_mcp = (struct mcontext __user *)&sf->mctx_transact;
-+	if (__get_user(msr_hi, &tm_mcp->mc_gregs[PT_MSR]))
- 		goto badframe;
-+	if (MSR_TM_ACTIVE(msr_hi<<32)) {
-+		if (!cpu_has_feature(CPU_FTR_TM))
-+			goto badframe;
-+		if (restore_tm_user_regs(regs, mcp, tm_mcp))
-+			goto badframe;
-+	} else
-+#endif
-+	{
-+		sr = (struct mcontext __user *)from_user_ptr(sigctx.regs);
-+		addr = sr;
-+		if (!access_ok(VERIFY_READ, sr, sizeof(*sr))
-+		    || restore_user_regs(regs, sr, 1))
-+			goto badframe;
-+	}
- 
- 	set_thread_flag(TIF_RESTOREALL);
- 	return 0;
+ 	/* This loads the speculative FP/VEC state, if used */
+ 	if (msr & MSR_FP) {
 -- 
 1.7.10.4
