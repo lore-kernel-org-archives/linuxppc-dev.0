@@ -1,12 +1,21 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH v2 5/5] powerpc/tm: Fix return of active 64bit signals
-Date: Sun,  9 Jun 2013 21:23:19 +1000
-Message-Id: <1370776999-14108-5-git-send-email-mikey@neuling.org>
-In-Reply-To: <1370776999-14108-1-git-send-email-mikey@neuling.org>
-References: <1370776999-14108-1-git-send-email-mikey@neuling.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Matt Evans <matt@ozlabs.org>
+Return-Path: <B40534@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 60F7B2C04BC
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Jun 2013 21:24:01 +1000 (EST)
+From: Wang Dongsheng <dongsheng.wang@freescale.com>
+To: <benh@kernel.crashing.org>
+Subject: [PATCH 1/2] powerpc: add Book E support to 64-bit hibernation
+Date: Sun, 9 Jun 2013 18:37:39 +0800
+Message-ID: <1370774260-31072-1-git-send-email-dongsheng.wang@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: anton@enomsg.org, Wang Dongsheng <dongsheng.wang@freescale.com>,
+ scottwood@freescale.com, johannes@sipsolutions.net,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,58 +25,148 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently we only restore signals which are transactionally suspended but it's
-possible that the transaction can be restored even when it's active.  Most
-likely this will result in a transactional rollback by the hardware as the
-transaction will have been doomed by an earlier treclaim.
+Update the 64-bit hibernation code to support Book E CPUs.
+Some registers and instructions are not defined for Book3e
+(SDR reg, tlbia instruction).
 
-The current code is a legacy of earlier kernel implementations which did
-software rollback of active transactions in the kernel.  That code has now gone
-but we didn't correctly fix up this part of the signals code which still makes
-assumptions based on having software rollback.
+SDR: Storage Description Register. Book3S and Book3E have different
+address translation mode, we do not need HTABORG & HTABSIZE to
+translate virtual address to real address.
 
-This changes the signal return code to always restore both contexts on 64 bit
-signal return.  It also ensures that the MSR TM bits are properly restored from
-the signal context which they are not currently.
+More registers are saved in BookE-64bit.(TCR, SPRGx, ...)
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
-cc: stable@vger.kernel.org (v3.9 only)
+Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
 ---
- arch/powerpc/kernel/signal_64.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+* History:
+* Wood Scott(A): Please investigate the issue of whether we are loading
+*                kernel module code in this step
+* R: Kernel will allocate the memory for module code segment and data
+*    segment. First allocate a memory, and copy the umod to hdr members
+*    of the struct load_info. Due to the temporary assigned module belongs
+*    to the kernel space, so it belongs to the kernel data.
+*
+*    The kernel of all data will be saved when hibernation suspend. So
+*    the module which has already been inserted will be saved.
 
-diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-index 3459473..887e99d 100644
---- a/arch/powerpc/kernel/signal_64.c
-+++ b/arch/powerpc/kernel/signal_64.c
-@@ -410,6 +410,10 @@ static long restore_tm_sigcontexts(struct pt_regs *regs,
+ arch/powerpc/kernel/swsusp_asm64.S | 64 ++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 62 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/kernel/swsusp_asm64.S b/arch/powerpc/kernel/swsusp_asm64.S
+index 86ac1d9..608e4ceb 100644
+--- a/arch/powerpc/kernel/swsusp_asm64.S
++++ b/arch/powerpc/kernel/swsusp_asm64.S
+@@ -46,10 +46,29 @@
+ #define SL_r29		0xe8
+ #define SL_r30		0xf0
+ #define SL_r31		0xf8
+-#define SL_SIZE		SL_r31+8
++#define SL_SPRG0	0x100
++#define SL_SPRG1	0x108
++#define SL_SPRG2	0x110
++#define SL_SPRG3	0x118
++#define SL_SPRG4	0x120
++#define SL_SPRG5	0x128
++#define SL_SPRG6	0x130
++#define SL_SPRG7	0x138
++#define SL_TCR		0x140
++#define SL_SIZE		SL_TCR+8
  
- 	/* get MSR separately, transfer the LE bit if doing signal return */
- 	err |= __get_user(msr, &sc->gp_regs[PT_MSR]);
-+	/* pull in MSR TM from user context */
-+	regs->msr = (regs->msr & ~MSR_TS_MASK) | (msr & MSR_TS_MASK);
+ /* these macros rely on the save area being
+  * pointed to by r11 */
 +
-+	/* pull in MSR LE from user context */
- 	regs->msr = (regs->msr & ~MSR_LE) | (msr & MSR_LE);
++#define SAVE_SPR(register)		\
++	mfspr	r0,SPRN_##register	;\
++	std	r0,SL_##register(r11)
++#define RESTORE_SPR(register)		\
++	ld	r0,SL_##register(r11)	;\
++	mtspr	SPRN_##register,r0
++#define RESTORE_SPRG(n)			\
++	ld	r0,SL_SPRG##n(r11)	;\
++	mtsprg	n,r0
+ #define SAVE_SPECIAL(special)		\
+ 	mf##special	r0		;\
+ 	std	r0, SL_##special(r11)
+@@ -103,8 +122,21 @@ _GLOBAL(swsusp_arch_suspend)
+ 	SAVE_REGISTER(r30)
+ 	SAVE_REGISTER(r31)
+ 	SAVE_SPECIAL(MSR)
+-	SAVE_SPECIAL(SDR1)
+ 	SAVE_SPECIAL(XER)
++#ifdef CONFIG_PPC_BOOK3S_64
++	SAVE_SPECIAL(SDR1)
++#else
++	SAVE_SPR(TCR)
++	/* Save SPRGs */
++	SAVE_SPR(SPRG0)
++	SAVE_SPR(SPRG1)
++	SAVE_SPR(SPRG2)
++	SAVE_SPR(SPRG3)
++	SAVE_SPR(SPRG4)
++	SAVE_SPR(SPRG5)
++	SAVE_SPR(SPRG6)
++	SAVE_SPR(SPRG7)
++#endif
  
- 	/* The following non-GPR non-FPR non-VR state is also checkpointed: */
-@@ -505,8 +509,6 @@ static long restore_tm_sigcontexts(struct pt_regs *regs,
- 	tm_enable();
- 	/* This loads the checkpointed FP/VEC state, if used */
- 	tm_recheckpoint(&current->thread, msr);
--	/* The task has moved into TM state S, so ensure MSR reflects this: */
--	regs->msr = (regs->msr & ~MSR_TS_MASK) | __MASK(33);
+ 	/* we push the stack up 128 bytes but don't store the
+ 	 * stack pointer on the stack like a real stackframe */
+@@ -151,6 +183,7 @@ copy_page_loop:
+ 	bne+	copyloop
+ nothing_to_copy:
  
- 	/* This loads the speculative FP/VEC state, if used */
- 	if (msr & MSR_FP) {
-@@ -654,7 +656,7 @@ int sys_rt_sigreturn(unsigned long r3, unsigned long r4, unsigned long r5,
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- 	if (__get_user(msr, &uc->uc_mcontext.gp_regs[PT_MSR]))
- 		goto badframe;
--	if (MSR_TM_SUSPENDED(msr)) {
-+	if (MSR_TM_ACTIVE(msr)) {
- 		/* We recheckpoint on return. */
- 		struct ucontext __user *uc_transact;
- 		if (__get_user(uc_transact, &uc->uc_link))
++#ifdef CONFIG_PPC_BOOK3S_64
+ 	/* flush caches */
+ 	lis	r3, 0x10
+ 	mtctr	r3
+@@ -167,6 +200,7 @@ nothing_to_copy:
+ 	sync
+ 
+ 	tlbia
++#endif
+ 
+ 	ld	r11,swsusp_save_area_ptr@toc(r2)
+ 
+@@ -208,16 +242,42 @@ nothing_to_copy:
+ 	RESTORE_REGISTER(r29)
+ 	RESTORE_REGISTER(r30)
+ 	RESTORE_REGISTER(r31)
++
++#ifdef CONFIG_PPC_BOOK3S_64
+ 	/* can't use RESTORE_SPECIAL(MSR) */
+ 	ld	r0, SL_MSR(r11)
+ 	mtmsrd	r0, 0
+ 	RESTORE_SPECIAL(SDR1)
++#else
++	/* Save SPRGs */
++	RESTORE_SPRG(0)
++	RESTORE_SPRG(1)
++	RESTORE_SPRG(2)
++	RESTORE_SPRG(3)
++	RESTORE_SPRG(4)
++	RESTORE_SPRG(5)
++	RESTORE_SPRG(6)
++	RESTORE_SPRG(7)
++
++	RESTORE_SPECIAL(MSR)
++
++	/* Restore TCR and clear any pending bits in TSR. */
++	RESTORE_SPR(TCR)
++	lis	r0, (TSR_ENW | TSR_WIS | TSR_DIS | TSR_FIS)@h
++	mtspr	SPRN_TSR,r0
++
++	/* Kick decrementer */
++	li	r0,1
++	mtdec	r0
++#endif
+ 	RESTORE_SPECIAL(XER)
+ 
+ 	sync
+ 
+ 	addi	r1,r1,-128
++#ifdef CONFIG_PPC_BOOK3S_64
+ 	bl	slb_flush_and_rebolt
++#endif
+ 	bl	do_after_copyback
+ 	addi	r1,r1,128
+ 
 -- 
-1.7.10.4
+1.8.0
