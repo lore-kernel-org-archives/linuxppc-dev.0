@@ -1,10 +1,9 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH v2 4/5] powerpc/tm: Fix return of 32bit rt signals to active
- transactions
-Date: Sun,  9 Jun 2013 21:23:18 +1000
-Message-Id: <1370776999-14108-4-git-send-email-mikey@neuling.org>
+Subject: [PATCH v2 5/5] powerpc/tm: Fix return of active 64bit signals
+Date: Sun,  9 Jun 2013 21:23:19 +1000
+Message-Id: <1370776999-14108-5-git-send-email-mikey@neuling.org>
 In-Reply-To: <1370776999-14108-1-git-send-email-mikey@neuling.org>
 References: <1370776999-14108-1-git-send-email-mikey@neuling.org>
 Cc: linuxppc-dev@lists.ozlabs.org, Matt Evans <matt@ozlabs.org>
@@ -27,27 +26,48 @@ software rollback of active transactions in the kernel.  That code has now gone
 but we didn't correctly fix up this part of the signals code which still makes
 assumptions based on having software rollback.
 
-This changes the signal return code to always restore both contexts on 32 bit
-rt signal return.
+This changes the signal return code to always restore both contexts on 64 bit
+signal return.  It also ensures that the MSR TM bits are properly restored from
+the signal context which they are not currently.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 cc: stable@vger.kernel.org (v3.9 only)
 ---
- arch/powerpc/kernel/signal_32.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kernel/signal_64.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index 364cb1e..0f83122 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -1245,7 +1245,7 @@ long sys_rt_sigreturn(int r3, int r4, int r5, int r6, int r7, int r8,
- 		if (__get_user(msr_hi, &mcp->mc_gregs[PT_MSR]))
- 			goto bad;
+diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
+index 3459473..887e99d 100644
+--- a/arch/powerpc/kernel/signal_64.c
++++ b/arch/powerpc/kernel/signal_64.c
+@@ -410,6 +410,10 @@ static long restore_tm_sigcontexts(struct pt_regs *regs,
  
--		if (MSR_TM_SUSPENDED(msr_hi<<32)) {
-+		if (MSR_TM_ACTIVE(msr_hi<<32)) {
- 			/* We only recheckpoint on return if we're
- 			 * transaction.
- 			 */
+ 	/* get MSR separately, transfer the LE bit if doing signal return */
+ 	err |= __get_user(msr, &sc->gp_regs[PT_MSR]);
++	/* pull in MSR TM from user context */
++	regs->msr = (regs->msr & ~MSR_TS_MASK) | (msr & MSR_TS_MASK);
++
++	/* pull in MSR LE from user context */
+ 	regs->msr = (regs->msr & ~MSR_LE) | (msr & MSR_LE);
+ 
+ 	/* The following non-GPR non-FPR non-VR state is also checkpointed: */
+@@ -505,8 +509,6 @@ static long restore_tm_sigcontexts(struct pt_regs *regs,
+ 	tm_enable();
+ 	/* This loads the checkpointed FP/VEC state, if used */
+ 	tm_recheckpoint(&current->thread, msr);
+-	/* The task has moved into TM state S, so ensure MSR reflects this: */
+-	regs->msr = (regs->msr & ~MSR_TS_MASK) | __MASK(33);
+ 
+ 	/* This loads the speculative FP/VEC state, if used */
+ 	if (msr & MSR_FP) {
+@@ -654,7 +656,7 @@ int sys_rt_sigreturn(unsigned long r3, unsigned long r4, unsigned long r5,
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ 	if (__get_user(msr, &uc->uc_mcontext.gp_regs[PT_MSR]))
+ 		goto badframe;
+-	if (MSR_TM_SUSPENDED(msr)) {
++	if (MSR_TM_ACTIVE(msr)) {
+ 		/* We recheckpoint on return. */
+ 		struct ucontext __user *uc_transact;
+ 		if (__get_user(uc_transact, &uc->uc_link))
 -- 
 1.7.10.4
