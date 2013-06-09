@@ -1,16 +1,18 @@
 Return-Path: <B40534@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0189.outbound.messaging.microsoft.com [213.199.154.189])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 60F7B2C04BC
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Jun 2013 21:24:01 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 6873F2C04D7
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Jun 2013 21:24:08 +1000 (EST)
 From: Wang Dongsheng <dongsheng.wang@freescale.com>
 To: <benh@kernel.crashing.org>
-Subject: [PATCH 1/2] powerpc: add Book E support to 64-bit hibernation
-Date: Sun, 9 Jun 2013 18:37:39 +0800
-Message-ID: <1370774260-31072-1-git-send-email-dongsheng.wang@freescale.com>
+Subject: [PATCH 2/2] powerpc/hibernate: add restore mmu context after resume
+Date: Sun, 9 Jun 2013 18:37:40 +0800
+Message-ID: <1370774260-31072-2-git-send-email-dongsheng.wang@freescale.com>
+In-Reply-To: <1370774260-31072-1-git-send-email-dongsheng.wang@freescale.com>
+References: <1370774260-31072-1-git-send-email-dongsheng.wang@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: anton@enomsg.org, Wang Dongsheng <dongsheng.wang@freescale.com>,
@@ -25,148 +27,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Update the 64-bit hibernation code to support Book E CPUs.
-Some registers and instructions are not defined for Book3e
-(SDR reg, tlbia instruction).
+add restore_mmu_context to replace switch_mmu_context in
+restore_processor_state, because the switch_mmu_context will do
+a whole pile of stuff that are probably completely unnecessary.
 
-SDR: Storage Description Register. Book3S and Book3E have different
-address translation mode, we do not need HTABORG & HTABSIZE to
-translate virtual address to real address.
-
-More registers are saved in BookE-64bit.(TCR, SPRGx, ...)
+There just need to restore the existing process context, and
+invalidate TLB for boot core.
 
 Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
 ---
-* History:
-* Wood Scott(A): Please investigate the issue of whether we are loading
-*                kernel module code in this step
-* R: Kernel will allocate the memory for module code segment and data
-*    segment. First allocate a memory, and copy the umod to hdr members
-*    of the struct load_info. Due to the temporary assigned module belongs
-*    to the kernel space, so it belongs to the kernel data.
-*
-*    The kernel of all data will be saved when hibernation suspend. So
-*    the module which has already been inserted will be saved.
+ arch/powerpc/include/asm/tlbflush.h |  2 ++
+ arch/powerpc/kernel/swsusp.c        |  4 +---
+ arch/powerpc/mm/tlb_nohash.c        | 12 ++++++++++++
+ 3 files changed, 15 insertions(+), 3 deletions(-)
 
- arch/powerpc/kernel/swsusp_asm64.S | 64 ++++++++++++++++++++++++++++++++++++--
- 1 file changed, 62 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/swsusp_asm64.S b/arch/powerpc/kernel/swsusp_asm64.S
-index 86ac1d9..608e4ceb 100644
---- a/arch/powerpc/kernel/swsusp_asm64.S
-+++ b/arch/powerpc/kernel/swsusp_asm64.S
-@@ -46,10 +46,29 @@
- #define SL_r29		0xe8
- #define SL_r30		0xf0
- #define SL_r31		0xf8
--#define SL_SIZE		SL_r31+8
-+#define SL_SPRG0	0x100
-+#define SL_SPRG1	0x108
-+#define SL_SPRG2	0x110
-+#define SL_SPRG3	0x118
-+#define SL_SPRG4	0x120
-+#define SL_SPRG5	0x128
-+#define SL_SPRG6	0x130
-+#define SL_SPRG7	0x138
-+#define SL_TCR		0x140
-+#define SL_SIZE		SL_TCR+8
+diff --git a/arch/powerpc/include/asm/tlbflush.h b/arch/powerpc/include/asm/tlbflush.h
+index 61a5927..c401fe3 100644
+--- a/arch/powerpc/include/asm/tlbflush.h
++++ b/arch/powerpc/include/asm/tlbflush.h
+@@ -44,6 +44,8 @@ extern void local_flush_tlb_page(struct vm_area_struct *vma, unsigned long vmadd
+ extern void __local_flush_tlb_page(struct mm_struct *mm, unsigned long vmaddr,
+ 				   int tsize, int ind);
  
- /* these macros rely on the save area being
-  * pointed to by r11 */
++extern void restore_mmu_context(void);
 +
-+#define SAVE_SPR(register)		\
-+	mfspr	r0,SPRN_##register	;\
-+	std	r0,SL_##register(r11)
-+#define RESTORE_SPR(register)		\
-+	ld	r0,SL_##register(r11)	;\
-+	mtspr	SPRN_##register,r0
-+#define RESTORE_SPRG(n)			\
-+	ld	r0,SL_SPRG##n(r11)	;\
-+	mtsprg	n,r0
- #define SAVE_SPECIAL(special)		\
- 	mf##special	r0		;\
- 	std	r0, SL_##special(r11)
-@@ -103,8 +122,21 @@ _GLOBAL(swsusp_arch_suspend)
- 	SAVE_REGISTER(r30)
- 	SAVE_REGISTER(r31)
- 	SAVE_SPECIAL(MSR)
--	SAVE_SPECIAL(SDR1)
- 	SAVE_SPECIAL(XER)
-+#ifdef CONFIG_PPC_BOOK3S_64
-+	SAVE_SPECIAL(SDR1)
-+#else
-+	SAVE_SPR(TCR)
-+	/* Save SPRGs */
-+	SAVE_SPR(SPRG0)
-+	SAVE_SPR(SPRG1)
-+	SAVE_SPR(SPRG2)
-+	SAVE_SPR(SPRG3)
-+	SAVE_SPR(SPRG4)
-+	SAVE_SPR(SPRG5)
-+	SAVE_SPR(SPRG6)
-+	SAVE_SPR(SPRG7)
-+#endif
+ #ifdef CONFIG_SMP
+ extern void flush_tlb_mm(struct mm_struct *mm);
+ extern void flush_tlb_page(struct vm_area_struct *vma, unsigned long vmaddr);
+diff --git a/arch/powerpc/kernel/swsusp.c b/arch/powerpc/kernel/swsusp.c
+index eae33e1..0b104d7 100644
+--- a/arch/powerpc/kernel/swsusp.c
++++ b/arch/powerpc/kernel/swsusp.c
+@@ -32,7 +32,5 @@ void save_processor_state(void)
  
- 	/* we push the stack up 128 bytes but don't store the
- 	 * stack pointer on the stack like a real stackframe */
-@@ -151,6 +183,7 @@ copy_page_loop:
- 	bne+	copyloop
- nothing_to_copy:
+ void restore_processor_state(void)
+ {
+-#ifdef CONFIG_PPC32
+-	switch_mmu_context(current->active_mm, current->active_mm);
+-#endif
++	restore_mmu_context();
+ }
+diff --git a/arch/powerpc/mm/tlb_nohash.c b/arch/powerpc/mm/tlb_nohash.c
+index df32a83..a5a0708 100644
+--- a/arch/powerpc/mm/tlb_nohash.c
++++ b/arch/powerpc/mm/tlb_nohash.c
+@@ -39,10 +39,12 @@
+ #include <linux/of_fdt.h>
+ #include <linux/hugetlb.h>
  
-+#ifdef CONFIG_PPC_BOOK3S_64
- 	/* flush caches */
- 	lis	r3, 0x10
- 	mtctr	r3
-@@ -167,6 +200,7 @@ nothing_to_copy:
- 	sync
++#include <asm/current.h>
+ #include <asm/tlbflush.h>
+ #include <asm/tlb.h>
+ #include <asm/code-patching.h>
+ #include <asm/hugetlb.h>
++#include <asm/mmu_context.h>
  
- 	tlbia
-+#endif
+ #include "mmu_decl.h"
  
- 	ld	r11,swsusp_save_area_ptr@toc(r2)
+@@ -193,6 +195,16 @@ void local_flush_tlb_page(struct vm_area_struct *vma, unsigned long vmaddr)
+ }
+ EXPORT_SYMBOL(local_flush_tlb_page);
  
-@@ -208,16 +242,42 @@ nothing_to_copy:
- 	RESTORE_REGISTER(r29)
- 	RESTORE_REGISTER(r30)
- 	RESTORE_REGISTER(r31)
++void restore_mmu_context(void)
++{
++	struct mm_struct *mm = current->active_mm;
 +
-+#ifdef CONFIG_PPC_BOOK3S_64
- 	/* can't use RESTORE_SPECIAL(MSR) */
- 	ld	r0, SL_MSR(r11)
- 	mtmsrd	r0, 0
- 	RESTORE_SPECIAL(SDR1)
-+#else
-+	/* Save SPRGs */
-+	RESTORE_SPRG(0)
-+	RESTORE_SPRG(1)
-+	RESTORE_SPRG(2)
-+	RESTORE_SPRG(3)
-+	RESTORE_SPRG(4)
-+	RESTORE_SPRG(5)
-+	RESTORE_SPRG(6)
-+	RESTORE_SPRG(7)
++	set_context(mm->context.id, mm->pgd);
 +
-+	RESTORE_SPECIAL(MSR)
++	_tlbil_all();
++}
++EXPORT_SYMBOL(restore_mmu_context);
 +
-+	/* Restore TCR and clear any pending bits in TSR. */
-+	RESTORE_SPR(TCR)
-+	lis	r0, (TSR_ENW | TSR_WIS | TSR_DIS | TSR_FIS)@h
-+	mtspr	SPRN_TSR,r0
-+
-+	/* Kick decrementer */
-+	li	r0,1
-+	mtdec	r0
-+#endif
- 	RESTORE_SPECIAL(XER)
- 
- 	sync
- 
- 	addi	r1,r1,-128
-+#ifdef CONFIG_PPC_BOOK3S_64
- 	bl	slb_flush_and_rebolt
-+#endif
- 	bl	do_after_copyback
- 	addi	r1,r1,128
- 
+ /*
+  * And here are the SMP non-local implementations
+  */
 -- 
 1.8.0
