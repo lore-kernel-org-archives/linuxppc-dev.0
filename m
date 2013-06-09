@@ -1,22 +1,21 @@
-Return-Path: <B40534@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3FA702C0296
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Jun 2013 17:44:26 +1000 (EST)
-From: Wang Dongsheng-B40534 <B40534@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: RE: [PATCH v2 2/2] powerpc/hibernate: PPC64 fix user threads access
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id CDDA82C01D4
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Jun 2013 17:46:02 +1000 (EST)
+Message-ID: <1370763946.14883.24.camel@pasglop>
+Subject: Re: [PATCH v2 2/2] powerpc/hibernate: PPC64 fix user threads access
  to kernel space
-Date: Sun, 9 Jun 2013 07:44:15 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259F6D57B@039-SN2MPN1-021.039d.mgd.msft.net>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Wang Dongsheng-B40534 <B40534@freescale.com>
+Date: Sun, 09 Jun 2013 17:45:46 +1000
+In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F15439259F6D57B@039-SN2MPN1-021.039d.mgd.msft.net>
 References: <1370755352-29901-1-git-send-email-dongsheng.wang@freescale.com>
  <1370760236.3766.481.camel@pasglop>
-In-Reply-To: <1370760236.3766.481.camel@pasglop>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+ <ABB05CD9C9F68C46A5CEDC7F15439259F6D57B@039-SN2MPN1-021.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 Cc: Wood Scott-B07421 <B07421@freescale.com>,
  "johannes@sipsolutions.net" <johannes@sipsolutions.net>,
  "anton@enomsg.org" <anton@enomsg.org>,
@@ -30,44 +29,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmVuamFtaW4gSGVycmVu
-c2NobWlkdCBbbWFpbHRvOmJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZ10NCj4gU2VudDogU3VuZGF5
-LCBKdW5lIDA5LCAyMDEzIDI6NDQgUE0NCj4gVG86IFdhbmcgRG9uZ3NoZW5nLUI0MDUzNA0KPiBD
-Yzogam9oYW5uZXNAc2lwc29sdXRpb25zLm5ldDsgYW50b25AZW5vbXNnLm9yZzsgV29vZCBTY290
-dC1CMDc0MjE7DQo+IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmc7IGxpbnV4cHBjLWRldkBsaXN0
-cy5vemxhYnMub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjIgMi8yXSBwb3dlcnBjL2hpYmVy
-bmF0ZTogUFBDNjQgZml4IHVzZXIgdGhyZWFkcw0KPiBhY2Nlc3MgdG8ga2VybmVsIHNwYWNlDQo+
-IA0KPiBPbiBTdW4sIDIwMTMtMDYtMDkgYXQgMTM6MjIgKzA4MDAsIFdhbmcgRG9uZ3NoZW5nIHdy
-b3RlOg0KPiA+IElmIFBJRCBpcyB1c2VkIGluIHRoZSBUTEIsIGFmdGVyIGhpYmVybmF0aW9uIHJl
-c3VtZSwgdGhlIHVzZXIgdGhyZWFkcw0KPiA+IHdpbGwgYWNjZXNzIHRvIGtlcm5lbCBzcGFjZS4N
-Cj4gDQo+ICAuLi4vLi4uDQo+IA0KPiBJIHRoaW5rIHRoZSBleHBsYW5hdGlvbiBpcyB3YXkgbW9y
-ZSBjb252b2x1dGVkIGFuZCBjb25mdXNpbmcgaGVyZSB0aGFuDQo+IGFueXRoaW5nIGVsc2UuDQo+
-IA0KPiBTaW1wbHkgc2F5IHRoYXQgdXBvbiByZXN1bWUgZnJvbSBoaWJlcm5hdGlvbiwgdGhlIE1N
-VSBjb250ZXh0IG5lZWRzIHRvIGJlDQo+IHJlc3RvcmVkICh0aGlzIGluY2x1ZGVzIHRoZSBQSUQg
-cmVnaXN0ZXIgdG9kYXkgaXQgbWlnaHQgaW5jbHVkZSBtb3JlIGlmDQo+IHdlIGRlY2lkZWQgdG8g
-cHJlLXNldCBzb21lIE1BUyBmb3IgZXhhbXBsZQ0KPiBldGMuLi4pIGFuZCBiZSBkb25lIHdpdGgg
-aXQuDQo+IA0KPiBOb3RlIHRoYXQgc3dpdGNoX21tdV9jb250ZXh0KCkgdXNlZCB0aGUgd2F5IHlv
-dSBkbyBpcyBxdWl0ZSAiZnVsbCBvbiIsIGl0DQo+IHdpbGwgZG8gYSB3aG9sZSBwaWxlIG9mIHN0
-dWZmIHRoYXQgYXJlIHByb2JhYmx5IGNvbXBsZXRlbHkgdW5uZWNlc3NhcnksDQo+IGFuZCBpbiBh
-ZGRpdGlvbiBtaWdodCBzdGlsbCBtaXNzIHRoZSBuZWVkIHRvIGNvbXBsZXRlbHkgZmx1c2ggdGhl
-IFRMQg0KPiBhbnl3YXkuDQo+IA0KPiBJIHdvdWxkIHN1Z2dlc3QgdGhhdCBpbnN0ZWFkLCBzb21l
-Ym9keSBhZGRzIHRoZSBuZWNlc3Nhcnkgcm91dGluZSB0bw0KPiB0bGJfbm9oYXNoLmMsIHNvbWV0
-aGluZyBsaWtlIHJlc3RvcmVfbW11X2NvbnRleHQoKSB3aGljaCB3aWxsIGRvIHRoYXQuDQo+IA0K
-VGhhbmtzIGJlbiwgVGhpcyBpcyBhIGdvb2QgaWRlYS4NCg0KV2UgZG8gbm90IG5lZWQgdG8gZGVj
-aWRlIHRoZSBjdXJyZW50IHRocmVhZCBoYXMgYSBjb250ZXh0IGluIHJlc3RvcmVfbW11X2NvbnRl
-eHQoKS4NCkJlY2F1c2UgdGhlIGN1cnJlbnQgaGFzIGFscmVhZHkgZ2V0IGEgY29udGV4dCBpbiBo
-aWJlcm5hdGlvbiBzdXNwZW5kIGZsb3cuDQoNClNvIHdlIGp1c3QgbmVlZCBzZXQgc2V0X2NvbnRl
-eHQoKSBpbiByZXN0b3JlX21tdV9jb250ZXh0KCkuDQoNCnZvaWQgcmVzdG9yZV9tbXVfY29udGV4
-dChzdHJ1Y3QgbW1fc3RydWN0ICpuZXh0KSB7DQoJc2V0X2NvbnRleHQobmV4dC0+Y29udGV4dC5p
-ZCwgbmV4dC0+cGdkKTsNCn0NCg0KLWRvbmdzaGVuZw0KDQo+IENoZWVycywNCj4gQmVuLg0KPiAN
-Cj4gPiBTaWduZWQtb2ZmLWJ5OiBXYW5nIERvbmdzaGVuZyA8ZG9uZ3NoZW5nLndhbmdAZnJlZXNj
-YWxlLmNvbT4NCj4gPiAtLS0NCj4gPiAgYXJjaC9wb3dlcnBjL2tlcm5lbC9zd3N1c3AuYyB8IDIg
-LS0NCj4gPiAgMSBmaWxlIGNoYW5nZWQsIDIgZGVsZXRpb25zKC0pDQo+ID4NCj4gPiBkaWZmIC0t
-Z2l0IGEvYXJjaC9wb3dlcnBjL2tlcm5lbC9zd3N1c3AuYw0KPiA+IGIvYXJjaC9wb3dlcnBjL2tl
-cm5lbC9zd3N1c3AuYyBpbmRleCBlYWUzM2UxLi4xOTMwZTQ0IDEwMDY0NA0KPiA+IC0tLSBhL2Fy
-Y2gvcG93ZXJwYy9rZXJuZWwvc3dzdXNwLmMNCj4gPiArKysgYi9hcmNoL3Bvd2VycGMva2VybmVs
-L3N3c3VzcC5jDQo+ID4gQEAgLTMyLDcgKzMyLDUgQEAgdm9pZCBzYXZlX3Byb2Nlc3Nvcl9zdGF0
-ZSh2b2lkKQ0KPiA+DQo+ID4gIHZvaWQgcmVzdG9yZV9wcm9jZXNzb3Jfc3RhdGUodm9pZCkNCj4g
-PiAgew0KPiA+IC0jaWZkZWYgQ09ORklHX1BQQzMyDQo+ID4gIAlzd2l0Y2hfbW11X2NvbnRleHQo
-Y3VycmVudC0+YWN0aXZlX21tLCBjdXJyZW50LT5hY3RpdmVfbW0pOyAtI2VuZGlmDQo+ID4gfQ0K
-PiANCj4gDQoNCg==
+On Sun, 2013-06-09 at 07:44 +0000, Wang Dongsheng-B40534 wrote:
+> So we just need set set_context() in restore_mmu_context().
+> 
+> void restore_mmu_context(struct mm_struct *next) {
+>         set_context(next->context.id, next->pgd);
+> }
+
+We probably also want to flush the TLB, just in case the boot kernel has
+left "something" there (though I wouldn't expect it to have run
+userspace it's not completely impossible).
+
+Cheers,
+Ben.
