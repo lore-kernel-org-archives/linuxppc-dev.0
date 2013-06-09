@@ -1,18 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 1E8082C00B1
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Jun 2013 17:57:15 +1000 (EST)
-Message-ID: <1370764616.14883.28.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Sun, 09 Jun 2013 17:56:56 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <B40534@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0184.outbound.messaging.microsoft.com [213.199.154.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 421AE2C041F
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Jun 2013 17:57:47 +1000 (EST)
+From: Wang Dongsheng-B40534 <B40534@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: RE: [PATCH v2 2/2] powerpc/hibernate: PPC64 fix user threads access
+ to kernel space
+Date: Sun, 9 Jun 2013 07:57:37 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259F6E5D5@039-SN2MPN1-021.039d.mgd.msft.net>
+References: <1370755352-29901-1-git-send-email-dongsheng.wang@freescale.com>
+ <1370760236.3766.481.camel@pasglop>
+ <ABB05CD9C9F68C46A5CEDC7F15439259F6D57B@039-SN2MPN1-021.039d.mgd.msft.net>
+ <1370763946.14883.24.camel@pasglop>
+In-Reply-To: <1370763946.14883.24.camel@pasglop>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "johannes@sipsolutions.net" <johannes@sipsolutions.net>,
+ "anton@enomsg.org" <anton@enomsg.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,67 +32,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
-
-Here are a few more powerpc changes for 3.10. I've merged your
-tree in at some point (which I generally avoid) in order to get
-the compat network fixes as soon as possible.
-
-Mostly regressions, and stuff I judged could/should still go in at
-this stage.
-
-I'm still waiting on some more fixes to the signal handling
-vs. transactional memory (this is really ugly btw) which are
-hopefully coming next week.
-
-Cheers,
-Ben.
-
-The following changes since commit 1612e111e4e565422242727efb59499cce8738e4:
-
-  Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net (2013-06-06 18:09:05 -0700)
-
-are available in the git repository at:
-
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-for you to fetch changes up to 227331303afdca06e44dcda41d27b72015153827:
-
-  powerpc: Print instruction when logging unhandled exceptions (2013-06-09 17:29:16 +1000)
-
-----------------------------------------------------------------
-Anton Blanchard (1):
-      powerpc: Print instruction when logging unhandled exceptions
-
-Benjamin Herrenschmidt (1):
-      Merge remote-tracking branch 'origin/master' into merge
-
-Gavin Shan (1):
-      powerpc/eeh: Don't check RTAS token to get PE addr
-
-Kevin Hao (1):
-      powerpc/pci: Check the bus address instead of resource address in pcibios_fixup_resources
-
-Michael Ellerman (3):
-      powerpc: Rename PMU interrupts from CNT to PMI
-      powerpc/perf: Fix deadlock caused by calling printk() in PMU exception
-      powerpc: Partial revert of "Context switch more PMU related SPRs"
-
-Michael Neuling (4):
-      powerpc/power8: Fix oprofile and perf
-      powerpc/pseries: Simplify denormalization handler
-      powerpc/power8: Update denormalization handler
-      powerpc/hw_breakpoints: Add DABRX cpu feature to fix 32-bit regression
-
- arch/powerpc/include/asm/cputable.h          |   17 +++--
- arch/powerpc/kernel/cputable.c               |    8 +--
- arch/powerpc/kernel/entry_64.S               |   28 --------
- arch/powerpc/kernel/exceptions-64s.S         |   90 ++++++++------------------
- arch/powerpc/kernel/irq.c                    |    2 +-
- arch/powerpc/kernel/pci-common.c             |    4 +-
- arch/powerpc/kernel/process.c                |    3 +-
- arch/powerpc/kernel/traps.c                  |   11 +++-
- arch/powerpc/perf/core-book3s.c              |    2 +-
- arch/powerpc/platforms/pseries/eeh_pseries.c |   12 ++--
- 10 files changed, 60 insertions(+), 117 deletions(-)
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmVuamFtaW4gSGVycmVu
+c2NobWlkdCBbbWFpbHRvOmJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZ10NCj4gU2VudDogU3VuZGF5
+LCBKdW5lIDA5LCAyMDEzIDM6NDYgUE0NCj4gVG86IFdhbmcgRG9uZ3NoZW5nLUI0MDUzNA0KPiBD
+Yzogam9oYW5uZXNAc2lwc29sdXRpb25zLm5ldDsgYW50b25AZW5vbXNnLm9yZzsgV29vZCBTY290
+dC1CMDc0MjE7DQo+IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmc7IGxpbnV4cHBjLWRldkBsaXN0
+cy5vemxhYnMub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjIgMi8yXSBwb3dlcnBjL2hpYmVy
+bmF0ZTogUFBDNjQgZml4IHVzZXIgdGhyZWFkcw0KPiBhY2Nlc3MgdG8ga2VybmVsIHNwYWNlDQo+
+IA0KPiBPbiBTdW4sIDIwMTMtMDYtMDkgYXQgMDc6NDQgKzAwMDAsIFdhbmcgRG9uZ3NoZW5nLUI0
+MDUzNCB3cm90ZToNCj4gPiBTbyB3ZSBqdXN0IG5lZWQgc2V0IHNldF9jb250ZXh0KCkgaW4gcmVz
+dG9yZV9tbXVfY29udGV4dCgpLg0KPiA+DQo+ID4gdm9pZCByZXN0b3JlX21tdV9jb250ZXh0KHN0
+cnVjdCBtbV9zdHJ1Y3QgKm5leHQpIHsNCj4gPiAgICAgICAgIHNldF9jb250ZXh0KG5leHQtPmNv
+bnRleHQuaWQsIG5leHQtPnBnZCk7IH0NCj4gDQo+IFdlIHByb2JhYmx5IGFsc28gd2FudCB0byBm
+bHVzaCB0aGUgVExCLCBqdXN0IGluIGNhc2UgdGhlIGJvb3Qga2VybmVsIGhhcw0KPiBsZWZ0ICJz
+b21ldGhpbmciIHRoZXJlICh0aG91Z2ggSSB3b3VsZG4ndCBleHBlY3QgaXQgdG8gaGF2ZSBydW4g
+dXNlcnNwYWNlDQo+IGl0J3Mgbm90IGNvbXBsZXRlbHkgaW1wb3NzaWJsZSkuDQo+IA0KWWVzLCBi
+dXQgVExCIGhhcyBhbHJlYWR5IGludmFsaWRhdGVkLg0KU2VlIG15IG90aGVyIHBhdGNoOg0KaHR0
+cDovL3BhdGNod29yay5vemxhYnMub3JnL3BhdGNoLzI1MDAwNi8NCg0KPiBDaGVlcnMsDQo+IEJl
+bi4NCj4gDQo+IA0KDQo=
