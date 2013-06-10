@@ -1,24 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-ee0-x22d.google.com (mail-ee0-x22d.google.com
- [IPv6:2a00:1450:4013:c00::22d])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A83192C02EA
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jun 2013 10:49:52 +1000 (EST)
-Received: by mail-ee0-f45.google.com with SMTP id c1so2356353eek.32
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 09 Jun 2013 17:49:48 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@linaro.org>
-To: linux-kernel@vger.kernel.org
-Subject: [RFC 10/10] irqchip: Make versatile fpga irq driver a generic chip
-Date: Mon, 10 Jun 2013 01:49:22 +0100
-Message-Id: <1370825362-11145-11-git-send-email-grant.likely@linaro.org>
-In-Reply-To: <1370825362-11145-1-git-send-email-grant.likely@linaro.org>
-References: <1370825362-11145-1-git-send-email-grant.likely@linaro.org>
-Cc: Russell King <linux@arm.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>,
- Linus Walleij <linus.walleij@linaro.org>,
- Grant Likely <grant.likely@linaro.org>, Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <geert@linux-m68k.org>
+Received: from winston.telenet-ops.be (winston.telenet-ops.be [195.130.137.75])
+ by ozlabs.org (Postfix) with ESMTP id C511A2C02F8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jun 2013 17:26:02 +1000 (EST)
+Received: from gerard.telenet-ops.be (gerard.telenet-ops.be [195.130.132.48])
+ by winston.telenet-ops.be (Postfix) with ESMTP id 0DEF91BF25B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jun 2013 09:25:34 +0200 (CEST)
+Date: Mon, 10 Jun 2013 09:25:31 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Sender: geert@linux-m68k.org
+To: Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: Build regressions/improvements in v3.10-rc5
+In-Reply-To: <alpine.DEB.2.00.1306100922530.21948@ayla.of.borg>
+Message-ID: <alpine.DEB.2.00.1306100924570.22024@ayla.of.borg>
+References: <alpine.DEB.2.00.1306100922530.21948@ayla.of.borg>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Linux/PPC Development <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,202 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is an RFC patch to convert the versatile FPGA irq controller driver
-to use generic irq chip. It builds on the series that extends the
-generic chip code to allow a linear irq domain to contain one or more
-generic irq chips so that each interrupt controller doesn't need to hand
-code the generic chip setup.
+On Mon, 10 Jun 2013, Geert Uytterhoeven wrote:
+> JFYI, when comparing v3.10-rc5 to v3.10-rc4[3], the summaries are:
+>   - build errors: +19/-10
+> [1] http://kisskb.ellerman.id.au/kisskb/head/6308/ (all 120 configs)
 
-I've written this as a proof of concept to see if the new generic irq
-code does what it needs to. I had to extend it slightly to properly
-handle the valid mask used by the versatile FPGA driver.
+ + arch/powerpc/kernel/cacheinfo.c: error: 'associativity' may be used uninitialized in this function [-Werror=uninitialized]:  => 571:16
+  + arch/powerpc/kernel/cacheinfo.c: error: 'size_kb' may be used uninitialized in this function [-Werror=uninitialized]:  => 522:16
+  + arch/powerpc/kernel/pci_dn.c: error: 'ret' may be used uninitialized in this function [-Werror=uninitialized]:  => 97:8
+  + arch/powerpc/kvm/book3s_32_mmu.c: error: 'sr' may be used uninitialized in this function [-Werror=uninitialized]:  => 63:2
+  + arch/powerpc/kvm/book3s_64_mmu.c: error: 'slb' may be used uninitialized in this function [-Werror=uninitialized]:  => 485:3
+  + arch/powerpc/mm/hash_native_64.c: error: 'a_size' may be used uninitialized in this function [-Werror=uninitialized]:  => 67:31
+  + arch/powerpc/platforms/cell/spufs/inode.c: error: incompatible types when assigning to type 'kgid_t' from type 'int':  => 628:16
+  + arch/powerpc/platforms/cell/spufs/inode.c: error: incompatible types when assigning to type 'kuid_t' from type 'int':  => 623:16
+  + arch/powerpc/platforms/pseries/msi.c: error: 'total' may be used uninitialized in this function [-Werror=uninitialized]:  => 320:24
+  + arch/powerpc/platforms/pseries/pci.c: error: 'pcie_link_speed_stats' may be used uninitialized in this function [-Werror=uninitialized]:  => 150:31
 
-Tested on QEMU, but not on real hardware.
+powerpc-randconfig
 
-Signed-off-by: Grant Likely <grant.likely@linaro.org>
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: Linus Walleij <linus.walleij@linaro.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
----
- drivers/irqchip/Kconfig              |   1 +
- drivers/irqchip/irq-versatile-fpga.c | 104 +++++++++++++----------------------
- 2 files changed, 39 insertions(+), 66 deletions(-)
+> [3] http://kisskb.ellerman.id.au/kisskb/head/6290/ (all 120 configs)
 
-diff --git a/drivers/irqchip/Kconfig b/drivers/irqchip/Kconfig
-index 4a33351..8765502 100644
---- a/drivers/irqchip/Kconfig
-+++ b/drivers/irqchip/Kconfig
-@@ -14,6 +14,7 @@ config ARM_VIC
- 	bool
- 	select IRQ_DOMAIN
- 	select MULTI_IRQ_HANDLER
-+	select GENERIC_IRQ_CHIP
- 
- config ARM_VIC_NR
- 	int
-diff --git a/drivers/irqchip/irq-versatile-fpga.c b/drivers/irqchip/irq-versatile-fpga.c
-index 47a52ab..8c7097b 100644
---- a/drivers/irqchip/irq-versatile-fpga.c
-+++ b/drivers/irqchip/irq-versatile-fpga.c
-@@ -34,37 +34,18 @@
-  * @used_irqs: number of active IRQs on this controller
-  */
- struct fpga_irq_data {
--	void __iomem *base;
--	struct irq_chip chip;
--	u32 valid;
- 	struct irq_domain *domain;
--	u8 used_irqs;
- };
- 
- /* we cannot allocate memory when the controllers are initially registered */
- static struct fpga_irq_data fpga_irq_devices[CONFIG_VERSATILE_FPGA_IRQ_NR];
- static int fpga_irq_id;
- 
--static void fpga_irq_mask(struct irq_data *d)
--{
--	struct fpga_irq_data *f = irq_data_get_irq_chip_data(d);
--	u32 mask = 1 << d->hwirq;
--
--	writel(mask, f->base + IRQ_ENABLE_CLEAR);
--}
--
--static void fpga_irq_unmask(struct irq_data *d)
--{
--	struct fpga_irq_data *f = irq_data_get_irq_chip_data(d);
--	u32 mask = 1 << d->hwirq;
--
--	writel(mask, f->base + IRQ_ENABLE_SET);
--}
--
- static void fpga_irq_handle(unsigned int irq, struct irq_desc *desc)
- {
--	struct fpga_irq_data *f = irq_desc_get_handler_data(desc);
--	u32 status = readl(f->base + IRQ_STATUS);
-+	struct irq_domain *domain = irq_desc_get_handler_data(desc);
-+	struct irq_chip_generic *gc = irq_get_domain_generic_chip(domain, 0);
-+	u32 status = readl(gc->reg_base + IRQ_STATUS);
- 
- 	if (status == 0) {
- 		do_bad_IRQ(irq, desc);
-@@ -74,7 +55,7 @@ static void fpga_irq_handle(unsigned int irq, struct irq_desc *desc)
- 	do {
- 		irq = ffs(status) - 1;
- 		status &= ~(1 << irq);
--		generic_handle_irq(irq_find_mapping(f->domain, irq));
-+		generic_handle_irq(irq_find_mapping(domain, irq));
- 	} while (status);
- }
- 
-@@ -85,11 +66,12 @@ static void fpga_irq_handle(unsigned int irq, struct irq_desc *desc)
-  */
- static int handle_one_fpga(struct fpga_irq_data *f, struct pt_regs *regs)
- {
-+	struct irq_chip_generic *gc = irq_get_domain_generic_chip(f->domain, 0);
- 	int handled = 0;
- 	int irq;
- 	u32 status;
- 
--	while ((status  = readl(f->base + IRQ_STATUS))) {
-+	while ((status = readl(gc->reg_base + IRQ_STATUS))) {
- 		irq = ffs(status) - 1;
- 		handle_IRQ(irq_find_mapping(f->domain, irq), regs);
- 		handled = 1;
-@@ -112,63 +94,53 @@ asmlinkage void __exception_irq_entry fpga_handle_irq(struct pt_regs *regs)
- 	} while (handled);
- }
- 
--static int fpga_irqdomain_map(struct irq_domain *d, unsigned int irq,
--		irq_hw_number_t hwirq)
--{
--	struct fpga_irq_data *f = d->host_data;
--
--	/* Skip invalid IRQs, only register handlers for the real ones */
--	if (!(f->valid & BIT(hwirq)))
--		return -EPERM;
--	irq_set_chip_data(irq, f);
--	irq_set_chip_and_handler(irq, &f->chip,
--				handle_level_irq);
--	set_irq_flags(irq, IRQF_VALID | IRQF_PROBE);
--	return 0;
--}
--
--static struct irq_domain_ops fpga_irqdomain_ops = {
--	.map = fpga_irqdomain_map,
--	.xlate = irq_domain_xlate_onetwocell,
--};
--
- void __init fpga_irq_init(void __iomem *base, const char *name, int irq_start,
- 			  int parent_irq, u32 valid, struct device_node *node)
- {
-+	struct irq_chip_generic *gc;
- 	struct fpga_irq_data *f;
--	int i;
-+	int ret;
- 
- 	if (fpga_irq_id >= ARRAY_SIZE(fpga_irq_devices)) {
- 		pr_err("%s: too few FPGA IRQ controllers, increase CONFIG_VERSATILE_FPGA_IRQ_NR\n", __func__);
- 		return;
- 	}
- 	f = &fpga_irq_devices[fpga_irq_id];
--	f->base = base;
--	f->chip.name = name;
--	f->chip.irq_ack = fpga_irq_mask;
--	f->chip.irq_mask = fpga_irq_mask;
--	f->chip.irq_unmask = fpga_irq_unmask;
--	f->valid = valid;
-+
-+	/* This will also allocate irq descriptors */
-+	f->domain = irq_domain_add_linear(node, fls(valid),
-+					  &irq_generic_chip_ops, f);
-+	if (!f->domain) {
-+		pr_err("FPGA IRQ setup failed allocation domain\n");
-+		return;
-+	}
-+
-+	ret = irq_alloc_domain_generic_chips(f->domain, fls(valid), 1,
-+			name, handle_level_irq,
-+			IRQ_NOREQUEST | IRQ_NOPROBE | IRQ_NOAUTOEN, 0, 0);
-+	if (ret) {
-+		pr_err("FPGA IRQ setup failed allocating generic chip\n");
-+		return;
-+	}
-+
-+	gc = irq_get_domain_generic_chip(f->domain, 0);
-+	gc->reg_base = base;
-+	gc->unused = ~valid;
-+	gc->chip_types[0].regs.enable = IRQ_ENABLE_SET;
-+	gc->chip_types[0].regs.disable = IRQ_ENABLE_CLEAR;
-+	gc->chip_types[0].chip.irq_ack = irq_gc_mask_disable_reg;
-+	gc->chip_types[0].chip.irq_mask = irq_gc_mask_disable_reg;
-+	gc->chip_types[0].chip.irq_unmask = irq_gc_unmask_enable_reg;
- 
- 	if (parent_irq != -1) {
--		irq_set_handler_data(parent_irq, f);
-+		irq_set_handler_data(parent_irq, f->domain);
- 		irq_set_chained_handler(parent_irq, fpga_irq_handle);
- 	}
- 
--	/* This will also allocate irq descriptors */
--	f->domain = irq_domain_add_simple(node, fls(valid), irq_start,
--					  &fpga_irqdomain_ops, f);
--
--	/* This will allocate all valid descriptors in the linear case */
--	for (i = 0; i < fls(valid); i++)
--		if (valid & BIT(i)) {
--			if (!irq_start)
--				irq_create_mapping(f->domain, i);
--			f->used_irqs++;
--		}
--
--	pr_info("FPGA IRQ chip %d \"%s\" @ %p, %u irqs\n",
--		fpga_irq_id, name, base, f->used_irqs);
-+	if (irq_start)
-+		irq_domain_associate_many(f->domain, irq_start, 0, fls(valid));
-+
-+	pr_info("FPGA IRQ chip %d \"%s\" @ %p\n", fpga_irq_id, name, base);
- 
- 	fpga_irq_id++;
- }
--- 
-1.8.1.2
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
