@@ -1,26 +1,37 @@
-Return-Path: <linus.walleij@linaro.org>
-Received: from mail-ob0-x235.google.com (mail-ob0-x235.google.com
- [IPv6:2607:f8b0:4003:c01::235])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 260682C02FF
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jun 2013 17:40:13 +1000 (EST)
-Received: by mail-ob0-f181.google.com with SMTP id 16so9577836obc.26
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jun 2013 00:40:08 -0700 (PDT)
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6D2DE2C00A4
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Jun 2013 18:03:54 +1000 (EST)
+Received: from /spool/local
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Mon, 10 Jun 2013 13:29:31 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 5E540E0054
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Jun 2013 13:33:03 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5A83eVD17826036
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Jun 2013 13:33:41 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5A83ihe014622
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Jun 2013 18:03:45 +1000
+Message-ID: <51B58843.5020809@linux.vnet.ibm.com>
+Date: Mon, 10 Jun 2013 13:33:15 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1370825362-11145-11-git-send-email-grant.likely@linaro.org>
-References: <1370825362-11145-1-git-send-email-grant.likely@linaro.org>
- <1370825362-11145-11-git-send-email-grant.likely@linaro.org>
-Date: Mon, 10 Jun 2013 09:40:08 +0200
-Message-ID: <CACRpkda+WD5dMoZ9s7mTLgOgUrm+EH3Mqxio=BuLTDr3aOEruw@mail.gmail.com>
-Subject: Re: [RFC 10/10] irqchip: Make versatile fpga irq driver a generic chip
-From: Linus Walleij <linus.walleij@linaro.org>
-To: Grant Likely <grant.likely@linaro.org>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] perf/Power7: Save dcache_src fields in sample record.
+References: <20130607204008.GA3281@us.ibm.com>
+In-Reply-To: <20130607204008.GA3281@us.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Russell King <linux@arm.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
+Cc: Anton Blanchard <anton@au1.ibm.com>, linux-kernel@vger.kernel.org,
+ Stephane Eranian <eranian@google.com>, linuxppc-dev@ozlabs.org,
+ Paul Mackerras <paulus@samba.org>, mingo@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,24 +41,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 10, 2013 at 2:49 AM, Grant Likely <grant.likely@linaro.org> wrote:
+> 
+> AFAICT, Power7 supports one extra level in the cache-hierarchy, so we propose
+> to add a new cache level, REM_CCE3 shown above.
+> 
+> To maintain consistency in terminology (i.e 2-hops = remote, 3-hops = distant),
+> I propose leaving the REM_MEM1 unused and adding another level, REM_MEM3.
+> 
 
-> This is an RFC patch to convert the versatile FPGA irq controller driver
-> to use generic irq chip. It builds on the series that extends the
-> generic chip code to allow a linear irq domain to contain one or more
-> generic irq chips so that each interrupt controller doesn't need to hand
-> code the generic chip setup.
->
-> I've written this as a proof of concept to see if the new generic irq
-> code does what it needs to. I had to extend it slightly to properly
-> handle the valid mask used by the versatile FPGA driver.
->
-> Tested on QEMU, but not on real hardware.
+Agreed.
 
-Is this the same as the one I tested previously?
+> Further, in the above REM_CCE1 case, Power7 can also identify if the data came
+> from the L2 or L3 cache of another core on the same chip. To describe this to
+> user space, we propose to set ->mem_lvl to:
+> 
+> 	PERF_MEM_LVL_REM_CCE1|PERF_MEM_LVL_L2
+> 
+> 	PERF_MEM_LVL_REM_CCE1|PERF_MEM_LVL_L3
+> 
+> Either that or we could leave REM_CCE1 unused in Power and add two more levels:
+> 
+> 	PERF_MEM_XLVL_REM_L2_CCE1
+> 	PERF_MEM_XLVL_REM_L3_CCE1
+> 
+> The former approach seems less confusing and this patch uses that approach.
+> 
 
-If it need re-testing please push a branch and I'll take it
-for a spin.
+Yeah, the former approach is simpler and makes sense.
 
-Yours.
-Linus Walleij
+
+> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/perf_event_server.h |    2 +
+>  arch/powerpc/perf/core-book3s.c              |    4 +
+>  arch/powerpc/perf/power7-pmu.c               |   81 ++++++++++++++++++++++++++
+>  include/uapi/linux/perf_event.h              |   12 +++-
+>  4 files changed, 97 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
+> index f265049..f2d162b 100644
+> --- a/arch/powerpc/include/asm/perf_event_server.h
+> +++ b/arch/powerpc/include/asm/perf_event_server.h
+> @@ -37,6 +37,8 @@ struct power_pmu {
+>  	void            (*config_bhrb)(u64 pmu_bhrb_filter);
+>  	void		(*disable_pmc)(unsigned int pmc, unsigned long mmcr[]);
+>  	int		(*limited_pmc_event)(u64 event_id);
+> +	void		(*get_mem_data_src)(struct perf_sample_data *data,
+> +				struct pt_regs *regs);
+>  	u32		flags;
+>  	const struct attribute_group	**attr_groups;
+>  	int		n_generic;
+> diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+> index 426180b..7778fa9 100644
+> --- a/arch/powerpc/perf/core-book3s.c
+> +++ b/arch/powerpc/perf/core-book3s.c
+> @@ -1632,6 +1632,10 @@ static void record_and_restart(struct perf_event *event, unsigned long val,
+>  			data.br_stack = &cpuhw->bhrb_stack;
+>  		}
+> 
+> +		if (event->attr.sample_type & PERF_SAMPLE_DATA_SRC &&
+> +						ppmu->get_mem_data_src)
+> +			ppmu->get_mem_data_src(&data, regs);
+> +
+>  		if (perf_event_overflow(event, &data, regs))
+>  			power_pmu_stop(event, 0);
+>  	}
+> diff --git a/arch/powerpc/perf/power7-pmu.c b/arch/powerpc/perf/power7-pmu.c
+> index 3c475d6..af92bfe 100644
+> --- a/arch/powerpc/perf/power7-pmu.c
+> +++ b/arch/powerpc/perf/power7-pmu.c
+> @@ -209,6 +209,85 @@ static int power7_get_alternatives(u64 event, unsigned int flags, u64 alt[])
+>  	return nalt;
+>  }
+> 
+> +#define	POWER7_MMCRA_PEMPTY		(0x1L << 63)
+> +#define	POWER7_MMCRA_FIN_STALL		(0x1L << 62)
+> +#define	POWER7_MMCRA_CMPL_STALL		(0x1L << 61)
+> +#define	POWER7_MMCRA_STALL_REASON_MASK	(0xFL << 60)
+> +
+> +#define	POWER7_MMCRA_DCACHE_MISS	(0x1L << 55)
+> +
+> +#define	POWER7_MMCRA_DCACHE_SRC_SHIFT	51
+> +#define	POWER7_MMCRA_DCACHE_SRC_MASK	(0xFL << POWER7_MMCRA_DCACHE_SRC_SHIFT)
+> +
+> +#define	POWER7_MMCRA_MDTLB_MISS		(0x1L << 50)
+> +
+> +#define	POWER7_MMCRA_MDTLB_SRC_SHIFT	46
+> +#define	POWER7_MMCRA_MDTLB_SRC_MASK	(0xFL << POWER7_MMCRA_MDTLB_SRC_SHIFT)
+> +
+> +#define	POWER7_MMCRA_MDERAT_MISS	(0x1L<< 45)
+> +#define	POWER7_MMCRA_MLSU_REJ		(0x1L<< 44)
+> +
+> +/* and so on */
+> +
+> +/*
+> + * Map DCACHE_SRC fields to the Linux memory hierarchy levels.
+> + *
+> + * Bits 9..12 in the MMCRA indicate the source of a data-cache entry, with
+> + * each of the 16 possible values referring to a specific source. Eg: if
+> + * the 4-bits have the value 1 (0b0001), the dcache entry was found local
+> + * L3 cache.
+> + *
+> + * We use the table, dcache_src_map, to map this value 1 to PERF_MEM_LVL_L3,
+> + * the arch-neutral representation of the L3 cache.
+> + *
+> + * Similarly, in case of marked data TLB miss, bits 14..17 of the MMCRA
+> + * indicate the load source of a marked DTLB  entry. dtlb_src_map[] gives
+> + * the mapping to the arch-neutral values of the TLB source.
+
+
+Where did you define dtlb_src_map[] ?
