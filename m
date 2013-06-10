@@ -1,36 +1,20 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 69BE72C02A4
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Jun 2013 14:19:03 +1000 (EST)
-Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 10 Jun 2013 14:10:01 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id D85832CE804D
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Jun 2013 14:19:00 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5A44K4w58917090
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Jun 2013 14:04:20 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5A4IwfP014628
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Jun 2013 14:18:59 +1000
-Message-ID: <51B55389.1080306@linux.vnet.ibm.com>
-Date: Mon, 10 Jun 2013 09:48:17 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Return-Path: <jk@ozlabs.org>
+Message-ID: <51B553FE.6010201@ozlabs.org>
+Date: Mon, 10 Jun 2013 12:20:14 +0800
+From: Jeremy Kerr <jk@ozlabs.org>
 MIME-Version: 1.0
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: Partial revert of "Context switch more PMU
- related SPRs"
-References: <1370491416-1807-1-git-send-email-michael@ellerman.id.au>
-In-Reply-To: <1370491416-1807-1-git-send-email-michael@ellerman.id.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [git pull] Please pull powerpc.git merge branch
+References: <1370764616.14883.28.camel@pasglop>
+ <CA+55aFz_E+x=Mr9Z6_09wzh1mXFr3a2VigPX77LzrsyLUFeb+Q@mail.gmail.com>
+ <CA+55aFxAC4EksZcz7SaZNjF9mfKkwLjWp2rEKxMZT8m-7uBeNQ@mail.gmail.com>
+ <51B53DAB.10501@ozlabs.org>
+ <CA+55aFzHT3NWrF6gq+BaLcZmEtrFwkiXv0_qZ0jGjxTO6-8iPQ@mail.gmail.com>
+In-Reply-To: <CA+55aFzHT3NWrF6gq+BaLcZmEtrFwkiXv0_qZ0jGjxTO6-8iPQ@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>,
+ Patchwork ML <patchwork@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,18 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/06/2013 09:33 AM, Michael Ellerman wrote:
-> In commit 59affcd I added context switching of more PMU SPRs, because
-> they are potentially exposed to userspace on Power8. However despite me
-> being a smart arse in the commit message it's actually not correct. In
-> particular it interacts badly with a global perf record.
+Hi Linus,
 
-Could you please explain how it would interact badly with a global perf record.
-If any user space try to mess around with the MMCR* registers itself, it would
-definitely interfere with the kernel's own PMU config going on during perf record.
-But thats how it works. So when we are actually dealing with MMCR* registers
-directly, we should not invoke "perf record" session which can potential run on
-the same PMU.
+> No. The date from the email was
+> 
+>     Date: Fri, 7 Jun 2013 15:42:54 +1000
+> 
+> and we want *that* date.
 
-Regards
-Anshuman
+Ah, gotchya.
+
+So, we now use the original date header (if present) in the mbox views:
+
+$ wget -qO - http://patchwork.ozlabs.org/patch/249598/mbox/ | grep ^Date
+Date: Fri, 7 Jun 2013 15:42:54 +1000
+
+... for all your data-mining needs.
+
+Cheers,
+
+
+Jeremy
