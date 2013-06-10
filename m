@@ -1,26 +1,23 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-pa0-x235.google.com (mail-pa0-x235.google.com
- [IPv6:2607:f8b0:400e:c03::235])
+Return-Path: <michael.guntsche@it-loops.com>
+Received: from mail-vb0-x231.google.com (mail-vb0-x231.google.com
+ [IPv6:2607:f8b0:400c:c02::231])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A6C6D2C0095
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2013 03:00:12 +1000 (EST)
-Received: by mail-pa0-f53.google.com with SMTP id tj12so2810704pac.26
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jun 2013 10:00:09 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 4AE9A2C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2013 03:07:47 +1000 (EST)
+Received: by mail-vb0-f49.google.com with SMTP id 12so1020082vbf.8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jun 2013 10:07:44 -0700 (PDT)
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <CAJL_dMtUXSCe3Bm=D4aYaX9NwhnaPjVsY4O+f8U9h5-NV9i0=A@mail.gmail.com>
-References: <alpine.DEB.2.00.1306100922530.21948@ayla.of.borg>
- <alpine.DEB.2.00.1306100924570.22024@ayla.of.borg>
- <CAJL_dMtUXSCe3Bm=D4aYaX9NwhnaPjVsY4O+f8U9h5-NV9i0=A@mail.gmail.com>
-Date: Mon, 10 Jun 2013 19:00:09 +0200
-Message-ID: <CAMuHMdWBCi165Mc=WNcbJ9WCQzconLb-drm1CSSrAxgkfYXkiQ@mail.gmail.com>
-Subject: Re: Build regressions/improvements in v3.10-rc5
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Anca Emanuel <anca.emanuel@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Linux/PPC Development <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel Development <linux-kernel@vger.kernel.org>
+In-Reply-To: <7927838.NMrLdRWptT@pcimr>
+References: <CALG0vJu9-640D=Q-2RoSOnWtR=sERwj0fSCibK+ijprcf-T6Ag@mail.gmail.com>
+ <7927838.NMrLdRWptT@pcimr>
+Date: Mon, 10 Jun 2013 19:07:43 +0200
+Message-ID: <CALG0vJtjS2wP_s=-iyG1ABKw_ct=B9OdNXY9YCrnkhAnpaN1Zw@mail.gmail.com>
+Subject: Re: [BUG] PCI related panic on powerpc based board with 3.10-rcX
+From: Michael Guntsche <michael.guntsche@it-loops.com>
+To: Rojhalat Ibrahim <imr@rtschenk.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,40 +27,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 10, 2013 at 4:37 PM, Anca Emanuel <anca.emanuel@gmail.com> wrote:
-> The relevant maintainers do not get a copy of this.
+Good evening,
 
-I do hope the PPC maintainers do read linuxppc-dev@lists.ozlabs.org.
-
-> On Mon, Jun 10, 2013 at 10:25 AM, Geert Uytterhoeven
-> <geert@linux-m68k.org> wrote:
->> On Mon, 10 Jun 2013, Geert Uytterhoeven wrote:
->>> JFYI, when comparing v3.10-rc5 to v3.10-rc4[3], the summaries are:
->>>   - build errors: +19/-10
->>> [1] http://kisskb.ellerman.id.au/kisskb/head/6308/ (all 120 configs)
+On Mon, Jun 10, 2013 at 1:41 PM, Rojhalat Ibrahim <imr@rtschenk.de> wrote:
+> Hi Mike,
+>
+> could you please try this patch:
+> https://lists.ozlabs.org/pipermail/linuxppc-dev/2013-May/106624.html
+> http://patchwork.ozlabs.org/patch/244515/
+>
+>    Rojhalat
+>
+>
+> On Saturday 08 June 2013 21:39:37 Michael Guntsche wrote:
+>> After bisecting I found the responsible commit.
 >>
->>  + arch/powerpc/kernel/cacheinfo.c: error: 'associativity' may be used uninitialized in this function [-Werror=uninitialized]:  => 571:16
->>   + arch/powerpc/kernel/cacheinfo.c: error: 'size_kb' may be used uninitialized in this function [-Werror=uninitialized]:  => 522:16
->>   + arch/powerpc/kernel/pci_dn.c: error: 'ret' may be used uninitialized in this function [-Werror=uninitialized]:  => 97:8
->>   + arch/powerpc/kvm/book3s_32_mmu.c: error: 'sr' may be used uninitialized in this function [-Werror=uninitialized]:  => 63:2
->>   + arch/powerpc/kvm/book3s_64_mmu.c: error: 'slb' may be used uninitialized in this function [-Werror=uninitialized]:  => 485:3
->>   + arch/powerpc/mm/hash_native_64.c: error: 'a_size' may be used uninitialized in this function [-Werror=uninitialized]:  => 67:31
->>   + arch/powerpc/platforms/cell/spufs/inode.c: error: incompatible types when assigning to type 'kgid_t' from type 'int':  => 628:16
->>   + arch/powerpc/platforms/cell/spufs/inode.c: error: incompatible types when assigning to type 'kuid_t' from type 'int':  => 623:16
->>   + arch/powerpc/platforms/pseries/msi.c: error: 'total' may be used uninitialized in this function [-Werror=uninitialized]:  => 320:24
->>   + arch/powerpc/platforms/pseries/pci.c: error: 'pcie_link_speed_stats' may be used uninitialized in this function [-Werror=uninitialized]:  => 150:31
+>> 50d8f87d2b3: powerpc/fsl-pci Make PCIe hotplug work with Freescale
+>> PCIe controllers
 >>
->> powerpc-randconfig
+>> Reverting this commit allowed my board to boot again.
 >>
->>> [3] http://kisskb.ellerman.id.au/kisskb/head/6290/ (all 120 configs)
+>> @Rojhalat: Please have a look at
+>> http://marc.info/?l=linux-kernel&m=137071294204858&w=2
+>> for my initial bugreport.
+>>
+>> What I do not understand at all is why this is affecting my platform.
+>> AFAIK there is no PCIe hardware on it AND I completely disabled PCIe
+>> support in config.
+>>
+>> Kind regards,
+>> Mike
 
-Gr{oetje,eeting}s,
+This patch does not fix the problem, during boot the kernel still
+panics. I had a closer look at the commit and the following patch
+fixes it for me....
 
-                        Geert
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 028ac1f..21b687f 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -814,7 +814,7 @@ int __init mpc83xx_add_bridge(struct device_node *dev)
+                if (ret)
+                        goto err0;
+        } else {
+-               fsl_setup_indirect_pci(hose, rsrc_cfg.start,
++               setup_indirect_pci(hose, rsrc_cfg.start,
+                                       rsrc_cfg.start + 4, 0);
+        }
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Apparently the mpc83xx platform code goes through great lengths to
+guard the call to fsl_pcie_check_link on NON PCIe platforms, since
+apparently this seems to cause the panic. Furthermore it also has its
+own PCIe setup code. With this patch applied the system boots fine for
+me.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+The only problem I have with this patch is that the compiler fails
+since -Werror is used and fsl_setup_indirect_pci now is never used.
+For testing purposes I removed the function definition. Obviously the
+proper fix would be to wrap it in an #ifdef but I did not know the
+proper define to check against.
+
+Kind regards,
+Mike
