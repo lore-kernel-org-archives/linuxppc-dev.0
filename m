@@ -1,23 +1,15 @@
-Return-Path: <michael.guntsche@it-loops.com>
-Received: from mail-vb0-x231.google.com (mail-vb0-x231.google.com
- [IPv6:2607:f8b0:400c:c02::231])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4AE9A2C0098
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2013 03:07:47 +1000 (EST)
-Received: by mail-vb0-f49.google.com with SMTP id 12so1020082vbf.8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jun 2013 10:07:44 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <7927838.NMrLdRWptT@pcimr>
-References: <CALG0vJu9-640D=Q-2RoSOnWtR=sERwj0fSCibK+ijprcf-T6Ag@mail.gmail.com>
- <7927838.NMrLdRWptT@pcimr>
-Date: Mon, 10 Jun 2013 19:07:43 +0200
-Message-ID: <CALG0vJtjS2wP_s=-iyG1ABKw_ct=B9OdNXY9YCrnkhAnpaN1Zw@mail.gmail.com>
-Subject: Re: [BUG] PCI related panic on powerpc based board with 3.10-rcX
-From: Michael Guntsche <michael.guntsche@it-loops.com>
-To: Rojhalat Ibrahim <imr@rtschenk.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <linux@roeck-us.net>
+Received: from mail.active-venture.com (mail.active-venture.com
+ [67.228.131.205]) by ozlabs.org (Postfix) with ESMTP id 40C882C008A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2013 03:31:47 +1000 (EST)
+From: Guenter Roeck <linux@roeck-us.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH v2] powerpc/pci: Improve device hotplug initialization
+Date: Mon, 10 Jun 2013 10:18:08 -0700
+Message-Id: <1370884688-7753-1-git-send-email-linux@roeck-us.net>
+Cc: Yuanquan Chen <Yuanquan.Chen@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>,
+ Hiroo Matsumoto <matsumoto.hiroo@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,65 +19,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Good evening,
+Commit 37f02195b (powerpc/pci: fix PCI-e devices rescan issue on powerpc
+platform) fixes a problem with interrupt and DMA initialization on hot
+plugged devices. With this commit, interrupt and DMA initialization for
+hot plugged devices is handled in the pci device enable function.
 
-On Mon, Jun 10, 2013 at 1:41 PM, Rojhalat Ibrahim <imr@rtschenk.de> wrote:
-> Hi Mike,
->
-> could you please try this patch:
-> https://lists.ozlabs.org/pipermail/linuxppc-dev/2013-May/106624.html
-> http://patchwork.ozlabs.org/patch/244515/
->
->    Rojhalat
->
->
-> On Saturday 08 June 2013 21:39:37 Michael Guntsche wrote:
->> After bisecting I found the responsible commit.
->>
->> 50d8f87d2b3: powerpc/fsl-pci Make PCIe hotplug work with Freescale
->> PCIe controllers
->>
->> Reverting this commit allowed my board to boot again.
->>
->> @Rojhalat: Please have a look at
->> http://marc.info/?l=linux-kernel&m=137071294204858&w=2
->> for my initial bugreport.
->>
->> What I do not understand at all is why this is affecting my platform.
->> AFAIK there is no PCIe hardware on it AND I completely disabled PCIe
->> support in config.
->>
->> Kind regards,
->> Mike
+This approach has a couple of drawbacks. First, it creates two code paths
+for device initialization, one for hot plugged devices and another for devices
+known during the initial PCI scan. Second, the initialization code for hot
+plugged devices is only called when the device is enabled, ie typically
+in the probe function. Also, the platform specific setup code is called each
+time pci_enable_device() is called, not only once during device discovery,
+meaning it is actually called multiple times, once for devices discovered
+during the initial scan and again each time a driver is re-loaded.
 
-This patch does not fix the problem, during boot the kernel still
-panics. I had a closer look at the commit and the following patch
-fixes it for me....
+The visible result is that interrupt pins are only assigned to hot plugged
+devices when the device driver is loaded. Effectively this changes the PCI
+probe API, since pci_dev->irq and the device's dma configuration will now
+only be valid after pci_enable() was called at least once. A more subtle
+change is that platform specific PCI device setup is moved from device
+discovery into the driver's probe function, more specifically into the
+pci_enable_device() call.
 
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 028ac1f..21b687f 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -814,7 +814,7 @@ int __init mpc83xx_add_bridge(struct device_node *dev)
-                if (ret)
-                        goto err0;
-        } else {
--               fsl_setup_indirect_pci(hose, rsrc_cfg.start,
-+               setup_indirect_pci(hose, rsrc_cfg.start,
-                                       rsrc_cfg.start + 4, 0);
-        }
+To fix the inconsistencies, add new function pcibios_add_device.
+Call pcibios_setup_device from pcibios_setup_bus_devices if device setup
+is not complete, and from pcibios_add_device if bus setup is complete.
 
-Apparently the mpc83xx platform code goes through great lengths to
-guard the call to fsl_pcie_check_link on NON PCIe platforms, since
-apparently this seems to cause the panic. Furthermore it also has its
-own PCIe setup code. With this patch applied the system boots fine for
-me.
+With this change, device setup code is moved back into device initialization,
+and called exactly once for both static and hot plugged devices.
 
-The only problem I have with this patch is that the compiler fails
-since -Werror is used and fsl_setup_indirect_pci now is never used.
-For testing purposes I removed the function definition. Obviously the
-proper fix would be to wrap it in an #ifdef but I did not know the
-proper define to check against.
+Cc: Yuanquan Chen <Yuanquan.Chen@freescale.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Hiroo Matsumoto <matsumoto.hiroo@jp.fujitsu.com>
+Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+---
+v2: Ensure that PCI bus fixup code has been executed before calling
+    device setup code.
 
-Kind regards,
-Mike
+ arch/powerpc/kernel/pci-common.c |   17 ++++++++++++-----
+ 1 file changed, 12 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index 7f2273c..6909b13 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -992,7 +992,7 @@ void pcibios_setup_bus_self(struct pci_bus *bus)
+ 		ppc_md.pci_dma_bus_setup(bus);
+ }
+ 
+-void pcibios_setup_device(struct pci_dev *dev)
++static void pcibios_setup_device(struct pci_dev *dev)
+ {
+ 	/* Fixup NUMA node as it may not be setup yet by the generic
+ 	 * code and is needed by the DMA init
+@@ -1013,6 +1013,17 @@ void pcibios_setup_device(struct pci_dev *dev)
+ 		ppc_md.pci_irq_fixup(dev);
+ }
+ 
++int pcibios_add_device(struct pci_dev *dev)
++{
++	/*
++	 * We can only call pcibios_setup_device() after bus setup is complete,
++	 * since some of the platform specific DMA setup code depends on it.
++	 */
++	if (dev->bus->is_added)
++		pcibios_setup_device(dev);
++	return 0;
++}
++
+ void pcibios_setup_bus_devices(struct pci_bus *bus)
+ {
+ 	struct pci_dev *dev;
+@@ -1467,10 +1478,6 @@ int pcibios_enable_device(struct pci_dev *dev, int mask)
+ 		if (ppc_md.pcibios_enable_device_hook(dev))
+ 			return -EINVAL;
+ 
+-	/* avoid pcie irq fix up impact on cardbus */
+-	if (dev->hdr_type != PCI_HEADER_TYPE_CARDBUS)
+-		pcibios_setup_device(dev);
+-
+ 	return pci_enable_resources(dev, mask);
+ }
+ 
+-- 
+1.7.9.7
