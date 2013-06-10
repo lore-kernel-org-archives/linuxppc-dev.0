@@ -1,38 +1,25 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 562DF2C007B
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Jun 2013 07:49:51 +1000 (EST)
-Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Mon, 10 Jun 2013 17:49:48 -0400
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id DD77DC90068
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Jun 2013 17:49:31 -0400 (EDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5ALnWlF224732
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Jun 2013 17:49:32 -0400
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5ALnVK8027547
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Jun 2013 15:49:31 -0600
-Date: Mon, 10 Jun 2013 14:48:48 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/2] perf/Power7: Save dcache_src fields in sample record.
-Message-ID: <20130610214848.GA2666@us.ibm.com>
-References: <20130607204008.GA3281@us.ibm.com>
- <51B58843.5020809@linux.vnet.ibm.com>
+Return-Path: <B07421@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe001.messaging.microsoft.com [65.55.88.11])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id F1D182C008C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2013 08:52:45 +1000 (EST)
+Date: Mon, 10 Jun 2013 17:52:33 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [BUG] PCI related panic on powerpc based board with 3.10-rcX
+To: Michael Guntsche <michael.guntsche@it-loops.com>
+References: <CALG0vJu9-640D=Q-2RoSOnWtR=sERwj0fSCibK+ijprcf-T6Ag@mail.gmail.com>
+ <7927838.NMrLdRWptT@pcimr>
+ <CALG0vJtjS2wP_s=-iyG1ABKw_ct=B9OdNXY9YCrnkhAnpaN1Zw@mail.gmail.com>
+In-Reply-To: <CALG0vJtjS2wP_s=-iyG1ABKw_ct=B9OdNXY9YCrnkhAnpaN1Zw@mail.gmail.com> (from
+ michael.guntsche@it-loops.com on Mon Jun 10 12:07:43 2013)
+Message-ID: <1370904753.18413.19@snotra>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <51B58843.5020809@linux.vnet.ibm.com>
-Cc: Anton Blanchard <anton@au1.ibm.com>, linux-kernel@vger.kernel.org,
- Stephane Eranian <eranian@google.com>, linuxppc-dev@ozlabs.org,
- Paul Mackerras <paulus@samba.org>, mingo@kernel.org
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: linuxppc-dev@lists.ozlabs.org, Rojhalat Ibrahim <imr@rtschenk.de>,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,29 +29,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anshuman Khandual [khandual@linux.vnet.ibm.com] wrote:
-| > The former approach seems less confusing and this patch uses that approach.
-| > 
-| 
-| Yeah, the former approach is simpler and makes sense.
+On 06/10/2013 12:07:43 PM, Michael Guntsche wrote:
+> Good evening,
+>=20
+> On Mon, Jun 10, 2013 at 1:41 PM, Rojhalat Ibrahim <imr@rtschenk.de> =20
+> wrote:
+> > Hi Mike,
+> >
+> > could you please try this patch:
+> > https://lists.ozlabs.org/pipermail/linuxppc-dev/2013-May/106624.html
+> > http://patchwork.ozlabs.org/patch/244515/
+> >
+> >    Rojhalat
+> >
+> >
+> > On Saturday 08 June 2013 21:39:37 Michael Guntsche wrote:
+> >> After bisecting I found the responsible commit.
+> >>
+> >> 50d8f87d2b3: powerpc/fsl-pci Make PCIe hotplug work with Freescale
+> >> PCIe controllers
+> >>
+> >> Reverting this commit allowed my board to boot again.
+> >>
+> >> @Rojhalat: Please have a look at
+> >> http://marc.info/?l=3Dlinux-kernel&m=3D137071294204858&w=3D2
+> >> for my initial bugreport.
+> >>
+> >> What I do not understand at all is why this is affecting my =20
+> platform.
+> >> AFAIK there is no PCIe hardware on it AND I completely disabled =20
+> PCIe
+> >> support in config.
+> >>
+> >> Kind regards,
+> >> Mike
+>=20
+> This patch does not fix the problem, during boot the kernel still
+> panics. I had a closer look at the commit and the following patch
+> fixes it for me....
+>=20
+> diff --git a/arch/powerpc/sysdev/fsl_pci.c =20
+> b/arch/powerpc/sysdev/fsl_pci.c
+> index 028ac1f..21b687f 100644
+> --- a/arch/powerpc/sysdev/fsl_pci.c
+> +++ b/arch/powerpc/sysdev/fsl_pci.c
+> @@ -814,7 +814,7 @@ int __init mpc83xx_add_bridge(struct device_node =20
+> *dev)
+>                 if (ret)
+>                         goto err0;
+>         } else {
+> -               fsl_setup_indirect_pci(hose, rsrc_cfg.start,
+> +               setup_indirect_pci(hose, rsrc_cfg.start,
+>                                        rsrc_cfg.start + 4, 0);
+>         }
 
-Ok. Seems to make sense at least on Power.
+The only difference here is that you're not setting hose->ops to =20
+fsl_indirect_pci_ops.  Do you know why that is helping, and what =20
+hose->ops is set to instead?
 
-<snip>
-
-| > + * We use the table, dcache_src_map, to map this value 1 to PERF_MEM_LVL_L3,
-| > + * the arch-neutral representation of the L3 cache.
-| > + *
-| > + * Similarly, in case of marked data TLB miss, bits 14..17 of the MMCRA
-| > + * indicate the load source of a marked DTLB  entry. dtlb_src_map[] gives
-| > + * the mapping to the arch-neutral values of the TLB source.
-| 
-| 
-| Where did you define dtlb_src_map[] ?
-
-Ah, the comment belongs in another patch that I am working on. That patch
-maps the PERF_MEM_TLB* flags to Power7.
-
-Thanks for the comments.
-
-Sukadev
+-Scott=
