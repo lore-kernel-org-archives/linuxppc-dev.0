@@ -1,14 +1,15 @@
 Return-Path: <linus971@gmail.com>
 MIME-Version: 1.0
 Sender: linus971@gmail.com
-In-Reply-To: <CA+55aFzHT3NWrF6gq+BaLcZmEtrFwkiXv0_qZ0jGjxTO6-8iPQ@mail.gmail.com>
+In-Reply-To: <CA+55aFxJxY3J2X7DsEY4nz050PmNFgsZRewQEPoVWc1gzdiLGw@mail.gmail.com>
 References: <1370764616.14883.28.camel@pasglop>
  <CA+55aFz_E+x=Mr9Z6_09wzh1mXFr3a2VigPX77LzrsyLUFeb+Q@mail.gmail.com>
  <CA+55aFxAC4EksZcz7SaZNjF9mfKkwLjWp2rEKxMZT8m-7uBeNQ@mail.gmail.com>
  <51B53DAB.10501@ozlabs.org>
  <CA+55aFzHT3NWrF6gq+BaLcZmEtrFwkiXv0_qZ0jGjxTO6-8iPQ@mail.gmail.com>
-Date: Sun, 9 Jun 2013 20:20:09 -0700
-Message-ID: <CA+55aFxJxY3J2X7DsEY4nz050PmNFgsZRewQEPoVWc1gzdiLGw@mail.gmail.com>
+ <CA+55aFxJxY3J2X7DsEY4nz050PmNFgsZRewQEPoVWc1gzdiLGw@mail.gmail.com>
+Date: Sun, 9 Jun 2013 20:36:17 -0700
+Message-ID: <CA+55aFx684C7k8=2Fk53AOvfSkfUb_6DncCnOM8zU=jdhOQMuA@mail.gmail.com>
 Subject: Re: [git pull] Please pull powerpc.git merge branch
 From: Linus Torvalds <torvalds@linux-foundation.org>
 To: Jeremy Kerr <jk@ozlabs.org>
@@ -25,46 +26,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Jun 9, 2013 at 8:06 PM, Linus Torvalds
+On Sun, Jun 9, 2013 at 8:20 PM, Linus Torvalds
 <torvalds@linux-foundation.org> wrote:
 >
-> And it does matter.
+> .. the rationale for this is that the work pattern of people is
+> actually interesting information. You can do things like this:
+>
+>     git log --pretty=%aD --author=Torvalds
 
-.. the rationale for this is that the work pattern of people is
-actually interesting information. You can do things like this:
+Final side note: for me, and other git users that apply other peoples
+patches, it's probably better to use
 
-    git log --pretty=%aD --author=Torvalds
+   git log --pretty=%cD --committer=Torvalds
 
-to see what my work pattern is, and I think that's *interesting*.
-Gathering statistics like whether people are generally doing 9-5
-Mon-Fri is actually interesting data. You can do things like this:
+instead.
 
-    git log --since=6.months --pretty=%aD --author=Torvalds |
-        cut -c1-3 |
-        sort |
-        uniq -c |
-        sort -n
+Interestingly, that shows a different pattern than my "authorship"
+statistics, which are mainly pull requests. It turns out I commit
+patches much more in the afternoon. The reason is probably simple: in
+the mornings, I have pull requests waiting from overnight, so a fair
+number of pull requests where I am author at 9-11. But my biggest
+source of patches tends to be Andrew Morton, who sends the patches in
+the afternoon, so suddenly the commit counts skew towards being
+between 3pm-8pm when you take all my commits into accoint.
 
-and see (for example) that I do slow down on weekends.
+Doing
 
-Same goes for things like what time of day ends up being most
-productive. You can do the statistics for me, and see that I tend to
-do the bulk of my pulls in the mornings (peak between 9-11) and that
-I'm not a night-owl (*big* drop-off after 8PM - that's what kids do to
-you). You can see a few really early-morning cases, but I suspect they
-were when I was jetlagged.
+    git log --since=6.months --pretty=%aD --grep=Signed.*Andrew.Morton
 
-So the date data is actually meaningful data. It's not just random noise.
+backs that up: most of the commits that have sign-offs by Andrew are
+sent in the afternoon.
 
-And to do these kinds of things, you absolutely have to have
-local-time with proper timezone information. Anything that screws that
-up is *broken*. git gets this right, unlike a lot of other broken
-SCM's. Git gets it right for a reason.
+I just find details like that really interesting, where you can
+actually mine for the workpatterns of people.
 
-Yeah, yeah, when people forward other peoples patches they often drop
-the date field, and the date of the patch ends up being the time that
-the last version of the patch got sent rather than anything else, so
-many of the statistics aren't valid. But a _tool_ that actively
-corrupts the date and time of a patch is just broken.
-
-                 Linus
+                   Linus
