@@ -1,37 +1,14 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6D2DE2C00A4
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Jun 2013 18:03:54 +1000 (EST)
-Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 10 Jun 2013 13:29:31 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 5E540E0054
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Jun 2013 13:33:03 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5A83eVD17826036
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Jun 2013 13:33:41 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5A83ihe014622
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Jun 2013 18:03:45 +1000
-Message-ID: <51B58843.5020809@linux.vnet.ibm.com>
-Date: Mon, 10 Jun 2013 13:33:15 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/2] perf/Power7: Save dcache_src fields in sample record.
-References: <20130607204008.GA3281@us.ibm.com>
-In-Reply-To: <20130607204008.GA3281@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Anton Blanchard <anton@au1.ibm.com>, linux-kernel@vger.kernel.org,
- Stephane Eranian <eranian@google.com>, linuxppc-dev@ozlabs.org,
- Paul Mackerras <paulus@samba.org>, mingo@kernel.org
+Return-Path: <matteo.facchinetti@sirius-es.it>
+Received: from ns1.gatteins.it (ns1.gatteins.it [193.58.239.94])
+ by ozlabs.org (Postfix) with ESMTP id 8D5A52C00A4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jun 2013 18:22:06 +1000 (EST)
+From: Matteo Facchinetti <matteo.facchinetti@sirius-es.it>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/mpc512x: add MPC5125 reset module support for system
+ restart
+Date: Mon, 10 Jun 2013 10:13:52 +0200
+Message-Id: <1370852032-17478-1-git-send-email-matteo.facchinetti@sirius-es.it>
+Cc: agust@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,113 +18,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> 
-> AFAICT, Power7 supports one extra level in the cache-hierarchy, so we propose
-> to add a new cache level, REM_CCE3 shown above.
-> 
-> To maintain consistency in terminology (i.e 2-hops = remote, 3-hops = distant),
-> I propose leaving the REM_MEM1 unused and adding another level, REM_MEM3.
-> 
+Only part of MPC5125 reset module is like as MPC5121.
+In detail, RCWH register doesn't contain informations about:
+- PCI arbiter
+- NAND flash page size
+- NAND flash port size
 
-Agreed.
+For this reason, in device tree, this module has a different name then
+MPC5121 reset module but use the same "struct mpc512x_reset_module"
+register definition and the same restart procedure.
 
-> Further, in the above REM_CCE1 case, Power7 can also identify if the data came
-> from the L2 or L3 cache of another core on the same chip. To describe this to
-> user space, we propose to set ->mem_lvl to:
-> 
-> 	PERF_MEM_LVL_REM_CCE1|PERF_MEM_LVL_L2
-> 
-> 	PERF_MEM_LVL_REM_CCE1|PERF_MEM_LVL_L3
-> 
-> Either that or we could leave REM_CCE1 unused in Power and add two more levels:
-> 
-> 	PERF_MEM_XLVL_REM_L2_CCE1
-> 	PERF_MEM_XLVL_REM_L3_CCE1
-> 
-> The former approach seems less confusing and this patch uses that approach.
-> 
+Signed-off-by: Matteo Facchinetti <engineering@sirius-es.it>
+---
+ arch/powerpc/platforms/512x/mpc512x.h        |  1 +
+ arch/powerpc/platforms/512x/mpc512x_shared.c | 15 ++++++++++++++-
+ 2 files changed, 15 insertions(+), 1 deletion(-)
 
-Yeah, the former approach is simpler and makes sense.
-
-
-> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/perf_event_server.h |    2 +
->  arch/powerpc/perf/core-book3s.c              |    4 +
->  arch/powerpc/perf/power7-pmu.c               |   81 ++++++++++++++++++++++++++
->  include/uapi/linux/perf_event.h              |   12 +++-
->  4 files changed, 97 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
-> index f265049..f2d162b 100644
-> --- a/arch/powerpc/include/asm/perf_event_server.h
-> +++ b/arch/powerpc/include/asm/perf_event_server.h
-> @@ -37,6 +37,8 @@ struct power_pmu {
->  	void            (*config_bhrb)(u64 pmu_bhrb_filter);
->  	void		(*disable_pmc)(unsigned int pmc, unsigned long mmcr[]);
->  	int		(*limited_pmc_event)(u64 event_id);
-> +	void		(*get_mem_data_src)(struct perf_sample_data *data,
-> +				struct pt_regs *regs);
->  	u32		flags;
->  	const struct attribute_group	**attr_groups;
->  	int		n_generic;
-> diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-> index 426180b..7778fa9 100644
-> --- a/arch/powerpc/perf/core-book3s.c
-> +++ b/arch/powerpc/perf/core-book3s.c
-> @@ -1632,6 +1632,10 @@ static void record_and_restart(struct perf_event *event, unsigned long val,
->  			data.br_stack = &cpuhw->bhrb_stack;
->  		}
-> 
-> +		if (event->attr.sample_type & PERF_SAMPLE_DATA_SRC &&
-> +						ppmu->get_mem_data_src)
-> +			ppmu->get_mem_data_src(&data, regs);
-> +
->  		if (perf_event_overflow(event, &data, regs))
->  			power_pmu_stop(event, 0);
->  	}
-> diff --git a/arch/powerpc/perf/power7-pmu.c b/arch/powerpc/perf/power7-pmu.c
-> index 3c475d6..af92bfe 100644
-> --- a/arch/powerpc/perf/power7-pmu.c
-> +++ b/arch/powerpc/perf/power7-pmu.c
-> @@ -209,6 +209,85 @@ static int power7_get_alternatives(u64 event, unsigned int flags, u64 alt[])
->  	return nalt;
->  }
-> 
-> +#define	POWER7_MMCRA_PEMPTY		(0x1L << 63)
-> +#define	POWER7_MMCRA_FIN_STALL		(0x1L << 62)
-> +#define	POWER7_MMCRA_CMPL_STALL		(0x1L << 61)
-> +#define	POWER7_MMCRA_STALL_REASON_MASK	(0xFL << 60)
-> +
-> +#define	POWER7_MMCRA_DCACHE_MISS	(0x1L << 55)
-> +
-> +#define	POWER7_MMCRA_DCACHE_SRC_SHIFT	51
-> +#define	POWER7_MMCRA_DCACHE_SRC_MASK	(0xFL << POWER7_MMCRA_DCACHE_SRC_SHIFT)
-> +
-> +#define	POWER7_MMCRA_MDTLB_MISS		(0x1L << 50)
-> +
-> +#define	POWER7_MMCRA_MDTLB_SRC_SHIFT	46
-> +#define	POWER7_MMCRA_MDTLB_SRC_MASK	(0xFL << POWER7_MMCRA_MDTLB_SRC_SHIFT)
-> +
-> +#define	POWER7_MMCRA_MDERAT_MISS	(0x1L<< 45)
-> +#define	POWER7_MMCRA_MLSU_REJ		(0x1L<< 44)
-> +
-> +/* and so on */
-> +
-> +/*
-> + * Map DCACHE_SRC fields to the Linux memory hierarchy levels.
-> + *
-> + * Bits 9..12 in the MMCRA indicate the source of a data-cache entry, with
-> + * each of the 16 possible values referring to a specific source. Eg: if
-> + * the 4-bits have the value 1 (0b0001), the dcache entry was found local
-> + * L3 cache.
-> + *
-> + * We use the table, dcache_src_map, to map this value 1 to PERF_MEM_LVL_L3,
-> + * the arch-neutral representation of the L3 cache.
-> + *
-> + * Similarly, in case of marked data TLB miss, bits 14..17 of the MMCRA
-> + * indicate the load source of a marked DTLB  entry. dtlb_src_map[] gives
-> + * the mapping to the arch-neutral values of the TLB source.
-
-
-Where did you define dtlb_src_map[] ?
+diff --git a/arch/powerpc/platforms/512x/mpc512x.h b/arch/powerpc/platforms/512x/mpc512x.h
+index fdb4303..cc97f02 100644
+--- a/arch/powerpc/platforms/512x/mpc512x.h
++++ b/arch/powerpc/platforms/512x/mpc512x.h
+@@ -17,6 +17,7 @@ extern void __init mpc512x_init(void);
+ extern void __init mpc512x_setup_arch(void);
+ extern int __init mpc5121_clk_init(void);
+ extern const char *mpc512x_select_psc_compat(void);
++extern const char *mpc512x_select_reset_compat(void);
+ extern void mpc512x_restart(char *cmd);
+ 
+ #endif				/* __MPC512X_H__ */
+diff --git a/arch/powerpc/platforms/512x/mpc512x_shared.c b/arch/powerpc/platforms/512x/mpc512x_shared.c
+index a8b5110..a82a41b 100644
+--- a/arch/powerpc/platforms/512x/mpc512x_shared.c
++++ b/arch/powerpc/platforms/512x/mpc512x_shared.c
+@@ -35,8 +35,10 @@ static struct mpc512x_reset_module __iomem *reset_module_base;
+ static void __init mpc512x_restart_init(void)
+ {
+ 	struct device_node *np;
++	const char *reset_compat;
+ 
+-	np = of_find_compatible_node(NULL, NULL, "fsl,mpc5121-reset");
++	reset_compat = mpc512x_select_reset_compat();
++	np = of_find_compatible_node(NULL, NULL, reset_compat);
+ 	if (!np)
+ 		return;
+ 
+@@ -355,6 +357,17 @@ const char *mpc512x_select_psc_compat(void)
+ 	return NULL;
+ }
+ 
++const char *mpc512x_select_reset_compat(void)
++{
++	if (of_machine_is_compatible("fsl,mpc5121"))
++		return "fsl,mpc5121-reset";
++
++	if (of_machine_is_compatible("fsl,mpc5125"))
++		return "fsl,mpc5125-reset";
++
++	return NULL;
++}
++
+ static unsigned int __init get_fifo_size(struct device_node *np,
+ 					 char *prop_name)
+ {
+-- 
+1.8.1.2
