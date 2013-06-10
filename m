@@ -1,14 +1,24 @@
-Return-Path: <matteo.facchinetti@sirius-es.it>
-Received: from ns1.gatteins.it (ns1.gatteins.it [193.58.239.94])
- by ozlabs.org (Postfix) with ESMTP id 8D5A52C00A4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jun 2013 18:22:06 +1000 (EST)
-From: Matteo Facchinetti <matteo.facchinetti@sirius-es.it>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/mpc512x: add MPC5125 reset module support for system
- restart
-Date: Mon, 10 Jun 2013 10:13:52 +0200
-Message-Id: <1370852032-17478-1-git-send-email-matteo.facchinetti@sirius-es.it>
-Cc: agust@denx.de
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+ [IPv6:2002:4e20:1eda::1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 37A452C02A9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jun 2013 19:04:26 +1000 (EST)
+Date: Mon, 10 Jun 2013 10:03:58 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Grant Likely <grant.likely@linaro.org>
+Subject: Re: [RFC 10/10] irqchip: Make versatile fpga irq driver a generic chip
+Message-ID: <20130610090357.GQ18614@n2100.arm.linux.org.uk>
+References: <1370825362-11145-1-git-send-email-grant.likely@linaro.org>
+ <1370825362-11145-11-git-send-email-grant.likely@linaro.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1370825362-11145-11-git-send-email-grant.likely@linaro.org>
+Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Arnd Bergmann <arnd@arndb.de>, Linus Walleij <linus.walleij@linaro.org>,
+ linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,67 +28,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Only part of MPC5125 reset module is like as MPC5121.
-In detail, RCWH register doesn't contain informations about:
-- PCI arbiter
-- NAND flash page size
-- NAND flash port size
+On Mon, Jun 10, 2013 at 01:49:22AM +0100, Grant Likely wrote:
+> This is an RFC patch to convert the versatile FPGA irq controller driver
+> to use generic irq chip. It builds on the series that extends the
+> generic chip code to allow a linear irq domain to contain one or more
+> generic irq chips so that each interrupt controller doesn't need to hand
+> code the generic chip setup.
 
-For this reason, in device tree, this module has a different name then
-MPC5121 reset module but use the same "struct mpc512x_reset_module"
-register definition and the same restart procedure.
-
-Signed-off-by: Matteo Facchinetti <engineering@sirius-es.it>
----
- arch/powerpc/platforms/512x/mpc512x.h        |  1 +
- arch/powerpc/platforms/512x/mpc512x_shared.c | 15 ++++++++++++++-
- 2 files changed, 15 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/platforms/512x/mpc512x.h b/arch/powerpc/platforms/512x/mpc512x.h
-index fdb4303..cc97f02 100644
---- a/arch/powerpc/platforms/512x/mpc512x.h
-+++ b/arch/powerpc/platforms/512x/mpc512x.h
-@@ -17,6 +17,7 @@ extern void __init mpc512x_init(void);
- extern void __init mpc512x_setup_arch(void);
- extern int __init mpc5121_clk_init(void);
- extern const char *mpc512x_select_psc_compat(void);
-+extern const char *mpc512x_select_reset_compat(void);
- extern void mpc512x_restart(char *cmd);
- 
- #endif				/* __MPC512X_H__ */
-diff --git a/arch/powerpc/platforms/512x/mpc512x_shared.c b/arch/powerpc/platforms/512x/mpc512x_shared.c
-index a8b5110..a82a41b 100644
---- a/arch/powerpc/platforms/512x/mpc512x_shared.c
-+++ b/arch/powerpc/platforms/512x/mpc512x_shared.c
-@@ -35,8 +35,10 @@ static struct mpc512x_reset_module __iomem *reset_module_base;
- static void __init mpc512x_restart_init(void)
- {
- 	struct device_node *np;
-+	const char *reset_compat;
- 
--	np = of_find_compatible_node(NULL, NULL, "fsl,mpc5121-reset");
-+	reset_compat = mpc512x_select_reset_compat();
-+	np = of_find_compatible_node(NULL, NULL, reset_compat);
- 	if (!np)
- 		return;
- 
-@@ -355,6 +357,17 @@ const char *mpc512x_select_psc_compat(void)
- 	return NULL;
- }
- 
-+const char *mpc512x_select_reset_compat(void)
-+{
-+	if (of_machine_is_compatible("fsl,mpc5121"))
-+		return "fsl,mpc5121-reset";
-+
-+	if (of_machine_is_compatible("fsl,mpc5125"))
-+		return "fsl,mpc5125-reset";
-+
-+	return NULL;
-+}
-+
- static unsigned int __init get_fifo_size(struct device_node *np,
- 					 char *prop_name)
- {
--- 
-1.8.1.2
+NAK, this makes functional changes.  You assume that the validity mask is
+a set of zeros followed by a set of ones.  This is not always the case.
+The PIC on Integrator/CP only has bits 29-22 and 11-0 set because 21-12
+are not valid.
