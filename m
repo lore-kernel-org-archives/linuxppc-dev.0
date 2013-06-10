@@ -1,23 +1,24 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
- by ozlabs.org (Postfix) with SMTP id 2FBC32C0095
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jun 2013 22:48:25 +1000 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
- by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
- id 24447-07 for <linuxppc-dev@lists.ozlabs.org>;
- Mon, 10 Jun 2013 13:48:13 +0100 (BST)
+Return-Path: <anca.emanuel@gmail.com>
+Received: from mail-pa0-x22a.google.com (mail-pa0-x22a.google.com
+ [IPv6:2607:f8b0:400e:c03::22a])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 73B392C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2013 00:37:04 +1000 (EST)
+Received: by mail-pa0-f42.google.com with SMTP id rl6so4506883pac.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jun 2013 07:37:00 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
-Subject: RE: PowerPC assembler question
-Date: Mon, 10 Jun 2013 13:41:48 +0100
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B727F@saturn3.aculab.com>
-In-Reply-To: <20130610211439.a69d2b26ee216f34caf473bd@mega-nerd.com>
-References: <20130610090135.a002eba2401c06eedfa7b7ec@mega-nerd.com>
- <1370820095.14883.45.camel@pasglop>
- <20130610211439.a69d2b26ee216f34caf473bd@mega-nerd.com>
-From: "David Laight" <David.Laight@ACULAB.COM>
-To: <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <alpine.DEB.2.00.1306100924570.22024@ayla.of.borg>
+References: <alpine.DEB.2.00.1306100922530.21948@ayla.of.borg>
+ <alpine.DEB.2.00.1306100924570.22024@ayla.of.borg>
+Date: Mon, 10 Jun 2013 17:37:00 +0300
+Message-ID: <CAJL_dMtUXSCe3Bm=D4aYaX9NwhnaPjVsY4O+f8U9h5-NV9i0=A@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v3.10-rc5
+From: Anca Emanuel <anca.emanuel@gmail.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linux/PPC Development <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel Development <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,29 +28,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> > Note: It's more readable if you use the register names, ie:
-> >
-> > 	lwz	%r30, .label - (1b)(%r31)
-> >
-> > The form of lwz is
-> >
-> > 	lwz	dest_reg, offset(address_reg)
-> >
-> > So it will load a 32-bit value from memory at the address contained =
-in
-> > r31 offset by ".label - 1b" which is itself the difference between
-> > two labels, "label", and the first "1:" label before the instruction
-...
-> Is there something I could replace this above lwz instruction with
-> that would work for PIC with offsets greater than +/- 32k?
+The relevant maintainers do not get a copy of this.
 
-With a scratch register there are some two instruction sequences.
-Reusing the destination register something like:
-	addis	%r30,%r31,hi(.label - 1b)
-	lwzx	%r30,lo(.label - 1b)(%r30)
-(Not sure of the hi()/lo() functions for ppc!)
-It is even possible that there are some macros for the
-assembler that will do this automatically - %r1 might
-even be reserved for the purpose (as it is on MIPS).
 
-	David
+On Mon, Jun 10, 2013 at 10:25 AM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> On Mon, 10 Jun 2013, Geert Uytterhoeven wrote:
+>> JFYI, when comparing v3.10-rc5 to v3.10-rc4[3], the summaries are:
+>>   - build errors: +19/-10
+>> [1] http://kisskb.ellerman.id.au/kisskb/head/6308/ (all 120 configs)
+>
+>  + arch/powerpc/kernel/cacheinfo.c: error: 'associativity' may be used uninitialized in this function [-Werror=uninitialized]:  => 571:16
+>   + arch/powerpc/kernel/cacheinfo.c: error: 'size_kb' may be used uninitialized in this function [-Werror=uninitialized]:  => 522:16
+>   + arch/powerpc/kernel/pci_dn.c: error: 'ret' may be used uninitialized in this function [-Werror=uninitialized]:  => 97:8
+>   + arch/powerpc/kvm/book3s_32_mmu.c: error: 'sr' may be used uninitialized in this function [-Werror=uninitialized]:  => 63:2
+>   + arch/powerpc/kvm/book3s_64_mmu.c: error: 'slb' may be used uninitialized in this function [-Werror=uninitialized]:  => 485:3
+>   + arch/powerpc/mm/hash_native_64.c: error: 'a_size' may be used uninitialized in this function [-Werror=uninitialized]:  => 67:31
+>   + arch/powerpc/platforms/cell/spufs/inode.c: error: incompatible types when assigning to type 'kgid_t' from type 'int':  => 628:16
+>   + arch/powerpc/platforms/cell/spufs/inode.c: error: incompatible types when assigning to type 'kuid_t' from type 'int':  => 623:16
+>   + arch/powerpc/platforms/pseries/msi.c: error: 'total' may be used uninitialized in this function [-Werror=uninitialized]:  => 320:24
+>   + arch/powerpc/platforms/pseries/pci.c: error: 'pcie_link_speed_stats' may be used uninitialized in this function [-Werror=uninitialized]:  => 150:31
+>
+> powerpc-randconfig
+>
+>> [3] http://kisskb.ellerman.id.au/kisskb/head/6290/ (all 120 configs)
+>
+> Gr{oetje,eeting}s,
+>
+>                                                 Geert
+>
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+>
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                                             -- Linus Torvalds
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
