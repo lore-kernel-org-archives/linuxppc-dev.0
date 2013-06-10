@@ -1,14 +1,16 @@
-Return-Path: <jk@ozlabs.org>
-Message-ID: <51B53DAB.10501@ozlabs.org>
-Date: Mon, 10 Jun 2013 10:44:59 +0800
-From: Jeremy Kerr <jk@ozlabs.org>
+Return-Path: <linus971@gmail.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [git pull] Please pull powerpc.git merge branch
+Sender: linus971@gmail.com
+In-Reply-To: <51B53DAB.10501@ozlabs.org>
 References: <1370764616.14883.28.camel@pasglop>
  <CA+55aFz_E+x=Mr9Z6_09wzh1mXFr3a2VigPX77LzrsyLUFeb+Q@mail.gmail.com>
  <CA+55aFxAC4EksZcz7SaZNjF9mfKkwLjWp2rEKxMZT8m-7uBeNQ@mail.gmail.com>
-In-Reply-To: <CA+55aFxAC4EksZcz7SaZNjF9mfKkwLjWp2rEKxMZT8m-7uBeNQ@mail.gmail.com>
+ <51B53DAB.10501@ozlabs.org>
+Date: Sun, 9 Jun 2013 20:06:34 -0700
+Message-ID: <CA+55aFzHT3NWrF6gq+BaLcZmEtrFwkiXv0_qZ0jGjxTO6-8iPQ@mail.gmail.com>
+Subject: Re: [git pull] Please pull powerpc.git merge branch
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jeremy Kerr <jk@ozlabs.org>
 Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
  Linux Kernel list <linux-kernel@vger.kernel.org>,
@@ -22,31 +24,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus,
+On Sun, Jun 9, 2013 at 7:44 PM, Jeremy Kerr <jk@ozlabs.org> wrote:
+>
+> We keep all patch dates in UTC, but were generating the Date header
+> incorrectly. Now fixed:
 
-> Is Jeremy the patchwork maintainer?
+No, not fixed.
 
-Yep, that's me.
+Keeping patch dates in UTC *corrupts* the date.
 
-> and it turns out that apparently 'patchwork' is just making up random
-> times, because when you download the email as an mbox, it will turn
-> this into that corrupt and incorrect
-> 
->     Date: Thu, 06 Jun 2013 19:42:54 -0000
-> 
-> thing which is apparently how you got the wrong timestamp to begin with.
+I'll ask people to stop using patchworks if it cannot keep track of
+emailed dates. The date very much is a local time WITH A TIMEZONE.
 
-We keep all patch dates in UTC, but were generating the Date header
-incorrectly. Now fixed:
+And it does matter.
 
-$ wget -qO - http://patchwork.ozlabs.org/patch/249598/mbox/ | grep ^Date
-Date: Fri, 07 Jun 2013 05:42:54 -0000
+> $ wget -qO - http://patchwork.ozlabs.org/patch/249598/mbox/ | grep ^Date
+> Date: Fri, 07 Jun 2013 05:42:54 -0000
 
-Commit is at:
+No. The date from the email was
 
- http://git.ozlabs.org/?p=patchwork;a=commitdiff;h=e7353352
+    Date: Fri, 7 Jun 2013 15:42:54 +1000
 
-Cheers,
+and we want *that* date. Not some random date that patchwork makes up
+that has no relevance.
 
+I know you have that date, because it shows up when asking for the
+headers in patchwork. Just use the right one, don't make up incorrect
+ones.
 
-Jeremy
+               Linus
