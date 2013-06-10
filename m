@@ -1,19 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 8E32D2C02AF
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jun 2013 09:21:41 +1000 (EST)
-Message-ID: <1370820095.14883.45.camel@pasglop>
-Subject: Re: PowerPC assembler question
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Erik de Castro Lopo <mle+cl@mega-nerd.com>
-Date: Mon, 10 Jun 2013 09:21:35 +1000
-In-Reply-To: <20130610090135.a002eba2401c06eedfa7b7ec@mega-nerd.com>
-References: <20130610090135.a002eba2401c06eedfa7b7ec@mega-nerd.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <jk@ozlabs.org>
+Message-ID: <51B53DAB.10501@ozlabs.org>
+Date: Mon, 10 Jun 2013 10:44:59 +0800
+From: Jeremy Kerr <jk@ozlabs.org>
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [git pull] Please pull powerpc.git merge branch
+References: <1370764616.14883.28.camel@pasglop>
+ <CA+55aFz_E+x=Mr9Z6_09wzh1mXFr3a2VigPX77LzrsyLUFeb+Q@mail.gmail.com>
+ <CA+55aFxAC4EksZcz7SaZNjF9mfKkwLjWp2rEKxMZT8m-7uBeNQ@mail.gmail.com>
+In-Reply-To: <CA+55aFxAC4EksZcz7SaZNjF9mfKkwLjWp2rEKxMZT8m-7uBeNQ@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>,
+ Patchwork ML <patchwork@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,45 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-06-10 at 09:01 +1000, Erik de Castro Lopo wrote:
-> Hi all,
+Hi Linus,
+
+> Is Jeremy the patchwork maintainer?
+
+Yep, that's me.
+
+> and it turns out that apparently 'patchwork' is just making up random
+> times, because when you download the email as an mbox, it will turn
+> this into that corrupt and incorrect
 > 
-> I'm trying to fix a problem in the PowerPC backend of the Glasgow
-> Haskell Compiler (GHC) and have a problem with the following
-> instruction form:
+>     Date: Thu, 06 Jun 2013 19:42:54 -0000
 > 
->     lwz     30, .label - (1b)(31)
-> 
-> Reading the documentation I could find, I have figured out that this
-> loads a 16 bit value into register 30. How it calculates that 16 bit
-> value has got me somewhat flumoxed.
-> 
-> Anybody care to explain?
+> thing which is apparently how you got the wrong timestamp to begin with.
 
-No, this loads a 32-bit value (16-bit would be lhz).
+We keep all patch dates in UTC, but were generating the Date header
+incorrectly. Now fixed:
 
-Note: It's more readable if you use the register names, ie:
+$ wget -qO - http://patchwork.ozlabs.org/patch/249598/mbox/ | grep ^Date
+Date: Fri, 07 Jun 2013 05:42:54 -0000
 
-	lwz	%r30, .label - (1b)(%r31)
+Commit is at:
 
-The form of lwz is
-
-	lwz	dest_reg, offset(address_reg)
-
-So it will load a 32-bit value from memory at the address contained in
-r31 offset by ".label - 1b" which is itself the difference between
-two labels, "label", and the first "1:" label before the instruction
-
-(gcc supports numeric labels that can be referenced with the suffix "b"
-for backward and "f" for forward which are handy for small
-displacements)
-
-So for example if 1: was the base of the structure and .label a field
-in the structure, it would load the 32-bit value of that field for the
-structure instance starting at %r31.
-
-In this case, this looks more like some kind of position-independent
-code though.
+ http://git.ozlabs.org/?p=patchwork;a=commitdiff;h=e7353352
 
 Cheers,
-Ben.
+
+
+Jeremy
