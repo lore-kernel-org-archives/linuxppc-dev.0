@@ -1,22 +1,36 @@
-Return-Path: <linus971@gmail.com>
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 69BE72C02A4
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Jun 2013 14:19:03 +1000 (EST)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Mon, 10 Jun 2013 14:10:01 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id D85832CE804D
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Jun 2013 14:19:00 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5A44K4w58917090
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Jun 2013 14:04:20 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5A4IwfP014628
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Jun 2013 14:18:59 +1000
+Message-ID: <51B55389.1080306@linux.vnet.ibm.com>
+Date: Mon, 10 Jun 2013 09:48:17 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Sender: linus971@gmail.com
-In-Reply-To: <CA+55aFxJxY3J2X7DsEY4nz050PmNFgsZRewQEPoVWc1gzdiLGw@mail.gmail.com>
-References: <1370764616.14883.28.camel@pasglop>
- <CA+55aFz_E+x=Mr9Z6_09wzh1mXFr3a2VigPX77LzrsyLUFeb+Q@mail.gmail.com>
- <CA+55aFxAC4EksZcz7SaZNjF9mfKkwLjWp2rEKxMZT8m-7uBeNQ@mail.gmail.com>
- <51B53DAB.10501@ozlabs.org>
- <CA+55aFzHT3NWrF6gq+BaLcZmEtrFwkiXv0_qZ0jGjxTO6-8iPQ@mail.gmail.com>
- <CA+55aFxJxY3J2X7DsEY4nz050PmNFgsZRewQEPoVWc1gzdiLGw@mail.gmail.com>
-Date: Sun, 9 Jun 2013 20:36:17 -0700
-Message-ID: <CA+55aFx684C7k8=2Fk53AOvfSkfUb_6DncCnOM8zU=jdhOQMuA@mail.gmail.com>
-Subject: Re: [git pull] Please pull powerpc.git merge branch
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jeremy Kerr <jk@ozlabs.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>,
- Patchwork ML <patchwork@lists.ozlabs.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: Partial revert of "Context switch more PMU
+ related SPRs"
+References: <1370491416-1807-1-git-send-email-michael@ellerman.id.au>
+In-Reply-To: <1370491416-1807-1-git-send-email-michael@ellerman.id.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,38 +40,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Jun 9, 2013 at 8:20 PM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
-> .. the rationale for this is that the work pattern of people is
-> actually interesting information. You can do things like this:
->
->     git log --pretty=%aD --author=Torvalds
+On 06/06/2013 09:33 AM, Michael Ellerman wrote:
+> In commit 59affcd I added context switching of more PMU SPRs, because
+> they are potentially exposed to userspace on Power8. However despite me
+> being a smart arse in the commit message it's actually not correct. In
+> particular it interacts badly with a global perf record.
 
-Final side note: for me, and other git users that apply other peoples
-patches, it's probably better to use
+Could you please explain how it would interact badly with a global perf record.
+If any user space try to mess around with the MMCR* registers itself, it would
+definitely interfere with the kernel's own PMU config going on during perf record.
+But thats how it works. So when we are actually dealing with MMCR* registers
+directly, we should not invoke "perf record" session which can potential run on
+the same PMU.
 
-   git log --pretty=%cD --committer=Torvalds
-
-instead.
-
-Interestingly, that shows a different pattern than my "authorship"
-statistics, which are mainly pull requests. It turns out I commit
-patches much more in the afternoon. The reason is probably simple: in
-the mornings, I have pull requests waiting from overnight, so a fair
-number of pull requests where I am author at 9-11. But my biggest
-source of patches tends to be Andrew Morton, who sends the patches in
-the afternoon, so suddenly the commit counts skew towards being
-between 3pm-8pm when you take all my commits into accoint.
-
-Doing
-
-    git log --since=6.months --pretty=%aD --grep=Signed.*Andrew.Morton
-
-backs that up: most of the commits that have sign-offs by Andrew are
-sent in the afternoon.
-
-I just find details like that really interesting, where you can
-actually mine for the workpatterns of people.
-
-                   Linus
+Regards
+Anshuman
