@@ -1,23 +1,20 @@
-Return-Path: <B07421@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9544E2C0095
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2013 06:53:58 +1000 (EST)
-Date: Tue, 11 Jun 2013 15:53:43 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH -V7 09/18] powerpc: Switch 16GB and 16MB explicit
- hugepages to a different page table format
-To: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <87obbgpmk3.fsf@linux.vnet.ibm.com> (from
- aneesh.kumar@linux.vnet.ibm.com on Sat Jun  8 11:57:48 2013)
-Message-ID: <1370984023.18413.30@snotra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: linux-mm@kvack.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
- dwg@au1.ibm.com
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 404722C008C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2013 07:28:06 +1000 (EST)
+Message-ID: <1370986074.8250.133.camel@pasglop>
+Subject: Re: [PATCH] powerpc/iommu: Remove unused pci_iommu_init() and
+ pci_direct_iommu_init()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Date: Wed, 12 Jun 2013 07:27:54 +1000
+In-Reply-To: <20130611195705.17794.68833.stgit@bhelgaas-glaptop>
+References: <20130611195705.17794.68833.stgit@bhelgaas-glaptop>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,26 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/08/2013 11:57:48 AM, Aneesh Kumar K.V wrote:
-> With the config shared I am not finding anything wrong, but I can't =20
-> test
-> these configs. Also can you confirm what you bisect this to
->=20
-> e2b3d202d1dba8f3546ed28224ce485bc50010be
-> powerpc: Switch 16GB and 16MB explicit hugepages to a different page =20
-> table format
+On Tue, 2013-06-11 at 13:57 -0600, Bjorn Helgaas wrote:
+> pci_iommu_init() and pci_direct_iommu_init() are not referenced anywhere,
+> so remove them.
 
->=20
-> or
->=20
-> cf9427b85e90bb1ff90e2397ff419691d983c68b "powerpc: New hugepage =20
-> directory format"
+Ah indeed, some old stuff...
 
-It's e2b3d202d1dba8f3546ed28224ce485bc50010be.
+Thanks,
+Ben.
 
-It turned out to be the change from "pmd_none" to =20
-"pmd_none_or_clear_bad".  Making that change triggers the "bad pmd" =20
-messages even when applied to v3.9 -- so we had bad pmds all along, =20
-undetected.  Now I get to figure out why. :-(
-
--Scott=
+> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+> ---
+>  arch/powerpc/include/asm/iommu.h |    7 -------
+>  1 file changed, 7 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+> index cbfe678..e670f73 100644
+> --- a/arch/powerpc/include/asm/iommu.h
+> +++ b/arch/powerpc/include/asm/iommu.h
+> @@ -125,13 +125,6 @@ extern void iommu_init_early_pSeries(void);
+>  extern void iommu_init_early_dart(void);
+>  extern void iommu_init_early_pasemi(void);
+>  
+> -#ifdef CONFIG_PCI
+> -extern void pci_iommu_init(void);
+> -extern void pci_direct_iommu_init(void);
+> -#else
+> -static inline void pci_iommu_init(void) { }
+> -#endif
+> -
+>  extern void alloc_dart_table(void);
+>  #if defined(CONFIG_PPC64) && defined(CONFIG_PM)
+>  static inline void iommu_save(void)
