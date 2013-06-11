@@ -1,25 +1,22 @@
-Return-Path: <R65777@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0250.outbound.messaging.microsoft.com [213.199.154.250])
+Return-Path: <B07421@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AE0192C007B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2013 22:09:06 +1000 (EST)
-From: Bhushan Bharat-R65777 <R65777@freescale.com>
-To: Bhushan Bharat-R65777 <R65777@freescale.com>, "galak@kernel.crashing.org"
- <galak@kernel.crashing.org>, "benh@kernel.crashing.org"
- <benh@kernel.crashing.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, Wood Scott-B07421 <B07421@freescale.com>,
- Yoder Stuart-B08248 <B08248@freescale.com>, Yang James-RA8135
- <RA8135@freescale.com>
-Subject: RE: [PATCH 0/2 v3] powerpc: Make ptrace work reliably
-Date: Tue, 11 Jun 2013 12:08:57 +0000
-Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D07066BD7@039-SN2MPN1-012.039d.mgd.msft.net>
-References: <1369196459-17275-1-git-send-email-Bharat.Bhushan@freescale.com>
-In-Reply-To: <1369196459-17275-1-git-send-email-Bharat.Bhushan@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
+ by ozlabs.org (Postfix) with ESMTPS id 1E6562C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2013 03:01:02 +1000 (EST)
+Date: Tue, 11 Jun 2013 12:00:51 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [BUG] PCI related panic on powerpc based board with 3.10-rcX
+To: Rojhalat Ibrahim <imr@rtschenk.de>
+In-Reply-To: <10631172.HfDeIDHqX3@pcimr> (from imr@rtschenk.de on Tue Jun 11
+ 02:24:28 2013)
+Message-ID: <1370970051.18413.24@snotra>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Michael Guntsche <michael.guntsche@it-loops.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,45 +26,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
+On 06/11/2013 02:24:28 AM, Rojhalat Ibrahim wrote:
+> On Monday 10 June 2013 17:52:33 Scott Wood wrote:
+> > On 06/10/2013 12:07:43 PM, Michael Guntsche wrote:
+> > > Good evening,
+> > >
+> > > This patch does not fix the problem, during boot the kernel still
+> > > panics. I had a closer look at the commit and the following patch
+> > > fixes it for me....
+> > >
+> > > diff --git a/arch/powerpc/sysdev/fsl_pci.c
+> > > b/arch/powerpc/sysdev/fsl_pci.c
+> > > index 028ac1f..21b687f 100644
+> > > --- a/arch/powerpc/sysdev/fsl_pci.c
+> > > +++ b/arch/powerpc/sysdev/fsl_pci.c
+> > > @@ -814,7 +814,7 @@ int __init mpc83xx_add_bridge(struct =20
+> device_node
+> > > *dev)
+> > >
+> > >                 if (ret)
+> > >
+> > >                         goto err0;
+> > >
+> > >         } else {
+> > >
+> > > -               fsl_setup_indirect_pci(hose, rsrc_cfg.start,
+> > > +               setup_indirect_pci(hose, rsrc_cfg.start,
+> > >
+> > >                                        rsrc_cfg.start + 4, 0);
+> > >
+> > >         }
+> >
+> > The only difference here is that you're not setting hose->ops to
+> > fsl_indirect_pci_ops.  Do you know why that is helping, and what
+> > hose->ops is set to instead?
+> >
+> > -Scott
+>=20
+> The difference is only the read function in hose->ops, which is set to
+> indirect_read_config instead of fsl_indirect_read_config.
+>=20
+> fsl_indirect_read_config calls fsl_pcie_check_link, which is where =20
+> the Oops
+> occurs.
 
-Ping;=20
-Please review this patchset ..=20
+Why is fsl_pcie_check_link being called for non-PCIe buses?
 
-Thanks
--Bharat
+> Mike, can you find out where exactly in fsl_pcie_check_link the bad =20
+> access
+> happens? Enabling CONFIG_DEBUG_BUGVERBOSE might help.
 
-> -----Original Message-----
-> From: Bhushan Bharat-R65777
-> Sent: Wednesday, May 22, 2013 9:51 AM
-> To: galak@kernel.crashing.org; benh@kernel.crashing.org; linuxppc-
-> dev@lists.ozlabs.org; Wood Scott-B07421; Yoder Stuart-B08248; Yang James-=
-RA8135
-> Cc: Bhushan Bharat-R65777
-> Subject: [PATCH 0/2 v3] powerpc: Make ptrace work reliably
->=20
-> From: Bharat Bhushan <bharat.bhushan@freescale.com>
->=20
-> v2->v3
->  - Load PACACURRENT immediately after _MSR(r1), and load DBCR0
->    just after "beq resume_kernel
->  - Added lat_sysycal results before and after the patch
->=20
-> v1->v2
->  - Subject line was missing 0/2, 1/2, 2/2
->=20
-> Bharat Bhushan (2):
->   powerpc: debug control and status registers are 32bit =3D> This patch m=
-akes
-> debug control and status registers as 32bit as they are.
->    This does not fix anything
->=20
->   powerpc: restore dbcr0 on user space exit =3D> This patch fixes the ptr=
-ace
-> reliability issue. The description is the patch
->    describes one of the case where it does not work reliably
->=20
->  arch/powerpc/include/asm/processor.h |    8 ++++----
->  arch/powerpc/kernel/asm-offsets.c    |    1 +
->  arch/powerpc/kernel/entry_64.S       |   28 ++++++++++++++++++++++++----
->  3 files changed, 29 insertions(+), 8 deletions(-)
+Why does it matter?  You shouldn't be calling that function at all.
+
+-Scott=
