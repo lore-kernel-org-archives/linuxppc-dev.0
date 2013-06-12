@@ -1,14 +1,21 @@
-Return-Path: <matteo.facchinetti@sirius-es.it>
-Received: from ns1.gatteins.it (ns1.gatteins.it [193.58.239.94])
- by ozlabs.org (Postfix) with ESMTP id 66E152C0092
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2013 17:22:04 +1000 (EST)
-From: Matteo Facchinetti <matteo.facchinetti@sirius-es.it>
-To: linux-serial@vger.kernel.org,
-	gregkh@linuxfoundation.org
-Subject: [PATCH] serial/mpc52xx_uart: fix kernel panic when system reboot
-Date: Wed, 12 Jun 2013 09:21:42 +0200
-Message-Id: <1371021702-3030-1-git-send-email-matteo.facchinetti@sirius-es.it>
-Cc: agust@denx.de, linuxppc-dev@lists.ozlabs.org
+Return-Path: <imr@rtschenk.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net
+ [IPv6:2001:a60:0:28:0:1:25:1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 95B4F2C0079
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2013 18:19:38 +1000 (EST)
+From: Rojhalat Ibrahim <imr@rtschenk.de>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [BUG] PCI related panic on powerpc based board with 3.10-rcX
+Date: Wed, 12 Jun 2013 10:19:30 +0200
+Message-ID: <34279395.MbRViMjbAR@pcimr>
+In-Reply-To: <1370971739.18413.27@snotra>
+References: <1370971739.18413.27@snotra>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Michael Guntsche <michael.guntsche@it-loops.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,64 +25,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This bug appear when a second PSC based driver appends an interrupt
-routine to the FIFO controller shared interrupt (like spi-mpc512x-psc).
-When reboot, uart_shutdown() remove the serial console interrupt handler
-while spi-mpc512x-psc isr is still activate and cause the following kernel
-panic:
+On Tuesday 11 June 2013 12:28:59 Scott Wood wrote:
+> On 06/11/2013 12:09:42 PM, Michael Guntsche wrote:
+> > On Tue, Jun 11, 2013 at 7:00 PM, Scott Wood <scottwood@freescale.com>
+> > 
+> > wrote:
+> > > On 06/11/2013 02:24:28 AM, Rojhalat Ibrahim wrote:
+> > >> On Monday 10 June 2013 17:52:33 Scott Wood wrote:
+> > >> > On 06/10/2013 12:07:43 PM, Michael Guntsche wrote:
+> > >> > > Good evening,
+> > >> > > 
+> > >> > > This patch does not fix the problem, during boot the kernel
+> > 
+> > still
+> > 
+> > >> > > panics. I had a closer look at the commit and the following
+> > 
+> > patch
+> > 
+> > >> > > fixes it for me....
+> > >> > > 
+> > >> > > diff --git a/arch/powerpc/sysdev/fsl_pci.c
+> > >> > > b/arch/powerpc/sysdev/fsl_pci.c
+> > >> > > index 028ac1f..21b687f 100644
+> > >> > > --- a/arch/powerpc/sysdev/fsl_pci.c
+> > >> > > +++ b/arch/powerpc/sysdev/fsl_pci.c
+> > >> > > @@ -814,7 +814,7 @@ int __init mpc83xx_add_bridge(struct
+> > 
+> > device_node
+> > 
+> > >> > > *dev)
+> > >> > > 
+> > >> > >                 if (ret)
+> > >> > >                 
+> > >> > >                         goto err0;
+> > >> > >         
+> > >> > >         } else {
+> > >> > > 
+> > >> > > -               fsl_setup_indirect_pci(hose, rsrc_cfg.start,
+> > >> > > +               setup_indirect_pci(hose, rsrc_cfg.start,
+> > >> > > 
+> > >> > >                                        rsrc_cfg.start + 4, 0);
+> > >> > >         
+> > >> > >         }
+> > >> > 
+> > >> > The only difference here is that you're not setting hose->ops to
+> > >> > fsl_indirect_pci_ops.  Do you know why that is helping, and what
+> > >> > hose->ops is set to instead?
+> > >> > 
+> > >> > -Scott
+> > >> 
+> > >> The difference is only the read function in hose->ops, which is
+> > 
+> > set to
+> > 
+> > >> indirect_read_config instead of fsl_indirect_read_config.
+> > >> 
+> > >> fsl_indirect_read_config calls fsl_pcie_check_link, which is where
+> > 
+> > the
+> > 
+> > >> Oops
+> > >> occurs.
+> > > 
+> > > Why is fsl_pcie_check_link being called for non-PCIe buses?
+> > > 
+> > >> Mike, can you find out where exactly in fsl_pcie_check_link the
+> > 
+> > bad access
+> > 
+> > >> happens? Enabling CONFIG_DEBUG_BUGVERBOSE might help.
+> > > 
+> > > Why does it matter?  You shouldn't be calling that function at all.
+> > > 
+> > > -Scott
+> > 
+> > For the record BUGVERBOSE is already set with this build so this is
+> > the most detailed trace I get. And regarding Scott's remark, maybe I
+> > was not clear enough in my first report. This is a PCI only board so I
+> > also wondered about the call to fsl_pcie_check_link in the first
+> > place.
+> 
+> Yes, I figured it was non-PCIe because the code change that you said
+> helped was on the non-PCIe branch of the if/else.  Generally it's good
+> to explicitly mention the chip you're using, though.
+> 
+> fsl_setup_indirect_pci should be renamed to fsl_setup_indirect_pcie.
+> Your patch above should be applied, and fsl_setup_indirect_pcie should
+> be moved into the booke/86xx ifdef to avoid an unused function warning.
+> 
+> -Scott
 
-The system is going down for reboot NOW!rpc (ttyPSC0) (Mon Jun 10 12:26:07 20
-INIT: Sending processirq 40: nobody cared (try booting with the "irqpoll" option)
-CPU: 0 PID: 0 Comm: swapper Not tainted 3.10.0-rc4-next-20130607-00001-ga0bceb3-dirty #5
-Call Trace:
-[cfff9f00] [c0007910] show_stack+0x48/0x150 (unreliable)
-[cfff9f40] [c005ae60] __report_bad_irq.isra.6+0x34/0xe0
-[cfff9f60] [c005b194] note_interrupt+0x214/0x26c
-[cfff9f90] [c00590fc] handle_irq_event_percpu+0xd0/0x1bc
-[cfff9fd0] [c005921c] handle_irq_event+0x34/0x54
-[cfff9fe0] [c005b8f4] handle_level_irq+0x90/0xf4
-[cfff9ff0] [c000cb98] call_handle_irq+0x18/0x28
-[c050dd60] [c000575c] do_IRQ+0xcc/0x124
-[c050dd90] [c000eb04] ret_from_except+0x0/0x14
---- Exception: 501 at __do_softirq+0x84/0x17c
-    LR = __do_softirq+0x20/0x17c
-[c050de50] [c0045e7c] ktime_get+0x148/0x160 (unreliable)
-[c050dea0] [c001eccc] irq_exit+0x94/0xb8
-[c050deb0] [c00056e0] do_IRQ+0x50/0x124
-[c050dee0] [c000eb04] ret_from_except+0x0/0x14
---- Exception: 501 at cpu_startup_entry+0x5c/0x134
-    LR = cpu_startup_entry+0xc0/0x134
-[c050dfa0] [c0045170] cpu_startup_entry+0xac/0x134 (unreliable)
-[c050dfc0] [c04b9d70] start_kernel+0x2d4/0x2e8
-[c050dff0] [00003438] 0x3438
-handlers:
-[<c02ae388>] mpc512x_psc_spi_isr
-Disabling IRQ #40
+How about this patch? It uses setup_indirect_pci for the PCI case in 
+mpc83xx_add_bridge. Additionally it adds a check in fsl_setup_indirect_pci
+to only use the modified read function in case of PCIe.
+
+   Rojhalat
 
 
-Disabling serial console interrupt before free_irq()
-prevents this error.
-
-
-
-Signed-off-by: Matteo Facchinetti <matteo.facchinetti@sirius-es.it>
----
- drivers/tty/serial/mpc52xx_uart.c | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/drivers/tty/serial/mpc52xx_uart.c b/drivers/tty/serial/mpc52xx_uart.c
-index 9ba1945..e1280a2 100644
---- a/drivers/tty/serial/mpc52xx_uart.c
-+++ b/drivers/tty/serial/mpc52xx_uart.c
-@@ -1058,6 +1058,9 @@ mpc52xx_uart_shutdown(struct uart_port *port)
- 	if (psc_ops->clock)
- 		psc_ops->clock(port, 0);
- 
-+	/* Disable interrupt */
-+	psc_ops->cw_disable_ints(port);
-+
- 	/* Release interrupt */
- 	free_irq(port->irq, port);
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 028ac1f..45670df 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -97,22 +97,23 @@ static int fsl_indirect_read_config(struct pci_bus *bus, unsigned int devfn,
+ 	return indirect_read_config(bus, devfn, offset, len, val);
  }
--- 
-1.8.1.2
+ 
+-static struct pci_ops fsl_indirect_pci_ops =
++static struct pci_ops fsl_indirect_pcie_ops =
+ {
+ 	.read = fsl_indirect_read_config,
+ 	.write = indirect_write_config,
+ };
+ 
++#if defined(CONFIG_FSL_SOC_BOOKE) || defined(CONFIG_PPC_86xx)
++
+ static void __init fsl_setup_indirect_pci(struct pci_controller* hose,
+ 					  resource_size_t cfg_addr,
+ 					  resource_size_t cfg_data, u32 flags)
+ {
+ 	setup_indirect_pci(hose, cfg_addr, cfg_data, flags);
+-	hose->ops = &fsl_indirect_pci_ops;
++	if (early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP))  /* PCIe */
++		hose->ops = &fsl_indirect_pcie_ops;
+ }
+ 
+-#if defined(CONFIG_FSL_SOC_BOOKE) || defined(CONFIG_PPC_86xx)
+-
+ #define MAX_PHYS_ADDR_BITS	40
+ static u64 pci64_dma_offset = 1ull << MAX_PHYS_ADDR_BITS;
+ 
+@@ -814,8 +815,8 @@ int __init mpc83xx_add_bridge(struct device_node *dev)
+ 		if (ret)
+ 			goto err0;
+ 	} else {
+-		fsl_setup_indirect_pci(hose, rsrc_cfg.start,
+-				       rsrc_cfg.start + 4, 0);
++		setup_indirect_pci(hose, rsrc_cfg.start,
++				   rsrc_cfg.start + 4, 0);
+ 	}
+ 
+ 	printk(KERN_INFO "Found FSL PCI host bridge at 0x%016llx. "
