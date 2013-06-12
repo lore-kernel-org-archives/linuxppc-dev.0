@@ -1,27 +1,15 @@
 Return-Path: <benh@kernel.crashing.org>
-Message-ID: <1371014978.8250.175.camel@pasglop>
-Subject: Re: [PATCH 1/5] ibmebus: convert of_platform_driver to platform_driver
+Message-ID: <1371015544.8250.182.camel@pasglop>
+Subject: [PATCH] of: Fix locking vs. interrupts
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Rob Herring <robherring2@gmail.com>
-Date: Wed, 12 Jun 2013 15:29:38 +1000
-In-Reply-To: <CAL_JsqKXt-gFL4y_k-_dFktpk1JD_S2G+hUsoOavw8QugFMOKA@mail.gmail.com>
-References: <1366596798-9457-1-git-send-email-robherring2@gmail.com>
- <1366596798-9457-2-git-send-email-robherring2@gmail.com>
- <CAL_JsqKDF=hPEM0Jz-zZSXBCXBZ=gBjLWL6QDvq+nFWkqY3DMw@mail.gmail.com>
- <1366911329.2869.31.camel@pasglop> <517980B0.3000401@gmail.com>
- <1366920741.2869.32.camel@pasglop> <517995D0.8020307@gmail.com>
- <CAL_JsqKXt-gFL4y_k-_dFktpk1JD_S2G+hUsoOavw8QugFMOKA@mail.gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Date: Wed, 12 Jun 2013 15:39:04 +1000
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Roland Dreier <roland@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
- linux-rdma@vger.kernel.org, netdev@vger.kernel.org,
- "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Christoph Raisch <raisch@de.ibm.com>, Hoang-Nam Nguyen <hnguyen@de.ibm.com>,
- Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
- Grant Likely <grant.likely@linaro.org>, Paul Mackerras <paulus@samba.org>,
- Sean Hefty <sean.hefty@intel.com>, linuxppc-dev@lists.ozlabs.org,
- Hal Rosenstock <hal.rosenstock@gmail.com>
+Cc: devicetree-discuss@lists.ozlabs.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ David Miller <davem@davemloft.net>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,16 +19,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-05-22 at 07:26 -0500, Rob Herring wrote:
-> > git://sources.calxeda.com/kernel/linux.git of-platform-removal
-> 
-> Ben,
-> 
-> Did you have a chance to test this? I want to get this into -next.
+The OF code uses irqsafe locks everywhere except in a handful of functions
+for no obvious reasons. Since the conversion from the old rwlocks, this
+now triggers lockdep warnings when used at interrupt time. At least one
+driver (ibmvscsi) seems to be doing that from softirq context.
 
-I tested the one in for-next (sorry for the high latency). Works fine.
+This converts the few non-irqsafe locks into irqsafe ones, making them
+consistent with the rest of the code.
 
-Ack.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: <stable@vger.kernel.org> [v3.9+]
+---
 
-Cheers,
-Ben.
+Note: It's silly to access the device-tree at interrupt time in most cases,
+and we should probably fix ibmvscsi, but for the time being, let's fix the
+obvious bug. Thomas, this can probably still go into 3.10... If not, I've
+CCed stable.
+
+diff --git a/arch/sparc/kernel/prom_common.c b/arch/sparc/kernel/prom_common.c
+index 9f20566..79cc0d1 100644
+--- a/arch/sparc/kernel/prom_common.c
++++ b/arch/sparc/kernel/prom_common.c
+@@ -54,6 +54,7 @@ EXPORT_SYMBOL(of_set_property_mutex);
+ int of_set_property(struct device_node *dp, const char *name, void *val, int len)
+ {
+ 	struct property **prevp;
++	unsigned long flags;
+ 	void *new_val;
+ 	int err;
+ 
+@@ -64,7 +65,7 @@ int of_set_property(struct device_node *dp, const char *name, void *val, int len
+ 	err = -ENODEV;
+ 
+ 	mutex_lock(&of_set_property_mutex);
+-	raw_spin_lock(&devtree_lock);
++	raw_spin_lock_irqsave(&devtree_lock, flags);
+ 	prevp = &dp->properties;
+ 	while (*prevp) {
+ 		struct property *prop = *prevp;
+@@ -91,7 +92,7 @@ int of_set_property(struct device_node *dp, const char *name, void *val, int len
+ 		}
+ 		prevp = &(*prevp)->next;
+ 	}
+-	raw_spin_unlock(&devtree_lock);
++	raw_spin_unlock_irqrestore(&devtree_lock, flags);
+ 	mutex_unlock(&of_set_property_mutex);
+ 
+ 	/* XXX Upate procfs if necessary... */
+diff --git a/drivers/of/base.c b/drivers/of/base.c
+index f53b992..951452c 100644
+--- a/drivers/of/base.c
++++ b/drivers/of/base.c
+@@ -192,14 +192,15 @@ EXPORT_SYMBOL(of_find_property);
+ struct device_node *of_find_all_nodes(struct device_node *prev)
+ {
+ 	struct device_node *np;
++	unsigned long flags;
+ 
+-	raw_spin_lock(&devtree_lock);
++	raw_spin_lock_irqsave(&devtree_lock, flags);
+ 	np = prev ? prev->allnext : of_allnodes;
+ 	for (; np != NULL; np = np->allnext)
+ 		if (of_node_get(np))
+ 			break;
+ 	of_node_put(prev);
+-	raw_spin_unlock(&devtree_lock);
++	raw_spin_unlock_irqrestore(&devtree_lock, flags);
+ 	return np;
+ }
+ EXPORT_SYMBOL(of_find_all_nodes);
+@@ -421,8 +422,9 @@ struct device_node *of_get_next_available_child(const struct device_node *node,
+ 	struct device_node *prev)
+ {
+ 	struct device_node *next;
++	unsigned long flags;
+ 
+-	raw_spin_lock(&devtree_lock);
++	raw_spin_lock_irqsave(&devtree_lock, flags);
+ 	next = prev ? prev->sibling : node->child;
+ 	for (; next; next = next->sibling) {
+ 		if (!__of_device_is_available(next))
+@@ -431,7 +433,7 @@ struct device_node *of_get_next_available_child(const struct device_node *node,
+ 			break;
+ 	}
+ 	of_node_put(prev);
+-	raw_spin_unlock(&devtree_lock);
++	raw_spin_unlock_irqrestore(&devtree_lock, flags);
+ 	return next;
+ }
+ EXPORT_SYMBOL(of_get_next_available_child);
+@@ -735,13 +737,14 @@ EXPORT_SYMBOL_GPL(of_modalias_node);
+ struct device_node *of_find_node_by_phandle(phandle handle)
+ {
+ 	struct device_node *np;
++	unsigned long flags;
+ 
+-	raw_spin_lock(&devtree_lock);
++	raw_spin_lock_irqsave(&devtree_lock, flags);
+ 	for (np = of_allnodes; np; np = np->allnext)
+ 		if (np->phandle == handle)
+ 			break;
+ 	of_node_get(np);
+-	raw_spin_unlock(&devtree_lock);
++	raw_spin_unlock_irqrestore(&devtree_lock, flags);
+ 	return np;
+ }
+ EXPORT_SYMBOL(of_find_node_by_phandle);
