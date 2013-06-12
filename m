@@ -1,21 +1,27 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 61D542C007A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2013 14:21:35 +1000 (EST)
-Message-ID: <1371010765.8250.173.camel@pasglop>
-Subject: Re: [PATCH 15/27] powerpc/eeh: I/O chip EEH state retrieval
+Message-ID: <1371014978.8250.175.camel@pasglop>
+Subject: Re: [PATCH 1/5] ibmebus: convert of_platform_driver to platform_driver
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gavin Shan <shangw@linux.vnet.ibm.com>
-Date: Wed, 12 Jun 2013 14:19:25 +1000
-In-Reply-To: <20130612033203.GA10000@shangw.(null)>
-References: <1370417668-16832-1-git-send-email-shangw@linux.vnet.ibm.com>
- <1370417668-16832-16-git-send-email-shangw@linux.vnet.ibm.com>
- <1370936224.8250.93.camel@pasglop> <20130612033203.GA10000@shangw.(null)>
+To: Rob Herring <robherring2@gmail.com>
+Date: Wed, 12 Jun 2013 15:29:38 +1000
+In-Reply-To: <CAL_JsqKXt-gFL4y_k-_dFktpk1JD_S2G+hUsoOavw8QugFMOKA@mail.gmail.com>
+References: <1366596798-9457-1-git-send-email-robherring2@gmail.com>
+ <1366596798-9457-2-git-send-email-robherring2@gmail.com>
+ <CAL_JsqKDF=hPEM0Jz-zZSXBCXBZ=gBjLWL6QDvq+nFWkqY3DMw@mail.gmail.com>
+ <1366911329.2869.31.camel@pasglop> <517980B0.3000401@gmail.com>
+ <1366920741.2869.32.camel@pasglop> <517995D0.8020307@gmail.com>
+ <CAL_JsqKXt-gFL4y_k-_dFktpk1JD_S2G+hUsoOavw8QugFMOKA@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Roland Dreier <roland@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ linux-rdma@vger.kernel.org, netdev@vger.kernel.org,
+ "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Christoph Raisch <raisch@de.ibm.com>, Hoang-Nam Nguyen <hnguyen@de.ibm.com>,
+ Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
+ Grant Likely <grant.likely@linaro.org>, Paul Mackerras <paulus@samba.org>,
+ Sean Hefty <sean.hefty@intel.com>, linuxppc-dev@lists.ozlabs.org,
+ Hal Rosenstock <hal.rosenstock@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,22 +31,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-06-12 at 11:32 +0800, Gavin Shan wrote:
-
-> >Same comments about "state" which is really "delay" and is probably
-> >not necessary at all ...
-> >
+On Wed, 2013-05-22 at 07:26 -0500, Rob Herring wrote:
+> > git://sources.calxeda.com/kernel/linux.git of-platform-removal
 > 
-> We need the "delay" in future to support PowerKVM guest. If the
-> specified PE is being reset, we rely on the delay to hold the
-> powerkvm guest for a while until the PE reset is done.
+> Ben,
+> 
+> Did you have a chance to test this? I want to get this into -next.
 
-Do we ? Can't we just rely on "temp unavailble" result and wait 1s when
-that happens (then try again) ?
+I tested the one in for-next (sorry for the high latency). Works fine.
 
-IE, A delay associated with a state doesn't make that much sense
-semantically speaking. With a state *transition* maybe but this isn't
-what this function is about...
+Ack.
 
 Cheers,
 Ben.
