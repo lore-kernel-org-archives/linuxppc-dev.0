@@ -1,19 +1,22 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- by ozlabs.org (Postfix) with ESMTP id 790822C0095
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2013 23:19:03 +1000 (EST)
-Subject: Re: [v3][KVM][PATCH 1/1] kvm:ppc: control doorbell exception with
- CONFIG_PPC_DOORBELL
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <1368410445-4969-1-git-send-email-tiejun.chen@windriver.com>
-Date: Wed, 12 Jun 2013 15:18:59 +0200
-Message-Id: <AC1A942D-1110-4800-89A1-90E8A959C246@suse.de>
-References: <1368410445-4969-1-git-send-email-tiejun.chen@windriver.com>
-To: Tiejun Chen <tiejun.chen@windriver.com>
-Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
- kvm-ppc@vger.kernel.org
+Return-Path: <bigeasy@linutronix.de>
+Received: from Galois.linutronix.de (www.linutronix.de [62.245.132.108])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 8FE022C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jun 2013 01:08:52 +1000 (EST)
+Message-ID: <51B88EED.6090709@linutronix.de>
+Date: Wed, 12 Jun 2013 17:08:29 +0200
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+MIME-Version: 1.0
+To: Oded Gabbay <ogabbay@advaoptical.com>
+Subject: Re: [PATCH] MDIO: FSL_PQ_MDIO: Fix bug on incorrect offset of tbipa
+ register
+References: <1371041258-15298-1-git-send-email-ogabbay@advaoptical.com>
+In-Reply-To: <1371041258-15298-1-git-send-email-ogabbay@advaoptical.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: stef.van.os@prodrive.nl, timur@tabi.org, Dongsheng.Wang@freescale.com,
+ paulus@samba.org, netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ davem@davemloft.net, linux-kernel@vger.kernel.org, B38951@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,22 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On 13.05.2013, at 04:00, Tiejun Chen wrote:
-
-> We can only use CONFIG_PPC_DOORBELL to control whether
-> the doorbell exception should be enabled.
+On 06/12/2013 02:47 PM, Oded Gabbay wrote:
+> This patch fixes a bug in the fsl_pq_mdio.c module and in relevant device-tree
+> files regarding the correct offset of the tbipa register in the eTSEC
+> controller in some of Freescale's PQ3 and QorIQ SoC.
+> The bug happens when the mdio in the device tree is configured to be compatible
+> to "fsl,gianfar-tbi". Because the mdio device in the device tree points to
+> addresses 25520, 26520 or 27520 (depends on the controller ID), the variable
+> priv->map at function fsl_pq_mdio_probe, points to that address. However,
+> later in the function there is a write to register tbipa that is actually
+> located at 25030, 26030 or 27030. Because the correct address is not io mapped,
+> the contents are written to a different register in the controller.
+> The fix sets the address of the mdio device to start at 25000, 26000 or 27000
+> and changes the mii_offset field to 0x520 in the relevant entry
+> (fsl,gianfar-tbi) of the fsl_pq_mdio_match array.
 > 
-> Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+> Note: This patch may break MDIO functionallity of some old Freescale's SoC
+> until Freescale will fix their device tree files. Basically, every device tree
+> which contains an mdio device that is compatible to "fsl,gianfar-tbi" should be
+> examined.
 
-Thanks, applied to kvm-ppc-queue with a slightly changed patch description:
+Not as is.
+Please add a check for the original address. If it has 0x520 at the end
+print a warning and fix it up. Please add to the patch description
+which register is modified instead if this patch is not applied.
+Depending on how critical this it might has to go stable.
 
-    KVM: PPC: Guard doorbell exception with CONFIG_PPC_DOORBELL
-
-    Availablity of the doorbell_exception function is guarded by
-    CONFIG_PPC_DOORBELL. Use the same define to guard our caller
-    of it.
-
-    Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
-    [agraf: improve patch description]
-    Signed-off-by: Alexander Graf <agraf@suse.de>
+Sebastian
