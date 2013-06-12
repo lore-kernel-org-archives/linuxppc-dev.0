@@ -1,14 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Message-ID: <1371027387.8250.199.camel@pasglop>
+Return-Path: <grant.likely@secretlab.ca>
+Received: from mail-we0-x22f.google.com (mail-we0-x22f.google.com
+ [IPv6:2a00:1450:400c:c03::22f])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BAF772C008A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2013 19:06:21 +1000 (EST)
+Received: by mail-we0-f175.google.com with SMTP id t59so6602688wes.20
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2013 02:06:17 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
 Subject: Re: [PATCH] of: Fix locking vs. interrupts
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Date: Wed, 12 Jun 2013 18:56:27 +1000
+To: Thomas Gleixner <tglx@linutronix.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
 In-Reply-To: <alpine.LFD.2.02.1306121023150.22970@ionos>
 References: <1371015544.8250.182.camel@pasglop>
  <alpine.LFD.2.02.1306121023150.22970@ionos>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Date: Wed, 12 Jun 2013 10:06:12 +0100
+Message-Id: <20130612090612.7E4ED3E0A56@localhost>
 Cc: devicetree-discuss@lists.ozlabs.org,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
  David Miller <davem@davemloft.net>,
@@ -22,7 +30,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-06-12 at 10:25 +0200, Thomas Gleixner wrote:
+On Wed, 12 Jun 2013 10:25:56 +0200 (CEST), Thomas Gleixner <tglx@linutronix.de> wrote:
 > On Wed, 12 Jun 2013, Benjamin Herrenschmidt wrote:
 > 
 > > The OF code uses irqsafe locks everywhere except in a handful of functions
@@ -52,8 +60,6 @@ On Wed, 2013-06-12 at 10:25 +0200, Thomas Gleixner wrote:
 > 
 > Should go through Grant I think.
 
-Right, thinko. Sent to you due to the bug being exposed by your
-conversion to spinlocks. Anyway, Grant got it now.
+Applied, thanks.
 
-Cheers,
-Ben.
+g.
