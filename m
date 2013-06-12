@@ -1,27 +1,22 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-pa0-x232.google.com (mail-pa0-x232.google.com
- [IPv6:2607:f8b0:400e:c03::232])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1F3892C007B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2013 18:21:08 +1000 (EST)
-Received: by mail-pa0-f50.google.com with SMTP id fb1so6340762pad.9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2013 01:21:05 -0700 (PDT)
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: rjw@sisk.pl
-Subject: [PATCH 07/11] cpufreq: powerpc: CBE_RAS: select CPU_FREQ_TABLE
-Date: Wed, 12 Jun 2013 13:45:14 +0530
-Message-Id: <601f678e73c3a5fbcc392ac480a2d12b155d0485.1371022830.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1371022830.git.viresh.kumar@linaro.org>
-References: <cover.1371022830.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1371022830.git.viresh.kumar@linaro.org>
-References: <cover.1371022830.git.viresh.kumar@linaro.org>
-Cc: robin.randhawa@arm.com, arnd@arndb.de, linux-pm@vger.kernel.org,
- Viresh Kumar <viresh.kumar@linaro.org>, patches@linaro.org,
- Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org,
- linaro-kernel@lists.linaro.org, Steve.Bannister@arm.com,
- arvind.chauhan@arm.com, linuxppc-dev@lists.ozlabs.org,
- charles.garcia-tobin@arm.com
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (www.linutronix.de [62.245.132.108])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 95C902C00AF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2013 18:26:12 +1000 (EST)
+Date: Wed, 12 Jun 2013 10:25:56 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] of: Fix locking vs. interrupts
+In-Reply-To: <1371015544.8250.182.camel@pasglop>
+Message-ID: <alpine.LFD.2.02.1306121023150.22970@ionos>
+References: <1371015544.8250.182.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: devicetree-discuss@lists.ozlabs.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ David Miller <davem@davemloft.net>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,26 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-CPUFreq driver of this platform uses APIs from freq_table.c and so must select
-CPU_FREQ_TABLE.
+On Wed, 12 Jun 2013, Benjamin Herrenschmidt wrote:
 
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/Kconfig.powerpc | 1 +
- 1 file changed, 1 insertion(+)
+> The OF code uses irqsafe locks everywhere except in a handful of functions
+> for no obvious reasons. Since the conversion from the old rwlocks, this
+> now triggers lockdep warnings when used at interrupt time. At least one
+> driver (ibmvscsi) seems to be doing that from softirq context.
+> 
+> This converts the few non-irqsafe locks into irqsafe ones, making them
+> consistent with the rest of the code.
 
-diff --git a/drivers/cpufreq/Kconfig.powerpc b/drivers/cpufreq/Kconfig.powerpc
-index 9c926ca..68c1abc 100644
---- a/drivers/cpufreq/Kconfig.powerpc
-+++ b/drivers/cpufreq/Kconfig.powerpc
-@@ -1,6 +1,7 @@
- config CPU_FREQ_CBE
- 	tristate "CBE frequency scaling"
- 	depends on CBE_RAS && PPC_CELL
-+	select CPU_FREQ_TABLE
- 	default m
- 	help
- 	  This adds the cpufreq driver for Cell BE processors.
--- 
-1.7.12.rc2.18.g61b472e
+Fun. https://lkml.org/lkml/2013/2/4/416 seems to have got lost 
+ 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> CC: <stable@vger.kernel.org> [v3.9+]
+
+Acked-by: Thomas Gleixner <tglx@linutronix.de>
+
+> ---
+> 
+> Note: It's silly to access the device-tree at interrupt time in most cases,
+> and we should probably fix ibmvscsi, but for the time being, let's fix the
+
+Right.
+
+> obvious bug. Thomas, this can probably still go into 3.10... If not, I've
+> CCed stable.
+
+Should go through Grant I think.
+
+Thanks,
+
+	tglx
