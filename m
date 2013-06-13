@@ -1,40 +1,38 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Return-Path: <benh@au1.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6EFF42C009C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jun 2013 14:26:26 +1000 (EST)
+ (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8D3062C008C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jun 2013 14:42:51 +1000 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Thu, 13 Jun 2013 00:26:22 -0400
-Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id F09EC38C801A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jun 2013 00:26:18 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5D4QJ7J304916
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jun 2013 00:26:19 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5D4QJFE015047
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jun 2013 01:26:19 -0300
-Date: Thu, 13 Jun 2013 12:26:15 +0800
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+ for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
+ Thu, 13 Jun 2013 14:31:40 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id AD9992CE8044
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jun 2013 14:42:46 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5D4gcDb25166064
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jun 2013 14:42:38 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5D4gk22027553
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jun 2013 14:42:46 +1000
+Message-ID: <1371098537.5555.0.camel@pasglop>
 Subject: Re: [PATCH 15/27] powerpc/eeh: I/O chip EEH state retrieval
-Message-ID: <20130613042615.GA4045@shangw.(null)>
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Date: Thu, 13 Jun 2013 14:42:17 +1000
+In-Reply-To: <20130613042615.GA4045@shangw.(null)>
 References: <1370417668-16832-1-git-send-email-shangw@linux.vnet.ibm.com>
  <1370417668-16832-16-git-send-email-shangw@linux.vnet.ibm.com>
- <1370936224.8250.93.camel@pasglop>
- <20130612033203.GA10000@shangw.(null)>
- <1371010765.8250.173.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1371010765.8250.173.camel@pasglop>
-Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <shangw@linux.vnet.ibm.com>
-Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
+ <1370936224.8250.93.camel@pasglop> <20130612033203.GA10000@shangw.(null)>
+ <1371010765.8250.173.camel@pasglop> <20130613042615.GA4045@shangw.(null)>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,36 +42,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 12, 2013 at 02:19:25PM +1000, Benjamin Herrenschmidt wrote:
->On Wed, 2013-06-12 at 11:32 +0800, Gavin Shan wrote:
->
->> >Same comments about "state" which is really "delay" and is probably
->> >not necessary at all ...
->> >
->> 
->> We need the "delay" in future to support PowerKVM guest. If the
->> specified PE is being reset, we rely on the delay to hold the
->> powerkvm guest for a while until the PE reset is done.
->
->Do we ? Can't we just rely on "temp unavailble" result and wait 1s when
->that happens (then try again) ?
->
->IE, A delay associated with a state doesn't make that much sense
->semantically speaking. With a state *transition* maybe but this isn't
->what this function is about...
->
+On Thu, 2013-06-13 at 12:26 +0800, Gavin Shan wrote:
+> So the answer is we can do it by makeing the assumption that f/w won't
+> return valid delay and we're going to use default value (1 second) for
+> guest on powernv or phyp, or we keep the delay here.
 
-Sorry, Ben. I should have clarified more clearly: Basically, the EEH
-core is going to be shared by: powernv, pseries on top of powernv or
-phyp. While running pseries on top of phyp, we're getting PE state
-through RTAS call "ibm,read-slot-reset-state2" and desired delay returned
-from f/w for temporary unavailable PE. In the future, the function
-ioda_eeh_get_state() will be called directly to emulate the RTAS call
-for guest running on top of PowerNV.
+Ok, at the very least then change the name to "unavailable_delay" or
+something explicit like that then :-)
 
-So the answer is we can do it by makeing the assumption that f/w won't
-return valid delay and we're going to use default value (1 second) for
-guest on powernv or phyp, or we keep the delay here.
+BTW. I've already applied patches 1 and 2 to my tree, you don't have to
+resend those. They'll show up today or tomorrow when I push my next
+branch out.
 
-Thanks,
-Gavin
+Cheers,
+Ben.
