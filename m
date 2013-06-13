@@ -1,25 +1,11 @@
-Return-Path: <B40534@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0189.outbound.messaging.microsoft.com [213.199.154.189])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9AC982C0079
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jun 2013 19:55:53 +1000 (EST)
-From: Wang Dongsheng-B40534 <B40534@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH 1/2] powerpc: add Book E support to 64-bit hibernation
-Date: Thu, 13 Jun 2013 09:55:43 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259F74985@039-SN2MPN1-021.039d.mgd.msft.net>
-References: <1370774260-31072-1-git-send-email-dongsheng.wang@freescale.com>
- (from	dongsheng.wang@freescale.com on Sun Jun  9 05:37:39 2013)
- <1371074628.18413.53@snotra>
-In-Reply-To: <1371074628.18413.53@snotra>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "johannes@sipsolutions.net" <johannes@sipsolutions.net>,
- "anton@enomsg.org" <anton@enomsg.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <michael@ozlabs.org>
+From: Michael Ellerman <michael@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc: Fix stack overflow crash in resume_kernel when
+ ftracing
+Date: Thu, 13 Jun 2013 21:04:56 +1000
+Message-Id: <1371121496-16095-1-git-send-email-michael@ellerman.id.au>
+Cc: Anton Blanchard <anton@samba.org>, rostedt@goodmis.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,82 +15,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+It's possible for us to crash when running with ftrace enabled, eg:
 
+  Bad kernel stack pointer bffffd12 at c00000000000a454
+  cpu 0x3: Vector: 300 (Data Access) at [c00000000ffe3d40]
+      pc: c00000000000a454: resume_kernel+0x34/0x60
+      lr: c00000000000335c: performance_monitor_common+0x15c/0x180
+      sp: bffffd12
+     msr: 8000000000001032
+     dar: bffffd12
+   dsisr: 42000000
 
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Thursday, June 13, 2013 6:04 AM
-> To: Wang Dongsheng-B40534
-> Cc: benh@kernel.crashing.org; johannes@sipsolutions.net; anton@enomsg.org=
-;
-> galak@kernel.crashing.org; linuxppc-dev@lists.ozlabs.org; Wang Dongsheng-
-> B40534
-> Subject: Re: [PATCH 1/2] powerpc: add Book E support to 64-bit
-> hibernation
->=20
-> On 06/09/2013 05:37:39 AM, Wang Dongsheng wrote:
-> >  /* these macros rely on the save area being
-> >   * pointed to by r11 */
-> > +
-> > +#define SAVE_SPR(register)		\
-> > +	mfspr	r0,SPRN_##register	;\
-> > +	std	r0,SL_##register(r11)
-> > +#define RESTORE_SPR(register)		\
-> > +	ld	r0,SL_##register(r11)	;\
-> > +	mtspr	SPRN_##register,r0
-> > +#define RESTORE_SPRG(n)			\
-> > +	ld	r0,SL_SPRG##n(r11)	;\
-> > +	mtsprg	n,r0
-> >  #define SAVE_SPECIAL(special)		\
-> >  	mf##special	r0		;\
-> >  	std	r0, SL_##special(r11)
->=20
-> Is there a particular SPR that you're trying to save, for which
-> SAVE_SPECIAL doesn't work?
->=20
-Yes, like pid, tcr.
+If we look at current's stack (paca->__current->stack) we see it is
+equal to c0000002ecab0000. Our stack is 16K, and comparing to
+paca->kstack (c0000002ecab3e30) we can see that we have overflowed our
+kernel stack. This leads to us writing over our struct thread_info, and
+in this case we have corrupted thread_info->flags and set
+_TIF_EMULATE_STACK_STORE.
 
-> > +#else
-> > +	/* Save SPRGs */
-> > +	RESTORE_SPRG(0)
-> > +	RESTORE_SPRG(1)
-> > +	RESTORE_SPRG(2)
-> > +	RESTORE_SPRG(3)
-> > +	RESTORE_SPRG(4)
-> > +	RESTORE_SPRG(5)
-> > +	RESTORE_SPRG(6)
-> > +	RESTORE_SPRG(7)
->=20
-> Why do we need this on book3e and not on book3s?
->=20
-Book3e: SPRG1 used save paca, SPRG2 be defined SPRN_SPRG_TLB_EXFRAME,...
-I think those register should be save, even now some SPRG register not be u=
-se.
+Dumping the stack we see:
 
-Book3s: Sorry, I not clear why book3s not do this. I think Anton or Ben cou=
-ld know the reason.
+  3:mon> t c0000002ecab0000
+  [c0000002ecab0000] c00000000002131c .performance_monitor_exception+0x5c/0x70
+  [c0000002ecab0080] c00000000000335c performance_monitor_common+0x15c/0x180
+  --- Exception: f01 (Performance Monitor) at c0000000000fb2ec .trace_hardirqs_off+0x1c/0x30
+  [c0000002ecab0370] c00000000016fdb0 .trace_graph_entry+0xb0/0x280 (unreliable)
+  [c0000002ecab0410] c00000000003d038 .prepare_ftrace_return+0x98/0x130
+  [c0000002ecab04b0] c00000000000a920 .ftrace_graph_caller+0x14/0x28
+  [c0000002ecab0520] c0000000000d6b58 .idle_cpu+0x18/0x90
+  [c0000002ecab05a0] c00000000000a934 .return_to_handler+0x0/0x34
+  [c0000002ecab0620] c00000000001e660 .timer_interrupt+0x160/0x300
+  [c0000002ecab06d0] c0000000000025dc decrementer_common+0x15c/0x180
+  --- Exception: 901 (Decrementer) at c0000000000104d4 .arch_local_irq_restore+0x74/0xa0
+  [c0000002ecab09c0] c0000000000fe044 .trace_hardirqs_on+0x14/0x30 (unreliable)
+  [c0000002ecab0fb0] c00000000016fe3c .trace_graph_entry+0x13c/0x280
+  [c0000002ecab1050] c00000000003d038 .prepare_ftrace_return+0x98/0x130
+  [c0000002ecab10f0] c00000000000a920 .ftrace_graph_caller+0x14/0x28
+  [c0000002ecab1160] c0000000000161f0 .__ppc64_runlatch_on+0x10/0x40
+  [c0000002ecab11d0] c00000000000a934 .return_to_handler+0x0/0x34
+  --- Exception: 901 (Decrementer) at c0000000000104d4 .arch_local_irq_restore+0x74/0xa0
 
-> > +
-> > +	RESTORE_SPECIAL(MSR)
-> > +
-> > +	/* Restore TCR and clear any pending bits in TSR. */
-> > +	RESTORE_SPR(TCR)
-> > +	lis	r0, (TSR_ENW | TSR_WIS | TSR_DIS | TSR_FIS)@h
-> > +	mtspr	SPRN_TSR,r0
->=20
-> Please be internally consistent with whitespace after commas, even if the
-> rest of the file is already inconsistent. :-P
->=20
-Thanks.
+  ... and so on
 
-> > +
-> > +	/* Kick decrementer */
-> > +	li	r0,1
-> > +	mtdec	r0
->=20
-> Why doesn't book3s need to kick the decrementer?
->=20
-Sorry, I not clear why book3s not do this. I think Anton or Ben could know =
-the reason.
+__ppc64_runlatch_on() is called from RUNLATCH_ON in the exception entry
+path. At that point the irq state is not consistent, ie. interrupts are
+hard disabled (by the exception entry), but the paca soft-enabled flag
+may be out of sync.
 
-> -Scott
+This leads to the local_irq_restore() in trace_graph_entry() actually
+enabling interrupts, which we do not want. Because we have not yet
+reprogrammed the decrementer we immediately take another decrementer
+exception, and recurse.
+
+The fix is twofold. Firstly make sure we call DISABLE_INTS before
+calling RUNLATCH_ON. The badly named DISABLE_INTS actually reconciles
+the irq state in the paca with the hardware, making it safe again to
+call local_irq_save/restore().
+
+Although that should be sufficient to fix the bug, we also mark the
+runlatch routines as notrace. They are called very early in the
+exception entry and we are asking for trouble tracing them. They are
+also fairly uninteresting and tracing them just adds unnecessary
+overhead.
+
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/include/asm/exception-64s.h |    2 +-
+ arch/powerpc/kernel/process.c            |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+index 8e5fae8..46793b5 100644
+--- a/arch/powerpc/include/asm/exception-64s.h
++++ b/arch/powerpc/include/asm/exception-64s.h
+@@ -513,7 +513,7 @@ label##_common:							\
+  */
+ #define STD_EXCEPTION_COMMON_ASYNC(trap, label, hdlr)		  \
+ 	EXCEPTION_COMMON(trap, label, hdlr, ret_from_except_lite, \
+-			 FINISH_NAP;RUNLATCH_ON;DISABLE_INTS)
++			 FINISH_NAP;DISABLE_INTS;RUNLATCH_ON)
+ 
+ /*
+  * When the idle code in power4_idle puts the CPU into NAP mode,
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index b0f3e3f..076d124 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1369,7 +1369,7 @@ void show_stack(struct task_struct *tsk, unsigned long *stack)
+ 
+ #ifdef CONFIG_PPC64
+ /* Called with hard IRQs off */
+-void __ppc64_runlatch_on(void)
++void notrace __ppc64_runlatch_on(void)
+ {
+ 	struct thread_info *ti = current_thread_info();
+ 	unsigned long ctrl;
+@@ -1382,7 +1382,7 @@ void __ppc64_runlatch_on(void)
+ }
+ 
+ /* Called with hard IRQs off */
+-void __ppc64_runlatch_off(void)
++void notrace __ppc64_runlatch_off(void)
+ {
+ 	struct thread_info *ti = current_thread_info();
+ 	unsigned long ctrl;
+-- 
+1.7.10.4
