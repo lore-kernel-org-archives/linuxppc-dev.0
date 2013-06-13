@@ -1,43 +1,24 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e31.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8E02E2C007A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jun 2013 02:21:14 +1000 (EST)
-Received: from /spool/local
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Wed, 12 Jun 2013 23:50:24 -0600
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
- [9.17.195.228])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 5ADF03E4003F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2013 23:50:03 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5D5oLw9117112
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2013 23:50:21 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5D5oKXm009757
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2013 23:50:20 -0600
-Date: Thu, 13 Jun 2013 13:50:17 +0800
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Subject: Re: [PATCH 15/27] powerpc/eeh: I/O chip EEH state retrieval
-Message-ID: <20130613055017.GA17094@shangw.(null)>
-References: <1370417668-16832-1-git-send-email-shangw@linux.vnet.ibm.com>
- <1370417668-16832-16-git-send-email-shangw@linux.vnet.ibm.com>
- <1370936224.8250.93.camel@pasglop>
- <20130612033203.GA10000@shangw.(null)>
- <1371010765.8250.173.camel@pasglop>
- <20130613042615.GA4045@shangw.(null)>
- <1371098537.5555.0.camel@pasglop>
+Return-Path: <B07421@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0187.outbound.messaging.microsoft.com [213.199.154.187])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4BF862C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jun 2013 02:49:28 +1000 (EST)
+Date: Thu, 13 Jun 2013 11:49:17 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [BUG] PCI related panic on powerpc based board with 3.10-rcX
+To: Rojhalat Ibrahim <imr@rtschenk.de>
+References: <1370971739.18413.27@snotra> <34279395.MbRViMjbAR@pcimr>
+ <1371073826.18413.52@snotra> <7706620.VNI3PE9pqO@pcimr>
+In-Reply-To: <7706620.VNI3PE9pqO@pcimr> (from imr@rtschenk.de on Thu Jun 13
+ 02:21:24 2013)
+Message-ID: <1371142157.2028.9@snotra>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1371098537.5555.0.camel@pasglop>
-Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <shangw@linux.vnet.ibm.com>
-Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Michael Guntsche <michael.guntsche@it-loops.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,24 +28,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 13, 2013 at 02:42:17PM +1000, Benjamin Herrenschmidt wrote:
->On Thu, 2013-06-13 at 12:26 +0800, Gavin Shan wrote:
->> So the answer is we can do it by makeing the assumption that f/w won't
->> return valid delay and we're going to use default value (1 second) for
->> guest on powernv or phyp, or we keep the delay here.
->
->Ok, at the very least then change the name to "unavailable_delay" or
->something explicit like that then :-)
->
+On 06/13/2013 02:21:24 AM, Rojhalat Ibrahim wrote:
+> On Wednesday 12 June 2013 16:50:26 Scott Wood wrote:
+> > On 06/12/2013 03:19:30 AM, Rojhalat Ibrahim wrote:
+> > > On Tuesday 11 June 2013 12:28:59 Scott Wood wrote:
+> > > > Yes, I figured it was non-PCIe because the code change that you =20
+> said
+> > > > helped was on the non-PCIe branch of the if/else.  Generally =20
+> it's
+> > >
+> > > good
+> > >
+> > > > to explicitly mention the chip you're using, though.
+> > > >
+> > > > fsl_setup_indirect_pci should be renamed to =20
+> fsl_setup_indirect_pcie.
+> > > > Your patch above should be applied, and fsl_setup_indirect_pcie
+> > >
+> > > should
+> > >
+> > > > be moved into the booke/86xx ifdef to avoid an unused function
+> > >
+> > > warning.
+> > >
+> > > > -Scott
+> > >
+> > > How about this patch? It uses setup_indirect_pci for the PCI case =20
+> in
+> > > mpc83xx_add_bridge. Additionally it adds a check in
+> > > fsl_setup_indirect_pci
+> > > to only use the modified read function in case of PCIe.
+> >
+> > If we're adding the check to fsl_setup_indirect_pci, there's no =20
+> need to
+> > change the 83xx call back to setup_indirect_pci.  I see that 85xx is
+> > also callirng fsl_setup_indirect_pci for both; it'd be good to be
+> > consistent.
+> >
+> > In any case, can you send a proper patch with a signoff and commit
+> > message?
+> >
+> > -Scott
+>=20
+> Where is it called for 85xx? As far as I can tell =20
+> fsl_setup_indirect_pci is
+> called exactly once in fsl_add_bridge and nowhere else (after =20
+> applying the
+> proposed patch).
 
-Ok.
+fsl_add_bridge() is where it's called for 85xx.
 
->BTW. I've already applied patches 1 and 2 to my tree, you don't have to
->resend those. They'll show up today or tomorrow when I push my next
->branch out.
->
+> For 83xx the decision between PCI and PCIe has already been made at
+> the point where the setup function is called. So IMO it doesn't make =20
+> sense
+> to call fsl_setup_indirect_pci and do the check again. Moreover PCIe =20
+> on 83xx
+> uses a completely different set of functions.
 
-Ok. Thanks, Ben.
+My concern is consistency.  E.g. if 85xx is using =20
+fsl_setup_indirect_pci for both, but 83xx isn't, then a developer using =20
+83xx could end up breaking 85xx by introducing another PCIe dependency =20
+in fsl_setup_indirect_pci.  Or an 85xx developer could put something =20
+non-PCIe-related in fsl_setup_indirect_pci that 83xx would benefit from.
 
-Thanks,
-Gavin
+Alternatively, you could call it fsl_setup_indirect_pcie, and move the =20
+PCIe check into fsl_add_bridge().
+
+-Scott=
