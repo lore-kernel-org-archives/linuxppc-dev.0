@@ -1,25 +1,22 @@
-Return-Path: <OGabbay@advaoptical.com>
-Received: from mail.advaoptical.com (mail.advaoptical.com [91.217.199.15])
+Return-Path: <imr@rtschenk.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net
+ [IPv6:2001:a60:0:28:0:1:25:1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "muc-vsrv-fsmail.advaoptical.com",
- Issuer "muc-vsrv-fsmail.advaoptical.com" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 674E82C0099
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jun 2013 16:45:25 +1000 (EST)
-Message-ID: <51B96A68.40102@advaoptical.com>
-Date: Thu, 13 Jun 2013 09:44:56 +0300
-From: Oded Gabbay <ogabbay@advaoptical.com>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 6CD342C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jun 2013 17:21:30 +1000 (EST)
+From: Rojhalat Ibrahim <imr@rtschenk.de>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [BUG] PCI related panic on powerpc based board with 3.10-rcX
+Date: Thu, 13 Jun 2013 09:21:24 +0200
+Message-ID: <7706620.VNI3PE9pqO@pcimr>
+In-Reply-To: <1371073826.18413.52@snotra>
+References: <1370971739.18413.27@snotra> <34279395.MbRViMjbAR@pcimr>
+ <1371073826.18413.52@snotra>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>, Sebastian Andrzej Siewior
- <bigeasy@linutronix.de>
-Subject: Re: [PATCH] MDIO: FSL_PQ_MDIO: Fix bug on incorrect offset of tbipa
- register
-References: <1371041258-15298-1-git-send-email-ogabbay@advaoptical.com>
- <51B88EED.6090709@linutronix.de> <1371061871.18413.44@snotra>
-In-Reply-To: <1371061871.18413.44@snotra>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: stef.van.os@prodrive.nl, netdev@vger.kernel.org, timur@tabi.org,
- Dongsheng.Wang@freescale.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
- davem@davemloft.net, linux-kernel@vger.kernel.org, B38951@freescale.com
+Content-Type: text/plain; charset="us-ascii"
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Michael Guntsche <michael.guntsche@it-loops.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,81 +26,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/12/2013 09:31 PM, Scott Wood wrote:
-> On 06/12/2013 10:08:29 AM, Sebastian Andrzej Siewior wrote:
->> On 06/12/2013 02:47 PM, Oded Gabbay wrote:
->> > This patch fixes a bug in the fsl_pq_mdio.c module and in relevant 
->> device-tree
->> > files regarding the correct offset of the tbipa register in the eTSEC
->> > controller in some of Freescale's PQ3 and QorIQ SoC.
->> > The bug happens when the mdio in the device tree is configured to 
->> be compatible
->> > to "fsl,gianfar-tbi". Because the mdio device in the device tree 
->> points to
->> > addresses 25520, 26520 or 27520 (depends on the controller ID), the 
->> variable
->> > priv->map at function fsl_pq_mdio_probe, points to that address. 
->> However,
->> > later in the function there is a write to register tbipa that is 
->> actually
->> > located at 25030, 26030 or 27030. Because the correct address is 
->> not io mapped,
->> > the contents are written to a different register in the controller.
->> > The fix sets the address of the mdio device to start at 25000, 
->> 26000 or 27000
->> > and changes the mii_offset field to 0x520 in the relevant entry
->> > (fsl,gianfar-tbi) of the fsl_pq_mdio_match array.
->> >
->> > Note: This patch may break MDIO functionallity of some old 
->> Freescale's SoC
->> > until Freescale will fix their device tree files. Basically, every 
->> device tree
->> > which contains an mdio device that is compatible to 
->> "fsl,gianfar-tbi" should be
->> > examined.
->>
->> Not as is.
->> Please add a check for the original address. If it has 0x520 at the end
->> print a warning and fix it up. Please add to the patch description
->> which register is modified instead if this patch is not applied.
->> Depending on how critical this it might has to go stable.
->
-> I'm not sure it's stable material if this is something that has never 
-> worked...
->
-> The device tree binding will also need to be fixed to note the 
-> difference in "reg" between "fsl,gianfar-mdio" and "fsl-gianfar-tbi" 
-> -- and should give an example of the latter.
->
+On Wednesday 12 June 2013 16:50:26 Scott Wood wrote:
+> On 06/12/2013 03:19:30 AM, Rojhalat Ibrahim wrote:
+> > On Tuesday 11 June 2013 12:28:59 Scott Wood wrote:
+> > > Yes, I figured it was non-PCIe because the code change that you said
+> > > helped was on the non-PCIe branch of the if/else.  Generally it's
+> > 
+> > good
+> > 
+> > > to explicitly mention the chip you're using, though.
+> > > 
+> > > fsl_setup_indirect_pci should be renamed to fsl_setup_indirect_pcie.
+> > > Your patch above should be applied, and fsl_setup_indirect_pcie
+> > 
+> > should
+> > 
+> > > be moved into the booke/86xx ifdef to avoid an unused function
+> > 
+> > warning.
+> > 
+> > > -Scott
+> > 
+> > How about this patch? It uses setup_indirect_pci for the PCI case in
+> > mpc83xx_add_bridge. Additionally it adds a check in
+> > fsl_setup_indirect_pci
+> > to only use the modified read function in case of PCIe.
+> 
+> If we're adding the check to fsl_setup_indirect_pci, there's no need to
+> change the 83xx call back to setup_indirect_pci.  I see that 85xx is
+> also callirng fsl_setup_indirect_pci for both; it'd be good to be
+> consistent.
+> 
+> In any case, can you send a proper patch with a signoff and commit
+> message?
+> 
 > -Scott
-I read the 2 comments and I'm not sure what should be the best way to 
-move ahead.
-I would like to describe what is the impact of not accepting this patch:
-When you connect any eTSEC, except the first one, using SGMII, you must 
-configure the TBIPA register because
-the MII management configuration uses the TBIPA address as part of the 
-SGMII initialization sequence,
-as described in the P2020 Reference manual.
-So, if that register is not initialized, the sequence is broken the and 
-eTSEC is not functioning (can not send/receive
-packets).
-I still think the best way to fix it is what I did:
-1. Point the priv->map to the start of the whole registers range of the 
-eTSEC
-2. Set mii_offset to 0x520 in the "gianfar-tbi" entry of the 
-"fsl_pq_mdio_match" array.
-3. Fix all the usages of the "gianfar-tbi" in the device tree files - 
-change the starting address and reg range
 
-I think this is the best way because it is stated in "fsl_pq_mdio_probe" 
-function that:
-     /*
-      * Some device tree nodes represent only the MII registers, and
-      * others represent the MAC and MII registers.  The 'mii_offset' field
-      * contains the offset of the MII registers inside the mapped register
-      * space.
-      */
-and that's why we have priv->map and priv->regs. So my fix goes 
-according to the current design of the driver.
+Where is it called for 85xx? As far as I can tell fsl_setup_indirect_pci is 
+called exactly once in fsl_add_bridge and nowhere else (after applying the
+proposed patch).
+For 83xx the decision between PCI and PCIe has already been made at
+the point where the setup function is called. So IMO it doesn't make sense
+to call fsl_setup_indirect_pci and do the check again. Moreover PCIe on 83xx
+uses a completely different set of functions.
 
--Oded
+I'll send the proper patch in a separate mail.
+
+   Rojhalat
