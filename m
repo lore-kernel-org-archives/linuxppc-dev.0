@@ -1,36 +1,25 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Return-Path: <OGabbay@advaoptical.com>
+Received: from mail.advaoptical.com (mail.advaoptical.com [91.217.199.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B96A72C009C
- for <linuxppc-dev@ozlabs.org>; Thu, 13 Jun 2013 16:40:37 +1000 (EST)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Thu, 13 Jun 2013 12:05:48 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 479D91258052
- for <linuxppc-dev@ozlabs.org>; Thu, 13 Jun 2013 12:09:24 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5D6eKu323330948
- for <linuxppc-dev@ozlabs.org>; Thu, 13 Jun 2013 12:10:21 +0530
-Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5D6eIef027410
- for <linuxppc-dev@ozlabs.org>; Thu, 13 Jun 2013 16:40:18 +1000
-Message-ID: <51B96933.60708@linux.vnet.ibm.com>
-Date: Thu, 13 Jun 2013 12:09:47 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ (Client CN "muc-vsrv-fsmail.advaoptical.com",
+ Issuer "muc-vsrv-fsmail.advaoptical.com" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 674E82C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jun 2013 16:45:25 +1000 (EST)
+Message-ID: <51B96A68.40102@advaoptical.com>
+Date: Thu, 13 Jun 2013 09:44:56 +0300
+From: Oded Gabbay <ogabbay@advaoptical.com>
 MIME-Version: 1.0
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/perf: Freeze PMC5/6 if we're not using them on
- Power8
-References: <1371086200-16778-1-git-send-email-michael@ellerman.id.au>
-In-Reply-To: <1371086200-16778-1-git-send-email-michael@ellerman.id.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+To: Scott Wood <scottwood@freescale.com>, Sebastian Andrzej Siewior
+ <bigeasy@linutronix.de>
+Subject: Re: [PATCH] MDIO: FSL_PQ_MDIO: Fix bug on incorrect offset of tbipa
+ register
+References: <1371041258-15298-1-git-send-email-ogabbay@advaoptical.com>
+ <51B88EED.6090709@linutronix.de> <1371061871.18413.44@snotra>
+In-Reply-To: <1371061871.18413.44@snotra>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: stef.van.os@prodrive.nl, netdev@vger.kernel.org, timur@tabi.org,
+ Dongsheng.Wang@freescale.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ davem@davemloft.net, linux-kernel@vger.kernel.org, B38951@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,75 +29,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/13/2013 06:46 AM, Michael Ellerman wrote:
-> On Power8 we can freeze PMC5 and 6 if we're not using them. Normally they
-> run all the time.
-> 
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> ---
->  arch/powerpc/include/asm/reg.h |    1 +
->  arch/powerpc/perf/power8-pmu.c |    4 ++++
->  2 files changed, 5 insertions(+)
-> 
-> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-> index 4a9e408..362142b 100644
-> --- a/arch/powerpc/include/asm/reg.h
-> +++ b/arch/powerpc/include/asm/reg.h
-> @@ -626,6 +626,7 @@
->  #define   MMCR0_TRIGGER	0x00002000UL /* TRIGGER enable */
->  #define   MMCR0_PMAO	0x00000080UL /* performance monitor alert has occurred, set to 0 after handling exception */
->  #define   MMCR0_SHRFC	0x00000040UL /* SHRre freeze conditions between threads */
-> +#define   MMCR0_FC56	0x00000010UL /* freeze counters 5 and 6 */
->  #define   MMCR0_FCTI	0x00000008UL /* freeze counters in tags inactive mode */
->  #define   MMCR0_FCTA	0x00000004UL /* freeze counters in tags active mode */
->  #define   MMCR0_FCWAIT	0x00000002UL /* freeze counter in WAIT state */
-> diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
-> index f7d1c4f..e791c68 100644
-> --- a/arch/powerpc/perf/power8-pmu.c
-> +++ b/arch/powerpc/perf/power8-pmu.c
-> @@ -378,6 +378,10 @@ static int power8_compute_mmcr(u64 event[], int n_ev,
->  	if (pmc_inuse & 0x7c)
->  		mmcr[0] |= MMCR0_PMCjCE;
-> 
-> +	/* If we're not using PMC 5 or 6, freeze them */
-> +	if (!(pmc_inuse & 0x60))
-> +		mmcr[0] |= MMCR0_FC56;
-> +
->  	mmcr[1] = mmcr1;
->  	mmcr[2] = mmcra;
-> 
+On 06/12/2013 09:31 PM, Scott Wood wrote:
+> On 06/12/2013 10:08:29 AM, Sebastian Andrzej Siewior wrote:
+>> On 06/12/2013 02:47 PM, Oded Gabbay wrote:
+>> > This patch fixes a bug in the fsl_pq_mdio.c module and in relevant 
+>> device-tree
+>> > files regarding the correct offset of the tbipa register in the eTSEC
+>> > controller in some of Freescale's PQ3 and QorIQ SoC.
+>> > The bug happens when the mdio in the device tree is configured to 
+>> be compatible
+>> > to "fsl,gianfar-tbi". Because the mdio device in the device tree 
+>> points to
+>> > addresses 25520, 26520 or 27520 (depends on the controller ID), the 
+>> variable
+>> > priv->map at function fsl_pq_mdio_probe, points to that address. 
+>> However,
+>> > later in the function there is a write to register tbipa that is 
+>> actually
+>> > located at 25030, 26030 or 27030. Because the correct address is 
+>> not io mapped,
+>> > the contents are written to a different register in the controller.
+>> > The fix sets the address of the mdio device to start at 25000, 
+>> 26000 or 27000
+>> > and changes the mii_offset field to 0x520 in the relevant entry
+>> > (fsl,gianfar-tbi) of the fsl_pq_mdio_match array.
+>> >
+>> > Note: This patch may break MDIO functionallity of some old 
+>> Freescale's SoC
+>> > until Freescale will fix their device tree files. Basically, every 
+>> device tree
+>> > which contains an mdio device that is compatible to 
+>> "fsl,gianfar-tbi" should be
+>> > examined.
+>>
+>> Not as is.
+>> Please add a check for the original address. If it has 0x520 at the end
+>> print a warning and fix it up. Please add to the patch description
+>> which register is modified instead if this patch is not applied.
+>> Depending on how critical this it might has to go stable.
+>
+> I'm not sure it's stable material if this is something that has never 
+> worked...
+>
+> The device tree binding will also need to be fixed to note the 
+> difference in "reg" between "fsl,gianfar-mdio" and "fsl-gianfar-tbi" 
+> -- and should give an example of the latter.
+>
+> -Scott
+I read the 2 comments and I'm not sure what should be the best way to 
+move ahead.
+I would like to describe what is the impact of not accepting this patch:
+When you connect any eTSEC, except the first one, using SGMII, you must 
+configure the TBIPA register because
+the MII management configuration uses the TBIPA address as part of the 
+SGMII initialization sequence,
+as described in the P2020 Reference manual.
+So, if that register is not initialized, the sequence is broken the and 
+eTSEC is not functioning (can not send/receive
+packets).
+I still think the best way to fix it is what I did:
+1. Point the priv->map to the start of the whole registers range of the 
+eTSEC
+2. Set mii_offset to 0x520 in the "gianfar-tbi" entry of the 
+"fsl_pq_mdio_match" array.
+3. Fix all the usages of the "gianfar-tbi" in the device tree files - 
+change the starting address and reg range
 
-Hey Michael,
+I think this is the best way because it is stated in "fsl_pq_mdio_probe" 
+function that:
+     /*
+      * Some device tree nodes represent only the MII registers, and
+      * others represent the MAC and MII registers.  The 'mii_offset' field
+      * contains the offset of the MII registers inside the mapped register
+      * space.
+      */
+and that's why we have priv->map and priv->regs. So my fix goes 
+according to the current design of the driver.
 
-This looks good. But we need to undo this changes when we terminate the perf session.
-That way user would be able to continue reading PMC5 and PMC6 through /sys interface
-as before (which may not be ideal). Adding the following changes along with this patch
-would keep the status quo as it is.
-
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 29c6482..141756a 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -881,6 +881,12 @@ static void power_pmu_disable(struct pmu *pmu)
- 		}
- 
- 		/*
-+ 		 * Undo PMC5/PMC6 freeze if already applied
-+ 	 	 */
-+		if (mfspr(SPRN_MMCR0) & MMCR0_FC56)
-+			mtspr(SPRN_MMCR0, mfspr(SPRN_MMCR0) & ~PMCR0_FC56)
-+
-+		/*
- 		 * Set the 'freeze counters' bit.
- 		 * The barrier is to make sure the mtspr has been
- 		 * executed and the PMU has frozen the events
-
-Regards
-Anshuman
-
-
-
-
-
-
- 
+-Oded
