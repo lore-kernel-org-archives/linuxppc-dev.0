@@ -1,25 +1,18 @@
-Return-Path: <B35336@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A22292C00A0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jun 2013 21:26:24 +1000 (EST)
-Date: Thu, 13 Jun 2013 19:25:52 +0800
-From: Zhao Chenhui <chenhui.zhao@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/sysfs: disable hotplug for the boot cpu
-Message-ID: <20130613112552.GC7536@localhost.localdomain>
-References: <1369727984-21505-1-git-send-email-chenhui.zhao@freescale.com>
- <1369727984-21505-2-git-send-email-chenhui.zhao@freescale.com>
- <1370036984.3928.144.camel@pasglop>
- <20130603104315.GA1365@localhost.localdomain>
- <1371007522.8250.169.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1371007522.8250.169.camel@pasglop>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+ [71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id D80A82C007A
+ for <linuxppc-dev@ozlabs.org>; Thu, 13 Jun 2013 22:45:09 +1000 (EST)
+Message-ID: <1371127506.9844.275.camel@gandalf.local.home>
+Subject: Re: [PATCH] powerpc: Fix stack overflow crash in resume_kernel when
+ ftracing
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Date: Thu, 13 Jun 2013 08:45:06 -0400
+In-Reply-To: <1371121496-16095-1-git-send-email-michael@ellerman.id.au>
+References: <1371121496-16095-1-git-send-email-michael@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,44 +22,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 12, 2013 at 01:25:22PM +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2013-06-03 at 18:43 +0800, Zhao Chenhui wrote:
-> > On Sat, Jun 01, 2013 at 07:49:44AM +1000, Benjamin Herrenschmidt wrote:
-> > > On Tue, 2013-05-28 at 15:59 +0800, Zhao Chenhui wrote:
-> > > > Some features depend on the boot cpu, for instance, hibernate/suspend.
-> > > > So disable hotplug for the boot cpu.
-> > > 
-> > > Don't we have code to "move" the boot CPU around when that happens ?
-> > > 
-> > > Ben.
-> > > 
-> > 
-> > Currently, the code in generic_cpu_disable() likes this:
-> > 
-> >         if (cpu == boot_cpuid)                                                 
-> > 	                return -EBUSY;
-> 
-> But the code in pseries/hotplug-cpu.c doesn't, we just "move" the boot
-> CPU around when that happens. Any reason we can't do that generically ?
-> 
-> Cheers,
-> Ben.
-> 
+On Thu, 2013-06-13 at 21:04 +1000, Michael Ellerman wrote:
 
-Some multicore SoCs firstly boot up the cpu0 after warm reset.
-In some suspend/resume cases, SoC will do a warm reset when resuming.
-In order to ensure that the suspending and resuming is running
-on a same cpu, cpu0 should be the last cpu to suspend. Here, cpu0 is
-the boot_cpuid.
+> Although that should be sufficient to fix the bug, we also mark the
+> runlatch routines as notrace. They are called very early in the
+> exception entry and we are asking for trouble tracing them. They are
+> also fairly uninteresting and tracing them just adds unnecessary
+> overhead.
 
--Chenhui
+Note, I usually lean towards tracing everything that can be traced, and
+only adding notrace to things that will actually cause a crash. If you
+don't like them to be traced, you can always do:
 
-> > If the dying cpu is the boot cpu, it will return -EBUSY. In the subsequent error handling,
-> > cpu_notify_nofail(CPU_DOWN_FAILED) in _cpu_down() will be called. Unfortunately, some
-> > cpu notifier callbacks handled CPU_DOWN_PREPARE, but not CPU_DOWN_FAILED, such as sched_cpu_inactive().
-> > So it will cause issues.
-> > 
-> > If we set the hotpluggable for the boot cpu, we can prevent user applications from disabling the boot cpu.
-> > 
-> > -Chenhui
-> > 
+echo '*__ppc64_runlatch_*'
+> /sys/kernel/debug/tracing/set_ftrace_notrace
+
+and that will keep them from being traced. You can also add it to the
+kernel command line with: ftrace_notrace=*__ppc64_runlatch_* which will
+also disable them on boot up.
+
+Also trace-cmd has:
+
+trace-cmd record -p function_graph -n '*__ppc64_runlatch_*'
+
+that will do the same thing.
+
+Hmm, I should add a way to disable things that are usually considered
+noise. Perhaps add something like:
+
+
+FTRACE_DEFAULT_OFF(__ppc64_runlatch_on);
+
+That adds the function to a different section that places it into
+another file that keeps it from being traced, but can be enabled when
+you want it to.
+
+-- Steve
