@@ -2,18 +2,17 @@ Return-Path: <joe@perches.com>
 Received: from labridge.com (perches-mx.perches.com [206.117.179.246])
  (using SSLv3 with cipher DES-CBC3-SHA (168/168 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 295C32C030A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jun 2013 12:38:58 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id C17292C016F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jun 2013 12:40:01 +1000 (EST)
 From: Joe Perches <joe@perches.com>
 To: Jiri Kosina <trivial@kernel.org>
-Subject: [Trivial PATCH 05/33] powerpc: idle: Convert use of typedef ctl_table
- to struct ctl_table
-Date: Thu, 13 Jun 2013 19:37:30 -0700
-Message-Id: <5e6452662144ad4c21bf817beeac0c1a32793c5c.1371177118.git.joe@perches.com>
+Subject: [Trivial PATCH 12/33] macintosh: Convert use of typedef ctl_table to
+ struct ctl_table
+Date: Thu, 13 Jun 2013 19:37:37 -0700
+Message-Id: <2884936fcfd6463d116ba108b8b174dd822c8547.1371177118.git.joe@perches.com>
 In-Reply-To: <cover.1371177118.git.joe@perches.com>
 References: <cover.1371177118.git.joe@perches.com>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,30 +26,48 @@ This typedef is unnecessary and should just be removed.
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- arch/powerpc/kernel/idle.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/macintosh/mac_hid.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/kernel/idle.c b/arch/powerpc/kernel/idle.c
-index 939ea7e..d7216c9 100644
---- a/arch/powerpc/kernel/idle.c
-+++ b/arch/powerpc/kernel/idle.c
-@@ -85,7 +85,7 @@ int powersave_nap;
- /*
-  * Register the sysctl to set/clear powersave_nap.
-  */
--static ctl_table powersave_nap_ctl_table[]={
-+static struct ctl_table powersave_nap_ctl_table[] = {
+diff --git a/drivers/macintosh/mac_hid.c b/drivers/macintosh/mac_hid.c
+index 6a82388..80d30e8 100644
+--- a/drivers/macintosh/mac_hid.c
++++ b/drivers/macintosh/mac_hid.c
+@@ -181,7 +181,7 @@ static void mac_hid_stop_emulation(void)
+ 	mac_hid_destroy_emumouse();
+ }
+ 
+-static int mac_hid_toggle_emumouse(ctl_table *table, int write,
++static int mac_hid_toggle_emumouse(struct ctl_table *table, int write,
+ 				   void __user *buffer, size_t *lenp,
+ 				   loff_t *ppos)
+ {
+@@ -214,7 +214,7 @@ static int mac_hid_toggle_emumouse(ctl_table *table, int write,
+ }
+ 
+ /* file(s) in /proc/sys/dev/mac_hid */
+-static ctl_table mac_hid_files[] = {
++static struct ctl_table mac_hid_files[] = {
  	{
- 		.procname	= "powersave-nap",
- 		.data		= &powersave_nap,
-@@ -95,7 +95,7 @@ static ctl_table powersave_nap_ctl_table[]={
- 	},
- 	{}
+ 		.procname	= "mouse_button_emulation",
+ 		.data		= &mouse_emulate_buttons,
+@@ -240,7 +240,7 @@ static ctl_table mac_hid_files[] = {
  };
--static ctl_table powersave_nap_sysctl_root[] = {
-+static struct ctl_table powersave_nap_sysctl_root[] = {
+ 
+ /* dir in /proc/sys/dev */
+-static ctl_table mac_hid_dir[] = {
++static struct ctl_table mac_hid_dir[] = {
  	{
- 		.procname	= "kernel",
- 		.mode		= 0555,
+ 		.procname	= "mac_hid",
+ 		.maxlen		= 0,
+@@ -251,7 +251,7 @@ static ctl_table mac_hid_dir[] = {
+ };
+ 
+ /* /proc/sys/dev itself, in case that is not there yet */
+-static ctl_table mac_hid_root_dir[] = {
++static struct ctl_table mac_hid_root_dir[] = {
+ 	{
+ 		.procname	= "dev",
+ 		.maxlen		= 0,
 -- 
 1.8.1.2.459.gbcd45b4.dirty
