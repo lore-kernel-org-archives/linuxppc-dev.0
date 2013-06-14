@@ -1,29 +1,22 @@
-Return-Path: <B31939@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe001.messaging.microsoft.com [65.55.88.11])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A72962C031E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jun 2013 17:15:55 +1000 (EST)
-Received: from mail169-tx2 (localhost [127.0.0.1])	by
- mail169-tx2-R.bigfish.com (Postfix) with ESMTP id 878DC400CE	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jun 2013 07:15:50 +0000 (UTC)
-Received: from TX2EHSMHS019.bigfish.com (unknown [10.9.14.228])	by
- mail169-tx2.bigfish.com (Postfix) with ESMTP id A13361E004A	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jun 2013 07:15:47 +0000 (UTC)
-From: Minghuan Lian <Minghuan.Lian@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 4/5] powerpc/dts: remove msi-available-ranges property
-Date: Fri, 14 Jun 2013 15:15:58 +0800
-Message-ID: <1371194159-17332-4-git-send-email-Minghuan.Lian@freescale.com>
-In-Reply-To: <1371194159-17332-1-git-send-email-Minghuan.Lian@freescale.com>
-References: <1371194159-17332-1-git-send-email-Minghuan.Lian@freescale.com>
+Return-Path: <imr@rtschenk.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net
+ [IPv6:2001:a60:0:28:0:1:25:1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 4141F2C008E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jun 2013 17:56:05 +1000 (EST)
+From: Rojhalat Ibrahim <imr@rtschenk.de>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [BUG] PCI related panic on powerpc based board with 3.10-rcX
+Date: Fri, 14 Jun 2013 09:55:50 +0200
+Message-ID: <6071007.YKP3JmbiTP@pcimr>
+In-Reply-To: <1371142157.2028.9@snotra>
+References: <1370971739.18413.27@snotra> <7706620.VNI3PE9pqO@pcimr>
+ <1371142157.2028.9@snotra>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Scott Wood <scottwood@freescale.com>,
- Minghuan Lian <Minghuan.Lian@freescale.com>,
- Zang Roy-R61911 <r61911@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Michael Guntsche <michael.guntsche@it-loops.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,95 +26,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For MPIC v4.3 MSIIR supports 8 MSI registers and MSIIR1 supports
-16 MSI registers, but uses different IBS and SRS shift. For the
-first register, when using MSIIR we will get the irqs 0x0 0x1 0x2
-...0x1f, but when using MSIIR1, the irqs are 0x0 0x10 0x20 ... 0x1f0
-It is hard to describe the available irqs using property
-'msi-available-ranges'. The patch removes this property.
+On Thursday 13 June 2013 11:49:17 Scott Wood wrote:
+> On 06/13/2013 02:21:24 AM, Rojhalat Ibrahim wrote:
+> > On Wednesday 12 June 2013 16:50:26 Scott Wood wrote:
+> > > On 06/12/2013 03:19:30 AM, Rojhalat Ibrahim wrote:
+> > > > On Tuesday 11 June 2013 12:28:59 Scott Wood wrote:
+> > > > > Yes, I figured it was non-PCIe because the code change that you
+> > 
+> > said
+> > 
+> > > > > helped was on the non-PCIe branch of the if/else.  Generally
+> > 
+> > it's
+> > 
+> > > > good
+> > > > 
+> > > > > to explicitly mention the chip you're using, though.
+> > > > > 
+> > > > > fsl_setup_indirect_pci should be renamed to
+> > 
+> > fsl_setup_indirect_pcie.
+> > 
+> > > > > Your patch above should be applied, and fsl_setup_indirect_pcie
+> > > > 
+> > > > should
+> > > > 
+> > > > > be moved into the booke/86xx ifdef to avoid an unused function
+> > > > 
+> > > > warning.
+> > > > 
+> > > > > -Scott
+> > > > 
+> > > > How about this patch? It uses setup_indirect_pci for the PCI case
+> > 
+> > in
+> > 
+> > > > mpc83xx_add_bridge. Additionally it adds a check in
+> > > > fsl_setup_indirect_pci
+> > > > to only use the modified read function in case of PCIe.
+> > > 
+> > > If we're adding the check to fsl_setup_indirect_pci, there's no
+> > 
+> > need to
+> > 
+> > > change the 83xx call back to setup_indirect_pci.  I see that 85xx is
+> > > also callirng fsl_setup_indirect_pci for both; it'd be good to be
+> > > consistent.
+> > > 
+> > > In any case, can you send a proper patch with a signoff and commit
+> > > message?
+> > > 
+> > > -Scott
+> > 
+> > Where is it called for 85xx? As far as I can tell
+> > fsl_setup_indirect_pci is
+> > called exactly once in fsl_add_bridge and nowhere else (after
+> > applying the
+> > proposed patch).
+> 
+> fsl_add_bridge() is where it's called for 85xx.
+> 
+> > For 83xx the decision between PCI and PCIe has already been made at
+> > the point where the setup function is called. So IMO it doesn't make
+> > sense
+> > to call fsl_setup_indirect_pci and do the check again. Moreover PCIe
+> > on 83xx
+> > uses a completely different set of functions.
+> 
+> My concern is consistency.  E.g. if 85xx is using
+> fsl_setup_indirect_pci for both, but 83xx isn't, then a developer using
+> 83xx could end up breaking 85xx by introducing another PCIe dependency
+> in fsl_setup_indirect_pci.  Or an 85xx developer could put something
+> non-PCIe-related in fsl_setup_indirect_pci that 83xx would benefit from.
+> 
+> Alternatively, you could call it fsl_setup_indirect_pcie, and move the
+> PCIe check into fsl_add_bridge().
+> 
+> -Scott
 
-Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
----
- arch/powerpc/boot/dts/fsl/pq3-mpic.dtsi      | 1 -
- arch/powerpc/boot/dts/fsl/qoriq-mpic.dtsi    | 3 ---
- arch/powerpc/boot/dts/fsl/qoriq-mpic4.3.dtsi | 4 ----
- 3 files changed, 8 deletions(-)
+Ok. I'll post a v2 of the patch.
 
-diff --git a/arch/powerpc/boot/dts/fsl/pq3-mpic.dtsi b/arch/powerpc/boot/dts/fsl/pq3-mpic.dtsi
-index 71c30eb..1ac4f23 100644
---- a/arch/powerpc/boot/dts/fsl/pq3-mpic.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/pq3-mpic.dtsi
-@@ -66,7 +66,6 @@ message@41400 {
- msi@41600 {
- 	compatible = "fsl,mpic-msi";
- 	reg = <0x41600 0x80>;
--	msi-available-ranges = <0 0x100>;
- 	interrupts = <
- 		0xe0 0 0 0
- 		0xe1 0 0 0
-diff --git a/arch/powerpc/boot/dts/fsl/qoriq-mpic.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-mpic.dtsi
-index 08f4227..cf7355c 100644
---- a/arch/powerpc/boot/dts/fsl/qoriq-mpic.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/qoriq-mpic.dtsi
-@@ -54,7 +54,6 @@ timer@41100 {
- msi0: msi@41600 {
- 	compatible = "fsl,mpic-msi";
- 	reg = <0x41600 0x200 0x44140 4>;
--	msi-available-ranges = <0 0x100>;
- 	interrupts = <
- 		0xe0 0 0 0
- 		0xe1 0 0 0
-@@ -69,7 +68,6 @@ msi0: msi@41600 {
- msi1: msi@41800 {
- 	compatible = "fsl,mpic-msi";
- 	reg = <0x41800 0x200 0x45140 4>;
--	msi-available-ranges = <0 0x100>;
- 	interrupts = <
- 		0xe8 0 0 0
- 		0xe9 0 0 0
-@@ -84,7 +82,6 @@ msi1: msi@41800 {
- msi2: msi@41a00 {
- 	compatible = "fsl,mpic-msi";
- 	reg = <0x41a00 0x200 0x46140 4>;
--	msi-available-ranges = <0 0x100>;
- 	interrupts = <
- 		0xf0 0 0 0
- 		0xf1 0 0 0
-diff --git a/arch/powerpc/boot/dts/fsl/qoriq-mpic4.3.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-mpic4.3.dtsi
-index e2665b8..8a997ea 100644
---- a/arch/powerpc/boot/dts/fsl/qoriq-mpic4.3.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/qoriq-mpic4.3.dtsi
-@@ -54,7 +54,6 @@ timer@41100 {
- msi0: msi@41600 {
- 	compatible = "fsl,mpic-msi", "fsl,mpic-msi-v4.3";
- 	reg = <0x41600 0x200 0x44148 4>;
--	msi-available-ranges = <0 0x200>;
- 	interrupts = <
- 		0xe0 0 0 0
- 		0xe1 0 0 0
-@@ -77,7 +76,6 @@ msi0: msi@41600 {
- msi1: msi@41800 {
- 	compatible = "fsl,mpic-msi", "fsl,mpic-msi-v4.3";
- 	reg = <0x41800 0x200 0x45148 4>;
--	msi-available-ranges = <0 0x200>;
- 	interrupts = <
- 		0xe8 0 0 0
- 		0xe9 0 0 0
-@@ -100,7 +98,6 @@ msi1: msi@41800 {
- msi2: msi@41a00 {
- 	compatible = "fsl,mpic-msi", "fsl,mpic-msi-v4.3";
- 	reg = <0x41a00 0x200 0x46148 4>;
--	msi-available-ranges = <0 0x200>;
- 	interrupts = <
- 		0xf0 0 0 0
- 		0xf1 0 0 0
-@@ -123,7 +120,6 @@ msi2: msi@41a00 {
- msi3: msi@41c00 {
- 	compatible = "fsl,mpic-msi", "fsl,mpic-msi-v4.3";
- 	reg = <0x41c00 0x200 0x47148 4>;
--	msi-available-ranges = <0 0x200>;
- 	interrupts = <
- 		0xf8 0 0 0
- 		0xf9 0 0 0
--- 
-1.8.1.2
+   Rojhalat
