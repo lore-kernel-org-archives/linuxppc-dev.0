@@ -1,18 +1,27 @@
-Return-Path: <joe@perches.com>
-Received: from labridge.com (perches-mx.perches.com [206.117.179.246])
- (using SSLv3 with cipher DES-CBC3-SHA (168/168 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id C17292C016F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jun 2013 12:40:01 +1000 (EST)
-From: Joe Perches <joe@perches.com>
-To: Jiri Kosina <trivial@kernel.org>
-Subject: [Trivial PATCH 12/33] macintosh: Convert use of typedef ctl_table to
- struct ctl_table
-Date: Thu, 13 Jun 2013 19:37:37 -0700
-Message-Id: <2884936fcfd6463d116ba108b8b174dd822c8547.1371177118.git.joe@perches.com>
-In-Reply-To: <cover.1371177118.git.joe@perches.com>
-References: <cover.1371177118.git.joe@perches.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <B31939@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1071F2C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jun 2013 17:15:46 +1000 (EST)
+Received: from mail206-tx2 (localhost [127.0.0.1])	by
+ mail206-tx2-R.bigfish.com (Postfix) with ESMTP id 7CE09D00157	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jun 2013 07:15:42 +0000 (UTC)
+Received: from TX2EHSMHS027.bigfish.com (unknown [10.9.14.248])	by
+ mail206-tx2.bigfish.com (Postfix) with ESMTP id B2342300079	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jun 2013 07:15:40 +0000 (UTC)
+From: Minghuan Lian <Minghuan.Lian@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 1/5] powerpc/dts: add MPIC v4.3 dts node
+Date: Fri, 14 Jun 2013 15:15:55 +0800
+Message-ID: <1371194159-17332-1-git-send-email-Minghuan.Lian@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Scott Wood <scottwood@freescale.com>,
+ Minghuan Lian <Minghuan.Lian@freescale.com>,
+ Zang Roy-R61911 <r61911@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,52 +31,204 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This typedef is unnecessary and should just be removed.
+For the latest platform T4 and B4, MPIC controller has been updated
+to v4.3. This patch adds a new file to describe the latest MPIC.
+The MSI blocks number is increased to four, the registers number
+of each block is increased to sixteen. MSIIR1 has been added to
+access these sixteen MSI registers.
 
-Signed-off-by: Joe Perches <joe@perches.com>
+Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
 ---
- drivers/macintosh/mac_hid.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ arch/powerpc/boot/dts/fsl/b4si-post.dtsi     |   2 +-
+ arch/powerpc/boot/dts/fsl/qoriq-mpic4.3.dtsi | 153 +++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/t4240si-post.dtsi  |   2 +-
+ 3 files changed, 155 insertions(+), 2 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-mpic4.3.dtsi
 
-diff --git a/drivers/macintosh/mac_hid.c b/drivers/macintosh/mac_hid.c
-index 6a82388..80d30e8 100644
---- a/drivers/macintosh/mac_hid.c
-+++ b/drivers/macintosh/mac_hid.c
-@@ -181,7 +181,7 @@ static void mac_hid_stop_emulation(void)
- 	mac_hid_destroy_emumouse();
- }
+diff --git a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
+index 7399154..4c617bf 100644
+--- a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
+@@ -204,7 +204,7 @@
+ 		};
+ 	};
  
--static int mac_hid_toggle_emumouse(ctl_table *table, int write,
-+static int mac_hid_toggle_emumouse(struct ctl_table *table, int write,
- 				   void __user *buffer, size_t *lenp,
- 				   loff_t *ppos)
- {
-@@ -214,7 +214,7 @@ static int mac_hid_toggle_emumouse(ctl_table *table, int write,
- }
+-/include/ "qoriq-mpic.dtsi"
++/include/ "qoriq-mpic4.3.dtsi"
  
- /* file(s) in /proc/sys/dev/mac_hid */
--static ctl_table mac_hid_files[] = {
-+static struct ctl_table mac_hid_files[] = {
- 	{
- 		.procname	= "mouse_button_emulation",
- 		.data		= &mouse_emulate_buttons,
-@@ -240,7 +240,7 @@ static ctl_table mac_hid_files[] = {
- };
+ 	guts: global-utilities@e0000 {
+ 		compatible = "fsl,b4-device-config";
+diff --git a/arch/powerpc/boot/dts/fsl/qoriq-mpic4.3.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-mpic4.3.dtsi
+new file mode 100644
+index 0000000..e2665b8
+--- /dev/null
++++ b/arch/powerpc/boot/dts/fsl/qoriq-mpic4.3.dtsi
+@@ -0,0 +1,153 @@
++/*
++ * QorIQ MPIC device tree stub [ controller @ offset 0x40000 ]
++ *
++ * Copyright 2013 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++mpic: pic@40000 {
++	interrupt-controller;
++	#address-cells = <0>;
++	#interrupt-cells = <4>;
++	reg = <0x40000 0x40000>;
++	compatible = "fsl,mpic";
++	device_type = "open-pic";
++	clock-frequency = <0x0>;
++};
++
++timer@41100 {
++	compatible = "fsl,mpic-global-timer";
++	reg = <0x41100 0x100 0x41300 4>;
++	interrupts = <0 0 3 0
++		      1 0 3 0
++		      2 0 3 0
++		      3 0 3 0>;
++};
++
++msi0: msi@41600 {
++	compatible = "fsl,mpic-msi", "fsl,mpic-msi-v4.3";
++	reg = <0x41600 0x200 0x44148 4>;
++	msi-available-ranges = <0 0x200>;
++	interrupts = <
++		0xe0 0 0 0
++		0xe1 0 0 0
++		0xe2 0 0 0
++		0xe3 0 0 0
++		0xe4 0 0 0
++		0xe5 0 0 0
++		0xe6 0 0 0
++		0xe7 0 0 0
++		0x100 0 0 0
++		0x101 0 0 0
++		0x102 0 0 0
++		0x103 0 0 0
++		0x104 0 0 0
++		0x105 0 0 0
++		0x106 0 0 0
++		0x107 0 0 0>;
++};
++
++msi1: msi@41800 {
++	compatible = "fsl,mpic-msi", "fsl,mpic-msi-v4.3";
++	reg = <0x41800 0x200 0x45148 4>;
++	msi-available-ranges = <0 0x200>;
++	interrupts = <
++		0xe8 0 0 0
++		0xe9 0 0 0
++		0xea 0 0 0
++		0xeb 0 0 0
++		0xec 0 0 0
++		0xed 0 0 0
++		0xee 0 0 0
++		0xef 0 0 0
++		0x108 0 0 0
++		0x109 0 0 0
++		0x10a 0 0 0
++		0x10b 0 0 0
++		0x10c 0 0 0
++		0x10d 0 0 0
++		0x10e 0 0 0
++		0x10f 0 0 0>;
++};
++
++msi2: msi@41a00 {
++	compatible = "fsl,mpic-msi", "fsl,mpic-msi-v4.3";
++	reg = <0x41a00 0x200 0x46148 4>;
++	msi-available-ranges = <0 0x200>;
++	interrupts = <
++		0xf0 0 0 0
++		0xf1 0 0 0
++		0xf2 0 0 0
++		0xf3 0 0 0
++		0xf4 0 0 0
++		0xf5 0 0 0
++		0xf6 0 0 0
++		0xf7 0 0 0
++		0x110 0 0 0
++		0x111 0 0 0
++		0x112 0 0 0
++		0x113 0 0 0
++		0x114 0 0 0
++		0x115 0 0 0
++		0x116 0 0 0
++		0x117 0 0 0>;
++};
++
++msi3: msi@41c00 {
++	compatible = "fsl,mpic-msi", "fsl,mpic-msi-v4.3";
++	reg = <0x41c00 0x200 0x47148 4>;
++	msi-available-ranges = <0 0x200>;
++	interrupts = <
++		0xf8 0 0 0
++		0xf9 0 0 0
++		0xfa 0 0 0
++		0xfb 0 0 0
++		0xfc 0 0 0
++		0xfd 0 0 0
++		0xfe 0 0 0
++		0xff 0 0 0
++		0x118 0 0 0
++		0x119 0 0 0
++		0x11a 0 0 0
++		0x11b 0 0 0
++		0x11c 0 0 0
++		0x11d 0 0 0
++		0x11e 0 0 0
++		0x11f 0 0 0>;
++};
++
++timer@42100 {
++	compatible = "fsl,mpic-global-timer";
++	reg = <0x42100 0x100 0x42300 4>;
++	interrupts = <4 0 3 0
++		      5 0 3 0
++		      6 0 3 0
++		      7 0 3 0>;
++};
+diff --git a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
+index bd611a9..510afa3 100644
+--- a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
+@@ -358,7 +358,7 @@
+ 			16 2 1 30>;
+ 	};
  
- /* dir in /proc/sys/dev */
--static ctl_table mac_hid_dir[] = {
-+static struct ctl_table mac_hid_dir[] = {
- 	{
- 		.procname	= "mac_hid",
- 		.maxlen		= 0,
-@@ -251,7 +251,7 @@ static ctl_table mac_hid_dir[] = {
- };
+-/include/ "qoriq-mpic.dtsi"
++/include/ "qoriq-mpic4.3.dtsi"
  
- /* /proc/sys/dev itself, in case that is not there yet */
--static ctl_table mac_hid_root_dir[] = {
-+static struct ctl_table mac_hid_root_dir[] = {
- 	{
- 		.procname	= "dev",
- 		.maxlen		= 0,
+ 	guts: global-utilities@e0000 {
+ 		compatible = "fsl,t4240-device-config", "fsl,qoriq-device-config-2.0";
 -- 
-1.8.1.2.459.gbcd45b4.dirty
+1.8.1.2
