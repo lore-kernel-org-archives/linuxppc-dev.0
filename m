@@ -1,22 +1,24 @@
 Return-Path: <B31939@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1071F2C007E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jun 2013 17:15:46 +1000 (EST)
-Received: from mail206-tx2 (localhost [127.0.0.1])	by
- mail206-tx2-R.bigfish.com (Postfix) with ESMTP id 7CE09D00157	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jun 2013 07:15:42 +0000 (UTC)
-Received: from TX2EHSMHS027.bigfish.com (unknown [10.9.14.248])	by
- mail206-tx2.bigfish.com (Postfix) with ESMTP id B2342300079	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jun 2013 07:15:40 +0000 (UTC)
+ by ozlabs.org (Postfix) with ESMTPS id 400882C02C3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jun 2013 17:15:49 +1000 (EST)
+Received: from mail208-va3 (localhost [127.0.0.1])	by
+ mail208-va3-R.bigfish.com (Postfix) with ESMTP id 57C50720BCB	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jun 2013 07:15:45 +0000 (UTC)
+Received: from VA3EHSMHS020.bigfish.com (unknown [10.7.14.241])	by
+ mail208-va3.bigfish.com (Postfix) with ESMTP id 75781D40084	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jun 2013 07:15:43 +0000 (UTC)
 From: Minghuan Lian <Minghuan.Lian@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 1/5] powerpc/dts: add MPIC v4.3 dts node
-Date: Fri, 14 Jun 2013 15:15:55 +0800
-Message-ID: <1371194159-17332-1-git-send-email-Minghuan.Lian@freescale.com>
+Subject: [PATCH 2/5] powerpc/fsl_msi: add MSIIR1 support for MPIC v4.3
+Date: Fri, 14 Jun 2013 15:15:56 +0800
+Message-ID: <1371194159-17332-2-git-send-email-Minghuan.Lian@freescale.com>
+In-Reply-To: <1371194159-17332-1-git-send-email-Minghuan.Lian@freescale.com>
+References: <1371194159-17332-1-git-send-email-Minghuan.Lian@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Scott Wood <scottwood@freescale.com>,
@@ -31,204 +33,171 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For the latest platform T4 and B4, MPIC controller has been updated
-to v4.3. This patch adds a new file to describe the latest MPIC.
-The MSI blocks number is increased to four, the registers number
-of each block is increased to sixteen. MSIIR1 has been added to
-access these sixteen MSI registers.
+MPIC controller v4.3 provides MSIIR1 to index 16 MSI registers.
+MSIIR can only index 8 MSI registers. MSIIR1 uses different bits
+definition than MSIIR. This patch adds ibs_shift and srs_shift to
+indicate the bits definition of the MSIIR and MSIIR1, so the same
+code can handle the MSIIR and MSIIR1 simultaneously.
 
 Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
 ---
- arch/powerpc/boot/dts/fsl/b4si-post.dtsi     |   2 +-
- arch/powerpc/boot/dts/fsl/qoriq-mpic4.3.dtsi | 153 +++++++++++++++++++++++++++
- arch/powerpc/boot/dts/fsl/t4240si-post.dtsi  |   2 +-
- 3 files changed, 155 insertions(+), 2 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-mpic4.3.dtsi
+ arch/powerpc/sysdev/fsl_msi.c | 62 ++++++++++++++++++++++++++++++++++---------
+ arch/powerpc/sysdev/fsl_msi.h |  4 ++-
+ 2 files changed, 53 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
-index 7399154..4c617bf 100644
---- a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
-@@ -204,7 +204,7 @@
- 		};
- 	};
+diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
+index ab02db3..34510b7 100644
+--- a/arch/powerpc/sysdev/fsl_msi.c
++++ b/arch/powerpc/sysdev/fsl_msi.c
+@@ -28,6 +28,18 @@
+ #include "fsl_msi.h"
+ #include "fsl_pci.h"
  
--/include/ "qoriq-mpic.dtsi"
-+/include/ "qoriq-mpic4.3.dtsi"
++#define MSIIR_OFFSET_MASK	0xfffff
++#define MSIIR_IBS_SHIFT		0
++#define MSIIR_SRS_SHIFT		5
++#define MSIIR1_IBS_SHIFT	4
++#define MSIIR1_SRS_SHIFT	0
++#define MSI_SRS_MASK		0xf
++#define MSI_IBS_MASK		0x1f
++
++#define msi_hwirq(msi, msir_index, intr_index) \
++		((msir_index) << (msi)->srs_shift | \
++		 ((intr_index) << (msi)->ibs_shift))
++
+ static LIST_HEAD(msi_head);
  
- 	guts: global-utilities@e0000 {
- 		compatible = "fsl,b4-device-config";
-diff --git a/arch/powerpc/boot/dts/fsl/qoriq-mpic4.3.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-mpic4.3.dtsi
-new file mode 100644
-index 0000000..e2665b8
---- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/qoriq-mpic4.3.dtsi
-@@ -0,0 +1,153 @@
-+/*
-+ * QorIQ MPIC device tree stub [ controller @ offset 0x40000 ]
-+ *
-+ * Copyright 2013 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+mpic: pic@40000 {
-+	interrupt-controller;
-+	#address-cells = <0>;
-+	#interrupt-cells = <4>;
-+	reg = <0x40000 0x40000>;
-+	compatible = "fsl,mpic";
-+	device_type = "open-pic";
-+	clock-frequency = <0x0>;
-+};
-+
-+timer@41100 {
-+	compatible = "fsl,mpic-global-timer";
-+	reg = <0x41100 0x100 0x41300 4>;
-+	interrupts = <0 0 3 0
-+		      1 0 3 0
-+		      2 0 3 0
-+		      3 0 3 0>;
-+};
-+
-+msi0: msi@41600 {
-+	compatible = "fsl,mpic-msi", "fsl,mpic-msi-v4.3";
-+	reg = <0x41600 0x200 0x44148 4>;
-+	msi-available-ranges = <0 0x200>;
-+	interrupts = <
-+		0xe0 0 0 0
-+		0xe1 0 0 0
-+		0xe2 0 0 0
-+		0xe3 0 0 0
-+		0xe4 0 0 0
-+		0xe5 0 0 0
-+		0xe6 0 0 0
-+		0xe7 0 0 0
-+		0x100 0 0 0
-+		0x101 0 0 0
-+		0x102 0 0 0
-+		0x103 0 0 0
-+		0x104 0 0 0
-+		0x105 0 0 0
-+		0x106 0 0 0
-+		0x107 0 0 0>;
-+};
-+
-+msi1: msi@41800 {
-+	compatible = "fsl,mpic-msi", "fsl,mpic-msi-v4.3";
-+	reg = <0x41800 0x200 0x45148 4>;
-+	msi-available-ranges = <0 0x200>;
-+	interrupts = <
-+		0xe8 0 0 0
-+		0xe9 0 0 0
-+		0xea 0 0 0
-+		0xeb 0 0 0
-+		0xec 0 0 0
-+		0xed 0 0 0
-+		0xee 0 0 0
-+		0xef 0 0 0
-+		0x108 0 0 0
-+		0x109 0 0 0
-+		0x10a 0 0 0
-+		0x10b 0 0 0
-+		0x10c 0 0 0
-+		0x10d 0 0 0
-+		0x10e 0 0 0
-+		0x10f 0 0 0>;
-+};
-+
-+msi2: msi@41a00 {
-+	compatible = "fsl,mpic-msi", "fsl,mpic-msi-v4.3";
-+	reg = <0x41a00 0x200 0x46148 4>;
-+	msi-available-ranges = <0 0x200>;
-+	interrupts = <
-+		0xf0 0 0 0
-+		0xf1 0 0 0
-+		0xf2 0 0 0
-+		0xf3 0 0 0
-+		0xf4 0 0 0
-+		0xf5 0 0 0
-+		0xf6 0 0 0
-+		0xf7 0 0 0
-+		0x110 0 0 0
-+		0x111 0 0 0
-+		0x112 0 0 0
-+		0x113 0 0 0
-+		0x114 0 0 0
-+		0x115 0 0 0
-+		0x116 0 0 0
-+		0x117 0 0 0>;
-+};
-+
-+msi3: msi@41c00 {
-+	compatible = "fsl,mpic-msi", "fsl,mpic-msi-v4.3";
-+	reg = <0x41c00 0x200 0x47148 4>;
-+	msi-available-ranges = <0 0x200>;
-+	interrupts = <
-+		0xf8 0 0 0
-+		0xf9 0 0 0
-+		0xfa 0 0 0
-+		0xfb 0 0 0
-+		0xfc 0 0 0
-+		0xfd 0 0 0
-+		0xfe 0 0 0
-+		0xff 0 0 0
-+		0x118 0 0 0
-+		0x119 0 0 0
-+		0x11a 0 0 0
-+		0x11b 0 0 0
-+		0x11c 0 0 0
-+		0x11d 0 0 0
-+		0x11e 0 0 0
-+		0x11f 0 0 0>;
-+};
-+
-+timer@42100 {
-+	compatible = "fsl,mpic-global-timer";
-+	reg = <0x42100 0x100 0x42300 4>;
-+	interrupts = <4 0 3 0
-+		      5 0 3 0
-+		      6 0 3 0
-+		      7 0 3 0>;
-+};
-diff --git a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-index bd611a9..510afa3 100644
---- a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-@@ -358,7 +358,7 @@
- 			16 2 1 30>;
- 	};
+ struct fsl_msi_feature {
+@@ -80,18 +92,19 @@ static const struct irq_domain_ops fsl_msi_host_ops = {
  
--/include/ "qoriq-mpic.dtsi"
-+/include/ "qoriq-mpic4.3.dtsi"
+ static int fsl_msi_init_allocator(struct fsl_msi *msi_data)
+ {
+-	int rc;
++	int rc, hwirq;
  
- 	guts: global-utilities@e0000 {
- 		compatible = "fsl,t4240-device-config", "fsl,qoriq-device-config-2.0";
+ 	rc = msi_bitmap_alloc(&msi_data->bitmap, NR_MSI_IRQS,
+ 			      msi_data->irqhost->of_node);
+ 	if (rc)
+ 		return rc;
+ 
+-	rc = msi_bitmap_reserve_dt_hwirqs(&msi_data->bitmap);
+-	if (rc < 0) {
+-		msi_bitmap_free(&msi_data->bitmap);
+-		return rc;
+-	}
++	/*
++	 * Reserve all the hwirqs
++	 * The available hwirqs will be released in fsl_msi_setup_hwirq()
++	 */
++	for (hwirq = 0; hwirq < NR_MSI_IRQS; hwirq++)
++		msi_bitmap_reserve_hwirq(&msi_data->bitmap, hwirq);
+ 
+ 	return 0;
+ }
+@@ -144,8 +157,9 @@ static void fsl_compose_msi_msg(struct pci_dev *pdev, int hwirq,
+ 
+ 	msg->data = hwirq;
+ 
+-	pr_debug("%s: allocated srs: %d, ibs: %d\n",
+-		__func__, hwirq / IRQS_PER_MSI_REG, hwirq % IRQS_PER_MSI_REG);
++	pr_debug("%s: allocated srs: %d, ibs: %d\n", __func__,
++		 (hwirq >> msi_data->srs_shift) & MSI_SRS_MASK,
++		 (hwirq >> msi_data->ibs_shift) & MSI_IBS_MASK);
+ }
+ 
+ static int fsl_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+@@ -285,8 +299,8 @@ static void fsl_msi_cascade(unsigned int irq, struct irq_desc *desc)
+ 		intr_index = ffs(msir_value) - 1;
+ 
+ 		cascade_irq = irq_linear_revmap(msi_data->irqhost,
+-				msir_index * IRQS_PER_MSI_REG +
+-					intr_index + have_shift);
++				msi_hwirq(msi_data, msir_index,
++					  intr_index + have_shift));
+ 		if (cascade_irq != NO_IRQ)
+ 			generic_handle_irq(cascade_irq);
+ 		have_shift += intr_index + 1;
+@@ -339,7 +353,7 @@ static int fsl_msi_setup_hwirq(struct fsl_msi *msi, struct platform_device *dev,
+ 			       int offset, int irq_index)
+ {
+ 	struct fsl_msi_cascade_data *cascade_data = NULL;
+-	int virt_msir;
++	int virt_msir, i;
+ 
+ 	virt_msir = irq_of_parse_and_map(dev->dev.of_node, irq_index);
+ 	if (virt_msir == NO_IRQ) {
+@@ -360,6 +374,11 @@ static int fsl_msi_setup_hwirq(struct fsl_msi *msi, struct platform_device *dev,
+ 	irq_set_handler_data(virt_msir, cascade_data);
+ 	irq_set_chained_handler(virt_msir, fsl_msi_cascade);
+ 
++	/* Release the hwirqs corresponding to this MSI register */
++	for (i = 0; i < IRQS_PER_MSI_REG; i++)
++		msi_bitmap_free_hwirqs(&msi->bitmap,
++				       msi_hwirq(msi, offset, i), 1);
++
+ 	return 0;
+ }
+ 
+@@ -368,7 +387,7 @@ static int fsl_of_msi_probe(struct platform_device *dev)
+ {
+ 	const struct of_device_id *match;
+ 	struct fsl_msi *msi;
+-	struct resource res;
++	struct resource res, msiir;
+ 	int err, i, j, irq_index, count;
+ 	int rc;
+ 	const u32 *p;
+@@ -421,10 +440,29 @@ static int fsl_of_msi_probe(struct platform_device *dev)
+ 		}
+ 		msi->msiir_offset =
+ 			features->msiir_offset + (res.start & 0xfffff);
++
++		/*
++		 * First read the MSIIR/MSIIR1 offset from dts
++		 * If failure use the hardcode MSIIR offset
++		 */
++		if (of_address_to_resource(dev->dev.of_node, 1, &msiir))
++			msi->msiir_offset = features->msiir_offset +
++					    (res.start & MSIIR_OFFSET_MASK);
++		else
++			msi->msiir_offset = msiir.start & MSIIR_OFFSET_MASK;
+ 	}
+ 
+ 	msi->feature = features->fsl_pic_ip;
+ 
++	if (of_device_is_compatible(dev->dev.of_node, "fsl,mpic-msi-v4.3")) {
++		msi->srs_shift = MSIIR1_SRS_SHIFT;
++		msi->ibs_shift = MSIIR1_IBS_SHIFT;
++
++	} else {
++		msi->srs_shift = MSIIR_SRS_SHIFT;
++		msi->ibs_shift = MSIIR_IBS_SHIFT;
++	}
++
+ 	/*
+ 	 * Remember the phandle, so that we can match with any PCI nodes
+ 	 * that have an "fsl,msi" property.
+diff --git a/arch/powerpc/sysdev/fsl_msi.h b/arch/powerpc/sysdev/fsl_msi.h
+index 8225f86..43a9d99 100644
+--- a/arch/powerpc/sysdev/fsl_msi.h
++++ b/arch/powerpc/sysdev/fsl_msi.h
+@@ -16,7 +16,7 @@
+ #include <linux/of.h>
+ #include <asm/msi_bitmap.h>
+ 
+-#define NR_MSI_REG		8
++#define NR_MSI_REG		16
+ #define IRQS_PER_MSI_REG	32
+ #define NR_MSI_IRQS	(NR_MSI_REG * IRQS_PER_MSI_REG)
+ 
+@@ -31,6 +31,8 @@ struct fsl_msi {
+ 	unsigned long cascade_irq;
+ 
+ 	u32 msiir_offset; /* Offset of MSIIR, relative to start of CCSR */
++	u32 ibs_shift; /* Shift of interrupt bit select */
++	u32 srs_shift; /* Shift of the shared interrupt register select */
+ 	void __iomem *msi_regs;
+ 	u32 feature;
+ 	int msi_virqs[NR_MSI_REG];
 -- 
 1.8.1.2
