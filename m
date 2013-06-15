@@ -1,33 +1,28 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 73F6A2C00A1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jun 2013 19:04:34 +1000 (EST)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Sat, 15 Jun 2013 03:04:29 -0600
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 608976E8047
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jun 2013 05:04:23 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5F93ZxK40960118
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jun 2013 05:03:35 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5F93Ygu015694
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jun 2013 06:03:35 -0300
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 22/27] powerpc/eeh: Allow to check fenced PHB proactively
-Date: Sat, 15 Jun 2013 17:03:13 +0800
-Message-Id: <1371286998-2842-23-git-send-email-shangw@linux.vnet.ibm.com>
-In-Reply-To: <1371286998-2842-1-git-send-email-shangw@linux.vnet.ibm.com>
-References: <1371286998-2842-1-git-send-email-shangw@linux.vnet.ibm.com>
-Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
+Return-Path: <linus.walleij@linaro.org>
+Received: from mail-ob0-x233.google.com (mail-ob0-x233.google.com
+ [IPv6:2607:f8b0:4003:c01::233])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6FEDC2C0079
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Jun 2013 07:19:48 +1000 (EST)
+Received: by mail-ob0-f179.google.com with SMTP id xk17so1879604obc.38
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jun 2013 14:19:43 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <CACxGe6tW+k6dN6gi6MoPQ2zehP4R+THmzFGZQkhOZGH7oS+S2g@mail.gmail.com>
+References: <1370825362-11145-1-git-send-email-grant.likely@linaro.org>
+ <1370825362-11145-11-git-send-email-grant.likely@linaro.org>
+ <CACRpkda+WD5dMoZ9s7mTLgOgUrm+EH3Mqxio=BuLTDr3aOEruw@mail.gmail.com>
+ <CACxGe6tW+k6dN6gi6MoPQ2zehP4R+THmzFGZQkhOZGH7oS+S2g@mail.gmail.com>
+Date: Sat, 15 Jun 2013 23:19:43 +0200
+Message-ID: <CACRpkdZcnjwQNap=i+LvzEeEFwDFgHw2BD7KVAUCNh0mRtX26w@mail.gmail.com>
+Subject: Re: [RFC 10/10] irqchip: Make versatile fpga irq driver a generic chip
+From: Linus Walleij <linus.walleij@linaro.org>
+To: Grant Likely <grant.likely@linaro.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Russell King <linux@arm.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,92 +32,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It's meaningless to handle frozen PE if we already had fenced PHB.
-The patch intends to check the PHB state before checking PE. If the
-PHB has been put into fenced state, we need take care of that firstly.
+On Mon, Jun 10, 2013 at 12:50 PM, Grant Likely <grant.likely@linaro.org> wrote:
+> On Mon, Jun 10, 2013 at 8:40 AM, Linus Walleij <linus.walleij@linaro.org> wrote:
+>> On Mon, Jun 10, 2013 at 2:49 AM, Grant Likely <grant.likely@linaro.org> wrote:
+>>
+>>> This is an RFC patch to convert the versatile FPGA irq controller driver
+>>> to use generic irq chip. It builds on the series that extends the
+>>> generic chip code to allow a linear irq domain to contain one or more
+>>> generic irq chips so that each interrupt controller doesn't need to hand
+>>> code the generic chip setup.
+>>>
+>>> I've written this as a proof of concept to see if the new generic irq
+>>> code does what it needs to. I had to extend it slightly to properly
+>>> handle the valid mask used by the versatile FPGA driver.
+>>>
+>>> Tested on QEMU, but not on real hardware.
+>>
+>> Is this the same as the one I tested previously?
+>>
+>> If it need re-testing please push a branch and I'll take it
+>> for a spin.
+>
+> Yes, it's the same, but if you can test the branch I would appreciate
+> it. I've done some heavy rework on the irqdomain code that makes
+> everything simpler, but also makes it likely that I've broken
+> something.
+>
+> git://git.secretlab.ca/git/linux.git irqdomain/test
 
-Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/eeh.c |   60 +++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 60 insertions(+), 0 deletions(-)
+It still works like a charm on the Integrator/AP.
+Tested-by: Linus Walleij <linus.walleij@linaro.org>
 
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index f7cbeae..bfd1c20 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -269,6 +269,58 @@ static inline unsigned long eeh_token_to_phys(unsigned long token)
- 	return pa | (token & (PAGE_SIZE-1));
- }
- 
-+/*
-+ * On PowerNV platform, we might already have fenced PHB there.
-+ * For that case, it's meaningless to recover frozen PE. Intead,
-+ * We have to handle fenced PHB firstly.
-+ */
-+static int eeh_phb_check_failure(struct eeh_pe *pe)
-+{
-+	struct eeh_pe *phb_pe;
-+	unsigned long flags;
-+	int ret;
-+
-+	if (!eeh_probe_mode_dev())
-+		return -EPERM;
-+
-+	/* Find the PHB PE */
-+	phb_pe = eeh_phb_pe_get(pe->phb);
-+	if (!phb_pe) {
-+		pr_warning("%s Can't find PE for PHB#%d\n",
-+			   __func__, pe->phb->global_number);
-+		return -EEXIST;
-+	}
-+
-+	/* If the PHB has been in problematic state */
-+	eeh_serialize_lock(&flags);
-+	if (phb_pe->state & (EEH_PE_ISOLATED | EEH_PE_PHB_DEAD)) {
-+		ret = 0;
-+		goto out;
-+	}
-+
-+	/* Check PHB state */
-+	ret = eeh_ops->get_state(phb_pe, NULL);
-+	if ((ret < 0) ||
-+	    (ret == EEH_STATE_NOT_SUPPORT) ||
-+	    (ret & (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE)) ==
-+	    (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE)) {
-+		ret = 0;
-+		goto out;
-+	}
-+
-+	/* Isolate the PHB and send event */
-+	eeh_pe_state_mark(phb_pe, EEH_PE_ISOLATED);
-+	eeh_serialize_unlock(flags);
-+	eeh_send_failure_event(phb_pe);
-+
-+	WARN(1, "EEH: PHB failure detected\n");
-+
-+	return 1;
-+out:
-+	eeh_serialize_unlock(flags);
-+	return ret;
-+}
-+
- /**
-  * eeh_dev_check_failure - Check if all 1's data is due to EEH slot freeze
-  * @edev: eeh device
-@@ -319,6 +371,14 @@ int eeh_dev_check_failure(struct eeh_dev *edev)
- 		return 0;
- 	}
- 
-+	/*
-+	 * On PowerNV platform, we might already have fenced PHB
-+	 * there and we need take care of that firstly.
-+	 */
-+	ret = eeh_phb_check_failure(pe);
-+	if (ret > 0)
-+		return ret;
-+
- 	/* If we already have a pending isolation event for this
- 	 * slot, we know it's bad already, we don't need to check.
- 	 * Do this checking under a lock; as multiple PCI devices
--- 
-1.7.5.4
+Yours,
+Linus Walleij
