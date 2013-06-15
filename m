@@ -1,30 +1,30 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e7.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7FE352C009D
+ (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7E2AB2C009A
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jun 2013 19:03:30 +1000 (EST)
 Received: from /spool/local
- by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Sat, 15 Jun 2013 05:03:27 -0400
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id A6D0638C801A
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jun 2013 05:03:24 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5F93OKT51052740
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jun 2013 05:03:25 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5F93Ofw015206
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jun 2013 06:03:24 -0300
+ Sat, 15 Jun 2013 03:03:26 -0600
+Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 8031738C8045
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jun 2013 05:03:23 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5F93Ouh324400
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jun 2013 05:03:24 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5F93NoQ025779
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jun 2013 06:03:23 -0300
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 04/27] powerpc/eeh: Make eeh_pe_get() public
-Date: Sat, 15 Jun 2013 17:02:55 +0800
-Message-Id: <1371286998-2842-5-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 03/27] powerpc/eeh: Make eeh_phb_pe_get() public
+Date: Sat, 15 Jun 2013 17:02:54 +0800
+Message-Id: <1371286998-2842-4-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1371286998-2842-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1371286998-2842-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -37,52 +37,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-While processing EEH event interrupt from P7IOC, we need function
-to retrieve the PE according to the indicated EEH device. The patch
-makes function eeh_pe_get() public so that other source files can call
-it for that purpose. Also, the patch fixes referring to wrong BDF
-(Bus/Device/Function) address while searching PE in function
-__eeh_pe_get().
+One of the possible cases indicated by P7IOC interrupt is fenced
+PHB. For that case, we need fetch the PE corresponding to the PHB
+and disable the PHB and all subordinate PCI buses/devices, recover
+from the fenced state and eventually enable the whole PHB. We need
+one function to fetch the PHB PE outside eeh_pe.c and the patch is
+going to make eeh_phb_pe_get() public for that purpose.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
  arch/powerpc/include/asm/eeh.h |    1 +
- arch/powerpc/kernel/eeh_pe.c   |    4 ++--
- 2 files changed, 3 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/eeh_pe.c   |    2 +-
+ 2 files changed, 2 insertions(+), 1 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 4ac6f70..acdfcaa 100644
+index e32c3c5..4ac6f70 100644
 --- a/arch/powerpc/include/asm/eeh.h
 +++ b/arch/powerpc/include/asm/eeh.h
-@@ -185,6 +185,7 @@ static inline void eeh_unlock(void)
+@@ -184,6 +184,7 @@ static inline void eeh_unlock(void)
+ 
  typedef void *(*eeh_traverse_func)(void *data, void *flag);
  int eeh_phb_pe_create(struct pci_controller *phb);
- struct eeh_pe *eeh_phb_pe_get(struct pci_controller *phb);
-+struct eeh_pe *eeh_pe_get(struct eeh_dev *edev);
++struct eeh_pe *eeh_phb_pe_get(struct pci_controller *phb);
  int eeh_add_to_parent_pe(struct eeh_dev *edev);
  int eeh_rmv_from_parent_pe(struct eeh_dev *edev, int purge_pe);
  void *eeh_pe_dev_traverse(struct eeh_pe *root,
 diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
-index 71c4544..3d2dcf5 100644
+index 9d4a9e8..71c4544 100644
 --- a/arch/powerpc/kernel/eeh_pe.c
 +++ b/arch/powerpc/kernel/eeh_pe.c
-@@ -228,7 +228,7 @@ static void *__eeh_pe_get(void *data, void *flag)
- 		return pe;
- 
- 	/* Try BDF address */
--	if (edev->pe_config_addr &&
-+	if (edev->config_addr &&
- 	   (edev->config_addr == pe->config_addr))
- 		return pe;
- 
-@@ -246,7 +246,7 @@ static void *__eeh_pe_get(void *data, void *flag)
-  * which is composed of PCI bus/device/function number, or unified
-  * PE address.
+@@ -95,7 +95,7 @@ int eeh_phb_pe_create(struct pci_controller *phb)
+  * hierarchy tree is composed of PHB PEs. The function is used
+  * to retrieve the corresponding PHB PE according to the given PHB.
   */
--static struct eeh_pe *eeh_pe_get(struct eeh_dev *edev)
-+struct eeh_pe *eeh_pe_get(struct eeh_dev *edev)
+-static struct eeh_pe *eeh_phb_pe_get(struct pci_controller *phb)
++struct eeh_pe *eeh_phb_pe_get(struct pci_controller *phb)
  {
- 	struct eeh_pe *root = eeh_phb_pe_get(edev->phb);
  	struct eeh_pe *pe;
+ 
 -- 
 1.7.5.4
