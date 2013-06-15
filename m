@@ -1,19 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id D79002C007E
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jun 2013 12:13:46 +1000 (EST)
-Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id r5F2DfGx026917
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jun 2013 21:13:42 -0500
-Message-ID: <1371262420.21896.26.camel@pasglop>
-Subject: [PATCH] powerpc: Fix missing/delayed calls to irq_work
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Date: Sat, 15 Jun 2013 12:13:40 +1000
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+ [71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id E671A2C008E
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jun 2013 12:17:36 +1000 (EST)
+Message-ID: <1371262654.9844.340.camel@gandalf.local.home>
+Subject: Re: Regression in RCU subsystem in latest mainline kernel
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Fri, 14 Jun 2013 22:17:34 -0400
+In-Reply-To: <1371261741.21896.20.camel@pasglop>
+References: <1626500.7WAVXjfS9F@pcimr>
+ <20130614122800.GL5146@linux.vnet.ibm.com> <1645938.As0LR1yeVd@pcimr>
+ <1371243967.9844.338.camel@gandalf.local.home>
+ <1371261741.21896.20.camel@pasglop>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, paulmck@linux.vnet.ibm.com,
+ Rojhalat Ibrahim <imr@rtschenk.de>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,31 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When replaying interrupts (as a result of the interrupt occurring
-while soft-disabled), in the case of the decrementer, we are exclusively
-testing for a pending timer target. However we also use decrementer
-interrupts to trigger the new "irq_work", which in this case would
-be missed.
+On Sat, 2013-06-15 at 12:02 +1000, Benjamin Herrenschmidt wrote:
+> On Fri, 2013-06-14 at 17:06 -0400, Steven Rostedt wrote:
+> > I was pretty much able to reproduce this on my PA Semi PPC box. Funny
+> > thing is, when I type on the console, it makes progress. Anyway, it
+> > seems that powerpc has an issue with irq_work(). I'll try to get some
+> > time either tonight or next week to figure it out.
+> 
+> Does this help ?
 
-This change the logic to force a replay in both cases of a timer
-boundary reached and a decrementer interrupt having actually occurred
-while disabled. The former test is still useful to catch cases where
-a CPU having been hard-disabled for a long time completely misses the
-interrupt due to a decrementer rollover.
+It did for me. Rojhalat, did this fix your issue too?
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+-- Steve
 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 5cbcf4d..ea185e0 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -162,7 +162,7 @@ notrace unsigned int __check_irq_replay(void)
- 	 * in case we also had a rollover while hard disabled
- 	 */
- 	local_paca->irq_happened &= ~PACA_IRQ_DEC;
--	if (decrementer_check_overflow())
-+	if ((happened & PACA_IRQ_DEC) || decrementer_check_overflow())
- 		return 0x900;
- 
- 	/* Finally check if an external interrupt happened */
+> 
+> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+> index 5cbcf4d..ea185e0 100644
+> --- a/arch/powerpc/kernel/irq.c
+> +++ b/arch/powerpc/kernel/irq.c
+> @@ -162,7 +162,7 @@ notrace unsigned int __check_irq_replay(void)
+>  	 * in case we also had a rollover while hard disabled
+>  	 */
+>  	local_paca->irq_happened &= ~PACA_IRQ_DEC;
+> -	if (decrementer_check_overflow())
+> +	if ((happened & PACA_IRQ_DEC) || decrementer_check_overflow())
+>  		return 0x900;
+>  
+>  	/* Finally check if an external interrupt happened */
+> 
+> Cheers,
+> Ben.
+> 
