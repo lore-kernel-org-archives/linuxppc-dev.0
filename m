@@ -1,30 +1,30 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E8F832C009E
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jun 2013 19:03:38 +1000 (EST)
+ (Client CN "e7.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 37DEC2C00B1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jun 2013 19:03:39 +1000 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Sat, 15 Jun 2013 05:03:36 -0400
+ Sat, 15 Jun 2013 05:03:37 -0400
 Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id B7BF838C801A
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 539C3C9003E
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jun 2013 05:03:33 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
  by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5F93YqB305718
+ r5F93Y1f305716
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jun 2013 05:03:34 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5F93X1m026320
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5F93X5k015635
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jun 2013 06:03:33 -0300
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 20/27] powerpc/eeh: Enable EEH check for config access
-Date: Sat, 15 Jun 2013 17:03:11 +0800
-Message-Id: <1371286998-2842-21-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 19/27] powerpc/eeh: Initialization for PowerNV
+Date: Sat, 15 Jun 2013 17:03:10 +0800
+Message-Id: <1371286998-2842-20-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1371286998-2842-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1371286998-2842-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -37,91 +37,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch enables EEH check and let EEH core to process the EEH
-errors for PowerNV platform while accessing config space. Originally,
-the implementation already had mechanism to check EEH errors and
-tried to recover from them. However, we never let EEH core to handle
-the EEH errors.
+The patch initializes EEH for PowerNV platform. Because the OPAL
+APIs requires HUB ID, we need trace that through struct pnv_phb.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/pci.c |   40 +++++++++++++++++++++++++++++++++-
- 1 files changed, 39 insertions(+), 1 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c   |   16 +++++++++++++---
+ arch/powerpc/platforms/powernv/pci-p5ioc2.c |    6 ++++--
+ 2 files changed, 17 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index 20af220..6d9a506 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -32,6 +32,8 @@
- #include <asm/iommu.h>
- #include <asm/tce.h>
- #include <asm/firmware.h>
-+#include <asm/eeh_event.h>
-+#include <asm/eeh.h>
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 9c9d15e..48b0940 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -973,6 +973,11 @@ static void pnv_pci_ioda_fixup(void)
+ 	pnv_pci_ioda_setup_PEs();
+ 	pnv_pci_ioda_setup_seg();
+ 	pnv_pci_ioda_setup_DMA();
++
++#ifdef CONFIG_EEH
++	eeh_addr_cache_build();
++	eeh_init();
++#endif
+ }
  
- #include "powernv.h"
- #include "pci.h"
-@@ -259,6 +261,10 @@ static int pnv_pci_read_config(struct pci_bus *bus,
+ /*
+@@ -1049,7 +1054,8 @@ static void pnv_pci_ioda_shutdown(struct pnv_phb *phb)
+ 		       OPAL_ASSERT_RESET);
+ }
+ 
+-void __init pnv_pci_init_ioda_phb(struct device_node *np, int ioda_type)
++void __init pnv_pci_init_ioda_phb(struct device_node *np,
++				  u64 hub_id, int ioda_type)
  {
- 	struct pci_controller *hose = pci_bus_to_host(bus);
- 	struct pnv_phb *phb = hose->private_data;
-+#ifdef CONFIG_EEH
-+	struct device_node *busdn, *dn;
-+	struct eeh_pe *phb_pe = NULL;
-+#endif
- 	u32 bdfn = (((uint64_t)bus->number) << 8) | devfn;
- 	s64 rc;
+ 	struct pci_controller *hose;
+ 	static int primary = 1;
+@@ -1087,6 +1093,7 @@ void __init pnv_pci_init_ioda_phb(struct device_node *np, int ioda_type)
+ 	hose->first_busno = 0;
+ 	hose->last_busno = 0xff;
+ 	hose->private_data = phb;
++	phb->hub_id = hub_id;
+ 	phb->opal_id = phb_id;
+ 	phb->type = ioda_type;
  
-@@ -291,8 +297,34 @@ static int pnv_pci_read_config(struct pci_bus *bus,
- 	cfg_dbg("pnv_pci_read_config bus: %x devfn: %x +%x/%x -> %08x\n",
- 		bus->number, devfn, where, size, *val);
+@@ -1172,6 +1179,9 @@ void __init pnv_pci_init_ioda_phb(struct device_node *np, int ioda_type)
+ 		phb->ioda.io_size, phb->ioda.io_segsize);
  
--	/* Check if the PHB got frozen due to an error (no response) */
-+	/*
-+	 * Check if the specified PE has been put into frozen
-+	 * state. On the other hand, we needn't do that while
-+	 * the PHB has been put into frozen state because of
-+	 * PHB-fatal errors.
-+	 */
+ 	phb->hose->ops = &pnv_pci_ops;
 +#ifdef CONFIG_EEH
-+	phb_pe = eeh_phb_pe_get(hose);
-+	if (phb_pe && (phb_pe->state & EEH_PE_ISOLATED))
-+		return PCIBIOS_SUCCESSFUL;
-+
-+	if (phb->eeh_enabled) {
-+		if (*val == EEH_IO_ERROR_VALUE(size)) {
-+			busdn = pci_bus_to_OF_node(bus);
-+			for (dn = busdn->child; dn; dn = dn->sibling) {
-+				struct pci_dn *pdn = PCI_DN(dn);
-+
-+				if (pdn && pdn->devfn == devfn &&
-+				    eeh_dev_check_failure(of_node_to_eeh_dev(dn)))
-+					return PCIBIOS_DEVICE_NOT_FOUND;
-+			}
-+		}
-+	} else {
-+		pnv_pci_config_check_eeh(phb, bus, bdfn);
-+	}
-+#else
- 	pnv_pci_config_check_eeh(phb, bus, bdfn);
++	phb->eeh_ops = &ioda_eeh_ops;
 +#endif
  
- 	return PCIBIOS_SUCCESSFUL;
+ 	/* Setup RID -> PE mapping function */
+ 	phb->bdfn_to_pe = pnv_ioda_bdfn_to_pe;
+@@ -1212,7 +1222,7 @@ void __init pnv_pci_init_ioda_phb(struct device_node *np, int ioda_type)
+ 
+ void pnv_pci_init_ioda2_phb(struct device_node *np)
+ {
+-	pnv_pci_init_ioda_phb(np, PNV_PHB_IODA2);
++	pnv_pci_init_ioda_phb(np, 0, PNV_PHB_IODA2);
  }
-@@ -323,8 +355,14 @@ static int pnv_pci_write_config(struct pci_bus *bus,
- 	default:
- 		return PCIBIOS_FUNC_NOT_SUPPORTED;
+ 
+ void __init pnv_pci_init_ioda_hub(struct device_node *np)
+@@ -1235,6 +1245,6 @@ void __init pnv_pci_init_ioda_hub(struct device_node *np)
+ 	for_each_child_of_node(np, phbn) {
+ 		/* Look for IODA1 PHBs */
+ 		if (of_device_is_compatible(phbn, "ibm,ioda-phb"))
+-			pnv_pci_init_ioda_phb(phbn, PNV_PHB_IODA1);
++			pnv_pci_init_ioda_phb(phbn, hub_id, PNV_PHB_IODA1);
  	}
-+
- 	/* Check if the PHB got frozen due to an error (no response) */
-+#ifdef CONFIG_EEH
-+	if (!phb->eeh_enabled)
-+		pnv_pci_config_check_eeh(phb, bus, bdfn);
-+#else
- 	pnv_pci_config_check_eeh(phb, bus, bdfn);
-+#endif
- 
- 	return PCIBIOS_SUCCESSFUL;
  }
+diff --git a/arch/powerpc/platforms/powernv/pci-p5ioc2.c b/arch/powerpc/platforms/powernv/pci-p5ioc2.c
+index 92b37a0..ae72616 100644
+--- a/arch/powerpc/platforms/powernv/pci-p5ioc2.c
++++ b/arch/powerpc/platforms/powernv/pci-p5ioc2.c
+@@ -92,7 +92,7 @@ static void pnv_pci_p5ioc2_dma_dev_setup(struct pnv_phb *phb,
+ 	set_iommu_table_base(&pdev->dev, &phb->p5ioc2.iommu_table);
+ }
+ 
+-static void __init pnv_pci_init_p5ioc2_phb(struct device_node *np,
++static void __init pnv_pci_init_p5ioc2_phb(struct device_node *np, u64 hub_id,
+ 					   void *tce_mem, u64 tce_size)
+ {
+ 	struct pnv_phb *phb;
+@@ -133,6 +133,7 @@ static void __init pnv_pci_init_p5ioc2_phb(struct device_node *np,
+ 	phb->hose->first_busno = 0;
+ 	phb->hose->last_busno = 0xff;
+ 	phb->hose->private_data = phb;
++	phb->hub_id = hub_id;
+ 	phb->opal_id = phb_id;
+ 	phb->type = PNV_PHB_P5IOC2;
+ 	phb->model = PNV_PHB_MODEL_P5IOC2;
+@@ -226,7 +227,8 @@ void __init pnv_pci_init_p5ioc2_hub(struct device_node *np)
+ 	for_each_child_of_node(np, phbn) {
+ 		if (of_device_is_compatible(phbn, "ibm,p5ioc2-pcix") ||
+ 		    of_device_is_compatible(phbn, "ibm,p5ioc2-pciex")) {
+-			pnv_pci_init_p5ioc2_phb(phbn, tce_mem, tce_per_phb);
++			pnv_pci_init_p5ioc2_phb(phbn, hub_id,
++					tce_mem, tce_per_phb);
+ 			tce_mem += tce_per_phb;
+ 		}
+ 	}
 -- 
 1.7.5.4
