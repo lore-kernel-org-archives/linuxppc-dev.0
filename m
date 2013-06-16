@@ -1,20 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 97ADE2C0085
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Jun 2013 15:12:22 +1000 (EST)
-Message-ID: <1371359531.21896.128.camel@pasglop>
-Subject: Re: [PATCH 21/27] powerpc/eeh: Process interrupts caused by EEH
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gavin Shan <shangw@linux.vnet.ibm.com>
-Date: Sun, 16 Jun 2013 15:12:11 +1000
-In-Reply-To: <1371286998-2842-22-git-send-email-shangw@linux.vnet.ibm.com>
-References: <1371286998-2842-1-git-send-email-shangw@linux.vnet.ibm.com>
- <1371286998-2842-22-git-send-email-shangw@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <mle+cl@mega-nerd.com>
+Received: from hendrix.mega-nerd.net (hendrix.mega-nerd.net [203.206.230.162])
+ by ozlabs.org (Postfix) with ESMTP id E0F862C00A8
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Jun 2013 16:30:43 +1000 (EST)
+Received: from rollins.mnn (pharoah-vpn [10.9.8.2])
+ by hendrix.mega-nerd.net (Postfix) with SMTP id 0D116106DDD
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Jun 2013 16:30:41 +1000 (EST)
+Date: Sun, 16 Jun 2013 16:30:41 +1000
+From: Erik de Castro Lopo <mle+cl@mega-nerd.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: PowerPC assembler question
+Message-Id: <20130616163041.fa5d1f2d41118b39e22241d5@mega-nerd.com>
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6026B727F@saturn3.aculab.com>
+References: <20130610090135.a002eba2401c06eedfa7b7ec@mega-nerd.com>
+ <1370820095.14883.45.camel@pasglop>
+ <20130610211439.a69d2b26ee216f34caf473bd@mega-nerd.com>
+ <AE90C24D6B3A694183C094C60CF0A2F6026B727F@saturn3.aculab.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Reply-To: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,43 +27,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2013-06-15 at 17:03 +0800, Gavin Shan wrote:
-> On PowerNV platform, the EEH event is produced either by detect
-> on accessing config or I/O registers, or by interrupts dedicated
-> for EEH report. The patch adds support to process the interrupts
-> dedicated for EEH report.
-> 
-> Firstly, the kernel thread will be waken up to process incoming
-> interrupt. The PHBs will be scanned one by one to process all
-> existing EEH errors. Besides, There're mulple EEH errors that can
-> be reported from interrupts and we have differentiated actions
-> against them:
-> 
-> - If the IOC is dead, all PCI buses under all PHBs will be removed
->   from the system.
-> - If the PHB is dead, all PCI buses under the PHB will be removed
->   from the system.
-> - If the PHB is fenced, EEH event will be sent to EEH core and
->   the fenced PHB is expected to be resetted completely.
-> - If specific PE has been put into frozen state, EEH event will
->   be sent to EEH core so that the PE will be resetted.
-> - If the error is informational one, we just output the related
->   registers for debugging purpose and no more action will be
->   taken.
 
-Getting better.... but:
+Been busy, but I'm back looking at this.
 
- - I still don't like having a kthread for that. Why not use schedule_work() ?
+David Laight wrote:
 
- - We already have an EEH thread, why not just use it ? IE send it a special
-type of message that makes it query the backend for error info instead ?
+> With a scratch register there are some two instruction sequences.
+> Reusing the destination register something like:
+>
+> 	addis	%r30,%r31,hi(.label - 1b)
+> 	lwzx	%r30,lo(.label - 1b)(%r30)
+>
 
- - I'm not fan of exposing that EEH private lock. I don't entirely understand
-why you need to do that either.
+I've managed to convert that into something gcc understands:
 
-Generally speaking, I'm thinking this file should contain less stuff, most of
-it should move into the ioda backend, the interrupt just turning into some
-request down to the existing EEH thread.
+	addis	30, 31, (.label-(1b))@ha
+	lwz	30, (.label-(1b))@l(30)
+
+The "@l" is the equivalent of lo() and "@ha" is the sign extending
+verions of hi(). Unfortunately, this code segfaults on executiion.
+I suspect that is because I have used the LWZ instruction instead
+of LWZX suggested by David.
+
+Unfortunately gcc doesn't accept LWZX which I found documented
+here:
+
+     http://pds.twi.tudelft.nl/vakken/in101/labcourse/instruction-set/lwzx.html
+
+and seems to have LX as a synonym, but that instruction only seems
+to work on registers, not on addresses as we have here.
+
+I'm actually beginning to have a better understanding of the code
+and I've pulled out these snippets code code into a small assember
+program I'm compiling with gcc and running under gdb.
 
 Cheers,
-Ben.
+Erik
+-- 
+----------------------------------------------------------------------
+Erik de Castro Lopo
+http://www.mega-nerd.com/
