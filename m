@@ -1,16 +1,19 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 4ECFF2C0096
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jun 2013 13:13:27 +1000 (EST)
-Message-ID: <1371438800.22681.38.camel@ul30vt.home>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id D37D22C016F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jun 2013 13:56:17 +1000 (EST)
+Message-ID: <1371441361.21896.152.camel@pasglop>
 Subject: Re: [PATCH 3/4] KVM: PPC: Add support for IOMMU in-kernel handling
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Sun, 16 Jun 2013 21:13:20 -0600
-In-Reply-To: <1371422343.21896.143.camel@pasglop>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alex Williamson <alex.williamson@redhat.com>
+Date: Mon, 17 Jun 2013 13:56:01 +1000
+In-Reply-To: <1371438800.22681.38.camel@ul30vt.home>
 References: <1370412673-1345-1-git-send-email-aik@ozlabs.ru>
  <1370412673-1345-4-git-send-email-aik@ozlabs.ru>
  <1371422343.21896.143.camel@pasglop>
+ <1371438800.22681.38.camel@ul30vt.home>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -26,38 +29,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-06-17 at 08:39 +1000, Benjamin Herrenschmidt wrote:
-> On Wed, 2013-06-05 at 16:11 +1000, Alexey Kardashevskiy wrote:
-> > +long kvm_vm_ioctl_create_spapr_tce_iommu(struct kvm *kvm,
-> > +               struct kvm_create_spapr_tce_iommu *args)
-> > +{
-> > +       struct kvmppc_spapr_tce_table *tt = NULL;
-> > +       struct iommu_group *grp;
-> > +       struct iommu_table *tbl;
-> > +
-> > +       /* Find an IOMMU table for the given ID */
-> > +       grp = iommu_group_get_by_id(args->iommu_id);
-> > +       if (!grp)
-> > +               return -ENXIO;
-> > +
-> > +       tbl = iommu_group_get_iommudata(grp);
-> > +       if (!tbl)
-> > +               return -ENXIO;
-> 
-> So Alex Graf pointed out here, there is a security issue here, or are we
-> missing something ?
-> 
-> What prevents a malicious program that has access to /dev/kvm from
-> taking over random iommu groups (including host used ones) that way?
-> 
-> What is the security model of that whole iommu stuff to begin with ?
+On Sun, 2013-06-16 at 21:13 -0600, Alex Williamson wrote:
 
-IOMMU groups themselves don't provide security, they're accessed by
-interfaces like VFIO, which provide the security.  Given a brief look, I
-agree, this looks like a possible backdoor.  The typical VFIO way to
-handle this would be to pass a VFIO file descriptor here to prove that
-the process has access to the IOMMU group.  This is how /dev/vfio/vfio
-gains the ability to setup an IOMMU domain an do mappings with the
-SET_CONTAINER ioctl using a group fd.  Thanks,
+> IOMMU groups themselves don't provide security, they're accessed by
+> interfaces like VFIO, which provide the security.  Given a brief look, I
+> agree, this looks like a possible backdoor.  The typical VFIO way to
+> handle this would be to pass a VFIO file descriptor here to prove that
+> the process has access to the IOMMU group.  This is how /dev/vfio/vfio
+> gains the ability to setup an IOMMU domain an do mappings with the
+> SET_CONTAINER ioctl using a group fd.  Thanks,
 
-Alex
+How do you envision that in the kernel ? IE. I'm in KVM code, gets that
+vfio fd, what do I do with it ?
+
+Basically, KVM needs to know that the user is allowed to use that iommu
+group. I don't think we want KVM however to call into VFIO directly
+right ?
+
+Cheers,
+Ben.
