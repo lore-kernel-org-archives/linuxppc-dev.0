@@ -1,19 +1,18 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
- [71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id AD64B2C0299
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jun 2013 23:51:53 +1000 (EST)
-Message-ID: <1371477109.18733.7.camel@gandalf.local.home>
-Subject: Re: Regression in RCU subsystem in latest mainline kernel
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Rojhalat Ibrahim <imr@rtschenk.de>
-Date: Mon, 17 Jun 2013 09:51:49 -0400
-In-Reply-To: <1558776.vQIgbXvFW8@pcimr>
-References: <1626500.7WAVXjfS9F@pcimr> <1371261741.21896.20.camel@pasglop>
- <1371262654.9844.340.camel@gandalf.local.home> <1558776.vQIgbXvFW8@pcimr>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: paulmck@linux.vnet.ibm.com, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-kernel@vger.kernel.org
+Return-Path: <imr@rtschenk.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 8FBF42C030A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 00:02:45 +1000 (EST)
+From: Rojhalat Ibrahim <imr@rtschenk.de>
+To: Scott Wood <scottwood@freescale.com>
+Subject: [PATCH v3] powerpc/pci: Fix setup of Freescale PCI / PCIe controllers
+Date: Mon, 17 Jun 2013 16:02:41 +0200
+Message-ID: <7498229.szaOTnNpbV@pcimr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Michael Guntsche <michael.guntsche@it-loops.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,28 +22,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-06-17 at 15:21 +0200, Rojhalat Ibrahim wrote:
-> On Friday 14 June 2013 22:17:34 Steven Rostedt wrote:
-> > On Sat, 2013-06-15 at 12:02 +1000, Benjamin Herrenschmidt wrote:
-> > > On Fri, 2013-06-14 at 17:06 -0400, Steven Rostedt wrote:
-> > > > I was pretty much able to reproduce this on my PA Semi PPC box. Funny
-> > > > thing is, when I type on the console, it makes progress. Anyway, it
-> > > > seems that powerpc has an issue with irq_work(). I'll try to get some
-> > > > time either tonight or next week to figure it out.
-> > > 
-> > > Does this help ?
-> > 
-> > It did for me. Rojhalat, did this fix your issue too?
-> > 
-> 
-> FWIW, since the fix is already applied, but it fixes my problem too.
-> 
+Commit 50d8f87d2b3 (powerpc/fsl-pci Make PCIe hotplug work with Freescale
+PCIe controllers) does not handle non-PCIe controllers properly, which causes
+a panic during boot for certain configurations.
+This patch fixes the issue by calling setup_indirect_pci for all device types.
+fsl_indirect_read_config is now only used for booke/86xx PCIe controllers.
 
-Thanks for the update. Yeah, Ben was about to send a queue to Linus, and
-as this proved to fix it for me, he felt that it needed to go in that
-queue instead of waiting for an update.
+Reported-by: Michael Guntsche <mike@it-loops.com>
+Cc: Scott Wood <scottwood@freescale.com>
+Signed-off-by: Rojhalat Ibrahim <imr@rtschenk.de>
+---
+v3: Fix compile error
 
-But I do appreciate the update as I wasn't 100% that this would fix the
-problem for you too.
+ arch/powerpc/sysdev/fsl_pci.c |   24 +++++++++---------------
+ 1 file changed, 9 insertions(+), 15 deletions(-)
 
--- Steve
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 028ac1f..46ac1dd 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -97,22 +97,14 @@ static int fsl_indirect_read_config(struct pci_bus *bus, unsigned int devfn,
+ 	return indirect_read_config(bus, devfn, offset, len, val);
+ }
+ 
+-static struct pci_ops fsl_indirect_pci_ops =
++#if defined(CONFIG_FSL_SOC_BOOKE) || defined(CONFIG_PPC_86xx)
++
++static struct pci_ops fsl_indirect_pcie_ops =
+ {
+ 	.read = fsl_indirect_read_config,
+ 	.write = indirect_write_config,
+ };
+ 
+-static void __init fsl_setup_indirect_pci(struct pci_controller* hose,
+-					  resource_size_t cfg_addr,
+-					  resource_size_t cfg_data, u32 flags)
+-{
+-	setup_indirect_pci(hose, cfg_addr, cfg_data, flags);
+-	hose->ops = &fsl_indirect_pci_ops;
+-}
+-
+-#if defined(CONFIG_FSL_SOC_BOOKE) || defined(CONFIG_PPC_86xx)
+-
+ #define MAX_PHYS_ADDR_BITS	40
+ static u64 pci64_dma_offset = 1ull << MAX_PHYS_ADDR_BITS;
+ 
+@@ -504,13 +496,15 @@ int __init fsl_add_bridge(struct platform_device *pdev, int is_primary)
+ 	if (!hose->private_data)
+ 		goto no_bridge;
+ 
+-	fsl_setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4,
+-			       PPC_INDIRECT_TYPE_BIG_ENDIAN);
++	setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4,
++			   PPC_INDIRECT_TYPE_BIG_ENDIAN);
+ 
+ 	if (in_be32(&pci->block_rev1) < PCIE_IP_REV_3_0)
+ 		hose->indirect_type |= PPC_INDIRECT_TYPE_FSL_CFG_REG_LINK;
+ 
+ 	if (early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP)) {
++		/* use fsl_indirect_read_config for PCIe */
++		hose->ops = &fsl_indirect_pcie_ops;
+ 		/* For PCIE read HEADER_TYPE to identify controler mode */
+ 		early_read_config_byte(hose, 0, 0, PCI_HEADER_TYPE, &hdr_type);
+ 		if ((hdr_type & 0x7f) != PCI_HEADER_TYPE_BRIDGE)
+@@ -814,8 +808,8 @@ int __init mpc83xx_add_bridge(struct device_node *dev)
+ 		if (ret)
+ 			goto err0;
+ 	} else {
+-		fsl_setup_indirect_pci(hose, rsrc_cfg.start,
+-				       rsrc_cfg.start + 4, 0);
++		setup_indirect_pci(hose, rsrc_cfg.start,
++				   rsrc_cfg.start + 4, 0);
+ 	}
+ 
+ 	printk(KERN_INFO "Found FSL PCI host bridge at 0x%016llx. "
+
+--
+1.8.1.5
