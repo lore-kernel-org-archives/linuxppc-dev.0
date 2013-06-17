@@ -1,26 +1,20 @@
-Return-Path: <B40534@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 82EBA2C0174
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jun 2013 15:59:06 +1000 (EST)
-From: Wang Dongsheng-B40534 <B40534@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH 1/2] powerpc: add Book E support to 64-bit hibernation
-Date: Mon, 17 Jun 2013 05:54:32 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259F85C34@039-SN2MPN1-022.039d.mgd.msft.net>
-References: <1370774260-31072-1-git-send-email-dongsheng.wang@freescale.com>
- <1371074628.18413.53@snotra>
- <ABB05CD9C9F68C46A5CEDC7F15439259F74985@039-SN2MPN1-021.039d.mgd.msft.net>
- <1371142282.2028.10@snotra>
-In-Reply-To: <1371142282.2028.10@snotra>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <michael@ellerman.id.au>
+Date: Mon, 17 Jun 2013 17:42:13 +1000
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Regression in RCU subsystem in latest mainline kernel
+Message-ID: <20130617074213.GA3589@concordia>
+References: <1626500.7WAVXjfS9F@pcimr>
+ <20130614122800.GL5146@linux.vnet.ibm.com>
+ <1645938.As0LR1yeVd@pcimr>
+ <1371243967.9844.338.camel@gandalf.local.home>
+ <1371261741.21896.20.camel@pasglop>
 MIME-Version: 1.0
-Cc: "johannes@sipsolutions.net" <johannes@sipsolutions.net>,
- "anton@enomsg.org" <anton@enomsg.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1371261741.21896.20.camel@pasglop>
+Cc: Rojhalat Ibrahim <imr@rtschenk.de>, paulmck@linux.vnet.ibm.com,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org,
+ Steven Rostedt <rostedt@goodmis.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,41 +24,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Sat, Jun 15, 2013 at 12:02:21PM +1000, Benjamin Herrenschmidt wrote:
+> On Fri, 2013-06-14 at 17:06 -0400, Steven Rostedt wrote:
+> > I was pretty much able to reproduce this on my PA Semi PPC box. Funny
+> > thing is, when I type on the console, it makes progress. Anyway, it
+> > seems that powerpc has an issue with irq_work(). I'll try to get some
+> > time either tonight or next week to figure it out.
+> 
+> Does this help ?
+> 
+> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+> index 5cbcf4d..ea185e0 100644
+> --- a/arch/powerpc/kernel/irq.c
+> +++ b/arch/powerpc/kernel/irq.c
+> @@ -162,7 +162,7 @@ notrace unsigned int __check_irq_replay(void)
+>  	 * in case we also had a rollover while hard disabled
+>  	 */
+>  	local_paca->irq_happened &= ~PACA_IRQ_DEC;
+> -	if (decrementer_check_overflow())
+> +	if ((happened & PACA_IRQ_DEC) || decrementer_check_overflow())
+>  		return 0x900;
+>  
+>  	/* Finally check if an external interrupt happened */
+> 
+
+This seems to help, but doesn't elminate the RCU stall warnings I am
+seeing. I now see them less often, but not never.
+
+Stack trace is something like:
+
+  INFO: rcu_sched detected stalls on CPUs/tasks: { 32} (detected by 12, t=21372 jiffies, g=18446744073709551503, c=18446744073709551502, q=1018)
+  Task dump for CPU 32:
+  power8-events   R  running task     4960  2009   1988 0x00000004
+  Call Trace:
+  [c000000fb0e3f910] [c000000fb0e3f9d0] 0xc000000fb0e3f9d0 (unreliable)
+  
+  [c000000fb0e3edc0] [c0000000000b2894] .__run_hrtimer+0xa4/0x2a0
+  [c000000fb0e3ee70] [c0000000000b36d8] .hrtimer_interrupt+0x148/0x320
+  [c000000fb0e3ef80] [c00000000001c754] .timer_interrupt+0x134/0x320
+  [c000000fb0e3f040] [c00000000000a4f4] restore_check_irq_replay+0x68/0xa8
+  --- Exception: 901 at .arch_local_irq_restore+0x24/0x90
+      LR = .__do_softirq+0x100/0x3a0
+  [c000000fb0e3f330] [c0000000000c4784] .vtime_account_irq_enter+0x34/0x70 (unreliable)
+  [c000000fb0e3f3a0] [c000000000089680] .__do_softirq+0x100/0x3a0
+  [c000000fb0e3f4c0] [c000000000089b38] .irq_exit+0xc8/0x110
+  [c000000fb0e3f540] [c00000000001c788] .timer_interrupt+0x168/0x320
+  [c000000fb0e3f600] [c0000000000025cc] decrementer_common+0x14c/0x180
+  --- Exception: 901 at .arch_local_irq_restore+0x74/0x90
+      LR = .arch_local_irq_restore+0x74/0x90
+  [c000000fb0e3f8f0] [c000000fb0e3f970] 0xc000000fb0e3f970 (unreliable)
+  [c000000fb0e3f960] [c0000000000e4ae0] .smp_call_function_single+0x1d0/0x1e0
+  [c000000fb0e3fa10] [c000000000147aa4] .task_function_call+0x54/0x70
+  [c000000fb0e3fab0] [c000000000147bc4] .perf_event_enable+0x104/0x1c0
+  [c000000fb0e3fb60] [c000000000146800] .perf_event_for_each_child+0x60/0x110
+  [c000000fb0e3fbf0] [c00000000014a528] .perf_ioctl+0x108/0x3f0
+  [c000000fb0e3fca0] [c0000000001d7138] .do_vfs_ioctl+0xb8/0x730
+  [c000000fb0e3fd80] [c0000000001d780c] .SyS_ioctl+0x5c/0xb0
+  [c000000fb0e3fe30] [c000000000009d54] syscall_exit+0x0/0x98
 
 
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Friday, June 14, 2013 12:51 AM
-> To: Wang Dongsheng-B40534
-> Cc: Wood Scott-B07421; benh@kernel.crashing.org;
-> johannes@sipsolutions.net; anton@enomsg.org; galak@kernel.crashing.org;
-> linuxppc-dev@lists.ozlabs.org
-> Subject: Re: [PATCH 1/2] powerpc: add Book E support to 64-bit
-> hibernation
->=20
-> On 06/13/2013 04:55:43 AM, Wang Dongsheng-B40534 wrote:
-> > > > +#else
-> > > > +	/* Save SPRGs */
-> > > > +	RESTORE_SPRG(0)
-> > > > +	RESTORE_SPRG(1)
-> > > > +	RESTORE_SPRG(2)
-> > > > +	RESTORE_SPRG(3)
-> > > > +	RESTORE_SPRG(4)
-> > > > +	RESTORE_SPRG(5)
-> > > > +	RESTORE_SPRG(6)
-> > > > +	RESTORE_SPRG(7)
-> > >
-> > > Why do we need this on book3e and not on book3s?
-> > >
-> > Book3e: SPRG1 used save paca, SPRG2 be defined
-> > SPRN_SPRG_TLB_EXFRAME,...
-> > I think those register should be save, even now some SPRG register not
-> > be use.
->=20
-> Are those expected/allowed to change as a result of the restore?
->=20
-Those registers are used by software, some allowed to change.
-Exception handling is used in some registers, see exception-64e.h
-These registers can be modified and saved.
-
-> -Scott
+cheers
