@@ -1,36 +1,23 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 240C72C02B7
- for <linuxppc-dev@ozlabs.org>; Mon, 17 Jun 2013 19:33:02 +1000 (EST)
-Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 17 Jun 2013 14:58:30 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id EC338E0058
- for <linuxppc-dev@ozlabs.org>; Mon, 17 Jun 2013 15:02:16 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5H9Wx3r23986344
- for <linuxppc-dev@ozlabs.org>; Mon, 17 Jun 2013 15:03:00 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5H9WpWv003886
- for <linuxppc-dev@ozlabs.org>; Mon, 17 Jun 2013 19:32:52 +1000
-Message-ID: <51BED7A4.4070900@linux.vnet.ibm.com>
-Date: Mon, 17 Jun 2013 15:02:20 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ by ozlabs.org (Postfix) with ESMTP id 9FC152C0299
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jun 2013 20:46:36 +1000 (EST)
+Message-ID: <51BEE906.5010306@suse.de>
+Date: Mon, 17 Jun 2013 12:46:30 +0200
+From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] powerpc: Fix emulation of illegal instructions on PowerNV
- platform
-References: <20130614100741.GA612@iris.ozlabs.ibm.com>
-In-Reply-To: <20130614100741.GA612@iris.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH 1/4] KVM: PPC: Add support for multiple-TCE hcalls
+References: <1370412673-1345-1-git-send-email-aik@ozlabs.ru>
+ <1370412673-1345-2-git-send-email-aik@ozlabs.ru>
+ <0A6C24DE-1422-4ABA-A516-2B864F4714F8@suse.de> <51BEC0FE.4020805@ozlabs.ru>
+ <F3AAE42F-F325-462B-AD22-F3E568C39A8C@suse.de> <51BECA2B.60401@ozlabs.ru>
+ <5BDDB985-B0A2-476C-B6E5-76E88E3FB182@suse.de> <51BECDF9.2020701@ozlabs.ru>
+In-Reply-To: <51BECDF9.2020701@ozlabs.ru>
+Content-Type: text/plain; charset=KOI8-R; format=flowed
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,26 +27,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/14/2013 03:37 PM, Paul Mackerras wrote:
-> Normally, the kernel emulates a few instructions that are unimplemented
-> on some processors (e.g. the old dcba instruction), or privileged (e.g.
-> mfpvr).  The emulation of unimplemented instructions is currently not
-> working on the PowerNV platform.  The reason is that on these machines,
-> unimplemented and illegal instructions cause a hypervisor emulation
-> assist interrupt, rather than a program interrupt as on older CPUs.
-> Our vector for the emulation assist interrupt just calls
-> program_check_exception() directly, without setting the bit in SRR1
-> that indicates an illegal instruction interrupt.  
+On 06/17/2013 10:51 AM, Alexey Kardashevskiy wrote:
+> On 06/17/2013 06:40 PM, Alexander Graf wrote:
+>> On 17.06.2013, at 10:34, Alexey Kardashevskiy wrote:
+>>
+>>> On 06/17/2013 06:02 PM, Alexander Graf wrote:
+>>>> On 17.06.2013, at 09:55, Alexey Kardashevskiy wrote:
+>>>>
+>>>>> On 06/17/2013 08:06 AM, Alexander Graf wrote:
+>>>>>> On 05.06.2013, at 08:11, Alexey Kardashevskiy wrote:
+>>>>>>
+>>>>>>> This adds real mode handlers for the H_PUT_TCE_INDIRECT and
+>>>>>>> H_STUFF_TCE hypercalls for QEMU emulated devices such as
+>>>>>>> IBMVIO devices or emulated PCI.  These calls allow adding
+>>>>>>> multiple entries (up to 512) into the TCE table in one call
+>>>>>>> which saves time on transition to/from real mode.
+>>>>>>>
+>>>>>>> This adds a tce_tmp cache to kvm_vcpu_arch to save valid TCEs
+>>>>>>> (copied from user and verified) before writing the whole list
+>>>>>>> into the TCE table. This cache will be utilized more in the
+>>>>>>> upcoming VFIO/IOMMU support to continue TCE list processing in
+>>>>>>> the virtual mode in the case if the real mode handler failed
+>>>>>>> for some reason.
+>>>>>>>
+>>>>>>> This adds a guest physical to host real address converter and
+>>>>>>> calls the existing H_PUT_TCE handler. The converting function
+>>>>>>> is going to be fully utilized by upcoming VFIO supporting
+>>>>>>> patches.
+>>>>>>>
+>>>>>>> This also implements the KVM_CAP_PPC_MULTITCE capability, so
+>>>>>>> in order to support the functionality of this patch, QEMU
+>>>>>>> needs to query for this capability and set the
+>>>>>>> "hcall-multi-tce" hypertas property only if the capability is
+>>>>>>> present, otherwise there will be serious performance
+>>>>>>> degradation.
+>>>>>>>
+>>>>>>> Cc: David Gibson<david@gibson.dropbear.id.au>  Signed-off-by:
+>>>>>>> Alexey Kardashevskiy<aik@ozlabs.ru>  Signed-off-by: Paul
+>>>>>>> Mackerras<paulus@samba.org>
+>>>>>> Only a few minor nits. Ben already commented on implementation
+>>>>>> details.
+>>>>>>
+>>>>>>> --- Changelog: 2013/06/05: * fixed mistype about IBMVIO in the
+>>>>>>> commit message * updated doc and moved it to another section *
+>>>>>>> changed capability number
+>>>>>>>
+>>>>>>> 2013/05/21: * added kvm_vcpu_arch::tce_tmp * removed cleanup
+>>>>>>> if put_indirect failed, instead we do not even start writing
+>>>>>>> to TCE table if we cannot get TCEs from the user and they are
+>>>>>>> invalid * kvmppc_emulated_h_put_tce is split to
+>>>>>>> kvmppc_emulated_put_tce and kvmppc_emulated_validate_tce (for
+>>>>>>> the previous item) * fixed bug with failthrough for H_IPI *
+>>>>>>> removed all get_user() from real mode handlers *
+>>>>>>> kvmppc_lookup_pte() added (instead of making lookup_linux_pte
+>>>>>>> public) --- Documentation/virtual/kvm/api.txt       |   17 ++
+>>>>>>> arch/powerpc/include/asm/kvm_host.h     |    2 +
+>>>>>>> arch/powerpc/include/asm/kvm_ppc.h      |   16 +-
+>>>>>>> arch/powerpc/kvm/book3s_64_vio.c        |  118 ++++++++++++++
+>>>>>>> arch/powerpc/kvm/book3s_64_vio_hv.c     |  266
+>>>>>>> +++++++++++++++++++++++++++---- arch/powerpc/kvm/book3s_hv.c
+>>>>>>> |   39 +++++ arch/powerpc/kvm/book3s_hv_rmhandlers.S |    6 +
+>>>>>>> arch/powerpc/kvm/book3s_pr_papr.c       |   37 ++++-
+>>>>>>> arch/powerpc/kvm/powerpc.c              |    3 +
+>>>>>>> include/uapi/linux/kvm.h                |    1 + 10 files
+>>>>>>> changed, 473 insertions(+), 32 deletions(-)
+>>>>>>>
+>>>>>>> diff --git a/Documentation/virtual/kvm/api.txt
+>>>>>>> b/Documentation/virtual/kvm/api.txt index 5f91eda..6c082ff
+>>>>>>> 100644 --- a/Documentation/virtual/kvm/api.txt +++
+>>>>>>> b/Documentation/virtual/kvm/api.txt @@ -2362,6 +2362,23 @@
+>>>>>>> calls by the guest for that service will be passed to
+>>>>>>> userspace to be handled.
+>>>>>>>
+>>>>>>>
+>>>>>>> +4.83 KVM_CAP_PPC_MULTITCE + +Capability:
+>>>>>>> KVM_CAP_PPC_MULTITCE +Architectures: ppc +Type: vm + +This
+>>>>>>> capability tells the guest that multiple TCE entry add/remove
+>>>>>>> hypercalls +handling is supported by the kernel. This
+>>>>>>> significanly accelerates DMA +operations for PPC KVM guests.
+>>>>>>> + +Unlike other capabilities in this section, this one does
+>>>>>>> not have an ioctl. +Instead, when the capability is present,
+>>>>>>> the H_PUT_TCE_INDIRECT and +H_STUFF_TCE hypercalls are to be
+>>>>>>> handled in the host kernel and not passed to +the guest.
+>>>>>>> Othwerwise it might be better for the guest to continue using
+>>>>>>> H_PUT_TCE +hypercall (if KVM_CAP_SPAPR_TCE or
+>>>>>>> KVM_CAP_SPAPR_TCE_IOMMU are present).
+>>>>>> While this describes perfectly well what the consequences are of
+>>>>>> the patches, it does not describe properly what the CAP actually
+>>>>>> expresses. The CAP only says "this kernel is able to handle
+>>>>>> H_PUT_TCE_INDIRECT and H_STUFF_TCE hypercalls directly". All
+>>>>>> other consequences are nice to document, but the semantics of
+>>>>>> the CAP are missing.
+>>>>>
+>>>>> ? It expresses ability to handle 2 hcalls. What is missing?
+>>>> You don't describe the kvm<->  qemu interface. You describe some
+>>>> decisions qemu can take from this cap.
+>>>
+>>> This file does not mention qemu at all. And the interface is - qemu
+>>> (or kvmtool could do that) just adds "hcall-multi-tce" to
+>>> "ibm,hypertas-functions" but this is for pseries linux and AIX could
+>>> always do it (no idea about it). Does it really have to be in this
+>>> file?
+>> Ok, let's go back a step. What does this CAP describe? Don't look at the
+>> description you wrote above. Just write a new one.
+> The CAP means the kernel is capable of handling hcalls A and B without
+> passing those into the user space. That accelerates DMA.
+>
+>
+>> What exactly can user space expect when it finds this CAP?
+> The user space can expect that its handlers for A and B are not going to be
+> called if it configures the guest appropriately.
+>
+> Any better? :)
 
-Hey Paul,
+A lot, yes. This is what the CAP actually means.
 
-The only difference between (1) Program interrupt and (2) Hypervisor
-emulation assist interrupt is that in the earlier, HW sets "illegal
-instruction" as the reason code in the SRR1 registers implicitly.
-We fix it in the later interrupt vector by doing the same explicitly
-in SW ? The cause of the problem before was not having the appropriate
-reason code ("illegal instruction") in the SRR1 register for program_
-check_exception() function to take it forward ?
+It's nice to give some guidance in the documentation of implications 
+(should expose "ibm,hypertas-functions" to enable the guest to actually 
+use these for example) but the first paragraph should only indicate what 
+the CAP changes.
 
-Regards
-Anshuman
+
+Alex
