@@ -1,30 +1,25 @@
-Return-Path: <B07421@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2B4E62C02CF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 02:22:49 +1000 (EST)
-Received: from mail97-tx2 (localhost [127.0.0.1])	by mail97-tx2-R.bigfish.com
- (Postfix) with ESMTP id C52B2320071	for
- <linuxppc-dev@lists.ozlabs.org>; Tue,
- 18 Jun 2013 16:22:44 +0000 (UTC)
-Received: from TX2EHSMHS034.bigfish.com (unknown [10.9.14.230])	by
- mail97-tx2.bigfish.com (Postfix) with ESMTP id 84AA140048	for
- <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 16:22:31 +0000 (UTC)
-Date: Tue, 18 Jun 2013 11:22:25 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 5/5] powerpc/fsl_msi: add 'msiregs' kernel parameter
-To: Lian Minghuan-b31939 <B31939@freescale.com>
-References: <1371514692.9073.12@snotra> <51BFCF99.1010608@freescale.com>
-In-Reply-To: <51BFCF99.1010608@freescale.com> (from B31939@freescale.com on
- Mon Jun 17 22:10:17 2013)
-Message-ID: <1371572545.9073.21@snotra>
+Return-Path: <michael.guntsche@it-loops.com>
+Received: from mail-vc0-f180.google.com (mail-vc0-f180.google.com
+ [209.85.220.180])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E933E2C00B1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 03:32:02 +1000 (EST)
+Received: by mail-vc0-f180.google.com with SMTP id gf11so3132047vcb.39
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 10:31:58 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: Minghuan Lian <Minghuan.Lian@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- Zang Roy-R61911 <r61911@freescale.com>
+In-Reply-To: <1371514253.9073.8@snotra>
+References: <1371241083.2996.7@snotra> <2435509.QyTW5GJC53@pcimr>
+ <1371514253.9073.8@snotra>
+Date: Tue, 18 Jun 2013 19:31:58 +0200
+Message-ID: <CALG0vJszdSp+HViLq3hL6BOASGrasHx34AgtUExCS3FoOa4uvw@mail.gmail.com>
+Subject: Re: [PATCH v2] powerpc/pci: Fix setup of Freescale PCI / PCIe
+ controllers
+From: Michael Guntsche <michael.guntsche@it-loops.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org, Rojhalat Ibrahim <imr@rtschenk.de>,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,55 +29,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/17/2013 10:10:17 PM, Lian Minghuan-b31939 wrote:
-> Hi Scott,
->=20
-> please see my comments inline.
->=20
-> On 06/18/2013 08:18 AM, Scott Wood wrote:
->> On 06/17/2013 12:36:50 AM, Lian Minghuan-b31939 wrote:
->>> Hi Scott,
->>>=20
->>> please see my comments inline.
->>>=20
->>> On 06/15/2013 06:13 AM, Scott Wood wrote:
->>>> On 06/14/2013 02:15:59 AM, Minghuan Lian wrote:
->>>>> 1. Only MSIIR1 can index 16 MSI registers, but when using MSIIR1
->>>>> the IRQs of a register are not continuous. for example, the first
->>>>> register irq values are 0x0, 0x10, 0x20, 0x30 ... 0x1f0. So it
->>>>> is hard to use 'msi-available-ranges' property to indicate the
->>>>> available ranges and 'msi-available-ranges' property has been
->>>>> removed from dts node, so this patch removes the related code.
->>>>>=20
->>>>> 2. Add 'msiregs' kernel parameter instead of =20
->>>>> 'msi-available-ranges'
->>>>> functionality.
->>>>=20
->>>> The reason we used a device tree property was because this is for =20
->>>> virtualization and AMP scenarios where this instance of Linux does =20
->>>> not own all of the MSI registers.
->>>>=20
->>>> I don't see any reasonable way to partition an MPIC v4.3 MSI group =20
->>>> -- but there are more groups, so it's not that bad. What's the use =20
->>>> case for this patch?
->>>>=20
->>> [Minghuan] I do not known any case about this patch. I add =20
->>> 'msiregs' just for achieving "msi-available-ranges" functionality. =20
->>> I do not want to remove partition functionality when updating to =20
->>> mpic4.3, although I do not see virtualization and AMP cases on =20
->>> T4(KVM does not need this functionality).
->>=20
->> Such functionality does not work on mpic v4.3.  There are =20
->> conflicting requirements of contiguous MSIs (because PCI devices can =20
->> use them that way) and the inability to partition a single register =20
->> (because they all go to the same MPIC interrupt).
->>=20
->> Keep msi-available-ranges as is for older hardware, and just ignore =20
->> it (with a warning printed) if it's present on MPIC v4.3.
->>=20
-> [Minghuan] Thanks for your guidance.
-> But 'msireg' should be remained or removed?
+On Tue, Jun 18, 2013 at 2:10 AM, Scott Wood <scottwood@freescale.com> wrote:
+> On 06/17/2013 08:15:33 AM, Rojhalat Ibrahim wrote:
+>>
+>> On Friday 14 June 2013 15:18:03 Scott Wood wrote:
+>> > On 83xx:
+>> > cc1: warnings being treated as errors
+>> > /home/scott/fsl/git/linux/upstream/arch/powerpc/sysdev/fsl_pci.c:100:23:
+>> > error: 'fsl_indirect_pcie_ops' defined but not used
+>> > make[2]: *** [arch/powerpc/sysdev/fsl_pci.o] Error 1
+>> > make[2]: *** Waiting for unfinished jobs....
+>> >
+>> > I can fix this when applying, but this makes me wonder how you tested
+>> > it, given that the whole point is to fix 83xx...  Did you fix this and
+>> > then accidentally sent a stale version?
+>> >
+>> > Also, please be careful that the patch doesn't get line wrapped -- I
+>> > had to manually unwrap a couple places.  Use git send-email if you
+>> > can't get KMail to cooperate.
+>> >
+>> > -Scott
+>>
+>> Sorry about the mess. I'll send a v3.
+>> Please note: I don't have an 83xx system. So I can only test if it
+>> compiles,
+>> which I obviously did not do with the right config.
+>
+>
+> OK, so it looks like it was Michael who ran into the problem on 83xx.
+> Michael, could you test the v3 patch that Rojhalat posted?
+>
+> -Scott
 
-Removed.
+I did a quick check against -rc6 and the system compiles and boots up fine.
 
--Scott=
+/Mike
