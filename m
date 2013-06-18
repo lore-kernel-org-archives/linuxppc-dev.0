@@ -2,29 +2,21 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 862052C030A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 07:59:12 +1000 (EST)
-Message-ID: <1371592737.21896.197.camel@pasglop>
-Subject: Re: [PATCH 3/4] KVM: PPC: Add support for IOMMU in-kernel handling
+ by ozlabs.org (Postfix) with ESMTPS id 7AD252C02EB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 08:03:41 +1000 (EST)
+Message-ID: <1371593004.21896.199.camel@pasglop>
+Subject: Re: [PATCH -V10 00/15] THP support for PPC64
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alex Williamson <alex.williamson@redhat.com>
-Date: Wed, 19 Jun 2013 07:58:57 +1000
-In-Reply-To: <1371566935.22681.169.camel@ul30vt.home>
-References: <1370412673-1345-1-git-send-email-aik@ozlabs.ru>
- <1370412673-1345-4-git-send-email-aik@ozlabs.ru>
- <1371422343.21896.143.camel@pasglop>
- <1371438800.22681.38.camel@ul30vt.home>
- <1371441361.21896.152.camel@pasglop>
- <1371522772.22681.140.camel@ul30vt.home>
- <1371530335.21896.169.camel@pasglop>
- <1371566935.22681.169.camel@ul30vt.home>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Date: Wed, 19 Jun 2013 08:03:24 +1000
+In-Reply-To: <8738sfi7er.fsf@linux.vnet.ibm.com>
+References: <1370446119-8837-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1371348007.21896.62.camel@pasglop> <1371353865.21896.94.camel@pasglop>
+ <1371355567.21896.101.camel@pasglop> <8738sfi7er.fsf@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
- Rusty Russell <rusty@rustcorp.com.au>, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: Alexey Kardashevskiy <aik@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,86 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-06-18 at 08:48 -0600, Alex Williamson wrote:
-> On Tue, 2013-06-18 at 14:38 +1000, Benjamin Herrenschmidt wrote:
-> > On Mon, 2013-06-17 at 20:32 -0600, Alex Williamson wrote:
-> > 
-> > > Right, we don't want to create dependencies across modules.  I don't
-> > > have a vision for how this should work.  This is effectively a complete
-> > > side-band to vfio, so we're really just dealing in the iommu group
-> > > space.  Maybe there needs to be some kind of registration of ownership
-> > > for the group using some kind of token.  It would need to include some
-> > > kind of notification when that ownership ends.  That might also be a
-> > > convenient tag to toggle driver probing off for devices in the group.
-> > > Other ideas?  Thanks,
-> > 
-> > All of that smells nasty like it will need a pile of bloody
-> > infrastructure.... which makes me think it's too complicated and not the
-> > right approach.
-> > 
-> > How does access control work today on x86/VFIO ? Can you give me a bit
-> > more details ? I didn't get a good grasp in your previous email....
+On Wed, 2013-06-19 at 00:16 +0530, Aneesh Kumar K.V wrote:
+
+> But will that by anonymous memory ? ie, will we find them suitable for
+> THP allocation ?
+
+The 4k pages themselves with 4k_PFN no, but the segment yes. A single of
+these will demote the whole segment, ie 256M or 1T.
+
+> >   * If you find a THP in hash_page and the segment size is 4k, fault
+> >
+> >   * In do_page_fault, re-check for that condition (or maybe we can make
+> > hash_page return a specific bit that gets ORed into the error_code into
+> > do_page_fault ?) and split huge pages there.
+> >
+> > But that's just an idea off the top of my mind, there might be a better
+> > way. Of course this needs to be tested.
+> >
+> > BTW. For the subpage protection, similarily, you need to make sure you
+> > properly map the entire segment as "no THP", not just the range
+> > passed-in by the user.
 > 
-> The current model is not x86 specific, but it only covers doing iommu
-> and device access through vfio.  The kink here is that we're trying to
-> do device access and setup through vfio, but iommu manipulation through
-> kvm.  We may want to revisit whether we can do the in-kernel iommu
-> manipulation through vfio rather than kvm.
+> Can you explain that more, why should the entire segment be marked no THP ?
+> The segment can work with 4K base page size and we still be able to
+> allocate a hugepage in that segment.
 
-How would that be possible ?
-
-The hypercalls from the guest arrive in KVM... in a very very specific &
-restricted environment which we call real mode (MMU off but still
-running in guest context), where we try to do as much as possible, or in
-virtual mode, where they get handled as normal KVM exits.
-
-The only way we could handle them "in VFIO" would be if somewhat VFIO
-registered callbacks with KVM... if we have that sort of
-cross-dependency, then we may as well have a simpler one where VFIO
-tells KVM what iommu is available for the VM
-
-> For vfio in general, the group is the unit of ownership.  A user is
-> granted access to /dev/vfio/$GROUP through file permissions.  The user
-> opens the group and a container (/dev/vfio/vfio) and calls SET_CONTAINER
-> on the group.  If supported by the platform, multiple groups can be set
-> to the same container, which allows for iommu domain sharing.  Once a
-> group is associated with a container, an iommu backend can be
-> initialized for the container.  Only then can a device be accessed
-> through the group.
-> 
-> So even if we were to pass a vfio group file descriptor into kvm and it
-> matched as some kind of ownership token on the iommu group, it's not
-> clear that's sufficient to assume we can start programming the iommu.
-> Thanks,
-
-Your scheme seems to me that it would have the same problem if you
-wanted to do virtualized iommu....
-
-In any case, this is a big deal. We have a requirement for pass-through.
-It cannot work with any remotely usable performance level if we don't
-implement the calls in KVM, so it needs to be sorted one way or another
-and I'm at a loss how here...
+Will we be able to track all the possible hashings of the huge page on a
+4k segment ?
 
 Ben.
-
-> Alex
-> 
-> > From the look of it, the VFIO file descriptor is what has the "access
-> > control" to the underlying iommu, is this right ? So we somewhat need to
-> > transfer (or copy) that ownership from the VFIO fd to the KVM VM.
-> > 
-> > I don't see a way to do that without some cross-layering here...
-> > 
-> > Rusty, are you aware of some kernel mechanism we can use for that ?
-> > 
-> > Cheers,
-> > Ben.
-> > 
-> > 
-> 
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
