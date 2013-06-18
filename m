@@ -1,28 +1,38 @@
-Return-Path: <B07421@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EFFA62C008C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 04:10:38 +1000 (EST)
-Received: from mail170-co1 (localhost [127.0.0.1])	by
- mail170-co1-R.bigfish.com (Postfix) with ESMTP id 052866C02FA	for
- <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 18:10:34 +0000 (UTC)
-Received: from CO1EHSMHS006.bigfish.com (unknown [10.243.78.233])	by
- mail170-co1.bigfish.com (Postfix) with ESMTP id D3C6A860195	for
- <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 18:09:53 +0000 (UTC)
-Date: Tue, 18 Jun 2013 13:08:58 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 2/5] powerpc/fsl_msi: add MSIIR1 support for MPIC v4.3
-To: Lian Minghuan-b31939 <B31939@freescale.com>
-In-Reply-To: <51BFC749.3080502@freescale.com> (from B31939@freescale.com on
- Mon Jun 17 21:34:49 2013)
-Message-ID: <1371578938.9073.30@snotra>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1E0A22C0087
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 04:46:27 +1000 (EST)
+Received: from /spool/local
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 19 Jun 2013 00:09:11 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 868DA125804E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 00:15:19 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5IIkHpc26214626
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 00:16:18 +0530
+Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5IIkLVL017830
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 04:46:21 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH -V10 00/15] THP support for PPC64
+In-Reply-To: <1371355567.21896.101.camel@pasglop>
+References: <1370446119-8837-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1371348007.21896.62.camel@pasglop> <1371353865.21896.94.camel@pasglop>
+ <1371355567.21896.101.camel@pasglop>
+Date: Wed, 19 Jun 2013 00:16:20 +0530
+Message-ID: <8738sfi7er.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: Minghuan Lian <Minghuan.Lian@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- Zang Roy-R61911 <r61911@freescale.com>
+Content-Type: text/plain
+Cc: Alexey Kardashevskiy <aik@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,67 +42,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/17/2013 09:34:49 PM, Lian Minghuan-b31939 wrote:
-> Hi Soctt,
->=20
-> please see my comments inline.
->=20
-> On 06/18/2013 08:15 AM, Scott Wood wrote:
->> On 06/16/2013 10:00:01 PM, Lian Minghuan-b31939 wrote:
->>> Hi Scott,
->>>=20
->>> please see my comments inline.
->>>=20
->>> On 06/15/2013 06:09 AM, Scott Wood wrote:
->>>> On 06/14/2013 02:15:56 AM, Minghuan Lian wrote:
->>>>> diff --git a/arch/powerpc/sysdev/fsl_msi.h =20
->>>>> b/arch/powerpc/sysdev/fsl_msi.h
->>>>> index 8225f86..43a9d99 100644
->>>>> --- a/arch/powerpc/sysdev/fsl_msi.h
->>>>> +++ b/arch/powerpc/sysdev/fsl_msi.h
->>>>> @@ -16,7 +16,7 @@
->>>>>  #include <linux/of.h>
->>>>>  #include <asm/msi_bitmap.h>
->>>>>=20
->>>>> -#define NR_MSI_REG        8
->>>>> +#define NR_MSI_REG        16
->>>>>  #define IRQS_PER_MSI_REG    32
->>>>>  #define NR_MSI_IRQS    (NR_MSI_REG * IRQS_PER_MSI_REG)
->>>>=20
->>>> I don't see where you update all_avail in fsl_of_msi_probe.
->>>>=20
->>>> We should also be bounds-checking the contents of =20
->>>> msi-available-ranges.
->>>> Currently it looks like we just silently overrun the bitmap if we =20
->>>> get bad
->>>> input from the device tree.
->>>>=20
->>> [Minghuan] all_avail definition: static const u32 all_avail[] =3D { =20
->>> 0, NR_MSI_IRQS };
->>> When changing NR_MSI_REG to 16, NR_MSI_IRQS has been changed to =20
->>> 16*32, and all_avail also is updated.
->>=20
->> That's my point.  It shouldn't change for older hardware.
-> [Minghaun] the older hardware has 8 registers, mipcv4.3 has 16 =20
-> registers. If we do not use 16*32 bitmap to indicate 8*32 irqs.(this =20
-> way just only wastes some memory and has no other harm)
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-Using the larger bitmap unconditionally is fine.  What is not fine is, =20
-on older hardware, acting as if all 16 irqs are present.
+> On Sun, 2013-06-16 at 13:37 +1000, Benjamin Herrenschmidt wrote:
+>> On Sun, 2013-06-16 at 12:00 +1000, Benjamin Herrenschmidt wrote:
+>> > So at this point, hash_page might *still* see the old pmd. Unless I
+>> > missed something, you did nothing that will prevent that (the only way
+>> > to lock against hash_page is really an IPI & wait or to take the PTE's
+>> > busy and make them !present or something). So as far as I can tell,
+>> > a concurrent hash_page can still sneak into the hash some "small"
+>> > entries after you have supposedly flushed them.
+>> 
+>> Note that the _PAGE_PRESENT bit is removed eventually ... but much
+>> later, in __collapse_huge_page_copy() which will also flush the hash, so
+>> at least we will remove a stale hash entry that would have been added by
+>> the race above I suppose...  but:
+>> 
+>>  - _PAGE_ACCESSED can still potentially be set after it was supposed to
+>> be stable
+>> 
+>>  - The clearing happens *after* copy_user_highpage(), ie, unless I
+>> missed something here, we potentially still have something writing to
+>> the 4k page while it's being copied, which is BAD.
+>> 
+>> Now, let me know if I did miss something here :-)
+>
+> An additional issue is that this all collides a bit with Alexey's work
+> to support TCEs in real mode in KVM, which is necessary to have "usable"
+> PCI pass-through.
+>
+> Look at patches http://patchwork.ozlabs.org/patch/248920/ and followup,
+> he basically walks the page tables here in a slightly different way than
+> Paul does in H_ENTER. It's more like gup_fast. It will need to handle
+> concurrent split/collapse etc... as well which it doesn't right now.
+>
+> I'm considering merging Alexei stuff first (provided I don't find major
+> problems with it), then you can provide a new THP series on top of it.
+>
+> While at it, also fix:
+>
+>  - Some of your patches are bug fixes (like the one about subpage
+> protection). They need to be either merged in the main patch or put
+> before the patch that enables THP.
 
-In other words, I'm talking about the contents of the bitmap, not its =20
-size.
+We can move them before. One of the reason I would like to keep them as
+seperate patches is to document the changes better in commit messages. 
 
-> we have two choice I think.
-> 1. Use a variable assigned value 8 or 16 based on compatible, then =20
-> dynamically create bitmap
+>
+>  - I haven't completely yet considered the impact of the demotion of
+> segments, but neither do you :-) IE. Under some circumstances, we can
+> demote entire segments from 64K HW pages to 4K HW pages in the SLB. For
+> example if a driver (such as HCA) sets the 4K_PFN bit in a PTE, this
+> will happen at hashing time. I don't think your code deals with that at
+> all, am I correct ? It *might* be that the right approach with those is:
+>
 
-If we have the mpic4.3 compatible, then we don't even support =20
-msi-available-ranges, so we'd skip this code and free everything in the =20
-bitmap.
+But will that by anonymous memory ? ie, will we find them suitable for
+THP allocation ?
 
-> 2. Add a new file for mpic v4.3.
+>   * If you find a THP in hash_page and the segment size is 4k, fault
+>
+>   * In do_page_fault, re-check for that condition (or maybe we can make
+> hash_page return a specific bit that gets ORed into the error_code into
+> do_page_fault ?) and split huge pages there.
+>
+> But that's just an idea off the top of my mind, there might be a better
+> way. Of course this needs to be tested.
+>
+> BTW. For the subpage protection, similarily, you need to make sure you
+> properly map the entire segment as "no THP", not just the range
+> passed-in by the user.
 
-No. :-)
+Can you explain that more, why should the entire segment be marked no THP ?
+The segment can work with 4K base page size and we still be able to
+allocate a hugepage in that segment.
 
--Scott=
+-aneesh
