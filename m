@@ -1,35 +1,27 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp03.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4D2712C02E8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 23:02:32 +1000 (EST)
-Received: from /spool/local
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 18 Jun 2013 18:26:40 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 21A1DE004F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 18:31:50 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5ID2WW18519832
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 18:32:32 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5ID2M1m026986
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 13:02:23 GMT
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, scottwood@freescale.com
-Subject: Re: [PATCH] powerpc: Fix bad pmd error with book3E config
-In-Reply-To: <1371033004-15864-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1371033004-15864-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Date: Tue, 18 Jun 2013 18:32:22 +0530
-Message-ID: <878v27inc1.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id E72F72C02AD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 00:49:04 +1000 (EST)
+Message-ID: <1371566935.22681.169.camel@ul30vt.home>
+Subject: Re: [PATCH 3/4] KVM: PPC: Add support for IOMMU in-kernel handling
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Tue, 18 Jun 2013 08:48:55 -0600
+In-Reply-To: <1371530335.21896.169.camel@pasglop>
+References: <1370412673-1345-1-git-send-email-aik@ozlabs.ru>
+ <1370412673-1345-4-git-send-email-aik@ozlabs.ru>
+ <1371422343.21896.143.camel@pasglop>
+ <1371438800.22681.38.camel@ul30vt.home>
+ <1371441361.21896.152.camel@pasglop>
+ <1371522772.22681.140.camel@ul30vt.home>
+ <1371530335.21896.169.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Rusty Russell <rusty@rustcorp.com.au>, Alexander Graf <agraf@suse.de>,
+ kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,31 +31,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+On Tue, 2013-06-18 at 14:38 +1000, Benjamin Herrenschmidt wrote:
+> On Mon, 2013-06-17 at 20:32 -0600, Alex Williamson wrote:
+> 
+> > Right, we don't want to create dependencies across modules.  I don't
+> > have a vision for how this should work.  This is effectively a complete
+> > side-band to vfio, so we're really just dealing in the iommu group
+> > space.  Maybe there needs to be some kind of registration of ownership
+> > for the group using some kind of token.  It would need to include some
+> > kind of notification when that ownership ends.  That might also be a
+> > convenient tag to toggle driver probing off for devices in the group.
+> > Other ideas?  Thanks,
+> 
+> All of that smells nasty like it will need a pile of bloody
+> infrastructure.... which makes me think it's too complicated and not the
+> right approach.
+> 
+> How does access control work today on x86/VFIO ? Can you give me a bit
+> more details ? I didn't get a good grasp in your previous email....
 
-> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
->
-> Book3E uses the hugepd at PMD level and don't encode pte directly
-> at the pmd level. So it will find the lower bits of pmd set
-> and the pmd_bad check throws error. Infact the current code
-> will never take the free_hugepd_range call at all because it will
-> clear the pmd if it find a hugepd pointer.
->
-> Reported-by: Scott Wood <scottwood@freescale.com>
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+The current model is not x86 specific, but it only covers doing iommu
+and device access through vfio.  The kink here is that we're trying to
+do device access and setup through vfio, but iommu manipulation through
+kvm.  We may want to revisit whether we can do the in-kernel iommu
+manipulation through vfio rather than kvm.
 
-Ben,
+For vfio in general, the group is the unit of ownership.  A user is
+granted access to /dev/vfio/$GROUP through file permissions.  The user
+opens the group and a container (/dev/vfio/vfio) and calls SET_CONTAINER
+on the group.  If supported by the platform, multiple groups can be set
+to the same container, which allows for iommu domain sharing.  Once a
+group is associated with a container, an iommu backend can be
+initialized for the container.  Only then can a device be accessed
+through the group.
 
-This is regression introduced by
-e2b3d202d1dba8f3546ed28224ce485bc50010be 
-"powerpc: Switch 16GB and 16MB explicit hugepages to a different page table format"
+So even if we were to pass a vfio group file descriptor into kvm and it
+matched as some kind of ownership token on the iommu group, it's not
+clear that's sufficient to assume we can start programming the iommu.
+Thanks,
 
-and should go upstream in 3.10
+Alex
 
-$git describe  --contains e2b3d202d1dba8f3546ed28224ce485bc50010be
-v3.10-rc1~121^2~15
-
-Without this path, we leak hugepd with all subarchs using old huge page
-directory format.
-
--aneesh
+> From the look of it, the VFIO file descriptor is what has the "access
+> control" to the underlying iommu, is this right ? So we somewhat need to
+> transfer (or copy) that ownership from the VFIO fd to the KVM VM.
+> 
+> I don't see a way to do that without some cross-layering here...
+> 
+> Rusty, are you aware of some kernel mechanism we can use for that ?
+> 
+> Cheers,
+> Ben.
+> 
+> 
