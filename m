@@ -1,30 +1,35 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-ie0-x22f.google.com (mail-ie0-x22f.google.com
- [IPv6:2607:f8b0:4001:c03::22f])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B1D142C0299
- for <linuxppc-dev@ozlabs.org>; Tue, 18 Jun 2013 22:14:04 +1000 (EST)
-Received: by mail-ie0-f175.google.com with SMTP id a13so9215047iee.6
- for <linuxppc-dev@ozlabs.org>; Tue, 18 Jun 2013 05:14:02 -0700 (PDT)
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp03.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4D2712C02E8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 23:02:32 +1000 (EST)
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 18 Jun 2013 18:26:40 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 21A1DE004F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 18:31:50 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5ID2WW18519832
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 18:32:32 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5ID2M1m026986
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 13:02:23 GMT
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, scottwood@freescale.com
+Subject: Re: [PATCH] powerpc: Fix bad pmd error with book3E config
+In-Reply-To: <1371033004-15864-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1371033004-15864-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Date: Tue, 18 Jun 2013 18:32:22 +0530
+Message-ID: <878v27inc1.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <32351.1371553495@ale.ozlabs.ibm.com>
-References: <1371244086-9189-1-git-send-email-grant.likely@linaro.org>
- <1371244086-9189-9-git-send-email-grant.likely@linaro.org>
- <4521.1371518445@ale.ozlabs.ibm.com> <5220.1371518734@ale.ozlabs.ibm.com>
- <CACxGe6s+K0xF0pnLjKoKXtz_YNoeM2+erhr_g2dX4ONpddRNGA@mail.gmail.com>
- <20130618094617.9BFA93E0D88@localhost> <32351.1371553495@ale.ozlabs.ibm.com>
-From: Grant Likely <grant.likely@linaro.org>
-Date: Tue, 18 Jun 2013 13:13:42 +0100
-Message-ID: <CACxGe6spx0wP2ceVcP1AqZwOUE+Ki9Ug1ksfRQG3DMWxpfiG8A@mail.gmail.com>
-Subject: Re: [PATCH v2 08/11] irqdomain: Refactor irq_domain_associate_many()
-To: Michael Neuling <mikey@neuling.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Linux PPC dev <linuxppc-dev@ozlabs.org>,
- linux-next <linux-next@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,28 +39,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 18, 2013 at 12:04 PM, Michael Neuling <mikey@neuling.org> wrote:
-> Grant Likely <grant.likely@linaro.org> wrote:
->
->> On Tue, 18 Jun 2013 10:05:31 +0100, Grant Likely <grant.likely@linaro.org> wrote:
->> > On Tue, Jun 18, 2013 at 2:25 AM, Michael Neuling <mikey@neuling.org> wrote:
->> > > Michael Neuling <mikey@neuling.org> wrote:
->> > >
->> > >> Grant,
->> > >>
->> > >> In next-20130617 we are getting the below crash on POWER7.  Bisecting,
->> > >> points to this patch (d39046ec72 in next)
->> > >
->> > > Also, reverting just d39046ec72 fixes the crash in next-20130617.
->> >
->> > Odd. Of all the changes in that series, I would not have expected that
->> > one to cause any problems. I'm digging into it now...
->>
->> Ugh. I flubbed the commit. Try this patch. It should solve the problem:
->>
->
-> Yep, it fixes it.  Thanks.
+"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
 
-Excellent, thanks for testing.
+> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+>
+> Book3E uses the hugepd at PMD level and don't encode pte directly
+> at the pmd level. So it will find the lower bits of pmd set
+> and the pmd_bad check throws error. Infact the current code
+> will never take the free_hugepd_range call at all because it will
+> clear the pmd if it find a hugepd pointer.
+>
+> Reported-by: Scott Wood <scottwood@freescale.com>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-g.
+Ben,
+
+This is regression introduced by
+e2b3d202d1dba8f3546ed28224ce485bc50010be 
+"powerpc: Switch 16GB and 16MB explicit hugepages to a different page table format"
+
+and should go upstream in 3.10
+
+$git describe  --contains e2b3d202d1dba8f3546ed28224ce485bc50010be
+v3.10-rc1~121^2~15
+
+Without this path, we leak hugepd with all subarchs using old huge page
+directory format.
+
+-aneesh
