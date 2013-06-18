@@ -1,26 +1,26 @@
 Return-Path: <B07421@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0D1462C02BF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 02:21:58 +1000 (EST)
-Received: from mail40-co1 (localhost [127.0.0.1])	by mail40-co1-R.bigfish.com
- (Postfix) with ESMTP id C6DFDDC0243	for
+ by ozlabs.org (Postfix) with ESMTPS id 2B4E62C02CF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 02:22:49 +1000 (EST)
+Received: from mail97-tx2 (localhost [127.0.0.1])	by mail97-tx2-R.bigfish.com
+ (Postfix) with ESMTP id C52B2320071	for
  <linuxppc-dev@lists.ozlabs.org>; Tue,
- 18 Jun 2013 16:21:53 +0000 (UTC)
-Received: from CO1EHSMHS012.bigfish.com (unknown [10.243.78.229])	by
- mail40-co1.bigfish.com (Postfix) with ESMTP id 93F8172007A	for
- <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 16:21:52 +0000 (UTC)
-Date: Tue, 18 Jun 2013 11:21:48 -0500
+ 18 Jun 2013 16:22:44 +0000 (UTC)
+Received: from TX2EHSMHS034.bigfish.com (unknown [10.9.14.230])	by
+ mail97-tx2.bigfish.com (Postfix) with ESMTP id 84AA140048	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 16:22:31 +0000 (UTC)
+Date: Tue, 18 Jun 2013 11:22:25 -0500
 From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 3/5] powerpc/dts: update MSI bindings doc for MPIC v4.3
+Subject: Re: [PATCH 5/5] powerpc/fsl_msi: add 'msiregs' kernel parameter
 To: Lian Minghuan-b31939 <B31939@freescale.com>
-References: <1371516126.9073.16@snotra> <51BFCAAF.1070400@freescale.com>
-In-Reply-To: <51BFCAAF.1070400@freescale.com> (from B31939@freescale.com on
- Mon Jun 17 21:49:19 2013)
-Message-ID: <1371572508.9073.20@snotra>
+References: <1371514692.9073.12@snotra> <51BFCF99.1010608@freescale.com>
+In-Reply-To: <51BFCF99.1010608@freescale.com> (from B31939@freescale.com on
+ Mon Jun 17 22:10:17 2013)
+Message-ID: <1371572545.9073.21@snotra>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
 Cc: Minghuan Lian <Minghuan.Lian@freescale.com>, linuxppc-dev@lists.ozlabs.org,
@@ -34,38 +34,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/17/2013 09:49:19 PM, Lian Minghuan-b31939 wrote:
-> On 06/18/2013 08:42 AM, Scott Wood wrote:
->> On 06/17/2013 07:28:07 PM, Scott Wood wrote:
->>> On 06/17/2013 12:07:41 AM, Lian Minghuan-b31939 wrote:
->>>>>> +    compatible =3D "fsl,mpic-msi";
->>>>>> +    reg =3D <0x41600 0x200 0x44140 4>;
->>>>>=20
->>>>> Why 0x200?
->>>>>=20
->>>> [Minghuan] The offsets of the MSIA registers are from 0x41600 to =20
->>>> 0x417ff, and the size is 0x200.
->>>> offset 0x41600-0x4170 are MSIIRA1-7.
->>>> 0x41720 is MSISRA,
->>>> 0x41750 is MSIIR.
->>>> The others are reserved.
+On 06/17/2013 10:10:17 PM, Lian Minghuan-b31939 wrote:
+> Hi Scott,
+>=20
+> please see my comments inline.
+>=20
+> On 06/18/2013 08:18 AM, Scott Wood wrote:
+>> On 06/17/2013 12:36:50 AM, Lian Minghuan-b31939 wrote:
+>>> Hi Scott,
 >>>=20
->>> There is no MSIIRA on fsl,mpic-msi.
+>>> please see my comments inline.
+>>>=20
+>>> On 06/15/2013 06:13 AM, Scott Wood wrote:
+>>>> On 06/14/2013 02:15:59 AM, Minghuan Lian wrote:
+>>>>> 1. Only MSIIR1 can index 16 MSI registers, but when using MSIIR1
+>>>>> the IRQs of a register are not continuous. for example, the first
+>>>>> register irq values are 0x0, 0x10, 0x20, 0x30 ... 0x1f0. So it
+>>>>> is hard to use 'msi-available-ranges' property to indicate the
+>>>>> available ranges and 'msi-available-ranges' property has been
+>>>>> removed from dts node, so this patch removes the related code.
+>>>>>=20
+>>>>> 2. Add 'msiregs' kernel parameter instead of =20
+>>>>> 'msi-available-ranges'
+>>>>> functionality.
+>>>>=20
+>>>> The reason we used a device tree property was because this is for =20
+>>>> virtualization and AMP scenarios where this instance of Linux does =20
+>>>> not own all of the MSI registers.
+>>>>=20
+>>>> I don't see any reasonable way to partition an MPIC v4.3 MSI group =20
+>>>> -- but there are more groups, so it's not that bad. What's the use =20
+>>>> case for this patch?
+>>>>=20
+>>> [Minghuan] I do not known any case about this patch. I add =20
+>>> 'msiregs' just for achieving "msi-available-ranges" functionality. =20
+>>> I do not want to remove partition functionality when updating to =20
+>>> mpic4.3, although I do not see virtualization and AMP cases on =20
+>>> T4(KVM does not need this functionality).
 >>=20
->> Sigh, I was thinking of MSIIR1A -- which of course is distinct from =20
->> both MSIIRA1 and MSIIRA. :-P
+>> Such functionality does not work on mpic v4.3.  There are =20
+>> conflicting requirements of contiguous MSIs (because PCI devices can =20
+>> use them that way) and the inability to partition a single register =20
+>> (because they all go to the same MPIC interrupt).
 >>=20
->> So it's just a bug that pq3-mpic.dtsi has a length of 0x80?
-> [Minghuan] I am sorry, there is a typo.
-> offset 0x41600-0x4170 should be MSIRA0-7.
-> The MSI bank size is 0x200.
-> The MSIR 0-7 size is 0x80.
-> So the first region of 'reg' should indicate bank size or MSIR size?
-> I think it should be a bank size. So MSI driver can access MSISR and =20
-> MSIIR, and provide some new features in feature.
+>> Keep msi-available-ranges as is for older hardware, and just ignore =20
+>> it (with a warning printed) if it's present on MPIC v4.3.
+>>=20
+> [Minghuan] Thanks for your guidance.
+> But 'msireg' should be remained or removed?
 
-It should be the bank size.  There's already inconsistency between =20
-pq3-mpic.dtsi and qoriq-mpic.dtsi (the latter has 0x200).  I think =20
-pq3-mpic.dtsi is just wrong and should be fixed.
+Removed.
 
 -Scott=
