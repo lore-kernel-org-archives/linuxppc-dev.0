@@ -1,37 +1,28 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3054C2C02B8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 03:54:39 +1000 (EST)
-Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 18 Jun 2013 23:17:51 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 8E6611258043
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 23:23:29 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5IHsRun26542314
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 23:24:27 +0530
-Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5IHsVue014775
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 03:54:31 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Subject: Re: [PATCH -V10 00/15] THP support for PPC64
-In-Reply-To: <1371348007.21896.62.camel@pasglop>
-References: <1370446119-8837-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1371348007.21896.62.camel@pasglop>
-Date: Tue, 18 Jun 2013 23:24:30 +0530
-Message-ID: <8761xbi9t5.fsf@linux.vnet.ibm.com>
+Return-Path: <B07421@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id EFFA62C008C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 04:10:38 +1000 (EST)
+Received: from mail170-co1 (localhost [127.0.0.1])	by
+ mail170-co1-R.bigfish.com (Postfix) with ESMTP id 052866C02FA	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 18:10:34 +0000 (UTC)
+Received: from CO1EHSMHS006.bigfish.com (unknown [10.243.78.233])	by
+ mail170-co1.bigfish.com (Postfix) with ESMTP id D3C6A860195	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 18:09:53 +0000 (UTC)
+Date: Tue, 18 Jun 2013 13:08:58 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 2/5] powerpc/fsl_msi: add MSIIR1 support for MPIC v4.3
+To: Lian Minghuan-b31939 <B31939@freescale.com>
+In-Reply-To: <51BFC749.3080502@freescale.com> (from B31939@freescale.com on
+ Mon Jun 17 21:34:49 2013)
+Message-ID: <1371578938.9073.30@snotra>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Andrea Arcangeli <aarcange@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- paulus@samba.org
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: Minghuan Lian <Minghuan.Lian@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ Zang Roy-R61911 <r61911@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,109 +32,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@au1.ibm.com> writes:
+On 06/17/2013 09:34:49 PM, Lian Minghuan-b31939 wrote:
+> Hi Soctt,
+>=20
+> please see my comments inline.
+>=20
+> On 06/18/2013 08:15 AM, Scott Wood wrote:
+>> On 06/16/2013 10:00:01 PM, Lian Minghuan-b31939 wrote:
+>>> Hi Scott,
+>>>=20
+>>> please see my comments inline.
+>>>=20
+>>> On 06/15/2013 06:09 AM, Scott Wood wrote:
+>>>> On 06/14/2013 02:15:56 AM, Minghuan Lian wrote:
+>>>>> diff --git a/arch/powerpc/sysdev/fsl_msi.h =20
+>>>>> b/arch/powerpc/sysdev/fsl_msi.h
+>>>>> index 8225f86..43a9d99 100644
+>>>>> --- a/arch/powerpc/sysdev/fsl_msi.h
+>>>>> +++ b/arch/powerpc/sysdev/fsl_msi.h
+>>>>> @@ -16,7 +16,7 @@
+>>>>>  #include <linux/of.h>
+>>>>>  #include <asm/msi_bitmap.h>
+>>>>>=20
+>>>>> -#define NR_MSI_REG        8
+>>>>> +#define NR_MSI_REG        16
+>>>>>  #define IRQS_PER_MSI_REG    32
+>>>>>  #define NR_MSI_IRQS    (NR_MSI_REG * IRQS_PER_MSI_REG)
+>>>>=20
+>>>> I don't see where you update all_avail in fsl_of_msi_probe.
+>>>>=20
+>>>> We should also be bounds-checking the contents of =20
+>>>> msi-available-ranges.
+>>>> Currently it looks like we just silently overrun the bitmap if we =20
+>>>> get bad
+>>>> input from the device tree.
+>>>>=20
+>>> [Minghuan] all_avail definition: static const u32 all_avail[] =3D { =20
+>>> 0, NR_MSI_IRQS };
+>>> When changing NR_MSI_REG to 16, NR_MSI_IRQS has been changed to =20
+>>> 16*32, and all_avail also is updated.
+>>=20
+>> That's my point.  It shouldn't change for older hardware.
+> [Minghaun] the older hardware has 8 registers, mipcv4.3 has 16 =20
+> registers. If we do not use 16*32 bitmap to indicate 8*32 irqs.(this =20
+> way just only wastes some memory and has no other harm)
 
-> On Wed, 2013-06-05 at 20:58 +0530, Aneesh Kumar K.V wrote:
->> This is the second patchset needed to support THP on ppc64. Some of
->> the changes
->> included in this series are tricky in that it changes the powerpc
->> linux page table
->> walk subtly. We also overload few of the pte flags for ptes at PMD
->> level (huge
->> page PTEs).
->> 
->> The related mm/ changes are already merged to Andrew's -mm tree.
->
-> [Andrea, question for you near the end ]
->
-> So I'm trying to understand how you handle races between hash_page
-> and collapse.
->
-> The generic collapse code does:
->
-> 	_pmd = pmdp_clear_flush(vma, address, pmd);
->
-> Which expects the architecture to essentially have stopped any
-> concurrent walk by the time it returns.
->
-> Your implementation of the above does this:
->
-> 		pmd = *pmdp;
-> 		pmd_clear(pmdp);
-> 		/*
-> 		 * Now invalidate the hpte entries in the range
-> 		 * covered by pmd. This make sure we take a
-> 		 * fault and will find the pmd as none, which will
-> 		 * result in a major fault which takes mmap_sem and
-> 		 * hence wait for collapse to complete. Without this
-> 		 * the __collapse_huge_page_copy can result in copying
-> 		 * the old content.
-> 		 */
-> 		flush_tlb_pmd_range(vma->vm_mm, &pmd, address);
->
-> So we clear the pmd after making a copy of it. This will eventually
-> prevent a tablewalk but only eventually, once that store becomes visible
-> to other processors, which may take a while. Then you proceed to flush
-> the hash table for all the underlying PTEs.
->
-> So at this point, hash_page might *still* see the old pmd. Unless I
-> missed something, you did nothing that will prevent that (the only way
-> to lock against hash_page is really an IPI & wait or to take the PTE's
-> busy and make them !present or something). So as far as I can tell,
-> a concurrent hash_page can still sneak into the hash some "small"
-> entries after you have supposedly flushed them.
->
+Using the larger bitmap unconditionally is fine.  What is not fine is, =20
+on older hardware, acting as if all 16 irqs are present.
 
-We are depending on the pmd being none. But as you said that doesn't
-take care of an already undergoing hash_page. As per the discussion I
-am listing below the option that use synchronize_sched. The other option
-that we have is to clear _PAGE_USER.
+In other words, I'm talking about the contents of the bitmap, not its =20
+size.
 
-commit f69f11ba6a957aac81ea8096b244005c450a2059
-Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Date:   Tue Jun 18 19:17:17 2013 +0530
+> we have two choice I think.
+> 1. Use a variable assigned value 8 or 16 based on compatible, then =20
+> dynamically create bitmap
 
-    powerpc/THP: Wait for all hash_page calls to finish before invalidating HPTE entries
-    
-    When we collapse normal pages to hugepage, we first clear the pmd, then invalidate all
-    the PTE entries. The assumption here is that any low level page fault will see pmd as
-    none and take the slow path that will wait on mmap_sem. But we could very well be in
-    a hash_page with local ptep pointer value. Such a hash page can result in adding new
-    HPTE entries for normal subpages/small page. That means we could be modifying the
-    page content as we copy them to a huge page. Fix this by waiting on hash_page to finish
-    after marking the pmd none and bfore invalidating HPTE entries. We use the heavy
-    synchronize_sched(). This should be ok as we do this in the background khugepaged thread
-    and not in application context. Also if we find collapse slow we can ideally increase
-    the scan rate.
-    
-    Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+If we have the mpic4.3 compatible, then we don't even support =20
+msi-available-ranges, so we'd skip this code and free everything in the =20
+bitmap.
 
-diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index bbecac4..92b733e 100644
---- a/arch/powerpc/mm/pgtable_64.c
-+++ b/arch/powerpc/mm/pgtable_64.c
-@@ -532,6 +532,7 @@ pmd_t pmdp_clear_flush(struct vm_area_struct *vma, unsigned long address,
- 		       pmd_t *pmdp)
- {
- 	pmd_t pmd;
-+	struct mm_struct *mm = vma->vm_mm;
- 
- 	VM_BUG_ON(address & ~HPAGE_PMD_MASK);
- 	if (pmd_trans_huge(*pmdp)) {
-@@ -542,6 +543,16 @@ pmd_t pmdp_clear_flush(struct vm_area_struct *vma, unsigned long address,
- 		 */
- 		pmd = *pmdp;
- 		pmd_clear(pmdp);
-+		spin_unlock(&mm->page_table_lock);
-+		/*
-+		 * Wait for all pending hash_page to finish
-+		 * We can do this by waiting for a context switch to happen on
-+		 * the cpus. Any new hash_page after this will see pmd none
-+		 * and fallback to code that takes mmap_sem and hence will block
-+		 * for collapse to finish.
-+		 */
-+		synchronize_sched();
-+		spin_lock(&mm->page_table_lock);
- 		/*
- 		 * Now invalidate the hpte entries in the range
- 		 * covered by pmd. This make sure we take a
+> 2. Add a new file for mpic v4.3.
+
+No. :-)
+
+-Scott=
