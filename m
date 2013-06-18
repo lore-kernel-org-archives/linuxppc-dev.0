@@ -1,24 +1,28 @@
 Return-Path: <B07421@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3458B2C02C8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 10:18:19 +1000 (EST)
-Received: from mail160-tx2 (localhost [127.0.0.1])	by
- mail160-tx2-R.bigfish.com (Postfix) with ESMTP id D58801C013F	for
- <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 00:18:15 +0000 (UTC)
-Received: from TX2EHSMHS014.bigfish.com (unknown [10.9.14.247])	by
- mail160-tx2.bigfish.com (Postfix) with ESMTP id BB6643E0063	for
- <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 00:18:13 +0000 (UTC)
-Date: Mon, 17 Jun 2013 19:18:12 -0500
+ by ozlabs.org (Postfix) with ESMTPS id 5B35B2C008A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 10:21:05 +1000 (EST)
+Received: from mail105-ch1 (localhost [127.0.0.1])	by
+ mail105-ch1-R.bigfish.com (Postfix) with ESMTP id A1FBD1002A8	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 00:21:01 +0000 (UTC)
+Received: from CH1EHSMHS027.bigfish.com (snatpool2.int.messaging.microsoft.com
+ [10.43.68.230])	by mail105-ch1.bigfish.com (Postfix) with ESMTP id
+ 32C543E0061	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 00:20:59
+ +0000 (UTC)
+Date: Mon, 17 Jun 2013 19:18:44 -0500
 From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 5/5] powerpc/fsl_msi: add 'msiregs' kernel parameter
+Subject: Re: [PATCH 1/5] powerpc/dts: add MPIC v4.3 dts node
 To: Lian Minghuan-b31939 <B31939@freescale.com>
-In-Reply-To: <51BEA072.1040902@freescale.com> (from B31939@freescale.com on
- Mon Jun 17 00:36:50 2013)
-Message-ID: <1371514692.9073.12@snotra>
+References: <1371194159-17332-1-git-send-email-Minghuan.Lian@freescale.com>
+ <1371242366.2996.10@snotra> <1371246799.2996.14@snotra>
+ <51BE7329.8070304@freescale.com>
+In-Reply-To: <51BE7329.8070304@freescale.com> (from B31939@freescale.com on
+ Sun Jun 16 21:23:37 2013)
+Message-ID: <1371514724.9073.13@snotra>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
 Cc: Minghuan Lian <Minghuan.Lian@freescale.com>, linuxppc-dev@lists.ozlabs.org,
@@ -32,43 +36,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/17/2013 12:36:50 AM, Lian Minghuan-b31939 wrote:
+On 06/16/2013 09:23:37 PM, Lian Minghuan-b31939 wrote:
 > Hi Scott,
 >=20
-> please see my comments inline.
+> please see my comments.
 >=20
-> On 06/15/2013 06:13 AM, Scott Wood wrote:
->> On 06/14/2013 02:15:59 AM, Minghuan Lian wrote:
->>> 1. Only MSIIR1 can index 16 MSI registers, but when using MSIIR1
->>> the IRQs of a register are not continuous. for example, the first
->>> register irq values are 0x0, 0x10, 0x20, 0x30 ... 0x1f0. So it
->>> is hard to use 'msi-available-ranges' property to indicate the
->>> available ranges and 'msi-available-ranges' property has been
->>> removed from dts node, so this patch removes the related code.
+> On 06/15/2013 05:53 AM, Scott Wood wrote:
+>> On 06/14/2013 03:39:26 PM, Scott Wood wrote:
+>>> On 06/14/2013 02:15:55 AM, Minghuan Lian wrote:
+>>>> +msi0: msi@41600 {
+>>>> +    compatible =3D "fsl,mpic-msi", "fsl,mpic-msi-v4.3";
 >>>=20
->>> 2. Add 'msiregs' kernel parameter instead of 'msi-available-ranges'
->>> functionality.
+>>> More specific compatibles come first -- and I don't think this is =20
+>>> 100% backwards compatible with "fsl,mpic-msi" anyway.
 >>=20
->> The reason we used a device tree property was because this is for =20
->> virtualization and AMP scenarios where this instance of Linux does =20
->> not own all of the MSI registers.
->>=20
->> I don't see any reasonable way to partition an MPIC v4.3 MSI group =20
->> -- but there are more groups, so it's not that bad.  What's the use =20
->> case for this patch?
->>=20
-> [Minghuan] I do not known any case about this patch. I add 'msiregs' =20
-> just for achieving "msi-available-ranges" functionality. I do not =20
-> want to remove partition functionality when updating to mpic4.3, =20
-> although I do not see virtualization and AMP cases on T4(KVM does not =20
-> need this functionality).
+>> Also please update the binding.
+> [Minghuan] Yes, maybe I should remove "fsl,mpic-msi". What do you =20
+> think?
 
-Such functionality does not work on mpic v4.3.  There are conflicting =20
-requirements of contiguous MSIs (because PCI devices can use them that =20
-way) and the inability to partition a single register (because they all =20
-go to the same MPIC interrupt).
-
-Keep msi-available-ranges as is for older hardware, and just ignore it =20
-(with a warning printed) if it's present on MPIC v4.3.
+Yes.
 
 -Scott=
