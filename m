@@ -1,30 +1,30 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e7.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9FA642C037D
+ (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0913F2C03B5
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 18:34:46 +1000 (EST)
 Received: from /spool/local
- by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Tue, 18 Jun 2013 04:34:44 -0400
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 15C526E8028
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 04:34:38 -0400 (EDT)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5I8YBOw305238
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 04:34:12 -0400
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5I8YBHQ004190
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 02:34:11 -0600
+ Tue, 18 Jun 2013 02:34:26 -0600
+Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 8F61B38C804D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 04:34:22 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5I8YMft55443700
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 04:34:22 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5I8YMeU021721
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 05:34:22 -0300
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 10/31] powerpc/eeh: Single kthread to handle events
-Date: Tue, 18 Jun 2013 16:33:34 +0800
-Message-Id: <1371544435-4943-11-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 20/31] powerpc/eeh: I/O chip PE reset
+Date: Tue, 18 Jun 2013 16:33:44 +0800
+Message-Id: <1371544435-4943-21-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1371544435-4943-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1371544435-4943-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -37,191 +37,266 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We possiblly have multiple kthreads running for multiple EEH errors
-(events) and use one spinlock to make the process of handling those
-EEH events serialized. That's unnecessary and the patch creates only
-one kthread, which is started during EEH core initialization time in
-eeh_init(). A new semaphore introduced to count the number of existing
-EEH events in the queue and the kthread waiting on the semaphore.
+The patch adds the I/O chip backend to do PE reset. For now, we
+focus on PCI bus dependent PE. If PHB PE has been put into error
+state, the PHB will take complete reset. Besides, the root bridge
+will take fundamental or hot reset accordingly if the indicated
+PE locates at the toppest of PCI hierarchy tree. Otherwise, the
+upstream p2p bridge will take hot reset.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh_event.h |    1 +
- arch/powerpc/kernel/eeh.c            |    5 ++
- arch/powerpc/kernel/eeh_event.c      |   96 +++++++++++++++++----------------
- 3 files changed, 55 insertions(+), 47 deletions(-)
+ arch/powerpc/platforms/powernv/eeh-ioda.c |  234 ++++++++++++++++++++++++++++-
+ 1 files changed, 233 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/eeh_event.h b/arch/powerpc/include/asm/eeh_event.h
-index de67d83..de92c86 100644
---- a/arch/powerpc/include/asm/eeh_event.h
-+++ b/arch/powerpc/include/asm/eeh_event.h
-@@ -31,6 +31,7 @@ struct eeh_event {
- 	struct eeh_pe		*pe;	/* EEH PE		*/
- };
- 
-+int eeh_event_init(void);
- int eeh_send_failure_event(struct eeh_pe *pe);
- void eeh_handle_event(struct eeh_pe *pe);
- 
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 7d169d3..777ecc0 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -704,6 +704,11 @@ int __init eeh_init(void)
- 
- 	raw_spin_lock_init(&confirm_error_lock);
- 
-+	/* Initialize EEH event */
-+	ret = eeh_event_init();
-+	if (ret)
-+		return ret;
-+
- 	/* Enable EEH for all adapters */
- 	if (eeh_probe_mode_devtree()) {
- 		list_for_each_entry_safe(hose, tmp,
-diff --git a/arch/powerpc/kernel/eeh_event.c b/arch/powerpc/kernel/eeh_event.c
-index 185bedd..62e532d 100644
---- a/arch/powerpc/kernel/eeh_event.c
-+++ b/arch/powerpc/kernel/eeh_event.c
-@@ -18,11 +18,10 @@
- 
- #include <linux/delay.h>
- #include <linux/list.h>
--#include <linux/mutex.h>
- #include <linux/sched.h>
-+#include <linux/semaphore.h>
- #include <linux/pci.h>
- #include <linux/slab.h>
--#include <linux/workqueue.h>
- #include <linux/kthread.h>
- #include <asm/eeh_event.h>
- #include <asm/ppc-pci.h>
-@@ -35,14 +34,9 @@
-  *  work-queue, where a worker thread can drive recovery.
-  */
- 
--/* EEH event workqueue setup. */
- static DEFINE_SPINLOCK(eeh_eventlist_lock);
-+static struct semaphore eeh_eventlist_sem;
- LIST_HEAD(eeh_eventlist);
--static void eeh_thread_launcher(struct work_struct *);
--DECLARE_WORK(eeh_event_wq, eeh_thread_launcher);
--
--/* Serialize reset sequences for a given pci device */
--DEFINE_MUTEX(eeh_event_mutex);
- 
- /**
-  * eeh_event_handler - Dispatch EEH events.
-@@ -60,55 +54,62 @@ static int eeh_event_handler(void * dummy)
- 	struct eeh_event *event;
- 	struct eeh_pe *pe;
- 
--	spin_lock_irqsave(&eeh_eventlist_lock, flags);
--	event = NULL;
--
--	/* Unqueue the event, get ready to process. */
--	if (!list_empty(&eeh_eventlist)) {
--		event = list_entry(eeh_eventlist.next, struct eeh_event, list);
--		list_del(&event->list);
--	}
--	spin_unlock_irqrestore(&eeh_eventlist_lock, flags);
--
--	if (event == NULL)
--		return 0;
--
--	/* Serialize processing of EEH events */
--	mutex_lock(&eeh_event_mutex);
--	pe = event->pe;
--	eeh_pe_state_mark(pe, EEH_PE_RECOVERING);
--	pr_info("EEH: Detected PCI bus error on PHB#%d-PE#%x\n",
--		pe->phb->global_number, pe->addr);
--
--	set_current_state(TASK_INTERRUPTIBLE);	/* Don't add to load average */
--	eeh_handle_event(pe);
--	eeh_pe_state_clear(pe, EEH_PE_RECOVERING);
--
--	kfree(event);
--	mutex_unlock(&eeh_event_mutex);
--
--	/* If there are no new errors after an hour, clear the counter. */
--	if (pe && pe->freeze_count > 0) {
--		msleep_interruptible(3600*1000);
--		if (pe->freeze_count > 0)
--			pe->freeze_count--;
--
-+	while (!kthread_should_stop()) {
-+		down(&eeh_eventlist_sem);
-+
-+		/* Fetch EEH event from the queue */
-+		spin_lock_irqsave(&eeh_eventlist_lock, flags);
-+		event = NULL;
-+		if (!list_empty(&eeh_eventlist)) {
-+			event = list_entry(eeh_eventlist.next,
-+					   struct eeh_event, list);
-+			list_del(&event->list);
-+		}
-+		spin_unlock_irqrestore(&eeh_eventlist_lock, flags);
-+		if (!event)
-+			continue;
-+
-+		/* We might have event without binding PE */
-+		pe = event->pe;
-+		if (pe) {
-+			eeh_pe_state_mark(pe, EEH_PE_RECOVERING);
-+			pr_info("EEH: Detected PCI bus error on PHB#%d-PE#%x\n",
-+				 pe->phb->global_number, pe->addr);
-+			eeh_handle_event(pe);
-+			eeh_pe_state_clear(pe, EEH_PE_RECOVERING);
-+		} else {
-+			eeh_handle_event(NULL);
-+		}
-+
-+		kfree(event);
- 	}
- 
- 	return 0;
+diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
+index a76870b..ea5fa05 100644
+--- a/arch/powerpc/platforms/powernv/eeh-ioda.c
++++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
+@@ -213,11 +213,243 @@ static int ioda_eeh_get_state(struct eeh_pe *pe)
+ 	return result;
  }
  
- /**
-- * eeh_thread_launcher - Start kernel thread to handle EEH events
-- * @dummy - unused
-+ * eeh_event_init - Start kernel thread to handle EEH events
-  *
-  * This routine is called to start the kernel thread for processing
-  * EEH event.
-  */
--static void eeh_thread_launcher(struct work_struct *dummy)
-+int eeh_event_init(void)
- {
--	if (IS_ERR(kthread_run(eeh_event_handler, NULL, "eehd")))
--		printk(KERN_ERR "Failed to start EEH daemon\n");
-+	struct task_struct *t;
-+	int ret = 0;
++static int ioda_eeh_pe_clear(struct eeh_pe *pe)
++{
++	struct pci_controller *hose;
++	struct pnv_phb *phb;
++	u32 pe_no;
++	u8 fstate;
++	u16 pcierr;
++	s64 ret;
 +
-+	/* Initialize semaphore */
-+	sema_init(&eeh_eventlist_sem, 0);
++	pe_no = pe->addr;
++	hose = pe->phb;
++	phb = pe->phb->private_data;
 +
-+	t = kthread_run(eeh_event_handler, NULL, "eehd");
-+	if (IS_ERR(t)) {
-+		ret = PTR_ERR(t);
-+		pr_err("%s: Failed to start EEH daemon (%d)\n",
-+			__func__, ret);
-+		return ret;
++	/* Clear the EEH error on the PE */
++	ret = opal_pci_eeh_freeze_clear(phb->opal_id,
++			pe_no, OPAL_EEH_ACTION_CLEAR_FREEZE_ALL);
++	if (ret) {
++		pr_err("%s: Failed to clear EEH error for "
++		       "PHB#%x-PE#%x, err=%lld\n",
++		       __func__, hose->global_number, pe_no, ret);
++		return -EIO;
++	}
++
++	/*
++	 * Read the PE state back and verify that the frozen
++	 * state has been removed.
++	 */
++	ret = opal_pci_eeh_freeze_status(phb->opal_id, pe_no,
++			&fstate, &pcierr, NULL);
++	if (ret) {
++		pr_err("%s: Failed to get EEH status on "
++		       "PHB#%x-PE#%x\n, err=%lld\n",
++		       __func__, hose->global_number, pe_no, ret);
++		return -EIO;
++	}
++
++	if (fstate != OPAL_EEH_STOPPED_NOT_FROZEN) {
++		pr_err("%s: Frozen state not cleared on "
++		       "PHB#%x-PE#%x, sts=%x\n",
++		       __func__, hose->global_number, pe_no, fstate);
++		return -EIO;
 +	}
 +
 +	return 0;
- }
- 
- /**
-@@ -136,7 +137,8 @@ int eeh_send_failure_event(struct eeh_pe *pe)
- 	list_add(&event->list, &eeh_eventlist);
- 	spin_unlock_irqrestore(&eeh_eventlist_lock, flags);
- 
--	schedule_work(&eeh_event_wq);
-+	/* For EEH deamon to knick in */
-+	up(&eeh_eventlist_sem);
- 
- 	return 0;
- }
++}
++
++static s64 ioda_eeh_phb_poll(struct pnv_phb *phb)
++{
++	s64 rc = OPAL_HARDWARE;
++
++	while (1) {
++		rc = opal_pci_poll(phb->opal_id);
++		if (rc <= 0)
++			break;
++
++		msleep(rc);
++	}
++
++	return rc;
++}
++
++static int ioda_eeh_phb_reset(struct pci_controller *hose, int option)
++{
++	struct pnv_phb *phb = hose->private_data;
++	s64 rc = OPAL_HARDWARE;
++
++	pr_debug("%s: Reset PHB#%x, option=%d\n",
++		 __func__, hose->global_number, option);
++
++	/* Issue PHB complete reset request */
++	if (option == EEH_RESET_FUNDAMENTAL ||
++	    option == EEH_RESET_HOT)
++		rc = opal_pci_reset(phb->opal_id,
++				OPAL_PHB_COMPLETE,
++				OPAL_ASSERT_RESET);
++	else if (option == EEH_RESET_DEACTIVATE)
++		rc = opal_pci_reset(phb->opal_id,
++				OPAL_PHB_COMPLETE,
++				OPAL_DEASSERT_RESET);
++	if (rc < 0)
++		goto out;
++
++	/*
++	 * Poll state of the PHB until the request is done
++	 * successfully.
++	 */
++	rc = ioda_eeh_phb_poll(phb);
++out:
++	if (rc != OPAL_SUCCESS)
++		return -EIO;
++
++	return 0;
++}
++
++static int ioda_eeh_root_reset(struct pci_controller *hose, int option)
++{
++	struct pnv_phb *phb = hose->private_data;
++	s64 rc = OPAL_SUCCESS;
++
++	pr_debug("%s: Reset PHB#%x, option=%d\n",
++		 __func__, hose->global_number, option);
++
++	/*
++	 * During the reset deassert time, we needn't care
++	 * the reset scope because the firmware does nothing
++	 * for fundamental or hot reset during deassert phase.
++	 */
++	if (option == EEH_RESET_FUNDAMENTAL)
++		rc = opal_pci_reset(phb->opal_id,
++				OPAL_PCI_FUNDAMENTAL_RESET,
++				OPAL_ASSERT_RESET);
++	else if (option == EEH_RESET_HOT)
++		rc = opal_pci_reset(phb->opal_id,
++				OPAL_PCI_HOT_RESET,
++				OPAL_ASSERT_RESET);
++	else if (option == EEH_RESET_DEACTIVATE)
++		rc = opal_pci_reset(phb->opal_id,
++				OPAL_PCI_HOT_RESET,
++				OPAL_DEASSERT_RESET);
++	if (rc < 0)
++		goto out;
++
++	/* Poll state of the PHB until the request is done */
++	rc = ioda_eeh_phb_poll(phb);
++out:
++	if (rc != OPAL_SUCCESS)
++		return -EIO;
++
++	return 0;
++}
++
++static int ioda_eeh_bridge_reset(struct pci_controller *hose,
++		struct pci_dev *dev, int option)
++{
++	u16 ctrl;
++
++	pr_debug("%s: Reset device %04x:%02x:%02x.%01x with option %d\n",
++		 __func__, hose->global_number, dev->bus->number,
++		 PCI_SLOT(dev->devfn), PCI_FUNC(dev->devfn), option);
++
++	switch (option) {
++	case EEH_RESET_FUNDAMENTAL:
++	case EEH_RESET_HOT:
++		pci_read_config_word(dev, PCI_BRIDGE_CONTROL, &ctrl);
++		ctrl |= PCI_BRIDGE_CTL_BUS_RESET;
++		pci_write_config_word(dev, PCI_BRIDGE_CONTROL, ctrl);
++		break;
++	case EEH_RESET_DEACTIVATE:
++		pci_read_config_word(dev, PCI_BRIDGE_CONTROL, &ctrl);
++		ctrl &= ~PCI_BRIDGE_CTL_BUS_RESET;
++		pci_write_config_word(dev, PCI_BRIDGE_CONTROL, ctrl);
++		break;
++	}
++
++	return 0;
++}
++
++/**
++ * ioda_eeh_reset - Reset the indicated PE
++ * @pe: EEH PE
++ * @option: reset option
++ *
++ * Do reset on the indicated PE. For PCI bus sensitive PE,
++ * we need to reset the parent p2p bridge. The PHB has to
++ * be reinitialized if the p2p bridge is root bridge. For
++ * PCI device sensitive PE, we will try to reset the device
++ * through FLR. For now, we don't have OPAL APIs to do HARD
++ * reset yet, so all reset would be SOFT (HOT) reset.
++ */
++static int ioda_eeh_reset(struct eeh_pe *pe, int option)
++{
++	struct pci_controller *hose = pe->phb;
++	struct eeh_dev *edev;
++	struct pci_dev *dev;
++	int ret;
++
++	/*
++	 * Anyway, we have to clear the problematic state for the
++	 * corresponding PE. However, we needn't do it if the PE
++	 * is PHB associated. That means the PHB is having fatal
++	 * errors and it needs reset. Further more, the AIB interface
++	 * isn't reliable any more.
++	 */
++	if (!(pe->type & EEH_PE_PHB) &&
++	    (option == EEH_RESET_HOT ||
++	    option == EEH_RESET_FUNDAMENTAL)) {
++		ret = ioda_eeh_pe_clear(pe);
++		if (ret)
++			return -EIO;
++	}
++
++	/*
++	 * The rules applied to reset, either fundamental or hot reset:
++	 *
++	 * We always reset the direct upstream bridge of the PE. If the
++	 * direct upstream bridge isn't root bridge, we always take hot
++	 * reset no matter what option (fundamental or hot) is. Otherwise,
++	 * we should do the reset according to the required option.
++	 */
++	if (pe->type & EEH_PE_PHB) {
++		ret = ioda_eeh_phb_reset(hose, option);
++	} else {
++		if (pe->type & EEH_PE_DEVICE) {
++			/*
++			 * If it's device PE, we didn't refer to the parent
++			 * PCI bus yet. So we have to figure it out indirectly.
++			 */
++			edev = list_first_entry(&pe->edevs,
++					struct eeh_dev, list);
++			dev = eeh_dev_to_pci_dev(edev);
++			dev = dev->bus->self;
++		} else {
++			/*
++			 * If it's bus PE, the parent PCI bus is already there
++			 * and just pick it up.
++			 */
++			dev = pe->bus->self;
++		}
++
++		/*
++		 * Do reset based on the fact that the direct upstream bridge
++		 * is root bridge (port) or not.
++		 */
++		if (dev->bus->number == 0)
++			ret = ioda_eeh_root_reset(hose, option);
++		else
++			ret = ioda_eeh_bridge_reset(hose, dev, option);
++	}
++
++	return ret;
++}
++
+ struct pnv_eeh_ops ioda_eeh_ops = {
+ 	.post_init		= ioda_eeh_post_init,
+ 	.set_option		= ioda_eeh_set_option,
+ 	.get_state		= ioda_eeh_get_state,
+-	.reset			= NULL,
++	.reset			= ioda_eeh_reset,
+ 	.get_log		= NULL,
+ 	.configure_bridge	= NULL,
+ 	.next_error		= NULL
 -- 
 1.7.5.4
