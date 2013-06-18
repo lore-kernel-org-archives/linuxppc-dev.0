@@ -2,29 +2,29 @@ Return-Path: <shangw@linux.vnet.ibm.com>
 Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 173D32C038C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 18:34:36 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id E8C7B2C034E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 18:34:43 +1000 (EST)
 Received: from /spool/local
  by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Tue, 18 Jun 2013 02:34:34 -0600
-Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 3AB0538C8056
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 04:34:32 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5I8YWPg248998
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 04:34:33 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5I8YW7q018182
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 04:34:32 -0400
+ Tue, 18 Jun 2013 02:34:35 -0600
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 37C8EC9003E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 04:34:03 -0400 (EDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5I8Y3JZ317592
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 04:34:03 -0400
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5I8Y3dO003714
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 02:34:03 -0600
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 29/31] powerpc/eeh: Register OPAL notifier for PCI error
-Date: Tue, 18 Jun 2013 16:33:53 +0800
-Message-Id: <1371544435-4943-30-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 03/31] powerpc/eeh: Make eeh_phb_pe_get() public
+Date: Tue, 18 Jun 2013 16:33:27 +0800
+Message-Id: <1371544435-4943-4-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1371544435-4943-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1371544435-4943-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -37,64 +37,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch registers OPAL event notifier and process the PCI errors
-from firmware. If we have pending PCI errors, special EEH event
-(without binding PE) will be sent to EEH core for processing.
+One of the possible cases indicated by P7IOC interrupt is fenced
+PHB. For that case, we need fetch the PE corresponding to the PHB
+and disable the PHB and all subordinate PCI buses/devices, recover
+from the fenced state and eventually enable the whole PHB. We need
+one function to fetch the PHB PE outside eeh_pe.c and the patch is
+going to make eeh_phb_pe_get() public for that purpose.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/eeh-ioda.c |   24 +++++++++++++++++++++++-
- 1 files changed, 23 insertions(+), 1 deletions(-)
+ arch/powerpc/include/asm/eeh.h |    1 +
+ arch/powerpc/kernel/eeh_pe.c   |    2 +-
+ 2 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-index a3eebd1..4961270 100644
---- a/arch/powerpc/platforms/powernv/eeh-ioda.c
-+++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-@@ -43,6 +43,13 @@
+diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+index e32c3c5..4ac6f70 100644
+--- a/arch/powerpc/include/asm/eeh.h
++++ b/arch/powerpc/include/asm/eeh.h
+@@ -184,6 +184,7 @@ static inline void eeh_unlock(void)
  
- static char *hub_diag = NULL;
- 
-+static void ioda_eeh_event(u64 events)
-+{
-+	/* We simply send special EEH event */
-+	if (events & OPAL_EVENT_PCI_ERROR)
-+		eeh_send_failure_event(NULL);
-+}
-+
- /**
-  * ioda_eeh_post_init - Chip dependent post initialization
-  * @hose: PCI controller
-@@ -54,6 +61,16 @@ static char *hub_diag = NULL;
- static int ioda_eeh_post_init(struct pci_controller *hose)
+ typedef void *(*eeh_traverse_func)(void *data, void *flag);
+ int eeh_phb_pe_create(struct pci_controller *phb);
++struct eeh_pe *eeh_phb_pe_get(struct pci_controller *phb);
+ int eeh_add_to_parent_pe(struct eeh_dev *edev);
+ int eeh_rmv_from_parent_pe(struct eeh_dev *edev, int purge_pe);
+ void *eeh_pe_dev_traverse(struct eeh_pe *root,
+diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
+index 9d4a9e8..71c4544 100644
+--- a/arch/powerpc/kernel/eeh_pe.c
++++ b/arch/powerpc/kernel/eeh_pe.c
+@@ -95,7 +95,7 @@ int eeh_phb_pe_create(struct pci_controller *phb)
+  * hierarchy tree is composed of PHB PEs. The function is used
+  * to retrieve the corresponding PHB PE according to the given PHB.
+  */
+-static struct eeh_pe *eeh_phb_pe_get(struct pci_controller *phb)
++struct eeh_pe *eeh_phb_pe_get(struct pci_controller *phb)
  {
- 	struct pnv_phb *phb = hose->private_data;
-+	int ret;
-+
-+	/* Register OPAL event notifier */
-+	ret = opal_notifier_register(OPAL_EVENT_PCI_ERROR,
-+				     ioda_eeh_event);
-+	if (ret) {
-+		pr_err("%s: Failed to register OPAL event notifier (%d)\n",
-+		       __func__, ret);
-+		return ret;
-+	}
+ 	struct eeh_pe *pe;
  
- 	/* FIXME: Enable it for PHB3 later */
- 	if (phb->type == PNV_PHB_IODA1) {
-@@ -736,8 +753,13 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
- 	long rc;
- 	int ret = 1;
- 
--	/* While running here, it's safe to purge the event queue */
-+	/*
-+	 * While running here, it's safe to purge the event queue.
-+	 * And we should keep the cached OPAL notifier event sychronized
-+	 * between the kernel and firmware.
-+	 */
- 	eeh_remove_event(NULL);
-+	opal_notifier_update_evt(OPAL_EVENT_PCI_ERROR, 0x0ul);
- 
- 	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
- 		/*
 -- 
 1.7.5.4
