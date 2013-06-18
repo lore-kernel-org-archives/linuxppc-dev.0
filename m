@@ -1,32 +1,26 @@
 Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0250.outbound.messaging.microsoft.com [213.199.154.250])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5B35B2C008A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 10:21:05 +1000 (EST)
-Received: from mail105-ch1 (localhost [127.0.0.1])	by
- mail105-ch1-R.bigfish.com (Postfix) with ESMTP id A1FBD1002A8	for
- <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 00:21:01 +0000 (UTC)
-Received: from CH1EHSMHS027.bigfish.com (snatpool2.int.messaging.microsoft.com
- [10.43.68.230])	by mail105-ch1.bigfish.com (Postfix) with ESMTP id
- 32C543E0061	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 00:20:59
- +0000 (UTC)
-Date: Mon, 17 Jun 2013 19:18:44 -0500
+ by ozlabs.org (Postfix) with ESMTPS id 2471C2C02A1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 10:22:12 +1000 (EST)
+Date: Mon, 17 Jun 2013 19:22:03 -0500
 From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 1/5] powerpc/dts: add MPIC v4.3 dts node
-To: Lian Minghuan-b31939 <B31939@freescale.com>
-References: <1371194159-17332-1-git-send-email-Minghuan.Lian@freescale.com>
- <1371242366.2996.10@snotra> <1371246799.2996.14@snotra>
- <51BE7329.8070304@freescale.com>
-In-Reply-To: <51BE7329.8070304@freescale.com> (from B31939@freescale.com on
- Sun Jun 16 21:23:37 2013)
-Message-ID: <1371514724.9073.13@snotra>
+Subject: Re: [PATCH 1/2] powerpc: add Book E support to 64-bit hibernation
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <1371513683.9073.6@snotra> <1371514650.21896.160.camel@pasglop>
+In-Reply-To: <1371514650.21896.160.camel@pasglop> (from
+ benh@kernel.crashing.org on Mon Jun 17 19:17:30 2013)
+Message-ID: <1371514923.9073.14@snotra>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: Minghuan Lian <Minghuan.Lian@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- Zang Roy-R61911 <r61911@freescale.com>
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "anton@enomsg.org" <anton@enomsg.org>,
+ Wang Dongsheng-B40534 <B40534@freescale.com>,
+ "johannes@sipsolutions.net" <johannes@sipsolutions.net>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,24 +30,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/16/2013 09:23:37 PM, Lian Minghuan-b31939 wrote:
-> Hi Scott,
+On 06/17/2013 07:17:30 PM, Benjamin Herrenschmidt wrote:
+> On Mon, 2013-06-17 at 19:01 -0500, Scott Wood wrote:
+> > I really doubt the exception scratch registers need to be saved --
+> > we're not trying to restore into the middle of an exception
+> > prolog/epilog.
+> >
+> > book3s has the PACA as well and they don't save it.  Don't we rely =20
+> on
+> > things like boot-time memory allocations happening in the same place
+> > when we resume?  extlb is part of the PACA, so the same applies.
 >=20
-> please see my comments.
->=20
-> On 06/15/2013 05:53 AM, Scott Wood wrote:
->> On 06/14/2013 03:39:26 PM, Scott Wood wrote:
->>> On 06/14/2013 02:15:55 AM, Minghuan Lian wrote:
->>>> +msi0: msi@41600 {
->>>> +    compatible =3D "fsl,mpic-msi", "fsl,mpic-msi-v4.3";
->>>=20
->>> More specific compatibles come first -- and I don't think this is =20
->>> 100% backwards compatible with "fsl,mpic-msi" anyway.
->>=20
->> Also please update the binding.
-> [Minghuan] Yes, maybe I should remove "fsl,mpic-msi". What do you =20
-> think?
+> I doubt we seriously tested hibernation :-) The PACA SPR should
+> definitely be saved/restored.
 
-Yes.
+OK.  It's not obvious to me how much the entire mechanism depends on =20
+things like boot time allocations being the same each time -- if we do =20
+depend on that in general, then the PACA shouldn't change on a =20
+particular CPU, right?
+
+Is it possible to restore on a different CPU than we saved on?  If so, =20
+could restoring the PACA leave us pointing to a different CPU's PACA?
 
 -Scott=
