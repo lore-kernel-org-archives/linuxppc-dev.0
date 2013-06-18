@@ -1,28 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 71F902C02A3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 14:39:14 +1000 (EST)
-Message-ID: <1371530335.21896.169.camel@pasglop>
-Subject: Re: [PATCH 3/4] KVM: PPC: Add support for IOMMU in-kernel handling
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alex Williamson <alex.williamson@redhat.com>
-Date: Tue, 18 Jun 2013 14:38:55 +1000
-In-Reply-To: <1371522772.22681.140.camel@ul30vt.home>
-References: <1370412673-1345-1-git-send-email-aik@ozlabs.ru>
- <1370412673-1345-4-git-send-email-aik@ozlabs.ru>
- <1371422343.21896.143.camel@pasglop>
- <1371438800.22681.38.camel@ul30vt.home>
- <1371441361.21896.152.camel@pasglop>
- <1371522772.22681.140.camel@ul30vt.home>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
- Rusty Russell <rusty@rustcorp.com.au>, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <michael@ellerman.id.au>
+Date: Tue, 18 Jun 2013 14:54:51 +1000
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Build regressions/improvements in v3.10-rc6
+Message-ID: <20130618045451.GB11417@concordia>
+References: <alpine.DEB.2.00.1306172114580.17108@ayla.of.borg>
+ <alpine.DEB.2.00.1306172115300.17174@ayla.of.borg>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.DEB.2.00.1306172115300.17174@ayla.of.borg>
+Cc: Linux/PPC Development <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel Development <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,31 +20,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-06-17 at 20:32 -0600, Alex Williamson wrote:
+On Mon, Jun 17, 2013 at 09:19:51PM +0200, Geert Uytterhoeven wrote:
+> On Mon, 17 Jun 2013, Geert Uytterhoeven wrote:
+> 
+> powerpc-randconfig
 
-> Right, we don't want to create dependencies across modules.  I don't
-> have a vision for how this should work.  This is effectively a complete
-> side-band to vfio, so we're really just dealing in the iommu group
-> space.  Maybe there needs to be some kind of registration of ownership
-> for the group using some kind of token.  It would need to include some
-> kind of notification when that ownership ends.  That might also be a
-> convenient tag to toggle driver probing off for devices in the group.
-> Other ideas?  Thanks,
+>   + arch/powerpc/include/asm/mmu-hash64.h: error: control reaches end of non-void function [-Werror=return-type]:  => 180:1
 
-All of that smells nasty like it will need a pile of bloody
-infrastructure.... which makes me think it's too complicated and not the
-right approach.
+This is running past a BUG(), which must mean we have CONFIG_BUG=n.
+BUG() turning into nothing is a bug in the CONFIG_BUG=n implementation IMHO.
+There was a discussion about this recently, I didn't see what the resolution
+was.
 
-How does access control work today on x86/VFIO ? Can you give me a bit
-more details ? I didn't get a good grasp in your previous email....
+>   + arch/powerpc/kvm/book3s_hv.c: error: 'vcpus_to_update[need_vpa_update]' may be used uninitialized in this function [-Werror=uninitialized]:  => 1187:22
 
->From the look of it, the VFIO file descriptor is what has the "access
-control" to the underlying iommu, is this right ? So we somewhat need to
-transfer (or copy) that ownership from the VFIO fd to the KVM VM.
+This looks bogus to me:
 
-I don't see a way to do that without some cross-layering here...
+  if (need_vpa_update) {
+ 	spin_unlock(&vc->lock);
+ 	for (i = 0; i < need_vpa_update; ++i) 
+ 		kvmppc_update_vpas(vcpus_to_update[i]);
 
-Rusty, are you aware of some kernel mechanism we can use for that ?
+I fail to see how that accesses vcpus_to_update[need_vpa_update].
 
-Cheers,
-Ben.
+>   + arch/powerpc/platforms/cell/beat_iommu.c: error: 'dma_base' may be used uninitialized in this function [-Werror=uninitialized]:  => 69:11
+>   + arch/powerpc/platforms/cell/beat_iommu.c: error: 'dma_size' may be used uninitialized in this function [-Werror=uninitialized]:  => 68:2
+>   + arch/powerpc/platforms/cell/beat_iommu.c: error: 'io_page_size' may be used uninitialized in this function [-Werror=uninitialized]:  => 68:54
+>   + arch/powerpc/platforms/cell/beat_wrapper.h: error: 'io_space_id' may be used uninitialized in this function [-Werror=uninitialized]:  => 249:2
+>   + arch/powerpc/platforms/cell/beat_wrapper.h: error: 'ioid' may be used uninitialized in this function [-Werror=uninitialized]:  => 249:2
+
+The above are all false warnings AFAICS.
+
+> We need more randconfig builds to divert attention from powerpc ;-)
+
+Or we could just drop them, with all the false positives from -Wuninitialized
+it's hard to spot any real problems.
+
+cheers
