@@ -1,31 +1,31 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e36.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 66F032C02B6
+ (Client CN "e32.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 017282C0342
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 18:34:18 +1000 (EST)
 Received: from /spool/local
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Tue, 18 Jun 2013 02:34:13 -0600
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
- [9.17.195.228])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 761931FF0024
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 02:28:56 -0600 (MDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5I8YAxE153900
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 02:34:10 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5I8Y9m6000739
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 02:34:10 -0600
+ Tue, 18 Jun 2013 02:34:10 -0600
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+ [9.17.195.106])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 5A4D119D8045
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 02:33:59 -0600 (MDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5I8Y8Lu338036
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 02:34:08 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5I8Y7tK003977
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 02:34:08 -0600
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 09/31] powerpc/eeh: Delay EEH probe during hotplug
-Date: Tue, 18 Jun 2013 16:33:33 +0800
-Message-Id: <1371544435-4943-10-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 07/31] powerpc/eeh: EEH post initialization operation
+Date: Tue, 18 Jun 2013 16:33:31 +0800
+Message-Id: <1371544435-4943-8-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1371544435-4943-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1371544435-4943-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -38,58 +38,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-While doing EEH recovery, the PCI devices of the problematic PE
-should be removed and then added to the system again. During the
-so-called hotplug event, the PCI devices of the problematic PE
-will be probed through early/late phase. We would delay EEH probe
-on late point for PowerNV platform since the PCI device isn't
-available in early phase.
+The patch adds new EEH operation post_init. It's used to notify
+the platform that EEH core has completed the EEH probe. By that,
+PowerNV platform starts to use the services supplied by EEH
+functionality.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/eeh.c |   16 +++++++++++++++-
- 1 files changed, 15 insertions(+), 1 deletions(-)
+ arch/powerpc/include/asm/eeh.h |    1 +
+ arch/powerpc/kernel/eeh.c      |   11 +++++++++++
+ 2 files changed, 12 insertions(+), 0 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+index beb3cbc..beec788 100644
+--- a/arch/powerpc/include/asm/eeh.h
++++ b/arch/powerpc/include/asm/eeh.h
+@@ -131,6 +131,7 @@ static inline struct pci_dev *eeh_dev_to_pci_dev(struct eeh_dev *edev)
+ struct eeh_ops {
+ 	char *name;
+ 	int (*init)(void);
++	int (*post_init)(void);
+ 	void* (*of_probe)(struct device_node *dn, void *flag);
+ 	int (*dev_probe)(struct pci_dev *dev, void *flag);
+ 	int (*set_option)(struct eeh_pe *pe, int option);
 diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index cda0b62..7d169d3 100644
+index c865c5f..a29cf47 100644
 --- a/arch/powerpc/kernel/eeh.c
 +++ b/arch/powerpc/kernel/eeh.c
-@@ -758,6 +758,14 @@ static void eeh_add_device_early(struct device_node *dn)
- {
- 	struct pci_controller *phb;
+@@ -720,6 +720,17 @@ int __init eeh_init(void)
+ 		return -EINVAL;
+ 	}
  
 +	/*
-+	 * If we're doing EEH probe based on PCI device, we
-+	 * would delay the probe until late stage because
-+	 * the PCI device isn't available this moment.
++	 * Call platform post-initialization. Actually, It's good chance
++	 * to inform platform that EEH is ready to supply service if the
++	 * I/O cache stuff has been built up.
 +	 */
-+	if (!eeh_probe_mode_devtree())
-+		return;
++	if (eeh_ops->post_init) {
++		ret = eeh_ops->post_init();
++		if (ret)
++			return ret;
++	}
 +
- 	if (!of_node_to_eeh_dev(dn))
- 		return;
- 	phb = of_node_to_eeh_dev(dn)->phb;
-@@ -766,7 +774,6 @@ static void eeh_add_device_early(struct device_node *dn)
- 	if (NULL == phb || 0 == phb->buid)
- 		return;
- 
--	/* FIXME: hotplug support on POWERNV */
- 	eeh_ops->of_probe(dn, NULL);
- }
- 
-@@ -817,6 +824,13 @@ static void eeh_add_device_late(struct pci_dev *dev)
- 	edev->pdev = dev;
- 	dev->dev.archdata.edev = edev;
- 
-+	/*
-+	 * We have to do the EEH probe here because the PCI device
-+	 * hasn't been created yet in the early stage.
-+	 */
-+	if (eeh_probe_mode_dev())
-+		eeh_ops->dev_probe(dev, NULL);
-+
- 	eeh_addr_cache_insert_dev(dev);
- }
- 
+ 	if (eeh_subsystem_enabled)
+ 		pr_info("EEH: PCI Enhanced I/O Error Handling Enabled\n");
+ 	else
 -- 
 1.7.5.4
