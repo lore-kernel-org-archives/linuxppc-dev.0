@@ -1,27 +1,30 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id E72F72C02AD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 00:49:04 +1000 (EST)
-Message-ID: <1371566935.22681.169.camel@ul30vt.home>
-Subject: Re: [PATCH 3/4] KVM: PPC: Add support for IOMMU in-kernel handling
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 18 Jun 2013 08:48:55 -0600
-In-Reply-To: <1371530335.21896.169.camel@pasglop>
-References: <1370412673-1345-1-git-send-email-aik@ozlabs.ru>
- <1370412673-1345-4-git-send-email-aik@ozlabs.ru>
- <1371422343.21896.143.camel@pasglop>
- <1371438800.22681.38.camel@ul30vt.home>
- <1371441361.21896.152.camel@pasglop>
- <1371522772.22681.140.camel@ul30vt.home>
- <1371530335.21896.169.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
- Rusty Russell <rusty@rustcorp.com.au>, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <B07421@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0D1462C02BF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 02:21:58 +1000 (EST)
+Received: from mail40-co1 (localhost [127.0.0.1])	by mail40-co1-R.bigfish.com
+ (Postfix) with ESMTP id C6DFDDC0243	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue,
+ 18 Jun 2013 16:21:53 +0000 (UTC)
+Received: from CO1EHSMHS012.bigfish.com (unknown [10.243.78.229])	by
+ mail40-co1.bigfish.com (Postfix) with ESMTP id 93F8172007A	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 16:21:52 +0000 (UTC)
+Date: Tue, 18 Jun 2013 11:21:48 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 3/5] powerpc/dts: update MSI bindings doc for MPIC v4.3
+To: Lian Minghuan-b31939 <B31939@freescale.com>
+References: <1371516126.9073.16@snotra> <51BFCAAF.1070400@freescale.com>
+In-Reply-To: <51BFCAAF.1070400@freescale.com> (from B31939@freescale.com on
+ Mon Jun 17 21:49:19 2013)
+Message-ID: <1371572508.9073.20@snotra>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: Minghuan Lian <Minghuan.Lian@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ Zang Roy-R61911 <r61911@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,56 +34,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-06-18 at 14:38 +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2013-06-17 at 20:32 -0600, Alex Williamson wrote:
-> 
-> > Right, we don't want to create dependencies across modules.  I don't
-> > have a vision for how this should work.  This is effectively a complete
-> > side-band to vfio, so we're really just dealing in the iommu group
-> > space.  Maybe there needs to be some kind of registration of ownership
-> > for the group using some kind of token.  It would need to include some
-> > kind of notification when that ownership ends.  That might also be a
-> > convenient tag to toggle driver probing off for devices in the group.
-> > Other ideas?  Thanks,
-> 
-> All of that smells nasty like it will need a pile of bloody
-> infrastructure.... which makes me think it's too complicated and not the
-> right approach.
-> 
-> How does access control work today on x86/VFIO ? Can you give me a bit
-> more details ? I didn't get a good grasp in your previous email....
+On 06/17/2013 09:49:19 PM, Lian Minghuan-b31939 wrote:
+> On 06/18/2013 08:42 AM, Scott Wood wrote:
+>> On 06/17/2013 07:28:07 PM, Scott Wood wrote:
+>>> On 06/17/2013 12:07:41 AM, Lian Minghuan-b31939 wrote:
+>>>>>> +    compatible =3D "fsl,mpic-msi";
+>>>>>> +    reg =3D <0x41600 0x200 0x44140 4>;
+>>>>>=20
+>>>>> Why 0x200?
+>>>>>=20
+>>>> [Minghuan] The offsets of the MSIA registers are from 0x41600 to =20
+>>>> 0x417ff, and the size is 0x200.
+>>>> offset 0x41600-0x4170 are MSIIRA1-7.
+>>>> 0x41720 is MSISRA,
+>>>> 0x41750 is MSIIR.
+>>>> The others are reserved.
+>>>=20
+>>> There is no MSIIRA on fsl,mpic-msi.
+>>=20
+>> Sigh, I was thinking of MSIIR1A -- which of course is distinct from =20
+>> both MSIIRA1 and MSIIRA. :-P
+>>=20
+>> So it's just a bug that pq3-mpic.dtsi has a length of 0x80?
+> [Minghuan] I am sorry, there is a typo.
+> offset 0x41600-0x4170 should be MSIRA0-7.
+> The MSI bank size is 0x200.
+> The MSIR 0-7 size is 0x80.
+> So the first region of 'reg' should indicate bank size or MSIR size?
+> I think it should be a bank size. So MSI driver can access MSISR and =20
+> MSIIR, and provide some new features in feature.
 
-The current model is not x86 specific, but it only covers doing iommu
-and device access through vfio.  The kink here is that we're trying to
-do device access and setup through vfio, but iommu manipulation through
-kvm.  We may want to revisit whether we can do the in-kernel iommu
-manipulation through vfio rather than kvm.
+It should be the bank size.  There's already inconsistency between =20
+pq3-mpic.dtsi and qoriq-mpic.dtsi (the latter has 0x200).  I think =20
+pq3-mpic.dtsi is just wrong and should be fixed.
 
-For vfio in general, the group is the unit of ownership.  A user is
-granted access to /dev/vfio/$GROUP through file permissions.  The user
-opens the group and a container (/dev/vfio/vfio) and calls SET_CONTAINER
-on the group.  If supported by the platform, multiple groups can be set
-to the same container, which allows for iommu domain sharing.  Once a
-group is associated with a container, an iommu backend can be
-initialized for the container.  Only then can a device be accessed
-through the group.
-
-So even if we were to pass a vfio group file descriptor into kvm and it
-matched as some kind of ownership token on the iommu group, it's not
-clear that's sufficient to assume we can start programming the iommu.
-Thanks,
-
-Alex
-
-> From the look of it, the VFIO file descriptor is what has the "access
-> control" to the underlying iommu, is this right ? So we somewhat need to
-> transfer (or copy) that ownership from the VFIO fd to the KVM VM.
-> 
-> I don't see a way to do that without some cross-layering here...
-> 
-> Rusty, are you aware of some kernel mechanism we can use for that ?
-> 
-> Cheers,
-> Ben.
-> 
-> 
+-Scott=
