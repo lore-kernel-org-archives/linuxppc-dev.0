@@ -1,39 +1,21 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BFABD2C0343
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 13:30:15 +1000 (EST)
-Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 19 Jun 2013 08:51:48 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 6AC0EE0055
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 08:59:33 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5J3UEmB25231488
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 09:00:14 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5J3U6ti016796
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 13:30:07 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH -V10 00/15] THP support for PPC64
-In-Reply-To: <1371593004.21896.199.camel@pasglop>
-References: <1370446119-8837-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1371348007.21896.62.camel@pasglop> <1371353865.21896.94.camel@pasglop>
- <1371355567.21896.101.camel@pasglop> <8738sfi7er.fsf@linux.vnet.ibm.com>
- <1371593004.21896.199.camel@pasglop>
-Date: Wed, 19 Jun 2013 09:00:05 +0530
-Message-ID: <87zjumhj5u.fsf@linux.vnet.ibm.com>
+Return-Path: <rusty@ozlabs.org>
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Alex Williamson <alex.williamson@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 3/4] KVM: PPC: Add support for IOMMU in-kernel handling
+In-Reply-To: <1371522772.22681.140.camel@ul30vt.home>
+References: <1370412673-1345-1-git-send-email-aik@ozlabs.ru>
+ <1370412673-1345-4-git-send-email-aik@ozlabs.ru>
+ <1371422343.21896.143.camel@pasglop> <1371438800.22681.38.camel@ul30vt.home>
+ <1371441361.21896.152.camel@pasglop> <1371522772.22681.140.camel@ul30vt.home>
+Date: Wed, 19 Jun 2013 13:05:43 +0930
+Message-ID: <87txkun568.fsf@rustcorp.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Alexey Kardashevskiy <aik@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- paulus@samba.org
+Content-Type: text/plain; charset=us-ascii
+Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,43 +25,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-
-> On Wed, 2013-06-19 at 00:16 +0530, Aneesh Kumar K.V wrote:
->
->> But will that by anonymous memory ? ie, will we find them suitable for
->> THP allocation ?
->
-> The 4k pages themselves with 4k_PFN no, but the segment yes. A single of
-> these will demote the whole segment, ie 256M or 1T.
->
->> >   * If you find a THP in hash_page and the segment size is 4k, fault
->> >
->> >   * In do_page_fault, re-check for that condition (or maybe we can make
->> > hash_page return a specific bit that gets ORed into the error_code into
->> > do_page_fault ?) and split huge pages there.
->> >
->> > But that's just an idea off the top of my mind, there might be a better
->> > way. Of course this needs to be tested.
->> >
->> > BTW. For the subpage protection, similarily, you need to make sure you
->> > properly map the entire segment as "no THP", not just the range
->> > passed-in by the user.
+Alex Williamson <alex.williamson@redhat.com> writes:
+> On Mon, 2013-06-17 at 13:56 +1000, Benjamin Herrenschmidt wrote:
+>> On Sun, 2013-06-16 at 21:13 -0600, Alex Williamson wrote:
 >> 
->> Can you explain that more, why should the entire segment be marked no THP ?
->> The segment can work with 4K base page size and we still be able to
->> allocate a hugepage in that segment.
+>> > IOMMU groups themselves don't provide security, they're accessed by
+>> > interfaces like VFIO, which provide the security.  Given a brief look, I
+>> > agree, this looks like a possible backdoor.  The typical VFIO way to
+>> > handle this would be to pass a VFIO file descriptor here to prove that
+>> > the process has access to the IOMMU group.  This is how /dev/vfio/vfio
+>> > gains the ability to setup an IOMMU domain an do mappings with the
+>> > SET_CONTAINER ioctl using a group fd.  Thanks,
+>> 
+>> How do you envision that in the kernel ? IE. I'm in KVM code, gets that
+>> vfio fd, what do I do with it ?
+>> 
+>> Basically, KVM needs to know that the user is allowed to use that iommu
+>> group. I don't think we want KVM however to call into VFIO directly
+>> right ?
 >
-> Will we be able to track all the possible hashings of the huge page on a
-> 4k segment ?
+> Right, we don't want to create dependencies across modules.  I don't
+> have a vision for how this should work.  This is effectively a complete
+> side-band to vfio, so we're really just dealing in the iommu group
+> space.  Maybe there needs to be some kind of registration of ownership
+> for the group using some kind of token.  It would need to include some
+> kind of notification when that ownership ends.  That might also be a
+> convenient tag to toggle driver probing off for devices in the group.
+> Other ideas?  Thanks,
 
-Yes. The comment above hpte_valid explains that 
+It's actually not that bad.
 
- * The linux hugepage PMD now include the pmd entries followed by the address
- * to the stashed pgtable_t. The stashed pgtable_t contains the hpte bits.
- * [ 1 bit secondary | 3 bit hidx | 1 bit valid | 000]. We use one byte per
- * each HPTE entry. With 16MB hugepage and 64K HPTE we need 256 entries and
- * with 4K HPTE we need 4096 entries. Both will fit in a 4K pgtable_t.
+eg. 
 
+struct vfio_container *vfio_container_from_file(struct file *filp)
+{
+        if (filp->f_op != &vfio_device_fops)
+                return ERR_PTR(-EINVAL);
 
--aneesh
+        /* OK it really is a vfio fd, return the data. */
+        ....
+}
+EXPORT_SYMBOL_GPL(vfio_container_from_file);
+
+...
+
+inside KVM_CREATE_SPAPR_TCE_IOMMU:
+
+        struct file *vfio_filp;
+        struct vfio_container *(lookup)(struct file *filp);
+
+        vfio_filp = fget(create_tce_iommu.fd);
+        if (!vfio)
+                ret = -EBADF;
+        lookup = symbol_get(vfio_container_from_file);
+        if (!lookup)
+                ret = -EINVAL;
+        else {
+                container = lookup(vfio_filp);
+                if (IS_ERR(container))
+                        ret = PTR_ERR(container);
+                else
+                        ...
+                symbol_put(vfio_container_from_file);
+        }
+
+symbol_get() won't try to load a module; it'll just fail.  This is what
+you want, since they must have vfio in the kernel to get a valid fd...
+
+Hope that helps,
+Rusty.
+                
