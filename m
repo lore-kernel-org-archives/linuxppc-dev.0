@@ -1,27 +1,23 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- by ozlabs.org (Postfix) with ESMTP id 8392B2C0334
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 19:58:59 +1000 (EST)
-Subject: Re: [PATCH 3/4] KVM: PPC: Add support for IOMMU in-kernel handling
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=iso-8859-1
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <1371617970.21896.232.camel@pasglop>
-Date: Wed, 19 Jun 2013 11:58:50 +0200
-Message-Id: <E63966E3-336F-4CB8-96EC-24D2C1644E62@suse.de>
-References: <1370412673-1345-1-git-send-email-aik@ozlabs.ru>
- <1370412673-1345-4-git-send-email-aik@ozlabs.ru>
- <1371422343.21896.143.camel@pasglop> <1371438800.22681.38.camel@ul30vt.home>
- <1371441361.21896.152.camel@pasglop> <1371522772.22681.140.camel@ul30vt.home>
- <87txkun568.fsf@rustcorp.com.au> <1371617970.21896.232.camel@pasglop>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: "kvm@vger.kernel.org mailing list" <kvm@vger.kernel.org>,
- Alexey Kardashevskiy <aik@ozlabs.ru>, Joerg Roedel <joro@8bytes.org>,
- Rusty Russell <rusty@rustcorp.com.au>,
- open list <linux-kernel@vger.kernel.org>, kvm-ppc@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 26B672C02F6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 20:20:45 +1000 (EST)
+Message-ID: <1371637113.21896.274.camel@pasglop>
+Subject: Re: [PATCH] powerpc/THP: Wait for all hash_page calls to finish
+ before invalidating HPTE entries
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Neuling <mikey@neuling.org>
+Date: Wed, 19 Jun 2013 20:18:33 +1000
+In-Reply-To: <9335.1371626096@ale.ozlabs.ibm.com>
+References: <1371624294-19451-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <7312.1371624946@ale.ozlabs.ibm.com> <87ehbymvif.fsf@linux.vnet.ibm.com>
+ <9335.1371626096@ale.ozlabs.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,56 +27,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, 2013-06-19 at 17:14 +1000, Michael Neuling wrote:
 
-On 19.06.2013, at 06:59, Benjamin Herrenschmidt wrote:
+> > This is a bug fix. The details can be found at 
+> 
+> Can you make this more obvious in the changelog (as well as making it 80
+> col).  I don't see 'bug' mentioned anywhere.  'Fix' is mentioned
+> somewhere in the middle of the changelog.
+> 
+> > 
+> > http://article.gmane.org/gmane.linux.ports.ppc.embedded/60266
+> 
+> OK, but V10 THP is not in yet, right?  So why not roll it into that
+> series rather than pushing broken stuff and fixing it?
 
-> On Wed, 2013-06-19 at 13:05 +0930, Rusty Russell wrote:
->> symbol_get() won't try to load a module; it'll just fail.  This is =
-what
->> you want, since they must have vfio in the kernel to get a valid =
-fd...
->=20
-> Ok, cool. I suppose what we want here Alexey is slightly higher level,
-> something like:
->=20
-> 	vfio_validate_iommu_id(file, iommu_id)
->=20
-> Which verifies that the file that was passed in is allowed to use
-> that iommu_id.
->=20
-> That's a simple and flexible interface (ie, it will work even if we
-> support multiple iommu IDs in the future for a vfio, for example
-> for DDW windows etc...), the logic to know about the ID remains
-> in qemu, this is strictly a validation call.
->=20
-> That way we also don't have to expose the containing vfio struct =
-etc...
-> just that simple function.
->=20
-> Alex, any objection ?
+Right, this is expected. This fix is a result of me asking him to do it
+that way on ST and should eventually be folded in the series (or
+re-ordered to be in there before the patch that enables THP).
 
-Which Alex? :)
-
-I think validate works, it keeps iteration logic out of the kernel which =
-is a good thing. There still needs to be an interface for getting the =
-iommu id in VFIO, but I suppose that one's for the other Alex and J=F6rg =
-to comment on.
-
->=20
-> Do we need to make it a get/put interface instead ?
->=20
-> 	vfio_validate_and_use_iommu(file, iommu_id);
->=20
-> 	vfio_release_iommu(file, iommu_id);
->=20
-> To ensure that the resource remains owned by the process until KVM
-> is closed as well ?
->=20
-> Or do we want to register with VFIO with a callback so that VFIO can
-> call us if it needs us to give it up ?
-
-Can't we just register a handler on the fd and get notified when it =
-closes? Can you kill VFIO access without closing the fd?
-
-
-Alex
+Cheers,
+Ben.
