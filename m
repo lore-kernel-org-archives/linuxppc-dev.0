@@ -1,21 +1,27 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 96E242C03B3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 19:21:16 +1000 (EST)
-From: Kevin Hao <haokexin@gmail.com>
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ by ozlabs.org (Postfix) with ESMTP id 8392B2C0334
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 19:58:59 +1000 (EST)
+Subject: Re: [PATCH 3/4] KVM: PPC: Add support for IOMMU in-kernel handling
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=iso-8859-1
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <1371617970.21896.232.camel@pasglop>
+Date: Wed, 19 Jun 2013 11:58:50 +0200
+Message-Id: <E63966E3-336F-4CB8-96EC-24D2C1644E62@suse.de>
+References: <1370412673-1345-1-git-send-email-aik@ozlabs.ru>
+ <1370412673-1345-4-git-send-email-aik@ozlabs.ru>
+ <1371422343.21896.143.camel@pasglop> <1371438800.22681.38.camel@ul30vt.home>
+ <1371441361.21896.152.camel@pasglop> <1371522772.22681.140.camel@ul30vt.home>
+ <87txkun568.fsf@rustcorp.com.au> <1371617970.21896.232.camel@pasglop>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 4/4] powerpc: make the kernel bootable from non 0 address for
- 6xx
-Date: Wed, 19 Jun 2013 17:20:04 +0800
-Message-ID: <1371633604-4491-5-git-send-email-haokexin@gmail.com>
-In-Reply-To: <1371633604-4491-1-git-send-email-haokexin@gmail.com>
-References: <1371633604-4491-1-git-send-email-haokexin@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
+Cc: "kvm@vger.kernel.org mailing list" <kvm@vger.kernel.org>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, Joerg Roedel <joro@8bytes.org>,
+ Rusty Russell <rusty@rustcorp.com.au>,
+ open list <linux-kernel@vger.kernel.org>, kvm-ppc@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,134 +31,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add the support to boot the kernel from a non 0 address for 6xx.
-Setup the exception trampoline if the physical start address is
-not 0.
 
-For a kdump kernel, enable the relocatable support implicitly.
-Since the memstart_adddr of the kdump is not 0, we definitely
-should regard this when setting up the BAT map.
+On 19.06.2013, at 06:59, Benjamin Herrenschmidt wrote:
 
-Signed-off-by: Kevin Hao <haokexin@gmail.com>
----
- arch/powerpc/Kconfig                            |  2 +-
- arch/powerpc/include/asm/exception_trampoline.h |  4 ++--
- arch/powerpc/kernel/Makefile                    |  3 ++-
- arch/powerpc/kernel/exception_trampoline.c      | 18 +++++++++++++++---
- arch/powerpc/mm/ppc_mmu_32.c                    |  7 +------
- 5 files changed, 21 insertions(+), 13 deletions(-)
+> On Wed, 2013-06-19 at 13:05 +0930, Rusty Russell wrote:
+>> symbol_get() won't try to load a module; it'll just fail.  This is =
+what
+>> you want, since they must have vfio in the kernel to get a valid =
+fd...
+>=20
+> Ok, cool. I suppose what we want here Alexey is slightly higher level,
+> something like:
+>=20
+> 	vfio_validate_iommu_id(file, iommu_id)
+>=20
+> Which verifies that the file that was passed in is allowed to use
+> that iommu_id.
+>=20
+> That's a simple and flexible interface (ie, it will work even if we
+> support multiple iommu IDs in the future for a vfio, for example
+> for DDW windows etc...), the logic to know about the ID remains
+> in qemu, this is strictly a validation call.
+>=20
+> That way we also don't have to expose the containing vfio struct =
+etc...
+> just that simple function.
+>=20
+> Alex, any objection ?
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 8fe2792..6e03028 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -382,7 +382,7 @@ config KEXEC
- config CRASH_DUMP
- 	bool "Build a kdump crash kernel"
- 	depends on PPC64 || 6xx || FSL_BOOKE || (44x && !SMP)
--	select RELOCATABLE if PPC64 || 44x
-+	select RELOCATABLE if PPC64 || 44x || 6xx
- 	select DYNAMIC_MEMSTART if FSL_BOOKE
- 	help
- 	  Build a kernel suitable for use as a kdump capture kernel.
-diff --git a/arch/powerpc/include/asm/exception_trampoline.h b/arch/powerpc/include/asm/exception_trampoline.h
-index 88281c9..df4af6a 100644
---- a/arch/powerpc/include/asm/exception_trampoline.h
-+++ b/arch/powerpc/include/asm/exception_trampoline.h
-@@ -22,11 +22,11 @@
- 
- #ifndef __ASSEMBLY__
- 
--#if defined(CONFIG_CRASH_DUMP) && !defined(CONFIG_NONSTATIC_KERNEL)
-+#if  defined(CONFIG_RELOCATABLE) && defined(CONFIG_6xx)
- extern void reserve_exception_trampoline(void);
- extern void setup_exception_trampoline(void);
- #else
--/* !CRASH_DUMP || !NONSTATIC_KERNEL */
-+/* !CONFIG_RELOCATABLE || !CONFIG_6xx */
- static inline void reserve_exception_trampoline(void) { ; }
- static inline void setup_exception_trampoline(void) { ; }
- #endif
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index c73a0e3..c722156 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -59,7 +59,8 @@ obj-$(CONFIG_LPARCFG)		+= lparcfg.o
- obj-$(CONFIG_IBMVIO)		+= vio.o
- obj-$(CONFIG_IBMEBUS)           += ibmebus.o
- obj-$(CONFIG_GENERIC_TBSYNC)	+= smp-tbsync.o
--obj-$(CONFIG_CRASH_DUMP)	+= crash_dump.o exception_trampoline.o
-+obj-$(CONFIG_CRASH_DUMP)	+= crash_dump.o
-+obj-$(CONFIG_RELOCATABLE)	+= exception_trampoline.o
- obj-$(CONFIG_FA_DUMP)		+= fadump.o
- ifeq ($(CONFIG_PPC32),y)
- obj-$(CONFIG_E500)		+= idle_e500.o
-diff --git a/arch/powerpc/kernel/exception_trampoline.c b/arch/powerpc/kernel/exception_trampoline.c
-index b725116..68aed9e 100644
---- a/arch/powerpc/kernel/exception_trampoline.c
-+++ b/arch/powerpc/kernel/exception_trampoline.c
-@@ -28,10 +28,16 @@
- #define DBG(fmt...)
- #endif
- 
--#ifndef CONFIG_NONSTATIC_KERNEL
-+#ifdef CONFIG_6xx
- void __init reserve_exception_trampoline(void)
- {
--	memblock_reserve(0, EXCEPTION_RESERVE_LIMIT);
-+	/*
-+	 * We don't need to reserve this memory region for a kdump kernel
-+	 * since this is not included in the memory regions of kdump kernel.
-+	 */
-+
-+	if (!memstart_addr && PHYSICAL_START)
-+		memblock_reserve(0, EXCEPTION_RESERVE_LIMIT);
- }
- 
- static void __init create_trampoline(unsigned long addr)
-@@ -54,6 +60,12 @@ void __init setup_exception_trampoline(void)
- {
- 	unsigned long i;
- 
-+	if (!PHYSICAL_START)
-+		return;
-+
-+	if (PHYSICAL_START > 0x2000000)
-+		panic("Don't support to load a kernel above 32M address");
-+
- 	DBG(" -> setup_exception_trampoline()\n");
- 
- 	for (i = EXCEPTION_TRAMPOLINE_START; i < EXCEPTION_TRAMPOLINE_END; i += 8) {
-@@ -67,4 +79,4 @@ void __init setup_exception_trampoline(void)
- 
- 	DBG(" <- setup_exception_trampoline()\n");
- }
--#endif /* CONFIG_NONSTATIC_KERNEL */
-+#endif /* CONFIG_6xx */
-diff --git a/arch/powerpc/mm/ppc_mmu_32.c b/arch/powerpc/mm/ppc_mmu_32.c
-index 11571e1..99ce477 100644
---- a/arch/powerpc/mm/ppc_mmu_32.c
-+++ b/arch/powerpc/mm/ppc_mmu_32.c
-@@ -86,7 +86,7 @@ unsigned long __init mmu_mapin_ram(unsigned long top)
- 
- 	/* Make sure we don't map a block larger than the
- 	   smallest alignment of the physical address. */
--	tot = top;
-+	tot = top + memstart_addr;
- 	for (bl = 128<<10; bl < max_size; bl <<= 1) {
- 		if (bl * 2 > tot)
- 			break;
-@@ -275,11 +275,6 @@ void __init MMU_init_hw(void)
- void setup_initial_memory_limit(phys_addr_t first_memblock_base,
- 				phys_addr_t first_memblock_size)
- {
--	/* We don't currently support the first MEMBLOCK not mapping 0
--	 * physical on those processors
--	 */
--	BUG_ON(first_memblock_base != 0);
--
- 	/* 601 can only access 16MB at the moment */
- 	if (PVR_VER(mfspr(SPRN_PVR)) == 1)
- 		memblock_set_current_limit(min_t(u64, first_memblock_size, 0x01000000));
--- 
-1.8.1.4
+Which Alex? :)
+
+I think validate works, it keeps iteration logic out of the kernel which =
+is a good thing. There still needs to be an interface for getting the =
+iommu id in VFIO, but I suppose that one's for the other Alex and J=F6rg =
+to comment on.
+
+>=20
+> Do we need to make it a get/put interface instead ?
+>=20
+> 	vfio_validate_and_use_iommu(file, iommu_id);
+>=20
+> 	vfio_release_iommu(file, iommu_id);
+>=20
+> To ensure that the resource remains owned by the process until KVM
+> is closed as well ?
+>=20
+> Or do we want to register with VFIO with a callback so that VFIO can
+> call us if it needs us to give it up ?
+
+Can't we just register a handler on the fd and get notified when it =
+closes? Can you kill VFIO access without closing the fd?
+
+
+Alex
