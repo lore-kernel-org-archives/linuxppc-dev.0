@@ -1,28 +1,38 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id DC81D2C013D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 14:59:47 +1000 (EST)
-Message-ID: <1371617970.21896.232.camel@pasglop>
-Subject: Re: [PATCH 3/4] KVM: PPC: Add support for IOMMU in-kernel handling
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alex Williamson <alex.williamson@redhat.com>
-Date: Wed, 19 Jun 2013 14:59:30 +1000
-In-Reply-To: <87txkun568.fsf@rustcorp.com.au>
-References: <1370412673-1345-1-git-send-email-aik@ozlabs.ru>
- <1370412673-1345-4-git-send-email-aik@ozlabs.ru>
- <1371422343.21896.143.camel@pasglop>
- <1371438800.22681.38.camel@ul30vt.home>
- <1371441361.21896.152.camel@pasglop>
- <1371522772.22681.140.camel@ul30vt.home> <87txkun568.fsf@rustcorp.com.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
- Rusty Russell <rusty@rustcorp.com.au>, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+ (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 125AA2C02F5
+ for <linuxppc-dev@ozlabs.org>; Wed, 19 Jun 2013 15:33:19 +1000 (EST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Tue, 18 Jun 2013 23:33:18 -0600
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id BE08538C8042
+ for <linuxppc-dev@ozlabs.org>; Wed, 19 Jun 2013 01:33:13 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5J5W584263236
+ for <linuxppc-dev@ozlabs.org>; Wed, 19 Jun 2013 01:32:05 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5J5W3G7010446
+ for <linuxppc-dev@ozlabs.org>; Wed, 19 Jun 2013 01:32:05 -0400
+Date: Tue, 18 Jun 2013 22:31:13 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH 1/2] perf/Power7: Save dcache_src fields in sample record.
+Message-ID: <20130619053113.GA5025@us.ibm.com>
+References: <20130607204008.GA3281@us.ibm.com>
+ <23819.1371616910@ale.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <23819.1371616910@ale.ozlabs.ibm.com>
+Cc: Anton Blanchard <anton@au1.ibm.com>, linux-kernel@vger.kernel.org,
+ Stephane Eranian <eranian@google.com>, linuxppc-dev@ozlabs.org,
+ Paul Mackerras <paulus@samba.org>, mingo@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,39 +42,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-06-19 at 13:05 +0930, Rusty Russell wrote:
-> symbol_get() won't try to load a module; it'll just fail.  This is what
-> you want, since they must have vfio in the kernel to get a valid fd...
+Michael Neuling [mikey@neuling.org] wrote:
+| Suka,
+| 
+| One of these two patches breaks pmac32_defconfig and I suspect all other
+| 32 bit configs (against mainline)
+| 
+| arch/powerpc/perf/core-book3s.c: In function 'record_and_restart':
+| arch/powerpc/perf/core-book3s.c:1632:4: error: passing argument 1 of 'ppmu->get_mem_data_src' from incompatible pointer type [-Werror]
+| arch/powerpc/perf/core-book3s.c:1632:4: note: expected 'struct perf_sample_data *' but argument is of type 'struct perf_sample_data *'
+| 
+| benh is busy enough without this junk.  Please check the simple things
+| like white space and compile errors!
 
-Ok, cool. I suppose what we want here Alexey is slightly higher level,
-something like:
+Sorry about that.
 
-	vfio_validate_iommu_id(file, iommu_id)
+BTW, this was an early patch more to get some feedback on mapping of
+memory hierarchy levels to Power and not intended to be merged. I have
+been reworking the patch based on other comments.
 
-Which verifies that the file that was passed in is allowed to use
-that iommu_id.
-
-That's a simple and flexible interface (ie, it will work even if we
-support multiple iommu IDs in the future for a vfio, for example
-for DDW windows etc...), the logic to know about the ID remains
-in qemu, this is strictly a validation call.
-
-That way we also don't have to expose the containing vfio struct etc...
-just that simple function.
-
-Alex, any objection ?
-
-Do we need to make it a get/put interface instead ?
-
-	vfio_validate_and_use_iommu(file, iommu_id);
-
-	vfio_release_iommu(file, iommu_id);
-
-To ensure that the resource remains owned by the process until KVM
-is closed as well ?
-
-Or do we want to register with VFIO with a callback so that VFIO can
-call us if it needs us to give it up ?
-
-Cheers,
-Ben.
+Sukadev
