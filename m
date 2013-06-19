@@ -1,15 +1,16 @@
 Return-Path: <haokexin@gmail.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 31ECA2C035C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 19:21:12 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id C26722C0383
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 19:21:13 +1000 (EST)
 From: Kevin Hao <haokexin@gmail.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 1/4] powerpc: enable relocatable support for 6xx
-Date: Wed, 19 Jun 2013 17:20:01 +0800
-Message-ID: <1371633604-4491-2-git-send-email-haokexin@gmail.com>
+Subject: [PATCH 2/4] powerpc: move the exception trampoline helper functions
+ to a separate file
+Date: Wed, 19 Jun 2013 17:20:02 +0800
+Message-ID: <1371633604-4491-3-git-send-email-haokexin@gmail.com>
 In-Reply-To: <1371633604-4491-1-git-send-email-haokexin@gmail.com>
 References: <1371633604-4491-1-git-send-email-haokexin@gmail.com>
 MIME-Version: 1.0
@@ -24,198 +25,292 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is based on the codes in head_44x.S. With this patch the kernel
-can only boot from 0 with CONFIG_RELOCATABLE enabled. We will add the
-support to boot from a non 0 address in the following patches.
+For some platform such as 6xx we need to setup the exception
+trampoline for a relocatable kernel even through the CONFIG_CRASH_DUMP
+is disabled. So move these functions to a separate file so they can
+be used by non dump kernel.  This patch doesn't introduce any function
+change.
 
 Signed-off-by: Kevin Hao <haokexin@gmail.com>
 ---
- arch/powerpc/Kconfig                   |   2 +-
- arch/powerpc/include/asm/page.h        |   2 +-
- arch/powerpc/kernel/head_32.S          | 103 +++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/prom_init_check.sh |   2 +-
- 4 files changed, 106 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/exception_trampoline.h | 35 +++++++++++++
+ arch/powerpc/include/asm/kdump.h                | 32 -----------
+ arch/powerpc/kernel/Makefile                    |  2 +-
+ arch/powerpc/kernel/crash_dump.c                | 41 ---------------
+ arch/powerpc/kernel/exception_trampoline.c      | 70 +++++++++++++++++++++++++
+ arch/powerpc/kernel/prom.c                      |  2 +-
+ arch/powerpc/kernel/setup_32.c                  |  1 +
+ arch/powerpc/kernel/setup_64.c                  |  2 +-
+ 8 files changed, 109 insertions(+), 76 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/exception_trampoline.h
+ create mode 100644 arch/powerpc/kernel/exception_trampoline.c
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index c33e3ad..8fe2792 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -866,7 +866,7 @@ config DYNAMIC_MEMSTART
- 
- config RELOCATABLE
- 	bool "Build a relocatable kernel"
--	depends on ADVANCED_OPTIONS && FLATMEM && 44x
-+	depends on ADVANCED_OPTIONS && FLATMEM && (44x || 6xx)
- 	select NONSTATIC_KERNEL
- 	help
- 	  This builds a kernel image that is capable of running at the
-diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-index 988c812..7145c14 100644
---- a/arch/powerpc/include/asm/page.h
-+++ b/arch/powerpc/include/asm/page.h
-@@ -207,7 +207,7 @@ extern long long virt_phys_offset;
-  * On non-Book-E PPC64 PAGE_OFFSET and MEMORY_START are constants so use
-  * the other definitions for __va & __pa.
-  */
--#ifdef CONFIG_BOOKE
-+#if defined(CONFIG_BOOKE) || defined(CONFIG_6xx)
- #define __va(x) ((void *)(unsigned long)((phys_addr_t)(x) + VIRT_PHYS_OFFSET))
- #define __pa(x) ((unsigned long)(x) - VIRT_PHYS_OFFSET)
- #else
-diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
-index dc0488b..eb47b13 100644
---- a/arch/powerpc/kernel/head_32.S
-+++ b/arch/powerpc/kernel/head_32.S
-@@ -73,6 +73,8 @@ _ENTRY(_start);
- 	nop	/* used by __secondary_hold on prep (mtx) and chrp smp */
- 	nop
- 
-+	bl	perform_relocation
+diff --git a/arch/powerpc/include/asm/exception_trampoline.h b/arch/powerpc/include/asm/exception_trampoline.h
+new file mode 100644
+index 0000000..707ad6c
+--- /dev/null
++++ b/arch/powerpc/include/asm/exception_trampoline.h
+@@ -0,0 +1,35 @@
++#ifndef _EXCEPTION_TRAMPOLINE_H
++#define _EXCEPTION_TRAMPOLINE_H
 +
- /* PMAC
-  * Enter here with the kernel text, data and bss loaded starting at
-  * 0, running with virtual == physical mapping.
-@@ -149,6 +151,8 @@ __start:
-  */
- 	bl	early_init
- 
-+	bl	after_relocation_init
++/* How many bytes to reserve at zero for kdump. The reserve limit should
++ * be greater or equal to the trampoline's end address.
++ * Reserve to the end of the FWNMI area, see head_64.S */
++#define KDUMP_RESERVE_LIMIT	0x10000 /* 64K */
 +
- /* Switch MMU off, clear BATs and flush TLB. At this point, r3 contains
-  * the physical address we are running at, returned by early_init()
-  */
-@@ -180,6 +184,7 @@ __after_mmu_off:
- #endif /* CONFIG_6xx */
- 
- 
-+#ifndef CONFIG_RELOCATABLE
- /*
-  * We need to run with _start at physical address 0.
-  * On CHRP, we are loaded at 0x10000 since OF on CHRP uses
-@@ -193,6 +198,8 @@ __after_mmu_off:
- 	lis	r5,PHYSICAL_START@h
- 	cmplw	0,r4,r5			/* already running at PHYSICAL_START? */
- 	bne	relocate_kernel
++/*
++ * On PPC64 translation is disabled during trampoline setup, so we use
++ * physical addresses. Though on PPC32 translation is already enabled,
++ * so we can't do the same. Luckily create_trampoline() creates relative
++ * branches, so we can just add the PAGE_OFFSET and don't worry about it.
++ */
++#ifdef __powerpc64__
++#define KDUMP_TRAMPOLINE_START	0x0100
++#define KDUMP_TRAMPOLINE_END	0x3000
++#else
++#define KDUMP_TRAMPOLINE_START	(0x0100 + PAGE_OFFSET)
++#define KDUMP_TRAMPOLINE_END	(0x3000 + PAGE_OFFSET)
++#endif /* __powerpc64__ */
++
++#ifndef __ASSEMBLY__
++
++#if defined(CONFIG_CRASH_DUMP) && !defined(CONFIG_NONSTATIC_KERNEL)
++extern void reserve_kdump_trampoline(void);
++extern void setup_kdump_trampoline(void);
++#else
++/* !CRASH_DUMP || !NONSTATIC_KERNEL */
++static inline void reserve_kdump_trampoline(void) { ; }
++static inline void setup_kdump_trampoline(void) { ; }
 +#endif
 +
- /*
-  * we now have the 1st 16M of ram mapped with the bats.
-  * prep needs the mmu to be turned on here, but pmac already has it on.
-@@ -1263,6 +1270,102 @@ m8260_gorom:
- 	blr
++#endif /* __ASSEMBLY__ */
++#endif /* _EXCEPTION_TRAMPOLINE_H */
+diff --git a/arch/powerpc/include/asm/kdump.h b/arch/powerpc/include/asm/kdump.h
+index c977620..7ac3553 100644
+--- a/arch/powerpc/include/asm/kdump.h
++++ b/arch/powerpc/include/asm/kdump.h
+@@ -5,42 +5,10 @@
+ 
+ #define KDUMP_KERNELBASE	0x2000000
+ 
+-/* How many bytes to reserve at zero for kdump. The reserve limit should
+- * be greater or equal to the trampoline's end address.
+- * Reserve to the end of the FWNMI area, see head_64.S */
+-#define KDUMP_RESERVE_LIMIT	0x10000 /* 64K */
+-
+ #ifdef CONFIG_CRASH_DUMP
+ 
+-/*
+- * On PPC64 translation is disabled during trampoline setup, so we use
+- * physical addresses. Though on PPC32 translation is already enabled,
+- * so we can't do the same. Luckily create_trampoline() creates relative
+- * branches, so we can just add the PAGE_OFFSET and don't worry about it.
+- */
+-#ifdef __powerpc64__
+-#define KDUMP_TRAMPOLINE_START	0x0100
+-#define KDUMP_TRAMPOLINE_END	0x3000
+-#else
+-#define KDUMP_TRAMPOLINE_START	(0x0100 + PAGE_OFFSET)
+-#define KDUMP_TRAMPOLINE_END	(0x3000 + PAGE_OFFSET)
+-#endif /* __powerpc64__ */
+-
+ #define KDUMP_MIN_TCE_ENTRIES	2048
+ 
+ #endif /* CONFIG_CRASH_DUMP */
+ 
+-#ifndef __ASSEMBLY__
+-
+-#if defined(CONFIG_CRASH_DUMP) && !defined(CONFIG_NONSTATIC_KERNEL)
+-extern void reserve_kdump_trampoline(void);
+-extern void setup_kdump_trampoline(void);
+-#else
+-/* !CRASH_DUMP || !NONSTATIC_KERNEL */
+-static inline void reserve_kdump_trampoline(void) { ; }
+-static inline void setup_kdump_trampoline(void) { ; }
+-#endif
+-
+-#endif /* __ASSEMBLY__ */
+-
+ #endif /* __PPC64_KDUMP_H */
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index f960a79..c73a0e3 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -59,7 +59,7 @@ obj-$(CONFIG_LPARCFG)		+= lparcfg.o
+ obj-$(CONFIG_IBMVIO)		+= vio.o
+ obj-$(CONFIG_IBMEBUS)           += ibmebus.o
+ obj-$(CONFIG_GENERIC_TBSYNC)	+= smp-tbsync.o
+-obj-$(CONFIG_CRASH_DUMP)	+= crash_dump.o
++obj-$(CONFIG_CRASH_DUMP)	+= crash_dump.o exception_trampoline.o
+ obj-$(CONFIG_FA_DUMP)		+= fadump.o
+ ifeq ($(CONFIG_PPC32),y)
+ obj-$(CONFIG_E500)		+= idle_e500.o
+diff --git a/arch/powerpc/kernel/crash_dump.c b/arch/powerpc/kernel/crash_dump.c
+index 9ec3fe1..56dab87 100644
+--- a/arch/powerpc/kernel/crash_dump.c
++++ b/arch/powerpc/kernel/crash_dump.c
+@@ -28,47 +28,6 @@
+ #define DBG(fmt...)
  #endif
  
-+perform_relocation:
-+#ifdef CONFIG_RELOCATABLE
+-#ifndef CONFIG_NONSTATIC_KERNEL
+-void __init reserve_kdump_trampoline(void)
+-{
+-	memblock_reserve(0, KDUMP_RESERVE_LIMIT);
+-}
+-
+-static void __init create_trampoline(unsigned long addr)
+-{
+-	unsigned int *p = (unsigned int *)addr;
+-
+-	/* The maximum range of a single instruction branch, is the current
+-	 * instruction's address + (32 MB - 4) bytes. For the trampoline we
+-	 * need to branch to current address + 32 MB. So we insert a nop at
+-	 * the trampoline address, then the next instruction (+ 4 bytes)
+-	 * does a branch to (32 MB - 4). The net effect is that when we
+-	 * branch to "addr" we jump to ("addr" + 32 MB). Although it requires
+-	 * two instructions it doesn't require any registers.
+-	 */
+-	patch_instruction(p, PPC_INST_NOP);
+-	patch_branch(++p, addr + PHYSICAL_START, 0);
+-}
+-
+-void __init setup_kdump_trampoline(void)
+-{
+-	unsigned long i;
+-
+-	DBG(" -> setup_kdump_trampoline()\n");
+-
+-	for (i = KDUMP_TRAMPOLINE_START; i < KDUMP_TRAMPOLINE_END; i += 8) {
+-		create_trampoline(i);
+-	}
+-
+-#ifdef CONFIG_PPC_PSERIES
+-	create_trampoline(__pa(system_reset_fwnmi) - PHYSICAL_START);
+-	create_trampoline(__pa(machine_check_fwnmi) - PHYSICAL_START);
+-#endif /* CONFIG_PPC_PSERIES */
+-
+-	DBG(" <- setup_kdump_trampoline()\n");
+-}
+-#endif /* CONFIG_NONSTATIC_KERNEL */
+-
+ static int __init parse_savemaxmem(char *p)
+ {
+ 	if (p)
+diff --git a/arch/powerpc/kernel/exception_trampoline.c b/arch/powerpc/kernel/exception_trampoline.c
+new file mode 100644
+index 0000000..71f4b72
+--- /dev/null
++++ b/arch/powerpc/kernel/exception_trampoline.c
+@@ -0,0 +1,70 @@
 +/*
-+ * Relocate ourselves to the current runtime address.
-+ * This is called only by the Boot CPU.
-+ * r21 will be loaded with the physical runtime address of _stext
-+ * Save the r3~r7 since these registers may contain the values needed
-+ * by the following boot code.
++ * Routines for doing kexec-based kdump.
++ *
++ * Copyright (C) 2005, IBM Corp.
++ *
++ * Created by: Michael Ellerman
++ *
++ * This source code is licensed under the GNU General Public License,
++ * Version 2.  See the file COPYING for more details.
 + */
-+	mr	r22,r3
-+	mr	r23,r4
-+	mr	r24,r5
-+	mr	r25,r6
-+	mr	r26,r7
 +
-+	mflr	r20
-+	bl	0f				/* Get our runtime address */
-+0:	mflr	r21				/* Make it accessible */
-+	addis	r21,r21,(_stext - 0b)@ha
-+	addi	r21,r21,(_stext - 0b)@l 	/*Get our current runtime base*/
++#undef DEBUG
 +
-+	/*
-+	 * We have the runtime address of our base.
-+	 * We calculate our shift of offset from a 256M page.
-+	 * We could map the 256M page we belong to at PAGE_OFFSET and
-+	 * get going from there.
-+	 */
-+	lis	r4,KERNELBASE@h
-+	ori	r4,r4,KERNELBASE@l
-+	rlwinm	r6,r21,0,4,31			/* r6 = PHYS_START % 256M */
-+	rlwinm	r5,r4,0,4,31			/* r5 = KERNELBASE % 256M */
-+	subf	r3,r5,r6			/* r3 = r6 - r5 */
-+	add	r3,r4,r3			/* Required Virutal Address */
++#include <linux/crash_dump.h>
++#include <linux/bootmem.h>
++#include <linux/memblock.h>
++#include <asm/code-patching.h>
++#include <asm/kdump.h>
++#include <asm/prom.h>
++#include <asm/firmware.h>
++#include <asm/uaccess.h>
++#include <asm/rtas.h>
 +
-+	bl	relocate
-+	mtlr	r20
-+	mr	r3,r22
-+	mr	r4,r23
-+	mr	r5,r24
-+	mr	r6,r25
-+	mr	r7,r26
++#ifdef DEBUG
++#include <asm/udbg.h>
++#define DBG(fmt...) udbg_printf(fmt)
++#else
++#define DBG(fmt...)
 +#endif
-+	blr
 +
-+after_relocation_init:
-+#ifdef CONFIG_RELOCATABLE
-+	/*
-+	 * Relocatable kernel support based on processing of dynamic
-+	 * relocation entries.
-+	 *
-+	 * r21 will contain the current offset of _stext
++#ifndef CONFIG_NONSTATIC_KERNEL
++void __init reserve_kdump_trampoline(void)
++{
++	memblock_reserve(0, KDUMP_RESERVE_LIMIT);
++}
++
++static void __init create_trampoline(unsigned long addr)
++{
++	unsigned int *p = (unsigned int *)addr;
++
++	/* The maximum range of a single instruction branch, is the current
++	 * instruction's address + (32 MB - 4) bytes. For the trampoline we
++	 * need to branch to current address + 32 MB. So we insert a nop at
++	 * the trampoline address, then the next instruction (+ 4 bytes)
++	 * does a branch to (32 MB - 4). The net effect is that when we
++	 * branch to "addr" we jump to ("addr" + 32 MB). Although it requires
++	 * two instructions it doesn't require any registers.
 +	 */
-+	lis	r3,kernstart_addr@ha
-+	la	r3,kernstart_addr@l(r3)
++	patch_instruction(p, PPC_INST_NOP);
++	patch_branch(++p, addr + PHYSICAL_START, 0);
++}
 +
-+	/* Store kernstart_addr */
-+	tophys(r3,r3)
-+	stw	r21,0(r3)
++void __init setup_kdump_trampoline(void)
++{
++	unsigned long i;
 +
-+	/*
-+	 * Compute the virt_phys_offset :
-+	 * virt_phys_offset = stext.run - kernstart_addr
-+	 *
-+	 * stext.run = (KERNELBASE & ~0xfffffff) + (kernstart_addr & 0xfffffff)
-+	 * When we relocate, we have :
-+	 *
-+	 *	(kernstart_addr & 0xfffffff) = (stext.run & 0xfffffff)
-+	 *
-+	 * hence:
-+	 *  virt_phys_offset = (KERNELBASE & ~0xfffffff)
-+	 *                            - (kernstart_addr & ~0xfffffff)
-+	 *
-+	 */
++	DBG(" -> setup_kdump_trampoline()\n");
 +
-+	/* KERNELBASE&~0xfffffff => (r4,r5) */
-+	lis	r5,KERNELBASE@h
-+	rlwinm	r5,r5,0,0,3	/* Align to 256M, lower 32bit */
++	for (i = KDUMP_TRAMPOLINE_START; i < KDUMP_TRAMPOLINE_END; i += 8) {
++		create_trampoline(i);
++	}
 +
-+	/* kernelstart_addr & ~0xfffffff => (r6,r7) */
-+	rlwinm	r7,r21,0,0,3	/* Align to 256M, lower 32bit */
++#ifdef CONFIG_PPC_PSERIES
++	create_trampoline(__pa(system_reset_fwnmi) - PHYSICAL_START);
++	create_trampoline(__pa(machine_check_fwnmi) - PHYSICAL_START);
++#endif /* CONFIG_PPC_PSERIES */
 +
-+	/*
-+	 * 64bit subtraction.
-+	 */
-+	subf	r5,r7,r5
-+
-+	/* Store virt_phys_offset */
-+	lis	r3,virt_phys_offset@h
-+	ori	r3,r3,virt_phys_offset@l
-+
-+	tophys(r3,r3)
-+	li	r4,0
-+	stw	r4,0(r3)	/* Higher 32bit */
-+	stw	r5,4(r3)	/* Lower 32bit */
-+#endif
-+	blr
++	DBG(" <- setup_kdump_trampoline()\n");
++}
++#endif /* CONFIG_NONSTATIC_KERNEL */
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 8b6f7a9..4a13ac5 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -40,7 +40,7 @@
+ #include <asm/processor.h>
+ #include <asm/irq.h>
+ #include <asm/io.h>
+-#include <asm/kdump.h>
++#include <asm/exception_trampoline.h>
+ #include <asm/smp.h>
+ #include <asm/mmu.h>
+ #include <asm/paca.h>
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index a8f54ec..9f3aa43 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -38,6 +38,7 @@
+ #include <asm/serial.h>
+ #include <asm/udbg.h>
+ #include <asm/mmu_context.h>
++#include <asm/exception_trampoline.h>
  
- /*
-  * We put a few things here that have to be page-aligned.
-diff --git a/arch/powerpc/kernel/prom_init_check.sh b/arch/powerpc/kernel/prom_init_check.sh
-index 3765da6..a24c208 100644
---- a/arch/powerpc/kernel/prom_init_check.sh
-+++ b/arch/powerpc/kernel/prom_init_check.sh
-@@ -22,7 +22,7 @@ __secondary_hold_acknowledge __secondary_hold_spinloop __start
- strcmp strcpy strlcpy strlen strncmp strstr logo_linux_clut224
- reloc_got2 kernstart_addr memstart_addr linux_banner _stext
- opal_query_takeover opal_do_takeover opal_enter_rtas opal_secondary_entry
--boot_command_line __prom_init_toc_start __prom_init_toc_end"
-+boot_command_line __prom_init_toc_start __prom_init_toc_end virt_phys_offset"
+ #include "setup.h"
  
- NM="$1"
- OBJ="$2"
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index e379d3f..06b8562 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -38,7 +38,7 @@
+ #include <linux/hugetlb.h>
+ 
+ #include <asm/io.h>
+-#include <asm/kdump.h>
++#include <asm/exception_trampoline.h>
+ #include <asm/prom.h>
+ #include <asm/processor.h>
+ #include <asm/pgtable.h>
 -- 
 1.8.1.4
