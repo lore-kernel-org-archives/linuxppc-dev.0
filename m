@@ -1,38 +1,12 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 125AA2C02F5
- for <linuxppc-dev@ozlabs.org>; Wed, 19 Jun 2013 15:33:19 +1000 (EST)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Tue, 18 Jun 2013 23:33:18 -0600
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id BE08538C8042
- for <linuxppc-dev@ozlabs.org>; Wed, 19 Jun 2013 01:33:13 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5J5W584263236
- for <linuxppc-dev@ozlabs.org>; Wed, 19 Jun 2013 01:32:05 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5J5W3G7010446
- for <linuxppc-dev@ozlabs.org>; Wed, 19 Jun 2013 01:32:05 -0400
-Date: Tue, 18 Jun 2013 22:31:13 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH 1/2] perf/Power7: Save dcache_src fields in sample record.
-Message-ID: <20130619053113.GA5025@us.ibm.com>
-References: <20130607204008.GA3281@us.ibm.com>
- <23819.1371616910@ale.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <23819.1371616910@ale.ozlabs.ibm.com>
-Cc: Anton Blanchard <anton@au1.ibm.com>, linux-kernel@vger.kernel.org,
- Stephane Eranian <eranian@google.com>, linuxppc-dev@ozlabs.org,
- Paul Mackerras <paulus@samba.org>, mingo@kernel.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc: Fix bad pmd error with book3E config
+In-reply-to: <1371033004-15864-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1371033004-15864-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Date: Wed, 19 Jun 2013 15:48:15 +1000
+Message-ID: <25129.1371620895@ale.ozlabs.ibm.com>
+Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,23 +16,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Neuling [mikey@neuling.org] wrote:
-| Suka,
-| 
-| One of these two patches breaks pmac32_defconfig and I suspect all other
-| 32 bit configs (against mainline)
-| 
-| arch/powerpc/perf/core-book3s.c: In function 'record_and_restart':
-| arch/powerpc/perf/core-book3s.c:1632:4: error: passing argument 1 of 'ppmu->get_mem_data_src' from incompatible pointer type [-Werror]
-| arch/powerpc/perf/core-book3s.c:1632:4: note: expected 'struct perf_sample_data *' but argument is of type 'struct perf_sample_data *'
-| 
-| benh is busy enough without this junk.  Please check the simple things
-| like white space and compile errors!
+Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
 
-Sorry about that.
+> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+> 
+> Book3E uses the hugepd at PMD level and don't encode pte directly
+> at the pmd level. So it will find the lower bits of pmd set
+> and the pmd_bad check throws error. Infact the current code
+> will never take the free_hugepd_range call at all because it will
+> clear the pmd if it find a hugepd pointer.
+> 
 
-BTW, this was an early patch more to get some feedback on mapping of
-memory hierarchy levels to Power and not intended to be merged. I have
-been reworking the patch based on other comments.
+Please explain what changes you are making.  Currently you are only
+describing what the issue is.
 
-Sukadev
+Also include which the SHA1 which caused the regression (ie
+e2b3d202d1dba8f3546ed28224ce485bc50010be "powerpc: Switch 16GB and 16MB
+explicit hugepages to a different page table format")
+
+Mikey
+
+> Reported-by: Scott Wood <scottwood@freescale.com>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/mm/hugetlbpage.c | 29 ++++++++++++++++++-----------
+>  1 file changed, 18 insertions(+), 11 deletions(-)
+> 
+> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+> index f2f01fd..0d3d3ee 100644
+> --- a/arch/powerpc/mm/hugetlbpage.c
+> +++ b/arch/powerpc/mm/hugetlbpage.c
+> @@ -536,19 +536,26 @@ static void hugetlb_free_pmd_range(struct mmu_gather *tlb, pud_t *pud,
+>  	do {
+>  		pmd = pmd_offset(pud, addr);
+>  		next = pmd_addr_end(addr, end);
+> -		if (pmd_none_or_clear_bad(pmd))
+> -			continue;
+> +		if (!is_hugepd(pmd)) {
+> +			/*
+> +			 * if it is not hugepd pointer, we should already find
+> +			 * it cleared.
+> +			 */
+> +			if (!pmd_none_or_clear_bad(pmd))
+> +				WARN_ON(1);
+
+How often are we going to hit this?    Should this be a warn_on once or
+even a bug_on?
+
+Also just make it: 
+  WARN_ON(!pmd_none_or_clear_bad(pmd))
+
+Mikey
+
+     
+
+> +		} else {
+>  #ifdef CONFIG_PPC_FSL_BOOK3E
+> -		/*
+> -		 * Increment next by the size of the huge mapping since
+> -		 * there may be more than one entry at this level for a
+> -		 * single hugepage, but all of them point to
+> -		 * the same kmem cache that holds the hugepte.
+> -		 */
+> -		next = addr + (1 << hugepd_shift(*(hugepd_t *)pmd));
+> +			/*
+> +			 * Increment next by the size of the huge mapping since
+> +			 * there may be more than one entry at this level for a
+> +			 * single hugepage, but all of them point to
+> +			 * the same kmem cache that holds the hugepte.
+> +			 */
+> +			next = addr + (1 << hugepd_shift(*(hugepd_t *)pmd));
+>  #endif
+> -		free_hugepd_range(tlb, (hugepd_t *)pmd, PMD_SHIFT,
+> -				  addr, next, floor, ceiling);
+> +			free_hugepd_range(tlb, (hugepd_t *)pmd, PMD_SHIFT,
+> +					  addr, next, floor, ceiling);
+> +		}
+>  	} while (addr = next, addr != end);
+>  
+>  	start &= PUD_MASK;
+> -- 
+> 1.8.1.2
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
