@@ -1,14 +1,36 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/THP: Wait for all hash_page calls to finish
- before invalidating HPTE entries
-In-reply-to: <87ehbymvif.fsf@linux.vnet.ibm.com>
-References: <1371624294-19451-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <7312.1371624946@ale.ozlabs.ibm.com> <87ehbymvif.fsf@linux.vnet.ibm.com>
-Date: Wed, 19 Jun 2013 17:14:56 +1000
-Message-ID: <9335.1371626096@ale.ozlabs.ibm.com>
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <qiudayu@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id EFA0F2C0319
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 17:21:21 +1000 (EST)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <qiudayu@linux.vnet.ibm.com>;
+ Wed, 19 Jun 2013 17:14:12 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 66A142CE8044
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 17:21:16 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5J76Y3Z1245636
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 17:06:34 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5J7LFTm031515
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 17:21:15 +1000
+Message-ID: <51C15BE3.70906@linux.vnet.ibm.com>
+Date: Wed, 19 Jun 2013 15:21:07 +0800
+From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Subject: Re: [PATCH 05/31] powerpc/eeh: Trace PCI bus from PE
+References: <1371544435-4943-1-git-send-email-shangw@linux.vnet.ibm.com>
+ <1371544435-4943-6-git-send-email-shangw@linux.vnet.ibm.com>
+In-Reply-To: <1371544435-4943-6-git-send-email-shangw@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,71 +40,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
+于 2013/6/18 16:33, Gavin Shan 写道:
+> There're several types of PEs can be supported for now: PHB, Bus
+> and Device dependent PE. For PCI bus dependent PE, tracing the
+> corresponding PCI bus from PE (struct eeh_pe) would make the code
+> more efficient. The patch also enables the retrieval of PCI bus based
+> on the PCI bus dependent PE.
+>
+> Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+> ---
+>   arch/powerpc/include/asm/eeh.h |    1 +
+>   arch/powerpc/kernel/eeh_pe.c   |   22 ++++++++++++++++++++++
+>   2 files changed, 23 insertions(+), 0 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+> index acdfcaa..f3b49d6 100644
+> --- a/arch/powerpc/include/asm/eeh.h
+> +++ b/arch/powerpc/include/asm/eeh.h
+> @@ -59,6 +59,7 @@ struct eeh_pe {
+>   	int config_addr;		/* Traditional PCI address	*/
+>   	int addr;			/* PE configuration address	*/
+>   	struct pci_controller *phb;	/* Associated PHB		*/
+> +	struct pci_bus *bus;		/* Top PCI bus for bus PE	*/
+>   	int check_count;		/* Times of ignored error	*/
+>   	int freeze_count;		/* Times of froze up		*/
+>   	int false_positives;		/* Times of reported #ff's	*/
+> diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
+> index 3d2dcf5..5bd1637 100644
+> --- a/arch/powerpc/kernel/eeh_pe.c
+> +++ b/arch/powerpc/kernel/eeh_pe.c
+> @@ -304,6 +304,7 @@ static struct eeh_pe *eeh_pe_get_parent(struct eeh_dev *edev)
+>   int eeh_add_to_parent_pe(struct eeh_dev *edev)
+>   {
+>   	struct eeh_pe *pe, *parent;
+> +	struct eeh_dev *first_edev;
+>
+>   	eeh_lock();
+>
+> @@ -326,6 +327,21 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+>   		pe->type = EEH_PE_BUS;
+>   		edev->pe = pe;
+>
+> +		/*
+> +		 * For PCI bus sensitive PE, we can reset the parent
+> +		 * bridge in order for hot-reset. However, the PCI
+> +		 * devices including the associated EEH devices might
+> +		 * be removed when EEH core is doing recovery. So that
+> +		 * won't safe to retrieve the bridge through downstream
+> +		 * EEH device. We have to trace the parent PCI bus, then
+> +		 * the parent bridge explicitly.
+> +		 */
+> +		if (eeh_probe_mode_dev() && !pe->bus) {
+> +			first_edev = list_first_entry(&pe->edevs,
+> +						      struct eeh_dev, list);
+> +			pe->bus = eeh_dev_to_pci_dev(first_edev)->bus;
+> +		}
+Hi Gavin
 
-> Michael Neuling <mikey@neuling.org> writes:
-> 
-> > Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
-> >
-> >> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-> >> 
-> >> When we collapse normal pages to hugepage, we first clear the pmd, then invalidate all
-> >> the PTE entries. The assumption here is that any low level page fault will see pmd as
-> >> none and take the slow path that will wait on mmap_sem. But we could very well be in
-> >> a hash_page with local ptep pointer value. Such a hash page can result in adding new
-> >> HPTE entries for normal subpages/small page. That means we could be modifying the
-> >> page content as we copy them to a huge page. Fix this by waiting on hash_page to finish
-> >> after marking the pmd none and bfore invalidating HPTE entries. We use the heavy
-> >> kick_all_cpus_sync(). This should be ok as we do this in the background khugepaged
-> >> thread and not in application context. But we block page fault handling for this time.
-> >> Also if we find collapse slow we can ideally increase the scan rate.
-> >
-> > 80 columns here
+I have qestion, can we keep pe->bus for a device pe ? the value is the 
+bus which edev belongs to.
 
+so that we can make the code more efficient for device pe.
 
+I have no idea of whether this will cause side effect
 
-> >
-> >> 
-> >> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> >> ---
-> >>  arch/powerpc/mm/pgtable_64.c | 8 ++++++++
-> >>  1 file changed, 8 insertions(+)
-> >> 
-> >> diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-> >> index bbecac4..4bb44c3 100644
-> >> --- a/arch/powerpc/mm/pgtable_64.c
-> >> +++ b/arch/powerpc/mm/pgtable_64.c
-> >> @@ -543,6 +543,14 @@ pmd_t pmdp_clear_flush(struct vm_area_struct *vma, unsigned long address,
-> >>  		pmd = *pmdp;
-> >>  		pmd_clear(pmdp);
-> >>  		/*
-> >> +		 * Wait for all pending hash_page to finish
-> >> +		 * We can do this by waiting for a context switch to happen on
-> >> +		 * the cpus. Any new hash_page after this will see pmd none
-> >> +		 * and fallback to code that takes mmap_sem and hence will block
-> >> +		 * for collapse to finish.
-> >> +		 */
-> >> +		kick_all_cpus_sync();
-> >> +		/*
-> >
-> > This doesn't apply on mainline... I assume it's needs your TPH
-> > patches?
-> 
-> yes, They are on top V10 THP series
-> 
-> >
-> > Also, dumb question. Is this a bug we're fixing or just an optimisation?
-> 
-> This is a bug fix. The details can be found at 
-
-Can you make this more obvious in the changelog (as well as making it 80
-col).  I don't see 'bug' mentioned anywhere.  'Fix' is mentioned
-somewhere in the middle of the changelog.
-
-> 
-> http://article.gmane.org/gmane.linux.ports.ppc.embedded/60266
-
-OK, but V10 THP is not in yet, right?  So why not roll it into that
-series rather than pushing broken stuff and fixing it?
-
-Mikey
+Thanks
+Mike
+> +
+>   		/* Put the edev to PE */
+>   		list_add_tail(&edev->list, &pe->edevs);
+>   		eeh_unlock();
+> @@ -641,12 +657,18 @@ struct pci_bus *eeh_pe_bus_get(struct eeh_pe *pe)
+>   		bus = pe->phb->bus;
+>   	} else if (pe->type & EEH_PE_BUS ||
+>   		   pe->type & EEH_PE_DEVICE) {
+> +		if (pe->bus) {
+> +			bus = pe->bus;
+> +			goto out;
+> +		}
+> +
+>   		edev = list_first_entry(&pe->edevs, struct eeh_dev, list);
+>   		pdev = eeh_dev_to_pci_dev(edev);
+>   		if (pdev)
+>   			bus = pdev->bus;
+>   	}
+>
+> +out:
+>   	eeh_unlock();
+>
+>   	return bus;
