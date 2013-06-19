@@ -1,19 +1,32 @@
-Return-Path: <saikia.partha@gmail.com>
-Received: from mail-wi0-x22f.google.com (mail-wi0-x22f.google.com
- [IPv6:2a00:1450:400c:c05::22f])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9481C2C013D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 23:09:48 +1000 (EST)
-Received: by mail-wi0-f175.google.com with SMTP id m6so657283wiv.14
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 06:09:44 -0700 (PDT)
-MIME-Version: 1.0
-Date: Wed, 19 Jun 2013 18:39:44 +0530
-Message-ID: <CABeCxOKXpgVaoigGBdCVo3tYgbfJnesNPOuOyTc0EKv_CTKoyg@mail.gmail.com>
-Subject: DEBUG_PAGEALLOC on PPC not working (kernels 2.6-25, 3.0-34)
-From: "saikia.partha" <saikia.partha@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary=f46d043c81921e70e404df818baf
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 47E352C02AF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 00:51:04 +1000 (EST)
+Message-ID: <1371653443.21896.291.camel@pasglop>
+Subject: Re: [PATCH 3/4] KVM: PPC: Add support for IOMMU in-kernel handling
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alexander Graf <agraf@suse.de>
+Date: Thu, 20 Jun 2013 00:50:43 +1000
+In-Reply-To: <E63966E3-336F-4CB8-96EC-24D2C1644E62@suse.de>
+References: <1370412673-1345-1-git-send-email-aik@ozlabs.ru>
+ <1370412673-1345-4-git-send-email-aik@ozlabs.ru>
+ <1371422343.21896.143.camel@pasglop>
+ <1371438800.22681.38.camel@ul30vt.home>
+ <1371441361.21896.152.camel@pasglop>
+ <1371522772.22681.140.camel@ul30vt.home> <87txkun568.fsf@rustcorp.com.au>
+ <1371617970.21896.232.camel@pasglop>
+ <E63966E3-336F-4CB8-96EC-24D2C1644E62@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: "kvm@vger.kernel.org mailing list" <kvm@vger.kernel.org>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, Joerg Roedel <joro@8bytes.org>,
+ Rusty Russell <rusty@rustcorp.com.au>,
+ open list <linux-kernel@vger.kernel.org>, kvm-ppc@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,147 +36,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---f46d043c81921e70e404df818baf
-Content-Type: text/plain; charset=UTF-8
+On Wed, 2013-06-19 at 11:58 +0200, Alexander Graf wrote:
 
-Hi,
+> > Alex, any objection ?
+> 
+> Which Alex? :)
 
-We have two Freescale PowerPC boards on which we're trying to enable
-DEBUG_PAGEALLOC with the hope that we'll see an exception whenever some
-code tries to modify a page that's been already freed. To test it, we wrote
-this sample code -
+Heh, mostly Williamson in this specific case but your input is still
+welcome :-)
 
-===
-#define BUF_SIZE    4096
-void
-pagealloc_test(void)
-{
-    char *buf = kmalloc(BUF_SIZE, GFP_KERNEL);
+> I think validate works, it keeps iteration logic out of the kernel
+> which is a good thing. There still needs to be an interface for
+> getting the iommu id in VFIO, but I suppose that one's for the other
+> Alex and Jörg to comment on.
 
-    if (!buf) {
-        printk("%s[%d] - alloc failed!\n", __func__, __LINE__);
-        return;
-    }
-    printk("%s[%d] - alloc'd\n", __func__, __LINE__);
-    memset(&buf[0], 0, BUF_SIZE);
-    printk("%s[%d] - memset'd\n", __func__, __LINE__);
-    kfree(buf);
-    printk("%s[%d] - free'd\n", __func__, __LINE__);
-    memset(&buf[0], 1, BUF_SIZE);
-    printk("%s[%d] - memset'd after free!\n", __func__, __LINE__);
-}
-===
+I think getting the iommu fd is already covered by separate patches from
+Alexey.
 
-Here, the last memset() should generate an exception if PAGEALLOC code
-correctly unmapped the page during kfree(). However, kernel is happily
-running after the memset post-free. Any clue?
-Also, the 2nd board has Book-E which has a different MMU architecture.
-Here, I saw that the function __change_page_attr() always returns as the
-condition v_mapped_by_tlbcam() is true. How do we remove the pte entry from
-the TLB in this case?  Has anyone tried DEBUG_PAGEALLOC on Book-E?
+> > 
+> > Do we need to make it a get/put interface instead ?
+> > 
+> > 	vfio_validate_and_use_iommu(file, iommu_id);
+> > 
+> > 	vfio_release_iommu(file, iommu_id);
+> > 
+> > To ensure that the resource remains owned by the process until KVM
+> > is closed as well ?
+> > 
+> > Or do we want to register with VFIO with a callback so that VFIO can
+> > call us if it needs us to give it up ?
+> 
+> Can't we just register a handler on the fd and get notified when it
+> closes? Can you kill VFIO access without closing the fd?
 
-Please find the board details below -
-Board 1: CPU - e300c4, kernel 2.6-25
-==============================
-======
-CONFIG_6xx=y
-CONFIG_PPC_FPU=y
-CONFIG_PPC_STD_MMU=y
-CONFIG_PPC_STD_MMU_32=y
-CONFIG_PPC32=y
-CONFIG_WORD_SIZE=32
-CONFIG_PPC_MERGE=y
-CONFIG_MMU=y
-CONFIG_IRQ_PER_CPU=y
-CONFIG_PPC=y
+That sounds actually harder :-)
 
-Board 2: CPU - e500v2, kernel 3.0-34
-====================================
-# CONFIG_PPC_BOOK3S_32 is not set
-CONFIG_PPC_85xx=y
-CONFIG_E500=y
-# CONFIG_PPC_E500MC is not set
-CONFIG_FSL_EMB_PERFMON=y
-CONFIG_BOOKE=y
-CONFIG_FSL_BOOKE=y
-CONFIG_PPC_FSL_BOOK3E=y
-# CONFIG_PHYS_64BIT is not set
-CONFIG_SPE=y
-CONFIG_PPC_MMU_NOHASH=y
-CONFIG_PPC_MMU_NOHASH_32=y
-CONFIG_PPC_BOOK3E_MMU=y
-# CONFIG_PPC_MM_SLICES is not set
-CONFIG_SMP=y
-CONFIG_NR_CPUS=2
-CONFIG_PPC32=y
-CONFIG_32BIT=y
-CONFIG_WORD_SIZE=32
-# CONFIG_ARCH_PHYS_ADDR_T_64BIT is not set
-# CONFIG_ARCH_DMA_ADDR_T_64BIT is not set
-CONFIG_MMU=y
-CONFIG_NR_IRQS=512
-CONFIG_PPC=y
+The question is basically: When we validate that relationship between a
+specific VFIO struct file with an iommu, what is the lifetime of that
+and how do we handle this lifetime properly.
 
-Regards,
-Partha
+There's two ways for that sort of situation: The notification model
+where we get notified when the relationship is broken, and the refcount
+model where we become a "user" and thus delay the breaking of the
+relationship until we have been disposed of as well.
 
---f46d043c81921e70e404df818baf
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+In this specific case, it's hard to tell what is the right model from my
+perspective, which is why I would welcome Alex (W.) input.
 
-<div dir=3D"ltr">Hi,<br><br>We have two Freescale PowerPC boards on which w=
-e&#39;re trying to
- enable DEBUG_PAGEALLOC with the hope that we&#39;ll see an exception=20
-whenever some code tries to modify a page that&#39;s been already freed. To=
-=20
-test it, we wrote this sample code -<br>
-<br>=3D=3D=3D<br>#define BUF_SIZE=C2=A0=C2=A0=C2=A0 4096<br>void<br>pageall=
-oc_test(void)<br>{<br>=C2=A0=C2=A0=C2=A0 char *buf =3D kmalloc(BUF_SIZE, GF=
-P_KERNEL);<br><br>=C2=A0=C2=A0=C2=A0 if (!buf) {<br>=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0 printk(&quot;%s[%d] - alloc failed!\n&quot;, __func__=
-, __LINE__);<br>
+In the end, the solution will end up being in the form of APIs exposed
+by VFIO for use by KVM (via that symbol lookup mechanism) so Alex (W),
+as owner of VFIO at this stage, what do you want those to look
+like ? :-)
 
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 return;<br>=C2=A0=C2=A0=C2=A0 }<=
-br>=C2=A0=C2=A0=C2=A0 printk(&quot;%s[%d] - alloc&#39;d\n&quot;, __func__, =
-__LINE__);<br>=C2=A0=C2=A0=C2=A0 memset(&amp;buf[0], 0, BUF_SIZE);<br>=C2=
-=A0=C2=A0=C2=A0 printk(&quot;%s[%d] - memset&#39;d\n&quot;, __func__, __LIN=
-E__);<br>=C2=A0=C2=A0=C2=A0 kfree(buf);<br>
-
-=C2=A0=C2=A0=C2=A0 printk(&quot;%s[%d] - free&#39;d\n&quot;, __func__, __LI=
-NE__);<br>=C2=A0=C2=A0=C2=A0 memset(&amp;buf[0], 1, BUF_SIZE);<br>=C2=A0=C2=
-=A0=C2=A0 printk(&quot;%s[%d] - memset&#39;d after free!\n&quot;, __func__,=
- __LINE__);<br>}<br>=3D=3D=3D<br><br>Here,
- the last memset() should generate an exception if PAGEALLOC code=20
-correctly unmapped the page during kfree(). However, kernel is happily=20
-running after the memset post-free. Any clue? <br>
-Also, the 2nd board has Book-E which has a different MMU architecture.=20
-Here, I saw that the function __change_page_attr() always returns as the
- condition v_mapped_by_tlbcam() is true. How do we remove the pte entry=20
-from the TLB in this case?=C2=A0 Has anyone tried DEBUG_PAGEALLOC on Book-E=
-?<br>
-<br>Please find the board details below - <br>Board 1: CPU - e300c4, kernel=
- 2.6-25<br>=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D<div dir=3D"ltr">=3D=3D=3D=3D=3D=3D<br>CONFIG_6x=
-x=3Dy<br>CONFIG_PPC_FPU=3Dy<br>CONFIG_PPC_STD_MMU=3Dy<br>CONFIG_PPC_STD_MMU=
-_32=3Dy<br>
-CONFIG_PPC32=3Dy<br>
-CONFIG_WORD_SIZE=3D32<br>CONFIG_PPC_MERGE=3Dy<br>CONFIG_MMU=3Dy<br>CONFIG_I=
-RQ_PER_CPU=3Dy<br>CONFIG_PPC=3Dy<br><br>Board 2: CPU - e500v2, kernel 3.0-3=
-4<br>=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D<br># CONFIG_PPC_BOOK3S_32 is not se=
-t<br>
-
-CONFIG_PPC_85xx=3Dy<br>CONFIG_E500=3Dy<br># CONFIG_PPC_E500MC is not set<br=
->CONFIG_FSL_EMB_PERFMON=3Dy<br>CONFIG_BOOKE=3Dy<br>CONFIG_FSL_BOOKE=3Dy<br>=
-CONFIG_PPC_FSL_BOOK3E=3Dy<br># CONFIG_PHYS_64BIT is not set<br>CONFIG_SPE=
-=3Dy<br>CONFIG_PPC_MMU_NOHASH=3Dy<br>
-
-CONFIG_PPC_MMU_NOHASH_32=3Dy<br>CONFIG_PPC_BOOK3E_MMU=3Dy<br># CONFIG_PPC_M=
-M_SLICES is not set<br>CONFIG_SMP=3Dy<br>CONFIG_NR_CPUS=3D2<br>CONFIG_PPC32=
-=3Dy<br>CONFIG_32BIT=3Dy<br>CONFIG_WORD_SIZE=3D32<br># CONFIG_ARCH_PHYS_ADD=
-R_T_64BIT is not set<br>
-
-# CONFIG_ARCH_DMA_ADDR_T_64BIT is not set<br>CONFIG_MMU=3Dy<br>CONFIG_NR_IR=
-QS=3D512<br>CONFIG_PPC=3Dy<br><br>Regards,<br>Partha</div></div>
-
---f46d043c81921e70e404df818baf--
+Cheers,
+Ben.
+ 
+> 
+> Alex
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
