@@ -1,32 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 47E352C02AF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 00:51:04 +1000 (EST)
-Message-ID: <1371653443.21896.291.camel@pasglop>
-Subject: Re: [PATCH 3/4] KVM: PPC: Add support for IOMMU in-kernel handling
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alexander Graf <agraf@suse.de>
-Date: Thu, 20 Jun 2013 00:50:43 +1000
-In-Reply-To: <E63966E3-336F-4CB8-96EC-24D2C1644E62@suse.de>
-References: <1370412673-1345-1-git-send-email-aik@ozlabs.ru>
- <1370412673-1345-4-git-send-email-aik@ozlabs.ru>
- <1371422343.21896.143.camel@pasglop>
- <1371438800.22681.38.camel@ul30vt.home>
- <1371441361.21896.152.camel@pasglop>
- <1371522772.22681.140.camel@ul30vt.home> <87txkun568.fsf@rustcorp.com.au>
- <1371617970.21896.232.camel@pasglop>
- <E63966E3-336F-4CB8-96EC-24D2C1644E62@suse.de>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: "kvm@vger.kernel.org mailing list" <kvm@vger.kernel.org>,
- Alexey Kardashevskiy <aik@ozlabs.ru>, Joerg Roedel <joro@8bytes.org>,
- Rusty Russell <rusty@rustcorp.com.au>,
- open list <linux-kernel@vger.kernel.org>, kvm-ppc@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+ by ozlabs.org (Postfix) with ESMTPS id 8C27B2C02A6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 01:06:58 +1000 (EST)
+Subject: Re: Pull request: scottwood/linux.git for-3.10
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <20130618201452.GA5429@home.buserror.net>
+Date: Wed, 19 Jun 2013 10:06:38 -0500
+Message-Id: <AEF681B9-AB7E-4C3D-99D6-BD29EF038A50@kernel.crashing.org>
+References: <20130618201452.GA5429@home.buserror.net>
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,65 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-06-19 at 11:58 +0200, Alexander Graf wrote:
 
-> > Alex, any objection ?
-> 
-> Which Alex? :)
+On Jun 18, 2013, at 3:14 PM, Scott Wood wrote:
 
-Heh, mostly Williamson in this specific case but your input is still
-welcome :-)
+> This fixes a regression that causes 83xx to oops on boot if a
+> non-express PCI bus is present.
+>=20
+> The following changes since commit =
+17858ca65eef148d335ffd4cfc09228a1c1cbfb5:
+>=20
+>  Merge tag 'please-pull-fixia64' of =
+git://git.kernel.org/pub/scm/linux/kernel/git/aegl/linux (2013-06-18 =
+06:29:19 -1000)
+>=20
+> are available in the git repository at:
+>=20
+>=20
+>  git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git =
+for-3.10
+>=20
+> for you to fetch changes up to =
+2383ea94854bcf5a0df3c6803b980868cef95418:
+>=20
+>  powerpc/pci: Fix setup of Freescale PCI / PCIe controllers =
+(2013-06-18 14:44:57 -0500)
+>=20
+> ----------------------------------------------------------------
+> Rojhalat Ibrahim (1):
+>      powerpc/pci: Fix setup of Freescale PCI / PCIe controllers
+>=20
+> arch/powerpc/sysdev/fsl_pci.c |   24 +++++++++---------------
+> 1 file changed, 9 insertions(+), 15 deletions(-)
 
-> I think validate works, it keeps iteration logic out of the kernel
-> which is a good thing. There still needs to be an interface for
-> getting the iommu id in VFIO, but I suppose that one's for the other
-> Alex and Jörg to comment on.
+What about Rohit's patch: powerpc/pci: Fix setup of Freescale PCI / PCIe =
+controllers?  Seems like also a fix for 3.10
 
-I think getting the iommu fd is already covered by separate patches from
-Alexey.
-
-> > 
-> > Do we need to make it a get/put interface instead ?
-> > 
-> > 	vfio_validate_and_use_iommu(file, iommu_id);
-> > 
-> > 	vfio_release_iommu(file, iommu_id);
-> > 
-> > To ensure that the resource remains owned by the process until KVM
-> > is closed as well ?
-> > 
-> > Or do we want to register with VFIO with a callback so that VFIO can
-> > call us if it needs us to give it up ?
-> 
-> Can't we just register a handler on the fd and get notified when it
-> closes? Can you kill VFIO access without closing the fd?
-
-That sounds actually harder :-)
-
-The question is basically: When we validate that relationship between a
-specific VFIO struct file with an iommu, what is the lifetime of that
-and how do we handle this lifetime properly.
-
-There's two ways for that sort of situation: The notification model
-where we get notified when the relationship is broken, and the refcount
-model where we become a "user" and thus delay the breaking of the
-relationship until we have been disposed of as well.
-
-In this specific case, it's hard to tell what is the right model from my
-perspective, which is why I would welcome Alex (W.) input.
-
-In the end, the solution will end up being in the form of APIs exposed
-by VFIO for use by KVM (via that symbol lookup mechanism) so Alex (W),
-as owner of VFIO at this stage, what do you want those to look
-like ? :-)
-
-Cheers,
-Ben.
- 
-> 
-> Alex
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+- k=
