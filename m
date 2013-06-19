@@ -1,26 +1,39 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-x22d.google.com (mail-pa0-x22d.google.com
- [IPv6:2607:f8b0:400e:c03::22d])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BD2612C0344
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 13:17:27 +1000 (EST)
-Received: by mail-pa0-f45.google.com with SMTP id bi5so4674998pad.18
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2013 20:17:24 -0700 (PDT)
-Message-ID: <51C122BC.8060107@ozlabs.ru>
-Date: Wed, 19 Jun 2013 13:17:16 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-MIME-Version: 1.0
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BFABD2C0343
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 13:30:15 +1000 (EST)
+Received: from /spool/local
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 19 Jun 2013 08:51:48 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 6AC0EE0055
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 08:59:33 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5J3UEmB25231488
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 09:00:14 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5J3U6ti016796
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 13:30:07 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 3/4] KVM: PPC: Add support for IOMMU in-kernel handling
-References: <1370412673-1345-1-git-send-email-aik@ozlabs.ru>
- <1370412673-1345-4-git-send-email-aik@ozlabs.ru>
- <1371357560.21896.120.camel@pasglop>
-In-Reply-To: <1371357560.21896.120.camel@pasglop>
-Content-Type: text/plain; charset=KOI8-R
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
- Alexander Graf <agraf@suse.de>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH -V10 00/15] THP support for PPC64
+In-Reply-To: <1371593004.21896.199.camel@pasglop>
+References: <1370446119-8837-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1371348007.21896.62.camel@pasglop> <1371353865.21896.94.camel@pasglop>
+ <1371355567.21896.101.camel@pasglop> <8738sfi7er.fsf@linux.vnet.ibm.com>
+ <1371593004.21896.199.camel@pasglop>
+Date: Wed, 19 Jun 2013 09:00:05 +0530
+Message-ID: <87zjumhj5u.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Alexey Kardashevskiy <aik@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,83 +43,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/16/2013 02:39 PM, Benjamin Herrenschmidt wrote:
->>  static pte_t kvmppc_lookup_pte(pgd_t *pgdir, unsigned long hva, bool writing,
->> -			unsigned long *pte_sizep)
->> +			unsigned long *pte_sizep, bool do_get_page)
->>  {
->>  	pte_t *ptep;
->>  	unsigned int shift = 0;
->> @@ -135,6 +136,14 @@ static pte_t kvmppc_lookup_pte(pgd_t *pgdir, unsigned long hva, bool writing,
->>  	if (!pte_present(*ptep))
->>  		return __pte(0);
->>  
->> +	/*
->> +	 * Put huge pages handling to the virtual mode.
->> +	 * The only exception is for TCE list pages which we
->> +	 * do need to call get_page() for.
->> +	 */
->> +	if ((*pte_sizep > PAGE_SIZE) && do_get_page)
->> +		return __pte(0);
->> +
->>  	/* wait until _PAGE_BUSY is clear then set it atomically */
->>  	__asm__ __volatile__ (
->>  		"1:	ldarx	%0,0,%3\n"
->> @@ -148,6 +157,18 @@ static pte_t kvmppc_lookup_pte(pgd_t *pgdir, unsigned long hva, bool writing,
->>  		: "cc");
->>  
->>  	ret = pte;
->> +	if (do_get_page && pte_present(pte) && (!writing || pte_write(pte))) {
->> +		struct page *pg = NULL;
->> +		pg = realmode_pfn_to_page(pte_pfn(pte));
->> +		if (realmode_get_page(pg)) {
->> +			ret = __pte(0);
->> +		} else {
->> +			pte = pte_mkyoung(pte);
->> +			if (writing)
->> +				pte = pte_mkdirty(pte);
->> +		}
->> +	}
->> +	*ptep = pte;	/* clears _PAGE_BUSY */
->>  
->>  	return ret;
->>  }
-> 
-> So now you are adding the clearing of _PAGE_BUSY that was missing for
-> your first patch, except that this is not enough since that means that
-> in the "emulated" case (ie, !do_get_page) you will in essence return
-> and then use a PTE that is not locked without any synchronization to
-> ensure that the underlying page doesn't go away... then you'll
-> dereference that page.
-> 
-> So either make everything use speculative get_page, or make the emulated
-> case use the MMU notifier to drop the operation in case of collision.
-> 
-> The former looks easier.
-> 
-> Also, any specific reason why you do:
-> 
->   - Lock the PTE
->   - get_page()
->   - Unlock the PTE
-> 
-> Instead of
-> 
->   - Read the PTE
->   - get_page_unless_zero
->   - re-check PTE
-> 
-> Like get_user_pages_fast() does ?
-> 
-> The former will be two atomic ops, the latter only one (faster), but
-> maybe you have a good reason why that can't work...
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+
+> On Wed, 2013-06-19 at 00:16 +0530, Aneesh Kumar K.V wrote:
+>
+>> But will that by anonymous memory ? ie, will we find them suitable for
+>> THP allocation ?
+>
+> The 4k pages themselves with 4k_PFN no, but the segment yes. A single of
+> these will demote the whole segment, ie 256M or 1T.
+>
+>> >   * If you find a THP in hash_page and the segment size is 4k, fault
+>> >
+>> >   * In do_page_fault, re-check for that condition (or maybe we can make
+>> > hash_page return a specific bit that gets ORed into the error_code into
+>> > do_page_fault ?) and split huge pages there.
+>> >
+>> > But that's just an idea off the top of my mind, there might be a better
+>> > way. Of course this needs to be tested.
+>> >
+>> > BTW. For the subpage protection, similarily, you need to make sure you
+>> > properly map the entire segment as "no THP", not just the range
+>> > passed-in by the user.
+>> 
+>> Can you explain that more, why should the entire segment be marked no THP ?
+>> The segment can work with 4K base page size and we still be able to
+>> allocate a hugepage in that segment.
+>
+> Will we be able to track all the possible hashings of the huge page on a
+> 4k segment ?
+
+Yes. The comment above hpte_valid explains that 
+
+ * The linux hugepage PMD now include the pmd entries followed by the address
+ * to the stashed pgtable_t. The stashed pgtable_t contains the hpte bits.
+ * [ 1 bit secondary | 3 bit hidx | 1 bit valid | 000]. We use one byte per
+ * each HPTE entry. With 16MB hugepage and 64K HPTE we need 256 entries and
+ * with 4K HPTE we need 4096 entries. Both will fit in a 4K pgtable_t.
 
 
-
-If we want to set "dirty" and "young" bits for pte then I do not know how
-to avoid _PAGE_BUSY.
-
-
-
--- 
-Alexey
+-aneesh
