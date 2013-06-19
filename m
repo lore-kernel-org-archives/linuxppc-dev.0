@@ -1,21 +1,13 @@
-Return-Path: <B07421@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E93C02C0090
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 07:00:57 +1000 (EST)
-Date: Wed, 19 Jun 2013 16:00:46 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: DEBUG_PAGEALLOC on PPC not working (kernels 2.6-25, 3.0-34)
-To: saikia.partha <saikia.partha@gmail.com>
-In-Reply-To: <CABeCxOKXpgVaoigGBdCVo3tYgbfJnesNPOuOyTc0EKv_CTKoyg@mail.gmail.com> (from
- saikia.partha@gmail.com on Wed Jun 19 08:09:44 2013)
-Message-ID: <1371675646.9073.39@snotra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/kvm: Handle transparent hugepage in KVM
+In-reply-to: <87k3lqxoy4.fsf@linux.vnet.ibm.com>
+References: <1371624245-17247-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <9103.1371625902@ale.ozlabs.ibm.com> <87k3lqxoy4.fsf@linux.vnet.ibm.com>
+Date: Thu, 20 Jun 2013 09:59:22 +1000
+Message-ID: <2293.1371686362@ale.ozlabs.ibm.com>
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,62 +17,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/19/2013 08:09:44 AM, saikia.partha wrote:
-> Hi,
->=20
-> We have two Freescale PowerPC boards on which we're trying to enable
-> DEBUG_PAGEALLOC with the hope that we'll see an exception whenever =20
-> some
-> code tries to modify a page that's been already freed. To test it, we =20
-> wrote
-> this sample code -
->=20
-> =3D=3D=3D
-> #define BUF_SIZE    4096
-> void
-> pagealloc_test(void)
-> {
->     char *buf =3D kmalloc(BUF_SIZE, GFP_KERNEL);
->=20
->     if (!buf) {
->         printk("%s[%d] - alloc failed!\n", __func__, __LINE__);
->         return;
->     }
->     printk("%s[%d] - alloc'd\n", __func__, __LINE__);
->     memset(&buf[0], 0, BUF_SIZE);
->     printk("%s[%d] - memset'd\n", __func__, __LINE__);
->     kfree(buf);
->     printk("%s[%d] - free'd\n", __func__, __LINE__);
->     memset(&buf[0], 1, BUF_SIZE);
->     printk("%s[%d] - memset'd after free!\n", __func__, __LINE__);
-> }
-> =3D=3D=3D
->=20
-> Here, the last memset() should generate an exception if PAGEALLOC code
-> correctly unmapped the page during kfree(). However, kernel is happily
-> running after the memset post-free. Any clue?
-> Also, the 2nd board has Book-E which has a different MMU architecture.
-> Here, I saw that the function __change_page_attr() always returns as =20
-> the
-> condition v_mapped_by_tlbcam() is true. How do we remove the pte =20
-> entry from
-> the TLB in this case?  Has anyone tried DEBUG_PAGEALLOC on Book-E?
+> >> --- a/arch/powerpc/include/asm/kvm_book3s_64.h
+> >> +++ b/arch/powerpc/include/asm/kvm_book3s_64.h
+> >> @@ -162,33 +162,40 @@ static inline int hpte_cache_flags_ok(unsigned long ptel, unsigned long io_type)
+> >>   * Lock and read a linux PTE.  If it's present and writable, atomically
+> >>   * set dirty and referenced bits and return the PTE, otherwise return 0.
+> >
+> > This is comment still valid now the ldarx/stdcx is gone?  
+> 
+> In a way yes. Instead of lock and read as it was before, it is now done
+> via cmpxchg which still use ldarx/stdcx
 
-This is not supported on booke -- the tlbcam mapping is required for =20
-all lowmem.
+OK, maybe you can update to reflect that.
 
-> Please find the board details below -
-> Board 1: CPU - e300c4, kernel 2.6-25
+> >> +	pte_t old_pte, new_pte = __pte(0);
+> >> +repeat:
+> >> +	do {
+> >> +		old_pte = pte_val(*ptep);
+> >> +		/*
+> >> +		 * wait until _PAGE_BUSY is clear then set it atomically
+> >> +		 */
+> >> +		if (unlikely(old_pte & _PAGE_BUSY))
+> >> +			goto repeat;
+> >
+> > continue here?  Please don't create looping primitives.
+> 
+> No that would be wrong. (I did that in an earlier version :).We really
+> don't want the below cmpxchg to run if we find _PAGE_BUSY.
 
-For e300, I think I had it working at one point a few years ago (see =20
-commit bde6c6e16aa489ea76c762fb7ffb0abb48660dd8).
+How about something like this then?
 
-The reason we can do it on e300 and not on booke is because e300 takes =20
-exceptions in real mode.  On e500 the MMU is always enabled, so we need =20
-bolted TLB1 entries that cover at least all exception code (up to the =20
-point where a TLB miss could safely be taken) and all page tables (in =20
-practice, we just bolt all lowmem) and other data that can be =20
-referenced from said exception code.  There are not enough TLB1 entries =20
-to do this on a fine-grained basis.
+while (1) {
+      if (unlikely(old_pte & _PAGE_BUSY))
+	    continue;
+.....
+      if cmpxchg(foo)
+      	 break;
+}
 
--Scott=
+
+> 
+> >   
+> >> +
+> >> +#ifdef CONFIG_TRANSPARENT_HUGEPAGE
+> >> +		/* If hugepage and is trans splitting return None */
+> >> +		if (unlikely(hugepage &&
+> >> +			     pmd_trans_splitting(pte_pmd(old_pte))))
+> >
+> > Comment looks much like the code... seems redundant.
+> >
+> >> +			return __pte(0);
+> >> +#endif
+> >>  
+> >> -	*p = pte;	/* clears _PAGE_BUSY */
+> >> +		/* If pte is not present return None */
+> >> +		if (unlikely(!(old_pte & _PAGE_PRESENT)))
+> >> +			return __pte(0);
+> >>  
+> >> -	return pte;
+> >> +		new_pte = pte_mkyoung(old_pte);
+> >> +		if (writing && pte_write(old_pte))
+> >> +			new_pte = pte_mkdirty(new_pte);
+> >> +
+> >> +	} while (old_pte != __cmpxchg_u64((unsigned long *)ptep,
+> >> +					  old_pte, new_pte));
+> >> +	return new_pte;
+> >>  }
+> >>  
+> >> +
+> >
+> > Whitespace
+
+
+
+> >> diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+> >> index dcf892d..39ae723 100644
+> >> --- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+> >> +++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+> >> @@ -150,9 +150,7 @@ static pte_t lookup_linux_pte(pgd_t *pgdir, unsigned long hva,
+> >>  		*pte_sizep = PAGE_SIZE;
+> >>  	if (ps > *pte_sizep)
+> >>  		return __pte(0);
+> >> -	if (!pte_present(*ptep))
+> >> -		return __pte(0);
+> >> -	return kvmppc_read_update_linux_pte(ptep, writing);
+> >> +	return kvmppc_read_update_linux_pte(ptep, writing, shift);
+> >
+> > 'shift' goes into the new 'hugepage' parameter?  Doesn't seem logical?
+> > Can we harmonise the name to make it less confusing?
+> >
+> 
+> it is actually the shift bits represending hugepage size. We set it to 0
+> if we don't find hugepage in find_linux_pte_or_hugepte. May be something
+> like hugepage_shift is better ?
+
+Sure.
+
+Mikey
