@@ -1,15 +1,39 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
-Subject: Re: [PATCH v4 0/8] Nvram-to-pstore
-In-reply-to: <20130605184756.25794.43872.stgit@aruna-ThinkPad-T420>
-References: <20130605184756.25794.43872.stgit@aruna-ThinkPad-T420>
-Date: Wed, 19 Jun 2013 16:15:03 +1000
-Message-ID: <1822.1371622503@ale.ozlabs.ibm.com>
-Cc: jkenisto@linux.vnet.ibm.com, tony.luck@intel.com, keescook@chromium.org,
- cbouatmailru@gmail.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
- ccross@android.com, paulus@samba.org, anton@samba.org,
- mahesh@linux.vnet.ibm.com
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e7.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 868AE2C0299
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 16:18:40 +1000 (EST)
+Received: from /spool/local
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Wed, 19 Jun 2013 02:18:37 -0400
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 9A974C90026
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 02:18:34 -0400 (EDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5J6IZhe282384
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 02:18:35 -0400
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5J6IYRP008587
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 00:18:34 -0600
+Date: Wed, 19 Jun 2013 14:18:32 +0800
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Subject: Re: [PATCH 01/31] powerpc/eeh: Move common part to kernel directory
+Message-ID: <20130619061832.GA13311@shangw.(null)>
+References: <1371544435-4943-1-git-send-email-shangw@linux.vnet.ibm.com>
+ <1371544435-4943-2-git-send-email-shangw@linux.vnet.ibm.com>
+ <10320.1371614286@ale.ozlabs.ibm.com>
+ <20130619061153.GA31968@shangw.(null)>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130619061153.GA31968@shangw.(null)>
+Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
+Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,62 +43,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com> wrote:
-> Currently the kernel provides the contents of p-series NVRAM only as a
-> simple stream of bytes via /dev/nvram, which must be interpreted in user
-> space by the nvram command in the powerpc-utils package. This patch set
-> exploits the pstore subsystem to expose each partition in NVRAM as a
-> separate file in /dev/pstore. For instance, Oops messages will be stored
-> in a file named [dmesg-nvram-2].
-> 
-> Changes from v3:
-> 	- Change filename prefix for of-config and common partition
-> 
-> Changes from v2:
-> 	- Fix renaming of pstore type ids in nvram.c
-> 
-> Changes from v1:
-> 	- Reduce #ifdefs by and remove forward declarations of pstore callbacks
-> 	- Handle return value of nvram_write_os_partition
-> 	- Remove empty pstore callbacks and register pstore only when pstore
-> 	  is configured
+On Wed, Jun 19, 2013 at 02:11:53PM +0800, Gavin Shan wrote:
+>On Wed, Jun 19, 2013 at 01:58:06PM +1000, Michael Neuling wrote:
+>>Bunch of whitespace issues here:
+>>
+>>% git am ~/Mail/linuxppc/31202
+>>Applying: powerpc/eeh: Move common part to kernel directory
+>>/home/mikey/src/powerpc-test/.git/rebase-apply/patch:437: trailing whitespace.
+>>
+>>/home/mikey/src/powerpc-test/.git/rebase-apply/patch:594: space before tab in indent.
+>>  	 */
+>>/home/mikey/src/powerpc-test/.git/rebase-apply/patch:607: trailing whitespace.
+>>	
+>>/home/mikey/src/powerpc-test/.git/rebase-apply/patch:608: trailing whitespace.
+>>	/* We might get hit with another EEH freeze as soon as the 
+>>/home/mikey/src/powerpc-test/.git/rebase-apply/patch:673: trailing whitespace.
+>>	
+>>error: patch failed: arch/powerpc/platforms/pseries/eeh_pe.c:1
+>>error: arch/powerpc/platforms/pseries/eeh_pe.c: patch does not apply
+>>Patch failed at 0001 powerpc/eeh: Move common part to kernel directory
+>>When you have resolved this problem run "git am --resolved".
+>>If you would prefer to skip this patch, instead run "git am --skip".
+>>To restore the original branch and stop patching run "git am --abort".
+>>
+>
+>Sorry for the inconvenience, Mikey. Please apply the updated [01/31] and [02/31] in
+>the attachment. The left patches except [17/31] are not changed. The updated [17/31]
+>will be contained in the attachment of the corresponding thread (original message
+>about [17/31]). Something like:
+>
 
-When booted on pHyp, I see /dev/nvram but not /dev/pstore, even if I
-turn on CONFIG_PSTORE.  Is there something else I need to add?
+Sorry, it's updated [14/31] instead of updated [17/31].
 
-Should we update pseries_defconfig to include CONFIG_PSTORE (which it
-doesn't include currently)?  Maybe turn on panic/oops via
-CONFIG_PSTORE_RAM too?
+updated [01/31]
+updated [02/31]
+[03/31]
+[04/31]
+  :
+  :
+updated [14/31]		(not updated [14/31])
+[18/31]
+[19/31]
+  :
+  :
+[31/31]
 
-Other than that, the series looks clean.  It's passes my build and boot
-tests.
-
-I've not reviewed the contents of the patches.
-
-Mikey
-
-> ---
-> 
-> Aruna Balakrishnaiah (8):
->       powerpc/pseries: Remove syslog prefix in uncompressed oops text
->       powerpc/pseries: Add version and timestamp to oops header
->       powerpc/pseries: Introduce generic read function to read nvram-partitions
->       powerpc/pseries: Read/Write oops nvram partition via pstore
->       powerpc/pseries: Read rtas partition via pstore
->       powerpc/pseries: Distinguish between a os-partition and non-os partition
->       powerpc/pseries: Read of-config partition via pstore
->       powerpc/pseries: Read common partition via pstore
-> 
-> 
->  arch/powerpc/platforms/pseries/nvram.c |  353 +++++++++++++++++++++++++++-----
->  fs/pstore/inode.c                      |    9 +
->  include/linux/pstore.h                 |    4 
->  3 files changed, 313 insertions(+), 53 deletions(-)
-> 
-> -- 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+Thanks,
+Gavin
