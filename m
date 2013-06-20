@@ -1,21 +1,35 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C61E02C02FF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 17:53:22 +1000 (EST)
-From: Tiejun Chen <tiejun.chen@windriver.com>
-To: <benh@kernel.crashing.org>
-Subject: [v2][PATCH 7/7] book3e/kexec/kdump: recover "r4 = 0" to create the
- initial TLB
-Date: Thu, 20 Jun 2013 15:53:17 +0800
-Message-ID: <1371714797-7898-8-git-send-email-tiejun.chen@windriver.com>
-In-Reply-To: <1371714797-7898-1-git-send-email-tiejun.chen@windriver.com>
-References: <1371714797-7898-1-git-send-email-tiejun.chen@windriver.com>
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-ie0-x22a.google.com (mail-ie0-x22a.google.com
+ [IPv6:2607:f8b0:4001:c03::22a])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CC6CF2C02A3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 18:48:24 +1000 (EST)
+Received: by mail-ie0-f170.google.com with SMTP id e11so16222977iej.29
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 01:48:21 -0700 (PDT)
+Message-ID: <51C2C1CC.9000003@ozlabs.ru>
+Date: Thu, 20 Jun 2013 18:48:12 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 3/4] KVM: PPC: Add support for IOMMU in-kernel handling
+References: <1371422343.21896.143.camel@pasglop>
+ <1371438800.22681.38.camel@ul30vt.home> <1371441361.21896.152.camel@pasglop>
+ <1371522772.22681.140.camel@ul30vt.home> <87txkun568.fsf@rustcorp.com.au>
+ <1371617970.21896.232.camel@pasglop>
+ <E63966E3-336F-4CB8-96EC-24D2C1644E62@suse.de>
+ <1371653443.21896.291.camel@pasglop> <1371656989.22659.98.camel@ul30vt.home>
+ <51C28BEA.8050501@ozlabs.ru> <20130620052822.GB3140@voom.redhat.com>
+ <1371714449.3944.14.camel@pasglop>
+In-Reply-To: <1371714449.3944.14.camel@pasglop>
+Content-Type: text/plain; charset=KOI8-R
+Cc: "kvm@vger.kernel.org mailing list" <kvm@vger.kernel.org>,
+ Joerg Roedel <joro@8bytes.org>, Rusty Russell <rusty@rustcorp.com.au>,
+ Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
+ open list <linux-kernel@vger.kernel.org>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,31 +39,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In commit 96f013f, "powerpc/kexec: Add kexec "hold" support for Book3e
-processors", requires that GPR4 survive the "hold" process, for IBM Blue
-Gene/Q with with some very strange firmware. But for FSL Book3E, r4 = 1
-to indicate that the initial TLB entry for this core already exists so
-we still should set r4 with 0 to create that initial TLB.
+On 06/20/2013 05:47 PM, Benjamin Herrenschmidt wrote:
+> On Thu, 2013-06-20 at 15:28 +1000, David Gibson wrote:
+>>> Just out of curiosity - would not get_file() and fput_atomic() on a
+>> group's
+>>> file* do the right job instead of vfio_group_add_external_user() and
+>>> vfio_group_del_external_user()?
+>>
+>> I was thinking that too.  Grabbing a file reference would certainly be
+>> the usual way of handling this sort of thing.
+> 
+> But that wouldn't prevent the group ownership to be returned to
+> the kernel or another user would it ?
 
-Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
----
- arch/powerpc/kernel/head_64.S |    4 ++++
- 1 file changed, 4 insertions(+)
 
-diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-index ffa4b18..63ed1c3 100644
---- a/arch/powerpc/kernel/head_64.S
-+++ b/arch/powerpc/kernel/head_64.S
-@@ -129,6 +129,10 @@ __secondary_hold:
- 	/* Grab our physical cpu number */
- 	mr	r24,r3
- 	/* stash r4 for book3e */
-+#ifdef CONFIG_PPC_FSL_BOOK3E
-+	/* we need to setup initial TLB entry. */
-+	li	r4,0
-+#endif
- 	mr	r25,r4
- 
- 	/* Tell the master cpu we're here */
+Holding the file pointer does not let the group->container_users counter go
+to zero and this is exactly what vfio_group_add_external_user() and
+vfio_group_del_external_user() do. The difference is only in absolute value
+- 2 vs. 3.
+
+No change in behaviour whether I use new vfio API or simply hold file* till
+KVM closes fd created when IOMMU was connected to LIOBN.
+
+And while this counter is not zero, QEMU cannot take ownership over the group.
+
+I am definitely still missing the bigger picture...
+
+
 -- 
-1.7.9.5
+Alexey
