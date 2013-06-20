@@ -2,17 +2,31 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 2EC9A2C01FC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 17:01:48 +1000 (EST)
-Message-ID: <1371711696.3944.13.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
+ by ozlabs.org (Postfix) with ESMTPS id 84A702C02A7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 17:47:48 +1000 (EST)
+Message-ID: <1371714449.3944.14.camel@pasglop>
+Subject: Re: [PATCH 3/4] KVM: PPC: Add support for IOMMU in-kernel handling
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Thu, 20 Jun 2013 17:01:36 +1000
+To: David Gibson <david@gibson.dropbear.id.au>
+Date: Thu, 20 Jun 2013 17:47:29 +1000
+In-Reply-To: <20130620052822.GB3140@voom.redhat.com>
+References: <1371422343.21896.143.camel@pasglop>
+ <1371438800.22681.38.camel@ul30vt.home>
+ <1371441361.21896.152.camel@pasglop>
+ <1371522772.22681.140.camel@ul30vt.home> <87txkun568.fsf@rustcorp.com.au>
+ <1371617970.21896.232.camel@pasglop>
+ <E63966E3-336F-4CB8-96EC-24D2C1644E62@suse.de>
+ <1371653443.21896.291.camel@pasglop>
+ <1371656989.22659.98.camel@ul30vt.home> <51C28BEA.8050501@ozlabs.ru>
+ <20130620052822.GB3140@voom.redhat.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Cc: "kvm@vger.kernel.org mailing list" <kvm@vger.kernel.org>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, Joerg Roedel <joro@8bytes.org>,
+ Rusty Russell <rusty@rustcorp.com.au>, Alexander Graf <agraf@suse.de>,
+ kvm-ppc@vger.kernel.org, open list <linux-kernel@vger.kernel.org>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,30 +36,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+On Thu, 2013-06-20 at 15:28 +1000, David Gibson wrote:
+> > Just out of curiosity - would not get_file() and fput_atomic() on a
+> group's
+> > file* do the right job instead of vfio_group_add_external_user() and
+> > vfio_group_del_external_user()?
+> 
+> I was thinking that too.  Grabbing a file reference would certainly be
+> the usual way of handling this sort of thing.
 
-Please pull this regression fix into 3.10. We accidentally broke
-hugetlbfs on Freescale embedded processors which use a slightly
-different page table layout than our server processors.
+But that wouldn't prevent the group ownership to be returned to
+the kernel or another user would it ?
 
-Cheers,
 Ben.
-
-The following changes since commit c0691143dfe1d42ec9bd89de5921ccb6a27ea1b3:
-
-  mn10300: Fix include dependency in irqflags.h et al. (2013-06-19 06:29:54 -1000)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-for you to fetch changes up to 8bbd9f04b7d982d1c6aeb5c08f5983b3d0b9e2fe:
-
-  powerpc: Fix bad pmd error with book3E config (2013-06-20 15:25:21 +1000)
-
-----------------------------------------------------------------
-Aneesh Kumar K.V (1):
-      powerpc: Fix bad pmd error with book3E config
-
- arch/powerpc/mm/hugetlbpage.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
