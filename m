@@ -1,31 +1,30 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp08.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5AC6B2C009C
+ (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 5AD9A2C029B
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 19:01:22 +1000 (EST)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 20 Jun 2013 18:58:35 +1000
+ Thu, 20 Jun 2013 18:47:05 +1000
 Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 420232CE804D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 19:01:16 +1000 (EST)
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id EB1272BB0051
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 19:01:18 +1000 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
  by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5K8kXYk64225456
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 18:46:33 +1000
+ r5K8kZrR6357378
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 18:46:35 +1000
 Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5K91Fxt000390
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 19:01:15 +1000
+ r5K91HuO000455
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 19:01:18 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V11 01/15] powerpc/mm: handle hugepage size correctly when
- invalidating hpte entries
-Date: Thu, 20 Jun 2013 14:30:13 +0530
-Message-Id: <1371718827-15065-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V11 02/15] powerpc/THP: Double the PMD table size for THP
+Date: Thu, 20 Jun 2013 14:30:14 +0530
+Message-Id: <1371718827-15065-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1371718827-15065-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1371718827-15065-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -41,484 +40,107 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-If a hash bucket gets full, we "evict" a more/less random entry from it.
-When we do that we don't invalidate the TLB (hpte_remove) because we assume
-the old translation is still technically "valid". This implies that when
-we are invalidating or updating pte, even if HPTE entry is not valid
-we should do a tlb invalidate. With hugepages, we need to pass the correct
-actual page size value for tlb invalidation.
+THP code does PTE page allocation along with large page request and deposit them
+for later use. This is to ensure that we won't have any failures when we split
+hugepages to regular pages.
 
-This change update the patch 0608d692463598c1d6e826d9dd7283381b4f246c
-"powerpc/mm: Always invalidate tlb on hpte invalidate and update" to handle
-transparent hugepages correctly.
+On powerpc we want to use the deposited PTE page for storing hash pte slot and
+secondary bit information for the HPTEs. We use the second half
+of the pmd table to save the deposted PTE page.
 
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/machdep.h      |   8 +--
- arch/powerpc/kvm/book3s_64_mmu_host.c   |   2 +-
- arch/powerpc/mm/hash_low_64.S           |  21 +++---
- arch/powerpc/mm/hash_native_64.c        | 122 ++++++++++++--------------------
- arch/powerpc/mm/hash_utils_64.c         |   9 ++-
- arch/powerpc/mm/hugetlbpage-hash64.c    |   2 +-
- arch/powerpc/platforms/cell/beat_htab.c |  16 +++--
- arch/powerpc/platforms/ps3/htab.c       |   5 +-
- arch/powerpc/platforms/pseries/lpar.c   |  17 +++--
- 9 files changed, 95 insertions(+), 107 deletions(-)
+ arch/powerpc/include/asm/pgalloc-64.h        | 6 +++---
+ arch/powerpc/include/asm/pgtable-ppc64-64k.h | 3 ++-
+ arch/powerpc/include/asm/pgtable-ppc64.h     | 6 +++++-
+ arch/powerpc/mm/init_64.c                    | 9 ++++++---
+ 4 files changed, 16 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index 92386fc..801e3c6 100644
---- a/arch/powerpc/include/asm/machdep.h
-+++ b/arch/powerpc/include/asm/machdep.h
-@@ -36,13 +36,13 @@ struct machdep_calls {
- #ifdef CONFIG_PPC64
- 	void            (*hpte_invalidate)(unsigned long slot,
- 					   unsigned long vpn,
--					   int psize, int ssize,
--					   int local);
-+					   int bpsize, int apsize,
-+					   int ssize, int local);
- 	long		(*hpte_updatepp)(unsigned long slot, 
- 					 unsigned long newpp, 
- 					 unsigned long vpn,
--					 int psize, int ssize,
--					 int local);
-+					 int bpsize, int apsize,
-+					 int ssize, int local);
- 	void            (*hpte_updateboltedpp)(unsigned long newpp, 
- 					       unsigned long ea,
- 					       int psize, int ssize);
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_host.c b/arch/powerpc/kvm/book3s_64_mmu_host.c
-index 3a9a1ac..176d3fd 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_host.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_host.c
-@@ -34,7 +34,7 @@
- void kvmppc_mmu_invalidate_pte(struct kvm_vcpu *vcpu, struct hpte_cache *pte)
+diff --git a/arch/powerpc/include/asm/pgalloc-64.h b/arch/powerpc/include/asm/pgalloc-64.h
+index b66ae72..f65e27b 100644
+--- a/arch/powerpc/include/asm/pgalloc-64.h
++++ b/arch/powerpc/include/asm/pgalloc-64.h
+@@ -221,17 +221,17 @@ static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
+ 
+ static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
  {
- 	ppc_md.hpte_invalidate(pte->slot, pte->host_vpn,
--			       MMU_PAGE_4K, MMU_SEGSIZE_256M,
-+			       MMU_PAGE_4K, MMU_PAGE_4K, MMU_SEGSIZE_256M,
- 			       false);
+-	return kmem_cache_alloc(PGT_CACHE(PMD_INDEX_SIZE),
++	return kmem_cache_alloc(PGT_CACHE(PMD_CACHE_INDEX),
+ 				GFP_KERNEL|__GFP_REPEAT);
  }
  
-diff --git a/arch/powerpc/mm/hash_low_64.S b/arch/powerpc/mm/hash_low_64.S
-index 0e980ac..d3cbda6 100644
---- a/arch/powerpc/mm/hash_low_64.S
-+++ b/arch/powerpc/mm/hash_low_64.S
-@@ -289,9 +289,10 @@ htab_modify_pte:
- 
- 	/* Call ppc_md.hpte_updatepp */
- 	mr	r5,r29			/* vpn */
--	li	r6,MMU_PAGE_4K		/* page size */
--	ld	r7,STK_PARAM(R9)(r1)	/* segment size */
--	ld	r8,STK_PARAM(R8)(r1)	/* get "local" param */
-+	li	r6,MMU_PAGE_4K		/* base page size */
-+	li	r7,MMU_PAGE_4K		/* actual page size */
-+	ld	r8,STK_PARAM(R9)(r1)	/* segment size */
-+	ld	r9,STK_PARAM(R8)(r1)	/* get "local" param */
- _GLOBAL(htab_call_hpte_updatepp)
- 	bl	.			/* Patched by htab_finish_init() */
- 
-@@ -649,9 +650,10 @@ htab_modify_pte:
- 
- 	/* Call ppc_md.hpte_updatepp */
- 	mr	r5,r29			/* vpn */
--	li	r6,MMU_PAGE_4K		/* page size */
--	ld	r7,STK_PARAM(R9)(r1)	/* segment size */
--	ld	r8,STK_PARAM(R8)(r1)	/* get "local" param */
-+	li	r6,MMU_PAGE_4K		/* base page size */
-+	li	r7,MMU_PAGE_4K		/* actual page size */
-+	ld	r8,STK_PARAM(R9)(r1)	/* segment size */
-+	ld	r9,STK_PARAM(R8)(r1)	/* get "local" param */
- _GLOBAL(htab_call_hpte_updatepp)
- 	bl	.			/* patched by htab_finish_init() */
- 
-@@ -937,9 +939,10 @@ ht64_modify_pte:
- 
- 	/* Call ppc_md.hpte_updatepp */
- 	mr	r5,r29			/* vpn */
--	li	r6,MMU_PAGE_64K
--	ld	r7,STK_PARAM(R9)(r1)	/* segment size */
--	ld	r8,STK_PARAM(R8)(r1)	/* get "local" param */
-+	li	r6,MMU_PAGE_64K		/* base page size */
-+	li	r7,MMU_PAGE_64K		/* actual page size */
-+	ld	r8,STK_PARAM(R9)(r1)	/* segment size */
-+	ld	r9,STK_PARAM(R8)(r1)	/* get "local" param */
- _GLOBAL(ht64_call_hpte_updatepp)
- 	bl	.			/* patched by htab_finish_init() */
- 
-diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
-index 4c122c3..6d152bc 100644
---- a/arch/powerpc/mm/hash_native_64.c
-+++ b/arch/powerpc/mm/hash_native_64.c
-@@ -273,61 +273,15 @@ static long native_hpte_remove(unsigned long hpte_group)
- 	return i;
+ static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
+ {
+-	kmem_cache_free(PGT_CACHE(PMD_INDEX_SIZE), pmd);
++	kmem_cache_free(PGT_CACHE(PMD_CACHE_INDEX), pmd);
  }
  
--static inline int __hpte_actual_psize(unsigned int lp, int psize)
--{
--	int i, shift;
--	unsigned int mask;
+ #define __pmd_free_tlb(tlb, pmd, addr)		      \
+-	pgtable_free_tlb(tlb, pmd, PMD_INDEX_SIZE)
++	pgtable_free_tlb(tlb, pmd, PMD_CACHE_INDEX)
+ #ifndef CONFIG_PPC_64K_PAGES
+ #define __pud_free_tlb(tlb, pud, addr)		      \
+ 	pgtable_free_tlb(tlb, pud, PUD_INDEX_SIZE)
+diff --git a/arch/powerpc/include/asm/pgtable-ppc64-64k.h b/arch/powerpc/include/asm/pgtable-ppc64-64k.h
+index 45142d6..a56b82f 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc64-64k.h
++++ b/arch/powerpc/include/asm/pgtable-ppc64-64k.h
+@@ -33,7 +33,8 @@
+ #define PGDIR_MASK	(~(PGDIR_SIZE-1))
+ 
+ /* Bits to mask out from a PMD to get to the PTE page */
+-#define PMD_MASKED_BITS		0x1ff
++/* PMDs point to PTE table fragments which are 4K aligned.  */
++#define PMD_MASKED_BITS		0xfff
+ /* Bits to mask out from a PGD/PUD to get to the PMD page */
+ #define PUD_MASKED_BITS		0x1ff
+ 
+diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
+index e3d55f6f..ab84332 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc64.h
++++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+@@ -20,7 +20,11 @@
+                 	    PUD_INDEX_SIZE + PGD_INDEX_SIZE + PAGE_SHIFT)
+ #define PGTABLE_RANGE (ASM_CONST(1) << PGTABLE_EADDR_SIZE)
+ 
 -
--	/* start from 1 ignoring MMU_PAGE_4K */
--	for (i = 1; i < MMU_PAGE_COUNT; i++) {
--
--		/* invalid penc */
--		if (mmu_psize_defs[psize].penc[i] == -1)
--			continue;
--		/*
--		 * encoding bits per actual page size
--		 *        PTE LP     actual page size
--		 *    rrrr rrrz		>=8KB
--		 *    rrrr rrzz		>=16KB
--		 *    rrrr rzzz		>=32KB
--		 *    rrrr zzzz		>=64KB
--		 * .......
--		 */
--		shift = mmu_psize_defs[i].shift - LP_SHIFT;
--		if (shift > LP_BITS)
--			shift = LP_BITS;
--		mask = (1 << shift) - 1;
--		if ((lp & mask) == mmu_psize_defs[psize].penc[i])
--			return i;
--	}
--	return -1;
--}
--
--static inline int hpte_actual_psize(struct hash_pte *hptep, int psize)
--{
--	/* Look at the 8 bit LP value */
--	unsigned int lp = (hptep->r >> LP_SHIFT) & ((1 << LP_BITS) - 1);
--
--	if (!(hptep->v & HPTE_V_VALID))
--		return -1;
--
--	/* First check if it is large page */
--	if (!(hptep->v & HPTE_V_LARGE))
--		return MMU_PAGE_4K;
--
--	return __hpte_actual_psize(lp, psize);
--}
--
- static long native_hpte_updatepp(unsigned long slot, unsigned long newpp,
--				 unsigned long vpn, int psize, int ssize,
--				 int local)
-+				 unsigned long vpn, int bpsize,
-+				 int apsize, int ssize, int local)
- {
- 	struct hash_pte *hptep = htab_address + slot;
- 	unsigned long hpte_v, want_v;
- 	int ret = 0;
--	int actual_psize;
- 
--	want_v = hpte_encode_avpn(vpn, psize, ssize);
-+	want_v = hpte_encode_avpn(vpn, bpsize, ssize);
- 
- 	DBG_LOW("    update(vpn=%016lx, avpnv=%016lx, group=%lx, newpp=%lx)",
- 		vpn, want_v & HPTE_V_AVPN, slot, newpp);
-@@ -335,7 +289,6 @@ static long native_hpte_updatepp(unsigned long slot, unsigned long newpp,
- 	native_lock_hpte(hptep);
- 
- 	hpte_v = hptep->v;
--	actual_psize = hpte_actual_psize(hptep, psize);
- 	/*
- 	 * We need to invalidate the TLB always because hpte_remove doesn't do
- 	 * a tlb invalidate. If a hash bucket gets full, we "evict" a more/less
-@@ -343,12 +296,7 @@ static long native_hpte_updatepp(unsigned long slot, unsigned long newpp,
- 	 * (hpte_remove) because we assume the old translation is still
- 	 * technically "valid".
- 	 */
--	if (actual_psize < 0) {
--		actual_psize = psize;
--		ret = -1;
--		goto err_out;
--	}
--	if (!HPTE_V_COMPARE(hpte_v, want_v)) {
-+	if (!HPTE_V_COMPARE(hpte_v, want_v) || !(hpte_v & HPTE_V_VALID)) {
- 		DBG_LOW(" -> miss\n");
- 		ret = -1;
- 	} else {
-@@ -357,11 +305,10 @@ static long native_hpte_updatepp(unsigned long slot, unsigned long newpp,
- 		hptep->r = (hptep->r & ~(HPTE_R_PP | HPTE_R_N)) |
- 			(newpp & (HPTE_R_PP | HPTE_R_N | HPTE_R_C));
- 	}
--err_out:
- 	native_unlock_hpte(hptep);
- 
- 	/* Ensure it is out of the tlb too. */
--	tlbie(vpn, psize, actual_psize, ssize, local);
-+	tlbie(vpn, bpsize, apsize, ssize, local);
- 
- 	return ret;
- }
-@@ -402,7 +349,6 @@ static long native_hpte_find(unsigned long vpn, int psize, int ssize)
- static void native_hpte_updateboltedpp(unsigned long newpp, unsigned long ea,
- 				       int psize, int ssize)
- {
--	int actual_psize;
- 	unsigned long vpn;
- 	unsigned long vsid;
- 	long slot;
-@@ -415,36 +361,33 @@ static void native_hpte_updateboltedpp(unsigned long newpp, unsigned long ea,
- 	if (slot == -1)
- 		panic("could not find page to bolt\n");
- 	hptep = htab_address + slot;
--	actual_psize = hpte_actual_psize(hptep, psize);
--	if (actual_psize < 0)
--		actual_psize = psize;
- 
- 	/* Update the HPTE */
- 	hptep->r = (hptep->r & ~(HPTE_R_PP | HPTE_R_N)) |
- 		(newpp & (HPTE_R_PP | HPTE_R_N));
--
--	/* Ensure it is out of the tlb too. */
--	tlbie(vpn, psize, actual_psize, ssize, 0);
-+	/*
-+	 * Ensure it is out of the tlb too. Bolted entries base and
-+	 * actual page size will be same.
-+	 */
-+	tlbie(vpn, psize, psize, ssize, 0);
- }
- 
- static void native_hpte_invalidate(unsigned long slot, unsigned long vpn,
--				   int psize, int ssize, int local)
-+				   int bpsize, int apsize, int ssize, int local)
- {
- 	struct hash_pte *hptep = htab_address + slot;
- 	unsigned long hpte_v;
- 	unsigned long want_v;
- 	unsigned long flags;
--	int actual_psize;
- 
- 	local_irq_save(flags);
- 
- 	DBG_LOW("    invalidate(vpn=%016lx, hash: %lx)\n", vpn, slot);
- 
--	want_v = hpte_encode_avpn(vpn, psize, ssize);
-+	want_v = hpte_encode_avpn(vpn, bpsize, ssize);
- 	native_lock_hpte(hptep);
- 	hpte_v = hptep->v;
- 
--	actual_psize = hpte_actual_psize(hptep, psize);
- 	/*
- 	 * We need to invalidate the TLB always because hpte_remove doesn't do
- 	 * a tlb invalidate. If a hash bucket gets full, we "evict" a more/less
-@@ -452,23 +395,48 @@ static void native_hpte_invalidate(unsigned long slot, unsigned long vpn,
- 	 * (hpte_remove) because we assume the old translation is still
- 	 * technically "valid".
- 	 */
--	if (actual_psize < 0) {
--		actual_psize = psize;
--		native_unlock_hpte(hptep);
--		goto err_out;
--	}
--	if (!HPTE_V_COMPARE(hpte_v, want_v))
-+	if (!HPTE_V_COMPARE(hpte_v, want_v) || !(hpte_v & HPTE_V_VALID))
- 		native_unlock_hpte(hptep);
- 	else
- 		/* Invalidate the hpte. NOTE: this also unlocks it */
- 		hptep->v = 0;
- 
--err_out:
- 	/* Invalidate the TLB */
--	tlbie(vpn, psize, actual_psize, ssize, local);
-+	tlbie(vpn, bpsize, apsize, ssize, local);
-+
- 	local_irq_restore(flags);
- }
- 
-+static inline int __hpte_actual_psize(unsigned int lp, int psize)
-+{
-+	int i, shift;
-+	unsigned int mask;
-+
-+	/* start from 1 ignoring MMU_PAGE_4K */
-+	for (i = 1; i < MMU_PAGE_COUNT; i++) {
-+
-+		/* invalid penc */
-+		if (mmu_psize_defs[psize].penc[i] == -1)
-+			continue;
-+		/*
-+		 * encoding bits per actual page size
-+		 *        PTE LP     actual page size
-+		 *    rrrr rrrz		>=8KB
-+		 *    rrrr rrzz		>=16KB
-+		 *    rrrr rzzz		>=32KB
-+		 *    rrrr zzzz		>=64KB
-+		 * .......
-+		 */
-+		shift = mmu_psize_defs[i].shift - LP_SHIFT;
-+		if (shift > LP_BITS)
-+			shift = LP_BITS;
-+		mask = (1 << shift) - 1;
-+		if ((lp & mask) == mmu_psize_defs[psize].penc[i])
-+			return i;
-+	}
-+	return -1;
-+}
-+
- static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
- 			int *psize, int *apsize, int *ssize, unsigned long *vpn)
- {
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index e303a6d..2f47080 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -1232,7 +1232,11 @@ void flush_hash_page(unsigned long vpn, real_pte_t pte, int psize, int ssize,
- 		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
- 		slot += hidx & _PTEIDX_GROUP_IX;
- 		DBG_LOW(" sub %ld: hash=%lx, hidx=%lx\n", index, slot, hidx);
--		ppc_md.hpte_invalidate(slot, vpn, psize, ssize, local);
-+		/*
-+		 * We use same base page size and actual psize, because we don't
-+		 * use these functions for hugepage
-+		 */
-+		ppc_md.hpte_invalidate(slot, vpn, psize, psize, ssize, local);
- 	} pte_iterate_hashed_end();
- 
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-@@ -1365,7 +1369,8 @@ static void kernel_unmap_linear_page(unsigned long vaddr, unsigned long lmi)
- 		hash = ~hash;
- 	slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
- 	slot += hidx & _PTEIDX_GROUP_IX;
--	ppc_md.hpte_invalidate(slot, vpn, mmu_linear_psize, mmu_kernel_ssize, 0);
-+	ppc_md.hpte_invalidate(slot, vpn, mmu_linear_psize, mmu_linear_psize,
-+			       mmu_kernel_ssize, 0);
- }
- 
- void kernel_map_pages(struct page *page, int numpages, int enable)
-diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
-index 0f1d94a..0b7fb67 100644
---- a/arch/powerpc/mm/hugetlbpage-hash64.c
-+++ b/arch/powerpc/mm/hugetlbpage-hash64.c
-@@ -81,7 +81,7 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
- 		slot += (old_pte & _PAGE_F_GIX) >> 12;
- 
- 		if (ppc_md.hpte_updatepp(slot, rflags, vpn, mmu_psize,
--					 ssize, local) == -1)
-+					 mmu_psize, ssize, local) == -1)
- 			old_pte &= ~_PAGE_HPTEFLAGS;
- 	}
- 
-diff --git a/arch/powerpc/platforms/cell/beat_htab.c b/arch/powerpc/platforms/cell/beat_htab.c
-index 246e1d8..c34ee4e 100644
---- a/arch/powerpc/platforms/cell/beat_htab.c
-+++ b/arch/powerpc/platforms/cell/beat_htab.c
-@@ -185,7 +185,8 @@ static void beat_lpar_hptab_clear(void)
- static long beat_lpar_hpte_updatepp(unsigned long slot,
- 				    unsigned long newpp,
- 				    unsigned long vpn,
--				    int psize, int ssize, int local)
-+				    int psize, int apsize,
-+				    int ssize, int local)
- {
- 	unsigned long lpar_rc;
- 	u64 dummy0, dummy1;
-@@ -274,7 +275,8 @@ static void beat_lpar_hpte_updateboltedpp(unsigned long newpp,
- }
- 
- static void beat_lpar_hpte_invalidate(unsigned long slot, unsigned long vpn,
--					 int psize, int ssize, int local)
-+				      int psize, int apsize,
-+				      int ssize, int local)
- {
- 	unsigned long want_v;
- 	unsigned long lpar_rc;
-@@ -364,9 +366,10 @@ static long beat_lpar_hpte_insert_v3(unsigned long hpte_group,
-  * already zero.  For now I am paranoid.
++#ifdef CONFIG_TRANSPARENT_HUGEPAGE
++#define PMD_CACHE_INDEX	(PMD_INDEX_SIZE + 1)
++#else
++#define PMD_CACHE_INDEX	PMD_INDEX_SIZE
++#endif
+ /*
+  * Define the address range of the kernel non-linear virtual area
   */
- static long beat_lpar_hpte_updatepp_v3(unsigned long slot,
--				    unsigned long newpp,
--				    unsigned long vpn,
--				    int psize, int ssize, int local)
-+				       unsigned long newpp,
-+				       unsigned long vpn,
-+				       int psize, int apsize,
-+				       int ssize, int local)
+diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+index a90b9c4..d0cd9e4 100644
+--- a/arch/powerpc/mm/init_64.c
++++ b/arch/powerpc/mm/init_64.c
+@@ -88,7 +88,11 @@ static void pgd_ctor(void *addr)
+ 
+ static void pmd_ctor(void *addr)
  {
- 	unsigned long lpar_rc;
- 	unsigned long want_v;
-@@ -394,7 +397,8 @@ static long beat_lpar_hpte_updatepp_v3(unsigned long slot,
++#ifdef CONFIG_TRANSPARENT_HUGEPAGE
++	memset(addr, 0, PMD_TABLE_SIZE * 2);
++#else
+ 	memset(addr, 0, PMD_TABLE_SIZE);
++#endif
  }
  
- static void beat_lpar_hpte_invalidate_v3(unsigned long slot, unsigned long vpn,
--					 int psize, int ssize, int local)
-+					 int psize, int apsize,
-+					 int ssize, int local)
+ struct kmem_cache *pgtable_cache[MAX_PGTABLE_INDEX_SIZE];
+@@ -137,10 +141,9 @@ void pgtable_cache_add(unsigned shift, void (*ctor)(void *))
+ void pgtable_cache_init(void)
  {
- 	unsigned long want_v;
- 	unsigned long lpar_rc;
-diff --git a/arch/powerpc/platforms/ps3/htab.c b/arch/powerpc/platforms/ps3/htab.c
-index 177a2f7..3e270e3 100644
---- a/arch/powerpc/platforms/ps3/htab.c
-+++ b/arch/powerpc/platforms/ps3/htab.c
-@@ -109,7 +109,8 @@ static long ps3_hpte_remove(unsigned long hpte_group)
- }
- 
- static long ps3_hpte_updatepp(unsigned long slot, unsigned long newpp,
--	unsigned long vpn, int psize, int ssize, int local)
-+			      unsigned long vpn, int psize, int apsize,
-+			      int ssize, int local)
- {
- 	int result;
- 	u64 hpte_v, want_v, hpte_rs;
-@@ -162,7 +163,7 @@ static void ps3_hpte_updateboltedpp(unsigned long newpp, unsigned long ea,
- }
- 
- static void ps3_hpte_invalidate(unsigned long slot, unsigned long vpn,
--	int psize, int ssize, int local)
-+				int psize, int apsize, int ssize, int local)
- {
- 	unsigned long flags;
- 	int result;
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index 6d62072..ca45c8f 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -240,7 +240,8 @@ static void pSeries_lpar_hptab_clear(void)
- static long pSeries_lpar_hpte_updatepp(unsigned long slot,
- 				       unsigned long newpp,
- 				       unsigned long vpn,
--				       int psize, int ssize, int local)
-+				       int psize, int apsize,
-+				       int ssize, int local)
- {
- 	unsigned long lpar_rc;
- 	unsigned long flags = (newpp & 7) | H_AVPN;
-@@ -328,7 +329,8 @@ static void pSeries_lpar_hpte_updateboltedpp(unsigned long newpp,
- }
- 
- static void pSeries_lpar_hpte_invalidate(unsigned long slot, unsigned long vpn,
--					 int psize, int ssize, int local)
-+					 int psize, int apsize,
-+					 int ssize, int local)
- {
- 	unsigned long want_v;
- 	unsigned long lpar_rc;
-@@ -356,8 +358,10 @@ static void pSeries_lpar_hpte_removebolted(unsigned long ea,
- 
- 	slot = pSeries_lpar_hpte_find(vpn, psize, ssize);
- 	BUG_ON(slot == -1);
+ 	pgtable_cache_add(PGD_INDEX_SIZE, pgd_ctor);
+-	pgtable_cache_add(PMD_INDEX_SIZE, pmd_ctor);
+-	if (!PGT_CACHE(PGD_INDEX_SIZE) || !PGT_CACHE(PMD_INDEX_SIZE))
++	pgtable_cache_add(PMD_CACHE_INDEX, pmd_ctor);
++	if (!PGT_CACHE(PGD_INDEX_SIZE) || !PGT_CACHE(PMD_CACHE_INDEX))
+ 		panic("Couldn't allocate pgtable caches");
 -
--	pSeries_lpar_hpte_invalidate(slot, vpn, psize, ssize, 0);
-+	/*
-+	 * lpar doesn't use the passed actual page size
-+	 */
-+	pSeries_lpar_hpte_invalidate(slot, vpn, psize, 0, ssize, 0);
- }
- 
- /* Flag bits for H_BULK_REMOVE */
-@@ -400,8 +404,11 @@ static void pSeries_lpar_flush_hash_range(unsigned long number, int local)
- 			slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
- 			slot += hidx & _PTEIDX_GROUP_IX;
- 			if (!firmware_has_feature(FW_FEATURE_BULK_REMOVE)) {
-+				/*
-+				 * lpar doesn't use the passed actual page size
-+				 */
- 				pSeries_lpar_hpte_invalidate(slot, vpn, psize,
--							     ssize, local);
-+							     0, ssize, local);
- 			} else {
- 				param[pix] = HBR_REQUEST | HBR_AVPN | slot;
- 				param[pix+1] = hpte_encode_avpn(vpn, psize,
+ 	/* In all current configs, when the PUD index exists it's the
+ 	 * same size as either the pgd or pmd index.  Verify that the
+ 	 * initialization above has also created a PUD cache.  This
 -- 
 1.8.1.2
