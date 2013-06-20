@@ -1,30 +1,24 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id CBD602C02BB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jun 2013 00:55:20 +1000 (EST)
-Message-ID: <1371740113.32709.22.camel@ul30vt.home>
-Subject: Re: [PATCH 3/4] KVM: PPC: Add support for IOMMU in-kernel handling
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Thu, 20 Jun 2013 08:55:13 -0600
-In-Reply-To: <51C2C1CC.9000003@ozlabs.ru>
-References: <1371422343.21896.143.camel@pasglop>
- <1371438800.22681.38.camel@ul30vt.home>
- <1371441361.21896.152.camel@pasglop>
- <1371522772.22681.140.camel@ul30vt.home> <87txkun568.fsf@rustcorp.com.au>
- <1371617970.21896.232.camel@pasglop>
- <E63966E3-336F-4CB8-96EC-24D2C1644E62@suse.de>
- <1371653443.21896.291.camel@pasglop>
- <1371656989.22659.98.camel@ul30vt.home> <51C28BEA.8050501@ozlabs.ru>
- <20130620052822.GB3140@voom.redhat.com> <1371714449.3944.14.camel@pasglop>
- <51C2C1CC.9000003@ozlabs.ru>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: "kvm@vger.kernel.org mailing list" <kvm@vger.kernel.org>,
- Joerg Roedel <joro@8bytes.org>, Rusty Russell <rusty@rustcorp.com.au>,
- Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
- open list <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <B16395@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4A7B42C009D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jun 2013 02:11:44 +1000 (EST)
+From: Varun Sethi <Varun.Sethi@freescale.com>
+To: <joro@8bytes.org>, <iommu@lists.linux-foundation.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+ <benh@kernel.crashing.org>, <galak@kernel.crashing.org>,
+ <stuart.yoder@freescale.com>, <scottwood@freescale.com>,
+ <alex.williamson@redhat.com>
+Subject: [PATCH 2/3 v16] iommu/fsl: Add additional iommu attributes required
+ by the PAMU driver.
+Date: Thu, 20 Jun 2013 21:31:27 +0530
+Message-ID: <1371744089-17780-1-git-send-email-Varun.Sethi@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Varun Sethi <Varun.Sethi@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,51 +28,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-06-20 at 18:48 +1000, Alexey Kardashevskiy wrote:
-> On 06/20/2013 05:47 PM, Benjamin Herrenschmidt wrote:
-> > On Thu, 2013-06-20 at 15:28 +1000, David Gibson wrote:
-> >>> Just out of curiosity - would not get_file() and fput_atomic() on a
-> >> group's
-> >>> file* do the right job instead of vfio_group_add_external_user() and
-> >>> vfio_group_del_external_user()?
-> >>
-> >> I was thinking that too.  Grabbing a file reference would certainly be
-> >> the usual way of handling this sort of thing.
-> > 
-> > But that wouldn't prevent the group ownership to be returned to
-> > the kernel or another user would it ?
-> 
-> 
-> Holding the file pointer does not let the group->container_users counter go
-> to zero
+Added the following domain attributes for the FSL PAMU driver:
+1. Added new iommu stash attribute, which allows setting of the
+   LIODN specific stash id parameter through IOMMU API.
+2. Added an attribute for enabling/disabling DMA to a particular
+   memory window.
+3. Added domain attribute to check for PAMUV1 specific constraints.
 
-How so?  Holding the file pointer means the file won't go away, which
-means the group release function won't be called.  That means the group
-won't go away, but that doesn't mean it's attached to an IOMMU.  A user
-could call UNSET_CONTAINER.
+Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
+---
+v16 changes:
+- rebased to 3.10-rc6
+v15 changes:
+- Moved fsl_pamu_stash.h under arch/powerpc/include/asm.
+v14 changes:
+- Add FSL prefix to PAMU attributes.
+v13 changes:
+- created a new file include/linux/fsl_pamu_stash.h for stash
+attributes.
+v12 changes:
+- Moved PAMU specifc stash ids and structures to PAMU header file.
+- no change in v11.
+- no change in v10.
+ arch/powerpc/include/asm/fsl_pamu_stash.h |   39 +++++++++++++++++++++++++++++
+ include/linux/iommu.h                     |   16 ++++++++++++
+ 2 files changed, 55 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/fsl_pamu_stash.h
 
->  and this is exactly what vfio_group_add_external_user() and
-> vfio_group_del_external_user() do. The difference is only in absolute value
-> - 2 vs. 3.
-> 
-> No change in behaviour whether I use new vfio API or simply hold file* till
-> KVM closes fd created when IOMMU was connected to LIOBN.
-
-By that notion you could open(/dev/vfio/$GROUP) and you're safe, right?
-But what about SET_CONTAINER & SET_IOMMU?  All that you guarantee
-holding the file pointer is that the vfio_group exists.
-
-> And while this counter is not zero, QEMU cannot take ownership over the group.
->
-> I am definitely still missing the bigger picture...
-
-The bigger picture is that the group needs to exist AND it needs to be
-setup and maintained to have IOMMU protection.  Actually, my first stab
-at add_external_user doesn't look sufficient, it needs to look more like
-vfio_group_get_device_fd, checking group->container->iommu and
-group_viable().  As written it would allow an external user after
-SET_CONTAINER without SET_IOMMU.  It should also be part of the API that
-the external user must hold the file reference between add_external_use
-and del_external_user and do cleanup on any exit paths.  Thanks,
-
-Alex
+diff --git a/arch/powerpc/include/asm/fsl_pamu_stash.h b/arch/powerpc/include/asm/fsl_pamu_stash.h
+new file mode 100644
+index 0000000..caa1b21
+--- /dev/null
++++ b/arch/powerpc/include/asm/fsl_pamu_stash.h
+@@ -0,0 +1,39 @@
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License, version 2, as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
++ *
++ * Copyright (C) 2013 Freescale Semiconductor, Inc.
++ *
++ */
++
++#ifndef __FSL_PAMU_STASH_H
++#define __FSL_PAMU_STASH_H
++
++/* cache stash targets */
++enum pamu_stash_target {
++	PAMU_ATTR_CACHE_L1 = 1,
++	PAMU_ATTR_CACHE_L2,
++	PAMU_ATTR_CACHE_L3,
++};
++
++/*
++ * This attribute allows configuring stashig specific parameters
++ * in the PAMU hardware.
++ */
++
++struct pamu_stash_attribute {
++	u32 	cpu;	/* cpu number */
++	u32 	cache;	/* cache to stash to: L1,L2,L3 */
++};
++
++#endif  /* __FSL_PAMU_STASH_H */
+diff --git a/include/linux/iommu.h b/include/linux/iommu.h
+index 3aeb730..7ea319e 100644
+--- a/include/linux/iommu.h
++++ b/include/linux/iommu.h
+@@ -58,10 +58,26 @@ struct iommu_domain {
+ #define IOMMU_CAP_CACHE_COHERENCY	0x1
+ #define IOMMU_CAP_INTR_REMAP		0x2	/* isolates device intrs */
+ 
++/*
++ * Following constraints are specifc to FSL_PAMUV1:
++ *  -aperture must be power of 2, and naturally aligned
++ *  -number of windows must be power of 2, and address space size
++ *   of each window is determined by aperture size / # of windows
++ *  -the actual size of the mapped region of a window must be power
++ *   of 2 starting with 4KB and physical address must be naturally
++ *   aligned.
++ * DOMAIN_ATTR_FSL_PAMUV1 corresponds to the above mentioned contraints.
++ * The caller can invoke iommu_domain_get_attr to check if the underlying
++ * iommu implementation supports these constraints.
++ */
++
+ enum iommu_attr {
+ 	DOMAIN_ATTR_GEOMETRY,
+ 	DOMAIN_ATTR_PAGING,
+ 	DOMAIN_ATTR_WINDOWS,
++	DOMAIN_ATTR_FSL_PAMU_STASH,
++	DOMAIN_ATTR_FSL_PAMU_ENABLE,
++	DOMAIN_ATTR_FSL_PAMUV1,
+ 	DOMAIN_ATTR_MAX,
+ };
+ 
+-- 
+1.7.4.1
