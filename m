@@ -3,14 +3,13 @@ Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mail1.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 47D622C009D
+ by ozlabs.org (Postfix) with ESMTPS id 72B262C023D
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 20:28:50 +1000 (EST)
 From: Tiejun Chen <tiejun.chen@windriver.com>
 To: <benh@kernel.crashing.org>
-Subject: [v5][PATCH 1/6] powerpc/book3e: load critical/machine/debug exception
- stack
-Date: Thu, 20 Jun 2013 18:28:25 +0800
-Message-ID: <1371724110-8250-2-git-send-email-tiejun.chen@windriver.com>
+Subject: [v5][PATCH 3/6] book3e/kgdb: update thread's dbcr0
+Date: Thu, 20 Jun 2013 18:28:27 +0800
+Message-ID: <1371724110-8250-4-git-send-email-tiejun.chen@windriver.com>
 In-Reply-To: <1371724110-8250-1-git-send-email-tiejun.chen@windriver.com>
 References: <1371724110-8250-1-git-send-email-tiejun.chen@windriver.com>
 MIME-Version: 1.0
@@ -25,92 +24,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We always alloc critical/machine/debug check exceptions. This is
-different from the normal exception. So we should load these exception
-stack properly like we did for booke.
+gdb always need to generate a single step properly to invoke
+a kgdb state. But with lazy interrupt, book3e can't always
+trigger a debug exception with a single step since the current
+is blocked for handling those pending exception, then we miss
+that expected dbcr configuration at last to generate a debug
+exception.
+
+So here we also update thread's dbcr0 to make sure the current
+can go back with that missed dbcr0 configuration.
 
 Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
 ---
- arch/powerpc/kernel/exceptions-64e.S |   49 +++++++++++++++++++++++++++++++---
- 1 file changed, 46 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/kgdb.c |   13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index 4b23119..4d8e57f 100644
---- a/arch/powerpc/kernel/exceptions-64e.S
-+++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -36,6 +36,37 @@
-  */
- #define	SPECIAL_EXC_FRAME_SIZE	INT_FRAME_SIZE
+diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
+index c1eef24..55409ac 100644
+--- a/arch/powerpc/kernel/kgdb.c
++++ b/arch/powerpc/kernel/kgdb.c
+@@ -410,7 +410,7 @@ int kgdb_arch_handle_exception(int vector, int signo, int err_code,
+ 			       struct pt_regs *linux_regs)
+ {
+ 	char *ptr = &remcom_in_buffer[1];
+-	unsigned long addr;
++	unsigned long addr, dbcr0;
  
-+/* only on book3e */
-+#define DBG_STACK_BASE		dbgirq_ctx
-+#define MC_STACK_BASE		mcheckirq_ctx
-+#define CRIT_STACK_BASE		critirq_ctx
-+
-+#ifdef CONFIG_RELOCATABLE
-+#define LOAD_STACK_BASE(reg, level)			\
-+	tovirt(r2,r2);					\
-+	LOAD_REG_ADDR(reg, level##_STACK_BASE);
-+#else
-+#define LOAD_STACK_BASE(reg, level)			\
-+	LOAD_REG_IMMEDIATE(reg, level##_STACK_BASE);
+ 	switch (remcom_in_buffer[0]) {
+ 		/*
+@@ -427,8 +427,15 @@ int kgdb_arch_handle_exception(int vector, int signo, int err_code,
+ 		/* set the trace bit if we're stepping */
+ 		if (remcom_in_buffer[0] == 's') {
+ #ifdef CONFIG_PPC_ADV_DEBUG_REGS
+-			mtspr(SPRN_DBCR0,
+-			      mfspr(SPRN_DBCR0) | DBCR0_IC | DBCR0_IDM);
++			dbcr0 = mfspr(SPRN_DBCR0) | DBCR0_IC | DBCR0_IDM;
++			mtspr(SPRN_DBCR0, dbcr0);
++#ifdef CONFIG_PPC_BOOK3E_64
++			/* With lazy interrut we have to update thread dbcr0 here
++			 * to make sure we can set debug properly at last to invoke
++			 * kgdb again to work well.
++			 */
++			current->thread.dbcr0 = dbcr0;
 +#endif
-+
-+#ifdef CONFIG_SMP
-+#define BOOK3E_LOAD_EXC_LEVEL_STACK(level)		\
-+	mfspr	r14,SPRN_PIR;				\
-+	slwi	r14,r14,3;				\
-+	LOAD_STACK_BASE(r10, level);			\
-+	add	r10,r10,r14;				\
-+	ld	r10,0(r10);				\
-+	addi	r10,r10,THREAD_SIZE;			\
-+	std	r10,PACA_##level##_STACK(r13);
-+#else
-+#define BOOK3E_LOAD_EXC_LEVEL_STACK(level)		\
-+	LOAD_STACK_BASE(r10, level);			\
-+	ld	r10,0(r10);				\
-+	addi	r10,r10,THREAD_SIZE;			\
-+	std	r10,PACA_##level##_STACK(r13);
-+#endif
-+
- /* Exception prolog code for all exceptions */
- #define EXCEPTION_PROLOG(n, intnum, type, addition)	    		    \
- 	mtspr	SPRN_SPRG_##type##_SCRATCH,r13;	/* get spare registers */   \
-@@ -68,20 +99,32 @@
- #define SPRN_GDBELL_SRR1	SPRN_GSRR1
- 
- #define CRIT_SET_KSTACK						            \
-+	andi.	r10,r11,MSR_PR;							\
-+	bne	1f;								\
-+	BOOK3E_LOAD_EXC_LEVEL_STACK(CRIT);					\
- 	ld	r1,PACA_CRIT_STACK(r13);				    \
--	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;
-+	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;					\
-+1:
- #define SPRN_CRIT_SRR0	SPRN_CSRR0
- #define SPRN_CRIT_SRR1	SPRN_CSRR1
- 
- #define DBG_SET_KSTACK						            \
-+	andi.	r10,r11,MSR_PR;							\
-+	bne	1f;								\
-+	BOOK3E_LOAD_EXC_LEVEL_STACK(DBG);					\
- 	ld	r1,PACA_DBG_STACK(r13);					    \
--	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;
-+	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;					\
-+1:
- #define SPRN_DBG_SRR0	SPRN_DSRR0
- #define SPRN_DBG_SRR1	SPRN_DSRR1
- 
- #define MC_SET_KSTACK						            \
-+	andi.	r10,r11,MSR_PR;							\
-+	bne	1f;								\
-+	BOOK3E_LOAD_EXC_LEVEL_STACK(MC);					\
- 	ld	r1,PACA_MC_STACK(r13);					    \
--	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;
-+	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;					\
-+1:
- #define SPRN_MC_SRR0	SPRN_MCSRR0
- #define SPRN_MC_SRR1	SPRN_MCSRR1
- 
+ 			linux_regs->msr |= MSR_DE;
+ #else
+ 			linux_regs->msr |= MSR_SE;
 -- 
 1.7.9.5
