@@ -1,31 +1,30 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e35.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 228882C0303
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 15:21:37 +1000 (EST)
+ (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E831C2C0316
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 15:21:38 +1000 (EST)
 Received: from /spool/local
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Wed, 19 Jun 2013 23:21:34 -0600
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
- [9.17.195.227])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id CAFFC19D803E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 23:21:23 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5K5LWJK162238
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 23:21:32 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5K5LWsq015217
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 23:21:32 -0600
+ Thu, 20 Jun 2013 01:21:35 -0400
+Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 0310138C804F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 01:21:32 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5K5LWR2272890
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 01:21:32 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5K5LWha003426
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 02:21:32 -0300
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 10/31] powerpc/eeh: Single kthread to handle events
-Date: Thu, 20 Jun 2013 13:21:00 +0800
-Message-Id: <1371705681-24632-11-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 09/31] powerpc/eeh: Delay EEH probe during hotplug
+Date: Thu, 20 Jun 2013 13:20:59 +0800
+Message-Id: <1371705681-24632-10-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1371705681-24632-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1371705681-24632-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -38,191 +37,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We possiblly have multiple kthreads running for multiple EEH errors
-(events) and use one spinlock to make the process of handling those
-EEH events serialized. That's unnecessary and the patch creates only
-one kthread, which is started during EEH core initialization time in
-eeh_init(). A new semaphore introduced to count the number of existing
-EEH events in the queue and the kthread waiting on the semaphore.
+While doing EEH recovery, the PCI devices of the problematic PE
+should be removed and then added to the system again. During the
+so-called hotplug event, the PCI devices of the problematic PE
+will be probed through early/late phase. We would delay EEH probe
+on late point for PowerNV platform since the PCI device isn't
+available in early phase.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh_event.h |    1 +
- arch/powerpc/kernel/eeh.c            |    5 ++
- arch/powerpc/kernel/eeh_event.c      |   96 +++++++++++++++++----------------
- 3 files changed, 55 insertions(+), 47 deletions(-)
+ arch/powerpc/kernel/eeh.c |   16 +++++++++++++++-
+ 1 files changed, 15 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/eeh_event.h b/arch/powerpc/include/asm/eeh_event.h
-index de67d83..de92c86 100644
---- a/arch/powerpc/include/asm/eeh_event.h
-+++ b/arch/powerpc/include/asm/eeh_event.h
-@@ -31,6 +31,7 @@ struct eeh_event {
- 	struct eeh_pe		*pe;	/* EEH PE		*/
- };
- 
-+int eeh_event_init(void);
- int eeh_send_failure_event(struct eeh_pe *pe);
- void eeh_handle_event(struct eeh_pe *pe);
- 
 diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 7d169d3..777ecc0 100644
+index cda0b62..7d169d3 100644
 --- a/arch/powerpc/kernel/eeh.c
 +++ b/arch/powerpc/kernel/eeh.c
-@@ -704,6 +704,11 @@ int __init eeh_init(void)
- 
- 	raw_spin_lock_init(&confirm_error_lock);
- 
-+	/* Initialize EEH event */
-+	ret = eeh_event_init();
-+	if (ret)
-+		return ret;
-+
- 	/* Enable EEH for all adapters */
- 	if (eeh_probe_mode_devtree()) {
- 		list_for_each_entry_safe(hose, tmp,
-diff --git a/arch/powerpc/kernel/eeh_event.c b/arch/powerpc/kernel/eeh_event.c
-index 185bedd..62e532d 100644
---- a/arch/powerpc/kernel/eeh_event.c
-+++ b/arch/powerpc/kernel/eeh_event.c
-@@ -18,11 +18,10 @@
- 
- #include <linux/delay.h>
- #include <linux/list.h>
--#include <linux/mutex.h>
- #include <linux/sched.h>
-+#include <linux/semaphore.h>
- #include <linux/pci.h>
- #include <linux/slab.h>
--#include <linux/workqueue.h>
- #include <linux/kthread.h>
- #include <asm/eeh_event.h>
- #include <asm/ppc-pci.h>
-@@ -35,14 +34,9 @@
-  *  work-queue, where a worker thread can drive recovery.
-  */
- 
--/* EEH event workqueue setup. */
- static DEFINE_SPINLOCK(eeh_eventlist_lock);
-+static struct semaphore eeh_eventlist_sem;
- LIST_HEAD(eeh_eventlist);
--static void eeh_thread_launcher(struct work_struct *);
--DECLARE_WORK(eeh_event_wq, eeh_thread_launcher);
--
--/* Serialize reset sequences for a given pci device */
--DEFINE_MUTEX(eeh_event_mutex);
- 
- /**
-  * eeh_event_handler - Dispatch EEH events.
-@@ -60,55 +54,62 @@ static int eeh_event_handler(void * dummy)
- 	struct eeh_event *event;
- 	struct eeh_pe *pe;
- 
--	spin_lock_irqsave(&eeh_eventlist_lock, flags);
--	event = NULL;
--
--	/* Unqueue the event, get ready to process. */
--	if (!list_empty(&eeh_eventlist)) {
--		event = list_entry(eeh_eventlist.next, struct eeh_event, list);
--		list_del(&event->list);
--	}
--	spin_unlock_irqrestore(&eeh_eventlist_lock, flags);
--
--	if (event == NULL)
--		return 0;
--
--	/* Serialize processing of EEH events */
--	mutex_lock(&eeh_event_mutex);
--	pe = event->pe;
--	eeh_pe_state_mark(pe, EEH_PE_RECOVERING);
--	pr_info("EEH: Detected PCI bus error on PHB#%d-PE#%x\n",
--		pe->phb->global_number, pe->addr);
--
--	set_current_state(TASK_INTERRUPTIBLE);	/* Don't add to load average */
--	eeh_handle_event(pe);
--	eeh_pe_state_clear(pe, EEH_PE_RECOVERING);
--
--	kfree(event);
--	mutex_unlock(&eeh_event_mutex);
--
--	/* If there are no new errors after an hour, clear the counter. */
--	if (pe && pe->freeze_count > 0) {
--		msleep_interruptible(3600*1000);
--		if (pe->freeze_count > 0)
--			pe->freeze_count--;
--
-+	while (!kthread_should_stop()) {
-+		down(&eeh_eventlist_sem);
-+
-+		/* Fetch EEH event from the queue */
-+		spin_lock_irqsave(&eeh_eventlist_lock, flags);
-+		event = NULL;
-+		if (!list_empty(&eeh_eventlist)) {
-+			event = list_entry(eeh_eventlist.next,
-+					   struct eeh_event, list);
-+			list_del(&event->list);
-+		}
-+		spin_unlock_irqrestore(&eeh_eventlist_lock, flags);
-+		if (!event)
-+			continue;
-+
-+		/* We might have event without binding PE */
-+		pe = event->pe;
-+		if (pe) {
-+			eeh_pe_state_mark(pe, EEH_PE_RECOVERING);
-+			pr_info("EEH: Detected PCI bus error on PHB#%d-PE#%x\n",
-+				 pe->phb->global_number, pe->addr);
-+			eeh_handle_event(pe);
-+			eeh_pe_state_clear(pe, EEH_PE_RECOVERING);
-+		} else {
-+			eeh_handle_event(NULL);
-+		}
-+
-+		kfree(event);
- 	}
- 
- 	return 0;
- }
- 
- /**
-- * eeh_thread_launcher - Start kernel thread to handle EEH events
-- * @dummy - unused
-+ * eeh_event_init - Start kernel thread to handle EEH events
-  *
-  * This routine is called to start the kernel thread for processing
-  * EEH event.
-  */
--static void eeh_thread_launcher(struct work_struct *dummy)
-+int eeh_event_init(void)
+@@ -758,6 +758,14 @@ static void eeh_add_device_early(struct device_node *dn)
  {
--	if (IS_ERR(kthread_run(eeh_event_handler, NULL, "eehd")))
--		printk(KERN_ERR "Failed to start EEH daemon\n");
-+	struct task_struct *t;
-+	int ret = 0;
+ 	struct pci_controller *phb;
+ 
++	/*
++	 * If we're doing EEH probe based on PCI device, we
++	 * would delay the probe until late stage because
++	 * the PCI device isn't available this moment.
++	 */
++	if (!eeh_probe_mode_devtree())
++		return;
 +
-+	/* Initialize semaphore */
-+	sema_init(&eeh_eventlist_sem, 0);
-+
-+	t = kthread_run(eeh_event_handler, NULL, "eehd");
-+	if (IS_ERR(t)) {
-+		ret = PTR_ERR(t);
-+		pr_err("%s: Failed to start EEH daemon (%d)\n",
-+			__func__, ret);
-+		return ret;
-+	}
-+
-+	return 0;
+ 	if (!of_node_to_eeh_dev(dn))
+ 		return;
+ 	phb = of_node_to_eeh_dev(dn)->phb;
+@@ -766,7 +774,6 @@ static void eeh_add_device_early(struct device_node *dn)
+ 	if (NULL == phb || 0 == phb->buid)
+ 		return;
+ 
+-	/* FIXME: hotplug support on POWERNV */
+ 	eeh_ops->of_probe(dn, NULL);
  }
  
- /**
-@@ -136,7 +137,8 @@ int eeh_send_failure_event(struct eeh_pe *pe)
- 	list_add(&event->list, &eeh_eventlist);
- 	spin_unlock_irqrestore(&eeh_eventlist_lock, flags);
+@@ -817,6 +824,13 @@ static void eeh_add_device_late(struct pci_dev *dev)
+ 	edev->pdev = dev;
+ 	dev->dev.archdata.edev = edev;
  
--	schedule_work(&eeh_event_wq);
-+	/* For EEH deamon to knick in */
-+	up(&eeh_eventlist_sem);
- 
- 	return 0;
++	/*
++	 * We have to do the EEH probe here because the PCI device
++	 * hasn't been created yet in the early stage.
++	 */
++	if (eeh_probe_mode_dev())
++		eeh_ops->dev_probe(dev, NULL);
++
+ 	eeh_addr_cache_insert_dev(dev);
  }
+ 
 -- 
 1.7.5.4
