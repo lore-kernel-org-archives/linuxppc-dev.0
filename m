@@ -1,23 +1,27 @@
-Return-Path: <saikia.partha@gmail.com>
-Received: from sam.nabble.com (sam.nabble.com [216.139.236.26])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id D47412C016F
- for <linuxppc-dev@ozlabs.org>; Thu, 20 Jun 2013 21:00:47 +1000 (EST)
-Received: from tom.nabble.com ([192.168.236.105])
- by sam.nabble.com with esmtp (Exim 4.72)
- (envelope-from <saikia.partha@gmail.com>) id 1UpcK8-0001CK-6L
- for linuxppc-dev@ozlabs.org; Thu, 20 Jun 2013 03:42:40 -0700
-Date: Thu, 20 Jun 2013 03:42:40 -0700 (PDT)
-From: perth1415 <saikia.partha@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Message-ID: <1371724960184-72625.post@n7.nabble.com>
-In-Reply-To: <1371675646.9073.39@snotra>
-References: <CABeCxOKXpgVaoigGBdCVo3tYgbfJnesNPOuOyTc0EKv_CTKoyg@mail.gmail.com>
- <1371675646.9073.39@snotra>
-Subject: Re: DEBUG_PAGEALLOC on PPC not working (kernels 2.6-25, 3.0-34)
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by ozlabs.org (Postfix) with SMTP id 4AD372C02A9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 21:35:04 +1000 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 18688-08 for <linuxppc-dev@lists.ozlabs.org>;
+ Thu, 20 Jun 2013 12:34:53 +0100 (BST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="Windows-1252"
+Subject: RE: [PATCH 2/2] perf tools: Make Power7 events available for perf
+Date: Thu, 20 Jun 2013 11:57:15 +0100
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B729C@saturn3.aculab.com>
+In-Reply-To: <1371692489.21846.14.camel@concordia>
+References: <1371633326-7696-1-git-send-email-runzhen@linux.vnet.ibm.com>
+ <1371633326-7696-2-git-send-email-runzhen@linux.vnet.ibm.com>
+ <1371692489.21846.14.camel@concordia>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: "Michael Ellerman" <michael@ellerman.id.au>,
+ "Runzhen Wang" <runzhen@linux.vnet.ibm.com>
+Cc: icycoder@gmail.com, linux-kernel@vger.kernel.org,
+ xiaoguangrong@linux.vnet.ibm.com, acme@redhat.com, paulus@samba.org,
+ sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,21 +31,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Scott,
+> I think we should be able to do something better using the C
+> preprocessor, this is exactly the sort of thing it's good at.
+>=20
+> What I mean is something like we do with =
+arch/powerpc/include/asm/systbl.h,
+> where we define the list of syscalls once, and then include it in
+> multiple places, using different macro definitions to get different
+> outputs.
 
-Thanks for the reply, though a bit disheartening :-)
-My understanding on e500 MMU is not clear. It'd be nice if I could find some
-way (may be ad-hoc) to debug some use-after-free page corruptions. SLAB
-debug tells me the page was modified by someone after it was freed but
-DEBUG_PAGEALLOC would have been more specific, as to tell me where exactly
-it was getting modified.
-Any debugging clues will be much appreciated.
+There is a 'neat' trick - you can pass a #define macro the
+name of another #define - which is then expanded after the
+initial expansion. A description I happen to have is pasted below.
 
-Regards,
-Partha
+	David
 
+Consider what happens when #define foo(x) x(args) is expanded: foo(bar)
+clearly becomes bar(args). If we also have #define bar(args) then bar()
+is expanded AFTER foo() allowing us to generate any text including args.
+So we have passed the name of one #define as a parameter to a different =
+#define.
 
+If we replace the definition of foo with
+#define foo(x) x(args1) x(args2) then foo(bar) is equivalent to
+bar(args1) bar(args2).
+This is useful because foo(baz) expands to baz(args1) baz(args2)
+allowing us to feed the same set of arguments to more than one #define.
 
---
-View this message in context: http://linuxppc.10917.n7.nabble.com/DEBUG-PAGEALLOC-on-PPC-not-working-kernels-2-6-25-3-0-34-tp72536p72625.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+A simple example:
+	#define lights(x) x(red) x(orange) x(green)
+	#define xx(colour) LIGHT_##colour,
+	enum { lights(xx) NUM_LIGHTS };
+	#undef xx
+	#define xx(colour) #colour,
+	static const char light_names[] =3D { lights(xx) };
+	#undef xx
+
+This expands to:
+	enum { LIGHT_red, LIGHT_orange, LIGHT_green, NUM_LIGHTS };
+	static const char light_names[] =3D { =94red=94, =94orange=94, =
+=94green=94, };
+(We needed to add NUM_LIGHTS because a trailing comma isn=92t valid in a =
+C++ enum.)
