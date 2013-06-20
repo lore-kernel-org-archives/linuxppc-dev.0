@@ -1,30 +1,30 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e7.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 217192C009D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 20:13:41 +1000 (EST)
+ (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D15D62C054D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 20:14:39 +1000 (EST)
 Received: from /spool/local
- by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Thu, 20 Jun 2013 06:13:39 -0400
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 7A64638C8045
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 06:13:36 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5KADbdH300728
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 06:13:37 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5KADamg019217
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 06:13:37 -0400
+ Thu, 20 Jun 2013 04:14:07 -0600
+Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 75D196E8044
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 06:14:00 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5KADY02297096
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 06:13:34 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5KADXvT015811
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 07:13:34 -0300
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 5/5] powerpc/eeh: Debugfs for error injection
-Date: Thu, 20 Jun 2013 18:13:26 +0800
-Message-Id: <1371723206-26190-6-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 1/5] powernv/opal: Notifier for OPAL events
+Date: Thu, 20 Jun 2013 18:13:22 +0800
+Message-Id: <1371723206-26190-2-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1371723206-26190-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1371723206-26190-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -37,69 +37,135 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch creates debugfs entries (powerpc/PCIxxxx/err_injct) for
-injecting EEH errors for testing purpose.
+This patch implements a notifier to receive a notification on OPAL
+event mask changes. The notifier is only called as a result of an OPAL
+interrupt, which will happen upon reception of FSP messages or PCI errors.
+Any event mask change detected as a result of opal_poll_events() will not
+result in a notifier call.
 
+[benh: changelog]
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/eeh-ioda.c |   31 +++++++++++++++++++++++++++++
- 1 files changed, 31 insertions(+), 0 deletions(-)
+ arch/powerpc/include/asm/opal.h       |    5 ++
+ arch/powerpc/platforms/powernv/opal.c |   69 ++++++++++++++++++++++++++++++++-
+ 2 files changed, 73 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-index 2b7689e..84f3036 100644
---- a/arch/powerpc/platforms/powernv/eeh-ioda.c
-+++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-@@ -12,6 +12,7 @@
-  */
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 2880797..029fe85 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -644,6 +644,11 @@ extern void hvc_opal_init_early(void);
+ extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
+ 				   int depth, void *data);
  
- #include <linux/bootmem.h>
-+#include <linux/debugfs.h>
- #include <linux/delay.h>
- #include <linux/init.h>
- #include <linux/io.h>
-@@ -64,6 +65,29 @@ static struct notifier_block ioda_eeh_nb = {
- 	.priority	= 0
- };
- 
-+#ifdef CONFIG_DEBUG_FS
-+static int ioda_eeh_dbgfs_set(void *data, u64 val)
-+{
-+	struct pci_controller *hose = data;
-+	struct pnv_phb *phb = hose->private_data;
++extern int opal_notifier_register(struct notifier_block *nb);
++extern void opal_notifier_enable(void);
++extern void opal_notifier_disable(void);
++extern void opal_notifier_update_evt(uint64_t evt_mask, uint64_t evt_val);
 +
-+	out_be64(phb->regs + 0xD10, val);
+ extern int opal_get_chars(uint32_t vtermno, char *buf, int count);
+ extern int opal_put_chars(uint32_t vtermno, const char *buf, int total_len);
+ 
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 628c564..106301f 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -15,6 +15,7 @@
+ #include <linux/of.h>
+ #include <linux/of_platform.h>
+ #include <linux/interrupt.h>
++#include <linux/notifier.h>
+ #include <linux/slab.h>
+ #include <asm/opal.h>
+ #include <asm/firmware.h>
+@@ -31,6 +32,10 @@ static DEFINE_SPINLOCK(opal_write_lock);
+ extern u64 opal_mc_secondary_handler[];
+ static unsigned int *opal_irqs;
+ static unsigned int opal_irq_count;
++static ATOMIC_NOTIFIER_HEAD(opal_notifier_head);
++static DEFINE_SPINLOCK(opal_notifier_lock);
++static uint64_t last_notified_mask = 0x0ul;
++static atomic_t opal_notifier_hold = ATOMIC_INIT(0);
+ 
+ int __init early_init_dt_scan_opal(unsigned long node,
+ 				   const char *uname, int depth, void *data)
+@@ -95,6 +100,68 @@ static int __init opal_register_exception_handlers(void)
+ 
+ early_initcall(opal_register_exception_handlers);
+ 
++int opal_notifier_register(struct notifier_block *nb)
++{
++	if (!nb) {
++		pr_warning("%s: Invalid argument (%p)\n",
++			   __func__, nb);
++		return -EINVAL;
++	}
++
++	atomic_notifier_chain_register(&opal_notifier_head, nb);
 +	return 0;
 +}
 +
-+static int ioda_eeh_dbgfs_get(void *data, u64 *val)
++static void opal_do_notifier(uint64_t events)
 +{
-+	struct pci_controller *hose = data;
-+	struct pnv_phb *phb = hose->private_data;
++	unsigned long flags;
++	uint64_t changed_mask;
 +
-+	*val = in_be64(phb->regs + 0xD10);
-+	return 0;
++	if (atomic_read(&opal_notifier_hold))
++		return;
++
++	spin_lock_irqsave(&opal_notifier_lock, flags);
++	changed_mask = last_notified_mask ^ events;
++	last_notified_mask = events;
++	spin_unlock_irqrestore(&opal_notifier_lock, flags);
++
++	/*
++	 * We feed with the event bits and changed bits for
++	 * enough information to the callback.
++	 */
++	atomic_notifier_call_chain(&opal_notifier_head,
++				   events, (void *)changed_mask);
 +}
 +
-+DEFINE_SIMPLE_ATTRIBUTE(ioda_eeh_dbgfs_ops, ioda_eeh_dbgfs_get,
-+			ioda_eeh_dbgfs_set, "0x%llx\n");
-+#endif /* CONFIG_DEBUG_FS */
++void opal_notifier_update_evt(uint64_t evt_mask,
++			      uint64_t evt_val)
++{
++	unsigned long flags;
 +
- /**
-  * ioda_eeh_post_init - Chip dependent post initialization
-  * @hose: PCI controller
-@@ -101,6 +125,13 @@ static int ioda_eeh_post_init(struct pci_controller *hose)
- 			}
- 		}
- 
-+#ifdef CONFIG_DEBUG_FS
-+		if (phb->dbgfs)
-+			debugfs_create_file("err_injct", 0600,
-+					    phb->dbgfs, hose,
-+					    &ioda_eeh_dbgfs_ops);
-+#endif
++	spin_lock_irqsave(&opal_notifier_lock, flags);
++	last_notified_mask &= ~evt_mask;
++	last_notified_mask |= evt_val;
++	spin_unlock_irqrestore(&opal_notifier_lock, flags);
++}
 +
- 		phb->eeh_enabled = 1;
- 	}
++void opal_notifier_enable(void)
++{
++	int64_t rc;
++	uint64_t evt = 0;
++
++	atomic_set(&opal_notifier_hold, 0);
++
++	/* Process pending events */
++	rc = opal_poll_events(&evt);
++	if (rc == OPAL_SUCCESS && evt)
++		opal_do_notifier(evt);
++}
++
++void opal_notifier_disable(void)
++{
++	atomic_set(&opal_notifier_hold, 1);
++}
++
+ int opal_get_chars(uint32_t vtermno, char *buf, int count)
+ {
+ 	s64 len, rc;
+@@ -297,7 +364,7 @@ static irqreturn_t opal_interrupt(int irq, void *data)
  
+ 	opal_handle_interrupt(virq_to_hw(irq), &events);
+ 
+-	/* XXX TODO: Do something with the events */
++	opal_do_notifier(events);
+ 
+ 	return IRQ_HANDLED;
+ }
 -- 
 1.7.5.4
