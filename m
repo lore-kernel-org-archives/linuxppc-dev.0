@@ -1,31 +1,31 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e37.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 289592C0364
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 15:21:45 +1000 (EST)
+ (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1C7492C0314
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 15:21:48 +1000 (EST)
 Received: from /spool/local
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Wed, 19 Jun 2013 23:21:43 -0600
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
- [9.17.195.228])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id B590A19D8036
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 23:21:31 -0600 (MDT)
+ Wed, 19 Jun 2013 23:21:46 -0600
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+ [9.17.195.227])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 6D0AE1FF001C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 23:16:30 -0600 (MDT)
 Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5K5Le1L157818
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 23:21:40 -0600
+ by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5K5Li7n162264
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 23:21:44 -0600
 Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
  by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5K5Ldxg020454
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 23:21:39 -0600
+ r5K5LhSe020622
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 23:21:44 -0600
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 20/31] powerpc/eeh: I/O chip PE reset
-Date: Thu, 20 Jun 2013 13:21:10 +0800
-Message-Id: <1371705681-24632-21-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 23/31] powerpc/eeh: PowerNV EEH backends
+Date: Thu, 20 Jun 2013 13:21:13 +0800
+Message-Id: <1371705681-24632-24-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1371705681-24632-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1371705681-24632-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -38,266 +38,465 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch adds the I/O chip backend to do PE reset. For now, we
-focus on PCI bus dependent PE. If PHB PE has been put into error
-state, the PHB will take complete reset. Besides, the root bridge
-will take fundamental or hot reset accordingly if the indicated
-PE locates at the toppest of PCI hierarchy tree. Otherwise, the
-upstream p2p bridge will take hot reset.
+The patch adds EEH backends for PowerNV platform. It's notable that
+part of those EEH backends call to the I/O chip dependent backends.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/eeh-ioda.c |  234 ++++++++++++++++++++++++++++-
- 1 files changed, 233 insertions(+), 1 deletions(-)
+ arch/powerpc/platforms/powernv/Makefile      |    2 +-
+ arch/powerpc/platforms/powernv/eeh-powernv.c |  419 ++++++++++++++++++++++++++
+ arch/powerpc/platforms/pseries/eeh_pseries.c |    3 +-
+ 3 files changed, 422 insertions(+), 2 deletions(-)
+ create mode 100644 arch/powerpc/platforms/powernv/eeh-powernv.c
 
-diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-index a76870b..ea5fa05 100644
---- a/arch/powerpc/platforms/powernv/eeh-ioda.c
-+++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-@@ -213,11 +213,243 @@ static int ioda_eeh_get_state(struct eeh_pe *pe)
- 	return result;
- }
+diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
+index 09bd0cb..7fe5951 100644
+--- a/arch/powerpc/platforms/powernv/Makefile
++++ b/arch/powerpc/platforms/powernv/Makefile
+@@ -3,4 +3,4 @@ obj-y			+= opal-rtc.o opal-nvram.o
  
-+static int ioda_eeh_pe_clear(struct eeh_pe *pe)
+ obj-$(CONFIG_SMP)	+= smp.o
+ obj-$(CONFIG_PCI)	+= pci.o pci-p5ioc2.o pci-ioda.o
+-obj-$(CONFIG_EEH)	+= eeh-ioda.o
++obj-$(CONFIG_EEH)	+= eeh-ioda.o eeh-powernv.o
+diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+new file mode 100644
+index 0000000..9559115
+--- /dev/null
++++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+@@ -0,0 +1,419 @@
++/*
++ * The file intends to implement the platform dependent EEH operations on
++ * powernv platform. Actually, the powernv was created in order to fully
++ * hypervisor support.
++ *
++ * Copyright Benjamin Herrenschmidt & Gavin Shan, IBM Corporation 2013.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++#include <linux/atomic.h>
++#include <linux/delay.h>
++#include <linux/export.h>
++#include <linux/init.h>
++#include <linux/list.h>
++#include <linux/msi.h>
++#include <linux/of.h>
++#include <linux/pci.h>
++#include <linux/proc_fs.h>
++#include <linux/rbtree.h>
++#include <linux/sched.h>
++#include <linux/seq_file.h>
++#include <linux/spinlock.h>
++
++#include <asm/eeh.h>
++#include <asm/eeh_event.h>
++#include <asm/firmware.h>
++#include <asm/io.h>
++#include <asm/iommu.h>
++#include <asm/machdep.h>
++#include <asm/msi_bitmap.h>
++#include <asm/opal.h>
++#include <asm/ppc-pci.h>
++
++#include "powernv.h"
++#include "pci.h"
++
++/**
++ * powernv_eeh_init - EEH platform dependent initialization
++ *
++ * EEH platform dependent initialization on powernv
++ */
++static int powernv_eeh_init(void)
 +{
-+	struct pci_controller *hose;
-+	struct pnv_phb *phb;
-+	u32 pe_no;
-+	u8 fstate;
-+	u16 pcierr;
-+	s64 ret;
-+
-+	pe_no = pe->addr;
-+	hose = pe->phb;
-+	phb = pe->phb->private_data;
-+
-+	/* Clear the EEH error on the PE */
-+	ret = opal_pci_eeh_freeze_clear(phb->opal_id,
-+			pe_no, OPAL_EEH_ACTION_CLEAR_FREEZE_ALL);
-+	if (ret) {
-+		pr_err("%s: Failed to clear EEH error for "
-+		       "PHB#%x-PE#%x, err=%lld\n",
-+		       __func__, hose->global_number, pe_no, ret);
-+		return -EIO;
++	/* We require OPALv3 */
++	if (!firmware_has_feature(FW_FEATURE_OPALv3)) {
++		pr_warning("%s: OPALv3 is required !\n", __func__);
++		return -EINVAL;
 +	}
 +
-+	/*
-+	 * Read the PE state back and verify that the frozen
-+	 * state has been removed.
-+	 */
-+	ret = opal_pci_eeh_freeze_status(phb->opal_id, pe_no,
-+			&fstate, &pcierr, NULL);
-+	if (ret) {
-+		pr_err("%s: Failed to get EEH status on "
-+		       "PHB#%x-PE#%x\n, err=%lld\n",
-+		       __func__, hose->global_number, pe_no, ret);
-+		return -EIO;
-+	}
-+
-+	if (fstate != OPAL_EEH_STOPPED_NOT_FROZEN) {
-+		pr_err("%s: Frozen state not cleared on "
-+		       "PHB#%x-PE#%x, sts=%x\n",
-+		       __func__, hose->global_number, pe_no, fstate);
-+		return -EIO;
-+	}
-+
-+	return 0;
-+}
-+
-+static s64 ioda_eeh_phb_poll(struct pnv_phb *phb)
-+{
-+	s64 rc = OPAL_HARDWARE;
-+
-+	while (1) {
-+		rc = opal_pci_poll(phb->opal_id);
-+		if (rc <= 0)
-+			break;
-+
-+		msleep(rc);
-+	}
-+
-+	return rc;
-+}
-+
-+static int ioda_eeh_phb_reset(struct pci_controller *hose, int option)
-+{
-+	struct pnv_phb *phb = hose->private_data;
-+	s64 rc = OPAL_HARDWARE;
-+
-+	pr_debug("%s: Reset PHB#%x, option=%d\n",
-+		 __func__, hose->global_number, option);
-+
-+	/* Issue PHB complete reset request */
-+	if (option == EEH_RESET_FUNDAMENTAL ||
-+	    option == EEH_RESET_HOT)
-+		rc = opal_pci_reset(phb->opal_id,
-+				OPAL_PHB_COMPLETE,
-+				OPAL_ASSERT_RESET);
-+	else if (option == EEH_RESET_DEACTIVATE)
-+		rc = opal_pci_reset(phb->opal_id,
-+				OPAL_PHB_COMPLETE,
-+				OPAL_DEASSERT_RESET);
-+	if (rc < 0)
-+		goto out;
-+
-+	/*
-+	 * Poll state of the PHB until the request is done
-+	 * successfully.
-+	 */
-+	rc = ioda_eeh_phb_poll(phb);
-+out:
-+	if (rc != OPAL_SUCCESS)
-+		return -EIO;
-+
-+	return 0;
-+}
-+
-+static int ioda_eeh_root_reset(struct pci_controller *hose, int option)
-+{
-+	struct pnv_phb *phb = hose->private_data;
-+	s64 rc = OPAL_SUCCESS;
-+
-+	pr_debug("%s: Reset PHB#%x, option=%d\n",
-+		 __func__, hose->global_number, option);
-+
-+	/*
-+	 * During the reset deassert time, we needn't care
-+	 * the reset scope because the firmware does nothing
-+	 * for fundamental or hot reset during deassert phase.
-+	 */
-+	if (option == EEH_RESET_FUNDAMENTAL)
-+		rc = opal_pci_reset(phb->opal_id,
-+				OPAL_PCI_FUNDAMENTAL_RESET,
-+				OPAL_ASSERT_RESET);
-+	else if (option == EEH_RESET_HOT)
-+		rc = opal_pci_reset(phb->opal_id,
-+				OPAL_PCI_HOT_RESET,
-+				OPAL_ASSERT_RESET);
-+	else if (option == EEH_RESET_DEACTIVATE)
-+		rc = opal_pci_reset(phb->opal_id,
-+				OPAL_PCI_HOT_RESET,
-+				OPAL_DEASSERT_RESET);
-+	if (rc < 0)
-+		goto out;
-+
-+	/* Poll state of the PHB until the request is done */
-+	rc = ioda_eeh_phb_poll(phb);
-+out:
-+	if (rc != OPAL_SUCCESS)
-+		return -EIO;
-+
-+	return 0;
-+}
-+
-+static int ioda_eeh_bridge_reset(struct pci_controller *hose,
-+		struct pci_dev *dev, int option)
-+{
-+	u16 ctrl;
-+
-+	pr_debug("%s: Reset device %04x:%02x:%02x.%01x with option %d\n",
-+		 __func__, hose->global_number, dev->bus->number,
-+		 PCI_SLOT(dev->devfn), PCI_FUNC(dev->devfn), option);
-+
-+	switch (option) {
-+	case EEH_RESET_FUNDAMENTAL:
-+	case EEH_RESET_HOT:
-+		pci_read_config_word(dev, PCI_BRIDGE_CONTROL, &ctrl);
-+		ctrl |= PCI_BRIDGE_CTL_BUS_RESET;
-+		pci_write_config_word(dev, PCI_BRIDGE_CONTROL, ctrl);
-+		break;
-+	case EEH_RESET_DEACTIVATE:
-+		pci_read_config_word(dev, PCI_BRIDGE_CONTROL, &ctrl);
-+		ctrl &= ~PCI_BRIDGE_CTL_BUS_RESET;
-+		pci_write_config_word(dev, PCI_BRIDGE_CONTROL, ctrl);
-+		break;
-+	}
++	/* Set EEH probe mode */
++	eeh_probe_mode_set(EEH_PROBE_MODE_DEV);
 +
 +	return 0;
 +}
 +
 +/**
-+ * ioda_eeh_reset - Reset the indicated PE
-+ * @pe: EEH PE
-+ * @option: reset option
++ * powernv_eeh_post_init - EEH platform dependent post initialization
 + *
-+ * Do reset on the indicated PE. For PCI bus sensitive PE,
-+ * we need to reset the parent p2p bridge. The PHB has to
-+ * be reinitialized if the p2p bridge is root bridge. For
-+ * PCI device sensitive PE, we will try to reset the device
-+ * through FLR. For now, we don't have OPAL APIs to do HARD
-+ * reset yet, so all reset would be SOFT (HOT) reset.
++ * EEH platform dependent post initialization on powernv. When
++ * the function is called, the EEH PEs and devices should have
++ * been built. If the I/O cache staff has been built, EEH is
++ * ready to supply service.
 + */
-+static int ioda_eeh_reset(struct eeh_pe *pe, int option)
++static int powernv_eeh_post_init(void)
 +{
-+	struct pci_controller *hose = pe->phb;
-+	struct eeh_dev *edev;
-+	struct pci_dev *dev;
-+	int ret;
++	struct pci_controller *hose;
++	struct pnv_phb *phb;
++	int ret = 0;
 +
-+	/*
-+	 * Anyway, we have to clear the problematic state for the
-+	 * corresponding PE. However, we needn't do it if the PE
-+	 * is PHB associated. That means the PHB is having fatal
-+	 * errors and it needs reset. Further more, the AIB interface
-+	 * isn't reliable any more.
-+	 */
-+	if (!(pe->type & EEH_PE_PHB) &&
-+	    (option == EEH_RESET_HOT ||
-+	    option == EEH_RESET_FUNDAMENTAL)) {
-+		ret = ioda_eeh_pe_clear(pe);
-+		if (ret)
-+			return -EIO;
-+	}
++	list_for_each_entry(hose, &hose_list, list_node) {
++		phb = hose->private_data;
 +
-+	/*
-+	 * The rules applied to reset, either fundamental or hot reset:
-+	 *
-+	 * We always reset the direct upstream bridge of the PE. If the
-+	 * direct upstream bridge isn't root bridge, we always take hot
-+	 * reset no matter what option (fundamental or hot) is. Otherwise,
-+	 * we should do the reset according to the required option.
-+	 */
-+	if (pe->type & EEH_PE_PHB) {
-+		ret = ioda_eeh_phb_reset(hose, option);
-+	} else {
-+		if (pe->type & EEH_PE_DEVICE) {
-+			/*
-+			 * If it's device PE, we didn't refer to the parent
-+			 * PCI bus yet. So we have to figure it out indirectly.
-+			 */
-+			edev = list_first_entry(&pe->edevs,
-+					struct eeh_dev, list);
-+			dev = eeh_dev_to_pci_dev(edev);
-+			dev = dev->bus->self;
-+		} else {
-+			/*
-+			 * If it's bus PE, the parent PCI bus is already there
-+			 * and just pick it up.
-+			 */
-+			dev = pe->bus->self;
++		if (phb->eeh_ops && phb->eeh_ops->post_init) {
++			ret = phb->eeh_ops->post_init(hose);
++			if (ret)
++				break;
 +		}
-+
-+		/*
-+		 * Do reset based on the fact that the direct upstream bridge
-+		 * is root bridge (port) or not.
-+		 */
-+		if (dev->bus->number == 0)
-+			ret = ioda_eeh_root_reset(hose, option);
-+		else
-+			ret = ioda_eeh_bridge_reset(hose, dev, option);
 +	}
 +
 +	return ret;
 +}
 +
- struct pnv_eeh_ops ioda_eeh_ops = {
- 	.post_init		= ioda_eeh_post_init,
- 	.set_option		= ioda_eeh_set_option,
- 	.get_state		= ioda_eeh_get_state,
--	.reset			= NULL,
-+	.reset			= ioda_eeh_reset,
- 	.get_log		= NULL,
- 	.configure_bridge	= NULL,
- 	.next_error		= NULL
++/**
++ * powernv_eeh_dev_probe - Do probe on PCI device
++ * @dev: PCI device
++ * @flag: unused
++ *
++ * When EEH module is installed during system boot, all PCI devices
++ * are checked one by one to see if it supports EEH. The function
++ * is introduced for the purpose. By default, EEH has been enabled
++ * on all PCI devices. That's to say, we only need do necessary
++ * initialization on the corresponding eeh device and create PE
++ * accordingly.
++ *
++ * It's notable that's unsafe to retrieve the EEH device through
++ * the corresponding PCI device. During the PCI device hotplug, which
++ * was possiblly triggered by EEH core, the binding between EEH device
++ * and the PCI device isn't built yet.
++ */
++static int powernv_eeh_dev_probe(struct pci_dev *dev, void *flag)
++{
++	struct pci_controller *hose = pci_bus_to_host(dev->bus);
++	struct pnv_phb *phb = hose->private_data;
++	struct device_node *dn = pci_device_to_OF_node(dev);
++	struct eeh_dev *edev = of_node_to_eeh_dev(dn);
++
++	/*
++	 * When probing the root bridge, which doesn't have any
++	 * subordinate PCI devices. We don't have OF node for
++	 * the root bridge. So it's not reasonable to continue
++	 * the probing.
++	 */
++	if (!dn || !edev)
++		return 0;
++
++	/* Skip for PCI-ISA bridge */
++	if ((dev->class >> 8) == PCI_CLASS_BRIDGE_ISA)
++		return 0;
++
++	/* Initialize eeh device */
++	edev->class_code	= dev->class;
++	edev->mode		= 0;
++	edev->config_addr	= ((dev->bus->number << 8) | dev->devfn);
++	edev->pe_config_addr	= phb->bdfn_to_pe(phb, dev->bus, dev->devfn & 0xff);
++
++	/* Create PE */
++	eeh_add_to_parent_pe(edev);
++
++	/*
++	 * Enable EEH explicitly so that we will do EEH check
++	 * while accessing I/O stuff
++	 *
++	 * FIXME: Enable that for PHB3 later
++	 */
++	if (phb->type == PNV_PHB_IODA1)
++		eeh_subsystem_enabled = 1;
++
++	/* Save memory bars */
++	eeh_save_bars(edev);
++
++	return 0;
++}
++
++/**
++ * powernv_eeh_set_option - Initialize EEH or MMIO/DMA reenable
++ * @pe: EEH PE
++ * @option: operation to be issued
++ *
++ * The function is used to control the EEH functionality globally.
++ * Currently, following options are support according to PAPR:
++ * Enable EEH, Disable EEH, Enable MMIO and Enable DMA
++ */
++static int powernv_eeh_set_option(struct eeh_pe *pe, int option)
++{
++	struct pci_controller *hose = pe->phb;
++	struct pnv_phb *phb = hose->private_data;
++	int ret = -EEXIST;
++
++	/*
++	 * What we need do is pass it down for hardware
++	 * implementation to handle it.
++	 */
++	if (phb->eeh_ops && phb->eeh_ops->set_option)
++		ret = phb->eeh_ops->set_option(pe, option);
++
++	return ret;
++}
++
++/**
++ * powernv_eeh_get_pe_addr - Retrieve PE address
++ * @pe: EEH PE
++ *
++ * Retrieve the PE address according to the given tranditional
++ * PCI BDF (Bus/Device/Function) address.
++ */
++static int powernv_eeh_get_pe_addr(struct eeh_pe *pe)
++{
++	return pe->addr;
++}
++
++/**
++ * powernv_eeh_get_state - Retrieve PE state
++ * @pe: EEH PE
++ * @delay: delay while PE state is temporarily unavailable
++ *
++ * Retrieve the state of the specified PE. For IODA-compitable
++ * platform, it should be retrieved from IODA table. Therefore,
++ * we prefer passing down to hardware implementation to handle
++ * it.
++ */
++static int powernv_eeh_get_state(struct eeh_pe *pe, int *delay)
++{
++	struct pci_controller *hose = pe->phb;
++	struct pnv_phb *phb = hose->private_data;
++	int ret = EEH_STATE_NOT_SUPPORT;
++
++	if (phb->eeh_ops && phb->eeh_ops->get_state) {
++		ret = phb->eeh_ops->get_state(pe);
++
++		/*
++		 * If the PE state is temporarily unavailable,
++		 * to inform the EEH core delay for default
++		 * period (1 second)
++		 */
++		if (delay) {
++			*delay = 0;
++			if (ret & EEH_STATE_UNAVAILABLE)
++				*delay = 1000;
++		}
++	}
++
++	return ret;
++}
++
++/**
++ * powernv_eeh_reset - Reset the specified PE
++ * @pe: EEH PE
++ * @option: reset option
++ *
++ * Reset the specified PE
++ */
++static int powernv_eeh_reset(struct eeh_pe *pe, int option)
++{
++	struct pci_controller *hose = pe->phb;
++	struct pnv_phb *phb = hose->private_data;
++	int ret = -EEXIST;
++
++	if (phb->eeh_ops && phb->eeh_ops->reset)
++		ret = phb->eeh_ops->reset(pe, option);
++
++	return ret;
++}
++
++/**
++ * powernv_eeh_wait_state - Wait for PE state
++ * @pe: EEH PE
++ * @max_wait: maximal period in microsecond
++ *
++ * Wait for the state of associated PE. It might take some time
++ * to retrieve the PE's state.
++ */
++static int powernv_eeh_wait_state(struct eeh_pe *pe, int max_wait)
++{
++	int ret;
++	int mwait;
++
++	while (1) {
++		ret = powernv_eeh_get_state(pe, &mwait);
++
++		/*
++		 * If the PE's state is temporarily unavailable,
++		 * we have to wait for the specified time. Otherwise,
++		 * the PE's state will be returned immediately.
++		 */
++		if (ret != EEH_STATE_UNAVAILABLE)
++			return ret;
++
++		max_wait -= mwait;
++		if (max_wait <= 0) {
++			pr_warning("%s: Timeout getting PE#%x's state (%d)\n",
++				   __func__, pe->addr, max_wait);
++			return EEH_STATE_NOT_SUPPORT;
++		}
++
++		msleep(mwait);
++	}
++
++	return EEH_STATE_NOT_SUPPORT;
++}
++
++/**
++ * powernv_eeh_get_log - Retrieve error log
++ * @pe: EEH PE
++ * @severity: temporary or permanent error log
++ * @drv_log: driver log to be combined with retrieved error log
++ * @len: length of driver log
++ *
++ * Retrieve the temporary or permanent error from the PE.
++ */
++static int powernv_eeh_get_log(struct eeh_pe *pe, int severity,
++			char *drv_log, unsigned long len)
++{
++	struct pci_controller *hose = pe->phb;
++	struct pnv_phb *phb = hose->private_data;
++	int ret = -EEXIST;
++
++	if (phb->eeh_ops && phb->eeh_ops->get_log)
++		ret = phb->eeh_ops->get_log(pe, severity, drv_log, len);
++
++	return ret;
++}
++
++/**
++ * powernv_eeh_configure_bridge - Configure PCI bridges in the indicated PE
++ * @pe: EEH PE
++ *
++ * The function will be called to reconfigure the bridges included
++ * in the specified PE so that the mulfunctional PE would be recovered
++ * again.
++ */
++static int powernv_eeh_configure_bridge(struct eeh_pe *pe)
++{
++	struct pci_controller *hose = pe->phb;
++	struct pnv_phb *phb = hose->private_data;
++	int ret = 0;
++
++	if (phb->eeh_ops && phb->eeh_ops->configure_bridge)
++		ret = phb->eeh_ops->configure_bridge(pe);
++
++	return ret;
++}
++
++/**
++ * powernv_eeh_read_config - Read PCI config space
++ * @dn: device node
++ * @where: PCI address
++ * @size: size to read
++ * @val: return value
++ *
++ * Read config space from the speicifed device
++ */
++static int powernv_eeh_read_config(struct device_node *dn, int where,
++				   int size, u32 *val)
++{
++	struct eeh_dev *edev = of_node_to_eeh_dev(dn);
++	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
++	struct pci_controller *hose = edev->phb;
++
++	return hose->ops->read(dev->bus, dev->devfn, where, size, val);
++}
++
++/**
++ * powernv_eeh_write_config - Write PCI config space
++ * @dn: device node
++ * @where: PCI address
++ * @size: size to write
++ * @val: value to be written
++ *
++ * Write config space to the specified device
++ */
++static int powernv_eeh_write_config(struct device_node *dn, int where,
++				    int size, u32 val)
++{
++	struct eeh_dev *edev = of_node_to_eeh_dev(dn);
++	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
++	struct pci_controller *hose = edev->phb;
++
++	hose = pci_bus_to_host(dev->bus);
++
++	return hose->ops->write(dev->bus, dev->devfn, where, size, val);
++}
++
++/**
++ * powernv_eeh_next_error - Retrieve next EEH error to handle
++ * @pe: Affected PE
++ *
++ * Using OPAL API, to retrieve next EEH error for EEH core to handle
++ */
++static int powernv_eeh_next_error(struct eeh_pe **pe)
++{
++	struct pci_controller *hose;
++	struct pnv_phb *phb = NULL;
++
++	list_for_each_entry(hose, &hose_list, list_node) {
++		phb = hose->private_data;
++		break;
++	}
++
++	if (phb && phb->eeh_ops->next_error)
++		return phb->eeh_ops->next_error(pe);
++
++	return -EEXIST;
++}
++
++static struct eeh_ops powernv_eeh_ops = {
++	.name                   = "powernv",
++	.init                   = powernv_eeh_init,
++	.post_init              = powernv_eeh_post_init,
++	.of_probe               = NULL,
++	.dev_probe              = powernv_eeh_dev_probe,
++	.set_option             = powernv_eeh_set_option,
++	.get_pe_addr            = powernv_eeh_get_pe_addr,
++	.get_state              = powernv_eeh_get_state,
++	.reset                  = powernv_eeh_reset,
++	.wait_state             = powernv_eeh_wait_state,
++	.get_log                = powernv_eeh_get_log,
++	.configure_bridge       = powernv_eeh_configure_bridge,
++	.read_config            = powernv_eeh_read_config,
++	.write_config           = powernv_eeh_write_config,
++	.next_error		= powernv_eeh_next_error
++};
++
++/**
++ * eeh_powernv_init - Register platform dependent EEH operations
++ *
++ * EEH initialization on powernv platform. This function should be
++ * called before any EEH related functions.
++ */
++static int __init eeh_powernv_init(void)
++{
++	int ret = -EINVAL;
++
++	if (!machine_is(powernv))
++		return ret;
++
++	ret = eeh_ops_register(&powernv_eeh_ops);
++	if (!ret)
++		pr_info("EEH: PowerNV platform initialized\n");
++	else
++		pr_info("EEH: Failed to initialize PowerNV platform (%d)\n", ret);
++
++	return ret;
++}
++
++early_initcall(eeh_powernv_init);
+diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
+index b456b15..62415f2 100644
+--- a/arch/powerpc/platforms/pseries/eeh_pseries.c
++++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+@@ -625,7 +625,8 @@ static struct eeh_ops pseries_eeh_ops = {
+ 	.get_log		= pseries_eeh_get_log,
+ 	.configure_bridge       = pseries_eeh_configure_bridge,
+ 	.read_config		= pseries_eeh_read_config,
+-	.write_config		= pseries_eeh_write_config
++	.write_config		= pseries_eeh_write_config,
++	.next_error		= NULL
+ };
+ 
+ /**
 -- 
 1.7.5.4
