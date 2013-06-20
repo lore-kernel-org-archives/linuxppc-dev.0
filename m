@@ -1,20 +1,36 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id F32CC2C033D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 20:28:54 +1000 (EST)
-From: Tiejun Chen <tiejun.chen@windriver.com>
-To: <benh@kernel.crashing.org>
-Subject: [v5][PATCH 6/6] book3e/kgdb: Fix a single stgep case of lazy IRQ
-Date: Thu, 20 Jun 2013 18:28:30 +0800
-Message-ID: <1371724110-8250-7-git-send-email-tiejun.chen@windriver.com>
-In-Reply-To: <1371724110-8250-1-git-send-email-tiejun.chen@windriver.com>
-References: <1371724110-8250-1-git-send-email-tiejun.chen@windriver.com>
+ (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E120D2C045D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 20:29:28 +1000 (EST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Thu, 20 Jun 2013 04:18:35 -0600
+Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 08A016E8055
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 06:18:29 -0400 (EDT)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5KAHgvZ44695790
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 06:17:42 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5KAHfB3002571
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 06:17:41 -0400
+Date: Thu, 20 Jun 2013 18:17:38 +0800
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Subject: Re: [PATCH v7 0/5] EEH Support for PowerNV platform
+Message-ID: <20130620101738.GA14545@shangw.(null)>
+References: <1371723206-26190-1-git-send-email-shangw@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1371723206-26190-1-git-send-email-shangw@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,66 +40,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When we're in kgdb_singlestep(), we have to work around to get
-thread_info by copying from the kernel stack before calling
-kgdb_handle_exception(), then copying it back afterwards.
+On Thu, Jun 20, 2013 at 06:13:21PM +0800, Gavin Shan wrote:
+>
+>It resends the last 5 patches ([27/31] - [31/31]) of the series to support EEH
+>for PowerNV platform.
+>
+>v6 -> v7:
+>	* Use atomic notifier to replace the original OPAL notifier according
+>	  to Ben's suggestion.
+>	* Avoid registering duplicated notifiers for OPAL_EVENT_PCI_ERROR.
+>
 
-But for PPC64, we have a lazy interrupt implementation. So after
-copying thread info frome kernle stack, if we need to replay an
-interrupt, we shouldn't restore that previous backup thread info
-to make sure we can replay an interrupt lately with a proper
-thread info.
+It also fixes the problem pointed by Mikey:
 
-This patch use __check_irq_replay() to guarantee this process.
+	* Included <asm/debug.h> in pci-ioda.c for correct reference to
+	  "powerpc_debugfs_root".
 
-Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
----
- arch/powerpc/kernel/irq.c  |   10 ++++++++++
- arch/powerpc/kernel/kgdb.c |    3 ++-
- 2 files changed, 12 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index ea185e0..3625453 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -339,7 +339,17 @@ bool prep_irq_for_idle(void)
- 	return true;
- }
- 
-+notrace unsigned int check_irq_replay(void)
-+{
-+	return __check_irq_replay();
-+}
-+#else
-+notrace unsigned int check_irq_replay(void)
-+{
-+	return 0;
-+}
- #endif /* CONFIG_PPC64 */
-+EXPORT_SYMBOL(check_irq_replay);
- 
- int arch_show_interrupts(struct seq_file *p, int prec)
- {
-diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
-index cde7818..5b30408 100644
---- a/arch/powerpc/kernel/kgdb.c
-+++ b/arch/powerpc/kernel/kgdb.c
-@@ -152,6 +152,7 @@ static int kgdb_handle_breakpoint(struct pt_regs *regs)
- }
- 
- static DEFINE_PER_CPU(struct thread_info, kgdb_thread_info);
-+extern notrace unsigned int check_irq_replay(void);
- static int kgdb_singlestep(struct pt_regs *regs)
- {
- 	struct thread_info *thread_info, *exception_thread_info;
-@@ -181,7 +182,7 @@ static int kgdb_singlestep(struct pt_regs *regs)
- 
- 	kgdb_handle_exception(0, SIGTRAP, 0, regs);
- 
--	if (thread_info != exception_thread_info)
-+	if ((thread_info != exception_thread_info) && (!check_irq_replay()))
- 		/* Restore current_thread_info lastly. */
- 		memcpy(exception_thread_info, backup_current_thread_info, sizeof *thread_info);
- 
--- 
-1.7.9.5
+Thanks,
+Gavin
