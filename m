@@ -2,29 +2,30 @@ Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5F4EB2C0326
+ by ozlabs.org (Postfix) with ESMTPS id CBAD12C032C
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 19:01:30 +1000 (EST)
 Received: from /spool/local
  by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 20 Jun 2013 18:50:06 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 1E5A33578045
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 19:01:26 +1000 (EST)
+ Thu, 20 Jun 2013 18:50:08 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id CB2003578045
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 19:01:27 +1000 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5K8kXJT3408162
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 18:46:33 +1000
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5K8ki4H66519224
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 18:46:44 +1000
 Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5K91Oq6001392
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 19:01:25 +1000
+ r5K91QEG001477
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 19:01:27 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V11 07/15] powerpc/kvm: Handle transparent hugepage in KVM
-Date: Thu, 20 Jun 2013 14:30:19 +0530
-Message-Id: <1371718827-15065-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V11 08/15] powerpc: Update gup_pmd_range to handle
+ transparent hugepages
+Date: Thu, 20 Jun 2013 14:30:20 +0530
+Message-Id: <1371718827-15065-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1371718827-15065-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1371718827-15065-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -40,146 +41,33 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-We can find pte that are splitting while walking page tables. Return
-None pte in that case.
-
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/kvm_book3s_64.h | 58 +++++++++++++++++++-------------
- arch/powerpc/kvm/book3s_64_mmu_hv.c      |  8 +++--
- arch/powerpc/kvm/book3s_hv_rm_mmu.c      | 12 +++----
- 3 files changed, 44 insertions(+), 34 deletions(-)
+ arch/powerpc/mm/gup.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
-index 9c1ff33..a1ecb14 100644
---- a/arch/powerpc/include/asm/kvm_book3s_64.h
-+++ b/arch/powerpc/include/asm/kvm_book3s_64.h
-@@ -159,36 +159,46 @@ static inline int hpte_cache_flags_ok(unsigned long ptel, unsigned long io_type)
- }
+diff --git a/arch/powerpc/mm/gup.c b/arch/powerpc/mm/gup.c
+index 4b921af..223a255 100644
+--- a/arch/powerpc/mm/gup.c
++++ b/arch/powerpc/mm/gup.c
+@@ -66,9 +66,15 @@ static int gup_pmd_range(pud_t pud, unsigned long addr, unsigned long end,
+ 		pmd_t pmd = *pmdp;
  
- /*
-- * Lock and read a linux PTE.  If it's present and writable, atomically
-- * set dirty and referenced bits and return the PTE, otherwise return 0.
-+ * If it's present and writable, atomically set dirty and referenced bits and
-+ * return the PTE, otherwise return 0. If we find a transparent hugepage
-+ * and if it is marked splitting we return 0;
-  */
--static inline pte_t kvmppc_read_update_linux_pte(pte_t *p, int writing)
-+static inline pte_t kvmppc_read_update_linux_pte(pte_t *ptep, int writing,
-+						 unsigned int hugepage)
- {
--	pte_t pte, tmp;
--
--	/* wait until _PAGE_BUSY is clear then set it atomically */
--	__asm__ __volatile__ (
--		"1:	ldarx	%0,0,%3\n"
--		"	andi.	%1,%0,%4\n"
--		"	bne-	1b\n"
--		"	ori	%1,%0,%4\n"
--		"	stdcx.	%1,0,%3\n"
--		"	bne-	1b"
--		: "=&r" (pte), "=&r" (tmp), "=m" (*p)
--		: "r" (p), "i" (_PAGE_BUSY)
--		: "cc");
--
--	if (pte_present(pte)) {
--		pte = pte_mkyoung(pte);
--		if (writing && pte_write(pte))
--			pte = pte_mkdirty(pte);
--	}
-+	pte_t old_pte, new_pte = __pte(0);
-+
-+	while (1) {
-+		old_pte = pte_val(*ptep);
+ 		next = pmd_addr_end(addr, end);
+-		if (pmd_none(pmd))
 +		/*
-+		 * wait until _PAGE_BUSY is clear then set it atomically
++		 * If we find a splitting transparent hugepage we
++		 * return zero. That will result in taking the slow
++		 * path which will call wait_split_huge_page()
++		 * if the pmd is still in splitting state
 +		 */
-+		if (unlikely(old_pte & _PAGE_BUSY)) {
-+			cpu_relax();
-+			continue;
-+		}
-+#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-+		/* If hugepage and is trans splitting return None */
-+		if (unlikely(hugepage &&
-+			     pmd_trans_splitting(pte_pmd(old_pte))))
-+			return __pte(0);
-+#endif
-+		/* If pte is not present return None */
-+		if (unlikely(!(old_pte & _PAGE_PRESENT)))
-+			return __pte(0);
- 
--	*p = pte;	/* clears _PAGE_BUSY */
-+		new_pte = pte_mkyoung(old_pte);
-+		if (writing && pte_write(old_pte))
-+			new_pte = pte_mkdirty(new_pte);
- 
--	return pte;
-+		if (old_pte == __cmpxchg_u64((unsigned long *)ptep, old_pte,
-+					     new_pte))
-+			break;
-+	}
-+	return new_pte;
- }
- 
-+
- /* Return HPTE cache control bits corresponding to Linux pte bits */
- static inline unsigned long hpte_cache_bits(unsigned long pte_val)
- {
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index 5880dfb..710d313 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -675,6 +675,7 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 		}
- 		/* if the guest wants write access, see if that is OK */
- 		if (!writing && hpte_is_writable(r)) {
-+			unsigned int hugepage_shift;
- 			pte_t *ptep, pte;
- 
- 			/*
-@@ -683,9 +684,10 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 			 */
- 			rcu_read_lock_sched();
- 			ptep = find_linux_pte_or_hugepte(current->mm->pgd,
--							 hva, NULL);
--			if (ptep && pte_present(*ptep)) {
--				pte = kvmppc_read_update_linux_pte(ptep, 1);
-+							 hva, &hugepage_shift);
-+			if (ptep) {
-+				pte = kvmppc_read_update_linux_pte(ptep, 1,
-+							   hugepage_shift);
- 				if (pte_write(pte))
- 					write_ok = 1;
- 			}
-diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-index dcf892d..fc25689 100644
---- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-+++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-@@ -139,20 +139,18 @@ static pte_t lookup_linux_pte(pgd_t *pgdir, unsigned long hva,
- {
- 	pte_t *ptep;
- 	unsigned long ps = *pte_sizep;
--	unsigned int shift;
-+	unsigned int hugepage_shift;
- 
--	ptep = find_linux_pte_or_hugepte(pgdir, hva, &shift);
-+	ptep = find_linux_pte_or_hugepte(pgdir, hva, &hugepage_shift);
- 	if (!ptep)
- 		return __pte(0);
--	if (shift)
--		*pte_sizep = 1ul << shift;
-+	if (hugepage_shift)
-+		*pte_sizep = 1ul << hugepage_shift;
- 	else
- 		*pte_sizep = PAGE_SIZE;
- 	if (ps > *pte_sizep)
- 		return __pte(0);
--	if (!pte_present(*ptep))
--		return __pte(0);
--	return kvmppc_read_update_linux_pte(ptep, writing);
-+	return kvmppc_read_update_linux_pte(ptep, writing, hugepage_shift);
- }
- 
- static inline void unlock_hpte(unsigned long *hpte, unsigned long hpte_v)
++		if (pmd_none(pmd) || pmd_trans_splitting(pmd))
+ 			return 0;
+-		if (pmd_huge(pmd)) {
++		if (pmd_huge(pmd) || pmd_large(pmd)) {
+ 			if (!gup_hugepte((pte_t *)pmdp, PMD_SIZE, addr, next,
+ 					 write, pages, nr))
+ 				return 0;
 -- 
 1.8.1.2
