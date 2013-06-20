@@ -1,31 +1,31 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e38.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0E4682C0330
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 15:21:39 +1000 (EST)
+ (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D728B2C02F4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 15:21:40 +1000 (EST)
 Received: from /spool/local
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
  Wed, 19 Jun 2013 23:21:38 -0600
-Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
- [9.17.195.226])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id E29CF1FF001E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 23:16:21 -0600 (MDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5K5LapJ151104
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+ [9.17.195.107])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 297991FF001F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 23:16:22 -0600 (MDT)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5K5LaZP113034
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 23:21:36 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5K5LYG7020061
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5K5LZLt015385
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 23:21:35 -0600
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 11/31] powerpc/eeh: Trace time on first error for PE
-Date: Thu, 20 Jun 2013 13:21:01 +0800
-Message-Id: <1371705681-24632-12-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 14/31] powerpc/eeh: EEH core to handle special event
+Date: Thu, 20 Jun 2013 13:21:04 +0800
+Message-Id: <1371705681-24632-15-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1371705681-24632-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1371705681-24632-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -38,119 +38,187 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We're not expecting that one specific PE got frozen for over 5
-times in last hour. Otherwise, the PE will be removed from the
-system upon newly coming EEH errors. The patch introduces time
-stamp to trace the first error on specific PE in last hour and
-function to update that accordingly. Besides, the time stamp
-is recovered during PE hotplug path as we did for frozen count.
+On PowerNV platform, the EEH event caused by interrupt won't have
+binding PE. The patch enables EEH core to handle the special event.
+To avoid the current logic we have, The eeh_handle_event() is renamed
+to eeh_handle_normal_event(), and the eeh_handle_special_event() is
+introduced. The function eeh_handle_event() dispatches to above two
+functions according to the input parameter. Besides, new backend
+"next_error" added to eeh_ops and it's expected to have following
+return values:
+
+        4 - Dead IOC           3 - Dead PHB
+        2 - Fenced PHB         1 - Frozen PE
+        0 - No error found
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h   |    3 +++
- arch/powerpc/kernel/eeh_driver.c |    5 +++++
- arch/powerpc/kernel/eeh_pe.c     |   27 +++++++++++++++++++++++++++
- 3 files changed, 35 insertions(+), 0 deletions(-)
+ arch/powerpc/include/asm/eeh.h   |    2 +
+ arch/powerpc/kernel/eeh_driver.c |  128 ++++++++++++++++++++++++++++++++-----
+ 2 files changed, 112 insertions(+), 18 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index beec788..e1109fd 100644
+index 0c0ac93..a0b11fb 100644
 --- a/arch/powerpc/include/asm/eeh.h
 +++ b/arch/powerpc/include/asm/eeh.h
-@@ -24,6 +24,7 @@
- #include <linux/init.h>
- #include <linux/list.h>
- #include <linux/string.h>
-+#include <linux/time.h>
+@@ -53,6 +53,7 @@ struct device_node;
  
- struct pci_dev;
- struct pci_bus;
-@@ -62,6 +63,7 @@ struct eeh_pe {
- 	struct pci_bus *bus;		/* Top PCI bus for bus PE	*/
- 	int check_count;		/* Times of ignored error	*/
- 	int freeze_count;		/* Times of froze up		*/
-+	struct timeval tstamp;		/* Time on first-time freeze	*/
- 	int false_positives;		/* Times of reported #ff's	*/
- 	struct eeh_pe *parent;		/* Parent PE			*/
- 	struct list_head child_list;	/* Link PE to the child list	*/
-@@ -190,6 +192,7 @@ struct eeh_pe *eeh_phb_pe_get(struct pci_controller *phb);
- struct eeh_pe *eeh_pe_get(struct eeh_dev *edev);
- int eeh_add_to_parent_pe(struct eeh_dev *edev);
- int eeh_rmv_from_parent_pe(struct eeh_dev *edev, int purge_pe);
-+void eeh_pe_update_time_stamp(struct eeh_pe *pe);
- void *eeh_pe_dev_traverse(struct eeh_pe *root,
- 		eeh_traverse_func fn, void *flag);
- void eeh_pe_restore_bars(struct eeh_pe *pe);
+ #define EEH_PE_ISOLATED		(1 << 0)	/* Isolated PE		*/
+ #define EEH_PE_RECOVERING	(1 << 1)	/* Recovering PE	*/
++#define EEH_PE_PHB_DEAD		(1 << 2)	/* Dead PHB		*/
+ 
+ struct eeh_pe {
+ 	int type;			/* PE type: PHB/Bus/Device	*/
+@@ -145,6 +146,7 @@ struct eeh_ops {
+ 	int (*configure_bridge)(struct eeh_pe *pe);
+ 	int (*read_config)(struct device_node *dn, int where, int size, u32 *val);
+ 	int (*write_config)(struct device_node *dn, int where, int size, u32 val);
++	int (*next_error)(struct eeh_pe **pe);
+ };
+ 
+ extern struct eeh_ops *eeh_ops;
 diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-index fb927af..678bc6c 100644
+index 678bc6c..0974e13 100644
 --- a/arch/powerpc/kernel/eeh_driver.c
 +++ b/arch/powerpc/kernel/eeh_driver.c
-@@ -349,10 +349,12 @@ static void *eeh_report_failure(void *data, void *userdata)
+@@ -399,24 +399,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
   */
- static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
+ #define MAX_WAIT_FOR_RECOVERY 150
+ 
+-/**
+- * eeh_handle_event - Reset a PCI device after hard lockup.
+- * @pe: EEH PE
+- *
+- * While PHB detects address or data parity errors on particular PCI
+- * slot, the associated PE will be frozen. Besides, DMA's occurring
+- * to wild addresses (which usually happen due to bugs in device
+- * drivers or in PCI adapter firmware) can cause EEH error. #SERR,
+- * #PERR or other misc PCI-related errors also can trigger EEH errors.
+- *
+- * Recovery process consists of unplugging the device driver (which
+- * generated hotplug events to userspace), then issuing a PCI #RST to
+- * the device, then reconfiguring the PCI config space for all bridges
+- * & devices under this slot, and then finally restarting the device
+- * drivers (which cause a second set of hotplug events to go out to
+- * userspace).
+- */
+-void eeh_handle_event(struct eeh_pe *pe)
++static void eeh_handle_normal_event(struct eeh_pe *pe)
  {
-+	struct timeval tstamp;
- 	int cnt, rc;
- 
- 	/* pcibios will clear the counter; save the value */
- 	cnt = pe->freeze_count;
-+	tstamp = pe->tstamp;
- 
- 	/*
- 	 * We don't remove the corresponding PE instances because
-@@ -385,6 +387,8 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
- 		ssleep(5);
- 		pcibios_add_pci_devices(bus);
- 	}
-+
-+	pe->tstamp = tstamp;
- 	pe->freeze_count = cnt;
- 
- 	return 0;
-@@ -425,6 +429,7 @@ void eeh_handle_event(struct eeh_pe *pe)
- 		return;
- 	}
- 
-+	eeh_pe_update_time_stamp(pe);
- 	pe->freeze_count++;
- 	if (pe->freeze_count > EEH_MAX_ALLOWED_FREEZES)
- 		goto excess_failures;
-diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
-index c963667..ae75722 100644
---- a/arch/powerpc/kernel/eeh_pe.c
-+++ b/arch/powerpc/kernel/eeh_pe.c
-@@ -482,6 +482,33 @@ int eeh_rmv_from_parent_pe(struct eeh_dev *edev, int purge_pe)
+ 	struct pci_bus *frozen_bus;
+ 	int rc = 0;
+@@ -554,3 +537,112 @@ perm_error:
+ 	if (frozen_bus)
+ 		pcibios_remove_pci_devices(frozen_bus);
  }
- 
- /**
-+ * eeh_pe_update_time_stamp - Update PE's frozen time stamp
-+ * @pe: EEH PE
-+ *
-+ * We have time stamp for each PE to trace its time of getting
-+ * frozen in last hour. The function should be called to update
-+ * the time stamp on first error of the specific PE. On the other
-+ * handle, we needn't account for errors happened in last hour.
-+ */
-+void eeh_pe_update_time_stamp(struct eeh_pe *pe)
++
++static void eeh_handle_special_event(void)
 +{
-+	struct timeval tstamp;
++	struct eeh_pe *pe, *phb_pe;
++	struct pci_bus *bus;
++	struct pci_controller *hose, *tmp;
++	unsigned long flags;
++	int rc = 0;
 +
-+	if (!pe) return;
++	/*
++	 * The return value from next_error() has been classified as follows.
++	 * It might be good to enumerate them. However, next_error() is only
++	 * supported by PowerNV platform for now. So it would be fine to use
++	 * integer directly:
++	 *
++	 * 4 - Dead IOC           3 - Dead PHB
++	 * 2 - Fenced PHB         1 - Frozen PE
++	 * 0 - No error found
++	 *
++	 */
++	rc = eeh_ops->next_error(&pe);
++	if (rc <= 0)
++		return;
 +
-+	if (pe->freeze_count <= 0) {
-+		pe->freeze_count = 0;
-+		do_gettimeofday(&pe->tstamp);
-+	} else {
-+		do_gettimeofday(&tstamp);
-+		if (tstamp.tv_sec - pe->tstamp.tv_sec > 3600) {
-+			pe->tstamp = tstamp;
-+			pe->freeze_count = 0;
++	switch (rc) {
++	case 4:
++		/* Mark all PHBs in dead state */
++		eeh_serialize_lock(&flags);
++		list_for_each_entry_safe(hose, tmp,
++				&hose_list, list_node) {
++			phb_pe = eeh_phb_pe_get(hose);
++			if (!phb_pe) continue;
++
++			eeh_pe_state_mark(phb_pe,
++				EEH_PE_ISOLATED | EEH_PE_PHB_DEAD);
++		}
++		eeh_serialize_unlock(flags);
++
++		/* Purge all events */
++		eeh_remove_event(NULL);
++		break;
++	case 3:
++	case 2:
++	case 1:
++		/* Mark the PE in fenced state */
++		eeh_serialize_lock(&flags);
++		if (rc == 3)
++			eeh_pe_state_mark(pe,
++				EEH_PE_ISOLATED | EEH_PE_PHB_DEAD);
++		else
++			eeh_pe_state_mark(pe,
++				EEH_PE_ISOLATED | EEH_PE_RECOVERING);
++		eeh_serialize_unlock(flags);
++
++		/* Purge all events of the PHB */
++		eeh_remove_event(pe);
++		break;
++	default:
++		pr_err("%s: Invalid value %d from next_error()\n",
++		       __func__, rc);
++		return;
++	}
++
++	/*
++	 * For fenced PHB and frozen PE, it's handled as normal
++	 * event. We have to remove the affected PHBs for dead
++	 * PHB and IOC
++	 */
++	if (rc == 2 || rc == 1)
++		eeh_handle_normal_event(pe);
++	else {
++		list_for_each_entry_safe(hose, tmp,
++			&hose_list, list_node) {
++			phb_pe = eeh_phb_pe_get(hose);
++			if (!phb_pe || !(phb_pe->state & EEH_PE_PHB_DEAD))
++				continue;
++
++			bus = eeh_pe_bus_get(phb_pe);
++			/* Notify all devices that they're about to go down. */
++			eeh_pe_dev_traverse(pe, eeh_report_failure, NULL);
++			pcibios_remove_pci_devices(bus);
 +		}
 +	}
 +}
 +
 +/**
-  * __eeh_pe_state_mark - Mark the state for the PE
-  * @data: EEH PE
-  * @flag: state
++ * eeh_handle_event - Reset a PCI device after hard lockup.
++ * @pe: EEH PE
++ *
++ * While PHB detects address or data parity errors on particular PCI
++ * slot, the associated PE will be frozen. Besides, DMA's occurring
++ * to wild addresses (which usually happen due to bugs in device
++ * drivers or in PCI adapter firmware) can cause EEH error. #SERR,
++ * #PERR or other misc PCI-related errors also can trigger EEH errors.
++ *
++ * Recovery process consists of unplugging the device driver (which
++ * generated hotplug events to userspace), then issuing a PCI #RST to
++ * the device, then reconfiguring the PCI config space for all bridges
++ * & devices under this slot, and then finally restarting the device
++ * drivers (which cause a second set of hotplug events to go out to
++ * userspace).
++ */
++void eeh_handle_event(struct eeh_pe *pe)
++{
++	if (pe)
++		eeh_handle_normal_event(pe);
++	else
++		eeh_handle_special_event();
++}
 -- 
 1.7.5.4
