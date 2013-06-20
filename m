@@ -1,17 +1,39 @@
-Return-Path: <michael@ellerman.id.au>
-Message-ID: <1371692489.21846.14.camel@concordia>
-Subject: Re: [PATCH 2/2] perf tools: Make Power7 events available for perf
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Runzhen Wang <runzhen@linux.vnet.ibm.com>
-Date: Thu, 20 Jun 2013 11:41:29 +1000
-In-Reply-To: <1371633326-7696-2-git-send-email-runzhen@linux.vnet.ibm.com>
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e38.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 69F242C02AB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 12:29:57 +1000 (EST)
+Received: from /spool/local
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Wed, 19 Jun 2013 20:29:55 -0600
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+ [9.17.195.228])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 9EADA19D8042
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 20:29:18 -0600 (MDT)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5K2TRna153090
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 20:29:27 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5K2TP3c010117
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 20:29:27 -0600
+Date: Wed, 19 Jun 2013 19:28:37 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH 1/2] perf tools: fix a typo of a Power7 event name
+Message-ID: <20130620022837.GA20609@us.ibm.com>
 References: <1371633326-7696-1-git-send-email-runzhen@linux.vnet.ibm.com>
- <1371633326-7696-2-git-send-email-runzhen@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ <1371691282.21846.1.camel@concordia>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1371691282.21846.1.camel@concordia>
 Cc: icycoder@gmail.com, linux-kernel@vger.kernel.org,
  xiaoguangrong@linux.vnet.ibm.com, acme@redhat.com, paulus@samba.org,
- sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+ Runzhen Wang <runzhen@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,99 +43,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-06-19 at 17:15 +0800, Runzhen Wang wrote:
-> Power7 supports over 530 different perf events but only a small
-> subset of these can be specified by name, for the remaining
-> events, we must specify them by their raw code:
-> 
->         perf stat -e r2003c <application>
-> 
-> This patch makes all the POWER7 events available in sysfs.
-> So we can instead specify these as:
-> 
->         perf stat -e 'cpu/PM_CMPLU_STALL_DFU/' <application>
-> 
-> where PM_CMPLU_STALL_DFU is the r2003c in previous example.
-> 
-> Before this patch is applied, the size of power7-pmu.o is:
-> 
-> $ size arch/powerpc/perf/power7-pmu.o
->    text	   data	    bss	    dec	    hex	filename
->    3073	   2720	      0	   5793	   16a1	arch/powerpc/perf/power7-pmu.o
-> 
-> and after the patch is applied, it is:
-> 
-> $ size arch/powerpc/perf/power7-pmu.o
->    text	   data	    bss	    dec	    hex	filename
->   14451	  31112	      0	  45563	   b1fb	arch/powerpc/perf/power7-pmu.o
+Michael Ellerman [michael@ellerman.id.au] wrote:
+| On Wed, 2013-06-19 at 17:15 +0800, Runzhen Wang wrote:
+| > In the Power7 PMU guide:
+| > https://www.power.org/documentation/commonly-used-metrics-for-performance-analysis/
+| > PM_BRU_MPRED is referred to as PM_BR_MPRED.
+| > 
+| > This patch fix the typo by changing the name of the event in kernel and
+| > documentation accordingly.
+| > 
+| > Signed-off-by: Runzhen Wang <runzhen@linux.vnet.ibm.com>
+| > ---
+| >  .../testing/sysfs-bus-event_source-devices-events  |    2 +-
+| >  arch/powerpc/perf/power7-pmu.c                     |   12 ++++++------
+| >  2 files changed, 7 insertions(+), 7 deletions(-)
+| > 
+| > diff --git a/Documentation/ABI/testing/sysfs-bus-event_source-devices-events b/Documentation/ABI/testing/sysfs-bus-event_source-devices-events
+| > index 8b25ffb..3c1cc24 100644
+| > --- a/Documentation/ABI/testing/sysfs-bus-event_source-devices-events
+| > +++ b/Documentation/ABI/testing/sysfs-bus-event_source-devices-events
+| > @@ -29,7 +29,7 @@ Description:	Generic performance monitoring events
+| >  
+| >  What: 		/sys/devices/cpu/events/PM_1PLUS_PPC_CMPL
+| >  		/sys/devices/cpu/events/PM_BRU_FIN
+| > -		/sys/devices/cpu/events/PM_BRU_MPRED
+| > +		/sys/devices/cpu/events/PM_BR_MPRED
+| 
+| So you're changing the ABI.
+| 
+| I think that's probably OK, but you at least need to mention _why_ you
+| think it's OK.
 
-OK so that's ~38K. Which is not terrible.
+Some of the reasons I think its ok to change:
 
-Can you measure the runtime overhead as well. I suspect it will be more.
+- It is relatively new interface, specific to the Power7 platform.
 
+- No tools that we know of actually use this interface at this point (none
+  are listed near the interface).
 
-You'll notice below that each event name is repeated four times, which
-for 530 events is a bit ugly.
+- Users of this interface (eg oprofile users migrating to perf) would be
+  more used to the "PM_BR_MPRED" rather than "PM_BRU_MPRED".
 
-I think we should be able to do something better using the C
-preprocessor, this is exactly the sort of thing it's good at.
+- These are in the ABI/testing at this point rather than ABI/stable, so
+  hoping we have some wiggle room.
 
-What I mean is something like we do with arch/powerpc/include/asm/systbl.h,
-where we define the list of syscalls once, and then include it in
-multiple places, using different macro definitions to get different
-outputs.
+But of course this is not a "grave error" or "security hole" which are
+the justifications listed in the Documentation/ABI/README.  If these
+are not good enough reasons, we can leave the misnomer around and
+create another file in sysfs with the correct name PM_BR_MPRED.
 
-So perhaps you'd define the list of events like:
-
-#define EVENT(PM_CMPLU_STALL_FXU, 0x20014)
-#define EVENT(PM_CMPLU_STALL_DIV, 0x40014)
-
-etc.
-
-Then you do something approximately like:
-
-#define EVENT(_name, _code)	POWER_EVENT_ATTR(_name, _code)
-#include "event-list.h"
-#undef EVENT
-
-#define EVENT(_name, _code)	POWER_EVENT_PTR(_name)
-
-static struct attribute *power7_events_attr[] = {
-#include "event-list.h"
-};
-
-
-You will obviously need to rework the POWER_EVENT macros to make that
-work, but it should be possible.
-
-The end result will be we have a single list of the events which we can
-check for accuracy once. And we can be sure that there are no mixups
-between events.
-
-
-> diff --git a/arch/powerpc/perf/power7-pmu.c b/arch/powerpc/perf/power7-pmu.c
-> index d1821b8..55e2404 100644
-> --- a/arch/powerpc/perf/power7-pmu.c
-> +++ b/arch/powerpc/perf/power7-pmu.c
-> @@ -53,37 +53,544 @@
->  /*
->   * Power7 event codes.
->   */
-
-...
-
-> +#define PME_PM_MRK_DERAT_MISS_64K                 0x2d05c
-> +#define PME_PM_INST_PTEG_FROM_DL2L3_MOD           0x4e054
-> +#define PME_PM_L2_ST_MISS                         0x26082
-> +#define PME_PM_MRK_PTEG_FROM_L21_SHR              0x4d056
-> +#undef  LWSYNC
-    ^
-What is this doing here?
-
-That is not your macro to undefine. Please be more careful.
-
-> +#define PME_PM_LWSYNC                             0xd094
-
-
-
-cheers
+Sukadev
