@@ -1,15 +1,15 @@
 Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7A6012C02AC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 17:53:11 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id DBA592C02AC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 17:53:12 +1000 (EST)
 From: Tiejun Chen <tiejun.chen@windriver.com>
 To: <benh@kernel.crashing.org>
-Subject: [v2][PATCH 2/7] book3e/kexec/kdump: enable kexec for kernel
-Date: Thu, 20 Jun 2013 15:53:12 +0800
-Message-ID: <1371714797-7898-3-git-send-email-tiejun.chen@windriver.com>
+Subject: [v2][PATCH 3/7] book3e/kexec/kdump: create a 1:1 TLB mapping
+Date: Thu, 20 Jun 2013 15:53:13 +0800
+Message-ID: <1371714797-7898-4-git-send-email-tiejun.chen@windriver.com>
 In-Reply-To: <1371714797-7898-1-git-send-email-tiejun.chen@windriver.com>
 References: <1371714797-7898-1-git-send-email-tiejun.chen@windriver.com>
 MIME-Version: 1.0
@@ -24,108 +24,139 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We need to active KEXEC for book3e and bypass or convert non-book3e stuff
-in kexec coverage.
+book3e have no real MMU mode so we have to create a 1:1 TLB
+mapping to make sure we can access the real physical address.
+And correct something to support this pseudo real mode on book3e.
 
 Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
 ---
- arch/powerpc/Kconfig                   |    2 +-
- arch/powerpc/kernel/machine_kexec_64.c |    6 ++++++
- arch/powerpc/kernel/misc_64.S          |    6 ++++++
- 3 files changed, 13 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/head_64.S |    9 ++++---
+ arch/powerpc/kernel/misc_64.S |   55 ++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 60 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index c33e3ad..6ecf3c9 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -364,7 +364,7 @@ config ARCH_ENABLE_MEMORY_HOTREMOVE
- 
- config KEXEC
- 	bool "kexec system call"
--	depends on (PPC_BOOK3S || FSL_BOOKE || (44x && !SMP))
-+	depends on (PPC_BOOK3S || FSL_BOOKE || (44x && !SMP)) || PPC_BOOK3E
- 	help
- 	  kexec is a system call that implements the ability to shutdown your
- 	  current kernel, and to start another kernel.  It is like a reboot
-diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
-index 611acdf..ef39271 100644
---- a/arch/powerpc/kernel/machine_kexec_64.c
-+++ b/arch/powerpc/kernel/machine_kexec_64.c
-@@ -33,6 +33,7 @@
- int default_machine_kexec_prepare(struct kimage *image)
- {
- 	int i;
-+#ifndef CONFIG_PPC_BOOK3E
- 	unsigned long begin, end;	/* limits of segment */
- 	unsigned long low, high;	/* limits of blocked memory range */
- 	struct device_node *node;
-@@ -41,6 +42,7 @@ int default_machine_kexec_prepare(struct kimage *image)
- 
- 	if (!ppc_md.hpte_clear_all)
- 		return -ENOENT;
+diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+index 0942f3a..3e19ba2 100644
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -444,12 +444,12 @@ _STATIC(__after_prom_start)
+ 	tovirt(r3,r3)			/* on booke, we already run at PAGE_OFFSET */
+ #endif
+ 	mr.	r4,r26			/* In some cases the loader may  */
++#if defined(CONFIG_PPC_BOOK3E)
++	tovirt(r4,r4)
 +#endif
+ 	beq	9f			/* have already put us at zero */
+ 	li	r6,0x100		/* Start offset, the first 0x100 */
+ 					/* bytes were copied earlier.	 */
+-#ifdef CONFIG_PPC_BOOK3E
+-	tovirt(r6,r6)			/* on booke, we already run at PAGE_OFFSET */
+-#endif
  
- 	/*
- 	 * Since we use the kernel fault handlers and paging code to
-@@ -51,6 +53,7 @@ int default_machine_kexec_prepare(struct kimage *image)
- 		if (image->segment[i].mem < __pa(_end))
- 			return -ETXTBSY;
+ #ifdef CONFIG_RELOCATABLE
+ /*
+@@ -492,6 +492,9 @@ _STATIC(__after_prom_start)
+ p_end:	.llong	_end - _stext
  
-+#ifndef CONFIG_PPC_BOOK3E
- 	/*
- 	 * For non-LPAR, we absolutely can not overwrite the mmu hash
- 	 * table, since we are still using the bolted entries in it to
-@@ -92,6 +95,7 @@ int default_machine_kexec_prepare(struct kimage *image)
- 				return -ETXTBSY;
- 		}
- 	}
+ 4:	/* Now copy the rest of the kernel up to _end */
++#if defined(CONFIG_PPC_BOOK3E)
++	tovirt(r26,r26)
 +#endif
- 
- 	return 0;
- }
-@@ -367,6 +371,7 @@ void default_machine_kexec(struct kimage *image)
- 	/* NOTREACHED */
- }
- 
-+#ifndef CONFIG_PPC_BOOK3E
- /* Values we need to export to the second kernel via the device tree. */
- static unsigned long htab_base;
- 
-@@ -411,3 +416,4 @@ static int __init export_htab_values(void)
- 	return 0;
- }
- late_initcall(export_htab_values);
-+#endif
+ 	addis	r5,r26,(p_end - _stext)@ha
+ 	ld	r5,(p_end - _stext)@l(r5)	/* get _end */
+ 5:	bl	.copy_and_flush		/* copy the rest */
 diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
-index 6820e45..f1a7ce7 100644
+index f1a7ce7..20cbb98 100644
 --- a/arch/powerpc/kernel/misc_64.S
 +++ b/arch/powerpc/kernel/misc_64.S
-@@ -543,9 +543,13 @@ _GLOBAL(kexec_sequence)
- 	lhz	r25,PACAHWCPUID(r13)	/* get our phys cpu from paca */
+@@ -460,6 +460,49 @@ kexec_flag:
  
- 	/* disable interrupts, we are overwriting kernel data next */
-+#ifndef CONFIG_PPC_BOOK3E
- 	mfmsr	r3
- 	rlwinm	r3,r3,0,17,15
- 	mtmsrd	r3,1
+ 
+ #ifdef CONFIG_KEXEC
++#ifdef CONFIG_PPC_BOOK3E
++/* BOOK3E have no a real MMU mode so we have to setup the initial TLB
++ * for a core to map v:0 to p:0 as 1:1. This current implementation
++ * assume that 1G is enough for kexec.
++ */
++#include <asm/mmu.h>
++kexec_create_tlb:
++	/* Invalidate all TLBs to avoid any TLB conflict. */
++	PPC_TLBILX_ALL(0,R0)
++	sync
++	isync
++
++	mfspr	r10,SPRN_TLB1CFG
++	andi.	r10,r10,TLBnCFG_N_ENTRY	/* Extract # entries */
++	subi	r10,r10,1		/* Often its always safe to use last */
++	lis	r9,MAS0_TLBSEL(1)@h
++	rlwimi	r9,r10,16,4,15		/* Setup MAS0 = TLBSEL | ESEL(r9) */
++
++/* Setup a temp mapping v:0 to p:0 as 1:1 and return to it.
++ */
++#ifdef CONFIG_SMP
++#define M_IF_SMP	MAS2_M
 +#else
-+	wrteei	0
++#define M_IF_SMP	0
++#endif
++	mtspr	SPRN_MAS0,r9
++
++	lis	r9,(MAS1_VALID|MAS1_IPROT)@h
++	ori	r9,r9,(MAS1_TSIZE(BOOK3E_PAGESZ_1GB))@l
++	mtspr	SPRN_MAS1,r9
++
++	LOAD_REG_IMMEDIATE(r9, 0x0 | M_IF_SMP)
++	mtspr	SPRN_MAS2,r9
++
++	LOAD_REG_IMMEDIATE(r9, 0x0 | MAS3_SR | MAS3_SW | MAS3_SX)
++	mtspr	SPRN_MAS3,r9
++	li	r9,0
++	mtspr	SPRN_MAS7,r9
++
++	tlbwe
++	isync
++	blr
 +#endif
  
- 	/* copy dest pages, flush whole dest image */
- 	mr	r3,r29
-@@ -567,10 +571,12 @@ _GLOBAL(kexec_sequence)
- 	li	r6,1
- 	stw	r6,kexec_flag-1b(5)
+ /* kexec_smp_wait(void)
+  *
+@@ -473,6 +516,10 @@ kexec_flag:
+  */
+ _GLOBAL(kexec_smp_wait)
+ 	lhz	r3,PACAHWCPUID(r13)
++#ifdef CONFIG_PPC_BOOK3E
++	/* Create a 1:1 mapping. */
++	bl	kexec_create_tlb
++#endif
+ 	bl	real_mode
  
+ 	li	r4,KEXEC_STATE_REAL_MODE
+@@ -489,6 +536,7 @@ _GLOBAL(kexec_smp_wait)
+  * don't overwrite r3 here, it is live for kexec_wait above.
+  */
+ real_mode:	/* assume normal blr return */
 +#ifndef CONFIG_PPC_BOOK3E
- 	/* clear out hardware hash page table and tlb */
- 	ld	r5,0(r27)		/* deref function descriptor */
- 	mtctr	r5
- 	bctrl				/* ppc_md.hpte_clear_all(void); */
+ 1:	li	r9,MSR_RI
+ 	li	r10,MSR_DR|MSR_IR
+ 	mflr	r11		/* return address to SRR0 */
+@@ -500,7 +548,10 @@ real_mode:	/* assume normal blr return */
+ 	mtspr	SPRN_SRR1,r10
+ 	mtspr	SPRN_SRR0,r11
+ 	rfid
+-
++#else
++	/* the real mode is nothing for book3e. */
++	blr
 +#endif
  
  /*
-  *   kexec image calling is:
+  * kexec_sequence(newstack, start, image, control, clear_all())
+@@ -549,6 +600,8 @@ _GLOBAL(kexec_sequence)
+ 	mtmsrd	r3,1
+ #else
+ 	wrteei	0
++	/* Create a 1:1 mapping. */
++	bl	kexec_create_tlb
+ #endif
+ 
+ 	/* copy dest pages, flush whole dest image */
 -- 
 1.7.9.5
