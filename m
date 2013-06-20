@@ -3,13 +3,16 @@ Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mail.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 41AC42C023D
+ by ozlabs.org (Postfix) with ESMTPS id 7D57A2C029B
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 20:28:47 +1000 (EST)
 From: Tiejun Chen <tiejun.chen@windriver.com>
 To: <benh@kernel.crashing.org>
-Subject: [v5][PATCH 0/6] powerpc/book3e: powerpc/book3e: make kgdb to work well
-Date: Thu, 20 Jun 2013 18:28:24 +0800
-Message-ID: <1371724110-8250-1-git-send-email-tiejun.chen@windriver.com>
+Subject: [v5][PATCH 2/6] powerpc/book3e: store critical/machine/debug
+ exception thread info
+Date: Thu, 20 Jun 2013 18:28:26 +0800
+Message-ID: <1371724110-8250-3-git-send-email-tiejun.chen@windriver.com>
+In-Reply-To: <1371724110-8250-1-git-send-email-tiejun.chen@windriver.com>
+References: <1371724110-8250-1-git-send-email-tiejun.chen@windriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
@@ -22,74 +25,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ben,
+We need to store thread info to these exception thread info like something
+we already did for PPC32.
 
-As you mention just now, I resend this another pending patch sets v5 used
-to support kgdb/gdb on book3e.
+Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+---
+ arch/powerpc/kernel/exceptions-64e.S |   15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-v5:
-
-* rebase on merge branch.
-
-Note the original patch, [ATCH 5/7] kgdb/kgdbts: support ppc64, is already merged
-by Jason.
-
-v4:
-
-* use DEFINE_PER_CPU to allocate kgdb's thread_info
-* add patch 7 to make usre copy thread_info only !__check_irq_replay
-* leave "andi.   r14,r11,MSR_PR" out of "#ifndef CONFIG_KGDB"
-  since cr0 is still used lately.
-* retest
-
-v3:
-
-* make work when enable CONFIG_RELOCATABLE
-* fix one typo in patch,
-  "powerpc/book3e: store critical/machine/debug exception thread info": 
-	ld	r1,PACAKSAVE(r13);
-    ->  ld	r14,PACAKSAVE(r13);
-* remove copying the thread_info since booke and book3e always copy
-  the thead_info now when we enter the debug exception, and so drop
-  the v2 patch, "book3e/kgdb: Fix a single stgep case of lazy IRQ"
-
-v2:
-
-* Make sure we cover CONFIG_PPC_BOOK3E_64 safely
-* Use LOAD_REG_IMMEDIATE() to load properly
-	the value of the constant expression in load debug exception stack 
-* Copy thread infor form the kernel stack coming from usr
-* Rebase latest powerpc git tree
-
-v1:
-* Copy thread info only when we are from !user mode since we'll get kernel stack
-  coming from usr directly.
-* remove save/restore EX_R14/EX_R15 since DBG_EXCEPTION_PROLOG already covered
-  this.
-* use CURRENT_THREAD_INFO() conveniently to get thread.
-* fix some typos
-* add a patch to make sure gdb can generate a single step properly to invoke a
-  kgdb state.
-* add a patch to if we need to replay an interrupt, we shouldn't restore that
-  previous backup thread info to make sure we can replay an interrupt lately
-  with a proper thread info.
-* rebase latest powerpc git tree
-
-v0:
-This patchset is used to support kgdb for book3e.
-
-------
-Tiejun Chen (6):
-      powerpc/book3e: load critical/machine/debug exception stack
-      powerpc/book3e: store critical/machine/debug exception thread info
-      book3e/kgdb: update thread's dbcr0
-      powerpc/book3e: support kgdb for kernel space
-      powerpc/kgdb: use DEFINE_PER_CPU to allocate kgdb's thread_info
-      book3e/kgdb: Fix a single stgep case of lazy IRQ
-
- arch/powerpc/kernel/exceptions-64e.S |   68 ++++++++++++++++++++++++++++++++--
- arch/powerpc/kernel/irq.c            |   10 +++++
- arch/powerpc/kernel/kgdb.c           |   21 +++++++----
- 3 files changed, 88 insertions(+), 11 deletions(-)
-
-Tiejun
+diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+index 4d8e57f..07cf657 100644
+--- a/arch/powerpc/kernel/exceptions-64e.S
++++ b/arch/powerpc/kernel/exceptions-64e.S
+@@ -67,6 +67,18 @@
+ 	std	r10,PACA_##level##_STACK(r13);
+ #endif
+ 
++/* Store something to exception thread info */
++#define	BOOK3E_STORE_EXC_LEVEL_THEAD_INFO(type)					\
++	ld	r14,PACAKSAVE(r13);						\
++	CURRENT_THREAD_INFO(r14, r14);						\
++	CURRENT_THREAD_INFO(r15, r1);						\
++	ld	r10,TI_FLAGS(r14);		     				\
++	std	r10,TI_FLAGS(r15);			     			\
++	ld	r10,TI_PREEMPT(r14);		     				\
++	std	r10,TI_PREEMPT(r15);		     				\
++	ld	r10,TI_TASK(r14);			     			\
++	std	r10,TI_TASK(r15);
++
+ /* Exception prolog code for all exceptions */
+ #define EXCEPTION_PROLOG(n, intnum, type, addition)	    		    \
+ 	mtspr	SPRN_SPRG_##type##_SCRATCH,r13;	/* get spare registers */   \
+@@ -104,6 +116,7 @@
+ 	BOOK3E_LOAD_EXC_LEVEL_STACK(CRIT);					\
+ 	ld	r1,PACA_CRIT_STACK(r13);				    \
+ 	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;					\
++	BOOK3E_STORE_EXC_LEVEL_THEAD_INFO(CRIT);				\
+ 1:
+ #define SPRN_CRIT_SRR0	SPRN_CSRR0
+ #define SPRN_CRIT_SRR1	SPRN_CSRR1
+@@ -114,6 +127,7 @@
+ 	BOOK3E_LOAD_EXC_LEVEL_STACK(DBG);					\
+ 	ld	r1,PACA_DBG_STACK(r13);					    \
+ 	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;					\
++	BOOK3E_STORE_EXC_LEVEL_THEAD_INFO(DBG);					\
+ 1:
+ #define SPRN_DBG_SRR0	SPRN_DSRR0
+ #define SPRN_DBG_SRR1	SPRN_DSRR1
+@@ -124,6 +138,7 @@
+ 	BOOK3E_LOAD_EXC_LEVEL_STACK(MC);					\
+ 	ld	r1,PACA_MC_STACK(r13);					    \
+ 	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;					\
++	BOOK3E_STORE_EXC_LEVEL_THEAD_INFO(MC);					\
+ 1:
+ #define SPRN_MC_SRR0	SPRN_MCSRR0
+ #define SPRN_MC_SRR1	SPRN_MCSRR1
+-- 
+1.7.9.5
