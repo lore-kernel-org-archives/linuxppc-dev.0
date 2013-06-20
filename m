@@ -1,39 +1,32 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e38.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 69F242C02AB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 12:29:57 +1000 (EST)
+ (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C8A862C01D4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 14:41:58 +1000 (EST)
 Received: from /spool/local
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Wed, 19 Jun 2013 20:29:55 -0600
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
- [9.17.195.228])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 9EADA19D8042
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 20:29:18 -0600 (MDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5K2TRna153090
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 20:29:27 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5K2TP3c010117
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 20:29:27 -0600
-Date: Wed, 19 Jun 2013 19:28:37 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 1/2] perf tools: fix a typo of a Power7 event name
-Message-ID: <20130620022837.GA20609@us.ibm.com>
-References: <1371633326-7696-1-git-send-email-runzhen@linux.vnet.ibm.com>
- <1371691282.21846.1.camel@concordia>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1371691282.21846.1.camel@concordia>
-Cc: icycoder@gmail.com, linux-kernel@vger.kernel.org,
- xiaoguangrong@linux.vnet.ibm.com, acme@redhat.com, paulus@samba.org,
- Runzhen Wang <runzhen@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 20 Jun 2013 14:32:27 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id B2C522CE8044
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 14:41:52 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5K4fhFf2818334
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 14:41:44 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5K4fpuo009343
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 14:41:52 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH -V2] powerpc/kvm: Handle transparent hugepage in KVM
+Date: Thu, 20 Jun 2013 10:11:44 +0530
+Message-Id: <1371703304-31687-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,53 +36,147 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman [michael@ellerman.id.au] wrote:
-| On Wed, 2013-06-19 at 17:15 +0800, Runzhen Wang wrote:
-| > In the Power7 PMU guide:
-| > https://www.power.org/documentation/commonly-used-metrics-for-performance-analysis/
-| > PM_BRU_MPRED is referred to as PM_BR_MPRED.
-| > 
-| > This patch fix the typo by changing the name of the event in kernel and
-| > documentation accordingly.
-| > 
-| > Signed-off-by: Runzhen Wang <runzhen@linux.vnet.ibm.com>
-| > ---
-| >  .../testing/sysfs-bus-event_source-devices-events  |    2 +-
-| >  arch/powerpc/perf/power7-pmu.c                     |   12 ++++++------
-| >  2 files changed, 7 insertions(+), 7 deletions(-)
-| > 
-| > diff --git a/Documentation/ABI/testing/sysfs-bus-event_source-devices-events b/Documentation/ABI/testing/sysfs-bus-event_source-devices-events
-| > index 8b25ffb..3c1cc24 100644
-| > --- a/Documentation/ABI/testing/sysfs-bus-event_source-devices-events
-| > +++ b/Documentation/ABI/testing/sysfs-bus-event_source-devices-events
-| > @@ -29,7 +29,7 @@ Description:	Generic performance monitoring events
-| >  
-| >  What: 		/sys/devices/cpu/events/PM_1PLUS_PPC_CMPL
-| >  		/sys/devices/cpu/events/PM_BRU_FIN
-| > -		/sys/devices/cpu/events/PM_BRU_MPRED
-| > +		/sys/devices/cpu/events/PM_BR_MPRED
-| 
-| So you're changing the ABI.
-| 
-| I think that's probably OK, but you at least need to mention _why_ you
-| think it's OK.
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-Some of the reasons I think its ok to change:
+We can find pte that are splitting while walking page tables. Return
+None pte in that case.
 
-- It is relatively new interface, specific to the Power7 platform.
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/kvm_book3s_64.h | 57 ++++++++++++++++++--------------
+ arch/powerpc/kvm/book3s_64_mmu_hv.c      |  8 +++--
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c      | 12 +++----
+ 3 files changed, 43 insertions(+), 34 deletions(-)
 
-- No tools that we know of actually use this interface at this point (none
-  are listed near the interface).
-
-- Users of this interface (eg oprofile users migrating to perf) would be
-  more used to the "PM_BR_MPRED" rather than "PM_BRU_MPRED".
-
-- These are in the ABI/testing at this point rather than ABI/stable, so
-  hoping we have some wiggle room.
-
-But of course this is not a "grave error" or "security hole" which are
-the justifications listed in the Documentation/ABI/README.  If these
-are not good enough reasons, we can leave the misnomer around and
-create another file in sysfs with the correct name PM_BR_MPRED.
-
-Sukadev
+diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
+index 9c1ff33..937c51b 100644
+--- a/arch/powerpc/include/asm/kvm_book3s_64.h
++++ b/arch/powerpc/include/asm/kvm_book3s_64.h
+@@ -159,36 +159,45 @@ static inline int hpte_cache_flags_ok(unsigned long ptel, unsigned long io_type)
+ }
+ 
+ /*
+- * Lock and read a linux PTE.  If it's present and writable, atomically
+- * set dirty and referenced bits and return the PTE, otherwise return 0.
++ * If it's present and writable, atomically set dirty and referenced bits and
++ * return the PTE, otherwise return 0. If we find a transparent hugepage
++ * and if it is marked splitting we return 0;
+  */
+-static inline pte_t kvmppc_read_update_linux_pte(pte_t *p, int writing)
++static inline pte_t kvmppc_read_update_linux_pte(pte_t *ptep, int writing,
++						 unsigned int hugepage)
+ {
+-	pte_t pte, tmp;
+-
+-	/* wait until _PAGE_BUSY is clear then set it atomically */
+-	__asm__ __volatile__ (
+-		"1:	ldarx	%0,0,%3\n"
+-		"	andi.	%1,%0,%4\n"
+-		"	bne-	1b\n"
+-		"	ori	%1,%0,%4\n"
+-		"	stdcx.	%1,0,%3\n"
+-		"	bne-	1b"
+-		: "=&r" (pte), "=&r" (tmp), "=m" (*p)
+-		: "r" (p), "i" (_PAGE_BUSY)
+-		: "cc");
+-
+-	if (pte_present(pte)) {
+-		pte = pte_mkyoung(pte);
+-		if (writing && pte_write(pte))
+-			pte = pte_mkdirty(pte);
+-	}
++	pte_t old_pte, new_pte = __pte(0);
++
++	while (1) {
++		old_pte = pte_val(*ptep);
++		/*
++		 * wait until _PAGE_BUSY is clear then set it atomically
++		 */
++		if (unlikely(old_pte & _PAGE_BUSY))
++			continue;
++
++#ifdef CONFIG_TRANSPARENT_HUGEPAGE
++		/* If hugepage and is trans splitting return None */
++		if (unlikely(hugepage &&
++			     pmd_trans_splitting(pte_pmd(old_pte))))
++			return __pte(0);
++#endif
++		/* If pte is not present return None */
++		if (unlikely(!(old_pte & _PAGE_PRESENT)))
++			return __pte(0);
+ 
+-	*p = pte;	/* clears _PAGE_BUSY */
++		new_pte = pte_mkyoung(old_pte);
++		if (writing && pte_write(old_pte))
++			new_pte = pte_mkdirty(new_pte);
+ 
+-	return pte;
++		if (old_pte == __cmpxchg_u64((unsigned long *)ptep, old_pte,
++					     new_pte))
++			break;
++	}
++	return new_pte;
+ }
+ 
++
+ /* Return HPTE cache control bits corresponding to Linux pte bits */
+ static inline unsigned long hpte_cache_bits(unsigned long pte_val)
+ {
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+index 5880dfb..710d313 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+@@ -675,6 +675,7 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 		}
+ 		/* if the guest wants write access, see if that is OK */
+ 		if (!writing && hpte_is_writable(r)) {
++			unsigned int hugepage_shift;
+ 			pte_t *ptep, pte;
+ 
+ 			/*
+@@ -683,9 +684,10 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 			 */
+ 			rcu_read_lock_sched();
+ 			ptep = find_linux_pte_or_hugepte(current->mm->pgd,
+-							 hva, NULL);
+-			if (ptep && pte_present(*ptep)) {
+-				pte = kvmppc_read_update_linux_pte(ptep, 1);
++							 hva, &hugepage_shift);
++			if (ptep) {
++				pte = kvmppc_read_update_linux_pte(ptep, 1,
++							   hugepage_shift);
+ 				if (pte_write(pte))
+ 					write_ok = 1;
+ 			}
+diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+index dcf892d..fc25689 100644
+--- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
++++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+@@ -139,20 +139,18 @@ static pte_t lookup_linux_pte(pgd_t *pgdir, unsigned long hva,
+ {
+ 	pte_t *ptep;
+ 	unsigned long ps = *pte_sizep;
+-	unsigned int shift;
++	unsigned int hugepage_shift;
+ 
+-	ptep = find_linux_pte_or_hugepte(pgdir, hva, &shift);
++	ptep = find_linux_pte_or_hugepte(pgdir, hva, &hugepage_shift);
+ 	if (!ptep)
+ 		return __pte(0);
+-	if (shift)
+-		*pte_sizep = 1ul << shift;
++	if (hugepage_shift)
++		*pte_sizep = 1ul << hugepage_shift;
+ 	else
+ 		*pte_sizep = PAGE_SIZE;
+ 	if (ps > *pte_sizep)
+ 		return __pte(0);
+-	if (!pte_present(*ptep))
+-		return __pte(0);
+-	return kvmppc_read_update_linux_pte(ptep, writing);
++	return kvmppc_read_update_linux_pte(ptep, writing, hugepage_shift);
+ }
+ 
+ static inline void unlock_hpte(unsigned long *hpte, unsigned long hpte_v)
+-- 
+1.8.1.2
