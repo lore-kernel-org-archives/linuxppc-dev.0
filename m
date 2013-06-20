@@ -1,32 +1,18 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e37.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0C5D82C023D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 20:24:17 +1000 (EST)
-Received: from /spool/local
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Thu, 20 Jun 2013 04:13:35 -0600
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
- [9.17.195.228])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 27FE91FF001D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 04:08:18 -0600 (MDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5KADWn0118372
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 04:13:32 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5KADVE7030219
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 04:13:32 -0600
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v7 0/5] EEH Support for PowerNV platform
-Date: Thu, 20 Jun 2013 18:13:21 +0800
-Message-Id: <1371723206-26190-1-git-send-email-shangw@linux.vnet.ibm.com>
-Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
+ (Client CN "mail.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 41AC42C023D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 20:28:47 +1000 (EST)
+From: Tiejun Chen <tiejun.chen@windriver.com>
+To: <benh@kernel.crashing.org>
+Subject: [v5][PATCH 0/6] powerpc/book3e: powerpc/book3e: make kgdb to work well
+Date: Thu, 20 Jun 2013 18:28:24 +0800
+Message-ID: <1371724110-8250-1-git-send-email-tiejun.chen@windriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,24 +22,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Ben,
 
-It resends the last 5 patches ([27/31] - [31/31]) of the series to support EEH
-for PowerNV platform.
+As you mention just now, I resend this another pending patch sets v5 used
+to support kgdb/gdb on book3e.
 
-v6 -> v7:
-	* Use atomic notifier to replace the original OPAL notifier according
-	  to Ben's suggestion.
-	* Avoid registering duplicated notifiers for OPAL_EVENT_PCI_ERROR.
+v5:
 
----
+* rebase on merge branch.
 
-arch/powerpc/include/asm/opal.h           |    5 ++
-arch/powerpc/platforms/powernv/eeh-ioda.c |   72 ++++++++++++++++++++++++++++-
-arch/powerpc/platforms/powernv/opal.c     |   69 +++++++++++++++++++++++++++-
-arch/powerpc/platforms/powernv/pci-ioda.c |   23 +++++++++
-arch/powerpc/platforms/powernv/pci.h      |    4 ++
-arch/powerpc/platforms/powernv/setup.c    |    4 ++
-6 files changed, 175 insertions(+), 2 deletions(-)
+Note the original patch, [ATCH 5/7] kgdb/kgdbts: support ppc64, is already merged
+by Jason.
 
-Thanks,
-Gavin
+v4:
+
+* use DEFINE_PER_CPU to allocate kgdb's thread_info
+* add patch 7 to make usre copy thread_info only !__check_irq_replay
+* leave "andi.   r14,r11,MSR_PR" out of "#ifndef CONFIG_KGDB"
+  since cr0 is still used lately.
+* retest
+
+v3:
+
+* make work when enable CONFIG_RELOCATABLE
+* fix one typo in patch,
+  "powerpc/book3e: store critical/machine/debug exception thread info": 
+	ld	r1,PACAKSAVE(r13);
+    ->  ld	r14,PACAKSAVE(r13);
+* remove copying the thread_info since booke and book3e always copy
+  the thead_info now when we enter the debug exception, and so drop
+  the v2 patch, "book3e/kgdb: Fix a single stgep case of lazy IRQ"
+
+v2:
+
+* Make sure we cover CONFIG_PPC_BOOK3E_64 safely
+* Use LOAD_REG_IMMEDIATE() to load properly
+	the value of the constant expression in load debug exception stack 
+* Copy thread infor form the kernel stack coming from usr
+* Rebase latest powerpc git tree
+
+v1:
+* Copy thread info only when we are from !user mode since we'll get kernel stack
+  coming from usr directly.
+* remove save/restore EX_R14/EX_R15 since DBG_EXCEPTION_PROLOG already covered
+  this.
+* use CURRENT_THREAD_INFO() conveniently to get thread.
+* fix some typos
+* add a patch to make sure gdb can generate a single step properly to invoke a
+  kgdb state.
+* add a patch to if we need to replay an interrupt, we shouldn't restore that
+  previous backup thread info to make sure we can replay an interrupt lately
+  with a proper thread info.
+* rebase latest powerpc git tree
+
+v0:
+This patchset is used to support kgdb for book3e.
+
+------
+Tiejun Chen (6):
+      powerpc/book3e: load critical/machine/debug exception stack
+      powerpc/book3e: store critical/machine/debug exception thread info
+      book3e/kgdb: update thread's dbcr0
+      powerpc/book3e: support kgdb for kernel space
+      powerpc/kgdb: use DEFINE_PER_CPU to allocate kgdb's thread_info
+      book3e/kgdb: Fix a single stgep case of lazy IRQ
+
+ arch/powerpc/kernel/exceptions-64e.S |   68 ++++++++++++++++++++++++++++++++--
+ arch/powerpc/kernel/irq.c            |   10 +++++
+ arch/powerpc/kernel/kgdb.c           |   21 +++++++----
+ 3 files changed, 88 insertions(+), 11 deletions(-)
+
+Tiejun
