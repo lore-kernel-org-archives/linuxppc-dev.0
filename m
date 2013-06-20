@@ -1,28 +1,30 @@
-Return-Path: <joro@8bytes.org>
-Received: from mail.8bytes.org (8bytes.org [85.214.48.195])
- by ozlabs.org (Postfix) with ESMTP id 76D182C009F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jun 2013 00:41:58 +1000 (EST)
-Received: from localhost (localhost [127.0.0.1])
- by mail.8bytes.org (Postfix) with SMTP id 7878B12B0EF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 16:41:55 +0200 (CEST)
-Date: Thu, 20 Jun 2013 16:41:53 +0200
-From: "joro@8bytes.org" <joro@8bytes.org>
-To: Sethi Varun-B16395 <B16395@freescale.com>
-Subject: Re: [PATCH 2/5 v11] powerpc: Add iommu domain pointer to device
- archdata
-Message-ID: <20130620144152.GB3589@8bytes.org>
-References: <1364500442-20927-1-git-send-email-Varun.Sethi@freescale.com>
- <1364500442-20927-3-git-send-email-Varun.Sethi@freescale.com>
- <AC9BAE34-A9CB-4A24-A357-0AA7734CE443@kernel.crashing.org>
- <C5ECD7A89D1DC44195F34B25E172658D5CB5D4@039-SN2MPN1-011.039d.mgd.msft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <C5ECD7A89D1DC44195F34B25E172658D5CB5D4@039-SN2MPN1-011.039d.mgd.msft.net>
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Yoder Stuart-B08248 <B08248@freescale.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id CBD602C02BB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jun 2013 00:55:20 +1000 (EST)
+Message-ID: <1371740113.32709.22.camel@ul30vt.home>
+Subject: Re: [PATCH 3/4] KVM: PPC: Add support for IOMMU in-kernel handling
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Date: Thu, 20 Jun 2013 08:55:13 -0600
+In-Reply-To: <51C2C1CC.9000003@ozlabs.ru>
+References: <1371422343.21896.143.camel@pasglop>
+ <1371438800.22681.38.camel@ul30vt.home>
+ <1371441361.21896.152.camel@pasglop>
+ <1371522772.22681.140.camel@ul30vt.home> <87txkun568.fsf@rustcorp.com.au>
+ <1371617970.21896.232.camel@pasglop>
+ <E63966E3-336F-4CB8-96EC-24D2C1644E62@suse.de>
+ <1371653443.21896.291.camel@pasglop>
+ <1371656989.22659.98.camel@ul30vt.home> <51C28BEA.8050501@ozlabs.ru>
+ <20130620052822.GB3140@voom.redhat.com> <1371714449.3944.14.camel@pasglop>
+ <51C2C1CC.9000003@ozlabs.ru>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: "kvm@vger.kernel.org mailing list" <kvm@vger.kernel.org>,
+ Joerg Roedel <joro@8bytes.org>, Rusty Russell <rusty@rustcorp.com.au>,
+ Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
+ open list <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,12 +34,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 20, 2013 at 02:29:30PM +0000, Sethi Varun-B16395 wrote:
-> Hi Joerg,
-> My PAMU driver patches depend on this patch which was Ack by Kumar. Should I resubmit this patch as well?
+On Thu, 2013-06-20 at 18:48 +1000, Alexey Kardashevskiy wrote:
+> On 06/20/2013 05:47 PM, Benjamin Herrenschmidt wrote:
+> > On Thu, 2013-06-20 at 15:28 +1000, David Gibson wrote:
+> >>> Just out of curiosity - would not get_file() and fput_atomic() on a
+> >> group's
+> >>> file* do the right job instead of vfio_group_add_external_user() and
+> >>> vfio_group_del_external_user()?
+> >>
+> >> I was thinking that too.  Grabbing a file reference would certainly be
+> >> the usual way of handling this sort of thing.
+> > 
+> > But that wouldn't prevent the group ownership to be returned to
+> > the kernel or another user would it ?
+> 
+> 
+> Holding the file pointer does not let the group->container_users counter go
+> to zero
 
-Yes, please. Add the collected Acked-bys and submit everything that is
-missing in v3.10-rc6.
+How so?  Holding the file pointer means the file won't go away, which
+means the group release function won't be called.  That means the group
+won't go away, but that doesn't mean it's attached to an IOMMU.  A user
+could call UNSET_CONTAINER.
 
+>  and this is exactly what vfio_group_add_external_user() and
+> vfio_group_del_external_user() do. The difference is only in absolute value
+> - 2 vs. 3.
+> 
+> No change in behaviour whether I use new vfio API or simply hold file* till
+> KVM closes fd created when IOMMU was connected to LIOBN.
 
-	Joerg
+By that notion you could open(/dev/vfio/$GROUP) and you're safe, right?
+But what about SET_CONTAINER & SET_IOMMU?  All that you guarantee
+holding the file pointer is that the vfio_group exists.
+
+> And while this counter is not zero, QEMU cannot take ownership over the group.
+>
+> I am definitely still missing the bigger picture...
+
+The bigger picture is that the group needs to exist AND it needs to be
+setup and maintained to have IOMMU protection.  Actually, my first stab
+at add_external_user doesn't look sufficient, it needs to look more like
+vfio_group_get_device_fd, checking group->container->iommu and
+group_viable().  As written it would allow an external user after
+SET_CONTAINER without SET_IOMMU.  It should also be part of the API that
+the external user must hold the file reference between add_external_use
+and del_external_user and do cleanup on any exit paths.  Thanks,
+
+Alex
