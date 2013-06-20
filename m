@@ -1,25 +1,21 @@
-Return-Path: <B16395@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
+Return-Path: <B07421@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0250.outbound.messaging.microsoft.com [213.199.154.250])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E5CE22C0307
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jun 2013 02:12:02 +1000 (EST)
-From: Varun Sethi <Varun.Sethi@freescale.com>
-To: <joro@8bytes.org>, <iommu@lists.linux-foundation.org>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
- <benh@kernel.crashing.org>, <galak@kernel.crashing.org>,
- <stuart.yoder@freescale.com>, <scottwood@freescale.com>,
- <alex.williamson@redhat.com>
-Subject: [PATCH 1/3 v11] powerpc: Add iommu domain pointer to device archdata
-Date: Thu, 20 Jun 2013 21:31:29 +0530
-Message-ID: <1371744089-17780-3-git-send-email-Varun.Sethi@freescale.com>
-In-Reply-To: <1371744089-17780-1-git-send-email-Varun.Sethi@freescale.com>
-References: <1371744089-17780-1-git-send-email-Varun.Sethi@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 139402C00A2
+ for <linuxppc-dev@ozlabs.org>; Fri, 21 Jun 2013 05:15:47 +1000 (EST)
+Date: Thu, 20 Jun 2013 14:15:37 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: DEBUG_PAGEALLOC on PPC not working (kernels 2.6-25, 3.0-34)
+To: perth1415 <saikia.partha@gmail.com>
+In-Reply-To: <1371724960184-72625.post@n7.nabble.com> (from
+ saikia.partha@gmail.com on Thu Jun 20 05:42:40 2013)
+Message-ID: <1371755737.11064.13@snotra>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Varun Sethi <Varun.Sethi@freescale.com>
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,33 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add an iommu domain pointer to device (powerpc) archdata.  Devices
-are attached to iommu domains and this pointer provides a mechanism
-to correlate between a device and the associated iommu domain.  This
-field is set when a device is attached to a domain.
+On 06/20/2013 05:42:40 AM, perth1415 wrote:
+> Hi Scott,
+>=20
+> Thanks for the reply, though a bit disheartening :-)
+> My understanding on e500 MMU is not clear. It'd be nice if I could =20
+> find some
+> way (may be ad-hoc) to debug some use-after-free page corruptions. =20
+> SLAB
+> debug tells me the page was modified by someone after it was freed but
+> DEBUG_PAGEALLOC would have been more specific, as to tell me where =20
+> exactly
+> it was getting modified.
+> Any debugging clues will be much appreciated.
 
-Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
-Acked-by: Kumar Gala <galak@kernel.crashing.org>
----
-- no change in v11.
-- no change in v10.
-- Added CONFIG_IOMMU_API in v9.
- arch/powerpc/include/asm/device.h |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+If you know an exact address that's being corrupted, you could set a =20
+data breakpoint (by manually setting the registers, and making sure =20
+that the exception handler will produce a dump and not ignore it as a =20
+spurious event).  You could add code to periodically check for =20
+corruption (from a timer, from codepaths which you suspect, =20
+before/after IRQ handlers, etc).  If you have specific code that you =20
+suspect may be responsible, you can have it check for poison values =20
+before writing.  I'm not sure if slab debugging already does this, but =20
+if not you could have it record the address of the code that last =20
+allocated and freed the corrupted memory chunk.
 
-diff --git a/arch/powerpc/include/asm/device.h b/arch/powerpc/include/asm/device.h
-index 77e97dd..38faede 100644
---- a/arch/powerpc/include/asm/device.h
-+++ b/arch/powerpc/include/asm/device.h
-@@ -28,6 +28,9 @@ struct dev_archdata {
- 		void		*iommu_table_base;
- 	} dma_data;
- 
-+#ifdef CONFIG_IOMMU_API
-+	void			*iommu_domain;
-+#endif
- #ifdef CONFIG_SWIOTLB
- 	dma_addr_t		max_direct_dma_addr;
- #endif
--- 
-1.7.4.1
+If you have access to a tool such as Virtutech Simics, you could use =20
+reverse execution to find the corruption.
+
+Or you could find a way to separate the code/data needed by exceptions =20
+(including page tables, kernel stacks, etc) from everything else, and =20
+only pin the former, but that's probably a lot of work.
+
+-Scott=
