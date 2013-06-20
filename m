@@ -1,30 +1,31 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AFF3E2C031D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 15:21:49 +1000 (EST)
+ (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B38282C031D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 15:21:50 +1000 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Thu, 20 Jun 2013 01:21:47 -0400
-Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id A3BB2C9003E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 01:21:43 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5K5LiUm321412
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 01:21:44 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5K5Lh1W003939
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2013 02:21:44 -0300
+ Wed, 19 Jun 2013 23:21:48 -0600
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+ [9.17.195.228])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 166EB1FF001D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 23:16:31 -0600 (MDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5K5Ljix071918
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 23:21:45 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5K5LiRS003981
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jun 2013 23:21:45 -0600
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 24/31] powerpc/eeh: Initialization for PowerNV
-Date: Thu, 20 Jun 2013 13:21:14 +0800
-Message-Id: <1371705681-24632-25-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 26/31] powerpc/eeh: Allow to check fenced PHB proactively
+Date: Thu, 20 Jun 2013 13:21:16 +0800
+Message-Id: <1371705681-24632-27-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1371705681-24632-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1371705681-24632-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -37,106 +38,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch initializes EEH for PowerNV platform. Because the OPAL
-APIs requires HUB ID, we need trace that through struct pnv_phb.
+It's meaningless to handle frozen PE if we already had fenced PHB.
+The patch intends to check the PHB state before checking PE. If the
+PHB has been put into fenced state, we need take care of that firstly.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c   |   16 +++++++++++++---
- arch/powerpc/platforms/powernv/pci-p5ioc2.c |    6 ++++--
- 2 files changed, 17 insertions(+), 5 deletions(-)
+ arch/powerpc/kernel/eeh.c |   60 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 60 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 9c9d15e..48b0940 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -973,6 +973,11 @@ static void pnv_pci_ioda_fixup(void)
- 	pnv_pci_ioda_setup_PEs();
- 	pnv_pci_ioda_setup_seg();
- 	pnv_pci_ioda_setup_DMA();
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index 81cd031..7c567be 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -269,6 +269,58 @@ static inline unsigned long eeh_token_to_phys(unsigned long token)
+ 	return pa | (token & (PAGE_SIZE-1));
+ }
+ 
++/*
++ * On PowerNV platform, we might already have fenced PHB there.
++ * For that case, it's meaningless to recover frozen PE. Intead,
++ * We have to handle fenced PHB firstly.
++ */
++static int eeh_phb_check_failure(struct eeh_pe *pe)
++{
++	struct eeh_pe *phb_pe;
++	unsigned long flags;
++	int ret;
 +
-+#ifdef CONFIG_EEH
-+	eeh_addr_cache_build();
-+	eeh_init();
-+#endif
- }
- 
- /*
-@@ -1049,7 +1054,8 @@ static void pnv_pci_ioda_shutdown(struct pnv_phb *phb)
- 		       OPAL_ASSERT_RESET);
- }
- 
--void __init pnv_pci_init_ioda_phb(struct device_node *np, int ioda_type)
-+void __init pnv_pci_init_ioda_phb(struct device_node *np,
-+				  u64 hub_id, int ioda_type)
- {
- 	struct pci_controller *hose;
- 	static int primary = 1;
-@@ -1087,6 +1093,7 @@ void __init pnv_pci_init_ioda_phb(struct device_node *np, int ioda_type)
- 	hose->first_busno = 0;
- 	hose->last_busno = 0xff;
- 	hose->private_data = phb;
-+	phb->hub_id = hub_id;
- 	phb->opal_id = phb_id;
- 	phb->type = ioda_type;
- 
-@@ -1172,6 +1179,9 @@ void __init pnv_pci_init_ioda_phb(struct device_node *np, int ioda_type)
- 		phb->ioda.io_size, phb->ioda.io_segsize);
- 
- 	phb->hose->ops = &pnv_pci_ops;
-+#ifdef CONFIG_EEH
-+	phb->eeh_ops = &ioda_eeh_ops;
-+#endif
- 
- 	/* Setup RID -> PE mapping function */
- 	phb->bdfn_to_pe = pnv_ioda_bdfn_to_pe;
-@@ -1212,7 +1222,7 @@ void __init pnv_pci_init_ioda_phb(struct device_node *np, int ioda_type)
- 
- void pnv_pci_init_ioda2_phb(struct device_node *np)
- {
--	pnv_pci_init_ioda_phb(np, PNV_PHB_IODA2);
-+	pnv_pci_init_ioda_phb(np, 0, PNV_PHB_IODA2);
- }
- 
- void __init pnv_pci_init_ioda_hub(struct device_node *np)
-@@ -1235,6 +1245,6 @@ void __init pnv_pci_init_ioda_hub(struct device_node *np)
- 	for_each_child_of_node(np, phbn) {
- 		/* Look for IODA1 PHBs */
- 		if (of_device_is_compatible(phbn, "ibm,ioda-phb"))
--			pnv_pci_init_ioda_phb(phbn, PNV_PHB_IODA1);
-+			pnv_pci_init_ioda_phb(phbn, hub_id, PNV_PHB_IODA1);
++	if (!eeh_probe_mode_dev())
++		return -EPERM;
++
++	/* Find the PHB PE */
++	phb_pe = eeh_phb_pe_get(pe->phb);
++	if (!phb_pe) {
++		pr_warning("%s Can't find PE for PHB#%d\n",
++			   __func__, pe->phb->global_number);
++		return -EEXIST;
++	}
++
++	/* If the PHB has been in problematic state */
++	eeh_serialize_lock(&flags);
++	if (phb_pe->state & (EEH_PE_ISOLATED | EEH_PE_PHB_DEAD)) {
++		ret = 0;
++		goto out;
++	}
++
++	/* Check PHB state */
++	ret = eeh_ops->get_state(phb_pe, NULL);
++	if ((ret < 0) ||
++	    (ret == EEH_STATE_NOT_SUPPORT) ||
++	    (ret & (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE)) ==
++	    (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE)) {
++		ret = 0;
++		goto out;
++	}
++
++	/* Isolate the PHB and send event */
++	eeh_pe_state_mark(phb_pe, EEH_PE_ISOLATED);
++	eeh_serialize_unlock(flags);
++	eeh_send_failure_event(phb_pe);
++
++	WARN(1, "EEH: PHB failure detected\n");
++
++	return 1;
++out:
++	eeh_serialize_unlock(flags);
++	return ret;
++}
++
+ /**
+  * eeh_dev_check_failure - Check if all 1's data is due to EEH slot freeze
+  * @edev: eeh device
+@@ -319,6 +371,14 @@ int eeh_dev_check_failure(struct eeh_dev *edev)
+ 		return 0;
  	}
- }
-diff --git a/arch/powerpc/platforms/powernv/pci-p5ioc2.c b/arch/powerpc/platforms/powernv/pci-p5ioc2.c
-index 92b37a0..ae72616 100644
---- a/arch/powerpc/platforms/powernv/pci-p5ioc2.c
-+++ b/arch/powerpc/platforms/powernv/pci-p5ioc2.c
-@@ -92,7 +92,7 @@ static void pnv_pci_p5ioc2_dma_dev_setup(struct pnv_phb *phb,
- 	set_iommu_table_base(&pdev->dev, &phb->p5ioc2.iommu_table);
- }
  
--static void __init pnv_pci_init_p5ioc2_phb(struct device_node *np,
-+static void __init pnv_pci_init_p5ioc2_phb(struct device_node *np, u64 hub_id,
- 					   void *tce_mem, u64 tce_size)
- {
- 	struct pnv_phb *phb;
-@@ -133,6 +133,7 @@ static void __init pnv_pci_init_p5ioc2_phb(struct device_node *np,
- 	phb->hose->first_busno = 0;
- 	phb->hose->last_busno = 0xff;
- 	phb->hose->private_data = phb;
-+	phb->hub_id = hub_id;
- 	phb->opal_id = phb_id;
- 	phb->type = PNV_PHB_P5IOC2;
- 	phb->model = PNV_PHB_MODEL_P5IOC2;
-@@ -226,7 +227,8 @@ void __init pnv_pci_init_p5ioc2_hub(struct device_node *np)
- 	for_each_child_of_node(np, phbn) {
- 		if (of_device_is_compatible(phbn, "ibm,p5ioc2-pcix") ||
- 		    of_device_is_compatible(phbn, "ibm,p5ioc2-pciex")) {
--			pnv_pci_init_p5ioc2_phb(phbn, tce_mem, tce_per_phb);
-+			pnv_pci_init_p5ioc2_phb(phbn, hub_id,
-+					tce_mem, tce_per_phb);
- 			tce_mem += tce_per_phb;
- 		}
- 	}
++	/*
++	 * On PowerNV platform, we might already have fenced PHB
++	 * there and we need take care of that firstly.
++	 */
++	ret = eeh_phb_check_failure(pe);
++	if (ret > 0)
++		return ret;
++
+ 	/* If we already have a pending isolation event for this
+ 	 * slot, we know it's bad already, we don't need to check.
+ 	 * Do this checking under a lock; as multiple PCI devices
 -- 
 1.7.5.4
