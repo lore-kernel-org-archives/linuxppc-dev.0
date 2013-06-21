@@ -1,30 +1,18 @@
-Return-Path: <B31939@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 70CA42C0389
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jun 2013 21:00:09 +1000 (EST)
-Received: from mail86-co9 (localhost [127.0.0.1])	by mail86-co9-R.bigfish.com
- (Postfix) with ESMTP id 2AB6AA0433	for
- <linuxppc-dev@lists.ozlabs.org>; Fri,
- 21 Jun 2013 11:00:05 +0000 (UTC)
-Received: from CO9EHSMHS014.bigfish.com (unknown [10.236.132.246])	by
- mail86-co9.bigfish.com (Postfix) with ESMTP id 81E2B2C0282	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jun 2013 10:58:50 +0000 (UTC)
-From: Minghuan Lian <Minghuan.Lian@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 2/3 v2] powerpc/dts: add MPIC v4.3 dts node
-Date: Fri, 21 Jun 2013 18:59:13 +0800
-Message-ID: <1371812354-1962-2-git-send-email-Minghuan.Lian@freescale.com>
-In-Reply-To: <1371812354-1962-1-git-send-email-Minghuan.Lian@freescale.com>
-References: <1371812354-1962-1-git-send-email-Minghuan.Lian@freescale.com>
+Return-Path: <linux@roeck-us.net>
+Received: from mail.active-venture.com (mail.active-venture.com
+ [67.228.131.205]) by ozlabs.org (Postfix) with ESMTP id 26D172C02E9
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jun 2013 02:54:50 +1000 (EST)
+Date: Fri, 21 Jun 2013 09:54:53 -0700
+From: Guenter Roeck <linux@roeck-us.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v2] powerpc/pci: Improve device hotplug initialization
+Message-ID: <20130621165453.GA5506@roeck-us.net>
+References: <1370884688-7753-1-git-send-email-linux@roeck-us.net>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Scott Wood <scottwood@freescale.com>,
- Minghuan Lian <Minghuan.Lian@freescale.com>,
- Zang Roy-R61911 <r61911@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1370884688-7753-1-git-send-email-linux@roeck-us.net>
+Cc: Yuanquan Chen <Yuanquan.Chen@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Hiroo Matsumoto <matsumoto.hiroo@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,200 +22,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For the latest platform T4 and B4, MPIC controller has been updated
-to v4.3. This patch adds a new file to describe the latest MPIC.
-The MSI blocks number is increased to four, the registers number
-of each block is increased to sixteen. MSIIR1 has been added to
-access these sixteen MSI registers.
+On Mon, Jun 10, 2013 at 10:18:08AM -0700, Guenter Roeck wrote:
+> Commit 37f02195b (powerpc/pci: fix PCI-e devices rescan issue on powerpc
+> platform) fixes a problem with interrupt and DMA initialization on hot
+> plugged devices. With this commit, interrupt and DMA initialization for
+> hot plugged devices is handled in the pci device enable function.
+> 
+> This approach has a couple of drawbacks. First, it creates two code paths
+> for device initialization, one for hot plugged devices and another for devices
+> known during the initial PCI scan. Second, the initialization code for hot
+> plugged devices is only called when the device is enabled, ie typically
+> in the probe function. Also, the platform specific setup code is called each
+> time pci_enable_device() is called, not only once during device discovery,
+> meaning it is actually called multiple times, once for devices discovered
+> during the initial scan and again each time a driver is re-loaded.
+> 
+> The visible result is that interrupt pins are only assigned to hot plugged
+> devices when the device driver is loaded. Effectively this changes the PCI
+> probe API, since pci_dev->irq and the device's dma configuration will now
+> only be valid after pci_enable() was called at least once. A more subtle
+> change is that platform specific PCI device setup is moved from device
+> discovery into the driver's probe function, more specifically into the
+> pci_enable_device() call.
+> 
+> To fix the inconsistencies, add new function pcibios_add_device.
+> Call pcibios_setup_device from pcibios_setup_bus_devices if device setup
+> is not complete, and from pcibios_add_device if bus setup is complete.
+> 
+> With this change, device setup code is moved back into device initialization,
+> and called exactly once for both static and hot plugged devices.
+> 
+> Cc: Yuanquan Chen <Yuanquan.Chen@freescale.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Hiroo Matsumoto <matsumoto.hiroo@jp.fujitsu.com>
+> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+> ---
+> v2: Ensure that PCI bus fixup code has been executed before calling
+>     device setup code.
+> 
+Hi Ben,
 
-Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
----
- arch/powerpc/boot/dts/fsl/b4si-post.dtsi     |   2 +-
- arch/powerpc/boot/dts/fsl/qoriq-mpic4.3.dtsi | 149 +++++++++++++++++++++++++++
- arch/powerpc/boot/dts/fsl/t4240si-post.dtsi  |   2 +-
- 3 files changed, 151 insertions(+), 2 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-mpic4.3.dtsi
+any comments/feedback on this approach ?
 
-diff --git a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
-index 7399154..4c617bf 100644
---- a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
-@@ -204,7 +204,7 @@
- 		};
- 	};
- 
--/include/ "qoriq-mpic.dtsi"
-+/include/ "qoriq-mpic4.3.dtsi"
- 
- 	guts: global-utilities@e0000 {
- 		compatible = "fsl,b4-device-config";
-diff --git a/arch/powerpc/boot/dts/fsl/qoriq-mpic4.3.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-mpic4.3.dtsi
-new file mode 100644
-index 0000000..64f713c
---- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/qoriq-mpic4.3.dtsi
-@@ -0,0 +1,149 @@
-+/*
-+ * QorIQ MPIC device tree stub [ controller @ offset 0x40000 ]
-+ *
-+ * Copyright 2013 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+mpic: pic@40000 {
-+	interrupt-controller;
-+	#address-cells = <0>;
-+	#interrupt-cells = <4>;
-+	reg = <0x40000 0x40000>;
-+	compatible = "fsl,mpic";
-+	device_type = "open-pic";
-+	clock-frequency = <0x0>;
-+};
-+
-+timer@41100 {
-+	compatible = "fsl,mpic-global-timer";
-+	reg = <0x41100 0x100 0x41300 4>;
-+	interrupts = <0 0 3 0
-+		      1 0 3 0
-+		      2 0 3 0
-+		      3 0 3 0>;
-+};
-+
-+msi0: msi@41600 {
-+	compatible = "fsl,mpic-msi-v4.3";
-+	reg = <0x41600 0x200 0x44148 4>;
-+	interrupts = <
-+		0xe0 0 0 0
-+		0xe1 0 0 0
-+		0xe2 0 0 0
-+		0xe3 0 0 0
-+		0xe4 0 0 0
-+		0xe5 0 0 0
-+		0xe6 0 0 0
-+		0xe7 0 0 0
-+		0x100 0 0 0
-+		0x101 0 0 0
-+		0x102 0 0 0
-+		0x103 0 0 0
-+		0x104 0 0 0
-+		0x105 0 0 0
-+		0x106 0 0 0
-+		0x107 0 0 0>;
-+};
-+
-+msi1: msi@41800 {
-+	compatible = "fsl,mpic-msi-v4.3";
-+	reg = <0x41800 0x200 0x45148 4>;
-+	interrupts = <
-+		0xe8 0 0 0
-+		0xe9 0 0 0
-+		0xea 0 0 0
-+		0xeb 0 0 0
-+		0xec 0 0 0
-+		0xed 0 0 0
-+		0xee 0 0 0
-+		0xef 0 0 0
-+		0x108 0 0 0
-+		0x109 0 0 0
-+		0x10a 0 0 0
-+		0x10b 0 0 0
-+		0x10c 0 0 0
-+		0x10d 0 0 0
-+		0x10e 0 0 0
-+		0x10f 0 0 0>;
-+};
-+
-+msi2: msi@41a00 {
-+	compatible = "fsl,mpic-msi-v4.3";
-+	reg = <0x41a00 0x200 0x46148 4>;
-+	interrupts = <
-+		0xf0 0 0 0
-+		0xf1 0 0 0
-+		0xf2 0 0 0
-+		0xf3 0 0 0
-+		0xf4 0 0 0
-+		0xf5 0 0 0
-+		0xf6 0 0 0
-+		0xf7 0 0 0
-+		0x110 0 0 0
-+		0x111 0 0 0
-+		0x112 0 0 0
-+		0x113 0 0 0
-+		0x114 0 0 0
-+		0x115 0 0 0
-+		0x116 0 0 0
-+		0x117 0 0 0>;
-+};
-+
-+msi3: msi@41c00 {
-+	compatible = "fsl,mpic-msi-v4.3";
-+	reg = <0x41c00 0x200 0x47148 4>;
-+	interrupts = <
-+		0xf8 0 0 0
-+		0xf9 0 0 0
-+		0xfa 0 0 0
-+		0xfb 0 0 0
-+		0xfc 0 0 0
-+		0xfd 0 0 0
-+		0xfe 0 0 0
-+		0xff 0 0 0
-+		0x118 0 0 0
-+		0x119 0 0 0
-+		0x11a 0 0 0
-+		0x11b 0 0 0
-+		0x11c 0 0 0
-+		0x11d 0 0 0
-+		0x11e 0 0 0
-+		0x11f 0 0 0>;
-+};
-+
-+timer@42100 {
-+	compatible = "fsl,mpic-global-timer";
-+	reg = <0x42100 0x100 0x42300 4>;
-+	interrupts = <4 0 3 0
-+		      5 0 3 0
-+		      6 0 3 0
-+		      7 0 3 0>;
-+};
-diff --git a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-index bd611a9..510afa3 100644
---- a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-@@ -358,7 +358,7 @@
- 			16 2 1 30>;
- 	};
- 
--/include/ "qoriq-mpic.dtsi"
-+/include/ "qoriq-mpic4.3.dtsi"
- 
- 	guts: global-utilities@e0000 {
- 		compatible = "fsl,t4240-device-config", "fsl,qoriq-device-config-2.0";
--- 
-1.8.1.2
+It is much less invasive than before and should address your concerns.
+
+Thanks,
+Guenter
+
+>  arch/powerpc/kernel/pci-common.c |   17 ++++++++++++-----
+>  1 file changed, 12 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+> index 7f2273c..6909b13 100644
+> --- a/arch/powerpc/kernel/pci-common.c
+> +++ b/arch/powerpc/kernel/pci-common.c
+> @@ -992,7 +992,7 @@ void pcibios_setup_bus_self(struct pci_bus *bus)
+>  		ppc_md.pci_dma_bus_setup(bus);
+>  }
+>  
+> -void pcibios_setup_device(struct pci_dev *dev)
+> +static void pcibios_setup_device(struct pci_dev *dev)
+>  {
+>  	/* Fixup NUMA node as it may not be setup yet by the generic
+>  	 * code and is needed by the DMA init
+> @@ -1013,6 +1013,17 @@ void pcibios_setup_device(struct pci_dev *dev)
+>  		ppc_md.pci_irq_fixup(dev);
+>  }
+>  
+> +int pcibios_add_device(struct pci_dev *dev)
+> +{
+> +	/*
+> +	 * We can only call pcibios_setup_device() after bus setup is complete,
+> +	 * since some of the platform specific DMA setup code depends on it.
+> +	 */
+> +	if (dev->bus->is_added)
+> +		pcibios_setup_device(dev);
+> +	return 0;
+> +}
+> +
+>  void pcibios_setup_bus_devices(struct pci_bus *bus)
+>  {
+>  	struct pci_dev *dev;
+> @@ -1467,10 +1478,6 @@ int pcibios_enable_device(struct pci_dev *dev, int mask)
+>  		if (ppc_md.pcibios_enable_device_hook(dev))
+>  			return -EINVAL;
+>  
+> -	/* avoid pcie irq fix up impact on cardbus */
+> -	if (dev->hdr_type != PCI_HEADER_TYPE_CARDBUS)
+> -		pcibios_setup_device(dev);
+> -
+>  	return pci_enable_resources(dev, mask);
+>  }
+>  
+> -- 
+> 1.7.9.7
+> 
+> 
