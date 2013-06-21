@@ -1,27 +1,34 @@
-Return-Path: <James.Hogan@imgtec.com>
-Message-ID: <51C40D78.4040603@imgtec.com>
-Date: Fri, 21 Jun 2013 09:23:20 +0100
-From: James Hogan <james.hogan@imgtec.com>
+Return-Path: <aruna@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DDF8B2C02F7
+ for <linuxppc-dev@ozlabs.org>; Fri, 21 Jun 2013 18:37:00 +1000 (EST)
+Received: from /spool/local
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <aruna@linux.vnet.ibm.com>;
+ Fri, 21 Jun 2013 18:22:37 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 060B62BB0050
+ for <linuxppc-dev@ozlabs.org>; Fri, 21 Jun 2013 18:36:53 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5L8LwF866715834
+ for <linuxppc-dev@ozlabs.org>; Fri, 21 Jun 2013 18:21:59 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5L8aoJn028606
+ for <linuxppc-dev@ozlabs.org>; Fri, 21 Jun 2013 18:36:51 +1000
+Subject: [PATCH] powerpc/pseries: Enable PSTORE in pseries_defconfig
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+ benh@kernel.crashing.org
+From: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
+Date: Fri, 21 Jun 2013 14:06:47 +0530
+Message-ID: <20130621083639.4039.27789.stgit@aruna-ThinkPad-T420>
 MIME-Version: 1.0
-To: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Subject: Re: [PATCH] of: Specify initrd location using 64-bit
-References: <1371775956-16453-1-git-send-email-santosh.shilimkar@ti.com>
- <51C3D8E7.5030601@synopsys.com>
-In-Reply-To: <51C3D8E7.5030601@synopsys.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, linux-mips@linux-mips.org,
- Aurelien Jacquiot <a-jacquiot@ti.com>,
- Catalin Marinas <catalin.marinas@arm.com>, bigeasy@linutronix.de,
- Will Deacon <will.deacon@arm.com>, Max Filippov <jcmvbkbc@gmail.com>,
- Paul Mackerras <paulus@samba.org>, Jonas Bonn <jonas@southpole.se>,
- Russell King <linux@arm.linux.org.uk>, linux-c6x-dev@linux-c6x.org,
- x86@kernel.org, arm@kernel.org, robherring2@gmail.com,
- Grant Likely <grant.likely@linaro.org>, devicetree-discuss@lists.ozlabs.org,
- linux-xtensa@linux-xtensa.org, Vineet Gupta <Vineet.Gupta1@synopsys.com>,
- Mark Salter <msalter@redhat.com>, Rob Herring <rob.herring@calxeda.com>,
- linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>,
- Michal Simek <monstr@monstr.eu>, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="utf-8"
+Cc: mahesh@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,74 +38,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 21/06/13 05:39, Vineet Gupta wrote:
-> Hi Santosh,
-> 
-> On 06/21/2013 06:22 AM, Santosh Shilimkar wrote:
->> Cc: Vineet Gupta <vgupta@synopsys.com>
->> Cc: Russell King <linux@arm.linux.org.uk>
->> Cc: Catalin Marinas <catalin.marinas@arm.com>
->> Cc: Will Deacon <will.deacon@arm.com>
->> Cc: Mark Salter <msalter@redhat.com>
->> Cc: Aurelien Jacquiot <a-jacquiot@ti.com>
->> Cc: James Hogan <james.hogan@imgtec.com>
->> Cc: Michal Simek <monstr@monstr.eu>
->> Cc: Ralf Baechle <ralf@linux-mips.org>
->> Cc: Jonas Bonn <jonas@southpole.se>
->> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> Cc: Paul Mackerras <paulus@samba.org>
->> Cc: x86@kernel.org
->> Cc: arm@kernel.org
->> Cc: Chris Zankel <chris@zankel.net>
->> Cc: Max Filippov <jcmvbkbc@gmail.com>
->> Cc: Grant Likely <grant.likely@linaro.org>
->> Cc: Rob Herring <rob.herring@calxeda.com>
->> Cc: bigeasy@linutronix.de
->> Cc: robherring2@gmail.com
->> Cc: Nicolas Pitre <nicolas.pitre@linaro.org>
->>
->> Cc: linux-arm-kernel@lists.infradead.org
->> Cc: linux-c6x-dev@linux-c6x.org
->> Cc: linux-mips@linux-mips.org
->> Cc: linuxppc-dev@lists.ozlabs.org
->> Cc: linux-xtensa@linux-xtensa.org
->> Cc: devicetree-discuss@lists.ozlabs.org
->>
->> Signed-off-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
->> ---
->>  arch/arc/mm/init.c            |    3 +--
->>  arch/arm/mm/init.c            |    2 +-
->>  arch/arm64/mm/init.c          |    3 +--
->>  arch/c6x/kernel/devicetree.c  |    3 +--
->>  arch/metag/mm/init.c          |    3 +--
->>  arch/microblaze/kernel/prom.c |    3 +--
->>  arch/mips/kernel/prom.c       |    3 +--
->>  arch/openrisc/kernel/prom.c   |    3 +--
->>  arch/powerpc/kernel/prom.c    |    3 +--
->>  arch/x86/kernel/devicetree.c  |    3 +--
->>  arch/xtensa/kernel/setup.c    |    3 +--
->>  drivers/of/fdt.c              |   10 ++++++----
->>  include/linux/of_fdt.h        |    3 +--
->>  13 files changed, 18 insertions(+), 27 deletions(-)
->>
->> diff --git a/arch/arc/mm/init.c b/arch/arc/mm/init.c
->> index 4a17736..3640c74 100644
->> --- a/arch/arc/mm/init.c
->> +++ b/arch/arc/mm/init.c
->> @@ -157,8 +157,7 @@ void __init free_initrd_mem(unsigned long start, unsigned long end)
->>  #endif
->>  
->>  #ifdef CONFIG_OF_FLATTREE
->> -void __init early_init_dt_setup_initrd_arch(unsigned long start,
->> -					    unsigned long end)
->> +void __init early_init_dt_setup_initrd_arch(u64 start, u64 end)
->>  {
->>  	pr_err("%s(%lx, %lx)\n", __func__, start, end);
->>  }
-> 
-> To avoid gcc warnings, you need to fix the print format specifiers too.
+Enable PSTORE in pseries_defconfig
 
-The same thing goes for arch/metag too.
+Signed-off-by: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
+---
+ arch/powerpc/configs/pseries_defconfig |    1 +
+ 1 file changed, 1 insertion(+)
 
-Cheers
-James
+diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
+index c4dfbaf..9630a50 100644
+--- a/arch/powerpc/configs/pseries_defconfig
++++ b/arch/powerpc/configs/pseries_defconfig
+@@ -347,3 +347,4 @@ CONFIG_VIRTUALIZATION=y
+ CONFIG_KVM_BOOK3S_64=m
+ CONFIG_KVM_BOOK3S_64_HV=y
+ CONFIG_VHOST_NET=m
++CONFIG_PSTORE=y
