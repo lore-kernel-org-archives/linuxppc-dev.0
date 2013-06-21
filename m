@@ -1,28 +1,22 @@
-Return-Path: <santosh.shilimkar@ti.com>
-Message-ID: <51C48986.6080602@ti.com>
-Date: Fri, 21 Jun 2013 13:12:38 -0400
-From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Return-Path: <pladow@gmail.com>
+Received: from mail-la0-x236.google.com (mail-la0-x236.google.com
+ [IPv6:2a00:1450:4010:c03::236])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B68182C04D6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jun 2013 03:15:03 +1000 (EST)
+Received: by mail-la0-f54.google.com with SMTP id ec20so7475204lab.41
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jun 2013 10:14:59 -0700 (PDT)
 MIME-Version: 1.0
-To: James Hogan <james.hogan@imgtec.com>, Vineet Gupta
- <Vineet.Gupta1@synopsys.com>
-Subject: Re: [PATCH] of: Specify initrd location using 64-bit
-References: <1371775956-16453-1-git-send-email-santosh.shilimkar@ti.com>
- <51C3D8E7.5030601@synopsys.com> <51C40D78.4040603@imgtec.com>
-In-Reply-To: <51C40D78.4040603@imgtec.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, linux-mips@linux-mips.org,
- Aurelien Jacquiot <a-jacquiot@ti.com>,
- Catalin Marinas <catalin.marinas@arm.com>, bigeasy@linutronix.de,
- Will Deacon <will.deacon@arm.com>, Max Filippov <jcmvbkbc@gmail.com>,
- Paul Mackerras <paulus@samba.org>, Jonas Bonn <jonas@southpole.se>,
- Russell King <linux@arm.linux.org.uk>, linux-c6x-dev@linux-c6x.org,
- x86@kernel.org, arm@kernel.org, robherring2@gmail.com,
- Grant Likely <grant.likely@linaro.org>, linux-xtensa@linux-xtensa.org,
- devicetree-discuss@lists.ozlabs.org, Mark Salter <msalter@redhat.com>,
- Rob Herring <rob.herring@calxeda.com>, linux-arm-kernel@lists.infradead.org,
- Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>,
- linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
- linuxppc-dev@lists.ozlabs.org
+Sender: pladow@gmail.com
+In-Reply-To: <CAN8Q1EdnN9+kKGy+voF3=EyPfbHv04Emfz=uA6XKMJEAkvLpAA@mail.gmail.com>
+References: <CAN8Q1EdnN9+kKGy+voF3=EyPfbHv04Emfz=uA6XKMJEAkvLpAA@mail.gmail.com>
+Date: Fri, 21 Jun 2013 10:14:58 -0700
+Message-ID: <CAN8Q1Ed9Lpg1Sog5tQODe+jqCRXBBH3d_UeR5usdc23CD7vwjg@mail.gmail.com>
+Subject: Re: Inbound PCI and Memory Corruption
+From: Peter LaDow <petela@gocougs.wsu.edu>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,82 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Vineet, James,
+On Fri, Jun 21, 2013 at 9:56 AM, Peter LaDow <petela@gocougs.wsu.edu> wrote:
+> We are running into a case where we get memory corruption when an
+> external PCI master writes to the processor.  We are using an MPC8349
+> with an external Intel 82540EP (an E1000) part.  I've spent several
+> weeks on the e1000 list trying to track down this problem, and after
+> some digging I'm thinking the problem is somewhere other than the
+> e1000 driver or the e1000 part.
 
-On Friday 21 June 2013 04:23 AM, James Hogan wrote:
-> On 21/06/13 05:39, Vineet Gupta wrote:
->> Hi Santosh,
->>
->> On 06/21/2013 06:22 AM, Santosh Shilimkar wrote:
->>> Cc: Vineet Gupta <vgupta@synopsys.com>
->>> Cc: Russell King <linux@arm.linux.org.uk>
->>> Cc: Catalin Marinas <catalin.marinas@arm.com>
->>> Cc: Will Deacon <will.deacon@arm.com>
->>> Cc: Mark Salter <msalter@redhat.com>
->>> Cc: Aurelien Jacquiot <a-jacquiot@ti.com>
->>> Cc: James Hogan <james.hogan@imgtec.com>
->>> Cc: Michal Simek <monstr@monstr.eu>
->>> Cc: Ralf Baechle <ralf@linux-mips.org>
->>> Cc: Jonas Bonn <jonas@southpole.se>
->>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->>> Cc: Paul Mackerras <paulus@samba.org>
->>> Cc: x86@kernel.org
->>> Cc: arm@kernel.org
->>> Cc: Chris Zankel <chris@zankel.net>
->>> Cc: Max Filippov <jcmvbkbc@gmail.com>
->>> Cc: Grant Likely <grant.likely@linaro.org>
->>> Cc: Rob Herring <rob.herring@calxeda.com>
->>> Cc: bigeasy@linutronix.de
->>> Cc: robherring2@gmail.com
->>> Cc: Nicolas Pitre <nicolas.pitre@linaro.org>
->>>
->>> Cc: linux-arm-kernel@lists.infradead.org
->>> Cc: linux-c6x-dev@linux-c6x.org
->>> Cc: linux-mips@linux-mips.org
->>> Cc: linuxppc-dev@lists.ozlabs.org
->>> Cc: linux-xtensa@linux-xtensa.org
->>> Cc: devicetree-discuss@lists.ozlabs.org
->>>
->>> Signed-off-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
->>> ---
->>>  arch/arc/mm/init.c            |    3 +--
->>>  arch/arm/mm/init.c            |    2 +-
->>>  arch/arm64/mm/init.c          |    3 +--
->>>  arch/c6x/kernel/devicetree.c  |    3 +--
->>>  arch/metag/mm/init.c          |    3 +--
->>>  arch/microblaze/kernel/prom.c |    3 +--
->>>  arch/mips/kernel/prom.c       |    3 +--
->>>  arch/openrisc/kernel/prom.c   |    3 +--
->>>  arch/powerpc/kernel/prom.c    |    3 +--
->>>  arch/x86/kernel/devicetree.c  |    3 +--
->>>  arch/xtensa/kernel/setup.c    |    3 +--
->>>  drivers/of/fdt.c              |   10 ++++++----
->>>  include/linux/of_fdt.h        |    3 +--
->>>  13 files changed, 18 insertions(+), 27 deletions(-)
->>>
->>> diff --git a/arch/arc/mm/init.c b/arch/arc/mm/init.c
->>> index 4a17736..3640c74 100644
->>> --- a/arch/arc/mm/init.c
->>> +++ b/arch/arc/mm/init.c
->>> @@ -157,8 +157,7 @@ void __init free_initrd_mem(unsigned long start, unsigned long end)
->>>  #endif
->>>  
->>>  #ifdef CONFIG_OF_FLATTREE
->>> -void __init early_init_dt_setup_initrd_arch(unsigned long start,
->>> -					    unsigned long end)
->>> +void __init early_init_dt_setup_initrd_arch(u64 start, u64 end)
->>>  {
->>>  	pr_err("%s(%lx, %lx)\n", __func__, start, end);
->>>  }
->>
->> To avoid gcc warnings, you need to fix the print format specifiers too.
-> 
-> The same thing goes for arch/metag too.
-> 
-Will update that in next version based on what we will end
-after the dicussion. i.e u64 or phys_addr_t
+After a (finally!) successful search of the list archive, I did find this:
 
-Thanks for comments.
+http://web.archiveorange.com/archive/v/9IQA26gPvdf4foaTcmCV
 
-Regards,
-Santosh
+Which seems very related to my problem.  However, the patch that is
+ultimately referenced is in place in 3.0.80 (see
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2006-February/021267.html).
+
+Hmmm...  perhaps our FDT is bad?
+
+Thanks,
+Pete
