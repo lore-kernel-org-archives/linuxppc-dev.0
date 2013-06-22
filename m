@@ -1,12 +1,14 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id EA0932C0430
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jun 2013 00:28:21 +1000 (EST)
-Message-ID: <1371911286.30572.155.camel@ul30vt.home>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id D0CC42C042D
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jun 2013 09:28:36 +1000 (EST)
+Message-ID: <1371943693.3944.104.camel@pasglop>
 Subject: Re: [PATCH 3/4] KVM: PPC: Add support for IOMMU in-kernel handling
-From: Alex Williamson <alex.williamson@redhat.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: David Gibson <david@gibson.dropbear.id.au>
-Date: Sat, 22 Jun 2013 08:28:06 -0600
+Date: Sun, 23 Jun 2013 09:28:13 +1000
 In-Reply-To: <20130622120304.GB25265@voom.fritz.box>
 References: <87txkun568.fsf@rustcorp.com.au>
  <1371617970.21896.232.camel@pasglop>
@@ -22,6 +24,7 @@ Cc: "kvm@vger.kernel.org mailing list" <kvm@vger.kernel.org>,
  Alexey Kardashevskiy <aik@ozlabs.ru>, Joerg Roedel <joro@8bytes.org>,
  Rusty Russell <rusty@rustcorp.com.au>, Alexander Graf <agraf@suse.de>,
  kvm-ppc@vger.kernel.org, open list <linux-kernel@vger.kernel.org>,
+ Alex Williamson <alex.williamson@redhat.com>,
  Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -33,32 +36,6 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Sat, 2013-06-22 at 22:03 +1000, David Gibson wrote:
-> On Thu, Jun 20, 2013 at 08:55:13AM -0600, Alex Williamson wrote:
-> > On Thu, 2013-06-20 at 18:48 +1000, Alexey Kardashevskiy wrote:
-> > > On 06/20/2013 05:47 PM, Benjamin Herrenschmidt wrote:
-> > > > On Thu, 2013-06-20 at 15:28 +1000, David Gibson wrote:
-> > > >>> Just out of curiosity - would not get_file() and fput_atomic() on a
-> > > >> group's
-> > > >>> file* do the right job instead of vfio_group_add_external_user() and
-> > > >>> vfio_group_del_external_user()?
-> > > >>
-> > > >> I was thinking that too.  Grabbing a file reference would certainly be
-> > > >> the usual way of handling this sort of thing.
-> > > > 
-> > > > But that wouldn't prevent the group ownership to be returned to
-> > > > the kernel or another user would it ?
-> > > 
-> > > 
-> > > Holding the file pointer does not let the group->container_users counter go
-> > > to zero
-> > 
-> > How so?  Holding the file pointer means the file won't go away, which
-> > means the group release function won't be called.  That means the group
-> > won't go away, but that doesn't mean it's attached to an IOMMU.  A user
-> > could call UNSET_CONTAINER.
-> 
-> Uhh... *thinks*.  Ah, I see.
-> 
 > I think the interface should not take the group fd, but the container
 > fd.  Holding a reference to *that* would keep the necessary things
 > around.  But more to the point, it's the right thing semantically:
@@ -70,9 +47,13 @@ On Sat, 2013-06-22 at 22:03 +1000, David Gibson wrote:
 > in the same container - the guest thinks they are different spaces,
 > but if they're in the same container they must be the same space.
 
-While the container is the gateway to the iommu, what empowers the
-container to maintain an iommu is the group.  What happens to a
-container when all the groups are disconnected or closed?  Groups are
-the unit that indicates hardware access, not containers.  Thanks,
+Interestingly, how are we going to extend that when/if we implement
+DDW ?
 
-Alex
+DDW means an API by which the guest can request the creation of
+additional iommus for a given device (typically, in addition to the
+default smallish 32-bit one using 4k pages, the guest can request
+a larger window in 64-bit space using a larger page size).
+
+Cheers,
+Ben.
