@@ -1,45 +1,47 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp08.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8EEDA2C0D95
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jun 2013 23:47:33 +1000 (EST)
+ (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7A40D2C0EE9
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jun 2013 23:48:03 +1000 (EST)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Sun, 23 Jun 2013 23:44:48 +1000
+ Sun, 23 Jun 2013 23:38:30 +1000
 Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id F06F52CE8044
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jun 2013 23:47:31 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 4CCE82BB0050
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jun 2013 23:48:01 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
  by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5NDWZoh62718204
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jun 2013 23:32:36 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5NDlUA0032418
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jun 2013 23:47:31 +1000
+ r5NDX54X61800636
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jun 2013 23:33:05 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5NDlxsD018180
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jun 2013 23:48:01 +1000
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH 28/45] KVM: Use get/put_online_cpus_atomic() to prevent CPU
- offline
+Subject: [PATCH 29/45] kvm/vmx: Use get/put_online_cpus_atomic() to prevent
+ CPU offline
 To: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com,
  paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org,
  akpm@linux-foundation.org, namhyung@kernel.org, walken@google.com,
  vincent.guittot@linaro.org, laijs@cn.fujitsu.com
-Date: Sun, 23 Jun 2013 19:14:11 +0530
-Message-ID: <20130623134407.19094.28802.stgit@srivatsabhat.in.ibm.com>
+Date: Sun, 23 Jun 2013 19:14:27 +0530
+Message-ID: <20130623134423.19094.90107.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20130623133642.19094.16038.stgit@srivatsabhat.in.ibm.com>
 References: <20130623133642.19094.16038.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: linux-arch@vger.kernel.org, kvm@vger.kernel.org,
- Gleb Natapov <gleb@redhat.com>, nikunj@linux.vnet.ibm.com,
+ Gleb Natapov <gleb@redhat.com>, x86@kernel.org, nikunj@linux.vnet.ibm.com,
  zhong@linux.vnet.ibm.com, linux-pm@vger.kernel.org, fweisbec@gmail.com,
- linux-kernel@vger.kernel.org, rostedt@goodmis.org,
- xiaoguangrong@linux.vnet.ibm.com, sbw@mit.edu, wangyun@linux.vnet.ibm.com,
+ "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+ rostedt@goodmis.org, xiaoguangrong@linux.vnet.ibm.com, sbw@mit.edu,
+ Ingo Molnar <mingo@redhat.com>, wangyun@linux.vnet.ibm.com,
  srivatsa.bhat@linux.vnet.ibm.com, netdev@vger.kernel.org,
- Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org
+ Paolo Bonzini <pbonzini@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -58,46 +60,71 @@ offline, while invoking from atomic context.
 
 Cc: Gleb Natapov <gleb@redhat.com>
 Cc: Paolo Bonzini <pbonzini@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: x86@kernel.org
 Cc: kvm@vger.kernel.org
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- virt/kvm/kvm_main.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ arch/x86/kvm/vmx.c |   13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 302681c..5bbfa30 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -174,7 +174,7 @@ static bool make_all_cpus_request(struct kvm *kvm, unsigned int req)
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index 260a919..4e1e966 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -26,6 +26,7 @@
+ #include <linux/mm.h>
+ #include <linux/highmem.h>
+ #include <linux/sched.h>
++#include <linux/cpu.h>
+ #include <linux/moduleparam.h>
+ #include <linux/mod_devicetable.h>
+ #include <linux/ftrace_event.h>
+@@ -7164,12 +7165,12 @@ static struct kvm_vcpu *vmx_create_vcpu(struct kvm *kvm, unsigned int id)
+ 	if (!vmm_exclusive)
+ 		kvm_cpu_vmxoff();
  
- 	zalloc_cpumask_var(&cpus, GFP_ATOMIC);
- 
--	me = get_cpu();
-+	me = get_online_cpus_atomic();
- 	kvm_for_each_vcpu(i, vcpu, kvm) {
- 		kvm_make_request(req, vcpu);
- 		cpu = vcpu->cpu;
-@@ -192,7 +192,7 @@ static bool make_all_cpus_request(struct kvm *kvm, unsigned int req)
- 		smp_call_function_many(cpus, ack_flush, NULL, 1);
- 	else
- 		called = false;
+-	cpu = get_cpu();
++	cpu = get_online_cpus_atomic();
+ 	vmx_vcpu_load(&vmx->vcpu, cpu);
+ 	vmx->vcpu.cpu = cpu;
+ 	err = vmx_vcpu_setup(vmx);
+ 	vmx_vcpu_put(&vmx->vcpu);
 -	put_cpu();
 +	put_online_cpus_atomic();
- 	free_cpumask_var(cpus);
- 	return called;
- }
-@@ -1707,11 +1707,11 @@ void kvm_vcpu_kick(struct kvm_vcpu *vcpu)
- 		++vcpu->stat.halt_wakeup;
- 	}
+ 	if (err)
+ 		goto free_vmcs;
+ 	if (vm_need_virtualize_apic_accesses(kvm)) {
+@@ -7706,12 +7707,12 @@ static int nested_vmx_run(struct kvm_vcpu *vcpu, bool launch)
  
--	me = get_cpu();
-+	me = get_online_cpus_atomic();
- 	if (cpu != me && (unsigned)cpu < nr_cpu_ids && cpu_online(cpu))
- 		if (kvm_arch_vcpu_should_kick(vcpu))
- 			smp_send_reschedule(cpu);
+ 	vmx->nested.vmcs01_tsc_offset = vmcs_read64(TSC_OFFSET);
+ 
+-	cpu = get_cpu();
++	cpu = get_online_cpus_atomic();
+ 	vmx->loaded_vmcs = vmcs02;
+ 	vmx_vcpu_put(vcpu);
+ 	vmx_vcpu_load(vcpu, cpu);
+ 	vcpu->cpu = cpu;
 -	put_cpu();
 +	put_online_cpus_atomic();
- }
- EXPORT_SYMBOL_GPL(kvm_vcpu_kick);
- #endif /* !CONFIG_S390 */
+ 
+ 	vmx_segment_cache_clear(vmx);
+ 
+@@ -8023,12 +8024,12 @@ static void nested_vmx_vmexit(struct kvm_vcpu *vcpu)
+ 	leave_guest_mode(vcpu);
+ 	prepare_vmcs12(vcpu, vmcs12);
+ 
+-	cpu = get_cpu();
++	cpu = get_online_cpus_atomic();
+ 	vmx->loaded_vmcs = &vmx->vmcs01;
+ 	vmx_vcpu_put(vcpu);
+ 	vmx_vcpu_load(vcpu, cpu);
+ 	vcpu->cpu = cpu;
+-	put_cpu();
++	put_online_cpus_atomic();
+ 
+ 	vmx_segment_cache_clear(vmx);
+ 
