@@ -1,48 +1,46 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0FD362C052A
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jun 2013 23:42:39 +1000 (EST)
+ (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B09BB2C07DC
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jun 2013 23:43:03 +1000 (EST)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Sun, 23 Jun 2013 23:31:10 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 8A6AD2BB0050
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jun 2013 23:42:36 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5NDRnB551839188
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jun 2013 23:27:49 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5NDgY2X028843
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jun 2013 23:42:36 +1000
+ Sun, 23 Jun 2013 23:28:38 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 38F6D2BB0052
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jun 2013 23:43:00 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5NDS38a6619350
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jun 2013 23:28:04 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5NDgvi4028242
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jun 2013 23:42:59 +1000
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH 06/45] CPU hotplug: Sprinkle debugging checks to catch locking
- bugs
+Subject: [PATCH 07/45] CPU hotplug: Expose the new debug config option
 To: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com,
  paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org,
  akpm@linux-foundation.org, namhyung@kernel.org, walken@google.com,
  vincent.guittot@linaro.org, laijs@cn.fujitsu.com
-Date: Sun, 23 Jun 2013 19:09:15 +0530
-Message-ID: <20130623133909.19094.18155.stgit@srivatsabhat.in.ibm.com>
+Date: Sun, 23 Jun 2013 19:09:31 +0530
+Message-ID: <20130623133928.19094.8259.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20130623133642.19094.16038.stgit@srivatsabhat.in.ibm.com>
 References: <20130623133642.19094.16038.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Cc: linux-arch@vger.kernel.org, Alex Shi <alex.shi@intel.com>,
- nikunj@linux.vnet.ibm.com, zhong@linux.vnet.ibm.com, linux-pm@vger.kernel.org,
- fweisbec@gmail.com, Rusty Russell <rusty@rustcorp.com.au>,
+Cc: linux-arch@vger.kernel.org, Michel Lespinasse <walken@google.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, nikunj@linux.vnet.ibm.com,
+ zhong@linux.vnet.ibm.com, linux-pm@vger.kernel.org, fweisbec@gmail.com,
  linux-kernel@vger.kernel.org, rostedt@goodmis.org,
- xiaoguangrong@linux.vnet.ibm.com, sbw@mit.edu, Joonsoo Kim <js1304@gmail.com>,
- wangyun@linux.vnet.ibm.com, srivatsa.bhat@linux.vnet.ibm.com,
- netdev@vger.kernel.org, Tejun Heo <tj@kernel.org>,
+ xiaoguangrong@linux.vnet.ibm.com, sbw@mit.edu,
+ Akinobu Mita <akinobu.mita@gmail.com>, wangyun@linux.vnet.ibm.com,
+ srivatsa.bhat@linux.vnet.ibm.com, netdev@vger.kernel.org,
  Andrew Morton <akpm@linux-foundation.org>,
- KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
- linuxppc-dev@lists.ozlabs.org
+ "Paul E. McKenney" <paul.mckenney@linaro.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,216 +50,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now that we have a debug infrastructure in place to detect cases where
-get/put_online_cpus_atomic() had to be used, add these checks at the
-right spots to help catch places where we missed converting to the new
-APIs.
+Now that we have all the pieces of the CPU hotplug debug infrastructure
+in place, expose the feature by growing a new Kconfig option,
+CONFIG_DEBUG_HOTPLUG_CPU.
 
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Alex Shi <alex.shi@intel.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Tejun Heo <tj@kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Joonsoo Kim <js1304@gmail.com>
+Cc: "Paul E. McKenney" <paul.mckenney@linaro.org>
+Cc: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Michel Lespinasse <walken@google.com>
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- include/linux/cpumask.h |   47 +++++++++++++++++++++++++++++++++++++++++++++--
- lib/cpumask.c           |    8 ++++++++
- 2 files changed, 53 insertions(+), 2 deletions(-)
+ lib/Kconfig.debug |    9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
-index 9197ca4..06d2c36 100644
---- a/include/linux/cpumask.h
-+++ b/include/linux/cpumask.h
-@@ -169,6 +169,7 @@ static inline unsigned int cpumask_any_but(const struct cpumask *mask,
-  */
- static inline unsigned int cpumask_first(const struct cpumask *srcp)
- {
-+	check_hotplug_safe_cpumask(srcp);
- 	return find_first_bit(cpumask_bits(srcp), nr_cpumask_bits);
- }
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index 566cf2b..6be1e72 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -512,6 +512,15 @@ config DEBUG_PREEMPT
+ 	  if kernel code uses it in a preemption-unsafe way. Also, the kernel
+ 	  will detect preemption count underflows.
  
-@@ -184,6 +185,8 @@ static inline unsigned int cpumask_next(int n, const struct cpumask *srcp)
- 	/* -1 is a legal arg here. */
- 	if (n != -1)
- 		cpumask_check(n);
++config DEBUG_HOTPLUG_CPU
++	bool "Debug CPU hotplug"
++	depends on HOTPLUG_CPU
++	default n
++	help
++	  If you say Y here, the kernel will check all the accesses of
++	  cpu_online_mask from atomic contexts, and will print warnings if
++	  the task lacks appropriate synchronization with CPU hotplug.
 +
-+	check_hotplug_safe_cpumask(srcp);
- 	return find_next_bit(cpumask_bits(srcp), nr_cpumask_bits, n+1);
- }
- 
-@@ -199,6 +202,8 @@ static inline unsigned int cpumask_next_zero(int n, const struct cpumask *srcp)
- 	/* -1 is a legal arg here. */
- 	if (n != -1)
- 		cpumask_check(n);
-+
-+	check_hotplug_safe_cpumask(srcp);
- 	return find_next_zero_bit(cpumask_bits(srcp), nr_cpumask_bits, n+1);
- }
- 
-@@ -288,8 +293,15 @@ static inline void cpumask_clear_cpu(int cpu, struct cpumask *dstp)
-  *
-  * No static inline type checking - see Subtlety (1) above.
-  */
--#define cpumask_test_cpu(cpu, cpumask) \
--	test_bit(cpumask_check(cpu), cpumask_bits((cpumask)))
-+#define cpumask_test_cpu(cpu, cpumask)				\
-+({								\
-+	int __ret;						\
-+								\
-+	check_hotplug_safe_cpu(cpu, cpumask);			\
-+	__ret = test_bit(cpumask_check(cpu),			\
-+				cpumask_bits((cpumask)));	\
-+	__ret;							\
-+})
- 
- /**
-  * cpumask_test_and_set_cpu - atomically test and set a cpu in a cpumask
-@@ -349,6 +361,9 @@ static inline int cpumask_and(struct cpumask *dstp,
- 			       const struct cpumask *src1p,
- 			       const struct cpumask *src2p)
- {
-+	check_hotplug_safe_cpumask(src1p);
-+	check_hotplug_safe_cpumask(src2p);
-+
- 	return bitmap_and(cpumask_bits(dstp), cpumask_bits(src1p),
- 				       cpumask_bits(src2p), nr_cpumask_bits);
- }
-@@ -362,6 +377,9 @@ static inline int cpumask_and(struct cpumask *dstp,
- static inline void cpumask_or(struct cpumask *dstp, const struct cpumask *src1p,
- 			      const struct cpumask *src2p)
- {
-+	check_hotplug_safe_cpumask(src1p);
-+	check_hotplug_safe_cpumask(src2p);
-+
- 	bitmap_or(cpumask_bits(dstp), cpumask_bits(src1p),
- 				      cpumask_bits(src2p), nr_cpumask_bits);
- }
-@@ -376,6 +394,9 @@ static inline void cpumask_xor(struct cpumask *dstp,
- 			       const struct cpumask *src1p,
- 			       const struct cpumask *src2p)
- {
-+	check_hotplug_safe_cpumask(src1p);
-+	check_hotplug_safe_cpumask(src2p);
-+
- 	bitmap_xor(cpumask_bits(dstp), cpumask_bits(src1p),
- 				       cpumask_bits(src2p), nr_cpumask_bits);
- }
-@@ -392,6 +413,9 @@ static inline int cpumask_andnot(struct cpumask *dstp,
- 				  const struct cpumask *src1p,
- 				  const struct cpumask *src2p)
- {
-+	check_hotplug_safe_cpumask(src1p);
-+	check_hotplug_safe_cpumask(src2p);
-+
- 	return bitmap_andnot(cpumask_bits(dstp), cpumask_bits(src1p),
- 					  cpumask_bits(src2p), nr_cpumask_bits);
- }
-@@ -404,6 +428,8 @@ static inline int cpumask_andnot(struct cpumask *dstp,
- static inline void cpumask_complement(struct cpumask *dstp,
- 				      const struct cpumask *srcp)
- {
-+	check_hotplug_safe_cpumask(srcp);
-+
- 	bitmap_complement(cpumask_bits(dstp), cpumask_bits(srcp),
- 					      nr_cpumask_bits);
- }
-@@ -416,6 +442,9 @@ static inline void cpumask_complement(struct cpumask *dstp,
- static inline bool cpumask_equal(const struct cpumask *src1p,
- 				const struct cpumask *src2p)
- {
-+	check_hotplug_safe_cpumask(src1p);
-+	check_hotplug_safe_cpumask(src2p);
-+
- 	return bitmap_equal(cpumask_bits(src1p), cpumask_bits(src2p),
- 						 nr_cpumask_bits);
- }
-@@ -428,6 +457,10 @@ static inline bool cpumask_equal(const struct cpumask *src1p,
- static inline bool cpumask_intersects(const struct cpumask *src1p,
- 				     const struct cpumask *src2p)
- {
-+
-+	check_hotplug_safe_cpumask(src1p);
-+	check_hotplug_safe_cpumask(src2p);
-+
- 	return bitmap_intersects(cpumask_bits(src1p), cpumask_bits(src2p),
- 						      nr_cpumask_bits);
- }
-@@ -442,6 +475,9 @@ static inline bool cpumask_intersects(const struct cpumask *src1p,
- static inline int cpumask_subset(const struct cpumask *src1p,
- 				 const struct cpumask *src2p)
- {
-+	check_hotplug_safe_cpumask(src1p);
-+	check_hotplug_safe_cpumask(src2p);
-+
- 	return bitmap_subset(cpumask_bits(src1p), cpumask_bits(src2p),
- 						  nr_cpumask_bits);
- }
-@@ -470,6 +506,12 @@ static inline bool cpumask_full(const struct cpumask *srcp)
-  */
- static inline unsigned int cpumask_weight(const struct cpumask *srcp)
- {
-+	/*
-+	 * Often, we just want to have a rough estimate of the number of
-+	 * online CPUs, without going to the trouble of synchronizing with
-+	 * CPU hotplug. So don't invoke check_hotplug_safe_cpumask() here.
-+	 */
-+
- 	return bitmap_weight(cpumask_bits(srcp), nr_cpumask_bits);
- }
- 
-@@ -507,6 +549,7 @@ static inline void cpumask_shift_left(struct cpumask *dstp,
- static inline void cpumask_copy(struct cpumask *dstp,
- 				const struct cpumask *srcp)
- {
-+	check_hotplug_safe_cpumask(srcp);
- 	bitmap_copy(cpumask_bits(dstp), cpumask_bits(srcp), nr_cpumask_bits);
- }
- 
-diff --git a/lib/cpumask.c b/lib/cpumask.c
-index d327b87..481df57 100644
---- a/lib/cpumask.c
-+++ b/lib/cpumask.c
-@@ -7,12 +7,14 @@
- 
- int __first_cpu(const cpumask_t *srcp)
- {
-+	check_hotplug_safe_cpumask(srcp);
- 	return min_t(int, NR_CPUS, find_first_bit(srcp->bits, NR_CPUS));
- }
- EXPORT_SYMBOL(__first_cpu);
- 
- int __next_cpu(int n, const cpumask_t *srcp)
- {
-+	check_hotplug_safe_cpumask(srcp);
- 	return min_t(int, NR_CPUS, find_next_bit(srcp->bits, NR_CPUS, n+1));
- }
- EXPORT_SYMBOL(__next_cpu);
-@@ -20,6 +22,7 @@ EXPORT_SYMBOL(__next_cpu);
- #if NR_CPUS > 64
- int __next_cpu_nr(int n, const cpumask_t *srcp)
- {
-+	check_hotplug_safe_cpumask(srcp);
- 	return min_t(int, nr_cpu_ids,
- 				find_next_bit(srcp->bits, nr_cpu_ids, n+1));
- }
-@@ -37,6 +40,9 @@ EXPORT_SYMBOL(__next_cpu_nr);
- int cpumask_next_and(int n, const struct cpumask *src1p,
- 		     const struct cpumask *src2p)
- {
-+	check_hotplug_safe_cpumask(src1p);
-+	check_hotplug_safe_cpumask(src2p);
-+
- 	while ((n = cpumask_next(n, src1p)) < nr_cpu_ids)
- 		if (cpumask_test_cpu(n, src2p))
- 			break;
-@@ -57,6 +63,8 @@ int cpumask_any_but(const struct cpumask *mask, unsigned int cpu)
- 	unsigned int i;
- 
- 	cpumask_check(cpu);
-+	check_hotplug_safe_cpumask(mask);
-+
- 	for_each_cpu(i, mask)
- 		if (i != cpu)
- 			break;
+ config DEBUG_RT_MUTEXES
+ 	bool "RT Mutex debugging, deadlock detection"
+ 	depends on DEBUG_KERNEL && RT_MUTEXES
