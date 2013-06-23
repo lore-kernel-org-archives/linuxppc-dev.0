@@ -1,34 +1,34 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0D0152C08FE
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jun 2013 23:49:18 +1000 (EST)
+ (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B03E82C1109
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jun 2013 23:49:30 +1000 (EST)
 Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Sun, 23 Jun 2013 19:12:23 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id A29071258053
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jun 2013 19:18:15 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5NDnQc224445084
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jun 2013 19:19:26 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5NDnBCK013833
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jun 2013 13:49:13 GMT
+ Sun, 23 Jun 2013 19:13:18 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 40B24394004E
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jun 2013 19:19:24 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5NDndYF20971748
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jun 2013 19:19:39 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5NDnMNT013079
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jun 2013 23:49:24 +1000
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH 35/45] ia64: irq,
- perfmon: Use get/put_online_cpus_atomic() to prevent CPU offline
+Subject: [PATCH 36/45] ia64: smp,
+ tlb: Use get/put_online_cpus_atomic() to prevent CPU offline
 To: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com,
  paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org,
  akpm@linux-foundation.org, namhyung@kernel.org, walken@google.com,
  vincent.guittot@linaro.org, laijs@cn.fujitsu.com
-Date: Sun, 23 Jun 2013 19:15:59 +0530
-Message-ID: <20130623134555.19094.5855.stgit@srivatsabhat.in.ibm.com>
+Date: Sun, 23 Jun 2013 19:16:09 +0530
+Message-ID: <20130623134605.19094.47993.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20130623133642.19094.16038.stgit@srivatsabhat.in.ibm.com>
 References: <20130623133642.19094.16038.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
@@ -39,9 +39,7 @@ Cc: linux-arch@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>,
  fweisbec@gmail.com, linux-kernel@vger.kernel.org, rostedt@goodmis.org,
  xiaoguangrong@linux.vnet.ibm.com, sbw@mit.edu, wangyun@linux.vnet.ibm.com,
  srivatsa.bhat@linux.vnet.ibm.com, netdev@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Thomas Gleixner <tglx@linutronix.de>,
- "Eric W. Biederman" <ebiederm@xmission.com>
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -60,156 +58,84 @@ offline, while invoking from atomic context.
 
 Cc: Tony Luck <tony.luck@intel.com>
 Cc: Fenghua Yu <fenghua.yu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: linux-ia64@vger.kernel.org
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- arch/ia64/kernel/irq_ia64.c |   15 +++++++++++++++
- arch/ia64/kernel/perfmon.c  |    8 +++++++-
- 2 files changed, 22 insertions(+), 1 deletion(-)
+ arch/ia64/kernel/smp.c |   12 ++++++------
+ arch/ia64/mm/tlb.c     |    4 ++--
+ 2 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/arch/ia64/kernel/irq_ia64.c b/arch/ia64/kernel/irq_ia64.c
-index 1034884..f58b162 100644
---- a/arch/ia64/kernel/irq_ia64.c
-+++ b/arch/ia64/kernel/irq_ia64.c
-@@ -25,6 +25,7 @@
- #include <linux/ptrace.h>
- #include <linux/signal.h>
+diff --git a/arch/ia64/kernel/smp.c b/arch/ia64/kernel/smp.c
+index 9fcd4e6..25991ba 100644
+--- a/arch/ia64/kernel/smp.c
++++ b/arch/ia64/kernel/smp.c
+@@ -24,6 +24,7 @@
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
  #include <linux/smp.h>
 +#include <linux/cpu.h>
- #include <linux/threads.h>
- #include <linux/bitops.h>
- #include <linux/irq.h>
-@@ -160,9 +161,11 @@ int bind_irq_vector(int irq, int vector, cpumask_t domain)
- 	unsigned long flags;
- 	int ret;
+ #include <linux/kernel_stat.h>
+ #include <linux/mm.h>
+ #include <linux/cache.h>
+@@ -259,8 +260,7 @@ smp_flush_tlb_cpumask(cpumask_t xcpumask)
+ 	cpumask_t cpumask = xcpumask;
+ 	int mycpu, cpu, flush_mycpu = 0;
  
-+	get_online_cpus_atomic();
- 	spin_lock_irqsave(&vector_lock, flags);
- 	ret = __bind_irq_vector(irq, vector, domain);
- 	spin_unlock_irqrestore(&vector_lock, flags);
+-	preempt_disable();
+-	mycpu = smp_processor_id();
++	mycpu = get_online_cpus_atomic();
+ 
+ 	for_each_cpu_mask(cpu, cpumask)
+ 		counts[cpu] = local_tlb_flush_counts[cpu].count & 0xffff;
+@@ -280,7 +280,7 @@ smp_flush_tlb_cpumask(cpumask_t xcpumask)
+ 		while(counts[cpu] == (local_tlb_flush_counts[cpu].count & 0xffff))
+ 			udelay(FLUSH_DELAY);
+ 
+-	preempt_enable();
 +	put_online_cpus_atomic();
- 	return ret;
  }
  
-@@ -190,9 +193,11 @@ static void clear_irq_vector(int irq)
+ void
+@@ -293,12 +293,12 @@ void
+ smp_flush_tlb_mm (struct mm_struct *mm)
  {
- 	unsigned long flags;
- 
+ 	cpumask_var_t cpus;
+-	preempt_disable();
 +	get_online_cpus_atomic();
- 	spin_lock_irqsave(&vector_lock, flags);
- 	__clear_irq_vector(irq);
- 	spin_unlock_irqrestore(&vector_lock, flags);
-+	put_online_cpus_atomic();
- }
- 
- int
-@@ -204,6 +209,7 @@ ia64_native_assign_irq_vector (int irq)
- 
- 	vector = -ENOSPC;
- 
-+	get_online_cpus_atomic();
- 	spin_lock_irqsave(&vector_lock, flags);
- 	for_each_online_cpu(cpu) {
- 		domain = vector_allocation_domain(cpu);
-@@ -218,6 +224,7 @@ ia64_native_assign_irq_vector (int irq)
- 	BUG_ON(__bind_irq_vector(irq, vector, domain));
-  out:
- 	spin_unlock_irqrestore(&vector_lock, flags);
-+	put_online_cpus_atomic();
- 	return vector;
- }
- 
-@@ -302,9 +309,11 @@ int irq_prepare_move(int irq, int cpu)
- 	unsigned long flags;
- 	int ret;
- 
-+	get_online_cpus_atomic();
- 	spin_lock_irqsave(&vector_lock, flags);
- 	ret = __irq_prepare_move(irq, cpu);
- 	spin_unlock_irqrestore(&vector_lock, flags);
-+	put_online_cpus_atomic();
- 	return ret;
- }
- 
-@@ -320,11 +329,13 @@ void irq_complete_move(unsigned irq)
- 	if (unlikely(cpu_isset(smp_processor_id(), cfg->old_domain)))
+ 	/* this happens for the common case of a single-threaded fork():  */
+ 	if (likely(mm == current->active_mm && atomic_read(&mm->mm_users) == 1))
+ 	{
+ 		local_finish_flush_tlb_mm(mm);
+-		preempt_enable();
++		put_online_cpus_atomic();
  		return;
- 
-+	get_online_cpus_atomic();
- 	cpumask_and(&cleanup_mask, &cfg->old_domain, cpu_online_mask);
- 	cfg->move_cleanup_count = cpus_weight(cleanup_mask);
- 	for_each_cpu_mask(i, cleanup_mask)
- 		platform_send_ipi(i, IA64_IRQ_MOVE_VECTOR, IA64_IPI_DM_INT, 0);
- 	cfg->move_in_progress = 0;
-+	put_online_cpus_atomic();
- }
- 
- static irqreturn_t smp_irq_move_cleanup_interrupt(int irq, void *dev_id)
-@@ -393,10 +404,12 @@ void destroy_and_reserve_irq(unsigned int irq)
- 
- 	dynamic_irq_cleanup(irq);
- 
-+	get_online_cpus_atomic();
- 	spin_lock_irqsave(&vector_lock, flags);
- 	__clear_irq_vector(irq);
- 	irq_status[irq] = IRQ_RSVD;
- 	spin_unlock_irqrestore(&vector_lock, flags);
-+	put_online_cpus_atomic();
- }
- 
- /*
-@@ -409,6 +422,7 @@ int create_irq(void)
- 	cpumask_t domain = CPU_MASK_NONE;
- 
- 	irq = vector = -ENOSPC;
-+	get_online_cpus_atomic();
- 	spin_lock_irqsave(&vector_lock, flags);
- 	for_each_online_cpu(cpu) {
- 		domain = vector_allocation_domain(cpu);
-@@ -424,6 +438,7 @@ int create_irq(void)
- 	BUG_ON(__bind_irq_vector(irq, vector, domain));
-  out:
- 	spin_unlock_irqrestore(&vector_lock, flags);
-+	put_online_cpus_atomic();
- 	if (irq >= 0)
- 		dynamic_irq_init(irq);
- 	return irq;
-diff --git a/arch/ia64/kernel/perfmon.c b/arch/ia64/kernel/perfmon.c
-index 9ea25fc..16c8303 100644
---- a/arch/ia64/kernel/perfmon.c
-+++ b/arch/ia64/kernel/perfmon.c
-@@ -6476,9 +6476,12 @@ pfm_install_alt_pmu_interrupt(pfm_intr_handler_desc_t *hdl)
- 	/* do the easy test first */
- 	if (pfm_alt_intr_handler) return -EBUSY;
- 
-+	get_online_cpus_atomic();
-+
- 	/* one at a time in the install or remove, just fail the others */
- 	if (!spin_trylock(&pfm_alt_install_check)) {
--		return -EBUSY;
-+		ret = -EBUSY;
-+		goto out;
  	}
- 
- 	/* reserve our session */
-@@ -6498,6 +6501,7 @@ pfm_install_alt_pmu_interrupt(pfm_intr_handler_desc_t *hdl)
- 	pfm_alt_intr_handler = hdl;
- 
- 	spin_unlock(&pfm_alt_install_check);
+ 	if (!alloc_cpumask_var(&cpus, GFP_ATOMIC)) {
+@@ -313,7 +313,7 @@ smp_flush_tlb_mm (struct mm_struct *mm)
+ 	local_irq_disable();
+ 	local_finish_flush_tlb_mm(mm);
+ 	local_irq_enable();
+-	preempt_enable();
 +	put_online_cpus_atomic();
- 
- 	return 0;
- 
-@@ -6510,6 +6514,8 @@ cleanup_reserve:
- 	}
- 
- 	spin_unlock(&pfm_alt_install_check);
-+out:
-+	put_online_cpus_atomic();
- 
- 	return ret;
  }
+ 
+ void arch_send_call_function_single_ipi(int cpu)
+diff --git a/arch/ia64/mm/tlb.c b/arch/ia64/mm/tlb.c
+index ed61297..8c55ef5 100644
+--- a/arch/ia64/mm/tlb.c
++++ b/arch/ia64/mm/tlb.c
+@@ -87,11 +87,11 @@ wrap_mmu_context (struct mm_struct *mm)
+ 	 * can't call flush_tlb_all() here because of race condition
+ 	 * with O(1) scheduler [EF]
+ 	 */
+-	cpu = get_cpu(); /* prevent preemption/migration */
++	cpu = get_online_cpus_atomic(); /* prevent preemption/migration */
+ 	for_each_online_cpu(i)
+ 		if (i != cpu)
+ 			per_cpu(ia64_need_tlb_flush, i) = 1;
+-	put_cpu();
++	put_online_cpus_atomic();
+ 	local_flush_tlb_all();
+ }
+ 
