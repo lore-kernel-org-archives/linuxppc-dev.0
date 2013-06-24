@@ -1,35 +1,24 @@
-Return-Path: <ddaney.cavm@gmail.com>
-Received: from mail-pa0-x22f.google.com (mail-pa0-x22f.google.com
- [IPv6:2607:f8b0:400e:c03::22f])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 453992C0095
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 04:17:12 +1000 (EST)
-Received: by mail-pa0-f47.google.com with SMTP id kl14so11410033pab.20
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2013 11:17:09 -0700 (PDT)
-Message-ID: <51C88D22.5000408@gmail.com>
-Date: Mon, 24 Jun 2013 11:17:06 -0700
-From: David Daney <ddaney.cavm@gmail.com>
+Return-Path: <B07421@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0184.outbound.messaging.microsoft.com [213.199.154.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8C41A2C007A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 04:34:59 +1000 (EST)
+Date: Mon, 24 Jun 2013 13:33:55 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: Pull request: scottwood/linux.git for-3.10
+To: Scott Wood <scottwood@freescale.com>
+References: <20130618201452.GA5429@home.buserror.net>
+ <AEF681B9-AB7E-4C3D-99D6-BD29EF038A50@kernel.crashing.org>
+ <1371660630.9073.34@snotra>
+In-Reply-To: <1371660630.9073.34@snotra> (from scottwood@freescale.com on
+ Wed Jun 19 11:50:30 2013)
+Message-ID: <1372098835.8183.4@snotra>
 MIME-Version: 1.0
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH 25/45] staging/octeon: Use get/put_online_cpus_atomic()
- to prevent CPU offline
-References: <20130623133642.19094.16038.stgit@srivatsabhat.in.ibm.com>
- <20130623134331.19094.80396.stgit@srivatsabhat.in.ibm.com>
- <20130623181740.GB24256@kroah.com> <51C744A9.8000406@linux.vnet.ibm.com>
-In-Reply-To: <51C744A9.8000406@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org,
- walken@google.com, mingo@kernel.org, linux-arch@vger.kernel.org,
- vincent.guittot@linaro.org, ddaney@caviumnetworks.com,
- xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
- paulmck@linux.vnet.ibm.com, devel@driverdev.osuosl.org,
- nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au,
- rostedt@goodmis.org, namhyung@kernel.org, tglx@linutronix.de,
- laijs@cn.fujitsu.com, zhong@linux.vnet.ibm.com,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, oleg@redhat.com, sbw@mit.edu,
- netdev@vger.kernel.org, tj@kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,93 +28,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/23/2013 11:55 AM, Srivatsa S. Bhat wrote:
-> On 06/23/2013 11:47 PM, Greg Kroah-Hartman wrote:
->> On Sun, Jun 23, 2013 at 07:13:33PM +0530, Srivatsa S. Bhat wrote:
->>> Once stop_machine() is gone from the CPU offline path, we won't be able
->>> to depend on disabling preemption to prevent CPUs from going offline
->>> from under us.
->>>
->>> Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going
->>> offline, while invoking from atomic context.
->>>
->>> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
->>> Cc: devel@driverdev.osuosl.org
->>> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
->>> ---
->>>
->>>   drivers/staging/octeon/ethernet-rx.c |    3 +++
->>>   1 file changed, 3 insertions(+)
->>>
->>> diff --git a/drivers/staging/octeon/ethernet-rx.c b/drivers/staging/octeon/ethernet-rx.c
->>> index 34afc16..8588b4d 100644
->>> --- a/drivers/staging/octeon/ethernet-rx.c
->>> +++ b/drivers/staging/octeon/ethernet-rx.c
->>> @@ -36,6 +36,7 @@
->>>   #include <linux/prefetch.h>
->>>   #include <linux/ratelimit.h>
->>>   #include <linux/smp.h>
->>> +#include <linux/cpu.h>
->>>   #include <linux/interrupt.h>
->>>   #include <net/dst.h>
->>>   #ifdef CONFIG_XFRM
->>> @@ -97,6 +98,7 @@ static void cvm_oct_enable_one_cpu(void)
->>>   		return;
->>>
->>>   	/* ... if a CPU is available, Turn on NAPI polling for that CPU.  */
->>> +	get_online_cpus_atomic();
->>>   	for_each_online_cpu(cpu) {
->>>   		if (!cpu_test_and_set(cpu, core_state.cpu_state)) {
->>>   			v = smp_call_function_single(cpu, cvm_oct_enable_napi,
->>> @@ -106,6 +108,7 @@ static void cvm_oct_enable_one_cpu(void)
->>>   			break;
->>>   		}
->>>   	}
->>> +	put_online_cpus_atomic();
->>
->> Does this driver really need to be doing this in the first place?  If
->> so, why?  The majority of network drivers don't, why is this one
->> "special"?
+On 06/19/2013 11:50:30 AM, Scott Wood wrote:
+> On 06/19/2013 10:06:38 AM, Kumar Gala wrote:
+>>=20
+>> On Jun 18, 2013, at 3:14 PM, Scott Wood wrote:
+>>=20
+>> > This fixes a regression that causes 83xx to oops on boot if a
+>> > non-express PCI bus is present.
+>> >
+>> > The following changes since commit =20
+>> 17858ca65eef148d335ffd4cfc09228a1c1cbfb5:
+>> >
+>> >  Merge tag 'please-pull-fixia64' of =20
+>> git://git.kernel.org/pub/scm/linux/kernel/git/aegl/linux (2013-06-18 =20
+>> 06:29:19 -1000)
+>> >
+>> > are available in the git repository at:
+>> >
+>> >
+>> >  git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git =20
+>> for-3.10
+>> >
+>> > for you to fetch changes up to =20
+>> 2383ea94854bcf5a0df3c6803b980868cef95418:
+>> >
+>> >  powerpc/pci: Fix setup of Freescale PCI / PCIe controllers =20
+>> (2013-06-18 14:44:57 -0500)
+>> >
+>> > ----------------------------------------------------------------
+>> > Rojhalat Ibrahim (1):
+>> >      powerpc/pci: Fix setup of Freescale PCI / PCIe controllers
+>> >
+>> > arch/powerpc/sysdev/fsl_pci.c |   24 +++++++++---------------
+>> > 1 file changed, 9 insertions(+), 15 deletions(-)
+>>=20
+>> What about Rohit's patch: powerpc/pci: Fix setup of Freescale PCI / =20
+>> PCIe controllers?  Seems like also a fix for 3.10
+>=20
+> That's the patch I'm asking you to pull. :-P
 
+Ping
 
-It depends on your definition of "need".
-
-The current driver receives packets from *all* network ports into a 
-single queue (in OCTEON speak this queue is called a POW group).  Under 
-high packet rates, the CPU time required to process the packets may 
-exceed the capabilities of a single CPU.
-
-In order to increase throughput beyond the single CPU limited rate, we 
-bring more than one CPUs into play for NAPI receive.  The code being 
-patched here is part of the logic that controls which CPUs are used for 
-NAPI receive.
-
-Just for the record:  Yes I know that doing this may lead to packet 
-reordering when doing forwarding.
-
-A further question that wasn't asked is: Will the code work at all if a 
-CPU is taken offline even if the race, the patch eliminates, is avoided?
-
-I doubt it.
-
-As far as the patch goes:
-
-Acked-by: David Daney <david.daney@cavium.com>
-
-David Daney
-
->>
->
-> Honestly, I don't know. Let's CC the author of that code (David Daney).
-> I wonder why get_maintainer.pl didn't generate his name for this file,
-> even though the entire file is almost made up of his commits alone!
->
-> Regards,
-> Srivatsa S. Bhat
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+-Scott=
