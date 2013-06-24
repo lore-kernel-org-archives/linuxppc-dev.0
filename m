@@ -1,13 +1,21 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/pseries: Enable PSTORE in pseries_defconfig
-In-reply-to: <20130621083639.4039.27789.stgit@aruna-ThinkPad-T420>
-References: <20130621083639.4039.27789.stgit@aruna-ThinkPad-T420>
-Date: Mon, 24 Jun 2013 11:21:36 +1000
-Message-ID: <7684.1372036896@ale.ozlabs.ibm.com>
-Cc: mahesh@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
- linux-kernel@vger.kernel.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 9FBBE2C029B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2013 11:50:14 +1000 (EST)
+Message-ID: <1372038589.3944.118.camel@pasglop>
+Subject: Re: [PATCH v2] powerpc/pci: Improve device hotplug initialization
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Guenter Roeck <linux@roeck-us.net>
+Date: Mon, 24 Jun 2013 11:49:49 +1000
+In-Reply-To: <20130621165453.GA5506@roeck-us.net>
+References: <1370884688-7753-1-git-send-email-linux@roeck-us.net>
+ <20130621165453.GA5506@roeck-us.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Yuanquan Chen <Yuanquan.Chen@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Hiroo Matsumoto <matsumoto.hiroo@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,39 +25,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Enable PSTORE in pseries_defconfig
+On Fri, 2013-06-21 at 09:54 -0700, Guenter Roeck wrote:
 
-Please add a "why" to your changelogs eg. "Now we have pstore support for
-nvram on pseries, enable it in the default config"
-
-"Why" you are changing something is more important than "what", since
-you can always determine "what" is being changed, by looking at the diff.
-The "why" will be long forgotten.
-
+> > v2: Ensure that PCI bus fixup code has been executed before calling
+> >     device setup code.
+> > 
+> Hi Ben,
 > 
-> Signed-off-by: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/configs/pseries_defconfig |    1 +
->  1 file changed, 1 insertion(+)
+> any comments/feedback on this approach ?
 > 
-> diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
-> index c4dfbaf..9630a50 100644
-> --- a/arch/powerpc/configs/pseries_defconfig
-> +++ b/arch/powerpc/configs/pseries_defconfig
-> @@ -347,3 +347,4 @@ CONFIG_VIRTUALIZATION=y
->  CONFIG_KVM_BOOK3S_64=m
->  CONFIG_KVM_BOOK3S_64_HV=y
->  CONFIG_VHOST_NET=m
-> +CONFIG_PSTORE=y
+> It is much less invasive than before and should address your concerns.
 
-This should really be added in the right location on the config, not
-just at the end.   ie.
+And also less nice cleanup :-) I'll have a look.
 
-@@ -296,6 +293,7 @@
- CONFIG_SQUASHFS_XATTR=y
- CONFIG_SQUASHFS_LZO=y
- CONFIG_SQUASHFS_XZ=y
-+CONFIG_PSTORE=y
- CONFIG_NFS_FS=y
- CONFIG_NFS_V3_ACL=y
- CONFIG_NFS_V4=y
+Cheers,
+Ben.
+
+> Thanks,
+> Guenter
+> 
+> >  arch/powerpc/kernel/pci-common.c |   17 ++++++++++++-----
+> >  1 file changed, 12 insertions(+), 5 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+> > index 7f2273c..6909b13 100644
+> > --- a/arch/powerpc/kernel/pci-common.c
+> > +++ b/arch/powerpc/kernel/pci-common.c
+> > @@ -992,7 +992,7 @@ void pcibios_setup_bus_self(struct pci_bus *bus)
+> >  		ppc_md.pci_dma_bus_setup(bus);
+> >  }
+> >  
+> > -void pcibios_setup_device(struct pci_dev *dev)
+> > +static void pcibios_setup_device(struct pci_dev *dev)
+> >  {
+> >  	/* Fixup NUMA node as it may not be setup yet by the generic
+> >  	 * code and is needed by the DMA init
+> > @@ -1013,6 +1013,17 @@ void pcibios_setup_device(struct pci_dev *dev)
+> >  		ppc_md.pci_irq_fixup(dev);
+> >  }
+> >  
+> > +int pcibios_add_device(struct pci_dev *dev)
+> > +{
+> > +	/*
+> > +	 * We can only call pcibios_setup_device() after bus setup is complete,
+> > +	 * since some of the platform specific DMA setup code depends on it.
+> > +	 */
+> > +	if (dev->bus->is_added)
+> > +		pcibios_setup_device(dev);
+> > +	return 0;
+> > +}
+> > +
+> >  void pcibios_setup_bus_devices(struct pci_bus *bus)
+> >  {
+> >  	struct pci_dev *dev;
+> > @@ -1467,10 +1478,6 @@ int pcibios_enable_device(struct pci_dev *dev, int mask)
+> >  		if (ppc_md.pcibios_enable_device_hook(dev))
+> >  			return -EINVAL;
+> >  
+> > -	/* avoid pcie irq fix up impact on cardbus */
+> > -	if (dev->hdr_type != PCI_HEADER_TYPE_CARDBUS)
+> > -		pcibios_setup_device(dev);
+> > -
+> >  	return pci_enable_resources(dev, mask);
+> >  }
+> >  
+> > -- 
+> > 1.7.9.7
+> > 
+> > 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
