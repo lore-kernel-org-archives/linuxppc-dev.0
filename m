@@ -1,36 +1,25 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp09.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AA6C72C0096
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 01:31:38 +1000 (EST)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 25 Jun 2013 12:27:53 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 2DDE02BB0044
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 01:31:34 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5OFVPQd786930
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 01:31:25 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5OFVXhl027401
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 01:31:33 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] Correct build warnings with CONFIG_TRANSPARENT_HUGEPAGE
- disabled
-In-Reply-To: <87hagnzgzk.fsf@linux.vnet.ibm.com>
-References: <51C8594B.1080701@linux.vnet.ibm.com>
- <87hagnzgzk.fsf@linux.vnet.ibm.com>
-Date: Mon, 24 Jun 2013 21:01:31 +0530
-Message-ID: <87ehbrzfsc.fsf@linux.vnet.ibm.com>
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by ozlabs.org (Postfix) with SMTP id 09A092C0079
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 02:28:15 +1000 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 02987-10 for <linuxppc-dev@lists.ozlabs.org>;
+ Mon, 24 Jun 2013 17:28:10 +0100 (BST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+	charset="UTF-8"
+Subject: RE: [PATCH] Correct build warnings with CONFIG_TRANSPARENT_HUGEPAGE
+ disabled
+Date: Mon, 24 Jun 2013 17:27:13 +0100
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B72A4@saturn3.aculab.com>
+In-Reply-To: <87ehbrzfsc.fsf@linux.vnet.ibm.com>
+References: <51C8594B.1080701@linux.vnet.ibm.com>
+ <87hagnzgzk.fsf@linux.vnet.ibm.com> <87ehbrzfsc.fsf@linux.vnet.ibm.com>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ "Nathan Fontenot" <nfont@linux.vnet.ibm.com>,
+ <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,76 +29,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
-
-> Nathan Fontenot <nfont@linux.vnet.ibm.com> writes:
->
->> Building with CONFIG_TRANSPARENT_HUGEPAGE disabled causes the following
->> build wearnings;
->>
->> powerpc/arch/powerpc/include/asm/mmu-hash64.h: In function =E2=80=98__ha=
-sh_page_thp=E2=80=99:
->> powerpc/arch/powerpc/include/asm/mmu-hash64.h:354: warning: no return st=
-atement in function returning non-void
->>
->> This patch adds a return -1 to the static inline for __hash_page_thp()
->> to correct the warnings.
->>
->> Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
->
-> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->
-> Wondering why i am not finding this
->
-> [root@llmp24l02 thp]# make arch/powerpc/mm/hash_utils_64.o
-> ....
-> .....
->   CC      arch/powerpc/mm/hash_utils_64.o
-> [root@llmp24l02 thp]# grep TRANSPARENT_HUGEPAGE .config
-> CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE=3Dy
-> # CONFIG_TRANSPARENT_HUGEPAGE is not set
-> [root@llmp24l02 thp]#=20
-> [root@llmp24l02 thp]# gcc --version
-> gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
-> Copyright (C) 2012 Free Software Foundation, Inc.
-> This is free software; see the source for copying conditions.  There is NO
-> warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOS=
-E.
->
->
-
-new compilers have __builtin_unreachable in BUG. That is why it didn't
-trigger for me.=20
-
-new compiler:
-_____________
-static inline __attribute__((always_inline)) __attribute__((no_instrument_f=
-unction)) int __hash_page_thp(unsigned long ea, unsigned long access,
-      unsigned long vsid, pmd_t *pmdp,
-      unsigned long trap, int local,
-      int ssize, unsigned int psize)
-{
- do { __asm__ __volatile__( "1:	twi 31,0,0\n" ".section __bug_table,\"a\"\n=
-" "2:\t" ".llong" " " "1b, %0\n" "\t.short %1, %2\n" ".org 2b+%3\n" ".previ=
-ous\n" : : "i" ("/home/opensource/sources/kernels/linux-powerpc/arch/powerp=
-c/include/asm/mmu-hash64.h"), "i" (353), "i" (0), "i" (sizeof(struct bug_en=
-try))); __builtin_unreachable(); } while (0);
-}
-
-failure:
-__________
-static inline __attribute__((always_inline)) __attribute__((no_instrument_f=
-unction)) int __hash_page_thp(unsigned long ea, unsigned long access,
-      unsigned long vsid, pmd_t *pmdp,
-      unsigned long trap, int local,
-      int ssize, unsigned int psize)
-{
- do { __asm__ __volatile__( "1: twi 31,0,0\n" ".section __bug_table,\"a\"\n=
-" "2:\t" ".llong" " " "1b, %0\n" "\t.short %1, %2\n" ".org 2b+%3\n" ".previ=
-ous\n" : : "i" ("/home/nfont/src/powerpc/arch/powerpc/include/asm/mmu-hash6=
-4.h"), "i" (353), "i" (0), "i" (sizeof(struct bug_entry))); do { } while (1=
-); } while (0);
-}
-
-
--aneesh
+PiBmYWlsdXJlOg0KPiBfX19fX19fX19fDQo+IHN0YXRpYyBpbmxpbmUgX19hdHRyaWJ1dGVfXygo
+YWx3YXlzX2lubGluZSkpIF9fYXR0cmlidXRlX18oKG5vX2luc3RydW1lbnRfZnVuY3Rpb24pKSBp
+bnQNCj4gX19oYXNoX3BhZ2VfdGhwKHVuc2lnbmVkIGxvbmcgZWEsIHVuc2lnbmVkIGxvbmcgYWNj
+ZXNzLA0KPiAgICAgICB1bnNpZ25lZCBsb25nIHZzaWQsIHBtZF90ICpwbWRwLA0KPiAgICAgICB1
+bnNpZ25lZCBsb25nIHRyYXAsIGludCBsb2NhbCwNCj4gICAgICAgaW50IHNzaXplLCB1bnNpZ25l
+ZCBpbnQgcHNpemUpDQo+IHsNCj4gIGRvIHsgX19hc21fXyBfX3ZvbGF0aWxlX18oICIxOiB0d2kg
+MzEsMCwwXG4iICIuc2VjdGlvbiBfX2J1Z190YWJsZSxcImFcIlxuIiAiMjpcdCIgIi5sbG9uZyIg
+IiAiICIxYiwNCj4gJTBcbiIgIlx0LnNob3J0ICUxLCAlMlxuIiAiLm9yZyAyYislM1xuIiAiLnBy
+ZXZpb3VzXG4iIDogOiAiaSINCj4gKCIvaG9tZS9uZm9udC9zcmMvcG93ZXJwYy9hcmNoL3Bvd2Vy
+cGMvaW5jbHVkZS9hc20vbW11LWhhc2g2NC5oIiksICJpIiAoMzUzKSwgImkiICgwKSwgImkiDQo+
+IChzaXplb2Yoc3RydWN0IGJ1Z19lbnRyeSkpKTsgZG8geyB9IHdoaWxlICgxKTsgfSB3aGlsZSAo
+MCk7DQo+IH0NCg0KV2h5IGlzbid0IHRoZSAiZG8geyB9IHdoaWxlICgxKTsiIGVub3VnaCB0byBz
+dG9wIHRoZSBjb21waWxlcg0KZXhwZWN0aW5nIHRoZSBhYm92ZSB0byByZXR1cm4/DQpJIGtub3cg
+SSd2ZSBhZGRlZCAiZm9yICg7Oyk7IiBpbiBzb21lIGNvZGUgYmVmb3JlIG5vdy4NCkRpc2FibGlu
+ZyBvcHRpbWlzYXRpb25zIHdvdWxkIGJlIGVub3VnaCAtIGJ1dCB1bmxpa2VseSB0byBiZSB0cnVl
+Lg0KDQoJRGF2aWQNCg0K
