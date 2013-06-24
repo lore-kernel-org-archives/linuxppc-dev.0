@@ -1,49 +1,33 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 699772C0096
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 03:28:52 +1000 (EST)
-Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Mon, 24 Jun 2013 22:50:51 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 761A63940053
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2013 22:58:39 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5OHSuUU26280172
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2013 22:58:56 +0530
-Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5OHSbnA024685
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 03:28:39 +1000
-Message-ID: <51C88103.8090301@linux.vnet.ibm.com>
-Date: Mon, 24 Jun 2013 22:55:23 +0530
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH 25/45] staging/octeon: Use get/put_online_cpus_atomic()
+Return-Path: <htejun@gmail.com>
+Received: from mail-qc0-x22b.google.com (mail-qc0-x22b.google.com
+ [IPv6:2607:f8b0:400d:c01::22b])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0CEDD2C0096
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 03:55:46 +1000 (EST)
+Received: by mail-qc0-f171.google.com with SMTP id n1so6631301qcw.30
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2013 10:55:42 -0700 (PDT)
+Sender: Tejun Heo <htejun@gmail.com>
+Date: Mon, 24 Jun 2013 10:55:35 -0700
+From: Tejun Heo <tj@kernel.org>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH 22/45] percpu_counter: Use get/put_online_cpus_atomic()
  to prevent CPU offline
+Message-ID: <20130624175535.GA1918@mtj.dyndns.org>
 References: <20130623133642.19094.16038.stgit@srivatsabhat.in.ibm.com>
- <20130623134331.19094.80396.stgit@srivatsabhat.in.ibm.com>
- <20130623181740.GB24256@kroah.com> <51C744A9.8000406@linux.vnet.ibm.com>
- <1372015045.3137.67.camel@joe-AO722>
-In-Reply-To: <1372015045.3137.67.camel@joe-AO722>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: peterz@infradead.org, fweisbec@gmail.com, oleg@redhat.com,
+ <20130623134256.19094.99231.stgit@srivatsabhat.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130623134256.19094.99231.stgit@srivatsabhat.in.ibm.com>
+Cc: peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org,
  walken@google.com, mingo@kernel.org, linux-arch@vger.kernel.org,
- vincent.guittot@linaro.org, ddaney@caviumnetworks.com,
- xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
- paulmck@linux.vnet.ibm.com, devel@driverdev.osuosl.org,
+ vincent.guittot@linaro.org, xiaoguangrong@linux.vnet.ibm.com,
+ wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com,
  nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au,
- rostedt@goodmis.org, namhyung@kernel.org, tglx@linutronix.de,
- laijs@cn.fujitsu.com, zhong@linux.vnet.ibm.com,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- sbw@mit.edu, netdev@vger.kernel.org, tj@kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+ rostedt@goodmis.org, Al Viro <viro@zeniv.linux.org.uk>, namhyung@kernel.org,
+ tglx@linutronix.de, laijs@cn.fujitsu.com, zhong@linux.vnet.ibm.com,
+ netdev@vger.kernel.org, oleg@redhat.com, sbw@mit.edu,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,49 +37,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/24/2013 12:47 AM, Joe Perches wrote:
-> On Mon, 2013-06-24 at 00:25 +0530, Srivatsa S. Bhat wrote:
->> On 06/23/2013 11:47 PM, Greg Kroah-Hartman wrote:
->>> On Sun, Jun 23, 2013 at 07:13:33PM +0530, Srivatsa S. Bhat wrote:
-> []
->>>> diff --git a/drivers/staging/octeon/ethernet-rx.c b/drivers/staging/octeon/ethernet-rx.c
-> []
->> Honestly, I don't know. Let's CC the author of that code (David Daney).
->> I wonder why get_maintainer.pl didn't generate his name for this file,
->> even though the entire file is almost made up of his commits alone!
+On Sun, Jun 23, 2013 at 07:12:59PM +0530, Srivatsa S. Bhat wrote:
+> Once stop_machine() is gone from the CPU offline path, we won't be able
+> to depend on disabling preemption to prevent CPUs from going offline
+> from under us.
 > 
-> Because by default, get_maintainer looks for a matching
-> file entry in MAINTAINERS.  Failing that, it looks at
-> one year of git history.  In this case, no work has been
-> done on the file for quite awhile.
+> Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going
+> offline, while invoking from atomic context.
 > 
-> --git-blame can be added to the get_maintainer.pl command
-> line to look for % of authorship by line and commit count.
-> 
-> Adding --git-blame can take a long time to run, that's why
-> it's not on by default.  Also, very old history can give
-> invalid email addresses as people move around and email
-> addresses decay.
-> 
-> If you always want to find original authors, you could
-> use a .get_maintainer.conf file with --git-blame in it.
-> 
-> $ time ./scripts/get_maintainer.pl --git-blame -f drivers/staging/octeon/ethernet-tx.c
-> Greg Kroah-Hartman <gregkh@linuxfoundation.org> (supporter:STAGING SUBSYSTEM,commits:4/16=25%)
-> David Daney <ddaney@caviumnetworks.com> (authored lines:711/725=98%,commits:13/16=81%)
-> Ralf Baechle <ralf@linux-mips.org> (commits:11/16=69%)
-> Eric Dumazet <eric.dumazet@gmail.com> (commits:2/16=12%)
-> Andrew Morton <akpm@linux-foundation.org> (commits:1/16=6%)
-> devel@driverdev.osuosl.org (open list:STAGING SUBSYSTEM)
-> linux-kernel@vger.kernel.org (open list)
-> 
-> real	0m16.853s
-> user	0m16.088s
-> sys	0m0.444s
-> 
-> 
+> Cc: Al Viro <viro@zeniv.linux.org.uk>
+> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+...
+> @@ -98,6 +98,7 @@ s64 __percpu_counter_sum(struct percpu_counter *fbc)
+>  	s64 ret;
+>  	int cpu;
+>  
+> +	get_online_cpus_atomic();
+>  	raw_spin_lock(&fbc->lock);
+>  	ret = fbc->count;
+>  	for_each_online_cpu(cpu) {
+> @@ -105,6 +106,7 @@ s64 __percpu_counter_sum(struct percpu_counter *fbc)
+>  		ret += *pcount;
+>  	}
+>  	raw_spin_unlock(&fbc->lock);
+> +	put_online_cpus_atomic();
 
-Oh, ok.. Thanks for the explanation and the tip!
+I don't think this is necessary.  CPU on/offlining is explicitly
+handled via the hotplug callback which synchronizes through fbc->lock.
+__percpu_counter_sum() racing with actual on/offlining doesn't affect
+correctness and adding superflous get_online_cpus_atomic() around it
+can be misleading.
 
-Regards,
-Srivatsa S. Bhat
+Thanks.
+
+-- 
+tejun
