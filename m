@@ -1,13 +1,36 @@
-Return-Path: <michael@ozlabs.org>
-From: Michael Ellerman <michael@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 8/8] powerpc/perf: Add power8 EBB support
-Date: Mon, 24 Jun 2013 21:28:56 +1000
-Message-Id: <1372073336-8189-8-git-send-email-michael@ellerman.id.au>
-In-Reply-To: <1372073336-8189-1-git-send-email-michael@ellerman.id.au>
-References: <1372073336-8189-1-git-send-email-michael@ellerman.id.au>
-Cc: sukadev@linux.vnet.ibm.com, Paul Mackerras <paulus@samba.org>,
- khandual@linux.vnet.ibm.com
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 58CAF2C0096
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 00:14:28 +1000 (EST)
+Received: from /spool/local
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Tue, 25 Jun 2013 00:00:00 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 7E3723578045
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 00:14:26 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5OEEGJk1901030
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 00:14:17 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5OEEPKs021294
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 00:14:25 +1000
+Received: from [9.41.105.123] ([9.41.105.123])
+ by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
+ r5OEEOYQ021275
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 00:14:24 +1000
+Message-ID: <51C8543F.6080905@linux.vnet.ibm.com>
+Date: Mon, 24 Jun 2013 09:14:23 -0500
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] Do not update sysfs cpu registration from invalid context
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,121 +40,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add logic to the power8 PMU code to support EBB. Future processors would
-also be expected to implement similar constraints. At that time we could
-possibly factor these out into common code.
+The topology update code that updates the cpu node registration in sysfs
+should not be called while in stop_machine(). The register/unregister
+calls take a lock and may sleep.
 
-Finally mark the power8 PMU as supporting EBB, which is the actual
-enable switch which allows EBBs to be configured.
+This patch moves these calls outside of the call to stop_machine().
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+Signed-off-by:Nathan Fontenot <nfont@linux.vnet.ibm.com>
 ---
- arch/powerpc/perf/power8-pmu.c |   44 +++++++++++++++++++++++++++++-----------
- 1 file changed, 32 insertions(+), 12 deletions(-)
+ arch/powerpc/mm/numa.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
-index d59f5b2..c7f8ccc 100644
---- a/arch/powerpc/perf/power8-pmu.c
-+++ b/arch/powerpc/perf/power8-pmu.c
-@@ -31,9 +31,9 @@
-  *
-  *        60        56        52        48        44        40        36        32
-  * | - - - - | - - - - | - - - - | - - - - | - - - - | - - - - | - - - - | - - - - |
-- *                                     [      thresh_cmp     ]   [  thresh_ctl   ]
-- *                                                                       |
-- *                                       thresh start/stop OR FAB match -*
-+ *   |                                 [      thresh_cmp     ]   [  thresh_ctl   ]
-+ *   |                                                                   |
-+ *   *- EBB (Linux)                      thresh start/stop OR FAB match -*
-  *
-  *        28        24        20        16        12         8         4         0
-  * | - - - - | - - - - | - - - - | - - - - | - - - - | - - - - | - - - - | - - - - |
-@@ -117,6 +117,7 @@
- 	 (EVENT_UNIT_MASK      << EVENT_UNIT_SHIFT)		|	\
- 	 (EVENT_COMBINE_MASK   << EVENT_COMBINE_SHIFT)		|	\
- 	 (EVENT_MARKED_MASK    << EVENT_MARKED_SHIFT)		|	\
-+	 (1ull		       << EVENT_CONFIG_EBB_SHIFT)	|	\
- 	  EVENT_PSEL_MASK)
+Index: powerpc/arch/powerpc/mm/numa.c
+===================================================================
+--- powerpc.orig/arch/powerpc/mm/numa.c	2013-06-24 06:53:31.000000000 -0500
++++ powerpc/arch/powerpc/mm/numa.c	2013-06-24 06:56:30.000000000 -0500
+@@ -1433,11 +1433,9 @@
+ 		if (cpu != update->cpu)
+ 			continue;
  
- /* MMCRA IFM bits - POWER8 */
-@@ -140,10 +141,10 @@
-  *
-  *        28        24        20        16        12         8         4         0
-  * | - - - - | - - - - | - - - - | - - - - | - - - - | - - - - | - - - - | - - - - |
-- *                       [ ]   [  sample ]   [     ]   [6] [5]   [4] [3]   [2] [1]
-- *                        |                     |
-- *      L1 I/D qualifier -*                     |      Count of events for each PMC.
-- *                                              |        p1, p2, p3, p4, p5, p6.
-+ *                   |   [ ]   [  sample ]   [     ]   [6] [5]   [4] [3]   [2] [1]
-+ *              EBB -*    |                     |
-+ *                        |                     |      Count of events for each PMC.
-+ *      L1 I/D qualifier -*                     |        p1, p2, p3, p4, p5, p6.
-  *                     nc - number of counters -*
-  *
-  * The PMC fields P1..P6, and NC, are adder fields. As we accumulate constraints
-@@ -159,6 +160,9 @@
- #define CNST_THRESH_VAL(v)	(((v) & EVENT_THRESH_MASK) << 32)
- #define CNST_THRESH_MASK	CNST_THRESH_VAL(EVENT_THRESH_MASK)
- 
-+#define CNST_EBB_VAL(v)		(((v) & 1) << 24)
-+#define CNST_EBB_MASK		CNST_EBB_VAL(1)
-+
- #define CNST_L1_QUAL_VAL(v)	(((v) & 3) << 22)
- #define CNST_L1_QUAL_MASK	CNST_L1_QUAL_VAL(3)
- 
-@@ -217,7 +221,7 @@ static inline bool event_is_fab_match(u64 event)
- 
- static int power8_get_constraint(u64 event, unsigned long *maskp, unsigned long *valp)
- {
--	unsigned int unit, pmc, cache;
-+	unsigned int unit, pmc, cache, ebb;
- 	unsigned long mask, value;
- 
- 	mask = value = 0;
-@@ -225,9 +229,13 @@ static int power8_get_constraint(u64 event, unsigned long *maskp, unsigned long
- 	if (event & ~EVENT_VALID_MASK)
- 		return -1;
- 
--	pmc   = (event >> EVENT_PMC_SHIFT)       & EVENT_PMC_MASK;
--	unit  = (event >> EVENT_UNIT_SHIFT)      & EVENT_UNIT_MASK;
--	cache = (event >> EVENT_CACHE_SEL_SHIFT) & EVENT_CACHE_SEL_MASK;
-+	pmc   = (event >> EVENT_PMC_SHIFT)        & EVENT_PMC_MASK;
-+	unit  = (event >> EVENT_UNIT_SHIFT)       & EVENT_UNIT_MASK;
-+	cache = (event >> EVENT_CACHE_SEL_SHIFT)  & EVENT_CACHE_SEL_MASK;
-+	ebb   = (event >> EVENT_CONFIG_EBB_SHIFT) & 1;
-+
-+	/* Clear the EBB bit in the event, so event checks work below */
-+	event &= ~(1ull << EVENT_CONFIG_EBB_SHIFT);
- 
- 	if (pmc) {
- 		if (pmc > 6)
-@@ -297,6 +305,18 @@ static int power8_get_constraint(u64 event, unsigned long *maskp, unsigned long
- 		value |= CNST_THRESH_VAL(event >> EVENT_THRESH_SHIFT);
+-		unregister_cpu_under_node(update->cpu, update->old_nid);
+ 		unmap_cpu_from_node(update->cpu);
+ 		map_cpu_to_node(update->cpu, update->new_nid);
+ 		vdso_getcpu_init();
+-		register_cpu_under_node(update->cpu, update->new_nid);
  	}
  
-+	if (!pmc && ebb)
-+		/* EBB events must specify the PMC */
-+		return -1;
-+
-+	/*
-+	 * All events must agree on EBB, either all request it or none.
-+	 * EBB events are pinned & exclusive, so this should never actually
-+	 * hit, but we leave it as a fallback in case.
-+	 */
-+	mask  |= CNST_EBB_VAL(ebb);
-+	value |= CNST_EBB_MASK;
-+
- 	*maskp = mask;
- 	*valp = value;
+ 	return 0;
+@@ -1485,6 +1483,9 @@
+ 	stop_machine(update_cpu_topology, &updates[0], &updated_cpus);
  
-@@ -591,7 +611,7 @@ static struct power_pmu power8_pmu = {
- 	.get_constraint		= power8_get_constraint,
- 	.get_alternatives	= power8_get_alternatives,
- 	.disable_pmc		= power8_disable_pmc,
--	.flags			= PPMU_HAS_SSLOT | PPMU_HAS_SIER | PPMU_BHRB,
-+	.flags			= PPMU_HAS_SSLOT | PPMU_HAS_SIER | PPMU_BHRB | PPMU_EBB,
- 	.n_generic		= ARRAY_SIZE(power8_generic_events),
- 	.generic_events		= power8_generic_events,
- 	.attr_groups		= power8_pmu_attr_groups,
--- 
-1.7.10.4
+ 	for (ud = &updates[0]; ud; ud = ud->next) {
++		unregister_cpu_under_node(update->cpu, update->old_nid);
++		register_cpu_under_node(update->cpu, update->new_nid);
++
+ 		dev = get_cpu_device(ud->cpu);
+ 		if (dev)
+ 			kobject_uevent(&dev->kobj, KOBJ_CHANGE);
