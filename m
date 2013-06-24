@@ -1,20 +1,28 @@
-Return-Path: <linux@roeck-us.net>
-Received: from mail.active-venture.com (mail.active-venture.com
- [67.228.131.205]) by ozlabs.org (Postfix) with ESMTP id DC5CB2C0495
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2013 14:48:20 +1000 (EST)
-Date: Sun, 23 Jun 2013 21:48:21 -0700
-From: Guenter Roeck <linux@roeck-us.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v2] powerpc/pci: Improve device hotplug initialization
-Message-ID: <20130624044821.GA12432@roeck-us.net>
-References: <1370884688-7753-1-git-send-email-linux@roeck-us.net>
- <20130621165453.GA5506@roeck-us.net>
- <1372038589.3944.118.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1372038589.3944.118.camel@pasglop>
-Cc: Yuanquan Chen <Yuanquan.Chen@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Hiroo Matsumoto <matsumoto.hiroo@jp.fujitsu.com>
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 842D92C04F7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2013 15:05:44 +1000 (EST)
+Message-ID: <1372048884.30572.168.camel@ul30vt.home>
+Subject: Re: [PATCH 3/4] KVM: PPC: Add support for IOMMU in-kernel handling
+From: Alex Williamson <alex.williamson@redhat.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Date: Sun, 23 Jun 2013 22:41:24 -0600
+In-Reply-To: <20130624035249.GD25265@voom.fritz.box>
+References: <E63966E3-336F-4CB8-96EC-24D2C1644E62@suse.de>
+ <1371653443.21896.291.camel@pasglop>
+ <1371656989.22659.98.camel@ul30vt.home> <51C28BEA.8050501@ozlabs.ru>
+ <20130620052822.GB3140@voom.redhat.com> <1371714449.3944.14.camel@pasglop>
+ <51C2C1CC.9000003@ozlabs.ru> <1371740113.32709.22.camel@ul30vt.home>
+ <20130622120304.GB25265@voom.fritz.box>
+ <1371911286.30572.155.camel@ul30vt.home>
+ <20130624035249.GD25265@voom.fritz.box>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: "kvm@vger.kernel.org mailing list" <kvm@vger.kernel.org>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, Joerg Roedel <joro@8bytes.org>,
+ Rusty Russell <rusty@rustcorp.com.au>, Alexander Graf <agraf@suse.de>,
+ kvm-ppc@vger.kernel.org, open list <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,86 +32,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 24, 2013 at 11:49:49AM +1000, Benjamin Herrenschmidt wrote:
-> On Fri, 2013-06-21 at 09:54 -0700, Guenter Roeck wrote:
-> 
-> > > v2: Ensure that PCI bus fixup code has been executed before calling
-> > >     device setup code.
+On Mon, 2013-06-24 at 13:52 +1000, David Gibson wrote:
+> On Sat, Jun 22, 2013 at 08:28:06AM -0600, Alex Williamson wrote:
+> > On Sat, 2013-06-22 at 22:03 +1000, David Gibson wrote:
+> > > On Thu, Jun 20, 2013 at 08:55:13AM -0600, Alex Williamson wrote:
+> > > > On Thu, 2013-06-20 at 18:48 +1000, Alexey Kardashevskiy wrote:
+> > > > > On 06/20/2013 05:47 PM, Benjamin Herrenschmidt wrote:
+> > > > > > On Thu, 2013-06-20 at 15:28 +1000, David Gibson wrote:
+> > > > > >>> Just out of curiosity - would not get_file() and fput_atomic() on a
+> > > > > >> group's
+> > > > > >>> file* do the right job instead of vfio_group_add_external_user() and
+> > > > > >>> vfio_group_del_external_user()?
+> > > > > >>
+> > > > > >> I was thinking that too.  Grabbing a file reference would certainly be
+> > > > > >> the usual way of handling this sort of thing.
+> > > > > > 
+> > > > > > But that wouldn't prevent the group ownership to be returned to
+> > > > > > the kernel or another user would it ?
+> > > > > 
+> > > > > 
+> > > > > Holding the file pointer does not let the group->container_users counter go
+> > > > > to zero
+> > > > 
+> > > > How so?  Holding the file pointer means the file won't go away, which
+> > > > means the group release function won't be called.  That means the group
+> > > > won't go away, but that doesn't mean it's attached to an IOMMU.  A user
+> > > > could call UNSET_CONTAINER.
 > > > 
-> > Hi Ben,
+> > > Uhh... *thinks*.  Ah, I see.
+> > > 
+> > > I think the interface should not take the group fd, but the container
+> > > fd.  Holding a reference to *that* would keep the necessary things
+> > > around.  But more to the point, it's the right thing semantically:
+> > > 
+> > > The container is essentially the handle on a host iommu address space,
+> > > and so that's what should be bound by the KVM call to a particular
+> > > guest iommu address space.  e.g. it would make no sense to bind two
+> > > different groups to different guest iommu address spaces, if they were
+> > > in the same container - the guest thinks they are different spaces,
+> > > but if they're in the same container they must be the same space.
 > > 
-> > any comments/feedback on this approach ?
-> > 
-> > It is much less invasive than before and should address your concerns.
+> > While the container is the gateway to the iommu, what empowers the
+> > container to maintain an iommu is the group.  What happens to a
+> > container when all the groups are disconnected or closed?  Groups are
+> > the unit that indicates hardware access, not containers.  Thanks,
 > 
-> And also less nice cleanup :-) I'll have a look.
+> Uh... huh?  I'm really not sure what you're getting at.
 > 
-I know :(.
+> The operation we're doing for KVM here is binding a guest iommu
+> address space to a particular host iommu address space.  Why would we
+> not want to use the obvious handle on the host iommu address space,
+> which is the container fd?
 
-Reminds me of that old story of being stuck between a rock and a hard place ...
+AIUI, the request isn't for an interface through which to do iommu
+mappings.  The request is for an interface to show that the user has
+sufficient privileges to do mappings.  Groups are what gives the user
+that ability.  The iommu is also possibly associated with multiple iommu
+groups and I believe what is being asked for here is a way to hold and
+lock a single iommu group with iommu protection.
 
-Guenter
+>From a practical point of view, the iommu interface is de-privileged
+once the groups are disconnected or closed.  Holding a reference count
+on the iommu fd won't prevent that.  That means we'd have to use a
+notifier to have KVM stop the side-channel iommu access.  Meanwhile
+holding the file descriptor for the group and adding an interface that
+bumps use counter allows KVM to lock itself in, just as if it had a
+device opened itself.  Thanks,
 
-> Cheers,
-> Ben.
-> 
-> > Thanks,
-> > Guenter
-> > 
-> > >  arch/powerpc/kernel/pci-common.c |   17 ++++++++++++-----
-> > >  1 file changed, 12 insertions(+), 5 deletions(-)
-> > > 
-> > > diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-> > > index 7f2273c..6909b13 100644
-> > > --- a/arch/powerpc/kernel/pci-common.c
-> > > +++ b/arch/powerpc/kernel/pci-common.c
-> > > @@ -992,7 +992,7 @@ void pcibios_setup_bus_self(struct pci_bus *bus)
-> > >  		ppc_md.pci_dma_bus_setup(bus);
-> > >  }
-> > >  
-> > > -void pcibios_setup_device(struct pci_dev *dev)
-> > > +static void pcibios_setup_device(struct pci_dev *dev)
-> > >  {
-> > >  	/* Fixup NUMA node as it may not be setup yet by the generic
-> > >  	 * code and is needed by the DMA init
-> > > @@ -1013,6 +1013,17 @@ void pcibios_setup_device(struct pci_dev *dev)
-> > >  		ppc_md.pci_irq_fixup(dev);
-> > >  }
-> > >  
-> > > +int pcibios_add_device(struct pci_dev *dev)
-> > > +{
-> > > +	/*
-> > > +	 * We can only call pcibios_setup_device() after bus setup is complete,
-> > > +	 * since some of the platform specific DMA setup code depends on it.
-> > > +	 */
-> > > +	if (dev->bus->is_added)
-> > > +		pcibios_setup_device(dev);
-> > > +	return 0;
-> > > +}
-> > > +
-> > >  void pcibios_setup_bus_devices(struct pci_bus *bus)
-> > >  {
-> > >  	struct pci_dev *dev;
-> > > @@ -1467,10 +1478,6 @@ int pcibios_enable_device(struct pci_dev *dev, int mask)
-> > >  		if (ppc_md.pcibios_enable_device_hook(dev))
-> > >  			return -EINVAL;
-> > >  
-> > > -	/* avoid pcie irq fix up impact on cardbus */
-> > > -	if (dev->hdr_type != PCI_HEADER_TYPE_CARDBUS)
-> > > -		pcibios_setup_device(dev);
-> > > -
-> > >  	return pci_enable_resources(dev, mask);
-> > >  }
-> > >  
-> > > -- 
-> > > 1.7.9.7
-> > > 
-> > > 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
-> 
+Alex
