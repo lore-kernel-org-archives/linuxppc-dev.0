@@ -1,10 +1,11 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 1/2] powerpc/hw_brk: Fix setting of length for exact mode
- breakpoints
-Date: Mon, 24 Jun 2013 15:47:22 +1000
-Message-Id: <1372052843-19109-1-git-send-email-mikey@neuling.org>
+Subject: [PATCH 2/2] powerpc/hw_brk: Fix clearing of extraneous IRQ
+Date: Mon, 24 Jun 2013 15:47:23 +1000
+Message-Id: <1372052843-19109-2-git-send-email-mikey@neuling.org>
+In-Reply-To: <1372052843-19109-1-git-send-email-mikey@neuling.org>
+References: <1372052843-19109-1-git-send-email-mikey@neuling.org>
 Cc: linuxppc-dev@lists.ozlabs.org,
  Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -16,38 +17,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The smallest match region for both the DABR and DAWR is 8 bytes, so the
-kernel needs to filter matches when users want to look at regions smaller than
-this.
+In 9422de3 "powerpc: Hardware breakpoints rewrite to handle non DABR breakpoint
+registers" we changed the way we mark extraneous irqs with this:
 
-Currently we set the length of PPC_BREAKPOINT_MODE_EXACT breakpoints to 8.
-This is wrong as in exact mode we should only match on 1 address, hence the
-length should be 1.
+-	info->extraneous_interrupt = !((bp->attr.bp_addr <= dar) &&
+-			(dar - bp->attr.bp_addr < bp->attr.bp_len));
++	if (!((bp->attr.bp_addr <= dar) &&
++	      (dar - bp->attr.bp_addr < bp->attr.bp_len)))
++		info->type |= HW_BRK_TYPE_EXTRANEOUS_IRQ;
 
-This ensures that the kernel will filter out any exact mode hardware breakpoint
-matches on any addresses other than the requested one.
+Unfortunately this is bogus as it never clears extraneous IRQ if it's already
+set.
+
+This correctly clears extraneous IRQ before possibly setting it.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 Reported-by: Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>
 Cc: stable@vger.kernel.org
 ---
- arch/powerpc/kernel/ptrace.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/hw_breakpoint.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index 98c2fc1..64f7bd5 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -1449,7 +1449,9 @@ static long ppc_set_hwdebug(struct task_struct *child,
+diff --git a/arch/powerpc/kernel/hw_breakpoint.c b/arch/powerpc/kernel/hw_breakpoint.c
+index a949bdf..1150ae7 100644
+--- a/arch/powerpc/kernel/hw_breakpoint.c
++++ b/arch/powerpc/kernel/hw_breakpoint.c
+@@ -250,6 +250,7 @@ int __kprobes hw_breakpoint_handler(struct die_args *args)
+ 	 * we still need to single-step the instruction, but we don't
+ 	 * generate an event.
  	 */
- 	if (bp_info->addr_mode == PPC_BREAKPOINT_MODE_RANGE_INCLUSIVE) {
- 		len = bp_info->addr2 - bp_info->addr;
--	} else if (bp_info->addr_mode != PPC_BREAKPOINT_MODE_EXACT) {
-+	} else if (bp_info->addr_mode == PPC_BREAKPOINT_MODE_EXACT)
-+		len = 1;
-+	else {
- 		ptrace_put_breakpoints(child);
- 		return -EINVAL;
- 	}
++	info->type &= ~HW_BRK_TYPE_EXTRANEOUS_IRQ;
+ 	if (!((bp->attr.bp_addr <= dar) &&
+ 	      (dar - bp->attr.bp_addr < bp->attr.bp_len)))
+ 		info->type |= HW_BRK_TYPE_EXTRANEOUS_IRQ;
 -- 
 1.7.10.4
