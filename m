@@ -1,46 +1,35 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EC5F32C0092
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 04:13:30 +1000 (EST)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 25 Jun 2013 04:01:59 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id CAAAF2BB0052
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 04:13:26 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5OHwckf58785944
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 03:58:38 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5OIDOdH030284
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 04:13:26 +1000
-Message-ID: <51C88B76.90806@linux.vnet.ibm.com>
-Date: Mon, 24 Jun 2013 23:39:58 +0530
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Return-Path: <ddaney.cavm@gmail.com>
+Received: from mail-pa0-x22f.google.com (mail-pa0-x22f.google.com
+ [IPv6:2607:f8b0:400e:c03::22f])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 453992C0095
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 04:17:12 +1000 (EST)
+Received: by mail-pa0-f47.google.com with SMTP id kl14so11410033pab.20
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2013 11:17:09 -0700 (PDT)
+Message-ID: <51C88D22.5000408@gmail.com>
+Date: Mon, 24 Jun 2013 11:17:06 -0700
+From: David Daney <ddaney.cavm@gmail.com>
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH 22/45] percpu_counter: Use get/put_online_cpus_atomic()
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH 25/45] staging/octeon: Use get/put_online_cpus_atomic()
  to prevent CPU offline
 References: <20130623133642.19094.16038.stgit@srivatsabhat.in.ibm.com>
- <20130623134256.19094.99231.stgit@srivatsabhat.in.ibm.com>
- <20130624175535.GA1918@mtj.dyndns.org> <20130624180636.GB1918@mtj.dyndns.org>
-In-Reply-To: <20130624180636.GB1918@mtj.dyndns.org>
-Content-Type: text/plain; charset=ISO-8859-1
+ <20130623134331.19094.80396.stgit@srivatsabhat.in.ibm.com>
+ <20130623181740.GB24256@kroah.com> <51C744A9.8000406@linux.vnet.ibm.com>
+In-Reply-To: <51C744A9.8000406@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org,
  walken@google.com, mingo@kernel.org, linux-arch@vger.kernel.org,
- vincent.guittot@linaro.org, xiaoguangrong@linux.vnet.ibm.com,
- wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com,
+ vincent.guittot@linaro.org, ddaney@caviumnetworks.com,
+ xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
+ paulmck@linux.vnet.ibm.com, devel@driverdev.osuosl.org,
  nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au,
- rostedt@goodmis.org, Al Viro <viro@zeniv.linux.org.uk>, namhyung@kernel.org,
- tglx@linutronix.de, laijs@cn.fujitsu.com, zhong@linux.vnet.ibm.com,
- netdev@vger.kernel.org, oleg@redhat.com, sbw@mit.edu,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+ rostedt@goodmis.org, namhyung@kernel.org, tglx@linutronix.de,
+ laijs@cn.fujitsu.com, zhong@linux.vnet.ibm.com,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, oleg@redhat.com, sbw@mit.edu,
+ netdev@vger.kernel.org, tj@kernel.org, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,40 +39,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/24/2013 11:36 PM, Tejun Heo wrote:
-> On Mon, Jun 24, 2013 at 10:55:35AM -0700, Tejun Heo wrote:
->>> @@ -105,6 +106,7 @@ s64 __percpu_counter_sum(struct percpu_counter *fbc)
->>>  		ret += *pcount;
->>>  	}
->>>  	raw_spin_unlock(&fbc->lock);
+On 06/23/2013 11:55 AM, Srivatsa S. Bhat wrote:
+> On 06/23/2013 11:47 PM, Greg Kroah-Hartman wrote:
+>> On Sun, Jun 23, 2013 at 07:13:33PM +0530, Srivatsa S. Bhat wrote:
+>>> Once stop_machine() is gone from the CPU offline path, we won't be able
+>>> to depend on disabling preemption to prevent CPUs from going offline
+>>> from under us.
+>>>
+>>> Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going
+>>> offline, while invoking from atomic context.
+>>>
+>>> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+>>> Cc: devel@driverdev.osuosl.org
+>>> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+>>> ---
+>>>
+>>>   drivers/staging/octeon/ethernet-rx.c |    3 +++
+>>>   1 file changed, 3 insertions(+)
+>>>
+>>> diff --git a/drivers/staging/octeon/ethernet-rx.c b/drivers/staging/octeon/ethernet-rx.c
+>>> index 34afc16..8588b4d 100644
+>>> --- a/drivers/staging/octeon/ethernet-rx.c
+>>> +++ b/drivers/staging/octeon/ethernet-rx.c
+>>> @@ -36,6 +36,7 @@
+>>>   #include <linux/prefetch.h>
+>>>   #include <linux/ratelimit.h>
+>>>   #include <linux/smp.h>
+>>> +#include <linux/cpu.h>
+>>>   #include <linux/interrupt.h>
+>>>   #include <net/dst.h>
+>>>   #ifdef CONFIG_XFRM
+>>> @@ -97,6 +98,7 @@ static void cvm_oct_enable_one_cpu(void)
+>>>   		return;
+>>>
+>>>   	/* ... if a CPU is available, Turn on NAPI polling for that CPU.  */
+>>> +	get_online_cpus_atomic();
+>>>   	for_each_online_cpu(cpu) {
+>>>   		if (!cpu_test_and_set(cpu, core_state.cpu_state)) {
+>>>   			v = smp_call_function_single(cpu, cvm_oct_enable_napi,
+>>> @@ -106,6 +108,7 @@ static void cvm_oct_enable_one_cpu(void)
+>>>   			break;
+>>>   		}
+>>>   	}
 >>> +	put_online_cpus_atomic();
 >>
->> I don't think this is necessary.  CPU on/offlining is explicitly
->> handled via the hotplug callback which synchronizes through fbc->lock.
->> __percpu_counter_sum() racing with actual on/offlining doesn't affect
->> correctness and adding superflous get_online_cpus_atomic() around it
->> can be misleading.
-> 
-> Ah, okay, so you added a debug feature which triggers warning if
-> online mask is accessed without synchronization.
+>> Does this driver really need to be doing this in the first place?  If
+>> so, why?  The majority of network drivers don't, why is this one
+>> "special"?
 
-Exactly!
 
->  Yeah, that makes
-> sense and while the above is not strictly necessary, it probably is
-> better to just add it rather than suppressing the warning in a
-> different way.
+It depends on your definition of "need".
 
-Yeah, I was beginning to scratch my head as to how to suppress the
-warning after I read your explanation as to why the calls to
-get/put_online_cpus_atomic() would be superfluous in this case...
+The current driver receives packets from *all* network ports into a 
+single queue (in OCTEON speak this queue is called a POW group).  Under 
+high packet rates, the CPU time required to process the packets may 
+exceed the capabilities of a single CPU.
 
-But as you said, simply invoking those functions is much simpler ;-)
+In order to increase throughput beyond the single CPU limited rate, we 
+bring more than one CPUs into play for NAPI receive.  The code being 
+patched here is part of the logic that controls which CPUs are used for 
+NAPI receive.
 
->  Can you please at least add a comment explaining that?
-> 
+Just for the record:  Yes I know that doing this may lead to packet 
+reordering when doing forwarding.
 
-Sure, will do. Thanks a lot Tejun!
- 
-Regards,
-Srivatsa S. Bhat
+A further question that wasn't asked is: Will the code work at all if a 
+CPU is taken offline even if the race, the patch eliminates, is avoided?
+
+I doubt it.
+
+As far as the patch goes:
+
+Acked-by: David Daney <david.daney@cavium.com>
+
+David Daney
+
+>>
+>
+> Honestly, I don't know. Let's CC the author of that code (David Daney).
+> I wonder why get_maintainer.pl didn't generate his name for this file,
+> even though the entire file is almost made up of his commits alone!
+>
+> Regards,
+> Srivatsa S. Bhat
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
