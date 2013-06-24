@@ -1,23 +1,13 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 36A292C04E6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2013 11:16:36 +1000 (EST)
-Message-ID: <1372036573.3944.115.camel@pasglop>
-Subject: Re: Inbound PCI and Memory Corruption
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Peter LaDow <pladow@gmail.com>
-Date: Mon, 24 Jun 2013 11:16:13 +1000
-In-Reply-To: <F3E9F49F-9C68-4BCB-B2A0-507AB1B2F10F@gmail.com>
-References: <CAN8Q1EdnN9+kKGy+voF3=EyPfbHv04Emfz=uA6XKMJEAkvLpAA@mail.gmail.com>
- <CAN8Q1Ed9Lpg1Sog5tQODe+jqCRXBBH3d_UeR5usdc23CD7vwjg@mail.gmail.com>
- <1371945647.3944.106.camel@pasglop>
- <F3E9F49F-9C68-4BCB-B2A0-507AB1B2F10F@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Peter LaDow <petela@gocougs.wsu.edu>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/pseries: Enable PSTORE in pseries_defconfig
+In-reply-to: <20130621083639.4039.27789.stgit@aruna-ThinkPad-T420>
+References: <20130621083639.4039.27789.stgit@aruna-ThinkPad-T420>
+Date: Mon, 24 Jun 2013 11:21:36 +1000
+Message-ID: <7684.1372036896@ale.ozlabs.ibm.com>
+Cc: mahesh@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,40 +17,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2013-06-23 at 17:56 -0700, Peter LaDow wrote:
-> 
-> On Jun 22, 2013, at 5:00 PM, Benjamin Herrenschmidt
-> <benh@kernel.crashing.org> wrote:
-> 
-> > On Fri, 2013-06-21 at 10:14 -0700, Peter LaDow wrote:
-> >> 
-> > Afaik e300 is slightly out of order, maybe it's missing a memory
-> barrier
-> > somewhere.... One thing to try is to add some to the dma_map/unmap
-> ops.
-> > 
-> > Also audit the driver to ensure that it properly uses barriers when
-> > populating descriptors (and maybe compare to a more recent version
-> of
-> > the driver upstream).
-> Thanks for the tips.
-> 
-> I've been working with the folk at Intel on the e1000-dev list, and
-> they did add memory barriers. And I've tried the latest e1000 drivers
-> (direct from the e1000 tree) with no luck.
-> 
-> I've done PCI traces, and there is no DMA after the disable is written
-> to the e1000 part. All I can think is that there may be posted writes,
-> the kernel goes on to cleanup the DMA buffers. But there are write
-> memory barriers, so I don't see how this is possible.
-> 
-> Are the memory barriers meaningful in single processor builds?
+> Enable PSTORE in pseries_defconfig
 
-Yes. However they have no effect on posted writes by the chip. You
-need to do an MMIO read for these to take effect.
+Please add a "why" to your changelogs eg. "Now we have pstore support for
+nvram on pseries, enable it in the default config"
 
-Also dbl check that the MMU is indeed mapping all these pages with the
-"M" bit.
+"Why" you are changing something is more important than "what", since
+you can always determine "what" is being changed, by looking at the diff.
+The "why" will be long forgotten.
 
-Cheers,
-Ben.
+> 
+> Signed-off-by: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/configs/pseries_defconfig |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
+> index c4dfbaf..9630a50 100644
+> --- a/arch/powerpc/configs/pseries_defconfig
+> +++ b/arch/powerpc/configs/pseries_defconfig
+> @@ -347,3 +347,4 @@ CONFIG_VIRTUALIZATION=y
+>  CONFIG_KVM_BOOK3S_64=m
+>  CONFIG_KVM_BOOK3S_64_HV=y
+>  CONFIG_VHOST_NET=m
+> +CONFIG_PSTORE=y
+
+This should really be added in the right location on the config, not
+just at the end.   ie.
+
+@@ -296,6 +293,7 @@
+ CONFIG_SQUASHFS_XATTR=y
+ CONFIG_SQUASHFS_LZO=y
+ CONFIG_SQUASHFS_XZ=y
++CONFIG_PSTORE=y
+ CONFIG_NFS_FS=y
+ CONFIG_NFS_V3_ACL=y
+ CONFIG_NFS_V4=y
