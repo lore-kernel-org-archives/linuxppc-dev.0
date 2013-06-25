@@ -1,11 +1,39 @@
-Return-Path: <michael@ozlabs.org>
-From: Michael Ellerman <michael@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 4/4] powerpc: Wire up the HV facility unavailable exception
-Date: Tue, 25 Jun 2013 17:47:57 +1000
-Message-Id: <1372146477-4338-4-git-send-email-michael@ellerman.id.au>
-In-Reply-To: <1372146477-4338-1-git-send-email-michael@ellerman.id.au>
-References: <1372146477-4338-1-git-send-email-michael@ellerman.id.au>
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e37.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3EC862C0309
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 17:48:07 +1000 (EST)
+Received: from /spool/local
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Tue, 25 Jun 2013 01:48:04 -0600
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+ [9.17.195.106])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id EFE6D19D8036
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 01:47:51 -0600 (MDT)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5P7m1Ho387444
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 01:48:01 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5P7lxGk013507
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 01:48:00 -0600
+Date: Tue, 25 Jun 2013 15:47:55 +0800
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 03/10] powerpc/eeh: Check PCIe link after reset
+Message-ID: <20130625074755.GA8486@shangw.(null)>
+References: <1372139717-14885-1-git-send-email-shangw@linux.vnet.ibm.com>
+ <1372139717-14885-4-git-send-email-shangw@linux.vnet.ibm.com>
+ <1372140384.3944.189.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1372140384.3944.189.camel@pasglop>
+Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <shangw@linux.vnet.ibm.com>
+Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -15,100 +43,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Similar to the facility unavailble exception, except the facilities are
-controlled by HFSCR.
+On Tue, Jun 25, 2013 at 04:06:24PM +1000, Benjamin Herrenschmidt wrote:
+>On Tue, 2013-06-25 at 13:55 +0800, Gavin Shan wrote:
+>>         * don't touch the other command bits
+>>          */
+>> -       eeh_ops->read_config(dn, PCI_COMMAND, 4, &cmd);
+>> -       if (edev->config_space[1] & PCI_COMMAND_PARITY)
+>> -               cmd |= PCI_COMMAND_PARITY;
+>> -       else
+>> -               cmd &= ~PCI_COMMAND_PARITY;
+>> -       if (edev->config_space[1] & PCI_COMMAND_SERR)
+>> -               cmd |= PCI_COMMAND_SERR;
+>> -       else
+>> -               cmd &= ~PCI_COMMAND_SERR;
+>> -       eeh_ops->write_config(dn, PCI_COMMAND, 4, cmd);
+>> +       if (pdev) {
+>> +               eeh_ops->write_config(dn, PCI_COMMAND, 4,
+>> +                                     edev->config_space[1]);
+>> +       } else {
+>
+>That needs a much better comment. Why are you doing that instead
+>of what's below ? In fact there is more to restore in a bridge
+>right ? (windows etc...). Do you do that ? Should we just have a
+>different function to restore a device vs. a bridge ?
+>
 
-Adapt the facility_unavailable_exception() so it can be called for
-either the regular or Hypervisor facility unavailable exceptions.
+Yeah, We should have one separate function to do that for bridge.
+I'll do that in next revision.
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/kernel/exceptions-64s.S |   15 +++++++++++++++
- arch/powerpc/kernel/traps.c          |   16 ++++++++++++----
- 2 files changed, 27 insertions(+), 4 deletions(-)
+>I also don't see a need to do thing differently between phyp and
+>powernv. Bridges inside partitions would suffer the same fate in
+>both cases.
+>
 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index d55a63c..4e00d22 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -347,6 +347,12 @@ facility_unavailable_trampoline:
- 	EXCEPTION_PROLOG_0(PACA_EXGEN)
- 	b	facility_unavailable_pSeries
- 
-+hv_facility_unavailable_trampoline:
-+	. = 0xf80
-+	SET_SCRATCH0(r13)
-+	EXCEPTION_PROLOG_0(PACA_EXGEN)
-+	b	facility_unavailable_hv
-+
- #ifdef CONFIG_CBE_RAS
- 	STD_EXCEPTION_HV(0x1200, 0x1202, cbe_system_error)
- 	KVM_HANDLER_SKIP(PACA_EXGEN, EXC_HV, 0x1202)
-@@ -525,6 +531,8 @@ denorm_done:
- 	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0xf40)
- 	STD_EXCEPTION_PSERIES_OOL(0xf60, facility_unavailable)
- 	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0xf60)
-+	STD_EXCEPTION_HV_OOL(0xf82, facility_unavailable)
-+	KVM_HANDLER(PACA_EXGEN, EXC_HV, 0xf82)
- 
- /*
-  * An interrupt came in while soft-disabled. We set paca->irq_happened, then:
-@@ -836,6 +844,12 @@ facility_unavailable_relon_trampoline:
- 	EXCEPTION_PROLOG_0(PACA_EXGEN)
- 	b	facility_unavailable_relon_pSeries
- 
-+hv_facility_unavailable_relon_trampoline:
-+	. = 0x4f80
-+	SET_SCRATCH0(r13)
-+	EXCEPTION_PROLOG_0(PACA_EXGEN)
-+	b	facility_unavailable_relon_hv
-+
- 	STD_RELON_EXCEPTION_PSERIES(0x5300, 0x1300, instruction_breakpoint)
- #ifdef CONFIG_PPC_DENORMALISATION
- 	. = 0x5500
-@@ -1174,6 +1188,7 @@ __end_handlers:
- 	STD_RELON_EXCEPTION_PSERIES_OOL(0xf20, altivec_unavailable)
- 	STD_RELON_EXCEPTION_PSERIES_OOL(0xf40, vsx_unavailable)
- 	STD_RELON_EXCEPTION_PSERIES_OOL(0xf60, facility_unavailable)
-+	STD_RELON_EXCEPTION_HV_OOL(0xf80, facility_unavailable)
- 
- #if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV)
- /*
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 2053bbd..e4f205a 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -1295,10 +1295,18 @@ void facility_unavailable_exception(struct pt_regs *regs)
- 		"EBB",
- 		"TAR",
- 	};
--	char *facility;
-+	char *facility, *prefix;
- 	u64 value;
- 
--	value = mfspr(SPRN_FSCR) >> 56;
-+	if (regs->trap == 0xf60) {
-+		value = mfspr(SPRN_FSCR);
-+		prefix = "";
-+	} else {
-+		value = mfspr(SPRN_HFSCR);
-+		prefix = "Hypervisor ";
-+	}
-+
-+	value = value >> 56;
- 
- 	/* We restore the interrupt state now */
- 	if (!arch_irq_disabled_regs(regs))
-@@ -1309,8 +1317,8 @@ void facility_unavailable_exception(struct pt_regs *regs)
- 	else
- 		facility = "unknown";
- 
--	pr_err("Facility '%s' unavailable, exception at 0x%lx, MSR=%lx\n",
--		facility, regs->nip, regs->msr);
-+	pr_err("%sFacility '%s' unavailable, exception at 0x%lx, MSR=%lx\n",
-+		prefix, facility, regs->nip, regs->msr);
- 
- 	if (user_mode(regs)) {
- 		_exception(SIGILL, regs, ILL_ILLOPC, regs->nip);
--- 
-1.7.10.4
+If we just have complete reset for fenced PHB, we need restore it
+from the cache (edev->config_space[1]) instead of reading that from
+hardware. Fenced PHB is the special case on PowerNV :-)
+
+Thanks,
+Gavin
