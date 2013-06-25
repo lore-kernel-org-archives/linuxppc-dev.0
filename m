@@ -1,45 +1,47 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0F93C2C05E5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:31:40 +1000 (EST)
+ (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9762E2C03C4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:32:02 +1000 (EST)
 Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Wed, 26 Jun 2013 01:55:24 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 882F91258051
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 02:00:40 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5PKVXPI23593204
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 02:01:33 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5PKVYLf009330
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:31:36 +1000
+ Wed, 26 Jun 2013 06:17:31 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 346992CE804A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:31:59 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5PKH9DH7995744
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:17:09 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5PKVvQY030462
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:31:58 +1000
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v2 17/45] time/clocksource: Use get/put_online_cpus_atomic()
- to prevent CPU offline
+Subject: [PATCH v2 18/45] softirq: Use get/put_online_cpus_atomic() to prevent
+ CPU offline
 To: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com,
  paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org,
  akpm@linux-foundation.org, namhyung@kernel.org, walken@google.com,
  vincent.guittot@linaro.org, laijs@cn.fujitsu.com
-Date: Wed, 26 Jun 2013 01:58:20 +0530
-Message-ID: <20130625202820.16593.17778.stgit@srivatsabhat.in.ibm.com>
+Date: Wed, 26 Jun 2013 01:58:27 +0530
+Message-ID: <20130625202826.16593.21025.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20130625202452.16593.22810.stgit@srivatsabhat.in.ibm.com>
 References: <20130625202452.16593.22810.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: linux-arch@vger.kernel.org, nikunj@linux.vnet.ibm.com,
- zhong@linux.vnet.ibm.com, linux-pm@vger.kernel.org, fweisbec@gmail.com,
- linux-kernel@vger.kernel.org, rostedt@goodmis.org,
- xiaoguangrong@linux.vnet.ibm.com, sbw@mit.edu,
- John Stultz <john.stultz@linaro.org>, wangyun@linux.vnet.ibm.com,
+ zhong@linux.vnet.ibm.com, linux-pm@vger.kernel.org,
+ Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+ rostedt@goodmis.org, xiaoguangrong@linux.vnet.ibm.com, sbw@mit.edu,
+ wangyun@linux.vnet.ibm.com,
  "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, netdev@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
+ Sedat Dilek <sedat.dilek@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,55 +58,36 @@ from under us.
 Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going
 offline, while invoking from atomic context.
 
-Cc: John Stultz <john.stultz@linaro.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Sedat Dilek <sedat.dilek@gmail.com>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- kernel/time/clocksource.c |    5 +++++
- 1 file changed, 5 insertions(+)
+ kernel/softirq.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
-index e713ef7..c4bbc25 100644
---- a/kernel/time/clocksource.c
-+++ b/kernel/time/clocksource.c
-@@ -30,6 +30,7 @@
- #include <linux/sched.h> /* for spin_unlock_irq() using preempt_count() m68k */
- #include <linux/tick.h>
- #include <linux/kthread.h>
-+#include <linux/cpu.h>
+diff --git a/kernel/softirq.c b/kernel/softirq.c
+index 3d6833f..c289722 100644
+--- a/kernel/softirq.c
++++ b/kernel/softirq.c
+@@ -644,14 +644,17 @@ static void remote_softirq_receive(void *data)
  
- #include "tick-internal.h"
- 
-@@ -252,6 +253,7 @@ static void clocksource_watchdog(unsigned long data)
- 	int64_t wd_nsec, cs_nsec;
- 	int next_cpu, reset_pending;
- 
-+	get_online_cpus_atomic();
- 	spin_lock(&watchdog_lock);
- 	if (!watchdog_running)
- 		goto out;
-@@ -329,6 +331,7 @@ static void clocksource_watchdog(unsigned long data)
- 	add_timer_on(&watchdog_timer, next_cpu);
- out:
- 	spin_unlock(&watchdog_lock);
-+	put_online_cpus_atomic();
- }
- 
- static inline void clocksource_start_watchdog(void)
-@@ -367,6 +370,7 @@ static void clocksource_enqueue_watchdog(struct clocksource *cs)
+ static int __try_remote_softirq(struct call_single_data *cp, int cpu, int softirq)
  {
- 	unsigned long flags;
- 
 +	get_online_cpus_atomic();
- 	spin_lock_irqsave(&watchdog_lock, flags);
- 	if (cs->flags & CLOCK_SOURCE_MUST_VERIFY) {
- 		/* cs is a clocksource to be watched. */
-@@ -386,6 +390,7 @@ static void clocksource_enqueue_watchdog(struct clocksource *cs)
- 	/* Check if the watchdog timer needs to be started. */
- 	clocksource_start_watchdog();
- 	spin_unlock_irqrestore(&watchdog_lock, flags);
-+	put_online_cpus_atomic();
- }
+ 	if (cpu_online(cpu)) {
+ 		cp->func = remote_softirq_receive;
+ 		cp->info = &softirq;
+ 		cp->flags = 0;
  
- static void clocksource_dequeue_watchdog(struct clocksource *cs)
+ 		__smp_call_function_single(cpu, cp, 0);
++		put_online_cpus_atomic();
+ 		return 0;
+ 	}
++	put_online_cpus_atomic();
+ 	return 1;
+ }
+ #else /* CONFIG_USE_GENERIC_SMP_HELPERS */
