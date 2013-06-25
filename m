@@ -1,34 +1,34 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp03.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D32842C0319
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:30:35 +1000 (EST)
+ (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D1B742C0384
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:30:39 +1000 (EST)
 Received: from /spool/local
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Wed, 26 Jun 2013 01:54:31 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 2B2A3E0056
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 02:00:01 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5PKUkpF19267802
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 02:00:46 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5PKUO06026647
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 20:30:27 GMT
+ Wed, 26 Jun 2013 01:54:23 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 9473D1258053
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 01:59:37 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5PKUn8V28246040
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 02:00:49 +0530
+Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5PKUWa2012617
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:30:33 +1000
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v2 10/45] sched/core: Use get/put_online_cpus_atomic() to
- prevent CPU offline
+Subject: [PATCH v2 11/45] migration: Use raw_spin_lock/unlock since interrupts
+ are already disabled
 To: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com,
  paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org,
  akpm@linux-foundation.org, namhyung@kernel.org, walken@google.com,
  vincent.guittot@linaro.org, laijs@cn.fujitsu.com
-Date: Wed, 26 Jun 2013 01:57:10 +0530
-Message-ID: <20130625202710.16593.95831.stgit@srivatsabhat.in.ibm.com>
+Date: Wed, 26 Jun 2013 01:57:17 +0530
+Message-ID: <20130625202717.16593.55189.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20130625202452.16593.22810.stgit@srivatsabhat.in.ibm.com>
 References: <20130625202452.16593.22810.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
@@ -50,121 +50,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Once stop_machine() is gone from the CPU offline path, we won't be able
-to depend on disabling preemption to prevent CPUs from going offline
-from under us.
-
-Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going
-offline, while invoking from atomic context.
+We need not use the raw_spin_lock_irqsave/restore primitives because
+all CPU_DYING notifiers run with interrupts disabled. So just use
+raw_spin_lock/unlock.
 
 Cc: Ingo Molnar <mingo@redhat.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- kernel/sched/core.c |   23 +++++++++++++++++++++--
- 1 file changed, 21 insertions(+), 2 deletions(-)
+ kernel/sched/core.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 195658b..accd550 100644
+index accd550..ff26f54 100644
 --- a/kernel/sched/core.c
 +++ b/kernel/sched/core.c
-@@ -1160,11 +1160,11 @@ void kick_process(struct task_struct *p)
- {
- 	int cpu;
+@@ -4682,14 +4682,14 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
+ 	case CPU_DYING:
+ 		sched_ttwu_pending();
+ 		/* Update our root-domain */
+-		raw_spin_lock_irqsave(&rq->lock, flags);
++		raw_spin_lock(&rq->lock); /* IRQs already disabled */
+ 		if (rq->rd) {
+ 			BUG_ON(!cpumask_test_cpu(cpu, rq->rd->span));
+ 			set_rq_offline(rq);
+ 		}
+ 		migrate_tasks(cpu);
+ 		BUG_ON(rq->nr_running != 1); /* the migration thread */
+-		raw_spin_unlock_irqrestore(&rq->lock, flags);
++		raw_spin_unlock(&rq->lock);
+ 		break;
  
--	preempt_disable();
-+	get_online_cpus_atomic();
- 	cpu = task_cpu(p);
- 	if ((cpu != smp_processor_id()) && task_curr(p))
- 		smp_send_reschedule(cpu);
--	preempt_enable();
-+	put_online_cpus_atomic();
- }
- EXPORT_SYMBOL_GPL(kick_process);
- #endif /* CONFIG_SMP */
-@@ -1172,6 +1172,9 @@ EXPORT_SYMBOL_GPL(kick_process);
- #ifdef CONFIG_SMP
- /*
-  * ->cpus_allowed is protected by both rq->lock and p->pi_lock
-+ *
-+ *  Must be called within get/put_online_cpus_atomic(), to prevent
-+ *  CPUs from going offline from under us.
-  */
- static int select_fallback_rq(int cpu, struct task_struct *p)
- {
-@@ -1245,6 +1248,9 @@ out:
- 
- /*
-  * The caller (fork, wakeup) owns p->pi_lock, ->cpus_allowed is stable.
-+ *
-+ * Must be called within get/put_online_cpus_atomic(), to prevent
-+ * CPUs from going offline from under us.
-  */
- static inline
- int select_task_rq(struct task_struct *p, int sd_flags, int wake_flags)
-@@ -1489,6 +1495,8 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
- 	unsigned long flags;
- 	int cpu, success = 0;
- 
-+	get_online_cpus_atomic();
-+
- 	smp_wmb();
- 	raw_spin_lock_irqsave(&p->pi_lock, flags);
- 	if (!(p->state & state))
-@@ -1531,6 +1539,7 @@ stat:
- out:
- 	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
- 
-+	put_online_cpus_atomic();
- 	return success;
- }
- 
-@@ -1753,6 +1762,8 @@ void wake_up_new_task(struct task_struct *p)
- 	unsigned long flags;
- 	struct rq *rq;
- 
-+	get_online_cpus_atomic();
-+
- 	raw_spin_lock_irqsave(&p->pi_lock, flags);
- #ifdef CONFIG_SMP
- 	/*
-@@ -1773,6 +1784,8 @@ void wake_up_new_task(struct task_struct *p)
- 		p->sched_class->task_woken(rq, p);
- #endif
- 	task_rq_unlock(rq, p, &flags);
-+
-+	put_online_cpus_atomic();
- }
- 
- #ifdef CONFIG_PREEMPT_NOTIFIERS
-@@ -3886,6 +3899,8 @@ bool __sched yield_to(struct task_struct *p, bool preempt)
- 	unsigned long flags;
- 	int yielded = 0;
- 
-+	get_online_cpus_atomic();
-+
- 	local_irq_save(flags);
- 	rq = this_rq();
- 
-@@ -3931,6 +3946,8 @@ out_unlock:
- out_irq:
- 	local_irq_restore(flags);
- 
-+	put_online_cpus_atomic();
-+
- 	if (yielded > 0)
- 		schedule();
- 
-@@ -4331,9 +4348,11 @@ static int migration_cpu_stop(void *data)
- 	 * The original target cpu might have gone down and we might
- 	 * be on another cpu but it doesn't matter.
- 	 */
-+	get_online_cpus_atomic();
- 	local_irq_disable();
- 	__migrate_task(arg->task, raw_smp_processor_id(), arg->dest_cpu);
- 	local_irq_enable();
-+	put_online_cpus_atomic();
- 	return 0;
- }
- 
+ 	case CPU_DEAD:
