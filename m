@@ -1,30 +1,31 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C1CF02C0394
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 15:55:59 +1000 (EST)
+ (Client CN "e37.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9FAC62C0342
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 15:56:00 +1000 (EST)
 Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Mon, 24 Jun 2013 23:55:57 -0600
-Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 1182A6E8028
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 01:55:50 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5P5tO2D334472
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 01:55:24 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5P5tN2Y016852
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 02:55:24 -0300
+ Mon, 24 Jun 2013 23:55:58 -0600
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+ [9.17.195.107])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id F324E3E40030
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2013 23:55:05 -0600 (MDT)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5P5tPJt141658
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2013 23:55:25 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5P5tOYc026216
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2013 23:55:25 -0600
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 03/10] powerpc/eeh: Check PCIe link after reset
-Date: Tue, 25 Jun 2013 13:55:10 +0800
-Message-Id: <1372139717-14885-4-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 06/10] powerpc/eeh: Support blocked IO access
+Date: Tue, 25 Jun 2013 13:55:13 +0800
+Message-Id: <1372139717-14885-7-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1372139717-14885-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1372139717-14885-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -37,171 +38,538 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-After reset (e.g. complete reset) in order to bring the fenced PHB
-back, the PCIe link might not be ready yet. The patch intends to
-make sure the PCIe link is ready before accessing its subordinate
-PCI devices. The patch also fixes that wrong values restored to
-PCI_COMMAND register for PCI bridges.
+The patch intends to support blocking IO access. Basically, if
+the EEH core detects that the IO access has been blocked on one
+specific PHB, we will simply return 0xFF's for reading and drop
+writing.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/eeh_pe.c |  120 ++++++++++++++++++++++++++++++++++++++----
- 1 files changed, 110 insertions(+), 10 deletions(-)
+ arch/powerpc/include/asm/eeh.h               |  231 +++++++++++++++++++++-----
+ arch/powerpc/include/asm/io.h                |   67 +++++---
+ arch/powerpc/kernel/eeh.c                    |   50 ++++--
+ arch/powerpc/platforms/powernv/eeh-powernv.c |    4 +-
+ 4 files changed, 269 insertions(+), 83 deletions(-)
 
-diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
-index 55943fc..db83ada 100644
---- a/arch/powerpc/kernel/eeh_pe.c
-+++ b/arch/powerpc/kernel/eeh_pe.c
-@@ -22,6 +22,7 @@
-  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-  */
+diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+index de821c1..a8dd983 100644
+--- a/arch/powerpc/include/asm/eeh.h
++++ b/arch/powerpc/include/asm/eeh.h
+@@ -211,7 +211,9 @@ void eeh_dev_phb_init_dynamic(struct pci_controller *phb);
+ int __init eeh_init(void);
+ int __init eeh_ops_register(struct eeh_ops *ops);
+ int __exit eeh_ops_unregister(const char *name);
+-unsigned long eeh_check_failure(const volatile void __iomem *token,
++int eeh_check_blocked_io(const volatile void __iomem *token,
++			 void **pedev);
++unsigned long eeh_check_failure(struct eeh_dev *edev,
+ 				unsigned long val);
+ int eeh_dev_check_failure(struct eeh_dev *edev);
+ void __init eeh_addr_cache_build(void);
+@@ -249,7 +251,13 @@ static inline void *eeh_dev_init(struct device_node *dn, void *data)
  
-+#include <linux/delay.h>
- #include <linux/export.h>
- #include <linux/gfp.h>
- #include <linux/init.h>
-@@ -567,6 +568,88 @@ void eeh_pe_state_clear(struct eeh_pe *pe, int state)
- 	eeh_pe_traverse(pe, __eeh_pe_state_clear, &state);
- }
+ static inline void eeh_dev_phb_init_dynamic(struct pci_controller *phb) { }
  
-+/*
-+ * Some PCI bridges (e.g. PLX bridges) have primary/secondary
-+ * buses assigned explicitly by firmware, and we probably have
-+ * lost that after reset. So we have to delay the check until
-+ * the PCI-CFG registers have been restored for the parent
-+ * bridge.
-+ *
-+ * Don't use normal PCI-CFG accessors, which probably has been
-+ * blocked on normal path during the stage. So we need utilize
-+ * eeh operations, which is always permitted.
-+ */
-+static void eeh_bridge_check_link(struct device_node *dn,
-+				  struct pci_dev *pdev)
+-static inline unsigned long eeh_check_failure(const volatile void __iomem *token, unsigned long val)
++int eeh_check_blocked_io(const volatile void __iomem *token,
++			 void **pedev)
 +{
-+	int cap;
-+	uint32_t val;
-+	int timeout = 0;
-+
-+	/*
-+	 * We only check root port and downstream ports of
-+	 * PCIe switches
-+	 */
-+	if (!pci_is_pcie(pdev) ||
-+	    (pci_pcie_type(pdev) != PCI_EXP_TYPE_ROOT_PORT &&
-+	     pci_pcie_type(pdev) != PCI_EXP_TYPE_DOWNSTREAM))
-+		return;
-+
-+	pr_debug("%s: Check PCIe link for %s ...\n",
-+		 __func__, pci_name(pdev));
-+
-+	/* Check slot status */
-+	cap = pdev->pcie_cap;
-+	eeh_ops->read_config(dn, cap + PCI_EXP_SLTSTA, 2, &val);
-+	if (!(val & PCI_EXP_SLTSTA_PDS)) {
-+		pr_debug("  No card in the slot (0x%04x) !\n", val);
-+		return;
-+	}
-+
-+	/* Check power status if we have the capability */
-+	eeh_ops->read_config(dn, cap + PCI_EXP_SLTCAP, 2, &val);
-+	if (val & PCI_EXP_SLTCAP_PCP) {
-+		eeh_ops->read_config(dn, cap + PCI_EXP_SLTCTL, 2, &val);
-+		if (val & PCI_EXP_SLTCTL_PCC) {
-+			pr_debug("  In power-off state, power it on ...\n");
-+			val &= ~(PCI_EXP_SLTCTL_PCC | PCI_EXP_SLTCTL_PIC);
-+			val |= (0x0100 & PCI_EXP_SLTCTL_PIC);
-+			eeh_ops->write_config(dn, cap + PCI_EXP_SLTCTL, 2, val);
-+			msleep(2 * 1000);
-+		}
-+	}
-+
-+	/* Enable link */
-+	eeh_ops->read_config(dn, cap + PCI_EXP_LNKCTL, 2, &val);
-+	val &= ~PCI_EXP_LNKCTL_LD;
-+	eeh_ops->write_config(dn, cap + PCI_EXP_LNKCTL, 2, val);
-+
-+	/* Check link */
-+	eeh_ops->read_config(dn, cap + PCI_EXP_LNKCAP, 4, &val);
-+	if (!(val & PCI_EXP_LNKCAP_DLLLARC)) {
-+		pr_debug("  No link reporting capability (0x%08x) \n", val);
-+		msleep(1000);
-+		return;
-+	}
-+
-+	/* Wait the link is up until timeout (5s) */
-+	timeout = 0;
-+	while (timeout < 5000) {
-+		msleep(20);
-+		timeout += 20;
-+
-+		eeh_ops->read_config(dn, cap + PCI_EXP_LNKSTA, 2, &val);
-+		if (val & PCI_EXP_LNKSTA_DLLLA)
-+			break;
-+	}
-+
-+	if (val & PCI_EXP_LNKSTA_DLLLA)
-+		pr_debug("  Link up (%s)\n",
-+			 (val & PCI_EXP_LNKSTA_CLS_2_5GB) ? "2.5GB" : "5GB");
-+	else
-+		pr_debug("  Link not ready (0x%04x)\n", val);
++	return 0;
 +}
 +
- /**
-  * eeh_restore_one_device_bars - Restore the Base Address Registers for one device
-  * @data: EEH device
-@@ -580,9 +663,17 @@ static void *eeh_restore_one_device_bars(void *data, void *flag)
++static inline unsigned long eeh_check_failure(void *data, unsigned long val)
  {
- 	int i;
- 	u32 cmd;
-+	struct pci_dev *pdev = NULL;
- 	struct eeh_dev *edev = (struct eeh_dev *)data;
- 	struct device_node *dn = eeh_dev_to_of_node(edev);
- 
-+	/* Trace the PCI bridge */
-+	if (eeh_probe_mode_dev()) {
-+		pdev = eeh_dev_to_pci_dev(edev);
-+		if (pdev->hdr_type != PCI_HEADER_TYPE_BRIDGE)
-+			pdev = NULL;
-+	}
-+
- 	for (i = 4; i < 10; i++)
- 		eeh_ops->write_config(dn, i*4, 4, edev->config_space[i]);
- 	/* 12 == Expansion ROM Address */
-@@ -603,16 +694,25 @@ static void *eeh_restore_one_device_bars(void *data, void *flag)
- 	 * Restore PERR & SERR bits, some devices require it,
- 	 * don't touch the other command bits
- 	 */
--	eeh_ops->read_config(dn, PCI_COMMAND, 4, &cmd);
--	if (edev->config_space[1] & PCI_COMMAND_PARITY)
--		cmd |= PCI_COMMAND_PARITY;
--	else
--		cmd &= ~PCI_COMMAND_PARITY;
--	if (edev->config_space[1] & PCI_COMMAND_SERR)
--		cmd |= PCI_COMMAND_SERR;
--	else
--		cmd &= ~PCI_COMMAND_SERR;
--	eeh_ops->write_config(dn, PCI_COMMAND, 4, cmd);
-+	if (pdev) {
-+		eeh_ops->write_config(dn, PCI_COMMAND, 4,
-+				      edev->config_space[1]);
-+	} else {
-+		eeh_ops->read_config(dn, PCI_COMMAND, 4, &cmd);
-+		if (edev->config_space[1] & PCI_COMMAND_PARITY)
-+			cmd |= PCI_COMMAND_PARITY;
-+		else
-+			cmd &= ~PCI_COMMAND_PARITY;
-+		if (edev->config_space[1] & PCI_COMMAND_SERR)
-+			cmd |= PCI_COMMAND_SERR;
-+		else
-+			cmd &= ~PCI_COMMAND_SERR;
-+		eeh_ops->write_config(dn, PCI_COMMAND, 4, cmd);
-+	}
-+
-+	/* Check the PCIe link for bridge */
-+	if (pdev)
-+		eeh_bridge_check_link(dn, pdev);
- 
- 	return NULL;
+ 	return val;
  }
+@@ -276,57 +284,99 @@ static inline void eeh_remove_bus_device(struct pci_dev *dev, int purge_pe) { }
+  */
+ static inline u8 eeh_readb(const volatile void __iomem *addr)
+ {
+-	u8 val = in_8(addr);
+-	if (EEH_POSSIBLE_ERROR(val, u8))
+-		return eeh_check_failure(addr, val);
++	u8 val = 0xFF;
++	void *edev;
++
++	if (!eeh_check_blocked_io(addr, &edev)) {
++		val = in_8(addr);
++		if (EEH_POSSIBLE_ERROR(val, u8))
++			return eeh_check_failure(edev, val);
++	}
++
+ 	return val;
+ }
+ 
+ static inline u16 eeh_readw(const volatile void __iomem *addr)
+ {
+-	u16 val = in_le16(addr);
+-	if (EEH_POSSIBLE_ERROR(val, u16))
+-		return eeh_check_failure(addr, val);
++	u16 val = 0xFFFF;
++	void *edev;
++
++	if (!eeh_check_blocked_io(addr, &edev)) {
++		val = in_le16(addr);
++		if (EEH_POSSIBLE_ERROR(val, u16))
++			return eeh_check_failure(edev, val);
++	}
++
+ 	return val;
+ }
+ 
+ static inline u32 eeh_readl(const volatile void __iomem *addr)
+ {
+-	u32 val = in_le32(addr);
+-	if (EEH_POSSIBLE_ERROR(val, u32))
+-		return eeh_check_failure(addr, val);
++	u32 val = 0xFFFFFFFF;
++	void *edev;
++
++	if (!eeh_check_blocked_io(addr, &edev)) {
++		val = in_le32(addr);
++		if (EEH_POSSIBLE_ERROR(val, u32))
++			return eeh_check_failure(edev, val);
++	}
++
+ 	return val;
+ }
+ 
+ static inline u64 eeh_readq(const volatile void __iomem *addr)
+ {
+-	u64 val = in_le64(addr);
+-	if (EEH_POSSIBLE_ERROR(val, u64))
+-		return eeh_check_failure(addr, val);
++	u64 val = 0xFFFFFFFFFFFFFFFF;
++	void *edev;
++
++	if (!eeh_check_blocked_io(addr, &edev)) {
++		val = in_le64(addr);
++		if (EEH_POSSIBLE_ERROR(val, u64))
++			return eeh_check_failure(edev, val);
++	}
++
+ 	return val;
+ }
+ 
+ static inline u16 eeh_readw_be(const volatile void __iomem *addr)
+ {
+-	u16 val = in_be16(addr);
+-	if (EEH_POSSIBLE_ERROR(val, u16))
+-		return eeh_check_failure(addr, val);
++	u16 val = 0xFFFF;
++	void *edev;
++
++	if (!eeh_check_blocked_io(addr, &edev)) {
++		val = in_be16(addr);
++		if (EEH_POSSIBLE_ERROR(val, u16))
++			return eeh_check_failure(edev, val);
++	}
++
+ 	return val;
+ }
+ 
+ static inline u32 eeh_readl_be(const volatile void __iomem *addr)
+ {
+-	u32 val = in_be32(addr);
+-	if (EEH_POSSIBLE_ERROR(val, u32))
+-		return eeh_check_failure(addr, val);
++	u32 val = 0xFFFFFFFF;
++	void *edev;
++
++	if (!eeh_check_blocked_io(addr, &edev)) {
++		val = in_be32(addr);
++		if (EEH_POSSIBLE_ERROR(val, u32))
++			return eeh_check_failure(edev, val);
++	}
++
+ 	return val;
+ }
+ 
+ static inline u64 eeh_readq_be(const volatile void __iomem *addr)
+ {
+-	u64 val = in_be64(addr);
+-	if (EEH_POSSIBLE_ERROR(val, u64))
+-		return eeh_check_failure(addr, val);
++	u64 val = 0xFFFFFFFFFFFFFFFF;
++	void *edev;
++
++	if (!eeh_check_blocked_io(addr, &edev)) {
++		val = in_be64(addr);
++		if (EEH_POSSIBLE_ERROR(val, u64))
++			return eeh_check_failure(edev, val);
++	}
++
+ 	return val;
+ }
+ 
+@@ -334,40 +384,145 @@ static inline void eeh_memcpy_fromio(void *dest, const
+ 				     volatile void __iomem *src,
+ 				     unsigned long n)
+ {
+-	_memcpy_fromio(dest, src, n);
++	void *edev;
++
++	memset(dest, 0xFF, n);
++
++	if (!eeh_check_blocked_io(src, &edev)) {
++		_memcpy_fromio(dest, src, n);
+ 
+-	/* Look for ffff's here at dest[n].  Assume that at least 4 bytes
+-	 * were copied. Check all four bytes.
+-	 */
+-	if (n >= 4 && EEH_POSSIBLE_ERROR(*((u32 *)(dest + n - 4)), u32))
+-		eeh_check_failure(src, *((u32 *)(dest + n - 4)));
++		/*
++		 * Look for ffff's here at dest[n]. Assume that at
++		 * least 4 bytes were copied. Check all four bytes.
++		 */
++		if (n >= 4 && EEH_POSSIBLE_ERROR(*((u32 *)(dest + n - 4)), u32))
++			eeh_check_failure(edev, *((u32 *)(dest + n - 4)));
++	}
+ }
+ 
+ /* in-string eeh macros */
+ static inline void eeh_readsb(const volatile void __iomem *addr, void * buf,
+ 			      int ns)
+ {
+-	_insb(addr, buf, ns);
+-	if (EEH_POSSIBLE_ERROR((*(((u8*)buf)+ns-1)), u8))
+-		eeh_check_failure(addr, *(u8*)buf);
++	void *edev;
++
++	memset(buf, 0xFF, ns);
++
++	if (!eeh_check_blocked_io(addr, &edev)) {
++		_insb(addr, buf, ns);
++		if (EEH_POSSIBLE_ERROR((*(((u8*)buf)+ns-1)), u8))
++			eeh_check_failure(edev, *(u8*)buf);
++	}
+ }
+ 
+ static inline void eeh_readsw(const volatile void __iomem *addr, void * buf,
+ 			      int ns)
+ {
+-	_insw(addr, buf, ns);
+-	if (EEH_POSSIBLE_ERROR((*(((u16*)buf)+ns-1)), u16))
+-		eeh_check_failure(addr, *(u16*)buf);
++	void *edev;
++
++	memset(buf, 0xFF, ns * sizeof(u16));
++
++	if (!eeh_check_blocked_io(addr, &edev)) {
++		_insw(addr, buf, ns);
++		if (EEH_POSSIBLE_ERROR((*(((u16*)buf)+ns-1)), u16))
++			eeh_check_failure(edev, *(u16*)buf);
++	}
+ }
+ 
+ static inline void eeh_readsl(const volatile void __iomem *addr, void * buf,
+ 			      int nl)
+ {
+-	_insl(addr, buf, nl);
+-	if (EEH_POSSIBLE_ERROR((*(((u32*)buf)+nl-1)), u32))
+-		eeh_check_failure(addr, *(u32*)buf);
++	void *edev;
++
++	memset(buf, 0xFF, nl * sizeof(u32));
++
++	if (!eeh_check_blocked_io(addr, &edev)) {
++		_insl(addr, buf, nl);
++		if (EEH_POSSIBLE_ERROR((*(((u32*)buf)+nl-1)), u32))
++			eeh_check_failure(edev, *(u32*)buf);
++	}
++}
++
++/* MMIO write */
++static inline void eeh_writeb(volatile u8 __iomem *addr, u8 val)
++{
++	if (!eeh_check_blocked_io(addr, NULL))
++		out_8(addr, val);
++}
++
++static inline void eeh_writew(volatile u16 __iomem *addr, u16 val)
++{
++	if (!eeh_check_blocked_io(addr, NULL))
++		out_le16(addr, val);
+ }
+ 
++static inline void eeh_writel(volatile u32 __iomem *addr, u32 val)
++{
++	if (!eeh_check_blocked_io(addr, NULL))
++		out_le32(addr, val);
++}
++
++static inline void eeh_writeq(volatile u64 __iomem *addr, u64 val)
++{
++	if (!eeh_check_blocked_io(addr, NULL))
++		out_le64(addr, val);
++}
++
++static inline void eeh_writew_be(volatile u16 __iomem *addr, u16 val)
++{
++	if (!eeh_check_blocked_io(addr, NULL))
++		out_be16(addr, val);
++}
++
++static inline void eeh_writel_be(volatile u32 __iomem *addr, u32 val)
++{
++	if (!eeh_check_blocked_io(addr, NULL))
++		out_be32(addr, val);
++}
++
++static inline void eeh_writeq_be(volatile u64 __iomem *addr, u64 val)
++{
++	if (!eeh_check_blocked_io(addr, NULL))
++		out_be64(addr, val);
++}
++
++static inline void eeh_writesb(volatile u8 __iomem *addr,
++			       const void *buf, long count)
++{
++	if (!eeh_check_blocked_io(addr, NULL))
++		_outsb(addr, buf, count);
++}
++
++static inline void eeh_writesw(volatile u16 __iomem *addr,
++			       const void *buf, long count)
++{
++	if (!eeh_check_blocked_io(addr, NULL))
++		_outsw(addr, buf, count);
++}
++
++static inline void eeh_writesl(volatile u32 __iomem *addr,
++			       const void *buf, long count)
++{
++	if (!eeh_check_blocked_io(addr, NULL))
++		_outsl(addr, buf, count);
++}
++
++static inline void eeh_memset_io(volatile void __iomem *addr,
++				 int c, unsigned long n)
++{
++	if (!eeh_check_blocked_io(addr, NULL))
++		_memset_io(addr, c, n);
++}
++
++static inline void eeh_memcpy_toio(volatile void __iomem *dest,
++				   const void *src, unsigned long n)
++{
++	if (!eeh_check_blocked_io(dest, NULL))
++		_memcpy_toio(dest, src, n);
++}
++
++
++
+ #endif /* CONFIG_PPC64 */
+ #endif /* __KERNEL__ */
+ #endif /* _POWERPC_EEH_H */
+diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
+index dd15e5e..fa58c45 100644
+--- a/arch/powerpc/include/asm/io.h
++++ b/arch/powerpc/include/asm/io.h
+@@ -412,30 +412,37 @@ __do_out_asm(_rec_outl, "stwbrx")
+  * possible to hook directly at the toplevel PIO operation if they have to
+  * be handled differently
+  */
+-#define __do_writeb(val, addr)	out_8(PCI_FIX_ADDR(addr), val)
+-#define __do_writew(val, addr)	out_le16(PCI_FIX_ADDR(addr), val)
+-#define __do_writel(val, addr)	out_le32(PCI_FIX_ADDR(addr), val)
+-#define __do_writeq(val, addr)	out_le64(PCI_FIX_ADDR(addr), val)
+-#define __do_writew_be(val, addr) out_be16(PCI_FIX_ADDR(addr), val)
+-#define __do_writel_be(val, addr) out_be32(PCI_FIX_ADDR(addr), val)
+-#define __do_writeq_be(val, addr) out_be64(PCI_FIX_ADDR(addr), val)
+ 
+ #ifdef CONFIG_EEH
+-#define __do_readb(addr)	eeh_readb(PCI_FIX_ADDR(addr))
+-#define __do_readw(addr)	eeh_readw(PCI_FIX_ADDR(addr))
+-#define __do_readl(addr)	eeh_readl(PCI_FIX_ADDR(addr))
+-#define __do_readq(addr)	eeh_readq(PCI_FIX_ADDR(addr))
+-#define __do_readw_be(addr)	eeh_readw_be(PCI_FIX_ADDR(addr))
+-#define __do_readl_be(addr)	eeh_readl_be(PCI_FIX_ADDR(addr))
+-#define __do_readq_be(addr)	eeh_readq_be(PCI_FIX_ADDR(addr))
++#define __do_readb(addr)		eeh_readb(PCI_FIX_ADDR(addr))
++#define __do_readw(addr)		eeh_readw(PCI_FIX_ADDR(addr))
++#define __do_readl(addr)		eeh_readl(PCI_FIX_ADDR(addr))
++#define __do_readq(addr)		eeh_readq(PCI_FIX_ADDR(addr))
++#define __do_readw_be(addr)		eeh_readw_be(PCI_FIX_ADDR(addr))
++#define __do_readl_be(addr)		eeh_readl_be(PCI_FIX_ADDR(addr))
++#define __do_readq_be(addr)		eeh_readq_be(PCI_FIX_ADDR(addr))
++#define __do_writeb(val, addr)		eeh_writeb(PCI_FIX_ADDR(addr), val)
++#define __do_writew(val, addr)          eeh_writew(PCI_FIX_ADDR(addr), val)
++#define __do_writel(val, addr)          eeh_writel(PCI_FIX_ADDR(addr), val)
++#define __do_writeq(val, addr)          eeh_writeq(PCI_FIX_ADDR(addr), val)
++#define __do_writew_be(val, addr)       eeh_writew_be(PCI_FIX_ADDR(addr), val)
++#define __do_writel_be(val, addr)       eeh_writel_be(PCI_FIX_ADDR(addr), val)
++#define __do_writeq_be(val, addr)       eeh_writeq_be(PCI_FIX_ADDR(addr), val)
+ #else /* CONFIG_EEH */
+-#define __do_readb(addr)	in_8(PCI_FIX_ADDR(addr))
+-#define __do_readw(addr)	in_le16(PCI_FIX_ADDR(addr))
+-#define __do_readl(addr)	in_le32(PCI_FIX_ADDR(addr))
+-#define __do_readq(addr)	in_le64(PCI_FIX_ADDR(addr))
+-#define __do_readw_be(addr)	in_be16(PCI_FIX_ADDR(addr))
+-#define __do_readl_be(addr)	in_be32(PCI_FIX_ADDR(addr))
+-#define __do_readq_be(addr)	in_be64(PCI_FIX_ADDR(addr))
++#define __do_readb(addr)		in_8(PCI_FIX_ADDR(addr))
++#define __do_readw(addr)		in_le16(PCI_FIX_ADDR(addr))
++#define __do_readl(addr)		in_le32(PCI_FIX_ADDR(addr))
++#define __do_readq(addr)		in_le64(PCI_FIX_ADDR(addr))
++#define __do_readw_be(addr)		in_be16(PCI_FIX_ADDR(addr))
++#define __do_readl_be(addr)		in_be32(PCI_FIX_ADDR(addr))
++#define __do_readq_be(addr)		in_be64(PCI_FIX_ADDR(addr))
++#define __do_writeb(val, addr)		out_8(PCI_FIX_ADDR(addr), val)
++#define __do_writew(val, addr)		out_le16(PCI_FIX_ADDR(addr), val)
++#define __do_writel(val, addr)		out_le32(PCI_FIX_ADDR(addr), val)
++#define __do_writeq(val, addr)		out_le64(PCI_FIX_ADDR(addr), val)
++#define __do_writew_be(val, addr)	out_be16(PCI_FIX_ADDR(addr), val)
++#define __do_writel_be(val, addr)	out_be32(PCI_FIX_ADDR(addr), val)
++#define __do_writeq_be(val, addr)	out_be64(PCI_FIX_ADDR(addr), val)
+ #endif /* !defined(CONFIG_EEH) */
+ 
+ #ifdef CONFIG_PPC32
+@@ -458,14 +465,17 @@ __do_out_asm(_rec_outl, "stwbrx")
+ #define __do_readsb(a, b, n)	eeh_readsb(PCI_FIX_ADDR(a), (b), (n))
+ #define __do_readsw(a, b, n)	eeh_readsw(PCI_FIX_ADDR(a), (b), (n))
+ #define __do_readsl(a, b, n)	eeh_readsl(PCI_FIX_ADDR(a), (b), (n))
++#define __do_writesb(a, b, n)   eeh_writesb(PCI_FIX_ADDR(a),(b),(n))
++#define __do_writesw(a, b, n)   eeh_writesw(PCI_FIX_ADDR(a),(b),(n))
++#define __do_writesl(a, b, n)   eeh_writesl(PCI_FIX_ADDR(a),(b),(n))
+ #else /* CONFIG_EEH */
+ #define __do_readsb(a, b, n)	_insb(PCI_FIX_ADDR(a), (b), (n))
+ #define __do_readsw(a, b, n)	_insw(PCI_FIX_ADDR(a), (b), (n))
+ #define __do_readsl(a, b, n)	_insl(PCI_FIX_ADDR(a), (b), (n))
+-#endif /* !CONFIG_EEH */
+ #define __do_writesb(a, b, n)	_outsb(PCI_FIX_ADDR(a),(b),(n))
+ #define __do_writesw(a, b, n)	_outsw(PCI_FIX_ADDR(a),(b),(n))
+ #define __do_writesl(a, b, n)	_outsl(PCI_FIX_ADDR(a),(b),(n))
++#endif /* !CONFIG_EEH */
+ 
+ #define __do_insb(p, b, n)	readsb((PCI_IO_ADDR)_IO_BASE+(p), (b), (n))
+ #define __do_insw(p, b, n)	readsw((PCI_IO_ADDR)_IO_BASE+(p), (b), (n))
+@@ -474,17 +484,20 @@ __do_out_asm(_rec_outl, "stwbrx")
+ #define __do_outsw(p, b, n)	writesw((PCI_IO_ADDR)_IO_BASE+(p),(b),(n))
+ #define __do_outsl(p, b, n)	writesl((PCI_IO_ADDR)_IO_BASE+(p),(b),(n))
+ 
+-#define __do_memset_io(addr, c, n)	\
+-				_memset_io(PCI_FIX_ADDR(addr), c, n)
+-#define __do_memcpy_toio(dst, src, n)	\
+-				_memcpy_toio(PCI_FIX_ADDR(dst), src, n)
+-
+ #ifdef CONFIG_EEH
+ #define __do_memcpy_fromio(dst, src, n)	\
+ 				eeh_memcpy_fromio(dst, PCI_FIX_ADDR(src), n)
++#define __do_memset_io(addr, c, n)	\
++				eeh_memset_io(PCI_FIX_ADDR(addr), c, n)
++#define __do_memcpy_toio(dst, src, n)	\
++				eeh_memcpy_toio(PCI_FIX_ADDR(dst), src, n)
+ #else /* CONFIG_EEH */
+ #define __do_memcpy_fromio(dst, src, n)	\
+ 				_memcpy_fromio(dst,PCI_FIX_ADDR(src),n)
++#define __do_memset_io(addr, c, n)	\
++				_memset_io(PCI_FIX_ADDR(addr), c, n)
++#define __do_memcpy_toio(dst, src, n)	\
++				_memcpy_toio(PCI_FIX_ADDR(dst), src, n)
+ #endif /* !CONFIG_EEH */
+ 
+ #ifdef CONFIG_PPC_INDIRECT_PIO
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index 65320fd..b46f1ca 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -464,39 +464,57 @@ dn_unlock:
+ EXPORT_SYMBOL_GPL(eeh_dev_check_failure);
+ 
+ /**
+- * eeh_check_failure - Check if all 1's data is due to EEH slot freeze
+- * @token: I/O token, should be address in the form 0xA....
+- * @val: value, should be all 1's (XXX why do we need this arg??)
+- *
+- * Check for an EEH failure at the given token address.  Call this
+- * routine if the result of a read was all 0xff's and you want to
+- * find out if this is due to an EEH slot freeze event.  This routine
+- * will query firmware for the EEH status.
++ * eeh_check_blocked_io - Check if the I/O access has been blocked
++ * @token: I/O token
++ * @pedev: EEH device
+  *
+- * Note this routine is safe to call in an interrupt context.
++ * Check if the I/O access has been blocked. If that's the case, we
++ * should return 0xFF's on read, or sliently drop the write.
+  */
+-unsigned long eeh_check_failure(const volatile void __iomem *token, unsigned long val)
++int eeh_check_blocked_io(const volatile void __iomem *token,
++			 void **pedev)
+ {
+-	unsigned long addr;
+ 	struct eeh_dev *edev;
++	unsigned long addr;
++	int rc;
+ 
+-	/* Finding the phys addr + pci device; this is pretty quick. */
++	/* Don't block I/O ranges which aren't traced by cache */
+ 	addr = eeh_token_to_phys((unsigned long __force) token);
+ 	edev = eeh_addr_cache_get_dev(addr);
+ 	if (!edev) {
++		if (pedev) *pedev = NULL;
+ 		eeh_stats.no_device++;
+-		return val;
++		return 0;
+ 	}
+ 
+-	eeh_dev_check_failure(edev);
++	if (pedev) *pedev = edev;
++	eeh_ops->get_setting(EEH_SETTING_BLOCK_IO, &rc, edev->phb);
++	return rc;
++}
++
++EXPORT_SYMBOL(eeh_check_blocked_io);
++
++/**
++ * eeh_check_failure - Check if all 1's data is due to EEH slot freeze
++ * @edev: EEH device
++ * @val: value
++ *
++ * Check if the EEH device has been frozen.
++ *
++ * Note this routine is safe to call in an interrupt context.
++ */
++unsigned long eeh_check_failure(struct eeh_dev *edev, unsigned long val)
++{
++	if (edev) {
++		eeh_dev_check_failure(edev);
++		pci_dev_put(eeh_dev_to_pci_dev(edev));
++	}
+ 
+-	pci_dev_put(eeh_dev_to_pci_dev(edev));
+ 	return val;
+ }
+ 
+ EXPORT_SYMBOL(eeh_check_failure);
+ 
+-
+ /**
+  * eeh_pci_enable - Enable MMIO or DMA transfers for this slot
+  * @pe: EEH PE
+diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+index cac5e18..20a7865 100644
+--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
++++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+@@ -367,7 +367,7 @@ static int powernv_eeh_set_setting(int option, int value, void *data)
+ 	struct pci_controller *hose = data;
+ 	struct pnv_phb *phb = hose->private_data;
+ 
+-	return phb->set_setting(option, value, data);
++	return phb->eeh_ops->set_setting(option, value, data);
+ }
+ 
+ /**
+@@ -383,7 +383,7 @@ static int powernv_eeh_get_setting(int option, int *value, void *data)
+ 	struct pci_controller *hose = data;
+ 	struct pnv_phb *phb = hose->private_data;
+ 
+-	return phb->get_setting(option, value, data);
++	return phb->eeh_ops->get_setting(option, value, data);
+ }
+ 
+ /**
 -- 
 1.7.5.4
