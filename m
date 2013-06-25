@@ -1,40 +1,37 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B3D032C0085
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 18:05:01 +1000 (EST)
+ (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 964192C00B1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 18:49:01 +1000 (EST)
 Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Tue, 25 Jun 2013 02:04:58 -0600
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id F098638C8042
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 04:04:24 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5P84PR4311028
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 04:04:25 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5P84PZr004764
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 04:04:25 -0400
-Date: Tue, 25 Jun 2013 16:04:20 +0800
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 03/10] powerpc/eeh: Check PCIe link after reset
-Message-ID: <20130625080420.GA18470@shangw.(null)>
-References: <1372139717-14885-1-git-send-email-shangw@linux.vnet.ibm.com>
- <1372139717-14885-4-git-send-email-shangw@linux.vnet.ibm.com>
- <1372140384.3944.189.camel@pasglop>
- <20130625074755.GA8486@shangw.(null)>
- <1372147064.3944.200.camel@pasglop>
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Tue, 25 Jun 2013 14:11:58 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id E5A471258051
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 14:17:55 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5P8nAKf10420380
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 14:19:10 +0530
+Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5P8mp47003458
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 18:48:51 +1000
+Message-ID: <51C95950.2030304@linux.vnet.ibm.com>
+Date: Tue, 25 Jun 2013 14:18:16 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1372147064.3944.200.camel@pasglop>
-Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <shangw@linux.vnet.ibm.com>
-Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH 1/2] powerpc/hw_brk: Fix setting of length for exact mode
+ breakpoints
+References: <1372052843-19109-1-git-send-email-mikey@neuling.org>
+In-Reply-To: <1372052843-19109-1-git-send-email-mikey@neuling.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,28 +41,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 25, 2013 at 05:57:44PM +1000, Benjamin Herrenschmidt wrote:
->On Tue, 2013-06-25 at 15:47 +0800, Gavin Shan wrote:
->> If we just have complete reset for fenced PHB, we need restore it
->> from the cache (edev->config_space[1]) instead of reading that from
->> hardware. Fenced PHB is the special case on PowerNV :-)
->
->Well not really...
->
->In general we can also end up doing a hard reset under pHyp, and bridges
->can lose their state as well, which means they need to be restored from
->cache.
->
->We don't see the real PHB, but we might see the bridges if we have a PE
->that contains a bridge, for example, a PCIe card with a switch on it.
->
->If we hard reset that (because the driver requested it) or if pHyp did a
->reset due to a fence behind the scene, that bridge *will* have lost its
->state and will need to be reconfigured too... or is RTAS doing it all ?
->
+On 06/24/2013 11:17 AM, Michael Neuling wrote:
+> The smallest match region for both the DABR and DAWR is 8 bytes, so the
+> kernel needs to filter matches when users want to look at regions smaller than
+> this.
+> 
+> Currently we set the length of PPC_BREAKPOINT_MODE_EXACT breakpoints to 8.
+> This is wrong as in exact mode we should only match on 1 address, hence the
+> length should be 1.
+> 
+> This ensures that the kernel will filter out any exact mode hardware breakpoint
+> matches on any addresses other than the requested one.
+> 
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
 
-Ok. So that would be job of eeh_ops->configure_bridge(). On pSeries, it
-should have done with that.
-
-Thanks,
-Gavin
+Reviewed-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
