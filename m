@@ -1,37 +1,34 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B97F92C008E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 19:00:50 +1000 (EST)
+ (Client CN "e37.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D21D72C013D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 20:01:14 +1000 (EST)
 Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 25 Jun 2013 14:23:43 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 6989F394004F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 14:30:42 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5P90m1c25362528
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 14:30:49 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5P90UIe021756
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 19:00:32 +1000
-Message-ID: <51C95C0C.6000905@linux.vnet.ibm.com>
-Date: Tue, 25 Jun 2013 14:29:56 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH 2/2] powerpc/hw_brk: Fix clearing of extraneous IRQ
-References: <1372052843-19109-1-git-send-email-mikey@neuling.org>
- <1372052843-19109-2-git-send-email-mikey@neuling.org>
-In-Reply-To: <1372052843-19109-2-git-send-email-mikey@neuling.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org,
- Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Tue, 25 Jun 2013 04:01:11 -0600
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+ [9.17.195.106])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 57A0A3E4004F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 04:00:49 -0600 (MDT)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5PA17Ql389312
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 04:01:07 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5PA170B003256
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 04:01:07 -0600
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/6] powerpc/eeh: Don't collect PCI-CFG data on PHB
+Date: Tue, 25 Jun 2013 18:00:56 +0800
+Message-Id: <1372154461-29674-2-git-send-email-shangw@linux.vnet.ibm.com>
+In-Reply-To: <1372154461-29674-1-git-send-email-shangw@linux.vnet.ibm.com>
+References: <1372154461-29674-1-git-send-email-shangw@linux.vnet.ibm.com>
+Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,20 +38,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/24/2013 11:17 AM, Michael Neuling wrote:
-> In 9422de3 "powerpc: Hardware breakpoints rewrite to handle non DABR breakpoint
-> registers" we changed the way we mark extraneous irqs with this:
-> 
-> -	info->extraneous_interrupt = !((bp->attr.bp_addr <= dar) &&
-> -			(dar - bp->attr.bp_addr < bp->attr.bp_len));
-> +	if (!((bp->attr.bp_addr <= dar) &&
-> +	      (dar - bp->attr.bp_addr < bp->attr.bp_len)))
-> +		info->type |= HW_BRK_TYPE_EXTRANEOUS_IRQ;
-> 
-> Unfortunately this is bogus as it never clears extraneous IRQ if it's already
-> set.
-> 
-> This correctly clears extraneous IRQ before possibly setting it.
-> 
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-Reviewed-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+When the PHB is fenced or dead, it's pointless to collect the data
+from PCI config space of subordinate PCI devices since it should
+return 0xFF's. It also has potential risk to incur additional errors.
+The patch avoids collecting PCI-CFG data while PHB is in fenced or
+dead state.
+
+Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/eeh.c |   34 ++++++++++++++++++++++++----------
+ 1 files changed, 24 insertions(+), 10 deletions(-)
+
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index 951a632..60deb42 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -232,16 +232,30 @@ void eeh_slot_error_detail(struct eeh_pe *pe, int severity)
+ {
+ 	size_t loglen = 0;
+ 	struct eeh_dev *edev;
++	bool valid_cfg_log = true;
+ 
+-	eeh_pci_enable(pe, EEH_OPT_THAW_MMIO);
+-	eeh_ops->configure_bridge(pe);
+-	eeh_pe_restore_bars(pe);
+-
+-	pci_regs_buf[0] = 0;
+-	eeh_pe_for_each_dev(pe, edev) {
+-		loglen += eeh_gather_pci_data(edev, pci_regs_buf,
+-				EEH_PCI_REGS_LOG_LEN);
+-        }
++	/*
++	 * When the PHB is fenced or dead, it's pointless to collect
++	 * the data from PCI config space because it should return
++	 * 0xFF's. For ER, we still retrieve the data from the PCI
++	 * config space.
++	 */
++	if (eeh_probe_mode_dev() &&
++	    (pe->type & EEH_PE_PHB) &&
++	    (pe->state & (EEH_PE_ISOLATED | EEH_PE_PHB_DEAD)))
++		valid_cfg_log = false;
++
++	if (valid_cfg_log) {
++		eeh_pci_enable(pe, EEH_OPT_THAW_MMIO);
++		eeh_ops->configure_bridge(pe);
++		eeh_pe_restore_bars(pe);
++
++		pci_regs_buf[0] = 0;
++		eeh_pe_for_each_dev(pe, edev) {
++			loglen += eeh_gather_pci_data(edev, pci_regs_buf,
++						      EEH_PCI_REGS_LOG_LEN);
++		}
++	}
+ 
+ 	eeh_ops->get_log(pe, severity, pci_regs_buf, loglen);
+ }
+-- 
+1.7.5.4
