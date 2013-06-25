@@ -1,33 +1,16 @@
-Return-Path: <B07421@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 778D22C008F
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Jun 2013 10:51:08 +1000 (EST)
-Date: Mon, 24 Jun 2013 19:51:00 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Subject: Re: [RFC] [PATCH] powerpc: Add MSR_DE to MSR_KERNEL
-Message-ID: <20130625005100.GA22976@home.buserror.net>
-References: <13517672561.20120531113057@abatron.ch>
- <OF1016B1AA.DF19B646-ONC1257A0F.003647EF-C1257A0F.003699E5@transmode.se>
- <4FC7AEC9.5050203@freescale.com>
- <OF3AA5925F.E17EF6A4-ONC1257A0F.0076C23F-C1257A0F.0076D836@transmode.se>
- <4FC7E606.1070205@freescale.com>
- <OF43D61D1E.31CC8410-ONC1257A0F.0079F3A4-C1257A0F.007A237A@transmode.se>
- <4FC7EDD5.8090302@freescale.com>
- <OFDC3DAEDA.27E0B532-ONC1257A0F.007BF637-C1257A0F.007C1E26@transmode.se>
- <3E027F8168735B46AC006B1D0C7BB002079C3290@039-SN2MPN1-013.039d.mgd.msft.net>
- <OF2715F7FE.447A7381-ONC1257A41.002F433E-C1257A41.002F5BFA@transmode.se>
+Return-Path: <michael@ellerman.id.au>
+Date: Tue, 25 Jun 2013 11:36:07 +1000
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/perf: Freeze PMC5/6 if we're not using them on
+ Power8
+Message-ID: <20130625013607.GA14051@concordia>
+References: <1371086200-16778-1-git-send-email-michael@ellerman.id.au>
+ <51B96933.60708@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <OF2715F7FE.447A7381-ONC1257A41.002F433E-C1257A41.002F5BFA@transmode.se>
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- Zang Roy-R61911 <r61911@freescale.com>, Bob Cochran <ppc@mindchasers.com>,
- "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- Dan Malek <ppc6dev@digitaldans.com>, Support <support@abatron.ch>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <51B96933.60708@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,35 +20,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 20, 2012 at 10:37:17AM +0200, Joakim Tjernlund wrote:
-> Zang Roy-R61911 <r61911@freescale.com> wrote on 2012/07/20 10:27:52:
+On Thu, Jun 13, 2013 at 12:09:47PM +0530, Anshuman Khandual wrote:
+> On 06/13/2013 06:46 AM, Michael Ellerman wrote:
+> > On Power8 we can freeze PMC5 and 6 if we're not using them. Normally they
+> > run all the time.
 > >
-> >
-> >
-> > > -----Original Message-----
-> > > From: linuxppc-dev-bounces+tie-fei.zang=freescale.com@lists.ozlabs.org
-> > > [mailto:linuxppc-dev-bounces+tie-fei.zang=freescale.com@lists.ozlabs.org]
-> > > On Behalf Of Joakim Tjernlund
-> > > Sent: Friday, June 01, 2012 6:36 AM
-> > > To: Wood Scott-B07421
-> > > Cc: linuxppc-dev@ozlabs.org; Dan Malek; Bob Cochran; Support
-> > > Subject: Re: [RFC] [PATCH] powerpc: Add MSR_DE to MSR_KERNEL
-> > >
-> > > It just occurred to me that you guys have this already in your Linux SDK so
-> > > it can't be that bad.
-> > No. MSR_DE is ONLY added when using CW debug in SDK.
-> > Roy
-> >
+> > index f7d1c4f..e791c68 100644
+> > --- a/arch/powerpc/perf/power8-pmu.c
+> > +++ b/arch/powerpc/perf/power8-pmu.c
+> > @@ -378,6 +378,10 @@ static int power8_compute_mmcr(u64 event[], int n_ev,
+> >  	if (pmc_inuse & 0x7c)
+> >  		mmcr[0] |= MMCR0_PMCjCE;
+> > 
+> > +	/* If we're not using PMC 5 or 6, freeze them */
+> > +	if (!(pmc_inuse & 0x60))
+> > +		mmcr[0] |= MMCR0_FC56;
+> > +
+> >  	mmcr[1] = mmcr1;
+> >  	mmcr[2] = mmcra;
+> > 
 > 
-> Yes, and I later found that user space debugging is busted if you turn on MSR_DE in
-> kernel.
+> Hey Michael,
+> 
+> This looks good. But we need to undo this changes when we terminate the perf session.
+> That way user would be able to continue reading PMC5 and PMC6 through /sys interface
+> as before (which may not be ideal). Adding the following changes along with this patch
+> would keep the status quo as it is.
 
-So, how should we handle the CONFIG_BDI_SWITCH patch?  It seems like it
-should at least have a warning in the kconfig help text that it breaks
-userspace debugging (to the point of causing a kernel oops if it's
-tried).  Or maybe it can deselect CONFIG_PPC_ADV_DEBUG_REGS?
+Yep.
 
-It'd also be nice to keep things like this, that are a consequence of how
-external debug works on e500, separate from the Abatron-specific stuff.
+> diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+> index 29c6482..141756a 100644
+> --- a/arch/powerpc/perf/core-book3s.c
+> +++ b/arch/powerpc/perf/core-book3s.c
+> @@ -881,6 +881,12 @@ static void power_pmu_disable(struct pmu *pmu)
+>  		}
+>  
+>  		/*
+> + 		 * Undo PMC5/PMC6 freeze if already applied
+> + 	 	 */
+> +		if (mfspr(SPRN_MMCR0) & MMCR0_FC56)
+> +			mtspr(SPRN_MMCR0, mfspr(SPRN_MMCR0) & ~PMCR0_FC56)
 
--Scott
+The intent here is correct. But you've added two mfsprs() and an mtspr()
+when the surrounding code has already read MMCR0, and will soon write
+it. They may not be that expensive but still.
+
+See my updated patch.
+
+cheers
