@@ -1,33 +1,15 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2DA652C00AD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 16:36:09 +1000 (EST)
-Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Tue, 25 Jun 2013 02:36:07 -0400
-Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 9D93938C8045
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 02:35:33 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5P6ZYfY326526
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 02:35:34 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5P6ZXoE026224
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 02:35:34 -0400
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 5CDE22C0077
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 16:37:22 +1000 (EST)
+From: Anatolij Gustschin <agust@denx.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 2/2] powerpc/eeh: Avoid warning on P8
-Date: Tue, 25 Jun 2013 14:35:28 +0800
-Message-Id: <1372142128-18077-2-git-send-email-shangw@linux.vnet.ibm.com>
-In-Reply-To: <1372142128-18077-1-git-send-email-shangw@linux.vnet.ibm.com>
-References: <1372142128-18077-1-git-send-email-shangw@linux.vnet.ibm.com>
-Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/mpc512x: update defconfig
+Date: Tue, 25 Jun 2013 08:37:17 +0200
+Message-Id: <1372142237-20554-1-git-send-email-agust@denx.de>
+Cc: Gerhard Sittig <gsi@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,36 +19,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-To replace down() with down_interrutible() to avoid following
-warning:
+From: Gerhard Sittig <gsi@denx.de>
 
-[c00000007ba7b710] [c000000000014410] .__switch_to+0x1b0/0x380
-[c00000007ba7b7c0] [c0000000007b408c] .__schedule+0x3ec/0x970
-[c00000007ba7ba50] [c0000000007b1f24] .schedule_timeout+0x1a4/0x2b0
-[c00000007ba7bb30] [c0000000007b34a4] .__down+0xa4/0x104
-[c00000007ba7bbf0] [c0000000000b9230] .down+0x60/0x70
-[c00000007ba7bc80] [c0000000000336d0] .eeh_event_handler+0x70/0x190
-[c00000007ba7bd30] [c0000000000b1a58] .kthread+0xe8/0xf0
-[c00000007ba7be30] [c00000000000a05c] .ret_from_kernel_thread+0x5c/0x8
+This patch does not change the content, it merely re-orders
+configuration items and drops explicit options which already
+apply as the default.
 
-Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+Signed-off-by: Gerhard Sittig <gsi@denx.de>
+Signed-off-by: Anatolij Gustschin <agust@denx.de>
 ---
- arch/powerpc/kernel/eeh_event.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ arch/powerpc/configs/mpc512x_defconfig |   20 +++-----------------
+ 1 file changed, 3 insertions(+), 17 deletions(-)
 
-diff --git a/arch/powerpc/kernel/eeh_event.c b/arch/powerpc/kernel/eeh_event.c
-index 39bcd81..d27c5af 100644
---- a/arch/powerpc/kernel/eeh_event.c
-+++ b/arch/powerpc/kernel/eeh_event.c
-@@ -55,7 +55,8 @@ static int eeh_event_handler(void * dummy)
- 	struct eeh_pe *pe;
- 
- 	while (!kthread_should_stop()) {
--		down(&eeh_eventlist_sem);
-+		if (down_interruptible(&eeh_eventlist_sem))
-+			break;
- 
- 		/* Fetch EEH event from the queue */
- 		spin_lock_irqsave(&eeh_eventlist_lock, flags);
+diff --git a/arch/powerpc/configs/mpc512x_defconfig b/arch/powerpc/configs/mpc512x_defconfig
+index 0d0d981..5b8ee80 100644
+--- a/arch/powerpc/configs/mpc512x_defconfig
++++ b/arch/powerpc/configs/mpc512x_defconfig
+@@ -1,7 +1,6 @@
+-CONFIG_EXPERIMENTAL=y
+ # CONFIG_SWAP is not set
+ CONFIG_SYSVIPC=y
+-CONFIG_SPARSE_IRQ=y
++CONFIG_NO_HZ=y
+ CONFIG_LOG_BUF_SHIFT=16
+ CONFIG_BLK_DEV_INITRD=y
+ # CONFIG_COMPAT_BRK is not set
+@@ -9,6 +8,7 @@ CONFIG_SLAB=y
+ CONFIG_MODULES=y
+ CONFIG_MODULE_UNLOAD=y
+ # CONFIG_BLK_DEV_BSG is not set
++CONFIG_PARTITION_ADVANCED=y
+ # CONFIG_IOSCHED_CFQ is not set
+ # CONFIG_PPC_CHRP is not set
+ CONFIG_PPC_MPC512x=y
+@@ -16,9 +16,7 @@ CONFIG_MPC5121_ADS=y
+ CONFIG_MPC512x_GENERIC=y
+ CONFIG_PDM360NG=y
+ # CONFIG_PPC_PMAC is not set
+-CONFIG_NO_HZ=y
+ CONFIG_HZ_1000=y
+-# CONFIG_MIGRATION is not set
+ # CONFIG_SECCOMP is not set
+ # CONFIG_PCI is not set
+ CONFIG_NET=y
+@@ -33,8 +31,6 @@ CONFIG_IP_PNP=y
+ # CONFIG_INET_DIAG is not set
+ # CONFIG_IPV6 is not set
+ CONFIG_CAN=y
+-CONFIG_CAN_RAW=y
+-CONFIG_CAN_BCM=y
+ CONFIG_CAN_VCAN=y
+ CONFIG_CAN_MSCAN=y
+ CONFIG_CAN_DEBUG_DEVICES=y
+@@ -46,7 +42,6 @@ CONFIG_DEVTMPFS_MOUNT=y
+ # CONFIG_FIRMWARE_IN_KERNEL is not set
+ CONFIG_MTD=y
+ CONFIG_MTD_CMDLINE_PARTS=y
+-CONFIG_MTD_CHAR=y
+ CONFIG_MTD_BLOCK=y
+ CONFIG_MTD_CFI=y
+ CONFIG_MTD_CFI_AMDSTD=y
+@@ -60,7 +55,6 @@ CONFIG_BLK_DEV_RAM=y
+ CONFIG_BLK_DEV_RAM_COUNT=1
+ CONFIG_BLK_DEV_RAM_SIZE=8192
+ CONFIG_BLK_DEV_XIP=y
+-CONFIG_MISC_DEVICES=y
+ CONFIG_EEPROM_AT24=y
+ CONFIG_EEPROM_AT25=y
+ CONFIG_SCSI=y
+@@ -68,6 +62,7 @@ CONFIG_SCSI=y
+ CONFIG_BLK_DEV_SD=y
+ CONFIG_CHR_DEV_SG=y
+ CONFIG_NETDEVICES=y
++CONFIG_FS_ENET=y
+ CONFIG_MARVELL_PHY=y
+ CONFIG_DAVICOM_PHY=y
+ CONFIG_QSEMI_PHY=y
+@@ -83,10 +78,6 @@ CONFIG_STE10XP=y
+ CONFIG_LSI_ET1011C_PHY=y
+ CONFIG_FIXED_PHY=y
+ CONFIG_MDIO_BITBANG=y
+-CONFIG_NET_ETHERNET=y
+-CONFIG_FS_ENET=y
+-# CONFIG_NETDEV_1000 is not set
+-# CONFIG_NETDEV_10000 is not set
+ # CONFIG_WLAN is not set
+ # CONFIG_INPUT_MOUSEDEV_PSAUX is not set
+ CONFIG_INPUT_EVDEV=y
+@@ -106,10 +97,7 @@ CONFIG_GPIO_SYSFS=y
+ CONFIG_GPIO_MPC8XXX=y
+ # CONFIG_HWMON is not set
+ CONFIG_MEDIA_SUPPORT=y
+-CONFIG_VIDEO_DEV=y
+ CONFIG_VIDEO_ADV_DEBUG=y
+-# CONFIG_VIDEO_HELPER_CHIPS_AUTO is not set
+-CONFIG_VIDEO_SAA711X=y
+ CONFIG_FB=y
+ CONFIG_FB_FSL_DIU=y
+ # CONFIG_VGA_CONSOLE is not set
+@@ -129,9 +117,7 @@ CONFIG_TMPFS=y
+ CONFIG_JFFS2_FS=y
+ CONFIG_UBIFS_FS=y
+ CONFIG_NFS_FS=y
+-CONFIG_NFS_V3=y
+ CONFIG_ROOT_NFS=y
+-CONFIG_PARTITION_ADVANCED=y
+ CONFIG_NLS_CODEPAGE_437=y
+ CONFIG_NLS_ISO8859_1=y
+ # CONFIG_ENABLE_WARN_DEPRECATED is not set
 -- 
-1.7.5.4
+1.7.9.5
