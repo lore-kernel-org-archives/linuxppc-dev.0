@@ -1,20 +1,31 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 548DF2C008A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 16:16:57 +1000 (EST)
-Message-ID: <1372140948.3944.193.camel@pasglop>
-Subject: Re: [PATCH 10/10] net/tg3: Avoid delay during MMIO access
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gavin Shan <shangw@linux.vnet.ibm.com>
-Date: Tue, 25 Jun 2013 16:15:48 +1000
-In-Reply-To: <1372139717-14885-11-git-send-email-shangw@linux.vnet.ibm.com>
-References: <1372139717-14885-1-git-send-email-shangw@linux.vnet.ibm.com>
- <1372139717-14885-11-git-send-email-shangw@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+ (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id F22BA2C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 16:35:39 +1000 (EST)
+Received: from /spool/local
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Tue, 25 Jun 2013 02:35:37 -0400
+Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 64D9738C804D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 02:35:34 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5P6ZYFO000482
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 02:35:34 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5P6ZWSU020965
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 03:35:34 -0300
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 1/2] powerpc/eeh: Remove eeh_mutex
+Date: Tue, 25 Jun 2013 14:35:27 +0800
+Message-Id: <1372142128-18077-1-git-send-email-shangw@linux.vnet.ibm.com>
+Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,134 +35,220 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-06-25 at 13:55 +0800, Gavin Shan wrote:
-> When the driver is encountering EEH errors, which might be caused
-> by frozen PCI host controller, the driver needn't keep reading on
-> MMIO until timeout. For the case, 0xFF's should be returned from
-> hardware. Otherwise, it possibly trigger soft-lockup. The patch
-> adds more check on that by pci_channel_offline(), thus to avoid
-> the possible soft-lockup.
+Originally, eeh_mutex was introduced to protect the PE hierarchy
+tree and the attached EEH devices because EEH core was possiblly
+running with multiple threads to access the PE hierarchy tree.
+However, we now have only one kthread in EEH core. So we needn't
+the eeh_mutex and just remove it.
 
-Can you resend this patch "standalone" (not part of a series)
-to the maintainer/author of this driver and CC the netdev list on
-vger.kernel.org ?
+Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/eeh.h |   14 --------------
+ arch/powerpc/kernel/eeh.c      |    3 ---
+ arch/powerpc/kernel/eeh_pe.c   |   30 +-----------------------------
+ 3 files changed, 1 insertions(+), 46 deletions(-)
 
-For the CC list, check the author of the original EEH support.
-
-Also maybe improve the explanation above explaining something like:
-
-"When the EEH error is the result of a fenced host bridge, MMIO
-accesses can be very slow (milliseconds) to timeout and return all 1's,
-thus causing the driver various timeout loops to take way too long and
-trigger soft-lockup warnings (in addition to taking minutes to recover).
-
-It might be worthwhile to check if for any of these cases, ffffffff is
-a valid possible value, and if not, bail early since that means the HW
-is either gone or isolated.
-
-In the meantime, checking that the PCI channel is offline will
-workaround the problem".
-
-Or something like that...
-
-> Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
-> ---
->  drivers/net/ethernet/broadcom/tg3.c |   36 +++++++++++++++++++++++++++++++++++
->  1 files changed, 36 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/broadcom/tg3.c b/drivers/net/ethernet/broadcom/tg3.c
-> index c777b90..a13463e 100644
-> --- a/drivers/net/ethernet/broadcom/tg3.c
-> +++ b/drivers/net/ethernet/broadcom/tg3.c
-> @@ -744,6 +744,9 @@ static int tg3_ape_lock(struct tg3 *tp, int locknum)
->  		status = tg3_ape_read32(tp, gnt + off);
->  		if (status == bit)
->  			break;
-> +		if (pci_channel_offline(tp->pdev))
-> +			break;
-> +
->  		udelay(10);
->  	}
->  
-> @@ -1635,6 +1638,9 @@ static void tg3_wait_for_event_ack(struct tg3 *tp)
->  	for (i = 0; i < delay_cnt; i++) {
->  		if (!(tr32(GRC_RX_CPU_EVENT) & GRC_RX_CPU_DRIVER_EVENT))
->  			break;
-> +		if (pci_channel_offline(tp->pdev))
-> +			break;
-> +
->  		udelay(8);
->  	}
->  }
-> @@ -1813,6 +1819,9 @@ static int tg3_poll_fw(struct tg3 *tp)
->  		for (i = 0; i < 200; i++) {
->  			if (tr32(VCPU_STATUS) & VCPU_STATUS_INIT_DONE)
->  				return 0;
-> +			if (pci_channel_offline(tp->pdev))
-> +				return -ENODEV;
-> +
->  			udelay(100);
->  		}
->  		return -ENODEV;
-> @@ -1823,6 +1832,15 @@ static int tg3_poll_fw(struct tg3 *tp)
->  		tg3_read_mem(tp, NIC_SRAM_FIRMWARE_MBOX, &val);
->  		if (val == ~NIC_SRAM_FIRMWARE_MBOX_MAGIC1)
->  			break;
-> +		if (pci_channel_offline(tp->pdev)) {
-> +			if (!tg3_flag(tp, NO_FWARE_REPORTED)) {
-> +				tg3_flag_set(tp, NO_FWARE_REPORTED);
-> +				netdev_info(tp->dev, "No firmware running\n");
-> +			}
-> +
-> +			break;
-> +		}
-> +
->  		udelay(10);
->  	}
->  
-> @@ -3520,6 +3538,8 @@ static int tg3_pause_cpu(struct tg3 *tp, u32 cpu_base)
->  		tw32(cpu_base + CPU_MODE,  CPU_MODE_HALT);
->  		if (tr32(cpu_base + CPU_MODE) & CPU_MODE_HALT)
->  			break;
-> +		if (pci_channel_offline(tp->pdev))
-> +			return -EBUSY;
->  	}
->  
->  	return (i == iters) ? -EBUSY : 0;
-> @@ -8589,6 +8609,14 @@ static int tg3_stop_block(struct tg3 *tp, unsigned long ofs, u32 enable_bit, boo
->  	tw32_f(ofs, val);
->  
->  	for (i = 0; i < MAX_WAIT_CNT; i++) {
-> +		if (pci_channel_offline(tp->pdev)) {
-> +			dev_err(&tp->pdev->dev,
-> +				"tg3_stop_block device offline, "
-> +				"ofs=%lx enable_bit=%x\n",
-> +				ofs, enable_bit);
-> +			return -ENODEV;
-> +		}
-> +
->  		udelay(100);
->  		val = tr32(ofs);
->  		if ((val & enable_bit) == 0)
-> @@ -8612,6 +8640,13 @@ static int tg3_abort_hw(struct tg3 *tp, bool silent)
->  
->  	tg3_disable_ints(tp);
->  
-> +	if (pci_channel_offline(tp->pdev)) {
-> +		tp->rx_mode &= ~(RX_MODE_ENABLE | TX_MODE_ENABLE);
-> +		tp->mac_mode &= ~MAC_MODE_TDE_ENABLE;
-> +		err = -ENODEV;
-> +		goto err_no_dev;
-> +	}
-> +
->  	tp->rx_mode &= ~RX_MODE_ENABLE;
->  	tw32_f(MAC_RX_MODE, tp->rx_mode);
->  	udelay(10);
-> @@ -8660,6 +8695,7 @@ static int tg3_abort_hw(struct tg3 *tp, bool silent)
->  	err |= tg3_stop_block(tp, BUFMGR_MODE, BUFMGR_MODE_ENABLE, silent);
->  	err |= tg3_stop_block(tp, MEMARB_MODE, MEMARB_MODE_ENABLE, silent);
->  
-> +err_no_dev:
->  	for (i = 0; i < tp->irq_cnt; i++) {
->  		struct tg3_napi *tnapi = &tp->napi[i];
->  		if (tnapi->hw_status)
+diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+index a0b11fb..dd65e31 100644
+--- a/arch/powerpc/include/asm/eeh.h
++++ b/arch/powerpc/include/asm/eeh.h
+@@ -151,7 +151,6 @@ struct eeh_ops {
+ 
+ extern struct eeh_ops *eeh_ops;
+ extern int eeh_subsystem_enabled;
+-extern struct mutex eeh_mutex;
+ extern raw_spinlock_t confirm_error_lock;
+ extern int eeh_probe_mode;
+ 
+@@ -173,16 +172,6 @@ static inline int eeh_probe_mode_dev(void)
+ 	return (eeh_probe_mode == EEH_PROBE_MODE_DEV);
+ }
+ 
+-static inline void eeh_lock(void)
+-{
+-	mutex_lock(&eeh_mutex);
+-}
+-
+-static inline void eeh_unlock(void)
+-{
+-	mutex_unlock(&eeh_mutex);
+-}
+-
+ static inline void eeh_serialize_lock(unsigned long *flags)
+ {
+ 	raw_spin_lock_irqsave(&confirm_error_lock, *flags);
+@@ -271,9 +260,6 @@ static inline void eeh_add_sysfs_files(struct pci_bus *bus) { }
+ 
+ static inline void eeh_remove_bus_device(struct pci_dev *dev, int purge_pe) { }
+ 
+-static inline void eeh_lock(void) { }
+-static inline void eeh_unlock(void) { }
+-
+ #define EEH_POSSIBLE_ERROR(val, type) (0)
+ #define EEH_IO_ERROR_VALUE(size) (-1UL)
+ #endif /* CONFIG_EEH */
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index 7c567be..951a632 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -103,9 +103,6 @@ EXPORT_SYMBOL(eeh_subsystem_enabled);
+  */
+ int eeh_probe_mode;
+ 
+-/* Global EEH mutex */
+-DEFINE_MUTEX(eeh_mutex);
+-
+ /* Lock to avoid races due to multiple reports of an error */
+ DEFINE_RAW_SPINLOCK(confirm_error_lock);
+ 
+diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
+index ae75722..55943fc 100644
+--- a/arch/powerpc/kernel/eeh_pe.c
++++ b/arch/powerpc/kernel/eeh_pe.c
+@@ -78,9 +78,7 @@ int eeh_phb_pe_create(struct pci_controller *phb)
+ 	}
+ 
+ 	/* Put it into the list */
+-	eeh_lock();
+ 	list_add_tail(&pe->child, &eeh_phb_pe);
+-	eeh_unlock();
+ 
+ 	pr_debug("EEH: Add PE for PHB#%d\n", phb->global_number);
+ 
+@@ -185,21 +183,15 @@ void *eeh_pe_dev_traverse(struct eeh_pe *root,
+ 		return NULL;
+ 	}
+ 
+-	eeh_lock();
+-
+ 	/* Traverse root PE */
+ 	for (pe = root; pe; pe = eeh_pe_next(pe, root)) {
+ 		eeh_pe_for_each_dev(pe, edev) {
+ 			ret = fn(edev, flag);
+-			if (ret) {
+-				eeh_unlock();
++			if (ret)
+ 				return ret;
+-			}
+ 		}
+ 	}
+ 
+-	eeh_unlock();
+-
+ 	return NULL;
+ }
+ 
+@@ -305,8 +297,6 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ {
+ 	struct eeh_pe *pe, *parent;
+ 
+-	eeh_lock();
+-
+ 	/*
+ 	 * Search the PE has been existing or not according
+ 	 * to the PE address. If that has been existing, the
+@@ -316,7 +306,6 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ 	pe = eeh_pe_get(edev);
+ 	if (pe && !(pe->type & EEH_PE_INVALID)) {
+ 		if (!edev->pe_config_addr) {
+-			eeh_unlock();
+ 			pr_err("%s: PE with addr 0x%x already exists\n",
+ 				__func__, edev->config_addr);
+ 			return -EEXIST;
+@@ -328,7 +317,6 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ 
+ 		/* Put the edev to PE */
+ 		list_add_tail(&edev->list, &pe->edevs);
+-		eeh_unlock();
+ 		pr_debug("EEH: Add %s to Bus PE#%x\n",
+ 			edev->dn->full_name, pe->addr);
+ 
+@@ -347,7 +335,6 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ 			parent->type &= ~EEH_PE_INVALID;
+ 			parent = parent->parent;
+ 		}
+-		eeh_unlock();
+ 		pr_debug("EEH: Add %s to Device PE#%x, Parent PE#%x\n",
+ 			edev->dn->full_name, pe->addr, pe->parent->addr);
+ 
+@@ -357,7 +344,6 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ 	/* Create a new EEH PE */
+ 	pe = eeh_pe_alloc(edev->phb, EEH_PE_DEVICE);
+ 	if (!pe) {
+-		eeh_unlock();
+ 		pr_err("%s: out of memory!\n", __func__);
+ 		return -ENOMEM;
+ 	}
+@@ -385,7 +371,6 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ 	if (!parent) {
+ 		parent = eeh_phb_pe_get(edev->phb);
+ 		if (!parent) {
+-			eeh_unlock();
+ 			pr_err("%s: No PHB PE is found (PHB Domain=%d)\n",
+ 				__func__, edev->phb->global_number);
+ 			edev->pe = NULL;
+@@ -402,7 +387,6 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ 	list_add_tail(&pe->child, &parent->child_list);
+ 	list_add_tail(&edev->list, &pe->edevs);
+ 	edev->pe = pe;
+-	eeh_unlock();
+ 	pr_debug("EEH: Add %s to Device PE#%x, Parent PE#%x\n",
+ 		edev->dn->full_name, pe->addr, pe->parent->addr);
+ 
+@@ -430,8 +414,6 @@ int eeh_rmv_from_parent_pe(struct eeh_dev *edev, int purge_pe)
+ 		return -EEXIST;
+ 	}
+ 
+-	eeh_lock();
+-
+ 	/* Remove the EEH device */
+ 	pe = edev->pe;
+ 	edev->pe = NULL;
+@@ -476,8 +458,6 @@ int eeh_rmv_from_parent_pe(struct eeh_dev *edev, int purge_pe)
+ 		pe = parent;
+ 	}
+ 
+-	eeh_unlock();
+-
+ 	return 0;
+ }
+ 
+@@ -550,9 +530,7 @@ static void *__eeh_pe_state_mark(void *data, void *flag)
+  */
+ void eeh_pe_state_mark(struct eeh_pe *pe, int state)
+ {
+-	eeh_lock();
+ 	eeh_pe_traverse(pe, __eeh_pe_state_mark, &state);
+-	eeh_unlock();
+ }
+ 
+ /**
+@@ -586,9 +564,7 @@ static void *__eeh_pe_state_clear(void *data, void *flag)
+  */
+ void eeh_pe_state_clear(struct eeh_pe *pe, int state)
+ {
+-	eeh_lock();
+ 	eeh_pe_traverse(pe, __eeh_pe_state_clear, &state);
+-	eeh_unlock();
+ }
+ 
+ /**
+@@ -673,8 +649,6 @@ struct pci_bus *eeh_pe_bus_get(struct eeh_pe *pe)
+ 	struct eeh_dev *edev;
+ 	struct pci_dev *pdev;
+ 
+-	eeh_lock();
+-
+ 	if (pe->type & EEH_PE_PHB) {
+ 		bus = pe->phb->bus;
+ 	} else if (pe->type & EEH_PE_BUS ||
+@@ -691,7 +665,5 @@ struct pci_bus *eeh_pe_bus_get(struct eeh_pe *pe)
+ 	}
+ 
+ out:
+-	eeh_unlock();
+-
+ 	return bus;
+ }
+-- 
+1.7.5.4
