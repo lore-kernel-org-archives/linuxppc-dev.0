@@ -1,44 +1,47 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp05.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E46A82C02EB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:32:16 +1000 (EST)
+ (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1918D2C0705
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:32:37 +1000 (EST)
 Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Wed, 26 Jun 2013 06:26:07 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 921FB2BB0051
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:32:11 +1000 (EST)
+ Wed, 26 Jun 2013 06:23:42 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 6008A2CE8051
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:32:34 +1000 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5PKW2c25439932
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:32:02 +1000
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5PKHZ2V5832988
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:17:35 +1000
 Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5PKW9Gm006000
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:32:11 +1000
+ r5PKWWNu006299
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:32:33 +1000
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v2 19/45] irq: Use get/put_online_cpus_atomic() to prevent CPU
+Subject: [PATCH v2 20/45] net: Use get/put_online_cpus_atomic() to prevent CPU
  offline
 To: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com,
  paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org,
  akpm@linux-foundation.org, namhyung@kernel.org, walken@google.com,
  vincent.guittot@linaro.org, laijs@cn.fujitsu.com
-Date: Wed, 26 Jun 2013 01:58:49 +0530
-Message-ID: <20130625202849.16593.84150.stgit@srivatsabhat.in.ibm.com>
+Date: Wed, 26 Jun 2013 01:59:02 +0530
+Message-ID: <20130625202901.16593.4774.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20130625202452.16593.22810.stgit@srivatsabhat.in.ibm.com>
 References: <20130625202452.16593.22810.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Cc: linux-arch@vger.kernel.org, nikunj@linux.vnet.ibm.com,
- zhong@linux.vnet.ibm.com, linux-pm@vger.kernel.org, fweisbec@gmail.com,
- linux-kernel@vger.kernel.org, rostedt@goodmis.org,
- xiaoguangrong@linux.vnet.ibm.com, sbw@mit.edu, wangyun@linux.vnet.ibm.com,
+Cc: linux-arch@vger.kernel.org, Alexander Duyck <alexander.h.duyck@intel.com>,
+ nikunj@linux.vnet.ibm.com, zhong@linux.vnet.ibm.com, linux-pm@vger.kernel.org,
+ fweisbec@gmail.com, linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+ xiaoguangrong@linux.vnet.ibm.com, sbw@mit.edu,
+ Eric Dumazet <edumazet@google.com>, wangyun@linux.vnet.ibm.com,
  "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, netdev@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
+ Ben Hutchings <bhutchings@solarflare.com>,
+ Cong Wang <xiyou.wangcong@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,85 +58,73 @@ from under us.
 Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going
 offline, while invoking from atomic context.
 
-Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Eric Dumazet <edumazet@google.com>
+Cc: Alexander Duyck <alexander.h.duyck@intel.com>
+Cc: Cong Wang <xiyou.wangcong@gmail.com>
+Cc: Ben Hutchings <bhutchings@solarflare.com>
+Cc: netdev@vger.kernel.org
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- kernel/irq/manage.c |    7 +++++++
- kernel/irq/proc.c   |    3 +++
- 2 files changed, 10 insertions(+)
+ net/core/dev.c |    9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index e16caa8..4d89f19 100644
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -18,6 +18,7 @@
- #include <linux/sched.h>
- #include <linux/sched/rt.h>
- #include <linux/task_work.h>
-+#include <linux/cpu.h>
+diff --git a/net/core/dev.c b/net/core/dev.c
+index fc1e289..90519e9 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -3141,7 +3141,7 @@ int netif_rx(struct sk_buff *skb)
+ 		struct rps_dev_flow voidflow, *rflow = &voidflow;
+ 		int cpu;
  
- #include "internals.h"
- 
-@@ -202,9 +203,11 @@ int irq_set_affinity(unsigned int irq, const struct cpumask *mask)
- 	if (!desc)
- 		return -EINVAL;
- 
-+	get_online_cpus_atomic();
- 	raw_spin_lock_irqsave(&desc->lock, flags);
- 	ret =  __irq_set_affinity_locked(irq_desc_get_irq_data(desc), mask);
- 	raw_spin_unlock_irqrestore(&desc->lock, flags);
-+	put_online_cpus_atomic();
- 	return ret;
- }
- 
-@@ -343,9 +346,11 @@ int irq_select_affinity_usr(unsigned int irq, struct cpumask *mask)
- 	unsigned long flags;
- 	int ret;
- 
-+	get_online_cpus_atomic();
- 	raw_spin_lock_irqsave(&desc->lock, flags);
- 	ret = setup_affinity(irq, desc, mask);
- 	raw_spin_unlock_irqrestore(&desc->lock, flags);
-+	put_online_cpus_atomic();
- 	return ret;
- }
- 
-@@ -1128,7 +1133,9 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
- 		}
- 
- 		/* Set default affinity mask once everything is setup */
+-		preempt_disable();
 +		get_online_cpus_atomic();
- 		setup_affinity(irq, desc, mask);
+ 		rcu_read_lock();
+ 
+ 		cpu = get_rps_cpu(skb->dev, skb, &rflow);
+@@ -3151,7 +3151,7 @@ int netif_rx(struct sk_buff *skb)
+ 		ret = enqueue_to_backlog(skb, cpu, &rflow->last_qtail);
+ 
+ 		rcu_read_unlock();
+-		preempt_enable();
 +		put_online_cpus_atomic();
- 
- 	} else if (new->flags & IRQF_TRIGGER_MASK) {
- 		unsigned int nmsk = new->flags & IRQF_TRIGGER_MASK;
-diff --git a/kernel/irq/proc.c b/kernel/irq/proc.c
-index 19ed5c4..47f9a74 100644
---- a/kernel/irq/proc.c
-+++ b/kernel/irq/proc.c
-@@ -7,6 +7,7 @@
-  */
- 
- #include <linux/irq.h>
-+#include <linux/cpu.h>
- #include <linux/gfp.h>
- #include <linux/proc_fs.h>
- #include <linux/seq_file.h>
-@@ -441,6 +442,7 @@ int show_interrupts(struct seq_file *p, void *v)
- 	if (!desc)
- 		return 0;
- 
-+	get_online_cpus_atomic();
- 	raw_spin_lock_irqsave(&desc->lock, flags);
- 	for_each_online_cpu(j)
- 		any_count |= kstat_irqs_cpu(i, j);
-@@ -477,6 +479,7 @@ int show_interrupts(struct seq_file *p, void *v)
- 	seq_putc(p, '\n');
- out:
- 	raw_spin_unlock_irqrestore(&desc->lock, flags);
-+	put_online_cpus_atomic();
- 	return 0;
- }
+ 	} else
  #endif
+ 	{
+@@ -3570,6 +3570,7 @@ int netif_receive_skb(struct sk_buff *skb)
+ 		struct rps_dev_flow voidflow, *rflow = &voidflow;
+ 		int cpu, ret;
+ 
++		get_online_cpus_atomic();
+ 		rcu_read_lock();
+ 
+ 		cpu = get_rps_cpu(skb->dev, skb, &rflow);
+@@ -3577,9 +3578,11 @@ int netif_receive_skb(struct sk_buff *skb)
+ 		if (cpu >= 0) {
+ 			ret = enqueue_to_backlog(skb, cpu, &rflow->last_qtail);
+ 			rcu_read_unlock();
++			put_online_cpus_atomic();
+ 			return ret;
+ 		}
+ 		rcu_read_unlock();
++		put_online_cpus_atomic();
+ 	}
+ #endif
+ 	return __netif_receive_skb(skb);
+@@ -3957,6 +3960,7 @@ static void net_rps_action_and_irq_enable(struct softnet_data *sd)
+ 		local_irq_enable();
+ 
+ 		/* Send pending IPI's to kick RPS processing on remote cpus. */
++		get_online_cpus_atomic();
+ 		while (remsd) {
+ 			struct softnet_data *next = remsd->rps_ipi_next;
+ 
+@@ -3965,6 +3969,7 @@ static void net_rps_action_and_irq_enable(struct softnet_data *sd)
+ 							   &remsd->csd, 0);
+ 			remsd = next;
+ 		}
++		put_online_cpus_atomic();
+ 	} else
+ #endif
+ 		local_irq_enable();
