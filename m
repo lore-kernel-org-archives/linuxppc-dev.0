@@ -1,26 +1,20 @@
 Return-Path: <B07421@freescale.com>
 Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0185.outbound.messaging.microsoft.com [213.199.154.185])
+ (mail-db8lp0189.outbound.messaging.microsoft.com [213.199.154.189])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 67C7A2C007B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 09:14:16 +1000 (EST)
-Received: from mail118-db8 (localhost [127.0.0.1])	by
- mail118-db8-R.bigfish.com (Postfix) with ESMTP id 52B863E03D4	for
- <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 23:14:10 +0000 (UTC)
-Received: from DB8EHSMHS032.bigfish.com (unknown [10.174.8.232])	by
- mail118-db8.bigfish.com (Postfix) with ESMTP id DF243C004A	for
- <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 23:14:08 +0000 (UTC)
-Date: Tue, 25 Jun 2013 18:14:04 -0500
+ by ozlabs.org (Postfix) with ESMTPS id AB4B62C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 09:47:00 +1000 (EST)
+Date: Tue, 25 Jun 2013 18:46:35 -0500
 From: Scott Wood <scottwood@freescale.com>
-To: Laurentiu TUDOR <Laurentiu.Tudor@freescale.com>
-Subject: Re: powerpc/85xx: Move ePAPR paravirt initialization earlier
-Message-ID: <20130625231404.GA29587@home.buserror.net>
-References: <1362498756-395-1-git-send-email-Laurentiu.Tudor@freescale.com>
+Subject: Re: BUG: no PCI/PCIe devices found in 85xx architecture
+To: Stefani Seibold <stefani@seibold.net>
+In-Reply-To: <1372185614.4726.12.camel@wall-e> (from stefani@seibold.net on
+ Tue Jun 25 13:40:14 2013)
+Message-ID: <1372203995.8183.26@snotra>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1362498756-395-1-git-send-email-Laurentiu.Tudor@freescale.com>
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,58 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 05, 2013 at 05:52:36PM +0200, Laurentiu TUDOR wrote:
-> From: Tudor Laurentiu <laurentiu.tudor@freescale.com>
-> 
-> The ePAPR para-virtualization needs to happen very early
-> otherwise the bytechannel based console will silently
-> drop some of the early boot messages.
-> 
-> Before this patch, this is how the kernel log started:
-> -----------------------------------------------------
->  > Brought up 2 CPUs
->  > devtmpfs: initialized
->  > NET: Registered protocol family 16
->  [...]
-> -----------------------------------------------------
-> 
-> After the patch the early messages show up:
-> -----------------------------------------------------
->  > Using P5020 DS machine description
->  > MMU: Supported page sizes
->  >          4 KB as direct
->  >       4096 KB as direct
->  [...]
-> -----------------------------------------------------
-> 
-> At console init, the kernel tried to flush the log buffer.
-> Since the paravirt was not yet initialized the console write
-> function failed silently, thus losing the buffered messages.
-[snip]
-> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-> index 6da881b..ce092ac 100644
-> --- a/arch/powerpc/kernel/setup_64.c
-> +++ b/arch/powerpc/kernel/setup_64.c
-> @@ -66,6 +66,7 @@
->  #include <asm/code-patching.h>
->  #include <asm/kvm_ppc.h>
->  #include <asm/hugetlb.h>
-> +#include <asm/epapr_hcalls.h>
->  
->  #include "setup.h"
->  
-> @@ -599,6 +600,8 @@ void __init setup_arch(char **cmdline_p)
->  	/* Initialize the MMU context management stuff */
->  	mmu_context_init();
->  
-> +	epapr_paravirt_init();
-> +
->  	kvm_linear_init();
->  
->  	/* Interrupt code needs to be 64K-aligned */
+On 06/25/2013 01:40:14 PM, Stefani Seibold wrote:
+> Hi,
+>=20
+> there is a bug in kernel 3.9 which the new fsl_pci platform driver. =20
+> The
+> pcibios_init in pci_32.c will be called before the platform driver =20
+> probe
+> will be invoked.
+>=20
+> The call order for a p2020 board with linux 3.9 is currently:
+>=20
+> fsl_pci_init
+> pcibios_init
+> fsl_pci_probe
+> fsl_pci_probe
+> fsl_pci_probe
+>=20
+> Therefore the PCI/PCIe bridge will be added after the PCI/PCIe busses
+> was scanned for devices. So no PCI/PCIe devices are available.
+>=20
+> Everything works fine by reverting the fsl_pci.[ch] to the version in
+> linux 3.4, because the PCI/PCIe bridges will be added in
+> the ..._setup_arch() function, before the pcibios_init function is
+> called.
+>=20
+> Any solution for this issue?
 
-Is this early enough?  There's udbg activity before this.  Maybe it
-should even go before udbg_early_init...  This would require converting
-the code to use the early device tree functions.
+I can't reproduce this on p3041 -- pcibios_init gets called after =20
+fsl_pci_probe, and its PCIe e1000 gets detected and used.
 
--Scott
+fsl_pci_probe should be called when of_platform_bus_probe is called, =20
+which is in a machine_arch_initcall.  pcibios_init is a =20
+subsys_initcall, which should happen later.
+
+Which p2020 board are you using?  Could you check when it is calling =20
+of_platform_bus_probe?
+
+-Scott=
