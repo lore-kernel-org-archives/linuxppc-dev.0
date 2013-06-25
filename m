@@ -1,45 +1,22 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8E6102C0085
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 08:00:46 +1000 (EST)
-Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Tue, 25 Jun 2013 18:00:43 -0400
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 63B5738C801A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 18:00:40 -0400 (EDT)
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5PM0eWX206614
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 18:00:40 -0400
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
- by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5PM2tWM007775
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 16:02:57 -0600
-Date: Tue, 25 Jun 2013 15:00:26 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 15/45] rcu: Use get/put_online_cpus_atomic() to
- prevent CPU offline
-Message-ID: <20130625220026.GG3828@linux.vnet.ibm.com>
-References: <20130625202452.16593.22810.stgit@srivatsabhat.in.ibm.com>
- <20130625202755.16593.67819.stgit@srivatsabhat.in.ibm.com>
+Return-Path: <B07421@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8E9A72C0040
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 09:04:44 +1000 (EST)
+Date: Tue, 25 Jun 2013 18:04:31 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: LEROY Christophe <christophe.leroy@c-s.fr>
+Subject: Re: [v2] Enhanced support for MPC8xx/8xxx watchdog
+Message-ID: <20130625230431.GA29393@home.buserror.net>
+References: <201302280852.r1S8qMYu003742@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130625202755.16593.67819.stgit@srivatsabhat.in.ibm.com>
-Cc: peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org,
- walken@google.com, mingo@kernel.org, linux-arch@vger.kernel.org,
- vincent.guittot@linaro.org, xiaoguangrong@linux.vnet.ibm.com,
- wangyun@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
- linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org,
- namhyung@kernel.org, tglx@linutronix.de, laijs@cn.fujitsu.com,
- zhong@linux.vnet.ibm.com, netdev@vger.kernel.org, oleg@redhat.com, sbw@mit.edu,
- tj@kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
-Reply-To: paulmck@linux.vnet.ibm.com
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <201302280852.r1S8qMYu003742@localhost.localdomain>
+Cc: Wim Van Sebroeck <wim@iguana.be>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-watchdog@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,75 +26,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 26, 2013 at 01:57:55AM +0530, Srivatsa S. Bhat wrote:
-> Once stop_machine() is gone from the CPU offline path, we won't be able
-> to depend on disabling preemption to prevent CPUs from going offline
-> from under us.
+On Thu, Feb 28, 2013 at 09:52:22AM +0100, LEROY Christophe wrote:
+> This patch modifies the behaviour of the MPC8xx/8xxx watchdog. On the MPC8xx,
+> at 133Mhz, the maximum timeout of the watchdog timer is 1s, which means it must
+> be pinged twice a second. This is not in line with the Linux watchdog concept
+> which is based on a default watchdog timeout around 60s.
+> This patch introduces an intermediate layer between the CPU and the userspace.
+> The kernel pings the watchdog at the required frequency at the condition that
+> userspace tools refresh it regularly.
+> Existing parameter 'timeout' is renamed 'hw_time'.
+> The new parameter 'timeout' allows to set up the userspace timeout.
+> The driver also implements the WDIOC_SETTIMEOUT ioctl.
 > 
-> In RCU code, rcu_implicit_dynticks_qs() checks if a CPU is offline,
-> while being protected by a spinlock. Use the get/put_online_cpus_atomic()
-> APIs to prevent CPUs from going offline, while invoking from atomic context.
-
-I am not completely sure that this is needed.  Here is a (quite possibly
-flawed) argument for its not being needed:
-
-o	rcu_gp_init() holds off CPU-hotplug operations during
-	grace-period initialization.  Therefore, RCU will avoid
-	looking for quiescent states from CPUs that were offline
-	(and thus in an extended quiescent state) at the beginning
-	of the grace period.
-
-o	If force_qs_rnp() is looking for a quiescent state from
-	a given CPU, and if it senses that CPU as being offline,
-	then even without synchronization we know that the CPU
-	was offline some time during the current grace period.
-
-	After all, it was online at the beginning of the grace
-	period (otherwise, we would not be looking at it at all),
-	and our later sampling of its state must have therefore
-	happened after the start of the grace period.  Given that
-	the grace period has not yet ended, it also has to happened
-	before the end of the grace period.
-
-o	Therefore, we should be able to sample the offline state
-	without synchronization.
-
-Possible flaws in this argument:  memory ordering, oddnesses in
-the sampling and updates of the cpumask recording which CPUs are
-online, and so on.
-
-Thoughts?
-
-							Thanx, Paul
-
-> Cc: Dipankar Sarma <dipankar@in.ibm.com>
-> Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-> ---
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 > 
->  kernel/rcutree.c |    4 ++++
->  1 file changed, 4 insertions(+)
 > 
-> diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-> index cf3adc6..caeed1a 100644
-> --- a/kernel/rcutree.c
-> +++ b/kernel/rcutree.c
-> @@ -2107,6 +2107,8 @@ static void force_qs_rnp(struct rcu_state *rsp, int (*f)(struct rcu_data *))
->  			rcu_initiate_boost(rnp, flags); /* releases rnp->lock */
->  			continue;
->  		}
+> diff -ur linux-3.7.9/drivers/watchdog/mpc8xxx_wdt.c linux/drivers/watchdog/mpc8xxx_wdt.c
+> --- linux-3.7.9/drivers/watchdog/mpc8xxx_wdt.c	2013-02-17 19:53:32.000000000 +0100
+> +++ linux/drivers/watchdog/mpc8xxx_wdt.c	2013-02-27 16:00:07.000000000 +0100
+> @@ -52,10 +52,17 @@
+>  static struct mpc8xxx_wdt __iomem *wd_base;
+>  static int mpc8xxx_wdt_init_late(void);
+>  
+> -static u16 timeout = 0xffff;
+> -module_param(timeout, ushort, 0);
+> +#define WD_TIMO 10			/* Default timeout = 10 seconds */
+
+If the default Linux watchdog timeout is normally 60 seconds, why is it 10
+here?
+
+> +static uint timeout = WD_TIMO;
+> +module_param(timeout, uint, 0);
+>  MODULE_PARM_DESC(timeout,
+> -	"Watchdog timeout in ticks. (0<timeout<65536, default=65535)");
+> +	"Watchdog SW timeout in seconds. (0 < timeout < 65536s, default = "
+> +				__MODULE_STRING(WD_TIMO) "s)");
+> +static u16 hw_timo = 0xffff;
+> +module_param(hw_timo, ushort, 0);
+> +MODULE_PARM_DESC(hw_timo,
+> +	"Watchdog HW timeout in ticks. (0 < hw_timo < 65536, default = 65535)");
+
+hw_timeout would be more legibile -- this is a public interface.
+
+>  static bool reset = 1;
+>  module_param(reset, bool, 0);
+> @@ -72,10 +79,12 @@
+>   * to 0
+>   */
+>  static int prescale = 1;
+> -static unsigned int timeout_sec;
+> +static unsigned int hw_timo_sec;
+>  
+> +static int wdt_auto = 1;
+
+bool, and add a comment indicating what this means.
+
+>  static unsigned long wdt_is_open;
+>  static DEFINE_SPINLOCK(wdt_spinlock);
+> +static unsigned long wdt_last_ping;
+>  
+>  static void mpc8xxx_wdt_keepalive(void)
+>  {
+> @@ -91,9 +100,20 @@
+>  
+>  static void mpc8xxx_wdt_timer_ping(unsigned long arg)
+>  {
+> -	mpc8xxx_wdt_keepalive();
+> -	/* We're pinging it twice faster than needed, just to be sure. */
+> -	mod_timer(&wdt_timer, jiffies + HZ * timeout_sec / 2);
+> +	if (wdt_auto)
+> +		wdt_last_ping = jiffies;
 > +
-> +		get_online_cpus_atomic();
->  		cpu = rnp->grplo;
->  		bit = 1;
->  		for (; cpu <= rnp->grphi; cpu++, bit <<= 1) {
-> @@ -2114,6 +2116,8 @@ static void force_qs_rnp(struct rcu_state *rsp, int (*f)(struct rcu_data *))
->  			    f(per_cpu_ptr(rsp->rda, cpu)))
->  				mask |= bit;
->  		}
-> +		put_online_cpus_atomic();
+> +	if (jiffies - wdt_last_ping <= timeout * HZ) {
+
+So timeout cannot be more than UINT_MAX / HZ...  Might want to check for
+that, just in case.
+
+What happens if there's a race?  If another CPU updates wdt_last_ping in
+parallel, then you could see wdt_last_ping greater than the value you
+read for jiffies.  Since this is an unsigned comparison, it will fail to
+call keepalive.  You might get saved by pinging it twice as often as
+necessary, but you shouldn't rely on that.
+
+> +		mpc8xxx_wdt_keepalive();
+> +		/* We're pinging it twice faster than needed, to be sure. */
+> +		mod_timer(&wdt_timer, jiffies + HZ * hw_timo_sec / 2);
+> +	}
+> +}
 > +
->  		if (mask != 0) {
-> 
->  			/* rcu_report_qs_rnp() releases rnp->lock. */
-> 
+> +static void mpc8xxx_wdt_sw_keepalive(void)
+> +{
+> +	wdt_last_ping = jiffies;
+> +	mpc8xxx_wdt_timer_ping(0);
+>  }
+
+This isn't new with this patch, but it looks like
+mpc8xxx_wdt_keepalive() can be called either from timer context, or with
+interrupts enabled... yet it uses a bare spin_lock() rather than an
+irq-safe version.  This should be fixed.
+
+-Scott
