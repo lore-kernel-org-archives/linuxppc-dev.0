@@ -1,47 +1,30 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e34.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 112992C0096
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 02:11:34 +1000 (EST)
-Received: from /spool/local
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Tue, 25 Jun 2013 10:11:30 -0600
-Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
- [9.17.195.107])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id DAD441FF0064
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 09:58:48 -0600 (MDT)
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5PG3luJ121022
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 10:03:51 -0600
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
- by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5PG630w003383
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 10:06:05 -0600
-Date: Tue, 25 Jun 2013 09:03:32 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: Regression in RCU subsystem in latest mainline kernel
-Message-ID: <20130625160332.GA3828@linux.vnet.ibm.com>
-References: <1626500.7WAVXjfS9F@pcimr>
- <20130614122800.GL5146@linux.vnet.ibm.com>
- <1645938.As0LR1yeVd@pcimr>
- <1371243967.9844.338.camel@gandalf.local.home>
- <1371261741.21896.20.camel@pasglop>
- <20130617074213.GA3589@concordia>
- <20130619040906.GA5146@linux.vnet.ibm.com>
- <20130625071914.GA29957@concordia>
- <20130625074422.GB29957@concordia>
+Return-Path: <keescook@google.com>
+Received: from mail-ie0-x22e.google.com (mail-ie0-x22e.google.com
+ [IPv6:2607:f8b0:4001:c03::22e])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C15522C007A
+ for <linuxppc-dev@ozlabs.org>; Wed, 26 Jun 2013 02:55:10 +1000 (EST)
+Received: by mail-ie0-f174.google.com with SMTP id 9so27512791iec.5
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Jun 2013 09:55:08 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130625074422.GB29957@concordia>
-Cc: Rojhalat Ibrahim <imr@rtschenk.de>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org,
- Steven Rostedt <rostedt@goodmis.org>
-Reply-To: paulmck@linux.vnet.ibm.com
+Sender: keescook@google.com
+In-Reply-To: <51C94101.3030702@linux.vnet.ibm.com>
+References: <20130624061936.12963.72529.stgit@aruna-ThinkPad-T420>
+ <20130624062316.12963.87911.stgit@aruna-ThinkPad-T420>
+ <CAGXu5jJezRynWEBmmH8wp=pt1yEjukhe6Pg_aRcZP7E6t-1R=g@mail.gmail.com>
+ <51C94101.3030702@linux.vnet.ibm.com>
+Date: Tue, 25 Jun 2013 09:55:07 -0700
+Message-ID: <CAGXu5jJjUxGSA08GkGguhTBTTmVjKgG90LLNxfNnhd7TV4crhg@mail.gmail.com>
+Subject: Re: [PATCH 3/3] powerpc/pseries: Support compression of oops text via
+ pstore
+From: Kees Cook <keescook@chromium.org>
+To: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: jkenisto@linux.vnet.ibm.com, Tony Luck <tony.luck@intel.com>,
+ mahesh@linux.vnet.ibm.com, Colin Cross <ccross@android.com>,
+ LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org, paulus@samba.org,
+ Anton Blanchard <anton@samba.org>, Anton Vorontsov <cbouatmailru@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,68 +34,302 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 25, 2013 at 05:44:23PM +1000, Michael Ellerman wrote:
-> On Tue, Jun 25, 2013 at 05:19:14PM +1000, Michael Ellerman wrote:
-> > 
-> > Here's another trace from 3.10-rc7 plus a few local patches.
-> 
-> And here's another with CONFIG_RCU_CPU_STALL_INFO=y in case that's useful:
-> 
-> PASS running test_pmc5_6_overuse()
-> INFO: rcu_sched self-detected stall on CPU
-> 	8: (1 GPs behind) idle=8eb/140000000000002/0 softirq=215/220 
+On Tue, Jun 25, 2013 at 12:04 AM, Aruna Balakrishnaiah
+<aruna@linux.vnet.ibm.com> wrote:
+> Hi Kees,
+>
+>
+> On Monday 24 June 2013 11:27 PM, Kees Cook wrote:
+>>
+>> On Sun, Jun 23, 2013 at 11:23 PM, Aruna Balakrishnaiah
+>> <aruna@linux.vnet.ibm.com> wrote:
+>>>
+>>> The patch set supports compression of oops messages while writing to
+>>> NVRAM,
+>>> this helps in capturing more of oops data to lnx,oops-log. The pstore
+>>> file
+>>> for oops messages will be in decompressed format making it readable.
+>>>
+>>> In case compression fails, the patch takes care of copying the header
+>>> added
+>>> by pstore and last oops_data_sz bytes of big_oops_buf to NVRAM so that we
+>>> have recent oops messages in lnx,oops-log.
+>>>
+>>> In case decompression fails, it will result in absence of oops file but
+>>> still
+>>> have files (in /dev/pstore) for other partitions.
+>>>
+>>> Signed-off-by: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
+>>> ---
+>>>   arch/powerpc/platforms/pseries/nvram.c |  132
+>>> +++++++++++++++++++++++++++++---
+>>>   1 file changed, 118 insertions(+), 14 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/platforms/pseries/nvram.c
+>>> b/arch/powerpc/platforms/pseries/nvram.c
+>>> index 0159d74..b5ba5e2 100644
+>>> --- a/arch/powerpc/platforms/pseries/nvram.c
+>>> +++ b/arch/powerpc/platforms/pseries/nvram.c
+>>> @@ -539,6 +539,65 @@ static int zip_oops(size_t text_len)
+>>>   }
+>>>
+>>>   #ifdef CONFIG_PSTORE
+>>> +/* Derived from logfs_uncompress */
+>>> +int nvram_decompress(void *in, void *out, size_t inlen, size_t outlen)
+>>> +{
+>>> +       int err, ret;
+>>> +
+>>> +       ret = -EIO;
+>>> +       err = zlib_inflateInit(&stream);
+>>> +       if (err != Z_OK)
+>>> +               goto error;
+>>> +
+>>> +       stream.next_in = in;
+>>> +       stream.avail_in = inlen;
+>>> +       stream.total_in = 0;
+>>> +       stream.next_out = out;
+>>> +       stream.avail_out = outlen;
+>>> +       stream.total_out = 0;
+>>> +
+>>> +       err = zlib_inflate(&stream, Z_FINISH);
+>>> +       if (err != Z_STREAM_END)
+>>> +               goto error;
+>>> +
+>>> +       err = zlib_inflateEnd(&stream);
+>>> +       if (err != Z_OK)
+>>> +               goto error;
+>>> +
+>>> +       ret = stream.total_out;
+>>> +error:
+>>> +       return ret;
+>>> +}
+>>> +
+>>> +static int unzip_oops(char *oops_buf, char *big_buf)
+>>> +{
+>>> +       struct oops_log_info *oops_hdr = (struct oops_log_info
+>>> *)oops_buf;
+>>> +       u64 timestamp = oops_hdr->timestamp;
+>>> +       char *big_oops_data = NULL;
+>>> +       char *oops_data_buf = NULL;
+>>> +       size_t big_oops_data_sz;
+>>> +       int unzipped_len;
+>>> +
+>>> +       big_oops_data = big_buf + sizeof(struct oops_log_info);
+>>> +       big_oops_data_sz = big_oops_buf_sz - sizeof(struct
+>>> oops_log_info);
+>>> +       oops_data_buf = oops_buf + sizeof(struct oops_log_info);
+>>> +
+>>> +       unzipped_len = nvram_decompress(oops_data_buf, big_oops_data,
+>>> +                                       oops_hdr->report_length,
+>>> +                                       big_oops_data_sz);
+>>> +
+>>> +       if (unzipped_len < 0) {
+>>> +               pr_err("nvram: decompression failed; returned %d\n",
+>>> +
+>>> unzipped_len);
+>>> +               return -1;
+>>> +       }
+>>> +       oops_hdr = (struct oops_log_info *)big_buf;
+>>> +       oops_hdr->version = OOPS_HDR_VERSION;
+>>> +       oops_hdr->report_length = (u16) unzipped_len;
+>>> +       oops_hdr->timestamp = timestamp;
+>>> +       return 0;
+>>> +}
+>>> +
+>>>   static int nvram_pstore_open(struct pstore_info *psi)
+>>>   {
+>>>          /* Reset the iterator to start reading partitions again */
+>>> @@ -567,6 +626,7 @@ static int nvram_pstore_write(enum pstore_type_id
+>>> type,
+>>>                                  size_t size, struct pstore_info *psi)
+>>>   {
+>>>          int rc;
+>>> +       unsigned int err_type = ERR_TYPE_KERNEL_PANIC;
+>>>          struct oops_log_info *oops_hdr = (struct oops_log_info *)
+>>> oops_buf;
+>>>
+>>>          /* part 1 has the recent messages from printk buffer */
+>>> @@ -577,8 +637,31 @@ static int nvram_pstore_write(enum pstore_type_id
+>>> type,
+>>>          oops_hdr->version = OOPS_HDR_VERSION;
+>>>          oops_hdr->report_length = (u16) size;
+>>>          oops_hdr->timestamp = get_seconds();
+>>> +
+>>> +       if (big_oops_buf) {
+>>> +               rc = zip_oops(size);
+>>> +               /*
+>>> +                * If compression fails copy recent log messages from
+>>> +                * big_oops_buf to oops_data.
+>>> +                */
+>>> +               if (rc != 0) {
+>>> +                       int hsize = pstore_get_header_size();
+>>
+>> I think I would rather see the API to pstore_write() changed to
+>> include explicit details about header sizes. Mkaing hsize a global
+>> seems unwise, since it's not strictly going to be a constant value. It
+>> could change between calls to the writer, for example.
+>
+>
+> Introducing headersize in pstore_write() API would need changes at
+> multiple places whereits being called. The idea is to move the
+> compression support to pstore infrastructure so that other platforms
+> could also make use of it. Once the compression support gets in,
+> header size argument in pstore_write() will have to be deprecated.
+>
+> Till the time compression support for pstore goes in, can't we call
+> pstore_header_size before every write call to knowthe header size.
 
-So this CPU has been out of action since before the beginning of the
-current grace period ("1 GPs behind").  It is not idle, having taken
-a pair of nested interrupts from process context (matching the stack
-below).  This CPU has take five softirqs since the last grace period
-that it noticed, which makes it likely that the loop is within the
-softirq handler.
+I think it would be cleaner for it to be passed as part of the
+pstore_write function. It does mean touching all the other callers,
+but using a global variable for this is just wrong, IMO. :)
 
-> 	 (t=2100 jiffies g=18446744073709551583 c=18446744073709551582 q=13)
+It would be a progression, at some point in the future, the
+pstore_write function could lose the header size argument when it was
+the right time.
 
-Assuming HZ=100, this stall has been going on  for 21 seconds.  There
-is a grace period in progress according to RCU's global state (which
-this CPU is not yet aware of).  There are a total of 13 RCU callbacks
-queued across the entire system.
+-Kees
 
-If the system is at all responsive, I suggest using ftrace (either from
-the boot command line or at runtime) to trace __do_softirq() and
-hrtimer_interrupt().
+>
+>> Beyond that, this all seems sensible, though it would be kind of cool
+>> to move this compression logic into the pstore core so it would get
+>> used by default (or through a module parameter).
+>> -Kees
+>>
+>>> +                       size_t diff = size - oops_data_sz + hsize;
+>>> +
+>>> +                       if (size > oops_data_sz) {
+>>> +                               memcpy(oops_data, big_oops_buf, hsize);
+>>> +                               memcpy(oops_data + hsize, big_oops_buf +
+>>> diff,
+>>> +                                       oops_data_sz - hsize);
+>>> +
+>>> +                               oops_hdr->report_length = (u16)
+>>> oops_data_sz;
+>>> +                       } else
+>>> +                               memcpy(oops_data, big_oops_buf, size);
+>>> +               } else
+>>> +                       err_type = ERR_TYPE_KERNEL_PANIC_GZ;
+>>> +       }
+>>> +
+>>>          rc = nvram_write_os_partition(&oops_log_partition, oops_buf,
+>>> -               (int) (sizeof(*oops_hdr) + size), ERR_TYPE_KERNEL_PANIC,
+>>> +               (int) (sizeof(*oops_hdr) + oops_hdr->report_length),
+>>> err_type,
+>>>                  count);
+>>>
+>>>          if (rc != 0)
+>>> @@ -600,10 +683,11 @@ static ssize_t nvram_pstore_read(u64 *id, enum
+>>> pstore_type_id *type,
+>>>          struct oops_log_info *oops_hdr;
+>>>          unsigned int err_type, id_no, size = 0;
+>>>          struct nvram_os_partition *part = NULL;
+>>> -       char *buff = NULL;
+>>> -       int sig = 0;
+>>> +       char *buff = NULL, *big_buff = NULL;
+>>> +       int rc, sig = 0;
+>>>          loff_t p;
+>>>
+>>> +read_partition:
+>>>          read_type++;
+>>>
+>>>          switch (nvram_type_ids[read_type]) {
+>>> @@ -666,6 +750,25 @@ static ssize_t nvram_pstore_read(u64 *id, enum
+>>> pstore_type_id *type,
+>>>          if (nvram_type_ids[read_type] == PSTORE_TYPE_DMESG) {
+>>>                  oops_hdr = (struct oops_log_info *)buff;
+>>>                  *buf = buff + sizeof(*oops_hdr);
+>>> +
+>>> +               if (err_type == ERR_TYPE_KERNEL_PANIC_GZ) {
+>>> +                       big_buff = kmalloc(big_oops_buf_sz, GFP_KERNEL);
+>>> +                       if (!big_buff)
+>>> +                               return -ENOMEM;
+>>> +
+>>> +                       rc = unzip_oops(buff, big_buff);
+>>> +
+>>> +                       if (rc != 0) {
+>>> +                               kfree(buff);
+>>> +                               kfree(big_buff);
+>>> +                               goto read_partition;
+>>> +                       }
+>>> +
+>>> +                       oops_hdr = (struct oops_log_info *)big_buff;
+>>> +                       *buf = big_buff + sizeof(*oops_hdr);
+>>> +                       kfree(buff);
+>>> +               }
+>>> +
+>>>                  time->tv_sec = oops_hdr->timestamp;
+>>>                  time->tv_nsec = 0;
+>>>                  return oops_hdr->report_length;
+>>> @@ -687,17 +790,18 @@ static int nvram_pstore_init(void)
+>>>   {
+>>>          int rc = 0;
+>>>
+>>> -       nvram_pstore_info.buf = oops_data;
+>>> -       nvram_pstore_info.bufsize = oops_data_sz;
+>>> +       if (big_oops_buf) {
+>>> +               nvram_pstore_info.buf = big_oops_buf;
+>>> +               nvram_pstore_info.bufsize = big_oops_buf_sz;
+>>> +       } else {
+>>> +               nvram_pstore_info.buf = oops_data;
+>>> +               nvram_pstore_info.bufsize = oops_data_sz;
+>>> +       }
+>>>
+>>>          rc = pstore_register(&nvram_pstore_info);
+>>>          if (rc != 0)
+>>>                  pr_err("nvram: pstore_register() failed, defaults to "
+>>>                                  "kmsg_dump; returned %d\n", rc);
+>>> -       else
+>>> -               /*TODO: Support compression when pstore is configured */
+>>> -               pr_info("nvram: Compression of oops text supported only
+>>> when "
+>>> -                               "pstore is not configured");
+>>>
+>>>          return rc;
+>>>   }
+>>> @@ -731,11 +835,6 @@ static void __init nvram_init_oops_partition(int
+>>> rtas_partition_exists)
+>>>          oops_data = oops_buf + sizeof(struct oops_log_info);
+>>>          oops_data_sz = oops_log_partition.size - sizeof(struct
+>>> oops_log_info);
+>>>
+>>> -       rc = nvram_pstore_init();
+>>> -
+>>> -       if (!rc)
+>>> -               return;
+>>> -
+>>>          /*
+>>>           * Figure compression (preceded by elimination of each line's
+>>> <n>
+>>>           * severity prefix) will reduce the oops/panic report to at most
+>>> @@ -759,6 +858,11 @@ static void __init nvram_init_oops_partition(int
+>>> rtas_partition_exists)
+>>>                  stream.workspace = NULL;
+>>>          }
+>>>
+>>> +       rc = nvram_pstore_init();
+>>> +
+>>> +       if (!rc)
+>>> +               return;
+>>> +
+>>>          rc = kmsg_dump_register(&nvram_kmsg_dumper);
+>>>          if (rc != 0) {
+>>>                  pr_err("nvram: kmsg_dump_register() failed; returned
+>>> %d\n", rc);
+>>>
+>>
+>>
+>> --
+>> Kees Cook
+>> Chrome OS Security
+>> _______________________________________________
+>> Linuxppc-dev mailing list
+>> Linuxppc-dev@lists.ozlabs.org
+>> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>>
+>
 
-							Thanx, Paul
 
-> cpu 0x8: Vector: 0  at [c0000003ea03eae0]
->     pc: c00000000011d9b0: .rcu_check_callbacks+0x450/0x910
->     lr: c00000000011d9b0: .rcu_check_callbacks+0x450/0x910
->     sp: c0000003ea03ec40
->    msr: 9000000000009032
->   current = 0xc0000003ebf9f4a0
->   paca    = 0xc00000000fdc2400	 softe: 0	 irq_happened: 0x00
->     pid   = 2444, comm = power8-events
-> enter ? for help
-> [c0000003ea03ed70] c000000000094cd0 .update_process_times+0x40/0x90
-> [c0000003ea03ee00] c0000000000df050 .tick_sched_handle.isra.13+0x20/0xa0
-> [c0000003ea03ee80] c0000000000df2bc .tick_sched_timer+0x5c/0xa0
-> [c0000003ea03ef20] c0000000000b3728 .__run_hrtimer+0x98/0x260
-> [c0000003ea03efc0] c0000000000b4738 .hrtimer_interrupt+0x138/0x3c0
-> [c0000003ea03f0d0] c00000000001cd34 .timer_interrupt+0x124/0x2f0
-> [c0000003ea03f180] c00000000000a4f4 restore_check_irq_replay+0x68/0xa8
-> --- Exception: 901 (Decrementer) at c000000000093ad4 .run_timer_softirq+0x74/0x360
-> [c0000003ea03f580] c000000000089ac4 .__do_softirq+0x174/0x350
-> [c0000003ea03f6a0] c000000000089ea8 .irq_exit+0xb8/0x100
-> [c0000003ea03f720] c00000000001cd68 .timer_interrupt+0x158/0x2f0
-> [c0000003ea03f7d0] c00000000000a4f4 restore_check_irq_replay+0x68/0xa8
-> --- Exception: 901 (Decrementer) at c00000000014a520 .task_function_call+0x60/0x70
-> [c0000003ea03fac0] c00000000014a634 .perf_event_enable+0x104/0x1c0 (unreliable)
-> [c0000003ea03fb70] c0000000001495ec .perf_event_for_each_child+0x5c/0xf0
-> [c0000003ea03fc00] c00000000014cd78 .perf_ioctl+0x108/0x400
-> [c0000003ea03fca0] c0000000001d9aa0 .do_vfs_ioctl+0xb0/0x740
-> [c0000003ea03fd80] c0000000001da188 .SyS_ioctl+0x58/0xb0
-> [c0000003ea03fe30] c000000000009d54 syscall_exit+0x0/0x98
-> --- Exception: c01 (System Call) at 00001fffffee03d0
-> SP (3ffff5e7cc90) is in userspace
-> 
-> 
-> cheers
-> 
+
+--
+Kees Cook
+Chrome OS Security
