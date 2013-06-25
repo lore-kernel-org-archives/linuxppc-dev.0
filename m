@@ -1,21 +1,33 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 4A5572C0087
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 14:57:04 +1000 (EST)
-Message-ID: <1372136211.30572.377.camel@ul30vt.home>
-Subject: Re: [PATCH 3/3 v16] iommu/fsl: Freescale PAMU driver and iommu
- implementation.
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Varun Sethi <Varun.Sethi@freescale.com>
-Date: Mon, 24 Jun 2013 22:56:51 -0600
-In-Reply-To: <1371744089-17780-2-git-send-email-Varun.Sethi@freescale.com>
-References: <1371744089-17780-1-git-send-email-Varun.Sethi@freescale.com>
- <1371744089-17780-2-git-send-email-Varun.Sethi@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: stuart.yoder@freescale.com, joro@8bytes.org, linux-kernel@vger.kernel.org,
- iommu@lists.linux-foundation.org, scottwood@freescale.com,
- Timur Tabi <timur@tabi.org>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CDF962C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 15:55:28 +1000 (EST)
+Received: from /spool/local
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Tue, 25 Jun 2013 01:55:25 -0400
+Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 64CA538C8042
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 01:55:23 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5P5tNEf65536002
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 01:55:23 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5P5tM5T024005
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 01:55:23 -0400
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 01/10] powerpc/eeh: Remove eeh_mutex
+Date: Tue, 25 Jun 2013 13:55:08 +0800
+Message-Id: <1372139717-14885-2-git-send-email-shangw@linux.vnet.ibm.com>
+In-Reply-To: <1372139717-14885-1-git-send-email-shangw@linux.vnet.ibm.com>
+References: <1372139717-14885-1-git-send-email-shangw@linux.vnet.ibm.com>
+Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,190 +37,236 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-06-20 at 21:31 +0530, Varun Sethi wrote:
+Originally, eeh_mutex was introduced to protect the PE hierarchy
+tree and the attached EEH devices because EEH core was possiblly
+running with multiple threads to access the PE hierarchy tree.
+However, we now have only one kthread in EEH core. So we needn't
+the eeh_mutex and just remove it. The patch also allows to be
+interrupted while waiting on EEH event semaphore.
 
-> +#define REQ_ACS_FLAGS	(PCI_ACS_SV | PCI_ACS_RR | PCI_ACS_CR | PCI_ACS_UF)
-> +
-> +static struct iommu_group *get_device_iommu_group(struct device *dev)
-> +{
-> +	struct iommu_group *group;
-> +
-> +	group = iommu_group_get(dev);
-> +	if (!group)
-> +		group = iommu_group_alloc();
-> +
-> +	return group;
-> +}
-> +
-[snip]
-> +
+Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/eeh.h  |   14 --------------
+ arch/powerpc/kernel/eeh.c       |    3 ---
+ arch/powerpc/kernel/eeh_event.c |    3 ++-
+ arch/powerpc/kernel/eeh_pe.c    |   30 +-----------------------------
+ 4 files changed, 3 insertions(+), 47 deletions(-)
 
-This really gets parent or peer, right?
-
-> +static struct iommu_group *get_peer_pci_device_group(struct pci_dev *pdev)
-> +{
-> +	struct iommu_group *group = NULL;
-> +
-> +	/* check if this is the first device on the bus*/
-> +	if (pdev->bus_list.next == pdev->bus_list.prev) {
-
-It's a list_head, use list functions.  The list implementation should be
-treated as opaque.
-
-if (list_is_singular(&pdev->bus_list))
-
-> +		struct pci_bus *bus = pdev->bus->parent;
-> +		/* Traverese the parent bus list to get
-> +		 * pdev & dev for the sibling device.
-> +		 */
-> +		while (bus) {
-> +			if (!list_empty(&bus->devices)) {
-> +				pdev = container_of(bus->devices.next,
-> +					            struct pci_dev, bus_list);
-
-pdev = list_first_entry(&bus->devices, struct pci_dev, bus_list);
-
-> +				group = iommu_group_get(&pdev->dev);
-> +				break;
-> +			} else
-> +				bus = bus->parent;
-
-Is this ever reached?  Don't you always have bus->self?
-
-> +		}
-> +	} else {
-> +		/*
-> +		 * Get the pdev & dev for the sibling device
-> +		 */
-> +		pdev = container_of(pdev->bus_list.prev,
-> +				    struct pci_dev, bus_list);
-
-How do you know if you're at the head or tail of the list?
-
-struct pci_dev *tmp;
-list_for_each_entry(tmp, &pdev->bus_list, bus_list) {
-	if (tmp == pdev)
-		continue;
-
-	group = iommu_group_get(&tmp->dev);
-	break;
-}
-
-> +		group = iommu_group_get(&pdev->dev);
-> +	}
-> +
-> +	return group;
-> +}
-> +
-> +static struct iommu_group *get_pci_device_group(struct pci_dev *pdev)
-> +{
-> +	struct iommu_group *group = NULL;
-> +	struct pci_dev *bridge, *dma_pdev = NULL;
-> +	struct pci_controller *pci_ctl;
-> +	bool pci_endpt_partioning;
-> +
-> +	pci_ctl = pci_bus_to_host(pdev->bus);
-> +	pci_endpt_partioning = check_pci_ctl_endpt_part(pci_ctl);
-> +	/* We can partition PCIe devices so assign device group to the device */
-> +	if (pci_endpt_partioning) {
-> +		bridge = pci_find_upstream_pcie_bridge(pdev);
-> +		if (bridge) {
-> +			if (pci_is_pcie(bridge))
-> +				dma_pdev = pci_get_domain_bus_and_slot(
-> +						pci_domain_nr(pdev->bus),
-> +						bridge->subordinate->number, 0);
-> +			if (!dma_pdev)
-> +				dma_pdev = pci_dev_get(bridge);
-> +		} else
-> +			dma_pdev = pci_dev_get(pdev);
-> +
-> +		/* Account for quirked devices */
-> +		swap_pci_ref(&dma_pdev, pci_get_dma_source(dma_pdev));
-> +
-> +		/*
-> +		 * If it's a multifunction device that does not support our
-> +		 * required ACS flags, add to the same group as function 0.
-> +		 */
-
-See c14d2690 in Joerg's next tree, using function 0 was a poor
-assumption.
-
-> +		if (dma_pdev->multifunction &&
-> +		    !pci_acs_enabled(dma_pdev, REQ_ACS_FLAGS))
-> +			swap_pci_ref(&dma_pdev,
-> +				     pci_get_slot(dma_pdev->bus,
-> +						  PCI_DEVFN(PCI_SLOT(dma_pdev->devfn),
-> +						  0)));
-> +
-> +		group = get_device_iommu_group(&pdev->dev);
-> +		pci_dev_put(pdev);
-
-What was the point of all the above if we use pdev here instead of
-dma_pdev?  Wrong device and broken reference counting.  This also isn't
-testing ACS all the way up to the root complex or controller.
-
-> +		/*
-> +		 * PCIe controller is not a paritionable entity
-> +		 * free the controller device iommu_group.
-> +		 */
-> +		if (pci_ctl->parent->iommu_group)
-> +			iommu_group_remove_device(pci_ctl->parent);
-> +	} else {
-> +		/*
-> +		 * All devices connected to the controller will share the
-> +		 * PCI controllers device group. If this is the first
-> +		 * device to be probed for the pci controller, copy the
-> +		 * device group information from the PCI controller device
-> +		 * node and remove the PCI controller iommu group.
-> +		 * For subsequent devices, the iommu group information can
-> +		 * be obtained from sibling devices (i.e. from the bus_devices
-> +		 * link list).
-> +		 */
-> +		if (pci_ctl->parent->iommu_group) {
-> +			group = get_device_iommu_group(pci_ctl->parent);
-> +			iommu_group_remove_device(pci_ctl->parent);
-> +		} else
-> +			group = get_peer_pci_device_group(pdev);
-> +	}
-> +
-> +	return group;
-> +}
-> +
-> +static int fsl_pamu_add_device(struct device *dev)
-> +{
-> +	struct iommu_group *group = NULL;
-> +	struct pci_dev *pdev;
-> +	const u32 *prop;
-> +	int ret, len;
-> +
-> +	/*
-> +	 * For platform devices we allocate a separate group for
-> +	 * each of the devices.
-> +	 */
-> +	if (dev->bus == &pci_bus_type) {
-> +		pdev = to_pci_dev(dev);
-> +		/* Don't create device groups for virtual PCI bridges */
-> +		if (pdev->subordinate)
-> +			return 0;
-> +
-> +		group = get_pci_device_group(pdev);
-> +
-> +	} else {
-> +		prop = of_get_property(dev->of_node, "fsl,liodn", &len);
-> +		if (prop)
-> +			group = get_device_iommu_group(dev);
-> +	}
-> +
-> +	if (!group || IS_ERR(group))
-> +		return PTR_ERR(group);
-> +
-> +	ret = iommu_group_add_device(group, dev);
-> +
-> +	iommu_group_put(group);
-> +	return ret;
-> +}
-> +
-> +static void fsl_pamu_remove_device(struct device *dev)
-> +{
-> +	iommu_group_remove_device(dev);
-> +}
+diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+index a0b11fb..dd65e31 100644
+--- a/arch/powerpc/include/asm/eeh.h
++++ b/arch/powerpc/include/asm/eeh.h
+@@ -151,7 +151,6 @@ struct eeh_ops {
+ 
+ extern struct eeh_ops *eeh_ops;
+ extern int eeh_subsystem_enabled;
+-extern struct mutex eeh_mutex;
+ extern raw_spinlock_t confirm_error_lock;
+ extern int eeh_probe_mode;
+ 
+@@ -173,16 +172,6 @@ static inline int eeh_probe_mode_dev(void)
+ 	return (eeh_probe_mode == EEH_PROBE_MODE_DEV);
+ }
+ 
+-static inline void eeh_lock(void)
+-{
+-	mutex_lock(&eeh_mutex);
+-}
+-
+-static inline void eeh_unlock(void)
+-{
+-	mutex_unlock(&eeh_mutex);
+-}
+-
+ static inline void eeh_serialize_lock(unsigned long *flags)
+ {
+ 	raw_spin_lock_irqsave(&confirm_error_lock, *flags);
+@@ -271,9 +260,6 @@ static inline void eeh_add_sysfs_files(struct pci_bus *bus) { }
+ 
+ static inline void eeh_remove_bus_device(struct pci_dev *dev, int purge_pe) { }
+ 
+-static inline void eeh_lock(void) { }
+-static inline void eeh_unlock(void) { }
+-
+ #define EEH_POSSIBLE_ERROR(val, type) (0)
+ #define EEH_IO_ERROR_VALUE(size) (-1UL)
+ #endif /* CONFIG_EEH */
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index 7c567be..951a632 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -103,9 +103,6 @@ EXPORT_SYMBOL(eeh_subsystem_enabled);
+  */
+ int eeh_probe_mode;
+ 
+-/* Global EEH mutex */
+-DEFINE_MUTEX(eeh_mutex);
+-
+ /* Lock to avoid races due to multiple reports of an error */
+ DEFINE_RAW_SPINLOCK(confirm_error_lock);
+ 
+diff --git a/arch/powerpc/kernel/eeh_event.c b/arch/powerpc/kernel/eeh_event.c
+index 39bcd81..165943e 100644
+--- a/arch/powerpc/kernel/eeh_event.c
++++ b/arch/powerpc/kernel/eeh_event.c
+@@ -55,7 +55,8 @@ static int eeh_event_handler(void * dummy)
+ 	struct eeh_pe *pe;
+ 
+ 	while (!kthread_should_stop()) {
+-		down(&eeh_eventlist_sem);
++		 if (down_interruptible(&eeh_eventlist_sem))
++			break;
+ 
+ 		/* Fetch EEH event from the queue */
+ 		spin_lock_irqsave(&eeh_eventlist_lock, flags);
+diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
+index ae75722..55943fc 100644
+--- a/arch/powerpc/kernel/eeh_pe.c
++++ b/arch/powerpc/kernel/eeh_pe.c
+@@ -78,9 +78,7 @@ int eeh_phb_pe_create(struct pci_controller *phb)
+ 	}
+ 
+ 	/* Put it into the list */
+-	eeh_lock();
+ 	list_add_tail(&pe->child, &eeh_phb_pe);
+-	eeh_unlock();
+ 
+ 	pr_debug("EEH: Add PE for PHB#%d\n", phb->global_number);
+ 
+@@ -185,21 +183,15 @@ void *eeh_pe_dev_traverse(struct eeh_pe *root,
+ 		return NULL;
+ 	}
+ 
+-	eeh_lock();
+-
+ 	/* Traverse root PE */
+ 	for (pe = root; pe; pe = eeh_pe_next(pe, root)) {
+ 		eeh_pe_for_each_dev(pe, edev) {
+ 			ret = fn(edev, flag);
+-			if (ret) {
+-				eeh_unlock();
++			if (ret)
+ 				return ret;
+-			}
+ 		}
+ 	}
+ 
+-	eeh_unlock();
+-
+ 	return NULL;
+ }
+ 
+@@ -305,8 +297,6 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ {
+ 	struct eeh_pe *pe, *parent;
+ 
+-	eeh_lock();
+-
+ 	/*
+ 	 * Search the PE has been existing or not according
+ 	 * to the PE address. If that has been existing, the
+@@ -316,7 +306,6 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ 	pe = eeh_pe_get(edev);
+ 	if (pe && !(pe->type & EEH_PE_INVALID)) {
+ 		if (!edev->pe_config_addr) {
+-			eeh_unlock();
+ 			pr_err("%s: PE with addr 0x%x already exists\n",
+ 				__func__, edev->config_addr);
+ 			return -EEXIST;
+@@ -328,7 +317,6 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ 
+ 		/* Put the edev to PE */
+ 		list_add_tail(&edev->list, &pe->edevs);
+-		eeh_unlock();
+ 		pr_debug("EEH: Add %s to Bus PE#%x\n",
+ 			edev->dn->full_name, pe->addr);
+ 
+@@ -347,7 +335,6 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ 			parent->type &= ~EEH_PE_INVALID;
+ 			parent = parent->parent;
+ 		}
+-		eeh_unlock();
+ 		pr_debug("EEH: Add %s to Device PE#%x, Parent PE#%x\n",
+ 			edev->dn->full_name, pe->addr, pe->parent->addr);
+ 
+@@ -357,7 +344,6 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ 	/* Create a new EEH PE */
+ 	pe = eeh_pe_alloc(edev->phb, EEH_PE_DEVICE);
+ 	if (!pe) {
+-		eeh_unlock();
+ 		pr_err("%s: out of memory!\n", __func__);
+ 		return -ENOMEM;
+ 	}
+@@ -385,7 +371,6 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ 	if (!parent) {
+ 		parent = eeh_phb_pe_get(edev->phb);
+ 		if (!parent) {
+-			eeh_unlock();
+ 			pr_err("%s: No PHB PE is found (PHB Domain=%d)\n",
+ 				__func__, edev->phb->global_number);
+ 			edev->pe = NULL;
+@@ -402,7 +387,6 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ 	list_add_tail(&pe->child, &parent->child_list);
+ 	list_add_tail(&edev->list, &pe->edevs);
+ 	edev->pe = pe;
+-	eeh_unlock();
+ 	pr_debug("EEH: Add %s to Device PE#%x, Parent PE#%x\n",
+ 		edev->dn->full_name, pe->addr, pe->parent->addr);
+ 
+@@ -430,8 +414,6 @@ int eeh_rmv_from_parent_pe(struct eeh_dev *edev, int purge_pe)
+ 		return -EEXIST;
+ 	}
+ 
+-	eeh_lock();
+-
+ 	/* Remove the EEH device */
+ 	pe = edev->pe;
+ 	edev->pe = NULL;
+@@ -476,8 +458,6 @@ int eeh_rmv_from_parent_pe(struct eeh_dev *edev, int purge_pe)
+ 		pe = parent;
+ 	}
+ 
+-	eeh_unlock();
+-
+ 	return 0;
+ }
+ 
+@@ -550,9 +530,7 @@ static void *__eeh_pe_state_mark(void *data, void *flag)
+  */
+ void eeh_pe_state_mark(struct eeh_pe *pe, int state)
+ {
+-	eeh_lock();
+ 	eeh_pe_traverse(pe, __eeh_pe_state_mark, &state);
+-	eeh_unlock();
+ }
+ 
+ /**
+@@ -586,9 +564,7 @@ static void *__eeh_pe_state_clear(void *data, void *flag)
+  */
+ void eeh_pe_state_clear(struct eeh_pe *pe, int state)
+ {
+-	eeh_lock();
+ 	eeh_pe_traverse(pe, __eeh_pe_state_clear, &state);
+-	eeh_unlock();
+ }
+ 
+ /**
+@@ -673,8 +649,6 @@ struct pci_bus *eeh_pe_bus_get(struct eeh_pe *pe)
+ 	struct eeh_dev *edev;
+ 	struct pci_dev *pdev;
+ 
+-	eeh_lock();
+-
+ 	if (pe->type & EEH_PE_PHB) {
+ 		bus = pe->phb->bus;
+ 	} else if (pe->type & EEH_PE_BUS ||
+@@ -691,7 +665,5 @@ struct pci_bus *eeh_pe_bus_get(struct eeh_pe *pe)
+ 	}
+ 
+ out:
+-	eeh_unlock();
+-
+ 	return bus;
+ }
+-- 
+1.7.5.4
