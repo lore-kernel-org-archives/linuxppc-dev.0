@@ -1,37 +1,20 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6A24C2C0091
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Jun 2013 21:23:16 +1000 (EST)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 25 Jun 2013 21:16:02 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 7B5A52CE804A
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Jun 2013 21:23:13 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5PB8FuN852264
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Jun 2013 21:08:15 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5PBNCjr030271
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Jun 2013 21:23:13 +1000
-Message-ID: <51C97D7F.4030405@linux.vnet.ibm.com>
-Date: Tue, 25 Jun 2013 16:52:39 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 2/8] powerpc/perf: Rework disable logic in pmu_disable()
-References: <1372073336-8189-1-git-send-email-michael@ellerman.id.au>
- <1372073336-8189-2-git-send-email-michael@ellerman.id.au>
-In-Reply-To: <1372073336-8189-2-git-send-email-michael@ellerman.id.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, sukadev@linux.vnet.ibm.com,
- Paul Mackerras <paulus@samba.org>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id D32712C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 21:55:24 +1000 (EST)
+Message-ID: <1372161315.3944.201.camel@pasglop>
+Subject: Re: [PATCH 1/6] powerpc/eeh: Don't collect PCI-CFG data on PHB
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Date: Tue, 25 Jun 2013 21:55:15 +1000
+In-Reply-To: <1372154461-29674-2-git-send-email-shangw@linux.vnet.ibm.com>
+References: <1372154461-29674-1-git-send-email-shangw@linux.vnet.ibm.com>
+ <1372154461-29674-2-git-send-email-shangw@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,36 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/24/2013 04:58 PM, Michael Ellerman wrote:
-> In pmu_disable() we disable the PMU by setting the FC (Freeze Counters)
-> bit in MMCR0. In order to do this we have to read/modify/write MMCR0.
-> 
-> It's possible that we read a value from MMCR0 which has PMAO (PMU Alert
-> Occurred) set. When we write that value back it will cause an interrupt
-> to occur. We will then end up in the PMU interrupt handler even though
-> we are supposed to have just disabled the PMU.
-> 
+On Tue, 2013-06-25 at 18:00 +0800, Gavin Shan wrote:
+> +       /*
+> +        * When the PHB is fenced or dead, it's pointless to collect
+> +        * the data from PCI config space because it should return
+> +        * 0xFF's. For ER, we still retrieve the data from the PCI
+> +        * config space.
+> +        */
+> +       if (eeh_probe_mode_dev() &&
+> +           (pe->type & EEH_PE_PHB) &&
+> +           (pe->state & (EEH_PE_ISOLATED | EEH_PE_PHB_DEAD)))
+> +               valid_cfg_log = false;
+> +
 
-Is that possible ? First of all MMCR0[PMAO] could not be written by SW.
-Even if you try writing it, how its going to generate PMU interrupt ?
-HW sets this bit MMCR0[PMAO] after a PMU interrupt has already occurred
-not that if we set this, a PMU interrupt would be generated.
+I'm still unsure about that one. EEH_PE_ISOLATED could be the result
+of a normal ER of PE#0 (which can happen for various reasons other
+than a fence) in which case the config space is available and
+interesting.
 
-> We can avoid this by making sure we never write PMAO back. We should not
+I would either not bother and collect the FF's, or make this specific
+to fence and only fence.
 
-Making sure that we dont write PMAO back is a good idea though.
-
-> lose interrupts because when the PMU is re-enabled the overflowed values
-> will cause another interrupt.
-> 
-
-I doubt this theory.
-
-> We also reorder the clearing of SAMPLE_ENABLE so that is done after the
-> PMU is frozen. Otherwise there is a small window between the clearing of
-> SAMPLE_ENABLE and the setting of FC where we could take an interrupt and
-> incorrectly see SAMPLE_ENABLE not set. This would for example change the
-> logic in perf_read_regs().
-> 
-
-Agreed
+Cheers,
+Ben.
