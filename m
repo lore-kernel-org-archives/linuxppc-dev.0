@@ -1,46 +1,45 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7EE6D2C0B8B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:37:01 +1000 (EST)
+ (Client CN "e28smtp03.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 091482C0B9F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:37:09 +1000 (EST)
 Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Wed, 26 Jun 2013 01:59:03 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 1034A125804E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 02:06:00 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5PKaqir26738928
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 02:06:52 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5PKasq9009824
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:36:56 +1000
+ Wed, 26 Jun 2013 02:01:07 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 27EEAE0054
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 02:06:36 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5PKbI6531064110
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 02:07:18 +0530
+Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5PKb1GM000928
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:37:03 +1000
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v2 42/45] powerpc: Use get/put_online_cpus_atomic() to avoid
- false-positive warning
+Subject: [PATCH v2 43/45] sh: Use get/put_online_cpus_atomic() to prevent CPU
+ offline
 To: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com,
  paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org,
  akpm@linux-foundation.org, namhyung@kernel.org, walken@google.com,
  vincent.guittot@linaro.org, laijs@cn.fujitsu.com
-Date: Wed, 26 Jun 2013 02:03:39 +0530
-Message-ID: <20130625203339.16593.60632.stgit@srivatsabhat.in.ibm.com>
+Date: Wed, 26 Jun 2013 02:03:47 +0530
+Message-ID: <20130625203346.16593.72263.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20130625202452.16593.22810.stgit@srivatsabhat.in.ibm.com>
 References: <20130625202452.16593.22810.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: linux-arch@vger.kernel.org, nikunj@linux.vnet.ibm.com,
  zhong@linux.vnet.ibm.com, linux-pm@vger.kernel.org, fweisbec@gmail.com,
- linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+ linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, rostedt@goodmis.org,
  xiaoguangrong@linux.vnet.ibm.com, sbw@mit.edu,
- Paul Mackerras <paulus@samba.org>, wangyun@linux.vnet.ibm.com,
+ Paul Mundt <lethal@linux-sh.org>, wangyun@linux.vnet.ibm.com,
  "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, netdev@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- Zhao Chenhui <chenhui.zhao@freescale.com>
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,45 +49,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Bringing a secondary CPU online is a special case in which, accessing
-the cpu_online_mask is safe, even though that task (which running on the
-CPU coming online) is not the hotplug writer.
+Once stop_machine() is gone from the CPU offline path, we won't be able
+to depend on disabling preemption to prevent CPUs from going offline
+from under us.
 
-It is a little hard to teach this to the debugging checks under
-CONFIG_DEBUG_HOTPLUG_CPU. But luckily powerpc is one of the few places
-where the CPU coming online traverses the cpu_online_mask before fully
-coming online. So wrap that part under get/put_online_cpus_atomic(), to
-avoid false-positive warnings from the CPU hotplug debug code.
+Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going
+offline, while invoking from atomic context.
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Kumar Gala <galak@kernel.crashing.org>
-Cc: Zhao Chenhui <chenhui.zhao@freescale.com>
+Cc: Paul Mundt <lethal@linux-sh.org>
 Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-sh@vger.kernel.org
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- arch/powerpc/kernel/smp.c |    2 ++
- 1 file changed, 2 insertions(+)
+ arch/sh/kernel/smp.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 2123bec..59c9a09 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -657,6 +657,7 @@ __cpuinit void start_secondary(void *unused)
- 		cpumask_set_cpu(base + i, cpu_core_mask(cpu));
- 	}
- 	l2_cache = cpu_to_l2cache(cpu);
+diff --git a/arch/sh/kernel/smp.c b/arch/sh/kernel/smp.c
+index 4569645..42ec182 100644
+--- a/arch/sh/kernel/smp.c
++++ b/arch/sh/kernel/smp.c
+@@ -357,7 +357,7 @@ static void flush_tlb_mm_ipi(void *mm)
+  */
+ void flush_tlb_mm(struct mm_struct *mm)
+ {
+-	preempt_disable();
 +	get_online_cpus_atomic();
- 	for_each_online_cpu(i) {
- 		struct device_node *np = cpu_to_l2cache(i);
- 		if (!np)
-@@ -667,6 +668,7 @@ __cpuinit void start_secondary(void *unused)
- 		}
- 		of_node_put(np);
- 	}
-+	put_online_cpus_atomic();
- 	of_node_put(l2_cache);
  
- 	local_irq_enable();
+ 	if ((atomic_read(&mm->mm_users) != 1) || (current->mm != mm)) {
+ 		smp_call_function(flush_tlb_mm_ipi, (void *)mm, 1);
+@@ -369,7 +369,7 @@ void flush_tlb_mm(struct mm_struct *mm)
+ 	}
+ 	local_flush_tlb_mm(mm);
+ 
+-	preempt_enable();
++	put_online_cpus_atomic();
+ }
+ 
+ struct flush_tlb_data {
+@@ -390,7 +390,7 @@ void flush_tlb_range(struct vm_area_struct *vma,
+ {
+ 	struct mm_struct *mm = vma->vm_mm;
+ 
+-	preempt_disable();
++	get_online_cpus_atomic();
+ 	if ((atomic_read(&mm->mm_users) != 1) || (current->mm != mm)) {
+ 		struct flush_tlb_data fd;
+ 
+@@ -405,7 +405,7 @@ void flush_tlb_range(struct vm_area_struct *vma,
+ 				cpu_context(i, mm) = 0;
+ 	}
+ 	local_flush_tlb_range(vma, start, end);
+-	preempt_enable();
++	put_online_cpus_atomic();
+ }
+ 
+ static void flush_tlb_kernel_range_ipi(void *info)
+@@ -433,7 +433,7 @@ static void flush_tlb_page_ipi(void *info)
+ 
+ void flush_tlb_page(struct vm_area_struct *vma, unsigned long page)
+ {
+-	preempt_disable();
++	get_online_cpus_atomic();
+ 	if ((atomic_read(&vma->vm_mm->mm_users) != 1) ||
+ 	    (current->mm != vma->vm_mm)) {
+ 		struct flush_tlb_data fd;
+@@ -448,7 +448,7 @@ void flush_tlb_page(struct vm_area_struct *vma, unsigned long page)
+ 				cpu_context(i, vma->vm_mm) = 0;
+ 	}
+ 	local_flush_tlb_page(vma, page);
+-	preempt_enable();
++	put_online_cpus_atomic();
+ }
+ 
+ static void flush_tlb_one_ipi(void *info)
