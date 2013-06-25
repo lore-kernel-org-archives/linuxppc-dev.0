@@ -1,9 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 From: Michael Ellerman <michael@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 2/4] powerpc: Remove KVMTEST from RELON exception handlers
-Date: Tue, 25 Jun 2013 17:47:55 +1000
-Message-Id: <1372146477-4338-2-git-send-email-michael@ellerman.id.au>
+Subject: [PATCH 3/4] powerpc: Rename and flesh out the facility unavailable
+ exception handler
+Date: Tue, 25 Jun 2013 17:47:56 +1000
+Message-Id: <1372146477-4338-3-git-send-email-michael@ellerman.id.au>
 In-Reply-To: <1372146477-4338-1-git-send-email-michael@ellerman.id.au>
 References: <1372146477-4338-1-git-send-email-michael@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -15,72 +16,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-KVMTEST is a macro which checks whether we are taking an exception from
-guest context, if so we branch out of line and eventually call into the
-KVM code to handle the switch.
+From: Michael Ellerman <michaele@au1.ibm.com>
 
-When running real guests on bare metal (HV KVM) the hardware ensures
-that we never take a relocation on exception when transitioning from
-guest to host. For PR KVM we disable relocation on exceptions ourself in
-kvmppc_core_init_vm(), as of commit a413f47 "Disable relocation on
-exceptions whenever PR KVM is active".
+The exception at 0xf60 is not the TM (Transactional Memory) unavailable
+exception, it is the "Facility Unavailable Exception", rename it as
+such.
 
-So convert all the RELON macros to use NOTEST, and drop the remaining
-KVM_HANDLER() definitions we have for 0xe40 and 0xe80.
+Flesh out the handler to acknowledge the fact that it can be called for
+many reasons, one of which is TM being unavailable.
+
+Use STD_EXCEPTION_COMMON() for the exception body, for some reason we
+had it open-coded, I've checked the generated code is identical.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/include/asm/exception-64s.h |    8 ++++----
- arch/powerpc/kernel/exceptions-64s.S     |    2 --
- 2 files changed, 4 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/exceptions-64s.S |   21 +++++++--------------
+ arch/powerpc/kernel/traps.c          |   33 +++++++++++++++++++++++++--------
+ 2 files changed, 32 insertions(+), 22 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-index 46793b5..07ca627 100644
---- a/arch/powerpc/include/asm/exception-64s.h
-+++ b/arch/powerpc/include/asm/exception-64s.h
-@@ -358,12 +358,12 @@ label##_relon_pSeries:					\
- 	/* No guest interrupts come through here */	\
- 	SET_SCRATCH0(r13);		/* save r13 */	\
- 	EXCEPTION_RELON_PROLOG_PSERIES(PACA_EXGEN, label##_common, \
--				       EXC_STD, KVMTEST_PR, vec)
-+				       EXC_STD, NOTEST, vec)
- 
- #define STD_RELON_EXCEPTION_PSERIES_OOL(vec, label)		\
- 	.globl label##_relon_pSeries;				\
- label##_relon_pSeries:						\
--	EXCEPTION_PROLOG_1(PACA_EXGEN, KVMTEST_PR, vec);	\
-+	EXCEPTION_PROLOG_1(PACA_EXGEN, NOTEST, vec);		\
- 	EXCEPTION_RELON_PROLOG_PSERIES_1(label##_common, EXC_STD)
- 
- #define STD_RELON_EXCEPTION_HV(loc, vec, label)		\
-@@ -374,12 +374,12 @@ label##_relon_hv:					\
- 	/* No guest interrupts come through here */	\
- 	SET_SCRATCH0(r13);	/* save r13 */		\
- 	EXCEPTION_RELON_PROLOG_PSERIES(PACA_EXGEN, label##_common, \
--				       EXC_HV, KVMTEST, vec)
-+				       EXC_HV, NOTEST, vec)
- 
- #define STD_RELON_EXCEPTION_HV_OOL(vec, label)			\
- 	.globl label##_relon_hv;				\
- label##_relon_hv:						\
--	EXCEPTION_PROLOG_1(PACA_EXGEN, KVMTEST, vec);		\
-+	EXCEPTION_PROLOG_1(PACA_EXGEN, NOTEST, vec);		\
- 	EXCEPTION_RELON_PROLOG_PSERIES_1(label##_common, EXC_HV)
- 
- /* This associate vector numbers with bits in paca->irq_happened */
 diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 0a9fdea..6bd6763 100644
+index 6bd6763..d55a63c 100644
 --- a/arch/powerpc/kernel/exceptions-64s.S
 +++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -1175,9 +1175,7 @@ __end_handlers:
+@@ -341,10 +341,11 @@ vsx_unavailable_pSeries_1:
+ 	EXCEPTION_PROLOG_0(PACA_EXGEN)
+ 	b	vsx_unavailable_pSeries
  
- 	/* Equivalents to the above handlers for relocation-on interrupt vectors */
- 	STD_RELON_EXCEPTION_HV_OOL(0xe40, emulation_assist)
--	KVM_HANDLER(PACA_EXGEN, EXC_HV, 0xe40)
- 	MASKABLE_RELON_EXCEPTION_HV_OOL(0xe80, h_doorbell)
--	KVM_HANDLER(PACA_EXGEN, EXC_HV, 0xe80)
++facility_unavailable_trampoline:
+ 	. = 0xf60
+ 	SET_SCRATCH0(r13)
+ 	EXCEPTION_PROLOG_0(PACA_EXGEN)
+-	b	tm_unavailable_pSeries
++	b	facility_unavailable_pSeries
  
+ #ifdef CONFIG_CBE_RAS
+ 	STD_EXCEPTION_HV(0x1200, 0x1202, cbe_system_error)
+@@ -522,7 +523,7 @@ denorm_done:
+ 	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0xf20)
+ 	STD_EXCEPTION_PSERIES_OOL(0xf40, vsx_unavailable)
+ 	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0xf40)
+-	STD_EXCEPTION_PSERIES_OOL(0xf60, tm_unavailable)
++	STD_EXCEPTION_PSERIES_OOL(0xf60, facility_unavailable)
+ 	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0xf60)
+ 
+ /*
+@@ -829,11 +830,11 @@ vsx_unavailable_relon_pSeries_1:
+ 	EXCEPTION_PROLOG_0(PACA_EXGEN)
+ 	b	vsx_unavailable_relon_pSeries
+ 
+-tm_unavailable_relon_pSeries_1:
++facility_unavailable_relon_trampoline:
+ 	. = 0x4f60
+ 	SET_SCRATCH0(r13)
+ 	EXCEPTION_PROLOG_0(PACA_EXGEN)
+-	b	tm_unavailable_relon_pSeries
++	b	facility_unavailable_relon_pSeries
+ 
+ 	STD_RELON_EXCEPTION_PSERIES(0x5300, 0x1300, instruction_breakpoint)
+ #ifdef CONFIG_PPC_DENORMALISATION
+@@ -1159,15 +1160,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+ 	bl	.vsx_unavailable_exception
+ 	b	.ret_from_except
+ 
+-	.align	7
+-	.globl tm_unavailable_common
+-tm_unavailable_common:
+-	EXCEPTION_PROLOG_COMMON(0xf60, PACA_EXGEN)
+-	bl	.save_nvgprs
+-	DISABLE_INTS
+-	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.tm_unavailable_exception
+-	b	.ret_from_except
++	STD_EXCEPTION_COMMON(0xf60, facility_unavailable, .facility_unavailable_exception)
+ 
+ 	.align	7
+ 	.globl	__end_handlers
+@@ -1180,7 +1173,7 @@ __end_handlers:
  	STD_RELON_EXCEPTION_PSERIES_OOL(0xf00, performance_monitor)
  	STD_RELON_EXCEPTION_PSERIES_OOL(0xf20, altivec_unavailable)
+ 	STD_RELON_EXCEPTION_PSERIES_OOL(0xf40, vsx_unavailable)
+-	STD_RELON_EXCEPTION_PSERIES_OOL(0xf60, tm_unavailable)
++	STD_RELON_EXCEPTION_PSERIES_OOL(0xf60, facility_unavailable)
+ 
+ #if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV)
+ /*
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index c0e5caf..2053bbd 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -1282,25 +1282,42 @@ void vsx_unavailable_exception(struct pt_regs *regs)
+ 	die("Unrecoverable VSX Unavailable Exception", regs, SIGABRT);
+ }
+ 
+-void tm_unavailable_exception(struct pt_regs *regs)
++void facility_unavailable_exception(struct pt_regs *regs)
+ {
++	static char *facility_strings[] = {
++		"FPU",
++		"VMX/VSX",
++		"DSCR",
++		"PMU SPRs",
++		"BHRB",
++		"TM",
++		"AT",
++		"EBB",
++		"TAR",
++	};
++	char *facility;
++	u64 value;
++
++	value = mfspr(SPRN_FSCR) >> 56;
++
+ 	/* We restore the interrupt state now */
+ 	if (!arch_irq_disabled_regs(regs))
+ 		local_irq_enable();
+ 
+-	/* Currently we never expect a TMU exception.  Catch
+-	 * this and kill the process!
+-	 */
+-	printk(KERN_EMERG "Unexpected TM unavailable exception at %lx "
+-	       "(msr %lx)\n",
+-	       regs->nip, regs->msr);
++	if (value < ARRAY_SIZE(facility_strings))
++		facility = facility_strings[value];
++	else
++		facility = "unknown";
++
++	pr_err("Facility '%s' unavailable, exception at 0x%lx, MSR=%lx\n",
++		facility, regs->nip, regs->msr);
+ 
+ 	if (user_mode(regs)) {
+ 		_exception(SIGILL, regs, ILL_ILLOPC, regs->nip);
+ 		return;
+ 	}
+ 
+-	die("Unexpected TM unavailable exception", regs, SIGABRT);
++	die("Unexpected facility unavailable exception", regs, SIGABRT);
+ }
+ 
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
 -- 
 1.7.10.4
