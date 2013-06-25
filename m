@@ -1,36 +1,28 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1A9F42C0084
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 12:47:21 +1000 (EST)
-Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Tue, 25 Jun 2013 08:11:06 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 94E30394004E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 08:17:17 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5P2lWwH31523028
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 08:17:32 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5P2lHU1006139
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 02:47:17 GMT
-Message-ID: <51C904B3.4060509@linux.vnet.ibm.com>
-Date: Mon, 24 Jun 2013 21:47:15 -0500
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Return-Path: <michael@ellerman.id.au>
+Date: Tue, 25 Jun 2013 12:58:58 +1000
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 40/45] powerpc, irq: Use GFP_ATOMIC allocations in atomic
+ context
+Message-ID: <20130625025858.GE14051@concordia>
+References: <20130623133642.19094.16038.stgit@srivatsabhat.in.ibm.com>
+ <20130623134657.19094.93687.stgit@srivatsabhat.in.ibm.com>
+ <20130625020842.GD14051@concordia>
+ <1372126384.3944.177.camel@pasglop>
 MIME-Version: 1.0
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] Do not update sysfs cpu registration from invalid context
-References: <51C8543F.6080905@linux.vnet.ibm.com>
- <20130625015057.GC14051@concordia>
-In-Reply-To: <20130625015057.GC14051@concordia>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1372126384.3944.177.camel@pasglop>
+Cc: peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, walken@google.com, mingo@kernel.org,
+ linux-arch@vger.kernel.org, vincent.guittot@linaro.org,
+ xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
+ paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
+ linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org,
+ Ian Munsie <imunsie@au1.ibm.com>, namhyung@kernel.org, tglx@linutronix.de,
+ laijs@cn.fujitsu.com, zhong@linux.vnet.ibm.com, netdev@vger.kernel.org,
+ oleg@redhat.com, sbw@mit.edu,
+ "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, tj@kernel.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,18 +32,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/24/2013 08:50 PM, Michael Ellerman wrote:
-> On Mon, Jun 24, 2013 at 09:14:23AM -0500, Nathan Fontenot wrote:
->> The topology update code that updates the cpu node registration in sysfs
->> should not be called while in stop_machine(). The register/unregister
->> calls take a lock and may sleep.
->>
->> This patch moves these calls outside of the call to stop_machine().
+On Tue, Jun 25, 2013 at 12:13:04PM +1000, Benjamin Herrenschmidt wrote:
+> On Tue, 2013-06-25 at 12:08 +1000, Michael Ellerman wrote:
+> > We're not checking for allocation failure, which we should be.
+> > 
+> > But this code is only used on powermac and 85xx, so it should probably
+> > just be a TODO to fix this up to handle the failure.
 > 
-> What happens? Do we lockup or do you just get a warning?
-> 
-> And what commit introduced the breakage?
+> And what can we do if they fail ?
 
-Guilty on on all counts. Hopefully I can still get by with stern warning.
+Fail up the chain and not unplug the CPU presumably.
 
--Nathan
+cheers
