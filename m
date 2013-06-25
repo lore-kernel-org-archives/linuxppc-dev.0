@@ -1,46 +1,44 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 14ED82C04FF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:30:45 +1000 (EST)
+ (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 43A702C02FC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:30:54 +1000 (EST)
 Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Wed, 26 Jun 2013 01:52:03 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 73E77125804E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 01:59:44 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5PKUu6c25755872
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 02:00:56 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5PKUc5u027676
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 20:30:40 GMT
+ Wed, 26 Jun 2013 06:21:16 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id A3F8C2CE8051
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:30:52 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5PKFrRq4587900
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:15:53 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5PKUoG1022294
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:30:52 +1000
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v2 12/45] sched/fair: Use get/put_online_cpus_atomic() to
- prevent CPU offline
+Subject: [PATCH v2 13/45] timer: Use get/put_online_cpus_atomic() to prevent
+ CPU offline
 To: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com,
  paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org,
  akpm@linux-foundation.org, namhyung@kernel.org, walken@google.com,
  vincent.guittot@linaro.org, laijs@cn.fujitsu.com
-Date: Wed, 26 Jun 2013 01:57:24 +0530
-Message-ID: <20130625202724.16593.64863.stgit@srivatsabhat.in.ibm.com>
+Date: Wed, 26 Jun 2013 01:57:31 +0530
+Message-ID: <20130625202730.16593.35113.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20130625202452.16593.22810.stgit@srivatsabhat.in.ibm.com>
 References: <20130625202452.16593.22810.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: linux-arch@vger.kernel.org, nikunj@linux.vnet.ibm.com,
- zhong@linux.vnet.ibm.com, linux-pm@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>, fweisbec@gmail.com,
+ zhong@linux.vnet.ibm.com, linux-pm@vger.kernel.org, fweisbec@gmail.com,
  linux-kernel@vger.kernel.org, rostedt@goodmis.org,
- xiaoguangrong@linux.vnet.ibm.com, sbw@mit.edu, Ingo Molnar <mingo@redhat.com>,
- wangyun@linux.vnet.ibm.com,
+ xiaoguangrong@linux.vnet.ibm.com, sbw@mit.edu, wangyun@linux.vnet.ibm.com,
  "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,101 +55,46 @@ from under us.
 Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going
 offline, while invoking from atomic context.
 
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- kernel/sched/fair.c |   14 +++++++++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
+ kernel/timer.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index c0ac2c3..88f056e 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -3338,7 +3338,8 @@ done:
-  *
-  * Returns the target CPU number, or the same CPU if no balancing is needed.
-  *
-- * preempt must be disabled.
-+ * Must be called within get/put_online_cpus_atomic(), to prevent CPUs
-+ * from going offline from under us.
-  */
- static int
- select_task_rq_fair(struct task_struct *p, int sd_flag, int wake_flags)
-@@ -5267,6 +5268,8 @@ void idle_balance(int this_cpu, struct rq *this_rq)
- 	raw_spin_unlock(&this_rq->lock);
- 
- 	update_blocked_averages(this_cpu);
-+
-+	get_online_cpus_atomic();
- 	rcu_read_lock();
- 	for_each_domain(this_cpu, sd) {
- 		unsigned long interval;
-@@ -5290,6 +5293,7 @@ void idle_balance(int this_cpu, struct rq *this_rq)
- 		}
- 	}
- 	rcu_read_unlock();
-+	put_online_cpus_atomic();
- 
- 	raw_spin_lock(&this_rq->lock);
- 
-@@ -5316,6 +5320,7 @@ static int active_load_balance_cpu_stop(void *data)
- 	struct rq *target_rq = cpu_rq(target_cpu);
- 	struct sched_domain *sd;
+diff --git a/kernel/timer.c b/kernel/timer.c
+index 15ffdb3..5db594c 100644
+--- a/kernel/timer.c
++++ b/kernel/timer.c
+@@ -729,6 +729,7 @@ __mod_timer(struct timer_list *timer, unsigned long expires,
+ 	timer_stats_timer_set_start_info(timer);
+ 	BUG_ON(!timer->function);
  
 +	get_online_cpus_atomic();
- 	raw_spin_lock_irq(&busiest_rq->lock);
+ 	base = lock_timer_base(timer, &flags);
  
- 	/* make sure the requested cpu hasn't gone down in the meantime */
-@@ -5367,6 +5372,7 @@ static int active_load_balance_cpu_stop(void *data)
+ 	ret = detach_if_pending(timer, base, false);
+@@ -768,6 +769,7 @@ __mod_timer(struct timer_list *timer, unsigned long expires,
+ 
  out_unlock:
- 	busiest_rq->active_balance = 0;
- 	raw_spin_unlock_irq(&busiest_rq->lock);
+ 	spin_unlock_irqrestore(&base->lock, flags);
 +	put_online_cpus_atomic();
- 	return 0;
+ 
+ 	return ret;
  }
+@@ -926,6 +928,7 @@ void add_timer_on(struct timer_list *timer, int cpu)
  
-@@ -5527,6 +5533,7 @@ static void rebalance_domains(int cpu, enum cpu_idle_type idle)
- 
- 	update_blocked_averages(cpu);
- 
+ 	timer_stats_timer_set_start_info(timer);
+ 	BUG_ON(timer_pending(timer) || !timer->function);
 +	get_online_cpus_atomic();
- 	rcu_read_lock();
- 	for_each_domain(cpu, sd) {
- 		if (!(sd->flags & SD_LOAD_BALANCE))
-@@ -5575,6 +5582,7 @@ out:
- 			break;
- 	}
- 	rcu_read_unlock();
-+	put_online_cpus_atomic();
- 
- 	/*
- 	 * next_balance will be updated only when there is a need.
-@@ -5706,6 +5714,7 @@ static void run_rebalance_domains(struct softirq_action *h)
- 	enum cpu_idle_type idle = this_rq->idle_balance ?
- 						CPU_IDLE : CPU_NOT_IDLE;
- 
-+	get_online_cpus_atomic();
- 	rebalance_domains(this_cpu, idle);
- 
- 	/*
-@@ -5714,6 +5723,7 @@ static void run_rebalance_domains(struct softirq_action *h)
- 	 * stopped.
+ 	spin_lock_irqsave(&base->lock, flags);
+ 	timer_set_base(timer, base);
+ 	debug_activate(timer, timer->expires);
+@@ -940,6 +943,7 @@ void add_timer_on(struct timer_list *timer, int cpu)
  	 */
- 	nohz_idle_balance(this_cpu, idle);
+ 	wake_up_nohz_cpu(cpu);
+ 	spin_unlock_irqrestore(&base->lock, flags);
 +	put_online_cpus_atomic();
  }
- 
- static inline int on_null_domain(int cpu)
-@@ -5731,8 +5741,10 @@ void trigger_load_balance(struct rq *rq, int cpu)
- 	    likely(!on_null_domain(cpu)))
- 		raise_softirq(SCHED_SOFTIRQ);
- #ifdef CONFIG_NO_HZ_COMMON
-+	get_online_cpus_atomic();
- 	if (nohz_kick_needed(rq, cpu) && likely(!on_null_domain(cpu)))
- 		nohz_balancer_kick(cpu);
-+	put_online_cpus_atomic();
- #endif
- }
+ EXPORT_SYMBOL_GPL(add_timer_on);
  
