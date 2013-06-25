@@ -1,46 +1,44 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 64E862C02BE
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:29:24 +1000 (EST)
+ (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3230C2C0314
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:29:39 +1000 (EST)
 Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Wed, 26 Jun 2013 01:50:40 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id EF340394004E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 01:59:17 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5PKTEid25165966
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 01:59:14 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5PKTGna008209
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:29:18 +1000
+ Wed, 26 Jun 2013 06:20:11 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 117392CE8051
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:29:37 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5PKEcO643712606
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:14:38 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5PKTZn6001970
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:29:36 +1000
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v2 02/45] CPU hotplug: Clarify the usage of different
- synchronization APIs
+Subject: [PATCH v2 03/45] Documentation,
+ CPU hotplug: Recommend usage of get/put_online_cpus_atomic()
 To: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com,
  paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org,
  akpm@linux-foundation.org, namhyung@kernel.org, walken@google.com,
  vincent.guittot@linaro.org, laijs@cn.fujitsu.com
-Date: Wed, 26 Jun 2013 01:56:01 +0530
-Message-ID: <20130625202601.16593.54501.stgit@srivatsabhat.in.ibm.com>
+Date: Wed, 26 Jun 2013 01:56:08 +0530
+Message-ID: <20130625202608.16593.43872.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20130625202452.16593.22810.stgit@srivatsabhat.in.ibm.com>
 References: <20130625202452.16593.22810.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: linux-arch@vger.kernel.org, nikunj@linux.vnet.ibm.com,
  zhong@linux.vnet.ibm.com, linux-pm@vger.kernel.org, fweisbec@gmail.com,
- "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-kernel@vger.kernel.org,
- rostedt@goodmis.org, xiaoguangrong@linux.vnet.ibm.com, sbw@mit.edu,
- Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>, wangyun@linux.vnet.ibm.com,
+ linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+ xiaoguangrong@linux.vnet.ibm.com, sbw@mit.edu, wangyun@linux.vnet.ibm.com,
  "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, netdev@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- Andrew Morton <akpm@linux-foundation.org>
+ Rob Landley <rob@landley.net>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,42 +48,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We have quite a few APIs now which help synchronize with CPU hotplug.
-Among them, get/put_online_cpus() is the oldest and the most well-known,
-so no problems there. By extension, its easy to comprehend the new
-set : get/put_online_cpus_atomic().
+Once stop_machine() is gone from the CPU offline path, we won't be able
+to depend on disabling preemption to prevent CPUs from going offline
+from under us.
 
-But there is yet another set, which might appear tempting to use:
-cpu_hotplug_disable()/cpu_hotplug_enable(). Add comments to clarify
-that this latter set is NOT for general use and must be used only in
-specific cases where the requirement is really to _disable_ hotplug
-and not just to synchronize with it.
+So add documentation to recommend using the new get/put_online_cpus_atomic()
+APIs to prevent CPUs from going offline, while invoking from atomic context.
 
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Cc: Rob Landley <rob@landley.net>
+Cc: linux-doc@vger.kernel.org
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- kernel/cpu.c |    7 +++++++
- 1 file changed, 7 insertions(+)
+ Documentation/cpu-hotplug.txt |   20 ++++++++++++++------
+ 1 file changed, 14 insertions(+), 6 deletions(-)
 
-diff --git a/kernel/cpu.c b/kernel/cpu.c
-index 2d03398..860f51a 100644
---- a/kernel/cpu.c
-+++ b/kernel/cpu.c
-@@ -139,6 +139,13 @@ static void cpu_hotplug_done(void)
-  * the 'cpu_hotplug_disabled' flag. The same lock is also acquired by the
-  * hotplug path before performing hotplug operations. So acquiring that lock
-  * guarantees mutual exclusion from any currently running hotplug operations.
-+ *
-+ * Note: In most cases, this is *NOT* the function you need. If you simply
-+ * want to avoid racing with CPU hotplug operations, use get/put_online_cpus()
-+ * or get/put_online_cpus_atomic(), depending on the situation.
-+ *
-+ * This set of functions is reserved for cases where you really wish to
-+ * _disable_ CPU hotplug and not just synchronize with it.
-  */
- void cpu_hotplug_disable(void)
- {
+diff --git a/Documentation/cpu-hotplug.txt b/Documentation/cpu-hotplug.txt
+index 9f40135..7b3ca60 100644
+--- a/Documentation/cpu-hotplug.txt
++++ b/Documentation/cpu-hotplug.txt
+@@ -113,13 +113,18 @@ Never use anything other than cpumask_t to represent bitmap of CPUs.
+ 	#include <linux/cpu.h>
+ 	get_online_cpus() and put_online_cpus():
+ 
+-The above calls are used to inhibit cpu hotplug operations. While the
++The above calls are used to inhibit cpu hotplug operations, when invoked from
++non-atomic contexts (because the above functions can sleep). While the
+ cpu_hotplug.refcount is non zero, the cpu_online_mask will not change.
+-If you merely need to avoid cpus going away, you could also use
+-preempt_disable() and preempt_enable() for those sections.
+-Just remember the critical section cannot call any
+-function that can sleep or schedule this process away. The preempt_disable()
+-will work as long as stop_machine_run() is used to take a cpu down.
++
++However, if you are executing in atomic context (ie., you can't afford to
++sleep), and you merely need to avoid cpus going offline, you can use
++get_online_cpus_atomic() and put_online_cpus_atomic() for those sections.
++Just remember the critical section cannot call any function that can sleep or
++schedule this process away. Using preempt_disable() will also work, as long
++as stop_machine() is used to take a CPU down. But we are going to get rid of
++stop_machine() in the CPU offline path soon, so it is strongly recommended
++to use the APIs mentioned above.
+ 
+ CPU Hotplug - Frequently Asked Questions.
+ 
+@@ -360,6 +365,9 @@ A: There are two ways.  If your code can be run in interrupt context, use
+ 		return err;
+ 	}
+ 
++   If my_func_on_cpu() itself cannot block, use get/put_online_cpus_atomic()
++   instead of get/put_online_cpus(), to prevent CPUs from going offline.
++
+ Q: How do we determine how many CPUs are available for hotplug.
+ A: There is no clear spec defined way from ACPI that can give us that
+    information today. Based on some input from Natalie of Unisys,
