@@ -1,45 +1,45 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 84FD92C05BF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:35:17 +1000 (EST)
+ (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 92E522C0A0C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:35:25 +1000 (EST)
 Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Wed, 26 Jun 2013 06:25:50 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 440D32CE8052
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:35:14 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5PKKF0E7536958
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:20:15 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5PKZCrp008829
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:35:13 +1000
+ Wed, 26 Jun 2013 02:00:20 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id B3F14E0053
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 02:04:53 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5PKZHxK29687996
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 02:05:17 +0530
+Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5PKZJD7005147
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 06:35:21 +1000
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v2 33/45] cris/smp: Use get/put_online_cpus_atomic() to
+Subject: [PATCH v2 34/45] hexagon/smp: Use get/put_online_cpus_atomic() to
  prevent CPU offline
 To: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com,
  paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org,
  akpm@linux-foundation.org, namhyung@kernel.org, walken@google.com,
  vincent.guittot@linaro.org, laijs@cn.fujitsu.com
-Date: Wed, 26 Jun 2013 02:01:51 +0530
-Message-ID: <20130625203151.16593.6198.stgit@srivatsabhat.in.ibm.com>
+Date: Wed, 26 Jun 2013 02:02:04 +0530
+Message-ID: <20130625203204.16593.61516.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20130625202452.16593.22810.stgit@srivatsabhat.in.ibm.com>
 References: <20130625202452.16593.22810.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Cc: linux-arch@vger.kernel.org, Jesper Nilsson <jesper.nilsson@axis.com>,
- nikunj@linux.vnet.ibm.com, zhong@linux.vnet.ibm.com, linux-pm@vger.kernel.org,
- linux-cris-kernel@axis.com, fweisbec@gmail.com, linux-kernel@vger.kernel.org,
- rostedt@goodmis.org, xiaoguangrong@linux.vnet.ibm.com,
- Mikael Starvik <starvik@axis.com>, sbw@mit.edu, wangyun@linux.vnet.ibm.com,
+Cc: linux-arch@vger.kernel.org, nikunj@linux.vnet.ibm.com,
+ zhong@linux.vnet.ibm.com, linux-pm@vger.kernel.org, fweisbec@gmail.com,
+ linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+ xiaoguangrong@linux.vnet.ibm.com, sbw@mit.edu, wangyun@linux.vnet.ibm.com,
  "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, netdev@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
+ linux-hexagon@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+ Richard Kuo <rkuo@codeaurora.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,54 +56,29 @@ from under us.
 Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going
 offline, while invoking from atomic context.
 
-Acked-by: Jesper Nilsson <jesper.nilsson@axis.com>
-Cc: Mikael Starvik <starvik@axis.com>
+Cc: Richard Kuo <rkuo@codeaurora.org>
 Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-cris-kernel@axis.com
+Cc: linux-hexagon@vger.kernel.org
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- arch/cris/arch-v32/kernel/smp.c |    5 +++++
- 1 file changed, 5 insertions(+)
+ arch/hexagon/kernel/smp.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/arch/cris/arch-v32/kernel/smp.c b/arch/cris/arch-v32/kernel/smp.c
-index cdd1202..b2d4612 100644
---- a/arch/cris/arch-v32/kernel/smp.c
-+++ b/arch/cris/arch-v32/kernel/smp.c
-@@ -13,6 +13,7 @@
- #include <linux/init.h>
- #include <linux/timex.h>
- #include <linux/sched.h>
-+#include <linux/cpu.h>
- #include <linux/kernel.h>
- #include <linux/cpumask.h>
- #include <linux/interrupt.h>
-@@ -222,6 +223,7 @@ void flush_tlb_common(struct mm_struct* mm, struct vm_area_struct* vma, unsigned
- 	unsigned long flags;
- 	cpumask_t cpu_mask;
- 
+diff --git a/arch/hexagon/kernel/smp.c b/arch/hexagon/kernel/smp.c
+index 0e364ca..30d4318 100644
+--- a/arch/hexagon/kernel/smp.c
++++ b/arch/hexagon/kernel/smp.c
+@@ -241,9 +241,12 @@ void smp_send_reschedule(int cpu)
+ void smp_send_stop(void)
+ {
+ 	struct cpumask targets;
++
 +	get_online_cpus_atomic();
- 	spin_lock_irqsave(&tlbstate_lock, flags);
- 	cpu_mask = (mm == FLUSH_ALL ? cpu_all_mask : *mm_cpumask(mm));
- 	cpumask_clear_cpu(smp_processor_id(), &cpu_mask);
-@@ -230,6 +232,7 @@ void flush_tlb_common(struct mm_struct* mm, struct vm_area_struct* vma, unsigned
- 	flush_addr = addr;
- 	send_ipi(IPI_FLUSH_TLB, 1, cpu_mask);
- 	spin_unlock_irqrestore(&tlbstate_lock, flags);
+ 	cpumask_copy(&targets, cpu_online_mask);
+ 	cpumask_clear_cpu(smp_processor_id(), &targets);
+ 	send_ipi(&targets, IPI_CPU_STOP);
 +	put_online_cpus_atomic();
  }
  
- void flush_tlb_all(void)
-@@ -319,10 +322,12 @@ int smp_call_function(void (*func)(void *info), void *info, int wait)
- 	data.info = info;
- 	data.wait = wait;
- 
-+	get_online_cpus_atomic();
- 	spin_lock(&call_lock);
- 	call_data = &data;
- 	ret = send_ipi(IPI_CALL, wait, cpu_mask);
- 	spin_unlock(&call_lock);
-+	put_online_cpus_atomic();
- 
- 	return ret;
- }
+ void arch_send_call_function_single_ipi(int cpu)
