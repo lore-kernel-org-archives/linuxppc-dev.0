@@ -1,41 +1,39 @@
-Return-Path: <aruna@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8D33A2C0098
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Jun 2013 17:04:55 +1000 (EST)
+ (Client CN "e34.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7D3A62C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 17:13:09 +1000 (EST)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <aruna@linux.vnet.ibm.com>;
- Tue, 25 Jun 2013 16:55:17 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 431322BB0051
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Jun 2013 17:04:49 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5P74exe6357466
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Jun 2013 17:04:40 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5P74lOQ008359
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Jun 2013 17:04:48 +1000
-Message-ID: <51C94101.3030702@linux.vnet.ibm.com>
-Date: Tue, 25 Jun 2013 12:34:33 +0530
-From: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Tue, 25 Jun 2013 01:13:06 -0600
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+ [9.17.195.107])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 5C8851FF001B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 01:07:48 -0600 (MDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5P7D3an151842
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 01:13:03 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5P7D3RK024754
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 01:13:03 -0600
+Date: Tue, 25 Jun 2013 15:12:59 +0800
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 04/10] powerpc/eeh: Backends to get/set settings
+Message-ID: <20130625071259.GA6784@shangw.(null)>
+References: <1372139717-14885-1-git-send-email-shangw@linux.vnet.ibm.com>
+ <1372139717-14885-5-git-send-email-shangw@linux.vnet.ibm.com>
+ <1372140444.3944.190.camel@pasglop>
 MIME-Version: 1.0
-To: Kees Cook <keescook@chromium.org>
-Subject: Re: [PATCH 3/3] powerpc/pseries: Support compression of oops text
- via pstore
-References: <20130624061936.12963.72529.stgit@aruna-ThinkPad-T420>
- <20130624062316.12963.87911.stgit@aruna-ThinkPad-T420>
- <CAGXu5jJezRynWEBmmH8wp=pt1yEjukhe6Pg_aRcZP7E6t-1R=g@mail.gmail.com>
-In-Reply-To: <CAGXu5jJezRynWEBmmH8wp=pt1yEjukhe6Pg_aRcZP7E6t-1R=g@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: jkenisto@linux.vnet.ibm.com, Tony Luck <tony.luck@intel.com>,
- mahesh@linux.vnet.ibm.com, Colin Cross <ccross@android.com>,
- LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org, paulus@samba.org,
- Anton Blanchard <anton@samba.org>, Anton Vorontsov <cbouatmailru@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1372140444.3944.190.camel@pasglop>
+Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <shangw@linux.vnet.ibm.com>
+Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,254 +43,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Kees,
+On Tue, Jun 25, 2013 at 04:07:24PM +1000, Benjamin Herrenschmidt wrote:
+>On Tue, 2013-06-25 at 13:55 +0800, Gavin Shan wrote:
+>> When the PHB gets fenced, 0xFF's returns from PCI config space and
+>> MMIO space in the hardware. The operations writting to them should
+>> be dropped. The patch introduce backends allow to set/get flags that
+>> indicate the access to PCI-CFG and MMIO should be blocked.
+>
+>We can't block MMIO without massive overhead. Config space can be
+>blocked inside the firmware, can't it ?
+>
 
-On Monday 24 June 2013 11:27 PM, Kees Cook wrote:
-> On Sun, Jun 23, 2013 at 11:23 PM, Aruna Balakrishnaiah
-> <aruna@linux.vnet.ibm.com> wrote:
->> The patch set supports compression of oops messages while writing to NVRAM,
->> this helps in capturing more of oops data to lnx,oops-log. The pstore file
->> for oops messages will be in decompressed format making it readable.
->>
->> In case compression fails, the patch takes care of copying the header added
->> by pstore and last oops_data_sz bytes of big_oops_buf to NVRAM so that we
->> have recent oops messages in lnx,oops-log.
->>
->> In case decompression fails, it will result in absence of oops file but still
->> have files (in /dev/pstore) for other partitions.
->>
->> Signed-off-by: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
+Yep. The config space has been blocked on fenced PHB by firmware. I
+almostly forgot that (struct p7ioc_phb::use_asb) :-)
+
+Thanks,
+Gavin
+
+>
+>> Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 >> ---
->>   arch/powerpc/platforms/pseries/nvram.c |  132 +++++++++++++++++++++++++++++---
->>   1 file changed, 118 insertions(+), 14 deletions(-)
->>
->> diff --git a/arch/powerpc/platforms/pseries/nvram.c b/arch/powerpc/platforms/pseries/nvram.c
->> index 0159d74..b5ba5e2 100644
->> --- a/arch/powerpc/platforms/pseries/nvram.c
->> +++ b/arch/powerpc/platforms/pseries/nvram.c
->> @@ -539,6 +539,65 @@ static int zip_oops(size_t text_len)
->>   }
->>
->>   #ifdef CONFIG_PSTORE
->> +/* Derived from logfs_uncompress */
->> +int nvram_decompress(void *in, void *out, size_t inlen, size_t outlen)
+>>  arch/powerpc/include/asm/eeh.h               |    6 +++
+>>  arch/powerpc/platforms/pseries/eeh_pseries.c |   44 ++++++++++++++++++++++++++
+>>  2 files changed, 50 insertions(+), 0 deletions(-)
+>> 
+>> diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+>> index dd65e31..de821c1 100644
+>> --- a/arch/powerpc/include/asm/eeh.h
+>> +++ b/arch/powerpc/include/asm/eeh.h
+>> @@ -131,6 +131,10 @@ static inline struct pci_dev *eeh_dev_to_pci_dev(struct eeh_dev *edev)
+>>  #define EEH_LOG_TEMP		1	/* EEH temporary error log	*/
+>>  #define EEH_LOG_PERM		2	/* EEH permanent error log	*/
+>>  
+>> +/* Settings for platforms */
+>> +#define EEH_SETTING_BLOCK_CFG	1	/* Blocked PCI config access	*/
+>> +#define EEH_SETTING_BLOCK_IO	2	/* Blocked MMIO access		*/
+>> +
+>>  struct eeh_ops {
+>>  	char *name;
+>>  	int (*init)(void);
+>> @@ -146,6 +150,8 @@ struct eeh_ops {
+>>  	int (*configure_bridge)(struct eeh_pe *pe);
+>>  	int (*read_config)(struct device_node *dn, int where, int size, u32 *val);
+>>  	int (*write_config)(struct device_node *dn, int where, int size, u32 val);
+>> +	int (*get_setting)(int option, int *value, void *data);
+>> +	int (*set_setting)(int option, int value, void *data);
+>>  	int (*next_error)(struct eeh_pe **pe);
+>>  };
+>>  
+>> diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
+>> index 62415f2..8c9509b 100644
+>> --- a/arch/powerpc/platforms/pseries/eeh_pseries.c
+>> +++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+>> @@ -612,6 +612,48 @@ static int pseries_eeh_write_config(struct device_node *dn, int where, int size,
+>>  	return rtas_write_config(pdn, where, size, val);
+>>  }
+>>  
+>> +/**
+>> + * pseries_eeh_get_setting - Retrieve settings that affect EEH core
+>> + * @option: option
+>> + * @value: value
+>> + * @data: dependent data
+>> + *
+>> + * Retrieve the settings from the platform in order to affect the
+>> + * behaviour of EEH core. We don't block PCI config or MMIO access
+>> + * on pSeries platform.
+>> + */
+>> +static int pseries_eeh_get_setting(int option, int *value, void *data)
 >> +{
->> +       int err, ret;
+>> +	int ret = 0;
 >> +
->> +       ret = -EIO;
->> +       err = zlib_inflateInit(&stream);
->> +       if (err != Z_OK)
->> +               goto error;
+>> +	switch (option) {
+>> +	case EEH_SETTING_BLOCK_CFG:
+>> +	case EEH_SETTING_BLOCK_IO:
+>> +		*value = 0;
+>> +		break;
+>> +	default:
+>> +		pr_warning("%s: Unrecognized option (%d)\n",
+>> +			   __func__, option);
+>> +		ret = -EINVAL;
+>> +	}
 >> +
->> +       stream.next_in = in;
->> +       stream.avail_in = inlen;
->> +       stream.total_in = 0;
->> +       stream.next_out = out;
->> +       stream.avail_out = outlen;
->> +       stream.total_out = 0;
->> +
->> +       err = zlib_inflate(&stream, Z_FINISH);
->> +       if (err != Z_STREAM_END)
->> +               goto error;
->> +
->> +       err = zlib_inflateEnd(&stream);
->> +       if (err != Z_OK)
->> +               goto error;
->> +
->> +       ret = stream.total_out;
->> +error:
->> +       return ret;
+>> +	return ret;
 >> +}
 >> +
->> +static int unzip_oops(char *oops_buf, char *big_buf)
+>> +/**
+>> + * pseries_eeh_set_setting - Configure settings to affect EEH core
+>> + * @option: option
+>> + * @value: value
+>> + * @data: dependent data
+>> + *
+>> + * Configure the settings for the platform in order to affect the
+>> + * behaviour of EEH core.
+>> + */
+>> +static int pseries_eeh_set_setting(int option, int value, void *data)
 >> +{
->> +       struct oops_log_info *oops_hdr = (struct oops_log_info *)oops_buf;
->> +       u64 timestamp = oops_hdr->timestamp;
->> +       char *big_oops_data = NULL;
->> +       char *oops_data_buf = NULL;
->> +       size_t big_oops_data_sz;
->> +       int unzipped_len;
->> +
->> +       big_oops_data = big_buf + sizeof(struct oops_log_info);
->> +       big_oops_data_sz = big_oops_buf_sz - sizeof(struct oops_log_info);
->> +       oops_data_buf = oops_buf + sizeof(struct oops_log_info);
->> +
->> +       unzipped_len = nvram_decompress(oops_data_buf, big_oops_data,
->> +                                       oops_hdr->report_length,
->> +                                       big_oops_data_sz);
->> +
->> +       if (unzipped_len < 0) {
->> +               pr_err("nvram: decompression failed; returned %d\n",
->> +                                                               unzipped_len);
->> +               return -1;
->> +       }
->> +       oops_hdr = (struct oops_log_info *)big_buf;
->> +       oops_hdr->version = OOPS_HDR_VERSION;
->> +       oops_hdr->report_length = (u16) unzipped_len;
->> +       oops_hdr->timestamp = timestamp;
->> +       return 0;
+>> +	return 0;
 >> +}
 >> +
->>   static int nvram_pstore_open(struct pstore_info *psi)
->>   {
->>          /* Reset the iterator to start reading partitions again */
->> @@ -567,6 +626,7 @@ static int nvram_pstore_write(enum pstore_type_id type,
->>                                  size_t size, struct pstore_info *psi)
->>   {
->>          int rc;
->> +       unsigned int err_type = ERR_TYPE_KERNEL_PANIC;
->>          struct oops_log_info *oops_hdr = (struct oops_log_info *) oops_buf;
->>
->>          /* part 1 has the recent messages from printk buffer */
->> @@ -577,8 +637,31 @@ static int nvram_pstore_write(enum pstore_type_id type,
->>          oops_hdr->version = OOPS_HDR_VERSION;
->>          oops_hdr->report_length = (u16) size;
->>          oops_hdr->timestamp = get_seconds();
->> +
->> +       if (big_oops_buf) {
->> +               rc = zip_oops(size);
->> +               /*
->> +                * If compression fails copy recent log messages from
->> +                * big_oops_buf to oops_data.
->> +                */
->> +               if (rc != 0) {
->> +                       int hsize = pstore_get_header_size();
-> I think I would rather see the API to pstore_write() changed to
-> include explicit details about header sizes. Mkaing hsize a global
-> seems unwise, since it's not strictly going to be a constant value. It
-> could change between calls to the writer, for example.
-
-Introducing headersize in pstore_write() API would need changes at
-multiple places whereits being called. The idea is to move the
-compression support to pstore infrastructure so that other platforms
-could also make use of it. Once the compression support gets in,
-header size argument in pstore_write() will have to be deprecated.
-
-Till the time compression support for pstore goes in, can't we call
-pstore_header_size before every write call to knowthe header size.
-
-> Beyond that, this all seems sensible, though it would be kind of cool
-> to move this compression logic into the pstore core so it would get
-> used by default (or through a module parameter).
-> -Kees
+>>  static struct eeh_ops pseries_eeh_ops = {
+>>  	.name			= "pseries",
+>>  	.init			= pseries_eeh_init,
+>> @@ -626,6 +668,8 @@ static struct eeh_ops pseries_eeh_ops = {
+>>  	.configure_bridge       = pseries_eeh_configure_bridge,
+>>  	.read_config		= pseries_eeh_read_config,
+>>  	.write_config		= pseries_eeh_write_config,
+>> +	.get_setting		= pseries_eeh_get_setting,
+>> +	.set_setting		= pseries_eeh_set_setting,
+>>  	.next_error		= NULL
+>>  };
+>>  
 >
->> +                       size_t diff = size - oops_data_sz + hsize;
->> +
->> +                       if (size > oops_data_sz) {
->> +                               memcpy(oops_data, big_oops_buf, hsize);
->> +                               memcpy(oops_data + hsize, big_oops_buf + diff,
->> +                                       oops_data_sz - hsize);
->> +
->> +                               oops_hdr->report_length = (u16) oops_data_sz;
->> +                       } else
->> +                               memcpy(oops_data, big_oops_buf, size);
->> +               } else
->> +                       err_type = ERR_TYPE_KERNEL_PANIC_GZ;
->> +       }
->> +
->>          rc = nvram_write_os_partition(&oops_log_partition, oops_buf,
->> -               (int) (sizeof(*oops_hdr) + size), ERR_TYPE_KERNEL_PANIC,
->> +               (int) (sizeof(*oops_hdr) + oops_hdr->report_length), err_type,
->>                  count);
->>
->>          if (rc != 0)
->> @@ -600,10 +683,11 @@ static ssize_t nvram_pstore_read(u64 *id, enum pstore_type_id *type,
->>          struct oops_log_info *oops_hdr;
->>          unsigned int err_type, id_no, size = 0;
->>          struct nvram_os_partition *part = NULL;
->> -       char *buff = NULL;
->> -       int sig = 0;
->> +       char *buff = NULL, *big_buff = NULL;
->> +       int rc, sig = 0;
->>          loff_t p;
->>
->> +read_partition:
->>          read_type++;
->>
->>          switch (nvram_type_ids[read_type]) {
->> @@ -666,6 +750,25 @@ static ssize_t nvram_pstore_read(u64 *id, enum pstore_type_id *type,
->>          if (nvram_type_ids[read_type] == PSTORE_TYPE_DMESG) {
->>                  oops_hdr = (struct oops_log_info *)buff;
->>                  *buf = buff + sizeof(*oops_hdr);
->> +
->> +               if (err_type == ERR_TYPE_KERNEL_PANIC_GZ) {
->> +                       big_buff = kmalloc(big_oops_buf_sz, GFP_KERNEL);
->> +                       if (!big_buff)
->> +                               return -ENOMEM;
->> +
->> +                       rc = unzip_oops(buff, big_buff);
->> +
->> +                       if (rc != 0) {
->> +                               kfree(buff);
->> +                               kfree(big_buff);
->> +                               goto read_partition;
->> +                       }
->> +
->> +                       oops_hdr = (struct oops_log_info *)big_buff;
->> +                       *buf = big_buff + sizeof(*oops_hdr);
->> +                       kfree(buff);
->> +               }
->> +
->>                  time->tv_sec = oops_hdr->timestamp;
->>                  time->tv_nsec = 0;
->>                  return oops_hdr->report_length;
->> @@ -687,17 +790,18 @@ static int nvram_pstore_init(void)
->>   {
->>          int rc = 0;
->>
->> -       nvram_pstore_info.buf = oops_data;
->> -       nvram_pstore_info.bufsize = oops_data_sz;
->> +       if (big_oops_buf) {
->> +               nvram_pstore_info.buf = big_oops_buf;
->> +               nvram_pstore_info.bufsize = big_oops_buf_sz;
->> +       } else {
->> +               nvram_pstore_info.buf = oops_data;
->> +               nvram_pstore_info.bufsize = oops_data_sz;
->> +       }
->>
->>          rc = pstore_register(&nvram_pstore_info);
->>          if (rc != 0)
->>                  pr_err("nvram: pstore_register() failed, defaults to "
->>                                  "kmsg_dump; returned %d\n", rc);
->> -       else
->> -               /*TODO: Support compression when pstore is configured */
->> -               pr_info("nvram: Compression of oops text supported only when "
->> -                               "pstore is not configured");
->>
->>          return rc;
->>   }
->> @@ -731,11 +835,6 @@ static void __init nvram_init_oops_partition(int rtas_partition_exists)
->>          oops_data = oops_buf + sizeof(struct oops_log_info);
->>          oops_data_sz = oops_log_partition.size - sizeof(struct oops_log_info);
->>
->> -       rc = nvram_pstore_init();
->> -
->> -       if (!rc)
->> -               return;
->> -
->>          /*
->>           * Figure compression (preceded by elimination of each line's <n>
->>           * severity prefix) will reduce the oops/panic report to at most
->> @@ -759,6 +858,11 @@ static void __init nvram_init_oops_partition(int rtas_partition_exists)
->>                  stream.workspace = NULL;
->>          }
->>
->> +       rc = nvram_pstore_init();
->> +
->> +       if (!rc)
->> +               return;
->> +
->>          rc = kmsg_dump_register(&nvram_kmsg_dumper);
->>          if (rc != 0) {
->>                  pr_err("nvram: kmsg_dump_register() failed; returned %d\n", rc);
->>
->
->
-> --
-> Kees Cook
-> Chrome OS Security
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
 >
