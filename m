@@ -1,30 +1,30 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 62FAD2C008F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 15:55:32 +1000 (EST)
+ (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C1CF02C0394
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 15:55:59 +1000 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Tue, 25 Jun 2013 01:55:29 -0400
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id A627138C8042
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 01:55:25 -0400 (EDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5P5tQbP297386
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 01:55:26 -0400
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5P5tPW3021298
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2013 23:55:25 -0600
+ Mon, 24 Jun 2013 23:55:57 -0600
+Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 1182A6E8028
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 01:55:50 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5P5tO2D334472
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 01:55:24 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5P5tN2Y016852
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 02:55:24 -0300
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 07/10] powerpc/powernv: Block PCI-CFG access if necessary
-Date: Tue, 25 Jun 2013 13:55:14 +0800
-Message-Id: <1372139717-14885-8-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 03/10] powerpc/eeh: Check PCIe link after reset
+Date: Tue, 25 Jun 2013 13:55:10 +0800
+Message-Id: <1372139717-14885-4-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1372139717-14885-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1372139717-14885-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -37,162 +37,171 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If the PCI-CFG access on the specific PHB, to return 0xFF's for
-reading and drop writing. The patch implements that for PowerNV
-platform. The patch also removes the check on "hose == NULL"
-for PCI-CFG accessors since the kernel should stop while fetching
-platform-dependent PHB (struct pnv_phb).
+After reset (e.g. complete reset) in order to bring the fenced PHB
+back, the PCIe link might not be ready yet. The patch intends to
+make sure the PCIe link is ready before accessing its subordinate
+PCI devices. The patch also fixes that wrong values restored to
+PCI_COMMAND register for PCI bridges.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/eeh-powernv.c |   10 ++---
- arch/powerpc/platforms/powernv/pci.c         |   59 ++++++++++++++++++++------
- arch/powerpc/platforms/powernv/pci.h         |    4 ++
- 3 files changed, 54 insertions(+), 19 deletions(-)
+ arch/powerpc/kernel/eeh_pe.c |  120 ++++++++++++++++++++++++++++++++++++++----
+ 1 files changed, 110 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index 20a7865..249798e 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -328,9 +328,9 @@ static int powernv_eeh_read_config(struct device_node *dn, int where,
- {
- 	struct eeh_dev *edev = of_node_to_eeh_dev(dn);
- 	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
--	struct pci_controller *hose = edev->phb;
+diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
+index 55943fc..db83ada 100644
+--- a/arch/powerpc/kernel/eeh_pe.c
++++ b/arch/powerpc/kernel/eeh_pe.c
+@@ -22,6 +22,7 @@
+  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+  */
  
--	return hose->ops->read(dev->bus, dev->devfn, where, size, val);
-+	return pnv_pci_cfg_read(dev->bus, dev->devfn,
-+				where, size, val, false);
++#include <linux/delay.h>
+ #include <linux/export.h>
+ #include <linux/gfp.h>
+ #include <linux/init.h>
+@@ -567,6 +568,88 @@ void eeh_pe_state_clear(struct eeh_pe *pe, int state)
+ 	eeh_pe_traverse(pe, __eeh_pe_state_clear, &state);
  }
  
- /**
-@@ -347,11 +347,9 @@ static int powernv_eeh_write_config(struct device_node *dn, int where,
- {
- 	struct eeh_dev *edev = of_node_to_eeh_dev(dn);
- 	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
--	struct pci_controller *hose = edev->phb;
- 
--	hose = pci_bus_to_host(dev->bus);
--
--	return hose->ops->write(dev->bus, dev->devfn, where, size, val);
-+	return pnv_pci_cfg_write(dev->bus, dev->devfn,
-+				 where, size, val, false);
- }
- 
- /**
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index 1f31826..47fa921 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -255,21 +255,30 @@ static void pnv_pci_config_check_eeh(struct pnv_phb *phb, struct pci_bus *bus,
- 		pnv_pci_handle_eeh_config(phb, pe_no);
- }
- 
--static int pnv_pci_read_config(struct pci_bus *bus,
--			       unsigned int devfn,
--			       int where, int size, u32 *val)
-+int pnv_pci_cfg_read(struct pci_bus *bus,
-+		     unsigned int devfn,
-+		     int where, int size,
-+		     u32 *val, bool check)
- {
- 	struct pci_controller *hose = pci_bus_to_host(bus);
- 	struct pnv_phb *phb = hose->private_data;
-+	u32 bdfn = (((uint64_t)bus->number) << 8) | devfn;
-+	s64 rc;
- #ifdef CONFIG_EEH
- 	struct device_node *busdn, *dn;
- 	struct eeh_pe *phb_pe = NULL;
--#endif
--	u32 bdfn = (((uint64_t)bus->number) << 8) | devfn;
--	s64 rc;
- 
--	if (hose == NULL)
++/*
++ * Some PCI bridges (e.g. PLX bridges) have primary/secondary
++ * buses assigned explicitly by firmware, and we probably have
++ * lost that after reset. So we have to delay the check until
++ * the PCI-CFG registers have been restored for the parent
++ * bridge.
++ *
++ * Don't use normal PCI-CFG accessors, which probably has been
++ * blocked on normal path during the stage. So we need utilize
++ * eeh operations, which is always permitted.
++ */
++static void eeh_bridge_check_link(struct device_node *dn,
++				  struct pci_dev *pdev)
++{
++	int cap;
++	uint32_t val;
++	int timeout = 0;
++
 +	/*
-+	 * If PCI-CFG access has been blocked, we simply
-+	 * return 0xFF's here.
++	 * We only check root port and downstream ports of
++	 * PCIe switches
 +	 */
-+	if (check &&
-+	    (phb->eeh_state & PNV_EEH_STATE_ENABLED) &&
-+	    (phb->eeh_state & PNV_EEH_STATE_CFG_BLOCKED)) {
-+		*val = 0xFFFFFFFF;
- 		return PCIBIOS_DEVICE_NOT_FOUND;
++	if (!pci_is_pcie(pdev) ||
++	    (pci_pcie_type(pdev) != PCI_EXP_TYPE_ROOT_PORT &&
++	     pci_pcie_type(pdev) != PCI_EXP_TYPE_DOWNSTREAM))
++		return;
++
++	pr_debug("%s: Check PCIe link for %s ...\n",
++		 __func__, pci_name(pdev));
++
++	/* Check slot status */
++	cap = pdev->pcie_cap;
++	eeh_ops->read_config(dn, cap + PCI_EXP_SLTSTA, 2, &val);
++	if (!(val & PCI_EXP_SLTSTA_PDS)) {
++		pr_debug("  No card in the slot (0x%04x) !\n", val);
++		return;
 +	}
-+#endif
- 
- 	switch (size) {
- 	case 1: {
-@@ -329,19 +338,26 @@ static int pnv_pci_read_config(struct pci_bus *bus,
- 	return PCIBIOS_SUCCESSFUL;
- }
- 
--static int pnv_pci_write_config(struct pci_bus *bus,
--				unsigned int devfn,
--				int where, int size, u32 val)
-+int pnv_pci_cfg_write(struct pci_bus *bus,
-+		      unsigned int devfn,
-+		      int where, int size,
-+		      u32 val, bool check)
++
++	/* Check power status if we have the capability */
++	eeh_ops->read_config(dn, cap + PCI_EXP_SLTCAP, 2, &val);
++	if (val & PCI_EXP_SLTCAP_PCP) {
++		eeh_ops->read_config(dn, cap + PCI_EXP_SLTCTL, 2, &val);
++		if (val & PCI_EXP_SLTCTL_PCC) {
++			pr_debug("  In power-off state, power it on ...\n");
++			val &= ~(PCI_EXP_SLTCTL_PCC | PCI_EXP_SLTCTL_PIC);
++			val |= (0x0100 & PCI_EXP_SLTCTL_PIC);
++			eeh_ops->write_config(dn, cap + PCI_EXP_SLTCTL, 2, val);
++			msleep(2 * 1000);
++		}
++	}
++
++	/* Enable link */
++	eeh_ops->read_config(dn, cap + PCI_EXP_LNKCTL, 2, &val);
++	val &= ~PCI_EXP_LNKCTL_LD;
++	eeh_ops->write_config(dn, cap + PCI_EXP_LNKCTL, 2, val);
++
++	/* Check link */
++	eeh_ops->read_config(dn, cap + PCI_EXP_LNKCAP, 4, &val);
++	if (!(val & PCI_EXP_LNKCAP_DLLLARC)) {
++		pr_debug("  No link reporting capability (0x%08x) \n", val);
++		msleep(1000);
++		return;
++	}
++
++	/* Wait the link is up until timeout (5s) */
++	timeout = 0;
++	while (timeout < 5000) {
++		msleep(20);
++		timeout += 20;
++
++		eeh_ops->read_config(dn, cap + PCI_EXP_LNKSTA, 2, &val);
++		if (val & PCI_EXP_LNKSTA_DLLLA)
++			break;
++	}
++
++	if (val & PCI_EXP_LNKSTA_DLLLA)
++		pr_debug("  Link up (%s)\n",
++			 (val & PCI_EXP_LNKSTA_CLS_2_5GB) ? "2.5GB" : "5GB");
++	else
++		pr_debug("  Link not ready (0x%04x)\n", val);
++}
++
+ /**
+  * eeh_restore_one_device_bars - Restore the Base Address Registers for one device
+  * @data: EEH device
+@@ -580,9 +663,17 @@ static void *eeh_restore_one_device_bars(void *data, void *flag)
  {
- 	struct pci_controller *hose = pci_bus_to_host(bus);
- 	struct pnv_phb *phb = hose->private_data;
- 	u32 bdfn = (((uint64_t)bus->number) << 8) | devfn;
+ 	int i;
+ 	u32 cmd;
++	struct pci_dev *pdev = NULL;
+ 	struct eeh_dev *edev = (struct eeh_dev *)data;
+ 	struct device_node *dn = eeh_dev_to_of_node(edev);
  
--	if (hose == NULL)
--		return PCIBIOS_DEVICE_NOT_FOUND;
--
- 	cfg_dbg("pnv_pci_write_config bus: %x devfn: %x +%x/%x -> %08x\n",
- 		bus->number, devfn, where, size, val);
++	/* Trace the PCI bridge */
++	if (eeh_probe_mode_dev()) {
++		pdev = eeh_dev_to_pci_dev(edev);
++		if (pdev->hdr_type != PCI_HEADER_TYPE_BRIDGE)
++			pdev = NULL;
++	}
 +
-+#ifdef CONFIG_EEH
-+	/* If PCI-CFG access has been blocked, drop it */
-+	if (check &&
-+	    (phb->eeh_state & PNV_EEH_STATE_ENABLED) &&
-+	    (phb->eeh_state & PNV_EEH_STATE_CFG_BLOCKED))
-+		return PCIBIOS_DEVICE_NOT_FOUND;
-+#endif
+ 	for (i = 4; i < 10; i++)
+ 		eeh_ops->write_config(dn, i*4, 4, edev->config_space[i]);
+ 	/* 12 == Expansion ROM Address */
+@@ -603,16 +694,25 @@ static void *eeh_restore_one_device_bars(void *data, void *flag)
+ 	 * Restore PERR & SERR bits, some devices require it,
+ 	 * don't touch the other command bits
+ 	 */
+-	eeh_ops->read_config(dn, PCI_COMMAND, 4, &cmd);
+-	if (edev->config_space[1] & PCI_COMMAND_PARITY)
+-		cmd |= PCI_COMMAND_PARITY;
+-	else
+-		cmd &= ~PCI_COMMAND_PARITY;
+-	if (edev->config_space[1] & PCI_COMMAND_SERR)
+-		cmd |= PCI_COMMAND_SERR;
+-	else
+-		cmd &= ~PCI_COMMAND_SERR;
+-	eeh_ops->write_config(dn, PCI_COMMAND, 4, cmd);
++	if (pdev) {
++		eeh_ops->write_config(dn, PCI_COMMAND, 4,
++				      edev->config_space[1]);
++	} else {
++		eeh_ops->read_config(dn, PCI_COMMAND, 4, &cmd);
++		if (edev->config_space[1] & PCI_COMMAND_PARITY)
++			cmd |= PCI_COMMAND_PARITY;
++		else
++			cmd &= ~PCI_COMMAND_PARITY;
++		if (edev->config_space[1] & PCI_COMMAND_SERR)
++			cmd |= PCI_COMMAND_SERR;
++		else
++			cmd &= ~PCI_COMMAND_SERR;
++		eeh_ops->write_config(dn, PCI_COMMAND, 4, cmd);
++	}
 +
- 	switch (size) {
- 	case 1:
- 		opal_pci_config_write_byte(phb->opal_id, bdfn, where, val);
-@@ -367,6 +383,23 @@ static int pnv_pci_write_config(struct pci_bus *bus,
- 	return PCIBIOS_SUCCESSFUL;
++	/* Check the PCIe link for bridge */
++	if (pdev)
++		eeh_bridge_check_link(dn, pdev);
+ 
+ 	return NULL;
  }
- 
-+static int pnv_pci_read_config(struct pci_bus *bus,
-+			       unsigned int devfn,
-+			       int where, int size, u32 *val)
-+{
-+	return pnv_pci_cfg_read(bus, devfn, where,
-+				size, val, true);
-+}
-+
-+static int pnv_pci_write_config(struct pci_bus *bus,
-+				unsigned int devfn,
-+				int where, int size,
-+				u32 val)
-+{
-+	return pnv_pci_cfg_write(bus, devfn, where,
-+				 size, val, true);
-+}
-+
- struct pci_ops pnv_pci_ops = {
- 	.read = pnv_pci_read_config,
- 	.write = pnv_pci_write_config,
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index a281a1c..8624f8f 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -187,6 +187,10 @@ extern struct pci_ops pnv_pci_ops;
- extern struct pnv_eeh_ops ioda_eeh_ops;
- #endif
- 
-+extern int pnv_pci_cfg_read(struct pci_bus *bus, unsigned int devfn,
-+			    int where, int size, u32 *val, bool check);
-+extern int pnv_pci_cfg_write(struct pci_bus *bus, unsigned int devfn,
-+			     int where, int size, u32 val, bool check);
- extern void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
- 				      void *tce_mem, u64 tce_size,
- 				      u64 dma_offset);
 -- 
 1.7.5.4
