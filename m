@@ -1,25 +1,28 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pb0-x22e.google.com (mail-pb0-x22e.google.com
- [IPv6:2607:f8b0:400e:c01::22e])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1F1D62C0097
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 22:19:13 +1000 (EST)
-Received: by mail-pb0-f46.google.com with SMTP id rq2so14127962pbb.19
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 05:19:11 -0700 (PDT)
-Message-ID: <51CADC39.1070905@ozlabs.ru>
-Date: Wed, 26 Jun 2013 22:19:05 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Return-Path: <B10716@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 033402C0097
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 22:36:37 +1000 (EST)
+Received: from mail149-co1 (localhost [127.0.0.1])	by
+ mail149-co1-R.bigfish.com (Postfix) with ESMTP id 5B2415C0100	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 12:36:30 +0000 (UTC)
+Received: from CO1EHSMHS013.bigfish.com (unknown [10.243.78.238])	by
+ mail149-co1.bigfish.com (Postfix) with ESMTP id F02E9D0004A	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 12:36:27 +0000 (UTC)
+Message-ID: <51CAE047.8030605@freescale.com>
+Date: Wed, 26 Jun 2013 15:36:23 +0300
+From: Tudor Laurentiu <Laurentiu.Tudor@freescale.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v2] powerpc/vfio: Add missing locks for take/release TCE
- table ownership
-References: <1372227662-28302-1-git-send-email-aik@ozlabs.ru>
-In-Reply-To: <1372227662-28302-1-git-send-email-aik@ozlabs.ru>
-Content-Type: text/plain; charset=KOI8-R
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: powerpc/85xx: Move ePAPR paravirt initialization earlier
+References: <1362498756-395-1-git-send-email-Laurentiu.Tudor@freescale.com>
+ <20130625231404.GA29587@home.buserror.net>
+In-Reply-To: <20130625231404.GA29587@home.buserror.net>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,90 +32,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ben, please ignore this.
-Need some more code there.
+On 06/26/2013 02:14 AM, Scott Wood wrote:
+> On Tue, Mar 05, 2013 at 05:52:36PM +0200, Laurentiu TUDOR wrote:
+>> From: Tudor Laurentiu<laurentiu.tudor@freescale.com>
+>>
+>> The ePAPR para-virtualization needs to happen very early
+>> otherwise the bytechannel based console will silently
+>> drop some of the early boot messages.
+>>
+>> Before this patch, this is how the kernel log started:
+>> -----------------------------------------------------
+>>   >  Brought up 2 CPUs
+>>   >  devtmpfs: initialized
+>>   >  NET: Registered protocol family 16
+>>   [...]
+>> -----------------------------------------------------
+>>
+>> After the patch the early messages show up:
+>> -----------------------------------------------------
+>>   >  Using P5020 DS machine description
+>>   >  MMU: Supported page sizes
+>>   >           4 KB as direct
+>>   >        4096 KB as direct
+>>   [...]
+>> -----------------------------------------------------
+>>
+>> At console init, the kernel tried to flush the log buffer.
+>> Since the paravirt was not yet initialized the console write
+>> function failed silently, thus losing the buffered messages.
+> [snip]
+>> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+>> index 6da881b..ce092ac 100644
+>> --- a/arch/powerpc/kernel/setup_64.c
+>> +++ b/arch/powerpc/kernel/setup_64.c
+>> @@ -66,6 +66,7 @@
+>>   #include<asm/code-patching.h>
+>>   #include<asm/kvm_ppc.h>
+>>   #include<asm/hugetlb.h>
+>> +#include<asm/epapr_hcalls.h>
+>>
+>>   #include "setup.h"
+>>
+>> @@ -599,6 +600,8 @@ void __init setup_arch(char **cmdline_p)
+>>   	/* Initialize the MMU context management stuff */
+>>   	mmu_context_init();
+>>
+>> +	epapr_paravirt_init();
+>> +
+>>   	kvm_linear_init();
+>>
+>>   	/* Interrupt code needs to be 64K-aligned */
+>
+> Is this early enough?  There's udbg activity before this.  Maybe it
+> should even go before udbg_early_init...
 
+Right. I'll try moving it in machine_init().
 
+> This would require converting
+> the code to use the early device tree functions.
+>
 
-On 06/26/2013 04:21 PM, Alexey Kardashevskiy wrote:
-> VFIO IOMMU driver for sPAPR TCE locks the whole DMA window by setting
-> ones to iommu_table.it_map. However this was not protected by the locks
-> which other clients of iommu_table use.
-> 
-> The patch fixes this.
-> 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
-> 
-> v1->v2:
-> * Fixed a potential warning from lockdep.
-> 
-> ---
->  arch/powerpc/kernel/iommu.c |   25 +++++++++++++++++++++++--
->  1 file changed, 23 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-> index b20ff17..5c1fc89 100644
-> --- a/arch/powerpc/kernel/iommu.c
-> +++ b/arch/powerpc/kernel/iommu.c
-> @@ -1076,25 +1076,42 @@ EXPORT_SYMBOL_GPL(iommu_put_tce_user_mode);
->  int iommu_take_ownership(struct iommu_table *tbl)
->  {
->  	unsigned long sz = (tbl->it_size + 7) >> 3;
-> +	unsigned long i, flags;
-> +	int ret = 0;
-> +
-> +	spin_lock_irqsave(&tbl->large_pool.lock, flags);
-> +	for (i = 0; i < tbl->nr_pools; i++)
-> +		spin_lock(&tbl->pools[i].lock);
->  
->  	if (tbl->it_offset == 0)
->  		clear_bit(0, tbl->it_map);
->  
->  	if (!bitmap_empty(tbl->it_map, tbl->it_size)) {
->  		pr_err("iommu_tce: it_map is not empty");
-> -		return -EBUSY;
-> +		ret = -EBUSY;
-> +		goto unlock_exit;
->  	}
->  
->  	memset(tbl->it_map, 0xff, sz);
->  	iommu_clear_tces_and_put_pages(tbl, tbl->it_offset, tbl->it_size);
->  
-> -	return 0;
-> +unlock_exit:
-> +	for (i = 0; i < tbl->nr_pools; i++)
-> +		spin_unlock(&tbl->pools[i].lock);
-> +	spin_unlock_irqrestore(&tbl->large_pool.lock, flags);
-> +
-> +	return ret;
->  }
->  EXPORT_SYMBOL_GPL(iommu_take_ownership);
->  
->  void iommu_release_ownership(struct iommu_table *tbl)
->  {
->  	unsigned long sz = (tbl->it_size + 7) >> 3;
-> +	unsigned long i, flags;
-> +
-> +	spin_lock_irqsave(&tbl->large_pool.lock, flags);
-> +	for (i = 0; i < tbl->nr_pools; i++)
-> +		spin_lock(&tbl->pools[i].lock);
->  
->  	iommu_clear_tces_and_put_pages(tbl, tbl->it_offset, tbl->it_size);
->  	memset(tbl->it_map, 0, sz);
-> @@ -1102,6 +1119,10 @@ void iommu_release_ownership(struct iommu_table *tbl)
->  	/* Restore bit#0 set by iommu_init_table() */
->  	if (tbl->it_offset == 0)
->  		set_bit(0, tbl->it_map);
-> +
-> +	for (i = 0; i < tbl->nr_pools; i++)
-> +		spin_unlock(&tbl->pools[i].lock);
-> +	spin_unlock_irqrestore(&tbl->large_pool.lock, flags);
->  }
->  EXPORT_SYMBOL_GPL(iommu_release_ownership);
->  
-> 
+I see. Had a look at that api and it seems pretty limited.
+I couldn't find a simple way of reading a property other than scanning 
+the entire tree with of_scan_flat_dt().
 
-
--- 
-Alexey
+---
+Best Regards, Laurentiu
