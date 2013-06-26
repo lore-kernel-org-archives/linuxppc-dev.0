@@ -1,27 +1,26 @@
-Return-Path: <B07421@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe002.messaging.microsoft.com [216.32.180.12])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 02CCF2C0091
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 04:57:08 +1000 (EST)
-Received: from mail219-va3 (localhost [127.0.0.1])	by
- mail219-va3-R.bigfish.com (Postfix) with ESMTP id 579D3600231	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 18:57:03 +0000 (UTC)
-Received: from VA3EHSMHS038.bigfish.com (unknown [10.7.14.242])	by
- mail219-va3.bigfish.com (Postfix) with ESMTP id 036C97E016B	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 18:56:50 +0000 (UTC)
-Date: Wed, 26 Jun 2013 13:56:45 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: powerpc/85xx: Move ePAPR paravirt initialization earlier
-To: Tudor Laurentiu <Laurentiu.Tudor@freescale.com>
-In-Reply-To: <51CAE047.8030605@freescale.com> (from
- Laurentiu.Tudor@freescale.com on Wed Jun 26 07:36:23 2013)
-Message-ID: <1372273005.8183.32@snotra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 45DD72C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 05:14:56 +1000 (EST)
+Message-ID: <1372274083.30572.577.camel@ul30vt.home>
+Subject: Re: [PATCH 3/3 v16] iommu/fsl: Freescale PAMU driver and iommu
+ implementation.
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Sethi Varun-B16395 <B16395@freescale.com>
+Date: Wed, 26 Jun 2013 13:14:43 -0600
+In-Reply-To: <C5ECD7A89D1DC44195F34B25E172658D5DD70C@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <1371744089-17780-1-git-send-email-Varun.Sethi@freescale.com>
+ <1371744089-17780-2-git-send-email-Varun.Sethi@freescale.com>
+ <1372136211.30572.377.camel@ul30vt.home>
+ <C5ECD7A89D1DC44195F34B25E172658D5DD70C@039-SN2MPN1-011.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Wood Scott-B07421 <B07421@freescale.com>, Timur Tabi <timur@tabi.org>,
+ "joro@8bytes.org" <joro@8bytes.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Yoder Stuart-B08248 <B08248@freescale.com>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,18 +30,171 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/26/2013 07:36:23 AM, Tudor Laurentiu wrote:
-> On 06/26/2013 02:14 AM, Scott Wood wrote:
->> This would require converting
->> the code to use the early device tree functions.
->>=20
->=20
-> I see. Had a look at that api and it seems pretty limited.
-> I couldn't find a simple way of reading a property other than =20
-> scanning the entire tree with of_scan_flat_dt().
+On Wed, 2013-06-26 at 06:24 +0000, Sethi Varun-B16395 wrote:
+> 
+> > -----Original Message-----
+> > From: Alex Williamson [mailto:alex.williamson@redhat.com]
+> > Sent: Tuesday, June 25, 2013 10:27 AM
+> > To: Sethi Varun-B16395
+> > Cc: joro@8bytes.org; iommu@lists.linux-foundation.org; linuxppc-
+> > dev@lists.ozlabs.org; linux-kernel@vger.kernel.org;
+> > benh@kernel.crashing.org; galak@kernel.crashing.org; Yoder Stuart-B08248;
+> > Wood Scott-B07421; Timur Tabi
+> > Subject: Re: [PATCH 3/3 v16] iommu/fsl: Freescale PAMU driver and iommu
+> > implementation.
+> > 
+> > On Thu, 2013-06-20 at 21:31 +0530, Varun Sethi wrote:
+> > 
+> > > +#define REQ_ACS_FLAGS	(PCI_ACS_SV | PCI_ACS_RR | PCI_ACS_CR |
+> > PCI_ACS_UF)
+> > > +
+> > > +static struct iommu_group *get_device_iommu_group(struct device *dev)
+> > > +{
+> > > +	struct iommu_group *group;
+> > > +
+> > > +	group = iommu_group_get(dev);
+> > > +	if (!group)
+> > > +		group = iommu_group_alloc();
+> > > +
+> > > +	return group;
+> > > +}
+> > > +
+> > [snip]
+> > > +
+> > 
+> > This really gets parent or peer, right?
+> > 
+> > > +static struct iommu_group *get_peer_pci_device_group(struct pci_dev
+> > > +*pdev) {
+> > > +	struct iommu_group *group = NULL;
+> > > +
+> > > +	/* check if this is the first device on the bus*/
+> > > +	if (pdev->bus_list.next == pdev->bus_list.prev) {
+> > 
+> > It's a list_head, use list functions.  The list implementation should be
+> > treated as opaque.
+> > 
+> > if (list_is_singular(&pdev->bus_list))
+> > 
+> > > +		struct pci_bus *bus = pdev->bus->parent;
+> > > +		/* Traverese the parent bus list to get
+> > > +		 * pdev & dev for the sibling device.
+> > > +		 */
+> > > +		while (bus) {
+> > > +			if (!list_empty(&bus->devices)) {
+> > > +				pdev = container_of(bus->devices.next,
+> > > +					            struct pci_dev, bus_list);
+> > 
+> > pdev = list_first_entry(&bus->devices, struct pci_dev, bus_list);
+> > 
+> > > +				group = iommu_group_get(&pdev->dev);
+> > > +				break;
+> > > +			} else
+> > > +				bus = bus->parent;
+> > 
+> > Is this ever reached?  Don't you always have bus->self?
+> > 
+> [Sethi Varun-B16395] Not sure I understand. Trying to get the group
+> information from the parent bus, if there are no sibling devices on
+> the current bus.
 
-What's wrong with scanning the entire tree?  The data format doesn't =20
-allow any more efficient type of lookup (it was designed to be simple =20
-and small, not fast).
+I assume there's always a bridge on a bus, but maybe that bridge
+(parent->self) is not in the list of parent->devices?  Is that the case?
+If not, then there's always a device on the bus, the bridge that created
+it.
 
--Scott=
+> > > +		}
+> > > +	} else {
+> > > +		/*
+> > > +		 * Get the pdev & dev for the sibling device
+> > > +		 */
+> > > +		pdev = container_of(pdev->bus_list.prev,
+> > > +				    struct pci_dev, bus_list);
+> > 
+> > How do you know if you're at the head or tail of the list?
+> > 
+> > struct pci_dev *tmp;
+> > list_for_each_entry(tmp, &pdev->bus_list, bus_list) {
+> > 	if (tmp == pdev)
+> > 		continue;
+> > 
+> > 	group = iommu_group_get(&tmp->dev);
+> > 	break;
+> > }
+> > 
+> > > +		group = iommu_group_get(&pdev->dev);
+> > > +	}
+> > > +
+> > > +	return group;
+> > > +}
+> > > +
+> > > +static struct iommu_group *get_pci_device_group(struct pci_dev *pdev)
+> > > +{
+> > > +	struct iommu_group *group = NULL;
+> > > +	struct pci_dev *bridge, *dma_pdev = NULL;
+> > > +	struct pci_controller *pci_ctl;
+> > > +	bool pci_endpt_partioning;
+> > > +
+> > > +	pci_ctl = pci_bus_to_host(pdev->bus);
+> > > +	pci_endpt_partioning = check_pci_ctl_endpt_part(pci_ctl);
+> > > +	/* We can partition PCIe devices so assign device group to the
+> > device */
+> > > +	if (pci_endpt_partioning) {
+> > > +		bridge = pci_find_upstream_pcie_bridge(pdev);
+> > > +		if (bridge) {
+> > > +			if (pci_is_pcie(bridge))
+> > > +				dma_pdev = pci_get_domain_bus_and_slot(
+> > > +						pci_domain_nr(pdev->bus),
+> > > +						bridge->subordinate->number, 0);
+> > > +			if (!dma_pdev)
+> > > +				dma_pdev = pci_dev_get(bridge);
+> > > +		} else
+> > > +			dma_pdev = pci_dev_get(pdev);
+> > > +
+> > > +		/* Account for quirked devices */
+> > > +		swap_pci_ref(&dma_pdev, pci_get_dma_source(dma_pdev));
+> > > +
+> > > +		/*
+> > > +		 * If it's a multifunction device that does not support our
+> > > +		 * required ACS flags, add to the same group as function 0.
+> > > +		 */
+> > 
+> > See c14d2690 in Joerg's next tree, using function 0 was a poor
+> > assumption.
+> [Sethi Varun-B16395] ok.
+> 
+> > 
+> > > +		if (dma_pdev->multifunction &&
+> > > +		    !pci_acs_enabled(dma_pdev, REQ_ACS_FLAGS))
+> > > +			swap_pci_ref(&dma_pdev,
+> > > +				     pci_get_slot(dma_pdev->bus,
+> > > +						  PCI_DEVFN(PCI_SLOT(dma_pdev-
+> > >devfn),
+> > > +						  0)));
+> > > +
+> > > +		group = get_device_iommu_group(&pdev->dev);
+> > > +		pci_dev_put(pdev);
+> > 
+> > What was the point of all the above if we use pdev here instead of
+> > dma_pdev?  Wrong device and broken reference counting.
+> [Sethi Varun-B16395] Will fix this
+> 
+>   This also isn't
+> > testing ACS all the way up to the root complex or controller.
+> [Sethi Varun-B16395] In our case the IOMMU can differentiate
+> transactions based on the LIODN. The PCIe controller can generate a
+> unique LIODN based on the bus,device,function number. I believe this
+> would even be true for devices connected to a PCIe bridge (and not on
+> the root bus). So, do we still need to check for ACS up to the root
+> node?
+
+ACS is the PCI capability that tells us whether a device allows
+peer-to-peer or requires all DMA to be forwarded upstream.  At any step
+along the way from an endpoint to the IOMMU the transaction can be
+re-routed.  We therefore need to test the ACS property not only of the
+endpoint, but every device between the endpoint and the IOMMU to form
+the IOMMU groups.  An IOMMU cannot isolate a device if a DMA access is
+re-routed by a link in the topology that prevents the IOMMU from even
+being part of the transaction.  Thanks,
+
+Alex
