@@ -1,37 +1,29 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 48B7A2C007B
- for <linuxppc-dev@ozlabs.org>; Wed, 26 Jun 2013 18:39:14 +1000 (EST)
-Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 26 Jun 2013 14:01:42 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id D14C43940053
- for <linuxppc-dev@ozlabs.org>; Wed, 26 Jun 2013 14:09:07 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5Q8dMvL22151420
- for <linuxppc-dev@ozlabs.org>; Wed, 26 Jun 2013 14:09:23 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5Q8d3fu015051
- for <linuxppc-dev@ozlabs.org>; Wed, 26 Jun 2013 18:39:04 +1000
-Message-ID: <51CAA885.8060406@linux.vnet.ibm.com>
-Date: Wed, 26 Jun 2013 14:08:29 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Return-Path: <R65777@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0251.outbound.messaging.microsoft.com [213.199.154.251])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 254F52C008A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 18:44:14 +1000 (EST)
+From: Bhushan Bharat-R65777 <R65777@freescale.com>
+To: tiejun.chen <tiejun.chen@windriver.com>
+Subject: RE: [PATCH 4/6 v5] KVM: PPC: exit to user space on "ehpriv"
+ instruction
+Date: Wed, 26 Jun 2013 08:44:05 +0000
+Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D07086C2F@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1372225346-5029-1-git-send-email-Bharat.Bhushan@freescale.com>
+ <1372225346-5029-5-git-send-email-Bharat.Bhushan@freescale.com>
+ <51CA903A.4070809@windriver.com>
+In-Reply-To: <51CA903A.4070809@windriver.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 7/8] powerpc/perf: Core EBB support for 64-bit book3s
-References: <1372073336-8189-1-git-send-email-michael@ellerman.id.au>
- <1372073336-8189-7-git-send-email-michael@ellerman.id.au>
-In-Reply-To: <1372073336-8189-7-git-send-email-michael@ellerman.id.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, sukadev@linux.vnet.ibm.com,
- Paul Mackerras <paulus@samba.org>
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "mikey@neuling.org" <mikey@neuling.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>, "agraf@suse.de" <agraf@suse.de>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,613 +33,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/24/2013 04:58 PM, Michael Ellerman wrote:
-> Add support for EBB (Event Based Branches) on 64-bit book3s. See the
-> included documentation for more details.
-> 
-> EBBs are a feature which allows the hardware to branch directly to a
-> specified user space address when a PMU event overflows. This can be
-> used by programs for self-monitoring with no kernel involvement in the
-> inner loop.
-> 
-> Most of the logic is in the generic book3s code, primarily to avoid a
-> proliferation of PMU callbacks.
-> 
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> ---
->  Documentation/powerpc/00-INDEX               |    2 +
->  Documentation/powerpc/pmu-ebb.txt            |  122 +++++++++++++++++++
->  arch/powerpc/include/asm/perf_event_server.h |    6 +
->  arch/powerpc/include/asm/processor.h         |    3 +-
->  arch/powerpc/include/asm/reg.h               |    8 ++
->  arch/powerpc/include/asm/switch_to.h         |   14 +++
->  arch/powerpc/kernel/process.c                |    4 +
->  arch/powerpc/perf/core-book3s.c              |  161 +++++++++++++++++++++++---
->  8 files changed, 306 insertions(+), 14 deletions(-)
->  create mode 100644 Documentation/powerpc/pmu-ebb.txt
-> 
-> diff --git a/Documentation/powerpc/00-INDEX b/Documentation/powerpc/00-INDEX
-> index dd9e928..05026ce 100644
-> --- a/Documentation/powerpc/00-INDEX
-> +++ b/Documentation/powerpc/00-INDEX
-> @@ -14,6 +14,8 @@ hvcs.txt
->  	- IBM "Hypervisor Virtual Console Server" Installation Guide
->  mpc52xx.txt
->  	- Linux 2.6.x on MPC52xx family
-> +pmu-ebb.txt
-> +	- Description of the API for using the PMU with Event Based Branches.
->  qe_firmware.txt
->  	- describes the layout of firmware binaries for the Freescale QUICC
->  	  Engine and the code that parses and uploads the microcode therein.
-> diff --git a/Documentation/powerpc/pmu-ebb.txt b/Documentation/powerpc/pmu-ebb.txt
-> new file mode 100644
-> index 0000000..65b6989
-> --- /dev/null
-> +++ b/Documentation/powerpc/pmu-ebb.txt
-> @@ -0,0 +1,122 @@
-> +PMU Event Based Branches
-> +========================
-> +
-> +Event Based Branches (EBBs) are a feature which allows the hardware to
-> +branch directly to a specified user space address when certain events occur.
-> +
-> +The full specification is available in Power ISA v2.07:
-> +
-> +  https://www.power.org/documentation/power-isa-version-2-07/
-> +
-> +One type of event for which EBBs can be configured is PMU exceptions. This
-> +document describes the API for configuring the Power PMU to generate EBBs,
-> +using the Linux perf_events API.
-> +
-> +
-> +Terminology
-> +-----------
-> +
-> +Throughout this document we will refer to an "EBB event" or "EBB events". This
-> +just refers to a struct perf_event which has set the "EBB" flag in its
-> +attr.config. All events which can be configured on the hardware PMU are
-> +possible "EBB events".
-> +
-
-Then why we have a condition like this where the event code must have the PMC
-value inside it (in the next patch) ?
-
-
-+	if (!pmc && ebb)
-+		/* EBB events must specify the PMC */
-+		return -1;
-
-
-> +
-> +Background
-> +----------
-> +
-> +When a PMU EBB occurs it is delivered to the currently running process. As such
-> +EBBs can only sensibly be used by programs for self-monitoring.
-> +
-> +It is a feature of the perf_events API that events can be created on other
-> +processes, subject to standard permission checks. This is also true of EBB
-> +events, however unless the target process enables EBBs (via mtspr(BESCR)) no
-> +EBBs will ever be delivered.
-> +
-> +This makes it possible for a process to enable EBBs for itself, but not
-> +actually configure any events. At a later time another process can come along
-> +and attach an EBB event to the process, which will then cause EBBs to be
-> +delivered to the first process. It's not clear if this is actually useful.
-> +
-
-May be useful when a "master process" wants each of the thread to collect statistics
-(about the same thread) on various dynamically configured events (as and when it
-wishes) and report it back to the master process. Just a thought about a case where
-it can be useful.
-
-> +When the PMU is configured for EBBs, all PMU interrupts are delivered to the
-> +user process. This means once an EBB event is scheduled on the PMU, no non-EBB
-> +events can be configured. This means that EBB events can not be run
-> +concurrently with regular 'perf' commands.
-> +
-> +It is however safe to run 'perf' commands on a process which is using EBBs. In
-> +general the EBB event will take priority, though it depends on the exact
-> +options used on the perf_event_open() and the timing.
-> +
-
-This is confusing. If a process A is using EBB for itself on event "p" and gets scheduled
-on CPU X. Process B has started perf session on process A for event "q". Now the PMU of
-CPU X would to be programmed for both the events "p" and "q" on different PMCs at the same
-point of time (with a condition checking that they dont collide on the same PMC though).
-What you are saying is that when the event "p" overflows, the PMU interrupt (CPU X) would
-be delivered to the process A user space and when the event "q" overflows, the PMU interrupt
-(CPU X) would be delivered inside the perf kernel component "perf_event_interrupt()" and would
-be processed for the perf session initiated by the second process B on process A.
-
-But again this contradicts your previous statement that when PMU is configured for EBB, *all*
-PMU interrupts would be delivered to the user space. Could you please kindly clarify this
-scenario.
-
-> +
-> +Creating an EBB event
-> +---------------------
-> +
-> +To request that an event is counted using EBB, the event code should have bit
-> +63 set.
-> +
-
-This macro (defined in arch header) identifies any event as an EBB event
-
-+/*
-+ * We use the event config bit 63 as a flag to request EBB.
-+ */
-+#define EVENT_CONFIG_EBB_SHIFT	63
-+
-
-So any user program would have to include the arch header to be able to set EBB bit.
-Numeric 63 will not be a clean ABI.
-
-> +EBB events must be created with a particular, and restrictive, set of
-> +attributes - this is so that they interoperate correctly with the rest of the
-> +perf_events subsystem.
-> +
-> +An EBB event must be created with the "pinned" and "exclusive" attributes set.
-> +Note that if you are creating a group of EBB events, only the leader can have
-> +these attributes set.
-> +
-> +An EBB event must NOT set any of the "inherit", "sample_period", "freq" or
-> +"enable_on_exec" attributes.
-> +
-> +An EBB event must be attached to a task. This is specified to perf_event_open()
-> +by passing a pid value, typically 0 indicating the current task.
-> +
-> +All events in a group must agree on whether they want EBB. That is all events
-> +must request EBB, or none may request EBB.
-> +
-> +
-> +Enabling an EBB event
-> +---------------------
-> +
-> +Once an EBB event has been successfully opened, it must be enabled with the
-> +perf_events API. This can be achieved either via the ioctl() interface, or the
-> +prctl() interface.
-> +
-> +However, due to the design of the perf_events API, enabling an event does not
-> +guarantee that it has been scheduled on the PMU. To ensure that the EBB event
-> +has been scheduled on the PMU, you must perform a read() on the event. If the
-> +read() returns EOF, then the event has not been scheduled and EBBs are not
-> +enabled.
-> +
-> +
-> +Reading an EBB event
-> +--------------------
-> +
-> +It is possible to read() from an EBB event. However the results are
-> +meaningless. Because interrupts are being delivered to the user process the
-> +kernel is not able to count the event, and so will return a junk value.
-> +
-> +
-> +Closing an EBB event
-> +--------------------
-> +
-> +When an EBB event is finished with, you can close it using close() as for any
-> +regular event. If this is the last EBB event the PMU will be deconfigured and
-> +no further PMU EBBs will be delivered.
-> +
-> +
-> +EBB Handler
-> +-----------
-> +
-> +The EBB handler is just regular userspace code, however it must be written in
-> +the style of an interrupt handler. When the handler is entered all registers
-> +are live (possibly) and so must be saved somehow before the handler can invoke
-> +other code.
-> +
-> +It's up to the program how to handle this. For C programs a relatively simple
-> +option is to create an interrupt frame on the stack and save registers there.
-> +
-
-Would be a great if you could give sample framework here on how to save and restore
-registers. Moreover we could actually put the various essential parts of the EBB
-handler construct in the perf_event_server.h file, so that the user would be able
-to user them directly and only focus on core part of the event handling.
-
-> +Fork
-> +----
-> +
-> +EBB events are not inherited across fork. If the child process wishes to use
-> +EBBs it should open a new event for itself. Similarly the EBB state in
-> +BESCR/EBBHR/EBBRR is cleared across fork().
-> diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
-> index f265049..2dd7bfc 100644
-> --- a/arch/powerpc/include/asm/perf_event_server.h
-> +++ b/arch/powerpc/include/asm/perf_event_server.h
-> @@ -60,6 +60,7 @@ struct power_pmu {
->  #define PPMU_HAS_SSLOT		0x00000020 /* Has sampled slot in MMCRA */
->  #define PPMU_HAS_SIER		0x00000040 /* Has SIER */
->  #define PPMU_BHRB		0x00000080 /* has BHRB feature enabled */
-> +#define PPMU_EBB		0x00000100 /* supports event based branch */
-> 
->  /*
->   * Values for flags to get_alternatives()
-> @@ -68,6 +69,11 @@ struct power_pmu {
->  #define PPMU_LIMITED_PMC_REQD	2	/* have to put this on a limited PMC */
->  #define PPMU_ONLY_COUNT_RUN	4	/* only counting in run state */
-> 
-> +/*
-> + * We use the event config bit 63 as a flag to request EBB.
-> + */
-> +#define EVENT_CONFIG_EBB_SHIFT	63
-> +
->  extern int register_power_pmu(struct power_pmu *);
-> 
->  struct pt_regs;
-> diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-> index 48af5d7..f9a4cdc 100644
-> --- a/arch/powerpc/include/asm/processor.h
-> +++ b/arch/powerpc/include/asm/processor.h
-> @@ -287,8 +287,9 @@ struct thread_struct {
->  	unsigned long	siar;
->  	unsigned long	sdar;
->  	unsigned long	sier;
-> -	unsigned long	mmcr0;
->  	unsigned long	mmcr2;
-> +	unsigned 	mmcr0;
-> +	unsigned 	used_ebb;
->  #endif
->  };
-> 
-
-Why mmrc0 has to change position here.
-
-
-> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-> index 362142b..5d7d9c2 100644
-> --- a/arch/powerpc/include/asm/reg.h
-> +++ b/arch/powerpc/include/asm/reg.h
-> @@ -621,6 +621,9 @@
->  #define   MMCR0_PMXE	0x04000000UL /* performance monitor exception enable */
->  #define   MMCR0_FCECE	0x02000000UL /* freeze ctrs on enabled cond or event */
->  #define   MMCR0_TBEE	0x00400000UL /* time base exception enable */
-> +#define   MMCR0_EBE	0x00100000UL /* Event based branch enable */
-> +#define   MMCR0_PMCC	0x000c0000UL /* PMC control */
-> +#define   MMCR0_PMCC_U6	0x00080000UL /* PMC1-6 are R/W by user (PR) */
->  #define   MMCR0_PMC1CE	0x00008000UL /* PMC1 count enable*/
->  #define   MMCR0_PMCjCE	0x00004000UL /* PMCj count enable*/
->  #define   MMCR0_TRIGGER	0x00002000UL /* TRIGGER enable */
-> @@ -674,6 +677,11 @@
->  #define   SIER_SIAR_VALID	0x0400000	/* SIAR contents valid */
->  #define   SIER_SDAR_VALID	0x0200000	/* SDAR contents valid */
-> 
-> +/* When EBB is enabled, some of MMCR0/MMCR2/SIER are user accessible */
-> +#define MMCR0_USER_MASK	(MMCR0_FC | MMCR0_PMXE | MMCR0_PMAO)
-> +#define MMCR2_USER_MASK	0x4020100804020000UL /* (FC1P|FC2P|FC3P|FC4P|FC5P|FC6P) */
-> +#define SIER_USER_MASK	0x7fffffUL
-> +
-
-Ohh these are the bits in SPR which are available in user space to read and write as well ?
-Better to have macros instead of hex codes here.
-
->  #define SPRN_PA6T_MMCR0 795
->  #define   PA6T_MMCR0_EN0	0x0000000000000001UL
->  #define   PA6T_MMCR0_EN1	0x0000000000000002UL
-> diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
-> index 200d763..49a13e0 100644
-> --- a/arch/powerpc/include/asm/switch_to.h
-> +++ b/arch/powerpc/include/asm/switch_to.h
-> @@ -67,4 +67,18 @@ static inline void flush_spe_to_thread(struct task_struct *t)
->  }
->  #endif
-> 
-> +static inline void clear_task_ebb(struct task_struct *t)
-> +{
-> +#ifdef CONFIG_PPC_BOOK3S_64
-> +    /* EBB perf events are not inherited, so clear all EBB state. */
-> +    t->thread.bescr = 0;
-> +    t->thread.mmcr2 = 0;
-> +    t->thread.mmcr0 = 0;
-> +    t->thread.siar = 0;
-> +    t->thread.sdar = 0;
-> +    t->thread.sier = 0;
-> +    t->thread.used_ebb = 0;
-> +#endif
-> +}
-> +
->  #endif /* _ASM_POWERPC_SWITCH_TO_H */
-> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-> index 076d124..c517dbe 100644
-> --- a/arch/powerpc/kernel/process.c
-> +++ b/arch/powerpc/kernel/process.c
-> @@ -916,7 +916,11 @@ int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)
->  	flush_altivec_to_thread(src);
->  	flush_vsx_to_thread(src);
->  	flush_spe_to_thread(src);
-> +
->  	*dst = *src;
-> +
-> +	clear_task_ebb(dst);
-> +
->  	return 0;
->  }
-
-Blank lines are not necessary here.
-
-> 
-> diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-> index d3ee2e5..c6bbbf9 100644
-> --- a/arch/powerpc/perf/core-book3s.c
-> +++ b/arch/powerpc/perf/core-book3s.c
-> @@ -77,6 +77,9 @@ static unsigned int freeze_events_kernel = MMCR0_FCS;
->  #define MMCR0_PMCjCE		MMCR0_PMCnCE
->  #define MMCR0_FC56		0
->  #define MMCR0_PMAO		0
-> +#define MMCR0_EBE		0
-> +#define MMCR0_PMCC		0
-> +#define MMCR0_PMCC_U6		0
-> 
->  #define SPRN_MMCRA		SPRN_MMCR2
->  #define MMCRA_SAMPLE_ENABLE	0
-> @@ -104,6 +107,15 @@ static inline int siar_valid(struct pt_regs *regs)
->  	return 1;
->  }
-> 
-> +static bool is_ebb_event(struct perf_event *event) { return false; }
-> +static int ebb_event_check(struct perf_event *event) { return 0; }
-> +static void ebb_event_add(struct perf_event *event) { }
-> +static void ebb_switch_out(unsigned long mmcr0) { }
-> +static unsigned long ebb_switch_in(bool ebb, unsigned long mmcr0)
-> +{
-> +	return mmcr0;
-> +}
-> +
->  static inline void power_pmu_bhrb_enable(struct perf_event *event) {}
->  static inline void power_pmu_bhrb_disable(struct perf_event *event) {}
->  void power_pmu_flush_branch_stack(void) {}
-> @@ -464,6 +476,89 @@ void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
->  	return;
->  }
-> 
-> +static bool is_ebb_event(struct perf_event *event)
-> +{
-> +	/*
-> +	 * This could be a per-PMU callback, but we'd rather avoid the cost. We
-> +	 * check that the PMU supports EBB, meaning those that don't can still
-> +	 * use bit 63 of the event code for something else if they wish.
-> +	 */
-> +	return (ppmu->flags & PPMU_EBB) &&
-> +	       ((event->attr.config >> EVENT_CONFIG_EBB_SHIFT) & 1);
-> +}
-> +
-> +static int ebb_event_check(struct perf_event *event)
-> +{
-> +	struct perf_event *leader = event->group_leader;
-> +
-> +	/* Event and group leader must agree on EBB */
-> +	if (is_ebb_event(leader) != is_ebb_event(event))
-> +		return -EINVAL;
-> +
-> +	if (is_ebb_event(event)) {
-> +		if (!(event->attach_state & PERF_ATTACH_TASK))
-> +			return -EINVAL;
-> +
-> +		if (!leader->attr.pinned || !leader->attr.exclusive)
-> +			return -EINVAL;
-> +
-> +		if (event->attr.inherit || event->attr.sample_period ||
-> +		    event->attr.enable_on_exec || event->attr.freq)
-> +			return -EINVAL;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static void ebb_event_add(struct perf_event *event)
-> +{
-> +	if (!is_ebb_event(event) || current->thread.used_ebb)
-> +		return;
-> +
-> +	/*
-> +	 * IFF this is the first time we've added an EBB event, set
-> +	 * PMXE in the user MMCR0 so we can detect when it's cleared by
-> +	 * userspace. We need this so that we can context switch while
-> +	 * userspace is in the EBB handler (where PMXE is 0).
-> +	 */
-> +	current->thread.used_ebb = 1;
-> +	current->thread.mmcr0 |= MMCR0_PMXE;
-> +}
-> +
-> +static void ebb_switch_out(unsigned long mmcr0)
-> +{
-> +	if (!(mmcr0 & MMCR0_EBE))
-> +		return;
-> +
-> +	current->thread.siar  = mfspr(SPRN_SIAR);
-> +	current->thread.sier  = mfspr(SPRN_SIER);
-> +	current->thread.sdar  = mfspr(SPRN_SDAR);
-> +	current->thread.mmcr0 = mmcr0 & MMCR0_USER_MASK;
-> +	current->thread.mmcr2 = mfspr(SPRN_MMCR2) & MMCR2_USER_MASK;
-> +}
-> +
-
-We also need to filter sier value for SIER_USER_MASK, right ? 
-
-> +static unsigned long ebb_switch_in(bool ebb, unsigned long mmcr0)
-> +{
-> +	if (!ebb)
-> +		goto out;
-> +
-> +	/* Enable EBB and read/write to all 6 PMCs for userspace */
-> +	mmcr0 |= MMCR0_EBE | MMCR0_PMCC_U6;
-> +
-> +	/* Add any bits from the user reg, FC or PMAO */
-> +	mmcr0 |= current->thread.mmcr0;
-> +
-> +	/* Be careful not to set PMXE if userspace had it cleared */
-> +	if (!(current->thread.mmcr0 & MMCR0_PMXE))
-> +		mmcr0 &= ~MMCR0_PMXE;
-> +
-> +	mtspr(SPRN_SIAR, current->thread.siar);
-> +	mtspr(SPRN_SIER, current->thread.sier);
-> +	mtspr(SPRN_SDAR, current->thread.sdar);
-> +	mtspr(SPRN_MMCR2, current->thread.mmcr2);
-> +out:
-> +	return mmcr0;
-> +}
->  #endif /* CONFIG_PPC64 */
-> 
->  static void perf_event_interrupt(struct pt_regs *regs);
-> @@ -734,6 +829,13 @@ static void power_pmu_read(struct perf_event *event)
-> 
->  	if (!event->hw.idx)
->  		return;
-> +
-> +	if (is_ebb_event(event)) {
-> +		val = read_pmc(event->hw.idx);
-> +		local64_set(&event->hw.prev_count, val);
-> +		return;
-> +	}
-> +
->  	/*
->  	 * Performance monitor interrupts come even when interrupts
->  	 * are soft-disabled, as long as interrupts are hard-enabled.
-> @@ -854,7 +956,7 @@ static void write_mmcr0(struct cpu_hw_events *cpuhw, unsigned long mmcr0)
->  static void power_pmu_disable(struct pmu *pmu)
->  {
->  	struct cpu_hw_events *cpuhw;
-> -	unsigned long flags, val;
-> +	unsigned long flags, mmcr0, val;
-> 
->  	if (!ppmu)
->  		return;
-> @@ -871,11 +973,11 @@ static void power_pmu_disable(struct pmu *pmu)
->  		}
-> 
->  		/*
-> -		 * Set the 'freeze counters' bit, clear PMAO/FC56.
-> +		 * Set the 'freeze counters' bit, clear EBE/PMCC/PMAO/FC56.
->  		 */
-> -		val  = mfspr(SPRN_MMCR0);
-> +		val  = mmcr0 = mfspr(SPRN_MMCR0);
->  		val |= MMCR0_FC;
-> -		val &= ~(MMCR0_PMAO | MMCR0_FC56);
-> +		val &= ~(MMCR0_EBE | MMCR0_PMCC | MMCR0_PMAO | MMCR0_FC56);
-> 
->  		/*
->  		 * The barrier is to make sure the mtspr has been
-> @@ -896,7 +998,10 @@ static void power_pmu_disable(struct pmu *pmu)
-> 
->  		cpuhw->disabled = 1;
->  		cpuhw->n_added = 0;
-> +
-> +		ebb_switch_out(mmcr0);
->  	}
-> +
->  	local_irq_restore(flags);
->  }
-> 
-> @@ -911,15 +1016,15 @@ static void power_pmu_enable(struct pmu *pmu)
->  	struct cpu_hw_events *cpuhw;
->  	unsigned long flags;
->  	long i;
-> -	unsigned long val;
-> +	unsigned long val, mmcr0;
->  	s64 left;
->  	unsigned int hwc_index[MAX_HWEVENTS];
->  	int n_lim;
->  	int idx;
-> +	bool ebb;
-> 
->  	if (!ppmu)
->  		return;
-> -
->  	local_irq_save(flags);
-> 
->  	cpuhw = &__get_cpu_var(cpu_hw_events);
-> @@ -934,6 +1039,13 @@ static void power_pmu_enable(struct pmu *pmu)
->  	cpuhw->disabled = 0;
-> 
->  	/*
-> +	 * EBB requires an exclusive group and all events must have the EBB
-> +	 * flag set, or not set, so we can just check a single event. Also we
-> +	 * know we have at least one event.
-> +	 */
-> +	ebb = is_ebb_event(cpuhw->event[0]);
-> +
-> +	/*
->  	 * If we didn't change anything, or only removed events,
->  	 * no need to recalculate MMCR* settings and reset the PMCs.
->  	 * Just reenable the PMU with the current MMCR* settings
-> @@ -1008,25 +1120,34 @@ static void power_pmu_enable(struct pmu *pmu)
->  			++n_lim;
->  			continue;
->  		}
-> -		val = 0;
-> -		if (event->hw.sample_period) {
-> -			left = local64_read(&event->hw.period_left);
-> -			if (left < 0x80000000L)
-> -				val = 0x80000000L - left;
-> +
-> +		if (ebb)
-> +			val = local64_read(&event->hw.prev_count);
-> +		else {
-> +			val = 0;
-> +			if (event->hw.sample_period) {
-> +				left = local64_read(&event->hw.period_left);
-> +				if (left < 0x80000000L)
-> +					val = 0x80000000L - left;
-> +			}
-> +			local64_set(&event->hw.prev_count, val);
->  		}
-> -		local64_set(&event->hw.prev_count, val);
-> +
->  		event->hw.idx = idx;
->  		if (event->hw.state & PERF_HES_STOPPED)
->  			val = 0;
->  		write_pmc(idx, val);
-> +
->  		perf_event_update_userpage(event);
->  	}
->  	cpuhw->n_limited = n_lim;
->  	cpuhw->mmcr[0] |= MMCR0_PMXE | MMCR0_FCECE;
-> 
->   out_enable:
-> +	mmcr0 = ebb_switch_in(ebb, cpuhw->mmcr[0]);
-> +
->  	mb();
-> -	write_mmcr0(cpuhw, cpuhw->mmcr[0]);
-> +	write_mmcr0(cpuhw, mmcr0);
-> 
->  	/*
->  	 * Enable instruction sampling if necessary
-> @@ -1124,6 +1245,8 @@ static int power_pmu_add(struct perf_event *event, int ef_flags)
->  	event->hw.config = cpuhw->events[n0];
-> 
->  nocheck:
-> +	ebb_event_add(event);
-> +
->  	++cpuhw->n_events;
->  	++cpuhw->n_added;
-> 
-> @@ -1484,6 +1607,11 @@ static int power_pmu_event_init(struct perf_event *event)
->  		}
->  	}
-> 
-> +	/* Extra checks for EBB */
-> +	err = ebb_event_check(event);
-> +	if (err)
-> +		return err;
-> +
->  	/*
->  	 * If this is in a group, check if it can go on with all the
->  	 * other hardware events in the group.  We assume the event
-> @@ -1523,6 +1651,13 @@ static int power_pmu_event_init(struct perf_event *event)
->  	local64_set(&event->hw.period_left, event->hw.last_period);
-> 
->  	/*
-> +	 * For EBB events we just context switch the PMC value, we don't do any
-> +	 * of the sample_period logic. We use hw.prev_count for this.
-> +	 */
-> +	if (is_ebb_event(event))
-> +		local64_set(&event->hw.prev_count, 0);
-> +
-> +	/*
->  	 * See if we need to reserve the PMU.
->  	 * If no events are currently in use, then we have to take a
->  	 * mutex to ensure that we don't race with another task doing
-> 
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogdGllanVuLmNoZW4gW21h
+aWx0bzp0aWVqdW4uY2hlbkB3aW5kcml2ZXIuY29tXQ0KPiBTZW50OiBXZWRuZXNkYXksIEp1bmUg
+MjYsIDIwMTMgMTI6MjUgUE0NCj4gVG86IEJodXNoYW4gQmhhcmF0LVI2NTc3Nw0KPiBDYzoga3Zt
+LXBwY0B2Z2VyLmtlcm5lbC5vcmc7IGt2bUB2Z2VyLmtlcm5lbC5vcmc7IGFncmFmQHN1c2UuZGU7
+IFdvb2QgU2NvdHQtDQo+IEIwNzQyMTsgYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnOyBsaW51eHBw
+Yy1kZXZAbGlzdHMub3psYWJzLm9yZzsgbGludXgtDQo+IGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7
+IG1pa2V5QG5ldWxpbmcub3JnOyBCaHVzaGFuIEJoYXJhdC1SNjU3NzcNCj4gU3ViamVjdDogUmU6
+IFtQQVRDSCA0LzYgdjVdIEtWTTogUFBDOiBleGl0IHRvIHVzZXIgc3BhY2Ugb24gImVocHJpdiIg
+aW5zdHJ1Y3Rpb24NCj4gDQo+IE9uIDA2LzI2LzIwMTMgMDE6NDIgUE0sIEJoYXJhdCBCaHVzaGFu
+IHdyb3RlOg0KPiA+ICJlaHByaXYiIGluc3RydWN0aW9uIGlzIHVzZWQgZm9yIHNldHRpbmcgc29m
+dHdhcmUgYnJlYWtwb2ludHMNCj4gPiBieSB1c2VyIHNwYWNlLiBUaGlzIHBhdGNoIGFkZHMgc3Vw
+cG9ydCB0byBleGl0IHRvIHVzZXIgc3BhY2UNCj4gPiB3aXRoICJydW4tPmRlYnVnIiBoYXZlIHJl
+bGV2YW50IGluZm9ybWF0aW9uLg0KPiA+DQo+ID4gQXMgdGhpcyBpcyB0aGUgZmlyc3QgcG9pbnQg
+d2UgYXJlIHVzaW5nIHJ1bi0+ZGVidWcsIGFsc28gZGVmaW5lZA0KPiA+IHRoZSBydW4tPmRlYnVn
+IHN0cnVjdHVyZS4NCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IEJoYXJhdCBCaHVzaGFuIDxiaGFy
+YXQuYmh1c2hhbkBmcmVlc2NhbGUuY29tPg0KPiA+IC0tLQ0KPiA+ICAgYXJjaC9wb3dlcnBjL2lu
+Y2x1ZGUvYXNtL2Rpc2Fzc2VtYmxlLmggfCAgICA0ICsrKysNCj4gPiAgIGFyY2gvcG93ZXJwYy9p
+bmNsdWRlL3VhcGkvYXNtL2t2bS5oICAgIHwgICAyMSArKysrKysrKysrKysrKysrKy0tLS0NCj4g
+PiAgIGFyY2gvcG93ZXJwYy9rdm0vZTUwMF9lbXVsYXRlLmMgICAgICAgIHwgICAyNyArKysrKysr
+KysrKysrKysrKysrKysrKysrKysNCj4gPiAgIDMgZmlsZXMgY2hhbmdlZCwgNDggaW5zZXJ0aW9u
+cygrKSwgNCBkZWxldGlvbnMoLSkNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMv
+aW5jbHVkZS9hc20vZGlzYXNzZW1ibGUuaA0KPiBiL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9k
+aXNhc3NlbWJsZS5oDQo+ID4gaW5kZXggOWIxOThkMS4uODU2ZjhkZSAxMDA2NDQNCj4gPiAtLS0g
+YS9hcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vZGlzYXNzZW1ibGUuaA0KPiA+ICsrKyBiL2FyY2gv
+cG93ZXJwYy9pbmNsdWRlL2FzbS9kaXNhc3NlbWJsZS5oDQo+ID4gQEAgLTc3LDQgKzc3LDggQEAg
+c3RhdGljIGlubGluZSB1bnNpZ25lZCBpbnQgZ2V0X2QodTMyIGluc3QpDQo+ID4gICAJcmV0dXJu
+IGluc3QgJiAweGZmZmY7DQo+ID4gICB9DQo+ID4NCj4gPiArc3RhdGljIGlubGluZSB1bnNpZ25l
+ZCBpbnQgZ2V0X29jKHUzMiBpbnN0KQ0KPiA+ICt7DQo+ID4gKwlyZXR1cm4gKGluc3QgPj4gMTEp
+ICYgMHg3ZmZmOw0KPiA+ICt9DQo+ID4gICAjZW5kaWYgLyogX19BU01fUFBDX0RJU0FTU0VNQkxF
+X0hfXyAqLw0KPiA+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvaW5jbHVkZS91YXBpL2FzbS9r
+dm0uaA0KPiBiL2FyY2gvcG93ZXJwYy9pbmNsdWRlL3VhcGkvYXNtL2t2bS5oDQo+ID4gaW5kZXgg
+MGZiMWE2ZS4uZGVkMDYwNyAxMDA2NDQNCj4gPiAtLS0gYS9hcmNoL3Bvd2VycGMvaW5jbHVkZS91
+YXBpL2FzbS9rdm0uaA0KPiA+ICsrKyBiL2FyY2gvcG93ZXJwYy9pbmNsdWRlL3VhcGkvYXNtL2t2
+bS5oDQo+ID4gQEAgLTI2OSw3ICsyNjksMjQgQEAgc3RydWN0IGt2bV9mcHUgew0KPiA+ICAgCV9f
+dTY0IGZwclszMl07DQo+ID4gICB9Ow0KPiA+DQo+ID4gKy8qDQo+ID4gKyAqIERlZmluZXMgZm9y
+IGgvdyBicmVha3BvaW50LCB3YXRjaHBvaW50IChyZWFkLCB3cml0ZSBvciBib3RoKSBhbmQNCj4g
+PiArICogc29mdHdhcmUgYnJlYWtwb2ludC4NCj4gPiArICogVGhlc2UgYXJlIHVzZWQgYXMgInR5
+cGUiIGluIEtWTV9TRVRfR1VFU1RfREVCVUcgaW9jdGwgYW5kICJzdGF0dXMiDQo+ID4gKyAqIGZv
+ciBLVk1fREVCVUdfRVhJVC4NCj4gPiArICovDQo+ID4gKyNkZWZpbmUgS1ZNUFBDX0RFQlVHX05P
+TkUJCTB4MA0KPiA+ICsjZGVmaW5lIEtWTVBQQ19ERUJVR19CUkVBS1BPSU5UCQkoMVVMIDw8IDEp
+DQo+ID4gKyNkZWZpbmUgS1ZNUFBDX0RFQlVHX1dBVENIX1dSSVRFCSgxVUwgPDwgMikNCj4gPiAr
+I2RlZmluZSBLVk1QUENfREVCVUdfV0FUQ0hfUkVBRAkJKDFVTCA8PCAzKQ0KPiA+ICAgc3RydWN0
+IGt2bV9kZWJ1Z19leGl0X2FyY2ggew0KPiA+ICsJX191NjQgYWRkcmVzczsNCj4gPiArCS8qDQo+
+ID4gKwkgKiBleGl0aW5nIHRvIHVzZXJzcGFjZSBiZWNhdXNlIG9mIGgvdyBicmVha3BvaW50LCB3
+YXRjaHBvaW50DQo+ID4gKwkgKiAocmVhZCwgd3JpdGUgb3IgYm90aCkgYW5kIHNvZnR3YXJlIGJy
+ZWFrcG9pbnQuDQo+ID4gKwkgKi8NCj4gPiArCV9fdTMyIHN0YXR1czsNCj4gPiArCV9fdTMyIHJl
+c2VydmVkOw0KPiA+ICAgfTsNCj4gPg0KPiA+ICAgLyogZm9yIEtWTV9TRVRfR1VFU1RfREVCVUcg
+Ki8NCj4gPiBAQCAtMjgxLDEwICsyOTgsNiBAQCBzdHJ1Y3Qga3ZtX2d1ZXN0X2RlYnVnX2FyY2gg
+ew0KPiA+ICAgCQkgKiBUeXBlIGRlbm90ZXMgaC93IGJyZWFrcG9pbnQsIHJlYWQgd2F0Y2hwb2lu
+dCwgd3JpdGUNCj4gPiAgIAkJICogd2F0Y2hwb2ludCBvciB3YXRjaHBvaW50IChib3RoIHJlYWQg
+YW5kIHdyaXRlKS4NCj4gPiAgIAkJICovDQo+ID4gLSNkZWZpbmUgS1ZNUFBDX0RFQlVHX05PTkUJ
+CTB4MA0KPiA+IC0jZGVmaW5lIEtWTVBQQ19ERUJVR19CUkVBS1BPSU5UCQkoMVVMIDw8IDEpDQo+
+ID4gLSNkZWZpbmUgS1ZNUFBDX0RFQlVHX1dBVENIX1dSSVRFCSgxVUwgPDwgMikNCj4gPiAtI2Rl
+ZmluZSBLVk1QUENfREVCVUdfV0FUQ0hfUkVBRAkJKDFVTCA8PCAzKQ0KPiA+ICAgCQlfX3UzMiB0
+eXBlOw0KPiA+ICAgCQlfX3UzMiByZXNlcnZlZDsNCj4gPiAgIAl9IGJwWzE2XTsNCj4gPiBkaWZm
+IC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2t2bS9lNTAwX2VtdWxhdGUuYyBiL2FyY2gvcG93ZXJwYy9r
+dm0vZTUwMF9lbXVsYXRlLmMNCj4gPiBpbmRleCBiMTBhMDEyLi5kYWI5ZDA3IDEwMDY0NA0KPiA+
+IC0tLSBhL2FyY2gvcG93ZXJwYy9rdm0vZTUwMF9lbXVsYXRlLmMNCj4gPiArKysgYi9hcmNoL3Bv
+d2VycGMva3ZtL2U1MDBfZW11bGF0ZS5jDQo+ID4gQEAgLTI2LDYgKzI2LDggQEANCj4gPiAgICNk
+ZWZpbmUgWE9QX1RMQlJFICAgOTQ2DQo+ID4gICAjZGVmaW5lIFhPUF9UTEJXRSAgIDk3OA0KPiA+
+ICAgI2RlZmluZSBYT1BfVExCSUxYICAxOA0KPiA+ICsjZGVmaW5lIFhPUF9FSFBSSVYgIDI3MA0K
+PiA+ICsjZGVmaW5lIEVIUFJJVl9PQ19ERUJVRyAwDQo+IA0KPiBBcyBJIHRoaW5rIHRoZSBjYXNl
+LCAiT0MgPSAwIiwgaXMgYSBiaXQgc3BlY2lmaWMgc2luY2UgSUlSQywgaWYgdGhlIE9DDQo+IG9w
+ZXJhbmQgaXMgb21pdHRlZCwgaXRzIGVxdWFsIDAgYnkgZGVmYXVsdC4gU28gSSB0aGluayB3ZSBz
+aG91bGQgc3RhcnQgdGhpcyBPQw0KPiB2YWx1ZSBmcm9tIDEgb3Igb3RoZXIgbWFnaWMgbnVtYmVy
+Lg0KDQplaHByaXYgaW5zdHJ1Y3Rpb24gaXMgZGVmaW5lZCB0byBiZSB1c2VkIGFzOg0KCWVocHJp
+diBPQyAvLyB3aGVyZSBPQyBjYW4gYmUgMCwxLCAuLi4gbg0KYW5kIGluIGV4dGVuZGVkIGZvciBp
+dCBjYW4gYmUgdXNlZCBhcw0KCWVocHJpdiAvLyBXaXRoIG5vIE9DLCBhbmQgaGVyZSBpdCBhc3N1
+bWVzIE9DID0gMA0KU28gT0MgPSAwIGlzIG5vdCBzcGVjaWZpYyBidXQgImVocHJpdiIgaXMgc2Ft
+ZSBhcyAiZWhwcml2IDAiLg0KDQpJIGRvIG5vdCB0aGluayBvZiBhbnkgc3BlY2lhbCByZWFzb24g
+dG8gcmVzZXJ2ZSAiZWhwcml2IiBhbmQgImVocHJpdiAwIi4NCg0KVGhhbmtzDQotQmhhcmF0DQoN
+Cj4gDQo+IEFuZCBpZiBwb3NzaWJsZSwgd2UnZCBiZXR0ZXIgYWRkIHNvbWUgY29tbWVudHMgdG8g
+ZGVzY3JpYmUgdGhpcyB0byBtYWtlIHRoZSBPQw0KPiBkZWZpbml0aW9uIHJlYWRhYmxlLg0KPiAN
+Cj4gVGllanVuDQo+IA0KPiA+DQo+ID4gICAjaWZkZWYgQ09ORklHX0tWTV9FNTAwTUMNCj4gPiAg
+IHN0YXRpYyBpbnQgZGJlbGwycHJpbyh1bG9uZyBwYXJhbSkNCj4gPiBAQCAtODIsNiArODQsMjYg
+QEAgc3RhdGljIGludCBrdm1wcGNfZTUwMF9lbXVsX21zZ3NuZChzdHJ1Y3Qga3ZtX3ZjcHUgKnZj
+cHUsDQo+IGludCByYikNCj4gPiAgIH0NCj4gPiAgICNlbmRpZg0KPiA+DQo+ID4gK3N0YXRpYyBp
+bnQga3ZtcHBjX2U1MDBfZW11bF9laHByaXYoc3RydWN0IGt2bV9ydW4gKnJ1biwgc3RydWN0IGt2
+bV92Y3B1DQo+ICp2Y3B1LA0KPiA+ICsJCQkJICAgdW5zaWduZWQgaW50IGluc3QsIGludCAqYWR2
+YW5jZSkNCj4gPiArew0KPiA+ICsJaW50IGVtdWxhdGVkID0gRU1VTEFURV9ET05FOw0KPiA+ICsN
+Cj4gPiArCXN3aXRjaCAoZ2V0X29jKGluc3QpKSB7DQo+ID4gKwljYXNlIEVIUFJJVl9PQ19ERUJV
+RzoNCj4gPiArCQlydW4tPmV4aXRfcmVhc29uID0gS1ZNX0VYSVRfREVCVUc7DQo+ID4gKwkJcnVu
+LT5kZWJ1Zy5hcmNoLmFkZHJlc3MgPSB2Y3B1LT5hcmNoLnBjOw0KPiA+ICsJCXJ1bi0+ZGVidWcu
+YXJjaC5zdGF0dXMgPSAwOw0KPiA+ICsJCWt2bXBwY19hY2NvdW50X2V4aXQodmNwdSwgREVCVUdf
+RVhJVFMpOw0KPiA+ICsJCWVtdWxhdGVkID0gRU1VTEFURV9FWElUX1VTRVI7DQo+ID4gKwkJKmFk
+dmFuY2UgPSAwOw0KPiA+ICsJCWJyZWFrOw0KPiA+ICsJZGVmYXVsdDoNCj4gPiArCQllbXVsYXRl
+ZCA9IEVNVUxBVEVfRkFJTDsNCj4gPiArCX0NCj4gPiArCXJldHVybiBlbXVsYXRlZDsNCj4gPiAr
+fQ0KPiA+ICsNCj4gPiAgIGludCBrdm1wcGNfY29yZV9lbXVsYXRlX29wKHN0cnVjdCBrdm1fcnVu
+ICpydW4sIHN0cnVjdCBrdm1fdmNwdSAqdmNwdSwNCj4gPiAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgIHVuc2lnbmVkIGludCBpbnN0LCBpbnQgKmFkdmFuY2UpDQo+ID4gICB7DQo+ID4gQEAg
+LTEzMCw2ICsxNTIsMTEgQEAgaW50IGt2bXBwY19jb3JlX2VtdWxhdGVfb3Aoc3RydWN0IGt2bV9y
+dW4gKnJ1biwgc3RydWN0DQo+IGt2bV92Y3B1ICp2Y3B1LA0KPiA+ICAgCQkJZW11bGF0ZWQgPSBr
+dm1wcGNfZTUwMF9lbXVsX3RsYml2YXgodmNwdSwgZWEpOw0KPiA+ICAgCQkJYnJlYWs7DQo+ID4N
+Cj4gPiArCQljYXNlIFhPUF9FSFBSSVY6DQo+ID4gKwkJCWVtdWxhdGVkID0ga3ZtcHBjX2U1MDBf
+ZW11bF9laHByaXYocnVuLCB2Y3B1LCBpbnN0LA0KPiA+ICsJCQkJCQkJICAgYWR2YW5jZSk7DQo+
+ID4gKwkJCWJyZWFrOw0KPiA+ICsNCj4gPiAgIAkJZGVmYXVsdDoNCj4gPiAgIAkJCWVtdWxhdGVk
+ID0gRU1VTEFURV9GQUlMOw0KPiA+ICAgCQl9DQo+ID4NCj4gDQoNCg==
