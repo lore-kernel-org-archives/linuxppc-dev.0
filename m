@@ -1,21 +1,29 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pb0-x22e.google.com (mail-pb0-x22e.google.com
- [IPv6:2607:f8b0:400e:c01::22e])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 44FF52C0091
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 16:21:15 +1000 (EST)
-Received: by mail-pb0-f46.google.com with SMTP id rq2so13714905pbb.33
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 23:21:12 -0700 (PDT)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2] powerpc/vfio: Add missing locks for take/release TCE table
- ownership
-Date: Wed, 26 Jun 2013 16:21:02 +1000
-Message-Id: <1372227662-28302-1-git-send-email-aik@ozlabs.ru>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <B16395@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1F8A02C0096
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 16:24:32 +1000 (EST)
+From: Sethi Varun-B16395 <B16395@freescale.com>
+To: Alex Williamson <alex.williamson@redhat.com>
+Subject: RE: [PATCH 3/3 v16] iommu/fsl: Freescale PAMU driver and iommu
+ implementation.
+Date: Wed, 26 Jun 2013 06:24:24 +0000
+Message-ID: <C5ECD7A89D1DC44195F34B25E172658D5DD70C@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <1371744089-17780-1-git-send-email-Varun.Sethi@freescale.com>
+ <1371744089-17780-2-git-send-email-Varun.Sethi@freescale.com>
+ <1372136211.30572.377.camel@ul30vt.home>
+In-Reply-To: <1372136211.30572.377.camel@ul30vt.home>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: Wood Scott-B07421 <B07421@freescale.com>, Timur Tabi <timur@tabi.org>,
+ "joro@8bytes.org" <joro@8bytes.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Yoder Stuart-B08248 <B08248@freescale.com>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,81 +33,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-VFIO IOMMU driver for sPAPR TCE locks the whole DMA window by setting
-ones to iommu_table.it_map. However this was not protected by the locks
-which other clients of iommu_table use.
-
-The patch fixes this.
-
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
-
-v1->v2:
-* Fixed a potential warning from lockdep.
-
----
- arch/powerpc/kernel/iommu.c |   25 +++++++++++++++++++++++--
- 1 file changed, 23 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index b20ff17..5c1fc89 100644
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -1076,25 +1076,42 @@ EXPORT_SYMBOL_GPL(iommu_put_tce_user_mode);
- int iommu_take_ownership(struct iommu_table *tbl)
- {
- 	unsigned long sz = (tbl->it_size + 7) >> 3;
-+	unsigned long i, flags;
-+	int ret = 0;
-+
-+	spin_lock_irqsave(&tbl->large_pool.lock, flags);
-+	for (i = 0; i < tbl->nr_pools; i++)
-+		spin_lock(&tbl->pools[i].lock);
- 
- 	if (tbl->it_offset == 0)
- 		clear_bit(0, tbl->it_map);
- 
- 	if (!bitmap_empty(tbl->it_map, tbl->it_size)) {
- 		pr_err("iommu_tce: it_map is not empty");
--		return -EBUSY;
-+		ret = -EBUSY;
-+		goto unlock_exit;
- 	}
- 
- 	memset(tbl->it_map, 0xff, sz);
- 	iommu_clear_tces_and_put_pages(tbl, tbl->it_offset, tbl->it_size);
- 
--	return 0;
-+unlock_exit:
-+	for (i = 0; i < tbl->nr_pools; i++)
-+		spin_unlock(&tbl->pools[i].lock);
-+	spin_unlock_irqrestore(&tbl->large_pool.lock, flags);
-+
-+	return ret;
- }
- EXPORT_SYMBOL_GPL(iommu_take_ownership);
- 
- void iommu_release_ownership(struct iommu_table *tbl)
- {
- 	unsigned long sz = (tbl->it_size + 7) >> 3;
-+	unsigned long i, flags;
-+
-+	spin_lock_irqsave(&tbl->large_pool.lock, flags);
-+	for (i = 0; i < tbl->nr_pools; i++)
-+		spin_lock(&tbl->pools[i].lock);
- 
- 	iommu_clear_tces_and_put_pages(tbl, tbl->it_offset, tbl->it_size);
- 	memset(tbl->it_map, 0, sz);
-@@ -1102,6 +1119,10 @@ void iommu_release_ownership(struct iommu_table *tbl)
- 	/* Restore bit#0 set by iommu_init_table() */
- 	if (tbl->it_offset == 0)
- 		set_bit(0, tbl->it_map);
-+
-+	for (i = 0; i < tbl->nr_pools; i++)
-+		spin_unlock(&tbl->pools[i].lock);
-+	spin_unlock_irqrestore(&tbl->large_pool.lock, flags);
- }
- EXPORT_SYMBOL_GPL(iommu_release_ownership);
- 
--- 
-1.7.10.4
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQWxleCBXaWxsaWFtc29u
+IFttYWlsdG86YWxleC53aWxsaWFtc29uQHJlZGhhdC5jb21dDQo+IFNlbnQ6IFR1ZXNkYXksIEp1
+bmUgMjUsIDIwMTMgMTA6MjcgQU0NCj4gVG86IFNldGhpIFZhcnVuLUIxNjM5NQ0KPiBDYzogam9y
+b0A4Ynl0ZXMub3JnOyBpb21tdUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZzsgbGludXhwcGMt
+DQo+IGRldkBsaXN0cy5vemxhYnMub3JnOyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOw0K
+PiBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmc7IFlv
+ZGVyIFN0dWFydC1CMDgyNDg7DQo+IFdvb2QgU2NvdHQtQjA3NDIxOyBUaW11ciBUYWJpDQo+IFN1
+YmplY3Q6IFJlOiBbUEFUQ0ggMy8zIHYxNl0gaW9tbXUvZnNsOiBGcmVlc2NhbGUgUEFNVSBkcml2
+ZXIgYW5kIGlvbW11DQo+IGltcGxlbWVudGF0aW9uLg0KPiANCj4gT24gVGh1LCAyMDEzLTA2LTIw
+IGF0IDIxOjMxICswNTMwLCBWYXJ1biBTZXRoaSB3cm90ZToNCj4gDQo+ID4gKyNkZWZpbmUgUkVR
+X0FDU19GTEFHUwkoUENJX0FDU19TViB8IFBDSV9BQ1NfUlIgfCBQQ0lfQUNTX0NSIHwNCj4gUENJ
+X0FDU19VRikNCj4gPiArDQo+ID4gK3N0YXRpYyBzdHJ1Y3QgaW9tbXVfZ3JvdXAgKmdldF9kZXZp
+Y2VfaW9tbXVfZ3JvdXAoc3RydWN0IGRldmljZSAqZGV2KQ0KPiA+ICt7DQo+ID4gKwlzdHJ1Y3Qg
+aW9tbXVfZ3JvdXAgKmdyb3VwOw0KPiA+ICsNCj4gPiArCWdyb3VwID0gaW9tbXVfZ3JvdXBfZ2V0
+KGRldik7DQo+ID4gKwlpZiAoIWdyb3VwKQ0KPiA+ICsJCWdyb3VwID0gaW9tbXVfZ3JvdXBfYWxs
+b2MoKTsNCj4gPiArDQo+ID4gKwlyZXR1cm4gZ3JvdXA7DQo+ID4gK30NCj4gPiArDQo+IFtzbmlw
+XQ0KPiA+ICsNCj4gDQo+IFRoaXMgcmVhbGx5IGdldHMgcGFyZW50IG9yIHBlZXIsIHJpZ2h0Pw0K
+PiANCj4gPiArc3RhdGljIHN0cnVjdCBpb21tdV9ncm91cCAqZ2V0X3BlZXJfcGNpX2RldmljZV9n
+cm91cChzdHJ1Y3QgcGNpX2Rldg0KPiA+ICsqcGRldikgew0KPiA+ICsJc3RydWN0IGlvbW11X2dy
+b3VwICpncm91cCA9IE5VTEw7DQo+ID4gKw0KPiA+ICsJLyogY2hlY2sgaWYgdGhpcyBpcyB0aGUg
+Zmlyc3QgZGV2aWNlIG9uIHRoZSBidXMqLw0KPiA+ICsJaWYgKHBkZXYtPmJ1c19saXN0Lm5leHQg
+PT0gcGRldi0+YnVzX2xpc3QucHJldikgew0KPiANCj4gSXQncyBhIGxpc3RfaGVhZCwgdXNlIGxp
+c3QgZnVuY3Rpb25zLiAgVGhlIGxpc3QgaW1wbGVtZW50YXRpb24gc2hvdWxkIGJlDQo+IHRyZWF0
+ZWQgYXMgb3BhcXVlLg0KPiANCj4gaWYgKGxpc3RfaXNfc2luZ3VsYXIoJnBkZXYtPmJ1c19saXN0
+KSkNCj4gDQo+ID4gKwkJc3RydWN0IHBjaV9idXMgKmJ1cyA9IHBkZXYtPmJ1cy0+cGFyZW50Ow0K
+PiA+ICsJCS8qIFRyYXZlcmVzZSB0aGUgcGFyZW50IGJ1cyBsaXN0IHRvIGdldA0KPiA+ICsJCSAq
+IHBkZXYgJiBkZXYgZm9yIHRoZSBzaWJsaW5nIGRldmljZS4NCj4gPiArCQkgKi8NCj4gPiArCQl3
+aGlsZSAoYnVzKSB7DQo+ID4gKwkJCWlmICghbGlzdF9lbXB0eSgmYnVzLT5kZXZpY2VzKSkgew0K
+PiA+ICsJCQkJcGRldiA9IGNvbnRhaW5lcl9vZihidXMtPmRldmljZXMubmV4dCwNCj4gPiArCQkJ
+CQkgICAgICAgICAgICBzdHJ1Y3QgcGNpX2RldiwgYnVzX2xpc3QpOw0KPiANCj4gcGRldiA9IGxp
+c3RfZmlyc3RfZW50cnkoJmJ1cy0+ZGV2aWNlcywgc3RydWN0IHBjaV9kZXYsIGJ1c19saXN0KTsN
+Cj4gDQo+ID4gKwkJCQlncm91cCA9IGlvbW11X2dyb3VwX2dldCgmcGRldi0+ZGV2KTsNCj4gPiAr
+CQkJCWJyZWFrOw0KPiA+ICsJCQl9IGVsc2UNCj4gPiArCQkJCWJ1cyA9IGJ1cy0+cGFyZW50Ow0K
+PiANCj4gSXMgdGhpcyBldmVyIHJlYWNoZWQ/ICBEb24ndCB5b3UgYWx3YXlzIGhhdmUgYnVzLT5z
+ZWxmPw0KPiANCltTZXRoaSBWYXJ1bi1CMTYzOTVdIE5vdCBzdXJlIEkgdW5kZXJzdGFuZC4gVHJ5
+aW5nIHRvIGdldCB0aGUgZ3JvdXAgaW5mb3JtYXRpb24gZnJvbSB0aGUgcGFyZW50IGJ1cywgaWYg
+dGhlcmUgYXJlIG5vIHNpYmxpbmcgZGV2aWNlcyBvbiB0aGUgY3VycmVudCBidXMuDQoNCj4gPiAr
+CQl9DQo+ID4gKwl9IGVsc2Ugew0KPiA+ICsJCS8qDQo+ID4gKwkJICogR2V0IHRoZSBwZGV2ICYg
+ZGV2IGZvciB0aGUgc2libGluZyBkZXZpY2UNCj4gPiArCQkgKi8NCj4gPiArCQlwZGV2ID0gY29u
+dGFpbmVyX29mKHBkZXYtPmJ1c19saXN0LnByZXYsDQo+ID4gKwkJCQkgICAgc3RydWN0IHBjaV9k
+ZXYsIGJ1c19saXN0KTsNCj4gDQo+IEhvdyBkbyB5b3Uga25vdyBpZiB5b3UncmUgYXQgdGhlIGhl
+YWQgb3IgdGFpbCBvZiB0aGUgbGlzdD8NCj4gDQo+IHN0cnVjdCBwY2lfZGV2ICp0bXA7DQo+IGxp
+c3RfZm9yX2VhY2hfZW50cnkodG1wLCAmcGRldi0+YnVzX2xpc3QsIGJ1c19saXN0KSB7DQo+IAlp
+ZiAodG1wID09IHBkZXYpDQo+IAkJY29udGludWU7DQo+IA0KPiAJZ3JvdXAgPSBpb21tdV9ncm91
+cF9nZXQoJnRtcC0+ZGV2KTsNCj4gCWJyZWFrOw0KPiB9DQo+IA0KPiA+ICsJCWdyb3VwID0gaW9t
+bXVfZ3JvdXBfZ2V0KCZwZGV2LT5kZXYpOw0KPiA+ICsJfQ0KPiA+ICsNCj4gPiArCXJldHVybiBn
+cm91cDsNCj4gPiArfQ0KPiA+ICsNCj4gPiArc3RhdGljIHN0cnVjdCBpb21tdV9ncm91cCAqZ2V0
+X3BjaV9kZXZpY2VfZ3JvdXAoc3RydWN0IHBjaV9kZXYgKnBkZXYpDQo+ID4gK3sNCj4gPiArCXN0
+cnVjdCBpb21tdV9ncm91cCAqZ3JvdXAgPSBOVUxMOw0KPiA+ICsJc3RydWN0IHBjaV9kZXYgKmJy
+aWRnZSwgKmRtYV9wZGV2ID0gTlVMTDsNCj4gPiArCXN0cnVjdCBwY2lfY29udHJvbGxlciAqcGNp
+X2N0bDsNCj4gPiArCWJvb2wgcGNpX2VuZHB0X3BhcnRpb25pbmc7DQo+ID4gKw0KPiA+ICsJcGNp
+X2N0bCA9IHBjaV9idXNfdG9faG9zdChwZGV2LT5idXMpOw0KPiA+ICsJcGNpX2VuZHB0X3BhcnRp
+b25pbmcgPSBjaGVja19wY2lfY3RsX2VuZHB0X3BhcnQocGNpX2N0bCk7DQo+ID4gKwkvKiBXZSBj
+YW4gcGFydGl0aW9uIFBDSWUgZGV2aWNlcyBzbyBhc3NpZ24gZGV2aWNlIGdyb3VwIHRvIHRoZQ0K
+PiBkZXZpY2UgKi8NCj4gPiArCWlmIChwY2lfZW5kcHRfcGFydGlvbmluZykgew0KPiA+ICsJCWJy
+aWRnZSA9IHBjaV9maW5kX3Vwc3RyZWFtX3BjaWVfYnJpZGdlKHBkZXYpOw0KPiA+ICsJCWlmIChi
+cmlkZ2UpIHsNCj4gPiArCQkJaWYgKHBjaV9pc19wY2llKGJyaWRnZSkpDQo+ID4gKwkJCQlkbWFf
+cGRldiA9IHBjaV9nZXRfZG9tYWluX2J1c19hbmRfc2xvdCgNCj4gPiArCQkJCQkJcGNpX2RvbWFp
+bl9ucihwZGV2LT5idXMpLA0KPiA+ICsJCQkJCQlicmlkZ2UtPnN1Ym9yZGluYXRlLT5udW1iZXIs
+IDApOw0KPiA+ICsJCQlpZiAoIWRtYV9wZGV2KQ0KPiA+ICsJCQkJZG1hX3BkZXYgPSBwY2lfZGV2
+X2dldChicmlkZ2UpOw0KPiA+ICsJCX0gZWxzZQ0KPiA+ICsJCQlkbWFfcGRldiA9IHBjaV9kZXZf
+Z2V0KHBkZXYpOw0KPiA+ICsNCj4gPiArCQkvKiBBY2NvdW50IGZvciBxdWlya2VkIGRldmljZXMg
+Ki8NCj4gPiArCQlzd2FwX3BjaV9yZWYoJmRtYV9wZGV2LCBwY2lfZ2V0X2RtYV9zb3VyY2UoZG1h
+X3BkZXYpKTsNCj4gPiArDQo+ID4gKwkJLyoNCj4gPiArCQkgKiBJZiBpdCdzIGEgbXVsdGlmdW5j
+dGlvbiBkZXZpY2UgdGhhdCBkb2VzIG5vdCBzdXBwb3J0IG91cg0KPiA+ICsJCSAqIHJlcXVpcmVk
+IEFDUyBmbGFncywgYWRkIHRvIHRoZSBzYW1lIGdyb3VwIGFzIGZ1bmN0aW9uIDAuDQo+ID4gKwkJ
+ICovDQo+IA0KPiBTZWUgYzE0ZDI2OTAgaW4gSm9lcmcncyBuZXh0IHRyZWUsIHVzaW5nIGZ1bmN0
+aW9uIDAgd2FzIGEgcG9vcg0KPiBhc3N1bXB0aW9uLg0KW1NldGhpIFZhcnVuLUIxNjM5NV0gb2su
+DQoNCj4gDQo+ID4gKwkJaWYgKGRtYV9wZGV2LT5tdWx0aWZ1bmN0aW9uICYmDQo+ID4gKwkJICAg
+ICFwY2lfYWNzX2VuYWJsZWQoZG1hX3BkZXYsIFJFUV9BQ1NfRkxBR1MpKQ0KPiA+ICsJCQlzd2Fw
+X3BjaV9yZWYoJmRtYV9wZGV2LA0KPiA+ICsJCQkJICAgICBwY2lfZ2V0X3Nsb3QoZG1hX3BkZXYt
+PmJ1cywNCj4gPiArCQkJCQkJICBQQ0lfREVWRk4oUENJX1NMT1QoZG1hX3BkZXYtDQo+ID5kZXZm
+biksDQo+ID4gKwkJCQkJCSAgMCkpKTsNCj4gPiArDQo+ID4gKwkJZ3JvdXAgPSBnZXRfZGV2aWNl
+X2lvbW11X2dyb3VwKCZwZGV2LT5kZXYpOw0KPiA+ICsJCXBjaV9kZXZfcHV0KHBkZXYpOw0KPiAN
+Cj4gV2hhdCB3YXMgdGhlIHBvaW50IG9mIGFsbCB0aGUgYWJvdmUgaWYgd2UgdXNlIHBkZXYgaGVy
+ZSBpbnN0ZWFkIG9mDQo+IGRtYV9wZGV2PyAgV3JvbmcgZGV2aWNlIGFuZCBicm9rZW4gcmVmZXJl
+bmNlIGNvdW50aW5nLg0KW1NldGhpIFZhcnVuLUIxNjM5NV0gV2lsbCBmaXggdGhpcw0KDQogIFRo
+aXMgYWxzbyBpc24ndA0KPiB0ZXN0aW5nIEFDUyBhbGwgdGhlIHdheSB1cCB0byB0aGUgcm9vdCBj
+b21wbGV4IG9yIGNvbnRyb2xsZXIuDQpbU2V0aGkgVmFydW4tQjE2Mzk1XSBJbiBvdXIgY2FzZSB0
+aGUgSU9NTVUgY2FuIGRpZmZlcmVudGlhdGUgdHJhbnNhY3Rpb25zIGJhc2VkIG9uIHRoZSBMSU9E
+Ti4gVGhlIFBDSWUgY29udHJvbGxlciBjYW4gZ2VuZXJhdGUgYSB1bmlxdWUgTElPRE4gYmFzZWQg
+b24gdGhlIGJ1cyxkZXZpY2UsZnVuY3Rpb24gbnVtYmVyLiBJIGJlbGlldmUgdGhpcyB3b3VsZCBl
+dmVuIGJlIHRydWUgZm9yIGRldmljZXMgY29ubmVjdGVkIHRvIGEgUENJZSBicmlkZ2UgKGFuZCBu
+b3Qgb24gdGhlIHJvb3QgYnVzKS4gU28sIGRvIHdlIHN0aWxsIG5lZWQgdG8gY2hlY2sgZm9yIEFD
+UyB1cCB0byB0aGUgcm9vdCBub2RlPw0KDQotVmFydW4NCg==
