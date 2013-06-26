@@ -1,37 +1,39 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7A5562C007B
- for <linuxppc-dev@ozlabs.org>; Wed, 26 Jun 2013 19:59:30 +1000 (EST)
+ (Client CN "e36.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 030D32C0085
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 20:08:28 +1000 (EST)
 Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 26 Jun 2013 15:24:47 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 72F721258051
- for <linuxppc-dev@ozlabs.org>; Wed, 26 Jun 2013 15:28:28 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5Q9xLQ428246224
- for <linuxppc-dev@ozlabs.org>; Wed, 26 Jun 2013 15:29:21 +0530
-Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5Q9xNqH011536
- for <linuxppc-dev@ozlabs.org>; Wed, 26 Jun 2013 19:59:24 +1000
-Message-ID: <51CABB56.9010105@linux.vnet.ibm.com>
-Date: Wed, 26 Jun 2013 15:28:46 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Wed, 26 Jun 2013 04:08:24 -0600
+Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
+ [9.17.195.226])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 608D23E4003F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 04:08:00 -0600 (MDT)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5QA8JZP092884
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 04:08:19 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5QA8I17028449
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 04:08:19 -0600
+Date: Wed, 26 Jun 2013 18:08:14 +0800
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: David Laight <David.Laight@aculab.com>
+Subject: Re: [PATCH 3/6] powerpc/powernv: Replace variables with flags
+Message-ID: <20130626100814.GA22174@shangw.(null)>
+References: <1372210688-12214-1-git-send-email-shangw@linux.vnet.ibm.com>
+ <1372210688-12214-4-git-send-email-shangw@linux.vnet.ibm.com>
+ <AE90C24D6B3A694183C094C60CF0A2F6026B72A6@saturn3.aculab.com>
 MIME-Version: 1.0
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 8/8] powerpc/perf: Add power8 EBB support
-References: <1372073336-8189-1-git-send-email-michael@ellerman.id.au>
- <1372073336-8189-8-git-send-email-michael@ellerman.id.au>
-In-Reply-To: <1372073336-8189-8-git-send-email-michael@ellerman.id.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, sukadev@linux.vnet.ibm.com,
- Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6026B72A6@saturn3.aculab.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <shangw@linux.vnet.ibm.com>
+Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,31 +43,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> @@ -117,6 +117,7 @@
->  	 (EVENT_UNIT_MASK      << EVENT_UNIT_SHIFT)		|	\
->  	 (EVENT_COMBINE_MASK   << EVENT_COMBINE_SHIFT)		|	\
->  	 (EVENT_MARKED_MASK    << EVENT_MARKED_SHIFT)		|	\
-> +	 (1ull		       << EVENT_CONFIG_EBB_SHIFT)	|	\
+On Wed, Jun 26, 2013 at 10:12:16AM +0100, David Laight wrote:
+>> We have 2 fields in "struct pnv_phb" to trace the states. The patch
+>> replace the fields with one and introduces flags for that. The patch
+>> doesn't impact the logic.
+>
+>What is the benefit of this change?
+>
 
-We should define this macro like EVENT_MARKED_MASK
+There might have more flags coming in. Putting all flags together
+could be maintained more easily. It doesn't save much memory as
+you pointed.
 
-#define EVENT_EBB_MASK       0x1
+>> +
+>> +#define PNV_EEH_STATE_ENABLED	(1 << 0)	/* EEH enabled	*/
+>> +#define PNV_EEH_STATE_REMOVED	(1 << 1)	/* PHB removed	*/
+>> +
+>>  #endif /* CONFIG_EEH */
+>> 
+>>  struct pnv_phb {
+>> @@ -92,8 +96,7 @@ struct pnv_phb {
+>> 
+>>  #ifdef CONFIG_EEH
+>>  	struct pnv_eeh_ops	*eeh_ops;
+>> -	int			eeh_enabled;
+>> -	int			removed;
+>> +	int			eeh_state;
+>>  #endif
+>> 
+>>  #ifdef CONFIG_DEBUG_FS
+>
+>All I can see is that it possibly reduces a structure by 4 bytes
+>while adding extra code.
+>(On 64 bit systems there might be a 4 byte pad added.)
+>
 
-Numeric value of "1ull" stands out odd in the scheme.
-
-
->  	  EVENT_PSEL_MASK)
-> 
-> + *              EBB -*    |                     |
-> + *                        |                     |      Count of events for each PMC.
-> + *      L1 I/D qualifier -*                     |        p1, p2, p3, p4, p5, p6.
->   *                     nc - number of counters -*
->   *
->   * The PMC fields P1..P6, and NC, are adder fields. As we accumulate constraints
-> @@ -159,6 +160,9 @@
->  #define CNST_THRESH_VAL(v)	(((v) & EVENT_THRESH_MASK) << 32)
->  #define CNST_THRESH_MASK	CNST_THRESH_VAL(EVENT_THRESH_MASK)
-> 
-> +#define CNST_EBB_VAL(v)		(((v) & 1) << 24)
-
-EVENT_EBB_MASK can be used here as well.
+Thanks,
+Gavin
