@@ -1,41 +1,24 @@
-Return-Path: <htejun@gmail.com>
-Received: from mail-qa0-x22f.google.com (mail-qa0-x22f.google.com
- [IPv6:2607:f8b0:400d:c00::22f])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1814D2C0098
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 07:35:09 +1000 (EST)
-Received: by mail-qa0-f47.google.com with SMTP id i13so1973206qae.6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 14:35:05 -0700 (PDT)
-Sender: Tejun Heo <htejun@gmail.com>
-Date: Wed, 26 Jun 2013 14:34:58 -0700
-From: Tejun Heo <tj@kernel.org>
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 15/45] rcu: Use get/put_online_cpus_atomic() to
- prevent CPU offline
-Message-ID: <20130626213458.GC4536@htj.dyndns.org>
-References: <20130625202755.16593.67819.stgit@srivatsabhat.in.ibm.com>
- <20130625220026.GG3828@linux.vnet.ibm.com>
- <51CAF624.6060004@linux.vnet.ibm.com>
- <AE90C24D6B3A694183C094C60CF0A2F6026B72AA@saturn3.aculab.com>
- <20130626143424.GN3828@linux.vnet.ibm.com>
- <1372258271.18733.256.camel@gandalf.local.home>
- <20130626152148.GA4405@mtj.dyndns.org>
- <1372260823.18733.263.camel@gandalf.local.home>
- <20130626172948.GD4405@mtj.dyndns.org>
- <51CB32E0.3040106@linux.vnet.ibm.com>
+Return-Path: <B07421@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 15B352C007C
+ for <linuxppc-dev@ozlabs.org>; Thu, 27 Jun 2013 07:43:48 +1000 (EST)
+Date: Wed, 26 Jun 2013 16:42:30 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [RFC] [PATCH] powerpc: Add MSR_DE to MSR_KERNEL
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+In-Reply-To: <OF239E7E70.94A77B69-ONC1257B95.0020B40D-C1257B95.0020FEEE@transmode.se>
+ (from joakim.tjernlund@transmode.se on Tue Jun 25 01:00:23 2013)
+Message-ID: <1372282950.8183.43@snotra>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <51CB32E0.3040106@linux.vnet.ibm.com>
-Cc: peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org,
- walken@google.com, mingo@kernel.org, linux-arch@vger.kernel.org,
- vincent.guittot@linaro.org, xiaoguangrong@linux.vnet.ibm.com,
- wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com,
- nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au,
- Steven Rostedt <rostedt@goodmis.org>, namhyung@kernel.org, tglx@linutronix.de,
- laijs@cn.fujitsu.com, zhong@linux.vnet.ibm.com, netdev@vger.kernel.org,
- oleg@redhat.com, sbw@mit.edu, David Laight <David.Laight@ACULAB.COM>,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ Zang Roy-R61911 <r61911@freescale.com>, Bob Cochran <ppc@mindchasers.com>,
+ "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ Dan Malek <ppc6dev@digitaldans.com>, Support <support@abatron.ch>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,18 +28,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hey,
+On 06/25/2013 01:00:23 AM, Joakim Tjernlund wrote:
+> Scott Wood <scottwood@freescale.com> wrote on 2013/06/25 02:51:00:
+> >
+> > On Fri, Jul 20, 2012 at 10:37:17AM +0200, Joakim Tjernlund wrote:
+> > > Zang Roy-R61911 <r61911@freescale.com> wrote on 2012/07/20 =20
+> 10:27:52:
+> > > >
+> > > >
+> > > >
+> > > > > -----Original Message-----
+> > > > > From:
+> linuxppc-dev-bounces+tie-fei.zang=3Dfreescale.com@lists.ozlabs.org
+> > > > > [
+> mailto:linuxppc-dev-bounces+tie-fei.zang=3Dfreescale.com@lists.ozlabs.org=
+]
+> > > > > On Behalf Of Joakim Tjernlund
+> > > > > Sent: Friday, June 01, 2012 6:36 AM
+> > > > > To: Wood Scott-B07421
+> > > > > Cc: linuxppc-dev@ozlabs.org; Dan Malek; Bob Cochran; Support
+> > > > > Subject: Re: [RFC] [PATCH] powerpc: Add MSR_DE to MSR_KERNEL
+> > > > >
+> > > > > It just occurred to me that you guys have this already in your
+> Linux SDK so
+> > > > > it can't be that bad.
+> > > > No. MSR_DE is ONLY added when using CW debug in SDK.
+> > > > Roy
+> > > >
+> > >
+> > > Yes, and I later found that user space debugging is busted if you =20
+> turn
+> on MSR_DE in
+> > > kernel.
+> >
+> > So, how should we handle the CONFIG_BDI_SWITCH patch?  It seems =20
+> like it
+> > should at least have a warning in the kconfig help text that it =20
+> breaks
+> > userspace debugging (to the point of causing a kernel oops if it's
+> > tried).  Or maybe it can deselect CONFIG_PPC_ADV_DEBUG_REGS?
+> >
+> > It'd also be nice to keep things like this, that are a consequence =20
+> of
+> how
+> > external debug works on e500, separate from the Abatron-specific =20
+> stuff.
+> >
+>=20
+> I was hoping the kernel would grow per context handling of MSR_DE. =20
+> Then
+> one could have
+> MSR_DE on in MSR_KERNEL but off in user space(unless gdb request it =20
+> on a
+> per process basis).
 
-On Wed, Jun 26, 2013 at 11:58:48PM +0530, Srivatsa S. Bhat wrote:
-> Yes, we were discussing hot-unplug latency for use-cases such as
-> suspend/resume. We didn't want to make those operations slower in the
-> process of removing stop_machine() from hotplug.
+What if the external debugger wants debugging to work when in userspace =20
+as well?  Plus, you wouldn't be able to debug from the very beginning =20
+of an exception handler if the exception came from userspace.
 
-Can you please explain why tho?  How much would it help in terms of
-power-saving?  Or are there other issues in taking longer to shut down
-cpus?
-
-Thanks.
-
--- 
-tejun
+-Scott=
