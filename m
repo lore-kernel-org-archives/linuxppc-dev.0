@@ -1,19 +1,22 @@
-Return-Path: <stefani@seibold.net>
-Received: from www84.your-server.de (www84.your-server.de [213.133.104.84])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 22BCF2C007A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 15:21:26 +1000 (EST)
-Message-ID: <1372224092.3374.5.camel@wall-e>
-Subject: Re: BUG: no PCI/PCIe devices found in 85xx architecture
-From: Stefani Seibold <stefani@seibold.net>
-To: Scott Wood <scottwood@freescale.com>
-Date: Wed, 26 Jun 2013 07:21:32 +0200
-In-Reply-To: <1372203995.8183.26@snotra>
-References: <1372203995.8183.26@snotra>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <R65777@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 5B3CF2C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 15:34:16 +1000 (EST)
+From: Bharat Bhushan <r65777@freescale.com>
+To: <kvm-ppc@vger.kernel.org>, <kvm@vger.kernel.org>, <agraf@suse.de>,
+ <scottwood@freescale.com>, <tiejun.chen@windriver.com>,
+ <benh@kernel.crashing.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-kernel@vger.kernel.org>, <mikey@neuling.org>
+Subject: [PATCH 0/6 v5] KVM :PPC: Userspace Debug support
+Date: Wed, 26 Jun 2013 11:12:20 +0530
+Message-ID: <1372225346-5029-1-git-send-email-Bharat.Bhushan@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Bharat Bhushan <bharat.bhushan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,53 +26,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am Dienstag, den 25.06.2013, 18:46 -0500 schrieb Scott Wood:
-> On 06/25/2013 01:40:14 PM, Stefani Seibold wrote:
-> > Hi,
-> > 
-> > there is a bug in kernel 3.9 which the new fsl_pci platform driver.  
-> > The
-> > pcibios_init in pci_32.c will be called before the platform driver  
-> > probe
-> > will be invoked.
-> > 
-> > The call order for a p2020 board with linux 3.9 is currently:
-> > 
-> > fsl_pci_init
-> > pcibios_init
-> > fsl_pci_probe
-> > fsl_pci_probe
-> > fsl_pci_probe
-> > 
-> > Therefore the PCI/PCIe bridge will be added after the PCI/PCIe busses
-> > was scanned for devices. So no PCI/PCIe devices are available.
-> > 
-> > Everything works fine by reverting the fsl_pci.[ch] to the version in
-> > linux 3.4, because the PCI/PCIe bridges will be added in
-> > the ..._setup_arch() function, before the pcibios_init function is
-> > called.
-> > 
-> > Any solution for this issue?
-> 
-> I can't reproduce this on p3041 -- pcibios_init gets called after  
-> fsl_pci_probe, and its PCIe e1000 gets detected and used.
-> 
-> fsl_pci_probe should be called when of_platform_bus_probe is called,  
-> which is in a machine_arch_initcall.  pcibios_init is a  
-> subsys_initcall, which should happen later.
-> 
-> Which p2020 board are you using?  Could you check when it is calling  
-> of_platform_bus_probe?
-> 
-> -Scott
+From: Bharat Bhushan <bharat.bhushan@freescale.com>
 
-Great, you are my hero. This is the solution.
+Note: These patches are based on http://github.com/agraf/linux-2.6.git queue
 
-In my old board support package for the kernel 3.4 there was a
-machine_device_initcall(). I did not saw the tiny difference against
-machine_arch_initcall() used by the other 85xx boards as i ported it to
-3.9.
+This patchset adds the userspace debug support for booke/bookehv.
+this is tested on powerpc e500v2/e500mc devices.
 
-Thanks
+We are now assuming that debug resource will not be used by kernel for
+its own debugging. It will be used for only kernel user process debugging.
+So the kernel debug load interface during context_to is used to load
+debug conext for that selected process.
 
-- Stefani
+v4->v5
+ - Some comments reworded and other cleanup (like change of function name etc)
+ - Added a function for setting MSRP rather than inline
+
+v3->v4
+ - 4 out of 7 patches of initial patchset were applied.
+   This patchset is on and above those 4 patches
+ - KVM local "struct kvmppc_booke_debug_reg" is replaced by
+   powerpc global "struct debug_reg"
+ - use switch_booke_debug_regs() for debug register context switch.
+ - Save DBSR before kernel pre-emption is enabled.
+ - Some more cleanup
+
+v2->v3
+ - We are now assuming that debug resource will not be used by
+   kernel for its own debugging.
+   It will be used for only kernel user process debugging.
+   So the kernel debug load interface during context_to is
+   used to load debug conext for that selected process.
+
+v1->v2
+ - Debug registers are save/restore in vcpu_put/vcpu_get.
+   Earlier the debug registers are saved/restored in guest entry/exit
+
+Bharat Bhushan (6):
+  powerpc: remove unnecessary line continuations
+  powerpc: move debug registers in a structure
+  powerpc: export debug registers save function for KVM
+  KVM: PPC: exit to user space on "ehpriv" instruction
+  KVM: PPC: Using "struct debug_reg"
+  KVM: PPC: Add userspace debug stub support
+
+ arch/powerpc/include/asm/disassemble.h |    4 +
+ arch/powerpc/include/asm/kvm_host.h    |   16 +--
+ arch/powerpc/include/asm/processor.h   |   38 +++--
+ arch/powerpc/include/asm/reg_booke.h   |    8 +-
+ arch/powerpc/include/asm/switch_to.h   |    4 +
+ arch/powerpc/include/uapi/asm/kvm.h    |   22 ++-
+ arch/powerpc/kernel/asm-offsets.c      |    2 +-
+ arch/powerpc/kernel/process.c          |   45 +++---
+ arch/powerpc/kernel/ptrace.c           |  154 +++++++++---------
+ arch/powerpc/kernel/signal_32.c        |    6 +-
+ arch/powerpc/kernel/traps.c            |   35 ++--
+ arch/powerpc/kvm/booke.c               |  273 ++++++++++++++++++++++++++++----
+ arch/powerpc/kvm/booke.h               |    5 +
+ arch/powerpc/kvm/e500_emulate.c        |   27 +++
+ 14 files changed, 455 insertions(+), 184 deletions(-)
