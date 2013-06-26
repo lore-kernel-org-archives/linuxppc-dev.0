@@ -1,30 +1,30 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 880CF2C0511
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 11:39:29 +1000 (EST)
+ (Client CN "e7.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8AB772C0513
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 11:39:40 +1000 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Tue, 25 Jun 2013 21:39:26 -0400
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 50ED438C805C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 21:39:23 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5Q1cF1p219076
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 21:38:15 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5Q1cEqo021083
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 22:38:15 -0300
+ Tue, 25 Jun 2013 21:39:38 -0400
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id B92CEC9003E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 21:39:34 -0400 (EDT)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5Q1cDtO320770
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 21:38:14 -0400
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5Q1cD0C010381
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2013 19:38:13 -0600
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 6/6] powerpc/eeh: Avoid build warnings
-Date: Wed, 26 Jun 2013 09:38:08 +0800
-Message-Id: <1372210688-12214-7-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 4/6] powerpc/eeh: Fix address catch for PowerNV
+Date: Wed, 26 Jun 2013 09:38:06 +0800
+Message-Id: <1372210688-12214-5-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1372210688-12214-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1372210688-12214-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -37,68 +37,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch is for avoiding following build warnings:
-
-   The function .pnv_pci_ioda_fixup() references
-   the function __init .eeh_init().
-   This is often because .pnv_pci_ioda_fixup lacks a __init
-
-   The function .pnv_pci_ioda_fixup() references
-   the function __init .eeh_addr_cache_build().
-   This is often because .pnv_pci_ioda_fixup lacks a __init
+On the PowerNV platform, the EEH address cache isn't built correctly
+because we skipped the EEH devices without binding PE. The patch
+fixes that.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h  |    4 ++--
- arch/powerpc/kernel/eeh.c       |    2 +-
- arch/powerpc/kernel/eeh_cache.c |    2 +-
- 3 files changed, 4 insertions(+), 4 deletions(-)
+ arch/powerpc/kernel/eeh_cache.c           |    2 +-
+ arch/powerpc/platforms/powernv/pci-ioda.c |    1 +
+ 2 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index dd65e31..09a8743 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -202,13 +202,13 @@ struct pci_bus *eeh_pe_bus_get(struct eeh_pe *pe);
- 
- void *eeh_dev_init(struct device_node *dn, void *data);
- void eeh_dev_phb_init_dynamic(struct pci_controller *phb);
--int __init eeh_init(void);
-+int eeh_init(void);
- int __init eeh_ops_register(struct eeh_ops *ops);
- int __exit eeh_ops_unregister(const char *name);
- unsigned long eeh_check_failure(const volatile void __iomem *token,
- 				unsigned long val);
- int eeh_dev_check_failure(struct eeh_dev *edev);
--void __init eeh_addr_cache_build(void);
-+void eeh_addr_cache_build(void);
- void eeh_add_device_tree_early(struct device_node *);
- void eeh_add_device_tree_late(struct pci_bus *);
- void eeh_add_sysfs_files(struct pci_bus *);
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index f7f2775..14475f6 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -751,7 +751,7 @@ int __exit eeh_ops_unregister(const char *name)
-  * Even if force-off is set, the EEH hardware is still enabled, so that
-  * newer systems can boot.
-  */
--int __init eeh_init(void)
-+int eeh_init(void)
- {
- 	struct pci_controller *hose, *tmp;
- 	struct device_node *phb;
 diff --git a/arch/powerpc/kernel/eeh_cache.c b/arch/powerpc/kernel/eeh_cache.c
-index 858ebea..ea9a94c 100644
+index 1d5d9a6..858ebea 100644
 --- a/arch/powerpc/kernel/eeh_cache.c
 +++ b/arch/powerpc/kernel/eeh_cache.c
-@@ -285,7 +285,7 @@ void eeh_addr_cache_rmv_dev(struct pci_dev *dev)
-  * Must be run late in boot process, after the pci controllers
-  * have been scanned for devices (after all device resources are known).
-  */
--void __init eeh_addr_cache_build(void)
-+void eeh_addr_cache_build(void)
- {
- 	struct device_node *dn;
- 	struct eeh_dev *edev;
+@@ -194,7 +194,7 @@ static void __eeh_addr_cache_insert_dev(struct pci_dev *dev)
+ 	}
+ 
+ 	/* Skip any devices for which EEH is not enabled. */
+-	if (!edev->pe) {
++	if (!eeh_probe_mode_dev() && !edev->pe) {
+ #ifdef DEBUG
+ 		pr_info("PCI: skip building address cache for=%s - %s\n",
+ 			pci_name(dev), dn->full_name);
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 3e5c3d5..0ff9a3a 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -998,6 +998,7 @@ static void pnv_pci_ioda_fixup(void)
+ 	pnv_pci_ioda_create_dbgfs();
+ 
+ #ifdef CONFIG_EEH
++	eeh_probe_mode_set(EEH_PROBE_MODE_DEV);
+ 	eeh_addr_cache_build();
+ 	eeh_init();
+ #endif
 -- 
 1.7.5.4
