@@ -1,14 +1,19 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
- [71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 1C2BC2C008A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 01:33:47 +1000 (EST)
-Message-ID: <1372260823.18733.263.camel@gandalf.local.home>
+Return-Path: <htejun@gmail.com>
+Received: from mail-qc0-x234.google.com (mail-qc0-x234.google.com
+ [IPv6:2607:f8b0:400d:c01::234])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A27292C0079
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 03:30:00 +1000 (EST)
+Received: by mail-qc0-f180.google.com with SMTP id a1so8314099qcx.25
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 10:29:57 -0700 (PDT)
+Sender: Tejun Heo <htejun@gmail.com>
+Date: Wed, 26 Jun 2013 10:29:48 -0700
+From: Tejun Heo <tj@kernel.org>
+To: Steven Rostedt <rostedt@goodmis.org>
 Subject: Re: [PATCH v2 15/45] rcu: Use get/put_online_cpus_atomic() to
  prevent CPU offline
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Tejun Heo <tj@kernel.org>
-Date: Wed, 26 Jun 2013 11:33:43 -0400
-In-Reply-To: <20130626152148.GA4405@mtj.dyndns.org>
+Message-ID: <20130626172948.GD4405@mtj.dyndns.org>
 References: <20130625202452.16593.22810.stgit@srivatsabhat.in.ibm.com>
  <20130625202755.16593.67819.stgit@srivatsabhat.in.ibm.com>
  <20130625220026.GG3828@linux.vnet.ibm.com>
@@ -17,8 +22,10 @@ References: <20130625202452.16593.22810.stgit@srivatsabhat.in.ibm.com>
  <20130626143424.GN3828@linux.vnet.ibm.com>
  <1372258271.18733.256.camel@gandalf.local.home>
  <20130626152148.GA4405@mtj.dyndns.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ <1372260823.18733.263.camel@gandalf.local.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1372260823.18733.263.camel@gandalf.local.home>
 Cc: peterz@infradead.org, fweisbec@gmail.com, oleg@redhat.com,
  walken@google.com, mingo@kernel.org, linux-arch@vger.kernel.org,
  vincent.guittot@linaro.org, xiaoguangrong@linux.vnet.ibm.com,
@@ -38,23 +45,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-06-26 at 08:21 -0700, Tejun Heo wrote:
-> On Wed, Jun 26, 2013 at 10:51:11AM -0400, Steven Rostedt wrote:
-> > > It would also increase the latency of CPU-hotunplug operations.
-> > 
-> > Is that a big deal?
+Hello,
+
+On Wed, Jun 26, 2013 at 11:33:43AM -0400, Steven Rostedt wrote:
+> I thought the whole deal with this patchset was to remove stop_machine
+> from CPU hotplug. Why halt all CPUs just to remove one? stomp_machine()
+> is extremely intrusive for the entire system, where as one CPU making
+> sure all CPUs schedule isn't very intrusive at all.
 > 
-> I thought that was the whole deal with this patchset - making cpu
-> hotunplugs lighter and faster mostly for powersaving.  That said, just
-> removing stop_machine call would be a pretty good deal and I don't
-> know how meaningful reducing CPU hotunplug latency is.  Srivatsa?
+> I didn't think the idea of this patch set was to make CPU hotplug
+> faster, just less intrusive to the system.
 
-I thought the whole deal with this patchset was to remove stop_machine
-from CPU hotplug. Why halt all CPUs just to remove one? stomp_machine()
-is extremely intrusive for the entire system, where as one CPU making
-sure all CPUs schedule isn't very intrusive at all.
+Yeap, removal of stop_machine is a great improvement in itself.  ISTR
+mentions of hot-unplug latency but I could be mistaken.  Srivatsa, can
+you please chime in on that?
 
-I didn't think the idea of this patch set was to make CPU hotplug
-faster, just less intrusive to the system.
+Thanks.
 
--- Steve
+-- 
+tejun
