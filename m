@@ -1,25 +1,33 @@
-Return-Path: <michael@ellerman.id.au>
-Date: Wed, 26 Jun 2013 18:10:58 +1000
-From: Michael Ellerman <michael@ellerman.id.au>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: Regression in RCU subsystem in latest mainline kernel
-Message-ID: <20130626081057.GB10796@concordia>
-References: <1626500.7WAVXjfS9F@pcimr>
- <20130614122800.GL5146@linux.vnet.ibm.com>
- <1645938.As0LR1yeVd@pcimr>
- <1371243967.9844.338.camel@gandalf.local.home>
- <1371261741.21896.20.camel@pasglop>
- <20130617074213.GA3589@concordia>
- <20130619040906.GA5146@linux.vnet.ibm.com>
- <20130625071914.GA29957@concordia>
- <20130625074422.GB29957@concordia>
- <20130625160332.GA3828@linux.vnet.ibm.com>
+Return-Path: <paolo.bonzini@gmail.com>
+Received: from mail-qc0-x232.google.com (mail-qc0-x232.google.com
+ [IPv6:2607:f8b0:400d:c01::232])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1AD0F2C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 18:21:11 +1000 (EST)
+Received: by mail-qc0-f178.google.com with SMTP id c11so8047989qcv.9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 01:21:09 -0700 (PDT)
+Sender: Paolo Bonzini <paolo.bonzini@gmail.com>
+Message-ID: <51CAA46B.70500@redhat.com>
+Date: Wed, 26 Jun 2013 10:20:59 +0200
+From: Paolo Bonzini <pbonzini@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130625160332.GA3828@linux.vnet.ibm.com>
-Cc: Rojhalat Ibrahim <imr@rtschenk.de>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org,
- Steven Rostedt <rostedt@goodmis.org>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 28/45] KVM: Use get/put_online_cpus_atomic() to prevent
+ CPU offline
+References: <20130625202452.16593.22810.stgit@srivatsabhat.in.ibm.com>
+ <20130625203036.16593.50377.stgit@srivatsabhat.in.ibm.com>
+In-Reply-To: <20130625203036.16593.50377.stgit@srivatsabhat.in.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Gleb Natapov <gleb@redhat.com>, peterz@infradead.org, fweisbec@gmail.com,
+ linux-kernel@vger.kernel.org, walken@google.com, mingo@kernel.org,
+ linux-arch@vger.kernel.org, vincent.guittot@linaro.org, kvm@vger.kernel.org,
+ xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
+ paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
+ linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org,
+ namhyung@kernel.org, tglx@linutronix.de, laijs@cn.fujitsu.com,
+ zhong@linux.vnet.ibm.com, netdev@vger.kernel.org, oleg@redhat.com, sbw@mit.edu,
+ tj@kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,44 +37,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 25, 2013 at 09:03:32AM -0700, Paul E. McKenney wrote:
-> On Tue, Jun 25, 2013 at 05:44:23PM +1000, Michael Ellerman wrote:
-> > On Tue, Jun 25, 2013 at 05:19:14PM +1000, Michael Ellerman wrote:
-> > > 
-> > > Here's another trace from 3.10-rc7 plus a few local patches.
-> > 
-> > And here's another with CONFIG_RCU_CPU_STALL_INFO=y in case that's useful:
-> > 
-> > PASS running test_pmc5_6_overuse()
-> > INFO: rcu_sched self-detected stall on CPU
-> > 	8: (1 GPs behind) idle=8eb/140000000000002/0 softirq=215/220 
+Il 25/06/2013 22:30, Srivatsa S. Bhat ha scritto:
+> Once stop_machine() is gone from the CPU offline path, we won't be able
+> to depend on disabling preemption to prevent CPUs from going offline
+> from under us.
 > 
-> So this CPU has been out of action since before the beginning of the
-> current grace period ("1 GPs behind").  It is not idle, having taken
-> a pair of nested interrupts from process context (matching the stack
-> below).  This CPU has take five softirqs since the last grace period
-> that it noticed, which makes it likely that the loop is within the
-> softirq handler.
+> Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going
+> offline, while invoking from atomic context.
 > 
-> > 	 (t=2100 jiffies g=18446744073709551583 c=18446744073709551582 q=13)
+> Cc: Gleb Natapov <gleb@redhat.com>
+> Cc: Paolo Bonzini <pbonzini@redhat.com>
+> Cc: kvm@vger.kernel.org
+> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> ---
 > 
-> Assuming HZ=100, this stall has been going on  for 21 seconds.  There
-> is a grace period in progress according to RCU's global state (which
-> this CPU is not yet aware of).  There are a total of 13 RCU callbacks
-> queued across the entire system.
+>  virt/kvm/kvm_main.c |    8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
 > 
-> If the system is at all responsive, I suggest using ftrace (either from
-> the boot command line or at runtime) to trace __do_softirq() and
-> hrtimer_interrupt().
+> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+> index 302681c..5bbfa30 100644
+> --- a/virt/kvm/kvm_main.c
+> +++ b/virt/kvm/kvm_main.c
+> @@ -174,7 +174,7 @@ static bool make_all_cpus_request(struct kvm *kvm, unsigned int req)
+>  
+>  	zalloc_cpumask_var(&cpus, GFP_ATOMIC);
+>  
+> -	me = get_cpu();
+> +	me = get_online_cpus_atomic();
+>  	kvm_for_each_vcpu(i, vcpu, kvm) {
+>  		kvm_make_request(req, vcpu);
+>  		cpu = vcpu->cpu;
+> @@ -192,7 +192,7 @@ static bool make_all_cpus_request(struct kvm *kvm, unsigned int req)
+>  		smp_call_function_many(cpus, ack_flush, NULL, 1);
+>  	else
+>  		called = false;
+> -	put_cpu();
+> +	put_online_cpus_atomic();
+>  	free_cpumask_var(cpus);
+>  	return called;
+>  }
+> @@ -1707,11 +1707,11 @@ void kvm_vcpu_kick(struct kvm_vcpu *vcpu)
+>  		++vcpu->stat.halt_wakeup;
+>  	}
+>  
+> -	me = get_cpu();
+> +	me = get_online_cpus_atomic();
+>  	if (cpu != me && (unsigned)cpu < nr_cpu_ids && cpu_online(cpu))
+>  		if (kvm_arch_vcpu_should_kick(vcpu))
+>  			smp_send_reschedule(cpu);
+> -	put_cpu();
+> +	put_online_cpus_atomic();
+>  }
+>  EXPORT_SYMBOL_GPL(kvm_vcpu_kick);
+>  #endif /* !CONFIG_S390 */
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
-Thanks for decoding it Paul.
-
-I've narrowed down the test case and I think this is probably just a
-case of too many perf interrupts. If I reduce the sampling period by
-half the test runs fine.
-
-There is logic in perf to detect an interrupt storm, but for some reason
-it's not saving us. I'll dig in there, but I don't think it's an RCU
-problem.
-
-cheers
+Acked-by: Paolo Bonzini <pbonzini@redhat.com>
