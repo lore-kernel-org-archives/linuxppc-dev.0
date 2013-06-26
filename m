@@ -1,19 +1,37 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.pcug.org.au [203.10.76.10])
- by ozlabs.org (Postfix) with ESMTP id 9042E2C0091
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 16:56:50 +1000 (EST)
-Date: Wed, 26 Jun 2013 16:56:42 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: linux-next: manual merge of the akpm tree with the powerpc tree
-Message-Id: <20130626165642.8740ecb6d5d5882b06f173c8@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Wed__26_Jun_2013_16_56_42_+1000_9ZYzORaX4_xzG.ZF"
-Cc: Michael Neuling <mikey@neuling.org>, linux-kernel@vger.kernel.org,
- Oleg Nesterov <oleg@redhat.com>, linux-next@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 40A502C0087
+ for <linuxppc-dev@ozlabs.org>; Wed, 26 Jun 2013 17:43:19 +1000 (EST)
+Received: from /spool/local
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Wed, 26 Jun 2013 03:43:15 -0400
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 4A37D6E8028
+ for <linuxppc-dev@ozlabs.org>; Wed, 26 Jun 2013 03:43:09 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5Q7gha6293210
+ for <linuxppc-dev@ozlabs.org>; Wed, 26 Jun 2013 03:42:43 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5Q7ggqw016284
+ for <linuxppc-dev@ozlabs.org>; Wed, 26 Jun 2013 04:42:43 -0300
+Date: Wed, 26 Jun 2013 00:41:50 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: eranian@google.com, Paul Mackerras <paulus@samba.org>,
+ Anton Blanchard <anton@au1.ibm.com>, ellerman@au1.ibm.com,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: [RFC][PATCH 2/3][v2] perf/Power7: Export MDTLB_SRC fields to userspace
+Message-ID: <20130626074150.GB3741@us.ibm.com>
+References: <20130626074106.GA3741@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130626074106.GA3741@us.ibm.com>
+Cc: sukadev@us.ibm.com, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,62 +41,216 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Wed__26_Jun_2013_16_56_42_+1000_9ZYzORaX4_xzG.ZF
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Andrew,
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Date: Tue, 25 Jun 2013 15:50:18 -0700
+Subject: [RFC][PATCH 2/3][v2] perf/Power7: Export MDTLB_SRC fields to userspace
 
-Today's linux-next merge of the akpm tree got a conflict in
-arch/powerpc/kernel/ptrace.c between commit b0b0aa9c7faf
-("powerpc/hw_brk: Fix setting of length for exact mode breakpoints") from
-the powerpc tree and commit "ptrace/powerpc: revert "hw_breakpoints: Fix
-racy access to ptrace breakpoints"" from the akpm tree.
+Power7 saves the "perf-event vector" information in the mmcra register.
+Included in this event vector is a "marked-data-TLB source", MDTLB_SRC,
+field which identifies where in the memory-hierarchy the data for a TLB
+miss was eventually found.
 
-I fixed it up (see below) and can carry the fix as necessary (no action
-is required).
+Use the 'struct perf_mem_data_src' to export the MDTLB_SRC field to
+user space.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+The mapping between the Power7 hierarchy levels and the arch-neutral levels
+is, unfortunately, not trivial. Some existing arch-neutral levels are unused
+in Power (eg: TLB_L1, TLB_WK, TLB_OS). But, Power7 provides several other
+levels for the MDTLB_SRC, so this patch proposes adding new arch-neutral
+levels.
 
-diff --cc arch/powerpc/kernel/ptrace.c
-index 64f7bd5,6645e57..0000000
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@@ -1449,10 -1437,7 +1437,9 @@@ static long ppc_set_hwdebug(struct task
-  	 */
-  	if (bp_info->addr_mode =3D=3D PPC_BREAKPOINT_MODE_RANGE_INCLUSIVE) {
-  		len =3D bp_info->addr2 - bp_info->addr;
- -	} else if (bp_info->addr_mode !=3D PPC_BREAKPOINT_MODE_EXACT) {
- +	} else if (bp_info->addr_mode =3D=3D PPC_BREAKPOINT_MODE_EXACT)
- +		len =3D 1;
- +	else {
-- 		ptrace_put_breakpoints(child);
-  		return -EINVAL;
-  	}
-  	bp =3D thread->ptrace_bps[0];
+    Arch-neutral levels         Power7 levels
+    -----------------------------------------------------------------------
+    local    TLB_L2		local (same core) L2 (FROM_L2)
+    local    TLB_L3		local (same core) L3 (FROM_L3)
 
---Signature=_Wed__26_Jun_2013_16_56_42_+1000_9ZYzORaX4_xzG.ZF
-Content-Type: application/pgp-signature
+    1-hop    TLB_REM_L2_CCE1*  different core on same chip (FROM_L2.1)
+    1-hop    TLB_REM_L3_CCE1*  different core on same chip (FROM_L3.1)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
+    2-hops   TLB_REM_CCE2*	remote (different chip, same node) (FROM_RL2L3)
+    3-hops   TLB_REM_CCE3*	distant (different node)  (FROM_DL2L3)
 
-iQIcBAEBCAAGBQJRypCuAAoJEECxmPOUX5FEMFsP/iLMpsI83VEBPCVdZdKFq4ms
-mxTBOl7XT27o/pj+0b3Z+htLcBqjzDfeMfrvyURf2Rs/e0Ha0xUX88fUolzrFHK6
-7prwBftW35ee3eWTkv3rwprbGc0PPsqz8NZJAx5sUnGfjNNY6RTcpPohSy7i2T5x
-O7D7qYIVTRL9hsCvgHPiZrnbkjY6PLkzgEakgbt0QiDBYKmIQ9aFuFzimhIkTS4Q
-87BO/fc3sefuYT/4N59xP9lkS7eTVR0C6sSZDsUaImIhwY4QSeaouwAihTba7u9x
-UMSh2M2UkvN003Cj71UtaHrhsPW+K7QbFnW2TVD1X4OKe2gF9ncefYgfgYvZIUL1
-r/r6Edav3rnP+lyAMIHmvhSP4aes37Dfmeq5cIlVxLPTNxuQW3Mx5m6qSh0YT3wc
-UJf/peocUSIrsVJLtrYNAm3iv9Vy0N2CMaREgSX0YAzoM9u+KwHA8vft2PGH8wL9
-YLlm72AGg5W/glOGEd1WNg4zA0JQRr5ITPEYsgdb1jBNkh36BVmYxHohUF56ZoxN
-IJ+c7KQlmgdjkVxZ7hnGW/EWfZbv25yG6zpw3mFWPmSosP/q9PdjJ6YGKxGcr4WD
-KlW/RvXhoL/W1IJUyKbZtfzF7vPqOHmyfzm7pZcWDw4tcldpMMehX64zVL1guRiM
-eN1c1fAK2tjRP16l0kDj
-=JNfM
------END PGP SIGNATURE-----
+    1-hop    TLB_REM_RAM1*	unused
+    2-hops   TLB_REM_RAM2*	remote (different chip, same node) (FROM_RMEM)
+    3-hops   TLB_REM_RAM3*	distant (different node) (FROM_DMEM)
 
---Signature=_Wed__26_Jun_2013_16_56_42_+1000_9ZYzORaX4_xzG.ZF--
+* proposed new levels.
+
+As shown above, Power7 supports one extra level in the cache-hierarchy (i.e
+total of 3-hops).  To maintain consistency in terminology (i.e 2-hops = remote,
+3-hops = distant), we propose leaving the REM_RAM1 unused in Power7 and adding
+another level, REM_RAM3.
+
+Further, in the above REM_CCE1 case, Power7 can also identify if the data came
+from the L2 or L3 cache of another core on the same chip. To describe this
+add the levels:
+
+	PERF_MEM_TLB_REM_L2_CCE1
+	PERF_MEM_TLB_REM_L3_CCE1
+
+Finally, in the REM_CCE1 and REM_CCE2 cases, Power7 also indicates whether
+the entry found in the remote cache was modified (dirty). So we add a new
+state
+
+	PERF_MEM_TLB_CCE_DIRTY
+
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+---
+
+Changelog[v2]:
+	- Address the MDTLB_SRC field before addressing the DCACHE_SRC field
+	  since we can then keep the new ->mem_dtlb bits contigious.
+	  (DCACHE_SRC needs a field, ->mem_xlvl in struct perf_mem_data_src
+	  and will be added in the next patch)
+
+ arch/powerpc/include/asm/perf_event_server.h |    2 +
+ arch/powerpc/perf/core-book3s.c              |    4 ++
+ arch/powerpc/perf/power7-pmu.c               |   64 ++++++++++++++++++++++++++
+ include/uapi/linux/perf_event.h              |   14 +++++-
+ 4 files changed, 82 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
+index f265049..30488f5 100644
+--- a/arch/powerpc/include/asm/perf_event_server.h
++++ b/arch/powerpc/include/asm/perf_event_server.h
+@@ -37,6 +37,8 @@ struct power_pmu {
+ 	void            (*config_bhrb)(u64 pmu_bhrb_filter);
+ 	void		(*disable_pmc)(unsigned int pmc, unsigned long mmcr[]);
+ 	int		(*limited_pmc_event)(u64 event_id);
++	void		(*get_mem_data_src)(union perf_mem_data_src *dsrc,
++				struct pt_regs *regs);
+ 	u32		flags;
+ 	const struct attribute_group	**attr_groups;
+ 	int		n_generic;
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index 29c6482..e0e0848 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -1627,6 +1627,10 @@ static void record_and_restart(struct perf_event *event, unsigned long val,
+ 			data.br_stack = &cpuhw->bhrb_stack;
+ 		}
+ 
++		if (event->attr.sample_type & PERF_SAMPLE_DATA_SRC &&
++				ppmu->get_mem_data_src)
++			ppmu->get_mem_data_src(&data.data_src, regs);
++
+ 		if (perf_event_overflow(event, &data, regs))
+ 			power_pmu_stop(event, 0);
+ 	}
+diff --git a/arch/powerpc/perf/power7-pmu.c b/arch/powerpc/perf/power7-pmu.c
+index 3c475d6..c1cac96 100644
+--- a/arch/powerpc/perf/power7-pmu.c
++++ b/arch/powerpc/perf/power7-pmu.c
+@@ -209,6 +209,69 @@ static int power7_get_alternatives(u64 event, unsigned int flags, u64 alt[])
+ 	return nalt;
+ }
+ 
++#define	POWER7_MMCRA_MDTLB_MISS		(0x1LL << 50)
++#define	POWER7_MMCRA_MDTLB_SRC_SHIFT	46
++#define	POWER7_MMCRA_MDTLB_SRC_MASK	(0xFLL << POWER7_MMCRA_MDTLB_SRC_SHIFT)
++
++/*
++ * Map MDTLB_SRC fields to the Linux memory hierarchy levels.
++ *
++ * Bits 14..17 in the MMCRA indicate the source of a marked-data-TLB miss,
++ * with of the 16 possible values referring to a specific source. Eg: if
++ * the 4-bits have the value 1 (0b0001), the mdtlb entry was found in the
++ * local L3 cache.
++ *
++ * We use the table, mdtlb_src_map, to map the value in this field, to
++ * PERF_MEM_TLB_L3, the arch-neutral representation of TLB L3 cache.
++ *
++ * Architecture neutral to Power7 hierarchy levels:
++ *	1-hop  = different core on same chip (L2.1 or L3.1)
++ *	2-hops = remote (different chip on same node, RL2L3, RMEM)
++ *	3-hops = distant (different node, DL2L3, DMEM)
++ */
++#define P(a, b)			PERF_MEM_S(a, b)
++#define TD(a, b)		(P(TLB, CCE_DIRTY) | P(a, b))
++
++static u64 mdtlb_src_map[] = {
++	P(TLB,  L2),			/* 00: FROM_L2 */
++	P(TLB,  L3),			/* 01: FROM_L3 */
++
++	P(TLB,  NA),			/* 02: Reserved */
++	P(TLB,  NA),			/* 03: Reserved */
++
++	P(TLB,  REM_L2_CCE1),		/* 04: FROM_L2.1_SHR */
++	TD(TLB, REM_L2_CCE1),		/* 05: FROM_L2.1_MOD */
++
++	P(TLB,  REM_L3_CCE1),		/* 06: FROM_L3.1_SHR */
++	TD(TLB, REM_L3_CCE1),		/* 07: FROM_L3.1_MOD */
++
++	P(TLB,  REM_CCE2),		/* 08: FROM_RL2L3_SHR */
++	TD(TLB, REM_CCE2),		/* 09: FROM_RL2L3_MOD */
++
++	P(TLB,  REM_CCE3),		/* 10: FROM_DL2L3_SHR */
++	TD(TLB, REM_CCE3),		/* 11: FROM_DL2L3_MOD */
++
++	P(TLB,  LOC_RAM),		/* 12: FROM_LMEM */
++	P(TLB,  REM_RAM2),		/* 13: FROM_RMEM */
++	P(TLB,  REM_RAM3),		/* 14: FROM_DMEM */
++
++	P(TLB,  NA),			/* 15: Reserved */
++};
++
++static void power7_get_mem_data_src(union perf_mem_data_src *dsrc,
++				struct pt_regs *regs)
++{
++	u64 idx;
++	u64 mmcra = regs->dsisr;
++
++	if (mmcra & POWER7_MMCRA_MDTLB_MISS) {
++		idx = mmcra & POWER7_MMCRA_MDTLB_SRC_MASK;
++		idx >>= POWER7_MMCRA_MDTLB_SRC_SHIFT;
++
++		dsrc->val |= mdtlb_src_map[idx];
++	}
++}
++
+ /*
+  * Returns 1 if event counts things relating to marked instructions
+  * and thus needs the MMCRA_SAMPLE_ENABLE bit set, or 0 if not.
+@@ -447,6 +510,7 @@ static struct power_pmu power7_pmu = {
+ 	.compute_mmcr		= power7_compute_mmcr,
+ 	.get_constraint		= power7_get_constraint,
+ 	.get_alternatives	= power7_get_alternatives,
++	.get_mem_data_src	= power7_get_mem_data_src,
+ 	.disable_pmc		= power7_disable_pmc,
+ 	.flags			= PPMU_ALT_SIPR,
+ 	.attr_groups		= power7_pmu_attr_groups,
+diff --git a/include/uapi/linux/perf_event.h b/include/uapi/linux/perf_event.h
+index 52697a3..815ee12 100644
+--- a/include/uapi/linux/perf_event.h
++++ b/include/uapi/linux/perf_event.h
+@@ -626,8 +626,8 @@ union perf_mem_data_src {
+ 			mem_lvl:14,	/* memory hierarchy level */
+ 			mem_snoop:5,	/* snoop mode */
+ 			mem_lock:2,	/* lock instr */
+-			mem_dtlb:7,	/* tlb access */
+-			mem_rsvd:31;
++			mem_dtlb:17,	/* tlb access */
++			mem_rsvd:21;
+ 	};
+ };
+ 
+@@ -678,6 +678,16 @@ union perf_mem_data_src {
+ #define PERF_MEM_TLB_L2		0x10 /* L2 */
+ #define PERF_MEM_TLB_WK		0x20 /* Hardware Walker*/
+ #define PERF_MEM_TLB_OS		0x40 /* OS fault handler */
++#define PERF_MEM_TLB_L3		0x80
++#define PERF_MEM_TLB_REM_L2_CCE1	0x100	/* Remote L2 cache (1 hop) */
++#define PERF_MEM_TLB_REM_L3_CCE1	0x200	/* Remote L3 cache (1 hop) */
++#define PERF_MEM_TLB_REM_CCE2	0x400	/* Remote cache (2 hops) */
++#define PERF_MEM_TLB_REM_CCE3	0x800	/* Remote cache (3 hops) */
++#define PERF_MEM_TLB_LOC_RAM	0x1000	/* Local DRAM */
++#define PERF_MEM_TLB_REM_RAM1	0x2000	/* Remote DRAM (1 hop) */
++#define PERF_MEM_TLB_REM_RAM2	0x4000	/* Remote DRAM (2 hops) */
++#define PERF_MEM_TLB_REM_RAM3	0x8000	/* Remote DRAM (3 hops) */
++#define PERF_MEM_TLB_CCE_DIRTY	0x10000	/* Remote cache entry hit, but dirty */
+ 
+ #define PERF_MEM_S(a, s) \
+ 	(((u64)PERF_MEM_##a##_##s) << PERF_MEM_##a##_SHIFT)
+-- 
+1.7.1
