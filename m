@@ -1,19 +1,19 @@
 Return-Path: <R65777@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A3C7A2C029D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 15:34:43 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 79C062C00A7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 15:34:50 +1000 (EST)
 From: Bharat Bhushan <r65777@freescale.com>
 To: <kvm-ppc@vger.kernel.org>, <kvm@vger.kernel.org>, <agraf@suse.de>,
  <scottwood@freescale.com>, <tiejun.chen@windriver.com>,
  <benh@kernel.crashing.org>, <linuxppc-dev@lists.ozlabs.org>,
  <linux-kernel@vger.kernel.org>, <mikey@neuling.org>
-Subject: [PATCH 4/6 v5] KVM: PPC: exit to user space on "ehpriv" instruction
-Date: Wed, 26 Jun 2013 11:12:24 +0530
-Message-ID: <1372225346-5029-5-git-send-email-Bharat.Bhushan@freescale.com>
+Subject: [PATCH 5/6 v5] KVM: PPC: Using "struct debug_reg"
+Date: Wed, 26 Jun 2013 11:12:25 +0530
+Message-ID: <1372225346-5029-6-git-send-email-Bharat.Bhushan@freescale.com>
 In-Reply-To: <1372225346-5029-1-git-send-email-Bharat.Bhushan@freescale.com>
 References: <1372225346-5029-1-git-send-email-Bharat.Bhushan@freescale.com>
 MIME-Version: 1.0
@@ -28,124 +28,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"ehpriv" instruction is used for setting software breakpoints
-by user space. This patch adds support to exit to user space
-with "run->debug" have relevant information.
-
-As this is the first point we are using run->debug, also defined
-the run->debug structure.
+For KVM also use the "struct debug_reg" defined in asm/processor.h
 
 Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
 ---
- arch/powerpc/include/asm/disassemble.h |    4 ++++
- arch/powerpc/include/uapi/asm/kvm.h    |   21 +++++++++++++++++----
- arch/powerpc/kvm/e500_emulate.c        |   27 +++++++++++++++++++++++++++
- 3 files changed, 48 insertions(+), 4 deletions(-)
+ arch/powerpc/include/asm/kvm_host.h |   13 +------------
+ arch/powerpc/kvm/booke.c            |   34 ++++++++++++++++++++++++----------
+ 2 files changed, 25 insertions(+), 22 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/disassemble.h b/arch/powerpc/include/asm/disassemble.h
-index 9b198d1..856f8de 100644
---- a/arch/powerpc/include/asm/disassemble.h
-+++ b/arch/powerpc/include/asm/disassemble.h
-@@ -77,4 +77,8 @@ static inline unsigned int get_d(u32 inst)
- 	return inst & 0xffff;
- }
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index af326cd..838a577 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -381,17 +381,6 @@ struct kvmppc_slb {
+ #define KVMPPC_EPR_USER		1 /* exit to userspace to fill EPR */
+ #define KVMPPC_EPR_KERNEL	2 /* in-kernel irqchip */
  
-+static inline unsigned int get_oc(u32 inst)
-+{
-+	return (inst >> 11) & 0x7fff;
-+}
- #endif /* __ASM_PPC_DISASSEMBLE_H__ */
-diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
-index 0fb1a6e..ded0607 100644
---- a/arch/powerpc/include/uapi/asm/kvm.h
-+++ b/arch/powerpc/include/uapi/asm/kvm.h
-@@ -269,7 +269,24 @@ struct kvm_fpu {
- 	__u64 fpr[32];
- };
- 
-+/*
-+ * Defines for h/w breakpoint, watchpoint (read, write or both) and
-+ * software breakpoint.
-+ * These are used as "type" in KVM_SET_GUEST_DEBUG ioctl and "status"
-+ * for KVM_DEBUG_EXIT.
-+ */
-+#define KVMPPC_DEBUG_NONE		0x0
-+#define KVMPPC_DEBUG_BREAKPOINT		(1UL << 1)
-+#define KVMPPC_DEBUG_WATCH_WRITE	(1UL << 2)
-+#define KVMPPC_DEBUG_WATCH_READ		(1UL << 3)
- struct kvm_debug_exit_arch {
-+	__u64 address;
-+	/*
-+	 * exiting to userspace because of h/w breakpoint, watchpoint
-+	 * (read, write or both) and software breakpoint.
-+	 */
-+	__u32 status;
-+	__u32 reserved;
- };
- 
- /* for KVM_SET_GUEST_DEBUG */
-@@ -281,10 +298,6 @@ struct kvm_guest_debug_arch {
- 		 * Type denotes h/w breakpoint, read watchpoint, write
- 		 * watchpoint or watchpoint (both read and write).
- 		 */
--#define KVMPPC_DEBUG_NONE		0x0
--#define KVMPPC_DEBUG_BREAKPOINT		(1UL << 1)
--#define KVMPPC_DEBUG_WATCH_WRITE	(1UL << 2)
--#define KVMPPC_DEBUG_WATCH_READ		(1UL << 3)
- 		__u32 type;
- 		__u32 reserved;
- 	} bp[16];
-diff --git a/arch/powerpc/kvm/e500_emulate.c b/arch/powerpc/kvm/e500_emulate.c
-index b10a012..dab9d07 100644
---- a/arch/powerpc/kvm/e500_emulate.c
-+++ b/arch/powerpc/kvm/e500_emulate.c
-@@ -26,6 +26,8 @@
- #define XOP_TLBRE   946
- #define XOP_TLBWE   978
- #define XOP_TLBILX  18
-+#define XOP_EHPRIV  270
-+#define EHPRIV_OC_DEBUG 0
- 
- #ifdef CONFIG_KVM_E500MC
- static int dbell2prio(ulong param)
-@@ -82,6 +84,26 @@ static int kvmppc_e500_emul_msgsnd(struct kvm_vcpu *vcpu, int rb)
- }
+-struct kvmppc_booke_debug_reg {
+-	u32 dbcr0;
+-	u32 dbcr1;
+-	u32 dbcr2;
+-#ifdef CONFIG_KVM_E500MC
+-	u32 dbcr4;
+-#endif
+-	u64 iac[KVMPPC_BOOKE_MAX_IAC];
+-	u64 dac[KVMPPC_BOOKE_MAX_DAC];
+-};
+-
+ #define KVMPPC_IRQ_DEFAULT	0
+ #define KVMPPC_IRQ_MPIC		1
+ #define KVMPPC_IRQ_XICS		2
+@@ -535,7 +524,7 @@ struct kvm_vcpu_arch {
+ 	u32 eptcfg;
+ 	u32 epr;
+ 	u32 crit_save;
+-	struct kvmppc_booke_debug_reg dbg_reg;
++	struct debug_reg dbg_reg;
  #endif
+ 	gpa_t paddr_accessed;
+ 	gva_t vaddr_accessed;
+diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+index 62d4ece..3e9fc1d 100644
+--- a/arch/powerpc/kvm/booke.c
++++ b/arch/powerpc/kvm/booke.c
+@@ -1424,7 +1424,6 @@ int kvm_vcpu_ioctl_get_one_reg(struct kvm_vcpu *vcpu, struct kvm_one_reg *reg)
+ 	int r = 0;
+ 	union kvmppc_one_reg val;
+ 	int size;
+-	long int i;
  
-+static int kvmppc_e500_emul_ehpriv(struct kvm_run *run, struct kvm_vcpu *vcpu,
-+				   unsigned int inst, int *advance)
-+{
-+	int emulated = EMULATE_DONE;
-+
-+	switch (get_oc(inst)) {
-+	case EHPRIV_OC_DEBUG:
-+		run->exit_reason = KVM_EXIT_DEBUG;
-+		run->debug.arch.address = vcpu->arch.pc;
-+		run->debug.arch.status = 0;
-+		kvmppc_account_exit(vcpu, DEBUG_EXITS);
-+		emulated = EMULATE_EXIT_USER;
-+		*advance = 0;
+ 	size = one_reg_size(reg->id);
+ 	if (size > sizeof(val))
+@@ -1432,16 +1431,24 @@ int kvm_vcpu_ioctl_get_one_reg(struct kvm_vcpu *vcpu, struct kvm_one_reg *reg)
+ 
+ 	switch (reg->id) {
+ 	case KVM_REG_PPC_IAC1:
++		val = get_reg_val(reg->id, vcpu->arch.dbg_reg.iac1);
 +		break;
-+	default:
-+		emulated = EMULATE_FAIL;
-+	}
-+	return emulated;
-+}
-+
- int kvmppc_core_emulate_op(struct kvm_run *run, struct kvm_vcpu *vcpu,
-                            unsigned int inst, int *advance)
- {
-@@ -130,6 +152,11 @@ int kvmppc_core_emulate_op(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 			emulated = kvmppc_e500_emul_tlbivax(vcpu, ea);
- 			break;
+ 	case KVM_REG_PPC_IAC2:
++		val = get_reg_val(reg->id, vcpu->arch.dbg_reg.iac2);
++		break;
++#if CONFIG_PPC_ADV_DEBUG_IACS > 2
+ 	case KVM_REG_PPC_IAC3:
++		val = get_reg_val(reg->id, vcpu->arch.dbg_reg.iac3);
++		break;
+ 	case KVM_REG_PPC_IAC4:
+-		i = reg->id - KVM_REG_PPC_IAC1;
+-		val = get_reg_val(reg->id, vcpu->arch.dbg_reg.iac[i]);
++		val = get_reg_val(reg->id, vcpu->arch.dbg_reg.iac4);
+ 		break;
++#endif
+ 	case KVM_REG_PPC_DAC1:
++		val = get_reg_val(reg->id, vcpu->arch.dbg_reg.dac1);
++		break;
+ 	case KVM_REG_PPC_DAC2:
+-		i = reg->id - KVM_REG_PPC_DAC1;
+-		val = get_reg_val(reg->id, vcpu->arch.dbg_reg.dac[i]);
++		val = get_reg_val(reg->id, vcpu->arch.dbg_reg.dac2);
+ 		break;
+ 	case KVM_REG_PPC_EPR: {
+ 		u32 epr = get_guest_epr(vcpu);
+@@ -1481,7 +1488,6 @@ int kvm_vcpu_ioctl_set_one_reg(struct kvm_vcpu *vcpu, struct kvm_one_reg *reg)
+ 	int r = 0;
+ 	union kvmppc_one_reg val;
+ 	int size;
+-	long int i;
  
-+		case XOP_EHPRIV:
-+			emulated = kvmppc_e500_emul_ehpriv(run, vcpu, inst,
-+							   advance);
-+			break;
-+
- 		default:
- 			emulated = EMULATE_FAIL;
- 		}
+ 	size = one_reg_size(reg->id);
+ 	if (size > sizeof(val))
+@@ -1492,16 +1498,24 @@ int kvm_vcpu_ioctl_set_one_reg(struct kvm_vcpu *vcpu, struct kvm_one_reg *reg)
+ 
+ 	switch (reg->id) {
+ 	case KVM_REG_PPC_IAC1:
++		vcpu->arch.dbg_reg.iac1 = set_reg_val(reg->id, val);
++		break;
+ 	case KVM_REG_PPC_IAC2:
++		vcpu->arch.dbg_reg.iac2 = set_reg_val(reg->id, val);
++		break;
++#if CONFIG_PPC_ADV_DEBUG_IACS > 2
+ 	case KVM_REG_PPC_IAC3:
++		vcpu->arch.dbg_reg.iac3 = set_reg_val(reg->id, val);
++		break;
+ 	case KVM_REG_PPC_IAC4:
+-		i = reg->id - KVM_REG_PPC_IAC1;
+-		vcpu->arch.dbg_reg.iac[i] = set_reg_val(reg->id, val);
++		vcpu->arch.dbg_reg.iac4 = set_reg_val(reg->id, val);
+ 		break;
++#endif
+ 	case KVM_REG_PPC_DAC1:
++		vcpu->arch.dbg_reg.dac1 = set_reg_val(reg->id, val);
++		break;
+ 	case KVM_REG_PPC_DAC2:
+-		i = reg->id - KVM_REG_PPC_DAC1;
+-		vcpu->arch.dbg_reg.dac[i] = set_reg_val(reg->id, val);
++		vcpu->arch.dbg_reg.dac2 = set_reg_val(reg->id, val);
+ 		break;
+ 	case KVM_REG_PPC_EPR: {
+ 		u32 new_epr = set_reg_val(reg->id, val);
 -- 
 1.7.0.4
