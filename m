@@ -1,33 +1,30 @@
-Return-Path: <paolo.bonzini@gmail.com>
-Received: from mail-qc0-x232.google.com (mail-qc0-x232.google.com
- [IPv6:2607:f8b0:400d:c01::232])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1AD0F2C009F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 18:21:11 +1000 (EST)
-Received: by mail-qc0-f178.google.com with SMTP id c11so8047989qcv.9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 01:21:09 -0700 (PDT)
-Sender: Paolo Bonzini <paolo.bonzini@gmail.com>
-Message-ID: <51CAA46B.70500@redhat.com>
-Date: Wed, 26 Jun 2013 10:20:59 +0200
+Return-Path: <pbonzini@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 585DD2C0040
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 18:25:11 +1000 (EST)
+Message-ID: <51CAA514.8050609@redhat.com>
+Date: Wed, 26 Jun 2013 10:23:48 +0200
 From: Paolo Bonzini <pbonzini@redhat.com>
 MIME-Version: 1.0
 To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 28/45] KVM: Use get/put_online_cpus_atomic() to prevent
- CPU offline
+Subject: Re: [PATCH v2 29/45] kvm/vmx: Use get/put_online_cpus_atomic() to
+ prevent CPU offline
 References: <20130625202452.16593.22810.stgit@srivatsabhat.in.ibm.com>
- <20130625203036.16593.50377.stgit@srivatsabhat.in.ibm.com>
-In-Reply-To: <20130625203036.16593.50377.stgit@srivatsabhat.in.ibm.com>
+ <20130625203043.16593.1600.stgit@srivatsabhat.in.ibm.com>
+ <51CA9C5E.1030609@redhat.com> <51CAA116.2060906@linux.vnet.ibm.com>
+In-Reply-To: <51CAA116.2060906@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=UTF-8
 Cc: Gleb Natapov <gleb@redhat.com>, peterz@infradead.org, fweisbec@gmail.com,
- linux-kernel@vger.kernel.org, walken@google.com, mingo@kernel.org,
- linux-arch@vger.kernel.org, vincent.guittot@linaro.org, kvm@vger.kernel.org,
- xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
- paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
- linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org,
- namhyung@kernel.org, tglx@linutronix.de, laijs@cn.fujitsu.com,
- zhong@linux.vnet.ibm.com, netdev@vger.kernel.org, oleg@redhat.com, sbw@mit.edu,
- tj@kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+ linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+ walken@google.com, mingo@kernel.org, linux-arch@vger.kernel.org,
+ vincent.guittot@linaro.org, kvm@vger.kernel.org, x86@kernel.org,
+ xiaoguangrong@linux.vnet.ibm.com, Ingo Molnar <mingo@redhat.com>,
+ wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com,
+ nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au,
+ rostedt@goodmis.org, namhyung@kernel.org, tglx@linutronix.de,
+ laijs@cn.fujitsu.com, zhong@linux.vnet.ibm.com, netdev@vger.kernel.org,
+ oleg@redhat.com, sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,64 +34,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Il 25/06/2013 22:30, Srivatsa S. Bhat ha scritto:
-> Once stop_machine() is gone from the CPU offline path, we won't be able
-> to depend on disabling preemption to prevent CPUs from going offline
-> from under us.
+Il 26/06/2013 10:06, Srivatsa S. Bhat ha scritto:
+> On 06/26/2013 01:16 PM, Paolo Bonzini wrote:
+>> Il 25/06/2013 22:30, Srivatsa S. Bhat ha scritto:
+>>> -	cpu = get_cpu();
+>>> +	cpu = get_online_cpus_atomic();
+>>>  	vmx_vcpu_load(&vmx->vcpu, cpu);
+>>>  	vmx->vcpu.cpu = cpu;
+>>>  	err = vmx_vcpu_setup(vmx);
+>>>  	vmx_vcpu_put(&vmx->vcpu);
+>>> -	put_cpu();
+>>> +	put_online_cpus_atomic();
+>>
+>> The new API has a weird name.  Why are you adding new functions instead
+>> of just modifying get/put_cpu?
+>>
 > 
-> Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going
-> offline, while invoking from atomic context.
+> Because the purpose of those two functions are distinctly different
+> from each other.
 > 
-> Cc: Gleb Natapov <gleb@redhat.com>
-> Cc: Paolo Bonzini <pbonzini@redhat.com>
-> Cc: kvm@vger.kernel.org
-> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-> ---
-> 
->  virt/kvm/kvm_main.c |    8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
-> 
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index 302681c..5bbfa30 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -174,7 +174,7 @@ static bool make_all_cpus_request(struct kvm *kvm, unsigned int req)
->  
->  	zalloc_cpumask_var(&cpus, GFP_ATOMIC);
->  
-> -	me = get_cpu();
-> +	me = get_online_cpus_atomic();
->  	kvm_for_each_vcpu(i, vcpu, kvm) {
->  		kvm_make_request(req, vcpu);
->  		cpu = vcpu->cpu;
-> @@ -192,7 +192,7 @@ static bool make_all_cpus_request(struct kvm *kvm, unsigned int req)
->  		smp_call_function_many(cpus, ack_flush, NULL, 1);
->  	else
->  		called = false;
-> -	put_cpu();
-> +	put_online_cpus_atomic();
->  	free_cpumask_var(cpus);
->  	return called;
->  }
-> @@ -1707,11 +1707,11 @@ void kvm_vcpu_kick(struct kvm_vcpu *vcpu)
->  		++vcpu->stat.halt_wakeup;
->  	}
->  
-> -	me = get_cpu();
-> +	me = get_online_cpus_atomic();
->  	if (cpu != me && (unsigned)cpu < nr_cpu_ids && cpu_online(cpu))
->  		if (kvm_arch_vcpu_should_kick(vcpu))
->  			smp_send_reschedule(cpu);
-> -	put_cpu();
-> +	put_online_cpus_atomic();
->  }
->  EXPORT_SYMBOL_GPL(kvm_vcpu_kick);
->  #endif /* !CONFIG_S390 */
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+> get/put_cpu() is used to disable preemption on the local CPU. (Which
+> also disables offlining the local CPU during that critical section).
 
-Acked-by: Paolo Bonzini <pbonzini@redhat.com>
+Ok, then I understood correctly... and I acked the other KVM patch.
+
+However, keeping the code on the local CPU is exactly the point of this
+particular use of get_cpu()/put_cpu().  Why does it need to synchronize
+with offlining of other CPUs?
+
+Paolo
+
+> What this patchset deals with is synchronizing with offline of *any*
+> CPU. Typically, we use get_online_cpus()/put_online_cpus() for that
+> purpose. But they can't be used in atomic context, because they take
+> mutex locks and hence can sleep.
+> 
+> So the code that executes in atomic context and which wants to prevent
+> *any* CPU from going offline, used to disable preemption around its
+> critical section. Disabling preemption prevents stop_machine(), and
+> CPU offline (of *any* CPU) was done via stop_machine(). So disabling
+> preemption disabled any CPU from going offline, as a *side-effect*.
+> 
+> And this patchset prepares the ground for getting rid of stop_machine()
+> in the CPU offline path. Which means, disabling preemption only prevents
+> the *local* CPU from going offline. So if code in atomic context wants
+> to prevent any CPU from going offline, we need a new set of APIs, like
+> get/put_online_cpus(), but which can be invoked from atomic context.
+> That's why I named it as get/put_online_cpus_atomic().
+> 
+> One of the key points here is that we want to preserve get/put_cpu()
+> as it is, since its purpose is different - disable preemption and
+> offline of the local CPU. There is no reason to change that API, its
+> useful as it is.
