@@ -1,29 +1,49 @@
-Return-Path: <R65777@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0251.outbound.messaging.microsoft.com [213.199.154.251])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 254F52C008A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 18:44:14 +1000 (EST)
-From: Bhushan Bharat-R65777 <R65777@freescale.com>
-To: tiejun.chen <tiejun.chen@windriver.com>
-Subject: RE: [PATCH 4/6 v5] KVM: PPC: exit to user space on "ehpriv"
- instruction
-Date: Wed, 26 Jun 2013 08:44:05 +0000
-Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D07086C2F@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1372225346-5029-1-git-send-email-Bharat.Bhushan@freescale.com>
- <1372225346-5029-5-git-send-email-Bharat.Bhushan@freescale.com>
- <51CA903A.4070809@windriver.com>
-In-Reply-To: <51CA903A.4070809@windriver.com>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 58B092C02C1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 18:44:30 +1000 (EST)
+Received: from /spool/local
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+ Wed, 26 Jun 2013 14:05:45 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 20032394004E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 14:14:24 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5Q8iHnC24969286
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 14:14:18 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5Q8iIwt029082
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 08:44:21 GMT
+Message-ID: <51CAA921.7030906@linux.vnet.ibm.com>
+Date: Wed, 26 Jun 2013 14:11:05 +0530
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "mikey@neuling.org" <mikey@neuling.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>, "agraf@suse.de" <agraf@suse.de>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Paolo Bonzini <pbonzini@redhat.com>
+Subject: Re: [PATCH v2 29/45] kvm/vmx: Use get/put_online_cpus_atomic() to
+ prevent CPU offline
+References: <20130625202452.16593.22810.stgit@srivatsabhat.in.ibm.com>
+ <20130625203043.16593.1600.stgit@srivatsabhat.in.ibm.com>
+ <51CA9C5E.1030609@redhat.com> <51CAA116.2060906@linux.vnet.ibm.com>
+ <51CAA514.8050609@redhat.com>
+In-Reply-To: <51CAA514.8050609@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: kvm@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
+ oleg@redhat.com, "H. Peter Anvin" <hpa@zytor.com>, walken@google.com,
+ mingo@kernel.org, linux-arch@vger.kernel.org, vincent.guittot@linaro.org,
+ Gleb Natapov <gleb@redhat.com>, x86@kernel.org,
+ xiaoguangrong@linux.vnet.ibm.com, Ingo Molnar <mingo@redhat.com>,
+ wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com,
+ nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au,
+ rostedt@goodmis.org, namhyung@kernel.org, tglx@linutronix.de,
+ laijs@cn.fujitsu.com, zhong@linux.vnet.ibm.com, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, sbw@mit.edu, tj@kernel.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,100 +53,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogdGllanVuLmNoZW4gW21h
-aWx0bzp0aWVqdW4uY2hlbkB3aW5kcml2ZXIuY29tXQ0KPiBTZW50OiBXZWRuZXNkYXksIEp1bmUg
-MjYsIDIwMTMgMTI6MjUgUE0NCj4gVG86IEJodXNoYW4gQmhhcmF0LVI2NTc3Nw0KPiBDYzoga3Zt
-LXBwY0B2Z2VyLmtlcm5lbC5vcmc7IGt2bUB2Z2VyLmtlcm5lbC5vcmc7IGFncmFmQHN1c2UuZGU7
-IFdvb2QgU2NvdHQtDQo+IEIwNzQyMTsgYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnOyBsaW51eHBw
-Yy1kZXZAbGlzdHMub3psYWJzLm9yZzsgbGludXgtDQo+IGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7
-IG1pa2V5QG5ldWxpbmcub3JnOyBCaHVzaGFuIEJoYXJhdC1SNjU3NzcNCj4gU3ViamVjdDogUmU6
-IFtQQVRDSCA0LzYgdjVdIEtWTTogUFBDOiBleGl0IHRvIHVzZXIgc3BhY2Ugb24gImVocHJpdiIg
-aW5zdHJ1Y3Rpb24NCj4gDQo+IE9uIDA2LzI2LzIwMTMgMDE6NDIgUE0sIEJoYXJhdCBCaHVzaGFu
-IHdyb3RlOg0KPiA+ICJlaHByaXYiIGluc3RydWN0aW9uIGlzIHVzZWQgZm9yIHNldHRpbmcgc29m
-dHdhcmUgYnJlYWtwb2ludHMNCj4gPiBieSB1c2VyIHNwYWNlLiBUaGlzIHBhdGNoIGFkZHMgc3Vw
-cG9ydCB0byBleGl0IHRvIHVzZXIgc3BhY2UNCj4gPiB3aXRoICJydW4tPmRlYnVnIiBoYXZlIHJl
-bGV2YW50IGluZm9ybWF0aW9uLg0KPiA+DQo+ID4gQXMgdGhpcyBpcyB0aGUgZmlyc3QgcG9pbnQg
-d2UgYXJlIHVzaW5nIHJ1bi0+ZGVidWcsIGFsc28gZGVmaW5lZA0KPiA+IHRoZSBydW4tPmRlYnVn
-IHN0cnVjdHVyZS4NCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IEJoYXJhdCBCaHVzaGFuIDxiaGFy
-YXQuYmh1c2hhbkBmcmVlc2NhbGUuY29tPg0KPiA+IC0tLQ0KPiA+ICAgYXJjaC9wb3dlcnBjL2lu
-Y2x1ZGUvYXNtL2Rpc2Fzc2VtYmxlLmggfCAgICA0ICsrKysNCj4gPiAgIGFyY2gvcG93ZXJwYy9p
-bmNsdWRlL3VhcGkvYXNtL2t2bS5oICAgIHwgICAyMSArKysrKysrKysrKysrKysrKy0tLS0NCj4g
-PiAgIGFyY2gvcG93ZXJwYy9rdm0vZTUwMF9lbXVsYXRlLmMgICAgICAgIHwgICAyNyArKysrKysr
-KysrKysrKysrKysrKysrKysrKysNCj4gPiAgIDMgZmlsZXMgY2hhbmdlZCwgNDggaW5zZXJ0aW9u
-cygrKSwgNCBkZWxldGlvbnMoLSkNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMv
-aW5jbHVkZS9hc20vZGlzYXNzZW1ibGUuaA0KPiBiL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9k
-aXNhc3NlbWJsZS5oDQo+ID4gaW5kZXggOWIxOThkMS4uODU2ZjhkZSAxMDA2NDQNCj4gPiAtLS0g
-YS9hcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vZGlzYXNzZW1ibGUuaA0KPiA+ICsrKyBiL2FyY2gv
-cG93ZXJwYy9pbmNsdWRlL2FzbS9kaXNhc3NlbWJsZS5oDQo+ID4gQEAgLTc3LDQgKzc3LDggQEAg
-c3RhdGljIGlubGluZSB1bnNpZ25lZCBpbnQgZ2V0X2QodTMyIGluc3QpDQo+ID4gICAJcmV0dXJu
-IGluc3QgJiAweGZmZmY7DQo+ID4gICB9DQo+ID4NCj4gPiArc3RhdGljIGlubGluZSB1bnNpZ25l
-ZCBpbnQgZ2V0X29jKHUzMiBpbnN0KQ0KPiA+ICt7DQo+ID4gKwlyZXR1cm4gKGluc3QgPj4gMTEp
-ICYgMHg3ZmZmOw0KPiA+ICt9DQo+ID4gICAjZW5kaWYgLyogX19BU01fUFBDX0RJU0FTU0VNQkxF
-X0hfXyAqLw0KPiA+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvaW5jbHVkZS91YXBpL2FzbS9r
-dm0uaA0KPiBiL2FyY2gvcG93ZXJwYy9pbmNsdWRlL3VhcGkvYXNtL2t2bS5oDQo+ID4gaW5kZXgg
-MGZiMWE2ZS4uZGVkMDYwNyAxMDA2NDQNCj4gPiAtLS0gYS9hcmNoL3Bvd2VycGMvaW5jbHVkZS91
-YXBpL2FzbS9rdm0uaA0KPiA+ICsrKyBiL2FyY2gvcG93ZXJwYy9pbmNsdWRlL3VhcGkvYXNtL2t2
-bS5oDQo+ID4gQEAgLTI2OSw3ICsyNjksMjQgQEAgc3RydWN0IGt2bV9mcHUgew0KPiA+ICAgCV9f
-dTY0IGZwclszMl07DQo+ID4gICB9Ow0KPiA+DQo+ID4gKy8qDQo+ID4gKyAqIERlZmluZXMgZm9y
-IGgvdyBicmVha3BvaW50LCB3YXRjaHBvaW50IChyZWFkLCB3cml0ZSBvciBib3RoKSBhbmQNCj4g
-PiArICogc29mdHdhcmUgYnJlYWtwb2ludC4NCj4gPiArICogVGhlc2UgYXJlIHVzZWQgYXMgInR5
-cGUiIGluIEtWTV9TRVRfR1VFU1RfREVCVUcgaW9jdGwgYW5kICJzdGF0dXMiDQo+ID4gKyAqIGZv
-ciBLVk1fREVCVUdfRVhJVC4NCj4gPiArICovDQo+ID4gKyNkZWZpbmUgS1ZNUFBDX0RFQlVHX05P
-TkUJCTB4MA0KPiA+ICsjZGVmaW5lIEtWTVBQQ19ERUJVR19CUkVBS1BPSU5UCQkoMVVMIDw8IDEp
-DQo+ID4gKyNkZWZpbmUgS1ZNUFBDX0RFQlVHX1dBVENIX1dSSVRFCSgxVUwgPDwgMikNCj4gPiAr
-I2RlZmluZSBLVk1QUENfREVCVUdfV0FUQ0hfUkVBRAkJKDFVTCA8PCAzKQ0KPiA+ICAgc3RydWN0
-IGt2bV9kZWJ1Z19leGl0X2FyY2ggew0KPiA+ICsJX191NjQgYWRkcmVzczsNCj4gPiArCS8qDQo+
-ID4gKwkgKiBleGl0aW5nIHRvIHVzZXJzcGFjZSBiZWNhdXNlIG9mIGgvdyBicmVha3BvaW50LCB3
-YXRjaHBvaW50DQo+ID4gKwkgKiAocmVhZCwgd3JpdGUgb3IgYm90aCkgYW5kIHNvZnR3YXJlIGJy
-ZWFrcG9pbnQuDQo+ID4gKwkgKi8NCj4gPiArCV9fdTMyIHN0YXR1czsNCj4gPiArCV9fdTMyIHJl
-c2VydmVkOw0KPiA+ICAgfTsNCj4gPg0KPiA+ICAgLyogZm9yIEtWTV9TRVRfR1VFU1RfREVCVUcg
-Ki8NCj4gPiBAQCAtMjgxLDEwICsyOTgsNiBAQCBzdHJ1Y3Qga3ZtX2d1ZXN0X2RlYnVnX2FyY2gg
-ew0KPiA+ICAgCQkgKiBUeXBlIGRlbm90ZXMgaC93IGJyZWFrcG9pbnQsIHJlYWQgd2F0Y2hwb2lu
-dCwgd3JpdGUNCj4gPiAgIAkJICogd2F0Y2hwb2ludCBvciB3YXRjaHBvaW50IChib3RoIHJlYWQg
-YW5kIHdyaXRlKS4NCj4gPiAgIAkJICovDQo+ID4gLSNkZWZpbmUgS1ZNUFBDX0RFQlVHX05PTkUJ
-CTB4MA0KPiA+IC0jZGVmaW5lIEtWTVBQQ19ERUJVR19CUkVBS1BPSU5UCQkoMVVMIDw8IDEpDQo+
-ID4gLSNkZWZpbmUgS1ZNUFBDX0RFQlVHX1dBVENIX1dSSVRFCSgxVUwgPDwgMikNCj4gPiAtI2Rl
-ZmluZSBLVk1QUENfREVCVUdfV0FUQ0hfUkVBRAkJKDFVTCA8PCAzKQ0KPiA+ICAgCQlfX3UzMiB0
-eXBlOw0KPiA+ICAgCQlfX3UzMiByZXNlcnZlZDsNCj4gPiAgIAl9IGJwWzE2XTsNCj4gPiBkaWZm
-IC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2t2bS9lNTAwX2VtdWxhdGUuYyBiL2FyY2gvcG93ZXJwYy9r
-dm0vZTUwMF9lbXVsYXRlLmMNCj4gPiBpbmRleCBiMTBhMDEyLi5kYWI5ZDA3IDEwMDY0NA0KPiA+
-IC0tLSBhL2FyY2gvcG93ZXJwYy9rdm0vZTUwMF9lbXVsYXRlLmMNCj4gPiArKysgYi9hcmNoL3Bv
-d2VycGMva3ZtL2U1MDBfZW11bGF0ZS5jDQo+ID4gQEAgLTI2LDYgKzI2LDggQEANCj4gPiAgICNk
-ZWZpbmUgWE9QX1RMQlJFICAgOTQ2DQo+ID4gICAjZGVmaW5lIFhPUF9UTEJXRSAgIDk3OA0KPiA+
-ICAgI2RlZmluZSBYT1BfVExCSUxYICAxOA0KPiA+ICsjZGVmaW5lIFhPUF9FSFBSSVYgIDI3MA0K
-PiA+ICsjZGVmaW5lIEVIUFJJVl9PQ19ERUJVRyAwDQo+IA0KPiBBcyBJIHRoaW5rIHRoZSBjYXNl
-LCAiT0MgPSAwIiwgaXMgYSBiaXQgc3BlY2lmaWMgc2luY2UgSUlSQywgaWYgdGhlIE9DDQo+IG9w
-ZXJhbmQgaXMgb21pdHRlZCwgaXRzIGVxdWFsIDAgYnkgZGVmYXVsdC4gU28gSSB0aGluayB3ZSBz
-aG91bGQgc3RhcnQgdGhpcyBPQw0KPiB2YWx1ZSBmcm9tIDEgb3Igb3RoZXIgbWFnaWMgbnVtYmVy
-Lg0KDQplaHByaXYgaW5zdHJ1Y3Rpb24gaXMgZGVmaW5lZCB0byBiZSB1c2VkIGFzOg0KCWVocHJp
-diBPQyAvLyB3aGVyZSBPQyBjYW4gYmUgMCwxLCAuLi4gbg0KYW5kIGluIGV4dGVuZGVkIGZvciBp
-dCBjYW4gYmUgdXNlZCBhcw0KCWVocHJpdiAvLyBXaXRoIG5vIE9DLCBhbmQgaGVyZSBpdCBhc3N1
-bWVzIE9DID0gMA0KU28gT0MgPSAwIGlzIG5vdCBzcGVjaWZpYyBidXQgImVocHJpdiIgaXMgc2Ft
-ZSBhcyAiZWhwcml2IDAiLg0KDQpJIGRvIG5vdCB0aGluayBvZiBhbnkgc3BlY2lhbCByZWFzb24g
-dG8gcmVzZXJ2ZSAiZWhwcml2IiBhbmQgImVocHJpdiAwIi4NCg0KVGhhbmtzDQotQmhhcmF0DQoN
-Cj4gDQo+IEFuZCBpZiBwb3NzaWJsZSwgd2UnZCBiZXR0ZXIgYWRkIHNvbWUgY29tbWVudHMgdG8g
-ZGVzY3JpYmUgdGhpcyB0byBtYWtlIHRoZSBPQw0KPiBkZWZpbml0aW9uIHJlYWRhYmxlLg0KPiAN
-Cj4gVGllanVuDQo+IA0KPiA+DQo+ID4gICAjaWZkZWYgQ09ORklHX0tWTV9FNTAwTUMNCj4gPiAg
-IHN0YXRpYyBpbnQgZGJlbGwycHJpbyh1bG9uZyBwYXJhbSkNCj4gPiBAQCAtODIsNiArODQsMjYg
-QEAgc3RhdGljIGludCBrdm1wcGNfZTUwMF9lbXVsX21zZ3NuZChzdHJ1Y3Qga3ZtX3ZjcHUgKnZj
-cHUsDQo+IGludCByYikNCj4gPiAgIH0NCj4gPiAgICNlbmRpZg0KPiA+DQo+ID4gK3N0YXRpYyBp
-bnQga3ZtcHBjX2U1MDBfZW11bF9laHByaXYoc3RydWN0IGt2bV9ydW4gKnJ1biwgc3RydWN0IGt2
-bV92Y3B1DQo+ICp2Y3B1LA0KPiA+ICsJCQkJICAgdW5zaWduZWQgaW50IGluc3QsIGludCAqYWR2
-YW5jZSkNCj4gPiArew0KPiA+ICsJaW50IGVtdWxhdGVkID0gRU1VTEFURV9ET05FOw0KPiA+ICsN
-Cj4gPiArCXN3aXRjaCAoZ2V0X29jKGluc3QpKSB7DQo+ID4gKwljYXNlIEVIUFJJVl9PQ19ERUJV
-RzoNCj4gPiArCQlydW4tPmV4aXRfcmVhc29uID0gS1ZNX0VYSVRfREVCVUc7DQo+ID4gKwkJcnVu
-LT5kZWJ1Zy5hcmNoLmFkZHJlc3MgPSB2Y3B1LT5hcmNoLnBjOw0KPiA+ICsJCXJ1bi0+ZGVidWcu
-YXJjaC5zdGF0dXMgPSAwOw0KPiA+ICsJCWt2bXBwY19hY2NvdW50X2V4aXQodmNwdSwgREVCVUdf
-RVhJVFMpOw0KPiA+ICsJCWVtdWxhdGVkID0gRU1VTEFURV9FWElUX1VTRVI7DQo+ID4gKwkJKmFk
-dmFuY2UgPSAwOw0KPiA+ICsJCWJyZWFrOw0KPiA+ICsJZGVmYXVsdDoNCj4gPiArCQllbXVsYXRl
-ZCA9IEVNVUxBVEVfRkFJTDsNCj4gPiArCX0NCj4gPiArCXJldHVybiBlbXVsYXRlZDsNCj4gPiAr
-fQ0KPiA+ICsNCj4gPiAgIGludCBrdm1wcGNfY29yZV9lbXVsYXRlX29wKHN0cnVjdCBrdm1fcnVu
-ICpydW4sIHN0cnVjdCBrdm1fdmNwdSAqdmNwdSwNCj4gPiAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgIHVuc2lnbmVkIGludCBpbnN0LCBpbnQgKmFkdmFuY2UpDQo+ID4gICB7DQo+ID4gQEAg
-LTEzMCw2ICsxNTIsMTEgQEAgaW50IGt2bXBwY19jb3JlX2VtdWxhdGVfb3Aoc3RydWN0IGt2bV9y
-dW4gKnJ1biwgc3RydWN0DQo+IGt2bV92Y3B1ICp2Y3B1LA0KPiA+ICAgCQkJZW11bGF0ZWQgPSBr
-dm1wcGNfZTUwMF9lbXVsX3RsYml2YXgodmNwdSwgZWEpOw0KPiA+ICAgCQkJYnJlYWs7DQo+ID4N
-Cj4gPiArCQljYXNlIFhPUF9FSFBSSVY6DQo+ID4gKwkJCWVtdWxhdGVkID0ga3ZtcHBjX2U1MDBf
-ZW11bF9laHByaXYocnVuLCB2Y3B1LCBpbnN0LA0KPiA+ICsJCQkJCQkJICAgYWR2YW5jZSk7DQo+
-ID4gKwkJCWJyZWFrOw0KPiA+ICsNCj4gPiAgIAkJZGVmYXVsdDoNCj4gPiAgIAkJCWVtdWxhdGVk
-ID0gRU1VTEFURV9GQUlMOw0KPiA+ICAgCQl9DQo+ID4NCj4gDQoNCg==
+On 06/26/2013 01:53 PM, Paolo Bonzini wrote:
+> Il 26/06/2013 10:06, Srivatsa S. Bhat ha scritto:
+>> On 06/26/2013 01:16 PM, Paolo Bonzini wrote:
+>>> Il 25/06/2013 22:30, Srivatsa S. Bhat ha scritto:
+>>>> -	cpu = get_cpu();
+>>>> +	cpu = get_online_cpus_atomic();
+>>>>  	vmx_vcpu_load(&vmx->vcpu, cpu);
+>>>>  	vmx->vcpu.cpu = cpu;
+>>>>  	err = vmx_vcpu_setup(vmx);
+>>>>  	vmx_vcpu_put(&vmx->vcpu);
+>>>> -	put_cpu();
+>>>> +	put_online_cpus_atomic();
+>>>
+>>> The new API has a weird name.  Why are you adding new functions instead
+>>> of just modifying get/put_cpu?
+>>>
+>>
+>> Because the purpose of those two functions are distinctly different
+>> from each other.
+>>
+>> get/put_cpu() is used to disable preemption on the local CPU. (Which
+>> also disables offlining the local CPU during that critical section).
+> 
+> Ok, then I understood correctly... and I acked the other KVM patch.
+>
+
+Thank you!
+ 
+> However, keeping the code on the local CPU is exactly the point of this
+> particular use of get_cpu()/put_cpu().  Why does it need to synchronize
+> with offlining of other CPUs?
+> 
+
+Now that I looked at it again, I think you are right, get/put_cpu() is
+good enough here.
+
+But let me explain why I initially thought we needed full synchronization
+with CPU offline. In short, I wanted to synchronize the calls to
+__loaded_vmcs_clear(). We have the scenario shown below:
+
+CPU offline:
+	CPU_DYING:
+		hardware_disable();
+		->vmclear_local_loaded_vmcss();
+		  ->__loaded_vmcs_clear(v);
+
+
+
+And vmx_vcpu_load() (among others) can do:
+       vmx_vcpu_load();
+       -> loaded_vmcs_clear();
+          -> __loaded_vmcs_clear();
+
+
+So I wanted to avoid this race-condition and hence wrapped the code with
+get/put_online_cpus_atomic().
+
+But the point I missed earlier is that loaded_vmcs_clear() calls
+__loaded_vmcs_clear() using smp_call_function_single(), which itself
+synchronizes properly with CPU hotplug. So there is no need to add full
+hotplug synchronization in the vmx code, as you noted above.
+
+So, please ignore this patch, and sorry for the noise!
+
+Regards,
+Srivatsa S. Bhat
