@@ -1,53 +1,27 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1C4852C008E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 04:32:11 +1000 (EST)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Wed, 26 Jun 2013 23:57:03 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 040FD3940043
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 00:02:04 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5QIW0BC29163716
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 00:02:01 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5QIW2gN019359
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 04:32:04 +1000
-Message-ID: <51CB32E0.3040106@linux.vnet.ibm.com>
-Date: Wed, 26 Jun 2013 23:58:48 +0530
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Return-Path: <B07421@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe002.messaging.microsoft.com [216.32.180.12])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 02CCF2C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 04:57:08 +1000 (EST)
+Received: from mail219-va3 (localhost [127.0.0.1])	by
+ mail219-va3-R.bigfish.com (Postfix) with ESMTP id 579D3600231	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 18:57:03 +0000 (UTC)
+Received: from VA3EHSMHS038.bigfish.com (unknown [10.7.14.242])	by
+ mail219-va3.bigfish.com (Postfix) with ESMTP id 036C97E016B	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 18:56:50 +0000 (UTC)
+Date: Wed, 26 Jun 2013 13:56:45 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: powerpc/85xx: Move ePAPR paravirt initialization earlier
+To: Tudor Laurentiu <Laurentiu.Tudor@freescale.com>
+In-Reply-To: <51CAE047.8030605@freescale.com> (from
+ Laurentiu.Tudor@freescale.com on Wed Jun 26 07:36:23 2013)
+Message-ID: <1372273005.8183.32@snotra>
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH v2 15/45] rcu: Use get/put_online_cpus_atomic() to prevent
- CPU offline
-References: <20130625202452.16593.22810.stgit@srivatsabhat.in.ibm.com>
- <20130625202755.16593.67819.stgit@srivatsabhat.in.ibm.com>
- <20130625220026.GG3828@linux.vnet.ibm.com>
- <51CAF624.6060004@linux.vnet.ibm.com>
- <AE90C24D6B3A694183C094C60CF0A2F6026B72AA@saturn3.aculab.com>
- <20130626143424.GN3828@linux.vnet.ibm.com>
- <1372258271.18733.256.camel@gandalf.local.home>
- <20130626152148.GA4405@mtj.dyndns.org>
- <1372260823.18733.263.camel@gandalf.local.home>
- <20130626172948.GD4405@mtj.dyndns.org>
-In-Reply-To: <20130626172948.GD4405@mtj.dyndns.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org,
- walken@google.com, mingo@kernel.org, linux-arch@vger.kernel.org,
- vincent.guittot@linaro.org, xiaoguangrong@linux.vnet.ibm.com,
- wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com,
- nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au,
- Steven Rostedt <rostedt@goodmis.org>, namhyung@kernel.org, tglx@linutronix.de,
- laijs@cn.fujitsu.com, zhong@linux.vnet.ibm.com, netdev@vger.kernel.org,
- oleg@redhat.com, sbw@mit.edu, David Laight <David.Laight@ACULAB.COM>,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,30 +31,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/26/2013 10:59 PM, Tejun Heo wrote:
-> Hello,
-> 
-> On Wed, Jun 26, 2013 at 11:33:43AM -0400, Steven Rostedt wrote:
->> I thought the whole deal with this patchset was to remove stop_machine
->> from CPU hotplug. Why halt all CPUs just to remove one? stomp_machine()
->> is extremely intrusive for the entire system, where as one CPU making
->> sure all CPUs schedule isn't very intrusive at all.
->>
->> I didn't think the idea of this patch set was to make CPU hotplug
->> faster, just less intrusive to the system.
-> 
-> Yeap, removal of stop_machine is a great improvement in itself.
+On 06/26/2013 07:36:23 AM, Tudor Laurentiu wrote:
+> On 06/26/2013 02:14 AM, Scott Wood wrote:
+>> This would require converting
+>> the code to use the early device tree functions.
+>>=20
+>=20
+> I see. Had a look at that api and it seems pretty limited.
+> I couldn't find a simple way of reading a property other than =20
+> scanning the entire tree with of_scan_flat_dt().
 
-Absolutely. To make hotplug less intrusive on the system.
+What's wrong with scanning the entire tree?  The data format doesn't =20
+allow any more efficient type of lookup (it was designed to be simple =20
+and small, not fast).
 
->  ISTR
-> mentions of hot-unplug latency but I could be mistaken.  Srivatsa, can
-> you please chime in on that?
-> 
-
-Yes, we were discussing hot-unplug latency for use-cases such as
-suspend/resume. We didn't want to make those operations slower in the
-process of removing stop_machine() from hotplug.
-
-Regards,
-Srivatsa S. Bhat
+-Scott=
