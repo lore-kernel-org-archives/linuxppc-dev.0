@@ -1,52 +1,31 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp08.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 563AB2C0095
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 20:09:38 +1000 (EST)
-Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Thu, 27 Jun 2013 20:06:49 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id E7C7B2CE8044
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 20:09:32 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5RA9NpI5636524
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 20:09:23 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5RA9UOa015742
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 20:09:32 +1000
-Message-ID: <51CC0E93.1080608@linux.vnet.ibm.com>
-Date: Thu, 27 Jun 2013 15:36:11 +0530
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-f43.google.com (mail-pa0-f43.google.com
+ [209.85.220.43])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1C2022C0087
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 20:48:43 +1000 (EST)
+Received: by mail-pa0-f43.google.com with SMTP id hz11so884864pad.16
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 03:48:41 -0700 (PDT)
+Message-ID: <51CC1881.5060500@ozlabs.ru>
+Date: Thu, 27 Jun 2013 20:48:33 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
-To: David Laight <David.Laight@ACULAB.COM>
-Subject: Re: [PATCH v2 15/45] rcu: Use get/put_online_cpus_atomic() to prevent
- CPU offline
-References: <20130625202452.16593.22810.stgit@srivatsabhat.in.ibm.com>
- <20130625202755.16593.67819.stgit@srivatsabhat.in.ibm.com>
- <20130625220026.GG3828@linux.vnet.ibm.com>
- <51CAF624.6060004@linux.vnet.ibm.com>
- <AE90C24D6B3A694183C094C60CF0A2F6026B72AA@saturn3.aculab.com>
- <20130626143424.GN3828@linux.vnet.ibm.com>
- <1372258271.18733.256.camel@gandalf.local.home>
- <20130626152148.GA4405@mtj.dyndns.org> <51CB3159.8000509@linux.vnet.ibm.com>
- <AE90C24D6B3A694183C094C60CF0A2F6026B72AB@saturn3.aculab.com>
-In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6026B72AB@saturn3.aculab.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org,
- walken@google.com, mingo@kernel.org, linux-arch@vger.kernel.org,
- vincent.guittot@linaro.org, xiaoguangrong@linux.vnet.ibm.com,
- wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com,
- nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au,
- Steven Rostedt <rostedt@goodmis.org>, namhyung@kernel.org, tglx@linutronix.de,
- laijs@cn.fujitsu.com, zhong@linux.vnet.ibm.com, netdev@vger.kernel.org,
- oleg@redhat.com, sbw@mit.edu, Tejun Heo <tj@kernel.org>,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 3/8] vfio: add external user support
+References: <1372309356-28320-1-git-send-email-aik@ozlabs.ru>
+ <1372309356-28320-4-git-send-email-aik@ozlabs.ru>
+ <20130627165929.3828c261c957845a549ad95b@canb.auug.org.au>
+ <1372326166.18612.42.camel@pasglop>
+In-Reply-To: <1372326166.18612.42.camel@pasglop>
+Content-Type: text/plain; charset=KOI8-R
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, kvm@vger.kernel.org,
+ linux-doc@vger.kernel.org, Alexander Graf <agraf@suse.de>,
+ kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>,
+ "Paul E . McKenney" <paulmck@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,68 +35,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/27/2013 02:24 PM, David Laight wrote:
->>>>> It would also increase the latency of CPU-hotunplug operations.
->>>>
->>>> Is that a big deal?
->>>
->>> I thought that was the whole deal with this patchset - making cpu
->>> hotunplugs lighter and faster mostly for powersaving.  That said, just
->>> removing stop_machine call would be a pretty good deal and I don't
->>> know how meaningful reducing CPU hotunplug latency is.  Srivatsa?
->>>
+On 06/27/2013 07:42 PM, Benjamin Herrenschmidt wrote:
+> On Thu, 2013-06-27 at 16:59 +1000, Stephen Rothwell wrote:
+>>> +/* Allows an external user (for example, KVM) to unlock an IOMMU
+>> group */
+>>> +static void vfio_group_del_external_user(struct file *filep)
+>>> +{
+>>> +     struct vfio_group *group = filep->private_data;
+>>> +
+>>> +     BUG_ON(filep->f_op != &vfio_group_fops);
 >>
->> Keeping the hotunplug latency is important for suspend/resume, where
->> we take all non-boot CPUs in a loop. That's an interesting use-case
->> where intrusiveness doesn't matter much, but latency does. So yes,
->> making CPU hotplug faster is also one of the goals of this patchset.
+>> We usually reserve BUG_ON for situations where there is no way to
+>> continue running or continuing will corrupt the running kernel.  Maybe
+>> WARN_ON() and return?
 > 
-> If you are removing all but one of the cpu, the you only need
-> one rcu cycle (remove everything from the list first).
-> 
+> Not even that. This is a user space provided "fd", we shouldn't oops the
+> kernel because we passed a wrong argument, just return -EINVAL or
+> something like that (add a return code).
 
-Hmm, yeah, but IIRC, back when we discussed this last time[1], we felt that
-would make the code a little bit hard to understand. But I think we can
-give it a shot to see how that goes and decide based on that. So thanks
-for bringing that up again!
-
-BTW, one thing I'd like to emphasize again here is that we will not use
-the RCU-like concept to have 2 different masks - a stable online mask
-and an actual online mask (this is one of the approaches that we had
-discussed earlier[2]). The reason why we don't wanna go down that path is,
-its hard to determine who can survive by just looking at the stable online
-mask, and who needs to be aware of the actual online mask. That will
-surely lead to more bugs and headache.
-
-So the use of an RCU-like concept here would only be to ensure that all
-preempt-disabled sections complete, and we can switch the synchronization
-scheme to global rwlocks, like what we had proposed earlier[3]. So, that
-still requires call-sites to be converted from preempt_disable() to
-get/put_online_cpus_atomic().
-
-I just wanted to clarify where exactly the RCU concept would fit in,
-in the stop-machine() replacement scheme...
+I'll change to WARN_ON but...
+This is going to be called on KVM exit on a file pointer previously
+verified for correctness. If it is a wrong file*, then something went
+terribly wrong.
 
 
-> I'd also guess that you can't suspend a cpu until you can sleep
-> the process that is running on it - so if a process has pre-emption
-> disabled you aren't going to complete suspend until the process
-> sleeps (this wouldn't be true if you suspended the cpu with its
-> current stack - but if suspend is removing the non-boot cpus first
-> it must be doing so from the scheduler idle loop).
-> 
-> If you are doing suspend for aggressive power saving, then all the
-> processes (and processors) will already be idle. However you
-> probably wouldn't want the memory accesses to determine this on
-> a large NUMA system with 1024+ processors.
-> 
-
-References:
-
-[1]. http://lkml.indiana.edu/hypermail/linux/kernel/1212.2/01979.html
-[2]. http://thread.gmane.org/gmane.linux.kernel/1405145/focus=29336
-[3]. http://thread.gmane.org/gmane.linux.documentation/9520/focus=1443258
-     http://thread.gmane.org/gmane.linux.power-management.general/29464/focus=1407948
-
-Regards,
-Srivatsa S. Bhat
+-- 
+Alexey
