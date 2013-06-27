@@ -1,37 +1,25 @@
-Return-Path: <suzuki@in.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e36.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2079C2C008A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 16:36:43 +1000 (EST)
-Received: from /spool/local
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <suzuki@in.ibm.com>;
- Thu, 27 Jun 2013 00:36:40 -0600
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
- [9.17.195.106])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 59A2C1FF001C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 00:31:21 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5R6ab4w384086
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 00:36:37 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5R6aaB8028191
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 00:36:37 -0600
-Message-ID: <51CBDD71.6030408@in.ibm.com>
-Date: Thu, 27 Jun 2013 12:06:33 +0530
-From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
-MIME-Version: 1.0
-To: Kevin Hao <haokexin@gmail.com>
-Subject: Re: [PATCH] powerpc: don't flush/invalidate the d/icache for an
- unknown relocation type
-References: <1372295383-19740-1-git-send-email-haokexin@gmail.com>
-In-Reply-To: <1372295383-19740-1-git-send-email-haokexin@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.pcug.org.au [203.10.76.10])
+ by ozlabs.org (Postfix) with ESMTP id CC8AF2C0097
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 16:48:02 +1000 (EST)
+Date: Thu, 27 Jun 2013 16:47:52 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH 3/8] vfio: add external user support
+Message-Id: <20130627164752.657c165ec4492e5248945a51@canb.auug.org.au>
+In-Reply-To: <1372309356-28320-4-git-send-email-aik@ozlabs.ru>
+References: <1372309356-28320-1-git-send-email-aik@ozlabs.ru>
+ <1372309356-28320-4-git-send-email-aik@ozlabs.ru>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Thu__27_Jun_2013_16_47_52_+1000_NRdURYob4XRbPIqC"
+Cc: kvm@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Alexander Graf <agraf@suse.de>, Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>,
+ "Paul E . McKenney" <paulmck@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,28 +29,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/27/2013 06:39 AM, Kevin Hao wrote:
-> For an unknown relocation type since the value of r4 is just the 8bit
-> relocation type, the sum of r4 and r7 may yield an invalid memory
-> address. For example:
->      In normal case:
->               r4 = c00xxxxx
->               r7 = 40000000
->               r4 + r7 = 000xxxxx
->
->      For an unknown relocation type:
->               r4 = 000000xx
->               r7 = 40000000
->               r4 + r7 = 400000xx
->     400000xx is an invalid memory address for a board which has just
->     512M memory.
->
-> And for operations such as dcbst or icbi may cause bus error for an
-> invalid memory address on some platforms and then cause the board
-> reset. So we should skip the flush/invalidate the d/icache for
-> an unknown relocation type.
->
+--Signature=_Thu__27_Jun_2013_16_47_52_+1000_NRdURYob4XRbPIqC
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Good catch. Thanks for the fix.
+Hi Alexy,
 
-Acked-by: Suzuki K. Poulose <suzuki@in.ibm.com>
+On Thu, 27 Jun 2013 15:02:31 +1000 Alexey Kardashevskiy <aik@ozlabs.ru> wro=
+te:
+>
+> index c488da5..54192b2 100644
+> --- a/drivers/vfio/vfio.c
+> +++ b/drivers/vfio/vfio.c
+> @@ -1370,6 +1370,59 @@ static const struct file_operations vfio_device_fo=
+ps =3D {
+>  };
+> =20
+>  /**
+> + * External user API, exported by symbols to be linked dynamically.
+> + */
+> +
+> +/* Allows an external user (for example, KVM) to lock an IOMMU group */
+> +static int vfio_group_add_external_user(struct file *filep)
+> +{
+> +	struct vfio_group *group =3D filep->private_data;
+> +
+> +	if (filep->f_op !=3D &vfio_group_fops)
+> +		return -EINVAL;
+> +
+> +	if (!atomic_inc_not_zero(&group->container_users))
+> +		return -EINVAL;
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(vfio_group_add_external_user);
+
+You cannot EXPORT a static symbol ... The same through the rest of the
+file.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Thu__27_Jun_2013_16_47_52_+1000_NRdURYob4XRbPIqC
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.20 (GNU/Linux)
+
+iQIcBAEBCAAGBQJRy+AbAAoJEECxmPOUX5FEfIgQAJxjfQ2mudNOZb4aylAKVAyl
+Z3bpuGqlym9KU9gWJ7NPwGfaea3rH7MQ0Tzjvgn4BKjIJ8UYo2Oao6n6fRivCZSb
+M14eOhUT5RLqUP6mmC5oc2IruMhzqNmsn0eYbgfUgiYCo7RX3hDefWtMff7+IXXz
+a/Z7UTohlw2Q9DzMjp64WC3yFRMzbEhzdxW/Y1lJPpdcN9bhlIca1UqxbEAeLTAm
+m983nPbKV3UQ70K57DE9xYA3lIrJKA/DfgH0mHsI1aixNdBSvr68GtzPars/Jm4f
+nL/J86haN4Gw0zqDCWWK7yALNIQOWUdvha6i/Ota8xSJgIydHU+FY1uEK8ipDRfa
+oHpvOuKFDgfas1lgx/nVxDP0myANGnzzNIxoUXfNzVXzLR044B7CxA2Vqb2LYWP7
+3IYQAMN6OWANRHQDiKisRb8sXWsG/daq86VEetIZmROLE9smlaCp1pj4+9TRR5Dz
+EFNEz+ixCrPhzY0J8XlpUqmC0yHVk2NxsUC1nDP/Cc/2b3Tmk4AYSSC1kL53WNkH
+QHTBgd+Am9IQqoKNH7rTMCylviPqKK2yj+jJbpmr//rsYAIVROQ6C/KGkswWB63q
+F+vTqCCyBImcF1mFcBFgqRfOV2wz5arDWYSP6bugPotE8RLeMAJqwIGV+/y1GrSb
+kVV682oBOvWHzdPdk33o
+=p2Bl
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__27_Jun_2013_16_47_52_+1000_NRdURYob4XRbPIqC--
