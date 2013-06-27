@@ -1,47 +1,28 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e31.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 305E02C06BD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 06:12:59 +1000 (EST)
-Received: from /spool/local
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Thu, 27 Jun 2013 14:12:56 -0600
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
- [9.17.195.106])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 0646C19D8046
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 14:12:45 -0600 (MDT)
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5RKCoFI184442
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 14:12:51 -0600
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
- by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5RKFGJu031189
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 14:15:18 -0600
-Date: Thu, 27 Jun 2013 13:12:46 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 16/45] rcu: Use cpu_is_offline_nocheck() to avoid
- false-positive warnings
-Message-ID: <20130627201246.GA3828@linux.vnet.ibm.com>
-References: <20130627195136.29830.10445.stgit@srivatsabhat.in.ibm.com>
- <20130627195517.29830.64108.stgit@srivatsabhat.in.ibm.com>
+Return-Path: <robherring2@gmail.com>
+Message-ID: <51CCA67C.2010803@gmail.com>
+Date: Thu, 27 Jun 2013 15:54:20 -0500
+From: Rob Herring <robherring2@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130627195517.29830.64108.stgit@srivatsabhat.in.ibm.com>
-Cc: peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org,
- walken@google.com, mingo@kernel.org, linux-arch@vger.kernel.org,
- vincent.guittot@linaro.org, xiaoguangrong@linux.vnet.ibm.com,
- wangyun@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
- linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org,
- namhyung@kernel.org, tglx@linutronix.de, laijs@cn.fujitsu.com,
- zhong@linux.vnet.ibm.com, netdev@vger.kernel.org, oleg@redhat.com, sbw@mit.edu,
- David.Laight@aculab.com, tj@kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
-Reply-To: paulmck@linux.vnet.ibm.com
+To: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Subject: Re: [PATCH] of: Specify initrd location using 64-bit
+References: <1371775956-16453-1-git-send-email-santosh.shilimkar@ti.com>
+ <51C4171C.9050908@linutronix.de> <51C48B5A.2040404@ti.com>
+In-Reply-To: <51C48B5A.2040404@ti.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, linux-mips@linux-mips.org,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Aurelien Jacquiot <a-jacquiot@ti.com>,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ Will Deacon <will.deacon@arm.com>, Max Filippov <jcmvbkbc@gmail.com>,
+ Paul Mackerras <paulus@samba.org>, Jonas Bonn <jonas@southpole.se>,
+ Russell King <linux@arm.linux.org.uk>, linux-c6x-dev@linux-c6x.org,
+ x86@kernel.org, arm@kernel.org, Mark Salter <msalter@redhat.com>,
+ Grant Likely <grant.likely@linaro.org>, linux-xtensa@linux-xtensa.org,
+ James Hogan <james.hogan@imgtec.com>, devicetree-discuss@lists.ozlabs.org,
+ Rob Herring <rob.herring@calxeda.com>, linux-arm-kernel@lists.infradead.org,
+ Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>,
+ Vineet Gupta <vgupta@synopsys.com>, linux-kernel@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,52 +32,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 28, 2013 at 01:25:17AM +0530, Srivatsa S. Bhat wrote:
-> In RCU code, rcu_implicit_dynticks_qs() checks if a CPU is offline,
-> while being protected by a spinlock. At first, it appears as if we need to
-> use the get/put_online_cpus_atomic() APIs to properly synchronize with CPU
-> hotplug, once we get rid of stop_machine(). However, RCU has adequate
-> synchronization with CPU hotplug, making that unnecessary. But since the
-> locking details are non-trivial, it is hard to teach this to the rudimentary
-> hotplug locking validator.
+On 06/21/2013 12:20 PM, Santosh Shilimkar wrote:
+> On Friday 21 June 2013 05:04 AM, Sebastian Andrzej Siewior wrote:
+>> On 06/21/2013 02:52 AM, Santosh Shilimkar wrote:
+>>> diff --git a/arch/microblaze/kernel/prom.c b/arch/microblaze/kernel/prom.c
+>>> index 0a2c68f..62e2e8f 100644
+>>> --- a/arch/microblaze/kernel/prom.c
+>>> +++ b/arch/microblaze/kernel/prom.c
+>>> @@ -136,8 +136,7 @@ void __init early_init_devtree(void *params)
+>>>  }
+>>>  
+>>>  #ifdef CONFIG_BLK_DEV_INITRD
+>>> -void __init early_init_dt_setup_initrd_arch(unsigned long start,
+>>> -		unsigned long end)
+>>> +void __init early_init_dt_setup_initrd_arch(u64 start, u64 end)
+>>>  {
+>>>  	initrd_start = (unsigned long)__va(start);
+>>>  	initrd_end = (unsigned long)__va(end);
+>>
+>> I think it would better to go here for phys_addr_t instead of u64. This
+>> would force you in of_flat_dt_match() to check if the value passed from
+>> DT specifies a memory address outside of 32bit address space and the
+>> kernel can't deal with this because its phys_addr_t is 32bit only due
+>> to a Kconfig switch.
+>>
+>> For x86, the initrd has to remain in the 32bit address space so passing
+>> the initrd in the upper range would violate the ABI. Not sure if this
+>> is true for other archs as well (ARM obviously not).
+>>
+> That pretty much means phys_addr_t. It will work for me as well but
+> in last thread from consistency with memory and reserved node, Rob
+> insisted to keep it as u64. So before I re-spin another version,
+> would like to here what Rob has to say considering the x86 requirement.
 > 
-> So use the _nocheck() variants of the cpu accessor functions to prevent false-
-> positive warnings from the CPU hotplug debug code. Also, add a comment
-> explaining the hotplug synchronization design used in RCU, so that its easy
-> to see why it is justified to use the _nocheck() variants.
-> 
-> Cc: Dipankar Sarma <dipankar@in.ibm.com>
-> Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> Rob,
+> Are you ok with phys_addr_t since your concern was about rest
+> of the memory specific bits of the device-tree code use u64 ?
 
-Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+No. I still think it should be u64 for same reasons I said originally.
 
-> ---
-> 
->  kernel/rcutree.c |   12 +++++++++++-
->  1 file changed, 11 insertions(+), 1 deletion(-)
-> 
-> diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-> index cf3adc6..ced28a45 100644
-> --- a/kernel/rcutree.c
-> +++ b/kernel/rcutree.c
-> @@ -794,7 +794,17 @@ static int rcu_implicit_dynticks_qs(struct rcu_data *rdp)
->  	if (ULONG_CMP_GE(rdp->rsp->gp_start + 2, jiffies))
->  		return 0;  /* Grace period is not old enough. */
->  	barrier();
-> -	if (cpu_is_offline(rdp->cpu)) {
-> +
-> +	/*
-> +	 * It is safe to use the _nocheck() version of cpu_is_offline() here
-> +	 * (to avoid false-positive warnings from CPU hotplug debug code),
-> +	 * because:
-> +	 * 1. rcu_gp_init() holds off CPU hotplug operations during grace
-> +	 *    period initialization.
-> +	 * 2. The current grace period has not ended yet.
-> +	 * So it is safe to sample the offline state without synchronization.
-> +	 */
-> +	if (cpu_is_offline_nocheck(rdp->cpu)) {
->  		trace_rcu_fqs(rdp->rsp->name, rdp->gpnum, rdp->cpu, "ofl");
->  		rdp->offline_fqs++;
->  		return 1;
-> 
+Rob
