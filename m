@@ -1,31 +1,33 @@
 Return-Path: <aruna@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 538682C0095
- for <linuxppc-dev@ozlabs.org>; Thu, 27 Jun 2013 18:33:00 +1000 (EST)
+ (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BFE1C2C02A5
+ for <linuxppc-dev@ozlabs.org>; Thu, 27 Jun 2013 18:33:04 +1000 (EST)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <aruna@linux.vnet.ibm.com>;
- Thu, 27 Jun 2013 18:21:21 +1000
+ Thu, 27 Jun 2013 18:23:33 +1000
 Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 999932CE8052
- for <linuxppc-dev@ozlabs.org>; Thu, 27 Jun 2013 18:32:52 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 9A5133578052
+ for <linuxppc-dev@ozlabs.org>; Thu, 27 Jun 2013 18:33:01 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
  by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5R8Whq54391172
- for <linuxppc-dev@ozlabs.org>; Thu, 27 Jun 2013 18:32:43 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5R8WpTw003678
+ r5R8Wq088585604
  for <linuxppc-dev@ozlabs.org>; Thu, 27 Jun 2013 18:32:52 +1000
-Subject: [PATCH v2 0/3] Nvram-to-pstore: compression support for oops data
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5R8Wxx4003120
+ for <linuxppc-dev@ozlabs.org>; Thu, 27 Jun 2013 18:33:01 +1000
+Subject: [PATCH v2 1/3] Pass header size in the pstore write callback
 To: tony.luck@intel.com, keescook@chromium.org, benh@kernel.crashing.org,
  linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org
 From: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
-Date: Thu, 27 Jun 2013 14:02:47 +0530
-Message-ID: <20130627082941.16749.67023.stgit@aruna-ThinkPad-T420>
+Date: Thu, 27 Jun 2013 14:02:56 +0530
+Message-ID: <20130627083256.16749.28039.stgit@aruna-ThinkPad-T420>
+In-Reply-To: <20130627082941.16749.67023.stgit@aruna-ThinkPad-T420>
+References: <20130627082941.16749.67023.stgit@aruna-ThinkPad-T420>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: jkenisto@linux.vnet.ibm.com, mahesh@linux.vnet.ibm.com,
@@ -39,49 +41,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Changes from v1:
-		- Add header size argument in the pstore write callback
-		instead of a separate API to return header size.
+Header size is needed to distinguish between header and the dump data.
+Incorporate the addition of new argument (hsize) in the pstore write
+callback.
 
-The patchset takes care of compressing oops messages while writing to NVRAM,
-so that more oops data can be captured in the given space.
-
-big_oops_buf (2.22 * oops_data_sz) is allocated for compression.
-oops_data_sz is oops header size less of oops partition size.
-
-Pstore will internally call kmsg_dump to capture messages from printk
-buffer. While returning the data to nvram it adds is own header.
-
-For compression:
-	Register pstore with big_oops_buf. 
-
-In case compression fails, copy header added by pstore and
-last oops_data_sz bytes (recent messages) of big_oops_buf to
-nvram for which we need to know header size. 
-	
-patch 01/03 adds an additional argument for header size in pstore_write callback.
-
-pstore read callback of nvram will read the compressed data and return the
-decompressed data so that dmesg file (under /dev/pstore) is readable.
-
-In case decompression fails, instead of having the compressed data (junk) in the
-dmesg file it will skip and continue reading other partitions. This results in
-absence of dmesg file but will still have files relating to other parititons.
-
+Signed-off-by: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
 ---
+ arch/powerpc/platforms/pseries/nvram.c |    4 +++-
+ drivers/acpi/apei/erst.c               |    4 ++--
+ drivers/firmware/efi/efi-pstore.c      |    2 +-
+ fs/pstore/platform.c                   |   10 ++++++----
+ fs/pstore/ram.c                        |    3 ++-
+ include/linux/pstore.h                 |    8 ++++----
+ 6 files changed, 18 insertions(+), 13 deletions(-)
 
-Aruna Balakrishnaiah (3):
-      Pass header size in the pstore write callback
-      powerpc/pseries: Re-organise the oops compression code
-      powerpc/pseries: Support compression of oops text via pstore
-
-
- arch/powerpc/platforms/pseries/nvram.c |  239 +++++++++++++++++++++++---------
- drivers/acpi/apei/erst.c               |    4 -
- drivers/firmware/efi/efi-pstore.c      |    2 
- fs/pstore/platform.c                   |   10 +
- fs/pstore/ram.c                        |    3 
- include/linux/pstore.h                 |    8 +
- 6 files changed, 187 insertions(+), 79 deletions(-)
-
--- 
+diff --git a/arch/powerpc/platforms/pseries/nvram.c b/arch/powerpc/platforms/pseries/nvram.c
+index 14cc486..3f0e7d6 100644
+--- a/arch/powerpc/platforms/pseries/nvram.c
++++ b/arch/powerpc/platforms/pseries/nvram.c
+@@ -502,6 +502,7 @@ static int nvram_pstore_open(struct pstore_info *psi)
+  * @part:               pstore writes data to registered buffer in parts,
+  *                      part number will indicate the same.
+  * @count:              Indicates oops count
++ * @hsize:              Size of header added by pstore
+  * @size:               number of bytes written to the registered buffer
+  * @psi:                registered pstore_info structure
+  *
+@@ -512,7 +513,8 @@ static int nvram_pstore_open(struct pstore_info *psi)
+ static int nvram_pstore_write(enum pstore_type_id type,
+ 				enum kmsg_dump_reason reason,
+ 				u64 *id, unsigned int part, int count,
+-				size_t size, struct pstore_info *psi)
++				size_t hsize, size_t size,
++				struct pstore_info *psi)
+ {
+ 	int rc;
+ 	struct oops_log_info *oops_hdr = (struct oops_log_info *) oops_buf;
+diff --git a/drivers/acpi/apei/erst.c b/drivers/acpi/apei/erst.c
+index 6d894bf..a9cf960 100644
+--- a/drivers/acpi/apei/erst.c
++++ b/drivers/acpi/apei/erst.c
+@@ -935,7 +935,7 @@ static ssize_t erst_reader(u64 *id, enum pstore_type_id *type, int *count,
+ 			   struct timespec *time, char **buf,
+ 			   struct pstore_info *psi);
+ static int erst_writer(enum pstore_type_id type, enum kmsg_dump_reason reason,
+-		       u64 *id, unsigned int part, int count,
++		       u64 *id, unsigned int part, int count, size_t hsize,
+ 		       size_t size, struct pstore_info *psi);
+ static int erst_clearer(enum pstore_type_id type, u64 id, int count,
+ 			struct timespec time, struct pstore_info *psi);
+@@ -1055,7 +1055,7 @@ out:
+ }
+ 
+ static int erst_writer(enum pstore_type_id type, enum kmsg_dump_reason reason,
+-		       u64 *id, unsigned int part, int count,
++		       u64 *id, unsigned int part, int count, size_t hsize,
+ 		       size_t size, struct pstore_info *psi)
+ {
+ 	struct cper_pstore_record *rcd = (struct cper_pstore_record *)
+diff --git a/drivers/firmware/efi/efi-pstore.c b/drivers/firmware/efi/efi-pstore.c
+index 202d2c8..452800e0 100644
+--- a/drivers/firmware/efi/efi-pstore.c
++++ b/drivers/firmware/efi/efi-pstore.c
+@@ -104,7 +104,7 @@ static ssize_t efi_pstore_read(u64 *id, enum pstore_type_id *type,
+ 
+ static int efi_pstore_write(enum pstore_type_id type,
+ 		enum kmsg_dump_reason reason, u64 *id,
+-		unsigned int part, int count, size_t size,
++		unsigned int part, int count, size_t hsize, size_t size,
+ 		struct pstore_info *psi)
+ {
+ 	char name[DUMP_NAME_LEN];
+diff --git a/fs/pstore/platform.c b/fs/pstore/platform.c
+index 86d1038..4637ec4 100644
+--- a/fs/pstore/platform.c
++++ b/fs/pstore/platform.c
+@@ -159,7 +159,7 @@ static void pstore_dump(struct kmsg_dumper *dumper,
+ 			break;
+ 
+ 		ret = psinfo->write(PSTORE_TYPE_DMESG, reason, &id, part,
+-				    oopscount, hsize + len, psinfo);
++				    oopscount, hsize, hsize + len, psinfo);
+ 		if (ret == 0 && reason == KMSG_DUMP_OOPS && pstore_is_mounted())
+ 			pstore_new_entry = 1;
+ 
+@@ -196,7 +196,7 @@ static void pstore_console_write(struct console *con, const char *s, unsigned c)
+ 			spin_lock_irqsave(&psinfo->buf_lock, flags);
+ 		}
+ 		memcpy(psinfo->buf, s, c);
+-		psinfo->write(PSTORE_TYPE_CONSOLE, 0, &id, 0, 0, c, psinfo);
++		psinfo->write(PSTORE_TYPE_CONSOLE, 0, &id, 0, 0, 0, c, psinfo);
+ 		spin_unlock_irqrestore(&psinfo->buf_lock, flags);
+ 		s += c;
+ 		c = e - s;
+@@ -221,9 +221,11 @@ static void pstore_register_console(void) {}
+ static int pstore_write_compat(enum pstore_type_id type,
+ 			       enum kmsg_dump_reason reason,
+ 			       u64 *id, unsigned int part, int count,
+-			       size_t size, struct pstore_info *psi)
++			       size_t hsize, size_t size,
++			       struct pstore_info *psi)
+ {
+-	return psi->write_buf(type, reason, id, part, psinfo->buf, size, psi);
++	return psi->write_buf(type, reason, id, part, psinfo->buf, hsize,
++			     size, psi);
+ }
+ 
+ /*
+diff --git a/fs/pstore/ram.c b/fs/pstore/ram.c
+index 1376e5a..c6bb77c 100644
+--- a/fs/pstore/ram.c
++++ b/fs/pstore/ram.c
+@@ -195,7 +195,8 @@ static size_t ramoops_write_kmsg_hdr(struct persistent_ram_zone *prz)
+ static int notrace ramoops_pstore_write_buf(enum pstore_type_id type,
+ 					    enum kmsg_dump_reason reason,
+ 					    u64 *id, unsigned int part,
+-					    const char *buf, size_t size,
++					    const char *buf,
++					    size_t hsize, size_t size,
+ 					    struct pstore_info *psi)
+ {
+ 	struct ramoops_context *cxt = psi->data;
+diff --git a/include/linux/pstore.h b/include/linux/pstore.h
+index 656699f..4aa80ba 100644
+--- a/include/linux/pstore.h
++++ b/include/linux/pstore.h
+@@ -58,12 +58,12 @@ struct pstore_info {
+ 			struct pstore_info *psi);
+ 	int		(*write)(enum pstore_type_id type,
+ 			enum kmsg_dump_reason reason, u64 *id,
+-			unsigned int part, int count, size_t size,
+-			struct pstore_info *psi);
++			unsigned int part, int count, size_t hsize,
++			size_t size, struct pstore_info *psi);
+ 	int		(*write_buf)(enum pstore_type_id type,
+ 			enum kmsg_dump_reason reason, u64 *id,
+-			unsigned int part, const char *buf, size_t size,
+-			struct pstore_info *psi);
++			unsigned int part, const char *buf, size_t hsize,
++			size_t size, struct pstore_info *psi);
+ 	int		(*erase)(enum pstore_type_id type, u64 id,
+ 			int count, struct timespec time,
+ 			struct pstore_info *psi);
