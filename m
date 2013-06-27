@@ -1,30 +1,41 @@
-Return-Path: <B07421@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6147E2C00AF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 04:39:44 +1000 (EST)
-Date: Thu, 27 Jun 2013 13:39:23 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 8/8] KVM: PPC: Add hugepage support for IOMMU in-kernel
- handling
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-References: <1372309356-28320-1-git-send-email-aik@ozlabs.ru>
- <1372309356-28320-9-git-send-email-aik@ozlabs.ru>
-In-Reply-To: <1372309356-28320-9-git-send-email-aik@ozlabs.ru> (from
- aik@ozlabs.ru on Thu Jun 27 00:02:36 2013)
-Message-ID: <1372358363.8183.53@snotra>
+Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4B1C92C013D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 05:55:57 +1000 (EST)
+Received: from /spool/local
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+ Fri, 28 Jun 2013 05:44:18 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id EE03F3578057
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 05:55:48 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5RJtdVf5636510
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 05:55:39 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5RJtk4R012367
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 05:55:48 +1000
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH v3 00/45] CPU hotplug: stop_machine()-free CPU hotplug, part 1
+To: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com,
+ paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org,
+ akpm@linux-foundation.org, namhyung@kernel.org, walken@google.com,
+ vincent.guittot@linaro.org, laijs@cn.fujitsu.com, David.Laight@aculab.com
+Date: Fri, 28 Jun 2013 01:22:26 +0530
+Message-ID: <20130627195136.29830.10445.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: kvm@vger.kernel.org, linux-doc@vger.kernel.org,
- Alexey Kardashevskiy <aik@ozlabs.ru>, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, "Paul E .
- McKenney" <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset="utf-8"
+Cc: linux-arch@vger.kernel.org, nikunj@linux.vnet.ibm.com,
+ zhong@linux.vnet.ibm.com, linux-pm@vger.kernel.org, fweisbec@gmail.com,
+ linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+ xiaoguangrong@linux.vnet.ibm.com, sbw@mit.edu, wangyun@linux.vnet.ibm.com,
+ srivatsa.bhat@linux.vnet.ibm.com, netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,31 +45,204 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/27/2013 12:02:36 AM, Alexey Kardashevskiy wrote:
-> +/*
-> + * The KVM guest can be backed with 16MB pages.
-> + * In this case, we cannot do page counting from the real mode
-> + * as the compound pages are used - they are linked in a list
-> + * with pointers as virtual addresses which are inaccessible
-> + * in real mode.
-> + *
-> + * The code below keeps a 16MB pages list and uses page struct
-> + * in real mode if it is already locked in RAM and inserted into
-> + * the list or switches to the virtual mode where it can be
-> + * handled in a usual manner.
-> + */
-> +#define KVMPPC_HUGEPAGE_HASH(gpa)	hash_32(gpa >> 24, 32)
-> +
-> +struct kvmppc_iommu_hugepage {
-> +	struct hlist_node hash_node;
-> +	unsigned long gpa;	/* Guest physical address */
-> +	unsigned long hpa;	/* Host physical address */
-> +	struct page *page;	/* page struct of the very first =20
-> subpage */
-> +	unsigned long size;	/* Huge page size (always 16MB at the =20
-> moment) */
-> +};
+Hi,
 
-Shouldn't this be namespaced to something like "book3s" or "spapr"?
+This patchset is a first step towards removing stop_machine() from the
+CPU hotplug offline path. It introduces a set of APIs (as a replacement to
+preempt_disable()/preempt_enable()) to synchronize with CPU hotplug from
+atomic contexts.
 
--Scott=
+The motivation behind getting rid of stop_machine() is to avoid its
+ill-effects, such as performance penalties[1] and the real-time latencies it
+inflicts on the system (and also things involving stop_machine() have often
+been notoriously hard to debug). And in general, getting rid of stop_machine()
+from CPU hotplug also greatly enhances the elegance of the CPU hotplug design
+itself.
+
+Getting rid of stop_machine() involves building the corresponding
+infrastructure in the core CPU hotplug code and converting all places which
+used to depend on the semantics of stop_machine() to synchronize with CPU
+hotplug.
+
+This patchset builds a first-level base infrastructure on which tree-wide
+conversions can be built upon, and also includes the conversions themselves.
+We certainly need a few more careful tree-sweeps to complete the conversion,
+but the goal of this patchset is to introduce the core pieces and to get the
+first batch of conversions in, while covering a reasonable bulk among them.
+
+This patchset also has a debug infrastructure to help with the conversions -
+with the newly introduced CONFIG_DEBUG_HOTPLUG_CPU option turned on, it
+prints warnings whenever the need for a conversion is detected. Patches 4-7
+build this framework. Needless to say, I'd really appreciate if people could
+test kernels with this option turned on and report omissions or better yet,
+send patches to contribute to this effort.
+
+[It is to be noted that this patchset doesn't replace stop_machine() yet,
+so the immediate risk in having an unconverted (or converted) call-site
+is nil, since there is no major functional change involved.]
+
+Once the conversion gets completed, we can finalize on the design of the
+stop_machine() replacement and use that in the core CPU hotplug code. We have
+had some discussions in the past where we debated several different
+designs[2]. We'll revisit that with more ideas once this conversion gets over.
+
+
+This patchset applies on current tip:master. It is also available in the
+following git branch:
+
+git://github.com/srivatsabhat/linux.git  stop-mch-free-cpuhp-part1-v3
+
+
+Thank you very much!
+
+
+Changes in v3:
+-------------
+* Added _nocheck() variants of cpu accessor functions for use in RCU
+  and percpu-counter code. Reworked the RCU and percpu-counter patches
+  accordingly.
+* Dropped the patch related to kvm-vmx, since it was unnecessary.
+* Added changes to r4k_on_each_cpu() in Mips, as pointed out by Ralf Baechle.
+* Added Acks and rebased to current tip/master.
+
+Changes in v2:
+-------------
+* Build-fix for !HOTPLUG_CPU case.
+* Minor code cleanups, and added a few comments.
+
+
+References:
+----------
+
+1. Performance difference between CPU Hotplug with and without
+   stop_machine():
+   http://article.gmane.org/gmane.linux.kernel/1435249
+
+2. Links to discussions around alternative synchronization schemes to
+   replace stop_machine() in the CPU Hotplug code:
+
+   v6: http://lwn.net/Articles/538819/
+   v5: http://lwn.net/Articles/533553/
+   v4: https://lkml.org/lkml/2012/12/11/209
+   v3: http://lwn.net/Articles/528541/
+   v2: https://lkml.org/lkml/2012/12/5/322
+   v1: https://lkml.org/lkml/2012/12/4/88
+       http://lwn.net/Articles/527988/
+
+3. Links to previous versions of this patchset:
+   v2: http://thread.gmane.org/gmane.linux.kernel/1515396
+   v1: http://lwn.net/Articles/556138/
+
+
+--
+ Srivatsa S. Bhat (45):
+      CPU hotplug: Provide APIs to prevent CPU offline from atomic context
+      CPU hotplug: Clarify the usage of different synchronization APIs
+      Documentation, CPU hotplug: Recommend usage of get/put_online_cpus_atomic()
+      CPU hotplug: Add infrastructure to check lacking hotplug synchronization
+      CPU hotplug: Protect set_cpu_online() to avoid false-positives
+      CPU hotplug: Sprinkle debugging checks to catch locking bugs
+      CPU hotplug: Add _nocheck() variants of accessor functions
+      CPU hotplug: Expose the new debug config option
+      CPU hotplug: Convert preprocessor macros to static inline functions
+      smp: Use get/put_online_cpus_atomic() to prevent CPU offline
+      sched/core: Use get/put_online_cpus_atomic() to prevent CPU offline
+      migration: Use raw_spin_lock/unlock since interrupts are already disabled
+      sched/fair: Use get/put_online_cpus_atomic() to prevent CPU offline
+      timer: Use get/put_online_cpus_atomic() to prevent CPU offline
+      sched/rt: Use get/put_online_cpus_atomic() to prevent CPU offline
+      rcu: Use cpu_is_offline_nocheck() to avoid false-positive warnings
+      tick-broadcast: Use get/put_online_cpus_atomic() to prevent CPU offline
+      time/clocksource: Use get/put_online_cpus_atomic() to prevent CPU offline
+      softirq: Use get/put_online_cpus_atomic() to prevent CPU offline
+      irq: Use get/put_online_cpus_atomic() to prevent CPU offline
+      net: Use get/put_online_cpus_atomic() to prevent CPU offline
+      block: Use get/put_online_cpus_atomic() to prevent CPU offline
+      percpu_counter: Use _nocheck version of for_each_online_cpu()
+      infiniband: ehca: Use get/put_online_cpus_atomic() to prevent CPU offline
+      [SCSI] fcoe: Use get/put_online_cpus_atomic() to prevent CPU offline
+      staging/octeon: Use get/put_online_cpus_atomic() to prevent CPU offline
+      x86: Use get/put_online_cpus_atomic() to prevent CPU offline
+      perf/x86: Use get/put_online_cpus_atomic() to prevent CPU offline
+      KVM: Use get/put_online_cpus_atomic() to prevent CPU offline
+      x86/xen: Use get/put_online_cpus_atomic() to prevent CPU offline
+      alpha/smp: Use get/put_online_cpus_atomic() to prevent CPU offline
+      blackfin/smp: Use get/put_online_cpus_atomic() to prevent CPU offline
+      cris/smp: Use get/put_online_cpus_atomic() to prevent CPU offline
+      hexagon/smp: Use get/put_online_cpus_atomic() to prevent CPU offline
+      ia64: irq, perfmon: Use get/put_online_cpus_atomic() to prevent CPU offline
+      ia64: smp, tlb: Use get/put_online_cpus_atomic() to prevent CPU offline
+      m32r: Use get/put_online_cpus_atomic() to prevent CPU offline
+      MIPS: Use get/put_online_cpus_atomic() to prevent CPU offline
+      mn10300: Use get/put_online_cpus_atomic() to prevent CPU offline
+      powerpc, irq: Use GFP_ATOMIC allocations in atomic context
+      powerpc: Use get/put_online_cpus_atomic() to prevent CPU offline
+      powerpc: Use get/put_online_cpus_atomic() to avoid false-positive warning
+      sh: Use get/put_online_cpus_atomic() to prevent CPU offline
+      sparc: Use get/put_online_cpus_atomic() to prevent CPU offline
+      tile: Use get/put_online_cpus_atomic() to prevent CPU offline
+
+ Documentation/cpu-hotplug.txt                 |   20 +++-
+ arch/alpha/kernel/smp.c                       |   19 ++-
+ arch/blackfin/mach-common/smp.c               |    4 -
+ arch/cris/arch-v32/kernel/smp.c               |    5 +
+ arch/hexagon/kernel/smp.c                     |    3 +
+ arch/ia64/kernel/irq_ia64.c                   |   15 +++
+ arch/ia64/kernel/perfmon.c                    |    8 +
+ arch/ia64/kernel/smp.c                        |   12 +-
+ arch/ia64/mm/tlb.c                            |    4 -
+ arch/m32r/kernel/smp.c                        |   16 +--
+ arch/mips/kernel/cevt-smtc.c                  |    7 +
+ arch/mips/kernel/smp.c                        |   16 +--
+ arch/mips/kernel/smtc.c                       |   12 ++
+ arch/mips/mm/c-octeon.c                       |    4 -
+ arch/mips/mm/c-r4k.c                          |    5 +
+ arch/mn10300/mm/cache-smp.c                   |    3 +
+ arch/mn10300/mm/tlb-smp.c                     |   17 ++-
+ arch/powerpc/kernel/irq.c                     |    9 +-
+ arch/powerpc/kernel/machine_kexec_64.c        |    4 -
+ arch/powerpc/kernel/smp.c                     |    4 +
+ arch/powerpc/kvm/book3s_hv.c                  |    5 +
+ arch/powerpc/mm/mmu_context_nohash.c          |    3 +
+ arch/powerpc/oprofile/cell/spu_profiler.c     |    3 +
+ arch/powerpc/oprofile/cell/spu_task_sync.c    |    4 +
+ arch/powerpc/oprofile/op_model_cell.c         |    6 +
+ arch/sh/kernel/smp.c                          |   12 +-
+ arch/sparc/kernel/smp_64.c                    |   12 +-
+ arch/tile/kernel/module.c                     |    3 +
+ arch/tile/kernel/tlb.c                        |   15 +++
+ arch/tile/mm/homecache.c                      |    3 +
+ arch/x86/kernel/apic/io_apic.c                |   21 +++-
+ arch/x86/kernel/cpu/mcheck/therm_throt.c      |    4 -
+ arch/x86/kernel/cpu/perf_event_intel_uncore.c |    6 +
+ arch/x86/mm/tlb.c                             |   14 +--
+ arch/x86/xen/mmu.c                            |    9 +-
+ block/blk-softirq.c                           |    3 +
+ drivers/infiniband/hw/ehca/ehca_irq.c         |    5 +
+ drivers/scsi/fcoe/fcoe.c                      |    7 +
+ drivers/staging/octeon/ethernet-rx.c          |    3 +
+ include/linux/cpu.h                           |   29 +++++
+ include/linux/cpumask.h                       |  118 +++++++++++++++++++++
+ kernel/cpu.c                                  |  138 +++++++++++++++++++++++++
+ kernel/irq/manage.c                           |    7 +
+ kernel/irq/proc.c                             |    3 +
+ kernel/rcutree.c                              |   12 ++
+ kernel/sched/core.c                           |   27 ++++-
+ kernel/sched/fair.c                           |   14 ++-
+ kernel/sched/rt.c                             |   14 +++
+ kernel/smp.c                                  |   52 +++++----
+ kernel/softirq.c                              |    3 +
+ kernel/time/clocksource.c                     |    5 +
+ kernel/time/tick-broadcast.c                  |    8 +
+ kernel/timer.c                                |    4 +
+ lib/Kconfig.debug                             |    8 +
+ lib/cpumask.c                                 |    8 +
+ lib/percpu_counter.c                          |    9 +-
+ net/core/dev.c                                |    9 +-
+ virt/kvm/kvm_main.c                           |    8 +
+ 58 files changed, 674 insertions(+), 127 deletions(-)
+
+
+Regards,
+Srivatsa S. Bhat
+IBM Linux Technology Center
