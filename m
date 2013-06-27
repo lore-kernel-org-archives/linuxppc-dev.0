@@ -1,31 +1,31 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e36.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 13F982C0092
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 15:46:58 +1000 (EST)
+ (Client CN "e35.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3F7E72C0095
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 15:46:59 +1000 (EST)
 Received: from /spool/local
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Wed, 26 Jun 2013 23:46:56 -0600
-Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
- [9.17.195.226])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id A3E8619D8046
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 23:46:44 -0600 (MDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5R5kspj143372
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 23:46:54 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5R5krII020334
+ Wed, 26 Jun 2013 23:46:55 -0600
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+ [9.17.195.227])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id CE1033E4003F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 23:46:33 -0600 (MDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5R5krgD158046
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 23:46:53 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5R5kqf2010877
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 23:46:53 -0600
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/8] powerpc/powernv: Replace variables with flags
-Date: Thu, 27 Jun 2013 13:46:44 +0800
-Message-Id: <1372312009-13710-4-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 1/8] powerpc/eeh: Don't collect PCI-CFG data on PHB
+Date: Thu, 27 Jun 2013 13:46:42 +0800
+Message-Id: <1372312009-13710-2-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1372312009-13710-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1372312009-13710-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -38,103 +38,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We have 2 fields in "struct pnv_phb" to trace the states. The patch
-replace the fields with one and introduces flags for that. The patch
-doesn't impact the logic.
+When the PHB is fenced or dead, it's pointless to collect the data
+from PCI config space of subordinate PCI devices since it should
+return 0xFF's. The patch also fixes overwritten buffer while getting
+PCI config data.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/eeh-ioda.c |    8 ++++----
- arch/powerpc/platforms/powernv/pci.c      |    4 ++--
- arch/powerpc/platforms/powernv/pci.h      |    7 +++++--
- 3 files changed, 11 insertions(+), 8 deletions(-)
+ arch/powerpc/kernel/eeh.c |   34 ++++++++++++++++++++++++----------
+ 1 files changed, 24 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-index 84f3036..85025d7 100644
---- a/arch/powerpc/platforms/powernv/eeh-ioda.c
-+++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-@@ -132,7 +132,7 @@ static int ioda_eeh_post_init(struct pci_controller *hose)
- 					    &ioda_eeh_dbgfs_ops);
- #endif
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index 951a632..2dd0bd1 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -232,16 +232,30 @@ void eeh_slot_error_detail(struct eeh_pe *pe, int severity)
+ {
+ 	size_t loglen = 0;
+ 	struct eeh_dev *edev;
++	bool valid_cfg_log = true;
  
--		phb->eeh_enabled = 1;
-+		phb->eeh_state |= PNV_EEH_STATE_ENABLED;
- 	}
- 
- 	return 0;
-@@ -815,7 +815,7 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
- 		 * removed, we needn't take care of it any more.
- 		 */
- 		phb = hose->private_data;
--		if (phb->removed)
-+		if (phb->eeh_state & PNV_EEH_STATE_REMOVED)
- 			continue;
- 
- 		rc = opal_pci_next_error(phb->opal_id,
-@@ -850,7 +850,7 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
- 				list_for_each_entry_safe(hose, tmp,
- 						&hose_list, list_node) {
- 					phb = hose->private_data;
--					phb->removed = 1;
-+					phb->eeh_state |= PNV_EEH_STATE_REMOVED;
- 				}
- 
- 				WARN(1, "EEH: dead IOC detected\n");
-@@ -867,7 +867,7 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
- 
- 				WARN(1, "EEH: dead PHB#%x detected\n",
- 				     hose->global_number);
--				phb->removed = 1;
-+				phb->eeh_state |= PNV_EEH_STATE_REMOVED;
- 				ret = 3;
- 				goto out;
- 			} else if (severity == OPAL_EEH_SEV_PHB_FENCED) {
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index 6d9a506..1f31826 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -308,7 +308,7 @@ static int pnv_pci_read_config(struct pci_bus *bus,
- 	if (phb_pe && (phb_pe->state & EEH_PE_ISOLATED))
- 		return PCIBIOS_SUCCESSFUL;
- 
--	if (phb->eeh_enabled) {
-+	if (phb->eeh_state & PNV_EEH_STATE_ENABLED) {
- 		if (*val == EEH_IO_ERROR_VALUE(size)) {
- 			busdn = pci_bus_to_OF_node(bus);
- 			for (dn = busdn->child; dn; dn = dn->sibling) {
-@@ -358,7 +358,7 @@ static int pnv_pci_write_config(struct pci_bus *bus,
- 
- 	/* Check if the PHB got frozen due to an error (no response) */
- #ifdef CONFIG_EEH
--	if (!phb->eeh_enabled)
-+	if (!(phb->eeh_state & PNV_EEH_STATE_ENABLED))
- 		pnv_pci_config_check_eeh(phb, bus, bdfn);
- #else
- 	pnv_pci_config_check_eeh(phb, bus, bdfn);
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index 43906e3..40bdf02 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -78,6 +78,10 @@ struct pnv_eeh_ops {
- 	int (*configure_bridge)(struct eeh_pe *pe);
- 	int (*next_error)(struct eeh_pe **pe);
- };
+-	eeh_pci_enable(pe, EEH_OPT_THAW_MMIO);
+-	eeh_ops->configure_bridge(pe);
+-	eeh_pe_restore_bars(pe);
+-
+-	pci_regs_buf[0] = 0;
+-	eeh_pe_for_each_dev(pe, edev) {
+-		loglen += eeh_gather_pci_data(edev, pci_regs_buf,
+-				EEH_PCI_REGS_LOG_LEN);
+-        }
++	/*
++	 * When the PHB is fenced or dead, it's pointless to collect
++	 * the data from PCI config space because it should return
++	 * 0xFF's. For ER, we still retrieve the data from the PCI
++	 * config space.
++	 */
++	if (eeh_probe_mode_dev() &&
++	    (pe->type & EEH_PE_PHB) &&
++	    (pe->state & (EEH_PE_ISOLATED | EEH_PE_PHB_DEAD)))
++		valid_cfg_log = false;
 +
-+#define PNV_EEH_STATE_ENABLED	(1 << 0)	/* EEH enabled	*/
-+#define PNV_EEH_STATE_REMOVED	(1 << 1)	/* PHB removed	*/
++	if (valid_cfg_log) {
++		eeh_pci_enable(pe, EEH_OPT_THAW_MMIO);
++		eeh_ops->configure_bridge(pe);
++		eeh_pe_restore_bars(pe);
 +
- #endif /* CONFIG_EEH */
++		pci_regs_buf[0] = 0;
++		eeh_pe_for_each_dev(pe, edev) {
++			loglen += eeh_gather_pci_data(edev, pci_regs_buf + loglen,
++						      EEH_PCI_REGS_LOG_LEN - loglen);
++		}
++	}
  
- struct pnv_phb {
-@@ -92,8 +96,7 @@ struct pnv_phb {
- 
- #ifdef CONFIG_EEH
- 	struct pnv_eeh_ops	*eeh_ops;
--	int			eeh_enabled;
--	int			removed;
-+	int			eeh_state;
- #endif
- 
- #ifdef CONFIG_DEBUG_FS
+ 	eeh_ops->get_log(pe, severity, pci_regs_buf, loglen);
+ }
 -- 
 1.7.5.4
