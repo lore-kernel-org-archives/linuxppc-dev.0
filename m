@@ -1,53 +1,26 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5B5082C0099
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 16:57:19 +1000 (EST)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Thu, 27 Jun 2013 12:22:04 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id E6D87E0059
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 12:26:37 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5R6vL0j22282390
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 12:27:21 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5R6uwOX023016
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 16:57:03 +1000
-Message-ID: <51CBE177.90502@linux.vnet.ibm.com>
-Date: Thu, 27 Jun 2013 12:23:43 +0530
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH v2 15/45] rcu: Use get/put_online_cpus_atomic() to prevent
- CPU offline
-References: <20130625202755.16593.67819.stgit@srivatsabhat.in.ibm.com>
- <20130625220026.GG3828@linux.vnet.ibm.com>
- <51CAF624.6060004@linux.vnet.ibm.com>
- <AE90C24D6B3A694183C094C60CF0A2F6026B72AA@saturn3.aculab.com>
- <20130626143424.GN3828@linux.vnet.ibm.com>
- <1372258271.18733.256.camel@gandalf.local.home>
- <20130626152148.GA4405@mtj.dyndns.org>
- <1372260823.18733.263.camel@gandalf.local.home>
- <20130626172948.GD4405@mtj.dyndns.org> <51CB32E0.3040106@linux.vnet.ibm.com>
- <20130626213458.GC4536@htj.dyndns.org>
-In-Reply-To: <20130626213458.GC4536@htj.dyndns.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org,
- walken@google.com, mingo@kernel.org, linux-arch@vger.kernel.org,
- vincent.guittot@linaro.org, xiaoguangrong@linux.vnet.ibm.com,
- wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com,
- nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au,
- Steven Rostedt <rostedt@goodmis.org>, namhyung@kernel.org, tglx@linutronix.de,
- laijs@cn.fujitsu.com, zhong@linux.vnet.ibm.com, netdev@vger.kernel.org,
- oleg@redhat.com, sbw@mit.edu, David Laight <David.Laight@ACULAB.COM>,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id EF0CC2C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 16:59:38 +1000 (EST)
+Date: Thu, 27 Jun 2013 16:59:29 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH 3/8] vfio: add external user support
+Message-Id: <20130627165929.3828c261c957845a549ad95b@canb.auug.org.au>
+In-Reply-To: <1372309356-28320-4-git-send-email-aik@ozlabs.ru>
+References: <1372309356-28320-1-git-send-email-aik@ozlabs.ru>
+ <1372309356-28320-4-git-send-email-aik@ozlabs.ru>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Thu__27_Jun_2013_16_59_29_+1000_lhv7FzSatZX_6IAt"
+Cc: kvm@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Alexander Graf <agraf@suse.de>, Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>,
+ "Paul E . McKenney" <paulmck@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,70 +30,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/27/2013 03:04 AM, Tejun Heo wrote:
-> Hey,
-> 
-> On Wed, Jun 26, 2013 at 11:58:48PM +0530, Srivatsa S. Bhat wrote:
->> Yes, we were discussing hot-unplug latency for use-cases such as
->> suspend/resume. We didn't want to make those operations slower in the
->> process of removing stop_machine() from hotplug.
-> 
-> Can you please explain why tho?
+--Signature=_Thu__27_Jun_2013_16_59_29_+1000_lhv7FzSatZX_6IAt
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Sure.
+Hi Alexy,
 
->  How much would it help in terms of
-> power-saving?  Or are there other issues in taking longer to shut down
-> cpus?
-> 
+On Thu, 27 Jun 2013 15:02:31 +1000 Alexey Kardashevskiy <aik@ozlabs.ru> wro=
+te:
+>
+> +/* Allows an external user (for example, KVM) to unlock an IOMMU group */
+> +static void vfio_group_del_external_user(struct file *filep)
+> +{
+> +	struct vfio_group *group =3D filep->private_data;
+> +
+> +	BUG_ON(filep->f_op !=3D &vfio_group_fops);
 
-Basically, power-management techniques (like suspend/resume as used on
-smartphones etc) are implemented using a controlling algorithm which
-controls the aggressiveness of power-management depending on the load
-on the system.
+We usually reserve BUG_ON for situations where there is no way to
+continue running or continuing will corrupt the running kernel.  Maybe
+WARN_ON() and return?
 
-Today, the cpuidle subsystem in Linux handles cpuidle transitions using
-that technique, so I'll explain using that as an example. Similar
-strategies are used for suspend/resume also.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-For every cpuidle state, we have atleast 2 parameters that determine
-how usable it is - 1. exit latency 2. target residency.
+--Signature=_Thu__27_Jun_2013_16_59_29_+1000_lhv7FzSatZX_6IAt
+Content-Type: application/pgp-signature
 
-The exit latency captures the amount of time it takes to come out of
-the power-saving state, from the time you asked it to come out. This
-is an estimate of how "deep" the power-saving state is. The deeper it
-is, the longer it takes to come out. (And of course, deeper states give
-higher power-savings).
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.20 (GNU/Linux)
 
-The target residency is a value which represents the break-even for
-that state. It tells us how long we should stay in that idle state
-(at a minimum) before we ask it to come out, to actually get some good
-power-savings out of that state. (Note that entry and exit to an idle
-state itself consumes some power, so there won't be any power-savings
-if we keep entering and exiting a deep state without staying in that
-state long enough).
+iQIcBAEBCAAGBQJRy+LZAAoJEECxmPOUX5FEYCIP/21qKXlYUTvY0xw0rl4Ala7J
+eqhHdErKg4yTxIJuIK6QKK6T5EaM4leNYbLmWkzOasbFO1ERQgCRPxlW9DMRfhJX
+SoW/MIEwbvWniRKR+EtWaDnRqV2nfyztrsNHhU1hMiaJYMMbFIOtMD0XOJX+jEw3
+xOkfObdOilbfQDwto0X0OY6tHH5MRnVhMzpBFYLdsTVNdbJmy9WiwztHjLOEMeaV
+UJkF1cI0Css8Hjw5y6JVIpGwERAwRYjTQOGzZGAbGr3+YmzEqHLWa+woICeIj5fp
+/V91/ZO2FiGdTnROZ6PgrSRedOOaGEqiH8dfxvGBemOUOKBWCqAxfGholyhTj2Xp
+CNgQpgKBO0MHX7n8zUJmknwtLKDXqWNFNYf7ctha4Oui1MaAXxgXagUR52WCXf+W
+IqfHWzDsRwJNbmVXQ1tcqkN7ot4BWi9LCJHbwz8X1Ud85MbS5gCAJvQwWcxqjh6A
+vBq9MX3KRXOoyO85AtP/BV4WKnc+i2VbdQB9o3GinhpdnfieafpknofDxg0eIT8S
+iZ2CzXatOt/imGPDOsudmlKldfUgJ6p7EeRKysLSzQIx3Gz/Cz2y/GrOw6+xkoRN
+/d/m7bsMNeNzACB2UcJhbVVemSVXYukC9F1P4yZWExiHXlDQUuSVjUB1rhIG9I9f
+xg1aWdoHMdtCbOt2LqsR
+=mBSd
+-----END PGP SIGNATURE-----
 
-Once the idle states are characterized like this, the cpuidle subsystem
-uses a cpuidle "governor" to actually decide which of the states to
-enter, given an idle period of time. The governor keeps track of the
-load on the system and predicts the length of the next idle period, and
-based on that prediction, it selects the idle state whose characteristics
-(exit latency/target residency) match the predicted idle time closely.
-
-So as we can see, the "deeper" the idle state, the lower its chance of
-getting used during regular workload runs, because it is deemed too costly.
-So entry/exit latency of an idle state is a very important aspect which
-determines how often you can use that state. Ideally we want states which
-are "deep" in the sense that they give huge power-savings, but "light"
-in the sense that their entry/exit latencies are low. Such states give
-us the best benefits, since we can use them aggressively.
-
-Now a similar argument applies for suspend/resume (on smartphones etc).
-Suspend/resume already gives good power-savings. But if we make it slower,
-the chances of using it profitably begins to reduce. That's why, IMHO,
-its important to keep a check on the latency of CPU hotplug and reduce
-it if possible. And that becomes even more important as systems keep
-sporting more and more CPUs.
-
-Regards,
-Srivatsa S. Bhat
+--Signature=_Thu__27_Jun_2013_16_59_29_+1000_lhv7FzSatZX_6IAt--
