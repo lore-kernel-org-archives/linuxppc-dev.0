@@ -1,23 +1,35 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.pcug.org.au [203.10.76.10])
- by ozlabs.org (Postfix) with ESMTP id 0D8262C009F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 17:50:27 +1000 (EST)
-Date: Thu, 27 Jun 2013 17:50:19 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH v2] vfio: add external user support
-Message-Id: <20130627175019.689f6c4c4ef92d6562cbd450@canb.auug.org.au>
-In-Reply-To: <1372317260-6438-1-git-send-email-aik@ozlabs.ru>
-References: <20130627164752.657c165ec4492e5248945a51@canb.auug.org.au>
- <1372317260-6438-1-git-send-email-aik@ozlabs.ru>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Thu__27_Jun_2013_17_50_19_+1000_FHk1xp9mtV99U7DK"
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <aruna@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 538682C0095
+ for <linuxppc-dev@ozlabs.org>; Thu, 27 Jun 2013 18:33:00 +1000 (EST)
+Received: from /spool/local
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <aruna@linux.vnet.ibm.com>;
+ Thu, 27 Jun 2013 18:21:21 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 999932CE8052
+ for <linuxppc-dev@ozlabs.org>; Thu, 27 Jun 2013 18:32:52 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5R8Whq54391172
+ for <linuxppc-dev@ozlabs.org>; Thu, 27 Jun 2013 18:32:43 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5R8WpTw003678
+ for <linuxppc-dev@ozlabs.org>; Thu, 27 Jun 2013 18:32:52 +1000
+Subject: [PATCH v2 0/3] Nvram-to-pstore: compression support for oops data
+To: tony.luck@intel.com, keescook@chromium.org, benh@kernel.crashing.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org
+From: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
+Date: Thu, 27 Jun 2013 14:02:47 +0530
+Message-ID: <20130627082941.16749.67023.stgit@aruna-ThinkPad-T420>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: jkenisto@linux.vnet.ibm.com, mahesh@linux.vnet.ibm.com,
+ cbouatmailru@gmail.com, anton@samba.org, ccross@android.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,59 +39,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Thu__27_Jun_2013_17_50_19_+1000_FHk1xp9mtV99U7DK
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Changes from v1:
+		- Add header size argument in the pstore write callback
+		instead of a separate API to return header size.
 
-Hi Alexy,
+The patchset takes care of compressing oops messages while writing to NVRAM,
+so that more oops data can be captured in the given space.
 
-Thanks for the changes.
+big_oops_buf (2.22 * oops_data_sz) is allocated for compression.
+oops_data_sz is oops header size less of oops partition size.
 
-On Thu, 27 Jun 2013 17:14:20 +1000 Alexey Kardashevskiy <aik@ozlabs.ru> wro=
-te:
->
-> diff --git a/include/linux/vfio.h b/include/linux/vfio.h
-> index ac8d488..7ee6575 100644
-> --- a/include/linux/vfio.h
-> +++ b/include/linux/vfio.h
-> @@ -90,4 +90,11 @@ extern void vfio_unregister_iommu_driver(
->  	TYPE tmp;						\
->  	offsetof(TYPE, MEMBER) + sizeof(tmp.MEMBER); })		\
-> =20
-> +/*
-> + * External user API
-> + */
-> +int vfio_group_add_external_user(struct file *filep);
-> +void vfio_group_del_external_user(struct file *filep);
-> +int vfio_group_iommu_id_from_file(struct file *filep);
+Pstore will internally call kmsg_dump to capture messages from printk
+buffer. While returning the data to nvram it adds is own header.
 
-Just being picky, but all the other function declarations in that file
-state "extern" explicitly.
+For compression:
+	Register pstore with big_oops_buf. 
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+In case compression fails, copy header added by pstore and
+last oops_data_sz bytes (recent messages) of big_oops_buf to
+nvram for which we need to know header size. 
+	
+patch 01/03 adds an additional argument for header size in pstore_write callback.
 
---Signature=_Thu__27_Jun_2013_17_50_19_+1000_FHk1xp9mtV99U7DK
-Content-Type: application/pgp-signature
+pstore read callback of nvram will read the compressed data and return the
+decompressed data so that dmesg file (under /dev/pstore) is readable.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
+In case decompression fails, instead of having the compressed data (junk) in the
+dmesg file it will skip and continue reading other partitions. This results in
+absence of dmesg file but will still have files relating to other parititons.
 
-iQIcBAEBCAAGBQJRy+6/AAoJEECxmPOUX5FEHB4P/0zvgpoHLvaSsXy+DmYPi4d8
-NI1J19YnPQsgg+cOF6ju9KECwFW4VKw0ZjjMtLfodmceBhPspLzPtvjj61gjSVsG
-FCvii9RRuFlinuwqf1tQHyEC2YWG9xbBb6AR6ZHM357migUEQROCfJCTvJIer+2P
-Z8R762/KPIRuUpuREy6btQVTPWhiVbF56eE5/EWtJ/iYI/F2hVlhNXGvQjTT1xud
-43eqV8ONdweNnrRxWa+Si3CMeGBzHIPgvjJb60fh93arhoccFx4FkydQhsod1CFC
-yvnHThvI0//2VefZZSzAVCZmBKutAUsfOTMmBcgQNpaksYeckawaM2nwFvmVk51w
-ye0Y8Z79pPVG14GH5ja4T/SmZnZ7L2LnTm6pKrFJMRhaOsceoHeSKLcRZyoCSjji
-TEu/A6Rr6+oJu0lXvw/rOyK7F2upZLBRTf5QaA9/jDiN9XL5faq2M7cx158ic3dP
-eMl+41eZl3M9lG8pXaUx0lAxkcAOCd0ZyODwdWtZXz8wvlAaCCJ9njaKWBdevwMs
-yki6xaM4C/6yrC2mFax0Dm1tXGnY+gzE1aYmpi0Mm22q+2cWyHLEYtpwVRbBlWM+
-WlowO6W/bjuJwKyGm0QjW42Y0t0dtL8oGCRJh4o7AUOHYFDrwLp78++DpWzBQu6/
-wGDYiwEOAfyrrDegtbbP
-=4MRZ
------END PGP SIGNATURE-----
+---
 
---Signature=_Thu__27_Jun_2013_17_50_19_+1000_FHk1xp9mtV99U7DK--
+Aruna Balakrishnaiah (3):
+      Pass header size in the pstore write callback
+      powerpc/pseries: Re-organise the oops compression code
+      powerpc/pseries: Support compression of oops text via pstore
+
+
+ arch/powerpc/platforms/pseries/nvram.c |  239 +++++++++++++++++++++++---------
+ drivers/acpi/apei/erst.c               |    4 -
+ drivers/firmware/efi/efi-pstore.c      |    2 
+ fs/pstore/platform.c                   |   10 +
+ fs/pstore/ram.c                        |    3 
+ include/linux/pstore.h                 |    8 +
+ 6 files changed, 187 insertions(+), 79 deletions(-)
+
+-- 
