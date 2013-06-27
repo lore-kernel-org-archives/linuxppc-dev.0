@@ -1,46 +1,22 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 815512C05B8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 05:58:30 +1000 (EST)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Fri, 28 Jun 2013 05:46:52 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id B6E062BB0053
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 05:58:27 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5RJwIww8520080
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 05:58:18 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5RJwPra016248
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 05:58:27 +1000
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v3 15/45] sched/rt: Use get/put_online_cpus_atomic() to
- prevent CPU offline
-To: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com,
- paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org,
- akpm@linux-foundation.org, namhyung@kernel.org, walken@google.com,
- vincent.guittot@linaro.org, laijs@cn.fujitsu.com, David.Laight@aculab.com
-Date: Fri, 28 Jun 2013 01:24:59 +0530
-Message-ID: <20130627195458.29830.25978.stgit@srivatsabhat.in.ibm.com>
-In-Reply-To: <20130627195136.29830.10445.stgit@srivatsabhat.in.ibm.com>
-References: <20130627195136.29830.10445.stgit@srivatsabhat.in.ibm.com>
+Return-Path: <B07421@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe002.messaging.microsoft.com [216.32.180.12])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 067FE2C064D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 05:58:47 +1000 (EST)
+Date: Thu, 27 Jun 2013 14:58:34 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 1/2] powerpc: enable the relocatable support for the fsl
+ booke 32bit kernel
+To: Kevin Hao <haokexin@gmail.com>
+In-Reply-To: <1372298434-20220-2-git-send-email-haokexin@gmail.com> (from
+ haokexin@gmail.com on Wed Jun 26 21:00:33 2013)
+Message-ID: <1372363114.8183.54@snotra>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linux-arch@vger.kernel.org, nikunj@linux.vnet.ibm.com,
- zhong@linux.vnet.ibm.com, linux-pm@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>, fweisbec@gmail.com,
- linux-kernel@vger.kernel.org, rostedt@goodmis.org,
- xiaoguangrong@linux.vnet.ibm.com, sbw@mit.edu, Ingo Molnar <mingo@redhat.com>,
- wangyun@linux.vnet.ibm.com,
- "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,100 +26,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Once stop_machine() is gone from the CPU offline path, we won't be able
-to depend on disabling preemption to prevent CPUs from going offline
-from under us.
+On 06/26/2013 09:00:33 PM, Kevin Hao wrote:
+> This is based on the codes in the head_44x.S. Since we always align to
+> 256M before mapping the PAGE_OFFSET for a relocatable kernel, we also
+> change the init tlb map to 256M size.
 
-Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going
-offline, while invoking from atomic context.
+Why 256M?
 
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
----
+This tightens the alignment requirement for dynamic memstart.  And what =20
+about boards with less than 256 MiB of RAM?
 
- kernel/sched/rt.c |   14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+> @@ -176,6 +176,8 @@ skpinv:	addi	r6,r6,1				=20
+> /* Increment */
+>  /* 7. Jump to KERNELBASE mapping */
+>  	lis	r6,(KERNELBASE & ~0xfff)@h
+>  	ori	r6,r6,(KERNELBASE & ~0xfff)@l
+> +	rlwinm	r7,r25,0,4,31
+> +	add	r6,r7,r6
 
-diff --git a/kernel/sched/rt.c b/kernel/sched/rt.c
-index 01970c8..03d9f38 100644
---- a/kernel/sched/rt.c
-+++ b/kernel/sched/rt.c
-@@ -6,6 +6,7 @@
- #include "sched.h"
- 
- #include <linux/slab.h>
-+#include <linux/cpu.h>
- 
- int sched_rr_timeslice = RR_TIMESLICE;
- 
-@@ -28,7 +29,9 @@ static enum hrtimer_restart sched_rt_period_timer(struct hrtimer *timer)
- 		if (!overrun)
- 			break;
- 
-+		get_online_cpus_atomic();
- 		idle = do_sched_rt_period_timer(rt_b, overrun);
-+		put_online_cpus_atomic();
- 	}
- 
- 	return idle ? HRTIMER_NORESTART : HRTIMER_RESTART;
-@@ -547,6 +550,7 @@ static int do_balance_runtime(struct rt_rq *rt_rq)
- 	int i, weight, more = 0;
- 	u64 rt_period;
- 
-+	get_online_cpus_atomic();
- 	weight = cpumask_weight(rd->span);
- 
- 	raw_spin_lock(&rt_b->rt_runtime_lock);
-@@ -588,6 +592,7 @@ next:
- 		raw_spin_unlock(&iter->rt_runtime_lock);
- 	}
- 	raw_spin_unlock(&rt_b->rt_runtime_lock);
-+	put_online_cpus_atomic();
- 
- 	return more;
- }
-@@ -1168,6 +1173,10 @@ static void yield_task_rt(struct rq *rq)
- #ifdef CONFIG_SMP
- static int find_lowest_rq(struct task_struct *task);
- 
-+/*
-+ * Must be called within get/put_online_cpus_atomic(), to prevent CPUs
-+ * from going offline from under us.
-+ */
- static int
- select_task_rq_rt(struct task_struct *p, int sd_flag, int flags)
- {
-@@ -1561,6 +1570,8 @@ retry:
- 		return 0;
- 	}
- 
-+	get_online_cpus_atomic();
-+
- 	/* We might release rq lock */
- 	get_task_struct(next_task);
- 
-@@ -1611,6 +1622,7 @@ retry:
- out:
- 	put_task_struct(next_task);
- 
-+	put_online_cpus_atomic();
- 	return ret;
- }
- 
-@@ -1630,6 +1642,7 @@ static int pull_rt_task(struct rq *this_rq)
- 	if (likely(!rt_overloaded(this_rq)))
- 		return 0;
- 
-+	get_online_cpus_atomic();
- 	for_each_cpu(cpu, this_rq->rd->rto_mask) {
- 		if (this_cpu == cpu)
- 			continue;
-@@ -1695,6 +1708,7 @@ skip:
- 		double_unlock_balance(this_rq, src_rq);
- 	}
- 
-+	put_online_cpus_atomic();
- 	return ret;
- }
- 
+Please consider using the more readable form of rlwinm/rlwimi:
+
+	rlwinm	r7,r25,0,0x0fffffff
+
+>  #elif defined(ENTRY_MAPPING_KEXEC_SETUP)
+>  /*
+> diff --git a/arch/powerpc/kernel/head_fsl_booke.S =20
+> b/arch/powerpc/kernel/head_fsl_booke.S
+> index d10a7ca..c3b4c8e53 100644
+> --- a/arch/powerpc/kernel/head_fsl_booke.S
+> +++ b/arch/powerpc/kernel/head_fsl_booke.S
+> @@ -83,10 +83,43 @@ _ENTRY(_start);
+>  	andc	r31,r20,r18		/* r31 =3D page base */
+>  	or	r31,r31,r19		/* r31 =3D devtree phys addr */
+>  	mfspr	r30,SPRN_MAS7
+> -
+> -	li	r25,0			/* phys kernel start (low) */
+>  	li	r24,0			/* CPU number */
+> -	li	r23,0			/* phys kernel start (high) */
+> +
+> +#ifdef CONFIG_RELOCATABLE
+> +	bl	0f				/* Get our runtime =20
+> address */
+> +0:	mflr	r3				/* Make it accessible */
+> +	addis	r3,r3,(_stext - 0b)@ha
+> +	addi	r3,r3,(_stext - 0b)@l 	/* Get our current runtime base =20
+> */
+> +
+> +	/* Translate _stext address to physical, save in r23/r25 */
+> +	tlbsx	0,r3			/* must succeed */
+> +
+> +	mfspr	r16,SPRN_MAS1
+> +	mfspr	r20,SPRN_MAS3
+> +	rlwinm	r17,r16,25,0x1f		/* r17 =3D log2(page size) */
+> +	li	r18,1024
+> +	slw	r18,r18,r17		/* r18 =3D page size */
+> +	addi	r18,r18,-1
+> +	and	r19,r3,r18		/* r19 =3D page offset */
+> +	andc	r25,r20,r18		/* r25 =3D page base */
+> +	or	r25,r25,r19		/* r25 =3D _stext phys addr */
+> +	mfspr	r23,SPRN_MAS7
+
+This duplicates the code for finding the device tree physical =20
+address... maybe factor it out into a function?
+
+> @@ -197,7 +230,58 @@ _ENTRY(__early_start)
+>=20
+>  	bl	early_init
+>=20
+> -#ifdef CONFIG_DYNAMIC_MEMSTART
+> +#ifdef CONFIG_RELOCATABLE
+> +	/*
+> +	 * Relocatable kernel support based on processing of dynamic
+> +	 * relocation entries.
+> +	 *
+> +	 * r25/r23 will contain RPN/ERPN for the start address of memory
+
+The start of memory or the start of the kernel?
+
+> +	 */
+> +	lis	r3,kernstart_addr@ha
+> +	la	r3,kernstart_addr@l(r3)
+> +
+> +#ifdef CONFIG_PHYS_64BIT
+> +	stw	r23,0(r3)
+> +	stw	r25,4(r3)
+> +#else
+> +	stw	r25,0(r3)
+> +#endif
+
+This part looks the same for relocatable and dynamic memstart -- can =20
+you avoid duplicating?
+
+> +	/*
+> +	 * Compute the virt_phys_offset :
+> +	 * virt_phys_offset =3D stext.run - kernstart_addr
+> +	 *
+> +	 * stext.run =3D (KERNELBASE & ~0xfffffff) + (kernstart_addr & =20
+> 0xfffffff)
+> +	 * When we relocate, we have :
+> +	 *
+> +	 *	(kernstart_addr & 0xfffffff) =3D (stext.run & 0xfffffff)
+> +	 *
+> +	 * hence:
+> +	 *  virt_phys_offset =3D (KERNELBASE & ~0xfffffff) -
+> +	 *                              (kernstart_addr & ~0xfffffff)
+> +	 *
+> +	 */
+> +
+> +	/* KERNELBASE&~0xfffffff =3D> (r4,r5) */
+
+> +	li	r4, 0		/* higer 32bit */
+> +	lis	r5,KERNELBASE@h
+
+Please be consistent with whitespace.
+
+-Scott=
