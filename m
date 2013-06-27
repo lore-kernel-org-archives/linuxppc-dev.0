@@ -1,21 +1,21 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-ie0-f174.google.com (mail-ie0-f174.google.com
- [209.85.223.174])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0A2DF2C00A2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 17:14:33 +1000 (EST)
-Received: by mail-ie0-f174.google.com with SMTP id 9so860177iec.33
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 00:14:31 -0700 (PDT)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: 
-Subject: [PATCH v2] vfio: add external user support
-Date: Thu, 27 Jun 2013 17:14:20 +1000
-Message-Id: <1372317260-6438-1-git-send-email-aik@ozlabs.ru>
-In-Reply-To: <20130627164752.657c165ec4492e5248945a51@canb.auug.org.au>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.pcug.org.au [203.10.76.10])
+ by ozlabs.org (Postfix) with ESMTP id 0D8262C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 17:50:27 +1000 (EST)
+Date: Thu, 27 Jun 2013 17:50:19 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH v2] vfio: add external user support
+Message-Id: <20130627175019.689f6c4c4ef92d6562cbd450@canb.auug.org.au>
+In-Reply-To: <1372317260-6438-1-git-send-email-aik@ozlabs.ru>
 References: <20130627164752.657c165ec4492e5248945a51@canb.auug.org.au>
-Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
- linux-kernel@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
+ <1372317260-6438-1-git-send-email-aik@ozlabs.ru>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Thu__27_Jun_2013_17_50_19_+1000_FHk1xp9mtV99U7DK"
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>,
  Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
  David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,133 +27,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-VFIO is designed to be used via ioctls on file descriptors
-returned by VFIO.
+--Signature=_Thu__27_Jun_2013_17_50_19_+1000_FHk1xp9mtV99U7DK
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-However in some situations support for an external user is required.
-The first user is KVM on PPC64 (SPAPR TCE protocol) which is going to
-use the existing VFIO groups for exclusive access in real/virtual mode
-in the host kernel to avoid passing map/unmap requests to the user
-space which would made things pretty slow.
+Hi Alexy,
 
-The proposed protocol includes:
+Thanks for the changes.
 
-1. do normal VFIO init stuff such as opening a new container, attaching
-group(s) to it, setting an IOMMU driver for a container. When IOMMU is
-set for a container, all groups in it are considered ready to use by
-an external user.
+On Thu, 27 Jun 2013 17:14:20 +1000 Alexey Kardashevskiy <aik@ozlabs.ru> wro=
+te:
+>
+> diff --git a/include/linux/vfio.h b/include/linux/vfio.h
+> index ac8d488..7ee6575 100644
+> --- a/include/linux/vfio.h
+> +++ b/include/linux/vfio.h
+> @@ -90,4 +90,11 @@ extern void vfio_unregister_iommu_driver(
+>  	TYPE tmp;						\
+>  	offsetof(TYPE, MEMBER) + sizeof(tmp.MEMBER); })		\
+> =20
+> +/*
+> + * External user API
+> + */
+> +int vfio_group_add_external_user(struct file *filep);
+> +void vfio_group_del_external_user(struct file *filep);
+> +int vfio_group_iommu_id_from_file(struct file *filep);
 
-2. pass a fd of the group we want to accelerate to KVM. KVM calls
-vfio_group_iommu_id_from_file() to verify if the group is initialized
-and IOMMU is set for it. The current TCE IOMMU driver marks the whole
-IOMMU table as busy when IOMMU is set for a container what this prevents
-other DMA users from allocating from it so it is safe to pass the group
-to the user space.
+Just being picky, but all the other function declarations in that file
+state "extern" explicitly.
 
-3. KVM increases the container users counter via
-vfio_group_add_external_user(). This prevents the VFIO group from
-being disposed prior to exiting KVM.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-4. When KVM is finished and doing cleanup, it releases the group file
-and decrements the container users counter. Everything gets released.
+--Signature=_Thu__27_Jun_2013_17_50_19_+1000_FHk1xp9mtV99U7DK
+Content-Type: application/pgp-signature
 
-5. KVM also keeps the group file as otherwise its fd might have been
-closed at the moment of KVM finish so vfio_group_del_external_user()
-call will not be possible.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.20 (GNU/Linux)
 
-The "vfio: Limit group opens" patch is also required for the consistency.
+iQIcBAEBCAAGBQJRy+6/AAoJEECxmPOUX5FEHB4P/0zvgpoHLvaSsXy+DmYPi4d8
+NI1J19YnPQsgg+cOF6ju9KECwFW4VKw0ZjjMtLfodmceBhPspLzPtvjj61gjSVsG
+FCvii9RRuFlinuwqf1tQHyEC2YWG9xbBb6AR6ZHM357migUEQROCfJCTvJIer+2P
+Z8R762/KPIRuUpuREy6btQVTPWhiVbF56eE5/EWtJ/iYI/F2hVlhNXGvQjTT1xud
+43eqV8ONdweNnrRxWa+Si3CMeGBzHIPgvjJb60fh93arhoccFx4FkydQhsod1CFC
+yvnHThvI0//2VefZZSzAVCZmBKutAUsfOTMmBcgQNpaksYeckawaM2nwFvmVk51w
+ye0Y8Z79pPVG14GH5ja4T/SmZnZ7L2LnTm6pKrFJMRhaOsceoHeSKLcRZyoCSjji
+TEu/A6Rr6+oJu0lXvw/rOyK7F2upZLBRTf5QaA9/jDiN9XL5faq2M7cx158ic3dP
+eMl+41eZl3M9lG8pXaUx0lAxkcAOCd0ZyODwdWtZXz8wvlAaCCJ9njaKWBdevwMs
+yki6xaM4C/6yrC2mFax0Dm1tXGnY+gzE1aYmpi0Mm22q+2cWyHLEYtpwVRbBlWM+
+WlowO6W/bjuJwKyGm0QjW42Y0t0dtL8oGCRJh4o7AUOHYFDrwLp78++DpWzBQu6/
+wGDYiwEOAfyrrDegtbbP
+=4MRZ
+-----END PGP SIGNATURE-----
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
-
-v1->v2: added definitions to vfio.h :)
-Should not compile but compiled. Hm.
-
----
- drivers/vfio/vfio.c  |   54 ++++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/vfio.h |    7 +++++++
- 2 files changed, 61 insertions(+)
-
-diff --git a/drivers/vfio/vfio.c b/drivers/vfio/vfio.c
-index c488da5..40875d2 100644
---- a/drivers/vfio/vfio.c
-+++ b/drivers/vfio/vfio.c
-@@ -1370,6 +1370,60 @@ static const struct file_operations vfio_device_fops = {
- };
- 
- /**
-+ * External user API, exported by symbols to be linked dynamically.
-+ */
-+
-+/* Allows an external user (for example, KVM) to lock an IOMMU group */
-+int vfio_group_add_external_user(struct file *filep)
-+{
-+	struct vfio_group *group = filep->private_data;
-+
-+	if (filep->f_op != &vfio_group_fops)
-+		return -EINVAL;
-+
-+	if (!atomic_inc_not_zero(&group->container_users))
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(vfio_group_add_external_user);
-+
-+/* Allows an external user (for example, KVM) to unlock an IOMMU group */
-+void vfio_group_del_external_user(struct file *filep)
-+{
-+	struct vfio_group *group = filep->private_data;
-+
-+	if (WARN_ON(filep->f_op != &vfio_group_fops))
-+		return;
-+
-+	vfio_group_try_dissolve_container(group);
-+}
-+EXPORT_SYMBOL_GPL(vfio_group_del_external_user);
-+
-+/*
-+ * Checks if a group for the specified file can be used by
-+ * an external user and returns the IOMMU ID if external use is possible.
-+ */
-+int vfio_group_iommu_id_from_file(struct file *filep)
-+{
-+	int ret;
-+	struct vfio_group *group = filep->private_data;
-+
-+	if (WARN_ON(filep->f_op != &vfio_group_fops))
-+		return -EINVAL;
-+
-+	if (0 == atomic_read(&group->container_users) ||
-+			!group->container->iommu_driver ||
-+			!vfio_group_viable(group))
-+		return -EINVAL;
-+
-+	ret = iommu_group_id(group->iommu_group);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(vfio_group_iommu_id_from_file);
-+
-+/**
-  * Module/class support
-  */
- static char *vfio_devnode(struct device *dev, umode_t *mode)
-diff --git a/include/linux/vfio.h b/include/linux/vfio.h
-index ac8d488..7ee6575 100644
---- a/include/linux/vfio.h
-+++ b/include/linux/vfio.h
-@@ -90,4 +90,11 @@ extern void vfio_unregister_iommu_driver(
- 	TYPE tmp;						\
- 	offsetof(TYPE, MEMBER) + sizeof(tmp.MEMBER); })		\
- 
-+/*
-+ * External user API
-+ */
-+int vfio_group_add_external_user(struct file *filep);
-+void vfio_group_del_external_user(struct file *filep);
-+int vfio_group_iommu_id_from_file(struct file *filep);
-+
- #endif /* VFIO_H */
--- 
-1.7.10.4
+--Signature=_Thu__27_Jun_2013_17_50_19_+1000_FHk1xp9mtV99U7DK--
