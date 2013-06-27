@@ -1,21 +1,26 @@
-Return-Path: <B07421@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EDF202C0302
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 07:52:42 +1000 (EST)
-Date: Thu, 27 Jun 2013 16:52:32 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Benjamin Collins <ben.c@servergy.com>
-Subject: Re: sgy-cts-1000: New DTS file for Servergy CTS-1000 systems
-Message-ID: <20130627215232.GA561@home.buserror.net>
-References: <E1UJ1fR-0004i4-H8@swissweb.swissdisk.com>
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pb0-f42.google.com (mail-pb0-f42.google.com
+ [209.85.160.42])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 919752C02FC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 08:57:36 +1000 (EST)
+Received: by mail-pb0-f42.google.com with SMTP id un1so1508032pbc.29
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 15:57:35 -0700 (PDT)
+Message-ID: <51CCC353.7030905@ozlabs.ru>
+Date: Fri, 28 Jun 2013 08:57:23 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <E1UJ1fR-0004i4-H8@swissweb.swissdisk.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+To: Alex Williamson <alex.williamson@redhat.com>
+Subject: Re: [PATCH v2] vfio: add external user support
+References: <20130627164752.657c165ec4492e5248945a51@canb.auug.org.au>
+ <1372317260-6438-1-git-send-email-aik@ozlabs.ru>
+ <1372347850.30572.659.camel@ul30vt.home>
+In-Reply-To: <1372347850.30572.659.camel@ul30vt.home>
+Content-Type: text/plain; charset=KOI8-R
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,220 +30,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 19, 2013 at 01:14:22AM -0400, Benjamin Collins wrote:
-> This isn't specifically needed in order to build the kernel. It's
-> stored in flash with firmware. However, keep it in the kernel for
-> reference (and to have an example for fsl_dpa device tree usage).
+On 06/28/2013 01:44 AM, Alex Williamson wrote:
+> On Thu, 2013-06-27 at 17:14 +1000, Alexey Kardashevskiy wrote:
+>> VFIO is designed to be used via ioctls on file descriptors
+>> returned by VFIO.
+>>
+>> However in some situations support for an external user is required.
+>> The first user is KVM on PPC64 (SPAPR TCE protocol) which is going to
+>> use the existing VFIO groups for exclusive access in real/virtual mode
+>> in the host kernel to avoid passing map/unmap requests to the user
+>> space which would made things pretty slow.
+>>
+>> The proposed protocol includes:
+>>
+>> 1. do normal VFIO init stuff such as opening a new container, attaching
+>> group(s) to it, setting an IOMMU driver for a container. When IOMMU is
+>> set for a container, all groups in it are considered ready to use by
+>> an external user.
+>>
+>> 2. pass a fd of the group we want to accelerate to KVM. KVM calls
+>> vfio_group_iommu_id_from_file() to verify if the group is initialized
+>> and IOMMU is set for it. The current TCE IOMMU driver marks the whole
+>> IOMMU table as busy when IOMMU is set for a container what this prevents
+>> other DMA users from allocating from it so it is safe to pass the group
+>> to the user space.
+>>
+>> 3. KVM increases the container users counter via
+>> vfio_group_add_external_user(). This prevents the VFIO group from
+>> being disposed prior to exiting KVM.
+>>
+>> 4. When KVM is finished and doing cleanup, it releases the group file
+>> and decrements the container users counter. Everything gets released.
+>>
+>> 5. KVM also keeps the group file as otherwise its fd might have been
+>> closed at the moment of KVM finish so vfio_group_del_external_user()
+>> call will not be possible.
 > 
-> Signed-off-by: Ben Collins <ben.c@servergy.com>
-> Cc: linuxppc-dev@lists.ozlabs.org
+> This is the wrong order in my mind.  An external user has no business
+> checking or maintaining any state of a group until it calls
+> add_external_user().  Only after that call is successful can the user
+> assume the filep to group relationship is static and get the iommu_id.
+> Any use of the "external user" API should start with "add" and end with
+> "del".
+
+Yes, this is what I actually do, just wrong commit message, will fix.
+
 > 
-> ---
-> arch/powerpc/boot/dts/sgy-cts-1000.dts | 1570 ++++++++++++++++++++++++++++++++
->  1 file changed, 1570 insertions(+)
->  create mode 100644 arch/powerpc/boot/dts/sgy-cts-1000.dts
+>> The "vfio: Limit group opens" patch is also required for the consistency.
+>>
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> ---
+>>
+>> v1->v2: added definitions to vfio.h :)
+>> Should not compile but compiled. Hm.
+>>
+>> ---
+>>  drivers/vfio/vfio.c  |   54 ++++++++++++++++++++++++++++++++++++++++++++++++++
+>>  include/linux/vfio.h |    7 +++++++
+>>  2 files changed, 61 insertions(+)
+>>
+>> diff --git a/drivers/vfio/vfio.c b/drivers/vfio/vfio.c
+>> index c488da5..40875d2 100644
+>> --- a/drivers/vfio/vfio.c
+>> +++ b/drivers/vfio/vfio.c
+>> @@ -1370,6 +1370,60 @@ static const struct file_operations vfio_device_fops = {
+>>  };
+>>  
+>>  /**
+>> + * External user API, exported by symbols to be linked dynamically.
+>> + */
+>> +
+>> +/* Allows an external user (for example, KVM) to lock an IOMMU group */
+>> +int vfio_group_add_external_user(struct file *filep)
+>> +{
+>> +	struct vfio_group *group = filep->private_data;
+>> +
+>> +	if (filep->f_op != &vfio_group_fops)
+>> +		return -EINVAL;
+>> +
+>> +	if (!atomic_inc_not_zero(&group->container_users))
+>> +		return -EINVAL;
+> 
+> This is the place where I was suggesting we need tests to match
+> get_device_fd.  It's not clear what the external user is holding if the
+> group has no iommu or is not viable here.
 
-Applying: sgy-cts-1000: New DTS file for Servergy CTS-1000 systems
-/home/scott/fsl/git/linux/upstream/.git/rebase-apply/patch:201: space
-/before tab in indent.
-  				      84 2 0 0
-/home/scott/fsl/git/linux/upstream/.git/rebase-apply/patch:873: trailing
-whitespace.
-				/* 
-warning: 2 lines add whitespace errors.
 
-> diff --git a/arch/powerpc/boot/dts/sgy-cts-1000.dts b/arch/powerpc/boot/dts/sgy-cts-1000.dts
-> new file mode 100644
-> index 0000000..1efa01a
-> --- /dev/null
-> +++ b/arch/powerpc/boot/dts/sgy-cts-1000.dts
-> @@ -0,0 +1,1570 @@
-> +/*
-> + * Servergy CTS-1000 Device Tree Source
-> + *
-> + * Copyright 2009-2011 Freescale Semiconductor Inc.
-> + * Copyright 2011-2013 Servergy, Inc.
-> + *
-> + * Redistribution and use in source and binary forms, with or without
-> + * modification, are permitted provided that the following conditions are met:
-> + *     * Redistributions of source code must retain the above copyright
-> + *       notice, this list of conditions and the following disclaimer.
-> + *     * Redistributions in binary form must reproduce the above copyright
-> + *       notice, this list of conditions and the following disclaimer in the
-> + *       documentation and/or other materials provided with the distribution.
-> + *     * Neither the name of Freescale Semiconductor nor the
-> + *       names of its contributors may be used to endorse or promote products
-> + *       derived from this software without specific prior written permission.
-> + *
-> + *
-> + * ALTERNATIVELY, this software may be distributed under the terms of the
-> + * GNU General Public License ("GPL") as published by the Free Software
-> + * Foundation, either version 2 of that License or (at your option) any
-> + * later version.
-> + *
-> + * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-> + * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-> + * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-> + * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-> + * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-> + * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-> + * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-> + * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-> + * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-> + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-> + */
-> +
-> +/dts-v1/;
-> +
-> +/ {
-> +	model = "sgy,cts-1000";
-> +	compatible = "fsl,P4080DS";
+In my mind this test must include test for iommu id so I would merge it
+with vfio_group_iommu_id_from_file(). Till I check iommu id, I still cannot
+use this group so where to put check for iommu/viable does not really
+matter (for me).
 
-This isn't a P4080DS.  Your board needs its own toplevel compatible.
+> 
+> 
+> if (!group->container->iommu_driver || !vfio_group_viable(group)) {
+> 	vfio_group_try_dissolve_container(group);
+> 	return -EINVAL;
+> }
+> 
+>> +
+>> +	return 0;
+>> +}
+>> +EXPORT_SYMBOL_GPL(vfio_group_add_external_user);
+>> +
+>> +/* Allows an external user (for example, KVM) to unlock an IOMMU group */
+>> +void vfio_group_del_external_user(struct file *filep)
+>> +{
+>> +	struct vfio_group *group = filep->private_data;
+>> +
+>> +	if (WARN_ON(filep->f_op != &vfio_group_fops))
+>> +		return;
+> 
+> How about we make this return int so we can return 0/-EINVAL and the
+> caller can decide the severity of the response?
 
-> +		fman0 = &fman0;
-> +		fman0_oh0 = &fman0_oh0;
-> +		fman0_oh1 = &fman0_oh1;
-> +		fman0_oh2 = &fman0_oh2;
-> +		fman0_oh3 = &fman0_oh3;
-> +		fman0_oh4 = &fman0_oh4;
-> +		fman0_oh5 = &fman0_oh5;
-> +		fman0_oh6 = &fman0_oh6;
-> +		fman0_rx0 = &fman0_rx0;
-> +		fman0_rx1 = &fman0_rx1;
-> +		fman0_rx2 = &fman0_rx2;
-> +		fman0_rx3 = &fman0_rx3;
-> +		fman0_rx4 = &fman0_rx4;
-> +
-> +		fman1 = &fman1;
-> +		fman1_oh0 = &fman1_oh0;
-> +		fman1_oh1 = &fman1_oh1;
-> +		fman1_oh2 = &fman1_oh2;
-> +		fman1_oh3 = &fman1_oh3;
-> +		fman1_oh4 = &fman1_oh4;
-> +		fman1_oh5 = &fman1_oh5;
-> +		fman1_oh6 = &fman1_oh6;
-> +		fman1_rx0 = &fman1_rx0;
-> +		fman1_rx1 = &fman1_rx1;
-> +		fman1_rx2 = &fman1_rx2;
-> +		fman1_rx3 = &fman1_rx3;
-> +		fman1_rx4 = &fman1_rx4;
-> +	};
+And what can the caller possibly do on !0?
 
-We need a proper device tree binding for this stuff first.
 
-> +	dcsr: dcsr@f00000000 {
-> +		ranges = <0x00000000 0xf 0x00000000 0x01008000>;
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +		compatible = "fsl,dcsr", "simple-bus";
-
-Please use fsl/p4080si-post.dtsi rather than duplicating all of this.
-
-You appear to have based this on an old SDK kernel, rather than the
-current mainline kernel.
-
-> +			hwmon@4c {
-> +				compatible = "adt,adt7461";
-> +				reg = <0x4c>;
-> +				/* 
-> +				 * Enabling this causes a flood of interrupts
-> +				 * on the ds3232 device (and since it never
-> +				 * gets ACK'd, it consumes 100% of a CPU).
-> +				 * -- BenC
-> +				interrupts = <1 10 0 0
-> +					      1 11 0 0>;
-> +				 */
-
-"1 10 0 0" and "1 11 0 0" don't look like valid MPIC interrupt specifiers
-to me, though.  Maybe that's the problem?  Is it supposed to be:
-
-	<10 1 0 0 11 1 0 0>
-
-?
-
-> +	localbus@ffe124000 {
-> +		compatible = "fsl,p4080-elbc", "fsl,elbc", "simple-bus";
-> +		reg = <0xf 0xfe124000 0 0x1000>;
-> +		interrupts = <25 2 0 0>;
-> +		#address-cells = <2>;
-> +		#size-cells = <1>;
-> +
-> +		ranges = <0 0 0xf 0xe8000000 0x08000000>;
-> +
-> +		/* 256M Flash device */
-> +		flash@0,0 {
-> +			compatible = "cfi-flash";
-> +			reg = <0 0 0x08000000>;
-> +			bank-width = <2>;
-> +			device-width = <2>;
-> +			#address-cells = <0x1>;
-> +			#size-cells = <0x1>;
-> +
-> +			/* 16M for kernel */
-> +			partition@0 {
-> +				label = "sgyboot-kernel";
-> +				reg = <0x00000000 0x01000000>;
-> +			};
-> +			/* 64M for root fs */
-> +			partition@1 {
-> +				label = "sgyboot-initrd";
-> +				reg = <0x01000000 0x04000000>;
-> +			};
-> +			/* 256K for FMan microcode */
-> +			partition@2 {
-> +				label = "fsl-fman-ucode";
-> +				reg = <0x05000000 0x00040000>;
-> +			};
-> +			/* 256K for Device-tree */
-> +			partition@3 {
-> +				label = "device-tree";
-> +				reg = <0x05040000 0x00040000>;
-> +			};
-> +			/* 128K for u-Boot environment */
-> +			partition@4 {
-> +				label = "u-boot-env";
-> +				reg = <0x05080000 0x00020000>;
-> +			};
-> +			/* 128K Unused */
-> +
-> +			/* 1Meg for splash screen in u-boot's UDL driver */
-> +			partition@6 {
-> +				label = "udl-splash";
-> +				reg = <0x050c0000 0x00100000>;
-> +			};
-> +
-> +			/* ~44Megs Unused */
-> +
-> +			/* 2.5M for u-Boot */
-> +			partition@5 {
-> +				label = "u-boot";
-> +				reg = <0x07D80000 0x00280000>;
-> +			};
-> +
-> +			/* The whole flash area */
-> +			partition@20 {
-> +				label = "whole";
-> +				reg = <0x00000000 0x08000000>;
-> +			};
-
-Are overlapping partitions allowed?
-
-Plus, unit addresses are supposed to match reg.
-
-> +	pci0: pcie@ffe200000 {
-> +		compatible = "fsl,p4080-pcie";
-> +		device_type = "pci";
-> +		#size-cells = <2>;
-> +		#address-cells = <3>;
-> +		reg = <0xf 0xfe200000 0 0x1000>;
-> +		bus-range = <0x0 0xff>;
-> +		ranges = <0x02000000 0 0xe0000000 0xc 0x00000000 0x0 0x20000000
-> +			  0x01000000 0 0x00000000 0xf 0xf8000000 0x0 0x00010000>;
-> +		clock-frequency = <0x1fca055>;
-> +		fsl,msi = <&msi0>;
-> +		interrupts = <16 2 1 15>;
-
-Where does "fsl,msi" come from?
-
--Scott
+-- 
+Alexey
