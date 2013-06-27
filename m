@@ -1,45 +1,47 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 622C72C0A83
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 06:04:21 +1000 (EST)
+ (Client CN "e31.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 305E02C06BD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 06:12:59 +1000 (EST)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Fri, 28 Jun 2013 05:52:43 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id EB2DB3578045
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 06:04:17 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5RJnGnD1245488
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 05:49:16 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5RK4FME022086
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 06:04:17 +1000
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v3 45/45] tile: Use get/put_online_cpus_atomic() to prevent
- CPU offline
-To: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com,
- paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org,
- akpm@linux-foundation.org, namhyung@kernel.org, walken@google.com,
- vincent.guittot@linaro.org, laijs@cn.fujitsu.com, David.Laight@aculab.com
-Date: Fri, 28 Jun 2013 01:30:54 +0530
-Message-ID: <20130627200054.29830.68222.stgit@srivatsabhat.in.ibm.com>
-In-Reply-To: <20130627195136.29830.10445.stgit@srivatsabhat.in.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Thu, 27 Jun 2013 14:12:56 -0600
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+ [9.17.195.106])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 0646C19D8046
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 14:12:45 -0600 (MDT)
+Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
+ by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5RKCoFI184442
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 14:12:51 -0600
+Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5RKFGJu031189
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 14:15:18 -0600
+Date: Thu, 27 Jun 2013 13:12:46 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 16/45] rcu: Use cpu_is_offline_nocheck() to avoid
+ false-positive warnings
+Message-ID: <20130627201246.GA3828@linux.vnet.ibm.com>
 References: <20130627195136.29830.10445.stgit@srivatsabhat.in.ibm.com>
+ <20130627195517.29830.64108.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linux-arch@vger.kernel.org, nikunj@linux.vnet.ibm.com,
- zhong@linux.vnet.ibm.com, linux-pm@vger.kernel.org,
- Chris Metcalf <cmetcalf@tilera.com>, fweisbec@gmail.com,
- linux-kernel@vger.kernel.org, rostedt@goodmis.org,
- xiaoguangrong@linux.vnet.ibm.com, sbw@mit.edu, wangyun@linux.vnet.ibm.com,
- "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, netdev@vger.kernel.org,
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130627195517.29830.64108.stgit@srivatsabhat.in.ibm.com>
+Cc: peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org,
+ walken@google.com, mingo@kernel.org, linux-arch@vger.kernel.org,
+ vincent.guittot@linaro.org, xiaoguangrong@linux.vnet.ibm.com,
+ wangyun@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
+ linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org,
+ namhyung@kernel.org, tglx@linutronix.de, laijs@cn.fujitsu.com,
+ zhong@linux.vnet.ibm.com, netdev@vger.kernel.org, oleg@redhat.com, sbw@mit.edu,
+ David.Laight@aculab.com, tj@kernel.org, akpm@linux-foundation.org,
  linuxppc-dev@lists.ozlabs.org
+Reply-To: paulmck@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,133 +51,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Once stop_machine() is gone from the CPU offline path, we won't be able
-to depend on disabling preemption to prevent CPUs from going offline
-from under us.
+On Fri, Jun 28, 2013 at 01:25:17AM +0530, Srivatsa S. Bhat wrote:
+> In RCU code, rcu_implicit_dynticks_qs() checks if a CPU is offline,
+> while being protected by a spinlock. At first, it appears as if we need to
+> use the get/put_online_cpus_atomic() APIs to properly synchronize with CPU
+> hotplug, once we get rid of stop_machine(). However, RCU has adequate
+> synchronization with CPU hotplug, making that unnecessary. But since the
+> locking details are non-trivial, it is hard to teach this to the rudimentary
+> hotplug locking validator.
+> 
+> So use the _nocheck() variants of the cpu accessor functions to prevent false-
+> positive warnings from the CPU hotplug debug code. Also, add a comment
+> explaining the hotplug synchronization design used in RCU, so that its easy
+> to see why it is justified to use the _nocheck() variants.
+> 
+> Cc: Dipankar Sarma <dipankar@in.ibm.com>
+> Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 
-Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going
-offline, while invoking from atomic context.
+Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-Cc: Chris Metcalf <cmetcalf@tilera.com>
-Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
----
-
- arch/tile/kernel/module.c |    3 +++
- arch/tile/kernel/tlb.c    |   15 +++++++++++++++
- arch/tile/mm/homecache.c  |    3 +++
- 3 files changed, 21 insertions(+)
-
-diff --git a/arch/tile/kernel/module.c b/arch/tile/kernel/module.c
-index 4918d91..db7d858 100644
---- a/arch/tile/kernel/module.c
-+++ b/arch/tile/kernel/module.c
-@@ -20,6 +20,7 @@
- #include <linux/fs.h>
- #include <linux/string.h>
- #include <linux/kernel.h>
-+#include <linux/cpu.h>
- #include <asm/pgtable.h>
- #include <asm/homecache.h>
- #include <arch/opcode.h>
-@@ -79,8 +80,10 @@ void module_free(struct module *mod, void *module_region)
- 	vfree(module_region);
- 
- 	/* Globally flush the L1 icache. */
-+	get_online_cpus_atomic();
- 	flush_remote(0, HV_FLUSH_EVICT_L1I, cpu_online_mask,
- 		     0, 0, 0, NULL, NULL, 0);
-+	put_online_cpus_atomic();
- 
- 	/*
- 	 * FIXME: If module_region == mod->module_init, trim exception
-diff --git a/arch/tile/kernel/tlb.c b/arch/tile/kernel/tlb.c
-index 3fd54d5..a32b9dd 100644
---- a/arch/tile/kernel/tlb.c
-+++ b/arch/tile/kernel/tlb.c
-@@ -14,6 +14,7 @@
-  */
- 
- #include <linux/cpumask.h>
-+#include <linux/cpu.h>
- #include <linux/module.h>
- #include <linux/hugetlb.h>
- #include <asm/tlbflush.h>
-@@ -35,6 +36,8 @@ void flush_tlb_mm(struct mm_struct *mm)
- {
- 	HV_Remote_ASID asids[NR_CPUS];
- 	int i = 0, cpu;
-+
-+	get_online_cpus_atomic();
- 	for_each_cpu(cpu, mm_cpumask(mm)) {
- 		HV_Remote_ASID *asid = &asids[i++];
- 		asid->y = cpu / smp_topology.width;
-@@ -43,6 +46,7 @@ void flush_tlb_mm(struct mm_struct *mm)
- 	}
- 	flush_remote(0, HV_FLUSH_EVICT_L1I, mm_cpumask(mm),
- 		     0, 0, 0, NULL, asids, i);
-+	put_online_cpus_atomic();
- }
- 
- void flush_tlb_current_task(void)
-@@ -55,8 +59,11 @@ void flush_tlb_page_mm(struct vm_area_struct *vma, struct mm_struct *mm,
- {
- 	unsigned long size = vma_kernel_pagesize(vma);
- 	int cache = (vma->vm_flags & VM_EXEC) ? HV_FLUSH_EVICT_L1I : 0;
-+
-+	get_online_cpus_atomic();
- 	flush_remote(0, cache, mm_cpumask(mm),
- 		     va, size, size, mm_cpumask(mm), NULL, 0);
-+	put_online_cpus_atomic();
- }
- 
- void flush_tlb_page(struct vm_area_struct *vma, unsigned long va)
-@@ -71,13 +78,18 @@ void flush_tlb_range(struct vm_area_struct *vma,
- 	unsigned long size = vma_kernel_pagesize(vma);
- 	struct mm_struct *mm = vma->vm_mm;
- 	int cache = (vma->vm_flags & VM_EXEC) ? HV_FLUSH_EVICT_L1I : 0;
-+
-+	get_online_cpus_atomic();
- 	flush_remote(0, cache, mm_cpumask(mm), start, end - start, size,
- 		     mm_cpumask(mm), NULL, 0);
-+	put_online_cpus_atomic();
- }
- 
- void flush_tlb_all(void)
- {
- 	int i;
-+
-+	get_online_cpus_atomic();
- 	for (i = 0; ; ++i) {
- 		HV_VirtAddrRange r = hv_inquire_virtual(i);
- 		if (r.size == 0)
-@@ -89,10 +101,13 @@ void flush_tlb_all(void)
- 			     r.start, r.size, HPAGE_SIZE, cpu_online_mask,
- 			     NULL, 0);
- 	}
-+	put_online_cpus_atomic();
- }
- 
- void flush_tlb_kernel_range(unsigned long start, unsigned long end)
- {
-+	get_online_cpus_atomic();
- 	flush_remote(0, HV_FLUSH_EVICT_L1I, cpu_online_mask,
- 		     start, end - start, PAGE_SIZE, cpu_online_mask, NULL, 0);
-+	put_online_cpus_atomic();
- }
-diff --git a/arch/tile/mm/homecache.c b/arch/tile/mm/homecache.c
-index 1ae9119..7ff5bf0 100644
---- a/arch/tile/mm/homecache.c
-+++ b/arch/tile/mm/homecache.c
-@@ -397,9 +397,12 @@ void homecache_change_page_home(struct page *page, int order, int home)
- 	BUG_ON(page_count(page) > 1);
- 	BUG_ON(page_mapcount(page) != 0);
- 	kva = (unsigned long) page_address(page);
-+
-+	get_online_cpus_atomic();
- 	flush_remote(0, HV_FLUSH_EVICT_L2, &cpu_cacheable_map,
- 		     kva, pages * PAGE_SIZE, PAGE_SIZE, cpu_online_mask,
- 		     NULL, 0);
-+	put_online_cpus_atomic();
- 
- 	for (i = 0; i < pages; ++i, kva += PAGE_SIZE) {
- 		pte_t *ptep = virt_to_pte(NULL, kva);
+> ---
+> 
+>  kernel/rcutree.c |   12 +++++++++++-
+>  1 file changed, 11 insertions(+), 1 deletion(-)
+> 
+> diff --git a/kernel/rcutree.c b/kernel/rcutree.c
+> index cf3adc6..ced28a45 100644
+> --- a/kernel/rcutree.c
+> +++ b/kernel/rcutree.c
+> @@ -794,7 +794,17 @@ static int rcu_implicit_dynticks_qs(struct rcu_data *rdp)
+>  	if (ULONG_CMP_GE(rdp->rsp->gp_start + 2, jiffies))
+>  		return 0;  /* Grace period is not old enough. */
+>  	barrier();
+> -	if (cpu_is_offline(rdp->cpu)) {
+> +
+> +	/*
+> +	 * It is safe to use the _nocheck() version of cpu_is_offline() here
+> +	 * (to avoid false-positive warnings from CPU hotplug debug code),
+> +	 * because:
+> +	 * 1. rcu_gp_init() holds off CPU hotplug operations during grace
+> +	 *    period initialization.
+> +	 * 2. The current grace period has not ended yet.
+> +	 * So it is safe to sample the offline state without synchronization.
+> +	 */
+> +	if (cpu_is_offline_nocheck(rdp->cpu)) {
+>  		trace_rcu_fqs(rdp->rsp->name, rdp->gpnum, rdp->cpu, "ofl");
+>  		rdp->offline_fqs++;
+>  		return 1;
+> 
