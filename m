@@ -2,31 +2,30 @@ Return-Path: <shangw@linux.vnet.ibm.com>
 Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9E3C62C00A4
+ by ozlabs.org (Postfix) with ESMTPS id B53AE2C00A8
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 15:47:00 +1000 (EST)
 Received: from /spool/local
  by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
  Wed, 26 Jun 2013 23:46:58 -0600
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
- [9.17.195.227])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id D1F713E40042
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 23:46:36 -0600 (MDT)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5R5kuNw111184
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 23:46:56 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5R5kt4N010957
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 23:46:56 -0600
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+ [9.17.195.107])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 7EFF819D8045
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 23:46:46 -0600 (MDT)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5R5ktiH148096
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 23:46:55 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5R5ktcI026228
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 23:46:55 -0600
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 8/8] powernv/eeh: Do hotplug on devices without EEH aware
- driver
-Date: Thu, 27 Jun 2013 13:46:49 +0800
-Message-Id: <1372312009-13710-9-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 7/8] powerpc/powernv: Use dev-node in PCI config accessors
+Date: Thu, 27 Jun 2013 13:46:48 +0800
+Message-Id: <1372312009-13710-8-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1372312009-13710-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1372312009-13710-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -39,240 +38,295 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-During recovery for EEH errors, the device driver requires reset
-explicitly (most of cases). The EEH core doesn't do hotplug during
-reset. However, there might have some device drivers that can't
-support EEH. So the deivce can't be put into quite state during
-the reset and possibly requesting PCI config or MMIO access. That
-would lead to the failure of the reset, and we don't expect that.
+Currently, we're using the combo (PCI bus + devfn) in the PCI
+config accessors and PCI config accessors in EEH depends on them.
+However, it's not safe to refer the PCI bus which might have been
+removed during hotplug. So we're using device node in the PCI
+config accessors and the corresponding backends just reuse them.
 
-The patch intends to fix that by removing those devices whose drivers
-can't support EEH before reset and added into the system after reset.
-In the result, it would avoid the race condition mentioned as above.
-The idea was proposed by Ben.
+The patch also fix one potential risk: We possiblly have frozen
+PE during the early PCI probe time, but we haven't setup the PE
+mapping yet. So the errors should be counted to PE#0.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h   |    4 +-
- arch/powerpc/include/asm/pci.h   |    1 +
- arch/powerpc/kernel/eeh_driver.c |  134 +++++++++++++++++++++++++++++++++++++-
- 3 files changed, 137 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/powernv/eeh-powernv.c |   44 +---------
+ arch/powerpc/platforms/powernv/pci.c         |  120 ++++++++++++++++----------
+ arch/powerpc/platforms/powernv/pci.h         |    4 +
+ 3 files changed, 79 insertions(+), 89 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 09a8743..dd62006 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -82,7 +82,8 @@ struct eeh_pe {
-  * another tree except the currently existing tree of PCI
-  * buses and PCI devices
-  */
--#define EEH_DEV_IRQ_DISABLED	(1<<0)	/* Interrupt disabled		*/
-+#define EEH_DEV_IRQ_DISABLED	(1 << 0)	/* Interrupt disabled	*/
-+#define EEH_DEV_REMOVED		(1 << 1)	/* PCI device removed	*/
- 
- struct eeh_dev {
- 	int mode;			/* EEH mode			*/
-@@ -95,6 +96,7 @@ struct eeh_dev {
- 	struct pci_controller *phb;	/* Associated PHB		*/
- 	struct device_node *dn;		/* Associated device node	*/
- 	struct pci_dev *pdev;		/* Associated PCI device	*/
-+	struct pci_bus *bus;		/* PCI bus used in hotplug	*/
- };
- 
- static inline struct device_node *eeh_dev_to_of_node(struct eeh_dev *edev)
-diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
-index 6653f27..af10ec5 100644
---- a/arch/powerpc/include/asm/pci.h
-+++ b/arch/powerpc/include/asm/pci.h
-@@ -183,6 +183,7 @@ extern void pci_resource_to_user(const struct pci_dev *dev, int bar,
- 				 resource_size_t *start, resource_size_t *end);
- 
- extern resource_size_t pcibios_io_space_offset(struct pci_controller *hose);
-+extern void pcibios_setup_device(struct pci_dev *dev);
- extern void pcibios_setup_bus_devices(struct pci_bus *bus);
- extern void pcibios_setup_bus_self(struct pci_bus *bus);
- extern void pcibios_setup_phb_io_space(struct pci_controller *hose);
-diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-index 2b1ce17..cb3baab 100644
---- a/arch/powerpc/kernel/eeh_driver.c
-+++ b/arch/powerpc/kernel/eeh_driver.c
-@@ -244,6 +244,7 @@ static void *eeh_report_reset(void *data, void *userdata)
- 	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
- 	enum pci_ers_result rc, *res = userdata;
- 	struct pci_driver *driver;
-+	bool enable_irq = true;
- 
- 	if (!dev) return NULL;
- 	dev->error_state = pci_channel_io_normal;
-@@ -251,7 +252,21 @@ static void *eeh_report_reset(void *data, void *userdata)
- 	driver = eeh_pcid_get(dev);
- 	if (!driver) return NULL;
- 
--	eeh_enable_irq(dev);
-+	/*
-+	 * For those PCI devices just added, we reloaded its driver
-+	 * and needn't to enable the interrupt. The driver should
-+	 * take care of that. Otherwise, complaint raised from IRQ
-+	 * subsystem.
-+	 */
-+	if (eeh_probe_mode_dev() && (edev->mode & EEH_DEV_REMOVED)) {
-+		edev->mode &= ~(EEH_DEV_REMOVED | EEH_DEV_IRQ_DISABLED);
-+		edev->bus = NULL;
-+		enable_irq = false;
-+
-+	}
-+
-+	if (enable_irq)
-+		eeh_enable_irq(dev);
- 
- 	if (!driver->err_handler ||
- 	    !driver->err_handler->slot_reset) {
-@@ -338,6 +353,115 @@ static void *eeh_report_failure(void *data, void *userdata)
- 	return NULL;
+diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+index 9559115..969cce7 100644
+--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
++++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+@@ -315,46 +315,6 @@ static int powernv_eeh_configure_bridge(struct eeh_pe *pe)
  }
  
-+static void *eeh_rmv_device(void *data, void *userdata)
-+{
-+	struct pci_driver *driver;
-+	struct eeh_dev *edev = (struct eeh_dev *)data;
-+	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
-+	int *removed = (int *)userdata;
-+
-+	/*
-+	 * Actually, we should remove the PCI bridges as well.
-+	 * However, that's lots of complexity to do that,
-+	 * particularly some of devices under the bridge might
-+	 * support EEH. So we just care about PCI devices for
-+	 * simplicity here.
-+	 */
-+	if (!dev || (dev->hdr_type & PCI_HEADER_TYPE_BRIDGE))
-+		return NULL;
-+	driver = eeh_pcid_get(dev);
-+	if (driver && driver->err_handler)
-+		return NULL;
-+
-+	/* If the driver doesn't support EEH, remove it */
-+	pr_info("EEH: Removing device %s without EEH support\n",
-+		pci_name(dev));
-+
-+	/* Detach EEH device from PCI device */
-+	edev->pdev = NULL;
-+	dev->dev.archdata.edev = NULL;
-+	pci_dev_put(dev);
-+
-+	/* Remove and address cache */
-+	eeh_addr_cache_rmv_dev(dev);
-+	eeh_sysfs_remove_device(dev);
-+
-+	/* Remove it from PCI subsystem */
-+	edev->mode |= EEH_DEV_REMOVED;
-+	edev->bus = dev->bus;
-+	pci_stop_and_remove_bus_device(dev);
-+	(*removed)++;
-+
-+	return NULL;
-+}
-+
-+static void *eeh_add_device(void *data, void *userdata)
-+{
-+	struct eeh_dev *edev = (struct eeh_dev *)data;
-+	struct pci_dev *dev;
-+	struct pci_bus *bus;
-+	struct resource *r;
-+	int *removed = (int *)userdata;
-+	int devfn, i;
-+
-+	if (!edev || !(edev->mode & EEH_DEV_REMOVED))
-+		return NULL;
-+	if (*removed <= 0)
-+		return edev;
-+
-+	/*
-+	 * We don't clear EEH_DEV_REMOVED flag here.
-+	 * Instead, do that before enabling IRQ to
-+	 * avoid complain from IRQ subsystem.
-+	 */
-+	*removed -= 1;
-+	bus = edev->bus;
-+	devfn = edev->config_addr & 0xFF;
-+	pr_info("EEH: Adding PCI device %04x:%02x:%02x.%01x\n",
-+		edev->phb->global_number, bus->number,
-+		PCI_SLOT(devfn), PCI_FUNC(devfn));
-+
-+	/* Scan PCI function */
-+	dev = pci_scan_single_device(bus, devfn);
-+	if (!dev) {
-+		pr_err("%s: Can't scan PCI function %02x:%02x.%01x\n",
-+		       __func__, bus->number, PCI_SLOT(devfn),
-+		       PCI_FUNC(devfn));
-+		return NULL;
-+	}
-+
-+	/*
-+	 * Setup the PCI device. It's not enough to
-+	 * claim the resource and we need assign or
-+	 * reassign that.
-+	 */
-+	pcibios_setup_device(dev);
-+	for (i = 0; i < PCI_NUM_RESOURCES; i++) {
-+		r = &dev->resource[i];
-+		if (r->parent || !r->flags)
-+			continue;
-+		if (pci_assign_resource(dev, i)) {
-+			pr_err("%s: Can't allocate %pR for %s\n",
-+			       __func__, r, pci_name(dev));
-+			/* Clear it out */
-+			r->start = 0;
-+			r->end = 0;
-+			r->flags = 0;
-+		}
-+	}
-+
-+	/* Associate EEH device with PCI device */
-+	pci_dev_get(dev);
-+	edev->pdev = dev;
-+	dev->dev.archdata.edev = edev;
-+	eeh_addr_cache_insert_dev(dev);
-+
-+	pci_bus_add_devices(bus);
-+	eeh_sysfs_add_device(dev);
-+
-+	return NULL;
-+}
-+
  /**
-  * eeh_reset_device - Perform actual reset of a pci slot
-  * @pe: EEH PE
-@@ -351,6 +475,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
+- * powernv_eeh_read_config - Read PCI config space
+- * @dn: device node
+- * @where: PCI address
+- * @size: size to read
+- * @val: return value
+- *
+- * Read config space from the speicifed device
+- */
+-static int powernv_eeh_read_config(struct device_node *dn, int where,
+-				   int size, u32 *val)
+-{
+-	struct eeh_dev *edev = of_node_to_eeh_dev(dn);
+-	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
+-	struct pci_controller *hose = edev->phb;
+-
+-	return hose->ops->read(dev->bus, dev->devfn, where, size, val);
+-}
+-
+-/**
+- * powernv_eeh_write_config - Write PCI config space
+- * @dn: device node
+- * @where: PCI address
+- * @size: size to write
+- * @val: value to be written
+- *
+- * Write config space to the specified device
+- */
+-static int powernv_eeh_write_config(struct device_node *dn, int where,
+-				    int size, u32 val)
+-{
+-	struct eeh_dev *edev = of_node_to_eeh_dev(dn);
+-	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
+-	struct pci_controller *hose = edev->phb;
+-
+-	hose = pci_bus_to_host(dev->bus);
+-
+-	return hose->ops->write(dev->bus, dev->devfn, where, size, val);
+-}
+-
+-/**
+  * powernv_eeh_next_error - Retrieve next EEH error to handle
+  * @pe: Affected PE
+  *
+@@ -389,8 +349,8 @@ static struct eeh_ops powernv_eeh_ops = {
+ 	.wait_state             = powernv_eeh_wait_state,
+ 	.get_log                = powernv_eeh_get_log,
+ 	.configure_bridge       = powernv_eeh_configure_bridge,
+-	.read_config            = powernv_eeh_read_config,
+-	.write_config           = powernv_eeh_write_config,
++	.read_config            = pnv_pci_cfg_read,
++	.write_config           = pnv_pci_cfg_write,
+ 	.next_error		= powernv_eeh_next_error
+ };
+ 
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index 1f31826..229b034 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -230,47 +230,50 @@ static void pnv_pci_handle_eeh_config(struct pnv_phb *phb, u32 pe_no)
+ 	spin_unlock_irqrestore(&phb->lock, flags);
+ }
+ 
+-static void pnv_pci_config_check_eeh(struct pnv_phb *phb, struct pci_bus *bus,
+-				     u32 bdfn)
++static void pnv_pci_config_check_eeh(struct pnv_phb *phb,
++				     struct device_node *dn)
  {
- 	struct timeval tstamp;
- 	int cnt, rc;
-+	int removed = 0;
+ 	s64	rc;
+ 	u8	fstate;
+ 	u16	pcierr;
+ 	u32	pe_no;
  
- 	/* pcibios will clear the counter; save the value */
- 	cnt = pe->freeze_count;
-@@ -364,6 +489,8 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
- 	 */
- 	if (bus)
- 		__pcibios_remove_pci_devices(bus, 0);
-+	else if (eeh_probe_mode_dev())
-+		eeh_pe_dev_traverse(pe, eeh_rmv_device, &removed);
+-	/* Get PE# if we support IODA */
+-	pe_no = phb->bdfn_to_pe ? phb->bdfn_to_pe(phb, bus, bdfn & 0xff) : 0;
++	/*
++	 * Get the PE#. During the PCI probe stage, we might not
++	 * setup that yet. So all ER errors should be mapped to
++	 * PE#0
++	 */
++	pe_no = PCI_DN(dn)->pe_number;
++	if (pe_no == IODA_INVALID_PE)
++		pe_no = 0;
  
- 	/* Reset the pci controller. (Asserts RST#; resets config space).
- 	 * Reconfigure bridges and devices. Don't try to bring the system
-@@ -384,8 +511,13 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
- 	 * potentially weird things happen.
- 	 */
- 	if (bus) {
-+		pr_info("EEH: Hold for 5 seconds after reset\n");
- 		ssleep(5);
- 		pcibios_add_pci_devices(bus);
-+	} else if (eeh_probe_mode_dev() && removed) {
-+		pr_info("EEH: Hold for 5 seconds after reset\n");
-+		ssleep(5);
-+		eeh_pe_dev_traverse(pe, eeh_add_device, &removed);
+ 	/* Read freeze status */
+ 	rc = opal_pci_eeh_freeze_status(phb->opal_id, pe_no, &fstate, &pcierr,
+ 					NULL);
+ 	if (rc) {
+-		pr_warning("PCI %d: Failed to read EEH status for PE#%d,"
+-			   " err %lld\n", phb->hose->global_number, pe_no, rc);
++		pr_warning("%s: Can't read EEH status (PE#%d) for "
++			   "%s, err %lld\n",
++			   __func__, pe_no, dn->full_name, rc);
+ 		return;
  	}
+-	cfg_dbg(" -> EEH check, bdfn=%04x PE%d fstate=%x\n",
+-		bdfn, pe_no, fstate);
++	cfg_dbg(" -> EEH check, bdfn=%04x PE#%d fstate=%x\n",
++		(PCI_DN(dn)->busno << 8) | (PCI_DN(dn)->devfn),
++		pe_no, fstate);
+ 	if (fstate != 0)
+ 		pnv_pci_handle_eeh_config(phb, pe_no);
+ }
  
- 	pe->tstamp = tstamp;
+-static int pnv_pci_read_config(struct pci_bus *bus,
+-			       unsigned int devfn,
+-			       int where, int size, u32 *val)
++int pnv_pci_cfg_read(struct device_node *dn,
++		     int where, int size, u32 *val)
+ {
+-	struct pci_controller *hose = pci_bus_to_host(bus);
+-	struct pnv_phb *phb = hose->private_data;
++	struct pci_dn *pdn = PCI_DN(dn);
++	struct pnv_phb *phb = pdn->phb->private_data;
++	u32 bdfn = (pdn->busno << 8) | pdn->devfn;
+ #ifdef CONFIG_EEH
+-	struct device_node *busdn, *dn;
+ 	struct eeh_pe *phb_pe = NULL;
+ #endif
+-	u32 bdfn = (((uint64_t)bus->number) << 8) | devfn;
+ 	s64 rc;
+ 
+-	if (hose == NULL)
+-		return PCIBIOS_DEVICE_NOT_FOUND;
+-
+ 	switch (size) {
+ 	case 1: {
+ 		u8 v8;
+@@ -294,8 +297,8 @@ static int pnv_pci_read_config(struct pci_bus *bus,
+ 	default:
+ 		return PCIBIOS_FUNC_NOT_SUPPORTED;
+ 	}
+-	cfg_dbg("pnv_pci_read_config bus: %x devfn: %x +%x/%x -> %08x\n",
+-		bus->number, devfn, where, size, *val);
++	cfg_dbg("%s: bus: %x devfn: %x +%x/%x -> %08x\n",
++		__func__, pdn->busno, pdn->devfn, where, size, *val);
+ 
+ 	/*
+ 	 * Check if the specified PE has been put into frozen
+@@ -304,44 +307,33 @@ static int pnv_pci_read_config(struct pci_bus *bus,
+ 	 * PHB-fatal errors.
+ 	 */
+ #ifdef CONFIG_EEH
+-	phb_pe = eeh_phb_pe_get(hose);
++	phb_pe = eeh_phb_pe_get(pdn->phb);
+ 	if (phb_pe && (phb_pe->state & EEH_PE_ISOLATED))
+ 		return PCIBIOS_SUCCESSFUL;
+ 
+ 	if (phb->eeh_state & PNV_EEH_STATE_ENABLED) {
+-		if (*val == EEH_IO_ERROR_VALUE(size)) {
+-			busdn = pci_bus_to_OF_node(bus);
+-			for (dn = busdn->child; dn; dn = dn->sibling) {
+-				struct pci_dn *pdn = PCI_DN(dn);
+-
+-				if (pdn && pdn->devfn == devfn &&
+-				    eeh_dev_check_failure(of_node_to_eeh_dev(dn)))
+-					return PCIBIOS_DEVICE_NOT_FOUND;
+-			}
+-		}
++		if (*val == EEH_IO_ERROR_VALUE(size) &&
++		    eeh_dev_check_failure(of_node_to_eeh_dev(dn)))
++			return PCIBIOS_DEVICE_NOT_FOUND;
+ 	} else {
+-		pnv_pci_config_check_eeh(phb, bus, bdfn);
++		pnv_pci_config_check_eeh(phb, dn);
+ 	}
+ #else
+-	pnv_pci_config_check_eeh(phb, bus, bdfn);
++	pnv_pci_config_check_eeh(phb, dn);
+ #endif
+ 
+ 	return PCIBIOS_SUCCESSFUL;
+ }
+ 
+-static int pnv_pci_write_config(struct pci_bus *bus,
+-				unsigned int devfn,
+-				int where, int size, u32 val)
++int pnv_pci_cfg_write(struct device_node *dn,
++		      int where, int size, u32 val)
+ {
+-	struct pci_controller *hose = pci_bus_to_host(bus);
+-	struct pnv_phb *phb = hose->private_data;
+-	u32 bdfn = (((uint64_t)bus->number) << 8) | devfn;
++	struct pci_dn *pdn = PCI_DN(dn);
++	struct pnv_phb *phb = pdn->phb->private_data;
++	u32 bdfn = (pdn->busno << 8) | pdn->devfn;
+ 
+-	if (hose == NULL)
+-		return PCIBIOS_DEVICE_NOT_FOUND;
+-
+-	cfg_dbg("pnv_pci_write_config bus: %x devfn: %x +%x/%x -> %08x\n",
+-		bus->number, devfn, where, size, val);
++	cfg_dbg("%s: bus: %x devfn: %x +%x/%x -> %08x\n",
++		pdn->busno, pdn->devfn, where, size, val);
+ 	switch (size) {
+ 	case 1:
+ 		opal_pci_config_write_byte(phb->opal_id, bdfn, where, val);
+@@ -359,16 +351,50 @@ static int pnv_pci_write_config(struct pci_bus *bus,
+ 	/* Check if the PHB got frozen due to an error (no response) */
+ #ifdef CONFIG_EEH
+ 	if (!(phb->eeh_state & PNV_EEH_STATE_ENABLED))
+-		pnv_pci_config_check_eeh(phb, bus, bdfn);
++		pnv_pci_config_check_eeh(phb, dn);
+ #else
+-	pnv_pci_config_check_eeh(phb, bus, bdfn);
++	pnv_pci_config_check_eeh(phb, dn);
+ #endif
+ 
+ 	return PCIBIOS_SUCCESSFUL;
+ }
+ 
++static int pnv_pci_read_config(struct pci_bus *bus,
++			       unsigned int devfn,
++			       int where, int size, u32 *val)
++{
++	struct device_node *dn, *busdn = pci_bus_to_OF_node(bus);
++	struct pci_dn *pdn;
++
++	for (dn = busdn->child; dn; dn = dn->sibling) {
++		pdn = PCI_DN(dn);
++		if (pdn && pdn->devfn == devfn)
++			return pnv_pci_cfg_read(dn, where, size, val);
++	}
++
++	*val = 0xFFFFFFFF;
++	return PCIBIOS_DEVICE_NOT_FOUND;
++
++}
++
++static int pnv_pci_write_config(struct pci_bus *bus,
++				unsigned int devfn,
++				int where, int size, u32 val)
++{
++	struct device_node *dn, *busdn = pci_bus_to_OF_node(bus);
++	struct pci_dn *pdn;
++
++	for (dn = busdn->child; dn; dn = dn->sibling) {
++		pdn = PCI_DN(dn);
++		if (pdn && pdn->devfn == devfn)
++			return pnv_pci_cfg_write(dn, where, size, val);
++	}
++
++	return PCIBIOS_DEVICE_NOT_FOUND;
++}
++
+ struct pci_ops pnv_pci_ops = {
+-	.read = pnv_pci_read_config,
++	.read  = pnv_pci_read_config,
+ 	.write = pnv_pci_write_config,
+ };
+ 
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index 40bdf02..d633c64 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -182,6 +182,10 @@ extern struct pci_ops pnv_pci_ops;
+ extern struct pnv_eeh_ops ioda_eeh_ops;
+ #endif
+ 
++int pnv_pci_cfg_read(struct device_node *dn,
++		     int where, int size, u32 *val);
++int pnv_pci_cfg_write(struct device_node *dn,
++		      int where, int size, u32 val);
+ extern void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
+ 				      void *tce_mem, u64 tce_size,
+ 				      u64 dma_offset);
 -- 
 1.7.5.4
