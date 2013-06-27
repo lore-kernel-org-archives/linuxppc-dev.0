@@ -1,17 +1,17 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-f44.google.com (mail-pa0-f44.google.com
- [209.85.220.44])
+Received: from mail-pa0-f43.google.com (mail-pa0-f43.google.com
+ [209.85.220.43])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E3B042C0099
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 15:03:16 +1000 (EST)
-Received: by mail-pa0-f44.google.com with SMTP id lj1so527364pab.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 22:03:15 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 651AF2C0304
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 15:03:23 +1000 (EST)
+Received: by mail-pa0-f43.google.com with SMTP id hz11so527617pad.16
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 22:03:21 -0700 (PDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/8] vfio: add external user support
-Date: Thu, 27 Jun 2013 15:02:31 +1000
-Message-Id: <1372309356-28320-4-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH 4/8] hashtable: add hash_for_each_possible_rcu_notrace()
+Date: Thu, 27 Jun 2013 15:02:32 +1000
+Message-Id: <1372309356-28320-5-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1372309356-28320-1-git-send-email-aik@ozlabs.ru>
 References: <1372309356-28320-1-git-send-email-aik@ozlabs.ru>
 Cc: kvm@vger.kernel.org, linux-doc@vger.kernel.org,
@@ -30,110 +30,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-VFIO is designed to be used via ioctls on file descriptors
-returned by VFIO.
-
-However in some situations support for an external user is required.
-The first user is KVM on PPC64 (SPAPR TCE protocol) which is going to
-use the existing VFIO groups for exclusive access in real/virtual mode
-in the host kernel to avoid passing map/unmap requests to the user
-space which would made things pretty slow.
-
-The proposed protocol includes:
-
-1. do normal VFIO init stuff such as opening a new container, attaching
-group(s) to it, setting an IOMMU driver for a container. When IOMMU is
-set for a container, all groups in it are considered ready to use by
-an external user.
-
-2. pass a fd of the group we want to accelerate to KVM. KVM calls
-vfio_group_iommu_id_from_file() to verify if the group is initialized
-and IOMMU is set for it. The current TCE IOMMU driver marks the whole
-IOMMU table as busy when IOMMU is set for a container what this prevents
-other DMA users from allocating from it so it is safe to pass the group
-to the user space.
-
-3. KVM increases the container users counter via
-vfio_group_add_external_user(). This prevents the VFIO group from
-being disposed prior to exiting KVM.
-
-4. When KVM is finished and doing cleanup, it releases the group file
-and decrements the container users counter. Everything gets released.
-
-5. KVM also keeps the group file as otherwise its fd might have been
-closed at the moment of KVM finish so vfio_group_del_external_user()
-call will not be possible.
-
-The "vfio: Limit group opens" patch is also required for the consistency.
+This adds hash_for_each_possible_rcu_notrace() which is basically
+a notrace clone of hash_for_each_possible_rcu() which cannot be
+used in real mode due to its tracing/debugging capability.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- drivers/vfio/vfio.c |   53 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 53 insertions(+)
+ include/linux/hashtable.h |   15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-diff --git a/drivers/vfio/vfio.c b/drivers/vfio/vfio.c
-index c488da5..54192b2 100644
---- a/drivers/vfio/vfio.c
-+++ b/drivers/vfio/vfio.c
-@@ -1370,6 +1370,59 @@ static const struct file_operations vfio_device_fops = {
- };
+diff --git a/include/linux/hashtable.h b/include/linux/hashtable.h
+index a9df51f..af8b169 100644
+--- a/include/linux/hashtable.h
++++ b/include/linux/hashtable.h
+@@ -174,6 +174,21 @@ static inline void hash_del_rcu(struct hlist_node *node)
+ 		member)
  
  /**
-+ * External user API, exported by symbols to be linked dynamically.
++ * hash_for_each_possible_rcu_notrace - iterate over all possible objects hashing
++ * to the same bucket in an rcu enabled hashtable in a rcu enabled hashtable
++ * @name: hashtable to iterate
++ * @obj: the type * to use as a loop cursor for each entry
++ * @member: the name of the hlist_node within the struct
++ * @key: the key of the objects to iterate over
++ *
++ * This is the same as hash_for_each_possible_rcu() except that it does
++ * not do any RCU debugging or tracing.
 + */
-+
-+/* Allows an external user (for example, KVM) to lock an IOMMU group */
-+static int vfio_group_add_external_user(struct file *filep)
-+{
-+	struct vfio_group *group = filep->private_data;
-+
-+	if (filep->f_op != &vfio_group_fops)
-+		return -EINVAL;
-+
-+	if (!atomic_inc_not_zero(&group->container_users))
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(vfio_group_add_external_user);
-+
-+/* Allows an external user (for example, KVM) to unlock an IOMMU group */
-+static void vfio_group_del_external_user(struct file *filep)
-+{
-+	struct vfio_group *group = filep->private_data;
-+
-+	BUG_ON(filep->f_op != &vfio_group_fops);
-+
-+	vfio_group_try_dissolve_container(group);
-+}
-+EXPORT_SYMBOL_GPL(vfio_group_del_external_user);
-+
-+/*
-+ * Checks if a group for the specified file can be used by
-+ * an external user and returns the IOMMU ID if external use is possible.
-+ */
-+static int vfio_group_iommu_id_from_file(struct file *filep)
-+{
-+	int ret;
-+	struct vfio_group *group = filep->private_data;
-+
-+	if (WARN_ON(filep->f_op != &vfio_group_fops))
-+		return -EINVAL;
-+
-+	if (0 == atomic_read(&group->container_users) ||
-+			!group->container->iommu_driver ||
-+			!vfio_group_viable(group))
-+		return -EINVAL;
-+
-+	ret = iommu_group_id(group->iommu_group);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(vfio_group_iommu_id_from_file);
++#define hash_for_each_possible_rcu_notrace(name, obj, member, key)	\
++	hlist_for_each_entry_rcu_notrace(obj, &name[hash_min(key, HASH_BITS(name))],\
++		member)
 +
 +/**
-  * Module/class support
-  */
- static char *vfio_devnode(struct device *dev, umode_t *mode)
+  * hash_for_each_possible_safe - iterate over all possible objects hashing to the
+  * same bucket safe against removals
+  * @name: hashtable to iterate
 -- 
 1.7.10.4
