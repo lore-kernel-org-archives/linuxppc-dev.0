@@ -1,28 +1,32 @@
-Return-Path: <robherring2@gmail.com>
-Message-ID: <51CCA67C.2010803@gmail.com>
-Date: Thu, 27 Jun 2013 15:54:20 -0500
-From: Rob Herring <robherring2@gmail.com>
-MIME-Version: 1.0
-To: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Subject: Re: [PATCH] of: Specify initrd location using 64-bit
-References: <1371775956-16453-1-git-send-email-santosh.shilimkar@ti.com>
- <51C4171C.9050908@linutronix.de> <51C48B5A.2040404@ti.com>
-In-Reply-To: <51C48B5A.2040404@ti.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, linux-mips@linux-mips.org,
- Catalin Marinas <catalin.marinas@arm.com>,
- Aurelien Jacquiot <a-jacquiot@ti.com>,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- Will Deacon <will.deacon@arm.com>, Max Filippov <jcmvbkbc@gmail.com>,
- Paul Mackerras <paulus@samba.org>, Jonas Bonn <jonas@southpole.se>,
- Russell King <linux@arm.linux.org.uk>, linux-c6x-dev@linux-c6x.org,
- x86@kernel.org, arm@kernel.org, Mark Salter <msalter@redhat.com>,
- Grant Likely <grant.likely@linaro.org>, linux-xtensa@linux-xtensa.org,
- James Hogan <james.hogan@imgtec.com>, devicetree-discuss@lists.ozlabs.org,
- Rob Herring <rob.herring@calxeda.com>, linux-arm-kernel@lists.infradead.org,
- Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>,
- Vineet Gupta <vgupta@synopsys.com>, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <cascardo@linux.vnet.ibm.com>
+Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e24smtp03.br.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id F3DC52C034C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 07:00:23 +1000 (EST)
+Received: from /spool/local
+ by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <cascardo@linux.vnet.ibm.com>;
+ Thu, 27 Jun 2013 18:00:15 -0300
+Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id 9377B1DC0066
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 17:00:13 -0400 (EDT)
+Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
+ by d24relay02.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5RKwpNa33226818
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 17:58:51 -0300
+Received: from d24av05.br.ibm.com (loopback [127.0.0.1])
+ by d24av05.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5RL0Ckx003614
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 18:00:12 -0300
+From: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] eeh: add eeh_dev to the cache during boot
+Date: Thu, 27 Jun 2013 18:00:10 -0300
+Message-Id: <1372366810-26739-1-git-send-email-cascardo@linux.vnet.ibm.com>
+Cc: paulus@samba.org, shangw@linux.vnet.ibm.com,
+ Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,43 +36,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/21/2013 12:20 PM, Santosh Shilimkar wrote:
-> On Friday 21 June 2013 05:04 AM, Sebastian Andrzej Siewior wrote:
->> On 06/21/2013 02:52 AM, Santosh Shilimkar wrote:
->>> diff --git a/arch/microblaze/kernel/prom.c b/arch/microblaze/kernel/prom.c
->>> index 0a2c68f..62e2e8f 100644
->>> --- a/arch/microblaze/kernel/prom.c
->>> +++ b/arch/microblaze/kernel/prom.c
->>> @@ -136,8 +136,7 @@ void __init early_init_devtree(void *params)
->>>  }
->>>  
->>>  #ifdef CONFIG_BLK_DEV_INITRD
->>> -void __init early_init_dt_setup_initrd_arch(unsigned long start,
->>> -		unsigned long end)
->>> +void __init early_init_dt_setup_initrd_arch(u64 start, u64 end)
->>>  {
->>>  	initrd_start = (unsigned long)__va(start);
->>>  	initrd_end = (unsigned long)__va(end);
->>
->> I think it would better to go here for phys_addr_t instead of u64. This
->> would force you in of_flat_dt_match() to check if the value passed from
->> DT specifies a memory address outside of 32bit address space and the
->> kernel can't deal with this because its phys_addr_t is 32bit only due
->> to a Kconfig switch.
->>
->> For x86, the initrd has to remain in the 32bit address space so passing
->> the initrd in the upper range would violate the ABI. Not sure if this
->> is true for other archs as well (ARM obviously not).
->>
-> That pretty much means phys_addr_t. It will work for me as well but
-> in last thread from consistency with memory and reserved node, Rob
-> insisted to keep it as u64. So before I re-spin another version,
-> would like to here what Rob has to say considering the x86 requirement.
-> 
-> Rob,
-> Are you ok with phys_addr_t since your concern was about rest
-> of the memory specific bits of the device-tree code use u64 ?
+commit f8f7d63fd96ead101415a1302035137a866f8998 ("powerpc/eeh: Trace eeh
+device from I/O cache") broke EEH on pseries for devices that were
+present during boot and have not been hotplugged/DLPARed.
 
-No. I still think it should be u64 for same reasons I said originally.
+eeh_check_failure will get the eeh_dev from the cache, and will get
+NULL. eeh_addr_cache_build adds the addresses to the cache, but eeh_dev
+for the giving pci_device is not set yet. Just reordering the call to
+eeh_addr_cache_insert_dev works fine. The ordering is similar to the one
+in eeh_add_device_late.
 
-Rob
+Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
+---
+
+Note that this is broken since v3.7-rc1 and this patch applies on top of
+v3.10-rc7. Just changing the patches will apply it on top of
+next-20130626, where it has moved to arch/powerpc/kernel/.
+
+I also realized when writing the log that maybe calling
+eeh_add_device_late instead could be a better option. Please, share your
+comments.
+
+---
+ arch/powerpc/platforms/pseries/eeh_cache.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/platforms/pseries/eeh_cache.c b/arch/powerpc/platforms/pseries/eeh_cache.c
+index 5a4c879..5ce3ba7 100644
+--- a/arch/powerpc/platforms/pseries/eeh_cache.c
++++ b/arch/powerpc/platforms/pseries/eeh_cache.c
+@@ -294,8 +294,6 @@ void __init eeh_addr_cache_build(void)
+ 	spin_lock_init(&pci_io_addr_cache_root.piar_lock);
+ 
+ 	for_each_pci_dev(dev) {
+-		eeh_addr_cache_insert_dev(dev);
+-
+ 		dn = pci_device_to_OF_node(dev);
+ 		if (!dn)
+ 			continue;
+@@ -308,6 +306,8 @@ void __init eeh_addr_cache_build(void)
+ 		dev->dev.archdata.edev = edev;
+ 		edev->pdev = dev;
+ 
++		eeh_addr_cache_insert_dev(dev);
++
+ 		eeh_sysfs_add_device(dev);
+ 	}
+ 
+-- 
+1.7.1
