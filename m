@@ -2,30 +2,29 @@ Return-Path: <shangw@linux.vnet.ibm.com>
 Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3AD902C01FC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 15:47:01 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id BC1CE2C0359
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 15:47:28 +1000 (EST)
 Received: from /spool/local
  by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Wed, 26 Jun 2013 23:46:58 -0600
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
- [9.17.195.228])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 033293E4003F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 23:46:36 -0600 (MDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5R5ktKP137946
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 23:46:55 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5R5ktKW026190
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jun 2013 23:46:55 -0600
+ Wed, 26 Jun 2013 23:47:26 -0600
+Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id AC5586E803C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 01:47:20 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5R5ksDc310976
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 01:46:54 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5R5ks65021283
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 02:46:54 -0300
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 5/8] powerpc/eeh: Refactor the output message
-Date: Thu, 27 Jun 2013 13:46:46 +0800
-Message-Id: <1372312009-13710-6-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 2/8] powerpc/eeh: Check PCIe link after reset
+Date: Thu, 27 Jun 2013 13:46:43 +0800
+Message-Id: <1372312009-13710-3-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1372312009-13710-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1372312009-13710-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -38,212 +37,209 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We needn't the the whole backtrace other than one-line message in
-the error reporting interrupt handler. For errors triggered by
-access PCI config space or MMIO, we replace "WARN(1, ...)" with
-pr_err() and dump_stack(). The patch also adds more output messages
-to indicate what EEH core is doing. Besides, some printk() are
-replaced with pr_warning().
+After reset (e.g. complete reset) in order to bring the fenced PHB
+back, the PCIe link might not be ready yet. The patch intends to
+make sure the PCIe link is ready before accessing its subordinate
+PCI devices. The patch also fixes that wrong values restored to
+PCI_COMMAND register for PCI bridges.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/eeh.c                 |    9 +++++++--
- arch/powerpc/kernel/eeh_driver.c          |   23 ++++++++++++++++++-----
- arch/powerpc/platforms/powernv/eeh-ioda.c |   25 ++++++++++++++++---------
- 3 files changed, 41 insertions(+), 16 deletions(-)
+ arch/powerpc/kernel/eeh_pe.c |  157 ++++++++++++++++++++++++++++++++++++++----
+ 1 files changed, 144 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 2dd0bd1..f7f2775 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -324,7 +324,9 @@ static int eeh_phb_check_failure(struct eeh_pe *pe)
- 	eeh_serialize_unlock(flags);
- 	eeh_send_failure_event(phb_pe);
+diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
+index 55943fc..016588a 100644
+--- a/arch/powerpc/kernel/eeh_pe.c
++++ b/arch/powerpc/kernel/eeh_pe.c
+@@ -22,6 +22,7 @@
+  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+  */
  
--	WARN(1, "EEH: PHB failure detected\n");
-+	pr_err("EEH: PHB#%x failure detected\n",
-+		phb_pe->phb->global_number);
-+	dump_stack();
++#include <linux/delay.h>
+ #include <linux/export.h>
+ #include <linux/gfp.h>
+ #include <linux/init.h>
+@@ -567,30 +568,132 @@ void eeh_pe_state_clear(struct eeh_pe *pe, int state)
+ 	eeh_pe_traverse(pe, __eeh_pe_state_clear, &state);
+ }
  
- 	return 1;
- out:
-@@ -453,7 +455,10 @@ int eeh_dev_check_failure(struct eeh_dev *edev)
- 	 * a stack trace will help the device-driver authors figure
- 	 * out what happened.  So print that out.
- 	 */
--	WARN(1, "EEH: failure detected\n");
-+	pr_err("EEH: Frozen PE#%x detected on PHB#%x\n",
-+		pe->addr, pe->phb->global_number);
-+	dump_stack();
+-/**
+- * eeh_restore_one_device_bars - Restore the Base Address Registers for one device
+- * @data: EEH device
+- * @flag: Unused
++/*
++ * Some PCI bridges (e.g. PLX bridges) have primary/secondary
++ * buses assigned explicitly by firmware, and we probably have
++ * lost that after reset. So we have to delay the check until
++ * the PCI-CFG registers have been restored for the parent
++ * bridge.
+  *
+- * Loads the PCI configuration space base address registers,
+- * the expansion ROM base address, the latency timer, and etc.
+- * from the saved values in the device node.
++ * Don't use normal PCI-CFG accessors, which probably has been
++ * blocked on normal path during the stage. So we need utilize
++ * eeh operations, which is always permitted.
+  */
+-static void *eeh_restore_one_device_bars(void *data, void *flag)
++static void eeh_bridge_check_link(struct pci_dev *pdev,
++				  struct device_node *dn)
++{
++	int cap;
++	uint32_t val;
++	int timeout = 0;
 +
- 	return 1;
- 
- dn_unlock:
-diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-index 0974e13..2b1ce17 100644
---- a/arch/powerpc/kernel/eeh_driver.c
-+++ b/arch/powerpc/kernel/eeh_driver.c
-@@ -425,6 +425,7 @@ static void eeh_handle_normal_event(struct eeh_pe *pe)
- 	 * status ... if any child can't handle the reset, then the entire
- 	 * slot is dlpar removed and added.
- 	 */
-+	pr_info("EEH: Notify device drivers to shutdown\n");
- 	eeh_pe_dev_traverse(pe, eeh_report_error, &result);
- 
- 	/* Get the current PCI slot state. This can take a long time,
-@@ -432,7 +433,7 @@ static void eeh_handle_normal_event(struct eeh_pe *pe)
- 	 */
- 	rc = eeh_ops->wait_state(pe, MAX_WAIT_FOR_RECOVERY*1000);
- 	if (rc < 0 || rc == EEH_STATE_NOT_SUPPORT) {
--		printk(KERN_WARNING "EEH: Permanent failure\n");
-+		pr_warning("EEH: Permanent failure\n");
- 		goto hard_fail;
- 	}
- 
-@@ -440,6 +441,7 @@ static void eeh_handle_normal_event(struct eeh_pe *pe)
- 	 * don't post the error log until after all dev drivers
- 	 * have been informed.
- 	 */
-+	pr_info("EEH: Collect temporary log\n");
- 	eeh_slot_error_detail(pe, EEH_LOG_TEMP);
- 
- 	/* If all device drivers were EEH-unaware, then shut
-@@ -447,15 +449,18 @@ static void eeh_handle_normal_event(struct eeh_pe *pe)
- 	 * go down willingly, without panicing the system.
- 	 */
- 	if (result == PCI_ERS_RESULT_NONE) {
-+		pr_info("EEH: Reset with hotplug activity\n");
- 		rc = eeh_reset_device(pe, frozen_bus);
- 		if (rc) {
--			printk(KERN_WARNING "EEH: Unable to reset, rc=%d\n", rc);
-+			pr_warning("%s: Unable to reset, err=%d\n",
-+				   __func__, rc);
- 			goto hard_fail;
- 		}
- 	}
- 
- 	/* If all devices reported they can proceed, then re-enable MMIO */
- 	if (result == PCI_ERS_RESULT_CAN_RECOVER) {
-+		pr_info("EEH: Enable I/O for affected devices\n");
- 		rc = eeh_pci_enable(pe, EEH_OPT_THAW_MMIO);
- 
- 		if (rc < 0)
-@@ -463,6 +468,7 @@ static void eeh_handle_normal_event(struct eeh_pe *pe)
- 		if (rc) {
- 			result = PCI_ERS_RESULT_NEED_RESET;
- 		} else {
-+			pr_info("EEH: Notify device drivers to resume I/O\n");
- 			result = PCI_ERS_RESULT_NONE;
- 			eeh_pe_dev_traverse(pe, eeh_report_mmio_enabled, &result);
- 		}
-@@ -470,6 +476,7 @@ static void eeh_handle_normal_event(struct eeh_pe *pe)
- 
- 	/* If all devices reported they can proceed, then re-enable DMA */
- 	if (result == PCI_ERS_RESULT_CAN_RECOVER) {
-+		pr_info("EEH: Enabled DMA for affected devices\n");
- 		rc = eeh_pci_enable(pe, EEH_OPT_THAW_DMA);
- 
- 		if (rc < 0)
-@@ -482,17 +489,22 @@ static void eeh_handle_normal_event(struct eeh_pe *pe)
- 
- 	/* If any device has a hard failure, then shut off everything. */
- 	if (result == PCI_ERS_RESULT_DISCONNECT) {
--		printk(KERN_WARNING "EEH: Device driver gave up\n");
-+		pr_warning("EEH: Device driver gave up\n");
- 		goto hard_fail;
- 	}
- 
- 	/* If any device called out for a reset, then reset the slot */
- 	if (result == PCI_ERS_RESULT_NEED_RESET) {
-+		pr_info("EEH: Reset without hotplug activity\n");
- 		rc = eeh_reset_device(pe, NULL);
- 		if (rc) {
--			printk(KERN_WARNING "EEH: Cannot reset, rc=%d\n", rc);
-+			pr_warning("%s: Cannot reset, err=%d\n",
-+				   __func__, rc);
- 			goto hard_fail;
- 		}
++	/*
++	 * We only check root port and downstream ports of
++	 * PCIe switches
++	 */
++	if (!pci_is_pcie(pdev) ||
++	    (pci_pcie_type(pdev) != PCI_EXP_TYPE_ROOT_PORT &&
++	     pci_pcie_type(pdev) != PCI_EXP_TYPE_DOWNSTREAM))
++		return;
 +
-+		pr_info("EEH: Notify device drivers "
-+			"the completion of reset\n");
- 		result = PCI_ERS_RESULT_NONE;
- 		eeh_pe_dev_traverse(pe, eeh_report_reset, &result);
- 	}
-@@ -500,11 +512,12 @@ static void eeh_handle_normal_event(struct eeh_pe *pe)
- 	/* All devices should claim they have recovered by now. */
- 	if ((result != PCI_ERS_RESULT_RECOVERED) &&
- 	    (result != PCI_ERS_RESULT_NONE)) {
--		printk(KERN_WARNING "EEH: Not recovered\n");
-+		pr_warning("EEH: Not recovered\n");
- 		goto hard_fail;
- 	}
++	pr_debug("%s: Check PCIe link for %s ...\n",
++		 __func__, pci_name(pdev));
++
++	/* Check slot status */
++	cap = pdev->pcie_cap;
++	eeh_ops->read_config(dn, cap + PCI_EXP_SLTSTA, 2, &val);
++	if (!(val & PCI_EXP_SLTSTA_PDS)) {
++		pr_debug("  No card in the slot (0x%04x) !\n", val);
++		return;
++	}
++
++	/* Check power status if we have the capability */
++	eeh_ops->read_config(dn, cap + PCI_EXP_SLTCAP, 2, &val);
++	if (val & PCI_EXP_SLTCAP_PCP) {
++		eeh_ops->read_config(dn, cap + PCI_EXP_SLTCTL, 2, &val);
++		if (val & PCI_EXP_SLTCTL_PCC) {
++			pr_debug("  In power-off state, power it on ...\n");
++			val &= ~(PCI_EXP_SLTCTL_PCC | PCI_EXP_SLTCTL_PIC);
++			val |= (0x0100 & PCI_EXP_SLTCTL_PIC);
++			eeh_ops->write_config(dn, cap + PCI_EXP_SLTCTL, 2, val);
++			msleep(2 * 1000);
++		}
++	}
++
++	/* Enable link */
++	eeh_ops->read_config(dn, cap + PCI_EXP_LNKCTL, 2, &val);
++	val &= ~PCI_EXP_LNKCTL_LD;
++	eeh_ops->write_config(dn, cap + PCI_EXP_LNKCTL, 2, val);
++
++	/* Check link */
++	eeh_ops->read_config(dn, cap + PCI_EXP_LNKCAP, 4, &val);
++	if (!(val & PCI_EXP_LNKCAP_DLLLARC)) {
++		pr_debug("  No link reporting capability (0x%08x) \n", val);
++		msleep(1000);
++		return;
++	}
++
++	/* Wait the link is up until timeout (5s) */
++	timeout = 0;
++	while (timeout < 5000) {
++		msleep(20);
++		timeout += 20;
++
++		eeh_ops->read_config(dn, cap + PCI_EXP_LNKSTA, 2, &val);
++		if (val & PCI_EXP_LNKSTA_DLLLA)
++			break;
++	}
++
++	if (val & PCI_EXP_LNKSTA_DLLLA)
++		pr_debug("  Link up (%s)\n",
++			 (val & PCI_EXP_LNKSTA_CLS_2_5GB) ? "2.5GB" : "5GB");
++	else
++		pr_debug("  Link not ready (0x%04x)\n", val);
++}
++
++#define BYTE_SWAP(OFF)	(8*((OFF)/4)+3-(OFF))
++#define SAVED_BYTE(OFF)	(((u8 *)(edev->config_space))[BYTE_SWAP(OFF)])
++
++static void eeh_restore_bridge_bars(struct pci_dev *pdev,
++				    struct eeh_dev *edev,
++				    struct device_node *dn)
++{
++	int i;
++
++	/*
++	 * Device BARs: 0x10 - 0x18
++	 * Bus numbers and windows: 0x18 - 0x30
++	 */
++	for (i = 4; i < 13; i++)
++		eeh_ops->write_config(dn, i*4, 4, edev->config_space[i]);
++	/* Rom: 0x38 */
++	eeh_ops->write_config(dn, 14*4, 4, edev->config_space[14]);
++
++	/* Cache line & Latency timer: 0xC 0xD */
++	eeh_ops->write_config(dn, PCI_CACHE_LINE_SIZE, 1,
++                SAVED_BYTE(PCI_CACHE_LINE_SIZE));
++        eeh_ops->write_config(dn, PCI_LATENCY_TIMER, 1,
++                SAVED_BYTE(PCI_LATENCY_TIMER));
++	/* Max latency, min grant, interrupt ping and line: 0x3C */
++	eeh_ops->write_config(dn, 15*4, 4, edev->config_space[15]);
++
++	/* PCI Command: 0x4 */
++	eeh_ops->write_config(dn, PCI_COMMAND, 4, edev->config_space[1]);
++
++	/* Check the PCIe link is ready */
++	eeh_bridge_check_link(pdev, dn);
++}
++
++static void eeh_restore_device_bars(struct eeh_dev *edev,
++				    struct device_node *dn)
+ {
+ 	int i;
+ 	u32 cmd;
+-	struct eeh_dev *edev = (struct eeh_dev *)data;
+-	struct device_node *dn = eeh_dev_to_of_node(edev);
  
- 	/* Tell all device drivers that they can resume operations */
-+	pr_info("EEH: Notify device driver to resume\n");
- 	eeh_pe_dev_traverse(pe, eeh_report_resume, NULL);
+ 	for (i = 4; i < 10; i++)
+ 		eeh_ops->write_config(dn, i*4, 4, edev->config_space[i]);
+ 	/* 12 == Expansion ROM Address */
+ 	eeh_ops->write_config(dn, 12*4, 4, edev->config_space[12]);
  
- 	return;
-diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-index 85025d7..0cd1c4a 100644
---- a/arch/powerpc/platforms/powernv/eeh-ioda.c
-+++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-@@ -853,11 +853,14 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
- 					phb->eeh_state |= PNV_EEH_STATE_REMOVED;
- 				}
+-#define BYTE_SWAP(OFF) (8*((OFF)/4)+3-(OFF))
+-#define SAVED_BYTE(OFF) (((u8 *)(edev->config_space))[BYTE_SWAP(OFF)])
+-
+ 	eeh_ops->write_config(dn, PCI_CACHE_LINE_SIZE, 1,
+ 		SAVED_BYTE(PCI_CACHE_LINE_SIZE));
+ 	eeh_ops->write_config(dn, PCI_LATENCY_TIMER, 1,
+@@ -613,6 +716,34 @@ static void *eeh_restore_one_device_bars(void *data, void *flag)
+ 	else
+ 		cmd &= ~PCI_COMMAND_SERR;
+ 	eeh_ops->write_config(dn, PCI_COMMAND, 4, cmd);
++}
++
++/**
++ * eeh_restore_one_device_bars - Restore the Base Address Registers for one device
++ * @data: EEH device
++ * @flag: Unused
++ *
++ * Loads the PCI configuration space base address registers,
++ * the expansion ROM base address, the latency timer, and etc.
++ * from the saved values in the device node.
++ */
++static void *eeh_restore_one_device_bars(void *data, void *flag)
++{
++	struct pci_dev *pdev = NULL;
++	struct eeh_dev *edev = (struct eeh_dev *)data;
++	struct device_node *dn = eeh_dev_to_of_node(edev);
++
++	/* Trace the PCI bridge */
++	if (eeh_probe_mode_dev()) {
++		pdev = eeh_dev_to_pci_dev(edev);
++		if (pdev->hdr_type != PCI_HEADER_TYPE_BRIDGE)
++                        pdev = NULL;
++        }
++
++	if (pdev)
++		eeh_restore_bridge_bars(pdev, edev, dn);
++	else
++		eeh_restore_device_bars(edev, dn);
  
--				WARN(1, "EEH: dead IOC detected\n");
-+				pr_err("EEH: dead IOC detected\n");
- 				ret = 4;
- 				goto out;
--			} else if (severity == OPAL_EEH_SEV_INF)
-+			} else if (severity == OPAL_EEH_SEV_INF) {
-+				pr_info("EEH: IOC informative error "
-+					"detected\n");
- 				ioda_eeh_hub_diag(hose);
-+			}
- 
- 			break;
- 		case OPAL_EEH_PHB_ERROR:
-@@ -865,8 +868,8 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
- 				if (ioda_eeh_get_phb_pe(hose, pe))
- 					break;
- 
--				WARN(1, "EEH: dead PHB#%x detected\n",
--				     hose->global_number);
-+				pr_err("EEH: dead PHB#%x detected\n",
-+					hose->global_number);
- 				phb->eeh_state |= PNV_EEH_STATE_REMOVED;
- 				ret = 3;
- 				goto out;
-@@ -874,20 +877,24 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
- 				if (ioda_eeh_get_phb_pe(hose, pe))
- 					break;
- 
--				WARN(1, "EEH: fenced PHB#%x detected\n",
--				     hose->global_number);
-+				pr_err("EEH: fenced PHB#%x detected\n",
-+					hose->global_number);
- 				ret = 2;
- 				goto out;
--			} else if (severity == OPAL_EEH_SEV_INF)
-+			} else if (severity == OPAL_EEH_SEV_INF) {
-+				pr_info("EEH: PHB#%x informative error "
-+					"detected\n",
-+					hose->global_number);
- 				ioda_eeh_phb_diag(hose);
-+			}
- 
- 			break;
- 		case OPAL_EEH_PE_ERROR:
- 			if (ioda_eeh_get_pe(hose, frozen_pe_no, pe))
- 				break;
- 
--			WARN(1, "EEH: Frozen PE#%x on PHB#%x detected\n",
--			     (*pe)->addr, (*pe)->phb->global_number);
-+			pr_err("EEH: Frozen PE#%x on PHB#%x detected\n",
-+				(*pe)->addr, (*pe)->phb->global_number);
- 			ret = 1;
- 			goto out;
- 		}
+ 	return NULL;
+ }
 -- 
 1.7.5.4
