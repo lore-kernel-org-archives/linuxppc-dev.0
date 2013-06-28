@@ -1,28 +1,24 @@
-Return-Path: <zhao.xia@nsn.com>
-Received: from demumfd001.nsn-inter.net (demumfd001.nsn-inter.net
- [93.183.12.32])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "demumfd001.nsn-inter.net",
- Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 932CD2C0382
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 18:33:02 +1000 (EST)
-Received: from demuprx017.emea.nsn-intra.net ([10.150.129.56])
- by demumfd001.nsn-inter.net (8.12.11.20060308/8.12.11) with ESMTP id
- r5S8Q14Z018186
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 10:26:01 +0200
-Received: from SGSIHTC004.nsn-intra.net ([10.159.225.21])
- by demuprx017.emea.nsn-intra.net (8.12.11.20060308/8.12.11) with ESMTP id
- r5S8NlWe004189
- (version=TLSv1/SSLv3 cipher=AES128-SHA bits=128 verify=FAIL)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 10:26:00 +0200
-From: "Xia, Zhao (NSN - CN/Shanghai)" <zhao.xia@nsn.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: FW: crash dump on ppc linux
-Date: Fri, 28 Jun 2013 08:24:31 +0000
-Message-ID: <7099B9A8CC7DCE4BA6769EB527DC640C048B3D@SGSIMBX005.nsn-intra.net>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <linasvepstas@gmail.com>
+Received: from mail-pd0-x22f.google.com (mail-pd0-x22f.google.com
+ [IPv6:2607:f8b0:400e:c02::22f])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4B32D2C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jun 2013 03:47:37 +1000 (EST)
+Received: by mail-pd0-f175.google.com with SMTP id 4so1167818pdd.34
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 10:47:34 -0700 (PDT)
 MIME-Version: 1.0
+In-Reply-To: <1372385489.18612.52.camel@pasglop>
+References: <1372384784-20788-1-git-send-email-shangw@linux.vnet.ibm.com>
+ <1372385489.18612.52.camel@pasglop>
+From: Linas Vepstas <linasvepstas@gmail.com>
+Date: Fri, 28 Jun 2013 12:47:14 -0500
+Message-ID: <CAHrUA34U+suou7K_RZs7K6xjZDXc8fVX5wNp9Fv3V8cG=dH7RA@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/eeh: Update MAINTAINERS
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <shangw@linux.vnet.ibm.com>
+Reply-To: linasvepstas@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,43 +28,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi
-
-Could you help to confirm:
-Kexec-tools 2.0.4 + Linux 2.6.33 on MPC8541(PPC32) can work or not?
-If not, how to make it? Thanks a lot.
-
-
------Original Message-----
-From: ext Simon Horman [mailto:horms@verge.net.au]=20
-Sent: Friday, June 28, 2013 4:17 PM
-To: Xia, Zhao (NSN - CN/Shanghai)
-Subject: Re: crash dump on ppc linux
-
-On Wed, Jun 26, 2013 at 05:12:21AM +0000, Xia, Zhao (NSN - CN/Shanghai) wro=
-te:
-> Hi  Horms
->=20
-> I visted the kexec-tool project page : http://horms.net/projects/kexec/ke=
-xec-tools/README.html
-> and I am glad to know that you are the maintainer of kexec-tools. Could y=
-ou help to answer the following question?
->=20
-> 1)      Does kexec-2.0.3 support ppc Linux (not ppc64 Linux)?  Because I =
-am debugging with mpc8541(PPC arch) on Linux 2.6.33.
->       And I encountered some problem.
-> 2)      Does the Linux version 2.6.33 need some patch for kexec-tools?
-
 Hi,
 
-I think these questions would be best sent to the
-linuxppc-dev@lists.ozlabs.org and kexec@lists.infradead.org lits.
+On 27 June 2013 21:11, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> On Fri, 2013-06-28 at 09:59 +0800, Gavin Shan wrote:
+>> Update MAINTAINERS to reflect recent changes.
+>>
+>> Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+>> ---
+>>  MAINTAINERS |    4 ++++
+>>  1 files changed, 4 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/MAINTAINERS b/MAINTAINERS
+>> index 5be702c..b447392 100644
+>> --- a/MAINTAINERS
+>> +++ b/MAINTAINERS
+>> @@ -6146,10 +6146,14 @@ F:    drivers/firmware/pcdp.*
+>>
+>>  PCI ERROR RECOVERY
+>>  M:
+>> +M:   Gavin Shan <shangw@linux.vnet.ibm.com>
+>
+> Remove Linas, he isn't involved anymore as far as I can tell
+> (are you ?)
 
-In general I believe that ppc64 is supported by kexec-tools 2.0.3 + 2.6.33.
-However, I am not familiar with mpc8541 and there are ongoing improvements
-made to ppc64 support for both kexec-tools and the linux kernel.  So if
-possible I would try using newer versions - the latest version of
-kexec-tools is 2.0.4. And in the case of kexec-tools
-the current git branch if the latest release seems to not work.
+Not involved any more; I don't have access to equipment, don't have
+time, expertise is fading.
 
-git://git.kernel.org/pub/scm/utils/kernel/kexec/kexec-tools.git
+>>  L:   linux-pci@vger.kernel.org
+>> +L:   linuxppc-dev@lists.ozlabs.org
+>>  S:   Supported
+>>  F:   Documentation/PCI/pci-error-recovery.txt
+>>  F:   Documentation/powerpc/eeh-pci-error-recovery.txt
+>> +F:   arch/powerpc/kernel/eeh*.c
+>> +F:   drivers/pci/pcie/aer/
+>
+> Not sure about the AER code. You are not maintaining *that* at least :-)
+> Maybe we should split EEH from the rest ?
+
+Based on recent discussions (a month ago?) regarding AER, its clear
+that at least some of the AER code is mis-designed, and that some of
+the patches being submitted against it were making things worse.   I
+suggest keeping an eye on that ... the problem is that both AER and
+EEH share a common framework in the PCI subsystem. As bugs in AER get
+discovered, there's a chance that someone will submit a patch to the
+common framework, or possibly start modifying assorted drivers, which
+will then break EEH ... so I don't think it is wise/safe to ignore
+AER.
+
+(The point is that AER and EEH really should work exactly the same;
+they differ merely by how they talk to the root port).
+
+-- Linas
