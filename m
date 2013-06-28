@@ -1,33 +1,37 @@
-Return-Path: <bigeasy@linutronix.de>
-Received: from Galois.linutronix.de (www.linutronix.de [62.245.132.108])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id C2A252C038D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 17:54:50 +1000 (EST)
-Message-ID: <51CD4125.5060305@linutronix.de>
-Date: Fri, 28 Jun 2013 09:54:13 +0200
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8DD2F2C00B8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 17:58:37 +1000 (EST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Fri, 28 Jun 2013 01:58:33 -0600
+Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 72DE4C90044
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 03:58:29 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5S7wUJE306798
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 03:58:30 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5S7wT88027334
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 03:58:30 -0400
+Date: Fri, 28 Jun 2013 15:58:23 +0800
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH v3] powerpc/eeh: Update MAINTAINERS
+Message-ID: <20130628075823.GA31734@shangw.(null)>
+References: <1372398143-15561-1-git-send-email-shangw@linux.vnet.ibm.com>
+ <20130628174634.3d05e076cbe48ffc4ad67a60@canb.auug.org.au>
 MIME-Version: 1.0
-To: Rob Herring <robherring2@gmail.com>
-Subject: Re: [PATCH] of: Specify initrd location using 64-bit
-References: <1371775956-16453-1-git-send-email-santosh.shilimkar@ti.com>
- <51C4171C.9050908@linutronix.de> <51C48B5A.2040404@ti.com>
- <51CCA67C.2010803@gmail.com>
-In-Reply-To: <51CCA67C.2010803@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, linux-mips@linux-mips.org,
- Aurelien Jacquiot <a-jacquiot@ti.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- Max Filippov <jcmvbkbc@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Jonas Bonn <jonas@southpole.se>, Russell King <linux@arm.linux.org.uk>,
- linux-c6x-dev@linux-c6x.org, x86@kernel.org, arm@kernel.org,
- Mark Salter <msalter@redhat.com>, Grant Likely <grant.likely@linaro.org>,
- linux-xtensa@linux-xtensa.org, James Hogan <james.hogan@imgtec.com>,
- devicetree-discuss@lists.ozlabs.org, Rob Herring <rob.herring@calxeda.com>,
- linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>,
- Michal Simek <monstr@monstr.eu>, Vineet Gupta <vgupta@synopsys.com>,
- linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
- Santosh Shilimkar <santosh.shilimkar@ti.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130628174634.3d05e076cbe48ffc4ad67a60@canb.auug.org.au>
+Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <shangw@linux.vnet.ibm.com>
+Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,19 +41,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/27/2013 10:54 PM, Rob Herring wrote:
+On Fri, Jun 28, 2013 at 05:46:34PM +1000, Stephen Rothwell wrote:
+>Hi Gavin,
+>
+>On Fri, 28 Jun 2013 13:42:23 +0800 Gavin Shan <shangw@linux.vnet.ibm.com> wrote:
+>>
+>> Update MAINTAINERS to reflect recent changes.
+>> 
+>> Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+>> ---
+>>  MAINTAINERS |    6 ++++++
+>>  1 files changed, 6 insertions(+), 0 deletions(-)
+>> 
+>> diff --git a/MAINTAINERS b/MAINTAINERS
+>> index 5be702c..78e64c9 100644
+>> --- a/MAINTAINERS
+>> +++ b/MAINTAINERS
+>> @@ -6149,7 +6149,13 @@ M:	Linas Vepstas <linasvepstas@gmail.com>
+>>  L:	linux-pci@vger.kernel.org
+>>  S:	Supported
+>>  F:	Documentation/PCI/pci-error-recovery.txt
+>> +
+>> +ENHANCED ERROR HANDLING (EEH)
+>> +M:	Gavin Shan <shangw@linux.vnet.ibm.com>
+>> +L:	linuxppc-dev@lists.ozlabs.org
+>> +S:	Supported
+>>  F:	Documentation/powerpc/eeh-pci-error-recovery.txt
+>> +F:	arch/powerpc/kernel/eeh*.c
+>>  
+>>  PCI SUBSYSTEM
+>>  M:	Bjorn Helgaas <bhelgaas@google.com>
+>
+>The entries in the MAINTAINERS file are meant to be in alphabetical
+>order ...
+>
 
->> Rob,
->> Are you ok with phys_addr_t since your concern was about rest
->> of the memory specific bits of the device-tree code use u64 ?
-> 
-> No. I still think it should be u64 for same reasons I said originally.
+Thanks, Stephen :-)
 
-The physical address space is represented by phys_addr_t and not u64
-within the kernel. If you go for u64 you may waste 32bit and you need
-to check if the running kernel can deal with this.
-Why was u64 such a good thing?
+I'll send up an v4. Sorry for my noise ;-(
 
-> Rob
-
-Sebastian
+Thanks,
+Gavin
