@@ -1,9 +1,9 @@
 Return-Path: <michael@ozlabs.org>
 From: Michael Ellerman <michael@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 5/9] powerpc/perf: Don't enable if we have zero events
-Date: Fri, 28 Jun 2013 18:15:14 +1000
-Message-Id: <1372407319-718-5-git-send-email-michael@ellerman.id.au>
+Subject: [PATCH 6/9] powerpc/perf: Drop MMCRA from thread_struct
+Date: Fri, 28 Jun 2013 18:15:15 +1000
+Message-Id: <1372407319-718-6-git-send-email-michael@ellerman.id.au>
 In-Reply-To: <1372407319-718-1-git-send-email-michael@ellerman.id.au>
 References: <1372407319-718-1-git-send-email-michael@ellerman.id.au>
 Cc: sukadev@linux.vnet.ibm.com, Paul Mackerras <paulus@samba.org>,
@@ -17,39 +17,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In power_pmu_enable() we still enable the PMU even if we have zero
-events. This should have no effect but doesn't make much sense. Instead
-just return after telling the hypervisor that we are not using the PMCs.
+In commit 59affcd "Context switch more PMU related SPRs" I added more
+PMU SPRs to thread_struct, later modified in commit b11ae95. To add
+insult to injury it turns out we don't need to switch MMCRA as it's
+only user readable, and the value is recomputed by the PMU code.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/perf/core-book3s.c |    7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/processor.h |    1 -
+ arch/powerpc/kernel/asm-offsets.c    |    1 -
+ 2 files changed, 2 deletions(-)
 
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index af4b4b1..d3ee2e5 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -926,6 +926,11 @@ static void power_pmu_enable(struct pmu *pmu)
- 	if (!cpuhw->disabled)
- 		goto out;
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index 9fe1129..3f19df3 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -289,7 +289,6 @@ struct thread_struct {
+ 	unsigned long	sier;
+ 	unsigned long	mmcr0;
+ 	unsigned long	mmcr2;
+-	unsigned long	mmcra;
+ #endif
+ };
  
-+	if (cpuhw->n_events == 0) {
-+		ppc_set_pmu_inuse(0);
-+		goto out;
-+	}
-+
- 	cpuhw->disabled = 0;
- 
- 	/*
-@@ -937,8 +942,6 @@ static void power_pmu_enable(struct pmu *pmu)
- 	if (!cpuhw->n_added) {
- 		mtspr(SPRN_MMCRA, cpuhw->mmcr[2] & ~MMCRA_SAMPLE_ENABLE);
- 		mtspr(SPRN_MMCR1, cpuhw->mmcr[1]);
--		if (cpuhw->n_events == 0)
--			ppc_set_pmu_inuse(0);
- 		goto out_enable;
- 	}
- 
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index dc684b1..c7e8afc 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -132,7 +132,6 @@ int main(void)
+ 	DEFINE(THREAD_SIER, offsetof(struct thread_struct, sier));
+ 	DEFINE(THREAD_MMCR0, offsetof(struct thread_struct, mmcr0));
+ 	DEFINE(THREAD_MMCR2, offsetof(struct thread_struct, mmcr2));
+-	DEFINE(THREAD_MMCRA, offsetof(struct thread_struct, mmcra));
+ #endif
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ 	DEFINE(PACATMSCRATCH, offsetof(struct paca_struct, tm_scratch));
 -- 
 1.7.10.4
