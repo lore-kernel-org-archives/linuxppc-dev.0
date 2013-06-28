@@ -1,19 +1,22 @@
 Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0250.outbound.messaging.microsoft.com [213.199.154.250])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 860712C02CB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 11:47:38 +1000 (EST)
-Date: Thu, 27 Jun 2013 20:47:27 -0500
+ by ozlabs.org (Postfix) with ESMTPS id 5D8752C0343
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 11:52:33 +1000 (EST)
+Date: Thu, 27 Jun 2013 20:52:20 -0500
 From: Scott Wood <scottwood@freescale.com>
 Subject: Re: [PATCH 1/2] powerpc: enable the relocatable support for the fsl
  booke 32bit kernel
 To: Kevin Hao <haokexin@gmail.com>
+References: <1372298434-20220-2-git-send-email-haokexin@gmail.com>
+ <1372363114.8183.54@snotra>
+ <20130628013637.GA3173@pek-khao-d1.corp.ad.wrs.com>
 In-Reply-To: <20130628013637.GA3173@pek-khao-d1.corp.ad.wrs.com> (from
  haokexin@gmail.com on Thu Jun 27 20:36:37 2013)
-Message-ID: <1372384047.8183.61@snotra>
+Message-ID: <1372384340.8183.62@snotra>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
 Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
@@ -42,34 +45,9 @@ On 06/27/2013 08:36:37 PM, Kevin Hao wrote:
 >   2. Since we always use the PAGE_OFFSET as 0xc0000000, the 256M is
 >      max alignment value we can use for this virtual address.
 
-Is there any reason why 64M won't continue to work here?
-
-> > This tightens the alignment requirement for dynamic memstart.
->=20
-> Yes. But since RELOCATABLE is a superset of DYNAMIC_MEMSTART, we can =20
-> always
-> use RELOCATABLE instead of DYNAMIC_MEMSTART for fsl booke board in =20
-> any cases.
-
-The extra flexibility of RELOCATABLE may help some use cases, but you'd =20
-still require the entire 256M naturally aligned region containing the =20
-kernel to be present and owned by this instance of Linux.
-
-> So DYNAMIC_MEMSTART will seem not so useful after we enable this =20
-> feature.
-
-Then why doesn't this patch remove it?
-
-> >  And
-> > what about boards with less than 256 MiB of RAM?
->=20
-> It should be fine. We just create the map in the tlb. The MM still use
-> the real size of memory.
-
-No, you must not map anything that is not present with a mapping that =20
-is executable and/or not guarded, or you could get speculative accesses =20
-to who-knows-what.  Even if RAM is present there but owned by some =20
-other entity, you could be creating illegal aliases if that other =20
-entity mapped it cache-inhibited or similar.
+0xc0000000 is 1G-aligned, so I don't see why 256M is the maximum (after =20
+verifying that enough memory is present with the right alignment, of =20
+course).  The TLB1 savings would probably not be enough to justify =20
+figuring that out, though.
 
 -Scott=
