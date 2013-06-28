@@ -1,19 +1,37 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 28C2F2C0366
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 14:57:04 +1000 (EST)
-Message-ID: <1372395413.18612.58.camel@pasglop>
-Subject: Re: [PATCH v2] powerpc/eeh: Update MAINTAINERS
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gavin Shan <shangw@linux.vnet.ibm.com>
-Date: Fri, 28 Jun 2013 14:56:53 +1000
-In-Reply-To: <1372386316-24086-1-git-send-email-shangw@linux.vnet.ibm.com>
-References: <1372386316-24086-1-git-send-email-shangw@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+ (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 773AE2C0374
+ for <linuxppc-dev@ozlabs.org>; Fri, 28 Jun 2013 15:11:00 +1000 (EST)
+Received: from /spool/local
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Fri, 28 Jun 2013 14:56:20 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 68ECE2BB0052
+ for <linuxppc-dev@ozlabs.org>; Fri, 28 Jun 2013 15:10:55 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5S4tq1t65667174
+ for <linuxppc-dev@ozlabs.org>; Fri, 28 Jun 2013 14:55:53 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5S5ArMi008715
+ for <linuxppc-dev@ozlabs.org>; Fri, 28 Jun 2013 15:10:54 +1000
+Message-ID: <51CD1AB6.5050001@linux.vnet.ibm.com>
+Date: Fri, 28 Jun 2013 10:40:14 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH 5/8] powerpc/perf: Don't enable if we have zero events
+References: <1372073336-8189-1-git-send-email-michael@ellerman.id.au>
+ <1372073336-8189-5-git-send-email-michael@ellerman.id.au>
+In-Reply-To: <1372073336-8189-5-git-send-email-michael@ellerman.id.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, sukadev@linux.vnet.ibm.com,
+ Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,33 +41,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-06-28 at 10:25 +0800, Gavin Shan wrote:
-> Update MAINTAINERS to reflect recent changes.
+On 06/24/2013 04:58 PM, Michael Ellerman wrote:
+> In power_pmu_enable() we still enable the PMU even if we have zero
+> events. This should have no effect but doesn't make much sense. Instead
+> just return after telling the hypervisor that we are not using the PMCs.
 > 
-> Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
-> ---
->  MAINTAINERS |    7 +++++++
->  1 files changed, 7 insertions(+), 0 deletions(-)
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 5be702c..c724a3a 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -6149,7 +6149,14 @@ M:	Linas Vepstas <linasvepstas@gmail.com>
->  L:	linux-pci@vger.kernel.org
->  S:	Supported
->  F:	Documentation/PCI/pci-error-recovery.txt
-> +F:	drivers/pci/pcie/aer/
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 
-Almost ;-) I still don't think that Linus has anything to do with AER,
-just don't add the above line.
-
-> +ENHANCED ERROR HANDLING (EEH)
-> +M:	Gavin Shan <shangw@linux.vnet.ibm.com>
-> +L:	linuxppc-dev@lists.ozlabs.org
-> +S:	Supported
->  F:	Documentation/powerpc/eeh-pci-error-recovery.txt
-> +F:	arch/powerpc/kernel/eeh*.c
->  
->  PCI SUBSYSTEM
->  M:	Bjorn Helgaas <bhelgaas@google.com>
+Reviewed-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
