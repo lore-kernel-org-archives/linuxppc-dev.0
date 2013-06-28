@@ -2,20 +2,21 @@ Return-Path: <abounine@idt.com>
 Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 83B032C02F6
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jun 2013 05:31:08 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 7CE592C02A1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jun 2013 05:31:12 +1000 (EST)
 From: Alexandre Bounine <alexandre.bounine@idt.com>
 To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/7] rapidio: update enumerator registration mechanism
-Date: Fri, 28 Jun 2013 15:18:52 -0400
-Message-Id: <1372447136-5751-4-git-send-email-alexandre.bounine@idt.com>
+Subject: [PATCH 2/7] rapidio/rionet: rework driver initialization and removal
+Date: Fri, 28 Jun 2013 15:18:51 -0400
+Message-Id: <1372447136-5751-3-git-send-email-alexandre.bounine@idt.com>
 In-Reply-To: <1372447136-5751-1-git-send-email-alexandre.bounine@idt.com>
 References: <1372447136-5751-1-git-send-email-alexandre.bounine@idt.com>
 Cc: Stef van Os <stef.van.os@Prodrive.nl>,
  Micha Nelissen <micha.nelissen@Prodrive.nl>,
  Andre van Herk <andre.van.herk@Prodrive.nl>,
- Alexandre Bounine <alexandre.bounine@idt.com>, Jean Delvare <jdelvare@suse.de>
+ Alexandre Bounine <alexandre.bounine@idt.com>,
+ "David S. Miller" <davem@davemloft.net>, Jean Delvare <jdelvare@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,419 +26,206 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Update enumeration/discovery method registration mechanism to allow loading
-enumeration/discovery methods before all mports are registered.
+Rework probe/remove routines to prevent rionet driver from monopolizing
+target RapidIO devices. Fix conflict with modular RapidIO switch drivers.
 
-Existing statically linked RapidIO subsystem expects that all available RapidIO
-mport devices are initialized and registered before the enumeration/discovery
-method is registered. Switching to loadable mport device drivers creates
-situation when mport device driver can be loaded after enumeration/discovery
-method is attached (e.g., loadable mport driver in a system with statically
-linked RapidIO core and enumerator). This also will happen in a system with
-hot-pluggable RapidIO controllers.
+Using one of RapidIO messaging channels rionet driver provides a service layer
+common to all endpoint devices in a system's RapidIO network. These devices may
+also require their own specific device driver which will be blocked from
+attaching to the target device by rionet (or block rionet if loaded earlier).
+To avoid conflict with device-specific drivers, the rionet driver is reworked
+to be registered as a subsystem interface on the RapidIO bus.
 
-To remove the dependency on the initialization/registration order this patch
-introduces enumeration/discovery registration mechanism that supports arbitrary
-registration order of mports and enumerator/discovery methods.
+The reworked rio_remove_dev() and rionet_exit() routines also include handling
+of individual rionet peer device removal which was not supported before.    
 
-The following registration rules are implemented:
-- only one enumeration/discovery method can be registered for given mport ID
-  (including RIO_MPORT_ANY);
-- when new enumeration/discovery methods tries to attach to the registered mport
-  device, method with matching mport ID will replace a default method previously
-  registered for given mport (if any);
-- enumeration/discovery method with target ID=RIO_MPORT_ANY will be attached
-  only to mports that do not have another enumerator attached to them;
-- when new mport device is registered with RapidIO subsystem, registration
-  routine searches for the enumeration/discovery method with the best matching
-  mport ID;
-  
 Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
 Cc: Matt Porter <mporter@kernel.crashing.org>
 Cc: Li Yang <leoli@freescale.com>
 Cc: Kumar Gala <galak@kernel.crashing.org>
+Cc: "David S. Miller" <davem@davemloft.net>
 Cc: Andre van Herk <andre.van.herk@Prodrive.nl>
 Cc: Micha Nelissen <micha.nelissen@Prodrive.nl>
 Cc: Stef van Os <stef.van.os@Prodrive.nl>
 Cc: Jean Delvare <jdelvare@suse.de>
 ---
- drivers/rapidio/rio-scan.c  |    1 +
- drivers/rapidio/rio-sysfs.c |   17 +----
- drivers/rapidio/rio.c       |  176 +++++++++++++++++++++++++++++++++++--------
- drivers/rapidio/rio.h       |    3 +-
- include/linux/rio.h         |   15 ++++
- 5 files changed, 164 insertions(+), 48 deletions(-)
+ drivers/net/rionet.c |  103 +++++++++++++++++++++++++++++++++++++------------
+ 1 files changed, 78 insertions(+), 25 deletions(-)
 
-diff --git a/drivers/rapidio/rio-scan.c b/drivers/rapidio/rio-scan.c
-index 61c913f..0e86569 100644
---- a/drivers/rapidio/rio-scan.c
-+++ b/drivers/rapidio/rio-scan.c
-@@ -1162,6 +1162,7 @@ bail:
- }
- 
- static struct rio_scan rio_scan_ops = {
-+	.owner = THIS_MODULE,
- 	.enumerate = rio_enum_mport,
- 	.discover = rio_disc_mport,
- };
-diff --git a/drivers/rapidio/rio-sysfs.c b/drivers/rapidio/rio-sysfs.c
-index 864e52f..0c4473e 100644
---- a/drivers/rapidio/rio-sysfs.c
-+++ b/drivers/rapidio/rio-sysfs.c
-@@ -286,7 +286,6 @@ static ssize_t bus_scan_store(struct bus_type *bus, const char *buf,
- 				size_t count)
- {
- 	long val;
--	struct rio_mport *port = NULL;
- 	int rc;
- 
- 	if (kstrtol(buf, 0, &val) < 0)
-@@ -300,21 +299,7 @@ static ssize_t bus_scan_store(struct bus_type *bus, const char *buf,
- 	if (val < 0 || val >= RIO_MAX_MPORTS)
- 		return -EINVAL;
- 
--	port = rio_find_mport((int)val);
--
--	if (!port) {
--		pr_debug("RIO: %s: mport_%d not available\n",
--			 __func__, (int)val);
--		return -EINVAL;
--	}
--
--	if (!port->nscan)
--		return -EINVAL;
--
--	if (port->host_deviceid >= 0)
--		rc = port->nscan->enumerate(port, 0);
--	else
--		rc = port->nscan->discover(port, RIO_SCAN_ENUM_NO_WAIT);
-+	rc = rio_mport_scan((int)val);
- exit:
- 	if (!rc)
- 		rc = count;
-diff --git a/drivers/rapidio/rio.c b/drivers/rapidio/rio.c
-index b17d521..5eb727c 100644
---- a/drivers/rapidio/rio.c
-+++ b/drivers/rapidio/rio.c
-@@ -34,6 +34,7 @@ static LIST_HEAD(rio_devices);
- static DEFINE_SPINLOCK(rio_global_list_lock);
- 
- static LIST_HEAD(rio_mports);
-+static LIST_HEAD(rio_scans);
- static DEFINE_MUTEX(rio_mport_list_lock);
- static unsigned char next_portid;
- static DEFINE_SPINLOCK(rio_mmap_lock);
-@@ -1602,34 +1603,73 @@ found:
-  * rio_register_scan - enumeration/discovery method registration interface
-  * @mport_id: mport device ID for which fabric scan routine has to be set
-  *            (RIO_MPORT_ANY = set for all available mports)
-- * @scan_ops: enumeration/discovery control structure
-+ * @scan_ops: enumeration/discovery operations structure
-+ *
-+ * Registers enumeration/discovery operations with RapidIO subsystem and
-+ * attaches it to the specified mport device (or all available mports
-+ * if RIO_MPORT_ANY is specified).
-  *
-- * Assigns enumeration or discovery method to the specified mport device (or all
-- * available mports if RIO_MPORT_ANY is specified).
-  * Returns error if the mport already has an enumerator attached to it.
-- * In case of RIO_MPORT_ANY ignores ports with valid scan routines and returns
-- * an error if was unable to find at least one available mport.
-+ * In case of RIO_MPORT_ANY skips mports with valid scan routines (no error).
-  */
- int rio_register_scan(int mport_id, struct rio_scan *scan_ops)
- {
- 	struct rio_mport *port;
--	int rc = -EBUSY;
-+	struct rio_scan_node *scan;
-+	int rc = 0;
- 
--	mutex_lock(&rio_mport_list_lock);
--	list_for_each_entry(port, &rio_mports, node) {
--		if (port->id == mport_id || mport_id == RIO_MPORT_ANY) {
--			if (port->nscan && mport_id == RIO_MPORT_ANY)
--				continue;
--			else if (port->nscan)
--				break;
-+	pr_debug("RIO: %s for mport_id=%d\n", __func__, mport_id);
- 
--			port->nscan = scan_ops;
--			rc = 0;
-+	if ((mport_id != RIO_MPORT_ANY && mport_id >= RIO_MAX_MPORTS) ||
-+	    !scan_ops)
-+		return -EINVAL;
- 
--			if (mport_id != RIO_MPORT_ANY)
--				break;
-+	mutex_lock(&rio_mport_list_lock);
-+
-+	/*
-+	 * Check if there is another enumerator already registered for
-+	 * the same mport ID (including RIO_MPORT_ANY). Multiple enumerators
-+	 * for the same mport ID are not supported.
-+	 */
-+	list_for_each_entry(scan, &rio_scans, node) {
-+		if (scan->mport_id == mport_id) {
-+			rc = -EBUSY;
-+			goto err_out;
- 		}
+diff --git a/drivers/net/rionet.c b/drivers/net/rionet.c
+index f433b59..6d1f6ed 100644
+--- a/drivers/net/rionet.c
++++ b/drivers/net/rionet.c
+@@ -208,6 +208,17 @@ static int rionet_start_xmit(struct sk_buff *skb, struct net_device *ndev)
+ 		if (nets[rnet->mport->id].active[destid])
+ 			rionet_queue_tx_msg(skb, ndev,
+ 					nets[rnet->mport->id].active[destid]);
++		else {
++			/*
++			 * If the target device was removed from the list of
++			 * active peers but we still have TX packets targeting
++			 * it just report sending a packet to the target
++			 * (without actual packet transfer).
++			 */
++			dev_kfree_skb_any(skb);
++			ndev->stats.tx_packets++;
++			ndev->stats.tx_bytes += skb->len;
++		}
  	}
-+
-+	/*
-+	 * Allocate and initialize new scan registration node.
-+	 */
-+	scan = kzalloc(sizeof(*scan), GFP_KERNEL);
-+	if (!scan) {
-+		rc = -ENOMEM;
-+		goto err_out;
-+	}
-+
-+	scan->mport_id = mport_id;
-+	scan->ops = scan_ops;
-+
-+	/*
-+	 * Traverse the list of registered mports to attach this new scan.
-+	 *
-+	 * The new scan with matching mport ID overrides any previously attached
-+	 * scan assuming that old scan (if any) is the default one (based on the
-+	 * enumerator registration check above).
-+	 * If the new scan is the global one, it will be attached only to mports
-+	 * that do not have their own individual operations already attached.
-+	 */
-+	list_for_each_entry(port, &rio_mports, node) {
-+		if (port->id == mport_id) {
-+			port->nscan = scan_ops;
-+			break;
-+		} else if (mport_id == RIO_MPORT_ANY && !port->nscan)
-+			port->nscan = scan_ops;
-+	}
-+
-+	list_add_tail(&scan->node, &rio_scans);
-+
-+err_out:
- 	mutex_unlock(&rio_mport_list_lock);
  
- 	return rc;
-@@ -1639,30 +1679,81 @@ EXPORT_SYMBOL_GPL(rio_register_scan);
- /**
-  * rio_unregister_scan - removes enumeration/discovery method from mport
-  * @mport_id: mport device ID for which fabric scan routine has to be
-- *            unregistered (RIO_MPORT_ANY = set for all available mports)
-+ *            unregistered (RIO_MPORT_ANY = apply to all mports that use
-+ *            the specified scan_ops)
-+ * @scan_ops: enumeration/discovery operations structure
-  *
-  * Removes enumeration or discovery method assigned to the specified mport
-- * device (or all available mports if RIO_MPORT_ANY is specified).
-+ * device. If RIO_MPORT_ANY is specified, removes the specified operations from
-+ * all mports that have them attached.
-  */
--int rio_unregister_scan(int mport_id)
-+int rio_unregister_scan(int mport_id, struct rio_scan *scan_ops)
- {
- 	struct rio_mport *port;
-+	struct rio_scan_node *scan;
-+
-+	pr_debug("RIO: %s for mport_id=%d\n", __func__, mport_id);
-+
-+	if (mport_id != RIO_MPORT_ANY && mport_id >= RIO_MAX_MPORTS)
-+		return -EINVAL;
- 
- 	mutex_lock(&rio_mport_list_lock);
--	list_for_each_entry(port, &rio_mports, node) {
--		if (port->id == mport_id || mport_id == RIO_MPORT_ANY) {
--			if (port->nscan)
--				port->nscan = NULL;
--			if (mport_id != RIO_MPORT_ANY)
--				break;
-+
-+	list_for_each_entry(port, &rio_mports, node)
-+		if (port->id == mport_id ||
-+		    (mport_id == RIO_MPORT_ANY && port->nscan == scan_ops))
-+			port->nscan = NULL;
-+
-+	list_for_each_entry(scan, &rio_scans, node)
-+		if (scan->mport_id == mport_id) {
-+			list_del(&scan->node);
-+			kfree(scan);
- 		}
--	}
-+
- 	mutex_unlock(&rio_mport_list_lock);
- 
+ 	spin_unlock_irqrestore(&rnet->tx_lock, flags);
+@@ -385,24 +396,28 @@ static int rionet_close(struct net_device *ndev)
  	return 0;
  }
- EXPORT_SYMBOL_GPL(rio_unregister_scan);
  
-+/**
-+ * rio_mport_scan - execute enumeration/discovery on the specified mport
-+ * @mport_id: number (ID) of mport device
-+ */
-+int rio_mport_scan(int mport_id)
-+{
-+	struct rio_mport *port = NULL;
-+	int rc;
-+
-+	mutex_lock(&rio_mport_list_lock);
-+	list_for_each_entry(port, &rio_mports, node) {
-+		if (port->id == mport_id)
-+			goto found;
-+	}
-+	mutex_unlock(&rio_mport_list_lock);
-+	return -ENODEV;
-+found:
-+	if (!port->nscan) {
-+		mutex_unlock(&rio_mport_list_lock);
-+		return -EINVAL;
-+	}
-+
-+	if (!try_module_get(port->nscan->owner)) {
-+		mutex_unlock(&rio_mport_list_lock);
-+		return -ENODEV;
-+	}
-+
-+	mutex_unlock(&rio_mport_list_lock);
-+
-+	if (port->host_deviceid >= 0)
-+		rc = port->nscan->enumerate(port, 0);
-+	else
-+		rc = port->nscan->discover(port, RIO_SCAN_ENUM_NO_WAIT);
-+
-+	module_put(port->nscan->owner);
-+	return rc;
-+}
-+
- static void rio_fixup_device(struct rio_dev *dev)
+-static void rionet_remove(struct rio_dev *rdev)
++static int rionet_remove_dev(struct device *dev, struct subsys_interface *sif)
  {
- }
-@@ -1691,7 +1782,10 @@ static void disc_work_handler(struct work_struct *_work)
- 	work = container_of(_work, struct rio_disc_work, work);
- 	pr_debug("RIO: discovery work for mport %d %s\n",
- 		 work->mport->id, work->mport->name);
--	work->mport->nscan->discover(work->mport, 0);
-+	if (try_module_get(work->mport->nscan->owner)) {
-+		work->mport->nscan->discover(work->mport, 0);
-+		module_put(work->mport->nscan->owner);
-+	}
- }
+-	struct net_device *ndev = rio_get_drvdata(rdev);
++	struct rio_dev *rdev = to_rio_dev(dev);
+ 	unsigned char netid = rdev->net->hport->id;
+ 	struct rionet_peer *peer, *tmp;
  
- int rio_init_mports(void)
-@@ -1710,8 +1804,10 @@ int rio_init_mports(void)
- 	mutex_lock(&rio_mport_list_lock);
- 	list_for_each_entry(port, &rio_mports, node) {
- 		if (port->host_deviceid >= 0) {
--			if (port->nscan)
-+			if (port->nscan && try_module_get(port->nscan->owner)) {
- 				port->nscan->enumerate(port, 0);
-+				module_put(port->nscan->owner);
-+			}
- 		} else
- 			n++;
- 	}
-@@ -1725,7 +1821,7 @@ int rio_init_mports(void)
- 	 * for each of them. If the code below fails to allocate needed
- 	 * resources, exit without error to keep results of enumeration
- 	 * process (if any).
--	 * TODO: Implement restart of dicovery process for all or
-+	 * TODO: Implement restart of discovery process for all or
- 	 * individual discovering mports.
- 	 */
- 	rio_wq = alloc_workqueue("riodisc", 0, 0);
-@@ -1751,9 +1847,9 @@ int rio_init_mports(void)
- 			n++;
- 		}
- 	}
--	mutex_unlock(&rio_mport_list_lock);
+-	unregister_netdev(ndev);
+-
+-	free_pages((unsigned long)nets[netid].active, get_order(sizeof(void *) *
+-			RIO_MAX_ROUTE_ENTRIES(rdev->net->hport->sys_size)));
+-	nets[netid].active = NULL;
++	if (dev_rionet_capable(rdev)) {
++		list_for_each_entry_safe(peer, tmp, &nets[netid].peers, node) {
++			if (peer->rdev == rdev) {
++				if (nets[netid].active[rdev->destid]) {
++					nets[netid].active[rdev->destid] = NULL;
++					nets[netid].nact--;
++				}
  
- 	flush_workqueue(rio_wq);
-+	mutex_unlock(&rio_mport_list_lock);
- 	pr_debug("RIO: destroy discovery workqueue\n");
- 	destroy_workqueue(rio_wq);
- 	kfree(work);
-@@ -1784,6 +1880,8 @@ __setup("riohdid=", rio_hdid_setup);
- 
- int rio_register_mport(struct rio_mport *port)
- {
-+	struct rio_scan_node *scan = NULL;
-+
- 	if (next_portid >= RIO_MAX_MPORTS) {
- 		pr_err("RIO: reached specified max number of mports\n");
- 		return 1;
-@@ -1792,9 +1890,25 @@ int rio_register_mport(struct rio_mport *port)
- 	port->id = next_portid++;
- 	port->host_deviceid = rio_get_hdid(port->id);
- 	port->nscan = NULL;
-+
- 	mutex_lock(&rio_mport_list_lock);
- 	list_add_tail(&port->node, &rio_mports);
-+
-+	/*
-+	 * Check if there are any registered enumeration/discovery operations
-+	 * that have to be attached to the added mport.
-+	 */
-+	list_for_each_entry(scan, &rio_scans, node) {
-+		if (port->id == scan->mport_id ||
-+		    scan->mport_id == RIO_MPORT_ANY) {
-+			port->nscan = scan->ops;
-+			if (port->id == scan->mport_id)
+-	list_for_each_entry_safe(peer, tmp, &nets[netid].peers, node) {
+-		list_del(&peer->node);
+-		kfree(peer);
++				list_del(&peer->node);
++				kfree(peer);
 +				break;
++			}
++		}
+ 	}
+ 
+-	free_netdev(ndev);
++	return 0;
+ }
+ 
+ static void rionet_get_drvinfo(struct net_device *ndev,
+@@ -503,12 +518,13 @@ static int rionet_setup_netdev(struct rio_mport *mport, struct net_device *ndev)
+ 
+ static unsigned long net_table[RIONET_MAX_NETS/sizeof(unsigned long) + 1];
+ 
+-static int rionet_probe(struct rio_dev *rdev, const struct rio_device_id *id)
++static int rionet_add_dev(struct device *dev, struct subsys_interface *sif)
+ {
+ 	int rc = -ENODEV;
+ 	u32 lsrc_ops, ldst_ops;
+ 	struct rionet_peer *peer;
+ 	struct net_device *ndev = NULL;
++	struct rio_dev *rdev = to_rio_dev(dev);
+ 	unsigned char netid = rdev->net->hport->id;
+ 	int oldnet;
+ 
+@@ -518,8 +534,9 @@ static int rionet_probe(struct rio_dev *rdev, const struct rio_device_id *id)
+ 	oldnet = test_and_set_bit(netid, net_table);
+ 
+ 	/*
+-	 * First time through, make sure local device is rionet
+-	 * capable, setup netdev (will be skipped on later probes)
++	 * If first time through this net, make sure local device is rionet
++	 * capable and setup netdev (this step will be skipped in later probes
++	 * on the same net).
+ 	 */
+ 	if (!oldnet) {
+ 		rio_local_read_config_32(rdev->net->hport, RIO_SRC_OPS_CAR,
+@@ -541,6 +558,12 @@ static int rionet_probe(struct rio_dev *rdev, const struct rio_device_id *id)
+ 		}
+ 		nets[netid].ndev = ndev;
+ 		rc = rionet_setup_netdev(rdev->net->hport, ndev);
++		if (rc) {
++			printk(KERN_ERR "%s: failed to setup netdev (rc=%d)\n",
++			       DRV_NAME, rc);
++			goto out;
++		}
++
+ 		INIT_LIST_HEAD(&nets[netid].peers);
+ 		nets[netid].nact = 0;
+ 	} else if (nets[netid].ndev == NULL)
+@@ -559,31 +582,61 @@ static int rionet_probe(struct rio_dev *rdev, const struct rio_device_id *id)
+ 		list_add_tail(&peer->node, &nets[netid].peers);
+ 	}
+ 
+-	rio_set_drvdata(rdev, nets[netid].ndev);
+-
+-      out:
++	return 0;
++out:
+ 	return rc;
+ }
+ 
++#ifdef MODULE
+ static struct rio_device_id rionet_id_table[] = {
+-	{RIO_DEVICE(RIO_ANY_ID, RIO_ANY_ID)}
++	{RIO_DEVICE(RIO_ANY_ID, RIO_ANY_ID)},
++	{ 0, }	/* terminate list */
+ };
+ 
+-static struct rio_driver rionet_driver = {
+-	.name = "rionet",
+-	.id_table = rionet_id_table,
+-	.probe = rionet_probe,
+-	.remove = rionet_remove,
++MODULE_DEVICE_TABLE(rapidio, rionet_id_table);
++#endif
++
++static struct subsys_interface rionet_interface = {
++	.name		= "rionet",
++	.subsys		= &rio_bus_type,
++	.add_dev	= rionet_add_dev,
++	.remove_dev	= rionet_remove_dev,
+ };
+ 
+ static int __init rionet_init(void)
+ {
+-	return rio_register_driver(&rionet_driver);
++	return subsys_interface_register(&rionet_interface);
+ }
+ 
+ static void __exit rionet_exit(void)
+ {
+-	rio_unregister_driver(&rionet_driver);
++	struct rionet_private *rnet;
++	struct net_device *ndev;
++	struct rionet_peer *peer, *tmp;
++	int i;
++
++	for (i = 0; i < RIONET_MAX_NETS; i++) {
++		if (nets[i].ndev != NULL) {
++			ndev = nets[i].ndev;
++			rnet = netdev_priv(ndev);
++			unregister_netdev(ndev);
++
++			list_for_each_entry_safe(peer,
++						 tmp, &nets[i].peers, node) {
++				list_del(&peer->node);
++				kfree(peer);
++			}
++
++			free_pages((unsigned long)nets[i].active,
++				 get_order(sizeof(void *) *
++				 RIO_MAX_ROUTE_ENTRIES(rnet->mport->sys_size)));
++			nets[i].active = NULL;
++
++			free_netdev(ndev);
 +		}
 +	}
- 	mutex_unlock(&rio_mport_list_lock);
 +
-+	pr_debug("RIO: %s %s id=%d\n", __func__, port->name, port->id);
- 	return 0;
++	subsys_interface_unregister(&rionet_interface);
  }
  
-diff --git a/drivers/rapidio/rio.h b/drivers/rapidio/rio.h
-index d595877..085215c 100644
---- a/drivers/rapidio/rio.h
-+++ b/drivers/rapidio/rio.h
-@@ -42,9 +42,10 @@ extern int rio_add_device(struct rio_dev *rdev);
- extern int rio_enable_rx_tx_port(struct rio_mport *port, int local, u16 destid,
- 				 u8 hopcount, u8 port_num);
- extern int rio_register_scan(int mport_id, struct rio_scan *scan_ops);
--extern int rio_unregister_scan(int mport_id);
-+extern int rio_unregister_scan(int mport_id, struct rio_scan *scan_ops);
- extern void rio_attach_device(struct rio_dev *rdev);
- extern struct rio_mport *rio_find_mport(int mport_id);
-+extern int rio_mport_scan(int mport_id);
- 
- /* Structures internal to the RIO core code */
- extern struct device_attribute rio_dev_attrs[];
-diff --git a/include/linux/rio.h b/include/linux/rio.h
-index fcd492e..8d3db1b 100644
---- a/include/linux/rio.h
-+++ b/include/linux/rio.h
-@@ -465,14 +465,29 @@ static inline struct rio_mport *dma_to_mport(struct dma_device *ddev)
- 
- /**
-  * struct rio_scan - RIO enumeration and discovery operations
-+ * @owner: The module owner of this structure
-  * @enumerate: Callback to perform RapidIO fabric enumeration.
-  * @discover: Callback to perform RapidIO fabric discovery.
-  */
- struct rio_scan {
-+	struct module *owner;
- 	int (*enumerate)(struct rio_mport *mport, u32 flags);
- 	int (*discover)(struct rio_mport *mport, u32 flags);
- };
- 
-+/**
-+ * struct rio_scan_node - list node to register RapidIO enumeration and
-+ * discovery methods with RapidIO core.
-+ * @mport_id: ID of an mport (net) serviced by this enumerator
-+ * @node: node in global list of registered enumerators
-+ * @ops: RIO enumeration and discovery operations
-+ */
-+struct rio_scan_node {
-+	int mport_id;
-+	struct list_head node;
-+	struct rio_scan *ops;
-+};
-+
- /* Architecture and hardware-specific functions */
- extern int rio_register_mport(struct rio_mport *);
- extern int rio_open_inb_mbox(struct rio_mport *, void *, int, int);
+ late_initcall(rionet_init);
 -- 
 1.7.8.4
