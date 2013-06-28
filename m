@@ -1,12 +1,34 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: benh@kernel.crashing.org
-MIME-Version: 1.0
-Subject: [PATCH] powerpc/tm: Clear MSR RI in non-recoverable TM code
-Date: Fri, 28 Jun 2013 18:17:09 +1000
-Message-ID: <28318.1372407429@ale.ozlabs.ibm.com>
-Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
- anton@samba.org
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id EB8CF2C037D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 19:11:16 +1000 (EST)
+Received: from /spool/local
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 28 Jun 2013 14:36:30 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id CBF031258043
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 14:40:14 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5S9BRoL29556772
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 14:41:27 +0530
+Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5S9B7SQ000333
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 19:11:08 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, linux-mm@kvack.org,
+ m.szyprowski@samsung.com, mina86@mina86.com
+Subject: [PATCH -V2 1/4] mm/cma: Move dma contiguous changes into a seperate
+ config
+Date: Fri, 28 Jun 2013 14:40:59 +0530
+Message-Id: <1372410662-3748-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,63 +38,190 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When we treclaim and trecheckpoint there's an unavoidable period when r1
-will not be a valid kernel stack pointer.
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-This patch clears the MSR recoverable interrupt (RI) bit over these
-regions to indicate we have an invalid kernel stack pointer.
+We want to use CMA for allocating hash page table and real mode area for
+PPC64. Hence move DMA contiguous related changes into a seperate config
+so that ppc64 can enable CMA without requiring DMA contiguous.
 
-For treclaim, the region over which we clear MSR RI is larger than
-required to avoid the need for an extra costly mtmsrd.
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/arm/configs/omap2plus_defconfig  |  2 +-
+ arch/arm/configs/tegra_defconfig      |  2 +-
+ arch/arm/include/asm/dma-contiguous.h |  2 +-
+ arch/arm/mm/dma-mapping.c             |  6 +++---
+ drivers/base/Kconfig                  | 21 +++++----------------
+ drivers/base/Makefile                 |  2 +-
+ include/linux/dma-contiguous.h        |  2 +-
+ mm/Kconfig                            | 24 ++++++++++++++++++++++++
+ 8 files changed, 37 insertions(+), 24 deletions(-)
 
-Thanks to Paulus for suggesting this change.
-
-Signed-off-by: Michael Neuling <mikey@neuling.org>
-
-diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
-index 2da67e7..51be8fb 100644
---- a/arch/powerpc/kernel/tm.S
-+++ b/arch/powerpc/kernel/tm.S
-@@ -112,9 +112,18 @@ _GLOBAL(tm_reclaim)
- 	std	r3, STACK_PARAM(0)(r1)
- 	SAVE_NVGPRS(r1)
+diff --git a/arch/arm/configs/omap2plus_defconfig b/arch/arm/configs/omap2plus_defconfig
+index abbe319..098268f 100644
+--- a/arch/arm/configs/omap2plus_defconfig
++++ b/arch/arm/configs/omap2plus_defconfig
+@@ -71,7 +71,7 @@ CONFIG_MAC80211=m
+ CONFIG_MAC80211_RC_PID=y
+ CONFIG_MAC80211_RC_DEFAULT_PID=y
+ CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+-CONFIG_CMA=y
++CONFIG_DMA_CMA=y
+ CONFIG_CONNECTOR=y
+ CONFIG_DEVTMPFS=y
+ CONFIG_DEVTMPFS_MOUNT=y
+diff --git a/arch/arm/configs/tegra_defconfig b/arch/arm/configs/tegra_defconfig
+index f7ba3161..34ae8f2 100644
+--- a/arch/arm/configs/tegra_defconfig
++++ b/arch/arm/configs/tegra_defconfig
+@@ -79,7 +79,7 @@ CONFIG_RFKILL_GPIO=y
+ CONFIG_DEVTMPFS=y
+ CONFIG_DEVTMPFS_MOUNT=y
+ # CONFIG_FIRMWARE_IN_KERNEL is not set
+-CONFIG_CMA=y
++CONFIG_DMA_CMA=y
+ CONFIG_MTD=y
+ CONFIG_MTD_CHAR=y
+ CONFIG_MTD_M25P80=y
+diff --git a/arch/arm/include/asm/dma-contiguous.h b/arch/arm/include/asm/dma-contiguous.h
+index 3ed37b4..e072bb2 100644
+--- a/arch/arm/include/asm/dma-contiguous.h
++++ b/arch/arm/include/asm/dma-contiguous.h
+@@ -2,7 +2,7 @@
+ #define ASMARM_DMA_CONTIGUOUS_H
  
-+	/* We need to setup MSR for VSX register save instructions.  Here we
-+	 * also clear the MSR RI since when we do the treclaim, we won't have a
-+	 * valid kernel pointer for a while.  We clear RI here as it avoids
-+	 * adding another mtmsr closer to the treclaim.  This makes the region
-+	 * maked as non-recoverable wider than it needs to be but it saves on
-+	 * inserting another mtmsrd later.
-+	 */
- 	mfmsr	r14
- 	mr	r15, r14
- 	ori	r15, r15, MSR_FP
-+	li	r16, MSR_RI
-+	andc	r15, r15, r16
- 	oris	r15, r15, MSR_VEC@h
- #ifdef CONFIG_VSX
- 	BEGIN_FTR_SECTION
-@@ -349,9 +358,10 @@ restore_gprs:
- 	mtcr	r5
- 	mtxer	r6
+ #ifdef __KERNEL__
+-#ifdef CONFIG_CMA
++#ifdef CONFIG_DMA_CMA
  
--	/* MSR and flags:  We don't change CRs, and we don't need to alter
--	 * MSR.
-+	/* Clear the MSR RI since we are about to change R1.  EE is already off
- 	 */
-+	li	r4, 0
-+	mtmsrd	r4, 1
+ #include <linux/types.h>
+ #include <asm-generic/dma-contiguous.h>
+diff --git a/arch/arm/mm/dma-mapping.c b/arch/arm/mm/dma-mapping.c
+index ef3e0f3..1fb40dc 100644
+--- a/arch/arm/mm/dma-mapping.c
++++ b/arch/arm/mm/dma-mapping.c
+@@ -358,7 +358,7 @@ static int __init atomic_pool_init(void)
+ 	if (!pages)
+ 		goto no_pages;
  
- 	REST_4GPRS(0, r7)			/* GPR0-3 */
- 	REST_GPR(4, r7)				/* GPR4-6 */
-@@ -377,6 +387,10 @@ restore_gprs:
- 	GET_PACA(r13)
- 	GET_SCRATCH0(r1)
+-	if (IS_ENABLED(CONFIG_CMA))
++	if (IS_ENABLED(CONFIG_DMA_CMA))
+ 		ptr = __alloc_from_contiguous(NULL, pool->size, prot, &page,
+ 					      atomic_pool_init);
+ 	else
+@@ -670,7 +670,7 @@ static void *__dma_alloc(struct device *dev, size_t size, dma_addr_t *handle,
+ 		addr = __alloc_simple_buffer(dev, size, gfp, &page);
+ 	else if (!(gfp & __GFP_WAIT))
+ 		addr = __alloc_from_pool(size, &page);
+-	else if (!IS_ENABLED(CONFIG_CMA))
++	else if (!IS_ENABLED(CONFIG_DMA_CMA))
+ 		addr = __alloc_remap_buffer(dev, size, gfp, prot, &page, caller);
+ 	else
+ 		addr = __alloc_from_contiguous(dev, size, prot, &page, caller);
+@@ -759,7 +759,7 @@ static void __arm_dma_free(struct device *dev, size_t size, void *cpu_addr,
+ 		__dma_free_buffer(page, size);
+ 	} else if (__free_from_pool(cpu_addr, size)) {
+ 		return;
+-	} else if (!IS_ENABLED(CONFIG_CMA)) {
++	} else if (!IS_ENABLED(CONFIG_DMA_CMA)) {
+ 		__dma_free_remap(cpu_addr, size);
+ 		__dma_free_buffer(page, size);
+ 	} else {
+diff --git a/drivers/base/Kconfig b/drivers/base/Kconfig
+index 07abd9d..74b7c98 100644
+--- a/drivers/base/Kconfig
++++ b/drivers/base/Kconfig
+@@ -202,11 +202,10 @@ config DMA_SHARED_BUFFER
+ 	  APIs extension; the file's descriptor can then be passed on to other
+ 	  driver.
  
-+	/* R1 is restored, so we are recoverable again.  EE is still off */
-+	li	r4, MSR_RI
-+	mtmsrd	r4, 1
+-config CMA
+-	bool "Contiguous Memory Allocator"
+-	depends on HAVE_DMA_CONTIGUOUS && HAVE_MEMBLOCK
+-	select MIGRATION
+-	select MEMORY_ISOLATION
++config DMA_CMA
++	bool "DMA Contiguous Memory Allocator"
++	depends on HAVE_DMA_CONTIGUOUS
++	select CMA
+ 	help
+ 	  This enables the Contiguous Memory Allocator which allows drivers
+ 	  to allocate big physically-contiguous blocks of memory for use with
+@@ -215,17 +214,7 @@ config CMA
+ 	  For more information see <include/linux/dma-contiguous.h>.
+ 	  If unsure, say "n".
+ 
+-if CMA
+-
+-config CMA_DEBUG
+-	bool "CMA debug messages (DEVELOPMENT)"
+-	depends on DEBUG_KERNEL
+-	help
+-	  Turns on debug messages in CMA.  This produces KERN_DEBUG
+-	  messages for every CMA call as well as various messages while
+-	  processing calls such as dma_alloc_from_contiguous().
+-	  This option does not affect warning and error messages.
+-
++if  DMA_CMA
+ comment "Default contiguous memory area size:"
+ 
+ config CMA_SIZE_MBYTES
+diff --git a/drivers/base/Makefile b/drivers/base/Makefile
+index 4e22ce3..5d93bb5 100644
+--- a/drivers/base/Makefile
++++ b/drivers/base/Makefile
+@@ -6,7 +6,7 @@ obj-y			:= core.o bus.o dd.o syscore.o \
+ 			   attribute_container.o transport_class.o \
+ 			   topology.o
+ obj-$(CONFIG_DEVTMPFS)	+= devtmpfs.o
+-obj-$(CONFIG_CMA) += dma-contiguous.o
++obj-$(CONFIG_DMA_CMA) += dma-contiguous.o
+ obj-y			+= power/
+ obj-$(CONFIG_HAS_DMA)	+= dma-mapping.o
+ obj-$(CONFIG_HAVE_GENERIC_DMA_COHERENT) += dma-coherent.o
+diff --git a/include/linux/dma-contiguous.h b/include/linux/dma-contiguous.h
+index 01b5c84..00141d3 100644
+--- a/include/linux/dma-contiguous.h
++++ b/include/linux/dma-contiguous.h
+@@ -57,7 +57,7 @@ struct cma;
+ struct page;
+ struct device;
+ 
+-#ifdef CONFIG_CMA
++#ifdef CONFIG_DMA_CMA
+ 
+ /*
+  * There is always at least global CMA area and a few optional device
+diff --git a/mm/Kconfig b/mm/Kconfig
+index e742d06..26a5f81 100644
+--- a/mm/Kconfig
++++ b/mm/Kconfig
+@@ -477,3 +477,27 @@ config FRONTSWAP
+ 	  and swap data is stored as normal on the matching swap device.
+ 
+ 	  If unsure, say Y to enable frontswap.
 +
- 	REST_NVGPRS(r1)
- 
- 	addi    r1, r1, TM_FRAME_SIZE
++config CMA
++	bool "Contiguous Memory Allocator"
++	depends on HAVE_MEMBLOCK
++	select MIGRATION
++	select MEMORY_ISOLATION
++	help
++	  This enables the Contiguous Memory Allocator which allows other
++	  subsystems to allocate big physically-contiguous blocks of memory.
++	  CMA reserves a region of memory and allows only movable pages to
++	  be allocated from it. This way, the kernel can use the memory for
++	  pagecache and when a subsystem requests for contiguous area, the
++	  allocated pages are migrated away to serve the contiguous request.
++
++	  If unsure, say "n".
++
++config CMA_DEBUG
++	bool "CMA debug messages (DEVELOPMENT)"
++	depends on DEBUG_KERNEL && CMA
++	help
++	  Turns on debug messages in CMA.  This produces KERN_DEBUG
++	  messages for every CMA call as well as various messages while
++	  processing calls such as dma_alloc_from_contiguous().
++	  This option does not affect warning and error messages.
+-- 
+1.8.1.2
