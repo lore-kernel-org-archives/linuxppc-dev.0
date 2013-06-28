@@ -1,21 +1,21 @@
-Return-Path: <B07421@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0187.outbound.messaging.microsoft.com [213.199.154.187])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 570B42C0330
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 09:16:59 +1000 (EST)
-Date: Thu, 27 Jun 2013 18:16:47 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Sergey Gerasimov <Sergey.Gerasimov@astrosoft-development.com>
-Subject: Re: [1/1] MPC831x: fix PCI express probing
-Message-ID: <20130627231647.GA15057@home.buserror.net>
-References: <1363687105-24835-1-git-send-email-Sergey.Gerasimov@astrosoft-development.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1363687105-24835-1-git-send-email-Sergey.Gerasimov@astrosoft-development.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 740682C032E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 10:41:41 +1000 (EST)
+Message-ID: <1372380089.30572.689.camel@ul30vt.home>
+Subject: Re: [PATCH v2] vfio: add external user support
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Date: Thu, 27 Jun 2013 18:41:29 -0600
+In-Reply-To: <51CCC353.7030905@ozlabs.ru>
+References: <20130627164752.657c165ec4492e5248945a51@canb.auug.org.au>
+ <1372317260-6438-1-git-send-email-aik@ozlabs.ru>
+ <1372347850.30572.659.camel@ul30vt.home> <51CCC353.7030905@ozlabs.ru>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,76 +25,143 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 19, 2013 at 10:58:25AM +0100, Sergey Gerasimov wrote:
-> For MPC831x the bus probing function also needs the fixup to assign
-> addresses to the PCI devices as it was for MPC85xx and MPC86xx.
-> The fixup of the bridge vendor and device ID should be done early in
-> PCI probing. Else the bridge is not detected as FIXUP_HEADER is called
-> too late.
+On Fri, 2013-06-28 at 08:57 +1000, Alexey Kardashevskiy wrote:
+> On 06/28/2013 01:44 AM, Alex Williamson wrote:
+> > On Thu, 2013-06-27 at 17:14 +1000, Alexey Kardashevskiy wrote:
+> >> VFIO is designed to be used via ioctls on file descriptors
+> >> returned by VFIO.
+> >>
+> >> However in some situations support for an external user is required.
+> >> The first user is KVM on PPC64 (SPAPR TCE protocol) which is going to
+> >> use the existing VFIO groups for exclusive access in real/virtual mode
+> >> in the host kernel to avoid passing map/unmap requests to the user
+> >> space which would made things pretty slow.
+> >>
+> >> The proposed protocol includes:
+> >>
+> >> 1. do normal VFIO init stuff such as opening a new container, attaching
+> >> group(s) to it, setting an IOMMU driver for a container. When IOMMU is
+> >> set for a container, all groups in it are considered ready to use by
+> >> an external user.
+> >>
+> >> 2. pass a fd of the group we want to accelerate to KVM. KVM calls
+> >> vfio_group_iommu_id_from_file() to verify if the group is initialized
+> >> and IOMMU is set for it. The current TCE IOMMU driver marks the whole
+> >> IOMMU table as busy when IOMMU is set for a container what this prevents
+> >> other DMA users from allocating from it so it is safe to pass the group
+> >> to the user space.
+> >>
+> >> 3. KVM increases the container users counter via
+> >> vfio_group_add_external_user(). This prevents the VFIO group from
+> >> being disposed prior to exiting KVM.
+> >>
+> >> 4. When KVM is finished and doing cleanup, it releases the group file
+> >> and decrements the container users counter. Everything gets released.
+> >>
+> >> 5. KVM also keeps the group file as otherwise its fd might have been
+> >> closed at the moment of KVM finish so vfio_group_del_external_user()
+> >> call will not be possible.
+> > 
+> > This is the wrong order in my mind.  An external user has no business
+> > checking or maintaining any state of a group until it calls
+> > add_external_user().  Only after that call is successful can the user
+> > assume the filep to group relationship is static and get the iommu_id.
+> > Any use of the "external user" API should start with "add" and end with
+> > "del".
 > 
-> Signed-off-by: Sergey Gerasimov <Sergey.Gerasimov@astrosoft-development.com>
+> Yes, this is what I actually do, just wrong commit message, will fix.
 > 
-> ---
-> arch/powerpc/sysdev/fsl_pci.c | 67 +++++++++++++++++++------------------------
->  1 file changed, 30 insertions(+), 37 deletions(-)
+> > 
+> >> The "vfio: Limit group opens" patch is also required for the consistency.
+> >>
+> >> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> >> ---
+> >>
+> >> v1->v2: added definitions to vfio.h :)
+> >> Should not compile but compiled. Hm.
+> >>
+> >> ---
+> >>  drivers/vfio/vfio.c  |   54 ++++++++++++++++++++++++++++++++++++++++++++++++++
+> >>  include/linux/vfio.h |    7 +++++++
+> >>  2 files changed, 61 insertions(+)
+> >>
+> >> diff --git a/drivers/vfio/vfio.c b/drivers/vfio/vfio.c
+> >> index c488da5..40875d2 100644
+> >> --- a/drivers/vfio/vfio.c
+> >> +++ b/drivers/vfio/vfio.c
+> >> @@ -1370,6 +1370,60 @@ static const struct file_operations vfio_device_fops = {
+> >>  };
+> >>  
+> >>  /**
+> >> + * External user API, exported by symbols to be linked dynamically.
+> >> + */
+> >> +
+> >> +/* Allows an external user (for example, KVM) to lock an IOMMU group */
+> >> +int vfio_group_add_external_user(struct file *filep)
+> >> +{
+> >> +	struct vfio_group *group = filep->private_data;
+> >> +
+> >> +	if (filep->f_op != &vfio_group_fops)
+> >> +		return -EINVAL;
+> >> +
+> >> +	if (!atomic_inc_not_zero(&group->container_users))
+> >> +		return -EINVAL;
+> > 
+> > This is the place where I was suggesting we need tests to match
+> > get_device_fd.  It's not clear what the external user is holding if the
+> > group has no iommu or is not viable here.
 > 
-> diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-> index 682084d..b4f0873 100644
-> --- a/arch/powerpc/sysdev/fsl_pci.c
-> +++ b/arch/powerpc/sysdev/fsl_pci.c
-> @@ -64,6 +64,34 @@ static int __init fsl_pcie_check_link(struct pci_controller *hose)
->  	return 0;
->  }
->  
-> +void fsl_pcibios_fixup_bus(struct pci_bus *bus)
-> +{
-> +	struct pci_controller *hose = (struct pci_controller *) bus->sysdata;
-> +	int i;
-> +
-> +
-> +	if ((bus->parent == hose->bus)
-> +		&& ((fsl_pcie_bus_fixup
-> +			&& pci_bus_find_capability(bus, 0, PCI_CAP_ID_EXP))
-> +				|| (hose->indirect_type
-> +					& PPC_INDIRECT_TYPE_NO_PCIE_LINK))) {
-> +		for (i = 0; i < 4; ++i) {
-[snip]
-> -void fsl_pcibios_fixup_bus(struct pci_bus *bus)
-> -{
-> -	struct pci_controller *hose = pci_bus_to_host(bus);
-> -	int i, is_pcie = 0, no_link;
-> -
-> -	/* The root complex bridge comes up with bogus resources,
-> -	 * we copy the PHB ones in.
-> -	 *
-> -	 * With the current generic PCI code, the PHB bus no longer
-> -	 * has bus->resource[0..4] set, so things are a bit more
-> -	 * tricky.
-> -	 */
-> -
-> -	if (fsl_pcie_bus_fixup)
-> -		is_pcie = early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP);
-> -	no_link = !!(hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK);
-> -
-> -	if (bus->parent == hose->bus && (is_pcie || no_link)) {
-> -		for (i = 0; i < PCI_BRIDGE_RESOURCE_NUM; ++i) {
+> 
+> In my mind this test must include test for iommu id so I would merge it
+> with vfio_group_iommu_id_from_file().
 
-It looks like you're reverting commit
-13635dfdc6aa8d2890e02dc441decfcb4ae63e14 ("powerpc/fsl/pci: Fix PCIe
-fixup regression"), presumably due to a bad merge conflict resolution.
+I'm not sure what that means.
 
-> @@ -515,7 +507,8 @@ no_bridge:
->  }
->  #endif /* CONFIG_FSL_SOC_BOOKE || CONFIG_PPC_86xx */
->  
-> -DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_FREESCALE, PCI_ANY_ID, quirk_fsl_pcie_header);
-> +DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_FREESCALE, PCI_ANY_ID,
-> +	quirk_fsl_pcie_header);
->  
->  #if defined(CONFIG_PPC_83xx) || defined(CONFIG_PPC_MPC512x)
->  struct mpc83xx_pcie_priv {
+> Till I check iommu id, I still cannot
+> use this group so where to put check for iommu/viable does not really
+> matter (for me).
 
-Ben/Kumar, any comments on this, or on needing to call
-fsl_pcibios_fixup_bus on 83xx?
+The difference is that getting the group id may just be the first of
+several external user API interfaces.  The idea of external user
+interface is that from add->del the group is maintained in the same
+state as if a device was opened.  If we disassemble that so that add
+sets up some stuff and getting the group id does a little more, what
+happens if we start adding more external user API callbacks?  A user of
+the interface shouldn't need to know the internals to know which
+interface allows what aspect of use.  Besides, I don't want to have to
+worry about managing another state slightly different from that used by
+the device fd.
 
--Scott
+> > 
+> > 
+> > if (!group->container->iommu_driver || !vfio_group_viable(group)) {
+> > 	vfio_group_try_dissolve_container(group);
+> > 	return -EINVAL;
+> > }
+> > 
+> >> +
+> >> +	return 0;
+> >> +}
+> >> +EXPORT_SYMBOL_GPL(vfio_group_add_external_user);
+> >> +
+> >> +/* Allows an external user (for example, KVM) to unlock an IOMMU group */
+> >> +void vfio_group_del_external_user(struct file *filep)
+> >> +{
+> >> +	struct vfio_group *group = filep->private_data;
+> >> +
+> >> +	if (WARN_ON(filep->f_op != &vfio_group_fops))
+> >> +		return;
+> > 
+> > How about we make this return int so we can return 0/-EINVAL and the
+> > caller can decide the severity of the response?
+> 
+> And what can the caller possibly do on !0?
+
+What if the caller is just passing a filep from userspace, should they
+be allowed to fill the logs by hitting this WARN_ON?  I don't know where
+it comes from here and whether the caller can return an error to
+userspace.  If this is the same filep that the caller used on add, they
+they can legitimately WARN_ON, but we can't tell if that's the case
+here.  Thanks,
+
+Alex
