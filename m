@@ -1,38 +1,19 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 852992C0382
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 15:57:47 +1000 (EST)
-Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 28 Jun 2013 11:20:41 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 158AD3940043
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 11:27:39 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r5S5vZ3G31129636
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 11:27:36 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r5S5vdAx010178
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 15:57:39 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [RFC PATCH 1/3] mm/cma: Move dma contiguous changes into a
- seperate config
-In-Reply-To: <51CC2530.2060605@samsung.com>
-References: <1372062327-7028-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <51CC2530.2060605@samsung.com>
-Date: Fri, 28 Jun 2013 11:27:38 +0530
-Message-ID: <87li5u93ql.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linux-mm@kvack.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
- Michal Nazarewicz <mina86@mina86.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.pcug.org.au [203.10.76.10])
+ by ozlabs.org (Postfix) with ESMTP id 823FD2C00A4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 17:46:40 +1000 (EST)
+Date: Fri, 28 Jun 2013 17:46:34 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3] powerpc/eeh: Update MAINTAINERS
+Message-Id: <20130628174634.3d05e076cbe48ffc4ad67a60@canb.auug.org.au>
+In-Reply-To: <1372398143-15561-1-git-send-email-shangw@linux.vnet.ibm.com>
+References: <1372398143-15561-1-git-send-email-shangw@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Fri__28_Jun_2013_17_46_34_+1000_222C8ciHv7uHCAnL"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,35 +23,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Marek Szyprowski <m.szyprowski@samsung.com> writes:
+--Signature=_Fri__28_Jun_2013_17_46_34_+1000_222C8ciHv7uHCAnL
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Hello,
->
-> On 6/24/2013 10:25 AM, Aneesh Kumar K.V wrote:
->> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
->>
->> We want to use CMA for allocating hash page table and real mode area for
->> PPC64. Hence move DMA contiguous related changes into a seperate config
->> so that ppc64 can enable CMA without requiring DMA contiguous.
->>
->> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->
-> It's nice to see that CMA is gaining another client in mainline Linux 
-> kernel.
-> I also like the idea of adding CONFIG_DMA_CMA for DMA-mapping related CMA
-> use to let others to use alloc_contig_range() interface.
->
-> However I noticed that You have almost copied the whole drivers/base.c for
-> separate use with PPC64 KVM. Is this really necessary? I think it should be
-> possible to isolate some common code, which plays with contiguous region
-> management and use it for both alloc_contig_range() clients (dma-mapping and
-> ppc64 kvm).
->
+Hi Gavin,
 
-One of the reason for having book3s_hv_cma.c is that few specifics vary
-between dma contiguous. We have different alignment needs. Also i will be
-switching the allocation to 256K chunks, not page size, in the next
-update. It is also not large code duplication. I will post V2 soon and
-may be we can see if it is worth consolidating.
+On Fri, 28 Jun 2013 13:42:23 +0800 Gavin Shan <shangw@linux.vnet.ibm.com> w=
+rote:
+>
+> Update MAINTAINERS to reflect recent changes.
+>=20
+> Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+> ---
+>  MAINTAINERS |    6 ++++++
+>  1 files changed, 6 insertions(+), 0 deletions(-)
+>=20
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 5be702c..78e64c9 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -6149,7 +6149,13 @@ M:	Linas Vepstas <linasvepstas@gmail.com>
+>  L:	linux-pci@vger.kernel.org
+>  S:	Supported
+>  F:	Documentation/PCI/pci-error-recovery.txt
+> +
+> +ENHANCED ERROR HANDLING (EEH)
+> +M:	Gavin Shan <shangw@linux.vnet.ibm.com>
+> +L:	linuxppc-dev@lists.ozlabs.org
+> +S:	Supported
+>  F:	Documentation/powerpc/eeh-pci-error-recovery.txt
+> +F:	arch/powerpc/kernel/eeh*.c
+> =20
+>  PCI SUBSYSTEM
+>  M:	Bjorn Helgaas <bhelgaas@google.com>
 
--aneesh
+The entries in the MAINTAINERS file are meant to be in alphabetical
+order ...
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Fri__28_Jun_2013_17_46_34_+1000_222C8ciHv7uHCAnL
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.20 (GNU/Linux)
+
+iQIcBAEBCAAGBQJRzT9eAAoJEECxmPOUX5FEevIQAJ/2KviWbhD9oAxwp5xA7bPp
+wdMlpcrUSFNkZMzI7Wy8o8B2liXXBLx1dQmtfbMqu1iw2+O3smpoNRqVL6W71KxV
+I7gHqAM1KzWNRBM2zrf2G6j6gNnbZ/A166HC6nxAAU0XgBg1qVVqWWdWY4dGpb55
+a4rgRjFHeJkjSL+s+DZ09ti4QTdqiDx0zGIIDom77279SuMrGIsR7d+P5+v/Slmm
+2u8HbJpP+FUvrHbVejyaAGJdscqmwMkPlieVjeIg31WpVpQwYRYnjC0VFkeOLC4Z
+lLvIEWar6vDcrgN1Ki4VFT9e7qT2ILPlr9hlp/2n0W0rcwKNYw9qXF/InwuzyFtY
+iYIgmmt38H20Tqj8BakzjU4eMj/UMkVdRvSYe9q2xtSPkMiwI5i86t+vEn8/KGRg
+KQR4XaQmP0ai0HRkjGy/Cd0is+ZK1MssHpozAoxYS0vuYT1/hoevUoErON0W+TkX
+g1qzqhpIVJe1m8pbVQWK5TPDc+HONBzL7USV7c4Wy9120e5XXzCqFm9qPbm5dsND
+422uTZHh5VChlfY2wvvLLV4vlunq/7WMW1ab8X5zZBSP38Jf3rOhsJmlOvzAF0MH
+CWZRgawjeCNGohThely39z+RcTkTS7K3sfaT7qIoSxzU68Ni7TqTatzL5kRbg8yz
+jpKAWm+nDRCbHb/GMpxo
+=Fn9P
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__28_Jun_2013_17_46_34_+1000_222C8ciHv7uHCAnL--
