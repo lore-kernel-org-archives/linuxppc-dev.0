@@ -1,20 +1,19 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id D612C2C008E
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jun 2013 04:21:22 +1000 (EST)
-Message-ID: <1372443669.30572.771.camel@ul30vt.home>
-Subject: Re: [PATCH 3/3 v17] iommu/fsl: Freescale PAMU driver and iommu
- implementation.
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Varun Sethi <Varun.Sethi@freescale.com>
-Date: Fri, 28 Jun 2013 12:21:09 -0600
-In-Reply-To: <1372405132-14170-1-git-send-email-Varun.Sethi@freescale.com>
-References: <1372405132-14170-1-git-send-email-Varun.Sethi@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: stuart.yoder@freescale.com, joro@8bytes.org, linux-kernel@vger.kernel.org,
- iommu@lists.linux-foundation.org, scottwood@freescale.com,
- Timur Tabi <timur@tabi.org>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <abounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6470A2C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jun 2013 05:30:55 +1000 (EST)
+From: Alexandre Bounine <alexandre.bounine@idt.com>
+To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0/7] rapidio: modularize rapidio subsystem
+Date: Fri, 28 Jun 2013 15:18:49 -0400
+Message-Id: <1372447136-5751-1-git-send-email-alexandre.bounine@idt.com>
+Cc: Stef van Os <stef.van.os@Prodrive.nl>,
+ Micha Nelissen <micha.nelissen@Prodrive.nl>,
+ Andre van Herk <andre.van.herk@Prodrive.nl>,
+ Alexandre Bounine <alexandre.bounine@idt.com>, Jean Delvare <jdelvare@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,255 +23,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-06-28 at 13:08 +0530, Varun Sethi wrote:
-> Following is a brief description of the PAMU hardware:
-> PAMU determines what action to take and whether to authorize the action on
-> the basis of the memory address, a Logical IO Device Number (LIODN), and
-> PAACT table (logically) indexed by LIODN and address. Hardware devices which
-> need to access memory must provide an LIODN in addition to the memory address.
-> 
-> Peripheral Access Authorization and Control Tables (PAACTs) are the primary
-> data structures used by PAMU. A PAACT is a table of peripheral access
-> authorization and control entries (PAACE).Each PAACE defines the range of
-> I/O bus address space that is accessible by the LIOD and the associated access
-> capabilities.
-> 
-> There are two types of PAACTs: primary PAACT (PPAACT) and secondary PAACT
-> (SPAACT).A given physical I/O device may be able to act as one or more
-> independent logical I/O devices (LIODs). Each such logical I/O device is
-> assigned an identifier called logical I/O device number (LIODN). A LIODN is
-> allocated a contiguous portion of the I/O bus address space called the DSA window
-> for performing DSA operations. The DSA window may optionally be divided into
-> multiple sub-windows, each of which may be used to map to a region in system
-> storage space. The first sub-window is referred to as the primary sub-window
-> and the remaining are called secondary sub-windows.
-> 
-> This patch provides the PAMU driver (fsl_pamu.c) and the corresponding IOMMU
-> API implementation (fsl_pamu_domain.c). The PAMU hardware driver (fsl_pamu.c)
-> has been derived from the work done by Ashish Kalra and Timur Tabi.
-[snip]
-> +#define REQ_ACS_FLAGS	(PCI_ACS_SV | PCI_ACS_RR | PCI_ACS_CR | PCI_ACS_UF)
-> +
-> +static struct iommu_group *get_device_iommu_group(struct device *dev)
-> +{
-> +	struct iommu_group *group;
-> +
-> +	group = iommu_group_get(dev);
-> +	if (!group)
-> +		group = iommu_group_alloc();
-> +
-> +	return group;
-> +}
-> +
-> +static  bool check_pci_ctl_endpt_part(struct pci_controller *pci_ctl)
-> +{
-> +	u32 version;
-> +
-> +	/* Check the PCI controller version number by readding BRR1 register */
-> +	version = in_be32(pci_ctl->cfg_addr + (PCI_FSL_BRR1 >> 2));
-> +	version &= PCI_FSL_BRR1_VER;
-> +	/* If PCI controller version is >= 0x204 we can partition endpoints*/
-> +	if (version >= 0x204)
-> +		return 1;
-> +
-> +	return 0;
-> +}
-> +
-> +/* Get iommu group information from peer devices or devices on the parent bus */
-> +static struct iommu_group *get_peer_pci_device_group(struct pci_dev *pdev)
-> +{
-> +	struct pci_dev *tmp;
-> +	struct iommu_group *group = NULL;
-> +
-> +	/* check if this is the first device on the bus*/
-> +	if (list_is_singular(&pdev->bus_list)) {
-> +		struct pci_bus *bus = pdev->bus->parent;
-> +		/* Traverese the parent bus list to get
-> +		 * the iommu group for devices on the
-> +		 * parent bus.
-> +		 */
-> +		while (bus && !group) {
-> +			list_for_each_entry(tmp, &bus->devices, bus_list) {
-> +				group = iommu_group_get(&tmp->dev);
-> +				if (group)
-> +					break;
-> +			}
-> +
-> +			bus = bus->parent;
-> +		}
-> +	} else {
-> +		/*
-> +		 * Get the iommu group for the sibling device
-> +		 */
-> +		list_for_each_entry(tmp, &pdev->bus_list, bus_list) {
-> +			if (tmp == pdev)
-> +				continue;
-> +			group = iommu_group_get(&tmp->dev);
-> +			if (group)
-> +				break;
-> +		}
-> +	}
-> +
-> +	return group;
+The following set of patches modifies kernel RapidIO subsystem to enable build
+and use of its components as loadable kernel modules. Combinations of statically
+linked and modular components are also supported.
 
-Can't we handle both of these with one loop?
+For this release full RapidIO subsystem modularization is implemented for
+x86-based platforms. For PowerPC platforms (mostly MPC85xx) RapidIO core and
+the mport driver (fsl_rio.c) still have only statically linked build option
+while other components (enumerator and switch drivers) can be built as kernel
+modules. This is not a significant limitation for embedded PowerPC platforms
+because they use on-chip RapidIO controllers. For PowerPC platforms that may use
+an external PCIe RapidIO controller (e.g. Tsi721) an additional patch will be
+provided later.
 
-struct pci_bus *bus = pdev->bus;
-while (bus) {
-	list_for_each_entry(tmp, &bus->devices, bus_list) {
-		if (tmp == pdev)
-			continue;
-		group = iommu_group_get(&tmp->dev);
-		if (group)
-			return group;
-	}
-	bus = bus->parent;
-}
-return NULL;
+This set of patches is based on the current linux-next code tree that contains
+previously submitted patches for modularized enumeration/discovery method.
 
-get_shared_pci_device_group() might be another naming option.
+Cc: Matt Porter <mporter@kernel.crashing.org>
+Cc: Li Yang <leoli@freescale.com>
+Cc: Kumar Gala <galak@kernel.crashing.org>
+Cc: Andre van Herk <andre.van.herk@Prodrive.nl>
+Cc: Micha Nelissen <micha.nelissen@Prodrive.nl>
+Cc: Stef van Os <stef.van.os@Prodrive.nl>
+Cc: Jean Delvare <jdelvare@suse.de>
 
-> +}
-> +
-> +static struct iommu_group *get_pci_device_group(struct pci_dev *pdev)
-> +{
-> +	struct pci_controller *pci_ctl;
-> +	bool pci_endpt_partioning;
-> +	struct iommu_group *group = NULL;
-> +	struct pci_dev *bridge, *dma_pdev = NULL;
-> +
-> +	pci_ctl = pci_bus_to_host(pdev->bus);
-> +	pci_endpt_partioning = check_pci_ctl_endpt_part(pci_ctl);
-> +	/* We can partition PCIe devices so assign device group to the device */
-> +	if (pci_endpt_partioning) {
-> +		bridge = pci_find_upstream_pcie_bridge(pdev);
-> +		if (bridge) {
-> +			if (pci_is_pcie(bridge))
-> +				dma_pdev = pci_get_domain_bus_and_slot(
-> +						pci_domain_nr(pdev->bus),
-> +						bridge->subordinate->number, 0);
-> +			if (!dma_pdev)
-> +				dma_pdev = pci_dev_get(bridge);
-> +		} else
-> +			dma_pdev = pci_dev_get(pdev);
-> +
-> +		/* Account for quirked devices */
-> +		swap_pci_ref(&dma_pdev, pci_get_dma_source(dma_pdev));
-> +
-> +		/*
-> +		 * If it's a multifunction device that does not support our
-> +		 * required ACS flags, add to the same group as lowest numbered
-> +		 * function that also does not suport the required ACS flags.
-> +		 */
-> +		if (dma_pdev->multifunction &&
-> +		    !pci_acs_enabled(dma_pdev, REQ_ACS_FLAGS)) {
-> +			u8 i, slot = PCI_SLOT(dma_pdev->devfn);
-> +
-> +			for (i = 0; i < 8; i++) {
-> +				struct pci_dev *tmp;
-> +
-> +				tmp = pci_get_slot(dma_pdev->bus, PCI_DEVFN(slot, i));
-> +				if (!tmp)
-> +					continue;
-> +
-> +				if (!pci_acs_enabled(tmp, REQ_ACS_FLAGS)) {
-> +					swap_pci_ref(&dma_pdev, tmp);
-> +					break;
-> +				}
-> +				pci_dev_put(tmp);
-> +			}
-> +		}
-> +
-> +		/*
-> +		 * Devices on the root bus go through the iommu.  If that's not us,
-> +	 	 * find the next upstream device and test ACS up to the root bus.
-> +		 * Finding the next device may require skipping virtual buses.
-> +		 */
-> +		while (!pci_is_root_bus(dma_pdev->bus)) {
-> +			struct pci_bus *bus = dma_pdev->bus;
-> +
-> +			while (!bus->self) {
-> +				if (!pci_is_root_bus(bus))
-> +					bus = bus->parent;
-> +				else
-> +					goto root_bus;
-> +			}
-> +
-> +			if (pci_acs_path_enabled(bus->self, NULL, REQ_ACS_FLAGS))
-> +				break;
-> +
-> +			swap_pci_ref(&dma_pdev, pci_dev_get(bus->self));
-> +		}
-> +
-> +root_bus:
-> +		group = get_device_iommu_group(&dma_pdev->dev);
-> +		pci_dev_put(dma_pdev);
-> +		/*
-> +		 * PCIe controller is not a paritionable entity
-> +		 * free the controller device iommu_group.
-> +		 */
-> +		if (pci_ctl->parent->iommu_group)
-> +			iommu_group_remove_device(pci_ctl->parent);
-> +	} else {
-> +		/*
-> +		 * All devices connected to the controller will share the
-> +		 * PCI controllers device group. If this is the first
-> +		 * device to be probed for the pci controller, copy the
-> +		 * device group information from the PCI controller device
-> +		 * node and remove the PCI controller iommu group.
-> +		 * For subsequent devices, the iommu group information can
-> +		 * be obtained from sibling devices (i.e. from the bus_devices
-> +		 * link list).
-> +		 */
-> +		if (pci_ctl->parent->iommu_group) {
-> +			group = get_device_iommu_group(pci_ctl->parent);
-> +			iommu_group_remove_device(pci_ctl->parent);
-> +		} else
-> +			group = get_peer_pci_device_group(pdev);
-> +	}
-> +
-> +	return group;
-> +}
-> +
-> +static int fsl_pamu_add_device(struct device *dev)
-> +{
-> +	struct iommu_group *group = NULL;
-> +	struct pci_dev *pdev;
-> +	const u32 *prop;
-> +	int ret, len;
-> +
-> +	/*
-> +	 * For platform devices we allocate a separate group for
-> +	 * each of the devices.
-> +	 */
-> +	if (dev->bus == &pci_bus_type) {
-> +		pdev = to_pci_dev(dev);
-> +		/* Don't create device groups for virtual PCI bridges */
-> +		if (pdev->subordinate)
-> +			return 0;
-> +
-> +		group = get_pci_device_group(pdev);
-> +
-> +	} else {
-> +		prop = of_get_property(dev->of_node, "fsl,liodn", &len);
-> +		if (prop)
-> +			group = get_device_iommu_group(dev);
-> +	}
-> +
-> +	if (!group || IS_ERR(group))
-> +		return PTR_ERR(group);
-> +
-> +	ret = iommu_group_add_device(group, dev);
-> +
-> +	iommu_group_put(group);
-> +	return ret;
-> +}
-> +
-> +static void fsl_pamu_remove_device(struct device *dev)
-> +{
-> +	iommu_group_remove_device(dev);
-> +}
+Alexandre Bounine (7):
+  rapidio: convert switch drivers to modules
+  rapidio/rionet: rework driver initialization and removal
+  rapidio: update enumerator registration mechanism
+  rapidio/tsi721: convert to modular mport driver
+  rapidio: add modular build option for the subsystem core
+  rapidio: add udev notification
+  rapidio: documentation update
 
-Seems ok otherwise.  Thanks,
+ Documentation/rapidio/rapidio.txt   |   98 ++++++-
+ Documentation/rapidio/sysfs.txt     |    1 +
+ arch/x86/Kconfig                    |    4 +-
+ drivers/net/rionet.c                |  103 ++++++--
+ drivers/rapidio/Kconfig             |    5 +
+ drivers/rapidio/Makefile            |    4 +-
+ drivers/rapidio/devices/Kconfig     |    2 +-
+ drivers/rapidio/devices/Makefile    |    7 +-
+ drivers/rapidio/devices/tsi721.c    |    9 +-
+ drivers/rapidio/rio-driver.c        |   18 ++
+ drivers/rapidio/rio-scan.c          |  172 +------------
+ drivers/rapidio/rio-sysfs.c         |   31 +--
+ drivers/rapidio/rio.c               |  490 ++++++++++++++++++++++++++++-------
+ drivers/rapidio/rio.h               |   44 +---
+ drivers/rapidio/switches/Kconfig    |   12 +-
+ drivers/rapidio/switches/idt_gen2.c |   98 ++++++--
+ drivers/rapidio/switches/idtcps.c   |   86 +++++--
+ drivers/rapidio/switches/tsi568.c   |   71 +++++-
+ drivers/rapidio/switches/tsi57x.c   |   81 +++++-
+ include/asm-generic/vmlinux.lds.h   |    7 -
+ include/linux/mod_devicetable.h     |   19 ++
+ include/linux/rio.h                 |   82 +++---
+ include/linux/rio_ids.h             |    2 -
+ scripts/mod/devicetable-offsets.c   |    6 +
+ scripts/mod/file2alias.c            |   20 ++
+ 25 files changed, 998 insertions(+), 474 deletions(-)
 
-Alex
+-- 
+1.7.8.4
