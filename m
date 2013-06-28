@@ -2,14 +2,14 @@ Return-Path: <abounine@idt.com>
 Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 626C42C00AF
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jun 2013 05:31:00 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id DA7472C02EE
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jun 2013 05:31:02 +1000 (EST)
 From: Alexandre Bounine <alexandre.bounine@idt.com>
 To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 5/7] rapidio: add modular build option for the subsystem core
-Date: Fri, 28 Jun 2013 15:18:54 -0400
-Message-Id: <1372447136-5751-6-git-send-email-alexandre.bounine@idt.com>
+Subject: [PATCH 6/7] rapidio: add udev notification
+Date: Fri, 28 Jun 2013 15:18:55 -0400
+Message-Id: <1372447136-5751-7-git-send-email-alexandre.bounine@idt.com>
 In-Reply-To: <1372447136-5751-1-git-send-email-alexandre.bounine@idt.com>
 References: <1372447136-5751-1-git-send-email-alexandre.bounine@idt.com>
 Cc: Stef van Os <stef.van.os@Prodrive.nl>,
@@ -25,12 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add a configuration option to build RapidIO subsystem core code as a loadable
-kernel module. Currently this option is available only for x86-based platforms,
-with the additional patch for PowerPC planned to be provided later.
+Add RapidIO-specific modalias generation to enable udev notifications about
+RapidIO-specific events.
 
-This patch replaces kernel command line parameter "riohdid=" with its
-module-specific analog "rapidio.hdid=".  
+The RapidIO modalias string format is shown below:
+
+"rapidio:vNNNNdNNNNavNNNNadNNNN"
+
+Where:
+v  - Device Vendor ID (16 bit),
+d  - Device ID (16 bit),
+av - Assembly Vendor ID (16 bit),
+ad - Assembly ID (16 bit),
+
+as they are reported in corresponding Capability Registers (CARs)
+of each RapidIO device.
 
 Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
 Cc: Matt Porter <mporter@kernel.crashing.org>
@@ -41,101 +50,200 @@ Cc: Micha Nelissen <micha.nelissen@Prodrive.nl>
 Cc: Stef van Os <stef.van.os@Prodrive.nl>
 Cc: Jean Delvare <jdelvare@suse.de>
 ---
- arch/x86/Kconfig         |    4 ++--
- drivers/rapidio/Makefile |    4 +++-
- drivers/rapidio/rio.c    |   27 ++++++++++++++-------------
- 3 files changed, 19 insertions(+), 16 deletions(-)
+ drivers/rapidio/rio-driver.c      |   18 ++++++++++++++++++
+ drivers/rapidio/rio-sysfs.c       |   10 ++++++++++
+ include/linux/mod_devicetable.h   |   19 +++++++++++++++++++
+ include/linux/rio.h               |   16 +---------------
+ include/linux/rio_ids.h           |    2 --
+ scripts/mod/devicetable-offsets.c |    6 ++++++
+ scripts/mod/file2alias.c          |   20 ++++++++++++++++++++
+ 7 files changed, 74 insertions(+), 17 deletions(-)
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index fe120da..583ac42 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -2246,11 +2246,11 @@ source "drivers/pcmcia/Kconfig"
- source "drivers/pci/hotplug/Kconfig"
+diff --git a/drivers/rapidio/rio-driver.c b/drivers/rapidio/rio-driver.c
+index a0c8755..3e9b6a7 100644
+--- a/drivers/rapidio/rio-driver.c
++++ b/drivers/rapidio/rio-driver.c
+@@ -199,6 +199,23 @@ static int rio_match_bus(struct device *dev, struct device_driver *drv)
+       out:return 0;
+ }
  
- config RAPIDIO
--	bool "RapidIO support"
-+	tristate "RapidIO support"
- 	depends on PCI
- 	default n
- 	help
--	  If you say Y here, the kernel will include drivers and
-+	  If enabled this option will include drivers and the core
- 	  infrastructure code to support RapidIO interconnect devices.
- 
- source "drivers/rapidio/Kconfig"
-diff --git a/drivers/rapidio/Makefile b/drivers/rapidio/Makefile
-index 3036702..6271ada 100644
---- a/drivers/rapidio/Makefile
-+++ b/drivers/rapidio/Makefile
-@@ -1,7 +1,9 @@
- #
- # Makefile for RapidIO interconnect services
- #
--obj-y += rio.o rio-access.o rio-driver.o rio-sysfs.o
-+obj-$(CONFIG_RAPIDIO) += rapidio.o
-+rapidio-y := rio.o rio-access.o rio-driver.o rio-sysfs.o
++static int rio_uevent(struct device *dev, struct kobj_uevent_env *env)
++{
++	struct rio_dev *rdev;
 +
- obj-$(CONFIG_RAPIDIO_ENUM_BASIC) += rio-scan.o
- 
- obj-$(CONFIG_RAPIDIO)		+= switches/
-diff --git a/drivers/rapidio/rio.c b/drivers/rapidio/rio.c
-index 2054b62..f4f30af 100644
---- a/drivers/rapidio/rio.c
-+++ b/drivers/rapidio/rio.c
-@@ -5,7 +5,7 @@
-  * Copyright 2005 MontaVista Software, Inc.
-  * Matt Porter <mporter@kernel.crashing.org>
-  *
-- * Copyright 2009 Integrated Device Technology, Inc.
-+ * Copyright 2009 - 2013 Integrated Device Technology, Inc.
-  * Alex Bounine <alexandre.bounine@idt.com>
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-@@ -30,6 +30,17 @@
- 
- #include "rio.h"
- 
-+MODULE_DESCRIPTION("RapidIO Subsystem Core");
-+MODULE_AUTHOR("Matt Porter <mporter@kernel.crashing.org>");
-+MODULE_AUTHOR("Alexandre Bounine <alexandre.bounine@idt.com>");
-+MODULE_LICENSE("GPL");
++	if (!dev)
++		return -ENODEV;
 +
-+static int hdid[RIO_MAX_MPORTS];
-+static int ids_num;
-+module_param_array(hdid, int, &ids_num, 0);
-+MODULE_PARM_DESC(hdid,
-+	"Destination ID assignment to local RapidIO controllers");
++	rdev = to_rio_dev(dev);
++	if (!rdev)
++		return -ENODEV;
 +
- static LIST_HEAD(rio_devices);
- static DEFINE_SPINLOCK(rio_global_list_lock);
++	if (add_uevent_var(env, "MODALIAS=rapidio:v%04Xd%04Xav%04Xad%04X",
++			   rdev->vid, rdev->did, rdev->asm_vid, rdev->asm_did))
++		return -ENOMEM;
++	return 0;
++}
++
+ struct device rio_bus = {
+ 	.init_name = "rapidio",
+ };
+@@ -210,6 +227,7 @@ struct bus_type rio_bus_type = {
+ 	.bus_attrs = rio_bus_attrs,
+ 	.probe = rio_device_probe,
+ 	.remove = rio_device_remove,
++	.uevent	= rio_uevent,
+ };
  
-@@ -1860,24 +1871,14 @@ no_disc:
+ /**
+diff --git a/drivers/rapidio/rio-sysfs.c b/drivers/rapidio/rio-sysfs.c
+index 0c4473e..9331be6 100644
+--- a/drivers/rapidio/rio-sysfs.c
++++ b/drivers/rapidio/rio-sysfs.c
+@@ -84,6 +84,15 @@ static ssize_t lnext_show(struct device *dev,
+ 	return str - buf;
+ }
+ 
++static ssize_t modalias_show(struct device *dev,
++			     struct device_attribute *attr, char *buf)
++{
++	struct rio_dev *rdev = to_rio_dev(dev);
++
++	return sprintf(buf, "rapidio:v%04Xd%04Xav%04Xad%04X\n",
++		       rdev->vid, rdev->did, rdev->asm_vid, rdev->asm_did);
++}
++
+ struct device_attribute rio_dev_attrs[] = {
+ 	__ATTR_RO(did),
+ 	__ATTR_RO(vid),
+@@ -93,6 +102,7 @@ struct device_attribute rio_dev_attrs[] = {
+ 	__ATTR_RO(asm_rev),
+ 	__ATTR_RO(lprev),
+ 	__ATTR_RO(destid),
++	__ATTR_RO(modalias),
+ 	__ATTR_NULL,
+ };
+ 
+diff --git a/include/linux/mod_devicetable.h b/include/linux/mod_devicetable.h
+index b508016..4b0ac9c 100644
+--- a/include/linux/mod_devicetable.h
++++ b/include/linux/mod_devicetable.h
+@@ -577,4 +577,23 @@ struct mei_cl_device_id {
+ 	kernel_ulong_t driver_info;
+ };
+ 
++/* RapidIO */
++
++#define RIO_ANY_ID	0xffff
++
++/**
++ * struct rio_device_id - RIO device identifier
++ * @did: RapidIO device ID
++ * @vid: RapidIO vendor ID
++ * @asm_did: RapidIO assembly device ID
++ * @asm_vid: RapidIO assembly vendor ID
++ *
++ * Identifies a RapidIO device based on both the device/vendor IDs and
++ * the assembly device/vendor IDs.
++ */
++struct rio_device_id {
++	__u16 did, vid;
++	__u16 asm_did, asm_vid;
++};
++
+ #endif /* LINUX_MOD_DEVICETABLE_H */
+diff --git a/include/linux/rio.h b/include/linux/rio.h
+index 8d3db1b..e2faf7b 100644
+--- a/include/linux/rio.h
++++ b/include/linux/rio.h
+@@ -20,6 +20,7 @@
+ #include <linux/errno.h>
+ #include <linux/device.h>
+ #include <linux/rio_regs.h>
++#include <linux/mod_devicetable.h>
+ #ifdef CONFIG_RAPIDIO_DMA_ENGINE
+ #include <linux/dmaengine.h>
+ #endif
+@@ -396,21 +397,6 @@ struct rio_driver {
+ 
+ #define	to_rio_driver(drv) container_of(drv,struct rio_driver, driver)
+ 
+-/**
+- * struct rio_device_id - RIO device identifier
+- * @did: RIO device ID
+- * @vid: RIO vendor ID
+- * @asm_did: RIO assembly device ID
+- * @asm_vid: RIO assembly vendor ID
+- *
+- * Identifies a RIO device based on both the device/vendor IDs and
+- * the assembly device/vendor IDs.
+- */
+-struct rio_device_id {
+-	u16 did, vid;
+-	u16 asm_did, asm_vid;
+-};
+-
+ union rio_pw_msg {
+ 	struct {
+ 		u32 comptag;	/* Component Tag CSR */
+diff --git a/include/linux/rio_ids.h b/include/linux/rio_ids.h
+index b66d13d..2543bc1 100644
+--- a/include/linux/rio_ids.h
++++ b/include/linux/rio_ids.h
+@@ -13,8 +13,6 @@
+ #ifndef LINUX_RIO_IDS_H
+ #define LINUX_RIO_IDS_H
+ 
+-#define RIO_ANY_ID			0xffff
+-
+ #define RIO_VID_FREESCALE		0x0002
+ #define RIO_DID_MPC8560			0x0003
+ 
+diff --git a/scripts/mod/devicetable-offsets.c b/scripts/mod/devicetable-offsets.c
+index e66d4d2..bb5d115 100644
+--- a/scripts/mod/devicetable-offsets.c
++++ b/scripts/mod/devicetable-offsets.c
+@@ -177,5 +177,11 @@ int main(void)
+ 	DEVID(mei_cl_device_id);
+ 	DEVID_FIELD(mei_cl_device_id, name);
+ 
++	DEVID(rio_device_id);
++	DEVID_FIELD(rio_device_id, did);
++	DEVID_FIELD(rio_device_id, vid);
++	DEVID_FIELD(rio_device_id, asm_did);
++	DEVID_FIELD(rio_device_id, asm_vid);
++
  	return 0;
  }
- 
--static int hdids[RIO_MAX_MPORTS + 1];
--
- static int rio_get_hdid(int index)
- {
--	if (!hdids[0] || hdids[0] <= index || index >= RIO_MAX_MPORTS)
-+	if (ids_num == 0 || ids_num <= index || index >= RIO_MAX_MPORTS)
- 		return -1;
- 
--	return hdids[index + 1];
-+	return hdid[index];
+diff --git a/scripts/mod/file2alias.c b/scripts/mod/file2alias.c
+index 45f9a33..d9e67b7 100644
+--- a/scripts/mod/file2alias.c
++++ b/scripts/mod/file2alias.c
+@@ -1145,6 +1145,26 @@ static int do_mei_entry(const char *filename, void *symval,
  }
+ ADD_TO_DEVTABLE("mei", mei_cl_device_id, do_mei_entry);
  
--static int rio_hdid_setup(char *str)
--{
--	(void)get_options(str, ARRAY_SIZE(hdids), hdids);
--	return 1;
--}
--
--__setup("riohdid=", rio_hdid_setup);
--
- int rio_register_mport(struct rio_mport *port)
++/* Looks like: rapidio:vNdNavNadN */
++static int do_rio_entry(const char *filename,
++			void *symval, char *alias)
++{
++	DEF_FIELD(symval, rio_device_id, did);
++	DEF_FIELD(symval, rio_device_id, vid);
++	DEF_FIELD(symval, rio_device_id, asm_did);
++	DEF_FIELD(symval, rio_device_id, asm_vid);
++
++	strcpy(alias, "rapidio:");
++	ADD(alias, "v", vid != RIO_ANY_ID, vid);
++	ADD(alias, "d", did != RIO_ANY_ID, did);
++	ADD(alias, "av", asm_vid != RIO_ANY_ID, asm_vid);
++	ADD(alias, "ad", asm_did != RIO_ANY_ID, asm_did);
++
++	add_wildcard(alias);
++	return 1;
++}
++ADD_TO_DEVTABLE("rapidio", rio_device_id, do_rio_entry);
++
+ /* Does namelen bytes of name exactly match the symbol? */
+ static bool sym_is(const char *name, unsigned namelen, const char *symbol)
  {
- 	struct rio_scan_node *scan = NULL;
 -- 
 1.7.8.4
