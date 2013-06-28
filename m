@@ -1,25 +1,31 @@
-Return-Path: <B07421@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0250.outbound.messaging.microsoft.com [213.199.154.250])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5D8752C0343
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 11:52:33 +1000 (EST)
-Date: Thu, 27 Jun 2013 20:52:20 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 1/2] powerpc: enable the relocatable support for the fsl
- booke 32bit kernel
-To: Kevin Hao <haokexin@gmail.com>
-References: <1372298434-20220-2-git-send-email-haokexin@gmail.com>
- <1372363114.8183.54@snotra>
- <20130628013637.GA3173@pek-khao-d1.corp.ad.wrs.com>
-In-Reply-To: <20130628013637.GA3173@pek-khao-d1.corp.ad.wrs.com> (from
- haokexin@gmail.com on Thu Jun 27 20:36:37 2013)
-Message-ID: <1372384340.8183.62@snotra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 057E82C0359
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2013 11:59:56 +1000 (EST)
+Received: from /spool/local
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Thu, 27 Jun 2013 21:59:52 -0400
+Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 0BB69C90052
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 21:59:50 -0400 (EDT)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r5S1xoCL307604
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 21:59:50 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r5S1xnIj012461
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2013 21:59:50 -0400
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/eeh: Update MAINTAINERS
+Date: Fri, 28 Jun 2013 09:59:44 +0800
+Message-Id: <1372384784-20788-1-git-send-email-shangw@linux.vnet.ibm.com>
+Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,25 +35,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/27/2013 08:36:37 PM, Kevin Hao wrote:
-> On Thu, Jun 27, 2013 at 02:58:34PM -0500, Scott Wood wrote:
-> > On 06/26/2013 09:00:33 PM, Kevin Hao wrote:
-> > >This is based on the codes in the head_44x.S. Since we always =20
-> align to
-> > >256M before mapping the PAGE_OFFSET for a relocatable kernel, we =20
-> also
-> > >change the init tlb map to 256M size.
-> >
-> > Why 256M?
->=20
-> For two reasons:
->   1. This is the size which both e500v1 and e500v2 support.
->   2. Since we always use the PAGE_OFFSET as 0xc0000000, the 256M is
->      max alignment value we can use for this virtual address.
+Update MAINTAINERS to reflect recent changes.
 
-0xc0000000 is 1G-aligned, so I don't see why 256M is the maximum (after =20
-verifying that enough memory is present with the right alignment, of =20
-course).  The TLB1 savings would probably not be enough to justify =20
-figuring that out, though.
+Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+---
+ MAINTAINERS |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
--Scott=
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 5be702c..b447392 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -6146,10 +6146,14 @@ F:	drivers/firmware/pcdp.*
+ 
+ PCI ERROR RECOVERY
+ M:	Linas Vepstas <linasvepstas@gmail.com>
++M:	Gavin Shan <shangw@linux.vnet.ibm.com>
+ L:	linux-pci@vger.kernel.org
++L:	linuxppc-dev@lists.ozlabs.org
+ S:	Supported
+ F:	Documentation/PCI/pci-error-recovery.txt
+ F:	Documentation/powerpc/eeh-pci-error-recovery.txt
++F:	arch/powerpc/kernel/eeh*.c
++F:	drivers/pci/pcie/aer/
+ 
+ PCI SUBSYSTEM
+ M:	Bjorn Helgaas <bhelgaas@google.com>
+-- 
+1.7.5.4
