@@ -2,14 +2,14 @@ Return-Path: <abounine@idt.com>
 Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 78C292C0098
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jun 2013 05:30:58 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 626C42C00AF
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jun 2013 05:31:00 +1000 (EST)
 From: Alexandre Bounine <alexandre.bounine@idt.com>
 To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 4/7] rapidio/tsi721: convert to modular mport driver
-Date: Fri, 28 Jun 2013 15:18:53 -0400
-Message-Id: <1372447136-5751-5-git-send-email-alexandre.bounine@idt.com>
+Subject: [PATCH 5/7] rapidio: add modular build option for the subsystem core
+Date: Fri, 28 Jun 2013 15:18:54 -0400
+Message-Id: <1372447136-5751-6-git-send-email-alexandre.bounine@idt.com>
 In-Reply-To: <1372447136-5751-1-git-send-email-alexandre.bounine@idt.com>
 References: <1372447136-5751-1-git-send-email-alexandre.bounine@idt.com>
 Cc: Stef van Os <stef.van.os@Prodrive.nl>,
@@ -25,11 +25,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds an option to build device driver for Tsi721 PCIe-to-SRIO bridge
-device as a kernel module.
+Add a configuration option to build RapidIO subsystem core code as a loadable
+kernel module. Currently this option is available only for x86-based platforms,
+with the additional patch for PowerPC planned to be provided later.
 
-Currently this module cannot be unloaded because the existing RapidIO subsystem
-code does not support dynamic removal of local RapidIO controllers (TODO).
+This patch replaces kernel command line parameter "riohdid=" with its
+module-specific analog "rapidio.hdid=".  
 
 Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
 Cc: Matt Porter <mporter@kernel.crashing.org>
@@ -40,69 +41,101 @@ Cc: Micha Nelissen <micha.nelissen@Prodrive.nl>
 Cc: Stef van Os <stef.van.os@Prodrive.nl>
 Cc: Jean Delvare <jdelvare@suse.de>
 ---
- drivers/rapidio/devices/Kconfig  |    2 +-
- drivers/rapidio/devices/Makefile |    7 +++----
- drivers/rapidio/devices/tsi721.c |    9 ++++-----
- drivers/rapidio/rio.c            |    1 +
- 4 files changed, 9 insertions(+), 10 deletions(-)
+ arch/x86/Kconfig         |    4 ++--
+ drivers/rapidio/Makefile |    4 +++-
+ drivers/rapidio/rio.c    |   27 ++++++++++++++-------------
+ 3 files changed, 19 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/rapidio/devices/Kconfig b/drivers/rapidio/devices/Kconfig
-index 12a9d7f..c4cb087 100644
---- a/drivers/rapidio/devices/Kconfig
-+++ b/drivers/rapidio/devices/Kconfig
-@@ -3,7 +3,7 @@
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index fe120da..583ac42 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -2246,11 +2246,11 @@ source "drivers/pcmcia/Kconfig"
+ source "drivers/pci/hotplug/Kconfig"
+ 
+ config RAPIDIO
+-	bool "RapidIO support"
++	tristate "RapidIO support"
+ 	depends on PCI
+ 	default n
+ 	help
+-	  If you say Y here, the kernel will include drivers and
++	  If enabled this option will include drivers and the core
+ 	  infrastructure code to support RapidIO interconnect devices.
+ 
+ source "drivers/rapidio/Kconfig"
+diff --git a/drivers/rapidio/Makefile b/drivers/rapidio/Makefile
+index 3036702..6271ada 100644
+--- a/drivers/rapidio/Makefile
++++ b/drivers/rapidio/Makefile
+@@ -1,7 +1,9 @@
  #
- 
- config RAPIDIO_TSI721
--	bool "IDT Tsi721 PCI Express SRIO Controller support"
-+	tristate "IDT Tsi721 PCI Express SRIO Controller support"
- 	depends on RAPIDIO && PCIEPORTBUS
- 	default "n"
- 	---help---
-diff --git a/drivers/rapidio/devices/Makefile b/drivers/rapidio/devices/Makefile
-index 7b62860..9432c49 100644
---- a/drivers/rapidio/devices/Makefile
-+++ b/drivers/rapidio/devices/Makefile
-@@ -2,7 +2,6 @@
- # Makefile for RapidIO devices
+ # Makefile for RapidIO interconnect services
  #
- 
--obj-$(CONFIG_RAPIDIO_TSI721)	+= tsi721.o
--ifeq ($(CONFIG_RAPIDIO_DMA_ENGINE),y)
--obj-$(CONFIG_RAPIDIO_TSI721)	+= tsi721_dma.o
--endif
-+obj-$(CONFIG_RAPIDIO_TSI721)	+= tsi721_mport.o
-+tsi721_mport-y			:= tsi721.o
-+tsi721_mport-$(CONFIG_RAPIDIO_DMA_ENGINE) += tsi721_dma.o
-diff --git a/drivers/rapidio/devices/tsi721.c b/drivers/rapidio/devices/tsi721.c
-index a8b2c23..ff7cbf2 100644
---- a/drivers/rapidio/devices/tsi721.c
-+++ b/drivers/rapidio/devices/tsi721.c
-@@ -2515,9 +2515,8 @@ static int __init tsi721_init(void)
- 	return pci_register_driver(&tsi721_driver);
- }
- 
--static void __exit tsi721_exit(void)
--{
--	pci_unregister_driver(&tsi721_driver);
--}
--
- device_initcall(tsi721_init);
+-obj-y += rio.o rio-access.o rio-driver.o rio-sysfs.o
++obj-$(CONFIG_RAPIDIO) += rapidio.o
++rapidio-y := rio.o rio-access.o rio-driver.o rio-sysfs.o
 +
-+MODULE_DESCRIPTION("IDT Tsi721 PCIExpress-to-SRIO bridge driver");
-+MODULE_AUTHOR("Integrated Device Technology, Inc.");
-+MODULE_LICENSE("GPL");
+ obj-$(CONFIG_RAPIDIO_ENUM_BASIC) += rio-scan.o
+ 
+ obj-$(CONFIG_RAPIDIO)		+= switches/
 diff --git a/drivers/rapidio/rio.c b/drivers/rapidio/rio.c
-index 5eb727c..2054b62 100644
+index 2054b62..f4f30af 100644
 --- a/drivers/rapidio/rio.c
 +++ b/drivers/rapidio/rio.c
-@@ -1911,6 +1911,7 @@ int rio_register_mport(struct rio_mport *port)
- 	pr_debug("RIO: %s %s id=%d\n", __func__, port->name, port->id);
+@@ -5,7 +5,7 @@
+  * Copyright 2005 MontaVista Software, Inc.
+  * Matt Porter <mporter@kernel.crashing.org>
+  *
+- * Copyright 2009 Integrated Device Technology, Inc.
++ * Copyright 2009 - 2013 Integrated Device Technology, Inc.
+  * Alex Bounine <alexandre.bounine@idt.com>
+  *
+  * This program is free software; you can redistribute  it and/or modify it
+@@ -30,6 +30,17 @@
+ 
+ #include "rio.h"
+ 
++MODULE_DESCRIPTION("RapidIO Subsystem Core");
++MODULE_AUTHOR("Matt Porter <mporter@kernel.crashing.org>");
++MODULE_AUTHOR("Alexandre Bounine <alexandre.bounine@idt.com>");
++MODULE_LICENSE("GPL");
++
++static int hdid[RIO_MAX_MPORTS];
++static int ids_num;
++module_param_array(hdid, int, &ids_num, 0);
++MODULE_PARM_DESC(hdid,
++	"Destination ID assignment to local RapidIO controllers");
++
+ static LIST_HEAD(rio_devices);
+ static DEFINE_SPINLOCK(rio_global_list_lock);
+ 
+@@ -1860,24 +1871,14 @@ no_disc:
  	return 0;
  }
-+EXPORT_SYMBOL_GPL(rio_register_mport);
  
- EXPORT_SYMBOL_GPL(rio_local_get_device_id);
- EXPORT_SYMBOL_GPL(rio_get_device);
+-static int hdids[RIO_MAX_MPORTS + 1];
+-
+ static int rio_get_hdid(int index)
+ {
+-	if (!hdids[0] || hdids[0] <= index || index >= RIO_MAX_MPORTS)
++	if (ids_num == 0 || ids_num <= index || index >= RIO_MAX_MPORTS)
+ 		return -1;
+ 
+-	return hdids[index + 1];
++	return hdid[index];
+ }
+ 
+-static int rio_hdid_setup(char *str)
+-{
+-	(void)get_options(str, ARRAY_SIZE(hdids), hdids);
+-	return 1;
+-}
+-
+-__setup("riohdid=", rio_hdid_setup);
+-
+ int rio_register_mport(struct rio_mport *port)
+ {
+ 	struct rio_scan_node *scan = NULL;
 -- 
 1.7.8.4
