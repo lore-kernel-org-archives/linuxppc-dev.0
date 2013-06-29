@@ -1,17 +1,38 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Sat, 29 Jun 2013 17:28:03 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH -V2 3/4] powerpc: Contiguous memory allocator based RMA
- allocation
-Message-ID: <20130629072803.GD8687@iris.ozlabs.ibm.com>
-References: <1372410662-3748-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1372410662-3748-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <geert.uytterhoeven@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1372410662-3748-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: m.szyprowski@samsung.com, linuxppc-dev@lists.ozlabs.org, mina86@mina86.com,
- linux-mm@kvack.org
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <51CE1F92.3070802@ti.com>
+References: <1371775956-16453-1-git-send-email-santosh.shilimkar@ti.com>
+ <51C4171C.9050908@linutronix.de> <51C48B5A.2040404@ti.com>
+ <51CCA67C.2010803@gmail.com>
+ <CACxGe6vOH0sCFVVXrYqD3dbYdOvithVu7-d1cvy5885i8x_Myw@mail.gmail.com>
+ <20130628134931.GD21034@game.jcrosoft.org>
+ <51CE1F92.3070802@ti.com>
+Date: Sat, 29 Jun 2013 10:34:27 +0200
+Message-ID: <CAMuHMdWjaakS-hvor7Ftyr=g-iF2kbrLryn_+YFXDDN5tS_QOw@mail.gmail.com>
+Subject: Re: [PATCH] of: Specify initrd location using 64-bit
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Santosh Shilimkar <santosh.shilimkar@ti.com>,
+ Rob Herring <robherring2@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Nicolas Pitre <nicolas.pitre@linaro.org>,
+ linux-mips <linux-mips@linux-mips.org>, Aurelien Jacquiot <a-jacquiot@ti.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ Will Deacon <will.deacon@arm.com>, Max Filippov <jcmvbkbc@gmail.com>,
+ Paul Mackerras <paulus@samba.org>, Jonas Bonn <jonas@southpole.se>,
+ Russell King <linux@arm.linux.org.uk>, linux-c6x-dev@linux-c6x.org,
+ the arch/x86 maintainers <x86@kernel.org>, "arm@kernel.org" <arm@kernel.org>,
+ Grant Likely <grant.likely@linaro.org>,
+ Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>,
+ linux-xtensa@linux-xtensa.org, James Hogan <james.hogan@imgtec.com>,
+ devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
+ Rob Herring <rob.herring@calxeda.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Chris Zankel <chris@zankel.net>, Vineet Gupta <vgupta@synopsys.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Ralf Baechle <ralf@linux-mips.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,16 +42,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 28, 2013 at 02:41:01PM +0530, Aneesh Kumar K.V wrote:
-> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-> 
-> Use CMA for allocation of RMA region for guest. Also remove linear allocator
-> now that it is not used
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+On Sat, Jun 29, 2013 at 1:43 AM, Santosh Shilimkar
+<santosh.shilimkar@ti.com> wrote:
+>>>>> Rob,
+>>>>> Are you ok with phys_addr_t since your concern was about rest
+>>>>> of the memory specific bits of the device-tree code use u64 ?
+>>>>
+>>>> No. I still think it should be u64 for same reasons I said originally.
+>>>
+>>> +1
+>>>
+>> +1
+>>
+>> fix type
+>>
+> Apart from waste of 32bit, what is the other concern you
+> have ? I really want to converge on this patch because it
+> has been a open ended discussion for quite some time. Does
+> that really break any thing on x86 or your concern is more
+> from semantics of the physical address.
 
-Acked-by: Paul Mackerras <paulus@samba.org>
+As the "original reasons" were not in this thread, I had to search a bit.
+I suppose you mean this one: https://lkml.org/lkml/2012/9/13/544 ?
 
-... though it could use a more extensive patch description.
+Summarized:
+| The address to load the initrd is decided by the bootloader/user and set
+| at that point later in time.
+| The dtb should not be tied to the kernel you are booting.
 
-Paul.
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
