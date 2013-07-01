@@ -1,18 +1,23 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:28:0:1:25:1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A20202C0097
- for <linuxppc-dev@ozlabs.org>; Tue,  2 Jul 2013 08:36:10 +1000 (EST)
-Date: Tue, 2 Jul 2013 00:36:05 +0200
-From: Anatolij Gustschin <agust@denx.de>
+Return-Path: <B07421@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E41862C0097
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2013 08:36:51 +1000 (EST)
+Date: Mon, 1 Jul 2013 17:36:40 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH v3 1/4] powerpc/mpic: add irq_set_wake support
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Please pull 'next' branch of 5xxx tree
-Message-ID: <20130702003605.2838c666@crub>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <1372717011.18612.160.camel@pasglop> (from
+ benh@kernel.crashing.org on Mon Jul  1 17:16:51 2013)
+Message-ID: <1372718200.8183.96@snotra>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ Wang Dongsheng-B40534 <B40534@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,45 +27,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben !
+On 07/01/2013 05:16:51 PM, Benjamin Herrenschmidt wrote:
+> On Mon, 2013-07-01 at 11:55 -0500, Scott Wood wrote:
+> > I've been picking patches and hope to send a pull request soon.  I
+> > already have these patches queued up as part of it.
+>=20
+> Hurry !
+>=20
+> Next time, I'd like the bulk of your stuff around -rc2 or 3 if =20
+> possible,
+> ie, keep feeding me rather than one big pull in the merge window.
+>=20
+> Thanks !
 
-Please pull mpc5xxx patches for v3.11. There are small cleanups
-and fixes for mpc512x common code, mpc512x_defconfig updates and
-soft reboot support for mpc5125 based boards.
+I'll send it tonight after I verify no obvious breakage.
 
-Thanks,
+I realize it's late, but I wasn't involved until a few weeks ago, and =20
+there was a large backlog (of which I've only been able to get through =20
+a portion so far).  Most of what I have gone through was done in the =20
+past week -- I wasn't just holding on to it.
 
-Anatolij
-
-The following changes since commit c7788792a5e7b0d5d7f96d0766b4cb6112d47d75:
-
-  Linux 3.10-rc2 (2013-05-20 14:37:38 -0700)
-
-are available in the git repository at:
-
-  git://git.denx.de/linux-2.6-agust.git next
-
-for you to fetch changes up to dd0120dea601de654a5a6d959da3a632a02200f0:
-
-  powerpc/mpc512x: enable USB support in defconfig (2013-06-25 08:51:19 +0200)
-
-----------------------------------------------------------------
-Anatolij Gustschin (1):
-      powerpc/mpc512x: enable USB support in defconfig
-
-Gerhard Sittig (3):
-      powerpc/mpc512x: move common code to shared.c file
-      powerpc/mpc512x: initialize board restart earlier
-      powerpc/mpc512x: commit re-generated defconfig
-
-Matteo Facchinetti (1):
-      powerpc/mpc512x: add MPC5125 reset module support for system restart
-
- arch/powerpc/configs/mpc512x_defconfig        |   27 ++++++++-------------
- arch/powerpc/include/asm/mpc5121.h            |    1 -
- arch/powerpc/platforms/512x/mpc5121_ads.c     |    6 ++---
- arch/powerpc/platforms/512x/mpc512x.h         |   12 +++-------
- arch/powerpc/platforms/512x/mpc512x_generic.c |    4 ++--
- arch/powerpc/platforms/512x/mpc512x_shared.c  |   31 ++++++++++++++++++++++---
- arch/powerpc/platforms/512x/pdm360ng.c        |    4 ++--
- 7 files changed, 47 insertions(+), 38 deletions(-)
+-Scott=
