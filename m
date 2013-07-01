@@ -1,38 +1,17 @@
-Return-Path: <bigeasy@linutronix.de>
-Received: from Galois.linutronix.de (www.linutronix.de [62.245.132.108])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 945652C02B1
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jul 2013 17:49:17 +1000 (EST)
-Message-ID: <51D1345B.8020509@linutronix.de>
-Date: Mon, 01 Jul 2013 09:48:43 +0200
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-MIME-Version: 1.0
-To: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Subject: Re: [PATCH] of: Specify initrd location using 64-bit
-References: <1371775956-16453-1-git-send-email-santosh.shilimkar@ti.com>
- <51C4171C.9050908@linutronix.de> <51C48B5A.2040404@ti.com>
- <51CCA67C.2010803@gmail.com>
- <CACxGe6vOH0sCFVVXrYqD3dbYdOvithVu7-d1cvy5885i8x_Myw@mail.gmail.com>
- <20130628134931.GD21034@game.jcrosoft.org> <51CE1F92.3070802@ti.com>
-In-Reply-To: <51CE1F92.3070802@ti.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Nicolas Pitre <nicolas.pitre@linaro.org>,
- linux-mips <linux-mips@linux-mips.org>, Aurelien Jacquiot <a-jacquiot@ti.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- Max Filippov <jcmvbkbc@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Jonas Bonn <jonas@southpole.se>, Russell King <linux@arm.linux.org.uk>,
- linux-c6x-dev@linux-c6x.org, x86@kernel.org, arm@kernel.org,
- Rob Herring <robherring2@gmail.com>, Grant Likely <grant.likely@linaro.org>,
- Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>,
- linux-xtensa@linux-xtensa.org, James Hogan <james.hogan@imgtec.com>,
- devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
- Rob Herring <rob.herring@calxeda.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Chris Zankel <chris@zankel.net>, Vineet Gupta <vgupta@synopsys.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Ralf Baechle <ralf@linux-mips.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ by ozlabs.org (Postfix) with ESMTPS id CF46C2C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jul 2013 17:54:18 +1000 (EST)
+Message-ID: <1372665249.18612.146.camel@pasglop>
+Subject: [PATCH] powerpc/powernv: Fix iommu initialization again
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc <linuxppc-dev@lists.ozlabs.org>
+Date: Mon, 01 Jul 2013 17:54:09 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Gavin Shan <shangw@linux.vnet.ibm.com>, Guenter Roeck <linux@roeck-us.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,38 +21,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/29/2013 01:43 AM, Santosh Shilimkar wrote:
-> 
-> Sebastian,
-> 
-> Apart from waste of 32bit, what is the other concern you
-> have ?
+So because those things always end up in trainwrecks... In 7846de406
+we moved back the iommu initialization earlier, essentially undoing
+37f02195b which was causing us endless trouble... except that in the
+meantime we had merged 959c9bdd58 (to workaround the original breakage)
+which is now ... broken :-)
 
-You pass a u64 as a physical address which is represented in other
-parts of the kernel (for a good reason) by phys_addr_t.
+This fixes it by doing a partial revert of the latter (we keep the
+ppc_md. path which will be needed in the hotplug case, which happens
+also during some EEH error recovery situations).
 
-> I really want to converge on this patch because it
-> has been a open ended discussion for quite some time. Does
-> that really break any thing on x86 or your concern is more
-> from semantics of the physical address.
-You want to have your code in so you can continue with your work, that
-is okay. The other two arguments why u64 here is a good thing was "due
-to what I said earlier" and "+1" and I don't have the time to look
-that up.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-There should be no problems on x86 if this goes in as it is now.
+Yes, that means that we broke 3.10 on powernv at the last minute in
+order to fix eeh on pseries. This is not a huge deal at this point
+because nobody outside of IBM cares about powernv yet (with a few
+exceptions), and we'll fix it in 3.10.1
 
-But think about this: What happens if you boot your ARM device without
-PAE and your initrd is in the upper region? If you are lucky the kernel
-looks at a different place where it also has a read permission, notices
-nothing sane is there, writes a message and continues. And if it is not
-allowed to read? It is clearly the user's fault for booting a non-PAE
-kernel.
-
-> 
-> Thanks for help.
-> 
-> Regards,
-> Santosh
-
-Sebastian
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 9c9d15e..8e6b278 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -441,6 +441,17 @@ static void pnv_pci_ioda_dma_dev_setup(struct pnv_phb *phb, struct pci_dev *pdev
+ 	set_iommu_table_base(&pdev->dev, &pe->tce32_table);
+ }
+ 
++static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe, struct pci_bus *bus)
++{
++	struct pci_dev *dev;
++
++ 	list_for_each_entry(dev, &bus->devices, bus_list) {
++		set_iommu_table_base(&dev->dev, &pe->tce32_table);
++		if (dev->subordinate)
++			pnv_ioda_setup_bus_dma(pe, dev->subordinate);
++	}
++}
++
+ static void pnv_pci_ioda1_tce_invalidate(struct iommu_table *tbl,
+ 					 u64 *startp, u64 *endp)
+ {
+@@ -596,6 +607,11 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+ 	}
+ 	iommu_init_table(tbl, phb->hose->node);
+ 
++	if (pe->pdev)
++		set_iommu_table_base(&pe->pdev->dev, tbl);
++	else
++		pnv_ioda_setup_bus_dma(pe, pe->pbus);
++
+ 	return;
+  fail:
+ 	/* XXX Failure: Try to fallback to 64-bit only ? */
+@@ -667,6 +683,11 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 	}
+ 	iommu_init_table(tbl, phb->hose->node);
+ 
++	if (pe->pdev)
++		set_iommu_table_base(&pe->pdev->dev, tbl);
++	else
++		pnv_ioda_setup_bus_dma(pe, pe->pbus);
++
+ 	return;
+ fail:
+ 	if (pe->tce32_seg >= 0)
