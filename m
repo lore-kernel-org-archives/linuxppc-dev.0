@@ -1,27 +1,25 @@
-Return-Path: <mpn@google.com>
-Received: from mail-ea0-x230.google.com (mail-ea0-x230.google.com
- [IPv6:2a00:1450:4013:c01::230])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3B66F2C013D
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jul 2013 21:52:14 +1000 (EST)
-Received: by mail-ea0-f176.google.com with SMTP id z15so1990790ead.21
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Jul 2013 04:52:09 -0700 (PDT)
-Sender: Michal Nazarewicz <mpn@google.com>
-From: Michal Nazarewicz <mina86@mina86.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, linux-mm@kvack.org,
- m.szyprowski@samsung.com
-Subject: Re: [PATCH -V2 1/4] mm/cma: Move dma contiguous changes into a
- seperate config
-In-Reply-To: <1372410662-3748-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1372410662-3748-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Date: Mon, 01 Jul 2013 13:52:02 +0200
-Message-ID: <xa1tzju6sdjx.fsf@mina86.com>
+Return-Path: <B32721@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 589572C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jul 2013 19:34:01 +1000 (EST)
+Received: from mail190-tx2 (localhost [127.0.0.1])	by
+ mail190-tx2-R.bigfish.com (Postfix) with ESMTP id 09BCA3000D6	for
+ <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jul 2013 09:33:57 +0000 (UTC)
+Received: from TX2EHSMHS032.bigfish.com (unknown [10.9.14.247])	by
+ mail190-tx2.bigfish.com (Postfix) with ESMTP id D90642C00E4	for
+ <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jul 2013 09:33:54 +0000 (UTC)
+From: Udma Catalin-Dan-B32721 <B32721@freescale.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc: Update compilation flags with core specific options
+Date: Mon, 1 Jul 2013 09:33:53 +0000
+Message-ID: <FE751157F0442848A159F3AB4CB1F55B3DBA47@039-SN1MPN1-001.039d.mgd.msft.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="=-=-="
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Udma Catalin-Dan-B32721 <B32721@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,152 +29,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-=-=
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+From: Catalin Udma <catalin.udma@freescale.com>
 
-On Fri, Jun 28 2013, Aneesh Kumar K.V wrote:
-> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
->
-> We want to use CMA for allocating hash page table and real mode area for
-> PPC64. Hence move DMA contiguous related changes into a seperate config
-> so that ppc64 can enable CMA without requiring DMA contiguous.
->
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+If CONFIG_E500 is enabled, the compilation flags are updated
+specifying the target core -mcpu=3De5500/e500mc/8540
+Also remove -Wa,-me500, being incompatible with -mcpu=3De5500/e6500
+The assembler option is redundant if the -mcpu=3D flag is set.
+The patch fixes the kernel compilation problem for e5500/e6500
+when using gcc option -mcpu=3De5500/e6500.
 
-Acked-by: Michal Nazarewicz <mina86@mina86.com>
+Signed-off-by: Catalin Udma <catalin.udma@freescale.com>
+---
+ arch/powerpc/Makefile |   13 ++++++++++++-
+ 1 files changed, 12 insertions(+), 1 deletions(-)
 
-> diff --git a/drivers/base/Kconfig b/drivers/base/Kconfig
-> index 07abd9d..74b7c98 100644
-> --- a/drivers/base/Kconfig
-> +++ b/drivers/base/Kconfig
-> @@ -202,11 +202,10 @@ config DMA_SHARED_BUFFER
->  	  APIs extension; the file's descriptor can then be passed on to other
->  	  driver.
->=20=20
-> -config CMA
-> -	bool "Contiguous Memory Allocator"
-> -	depends on HAVE_DMA_CONTIGUOUS && HAVE_MEMBLOCK
-> -	select MIGRATION
-> -	select MEMORY_ISOLATION
-> +config DMA_CMA
-> +	bool "DMA Contiguous Memory Allocator"
-> +	depends on HAVE_DMA_CONTIGUOUS
-> +	select CMA
-
-Just to be on the safe side, I'd add
-
-	depends on HAVE_MEMBLOCK
-
-or change this so that it does not select CMA but depends on CMA.
-
->  	help
->  	  This enables the Contiguous Memory Allocator which allows drivers
->  	  to allocate big physically-contiguous blocks of memory for use with
-> @@ -215,17 +214,7 @@ config CMA
->  	  For more information see <include/linux/dma-contiguous.h>.
->  	  If unsure, say "n".
->=20=20
-> -if CMA
-> -
-> -config CMA_DEBUG
-> -	bool "CMA debug messages (DEVELOPMENT)"
-> -	depends on DEBUG_KERNEL
-> -	help
-> -	  Turns on debug messages in CMA.  This produces KERN_DEBUG
-> -	  messages for every CMA call as well as various messages while
-> -	  processing calls such as dma_alloc_from_contiguous().
-> -	  This option does not affect warning and error messages.
-> -
-> +if  DMA_CMA
->  comment "Default contiguous memory area size:"
->=20=20
->  config CMA_SIZE_MBYTES
-
-> diff --git a/include/linux/dma-contiguous.h b/include/linux/dma-contiguou=
-s.h
-> index 01b5c84..00141d3 100644
-> --- a/include/linux/dma-contiguous.h
-> +++ b/include/linux/dma-contiguous.h
-> @@ -57,7 +57,7 @@ struct cma;
->  struct page;
->  struct device;
->=20=20
-> -#ifdef CONFIG_CMA
-> +#ifdef CONFIG_DMA_CMA
->=20=20
->  /*
->   * There is always at least global CMA area and a few optional device
-> diff --git a/mm/Kconfig b/mm/Kconfig
-> index e742d06..26a5f81 100644
-> --- a/mm/Kconfig
-> +++ b/mm/Kconfig
-> @@ -477,3 +477,27 @@ config FRONTSWAP
->  	  and swap data is stored as normal on the matching swap device.
->=20=20
->  	  If unsure, say Y to enable frontswap.
-> +
-> +config CMA
-> +	bool "Contiguous Memory Allocator"
-> +	depends on HAVE_MEMBLOCK
-> +	select MIGRATION
-> +	select MEMORY_ISOLATION
-> +	help
-> +	  This enables the Contiguous Memory Allocator which allows other
-> +	  subsystems to allocate big physically-contiguous blocks of memory.
-> +	  CMA reserves a region of memory and allows only movable pages to
-> +	  be allocated from it. This way, the kernel can use the memory for
-> +	  pagecache and when a subsystem requests for contiguous area, the
-> +	  allocated pages are migrated away to serve the contiguous request.
-> +
-> +	  If unsure, say "n".
-> +
-> +config CMA_DEBUG
-> +	bool "CMA debug messages (DEVELOPMENT)"
-> +	depends on DEBUG_KERNEL && CMA
-> +	help
-> +	  Turns on debug messages in CMA.  This produces KERN_DEBUG
-> +	  messages for every CMA call as well as various messages while
-> +	  processing calls such as dma_alloc_from_contiguous().
-> +	  This option does not affect warning and error messages.
-> --=20
-> 1.8.1.2
->
-
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 0624909..82808b5 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -140,6 +140,18 @@ ifeq ($(CONFIG_6xx),y)
+ KBUILD_CFLAGS		+=3D -mcpu=3Dpowerpc
+ endif
+=20
++ifeq ($(CONFIG_E500),y)
++ifeq ($(CONFIG_64BIT),y)
++KBUILD_CFLAGS		+=3D -mcpu=3De5500
++else
++ifeq ($(CONFIG_PPC_E500MC),y)
++KBUILD_CFLAGS		+=3D -mcpu=3De500mc
++else
++KBUILD_CFLAGS		+=3D -mcpu=3D8540
++endif
++endif
++endif
++
+ # Work around a gcc code-gen bug with -fno-omit-frame-pointer.
+ ifeq ($(CONFIG_FUNCTION_TRACER),y)
+ KBUILD_CFLAGS		+=3D -mno-sched-epilog
+@@ -147,7 +159,6 @@ endif
+=20
+ cpu-as-$(CONFIG_4xx)		+=3D -Wa,-m405
+ cpu-as-$(CONFIG_ALTIVEC)	+=3D -Wa,-maltivec
+-cpu-as-$(CONFIG_E500)		+=3D -Wa,-me500
+ cpu-as-$(CONFIG_E200)		+=3D -Wa,-me200
+=20
+ KBUILD_AFLAGS +=3D $(cpu-as-y)
 --=20
-Best regards,                                         _     _
-.o. | Liege of Serenely Enlightened Majesty of      o' \,=3D./ `o
-..o | Computer Science,  Micha=C5=82 =E2=80=9Cmina86=E2=80=9D Nazarewicz   =
- (o o)
-ooo +----<email/xmpp: mpn@google.com>--------------ooO--(_)--Ooo--
---=-=-=
-Content-Type: multipart/signed; boundary="==-=-=";
-	micalg=pgp-sha1; protocol="application/pgp-signature"
-
---==-=-=
-Content-Type: text/plain
-
-
---==-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAEBAgAGBQJR0W1iAAoJECBgQBJQdR/0GKsQAImkobDydf8Cz/SR7nE8B2Q6
-LTA0n87AwwtMgLeZLIDQncksISI7bdduIsjaLD1zk3pcIu3z3RdPHEsoVZCgBaaN
-vz+BMnLe6TEgP6HKI98QcrVyeZViJwMIKSNTPUmdByum7YxOWAKQH6rSNogTsZGE
-nwPMU9ZklN9DaZtOpuOCP+6yxmuN5ENYnaIeKD9R+UOYbM6XfdlqX0Plmho5XZGd
-KCaH8dmfa7DobiHVREl7+n6YVQpZPeavOywSPPNw76XiGT7KZaaTxMdNC+nQJH6C
-SrUL8CDtcDei0OsIByE1BAYkhKXFsQRfWZkYG3YxpLmBVzuPaLjiMw0jasFlozSD
-26C5Gqkfv80tD61jdfrWVnDta912CCPjfQ5L7gpJV+XN134otdnXB5Fw3JKTG9iW
-2hl9KEufbmMgYqb+rkeAmkN4DHNdRuN5qPO5i2HfHXCGVW2++QBW1dW6rthV16VG
-q0kWC+H8Q2wWQuSUW7/h3+o2jOSOlT6mN90/UoO2QU1SPIhgkBR+7ismHVJWFPRw
-i+wF4WeBaGvzq2Lb7LqB9r3+P/VG1eGuinJYx3lV9TrMJRE0dmMYmXIFEE95aS1h
-cWskahY1GMgVpjsdPWucjkXlu1BXR9/OjjO8REJ07PkM2ny+OcQ49qLgn7dFHs4+
-9P3LkSEZPWNMGUpon1H8
-=7mX6
------END PGP SIGNATURE-----
---==-=-=--
-
---=-=-=--
+1.7.8
