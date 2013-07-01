@@ -1,26 +1,25 @@
-Return-Path: <B40534@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8BC422C0299
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jul 2013 12:38:25 +1000 (EST)
-From: Wang Dongsheng-B40534 <B40534@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Wood Scott-B07421
- <B07421@freescale.com>, "galak@kernel.crashing.org"
- <galak@kernel.crashing.org>
-Subject: RE: [PATCH v3 1/4] powerpc/mpic: add irq_set_wake support
-Date: Mon, 1 Jul 2013 02:38:15 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259F916BF@039-SN2MPN1-022.039d.mgd.msft.net>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 5D3242C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jul 2013 12:48:57 +1000 (EST)
+Message-ID: <1372646926.18612.140.camel@pasglop>
+Subject: Re: [PATCH v3 1/4] powerpc/mpic: add irq_set_wake support
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Wang Dongsheng-B40534 <B40534@freescale.com>
+Date: Mon, 01 Jul 2013 12:48:46 +1000
+In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F15439259F916BF@039-SN2MPN1-022.039d.mgd.msft.net>
 References: <1365474152-21524-1-git-send-email-dongsheng.wang@freescale.com>
  <ABB05CD9C9F68C46A5CEDC7F15439259EE77D8@039-SN2MPN1-021.039d.mgd.msft.net>
  <1366155021.23030.24@snotra>
  <ABB05CD9C9F68C46A5CEDC7F15439259F2581C@039-SN2MPN1-022.039d.mgd.msft.net>
  <1368421223.19924.16.camel@pasglop>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ <ABB05CD9C9F68C46A5CEDC7F15439259F916BF@039-SN2MPN1-022.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,81 +29,151 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgQmVuamFtaW4gJiBLdW1hciAmIHNjb3R0LA0KDQpJIGFtIG5vdCBzdXJlIHdobyBjYW4gYXBw
-bHkgdGhlc2UgcGF0Y2hlcy4uLg0KDQpTY290dCBhbHJlYWR5IEFDSyB0aGVzZSBwYXRjaGVzLg0K
-DQpBIGZldyBkYXlzIGFnbyBTY290dCBoYXZlIGEgcHVsbCByZXF1ZXN0LCBTY290dCBjYW4gYWNj
-ZXB0IHRoZW0/IE9yID8NCg0KW3YzLDEvNF0gcG93ZXJwYy9tcGljOiBhZGQgaXJxX3NldF93YWtl
-IHN1cHBvcnQNCmh0dHA6Ly9wYXRjaHdvcmsub3psYWJzLm9yZy9wYXRjaC8yMzQ5MzQvDQoNClt2
-MywyLzRdIHBvd2VycGMvbXBpYzogYWRkIGdsb2JhbCB0aW1lciBzdXBwb3J0DQpodHRwOi8vcGF0
-Y2h3b3JrLm96bGFicy5vcmcvcGF0Y2gvMjM0OTM1Lw0KDQpbdjMsMy80XSBwb3dlcnBjL21waWM6
-IGNyZWF0ZSBtcGljIHN1YnN5c3RlbSBvYmplY3QNCmh0dHA6Ly9wYXRjaHdvcmsub3psYWJzLm9y
-Zy9wYXRjaC8yMzQ5MzYNCg0KW3YzLDQvNF0gcG93ZXJwYy9mc2w6IGFkZCBNUElDIHRpbWVyIHdh
-a2V1cCBzdXBwb3J0DQpodHRwOi8vcGF0Y2h3b3JrLm96bGFicy5vcmcvcGF0Y2gvMjM0OTM3Lw0K
-DQpUaGFua3MuDQoNCi1kb25nc2hlbmcNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0K
-PiBGcm9tOiBXYW5nIERvbmdzaGVuZy1CNDA1MzQNCj4gU2VudDogU3VuZGF5LCBKdW5lIDA5LCAy
-MDEzIDQ6MjAgUE0NCj4gVG86ICdCZW5qYW1pbiBIZXJyZW5zY2htaWR0Jw0KPiBDYzogbGludXhw
-cGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IFdvb2QgU2NvdHQtQjA3NDIxOw0KPiBnYWxha0BrZXJu
-ZWwuY3Jhc2hpbmcub3JnDQo+IFN1YmplY3Q6IFJFOiBbUEFUQ0ggdjMgMS80XSBwb3dlcnBjL21w
-aWM6IGFkZCBpcnFfc2V0X3dha2Ugc3VwcG9ydA0KPiANCj4gSGkgYmVuLA0KPiANCj4gQ291bGQg
-eW91IGFwcGx5IHRoZXNlIHBhdGNoZXM/IFRoYW5rcy4gOikNCj4gDQo+IC0gZG9uZ3NoZW5nDQo+
-IA0KPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gRnJvbTogQmVuamFtaW4gSGVy
-cmVuc2NobWlkdCBbbWFpbHRvOmJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZ10NCj4gPiBTZW50OiBN
-b25kYXksIE1heSAxMywgMjAxMyAxOjAwIFBNDQo+ID4gVG86IFdhbmcgRG9uZ3NoZW5nLUI0MDUz
-NA0KPiA+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgV29vZCBTY290dC1CMDc0
-MjE7DQo+ID4gZ2FsYWtAa2VybmVsLmNyYXNoaW5nLm9yZw0KPiA+IFN1YmplY3Q6IFJlOiBbUEFU
-Q0ggdjMgMS80XSBwb3dlcnBjL21waWM6IGFkZCBpcnFfc2V0X3dha2Ugc3VwcG9ydA0KPiA+DQo+
-ID4gT24gTW9uLCAyMDEzLTA1LTEzIGF0IDA0OjI1ICswMDAwLCBXYW5nIERvbmdzaGVuZy1CNDA1
-MzQgd3JvdGU6DQo+ID4gPiBIaSBCZW5qYW1pbiwNCj4gPiA+DQo+ID4gPiBDb3VsZCB5b3UgYXBw
-bHkgdGhlc2UgcGF0Y2hlcz8NCj4gPg0KPiA+IEknbGwgaGF2ZSBhIGxvb2ssIEkgd2FzIGFzc3Vt
-aW5nIEt1bWFyIHdvdWxkIHRha2UgdGhlbSBidXQgc2luY2Ugbm90DQo+ID4gSSdsbCBxdWV1ZSB0
-aGVtIHVwLg0KPiA+DQo+ID4gQ2hlZXJzLA0KPiA+IEJlbi4NCj4gPg0KPiA+ID4gU2NvdHQgYWxy
-ZWFkeSBBQ0suDQo+ID4gPg0KPiA+ID4gW3YzLDEvNF0gcG93ZXJwYy9tcGljOiBhZGQgaXJxX3Nl
-dF93YWtlIHN1cHBvcnQNCj4gPiA+IGh0dHA6Ly9wYXRjaHdvcmsub3psYWJzLm9yZy9wYXRjaC8y
-MzQ5MzQvDQo+ID4gPg0KPiA+ID4gW3YzLDIvNF0gcG93ZXJwYy9tcGljOiBhZGQgZ2xvYmFsIHRp
-bWVyIHN1cHBvcnQNCj4gPiA+IGh0dHA6Ly9wYXRjaHdvcmsub3psYWJzLm9yZy9wYXRjaC8yMzQ5
-MzUvDQo+ID4gPg0KPiA+ID4gW3YzLDMvNF0gcG93ZXJwYy9tcGljOiBjcmVhdGUgbXBpYyBzdWJz
-eXN0ZW0gb2JqZWN0DQo+ID4gPiBodHRwOi8vcGF0Y2h3b3JrLm96bGFicy5vcmcvcGF0Y2gvMjM0
-OTM2Lw0KPiA+ID4NCj4gPiA+IFt2Myw0LzRdIHBvd2VycGMvZnNsOiBhZGQgTVBJQyB0aW1lciB3
-YWtldXAgc3VwcG9ydA0KPiA+ID4gaHR0cDovL3BhdGNod29yay5vemxhYnMub3JnL3BhdGNoLzIz
-NDkzNy8NCj4gPiA+DQo+ID4gPiBUaGFua3MuDQo+ID4gPg0KPiA+ID4gPiAtLS0tLU9yaWdpbmFs
-IE1lc3NhZ2UtLS0tLQ0KPiA+ID4gPiBGcm9tOiBXYW5nIERvbmdzaGVuZy1CNDA1MzQNCj4gPiA+
-ID4gU2VudDogRnJpZGF5LCBNYXkgMDMsIDIwMTMgOTo1NCBBTQ0KPiA+ID4gPiBUbzogJ2dhbGFr
-QGtlcm5lbC5jcmFzaGluZy5vcmcnDQo+ID4gPiA+IENjOiAnbGludXhwcGMtZGV2QGxpc3RzLm96
-bGFicy5vcmcnOyBXb29kIFNjb3R0LUIwNzQyMTsNCj4gPiA+ID4gJ2JlbmhAa2VybmVsLmNyYXNo
-aW5nLm9yZycNCj4gPiA+ID4gU3ViamVjdDogUkU6IFtQQVRDSCB2MyAxLzRdIHBvd2VycGMvbXBp
-YzogYWRkIGlycV9zZXRfd2FrZSBzdXBwb3J0DQo+ID4gPiA+DQo+ID4gPiA+IEhpIEt1bWFyLA0K
-PiA+ID4gPg0KPiA+ID4gPiBDb3VsZCB5b3UgYXBwbHkgdGhlc2UgcGF0Y2hlcz8NCj4gPiA+ID4N
-Cj4gPiA+ID4gVGhhbmtzLg0KPiA+ID4gPg0KPiA+ID4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2Fn
-ZS0tLS0tDQo+ID4gPiA+ID4gRnJvbTogV2FuZyBEb25nc2hlbmctQjQwNTM0DQo+ID4gPiA+ID4g
-U2VudDogVHVlc2RheSwgQXByaWwgMjMsIDIwMTMgNjoxMCBQTQ0KPiA+ID4gPiA+IFRvOiBnYWxh
-a0BrZXJuZWwuY3Jhc2hpbmcub3JnDQo+ID4gPiA+ID4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0cy5v
-emxhYnMub3JnOyBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gPiA+IFN1YmplY3Q6IFJFOiBbUEFU
-Q0ggdjMgMS80XSBwb3dlcnBjL21waWM6IGFkZCBpcnFfc2V0X3dha2UNCj4gPiA+ID4gPiBzdXBw
-b3J0DQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBIaSBLdW1hciwNCj4gPiA+ID4gPg0KPiA+ID4gPiA+
-IENvdWxkIHlvdSBhcHBseSB0aGVzZSBwYXRjaGVzPw0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gVGhh
-bmtzLg0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gW3YzLDEvNF0gcG93ZXJwYy9tcGljOiBhZGQgaXJx
-X3NldF93YWtlIHN1cHBvcnQNCj4gPiA+ID4gPiBodHRwOi8vcGF0Y2h3b3JrLm96bGFicy5vcmcv
-cGF0Y2gvMjM0OTM0Lw0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gW3YzLDIvNF0gcG93ZXJwYy9tcGlj
-OiBhZGQgZ2xvYmFsIHRpbWVyIHN1cHBvcnQNCj4gPiA+ID4gPiBodHRwOi8vcGF0Y2h3b3JrLm96
-bGFicy5vcmcvcGF0Y2gvMjM0OTM1Lw0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gW3YzLDMvNF0gcG93
-ZXJwYy9tcGljOiBjcmVhdGUgbXBpYyBzdWJzeXN0ZW0gb2JqZWN0DQo+ID4gPiA+ID4gaHR0cDov
-L3BhdGNod29yay5vemxhYnMub3JnL3BhdGNoLzIzNDkzNi8NCj4gPiA+ID4gPg0KPiA+ID4gPiA+
-IFt2Myw0LzRdIHBvd2VycGMvZnNsOiBhZGQgTVBJQyB0aW1lciB3YWtldXAgc3VwcG9ydA0KPiA+
-ID4gPiA+IGh0dHA6Ly9wYXRjaHdvcmsub3psYWJzLm9yZy9wYXRjaC8yMzQ5MzcvDQo+ID4gPiA+
-ID4NCj4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4g
-PiA+ID4gPiA+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4gPiA+ID4gPiBTZW50OiBXZWRu
-ZXNkYXksIEFwcmlsIDE3LCAyMDEzIDc6MzAgQU0NCj4gPiA+ID4gPiA+IFRvOiBXYW5nIERvbmdz
-aGVuZy1CNDA1MzQNCj4gPiA+ID4gPiA+IENjOiBXb29kIFNjb3R0LUIwNzQyMTsgbGludXhwcGMt
-ZGV2QGxpc3RzLm96bGFicy5vcmc7DQo+ID4gPiA+ID4gPiBnYWxha0BrZXJuZWwuY3Jhc2hpbmcu
-b3JnDQo+ID4gPiA+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIIHYzIDEvNF0gcG93ZXJwYy9tcGlj
-OiBhZGQgaXJxX3NldF93YWtlDQo+ID4gPiA+ID4gPiBzdXBwb3J0DQo+ID4gPiA+ID4gPg0KPiA+
-ID4gPiA+ID4gQUNLDQo+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gLVNjb3R0DQo+ID4gPiA+ID4g
-Pg0KPiA+ID4gPiA+ID4gT24gMDQvMTYvMjAxMyAwNTo1ODo1MiBBTSwgV2FuZyBEb25nc2hlbmct
-QjQwNTM0IHdyb3RlOg0KPiA+ID4gPiA+ID4gPiBIaSBzY290dCwNCj4gPiA+ID4gPiA+ID4NCj4g
-PiA+ID4gPiA+ID4gQ291bGQgeW91IEFDSyB0aGVzZSBwYXRjaGVzPw0KPiA+ID4gPiA+ID4gPg0K
-PiA+ID4gPiA+ID4gPiBbUEFUQ0ggdjMgMi80XSBwb3dlcnBjL21waWM6IGFkZCBnbG9iYWwgdGlt
-ZXIgc3VwcG9ydCBbUEFUQ0gNCj4gPiA+ID4gPiA+ID4gdjMgMy80XQ0KPiA+ID4gPiA+ID4gPiBw
-b3dlcnBjL21waWM6IGNyZWF0ZSBtcGljIHN1YnN5c3RlbSBvYmplY3QgW1BBVENIIHYzIDQvNF0N
-Cj4gPiA+ID4gPiA+ID4gcG93ZXJwYy9mc2w6IGFkZCBNUElDIHRpbWVyIHdha2V1cCBzdXBwb3J0
-DQo+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+IFRoYW5rcy4NCj4gPiA+ID4gPiA+ID4NCj4g
-Pg0KPiA+DQoNCg==
+On Mon, 2013-07-01 at 02:38 +0000, Wang Dongsheng-B40534 wrote:
+> Hi Benjamin & Kumar & scott,
+> 
+> I am not sure who can apply these patches...
+> 
+> Scott already ACK these patches.
+> 
+> A few days ago Scott have a pull request, Scott can accept them? Or ?
+
+I'm happy to pull from Scott. Do somebody other than me has access to an
+old Mac (a G5 for example) to check they don't break anything there ?
+
+Ben.
+
+> [v3,1/4] powerpc/mpic: add irq_set_wake support
+> http://patchwork.ozlabs.org/patch/234934/
+> 
+> [v3,2/4] powerpc/mpic: add global timer support
+> http://patchwork.ozlabs.org/patch/234935/
+> 
+> [v3,3/4] powerpc/mpic: create mpic subsystem object
+> http://patchwork.ozlabs.org/patch/234936
+> 
+> [v3,4/4] powerpc/fsl: add MPIC timer wakeup support
+> http://patchwork.ozlabs.org/patch/234937/
+> 
+> Thanks.
+> 
+> -dongsheng
+> 
+> > -----Original Message-----
+> > From: Wang Dongsheng-B40534
+> > Sent: Sunday, June 09, 2013 4:20 PM
+> > To: 'Benjamin Herrenschmidt'
+> > Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421;
+> > galak@kernel.crashing.org
+> > Subject: RE: [PATCH v3 1/4] powerpc/mpic: add irq_set_wake support
+> > 
+> > Hi ben,
+> > 
+> > Could you apply these patches? Thanks. :)
+> > 
+> > - dongsheng
+> > 
+> > > -----Original Message-----
+> > > From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org]
+> > > Sent: Monday, May 13, 2013 1:00 PM
+> > > To: Wang Dongsheng-B40534
+> > > Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421;
+> > > galak@kernel.crashing.org
+> > > Subject: Re: [PATCH v3 1/4] powerpc/mpic: add irq_set_wake support
+> > >
+> > > On Mon, 2013-05-13 at 04:25 +0000, Wang Dongsheng-B40534 wrote:
+> > > > Hi Benjamin,
+> > > >
+> > > > Could you apply these patches?
+> > >
+> > > I'll have a look, I was assuming Kumar would take them but since not
+> > > I'll queue them up.
+> > >
+> > > Cheers,
+> > > Ben.
+> > >
+> > > > Scott already ACK.
+> > > >
+> > > > [v3,1/4] powerpc/mpic: add irq_set_wake support
+> > > > http://patchwork.ozlabs.org/patch/234934/
+> > > >
+> > > > [v3,2/4] powerpc/mpic: add global timer support
+> > > > http://patchwork.ozlabs.org/patch/234935/
+> > > >
+> > > > [v3,3/4] powerpc/mpic: create mpic subsystem object
+> > > > http://patchwork.ozlabs.org/patch/234936/
+> > > >
+> > > > [v3,4/4] powerpc/fsl: add MPIC timer wakeup support
+> > > > http://patchwork.ozlabs.org/patch/234937/
+> > > >
+> > > > Thanks.
+> > > >
+> > > > > -----Original Message-----
+> > > > > From: Wang Dongsheng-B40534
+> > > > > Sent: Friday, May 03, 2013 9:54 AM
+> > > > > To: 'galak@kernel.crashing.org'
+> > > > > Cc: 'linuxppc-dev@lists.ozlabs.org'; Wood Scott-B07421;
+> > > > > 'benh@kernel.crashing.org'
+> > > > > Subject: RE: [PATCH v3 1/4] powerpc/mpic: add irq_set_wake support
+> > > > >
+> > > > > Hi Kumar,
+> > > > >
+> > > > > Could you apply these patches?
+> > > > >
+> > > > > Thanks.
+> > > > >
+> > > > > > -----Original Message-----
+> > > > > > From: Wang Dongsheng-B40534
+> > > > > > Sent: Tuesday, April 23, 2013 6:10 PM
+> > > > > > To: galak@kernel.crashing.org
+> > > > > > Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421
+> > > > > > Subject: RE: [PATCH v3 1/4] powerpc/mpic: add irq_set_wake
+> > > > > > support
+> > > > > >
+> > > > > > Hi Kumar,
+> > > > > >
+> > > > > > Could you apply these patches?
+> > > > > >
+> > > > > > Thanks.
+> > > > > >
+> > > > > > [v3,1/4] powerpc/mpic: add irq_set_wake support
+> > > > > > http://patchwork.ozlabs.org/patch/234934/
+> > > > > >
+> > > > > > [v3,2/4] powerpc/mpic: add global timer support
+> > > > > > http://patchwork.ozlabs.org/patch/234935/
+> > > > > >
+> > > > > > [v3,3/4] powerpc/mpic: create mpic subsystem object
+> > > > > > http://patchwork.ozlabs.org/patch/234936/
+> > > > > >
+> > > > > > [v3,4/4] powerpc/fsl: add MPIC timer wakeup support
+> > > > > > http://patchwork.ozlabs.org/patch/234937/
+> > > > > >
+> > > > > >
+> > > > > > > -----Original Message-----
+> > > > > > > From: Wood Scott-B07421
+> > > > > > > Sent: Wednesday, April 17, 2013 7:30 AM
+> > > > > > > To: Wang Dongsheng-B40534
+> > > > > > > Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org;
+> > > > > > > galak@kernel.crashing.org
+> > > > > > > Subject: Re: [PATCH v3 1/4] powerpc/mpic: add irq_set_wake
+> > > > > > > support
+> > > > > > >
+> > > > > > > ACK
+> > > > > > >
+> > > > > > > -Scott
+> > > > > > >
+> > > > > > > On 04/16/2013 05:58:52 AM, Wang Dongsheng-B40534 wrote:
+> > > > > > > > Hi scott,
+> > > > > > > >
+> > > > > > > > Could you ACK these patches?
+> > > > > > > >
+> > > > > > > > [PATCH v3 2/4] powerpc/mpic: add global timer support [PATCH
+> > > > > > > > v3 3/4]
+> > > > > > > > powerpc/mpic: create mpic subsystem object [PATCH v3 4/4]
+> > > > > > > > powerpc/fsl: add MPIC timer wakeup support
+> > > > > > > >
+> > > > > > > > Thanks.
+> > > > > > > >
+> > >
+> > >
+> 
