@@ -1,38 +1,32 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6B12D2C00A7
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jul 2013 23:01:20 +1000 (EST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 1 Jul 2013 22:51:29 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id CA1943578050
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jul 2013 23:01:13 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r61D14pv2294130
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Jul 2013 23:01:04 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r61D1CUq017173
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Jul 2013 23:01:13 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Michal Nazarewicz <mina86@mina86.com>, benh@kernel.crashing.org,
- paulus@samba.org, linux-mm@kvack.org, m.szyprowski@samsung.com
-Subject: Re: [PATCH -V2 1/4] mm/cma: Move dma contiguous changes into a
- seperate config
-In-Reply-To: <xa1tzju6sdjx.fsf@mina86.com>
-References: <1372410662-3748-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <xa1tzju6sdjx.fsf@mina86.com>
-Date: Mon, 01 Jul 2013 18:31:10 +0530
-Message-ID: <8738rytox5.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <thomas.petazzoni@free-electrons.com>
+Received: from mail.free-electrons.com (mail.free-electrons.com [94.23.35.102])
+ by ozlabs.org (Postfix) with ESMTP id 883E32C0077
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jul 2013 23:42:42 +1000 (EST)
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+To: Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
+ Russell King <linux@arm.linux.org.uk>,
+ Grant Likely <grant.likely@secretlab.ca>,
+ Rob Herring <rob.herring@calxeda.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>,
+ Andrew Lunn <andrew@lunn.ch>,
+ Gregory Clement <gregory.clement@free-electrons.com>
+Subject: [PATCHv4 02/11] pci: use weak functions for MSI arch-specific
+ functions
+Date: Mon,  1 Jul 2013 15:42:07 +0200
+Message-Id: <1372686136-1370-3-git-send-email-thomas.petazzoni@free-electrons.com>
+In-Reply-To: <1372686136-1370-1-git-send-email-thomas.petazzoni@free-electrons.com>
+References: <1372686136-1370-1-git-send-email-thomas.petazzoni@free-electrons.com>
+Cc: Lior Amsalem <alior@marvell.com>, linux-mips@linux-mips.org,
+ linux-ia64@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Thierry Reding <thierry.reding@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ linux-s390@vger.kernel.org, x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
+ Ezequiel Garcia <ezequiel.garcia@free-electrons.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Chris Metcalf <cmetcalf@tilera.com>,
+ linux-arm-kernel@lists.infradead.org, Tony Luck <tony.luck@intel.com>,
+ Ralf Baechle <ralf@linux-mips.org>, Maen Suleiman <maen@marvell.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,70 +36,280 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michal Nazarewicz <mina86@mina86.com> writes:
+Until now, the MSI architecture-specific functions could be overloaded
+using a fairly complex set of #define and compile-time
+conditionals. In order to prepare for the introduction of the msi_chip
+infrastructure, it is desirable to switch all those functions to use
+the 'weak' mechanism. This commit converts all the architectures that
+were overidding those MSI functions to use the new strategy.
 
-> On Fri, Jun 28 2013, Aneesh Kumar K.V wrote:
->> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
->>
->> We want to use CMA for allocating hash page table and real mode area for
->> PPC64. Hence move DMA contiguous related changes into a seperate config
->> so that ppc64 can enable CMA without requiring DMA contiguous.
->>
->> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->
-> Acked-by: Michal Nazarewicz <mina86@mina86.com>
->
->> diff --git a/drivers/base/Kconfig b/drivers/base/Kconfig
->> index 07abd9d..74b7c98 100644
->> --- a/drivers/base/Kconfig
->> +++ b/drivers/base/Kconfig
->> @@ -202,11 +202,10 @@ config DMA_SHARED_BUFFER
->>  	  APIs extension; the file's descriptor can then be passed on to other
->>  	  driver.
->>  
->> -config CMA
->> -	bool "Contiguous Memory Allocator"
->> -	depends on HAVE_DMA_CONTIGUOUS && HAVE_MEMBLOCK
->> -	select MIGRATION
->> -	select MEMORY_ISOLATION
->> +config DMA_CMA
->> +	bool "DMA Contiguous Memory Allocator"
->> +	depends on HAVE_DMA_CONTIGUOUS
->> +	select CMA
->
-> Just to be on the safe side, I'd add
->
-> 	depends on HAVE_MEMBLOCK
->
-> or change this so that it does not select CMA but depends on CMA.
+Note that we keep a separate, non-weak, function
+default_teardown_msi_irqs() for the default behavior of the
+arch_teardown_msi_irqs(), as the default behavior is needed by the Xen
+x86 PCI code.
 
+Signed-off-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: linux390@de.ibm.com
+Cc: linux-s390@vger.kernel.org
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: x86@kernel.org
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Fenghua Yu <fenghua.yu@intel.com>
+Cc: linux-ia64@vger.kernel.org
+Cc: Ralf Baechle <ralf@linux-mips.org>
+Cc: linux-mips@linux-mips.org
+Cc: David S. Miller <davem@davemloft.net>
+Cc: sparclinux@vger.kernel.org
+Cc: Chris Metcalf <cmetcalf@tilera.com>
+---
+ arch/mips/include/asm/pci.h    |  5 -----
+ arch/powerpc/include/asm/pci.h |  5 -----
+ arch/s390/include/asm/pci.h    |  4 ----
+ arch/x86/include/asm/pci.h     | 28 --------------------------
+ arch/x86/kernel/x86_init.c     | 21 ++++++++++++++++++++
+ drivers/pci/msi.c              | 45 +++++++++++++++++++-----------------------
+ include/linux/msi.h            |  7 ++++++-
+ 7 files changed, 47 insertions(+), 68 deletions(-)
 
-updated this to 
-
-+config DMA_CMA
-+	bool "DMA Contiguous Memory Allocator"
-+	depends on HAVE_DMA_CONTIGUOUS && CMA
-
-
->
->>  	help
->>  	  This enables the Contiguous Memory Allocator which allows drivers
->>  	  to allocate big physically-contiguous blocks of memory for use with
->> @@ -215,17 +214,7 @@ config CMA
->>  	  For more information see <include/linux/dma-contiguous.h>.
->>  	  If unsure, say "n".
->>  
->> -if CMA
->> -
->> -config CMA_DEBUG
->> -	bool "CMA debug messages (DEVELOPMENT)"
->> -	depends on DEBUG_KERNEL
->> -	help
->> -	  Turns on debug messages in CMA.  This produces KERN_DEBUG
->> -	  messages for every CMA call as well as various messages while
->> -	  processing calls such as dma_alloc_from_contiguous().
->> -	  This option does not affect warning and error messages.
->> -
-
-Thanks
--aneesh
+diff --git a/arch/mips/include/asm/pci.h b/arch/mips/include/asm/pci.h
+index b8e24fd..031f4c1 100644
+--- a/arch/mips/include/asm/pci.h
++++ b/arch/mips/include/asm/pci.h
+@@ -137,11 +137,6 @@ static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
+ 	return channel ? 15 : 14;
+ }
+ 
+-#ifdef CONFIG_CPU_CAVIUM_OCTEON
+-/* MSI arch hook for OCTEON */
+-#define arch_setup_msi_irqs arch_setup_msi_irqs
+-#endif
+-
+ extern char * (*pcibios_plat_setup)(char *str);
+ 
+ #ifdef CONFIG_OF
+diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
+index 6653f27..95145a1 100644
+--- a/arch/powerpc/include/asm/pci.h
++++ b/arch/powerpc/include/asm/pci.h
+@@ -113,11 +113,6 @@ extern int pci_domain_nr(struct pci_bus *bus);
+ /* Decide whether to display the domain number in /proc */
+ extern int pci_proc_domain(struct pci_bus *bus);
+ 
+-/* MSI arch hooks */
+-#define arch_setup_msi_irqs arch_setup_msi_irqs
+-#define arch_teardown_msi_irqs arch_teardown_msi_irqs
+-#define arch_msi_check_device arch_msi_check_device
+-
+ struct vm_area_struct;
+ /* Map a range of PCI memory or I/O space for a device into user space */
+ int pci_mmap_page_range(struct pci_dev *pdev, struct vm_area_struct *vma,
+diff --git a/arch/s390/include/asm/pci.h b/arch/s390/include/asm/pci.h
+index 6c18012..8641e8d 100644
+--- a/arch/s390/include/asm/pci.h
++++ b/arch/s390/include/asm/pci.h
+@@ -21,10 +21,6 @@ void pci_iounmap(struct pci_dev *, void __iomem *);
+ int pci_domain_nr(struct pci_bus *);
+ int pci_proc_domain(struct pci_bus *);
+ 
+-/* MSI arch hooks */
+-#define arch_setup_msi_irqs	arch_setup_msi_irqs
+-#define arch_teardown_msi_irqs	arch_teardown_msi_irqs
+-
+ #define ZPCI_BUS_NR			0	/* default bus number */
+ #define ZPCI_DEVFN			0	/* default device number */
+ 
+diff --git a/arch/x86/include/asm/pci.h b/arch/x86/include/asm/pci.h
+index d9e9e6c..8c61de0 100644
+--- a/arch/x86/include/asm/pci.h
++++ b/arch/x86/include/asm/pci.h
+@@ -100,29 +100,6 @@ static inline void early_quirks(void) { }
+ extern void pci_iommu_alloc(void);
+ 
+ #ifdef CONFIG_PCI_MSI
+-/* MSI arch specific hooks */
+-static inline int x86_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+-{
+-	return x86_msi.setup_msi_irqs(dev, nvec, type);
+-}
+-
+-static inline void x86_teardown_msi_irqs(struct pci_dev *dev)
+-{
+-	x86_msi.teardown_msi_irqs(dev);
+-}
+-
+-static inline void x86_teardown_msi_irq(unsigned int irq)
+-{
+-	x86_msi.teardown_msi_irq(irq);
+-}
+-static inline void x86_restore_msi_irqs(struct pci_dev *dev, int irq)
+-{
+-	x86_msi.restore_msi_irqs(dev, irq);
+-}
+-#define arch_setup_msi_irqs x86_setup_msi_irqs
+-#define arch_teardown_msi_irqs x86_teardown_msi_irqs
+-#define arch_teardown_msi_irq x86_teardown_msi_irq
+-#define arch_restore_msi_irqs x86_restore_msi_irqs
+ /* implemented in arch/x86/kernel/apic/io_apic. */
+ struct msi_desc;
+ int native_setup_msi_irqs(struct pci_dev *dev, int nvec, int type);
+@@ -130,11 +107,6 @@ void native_teardown_msi_irq(unsigned int irq);
+ void native_restore_msi_irqs(struct pci_dev *dev, int irq);
+ int setup_msi_irq(struct pci_dev *dev, struct msi_desc *msidesc,
+ 		  unsigned int irq_base, unsigned int irq_offset);
+-/* default to the implementation in drivers/lib/msi.c */
+-#define HAVE_DEFAULT_MSI_TEARDOWN_IRQS
+-#define HAVE_DEFAULT_MSI_RESTORE_IRQS
+-void default_teardown_msi_irqs(struct pci_dev *dev);
+-void default_restore_msi_irqs(struct pci_dev *dev, int irq);
+ #else
+ #define native_setup_msi_irqs		NULL
+ #define native_teardown_msi_irq		NULL
+diff --git a/arch/x86/kernel/x86_init.c b/arch/x86/kernel/x86_init.c
+index 45a14db..a2b189c 100644
+--- a/arch/x86/kernel/x86_init.c
++++ b/arch/x86/kernel/x86_init.c
+@@ -116,6 +116,27 @@ struct x86_msi_ops x86_msi = {
+ 	.setup_hpet_msi		= default_setup_hpet_msi,
+ };
+ 
++/* MSI arch specific hooks */
++int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
++{
++	return x86_msi.setup_msi_irqs(dev, nvec, type);
++}
++
++void arch_teardown_msi_irqs(struct pci_dev *dev)
++{
++	x86_msi.teardown_msi_irqs(dev);
++}
++
++void arch_teardown_msi_irq(unsigned int irq)
++{
++	x86_msi.teardown_msi_irq(irq);
++}
++
++void arch_restore_msi_irqs(struct pci_dev *dev, int irq)
++{
++	x86_msi.restore_msi_irqs(dev, irq);
++}
++
+ struct x86_io_apic_ops x86_io_apic_ops = {
+ 	.init			= native_io_apic_init_mappings,
+ 	.read			= native_io_apic_read,
+diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+index 2c10752..289fbfd 100644
+--- a/drivers/pci/msi.c
++++ b/drivers/pci/msi.c
+@@ -30,20 +30,21 @@ static int pci_msi_enable = 1;
+ 
+ /* Arch hooks */
+ 
+-#ifndef arch_msi_check_device
+-int arch_msi_check_device(struct pci_dev *dev, int nvec, int type)
++int __weak arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
+ {
+-	return 0;
++	return -EINVAL;
+ }
+-#endif
+ 
+-#ifndef arch_setup_msi_irqs
+-# define arch_setup_msi_irqs default_setup_msi_irqs
+-# define HAVE_DEFAULT_MSI_SETUP_IRQS
+-#endif
++void __weak arch_teardown_msi_irq(unsigned int irq)
++{
++}
+ 
+-#ifdef HAVE_DEFAULT_MSI_SETUP_IRQS
+-int default_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
++int __weak arch_msi_check_device(struct pci_dev *dev, int nvec, int type)
++{
++	return 0;
++}
++
++int __weak arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+ {
+ 	struct msi_desc *entry;
+ 	int ret;
+@@ -65,14 +66,11 @@ int default_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+ 
+ 	return 0;
+ }
+-#endif
+ 
+-#ifndef arch_teardown_msi_irqs
+-# define arch_teardown_msi_irqs default_teardown_msi_irqs
+-# define HAVE_DEFAULT_MSI_TEARDOWN_IRQS
+-#endif
+-
+-#ifdef HAVE_DEFAULT_MSI_TEARDOWN_IRQS
++/*
++ * We have a default implementation available as a separate non-weak
++ * function, as it is used by the Xen x86 PCI code
++ */
+ void default_teardown_msi_irqs(struct pci_dev *dev)
+ {
+ 	struct msi_desc *entry;
+@@ -86,15 +84,13 @@ void default_teardown_msi_irqs(struct pci_dev *dev)
+ 			arch_teardown_msi_irq(entry->irq + i);
+ 	}
+ }
+-#endif
+ 
+-#ifndef arch_restore_msi_irqs
+-# define arch_restore_msi_irqs default_restore_msi_irqs
+-# define HAVE_DEFAULT_MSI_RESTORE_IRQS
+-#endif
++void __weak arch_teardown_msi_irqs(struct pci_dev *dev)
++{
++	return default_teardown_msi_irqs(dev);
++}
+ 
+-#ifdef HAVE_DEFAULT_MSI_RESTORE_IRQS
+-void default_restore_msi_irqs(struct pci_dev *dev, int irq)
++void __weak arch_restore_msi_irqs(struct pci_dev *dev, int irq)
+ {
+ 	struct msi_desc *entry;
+ 
+@@ -111,7 +107,6 @@ void default_restore_msi_irqs(struct pci_dev *dev, int irq)
+ 	if (entry)
+ 		write_msi_msg(irq, &entry->msg);
+ }
+-#endif
+ 
+ static void msi_set_enable(struct pci_dev *dev, int enable)
+ {
+diff --git a/include/linux/msi.h b/include/linux/msi.h
+index 20c2d6d..c82ff8d 100644
+--- a/include/linux/msi.h
++++ b/include/linux/msi.h
+@@ -50,12 +50,17 @@ struct msi_desc {
+ };
+ 
+ /*
+- * The arch hook for setup up msi irqs
++ * The arch hooks to setup up msi irqs. Those functions are
++ * implemented as weak symbols so that they /can/ be overriden by
++ * architecture specific code if needed.
+  */
+ int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc);
+ void arch_teardown_msi_irq(unsigned int irq);
+ int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type);
+ void arch_teardown_msi_irqs(struct pci_dev *dev);
+ int arch_msi_check_device(struct pci_dev* dev, int nvec, int type);
++void arch_restore_msi_irqs(struct pci_dev *dev, int irq);
++
++void default_teardown_msi_irqs(struct pci_dev *dev);
+ 
+ #endif /* LINUX_MSI_H */
+-- 
+1.8.1.2
