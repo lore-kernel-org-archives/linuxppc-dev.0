@@ -1,20 +1,28 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 98A862C00AF
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2013 00:35:39 +1000 (EST)
-Message-ID: <1372689326.30572.788.camel@ul30vt.home>
-Subject: Re: [PATCH 3/3 v18] iommu/fsl: Freescale PAMU driver and iommu
+Return-Path: <B16395@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E99152C01D4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2013 00:36:43 +1000 (EST)
+From: Sethi Varun-B16395 <B16395@freescale.com>
+To: Alex Williamson <alex.williamson@redhat.com>
+Subject: RE: [PATCH 3/3 v18] iommu/fsl: Freescale PAMU driver and iommu
  implementation.
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Varun Sethi <Varun.Sethi@freescale.com>
-Date: Mon, 01 Jul 2013 08:35:26 -0600
-In-Reply-To: <1372673475-20929-1-git-send-email-Varun.Sethi@freescale.com>
+Date: Mon, 1 Jul 2013 14:36:35 +0000
+Message-ID: <C5ECD7A89D1DC44195F34B25E172658D0A34A7F5@039-SN2MPN1-011.039d.mgd.msft.net>
 References: <1372673475-20929-1-git-send-email-Varun.Sethi@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: stuart.yoder@freescale.com, joro@8bytes.org, linux-kernel@vger.kernel.org,
- iommu@lists.linux-foundation.org, scottwood@freescale.com,
- Timur Tabi <timur@tabi.org>, linuxppc-dev@lists.ozlabs.org
+ <1372689326.30572.788.camel@ul30vt.home>
+In-Reply-To: <1372689326.30572.788.camel@ul30vt.home>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: Wood Scott-B07421 <B07421@freescale.com>, Timur Tabi <timur@tabi.org>,
+ "joro@8bytes.org" <joro@8bytes.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Yoder Stuart-B08248 <B08248@freescale.com>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,37 +32,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-07-01 at 15:41 +0530, Varun Sethi wrote:
-> Following is a brief description of the PAMU hardware:
-> PAMU determines what action to take and whether to authorize the action on
-> the basis of the memory address, a Logical IO Device Number (LIODN), and
-> PAACT table (logically) indexed by LIODN and address. Hardware devices which
-> need to access memory must provide an LIODN in addition to the memory address.
-> 
-> Peripheral Access Authorization and Control Tables (PAACTs) are the primary
-> data structures used by PAMU. A PAACT is a table of peripheral access
-> authorization and control entries (PAACE).Each PAACE defines the range of
-> I/O bus address space that is accessible by the LIOD and the associated access
-> capabilities.
-> 
-> There are two types of PAACTs: primary PAACT (PPAACT) and secondary PAACT
-> (SPAACT).A given physical I/O device may be able to act as one or more
-> independent logical I/O devices (LIODs). Each such logical I/O device is
-> assigned an identifier called logical I/O device number (LIODN). A LIODN is
-> allocated a contiguous portion of the I/O bus address space called the DSA window
-> for performing DSA operations. The DSA window may optionally be divided into
-> multiple sub-windows, each of which may be used to map to a region in system
-> storage space. The first sub-window is referred to as the primary sub-window
-> and the remaining are called secondary sub-windows.
-> 
-> This patch provides the PAMU driver (fsl_pamu.c) and the corresponding IOMMU
-> API implementation (fsl_pamu_domain.c). The PAMU hardware driver (fsl_pamu.c)
-> has been derived from the work done by Ashish Kalra and Timur Tabi.
-> 
-> Signed-off-by: Timur Tabi <timur@tabi.org>
-> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
-> ---
-
-For iommu group support
-
-Acked-by: Alex Williamson <alex.williamson@redhat.com>
+VGhhbmtzIEFsZXguDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQWxl
+eCBXaWxsaWFtc29uIFttYWlsdG86YWxleC53aWxsaWFtc29uQHJlZGhhdC5jb21dDQo+IFNlbnQ6
+IE1vbmRheSwgSnVseSAwMSwgMjAxMyA4OjA1IFBNDQo+IFRvOiBTZXRoaSBWYXJ1bi1CMTYzOTUN
+Cj4gQ2M6IGpvcm9AOGJ5dGVzLm9yZzsgaW9tbXVAbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmc7
+IGxpbnV4cHBjLQ0KPiBkZXZAbGlzdHMub3psYWJzLm9yZzsgbGludXgta2VybmVsQHZnZXIua2Vy
+bmVsLm9yZzsNCj4gYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnOyBnYWxha0BrZXJuZWwuY3Jhc2hp
+bmcub3JnOyBZb2RlciBTdHVhcnQtQjA4MjQ4Ow0KPiBXb29kIFNjb3R0LUIwNzQyMTsgVGltdXIg
+VGFiaQ0KPiBTdWJqZWN0OiBSZTogW1BBVENIIDMvMyB2MThdIGlvbW11L2ZzbDogRnJlZXNjYWxl
+IFBBTVUgZHJpdmVyIGFuZCBpb21tdQ0KPiBpbXBsZW1lbnRhdGlvbi4NCj4gDQo+IE9uIE1vbiwg
+MjAxMy0wNy0wMSBhdCAxNTo0MSArMDUzMCwgVmFydW4gU2V0aGkgd3JvdGU6DQo+ID4gRm9sbG93
+aW5nIGlzIGEgYnJpZWYgZGVzY3JpcHRpb24gb2YgdGhlIFBBTVUgaGFyZHdhcmU6DQo+ID4gUEFN
+VSBkZXRlcm1pbmVzIHdoYXQgYWN0aW9uIHRvIHRha2UgYW5kIHdoZXRoZXIgdG8gYXV0aG9yaXpl
+IHRoZQ0KPiA+IGFjdGlvbiBvbiB0aGUgYmFzaXMgb2YgdGhlIG1lbW9yeSBhZGRyZXNzLCBhIExv
+Z2ljYWwgSU8gRGV2aWNlIE51bWJlcg0KPiA+IChMSU9ETiksIGFuZCBQQUFDVCB0YWJsZSAobG9n
+aWNhbGx5KSBpbmRleGVkIGJ5IExJT0ROIGFuZCBhZGRyZXNzLg0KPiA+IEhhcmR3YXJlIGRldmlj
+ZXMgd2hpY2ggbmVlZCB0byBhY2Nlc3MgbWVtb3J5IG11c3QgcHJvdmlkZSBhbiBMSU9ETiBpbg0K
+PiBhZGRpdGlvbiB0byB0aGUgbWVtb3J5IGFkZHJlc3MuDQo+ID4NCj4gPiBQZXJpcGhlcmFsIEFj
+Y2VzcyBBdXRob3JpemF0aW9uIGFuZCBDb250cm9sIFRhYmxlcyAoUEFBQ1RzKSBhcmUgdGhlDQo+
+ID4gcHJpbWFyeSBkYXRhIHN0cnVjdHVyZXMgdXNlZCBieSBQQU1VLiBBIFBBQUNUIGlzIGEgdGFi
+bGUgb2YgcGVyaXBoZXJhbA0KPiA+IGFjY2VzcyBhdXRob3JpemF0aW9uIGFuZCBjb250cm9sIGVu
+dHJpZXMgKFBBQUNFKS5FYWNoIFBBQUNFIGRlZmluZXMNCj4gPiB0aGUgcmFuZ2Ugb2YgSS9PIGJ1
+cyBhZGRyZXNzIHNwYWNlIHRoYXQgaXMgYWNjZXNzaWJsZSBieSB0aGUgTElPRCBhbmQNCj4gPiB0
+aGUgYXNzb2NpYXRlZCBhY2Nlc3MgY2FwYWJpbGl0aWVzLg0KPiA+DQo+ID4gVGhlcmUgYXJlIHR3
+byB0eXBlcyBvZiBQQUFDVHM6IHByaW1hcnkgUEFBQ1QgKFBQQUFDVCkgYW5kIHNlY29uZGFyeQ0K
+PiA+IFBBQUNUIChTUEFBQ1QpLkEgZ2l2ZW4gcGh5c2ljYWwgSS9PIGRldmljZSBtYXkgYmUgYWJs
+ZSB0byBhY3QgYXMgb25lDQo+ID4gb3IgbW9yZSBpbmRlcGVuZGVudCBsb2dpY2FsIEkvTyBkZXZp
+Y2VzIChMSU9EcykuIEVhY2ggc3VjaCBsb2dpY2FsIEkvTw0KPiA+IGRldmljZSBpcyBhc3NpZ25l
+ZCBhbiBpZGVudGlmaWVyIGNhbGxlZCBsb2dpY2FsIEkvTyBkZXZpY2UgbnVtYmVyDQo+ID4gKExJ
+T0ROKS4gQSBMSU9ETiBpcyBhbGxvY2F0ZWQgYSBjb250aWd1b3VzIHBvcnRpb24gb2YgdGhlIEkv
+TyBidXMNCj4gPiBhZGRyZXNzIHNwYWNlIGNhbGxlZCB0aGUgRFNBIHdpbmRvdyBmb3IgcGVyZm9y
+bWluZyBEU0Egb3BlcmF0aW9ucy4gVGhlDQo+ID4gRFNBIHdpbmRvdyBtYXkgb3B0aW9uYWxseSBi
+ZSBkaXZpZGVkIGludG8gbXVsdGlwbGUgc3ViLXdpbmRvd3MsIGVhY2gNCj4gPiBvZiB3aGljaCBt
+YXkgYmUgdXNlZCB0byBtYXAgdG8gYSByZWdpb24gaW4gc3lzdGVtIHN0b3JhZ2Ugc3BhY2UuIFRo
+ZQ0KPiA+IGZpcnN0IHN1Yi13aW5kb3cgaXMgcmVmZXJyZWQgdG8gYXMgdGhlIHByaW1hcnkgc3Vi
+LXdpbmRvdyBhbmQgdGhlDQo+IHJlbWFpbmluZyBhcmUgY2FsbGVkIHNlY29uZGFyeSBzdWItd2lu
+ZG93cy4NCj4gPg0KPiA+IFRoaXMgcGF0Y2ggcHJvdmlkZXMgdGhlIFBBTVUgZHJpdmVyIChmc2xf
+cGFtdS5jKSBhbmQgdGhlIGNvcnJlc3BvbmRpbmcNCj4gPiBJT01NVSBBUEkgaW1wbGVtZW50YXRp
+b24gKGZzbF9wYW11X2RvbWFpbi5jKS4gVGhlIFBBTVUgaGFyZHdhcmUgZHJpdmVyDQo+ID4gKGZz
+bF9wYW11LmMpIGhhcyBiZWVuIGRlcml2ZWQgZnJvbSB0aGUgd29yayBkb25lIGJ5IEFzaGlzaCBL
+YWxyYSBhbmQNCj4gVGltdXIgVGFiaS4NCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IFRpbXVyIFRh
+YmkgPHRpbXVyQHRhYmkub3JnPg0KPiA+IFNpZ25lZC1vZmYtYnk6IFZhcnVuIFNldGhpIDxWYXJ1
+bi5TZXRoaUBmcmVlc2NhbGUuY29tPg0KPiA+IC0tLQ0KPiANCj4gRm9yIGlvbW11IGdyb3VwIHN1
+cHBvcnQNCj4gDQo+IEFja2VkLWJ5OiBBbGV4IFdpbGxpYW1zb24gPGFsZXgud2lsbGlhbXNvbkBy
+ZWRoYXQuY29tPg0KPiANCg0K
