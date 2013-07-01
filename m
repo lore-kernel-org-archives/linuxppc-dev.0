@@ -1,13 +1,21 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: benh@kernel.crashing.org
+Return-Path: <B45939@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1F6222C02B4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jul 2013 13:21:03 +1000 (EST)
+From: <hongbo.zhang@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 1/2] DMA: Freescale: Add new 8-channel DMA engine device tree
+ nodes
+Date: Mon, 1 Jul 2013 11:20:08 +0800
+Message-ID: <1372648810-2807-1-git-send-email-hongbo.zhang@freescale.com>
 MIME-Version: 1.0
-Subject: [PATCH] powerpc/hw_brk: Fix off by one error when validating DAWR
- region end
-Date: Mon, 01 Jul 2013 14:19:50 +1000
-Message-ID: <14367.1372652390@ale.ozlabs.ibm.com>
-Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>,
- Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>
+Content-Type: text/plain
+Cc: scottwood@freescale.com, Hongbo Zhang <hongbo.zhang@freescale.com>,
+ linux-kernel@vger.kernel.org, vakul@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,27 +25,226 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The Data Address Watchpoint Register (DAWR) on POWER8 can take a 512
-byte range but this range must not cross a 512 byte boundary.
+From: Hongbo Zhang <hongbo.zhang@freescale.com>
 
-Unfortunately we were off by one when calculating the end of the region,
-hence we were not allowing some breakpoint regions which were actually
-valid.  This fixes this error.
+Freescale QorIQ T4 and B4 introduce new 8-channel DMA engines, this patch add
+the device tree nodes for them.
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
-Reported-by: Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>
-Cc: stable@vger.kernel.org # 3.9+
+Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
+---
+ arch/powerpc/boot/dts/fsl/qoriq-dma2-0.dtsi |   90 +++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/qoriq-dma2-1.dtsi |   90 +++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/t4240si-post.dtsi |    4 +-
+ 3 files changed, 182 insertions(+), 2 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-dma2-0.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-dma2-1.dtsi
 
-diff --git a/arch/powerpc/kernel/hw_breakpoint.c b/arch/powerpc/kernel/hw_breakpoint.c
-index 1150ae7..f0b47d1 100644
---- a/arch/powerpc/kernel/hw_breakpoint.c
-+++ b/arch/powerpc/kernel/hw_breakpoint.c
-@@ -176,7 +176,7 @@ int arch_validate_hwbkpt_settings(struct perf_event *bp)
- 		length_max = 512 ; /* 64 doublewords */
- 		/* DAWR region can't cross 512 boundary */
- 		if ((bp->attr.bp_addr >> 10) != 
--		    ((bp->attr.bp_addr + bp->attr.bp_len) >> 10))
-+		    ((bp->attr.bp_addr + bp->attr.bp_len - 1) >> 10))
- 			return -EINVAL;
- 	}
- 	if (info->len >
+diff --git a/arch/powerpc/boot/dts/fsl/qoriq-dma2-0.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-dma2-0.dtsi
+new file mode 100644
+index 0000000..c626c49
+--- /dev/null
++++ b/arch/powerpc/boot/dts/fsl/qoriq-dma2-0.dtsi
+@@ -0,0 +1,90 @@
++/*
++ * QorIQ DMA device tree stub [ controller @ offset 0x100000 ]
++ *
++ * Copyright 2011-2013 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++dma0: dma@100300 {
++	#address-cells = <1>;
++	#size-cells = <1>;
++	compatible = "fsl,eloplus-dma2";
++	reg = <0x100300 0x4 0x100600 0x4>;
++	ranges = <0x0 0x100100 0x500>;
++	cell-index = <0>;
++	dma-channel@0 {
++		compatible = "fsl,eloplus-dma-channel";
++		reg = <0x0 0x80>;
++		cell-index = <0>;
++		interrupts = <28 2 0 0>;
++	};
++	dma-channel@80 {
++		compatible = "fsl,eloplus-dma-channel";
++		reg = <0x80 0x80>;
++		cell-index = <1>;
++		interrupts = <29 2 0 0>;
++	};
++	dma-channel@100 {
++		compatible = "fsl,eloplus-dma-channel";
++		reg = <0x100 0x80>;
++		cell-index = <2>;
++		interrupts = <30 2 0 0>;
++	};
++	dma-channel@180 {
++		compatible = "fsl,eloplus-dma-channel";
++		reg = <0x180 0x80>;
++		cell-index = <3>;
++		interrupts = <31 2 0 0>;
++	};
++	dma-channel@300 {
++		compatible = "fsl,eloplus-dma-channel";
++		reg = <0x300 0x80>;
++		cell-index = <4>;
++		interrupts = <76 2 0 0>;
++	};
++	dma-channel@380 {
++		compatible = "fsl,eloplus-dma-channel";
++		reg = <0x380 0x80>;
++		cell-index = <5>;
++		interrupts = <77 2 0 0>;
++	};
++	dma-channel@400 {
++		compatible = "fsl,eloplus-dma-channel";
++		reg = <0x400 0x80>;
++		cell-index = <6>;
++		interrupts = <78 2 0 0>;
++	};
++	dma-channel@480 {
++		compatible = "fsl,eloplus-dma-channel";
++		reg = <0x480 0x80>;
++		cell-index = <7>;
++		interrupts = <79 2 0 0>;
++	};
++};
+diff --git a/arch/powerpc/boot/dts/fsl/qoriq-dma2-1.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-dma2-1.dtsi
+new file mode 100644
+index 0000000..980ea77
+--- /dev/null
++++ b/arch/powerpc/boot/dts/fsl/qoriq-dma2-1.dtsi
+@@ -0,0 +1,90 @@
++/*
++ * QorIQ DMA device tree stub [ controller @ offset 0x101000 ]
++ *
++ * Copyright 2011-2013 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++dma1: dma@101300 {
++	#address-cells = <1>;
++	#size-cells = <1>;
++	compatible = "fsl,eloplus-dma2";
++	reg = <0x101300 0x4 0x101600 0x4>;
++	ranges = <0x0 0x101100 0x500>;
++	cell-index = <1>;
++	dma-channel@0 {
++		compatible = "fsl,eloplus-dma-channel";
++		reg = <0x0 0x80>;
++		cell-index = <0>;
++		interrupts = <32 2 0 0>;
++	};
++	dma-channel@80 {
++		compatible = "fsl,eloplus-dma-channel";
++		reg = <0x80 0x80>;
++		cell-index = <1>;
++		interrupts = <33 2 0 0>;
++	};
++	dma-channel@100 {
++		compatible = "fsl,eloplus-dma-channel";
++		reg = <0x100 0x80>;
++		cell-index = <2>;
++		interrupts = <34 2 0 0>;
++	};
++	dma-channel@180 {
++		compatible = "fsl,eloplus-dma-channel";
++		reg = <0x180 0x80>;
++		cell-index = <3>;
++		interrupts = <35 2 0 0>;
++	};
++	dma-channel@300 {
++		compatible = "fsl,eloplus-dma-channel";
++		reg = <0x300 0x80>;
++		cell-index = <4>;
++		interrupts = <80 2 0 0>;
++	};
++	dma-channel@380 {
++		compatible = "fsl,eloplus-dma-channel";
++		reg = <0x380 0x80>;
++		cell-index = <5>;
++		interrupts = <81 2 0 0>;
++	};
++	dma-channel@400 {
++		compatible = "fsl,eloplus-dma-channel";
++		reg = <0x400 0x80>;
++		cell-index = <6>;
++		interrupts = <82 2 0 0>;
++	};
++	dma-channel@480 {
++		compatible = "fsl,eloplus-dma-channel";
++		reg = <0x480 0x80>;
++		cell-index = <7>;
++		interrupts = <83 2 0 0>;
++	};
++};
+diff --git a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
+index bd611a9..7d8bac6 100644
+--- a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
+@@ -387,8 +387,8 @@
+ 		reg	   = <0xea000 0x4000>;
+ 	};
+ 
+-/include/ "qoriq-dma-0.dtsi"
+-/include/ "qoriq-dma-1.dtsi"
++/include/ "qoriq-dma2-0.dtsi"
++/include/ "qoriq-dma2-1.dtsi"
+ 
+ /include/ "qoriq-espi-0.dtsi"
+ 	spi@110000 {
+-- 
+1.7.9.5
