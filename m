@@ -1,37 +1,20 @@
-Return-Path: <santosh.shilimkar@ti.com>
-Message-ID: <51D18B0B.1060906@ti.com>
-Date: Mon, 1 Jul 2013 09:58:35 -0400
-From: Santosh Shilimkar <santosh.shilimkar@ti.com>
-MIME-Version: 1.0
-Subject: Re: [PATCH] of: Specify initrd location using 64-bit
-References: <1371775956-16453-1-git-send-email-santosh.shilimkar@ti.com>
- <51C4171C.9050908@linutronix.de> <51C48B5A.2040404@ti.com>
- <51CCA67C.2010803@gmail.com>
- <CACxGe6vOH0sCFVVXrYqD3dbYdOvithVu7-d1cvy5885i8x_Myw@mail.gmail.com>
- <20130628134931.GD21034@game.jcrosoft.org> <51CE1F92.3070802@ti.com>
- <51D1345B.8020509@linutronix.de>
- <CAMuHMdV6YM3-hASqjxkguEukZjnjK80gBjDNiabxjfQtC=c8ag@mail.gmail.com>
-In-Reply-To: <CAMuHMdV6YM3-hASqjxkguEukZjnjK80gBjDNiabxjfQtC=c8ag@mail.gmail.com>
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 98A862C00AF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2013 00:35:39 +1000 (EST)
+Message-ID: <1372689326.30572.788.camel@ul30vt.home>
+Subject: Re: [PATCH 3/3 v18] iommu/fsl: Freescale PAMU driver and iommu
+ implementation.
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Varun Sethi <Varun.Sethi@freescale.com>
+Date: Mon, 01 Jul 2013 08:35:26 -0600
+In-Reply-To: <1372673475-20929-1-git-send-email-Varun.Sethi@freescale.com>
+References: <1372673475-20929-1-git-send-email-Varun.Sethi@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
-Cc: Nicolas Pitre <nicolas.pitre@linaro.org>,
- linux-mips <linux-mips@linux-mips.org>, Aurelien Jacquiot <a-jacquiot@ti.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- Will Deacon <will.deacon@arm.com>, Max Filippov <jcmvbkbc@gmail.com>,
- Paul Mackerras <paulus@samba.org>, Jonas Bonn <jonas@southpole.se>,
- Russell King <linux@arm.linux.org.uk>, linux-c6x-dev@linux-c6x.org,
- the arch/x86 maintainers <x86@kernel.org>, "arm@kernel.org" <arm@kernel.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Grant Likely <grant.likely@linaro.org>, Rob Herring <robherring2@gmail.com>,
- Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>,
- linux-xtensa@linux-xtensa.org, James Hogan <james.hogan@imgtec.com>,
- devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
- Rob Herring <rob.herring@calxeda.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Chris Zankel <chris@zankel.net>, Vineet Gupta <vgupta@synopsys.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Ralf Baechle <ralf@linux-mips.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Mime-Version: 1.0
+Cc: stuart.yoder@freescale.com, joro@8bytes.org, linux-kernel@vger.kernel.org,
+ iommu@lists.linux-foundation.org, scottwood@freescale.com,
+ Timur Tabi <timur@tabi.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,42 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday 01 July 2013 03:59 AM, Geert Uytterhoeven wrote:
-> On Mon, Jul 1, 2013 at 9:48 AM, Sebastian Andrzej Siewior
-> <bigeasy@linutronix.de> wrote:
->> On 06/29/2013 01:43 AM, Santosh Shilimkar wrote:
->>> Apart from waste of 32bit, what is the other concern you
->>> have ?
->>
->> You pass a u64 as a physical address which is represented in other
->> parts of the kernel (for a good reason) by phys_addr_t.
->>
->>> I really want to converge on this patch because it
->>> has been a open ended discussion for quite some time. Does
->>> that really break any thing on x86 or your concern is more
->>> from semantics of the physical address.
->> You want to have your code in so you can continue with your work, that
->> is okay. The other two arguments why u64 here is a good thing was "due
->> to what I said earlier" and "+1" and I don't have the time to look
->> that up.
->>
->> There should be no problems on x86 if this goes in as it is now.
->>
->> But think about this: What happens if you boot your ARM device without
->> PAE and your initrd is in the upper region? If you are lucky the kernel
->> looks at a different place where it also has a read permission, notices
->> nothing sane is there, writes a message and continues. And if it is not
->> allowed to read? It is clearly the user's fault for booting a non-PAE
->> kernel.
+On Mon, 2013-07-01 at 15:41 +0530, Varun Sethi wrote:
+> Following is a brief description of the PAMU hardware:
+> PAMU determines what action to take and whether to authorize the action on
+> the basis of the memory address, a Logical IO Device Number (LIODN), and
+> PAACT table (logically) indexed by LIODN and address. Hardware devices which
+> need to access memory must provide an LIODN in addition to the memory address.
 > 
-> That's actual the original reason: DT has it as 64 bit, and passes it to a
-> 32 bit kernel when running in 32 bit mode without PAE.
+> Peripheral Access Authorization and Control Tables (PAACTs) are the primary
+> data structures used by PAMU. A PAACT is a table of peripheral access
+> authorization and control entries (PAACE).Each PAACE defines the range of
+> I/O bus address space that is accessible by the LIOD and the associated access
+> capabilities.
 > 
-Thanks all for comments and useful discussion. I will resubmit the
-patch with update to fix the printk warnings reported by Vineet and
-James post the $subject change.
+> There are two types of PAACTs: primary PAACT (PPAACT) and secondary PAACT
+> (SPAACT).A given physical I/O device may be able to act as one or more
+> independent logical I/O devices (LIODs). Each such logical I/O device is
+> assigned an identifier called logical I/O device number (LIODN). A LIODN is
+> allocated a contiguous portion of the I/O bus address space called the DSA window
+> for performing DSA operations. The DSA window may optionally be divided into
+> multiple sub-windows, each of which may be used to map to a region in system
+> storage space. The first sub-window is referred to as the primary sub-window
+> and the remaining are called secondary sub-windows.
+> 
+> This patch provides the PAMU driver (fsl_pamu.c) and the corresponding IOMMU
+> API implementation (fsl_pamu_domain.c). The PAMU hardware driver (fsl_pamu.c)
+> has been derived from the work done by Ashish Kalra and Timur Tabi.
+> 
+> Signed-off-by: Timur Tabi <timur@tabi.org>
+> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
+> ---
 
-Am assuming the patch will go via Grant Likely's tree.
+For iommu group support
 
-Regards,
-Santosh
+Acked-by: Alex Williamson <alex.williamson@redhat.com>
