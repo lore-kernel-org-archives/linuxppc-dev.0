@@ -1,25 +1,35 @@
-Return-Path: <b10716@zro03-ws408.ea.freescale.net>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe001.messaging.microsoft.com [65.55.88.11])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 15DB02C00A6
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2013 22:46:40 +1000 (EST)
-Received: from mail212-tx2 (localhost [127.0.0.1])	by
- mail212-tx2-R.bigfish.com (Postfix) with ESMTP id 5056F9000DB	for
- <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2013 12:46:36 +0000 (UTC)
-Received: from TX2EHSMHS035.bigfish.com (unknown [10.9.14.232])	by
- mail212-tx2.bigfish.com (Postfix) with ESMTP id 90513B0006E	for
- <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2013 12:46:34 +0000 (UTC)
-From: Laurentiu Tudor <Laurentiu.Tudor@freescale.com>
-To: <scottwood@freescale.com>
-Subject: [PATCH][v2] powerpc/85xx: Move ePAPR paravirt initialization earlier
-Date: Tue, 2 Jul 2013 15:46:29 +0300
-Message-ID: <1372769189-17864-1-git-send-email-Laurentiu.Tudor@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Laurentiu Tudor <Laurentiu.Tudor@freescale.com>,
+Return-Path: <brueckner@linux.vnet.ibm.com>
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e06smtp12.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 974592C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2013 01:07:37 +1000 (EST)
+Received: from /spool/local
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <brueckner@linux.vnet.ibm.com>;
+ Tue, 2 Jul 2013 16:02:28 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 6E8612190067
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2013 16:11:14 +0100 (BST)
+Received: from d06av08.portsmouth.uk.ibm.com (d06av08.portsmouth.uk.ibm.com
+ [9.149.37.249])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r62F7JVo47710410
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Jul 2013 15:07:19 GMT
+Received: from d06av08.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av08.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r62F7Tex001784
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Jul 2013 09:07:29 -0600
+From: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, jslaby@suse.cz, gregkh@linuxfoundation.org
+Subject: [PATCH 0/2] hvc_console: Add DTR/RTS callbacks to handle HUPCL
+ conditions
+Date: Tue,  2 Jul 2013 17:07:13 +0200
+Message-Id: <1372777635-10423-1-git-send-email-brueckner@linux.vnet.ibm.com>
+Cc: linux-s390@vger.kernel.org, heiko.carstens@de.ibm.com,
+ linux-kernel@vger.kernel.org, brueckner@linux.vnet.com, schwidefsky@de.ibm.com,
  linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -30,164 +40,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At console init, when the kernel tries to flush the log buffer
-the ePAPR byte-channel based console write fails silently,
-losing the buffered messages.
-This happens because The ePAPR para-virtualization init isn't
-done early enough so that the hcall instruction to be set,
-causing the byte-channel write hcall to be a nop.
-To fix, change the ePAPR para-virt init to use early device
-tree functions and move it in early init.
+Hi folks,
 
-Signed-off-by: Laurentiu Tudor <Laurentiu.Tudor@freescale.com>
----
-v2:
- - moved epapr init even earlier (in early init stage). context here:
-     http://lists.ozlabs.org/pipermail/linuxppc-dev/2013-June/108116.html
- - reworded commit msg
- - re-based on git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+this series resolves an issue for hvc back-ends that transfer
+terminal data over an established communication path.
 
- arch/powerpc/include/asm/epapr_hcalls.h |    6 ++++
- arch/powerpc/kernel/epapr_paravirt.c    |   49 +++++++++++++++++-------------
- arch/powerpc/kernel/setup_32.c          |    4 ++-
- arch/powerpc/kernel/setup_64.c          |    3 ++
- 4 files changed, 40 insertions(+), 22 deletions(-)
+The current implementation of the hvc_console layer notifies its
+back-ends for tty open, close, and hangups.  However, there are
+conditions where the hangup-on-close (HUPCL) termios flag must be
+considered, for example, when doing a vhangup().
 
-diff --git a/arch/powerpc/include/asm/epapr_hcalls.h b/arch/powerpc/include/asm/epapr_hcalls.h
-index d3d6342..86b0ac7 100644
---- a/arch/powerpc/include/asm/epapr_hcalls.h
-+++ b/arch/powerpc/include/asm/epapr_hcalls.h
-@@ -105,6 +105,12 @@
- extern bool epapr_paravirt_enabled;
- extern u32 epapr_hypercall_start[];
- 
-+#ifdef CONFIG_EPAPR_PARAVIRT
-+int __init epapr_paravirt_early_init(void);
-+#else
-+static inline int epapr_paravirt_early_init(void) { return 0; }
-+#endif
-+
- /*
-  * We use "uintptr_t" to define a register because it's guaranteed to be a
-  * 32-bit integer on a 32-bit platform, and a 64-bit integer on a 64-bit
-diff --git a/arch/powerpc/kernel/epapr_paravirt.c b/arch/powerpc/kernel/epapr_paravirt.c
-index d44a571..d05f9da 100644
---- a/arch/powerpc/kernel/epapr_paravirt.c
-+++ b/arch/powerpc/kernel/epapr_paravirt.c
-@@ -30,38 +30,45 @@ extern u32 epapr_ev_idle_start[];
- 
- bool epapr_paravirt_enabled;
- 
--static int __init epapr_paravirt_init(void)
-+static int __init early_init_dt_scan_epapr(unsigned long node,
-+					   const char *uname,
-+					   int depth, void *data)
- {
--	struct device_node *hyper_node;
--	const u32 *insts;
--	int len, i;
-+	const u32 *instrs;
-+	unsigned long len;
-+	int i;
- 
--	hyper_node = of_find_node_by_path("/hypervisor");
--	if (!hyper_node)
--		return -ENODEV;
-+	if (!of_flat_dt_is_compatible(node, "epapr,hypervisor-1"))
-+		return 0;
- 
--	insts = of_get_property(hyper_node, "hcall-instructions", &len);
--	if (!insts)
--		return -ENODEV;
-+#if !defined(CONFIG_64BIT) || defined(CONFIG_PPC_BOOK3E_64)
-+	if (of_get_flat_dt_prop(node, "has-idle", NULL))
-+		ppc_md.power_save = epapr_ev_idle;
-+#endif
- 
--	if (len % 4 || len > (4 * 4))
--		return -ENODEV;
-+	instrs = of_get_flat_dt_prop(node, "hcall-instructions", &len);
-+	if (instrs) {
-+		if (len % 4 || len > (4 * 4))
-+			return -1;
- 
--	for (i = 0; i < (len / 4); i++) {
--		patch_instruction(epapr_hypercall_start + i, insts[i]);
-+		for (i = 0; i < (len / 4); i++) {
-+			patch_instruction(epapr_hypercall_start + i, instrs[i]);
- #if !defined(CONFIG_64BIT) || defined(CONFIG_PPC_BOOK3E_64)
--		patch_instruction(epapr_ev_idle_start + i, insts[i]);
-+			patch_instruction(epapr_ev_idle_start + i, instrs[i]);
- #endif
-+		}
-+
-+		return 1;
- 	}
- 
--#if !defined(CONFIG_64BIT) || defined(CONFIG_PPC_BOOK3E_64)
--	if (of_get_property(hyper_node, "has-idle", NULL))
--		ppc_md.power_save = epapr_ev_idle;
--#endif
-+	return -1;
-+}
- 
--	epapr_paravirt_enabled = true;
-+int __init epapr_paravirt_early_init(void)
-+{
-+	if (of_scan_flat_dt(early_init_dt_scan_epapr, NULL) > 0)
-+		epapr_paravirt_enabled = true;
- 
- 	return 0;
- }
- 
--early_initcall(epapr_paravirt_init);
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index a8f54ec..a4bbcae 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -38,6 +38,7 @@
- #include <asm/serial.h>
- #include <asm/udbg.h>
- #include <asm/mmu_context.h>
-+#include <asm/epapr_hcalls.h>
- 
- #include "setup.h"
- 
-@@ -128,6 +129,8 @@ notrace void __init machine_init(u64 dt_ptr)
- 	/* Do some early initialization based on the flat device tree */
- 	early_init_devtree(__va(dt_ptr));
- 
-+	epapr_paravirt_early_init();
-+
- 	early_init_mmu();
- 
- 	probe_machine();
-@@ -326,5 +329,4 @@ void __init setup_arch(char **cmdline_p)
- 
- 	/* Initialize the MMU context management stuff */
- 	mmu_context_init();
--
- }
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index e379d3f..fd9941a 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -66,6 +66,7 @@
- #include <asm/code-patching.h>
- #include <asm/kvm_ppc.h>
- #include <asm/hugetlb.h>
-+#include <asm/epapr_hcalls.h>
- 
- #include "setup.h"
- 
-@@ -215,6 +216,8 @@ void __init early_setup(unsigned long dt_ptr)
- 	 */
- 	early_init_devtree(__va(dt_ptr));
- 
-+	epapr_paravirt_early_init();
-+
- 	/* Now we know the logical id of our boot cpu, setup the paca. */
- 	setup_paca(&paca[boot_cpuid]);
- 	fixup_boot_paca();
--- 
-1.7.6.5
+For the hvc_iucv back-end, users perceives disconnects at their
+login which are triggered by a modified vhangup() invocation as
+described in https://lkml.org/lkml/2012/6/5/145.
+(The kernel change implied also a change in the login program).
+
+However, this also necessitates to inform back-ends about changes
+in the DTR/RTS control lines which actually depend on the setting
+of the HUPCL termios flag.  Like in the old days for modems,
+network-based back-ends need to know when to hang-up and drop off
+an established communication path.  Without this new notification,
+back-ends can only use the tty open, close, hangup notifiers to
+decide whether to disconnect.  This is not sufficient because the
+HUPCL flag can be cleared (i.e. not to hang-up a connection) when
+last tty file descriptor is closed.
+
+This series adds the dtr_rts() callback to the hvc_console layer
+and modifies the hvc_iucv device driver to disconnect an established
+IUCV connection only when the DTR/RTS is lowered.
+
+
+Feedback is very welcome.  Thanks in advance!
+
+Kind regards,
+  Hendrik
