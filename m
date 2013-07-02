@@ -1,27 +1,17 @@
-Return-Path: <neorf3k@gmail.com>
-Received: from mail-bk0-x232.google.com (mail-bk0-x232.google.com
- [IPv6:2a00:1450:4008:c01::232])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C41642C00A7
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2013 22:36:59 +1000 (EST)
-Received: by mail-bk0-f50.google.com with SMTP id ik8so2308639bkc.37
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jul 2013 05:36:55 -0700 (PDT)
-Content-Type: multipart/alternative;
- boundary="Apple-Mail=_E64F5379-6112-484F-A674-411F41B196AF"
-Mime-Version: 1.0 (Mac OS X Mail 6.5 \(1508\))
-Subject: compile custom kernel for custom board with mpc5200b
-From: neorf3k <neorf3k@gmail.com>
-In-Reply-To: <CC3CAF69-E890-4A56-8E04-1A82D9662F7F@me.com>
-Date: Tue, 2 Jul 2013 14:36:48 +0200
-Message-Id: <B24571FC-9F6D-4E1D-8D22-276182B19F83@gmail.com>
-References: <36A2A056-9BA2-4246-AED9-660E103475EE@me.com>
- <CACxGe6sJNv5v=uFoQaNgq9j=q0SDAxxPb2V9hzx7vLtMkuOvjQ@mail.gmail.com>
- <5D7592C8-B262-4F6F-8CCA-E5E58DC1F850@me.com>
- <CACxGe6uKUkiD07PH0A+ToaGw_03Vkn0Y6cFvNuOXMLuT1HRCHQ@mail.gmail.com>
- <CC3CAF69-E890-4A56-8E04-1A82D9662F7F@me.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <ydroneaud@quest-ce.net>
+From: Yann Droneaud <ydroneaud@opteya.com>
+To: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, cbe-oss-dev@lists.ozlabs.org,
+ linux-rdma@vger.kernel.org, devel@driverdev.osuosl.org,
+ kvm@vger.kernel.org, linux-fsdevel@vger.kernel.org, xfs@oss.sgi.com,
+ linux-sctp@vger.kernel.org, netdev@vger.kernel.org,
+ Eric Paris <eparis@redhat.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+ Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@redhat.com>,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Subject: [PATCH 00/13] Getting rid of get_unused_fd()
+Date: Tue,  2 Jul 2013 18:39:24 +0200
+Message-Id: <cover.1372777600.git.ydroneaud@opteya.com>
+Cc: Yann Droneaud <ydroneaud@opteya.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,85 +21,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi,
 
---Apple-Mail=_E64F5379-6112-484F-A674-411F41B196AF
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain;
-	charset=windows-1252
+Macro get_unused_fd() is a shortcut to call function get_unused_fd_flags(),
+to allocate a file descriptor.
 
-Hello, i'm developing an embedded linux system on a custom mpc5200b =
-board, at University.
+The macro use 0 as flags, so the file descriptor is created
+without O_CLOEXEC flag.
 
-We have  a problem with a custom version of kernel: 2.6.23 and 2.6.33. =
-We can't use newer version at the moment.
+This can be seen as an unsafe default eg. in most case O_CLOEXEC
+must be used to not leak file descriptor across exec().
 
-We are able to compile and load the kernel on Freescale Lite5200b and on =
-Custom Board.
+Newer kernel code should use anon_inode_getfd() or get_unused_fd_flags()
+with flags provided by userspace. If flags cannot be given by userspace,
+O_CLOEXEC must be the default flag.
 
-So, we have tested ethernet on both boards.=20
-On Freescale, ethernet connection is ok, just tested with ping.
+Using O_CLOEXEC by default allows userspace to choose, without race,
+if the file descriptor is going to be inherited across exec().
 
-But on Custom Board we are having problems:
-with kernel 2.6.23 we lost 98% packet loss.=20
-We have tried to disable XLB PIPELINE in: =
-arch/powerpc/platforms/52xx/mpc52xx_common.c
-(just commenting these lines):
+They are two ways to achieve this:
 
-/* Disable XLB pipelining */
-     /* (cfr errate 292. We could do this only just before ATA PIO
-         transaction and re-enable it afterwards ...) */
-     //out_be32(&xlb->config, in_be32(&xlb->config) | =
-MPC52xx_XLB_CFG_PLDIS);
+- makes get_unused_fd() use O_CLOEXEC by default
 
-And with this, we have 10% packet loss.
+  It's difficult to get it right: every code using of get_unused_fd()
+  must take this change into account and be fixed as soon as
+  macro get_unused_fd() do the switch. Non updated code will have
+  unexpected behavor and it's likely going to break API contract.
 
-In kernel 2.6.33, we have tried the same=85 but disabling or not the =
-pipeline, we have 55% packet loss.
+- remove get_unused_fd()
 
-Where could i find some solutions?
+  It's going to break some out of tree, not yet upstream kernel code,
+  but it's easy to notice and fix. Anyway, newer code should use
+  anon_inode_getfd() or get_unused_fd_flags().
 
-Thank you
+The latter option was choosen to ensure no unexpected behavor
+for out of tree, not yet upstream code. Removing the macro is the safest
+choice: it's better to break build than trying to make get_unused_fd()
+use O_CLOEXEC by default and get all user of get_unused_fd() update.
 
-neorf=
+Additionnaly, removing the macro is not going to break modules ABI.
 
---Apple-Mail=_E64F5379-6112-484F-A674-411F41B196AF
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/html;
-	charset=windows-1252
+In linux-next tag 20130702, they're currently:
 
-<html><head><meta http-equiv=3D"Content-Type" content=3D"text/html =
-charset=3Dwindows-1252"></head><body style=3D"word-wrap: break-word; =
--webkit-nbsp-mode: space; -webkit-line-break: after-white-space; =
-">Hello,&nbsp;i'm developing an embedded linux system on a custom =
-mpc5200b board, at University.<div class=3D"page" title=3D"Page 9">
-		=09
-		</div><div><br></div><div>We have &nbsp;a problem with a =
-custom version of kernel: 2.6.23 and 2.6.33. We can't use newer version =
-at the moment.</div><div><br></div><div>We are able to compile and load =
-the kernel on Freescale Lite5200b and on Custom =
-Board.</div><div><br></div><div>So, we have tested ethernet on both =
-boards.&nbsp;</div><div>On Freescale, ethernet connection is ok, just =
-tested with ping.</div><div><br></div><div>But on Custom Board we are =
-having problems:</div><div>with kernel 2.6.23 we lost 98% packet =
-loss.&nbsp;</div><div>We have tried to disable XLB PIPELINE =
-in:&nbsp;<span style=3D"font-family: Arial; =
-">arch/powerpc/platforms/52xx/mpc52xx_common.c</span></div><div><span =
-style=3D"font-family: Arial; ">(just commenting these =
-lines):</span></div><div><span style=3D"font-family: Arial; =
-"><br></span></div><div><span style=3D"font-family: Arial; "><div>/* =
-Disable XLB pipelining */</div><div>&nbsp; &nbsp; &nbsp;/* (cfr errate =
-292. We could do this only just before ATA PIO</div><div>&nbsp; &nbsp; =
-&nbsp; &nbsp; &nbsp;transaction and re-enable it afterwards ...) =
-*/</div><div>&nbsp; &nbsp; &nbsp;//out_be32(&amp;xlb-&gt;config, =
-in_be32(&amp;xlb-&gt;config) | =
-MPC52xx_XLB_CFG_PLDIS);</div><div><br></div><div>And with this, we have =
-10% packet loss.</div><div><br></div><div>In kernel 2.6.33, we have =
-tried the same=85 but disabling or not the pipeline, we have 55% packet =
-loss.</div><div><br></div><div>Where could i find some =
-solutions?</div><div><br></div><div>Thank =
-you</div><div><br></div><div>neorf</div></span></div><!--?xml =
-version=3D"1.0" encoding=3D"UTF-8" standalone=3D"no"?-->
+- 15 calls to get_unused_fd_flags()
+     not counting get_unused_fd() and anon_inode_getfd()
+- 14 calls to get_unused_fd()
+- 11 calls to anon_inode_getfd()
 
-</body></html>=
+The following patchset try to convert all calls to get_unused_fd()
+to get_unused_fd_flags(0) before removing get_unused_fd() macro.
 
---Apple-Mail=_E64F5379-6112-484F-A674-411F41B196AF--
+Without get_unused_fd() macro, more subsystems are likely to use
+anon_inode_getfd() and be teached to provide an API that let userspace
+choose the opening flags of the file descriptor.
+
+Yann Droneaud (13):
+  ia64: use get_unused_fd_flags(0) instead of get_unused_fd()
+  ppc/cell: use get_unused_fd_flags(0) instead of get_unused_fd()
+  infiniband: use get_unused_fd_flags(0) instead of get_unused_fd()
+  android/sw_sync: use get_unused_fd_flags(0) instead of get_unused_fd()
+  android/sync: use get_unused_fd_flags(0) instead of get_unused_fd()
+  vfio: use get_unused_fd_flags(0) instead of get_unused_fd()
+  binfmt_misc: use get_unused_fd_flags(0) instead of get_unused_fd()
+  file: use get_unused_fd_flags(0) instead of get_unused_fd()
+  fanotify: use get_unused_fd_flags(0) instead of get_unused_fd()
+  xfs: use get_unused_fd_flags(0) instead of get_unused_fd()
+  events: use get_unused_fd_flags(0) instead of get_unused_fd()
+  sctp: use get_unused_fd_flags(0) instead of get_unused_fd()
+  file: remove get_unused_fd()
+
+ arch/ia64/kernel/perfmon.c                | 2 +-
+ arch/powerpc/platforms/cell/spufs/inode.c | 4 ++--
+ drivers/infiniband/core/uverbs_cmd.c      | 4 ++--
+ drivers/staging/android/sw_sync.c         | 2 +-
+ drivers/staging/android/sync.c            | 2 +-
+ drivers/vfio/vfio.c                       | 2 +-
+ fs/binfmt_misc.c                          | 2 +-
+ fs/file.c                                 | 2 +-
+ fs/notify/fanotify/fanotify_user.c        | 2 +-
+ fs/xfs/xfs_ioctl.c                        | 2 +-
+ include/linux/file.h                      | 1 -
+ kernel/events/core.c                      | 2 +-
+ net/sctp/socket.c                         | 2 +-
+ 13 files changed, 14 insertions(+), 15 deletions(-)
+
+-- 
+1.8.3.1
