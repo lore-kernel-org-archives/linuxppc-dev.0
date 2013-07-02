@@ -1,47 +1,19 @@
-Return-Path: <wangyun@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6544B2C016F
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2013 15:33:15 +1000 (EST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <wangyun@linux.vnet.ibm.com>;
- Tue, 2 Jul 2013 15:23:23 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 6A3D72BB0056
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2013 15:33:07 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r625Ww5i6226284
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Jul 2013 15:32:58 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r625X5aA008804
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Jul 2013 15:33:07 +1000
-Message-ID: <51D2660A.8000401@linux.vnet.ibm.com>
-Date: Tue, 02 Jul 2013 13:32:58 +0800
-From: Michael Wang <wangyun@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 10/45] smp: Use get/put_online_cpus_atomic() to prevent
- CPU offline
-References: <20130627195136.29830.10445.stgit@srivatsabhat.in.ibm.com>
- <20130627195418.29830.34958.stgit@srivatsabhat.in.ibm.com>
-In-Reply-To: <20130627195418.29830.34958.stgit@srivatsabhat.in.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: peterz@infradead.org, fweisbec@gmail.com, Shaohua Li <shli@fusionio.com>,
- linux-kernel@vger.kernel.org, Jan Beulich <jbeulich@suse.com>,
- walken@google.com, mingo@kernel.org, linux-arch@vger.kernel.org,
- vincent.guittot@linaro.org, xiaoguangrong@linux.vnet.ibm.com,
- paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
- linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org,
- namhyung@kernel.org, tglx@linutronix.de, Wang YanQing <udknight@gmail.com>,
- laijs@cn.fujitsu.com, zhong@linux.vnet.ibm.com, netdev@vger.kernel.org,
- oleg@redhat.com, sbw@mit.edu, David.Laight@aculab.com, tj@kernel.org,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- liguang <lig.fnst@cn.fujitsu.com>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id E2BA12C00A3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2013 17:43:15 +1000 (EST)
+Message-ID: <1372750985.3616.0.camel@pasglop>
+Subject: Re: Pull request: scottwood/linux.git next
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+Date: Tue, 02 Jul 2013 17:43:05 +1000
+In-Reply-To: <20130701234310.GA22106@home.buserror.net>
+References: <20130701234310.GA22106@home.buserror.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,59 +23,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi, Srivatsa
+On Mon, 2013-07-01 at 18:43 -0500, Scott Wood wrote:
+> Note to contributors: This is only a fraction of the outstanding patches
+> for FSL PPC.  I haven't been able to process the entire backlog since
+> starting to help Kumar with this a few weeks ago.  If your patch is still
+> "action required" in patchwork, I haven't forgotten it -- but it will not
+> make it into this merge window.
 
-On 06/28/2013 03:54 AM, Srivatsa S. Bhat wrote:
-[snip]
-> @@ -625,8 +632,9 @@ EXPORT_SYMBOL(on_each_cpu_mask);
->   * The function might sleep if the GFP flags indicates a non
->   * atomic allocation is allowed.
->   *
-> - * Preemption is disabled to protect against CPUs going offline but not online.
-> - * CPUs going online during the call will not be seen or sent an IPI.
-> + * We use get/put_online_cpus_atomic() to protect against CPUs going
-> + * offline but not online. CPUs going online during the call will
-> + * not be seen or sent an IPI.
+Next time, please provide me an introductory message about what's in the
+pull request (highlights) which I can then put in my merge commit.
 
-I was a little confused about this comment, if the offline-cpu still
-have chances to become online, then there is chances that we will pick
-it from for_each_online_cpu(), isn't it? Did I miss some point?
+Thanks !
 
-Regards,
-Michael Wang
-
->   *
->   * You must not call this function with disabled interrupts or
->   * from a hardware interrupt handler or from a bottom half handler.
-> @@ -641,26 +649,26 @@ void on_each_cpu_cond(bool (*cond_func)(int cpu, void *info),
->  	might_sleep_if(gfp_flags & __GFP_WAIT);
-> 
->  	if (likely(zalloc_cpumask_var(&cpus, (gfp_flags|__GFP_NOWARN)))) {
-> -		preempt_disable();
-> +		get_online_cpus_atomic();
->  		for_each_online_cpu(cpu)
->  			if (cond_func(cpu, info))
->  				cpumask_set_cpu(cpu, cpus);
->  		on_each_cpu_mask(cpus, func, info, wait);
-> -		preempt_enable();
-> +		put_online_cpus_atomic();
->  		free_cpumask_var(cpus);
->  	} else {
->  		/*
->  		 * No free cpumask, bother. No matter, we'll
->  		 * just have to IPI them one by one.
->  		 */
-> -		preempt_disable();
-> +		get_online_cpus_atomic();
->  		for_each_online_cpu(cpu)
->  			if (cond_func(cpu, info)) {
->  				ret = smp_call_function_single(cpu, func,
->  								info, wait);
->  				WARN_ON_ONCE(!ret);
->  			}
-> -		preempt_enable();
-> +		put_online_cpus_atomic();
->  	}
->  }
->  EXPORT_SYMBOL(on_each_cpu_cond);
-> 
+Cheers,
+Ben.
