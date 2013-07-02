@@ -1,22 +1,18 @@
-Return-Path: <B07421@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0184.outbound.messaging.microsoft.com [213.199.154.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3D43C2C0084
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2013 10:04:47 +1000 (EST)
-Date: Mon, 1 Jul 2013 19:04:35 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] DTS: Add compatible list for eSDHC
-To: Haijun Zhang <Haijun.Zhang@freescale.com>
-In-Reply-To: <1372656110-13876-1-git-send-email-Haijun.Zhang@freescale.com>
- (from Haijun.Zhang@freescale.com on Mon Jul  1 00:21:50 2013)
-Message-ID: <1372723475.8183.100@snotra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: Fleming Andrew-AFLEMING <AFLEMING@freescale.com>,
- linuxppc-dev@lists.ozlabs.org, Haijun Zhang <Haijun.Zhang@freescale.com>
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ by ozlabs.org (Postfix) with ESMTP id DA44D2C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2013 10:18:27 +1000 (EST)
+Subject: Re: [PATCH 1/2] powerpc/booke64: Use common defines for AltiVec
+ interrupts numbers
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <1372692931-16324-1-git-send-email-mihai.caraman@freescale.com>
+Date: Tue, 2 Jul 2013 02:18:21 +0200
+Message-Id: <8F554F03-E6B0-4140-8830-D4FD6249CEF9@suse.de>
+References: <1372692931-16324-1-git-send-email-mihai.caraman@freescale.com>
+To: Mihai Caraman <mihai.caraman@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,27 +22,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/01/2013 12:21:50 AM, Haijun Zhang wrote:
-> Add compatible of esdhc for below board:
-> p2041   p3041   p4080   p5020   p5040
+
+On 01.07.2013, at 17:35, Mihai Caraman wrote:
+
+> On Book3E some SPE/FP/AltiVec interrupts share the same number. Use
+> common defines to indentify these numbers.
+
+So why didn't this happen from the beginning? Why the change?
+
+
+Alex
+
 >=20
-> Signed-off-by: Haijun Zhang <Haijun.Zhang@freescale.com>
-> CC: Scott Wood <scottwood@freescale.com>
-> CC: Fleming Andrew-AFLEMING <AFLEMING@freescale.com>
+> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
 > ---
->  arch/powerpc/boot/dts/fsl/p2041si-post.dtsi | 1 +
->  arch/powerpc/boot/dts/fsl/p3041si-post.dtsi | 1 +
->  arch/powerpc/boot/dts/fsl/p4080si-post.dtsi | 1 +
->  arch/powerpc/boot/dts/fsl/p5020si-post.dtsi | 1 +
->  arch/powerpc/boot/dts/fsl/p5040si-post.dtsi | 1 +
->  5 files changed, 5 insertions(+)
-
-Is there something specific that depends on this, or are you just =20
-trying to conform to other examples?
-
-I don't think we need the SoC name here, given that eSDHC has a version =20
-register that you can read (and an SVR in the unlikely case that that =20
-isn't adequate).  If you did end up relying on this device tree change, =20
-you'd be broken if an older device trees is used.
-
--Scott=
+> arch/powerpc/kernel/exceptions-64e.S |    5 +++--
+> 1 files changed, 3 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kernel/exceptions-64e.S =
+b/arch/powerpc/kernel/exceptions-64e.S
+> index 645170a..0c379e9 100644
+> --- a/arch/powerpc/kernel/exceptions-64e.S
+> +++ b/arch/powerpc/kernel/exceptions-64e.S
+> @@ -399,7 +399,7 @@ interrupt_end_book3e:
+>=20
+> /* Altivec Unavailable Interrupt */
+> 	START_EXCEPTION(altivec_unavailable);
+> -	NORMAL_EXCEPTION_PROLOG(0x200, BOOKE_INTERRUPT_ALTIVEC_UNAVAIL,
+> +	NORMAL_EXCEPTION_PROLOG(0x200, =
+BOOKE_INTERRUPT_SPE_ALTIVEC_UNAVAIL,
+> 				PROLOG_ADDITION_NONE)
+> 	/* we can probably do a shorter exception entry for that one... =
+*/
+> 	EXCEPTION_COMMON(0x200, PACA_EXGEN, INTS_KEEP)
+> @@ -421,7 +421,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+>=20
+> /* AltiVec Assist */
+> 	START_EXCEPTION(altivec_assist);
+> -	NORMAL_EXCEPTION_PROLOG(0x220, BOOKE_INTERRUPT_ALTIVEC_ASSIST,
+> +	NORMAL_EXCEPTION_PROLOG(0x220,
+> +				=
+BOOKE_INTERRUPT_SPE_FP_DATA_ALTIVEC_ASSIST,
+> 				PROLOG_ADDITION_NONE)
+> 	EXCEPTION_COMMON(0x220, PACA_EXGEN, INTS_DISABLE)
+> 	bl	.save_nvgprs
+> --=20
+> 1.7.3.4
+>=20
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
