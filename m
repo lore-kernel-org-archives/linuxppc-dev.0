@@ -1,22 +1,19 @@
-Return-Path: <B07421@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id ECDA52C00A9
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2013 11:00:21 +1000 (EST)
-Date: Mon, 1 Jul 2013 20:00:06 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 2/2] powerpc/fsl_booke: enable the relocatable for the
- kdump kernel
-To: Kevin Hao <haokexin@gmail.com>
-In-Reply-To: <20130630073521.GC32268@pek-khao-d1.corp.ad.wrs.com> (from
- haokexin@gmail.com on Sun Jun 30 02:35:21 2013)
-Message-ID: <1372726806.8183.105@snotra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ by ozlabs.org (Postfix) with ESMTP id C22C02C00AF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2013 11:02:56 +1000 (EST)
+Subject: Re: [PATCH 1/2] powerpc/booke64: Use common defines for AltiVec
+ interrupts numbers
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <1372726613.8183.104@snotra>
+Date: Tue, 2 Jul 2013 03:02:51 +0200
+Message-Id: <CC31298B-CEB3-4F35-9400-7C5CEC50BF66@suse.de>
+References: <1372726613.8183.104@snotra>
+To: Scott Wood <scottwood@freescale.com>
+Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,66 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/30/2013 02:35:21 AM, Kevin Hao wrote:
-> On Thu, Jun 27, 2013 at 09:19:06PM -0500, Scott Wood wrote:
-> > On 06/26/2013 09:00:34 PM, Kevin Hao wrote:
-> > >diff --git a/arch/powerpc/include/asm/mmu-book3e.h
-> > >b/arch/powerpc/include/asm/mmu-book3e.h
-> > >index 936db36..bf422db 100644
-> > >--- a/arch/powerpc/include/asm/mmu-book3e.h
-> > >+++ b/arch/powerpc/include/asm/mmu-book3e.h
-> > >@@ -214,6 +214,11 @@
-> > > #define TLBILX_T_CLASS2			6
-> > > #define TLBILX_T_CLASS3			7
-> > >
-> > >+#ifdef CONFIG_PPC32
-> > >+/* The max size that one tlb can map in a 32bit kernel. */
-> > >+#define PPC_PIN_SIZE	(1 << 28)	/* 256M */
-> > >+#endif
-> >
-> > That comment is not true for all chips.
+
+On 02.07.2013, at 02:56, Scott Wood wrote:
+
+> On 07/01/2013 07:18:21 PM, Alexander Graf wrote:
+>> On 01.07.2013, at 17:35, Mihai Caraman wrote:
+>> > On Book3E some SPE/FP/AltiVec interrupts share the same number. Use
+>> > common defines to indentify these numbers.
+>> So why didn't this happen from the beginning?
 >=20
-> This is not for the hardware limitation.
-
-It's not for a general software limitation, either.  We can use 1G =20
-mappings for user hugetlb (if the default mmap address is moved out of =20
-the way) or for the kernel lowmem mapping (if the address is moved to =20
-0x80000000 instead of 0xc0000000).
-
-It's also possible (although unlikely at this point) that someone could =20
-make a 32-bit booke chip that cannot handle 256M mappings.
-
-> > Pardon my ignorance about how kdump/kexec works, but I'm a bit
-> > confused by exactly what the situation is with crashkernel.  How do
-> > we know that we are the crash kernel, and that we should limit our
-> > RAM usage to that area?
+> Ask Kumar.
 >=20
-> The kexec tool will parse the command line of the boot kernel and get
-> the reserved memory info (such as start address, size) and then pass
-> these informations to the kdump kernel via device tree.
-
-Does this alter memstart_addr or just mark the region as reserved?
-
-> > >+	while (1) {
-> > >+		cam_sz =3D calc_cam_sz(ram, virt, phys);
-> > >+		if (cam_sz + phys > PHYSICAL_START + _end - _stext)
-> > >+			break;
-> > >+		ram =3D 1 << (ilog2(ram) + 1);
-> > >+	}
-> >
-> > The ram that was passed in is as much as you have.  Don't map more.
-> >
-> > What happens if (e.g.) memstart_addr is 512M, with a size of 512M,
-> > and the kernel starts at 768M?  Increasing the size will never get
-> > you a mapping that covers kernstart, because calc_cam_sz will never
-> > return more than 256M.
+>> Why the change?
 >=20
-> Yes, the current code still can't handle this case. We always assume
-> that the kernel is in the memory region which can be covered by the
-> first tlb entry.
+> So we can remove this hack in kvm_asm.h:
+>=20
+> /*
+> * TODO: Unify 32-bit and 64-bit kernel exception handlers to use same =
+defines
+> */
+> #define BOOKE_INTERRUPT_SPE_UNAVAIL =
+BOOKE_INTERRUPT_SPE_ALTIVEC_UNAVAIL
+> #define BOOKE_INTERRUPT_SPE_FP_DATA =
+BOOKE_INTERRUPT_SPE_FP_DATA_ALTIVEC_ASSIST
+> #define BOOKE_INTERRUPT_ALTIVEC_UNAVAIL =
+BOOKE_INTERRUPT_SPE_ALTIVEC_UNAVAIL
+> #define BOOKE_INTERRUPT_ALTIVEC_ASSIST \
+>                                =
+BOOKE_INTERRUPT_SPE_FP_DATA_ALTIVEC_ASSIST
+>=20
+> It was added as a compilation fix, and it was less intrusive to =
+temporarily fix it this way.
+>=20
+> I am curious why the above code wasn't removed at the end of this =
+patchset. :-)
 
-Assuming memstart_addr isn't affected by the crashkernel reservation =20
-(if it is, could you point out where?), you'd then have a problem with =20
-the crashkernel area going anywhere above 256M.
+Yeah, and why the intention isn't clearly written down in the patch =
+description ;)
 
--Scott=
+
+Alex
