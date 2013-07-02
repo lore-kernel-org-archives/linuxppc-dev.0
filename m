@@ -1,33 +1,32 @@
 Return-Path: <brueckner@linux.vnet.ibm.com>
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+Received: from e06smtp18.uk.ibm.com (e06smtp18.uk.ibm.com [195.75.94.114])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e06smtp15.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 973FC2C0089
+ (Client CN "e06smtp18.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 97FD92C0097
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2013 01:07:37 +1000 (EST)
 Received: from /spool/local
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp18.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <brueckner@linux.vnet.ibm.com>;
- Tue, 2 Jul 2013 16:02:52 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id EE23D1B0805D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2013 16:07:30 +0100 (BST)
+ Tue, 2 Jul 2013 16:02:00 +0100
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 84F741B08061
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2013 16:07:31 +0100 (BST)
 Received: from d06av08.portsmouth.uk.ibm.com (d06av08.portsmouth.uk.ibm.com
  [9.149.37.249])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r62F7Joa50266172
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r62F7Js348824356
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Jul 2013 15:07:19 GMT
 Received: from d06av08.portsmouth.uk.ibm.com (localhost [127.0.0.1])
  by d06av08.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r62F7TmI001840
+ r62F7UFm001872
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Jul 2013 09:07:30 -0600
 From: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, jslaby@suse.cz, gregkh@linuxfoundation.org
-Subject: [PATCH 1/2] tty/hvc_console: Add DTR/RTS callback to handle HUPCL
- control
-Date: Tue,  2 Jul 2013 17:07:14 +0200
-Message-Id: <1372777635-10423-2-git-send-email-brueckner@linux.vnet.ibm.com>
+Subject: [PATCH 2/2] tty/hvc_iucv: Disconnect IUCV connection when lowering DTR
+Date: Tue,  2 Jul 2013 17:07:15 +0200
+Message-Id: <1372777635-10423-3-git-send-email-brueckner@linux.vnet.ibm.com>
 In-Reply-To: <1372777635-10423-1-git-send-email-brueckner@linux.vnet.ibm.com>
 References: <1372777635-10423-1-git-send-email-brueckner@linux.vnet.ibm.com>
 Cc: linux-s390@vger.kernel.org, heiko.carstens@de.ibm.com,
@@ -42,62 +41,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Introduce a new callback to explicitly handle the HUPCL termios control flag.
-This prepares for a follow-up commit for the hvc_iucv device driver to
-improve handling when to drop an established network connection.
+Implement the dtr_rts() hvc console callback to improve control when to
+disconnect the IUCV connection.  Previously, the IUCV connection was
+disconnected during the notifier_del() callback, i.e., when the last file
+descriptor to the hvc terminal device was closed.
 
-The callback naming is based on the recently added tty_port interface to
-facilitate a potential refactoring of the hvc_console to use tty_port
-functions.
+Recent changes in login programs caused undesired disconnects during the
+login phase.  To prevent these kind of disconnects, implement the dtr_rts
+callback to implicitly handle the HUPCL termios control via the hvc_console
+driver.
 
 Signed-off-by: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
 ---
- drivers/tty/hvc/hvc_console.c |   11 ++++++++++-
- drivers/tty/hvc/hvc_console.h |    3 +++
- 2 files changed, 13 insertions(+), 1 deletions(-)
+ drivers/tty/hvc/hvc_iucv.c |   64 +++++++++++++++++++++++++++++++++++---------
+ 1 files changed, 51 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
-index eb255e8..9eba119 100644
---- a/drivers/tty/hvc/hvc_console.c
-+++ b/drivers/tty/hvc/hvc_console.c
-@@ -361,7 +361,12 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
- 		tty->driver_data = NULL;
- 		tty_port_put(&hp->port);
- 		printk(KERN_ERR "hvc_open: request_irq failed with rc %d.\n", rc);
+diff --git a/drivers/tty/hvc/hvc_iucv.c b/drivers/tty/hvc/hvc_iucv.c
+index b6f7d52..bb08676 100644
+--- a/drivers/tty/hvc/hvc_iucv.c
++++ b/drivers/tty/hvc/hvc_iucv.c
+@@ -656,21 +656,64 @@ static void hvc_iucv_notifier_hangup(struct hvc_struct *hp, int id)
+ }
+ 
+ /**
++ * hvc_iucv_dtr_rts() - HVC notifier for handling DTR/RTS
++ * @hp:		Pointer the HVC device (struct hvc_struct)
++ * @raise:	Non-zero to raise or zero to lower DTR/RTS lines
++ *
++ * This routine notifies the HVC back-end to raise or lower DTR/RTS
++ * lines.  Raising DTR/RTS is ignored.  Lowering DTR/RTS indicates to
++ * drop the IUCV connection (similar to hang up the modem).
++ */
++static void hvc_iucv_dtr_rts(struct hvc_struct *hp, int raise)
++{
++	struct hvc_iucv_private *priv;
++	struct iucv_path        *path;
++
++	/* Raising the DTR/RTS is ignored as IUCV connections can be
++	 * established at any times.
++	 */
++	if (raise)
++		return;
++
++	priv = hvc_iucv_get_private(hp->vtermno);
++	if (!priv)
++		return;
++
++	/* Lowering the DTR/RTS lines disconnects an established IUCV
++	 * connection.
++	 */
++	flush_sndbuf_sync(priv);
++
++	spin_lock_bh(&priv->lock);
++	path = priv->path;		/* save reference to IUCV path */
++	priv->path = NULL;
++	priv->iucv_state = IUCV_DISCONN;
++	spin_unlock_bh(&priv->lock);
++
++	/* Sever IUCV path outside of priv->lock due to lock ordering of:
++	 * priv->lock <--> iucv_table_lock */
++	if (path) {
++		iucv_path_sever(path, NULL);
++		iucv_path_free(path);
++	}
++}
++
++/**
+  * hvc_iucv_notifier_del() - HVC notifier for closing a TTY for the last time.
+  * @hp:		Pointer to the HVC device (struct hvc_struct)
+  * @id:		Additional data (originally passed to hvc_alloc):
+  *		the index of an struct hvc_iucv_private instance.
+  *
+  * This routine notifies the HVC back-end that the last tty device fd has been
+- * closed.  The function calls hvc_iucv_cleanup() to clean up the struct
+- * hvc_iucv_private instance.
++ * closed.  The function cleans up tty resources.  The clean-up of the IUCV
++ * connection is done in hvc_iucv_dtr_rts() and depends on the HUPCL termios
++ * control setting.
+  *
+  * Locking:	struct hvc_iucv_private->lock
+  */
+ static void hvc_iucv_notifier_del(struct hvc_struct *hp, int id)
+ {
+ 	struct hvc_iucv_private *priv;
+-	struct iucv_path	*path;
+ 
+ 	priv = hvc_iucv_get_private(id);
+ 	if (!priv)
+@@ -679,17 +722,11 @@ static void hvc_iucv_notifier_del(struct hvc_struct *hp, int id)
+ 	flush_sndbuf_sync(priv);
+ 
+ 	spin_lock_bh(&priv->lock);
+-	path = priv->path;		/* save reference to IUCV path */
+-	priv->path = NULL;
+-	hvc_iucv_cleanup(priv);
++	destroy_tty_buffer_list(&priv->tty_outqueue);
++	destroy_tty_buffer_list(&priv->tty_inqueue);
++	priv->tty_state = TTY_CLOSED;
++	priv->sndbuf_len = 0;
+ 	spin_unlock_bh(&priv->lock);
+-
+-	/* sever IUCV path outside of priv->lock due to lock ordering of:
+-	 * priv->lock <--> iucv_table_lock */
+-	if (path) {
+-		iucv_path_sever(path, NULL);
+-		iucv_path_free(path);
 -	}
-+	} else
-+		/* We are ready... raise DTR/RTS */
-+		if (C_BAUD(tty))
-+			if (hp->ops->dtr_rts)
-+				hp->ops->dtr_rts(hp, 1);
-+
- 	/* Force wakeup of the polling thread */
- 	hvc_kick();
+ }
  
-@@ -393,6 +398,10 @@ static void hvc_close(struct tty_struct *tty, struct file * filp)
- 		/* We are done with the tty pointer now. */
- 		tty_port_tty_set(&hp->port, NULL);
- 
-+		if (C_HUPCL(tty))
-+			if (hp->ops->dtr_rts)
-+				hp->ops->dtr_rts(hp, 0);
-+
- 		if (hp->ops->notifier_del)
- 			hp->ops->notifier_del(hp, hp->data);
- 
-diff --git a/drivers/tty/hvc/hvc_console.h b/drivers/tty/hvc/hvc_console.h
-index 674d23c..9131019 100644
---- a/drivers/tty/hvc/hvc_console.h
-+++ b/drivers/tty/hvc/hvc_console.h
-@@ -75,6 +75,9 @@ struct hv_ops {
- 	/* tiocmget/set implementation */
- 	int (*tiocmget)(struct hvc_struct *hp);
- 	int (*tiocmset)(struct hvc_struct *hp, unsigned int set, unsigned int clear);
-+
-+	/* Callbacks to handle tty ports */
-+	void (*dtr_rts)(struct hvc_struct *hp, int raise);
+ /**
+@@ -931,6 +968,7 @@ static const struct hv_ops hvc_iucv_ops = {
+ 	.notifier_add = hvc_iucv_notifier_add,
+ 	.notifier_del = hvc_iucv_notifier_del,
+ 	.notifier_hangup = hvc_iucv_notifier_hangup,
++	.dtr_rts = hvc_iucv_dtr_rts,
  };
  
- /* Register a vterm and a slot index for use as a console (console_init) */
+ /* Suspend / resume device operations */
 -- 
 1.7.5.4
