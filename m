@@ -1,23 +1,25 @@
-Return-Path: <B07421@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0189.outbound.messaging.microsoft.com [213.199.154.189])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A13E12C02FB
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2013 04:54:53 +1000 (EST)
-Date: Tue, 2 Jul 2013 13:54:39 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] DTS: Add compatible list for eSDHC
-To: Zhang Haijun-B42677 <B42677@freescale.com>
-In-Reply-To: <99E897753B6F7048BD8CCDB4661D02E13609E1@039-SN2MPN1-023.039d.mgd.msft.net>
- (from B42677@freescale.com on Tue Jul  2 03:00:43 2013)
-Message-ID: <1372791279.8183.115@snotra>
+Return-Path: <eranian@google.com>
+Received: from mail-oa0-x232.google.com (mail-oa0-x232.google.com
+ [IPv6:2607:f8b0:4003:c02::232])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id AC8822C0095
+ for <linuxppc-dev@ozlabs.org>; Wed,  3 Jul 2013 07:27:00 +1000 (EST)
+Received: by mail-oa0-f50.google.com with SMTP id k7so7177647oag.9
+ for <linuxppc-dev@ozlabs.org>; Tue, 02 Jul 2013 14:26:58 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- Fleming Andy-AFLEMING <afleming@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <20130626074106.GA3741@us.ibm.com>
+References: <20130626074106.GA3741@us.ibm.com>
+Date: Tue, 2 Jul 2013 23:26:57 +0200
+Message-ID: <CABPqkBRo2iecP5AcSYi4D1GBFUT55QJpqMQTL51gcYPWtrKCkQ@mail.gmail.com>
+Subject: Re: [RFC][PATCH 1/3][v2] perf: Move PERF_MEM*SHIFT macros up the block
+From: Stephane Eranian <eranian@google.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Anton Blanchard <anton@au1.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+ sukadev@us.ibm.com, Linux PPC dev <linuxppc-dev@ozlabs.org>,
+ Paul Mackerras <paulus@samba.org>, ellerman@au1.ibm.com,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,58 +29,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/02/2013 03:00:43 AM, Zhang Haijun-B42677 wrote:
->=20
->=20
->=20
-> Regards
-> Haijun.
->=20
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Tuesday, July 02, 2013 8:05 AM
-> > To: Zhang Haijun-B42677
-> > Cc: galak@kernel.crashing.org; linuxppc-dev@lists.ozlabs.org; Zhang
-> > Haijun-B42677; Fleming Andy-AFLEMING
-> > Subject: Re: [PATCH] DTS: Add compatible list for eSDHC
-> >
-> > On 07/01/2013 12:21:50 AM, Haijun Zhang wrote:
-> > > Add compatible of esdhc for below board:
-> > > p2041   p3041   p4080   p5020   p5040
-> > >
-> > > Signed-off-by: Haijun Zhang <Haijun.Zhang@freescale.com>
-> > > CC: Scott Wood <scottwood@freescale.com>
-> > > CC: Fleming Andrew-AFLEMING <AFLEMING@freescale.com>
-> > > ---
-> > >  arch/powerpc/boot/dts/fsl/p2041si-post.dtsi | 1 +
-> > > arch/powerpc/boot/dts/fsl/p3041si-post.dtsi | 1 +
-> > > arch/powerpc/boot/dts/fsl/p4080si-post.dtsi | 1 +
-> > > arch/powerpc/boot/dts/fsl/p5020si-post.dtsi | 1 +
-> > > arch/powerpc/boot/dts/fsl/p5040si-post.dtsi | 1 +
-> > >  5 files changed, 5 insertions(+)
-> >
-> > Is there something specific that depends on this, or are you just =20
-> trying
-> > to conform to other examples?
-> >
-> > I don't think we need the SoC name here, given that eSDHC has a =20
-> version
-> > register that you can read (and an SVR in the unlikely case that =20
-> that
-> > isn't adequate).  If you did end up relying on this device tree =20
-> change,
-> > you'd be broken if an older device trees is used.
-> >
-> [Haijun Wrote:] Yes, in mmc driver (sdhci-pltfm.c)some quirks depends =20
-> on Soc name and its Soc version (sdhci-of-esdhc.c), even if they had =20
-> the same eSDHC version.
+On Wed, Jun 26, 2013 at 9:41 AM, Sukadev Bhattiprolu
+<sukadev@linux.vnet.ibm.com> wrote:
+>
+> From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> Date: Fri, 21 Jun 2013 14:03:01 -0700
+> Subject: [RFC][PATCH 1/3][v2] perf: Move PERF_MEM*SHIFT macros up the block
+>
+> Values for the PERF_MEM_*SHIFT macros depend on the block before
+> them, so it would be more readable if they are in the beginning
+> of the block.
+>
+> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 
-Then please use SVR for applying errata workarounds to these chips, =20
-rather than rely on the device tree being updated.  The SVR approach =20
-also lets you deal with cases where the erratum is present in one rev =20
-of an SoC but not another.
+Reviewed-by: Stephane Eranian <eranian@google.com>
 
-Is SDHCI_QUIRK_BROKEN_TIMEOUT_VAL present on these chips?  If so, which =20
-chips (of the same eSDHC version) is it not present on?
-
--Scott=
+> ---
+>  include/uapi/linux/perf_event.h |   10 +++++-----
+>  1 files changed, 5 insertions(+), 5 deletions(-)
+>
+> diff --git a/include/uapi/linux/perf_event.h b/include/uapi/linux/perf_event.h
+> index fb104e5..52697a3 100644
+> --- a/include/uapi/linux/perf_event.h
+> +++ b/include/uapi/linux/perf_event.h
+> @@ -632,14 +632,15 @@ union perf_mem_data_src {
+>  };
+>
+>  /* type of opcode (load/store/prefetch,code) */
+> +#define PERF_MEM_OP_SHIFT      0
+>  #define PERF_MEM_OP_NA         0x01 /* not available */
+>  #define PERF_MEM_OP_LOAD       0x02 /* load instruction */
+>  #define PERF_MEM_OP_STORE      0x04 /* store instruction */
+>  #define PERF_MEM_OP_PFETCH     0x08 /* prefetch */
+>  #define PERF_MEM_OP_EXEC       0x10 /* code (execution) */
+> -#define PERF_MEM_OP_SHIFT      0
+>
+>  /* memory hierarchy (memory level, hit or miss) */
+> +#define PERF_MEM_LVL_SHIFT     5
+>  #define PERF_MEM_LVL_NA                0x01  /* not available */
+>  #define PERF_MEM_LVL_HIT       0x02  /* hit level */
+>  #define PERF_MEM_LVL_MISS      0x04  /* miss level  */
+> @@ -654,22 +655,22 @@ union perf_mem_data_src {
+>  #define PERF_MEM_LVL_REM_CCE2  0x800 /* Remote Cache (2 hops) */
+>  #define PERF_MEM_LVL_IO                0x1000 /* I/O memory */
+>  #define PERF_MEM_LVL_UNC       0x2000 /* Uncached memory */
+> -#define PERF_MEM_LVL_SHIFT     5
+>
+>  /* snoop mode */
+> +#define PERF_MEM_SNOOP_SHIFT   19
+>  #define PERF_MEM_SNOOP_NA      0x01 /* not available */
+>  #define PERF_MEM_SNOOP_NONE    0x02 /* no snoop */
+>  #define PERF_MEM_SNOOP_HIT     0x04 /* snoop hit */
+>  #define PERF_MEM_SNOOP_MISS    0x08 /* snoop miss */
+>  #define PERF_MEM_SNOOP_HITM    0x10 /* snoop hit modified */
+> -#define PERF_MEM_SNOOP_SHIFT   19
+>
+>  /* locked instruction */
+> +#define PERF_MEM_LOCK_SHIFT    24
+>  #define PERF_MEM_LOCK_NA       0x01 /* not available */
+>  #define PERF_MEM_LOCK_LOCKED   0x02 /* locked transaction */
+> -#define PERF_MEM_LOCK_SHIFT    24
+>
+>  /* TLB access */
+> +#define PERF_MEM_TLB_SHIFT     26
+>  #define PERF_MEM_TLB_NA                0x01 /* not available */
+>  #define PERF_MEM_TLB_HIT       0x02 /* hit level */
+>  #define PERF_MEM_TLB_MISS      0x04 /* miss level */
+> @@ -677,7 +678,6 @@ union perf_mem_data_src {
+>  #define PERF_MEM_TLB_L2                0x10 /* L2 */
+>  #define PERF_MEM_TLB_WK                0x20 /* Hardware Walker*/
+>  #define PERF_MEM_TLB_OS                0x40 /* OS fault handler */
+> -#define PERF_MEM_TLB_SHIFT     26
+>
+>  #define PERF_MEM_S(a, s) \
+>         (((u64)PERF_MEM_##a##_##s) << PERF_MEM_##a##_SHIFT)
+> --
+> 1.7.1
+>
