@@ -1,23 +1,43 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- by ozlabs.org (Postfix) with ESMTP id CF5C72C00AC
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2013 02:37:00 +1000 (EST)
-Message-ID: <51D301A8.50406@suse.de>
-Date: Tue, 02 Jul 2013 18:36:56 +0200
-From: Alexander Graf <agraf@suse.de>
+Return-Path: <bhelgaas@google.com>
+Received: from mail-oa0-x22e.google.com (mail-oa0-x22e.google.com
+ [IPv6:2607:f8b0:4003:c02::22e])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A1B9B2C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2013 03:14:25 +1000 (EST)
+Received: by mail-oa0-f46.google.com with SMTP id h1so6703319oag.19
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jul 2013 10:14:21 -0700 (PDT)
 MIME-Version: 1.0
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH -V3 3/4] powerpc/kvm: Contiguous memory allocator based
- RMA allocation
-References: <1372743918-12293-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1372743918-12293-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <51D2EEF7.8000607@suse.de> <87zju5yo7g.fsf@linux.vnet.ibm.com>
- <51D2F278.3050002@suse.de> <87r4fhylhe.fsf@linux.vnet.ibm.com>
-In-Reply-To: <87r4fhylhe.fsf@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linux-mm@kvack.org,
- paulus@samba.org, mina86@mina86.com, linuxppc-dev@lists.ozlabs.org,
- m.szyprowski@samsung.com
+In-Reply-To: <20130702073037.55a53642@skate>
+References: <1372686136-1370-1-git-send-email-thomas.petazzoni@free-electrons.com>
+ <1372686136-1370-3-git-send-email-thomas.petazzoni@free-electrons.com>
+ <1372726396.17904.1.camel@concordia> <20130702073037.55a53642@skate>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Tue, 2 Jul 2013 11:14:01 -0600
+Message-ID: <CAErSpo5NuwC5cWiWxOb0c3tO47SPBcbW3Vx5vMu=cCu2m4vYLw@mail.gmail.com>
+Subject: Re: [PATCHv4 02/11] pci: use weak functions for MSI arch-specific
+ functions
+To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Thierry Reding <thierry.reding@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
+ "x86@kernel.org" <x86@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Ezequiel Garcia <ezequiel.garcia@free-electrons.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Jason Cooper <jason@lakedaemon.net>,
+ Rob Herring <rob.herring@calxeda.com>, Chris Metcalf <cmetcalf@tilera.com>,
+ Gregory Clement <gregory.clement@free-electrons.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm <linux-arm-kernel@lists.infradead.org>,
+ Tony Luck <tony.luck@intel.com>, Ralf Baechle <ralf@linux-mips.org>,
+ Maen Suleiman <maen@marvell.com>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ linux390@de.ibm.com, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,91 +47,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/02/2013 06:28 PM, Aneesh Kumar K.V wrote:
-> Alexander Graf<agraf@suse.de>  writes:
+On Mon, Jul 1, 2013 at 11:30 PM, Thomas Petazzoni
+<thomas.petazzoni@free-electrons.com> wrote:
+> Dear Michael Ellerman,
 >
->> On 07/02/2013 05:29 PM, Aneesh Kumar K.V wrote:
->>> Alexander Graf<agraf@suse.de>   writes:
->>>
->>>> On 07/02/2013 07:45 AM, Aneesh Kumar K.V wrote:
->>>>> From: "Aneesh Kumar K.V"<aneesh.kumar@linux.vnet.ibm.com>
->>>>>
->>>>> Older version of power architecture use Real Mode Offset register and Real Mode Limit
->>>>> Selector for mapping guest Real Mode Area. The guest RMA should be physically
->>>>> contigous since we use the range when address translation is not enabled.
->>>>>
->>>>> This patch switch RMA allocation code to use contigous memory allocator. The patch
->>>>> also remove the the linear allocator which not used any more
->>>>>
->>>>> Acked-by: Paul Mackerras<paulus@samba.org>
->>>>> Signed-off-by: Aneesh Kumar K.V<aneesh.kumar@linux.vnet.ibm.com>
->>>>> ---
->>> .... snip ....
->>>
->>>>> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
->>>>> index 550f592..55c8519 100644
->>>>> --- a/arch/powerpc/kvm/book3s_hv.c
->>>>> +++ b/arch/powerpc/kvm/book3s_hv.c
->>>>> @@ -1511,10 +1511,10 @@ static inline int lpcr_rmls(unsigned long rma_size)
->>>>>
->>>>>     static int kvm_rma_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
->>>>>     {
->>>>> -	struct kvmppc_linear_info *ri = vma->vm_file->private_data;
->>>>>     	struct page *page;
->>>>> +	struct kvm_rma_info *ri = vma->vm_file->private_data;
->>>>>
->>>>> -	if (vmf->pgoff>= ri->npages)
->>>>> +	if (vmf->pgoff>= kvm_rma_pages)
->>>>>     		return VM_FAULT_SIGBUS;
->>>>>
->>>>>     	page = pfn_to_page(ri->base_pfn + vmf->pgoff);
->>>>> @@ -1536,7 +1536,7 @@ static int kvm_rma_mmap(struct file *file, struct vm_area_struct *vma)
->>>>>
->>>>>     static int kvm_rma_release(struct inode *inode, struct file *filp)
->>>>>     {
->>>>> -	struct kvmppc_linear_info *ri = filp->private_data;
->>>>> +	struct kvm_rma_info *ri = filp->private_data;
->>>>>
->>>>>     	kvm_release_rma(ri);
->>>>>     	return 0;
->>>>> @@ -1549,8 +1549,17 @@ static const struct file_operations kvm_rma_fops = {
->>>>>
->>>>>     long kvm_vm_ioctl_allocate_rma(struct kvm *kvm, struct kvm_allocate_rma *ret)
->>>>>     {
->>>>> -	struct kvmppc_linear_info *ri;
->>>>>     	long fd;
->>>>> +	struct kvm_rma_info *ri;
->>>>> +	/*
->>>>> +	 * Only do this on PPC970 in HV mode
->>>>> +	 */
->>>>> +	if (!cpu_has_feature(CPU_FTR_HVMODE) ||
->>>>> +	    !cpu_has_feature(CPU_FTR_ARCH_201))
->>>>> +		return -EINVAL;
->>>> Is this really what we want? User space may want to use an RMA on POWER7
->>>> systems, no?
->>> IIUC they will use virtual real mode area (VRMA) and not RMA
->> Then I suppose we should at least update the comment a bit further down
->> the patch that indicates that on POWER7 systems we do support a real
->> RMA. I can't really think of any reason why user space would want to use
->> RMA over VRMA.
+> On Tue, 02 Jul 2013 10:53:16 +1000, Michael Ellerman wrote:
+>> On Mon, 2013-07-01 at 15:42 +0200, Thomas Petazzoni wrote:
+>> > Until now, the MSI architecture-specific functions could be overloaded
+>> > using a fairly complex set of #define and compile-time
+>> > conditionals. In order to prepare for the introduction of the msi_chip
+>> > infrastructure, it is desirable to switch all those functions to use
+>> > the 'weak' mechanism. This commit converts all the architectures that
+>> > were overidding those MSI functions to use the new strategy.
 >>
-> where ? We have comments like
+>> The MSI code used to use weak functions, until we discovered they were
+>> being miscompiled on some toolchains (11df1f0). I assume these days
+>> we're confident they work correctly.
 >
-> /* On POWER7, use VRMA; on PPC970, give up */
+> Hum, interesting. I see from your commit that gcc 4.3.2 was apparently
+> affected, and gcc 4.3.x is not /that/ old. Bjorn, what's your point of
+> view on this?
 
->   /*
-> - * This maintains a list of RMAs (real mode areas) for KVM guests to use.
-> + * We allocate RMAs (real mode areas) for KVM guests from the KVM CMA area.
->    * Each RMA has to be physically contiguous and of a size that the
->    * hardware supports.  PPC970 and POWER7 support 64MB, 128MB and 256MB,
->    * and other larger sizes.  Since we are unlikely to be allocate that
->    * much physically contiguous memory after the system is up and running,
-> - * we preallocate a set of RMAs in early boot for KVM to use.
-> + * we preallocate a set of RMAs in early boot using CMA.
-> + * should be power of 2.
->    */
+There *were* compilation issues with weak functions, but AFAIK they've
+been resolved and there's no reason to avoid them.  Commit f9d142500
+addressed this.
 
-This could be falsely interpreted as "POWER7 can use an RMA".
-
-
-Alex
+Bjorn
