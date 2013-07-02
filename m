@@ -2,18 +2,24 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 9CC712C009C
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2013 08:01:50 +1000 (EST)
-Message-ID: <1372802478.4122.24.camel@pasglop>
-Subject: Re: [PATCH] powerpc/powernv: Mark pnv_pci_init_ioda2_phb() as __init
+ by ozlabs.org (Postfix) with ESMTPS id E09922C0077
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2013 08:28:57 +1000 (EST)
+Message-ID: <1372804109.4122.25.camel@pasglop>
+Subject: Re: [PATCH -V3 2/4] powerpc/kvm: Contiguous memory allocator based
+ hash page table allocation
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Date: Wed, 03 Jul 2013 08:01:18 +1000
-In-Reply-To: <20130702182003.28238.61942.stgit@bhelgaas-glaptop>
-References: <20130702182003.28238.61942.stgit@bhelgaas-glaptop>
+To: Alexander Graf <agraf@suse.de>
+Date: Wed, 03 Jul 2013 08:28:29 +1000
+In-Reply-To: <51D2EDD7.9060205@suse.de>
+References: <1372743918-12293-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1372743918-12293-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <51D2EDD7.9060205@suse.de>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
+Cc: kvm-ppc@vger.kernel.org, kvm@vger.kernel.org, mina86@mina86.com,
+ linux-mm@kvack.org, paulus@samba.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, m.szyprowski@samsung.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,37 +29,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-07-02 at 12:20 -0600, Bjorn Helgaas wrote:
-> Mark pnv_pci_init_ioda2_phb() as __init.  It is called only from an
-> init function (pnv_pci_init()), and it calls an init function
-> (pnv_pci_init_ioda_phb()):
-> 
->     pnv_pci_init                # init
->       pnv_pci_init_ioda2_phb    # non-init
-> 	pnv_pci_init_ioda_phb   # init
-> 
-> This should fix a section mismatch warning.
+On Tue, 2013-07-02 at 17:12 +0200, Alexander Graf wrote:
+> Is CMA a mandatory option in the kernel? Or can it be optionally 
+> disabled? If it can be disabled, we should keep the preallocated 
+> fallback case around for systems that have CMA disabled.
 
-Thanks. I should look at those warnings more often...
+Why ? More junk code to keep around ...
+
+If CMA is disabled, we can limit ourselves to dynamic allocation (with
+limitation to 16M hash table).
 
 Cheers,
 Ben.
-
-> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
-> ---
->  arch/powerpc/platforms/powernv/pci-ioda.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index 9c9d15e..dfbb03d 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -1210,7 +1210,7 @@ void __init pnv_pci_init_ioda_phb(struct device_node *np, int ioda_type)
->  		opal_pci_set_pe(phb_id, 0, 0, 7, 1, 1 , OPAL_MAP_PE);
->  }
->  
-> -void pnv_pci_init_ioda2_phb(struct device_node *np)
-> +void __init pnv_pci_init_ioda2_phb(struct device_node *np)
->  {
->  	pnv_pci_init_ioda_phb(np, PNV_PHB_IODA2);
->  }
