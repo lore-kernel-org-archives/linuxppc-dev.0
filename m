@@ -1,25 +1,27 @@
-Return-Path: <eranian@google.com>
-Received: from mail-oa0-x232.google.com (mail-oa0-x232.google.com
- [IPv6:2607:f8b0:4003:c02::232])
+Return-Path: <neorf3k@gmail.com>
+Received: from mail-bk0-x232.google.com (mail-bk0-x232.google.com
+ [IPv6:2a00:1450:4008:c01::232])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AC8822C0095
- for <linuxppc-dev@ozlabs.org>; Wed,  3 Jul 2013 07:27:00 +1000 (EST)
-Received: by mail-oa0-f50.google.com with SMTP id k7so7177647oag.9
- for <linuxppc-dev@ozlabs.org>; Tue, 02 Jul 2013 14:26:58 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20130626074106.GA3741@us.ibm.com>
-References: <20130626074106.GA3741@us.ibm.com>
-Date: Tue, 2 Jul 2013 23:26:57 +0200
-Message-ID: <CABPqkBRo2iecP5AcSYi4D1GBFUT55QJpqMQTL51gcYPWtrKCkQ@mail.gmail.com>
-Subject: Re: [RFC][PATCH 1/3][v2] perf: Move PERF_MEM*SHIFT macros up the block
-From: Stephane Eranian <eranian@google.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Anton Blanchard <anton@au1.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
- sukadev@us.ibm.com, Linux PPC dev <linuxppc-dev@ozlabs.org>,
- Paul Mackerras <paulus@samba.org>, ellerman@au1.ibm.com,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id C41642C00A7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2013 22:36:59 +1000 (EST)
+Received: by mail-bk0-f50.google.com with SMTP id ik8so2308639bkc.37
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jul 2013 05:36:55 -0700 (PDT)
+Content-Type: multipart/alternative;
+ boundary="Apple-Mail=_E64F5379-6112-484F-A674-411F41B196AF"
+Mime-Version: 1.0 (Mac OS X Mail 6.5 \(1508\))
+Subject: compile custom kernel for custom board with mpc5200b
+From: neorf3k <neorf3k@gmail.com>
+In-Reply-To: <CC3CAF69-E890-4A56-8E04-1A82D9662F7F@me.com>
+Date: Tue, 2 Jul 2013 14:36:48 +0200
+Message-Id: <B24571FC-9F6D-4E1D-8D22-276182B19F83@gmail.com>
+References: <36A2A056-9BA2-4246-AED9-660E103475EE@me.com>
+ <CACxGe6sJNv5v=uFoQaNgq9j=q0SDAxxPb2V9hzx7vLtMkuOvjQ@mail.gmail.com>
+ <5D7592C8-B262-4F6F-8CCA-E5E58DC1F850@me.com>
+ <CACxGe6uKUkiD07PH0A+ToaGw_03Vkn0Y6cFvNuOXMLuT1HRCHQ@mail.gmail.com>
+ <CC3CAF69-E890-4A56-8E04-1A82D9662F7F@me.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,80 +31,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 26, 2013 at 9:41 AM, Sukadev Bhattiprolu
-<sukadev@linux.vnet.ibm.com> wrote:
->
-> From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> Date: Fri, 21 Jun 2013 14:03:01 -0700
-> Subject: [RFC][PATCH 1/3][v2] perf: Move PERF_MEM*SHIFT macros up the block
->
-> Values for the PERF_MEM_*SHIFT macros depend on the block before
-> them, so it would be more readable if they are in the beginning
-> of the block.
->
-> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 
-Reviewed-by: Stephane Eranian <eranian@google.com>
+--Apple-Mail=_E64F5379-6112-484F-A674-411F41B196AF
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain;
+	charset=windows-1252
 
-> ---
->  include/uapi/linux/perf_event.h |   10 +++++-----
->  1 files changed, 5 insertions(+), 5 deletions(-)
->
-> diff --git a/include/uapi/linux/perf_event.h b/include/uapi/linux/perf_event.h
-> index fb104e5..52697a3 100644
-> --- a/include/uapi/linux/perf_event.h
-> +++ b/include/uapi/linux/perf_event.h
-> @@ -632,14 +632,15 @@ union perf_mem_data_src {
->  };
->
->  /* type of opcode (load/store/prefetch,code) */
-> +#define PERF_MEM_OP_SHIFT      0
->  #define PERF_MEM_OP_NA         0x01 /* not available */
->  #define PERF_MEM_OP_LOAD       0x02 /* load instruction */
->  #define PERF_MEM_OP_STORE      0x04 /* store instruction */
->  #define PERF_MEM_OP_PFETCH     0x08 /* prefetch */
->  #define PERF_MEM_OP_EXEC       0x10 /* code (execution) */
-> -#define PERF_MEM_OP_SHIFT      0
->
->  /* memory hierarchy (memory level, hit or miss) */
-> +#define PERF_MEM_LVL_SHIFT     5
->  #define PERF_MEM_LVL_NA                0x01  /* not available */
->  #define PERF_MEM_LVL_HIT       0x02  /* hit level */
->  #define PERF_MEM_LVL_MISS      0x04  /* miss level  */
-> @@ -654,22 +655,22 @@ union perf_mem_data_src {
->  #define PERF_MEM_LVL_REM_CCE2  0x800 /* Remote Cache (2 hops) */
->  #define PERF_MEM_LVL_IO                0x1000 /* I/O memory */
->  #define PERF_MEM_LVL_UNC       0x2000 /* Uncached memory */
-> -#define PERF_MEM_LVL_SHIFT     5
->
->  /* snoop mode */
-> +#define PERF_MEM_SNOOP_SHIFT   19
->  #define PERF_MEM_SNOOP_NA      0x01 /* not available */
->  #define PERF_MEM_SNOOP_NONE    0x02 /* no snoop */
->  #define PERF_MEM_SNOOP_HIT     0x04 /* snoop hit */
->  #define PERF_MEM_SNOOP_MISS    0x08 /* snoop miss */
->  #define PERF_MEM_SNOOP_HITM    0x10 /* snoop hit modified */
-> -#define PERF_MEM_SNOOP_SHIFT   19
->
->  /* locked instruction */
-> +#define PERF_MEM_LOCK_SHIFT    24
->  #define PERF_MEM_LOCK_NA       0x01 /* not available */
->  #define PERF_MEM_LOCK_LOCKED   0x02 /* locked transaction */
-> -#define PERF_MEM_LOCK_SHIFT    24
->
->  /* TLB access */
-> +#define PERF_MEM_TLB_SHIFT     26
->  #define PERF_MEM_TLB_NA                0x01 /* not available */
->  #define PERF_MEM_TLB_HIT       0x02 /* hit level */
->  #define PERF_MEM_TLB_MISS      0x04 /* miss level */
-> @@ -677,7 +678,6 @@ union perf_mem_data_src {
->  #define PERF_MEM_TLB_L2                0x10 /* L2 */
->  #define PERF_MEM_TLB_WK                0x20 /* Hardware Walker*/
->  #define PERF_MEM_TLB_OS                0x40 /* OS fault handler */
-> -#define PERF_MEM_TLB_SHIFT     26
->
->  #define PERF_MEM_S(a, s) \
->         (((u64)PERF_MEM_##a##_##s) << PERF_MEM_##a##_SHIFT)
-> --
-> 1.7.1
->
+Hello, i'm developing an embedded linux system on a custom mpc5200b =
+board, at University.
+
+We have  a problem with a custom version of kernel: 2.6.23 and 2.6.33. =
+We can't use newer version at the moment.
+
+We are able to compile and load the kernel on Freescale Lite5200b and on =
+Custom Board.
+
+So, we have tested ethernet on both boards.=20
+On Freescale, ethernet connection is ok, just tested with ping.
+
+But on Custom Board we are having problems:
+with kernel 2.6.23 we lost 98% packet loss.=20
+We have tried to disable XLB PIPELINE in: =
+arch/powerpc/platforms/52xx/mpc52xx_common.c
+(just commenting these lines):
+
+/* Disable XLB pipelining */
+     /* (cfr errate 292. We could do this only just before ATA PIO
+         transaction and re-enable it afterwards ...) */
+     //out_be32(&xlb->config, in_be32(&xlb->config) | =
+MPC52xx_XLB_CFG_PLDIS);
+
+And with this, we have 10% packet loss.
+
+In kernel 2.6.33, we have tried the same=85 but disabling or not the =
+pipeline, we have 55% packet loss.
+
+Where could i find some solutions?
+
+Thank you
+
+neorf=
+
+--Apple-Mail=_E64F5379-6112-484F-A674-411F41B196AF
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/html;
+	charset=windows-1252
+
+<html><head><meta http-equiv=3D"Content-Type" content=3D"text/html =
+charset=3Dwindows-1252"></head><body style=3D"word-wrap: break-word; =
+-webkit-nbsp-mode: space; -webkit-line-break: after-white-space; =
+">Hello,&nbsp;i'm developing an embedded linux system on a custom =
+mpc5200b board, at University.<div class=3D"page" title=3D"Page 9">
+		=09
+		</div><div><br></div><div>We have &nbsp;a problem with a =
+custom version of kernel: 2.6.23 and 2.6.33. We can't use newer version =
+at the moment.</div><div><br></div><div>We are able to compile and load =
+the kernel on Freescale Lite5200b and on Custom =
+Board.</div><div><br></div><div>So, we have tested ethernet on both =
+boards.&nbsp;</div><div>On Freescale, ethernet connection is ok, just =
+tested with ping.</div><div><br></div><div>But on Custom Board we are =
+having problems:</div><div>with kernel 2.6.23 we lost 98% packet =
+loss.&nbsp;</div><div>We have tried to disable XLB PIPELINE =
+in:&nbsp;<span style=3D"font-family: Arial; =
+">arch/powerpc/platforms/52xx/mpc52xx_common.c</span></div><div><span =
+style=3D"font-family: Arial; ">(just commenting these =
+lines):</span></div><div><span style=3D"font-family: Arial; =
+"><br></span></div><div><span style=3D"font-family: Arial; "><div>/* =
+Disable XLB pipelining */</div><div>&nbsp; &nbsp; &nbsp;/* (cfr errate =
+292. We could do this only just before ATA PIO</div><div>&nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp;transaction and re-enable it afterwards ...) =
+*/</div><div>&nbsp; &nbsp; &nbsp;//out_be32(&amp;xlb-&gt;config, =
+in_be32(&amp;xlb-&gt;config) | =
+MPC52xx_XLB_CFG_PLDIS);</div><div><br></div><div>And with this, we have =
+10% packet loss.</div><div><br></div><div>In kernel 2.6.33, we have =
+tried the same=85 but disabling or not the pipeline, we have 55% packet =
+loss.</div><div><br></div><div>Where could i find some =
+solutions?</div><div><br></div><div>Thank =
+you</div><div><br></div><div>neorf</div></span></div><!--?xml =
+version=3D"1.0" encoding=3D"UTF-8" standalone=3D"no"?-->
+
+</body></html>=
+
+--Apple-Mail=_E64F5379-6112-484F-A674-411F41B196AF--
