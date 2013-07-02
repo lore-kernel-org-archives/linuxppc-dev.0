@@ -1,37 +1,21 @@
-Return-Path: <brueckner@linux.vnet.ibm.com>
-Received: from e06smtp18.uk.ibm.com (e06smtp18.uk.ibm.com [195.75.94.114])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e06smtp18.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 97FD92C0097
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2013 01:07:37 +1000 (EST)
-Received: from /spool/local
- by e06smtp18.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <brueckner@linux.vnet.ibm.com>;
- Tue, 2 Jul 2013 16:02:00 +0100
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 84F741B08061
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2013 16:07:31 +0100 (BST)
-Received: from d06av08.portsmouth.uk.ibm.com (d06av08.portsmouth.uk.ibm.com
- [9.149.37.249])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r62F7Js348824356
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Jul 2013 15:07:19 GMT
-Received: from d06av08.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av08.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r62F7UFm001872
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Jul 2013 09:07:30 -0600
-From: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, jslaby@suse.cz, gregkh@linuxfoundation.org
-Subject: [PATCH 2/2] tty/hvc_iucv: Disconnect IUCV connection when lowering DTR
-Date: Tue,  2 Jul 2013 17:07:15 +0200
-Message-Id: <1372777635-10423-3-git-send-email-brueckner@linux.vnet.ibm.com>
-In-Reply-To: <1372777635-10423-1-git-send-email-brueckner@linux.vnet.ibm.com>
-References: <1372777635-10423-1-git-send-email-brueckner@linux.vnet.ibm.com>
-Cc: linux-s390@vger.kernel.org, heiko.carstens@de.ibm.com,
- linux-kernel@vger.kernel.org, brueckner@linux.vnet.com, schwidefsky@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ by ozlabs.org (Postfix) with ESMTP id 2D6C42C00A3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2013 01:12:31 +1000 (EST)
+Message-ID: <51D2EDD7.9060205@suse.de>
+Date: Tue, 02 Jul 2013 17:12:23 +0200
+From: Alexander Graf <agraf@suse.de>
+MIME-Version: 1.0
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH -V3 2/4] powerpc/kvm: Contiguous memory allocator based
+ hash page table allocation
+References: <1372743918-12293-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1372743918-12293-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1372743918-12293-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: kvm@vger.kernel.org, mina86@mina86.com, linux-mm@kvack.org,
+ paulus@samba.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ m.szyprowski@samsung.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,122 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Implement the dtr_rts() hvc console callback to improve control when to
-disconnect the IUCV connection.  Previously, the IUCV connection was
-disconnected during the notifier_del() callback, i.e., when the last file
-descriptor to the hvc terminal device was closed.
+On 07/02/2013 07:45 AM, Aneesh Kumar K.V wrote:
+> From: "Aneesh Kumar K.V"<aneesh.kumar@linux.vnet.ibm.com>
+>
+> Powerpc architecture uses a hash based page table mechanism for mapping virtual
+> addresses to physical address. The architecture require this hash page table to
+> be physically contiguous. With KVM on Powerpc currently we use early reservation
+> mechanism for allocating guest hash page table. This implies that we need to
+> reserve a big memory region to ensure we can create large number of guest
+> simultaneously with KVM on Power. Another disadvantage is that the reserved memory
+> is not available to rest of the subsystems and and that implies we limit the total
+> available memory in the host.
+>
+> This patch series switch the guest hash page table allocation to use
+> contiguous memory allocator.
+>
+> Signed-off-by: Aneesh Kumar K.V<aneesh.kumar@linux.vnet.ibm.com>
 
-Recent changes in login programs caused undesired disconnects during the
-login phase.  To prevent these kind of disconnects, implement the dtr_rts
-callback to implicitly handle the HUPCL termios control via the hvc_console
-driver.
+Is CMA a mandatory option in the kernel? Or can it be optionally 
+disabled? If it can be disabled, we should keep the preallocated 
+fallback case around for systems that have CMA disabled.
 
-Signed-off-by: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
----
- drivers/tty/hvc/hvc_iucv.c |   64 +++++++++++++++++++++++++++++++++++---------
- 1 files changed, 51 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/tty/hvc/hvc_iucv.c b/drivers/tty/hvc/hvc_iucv.c
-index b6f7d52..bb08676 100644
---- a/drivers/tty/hvc/hvc_iucv.c
-+++ b/drivers/tty/hvc/hvc_iucv.c
-@@ -656,21 +656,64 @@ static void hvc_iucv_notifier_hangup(struct hvc_struct *hp, int id)
- }
- 
- /**
-+ * hvc_iucv_dtr_rts() - HVC notifier for handling DTR/RTS
-+ * @hp:		Pointer the HVC device (struct hvc_struct)
-+ * @raise:	Non-zero to raise or zero to lower DTR/RTS lines
-+ *
-+ * This routine notifies the HVC back-end to raise or lower DTR/RTS
-+ * lines.  Raising DTR/RTS is ignored.  Lowering DTR/RTS indicates to
-+ * drop the IUCV connection (similar to hang up the modem).
-+ */
-+static void hvc_iucv_dtr_rts(struct hvc_struct *hp, int raise)
-+{
-+	struct hvc_iucv_private *priv;
-+	struct iucv_path        *path;
-+
-+	/* Raising the DTR/RTS is ignored as IUCV connections can be
-+	 * established at any times.
-+	 */
-+	if (raise)
-+		return;
-+
-+	priv = hvc_iucv_get_private(hp->vtermno);
-+	if (!priv)
-+		return;
-+
-+	/* Lowering the DTR/RTS lines disconnects an established IUCV
-+	 * connection.
-+	 */
-+	flush_sndbuf_sync(priv);
-+
-+	spin_lock_bh(&priv->lock);
-+	path = priv->path;		/* save reference to IUCV path */
-+	priv->path = NULL;
-+	priv->iucv_state = IUCV_DISCONN;
-+	spin_unlock_bh(&priv->lock);
-+
-+	/* Sever IUCV path outside of priv->lock due to lock ordering of:
-+	 * priv->lock <--> iucv_table_lock */
-+	if (path) {
-+		iucv_path_sever(path, NULL);
-+		iucv_path_free(path);
-+	}
-+}
-+
-+/**
-  * hvc_iucv_notifier_del() - HVC notifier for closing a TTY for the last time.
-  * @hp:		Pointer to the HVC device (struct hvc_struct)
-  * @id:		Additional data (originally passed to hvc_alloc):
-  *		the index of an struct hvc_iucv_private instance.
-  *
-  * This routine notifies the HVC back-end that the last tty device fd has been
-- * closed.  The function calls hvc_iucv_cleanup() to clean up the struct
-- * hvc_iucv_private instance.
-+ * closed.  The function cleans up tty resources.  The clean-up of the IUCV
-+ * connection is done in hvc_iucv_dtr_rts() and depends on the HUPCL termios
-+ * control setting.
-  *
-  * Locking:	struct hvc_iucv_private->lock
-  */
- static void hvc_iucv_notifier_del(struct hvc_struct *hp, int id)
- {
- 	struct hvc_iucv_private *priv;
--	struct iucv_path	*path;
- 
- 	priv = hvc_iucv_get_private(id);
- 	if (!priv)
-@@ -679,17 +722,11 @@ static void hvc_iucv_notifier_del(struct hvc_struct *hp, int id)
- 	flush_sndbuf_sync(priv);
- 
- 	spin_lock_bh(&priv->lock);
--	path = priv->path;		/* save reference to IUCV path */
--	priv->path = NULL;
--	hvc_iucv_cleanup(priv);
-+	destroy_tty_buffer_list(&priv->tty_outqueue);
-+	destroy_tty_buffer_list(&priv->tty_inqueue);
-+	priv->tty_state = TTY_CLOSED;
-+	priv->sndbuf_len = 0;
- 	spin_unlock_bh(&priv->lock);
--
--	/* sever IUCV path outside of priv->lock due to lock ordering of:
--	 * priv->lock <--> iucv_table_lock */
--	if (path) {
--		iucv_path_sever(path, NULL);
--		iucv_path_free(path);
--	}
- }
- 
- /**
-@@ -931,6 +968,7 @@ static const struct hv_ops hvc_iucv_ops = {
- 	.notifier_add = hvc_iucv_notifier_add,
- 	.notifier_del = hvc_iucv_notifier_del,
- 	.notifier_hangup = hvc_iucv_notifier_hangup,
-+	.dtr_rts = hvc_iucv_dtr_rts,
- };
- 
- /* Suspend / resume device operations */
--- 
-1.7.5.4
+Alex
