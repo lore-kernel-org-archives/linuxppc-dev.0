@@ -1,16 +1,16 @@
 Return-Path: <B38951@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B03862C00A3
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2013 12:23:48 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 878C82C008A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2013 12:25:33 +1000 (EST)
 From: Jia Hongtao <hongtao.jia@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <B07421@freescale.com>
 Subject: [PATCH] powerpc/msi: Fix compile error on mpc83xx
-Date: Tue, 2 Jul 2013 09:34:52 +0800
-Message-ID: <1372728892-31501-1-git-send-email-hongtao.jia@freescale.com>
+Date: Tue, 2 Jul 2013 09:36:37 +0800
+Message-ID: <1372728997-31665-1-git-send-email-hongtao.jia@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: b38951@freescale.com
@@ -29,7 +29,6 @@ The compile error log like:
 arch/powerpc/sysdev/built-in.o: In function `fsl_of_msi_probe':
 fsl_msi.c:(.text+0x150c): undefined reference to `fsl_mpic_primary_get_version'
 
-Signed-off-by: Jia Hongtao <B38951@freescale.com>
 Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
 ---
  arch/powerpc/include/asm/mpic.h | 7 +++++++
