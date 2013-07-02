@@ -1,32 +1,20 @@
-Return-Path: <michael@ellerman.id.au>
-Message-ID: <1372726396.17904.1.camel@concordia>
-Subject: Re: [PATCHv4 02/11] pci: use weak functions for MSI arch-specific
- functions
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Date: Tue, 02 Jul 2013 10:53:16 +1000
-In-Reply-To: <1372686136-1370-3-git-send-email-thomas.petazzoni@free-electrons.com>
-References: <1372686136-1370-1-git-send-email-thomas.petazzoni@free-electrons.com>
- <1372686136-1370-3-git-send-email-thomas.petazzoni@free-electrons.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id 9B0862C0077
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2013 10:54:26 +1000 (EST)
+Date: Tue, 2 Jul 2013 10:54:15 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: linux-next: build failure after merge of the powerpc tree
+Message-Id: <20130702105415.8579055c3539bbb3e3cacfbc@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>,
- linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
- linux-pci@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
- Bjorn Helgaas <bhelgaas@google.com>, Thierry Reding <thierry.reding@gmail.com>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- sparclinux@vger.kernel.org, linux-s390@vger.kernel.org,
- Russell King <linux@arm.linux.org.uk>, x86@kernel.org,
- Ingo Molnar <mingo@redhat.com>,
- Ezequiel Garcia <ezequiel.garcia@free-electrons.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Jason Cooper <jason@lakedaemon.net>,
- Rob Herring <rob.herring@calxeda.com>, Chris Metcalf <cmetcalf@tilera.com>,
- Gregory Clement <gregory.clement@free-electrons.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Tony Luck <tony.luck@intel.com>, Ralf Baechle <ralf@linux-mips.org>,
- Maen Suleiman <maen@marvell.com>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
- linux390@de.ibm.com, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Tue__2_Jul_2013_10_54_15_+1000_6lmMRLOZs4.YIL2+"
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,16 +24,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-07-01 at 15:42 +0200, Thomas Petazzoni wrote:
-> Until now, the MSI architecture-specific functions could be overloaded
-> using a fairly complex set of #define and compile-time
-> conditionals. In order to prepare for the introduction of the msi_chip
-> infrastructure, it is desirable to switch all those functions to use
-> the 'weak' mechanism. This commit converts all the architectures that
-> were overidding those MSI functions to use the new strategy.
+--Signature=_Tue__2_Jul_2013_10_54_15_+1000_6lmMRLOZs4.YIL2+
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The MSI code used to use weak functions, until we discovered they were
-being miscompiled on some toolchains (11df1f0). I assume these days
-we're confident they work correctly.
+Hi all,
 
-cheers
+After merging the powerpc tree, today's linux-next build (x86_64
+allmodconfig) failed like this:
+
+fs/pstore/ftrace.c: In function 'pstore_ftrace_call':
+fs/pstore/ftrace.c:47:6: warning: passing argument 7 of 'psinfo->write_buf'=
+ makes integer from pointer without a cast [enabled by default]
+      sizeof(rec), psinfo);
+      ^
+fs/pstore/ftrace.c:47:6: note: expected 'size_t' but argument is of type 's=
+truct pstore_info *'
+fs/pstore/ftrace.c:47:6: error: too few arguments to function 'psinfo->writ=
+e_buf'
+
+Caused by commit 6bbbca735936 ("pstore: Pass header size in the pstore
+write callback").
+
+I have used the version from next-20130701 for today.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Tue__2_Jul_2013_10_54_15_+1000_6lmMRLOZs4.YIL2+
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.20 (GNU/Linux)
+
+iQIcBAEBCAAGBQJR0iS8AAoJEECxmPOUX5FE/BEP/iW7+HjyytorMyGWIT7qo5VC
+FqEX9wRwTGe63tTRZ/c9fds9ARm+LFruMB8az+WFbLHEloV+I0ESp3SHbVa9X4FC
+LZb3HdxjY5HRfR15tc/xwu/dRhsLVt2hyds4u3D6gsT2c+XDMWSEZlakeeUph1+z
+fShfX4S8zE//J10scU6OoYm+9dLEY1uT6pL7v2PYD5GpywX557mhtqXdroeYNmE8
+POmGmHsYZoSuJBkZW/287EC66uUHG0TUUXNMf4282NDQsjpmuiXbWfvMIESNw/6v
++X8mKiR/7ZxZqFebG+5cjiiXdhTbIbecF8D4+AMQR3lAKXy6jh8EY3hnzGN0N56g
+ltPOnSvhS4R6hjX0+6Ff0cI8YOwCrOdEqyzJVexYjSI2xNjiRRlOob94E8Tvqzi/
+eTMvBN4NUnM6Ooz4IZjMpLEmiKHw8bfBXeBcq8Utvx4N8d2gFAFZgCrDdOpYOeU+
+vdaAQWS8J1fleMpi5JJDDaA/XPfqBZbIekqzFfnjVwu2NX8vfMHR37Re0HoEAIw2
+EZsfEFRlUR6CjGA+KcqWx1SVGemuZ8wXsevu14LgbUS2sMiaI5iX/DfpU548oW3D
+KWkbWYax9lMc8ib/UKGDDHy4OCpl+vz6wJkKtuLvv95uQpzqngrPWHAz+XvPGF+A
+m8+Rmh7sZ2hs5yaCq9so
+=qlRT
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__2_Jul_2013_10_54_15_+1000_6lmMRLOZs4.YIL2+--
