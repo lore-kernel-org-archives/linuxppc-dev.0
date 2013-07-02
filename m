@@ -1,34 +1,47 @@
-Return-Path: <michael@ellerman.id.au>
-Date: Tue, 2 Jul 2013 16:52:20 +1000
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: Re: [PATCHv4 02/11] pci: use weak functions for MSI arch-specific
- functions
-Message-ID: <20130702065220.GA20521@concordia>
-References: <1372686136-1370-1-git-send-email-thomas.petazzoni@free-electrons.com>
- <1372686136-1370-3-git-send-email-thomas.petazzoni@free-electrons.com>
- <1372726396.17904.1.camel@concordia>
- <20130702073037.55a53642@skate>
+Return-Path: <wangyun@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6544B2C016F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2013 15:33:15 +1000 (EST)
+Received: from /spool/local
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <wangyun@linux.vnet.ibm.com>;
+ Tue, 2 Jul 2013 15:23:23 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 6A3D72BB0056
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2013 15:33:07 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r625Ww5i6226284
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Jul 2013 15:32:58 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r625X5aA008804
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Jul 2013 15:33:07 +1000
+Message-ID: <51D2660A.8000401@linux.vnet.ibm.com>
+Date: Tue, 02 Jul 2013 13:32:58 +0800
+From: Michael Wang <wangyun@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130702073037.55a53642@skate>
-Cc: Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>,
- linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
- linux-pci@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
- Bjorn Helgaas <bhelgaas@google.com>, Thierry Reding <thierry.reding@gmail.com>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- sparclinux@vger.kernel.org, linux-s390@vger.kernel.org,
- Russell King <linux@arm.linux.org.uk>, x86@kernel.org,
- Ingo Molnar <mingo@redhat.com>,
- Ezequiel Garcia <ezequiel.garcia@free-electrons.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Jason Cooper <jason@lakedaemon.net>,
- Rob Herring <rob.herring@calxeda.com>, Chris Metcalf <cmetcalf@tilera.com>,
- Gregory Clement <gregory.clement@free-electrons.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Tony Luck <tony.luck@intel.com>, Ralf Baechle <ralf@linux-mips.org>,
- Maen Suleiman <maen@marvell.com>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
- linux390@de.ibm.com, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 10/45] smp: Use get/put_online_cpus_atomic() to prevent
+ CPU offline
+References: <20130627195136.29830.10445.stgit@srivatsabhat.in.ibm.com>
+ <20130627195418.29830.34958.stgit@srivatsabhat.in.ibm.com>
+In-Reply-To: <20130627195418.29830.34958.stgit@srivatsabhat.in.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: peterz@infradead.org, fweisbec@gmail.com, Shaohua Li <shli@fusionio.com>,
+ linux-kernel@vger.kernel.org, Jan Beulich <jbeulich@suse.com>,
+ walken@google.com, mingo@kernel.org, linux-arch@vger.kernel.org,
+ vincent.guittot@linaro.org, xiaoguangrong@linux.vnet.ibm.com,
+ paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
+ linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org,
+ namhyung@kernel.org, tglx@linutronix.de, Wang YanQing <udknight@gmail.com>,
+ laijs@cn.fujitsu.com, zhong@linux.vnet.ibm.com, netdev@vger.kernel.org,
+ oleg@redhat.com, sbw@mit.edu, David.Laight@aculab.com, tj@kernel.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ liguang <lig.fnst@cn.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,39 +51,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 02, 2013 at 07:30:37AM +0200, Thomas Petazzoni wrote:
-> Dear Michael Ellerman,
+Hi, Srivatsa
+
+On 06/28/2013 03:54 AM, Srivatsa S. Bhat wrote:
+[snip]
+> @@ -625,8 +632,9 @@ EXPORT_SYMBOL(on_each_cpu_mask);
+>   * The function might sleep if the GFP flags indicates a non
+>   * atomic allocation is allowed.
+>   *
+> - * Preemption is disabled to protect against CPUs going offline but not online.
+> - * CPUs going online during the call will not be seen or sent an IPI.
+> + * We use get/put_online_cpus_atomic() to protect against CPUs going
+> + * offline but not online. CPUs going online during the call will
+> + * not be seen or sent an IPI.
+
+I was a little confused about this comment, if the offline-cpu still
+have chances to become online, then there is chances that we will pick
+it from for_each_online_cpu(), isn't it? Did I miss some point?
+
+Regards,
+Michael Wang
+
+>   *
+>   * You must not call this function with disabled interrupts or
+>   * from a hardware interrupt handler or from a bottom half handler.
+> @@ -641,26 +649,26 @@ void on_each_cpu_cond(bool (*cond_func)(int cpu, void *info),
+>  	might_sleep_if(gfp_flags & __GFP_WAIT);
 > 
-> On Tue, 02 Jul 2013 10:53:16 +1000, Michael Ellerman wrote:
-> > On Mon, 2013-07-01 at 15:42 +0200, Thomas Petazzoni wrote:
-> > > Until now, the MSI architecture-specific functions could be overloaded
-> > > using a fairly complex set of #define and compile-time
-> > > conditionals. In order to prepare for the introduction of the msi_chip
-> > > infrastructure, it is desirable to switch all those functions to use
-> > > the 'weak' mechanism. This commit converts all the architectures that
-> > > were overidding those MSI functions to use the new strategy.
-> > 
-> > The MSI code used to use weak functions, until we discovered they were
-> > being miscompiled on some toolchains (11df1f0). I assume these days
-> > we're confident they work correctly.
+>  	if (likely(zalloc_cpumask_var(&cpus, (gfp_flags|__GFP_NOWARN)))) {
+> -		preempt_disable();
+> +		get_online_cpus_atomic();
+>  		for_each_online_cpu(cpu)
+>  			if (cond_func(cpu, info))
+>  				cpumask_set_cpu(cpu, cpus);
+>  		on_each_cpu_mask(cpus, func, info, wait);
+> -		preempt_enable();
+> +		put_online_cpus_atomic();
+>  		free_cpumask_var(cpus);
+>  	} else {
+>  		/*
+>  		 * No free cpumask, bother. No matter, we'll
+>  		 * just have to IPI them one by one.
+>  		 */
+> -		preempt_disable();
+> +		get_online_cpus_atomic();
+>  		for_each_online_cpu(cpu)
+>  			if (cond_func(cpu, info)) {
+>  				ret = smp_call_function_single(cpu, func,
+>  								info, wait);
+>  				WARN_ON_ONCE(!ret);
+>  			}
+> -		preempt_enable();
+> +		put_online_cpus_atomic();
+>  	}
+>  }
+>  EXPORT_SYMBOL(on_each_cpu_cond);
 > 
-> Hum, interesting. I see from your commit that gcc 4.3.2 was apparently
-> affected, and gcc 4.3.x is not /that/ old. Bjorn, what's your point of
-> view on this?
-
-Stop press.
-
-I went back and found the old threads on this, it's been a while. It
-looks like it was only gcc 4.1.[01] that miscompiled. The reference to
-gcc 4.3.2 was WRT ellision of the unused code, which is a separate
-issue.
-
-The kernel blacklists gcc 4.1.[01] (see f9d1425), so weak should be
-safe to use.
-
-We merged the change to the PCI code anyway because we thought it was
-nicer and it also avoided any problems with weak.
-
-So pretend I never said anything :)
-
-cheers
