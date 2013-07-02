@@ -1,19 +1,20 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- by ozlabs.org (Postfix) with ESMTP id C22C02C00AF
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2013 11:02:56 +1000 (EST)
-Subject: Re: [PATCH 1/2] powerpc/booke64: Use common defines for AltiVec
- interrupts numbers
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <1372726613.8183.104@snotra>
-Date: Tue, 2 Jul 2013 03:02:51 +0200
-Message-Id: <CC31298B-CEB3-4F35-9400-7C5CEC50BF66@suse.de>
-References: <1372726613.8183.104@snotra>
-To: Scott Wood <scottwood@freescale.com>
-Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 0A8202C008C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2013 12:00:39 +1000 (EST)
+Message-ID: <1372730420.4820.21.camel@pasglop>
+Subject: Re: linux-next: build failure after merge of the powerpc tree
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Tue, 02 Jul 2013 12:00:20 +1000
+In-Reply-To: <20130702105415.8579055c3539bbb3e3cacfbc@canb.auug.org.au>
+References: <20130702105415.8579055c3539bbb3e3cacfbc@canb.auug.org.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linux-next@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,43 +24,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 2013-07-02 at 10:54 +1000, Stephen Rothwell wrote:
+> Hi all,
+> 
+> After merging the powerpc tree, today's linux-next build (x86_64
+> allmodconfig) failed like this:
+> 
+> fs/pstore/ftrace.c: In function 'pstore_ftrace_call':
+> fs/pstore/ftrace.c:47:6: warning: passing argument 7 of 'psinfo->write_buf' makes integer from pointer without a cast [enabled by default]
+>       sizeof(rec), psinfo);
+>       ^
+> fs/pstore/ftrace.c:47:6: note: expected 'size_t' but argument is of type 'struct pstore_info *'
+> fs/pstore/ftrace.c:47:6: error: too few arguments to function 'psinfo->write_buf'
+> 
+> Caused by commit 6bbbca735936 ("pstore: Pass header size in the pstore
+> write callback").
+> 
+> I have used the version from next-20130701 for today.
 
-On 02.07.2013, at 02:56, Scott Wood wrote:
+Interestingly enough I didn't see that when testing a x86_64 build, I
+might have failed to test with ftrace enabled.
 
-> On 07/01/2013 07:18:21 PM, Alexander Graf wrote:
->> On 01.07.2013, at 17:35, Mihai Caraman wrote:
->> > On Book3E some SPE/FP/AltiVec interrupts share the same number. Use
->> > common defines to indentify these numbers.
->> So why didn't this happen from the beginning?
->=20
-> Ask Kumar.
->=20
->> Why the change?
->=20
-> So we can remove this hack in kvm_asm.h:
->=20
-> /*
-> * TODO: Unify 32-bit and 64-bit kernel exception handlers to use same =
-defines
-> */
-> #define BOOKE_INTERRUPT_SPE_UNAVAIL =
-BOOKE_INTERRUPT_SPE_ALTIVEC_UNAVAIL
-> #define BOOKE_INTERRUPT_SPE_FP_DATA =
-BOOKE_INTERRUPT_SPE_FP_DATA_ALTIVEC_ASSIST
-> #define BOOKE_INTERRUPT_ALTIVEC_UNAVAIL =
-BOOKE_INTERRUPT_SPE_ALTIVEC_UNAVAIL
-> #define BOOKE_INTERRUPT_ALTIVEC_ASSIST \
->                                =
-BOOKE_INTERRUPT_SPE_FP_DATA_ALTIVEC_ASSIST
->=20
-> It was added as a compilation fix, and it was less intrusive to =
-temporarily fix it this way.
->=20
-> I am curious why the above code wasn't removed at the end of this =
-patchset. :-)
+Aruna, please send a fix ASAP.
 
-Yeah, and why the intention isn't clearly written down in the patch =
-description ;)
-
-
-Alex
+Cheers,
+Ben.
