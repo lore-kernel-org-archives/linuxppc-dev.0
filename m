@@ -1,24 +1,34 @@
-Return-Path: <R65777@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 94E2F2C02EF
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2013 15:37:44 +1000 (EST)
-From: Bhushan Bharat-R65777 <R65777@freescale.com>
-To: Tiejun Chen <tiejun.chen@windriver.com>, "benh@kernel.crashing.org"
- <benh@kernel.crashing.org>
-Subject: RE: [v2][PATCH 4/7] book3e/kexec/kdump: introduce a kexec kernel flag
-Date: Tue, 2 Jul 2013 05:37:36 +0000
-Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D070947A5@039-SN2MPN1-011.039d.mgd.msft.net>
-References: <1371714797-7898-1-git-send-email-tiejun.chen@windriver.com>
- <1371714797-7898-5-git-send-email-tiejun.chen@windriver.com>
-In-Reply-To: <1371714797-7898-5-git-send-email-tiejun.chen@windriver.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 242D32C007B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2013 15:45:29 +1000 (EST)
+Received: from /spool/local
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 2 Jul 2013 15:35:40 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id CB65E2BB004F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2013 15:45:25 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r625USrd49807598
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Jul 2013 15:30:28 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r625jOHL001692
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Jul 2013 15:45:25 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, agraf@suse.de,
+ m.szyprowski@samsung.com, mina86@mina86.com
+Subject: [PATCH -V3 1/4] mm/cma: Move dma contiguous changes into a seperate
+ config
+Date: Tue,  2 Jul 2013 11:15:15 +0530
+Message-Id: <1372743918-12293-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,154 +38,191 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
+We want to use CMA for allocating hash page table and real mode area for
+PPC64. Hence move DMA contiguous related changes into a seperate config
+so that ppc64 can enable CMA without requiring DMA contiguous.
 
-> -----Original Message-----
-> From: Linuxppc-dev [mailto:linuxppc-dev-
-> bounces+bharat.bhushan=3Dfreescale.com@lists.ozlabs.org] On Behalf Of Tie=
-jun Chen
-> Sent: Thursday, June 20, 2013 1:23 PM
-> To: benh@kernel.crashing.org
-> Cc: linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org
-> Subject: [v2][PATCH 4/7] book3e/kexec/kdump: introduce a kexec kernel fla=
-g
->=20
-> We need to introduce a flag to indicate we're already running
-> a kexec kernel then we can go proper path. For example, We
-> shouldn't access spin_table from the bootloader to up any secondary
-> cpu for kexec kernel, and kexec kernel already know how to jump to
-> generic_secondary_smp_init.
->=20
-> Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
-> ---
->  arch/powerpc/include/asm/smp.h    |    3 +++
->  arch/powerpc/kernel/head_64.S     |   12 ++++++++++++
->  arch/powerpc/kernel/misc_64.S     |    6 ++++++
->  arch/powerpc/platforms/85xx/smp.c |   14 ++++++++++++++
->  4 files changed, 35 insertions(+)
->=20
-> diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/sm=
-p.h
-> index ffbaabe..fbc3d9b 100644
-> --- a/arch/powerpc/include/asm/smp.h
-> +++ b/arch/powerpc/include/asm/smp.h
-> @@ -200,6 +200,9 @@ extern void generic_secondary_thread_init(void);
->  extern unsigned long __secondary_hold_spinloop;
->  extern unsigned long __secondary_hold_acknowledge;
->  extern char __secondary_hold;
-> +#if defined(CONFIG_KEXEC) || defined(CONFIG_CRASH_DUMP)
-> +extern unsigned long __run_at_kexec;
-> +#endif
->=20
->  extern void __early_start(void);
->  #endif /* __ASSEMBLY__ */
-> diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.=
-S
-> index 3e19ba2..ffa4b18 100644
-> --- a/arch/powerpc/kernel/head_64.S
-> +++ b/arch/powerpc/kernel/head_64.S
-> @@ -89,6 +89,12 @@ __secondary_hold_spinloop:
->  __secondary_hold_acknowledge:
->  	.llong	0x0
->=20
-> +#if defined(CONFIG_KEXEC) || defined(CONFIG_CRASH_DUMP)
-> +	.globl	__run_at_kexec
-> +__run_at_kexec:
-> +	.llong	0x0	/* Flag for the secondary kernel from kexec. */
-> +#endif
-> +
->  #ifdef CONFIG_RELOCATABLE
->  	/* This flag is set to 1 by a loader if the kernel should run
->  	 * at the loaded address instead of the linked address.  This
-> @@ -417,6 +423,12 @@ _STATIC(__after_prom_start)
->  #if defined(CONFIG_PPC_BOOK3E)
->  	tovirt(r26,r26)			/* on booke, we already run at
-> PAGE_OFFSET */
->  #endif
-> +#if defined(CONFIG_KEXEC) || defined(CONFIG_CRASH_DUMP)
-> +	/* If relocated we need to restore this flag on that relocated address.=
- */
-> +	ld	r7,__run_at_kexec-_stext(r26)
-> +	std	r7,__run_at_kexec-_stext(r26)
-> +#endif
-> +
->  	lwz	r7,__run_at_load-_stext(r26)
->  #if defined(CONFIG_PPC_BOOK3E)
->  	tophys(r26,r26)			/* Restore for the remains. */
-> diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.=
-S
-> index 20cbb98..c89aead 100644
-> --- a/arch/powerpc/kernel/misc_64.S
-> +++ b/arch/powerpc/kernel/misc_64.S
-> @@ -619,6 +619,12 @@ _GLOBAL(kexec_sequence)
->  	bl	.copy_and_flush	/* (dest, src, copy limit, start offset) */
->  1:	/* assume normal blr return */
->=20
-> +	/* notify we're going into kexec kernel for SMP. */
-> +	LOAD_REG_ADDR(r3,__run_at_kexec)
-> +	li	r4,1
-> +	std	r4,0(r3)
-> +	sync
-> +
->  	/* release other cpus to the new kernel secondary start at 0x60 */
->  	mflr	r5
->  	li	r6,1
-> diff --git a/arch/powerpc/platforms/85xx/smp.c
-> b/arch/powerpc/platforms/85xx/smp.c
-> index 6a17599..b308373 100644
-> --- a/arch/powerpc/platforms/85xx/smp.c
-> +++ b/arch/powerpc/platforms/85xx/smp.c
-> @@ -150,6 +150,9 @@ static int __cpuinit smp_85xx_kick_cpu(int nr)
->  	int hw_cpu =3D get_hard_smp_processor_id(nr);
->  	int ioremappable;
->  	int ret =3D 0;
-> +#if defined(CONFIG_KEXEC) || defined(CONFIG_CRASH_DUMP)
-> +	unsigned long *ptr;
-> +#endif
+Acked-by: Michal Nazarewicz <mina86@mina86.com>
+Acked-by: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/arm/configs/omap2plus_defconfig  |  2 +-
+ arch/arm/configs/tegra_defconfig      |  2 +-
+ arch/arm/include/asm/dma-contiguous.h |  2 +-
+ arch/arm/mm/dma-mapping.c             |  6 +++---
+ drivers/base/Kconfig                  | 20 ++++----------------
+ drivers/base/Makefile                 |  2 +-
+ include/linux/dma-contiguous.h        |  2 +-
+ mm/Kconfig                            | 24 ++++++++++++++++++++++++
+ 8 files changed, 36 insertions(+), 24 deletions(-)
 
-What about if we can remove the ifdef around *ptr ...
-
->=20
->  	WARN_ON(nr < 0 || nr >=3D NR_CPUS);
->  	WARN_ON(hw_cpu < 0 || hw_cpu >=3D NR_CPUS);
-> @@ -238,11 +241,22 @@ out:
->  #else
->  	smp_generic_kick_cpu(nr);
->=20
-> +#if defined(CONFIG_KEXEC) || defined(CONFIG_CRASH_DUMP)
-> +	ptr  =3D (unsigned long *)((unsigned long)&__run_at_kexec);
-
-... #endif here ...
-
-> +	/* We shouldn't access spin_table from the bootloader to up any
-> +	 * secondary cpu for kexec kernel, and kexec kernel already
-> +	 * know how to jump to generic_secondary_smp_init.
-> +	 */
-> +	if (!*ptr) {
-> +#endif
-
-... remove #endif ...
-
->  	flush_spin_table(spin_table);
->  	out_be32(&spin_table->pir, hw_cpu);
->  	out_be64((u64 *)(&spin_table->addr_h),
->  	  __pa((u64)*((unsigned long long *)generic_secondary_smp_init)));
->  	flush_spin_table(spin_table);
-> +#if defined(CONFIG_KEXEC) || defined(CONFIG_CRASH_DUMP)
-> +	}
-> +#endif
-
---- remove above 3 lines
-
--Bharat
-
->  #endif
->=20
->  	local_irq_restore(flags);
-> --
-> 1.7.9.5
->=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+diff --git a/arch/arm/configs/omap2plus_defconfig b/arch/arm/configs/omap2plus_defconfig
+index abbe319..098268f 100644
+--- a/arch/arm/configs/omap2plus_defconfig
++++ b/arch/arm/configs/omap2plus_defconfig
+@@ -71,7 +71,7 @@ CONFIG_MAC80211=m
+ CONFIG_MAC80211_RC_PID=y
+ CONFIG_MAC80211_RC_DEFAULT_PID=y
+ CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+-CONFIG_CMA=y
++CONFIG_DMA_CMA=y
+ CONFIG_CONNECTOR=y
+ CONFIG_DEVTMPFS=y
+ CONFIG_DEVTMPFS_MOUNT=y
+diff --git a/arch/arm/configs/tegra_defconfig b/arch/arm/configs/tegra_defconfig
+index f7ba3161..34ae8f2 100644
+--- a/arch/arm/configs/tegra_defconfig
++++ b/arch/arm/configs/tegra_defconfig
+@@ -79,7 +79,7 @@ CONFIG_RFKILL_GPIO=y
+ CONFIG_DEVTMPFS=y
+ CONFIG_DEVTMPFS_MOUNT=y
+ # CONFIG_FIRMWARE_IN_KERNEL is not set
+-CONFIG_CMA=y
++CONFIG_DMA_CMA=y
+ CONFIG_MTD=y
+ CONFIG_MTD_CHAR=y
+ CONFIG_MTD_M25P80=y
+diff --git a/arch/arm/include/asm/dma-contiguous.h b/arch/arm/include/asm/dma-contiguous.h
+index 3ed37b4..e072bb2 100644
+--- a/arch/arm/include/asm/dma-contiguous.h
++++ b/arch/arm/include/asm/dma-contiguous.h
+@@ -2,7 +2,7 @@
+ #define ASMARM_DMA_CONTIGUOUS_H
+ 
+ #ifdef __KERNEL__
+-#ifdef CONFIG_CMA
++#ifdef CONFIG_DMA_CMA
+ 
+ #include <linux/types.h>
+ #include <asm-generic/dma-contiguous.h>
+diff --git a/arch/arm/mm/dma-mapping.c b/arch/arm/mm/dma-mapping.c
+index ef3e0f3..1fb40dc 100644
+--- a/arch/arm/mm/dma-mapping.c
++++ b/arch/arm/mm/dma-mapping.c
+@@ -358,7 +358,7 @@ static int __init atomic_pool_init(void)
+ 	if (!pages)
+ 		goto no_pages;
+ 
+-	if (IS_ENABLED(CONFIG_CMA))
++	if (IS_ENABLED(CONFIG_DMA_CMA))
+ 		ptr = __alloc_from_contiguous(NULL, pool->size, prot, &page,
+ 					      atomic_pool_init);
+ 	else
+@@ -670,7 +670,7 @@ static void *__dma_alloc(struct device *dev, size_t size, dma_addr_t *handle,
+ 		addr = __alloc_simple_buffer(dev, size, gfp, &page);
+ 	else if (!(gfp & __GFP_WAIT))
+ 		addr = __alloc_from_pool(size, &page);
+-	else if (!IS_ENABLED(CONFIG_CMA))
++	else if (!IS_ENABLED(CONFIG_DMA_CMA))
+ 		addr = __alloc_remap_buffer(dev, size, gfp, prot, &page, caller);
+ 	else
+ 		addr = __alloc_from_contiguous(dev, size, prot, &page, caller);
+@@ -759,7 +759,7 @@ static void __arm_dma_free(struct device *dev, size_t size, void *cpu_addr,
+ 		__dma_free_buffer(page, size);
+ 	} else if (__free_from_pool(cpu_addr, size)) {
+ 		return;
+-	} else if (!IS_ENABLED(CONFIG_CMA)) {
++	} else if (!IS_ENABLED(CONFIG_DMA_CMA)) {
+ 		__dma_free_remap(cpu_addr, size);
+ 		__dma_free_buffer(page, size);
+ 	} else {
+diff --git a/drivers/base/Kconfig b/drivers/base/Kconfig
+index 07abd9d..10cd80a 100644
+--- a/drivers/base/Kconfig
++++ b/drivers/base/Kconfig
+@@ -202,11 +202,9 @@ config DMA_SHARED_BUFFER
+ 	  APIs extension; the file's descriptor can then be passed on to other
+ 	  driver.
+ 
+-config CMA
+-	bool "Contiguous Memory Allocator"
+-	depends on HAVE_DMA_CONTIGUOUS && HAVE_MEMBLOCK
+-	select MIGRATION
+-	select MEMORY_ISOLATION
++config DMA_CMA
++	bool "DMA Contiguous Memory Allocator"
++	depends on HAVE_DMA_CONTIGUOUS && CMA
+ 	help
+ 	  This enables the Contiguous Memory Allocator which allows drivers
+ 	  to allocate big physically-contiguous blocks of memory for use with
+@@ -215,17 +213,7 @@ config CMA
+ 	  For more information see <include/linux/dma-contiguous.h>.
+ 	  If unsure, say "n".
+ 
+-if CMA
+-
+-config CMA_DEBUG
+-	bool "CMA debug messages (DEVELOPMENT)"
+-	depends on DEBUG_KERNEL
+-	help
+-	  Turns on debug messages in CMA.  This produces KERN_DEBUG
+-	  messages for every CMA call as well as various messages while
+-	  processing calls such as dma_alloc_from_contiguous().
+-	  This option does not affect warning and error messages.
+-
++if  DMA_CMA
+ comment "Default contiguous memory area size:"
+ 
+ config CMA_SIZE_MBYTES
+diff --git a/drivers/base/Makefile b/drivers/base/Makefile
+index 4e22ce3..5d93bb5 100644
+--- a/drivers/base/Makefile
++++ b/drivers/base/Makefile
+@@ -6,7 +6,7 @@ obj-y			:= core.o bus.o dd.o syscore.o \
+ 			   attribute_container.o transport_class.o \
+ 			   topology.o
+ obj-$(CONFIG_DEVTMPFS)	+= devtmpfs.o
+-obj-$(CONFIG_CMA) += dma-contiguous.o
++obj-$(CONFIG_DMA_CMA) += dma-contiguous.o
+ obj-y			+= power/
+ obj-$(CONFIG_HAS_DMA)	+= dma-mapping.o
+ obj-$(CONFIG_HAVE_GENERIC_DMA_COHERENT) += dma-coherent.o
+diff --git a/include/linux/dma-contiguous.h b/include/linux/dma-contiguous.h
+index 01b5c84..00141d3 100644
+--- a/include/linux/dma-contiguous.h
++++ b/include/linux/dma-contiguous.h
+@@ -57,7 +57,7 @@ struct cma;
+ struct page;
+ struct device;
+ 
+-#ifdef CONFIG_CMA
++#ifdef CONFIG_DMA_CMA
+ 
+ /*
+  * There is always at least global CMA area and a few optional device
+diff --git a/mm/Kconfig b/mm/Kconfig
+index e742d06..26a5f81 100644
+--- a/mm/Kconfig
++++ b/mm/Kconfig
+@@ -477,3 +477,27 @@ config FRONTSWAP
+ 	  and swap data is stored as normal on the matching swap device.
+ 
+ 	  If unsure, say Y to enable frontswap.
++
++config CMA
++	bool "Contiguous Memory Allocator"
++	depends on HAVE_MEMBLOCK
++	select MIGRATION
++	select MEMORY_ISOLATION
++	help
++	  This enables the Contiguous Memory Allocator which allows other
++	  subsystems to allocate big physically-contiguous blocks of memory.
++	  CMA reserves a region of memory and allows only movable pages to
++	  be allocated from it. This way, the kernel can use the memory for
++	  pagecache and when a subsystem requests for contiguous area, the
++	  allocated pages are migrated away to serve the contiguous request.
++
++	  If unsure, say "n".
++
++config CMA_DEBUG
++	bool "CMA debug messages (DEVELOPMENT)"
++	depends on DEBUG_KERNEL && CMA
++	help
++	  Turns on debug messages in CMA.  This produces KERN_DEBUG
++	  messages for every CMA call as well as various messages while
++	  processing calls such as dma_alloc_from_contiguous().
++	  This option does not affect warning and error messages.
+-- 
+1.8.1.2
