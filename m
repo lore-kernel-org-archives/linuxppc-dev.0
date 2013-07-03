@@ -1,25 +1,19 @@
-Return-Path: <B07421@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe010.messaging.microsoft.com [216.32.180.30])
+Return-Path: <ra8135@perf2farm5.am.freescale.net>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C7F552C008C
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jul 2013 06:38:43 +1000 (EST)
-Date: Wed, 3 Jul 2013 15:38:27 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 1/2] powerpc: enable the relocatable support for the fsl
- booke 32bit kernel
-To: Kevin Hao <haokexin@gmail.com>
-References: <20130702032447.GA26391@pek-khao-d1.corp.ad.wrs.com>
- <1372804758.8183.124@snotra>
- <20130703030044.GA25190@pek-khao-d1.corp.ad.wrs.com>
-In-Reply-To: <20130703030044.GA25190@pek-khao-d1.corp.ad.wrs.com> (from
- haokexin@gmail.com on Tue Jul  2 22:00:44 2013)
-Message-ID: <1372883907.8183.151@snotra>
+ by ozlabs.org (Postfix) with ESMTPS id A0C6D2C00A6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jul 2013 07:28:28 +1000 (EST)
+From: <James.Yang@freescale.com>
+To: <benh@kernel.crashing.org>, <scottwood@freescale.com>
+Subject: [PATCH] Emulate sync instruction variants
+Date: Wed, 3 Jul 2013 16:26:47 -0500
+Message-ID: <1372886807-12109-1-git-send-email-James.Yang@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: James Yang <James.Yang@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,24 +23,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/02/2013 10:00:44 PM, Kevin Hao wrote:
-> On Tue, Jul 02, 2013 at 05:39:18PM -0500, Scott Wood wrote:
-> > How much overhead (space and time) is this really?
->=20
-> The following is the additional sections when relocatable is enabled =20
-> for
-> a p2020rdb board.
->    section        size
->   .dynsym       000007f0
->   .dynstr       00000926
->   .dynamic      00000080
->   .hash         00000388
->   .interp       00000011
->   .rela.dyn     00215250
->=20
-> The time for the relocation is about 32ms on a p2020rdb board.
+From: James Yang <James.Yang@freescale.com>
 
-Hmm... more relocations than I expected.  What percentage is this of =20
-the total image size?
+Reserved fields of the sync instruction have been used for other
+instructions (e.g. lwsync).  On processors that do not support variants
+of the sync instruction, emulate it by executing a sync to subsume the
+effect of the intended instruction.
 
--Scott=
+Signed-off-by: James Yang <James.Yang@freescale.com>
+---
+ arch/powerpc/include/asm/ppc-opcode.h |    2 ++
+ arch/powerpc/kernel/traps.c           |    7 +++++++
+ 2 files changed, 9 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+index eccfc16..0142eb2 100644
+--- a/arch/powerpc/include/asm/ppc-opcode.h
++++ b/arch/powerpc/include/asm/ppc-opcode.h
+@@ -96,6 +96,8 @@
+ #define PPC_INST_LSWX			0x7c00042a
+ #define PPC_INST_LWARX			0x7c000028
+ #define PPC_INST_LWSYNC			0x7c2004ac
++#define PPC_INST_SYNC			0x7c0004ac
++#define PPC_INST_SYNC_MASK		0xfc0007fe
+ #define PPC_INST_LXVD2X			0x7c000698
+ #define PPC_INST_MCRXR			0x7c000400
+ #define PPC_INST_MCRXR_MASK		0xfc0007fe
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index a98adc7..c3ceaa2 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -1018,6 +1018,13 @@ static int emulate_instruction(struct pt_regs *regs)
+ 		return emulate_isel(regs, instword);
+ 	}
+ 
++	/* Emulate sync instruction variants */
++	if ((instword & PPC_INST_SYNC_MASK) == PPC_INST_SYNC) {
++		PPC_WARN_EMULATED(sync, regs);
++		asm volatile ("sync");
++		return 0;
++	}
++
+ #ifdef CONFIG_PPC64
+ 	/* Emulate the mfspr rD, DSCR. */
+ 	if ((((instword & PPC_INST_MFSPR_DSCR_USER_MASK) ==
+-- 
+1.7.0.4
