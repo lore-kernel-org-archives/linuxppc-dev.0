@@ -1,23 +1,18 @@
-Return-Path: <B02008@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 080602C0439
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2013 23:31:12 +1000 (EST)
-From: Mihai Caraman <mihai.caraman@freescale.com>
-To: <kvm-ppc@vger.kernel.org>
-Subject: [PATCH 2/2] KVM: PPC: Book3E: Emulate MCSRR0/1 SPR and rfmci
- instruction
-Date: Wed, 3 Jul 2013 16:30:55 +0300
-Message-ID: <1372858255-19708-2-git-send-email-mihai.caraman@freescale.com>
-In-Reply-To: <1372858255-19708-1-git-send-email-mihai.caraman@freescale.com>
-References: <1372858255-19708-1-git-send-email-mihai.caraman@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- kvm@vger.kernel.org
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ by ozlabs.org (Postfix) with ESMTP id DC7272C007B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2013 23:45:15 +1000 (EST)
+Subject: Re: [PATCH 3/6] KVM: PPC: Book3E: Increase FPU laziness
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <1372855359-13452-4-git-send-email-mihai.caraman@freescale.com>
+Date: Wed, 3 Jul 2013 15:45:11 +0200
+Message-Id: <4A7356DD-BD24-49B3-AB17-B3237F71CF88@suse.de>
+References: <1372855359-13452-1-git-send-email-mihai.caraman@freescale.com>
+ <1372855359-13452-4-git-send-email-mihai.caraman@freescale.com>
+To: Mihai Caraman <mihai.caraman@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,104 +22,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some guests are making use of return from machine check instruction
-to do crazy things even though the 64-bit kernel doesn't handle yet
-this interrupt. Emulate MCSRR0/1 SPR and rfmci instruction accordingly.
 
-Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
----
- arch/powerpc/include/asm/kvm_host.h |    1 +
- arch/powerpc/kvm/booke_emulate.c    |   25 +++++++++++++++++++++++++
- arch/powerpc/kvm/timing.c           |    1 +
- 3 files changed, 27 insertions(+), 0 deletions(-)
+On 03.07.2013, at 14:42, Mihai Caraman wrote:
 
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index af326cd..0466789 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -148,6 +148,7 @@ enum kvm_exit_types {
- 	EMULATED_TLBWE_EXITS,
- 	EMULATED_RFI_EXITS,
- 	EMULATED_RFCI_EXITS,
-+	EMULATED_RFMCI_EXITS,
- 	DEC_EXITS,
- 	EXT_INTR_EXITS,
- 	HALT_WAKEUP,
-diff --git a/arch/powerpc/kvm/booke_emulate.c b/arch/powerpc/kvm/booke_emulate.c
-index 27a4b28..aaff1b7 100644
---- a/arch/powerpc/kvm/booke_emulate.c
-+++ b/arch/powerpc/kvm/booke_emulate.c
-@@ -23,6 +23,7 @@
- 
- #include "booke.h"
- 
-+#define OP_19_XOP_RFMCI   38
- #define OP_19_XOP_RFI     50
- #define OP_19_XOP_RFCI    51
- 
-@@ -43,6 +44,12 @@ static void kvmppc_emul_rfci(struct kvm_vcpu *vcpu)
- 	kvmppc_set_msr(vcpu, vcpu->arch.csrr1);
- }
- 
-+static void kvmppc_emul_rfmci(struct kvm_vcpu *vcpu)
-+{
-+	vcpu->arch.pc = vcpu->arch.mcsrr0;
-+	kvmppc_set_msr(vcpu, vcpu->arch.mcsrr1);
-+}
-+
- int kvmppc_booke_emulate_op(struct kvm_run *run, struct kvm_vcpu *vcpu,
-                             unsigned int inst, int *advance)
- {
-@@ -65,6 +72,12 @@ int kvmppc_booke_emulate_op(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 			*advance = 0;
- 			break;
- 
-+		case OP_19_XOP_RFMCI:
-+			kvmppc_emul_rfmci(vcpu);
-+			kvmppc_set_exit_type(vcpu, EMULATED_RFMCI_EXITS);
-+			*advance = 0;
-+			break;
-+
- 		default:
- 			emulated = EMULATE_FAIL;
- 			break;
-@@ -138,6 +151,12 @@ int kvmppc_booke_emulate_mtspr(struct kvm_vcpu *vcpu, int sprn, ulong spr_val)
- 	case SPRN_DBCR1:
- 		vcpu->arch.dbg_reg.dbcr1 = spr_val;
- 		break;
-+	case SPRN_MCSRR0:
-+		vcpu->arch.mcsrr0 = spr_val;
-+		break;
-+	case SPRN_MCSRR1:
-+		vcpu->arch.mcsrr1 = spr_val;
-+		break;
- 	case SPRN_DBSR:
- 		vcpu->arch.dbsr &= ~spr_val;
- 		break;
-@@ -284,6 +303,12 @@ int kvmppc_booke_emulate_mfspr(struct kvm_vcpu *vcpu, int sprn, ulong *spr_val)
- 	case SPRN_DBCR1:
- 		*spr_val = vcpu->arch.dbg_reg.dbcr1;
- 		break;
-+	case SPRN_MCSRR0:
-+		*spr_val = vcpu->arch.mcsrr0;
-+		break;
-+	case SPRN_MCSRR1:
-+		*spr_val = vcpu->arch.mcsrr1;
-+		break;
- 	case SPRN_DBSR:
- 		*spr_val = vcpu->arch.dbsr;
- 		break;
-diff --git a/arch/powerpc/kvm/timing.c b/arch/powerpc/kvm/timing.c
-index c392d26..670f63d 100644
---- a/arch/powerpc/kvm/timing.c
-+++ b/arch/powerpc/kvm/timing.c
-@@ -129,6 +129,7 @@ static const char *kvm_exit_names[__NUMBER_OF_KVM_EXIT_TYPES] = {
- 	[EMULATED_TLBSX_EXITS] =    "EMUL_TLBSX",
- 	[EMULATED_TLBWE_EXITS] =    "EMUL_TLBWE",
- 	[EMULATED_RFI_EXITS] =      "EMUL_RFI",
-+	[EMULATED_RFMCI_EXITS] =    "EMUL_RFMCI",
- 	[DEC_EXITS] =               "DEC",
- 	[EXT_INTR_EXITS] =          "EXTINT",
- 	[HALT_WAKEUP] =             "HALT",
--- 
-1.7.3.4
+> Increase FPU laziness by calling kvmppc_load_guest_fp() just before
+> returning to guest instead of each sched in. Without this improvement
+> an interrupt may also claim floting point corrupting guest state.
+
+Not sure I follow. Could you please describe exactly what's happening?
+
+
+Alex
+
+>=20
+> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+> ---
+> arch/powerpc/kvm/booke.c  |    1 +
+> arch/powerpc/kvm/e500mc.c |    2 --
+> 2 files changed, 1 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+> index 113961f..3cae2e3 100644
+> --- a/arch/powerpc/kvm/booke.c
+> +++ b/arch/powerpc/kvm/booke.c
+> @@ -1204,6 +1204,7 @@ int kvmppc_handle_exit(struct kvm_run *run, =
+struct kvm_vcpu *vcpu,
+> 			r =3D (s << 2) | RESUME_HOST | (r & =
+RESUME_FLAG_NV);
+> 		} else {
+> 			kvmppc_lazy_ee_enable();
+> +			kvmppc_load_guest_fp(vcpu);
+> 		}
+> 	}
+>=20
+> diff --git a/arch/powerpc/kvm/e500mc.c b/arch/powerpc/kvm/e500mc.c
+> index 19c8379..09da1ac 100644
+> --- a/arch/powerpc/kvm/e500mc.c
+> +++ b/arch/powerpc/kvm/e500mc.c
+> @@ -143,8 +143,6 @@ void kvmppc_core_vcpu_load(struct kvm_vcpu *vcpu, =
+int cpu)
+> 		kvmppc_e500_tlbil_all(vcpu_e500);
+> 		__get_cpu_var(last_vcpu_on_cpu) =3D vcpu;
+> 	}
+> -
+> -	kvmppc_load_guest_fp(vcpu);
+> }
+>=20
+> void kvmppc_core_vcpu_put(struct kvm_vcpu *vcpu)
+> --=20
+> 1.7.3.4
+>=20
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
