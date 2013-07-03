@@ -1,24 +1,24 @@
-Return-Path: <B07421@freescale.com>
+Return-Path: <B42677@freescale.com>
 Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
+ (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 76DBE2C00A0
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2013 09:13:25 +1000 (EST)
-Date: Tue, 2 Jul 2013 18:13:06 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 2/2] DMA: Freescale: update driver to support 8-channel
- DMA engine
-To: <hongbo.zhang@freescale.com>
-In-Reply-To: <1372650378-2936-2-git-send-email-hongbo.zhang@freescale.com>
- (from hongbo.zhang@freescale.com on Sun Jun 30 22:46:18 2013)
-Message-ID: <1372806786.8183.127@snotra>
+ by ozlabs.org (Postfix) with ESMTPS id 7F2622C0077
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2013 12:14:51 +1000 (EST)
+From: Zhang Haijun-B42677 <B42677@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH] DTS: Add compatible list for eSDHC
+Date: Wed, 3 Jul 2013 02:14:42 +0000
+Message-ID: <99E897753B6F7048BD8CCDB4661D02E1361BBF@039-SN2MPN1-023.039d.mgd.msft.net>
+References: <99E897753B6F7048BD8CCDB4661D02E13609E1@039-SN2MPN1-023.039d.mgd.msft.net>
+ (from B42677@freescale.com on Tue Jul  2 03:00:43 2013)
+ <1372791279.8183.115@snotra>
+In-Reply-To: <1372791279.8183.115@snotra>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: vinod.koul@intel.com, linux-kernel@vger.kernel.org, vakul@freescale.com,
- Hongbo Zhang <hongbo.zhang@freescale.com>, djbw@fb.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: Fleming Andy-AFLEMING <afleming@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,109 +28,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/30/2013 10:46:18 PM, hongbo.zhang@freescale.com wrote:
-> From: Hongbo Zhang <hongbo.zhang@freescale.com>
+
+
+
+Regards
+Haijun.
+
+
+> -----Original Message-----
+> From: Wood Scott-B07421
+> Sent: Wednesday, July 03, 2013 2:55 AM
+> To: Zhang Haijun-B42677
+> Cc: Wood Scott-B07421; galak@kernel.crashing.org; linuxppc-
+> dev@lists.ozlabs.org; Fleming Andy-AFLEMING
+> Subject: Re: [PATCH] DTS: Add compatible list for eSDHC
 >=20
-> This patch adds support to 8-channel DMA engine, thus the driver =20
-> works for both
-> the new 8-channel and the legacy 4-channel DMA engines.
+> On 07/02/2013 03:00:43 AM, Zhang Haijun-B42677 wrote:
+> >
+> >
+> >
+> > Regards
+> > Haijun.
+> >
+> > > -----Original Message-----
+> > > From: Wood Scott-B07421
+> > > Sent: Tuesday, July 02, 2013 8:05 AM
+> > > To: Zhang Haijun-B42677
+> > > Cc: galak@kernel.crashing.org; linuxppc-dev@lists.ozlabs.org; Zhang
+> > > Haijun-B42677; Fleming Andy-AFLEMING
+> > > Subject: Re: [PATCH] DTS: Add compatible list for eSDHC
+> > >
+> > > On 07/01/2013 12:21:50 AM, Haijun Zhang wrote:
+> > > > Add compatible of esdhc for below board:
+> > > > p2041   p3041   p4080   p5020   p5040
+> > > >
+> > > > Signed-off-by: Haijun Zhang <Haijun.Zhang@freescale.com>
+> > > > CC: Scott Wood <scottwood@freescale.com>
+> > > > CC: Fleming Andrew-AFLEMING <AFLEMING@freescale.com>
+> > > > ---
+> > > >  arch/powerpc/boot/dts/fsl/p2041si-post.dtsi | 1 +
+> > > > arch/powerpc/boot/dts/fsl/p3041si-post.dtsi | 1 +
+> > > > arch/powerpc/boot/dts/fsl/p4080si-post.dtsi | 1 +
+> > > > arch/powerpc/boot/dts/fsl/p5020si-post.dtsi | 1 +
+> > > > arch/powerpc/boot/dts/fsl/p5040si-post.dtsi | 1 +
+> > > >  5 files changed, 5 insertions(+)
+> > >
+> > > Is there something specific that depends on this, or are you just
+> > trying
+> > > to conform to other examples?
+> > >
+> > > I don't think we need the SoC name here, given that eSDHC has a
+> > version
+> > > register that you can read (and an SVR in the unlikely case that
+> > that
+> > > isn't adequate).  If you did end up relying on this device tree
+> > change,
+> > > you'd be broken if an older device trees is used.
+> > >
+> > [Haijun Wrote:] Yes, in mmc driver (sdhci-pltfm.c)some quirks depends
+> > on Soc name and its Soc version (sdhci-of-esdhc.c), even if they had
+> > the same eSDHC version.
 >=20
-> Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
-> ---
->  drivers/dma/fsldma.c |   48 =20
-> ++++++++++++++++++++++++++++++++++--------------
->  drivers/dma/fsldma.h |    4 ++--
->  2 files changed, 36 insertions(+), 16 deletions(-)
+> Then please use SVR for applying errata workarounds to these chips,
+> rather than rely on the device tree being updated.  The SVR approach also
+> lets you deal with cases where the erratum is present in one rev of an
+> SoC but not another.
+[Haijun Wrote:] Ok, I'll update this in mmc driver.
 >=20
-> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-> index 4fc2980..0f453ea 100644
-> --- a/drivers/dma/fsldma.c
-> +++ b/drivers/dma/fsldma.c
-> @@ -1119,27 +1119,33 @@ static irqreturn_t fsldma_ctrl_irq(int irq, =20
-> void *data)
->  	struct fsldma_device *fdev =3D data;
->  	struct fsldma_chan *chan;
->  	unsigned int handled =3D 0;
-> -	u32 gsr, mask;
-> +	u8 chan_sr[round_up(FSL_DMA_MAX_CHANS_PER_DEVICE, 4)];
-> +	u32 gsr;
->  	int i;
+> Is SDHCI_QUIRK_BROKEN_TIMEOUT_VAL present on these chips?  If so, which
+> chips (of the same eSDHC version) is it not present on?
 >=20
-> -	gsr =3D (fdev->feature & FSL_DMA_BIG_ENDIAN) ? in_be32(fdev->regs)
-> -						   : =20
-> in_le32(fdev->regs);
-> -	mask =3D 0xff000000;
-> -	dev_dbg(fdev->dev, "IRQ: gsr 0x%.8x\n", gsr);
-> +	memset(&chan_sr, 0, sizeof(chan_sr));
-> +	gsr =3D (fdev->feature & FSL_DMA_BIG_ENDIAN) ? =20
-> in_be32(fdev->regs0)
-> +						   : =20
-> in_le32(fdev->regs0);
-> +	memcpy(&chan_sr[0], &gsr, 4);
-> +	dev_dbg(fdev->dev, "IRQ: gsr0 0x%.8x\n", gsr);
-> +
-> +	if (of_device_is_compatible(fdev->dev->of_node, =20
-> "fsl,eloplus-dma2")) {
-
-NACK; Figure out what sort of device you've got when you first probe =20
-the device, and store the information for later.  Do not call device =20
-tree stuff in an interrupt handler.
-
-> +		gsr =3D (fdev->feature & FSL_DMA_BIG_ENDIAN) ?
-> +			in_be32(fdev->regs1) : in_le32(fdev->regs1);
-> +		memcpy(&chan_sr[4], &gsr, 4);
-> +		dev_dbg(fdev->dev, "IRQ: gsr1 0x%.8x\n", gsr);
-> +	}
-
-Do these memcpy()s get inlined?  If not (and maybe even if they do), =20
-it'd be better to use a union instead.
-
-Wait a second -- how are we even getting into this code on these new =20
-DMA controllers?  All 85xx-family DMA controllers use fsldma_chan_irq =20
-directly.
-
-> @@ -1341,13 +1349,22 @@ static int fsldma_of_probe(struct =20
-> platform_device *op)
->  	INIT_LIST_HEAD(&fdev->common.channels);
->=20
->  	/* ioremap the registers for use */
-> -	fdev->regs =3D of_iomap(op->dev.of_node, 0);
-> -	if (!fdev->regs) {
-> -		dev_err(&op->dev, "unable to ioremap registers\n");
-> +	fdev->regs0 =3D of_iomap(op->dev.of_node, 0);
-> +	if (!fdev->regs0) {
-> +		dev_err(&op->dev, "unable to ioremap register0\n");
->  		err =3D -ENOMEM;
->  		goto out_free_fdev;
->  	}
->=20
-> +	if (of_device_is_compatible(op->dev.of_node, =20
-> "fsl,eloplus-dma2")) {
-
-Not "fsl,eloplusplus-dma"? :-)
-
-More seriously, if we're sticking with this "elo" naming, maybe =20
-"fsl,elo3-dma" would be better.  It would be odd to have "2" in the =20
-name of the third generation of this hardware.
-
-> diff --git a/drivers/dma/fsldma.h b/drivers/dma/fsldma.h
-> index f5c3879..880664d 100644
-> --- a/drivers/dma/fsldma.h
-> +++ b/drivers/dma/fsldma.h
-> @@ -112,10 +112,10 @@ struct fsldma_chan_regs {
->  };
->=20
->  struct fsldma_chan;
-> -#define FSL_DMA_MAX_CHANS_PER_DEVICE 4
-> +#define FSL_DMA_MAX_CHANS_PER_DEVICE 8
->=20
->  struct fsldma_device {
-> -	void __iomem *regs;	/* DGSR register base */
-> +	void __iomem *regs0, *regs1;	/* DGSR registers */
-
-Either give these meaningful names, or use an array.  Or both (dgsr[2]).
-
-Or just get rid of this, since I don't see why we need DGSR1 at all, as =20
-previously noted.
-
--Scott=
+[Haijun Wrote:] I also confused about this quirk, I'm not sure if this quir=
+k is indeed need by them. The calculation of the timeout value used to have=
+ some defect, so some board may encounter timeout err when using sd card. I=
+ had send patch to change it, but I'm not sure which of them is due to the =
+calculation err. This quirk just let the card use the max value to wait for=
+ data or command transfer complete. No impact to performance and function. =
+So I leave them no changed.
+> -Scott
