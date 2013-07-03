@@ -1,20 +1,20 @@
 Return-Path: <B02008@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2EAFD2C0097
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2013 22:12:00 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 919982C007A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2013 22:25:39 +1000 (EST)
 From: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [RFC PATCH 5/6] KVM: PPC: Book3E: Add ONE_REG AltiVec support
-Date: Wed, 3 Jul 2013 12:11:52 +0000
-Message-ID: <300B73AA675FCE4A93EB4FC1D42459FF0A2A3592@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1370292868-2697-1-git-send-email-mihai.caraman@freescale.com>
- <1370292868-2697-6-git-send-email-mihai.caraman@freescale.com>
- <1370385622.748.21@snotra>
-In-Reply-To: <1370385622.748.21@snotra>
+To: Wood Scott-B07421 <B07421@freescale.com>, Alexander Graf <agraf@suse.de>
+Subject: RE: [PATCH 1/2] powerpc/booke64: Use common defines for AltiVec
+ interrupts numbers
+Date: Wed, 3 Jul 2013 12:25:22 +0000
+Message-ID: <300B73AA675FCE4A93EB4FC1D42459FF0A2A35E3@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <8F554F03-E6B0-4140-8830-D4FD6249CEF9@suse.de> (from
+ agraf@suse.de on Mon Jul  1 19:18:21 2013) <1372726613.8183.104@snotra>
+In-Reply-To: <1372726613.8183.104@snotra>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
@@ -29,56 +29,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Wednesday, June 05, 2013 1:40 AM
-> To: Caraman Mihai Claudiu-B02008
-> Cc: kvm-ppc@vger.kernel.org; kvm@vger.kernel.org; linuxppc-
-> dev@lists.ozlabs.org; Caraman Mihai Claudiu-B02008
-> Subject: Re: [RFC PATCH 5/6] KVM: PPC: Book3E: Add ONE_REG AltiVec
-> support
->=20
-> On 06/03/2013 03:54:27 PM, Mihai Caraman wrote:
-> > Add ONE_REG support for AltiVec on Book3E.
-> >
-> > Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
-> > ---
-> >  arch/powerpc/kvm/booke.c |   32 ++++++++++++++++++++++++++++++++
-> >  1 files changed, 32 insertions(+), 0 deletions(-)
-> >
-> > diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-> > index 01eb635..019496d 100644
-> > --- a/arch/powerpc/kvm/booke.c
-> > +++ b/arch/powerpc/kvm/booke.c
-> > @@ -1570,6 +1570,22 @@ int kvm_vcpu_ioctl_get_one_reg(struct kvm_vcpu
-> > *vcpu, struct kvm_one_reg *reg)
-> >  	case KVM_REG_PPC_DEBUG_INST:
-> >  		val =3D get_reg_val(reg->id, KVMPPC_INST_EHPRIV);
-> >  		break;
-> > +#ifdef CONFIG_ALTIVEC
-> > +	case KVM_REG_PPC_VR0 ... KVM_REG_PPC_VR31:
-> > +		if (!cpu_has_feature(CPU_FTR_ALTIVEC)) {
-> > +			r =3D -ENXIO;
-> > +			break;
-> > +		}
-> > +		val.vval =3D vcpu->arch.vr[reg->id - KVM_REG_PPC_VR0];
-> > +		break;
-> > +	case KVM_REG_PPC_VSCR:
-> > +		if (!cpu_has_feature(CPU_FTR_ALTIVEC)) {
-> > +			r =3D -ENXIO;
-> > +			break;
-> > +		}
-> > +		val =3D get_reg_val(reg->id, vcpu->arch.vscr.u[3]);
-> > +		break;
->=20
-> Why u[3]?
+> So we can remove this hack in kvm_asm.h:
 
-AltiVec PEM manual says: "The VSCR has two defined bits, the AltiVec non-Ja=
-va
-mode (NJ) bit (VSCR[15]) and the AltiVec saturation (SAT) bit (VSCR[31]);
-the remaining bits are reserved."
+Not yet, this comment was added in the context of AltiVec RFC patches
+which intended to remove a similar dependency.
 
-I think this is the reason Paul M. exposed KVM_REG_PPC_VSCR width as 32-bit=
-.
+>=20
+> /*
+>   * TODO: Unify 32-bit and 64-bit kernel exception handlers to use same
+> defines
+>   */
+> #define BOOKE_INTERRUPT_SPE_UNAVAIL BOOKE_INTERRUPT_SPE_ALTIVEC_UNAVAIL
+> #define BOOKE_INTERRUPT_SPE_FP_DATA
+> BOOKE_INTERRUPT_SPE_FP_DATA_ALTIVEC_ASSIST
+> #define BOOKE_INTERRUPT_ALTIVEC_UNAVAIL
+> BOOKE_INTERRUPT_SPE_ALTIVEC_UNAVAIL
+> #define BOOKE_INTERRUPT_ALTIVEC_ASSIST \
+>=20
+> BOOKE_INTERRUPT_SPE_FP_DATA_ALTIVEC_ASSIST
+>=20
+> It was added as a compilation fix, and it was less intrusive to
+> temporarily fix it this way.
+>=20
+> I am curious why the above code wasn't removed at the end of this
+> patchset. :-)
+
+Before removing it we also need to apply at least the first patch from
+the Altivec set that I will send today.
 
 -Mike
