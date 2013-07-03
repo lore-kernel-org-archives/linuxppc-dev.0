@@ -1,23 +1,25 @@
 Return-Path: <B07421@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe010.messaging.microsoft.com [216.32.180.30])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5BE282C01FC
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jul 2013 06:18:21 +1000 (EST)
-Date: Wed, 3 Jul 2013 15:18:12 -0500
+ by ozlabs.org (Postfix) with ESMTPS id C7F552C008C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jul 2013 06:38:43 +1000 (EST)
+Date: Wed, 3 Jul 2013 15:38:27 -0500
 From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 1/2] powerpc/booke64: Add LRAT error exception handler
-To: Mihai Caraman <mihai.caraman@freescale.com>
-References: <1372870566-11299-1-git-send-email-mihai.caraman@freescale.com>
-In-Reply-To: <1372870566-11299-1-git-send-email-mihai.caraman@freescale.com>
- (from mihai.caraman@freescale.com on Wed Jul  3 11:56:05 2013)
-Message-ID: <1372882692.8183.150@snotra>
+Subject: Re: [PATCH 1/2] powerpc: enable the relocatable support for the fsl
+ booke 32bit kernel
+To: Kevin Hao <haokexin@gmail.com>
+References: <20130702032447.GA26391@pek-khao-d1.corp.ad.wrs.com>
+ <1372804758.8183.124@snotra>
+ <20130703030044.GA25190@pek-khao-d1.corp.ad.wrs.com>
+In-Reply-To: <20130703030044.GA25190@pek-khao-d1.corp.ad.wrs.com> (from
+ haokexin@gmail.com on Tue Jul  2 22:00:44 2013)
+Message-ID: <1372883907.8183.151@snotra>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,14 +29,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/03/2013 11:56:05 AM, Mihai Caraman wrote:
-> @@ -1410,6 +1423,7 @@ _GLOBAL(setup_doorbell_ivors)
->  _GLOBAL(setup_ehv_ivors)
->  	SET_IVOR(40, 0x300) /* Embedded Hypervisor System Call */
->  	SET_IVOR(41, 0x320) /* Embedded Hypervisor Privilege */
-> +	SET_IVOR(42, 0x340) /* LRAT Error */
+On 07/02/2013 10:00:44 PM, Kevin Hao wrote:
+> On Tue, Jul 02, 2013 at 05:39:18PM -0500, Scott Wood wrote:
+> > How much overhead (space and time) is this really?
+>=20
+> The following is the additional sections when relocatable is enabled =20
+> for
+> a p2020rdb board.
+>    section        size
+>   .dynsym       000007f0
+>   .dynstr       00000926
+>   .dynamic      00000080
+>   .hash         00000388
+>   .interp       00000011
+>   .rela.dyn     00215250
+>=20
+> The time for the relocation is about 32ms on a p2020rdb board.
 
-What happens if we write to IVOR42 on e5500?  If the answer is no-op, =20
-is that behavior guaranteed on any CPU with E.HV but not LRAT?
+Hmm... more relocations than I expected.  What percentage is this of =20
+the total image size?
 
 -Scott=
