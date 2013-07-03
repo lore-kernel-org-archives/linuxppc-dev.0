@@ -1,31 +1,22 @@
-Return-Path: <B10716@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9B9382C007C
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jul 2013 01:13:45 +1000 (EST)
-Received: from mail98-ch1 (localhost [127.0.0.1])	by mail98-ch1-R.bigfish.com
- (Postfix) with ESMTP id 77B84A016A	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Jul 2013 15:13:40 +0000 (UTC)
-Received: from CH1EHSMHS043.bigfish.com (snatpool1.int.messaging.microsoft.com
- [10.43.68.253])	by mail98-ch1.bigfish.com (Postfix) with ESMTP id
- BEBE63C05DE
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2013 15:13:19 +0000 (UTC)
-Message-ID: <51D43F8A.7060008@freescale.com>
-Date: Wed, 3 Jul 2013 18:13:14 +0300
-From: Tudor Laurentiu <Laurentiu.Tudor@freescale.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH][v2] powerpc/85xx: Move ePAPR paravirt initialization
- earlier
-References: <1372769189-17864-1-git-send-email-Laurentiu.Tudor@freescale.com>
- <1372787740.8183.113@snotra> <51D41937.3000509@freescale.com>
- <1372863166.8183.129@snotra>
-In-Reply-To: <1372863166.8183.129@snotra>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ by ozlabs.org (Postfix) with ESMTP id 66C482C0312
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jul 2013 01:14:01 +1000 (EST)
+Subject: Re: [PATCH 2/6] KVM: PPC: Book3E: Refactor SPE/FP exit handling
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <300B73AA675FCE4A93EB4FC1D42459FF0A2A3893@039-SN2MPN1-013.039d.mgd.msft.net>
+Date: Wed, 3 Jul 2013 17:13:57 +0200
+Message-Id: <4C6EF5E2-013B-4EA7-8DDC-586BF8FBE741@suse.de>
+References: <1372855359-13452-1-git-send-email-mihai.caraman@freescale.com>
+ <1372855359-13452-3-git-send-email-mihai.caraman@freescale.com>
+ <97D96A79-E1E8-47FE-82DB-378AD7869C61@suse.de>
+ <300B73AA675FCE4A93EB4FC1D42459FF0A2A3893@039-SN2MPN1-013.039d.mgd.msft.net>
+To: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,30 +26,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/03/2013 05:52 PM, Scott Wood wrote:
-> On 07/03/2013 07:29:43 AM, Tudor Laurentiu wrote:
->> On 07/02/2013 08:55 PM, Scott Wood wrote:
->>> On 07/02/2013 07:46:29 AM, Laurentiu Tudor wrote:
->>>> - insts = of_get_property(hyper_node, "hcall-instructions", &len);
->>>> - if (!insts)
->>>> - return -ENODEV;
->>>> +#if !defined(CONFIG_64BIT) || defined(CONFIG_PPC_BOOK3E_64)
->>>> + if (of_get_flat_dt_prop(node, "has-idle", NULL))
->>>> + ppc_md.power_save = epapr_ev_idle;
->>>> +#endif
->>>
->>> Why are you doing this before processing hcall-instructions?
->>>
->>
->> Nothing of importance. The code seemed more clear to me.
->
-> It seems wrong to expose epapr_ev_idle to ppc_md before the hcall has
-> been patched in, even if you don't expect to actually go idle at this
-> point.
->
 
-Ah, now I understand your concerns. I've submitted a [v3] restoring the 
-original ordering.
+On 03.07.2013, at 15:53, Caraman Mihai Claudiu-B02008 wrote:
 
----
-Best Regards, Laurentiu
+>>> -#ifdef CONFIG_SPE
+>>> 	case BOOKE_INTERRUPT_SPE_ALTIVEC_UNAVAIL: {
+>>> -		if (vcpu->arch.shared->msr & MSR_SPE)
+>>> -			kvmppc_vcpu_enable_spe(vcpu);
+>>> -		else
+>>> -			kvmppc_booke_queue_irqprio(vcpu,
+>>> -
+>> BOOKE_IRQPRIO_SPE_ALTIVEC_UNAVAIL);
+>>> +		if (kvmppc_supports_spe()) {
+>>> +			bool enabled =3D false;
+>>> +
+>>> +#ifndef CONFIG_KVM_BOOKE_HV
+>>> +			if (vcpu->arch.shared->msr & MSR_SPE) {
+>>> +				kvmppc_vcpu_enable_spe(vcpu);
+>>> +				enabled =3D true;
+>>> +			}
+>>> +#endif
+>>=20
+>> Why the #ifdef? On HV capable systems kvmppc_supports_spe() will just
+>> always return false.=20
+>=20
+> AltiVec and SPE unavailable exceptions follows the same path. While=20
+> kvmppc_supports_spe() will always return false =
+kvmppc_supports_altivec()
+> may not.
+
+There is no chip that supports SPE and HV at the same time. So we'll =
+never hit this anyway, since kvmppc_supports_spe() always returns false =
+on HV capable systems.
+
+Just add a comment saying so and remove the ifdef :).
+
+
+Alex
+
+>=20
+>> And I don't really understand why HV would be special in the first =
+place
+>> here. Is it because we're accessing shared->msr?
+>=20
+> You are right on HV case MSP[SPV] should be always zero when an =
+unavailabe
+> exception take place. The distrinction was made because on non HV the =
+guest
+> doesn't have direct access to MSR[SPE]. The name of the bit (not the =
+position)
+> was changed on HV cores.
+>=20
+>>=20
+>>> +			if (!enabled)
+>>> +				kvmppc_booke_queue_irqprio(vcpu,
+>>> +					=
+BOOKE_IRQPRIO_SPE_ALTIVEC_UNAVAIL);
+>>> +		} else {
+>>> +			/*
+>>> +			 * Guest wants SPE, but host kernel doesn't =
+support it.
+>>=20
+>> host kernel or hardware
+>=20
+> Ok.
+>=20
+> -Mike
+>=20
