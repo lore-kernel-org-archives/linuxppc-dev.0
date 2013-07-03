@@ -1,18 +1,33 @@
-Return-Path: <B45939@freescale.com>
-Message-ID: <51D3D76B.5040306@freescale.com>
-Date: Wed, 3 Jul 2013 15:48:59 +0800
-From: Hongbo Zhang <hongbo.zhang@freescale.com>
-MIME-Version: 1.0
-To: Hongbo Zhang <hongbo.zhang@freescale.com>
-Subject: Re: [PATCH 1/2] DMA: Freescale: Add new 8-channel DMA engine device
- tree nodes
-References: <1372650378-2936-1-git-send-email-hongbo.zhang@freescale.com>
- <51D3A030.4020608@freescale.com>
-In-Reply-To: <51D3A030.4020608@freescale.com>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: vinod.koul@intel.com, devicetree-discuss@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, vakul@freescale.com, djbw@fb.com,
- scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CB2A42C00A0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2013 18:20:17 +1000 (EST)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 3 Jul 2013 18:10:35 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id E70362BB0052
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2013 18:20:10 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r6385B1L57933946
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Jul 2013 18:05:12 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r638K9SS004295
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Jul 2013 18:20:09 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH 1/2] powerpc/mm: Use the correct SLB(LLP) encoding in tlbie
+ instruction
+Date: Wed,  3 Jul 2013 13:50:02 +0530
+Message-Id: <1372839603-8308-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,272 +37,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/03/2013 11:53 AM, Hongbo Zhang wrote:
-> hmm...add the devicetree-discuss@lists.ozlabs.org into list.
->
-> Note that we are discussing a better naming for this new compatible 
-> property in the corresponding [PATCH 2/2], so I will resend a v2 of 
-> this patch.
->
->
-> On 07/01/2013 11:46 AM, hongbo.zhang@freescale.com wrote:
->> From: Hongbo Zhang <hongbo.zhang@freescale.com>
->>
->> Freescale QorIQ T4 and B4 introduce new 8-channel DMA engines, this 
->> patch add
->> the device tree nodes for them.
->>
->> Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
->> ---
->>   arch/powerpc/boot/dts/fsl/qoriq-dma2-0.dtsi |   90 
->> +++++++++++++++++++++++++++
->>   arch/powerpc/boot/dts/fsl/qoriq-dma2-1.dtsi |   90 
->> +++++++++++++++++++++++++++
->>   arch/powerpc/boot/dts/fsl/t4240si-post.dtsi |    4 +-
->>   3 files changed, 182 insertions(+), 2 deletions(-)
->>   create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-dma2-0.dtsi
->>   create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-dma2-1.dtsi
-Scott, any comment of these two file names?
->>
->> diff --git a/arch/powerpc/boot/dts/fsl/qoriq-dma2-0.dtsi 
->> b/arch/powerpc/boot/dts/fsl/qoriq-dma2-0.dtsi
->> new file mode 100644
->> index 0000000..c626c49
->> --- /dev/null
->> +++ b/arch/powerpc/boot/dts/fsl/qoriq-dma2-0.dtsi
->> @@ -0,0 +1,90 @@
->> +/*
->> + * QorIQ DMA device tree stub [ controller @ offset 0x100000 ]
->> + *
->> + * Copyright 2011-2013 Freescale Semiconductor Inc.
->> + *
->> + * Redistribution and use in source and binary forms, with or without
->> + * modification, are permitted provided that the following 
->> conditions are met:
->> + *     * Redistributions of source code must retain the above copyright
->> + *       notice, this list of conditions and the following disclaimer.
->> + *     * Redistributions in binary form must reproduce the above 
->> copyright
->> + *       notice, this list of conditions and the following 
->> disclaimer in the
->> + *       documentation and/or other materials provided with the 
->> distribution.
->> + *     * Neither the name of Freescale Semiconductor nor the
->> + *       names of its contributors may be used to endorse or promote 
->> products
->> + *       derived from this software without specific prior written 
->> permission.
->> + *
->> + *
->> + * ALTERNATIVELY, this software may be distributed under the terms 
->> of the
->> + * GNU General Public License ("GPL") as published by the Free Software
->> + * Foundation, either version 2 of that License or (at your option) any
->> + * later version.
->> + *
->> + * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' 
->> AND ANY
->> + * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
->> IMPLIED
->> + * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR 
->> PURPOSE ARE
->> + * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE 
->> FOR ANY
->> + * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
->> CONSEQUENTIAL DAMAGES
->> + * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS 
->> OR SERVICES;
->> + * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
->> CAUSED AND
->> + * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT 
->> LIABILITY, OR TORT
->> + * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE 
->> USE OF THIS
->> + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
->> + */
->> +
->> +dma0: dma@100300 {
->> +    #address-cells = <1>;
->> +    #size-cells = <1>;
->> +    compatible = "fsl,eloplus-dma2";
->> +    reg = <0x100300 0x4 0x100600 0x4>;
->> +    ranges = <0x0 0x100100 0x500>;
->> +    cell-index = <0>;
->> +    dma-channel@0 {
->> +        compatible = "fsl,eloplus-dma-channel";
->> +        reg = <0x0 0x80>;
->> +        cell-index = <0>;
->> +        interrupts = <28 2 0 0>;
->> +    };
->> +    dma-channel@80 {
->> +        compatible = "fsl,eloplus-dma-channel";
->> +        reg = <0x80 0x80>;
->> +        cell-index = <1>;
->> +        interrupts = <29 2 0 0>;
->> +    };
->> +    dma-channel@100 {
->> +        compatible = "fsl,eloplus-dma-channel";
->> +        reg = <0x100 0x80>;
->> +        cell-index = <2>;
->> +        interrupts = <30 2 0 0>;
->> +    };
->> +    dma-channel@180 {
->> +        compatible = "fsl,eloplus-dma-channel";
->> +        reg = <0x180 0x80>;
->> +        cell-index = <3>;
->> +        interrupts = <31 2 0 0>;
->> +    };
->> +    dma-channel@300 {
->> +        compatible = "fsl,eloplus-dma-channel";
->> +        reg = <0x300 0x80>;
->> +        cell-index = <4>;
->> +        interrupts = <76 2 0 0>;
->> +    };
->> +    dma-channel@380 {
->> +        compatible = "fsl,eloplus-dma-channel";
->> +        reg = <0x380 0x80>;
->> +        cell-index = <5>;
->> +        interrupts = <77 2 0 0>;
->> +    };
->> +    dma-channel@400 {
->> +        compatible = "fsl,eloplus-dma-channel";
->> +        reg = <0x400 0x80>;
->> +        cell-index = <6>;
->> +        interrupts = <78 2 0 0>;
->> +    };
->> +    dma-channel@480 {
->> +        compatible = "fsl,eloplus-dma-channel";
->> +        reg = <0x480 0x80>;
->> +        cell-index = <7>;
->> +        interrupts = <79 2 0 0>;
->> +    };
->> +};
->> diff --git a/arch/powerpc/boot/dts/fsl/qoriq-dma2-1.dtsi 
->> b/arch/powerpc/boot/dts/fsl/qoriq-dma2-1.dtsi
->> new file mode 100644
->> index 0000000..980ea77
->> --- /dev/null
->> +++ b/arch/powerpc/boot/dts/fsl/qoriq-dma2-1.dtsi
->> @@ -0,0 +1,90 @@
->> +/*
->> + * QorIQ DMA device tree stub [ controller @ offset 0x101000 ]
->> + *
->> + * Copyright 2011-2013 Freescale Semiconductor Inc.
->> + *
->> + * Redistribution and use in source and binary forms, with or without
->> + * modification, are permitted provided that the following 
->> conditions are met:
->> + *     * Redistributions of source code must retain the above copyright
->> + *       notice, this list of conditions and the following disclaimer.
->> + *     * Redistributions in binary form must reproduce the above 
->> copyright
->> + *       notice, this list of conditions and the following 
->> disclaimer in the
->> + *       documentation and/or other materials provided with the 
->> distribution.
->> + *     * Neither the name of Freescale Semiconductor nor the
->> + *       names of its contributors may be used to endorse or promote 
->> products
->> + *       derived from this software without specific prior written 
->> permission.
->> + *
->> + *
->> + * ALTERNATIVELY, this software may be distributed under the terms 
->> of the
->> + * GNU General Public License ("GPL") as published by the Free Software
->> + * Foundation, either version 2 of that License or (at your option) any
->> + * later version.
->> + *
->> + * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' 
->> AND ANY
->> + * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
->> IMPLIED
->> + * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR 
->> PURPOSE ARE
->> + * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE 
->> FOR ANY
->> + * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
->> CONSEQUENTIAL DAMAGES
->> + * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS 
->> OR SERVICES;
->> + * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
->> CAUSED AND
->> + * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT 
->> LIABILITY, OR TORT
->> + * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE 
->> USE OF THIS
->> + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
->> + */
->> +
->> +dma1: dma@101300 {
->> +    #address-cells = <1>;
->> +    #size-cells = <1>;
->> +    compatible = "fsl,eloplus-dma2";
->> +    reg = <0x101300 0x4 0x101600 0x4>;
->> +    ranges = <0x0 0x101100 0x500>;
->> +    cell-index = <1>;
->> +    dma-channel@0 {
->> +        compatible = "fsl,eloplus-dma-channel";
->> +        reg = <0x0 0x80>;
->> +        cell-index = <0>;
->> +        interrupts = <32 2 0 0>;
->> +    };
->> +    dma-channel@80 {
->> +        compatible = "fsl,eloplus-dma-channel";
->> +        reg = <0x80 0x80>;
->> +        cell-index = <1>;
->> +        interrupts = <33 2 0 0>;
->> +    };
->> +    dma-channel@100 {
->> +        compatible = "fsl,eloplus-dma-channel";
->> +        reg = <0x100 0x80>;
->> +        cell-index = <2>;
->> +        interrupts = <34 2 0 0>;
->> +    };
->> +    dma-channel@180 {
->> +        compatible = "fsl,eloplus-dma-channel";
->> +        reg = <0x180 0x80>;
->> +        cell-index = <3>;
->> +        interrupts = <35 2 0 0>;
->> +    };
->> +    dma-channel@300 {
->> +        compatible = "fsl,eloplus-dma-channel";
->> +        reg = <0x300 0x80>;
->> +        cell-index = <4>;
->> +        interrupts = <80 2 0 0>;
->> +    };
->> +    dma-channel@380 {
->> +        compatible = "fsl,eloplus-dma-channel";
->> +        reg = <0x380 0x80>;
->> +        cell-index = <5>;
->> +        interrupts = <81 2 0 0>;
->> +    };
->> +    dma-channel@400 {
->> +        compatible = "fsl,eloplus-dma-channel";
->> +        reg = <0x400 0x80>;
->> +        cell-index = <6>;
->> +        interrupts = <82 2 0 0>;
->> +    };
->> +    dma-channel@480 {
->> +        compatible = "fsl,eloplus-dma-channel";
->> +        reg = <0x480 0x80>;
->> +        cell-index = <7>;
->> +        interrupts = <83 2 0 0>;
->> +    };
->> +};
->> diff --git a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi 
->> b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
->> index bd611a9..7d8bac6 100644
->> --- a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
->> +++ b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
->> @@ -387,8 +387,8 @@
->>           reg       = <0xea000 0x4000>;
->>       };
->>   -/include/ "qoriq-dma-0.dtsi"
->> -/include/ "qoriq-dma-1.dtsi"
->> +/include/ "qoriq-dma2-0.dtsi"
->> +/include/ "qoriq-dma2-1.dtsi"
->>     /include/ "qoriq-espi-0.dtsi"
->>       spi@110000 {
->
->
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+
+The sllp value is stored in mmu_psize_defs in such a way that we can easily OR
+the value to get the operand for slbmte instruction. ie, the L and LP bits are
+not contiguous. Decode the bits and use them correctly in tlbie.
+regression is introduced by 1f6aaaccb1b3af8613fe45781c1aefee2ae8c6b3
+"powerpc: Update tlbie/tlbiel as per ISA doc"
+
+Reported-by: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/mm/hash_native_64.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+index 3f0c30a..0de15fc 100644
+--- a/arch/powerpc/mm/hash_native_64.c
++++ b/arch/powerpc/mm/hash_native_64.c
+@@ -43,6 +43,7 @@ static inline void __tlbie(unsigned long vpn, int psize, int apsize, int ssize)
+ {
+ 	unsigned long va;
+ 	unsigned int penc;
++	unsigned long sllp;
+ 
+ 	/*
+ 	 * We need 14 to 65 bits of va for a tlibe of 4K page
+@@ -64,7 +65,9 @@ static inline void __tlbie(unsigned long vpn, int psize, int apsize, int ssize)
+ 		/* clear out bits after (52) [0....52.....63] */
+ 		va &= ~((1ul << (64 - 52)) - 1);
+ 		va |= ssize << 8;
+-		va |= mmu_psize_defs[apsize].sllp << 6;
++		sllp = ((mmu_psize_defs[apsize].sllp & 0x100) >> 6) |
++			((mmu_psize_defs[apsize].sllp & 0x30) >> 4);
++		va |= sllp << 5;
+ 		asm volatile(ASM_FTR_IFCLR("tlbie %0,0", PPC_TLBIE(%1,%0), %2)
+ 			     : : "r" (va), "r"(0), "i" (CPU_FTR_ARCH_206)
+ 			     : "memory");
+@@ -98,6 +101,7 @@ static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
+ {
+ 	unsigned long va;
+ 	unsigned int penc;
++	unsigned long sllp;
+ 
+ 	/* VPN_SHIFT can be atmost 12 */
+ 	va = vpn << VPN_SHIFT;
+@@ -113,7 +117,9 @@ static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
+ 		/* clear out bits after(52) [0....52.....63] */
+ 		va &= ~((1ul << (64 - 52)) - 1);
+ 		va |= ssize << 8;
+-		va |= mmu_psize_defs[apsize].sllp << 6;
++		sllp = ((mmu_psize_defs[apsize].sllp & 0x100) >> 6) |
++			((mmu_psize_defs[apsize].sllp & 0x30) >> 4);
++		va |= sllp << 5;
+ 		asm volatile(".long 0x7c000224 | (%0 << 11) | (0 << 21)"
+ 			     : : "r"(va) : "memory");
+ 		break;
+-- 
+1.8.1.2
