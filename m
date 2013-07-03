@@ -1,20 +1,19 @@
-Return-Path: <B07421@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0251.outbound.messaging.microsoft.com [213.199.154.251])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3DFE62C00AF
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jul 2013 04:38:39 +1000 (EST)
-Date: Wed, 3 Jul 2013 13:38:26 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 4/6] KVM: PPC: Book3E: Add AltiVec support
-To: Mihai Caraman <mihai.caraman@freescale.com>
-In-Reply-To: <1372855359-13452-5-git-send-email-mihai.caraman@freescale.com>
- (from mihai.caraman@freescale.com on Wed Jul  3 07:42:37 2013)
-Message-ID: <1372876706.8183.139@snotra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ by ozlabs.org (Postfix) with ESMTP id BC3202C00A6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jul 2013 04:39:27 +1000 (EST)
+Subject: Re: [PATCH 3/6] KVM: PPC: Book3E: Increase FPU laziness
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <1372873477.8183.134@snotra>
+Date: Wed, 3 Jul 2013 20:39:22 +0200
+Message-Id: <84AE642A-5FD5-4C93-A384-39D482555B29@suse.de>
+References: <1372855359-13452-1-git-send-email-mihai.caraman@freescale.com>
+ <1372855359-13452-4-git-send-email-mihai.caraman@freescale.com>
+ <1372871922.8183.133@snotra> <BFF1818E-A595-4122-8A57-DBD3A6A0B21C@suse.de>
+ <1372873477.8183.134@snotra>
+To: Scott Wood <scottwood@freescale.com>
 Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
  kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,38 +25,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/03/2013 07:42:37 AM, Mihai Caraman wrote:
-> Add KVM Book3E AltiVec support. KVM Book3E FPU support gracefully =20
-> reuse host
-> infrastructure so follow the same approach for AltiVec.
->=20
-> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
-> ---
->  arch/powerpc/kvm/booke.c |   72 =20
-> ++++++++++++++++++++++++++++++++++++++++++++-
->  1 files changed, 70 insertions(+), 2 deletions(-)
->=20
-> diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-> index 3cae2e3..c3c3af6 100644
-> --- a/arch/powerpc/kvm/booke.c
-> +++ b/arch/powerpc/kvm/booke.c
-> @@ -98,6 +98,19 @@ static inline bool kvmppc_supports_spe(void)
->  	return false;
->  }
->=20
-> +/*
-> + * Always returns true is AltiVec unit is present, see
-> + * kvmppc_core_check_processor_compat().
-> + */
-> +static inline bool kvmppc_supports_altivec(void)
-> +{
-> +#ifdef CONFIG_ALTIVEC
-> +		if (cpu_has_feature(CPU_FTR_ALTIVEC))
-> +			return true;
-> +#endif
-> +	return false;
-> +}
 
-Whitespace.
+On 03.07.2013, at 19:44, Scott Wood wrote:
 
--Scott=
+> On 07/03/2013 12:23:16 PM, Alexander Graf wrote:
+>> On 03.07.2013, at 19:18, Scott Wood wrote:
+>> > On 07/03/2013 07:42:36 AM, Mihai Caraman wrote:
+>> >> Increase FPU laziness by calling kvmppc_load_guest_fp() just =
+before
+>> >> returning to guest instead of each sched in. Without this =
+improvement
+>> >> an interrupt may also claim floting point corrupting guest state.
+>> >> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+>> >> ---
+>> >> arch/powerpc/kvm/booke.c  |    1 +
+>> >> arch/powerpc/kvm/e500mc.c |    2 --
+>> >> 2 files changed, 1 insertions(+), 2 deletions(-)
+>> >> diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+>> >> index 113961f..3cae2e3 100644
+>> >> --- a/arch/powerpc/kvm/booke.c
+>> >> +++ b/arch/powerpc/kvm/booke.c
+>> >> @@ -1204,6 +1204,7 @@ int kvmppc_handle_exit(struct kvm_run *run, =
+struct kvm_vcpu *vcpu,
+>> >> 			r =3D (s << 2) | RESUME_HOST | (r & =
+RESUME_FLAG_NV);
+>> >> 		} else {
+>> >> 			kvmppc_lazy_ee_enable();
+>> >> +			kvmppc_load_guest_fp(vcpu);
+>> >> 		}
+>> >
+>> > This should go before the kvmppc_lazy_ee_enable().
+>> Why? What difference does that make? We're running with interrupts =
+disabled here, right?
+>=20
+> Yes, and we want to minimize the code we run where we have interrupts =
+disabled but the lazy ee state says they're enabled.  So =
+kvmppc_lazy_ee_enable() should be the last thing we do before entering =
+asm code.
+>=20
+> See http://patchwork.ozlabs.org/patch/249565/
+
+Ah, cool. So we should add a comment saying that this should be the last =
+thing before entering asm code then :). That way we make sure nobody =
+else repeats the same mistake.
+
+
+Alex
