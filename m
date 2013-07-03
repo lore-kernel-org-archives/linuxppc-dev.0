@@ -1,18 +1,25 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- by ozlabs.org (Postfix) with ESMTP id DC7272C007B
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2013 23:45:15 +1000 (EST)
-Subject: Re: [PATCH 3/6] KVM: PPC: Book3E: Increase FPU laziness
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <1372855359-13452-4-git-send-email-mihai.caraman@freescale.com>
-Date: Wed, 3 Jul 2013 15:45:11 +0200
-Message-Id: <4A7356DD-BD24-49B3-AB17-B3237F71CF88@suse.de>
+Return-Path: <B02008@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B3A482C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2013 23:53:59 +1000 (EST)
+From: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
+To: Alexander Graf <agraf@suse.de>
+Subject: RE: [PATCH 2/6] KVM: PPC: Book3E: Refactor SPE/FP exit handling
+Date: Wed, 3 Jul 2013 13:53:49 +0000
+Message-ID: <300B73AA675FCE4A93EB4FC1D42459FF0A2A3893@039-SN2MPN1-013.039d.mgd.msft.net>
 References: <1372855359-13452-1-git-send-email-mihai.caraman@freescale.com>
- <1372855359-13452-4-git-send-email-mihai.caraman@freescale.com>
-To: Mihai Caraman <mihai.caraman@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+ <1372855359-13452-3-git-send-email-mihai.caraman@freescale.com>
+ <97D96A79-E1E8-47FE-82DB-378AD7869C61@suse.de>
+In-Reply-To: <97D96A79-E1E8-47FE-82DB-378AD7869C61@suse.de>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,58 +29,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+> > -#ifdef CONFIG_SPE
+> > 	case BOOKE_INTERRUPT_SPE_ALTIVEC_UNAVAIL: {
+> > -		if (vcpu->arch.shared->msr & MSR_SPE)
+> > -			kvmppc_vcpu_enable_spe(vcpu);
+> > -		else
+> > -			kvmppc_booke_queue_irqprio(vcpu,
+> > -
+> BOOKE_IRQPRIO_SPE_ALTIVEC_UNAVAIL);
+> > +		if (kvmppc_supports_spe()) {
+> > +			bool enabled =3D false;
+> > +
+> > +#ifndef CONFIG_KVM_BOOKE_HV
+> > +			if (vcpu->arch.shared->msr & MSR_SPE) {
+> > +				kvmppc_vcpu_enable_spe(vcpu);
+> > +				enabled =3D true;
+> > +			}
+> > +#endif
+>=20
+> Why the #ifdef? On HV capable systems kvmppc_supports_spe() will just
+> always return false.=20
 
-On 03.07.2013, at 14:42, Mihai Caraman wrote:
+AltiVec and SPE unavailable exceptions follows the same path. While=20
+kvmppc_supports_spe() will always return false kvmppc_supports_altivec()
+may not.
 
-> Increase FPU laziness by calling kvmppc_load_guest_fp() just before
-> returning to guest instead of each sched in. Without this improvement
-> an interrupt may also claim floting point corrupting guest state.
+> And I don't really understand why HV would be special in the first place
+> here. Is it because we're accessing shared->msr?
 
-Not sure I follow. Could you please describe exactly what's happening?
-
-
-Alex
+You are right on HV case MSP[SPV] should be always zero when an unavailabe
+exception take place. The distrinction was made because on non HV the guest
+doesn't have direct access to MSR[SPE]. The name of the bit (not the positi=
+on)
+was changed on HV cores.
 
 >=20
-> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
-> ---
-> arch/powerpc/kvm/booke.c  |    1 +
-> arch/powerpc/kvm/e500mc.c |    2 --
-> 2 files changed, 1 insertions(+), 2 deletions(-)
+> > +			if (!enabled)
+> > +				kvmppc_booke_queue_irqprio(vcpu,
+> > +					BOOKE_IRQPRIO_SPE_ALTIVEC_UNAVAIL);
+> > +		} else {
+> > +			/*
+> > +			 * Guest wants SPE, but host kernel doesn't support it.
 >=20
-> diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-> index 113961f..3cae2e3 100644
-> --- a/arch/powerpc/kvm/booke.c
-> +++ b/arch/powerpc/kvm/booke.c
-> @@ -1204,6 +1204,7 @@ int kvmppc_handle_exit(struct kvm_run *run, =
-struct kvm_vcpu *vcpu,
-> 			r =3D (s << 2) | RESUME_HOST | (r & =
-RESUME_FLAG_NV);
-> 		} else {
-> 			kvmppc_lazy_ee_enable();
-> +			kvmppc_load_guest_fp(vcpu);
-> 		}
-> 	}
->=20
-> diff --git a/arch/powerpc/kvm/e500mc.c b/arch/powerpc/kvm/e500mc.c
-> index 19c8379..09da1ac 100644
-> --- a/arch/powerpc/kvm/e500mc.c
-> +++ b/arch/powerpc/kvm/e500mc.c
-> @@ -143,8 +143,6 @@ void kvmppc_core_vcpu_load(struct kvm_vcpu *vcpu, =
-int cpu)
-> 		kvmppc_e500_tlbil_all(vcpu_e500);
-> 		__get_cpu_var(last_vcpu_on_cpu) =3D vcpu;
-> 	}
-> -
-> -	kvmppc_load_guest_fp(vcpu);
-> }
->=20
-> void kvmppc_core_vcpu_put(struct kvm_vcpu *vcpu)
-> --=20
-> 1.7.3.4
->=20
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> host kernel or hardware
+
+Ok.
+
+-Mike
