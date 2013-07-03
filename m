@@ -1,21 +1,21 @@
 Return-Path: <B07421@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0188.outbound.messaging.microsoft.com [213.199.154.188])
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A660B2C0085
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jul 2013 04:29:12 +1000 (EST)
-Date: Wed, 3 Jul 2013 13:28:59 -0500
+ by ozlabs.org (Postfix) with ESMTPS id 6E2E82C007B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jul 2013 04:31:26 +1000 (EST)
+Date: Wed, 3 Jul 2013 13:31:16 -0500
 From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 2/6] KVM: PPC: Book3E: Refactor SPE/FP exit handling
-To: Alexander Graf <agraf@suse.de>
-In-Reply-To: <4C6EF5E2-013B-4EA7-8DDC-586BF8FBE741@suse.de> (from
- agraf@suse.de on Wed Jul  3 10:13:57 2013)
-Message-ID: <1372876139.8183.135@snotra>
+Subject: Re: [RFC PATCH 5/6] KVM: PPC: Book3E: Add ONE_REG AltiVec support
+To: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
+In-Reply-To: <300B73AA675FCE4A93EB4FC1D42459FF0A2A3592@039-SN2MPN1-013.039d.mgd.msft.net>
+ (from B02008@freescale.com on Wed Jul  3 07:11:52 2013)
+Message-ID: <1372876276.8183.136@snotra>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>,
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
  "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
@@ -28,58 +28,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-  On 07/03/2013 10:13:57 AM, Alexander Graf wrote:
->=20
-> On 03.07.2013, at 15:53, Caraman Mihai Claudiu-B02008 wrote:
->=20
-> >>> -#ifdef CONFIG_SPE
-> >>> 	case BOOKE_INTERRUPT_SPE_ALTIVEC_UNAVAIL: {
-> >>> -		if (vcpu->arch.shared->msr & MSR_SPE)
-> >>> -			kvmppc_vcpu_enable_spe(vcpu);
-> >>> -		else
-> >>> -			kvmppc_booke_queue_irqprio(vcpu,
-> >>> -
-> >> BOOKE_IRQPRIO_SPE_ALTIVEC_UNAVAIL);
-> >>> +		if (kvmppc_supports_spe()) {
-> >>> +			bool enabled =3D false;
-> >>> +
-> >>> +#ifndef CONFIG_KVM_BOOKE_HV
-> >>> +			if (vcpu->arch.shared->msr & MSR_SPE) {
-> >>> +				kvmppc_vcpu_enable_spe(vcpu);
-> >>> +				enabled =3D true;
-> >>> +			}
-> >>> +#endif
-> >>
-> >> Why the #ifdef? On HV capable systems kvmppc_supports_spe() will =20
-> just
-> >> always return false.
+On 07/03/2013 07:11:52 AM, Caraman Mihai Claudiu-B02008 wrote:
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Wednesday, June 05, 2013 1:40 AM
+> > To: Caraman Mihai Claudiu-B02008
+> > Cc: kvm-ppc@vger.kernel.org; kvm@vger.kernel.org; linuxppc-
+> > dev@lists.ozlabs.org; Caraman Mihai Claudiu-B02008
+> > Subject: Re: [RFC PATCH 5/6] KVM: PPC: Book3E: Add ONE_REG AltiVec
+> > support
 > >
-> > AltiVec and SPE unavailable exceptions follows the same path. While
-> > kvmppc_supports_spe() will always return false =20
-> kvmppc_supports_altivec()
-> > may not.
+> > On 06/03/2013 03:54:27 PM, Mihai Caraman wrote:
+> > > Add ONE_REG support for AltiVec on Book3E.
+> > >
+> > > Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+> > > ---
+> > >  arch/powerpc/kvm/booke.c |   32 ++++++++++++++++++++++++++++++++
+> > >  1 files changed, 32 insertions(+), 0 deletions(-)
+> > >
+> > > diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+> > > index 01eb635..019496d 100644
+> > > --- a/arch/powerpc/kvm/booke.c
+> > > +++ b/arch/powerpc/kvm/booke.c
+> > > @@ -1570,6 +1570,22 @@ int kvm_vcpu_ioctl_get_one_reg(struct =20
+> kvm_vcpu
+> > > *vcpu, struct kvm_one_reg *reg)
+> > >  	case KVM_REG_PPC_DEBUG_INST:
+> > >  		val =3D get_reg_val(reg->id, KVMPPC_INST_EHPRIV);
+> > >  		break;
+> > > +#ifdef CONFIG_ALTIVEC
+> > > +	case KVM_REG_PPC_VR0 ... KVM_REG_PPC_VR31:
+> > > +		if (!cpu_has_feature(CPU_FTR_ALTIVEC)) {
+> > > +			r =3D -ENXIO;
+> > > +			break;
+> > > +		}
+> > > +		val.vval =3D vcpu->arch.vr[reg->id - KVM_REG_PPC_VR0];
+> > > +		break;
+> > > +	case KVM_REG_PPC_VSCR:
+> > > +		if (!cpu_has_feature(CPU_FTR_ALTIVEC)) {
+> > > +			r =3D -ENXIO;
+> > > +			break;
+> > > +		}
+> > > +		val =3D get_reg_val(reg->id, vcpu->arch.vscr.u[3]);
+> > > +		break;
+> >
+> > Why u[3]?
 >=20
-> There is no chip that supports SPE and HV at the same time. So we'll =20
-> never hit this anyway, since kvmppc_supports_spe() always returns =20
-> false on HV capable systems.
+> AltiVec PEM manual says: "The VSCR has two defined bits, the AltiVec =20
+> non-Java
+> mode (NJ) bit (VSCR[15]) and the AltiVec saturation (SAT) bit =20
+> (VSCR[31]);
+> the remaining bits are reserved."
 >=20
-> Just add a comment saying so and remove the ifdef :).
+> I think this is the reason Paul M. exposed KVM_REG_PPC_VSCR width as =20
+> 32-bit.
 
-kvmppc_vcpu_enable_spe isn't defined unless CONFIG_SPE is defined.  =20
-More seriously, MSR_SPE is the same as MSR_VEC, so we shouldn't =20
-interpret it as SPE unless CONFIG_SPE is defined.  And we can't rely on =20
-the "if (kvmppc_supports_spe())" here because a later patch changes it =20
-to "if (kvmppc_supports_altivec() || kvmppc_supports_spe())".  So I =20
-think we still need the ifdef CONFIG_SPE here.
-
-As for the HV ifndef, we should try not to confuse HV/PR with =20
-e500mc/e500v2, even if we happen to only run HV on e500mc and PR on =20
-e500v2.  We would not want to call kvmppc_vcpu_enable_spe() here on a =20
-hypothetical HV target with SPE.  And we *would* want to call =20
-kvmppc_vcpu_enable_fp() here on a hypothetical PR target with normal =20
-FP.  It's one thing to leave out the latter, since it would involve =20
-writing actual code that we have no way to test at this point, but =20
-quite another to leave out the proper conditions for when we want to =20
-run code that we do have.
+Ugh.  It's documented as a 32-bit register in the ISA, but it can only =20
+be accessed via a vector register (seems like an odd design choice, but =20
+whatever).  And the kernel chose to represent it as a 128-bit vector, =20
+while KVM chose to represent it as the register (not the access =20
+thereto) is architected.  It would have been nice to be consistent...  =20
+At least put in a comment explaining this.
 
 -Scott=
