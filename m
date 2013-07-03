@@ -1,29 +1,23 @@
-Return-Path: <B10716@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
+Return-Path: <B02008@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 664262C0095
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2013 22:30:04 +1000 (EST)
-Received: from mail228-tx2 (localhost [127.0.0.1])	by
- mail228-tx2-R.bigfish.com (Postfix) with ESMTP id 3E194380220	for
- <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2013 12:30:00 +0000 (UTC)
-Received: from TX2EHSMHS001.bigfish.com (unknown [10.9.14.241])	by
- mail228-tx2.bigfish.com (Postfix) with ESMTP id A071CBC0063	for
- <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2013 12:29:58 +0000 (UTC)
-Message-ID: <51D41937.3000509@freescale.com>
-Date: Wed, 3 Jul 2013 15:29:43 +0300
-From: Tudor Laurentiu <Laurentiu.Tudor@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 378A42C009C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2013 22:43:08 +1000 (EST)
+From: Mihai Caraman <mihai.caraman@freescale.com>
+To: <kvm-ppc@vger.kernel.org>
+Subject: [PATCH 1/6] KVM: PPC: Book3E: Use common defines for SPE/FP/AltiVec
+ int numbers
+Date: Wed, 3 Jul 2013 15:42:34 +0300
+Message-ID: <1372855359-13452-2-git-send-email-mihai.caraman@freescale.com>
+In-Reply-To: <1372855359-13452-1-git-send-email-mihai.caraman@freescale.com>
+References: <1372855359-13452-1-git-send-email-mihai.caraman@freescale.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH][v2] powerpc/85xx: Move ePAPR paravirt initialization
- earlier
-References: <1372769189-17864-1-git-send-email-Laurentiu.Tudor@freescale.com>
- <1372787740.8183.113@snotra>
-In-Reply-To: <1372787740.8183.113@snotra>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,58 +27,174 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/02/2013 08:55 PM, Scott Wood wrote:
-> On 07/02/2013 07:46:29 AM, Laurentiu Tudor wrote:
->> diff --git a/arch/powerpc/kernel/epapr_paravirt.c
->> b/arch/powerpc/kernel/epapr_paravirt.c
->> index d44a571..d05f9da 100644
->> --- a/arch/powerpc/kernel/epapr_paravirt.c
->> +++ b/arch/powerpc/kernel/epapr_paravirt.c
->> @@ -30,38 +30,45 @@ extern u32 epapr_ev_idle_start[];
->>
->> bool epapr_paravirt_enabled;
->>
->> -static int __init epapr_paravirt_init(void)
->> +static int __init early_init_dt_scan_epapr(unsigned long node,
->> + const char *uname,
->> + int depth, void *data)
->> {
->> - struct device_node *hyper_node;
->> - const u32 *insts;
->> - int len, i;
->> + const u32 *instrs;
->> + unsigned long len;
->> + int i;
->>
->> - hyper_node = of_find_node_by_path("/hypervisor");
->> - if (!hyper_node)
->> - return -ENODEV;
->> + if (!of_flat_dt_is_compatible(node, "epapr,hypervisor-1"))
->> + return 0;
->
-> QEMU doesn't set "epapr,hypervisor-1" but it still uses the same hcall
-> mechanism. The compatible that QEMU sets is "linux,kvm". Perhaps QEMU
-> should change, but we'd still like to be compatible with older QEMUs.
->
-> How is this change related to moving initialization earlier?
+Use common BOOKE_IRQPRIO and BOOKE_INTERRUPT defines for SPE/FP/AltiVec
+which share the same interrupts numbers.
 
-Just a (extra-)check to see that i'm on the right node.
-But considering your mention on qemu/kvm using a different compatible 
-i'm thinking of dropping it and only try reading the 
-"hcall-instructions" property.
-
->> - insts = of_get_property(hyper_node, "hcall-instructions", &len);
->> - if (!insts)
->> - return -ENODEV;
->> +#if !defined(CONFIG_64BIT) || defined(CONFIG_PPC_BOOK3E_64)
->> + if (of_get_flat_dt_prop(node, "has-idle", NULL))
->> + ppc_md.power_save = epapr_ev_idle;
->> +#endif
->
-> Why are you doing this before processing hcall-instructions?
->
-
-Nothing of importance. The code seemed more clear to me.
-
+Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
 ---
-Best Regards, Laurentiu
+ arch/powerpc/kvm/booke.c              |   16 ++++++++--------
+ arch/powerpc/kvm/booke.h              |    4 ++--
+ arch/powerpc/kvm/bookehv_interrupts.S |    8 ++++----
+ arch/powerpc/kvm/e500.c               |   10 ++++++----
+ arch/powerpc/kvm/e500_emulate.c       |    8 ++++----
+ 5 files changed, 24 insertions(+), 22 deletions(-)
+
+diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+index d2fef74..fb47e85 100644
+--- a/arch/powerpc/kvm/booke.c
++++ b/arch/powerpc/kvm/booke.c
+@@ -362,8 +362,8 @@ static int kvmppc_booke_irqprio_deliver(struct kvm_vcpu *vcpu,
+ 	case BOOKE_IRQPRIO_ITLB_MISS:
+ 	case BOOKE_IRQPRIO_SYSCALL:
+ 	case BOOKE_IRQPRIO_FP_UNAVAIL:
+-	case BOOKE_IRQPRIO_SPE_UNAVAIL:
+-	case BOOKE_IRQPRIO_SPE_FP_DATA:
++	case BOOKE_IRQPRIO_SPE_ALTIVEC_UNAVAIL:
++	case BOOKE_IRQPRIO_SPE_FP_DATA_ALTIVEC_ASSIST:
+ 	case BOOKE_IRQPRIO_SPE_FP_ROUND:
+ 	case BOOKE_IRQPRIO_AP_UNAVAIL:
+ 		allowed = 1;
+@@ -944,18 +944,18 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 		break;
+ 
+ #ifdef CONFIG_SPE
+-	case BOOKE_INTERRUPT_SPE_UNAVAIL: {
++	case BOOKE_INTERRUPT_SPE_ALTIVEC_UNAVAIL: {
+ 		if (vcpu->arch.shared->msr & MSR_SPE)
+ 			kvmppc_vcpu_enable_spe(vcpu);
+ 		else
+ 			kvmppc_booke_queue_irqprio(vcpu,
+-						   BOOKE_IRQPRIO_SPE_UNAVAIL);
++						   BOOKE_IRQPRIO_SPE_ALTIVEC_UNAVAIL);
+ 		r = RESUME_GUEST;
+ 		break;
+ 	}
+ 
+-	case BOOKE_INTERRUPT_SPE_FP_DATA:
+-		kvmppc_booke_queue_irqprio(vcpu, BOOKE_IRQPRIO_SPE_FP_DATA);
++	case BOOKE_INTERRUPT_SPE_FP_DATA_ALTIVEC_ASSIST:
++		kvmppc_booke_queue_irqprio(vcpu, BOOKE_IRQPRIO_SPE_FP_DATA_ALTIVEC_ASSIST);
+ 		r = RESUME_GUEST;
+ 		break;
+ 
+@@ -964,7 +964,7 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 		r = RESUME_GUEST;
+ 		break;
+ #else
+-	case BOOKE_INTERRUPT_SPE_UNAVAIL:
++	case BOOKE_INTERRUPT_SPE_ALTIVEC_UNAVAIL:
+ 		/*
+ 		 * Guest wants SPE, but host kernel doesn't support it.  Send
+ 		 * an "unimplemented operation" program check to the guest.
+@@ -977,7 +977,7 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 	 * These really should never happen without CONFIG_SPE,
+ 	 * as we should never enable the real MSR[SPE] in the guest.
+ 	 */
+-	case BOOKE_INTERRUPT_SPE_FP_DATA:
++	case BOOKE_INTERRUPT_SPE_FP_DATA_ALTIVEC_ASSIST:
+ 	case BOOKE_INTERRUPT_SPE_FP_ROUND:
+ 		printk(KERN_CRIT "%s: unexpected SPE interrupt %u at %08lx\n",
+ 		       __func__, exit_nr, vcpu->arch.pc);
+diff --git a/arch/powerpc/kvm/booke.h b/arch/powerpc/kvm/booke.h
+index 5fd1ba6..9e92006 100644
+--- a/arch/powerpc/kvm/booke.h
++++ b/arch/powerpc/kvm/booke.h
+@@ -32,8 +32,8 @@
+ #define BOOKE_IRQPRIO_ALIGNMENT 2
+ #define BOOKE_IRQPRIO_PROGRAM 3
+ #define BOOKE_IRQPRIO_FP_UNAVAIL 4
+-#define BOOKE_IRQPRIO_SPE_UNAVAIL 5
+-#define BOOKE_IRQPRIO_SPE_FP_DATA 6
++#define BOOKE_IRQPRIO_SPE_ALTIVEC_UNAVAIL 5
++#define BOOKE_IRQPRIO_SPE_FP_DATA_ALTIVEC_ASSIST 6
+ #define BOOKE_IRQPRIO_SPE_FP_ROUND 7
+ #define BOOKE_IRQPRIO_SYSCALL 8
+ #define BOOKE_IRQPRIO_AP_UNAVAIL 9
+diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
+index e8ed7d6..8d35dc0 100644
+--- a/arch/powerpc/kvm/bookehv_interrupts.S
++++ b/arch/powerpc/kvm/bookehv_interrupts.S
+@@ -295,9 +295,9 @@ kvm_handler BOOKE_INTERRUPT_DTLB_MISS, EX_PARAMS_TLB, \
+ 	SPRN_SRR0, SPRN_SRR1, (NEED_EMU | NEED_DEAR | NEED_ESR)
+ kvm_handler BOOKE_INTERRUPT_ITLB_MISS, EX_PARAMS_TLB, \
+ 	SPRN_SRR0, SPRN_SRR1, 0
+-kvm_handler BOOKE_INTERRUPT_SPE_UNAVAIL, EX_PARAMS(GEN), \
++kvm_handler BOOKE_INTERRUPT_SPE_ALTIVEC_UNAVAIL, EX_PARAMS(GEN), \
+ 	SPRN_SRR0, SPRN_SRR1, 0
+-kvm_handler BOOKE_INTERRUPT_SPE_FP_DATA, EX_PARAMS(GEN), \
++kvm_handler BOOKE_INTERRUPT_SPE_FP_DATA_ALTIVEC_ASSIST, EX_PARAMS(GEN), \
+ 	SPRN_SRR0, SPRN_SRR1, 0
+ kvm_handler BOOKE_INTERRUPT_SPE_FP_ROUND, EX_PARAMS(GEN), \
+ 	SPRN_SRR0, SPRN_SRR1, 0
+@@ -398,8 +398,8 @@ kvm_lvl_handler BOOKE_INTERRUPT_WATCHDOG, \
+ kvm_handler BOOKE_INTERRUPT_DTLB_MISS, \
+ 	SPRN_SRR0, SPRN_SRR1, (NEED_EMU | NEED_DEAR | NEED_ESR)
+ kvm_handler BOOKE_INTERRUPT_ITLB_MISS, SPRN_SRR0, SPRN_SRR1, 0
+-kvm_handler BOOKE_INTERRUPT_SPE_UNAVAIL, SPRN_SRR0, SPRN_SRR1, 0
+-kvm_handler BOOKE_INTERRUPT_SPE_FP_DATA, SPRN_SRR0, SPRN_SRR1, 0
++kvm_handler BOOKE_INTERRUPT_SPE_ALTIVEC_UNAVAIL, SPRN_SRR0, SPRN_SRR1, 0
++kvm_handler BOOKE_INTERRUPT_SPE_FP_DATA_ALTIVEC_ASSIST, SPRN_SRR0, SPRN_SRR1, 0
+ kvm_handler BOOKE_INTERRUPT_SPE_FP_ROUND, SPRN_SRR0, SPRN_SRR1, 0
+ kvm_handler BOOKE_INTERRUPT_PERFORMANCE_MONITOR, SPRN_SRR0, SPRN_SRR1, 0
+ kvm_handler BOOKE_INTERRUPT_DOORBELL, SPRN_SRR0, SPRN_SRR1, 0
+diff --git a/arch/powerpc/kvm/e500.c b/arch/powerpc/kvm/e500.c
+index ce6b73c..0fb2f4d 100644
+--- a/arch/powerpc/kvm/e500.c
++++ b/arch/powerpc/kvm/e500.c
+@@ -380,8 +380,10 @@ void kvmppc_core_get_sregs(struct kvm_vcpu *vcpu, struct kvm_sregs *sregs)
+ 	sregs->u.e.impl.fsl.hid0 = vcpu_e500->hid0;
+ 	sregs->u.e.impl.fsl.mcar = vcpu_e500->mcar;
+ 
+-	sregs->u.e.ivor_high[0] = vcpu->arch.ivor[BOOKE_IRQPRIO_SPE_UNAVAIL];
+-	sregs->u.e.ivor_high[1] = vcpu->arch.ivor[BOOKE_IRQPRIO_SPE_FP_DATA];
++	sregs->u.e.ivor_high[0] =
++		vcpu->arch.ivor[BOOKE_IRQPRIO_SPE_ALTIVEC_UNAVAIL];
++	sregs->u.e.ivor_high[1] =
++		vcpu->arch.ivor[BOOKE_IRQPRIO_SPE_FP_DATA_ALTIVEC_ASSIST];
+ 	sregs->u.e.ivor_high[2] = vcpu->arch.ivor[BOOKE_IRQPRIO_SPE_FP_ROUND];
+ 	sregs->u.e.ivor_high[3] =
+ 		vcpu->arch.ivor[BOOKE_IRQPRIO_PERFORMANCE_MONITOR];
+@@ -409,9 +411,9 @@ int kvmppc_core_set_sregs(struct kvm_vcpu *vcpu, struct kvm_sregs *sregs)
+ 		return 0;
+ 
+ 	if (sregs->u.e.features & KVM_SREGS_E_SPE) {
+-		vcpu->arch.ivor[BOOKE_IRQPRIO_SPE_UNAVAIL] =
++		vcpu->arch.ivor[BOOKE_IRQPRIO_SPE_ALTIVEC_UNAVAIL] =
+ 			sregs->u.e.ivor_high[0];
+-		vcpu->arch.ivor[BOOKE_IRQPRIO_SPE_FP_DATA] =
++		vcpu->arch.ivor[BOOKE_IRQPRIO_SPE_FP_DATA_ALTIVEC_ASSIST] =
+ 			sregs->u.e.ivor_high[1];
+ 		vcpu->arch.ivor[BOOKE_IRQPRIO_SPE_FP_ROUND] =
+ 			sregs->u.e.ivor_high[2];
+diff --git a/arch/powerpc/kvm/e500_emulate.c b/arch/powerpc/kvm/e500_emulate.c
+index b10a012..b2e159b 100644
+--- a/arch/powerpc/kvm/e500_emulate.c
++++ b/arch/powerpc/kvm/e500_emulate.c
+@@ -211,10 +211,10 @@ int kvmppc_core_emulate_mtspr(struct kvm_vcpu *vcpu, int sprn, ulong spr_val)
+ 
+ 	/* extra exceptions */
+ 	case SPRN_IVOR32:
+-		vcpu->arch.ivor[BOOKE_IRQPRIO_SPE_UNAVAIL] = spr_val;
++		vcpu->arch.ivor[BOOKE_IRQPRIO_SPE_ALTIVEC_UNAVAIL] = spr_val;
+ 		break;
+ 	case SPRN_IVOR33:
+-		vcpu->arch.ivor[BOOKE_IRQPRIO_SPE_FP_DATA] = spr_val;
++		vcpu->arch.ivor[BOOKE_IRQPRIO_SPE_FP_DATA_ALTIVEC_ASSIST] = spr_val;
+ 		break;
+ 	case SPRN_IVOR34:
+ 		vcpu->arch.ivor[BOOKE_IRQPRIO_SPE_FP_ROUND] = spr_val;
+@@ -329,10 +329,10 @@ int kvmppc_core_emulate_mfspr(struct kvm_vcpu *vcpu, int sprn, ulong *spr_val)
+ 
+ 	/* extra exceptions */
+ 	case SPRN_IVOR32:
+-		*spr_val = vcpu->arch.ivor[BOOKE_IRQPRIO_SPE_UNAVAIL];
++		*spr_val = vcpu->arch.ivor[BOOKE_IRQPRIO_SPE_ALTIVEC_UNAVAIL];
+ 		break;
+ 	case SPRN_IVOR33:
+-		*spr_val = vcpu->arch.ivor[BOOKE_IRQPRIO_SPE_FP_DATA];
++		*spr_val = vcpu->arch.ivor[BOOKE_IRQPRIO_SPE_FP_DATA_ALTIVEC_ASSIST];
+ 		break;
+ 	case SPRN_IVOR34:
+ 		*spr_val = vcpu->arch.ivor[BOOKE_IRQPRIO_SPE_FP_ROUND];
+-- 
+1.7.3.4
