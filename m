@@ -1,20 +1,24 @@
-Return-Path: <B02008@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0186.outbound.messaging.microsoft.com [213.199.154.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 11BF62C00A1
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jul 2013 02:56:21 +1000 (EST)
-From: Mihai Caraman <mihai.caraman@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 1/2] powerpc/booke64: Add LRAT error exception handler
-Date: Wed, 3 Jul 2013 19:56:05 +0300
-Message-ID: <1372870566-11299-1-git-send-email-mihai.caraman@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Mihai Caraman <mihai.caraman@freescale.com>, kvm@vger.kernel.org,
- kvm-ppc@vger.kernel.org
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ by ozlabs.org (Postfix) with ESMTP id E0F052C009E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jul 2013 02:59:50 +1000 (EST)
+Subject: Re: [PATCH 3/6] KVM: PPC: Book3E: Increase FPU laziness
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <300B73AA675FCE4A93EB4FC1D42459FF0A2A3BDA@039-SN2MPN1-013.039d.mgd.msft.net>
+Date: Wed, 3 Jul 2013 18:59:45 +0200
+Message-Id: <23C56B31-5145-481E-9877-F1878F66959D@suse.de>
+References: <1372855359-13452-1-git-send-email-mihai.caraman@freescale.com>
+ <1372855359-13452-4-git-send-email-mihai.caraman@freescale.com>
+ <4A7356DD-BD24-49B3-AB17-B3237F71CF88@suse.de>
+ <300B73AA675FCE4A93EB4FC1D42459FF0A2A38B0@039-SN2MPN1-013.039d.mgd.msft.net>
+ <C4820C32-33E6-4E34-A24C-C49BD7CC8307@suse.de>
+ <300B73AA675FCE4A93EB4FC1D42459FF0A2A3BDA@039-SN2MPN1-013.039d.mgd.msft.net>
+To: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,85 +28,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add LRAT (Logical to Real Address Translation) error exception handler to
-Booke3E 64-bit kernel. LRAT support in KVM will follow afterwards.
 
-Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
----
- arch/powerpc/include/asm/kvm_asm.h   |    1 +
- arch/powerpc/include/asm/reg_booke.h |    1 +
- arch/powerpc/kernel/exceptions-64e.S |   14 ++++++++++++++
- 3 files changed, 16 insertions(+), 0 deletions(-)
+On 03.07.2013, at 17:41, Caraman Mihai Claudiu-B02008 wrote:
 
-diff --git a/arch/powerpc/include/asm/kvm_asm.h b/arch/powerpc/include/asm/kvm_asm.h
-index 851bac7..83b91e5 100644
---- a/arch/powerpc/include/asm/kvm_asm.h
-+++ b/arch/powerpc/include/asm/kvm_asm.h
-@@ -74,6 +74,7 @@
- #define BOOKE_INTERRUPT_GUEST_DBELL_CRIT 39
- #define BOOKE_INTERRUPT_HV_SYSCALL 40
- #define BOOKE_INTERRUPT_HV_PRIV 41
-+#define BOOKE_INTERRUPT_LRAT_ERROR 42
- 
- /* book3s */
- 
-diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
-index b417de3..6b113e1 100644
---- a/arch/powerpc/include/asm/reg_booke.h
-+++ b/arch/powerpc/include/asm/reg_booke.h
-@@ -101,6 +101,7 @@
- #define SPRN_IVOR39	0x1B1	/* Interrupt Vector Offset Register 39 */
- #define SPRN_IVOR40	0x1B2	/* Interrupt Vector Offset Register 40 */
- #define SPRN_IVOR41	0x1B3	/* Interrupt Vector Offset Register 41 */
-+#define SPRN_IVOR42	0x1B4	/* Interrupt Vector Offset Register 42 */
- #define SPRN_GIVOR2	0x1B8	/* Guest IVOR2 */
- #define SPRN_GIVOR3	0x1B9	/* Guest IVOR3 */
- #define SPRN_GIVOR4	0x1BA	/* Guest IVOR4 */
-diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index 0c379e9..e08b469 100644
---- a/arch/powerpc/kernel/exceptions-64e.S
-+++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -308,6 +308,7 @@ interrupt_base_book3e:					/* fake trap */
- 	EXCEPTION_STUB(0x2e0, guest_doorbell_crit)
- 	EXCEPTION_STUB(0x300, hypercall)
- 	EXCEPTION_STUB(0x320, ehpriv)
-+	EXCEPTION_STUB(0x340, lrat_error)
- 
- 	.globl interrupt_end_book3e
- interrupt_end_book3e:
-@@ -676,6 +677,17 @@ kernel_dbg_exc:
- 	bl	.unknown_exception
- 	b	.ret_from_except
- 
-+/* LRAT Error interrupt */
-+	START_EXCEPTION(lrat_error);
-+	NORMAL_EXCEPTION_PROLOG(0x340, BOOKE_INTERRUPT_LRAT_ERROR,
-+			        PROLOG_ADDITION_NONE)
-+	EXCEPTION_COMMON(0x340, PACA_EXGEN, INTS_KEEP)
-+	addi	r3,r1,STACK_FRAME_OVERHEAD
-+	bl	.save_nvgprs
-+	INTS_RESTORE_HARD
-+	bl	.unknown_exception
-+	b	.ret_from_except
-+
- /*
-  * An interrupt came in while soft-disabled; We mark paca->irq_happened
-  * accordingly and if the interrupt is level sensitive, we hard disable
-@@ -858,6 +870,7 @@ BAD_STACK_TRAMPOLINE(0x2e0)
- BAD_STACK_TRAMPOLINE(0x300)
- BAD_STACK_TRAMPOLINE(0x310)
- BAD_STACK_TRAMPOLINE(0x320)
-+BAD_STACK_TRAMPOLINE(0x340)
- BAD_STACK_TRAMPOLINE(0x400)
- BAD_STACK_TRAMPOLINE(0x500)
- BAD_STACK_TRAMPOLINE(0x600)
-@@ -1410,6 +1423,7 @@ _GLOBAL(setup_doorbell_ivors)
- _GLOBAL(setup_ehv_ivors)
- 	SET_IVOR(40, 0x300) /* Embedded Hypervisor System Call */
- 	SET_IVOR(41, 0x320) /* Embedded Hypervisor Privilege */
-+	SET_IVOR(42, 0x340) /* LRAT Error */
- 	SET_IVOR(38, 0x2c0) /* Guest Processor Doorbell */
- 	SET_IVOR(39, 0x2e0) /* Guest Processor Doorbell Crit/MC */
- 	blr
--- 
-1.7.3.4
+>>>>> Increase FPU laziness by calling kvmppc_load_guest_fp() just =
+before
+>>>>> returning to guest instead of each sched in. Without this =
+improvement
+>>>>> an interrupt may also claim floting point corrupting guest state.
+>>>>=20
+>>>> Not sure I follow. Could you please describe exactly what's =
+happening?
+>>>=20
+>>> This was already discussed on the list, I will forward you the =
+thread.
+>>=20
+>> The only thing I've seen in that thread was some pathetic theoretical
+>> case where an interrupt handler would enable fp and clobber state
+>> carelessly. That's not something I'm worried about.
+>=20
+> Neither me though I don't find it pathetic. Please refer it to Scott.
+
+If from Linux's point of view we look like a user space program with =
+active floating point registers, we don't have to worry about this case. =
+Kernel code that would clobber that fp state would clobber random user =
+space's fp state too.
+
+>=20
+>>=20
+>> I really don't see where this patch improves anything tbh. It =
+certainly
+>> makes the code flow more awkward.
+>=20
+> I was pointing you to this: The idea of FPU/AltiVec laziness that the =
+kernel
+> is struggling to achieve is to reduce the number of store/restore =
+operations.
+> Without this improvement we restore the unit each time we are sched =
+it. If an
+> other process take the ownership of the unit (on SMP it's even worse =
+but don't
+> bother with this) the kernel store the unit state to qemu task. This =
+can happen
+> multiple times during handle_exit().
+>=20
+> Do you see it now?=20
+
+Yup. Looks good. The code flow is very hard to follow though - there are =
+a lot of implicit assumptions that don't get documented anywhere. For =
+example the fact that we rely on giveup_fpu() to remove MSR_FP from our =
+thread.
+
+
+Alex
