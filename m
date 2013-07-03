@@ -1,19 +1,20 @@
-Return-Path: <ra8135@perf2farm5.am.freescale.net>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A0C6D2C00A6
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jul 2013 07:28:28 +1000 (EST)
-From: <James.Yang@freescale.com>
-To: <benh@kernel.crashing.org>, <scottwood@freescale.com>
-Subject: [PATCH] Emulate sync instruction variants
-Date: Wed, 3 Jul 2013 16:26:47 -0500
-Message-ID: <1372886807-12109-1-git-send-email-James.Yang@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: James Yang <James.Yang@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ by ozlabs.org (Postfix) with ESMTP id 2755E2C0079
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jul 2013 07:42:45 +1000 (EST)
+Subject: Re: [PATCH 2/2] KVM: PPC: Book3E: Add LRAT error exception handler
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <1372882590.8183.149@snotra>
+Date: Wed, 3 Jul 2013 23:42:40 +0200
+Message-Id: <6D66E322-D680-4F47-9841-E0A299F45EC1@suse.de>
+References: <1372870566-11299-1-git-send-email-mihai.caraman@freescale.com>
+ <1372870566-11299-2-git-send-email-mihai.caraman@freescale.com>
+ <1372882590.8183.149@snotra>
+To: Scott Wood <scottwood@freescale.com>
+Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,49 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: James Yang <James.Yang@freescale.com>
 
-Reserved fields of the sync instruction have been used for other
-instructions (e.g. lwsync).  On processors that do not support variants
-of the sync instruction, emulate it by executing a sync to subsume the
-effect of the intended instruction.
+On 03.07.2013, at 22:16, Scott Wood wrote:
 
-Signed-off-by: James Yang <James.Yang@freescale.com>
----
- arch/powerpc/include/asm/ppc-opcode.h |    2 ++
- arch/powerpc/kernel/traps.c           |    7 +++++++
- 2 files changed, 9 insertions(+), 0 deletions(-)
+> On 07/03/2013 11:56:06 AM, Mihai Caraman wrote:
+>> With LRAT (Logical to Real Address Translation) error exception =
+handler in kernel
+>> KVM needs to add the counterpart otherwise will break the build.
+>> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+>> ---
+>> arch/powerpc/kvm/bookehv_interrupts.S |    2 ++
+>> 1 files changed, 2 insertions(+), 0 deletions(-)
+>=20
+> Please combine these two patches to avoid breaking bisectability.
 
-diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-index eccfc16..0142eb2 100644
---- a/arch/powerpc/include/asm/ppc-opcode.h
-+++ b/arch/powerpc/include/asm/ppc-opcode.h
-@@ -96,6 +96,8 @@
- #define PPC_INST_LSWX			0x7c00042a
- #define PPC_INST_LWARX			0x7c000028
- #define PPC_INST_LWSYNC			0x7c2004ac
-+#define PPC_INST_SYNC			0x7c0004ac
-+#define PPC_INST_SYNC_MASK		0xfc0007fe
- #define PPC_INST_LXVD2X			0x7c000698
- #define PPC_INST_MCRXR			0x7c000400
- #define PPC_INST_MCRXR_MASK		0xfc0007fe
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index a98adc7..c3ceaa2 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -1018,6 +1018,13 @@ static int emulate_instruction(struct pt_regs *regs)
- 		return emulate_isel(regs, instword);
- 	}
- 
-+	/* Emulate sync instruction variants */
-+	if ((instword & PPC_INST_SYNC_MASK) == PPC_INST_SYNC) {
-+		PPC_WARN_EMULATED(sync, regs);
-+		asm volatile ("sync");
-+		return 0;
-+	}
-+
- #ifdef CONFIG_PPC64
- 	/* Emulate the mfspr rD, DSCR. */
- 	if ((((instword & PPC_INST_MFSPR_DSCR_USER_MASK) ==
--- 
-1.7.0.4
+Why does the split break bisectability?
+
+
+Alex
