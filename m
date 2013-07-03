@@ -1,24 +1,19 @@
-Return-Path: <B07421@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe001.messaging.microsoft.com [65.55.88.11])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6AAE12C00A8
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jul 2013 06:16:37 +1000 (EST)
-Date: Wed, 3 Jul 2013 15:16:30 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 2/2] KVM: PPC: Book3E: Add LRAT error exception handler
-To: Mihai Caraman <mihai.caraman@freescale.com>
-References: <1372870566-11299-1-git-send-email-mihai.caraman@freescale.com>
- <1372870566-11299-2-git-send-email-mihai.caraman@freescale.com>
-In-Reply-To: <1372870566-11299-2-git-send-email-mihai.caraman@freescale.com>
- (from mihai.caraman@freescale.com on Wed Jul  3 11:56:06 2013)
-Message-ID: <1372882590.8183.149@snotra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+Return-Path: <abounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CC2642C0319
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jul 2013 06:16:59 +1000 (EST)
+From: Alexandre Bounine <alexandre.bounine@idt.com>
+To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] rapidio: change endpoint device name format
+Date: Wed,  3 Jul 2013 16:15:52 -0400
+Message-Id: <1372882552-21746-1-git-send-email-alexandre.bounine@idt.com>
+Cc: Stef van Os <stef.van.os@Prodrive.nl>,
+ Micha Nelissen <micha.nelissen@Prodrive.nl>,
+ Andre van Herk <andre.van.herk@Prodrive.nl>,
+ Alexandre Bounine <alexandre.bounine@idt.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,16 +23,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/03/2013 11:56:06 AM, Mihai Caraman wrote:
-> With LRAT (Logical to Real Address Translation) error exception =20
-> handler in kernel
-> KVM needs to add the counterpart otherwise will break the build.
->=20
-> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
-> ---
->  arch/powerpc/kvm/bookehv_interrupts.S |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
+Change endpoint device name format to use a component tag value instead of
+device destination ID.
 
-Please combine these two patches to avoid breaking bisectability.
+RapidIO specification defines a component tag to be a unique identifier
+for devices in a network. RapidIO switches already use component tag as
+part of their device name and also use it for device identification when
+processing error management event notifications.
 
--Scott=
+Forming an endpoint's device name using its component tag instead of destination ID
+allows to keep sysfs device directories unchanged in case if a routing
+process dynamically changes endpoint's destination ID as a result of route
+optimization.
+
+This change should not affect any existing users because a valid device
+destination ID always should be obtained by reading "destid" attribute and
+not by parsing device name.
+
+This patch also removes switchid member from struct rio_switch because it
+simply duplicates the component tag and does not have other use than in
+device name generation.
+
+Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
+Cc: Matt Porter <mporter@kernel.crashing.org>
+Cc: Li Yang <leoli@freescale.com>
+Cc: Kumar Gala <galak@kernel.crashing.org>
+Cc: Andre van Herk <andre.van.herk@Prodrive.nl>
+Cc: Micha Nelissen <micha.nelissen@Prodrive.nl>
+Cc: Stef van Os <stef.van.os@Prodrive.nl>
+---
+ drivers/rapidio/rio-scan.c |    5 ++---
+ include/linux/rio.h        |    2 --
+ 2 files changed, 2 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/rapidio/rio-scan.c b/drivers/rapidio/rio-scan.c
+index 0e86569..c744800 100644
+--- a/drivers/rapidio/rio-scan.c
++++ b/drivers/rapidio/rio-scan.c
+@@ -433,7 +433,6 @@ static struct rio_dev *rio_setup_device(struct rio_net *net,
+ 	/* If a PE has both switch and other functions, show it as a switch */
+ 	if (rio_is_switch(rdev)) {
+ 		rswitch = rdev->rswitch;
+-		rswitch->switchid = rdev->comp_tag & RIO_CTAG_UDEVID;
+ 		rswitch->port_ok = 0;
+ 		spin_lock_init(&rswitch->lock);
+ 		rswitch->route_table = kzalloc(sizeof(u8)*
+@@ -446,7 +445,7 @@ static struct rio_dev *rio_setup_device(struct rio_net *net,
+ 				rdid++)
+ 			rswitch->route_table[rdid] = RIO_INVALID_ROUTE;
+ 		dev_set_name(&rdev->dev, "%02x:s:%04x", rdev->net->id,
+-			     rswitch->switchid);
++			     rdev->comp_tag & RIO_CTAG_UDEVID);
+ 
+ 		if (do_enum)
+ 			rio_route_clr_table(rdev, RIO_GLOBAL_TABLE, 0);
+@@ -459,7 +458,7 @@ static struct rio_dev *rio_setup_device(struct rio_net *net,
+ 			rio_enable_rx_tx_port(port, 0, destid, hopcount, 0);
+ 
+ 		dev_set_name(&rdev->dev, "%02x:e:%04x", rdev->net->id,
+-			     rdev->destid);
++			     rdev->comp_tag & RIO_CTAG_UDEVID);
+ 	}
+ 
+ 	rio_attach_device(rdev);
+diff --git a/include/linux/rio.h b/include/linux/rio.h
+index e2faf7b..b71d573 100644
+--- a/include/linux/rio.h
++++ b/include/linux/rio.h
+@@ -92,7 +92,6 @@ union rio_pw_msg;
+ /**
+  * struct rio_switch - RIO switch info
+  * @node: Node in global list of switches
+- * @switchid: Switch ID that is unique across a network
+  * @route_table: Copy of switch routing table
+  * @port_ok: Status of each port (one bit per port) - OK=1 or UNINIT=0
+  * @ops: pointer to switch-specific operations
+@@ -101,7 +100,6 @@ union rio_pw_msg;
+  */
+ struct rio_switch {
+ 	struct list_head node;
+-	u16 switchid;
+ 	u8 *route_table;
+ 	u32 port_ok;
+ 	struct rio_switch_ops *ops;
+-- 
+1.7.8.4
