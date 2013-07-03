@@ -1,31 +1,32 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CB2A42C00A0
+ (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E086D2C00A3
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2013 18:20:17 +1000 (EST)
 Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 3 Jul 2013 18:10:35 +1000
+ Wed, 3 Jul 2013 18:10:25 +1000
 Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id E70362BB0052
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2013 18:20:10 +1000 (EST)
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 20D212BB0053
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2013 18:20:11 +1000 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
  by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r6385B1L57933946
+ r6385CI657933948
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Jul 2013 18:05:12 +1000
 Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r638K9SS004295
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Jul 2013 18:20:09 +1000
+ r638KAms004333
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Jul 2013 18:20:10 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH 1/2] powerpc/mm: Use the correct SLB(LLP) encoding in tlbie
- instruction
-Date: Wed,  3 Jul 2013 13:50:02 +0530
-Message-Id: <1372839603-8308-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH 2/2] powerpc/mm: Fix fallthrough bug in  hpte_decode
+Date: Wed,  3 Jul 2013 13:50:03 +0530
+Message-Id: <1372839603-8308-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1372839603-8308-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1372839603-8308-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,59 +40,35 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-The sllp value is stored in mmu_psize_defs in such a way that we can easily OR
-the value to get the operand for slbmte instruction. ie, the L and LP bits are
-not contiguous. Decode the bits and use them correctly in tlbie.
-regression is introduced by 1f6aaaccb1b3af8613fe45781c1aefee2ae8c6b3
-"powerpc: Update tlbie/tlbiel as per ISA doc"
+We should not fallthrough different case statements in hpte_decode. Add
+break statement to break out of the switch. The regression is introduced by
+dcda287a9b26309ae43a091d0ecde16f8f61b4c0 "powerpc/mm: Simplify hpte_decode"
 
 Reported-by: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/hash_native_64.c | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ arch/powerpc/mm/hash_native_64.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
-index 3f0c30a..0de15fc 100644
+index 0de15fc..e1f9b82 100644
 --- a/arch/powerpc/mm/hash_native_64.c
 +++ b/arch/powerpc/mm/hash_native_64.c
-@@ -43,6 +43,7 @@ static inline void __tlbie(unsigned long vpn, int psize, int apsize, int ssize)
- {
- 	unsigned long va;
- 	unsigned int penc;
-+	unsigned long sllp;
- 
- 	/*
- 	 * We need 14 to 65 bits of va for a tlibe of 4K page
-@@ -64,7 +65,9 @@ static inline void __tlbie(unsigned long vpn, int psize, int apsize, int ssize)
- 		/* clear out bits after (52) [0....52.....63] */
- 		va &= ~((1ul << (64 - 52)) - 1);
- 		va |= ssize << 8;
--		va |= mmu_psize_defs[apsize].sllp << 6;
-+		sllp = ((mmu_psize_defs[apsize].sllp & 0x100) >> 6) |
-+			((mmu_psize_defs[apsize].sllp & 0x30) >> 4);
-+		va |= sllp << 5;
- 		asm volatile(ASM_FTR_IFCLR("tlbie %0,0", PPC_TLBIE(%1,%0), %2)
- 			     : : "r" (va), "r"(0), "i" (CPU_FTR_ARCH_206)
- 			     : "memory");
-@@ -98,6 +101,7 @@ static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
- {
- 	unsigned long va;
- 	unsigned int penc;
-+	unsigned long sllp;
- 
- 	/* VPN_SHIFT can be atmost 12 */
- 	va = vpn << VPN_SHIFT;
-@@ -113,7 +117,9 @@ static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
- 		/* clear out bits after(52) [0....52.....63] */
- 		va &= ~((1ul << (64 - 52)) - 1);
- 		va |= ssize << 8;
--		va |= mmu_psize_defs[apsize].sllp << 6;
-+		sllp = ((mmu_psize_defs[apsize].sllp & 0x100) >> 6) |
-+			((mmu_psize_defs[apsize].sllp & 0x30) >> 4);
-+		va |= sllp << 5;
- 		asm volatile(".long 0x7c000224 | (%0 << 11) | (0 << 21)"
- 			     : : "r"(va) : "memory");
- 		break;
+@@ -560,6 +560,7 @@ static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
+ 			seg_off |= vpi << shift;
+ 		}
+ 		*vpn = vsid << (SID_SHIFT - VPN_SHIFT) | seg_off >> VPN_SHIFT;
++		break;
+ 	case MMU_SEGSIZE_1T:
+ 		/* We only have 40 - 23 bits of seg_off in avpn */
+ 		seg_off = (avpn & 0x1ffff) << 23;
+@@ -569,6 +570,7 @@ static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
+ 			seg_off |= vpi << shift;
+ 		}
+ 		*vpn = vsid << (SID_SHIFT_1T - VPN_SHIFT) | seg_off >> VPN_SHIFT;
++		break;
+ 	default:
+ 		*vpn = size = 0;
+ 	}
 -- 
 1.8.1.2
