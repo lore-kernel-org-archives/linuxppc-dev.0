@@ -1,14 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Message-ID: <1372831270.4122.36.camel@pasglop>
-Subject: [PATCH] of: Fix address decoding on Bimini and js2x machines
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- devicetree-discuss@lists.ozlabs.org
-Date: Wed, 03 Jul 2013 16:01:10 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Thierry Reding <thierry.reding@avionic-design.de>,
- Rob Herring <rob.herring@calxeda.com>, Arnd Bergmann <arnd@arndb.de>
+Return-Path: <paulus@ozlabs.org>
+Date: Wed, 3 Jul 2013 16:16:26 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH -V3 4/4] powerpc/kvm: Use 256K chunk to track both RMA
+ and hash page table allocation.
+Message-ID: <20130703061626.GB25034@drongo>
+References: <1372743918-12293-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1372743918-12293-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1372743918-12293-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: kvm@vger.kernel.org, agraf@suse.de, mina86@mina86.com, linux-mm@kvack.org,
+ kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ m.szyprowski@samsung.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,40 +22,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
- Commit:
-    
-  e38c0a1fbc5803cbacdaac0557c70ac8ca5152e7
-  of/address: Handle #address-cells > 2 specially
-    
-broke real time clock access on Bimini, js2x, and similar powerpc
-machines using the "maple" platform. That code was indirectly relying
-on the old (broken) behaviour of the translation for the hypertransport
-to ISA bridge.
-    
-This fixes it by treating hypertransport as a PCI bus
-    
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: <stable@vger.kernel.org> [v3.6+]
----
+On Tue, Jul 02, 2013 at 11:15:18AM +0530, Aneesh Kumar K.V wrote:
+> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+> 
+> Both RMA and hash page table request will be a multiple of 256K. We can use
+> a chunk size of 256K to track the free/used 256K chunk in the bitmap. This
+> should help to reduce the bitmap size.
+> 
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-Rob, if you have no objection I will put that in powerpc -next
+Acked-by: Paul Mackerras <paulus@samba.org>
 
-diff --git a/drivers/of/address.c b/drivers/of/address.c
-index 04da786..7c8221d 100644
---- a/drivers/of/address.c
-+++ b/drivers/of/address.c
-@@ -106,8 +106,12 @@ static unsigned int of_bus_default_get_flags(const __be32 *
- 
- static int of_bus_pci_match(struct device_node *np)
- {
--       /* "vci" is for the /chaos bridge on 1st-gen PCI powermacs */
--       return !strcmp(np->type, "pci") || !strcmp(np->type, "vci");
-+       /*
-+        * "vci" is for the /chaos bridge on 1st-gen PCI powermacs
-+        * "ht" is hypertransport
-+        */
-+       return !strcmp(np->type, "pci") || !strcmp(np->type, "vci") ||
-+               !strcmp(np->type, "ht");
- }
- 
- static void of_bus_pci_count_cells(struct device_node *np,
+Thanks!
