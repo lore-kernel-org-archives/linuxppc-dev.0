@@ -1,22 +1,22 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- by ozlabs.org (Postfix) with ESMTP id E0F052C009E
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jul 2013 02:59:50 +1000 (EST)
+Return-Path: <B07421@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 343242C00A0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jul 2013 03:07:22 +1000 (EST)
+Date: Wed, 3 Jul 2013 12:07:12 -0500
+From: Scott Wood <scottwood@freescale.com>
 Subject: Re: [PATCH 3/6] KVM: PPC: Book3E: Increase FPU laziness
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <300B73AA675FCE4A93EB4FC1D42459FF0A2A3BDA@039-SN2MPN1-013.039d.mgd.msft.net>
-Date: Wed, 3 Jul 2013 18:59:45 +0200
-Message-Id: <23C56B31-5145-481E-9877-F1878F66959D@suse.de>
-References: <1372855359-13452-1-git-send-email-mihai.caraman@freescale.com>
- <1372855359-13452-4-git-send-email-mihai.caraman@freescale.com>
- <4A7356DD-BD24-49B3-AB17-B3237F71CF88@suse.de>
- <300B73AA675FCE4A93EB4FC1D42459FF0A2A38B0@039-SN2MPN1-013.039d.mgd.msft.net>
- <C4820C32-33E6-4E34-A24C-C49BD7CC8307@suse.de>
- <300B73AA675FCE4A93EB4FC1D42459FF0A2A3BDA@039-SN2MPN1-013.039d.mgd.msft.net>
-To: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+To: Alexander Graf <agraf@suse.de>
+In-Reply-To: <C4820C32-33E6-4E34-A24C-C49BD7CC8307@suse.de> (from
+ agraf@suse.de on Wed Jul  3 10:11:50 2013)
+Message-ID: <1372871232.8183.131@snotra>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
  "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,56 +28,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On 03.07.2013, at 17:41, Caraman Mihai Claudiu-B02008 wrote:
-
->>>>> Increase FPU laziness by calling kvmppc_load_guest_fp() just =
-before
->>>>> returning to guest instead of each sched in. Without this =
-improvement
->>>>> an interrupt may also claim floting point corrupting guest state.
->>>>=20
->>>> Not sure I follow. Could you please describe exactly what's =
-happening?
->>>=20
->>> This was already discussed on the list, I will forward you the =
-thread.
->>=20
->> The only thing I've seen in that thread was some pathetic theoretical
->> case where an interrupt handler would enable fp and clobber state
->> carelessly. That's not something I'm worried about.
+On 07/03/2013 10:11:50 AM, Alexander Graf wrote:
 >=20
-> Neither me though I don't find it pathetic. Please refer it to Scott.
-
-If from Linux's point of view we look like a user space program with =
-active floating point registers, we don't have to worry about this case. =
-Kernel code that would clobber that fp state would clobber random user =
-space's fp state too.
-
+> On 03.07.2013, at 15:55, Caraman Mihai Claudiu-B02008 wrote:
 >=20
->>=20
->> I really don't see where this patch improves anything tbh. It =
-certainly
->> makes the code flow more awkward.
+> >> -----Original Message-----
+> >> From: Alexander Graf [mailto:agraf@suse.de]
+> >> Sent: Wednesday, July 03, 2013 4:45 PM
+> >> To: Caraman Mihai Claudiu-B02008
+> >> Cc: kvm-ppc@vger.kernel.org; kvm@vger.kernel.org; linuxppc-
+> >> dev@lists.ozlabs.org
+> >> Subject: Re: [PATCH 3/6] KVM: PPC: Book3E: Increase FPU laziness
+> >>
+> >>
+> >> On 03.07.2013, at 14:42, Mihai Caraman wrote:
+> >>
+> >>> Increase FPU laziness by calling kvmppc_load_guest_fp() just =20
+> before
+> >>> returning to guest instead of each sched in. Without this =20
+> improvement
+> >>> an interrupt may also claim floting point corrupting guest state.
+> >>
+> >> Not sure I follow. Could you please describe exactly what's =20
+> happening?
+> >
+> > This was already discussed on the list, I will forward you the =20
+> thread.
 >=20
-> I was pointing you to this: The idea of FPU/AltiVec laziness that the =
-kernel
-> is struggling to achieve is to reduce the number of store/restore =
-operations.
-> Without this improvement we restore the unit each time we are sched =
-it. If an
-> other process take the ownership of the unit (on SMP it's even worse =
-but don't
-> bother with this) the kernel store the unit state to qemu task. This =
-can happen
-> multiple times during handle_exit().
->=20
-> Do you see it now?=20
+> The only thing I've seen in that thread was some pathetic theoretical =20
+> case where an interrupt handler would enable fp and clobber state =20
+> carelessly. That's not something I'm worried about.
 
-Yup. Looks good. The code flow is very hard to follow though - there are =
-a lot of implicit assumptions that don't get documented anywhere. For =
-example the fact that we rely on giveup_fpu() to remove MSR_FP from our =
-thread.
+On x86 floating point registers can be used for memcpy(), which can be =20
+used in interrupt handlers.  Just because it doesn't happen on PPC =20
+today doesn't make it a "pathetic theoretical case" that we should =20
+ignore and leave a landmine buried in the KVM code.  Even power7 is =20
+using something similar for copyuser (which isn't called from interrupt =20
+context, but it's not a huge leap from that to doing it in memcpy).
 
+It also doesn't seem *that* farfetched that some driver for unusual =20
+hardware could decide it needs FP in its interrupt handler, and call =20
+the function that is specifically meant to ensure that.  It's frowned =20
+upon, but that doesn't mean nobody will ever do it.
 
-Alex
+-Scott=
