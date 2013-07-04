@@ -1,27 +1,26 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail-pb0-x236.google.com (mail-pb0-x236.google.com
- [IPv6:2607:f8b0:400e:c01::236])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A0BEA2C00B3
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jul 2013 11:08:30 +1000 (EST)
-Received: by mail-pb0-f54.google.com with SMTP id ro2so668165pbb.13
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jul 2013 18:08:27 -0700 (PDT)
-Date: Thu, 4 Jul 2013 09:08:18 +0800
-From: Kevin Hao <haokexin@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 1/2] powerpc: enable the relocatable support for the fsl
- booke 32bit kernel
-Message-ID: <20130704010818.GA16188@pek-khao-d1.corp.ad.wrs.com>
-References: <20130702032447.GA26391@pek-khao-d1.corp.ad.wrs.com>
- <1372804758.8183.124@snotra>
- <20130703030044.GA25190@pek-khao-d1.corp.ad.wrs.com>
- <1372883907.8183.151@snotra>
+Return-Path: <B42677@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8F3DD2C00B8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jul 2013 12:04:48 +1000 (EST)
+From: Zhang Haijun-B42677 <B42677@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: =?gb2312?B?tPC4tDogW1BBVENIIDIvMl0gcG93ZXJwYy84NXh4OiBhZGQgdGhlIFAxMDIw?=
+ =?gb2312?Q?RDB-PD_DTS_support?=
+Date: Thu, 4 Jul 2013 02:04:40 +0000
+Message-ID: <99E897753B6F7048BD8CCDB4661D02E1362C90@039-SN2MPN1-023.039d.mgd.msft.net>
+References: <1372651943-12045-1-git-send-email-Haijun.Zhang@freescale.com>
+ <1372651943-12045-2-git-send-email-Haijun.Zhang@freescale.com>,
+ <1372878572.8183.145@snotra>
+In-Reply-To: <1372878572.8183.145@snotra>
+Content-Type: text/plain; charset="gb2312"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="/9DWx/yDrRhgMJTb"
-In-Reply-To: <1372883907.8183.151@snotra>
-Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
+Cc: Huang Changming-R66093 <r66093@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Xie Xiaobo-R63061 <r63061@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,57 +30,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---/9DWx/yDrRhgMJTb
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, Jul 03, 2013 at 03:38:27PM -0500, Scott Wood wrote:
-> On 07/02/2013 10:00:44 PM, Kevin Hao wrote:
-> >On Tue, Jul 02, 2013 at 05:39:18PM -0500, Scott Wood wrote:
-> >> How much overhead (space and time) is this really?
-> >
-> >The following is the additional sections when relocatable is
-> >enabled for
-> >a p2020rdb board.
-> >   section        size
-> >  .dynsym       000007f0
-> >  .dynstr       00000926
-> >  .dynamic      00000080
-> >  .hash         00000388
-> >  .interp       00000011
-> >  .rela.dyn     00215250
-> >
-> >The time for the relocation is about 32ms on a p2020rdb board.
->=20
-> Hmm... more relocations than I expected.  What percentage is this of
-> the total image size?
-
-The size of vmlinux.bin is about 10M. The percentage of the relocation
-section is about 20%. But look on the bright side of thing, all the relocat=
-ion
-stuff are in init section and should be discarded at runtime. :-)
-
-Thanks,
-Kevin
-
->=20
-> -Scott
-
---/9DWx/yDrRhgMJTb
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQEcBAEBAgAGBQJR1MsCAAoJEJNY7TDerrFx4r4IAJqw8dCcfXEInw+PdOBm/BrF
-0hwOd7Jb2oox8Hcj4RJVBBAvi+tT3d52kdaYQWrDhxckrVpPIsHVeN6XnoexnRhB
-NELGpRvAjznDjhN+NhL6t744RrJI+xMFlW0s78XsDKTDj6Jv3HR6of+lXDuzm+mL
-DoF85FN8LKcS92vphzyLyyRZyQUOCD1MdIoCHoHBDk5pNKJQCI9gy5YzTD9iksvt
-UcTebBvzViu6Ate6k8tXM0GBtUpS/o84SXxWLPyt9R26vJW893LZkJVcuNyX2CxY
-xyjIl5UcdwnY3i5Z+VL9Na57xApLKG/gRLV8gyyBMmTvJkEi2sAz+T6ZNzse5KU=
-=rssN
------END PGP SIGNATURE-----
-
---/9DWx/yDrRhgMJTb--
+CgpSZWdhcmRzICYgVGhhbmtzCgpIYWlqdW4uCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fCreivP7IyzogV29vZCBTY290dC1CMDc0MjEKt6LLzcqxvOQ6IDIwMTPE6jfU
+wjPI1SAxOTowOQrK1bz+yMs6IFpoYW5nIEhhaWp1bi1CNDI2NzcKQ2M6IGdhbGFrQGtlcm5lbC5j
+cmFzaGluZy5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBaaGFuZyBIYWlqdW4t
+QjQyNjc3OyBIdWFuZyBDaGFuZ21pbmctUjY2MDkzCtb3zOI6IFJlOiBbUEFUQ0ggMi8yXSBwb3dl
+cnBjLzg1eHg6IGFkZCB0aGUgUDEwMjBSREItUEQgRFRTIHN1cHBvcnQKCk9uIDA2LzMwLzIwMTMg
+MTE6MTI6MjMgUE0sIEhhaWp1biBaaGFuZyB3cm90ZToKPiBGcm9tOiAiSGFpanVuLlpoYW5nIiA8
+SGFpanVuLlpoYW5nQGZyZWVzY2FsZS5jb20+Cj4KPiBPdmVydmlldyBvZiBQMTAyMFJEQi1QRCBk
+ZXZpY2U6Cj4gLSBERFIzIDJHQgo+IC0gTk9SIGZsYXNoIDY0TUIKPiAtIE5BTkQgZmxhc2ggMTI4
+TUIKPiAtIFNQSSBmbGFzaCAxNk1CCj4gLSBJMkMgRUVQUk9NIDI1NktiCj4gLSBlVFNFQzEgKFJH
+TUlJIFBIWSkgY29ubmVjdGVkIHRvIFZTQzczODUgTDIgc3dpdGNoCj4gLSBlVFNFQzIgKFNHTUlJ
+IFBIWSkKPiAtIGVUU0VDMyAoUkdNSUkgUEhZKQo+IC0gU0RIQwo+IC0gMiBVU0IgcG9ydHMKPiAt
+IDQgVERNIHBvcnRzCj4gLSBQQ0llCj4KPiBTaWduZWQtb2ZmLWJ5OiBIYWlqdW4gWmhhbmcgPEhh
+aWp1bi5aaGFuZ0BmcmVlc2NhbGUuY29tPgo+IFNpZ25lZC1vZmYtYnk6IEplcnJ5IEh1YW5nIDxD
+aGFuZy1NaW5nLkh1YW5nQGZyZWVzY2FsZS5jb20+Cj4gQ0M6IFNjb3R0IFdvb2QgPHNjb3R0d29v
+ZEBmcmVlc2NhbGUuY29tPgo+IC0tLQo+ICBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvcDEwMjByZGIt
+cGQuZHRzaSAgICB8IDI1Nwo+ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKwo+ICBhcmNo
+L3Bvd2VycGMvYm9vdC9kdHMvcDEwMjByZGItcGRfMzJiLmR0cyB8ICA5MCArKysrKysrKysrKwo+
+ICAyIGZpbGVzIGNoYW5nZWQsIDM0NyBpbnNlcnRpb25zKCspCj4gIGNyZWF0ZSBtb2RlIDEwMDY0
+NCBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvcDEwMjByZGItcGQuZHRzaQo+ICBjcmVhdGUgbW9kZSAx
+MDA2NDQgYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL3AxMDIwcmRiLXBkXzMyYi5kdHMKCldoYXQgYWJv
+dXQgMzZiPwoKSGFpanVuOiAyRyBERFIgd2FzIGZpeCBvbiBQMTAyMFJEQi1QRCBib2FyZC4gTm8g
+bmVlZCAzNmJpdCBzdXBwb3J0LiBBbHNvIG5vIDM2Yml0IHVib290IHN1cHBvcnQuCgoKPiArICAg
+ICBjcGxkQDIsMCB7Cj4gKyAgICAgICAgICAgICAjYWRkcmVzcy1jZWxscyA9IDwxPjsKPiArICAg
+ICAgICAgICAgICNzaXplLWNlbGxzID0gPDE+Owo+ICsgICAgICAgICAgICAgY29tcGF0aWJsZSA9
+ICJjcGxkIjsKPiArICAgICAgICAgICAgIHJlZyA9IDwweDIgMHgwIDB4MjAwMDA+Owo+ICsgICAg
+ICAgICAgICAgcmVhZC1vbmx5Owo+ICsgICAgIH07CgpXaGVyZSBkb2VzICJjcGxkIiBhcyBhIGNv
+bXBhdGlibGUgY29tZSBmcm9tIChpdCdzIHdheSB0b28gdmFndWUpPyAgV2hhdAppcyByZWFkLW9u
+bHkgc3VwcG9zZWQgdG8gbWVhbiBoZXJlPwoKSGFpanVuOiBJbiBmYWN0IGFsbW9zdCBhbGwgYm9h
+cmQgaGFzIGl0cyBzcGVjaWFsIENQTEQuIFRoaXMgbm9kZSBqdXN0IGNvcHkgZnJvbSBwMTAyMHJk
+Yi1wYyBib2FyZC4KClNvLCBjaGFuZ2UgaXQgdG8gOgoKY3BsZEAyLDAgewogICAgICAgICAgY29t
+cGF0aWJsZSA9ICJmc2wsIHAxMDIwcmRiLWNwbGQiOwogICAgICAgICAgcmVnID0gPDB4MiAweDAg
+MHgyMDAwMD47CiAgICAgICAgICByZWFkLW9ubHk7Cn07CgpDUExEIHdhcyBqdXN0IGxpa2UgYSBF
+RVBST00sIGl0IGNvbnRhaW4gdGhlIGNvbmZpZyBpbmZvcm1hdGlvbiBhYm91dCBURE0sIExFRCwg
+UE9XRVIsIHdhdGNoZG9nLCBGWE8sIEZYUyBhbmQgc28gb24uCldlIGNoYW5nZWQgaXQgdW5kZXIg
+dWJvb3QsIHdoZW4ga2VybmVsIHNldHVwIHdlIG9ubHkgbmVlZCB0byByZWFkLCBzdXBwb3NlZCBu
+b3QgYmUgY2hhbmdlZC4KCldoeSBkbyB5b3UgaGF2ZSAjYWRkcmVzcy1jZWxscy8jc2l6ZS1jZWxs
+cyBpZiB0aGVyZSBhcmUgbm8gY2hpbGQgbm9kZXM/CgpJJ2xsIHJlbW92ZSB0aGlzLgoKCi1TY290
+dAo=
