@@ -1,24 +1,20 @@
-Return-Path: <neorf3k@gmail.com>
-Received: from mail-wg0-x22c.google.com (mail-wg0-x22c.google.com
- [IPv6:2a00:1450:400c:c00::22c])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0137A2C009A
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jul 2013 19:32:04 +1000 (EST)
-Received: by mail-wg0-f44.google.com with SMTP id m15so933222wgh.23
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jul 2013 02:32:00 -0700 (PDT)
-Received: from [109.52.126.4] ([109.52.126.4])
- by mx.google.com with ESMTPSA id fb2sm33435662wic.4.2013.07.04.02.31.59
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLSv1 cipher=ECDHE-RSA-RC4-SHA bits=128/128);
- Thu, 04 Jul 2013 02:31:59 -0700 (PDT)
-From: Lorenzo Forzini <neorf3k@gmail.com>
+Return-Path: <michael@ellerman.id.au>
+Date: Thu, 4 Jul 2013 22:52:18 +1000
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Vince Weaver <vince@deater.net>
+Subject: Re: [PATCH v2 2/2] perf tools: Make Power7 events available for perf
+Message-ID: <20130704125218.GA21134@concordia>
+References: <1372170933-4538-1-git-send-email-runzhen@linux.vnet.ibm.com>
+ <1372170933-4538-3-git-send-email-runzhen@linux.vnet.ibm.com>
+ <alpine.DEB.2.02.1306251240440.25443@pianoman.cluster.toy>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Subject: help with custom board based on mpc5200b
-Message-Id: <26BF10C8-C181-4FEA-9314-7D8D3C1AB4FD@gmail.com>
-Date: Thu, 4 Jul 2013 11:31:54 +0200
-To: linuxppc-dev@lists.ozlabs.org
-Mime-Version: 1.0 (Mac OS X Mail 6.5 \(1508\))
+In-Reply-To: <alpine.DEB.2.02.1306251240440.25443@pianoman.cluster.toy>
+Cc: vincent.weaver@maine.edu, Peter Zijlstra <peterz@infradead.org>,
+ linux-kernel@vger.kernel.org, Stephane Eranian <eranian@google.com>,
+ xiaoguangrong@linux.vnet.ibm.com, acme@redhat.com, paulus@samba.org,
+ Runzhen Wang <runzhen@linux.vnet.ibm.com>, sukadev@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,19 +24,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello, we're using a custom board based on mpc5200b
+On Tue, Jun 25, 2013 at 12:46:42PM -0400, Vince Weaver wrote:
+> On Tue, 25 Jun 2013, Runzhen Wang wrote:
+> 
+> > This patch makes all the POWER7 events available in sysfs.
+> > 
+> > ...
+> >
+> > $ size arch/powerpc/perf/power7-pmu.o
+> >    text	   data	    bss	    dec	    hex	filename
+> >    3073	   2720	      0	   5793	   16a1	arch/powerpc/perf/power7-pmu.o
+> > 
+> > and after the patch is applied, it is:
+> > 
+> > $ size arch/powerpc/perf/power7-pmu.o
+> >    text	   data	    bss	    dec	    hex	filename
+> >   15950	  31112	      0	  47062	   b7d6	arch/powerpc/perf/power7-pmu.o
+> 
+> So if I'm reading this right, there's 45k of overhead for just one cpu 
+> type?
 
-We are using kernel 2.6.33 and when we using ethernet, we get 80% packet =
-loss with ping.
-Where could i find the solutions?
+I think there's another ~56K at runtime too, at least on my system where
+each sysfs_dirent is 112 bytes.
+ 
+> What happens if we do this on x86?
+> 
+> If we have similar for p6/p4/core2/nehalem/ivb/snb/amd10h/amd15h/amd16h/knb
+> that's 450k of event defintions in the kernel.  And may I remind everyone 
+> that you can't compile perf_event support as a module, nor can you 
+> unconfigure it on x86 (it's always built in, no option to disable).
 
-U-boot information:
-CPU:   MPC5200B v2.2, Core v1.4 at 132 MHz
-       Bus 132 MHz, IPB 132 MHz, PCI 66 MHz
-Board: Ran Controller Board
+To be honest on Power7 systems we're not really bothered about ~100K,
+that's less than two pages. But I agree with your point that it's
+getting a bit silly.
 
-I2C:   85 kHz, ready
+Various folks have tried over the years to get alternative approaches
+adopted (as I'm sure you know), and this has just ended up as the path
+of least resistance.
 
-Thanks
+> I'd like to repeat my unpopular position that we just link perf against 
+> libpfm4 and keep event tables in userspace where they belong.
 
-Lorenzo=
+I don't think it even needs libpfm4, just some csv files in tools/perf
+would do the trick.
+
+Instead we have Google using gooda, which provides event decoding on top
+of perf (via libpfm4). Andi Kleen at Intel has a tool that provides
+event decoding on top of perf. Presumably Facebook do too? And at IBM
+most folks still use oprofile, because it provides event decoding. 
+
+cheers
