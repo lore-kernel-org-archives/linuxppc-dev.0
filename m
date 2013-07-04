@@ -1,26 +1,12 @@
-Return-Path: <B42677@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8F3DD2C00B8
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jul 2013 12:04:48 +1000 (EST)
-From: Zhang Haijun-B42677 <B42677@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: =?gb2312?B?tPC4tDogW1BBVENIIDIvMl0gcG93ZXJwYy84NXh4OiBhZGQgdGhlIFAxMDIw?=
- =?gb2312?Q?RDB-PD_DTS_support?=
-Date: Thu, 4 Jul 2013 02:04:40 +0000
-Message-ID: <99E897753B6F7048BD8CCDB4661D02E1362C90@039-SN2MPN1-023.039d.mgd.msft.net>
-References: <1372651943-12045-1-git-send-email-Haijun.Zhang@freescale.com>
- <1372651943-12045-2-git-send-email-Haijun.Zhang@freescale.com>,
- <1372878572.8183.145@snotra>
-In-Reply-To: <1372878572.8183.145@snotra>
-Content-Type: text/plain; charset="gb2312"
+Return-Path: <paulus@ozlabs.org>
+Date: Thu, 4 Jul 2013 13:05:06 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Use ibm,chip-id property to compute cpu_core_mask
+ if available
+Message-ID: <20130704030506.GA2396@iris.ozlabs.ibm.com>
 MIME-Version: 1.0
-Cc: Huang Changming-R66093 <r66093@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Xie Xiaobo-R63061 <r63061@freescale.com>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,42 +16,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-CgpSZWdhcmRzICYgVGhhbmtzCgpIYWlqdW4uCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fCreivP7IyzogV29vZCBTY290dC1CMDc0MjEKt6LLzcqxvOQ6IDIwMTPE6jfU
-wjPI1SAxOTowOQrK1bz+yMs6IFpoYW5nIEhhaWp1bi1CNDI2NzcKQ2M6IGdhbGFrQGtlcm5lbC5j
-cmFzaGluZy5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBaaGFuZyBIYWlqdW4t
-QjQyNjc3OyBIdWFuZyBDaGFuZ21pbmctUjY2MDkzCtb3zOI6IFJlOiBbUEFUQ0ggMi8yXSBwb3dl
-cnBjLzg1eHg6IGFkZCB0aGUgUDEwMjBSREItUEQgRFRTIHN1cHBvcnQKCk9uIDA2LzMwLzIwMTMg
-MTE6MTI6MjMgUE0sIEhhaWp1biBaaGFuZyB3cm90ZToKPiBGcm9tOiAiSGFpanVuLlpoYW5nIiA8
-SGFpanVuLlpoYW5nQGZyZWVzY2FsZS5jb20+Cj4KPiBPdmVydmlldyBvZiBQMTAyMFJEQi1QRCBk
-ZXZpY2U6Cj4gLSBERFIzIDJHQgo+IC0gTk9SIGZsYXNoIDY0TUIKPiAtIE5BTkQgZmxhc2ggMTI4
-TUIKPiAtIFNQSSBmbGFzaCAxNk1CCj4gLSBJMkMgRUVQUk9NIDI1NktiCj4gLSBlVFNFQzEgKFJH
-TUlJIFBIWSkgY29ubmVjdGVkIHRvIFZTQzczODUgTDIgc3dpdGNoCj4gLSBlVFNFQzIgKFNHTUlJ
-IFBIWSkKPiAtIGVUU0VDMyAoUkdNSUkgUEhZKQo+IC0gU0RIQwo+IC0gMiBVU0IgcG9ydHMKPiAt
-IDQgVERNIHBvcnRzCj4gLSBQQ0llCj4KPiBTaWduZWQtb2ZmLWJ5OiBIYWlqdW4gWmhhbmcgPEhh
-aWp1bi5aaGFuZ0BmcmVlc2NhbGUuY29tPgo+IFNpZ25lZC1vZmYtYnk6IEplcnJ5IEh1YW5nIDxD
-aGFuZy1NaW5nLkh1YW5nQGZyZWVzY2FsZS5jb20+Cj4gQ0M6IFNjb3R0IFdvb2QgPHNjb3R0d29v
-ZEBmcmVlc2NhbGUuY29tPgo+IC0tLQo+ICBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvcDEwMjByZGIt
-cGQuZHRzaSAgICB8IDI1Nwo+ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKwo+ICBhcmNo
-L3Bvd2VycGMvYm9vdC9kdHMvcDEwMjByZGItcGRfMzJiLmR0cyB8ICA5MCArKysrKysrKysrKwo+
-ICAyIGZpbGVzIGNoYW5nZWQsIDM0NyBpbnNlcnRpb25zKCspCj4gIGNyZWF0ZSBtb2RlIDEwMDY0
-NCBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvcDEwMjByZGItcGQuZHRzaQo+ICBjcmVhdGUgbW9kZSAx
-MDA2NDQgYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL3AxMDIwcmRiLXBkXzMyYi5kdHMKCldoYXQgYWJv
-dXQgMzZiPwoKSGFpanVuOiAyRyBERFIgd2FzIGZpeCBvbiBQMTAyMFJEQi1QRCBib2FyZC4gTm8g
-bmVlZCAzNmJpdCBzdXBwb3J0LiBBbHNvIG5vIDM2Yml0IHVib290IHN1cHBvcnQuCgoKPiArICAg
-ICBjcGxkQDIsMCB7Cj4gKyAgICAgICAgICAgICAjYWRkcmVzcy1jZWxscyA9IDwxPjsKPiArICAg
-ICAgICAgICAgICNzaXplLWNlbGxzID0gPDE+Owo+ICsgICAgICAgICAgICAgY29tcGF0aWJsZSA9
-ICJjcGxkIjsKPiArICAgICAgICAgICAgIHJlZyA9IDwweDIgMHgwIDB4MjAwMDA+Owo+ICsgICAg
-ICAgICAgICAgcmVhZC1vbmx5Owo+ICsgICAgIH07CgpXaGVyZSBkb2VzICJjcGxkIiBhcyBhIGNv
-bXBhdGlibGUgY29tZSBmcm9tIChpdCdzIHdheSB0b28gdmFndWUpPyAgV2hhdAppcyByZWFkLW9u
-bHkgc3VwcG9zZWQgdG8gbWVhbiBoZXJlPwoKSGFpanVuOiBJbiBmYWN0IGFsbW9zdCBhbGwgYm9h
-cmQgaGFzIGl0cyBzcGVjaWFsIENQTEQuIFRoaXMgbm9kZSBqdXN0IGNvcHkgZnJvbSBwMTAyMHJk
-Yi1wYyBib2FyZC4KClNvLCBjaGFuZ2UgaXQgdG8gOgoKY3BsZEAyLDAgewogICAgICAgICAgY29t
-cGF0aWJsZSA9ICJmc2wsIHAxMDIwcmRiLWNwbGQiOwogICAgICAgICAgcmVnID0gPDB4MiAweDAg
-MHgyMDAwMD47CiAgICAgICAgICByZWFkLW9ubHk7Cn07CgpDUExEIHdhcyBqdXN0IGxpa2UgYSBF
-RVBST00sIGl0IGNvbnRhaW4gdGhlIGNvbmZpZyBpbmZvcm1hdGlvbiBhYm91dCBURE0sIExFRCwg
-UE9XRVIsIHdhdGNoZG9nLCBGWE8sIEZYUyBhbmQgc28gb24uCldlIGNoYW5nZWQgaXQgdW5kZXIg
-dWJvb3QsIHdoZW4ga2VybmVsIHNldHVwIHdlIG9ubHkgbmVlZCB0byByZWFkLCBzdXBwb3NlZCBu
-b3QgYmUgY2hhbmdlZC4KCldoeSBkbyB5b3UgaGF2ZSAjYWRkcmVzcy1jZWxscy8jc2l6ZS1jZWxs
-cyBpZiB0aGVyZSBhcmUgbm8gY2hpbGQgbm9kZXM/CgpJJ2xsIHJlbW92ZSB0aGlzLgoKCi1TY290
-dAo=
+Some systems have an ibm,chip-id property in the cpu nodes in the
+device tree.  On these systems, we now use that to compute the
+cpu_core_mask (i.e. the set of core siblings) rather than looking
+at cache properties.
+
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index b72d8c9..3b7a118 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -587,6 +587,32 @@ int cpu_first_thread_of_core(int core)
+ }
+ EXPORT_SYMBOL_GPL(cpu_first_thread_of_core);
+ 
++static void traverse_siblings_chip_id(int cpu, int add, int chipid)
++{
++	const struct cpumask *mask;
++	struct device_node *np;
++	int i, plen;
++	const int *prop;
++
++	mask = add ? cpu_online_mask : cpu_present_mask;
++	for_each_cpu(i, mask) {
++		np = of_get_cpu_node(i, NULL);
++		if (!np)
++			continue;
++		prop = of_get_property(np, "ibm,chip-id", &plen);
++		if (prop && plen == sizeof(int) && *prop == chipid) {
++			if (add) {
++				cpumask_set_cpu(cpu, cpu_core_mask(i));
++				cpumask_set_cpu(i, cpu_core_mask(cpu));
++			} else {
++				cpumask_clear_cpu(cpu, cpu_core_mask(i));
++				cpumask_clear_cpu(i, cpu_core_mask(cpu));
++			}
++		}
++		of_node_put(np);
++	}
++}
++
+ /* Must be called when no change can occur to cpu_present_mask,
+  * i.e. during cpu online or offline.
+  */
+@@ -611,14 +637,29 @@ static struct device_node *cpu_to_l2cache(int cpu)
+ 
+ static void traverse_core_siblings(int cpu, int add)
+ {
+-	struct device_node *l2_cache;
++	struct device_node *l2_cache, *np;
+ 	const struct cpumask *mask;
+-	int i;
++	int i, chip, plen;
++	const int *prop;
++
++	/* First see if we have ibm,chip-id properties in cpu nodes */
++	np = of_get_cpu_node(cpu, NULL);
++	if (np) {
++		chip = -1;
++		prop = of_get_property(np, "ibm,chip-id", &plen);
++		if (prop && plen == sizeof(int))
++			chip = *(int *)prop;
++		of_node_put(np);
++		if (chip >= 0) {
++			traverse_siblings_chip_id(cpu, add, chip);
++			return;
++		}
++	}
+ 
+ 	l2_cache = cpu_to_l2cache(cpu);
+ 	mask = add ? cpu_online_mask : cpu_present_mask;
+ 	for_each_cpu(i, mask) {
+-		struct device_node *np = cpu_to_l2cache(i);
++		np = cpu_to_l2cache(i);
+ 		if (!np)
+ 			continue;
+ 		if (np == l2_cache) {
