@@ -1,21 +1,21 @@
 Return-Path: <haokexin@gmail.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A58612C0412
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jul 2013 22:55:36 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id BA55D2C0473
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jul 2013 22:55:43 +1000 (EST)
 From: Kevin Hao <haokexin@gmail.com>
-To: Kumar Gala <galak@kernel.crashing.org>, Andrew Morton
- <akpm@linux-foundation.org>
-Subject: [PATCH v2 5/8] memblock: introduce the memblock_reinit function
-Date: Thu, 4 Jul 2013 20:54:11 +0800
-Message-ID: <1372942454-25191-6-git-send-email-haokexin@gmail.com>
+To: Kumar Gala <galak@kernel.crashing.org>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>
+Subject: [PATCH v2 6/8] powerpc: introduce early_get_first_memblock_info
+Date: Thu, 4 Jul 2013 20:54:12 +0800
+Message-ID: <1372942454-25191-7-git-send-email-haokexin@gmail.com>
 In-Reply-To: <1372942454-25191-1-git-send-email-haokexin@gmail.com>
 References: <1372942454-25191-1-git-send-email-haokexin@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: Scott Wood <scottwood@freescale.com>, linux-mm@kvack.org,
+Cc: Scott Wood <scottwood@freescale.com>,
  linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,81 +26,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In the current code, the data used by memblock are initialized
-statically. But in some special cases we may scan the memory twice.
-So we should have a way to reinitialize these data before the second
-time.
+For a relocatable kernel since it can be loaded at any place, there
+is no any relation between the kernel start addr and the memstart_addr.
+So we can't calculate the memstart_addr from kernel start addr. And
+also we can't wait to do the relocation after we get the real
+memstart_addr from device tree because it is so late. So introduce
+a new function we can use to get the first memblock address and size
+in a very early stage (before machine_init).
 
 Signed-off-by: Kevin Hao <haokexin@gmail.com>
 ---
 A new patch in v2.
 
- include/linux/memblock.h |  1 +
- mm/memblock.c            | 33 +++++++++++++++++++++++----------
- 2 files changed, 24 insertions(+), 10 deletions(-)
+ arch/powerpc/kernel/prom.c | 24 ++++++++++++++++++++++++
+ include/linux/of_fdt.h     |  1 +
+ 2 files changed, 25 insertions(+)
 
-diff --git a/include/linux/memblock.h b/include/linux/memblock.h
-index f388203..9d55311 100644
---- a/include/linux/memblock.h
-+++ b/include/linux/memblock.h
-@@ -58,6 +58,7 @@ int memblock_remove(phys_addr_t base, phys_addr_t size);
- int memblock_free(phys_addr_t base, phys_addr_t size);
- int memblock_reserve(phys_addr_t base, phys_addr_t size);
- void memblock_trim_memory(phys_addr_t align);
-+void memblock_reinit(void);
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index eb23ac9..9a69d2d 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -753,6 +753,30 @@ void __init early_init_devtree(void *params)
+ 	DBG(" <- early_init_devtree()\n");
+ }
  
- #ifdef CONFIG_HAVE_MEMBLOCK_NODE_MAP
- void __next_mem_pfn_range(int *idx, int nid, unsigned long *out_start_pfn,
-diff --git a/mm/memblock.c b/mm/memblock.c
-index c5fad93..9406ce6 100644
---- a/mm/memblock.c
-+++ b/mm/memblock.c
-@@ -23,23 +23,36 @@
- static struct memblock_region memblock_memory_init_regions[INIT_MEMBLOCK_REGIONS] __initdata_memblock;
- static struct memblock_region memblock_reserved_init_regions[INIT_MEMBLOCK_REGIONS] __initdata_memblock;
- 
--struct memblock memblock __initdata_memblock = {
--	.memory.regions		= memblock_memory_init_regions,
--	.memory.cnt		= 1,	/* empty dummy entry */
--	.memory.max		= INIT_MEMBLOCK_REGIONS,
--
--	.reserved.regions	= memblock_reserved_init_regions,
--	.reserved.cnt		= 1,	/* empty dummy entry */
--	.reserved.max		= INIT_MEMBLOCK_REGIONS,
-+#define INIT_MEMBLOCK {							\
-+	.memory.regions		= memblock_memory_init_regions,		\
-+	.memory.cnt		= 1,	/* empty dummy entry */		\
-+	.memory.max		= INIT_MEMBLOCK_REGIONS,		\
-+									\
-+	.reserved.regions	= memblock_reserved_init_regions,	\
-+	.reserved.cnt		= 1,	/* empty dummy entry */		\
-+	.reserved.max		= INIT_MEMBLOCK_REGIONS,		\
-+									\
-+	.current_limit		= MEMBLOCK_ALLOC_ANYWHERE,		\
-+}
- 
--	.current_limit		= MEMBLOCK_ALLOC_ANYWHERE,
--};
-+struct memblock memblock __initdata_memblock = INIT_MEMBLOCK;
- 
- int memblock_debug __initdata_memblock;
- static int memblock_can_resize __initdata_memblock;
- static int memblock_memory_in_slab __initdata_memblock = 0;
- static int memblock_reserved_in_slab __initdata_memblock = 0;
- 
-+void __init memblock_reinit(void)
++#ifdef CONFIG_RELOCATABLE
++/*
++ * This function run before early_init_devtree, so we have to init
++ * initial_boot_params. Since early_init_dt_scan_memory_ppc will be
++ * executed again in early_init_devtree, we have to reinitialize the
++ * memblock data before return.
++ */
++void __init early_get_first_memblock_info(void *params, phys_addr_t *size)
 +{
-+	memset(memblock_memory_init_regions, 0,
-+				sizeof(memblock_memory_init_regions));
-+	memset(memblock_reserved_init_regions, 0,
-+				sizeof(memblock_reserved_init_regions));
++	/* Setup flat device-tree pointer */
++	initial_boot_params = params;
 +
-+	memset(&memblock, 0, sizeof(memblock));
-+	memblock = (struct memblock) INIT_MEMBLOCK;
++	/* Scan memory nodes and rebuild MEMBLOCKs */
++	of_scan_flat_dt(early_init_dt_scan_root, NULL);
++	of_scan_flat_dt(early_init_dt_scan_memory_ppc, NULL);
++
++	if (size)
++		*size = first_memblock_size;
++
++	/* Undo what early_init_dt_scan_memory_ppc does to memblock */
++	memblock_reinit();
 +}
++#endif
 +
- /* inline so we don't get a warning when pr_debug is compiled out */
- static __init_memblock const char *
- memblock_type_name(struct memblock_type *type)
+ /*******
+  *
+  * New implementation of the OF "find" APIs, return a refcounted
+diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
+index ed136ad..befe744 100644
+--- a/include/linux/of_fdt.h
++++ b/include/linux/of_fdt.h
+@@ -117,6 +117,7 @@ extern int early_init_dt_scan_root(unsigned long node, const char *uname,
+ /* Other Prototypes */
+ extern void unflatten_device_tree(void);
+ extern void early_init_devtree(void *);
++extern void early_get_first_memblock_info(void *, phys_addr_t *);
+ #else /* CONFIG_OF_FLATTREE */
+ static inline void unflatten_device_tree(void) {}
+ #endif /* CONFIG_OF_FLATTREE */
 -- 
 1.8.1.4
