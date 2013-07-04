@@ -1,20 +1,27 @@
-Return-Path: <Waiman.Long@hp.com>
-From: Waiman Long <Waiman.Long@hp.com>
-To: 
-Subject: [PATCH v3 04/25] powerpc: Change how dentry's d_lock field is accessed
-Date: Wed,  3 Jul 2013 16:19:57 -0400
-Message-Id: <1372882797-22614-1-git-send-email-Waiman.Long@hp.com>
-To: Alexander Viro <viro@zeniv.linux.org.uk> , Jeff Layton <jlayton@redhat.com>,
- Miklos Szeredi <mszeredi@suse.cz>, Ingo Molnar <mingo@redhat.com>,
- Thomas Gleixner <tglx@linutronix.de>
-Cc: cbe-oss-dev@lists.ozlabs.org, Waiman Long <Waiman.Long@hp.com>,
- Arnd Bergmann <arnd@arndb.de>, Peter Zijlstra <peterz@infradead.org>,
- linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
- "Chandramouleeswaran, Aswin" <aswin@hp.com>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Andi Kleen <andi@firstfloor.org>, Paul Mackerras <paulus@samba.org>,
- Jeremy Kerr <jk@ozlabs.org>, "Norton, Scott J" <scott.norton@hp.com>,
- linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <haokexin@gmail.com>
+Received: from mail-pb0-x236.google.com (mail-pb0-x236.google.com
+ [IPv6:2607:f8b0:400e:c01::236])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A0BEA2C00B3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jul 2013 11:08:30 +1000 (EST)
+Received: by mail-pb0-f54.google.com with SMTP id ro2so668165pbb.13
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jul 2013 18:08:27 -0700 (PDT)
+Date: Thu, 4 Jul 2013 09:08:18 +0800
+From: Kevin Hao <haokexin@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 1/2] powerpc: enable the relocatable support for the fsl
+ booke 32bit kernel
+Message-ID: <20130704010818.GA16188@pek-khao-d1.corp.ad.wrs.com>
+References: <20130702032447.GA26391@pek-khao-d1.corp.ad.wrs.com>
+ <1372804758.8183.124@snotra>
+ <20130703030044.GA25190@pek-khao-d1.corp.ad.wrs.com>
+ <1372883907.8183.151@snotra>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="/9DWx/yDrRhgMJTb"
+In-Reply-To: <1372883907.8183.151@snotra>
+Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,42 +31,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Because of the changes made in dcache.h header file, files that
-use the d_lock field of the dentry structure need to be changed
-accordingly. All the d_lock's spin_lock() and spin_unlock() calls
-are replaced by the corresponding d_lock() and d_unlock() calls.
-There is no change in logic and everything should just work.
 
-Signed-off-by: Waiman Long <Waiman.Long@hp.com>
----
- arch/powerpc/platforms/cell/spufs/inode.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+--/9DWx/yDrRhgMJTb
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/arch/powerpc/platforms/cell/spufs/inode.c b/arch/powerpc/platforms/cell/spufs/inode.c
-index 35f77a4..3597c4b 100644
---- a/arch/powerpc/platforms/cell/spufs/inode.c
-+++ b/arch/powerpc/platforms/cell/spufs/inode.c
-@@ -165,18 +165,18 @@ static void spufs_prune_dir(struct dentry *dir)
- 
- 	mutex_lock(&dir->d_inode->i_mutex);
- 	list_for_each_entry_safe(dentry, tmp, &dir->d_subdirs, d_u.d_child) {
--		spin_lock(&dentry->d_lock);
-+		d_lock(dentry);
- 		if (!(d_unhashed(dentry)) && dentry->d_inode) {
- 			dget_dlock(dentry);
- 			__d_drop(dentry);
--			spin_unlock(&dentry->d_lock);
-+			d_unlock(dentry);
- 			simple_unlink(dir->d_inode, dentry);
- 			/* XXX: what was dcache_lock protecting here? Other
- 			 * filesystems (IB, configfs) release dcache_lock
- 			 * before unlink */
- 			dput(dentry);
- 		} else {
--			spin_unlock(&dentry->d_lock);
-+			d_unlock(dentry);
- 		}
- 	}
- 	shrink_dcache_parent(dir);
--- 
-1.7.1
+On Wed, Jul 03, 2013 at 03:38:27PM -0500, Scott Wood wrote:
+> On 07/02/2013 10:00:44 PM, Kevin Hao wrote:
+> >On Tue, Jul 02, 2013 at 05:39:18PM -0500, Scott Wood wrote:
+> >> How much overhead (space and time) is this really?
+> >
+> >The following is the additional sections when relocatable is
+> >enabled for
+> >a p2020rdb board.
+> >   section        size
+> >  .dynsym       000007f0
+> >  .dynstr       00000926
+> >  .dynamic      00000080
+> >  .hash         00000388
+> >  .interp       00000011
+> >  .rela.dyn     00215250
+> >
+> >The time for the relocation is about 32ms on a p2020rdb board.
+>=20
+> Hmm... more relocations than I expected.  What percentage is this of
+> the total image size?
+
+The size of vmlinux.bin is about 10M. The percentage of the relocation
+section is about 20%. But look on the bright side of thing, all the relocat=
+ion
+stuff are in init section and should be discarded at runtime. :-)
+
+Thanks,
+Kevin
+
+>=20
+> -Scott
+
+--/9DWx/yDrRhgMJTb
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQEcBAEBAgAGBQJR1MsCAAoJEJNY7TDerrFx4r4IAJqw8dCcfXEInw+PdOBm/BrF
+0hwOd7Jb2oox8Hcj4RJVBBAvi+tT3d52kdaYQWrDhxckrVpPIsHVeN6XnoexnRhB
+NELGpRvAjznDjhN+NhL6t744RrJI+xMFlW0s78XsDKTDj6Jv3HR6of+lXDuzm+mL
+DoF85FN8LKcS92vphzyLyyRZyQUOCD1MdIoCHoHBDk5pNKJQCI9gy5YzTD9iksvt
+UcTebBvzViu6Ate6k8tXM0GBtUpS/o84SXxWLPyt9R26vJW893LZkJVcuNyX2CxY
+xyjIl5UcdwnY3i5Z+VL9Na57xApLKG/gRLV8gyyBMmTvJkEi2sAz+T6ZNzse5KU=
+=rssN
+-----END PGP SIGNATURE-----
+
+--/9DWx/yDrRhgMJTb--
