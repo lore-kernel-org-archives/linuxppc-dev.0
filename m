@@ -1,16 +1,18 @@
 Return-Path: <haokexin@gmail.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0E53B2C008F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jul 2013 22:54:45 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 93DD52C0327
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jul 2013 22:54:54 +1000 (EST)
 From: Kevin Hao <haokexin@gmail.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH v2 0/8] powerpc: enable the relocatable support for fsl booke
- 32bit kernel
-Date: Thu, 4 Jul 2013 20:54:06 +0800
-Message-ID: <1372942454-25191-1-git-send-email-haokexin@gmail.com>
+Subject: [PATCH v2 1/8] powerpc/fsl_booke: protect the access to MAS7 with
+ MMU_FTR_BIG_PHYS
+Date: Thu, 4 Jul 2013 20:54:07 +0800
+Message-ID: <1372942454-25191-2-git-send-email-haokexin@gmail.com>
+In-Reply-To: <1372942454-25191-1-git-send-email-haokexin@gmail.com>
+References: <1372942454-25191-1-git-send-email-haokexin@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Scott Wood <scottwood@freescale.com>,
@@ -24,51 +26,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-v2:
-These patches are based on the Ben's next branch. In this version we choose
-to do a second relocation if the PAGE_OFFSET is not mapped to the memstart_addr
-and we also choose to set the tlb1 entries for the kernel space in address
-space 1. With this implementation:
-  * We can load the kernel at any place between
-     memstart_addr ~ memstart_addr + 768M
-  * We can reserve any memory between memstart_addr ~ memstart_addr + 768M
-    for a kdump kernel.
+The e500v1 doesn't implement the MAS7, so we should avoid to access
+this register on that implementations. Some code use the
+CONFIG_PHYS_64BIT to protect these accesses, but this is not accurate.
+In theory we can enable the CONFIG_PHYS_64BIT for a e500v1 board and
+the CONFIG_PHYS_64BIT is also enabled by default in mpc85xx_defconfig
+which definitely have the support for e500v1 board. The MMU_FTR_BIG_PHYS
+should be the right choice.
 
-I have done a kdump boot on a p2020rdb kernel with the memory reserved by
-'crashkernel=32M@320M'.
+Signed-off-by: Kevin Hao <haokexin@gmail.com>
+---
+A new patch in v2.
 
+ arch/powerpc/kernel/entry_32.S                | 8 +++++---
+ arch/powerpc/kernel/fsl_booke_entry_mapping.S | 6 ++++--
+ arch/powerpc/kernel/head_fsl_booke.S          | 4 ++++
+ arch/powerpc/mm/hugetlbpage-book3e.c          | 3 ++-
+ 4 files changed, 15 insertions(+), 6 deletions(-)
 
-v1:
-Currently the fsl booke 32bit kernel is using the DYNAMIC_MEMSTART relocation
-method. But the RELOCATABLE method is more flexible and has less alignment
-restriction. So enable this feature on this platform and use it by
-default for the kdump kernel.
-
-These patches have passed the kdump boot test on a p2020rdb board.
-
-Kevin Hao (8):
-  powerpc/fsl_booke: protect the access to MAS7 with MMU_FTR_BIG_PHYS
-  powerpc/fsl_booke: introduce get_phys_addr function
-  powerpc: enable the relocatable support for the fsl booke 32bit kernel
-  powerpc/fsl_booke: set the tlb entry for the kernel address in AS1
-  memblock: introduce the memblock_reinit function
-  powerpc: introduce early_get_first_memblock_info
-  powerpc/fsl_booke: make sure PAGE_OFFSET map to memstart_addr for    
-    relocatable kernel
-  powerpc/fsl_booke: enable the relocatable for the kdump kernel
-
- arch/powerpc/Kconfig                          |   5 +-
- arch/powerpc/kernel/entry_32.S                |   8 +-
- arch/powerpc/kernel/fsl_booke_entry_mapping.S |  14 +-
- arch/powerpc/kernel/head_fsl_booke.S          | 233 ++++++++++++++++++++++++--
- arch/powerpc/kernel/prom.c                    |  24 +++
- arch/powerpc/mm/fsl_booke_mmu.c               |  56 +++++++
- arch/powerpc/mm/hugetlbpage-book3e.c          |   3 +-
- arch/powerpc/mm/mmu_decl.h                    |   2 +
- include/linux/memblock.h                      |   1 +
- include/linux/of_fdt.h                        |   1 +
- mm/memblock.c                                 |  33 ++--
- 11 files changed, 340 insertions(+), 40 deletions(-)
-
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 22b45a4..2ce22c2 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -75,10 +75,10 @@ crit_transfer_to_handler:
+ 	stw	r0,MAS3(r11)
+ 	mfspr	r0,SPRN_MAS6
+ 	stw	r0,MAS6(r11)
+-#ifdef CONFIG_PHYS_64BIT
++BEGIN_MMU_FTR_SECTION
+ 	mfspr	r0,SPRN_MAS7
+ 	stw	r0,MAS7(r11)
+-#endif /* CONFIG_PHYS_64BIT */
++END_MMU_FTR_SECTION_IFSET(MMU_FTR_BIG_PHYS)
+ #endif /* CONFIG_PPC_BOOK3E_MMU */
+ #ifdef CONFIG_44x
+ 	mfspr	r0,SPRN_MMUCR
+@@ -1112,8 +1112,10 @@ exc_exit_restart_end:
+ #if defined(CONFIG_PPC_BOOK3E_MMU)
+ #ifdef CONFIG_PHYS_64BIT
+ #define	RESTORE_MAS7							\
++BEGIN_MMU_FTR_SECTION							\
+ 	lwz	r11,MAS7(r1);						\
+-	mtspr	SPRN_MAS7,r11;
++	mtspr	SPRN_MAS7,r11;						\
++END_MMU_FTR_SECTION_IFSET(MMU_FTR_BIG_PHYS)
+ #else
+ #define	RESTORE_MAS7
+ #endif /* CONFIG_PHYS_64BIT */
+diff --git a/arch/powerpc/kernel/fsl_booke_entry_mapping.S b/arch/powerpc/kernel/fsl_booke_entry_mapping.S
+index a92c79b..2201f84 100644
+--- a/arch/powerpc/kernel/fsl_booke_entry_mapping.S
++++ b/arch/powerpc/kernel/fsl_booke_entry_mapping.S
+@@ -88,9 +88,11 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ 1:	mflr	r7
+ 
+ 	mfspr	r8,SPRN_MAS3
+-#ifdef CONFIG_PHYS_64BIT
++BEGIN_MMU_FTR_SECTION
+ 	mfspr	r23,SPRN_MAS7
+-#endif
++MMU_FTR_SECTION_ELSE
++	li	r23,0
++ALT_MMU_FTR_SECTION_END_IFSET(MMU_FTR_BIG_PHYS)
+ 	and	r8,r6,r8
+ 	subfic	r9,r6,-4096
+ 	and	r9,r9,r7
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index d10a7ca..a04a48d 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -82,7 +82,11 @@ _ENTRY(_start);
+ 	and	r19,r3,r18		/* r19 = page offset */
+ 	andc	r31,r20,r18		/* r31 = page base */
+ 	or	r31,r31,r19		/* r31 = devtree phys addr */
++BEGIN_MMU_FTR_SECTION
+ 	mfspr	r30,SPRN_MAS7
++MMU_FTR_SECTION_ELSE
++	li	r30,0
++ALT_MMU_FTR_SECTION_END_IFSET(MMU_FTR_BIG_PHYS)
+ 
+ 	li	r25,0			/* phys kernel start (low) */
+ 	li	r24,0			/* CPU number */
+diff --git a/arch/powerpc/mm/hugetlbpage-book3e.c b/arch/powerpc/mm/hugetlbpage-book3e.c
+index 3bc7006..ac63e7e 100644
+--- a/arch/powerpc/mm/hugetlbpage-book3e.c
++++ b/arch/powerpc/mm/hugetlbpage-book3e.c
+@@ -103,7 +103,8 @@ void book3e_hugetlb_preload(struct vm_area_struct *vma, unsigned long ea,
+ 	if (mmu_has_feature(MMU_FTR_USE_PAIRED_MAS)) {
+ 		mtspr(SPRN_MAS7_MAS3, mas7_3);
+ 	} else {
+-		mtspr(SPRN_MAS7, upper_32_bits(mas7_3));
++		if (mmu_has_feature(MMU_FTR_BIG_PHYS))
++			mtspr(SPRN_MAS7, upper_32_bits(mas7_3));
+ 		mtspr(SPRN_MAS3, lower_32_bits(mas7_3));
+ 	}
+ 
 -- 
 1.8.1.4
