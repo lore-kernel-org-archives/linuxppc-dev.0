@@ -4,13 +4,13 @@ Received: from co9outboundpool.messaging.microsoft.com
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A83262C0091
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jul 2013 07:14:40 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 1E84A2C0096
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jul 2013 07:18:58 +1000 (EST)
 From: James Yang <James.Yang@freescale.com>
 To: <benh@kernel.crashing.org>, <scottwood@freescale.com>
-Subject: [PATCH] powerpc/math-emu: fix load/store indexed emulation
-Date: Thu, 4 Jul 2013 16:14:18 -0500
-Message-ID: <1372972458-26165-1-git-send-email-James.Yang@freescale.com>
+Subject: [PATCH v2] powerpc/math-emu: fix load/store indexed emulation
+Date: Thu, 4 Jul 2013 16:18:44 -0500
+Message-ID: <1372972724-28767-1-git-send-email-James.Yang@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: James Yang <James.Yang@freescale.com>, linuxppc-dev@lists.ozlabs.org
@@ -30,6 +30,8 @@ Load/store indexed with update instructions where the index register
 RA=R0, such as "lfdux f1,0,r3", are invalid, and, to be consistent
 with existing math-emu behavior for other invalid instruction forms,
 will signal as illegal.
+
+Signed-off-by: James Yang <James.Yang@freescale.com>
 ---
  arch/powerpc/math-emu/math.c |   15 +++++----------
  1 files changed, 5 insertions(+), 10 deletions(-)
