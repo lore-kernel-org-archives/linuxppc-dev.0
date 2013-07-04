@@ -1,27 +1,23 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:4978:20e::2])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 7D09D2C036E
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jul 2013 22:57:44 +1000 (EST)
-Date: Thu, 4 Jul 2013 14:57:00 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH v2 2/2] perf tools: Make Power7 events available for perf
-Message-ID: <20130704125700.GM18898@dyad.programming.kicks-ass.net>
-References: <1372170933-4538-1-git-send-email-runzhen@linux.vnet.ibm.com>
- <1372170933-4538-3-git-send-email-runzhen@linux.vnet.ibm.com>
- <alpine.DEB.2.02.1306251240440.25443@pianoman.cluster.toy>
- <20130704125218.GA21134@concordia>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130704125218.GA21134@concordia>
-Cc: vincent.weaver@maine.edu, Vince Weaver <vince@deater.net>,
- Stephane Eranian <eranian@google.com>, linux-kernel@vger.kernel.org,
- acme@redhat.com, paulus@samba.org, xiaoguangrong@linux.vnet.ibm.com,
- Runzhen Wang <runzhen@linux.vnet.ibm.com>, sukadev@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-ee0-f43.google.com (mail-ee0-f43.google.com [74.125.83.43])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CDC882C008A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jul 2013 02:18:33 +1000 (EST)
+Received: by mail-ee0-f43.google.com with SMTP id l10so891090eei.30
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jul 2013 09:18:29 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@linaro.org>
+Subject: Re: [PATCH] of: Fix address decoding on Bimini and js2x machines
+To: Rob Herring <robherring2@gmail.com>
+In-Reply-To: <CACxGe6ucVocguyNdZ9CiN0ef=WgmOrZe0FyVij_bC7bJZe41=g@mail.gmail.com>
+References: <1372831270.4122.36.camel@pasglop> <51D430C7.8030100@gmail.com>
+ <CACxGe6ucVocguyNdZ9CiN0ef=WgmOrZe0FyVij_bC7bJZe41=g@mail.gmail.com>
+Date: Thu, 04 Jul 2013 17:18:28 +0100
+Message-Id: <20130704161828.EB08D3E08D0@localhost>
+Cc: devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
+ Thierry Reding <thierry.reding@avionic-design.de>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,12 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 04, 2013 at 10:52:18PM +1000, Michael Ellerman wrote:
-> I don't think it even needs libpfm4, just some csv files in tools/perf
-> would do the trick.
+On Wed, 3 Jul 2013 15:37:56 +0100, Grant Likely <grant.likely@linaro.org> wrote:
+> On Wed, Jul 3, 2013 at 3:10 PM, Rob Herring <robherring2@gmail.com> wrote:
+> > On 07/03/2013 01:01 AM, Benjamin Herrenschmidt wrote:
+> >>  Commit:
+> >>
+> >>   e38c0a1fbc5803cbacdaac0557c70ac8ca5152e7
+> >>   of/address: Handle #address-cells > 2 specially
+> >>
+> >> broke real time clock access on Bimini, js2x, and similar powerpc
+> >> machines using the "maple" platform. That code was indirectly relying
+> >> on the old (broken) behaviour of the translation for the hypertransport
+> >> to ISA bridge.
+> >>
+> >> This fixes it by treating hypertransport as a PCI bus
+> >>
+> >> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> >> CC: <stable@vger.kernel.org> [v3.6+]
+> >> ---
+> >>
+> >> Rob, if you have no objection I will put that in powerpc -next
+> >
+> > NP.
+> >
+> > Acked-by: Rob Herring <rob.herring@calxeda.com>
+> 
+> I'll include this in my 3.11 pull request for Linus
 
-Right; I think Stephane and Jiri are in favour of creating a 'new' project that
-includes just the event definitions in a plain text format and a little library
-with parser to be used by all interested parties.
+Oops. Ben, I misread what you wrote. It would have been just fine to
+include it in your powerpc -next branch. Sorry for the confusion.
 
-Its just not something that's moving along at any pace at all atm :/
+Anyway, I saw your powerpc pull req and that this patch wasn't in it, so
+I've picked it up and will send it to Linus as soon as the test build
+completes.
+
+g.
