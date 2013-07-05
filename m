@@ -1,18 +1,16 @@
 Return-Path: <thomas.petazzoni@free-electrons.com>
 Received: from mail.free-electrons.com (mail.free-electrons.com [94.23.35.102])
- by ozlabs.org (Postfix) with ESMTP id EC3FC2C038A
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jul 2013 07:40:38 +1000 (EST)
-Date: Fri, 5 Jul 2013 23:40:34 +0200
+ by ozlabs.org (Postfix) with ESMTP id 8C7992C00B8
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jul 2013 07:45:05 +1000 (EST)
+Date: Fri, 5 Jul 2013 23:45:01 +0200
 From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [PATCHv4 02/11] pci: use weak functions for MSI arch-specific
- functions
-Message-ID: <20130705234034.6c57cd43@skate>
-In-Reply-To: <CAErSpo4HoofGhN8VumRnN0sN_+gWJ9gVQJVMiePnDBUKwh74ag@mail.gmail.com>
+Subject: Re: [PATCHv4 03/11] pci: remove ARCH_SUPPORTS_MSI kconfig option
+Message-ID: <20130705234501.1341f52e@skate>
+In-Reply-To: <CAErSpo73iSBg+SYwZLea0qdXD1uVc3+Vacd8Tg4CU92vLG=2AQ@mail.gmail.com>
 References: <1372686136-1370-1-git-send-email-thomas.petazzoni@free-electrons.com>
- <1372686136-1370-3-git-send-email-thomas.petazzoni@free-electrons.com>
- <CAErSpo5uCpQftDmsMYEsFMtt_LP3kZPQ3Y4zz4VT7GdpcFq+1w@mail.gmail.com>
- <CAErSpo4HoofGhN8VumRnN0sN_+gWJ9gVQJVMiePnDBUKwh74ag@mail.gmail.com>
+ <1372686136-1370-4-git-send-email-thomas.petazzoni@free-electrons.com>
+ <CAErSpo73iSBg+SYwZLea0qdXD1uVc3+Vacd8Tg4CU92vLG=2AQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>,
@@ -45,20 +43,20 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Dear Bjorn Helgaas,
 
-On Fri, 5 Jul 2013 15:34:10 -0600, Bjorn Helgaas wrote:
-> On Fri, Jul 5, 2013 at 3:32 PM, Bjorn Helgaas <bhelgaas@google.com> wrote:
-> 
-> > Acked-by: Bjorn Helgaas <bhelgaas@google.com>
-> 
-> But please update your subject line to use consistent capitalization, e.g.,
-> 
-> PCI: Use weak ...
+On Fri, 5 Jul 2013 15:37:33 -0600, Bjorn Helgaas wrote:
 
-Sure, will do.
+> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+> 
+> Again, please update the subject line to "PCI: Remove ..."
+> 
+> I doubt that you'll get explicit acks from all the arches you touched,
+> but I think it's reasonable to put at least patches 2 & 3 in -next
+> soon after v3.11-rc1, so we should have time to shake out issues.
 
-Would it be possible to get Tested-by and/or Acked-by from the
-different architecture maintainers affected by PATCH 02/11 and PATCH
-03/11 ?
+Sure. Which merge strategy do you suggest for this patch series, which
+touches a number of different areas, and has some build-time
+dependencies between the patches (if needed, I can detail those build
+time dependencies to help figuring out the best strategy).
 
 Thanks,
 
