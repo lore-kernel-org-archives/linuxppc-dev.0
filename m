@@ -1,30 +1,33 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 873B32C0095
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jul 2013 12:57:44 +1000 (EST)
+ (Client CN "e36.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7F6E62C0095
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jul 2013 12:57:45 +1000 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Thu, 4 Jul 2013 22:57:40 -0400
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 17977C90045
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jul 2013 22:57:37 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r652vckT246182
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Jul 2013 22:57:38 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r652vbWW027745
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Jul 2013 23:57:37 -0300
+ Thu, 4 Jul 2013 20:57:42 -0600
+Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
+ [9.17.195.226])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id EE0F61FF001D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jul 2013 20:52:22 -0600 (MDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r652vemv154476
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Jul 2013 20:57:40 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r652vddu009818
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Jul 2013 20:57:40 -0600
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v1 0/8] EEH Followup Fixes (II) 
-Date: Fri,  5 Jul 2013 10:57:26 +0800
-Message-Id: <1372993054-25730-1-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 3/8] powerpc/pci: Override pcibios_stop_dev()
+Date: Fri,  5 Jul 2013 10:57:29 +0800
+Message-Id: <1372993054-25730-4-git-send-email-shangw@linux.vnet.ibm.com>
+In-Reply-To: <1372993054-25730-1-git-send-email-shangw@linux.vnet.ibm.com>
+References: <1372993054-25730-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -35,64 +38,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The series of patches bases on linux-poerpc-next and intends to resolve
-the following problems:
- 
-	- On pSeries platform, the EEH doesn't work after PHB hotplug
-	  with "drmgr". The root cause is that the EEH resources (
-	  EEH devices, EEH caches) aren't released correctly. For the
-	  problem, we add one hook (pcibios_stop_dev), which is called
-	  on pci_stop_and_remove_device(). In pcibios_stop_dev(), we
-	  release the EEH resources.
-	- Another issue is that we need put the domain (PE or PHB) into
-	  quite state while doing reset on that domain. However, some
-	  deivces in the domain might not have EEH sensitive drivers, or
-	  even don't have driver. Those deivces can't be put into quite
-	  state and possibly keep issuing PCI-CFG or MMIO request during
-	  resetting the domain. That possibly causes the failure of reset
-	  and eventually failure of EEH recovery. For the issue, we introduces
-	  so-called "partial hotplug". That means, those devices without driver or
-	  without EEH sensitive driver are removed before doing reset, and
-	  plugged (probed) into the system after reset.
-	- We need traverse EEH devices of one specific PE with safe variant
-	  of list tranverse function. The EEH device might be removed while
-	  doing iteration.
-	- When doing plug for PCI bus, we need check if we need reassign the
-	  resources for subordinate devices (PCI_REASSIGN_ALL_RSRC) and do that
-	  accordingly.
+The patch overrides the weak function pcibios_stop_dev() to destroy
+the EEH device and cache while stopping and removing the corresponding
+PCI device.
 
-The patchset is verified on pSeires and PowerNV platforms:
-
-pSeries Platform
------------------
-
-drmgr -c phb -r -s "PHB 513"
-drmgr -c phb -a -s "PHB 513"
-errinjct eeh -f 1 -s net/eth2
-
-PowerNV Platform
------------------
-
-cd /sys/devices/pci0005:00/0005:00:00.0/0005:01:00.0/0005:02:08.0/0005:80:00.0/0005:90:01.0
-while true; do od -x config > /dev/null; sleep 1; done
-echo 1 > /sys/kernel/debug/powerpc/PCI0005/err_injct
-
+Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
+ arch/powerpc/kernel/pci-hotplug.c |   13 ++++++++++++-
+ 1 files changed, 12 insertions(+), 1 deletions(-)
 
-arch/powerpc/include/asm/eeh.h        |   24 +++++--
-arch/powerpc/include/asm/pci-bridge.h |    3 +-
-arch/powerpc/include/asm/pci.h        |    2 +
-arch/powerpc/kernel/eeh.c             |   56 ++++++---------
-arch/powerpc/kernel/eeh_driver.c      |  106 ++++++++++++++++++++++++++-
-arch/powerpc/kernel/eeh_pe.c          |   43 ++++++-----
-arch/powerpc/kernel/pci-common.c      |    8 ++-
-arch/powerpc/kernel/pci-hotplug.c     |  129 +++++++++++++++++++++++++++------
-arch/powerpc/kernel/pci_of_scan.c     |   43 ++++++++---
-drivers/pci/hotplug/rpadlpar_core.c   |    1 -
-drivers/pci/probe.c                   |    4 +
-drivers/pci/remove.c                  |    2 +
-include/linux/pci.h                   |    1 +
-13 files changed, 322 insertions(+), 100 deletions(-)
-
-Thanks,
-Gavin
+diff --git a/arch/powerpc/kernel/pci-hotplug.c b/arch/powerpc/kernel/pci-hotplug.c
+index 3f60880..617d2df 100644
+--- a/arch/powerpc/kernel/pci-hotplug.c
++++ b/arch/powerpc/kernel/pci-hotplug.c
+@@ -22,6 +22,18 @@
+ #include <asm/eeh.h>
+ 
+ /**
++ * pcibios_stop_dev - stop the PCI device
++ * @dev: the indicated PCI device
++ *
++ * Stop the PCI device. The function should be called before
++ * stopping the specified PCI device.
++ */
++void pcibios_stop_dev(struct pci_dev *dev)
++{
++	eeh_remove_device(dev, 1);
++}
++
++/**
+  * __pcibios_remove_pci_devices - remove all devices under this bus
+  * @bus: the indicated PCI bus
+  * @purge_pe: destroy the PE on removal of PCI devices
+@@ -45,7 +57,6 @@ void __pcibios_remove_pci_devices(struct pci_bus *bus, int purge_pe)
+ 		 pci_domain_nr(bus),  bus->number);
+ 	list_for_each_entry_safe(dev, tmp, &bus->devices, bus_list) {
+ 		pr_debug("     * Removing %s...\n", pci_name(dev));
+-		eeh_remove_bus_device(dev, purge_pe);
+ 		pci_stop_and_remove_bus_device(dev);
+ 	}
+ }
+-- 
+1.7.5.4
