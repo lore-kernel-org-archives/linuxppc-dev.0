@@ -1,21 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 6F16D2C0096
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jul 2013 13:08:15 +1000 (EST)
-Message-ID: <1372993680.4122.104.camel@pasglop>
-Subject: Re: [PATCH 1/8] PCI: Add pcibios_stop_dev()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Date: Fri, 05 Jul 2013 13:08:00 +1000
-In-Reply-To: <1372993054-25730-2-git-send-email-shangw@linux.vnet.ibm.com>
-References: <1372993054-25730-1-git-send-email-shangw@linux.vnet.ibm.com>
- <1372993054-25730-2-git-send-email-shangw@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Gavin Shan <shangw@linux.vnet.ibm.com>
+Return-Path: <B45939@freescale.com>
+From: <hongbo.zhang@freescale.com>
+To: <vinod.koul@intel.com>, <djbw@fb.com>, <leoli@freescale.com>,
+ <scottwood@freescale.com>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH V2 2/2] DMA: Freescale: update driver to support 8-channel DMA
+ engine
+Date: Fri, 5 Jul 2013 14:27:06 +0800
+Message-ID: <1373005626-20726-3-git-send-email-hongbo.zhang@freescale.com>
+In-Reply-To: <1373005626-20726-1-git-send-email-hongbo.zhang@freescale.com>
+References: <1373005626-20726-1-git-send-email-hongbo.zhang@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Hongbo Zhang <hongbo.zhang@freescale.com>,
+ devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ vakul@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,68 +22,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-07-05 at 10:57 +0800, Gavin Shan wrote:
-> When stopping and removing one specific PCI device, the platform
-> might need take some actions. One example is that EEH already had
-> eeh cache and eeh device attached to the PCI device, and we need
-> release eeh cache and device during the time. The patch introduces
-> hook pcibios_stop_dev() for the purpose.
+From: Hongbo Zhang <hongbo.zhang@freescale.com>
 
-Bjorn, any objection ? Ack ? Nack ? :-)
+This patch adds support to 8-channel DMA engine, thus the driver works for both
+the new 8-channel and the legacy 4-channel DMA engines.
 
-I'd like to put that in my tree, it's part of a series that fixes a
-number of bugs with our hotplug and EEH code which I'd like to send
-to Linus soonish.
+Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
+---
+ drivers/dma/fsldma.c |    5 ++++-
+ drivers/dma/fsldma.h |    2 +-
+ 2 files changed, 5 insertions(+), 2 deletions(-)
 
-Cheers,
-Ben.
-
-> Cc: Bjorn Helgaas <bhelgaas@google.com>
-> Cc: linux-pci@vger.kernel.org
-> Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
-> ---
->  drivers/pci/probe.c  |    4 ++++
->  drivers/pci/remove.c |    2 ++
->  include/linux/pci.h  |    1 +
->  3 files changed, 7 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-> index 70f10fa..7167dc4 100644
-> --- a/drivers/pci/probe.c
-> +++ b/drivers/pci/probe.c
-> @@ -1669,6 +1669,10 @@ void __weak pcibios_remove_bus(struct pci_bus *bus)
->  {
->  }
->  
-> +void __weak pcibios_stop_dev(struct pci_dev *dev)
-> +{
-> +}
-> +
->  struct pci_bus *pci_create_root_bus(struct device *parent, int bus,
->  		struct pci_ops *ops, void *sysdata, struct list_head *resources)
->  {
-> diff --git a/drivers/pci/remove.c b/drivers/pci/remove.c
-> index 8fc54b7..e329efc 100644
-> --- a/drivers/pci/remove.c
-> +++ b/drivers/pci/remove.c
-> @@ -21,6 +21,8 @@ static void pci_stop_dev(struct pci_dev *dev)
->  {
->  	pci_pme_active(dev, false);
->  
-> +	pcibios_stop_dev(dev);
-> +
->  	if (dev->is_added) {
->  		pci_proc_detach_device(dev);
->  		pci_remove_sysfs_dev_files(dev);
-> diff --git a/include/linux/pci.h b/include/linux/pci.h
-> index 3a24e4f..40df783 100644
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -696,6 +696,7 @@ int no_pci_devices(void);
->  void pcibios_resource_survey_bus(struct pci_bus *bus);
->  void pcibios_add_bus(struct pci_bus *bus);
->  void pcibios_remove_bus(struct pci_bus *bus);
-> +void pcibios_stop_dev(struct pci_dev *dev);
->  void pcibios_fixup_bus(struct pci_bus *);
->  int __must_check pcibios_enable_device(struct pci_dev *, int mask);
->  /* Architecture specific versions may override this (weak) */
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index 4fc2980..7732de2 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -1261,7 +1261,9 @@ static int fsl_dma_chan_probe(struct fsldma_device *fdev,
+ 	WARN_ON(fdev->feature != chan->feature);
+ 
+ 	chan->dev = fdev->dev;
+-	chan->id = ((res.start - 0x100) & 0xfff) >> 7;
++	chan->id = (res.start & 0xfff) < 0x300 ?
++		   ((res.start - 0x100) & 0xfff) >> 7 :
++		   ((res.start - 0x200) & 0xfff) >> 7;
+ 	if (chan->id >= FSL_DMA_MAX_CHANS_PER_DEVICE) {
+ 		dev_err(fdev->dev, "too many channels for device\n");
+ 		err = -EINVAL;
+@@ -1435,6 +1437,7 @@ static int fsldma_of_remove(struct platform_device *op)
+ }
+ 
+ static const struct of_device_id fsldma_of_ids[] = {
++	{ .compatible = "fsl,elo3-dma", },
+ 	{ .compatible = "fsl,eloplus-dma", },
+ 	{ .compatible = "fsl,elo-dma", },
+ 	{}
+diff --git a/drivers/dma/fsldma.h b/drivers/dma/fsldma.h
+index f5c3879..1ffc244 100644
+--- a/drivers/dma/fsldma.h
++++ b/drivers/dma/fsldma.h
+@@ -112,7 +112,7 @@ struct fsldma_chan_regs {
+ };
+ 
+ struct fsldma_chan;
+-#define FSL_DMA_MAX_CHANS_PER_DEVICE 4
++#define FSL_DMA_MAX_CHANS_PER_DEVICE 8
+ 
+ struct fsldma_device {
+ 	void __iomem *regs;	/* DGSR register base */
+-- 
+1.7.9.5
