@@ -2,12 +2,9 @@ Return-Path: <B45939@freescale.com>
 From: <hongbo.zhang@freescale.com>
 To: <vinod.koul@intel.com>, <djbw@fb.com>, <leoli@freescale.com>,
  <scottwood@freescale.com>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH V2 2/2] DMA: Freescale: update driver to support 8-channel DMA
- engine
-Date: Fri, 5 Jul 2013 14:27:06 +0800
-Message-ID: <1373005626-20726-3-git-send-email-hongbo.zhang@freescale.com>
-In-Reply-To: <1373005626-20726-1-git-send-email-hongbo.zhang@freescale.com>
-References: <1373005626-20726-1-git-send-email-hongbo.zhang@freescale.com>
+Subject: [PATCH V2 0/2] DMA: Freescale: Add support for 8-channel DMA engine
+Date: Fri, 5 Jul 2013 14:27:04 +0800
+Message-ID: <1373005626-20726-1-git-send-email-hongbo.zhang@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Hongbo Zhang <hongbo.zhang@freescale.com>,
@@ -24,50 +21,29 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Hongbo Zhang <hongbo.zhang@freescale.com>
 
-This patch adds support to 8-channel DMA engine, thus the driver works for both
-the new 8-channel and the legacy 4-channel DMA engines.
+Hi Vinod, Dan, Leo and Scott, please have a look at these V2 patches.
 
-Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
----
- drivers/dma/fsldma.c |    5 ++++-
- drivers/dma/fsldma.h |    2 +-
- 2 files changed, 5 insertions(+), 2 deletions(-)
+Freescale QorIQ T4 and B4 introduce new 8-channel DMA engines, this patch set
+adds support this DMA engine.
 
-diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index 4fc2980..7732de2 100644
---- a/drivers/dma/fsldma.c
-+++ b/drivers/dma/fsldma.c
-@@ -1261,7 +1261,9 @@ static int fsl_dma_chan_probe(struct fsldma_device *fdev,
- 	WARN_ON(fdev->feature != chan->feature);
- 
- 	chan->dev = fdev->dev;
--	chan->id = ((res.start - 0x100) & 0xfff) >> 7;
-+	chan->id = (res.start & 0xfff) < 0x300 ?
-+		   ((res.start - 0x100) & 0xfff) >> 7 :
-+		   ((res.start - 0x200) & 0xfff) >> 7;
- 	if (chan->id >= FSL_DMA_MAX_CHANS_PER_DEVICE) {
- 		dev_err(fdev->dev, "too many channels for device\n");
- 		err = -EINVAL;
-@@ -1435,6 +1437,7 @@ static int fsldma_of_remove(struct platform_device *op)
- }
- 
- static const struct of_device_id fsldma_of_ids[] = {
-+	{ .compatible = "fsl,elo3-dma", },
- 	{ .compatible = "fsl,eloplus-dma", },
- 	{ .compatible = "fsl,elo-dma", },
- 	{}
-diff --git a/drivers/dma/fsldma.h b/drivers/dma/fsldma.h
-index f5c3879..1ffc244 100644
---- a/drivers/dma/fsldma.h
-+++ b/drivers/dma/fsldma.h
-@@ -112,7 +112,7 @@ struct fsldma_chan_regs {
- };
- 
- struct fsldma_chan;
--#define FSL_DMA_MAX_CHANS_PER_DEVICE 4
-+#define FSL_DMA_MAX_CHANS_PER_DEVICE 8
- 
- struct fsldma_device {
- 	void __iomem *regs;	/* DGSR register base */
+V1->v2 changes:
+- removed the codes handling the register dgsr1, since it isn't used corrently
+- renamed the DMA DT compatible to "fsl,elo3-dma"
+- renamed the new dts files to "elo3-dma-<n>.dtsi"
+
+
+Hongbo Zhang (2):
+  DMA: Freescale: Add new 8-channel DMA engine device tree nodes
+  DMA: Freescale: update driver to support 8-channel DMA engine
+
+ arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi   |   90 +++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi   |   90 +++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/t4240si-post.dtsi |    4 +-
+ drivers/dma/fsldma.c                        |    5 +-
+ drivers/dma/fsldma.h                        |    2 +-
+ 5 files changed, 187 insertions(+), 4 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi
+
 -- 
 1.7.9.5
