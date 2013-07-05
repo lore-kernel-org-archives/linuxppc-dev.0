@@ -1,19 +1,22 @@
 Return-Path: <ra8135@perf2farm5.am.freescale.net>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0253.outbound.messaging.microsoft.com [213.199.154.253])
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0185.outbound.messaging.microsoft.com [213.199.154.185])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 10C3F2C0099
+ by ozlabs.org (Postfix) with ESMTPS id 10C5E2C009A
  for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jul 2013 08:11:20 +1000 (EST)
 From: James Yang <James.Yang@freescale.com>
 To: <benh@kernel.crashing.org>, <scottwood@freescale.com>
-Subject: [RFC][PATCH 0/2] powerpc/booke: PTRACE_SINGLEBLOCK support for BookE
-Date: Fri, 5 Jul 2013 17:11:03 -0500
-Message-ID: <1373062265-4267-1-git-send-email-James.Yang@freescale.com>
+Subject: [RFC][PATCH 2/2] powerpc/booke: revert PTRACE_SINGLEBLOCK to BookE
+ behavior
+Date: Fri, 5 Jul 2013 17:11:05 -0500
+Message-ID: <1373062265-4267-3-git-send-email-James.Yang@freescale.com>
+In-Reply-To: <1373062265-4267-1-git-send-email-James.Yang@freescale.com>
+References: <1373062265-4267-1-git-send-email-James.Yang@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: James Yang <James.Yang@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,45 +26,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PTRACE_SINGLEBLOCK support for BookE currently stops on the instruction
-after taken branches.  This is different from the behavior on Server
-where it stops after all branches.  
+A BookE branch taken debug exception followed by a single step does not
+accurately simulate Server's branch execute debug exception.  BookE's
+branch taken debug exception stops before the branch is to be executed
+and only happens if the branch will actually be taken.  Server's branch
+execute trace exception stops on the instruction after the branch
+executes, regardless of whether or not the branch redirected the program
+counter.
 
-BookE was made to simulate Server by taking a single step after the
-branch taken exception.  It is understood that the reason for making
-PTRACE_SINGLEBLOCK on BookE to simulate Server was to make the semantics
-exposed to user space identicial on both, but this is not really
-possible due to the fundamental difference that untaken branches do not
-trigger the branch taken exception in BookE.
+The existing PTRACE_SINGLEBLOCK support for BookE hardcodes a single
+step after the branch taken exception is taken in order to simulate
+Server's behavior, but this misses fall-through branch instructions
+(i.e., branches that are NOT taken).  Also, the si_code became masked as
+TRAP_TRACE instead of TRAP_BRANCH.
 
-BookE ISA's branch taken exception triggers before a branch that will be
-taken executes.  This allows software to examine the branch and the
-conditions under which it will be taken.  It also means software can
-tell where basic blocks end (at least the ones which are terminated by
-taken branches).  There are no architected registers that report the
-address of the branch instruction after it has executed.
+This patch provides native support for the BookE branch taken debug
+exception's behavior:  PTRACE_SINGLEBLOCK stops with a SIGTRAP before a
+branch-that-would-be-taken would execute.  Userspace software will be
+able to examine the process state upon catching the SIGTRAP, and it
+will need to issue a PTRACE_SINGLESTEP or PTRACE_CONT to resume program
+execution past the branch.
 
-Server's branch trace exception triggers after a branch executes
-regardless of whether or not it was taken.  The exception stops on the
-instruction after fall-through branches.
+Signed-off-by: James Yang <James.Yang@freescale.com>
+---
+ arch/powerpc/kernel/traps.c |   40 +++++++++++++++++++++++++++-------------
+ 1 files changed, 27 insertions(+), 13 deletions(-)
 
-Two mutually-exclusive patches are provided for RFC that expose BookE's
-branch taken debug exception behavior accessible through
-PTRACE_SINGLEBLOCK:  
-
-- The first patch keeps the semantic behavior of the existing support by
-  using the ptrace() addr parameter to select between the modes.  This
-  requires a new bit in the TIF as well as changes in kernel/ptrace.c.
-
-- The second patch makes PTRACE_SINGLEBLOCK reflect the BookE native
-  behavior, which stops on the branch instruction.  The changes are
-  isolated to arch/powerpc/kernel/traps.c.
-
-IMHO, the only reason not to do the 2nd patch would be to maintain
-compatibility for any tools that actually rely on the inaccurate
-simulation of Server's behavior when run on a BookE system.  Are there
-any tools that actually rely upon the behavior currently implemented for
-BookE in Linux -- SIGTRAP only after taken branches?  Even if there are,
-it should be possible to modify such a tool to issue a PTRACE_SINGLESTEP
-after receiving the SIGTRAP on the branch to retain equivalent
-functionality.
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index c3ceaa2..5837d7f 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -1518,12 +1518,21 @@ void __kprobes DebugException(struct pt_regs *regs, unsigned long debug_status)
+ {
+ 	current->thread.dbsr = debug_status;
+ 
+-	/* Hack alert: On BookE, Branch Taken stops on the branch itself, while
+-	 * on server, it stops on the target of the branch. In order to simulate
+-	 * the server behaviour, we thus restart right away with a single step
+-	 * instead of stopping here when hitting a BT
++	/* BookE's Branch Taken Debug Exception stops on the branch iff the
++	 * branch is resolved to be taken.  No exception occurs if the branch
++	 * is not taken (no exception if the branch does not redirect the PC).
++	 * This is unlike Classic/Server's behavior where the exception occurs
++	 * after the branch executes, regardless of whether or not the branch
++	 * redirected the PC.
++	 *
++	 * The past behavior of this function was to simulate Classic/Server's
++	 * behavior by performing a single-step upon a branch taken exception.
++	 * However, the simulation is not accurate because fall-through non-
++	 * taken branches would not result in a SIGTRAP.  Also, that SIGTRAP's
++	 * si_code would be reported as a TRAP_TRACE instead of a TRAP_BRANCH.
+ 	 */
+-	if (debug_status & DBSR_BT) {
++
++	if (debug_status & DBSR_BT) {	/* Branch Taken */
+ 		regs->msr &= ~MSR_DE;
+ 
+ 		/* Disable BT */
+@@ -1531,20 +1540,25 @@ void __kprobes DebugException(struct pt_regs *regs, unsigned long debug_status)
+ 		/* Clear the BT event */
+ 		mtspr(SPRN_DBSR, DBSR_BT);
+ 
+-		/* Do the single step trick only when coming from userspace */
+-		if (user_mode(regs)) {
+-			current->thread.dbcr0 &= ~DBCR0_BT;
+-			current->thread.dbcr0 |= DBCR0_IDM | DBCR0_IC;
+-			regs->msr |= MSR_DE;
+-			return;
+-		}
+-
+ 		if (notify_die(DIE_SSTEP, "block_step", regs, 5,
+ 			       5, SIGTRAP) == NOTIFY_STOP) {
+ 			return;
+ 		}
++
+ 		if (debugger_sstep(regs))
+ 			return;
++
++		if (user_mode(regs)) {
++			current->thread.dbcr0 &= ~DBCR0_BT;
++			if (DBCR_ACTIVE_EVENTS(current->thread.dbcr0,
++					       current->thread.dbcr1))
++				regs->msr |= MSR_DE;
++			else
++				/* Make sure the IDM bit is off */
++				current->thread.dbcr0 &= ~DBCR0_IDM;
++		}
++
++		_exception(SIGTRAP, regs, TRAP_BRANCH, regs->nip);
+ 	} else if (debug_status & DBSR_IC) { 	/* Instruction complete */
+ 		regs->msr &= ~MSR_DE;
+ 
+-- 
+1.7.0.4
