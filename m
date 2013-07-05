@@ -1,24 +1,19 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-ob0-x230.google.com (mail-ob0-x230.google.com
- [IPv6:2607:f8b0:4003:c01::230])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 374DE2C0096
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jul 2013 04:51:33 +1000 (EST)
-Received: by mail-ob0-f176.google.com with SMTP id v19so3199420obq.21
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jul 2013 11:51:30 -0700 (PDT)
+Return-Path: <ra8135@perf2farm5.am.freescale.net>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 631D42C0095
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jul 2013 05:50:07 +1000 (EST)
+From: James Yang <James.Yang@freescale.com>
+To: <benh@kernel.crashing.org>, <scottwood@freescale.com>
+Subject: [PATCH] powerpc/booke: clear DBCR0_BT in user_disable_single_step()
+Date: Fri, 5 Jul 2013 14:49:43 -0500
+Message-ID: <1373053783-19668-1-git-send-email-James.Yang@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <1372993054-25730-5-git-send-email-shangw@linux.vnet.ibm.com>
-References: <1372993054-25730-1-git-send-email-shangw@linux.vnet.ibm.com>
- <1372993054-25730-5-git-send-email-shangw@linux.vnet.ibm.com>
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Fri, 5 Jul 2013 12:51:10 -0600
-Message-ID: <CAErSpo70EDUOhWT+w5VTyEecJB66x5kL9wH9Ju+zzGi-yCVnsA@mail.gmail.com>
-Subject: Re: [PATCH 4/8] PCI/hotplug: Needn't remove EEH cache again
-To: Gavin Shan <shangw@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+Content-Type: text/plain
+Cc: James Yang <James.Yang@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,39 +23,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 4, 2013 at 8:57 PM, Gavin Shan <shangw@linux.vnet.ibm.com> wrote:
-> Since pci_stop_and_remove_bus_device() has removed the EEH cache,
-> we needn't do that again.
->
-> Cc: Bjorn Helgaas <bhelgaas@google.com>
-> Cc: linux-pci@vger.kernel.org
-> Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+BookE version of user_disable_single_step() clears DBCR0_IC for the
+instruction completion debug, but did not also clear DBCR0_BT for the
+branch taken exception.  This behavior was lost by the 2/2010 patch.
 
-Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+Signed-off-by: James Yang <James.Yang@freescale.com>
+---
+ arch/powerpc/kernel/ptrace.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Please merge this along with the rest of your series via whatever tree
-you choose.
-
-> ---
->  drivers/pci/hotplug/rpadlpar_core.c |    1 -
->  1 files changed, 0 insertions(+), 1 deletions(-)
->
-> diff --git a/drivers/pci/hotplug/rpadlpar_core.c b/drivers/pci/hotplug/rpadlpar_core.c
-> index b29e20b..bb7af78 100644
-> --- a/drivers/pci/hotplug/rpadlpar_core.c
-> +++ b/drivers/pci/hotplug/rpadlpar_core.c
-> @@ -388,7 +388,6 @@ int dlpar_remove_pci_slot(char *drc_name, struct device_node *dn)
->         /* Remove the EADS bridge device itself */
->         BUG_ON(!bus->self);
->         pr_debug("PCI: Now removing bridge device %s\n", pci_name(bus->self));
-> -       eeh_remove_bus_device(bus->self, true);
->         pci_stop_and_remove_bus_device(bus->self);
->
->         return 0;
-> --
-> 1.7.5.4
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index 98c2fc1..c634970 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -894,7 +894,7 @@ void user_disable_single_step(struct task_struct *task)
+ 		 * And, after doing so, if all debug flags are off, turn
+ 		 * off DBCR0(IDM) and MSR(DE) .... Torez
+ 		 */
+-		task->thread.dbcr0 &= ~DBCR0_IC;
++		task->thread.dbcr0 &= ~(DBCR0_IC|DBCR0_BT);
+ 		/*
+ 		 * Test to see if any of the DBCR_ACTIVE_EVENTS bits are set.
+ 		 */
+-- 
+1.7.0.4
