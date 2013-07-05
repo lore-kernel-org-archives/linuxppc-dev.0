@@ -1,19 +1,42 @@
-Return-Path: <ra8135@perf2farm5.am.freescale.net>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 631D42C0095
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jul 2013 05:50:07 +1000 (EST)
-From: James Yang <James.Yang@freescale.com>
-To: <benh@kernel.crashing.org>, <scottwood@freescale.com>
-Subject: [PATCH] powerpc/booke: clear DBCR0_BT in user_disable_single_step()
-Date: Fri, 5 Jul 2013 14:49:43 -0500
-Message-ID: <1373053783-19668-1-git-send-email-James.Yang@freescale.com>
+Return-Path: <bhelgaas@google.com>
+Received: from mail-oa0-x22d.google.com (mail-oa0-x22d.google.com
+ [IPv6:2607:f8b0:4003:c02::22d])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 78A2A2C009A
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jul 2013 07:32:37 +1000 (EST)
+Received: by mail-oa0-f45.google.com with SMTP id j1so3905069oag.4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jul 2013 14:32:33 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: James Yang <James.Yang@freescale.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1372686136-1370-3-git-send-email-thomas.petazzoni@free-electrons.com>
+References: <1372686136-1370-1-git-send-email-thomas.petazzoni@free-electrons.com>
+ <1372686136-1370-3-git-send-email-thomas.petazzoni@free-electrons.com>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Fri, 5 Jul 2013 15:32:13 -0600
+Message-ID: <CAErSpo5uCpQftDmsMYEsFMtt_LP3kZPQ3Y4zz4VT7GdpcFq+1w@mail.gmail.com>
+Subject: Re: [PATCHv4 02/11] pci: use weak functions for MSI arch-specific
+ functions
+To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Thierry Reding <thierry.reding@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
+ "x86@kernel.org" <x86@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Ezequiel Garcia <ezequiel.garcia@free-electrons.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Jason Cooper <jason@lakedaemon.net>,
+ Rob Herring <rob.herring@calxeda.com>, Chris Metcalf <cmetcalf@tilera.com>,
+ Gregory Clement <gregory.clement@free-electrons.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm <linux-arm-kernel@lists.infradead.org>,
+ Tony Luck <tony.luck@intel.com>, Ralf Baechle <ralf@linux-mips.org>,
+ Maen Suleiman <maen@marvell.com>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ linux390@de.ibm.com, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,27 +46,286 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-BookE version of user_disable_single_step() clears DBCR0_IC for the
-instruction completion debug, but did not also clear DBCR0_BT for the
-branch taken exception.  This behavior was lost by the 2/2010 patch.
+On Mon, Jul 1, 2013 at 7:42 AM, Thomas Petazzoni
+<thomas.petazzoni@free-electrons.com> wrote:
+> Until now, the MSI architecture-specific functions could be overloaded
+> using a fairly complex set of #define and compile-time
+> conditionals. In order to prepare for the introduction of the msi_chip
+> infrastructure, it is desirable to switch all those functions to use
+> the 'weak' mechanism. This commit converts all the architectures that
+> were overidding those MSI functions to use the new strategy.
+>
+> Note that we keep a separate, non-weak, function
+> default_teardown_msi_irqs() for the default behavior of the
+> arch_teardown_msi_irqs(), as the default behavior is needed by the Xen
+> x86 PCI code.
+>
+> Signed-off-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+> Cc: linux390@de.ibm.com
+> Cc: linux-s390@vger.kernel.org
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: H. Peter Anvin <hpa@zytor.com>
+> Cc: x86@kernel.org
+> Cc: Russell King <linux@arm.linux.org.uk>
+> Cc: Tony Luck <tony.luck@intel.com>
+> Cc: Fenghua Yu <fenghua.yu@intel.com>
+> Cc: linux-ia64@vger.kernel.org
+> Cc: Ralf Baechle <ralf@linux-mips.org>
+> Cc: linux-mips@linux-mips.org
+> Cc: David S. Miller <davem@davemloft.net>
+> Cc: sparclinux@vger.kernel.org
+> Cc: Chris Metcalf <cmetcalf@tilera.com>
 
-Signed-off-by: James Yang <James.Yang@freescale.com>
----
- arch/powerpc/kernel/ptrace.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
 
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index 98c2fc1..c634970 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -894,7 +894,7 @@ void user_disable_single_step(struct task_struct *task)
- 		 * And, after doing so, if all debug flags are off, turn
- 		 * off DBCR0(IDM) and MSR(DE) .... Torez
- 		 */
--		task->thread.dbcr0 &= ~DBCR0_IC;
-+		task->thread.dbcr0 &= ~(DBCR0_IC|DBCR0_BT);
- 		/*
- 		 * Test to see if any of the DBCR_ACTIVE_EVENTS bits are set.
- 		 */
--- 
-1.7.0.4
+> ---
+>  arch/mips/include/asm/pci.h    |  5 -----
+>  arch/powerpc/include/asm/pci.h |  5 -----
+>  arch/s390/include/asm/pci.h    |  4 ----
+>  arch/x86/include/asm/pci.h     | 28 --------------------------
+>  arch/x86/kernel/x86_init.c     | 21 ++++++++++++++++++++
+>  drivers/pci/msi.c              | 45 +++++++++++++++++++-----------------------
+>  include/linux/msi.h            |  7 ++++++-
+>  7 files changed, 47 insertions(+), 68 deletions(-)
+>
+> diff --git a/arch/mips/include/asm/pci.h b/arch/mips/include/asm/pci.h
+> index b8e24fd..031f4c1 100644
+> --- a/arch/mips/include/asm/pci.h
+> +++ b/arch/mips/include/asm/pci.h
+> @@ -137,11 +137,6 @@ static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
+>         return channel ? 15 : 14;
+>  }
+>
+> -#ifdef CONFIG_CPU_CAVIUM_OCTEON
+> -/* MSI arch hook for OCTEON */
+> -#define arch_setup_msi_irqs arch_setup_msi_irqs
+> -#endif
+> -
+>  extern char * (*pcibios_plat_setup)(char *str);
+>
+>  #ifdef CONFIG_OF
+> diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
+> index 6653f27..95145a1 100644
+> --- a/arch/powerpc/include/asm/pci.h
+> +++ b/arch/powerpc/include/asm/pci.h
+> @@ -113,11 +113,6 @@ extern int pci_domain_nr(struct pci_bus *bus);
+>  /* Decide whether to display the domain number in /proc */
+>  extern int pci_proc_domain(struct pci_bus *bus);
+>
+> -/* MSI arch hooks */
+> -#define arch_setup_msi_irqs arch_setup_msi_irqs
+> -#define arch_teardown_msi_irqs arch_teardown_msi_irqs
+> -#define arch_msi_check_device arch_msi_check_device
+> -
+>  struct vm_area_struct;
+>  /* Map a range of PCI memory or I/O space for a device into user space */
+>  int pci_mmap_page_range(struct pci_dev *pdev, struct vm_area_struct *vma,
+> diff --git a/arch/s390/include/asm/pci.h b/arch/s390/include/asm/pci.h
+> index 6c18012..8641e8d 100644
+> --- a/arch/s390/include/asm/pci.h
+> +++ b/arch/s390/include/asm/pci.h
+> @@ -21,10 +21,6 @@ void pci_iounmap(struct pci_dev *, void __iomem *);
+>  int pci_domain_nr(struct pci_bus *);
+>  int pci_proc_domain(struct pci_bus *);
+>
+> -/* MSI arch hooks */
+> -#define arch_setup_msi_irqs    arch_setup_msi_irqs
+> -#define arch_teardown_msi_irqs arch_teardown_msi_irqs
+> -
+>  #define ZPCI_BUS_NR                    0       /* default bus number */
+>  #define ZPCI_DEVFN                     0       /* default device number */
+>
+> diff --git a/arch/x86/include/asm/pci.h b/arch/x86/include/asm/pci.h
+> index d9e9e6c..8c61de0 100644
+> --- a/arch/x86/include/asm/pci.h
+> +++ b/arch/x86/include/asm/pci.h
+> @@ -100,29 +100,6 @@ static inline void early_quirks(void) { }
+>  extern void pci_iommu_alloc(void);
+>
+>  #ifdef CONFIG_PCI_MSI
+> -/* MSI arch specific hooks */
+> -static inline int x86_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+> -{
+> -       return x86_msi.setup_msi_irqs(dev, nvec, type);
+> -}
+> -
+> -static inline void x86_teardown_msi_irqs(struct pci_dev *dev)
+> -{
+> -       x86_msi.teardown_msi_irqs(dev);
+> -}
+> -
+> -static inline void x86_teardown_msi_irq(unsigned int irq)
+> -{
+> -       x86_msi.teardown_msi_irq(irq);
+> -}
+> -static inline void x86_restore_msi_irqs(struct pci_dev *dev, int irq)
+> -{
+> -       x86_msi.restore_msi_irqs(dev, irq);
+> -}
+> -#define arch_setup_msi_irqs x86_setup_msi_irqs
+> -#define arch_teardown_msi_irqs x86_teardown_msi_irqs
+> -#define arch_teardown_msi_irq x86_teardown_msi_irq
+> -#define arch_restore_msi_irqs x86_restore_msi_irqs
+>  /* implemented in arch/x86/kernel/apic/io_apic. */
+>  struct msi_desc;
+>  int native_setup_msi_irqs(struct pci_dev *dev, int nvec, int type);
+> @@ -130,11 +107,6 @@ void native_teardown_msi_irq(unsigned int irq);
+>  void native_restore_msi_irqs(struct pci_dev *dev, int irq);
+>  int setup_msi_irq(struct pci_dev *dev, struct msi_desc *msidesc,
+>                   unsigned int irq_base, unsigned int irq_offset);
+> -/* default to the implementation in drivers/lib/msi.c */
+> -#define HAVE_DEFAULT_MSI_TEARDOWN_IRQS
+> -#define HAVE_DEFAULT_MSI_RESTORE_IRQS
+> -void default_teardown_msi_irqs(struct pci_dev *dev);
+> -void default_restore_msi_irqs(struct pci_dev *dev, int irq);
+>  #else
+>  #define native_setup_msi_irqs          NULL
+>  #define native_teardown_msi_irq                NULL
+> diff --git a/arch/x86/kernel/x86_init.c b/arch/x86/kernel/x86_init.c
+> index 45a14db..a2b189c 100644
+> --- a/arch/x86/kernel/x86_init.c
+> +++ b/arch/x86/kernel/x86_init.c
+> @@ -116,6 +116,27 @@ struct x86_msi_ops x86_msi = {
+>         .setup_hpet_msi         = default_setup_hpet_msi,
+>  };
+>
+> +/* MSI arch specific hooks */
+> +int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+> +{
+> +       return x86_msi.setup_msi_irqs(dev, nvec, type);
+> +}
+> +
+> +void arch_teardown_msi_irqs(struct pci_dev *dev)
+> +{
+> +       x86_msi.teardown_msi_irqs(dev);
+> +}
+> +
+> +void arch_teardown_msi_irq(unsigned int irq)
+> +{
+> +       x86_msi.teardown_msi_irq(irq);
+> +}
+> +
+> +void arch_restore_msi_irqs(struct pci_dev *dev, int irq)
+> +{
+> +       x86_msi.restore_msi_irqs(dev, irq);
+> +}
+> +
+>  struct x86_io_apic_ops x86_io_apic_ops = {
+>         .init                   = native_io_apic_init_mappings,
+>         .read                   = native_io_apic_read,
+> diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+> index 2c10752..289fbfd 100644
+> --- a/drivers/pci/msi.c
+> +++ b/drivers/pci/msi.c
+> @@ -30,20 +30,21 @@ static int pci_msi_enable = 1;
+>
+>  /* Arch hooks */
+>
+> -#ifndef arch_msi_check_device
+> -int arch_msi_check_device(struct pci_dev *dev, int nvec, int type)
+> +int __weak arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
+>  {
+> -       return 0;
+> +       return -EINVAL;
+>  }
+> -#endif
+>
+> -#ifndef arch_setup_msi_irqs
+> -# define arch_setup_msi_irqs default_setup_msi_irqs
+> -# define HAVE_DEFAULT_MSI_SETUP_IRQS
+> -#endif
+> +void __weak arch_teardown_msi_irq(unsigned int irq)
+> +{
+> +}
+>
+> -#ifdef HAVE_DEFAULT_MSI_SETUP_IRQS
+> -int default_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+> +int __weak arch_msi_check_device(struct pci_dev *dev, int nvec, int type)
+> +{
+> +       return 0;
+> +}
+> +
+> +int __weak arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+>  {
+>         struct msi_desc *entry;
+>         int ret;
+> @@ -65,14 +66,11 @@ int default_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+>
+>         return 0;
+>  }
+> -#endif
+>
+> -#ifndef arch_teardown_msi_irqs
+> -# define arch_teardown_msi_irqs default_teardown_msi_irqs
+> -# define HAVE_DEFAULT_MSI_TEARDOWN_IRQS
+> -#endif
+> -
+> -#ifdef HAVE_DEFAULT_MSI_TEARDOWN_IRQS
+> +/*
+> + * We have a default implementation available as a separate non-weak
+> + * function, as it is used by the Xen x86 PCI code
+> + */
+>  void default_teardown_msi_irqs(struct pci_dev *dev)
+>  {
+>         struct msi_desc *entry;
+> @@ -86,15 +84,13 @@ void default_teardown_msi_irqs(struct pci_dev *dev)
+>                         arch_teardown_msi_irq(entry->irq + i);
+>         }
+>  }
+> -#endif
+>
+> -#ifndef arch_restore_msi_irqs
+> -# define arch_restore_msi_irqs default_restore_msi_irqs
+> -# define HAVE_DEFAULT_MSI_RESTORE_IRQS
+> -#endif
+> +void __weak arch_teardown_msi_irqs(struct pci_dev *dev)
+> +{
+> +       return default_teardown_msi_irqs(dev);
+> +}
+>
+> -#ifdef HAVE_DEFAULT_MSI_RESTORE_IRQS
+> -void default_restore_msi_irqs(struct pci_dev *dev, int irq)
+> +void __weak arch_restore_msi_irqs(struct pci_dev *dev, int irq)
+>  {
+>         struct msi_desc *entry;
+>
+> @@ -111,7 +107,6 @@ void default_restore_msi_irqs(struct pci_dev *dev, int irq)
+>         if (entry)
+>                 write_msi_msg(irq, &entry->msg);
+>  }
+> -#endif
+>
+>  static void msi_set_enable(struct pci_dev *dev, int enable)
+>  {
+> diff --git a/include/linux/msi.h b/include/linux/msi.h
+> index 20c2d6d..c82ff8d 100644
+> --- a/include/linux/msi.h
+> +++ b/include/linux/msi.h
+> @@ -50,12 +50,17 @@ struct msi_desc {
+>  };
+>
+>  /*
+> - * The arch hook for setup up msi irqs
+> + * The arch hooks to setup up msi irqs. Those functions are
+> + * implemented as weak symbols so that they /can/ be overriden by
+> + * architecture specific code if needed.
+>   */
+>  int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc);
+>  void arch_teardown_msi_irq(unsigned int irq);
+>  int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type);
+>  void arch_teardown_msi_irqs(struct pci_dev *dev);
+>  int arch_msi_check_device(struct pci_dev* dev, int nvec, int type);
+> +void arch_restore_msi_irqs(struct pci_dev *dev, int irq);
+> +
+> +void default_teardown_msi_irqs(struct pci_dev *dev);
+>
+>  #endif /* LINUX_MSI_H */
+> --
+> 1.8.1.2
+>
