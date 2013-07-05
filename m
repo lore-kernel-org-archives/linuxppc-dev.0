@@ -1,39 +1,24 @@
-Return-Path: <azanella@linux.vnet.ibm.com>
-Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e24smtp04.br.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D6A2A2C0095
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jul 2013 03:58:11 +1000 (EST)
-Received: from /spool/local
- by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <azanella@linux.vnet.ibm.com>;
- Fri, 5 Jul 2013 14:58:04 -0300
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id 1980E3520027
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jul 2013 13:58:01 -0400 (EDT)
-Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
- by d24relay03.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r65Huj9L23658540
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Jul 2013 14:56:46 -0300
-Received: from d24av05.br.ibm.com (loopback [127.0.0.1])
- by d24av05.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r65Hvxu7009925
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Jul 2013 14:57:59 -0300
-Message-ID: <51D70927.3070909@linux.vnet.ibm.com>
-Date: Fri, 05 Jul 2013 14:57:59 -0300
-From: Adhemerval Zanella <azanella@linux.vnet.ibm.com>
+Return-Path: <bhelgaas@google.com>
+Received: from mail-oa0-x230.google.com (mail-oa0-x230.google.com
+ [IPv6:2607:f8b0:4003:c02::230])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 173EF2C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jul 2013 04:49:28 +1000 (EST)
+Received: by mail-oa0-f48.google.com with SMTP id f4so3730732oah.7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jul 2013 11:49:25 -0700 (PDT)
 MIME-Version: 1.0
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 8/8] powerpc/perf: Add power8 EBB support
-References: <1372073336-8189-1-git-send-email-michael@ellerman.id.au>
- <1372073336-8189-8-git-send-email-michael@ellerman.id.au>
- <51CABB56.9010105@linux.vnet.ibm.com> <1372333965.29229.26.camel@concordia>
- <51CD0DC7.7020702@linux.vnet.ibm.com> <51D5C5B9.4070005@linux.vnet.ibm.com>
- <20130705025427.GA27319@concordia>
-In-Reply-To: <20130705025427.GA27319@concordia>
+In-Reply-To: <1372993054-25730-2-git-send-email-shangw@linux.vnet.ibm.com>
+References: <1372993054-25730-1-git-send-email-shangw@linux.vnet.ibm.com>
+ <1372993054-25730-2-git-send-email-shangw@linux.vnet.ibm.com>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Fri, 5 Jul 2013 12:49:05 -0600
+Message-ID: <CAErSpo7QGD99HM1fEcvGi-9h3HX6C8nu1mzJHnMMUKWTNO0vnw@mail.gmail.com>
+Subject: Re: [PATCH 1/8] PCI: Add pcibios_stop_dev()
+To: Gavin Shan <shangw@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: ryanarn@us.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,57 +28,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04-07-2013 23:54, Michael Ellerman wrote:
-> On Thu, Jul 04, 2013 at 03:58:01PM -0300, Adhemerval Zanella wrote:
->> Hi Michael,
->>
->> I believe you forgot to add the cpu_user_features2 bit to announce the EBB support
->> for P8, patch following:
-> Hi Adhemerval,
+On Thu, Jul 4, 2013 at 8:57 PM, Gavin Shan <shangw@linux.vnet.ibm.com> wrote:
+> When stopping and removing one specific PCI device, the platform
+> might need take some actions. One example is that EEH already had
+> eeh cache and eeh device attached to the PCI device, and we need
+> release eeh cache and device during the time. The patch introduces
+> hook pcibios_stop_dev() for the purpose.
 >
-> You're right, I haven't added it. I was wondering how best to do it.
+> Cc: Bjorn Helgaas <bhelgaas@google.com>
+> Cc: linux-pci@vger.kernel.org
+> Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+> ---
+>  drivers/pci/probe.c  |    4 ++++
+>  drivers/pci/remove.c |    2 ++
+>  include/linux/pci.h  |    1 +
+>  3 files changed, 7 insertions(+), 0 deletions(-)
 >
-> It's possible to configure the kernel so that it doesn't have PMU
-> support, and in that case EBB is unsupported. It's also possible that something
-> goes wrong with the PMU registration (kernel bug or OOM), and again EBB is then
-> unsupported.
->
-> So I think it might be better if we add PPC_FEATURE2_EBB at runtime in
-> init_power8_pmu().
->
-> What do you think?
-Indeed your approach seems better (I wasn't aware you could configure
-kernel with perf subsystem).
-
->
-> Something like:
->
-> diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
-> index c7f8ccc..fd9ed89 100644
-> --- a/arch/powerpc/perf/power8-pmu.c
-> +++ b/arch/powerpc/perf/power8-pmu.c
-> @@ -620,10 +682,19 @@ static struct power_pmu power8_pmu = {
->
->  static int __init init_power8_pmu(void)
+> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+> index 70f10fa..7167dc4 100644
+> --- a/drivers/pci/probe.c
+> +++ b/drivers/pci/probe.c
+> @@ -1669,6 +1669,10 @@ void __weak pcibios_remove_bus(struct pci_bus *bus)
 >  {
-> +       int rc;
-> +
->         if (!cur_cpu_spec->oprofile_cpu_type ||
->             strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power8"))
->                 return -ENODEV;
->
-> -       return register_power_pmu(&power8_pmu);
-> +       rc = register_power_pmu(&power8_pmu);
-> +       if (rc)
-> +               return rc;
-> +
-> +       /* Tell userspace that EBB is supported */
-> +       cur_cpu_spec->cpu_user_features2 |= PPC_FEATURE2_EBB;
-> +
-> +       return 0;
 >  }
->  early_initcall(init_power8_pmu);
 >
+> +void __weak pcibios_stop_dev(struct pci_dev *dev)
+> +{
+> +}
+> +
+>  struct pci_bus *pci_create_root_bus(struct device *parent, int bus,
+>                 struct pci_ops *ops, void *sysdata, struct list_head *resources)
+>  {
+> diff --git a/drivers/pci/remove.c b/drivers/pci/remove.c
+> index 8fc54b7..e329efc 100644
+> --- a/drivers/pci/remove.c
+> +++ b/drivers/pci/remove.c
+> @@ -21,6 +21,8 @@ static void pci_stop_dev(struct pci_dev *dev)
+>  {
+>         pci_pme_active(dev, false);
 >
-> cheers
+> +       pcibios_stop_dev(dev);
+
+We already have pcibios_release_device() (just merged for v3.11).
+Would that work for you?  I haven't seen your whole series, so I can't
+tell whether you need something different.
+
+>         if (dev->is_added) {
+>                 pci_proc_detach_device(dev);
+>                 pci_remove_sysfs_dev_files(dev);
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index 3a24e4f..40df783 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -696,6 +696,7 @@ int no_pci_devices(void);
+>  void pcibios_resource_survey_bus(struct pci_bus *bus);
+>  void pcibios_add_bus(struct pci_bus *bus);
+>  void pcibios_remove_bus(struct pci_bus *bus);
+> +void pcibios_stop_dev(struct pci_dev *dev);
+>  void pcibios_fixup_bus(struct pci_bus *);
+>  int __must_check pcibios_enable_device(struct pci_dev *, int mask);
+>  /* Architecture specific versions may override this (weak) */
+> --
+> 1.7.5.4
 >
