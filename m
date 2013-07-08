@@ -1,21 +1,24 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 3322A2C00A6
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2013 07:52:58 +1000 (EST)
-Message-ID: <1373320371.2602.159.camel@ul30vt.home>
-Subject: Re: [PATCH 3/8] vfio: add external user support
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Mon, 08 Jul 2013 15:52:51 -0600
-In-Reply-To: <1373123227-22969-4-git-send-email-aik@ozlabs.ru>
-References: <1373123227-22969-1-git-send-email-aik@ozlabs.ru>
- <1373123227-22969-4-git-send-email-aik@ozlabs.ru>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: kvm@vger.kernel.org, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <B07421@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id F205D2C0296
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2013 09:43:39 +1000 (EST)
+Date: Mon, 8 Jul 2013 18:43:06 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 1/4] powerpc/85xx: Add support for 85xx cpu type detection
+To: Haijun Zhang <Haijun.Zhang@freescale.com>
+References: <1373249545-23928-1-git-send-email-Haijun.Zhang@freescale.com>
+In-Reply-To: <1373249545-23928-1-git-send-email-Haijun.Zhang@freescale.com>
+ (from Haijun.Zhang@freescale.com on Sun Jul  7 21:12:22 2013)
+Message-ID: <1373326986.8183.185@snotra>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: Zhao Chenhui <chenhui.zhao@freescale.com>, linux-mmc@vger.kernel.org,
+ AFLEMING@freescale.com, cbouatmailru@gmail.com, cjb@laptop.org,
+ linuxppc-dev@lists.ozlabs.org, Haijun Zhang <Haijun.Zhang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,140 +28,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2013-07-07 at 01:07 +1000, Alexey Kardashevskiy wrote:
-> VFIO is designed to be used via ioctls on file descriptors
-> returned by VFIO.
-> 
-> However in some situations support for an external user is required.
-> The first user is KVM on PPC64 (SPAPR TCE protocol) which is going to
-> use the existing VFIO groups for exclusive access in real/virtual mode
-> on a host to avoid passing map/unmap requests to the user space which
-> would made things pretty slow.
-> 
-> The proposed protocol includes:
-> 
-> 1. do normal VFIO init stuff such as opening a new container, attaching
-> group(s) to it, setting an IOMMU driver for a container. When IOMMU is
-> set for a container, all groups in it are considered ready to use by
-> an external user.
-> 
-> 2. pass a fd of the group we want to accelerate to KVM. KVM calls
-> vfio_group_get_external_user() to verify if the group is initialized,
-> IOMMU is set for it and increment the container user counter to prevent
-> the VFIO group from disposal prior to KVM exit.
-> The current TCE IOMMU driver marks the whole IOMMU table as busy when
-> IOMMU is set for a container what prevents other DMA users from
-> allocating from it so it is safe to grant user space access to it.
-> 
-> 3. KVM calls vfio_external_user_iommu_id() to obtian an IOMMU ID which
-> KVM uses to get an iommu_group struct for later use.
-> 
-> 4. When KVM is finished, it calls vfio_group_put_external_user() to
-> release the VFIO group by decrementing the container user counter.
-> Everything gets released.
-> 
-> The "vfio: Limit group opens" patch is also required for the consistency.
-> 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+On 07/07/2013 09:12:22 PM, Haijun Zhang wrote:
+> Add this file to help detect cpu type in runtime.
+> These macros and inline routines will be more favorable for driver
+> to apply errata and workaround to specified cpu type.
+>=20
+> Signed-off-by: Haijun Zhang <Haijun.Zhang@freescale.com>
+> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
 > ---
-> diff --git a/drivers/vfio/vfio.c b/drivers/vfio/vfio.c
-> index c488da5..57aa191 100644
-> --- a/drivers/vfio/vfio.c
-> +++ b/drivers/vfio/vfio.c
-> @@ -1370,6 +1370,62 @@ static const struct file_operations vfio_device_fops = {
->  };
->  
->  /**
-> + * External user API, exported by symbols to be linked dynamically.
-> + *
-> + * The protocol includes:
-> + *  1. do normal VFIO init operation:
-> + *	- opening a new container;
-> + *	- attaching group(s) to it;
-> + *	- setting an IOMMU driver for a container.
-> + * When IOMMU is set for a container, all groups in it are
-> + * considered ready to use by an external user.
-> + *
-> + * 2. The user space passed a group fd which we want to accelerate in
-> + * KVM. KVM uses vfio_group_get_external_user() to verify that:
-> + *	- the group is initialized;
-> + *	- IOMMU is set for it.
-> + * Then vfio_group_get_external_user() increments the container user
-> + * counter to prevent the VFIO group from disposal prior to KVM exit.
-> + *
-> + * 3. KVM calls vfio_external_user_iommu_id() to know an IOMMU ID which
-> + * KVM uses to get an iommu_group struct for later use.
-> + *
-> + * 4. When KVM is finished, it calls vfio_group_put_external_user() to
-> + * release the VFIO group by decrementing the container user counter.
+>  arch/powerpc/include/asm/mpc85xx.h | 96 =20
+> ++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 96 insertions(+)
+>  create mode 100644 arch/powerpc/include/asm/mpc85xx.h
 
-nit, the interface is for any external user, not just kvm.
+What changed since the last time this was posted?  I don't see any of =20
+the feedback addressed that I gave here:
 
-> + */
-> +struct vfio_group *vfio_group_get_external_user(struct file *filep)
-> +{
-> +	struct vfio_group *group = filep->private_data;
-> +
-> +	if (filep->f_op != &vfio_group_fops)
-> +		return NULL;
+http://patchwork.ozlabs.org/patch/144880/
 
-ERR_PTR(-EINVAL)
-
-There also needs to be a vfio_group_get(group) here and put in error
-cases.
-
-> +
-> +	if (!atomic_inc_not_zero(&group->container_users))
-> +		return NULL;
-
-ERR_PTR(-EINVAL)
-
-> +
-> +	if (!group->container->iommu_driver ||
-> +			!vfio_group_viable(group)) {
-> +		atomic_dec(&group->container_users);
-> +		return NULL;
-
-ERR_PTR(-EINVAL)
-
-> +	}
-> +
-> +	return group;
-> +}
-> +EXPORT_SYMBOL_GPL(vfio_group_get_external_user);
-> +
-> +void vfio_group_put_external_user(struct vfio_group *group)
-> +{
-> +	vfio_group_try_dissolve_container(group);
-
-And a vfio_group_put(group) here
-
-> +}
-> +EXPORT_SYMBOL_GPL(vfio_group_put_external_user);
-> +
-> +int vfio_external_user_iommu_id(struct vfio_group *group)
-> +{
-> +	return iommu_group_id(group->iommu_group);
-> +}
-> +EXPORT_SYMBOL_GPL(vfio_external_user_iommu_id);
-> +
-> +/**
->   * Module/class support
->   */
->  static char *vfio_devnode(struct device *dev, umode_t *mode)
-> diff --git a/include/linux/vfio.h b/include/linux/vfio.h
-> index ac8d488..24579a0 100644
-> --- a/include/linux/vfio.h
-> +++ b/include/linux/vfio.h
-> @@ -90,4 +90,11 @@ extern void vfio_unregister_iommu_driver(
->  	TYPE tmp;						\
->  	offsetof(TYPE, MEMBER) + sizeof(tmp.MEMBER); })		\
->  
-> +/*
-> + * External user API
-> + */
-> +extern struct vfio_group *vfio_group_get_external_user(struct file *filep);
-> +extern void vfio_group_put_external_user(struct vfio_group *group);
-> +extern int vfio_external_user_iommu_id(struct vfio_group *group);
-> +
->  #endif /* VFIO_H */
+-Scott=
