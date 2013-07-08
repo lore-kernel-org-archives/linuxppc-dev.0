@@ -1,19 +1,21 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- by ozlabs.org (Postfix) with ESMTP id B117B2C016A
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2013 04:46:04 +1000 (EST)
-Subject: Re: [PATCH 2/2] KVM: PPC: Book3E: Emulate MCSRR0/1 SPR and rfmci
- instruction
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <1372858255-19708-2-git-send-email-mihai.caraman@freescale.com>
-Date: Mon, 8 Jul 2013 20:45:58 +0200
-Message-Id: <1C2B7183-EF0F-4D97-9287-1068C9E97471@suse.de>
-References: <1372858255-19708-1-git-send-email-mihai.caraman@freescale.com>
- <1372858255-19708-2-git-send-email-mihai.caraman@freescale.com>
-To: Mihai Caraman <mihai.caraman@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 3322A2C00A6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2013 07:52:58 +1000 (EST)
+Message-ID: <1373320371.2602.159.camel@ul30vt.home>
+Subject: Re: [PATCH 3/8] vfio: add external user support
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Date: Mon, 08 Jul 2013 15:52:51 -0600
+In-Reply-To: <1373123227-22969-4-git-send-email-aik@ozlabs.ru>
+References: <1373123227-22969-1-git-send-email-aik@ozlabs.ru>
+ <1373123227-22969-4-git-send-email-aik@ozlabs.ru>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: kvm@vger.kernel.org, Alexander Graf <agraf@suse.de>,
+ kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,137 +25,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On 03.07.2013, at 15:30, Mihai Caraman wrote:
-
-> Some guests are making use of return from machine check instruction
-> to do crazy things even though the 64-bit kernel doesn't handle yet
-> this interrupt. Emulate MCSRR0/1 SPR and rfmci instruction =
-accordingly.
->=20
-> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+On Sun, 2013-07-07 at 01:07 +1000, Alexey Kardashevskiy wrote:
+> VFIO is designed to be used via ioctls on file descriptors
+> returned by VFIO.
+> 
+> However in some situations support for an external user is required.
+> The first user is KVM on PPC64 (SPAPR TCE protocol) which is going to
+> use the existing VFIO groups for exclusive access in real/virtual mode
+> on a host to avoid passing map/unmap requests to the user space which
+> would made things pretty slow.
+> 
+> The proposed protocol includes:
+> 
+> 1. do normal VFIO init stuff such as opening a new container, attaching
+> group(s) to it, setting an IOMMU driver for a container. When IOMMU is
+> set for a container, all groups in it are considered ready to use by
+> an external user.
+> 
+> 2. pass a fd of the group we want to accelerate to KVM. KVM calls
+> vfio_group_get_external_user() to verify if the group is initialized,
+> IOMMU is set for it and increment the container user counter to prevent
+> the VFIO group from disposal prior to KVM exit.
+> The current TCE IOMMU driver marks the whole IOMMU table as busy when
+> IOMMU is set for a container what prevents other DMA users from
+> allocating from it so it is safe to grant user space access to it.
+> 
+> 3. KVM calls vfio_external_user_iommu_id() to obtian an IOMMU ID which
+> KVM uses to get an iommu_group struct for later use.
+> 
+> 4. When KVM is finished, it calls vfio_group_put_external_user() to
+> release the VFIO group by decrementing the container user counter.
+> Everything gets released.
+> 
+> The "vfio: Limit group opens" patch is also required for the consistency.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 > ---
-> arch/powerpc/include/asm/kvm_host.h |    1 +
-> arch/powerpc/kvm/booke_emulate.c    |   25 +++++++++++++++++++++++++
-> arch/powerpc/kvm/timing.c           |    1 +
-> 3 files changed, 27 insertions(+), 0 deletions(-)
->=20
-> diff --git a/arch/powerpc/include/asm/kvm_host.h =
-b/arch/powerpc/include/asm/kvm_host.h
-> index af326cd..0466789 100644
-> --- a/arch/powerpc/include/asm/kvm_host.h
-> +++ b/arch/powerpc/include/asm/kvm_host.h
-> @@ -148,6 +148,7 @@ enum kvm_exit_types {
-> 	EMULATED_TLBWE_EXITS,
-> 	EMULATED_RFI_EXITS,
-> 	EMULATED_RFCI_EXITS,
-> +	EMULATED_RFMCI_EXITS,
+> diff --git a/drivers/vfio/vfio.c b/drivers/vfio/vfio.c
+> index c488da5..57aa191 100644
+> --- a/drivers/vfio/vfio.c
+> +++ b/drivers/vfio/vfio.c
+> @@ -1370,6 +1370,62 @@ static const struct file_operations vfio_device_fops = {
+>  };
+>  
+>  /**
+> + * External user API, exported by symbols to be linked dynamically.
+> + *
+> + * The protocol includes:
+> + *  1. do normal VFIO init operation:
+> + *	- opening a new container;
+> + *	- attaching group(s) to it;
+> + *	- setting an IOMMU driver for a container.
+> + * When IOMMU is set for a container, all groups in it are
+> + * considered ready to use by an external user.
+> + *
+> + * 2. The user space passed a group fd which we want to accelerate in
+> + * KVM. KVM uses vfio_group_get_external_user() to verify that:
+> + *	- the group is initialized;
+> + *	- IOMMU is set for it.
+> + * Then vfio_group_get_external_user() increments the container user
+> + * counter to prevent the VFIO group from disposal prior to KVM exit.
+> + *
+> + * 3. KVM calls vfio_external_user_iommu_id() to know an IOMMU ID which
+> + * KVM uses to get an iommu_group struct for later use.
+> + *
+> + * 4. When KVM is finished, it calls vfio_group_put_external_user() to
+> + * release the VFIO group by decrementing the container user counter.
 
-I would quite frankly prefer to see us abandon the whole exit timing =
-framework in the kernel and instead use trace points. Then we don't have =
-to maintain all of this randomly exercised code.
+nit, the interface is for any external user, not just kvm.
 
-FWIW I think in this case however, treating RFMCI the same as RFI or =
-random "instruction emulation" shouldn't hurt. This whole table is only =
-about timing measurements. If you want to know for real what's going on, =
-use trace points.
-
-Otherwise looks good.
-
-
-Alex
-
-> 	DEC_EXITS,
-> 	EXT_INTR_EXITS,
-> 	HALT_WAKEUP,
-> diff --git a/arch/powerpc/kvm/booke_emulate.c =
-b/arch/powerpc/kvm/booke_emulate.c
-> index 27a4b28..aaff1b7 100644
-> --- a/arch/powerpc/kvm/booke_emulate.c
-> +++ b/arch/powerpc/kvm/booke_emulate.c
-> @@ -23,6 +23,7 @@
->=20
-> #include "booke.h"
->=20
-> +#define OP_19_XOP_RFMCI   38
-> #define OP_19_XOP_RFI     50
-> #define OP_19_XOP_RFCI    51
->=20
-> @@ -43,6 +44,12 @@ static void kvmppc_emul_rfci(struct kvm_vcpu *vcpu)
-> 	kvmppc_set_msr(vcpu, vcpu->arch.csrr1);
-> }
->=20
-> +static void kvmppc_emul_rfmci(struct kvm_vcpu *vcpu)
+> + */
+> +struct vfio_group *vfio_group_get_external_user(struct file *filep)
 > +{
-> +	vcpu->arch.pc =3D vcpu->arch.mcsrr0;
-> +	kvmppc_set_msr(vcpu, vcpu->arch.mcsrr1);
+> +	struct vfio_group *group = filep->private_data;
+> +
+> +	if (filep->f_op != &vfio_group_fops)
+> +		return NULL;
+
+ERR_PTR(-EINVAL)
+
+There also needs to be a vfio_group_get(group) here and put in error
+cases.
+
+> +
+> +	if (!atomic_inc_not_zero(&group->container_users))
+> +		return NULL;
+
+ERR_PTR(-EINVAL)
+
+> +
+> +	if (!group->container->iommu_driver ||
+> +			!vfio_group_viable(group)) {
+> +		atomic_dec(&group->container_users);
+> +		return NULL;
+
+ERR_PTR(-EINVAL)
+
+> +	}
+> +
+> +	return group;
 > +}
+> +EXPORT_SYMBOL_GPL(vfio_group_get_external_user);
 > +
-> int kvmppc_booke_emulate_op(struct kvm_run *run, struct kvm_vcpu =
-*vcpu,
->                             unsigned int inst, int *advance)
-> {
-> @@ -65,6 +72,12 @@ int kvmppc_booke_emulate_op(struct kvm_run *run, =
-struct kvm_vcpu *vcpu,
-> 			*advance =3D 0;
-> 			break;
->=20
-> +		case OP_19_XOP_RFMCI:
-> +			kvmppc_emul_rfmci(vcpu);
-> +			kvmppc_set_exit_type(vcpu, =
-EMULATED_RFMCI_EXITS);
-> +			*advance =3D 0;
-> +			break;
+> +void vfio_group_put_external_user(struct vfio_group *group)
+> +{
+> +	vfio_group_try_dissolve_container(group);
+
+And a vfio_group_put(group) here
+
+> +}
+> +EXPORT_SYMBOL_GPL(vfio_group_put_external_user);
 > +
-> 		default:
-> 			emulated =3D EMULATE_FAIL;
-> 			break;
-> @@ -138,6 +151,12 @@ int kvmppc_booke_emulate_mtspr(struct kvm_vcpu =
-*vcpu, int sprn, ulong spr_val)
-> 	case SPRN_DBCR1:
-> 		vcpu->arch.dbg_reg.dbcr1 =3D spr_val;
-> 		break;
-> +	case SPRN_MCSRR0:
-> +		vcpu->arch.mcsrr0 =3D spr_val;
-> +		break;
-> +	case SPRN_MCSRR1:
-> +		vcpu->arch.mcsrr1 =3D spr_val;
-> +		break;
-> 	case SPRN_DBSR:
-> 		vcpu->arch.dbsr &=3D ~spr_val;
-> 		break;
-> @@ -284,6 +303,12 @@ int kvmppc_booke_emulate_mfspr(struct kvm_vcpu =
-*vcpu, int sprn, ulong *spr_val)
-> 	case SPRN_DBCR1:
-> 		*spr_val =3D vcpu->arch.dbg_reg.dbcr1;
-> 		break;
-> +	case SPRN_MCSRR0:
-> +		*spr_val =3D vcpu->arch.mcsrr0;
-> +		break;
-> +	case SPRN_MCSRR1:
-> +		*spr_val =3D vcpu->arch.mcsrr1;
-> +		break;
-> 	case SPRN_DBSR:
-> 		*spr_val =3D vcpu->arch.dbsr;
-> 		break;
-> diff --git a/arch/powerpc/kvm/timing.c b/arch/powerpc/kvm/timing.c
-> index c392d26..670f63d 100644
-> --- a/arch/powerpc/kvm/timing.c
-> +++ b/arch/powerpc/kvm/timing.c
-> @@ -129,6 +129,7 @@ static const char =
-*kvm_exit_names[__NUMBER_OF_KVM_EXIT_TYPES] =3D {
-> 	[EMULATED_TLBSX_EXITS] =3D    "EMUL_TLBSX",
-> 	[EMULATED_TLBWE_EXITS] =3D    "EMUL_TLBWE",
-> 	[EMULATED_RFI_EXITS] =3D      "EMUL_RFI",
-> +	[EMULATED_RFMCI_EXITS] =3D    "EMUL_RFMCI",
-> 	[DEC_EXITS] =3D               "DEC",
-> 	[EXT_INTR_EXITS] =3D          "EXTINT",
-> 	[HALT_WAKEUP] =3D             "HALT",
-> --=20
-> 1.7.3.4
->=20
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> +int vfio_external_user_iommu_id(struct vfio_group *group)
+> +{
+> +	return iommu_group_id(group->iommu_group);
+> +}
+> +EXPORT_SYMBOL_GPL(vfio_external_user_iommu_id);
+> +
+> +/**
+>   * Module/class support
+>   */
+>  static char *vfio_devnode(struct device *dev, umode_t *mode)
+> diff --git a/include/linux/vfio.h b/include/linux/vfio.h
+> index ac8d488..24579a0 100644
+> --- a/include/linux/vfio.h
+> +++ b/include/linux/vfio.h
+> @@ -90,4 +90,11 @@ extern void vfio_unregister_iommu_driver(
+>  	TYPE tmp;						\
+>  	offsetof(TYPE, MEMBER) + sizeof(tmp.MEMBER); })		\
+>  
+> +/*
+> + * External user API
+> + */
+> +extern struct vfio_group *vfio_group_get_external_user(struct file *filep);
+> +extern void vfio_group_put_external_user(struct vfio_group *group);
+> +extern int vfio_external_user_iommu_id(struct vfio_group *group);
+> +
+>  #endif /* VFIO_H */
