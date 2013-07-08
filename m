@@ -1,41 +1,29 @@
-Return-Path: <thomas.petazzoni@free-electrons.com>
-Received: from mail.free-electrons.com (mail.free-electrons.com [94.23.35.102])
- by ozlabs.org (Postfix) with ESMTP id 2C8292C009A
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Jul 2013 02:33:47 +1000 (EST)
-Date: Sat, 6 Jul 2013 18:33:41 +0200
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-To: Jason Cooper <jason@lakedaemon.net>
-Subject: Re: [PATCHv4 03/11] pci: remove ARCH_SUPPORTS_MSI kconfig option
-Message-ID: <20130706183341.379d2fea@skate>
-In-Reply-To: <20130706161743.GM2569@titan.lakedaemon.net>
-References: <1372686136-1370-1-git-send-email-thomas.petazzoni@free-electrons.com>
- <1372686136-1370-4-git-send-email-thomas.petazzoni@free-electrons.com>
- <CAErSpo73iSBg+SYwZLea0qdXD1uVc3+Vacd8Tg4CU92vLG=2AQ@mail.gmail.com>
- <20130705234501.1341f52e@skate>
- <20130706135433.GL2569@titan.lakedaemon.net>
- <CAErSpo4uN2MifYHbFiUfQ+6TE-hBkbWYdnAvabj8jCTOd5g+1A@mail.gmail.com>
- <20130706161743.GM2569@titan.lakedaemon.net>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 2BB3D2C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jul 2013 11:33:58 +1000 (EST)
+Message-ID: <1373247199.4446.29.camel@pasglop>
+Subject: Re: [PATCH 4/8] powerpc: Prepare to support kernel handling of
+ IOMMU map/unmap
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Date: Mon, 08 Jul 2013 11:33:19 +1000
+In-Reply-To: <1373123227-22969-5-git-send-email-aik@ozlabs.ru>
+References: <1373123227-22969-1-git-send-email-aik@ozlabs.ru>
+ <1373123227-22969-5-git-send-email-aik@ozlabs.ru>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Gregory Clement <gregory.clement@free-electrons.com>,
- Thierry Reding <thierry.reding@gmail.com>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
- "x86@kernel.org" <x86@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- Ezequiel Garcia <ezequiel.garcia@free-electrons.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Chris Metcalf <cmetcalf@tilera.com>,
- Rob Herring <rob.herring@calxeda.com>, Bjorn Helgaas <bhelgaas@google.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- linux-arm <linux-arm-kernel@lists.infradead.org>,
- Tony Luck <tony.luck@intel.com>, Ralf Baechle <ralf@linux-mips.org>,
- Maen Suleiman <maen@marvell.com>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
- linux390@de.ibm.com, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "David
- S. Miller" <davem@davemloft.net>
+Cc: Andrea Arcangeli <aarcange@redhat.com>,
+ Christoffer Dall <cdall@cs.columbia.edu>, kvm@vger.kernel.org,
+ Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>,
+ Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,32 +33,170 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear Jason Cooper,
-
-On Sat, 6 Jul 2013 12:17:43 -0400, Jason Cooper wrote:
-
-> > > If we end up handling this the same as the of/pci & mvebu-pcie series
-> > > (whole series through mvebu -> arm-soc) I can have it up in -next within
-> > > a few days of -rc1.  Just let me know.
-> > 
-> > That sounds fine with me.  I don't think it's worth trying to split
-> > out the drivers/pci stuff and trying to coordinate it going through
-> > different trees.
+On Sun, 2013-07-07 at 01:07 +1000, Alexey Kardashevskiy wrote:
+> The current VFIO-on-POWER implementation supports only user mode
+> driven mapping, i.e. QEMU is sending requests to map/unmap pages.
+> However this approach is really slow, so we want to move that to KVM.
+> Since H_PUT_TCE can be extremely performance sensitive (especially with
+> network adapters where each packet needs to be mapped/unmapped) we chose
+> to implement that as a "fast" hypercall directly in "real
+> mode" (processor still in the guest context but MMU off).
 > 
-> Ok, will do.
+> To be able to do that, we need to provide some facilities to
+> access the struct page count within that real mode environment as things
+> like the sparsemem vmemmap mappings aren't accessible.
 > 
-> Thomas, I assume there will be one more version to address Bjorn's last
-> comments?
+> This adds an API to increment/decrement page counter as
+> get_user_pages API used for user mode mapping does not work
+> in the real mode.
+> 
+> CONFIG_SPARSEMEM_VMEMMAP and CONFIG_FLATMEM are supported.
 
-Yes, indeed. I was waiting to see if Thierry Redding would give some
-additional feedback on Bjorn's comment, but if he doesn't, I'll resend
-an updated version, most likely next week.
+This patch will need an ack from "mm" people to make sure they are ok
+with our approach and ack the change to the generic header.
 
-Thanks!
+(Added linux-mm).
 
-Thomas
--- 
-Thomas Petazzoni, Free Electrons
-Kernel, drivers, real-time and embedded Linux
-development, consulting, training and support.
-http://free-electrons.com
+Cheers,
+Ben.
+
+> Reviewed-by: Paul Mackerras <paulus@samba.org>
+> Signed-off-by: Paul Mackerras <paulus@samba.org>
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> 
+> ---
+> 
+> Changes:
+> 2013/06/27:
+> * realmode_get_page() fixed to use get_page_unless_zero(). If failed,
+> the call will be passed from real to virtual mode and safely handled.
+> * added comment to PageCompound() in include/linux/page-flags.h.
+> 
+> 2013/05/20:
+> * PageTail() is replaced by PageCompound() in order to have the same checks
+> for whether the page is huge in realmode_get_page() and realmode_put_page()
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+>  arch/powerpc/include/asm/pgtable-ppc64.h |  4 ++
+>  arch/powerpc/mm/init_64.c                | 78 +++++++++++++++++++++++++++++++-
+>  include/linux/page-flags.h               |  4 +-
+>  3 files changed, 84 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
+> index e3d55f6f..7b46e5f 100644
+> --- a/arch/powerpc/include/asm/pgtable-ppc64.h
+> +++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+> @@ -376,6 +376,10 @@ static inline pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea,
+>  }
+>  #endif /* !CONFIG_HUGETLB_PAGE */
+>  
+> +struct page *realmode_pfn_to_page(unsigned long pfn);
+> +int realmode_get_page(struct page *page);
+> +int realmode_put_page(struct page *page);
+> +
+>  #endif /* __ASSEMBLY__ */
+>  
+>  #endif /* _ASM_POWERPC_PGTABLE_PPC64_H_ */
+> diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+> index a90b9c4..7031be3 100644
+> --- a/arch/powerpc/mm/init_64.c
+> +++ b/arch/powerpc/mm/init_64.c
+> @@ -297,5 +297,81 @@ void vmemmap_free(unsigned long start, unsigned long end)
+>  {
+>  }
+>  
+> -#endif /* CONFIG_SPARSEMEM_VMEMMAP */
+> +/*
+> + * We do not have access to the sparsemem vmemmap, so we fallback to
+> + * walking the list of sparsemem blocks which we already maintain for
+> + * the sake of crashdump. In the long run, we might want to maintain
+> + * a tree if performance of that linear walk becomes a problem.
+> + *
+> + * Any of realmode_XXXX functions can fail due to:
+> + * 1) As real sparsemem blocks do not lay in RAM continously (they
+> + * are in virtual address space which is not available in the real mode),
+> + * the requested page struct can be split between blocks so get_page/put_page
+> + * may fail.
+> + * 2) When huge pages are used, the get_page/put_page API will fail
+> + * in real mode as the linked addresses in the page struct are virtual
+> + * too.
+> + * When 1) or 2) takes place, the API returns an error code to cause
+> + * an exit to kernel virtual mode where the operation will be completed.
+> + */
+> +struct page *realmode_pfn_to_page(unsigned long pfn)
+> +{
+> +	struct vmemmap_backing *vmem_back;
+> +	struct page *page;
+> +	unsigned long page_size = 1 << mmu_psize_defs[mmu_vmemmap_psize].shift;
+> +	unsigned long pg_va = (unsigned long) pfn_to_page(pfn);
+>  
+> +	for (vmem_back = vmemmap_list; vmem_back; vmem_back = vmem_back->list) {
+> +		if (pg_va < vmem_back->virt_addr)
+> +			continue;
+> +
+> +		/* Check that page struct is not split between real pages */
+> +		if ((pg_va + sizeof(struct page)) >
+> +				(vmem_back->virt_addr + page_size))
+> +			return NULL;
+> +
+> +		page = (struct page *) (vmem_back->phys + pg_va -
+> +				vmem_back->virt_addr);
+> +		return page;
+> +	}
+> +
+> +	return NULL;
+> +}
+> +EXPORT_SYMBOL_GPL(realmode_pfn_to_page);
+> +
+> +#elif defined(CONFIG_FLATMEM)
+> +
+> +struct page *realmode_pfn_to_page(unsigned long pfn)
+> +{
+> +	struct page *page = pfn_to_page(pfn);
+> +	return page;
+> +}
+> +EXPORT_SYMBOL_GPL(realmode_pfn_to_page);
+> +
+> +#endif /* CONFIG_SPARSEMEM_VMEMMAP/CONFIG_FLATMEM */
+> +
+> +#if defined(CONFIG_SPARSEMEM_VMEMMAP) || defined(CONFIG_FLATMEM)
+> +int realmode_get_page(struct page *page)
+> +{
+> +	if (PageCompound(page))
+> +		return -EAGAIN;
+> +
+> +	if (!get_page_unless_zero(page))
+> +		return -EAGAIN;
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(realmode_get_page);
+> +
+> +int realmode_put_page(struct page *page)
+> +{
+> +	if (PageCompound(page))
+> +		return -EAGAIN;
+> +
+> +	if (!atomic_add_unless(&page->_count, -1, 1))
+> +		return -EAGAIN;
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(realmode_put_page);
+> +#endif
+> diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
+> index 6d53675..98ada58 100644
+> --- a/include/linux/page-flags.h
+> +++ b/include/linux/page-flags.h
+> @@ -329,7 +329,9 @@ static inline void set_page_writeback(struct page *page)
+>   * System with lots of page flags available. This allows separate
+>   * flags for PageHead() and PageTail() checks of compound pages so that bit
+>   * tests can be used in performance sensitive paths. PageCompound is
+> - * generally not used in hot code paths.
+> + * generally not used in hot code paths except arch/powerpc/mm/init_64.c
+> + * and arch/powerpc/kvm/book3s_64_vio_hv.c which use it to detect huge pages
+> + * and avoid handling those in real mode.
+>   */
+>  __PAGEFLAG(Head, head) CLEARPAGEFLAG(Head, head)
+>  __PAGEFLAG(Tail, tail)
