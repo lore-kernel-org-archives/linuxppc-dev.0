@@ -1,17 +1,16 @@
 Return-Path: <B42677@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0185.outbound.messaging.microsoft.com [213.199.154.185])
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0252.outbound.messaging.microsoft.com [213.199.154.252])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DDE772C0099
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jul 2013 13:02:12 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 8F1E22C009D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jul 2013 13:02:15 +1000 (EST)
 From: Haijun Zhang <Haijun.Zhang@freescale.com>
 To: <linux-mmc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 2/4] mmc: esdhc: workaround for dma err in the last system
- transaction
-Date: Mon, 8 Jul 2013 10:12:23 +0800
-Message-ID: <1373249545-23928-2-git-send-email-Haijun.Zhang@freescale.com>
+Subject: [PATCH 3/4] mmc: esdhc: Add quirks to support T4240 board
+Date: Mon, 8 Jul 2013 10:12:24 +0800
+Message-ID: <1373249545-23928-3-git-send-email-Haijun.Zhang@freescale.com>
 In-Reply-To: <1373249545-23928-1-git-send-email-Haijun.Zhang@freescale.com>
 References: <1373249545-23928-1-git-send-email-Haijun.Zhang@freescale.com>
 MIME-Version: 1.0
@@ -27,177 +26,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A-004388: eSDHC DMA might not stop if error occurs on system transaction
-
-eSDHC DMA(SDMA/ADMA) might not stop if an error occurs in the last system
-transaction. It may continue initiating additional transactions until
-software reset for data/all is issued during error recovery. There is not
-any data corruption to the SD data. The IRQSTAT[DMAE] is set when the
-erratum occurs.
-The only conditions under which issues occur are the following:
-1. SDMA - For SD Write , the error occurs in the last system transaction.
-No issue for SD read
-2. ADMA
-a. Block count is enabled: For SD write, the error occurs in the last system
-transaction. There is no issue for SD read when block count is enabled.
-b. Block count is disabled: Block count is designated by the ADMA descriptor
-table, and the error occurs in the last system transaction when ADMA is
-executing last descriptor line of table.
-
-eSDHC may initiate additional system transactions. There is no data integrity
-issue for case 1 and 2a described below. For case 2b, system data might be
-corrupted.
-
-Workaround: Set eSDHC_SYSCTL[RSTD] when IRQSTAT[DMAE] is set. For cases 2a and
-2b above, add an extra descriptor line with zero data next to the last
-descriptor line.
+On T4240 board controllers has an unusable ADMA engine, so use SDMA instead.
+Also 3.0v is support on T4240 board even if the capacity detailed only 1.8v
+support. Without this quirk SD card will declare voltage not support and
 
 Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
 ---
- drivers/mmc/host/sdhci-of-esdhc.c | 113 +++++++++++++++++++++++++++++++++++---
- 1 file changed, 104 insertions(+), 9 deletions(-)
+ drivers/mmc/host/sdhci-pltfm.c | 5 +++++
+ drivers/mmc/host/sdhci.c       | 3 +++
+ include/linux/mmc/sdhci.h      | 2 ++
+ 3 files changed, 10 insertions(+)
 
-diff --git a/drivers/mmc/host/sdhci-of-esdhc.c b/drivers/mmc/host/sdhci-of-esdhc.c
-index 15039e2..b22cab0 100644
---- a/drivers/mmc/host/sdhci-of-esdhc.c
-+++ b/drivers/mmc/host/sdhci-of-esdhc.c
-@@ -21,6 +21,7 @@
- #include <linux/mmc/host.h>
- #include "sdhci-pltfm.h"
- #include "sdhci-esdhc.h"
-+#include <asm/mpc85xx.h>
+diff --git a/drivers/mmc/host/sdhci-pltfm.c b/drivers/mmc/host/sdhci-pltfm.c
+index e2065a4..02edb3d 100644
+--- a/drivers/mmc/host/sdhci-pltfm.c
++++ b/drivers/mmc/host/sdhci-pltfm.c
+@@ -92,6 +92,11 @@ void sdhci_get_of_property(struct platform_device *pdev)
+ 		if (of_device_is_compatible(np, "fsl,p2020-rev1-esdhc"))
+ 			host->quirks |= SDHCI_QUIRK_BROKEN_DMA;
  
- #define VENDOR_V_22	0x12
- #define VENDOR_V_23	0x13
-@@ -142,6 +143,26 @@ static void esdhc_writeb(struct sdhci_host *host, u8 val, int reg)
- 	sdhci_be32bs_writeb(host, val, reg);
- }
- 
-+static void esdhc_reset(struct sdhci_host *host, u8 mask)
-+{
-+	u32 ier;
-+	u32 uninitialized_var(isav);
-+
-+	if (host->quirks & SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET)
-+		isav = esdhc_readl(host, SDHCI_INT_ENABLE);
-+
-+	esdhc_writeb(host, mask, SDHCI_SOFTWARE_RESET);
-+	mdelay(100);
-+
-+	if (host->quirks & SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET) {
-+		ier = esdhc_readl(host, SDHCI_INT_ENABLE);
-+		ier &= ~SDHCI_INT_ALL_MASK;
-+		ier |= isav;
-+		esdhc_writel(host, ier, SDHCI_INT_ENABLE);
-+		esdhc_writel(host, ier, SDHCI_SIGNAL_ENABLE);
-+	}
-+}
-+
- /*
-  * For Abort or Suspend after Stop at Block Gap, ignore the ADMA
-  * error(IRQSTAT[ADMAE]) if both Transfer Complete(IRQSTAT[TC])
-@@ -162,19 +183,93 @@ static void esdhci_of_adma_workaround(struct sdhci_host *host, u32 intmask)
- 	applicable = (intmask & SDHCI_INT_DATA_END) &&
- 		(intmask & SDHCI_INT_BLK_GAP) &&
- 		(tmp == VENDOR_V_23);
--	if (!applicable)
-+	if (applicable) {
-+
-+		esdhc_reset(host, SDHCI_RESET_DATA);
-+		host->data->error = 0;
-+		dmastart = sg_dma_address(host->data->sg);
-+		dmanow = dmastart + host->data->bytes_xfered;
-+		/*
-+		 * Force update to the next DMA block boundary.
-+		 */
-+		dmanow = (dmanow & ~(SDHCI_DEFAULT_BOUNDARY_SIZE - 1)) +
-+			SDHCI_DEFAULT_BOUNDARY_SIZE;
-+		host->data->bytes_xfered = dmanow - dmastart;
-+		sdhci_writel(host, dmanow, SDHCI_DMA_ADDRESS);
-+
- 		return;
-+	}
- 
--	host->data->error = 0;
--	dmastart = sg_dma_address(host->data->sg);
--	dmanow = dmastart + host->data->bytes_xfered;
- 	/*
--	 * Force update to the next DMA block boundary.
-+	 * Check for A-004388: eSDHC DMA might not stop if error
-+	 * occurs on system transaction
-+	 * Impact list:
-+	 * T4240-R1.0 B4860-R1.0 P1010-R1.0
- 	 */
--	dmanow = (dmanow & ~(SDHCI_DEFAULT_BOUNDARY_SIZE - 1)) +
--		SDHCI_DEFAULT_BOUNDARY_SIZE;
--	host->data->bytes_xfered = dmanow - dmastart;
--	sdhci_writel(host, dmanow, SDHCI_DMA_ADDRESS);
-+	if (!((fsl_svr_is(SVR_T4240) && fsl_svr_rev_is(1, 0)) ||
-+		(fsl_svr_is(SVR_B4860) && fsl_svr_rev_is(1, 0)) ||
-+		(fsl_svr_is(SVR_P1010) && fsl_svr_rev_is(1, 0))))
-+		return;
-+
-+
-+	esdhc_reset(host, SDHCI_RESET_DATA);
-+
-+	if (host->flags & SDHCI_USE_ADMA) {
-+		u32 mod, i, offset;
-+		u8 *desc;
-+		dma_addr_t addr;
-+		struct scatterlist *sg;
-+
-+		mod = esdhc_readl(host, SDHCI_TRANSFER_MODE);
-+		if (mod & SDHCI_TRNS_BLK_CNT_EN) {
-+			/*
-+			 * In case read transfer there is no data
-+			 * was corrupted
-+			 */
-+			if (host->data->flags & MMC_DATA_READ)
-+				host->data->error = 0;
-+
-+			return;
++		if (of_device_is_compatible(np, "fsl,t4240-esdhc")) {
++			host->quirks |= SDHCI_QUIRK_BROKEN_ADMA;
++			host->quirks2 |= SDHCI_QUIRK2_CIRCUIT_SUPPORT_VS30;
 +		}
 +
-+
-+		BUG_ON(!host->data);
-+		desc = host->adma_desc;
-+		for_each_sg(host->data->sg, sg, host->sg_count, i) {
-+			addr = sg_dma_address(sg);
-+			offset = (4 - (addr & 0x3)) & 0x3;
-+			if (offset)
-+				desc += 8;
-+			desc += 8;
-+		}
-+
-+		/*
-+		 * Add an extra zero descriptor next to the
-+		 * terminating descriptor.
-+		 */
-+		desc += 8;
-+		WARN_ON((desc - host->adma_desc) > (128 * 2 + 1) * 4);
-+
-+		if (host->quirks & SDHCI_QUIRK_NO_ENDATTR_IN_NOPDESC) {
-+			desc -= 8;
-+			desc[0] |= 0x2; /* end */
-+		} else {
-+			__le32 *dataddr = (__le32 __force *)(desc + 4);
-+			__le16 *cmdlen = (__le16 __force *)desc;
-+
-+			cmdlen[0] = cpu_to_le16(0x3);
-+			cmdlen[1] = cpu_to_le16(0);
-+
-+			dataddr[0] = cpu_to_le32(0);
-+		}
-+
-+	}
-+
-+	if ((host->flags & SDHCI_USE_SDMA) &&
-+			(host->data->flags & MMC_DATA_READ))
-+		host->data->error = 0;
-+
-+	return;
- }
+ 		if (of_device_is_compatible(np, "fsl,p2020-esdhc") ||
+ 		    of_device_is_compatible(np, "fsl,p1010-esdhc") ||
+ 		    of_device_is_compatible(np, "fsl,t4240-esdhc") ||
+diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+index a78bd4f..de7fa81 100644
+--- a/drivers/mmc/host/sdhci.c
++++ b/drivers/mmc/host/sdhci.c
+@@ -2797,6 +2797,9 @@ int sdhci_add_host(struct sdhci_host *host)
+ 			host->caps1 :
+ 			sdhci_readl(host, SDHCI_CAPABILITIES_1);
  
- static int esdhc_of_enable_dma(struct sdhci_host *host)
++	if (host->quirks2 & SDHCI_QUIRK2_CIRCUIT_SUPPORT_VS30)
++		caps[0] = caps[0] | SDHCI_CAN_VDD_300;
++
+ 	if (host->quirks & SDHCI_QUIRK_FORCE_DMA)
+ 		host->flags |= SDHCI_USE_SDMA;
+ 	else if (!(caps[0] & SDHCI_CAN_DO_SDMA))
+diff --git a/include/linux/mmc/sdhci.h b/include/linux/mmc/sdhci.h
+index e3c6a74..dc608d7 100644
+--- a/include/linux/mmc/sdhci.h
++++ b/include/linux/mmc/sdhci.h
+@@ -98,6 +98,8 @@ struct sdhci_host {
+ #define SDHCI_QUIRK2_CARD_ON_NEEDS_BUS_ON		(1<<4)
+ /* Controller has a non-standard host control register */
+ #define SDHCI_QUIRK2_BROKEN_HOST_CONTROL		(1<<5)
++/* The host support VS300 even if the capacity detailed not */
++#define SDHCI_QUIRK2_CIRCUIT_SUPPORT_VS30		(1<<6)
+ 
+ 	int irq;		/* Device IRQ */
+ 	void __iomem *ioaddr;	/* Mapped address */
 -- 
 1.8.0
