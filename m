@@ -1,23 +1,22 @@
-Return-Path: <B42677@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0189.outbound.messaging.microsoft.com [213.199.154.189])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 174822C02B0
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jul 2013 13:02:17 +1000 (EST)
-From: Haijun Zhang <Haijun.Zhang@freescale.com>
-To: <linux-mmc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 4/4] mmc: eSDHC: Some eSDHC host need long time to generate
- command interrupt
-Date: Mon, 8 Jul 2013 10:12:25 +0800
-Message-ID: <1373249545-23928-4-git-send-email-Haijun.Zhang@freescale.com>
-In-Reply-To: <1373249545-23928-1-git-send-email-Haijun.Zhang@freescale.com>
-References: <1373249545-23928-1-git-send-email-Haijun.Zhang@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: scottwood@freescale.com, cjb@laptop.org, AFLEMING@freescale.com,
- Haijun Zhang <haijun.zhang@freescale.com>, cbouatmailru@gmail.com
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pb0-f50.google.com (mail-pb0-f50.google.com
+ [209.85.160.50])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 081FF2C00B8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jul 2013 14:44:47 +1000 (EST)
+Received: by mail-pb0-f50.google.com with SMTP id wz7so3891098pbc.9
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 07 Jul 2013 21:44:45 -0700 (PDT)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2] powerpc: add real mode support for dma operations on
+ powernv
+Date: Mon,  8 Jul 2013 14:44:29 +1000
+Message-Id: <1373258669-3130-1-git-send-email-aik@ozlabs.ru>
+In-Reply-To: <1373123227-22969-6-git-send-email-aik@ozlabs.ru>
+References: <1373123227-22969-6-git-send-email-aik@ozlabs.ru>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,71 +26,264 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Command complete interrupt not always generate within 10 * HZ. Sometimes
-500 * HZ or more. So enlarge this detecting value to ensure the host had
-sufficient time to generate command complete interrupt.
+The existing TCE machine calls (tce_build and tce_free) only support
+virtual mode as they call __raw_writeq for TCE invalidation what
+fails in real mode.
 
-Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
+This introduces tce_build_rm and tce_free_rm real mode versions
+which do mostly the same but use "Store Doubleword Caching Inhibited
+Indexed" instruction for TCE invalidation.
+
+This new feature is going to be utilized by real mode support of VFIO.
+
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- drivers/mmc/host/sdhci-of-esdhc.c |  3 +++
- drivers/mmc/host/sdhci.c          | 10 +++++++++-
- include/linux/mmc/sdhci.h         |  2 ++
- 3 files changed, 14 insertions(+), 1 deletion(-)
+Changes:
+2013/08/07:
+* tested on p7ioc and fixed a bug with realmode addresses
 
-diff --git a/drivers/mmc/host/sdhci-of-esdhc.c b/drivers/mmc/host/sdhci-of-esdhc.c
-index b22cab0..b616b03 100644
---- a/drivers/mmc/host/sdhci-of-esdhc.c
-+++ b/drivers/mmc/host/sdhci-of-esdhc.c
-@@ -331,6 +331,9 @@ static void esdhc_of_platform_init(struct sdhci_host *host)
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+ arch/powerpc/include/asm/machdep.h        | 12 +++++++++
+ arch/powerpc/platforms/powernv/pci-ioda.c | 43 ++++++++++++++++++++++---------
+ arch/powerpc/platforms/powernv/pci.c      | 38 ++++++++++++++++++++++-----
+ arch/powerpc/platforms/powernv/pci.h      |  3 ++-
+ 4 files changed, 77 insertions(+), 19 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+index 92386fc..0c19eef 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -75,6 +75,18 @@ struct machdep_calls {
+ 				    long index);
+ 	void		(*tce_flush)(struct iommu_table *tbl);
  
- 	if (vvn > VENDOR_V_22)
- 		host->quirks &= ~SDHCI_QUIRK_NO_BUSY_IRQ;
++	/* _rm versions are for real mode use only */
++	int		(*tce_build_rm)(struct iommu_table *tbl,
++				     long index,
++				     long npages,
++				     unsigned long uaddr,
++				     enum dma_data_direction direction,
++				     struct dma_attrs *attrs);
++	void		(*tce_free_rm)(struct iommu_table *tbl,
++				    long index,
++				    long npages);
++	void		(*tce_flush_rm)(struct iommu_table *tbl);
 +
-+	if (fsl_svr_is(SVR_B4860) || fsl_svr_is(SVR_T4240))
-+		host->quirks2 |= SDHCI_QUIRK2_LONG_TM_CMD_COMPLETE_IRQ;
+ 	void __iomem *	(*ioremap)(phys_addr_t addr, unsigned long size,
+ 				   unsigned long flags, void *caller);
+ 	void		(*iounmap)(volatile void __iomem *token);
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index d200594..8a70003 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -68,6 +68,12 @@ define_pe_printk_level(pe_err, KERN_ERR);
+ define_pe_printk_level(pe_warn, KERN_WARNING);
+ define_pe_printk_level(pe_info, KERN_INFO);
+ 
++static inline void __raw_rm_writeq(u64 val, volatile void __iomem *paddr)
++{
++	__asm__ __volatile__("stdcix %0,0,%1"
++		: : "r" (val), "r" (paddr) : "memory");
++}
++
+ static int pnv_ioda_alloc_pe(struct pnv_phb *phb)
+ {
+ 	unsigned long pe;
+@@ -452,10 +458,13 @@ static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe, struct pci_bus *bus)
+ 	}
  }
  
- static int esdhc_pltfm_bus_width(struct sdhci_host *host, int width)
-diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index de7fa81..35015ba 100644
---- a/drivers/mmc/host/sdhci.c
-+++ b/drivers/mmc/host/sdhci.c
-@@ -986,6 +986,7 @@ static void sdhci_send_command(struct sdhci_host *host, struct mmc_command *cmd)
- 	int flags;
- 	u32 mask;
- 	unsigned long timeout;
-+	int timer = 10;
+-static void pnv_pci_ioda1_tce_invalidate(struct iommu_table *tbl,
+-					 u64 *startp, u64 *endp)
++static void pnv_pci_ioda1_tce_invalidate(struct pnv_ioda_pe *pe,
++					 struct iommu_table *tbl,
++					 u64 *startp, u64 *endp, bool rm)
+ {
+-	u64 __iomem *invalidate = (u64 __iomem *)tbl->it_index;
++	u64 __iomem *invalidate = rm?
++		(u64 __iomem *)pe->it_index_rm:
++		(u64 __iomem *)tbl->it_index;
+ 	unsigned long start, end, inc;
  
- 	WARN_ON(host->cmd);
+ 	start = __pa(startp);
+@@ -482,7 +491,10 @@ static void pnv_pci_ioda1_tce_invalidate(struct iommu_table *tbl,
  
-@@ -1014,7 +1015,14 @@ static void sdhci_send_command(struct sdhci_host *host, struct mmc_command *cmd)
- 		mdelay(1);
+         mb(); /* Ensure above stores are visible */
+         while (start <= end) {
+-                __raw_writeq(start, invalidate);
++		if (rm)
++			__raw_rm_writeq(start, invalidate);
++		else
++			__raw_writeq(start, invalidate);
+                 start += inc;
+         }
+ 
+@@ -494,10 +506,12 @@ static void pnv_pci_ioda1_tce_invalidate(struct iommu_table *tbl,
+ 
+ static void pnv_pci_ioda2_tce_invalidate(struct pnv_ioda_pe *pe,
+ 					 struct iommu_table *tbl,
+-					 u64 *startp, u64 *endp)
++					 u64 *startp, u64 *endp, bool rm)
+ {
+ 	unsigned long start, end, inc;
+-	u64 __iomem *invalidate = (u64 __iomem *)tbl->it_index;
++	u64 __iomem *invalidate = rm?
++		(u64 __iomem *)pe->it_index_rm:
++		(u64 __iomem *)tbl->it_index;
+ 
+ 	/* We'll invalidate DMA address in PE scope */
+ 	start = 0x2ul << 60;
+@@ -513,22 +527,25 @@ static void pnv_pci_ioda2_tce_invalidate(struct pnv_ioda_pe *pe,
+ 	mb();
+ 
+ 	while (start <= end) {
+-		__raw_writeq(start, invalidate);
++		if (rm)
++			__raw_rm_writeq(start, invalidate);
++		else
++			__raw_writeq(start, invalidate);
+ 		start += inc;
  	}
+ }
  
--	mod_timer(&host->timer, jiffies + 10 * HZ);
-+	/*
-+	 * Some eSDHC controller need long time to generate command complete
-+	 * interrupt, 1000 * HZ will be enough.
-+	 */
-+	if (host->quirks2 & SDHCI_QUIRK2_LONG_TM_CMD_COMPLETE_IRQ)
-+		timer = 1000;
+ void pnv_pci_ioda_tce_invalidate(struct iommu_table *tbl,
+-				 u64 *startp, u64 *endp)
++				 u64 *startp, u64 *endp, bool rm)
+ {
+ 	struct pnv_ioda_pe *pe = container_of(tbl, struct pnv_ioda_pe,
+ 					      tce32_table);
+ 	struct pnv_phb *phb = pe->phb;
+ 
+ 	if (phb->type == PNV_PHB_IODA1)
+-		pnv_pci_ioda1_tce_invalidate(tbl, startp, endp);
++		pnv_pci_ioda1_tce_invalidate(pe, tbl, startp, endp, rm);
+ 	else
+-		pnv_pci_ioda2_tce_invalidate(pe, tbl, startp, endp);
++		pnv_pci_ioda2_tce_invalidate(pe, tbl, startp, endp, rm);
+ }
+ 
+ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+@@ -601,7 +618,8 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+ 		 * bus number, print that out instead.
+ 		 */
+ 		tbl->it_busno = 0;
+-		tbl->it_index = (unsigned long)ioremap(be64_to_cpup(swinvp), 8);
++		pe->it_index_rm = be64_to_cpup(swinvp);
++		tbl->it_index = (unsigned long)ioremap(pe->it_index_rm, 8);
+ 		tbl->it_type = TCE_PCI_SWINV_CREATE | TCE_PCI_SWINV_FREE |
+ 			       TCE_PCI_SWINV_PAIR;
+ 	}
+@@ -679,7 +697,8 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 		 * bus number, print that out instead.
+ 		 */
+ 		tbl->it_busno = 0;
+-		tbl->it_index = (unsigned long)ioremap(be64_to_cpup(swinvp), 8);
++		pe->it_index_rm = be64_to_cpup(swinvp);
++		tbl->it_index = (unsigned long)ioremap(pe->it_index_rm, 8);
+ 		tbl->it_type = TCE_PCI_SWINV_CREATE | TCE_PCI_SWINV_FREE;
+ 	}
+ 	iommu_init_table(tbl, phb->hose->node);
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index e16b729..280f614 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -336,7 +336,7 @@ struct pci_ops pnv_pci_ops = {
+ 
+ static int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
+ 			 unsigned long uaddr, enum dma_data_direction direction,
+-			 struct dma_attrs *attrs)
++			 struct dma_attrs *attrs, bool rm)
+ {
+ 	u64 proto_tce;
+ 	u64 *tcep, *tces;
+@@ -358,12 +358,19 @@ static int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
+ 	 * of flags if that becomes the case
+ 	 */
+ 	if (tbl->it_type & TCE_PCI_SWINV_CREATE)
+-		pnv_pci_ioda_tce_invalidate(tbl, tces, tcep - 1);
++		pnv_pci_ioda_tce_invalidate(tbl, tces, tcep - 1, rm);
+ 
+ 	return 0;
+ }
+ 
+-static void pnv_tce_free(struct iommu_table *tbl, long index, long npages)
++static int pnv_tce_build_vm(struct iommu_table *tbl, long index, long npages,
++			    unsigned long uaddr, enum dma_data_direction direction,
++			    struct dma_attrs *attrs)
++{
++	return pnv_tce_build(tbl, index, npages, uaddr, direction, attrs, false);
++}
 +
-+	mod_timer(&host->timer, jiffies + timer * HZ);
++static void pnv_tce_free(struct iommu_table *tbl, long index, long npages, bool rm)
+ {
+ 	u64 *tcep, *tces;
  
- 	host->cmd = cmd;
+@@ -373,7 +380,12 @@ static void pnv_tce_free(struct iommu_table *tbl, long index, long npages)
+ 		*(tcep++) = 0;
  
-diff --git a/include/linux/mmc/sdhci.h b/include/linux/mmc/sdhci.h
-index dc608d7..68e7dd1 100644
---- a/include/linux/mmc/sdhci.h
-+++ b/include/linux/mmc/sdhci.h
-@@ -100,6 +100,8 @@ struct sdhci_host {
- #define SDHCI_QUIRK2_BROKEN_HOST_CONTROL		(1<<5)
- /* The host support VS300 even if the capacity detailed not */
- #define SDHCI_QUIRK2_CIRCUIT_SUPPORT_VS30		(1<<6)
-+/* Some controller need long time to generate command complete interrupt */
-+#define SDHCI_QUIRK2_LONG_TM_CMD_COMPLETE_IRQ		(1<<7)
+ 	if (tbl->it_type & TCE_PCI_SWINV_FREE)
+-		pnv_pci_ioda_tce_invalidate(tbl, tces, tcep - 1);
++		pnv_pci_ioda_tce_invalidate(tbl, tces, tcep - 1, rm);
++}
++
++static void pnv_tce_free_vm(struct iommu_table *tbl, long index, long npages)
++{
++	pnv_tce_free(tbl, index, npages, false);
+ }
  
- 	int irq;		/* Device IRQ */
- 	void __iomem *ioaddr;	/* Mapped address */
+ static unsigned long pnv_tce_get(struct iommu_table *tbl, long index)
+@@ -381,6 +393,18 @@ static unsigned long pnv_tce_get(struct iommu_table *tbl, long index)
+ 	return ((u64 *)tbl->it_base)[index - tbl->it_offset];
+ }
+ 
++static int pnv_tce_build_rm(struct iommu_table *tbl, long index, long npages,
++			    unsigned long uaddr, enum dma_data_direction direction,
++			    struct dma_attrs *attrs)
++{
++	return pnv_tce_build(tbl, index, npages, uaddr, direction, attrs, true);
++}
++
++static void pnv_tce_free_rm(struct iommu_table *tbl, long index, long npages)
++{
++	pnv_tce_free(tbl, index, npages, true);
++}
++
+ void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
+ 			       void *tce_mem, u64 tce_size,
+ 			       u64 dma_offset)
+@@ -545,8 +569,10 @@ void __init pnv_pci_init(void)
+ 
+ 	/* Configure IOMMU DMA hooks */
+ 	ppc_md.pci_dma_dev_setup = pnv_pci_dma_dev_setup;
+-	ppc_md.tce_build = pnv_tce_build;
+-	ppc_md.tce_free = pnv_tce_free;
++	ppc_md.tce_build = pnv_tce_build_vm;
++	ppc_md.tce_free = pnv_tce_free_vm;
++	ppc_md.tce_build_rm = pnv_tce_build_rm;
++	ppc_md.tce_free_rm = pnv_tce_free_rm;
+ 	ppc_md.tce_get = pnv_tce_get;
+ 	ppc_md.pci_probe_mode = pnv_pci_probe_mode;
+ 	set_pci_dma_ops(&dma_iommu_ops);
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index 25d76c4..7ea82c1 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -52,6 +52,7 @@ struct pnv_ioda_pe {
+ 	int			tce32_seg;
+ 	int			tce32_segcount;
+ 	struct iommu_table	tce32_table;
++	phys_addr_t		it_index_rm;
+ 
+ 	/* XXX TODO: Add support for additional 64-bit iommus */
+ 
+@@ -158,6 +159,6 @@ extern void pnv_pci_init_p5ioc2_hub(struct device_node *np);
+ extern void pnv_pci_init_ioda_hub(struct device_node *np);
+ extern void pnv_pci_init_ioda2_phb(struct device_node *np);
+ extern void pnv_pci_ioda_tce_invalidate(struct iommu_table *tbl,
+-					u64 *startp, u64 *endp);
++					u64 *startp, u64 *endp, bool rm);
+ 
+ #endif /* __POWERNV_PCI_H */
 -- 
-1.8.0
+1.8.3.2
