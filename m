@@ -1,25 +1,17 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E9A242C02CC
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2013 03:18:49 +1000 (EST)
-Date: Mon, 8 Jul 2013 12:18:39 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 3/4 V2] mmc: esdhc: Add quirks to support T4240QDS board
-To: Haijun Zhang <Haijun.Zhang@freescale.com>
-References: <1373267764-6364-1-git-send-email-Haijun.Zhang@freescale.com>
- <1373267764-6364-2-git-send-email-Haijun.Zhang@freescale.com>
-In-Reply-To: <1373267764-6364-2-git-send-email-Haijun.Zhang@freescale.com>
- (from Haijun.Zhang@freescale.com on Mon Jul  8 02:16:04 2013)
-Message-ID: <1373303919.8183.164@snotra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: linux-mmc@vger.kernel.org, r39252@freescale.com, AFLEMING@freescale.com,
- cbouatmailru@gmail.com, cjb@laptop.org, linuxppc-dev@lists.ozlabs.org,
- Haijun Zhang <haijun.zhang@freescale.com>
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ by ozlabs.org (Postfix) with ESMTP id 40B7E2C0178
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2013 04:39:47 +1000 (EST)
+Subject: Re: [PATCH 1/2] KVM: PPC: Fix kvm_exit_names array
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <1372858255-19708-1-git-send-email-mihai.caraman@freescale.com>
+Date: Mon, 8 Jul 2013 20:39:40 +0200
+Message-Id: <E4CE5690-9C60-4CFF-AA22-519CA2FF1888@suse.de>
+References: <1372858255-19708-1-git-send-email-mihai.caraman@freescale.com>
+To: Mihai Caraman <mihai.caraman@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,22 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/08/2013 02:16:04 AM, Haijun Zhang wrote:
-> On T4240QDS board controllers has an unusable ADMA engine, so use =20
-> SDMA instead.
-> Also 3.0v is support on T4240QDS board even if the capacity detailed =20
-> only 1.8v
-> support. Without this quirk SD card will declare voltage not support =20
-> and
+
+On 03.07.2013, at 15:30, Mihai Caraman wrote:
+
+> Some exit ids where left out from kvm_exit_names array.
 >=20
-> Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
+> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+> ---
+> arch/powerpc/kvm/timing.c |    4 +++-
+> 1 files changed, 3 insertions(+), 1 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kvm/timing.c b/arch/powerpc/kvm/timing.c
+> index 07b6110..c392d26 100644
+> --- a/arch/powerpc/kvm/timing.c
+> +++ b/arch/powerpc/kvm/timing.c
+> @@ -135,7 +135,9 @@ static const char =
+*kvm_exit_names[__NUMBER_OF_KVM_EXIT_TYPES] =3D {
+> 	[USR_PR_INST] =3D             "USR_PR_INST",
+> 	[FP_UNAVAIL] =3D              "FP_UNAVAIL",
+> 	[DEBUG_EXITS] =3D             "DEBUG",
+> -	[TIMEINGUEST] =3D             "TIMEINGUEST"
+> +	[TIMEINGUEST] =3D             "TIMEINGUEST",
+> +	[DBELL_EXITS] =3D             "DBELL",
+> +	[GDBELL_EXITS] =3D            "GDBELL"
 
-...and what?
+Please add a comma at the end here, so that we don't have to uselessly =
+touch the entry next time again.
 
-Why is this board-specific?  Isn't the controller part of the SoC, not =20
-part of the board?  If it really is board-specific, could you be more =20
-detailed about why (ideally with an erratum number), and check the =20
-toplevel board compatible (or get the information from platform code) =20
-rather than modify the device tree?
 
--Scott=
+Alex
