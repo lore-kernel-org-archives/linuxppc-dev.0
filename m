@@ -1,29 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 2BB3D2C0099
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jul 2013 11:33:58 +1000 (EST)
-Message-ID: <1373247199.4446.29.camel@pasglop>
-Subject: Re: [PATCH 4/8] powerpc: Prepare to support kernel handling of
- IOMMU map/unmap
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Mon, 08 Jul 2013 11:33:19 +1000
-In-Reply-To: <1373123227-22969-5-git-send-email-aik@ozlabs.ru>
-References: <1373123227-22969-1-git-send-email-aik@ozlabs.ru>
- <1373123227-22969-5-git-send-email-aik@ozlabs.ru>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Andrea Arcangeli <aarcange@redhat.com>,
- Christoffer Dall <cdall@cs.columbia.edu>, kvm@vger.kernel.org,
- Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>,
- Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <B42677@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0185.outbound.messaging.microsoft.com [213.199.154.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DDE772C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jul 2013 13:02:12 +1000 (EST)
+From: Haijun Zhang <Haijun.Zhang@freescale.com>
+To: <linux-mmc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 2/4] mmc: esdhc: workaround for dma err in the last system
+ transaction
+Date: Mon, 8 Jul 2013 10:12:23 +0800
+Message-ID: <1373249545-23928-2-git-send-email-Haijun.Zhang@freescale.com>
+In-Reply-To: <1373249545-23928-1-git-send-email-Haijun.Zhang@freescale.com>
+References: <1373249545-23928-1-git-send-email-Haijun.Zhang@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: scottwood@freescale.com, cjb@laptop.org, AFLEMING@freescale.com,
+ Haijun Zhang <haijun.zhang@freescale.com>, cbouatmailru@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,170 +27,177 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2013-07-07 at 01:07 +1000, Alexey Kardashevskiy wrote:
-> The current VFIO-on-POWER implementation supports only user mode
-> driven mapping, i.e. QEMU is sending requests to map/unmap pages.
-> However this approach is really slow, so we want to move that to KVM.
-> Since H_PUT_TCE can be extremely performance sensitive (especially with
-> network adapters where each packet needs to be mapped/unmapped) we chose
-> to implement that as a "fast" hypercall directly in "real
-> mode" (processor still in the guest context but MMU off).
-> 
-> To be able to do that, we need to provide some facilities to
-> access the struct page count within that real mode environment as things
-> like the sparsemem vmemmap mappings aren't accessible.
-> 
-> This adds an API to increment/decrement page counter as
-> get_user_pages API used for user mode mapping does not work
-> in the real mode.
-> 
-> CONFIG_SPARSEMEM_VMEMMAP and CONFIG_FLATMEM are supported.
+A-004388: eSDHC DMA might not stop if error occurs on system transaction
 
-This patch will need an ack from "mm" people to make sure they are ok
-with our approach and ack the change to the generic header.
+eSDHC DMA(SDMA/ADMA) might not stop if an error occurs in the last system
+transaction. It may continue initiating additional transactions until
+software reset for data/all is issued during error recovery. There is not
+any data corruption to the SD data. The IRQSTAT[DMAE] is set when the
+erratum occurs.
+The only conditions under which issues occur are the following:
+1. SDMA - For SD Write , the error occurs in the last system transaction.
+No issue for SD read
+2. ADMA
+a. Block count is enabled: For SD write, the error occurs in the last system
+transaction. There is no issue for SD read when block count is enabled.
+b. Block count is disabled: Block count is designated by the ADMA descriptor
+table, and the error occurs in the last system transaction when ADMA is
+executing last descriptor line of table.
 
-(Added linux-mm).
+eSDHC may initiate additional system transactions. There is no data integrity
+issue for case 1 and 2a described below. For case 2b, system data might be
+corrupted.
 
-Cheers,
-Ben.
+Workaround: Set eSDHC_SYSCTL[RSTD] when IRQSTAT[DMAE] is set. For cases 2a and
+2b above, add an extra descriptor line with zero data next to the last
+descriptor line.
 
-> Reviewed-by: Paul Mackerras <paulus@samba.org>
-> Signed-off-by: Paul Mackerras <paulus@samba.org>
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> 
-> ---
-> 
-> Changes:
-> 2013/06/27:
-> * realmode_get_page() fixed to use get_page_unless_zero(). If failed,
-> the call will be passed from real to virtual mode and safely handled.
-> * added comment to PageCompound() in include/linux/page-flags.h.
-> 
-> 2013/05/20:
-> * PageTail() is replaced by PageCompound() in order to have the same checks
-> for whether the page is huge in realmode_get_page() and realmode_put_page()
-> 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
->  arch/powerpc/include/asm/pgtable-ppc64.h |  4 ++
->  arch/powerpc/mm/init_64.c                | 78 +++++++++++++++++++++++++++++++-
->  include/linux/page-flags.h               |  4 +-
->  3 files changed, 84 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
-> index e3d55f6f..7b46e5f 100644
-> --- a/arch/powerpc/include/asm/pgtable-ppc64.h
-> +++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-> @@ -376,6 +376,10 @@ static inline pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea,
->  }
->  #endif /* !CONFIG_HUGETLB_PAGE */
->  
-> +struct page *realmode_pfn_to_page(unsigned long pfn);
-> +int realmode_get_page(struct page *page);
-> +int realmode_put_page(struct page *page);
-> +
->  #endif /* __ASSEMBLY__ */
->  
->  #endif /* _ASM_POWERPC_PGTABLE_PPC64_H_ */
-> diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-> index a90b9c4..7031be3 100644
-> --- a/arch/powerpc/mm/init_64.c
-> +++ b/arch/powerpc/mm/init_64.c
-> @@ -297,5 +297,81 @@ void vmemmap_free(unsigned long start, unsigned long end)
->  {
->  }
->  
-> -#endif /* CONFIG_SPARSEMEM_VMEMMAP */
-> +/*
-> + * We do not have access to the sparsemem vmemmap, so we fallback to
-> + * walking the list of sparsemem blocks which we already maintain for
-> + * the sake of crashdump. In the long run, we might want to maintain
-> + * a tree if performance of that linear walk becomes a problem.
-> + *
-> + * Any of realmode_XXXX functions can fail due to:
-> + * 1) As real sparsemem blocks do not lay in RAM continously (they
-> + * are in virtual address space which is not available in the real mode),
-> + * the requested page struct can be split between blocks so get_page/put_page
-> + * may fail.
-> + * 2) When huge pages are used, the get_page/put_page API will fail
-> + * in real mode as the linked addresses in the page struct are virtual
-> + * too.
-> + * When 1) or 2) takes place, the API returns an error code to cause
-> + * an exit to kernel virtual mode where the operation will be completed.
-> + */
-> +struct page *realmode_pfn_to_page(unsigned long pfn)
-> +{
-> +	struct vmemmap_backing *vmem_back;
-> +	struct page *page;
-> +	unsigned long page_size = 1 << mmu_psize_defs[mmu_vmemmap_psize].shift;
-> +	unsigned long pg_va = (unsigned long) pfn_to_page(pfn);
->  
-> +	for (vmem_back = vmemmap_list; vmem_back; vmem_back = vmem_back->list) {
-> +		if (pg_va < vmem_back->virt_addr)
-> +			continue;
-> +
-> +		/* Check that page struct is not split between real pages */
-> +		if ((pg_va + sizeof(struct page)) >
-> +				(vmem_back->virt_addr + page_size))
-> +			return NULL;
-> +
-> +		page = (struct page *) (vmem_back->phys + pg_va -
-> +				vmem_back->virt_addr);
-> +		return page;
-> +	}
-> +
-> +	return NULL;
-> +}
-> +EXPORT_SYMBOL_GPL(realmode_pfn_to_page);
-> +
-> +#elif defined(CONFIG_FLATMEM)
-> +
-> +struct page *realmode_pfn_to_page(unsigned long pfn)
-> +{
-> +	struct page *page = pfn_to_page(pfn);
-> +	return page;
-> +}
-> +EXPORT_SYMBOL_GPL(realmode_pfn_to_page);
-> +
-> +#endif /* CONFIG_SPARSEMEM_VMEMMAP/CONFIG_FLATMEM */
-> +
-> +#if defined(CONFIG_SPARSEMEM_VMEMMAP) || defined(CONFIG_FLATMEM)
-> +int realmode_get_page(struct page *page)
-> +{
-> +	if (PageCompound(page))
-> +		return -EAGAIN;
-> +
-> +	if (!get_page_unless_zero(page))
-> +		return -EAGAIN;
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(realmode_get_page);
-> +
-> +int realmode_put_page(struct page *page)
-> +{
-> +	if (PageCompound(page))
-> +		return -EAGAIN;
-> +
-> +	if (!atomic_add_unless(&page->_count, -1, 1))
-> +		return -EAGAIN;
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(realmode_put_page);
-> +#endif
-> diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
-> index 6d53675..98ada58 100644
-> --- a/include/linux/page-flags.h
-> +++ b/include/linux/page-flags.h
-> @@ -329,7 +329,9 @@ static inline void set_page_writeback(struct page *page)
->   * System with lots of page flags available. This allows separate
->   * flags for PageHead() and PageTail() checks of compound pages so that bit
->   * tests can be used in performance sensitive paths. PageCompound is
-> - * generally not used in hot code paths.
-> + * generally not used in hot code paths except arch/powerpc/mm/init_64.c
-> + * and arch/powerpc/kvm/book3s_64_vio_hv.c which use it to detect huge pages
-> + * and avoid handling those in real mode.
->   */
->  __PAGEFLAG(Head, head) CLEARPAGEFLAG(Head, head)
->  __PAGEFLAG(Tail, tail)
+Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
+---
+ drivers/mmc/host/sdhci-of-esdhc.c | 113 +++++++++++++++++++++++++++++++++++---
+ 1 file changed, 104 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/mmc/host/sdhci-of-esdhc.c b/drivers/mmc/host/sdhci-of-esdhc.c
+index 15039e2..b22cab0 100644
+--- a/drivers/mmc/host/sdhci-of-esdhc.c
++++ b/drivers/mmc/host/sdhci-of-esdhc.c
+@@ -21,6 +21,7 @@
+ #include <linux/mmc/host.h>
+ #include "sdhci-pltfm.h"
+ #include "sdhci-esdhc.h"
++#include <asm/mpc85xx.h>
+ 
+ #define VENDOR_V_22	0x12
+ #define VENDOR_V_23	0x13
+@@ -142,6 +143,26 @@ static void esdhc_writeb(struct sdhci_host *host, u8 val, int reg)
+ 	sdhci_be32bs_writeb(host, val, reg);
+ }
+ 
++static void esdhc_reset(struct sdhci_host *host, u8 mask)
++{
++	u32 ier;
++	u32 uninitialized_var(isav);
++
++	if (host->quirks & SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET)
++		isav = esdhc_readl(host, SDHCI_INT_ENABLE);
++
++	esdhc_writeb(host, mask, SDHCI_SOFTWARE_RESET);
++	mdelay(100);
++
++	if (host->quirks & SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET) {
++		ier = esdhc_readl(host, SDHCI_INT_ENABLE);
++		ier &= ~SDHCI_INT_ALL_MASK;
++		ier |= isav;
++		esdhc_writel(host, ier, SDHCI_INT_ENABLE);
++		esdhc_writel(host, ier, SDHCI_SIGNAL_ENABLE);
++	}
++}
++
+ /*
+  * For Abort or Suspend after Stop at Block Gap, ignore the ADMA
+  * error(IRQSTAT[ADMAE]) if both Transfer Complete(IRQSTAT[TC])
+@@ -162,19 +183,93 @@ static void esdhci_of_adma_workaround(struct sdhci_host *host, u32 intmask)
+ 	applicable = (intmask & SDHCI_INT_DATA_END) &&
+ 		(intmask & SDHCI_INT_BLK_GAP) &&
+ 		(tmp == VENDOR_V_23);
+-	if (!applicable)
++	if (applicable) {
++
++		esdhc_reset(host, SDHCI_RESET_DATA);
++		host->data->error = 0;
++		dmastart = sg_dma_address(host->data->sg);
++		dmanow = dmastart + host->data->bytes_xfered;
++		/*
++		 * Force update to the next DMA block boundary.
++		 */
++		dmanow = (dmanow & ~(SDHCI_DEFAULT_BOUNDARY_SIZE - 1)) +
++			SDHCI_DEFAULT_BOUNDARY_SIZE;
++		host->data->bytes_xfered = dmanow - dmastart;
++		sdhci_writel(host, dmanow, SDHCI_DMA_ADDRESS);
++
+ 		return;
++	}
+ 
+-	host->data->error = 0;
+-	dmastart = sg_dma_address(host->data->sg);
+-	dmanow = dmastart + host->data->bytes_xfered;
+ 	/*
+-	 * Force update to the next DMA block boundary.
++	 * Check for A-004388: eSDHC DMA might not stop if error
++	 * occurs on system transaction
++	 * Impact list:
++	 * T4240-R1.0 B4860-R1.0 P1010-R1.0
+ 	 */
+-	dmanow = (dmanow & ~(SDHCI_DEFAULT_BOUNDARY_SIZE - 1)) +
+-		SDHCI_DEFAULT_BOUNDARY_SIZE;
+-	host->data->bytes_xfered = dmanow - dmastart;
+-	sdhci_writel(host, dmanow, SDHCI_DMA_ADDRESS);
++	if (!((fsl_svr_is(SVR_T4240) && fsl_svr_rev_is(1, 0)) ||
++		(fsl_svr_is(SVR_B4860) && fsl_svr_rev_is(1, 0)) ||
++		(fsl_svr_is(SVR_P1010) && fsl_svr_rev_is(1, 0))))
++		return;
++
++
++	esdhc_reset(host, SDHCI_RESET_DATA);
++
++	if (host->flags & SDHCI_USE_ADMA) {
++		u32 mod, i, offset;
++		u8 *desc;
++		dma_addr_t addr;
++		struct scatterlist *sg;
++
++		mod = esdhc_readl(host, SDHCI_TRANSFER_MODE);
++		if (mod & SDHCI_TRNS_BLK_CNT_EN) {
++			/*
++			 * In case read transfer there is no data
++			 * was corrupted
++			 */
++			if (host->data->flags & MMC_DATA_READ)
++				host->data->error = 0;
++
++			return;
++		}
++
++
++		BUG_ON(!host->data);
++		desc = host->adma_desc;
++		for_each_sg(host->data->sg, sg, host->sg_count, i) {
++			addr = sg_dma_address(sg);
++			offset = (4 - (addr & 0x3)) & 0x3;
++			if (offset)
++				desc += 8;
++			desc += 8;
++		}
++
++		/*
++		 * Add an extra zero descriptor next to the
++		 * terminating descriptor.
++		 */
++		desc += 8;
++		WARN_ON((desc - host->adma_desc) > (128 * 2 + 1) * 4);
++
++		if (host->quirks & SDHCI_QUIRK_NO_ENDATTR_IN_NOPDESC) {
++			desc -= 8;
++			desc[0] |= 0x2; /* end */
++		} else {
++			__le32 *dataddr = (__le32 __force *)(desc + 4);
++			__le16 *cmdlen = (__le16 __force *)desc;
++
++			cmdlen[0] = cpu_to_le16(0x3);
++			cmdlen[1] = cpu_to_le16(0);
++
++			dataddr[0] = cpu_to_le32(0);
++		}
++
++	}
++
++	if ((host->flags & SDHCI_USE_SDMA) &&
++			(host->data->flags & MMC_DATA_READ))
++		host->data->error = 0;
++
++	return;
+ }
+ 
+ static int esdhc_of_enable_dma(struct sdhci_host *host)
+-- 
+1.8.0
