@@ -1,20 +1,27 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- by ozlabs.org (Postfix) with ESMTP id 4463B2C0087
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2013 00:21:15 +1000 (EST)
-Subject: Re: [PATCH -V3 1/4] mm/cma: Move dma contiguous changes into a
- seperate config
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <1372743918-12293-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Date: Mon, 8 Jul 2013 16:21:05 +0200
-Message-Id: <1C7CE5C5-A66F-4EB1-B9D0-EED8B555E146@suse.de>
-References: <1372743918-12293-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: kvm@vger.kernel.org, mina86@mina86.com, linux-mm@kvack.org,
- paulus@samba.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- m.szyprowski@samsung.com
+Return-Path: <B07421@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 362FD2C00A1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2013 02:48:39 +1000 (EST)
+Date: Mon, 8 Jul 2013 11:48:25 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 1/2] powerpc: enable the relocatable support for the fsl
+ booke 32bit kernel
+To: Kevin Hao <haokexin@gmail.com>
+References: <20130702032447.GA26391@pek-khao-d1.corp.ad.wrs.com>
+ <1372804758.8183.124@snotra>
+ <20130703030044.GA25190@pek-khao-d1.corp.ad.wrs.com>
+ <1372883907.8183.151@snotra>
+ <20130704010818.GA16188@pek-khao-d1.corp.ad.wrs.com>
+In-Reply-To: <20130704010818.GA16188@pek-khao-d1.corp.ad.wrs.com> (from
+ haokexin@gmail.com on Wed Jul  3 20:08:18 2013)
+Message-ID: <1373302105.8183.160@snotra>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,23 +31,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On 02.07.2013, at 07:45, Aneesh Kumar K.V wrote:
-
-> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+On 07/03/2013 08:08:18 PM, Kevin Hao wrote:
+> On Wed, Jul 03, 2013 at 03:38:27PM -0500, Scott Wood wrote:
+> > On 07/02/2013 10:00:44 PM, Kevin Hao wrote:
+> > >On Tue, Jul 02, 2013 at 05:39:18PM -0500, Scott Wood wrote:
+> > >> How much overhead (space and time) is this really?
+> > >
+> > >The following is the additional sections when relocatable is
+> > >enabled for
+> > >a p2020rdb board.
+> > >   section        size
+> > >  .dynsym       000007f0
+> > >  .dynstr       00000926
+> > >  .dynamic      00000080
+> > >  .hash         00000388
+> > >  .interp       00000011
+> > >  .rela.dyn     00215250
+> > >
+> > >The time for the relocation is about 32ms on a p2020rdb board.
+> >
+> > Hmm... more relocations than I expected.  What percentage is this of
+> > the total image size?
 >=20
-> We want to use CMA for allocating hash page table and real mode area =
-for
-> PPC64. Hence move DMA contiguous related changes into a seperate =
-config
-> so that ppc64 can enable CMA without requiring DMA contiguous.
->=20
-> Acked-by: Michal Nazarewicz <mina86@mina86.com>
-> Acked-by: Paul Mackerras <paulus@samba.org>
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> The size of vmlinux.bin is about 10M. The percentage of the relocation
+> section is about 20%. But look on the bright side of thing, all the =20
+> relocation
+> stuff are in init section and should be discarded at runtime. :-)
 
-Thanks, applied all to kvm-ppc-queue. Please provide a cover letter next =
-time :).
+That doesn't reduce the space it takes up in flash...
 
-
-Alex
+-Scott=
