@@ -1,17 +1,23 @@
-Return-Path: <michael@ellerman.id.au>
-Date: Mon, 8 Jul 2013 18:28:45 +1000
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc, perf: Add generic cache reference and cache
- miss events for POWER8 PMU
-Message-ID: <20130708082844.GA18271@concordia>
-References: <51D11DEF.8070302@linux.vnet.ibm.com>
+Return-Path: <haokexin@gmail.com>
+Received: from mail-pb0-x22c.google.com (mail-pb0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c01::22c])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0C3972C009D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jul 2013 22:00:05 +1000 (EST)
+Received: by mail-pb0-f44.google.com with SMTP id uo1so4220048pbc.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Jul 2013 05:00:02 -0700 (PDT)
+Date: Mon, 8 Jul 2013 19:59:52 +0800
+From: Kevin Hao <haokexin@gmail.com>
+To: Kumar Gala <galak@kernel.crashing.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Scott Wood <scottwood@freescale.com>
+Subject: question about the e200 support
+Message-ID: <20130708115951.GD1005@pek-khao-d1.corp.ad.wrs.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <51D11DEF.8070302@linux.vnet.ibm.com>
-Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>,
- Michael Ellerman <ellerman@au1.ibm.com>,
- Michael Neuling <michael.neuling@au1.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="hxkXGo8AKqTJ+9QI"
+Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,28 +27,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 01, 2013 at 11:43:03AM +0530, Anshuman Khandual wrote:
-> powerpc, perf: Add generic cache reference and cache miss events for POWER8 PMU
-> 
-> This enables generic cache reference and cache miss events on POWER8 systems by
-> utilizing raw PMU event codes for L1 cache reference and L1 cache miss events
-> respectively.
-> 
-> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-> 
-> diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
-> index f7d1c4f..5ccddac 100644
-> --- a/arch/powerpc/perf/power8-pmu.c
-> +++ b/arch/powerpc/perf/power8-pmu.c
-> @@ -24,6 +24,8 @@
->  #define PM_INST_CMPL			0x00002
->  #define PM_BRU_FIN			0x10068
->  #define PM_BR_MPRED_CMPL		0x400f6
-> +#define PM_LD_MISS_L1			0x3E054
-> +#define PM_LD_REF_L1			0x100EE
 
-Hi Anshuman,
+--hxkXGo8AKqTJ+9QI
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Which system did you test this on and what results did you see?
+Hi,
 
-cheers
+It seems that Kumar added the e200 core support for linux in 2005. But we
+never add a e200 board since then. I doubt if anyone will do that in the
+future. Is this just reserved for out of tree users? If not, how about
+drop the e200 core support from kernel? It will definitely make the
+e500 code more readable without all these useless #ifdef for CONFIG_E200.
+What are you guys opinions?
+
+Thanks,
+Kevin
+
+--hxkXGo8AKqTJ+9QI
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQEcBAEBAgAGBQJR2qm3AAoJEJNY7TDerrFxUy8H/2r6m5B69bkR/Dzx/+KmUEFd
+MMlumMfZ64TpcnWGE3z9SDgVduxpNyKge6fGEeuB+EpmR7PkP315nMtLGvtrI5U9
+WaeUdhYLRiHcfKgcCpcBPydKGfYWnsAaRM56owLr4zs8ATgWg+bnx3k5P+k4XfWM
+x3lSxTvOC/++1/Tix0GJPwKEFKb1NWhc4eDutT4do/hjkQtAOTQDKrhs0hzSI2qy
+P6JFD3a0lITxBDghsmKJMG9wGpTjfIT90wzf1KE88JFzWvfDbW+qpBly4L4dfxYV
+kHccY1J1CQT4sjAVbM1WHmNt1cLUkXDD3O6mXcLIKc4XF5QLqTVrBE3wyN/F6DQ=
+=3oOk
+-----END PGP SIGNATURE-----
+
+--hxkXGo8AKqTJ+9QI--
