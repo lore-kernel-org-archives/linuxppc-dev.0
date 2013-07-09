@@ -1,27 +1,21 @@
 Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- by ozlabs.org (Postfix) with ESMTP id 2DCED2C00AF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 01:54:47 +1000 (EST)
-Message-ID: <51DC3242.30802@suse.de>
-Date: Tue, 09 Jul 2013 17:54:42 +0200
+ by ozlabs.org (Postfix) with ESMTP id 9852A2C00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 02:02:41 +1000 (EST)
+Message-ID: <51DC341D.20901@suse.de>
+Date: Tue, 09 Jul 2013 18:02:37 +0200
 From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 4/8] powerpc: Prepare to support kernel handling of IOMMU
- map/unmap
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH 5/8] powerpc: add real mode support for dma operations
+ on powernv
 References: <1373123227-22969-1-git-send-email-aik@ozlabs.ru>
- <1373123227-22969-5-git-send-email-aik@ozlabs.ru>
- <1373247199.4446.29.camel@pasglop>
-In-Reply-To: <1373247199.4446.29.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Andrea Arcangeli <aarcange@redhat.com>,
- Christoffer Dall <cdall@cs.columbia.edu>, kvm@vger.kernel.org,
- Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>,
- Alexey Kardashevskiy <aik@ozlabs.ru>, linux-kernel@vger.kernel.org,
- kvm-ppc@vger.kernel.org, linux-mm@kvack.org,
+ <1373123227-22969-6-git-send-email-aik@ozlabs.ru>
+In-Reply-To: <1373123227-22969-6-git-send-email-aik@ozlabs.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
  Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
  David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,178 +26,221 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/08/2013 03:33 AM, Benjamin Herrenschmidt wrote:
-> On Sun, 2013-07-07 at 01:07 +1000, Alexey Kardashevskiy wrote:
->> The current VFIO-on-POWER implementation supports only user mode
->> driven mapping, i.e. QEMU is sending requests to map/unmap pages.
->> However this approach is really slow, so we want to move that to KVM.
->> Since H_PUT_TCE can be extremely performance sensitive (especially with
->> network adapters where each packet needs to be mapped/unmapped) we chose
->> to implement that as a "fast" hypercall directly in "real
->> mode" (processor still in the guest context but MMU off).
->>
->> To be able to do that, we need to provide some facilities to
->> access the struct page count within that real mode environment as things
->> like the sparsemem vmemmap mappings aren't accessible.
->>
->> This adds an API to increment/decrement page counter as
->> get_user_pages API used for user mode mapping does not work
->> in the real mode.
->>
->> CONFIG_SPARSEMEM_VMEMMAP and CONFIG_FLATMEM are supported.
-> This patch will need an ack from "mm" people to make sure they are ok
-> with our approach and ack the change to the generic header.
+On 07/06/2013 05:07 PM, Alexey Kardashevskiy wrote:
+> The existing TCE machine calls (tce_build and tce_free) only support
+> virtual mode as they call __raw_writeq for TCE invalidation what
+> fails in real mode.
 >
-> (Added linux-mm).
->
-> Cheers,
-> Ben.
->
->> Reviewed-by: Paul Mackerras<paulus@samba.org>
->> Signed-off-by: Paul Mackerras<paulus@samba.org>
->> Signed-off-by: Alexey Kardashevskiy<aik@ozlabs.ru>
->>
->> ---
->>
->> Changes:
->> 2013/06/27:
->> * realmode_get_page() fixed to use get_page_unless_zero(). If failed,
->> the call will be passed from real to virtual mode and safely handled.
->> * added comment to PageCompound() in include/linux/page-flags.h.
->>
->> 2013/05/20:
->> * PageTail() is replaced by PageCompound() in order to have the same checks
->> for whether the page is huge in realmode_get_page() and realmode_put_page()
->>
->> Signed-off-by: Alexey Kardashevskiy<aik@ozlabs.ru>
->> ---
->>   arch/powerpc/include/asm/pgtable-ppc64.h |  4 ++
->>   arch/powerpc/mm/init_64.c                | 78 +++++++++++++++++++++++++++++++-
->>   include/linux/page-flags.h               |  4 +-
->>   3 files changed, 84 insertions(+), 2 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
->> index e3d55f6f..7b46e5f 100644
->> --- a/arch/powerpc/include/asm/pgtable-ppc64.h
->> +++ b/arch/powerpc/include/asm/pgtable-ppc64.h
->> @@ -376,6 +376,10 @@ static inline pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea,
->>   }
->>   #endif /* !CONFIG_HUGETLB_PAGE */
->>
->> +struct page *realmode_pfn_to_page(unsigned long pfn);
->> +int realmode_get_page(struct page *page);
->> +int realmode_put_page(struct page *page);
->> +
->>   #endif /* __ASSEMBLY__ */
->>
->>   #endif /* _ASM_POWERPC_PGTABLE_PPC64_H_ */
->> diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
->> index a90b9c4..7031be3 100644
->> --- a/arch/powerpc/mm/init_64.c
->> +++ b/arch/powerpc/mm/init_64.c
->> @@ -297,5 +297,81 @@ void vmemmap_free(unsigned long start, unsigned long end)
->>   {
->>   }
->>
->> -#endif /* CONFIG_SPARSEMEM_VMEMMAP */
->> +/*
->> + * We do not have access to the sparsemem vmemmap, so we fallback to
->> + * walking the list of sparsemem blocks which we already maintain for
->> + * the sake of crashdump. In the long run, we might want to maintain
->> + * a tree if performance of that linear walk becomes a problem.
->> + *
->> + * Any of realmode_XXXX functions can fail due to:
->> + * 1) As real sparsemem blocks do not lay in RAM continously (they
->> + * are in virtual address space which is not available in the real mode),
->> + * the requested page struct can be split between blocks so get_page/put_page
->> + * may fail.
->> + * 2) When huge pages are used, the get_page/put_page API will fail
->> + * in real mode as the linked addresses in the page struct are virtual
->> + * too.
->> + * When 1) or 2) takes place, the API returns an error code to cause
->> + * an exit to kernel virtual mode where the operation will be completed.
+> This introduces tce_build_rm and tce_free_rm real mode versions
+> which do mostly the same but use "Store Doubleword Caching Inhibited
+> Indexed" instruction for TCE invalidation.
 
-I don't see where these functions enter kernel virtual mode. I think 
-it's best to just remove the last sentence. It doesn't belong here.
+So would always using stdcix have any bad side effects?
 
 
 Alex
 
->> + */
->> +struct page *realmode_pfn_to_page(unsigned long pfn)
->> +{
->> +	struct vmemmap_backing *vmem_back;
->> +	struct page *page;
->> +	unsigned long page_size = 1<<  mmu_psize_defs[mmu_vmemmap_psize].shift;
->> +	unsigned long pg_va = (unsigned long) pfn_to_page(pfn);
->>
->> +	for (vmem_back = vmemmap_list; vmem_back; vmem_back = vmem_back->list) {
->> +		if (pg_va<  vmem_back->virt_addr)
->> +			continue;
->> +
->> +		/* Check that page struct is not split between real pages */
->> +		if ((pg_va + sizeof(struct page))>
->> +				(vmem_back->virt_addr + page_size))
->> +			return NULL;
->> +
->> +		page = (struct page *) (vmem_back->phys + pg_va -
->> +				vmem_back->virt_addr);
->> +		return page;
->> +	}
->> +
->> +	return NULL;
->> +}
->> +EXPORT_SYMBOL_GPL(realmode_pfn_to_page);
->> +
->> +#elif defined(CONFIG_FLATMEM)
->> +
->> +struct page *realmode_pfn_to_page(unsigned long pfn)
->> +{
->> +	struct page *page = pfn_to_page(pfn);
->> +	return page;
->> +}
->> +EXPORT_SYMBOL_GPL(realmode_pfn_to_page);
->> +
->> +#endif /* CONFIG_SPARSEMEM_VMEMMAP/CONFIG_FLATMEM */
->> +
->> +#if defined(CONFIG_SPARSEMEM_VMEMMAP) || defined(CONFIG_FLATMEM)
->> +int realmode_get_page(struct page *page)
->> +{
->> +	if (PageCompound(page))
->> +		return -EAGAIN;
->> +
->> +	if (!get_page_unless_zero(page))
->> +		return -EAGAIN;
->> +
->> +	return 0;
->> +}
->> +EXPORT_SYMBOL_GPL(realmode_get_page);
->> +
->> +int realmode_put_page(struct page *page)
->> +{
->> +	if (PageCompound(page))
->> +		return -EAGAIN;
->> +
->> +	if (!atomic_add_unless(&page->_count, -1, 1))
->> +		return -EAGAIN;
->> +
->> +	return 0;
->> +}
->> +EXPORT_SYMBOL_GPL(realmode_put_page);
->> +#endif
->> diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
->> index 6d53675..98ada58 100644
->> --- a/include/linux/page-flags.h
->> +++ b/include/linux/page-flags.h
->> @@ -329,7 +329,9 @@ static inline void set_page_writeback(struct page *page)
->>    * System with lots of page flags available. This allows separate
->>    * flags for PageHead() and PageTail() checks of compound pages so that bit
->>    * tests can be used in performance sensitive paths. PageCompound is
->> - * generally not used in hot code paths.
->> + * generally not used in hot code paths except arch/powerpc/mm/init_64.c
->> + * and arch/powerpc/kvm/book3s_64_vio_hv.c which use it to detect huge pages
->> + * and avoid handling those in real mode.
->>    */
->>   __PAGEFLAG(Head, head) CLEARPAGEFLAG(Head, head)
->>   __PAGEFLAG(Tail, tail)
 >
+> This new feature is going to be utilized by real mode support of VFIO.
+>
+> Signed-off-by: Alexey Kardashevskiy<aik@ozlabs.ru>
+> ---
+>   arch/powerpc/include/asm/machdep.h        | 12 ++++++++++
+>   arch/powerpc/platforms/powernv/pci-ioda.c | 26 +++++++++++++++------
+>   arch/powerpc/platforms/powernv/pci.c      | 38 ++++++++++++++++++++++++++-----
+>   arch/powerpc/platforms/powernv/pci.h      |  2 +-
+>   4 files changed, 64 insertions(+), 14 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+> index 92386fc..0c19eef 100644
+> --- a/arch/powerpc/include/asm/machdep.h
+> +++ b/arch/powerpc/include/asm/machdep.h
+> @@ -75,6 +75,18 @@ struct machdep_calls {
+>   				    long index);
+>   	void		(*tce_flush)(struct iommu_table *tbl);
+>
+> +	/* _rm versions are for real mode use only */
+> +	int		(*tce_build_rm)(struct iommu_table *tbl,
+> +				     long index,
+> +				     long npages,
+> +				     unsigned long uaddr,
+> +				     enum dma_data_direction direction,
+> +				     struct dma_attrs *attrs);
+> +	void		(*tce_free_rm)(struct iommu_table *tbl,
+> +				    long index,
+> +				    long npages);
+> +	void		(*tce_flush_rm)(struct iommu_table *tbl);
+> +
+>   	void __iomem *	(*ioremap)(phys_addr_t addr, unsigned long size,
+>   				   unsigned long flags, void *caller);
+>   	void		(*iounmap)(volatile void __iomem *token);
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index 2931d97..2797dec 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -68,6 +68,12 @@ define_pe_printk_level(pe_err, KERN_ERR);
+>   define_pe_printk_level(pe_warn, KERN_WARNING);
+>   define_pe_printk_level(pe_info, KERN_INFO);
+>
+> +static inline void rm_writed(unsigned long paddr, u64 val)
+> +{
+> +	__asm__ __volatile__("sync; stdcix %0,0,%1"
+> +		: : "r" (val), "r" (paddr) : "memory");
+> +}
+> +
+>   static int pnv_ioda_alloc_pe(struct pnv_phb *phb)
+>   {
+>   	unsigned long pe;
+> @@ -442,7 +448,7 @@ static void pnv_pci_ioda_dma_dev_setup(struct pnv_phb *phb, struct pci_dev *pdev
+>   }
+>
+>   static void pnv_pci_ioda1_tce_invalidate(struct iommu_table *tbl,
+> -					 u64 *startp, u64 *endp)
+> +					 u64 *startp, u64 *endp, bool rm)
+>   {
+>   	u64 __iomem *invalidate = (u64 __iomem *)tbl->it_index;
+>   	unsigned long start, end, inc;
+> @@ -471,7 +477,10 @@ static void pnv_pci_ioda1_tce_invalidate(struct iommu_table *tbl,
+>
+>           mb(); /* Ensure above stores are visible */
+>           while (start<= end) {
+> -                __raw_writeq(start, invalidate);
+> +		if (rm)
+> +			rm_writed((unsigned long) invalidate, start);
+> +		else
+> +			__raw_writeq(start, invalidate);
+>                   start += inc;
+>           }
+>
+> @@ -483,7 +492,7 @@ static void pnv_pci_ioda1_tce_invalidate(struct iommu_table *tbl,
+>
+>   static void pnv_pci_ioda2_tce_invalidate(struct pnv_ioda_pe *pe,
+>   					 struct iommu_table *tbl,
+> -					 u64 *startp, u64 *endp)
+> +					 u64 *startp, u64 *endp, bool rm)
+>   {
+>   	unsigned long start, end, inc;
+>   	u64 __iomem *invalidate = (u64 __iomem *)tbl->it_index;
+> @@ -502,22 +511,25 @@ static void pnv_pci_ioda2_tce_invalidate(struct pnv_ioda_pe *pe,
+>   	mb();
+>
+>   	while (start<= end) {
+> -		__raw_writeq(start, invalidate);
+> +		if (rm)
+> +			rm_writed((unsigned long) invalidate, start);
+> +		else
+> +			__raw_writeq(start, invalidate);
+>   		start += inc;
+>   	}
+>   }
+>
+>   void pnv_pci_ioda_tce_invalidate(struct iommu_table *tbl,
+> -				 u64 *startp, u64 *endp)
+> +				 u64 *startp, u64 *endp, bool rm)
+>   {
+>   	struct pnv_ioda_pe *pe = container_of(tbl, struct pnv_ioda_pe,
+>   					      tce32_table);
+>   	struct pnv_phb *phb = pe->phb;
+>
+>   	if (phb->type == PNV_PHB_IODA1)
+> -		pnv_pci_ioda1_tce_invalidate(tbl, startp, endp);
+> +		pnv_pci_ioda1_tce_invalidate(tbl, startp, endp, rm);
+>   	else
+> -		pnv_pci_ioda2_tce_invalidate(pe, tbl, startp, endp);
+> +		pnv_pci_ioda2_tce_invalidate(pe, tbl, startp, endp, rm);
+>   }
+>
+>   static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+> index e16b729..280f614 100644
+> --- a/arch/powerpc/platforms/powernv/pci.c
+> +++ b/arch/powerpc/platforms/powernv/pci.c
+> @@ -336,7 +336,7 @@ struct pci_ops pnv_pci_ops = {
+>
+>   static int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
+>   			 unsigned long uaddr, enum dma_data_direction direction,
+> -			 struct dma_attrs *attrs)
+> +			 struct dma_attrs *attrs, bool rm)
+>   {
+>   	u64 proto_tce;
+>   	u64 *tcep, *tces;
+> @@ -358,12 +358,19 @@ static int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
+>   	 * of flags if that becomes the case
+>   	 */
+>   	if (tbl->it_type&  TCE_PCI_SWINV_CREATE)
+> -		pnv_pci_ioda_tce_invalidate(tbl, tces, tcep - 1);
+> +		pnv_pci_ioda_tce_invalidate(tbl, tces, tcep - 1, rm);
+>
+>   	return 0;
+>   }
+>
+> -static void pnv_tce_free(struct iommu_table *tbl, long index, long npages)
+> +static int pnv_tce_build_vm(struct iommu_table *tbl, long index, long npages,
+> +			    unsigned long uaddr, enum dma_data_direction direction,
+> +			    struct dma_attrs *attrs)
+> +{
+> +	return pnv_tce_build(tbl, index, npages, uaddr, direction, attrs, false);
+> +}
+> +
+> +static void pnv_tce_free(struct iommu_table *tbl, long index, long npages, bool rm)
+>   {
+>   	u64 *tcep, *tces;
+>
+> @@ -373,7 +380,12 @@ static void pnv_tce_free(struct iommu_table *tbl, long index, long npages)
+>   		*(tcep++) = 0;
+>
+>   	if (tbl->it_type&  TCE_PCI_SWINV_FREE)
+> -		pnv_pci_ioda_tce_invalidate(tbl, tces, tcep - 1);
+> +		pnv_pci_ioda_tce_invalidate(tbl, tces, tcep - 1, rm);
+> +}
+> +
+> +static void pnv_tce_free_vm(struct iommu_table *tbl, long index, long npages)
+> +{
+> +	pnv_tce_free(tbl, index, npages, false);
+>   }
+>
+>   static unsigned long pnv_tce_get(struct iommu_table *tbl, long index)
+> @@ -381,6 +393,18 @@ static unsigned long pnv_tce_get(struct iommu_table *tbl, long index)
+>   	return ((u64 *)tbl->it_base)[index - tbl->it_offset];
+>   }
+>
+> +static int pnv_tce_build_rm(struct iommu_table *tbl, long index, long npages,
+> +			    unsigned long uaddr, enum dma_data_direction direction,
+> +			    struct dma_attrs *attrs)
+> +{
+> +	return pnv_tce_build(tbl, index, npages, uaddr, direction, attrs, true);
+> +}
+> +
+> +static void pnv_tce_free_rm(struct iommu_table *tbl, long index, long npages)
+> +{
+> +	pnv_tce_free(tbl, index, npages, true);
+> +}
+> +
+>   void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
+>   			       void *tce_mem, u64 tce_size,
+>   			       u64 dma_offset)
+> @@ -545,8 +569,10 @@ void __init pnv_pci_init(void)
+>
+>   	/* Configure IOMMU DMA hooks */
+>   	ppc_md.pci_dma_dev_setup = pnv_pci_dma_dev_setup;
+> -	ppc_md.tce_build = pnv_tce_build;
+> -	ppc_md.tce_free = pnv_tce_free;
+> +	ppc_md.tce_build = pnv_tce_build_vm;
+> +	ppc_md.tce_free = pnv_tce_free_vm;
+> +	ppc_md.tce_build_rm = pnv_tce_build_rm;
+> +	ppc_md.tce_free_rm = pnv_tce_free_rm;
+>   	ppc_md.tce_get = pnv_tce_get;
+>   	ppc_md.pci_probe_mode = pnv_pci_probe_mode;
+>   	set_pci_dma_ops(&dma_iommu_ops);
+> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+> index 25d76c4..6799374 100644
+> --- a/arch/powerpc/platforms/powernv/pci.h
+> +++ b/arch/powerpc/platforms/powernv/pci.h
+> @@ -158,6 +158,6 @@ extern void pnv_pci_init_p5ioc2_hub(struct device_node *np);
+>   extern void pnv_pci_init_ioda_hub(struct device_node *np);
+>   extern void pnv_pci_init_ioda2_phb(struct device_node *np);
+>   extern void pnv_pci_ioda_tce_invalidate(struct iommu_table *tbl,
+> -					u64 *startp, u64 *endp);
+> +					u64 *startp, u64 *endp, bool rm);
+>
+>   #endif /* __POWERNV_PCI_H */
