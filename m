@@ -1,21 +1,30 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D8F832C0343
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2013 18:03:03 +1000 (EST)
-From: Tiejun Chen <tiejun.chen@windriver.com>
-To: <benh@kernel.crashing.org>
-Subject: [v3][PATCH 8/8] book3e/kexec/kdump: recover "r4 = 0" to create the
- initial TLB
-Date: Tue, 9 Jul 2013 16:03:27 +0800
-Message-ID: <1373357007-30785-9-git-send-email-tiejun.chen@windriver.com>
-In-Reply-To: <1373357007-30785-1-git-send-email-tiejun.chen@windriver.com>
-References: <1373357007-30785-1-git-send-email-tiejun.chen@windriver.com>
+Return-Path: <peterz@infradead.org>
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:4978:20e::2])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id BDB4A2C02A3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2013 18:15:25 +1000 (EST)
+Date: Tue, 9 Jul 2013 10:14:34 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Vince Weaver <vincent.weaver@maine.edu>
+Subject: Re: [PATCH v2 2/2] perf tools: Make Power7 events available for perf
+Message-ID: <20130709081434.GI25631@dyad.programming.kicks-ass.net>
+References: <1372170933-4538-1-git-send-email-runzhen@linux.vnet.ibm.com>
+ <1372170933-4538-3-git-send-email-runzhen@linux.vnet.ibm.com>
+ <alpine.DEB.2.02.1306251240440.25443@pianoman.cluster.toy>
+ <20130704125218.GA21134@concordia>
+ <20130704125700.GM18898@dyad.programming.kicks-ass.net>
+ <20130709012952.GA7185@concordia>
+ <alpine.DEB.2.10.1307082204550.26280@vincent-weaver-1.um.maine.edu>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.DEB.2.10.1307082204550.26280@vincent-weaver-1.um.maine.edu>
+Cc: acme@redhat.com, Vince Weaver <vince@deater.net>,
+ Stephane Eranian <eranian@google.com>, linux-kernel@vger.kernel.org,
+ paulus@samba.org, xiaoguangrong@linux.vnet.ibm.com,
+ Runzhen Wang <runzhen@linux.vnet.ibm.com>, sukadev@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,31 +34,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In commit 96f013f, "powerpc/kexec: Add kexec "hold" support for Book3e
-processors", requires that GPR4 survive the "hold" process, for IBM Blue
-Gene/Q with with some very strange firmware. But for FSL Book3E, r4 = 1
-to indicate that the initial TLB entry for this core already exists so
-we still should set r4 with 0 to create that initial TLB.
+On Mon, Jul 08, 2013 at 10:24:34PM -0400, Vince Weaver wrote:
+> 
+> So something like they have on ARM?
+> 
+> vince@pandaboard:/sys/bus/event_source/devices$ ls -l
+> lrwxrwxrwx 1 root root 0 Jul  8 21:57 ARMv7 Cortex-A9 -> ../../../devices/ARMv7 Cortex-A9
+> lrwxrwxrwx 1 root root 0 Jul  8 21:57 breakpoint -> ../../../devices/breakpoint
+> lrwxrwxrwx 1 root root 0 Jul  8 21:57 software -> ../../../devices/software
+> lrwxrwxrwx 1 root root 0 Jul  8 21:57 tracepoint -> ../../../devices/tracepoint
 
-Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
----
- arch/powerpc/kernel/head_64.S |    4 ++++
- 1 file changed, 4 insertions(+)
+Right so what I remember of the ARM case is that their /proc/cpuinfo isn't
+sufficient to identify their PMU. And they don't have a cpuid like instruction
+at all.
 
-diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-index 0b46c9d..d546c5e 100644
---- a/arch/powerpc/kernel/head_64.S
-+++ b/arch/powerpc/kernel/head_64.S
-@@ -127,6 +127,10 @@ __secondary_hold:
- 	/* Grab our physical cpu number */
- 	mr	r24,r3
- 	/* stash r4 for book3e */
-+#ifdef CONFIG_PPC_FSL_BOOK3E
-+	/* we need to setup initial TLB entry. */
-+	li	r4,0
-+#endif
- 	mr	r25,r4
- 
- 	/* Tell the master cpu we're here */
--- 
-1.7.9.5
+> > For the cpu you can obviously just detect what processor you're on with
+> > cpuid or whatever, but it's a bit of a hack. And that really doesn't
+> > work for non-cpu PMUs.
+> 
+> why is it a hack to use cpuid?
+
+I agree, for x86 cpuid is perfectly fine, as would /proc/cpuinfo be, I suspect
+that just the model number is sufficient in most cases, even for uncore stuff.
