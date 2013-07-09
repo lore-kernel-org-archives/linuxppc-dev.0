@@ -1,15 +1,15 @@
 Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3D5BF2C0372
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2013 18:02:53 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id C41B42C0327
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2013 18:02:54 +1000 (EST)
 From: Tiejun Chen <tiejun.chen@windriver.com>
 To: <benh@kernel.crashing.org>
-Subject: [v3][PATCH 6/8] book3e/kexec/kdump: implement ppc64 kexec specfic
-Date: Tue, 9 Jul 2013 16:03:25 +0800
-Message-ID: <1373357007-30785-7-git-send-email-tiejun.chen@windriver.com>
+Subject: [v3][PATCH 7/8] book3e/kexec/kdump: redefine VIRT_PHYS_OFFSET
+Date: Tue, 9 Jul 2013 16:03:26 +0800
+Message-ID: <1373357007-30785-8-git-send-email-tiejun.chen@windriver.com>
 In-Reply-To: <1373357007-30785-1-git-send-email-tiejun.chen@windriver.com>
 References: <1373357007-30785-1-git-send-email-tiejun.chen@windriver.com>
 MIME-Version: 1.0
@@ -24,62 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-ppc64 kexec mechanism has a different implementation with ppc32.
+Book3e is always aligned 1GB to create TLB so we should
+use (KERNELBASE - MEMORY_START) as VIRT_PHYS_OFFSET to
+get __pa/__va properly while boot kdump.
 
 Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
 ---
- arch/powerpc/platforms/85xx/smp.c |   13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ arch/powerpc/include/asm/page.h |    2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
-index 14d461b..d862808 100644
---- a/arch/powerpc/platforms/85xx/smp.c
-+++ b/arch/powerpc/platforms/85xx/smp.c
-@@ -276,6 +276,7 @@ struct smp_ops_t smp_85xx_ops = {
- };
- 
- #ifdef CONFIG_KEXEC
-+#ifdef CONFIG_PPC32
- atomic_t kexec_down_cpus = ATOMIC_INIT(0);
- 
- void mpc85xx_smp_kexec_cpu_down(int crash_shutdown, int secondary)
-@@ -294,6 +295,14 @@ static void mpc85xx_smp_kexec_down(void *arg)
- 	if (ppc_md.kexec_cpu_down)
- 		ppc_md.kexec_cpu_down(0,1);
- }
-+#else
-+void mpc85xx_smp_kexec_cpu_down(int crash_shutdown, int secondary)
-+{
-+	local_irq_disable();
-+	hard_irq_disable();
-+	mpic_teardown_this_cpu(secondary);
-+}
-+#endif
- 
- static void map_and_flush(unsigned long paddr)
- {
-@@ -345,11 +354,14 @@ static void mpc85xx_smp_flush_dcache_kexec(struct kimage *image)
- 
- static void mpc85xx_smp_machine_kexec(struct kimage *image)
- {
-+#ifdef CONFIG_PPC32
- 	int timeout = INT_MAX;
- 	int i, num_cpus = num_present_cpus();
-+#endif
- 
- 	mpc85xx_smp_flush_dcache_kexec(image);
- 
-+#ifdef CONFIG_PPC32
- 	if (image->type == KEXEC_TYPE_DEFAULT)
- 		smp_call_function(mpc85xx_smp_kexec_down, NULL, 0);
- 
-@@ -367,6 +379,7 @@ static void mpc85xx_smp_machine_kexec(struct kimage *image)
- 		if ( i == smp_processor_id() ) continue;
- 		mpic_reset_core(i);
- 	}
-+#endif
- 
- 	default_machine_kexec(image);
- }
+diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
+index 988c812..5b00081 100644
+--- a/arch/powerpc/include/asm/page.h
++++ b/arch/powerpc/include/asm/page.h
+@@ -112,6 +112,8 @@ extern long long virt_phys_offset;
+ /* See Description below for VIRT_PHYS_OFFSET */
+ #ifdef CONFIG_RELOCATABLE_PPC32
+ #define VIRT_PHYS_OFFSET virt_phys_offset
++#elif defined(CONFIG_PPC_BOOK3E_64)
++#define VIRT_PHYS_OFFSET (KERNELBASE - MEMORY_START)
+ #else
+ #define VIRT_PHYS_OFFSET (KERNELBASE - PHYSICAL_START)
+ #endif
 -- 
 1.7.9.5
