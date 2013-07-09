@@ -3,13 +3,13 @@ Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mail1.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0921C2C034D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2013 18:02:49 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id A0CFE2C033B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2013 18:02:51 +1000 (EST)
 From: Tiejun Chen <tiejun.chen@windriver.com>
 To: <benh@kernel.crashing.org>
-Subject: [v3][PATCH 4/8] book3e/kexec/kdump: create a 1:1 TLB mapping
-Date: Tue, 9 Jul 2013 16:03:23 +0800
-Message-ID: <1373357007-30785-5-git-send-email-tiejun.chen@windriver.com>
+Subject: [v3][PATCH 5/8] book3e/kexec/kdump: introduce a kexec kernel flag
+Date: Tue, 9 Jul 2013 16:03:24 +0800
+Message-ID: <1373357007-30785-6-git-send-email-tiejun.chen@windriver.com>
 In-Reply-To: <1373357007-30785-1-git-send-email-tiejun.chen@windriver.com>
 References: <1373357007-30785-1-git-send-email-tiejun.chen@windriver.com>
 MIME-Version: 1.0
@@ -24,139 +24,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-book3e have no real MMU mode so we have to create a 1:1 TLB
-mapping to make sure we can access the real physical address.
-And correct something to support this pseudo real mode on book3e.
+We need to introduce a flag to indicate we're already running
+a kexec kernel then we can go proper path. For example, We
+shouldn't access spin_table from the bootloader to up any secondary
+cpu for kexec kernel, and kexec kernel already know how to jump to
+generic_secondary_smp_init.
 
 Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
 ---
- arch/powerpc/kernel/head_64.S |    9 ++++---
- arch/powerpc/kernel/misc_64.S |   55 ++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 60 insertions(+), 4 deletions(-)
+ arch/powerpc/include/asm/smp.h    |    1 +
+ arch/powerpc/kernel/head_64.S     |   10 ++++++++++
+ arch/powerpc/kernel/misc_64.S     |    6 ++++++
+ arch/powerpc/platforms/85xx/smp.c |   20 +++++++++++++++-----
+ 4 files changed, 32 insertions(+), 5 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
+index ffbaabe..59165a3 100644
+--- a/arch/powerpc/include/asm/smp.h
++++ b/arch/powerpc/include/asm/smp.h
+@@ -200,6 +200,7 @@ extern void generic_secondary_thread_init(void);
+ extern unsigned long __secondary_hold_spinloop;
+ extern unsigned long __secondary_hold_acknowledge;
+ extern char __secondary_hold;
++extern unsigned long __run_at_kexec;
+ 
+ extern void __early_start(void);
+ #endif /* __ASSEMBLY__ */
 diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-index 550f8fb..7dc56be 100644
+index 7dc56be..0b46c9d 100644
 --- a/arch/powerpc/kernel/head_64.S
 +++ b/arch/powerpc/kernel/head_64.S
-@@ -447,12 +447,12 @@ _STATIC(__after_prom_start)
- 	tovirt(r3,r3)			/* on booke, we already run at PAGE_OFFSET */
- #endif
- 	mr.	r4,r26			/* In some cases the loader may  */
-+#if defined(CONFIG_PPC_BOOK3E)
-+	tovirt(r4,r4)
-+#endif
- 	beq	9f			/* have already put us at zero */
- 	li	r6,0x100		/* Start offset, the first 0x100 */
- 					/* bytes were copied earlier.	 */
--#ifdef CONFIG_PPC_BOOK3E
--	tovirt(r6,r6)			/* on booke, we already run at PAGE_OFFSET */
--#endif
+@@ -89,6 +89,10 @@ __secondary_hold_spinloop:
+ __secondary_hold_acknowledge:
+ 	.llong	0x0
  
++	.globl	__run_at_kexec
++__run_at_kexec:
++	.llong	0x0	/* Flag for the secondary kernel from kexec. */
++
  #ifdef CONFIG_RELOCATABLE
- /*
-@@ -495,6 +495,9 @@ _STATIC(__after_prom_start)
- p_end:	.llong	_end - _stext
- 
- 4:	/* Now copy the rest of the kernel up to _end */
-+#if defined(CONFIG_PPC_BOOK3E)
-+	tovirt(r26,r26)
+ 	/* This flag is set to 1 by a loader if the kernel should run
+ 	 * at the loaded address instead of the linked address.  This
+@@ -417,6 +421,12 @@ _STATIC(__after_prom_start)
+ #if defined(CONFIG_PPC_BOOK3E)
+ 	tovirt(r26,r26)			/* on booke, we already run at PAGE_OFFSET */
+ #endif
++#if defined(CONFIG_KEXEC) || defined(CONFIG_CRASH_DUMP)
++	/* If relocated we need to restore this flag on that relocated address. */
++	ld	r7,__run_at_kexec-_stext(r26)
++	std	r7,__run_at_kexec-_stext(r26)
 +#endif
- 	addis	r5,r26,(p_end - _stext)@ha
- 	ld	r5,(p_end - _stext)@l(r5)	/* get _end */
- 5:	bl	.copy_and_flush		/* copy the rest */
++
+ 	lwz	r7,__run_at_load-_stext(r26)
+ #if defined(CONFIG_PPC_BOOK3E)
+ 	tophys(r26,r26)			/* Restore for the remains. */
 diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
-index f1a7ce7..20cbb98 100644
+index 20cbb98..c89aead 100644
 --- a/arch/powerpc/kernel/misc_64.S
 +++ b/arch/powerpc/kernel/misc_64.S
-@@ -460,6 +460,49 @@ kexec_flag:
+@@ -619,6 +619,12 @@ _GLOBAL(kexec_sequence)
+ 	bl	.copy_and_flush	/* (dest, src, copy limit, start offset) */
+ 1:	/* assume normal blr return */
  
- 
- #ifdef CONFIG_KEXEC
-+#ifdef CONFIG_PPC_BOOK3E
-+/* BOOK3E have no a real MMU mode so we have to setup the initial TLB
-+ * for a core to map v:0 to p:0 as 1:1. This current implementation
-+ * assume that 1G is enough for kexec.
-+ */
-+#include <asm/mmu.h>
-+kexec_create_tlb:
-+	/* Invalidate all TLBs to avoid any TLB conflict. */
-+	PPC_TLBILX_ALL(0,R0)
++	/* notify we're going into kexec kernel for SMP. */
++	LOAD_REG_ADDR(r3,__run_at_kexec)
++	li	r4,1
++	std	r4,0(r3)
 +	sync
-+	isync
 +
-+	mfspr	r10,SPRN_TLB1CFG
-+	andi.	r10,r10,TLBnCFG_N_ENTRY	/* Extract # entries */
-+	subi	r10,r10,1		/* Often its always safe to use last */
-+	lis	r9,MAS0_TLBSEL(1)@h
-+	rlwimi	r9,r10,16,4,15		/* Setup MAS0 = TLBSEL | ESEL(r9) */
-+
-+/* Setup a temp mapping v:0 to p:0 as 1:1 and return to it.
-+ */
-+#ifdef CONFIG_SMP
-+#define M_IF_SMP	MAS2_M
-+#else
-+#define M_IF_SMP	0
-+#endif
-+	mtspr	SPRN_MAS0,r9
-+
-+	lis	r9,(MAS1_VALID|MAS1_IPROT)@h
-+	ori	r9,r9,(MAS1_TSIZE(BOOK3E_PAGESZ_1GB))@l
-+	mtspr	SPRN_MAS1,r9
-+
-+	LOAD_REG_IMMEDIATE(r9, 0x0 | M_IF_SMP)
-+	mtspr	SPRN_MAS2,r9
-+
-+	LOAD_REG_IMMEDIATE(r9, 0x0 | MAS3_SR | MAS3_SW | MAS3_SX)
-+	mtspr	SPRN_MAS3,r9
-+	li	r9,0
-+	mtspr	SPRN_MAS7,r9
-+
-+	tlbwe
-+	isync
-+	blr
+ 	/* release other cpus to the new kernel secondary start at 0x60 */
+ 	mflr	r5
+ 	li	r6,1
+diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
+index 5ced4f5..14d461b 100644
+--- a/arch/powerpc/platforms/85xx/smp.c
++++ b/arch/powerpc/platforms/85xx/smp.c
+@@ -150,6 +150,9 @@ static int smp_85xx_kick_cpu(int nr)
+ 	int hw_cpu = get_hard_smp_processor_id(nr);
+ 	int ioremappable;
+ 	int ret = 0;
++#ifdef CONFIG_PPC64
++	unsigned long *ptr = NULL;
 +#endif
  
- /* kexec_smp_wait(void)
-  *
-@@ -473,6 +516,10 @@ kexec_flag:
-  */
- _GLOBAL(kexec_smp_wait)
- 	lhz	r3,PACAHWCPUID(r13)
-+#ifdef CONFIG_PPC_BOOK3E
-+	/* Create a 1:1 mapping. */
-+	bl	kexec_create_tlb
-+#endif
- 	bl	real_mode
- 
- 	li	r4,KEXEC_STATE_REAL_MODE
-@@ -489,6 +536,7 @@ _GLOBAL(kexec_smp_wait)
-  * don't overwrite r3 here, it is live for kexec_wait above.
-  */
- real_mode:	/* assume normal blr return */
-+#ifndef CONFIG_PPC_BOOK3E
- 1:	li	r9,MSR_RI
- 	li	r10,MSR_DR|MSR_IR
- 	mflr	r11		/* return address to SRR0 */
-@@ -500,7 +548,10 @@ real_mode:	/* assume normal blr return */
- 	mtspr	SPRN_SRR1,r10
- 	mtspr	SPRN_SRR0,r11
- 	rfid
--
-+#else
-+	/* the real mode is nothing for book3e. */
-+	blr
-+#endif
- 
- /*
-  * kexec_sequence(newstack, start, image, control, clear_all())
-@@ -549,6 +600,8 @@ _GLOBAL(kexec_sequence)
- 	mtmsrd	r3,1
+ 	WARN_ON(nr < 0 || nr >= NR_CPUS);
+ 	WARN_ON(hw_cpu < 0 || hw_cpu >= NR_CPUS);
+@@ -238,11 +241,18 @@ out:
  #else
- 	wrteei	0
-+	/* Create a 1:1 mapping. */
-+	bl	kexec_create_tlb
+ 	smp_generic_kick_cpu(nr);
+ 
+-	flush_spin_table(spin_table);
+-	out_be32(&spin_table->pir, hw_cpu);
+-	out_be64((u64 *)(&spin_table->addr_h),
+-	  __pa((u64)*((unsigned long long *)generic_secondary_smp_init)));
+-	flush_spin_table(spin_table);
++	ptr  = (unsigned long *)((unsigned long)&__run_at_kexec);
++	/* We shouldn't access spin_table from the bootloader to up any
++	 * secondary cpu for kexec kernel, and kexec kernel already
++	 * know how to jump to generic_secondary_smp_init.
++	 */
++	if (!*ptr) {
++		flush_spin_table(spin_table);
++		out_be32(&spin_table->pir, hw_cpu);
++		out_be64((u64 *)(&spin_table->addr_h),
++		 __pa((u64)*((unsigned long long *)generic_secondary_smp_init)));
++		flush_spin_table(spin_table);
++	}
  #endif
  
- 	/* copy dest pages, flush whole dest image */
+ 	local_irq_restore(flags);
 -- 
 1.7.9.5
