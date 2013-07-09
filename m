@@ -1,22 +1,34 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 867E22C00AD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 00:08:12 +1000 (EST)
-Message-ID: <1373378884.2602.205.camel@ul30vt.home>
-Subject: Re: [PATCH 3/8] vfio: add external user support
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Tue, 09 Jul 2013 08:08:04 -0600
-In-Reply-To: <51DBA239.9000303@ozlabs.ru>
-References: <1373123227-22969-1-git-send-email-aik@ozlabs.ru>
- <1373123227-22969-4-git-send-email-aik@ozlabs.ru>
- <1373320371.2602.159.camel@ul30vt.home> <51DBA239.9000303@ozlabs.ru>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: kvm@vger.kernel.org, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <vincent.weaver@maine.edu>
+Received: from mail-vb0-f43.google.com (mail-vb0-f43.google.com
+ [209.85.212.43])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 32DE12C02B8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 00:59:56 +1000 (EST)
+Received: by mail-vb0-f43.google.com with SMTP id e12so4493332vbg.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jul 2013 07:59:53 -0700 (PDT)
+Date: Tue, 9 Jul 2013 11:05:30 -0400 (EDT)
+From: Vince Weaver <vincent.weaver@maine.edu>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v2 2/2] perf tools: Make Power7 events available for perf
+In-Reply-To: <20130709081434.GI25631@dyad.programming.kicks-ass.net>
+Message-ID: <alpine.DEB.2.10.1307091059270.675@vincent-weaver-1.um.maine.edu>
+References: <1372170933-4538-1-git-send-email-runzhen@linux.vnet.ibm.com>
+ <1372170933-4538-3-git-send-email-runzhen@linux.vnet.ibm.com>
+ <alpine.DEB.2.02.1306251240440.25443@pianoman.cluster.toy>
+ <20130704125218.GA21134@concordia>
+ <20130704125700.GM18898@dyad.programming.kicks-ass.net>
+ <20130709012952.GA7185@concordia>
+ <alpine.DEB.2.10.1307082204550.26280@vincent-weaver-1.um.maine.edu>
+ <20130709081434.GI25631@dyad.programming.kicks-ass.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: acme@redhat.com, Vince Weaver <vincent.weaver@maine.edu>,
+ Will Deacon <will.deacon@arm.com>, Vince Weaver <vince@deater.net>,
+ Stephane Eranian <eranian@google.com>, linux-kernel@vger.kernel.org,
+ paulus@samba.org, xiaoguangrong@linux.vnet.ibm.com,
+ Runzhen Wang <runzhen@linux.vnet.ibm.com>, sukadev@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,162 +38,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-07-09 at 15:40 +1000, Alexey Kardashevskiy wrote:
-> On 07/09/2013 07:52 AM, Alex Williamson wrote:
-> > On Sun, 2013-07-07 at 01:07 +1000, Alexey Kardashevskiy wrote:
-> >> VFIO is designed to be used via ioctls on file descriptors
-> >> returned by VFIO.
-> >>
-> >> However in some situations support for an external user is required.
-> >> The first user is KVM on PPC64 (SPAPR TCE protocol) which is going to
-> >> use the existing VFIO groups for exclusive access in real/virtual mode
-> >> on a host to avoid passing map/unmap requests to the user space which
-> >> would made things pretty slow.
-> >>
-> >> The proposed protocol includes:
-> >>
-> >> 1. do normal VFIO init stuff such as opening a new container, attaching
-> >> group(s) to it, setting an IOMMU driver for a container. When IOMMU is
-> >> set for a container, all groups in it are considered ready to use by
-> >> an external user.
-> >>
-> >> 2. pass a fd of the group we want to accelerate to KVM. KVM calls
-> >> vfio_group_get_external_user() to verify if the group is initialized,
-> >> IOMMU is set for it and increment the container user counter to prevent
-> >> the VFIO group from disposal prior to KVM exit.
-> >> The current TCE IOMMU driver marks the whole IOMMU table as busy when
-> >> IOMMU is set for a container what prevents other DMA users from
-> >> allocating from it so it is safe to grant user space access to it.
-> >>
-> >> 3. KVM calls vfio_external_user_iommu_id() to obtian an IOMMU ID which
-> >> KVM uses to get an iommu_group struct for later use.
-> >>
-> >> 4. When KVM is finished, it calls vfio_group_put_external_user() to
-> >> release the VFIO group by decrementing the container user counter.
-> >> Everything gets released.
-> >>
-> >> The "vfio: Limit group opens" patch is also required for the consistency.
-> >>
-> >> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> >> ---
-> >> diff --git a/drivers/vfio/vfio.c b/drivers/vfio/vfio.c
-> >> index c488da5..57aa191 100644
-> >> --- a/drivers/vfio/vfio.c
-> >> +++ b/drivers/vfio/vfio.c
-> >> @@ -1370,6 +1370,62 @@ static const struct file_operations vfio_device_fops = {
-> >>  };
-> >>  
-> >>  /**
-> >> + * External user API, exported by symbols to be linked dynamically.
-> >> + *
-> >> + * The protocol includes:
-> >> + *  1. do normal VFIO init operation:
-> >> + *	- opening a new container;
-> >> + *	- attaching group(s) to it;
-> >> + *	- setting an IOMMU driver for a container.
-> >> + * When IOMMU is set for a container, all groups in it are
-> >> + * considered ready to use by an external user.
-> >> + *
-> >> + * 2. The user space passed a group fd which we want to accelerate in
-> >> + * KVM. KVM uses vfio_group_get_external_user() to verify that:
-> >> + *	- the group is initialized;
-> >> + *	- IOMMU is set for it.
-> >> + * Then vfio_group_get_external_user() increments the container user
-> >> + * counter to prevent the VFIO group from disposal prior to KVM exit.
-> >> + *
-> >> + * 3. KVM calls vfio_external_user_iommu_id() to know an IOMMU ID which
-> >> + * KVM uses to get an iommu_group struct for later use.
-> >> + *
-> >> + * 4. When KVM is finished, it calls vfio_group_put_external_user() to
-> >> + * release the VFIO group by decrementing the container user counter.
-> > 
-> > nit, the interface is for any external user, not just kvm.
-> 
-> s/KVM/An external user/ ?
-> Or add "the description below uses KVM just as an example of an external user"?
+On Tue, 9 Jul 2013, Peter Zijlstra wrote:
 
-Give a generic API description, KVM is just an example.
-
-> >> + */
-> >> +struct vfio_group *vfio_group_get_external_user(struct file *filep)
-> >> +{
-> >> +	struct vfio_group *group = filep->private_data;
-> >> +
-> >> +	if (filep->f_op != &vfio_group_fops)
-> >> +		return NULL;
+> On Mon, Jul 08, 2013 at 10:24:34PM -0400, Vince Weaver wrote:
 > > 
-> > ERR_PTR(-EINVAL)
+> > So something like they have on ARM?
 > > 
-> > There also needs to be a vfio_group_get(group) here and put in error
-> > cases.
+> > vince@pandaboard:/sys/bus/event_source/devices$ ls -l
+> > lrwxrwxrwx 1 root root 0 Jul  8 21:57 ARMv7 Cortex-A9 -> ../../../devices/ARMv7 Cortex-A9
+> > lrwxrwxrwx 1 root root 0 Jul  8 21:57 breakpoint -> ../../../devices/breakpoint
+> > lrwxrwxrwx 1 root root 0 Jul  8 21:57 software -> ../../../devices/software
+> > lrwxrwxrwx 1 root root 0 Jul  8 21:57 tracepoint -> ../../../devices/tracepoint
 > 
-> 
-> Is that because I do not hold a reference to the file anymore?
+> Right so what I remember of the ARM case is that their /proc/cpuinfo isn't
+> sufficient to identify their PMU. And they don't have a cpuid like instruction
+> at all.
 
-We were debating whether it was needed even with the file reference
-because we weren't sure that we wanted to trust the user to hold the
-reference.  Since we're now passing an object, we absolutely must
-increase the reference count on the object for this user.  Thanks,
+libpfm4 uses the
+   CPU part	: 0xc09
+line in /proc/cpuinfo on ARM, and that's enough for the processors PAPI 
+supports (Cortex A8/A9/A15 plus the 1176 on the raspberry-pi).  I'm 
+guessing it wouldn't be enough if we wanted to support *all* ARMs with
+PMUs.
 
-Alex
+And speaking of ARM, I should be railing at them for breaking the ABI too, 
+with their (understandable yet still ABI breaking) decision to remove 
+BogoMIPS from /proc/cpuinfo.  That change will impact PAPI as well as 
+various other programs I maintain that have the misfortune of parsing that 
+file.
 
-> >> +
-> >> +	if (!atomic_inc_not_zero(&group->container_users))
-> >> +		return NULL;
-> > 
-> > ERR_PTR(-EINVAL)
-> > 
-> >> +
-> >> +	if (!group->container->iommu_driver ||
-> >> +			!vfio_group_viable(group)) {
-> >> +		atomic_dec(&group->container_users);
-> >> +		return NULL;
-> > 
-> > ERR_PTR(-EINVAL)
-> > 
-> >> +	}
-> >> +
-> >> +	return group;
-> >> +}
-> >> +EXPORT_SYMBOL_GPL(vfio_group_get_external_user);
-> >> +
-> >> +void vfio_group_put_external_user(struct vfio_group *group)
-> >> +{
-> >> +	vfio_group_try_dissolve_container(group);
-> > 
-> > And a vfio_group_put(group) here
-> > 
-> >> +}
-> >> +EXPORT_SYMBOL_GPL(vfio_group_put_external_user);
-> >> +
-> >> +int vfio_external_user_iommu_id(struct vfio_group *group)
-> >> +{
-> >> +	return iommu_group_id(group->iommu_group);
-> >> +}
-> >> +EXPORT_SYMBOL_GPL(vfio_external_user_iommu_id);
-> >> +
-> >> +/**
-> >>   * Module/class support
-> >>   */
-> >>  static char *vfio_devnode(struct device *dev, umode_t *mode)
-> >> diff --git a/include/linux/vfio.h b/include/linux/vfio.h
-> >> index ac8d488..24579a0 100644
-> >> --- a/include/linux/vfio.h
-> >> +++ b/include/linux/vfio.h
-> >> @@ -90,4 +90,11 @@ extern void vfio_unregister_iommu_driver(
-> >>  	TYPE tmp;						\
-> >>  	offsetof(TYPE, MEMBER) + sizeof(tmp.MEMBER); })		\
-> >>  
-> >> +/*
-> >> + * External user API
-> >> + */
-> >> +extern struct vfio_group *vfio_group_get_external_user(struct file *filep);
-> >> +extern void vfio_group_put_external_user(struct vfio_group *group);
-> >> +extern int vfio_external_user_iommu_id(struct vfio_group *group);
-> >> +
-> >>  #endif /* VFIO_H */
-> > 
-> > 
-> > 
-> 
-> 
+Vince
