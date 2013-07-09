@@ -1,22 +1,19 @@
 Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- by ozlabs.org (Postfix) with ESMTP id 332732C00A0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 03:32:23 +1000 (EST)
-Message-ID: <51DC4923.5010501@suse.de>
-Date: Tue, 09 Jul 2013 19:32:19 +0200
+ by ozlabs.org (Postfix) with ESMTP id B02202C009A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 03:44:36 +1000 (EST)
+Message-ID: <51DC4C00.70509@suse.de>
+Date: Tue, 09 Jul 2013 19:44:32 +0200
 From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH 8/8] KVM: PPC: Add hugepage support for IOMMU in-kernel
- handling
-References: <1373123227-22969-1-git-send-email-aik@ozlabs.ru>
- <1373123227-22969-9-git-send-email-aik@ozlabs.ru>
-In-Reply-To: <1373123227-22969-9-git-send-email-aik@ozlabs.ru>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 2/2] KVM: PPC: Book3E: Get vcpu's last instruction for
+ emulation
+References: <1373390018.8183.194@snotra>
+In-Reply-To: <1373390018.8183.194@snotra>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,393 +23,133 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/06/2013 05:07 PM, Alexey Kardashevskiy wrote:
-> This adds special support for huge pages (16MB).  The reference
-> counting cannot be easily done for such pages in real mode (when
-> MMU is off) so we added a list of huge pages.  It is populated in
-> virtual mode and get_page is called just once per a huge page.
-> Real mode handlers check if the requested page is huge and in the list,
-> then no reference counting is done, otherwise an exit to virtual mode
-> happens.  The list is released at KVM exit.  At the moment the fastest
-> card available for tests uses up to 9 huge pages so walking through this
-> list is not very expensive.  However this can change and we may want
-> to optimize this.
+On 07/09/2013 07:13 PM, Scott Wood wrote:
+> On 07/08/2013 08:39:05 AM, Alexander Graf wrote:
+>>
+>> On 28.06.2013, at 11:20, Mihai Caraman wrote:
+>>
+>> > lwepx faults needs to be handled by KVM and this implies additional 
+>> code
+>> > in DO_KVM macro to identify the source of the exception originated 
+>> from
+>> > host context. This requires to check the Exception Syndrome Register
+>> > (ESR[EPID]) and External PID Load Context Register (EPLC[EGS]) for 
+>> DTB_MISS,
+>> > DSI and LRAT exceptions which is too intrusive for the host.
+>> >
+>> > Get rid of lwepx and acquire last instuction in 
+>> kvmppc_handle_exit() by
+>> > searching for the physical address and kmap it. This fixes an 
+>> infinite loop
+>>
+>> What's the difference in speed for this?
+>>
+>> Also, could we call lwepx later in host code, when 
+>> kvmppc_get_last_inst() gets invoked?
 >
-> Signed-off-by: Paul Mackerras<paulus@samba.org>
-> Signed-off-by: Alexey Kardashevskiy<aik@ozlabs.ru>
->
-> ---
->
-> Changes:
-> 2013/06/27:
-> * list of huge pages replaces with hashtable for better performance
+> Any use of lwepx is problematic unless we want to add overhead to the 
+> main Linux TLB miss handler.
 
-So the only thing your patch description really talks about is not true 
-anymore?
+What exactly would be missing?
 
-> * spinlock removed from real mode and only protects insertion of new
-> huge [ages descriptors into the hashtable
->
-> 2013/06/05:
-> * fixed compile error when CONFIG_IOMMU_API=n
->
-> 2013/05/20:
-> * the real mode handler now searches for a huge page by gpa (used to be pte)
-> * the virtual mode handler prints warning if it is called twice for the same
-> huge page as the real mode handler is expected to fail just once - when a huge
-> page is not in the list yet.
-> * the huge page is refcounted twice - when added to the hugepage list and
-> when used in the virtual mode hcall handler (can be optimized but it will
-> make the patch less nice).
->
-> Signed-off-by: Alexey Kardashevskiy<aik@ozlabs.ru>
-> ---
->   arch/powerpc/include/asm/kvm_host.h |  25 +++++++++
->   arch/powerpc/kernel/iommu.c         |   6 ++-
->   arch/powerpc/kvm/book3s_64_vio.c    | 104 +++++++++++++++++++++++++++++++++---
->   arch/powerpc/kvm/book3s_64_vio_hv.c |  21 ++++++--
->   4 files changed, 146 insertions(+), 10 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-> index 53e61b2..a7508cf 100644
-> --- a/arch/powerpc/include/asm/kvm_host.h
-> +++ b/arch/powerpc/include/asm/kvm_host.h
-> @@ -30,6 +30,7 @@
->   #include<linux/kvm_para.h>
->   #include<linux/list.h>
->   #include<linux/atomic.h>
-> +#include<linux/hashtable.h>
->   #include<asm/kvm_asm.h>
->   #include<asm/processor.h>
->   #include<asm/page.h>
-> @@ -182,10 +183,34 @@ struct kvmppc_spapr_tce_table {
->   	u32 window_size;
->   	struct iommu_group *grp;		/* used for IOMMU groups */
->   	struct vfio_group *vfio_grp;		/* used for IOMMU groups */
-> +	DECLARE_HASHTABLE(hash_tab, ilog2(64));	/* used for IOMMU groups */
-> +	spinlock_t hugepages_write_lock;	/* used for IOMMU groups */
->   	struct { struct { unsigned long put, indir, stuff; } rm, vm; } stat;
->   	struct page *pages[0];
->   };
->
-> +/*
-> + * The KVM guest can be backed with 16MB pages.
-> + * In this case, we cannot do page counting from the real mode
-> + * as the compound pages are used - they are linked in a list
-> + * with pointers as virtual addresses which are inaccessible
-> + * in real mode.
-> + *
-> + * The code below keeps a 16MB pages list and uses page struct
-> + * in real mode if it is already locked in RAM and inserted into
-> + * the list or switches to the virtual mode where it can be
-> + * handled in a usual manner.
-> + */
-> +#define KVMPPC_SPAPR_HUGEPAGE_HASH(gpa)	hash_32(gpa>>  24, 32)
-> +
-> +struct kvmppc_spapr_iommu_hugepage {
-> +	struct hlist_node hash_node;
-> +	unsigned long gpa;	/* Guest physical address */
-> +	unsigned long hpa;	/* Host physical address */
-> +	struct page *page;	/* page struct of the very first subpage */
-> +	unsigned long size;	/* Huge page size (always 16MB at the moment) */
-> +};
-> +
->   struct kvmppc_linear_info {
->   	void		*base_virt;
->   	unsigned long	 base_pfn;
-> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-> index 51678ec..e0b6eca 100644
-> --- a/arch/powerpc/kernel/iommu.c
-> +++ b/arch/powerpc/kernel/iommu.c
-> @@ -999,7 +999,8 @@ int iommu_free_tces(struct iommu_table *tbl, unsigned long entry,
->   			if (!pg) {
->   				ret = -EAGAIN;
->   			} else if (PageCompound(pg)) {
-> -				ret = -EAGAIN;
-> +				/* Hugepages will be released at KVM exit */
-> +				ret = 0;
->   			} else {
->   				if (oldtce&  TCE_PCI_WRITE)
->   					SetPageDirty(pg);
-> @@ -1009,6 +1010,9 @@ int iommu_free_tces(struct iommu_table *tbl, unsigned long entry,
->   			struct page *pg = pfn_to_page(oldtce>>  PAGE_SHIFT);
->   			if (!pg) {
->   				ret = -EAGAIN;
-> +			} else if (PageCompound(pg)) {
-> +				/* Hugepages will be released at KVM exit */
-> +				ret = 0;
->   			} else {
->   				if (oldtce&  TCE_PCI_WRITE)
->   					SetPageDirty(pg);
-> diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
-> index 2b51f4a..c037219 100644
-> --- a/arch/powerpc/kvm/book3s_64_vio.c
-> +++ b/arch/powerpc/kvm/book3s_64_vio.c
-> @@ -46,6 +46,40 @@
->
->   #define ERROR_ADDR      ((void *)~(unsigned long)0x0)
->
-> +#ifdef CONFIG_IOMMU_API
+I'd also still like to see some performance benchmarks on this to make 
+sure we're not walking into a bad direction.
 
-Can't you just make CONFIG_IOMMU_API mandatory in Kconfig?
+>
+>> > +        return;
+>> > +    }
+>> > +
+>> > +    mas3 = mfspr(SPRN_MAS3);
+>> > +    pr = vcpu->arch.shared->msr & MSR_PR;
+>> > +    if ((pr && (!(mas3 & MAS3_UX))) || ((!pr) && (!(mas3 & 
+>> MAS3_SX)))) {
+>> > +         /*
+>> > +         * Another thread may rewrite the TLB entry in parallel, 
+>> don't
+>> > +         * execute from the address if the execute permission is 
+>> not set
+>>
+>> Isn't this racy?
+>
+> Yes, that's the point.  We want to access permissions atomically with 
+> the address.  If the guest races here, the unpredictable behavior is 
+> its own fault, but we don't want to make it worse by assuming that the 
+> new TLB entry is executable just because the old TLB entry was.
 
-> +static void kvmppc_iommu_hugepages_init(struct kvmppc_spapr_tce_table *tt)
-> +{
-> +	spin_lock_init(&tt->hugepages_write_lock);
-> +	hash_init(tt->hash_tab);
-> +}
-> +
-> +static void kvmppc_iommu_hugepages_cleanup(struct kvmppc_spapr_tce_table *tt)
-> +{
-> +	int bkt;
-> +	struct kvmppc_spapr_iommu_hugepage *hp;
-> +	struct hlist_node *tmp;
-> +
-> +	spin_lock(&tt->hugepages_write_lock);
-> +	hash_for_each_safe(tt->hash_tab, bkt, tmp, hp, hash_node) {
-> +		pr_debug("Release HP liobn=%llx #%u gpa=%lx hpa=%lx size=%ld\n",
-> +				tt->liobn, bkt, hp->gpa, hp->hpa, hp->size);
+I see.
 
-trace point
+>
+> There's still a potential problem if the instruction at the new TLB 
+> entry is valid but not something that KVM emulates (because it 
+> wouldn't have trapped).  Given that the guest is already engaging in 
+> unpredictable behavior, though, and that it's no longer a security 
+> issue (it'll just cause the guest to exit), I don't think we need to 
+> worry too much about it.
 
-> +		hlist_del_rcu(&hp->hash_node);
-> +
-> +		put_page(hp->page);
+No, that case is fine. It's the same as book3s pr.
 
-Don't you have to mark them dirty?
+>
+>> > +         */
+>> > +        vcpu->arch.fault_esr = 0;
+>> > +        *exit_nr = BOOKE_INTERRUPT_INST_STORAGE;
+>> > +        return;
+>> > +    }
+>> > +
+>> > +    /* Get page size */
+>> > +    if (MAS0_GET_TLBSEL(mfspr(SPRN_MAS0)) == 0)
+>> > +        psize_shift = PAGE_SHIFT;
+>> > +    else
+>> > +        psize_shift = MAS1_GET_TSIZE(mas1) + 10;
+>> > +
+>> > +    mas7_mas3 = (((u64) mfspr(SPRN_MAS7)) << 32) |
+>> > +            mfspr(SPRN_MAS3);
+>>
+>> You're non-atomically reading MAS3/MAS7 after you've checked for 
+>> permissions on MAS3. I'm surprised there's no handler that allows 
+>> MAS3/7 access through the new, combined SPR for 64bit systems.
+>
+> There is, but then we'd need to special-case 64-bit systems.
 
-> +		kfree(hp);
-> +	}
-> +	spin_unlock(&tt->hugepages_write_lock);
-> +}
-> +#else
-> +static void kvmppc_iommu_hugepages_init(struct kvmppc_spapr_tce_table *tt)
-> +{
-> +}
-> +
-> +static void kvmppc_iommu_hugepages_cleanup(struct kvmppc_spapr_tce_table *tt)
-> +{
-> +}
-> +#endif /* CONFIG_IOMMU_API */
-> +
->   static long kvmppc_stt_npages(unsigned long window_size)
->   {
->   	return ALIGN((window_size>>  SPAPR_TCE_SHIFT)
-> @@ -112,6 +146,7 @@ static void release_spapr_tce_table(struct kvmppc_spapr_tce_table *stt)
->
->   	mutex_lock(&kvm->lock);
->   	list_del(&stt->list);
-> +	kvmppc_iommu_hugepages_cleanup(stt);
->
->   #ifdef CONFIG_IOMMU_API
->   	if (stt->grp) {
-> @@ -200,6 +235,7 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
->   	kvm_get_kvm(kvm);
->
->   	mutex_lock(&kvm->lock);
-> +	kvmppc_iommu_hugepages_init(stt);
->   	list_add(&stt->list,&kvm->arch.spapr_tce_tables);
->
->   	mutex_unlock(&kvm->lock);
-> @@ -283,6 +319,7 @@ long kvm_vm_ioctl_create_spapr_tce_iommu(struct kvm *kvm,
->
->   	kvm_get_kvm(kvm);
->   	mutex_lock(&kvm->lock);
-> +	kvmppc_iommu_hugepages_init(tt);
->   	list_add(&tt->list,&kvm->arch.spapr_tce_tables);
->   	mutex_unlock(&kvm->lock);
->
-> @@ -307,10 +344,17 @@ long kvm_vm_ioctl_create_spapr_tce_iommu(struct kvm *kvm,
->
->   /* Converts guest physical address to host virtual address */
->   static void __user *kvmppc_vm_gpa_to_hva_and_get(struct kvm_vcpu *vcpu,
-> +		struct kvmppc_spapr_tce_table *tt,
->   		unsigned long gpa, struct page **pg, unsigned long *hpa)
->   {
->   	unsigned long hva, gfn = gpa>>  PAGE_SHIFT;
->   	struct kvm_memory_slot *memslot;
-> +#ifdef CONFIG_IOMMU_API
-> +	struct kvmppc_spapr_iommu_hugepage *hp;
-> +	unsigned key = KVMPPC_SPAPR_HUGEPAGE_HASH(gpa);
-> +	pte_t *ptep;
-> +	unsigned int shift = 0;
-> +#endif
->
->   	memslot = search_memslots(kvm_memslots(vcpu->kvm), gfn);
->   	if (!memslot)
-> @@ -325,6 +369,54 @@ static void __user *kvmppc_vm_gpa_to_hva_and_get(struct kvm_vcpu *vcpu,
->   		*hpa = __pa((unsigned long) page_address(*pg)) +
->   				(hva&  ~PAGE_MASK);
->
-> +#ifdef CONFIG_IOMMU_API
+Oh, what I was trying to say is that I'm surprised there's nothing in 
+Linux already like
 
-This function is becoming incredibly large. Please split it up. Also 
-please document the code.
+static inline u64 get_mas73(void) {
+#ifdef CONFIG_PPC64
+     return mfspr(SPRN_MAS73)
+#else
+     return ((u64)mfspr(SPRN_MAS7) << 32) | mfspr(SPRN_MAS3);
+#endif
+}
+
+>   Why does atomicity matter here?  The MAS registers were filled in 
+> when we did the tlbsx.  They are thread-local.  They don't magically 
+> change just because the other thread rewrites the TLB entry that was 
+> used to fill them.
+
+Yeah, it doesn't matter.
+
+>
+>> > +    addr = (mas7_mas3 & (~0ULL << psize_shift)) |
+>> > +           (geaddr & ((1ULL << psize_shift) - 1ULL));
+>> > +
+>> > +    /* Map a page and get guest's instruction */
+>> > +    page = pfn_to_page(addr >> PAGE_SHIFT);
+>>
+>> So it seems to me like you're jumping through a lot of hoops to make 
+>> sure this works for LRAT and non-LRAT at the same time. Can't we just 
+>> treat them as the different things they are?
+>>
+>> What if we have different MMU backends for LRAT and non-LRAT? The 
+>> non-LRAT case could then try lwepx, if that fails, fall back to read 
+>> the shadow TLB. For the LRAT case, we'd do lwepx, if that fails fall 
+>> back to this logic.
+>
+> This isn't about LRAT; it's about hardware threads.  It also fixes the 
+> handling of execute-only pages on current chips.
+
+On non-LRAT systems we could always check our shadow copy of the guest's 
+TLB, no? I'd really like to know what the performance difference would 
+be for the 2 approaches.
 
 
 Alex
-
-> +	if (!PageCompound(*pg))
-> +		return (void *) hva;
-> +
-> +	spin_lock(&tt->hugepages_write_lock);
-> +	hash_for_each_possible_rcu(tt->hash_tab, hp, hash_node, key) {
-> +		if ((gpa<  hp->gpa) || (gpa>= hp->gpa + hp->size))
-> +			continue;
-> +		if (hpa)
-> +			*hpa = __pa((unsigned long) page_address(hp->page)) +
-> +					(hva&  (hp->size - 1));
-> +		goto unlock_exit;
-> +	}
-> +
-> +	ptep = find_linux_pte_or_hugepte(vcpu->arch.pgdir, hva,&shift);
-> +	WARN_ON(!ptep);
-> +
-> +	if (!ptep || (shift<= PAGE_SHIFT)) {
-> +		hva = (unsigned long) ERROR_ADDR;
-> +		goto unlock_exit;
-> +	}
-> +
-> +	hp = kzalloc(sizeof(*hp), GFP_KERNEL);
-> +	if (!hp) {
-> +		hva = (unsigned long) ERROR_ADDR;
-> +		goto unlock_exit;
-> +	}
-> +
-> +	hp->gpa = gpa&  ~((1<<  shift) - 1);
-> +	hp->hpa = (pte_pfn(*ptep)<<  PAGE_SHIFT);
-> +	hp->size = 1<<  shift;
-> +
-> +	if (get_user_pages_fast(hva&  ~(hp->size - 1), 1, 1,&hp->page) != 1) {
-> +		hva = (unsigned long) ERROR_ADDR;
-> +		kfree(hp);
-> +		goto unlock_exit;
-> +	}
-> +	hash_add_rcu(tt->hash_tab,&hp->hash_node, key);
-> +
-> +	if (hpa)
-> +		*hpa = __pa((unsigned long) page_address(hp->page)) +
-> +				(hva&  (hp->size - 1));
-> +unlock_exit:
-> +	spin_unlock(&tt->hugepages_write_lock);
-> +
-> +	put_page(*pg);
-> +	*pg = NULL;
-> +#endif /* CONFIG_IOMMU_API */
->   	return (void *) hva;
->   }
->
-> @@ -363,7 +455,7 @@ long kvmppc_vm_h_put_tce_iommu(struct kvm_vcpu *vcpu,
->   		if (iommu_tce_put_param_check(tbl, ioba, tce))
->   			return H_PARAMETER;
->
-> -		hva = kvmppc_vm_gpa_to_hva_and_get(vcpu, tce,&pg,&hpa);
-> +		hva = kvmppc_vm_gpa_to_hva_and_get(vcpu, tt, tce,&pg,&hpa);
->   		if (hva == ERROR_ADDR)
->   			return H_HARDWARE;
->   	}
-> @@ -372,7 +464,7 @@ long kvmppc_vm_h_put_tce_iommu(struct kvm_vcpu *vcpu,
->   		return H_SUCCESS;
->
->   	pg = pfn_to_page(hpa>>  PAGE_SHIFT);
-> -	if (pg)
-> +	if (pg&&  !PageCompound(pg))
->   		put_page(pg);
->
->   	return H_HARDWARE;
-> @@ -414,7 +506,7 @@ static long kvmppc_vm_h_put_tce_indirect_iommu(struct kvm_vcpu *vcpu,
->   					(i<<  IOMMU_PAGE_SHIFT), gpa))
->   			return H_PARAMETER;
->
-> -		hva = kvmppc_vm_gpa_to_hva_and_get(vcpu, gpa,&pg,
-> +		hva = kvmppc_vm_gpa_to_hva_and_get(vcpu, tt, gpa,&pg,
->   				&vcpu->arch.tce_tmp_hpas[i]);
->   		if (hva == ERROR_ADDR)
->   			goto putpages_flush_exit;
-> @@ -429,7 +521,7 @@ putpages_flush_exit:
->   	for ( --i; i>= 0; --i) {
->   		struct page *pg;
->   		pg = pfn_to_page(vcpu->arch.tce_tmp_hpas[i]>>  PAGE_SHIFT);
-> -		if (pg)
-> +		if (pg&&  !PageCompound(pg))
->   			put_page(pg);
->   	}
->
-> @@ -517,7 +609,7 @@ long kvmppc_vm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
->   	if ((ioba + (npages<<  IOMMU_PAGE_SHIFT))>  tt->window_size)
->   		return H_PARAMETER;
->
-> -	tces = kvmppc_vm_gpa_to_hva_and_get(vcpu, tce_list,&pg, NULL);
-> +	tces = kvmppc_vm_gpa_to_hva_and_get(vcpu, tt, tce_list,&pg, NULL);
->   	if (tces == ERROR_ADDR)
->   		return H_TOO_HARD;
->
-> @@ -547,7 +639,7 @@ long kvmppc_vm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
->   		kvmppc_emulated_put_tce(tt, ioba + (i<<  IOMMU_PAGE_SHIFT),
->   				vcpu->arch.tce_tmp_hpas[i]);
->   put_list_page_exit:
-> -	if (pg)
-> +	if (pg&&  !PageCompound(pg))
->   		put_page(pg);
->
->   	if (vcpu->arch.tce_rm_fail != TCERM_NONE) {
-> diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
-> index f8103c6..8c6449f 100644
-> --- a/arch/powerpc/kvm/book3s_64_vio_hv.c
-> +++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
-> @@ -132,6 +132,7 @@ EXPORT_SYMBOL_GPL(kvmppc_emulated_put_tce);
->    * returns ERROR_ADDR if failed.
->    */
->   static unsigned long kvmppc_rm_gpa_to_hpa_and_get(struct kvm_vcpu *vcpu,
-> +		struct kvmppc_spapr_tce_table *tt,
->   		unsigned long gpa, struct page **pg)
->   {
->   	struct kvm_memory_slot *memslot;
-> @@ -139,6 +140,20 @@ static unsigned long kvmppc_rm_gpa_to_hpa_and_get(struct kvm_vcpu *vcpu,
->   	unsigned long hva, hpa = ERROR_ADDR;
->   	unsigned long gfn = gpa>>  PAGE_SHIFT;
->   	unsigned shift = 0;
-> +	struct kvmppc_spapr_iommu_hugepage *hp;
-> +
-> +	/* Try to find an already used hugepage */
-> +	unsigned key = KVMPPC_SPAPR_HUGEPAGE_HASH(gpa);
-> +
-> +	hash_for_each_possible_rcu_notrace(tt->hash_tab, hp,
-> +			hash_node, key) {
-> +		if ((gpa<  hp->gpa) || (gpa>= hp->gpa + hp->size))
-> +			continue;
-> +
-> +		*pg = NULL; /* Tell the caller not to put page */
-> +
-> +		return hp->hpa + (gpa&  (hp->size - 1));
-> +	}
->
->   	memslot = search_memslots(kvm_memslots(vcpu->kvm), gfn);
->   	if (!memslot)
-> @@ -208,7 +223,7 @@ static long kvmppc_h_put_tce_iommu(struct kvm_vcpu *vcpu,
->   	if (iommu_tce_put_param_check(tbl, ioba, tce))
->   		return H_PARAMETER;
->
-> -	hpa = kvmppc_rm_gpa_to_hpa_and_get(vcpu, tce,&pg);
-> +	hpa = kvmppc_rm_gpa_to_hpa_and_get(vcpu, tt, tce,&pg);
->   	if (hpa == ERROR_ADDR)
->   		return H_TOO_HARD;
->
-> @@ -247,7 +262,7 @@ static long kvmppc_h_put_tce_indirect_iommu(struct kvm_vcpu *vcpu,
->
->   	/* Translate TCEs and go get_page() */
->   	for (i = 0; i<  npages; ++i) {
-> -		hpa = kvmppc_rm_gpa_to_hpa_and_get(vcpu, tces[i],&pg);
-> +		hpa = kvmppc_rm_gpa_to_hpa_and_get(vcpu, tt, tces[i],&pg);
->   		if (hpa == ERROR_ADDR) {
->   			vcpu->arch.tce_tmp_num = i;
->   			vcpu->arch.tce_rm_fail = TCERM_GETPAGE;
-> @@ -342,7 +357,7 @@ long kvmppc_h_put_tce_indirect(struct kvm_vcpu *vcpu,
->   	if ((ioba + (npages<<  IOMMU_PAGE_SHIFT))>  tt->window_size)
->   		return H_PARAMETER;
->
-> -	tces = kvmppc_rm_gpa_to_hpa_and_get(vcpu, tce_list,&pg);
-> +	tces = kvmppc_rm_gpa_to_hpa_and_get(vcpu, tt, tce_list,&pg);
->   	if (tces == ERROR_ADDR)
->   		return H_TOO_HARD;
->
