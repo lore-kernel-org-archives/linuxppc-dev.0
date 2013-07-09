@@ -1,16 +1,15 @@
 Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 288362C02C9
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2013 18:02:44 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 5D3C52C00AC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2013 18:02:46 +1000 (EST)
 From: Tiejun Chen <tiejun.chen@windriver.com>
 To: <benh@kernel.crashing.org>
-Subject: [v3][PATCH 1/8] powerpc/book3e: rename interrupt_end_book3e with
- __end_interrupts
-Date: Tue, 9 Jul 2013 16:03:20 +0800
-Message-ID: <1373357007-30785-2-git-send-email-tiejun.chen@windriver.com>
+Subject: [v3][PATCH 2/8] powerpc/book3e: support CONFIG_RELOCATABLE
+Date: Tue, 9 Jul 2013 16:03:21 +0800
+Message-ID: <1373357007-30785-3-git-send-email-tiejun.chen@windriver.com>
 In-Reply-To: <1373357007-30785-1-git-send-email-tiejun.chen@windriver.com>
 References: <1373357007-30785-1-git-send-email-tiejun.chen@windriver.com>
 MIME-Version: 1.0
@@ -25,47 +24,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We can rename 'interrupt_end_book3e' with '__end_interrupts' then
-book3s/book3e can share this unique label to make sure we can use
-this conveniently.
+book3e is different with book3s since 3s includes the exception
+vectors code in head_64.S as it relies on absolute addressing
+which is only possible within this compilation unit. So we have
+to get that label address with got.
+
+And when boot a relocated kernel, we should reset ipvr properly again
+after .relocate.
 
 Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
 ---
- arch/powerpc/kernel/exceptions-64e.S |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ arch/powerpc/include/asm/exception-64e.h |   11 +++++++++++
+ arch/powerpc/kernel/exceptions-64e.S     |   18 +++++++++++++++++-
+ arch/powerpc/kernel/head_64.S            |   25 +++++++++++++++++++++++++
+ 3 files changed, 53 insertions(+), 1 deletion(-)
 
+diff --git a/arch/powerpc/include/asm/exception-64e.h b/arch/powerpc/include/asm/exception-64e.h
+index 51fa43e..371a77f 100644
+--- a/arch/powerpc/include/asm/exception-64e.h
++++ b/arch/powerpc/include/asm/exception-64e.h
+@@ -214,10 +214,21 @@ exc_##label##_book3e:
+ #define TLB_MISS_STATS_SAVE_INFO_BOLTED
+ #endif
+ 
++#ifndef CONFIG_RELOCATABLE
+ #define SET_IVOR(vector_number, vector_offset)	\
+ 	li	r3,vector_offset@l; 		\
+ 	ori	r3,r3,interrupt_base_book3e@l;	\
+ 	mtspr	SPRN_IVOR##vector_number,r3;
++#else /* !CONFIG_RELOCATABLE */
++/* In relocatable case the value of the constant expression 'expr' is only
++ * offset. So instead, we should loads the address of label 'name'.
++ */
++#define SET_IVOR(vector_number, vector_offset)	\
++	LOAD_REG_ADDR(r3,interrupt_base_book3e);\
++	rlwinm	r3,r3,0,15,0;			\
++	ori	r3,r3,vector_offset@l;		\
++	mtspr	SPRN_IVOR##vector_number,r3;
++#endif /* CONFIG_RELOCATABLE */
+ 
+ #endif /* _ASM_POWERPC_EXCEPTION_64E_H */
+ 
 diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index 645170a..a518e48 100644
+index a518e48..be3b4b1 100644
 --- a/arch/powerpc/kernel/exceptions-64e.S
 +++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -309,8 +309,8 @@ interrupt_base_book3e:					/* fake trap */
- 	EXCEPTION_STUB(0x300, hypercall)
- 	EXCEPTION_STUB(0x320, ehpriv)
+@@ -1097,7 +1097,15 @@ skpinv:	addi	r6,r6,1				/* Increment */
+  * r4 = MAS0 w/TLBSEL & ESEL for the temp mapping
+  */
+ 	/* Now we branch the new virtual address mapped by this entry */
++#ifdef CONFIG_RELOCATABLE
++	/* We have to find out address from lr. */
++	bl	1f		/* Find our address */
++1:	mflr	r6
++	addi	r6,r6,(2f - 1b)
++	tovirt(r6,r6)
++#else
+ 	LOAD_REG_IMMEDIATE(r6,2f)
++#endif
+ 	lis	r7,MSR_KERNEL@h
+ 	ori	r7,r7,MSR_KERNEL@l
+ 	mtspr	SPRN_SRR0,r6
+@@ -1348,9 +1356,17 @@ _GLOBAL(book3e_secondary_thread_init)
+ 	mflr	r28
+ 	b	3b
  
--	.globl interrupt_end_book3e
--interrupt_end_book3e:
-+	.globl __end_interrupts
-+__end_interrupts:
+-_STATIC(init_core_book3e)
++_GLOBAL(init_core_book3e)
+ 	/* Establish the interrupt vector base */
++#ifdef CONFIG_RELOCATABLE
++/* In relocatable case the value of the constant expression 'expr' is only
++ * offset. So instead, we should loads the address of label 'name'.
++ */
++	tovirt(r2,r2)
++	LOAD_REG_ADDR(r3, interrupt_base_book3e)
++#else
+ 	LOAD_REG_IMMEDIATE(r3, interrupt_base_book3e)
++#endif
+ 	mtspr	SPRN_IVPR,r3
+ 	sync
+ 	blr
+diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+index b61363d..550f8fb 100644
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -414,12 +414,25 @@ _STATIC(__after_prom_start)
+ 	/* process relocations for the final address of the kernel */
+ 	lis	r25,PAGE_OFFSET@highest	/* compute virtual base of kernel */
+ 	sldi	r25,r25,32
++#if defined(CONFIG_PPC_BOOK3E)
++	tovirt(r26,r26)			/* on booke, we already run at PAGE_OFFSET */
++#endif
+ 	lwz	r7,__run_at_load-_stext(r26)
++#if defined(CONFIG_PPC_BOOK3E)
++	tophys(r26,r26)			/* Restore for the remains. */
++#endif
+ 	cmplwi	cr0,r7,1	/* flagged to stay where we are ? */
+ 	bne	1f
+ 	add	r25,r25,r26
+ 1:	mr	r3,r25
+ 	bl	.relocate
++#if defined(CONFIG_PPC_BOOK3E)
++	/* In relocatable case we always have to load the address of label 'name'
++	 * to set IVPR. So after .relocate we have to update IVPR with current
++	 * address of label.
++	 */
++	bl	.init_core_book3e
++#endif
+ #endif
  
- /* Critical Input Interrupt */
- 	START_EXCEPTION(critical_input);
-@@ -493,7 +493,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
- 	beq+	1f
+ /*
+@@ -447,12 +460,24 @@ _STATIC(__after_prom_start)
+  * variable __run_at_load, if it is set the kernel is treated as relocatable
+  * kernel, otherwise it will be moved to PHYSICAL_START
+  */
++#if defined(CONFIG_PPC_BOOK3E)
++	tovirt(r26,r26)			/* on booke, we already run at PAGE_OFFSET */
++#endif
+ 	lwz	r7,__run_at_load-_stext(r26)
++#if defined(CONFIG_PPC_BOOK3E)
++	tophys(r26,r26)			/* Restore for the remains. */
++#endif
+ 	cmplwi	cr0,r7,1
+ 	bne	3f
  
- 	LOAD_REG_IMMEDIATE(r14,interrupt_base_book3e)
--	LOAD_REG_IMMEDIATE(r15,interrupt_end_book3e)
-+	LOAD_REG_IMMEDIATE(r15,__end_interrupts)
- 	cmpld	cr0,r10,r14
- 	cmpld	cr1,r10,r15
- 	blt+	cr0,1f
-@@ -559,7 +559,7 @@ kernel_dbg_exc:
- 	beq+	1f
- 
- 	LOAD_REG_IMMEDIATE(r14,interrupt_base_book3e)
--	LOAD_REG_IMMEDIATE(r15,interrupt_end_book3e)
-+	LOAD_REG_IMMEDIATE(r15,__end_interrupts)
- 	cmpld	cr0,r10,r14
- 	cmpld	cr1,r10,r15
- 	blt+	cr0,1f
++#ifdef CONFIG_PPC_BOOK3E
++	LOAD_REG_ADDR(r5, __end_interrupts)
++	LOAD_REG_ADDR(r11, _stext)
++	sub	r5,r5,r11
++#else
+ 	/* just copy interrupts */
+ 	LOAD_REG_IMMEDIATE(r5, __end_interrupts - _stext)
++#endif
+ 	b	5f
+ 3:
+ #endif
 -- 
 1.7.9.5
