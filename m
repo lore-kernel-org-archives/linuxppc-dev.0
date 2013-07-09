@@ -1,29 +1,28 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pd0-f182.google.com (mail-pd0-f182.google.com
- [209.85.192.182])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8F0672C01FC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 09:35:23 +1000 (EST)
-Received: by mail-pd0-f182.google.com with SMTP id r10so5751390pdi.41
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jul 2013 16:35:22 -0700 (PDT)
-Message-ID: <51DC9E32.8040109@ozlabs.ru>
-Date: Wed, 10 Jul 2013 09:35:14 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Return-Path: <B07421@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 83A3A2C0174
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 09:48:47 +1000 (EST)
+Received: from mail79-co1 (localhost [127.0.0.1])	by mail79-co1-R.bigfish.com
+ (Postfix) with ESMTP id 53E99B403C0	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Jul 2013 23:48:42 +0000 (UTC)
+Received: from CO1EHSMHS020.bigfish.com (unknown [10.243.78.230])	by
+ mail79-co1.bigfish.com (Postfix) with ESMTP id CBD5138004D	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2013 23:48:41 +0000 (UTC)
+Date: Tue, 9 Jul 2013 18:48:35 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] Update compilation flags with core specific options
+To: Catalin Udma <catalin.udma@freescale.com>
+References: <1372764004-18896-1-git-send-email-catalin.udma@freescale.com>
+In-Reply-To: <1372764004-18896-1-git-send-email-catalin.udma@freescale.com>
+ (from catalin.udma@freescale.com on Tue Jul  2 06:20:04 2013)
+Message-ID: <1373413715.8183.210@snotra>
 MIME-Version: 1.0
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 2/8] KVM: PPC: reserve a capability and ioctl numbers
- for realmode VFIO
-References: <1372309356-28320-1-git-send-email-aik@ozlabs.ru>
- <1372309356-28320-3-git-send-email-aik@ozlabs.ru> <51DC2DDA.6040408@suse.de>
-In-Reply-To: <51DC2DDA.6040408@suse.de>
-Content-Type: text/plain; charset=KOI8-R
-Cc: kvm@vger.kernel.org, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>,
- "Paul E . McKenney" <paulmck@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,40 +32,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/10/2013 01:35 AM, Alexander Graf wrote:
-> On 06/27/2013 07:02 AM, Alexey Kardashevskiy wrote:
->> Signed-off-by: Alexey Kardashevskiy<aik@ozlabs.ru>
->> ---
->>   include/uapi/linux/kvm.h |    2 ++
->>   1 file changed, 2 insertions(+)
->>
->> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
->> index 970b1f5..0865c01 100644
->> --- a/include/uapi/linux/kvm.h
->> +++ b/include/uapi/linux/kvm.h
->> @@ -667,6 +667,7 @@ struct kvm_ppc_smmu_info {
->>   #define KVM_CAP_PPC_RTAS 91
->>   #define KVM_CAP_IRQ_XICS 92
->>   #define KVM_CAP_SPAPR_MULTITCE 93
->> +#define KVM_CAP_SPAPR_TCE_IOMMU 94
->>
->>   #ifdef KVM_CAP_IRQ_ROUTING
->>
->> @@ -923,6 +924,7 @@ struct kvm_s390_ucas_mapping {
->>   /* Available with KVM_CAP_PPC_ALLOC_HTAB */
->>   #define KVM_PPC_ALLOCATE_HTAB      _IOWR(KVMIO, 0xa7, __u32)
->>   #define KVM_CREATE_SPAPR_TCE      _IOW(KVMIO,  0xa8, struct
->> kvm_create_spapr_tce)
->> +#define KVM_CREATE_SPAPR_TCE_IOMMU _IOW(KVMIO,  0xaf, struct
->> kvm_create_spapr_tce_iommu)
-> 
-> Please order them by number.
+On 07/02/2013 06:20:04 AM, Catalin Udma wrote:
+> If CONFIG_E500 is enabled, the compilation flags are updated
+> specifying the target core -mcpu=3De5500/e500mc/8540
+> Also remove -Wa,-me500, being incompatible with -mcpu=3De5500/e6500
+> The assembler option is redundant if the -mcpu=3D flag is set.
+> The patch fixes the kernel compilation problem for e5500/e6500
+> when using gcc option -mcpu=3De5500/e6500.
 
-Oh. Again :( We have had this discussion with Scott Wood here already.
-Where _exactly_ do you want me to put it? Many sections, not really
-ordered. Thank you.
+Another reason to do this is that currently, the assembler is replacing =20
+lwsync with sync on 64-bit kernels (it doesn't happen on 32-bit because =20
+we generate the lwsync at runtime) due to the -Wa,-me500.
 
-
-
--- 
-Alexey
+-Scott=
