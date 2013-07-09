@@ -1,28 +1,26 @@
-Return-Path: <B07421@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 83A3A2C0174
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 09:48:47 +1000 (EST)
-Received: from mail79-co1 (localhost [127.0.0.1])	by mail79-co1-R.bigfish.com
- (Postfix) with ESMTP id 53E99B403C0	for
- <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Jul 2013 23:48:42 +0000 (UTC)
-Received: from CO1EHSMHS020.bigfish.com (unknown [10.243.78.230])	by
- mail79-co1.bigfish.com (Postfix) with ESMTP id CBD5138004D	for
- <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2013 23:48:41 +0000 (UTC)
-Date: Tue, 9 Jul 2013 18:48:35 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] Update compilation flags with core specific options
-To: Catalin Udma <catalin.udma@freescale.com>
-References: <1372764004-18896-1-git-send-email-catalin.udma@freescale.com>
-In-Reply-To: <1372764004-18896-1-git-send-email-catalin.udma@freescale.com>
- (from catalin.udma@freescale.com on Tue Jul  2 06:20:04 2013)
-Message-ID: <1373413715.8183.210@snotra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+ [71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id AEE142C01FC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 09:50:27 +1000 (EST)
+Message-ID: <1373413824.7458.38.camel@gandalf.local.home>
+Subject: Re: [PATCH 2/2] KVM: PPC: Book3E: Emulate MCSRR0/1 SPR and rfmci
+ instruction
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Alexander Graf <agraf@suse.de>
+Date: Tue, 09 Jul 2013 19:50:24 -0400
+In-Reply-To: <B31BC4F4-39E8-479D-B5AB-2D7F870E7A6C@suse.de>
+References: <1372858255-19708-1-git-send-email-mihai.caraman@freescale.com>
+ <1372858255-19708-2-git-send-email-mihai.caraman@freescale.com>
+ <1C2B7183-EF0F-4D97-9287-1068C9E97471@suse.de> <1373390162.8183.195@snotra>
+ <51DC4C78.5080808@suse.de> <1373394562.8183.197@snotra>
+ <822D94B1-6E7E-4416-9F34-72E3BEAF6B8F@suse.de> <1373406891.8183.207@snotra>
+ <B31BC4F4-39E8-479D-B5AB-2D7F870E7A6C@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Scott Wood <scottwood@freescale.com>,
+ Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ "<kvm@vger.kernel.org> list" <kvm@vger.kernel.org>,
+ "<kvm-ppc@vger.kernel.org>" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,16 +30,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/02/2013 06:20:04 AM, Catalin Udma wrote:
-> If CONFIG_E500 is enabled, the compilation flags are updated
-> specifying the target core -mcpu=3De5500/e500mc/8540
-> Also remove -Wa,-me500, being incompatible with -mcpu=3De5500/e6500
-> The assembler option is redundant if the -mcpu=3D flag is set.
-> The patch fixes the kernel compilation problem for e5500/e6500
-> when using gcc option -mcpu=3De5500/e6500.
+On Wed, 2013-07-10 at 00:00 +0200, Alexander Graf wrote:
 
-Another reason to do this is that currently, the assembler is replacing =20
-lwsync with sync on 64-bit kernels (it doesn't happen on 32-bit because =20
-we generate the lwsync at runtime) due to the -Wa,-me500.
+> Then don't overflow the buffer. Make it large enough. IIRC ftrace improved recently to dynamically increase the buffer size too.
+> 
+> Steven, do I remember correctly here?
 
--Scott=
+Not really. Ftrace only dynamically increases the buffer when the trace
+is first used. Other than that, the size is static. I also wouldn't
+suggest allocating the buffer when needed as that has the overhead of
+allocating memory.
+
+-- Steve
