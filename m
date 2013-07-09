@@ -1,27 +1,28 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-f42.google.com (mail-pa0-f42.google.com
- [209.85.220.42])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CCE932C02E9
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2013 15:40:19 +1000 (EST)
-Received: by mail-pa0-f42.google.com with SMTP id rl6so5189149pac.15
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Jul 2013 22:40:17 -0700 (PDT)
-Message-ID: <51DBA239.9000303@ozlabs.ru>
-Date: Tue, 09 Jul 2013 15:40:09 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Return-Path: <B42677@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D311F2C02EA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2013 16:01:59 +1000 (EST)
+From: Zhang Haijun-B42677 <B42677@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: =?gb2312?B?tPC4tDogW1BBVENIXSBQb3dlcnBjL3Q0MjQwOiBjaGFuZ2UgdGhlIGNvbXBh?=
+ =?gb2312?Q?tible_flags_for_t4240qds_board?=
+Date: Tue, 9 Jul 2013 06:04:01 +0000
+Message-ID: <99E897753B6F7048BD8CCDB4661D02E1396F57@039-SN2MPN1-021.039d.mgd.msft.net>
+References: <1373267764-6364-1-git-send-email-Haijun.Zhang@freescale.com>,
+ <1373303645.8183.163@snotra>
+In-Reply-To: <1373303645.8183.163@snotra>
+Content-Type: text/plain; charset="gb2312"
 MIME-Version: 1.0
-To: Alex Williamson <alex.williamson@redhat.com>
-Subject: Re: [PATCH 3/8] vfio: add external user support
-References: <1373123227-22969-1-git-send-email-aik@ozlabs.ru>
- <1373123227-22969-4-git-send-email-aik@ozlabs.ru>
- <1373320371.2602.159.camel@ul30vt.home>
-In-Reply-To: <1373320371.2602.159.camel@ul30vt.home>
-Content-Type: text/plain; charset=KOI8-R
-Cc: kvm@vger.kernel.org, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+ Wrobel Heinz-R39252 <r39252@freescale.com>,
+ Fleming Andy-AFLEMING <afleming@freescale.com>,
+ "cbouatmailru@gmail.com" <cbouatmailru@gmail.com>,
+ "cjb@laptop.org" <cjb@laptop.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,156 +32,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/09/2013 07:52 AM, Alex Williamson wrote:
-> On Sun, 2013-07-07 at 01:07 +1000, Alexey Kardashevskiy wrote:
->> VFIO is designed to be used via ioctls on file descriptors
->> returned by VFIO.
->>
->> However in some situations support for an external user is required.
->> The first user is KVM on PPC64 (SPAPR TCE protocol) which is going to
->> use the existing VFIO groups for exclusive access in real/virtual mode
->> on a host to avoid passing map/unmap requests to the user space which
->> would made things pretty slow.
->>
->> The proposed protocol includes:
->>
->> 1. do normal VFIO init stuff such as opening a new container, attaching
->> group(s) to it, setting an IOMMU driver for a container. When IOMMU is
->> set for a container, all groups in it are considered ready to use by
->> an external user.
->>
->> 2. pass a fd of the group we want to accelerate to KVM. KVM calls
->> vfio_group_get_external_user() to verify if the group is initialized,
->> IOMMU is set for it and increment the container user counter to prevent
->> the VFIO group from disposal prior to KVM exit.
->> The current TCE IOMMU driver marks the whole IOMMU table as busy when
->> IOMMU is set for a container what prevents other DMA users from
->> allocating from it so it is safe to grant user space access to it.
->>
->> 3. KVM calls vfio_external_user_iommu_id() to obtian an IOMMU ID which
->> KVM uses to get an iommu_group struct for later use.
->>
->> 4. When KVM is finished, it calls vfio_group_put_external_user() to
->> release the VFIO group by decrementing the container user counter.
->> Everything gets released.
->>
->> The "vfio: Limit group opens" patch is also required for the consistency.
->>
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> ---
->> diff --git a/drivers/vfio/vfio.c b/drivers/vfio/vfio.c
->> index c488da5..57aa191 100644
->> --- a/drivers/vfio/vfio.c
->> +++ b/drivers/vfio/vfio.c
->> @@ -1370,6 +1370,62 @@ static const struct file_operations vfio_device_fops = {
->>  };
->>  
->>  /**
->> + * External user API, exported by symbols to be linked dynamically.
->> + *
->> + * The protocol includes:
->> + *  1. do normal VFIO init operation:
->> + *	- opening a new container;
->> + *	- attaching group(s) to it;
->> + *	- setting an IOMMU driver for a container.
->> + * When IOMMU is set for a container, all groups in it are
->> + * considered ready to use by an external user.
->> + *
->> + * 2. The user space passed a group fd which we want to accelerate in
->> + * KVM. KVM uses vfio_group_get_external_user() to verify that:
->> + *	- the group is initialized;
->> + *	- IOMMU is set for it.
->> + * Then vfio_group_get_external_user() increments the container user
->> + * counter to prevent the VFIO group from disposal prior to KVM exit.
->> + *
->> + * 3. KVM calls vfio_external_user_iommu_id() to know an IOMMU ID which
->> + * KVM uses to get an iommu_group struct for later use.
->> + *
->> + * 4. When KVM is finished, it calls vfio_group_put_external_user() to
->> + * release the VFIO group by decrementing the container user counter.
-> 
-> nit, the interface is for any external user, not just kvm.
-
-s/KVM/An external user/ ?
-Or add "the description below uses KVM just as an example of an external user"?
-
-
->> + */
->> +struct vfio_group *vfio_group_get_external_user(struct file *filep)
->> +{
->> +	struct vfio_group *group = filep->private_data;
->> +
->> +	if (filep->f_op != &vfio_group_fops)
->> +		return NULL;
-> 
-> ERR_PTR(-EINVAL)
-> 
-> There also needs to be a vfio_group_get(group) here and put in error
-> cases.
-
-
-Is that because I do not hold a reference to the file anymore?
-
-
->> +
->> +	if (!atomic_inc_not_zero(&group->container_users))
->> +		return NULL;
-> 
-> ERR_PTR(-EINVAL)
-> 
->> +
->> +	if (!group->container->iommu_driver ||
->> +			!vfio_group_viable(group)) {
->> +		atomic_dec(&group->container_users);
->> +		return NULL;
-> 
-> ERR_PTR(-EINVAL)
-> 
->> +	}
->> +
->> +	return group;
->> +}
->> +EXPORT_SYMBOL_GPL(vfio_group_get_external_user);
->> +
->> +void vfio_group_put_external_user(struct vfio_group *group)
->> +{
->> +	vfio_group_try_dissolve_container(group);
-> 
-> And a vfio_group_put(group) here
-> 
->> +}
->> +EXPORT_SYMBOL_GPL(vfio_group_put_external_user);
->> +
->> +int vfio_external_user_iommu_id(struct vfio_group *group)
->> +{
->> +	return iommu_group_id(group->iommu_group);
->> +}
->> +EXPORT_SYMBOL_GPL(vfio_external_user_iommu_id);
->> +
->> +/**
->>   * Module/class support
->>   */
->>  static char *vfio_devnode(struct device *dev, umode_t *mode)
->> diff --git a/include/linux/vfio.h b/include/linux/vfio.h
->> index ac8d488..24579a0 100644
->> --- a/include/linux/vfio.h
->> +++ b/include/linux/vfio.h
->> @@ -90,4 +90,11 @@ extern void vfio_unregister_iommu_driver(
->>  	TYPE tmp;						\
->>  	offsetof(TYPE, MEMBER) + sizeof(tmp.MEMBER); })		\
->>  
->> +/*
->> + * External user API
->> + */
->> +extern struct vfio_group *vfio_group_get_external_user(struct file *filep);
->> +extern void vfio_group_put_external_user(struct vfio_group *group);
->> +extern int vfio_external_user_iommu_id(struct vfio_group *group);
->> +
->>  #endif /* VFIO_H */
-> 
-> 
-> 
-
-
--- 
-Alexey
+CgpSZWdhcmRzICYgVGhhbmtzCgpIYWlqdW4uCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fCreivP7IyzogV29vZCBTY290dC1CMDc0MjEKt6LLzcqxvOQ6IDIwMTPE6jfU
+wjjI1SAxNzoxNArK1bz+yMs6IFpoYW5nIEhhaWp1bi1CNDI2NzcKs63LzTogbGludXgtbW1jQHZn
+ZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGNib3VhdG1haWxy
+dUBnbWFpbC5jb207IGNqYkBsYXB0b3Aub3JnOyBGbGVtaW5nIEFuZHktQUZMRU1JTkc7IFdyb2Jl
+bCBIZWluei1SMzkyNTI7IFpoYW5nIEhhaWp1bi1CNDI2NzcK1vfM4jogUmU6IFtQQVRDSF0gUG93
+ZXJwYy90NDI0MDogY2hhbmdlIHRoZSBjb21wYXRpYmxlIGZsYWdzIGZvciB0NDI0MHFkcyBib2Fy
+ZAoKT24gMDcvMDgvMjAxMyAwMjoxNjowMyBBTSwgSGFpanVuIFpoYW5nIHdyb3RlOgo+IEluIG9y
+ZGVyIHRvIG1ha2UgYSBkaWZmZXJlbmNlIGJldHdlZW4gZGlmZmVyZW50IFQ0MjQwIGJvYXJkLgo+
+IFNwZWNpZnkgVDQyNDBRRFMgYm9hcmQgdGhlIHVuaXF1ZSBjb21wYXRpYmxlIGZsYWdzIGZvciB0
+NDI0MHFkcwo+IGVTREhDIGhvc3QuCj4KPiBTaWduZWQtb2ZmLWJ5OiBIYWlqdW4gWmhhbmcgPEhh
+aWp1bi5aaGFuZ0BmcmVlc2NhbGUuY29tPgo+IC0tLQo+ICBhcmNoL3Bvd2VycGMvYm9vdC9kdHMv
+ZnNsL3Q0MjQwc2ktcG9zdC5kdHNpIHwgMiArLQo+ICAxIGZpbGUgY2hhbmdlZCwgMSBpbnNlcnRp
+b24oKyksIDEgZGVsZXRpb24oLSkKPgo+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvYm9vdC9k
+dHMvZnNsL3Q0MjQwc2ktcG9zdC5kdHNpCj4gYi9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3Q0
+MjQwc2ktcG9zdC5kdHNpCj4gaW5kZXggYmQ2MTFhOS4uMDhiNDdkMCAxMDA2NDQKPiAtLS0gYS9h
+cmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3Q0MjQwc2ktcG9zdC5kdHNpCj4gKysrIGIvYXJjaC9w
+b3dlcnBjL2Jvb3QvZHRzL2ZzbC90NDI0MHNpLXBvc3QuZHRzaQo+IEBAIC0zOTcsNyArMzk3LDcg
+QEAKPgo+ICAvaW5jbHVkZS8gInFvcmlxLWVzZGhjLTAuZHRzaSIKPiAgICAgICBzZGhjQDExNDAw
+MCB7Cj4gLSAgICAgICAgICAgICBjb21wYXRpYmxlID0gImZzbCx0NDI0MC1lc2RoYyIsICJmc2ws
+ZXNkaGMiOwo+ICsgICAgICAgICAgICAgY29tcGF0aWJsZSA9ICJmc2wsdDQyNDBxZHMtZXNkaGMi
+LCAiZnNsLGVzZGhjIjsKPiAgICAgICAgICAgICAgIHNkaGNpLGF1dG8tY21kMTI7Cj4gICAgICAg
+fTsKCk5BQ0suICBUaGlzIG5vZGUgaXMgZGVzY3JpYmluZyB0aGUgc2RoYyBibG9jayBvZiB0aGUg
+dDQyNDAgU29DLiAgV2hhdApib2FyZCB5b3Ugc3RpY2sgaXQgaW4gZG9lc24ndCBjaGFuZ2Ugd2hh
+dCBpdCBpcy4KClBsdXMsIHdoYXQgYWJvdXQgdXNlcnMgd2l0aCBvbGQgZGV2aWNlIHRyZWVzPwoK
+Q3VycmVudGx5IG5vIHVzZXJzIHVzZSB0aGlzIGlwIGJsb2NrIGV4Y2VwdCBlc2RoYyBkcml2ZXIu
+CgpIb3cgYWJvdXQgY2hhbmdlIHRoaXMgaW4gYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL3Q0MjQwcWRz
+LmR0cwoKKysrIGIvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL3Q0MjQwcWRzLmR0cwpAQCAtMTE3LDYg
+KzExNywxMCBAQAogICAgICAgICAgICAgICAgICAgICAgICB9OwogICAgICAgICAgICAgICAgfTsK
+IAogICAgICAgICAgICAgICBzZGhjQDExNDAwMCB7CiAgICAgICAgICAgICAgICAgICAgICBjb21w
+YXRpYmxlID0gImZzbCx0NDI0MC1lc2RoYyIsICJmc2wsZXNkaGMiOwogICAgICAgICAgICAgICB9
+OwoKICAgICAgICAgICAgICAgaTJjQDExODAwMCB7CiAgICAgICAgICAgIAoKKysrIGIvYXJjaC9w
+b3dlcnBjL2Jvb3QvZHRzL3Q0MjQwcWRzLmR0cwpAQCAtMTE3LDYgKzExNywxMCBAQAogICAgICAg
+ICAgICAgICAgICAgICAgICB9OwogICAgICAgICAgICAgICAgfTsKIAorICAgICAgICAgICAgICAg
+c2RoY0AxMTQwMDAgeworICAgICAgICAgICAgICAgICAgICAgICBjb21wYXRpYmxlID0gImZzbCx0
+NDI0MHFkcy1lc2RoYyIsICJmc2wsZXNkaGMiOworICAgICAgICAgICAgICAgfTsKKwogICAgICAg
+ICAgICAgICAgaTJjQDExODAwMCB7CiAgICAgICAgICAgIAoKLVNjb3R0Cg==
