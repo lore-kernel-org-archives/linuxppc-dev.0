@@ -1,26 +1,23 @@
-Return-Path: <B42677@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 839282C02B8
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2013 16:35:23 +1000 (EST)
-From: Zhang Haijun-B42677 <B42677@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: =?gb2312?B?tPC4tDogW1BBVENIIFYyIDIvMl0gcG93ZXJwYy84NXh4OiBhZGQgdGhlIFAx?=
- =?gb2312?Q?020RDB-PD_DTS_support?=
-Date: Tue, 9 Jul 2013 06:37:23 +0000
-Message-ID: <99E897753B6F7048BD8CCDB4661D02E1396FA2@039-SN2MPN1-021.039d.mgd.msft.net>
-References: <1372982700-14416-1-git-send-email-Haijun.Zhang@freescale.com>
- (from Haijun.Zhang@freescale.com on Thu Jul  4 19:05:00
- 2013),<1373303429.8183.162@snotra>
-In-Reply-To: <1373303429.8183.162@snotra>
-Content-Type: text/plain; charset="gb2312"
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3A61E2C02FB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2013 17:48:40 +1000 (EST)
+Message-ID: <51DBC07A.4020809@windriver.com>
+Date: Tue, 9 Jul 2013 15:49:14 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
 MIME-Version: 1.0
-Cc: Fleming Andy-AFLEMING <afleming@freescale.com>,
- Huang Changming-R66093 <r66093@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Bhushan Bharat-R65777 <R65777@freescale.com>
+Subject: Re: [v2][PATCH 1/7] powerpc/book3e: support CONFIG_RELOCATABLE
+References: <1371714797-7898-1-git-send-email-tiejun.chen@windriver.com>
+ <1371714797-7898-2-git-send-email-tiejun.chen@windriver.com>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0709474E@039-SN2MPN1-011.039d.mgd.msft.net>
+In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D0709474E@039-SN2MPN1-011.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,63 +27,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-CgpSZWdhcmRzICYgVGhhbmtzCgpIYWlqdW4uCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fCreivP7IyzogV29vZCBTY290dC1CMDc0MjEKt6LLzcqxvOQ6IDIwMTPE6jfU
-wjjI1SAxNzoxMArK1bz+yMs6IFpoYW5nIEhhaWp1bi1CNDI2NzcKs63LzTogbGludXhwcGMtZGV2
-QGxpc3RzLm96bGFicy5vcmc7IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmc7IEZsZW1pbmcgQW5k
-eS1BRkxFTUlORzsgWmhhbmcgSGFpanVuLUI0MjY3NzsgSHVhbmcgQ2hhbmdtaW5nLVI2NjA5MwrW
-98ziOiBSZTogW1BBVENIIFYyIDIvMl0gcG93ZXJwYy84NXh4OiBhZGQgdGhlIFAxMDIwUkRCLVBE
-IERUUyBzdXBwb3J0CgpPbiAwNy8wNC8yMDEzIDA3OjA1OjAwIFBNLCBIYWlqdW4gWmhhbmcgd3Jv
-dGU6Cj4gZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9ib290L2R0cy9wMTAyMHJkYi1wYy5kdHNp
-Cj4gYi9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvcDEwMjByZGItcGMuZHRzaQo+IGluZGV4IGM5NTJj
-ZDMuLjlkMjQ1MDEgMTAwNjQ0Cj4gLS0tIGEvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL3AxMDIwcmRi
-LXBjLmR0c2kKPiArKysgYi9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvcDEwMjByZGItcGMuZHRzaQo+
-IEBAIC0xMzEsOSArMTMxLDcgQEAKPiAgICAgICB9Owo+Cj4gICAgICAgY3BsZEAzLDAgewo+IC0g
-ICAgICAgICAgICAgI2FkZHJlc3MtY2VsbHMgPSA8MT47Cj4gLSAgICAgICAgICAgICAjc2l6ZS1j
-ZWxscyA9IDwxPjsKPiAtICAgICAgICAgICAgIGNvbXBhdGlibGUgPSAiY3BsZCI7Cj4gKyAgICAg
-ICAgICAgICBjb21wYXRpYmxlID0gImZzbCwgcDEwMjByZGItY3BsZCI7CgpObyBzcGFjZSBhZnRl
-ciAiZnNsLCIuCgpJJ2xsIGNoYW5nZSBpdCB0aGFua3MuCgo+ICsgICAgICAgICAgICAgICAgICAg
-ICBwYXJ0aXRpb25AZnMgewo+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgIC8qIDRNQiBm
-b3IgQ29tcHJlc3NlZCBSRlMgSW1hZ2UgKi8KPiArICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICByZWcgPSA8MHgwMDUwMDAwMCAweDAwNDAwMDAwPjsKPiArICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICBsYWJlbCA9ICJmaWxlIHN5c3RlbSI7Cj4gKyAgICAgICAgICAgICAgICAgICAgIH07
-Cj4gKwo+ICsgICAgICAgICAgICAgICAgICAgICBwYXJ0aXRpb25AamZmcy1mcyB7Cj4gKyAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgLyogN01CIGZvciBKRkZTMiBiYXNlZCBSRlMgKi8KPiAr
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICByZWcgPSA8MHgwMDkwMDAwMCAweDAwNzAwMDAw
-PjsKPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICBsYWJlbCA9ICJmaWxlIHN5c3RlbSBq
-ZmZzMiI7Cj4gKyAgICAgICAgICAgICAgICAgICAgIH07Cj4gKyAgICAgICAgICAgICB9Owo+ICsg
-ICAgICAgICAgICAgc2xpY0AwIHsKPiArICAgICAgICAgICAgICAgICAgICAgY29tcGF0aWJsZSA9
-ICJ6YXJsaW5rLGxlODgyNjYiOwo+ICsgICAgICAgICAgICAgICAgICAgICByZWcgPSA8MT47Cj4g
-KyAgICAgICAgICAgICAgICAgICAgIHNwaS1tYXgtZnJlcXVlbmN5ID0gPDgwMDAwMDA+Owo+ICsg
-ICAgICAgICAgICAgfTsKPiArICAgICAgICAgICAgIHNsaWNAMSB7Cj4gKyAgICAgICAgICAgICAg
-ICAgICAgIGNvbXBhdGlibGUgPSAiemFybGluayxsZTg4MjY2IjsKPiArICAgICAgICAgICAgICAg
-ICAgICAgcmVnID0gPDI+Owo+ICsgICAgICAgICAgICAgICAgICAgICBzcGktbWF4LWZyZXF1ZW5j
-eSA9IDw4MDAwMDAwPjsKPiArICAgICAgICAgICAgIH07Cj4gKwo+ICsgICAgIH07CgpSZW1vdmUg
-dGhhdCBsYXN0IGJsYW5rIGxpbmUsIGFuZCBpbnNlcnQgYSBibGFuayBsaW5lIGJlZm9yZSBlYWNo
-CiJzbGljQC4uLiIgKGxpa2UgeW91IGRvIGJldHdlZW4gdGhlIHBhcnRpdGlvbiBub2RlcykuCgpJ
-J2xsIGNoYW5nZSBpdCB0aGFua3MuCgo+ICsgICAgIC8qIFVTQjIgaXMgc2hhcmVkIHdpdGggbG9j
-YWxidXMsIHNvIGl0IG11c3QgYmUgZGlzYWJsZWQKPiArICAgICAgICBieSBkZWZhdWx0LiBXZSBj
-YW4ndCBwdXQgJ3N0YXR1cyA9ICJkaXNhYmxlZCI7JyBoZXJlCj4gKyAgICAgICAgc2luY2UgVS1C
-b290IGRvZXNuJ3QgY2xlYXIgdGhlIHN0YXR1cyBwcm9wZXJ0eSB3aGVuCj4gKyAgICAgICAgaXQg
-ZW5hYmxlcyBVU0IyLiBPVE9ILCBVLUJvb3QgZG9lcyBjcmVhdGUgYSBuZXcgbm9kZQo+ICsgICAg
-ICAgIHdoZW4gdGhlcmUgaXNuJ3QgYW55LiBTbywganVzdCBjb21tZW50IGl0IG91dC4KPiArICAg
-ICAqLwoKLyoKICAqIExpbnV4IG11bHRpLWxpbmUKICAqIGNvbW1lbnQgc3R5bGUKICAqIGlzIGxp
-a2UgdGhpcy4KICAqLwoKPiArICAgICB1c2JAMjMwMDAgewo+ICsgICAgICAgICAgICAgc3RhdHVz
-ID0gImRpc2FibGVkIjsKPiArICAgICAgICAgICAgIHBoeV90eXBlID0gInVscGkiOwo+ICsgICAg
-IH07CgpEaWRuJ3QgeW91IGp1c3Qgc2F5IGFib3ZlIHRoYXQgeW91IGNhbid0IHVzZSBzdGF0dXMg
-PSAiZGlzYWJsZWQiPwoKQW5kIGNhbiBVLUJvb3QgYmUgZml4ZWQgdG8gc2V0IHN0YXR1cyA9ICJk
-aXNhYmxlZCIgb24gd2hpY2hldmVyIEkvTyBpcwpub3QgdXNhYmxlPwoKSSBoYWQgY2hlY2tlZCB3
-aXRoIGlwIG93bmVyLCB0aGlzIG5vZGUgaXMgbm90IG5lZWRlZC4gSSdsbCBtYXNrIGl0LgoKPiAr
-L2luY2x1ZGUvICJmc2wvcDEwMjBzaS1wcmUuZHRzaSIKPiArLyB7Cj4gKyAgICAgbW9kZWwgPSAi
-ZnNsLFAxMDIwUkRCLVBEIjsKPiArICAgICBjb21wYXRpYmxlID0gImZzbCxQMTAyMFJEQi1QRCI7
-Cj4gKwo+ICsgICAgIG1lbW9yeSB7Cj4gKyAgICAgICAgICAgICBkZXZpY2VfdHlwZSA9ICJtZW1v
-cnkiOwo+ICsgICAgIH07Cj4gKwo+ICsgICAgIGxiYzogbG9jYWxidXNAZmZlMDUwMDAgewo+ICsg
-ICAgICAgICAgICAgcmVnID0gPDB4MCAweGZmZTA1MDAwIDB4MCAweDEwMDA+Owo+ICsKPiArICAg
-ICAgICAgICAgIC8qIE5PUiwgTkFORCBmbGFzaCBhbmQgTDIgc3dpdGNoICovCj4gKyAgICAgICAg
-ICAgICByYW5nZXMgPSA8MHgwIDB4MCAweDAgMHhlYzAwMDAwMCAweDA0MDAwMDAwCj4gKyAgICAg
-ICAgICAgICAgICAgICAgICAgMHgxIDB4MCAweDAgMHhmZjgwMDAwMCAweDAwMDQwMDAwCj4gKyAg
-ICAgICAgICAgICAgICAgICAgICAgMHgyIDB4MCAweDAgMHhmZmEwMDAwMCAweDAwMDIwMDAwCj4g
-KyAgICAgICAgICAgICAgICAgICAgICAgMHgzIDB4MCAweDAgMHhmZmIwMDAwMCAweDAwMDIwMDAw
-PjsKCklmIHlvdSdyZSBnb2luZyB0byBoYXZlIGEgY29tbWVudCBoZXJlIGFib3V0IHdoYXQgaXMg
-bWFwcGVkIGJ5IHRoZQpyYW5nZXMsIHdoeSBleGNsdWRlIHRoZSBDUExEPwoKSSdsbCBhZGQgaXQu
-CgotU2NvdHQK
+On 07/02/2013 01:00 PM, Bhushan Bharat-R65777 wrote:
+>
+>
+>> -----Original Message-----
+>> From: Linuxppc-dev [mailto:linuxppc-dev-
+>> bounces+bharat.bhushan=freescale.com@lists.ozlabs.org] On Behalf Of Tiejun Chen
+>> Sent: Thursday, June 20, 2013 1:23 PM
+>> To: benh@kernel.crashing.org
+>> Cc: linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org
+>> Subject: [v2][PATCH 1/7] powerpc/book3e: support CONFIG_RELOCATABLE
+>>
+>> book3e is different with book3s since 3s includes the exception
+>> vectors code in head_64.S as it relies on absolute addressing
+>> which is only possible within this compilation unit. So we have
+>> to get that label address with got.
+>>
+>> And when boot a relocated kernel, we should reset ipvr properly again
+>> after .relocate.
+>>
+>> Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+>> ---
+
+[snip]
+
+>>   	int *src, *dest;
+>>   	unsigned long length;
+>> +#ifdef CONFIG_PPC_BOOK3E
+>> +	extern char interrupt_end_book3e[];
+>> +#endif
+>
+> Cannot we do this in arch/powerpc/kernel/asm/sections.h
+>
+>>
+>>   	if (PHYSICAL_START == 0)
+>>   		return;
+>>
+>>   	src = (int *)(KERNELBASE + PHYSICAL_START);
+>>   	dest = (int *)KERNELBASE;
+>> +#ifdef CONFIG_PPC_BOOK3E
+>> +	length = (interrupt_end_book3e - _stext) / sizeof(int);
+>> +#else
+>>   	length = (__end_interrupts - _stext) / sizeof(int);
+>> +#endif
+>
+> can we keep same name in books and booke; __end_interrupts ? this way we can avoid such #ifdefs
+
+Yes, I think I can simplify this as you pointed :)
+
+Thanks,
+
+Tiejun
