@@ -1,24 +1,19 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id F205D2C0296
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2013 09:43:39 +1000 (EST)
-Date: Mon, 8 Jul 2013 18:43:06 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 1/4] powerpc/85xx: Add support for 85xx cpu type detection
-To: Haijun Zhang <Haijun.Zhang@freescale.com>
-References: <1373249545-23928-1-git-send-email-Haijun.Zhang@freescale.com>
-In-Reply-To: <1373249545-23928-1-git-send-email-Haijun.Zhang@freescale.com>
- (from Haijun.Zhang@freescale.com on Sun Jul  7 21:12:22 2013)
-Message-ID: <1373326986.8183.185@snotra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: Zhao Chenhui <chenhui.zhao@freescale.com>, linux-mmc@vger.kernel.org,
- AFLEMING@freescale.com, cbouatmailru@gmail.com, cjb@laptop.org,
- linuxppc-dev@lists.ozlabs.org, Haijun Zhang <Haijun.Zhang@freescale.com>
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ by ozlabs.org (Postfix) with ESMTP id BE0AC2C00A1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2013 11:00:25 +1000 (EST)
+Subject: Re: [PATCH 0/2] powerpc: allow kvm to use kerel debug framework
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <1372918546-15075-1-git-send-email-Bharat.Bhushan@freescale.com>
+Date: Tue, 9 Jul 2013 03:00:16 +0200
+Message-Id: <C4D71A1A-3D5B-4C9C-A26B-9EAFFD9D87C5@suse.de>
+References: <1372918546-15075-1-git-send-email-Bharat.Bhushan@freescale.com>
+To: Bharat Bhushan <r65777@freescale.com>
+Cc: mikey@neuling.org, linux-kernel@vger.kernel.org,
+ Bharat Bhushan <bharat.bhushan@freescale.com>, scottwood@freescale.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,22 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/07/2013 09:12:22 PM, Haijun Zhang wrote:
-> Add this file to help detect cpu type in runtime.
-> These macros and inline routines will be more favorable for driver
-> to apply errata and workaround to specified cpu type.
+
+On 04.07.2013, at 08:15, Bharat Bhushan wrote:
+
+> From: Bharat Bhushan <bharat.bhushan@freescale.com>
 >=20
-> Signed-off-by: Haijun Zhang <Haijun.Zhang@freescale.com>
-> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
-> ---
->  arch/powerpc/include/asm/mpc85xx.h | 96 =20
-> ++++++++++++++++++++++++++++++++++++++
->  1 file changed, 96 insertions(+)
->  create mode 100644 arch/powerpc/include/asm/mpc85xx.h
+> This patchset moves the debug registers in a structure, which allows
+> kvm to use same structure for debug emulation.
+>=20
+> Note: Earilier a patchset =
+"https://lists.ozlabs.org/pipermail/linuxppc-dev/2013-June/108132.html"
+> was sent which is a bunch of six patches. That patchset is divided =
+into two parts:
+> 	1) powerpc specific changes (These 2 patches are actually have =
+those changes)
+> 	2) KVM specific changes (will send separate patch on agraf =
+repository)
 
-What changed since the last time this was posted?  I don't see any of =20
-the feedback addressed that I gave here:
+Mikey, if you like those could you please apply the into a topic branch =
+and get that one merged with Ben? I'd also pull it into my tree then.
 
-http://patchwork.ozlabs.org/patch/144880/
 
--Scott=
+Alex
+
+>=20
+> Bharat Bhushan (2):
+>  powerpc: remove unnecessary line continuations
+>  powerpc: move debug registers in a structure
+>=20
+> arch/powerpc/include/asm/processor.h |   38 +++++----
+> arch/powerpc/include/asm/reg_booke.h |    8 +-
+> arch/powerpc/kernel/asm-offsets.c    |    2 +-
+> arch/powerpc/kernel/process.c        |   42 +++++-----
+> arch/powerpc/kernel/ptrace.c         |  154 =
++++++++++++++++++-----------------
+> arch/powerpc/kernel/ptrace32.c       |    2 +-
+> arch/powerpc/kernel/signal_32.c      |    6 +-
+> arch/powerpc/kernel/traps.c          |   35 ++++----
+> 8 files changed, 147 insertions(+), 140 deletions(-)
+>=20
+>=20
