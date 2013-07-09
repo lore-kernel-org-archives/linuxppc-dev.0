@@ -1,15 +1,27 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 0/2] powerpc: allow kvm to use kerel debug framework
-In-reply-to: <C4D71A1A-3D5B-4C9C-A26B-9EAFFD9D87C5@suse.de>
-References: <1372918546-15075-1-git-send-email-Bharat.Bhushan@freescale.com>
- <C4D71A1A-3D5B-4C9C-A26B-9EAFFD9D87C5@suse.de>
-Date: Tue, 09 Jul 2013 14:24:32 +1000
-Message-ID: <14504.1373343872@ale.ozlabs.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Bharat Bhushan <bharat.bhushan@freescale.com>,
- Bharat Bhushan <r65777@freescale.com>, scottwood@freescale.com,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <B42677@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4ADDA2C02CE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2013 15:32:35 +1000 (EST)
+From: Zhang Haijun-B42677 <B42677@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: =?gb2312?B?tPC4tDogtPC4tDogW1BBVENIIDIvMl0gcG93ZXJwYy84NXh4OiBhZGQgdGhl?=
+ =?gb2312?Q?_P1020RDB-PD_DTS_support?=
+Date: Tue, 9 Jul 2013 05:34:34 +0000
+Message-ID: <99E897753B6F7048BD8CCDB4661D02E1396F13@039-SN2MPN1-021.039d.mgd.msft.net>
+References: <99E897753B6F7048BD8CCDB4661D02E1362C90@039-SN2MPN1-023.039d.mgd.msft.net>
+ (from B42677@freescale.com on Wed Jul  3 21:04:40
+ 2013), <1373303338.8183.161@snotra>,
+ <99E897753B6F7048BD8CCDB4661D02E1393DBA@039-SN2MPN1-021.039d.mgd.msft.net>
+In-Reply-To: <99E897753B6F7048BD8CCDB4661D02E1393DBA@039-SN2MPN1-021.039d.mgd.msft.net>
+Content-Type: text/plain; charset="gb2312"
+MIME-Version: 1.0
+Cc: Huang Changming-R66093 <r66093@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Xie Xiaobo-R63061 <r63061@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,27 +31,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alexander Graf <agraf@suse.de> wrote:
-
-> 
-> On 04.07.2013, at 08:15, Bharat Bhushan wrote:
-> 
-> > From: Bharat Bhushan <bharat.bhushan@freescale.com>
-> > 
-> > This patchset moves the debug registers in a structure, which allows
-> > kvm to use same structure for debug emulation.
-> > 
-> > Note: Earilier a patchset "https://lists.ozlabs.org/pipermail/linuxppc-dev/2013-June/108132.html"
-> > was sent which is a bunch of six patches. That patchset is divided into two parts:
-> > 	1) powerpc specific changes (These 2 patches are actually have those changes)
-> > 	2) KVM specific changes (will send separate patch on agraf repository)
-> 
-> Mikey, if you like those could you please apply the into a topic
-> branch and get that one merged with Ben? I'd also pull it into my tree
-> then.
-
-benh would pull these directly.  
-
-I'll have a chat with him to see if he wants my ACK before he does that.
-
-Mikey
+CgpSZWdhcmRzICYgVGhhbmtzCgpIYWlqdW4uCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fCreivP7IyzogV29vZCBTY290dC1CMDc0MjEKt6LLzcqxvOQ6IDIwMTPE6jfU
+wjjI1SAxNzowOArK1bz+yMs6IFpoYW5nIEhhaWp1bi1CNDI2NzcKs63LzTogV29vZCBTY290dC1C
+MDc0MjE7IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxh
+YnMub3JnOyBIdWFuZyBDaGFuZ21pbmctUjY2MDkzOyBYaWUgWGlhb2JvLVI2MzA2MQrW98ziOiBS
+ZTogtPC4tDogW1BBVENIIDIvMl0gcG93ZXJwYy84NXh4OiBhZGQgdGhlIFAxMDIwUkRCLVBEIERU
+UyBzdXBwb3J0CgpPbiAwNy8wMy8yMDEzIDA5OjA0OjQwIFBNLCBaaGFuZyBIYWlqdW4tQjQyNjc3
+IHdyb3RlOgo+Cj4KPiBSZWdhcmRzICYgVGhhbmtzCj4KPiBIYWlqdW4uCj4KPiBfX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCj4gt6K8/sjLOiBXb29kIFNjb3R0LUIwNzQy
+MQo+ILeiy83KsbzkOiAyMDEzxOo31MIzyNUgMTk6MDkKPiDK1bz+yMs6IFpoYW5nIEhhaWp1bi1C
+NDI2NzcKPiBDYzogZ2FsYWtAa2VybmVsLmNyYXNoaW5nLm9yZzsgbGludXhwcGMtZGV2QGxpc3Rz
+Lm96bGFicy5vcmc7IFpoYW5nCj4gSGFpanVuLUI0MjY3NzsgSHVhbmcgQ2hhbmdtaW5nLVI2NjA5
+Mwo+INb3zOI6IFJlOiBbUEFUQ0ggMi8yXSBwb3dlcnBjLzg1eHg6IGFkZCB0aGUgUDEwMjBSREIt
+UEQgRFRTIHN1cHBvcnQKPgo+IE9uIDA2LzMwLzIwMTMgMTE6MTI6MjMgUE0sIEhhaWp1biBaaGFu
+ZyB3cm90ZToKPiA+IEZyb206ICJIYWlqdW4uWmhhbmciIDxIYWlqdW4uWmhhbmdAZnJlZXNjYWxl
+LmNvbT4KPiA+Cj4gPiBPdmVydmlldyBvZiBQMTAyMFJEQi1QRCBkZXZpY2U6Cj4gPiAtIEREUjMg
+MkdCCj4gPiAtIE5PUiBmbGFzaCA2NE1CCj4gPiAtIE5BTkQgZmxhc2ggMTI4TUIKPiA+IC0gU1BJ
+IGZsYXNoIDE2TUIKPiA+IC0gSTJDIEVFUFJPTSAyNTZLYgo+ID4gLSBlVFNFQzEgKFJHTUlJIFBI
+WSkgY29ubmVjdGVkIHRvIFZTQzczODUgTDIgc3dpdGNoCj4gPiAtIGVUU0VDMiAoU0dNSUkgUEhZ
+KQo+ID4gLSBlVFNFQzMgKFJHTUlJIFBIWSkKPiA+IC0gU0RIQwo+ID4gLSAyIFVTQiBwb3J0cwo+
+ID4gLSA0IFRETSBwb3J0cwo+ID4gLSBQQ0llCj4gPgo+ID4gU2lnbmVkLW9mZi1ieTogSGFpanVu
+IFpoYW5nIDxIYWlqdW4uWmhhbmdAZnJlZXNjYWxlLmNvbT4KPiA+IFNpZ25lZC1vZmYtYnk6IEpl
+cnJ5IEh1YW5nIDxDaGFuZy1NaW5nLkh1YW5nQGZyZWVzY2FsZS5jb20+Cj4gPiBDQzogU2NvdHQg
+V29vZCA8c2NvdHR3b29kQGZyZWVzY2FsZS5jb20+Cj4gPiAtLS0KPiA+ICBhcmNoL3Bvd2VycGMv
+Ym9vdC9kdHMvcDEwMjByZGItcGQuZHRzaSAgICB8IDI1Nwo+ID4gKysrKysrKysrKysrKysrKysr
+KysrKysrKysrKysrCj4gPiAgYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL3AxMDIwcmRiLXBkXzMyYi5k
+dHMgfCAgOTAgKysrKysrKysrKysKPiA+ICAyIGZpbGVzIGNoYW5nZWQsIDM0NyBpbnNlcnRpb25z
+KCspCj4gPiAgY3JlYXRlIG1vZGUgMTAwNjQ0IGFyY2gvcG93ZXJwYy9ib290L2R0cy9wMTAyMHJk
+Yi1wZC5kdHNpCj4gPiAgY3JlYXRlIG1vZGUgMTAwNjQ0IGFyY2gvcG93ZXJwYy9ib290L2R0cy9w
+MTAyMHJkYi1wZF8zMmIuZHRzCj4KPiBXaGF0IGFib3V0IDM2Yj8KPgo+IEhhaWp1bjogMkcgRERS
+IHdhcyBmaXggb24gUDEwMjBSREItUEQgYm9hcmQuIE5vIG5lZWQgMzZiaXQgc3VwcG9ydC4KPiBB
+bHNvIG5vIDM2Yml0IHVib290IHN1cHBvcnQuCgpTbyB0aGVuIHdoeSBub3QganVzdCBoYXZlIG9u
+ZSAicDEwMjByZGItcGQuZHRzIj8KCk9ro6wgaSdsbCByZW1vdmUgJ18zMmInLgoKT3IsIGNhbiB5
+b3UgaGF2ZSBhIGNvbW1vbiBwMTAyMHJkYi5kdHNpIHRoYXQgYWxsIHRoZSB2YXJpYW50cyB1c2Us
+IHdpdGgKdGhlIC5kdHMgZmlsZSBvbmx5IGhhbmRsaW5nIHRoZSBkaWZmZXJlbmNlcz8KCkkgdGhp
+bmsgbm8gbmVlZCB0byBkbyB0aGlzLCBhbG1vc3QgYWxsIG9mIHZhcmlhbnRzIGluIHh4eC5kdHNp
+IGFyZSBkaWZmZXJlbnQuIAoKPiA+ICsgICAgIGNwbGRAMiwwIHsKPiA+ICsgICAgICAgICAgICAg
+I2FkZHJlc3MtY2VsbHMgPSA8MT47Cj4gPiArICAgICAgICAgICAgICNzaXplLWNlbGxzID0gPDE+
+Owo+ID4gKyAgICAgICAgICAgICBjb21wYXRpYmxlID0gImNwbGQiOwo+ID4gKyAgICAgICAgICAg
+ICByZWcgPSA8MHgyIDB4MCAweDIwMDAwPjsKPiA+ICsgICAgICAgICAgICAgcmVhZC1vbmx5Owo+
+ID4gKyAgICAgfTsKPgo+IFdoZXJlIGRvZXMgImNwbGQiIGFzIGEgY29tcGF0aWJsZSBjb21lIGZy
+b20gKGl0J3Mgd2F5IHRvbyB2YWd1ZSk/Cj4gV2hhdAo+IGlzIHJlYWQtb25seSBzdXBwb3NlZCB0
+byBtZWFuIGhlcmU/Cj4KPiBIYWlqdW46IEluIGZhY3QgYWxtb3N0IGFsbCBib2FyZCBoYXMgaXRz
+IHNwZWNpYWwgQ1BMRC4gVGhpcyBub2RlIGp1c3QKPiBjb3B5IGZyb20gcDEwMjByZGItcGMgYm9h
+cmQuCj4KPiBTbywgY2hhbmdlIGl0IHRvIDoKPgo+IGNwbGRAMiwwIHsKPiAgICAgICAgICAgY29t
+cGF0aWJsZSA9ICJmc2wsIHAxMDIwcmRiLWNwbGQiOwo+ICAgICAgICAgICByZWcgPSA8MHgyIDB4
+MCAweDIwMDAwPjsKPiAgICAgICAgICAgcmVhZC1vbmx5Owo+IH07CgpBZ2Fpbiwgd2hhdCBpcyBy
+ZWFkLW9ubHkgc3VwcG9zZWQgdG8gbWVhbiBoZXJlPyAgSSBkb24ndCBjYXJlIHRoYXQgaXQncwpj
+b3BpZWQgZnJvbSB0aGUgUEMgdmVyc2lvbi4gIEl0IGRvZXNuJ3QgbWFrZSBzZW5zZSwgYW5kIGlz
+IG5vdApkb2N1bWVudGVkIGluIGEgYmluZGluZy4KCk1vc3RseSBDUExEIG9ubHkgdXNlZCB0byBy
+ZWFkIGNvbmZpZ3VyYXRpb24gZnJvbS4gU3VwcG9zZWQgbm90IGJlZW4gY2hhbmdlZC4KCklzIHRo
+ZSAtcGQgQ1BMRCAxMDAlIGlkZW50aWNhbCB0byB0aGUgLXBjIENQTEQ/ICBJZiBub3QsIHNob3Vs
+ZG4ndCB0aGUKY29tcGF0aWJsZSBub3RlIHRoZSBkaWZmZXJlbmNlIGJldHdlZW4gdGhlIHR3bz8K
+Cm9oLCB5ZXMgdGhleSBzaG91bGQgaGFkIHRoZWlyIG93biBuYW1lLiBJJ2xsIGNoYW5nZSBpdC4K
+Ci1TY290dAo=
