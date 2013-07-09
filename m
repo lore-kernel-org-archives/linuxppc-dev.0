@@ -1,23 +1,19 @@
 Return-Path: <B07421@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0249.outbound.messaging.microsoft.com [213.199.154.249])
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 707332C0092
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 04:29:36 +1000 (EST)
-Date: Tue, 9 Jul 2013 13:29:22 -0500
+ by ozlabs.org (Postfix) with ESMTPS id 062D32C008A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 04:47:27 +1000 (EST)
+Date: Tue, 9 Jul 2013 13:46:45 -0500
 From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 2/2] KVM: PPC: Book3E: Emulate MCSRR0/1 SPR and rfmci
- instruction
+Subject: Re: [PATCH 2/2] KVM: PPC: Book3E: Get vcpu's last instruction for
+ emulation
 To: Alexander Graf <agraf@suse.de>
-References: <1372858255-19708-1-git-send-email-mihai.caraman@freescale.com>
- <1372858255-19708-2-git-send-email-mihai.caraman@freescale.com>
- <1C2B7183-EF0F-4D97-9287-1068C9E97471@suse.de> <1373390162.8183.195@snotra>
- <51DC4C78.5080808@suse.de>
-In-Reply-To: <51DC4C78.5080808@suse.de> (from agraf@suse.de on Tue Jul  9
- 12:46:32 2013)
-Message-ID: <1373394562.8183.197@snotra>
+In-Reply-To: <51DC4C00.70509@suse.de> (from agraf@suse.de on Tue Jul  9
+ 12:44:32 2013)
+Message-ID: <1373395605.8183.198@snotra>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
 Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
@@ -31,59 +27,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/09/2013 12:46:32 PM, Alexander Graf wrote:
-> On 07/09/2013 07:16 PM, Scott Wood wrote:
->> On 07/08/2013 01:45:58 PM, Alexander Graf wrote:
+On 07/09/2013 12:44:32 PM, Alexander Graf wrote:
+> On 07/09/2013 07:13 PM, Scott Wood wrote:
+>> On 07/08/2013 08:39:05 AM, Alexander Graf wrote:
 >>>=20
->>> On 03.07.2013, at 15:30, Mihai Caraman wrote:
+>>> On 28.06.2013, at 11:20, Mihai Caraman wrote:
 >>>=20
->>> > Some guests are making use of return from machine check =20
->>> instruction
->>> > to do crazy things even though the 64-bit kernel doesn't handle =20
->>> yet
->>> > this interrupt. Emulate MCSRR0/1 SPR and rfmci instruction =20
->>> accordingly.
+>>> > lwepx faults needs to be handled by KVM and this implies =20
+>>> additional code
+>>> > in DO_KVM macro to identify the source of the exception =20
+>>> originated from
+>>> > host context. This requires to check the Exception Syndrome =20
+>>> Register
+>>> > (ESR[EPID]) and External PID Load Context Register (EPLC[EGS]) =20
+>>> for DTB_MISS,
+>>> > DSI and LRAT exceptions which is too intrusive for the host.
 >>> >
->>> > Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
->>> > ---
->>> > arch/powerpc/include/asm/kvm_host.h |    1 +
->>> > arch/powerpc/kvm/booke_emulate.c    |   25 =20
->>> +++++++++++++++++++++++++
->>> > arch/powerpc/kvm/timing.c           |    1 +
->>> > 3 files changed, 27 insertions(+), 0 deletions(-)
->>> >
->>> > diff --git a/arch/powerpc/include/asm/kvm_host.h =20
->>> b/arch/powerpc/include/asm/kvm_host.h
->>> > index af326cd..0466789 100644
->>> > --- a/arch/powerpc/include/asm/kvm_host.h
->>> > +++ b/arch/powerpc/include/asm/kvm_host.h
->>> > @@ -148,6 +148,7 @@ enum kvm_exit_types {
->>> >     EMULATED_TLBWE_EXITS,
->>> >     EMULATED_RFI_EXITS,
->>> >     EMULATED_RFCI_EXITS,
->>> > +    EMULATED_RFMCI_EXITS,
+>>> > Get rid of lwepx and acquire last instuction in =20
+>>> kvmppc_handle_exit() by
+>>> > searching for the physical address and kmap it. This fixes an =20
+>>> infinite loop
 >>>=20
->>> I would quite frankly prefer to see us abandon the whole exit =20
->>> timing framework in the kernel and instead use trace points. Then =20
->>> we don't have to maintain all of this randomly exercised code.
+>>> What's the difference in speed for this?
+>>>=20
+>>> Also, could we call lwepx later in host code, when =20
+>>> kvmppc_get_last_inst() gets invoked?
 >>=20
->> Would this map well to tracepoints?  We're not trying to track =20
->> discrete events, so much as accumulated time spent in different =20
->> areas.
+>> Any use of lwepx is problematic unless we want to add overhead to =20
+>> the main Linux TLB miss handler.
 >=20
-> I think so. We'd just have to emit tracepoints as soon as we enter =20
-> handle_exit and in prepare_to_enter. Then a user space program should =20
-> have everything it needs to create statistics out of that. It would =20
-> certainly simplify the entry/exit path.
+> What exactly would be missing?
 
-I was hoping that wasn't going to be your answer. :-)
+If lwepx faults, it goes to the normal host TLB miss handler.  Without =20
+adding code to it to recognize that it's an external-PID fault, it will =20
+try to search the normal Linux page tables and insert a normal host =20
+entry.  If it thinks it has succeeded, it will retry the instruction =20
+rather than search for an exception handler.  The instruction will =20
+fault again, and you get a hang.
 
-Such a change would introduce a new dependency, more complexity, and =20
-the possibility for bad totals to result from a ring buffer filling =20
-faster than userspace can drain it.
+> I'd also still like to see some performance benchmarks on this to =20
+> make sure we're not walking into a bad direction.
 
-I also don't see how it would simplify entry/exit, since we'd still =20
-need to take timestamps in the same places, in order to record a final =20
-event that says how long a particular event took.
+I doubt it'll be significantly different.  There's overhead involved in =20
+setting up for lwepx as well.  It doesn't hurt to test, though this is =20
+a functional correctness issue, so I'm not sure what better =20
+alternatives we have.  I don't want to slow down non-KVM TLB misses for =20
+this.
+
+>>> > +    addr =3D (mas7_mas3 & (~0ULL << psize_shift)) |
+>>> > +           (geaddr & ((1ULL << psize_shift) - 1ULL));
+>>> > +
+>>> > +    /* Map a page and get guest's instruction */
+>>> > +    page =3D pfn_to_page(addr >> PAGE_SHIFT);
+>>>=20
+>>> So it seems to me like you're jumping through a lot of hoops to =20
+>>> make sure this works for LRAT and non-LRAT at the same time. Can't =20
+>>> we just treat them as the different things they are?
+>>>=20
+>>> What if we have different MMU backends for LRAT and non-LRAT? The =20
+>>> non-LRAT case could then try lwepx, if that fails, fall back to =20
+>>> read the shadow TLB. For the LRAT case, we'd do lwepx, if that =20
+>>> fails fall back to this logic.
+>>=20
+>> This isn't about LRAT; it's about hardware threads.  It also fixes =20
+>> the handling of execute-only pages on current chips.
+>=20
+> On non-LRAT systems we could always check our shadow copy of the =20
+> guest's TLB, no? I'd really like to know what the performance =20
+> difference would be for the 2 approaches.
+
+I suspect that tlbsx is faster, or at worst similar.  And unlike =20
+comparing tlbsx to lwepx (not counting a fix for the threading =20
+problem), we don't already have code to search the guest TLB, so =20
+testing would be more work.
 
 -Scott=
