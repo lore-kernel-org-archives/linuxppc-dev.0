@@ -1,19 +1,29 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- by ozlabs.org (Postfix) with ESMTP id BE0AC2C00A1
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2013 11:00:25 +1000 (EST)
-Subject: Re: [PATCH 0/2] powerpc: allow kvm to use kerel debug framework
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <1372918546-15075-1-git-send-email-Bharat.Bhushan@freescale.com>
-Date: Tue, 9 Jul 2013 03:00:16 +0200
-Message-Id: <C4D71A1A-3D5B-4C9C-A26B-9EAFFD9D87C5@suse.de>
-References: <1372918546-15075-1-git-send-email-Bharat.Bhushan@freescale.com>
-To: Bharat Bhushan <r65777@freescale.com>
-Cc: mikey@neuling.org, linux-kernel@vger.kernel.org,
- Bharat Bhushan <bharat.bhushan@freescale.com>, scottwood@freescale.com,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <haokexin@gmail.com>
+Received: from mail-pd0-x235.google.com (mail-pd0-x235.google.com
+ [IPv6:2607:f8b0:400e:c02::235])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CE9CA2C016A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2013 11:27:04 +1000 (EST)
+Received: by mail-pd0-f181.google.com with SMTP id 14so4630490pdj.40
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Jul 2013 18:27:02 -0700 (PDT)
+Date: Tue, 9 Jul 2013 09:26:51 +0800
+From: Kevin Hao <haokexin@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 1/2] powerpc: enable the relocatable support for the fsl
+ booke 32bit kernel
+Message-ID: <20130709012651.GA13551@pek-khao-d1.corp.ad.wrs.com>
+References: <20130702032447.GA26391@pek-khao-d1.corp.ad.wrs.com>
+ <1372804758.8183.124@snotra>
+ <20130703030044.GA25190@pek-khao-d1.corp.ad.wrs.com>
+ <1372883907.8183.151@snotra>
+ <20130704010818.GA16188@pek-khao-d1.corp.ad.wrs.com>
+ <1373302105.8183.160@snotra>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="NzB8fVQJ5HfG6fxh"
+In-Reply-To: <1373302105.8183.160@snotra>
+Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,42 +34,63 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On 04.07.2013, at 08:15, Bharat Bhushan wrote:
+--NzB8fVQJ5HfG6fxh
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> From: Bharat Bhushan <bharat.bhushan@freescale.com>
+On Mon, Jul 08, 2013 at 11:48:25AM -0500, Scott Wood wrote:
+> On 07/03/2013 08:08:18 PM, Kevin Hao wrote:
+> >On Wed, Jul 03, 2013 at 03:38:27PM -0500, Scott Wood wrote:
+> >> On 07/02/2013 10:00:44 PM, Kevin Hao wrote:
+> >> >On Tue, Jul 02, 2013 at 05:39:18PM -0500, Scott Wood wrote:
+> >> >> How much overhead (space and time) is this really?
+> >> >
+> >> >The following is the additional sections when relocatable is
+> >> >enabled for
+> >> >a p2020rdb board.
+> >> >   section        size
+> >> >  .dynsym       000007f0
+> >> >  .dynstr       00000926
+> >> >  .dynamic      00000080
+> >> >  .hash         00000388
+> >> >  .interp       00000011
+> >> >  .rela.dyn     00215250
+> >> >
+> >> >The time for the relocation is about 32ms on a p2020rdb board.
+> >>
+> >> Hmm... more relocations than I expected.  What percentage is this of
+> >> the total image size?
+> >
+> >The size of vmlinux.bin is about 10M. The percentage of the relocation
+> >section is about 20%. But look on the bright side of thing, all
+> >the relocation
+> >stuff are in init section and should be discarded at runtime. :-)
 >=20
-> This patchset moves the debug registers in a structure, which allows
-> kvm to use same structure for debug emulation.
->=20
-> Note: Earilier a patchset =
-"https://lists.ozlabs.org/pipermail/linuxppc-dev/2013-June/108132.html"
-> was sent which is a bunch of six patches. That patchset is divided =
-into two parts:
-> 	1) powerpc specific changes (These 2 patches are actually have =
-those changes)
-> 	2) KVM specific changes (will send separate patch on agraf =
-repository)
+> That doesn't reduce the space it takes up in flash...
 
-Mikey, if you like those could you please apply the into a topic branch =
-and get that one merged with Ben? I'd also pull it into my tree then.
+Yes. But since we always use a compressed uImage kernel in flash,
+the increasing size of the image would shrink to about 500K.
 
+Thanks,
+Kevin
 
-Alex
+>=20
+> -Scott
 
->=20
-> Bharat Bhushan (2):
->  powerpc: remove unnecessary line continuations
->  powerpc: move debug registers in a structure
->=20
-> arch/powerpc/include/asm/processor.h |   38 +++++----
-> arch/powerpc/include/asm/reg_booke.h |    8 +-
-> arch/powerpc/kernel/asm-offsets.c    |    2 +-
-> arch/powerpc/kernel/process.c        |   42 +++++-----
-> arch/powerpc/kernel/ptrace.c         |  154 =
-+++++++++++++++++-----------------
-> arch/powerpc/kernel/ptrace32.c       |    2 +-
-> arch/powerpc/kernel/signal_32.c      |    6 +-
-> arch/powerpc/kernel/traps.c          |   35 ++++----
-> 8 files changed, 147 insertions(+), 140 deletions(-)
->=20
->=20
+--NzB8fVQJ5HfG6fxh
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQEcBAEBAgAGBQJR22bbAAoJEJNY7TDerrFxvZAH/0oFmewwr89z2utC/sw5wNYH
++voFLKwb5tGyN6/UNfnWUKxwZjCG1xuYjH4KDGedAwP6jCo6PNs210q6DsSblLhY
+QToJqxmtqSg5Q7ojCxWKqsddgNMCP+zhQ31AOrgMOZK1OjRqDtBEYjF4JMUDAbNb
+FqSvcpSrAzBQ+UQi4C2Wc5ZM3mmdD90JYwt99xZ+ZLXISCAJ9cakAoUV8HiOfE+C
+bCQk/szECJmrM3M6D6MKNSuatmBtSoPFftiOkqPi2rtkTQlKcCE7q0so5Atiohcn
+fLQwiGA5oG5DHIQkFdsdIKtRTaVK4ASZge5IEIvKLx5UkjkCmLTbdKW6BKQ9+S8=
+=SBpk
+-----END PGP SIGNATURE-----
+
+--NzB8fVQJ5HfG6fxh--
