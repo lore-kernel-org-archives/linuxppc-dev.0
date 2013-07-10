@@ -1,20 +1,27 @@
-Return-Path: <B42378@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 093882C009C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 20:35:23 +1000 (EST)
-From: Nicolin Chen <b42378@freescale.com>
-To: <broonie@kernel.org>, <timur@tabi.org>
-Subject: [PATCH] ASoC: fsl: Disable SSI in trigger() if RE/TE are both cleared
-Date: Wed, 10 Jul 2013 18:43:54 +0800
-Message-ID: <1373453034-21618-1-git-send-email-b42378@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: fabio.estevam@freescale.com, alsa-devel@alsa-project.org,
- shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 66CCA2C02CC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 20:39:24 +1000 (EST)
+Message-ID: <1373452753.19894.19.camel@pasglop>
+Subject: Re: [PATCH 8/8] KVM: PPC: Add hugepage support for IOMMU in-kernel
+ handling
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alexander Graf <agraf@suse.de>
+Date: Wed, 10 Jul 2013 20:39:13 +1000
+In-Reply-To: <778C7C81-5F7F-4E21-8B72-92F336002F9E@suse.de>
+References: <1373123227-22969-1-git-send-email-aik@ozlabs.ru>
+ <1373123227-22969-9-git-send-email-aik@ozlabs.ru>
+ <51DC4923.5010501@suse.de> <51DC9CDA.3070906@ozlabs.ru>
+ <778C7C81-5F7F-4E21-8B72-92F336002F9E@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,52 +31,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The code enabled SSIEN when triggered by SNDRV_PCM_TRIGGER_START,
-so move the disable code to SNDRV_PCM_TRIGGER_STOP for symmetric.
+On Wed, 2013-07-10 at 12:33 +0200, Alexander Graf wrote:
+> 
+> It's not exactly obvious that you're calling it with writing == 1 :).
+> Can you create a new local variable "is_write" in the calling
+> function, set that to 1 before the call to get_user_pages_fast and
+> pass it in instead of the 1? The compiler should easily optimize all
+> of that away, but it makes the code by far easier to read.
 
-This also allows us to use the SSI driver more flexible so that
-it can support some use cases like "aplay S16_LE.wav S24_LE.wav"
-which would call the driver in sequence like:
- startup()->hw_params(S16_LE)->trigger(START)->tirgger(STOP)->
- hw_params(S24_LE)->trigger(START)->tirgger(STOP)->shutdown()
+Ugh ?
 
-If we disable SSIEN in shutdown(), the second hw_params() would
-bypass the sample bits setting while using symmetric_rate.
+Nobody else does that .... (look at futex :-)
 
-Signed-off-by: Nicolin Chen <b42378@freescale.com>
----
- sound/soc/fsl/fsl_ssi.c |   12 +++---------
- 1 files changed, 3 insertions(+), 9 deletions(-)
-
-diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index 2f2d837..b6ab341 100644
---- a/sound/soc/fsl/fsl_ssi.c
-+++ b/sound/soc/fsl/fsl_ssi.c
-@@ -510,6 +510,9 @@ static int fsl_ssi_trigger(struct snd_pcm_substream *substream, int cmd,
- 			write_ssi_mask(&ssi->scr, CCSR_SSI_SCR_TE, 0);
- 		else
- 			write_ssi_mask(&ssi->scr, CCSR_SSI_SCR_RE, 0);
-+
-+		if ((read_ssi(&ssi->scr) & (CCSR_SSI_SCR_TE | CCSR_SSI_SCR_RE)) == 0)
-+			write_ssi_mask(&ssi->scr, CCSR_SSI_SCR_SSIEN, 0);
- 		break;
- 
- 	default:
-@@ -534,15 +537,6 @@ static void fsl_ssi_shutdown(struct snd_pcm_substream *substream,
- 		ssi_private->first_stream = ssi_private->second_stream;
- 
- 	ssi_private->second_stream = NULL;
--
--	/*
--	 * If this is the last active substream, disable the SSI.
--	 */
--	if (!ssi_private->first_stream) {
--		struct ccsr_ssi __iomem *ssi = ssi_private->ssi;
--
--		write_ssi_mask(&ssi->scr, CCSR_SSI_SCR_SSIEN, 0);
--	}
- }
- 
- static int fsl_ssi_dai_probe(struct snd_soc_dai *dai)
--- 
-1.7.1
+Ben.
