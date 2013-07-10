@@ -1,22 +1,23 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
- [71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id E4DD72C0182
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 10:00:50 +1000 (EST)
-Message-ID: <1373414448.7458.42.camel@gandalf.local.home>
-Subject: Re: [PATCH 2/2] KVM: PPC: Book3E: Emulate MCSRR0/1 SPR and rfmci
- instruction
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Scott Wood <scottwood@freescale.com>
-Date: Tue, 09 Jul 2013 20:00:48 -0400
-In-Reply-To: <1373408783.8183.208@snotra>
-References: <1373408783.8183.208@snotra>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
- "<kvm@vger.kernel.org> list" <kvm@vger.kernel.org>,
- Alexander Graf <agraf@suse.de>,
- "<kvm-ppc@vger.kernel.org>" <kvm-ppc@vger.kernel.org>,
- Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <B07421@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7592A2C01D4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 10:06:48 +1000 (EST)
+Date: Tue, 9 Jul 2013 19:06:37 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 2/2] KVM: PPC: Book3E: Get vcpu's last instruction for
+ emulation
+To: Alexander Graf <agraf@suse.de>
+In-Reply-To: <BD85AACF-5975-459D-9D28-8DB672D6B5C3@suse.de> (from
+ agraf@suse.de on Tue Jul  9 16:44:24 2013)
+Message-ID: <1373414797.8183.212@snotra>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,97 +27,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-07-09 at 17:26 -0500, Scott Wood wrote:
-> On 07/09/2013 05:00:26 PM, Alexander Graf wrote:
-> > 
-> > On 09.07.2013, at 23:54, Scott Wood wrote:
-> > 
-> > > On 07/09/2013 04:49:32 PM, Alexander Graf wrote:
-> > >> Not sure I understand. What the timing stats do is that they  
-> > measure the time between [exit ... entry], right? We'd do the same  
-> > thing, just all in C code. That means we would become slightly less  
-> > accurate, but gain dynamic enabling of the traces and get rid of all  
-> > the timing stat asm code.
-> > >
-> > > Compile-time enabling bothers me less than a loss of accuracy (not  
-> > just a small loss by moving into C code, but a potential for a large  
-> > loss if we overflow the buffer)
-> > 
-> > Then don't overflow the buffer. Make it large enough.
-> 
-> How large is that?  Does the tool recognize and report when overflow  
-> happens?
+On 07/09/2013 04:44:24 PM, Alexander Graf wrote:
+>=20
+> On 09.07.2013, at 20:46, Scott Wood wrote:
+> > I suspect that tlbsx is faster, or at worst similar.  And unlike =20
+> comparing tlbsx to lwepx (not counting a fix for the threading =20
+> problem), we don't already have code to search the guest TLB, so =20
+> testing would be more work.
+>=20
+> We have code to walk the guest TLB for TLB misses. This really is =20
+> just the TLB miss search without host TLB injection.
+>=20
+> So let's say we're using the shadow TLB. The guest always has its say =20
+> 64 TLB entries that it can count on - we never evict anything by =20
+> accident, because we store all of the 64 entries in our guest TLB =20
+> cache. When the guest faults at an address, the first thing we do is =20
+> we check the cache whether we have that page already mapped.
+>=20
+> However, with this method we now have 2 enumeration methods for guest =20
+> TLB searches. We have the tlbsx one which searches the host TLB and =20
+> we have our guest TLB cache. The guest TLB cache might still contain =20
+> an entry for an address that we already invalidated on the host. =20
+> Would that impose a problem?
+>=20
+> I guess not because we're swizzling the exit code around to instead =20
+> be an instruction miss which means we restore the TLB entry into our =20
+> host's TLB so that when we resume, we land here and the tlbsx hits. =20
+> But it feels backwards.
 
-Note, the ftrace buffers allow you to see when overflow does happen.
+Any better way?  Searching the guest TLB won't work for the LRAT case, =20
+so we'd need to have this logic around anyway.  We shouldn't add a =20
+second codepath unless it's a clear performance gain -- and again, I =20
+suspect it would be the opposite, especially if the entry is not in =20
+TLB0 or in one of the first few entries searched in TLB1.  The tlbsx =20
+miss case is not what we should optimize for.
 
-> 
-> How much will the overhead of running some python script on the host,  
-> consuming a large volume of data, affect the results?
+> At least this code has to become something more generic, such as =20
+> kvmppc_read_guest(vcpu, addr, TYPE_INSN) and move into the host mmu =20
+> implementation, as it's 100% host mmu specific.
 
-This doesn't need to be python, and you can read the buffers in binary
-as well. Mauro wrote a tool that uses ftrace for MCE errors. You can
-probably do something similar. I need to get the code that reads ftrace
-binary buffers out as a library.
+I agree that e500_mmu_host.c is a better place for it (with an ifdef =20
+for BOOKEHV), but supporting anything other than instruction fetches =20
+could wait until we have a user for it (it means extra code to figure =20
+out if permissions are correct).
 
-
-> 
-> > IIRC ftrace improved recently to dynamically increase the buffer size  
-> > too.
-
-What did change was that you can create buffers for your own use.
-
-> > 
-> > Steven, do I remember correctly here?
-> 
-> Yay more complexity.
-
-What? Is ftrace complex? ;-)
-
-> 
-> So now we get to worry about possible memory allocations happening when  
-> we try to log something?  Or if there is a way to do an "atomic" log,  
-> we're back to the "buffer might be full" situation.
-
-Nope, ftrace doesn't do dynamic allocation here.
-
--- Steve
-
-> 
-> > > and a dependency on a userspace tool
-> > 
-> > We already have that for kvm_stat. It's a simple python script - and  
-> > you surely have python on your rootfs, no?
-> > 
-> > > (both in terms of the tool needing to be written, and in the hassle  
-> > of ensuring that it's present in the root filesystem of whatever  
-> > system I'm testing).  And the whole mechanism will be more  
-> > complicated.
-> > 
-> > It'll also be more flexible at the same time. You could take the logs  
-> > and actually check what's going on to debug issues that you're  
-> > encountering for example.
-> > 
-> > We could even go as far as sharing the same tool with other  
-> > architectures, so that we only have to learn how to debug things once.
-> 
-> Have you encountered an actual need for this flexibility, or is it  
-> theoretical?
-> 
-> Is there common infrastructure for dealing with measuring intervals and  
-> tracking statistics thereof, rather than just tracking points and  
-> letting userspace connect the dots (though it could still do that as an  
-> option)?  Even if it must be done in userspace, it doesn't seem like  
-> something that should be KVM-specific.
-> 
-> > > Lots of debug options are enabled at build time; why must this be  
-> > different?
-> > 
-> > Because I think it's valuable as debug tool for cases where compile  
-> > time switches are not the best way of debugging things. It's not a  
-> > high profile thing to tackle for me tbh, but I don't really think  
-> > working heavily on the timing stat thing is the correct path to walk  
-> > along.
-> 
-> Adding new exit types isn't "working heavily" on it.
-> 
-> -Scott
+-Scott=
