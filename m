@@ -1,25 +1,23 @@
 Return-Path: <B07421@freescale.com>
 Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
+ (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C8DCC2C02CD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 04:25:15 +1000 (EST)
-Date: Wed, 10 Jul 2013 13:24:58 -0500
+ by ozlabs.org (Postfix) with ESMTPS id 107402C0178
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 04:37:19 +1000 (EST)
+Date: Wed, 10 Jul 2013 13:37:06 -0500
 From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 2/2] KVM: PPC: Book3E: Emulate MCSRR0/1 SPR and rfmci
- instruction
+Subject: Re: [PATCH 2/2] KVM: PPC: Book3E: Get vcpu's last instruction for
+ emulation
 To: Alexander Graf <agraf@suse.de>
-In-Reply-To: <386A14D3-0968-4FC5-B273-D5D510ADDAF3@suse.de> (from
- agraf@suse.de on Wed Jul 10 05:23:36 2013)
-Message-ID: <1373480698.8183.218@snotra>
+In-Reply-To: <27E6FCB1-322F-410D-A87C-D5410C7374E7@suse.de> (from
+ agraf@suse.de on Wed Jul 10 05:18:10 2013)
+Message-ID: <1373481426.8183.219@snotra>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: Steven Rostedt <rostedt@goodmis.org>,
- Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- "<kvm@vger.kernel.org> list" <kvm@vger.kernel.org>,
- "<kvm-ppc@vger.kernel.org>" <kvm-ppc@vger.kernel.org>
+Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,74 +27,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/10/2013 05:23:36 AM, Alexander Graf wrote:
+On 07/10/2013 05:18:10 AM, Alexander Graf wrote:
 >=20
-> On 10.07.2013, at 00:26, Scott Wood wrote:
+> On 10.07.2013, at 02:12, Scott Wood wrote:
 >=20
-> > On 07/09/2013 05:00:26 PM, Alexander Graf wrote:
-> >> It'll also be more flexible at the same time. You could take the =20
-> logs and actually check what's going on to debug issues that you're =20
-> encountering for example.
-> >> We could even go as far as sharing the same tool with other =20
-> architectures, so that we only have to learn how to debug things once.
+> > On 07/09/2013 04:45:10 PM, Alexander Graf wrote:
+> >> On 28.06.2013, at 11:20, Mihai Caraman wrote:
+> >> > +	/* Get page size */
+> >> > +	if (MAS0_GET_TLBSEL(mfspr(SPRN_MAS0)) =3D=3D 0)
+> >> > +		psize_shift =3D PAGE_SHIFT;
+> >> > +	else
+> >> > +		psize_shift =3D MAS1_GET_TSIZE(mas1) + 10;
+> >> > +
+> >> > +	mas7_mas3 =3D (((u64) mfspr(SPRN_MAS7)) << 32) |
+> >> > +		    mfspr(SPRN_MAS3);
+> >> > +	addr =3D (mas7_mas3 & (~0ULL << psize_shift)) |
+> >> > +	       (geaddr & ((1ULL << psize_shift) - 1ULL));
+> >> > +
+> >> > +	/* Map a page and get guest's instruction */
+> >> > +	page =3D pfn_to_page(addr >> PAGE_SHIFT);
+> >> While looking at this I just realized that you're missing a check =20
+> here. What if our IP is in some PCI BAR? Or can't we execute from =20
+> those?
 > >
-> > Have you encountered an actual need for this flexibility, or is it =20
-> theoretical?
+> > We at least need to check pfn_valid() first.  That'll just keep us =20
+> from accessing a bad pointer in the host kernel, though -- it won't =20
+> make the emulation actually work.  If we need that, we'll probably =20
+> need to create a temporary TLB entry manually.
 >=20
-> Yeah, first thing I did back then to actually debug kvm failures was =20
-> to add trace points.
+> ioremap()?
 
-I meant specifically for handling exit timings this way.
+That's a bit heavy... also we'd need to deal with cacheability.  This =20
+code is already engaged in directly creating TLB entries, so it doesn't =20
+seem like much of a stretch to create one for this.  It should be =20
+faster than ioremap() or kmap_atomic().
 
-> > Is there common infrastructure for dealing with measuring intervals =20
-> and tracking statistics thereof, rather than just tracking points and =20
-> letting userspace connect the dots (though it could still do that as =20
-> an option)?  Even if it must be done in userspace, it doesn't seem =20
-> like something that should be KVM-specific.
+The one complication is allocating the virtual address space, but maybe =20
+we could just use the page that kmap_atomic would have used?  Of =20
+course, if we want to handle execution from other than normal kernel =20
+memory, we'll need to make sure that the virtual address space is =20
+allocated even when highmem is not present (e.g. 64-bit).
+
+> However, if we were walking the guest TLB cache instead we would get =20
+> a guest physical address which we can always resolve to a host =20
+> virtual address.
 >=20
-> Would you like to have different ways of measuring mm subsystem =20
-> overhead? I don't :). The same goes for KVM really. If we could =20
-> converge towards a single user space interface to get exit timings, =20
-> it'd make debugging a lot easier.
+> I'm not sure how important that whole use case is though. Maybe we =20
+> should just error out to the guest for now.
 
-I agree -- that's why I said it doesn't seem like something that should =20
-be KVM-specific.  But that's orthogonal to whether it's done in kernel =20
-space or user space.  The ability to get begin/end events from =20
-userspace would be nice when it is specifically requested, but it would =20
-also be nice if the kernel could track some basic statistics so we =20
-wouldn't have to ship so much data around to arrive at the same result.
-
-At the very least, I'd like such a tool/infrastructure to exist before =20
-we start complaining about doing minor maintenance of the current =20
-mechanism.
-
-> We already have this for the debugfs counters btw. And the timing =20
-> framework does break kvm_stat today already, as it emits textual =20
-> stats rather than numbers which all of the other debugfs stats do. =20
-> But at least I can take the x86 kvm_stat tool and run it on ppc just =20
-> fine to see exit stats.
-
-We already have what?  The last two sentences seem contradictory -- can =20
-you or can't you use kvm_stat as is?  I'm not familiar with kvm_stat.
-
-What does x86 KVM expose in debugfs?
-
-> >> > Lots of debug options are enabled at build time; why must this =20
-> be different?
-> >> Because I think it's valuable as debug tool for cases where =20
-> compile time switches are not the best way of debugging things. It's =20
-> not a high profile thing to tackle for me tbh, but I don't really =20
-> think working heavily on the timing stat thing is the correct path to =20
-> walk along.
-> >
-> > Adding new exit types isn't "working heavily" on it.
->=20
-> No, but the fact that the first patch is a fix to add exit stats for =20
-> exits that we missed out before doesn't give me a lot of confidence =20
-> that lots of people use timing stats. And I am always very weary of =20
-> #ifdef'ed code, as it blows up the test matrix heavily.
-
-I used it quite a lot when I was doing KVM performance work.  It's just =20
-been a while since I last did that.
+It's not that important, now that we are using hugetlb rather than =20
+directly mapping a large hunk of reserved memory.  It would be nice to =20
+handle it though, if we can do without too much hassle.  And I think =20
+manually creating a TLB entry could be faster than kmap_atomic(), or =20
+searching the guest TLB and then doing a reverse memslot lookup.
 
 -Scott=
