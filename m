@@ -1,37 +1,30 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B9B6C2C02AF
- for <linuxppc-dev@ozlabs.org>; Thu, 11 Jul 2013 00:11:57 +1000 (EST)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 10 Jul 2013 23:59:53 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id D9C2E2CE804D
- for <linuxppc-dev@ozlabs.org>; Thu, 11 Jul 2013 00:11:54 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r6ADulAM39256200
- for <linuxppc-dev@ozlabs.org>; Wed, 10 Jul 2013 23:56:47 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r6AEBrhA021992
- for <linuxppc-dev@ozlabs.org>; Thu, 11 Jul 2013 00:11:54 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Fix the corrupt r3 error during MCE handling.
-In-Reply-To: <20130710130155.4993.61577.stgit@mars>
-References: <20130710130155.4993.61577.stgit@mars>
-Date: Wed, 10 Jul 2013 19:41:51 +0530
-Message-ID: <8761wild20.fsf@linux.vnet.ibm.com>
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pd0-f172.google.com (mail-pd0-f172.google.com
+ [209.85.192.172])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4F4772C02BB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 00:17:27 +1000 (EST)
+Received: by mail-pd0-f172.google.com with SMTP id z10so6387113pdj.31
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 07:17:24 -0700 (PDT)
+Message-ID: <51DD6CED.6080001@ozlabs.ru>
+Date: Thu, 11 Jul 2013 00:17:17 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH 2/8] KVM: PPC: reserve a capability and ioctl numbers
+ for realmode VFIO
+References: <1372309356-28320-1-git-send-email-aik@ozlabs.ru>
+ <1372309356-28320-3-git-send-email-aik@ozlabs.ru> <51DC2DDA.6040408@suse.de>
+ <51DC9E32.8040109@ozlabs.ru> <E8E3A724-7045-4B8F-BE29-29BAB41D68C2@suse.de>
+In-Reply-To: <E8E3A724-7045-4B8F-BE29-29BAB41D68C2@suse.de>
+Content-Type: text/plain; charset=KOI8-R
+Cc: kvm@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>,
+ "Paul E . McKenney" <paulmck@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,40 +34,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> writes:
+On 07/10/2013 08:27 PM, Alexander Graf wrote:
+> 
+> On 10.07.2013, at 01:35, Alexey Kardashevskiy wrote:
+> 
+>> On 07/10/2013 01:35 AM, Alexander Graf wrote:
+>>> On 06/27/2013 07:02 AM, Alexey Kardashevskiy wrote:
+>>>> Signed-off-by: Alexey Kardashevskiy<aik@ozlabs.ru>
+>>>> ---
+>>>>  include/uapi/linux/kvm.h |    2 ++
+>>>>  1 file changed, 2 insertions(+)
+>>>>
+>>>> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+>>>> index 970b1f5..0865c01 100644
+>>>> --- a/include/uapi/linux/kvm.h
+>>>> +++ b/include/uapi/linux/kvm.h
+>>>> @@ -667,6 +667,7 @@ struct kvm_ppc_smmu_info {
+>>>>  #define KVM_CAP_PPC_RTAS 91
+>>>>  #define KVM_CAP_IRQ_XICS 92
+>>>>  #define KVM_CAP_SPAPR_MULTITCE 93
+>>>> +#define KVM_CAP_SPAPR_TCE_IOMMU 94
+>>>>
+>>>>  #ifdef KVM_CAP_IRQ_ROUTING
+>>>>
+>>>> @@ -923,6 +924,7 @@ struct kvm_s390_ucas_mapping {
+>>>>  /* Available with KVM_CAP_PPC_ALLOC_HTAB */
+>>>>  #define KVM_PPC_ALLOCATE_HTAB      _IOWR(KVMIO, 0xa7, __u32)
+>>>>  #define KVM_CREATE_SPAPR_TCE      _IOW(KVMIO,  0xa8, struct
+>>>> kvm_create_spapr_tce)
+>>>> +#define KVM_CREATE_SPAPR_TCE_IOMMU _IOW(KVMIO,  0xaf, struct
+>>>> kvm_create_spapr_tce_iommu)
+>>>
+>>> Please order them by number.
+>>
+>> Oh. Again :( We have had this discussion with Scott Wood here already.
+>> Where _exactly_ do you want me to put it?
+> 
+> 8 lines further down. With a comment saying when it's available. Also why is it af, not ad?
 
-> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
->
-> During Machine Check interrupt on pseries platform, R3 generally points to
-> memory region inside RTAS (FWNMI) area. We see r3 corruption because when RTAS
-> delivers the machine check exception it passes the address inside FWNMI area
-> with the top most bit set. This patch fixes this issue by masking top two bit
-> in machine check exception handler.
 
-I always got that error and used to wonder why I find FWNMI
-corrupt. IS this a rtas bug or is it documented in papr ?
+0xad and 0xae are taken.
+Where should I have commented this? In the commit message? Or in the patch
+itself?
 
 
->
-> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/platforms/pseries/ras.c |    3 +++
->  1 file changed, 3 insertions(+)
->
-> diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
-> index 7b3cbde..721c058 100644
-> --- a/arch/powerpc/platforms/pseries/ras.c
-> +++ b/arch/powerpc/platforms/pseries/ras.c
-> @@ -287,6 +287,9 @@ static struct rtas_error_log *fwnmi_get_errinfo(struct pt_regs *regs)
->  	unsigned long *savep;
->  	struct rtas_error_log *h, *errhdr = NULL;
->
-> +	/* Mask top two bits */
-> +	regs->gpr[3] &= ~(0x3UL << 62);
-> +
->  	if (!VALID_FWNMI_BUFFER(regs->gpr[3])) {
->  		printk(KERN_ERR "FWNMI: corrupt r3 0x%016lx\n", regs->gpr[3]);
->  		return NULL;
->
+>> Many sections, not really ordered. Thank you.
+> 
+> They should all be ordered inside of their own categories.
 
--aneesh
+
+-- 
+Alexey
