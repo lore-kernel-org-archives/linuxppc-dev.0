@@ -1,29 +1,27 @@
-Return-Path: <B42677@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5E9B22C01FC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 13:39:24 +1000 (EST)
-From: Zhang Haijun-B42677 <B42677@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: =?utf-8?B?UkU6IOetlOWkjTogW1BBVENIXSBQb3dlcnBjL3Q0MjQwOiBjaGFuZ2UgdGhl?=
- =?utf-8?Q?_compatible_flags_for_t4240qds_board?=
-Date: Wed, 10 Jul 2013 03:41:22 +0000
-Message-ID: <99E897753B6F7048BD8CCDB4661D02E139CE27@039-SN2MPN1-021.039d.mgd.msft.net>
-References: <99E897753B6F7048BD8CCDB4661D02E1396F57@039-SN2MPN1-021.039d.mgd.msft.net>
- (from B42677@freescale.com on Tue Jul  9 01:04:01 2013)
- <1373400262.8183.201@snotra>
-In-Reply-To: <1373400262.8183.201@snotra>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <haokexin@gmail.com>
+Received: from mail-pa0-x230.google.com (mail-pa0-x230.google.com
+ [IPv6:2607:f8b0:400e:c03::230])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0BDC92C00A3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 13:46:54 +1000 (EST)
+Received: by mail-pa0-f48.google.com with SMTP id kp12so6186406pab.7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jul 2013 20:46:52 -0700 (PDT)
+Date: Wed, 10 Jul 2013 11:46:40 +0800
+From: Kevin Hao <haokexin@gmail.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH 1/2] powerpc/math-emu: remove the dead code in math.c
+Message-ID: <20130710034640.GC361@pek-khao-d1.corp.ad.wrs.com>
+References: <1373420623-24869-1-git-send-email-haokexin@gmail.com>
+ <1373420623-24869-2-git-send-email-haokexin@gmail.com>
+ <20130710020132.GA7491@concordia>
+ <20130710022307.GB361@pek-khao-d1.corp.ad.wrs.com>
+ <20130710032533.GA10374@concordia>
 MIME-Version: 1.0
-Cc: "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- Wrobel Heinz-R39252 <r39252@freescale.com>,
- Fleming Andy-AFLEMING <afleming@freescale.com>,
- "cbouatmailru@gmail.com" <cbouatmailru@gmail.com>,
- "cjb@laptop.org" <cjb@laptop.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="LwW0XdcUbUexiWVK"
+In-Reply-To: <20130710032533.GA10374@concordia>
+Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,64 +31,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNClRoYW5rcy4NCg0KUmVnYXJkcw0KSGFpanVuLg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2Fn
-ZS0tLS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+IFNlbnQ6IFdlZG5lc2RheSwgSnVs
-eSAxMCwgMjAxMyA0OjA0IEFNDQo+IFRvOiBaaGFuZyBIYWlqdW4tQjQyNjc3DQo+IENjOiBXb29k
-IFNjb3R0LUIwNzQyMTsgbGludXgtbW1jQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtDQo+IGRl
-dkBsaXN0cy5vemxhYnMub3JnOyBjYm91YXRtYWlscnVAZ21haWwuY29tOyBjamJAbGFwdG9wLm9y
-ZzsgRmxlbWluZw0KPiBBbmR5LUFGTEVNSU5HOyBXcm9iZWwgSGVpbnotUjM5MjUyDQo+IFN1Ympl
-Y3Q6IFJlOiDnrZTlpI06IFtQQVRDSF0gUG93ZXJwYy90NDI0MDogY2hhbmdlIHRoZSBjb21wYXRp
-YmxlIGZsYWdzIGZvcg0KPiB0NDI0MHFkcyBib2FyZA0KPiANCj4gT24gMDcvMDkvMjAxMyAwMTow
-NDowMSBBTSwgWmhhbmcgSGFpanVuLUI0MjY3NyB3cm90ZToNCj4gPg0KPiA+DQo+ID4gUmVnYXJk
-cyAmIFRoYW5rcw0KPiA+DQo+ID4gSGFpanVuLg0KPiA+DQo+ID4gX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fXw0KPiA+IOWPkeS7tuS6ujogV29vZCBTY290dC1CMDc0MjEN
-Cj4gPiDlj5HpgIHml7bpl7Q6IDIwMTPlubQ35pyIOOaXpSAxNzoxNA0KPiA+IOaUtuS7tuS6ujog
-WmhhbmcgSGFpanVuLUI0MjY3Nw0KPiA+IOaKhOmAgTogbGludXgtbW1jQHZnZXIua2VybmVsLm9y
-ZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7DQo+ID4gY2JvdWF0bWFpbHJ1QGdtYWls
-LmNvbTsgY2piQGxhcHRvcC5vcmc7IEZsZW1pbmcgQW5keS1BRkxFTUlORzsgV3JvYmVsDQo+ID4g
-SGVpbnotUjM5MjUyOyBaaGFuZyBIYWlqdW4tQjQyNjc3DQo+ID4g5Li76aKYOiBSZTogW1BBVENI
-XSBQb3dlcnBjL3Q0MjQwOiBjaGFuZ2UgdGhlIGNvbXBhdGlibGUgZmxhZ3MgZm9yDQo+ID4gdDQy
-NDBxZHMgYm9hcmQNCj4gPg0KPiA+IE9uIDA3LzA4LzIwMTMgMDI6MTY6MDMgQU0sIEhhaWp1biBa
-aGFuZyB3cm90ZToNCj4gPiA+IEluIG9yZGVyIHRvIG1ha2UgYSBkaWZmZXJlbmNlIGJldHdlZW4g
-ZGlmZmVyZW50IFQ0MjQwIGJvYXJkLg0KPiA+ID4gU3BlY2lmeSBUNDI0MFFEUyBib2FyZCB0aGUg
-dW5pcXVlIGNvbXBhdGlibGUgZmxhZ3MgZm9yIHQ0MjQwcWRzDQo+ID4gPiBlU0RIQyBob3N0Lg0K
-PiA+ID4NCj4gPiA+IFNpZ25lZC1vZmYtYnk6IEhhaWp1biBaaGFuZyA8SGFpanVuLlpoYW5nQGZy
-ZWVzY2FsZS5jb20+DQo+ID4gPiAtLS0NCj4gPiA+ICBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNs
-L3Q0MjQwc2ktcG9zdC5kdHNpIHwgMiArLQ0KPiA+ID4gIDEgZmlsZSBjaGFuZ2VkLCAxIGluc2Vy
-dGlvbigrKSwgMSBkZWxldGlvbigtKQ0KPiA+ID4NCj4gPiA+IGRpZmYgLS1naXQgYS9hcmNoL3Bv
-d2VycGMvYm9vdC9kdHMvZnNsL3Q0MjQwc2ktcG9zdC5kdHNpDQo+ID4gPiBiL2FyY2gvcG93ZXJw
-Yy9ib290L2R0cy9mc2wvdDQyNDBzaS1wb3N0LmR0c2kNCj4gPiA+IGluZGV4IGJkNjExYTkuLjA4
-YjQ3ZDAgMTAwNjQ0DQo+ID4gPiAtLS0gYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3Q0MjQw
-c2ktcG9zdC5kdHNpDQo+ID4gPiArKysgYi9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3Q0MjQw
-c2ktcG9zdC5kdHNpDQo+ID4gPiBAQCAtMzk3LDcgKzM5Nyw3IEBADQo+ID4gPg0KPiA+ID4gIC9p
-bmNsdWRlLyAicW9yaXEtZXNkaGMtMC5kdHNpIg0KPiA+ID4gICAgICAgc2RoY0AxMTQwMDAgew0K
-PiA+ID4gLSAgICAgICAgICAgICBjb21wYXRpYmxlID0gImZzbCx0NDI0MC1lc2RoYyIsICJmc2ws
-ZXNkaGMiOw0KPiA+ID4gKyAgICAgICAgICAgICBjb21wYXRpYmxlID0gImZzbCx0NDI0MHFkcy1l
-c2RoYyIsICJmc2wsZXNkaGMiOw0KPiA+ID4gICAgICAgICAgICAgICBzZGhjaSxhdXRvLWNtZDEy
-Ow0KPiA+ID4gICAgICAgfTsNCj4gPg0KPiA+IE5BQ0suICBUaGlzIG5vZGUgaXMgZGVzY3JpYmlu
-ZyB0aGUgc2RoYyBibG9jayBvZiB0aGUgdDQyNDAgU29DLiAgV2hhdA0KPiA+IGJvYXJkIHlvdSBz
-dGljayBpdCBpbiBkb2Vzbid0IGNoYW5nZSB3aGF0IGl0IGlzLg0KPiA+DQo+ID4gUGx1cywgd2hh
-dCBhYm91dCB1c2VycyB3aXRoIG9sZCBkZXZpY2UgdHJlZXM/DQo+ID4NCj4gPiBDdXJyZW50bHkg
-bm8gdXNlcnMgdXNlIHRoaXMgaXAgYmxvY2sgZXhjZXB0IGVzZGhjIGRyaXZlci4NCj4gDQo+IEkn
-bSBub3QgdGFsa2luZyBhYm91dCBjb2RlIHVzZXJzLiAgSSdtIHRhbGtpbmcgYWJvdXQgcGVvcGxl
-IHVzZXJzLg0KPiANCj4gPiBIb3cgYWJvdXQgY2hhbmdlIHRoaXMgaW4gYXJjaC9wb3dlcnBjL2Jv
-b3QvZHRzL3Q0MjQwcWRzLmR0cw0KPiA+DQo+ID4gKysrIGIvYXJjaC9wb3dlcnBjL2Jvb3QvZHRz
-L3Q0MjQwcWRzLmR0cw0KPiA+IEBAIC0xMTcsNiArMTE3LDEwIEBADQo+ID4gICAgICAgICAgICAg
-ICAgICAgICAgICAgfTsNCj4gPiAgICAgICAgICAgICAgICAgfTsNCj4gPg0KPiA+ICAgICAgICAg
-ICAgICAgIHNkaGNAMTE0MDAwIHsNCj4gPiAgICAgICAgICAgICAgICAgICAgICAgY29tcGF0aWJs
-ZSA9ICJmc2wsdDQyNDAtZXNkaGMiLCAiZnNsLGVzZGhjIjsNCj4gPiAgICAgICAgICAgICAgICB9
-Ow0KPiA+DQo+ID4gICAgICAgICAgICAgICAgaTJjQDExODAwMCB7DQo+ID4NCj4gPg0KPiA+ICsr
-KyBiL2FyY2gvcG93ZXJwYy9ib290L2R0cy90NDI0MHFkcy5kdHMNCj4gPiBAQCAtMTE3LDYgKzEx
-NywxMCBAQA0KPiA+ICAgICAgICAgICAgICAgICAgICAgICAgIH07DQo+ID4gICAgICAgICAgICAg
-ICAgIH07DQo+ID4NCj4gPiArICAgICAgICAgICAgICAgc2RoY0AxMTQwMDAgew0KPiA+ICsgICAg
-ICAgICAgICAgICAgICAgICAgIGNvbXBhdGlibGUgPSAiZnNsLHQ0MjQwcWRzLWVzZGhjIiwNCj4g
-PiAiZnNsLGVzZGhjIjsNCj4gPiArICAgICAgICAgICAgICAgfTsNCj4gPiArDQo+ID4gICAgICAg
-ICAgICAgICAgIGkyY0AxMTgwMDAgew0KPiANCj4gTm8uICBJdCdzIHN0aWxsIHN1cHBvc2VkIHRv
-IGJlIGRlc2NyaWJpbmcgdGhlIHNkaGMgYmxvY2sgaXRzZWxmLCBub3QgdGhlDQo+IGJvYXJkIC0t
-IGFuZCBhbnkgd29ya2Fyb3VuZHMgdGhhdCBrZXkgb2ZmIG9mIHRoaXMgd2lsbCBzdGlsbCBmYWls
-IHRvIHdvcmsNCj4gd2l0aCBleGlzdGluZyBkZXZpY2UgdHJlZXMuDQpbSGFpanVuIFdyb3RlOl0g
-U28sIGxlYXZlIGR0cyB1bmNoYW5nZWQgYW5kIHRvIGNoZWNrIGNvbXBpdGFibGUgZm9yIGJvYXJk
-IGluIHNkaGNpLXBsdGZtLmMNCmUuZy46DQoJdW5zaWduZWQgbG9uZyByb290ID0gb2ZfZ2V0X2Zs
-YXRfZHRfcm9vdCgpOw0KDQoJaWYgKG9mX2ZsYXRfZHRfaXNfY29tcGF0aWJsZShyb290LCAiZnNs
-LFQ0MjQwUURTIikpDQoJCWhvc3QtPnF1aXJrcyB8PSBYWFg7DQoNCklzIHRoaXMgb2s/DQoJDQo+
-IA0KPiAtU2NvdHQNCg==
+
+--LwW0XdcUbUexiWVK
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, Jul 10, 2013 at 01:25:33PM +1000, Michael Ellerman wrote:
+> On Wed, Jul 10, 2013 at 10:23:07AM +0800, Kevin Hao wrote:
+> > On Wed, Jul 10, 2013 at 12:01:33PM +1000, Michael Ellerman wrote:
+> > > On Wed, Jul 10, 2013 at 09:43:42AM +0800, Kevin Hao wrote:
+> > > > The math.c is only built when CONFIG_MATH_EMULATION is enabled.
+> > > > So we would never get into the case that CONFIG_MATH_EMULATION
+> > > > is not defined in this file.
+> > >=20
+> > > Any idea why we have that there? ie. have the config symbols changed
+> > > over time or was this always dead code?
+> >=20
+> > No idea. I tried to trace this before submitting the patch. But it has
+> > been there since the begin of the git history. So I just assume that it=
+ is
+> > always dead code. :-)
+>=20
+> Yeah looks like it. Even in the git-huge tree I see it in the initial
+> commit.
+
+Thanks for the confirmation.
+
+>=20
+> You should say that in the commit message though. Otherwise it's not
+> clear if you're fixing a recent breakage or not.
+
+Indeed. I will wait a little to see if there are any other comments. Then
+respin a new version to capture such info in the commit log.
+
+Thanks,
+Kevin
+
+>=20
+> cheers
+
+--LwW0XdcUbUexiWVK
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQEcBAEBAgAGBQJR3NkgAAoJEJNY7TDerrFxdeEIALmXEkrFbmtR63y1ElrcQDs1
+L5+WOsdO9xUdjGcgu1rQJFj6nyrnZiuwcsONLsv0UebnyzDeQy4MWds5ZyNvMdH2
+s6oHX3ts97bTnGgFCq8mNaCxJSS0yIR1vVDh04X9vsWNQeweJxK1DQ5AaXWutUYM
+s6eTzYhkqx4Kw5CO/3ylJcXrrU1xMiWilcVwQ7WmxYyrpsoV7me3cjqrCRbwGwXK
+CWFyct78GCEj6dOzH6qe3HGHQdnT/8pvC9f+fikQLlwoeDTTDrzPKvPqaizbP1ZB
+ciybE8Ld8BC8UMZql5YxGrO5f8M0OeZ6uBPjAIxwPxfpSpi+VV1yiH/G7M+J4J4=
+=iu3d
+-----END PGP SIGNATURE-----
+
+--LwW0XdcUbUexiWVK--
