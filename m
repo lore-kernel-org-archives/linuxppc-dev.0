@@ -1,25 +1,29 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 7453E2C0084
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 13:37:19 +1000 (EST)
-Message-ID: <1373427426.16720.6.camel@pasglop>
-Subject: Re: [PATCH 5/8] powerpc: add real mode support for dma operations
- on powernv
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alexander Graf <agraf@suse.de>
-Date: Wed, 10 Jul 2013 13:37:06 +1000
-In-Reply-To: <51DC341D.20901@suse.de>
-References: <1373123227-22969-1-git-send-email-aik@ozlabs.ru>
- <1373123227-22969-6-git-send-email-aik@ozlabs.ru> <51DC341D.20901@suse.de>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
- linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <B42677@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 5E9B22C01FC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 13:39:24 +1000 (EST)
+From: Zhang Haijun-B42677 <B42677@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: =?utf-8?B?UkU6IOetlOWkjTogW1BBVENIXSBQb3dlcnBjL3Q0MjQwOiBjaGFuZ2UgdGhl?=
+ =?utf-8?Q?_compatible_flags_for_t4240qds_board?=
+Date: Wed, 10 Jul 2013 03:41:22 +0000
+Message-ID: <99E897753B6F7048BD8CCDB4661D02E139CE27@039-SN2MPN1-021.039d.mgd.msft.net>
+References: <99E897753B6F7048BD8CCDB4661D02E1396F57@039-SN2MPN1-021.039d.mgd.msft.net>
+ (from B42677@freescale.com on Tue Jul  9 01:04:01 2013)
+ <1373400262.8183.201@snotra>
+In-Reply-To: <1373400262.8183.201@snotra>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+ Wrobel Heinz-R39252 <r39252@freescale.com>,
+ Fleming Andy-AFLEMING <afleming@freescale.com>,
+ "cbouatmailru@gmail.com" <cbouatmailru@gmail.com>,
+ "cjb@laptop.org" <cjb@laptop.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,228 +33,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-07-09 at 18:02 +0200, Alexander Graf wrote:
-> On 07/06/2013 05:07 PM, Alexey Kardashevskiy wrote:
-> > The existing TCE machine calls (tce_build and tce_free) only support
-> > virtual mode as they call __raw_writeq for TCE invalidation what
-> > fails in real mode.
-> >
-> > This introduces tce_build_rm and tce_free_rm real mode versions
-> > which do mostly the same but use "Store Doubleword Caching Inhibited
-> > Indexed" instruction for TCE invalidation.
-> 
-> So would always using stdcix have any bad side effects?
-
-Yes. Those instructions are only supposed to be used in hypervisor real
-mode as per the architecture spec.
-
-Cheers,
-Ben.
-
-> 
-> Alex
-> 
-> >
-> > This new feature is going to be utilized by real mode support of VFIO.
-> >
-> > Signed-off-by: Alexey Kardashevskiy<aik@ozlabs.ru>
-> > ---
-> >   arch/powerpc/include/asm/machdep.h        | 12 ++++++++++
-> >   arch/powerpc/platforms/powernv/pci-ioda.c | 26 +++++++++++++++------
-> >   arch/powerpc/platforms/powernv/pci.c      | 38 ++++++++++++++++++++++++++-----
-> >   arch/powerpc/platforms/powernv/pci.h      |  2 +-
-> >   4 files changed, 64 insertions(+), 14 deletions(-)
-> >
-> > diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-> > index 92386fc..0c19eef 100644
-> > --- a/arch/powerpc/include/asm/machdep.h
-> > +++ b/arch/powerpc/include/asm/machdep.h
-> > @@ -75,6 +75,18 @@ struct machdep_calls {
-> >   				    long index);
-> >   	void		(*tce_flush)(struct iommu_table *tbl);
-> >
-> > +	/* _rm versions are for real mode use only */
-> > +	int		(*tce_build_rm)(struct iommu_table *tbl,
-> > +				     long index,
-> > +				     long npages,
-> > +				     unsigned long uaddr,
-> > +				     enum dma_data_direction direction,
-> > +				     struct dma_attrs *attrs);
-> > +	void		(*tce_free_rm)(struct iommu_table *tbl,
-> > +				    long index,
-> > +				    long npages);
-> > +	void		(*tce_flush_rm)(struct iommu_table *tbl);
-> > +
-> >   	void __iomem *	(*ioremap)(phys_addr_t addr, unsigned long size,
-> >   				   unsigned long flags, void *caller);
-> >   	void		(*iounmap)(volatile void __iomem *token);
-> > diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> > index 2931d97..2797dec 100644
-> > --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> > +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> > @@ -68,6 +68,12 @@ define_pe_printk_level(pe_err, KERN_ERR);
-> >   define_pe_printk_level(pe_warn, KERN_WARNING);
-> >   define_pe_printk_level(pe_info, KERN_INFO);
-> >
-> > +static inline void rm_writed(unsigned long paddr, u64 val)
-> > +{
-> > +	__asm__ __volatile__("sync; stdcix %0,0,%1"
-> > +		: : "r" (val), "r" (paddr) : "memory");
-> > +}
-> > +
-> >   static int pnv_ioda_alloc_pe(struct pnv_phb *phb)
-> >   {
-> >   	unsigned long pe;
-> > @@ -442,7 +448,7 @@ static void pnv_pci_ioda_dma_dev_setup(struct pnv_phb *phb, struct pci_dev *pdev
-> >   }
-> >
-> >   static void pnv_pci_ioda1_tce_invalidate(struct iommu_table *tbl,
-> > -					 u64 *startp, u64 *endp)
-> > +					 u64 *startp, u64 *endp, bool rm)
-> >   {
-> >   	u64 __iomem *invalidate = (u64 __iomem *)tbl->it_index;
-> >   	unsigned long start, end, inc;
-> > @@ -471,7 +477,10 @@ static void pnv_pci_ioda1_tce_invalidate(struct iommu_table *tbl,
-> >
-> >           mb(); /* Ensure above stores are visible */
-> >           while (start<= end) {
-> > -                __raw_writeq(start, invalidate);
-> > +		if (rm)
-> > +			rm_writed((unsigned long) invalidate, start);
-> > +		else
-> > +			__raw_writeq(start, invalidate);
-> >                   start += inc;
-> >           }
-> >
-> > @@ -483,7 +492,7 @@ static void pnv_pci_ioda1_tce_invalidate(struct iommu_table *tbl,
-> >
-> >   static void pnv_pci_ioda2_tce_invalidate(struct pnv_ioda_pe *pe,
-> >   					 struct iommu_table *tbl,
-> > -					 u64 *startp, u64 *endp)
-> > +					 u64 *startp, u64 *endp, bool rm)
-> >   {
-> >   	unsigned long start, end, inc;
-> >   	u64 __iomem *invalidate = (u64 __iomem *)tbl->it_index;
-> > @@ -502,22 +511,25 @@ static void pnv_pci_ioda2_tce_invalidate(struct pnv_ioda_pe *pe,
-> >   	mb();
-> >
-> >   	while (start<= end) {
-> > -		__raw_writeq(start, invalidate);
-> > +		if (rm)
-> > +			rm_writed((unsigned long) invalidate, start);
-> > +		else
-> > +			__raw_writeq(start, invalidate);
-> >   		start += inc;
-> >   	}
-> >   }
-> >
-> >   void pnv_pci_ioda_tce_invalidate(struct iommu_table *tbl,
-> > -				 u64 *startp, u64 *endp)
-> > +				 u64 *startp, u64 *endp, bool rm)
-> >   {
-> >   	struct pnv_ioda_pe *pe = container_of(tbl, struct pnv_ioda_pe,
-> >   					      tce32_table);
-> >   	struct pnv_phb *phb = pe->phb;
-> >
-> >   	if (phb->type == PNV_PHB_IODA1)
-> > -		pnv_pci_ioda1_tce_invalidate(tbl, startp, endp);
-> > +		pnv_pci_ioda1_tce_invalidate(tbl, startp, endp, rm);
-> >   	else
-> > -		pnv_pci_ioda2_tce_invalidate(pe, tbl, startp, endp);
-> > +		pnv_pci_ioda2_tce_invalidate(pe, tbl, startp, endp, rm);
-> >   }
-> >
-> >   static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
-> > diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-> > index e16b729..280f614 100644
-> > --- a/arch/powerpc/platforms/powernv/pci.c
-> > +++ b/arch/powerpc/platforms/powernv/pci.c
-> > @@ -336,7 +336,7 @@ struct pci_ops pnv_pci_ops = {
-> >
-> >   static int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
-> >   			 unsigned long uaddr, enum dma_data_direction direction,
-> > -			 struct dma_attrs *attrs)
-> > +			 struct dma_attrs *attrs, bool rm)
-> >   {
-> >   	u64 proto_tce;
-> >   	u64 *tcep, *tces;
-> > @@ -358,12 +358,19 @@ static int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
-> >   	 * of flags if that becomes the case
-> >   	 */
-> >   	if (tbl->it_type&  TCE_PCI_SWINV_CREATE)
-> > -		pnv_pci_ioda_tce_invalidate(tbl, tces, tcep - 1);
-> > +		pnv_pci_ioda_tce_invalidate(tbl, tces, tcep - 1, rm);
-> >
-> >   	return 0;
-> >   }
-> >
-> > -static void pnv_tce_free(struct iommu_table *tbl, long index, long npages)
-> > +static int pnv_tce_build_vm(struct iommu_table *tbl, long index, long npages,
-> > +			    unsigned long uaddr, enum dma_data_direction direction,
-> > +			    struct dma_attrs *attrs)
-> > +{
-> > +	return pnv_tce_build(tbl, index, npages, uaddr, direction, attrs, false);
-> > +}
-> > +
-> > +static void pnv_tce_free(struct iommu_table *tbl, long index, long npages, bool rm)
-> >   {
-> >   	u64 *tcep, *tces;
-> >
-> > @@ -373,7 +380,12 @@ static void pnv_tce_free(struct iommu_table *tbl, long index, long npages)
-> >   		*(tcep++) = 0;
-> >
-> >   	if (tbl->it_type&  TCE_PCI_SWINV_FREE)
-> > -		pnv_pci_ioda_tce_invalidate(tbl, tces, tcep - 1);
-> > +		pnv_pci_ioda_tce_invalidate(tbl, tces, tcep - 1, rm);
-> > +}
-> > +
-> > +static void pnv_tce_free_vm(struct iommu_table *tbl, long index, long npages)
-> > +{
-> > +	pnv_tce_free(tbl, index, npages, false);
-> >   }
-> >
-> >   static unsigned long pnv_tce_get(struct iommu_table *tbl, long index)
-> > @@ -381,6 +393,18 @@ static unsigned long pnv_tce_get(struct iommu_table *tbl, long index)
-> >   	return ((u64 *)tbl->it_base)[index - tbl->it_offset];
-> >   }
-> >
-> > +static int pnv_tce_build_rm(struct iommu_table *tbl, long index, long npages,
-> > +			    unsigned long uaddr, enum dma_data_direction direction,
-> > +			    struct dma_attrs *attrs)
-> > +{
-> > +	return pnv_tce_build(tbl, index, npages, uaddr, direction, attrs, true);
-> > +}
-> > +
-> > +static void pnv_tce_free_rm(struct iommu_table *tbl, long index, long npages)
-> > +{
-> > +	pnv_tce_free(tbl, index, npages, true);
-> > +}
-> > +
-> >   void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
-> >   			       void *tce_mem, u64 tce_size,
-> >   			       u64 dma_offset)
-> > @@ -545,8 +569,10 @@ void __init pnv_pci_init(void)
-> >
-> >   	/* Configure IOMMU DMA hooks */
-> >   	ppc_md.pci_dma_dev_setup = pnv_pci_dma_dev_setup;
-> > -	ppc_md.tce_build = pnv_tce_build;
-> > -	ppc_md.tce_free = pnv_tce_free;
-> > +	ppc_md.tce_build = pnv_tce_build_vm;
-> > +	ppc_md.tce_free = pnv_tce_free_vm;
-> > +	ppc_md.tce_build_rm = pnv_tce_build_rm;
-> > +	ppc_md.tce_free_rm = pnv_tce_free_rm;
-> >   	ppc_md.tce_get = pnv_tce_get;
-> >   	ppc_md.pci_probe_mode = pnv_pci_probe_mode;
-> >   	set_pci_dma_ops(&dma_iommu_ops);
-> > diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-> > index 25d76c4..6799374 100644
-> > --- a/arch/powerpc/platforms/powernv/pci.h
-> > +++ b/arch/powerpc/platforms/powernv/pci.h
-> > @@ -158,6 +158,6 @@ extern void pnv_pci_init_p5ioc2_hub(struct device_node *np);
-> >   extern void pnv_pci_init_ioda_hub(struct device_node *np);
-> >   extern void pnv_pci_init_ioda2_phb(struct device_node *np);
-> >   extern void pnv_pci_ioda_tce_invalidate(struct iommu_table *tbl,
-> > -					u64 *startp, u64 *endp);
-> > +					u64 *startp, u64 *endp, bool rm);
-> >
-> >   #endif /* __POWERNV_PCI_H */
+DQoNClRoYW5rcy4NCg0KUmVnYXJkcw0KSGFpanVuLg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2Fn
+ZS0tLS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+IFNlbnQ6IFdlZG5lc2RheSwgSnVs
+eSAxMCwgMjAxMyA0OjA0IEFNDQo+IFRvOiBaaGFuZyBIYWlqdW4tQjQyNjc3DQo+IENjOiBXb29k
+IFNjb3R0LUIwNzQyMTsgbGludXgtbW1jQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtDQo+IGRl
+dkBsaXN0cy5vemxhYnMub3JnOyBjYm91YXRtYWlscnVAZ21haWwuY29tOyBjamJAbGFwdG9wLm9y
+ZzsgRmxlbWluZw0KPiBBbmR5LUFGTEVNSU5HOyBXcm9iZWwgSGVpbnotUjM5MjUyDQo+IFN1Ympl
+Y3Q6IFJlOiDnrZTlpI06IFtQQVRDSF0gUG93ZXJwYy90NDI0MDogY2hhbmdlIHRoZSBjb21wYXRp
+YmxlIGZsYWdzIGZvcg0KPiB0NDI0MHFkcyBib2FyZA0KPiANCj4gT24gMDcvMDkvMjAxMyAwMTow
+NDowMSBBTSwgWmhhbmcgSGFpanVuLUI0MjY3NyB3cm90ZToNCj4gPg0KPiA+DQo+ID4gUmVnYXJk
+cyAmIFRoYW5rcw0KPiA+DQo+ID4gSGFpanVuLg0KPiA+DQo+ID4gX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fXw0KPiA+IOWPkeS7tuS6ujogV29vZCBTY290dC1CMDc0MjEN
+Cj4gPiDlj5HpgIHml7bpl7Q6IDIwMTPlubQ35pyIOOaXpSAxNzoxNA0KPiA+IOaUtuS7tuS6ujog
+WmhhbmcgSGFpanVuLUI0MjY3Nw0KPiA+IOaKhOmAgTogbGludXgtbW1jQHZnZXIua2VybmVsLm9y
+ZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7DQo+ID4gY2JvdWF0bWFpbHJ1QGdtYWls
+LmNvbTsgY2piQGxhcHRvcC5vcmc7IEZsZW1pbmcgQW5keS1BRkxFTUlORzsgV3JvYmVsDQo+ID4g
+SGVpbnotUjM5MjUyOyBaaGFuZyBIYWlqdW4tQjQyNjc3DQo+ID4g5Li76aKYOiBSZTogW1BBVENI
+XSBQb3dlcnBjL3Q0MjQwOiBjaGFuZ2UgdGhlIGNvbXBhdGlibGUgZmxhZ3MgZm9yDQo+ID4gdDQy
+NDBxZHMgYm9hcmQNCj4gPg0KPiA+IE9uIDA3LzA4LzIwMTMgMDI6MTY6MDMgQU0sIEhhaWp1biBa
+aGFuZyB3cm90ZToNCj4gPiA+IEluIG9yZGVyIHRvIG1ha2UgYSBkaWZmZXJlbmNlIGJldHdlZW4g
+ZGlmZmVyZW50IFQ0MjQwIGJvYXJkLg0KPiA+ID4gU3BlY2lmeSBUNDI0MFFEUyBib2FyZCB0aGUg
+dW5pcXVlIGNvbXBhdGlibGUgZmxhZ3MgZm9yIHQ0MjQwcWRzDQo+ID4gPiBlU0RIQyBob3N0Lg0K
+PiA+ID4NCj4gPiA+IFNpZ25lZC1vZmYtYnk6IEhhaWp1biBaaGFuZyA8SGFpanVuLlpoYW5nQGZy
+ZWVzY2FsZS5jb20+DQo+ID4gPiAtLS0NCj4gPiA+ICBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNs
+L3Q0MjQwc2ktcG9zdC5kdHNpIHwgMiArLQ0KPiA+ID4gIDEgZmlsZSBjaGFuZ2VkLCAxIGluc2Vy
+dGlvbigrKSwgMSBkZWxldGlvbigtKQ0KPiA+ID4NCj4gPiA+IGRpZmYgLS1naXQgYS9hcmNoL3Bv
+d2VycGMvYm9vdC9kdHMvZnNsL3Q0MjQwc2ktcG9zdC5kdHNpDQo+ID4gPiBiL2FyY2gvcG93ZXJw
+Yy9ib290L2R0cy9mc2wvdDQyNDBzaS1wb3N0LmR0c2kNCj4gPiA+IGluZGV4IGJkNjExYTkuLjA4
+YjQ3ZDAgMTAwNjQ0DQo+ID4gPiAtLS0gYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3Q0MjQw
+c2ktcG9zdC5kdHNpDQo+ID4gPiArKysgYi9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3Q0MjQw
+c2ktcG9zdC5kdHNpDQo+ID4gPiBAQCAtMzk3LDcgKzM5Nyw3IEBADQo+ID4gPg0KPiA+ID4gIC9p
+bmNsdWRlLyAicW9yaXEtZXNkaGMtMC5kdHNpIg0KPiA+ID4gICAgICAgc2RoY0AxMTQwMDAgew0K
+PiA+ID4gLSAgICAgICAgICAgICBjb21wYXRpYmxlID0gImZzbCx0NDI0MC1lc2RoYyIsICJmc2ws
+ZXNkaGMiOw0KPiA+ID4gKyAgICAgICAgICAgICBjb21wYXRpYmxlID0gImZzbCx0NDI0MHFkcy1l
+c2RoYyIsICJmc2wsZXNkaGMiOw0KPiA+ID4gICAgICAgICAgICAgICBzZGhjaSxhdXRvLWNtZDEy
+Ow0KPiA+ID4gICAgICAgfTsNCj4gPg0KPiA+IE5BQ0suICBUaGlzIG5vZGUgaXMgZGVzY3JpYmlu
+ZyB0aGUgc2RoYyBibG9jayBvZiB0aGUgdDQyNDAgU29DLiAgV2hhdA0KPiA+IGJvYXJkIHlvdSBz
+dGljayBpdCBpbiBkb2Vzbid0IGNoYW5nZSB3aGF0IGl0IGlzLg0KPiA+DQo+ID4gUGx1cywgd2hh
+dCBhYm91dCB1c2VycyB3aXRoIG9sZCBkZXZpY2UgdHJlZXM/DQo+ID4NCj4gPiBDdXJyZW50bHkg
+bm8gdXNlcnMgdXNlIHRoaXMgaXAgYmxvY2sgZXhjZXB0IGVzZGhjIGRyaXZlci4NCj4gDQo+IEkn
+bSBub3QgdGFsa2luZyBhYm91dCBjb2RlIHVzZXJzLiAgSSdtIHRhbGtpbmcgYWJvdXQgcGVvcGxl
+IHVzZXJzLg0KPiANCj4gPiBIb3cgYWJvdXQgY2hhbmdlIHRoaXMgaW4gYXJjaC9wb3dlcnBjL2Jv
+b3QvZHRzL3Q0MjQwcWRzLmR0cw0KPiA+DQo+ID4gKysrIGIvYXJjaC9wb3dlcnBjL2Jvb3QvZHRz
+L3Q0MjQwcWRzLmR0cw0KPiA+IEBAIC0xMTcsNiArMTE3LDEwIEBADQo+ID4gICAgICAgICAgICAg
+ICAgICAgICAgICAgfTsNCj4gPiAgICAgICAgICAgICAgICAgfTsNCj4gPg0KPiA+ICAgICAgICAg
+ICAgICAgIHNkaGNAMTE0MDAwIHsNCj4gPiAgICAgICAgICAgICAgICAgICAgICAgY29tcGF0aWJs
+ZSA9ICJmc2wsdDQyNDAtZXNkaGMiLCAiZnNsLGVzZGhjIjsNCj4gPiAgICAgICAgICAgICAgICB9
+Ow0KPiA+DQo+ID4gICAgICAgICAgICAgICAgaTJjQDExODAwMCB7DQo+ID4NCj4gPg0KPiA+ICsr
+KyBiL2FyY2gvcG93ZXJwYy9ib290L2R0cy90NDI0MHFkcy5kdHMNCj4gPiBAQCAtMTE3LDYgKzEx
+NywxMCBAQA0KPiA+ICAgICAgICAgICAgICAgICAgICAgICAgIH07DQo+ID4gICAgICAgICAgICAg
+ICAgIH07DQo+ID4NCj4gPiArICAgICAgICAgICAgICAgc2RoY0AxMTQwMDAgew0KPiA+ICsgICAg
+ICAgICAgICAgICAgICAgICAgIGNvbXBhdGlibGUgPSAiZnNsLHQ0MjQwcWRzLWVzZGhjIiwNCj4g
+PiAiZnNsLGVzZGhjIjsNCj4gPiArICAgICAgICAgICAgICAgfTsNCj4gPiArDQo+ID4gICAgICAg
+ICAgICAgICAgIGkyY0AxMTgwMDAgew0KPiANCj4gTm8uICBJdCdzIHN0aWxsIHN1cHBvc2VkIHRv
+IGJlIGRlc2NyaWJpbmcgdGhlIHNkaGMgYmxvY2sgaXRzZWxmLCBub3QgdGhlDQo+IGJvYXJkIC0t
+IGFuZCBhbnkgd29ya2Fyb3VuZHMgdGhhdCBrZXkgb2ZmIG9mIHRoaXMgd2lsbCBzdGlsbCBmYWls
+IHRvIHdvcmsNCj4gd2l0aCBleGlzdGluZyBkZXZpY2UgdHJlZXMuDQpbSGFpanVuIFdyb3RlOl0g
+U28sIGxlYXZlIGR0cyB1bmNoYW5nZWQgYW5kIHRvIGNoZWNrIGNvbXBpdGFibGUgZm9yIGJvYXJk
+IGluIHNkaGNpLXBsdGZtLmMNCmUuZy46DQoJdW5zaWduZWQgbG9uZyByb290ID0gb2ZfZ2V0X2Zs
+YXRfZHRfcm9vdCgpOw0KDQoJaWYgKG9mX2ZsYXRfZHRfaXNfY29tcGF0aWJsZShyb290LCAiZnNs
+LFQ0MjQwUURTIikpDQoJCWhvc3QtPnF1aXJrcyB8PSBYWFg7DQoNCklzIHRoaXMgb2s/DQoJDQo+
+IA0KPiAtU2NvdHQNCg==
