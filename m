@@ -1,25 +1,25 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail-pb0-x22d.google.com (mail-pb0-x22d.google.com
- [IPv6:2607:f8b0:400e:c01::22d])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 454B72C013D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 12:23:22 +1000 (EST)
-Received: by mail-pb0-f45.google.com with SMTP id mc8so6154755pbc.32
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jul 2013 19:23:19 -0700 (PDT)
-Date: Wed, 10 Jul 2013 10:23:07 +0800
-From: Kevin Hao <haokexin@gmail.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 1/2] powerpc/math-emu: remove the dead code in math.c
-Message-ID: <20130710022307.GB361@pek-khao-d1.corp.ad.wrs.com>
-References: <1373420623-24869-1-git-send-email-haokexin@gmail.com>
- <1373420623-24869-2-git-send-email-haokexin@gmail.com>
- <20130710020132.GA7491@concordia>
+Return-Path: <michael@ellerman.id.au>
+Date: Wed, 10 Jul 2013 12:37:16 +1000
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Vince Weaver <vincent.weaver@maine.edu>
+Subject: Re: [PATCH v2 2/2] perf tools: Make Power7 events available for perf
+Message-ID: <20130710023715.GC7491@concordia>
+References: <1372170933-4538-1-git-send-email-runzhen@linux.vnet.ibm.com>
+ <1372170933-4538-3-git-send-email-runzhen@linux.vnet.ibm.com>
+ <alpine.DEB.2.02.1306251240440.25443@pianoman.cluster.toy>
+ <20130704125218.GA21134@concordia>
+ <20130704125700.GM18898@dyad.programming.kicks-ass.net>
+ <20130709012952.GA7185@concordia>
+ <alpine.DEB.2.10.1307082204550.26280@vincent-weaver-1.um.maine.edu>
+ <20130709033402.GA8543@concordia>
+ <alpine.DEB.2.10.1307091113010.675@vincent-weaver-1.um.maine.edu>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="TRYliJ5NKNqkz5bu"
-In-Reply-To: <20130710020132.GA7491@concordia>
-Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.DEB.2.10.1307091113010.675@vincent-weaver-1.um.maine.edu>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+ Stephane Eranian <eranian@google.com>, xiaoguangrong@linux.vnet.ibm.com,
+ acme@redhat.com, paulus@samba.org, Runzhen Wang <runzhen@linux.vnet.ibm.com>,
+ sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,44 +29,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Jul 09, 2013 at 11:20:50AM -0400, Vince Weaver wrote:
+> On Tue, 9 Jul 2013, Michael Ellerman wrote:
+> 
+> > On Mon, Jul 08, 2013 at 10:24:34PM -0400, Vince Weaver wrote:
+> > > why is it a hack to use cpuid?
+> > 
+> > Because you're assuming that the PMU the kernel has exposed is for the
+> > cpu you happen to be executing on.
+> > 
+> > But the real issue is with PMUs that are not in the CPU - there is no
+> > easy way for userspace to detect them and determine which event list it
+> > should be consulting.
+> 
+> what kind of devices are you talking about?  
 
---TRYliJ5NKNqkz5bu
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+GPUs, PCI host bridges, memory controllers, PCI attached accelerators,
+strange devices on non standard buses, you name it.
 
-On Wed, Jul 10, 2013 at 12:01:33PM +1000, Michael Ellerman wrote:
-> On Wed, Jul 10, 2013 at 09:43:42AM +0800, Kevin Hao wrote:
-> > The math.c is only built when CONFIG_MATH_EMULATION is enabled.
-> > So we would never get into the case that CONFIG_MATH_EMULATION
-> > is not defined in this file.
->=20
-> Any idea why we have that there? ie. have the config symbols changed
-> over time or was this always dead code?
+> If they have kernel/perf_event support then they'd be putting a
+> directory entry with a unique name into
+> /sys/bus/event_source/devices/, right?
 
-No idea. I tried to trace this before submitting the patch. But it has
-been there since the begin of the git history. So I just assume that it is
-always dead code. :-)
+Yes. But although the name is unique it's not sufficient to actually
+identify the list of events.
 
-Thanks,
-Kevin
+For example the CPU PMU is called "cpu" on most architectures, so userspace
+needs to work out which exact CPU it is - and I know that's possible,
+but it means the "simple little" event parsing library is not so simple
+anymore.
 
->=20
-> cheers
+Then imagine you have a GPU on PCI which registers its PMU as "gpu" -
+how do you work out which GPU it is? Userspace can probably work it out
+by trawling through sysfs and finding the vendor and device ids and
+matching that with a lookup table. The library just got less simple
+again.
 
---TRYliJ5NKNqkz5bu
-Content-Type: application/pgp-signature
+Now say you have a PMU in your memory controller, it's not represented
+in sysfs except for the PMU. Which memory controller is it? Maybe you
+can infer it from the CPU you're on, but maybe you can't.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
+> > This whole thread is about making the event list not the kernel's job?
+> 
+> Yes.  This has been debated forever here; I'm firmly in the "event lists 
+> should be entirely in userspace" camp but that's not the majority 
+> position.
 
-iQEcBAEBAgAGBQJR3MWLAAoJEJNY7TDerrFxktgH+wdgGZ7Pd3N2FYQPtv16bEVp
-tSw1QnY+uD7Gtrao8+C9uGqyLGU+QdviEcqF98YpnXkXEn6e76CMWUtl9IODKKKH
-Ucf+0AwtvGzBkODZWHhTxFU9clN1SUek4DFNE9Xjv7o5BnEIPtNc+1OAjSiSSPsq
-/JFlttfxAHam+XvTxnQzHlkBXgIpBPc81V+boD4P0wQkiF7qwcQMQTGlYOIPA0+l
-ImLV1OCJnjcW9A0LiqDokKGlFe5Pb6EuIlchD2PLe1LNbKcxtMEsp93eJd7a3I56
-cpC4ZHC9h/RYXBzugMtQdB7VeBC6VAMQg+GsLrJhSHODBzG1le9U7FjWpG7BCJs=
-=umHa
------END PGP SIGNATURE-----
+Yes we agree on the event list being in userspace, you can stop trying
+to convince me.
 
---TRYliJ5NKNqkz5bu--
+What shouldn't be in userspace is the logic to detect which PMUs are
+available on the system.
+
+cheers
