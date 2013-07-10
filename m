@@ -3,22 +3,32 @@ Received: from merlin.infradead.org (merlin.infradead.org
  [IPv6:2001:4978:20e::2])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 910D92C02A9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 05:20:04 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id C8BA02C0421
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 05:20:19 +1000 (EST)
 From: Arnaldo Carvalho de Melo <acme@infradead.org>
 To: Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 12/23] perf tools: fix a typo of a Power7 event name
-Date: Wed, 10 Jul 2013 16:19:12 -0300
-Message-Id: <1373483963-19277-13-git-send-email-acme@infradead.org>
-In-Reply-To: <1373483963-19277-1-git-send-email-acme@infradead.org>
-References: <1373483963-19277-1-git-send-email-acme@infradead.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>, icycoder@gmail.com,
- linux-kernel@vger.kernel.org, Runzhen Wang <runzhew@clemson.edu>,
- Paul Mackerras <paulus@samba.org>,
+Subject: [GIT PULL 00/23] perf/urgent fixes
+Date: Wed, 10 Jul 2013 16:19:00 -0300
+Message-Id: <1373483963-19277-1-git-send-email-acme@infradead.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+ Frederic Weisbecker <fweisbec@gmail.com>,
+ Stephane Eranian <eranian@google.com>, Adrian Hunter <adrian.hunter@intel.com>,
+ Paul Mackerras <paulus@samba.org>, Robert Richter <rric@kernel.org>,
+ Jiri Olsa <jolsa@redhat.com>, Ramkumar Ramachandra <artagnon@gmail.com>,
+ Andi Kleen <ak@linux.intel.com>, Hitoshi Mitake <h.mitake@gmail.com>,
+ Michael Witten <mfwitten@gmail.com>,
  Xiao Guangrong <xiaoguangrong@linux.vnet.ibm.com>,
- Runzhen Wang <runzhen@linux.vnet.ibm.com>,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
  Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+ Mike Frysinger <vapier@gentoo.org>, icycoder@gmail.com,
+ Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+ Runzhen Wang <runzhew@clemson.edu>, Steven Rostedt <rostedt@goodmis.org>,
+ zheng.z.yan@intel.com, Namhyung Kim <namhyung@kernel.org>,
+ Waiman Long <Waiman.Long@hp.com>, Arnaldo Carvalho de Melo <acme@redhat.com>,
+ Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+ Pekka Enberg <penberg@kernel.org>, David Ahern <dsahern@gmail.com>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, linuxppc-dev@lists.ozlabs.org,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,114 +38,152 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Runzhen Wang <runzhen@linux.vnet.ibm.com>
+From: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
 
-In the Power7 PMU guide:
-https://www.power.org/documentation/commonly-used-metrics-for-performance-analysis/
-PM_BRU_MPRED is referred to as PM_BR_MPRED.
+Hi Ingo,
 
-It fixed the typo by changing the name of the event in kernel and
-documentation accordingly.
+	Please consider pulling,
 
-This patch changes the ABI, there are some reasons I think it's ok:
+Regards,
 
-- It is relatively new interface, specific to the Power7 platform.
+- Arnaldo
 
-- No tools that we know of actually use this interface at this point
- (none are listed near the interface).
+The following changes since commit e5302920da9ef23f9d19d4e9ac85704cc25bee7a:
 
-- Users of this interface (eg oprofile users migrating to perf)
-  would be more used to the "PM_BR_MPRED" rather than "PM_BRU_MPRED".
+  perf: Fix interrupt handler timing harness (2013-07-05 08:54:43 +0200)
 
-- These are in the ABI/testing at this point rather than ABI/stable,
-  so hoping we have some wiggle room.
+are available in the git repository at:
 
-Signed-off-by: Runzhen Wang <runzhen@linux.vnet.ibm.com>
-Acked-by: Michael Ellerman <michael@ellerman.id.au>
-Cc: icycoder@gmail.com
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Michael Ellerman <michael@ellerman.id.au>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Runzhen Wang <runzhew@clemson.edu>
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Xiao Guangrong <xiaoguangrong@linux.vnet.ibm.com>
-Link: http://lkml.kernel.org/r/1372407297-6996-2-git-send-email-runzhen@linux.vnet.ibm.com
+  git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux tags/perf-urgent-for-mingo
+
+for you to fetch changes up to 750ade7e82709c2835cb221a7b6a9ef0a6a9c0ac:
+
+  perf script: Fix broken include in Context.xs (2013-07-10 13:47:00 -0300)
+
+----------------------------------------------------------------
+perf/urgent fixes:
+
+. Fix some freeing bugs on the parsing error paths, from Adrian Hunter.
+
+. Update symbol_conf.nr_events when processing attribute events, fix from Adrian Hunter.
+
+. Fix missing increment in sample parsing when PERF_SAMPLE_STACK_USER
+  is present, from Adrian Hunt.
+
+. Fix count parameter to read call in event_format__new, from David Ahern.
+
+. Remove -A/--append option, not working for a long time, from Jiri Olsa.
+
+. Remove -f/--force option, was a no-op for quite some time, from Jiri Olsa.
+
+. Fix -x/--exclude-other option for report command, from Jiri Olsa.
+
+. Cross build fixes, at least one for Android, from Joonsoo Kim.
+
+. Fix memory allocation fail check in mem{set,cpy} 'perf bench' workloads,
+  from Kirill A. Shutemov.
+
+. Revert regression in configuration of Python support, from Michael Witten.
+
+. Fix -ldw/-lelf link test when static linking, from Mike Frysinger.
+
+. Fix issues with multiple children processing in perf_evlist__start_workload(),
+  from Namhyung Kim.
+
+. Fix broken include in Context.xs ('perf script'), from Ramkumar Ramachandra.
+
+. Fixes for build problems, from Robert Richter.
+
+. Fix a typo of a Power7 event name, from Runzhen Wang.
+
+. Avoid sending SIGTERM to random processes in 'perf stat', fix from Stephane Eranian.
+
+. Fix per-socket output bug for uncore events in 'perf stat', from Stephane Eranian.
+
+. Fix vdso list searching, from Waiman Long.
+
 Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- .../ABI/testing/sysfs-bus-event_source-devices-events        |  2 +-
- arch/powerpc/perf/power7-pmu.c                               | 12 ++++++------
- 2 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-bus-event_source-devices-events b/Documentation/ABI/testing/sysfs-bus-event_source-devices-events
-index 8b25ffb..3c1cc24 100644
---- a/Documentation/ABI/testing/sysfs-bus-event_source-devices-events
-+++ b/Documentation/ABI/testing/sysfs-bus-event_source-devices-events
-@@ -29,7 +29,7 @@ Description:	Generic performance monitoring events
- 
- What: 		/sys/devices/cpu/events/PM_1PLUS_PPC_CMPL
- 		/sys/devices/cpu/events/PM_BRU_FIN
--		/sys/devices/cpu/events/PM_BRU_MPRED
-+		/sys/devices/cpu/events/PM_BR_MPRED
- 		/sys/devices/cpu/events/PM_CMPLU_STALL
- 		/sys/devices/cpu/events/PM_CMPLU_STALL_BRU
- 		/sys/devices/cpu/events/PM_CMPLU_STALL_DCACHE_MISS
-diff --git a/arch/powerpc/perf/power7-pmu.c b/arch/powerpc/perf/power7-pmu.c
-index 13c3f0e..d1821b8 100644
---- a/arch/powerpc/perf/power7-pmu.c
-+++ b/arch/powerpc/perf/power7-pmu.c
-@@ -60,7 +60,7 @@
- #define	PME_PM_LD_REF_L1		0xc880
- #define	PME_PM_LD_MISS_L1		0x400f0
- #define	PME_PM_BRU_FIN			0x10068
--#define	PME_PM_BRU_MPRED		0x400f6
-+#define	PME_PM_BR_MPRED			0x400f6
- 
- #define PME_PM_CMPLU_STALL_FXU			0x20014
- #define PME_PM_CMPLU_STALL_DIV			0x40014
-@@ -349,7 +349,7 @@ static int power7_generic_events[] = {
- 	[PERF_COUNT_HW_CACHE_REFERENCES] =		PME_PM_LD_REF_L1,
- 	[PERF_COUNT_HW_CACHE_MISSES] =			PME_PM_LD_MISS_L1,
- 	[PERF_COUNT_HW_BRANCH_INSTRUCTIONS] =		PME_PM_BRU_FIN,
--	[PERF_COUNT_HW_BRANCH_MISSES] =			PME_PM_BRU_MPRED,
-+	[PERF_COUNT_HW_BRANCH_MISSES] =			PME_PM_BR_MPRED,
- };
- 
- #define C(x)	PERF_COUNT_HW_CACHE_##x
-@@ -405,7 +405,7 @@ GENERIC_EVENT_ATTR(instructions,		INST_CMPL);
- GENERIC_EVENT_ATTR(cache-references,		LD_REF_L1);
- GENERIC_EVENT_ATTR(cache-misses,		LD_MISS_L1);
- GENERIC_EVENT_ATTR(branch-instructions,		BRU_FIN);
--GENERIC_EVENT_ATTR(branch-misses,		BRU_MPRED);
-+GENERIC_EVENT_ATTR(branch-misses,		BR_MPRED);
- 
- POWER_EVENT_ATTR(CYC,				CYC);
- POWER_EVENT_ATTR(GCT_NOSLOT_CYC,		GCT_NOSLOT_CYC);
-@@ -414,7 +414,7 @@ POWER_EVENT_ATTR(INST_CMPL,			INST_CMPL);
- POWER_EVENT_ATTR(LD_REF_L1,			LD_REF_L1);
- POWER_EVENT_ATTR(LD_MISS_L1,			LD_MISS_L1);
- POWER_EVENT_ATTR(BRU_FIN,			BRU_FIN)
--POWER_EVENT_ATTR(BRU_MPRED,			BRU_MPRED);
-+POWER_EVENT_ATTR(BR_MPRED,			BR_MPRED);
- 
- POWER_EVENT_ATTR(CMPLU_STALL_FXU,		CMPLU_STALL_FXU);
- POWER_EVENT_ATTR(CMPLU_STALL_DIV,		CMPLU_STALL_DIV);
-@@ -449,7 +449,7 @@ static struct attribute *power7_events_attr[] = {
- 	GENERIC_EVENT_PTR(LD_REF_L1),
- 	GENERIC_EVENT_PTR(LD_MISS_L1),
- 	GENERIC_EVENT_PTR(BRU_FIN),
--	GENERIC_EVENT_PTR(BRU_MPRED),
-+	GENERIC_EVENT_PTR(BR_MPRED),
- 
- 	POWER_EVENT_PTR(CYC),
- 	POWER_EVENT_PTR(GCT_NOSLOT_CYC),
-@@ -458,7 +458,7 @@ static struct attribute *power7_events_attr[] = {
- 	POWER_EVENT_PTR(LD_REF_L1),
- 	POWER_EVENT_PTR(LD_MISS_L1),
- 	POWER_EVENT_PTR(BRU_FIN),
--	POWER_EVENT_PTR(BRU_MPRED),
-+	POWER_EVENT_PTR(BR_MPRED),
- 
- 	POWER_EVENT_PTR(CMPLU_STALL_FXU),
- 	POWER_EVENT_PTR(CMPLU_STALL_DIV),
--- 
-1.8.1.4
+----------------------------------------------------------------
+Adrian Hunter (4):
+      perf tools: Fix parse_events_terms() segfault on error path
+      perf tools: Fix new_term() missing free on error path
+      perf tools: Update symbol_conf.nr_events when processing attribute events
+      perf evsel: Fix missing increment in sample parsing
+
+David Ahern (1):
+      perf evsel: Fix count parameter to read call in event_format__new
+
+Jiri Olsa (3):
+      perf record: Remove -A/--append option
+      perf record: Remove -f/--force option
+      perf tools: Fix -x/--exclude-other option for report command
+
+Joonsoo Kim (2):
+      perf tools: Include termios.h explicitly
+      tools lib lk: Fix for cross build
+
+Kirill A. Shutemov (1):
+      perf bench: Fix memory allocation fail check in mem{set,cpy} workloads
+
+Michael Witten (1):
+      perf tools: Revert regression in configuration of Python support
+
+Mike Frysinger (1):
+      perf tools: Fix -ldw/-lelf link test when static linking
+
+Namhyung Kim (1):
+      perf evlist: Enhance perf_evlist__start_workload()
+
+Ramkumar Ramachandra (1):
+      perf script: Fix broken include in Context.xs
+
+Robert Richter (4):
+      tools: Get only verbose output with V=1
+      perf tools: Fix output directory of Documentation/
+      perf tools: Fix build errors with O and DESTDIR make vars set
+      perf tools: Fix perf version generation
+
+Runzhen Wang (1):
+      perf tools: fix a typo of a Power7 event name
+
+Stephane Eranian (2):
+      perf stat: Avoid sending SIGTERM to random processes
+      perf stat: Fix per-socket output bug for uncore events
+
+Waiman Long (1):
+      perf symbols: Fix vdso list searching
+
+ .../testing/sysfs-bus-event_source-devices-events  |  2 +-
+ arch/powerpc/perf/power7-pmu.c                     | 12 +--
+ tools/lib/lk/Makefile                              | 17 ++++-
+ tools/perf/Documentation/Makefile                  | 12 +--
+ tools/perf/Documentation/examples.txt              |  4 +-
+ tools/perf/Documentation/perf-record.txt           |  8 +-
+ tools/perf/Makefile                                |  5 +-
+ tools/perf/bench/mem-memcpy.c                      |  4 +-
+ tools/perf/bench/mem-memset.c                      |  2 +-
+ tools/perf/builtin-diff.c                          |  1 -
+ tools/perf/builtin-kmem.c                          |  2 +-
+ tools/perf/builtin-lock.c                          |  2 +-
+ tools/perf/builtin-record.c                        | 85 +++-------------------
+ tools/perf/builtin-report.c                        |  3 +-
+ tools/perf/builtin-sched.c                         |  1 -
+ tools/perf/builtin-stat.c                          | 30 +++++++-
+ tools/perf/builtin-timechart.c                     |  4 +-
+ tools/perf/builtin-top.c                           |  2 -
+ tools/perf/config/Makefile                         |  6 +-
+ tools/perf/config/utilities.mak                    |  4 +-
+ tools/perf/scripts/perl/Perf-Trace-Util/Context.xs |  2 +-
+ tools/perf/util/PERF-VERSION-GEN                   | 21 ++++--
+ tools/perf/util/dso.c                              | 10 ++-
+ tools/perf/util/dso.h                              |  3 +-
+ tools/perf/util/evlist.c                           | 10 ++-
+ tools/perf/util/evsel.c                            |  4 +-
+ tools/perf/util/header.c                           | 15 +---
+ tools/perf/util/parse-events.c                     |  4 +-
+ tools/perf/util/symbol.c                           |  1 -
+ tools/perf/util/util.h                             |  2 +-
+ tools/perf/util/vdso.c                             |  2 +-
+ tools/scripts/Makefile.include                     |  2 +-
+ 32 files changed, 125 insertions(+), 157 deletions(-)
