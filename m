@@ -1,21 +1,26 @@
 Return-Path: <B42677@freescale.com>
 Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0252.outbound.messaging.microsoft.com [213.199.154.252])
+ (mail-db9lp0249.outbound.messaging.microsoft.com [213.199.154.249])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D07C92C00AD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 13:15:02 +1000 (EST)
-From: Haijun Zhang <Haijun.Zhang@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 2/2 V4] powerpc/85xx: add the P1020RDB-PD DTS support
-Date: Wed, 10 Jul 2013 10:24:57 +0800
-Message-ID: <1373423097-27866-1-git-send-email-Haijun.Zhang@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 0C6332C0085
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 13:16:34 +1000 (EST)
+From: Zhang Haijun-B42677 <B42677@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH 2/2 V3] powerpc/85xx: add the P1020RDB-PD DTS support
+Date: Wed, 10 Jul 2013 03:18:35 +0000
+Message-ID: <99E897753B6F7048BD8CCDB4661D02E139BDF4@039-SN2MPN1-021.039d.mgd.msft.net>
+References: <1373358943-30433-1-git-send-email-Haijun.Zhang@freescale.com>
+ (from Haijun.Zhang@freescale.com on Tue Jul  9 03:35:43 2013)
+ <1373386496.8183.190@snotra>
+In-Reply-To: <1373386496.8183.190@snotra>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Jerry Huang <Chang-Ming.Huang@freescale.com>, AFLEMING@freescale.com,
- Xie Xiaobo-R63061 <X.Xie@freescale.com>, Scott Wood <scottwood@freescale.com>,
- Haijun Zhang <Haijun.Zhang@freescale.com>
+Cc: Fleming Andy-AFLEMING <afleming@freescale.com>,
+ Huang Changming-R66093 <r66093@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Xie Xiaobo-R63061 <r63061@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,318 +30,181 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Overview of P1020RDB-PD device:
-- DDR3 2GB
-- NOR flash 64MB
-- NAND flash 128MB
-- SPI flash 16MB
-- I2C EEPROM 256Kb
-- eTSEC1 (RGMII PHY) connected to VSC7385 L2 switch
-- eTSEC2 (SGMII PHY)
-- eTSEC3 (RGMII PHY)
-- SDHC
-- 1 USB ports
-- TDM ports
-- PCIe
+Hi, scott
 
-Signed-off-by: Haijun Zhang <Haijun.Zhang@freescale.com>
-Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
-Signed-off-by: Xie Xiaobo-R63061 <X.Xie@freescale.com>
-CC: Scott Wood <scottwood@freescale.com>
----
-changes for V4:
-	- Combine *.dtsi to dts file
-	- Remove redundant fs patition
+Patch V4 had send, Pls review.
 
- arch/powerpc/boot/dts/p1020rdb-pd.dts | 280 ++++++++++++++++++++++++++++++++++
- 1 file changed, 280 insertions(+)
- create mode 100644 arch/powerpc/boot/dts/p1020rdb-pd.dts
+Thanks.
 
-diff --git a/arch/powerpc/boot/dts/p1020rdb-pd.dts b/arch/powerpc/boot/dts/p1020rdb-pd.dts
-new file mode 100644
-index 0000000..c10d027
---- /dev/null
-+++ b/arch/powerpc/boot/dts/p1020rdb-pd.dts
-@@ -0,0 +1,280 @@
-+/*
-+ * P1020 RDB-PD Device Tree Source (32-bit address map)
-+ *
-+ * Copyright 2013 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/include/ "fsl/p1020si-pre.dtsi"
-+/ {
-+	model = "fsl,P1020RDB-PD";
-+	compatible = "fsl,P1020RDB-PD";
-+
-+	memory {
-+		device_type = "memory";
-+	};
-+
-+	lbc: localbus@ffe05000 {
-+		reg = <0x0 0xffe05000 0x0 0x1000>;
-+
-+		/* NOR, NAND flash, L2 switch and CPLD */
-+		ranges = <0x0 0x0 0x0 0xec000000 0x04000000
-+			  0x1 0x0 0x0 0xff800000 0x00040000
-+			  0x2 0x0 0x0 0xffa00000 0x00020000
-+			  0x3 0x0 0x0 0xffb00000 0x00020000>;
-+
-+		nor@0,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "cfi-flash";
-+			reg = <0x0 0x0 0x4000000>;
-+			bank-width = <2>;
-+			device-width = <1>;
-+
-+			partition@0 {
-+				/* 128KB for DTB Image */
-+				reg = <0x0 0x00020000>;
-+				label = "NOR DTB Image";
-+			};
-+
-+			partition@20000 {
-+				/* 3.875 MB for Linux Kernel Image */
-+				reg = <0x00020000 0x003e0000>;
-+				label = "NOR Linux Kernel Image";
-+			};
-+
-+			partition@400000 {
-+				/* 58MB for Root file System */
-+				reg = <0x00400000 0x03a00000>;
-+				label = "NOR Root File System";
-+			};
-+
-+			partition@3e00000 {
-+				/* This location must not be altered  */
-+				/* 1M for Vitesse 7385 Switch firmware */
-+				reg = <0x3e00000 0x00100000>;
-+				label = "NOR Vitesse-7385 Firmware";
-+				read-only;
-+			};
-+
-+			partition@3f00000 {
-+				/* This location must not be altered  */
-+				/* 512KB for u-boot Bootloader Image */
-+				/* 512KB for u-boot Environment Variables */
-+				reg = <0x03f00000 0x00100000>;
-+				label = "NOR U-Boot Image";
-+				read-only;
-+			};
-+		};
-+
-+		nand@1,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "fsl,p1020-fcm-nand",
-+				     "fsl,elbc-fcm-nand";
-+			reg = <0x1 0x0 0x40000>;
-+
-+			partition@0 {
-+				/* This location must not be altered  */
-+				/* 1MB for u-boot Bootloader Image */
-+				reg = <0x0 0x00100000>;
-+				label = "NAND U-Boot Image";
-+				read-only;
-+			};
-+
-+			partition@100000 {
-+				/* 1MB for DTB Image */
-+				reg = <0x00100000 0x00100000>;
-+				label = "NAND DTB Image";
-+			};
-+
-+			partition@200000 {
-+				/* 4MB for Linux Kernel Image */
-+				reg = <0x00200000 0x00400000>;
-+				label = "NAND Linux Kernel Image";
-+			};
-+
-+			partition@600000 {
-+				/* 96MB for File System Image */
-+				reg = <0x00600000 0x06000000>;
-+				label = "NAND FILE System Image";
-+			};
-+		};
-+
-+		cpld@2,0 {
-+			compatible = "fsl,p1020rdb-pd-cpld";
-+			reg = <0x2 0x0 0x20000>;
-+		};
-+
-+		L2switch@3,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "vitesse-7385";
-+			reg = <0x3 0x0 0x20000>;
-+		};
-+	};
-+
-+	soc: soc@ffe00000 {
-+		ranges = <0x0 0x0 0xffe00000 0x100000>;
-+
-+		i2c@3000 {
-+			rtc@68 {
-+				compatible = "dallas,ds1339";
-+				reg = <0x68>;
-+			};
-+		};
-+
-+		spi@7000 {
-+			flash@0 {
-+				#address-cells = <1>;
-+				#size-cells = <1>;
-+				compatible = "spansion,s25sl12801";
-+				reg = <0>;
-+				/* input clock */
-+				spi-max-frequency = <40000000>;
-+
-+				partition@0 {
-+					/* 512KB for u-boot Bootloader Image */
-+					reg = <0x0 0x00080000>;
-+					label = "SPI U-Boot Image";
-+					read-only;
-+				};
-+
-+				partition@80000 {
-+					/* 512KB for DTB Image*/
-+					reg = <0x00080000 0x00080000>;
-+					label = "SPI DTB Image";
-+				};
-+
-+				partition@100000 {
-+					/* 4MB for Linux Kernel Image */
-+					reg = <0x00100000 0x00400000>;
-+					label = "SPI Linux Kernel Image";
-+				};
-+
-+				partition@500000 {
-+					/* 7MB for FS System Image */
-+					reg = <0x00500000 0x00700000>;
-+					label = "SPI File System Image";
-+				};
-+			};
-+
-+			slic@0 {
-+				compatible = "zarlink,le88266";
-+				reg = <1>;
-+				spi-max-frequency = <8000000>;
-+			};
-+
-+			slic@1 {
-+				compatible = "zarlink,le88266";
-+				reg = <2>;
-+				spi-max-frequency = <8000000>;
-+			};
-+		};
-+
-+		mdio@24000 {
-+			phy0: ethernet-phy@0 {
-+				interrupts = <3 1 0 0>;
-+				reg = <0x0>;
-+			};
-+
-+			phy1: ethernet-phy@1 {
-+				interrupts = <2 1 0 0>;
-+				reg = <0x1>;
-+			};
-+		};
-+
-+		mdio@25000 {
-+			tbi1: tbi-phy@11 {
-+				reg = <0x11>;
-+				device_type = "tbi-phy";
-+			};
-+		};
-+
-+		mdio@26000 {
-+			tbi2: tbi-phy@11 {
-+				reg = <0x11>;
-+				device_type = "tbi-phy";
-+			};
-+		};
-+
-+		enet0: ethernet@b0000 {
-+			fixed-link = <1 1 1000 0 0>;
-+			phy-connection-type = "rgmii-id";
-+		};
-+
-+		enet1: ethernet@b1000 {
-+			phy-handle = <&phy0>;
-+			tbi-handle = <&tbi1>;
-+			phy-connection-type = "sgmii";
-+		};
-+
-+		enet2: ethernet@b2000 {
-+			phy-handle = <&phy1>;
-+			phy-connection-type = "rgmii-id";
-+		};
-+
-+		usb@22000 {
-+			phy_type = "ulpi";
-+		};
-+	};
-+
-+	pci0: pcie@ffe09000 {
-+		reg = <0x0 0xffe09000 0x0 0x1000>;
-+		ranges = <0x2000000 0x0 0xa0000000 0x0 0xa0000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0x0 0xffc10000 0x0 0x10000>;
-+		pcie@0 {
-+			ranges = <0x2000000 0x0 0xa0000000
-+				  0x2000000 0x0 0xa0000000
-+				  0x0 0x20000000
-+
-+				  0x1000000 0x0 0x0
-+				  0x1000000 0x0 0x0
-+				  0x0 0x100000>;
-+		};
-+	};
-+
-+	pci1: pcie@ffe0a000 {
-+		reg = <0x0 0xffe0a000 0x0 0x1000>;
-+		ranges = <0x2000000 0x0 0x80000000 0x0 0x80000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0x0 0xffc00000 0x0 0x10000>;
-+		pcie@0 {
-+			ranges = <0x2000000 0x0 0x80000000
-+				  0x2000000 0x0 0x80000000
-+				  0x0 0x20000000
-+
-+				  0x1000000 0x0 0x0
-+				  0x1000000 0x0 0x0
-+				  0x0 0x100000>;
-+		};
-+	};
-+};
-+
-+/include/ "fsl/p1020si-post.dtsi"
--- 
-1.8.0
+Regards=20
+Haijun.
+
+> -----Original Message-----
+> From: Wood Scott-B07421
+> Sent: Wednesday, July 10, 2013 12:15 AM
+> To: Zhang Haijun-B42677
+> Cc: linuxppc-dev@lists.ozlabs.org; galak@kernel.crashing.org; Fleming
+> Andy-AFLEMING; Zhang Haijun-B42677; Huang Changming-R66093; Xie Xiaobo-
+> R63061
+> Subject: Re: [PATCH 2/2 V3] powerpc/85xx: add the P1020RDB-PD DTS support
+>=20
+> On 07/09/2013 03:35:43 AM, Haijun Zhang wrote:
+> > Overview of P1020RDB-PD device:
+> > - DDR3 2GB
+> > - NOR flash 64MB
+> > - NAND flash 128MB
+> > - SPI flash 16MB
+> > - I2C EEPROM 256Kb
+> > - eTSEC1 (RGMII PHY) connected to VSC7385 L2 switch
+> > - eTSEC2 (SGMII PHY)
+> > - eTSEC3 (RGMII PHY)
+> > - SDHC
+> > - 2 USB ports
+> > - 4 TDM ports
+> > - PCIe
+> >
+> > Signed-off-by: Haijun Zhang <Haijun.Zhang@freescale.com>
+> > Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
+> > Signed-off-by: Xie Xiaobo-R63061 <X.Xie@freescale.com>
+> > CC: Scott Wood <scottwood@freescale.com>
+> > ---
+> > changes for v3:
+> > 	- Remove some blank and changed the usb node
+> > 	- Renamed the dts file
+> > 	- change the cpld name of pd board
+> >
+> >  arch/powerpc/boot/dts/p1020rdb-pd.dts  |  90 ++++++++++++
+> > arch/powerpc/boot/dts/p1020rdb-pd.dtsi | 257
+> > +++++++++++++++++++++++++++++++++
+> >  2 files changed, 347 insertions(+)
+> >  create mode 100644 arch/powerpc/boot/dts/p1020rdb-pd.dts
+> >  create mode 100644 arch/powerpc/boot/dts/p1020rdb-pd.dtsi
+>=20
+> Again, why do you need a separate .dtsi?  If this isn't for a 32/36-bit
+> split, what is the criteria for what goes in the .dts versus what goes in
+> the .dtsi?
+>=20
+> > +		partition@600000 {
+> > +			/* 4MB for Compressed Root file System Image */
+> > +			reg =3D <0x00600000 0x00400000>;
+> > +			label =3D "NAND Compressed RFS Image";
+> > +		};
+> > +
+> > +		partition@a00000 {
+> > +			/* 22MB for JFFS2 based Root file System */
+> > +			reg =3D <0x00a00000 0x01600000>;
+> > +			label =3D "NAND JFFS2 Root File System";
+> > +		};
+>=20
+> Don't refer to JFFS2.  It's bad enough that we specify partition layout
+> here -- no need to specify the filesystem type, especially when it's a fs
+> type that is no longer recommended.
+>=20
+> > +		partition@2000000 {
+> > +			/* 96MB for RAMDISK based Root file System */
+> > +			reg =3D <0x02000000 0x06000000>;
+> > +			label =3D "NAND Writable User area";
+> > +		};
+>=20
+> Wouldn't it be better to combine these last three partitions?  Why do you
+> need three root filesystems?
+>=20
+> > +	cpld@2,0 {
+> > +		compatible =3D "fsl,p1020rdb-pd-cpld";
+> > +		reg =3D <0x2 0x0 0x20000>;
+> > +		read-only;
+> > +	};
+>=20
+> Remove read-only.
+>=20
+> > +	spi@7000 {
+> > +		flash@0 {
+> > +			#address-cells =3D <1>;
+> > +			#size-cells =3D <1>;
+> > +			compatible =3D "spansion,s25sl12801";
+> > +			reg =3D <0>;
+> > +			spi-max-frequency =3D <40000000>; /* input clock
+> > */
+> > +
+> > +			partition@u-boot {
+> > +				/* 512KB for u-boot Bootloader Image */
+> > +				reg =3D <0x0 0x00080000>;
+> > +				label =3D "u-boot";
+> > +				read-only;
+> > +			};
+> > +
+> > +			partition@dtb {
+> > +				/* 512KB for DTB Image*/
+> > +				reg =3D <0x00080000 0x00080000>;
+> > +				label =3D "dtb";
+> > +			};
+> > +
+> > +			partition@kernel {
+> > +				/* 4MB for Linux Kernel Image */
+> > +				reg =3D <0x00100000 0x00400000>;
+> > +				label =3D "kernel";
+> > +			};
+>=20
+> These unit addresses are not appropriate.  They should match reg, not
+> label.
+>=20
+> > +			partition@fs {
+> > +				/* 4MB for Compressed RFS Image */
+> > +				reg =3D <0x00500000 0x00400000>;
+> > +				label =3D "file system";
+> > +			};
+> > +
+> > +			partition@jffs-fs {
+> > +				/* 7MB for JFFS2 based RFS */
+> > +				reg =3D <0x00900000 0x00700000>;
+> > +				label =3D "file system jffs2";
+> > +			};
+>=20
+> As with NAND flash, please combine these and don't reference JFFS2.
+>=20
+> > +		};
+> > +
+> > +		slic@0 {
+> > +			compatible =3D "zarlink,le88266";
+> > +			reg =3D <1>;
+> > +			spi-max-frequency =3D <8000000>;
+> > +		};
+> > +
+> > +		slic@1 {
+> > +			compatible =3D "zarlink,le88266";
+> > +			reg =3D <2>;
+> > +			spi-max-frequency =3D <8000000>;
+> > +		};
+> > +	};
+> > +
+> > +	mdio@24000 {
+> > +		phy0: ethernet-phy@0 {
+> > +			interrupts =3D <3 1 0 0>;
+> > +			reg =3D <0x0>;
+> > +		};
+> > +		phy1: ethernet-phy@1 {
+> > +			interrupts =3D <2 1 0 0>;
+> > +			reg =3D <0x1>;
+> > +		};
+> > +	};
+>=20
+> Again, leave a blank line between nodes.  If I comment about a style
+> issue in one place, you should also fix the same issue in other places
+> where it occurs.
+>=20
+> > +	/*
+> > +	 * USB2 is shared with localbus, so it must be disabled
+> > +	 * by default. We can't put 'status =3D "disabled";' here
+> > +	 * since U-Boot doesn't clear the status property when
+> > +	 * it enables USB2. OTOH, U-Boot does create a new node
+> > +	 * when there isn't any. So, just comment it out.
+> > +	 * usb@23000 {
+> > +	 * 	status =3D "disabled";
+> > +	 * 	phy_type =3D "ulpi";
+> > +	 * };
+> > +	 */
+>=20
+> No.  Fix U-Boot to do whatever updating it needs to do based on runtime
+> configuration.  Do not add commented out nodes to the tree.
+>=20
+> -Scott
