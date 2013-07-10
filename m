@@ -1,19 +1,20 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- by ozlabs.org (Postfix) with ESMTP id 224D92C02B8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 20:18:15 +1000 (EST)
-Subject: Re: [PATCH 2/2] KVM: PPC: Book3E: Get vcpu's last instruction for
- emulation
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <1373415151.8183.213@snotra>
-Date: Wed, 10 Jul 2013 12:18:10 +0200
-Message-Id: <27E6FCB1-322F-410D-A87C-D5410C7374E7@suse.de>
-References: <1373415151.8183.213@snotra>
-To: Scott Wood <scottwood@freescale.com>
-Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+Return-Path: <a13xp0p0v88@gmail.com>
+Received: from mail-lb0-x235.google.com (mail-lb0-x235.google.com
+ [IPv6:2a00:1450:4010:c04::235])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CE4C72C02BD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 20:18:56 +1000 (EST)
+Received: by mail-lb0-f181.google.com with SMTP id w10so5557279lbi.12
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 03:18:52 -0700 (PDT)
+From: Alexander Popov <a13xp0p0v88@gmail.com>
+To: Vinod Koul <vinod.koul@intel.com>,
+	Dan Williams <djbw@fb.com>
+Subject: [V2 1/2] powerpc: mpc512x_dma: add support for data transfers between
+ memory and i/o memory
+Date: Wed, 10 Jul 2013 14:20:51 +0400
+Message-Id: <1373451651-20029-1-git-send-email-a13xp0p0v88@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,40 +24,223 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Data transfers between memory and i/o memory require more delicate TCD
+(Transfer Control Descriptor) configuration and DMA channel service requests
+via hardware.
 
-On 10.07.2013, at 02:12, Scott Wood wrote:
+dma_device.device_control callback function is needed to configure
+DMA channel to work with i/o memory.
 
-> On 07/09/2013 04:45:10 PM, Alexander Graf wrote:
->> On 28.06.2013, at 11:20, Mihai Caraman wrote:
->> > +	/* Get page size */
->> > +	if (MAS0_GET_TLBSEL(mfspr(SPRN_MAS0)) =3D=3D 0)
->> > +		psize_shift =3D PAGE_SHIFT;
->> > +	else
->> > +		psize_shift =3D MAS1_GET_TSIZE(mas1) + 10;
->> > +
->> > +	mas7_mas3 =3D (((u64) mfspr(SPRN_MAS7)) << 32) |
->> > +		    mfspr(SPRN_MAS3);
->> > +	addr =3D (mas7_mas3 & (~0ULL << psize_shift)) |
->> > +	       (geaddr & ((1ULL << psize_shift) - 1ULL));
->> > +
->> > +	/* Map a page and get guest's instruction */
->> > +	page =3D pfn_to_page(addr >> PAGE_SHIFT);
->> While looking at this I just realized that you're missing a check =
-here. What if our IP is in some PCI BAR? Or can't we execute from those?
->=20
-> We at least need to check pfn_valid() first.  That'll just keep us =
-from accessing a bad pointer in the host kernel, though -- it won't make =
-the emulation actually work.  If we need that, we'll probably need to =
-create a temporary TLB entry manually.
+Signed-off-by: Alexander Popov <a13xp0p0v88@gmail.com>
+---
+ drivers/dma/mpc512x_dma.c | 147 +++++++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 140 insertions(+), 7 deletions(-)
 
-ioremap()?
-
-However, if we were walking the guest TLB cache instead we would get a =
-guest physical address which we can always resolve to a host virtual =
-address.
-
-I'm not sure how important that whole use case is though. Maybe we =
-should just error out to the guest for now.
-
-
-Alex
+diff --git a/drivers/dma/mpc512x_dma.c b/drivers/dma/mpc512x_dma.c
+index 2d95673..f90b717 100644
+--- a/drivers/dma/mpc512x_dma.c
++++ b/drivers/dma/mpc512x_dma.c
+@@ -2,6 +2,7 @@
+  * Copyright (C) Freescale Semicondutor, Inc. 2007, 2008.
+  * Copyright (C) Semihalf 2009
+  * Copyright (C) Ilya Yanok, Emcraft Systems 2010
++ * Copyright (C) Alexander Popov, Promcontroller 2013
+  *
+  * Written by Piotr Ziecik <kosmo@semihalf.com>. Hardware description
+  * (defines, structures and comments) was taken from MPC5121 DMA driver
+@@ -28,11 +29,6 @@
+  * file called COPYING.
+  */
+ 
+-/*
+- * This is initial version of MPC5121 DMA driver. Only memory to memory
+- * transfers are supported (tested using dmatest module).
+- */
+-
+ #include <linux/module.h>
+ #include <linux/dmaengine.h>
+ #include <linux/dma-mapping.h>
+@@ -190,9 +186,13 @@ struct mpc_dma_chan {
+ 	struct list_head		completed;
+ 	struct mpc_dma_tcd		*tcd;
+ 	dma_addr_t			tcd_paddr;
++	u32				tcd_nunits;
+ 
+ 	/* Lock for this structure */
+ 	spinlock_t			lock;
++
++	/* Channel's peripheral fifo address */
++	dma_addr_t			per_paddr;
+ };
+ 
+ struct mpc_dma {
+@@ -256,7 +256,9 @@ static void mpc_dma_execute(struct mpc_dma_chan *mchan)
+ 
+ 		prev->tcd->dlast_sga = mdesc->tcd_paddr;
+ 		prev->tcd->e_sg = 1;
+-		mdesc->tcd->start = 1;
++		/* only start explicitly on MDDRC channel */
++		if (cid == 32)
++			mdesc->tcd->start = 1;
+ 
+ 		prev = mdesc;
+ 	}
+@@ -268,7 +270,15 @@ static void mpc_dma_execute(struct mpc_dma_chan *mchan)
+ 
+ 	if (first != prev)
+ 		mdma->tcd[cid].e_sg = 1;
+-	out_8(&mdma->regs->dmassrt, cid);
++
++	switch (cid) {
++	case 26:
++		out_8(&mdma->regs->dmaserq, cid);
++		break;
++	case 32:
++		out_8(&mdma->regs->dmassrt, cid);
++		break;
++	}
+ }
+ 
+ /* Handle interrupt on one half of DMA controller (32 channels) */
+@@ -641,6 +651,126 @@ mpc_dma_prep_memcpy(struct dma_chan *chan, dma_addr_t dst, dma_addr_t src,
+ 	return &mdesc->desc;
+ }
+ 
++static struct dma_async_tx_descriptor *mpc_dma_prep_slave_sg(
++		struct dma_chan *chan, struct scatterlist *sgl,
++		unsigned int sg_len, enum dma_transfer_direction direction,
++		unsigned long flags, void *context)
++{
++	struct mpc_dma *mdma = dma_chan_to_mpc_dma(chan);
++	struct mpc_dma_chan *mchan = dma_chan_to_mpc_dma_chan(chan);
++	struct mpc_dma_desc *mdesc = NULL;
++	struct mpc_dma_tcd *tcd;
++	unsigned long iflags;
++	struct scatterlist *sg;
++	size_t len;
++	int iter, i;
++
++	if (!list_empty(&mchan->active))
++		return NULL;
++
++	for_each_sg(sgl, sg, sg_len, i) {
++		spin_lock_irqsave(&mchan->lock, iflags);
++
++		mdesc = list_first_entry(&mchan->free, struct mpc_dma_desc,
++									node);
++		if (!mdesc) {
++			spin_unlock_irqrestore(&mchan->lock, iflags);
++			/* try to free completed descriptors */
++			mpc_dma_process_completed(mdma);
++			return NULL;
++		}
++
++		list_del(&mdesc->node);
++
++		spin_unlock_irqrestore(&mchan->lock, iflags);
++
++		mdesc->error = 0;
++		tcd = mdesc->tcd;
++
++		/* Prepare Transfer Control Descriptor for this transaction */
++		memset(tcd, 0, sizeof(struct mpc_dma_tcd));
++
++		if (!IS_ALIGNED(sg_dma_address(sg), 4))
++			return NULL;
++
++		if (direction == DMA_DEV_TO_MEM) {
++			tcd->saddr = mchan->per_paddr;
++			tcd->daddr = sg_dma_address(sg);
++			tcd->soff = 0;
++			tcd->doff = 4;
++		} else if (direction == DMA_MEM_TO_DEV) {
++			tcd->saddr = sg_dma_address(sg);
++			tcd->daddr = mchan->per_paddr;
++			tcd->soff = 4;
++			tcd->doff = 0;
++		} else {
++			return NULL;
++		}
++		tcd->ssize = MPC_DMA_TSIZE_4;
++		tcd->dsize = MPC_DMA_TSIZE_4;
++
++		len = sg_dma_len(sg);
++
++		if (mchan->tcd_nunits)
++			tcd->nbytes = mchan->tcd_nunits * 4;
++		else
++			tcd->nbytes = 64;
++
++		if (!IS_ALIGNED(len, tcd->nbytes))
++			return NULL;
++
++		iter = len / tcd->nbytes;
++		if (iter > ((1 << 15) - 1)) {   /* maximum biter */
++			return NULL; /* len is too big */
++		} else {
++			/* citer_linkch contains the high bits of iter */
++			tcd->biter = iter & 0x1ff;
++			tcd->biter_linkch = iter >> 9;
++			tcd->citer = tcd->biter;
++			tcd->citer_linkch = tcd->biter_linkch;
++		}
++
++		tcd->e_sg = 0;
++		tcd->d_req = 1;
++
++		/* Place descriptor in prepared list */
++		spin_lock_irqsave(&mchan->lock, iflags);
++		list_add_tail(&mdesc->node, &mchan->prepared);
++		spin_unlock_irqrestore(&mchan->lock, iflags);
++	}
++
++	/* Return the last descriptor */
++	return &mdesc->desc;
++}
++
++static int mpc_dma_device_control(struct dma_chan *chan, enum dma_ctrl_cmd cmd,
++				  unsigned long arg)
++{
++	struct mpc_dma_chan *mchan = dma_chan_to_mpc_dma_chan(chan);
++	struct dma_slave_config *cfg = (void *)arg;
++
++	switch (cmd) {
++	case DMA_SLAVE_CONFIG:
++		if (cfg->src_addr_width != DMA_SLAVE_BUSWIDTH_4_BYTES &&
++		    cfg->dst_addr_width != DMA_SLAVE_BUSWIDTH_4_BYTES)
++			return -EINVAL;
++
++		if (cfg->direction == DMA_DEV_TO_MEM) {
++			mchan->per_paddr = cfg->src_addr;
++			mchan->tcd_nunits = cfg->src_maxburst;
++		} else {
++			mchan->per_paddr = cfg->dst_addr;
++			mchan->tcd_nunits = cfg->dst_maxburst;
++		}
++
++		return 0;
++	default:
++		return -ENOSYS;
++	}
++
++	return -EINVAL;
++}
++
+ static int mpc_dma_probe(struct platform_device *op)
+ {
+ 	struct device_node *dn = op->dev.of_node;
+@@ -725,9 +855,12 @@ static int mpc_dma_probe(struct platform_device *op)
+ 	dma->device_issue_pending = mpc_dma_issue_pending;
+ 	dma->device_tx_status = mpc_dma_tx_status;
+ 	dma->device_prep_dma_memcpy = mpc_dma_prep_memcpy;
++	dma->device_prep_slave_sg = mpc_dma_prep_slave_sg;
++	dma->device_control = mpc_dma_device_control;
+ 
+ 	INIT_LIST_HEAD(&dma->channels);
+ 	dma_cap_set(DMA_MEMCPY, dma->cap_mask);
++	dma_cap_set(DMA_SLAVE, dma->cap_mask);
+ 
+ 	for (i = 0; i < dma->chancnt; i++) {
+ 		mchan = &mdma->channels[i];
+-- 
+1.7.11.3
