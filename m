@@ -1,20 +1,25 @@
-Return-Path: <aijazbaig1@gmail.com>
-Received: from sam.nabble.com (sam.nabble.com [216.139.236.26])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 0EA622C0089
- for <linuxppc-dev@ozlabs.org>; Thu, 11 Jul 2013 00:10:46 +1000 (EST)
-Received: from tom.nabble.com ([192.168.236.105])
- by sam.nabble.com with esmtp (Exim 4.72)
- (envelope-from <aijazbaig1@gmail.com>) id 1Uwuqt-0006qx-J0
- for linuxppc-dev@ozlabs.org; Wed, 10 Jul 2013 06:54:39 -0700
-Date: Wed, 10 Jul 2013 06:54:39 -0700 (PDT)
-From: JiveTalkin <aijazbaig1@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Message-ID: <1373464479578-73565.post@n7.nabble.com>
-Subject: ABI defined register usage within function calls
+Return-Path: <B07421@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C8DCC2C02CD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 04:25:15 +1000 (EST)
+Date: Wed, 10 Jul 2013 13:24:58 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 2/2] KVM: PPC: Book3E: Emulate MCSRR0/1 SPR and rfmci
+ instruction
+To: Alexander Graf <agraf@suse.de>
+In-Reply-To: <386A14D3-0968-4FC5-B273-D5D510ADDAF3@suse.de> (from
+ agraf@suse.de on Wed Jul 10 05:23:36 2013)
+Message-ID: <1373480698.8183.218@snotra>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+ Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ "<kvm@vger.kernel.org> list" <kvm@vger.kernel.org>,
+ "<kvm-ppc@vger.kernel.org>" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,77 +29,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello.
+On 07/10/2013 05:23:36 AM, Alexander Graf wrote:
+>=20
+> On 10.07.2013, at 00:26, Scott Wood wrote:
+>=20
+> > On 07/09/2013 05:00:26 PM, Alexander Graf wrote:
+> >> It'll also be more flexible at the same time. You could take the =20
+> logs and actually check what's going on to debug issues that you're =20
+> encountering for example.
+> >> We could even go as far as sharing the same tool with other =20
+> architectures, so that we only have to learn how to debug things once.
+> >
+> > Have you encountered an actual need for this flexibility, or is it =20
+> theoretical?
+>=20
+> Yeah, first thing I did back then to actually debug kvm failures was =20
+> to add trace points.
 
-I would like to monitor the value of one of the parameters (within the stack
-frame) that have been passed as part of a context switch (from process
-context to interrupt context). Hence I have been looking at the call flow of
-a typical exception (which can be thought of as a synchronous exception
-isn't it?).
+I meant specifically for handling exit timings this way.
 
-Since e500 is a 32bit processor, I have been looking at entry_32.S which
-contains the context switching code which is the entry point for the
-exception handling. As an example, I am looking at how system calls are
-handled in the PowerPC architecture in general and e500 in particular. Since
-in case of BookE, the MMU is always ON, we are never in real mode and the
-interrupt vector can be at arbitrary virtual address.
+> > Is there common infrastructure for dealing with measuring intervals =20
+> and tracking statistics thereof, rather than just tracking points and =20
+> letting userspace connect the dots (though it could still do that as =20
+> an option)?  Even if it must be done in userspace, it doesn't seem =20
+> like something that should be KVM-specific.
+>=20
+> Would you like to have different ways of measuring mm subsystem =20
+> overhead? I don't :). The same goes for KVM really. If we could =20
+> converge towards a single user space interface to get exit timings, =20
+> it'd make debugging a lot easier.
 
-This defines how a Syscall is going to handled, as per head_fsl_booke.S:
-/* System Call Interrupt */
-START_EXCEPTION(SystemCall)
-NORMAL_EXCEPTION_PROLOG
-EXC_XFER_EE_LITE(0x0c00, DoSyscall)
+I agree -- that's why I said it doesn't seem like something that should =20
+be KVM-specific.  But that's orthogonal to whether it's done in kernel =20
+space or user space.  The ability to get begin/end events from =20
+userspace would be nice when it is specifically requested, but it would =20
+also be nice if the kernel could track some basic statistics so we =20
+wouldn't have to ship so much data around to arrive at the same result.
 
-START_EXCEPTION does nothing more than align us to a word (32bit) boundary
-(obviously for performance reasons). What I need to understand is the
-NORMAL_EXCEPTION_PROLOG. I reproduce it here:
+At the very least, I'd like such a tool/infrastructure to exist before =20
+we start complaining about doing minor maintenance of the current =20
+mechanism.
 
+> We already have this for the debugfs counters btw. And the timing =20
+> framework does break kvm_stat today already, as it emits textual =20
+> stats rather than numbers which all of the other debugfs stats do. =20
+> But at least I can take the x86 kvm_stat tool and run it on ppc just =20
+> fine to see exit stats.
 
-First thing it does it saves r10, r11 and r1(containing the Stack pointer)
-into the scratch registers 0,1 and 2 respectively. Correct me if I am wrong,
-but as per the older EABI, isn't it recommended for the OS to load SPRG0
-with the start address of an area of memory (the stack top) to be used by
-the 1st level interrupt handler? Or can these registers be used anyway we
-see fit?
+We already have what?  The last two sentences seem contradictory -- can =20
+you or can't you use kvm_stat as is?  I'm not familiar with kvm_stat.
 
-Moving on, it seems the kernel folks have decided to use SPRNG3 to point to
-the currently running process's thread_struct structure. Is there a document
-which recommends so or was it an unanimous decision taken during early
-development? Just curios.
+What does x86 KVM expose in debugfs?
 
-Then we go on to check the value of the PR bit from the MSR which has been
-copied by the hardware to SRR1. So here we are actually checking whether the
-exception occurred when the machine was in user space or kernel space right? 
+> >> > Lots of debug options are enabled at build time; why must this =20
+> be different?
+> >> Because I think it's valuable as debug tool for cases where =20
+> compile time switches are not the best way of debugging things. It's =20
+> not a high profile thing to tackle for me tbh, but I don't really =20
+> think working heavily on the timing stat thing is the correct path to =20
+> walk along.
+> >
+> > Adding new exit types isn't "working heavily" on it.
+>=20
+> No, but the fact that the first patch is a fix to add exit stats for =20
+> exits that we missed out before doesn't give me a lot of confidence =20
+> that lots of people use timing stats. And I am always very weary of =20
+> #ifdef'ed code, as it blows up the test matrix heavily.
 
-So once we determine that we've originated in the userspace, as is the case
-for SystemCall, we are apparently updating r1 (stack pointer) with (r1 +
-THREAD) - THREAD_INFO. Or is it actually r1 + (THREAD_INFO-THREAD)? In
-either case, how does this take us to the top of the kernel stack, is
-something I am unable to get my head around. May be I do not know some basic
-concepts here, which is why this is looking strange to me. Could someone
-please elaborate? Some ASCII art would be really nice here.
+I used it quite a lot when I was doing KVM performance work.  It's just =20
+been a while since I last did that.
 
-We then allocate an exception frame to hold the activation record (stack
-frame) for the caller. Into this frame, we save the CR. We also save R12 and
-R9 (as they are volatile registers and the caller must save them before
-calling a function). We then retrieve the earlier stored values of r10 and
-r11 and store them into the frame (using r11 as an anchor as it now points
-to the top of the stack frame). Then we store the link register.
-
-We retrieve previously stored r1 (previous frame's stack pointer isn't it?),
-retrieve SRR0 (which includes the return address and in this case, the
-address of the next instruction in case of a syscall from userspace,
-correct?). If we have already stored the previous value of R1 then what are
-we doing with this:
-
-
-
-Please correct me if my understanding is incorrect somewhere in addition to
-some of the doubts I have raised with this. I appreciate your help.
-
-
-
-
---
-View this message in context: http://linuxppc.10917.n7.nabble.com/ABI-defined-register-usage-within-function-calls-tp73565.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+-Scott=
