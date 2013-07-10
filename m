@@ -1,22 +1,36 @@
-Return-Path: <B42677@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe003.messaging.microsoft.com [213.199.154.206])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E827D2C02AF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 18:29:13 +1000 (EST)
-From: Haijun Zhang <Haijun.Zhang@freescale.com>
-To: <linux-mmc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 1/4 V2] powerpc/85xx: Add support for 85xx cpu type detection
-Date: Wed, 10 Jul 2013 15:39:01 +0800
-Message-ID: <1373441941-32650-1-git-send-email-Haijun.Zhang@freescale.com>
+Return-Path: <mingo.kernel.org@gmail.com>
+Received: from mail-ea0-x231.google.com (mail-ea0-x231.google.com
+ [IPv6:2a00:1450:4013:c01::231])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A22F12C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 18:34:43 +1000 (EST)
+Received: by mail-ea0-f177.google.com with SMTP id j14so4697365eak.8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 01:34:38 -0700 (PDT)
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Date: Wed, 10 Jul 2013 10:34:35 +0200
+From: Ingo Molnar <mingo@kernel.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH v2 2/2] perf tools: Make Power7 events available for perf
+Message-ID: <20130710083435.GA24070@gmail.com>
+References: <1372170933-4538-1-git-send-email-runzhen@linux.vnet.ibm.com>
+ <1372170933-4538-3-git-send-email-runzhen@linux.vnet.ibm.com>
+ <alpine.DEB.2.02.1306251240440.25443@pianoman.cluster.toy>
+ <20130704125218.GA21134@concordia>
+ <20130704125700.GM18898@dyad.programming.kicks-ass.net>
+ <20130709012952.GA7185@concordia>
+ <alpine.DEB.2.10.1307082204550.26280@vincent-weaver-1.um.maine.edu>
+ <20130709081434.GI25631@dyad.programming.kicks-ass.net>
+ <20130710030926.GD7491@concordia>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Zhao Chenhui <chenhui.zhao@freescale.com>, r39252@freescale.com,
- AFLEMING@freescale.com, Haijun Zhang <Haijun.Zhang@freescale.com>,
- cbouatmailru@gmail.com, scottwood@freescale.com, cjb@laptop.org,
- X.Xie@freescale.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130710030926.GD7491@concordia>
+Cc: Vince Weaver <vincent.weaver@maine.edu>,
+ Peter Zijlstra <peterz@infradead.org>, Vince Weaver <vince@deater.net>,
+ Stephane Eranian <eranian@google.com>, linux-kernel@vger.kernel.org,
+ acme@redhat.com, paulus@samba.org, xiaoguangrong@linux.vnet.ibm.com,
+ Runzhen Wang <runzhen@linux.vnet.ibm.com>, sukadev@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,80 +40,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add this file to help detect cpu type in runtime.
-These macros will be more favorable for driver
-to apply errata and workaround to specified cpu type.
 
-Signed-off-by: Haijun Zhang <Haijun.Zhang@freescale.com>
-Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
----
-changes v2:
-	- Remove inline function
-	- Ignore E bit of SOC
-	- Add Macro to get current soc version
+* Michael Ellerman <michael@ellerman.id.au> wrote:
 
- arch/powerpc/include/asm/mpc85xx.h | 53 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 53 insertions(+)
- create mode 100644 arch/powerpc/include/asm/mpc85xx.h
+> On Tue, Jul 09, 2013 at 10:14:34AM +0200, Peter Zijlstra wrote:
+> > On Mon, Jul 08, 2013 at 10:24:34PM -0400, Vince Weaver wrote:
+> > > 
+> > > So something like they have on ARM?
+> > > 
+> > > vince@pandaboard:/sys/bus/event_source/devices$ ls -l
+> > > lrwxrwxrwx 1 root root 0 Jul  8 21:57 ARMv7 Cortex-A9 -> ../../../devices/ARMv7 Cortex-A9
+> > > lrwxrwxrwx 1 root root 0 Jul  8 21:57 breakpoint -> ../../../devices/breakpoint
+> > > lrwxrwxrwx 1 root root 0 Jul  8 21:57 software -> ../../../devices/software
+> > > lrwxrwxrwx 1 root root 0 Jul  8 21:57 tracepoint -> ../../../devices/tracepoint
+> > 
+> > Right so what I remember of the ARM case is that their /proc/cpuinfo isn't
+> > sufficient to identify their PMU. And they don't have a cpuid like instruction
+> > at all.
+> > 
+> > > > For the cpu you can obviously just detect what processor you're on with
+> > > > cpuid or whatever, but it's a bit of a hack. And that really doesn't
+> > > > work for non-cpu PMUs.
+> > > 
+> > > why is it a hack to use cpuid?
+> > 
+> > I agree, for x86 cpuid is perfectly fine, as would /proc/cpuinfo be, I suspect
+> > that just the model number is sufficient in most cases, even for uncore stuff.
+>  
+> What about things on PCI? Other strange buses?
+> 
+> As long as everything's in /sys then it should be _possible_ for 
+> userspace to work out what's what, but it's going to end up with a bunch 
+> of detection logic and heuristics in the library.
+> 
+> At which point you've just rewritten libpfm4.
 
-diff --git a/arch/powerpc/include/asm/mpc85xx.h b/arch/powerpc/include/asm/mpc85xx.h
-new file mode 100644
-index 0000000..20af5e8
---- /dev/null
-+++ b/arch/powerpc/include/asm/mpc85xx.h
-@@ -0,0 +1,53 @@
-+/*
-+ * MPC85xx cpu type detection
-+ *
-+ * Copyright 2011-2012 Freescale Semiconductor, Inc.
-+ *
-+ * This is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+
-+#ifndef __ASM_PPC_MPC85XX_H
-+#define __ASM_PPC_MPC85XX_H
-+
-+#define SVR_REV(svr)	((svr) & 0xFF)		/* SOC design resision */
-+#define SVR_MAJ(svr)	(((svr) >>  4) & 0xF)	/* Major revision field*/
-+#define SVR_MIN(svr)	(((svr) >>  0) & 0xF)	/* Minor revision field*/
-+
-+/* Some parts define SVR[0:23] as the SOC version */
-+#define SVR_SOC_VER(svr) (((svr) >> 8) & 0xFFF7FF)	/* SOC Version fields */
-+
-+/* Get current SOC Version */
-+#define GET_SVR()	(mfspr(SPRN_SVR))
-+
-+#define IS_SVR_REV(svr, maj, min) \
-+	((SVR_MAJ(svr) == (maj)) && (SVR_MIN(svr) == (min)))
-+
-+#define SVR_8533	0x803400
-+#define SVR_8535	0x803701
-+#define SVR_8536	0x803700
-+#define SVR_8540	0x803000
-+#define SVR_8541	0x807200
-+#define SVR_8543	0x803200
-+#define SVR_8544	0x803401
-+#define SVR_8545	0x803102
-+#define SVR_8547	0x803101
-+#define SVR_8548	0x803100
-+#define SVR_8555	0x807100
-+#define SVR_8560	0x807000
-+#define SVR_8567	0x807501
-+#define SVR_8568	0x807500
-+#define SVR_8569	0x808000
-+#define SVR_8572	0x80E000
-+#define SVR_P1010	0x80f900
-+#define SVR_P2041	0x821001
-+#define SVR_P3041	0x821103
-+#define SVR_P5010	0x822100
-+#define SVR_P5020	0x822000
-+#define SVR_P5040	0x820400
-+#define SVR_T4240	0x824800
-+#define SVR_B4860	0x868800
-+
-+#endif
--- 
-1.8.0
+Exactly - PMUs enumerated in /sys should be self-identifying, it's a 
+hardware topology after all ...
+
+Anytime userspace is forced to look into /proc, or into weird places in 
+/sys it's a FAIL really.
+
+perf ABIs want to be self-identifying and self-sufficient, anytime 
+userspace is forced to look elsewhere it adds another source of fragility.
+
+And duplication with something that is 'already in /proc' is not a problem 
+_at all_, these are computers that provide us different views into the 
+same physical reality with dozens of different abstractions, so 
+duplication of information is natural and _good_.
+
+Thanks,
+
+	Ingo
