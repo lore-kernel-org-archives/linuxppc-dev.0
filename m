@@ -1,26 +1,27 @@
-Return-Path: <B42677@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0249.outbound.messaging.microsoft.com [213.199.154.249])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0C6332C0085
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 13:16:34 +1000 (EST)
-From: Zhang Haijun-B42677 <B42677@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH 2/2 V3] powerpc/85xx: add the P1020RDB-PD DTS support
-Date: Wed, 10 Jul 2013 03:18:35 +0000
-Message-ID: <99E897753B6F7048BD8CCDB4661D02E139BDF4@039-SN2MPN1-021.039d.mgd.msft.net>
-References: <1373358943-30433-1-git-send-email-Haijun.Zhang@freescale.com>
- (from Haijun.Zhang@freescale.com on Tue Jul  9 03:35:43 2013)
- <1373386496.8183.190@snotra>
-In-Reply-To: <1373386496.8183.190@snotra>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-ye0-f181.google.com (mail-ye0-f181.google.com
+ [209.85.213.181])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 45A4C2C00AC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 13:17:32 +1000 (EST)
+Received: by mail-ye0-f181.google.com with SMTP id g12so2209561yee.26
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jul 2013 20:17:29 -0700 (PDT)
+Message-ID: <51DCD23F.7020503@ozlabs.ru>
+Date: Wed, 10 Jul 2013 13:17:19 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
-Cc: Fleming Andy-AFLEMING <afleming@freescale.com>,
- Huang Changming-R66093 <r66093@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Xie Xiaobo-R63061 <r63061@freescale.com>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH 5/8] powerpc: add real mode support for dma operations
+ on powernv
+References: <1373123227-22969-1-git-send-email-aik@ozlabs.ru>
+ <1373123227-22969-6-git-send-email-aik@ozlabs.ru> <51DC341D.20901@suse.de>
+In-Reply-To: <51DC341D.20901@suse.de>
+Content-Type: text/plain; charset=KOI8-R
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,181 +31,253 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi, scott
+On 07/10/2013 02:02 AM, Alexander Graf wrote:
+> On 07/06/2013 05:07 PM, Alexey Kardashevskiy wrote:
+>> The existing TCE machine calls (tce_build and tce_free) only support
+>> virtual mode as they call __raw_writeq for TCE invalidation what
+>> fails in real mode.
+>>
+>> This introduces tce_build_rm and tce_free_rm real mode versions
+>> which do mostly the same but use "Store Doubleword Caching Inhibited
+>> Indexed" instruction for TCE invalidation.
+> 
+> So would always using stdcix have any bad side effects?
 
-Patch V4 had send, Pls review.
 
-Thanks.
+PowerISA says "They must be executed only when MSRDR=0" about stdcix.
 
-Regards=20
-Haijun.
 
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Wednesday, July 10, 2013 12:15 AM
-> To: Zhang Haijun-B42677
-> Cc: linuxppc-dev@lists.ozlabs.org; galak@kernel.crashing.org; Fleming
-> Andy-AFLEMING; Zhang Haijun-B42677; Huang Changming-R66093; Xie Xiaobo-
-> R63061
-> Subject: Re: [PATCH 2/2 V3] powerpc/85xx: add the P1020RDB-PD DTS support
->=20
-> On 07/09/2013 03:35:43 AM, Haijun Zhang wrote:
-> > Overview of P1020RDB-PD device:
-> > - DDR3 2GB
-> > - NOR flash 64MB
-> > - NAND flash 128MB
-> > - SPI flash 16MB
-> > - I2C EEPROM 256Kb
-> > - eTSEC1 (RGMII PHY) connected to VSC7385 L2 switch
-> > - eTSEC2 (SGMII PHY)
-> > - eTSEC3 (RGMII PHY)
-> > - SDHC
-> > - 2 USB ports
-> > - 4 TDM ports
-> > - PCIe
-> >
-> > Signed-off-by: Haijun Zhang <Haijun.Zhang@freescale.com>
-> > Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
-> > Signed-off-by: Xie Xiaobo-R63061 <X.Xie@freescale.com>
-> > CC: Scott Wood <scottwood@freescale.com>
-> > ---
-> > changes for v3:
-> > 	- Remove some blank and changed the usb node
-> > 	- Renamed the dts file
-> > 	- change the cpld name of pd board
-> >
-> >  arch/powerpc/boot/dts/p1020rdb-pd.dts  |  90 ++++++++++++
-> > arch/powerpc/boot/dts/p1020rdb-pd.dtsi | 257
-> > +++++++++++++++++++++++++++++++++
-> >  2 files changed, 347 insertions(+)
-> >  create mode 100644 arch/powerpc/boot/dts/p1020rdb-pd.dts
-> >  create mode 100644 arch/powerpc/boot/dts/p1020rdb-pd.dtsi
->=20
-> Again, why do you need a separate .dtsi?  If this isn't for a 32/36-bit
-> split, what is the criteria for what goes in the .dts versus what goes in
-> the .dtsi?
->=20
-> > +		partition@600000 {
-> > +			/* 4MB for Compressed Root file System Image */
-> > +			reg =3D <0x00600000 0x00400000>;
-> > +			label =3D "NAND Compressed RFS Image";
-> > +		};
-> > +
-> > +		partition@a00000 {
-> > +			/* 22MB for JFFS2 based Root file System */
-> > +			reg =3D <0x00a00000 0x01600000>;
-> > +			label =3D "NAND JFFS2 Root File System";
-> > +		};
->=20
-> Don't refer to JFFS2.  It's bad enough that we specify partition layout
-> here -- no need to specify the filesystem type, especially when it's a fs
-> type that is no longer recommended.
->=20
-> > +		partition@2000000 {
-> > +			/* 96MB for RAMDISK based Root file System */
-> > +			reg =3D <0x02000000 0x06000000>;
-> > +			label =3D "NAND Writable User area";
-> > +		};
->=20
-> Wouldn't it be better to combine these last three partitions?  Why do you
-> need three root filesystems?
->=20
-> > +	cpld@2,0 {
-> > +		compatible =3D "fsl,p1020rdb-pd-cpld";
-> > +		reg =3D <0x2 0x0 0x20000>;
-> > +		read-only;
-> > +	};
->=20
-> Remove read-only.
->=20
-> > +	spi@7000 {
-> > +		flash@0 {
-> > +			#address-cells =3D <1>;
-> > +			#size-cells =3D <1>;
-> > +			compatible =3D "spansion,s25sl12801";
-> > +			reg =3D <0>;
-> > +			spi-max-frequency =3D <40000000>; /* input clock
-> > */
-> > +
-> > +			partition@u-boot {
-> > +				/* 512KB for u-boot Bootloader Image */
-> > +				reg =3D <0x0 0x00080000>;
-> > +				label =3D "u-boot";
-> > +				read-only;
-> > +			};
-> > +
-> > +			partition@dtb {
-> > +				/* 512KB for DTB Image*/
-> > +				reg =3D <0x00080000 0x00080000>;
-> > +				label =3D "dtb";
-> > +			};
-> > +
-> > +			partition@kernel {
-> > +				/* 4MB for Linux Kernel Image */
-> > +				reg =3D <0x00100000 0x00400000>;
-> > +				label =3D "kernel";
-> > +			};
->=20
-> These unit addresses are not appropriate.  They should match reg, not
-> label.
->=20
-> > +			partition@fs {
-> > +				/* 4MB for Compressed RFS Image */
-> > +				reg =3D <0x00500000 0x00400000>;
-> > +				label =3D "file system";
-> > +			};
-> > +
-> > +			partition@jffs-fs {
-> > +				/* 7MB for JFFS2 based RFS */
-> > +				reg =3D <0x00900000 0x00700000>;
-> > +				label =3D "file system jffs2";
-> > +			};
->=20
-> As with NAND flash, please combine these and don't reference JFFS2.
->=20
-> > +		};
-> > +
-> > +		slic@0 {
-> > +			compatible =3D "zarlink,le88266";
-> > +			reg =3D <1>;
-> > +			spi-max-frequency =3D <8000000>;
-> > +		};
-> > +
-> > +		slic@1 {
-> > +			compatible =3D "zarlink,le88266";
-> > +			reg =3D <2>;
-> > +			spi-max-frequency =3D <8000000>;
-> > +		};
-> > +	};
-> > +
-> > +	mdio@24000 {
-> > +		phy0: ethernet-phy@0 {
-> > +			interrupts =3D <3 1 0 0>;
-> > +			reg =3D <0x0>;
-> > +		};
-> > +		phy1: ethernet-phy@1 {
-> > +			interrupts =3D <2 1 0 0>;
-> > +			reg =3D <0x1>;
-> > +		};
-> > +	};
->=20
-> Again, leave a blank line between nodes.  If I comment about a style
-> issue in one place, you should also fix the same issue in other places
-> where it occurs.
->=20
-> > +	/*
-> > +	 * USB2 is shared with localbus, so it must be disabled
-> > +	 * by default. We can't put 'status =3D "disabled";' here
-> > +	 * since U-Boot doesn't clear the status property when
-> > +	 * it enables USB2. OTOH, U-Boot does create a new node
-> > +	 * when there isn't any. So, just comment it out.
-> > +	 * usb@23000 {
-> > +	 * 	status =3D "disabled";
-> > +	 * 	phy_type =3D "ulpi";
-> > +	 * };
-> > +	 */
->=20
-> No.  Fix U-Boot to do whatever updating it needs to do based on runtime
-> configuration.  Do not add commented out nodes to the tree.
->=20
-> -Scott
+
+> 
+> 
+> Alex
+> 
+>>
+>> This new feature is going to be utilized by real mode support of VFIO.
+>>
+>> Signed-off-by: Alexey Kardashevskiy<aik@ozlabs.ru>
+>> ---
+>>   arch/powerpc/include/asm/machdep.h        | 12 ++++++++++
+>>   arch/powerpc/platforms/powernv/pci-ioda.c | 26 +++++++++++++++------
+>>   arch/powerpc/platforms/powernv/pci.c      | 38
+>> ++++++++++++++++++++++++++-----
+>>   arch/powerpc/platforms/powernv/pci.h      |  2 +-
+>>   4 files changed, 64 insertions(+), 14 deletions(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/machdep.h
+>> b/arch/powerpc/include/asm/machdep.h
+>> index 92386fc..0c19eef 100644
+>> --- a/arch/powerpc/include/asm/machdep.h
+>> +++ b/arch/powerpc/include/asm/machdep.h
+>> @@ -75,6 +75,18 @@ struct machdep_calls {
+>>                       long index);
+>>       void        (*tce_flush)(struct iommu_table *tbl);
+>>
+>> +    /* _rm versions are for real mode use only */
+>> +    int        (*tce_build_rm)(struct iommu_table *tbl,
+>> +                     long index,
+>> +                     long npages,
+>> +                     unsigned long uaddr,
+>> +                     enum dma_data_direction direction,
+>> +                     struct dma_attrs *attrs);
+>> +    void        (*tce_free_rm)(struct iommu_table *tbl,
+>> +                    long index,
+>> +                    long npages);
+>> +    void        (*tce_flush_rm)(struct iommu_table *tbl);
+>> +
+>>       void __iomem *    (*ioremap)(phys_addr_t addr, unsigned long size,
+>>                      unsigned long flags, void *caller);
+>>       void        (*iounmap)(volatile void __iomem *token);
+>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c
+>> b/arch/powerpc/platforms/powernv/pci-ioda.c
+>> index 2931d97..2797dec 100644
+>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>> @@ -68,6 +68,12 @@ define_pe_printk_level(pe_err, KERN_ERR);
+>>   define_pe_printk_level(pe_warn, KERN_WARNING);
+>>   define_pe_printk_level(pe_info, KERN_INFO);
+>>
+>> +static inline void rm_writed(unsigned long paddr, u64 val)
+>> +{
+>> +    __asm__ __volatile__("sync; stdcix %0,0,%1"
+>> +        : : "r" (val), "r" (paddr) : "memory");
+>> +}
+>> +
+>>   static int pnv_ioda_alloc_pe(struct pnv_phb *phb)
+>>   {
+>>       unsigned long pe;
+>> @@ -442,7 +448,7 @@ static void pnv_pci_ioda_dma_dev_setup(struct pnv_phb
+>> *phb, struct pci_dev *pdev
+>>   }
+>>
+>>   static void pnv_pci_ioda1_tce_invalidate(struct iommu_table *tbl,
+>> -                     u64 *startp, u64 *endp)
+>> +                     u64 *startp, u64 *endp, bool rm)
+>>   {
+>>       u64 __iomem *invalidate = (u64 __iomem *)tbl->it_index;
+>>       unsigned long start, end, inc;
+>> @@ -471,7 +477,10 @@ static void pnv_pci_ioda1_tce_invalidate(struct
+>> iommu_table *tbl,
+>>
+>>           mb(); /* Ensure above stores are visible */
+>>           while (start<= end) {
+>> -                __raw_writeq(start, invalidate);
+>> +        if (rm)
+>> +            rm_writed((unsigned long) invalidate, start);
+>> +        else
+>> +            __raw_writeq(start, invalidate);
+>>                   start += inc;
+>>           }
+>>
+>> @@ -483,7 +492,7 @@ static void pnv_pci_ioda1_tce_invalidate(struct
+>> iommu_table *tbl,
+>>
+>>   static void pnv_pci_ioda2_tce_invalidate(struct pnv_ioda_pe *pe,
+>>                        struct iommu_table *tbl,
+>> -                     u64 *startp, u64 *endp)
+>> +                     u64 *startp, u64 *endp, bool rm)
+>>   {
+>>       unsigned long start, end, inc;
+>>       u64 __iomem *invalidate = (u64 __iomem *)tbl->it_index;
+>> @@ -502,22 +511,25 @@ static void pnv_pci_ioda2_tce_invalidate(struct
+>> pnv_ioda_pe *pe,
+>>       mb();
+>>
+>>       while (start<= end) {
+>> -        __raw_writeq(start, invalidate);
+>> +        if (rm)
+>> +            rm_writed((unsigned long) invalidate, start);
+>> +        else
+>> +            __raw_writeq(start, invalidate);
+>>           start += inc;
+>>       }
+>>   }
+>>
+>>   void pnv_pci_ioda_tce_invalidate(struct iommu_table *tbl,
+>> -                 u64 *startp, u64 *endp)
+>> +                 u64 *startp, u64 *endp, bool rm)
+>>   {
+>>       struct pnv_ioda_pe *pe = container_of(tbl, struct pnv_ioda_pe,
+>>                             tce32_table);
+>>       struct pnv_phb *phb = pe->phb;
+>>
+>>       if (phb->type == PNV_PHB_IODA1)
+>> -        pnv_pci_ioda1_tce_invalidate(tbl, startp, endp);
+>> +        pnv_pci_ioda1_tce_invalidate(tbl, startp, endp, rm);
+>>       else
+>> -        pnv_pci_ioda2_tce_invalidate(pe, tbl, startp, endp);
+>> +        pnv_pci_ioda2_tce_invalidate(pe, tbl, startp, endp, rm);
+>>   }
+>>
+>>   static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+>> diff --git a/arch/powerpc/platforms/powernv/pci.c
+>> b/arch/powerpc/platforms/powernv/pci.c
+>> index e16b729..280f614 100644
+>> --- a/arch/powerpc/platforms/powernv/pci.c
+>> +++ b/arch/powerpc/platforms/powernv/pci.c
+>> @@ -336,7 +336,7 @@ struct pci_ops pnv_pci_ops = {
+>>
+>>   static int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
+>>                unsigned long uaddr, enum dma_data_direction direction,
+>> -             struct dma_attrs *attrs)
+>> +             struct dma_attrs *attrs, bool rm)
+>>   {
+>>       u64 proto_tce;
+>>       u64 *tcep, *tces;
+>> @@ -358,12 +358,19 @@ static int pnv_tce_build(struct iommu_table *tbl,
+>> long index, long npages,
+>>        * of flags if that becomes the case
+>>        */
+>>       if (tbl->it_type&  TCE_PCI_SWINV_CREATE)
+>> -        pnv_pci_ioda_tce_invalidate(tbl, tces, tcep - 1);
+>> +        pnv_pci_ioda_tce_invalidate(tbl, tces, tcep - 1, rm);
+>>
+>>       return 0;
+>>   }
+>>
+>> -static void pnv_tce_free(struct iommu_table *tbl, long index, long npages)
+>> +static int pnv_tce_build_vm(struct iommu_table *tbl, long index, long
+>> npages,
+>> +                unsigned long uaddr, enum dma_data_direction direction,
+>> +                struct dma_attrs *attrs)
+>> +{
+>> +    return pnv_tce_build(tbl, index, npages, uaddr, direction, attrs,
+>> false);
+>> +}
+>> +
+>> +static void pnv_tce_free(struct iommu_table *tbl, long index, long
+>> npages, bool rm)
+>>   {
+>>       u64 *tcep, *tces;
+>>
+>> @@ -373,7 +380,12 @@ static void pnv_tce_free(struct iommu_table *tbl,
+>> long index, long npages)
+>>           *(tcep++) = 0;
+>>
+>>       if (tbl->it_type&  TCE_PCI_SWINV_FREE)
+>> -        pnv_pci_ioda_tce_invalidate(tbl, tces, tcep - 1);
+>> +        pnv_pci_ioda_tce_invalidate(tbl, tces, tcep - 1, rm);
+>> +}
+>> +
+>> +static void pnv_tce_free_vm(struct iommu_table *tbl, long index, long
+>> npages)
+>> +{
+>> +    pnv_tce_free(tbl, index, npages, false);
+>>   }
+>>
+>>   static unsigned long pnv_tce_get(struct iommu_table *tbl, long index)
+>> @@ -381,6 +393,18 @@ static unsigned long pnv_tce_get(struct iommu_table
+>> *tbl, long index)
+>>       return ((u64 *)tbl->it_base)[index - tbl->it_offset];
+>>   }
+>>
+>> +static int pnv_tce_build_rm(struct iommu_table *tbl, long index, long
+>> npages,
+>> +                unsigned long uaddr, enum dma_data_direction direction,
+>> +                struct dma_attrs *attrs)
+>> +{
+>> +    return pnv_tce_build(tbl, index, npages, uaddr, direction, attrs,
+>> true);
+>> +}
+>> +
+>> +static void pnv_tce_free_rm(struct iommu_table *tbl, long index, long
+>> npages)
+>> +{
+>> +    pnv_tce_free(tbl, index, npages, true);
+>> +}
+>> +
+>>   void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
+>>                      void *tce_mem, u64 tce_size,
+>>                      u64 dma_offset)
+>> @@ -545,8 +569,10 @@ void __init pnv_pci_init(void)
+>>
+>>       /* Configure IOMMU DMA hooks */
+>>       ppc_md.pci_dma_dev_setup = pnv_pci_dma_dev_setup;
+>> -    ppc_md.tce_build = pnv_tce_build;
+>> -    ppc_md.tce_free = pnv_tce_free;
+>> +    ppc_md.tce_build = pnv_tce_build_vm;
+>> +    ppc_md.tce_free = pnv_tce_free_vm;
+>> +    ppc_md.tce_build_rm = pnv_tce_build_rm;
+>> +    ppc_md.tce_free_rm = pnv_tce_free_rm;
+>>       ppc_md.tce_get = pnv_tce_get;
+>>       ppc_md.pci_probe_mode = pnv_pci_probe_mode;
+>>       set_pci_dma_ops(&dma_iommu_ops);
+>> diff --git a/arch/powerpc/platforms/powernv/pci.h
+>> b/arch/powerpc/platforms/powernv/pci.h
+>> index 25d76c4..6799374 100644
+>> --- a/arch/powerpc/platforms/powernv/pci.h
+>> +++ b/arch/powerpc/platforms/powernv/pci.h
+>> @@ -158,6 +158,6 @@ extern void pnv_pci_init_p5ioc2_hub(struct
+>> device_node *np);
+>>   extern void pnv_pci_init_ioda_hub(struct device_node *np);
+>>   extern void pnv_pci_init_ioda2_phb(struct device_node *np);
+>>   extern void pnv_pci_ioda_tce_invalidate(struct iommu_table *tbl,
+>> -                    u64 *startp, u64 *endp);
+>> +                    u64 *startp, u64 *endp, bool rm);
+>>
+>>   #endif /* __POWERNV_PCI_H */
+> 
+
+
+-- 
+Alexey
