@@ -1,22 +1,26 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- by ozlabs.org (Postfix) with ESMTP id 5B8AA2C0096
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 20:05:28 +1000 (EST)
-Subject: Re: [PATCH 6/8] KVM: PPC: Add support for multiple-TCE hcalls
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=koi8-r
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <51DCEA76.9070808@ozlabs.ru>
-Date: Wed, 10 Jul 2013 12:05:18 +0200
-Message-Id: <D10E7B99-3A7C-4275-9A49-3CB15598E705@suse.de>
-References: <1373123227-22969-1-git-send-email-aik@ozlabs.ru>
- <1373123227-22969-7-git-send-email-aik@ozlabs.ru> <51DC4228.7010607@suse.de>
- <51DCEA76.9070808@ozlabs.ru>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <B40534@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id AB6F62C02BB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 20:06:37 +1000 (EST)
+From: Wang Dongsheng-B40534 <B40534@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: RE: [PATCH 1/2] powerpc: add Book E support to 64-bit hibernation
+Date: Wed, 10 Jul 2013 10:05:36 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259FBECCE@039-SN2MPN1-022.039d.mgd.msft.net>
+References: <1370774260-31072-1-git-send-email-dongsheng.wang@freescale.com>
+ <ABB05CD9C9F68C46A5CEDC7F15439259FBEC41@039-SN2MPN1-022.039d.mgd.msft.net>
+ <1373449893.19894.18.camel@pasglop>
+In-Reply-To: <1373449893.19894.18.camel@pasglop>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "johannes@sipsolutions.net" <johannes@sipsolutions.net>,
+ "anton@enomsg.org" <anton@enomsg.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,831 +30,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On 10.07.2013, at 07:00, Alexey Kardashevskiy wrote:
-
-> On 07/10/2013 03:02 AM, Alexander Graf wrote:
->> On 07/06/2013 05:07 PM, Alexey Kardashevskiy wrote:
->>> This adds real mode handlers for the H_PUT_TCE_INDIRECT and
->>> H_STUFF_TCE hypercalls for QEMU emulated devices such as IBMVIO
->>> devices or emulated PCI.  These calls allow adding multiple entries
->>> (up to 512) into the TCE table in one call which saves time on
->>> transition to/from real mode.
->>=20
->> We don't mention QEMU explicitly in KVM code usually.
->>=20
->>> This adds a tce_tmp cache to kvm_vcpu_arch to save valid TCEs
->>> (copied from user and verified) before writing the whole list into
->>> the TCE table. This cache will be utilized more in the upcoming
->>> VFIO/IOMMU support to continue TCE list processing in the virtual
->>> mode in the case if the real mode handler failed for some reason.
->>>=20
->>> This adds a guest physical to host real address converter
->>> and calls the existing H_PUT_TCE handler. The converting function
->>> is going to be fully utilized by upcoming VFIO supporting patches.
->>>=20
->>> This also implements the KVM_CAP_PPC_MULTITCE capability,
->>> so in order to support the functionality of this patch, QEMU
->>> needs to query for this capability and set the "hcall-multi-tce"
->>> hypertas property only if the capability is present, otherwise
->>> there will be serious performance degradation.
->>=20
->> Same as above. But really you're only giving recommendations here. =
-What's
->> the point? Please describe what the benefit of this patch is, not =
-what some
->> other random subsystem might do with the benefits it brings.
->>=20
->>>=20
->>> Signed-off-by: Paul Mackerras<paulus@samba.org>
->>> Signed-off-by: Alexey Kardashevskiy<aik@ozlabs.ru>
->>>=20
->>> ---
->>> Changelog:
->>> 2013/07/06:
->>> * fixed number of wrong get_page()/put_page() calls
->>>=20
->>> 2013/06/27:
->>> * fixed clear of BUSY bit in kvmppc_lookup_pte()
->>> * H_PUT_TCE_INDIRECT does realmode_get_page() now
->>> * KVM_CAP_SPAPR_MULTITCE now depends on CONFIG_PPC_BOOK3S_64
->>> * updated doc
->>>=20
->>> 2013/06/05:
->>> * fixed mistype about IBMVIO in the commit message
->>> * updated doc and moved it to another section
->>> * changed capability number
->>>=20
->>> 2013/05/21:
->>> * added kvm_vcpu_arch::tce_tmp
->>> * removed cleanup if put_indirect failed, instead we do not even =
-start
->>> writing to TCE table if we cannot get TCEs from the user and they =
-are
->>> invalid
->>> * kvmppc_emulated_h_put_tce is split to kvmppc_emulated_put_tce
->>> and kvmppc_emulated_validate_tce (for the previous item)
->>> * fixed bug with failthrough for H_IPI
->>> * removed all get_user() from real mode handlers
->>> * kvmppc_lookup_pte() added (instead of making lookup_linux_pte =
-public)
->>>=20
->>> Signed-off-by: Alexey Kardashevskiy<aik@ozlabs.ru>
->>> ---
->>>  Documentation/virtual/kvm/api.txt       |  25 +++
->>>  arch/powerpc/include/asm/kvm_host.h     |   9 ++
->>>  arch/powerpc/include/asm/kvm_ppc.h      |  16 +-
->>>  arch/powerpc/kvm/book3s_64_vio.c        | 154 ++++++++++++++++++-
->>>  arch/powerpc/kvm/book3s_64_vio_hv.c     | 260
->>> ++++++++++++++++++++++++++++----
->>>  arch/powerpc/kvm/book3s_hv.c            |  41 ++++-
->>>  arch/powerpc/kvm/book3s_hv_rmhandlers.S |   6 +
->>>  arch/powerpc/kvm/book3s_pr_papr.c       |  37 ++++-
->>>  arch/powerpc/kvm/powerpc.c              |   3 +
->>>  9 files changed, 517 insertions(+), 34 deletions(-)
->>>=20
->>> diff --git a/Documentation/virtual/kvm/api.txt
->>> b/Documentation/virtual/kvm/api.txt
->>> index 6365fef..762c703 100644
->>> --- a/Documentation/virtual/kvm/api.txt
->>> +++ b/Documentation/virtual/kvm/api.txt
->>> @@ -2362,6 +2362,31 @@ calls by the guest for that service will be =
-passed
->>> to userspace to be
->>>  handled.
->>>=20
->>>=20
->>> +4.86 KVM_CAP_PPC_MULTITCE
->>> +
->>> +Capability: KVM_CAP_PPC_MULTITCE
->>> +Architectures: ppc
->>> +Type: vm
->>> +
->>> +This capability means the kernel is capable of handling hypercalls
->>> +H_PUT_TCE_INDIRECT and H_STUFF_TCE without passing those into the =
-user
->>> +space. This significanly accelerates DMA operations for PPC KVM =
-guests.
->>=20
->> significanly? Please run this through a spell checker.
->>=20
->>> +The user space should expect that its handlers for these hypercalls
->>=20
->> s/The//
->>=20
->>> +are not going to be called.
->>=20
->> Is user space guaranteed they will not be called? Or can it still =
-happen?
->=20
-> ... if user space previously registered LIOBN in KVM (via
-> KVM_CREATE_SPAPR_TCE or similar calls).
->=20
-> ok?
-
-How about this?
-
-The hypercalls mentioned above may or may not be processed successfully =
-in the kernel based fast path. If they can not be handled by the kernel, =
-they will get passed on to user space. So user space still has to have =
-an implementation for these despite the in kernel acceleration.
-
----
-
-The target audience for this documentation is user space KVM API users. =
-Someone developing kvm tool for example. They want to know implications =
-specific CAPs have.
-
->=20
-> There is also KVM_CREATE_SPAPR_TCE_IOMMU but it is not in the kernel =
-yet
-> and may never get there.
->=20
->=20
->>> +In order to enable H_PUT_TCE_INDIRECT and H_STUFF_TCE use in the =
-guest,
->>> +the user space might have to advertise it for the guest. For =
-example,
->>> +IBM pSeries guest starts using them if "hcall-multi-tce" is present =
-in
->>> +the "ibm,hypertas-functions" device-tree property.
->>=20
->> This paragraph describes sPAPR. That's fine, but please document it =
-as
->> such. Also please check your grammar.
->=20
->>> +
->>> +Without this capability, only H_PUT_TCE is handled by the kernel =
-and
->>> +therefore the use of H_PUT_TCE_INDIRECT and H_STUFF_TCE is not =
-recommended
->>> +unless the capability is present as passing hypercalls to the =
-userspace
->>> +slows operations a lot.
->>> +
->>> +Unlike other capabilities of this section, this one is always =
-enabled.
->>=20
->> Why? Wouldn't that confuse older user space?
->=20
->=20
-> How? Old user space won't check for this capability and won't tell the
-> guest to use it (via "hcall-multi-tce"). Old H_PUT_TCE is still there.
->=20
-> If the guest always uses H_PUT_TCE_INDIRECT/H_STUFF_TCE no matter =
-what,
-> then it is its problem - it won't work now anyway as neither QEMU nor =
-host
-> kernel supports these calls.
-
-Always assume that you are a kernel developer without knowledge of any =
-user space code using your interfaces. So there is the theoretical =
-possibility that there is a user space client out there that implements =
-H_PUT_TCE_INDIRECT and advertises hcall-multi-tce to the guest. Would =
-that client break? If so, we should definitely have the CAP disabled by =
-default.
-
-But really, it's also as much about consistency as anything else. If we =
-leave everything as is and always extend functionality by enabling new =
-CAPs, we're pretty much guaranteed that we don't break anything by =
-accident. It also makes debugging easier because you can for example =
-disable this particular feature to see whether something has bad side =
-effects.
-
->=20
->=20
->=20
->>> +
->>> +
->>>  5. The kvm_run structure
->>>  ------------------------
->>>=20
->>> diff --git a/arch/powerpc/include/asm/kvm_host.h
->>> b/arch/powerpc/include/asm/kvm_host.h
->>> index af326cd..20d04bd 100644
->>> --- a/arch/powerpc/include/asm/kvm_host.h
->>> +++ b/arch/powerpc/include/asm/kvm_host.h
->>> @@ -180,6 +180,7 @@ struct kvmppc_spapr_tce_table {
->>>      struct kvm *kvm;
->>>      u64 liobn;
->>>      u32 window_size;
->>> +    struct { struct { unsigned long put, indir, stuff; } rm, vm; } =
-stat;
->>=20
->> You don't need this.
->>=20
->>>      struct page *pages[0];
->>>  };
->>>=20
->>> @@ -609,6 +610,14 @@ struct kvm_vcpu_arch {
->>>      spinlock_t tbacct_lock;
->>>      u64 busy_stolen;
->>>      u64 busy_preempt;
->>> +
->>> +    unsigned long *tce_tmp_hpas;    /* TCE cache for =
-TCE_PUT_INDIRECT
->>> hcall */
->>> +    enum {
->>> +        TCERM_NONE,
->>> +        TCERM_GETPAGE,
->>> +        TCERM_PUTTCE,
->>> +        TCERM_PUTLIST,
->>> +    } tce_rm_fail;            /* failed stage of request processing =
-*/
->>>  #endif
->>>  };
->>>=20
->>> diff --git a/arch/powerpc/include/asm/kvm_ppc.h
->>> b/arch/powerpc/include/asm/kvm_ppc.h
->>> index a5287fe..fa722a0 100644
->>> --- a/arch/powerpc/include/asm/kvm_ppc.h
->>> +++ b/arch/powerpc/include/asm/kvm_ppc.h
->>> @@ -133,8 +133,20 @@ extern int kvmppc_pseries_do_hcall(struct =
-kvm_vcpu
->>> *vcpu);
->>>=20
->>>  extern long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
->>>                  struct kvm_create_spapr_tce *args);
->>> -extern long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long =
-liobn,
->>> -                 unsigned long ioba, unsigned long tce);
->>> +extern struct kvmppc_spapr_tce_table *kvmppc_find_tce_table(
->>> +        struct kvm_vcpu *vcpu, unsigned long liobn);
->>> +extern long kvmppc_emulated_validate_tce(unsigned long tce);
->>> +extern void kvmppc_emulated_put_tce(struct kvmppc_spapr_tce_table =
-*tt,
->>> +        unsigned long ioba, unsigned long tce);
->>> +extern long kvmppc_vm_h_put_tce(struct kvm_vcpu *vcpu,
->>> +        unsigned long liobn, unsigned long ioba,
->>> +        unsigned long tce);
->>> +extern long kvmppc_vm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
->>> +        unsigned long liobn, unsigned long ioba,
->>> +        unsigned long tce_list, unsigned long npages);
->>> +extern long kvmppc_vm_h_stuff_tce(struct kvm_vcpu *vcpu,
->>> +        unsigned long liobn, unsigned long ioba,
->>> +        unsigned long tce_value, unsigned long npages);
->>>  extern long kvm_vm_ioctl_allocate_rma(struct kvm *kvm,
->>>                  struct kvm_allocate_rma *rma);
->>>  extern struct kvmppc_linear_info *kvm_alloc_rma(void);
->>> diff --git a/arch/powerpc/kvm/book3s_64_vio.c
->>> b/arch/powerpc/kvm/book3s_64_vio.c
->>> index b2d3f3b..99bf4e5 100644
->>> --- a/arch/powerpc/kvm/book3s_64_vio.c
->>> +++ b/arch/powerpc/kvm/book3s_64_vio.c
->>> @@ -14,6 +14,7 @@
->>>   *
->>>   * Copyright 2010 Paul Mackerras, IBM Corp.<paulus@au1.ibm.com>
->>>   * Copyright 2011 David Gibson, IBM Corporation<dwg@au1.ibm.com>
->>> + * Copyright 2013 Alexey Kardashevskiy, IBM =
-Corporation<aik@au1.ibm.com>
->>>   */
->>>=20
->>>  #include<linux/types.h>
->>> @@ -36,8 +37,10 @@
->>>  #include<asm/ppc-opcode.h>
->>>  #include<asm/kvm_host.h>
->>>  #include<asm/udbg.h>
->>> +#include<asm/iommu.h>
->>> +#include<asm/tce.h>
->>>=20
->>> -#define TCES_PER_PAGE    (PAGE_SIZE / sizeof(u64))
->>> +#define ERROR_ADDR      ((void *)~(unsigned long)0x0)
->>>=20
->>>  static long kvmppc_stt_npages(unsigned long window_size)
->>>  {
->>> @@ -50,6 +53,20 @@ static void release_spapr_tce_table(struct
->>> kvmppc_spapr_tce_table *stt)
->>>      struct kvm *kvm =3D stt->kvm;
->>>      int i;
->>>=20
->>> +#define __SV(x) stt->stat.x
->>> +#define __SVD(x) (__SV(rm.x)?(__SV(rm.x)-__SV(vm.x)):0)
->>> +    pr_debug("%s stat for liobn=3D%llx\n"
->>> +            "--------------- realmode ----- virtmode ---\n"
->>> +            "put_tce       %10ld     %10ld\n"
->>> +            "put_tce_indir %10ld     %10ld\n"
->>> +            "stuff_tce     %10ld     %10ld\n",
->>> +            __func__, stt->liobn,
->>> +            __SVD(put), __SV(vm.put),
->>> +            __SVD(indir), __SV(vm.indir),
->>> +            __SVD(stuff), __SV(vm.stuff));
->>> +#undef __SVD
->>> +#undef __SV
->>=20
->> All of these stat points should just be trace points. You can do the
->> statistic gathering from user space then.
->>=20
->>> +
->>>      mutex_lock(&kvm->lock);
->>>      list_del(&stt->list);
->>>      for (i =3D 0; i<  kvmppc_stt_npages(stt->window_size); i++)
->>> @@ -148,3 +165,138 @@ fail:
->>>      }
->>>      return ret;
->>>  }
->>> +
->>> +/* Converts guest physical address to host virtual address */
->>> +static void __user *kvmppc_vm_gpa_to_hva_and_get(struct kvm_vcpu =
-*vcpu,
->>=20
->> Please don't distinguish _vm versions. They're the normal case. _rm =
-ones
->> are the special ones.
->>=20
->>> +        unsigned long gpa, struct page **pg)
->>> +{
->>> +    unsigned long hva, gfn =3D gpa>>  PAGE_SHIFT;
->>> +    struct kvm_memory_slot *memslot;
->>> +
->>> +    memslot =3D search_memslots(kvm_memslots(vcpu->kvm), gfn);
->>> +    if (!memslot)
->>> +        return ERROR_ADDR;
->>> +
->>> +    hva =3D __gfn_to_hva_memslot(memslot, gfn) + (gpa&  =
-~PAGE_MASK);
->>=20
->> s/+/|/
->>=20
->>> +
->>> +    if (get_user_pages_fast(hva&  PAGE_MASK, 1, 0, pg) !=3D 1)
->>> +        return ERROR_ADDR;
->>> +
->>> +    return (void *) hva;
->>> +}
->>> +
->>> +long kvmppc_vm_h_put_tce(struct kvm_vcpu *vcpu,
->>> +        unsigned long liobn, unsigned long ioba,
->>> +        unsigned long tce)
->>> +{
->>> +    long ret;
->>> +    struct kvmppc_spapr_tce_table *tt;
->>> +
->>> +    tt =3D kvmppc_find_tce_table(vcpu, liobn);
->>> +    /* Didn't find the liobn, put it to userspace */
->>=20
->> Unclear comment.
->=20
->=20
-> What detail is missing?
-
-Grammar wise "it" in the second half of the sentence refers to liobn. So =
-you "put" the "liobn to userspace". That sentence doesn't make any =
-sense.
-
-What you really want to say is:
-
-  /* Couldn't find the liobn. Something went wrong. Let user space =
-handle the hypercall. That has better ways of dealing with errors. */
-
->=20
->=20
->>> +    if (!tt)
->>> +        return H_TOO_HARD;
->>> +
->>> +    ++tt->stat.vm.put;
->>> +
->>> +    if (ioba>=3D tt->window_size)
->>> +        return H_PARAMETER;
->>> +
->>> +    ret =3D kvmppc_emulated_validate_tce(tce);
->>> +    if (ret)
->>> +        return ret;
->>> +
->>> +    kvmppc_emulated_put_tce(tt, ioba, tce);
->>> +
->>> +    return H_SUCCESS;
->>> +}
->>> +
->>> +long kvmppc_vm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
->>> +        unsigned long liobn, unsigned long ioba,
->>> +        unsigned long tce_list, unsigned long npages)
->>> +{
->>> +    struct kvmppc_spapr_tce_table *tt;
->>> +    long i, ret =3D H_SUCCESS;
->>> +    unsigned long __user *tces;
->>> +    struct page *pg =3D NULL;
->>> +
->>> +    tt =3D kvmppc_find_tce_table(vcpu, liobn);
->>> +    /* Didn't find the liobn, put it to userspace */
->>> +    if (!tt)
->>> +        return H_TOO_HARD;
->>> +
->>> +    ++tt->stat.vm.indir;
->>> +
->>> +    /*
->>> +     * The spec says that the maximum size of the list is 512 TCEs =
-so
->>> +     * so the whole table addressed resides in 4K page
->>=20
->> so so?
->>=20
->>> +     */
->>> +    if (npages>  512)
->>> +        return H_PARAMETER;
->>> +
->>> +    if (tce_list&  ~IOMMU_PAGE_MASK)
->>> +        return H_PARAMETER;
->>> +
->>> +    if ((ioba + (npages<<  IOMMU_PAGE_SHIFT))>  tt->window_size)
->>> +        return H_PARAMETER;
->>> +
->>> +    tces =3D kvmppc_vm_gpa_to_hva_and_get(vcpu, tce_list,&pg);
->>> +    if (tces =3D=3D ERROR_ADDR)
->>> +        return H_TOO_HARD;
->>> +
->>> +    if (vcpu->arch.tce_rm_fail =3D=3D TCERM_PUTLIST)
->>> +        goto put_list_page_exit;
->>> +
->>> +    for (i =3D 0; i<  npages; ++i) {
->>> +        if (get_user(vcpu->arch.tce_tmp_hpas[i], tces + i)) {
->>> +            ret =3D H_PARAMETER;
->>> +            goto put_list_page_exit;
->>> +        }
->>> +
->>> +        ret =3D =
-kvmppc_emulated_validate_tce(vcpu->arch.tce_tmp_hpas[i]);
->>> +        if (ret)
->>> +            goto put_list_page_exit;
->>> +    }
->>> +
->>> +    for (i =3D 0; i<  npages; ++i)
->>> +        kvmppc_emulated_put_tce(tt, ioba + (i<<  IOMMU_PAGE_SHIFT),
->>> +                vcpu->arch.tce_tmp_hpas[i]);
->>> +put_list_page_exit:
->>> +    if (pg)
->>> +        put_page(pg);
->>> +
->>> +    if (vcpu->arch.tce_rm_fail !=3D TCERM_NONE) {
->>> +        vcpu->arch.tce_rm_fail =3D TCERM_NONE;
->>> +        if (pg&&  !PageCompound(pg))
->>> +            put_page(pg); /* finish pending realmode_put_page() */
->>> +    }
->>> +
->>> +    return ret;
->>> +}
->>> +
->>> +long kvmppc_vm_h_stuff_tce(struct kvm_vcpu *vcpu,
->>> +        unsigned long liobn, unsigned long ioba,
->>> +        unsigned long tce_value, unsigned long npages)
->>> +{
->>> +    struct kvmppc_spapr_tce_table *tt;
->>> +    long i, ret;
->>> +
->>> +    tt =3D kvmppc_find_tce_table(vcpu, liobn);
->>> +    /* Didn't find the liobn, put it to userspace */
->>> +    if (!tt)
->>> +        return H_TOO_HARD;
->>> +
->>> +    ++tt->stat.vm.stuff;
->>> +
->>> +    if ((ioba + (npages<<  IOMMU_PAGE_SHIFT))>  tt->window_size)
->>> +        return H_PARAMETER;
->>> +
->>> +    ret =3D kvmppc_emulated_validate_tce(tce_value);
->>> +    if (ret || (tce_value&  (TCE_PCI_WRITE | TCE_PCI_READ)))
->>> +        return H_PARAMETER;
->>> +
->>> +    for (i =3D 0; i<  npages; ++i, ioba +=3D IOMMU_PAGE_SIZE)
->>> +        kvmppc_emulated_put_tce(tt, ioba, tce_value);
->>> +
->>> +    return H_SUCCESS;
->>> +}
->>> diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c
->>> b/arch/powerpc/kvm/book3s_64_vio_hv.c
->>> index 30c2f3b..cd3e6f9 100644
->>> --- a/arch/powerpc/kvm/book3s_64_vio_hv.c
->>> +++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
->>> @@ -14,6 +14,7 @@
->>>   *
->>>   * Copyright 2010 Paul Mackerras, IBM Corp.<paulus@au1.ibm.com>
->>>   * Copyright 2011 David Gibson, IBM Corporation<dwg@au1.ibm.com>
->>> + * Copyright 2013 Alexey Kardashevskiy, IBM =
-Corporation<aik@au1.ibm.com>
->>>   */
->>>=20
->>>  #include<linux/types.h>
->>> @@ -35,42 +36,243 @@
->>>  #include<asm/ppc-opcode.h>
->>>  #include<asm/kvm_host.h>
->>>  #include<asm/udbg.h>
->>> +#include<asm/iommu.h>
->>> +#include<asm/tce.h>
->>>=20
->>>  #define TCES_PER_PAGE    (PAGE_SIZE / sizeof(u64))
->>> +#define ERROR_ADDR      (~(unsigned long)0x0)
->>>=20
->>> -/* WARNING: This will be called in real-mode on HV KVM and virtual
->>> - *          mode on PR KVM
->>=20
->> What's wrong with the warning?
->=20
->=20
-> It belongs to kvmppc_h_put_tce() which is not called in virtual mode =
-anymore.
-
-I thought the comment applied to the whole file before? Hrm. Maybe I =
-misread it then.
-
-> It is technically correct for kvmppc_find_tce_table() though. Should I =
-put
-> this comment before every function which may be called from real and
-> virtual modes?
-
-Yes, please. Otherwise someone might stick an access to a non-linear =
-address in there by accident.
-
->=20
->=20
->=20
->>> +/*
->>> + * Finds a TCE table descriptor by LIOBN
->>>   */
->>> +struct kvmppc_spapr_tce_table *kvmppc_find_tce_table(struct =
-kvm_vcpu *vcpu,
->>> +        unsigned long liobn)
->>> +{
->>> +    struct kvmppc_spapr_tce_table *tt;
->>> +
->>> +    list_for_each_entry(tt,&vcpu->kvm->arch.spapr_tce_tables, list) =
-{
->>> +        if (tt->liobn =3D=3D liobn)
->>> +            return tt;
->>> +    }
->>> +
->>> +    return NULL;
->>> +}
->>> +EXPORT_SYMBOL_GPL(kvmppc_find_tce_table);
->>> +
->>> +#ifdef DEBUG
->>> +/*
->>> + * Lets user mode disable realmode handlers by putting big number
->>> + * in the bottom value of LIOBN
->>=20
->> What? Seriously? Just don't enable the CAP.
->=20
->=20
-> It is under DEBUG. It really, really helps to be able to disable real =
-mode
-> handlers without reboot. Ok, no debug code, I'll remove.
-
-Debug code is good, but #ifdefs are bad. For you, an #ifdef reads like =
-"code that doesn't do any hard when disabled". For me, #ifdefs read =
-"code that definitely breaks because nobody turns the #define on".
-
-So please, avoid #ifdef'ed code whenever possible. Switching the CAP on =
-and off is a much better debug approach in this case.
-
->=20
->=20
->>> + */
->>> +#define kvmppc_find_tce_table(a, b) \
->>> +        ((((b)&0xffff)>10000)?NULL:kvmppc_find_tce_table((a), (b)))
->>> +#endif
->>> +
->>> +/*
->>> + * Validates TCE address.
->>> + * At the moment only flags are validated as other checks will
->>> significantly slow
->>> + * down or can make it even impossible to handle TCE requests in =
-real mode.
->>=20
->> What?
->=20
->=20
-> What is missing here (besides good english)?
-
-What badness could slip through by not validating everything?
-
->=20
->=20
->>> + */
->>> +long kvmppc_emulated_validate_tce(unsigned long tce)
->>=20
->> I don't like the naming scheme. Please turn this around and make it
->> kvmppc_tce_validate().
->=20
->=20
-> Oh. "Like"... Ok.
-
-Yes. Like.
-
->=20
->=20
->>> +{
->>> +    if (tce&  ~(IOMMU_PAGE_MASK | TCE_PCI_WRITE | TCE_PCI_READ))
->>> +        return H_PARAMETER;
->>> +
->>> +    return H_SUCCESS;
->>> +}
->>> +EXPORT_SYMBOL_GPL(kvmppc_emulated_validate_tce);
->>> +
->>> +/*
->>> + * Handles TCE requests for QEMU emulated devices.
->>=20
->> We still don't mention QEMU in KVM code. And does it really matter =
-whether
->> they're emulated by QEMU? Devices could also be emulated by KVM.
->>=20
->>> + * Puts guest TCE values to the table and expects QEMU to convert =
-them
->>> + * later in a QEMU device implementation.
->>> + * Called in both real and virtual modes.
->>> + * Cannot fail so kvmppc_emulated_validate_tce must be called =
-before it.
->>> + */
->>> +void kvmppc_emulated_put_tce(struct kvmppc_spapr_tce_table *tt,
->>=20
->> kvmppc_tce_put()
->>=20
->>> +        unsigned long ioba, unsigned long tce)
->>> +{
->>> +    unsigned long idx =3D ioba>>  SPAPR_TCE_SHIFT;
->>> +    struct page *page;
->>> +    u64 *tbl;
->>> +
->>> +    /*
->>> +     * Note on the use of page_address() in real mode,
->>> +     *
->>> +     * It is safe to use page_address() in real mode on ppc64 =
-because
->>> +     * page_address() is always defined as lowmem_page_address()
->>> +     * which returns __va(PFN_PHYS(page_to_pfn(page))) which is =
-arithmetial
->>> +     * operation and does not access page struct.
->>> +     *
->>> +     * Theoretically page_address() could be defined different
->>> +     * but either WANT_PAGE_VIRTUAL or HASHED_PAGE_VIRTUAL
->>> +     * should be enabled.
->>> +     * WANT_PAGE_VIRTUAL is never enabled on ppc32/ppc64,
->>> +     * HASHED_PAGE_VIRTUAL could be enabled for ppc32 only and only
->>> +     * if CONFIG_HIGHMEM is defined. As CONFIG_SPARSEMEM_VMEMMAP
->>> +     * is not expected to be enabled on ppc32, page_address()
->>> +     * is safe for ppc32 as well.
->>> +     */
->>> +#if defined(HASHED_PAGE_VIRTUAL) || defined(WANT_PAGE_VIRTUAL)
->>> +#error TODO: fix to avoid page_address() here
->>> +#endif
->>=20
->> Can you extract the text above, the check and the page_address call =
-into a
->> simple wrapper function?
->=20
->=20
-> Is this function also too big? Sorry, I do not understand the comment.
-
-All of the comment and #if here only deal with the fact that you have a =
-real mode hack to call page_address() that happens to work under =
-specific circumstances.
-
-There's nothing kvmppc_tce_put() specific about this. The page_address() =
-code happens to get called here, sure. But if I read the =
-kvmppc_tce_put() function I don't care about these details - I want to =
-understand the code flow that ends up writing the TCE.
-
->=20
->=20
->>> +    page =3D tt->pages[idx / TCES_PER_PAGE];
->>> +    tbl =3D (u64 *)page_address(page);
->>> +
->>> +    /* udbg_printf("tce @ %p\n",&tbl[idx % TCES_PER_PAGE]); */
->>=20
->> This is not an RFC, is it?
->=20
->=20
-> Any debug code is prohibited? Ok, I'll remove.
-
-Debug code that requires code changes is prohibited, yes. Debug code =
-that is runtime switchable (pr_debug, trace points, etc) are allowed.
-
->=20
->=20
->>> +    tbl[idx % TCES_PER_PAGE] =3D tce;
->>> +}
->>> +EXPORT_SYMBOL_GPL(kvmppc_emulated_put_tce);
->>> +
->>> +#ifdef CONFIG_KVM_BOOK3S_64_HV
->>> +/*
->>> + * Converts guest physical address to host physical address.
->>> + * Tries to increase page counter via realmode_get_page() and
->>> + * returns ERROR_ADDR if failed.
->>> + */
->>> +static unsigned long kvmppc_rm_gpa_to_hpa_and_get(struct kvm_vcpu =
-*vcpu,
->>> +        unsigned long gpa, struct page **pg)
->>> +{
->>> +    struct kvm_memory_slot *memslot;
->>> +    pte_t *ptep, pte;
->>> +    unsigned long hva, hpa =3D ERROR_ADDR;
->>> +    unsigned long gfn =3D gpa>>  PAGE_SHIFT;
->>> +    unsigned shift =3D 0;
->>> +
->>> +    memslot =3D search_memslots(kvm_memslots(vcpu->kvm), gfn);
->>> +    if (!memslot)
->>> +        return ERROR_ADDR;
->>> +
->>> +    hva =3D __gfn_to_hva_memslot(memslot, gfn);
->>> +
->>> +    ptep =3D find_linux_pte_or_hugepte(vcpu->arch.pgdir, =
-hva,&shift);
->>> +    if (!ptep || !pte_present(*ptep))
->>> +        return ERROR_ADDR;
->>> +    pte =3D *ptep;
->>> +
->>> +    if (((gpa&  TCE_PCI_WRITE) || pte_write(pte))&&  =
-!pte_dirty(pte))
->>> +        return ERROR_ADDR;
->>> +
->>> +    if (!pte_young(pte))
->>> +        return ERROR_ADDR;
->>> +
->>> +    if (!shift)
->>> +        shift =3D PAGE_SHIFT;
->>> +
->>> +    /* Put huge pages handling to the virtual mode */
->>> +    if (shift>  PAGE_SHIFT)
->>> +        return ERROR_ADDR;
->>> +
->>> +    *pg =3D realmode_pfn_to_page(pte_pfn(pte));
->>> +    if (!*pg || realmode_get_page(*pg))
->>> +        return ERROR_ADDR;
->>> +
->>> +    /* pte_pfn(pte) returns address aligned to pg_size */
->>> +    hpa =3D (pte_pfn(pte)<<  PAGE_SHIFT) + (gpa&  ((1<<  shift) - =
-1));
->>> +
->>> +    if (unlikely(pte_val(pte) !=3D pte_val(*ptep))) {
->>> +        hpa =3D ERROR_ADDR;
->>> +        realmode_put_page(*pg);
->>> +        *pg =3D NULL;
->>> +    }
->>> +
->>> +    return hpa;
->>> +}
->>> +
->>>  long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
->>>                unsigned long ioba, unsigned long tce)
->>>  {
->>> -    struct kvm *kvm =3D vcpu->kvm;
->>> -    struct kvmppc_spapr_tce_table *stt;
->>> -
->>> -    /* udbg_printf("H_PUT_TCE(): liobn=3D0x%lx ioba=3D0x%lx, =
-tce=3D0x%lx\n", */
->>> -    /*         liobn, ioba, tce); */
->>> -
->>> -    list_for_each_entry(stt,&kvm->arch.spapr_tce_tables, list) {
->>> -        if (stt->liobn =3D=3D liobn) {
->>> -            unsigned long idx =3D ioba>>  SPAPR_TCE_SHIFT;
->>> -            struct page *page;
->>> -            u64 *tbl;
->>> -
->>> -            /* udbg_printf("H_PUT_TCE: liobn 0x%lx =3D>  stt=3D%p=20=
-
->>> window_size=3D0x%x\n", */
->>> -            /*         liobn, stt, stt->window_size); */
->>> -            if (ioba>=3D stt->window_size)
->>> -                return H_PARAMETER;
->>> -
->>> -            page =3D stt->pages[idx / TCES_PER_PAGE];
->>> -            tbl =3D (u64 *)page_address(page);
->>> -
->>> -            /* FIXME: Need to validate the TCE itself */
->>> -            /* udbg_printf("tce @ %p\n",&tbl[idx % TCES_PER_PAGE]); =
-*/
->>> -            tbl[idx % TCES_PER_PAGE] =3D tce;
->>> -            return H_SUCCESS;
->>> -        }
->>> +    long ret;
->>> +    struct kvmppc_spapr_tce_table *tt =3D =
-kvmppc_find_tce_table(vcpu, liobn);
->>> +
->>> +    if (!tt)
->>> +        return H_TOO_HARD;
->>> +
->>> +    ++tt->stat.rm.put;
->>> +
->>> +    if (ioba>=3D tt->window_size)
->>> +        return H_PARAMETER;
->>> +
->>> +    ret =3D kvmppc_emulated_validate_tce(tce);
->>> +    if (!ret)
->>> +        kvmppc_emulated_put_tce(tt, ioba, tce);
->>> +
->>> +    return ret;
->>> +}
->>> +
->>> +long kvmppc_h_put_tce_indirect(struct kvm_vcpu *vcpu,
->>=20
->> So the _vm version is the normal one and this is the _rm version? If =
-so,
->> please mark it as such. Is there any way to generate both from the =
-same
->> source? The way it's now there is a lot of duplicate code.
->=20
->=20
-> I tried, looked very ugly. If you insist, I will do so.
-
-If it looks ugly better don't. I just want to make sure you explored the =
-option. But please keep the naming scheme consistent.
-
-
-Alex
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmVuamFtaW4gSGVycmVu
+c2NobWlkdCBbbWFpbHRvOmJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZ10NCj4gU2VudDogV2VkbmVz
+ZGF5LCBKdWx5IDEwLCAyMDEzIDU6NTIgUE0NCj4gVG86IFdhbmcgRG9uZ3NoZW5nLUI0MDUzNA0K
+PiBDYzogV29vZCBTY290dC1CMDc0MjE7IGpvaGFubmVzQHNpcHNvbHV0aW9ucy5uZXQ7IGFudG9u
+QGVub21zZy5vcmc7DQo+IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmc7IGxpbnV4cHBjLWRldkBs
+aXN0cy5vemxhYnMub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMS8yXSBwb3dlcnBjOiBhZGQg
+Qm9vayBFIHN1cHBvcnQgdG8gNjQtYml0DQo+IGhpYmVybmF0aW9uDQo+IA0KPiBPbiBXZWQsIDIw
+MTMtMDctMTAgYXQgMDk6NDEgKzAwMDAsIFdhbmcgRG9uZ3NoZW5nLUI0MDUzNCB3cm90ZToNCj4g
+PiBIaSBzY290dCwNCj4gPg0KPiA+IENvdWxkIHlvdSBhcHBseSB0aGlzIHBhdGNoPw0KPiANCj4g
+VGhlcmUgd2VyZSBhIG51bWJyZSBvZiBjb21tZW50cywgd2VyZSB0aGVyZSBhZGRyZXNzZWQgPyBE
+byB5b3UgbmVlZCB0bw0KPiBzYXZlIGFsbCB0aGUgU1BSR3MgZm9yIGV4YW1wbGUgPw0KPiANCj4g
+QmVuLg0KPiANClVtLi4ueWVzLCBzb3JyeSwgbm90IGFsbCBvZiB0aGUgU1BSR3MuDQp0aGUgZGlz
+Y3Vzc2lvbiBhYm91dCBTUFJHMSBhbmQgU1BSRzIuIEkgY2FuIGZpeCB0aGVtLCBqdXN0IHRvIHNh
+dmUgU1JQRzEgJiBTUFJHMi4NCkJ1dCB0aG9zZSByZWdpc3RlcnMgY2FuIGJlIHVzZWQgYnkgc29m
+dHdhcmUsIEkgdGhpbmsgdGhvc2UgcmVnaXN0ZXIgc2hvdWxkIGJlIHNhdmUsDQpldmVuIG5vdyBz
+b21lIFNQUkcgcmVnaXN0ZXIgbm90IGJlIHVzZS4NCg0KPiA+IFRoYW5rcy4NCj4gPg0KPiA+IC1k
+b25nc2hlbmcNCj4gPg0KPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+IEZy
+b206IFdhbmcgRG9uZ3NoZW5nLUI0MDUzNA0KPiA+ID4gU2VudDogU3VuZGF5LCBKdW5lIDA5LCAy
+MDEzIDY6MzggUE0NCj4gPiA+IFRvOiBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmcNCj4gPiA+IENj
+OiBqb2hhbm5lc0BzaXBzb2x1dGlvbnMubmV0OyBhbnRvbkBlbm9tc2cub3JnOyBXb29kIFNjb3R0
+LUIwNzQyMTsNCj4gPiA+IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmc7IGxpbnV4cHBjLWRldkBs
+aXN0cy5vemxhYnMub3JnOyBXYW5nDQo+ID4gPiBEb25nc2hlbmctDQo+ID4gPiBCNDA1MzQNCj4g
+PiA+IFN1YmplY3Q6IFtQQVRDSCAxLzJdIHBvd2VycGM6IGFkZCBCb29rIEUgc3VwcG9ydCB0byA2
+NC1iaXQNCj4gPiA+IGhpYmVybmF0aW9uDQo+ID4gPg0KPiA+ID4gVXBkYXRlIHRoZSA2NC1iaXQg
+aGliZXJuYXRpb24gY29kZSB0byBzdXBwb3J0IEJvb2sgRSBDUFVzLg0KPiA+ID4gU29tZSByZWdp
+c3RlcnMgYW5kIGluc3RydWN0aW9ucyBhcmUgbm90IGRlZmluZWQgZm9yIEJvb2szZSAoU0RSIHJl
+ZywNCj4gPiA+IHRsYmlhIGluc3RydWN0aW9uKS4NCj4gPiA+DQo+ID4gPiBTRFI6IFN0b3JhZ2Ug
+RGVzY3JpcHRpb24gUmVnaXN0ZXIuIEJvb2szUyBhbmQgQm9vazNFIGhhdmUgZGlmZmVyZW50DQo+
+ID4gPiBhZGRyZXNzIHRyYW5zbGF0aW9uIG1vZGUsIHdlIGRvIG5vdCBuZWVkIEhUQUJPUkcgJiBI
+VEFCU0laRSB0bw0KPiA+ID4gdHJhbnNsYXRlIHZpcnR1YWwgYWRkcmVzcyB0byByZWFsIGFkZHJl
+c3MuDQo+ID4gPg0KPiA+ID4gTW9yZSByZWdpc3RlcnMgYXJlIHNhdmVkIGluIEJvb2tFLTY0Yml0
+LihUQ1IsIFNQUkd4LCAuLi4pDQo+ID4gPg0KPiA+ID4gU2lnbmVkLW9mZi1ieTogV2FuZyBEb25n
+c2hlbmcgPGRvbmdzaGVuZy53YW5nQGZyZWVzY2FsZS5jb20+DQo+ID4gPiAtLS0NCj4gPiA+ICog
+SGlzdG9yeToNCj4gPiA+ICogV29vZCBTY290dChBKTogUGxlYXNlIGludmVzdGlnYXRlIHRoZSBp
+c3N1ZSBvZiB3aGV0aGVyIHdlIGFyZQ0KPiBsb2FkaW5nDQo+ID4gPiAqICAgICAgICAgICAgICAg
+IGtlcm5lbCBtb2R1bGUgY29kZSBpbiB0aGlzIHN0ZXANCj4gPiA+ICogUjogS2VybmVsIHdpbGwg
+YWxsb2NhdGUgdGhlIG1lbW9yeSBmb3IgbW9kdWxlIGNvZGUgc2VnbWVudCBhbmQgZGF0YQ0KPiA+
+ID4gKiAgICBzZWdtZW50LiBGaXJzdCBhbGxvY2F0ZSBhIG1lbW9yeSwgYW5kIGNvcHkgdGhlIHVt
+b2QgdG8gaGRyDQo+IG1lbWJlcnMNCj4gPiA+ICogICAgb2YgdGhlIHN0cnVjdCBsb2FkX2luZm8u
+IER1ZSB0byB0aGUgdGVtcG9yYXJ5IGFzc2lnbmVkIG1vZHVsZQ0KPiA+ID4gYmVsb25ncw0KPiA+
+ID4gKiAgICB0byB0aGUga2VybmVsIHNwYWNlLCBzbyBpdCBiZWxvbmdzIHRvIHRoZSBrZXJuZWwg
+ZGF0YS4NCj4gPiA+ICoNCj4gPiA+ICogICAgVGhlIGtlcm5lbCBvZiBhbGwgZGF0YSB3aWxsIGJl
+IHNhdmVkIHdoZW4gaGliZXJuYXRpb24gc3VzcGVuZC4NCj4gU28NCj4gPiA+ICogICAgdGhlIG1v
+ZHVsZSB3aGljaCBoYXMgYWxyZWFkeSBiZWVuIGluc2VydGVkIHdpbGwgYmUgc2F2ZWQuDQo+ID4g
+Pg0KPiA+ID4gIGFyY2gvcG93ZXJwYy9rZXJuZWwvc3dzdXNwX2FzbTY0LlMgfCA2NA0KPiA+ID4g
+KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrLS0NCj4gPiA+ICAxIGZpbGUgY2hh
+bmdlZCwgNjIgaW5zZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkNCj4gPiA+DQo+ID4gPiBkaWZm
+IC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2tlcm5lbC9zd3N1c3BfYXNtNjQuUw0KPiA+ID4gYi9hcmNo
+L3Bvd2VycGMva2VybmVsL3N3c3VzcF9hc202NC5TDQo+ID4gPiBpbmRleCA4NmFjMWQ5Li42MDhl
+NGNlYiAxMDA2NDQNCj4gPiA+IC0tLSBhL2FyY2gvcG93ZXJwYy9rZXJuZWwvc3dzdXNwX2FzbTY0
+LlMNCj4gPiA+ICsrKyBiL2FyY2gvcG93ZXJwYy9rZXJuZWwvc3dzdXNwX2FzbTY0LlMNCj4gPiA+
+IEBAIC00NiwxMCArNDYsMjkgQEANCj4gPiA+ICAjZGVmaW5lIFNMX3IyOQkJMHhlOA0KPiA+ID4g
+ICNkZWZpbmUgU0xfcjMwCQkweGYwDQo+ID4gPiAgI2RlZmluZSBTTF9yMzEJCTB4ZjgNCj4gPiA+
+IC0jZGVmaW5lIFNMX1NJWkUJCVNMX3IzMSs4DQo+ID4gPiArI2RlZmluZSBTTF9TUFJHMAkweDEw
+MA0KPiA+ID4gKyNkZWZpbmUgU0xfU1BSRzEJMHgxMDgNCj4gPiA+ICsjZGVmaW5lIFNMX1NQUkcy
+CTB4MTEwDQo+ID4gPiArI2RlZmluZSBTTF9TUFJHMwkweDExOA0KPiA+ID4gKyNkZWZpbmUgU0xf
+U1BSRzQJMHgxMjANCj4gPiA+ICsjZGVmaW5lIFNMX1NQUkc1CTB4MTI4DQo+ID4gPiArI2RlZmlu
+ZSBTTF9TUFJHNgkweDEzMA0KPiA+ID4gKyNkZWZpbmUgU0xfU1BSRzcJMHgxMzgNCj4gPiA+ICsj
+ZGVmaW5lIFNMX1RDUgkJMHgxNDANCj4gPiA+ICsjZGVmaW5lIFNMX1NJWkUJCVNMX1RDUis4DQo+
+ID4gPg0KPiA+ID4gIC8qIHRoZXNlIG1hY3JvcyByZWx5IG9uIHRoZSBzYXZlIGFyZWEgYmVpbmcN
+Cj4gPiA+ICAgKiBwb2ludGVkIHRvIGJ5IHIxMSAqLw0KPiA+ID4gKw0KPiA+ID4gKyNkZWZpbmUg
+U0FWRV9TUFIocmVnaXN0ZXIpCQlcDQo+ID4gPiArCW1mc3ByCXIwLFNQUk5fIyNyZWdpc3Rlcgk7
+XA0KPiA+ID4gKwlzdGQJcjAsU0xfIyNyZWdpc3RlcihyMTEpDQo+ID4gPiArI2RlZmluZSBSRVNU
+T1JFX1NQUihyZWdpc3RlcikJCVwNCj4gPiA+ICsJbGQJcjAsU0xfIyNyZWdpc3RlcihyMTEpCTtc
+DQo+ID4gPiArCW10c3ByCVNQUk5fIyNyZWdpc3RlcixyMA0KPiA+ID4gKyNkZWZpbmUgUkVTVE9S
+RV9TUFJHKG4pCQkJXA0KPiA+ID4gKwlsZAlyMCxTTF9TUFJHIyNuKHIxMSkJO1wNCj4gPiA+ICsJ
+bXRzcHJnCW4scjANCj4gPiA+ICAjZGVmaW5lIFNBVkVfU1BFQ0lBTChzcGVjaWFsKQkJXA0KPiA+
+ID4gIAltZiMjc3BlY2lhbAlyMAkJO1wNCj4gPiA+ICAJc3RkCXIwLCBTTF8jI3NwZWNpYWwocjEx
+KQ0KPiA+ID4gQEAgLTEwMyw4ICsxMjIsMjEgQEAgX0dMT0JBTChzd3N1c3BfYXJjaF9zdXNwZW5k
+KQ0KPiA+ID4gIAlTQVZFX1JFR0lTVEVSKHIzMCkNCj4gPiA+ICAJU0FWRV9SRUdJU1RFUihyMzEp
+DQo+ID4gPiAgCVNBVkVfU1BFQ0lBTChNU1IpDQo+ID4gPiAtCVNBVkVfU1BFQ0lBTChTRFIxKQ0K
+PiA+ID4gIAlTQVZFX1NQRUNJQUwoWEVSKQ0KPiA+ID4gKyNpZmRlZiBDT05GSUdfUFBDX0JPT0sz
+U182NA0KPiA+ID4gKwlTQVZFX1NQRUNJQUwoU0RSMSkNCj4gPiA+ICsjZWxzZQ0KPiA+ID4gKwlT
+QVZFX1NQUihUQ1IpDQo+ID4gPiArCS8qIFNhdmUgU1BSR3MgKi8NCj4gPiA+ICsJU0FWRV9TUFIo
+U1BSRzApDQo+ID4gPiArCVNBVkVfU1BSKFNQUkcxKQ0KPiA+ID4gKwlTQVZFX1NQUihTUFJHMikN
+Cj4gPiA+ICsJU0FWRV9TUFIoU1BSRzMpDQo+ID4gPiArCVNBVkVfU1BSKFNQUkc0KQ0KPiA+ID4g
+KwlTQVZFX1NQUihTUFJHNSkNCj4gPiA+ICsJU0FWRV9TUFIoU1BSRzYpDQo+ID4gPiArCVNBVkVf
+U1BSKFNQUkc3KQ0KPiA+ID4gKyNlbmRpZg0KPiA+ID4NCj4gPiA+ICAJLyogd2UgcHVzaCB0aGUg
+c3RhY2sgdXAgMTI4IGJ5dGVzIGJ1dCBkb24ndCBzdG9yZSB0aGUNCj4gPiA+ICAJICogc3RhY2sg
+cG9pbnRlciBvbiB0aGUgc3RhY2sgbGlrZSBhIHJlYWwgc3RhY2tmcmFtZSAqLyBAQCAtMTUxLDYN
+Cj4gPiA+ICsxODMsNyBAQCBjb3B5X3BhZ2VfbG9vcDoNCj4gPiA+ICAJYm5lKwljb3B5bG9vcA0K
+PiA+ID4gIG5vdGhpbmdfdG9fY29weToNCj4gPiA+DQo+ID4gPiArI2lmZGVmIENPTkZJR19QUENf
+Qk9PSzNTXzY0DQo+ID4gPiAgCS8qIGZsdXNoIGNhY2hlcyAqLw0KPiA+ID4gIAlsaXMJcjMsIDB4
+MTANCj4gPiA+ICAJbXRjdHIJcjMNCj4gPiA+IEBAIC0xNjcsNiArMjAwLDcgQEAgbm90aGluZ190
+b19jb3B5Og0KPiA+ID4gIAlzeW5jDQo+ID4gPg0KPiA+ID4gIAl0bGJpYQ0KPiA+ID4gKyNlbmRp
+Zg0KPiA+ID4NCj4gPiA+ICAJbGQJcjExLHN3c3VzcF9zYXZlX2FyZWFfcHRyQHRvYyhyMikNCj4g
+PiA+DQo+ID4gPiBAQCAtMjA4LDE2ICsyNDIsNDIgQEAgbm90aGluZ190b19jb3B5Og0KPiA+ID4g
+IAlSRVNUT1JFX1JFR0lTVEVSKHIyOSkNCj4gPiA+ICAJUkVTVE9SRV9SRUdJU1RFUihyMzApDQo+
+ID4gPiAgCVJFU1RPUkVfUkVHSVNURVIocjMxKQ0KPiA+ID4gKw0KPiA+ID4gKyNpZmRlZiBDT05G
+SUdfUFBDX0JPT0szU182NA0KPiA+ID4gIAkvKiBjYW4ndCB1c2UgUkVTVE9SRV9TUEVDSUFMKE1T
+UikgKi8NCj4gPiA+ICAJbGQJcjAsIFNMX01TUihyMTEpDQo+ID4gPiAgCW10bXNyZAlyMCwgMA0K
+PiA+ID4gIAlSRVNUT1JFX1NQRUNJQUwoU0RSMSkNCj4gPiA+ICsjZWxzZQ0KPiA+ID4gKwkvKiBT
+YXZlIFNQUkdzICovDQo+ID4gPiArCVJFU1RPUkVfU1BSRygwKQ0KPiA+ID4gKwlSRVNUT1JFX1NQ
+UkcoMSkNCj4gPiA+ICsJUkVTVE9SRV9TUFJHKDIpDQo+ID4gPiArCVJFU1RPUkVfU1BSRygzKQ0K
+PiA+ID4gKwlSRVNUT1JFX1NQUkcoNCkNCj4gPiA+ICsJUkVTVE9SRV9TUFJHKDUpDQo+ID4gPiAr
+CVJFU1RPUkVfU1BSRyg2KQ0KPiA+ID4gKwlSRVNUT1JFX1NQUkcoNykNCj4gPiA+ICsNCj4gPiA+
+ICsJUkVTVE9SRV9TUEVDSUFMKE1TUikNCj4gPiA+ICsNCj4gPiA+ICsJLyogUmVzdG9yZSBUQ1Ig
+YW5kIGNsZWFyIGFueSBwZW5kaW5nIGJpdHMgaW4gVFNSLiAqLw0KPiA+ID4gKwlSRVNUT1JFX1NQ
+UihUQ1IpDQo+ID4gPiArCWxpcwlyMCwgKFRTUl9FTlcgfCBUU1JfV0lTIHwgVFNSX0RJUyB8IFRT
+Ul9GSVMpQGgNCj4gPiA+ICsJbXRzcHIJU1BSTl9UU1IscjANCj4gPiA+ICsNCj4gPiA+ICsJLyog
+S2ljayBkZWNyZW1lbnRlciAqLw0KPiA+ID4gKwlsaQlyMCwxDQo+ID4gPiArCW10ZGVjCXIwDQo+
+ID4gPiArI2VuZGlmDQo+ID4gPiAgCVJFU1RPUkVfU1BFQ0lBTChYRVIpDQo+ID4gPg0KPiA+ID4g
+IAlzeW5jDQo+ID4gPg0KPiA+ID4gIAlhZGRpCXIxLHIxLC0xMjgNCj4gPiA+ICsjaWZkZWYgQ09O
+RklHX1BQQ19CT09LM1NfNjQNCj4gPiA+ICAJYmwJc2xiX2ZsdXNoX2FuZF9yZWJvbHQNCj4gPiA+
+ICsjZW5kaWYNCj4gPiA+ICAJYmwJZG9fYWZ0ZXJfY29weWJhY2sNCj4gPiA+ICAJYWRkaQlyMSxy
+MSwxMjgNCj4gPiA+DQo+ID4gPiAtLQ0KPiA+ID4gMS44LjANCj4gPg0KPiANCj4gDQoNCg==
