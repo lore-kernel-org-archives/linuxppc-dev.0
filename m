@@ -1,18 +1,17 @@
 Return-Path: <haokexin@gmail.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A90C92C008E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 11:44:22 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id BA9202C008E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 11:51:37 +1000 (EST)
 From: Kevin Hao <haokexin@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 2/2] powerpc/math-emu: remove the unneeded check for
- CONFIG_MATH_EMULATION in math.c
-Date: Wed, 10 Jul 2013 09:43:43 +0800
-Message-ID: <1373420623-24869-3-git-send-email-haokexin@gmail.com>
-In-Reply-To: <1373420623-24869-1-git-send-email-haokexin@gmail.com>
-References: <1373420623-24869-1-git-send-email-haokexin@gmail.com>
+To: Kumar Gala <galak@kernel.crashing.org>, Scott Wood
+ <scottwood@freescale.com>
+Subject: [PATCH] powerpc/85xx: enable the math emulation for the
+ corenet64_smp_defconfig
+Date: Wed, 10 Jul 2013 09:49:52 +0800
+Message-ID: <1373420992-25167-1-git-send-email-haokexin@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
@@ -25,46 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The math.c is only built when CONFIG_MATH_EMULATION is enabled.
-So the #ifdef check for CONFIG_MATH_EMULATION in it seems redundant.
-Drop all of them.
+I got the following error on my t4240qds board.
+  ntpd[2713]: unhandled signal 4 at 0fd5b448 nip 0fd5b448 lr 0fd5b424 code 30001
+
+The root cause is that the float point instruction 'fsqrt' is used.
+But this instruction is not implemented on e6500 core. Even this
+does seem a gcc bug, I would like to enable the math emulation
+in the kernel to workaround this kind of issue.
 
 Signed-off-by: Kevin Hao <haokexin@gmail.com>
 ---
- arch/powerpc/math-emu/math.c | 4 ----
- 1 file changed, 4 deletions(-)
+ arch/powerpc/configs/corenet64_smp_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/math-emu/math.c b/arch/powerpc/math-emu/math.c
-index cefb4f2..3fe8e35 100644
---- a/arch/powerpc/math-emu/math.c
-+++ b/arch/powerpc/math-emu/math.c
-@@ -154,7 +154,6 @@ FLOATFUNC(fsqrts);
- #define XEU	15
- #define XFLB	10
- 
--#ifdef CONFIG_MATH_EMULATION
- static int
- record_exception(struct pt_regs *regs, int eflag)
- {
-@@ -212,7 +211,6 @@ record_exception(struct pt_regs *regs, int eflag)
- 
- 	return (fpscr & FPSCR_FEX) ? 1 : 0;
- }
--#endif /* CONFIG_MATH_EMULATION */
- 
- int
- do_mathemu(struct pt_regs *regs)
-@@ -222,11 +220,9 @@ do_mathemu(struct pt_regs *regs)
- 	signed short sdisp;
- 	u32 insn = 0;
- 	int idx = 0;
--#ifdef CONFIG_MATH_EMULATION
- 	int (*func)(void *, void *, void *, void *);
- 	int type = 0;
- 	int eflag, trap;
--#endif
- 
- 	if (get_user(insn, (u32 *)pc))
- 		return -EFAULT;
+diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
+index 6c8b020..b5408dc 100644
+--- a/arch/powerpc/configs/corenet64_smp_defconfig
++++ b/arch/powerpc/configs/corenet64_smp_defconfig
+@@ -27,6 +27,7 @@ CONFIG_P5040_DS=y
+ CONFIG_T4240_QDS=y
+ # CONFIG_PPC_OF_BOOT_TRAMPOLINE is not set
+ CONFIG_BINFMT_MISC=m
++CONFIG_MATH_EMULATION=y
+ CONFIG_FSL_IFC=y
+ CONFIG_PCIEPORTBUS=y
+ CONFIG_PCI_MSI=y
 -- 
 1.8.1.4
