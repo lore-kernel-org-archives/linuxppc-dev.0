@@ -1,22 +1,22 @@
-Return-Path: <andriy.shevchenko@linux.intel.com>
-Received: from mga03.intel.com (mga03.intel.com [143.182.124.21])
- by ozlabs.org (Postfix) with ESMTP id 087CA2C007E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 17:54:58 +1000 (EST)
-Message-ID: <1373442874.24799.215.camel@smile>
-Subject: Re: [PATCH 00/12] dma: various minor clean ups for slave drivers
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Vinod Koul <vinod.koul@intel.com>
-Date: Wed, 10 Jul 2013 10:54:34 +0300
-In-Reply-To: <20130530174727.GE3767@intel.com>
-References: <1369656882-25241-1-git-send-email-andriy.shevchenko@linux.intel.com>
- <20130530174727.GE3767@intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Shawn Guo <shawn.guo@linaro.org>, Stephen Warren <swarren@wwwdotorg.org>,
- linux-kernel@vger.kernel.org,
- Andy Shevchenko <andriy.shevchenko@linux.jf.intel.com>,
- Zhang Wei <zw@zh-kernel.org>, Dan Williams <djbw@fb.com>,
- linux-tegra@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <B42677@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe003.messaging.microsoft.com [213.199.154.206])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E827D2C02AF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 18:29:13 +1000 (EST)
+From: Haijun Zhang <Haijun.Zhang@freescale.com>
+To: <linux-mmc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 1/4 V2] powerpc/85xx: Add support for 85xx cpu type detection
+Date: Wed, 10 Jul 2013 15:39:01 +0800
+Message-ID: <1373441941-32650-1-git-send-email-Haijun.Zhang@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Zhao Chenhui <chenhui.zhao@freescale.com>, r39252@freescale.com,
+ AFLEMING@freescale.com, Haijun Zhang <Haijun.Zhang@freescale.com>,
+ cbouatmailru@gmail.com, scottwood@freescale.com, cjb@laptop.org,
+ X.Xie@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,54 +26,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-05-30 at 23:17 +0530, Vinod Koul wrote:=20
-> On Mon, May 27, 2013 at 03:14:30PM +0300, Andy Shevchenko wrote:
-> > Here is a set of small independent patches that clean up or fix minor t=
-hings
-> > across DMA slave drivers.
-> The series looks fine. I am going to wait a day more and apply, pls speak=
- up if
-> you disagree and ack if you agree
+Add this file to help detect cpu type in runtime.
+These macros will be more favorable for driver
+to apply errata and workaround to specified cpu type.
 
-Kindly remind about this series.
+Signed-off-by: Haijun Zhang <Haijun.Zhang@freescale.com>
+Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+---
+changes v2:
+	- Remove inline function
+	- Ignore E bit of SOC
+	- Add Macro to get current soc version
 
->=20
-> --
-> ~Vinod
-> >=20
-> > Andy Shevchenko (12):
-> >   imx-sdma: remove useless variable
-> >   mxs-dma: remove useless variable
-> >   edma: no need to assign residue to 0 explicitly
-> >   ep93xx_dma: remove useless use of lock
-> >   fsldma: remove useless use of lock
-> >   mmp_pdma: remove useless use of lock
-> >   mpc512x_dma: remove useless use of lock
-> >   pch_dma: remove useless use of lock
-> >   tegra20-apb-dma: remove useless use of lock
-> >   ipu_idmac: re-use dma_cookie_status()
-> >   mmp_tdma: set cookies as well when asked for tx status
-> >   txx9dmac: return DMA_SUCCESS immediately from device_tx_status()
-> >=20
-> >  drivers/dma/edma.c            |  2 --
-> >  drivers/dma/ep93xx_dma.c      | 10 +---------
-> >  drivers/dma/fsldma.c          | 10 +---------
-> >  drivers/dma/imx-sdma.c        |  9 +++------
-> >  drivers/dma/ipu/ipu_idmac.c   |  5 +----
-> >  drivers/dma/mmp_pdma.c        | 10 +---------
-> >  drivers/dma/mmp_tdma.c        |  3 ++-
-> >  drivers/dma/mpc512x_dma.c     | 10 +---------
-> >  drivers/dma/mxs-dma.c         |  4 +---
-> >  drivers/dma/pch_dma.c         |  9 +--------
-> >  drivers/dma/tegra20-apb-dma.c |  8 +++-----
-> >  drivers/dma/txx9dmac.c        | 13 ++++++-------
-> >  12 files changed, 21 insertions(+), 72 deletions(-)
-> >=20
-> > --=20
-> > 1.8.2.rc0.22.gb3600c3
-> >=20
->=20
+ arch/powerpc/include/asm/mpc85xx.h | 53 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 53 insertions(+)
+ create mode 100644 arch/powerpc/include/asm/mpc85xx.h
 
---=20
-Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Intel Finland Oy
+diff --git a/arch/powerpc/include/asm/mpc85xx.h b/arch/powerpc/include/asm/mpc85xx.h
+new file mode 100644
+index 0000000..20af5e8
+--- /dev/null
++++ b/arch/powerpc/include/asm/mpc85xx.h
+@@ -0,0 +1,53 @@
++/*
++ * MPC85xx cpu type detection
++ *
++ * Copyright 2011-2012 Freescale Semiconductor, Inc.
++ *
++ * This is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++#ifndef __ASM_PPC_MPC85XX_H
++#define __ASM_PPC_MPC85XX_H
++
++#define SVR_REV(svr)	((svr) & 0xFF)		/* SOC design resision */
++#define SVR_MAJ(svr)	(((svr) >>  4) & 0xF)	/* Major revision field*/
++#define SVR_MIN(svr)	(((svr) >>  0) & 0xF)	/* Minor revision field*/
++
++/* Some parts define SVR[0:23] as the SOC version */
++#define SVR_SOC_VER(svr) (((svr) >> 8) & 0xFFF7FF)	/* SOC Version fields */
++
++/* Get current SOC Version */
++#define GET_SVR()	(mfspr(SPRN_SVR))
++
++#define IS_SVR_REV(svr, maj, min) \
++	((SVR_MAJ(svr) == (maj)) && (SVR_MIN(svr) == (min)))
++
++#define SVR_8533	0x803400
++#define SVR_8535	0x803701
++#define SVR_8536	0x803700
++#define SVR_8540	0x803000
++#define SVR_8541	0x807200
++#define SVR_8543	0x803200
++#define SVR_8544	0x803401
++#define SVR_8545	0x803102
++#define SVR_8547	0x803101
++#define SVR_8548	0x803100
++#define SVR_8555	0x807100
++#define SVR_8560	0x807000
++#define SVR_8567	0x807501
++#define SVR_8568	0x807500
++#define SVR_8569	0x808000
++#define SVR_8572	0x80E000
++#define SVR_P1010	0x80f900
++#define SVR_P2041	0x821001
++#define SVR_P3041	0x821103
++#define SVR_P5010	0x822100
++#define SVR_P5020	0x822000
++#define SVR_P5040	0x820400
++#define SVR_T4240	0x824800
++#define SVR_B4860	0x868800
++
++#endif
+-- 
+1.8.0
