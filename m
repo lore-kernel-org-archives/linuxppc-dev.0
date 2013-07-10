@@ -1,25 +1,27 @@
-Return-Path: <B07421@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0252.outbound.messaging.microsoft.com [213.199.154.252])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0FE9A2C02FA
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 07:48:25 +1000 (EST)
-Date: Wed, 10 Jul 2013 16:48:13 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 1/4 V2] powerpc/85xx: Add support for 85xx cpu type
- detection
-To: Haijun Zhang <Haijun.Zhang@freescale.com>
-In-Reply-To: <1373441941-32650-1-git-send-email-Haijun.Zhang@freescale.com>
- (from Haijun.Zhang@freescale.com on Wed Jul 10 02:39:01 2013)
-Message-ID: <1373492893.8183.236@snotra>
+Return-Path: <pladow@gmail.com>
+Received: from mail-la0-x233.google.com (mail-la0-x233.google.com
+ [IPv6:2a00:1450:4010:c03::233])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 5540A2C02F1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 08:16:40 +1000 (EST)
+Received: by mail-la0-f51.google.com with SMTP id fq12so6254343lab.10
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 15:16:35 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: Zhao Chenhui <chenhui.zhao@freescale.com>, linux-mmc@vger.kernel.org,
- r39252@freescale.com, AFLEMING@freescale.com,
- Haijun Zhang <Haijun.Zhang@freescale.com>, cbouatmailru@gmail.com,
- cjb@laptop.org, linuxppc-dev@lists.ozlabs.org, X.Xie@freescale.com
+Sender: pladow@gmail.com
+In-Reply-To: <1373492413.19894.29.camel@pasglop>
+References: <CAN8Q1EdnN9+kKGy+voF3=EyPfbHv04Emfz=uA6XKMJEAkvLpAA@mail.gmail.com>
+ <CAN8Q1Ed9Lpg1Sog5tQODe+jqCRXBBH3d_UeR5usdc23CD7vwjg@mail.gmail.com>
+ <1371945647.3944.106.camel@pasglop>
+ <CAN8Q1EetHpVkWFmbDGCE-3J4H7oJm0zE66SAdJyvtDb7OBc-gg@mail.gmail.com>
+ <1373492413.19894.29.camel@pasglop>
+Date: Wed, 10 Jul 2013 15:16:34 -0700
+Message-ID: <CAN8Q1EeR62=W_Uxz6MdFs9ZBFxZP_Kb1r2f=w9OnOvouF12Tfg@mail.gmail.com>
+Subject: Re: Inbound PCI and Memory Corruption
+From: Peter LaDow <petela@gocougs.wsu.edu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,20 +31,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/10/2013 02:39:01 AM, Haijun Zhang wrote:
-> +/* Get current SOC Version */
-> +#define GET_SVR()	(mfspr(SPRN_SVR))
+On Wed, Jul 10, 2013 at 2:40 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> Well, it should work, ....
 
-Unnecessary parens.  Why do we need GET_SVR(), versus opencoding it?  =20
-Note that U-Boot (which this is patterned after) doesn't have =20
-GET_SVR(), so code that wants to work on both can't use it anyway.
+I tried forcing NET_IP_ALIGN to 0, and I did see the DMA accesses
+align on 32-bit boundaries with all the byte enables set.  However,
+the memory corruption still occurred.
 
-> +#define IS_SVR_REV(svr, maj, min) \
-> +	((SVR_MAJ(svr) =3D=3D (maj)) && (SVR_MIN(svr) =3D=3D (min)))
+> but it's possible that there is some subtle bug on this specific Freescale SoC....
 
-I don't think IS_SVR_REV is needed.  Callers can just do "if =20
-(SVR_REV(svr) =3D=3D 0x30)" or whatever, especially since we're relying on =
-=20
-them to do this for greater/less than comparisons.
+I looked through the Freescale errata
+(http://www.freescale.com/files/32bit/doc/errata/MPC8349ECE.pdf) and
+only 2 seem relevant:  PCI19 and DMA2 (the rest are either fixed in
+our core version 3.1).
 
--Scott=
+PCI19:  When using a dual-address cycle for inbound write accesses
+with then IOS is full, the PCI overwrites the address for the IOS with
+the new address from the bus.
+
+DMA2: There can be corruption of the DMA data.  Examples are DAHTS is
+8 bytes and the source port is a 32-bit PCI bus or the source memory
+space i son the PCI bus and is not prefetchable.
+
+I don't think PCI19 applies since no dual-address cycles are
+generated.  From what I've seen, all the DMA addresses in the RX ring
+descriptors are in the lower 32-bit address space.
+
+I don't think DMA2 applies because it is for the DMA controller
+specific to the 8349.  And since these transactions are not setup or
+managed by the DMA controller...  At least I don't think they are
+(unless dma_alloc and dma_map_single do something related to this).
+My understanding is that in this case the PCI inbound registers are
+configured and the DMA controller is not used.
+
+> ...Did you correlate the corruption with one such packet ?
+>
+> Did you get any traces that show the flow that happens around a case of
+> corruption ?
+
+Not yet.  I'm having a difficult time syncing the PCI trace with the
+kernel debug output.  And since the corruption may be detected well
+after the actual corruption occurs, determine which DMA transfer
+caused a corruption is difficult.
+
+I'm still trying to gather more information.
+
+Thanks,
+Pete
