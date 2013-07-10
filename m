@@ -1,24 +1,24 @@
 Return-Path: <B40534@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AB6F62C02BB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 20:06:37 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 61F3B2C0096
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 20:13:48 +1000 (EST)
 From: Wang Dongsheng-B40534 <B40534@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: RE: [PATCH 1/2] powerpc: add Book E support to 64-bit hibernation
-Date: Wed, 10 Jul 2013 10:05:36 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259FBECCE@039-SN2MPN1-022.039d.mgd.msft.net>
+To: Wang Dongsheng-B40534 <B40534@freescale.com>, "benh@kernel.crashing.org"
+ <benh@kernel.crashing.org>, Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH 2/2] powerpc/hibernate: add restore mmu context after
+ resume
+Date: Wed, 10 Jul 2013 10:11:54 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259FBECEC@039-SN2MPN1-022.039d.mgd.msft.net>
 References: <1370774260-31072-1-git-send-email-dongsheng.wang@freescale.com>
- <ABB05CD9C9F68C46A5CEDC7F15439259FBEC41@039-SN2MPN1-022.039d.mgd.msft.net>
- <1373449893.19894.18.camel@pasglop>
-In-Reply-To: <1373449893.19894.18.camel@pasglop>
-Content-Type: text/plain; charset="utf-8"
+ <1370774260-31072-2-git-send-email-dongsheng.wang@freescale.com>
+In-Reply-To: <1370774260-31072-2-git-send-email-dongsheng.wang@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "johannes@sipsolutions.net" <johannes@sipsolutions.net>,
+Cc: "johannes@sipsolutions.net" <johannes@sipsolutions.net>,
  "anton@enomsg.org" <anton@enomsg.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,109 +30,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmVuamFtaW4gSGVycmVu
-c2NobWlkdCBbbWFpbHRvOmJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZ10NCj4gU2VudDogV2VkbmVz
-ZGF5LCBKdWx5IDEwLCAyMDEzIDU6NTIgUE0NCj4gVG86IFdhbmcgRG9uZ3NoZW5nLUI0MDUzNA0K
-PiBDYzogV29vZCBTY290dC1CMDc0MjE7IGpvaGFubmVzQHNpcHNvbHV0aW9ucy5uZXQ7IGFudG9u
-QGVub21zZy5vcmc7DQo+IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmc7IGxpbnV4cHBjLWRldkBs
-aXN0cy5vemxhYnMub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMS8yXSBwb3dlcnBjOiBhZGQg
-Qm9vayBFIHN1cHBvcnQgdG8gNjQtYml0DQo+IGhpYmVybmF0aW9uDQo+IA0KPiBPbiBXZWQsIDIw
-MTMtMDctMTAgYXQgMDk6NDEgKzAwMDAsIFdhbmcgRG9uZ3NoZW5nLUI0MDUzNCB3cm90ZToNCj4g
-PiBIaSBzY290dCwNCj4gPg0KPiA+IENvdWxkIHlvdSBhcHBseSB0aGlzIHBhdGNoPw0KPiANCj4g
-VGhlcmUgd2VyZSBhIG51bWJyZSBvZiBjb21tZW50cywgd2VyZSB0aGVyZSBhZGRyZXNzZWQgPyBE
-byB5b3UgbmVlZCB0bw0KPiBzYXZlIGFsbCB0aGUgU1BSR3MgZm9yIGV4YW1wbGUgPw0KPiANCj4g
-QmVuLg0KPiANClVtLi4ueWVzLCBzb3JyeSwgbm90IGFsbCBvZiB0aGUgU1BSR3MuDQp0aGUgZGlz
-Y3Vzc2lvbiBhYm91dCBTUFJHMSBhbmQgU1BSRzIuIEkgY2FuIGZpeCB0aGVtLCBqdXN0IHRvIHNh
-dmUgU1JQRzEgJiBTUFJHMi4NCkJ1dCB0aG9zZSByZWdpc3RlcnMgY2FuIGJlIHVzZWQgYnkgc29m
-dHdhcmUsIEkgdGhpbmsgdGhvc2UgcmVnaXN0ZXIgc2hvdWxkIGJlIHNhdmUsDQpldmVuIG5vdyBz
-b21lIFNQUkcgcmVnaXN0ZXIgbm90IGJlIHVzZS4NCg0KPiA+IFRoYW5rcy4NCj4gPg0KPiA+IC1k
-b25nc2hlbmcNCj4gPg0KPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+IEZy
-b206IFdhbmcgRG9uZ3NoZW5nLUI0MDUzNA0KPiA+ID4gU2VudDogU3VuZGF5LCBKdW5lIDA5LCAy
-MDEzIDY6MzggUE0NCj4gPiA+IFRvOiBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmcNCj4gPiA+IENj
-OiBqb2hhbm5lc0BzaXBzb2x1dGlvbnMubmV0OyBhbnRvbkBlbm9tc2cub3JnOyBXb29kIFNjb3R0
-LUIwNzQyMTsNCj4gPiA+IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmc7IGxpbnV4cHBjLWRldkBs
-aXN0cy5vemxhYnMub3JnOyBXYW5nDQo+ID4gPiBEb25nc2hlbmctDQo+ID4gPiBCNDA1MzQNCj4g
-PiA+IFN1YmplY3Q6IFtQQVRDSCAxLzJdIHBvd2VycGM6IGFkZCBCb29rIEUgc3VwcG9ydCB0byA2
-NC1iaXQNCj4gPiA+IGhpYmVybmF0aW9uDQo+ID4gPg0KPiA+ID4gVXBkYXRlIHRoZSA2NC1iaXQg
-aGliZXJuYXRpb24gY29kZSB0byBzdXBwb3J0IEJvb2sgRSBDUFVzLg0KPiA+ID4gU29tZSByZWdp
-c3RlcnMgYW5kIGluc3RydWN0aW9ucyBhcmUgbm90IGRlZmluZWQgZm9yIEJvb2szZSAoU0RSIHJl
-ZywNCj4gPiA+IHRsYmlhIGluc3RydWN0aW9uKS4NCj4gPiA+DQo+ID4gPiBTRFI6IFN0b3JhZ2Ug
-RGVzY3JpcHRpb24gUmVnaXN0ZXIuIEJvb2szUyBhbmQgQm9vazNFIGhhdmUgZGlmZmVyZW50DQo+
-ID4gPiBhZGRyZXNzIHRyYW5zbGF0aW9uIG1vZGUsIHdlIGRvIG5vdCBuZWVkIEhUQUJPUkcgJiBI
-VEFCU0laRSB0bw0KPiA+ID4gdHJhbnNsYXRlIHZpcnR1YWwgYWRkcmVzcyB0byByZWFsIGFkZHJl
-c3MuDQo+ID4gPg0KPiA+ID4gTW9yZSByZWdpc3RlcnMgYXJlIHNhdmVkIGluIEJvb2tFLTY0Yml0
-LihUQ1IsIFNQUkd4LCAuLi4pDQo+ID4gPg0KPiA+ID4gU2lnbmVkLW9mZi1ieTogV2FuZyBEb25n
-c2hlbmcgPGRvbmdzaGVuZy53YW5nQGZyZWVzY2FsZS5jb20+DQo+ID4gPiAtLS0NCj4gPiA+ICog
-SGlzdG9yeToNCj4gPiA+ICogV29vZCBTY290dChBKTogUGxlYXNlIGludmVzdGlnYXRlIHRoZSBp
-c3N1ZSBvZiB3aGV0aGVyIHdlIGFyZQ0KPiBsb2FkaW5nDQo+ID4gPiAqICAgICAgICAgICAgICAg
-IGtlcm5lbCBtb2R1bGUgY29kZSBpbiB0aGlzIHN0ZXANCj4gPiA+ICogUjogS2VybmVsIHdpbGwg
-YWxsb2NhdGUgdGhlIG1lbW9yeSBmb3IgbW9kdWxlIGNvZGUgc2VnbWVudCBhbmQgZGF0YQ0KPiA+
-ID4gKiAgICBzZWdtZW50LiBGaXJzdCBhbGxvY2F0ZSBhIG1lbW9yeSwgYW5kIGNvcHkgdGhlIHVt
-b2QgdG8gaGRyDQo+IG1lbWJlcnMNCj4gPiA+ICogICAgb2YgdGhlIHN0cnVjdCBsb2FkX2luZm8u
-IER1ZSB0byB0aGUgdGVtcG9yYXJ5IGFzc2lnbmVkIG1vZHVsZQ0KPiA+ID4gYmVsb25ncw0KPiA+
-ID4gKiAgICB0byB0aGUga2VybmVsIHNwYWNlLCBzbyBpdCBiZWxvbmdzIHRvIHRoZSBrZXJuZWwg
-ZGF0YS4NCj4gPiA+ICoNCj4gPiA+ICogICAgVGhlIGtlcm5lbCBvZiBhbGwgZGF0YSB3aWxsIGJl
-IHNhdmVkIHdoZW4gaGliZXJuYXRpb24gc3VzcGVuZC4NCj4gU28NCj4gPiA+ICogICAgdGhlIG1v
-ZHVsZSB3aGljaCBoYXMgYWxyZWFkeSBiZWVuIGluc2VydGVkIHdpbGwgYmUgc2F2ZWQuDQo+ID4g
-Pg0KPiA+ID4gIGFyY2gvcG93ZXJwYy9rZXJuZWwvc3dzdXNwX2FzbTY0LlMgfCA2NA0KPiA+ID4g
-KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrLS0NCj4gPiA+ICAxIGZpbGUgY2hh
-bmdlZCwgNjIgaW5zZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkNCj4gPiA+DQo+ID4gPiBkaWZm
-IC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2tlcm5lbC9zd3N1c3BfYXNtNjQuUw0KPiA+ID4gYi9hcmNo
-L3Bvd2VycGMva2VybmVsL3N3c3VzcF9hc202NC5TDQo+ID4gPiBpbmRleCA4NmFjMWQ5Li42MDhl
-NGNlYiAxMDA2NDQNCj4gPiA+IC0tLSBhL2FyY2gvcG93ZXJwYy9rZXJuZWwvc3dzdXNwX2FzbTY0
-LlMNCj4gPiA+ICsrKyBiL2FyY2gvcG93ZXJwYy9rZXJuZWwvc3dzdXNwX2FzbTY0LlMNCj4gPiA+
-IEBAIC00NiwxMCArNDYsMjkgQEANCj4gPiA+ICAjZGVmaW5lIFNMX3IyOQkJMHhlOA0KPiA+ID4g
-ICNkZWZpbmUgU0xfcjMwCQkweGYwDQo+ID4gPiAgI2RlZmluZSBTTF9yMzEJCTB4ZjgNCj4gPiA+
-IC0jZGVmaW5lIFNMX1NJWkUJCVNMX3IzMSs4DQo+ID4gPiArI2RlZmluZSBTTF9TUFJHMAkweDEw
-MA0KPiA+ID4gKyNkZWZpbmUgU0xfU1BSRzEJMHgxMDgNCj4gPiA+ICsjZGVmaW5lIFNMX1NQUkcy
-CTB4MTEwDQo+ID4gPiArI2RlZmluZSBTTF9TUFJHMwkweDExOA0KPiA+ID4gKyNkZWZpbmUgU0xf
-U1BSRzQJMHgxMjANCj4gPiA+ICsjZGVmaW5lIFNMX1NQUkc1CTB4MTI4DQo+ID4gPiArI2RlZmlu
-ZSBTTF9TUFJHNgkweDEzMA0KPiA+ID4gKyNkZWZpbmUgU0xfU1BSRzcJMHgxMzgNCj4gPiA+ICsj
-ZGVmaW5lIFNMX1RDUgkJMHgxNDANCj4gPiA+ICsjZGVmaW5lIFNMX1NJWkUJCVNMX1RDUis4DQo+
-ID4gPg0KPiA+ID4gIC8qIHRoZXNlIG1hY3JvcyByZWx5IG9uIHRoZSBzYXZlIGFyZWEgYmVpbmcN
-Cj4gPiA+ICAgKiBwb2ludGVkIHRvIGJ5IHIxMSAqLw0KPiA+ID4gKw0KPiA+ID4gKyNkZWZpbmUg
-U0FWRV9TUFIocmVnaXN0ZXIpCQlcDQo+ID4gPiArCW1mc3ByCXIwLFNQUk5fIyNyZWdpc3Rlcgk7
-XA0KPiA+ID4gKwlzdGQJcjAsU0xfIyNyZWdpc3RlcihyMTEpDQo+ID4gPiArI2RlZmluZSBSRVNU
-T1JFX1NQUihyZWdpc3RlcikJCVwNCj4gPiA+ICsJbGQJcjAsU0xfIyNyZWdpc3RlcihyMTEpCTtc
-DQo+ID4gPiArCW10c3ByCVNQUk5fIyNyZWdpc3RlcixyMA0KPiA+ID4gKyNkZWZpbmUgUkVTVE9S
-RV9TUFJHKG4pCQkJXA0KPiA+ID4gKwlsZAlyMCxTTF9TUFJHIyNuKHIxMSkJO1wNCj4gPiA+ICsJ
-bXRzcHJnCW4scjANCj4gPiA+ICAjZGVmaW5lIFNBVkVfU1BFQ0lBTChzcGVjaWFsKQkJXA0KPiA+
-ID4gIAltZiMjc3BlY2lhbAlyMAkJO1wNCj4gPiA+ICAJc3RkCXIwLCBTTF8jI3NwZWNpYWwocjEx
-KQ0KPiA+ID4gQEAgLTEwMyw4ICsxMjIsMjEgQEAgX0dMT0JBTChzd3N1c3BfYXJjaF9zdXNwZW5k
-KQ0KPiA+ID4gIAlTQVZFX1JFR0lTVEVSKHIzMCkNCj4gPiA+ICAJU0FWRV9SRUdJU1RFUihyMzEp
-DQo+ID4gPiAgCVNBVkVfU1BFQ0lBTChNU1IpDQo+ID4gPiAtCVNBVkVfU1BFQ0lBTChTRFIxKQ0K
-PiA+ID4gIAlTQVZFX1NQRUNJQUwoWEVSKQ0KPiA+ID4gKyNpZmRlZiBDT05GSUdfUFBDX0JPT0sz
-U182NA0KPiA+ID4gKwlTQVZFX1NQRUNJQUwoU0RSMSkNCj4gPiA+ICsjZWxzZQ0KPiA+ID4gKwlT
-QVZFX1NQUihUQ1IpDQo+ID4gPiArCS8qIFNhdmUgU1BSR3MgKi8NCj4gPiA+ICsJU0FWRV9TUFIo
-U1BSRzApDQo+ID4gPiArCVNBVkVfU1BSKFNQUkcxKQ0KPiA+ID4gKwlTQVZFX1NQUihTUFJHMikN
-Cj4gPiA+ICsJU0FWRV9TUFIoU1BSRzMpDQo+ID4gPiArCVNBVkVfU1BSKFNQUkc0KQ0KPiA+ID4g
-KwlTQVZFX1NQUihTUFJHNSkNCj4gPiA+ICsJU0FWRV9TUFIoU1BSRzYpDQo+ID4gPiArCVNBVkVf
-U1BSKFNQUkc3KQ0KPiA+ID4gKyNlbmRpZg0KPiA+ID4NCj4gPiA+ICAJLyogd2UgcHVzaCB0aGUg
-c3RhY2sgdXAgMTI4IGJ5dGVzIGJ1dCBkb24ndCBzdG9yZSB0aGUNCj4gPiA+ICAJICogc3RhY2sg
-cG9pbnRlciBvbiB0aGUgc3RhY2sgbGlrZSBhIHJlYWwgc3RhY2tmcmFtZSAqLyBAQCAtMTUxLDYN
-Cj4gPiA+ICsxODMsNyBAQCBjb3B5X3BhZ2VfbG9vcDoNCj4gPiA+ICAJYm5lKwljb3B5bG9vcA0K
-PiA+ID4gIG5vdGhpbmdfdG9fY29weToNCj4gPiA+DQo+ID4gPiArI2lmZGVmIENPTkZJR19QUENf
-Qk9PSzNTXzY0DQo+ID4gPiAgCS8qIGZsdXNoIGNhY2hlcyAqLw0KPiA+ID4gIAlsaXMJcjMsIDB4
-MTANCj4gPiA+ICAJbXRjdHIJcjMNCj4gPiA+IEBAIC0xNjcsNiArMjAwLDcgQEAgbm90aGluZ190
-b19jb3B5Og0KPiA+ID4gIAlzeW5jDQo+ID4gPg0KPiA+ID4gIAl0bGJpYQ0KPiA+ID4gKyNlbmRp
-Zg0KPiA+ID4NCj4gPiA+ICAJbGQJcjExLHN3c3VzcF9zYXZlX2FyZWFfcHRyQHRvYyhyMikNCj4g
-PiA+DQo+ID4gPiBAQCAtMjA4LDE2ICsyNDIsNDIgQEAgbm90aGluZ190b19jb3B5Og0KPiA+ID4g
-IAlSRVNUT1JFX1JFR0lTVEVSKHIyOSkNCj4gPiA+ICAJUkVTVE9SRV9SRUdJU1RFUihyMzApDQo+
-ID4gPiAgCVJFU1RPUkVfUkVHSVNURVIocjMxKQ0KPiA+ID4gKw0KPiA+ID4gKyNpZmRlZiBDT05G
-SUdfUFBDX0JPT0szU182NA0KPiA+ID4gIAkvKiBjYW4ndCB1c2UgUkVTVE9SRV9TUEVDSUFMKE1T
-UikgKi8NCj4gPiA+ICAJbGQJcjAsIFNMX01TUihyMTEpDQo+ID4gPiAgCW10bXNyZAlyMCwgMA0K
-PiA+ID4gIAlSRVNUT1JFX1NQRUNJQUwoU0RSMSkNCj4gPiA+ICsjZWxzZQ0KPiA+ID4gKwkvKiBT
-YXZlIFNQUkdzICovDQo+ID4gPiArCVJFU1RPUkVfU1BSRygwKQ0KPiA+ID4gKwlSRVNUT1JFX1NQ
-UkcoMSkNCj4gPiA+ICsJUkVTVE9SRV9TUFJHKDIpDQo+ID4gPiArCVJFU1RPUkVfU1BSRygzKQ0K
-PiA+ID4gKwlSRVNUT1JFX1NQUkcoNCkNCj4gPiA+ICsJUkVTVE9SRV9TUFJHKDUpDQo+ID4gPiAr
-CVJFU1RPUkVfU1BSRyg2KQ0KPiA+ID4gKwlSRVNUT1JFX1NQUkcoNykNCj4gPiA+ICsNCj4gPiA+
-ICsJUkVTVE9SRV9TUEVDSUFMKE1TUikNCj4gPiA+ICsNCj4gPiA+ICsJLyogUmVzdG9yZSBUQ1Ig
-YW5kIGNsZWFyIGFueSBwZW5kaW5nIGJpdHMgaW4gVFNSLiAqLw0KPiA+ID4gKwlSRVNUT1JFX1NQ
-UihUQ1IpDQo+ID4gPiArCWxpcwlyMCwgKFRTUl9FTlcgfCBUU1JfV0lTIHwgVFNSX0RJUyB8IFRT
-Ul9GSVMpQGgNCj4gPiA+ICsJbXRzcHIJU1BSTl9UU1IscjANCj4gPiA+ICsNCj4gPiA+ICsJLyog
-S2ljayBkZWNyZW1lbnRlciAqLw0KPiA+ID4gKwlsaQlyMCwxDQo+ID4gPiArCW10ZGVjCXIwDQo+
-ID4gPiArI2VuZGlmDQo+ID4gPiAgCVJFU1RPUkVfU1BFQ0lBTChYRVIpDQo+ID4gPg0KPiA+ID4g
-IAlzeW5jDQo+ID4gPg0KPiA+ID4gIAlhZGRpCXIxLHIxLC0xMjgNCj4gPiA+ICsjaWZkZWYgQ09O
-RklHX1BQQ19CT09LM1NfNjQNCj4gPiA+ICAJYmwJc2xiX2ZsdXNoX2FuZF9yZWJvbHQNCj4gPiA+
-ICsjZW5kaWYNCj4gPiA+ICAJYmwJZG9fYWZ0ZXJfY29weWJhY2sNCj4gPiA+ICAJYWRkaQlyMSxy
-MSwxMjgNCj4gPiA+DQo+ID4gPiAtLQ0KPiA+ID4gMS44LjANCj4gPg0KPiANCj4gDQoNCg==
+Hi scott & ben,
+
+About this patch do you have any suggestions?
+
+Thanks
+
+- dongsheng
+
+> -----Original Message-----
+> From: Wang Dongsheng-B40534
+> Sent: Sunday, June 09, 2013 6:38 PM
+> To: benh@kernel.crashing.org
+> Cc: johannes@sipsolutions.net; anton@enomsg.org; Wood Scott-B07421;
+> galak@kernel.crashing.org; linuxppc-dev@lists.ozlabs.org; Wang Dongsheng-
+> B40534
+> Subject: [PATCH 2/2] powerpc/hibernate: add restore mmu context after
+> resume
+>=20
+> add restore_mmu_context to replace switch_mmu_context in
+> restore_processor_state, because the switch_mmu_context will do
+> a whole pile of stuff that are probably completely unnecessary.
+>=20
+> There just need to restore the existing process context, and
+> invalidate TLB for boot core.
+>=20
+> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> ---
+>  arch/powerpc/include/asm/tlbflush.h |  2 ++
+>  arch/powerpc/kernel/swsusp.c        |  4 +---
+>  arch/powerpc/mm/tlb_nohash.c        | 12 ++++++++++++
+>  3 files changed, 15 insertions(+), 3 deletions(-)
+>=20
+> diff --git a/arch/powerpc/include/asm/tlbflush.h
+> b/arch/powerpc/include/asm/tlbflush.h
+> index 61a5927..c401fe3 100644
+> --- a/arch/powerpc/include/asm/tlbflush.h
+> +++ b/arch/powerpc/include/asm/tlbflush.h
+> @@ -44,6 +44,8 @@ extern void local_flush_tlb_page(struct vm_area_struct
+> *vma, unsigned long vmadd
+>  extern void __local_flush_tlb_page(struct mm_struct *mm, unsigned long
+> vmaddr,
+>  				   int tsize, int ind);
+>=20
+> +extern void restore_mmu_context(void);
+> +
+>  #ifdef CONFIG_SMP
+>  extern void flush_tlb_mm(struct mm_struct *mm);
+>  extern void flush_tlb_page(struct vm_area_struct *vma, unsigned long
+> vmaddr);
+> diff --git a/arch/powerpc/kernel/swsusp.c b/arch/powerpc/kernel/swsusp.c
+> index eae33e1..0b104d7 100644
+> --- a/arch/powerpc/kernel/swsusp.c
+> +++ b/arch/powerpc/kernel/swsusp.c
+> @@ -32,7 +32,5 @@ void save_processor_state(void)
+>=20
+>  void restore_processor_state(void)
+>  {
+> -#ifdef CONFIG_PPC32
+> -	switch_mmu_context(current->active_mm, current->active_mm);
+> -#endif
+> +	restore_mmu_context();
+>  }
+> diff --git a/arch/powerpc/mm/tlb_nohash.c b/arch/powerpc/mm/tlb_nohash.c
+> index df32a83..a5a0708 100644
+> --- a/arch/powerpc/mm/tlb_nohash.c
+> +++ b/arch/powerpc/mm/tlb_nohash.c
+> @@ -39,10 +39,12 @@
+>  #include <linux/of_fdt.h>
+>  #include <linux/hugetlb.h>
+>=20
+> +#include <asm/current.h>
+>  #include <asm/tlbflush.h>
+>  #include <asm/tlb.h>
+>  #include <asm/code-patching.h>
+>  #include <asm/hugetlb.h>
+> +#include <asm/mmu_context.h>
+>=20
+>  #include "mmu_decl.h"
+>=20
+> @@ -193,6 +195,16 @@ void local_flush_tlb_page(struct vm_area_struct *vma=
+,
+> unsigned long vmaddr)
+>  }
+>  EXPORT_SYMBOL(local_flush_tlb_page);
+>=20
+> +void restore_mmu_context(void)
+> +{
+> +	struct mm_struct *mm =3D current->active_mm;
+> +
+> +	set_context(mm->context.id, mm->pgd);
+> +
+> +	_tlbil_all();
+> +}
+> +EXPORT_SYMBOL(restore_mmu_context);
+> +
+>  /*
+>   * And here are the SMP non-local implementations
+>   */
+> --
+> 1.8.0
