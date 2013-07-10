@@ -1,23 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <stefani@seibold.net>
+Received: from www84.your-server.de (www84.your-server.de [213.133.104.84])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 32FBD2C0316
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 19:51:47 +1000 (EST)
-Message-ID: <1373449893.19894.18.camel@pasglop>
-Subject: Re: [PATCH 1/2] powerpc: add Book E support to 64-bit hibernation
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Wang Dongsheng-B40534 <B40534@freescale.com>
-Date: Wed, 10 Jul 2013 19:51:33 +1000
-In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F15439259FBEC41@039-SN2MPN1-022.039d.mgd.msft.net>
-References: <1370774260-31072-1-git-send-email-dongsheng.wang@freescale.com>
- <ABB05CD9C9F68C46A5CEDC7F15439259FBEC41@039-SN2MPN1-022.039d.mgd.msft.net>
+ by ozlabs.org (Postfix) with ESMTPS id 5DB962C02AB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jul 2013 20:00:09 +1000 (EST)
+Message-ID: <1373450412.1016.3.camel@wall-e>
+Subject: Re: BUG: 32 Bit Kernel kexec hangs on P2020
+From: Stefani Seibold <stefani@seibold.net>
+To: "tiejun.chen" <tiejun.chen@windriver.com>
+Date: Wed, 10 Jul 2013 12:00:12 +0200
+In-Reply-To: <51DD1FC7.6080203@windriver.com>
+References: <1373445543.348.5.camel@wall-e> <51DD1FC7.6080203@windriver.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "johannes@sipsolutions.net" <johannes@sipsolutions.net>,
- "anton@enomsg.org" <anton@enomsg.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
+ kexec@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,175 +25,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-07-10 at 09:41 +0000, Wang Dongsheng-B40534 wrote:
-> Hi scott,
+Am Mittwoch, den 10.07.2013, 16:48 +0800 schrieb tiejun.chen:
+> On 07/10/2013 04:39 PM, Stefani Seibold wrote:
+> > Hi,
+> >
+> > i have tried to kexec a 32 bit kernel on a Freescale P2020 dual core CPU
+> > (e500v2, revison 5.1 - pvr 8021 1051), but Kexec will hang after the
+> > "Bye!".
+> >
+> > The host and the kexec kernel are the same, based on the current kernel
+> > version 3.10.
+> >
+> > I have tried it with kexec-tools 2.0.4.git released 30 June 2013.
+> >
+> > Invoking kexec with
+> >
+> > kexec --command-line "1 maxcpus=1 noirqdistrib reset_devices $(cat /proc/cmdline)" -t elf-ppc --dtb=rs2020.dtb \
+> > --reuse-node="/cpus/PowerPC,P2020@0/timebase-frequency" \
+> > --reuse-node="/cpus/PowerPC,P2020@0/bus-frequency" \
+> > --reuse-node="/cpus/PowerPC,P2020@0/clock-frequency" \
+> > --reuse-node="/cpus/PowerPC,P2020@0/next-level-cache" \
+> > --reuse-node="/cpus/PowerPC,P2020@1/timebase-frequency" \
+> > --reuse-node="/cpus/PowerPC,P2020@1/bus-frequency" \
+> > --reuse-node="/cpus/PowerPC,P2020@1/clock-frequency" \
+> > --reuse-node="/cpus/PowerPC,P2020@1/next-level-cache" \
+> > --reuse-node="/cpus/PowerPC,P2020@1/cpu-release-addr" \
+> > --reuse-node="/cpus/PowerPC,P2020@1/enable-method" \
+> > --reuse-node="/soc@ffe00000/bus-frequency" \
+> > --reuse-node="/soc@ffe00000/serial@4500/clock-frequency" \
+> > --reuse-node="/soc@ffe00000/ethernet@24000/local-mac-address" \
+> > -d -l -x vmlinux
+> > kexec -e
 > 
-> Could you apply this patch?
+> Could you try again with one simple command like,
+> 
+> kexec -l vmlinux --append="`cat /proc/cmdline`";kexec -e
+> 
 
-There were a numbre of comments, were there addressed ? Do you need to
-save all the SPRGs for example ?
+Great, this works.
 
-Ben.
+I did more test and the issue for the fail is the passing of the device
+tree. But the device tree is exact the same as the previous used one.
 
-> Thanks.
-> 
-> -dongsheng
-> 
-> > -----Original Message-----
-> > From: Wang Dongsheng-B40534
-> > Sent: Sunday, June 09, 2013 6:38 PM
-> > To: benh@kernel.crashing.org
-> > Cc: johannes@sipsolutions.net; anton@enomsg.org; Wood Scott-B07421;
-> > galak@kernel.crashing.org; linuxppc-dev@lists.ozlabs.org; Wang Dongsheng-
-> > B40534
-> > Subject: [PATCH 1/2] powerpc: add Book E support to 64-bit hibernation
-> > 
-> > Update the 64-bit hibernation code to support Book E CPUs.
-> > Some registers and instructions are not defined for Book3e
-> > (SDR reg, tlbia instruction).
-> > 
-> > SDR: Storage Description Register. Book3S and Book3E have different
-> > address translation mode, we do not need HTABORG & HTABSIZE to
-> > translate virtual address to real address.
-> > 
-> > More registers are saved in BookE-64bit.(TCR, SPRGx, ...)
-> > 
-> > Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
-> > ---
-> > * History:
-> > * Wood Scott(A): Please investigate the issue of whether we are loading
-> > *                kernel module code in this step
-> > * R: Kernel will allocate the memory for module code segment and data
-> > *    segment. First allocate a memory, and copy the umod to hdr members
-> > *    of the struct load_info. Due to the temporary assigned module
-> > belongs
-> > *    to the kernel space, so it belongs to the kernel data.
-> > *
-> > *    The kernel of all data will be saved when hibernation suspend. So
-> > *    the module which has already been inserted will be saved.
-> > 
-> >  arch/powerpc/kernel/swsusp_asm64.S | 64
-> > ++++++++++++++++++++++++++++++++++++--
-> >  1 file changed, 62 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/kernel/swsusp_asm64.S
-> > b/arch/powerpc/kernel/swsusp_asm64.S
-> > index 86ac1d9..608e4ceb 100644
-> > --- a/arch/powerpc/kernel/swsusp_asm64.S
-> > +++ b/arch/powerpc/kernel/swsusp_asm64.S
-> > @@ -46,10 +46,29 @@
-> >  #define SL_r29		0xe8
-> >  #define SL_r30		0xf0
-> >  #define SL_r31		0xf8
-> > -#define SL_SIZE		SL_r31+8
-> > +#define SL_SPRG0	0x100
-> > +#define SL_SPRG1	0x108
-> > +#define SL_SPRG2	0x110
-> > +#define SL_SPRG3	0x118
-> > +#define SL_SPRG4	0x120
-> > +#define SL_SPRG5	0x128
-> > +#define SL_SPRG6	0x130
-> > +#define SL_SPRG7	0x138
-> > +#define SL_TCR		0x140
-> > +#define SL_SIZE		SL_TCR+8
-> > 
-> >  /* these macros rely on the save area being
-> >   * pointed to by r11 */
-> > +
-> > +#define SAVE_SPR(register)		\
-> > +	mfspr	r0,SPRN_##register	;\
-> > +	std	r0,SL_##register(r11)
-> > +#define RESTORE_SPR(register)		\
-> > +	ld	r0,SL_##register(r11)	;\
-> > +	mtspr	SPRN_##register,r0
-> > +#define RESTORE_SPRG(n)			\
-> > +	ld	r0,SL_SPRG##n(r11)	;\
-> > +	mtsprg	n,r0
-> >  #define SAVE_SPECIAL(special)		\
-> >  	mf##special	r0		;\
-> >  	std	r0, SL_##special(r11)
-> > @@ -103,8 +122,21 @@ _GLOBAL(swsusp_arch_suspend)
-> >  	SAVE_REGISTER(r30)
-> >  	SAVE_REGISTER(r31)
-> >  	SAVE_SPECIAL(MSR)
-> > -	SAVE_SPECIAL(SDR1)
-> >  	SAVE_SPECIAL(XER)
-> > +#ifdef CONFIG_PPC_BOOK3S_64
-> > +	SAVE_SPECIAL(SDR1)
-> > +#else
-> > +	SAVE_SPR(TCR)
-> > +	/* Save SPRGs */
-> > +	SAVE_SPR(SPRG0)
-> > +	SAVE_SPR(SPRG1)
-> > +	SAVE_SPR(SPRG2)
-> > +	SAVE_SPR(SPRG3)
-> > +	SAVE_SPR(SPRG4)
-> > +	SAVE_SPR(SPRG5)
-> > +	SAVE_SPR(SPRG6)
-> > +	SAVE_SPR(SPRG7)
-> > +#endif
-> > 
-> >  	/* we push the stack up 128 bytes but don't store the
-> >  	 * stack pointer on the stack like a real stackframe */
-> > @@ -151,6 +183,7 @@ copy_page_loop:
-> >  	bne+	copyloop
-> >  nothing_to_copy:
-> > 
-> > +#ifdef CONFIG_PPC_BOOK3S_64
-> >  	/* flush caches */
-> >  	lis	r3, 0x10
-> >  	mtctr	r3
-> > @@ -167,6 +200,7 @@ nothing_to_copy:
-> >  	sync
-> > 
-> >  	tlbia
-> > +#endif
-> > 
-> >  	ld	r11,swsusp_save_area_ptr@toc(r2)
-> > 
-> > @@ -208,16 +242,42 @@ nothing_to_copy:
-> >  	RESTORE_REGISTER(r29)
-> >  	RESTORE_REGISTER(r30)
-> >  	RESTORE_REGISTER(r31)
-> > +
-> > +#ifdef CONFIG_PPC_BOOK3S_64
-> >  	/* can't use RESTORE_SPECIAL(MSR) */
-> >  	ld	r0, SL_MSR(r11)
-> >  	mtmsrd	r0, 0
-> >  	RESTORE_SPECIAL(SDR1)
-> > +#else
-> > +	/* Save SPRGs */
-> > +	RESTORE_SPRG(0)
-> > +	RESTORE_SPRG(1)
-> > +	RESTORE_SPRG(2)
-> > +	RESTORE_SPRG(3)
-> > +	RESTORE_SPRG(4)
-> > +	RESTORE_SPRG(5)
-> > +	RESTORE_SPRG(6)
-> > +	RESTORE_SPRG(7)
-> > +
-> > +	RESTORE_SPECIAL(MSR)
-> > +
-> > +	/* Restore TCR and clear any pending bits in TSR. */
-> > +	RESTORE_SPR(TCR)
-> > +	lis	r0, (TSR_ENW | TSR_WIS | TSR_DIS | TSR_FIS)@h
-> > +	mtspr	SPRN_TSR,r0
-> > +
-> > +	/* Kick decrementer */
-> > +	li	r0,1
-> > +	mtdec	r0
-> > +#endif
-> >  	RESTORE_SPECIAL(XER)
-> > 
-> >  	sync
-> > 
-> >  	addi	r1,r1,-128
-> > +#ifdef CONFIG_PPC_BOOK3S_64
-> >  	bl	slb_flush_and_rebolt
-> > +#endif
-> >  	bl	do_after_copyback
-> >  	addi	r1,r1,128
-> > 
-> > --
-> > 1.8.0
-> 
+Is passing a new device tree not allowed?
+
+Stefani
