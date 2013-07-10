@@ -1,19 +1,19 @@
 Return-Path: <B07421@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0253.outbound.messaging.microsoft.com [213.199.154.253])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 107402C0178
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 04:37:19 +1000 (EST)
-Date: Wed, 10 Jul 2013 13:37:06 -0500
+ by ozlabs.org (Postfix) with ESMTPS id 0963C2C02CE
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 04:44:05 +1000 (EST)
+Date: Wed, 10 Jul 2013 13:42:42 -0500
 From: Scott Wood <scottwood@freescale.com>
 Subject: Re: [PATCH 2/2] KVM: PPC: Book3E: Get vcpu's last instruction for
  emulation
 To: Alexander Graf <agraf@suse.de>
-In-Reply-To: <27E6FCB1-322F-410D-A87C-D5410C7374E7@suse.de> (from
- agraf@suse.de on Wed Jul 10 05:18:10 2013)
-Message-ID: <1373481426.8183.219@snotra>
+In-Reply-To: <2750D29D-8CE6-40D3-922D-864F447FEFD8@suse.de> (from
+ agraf@suse.de on Wed Jul 10 05:15:09 2013)
+Message-ID: <1373481762.8183.220@snotra>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
 Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
@@ -27,58 +27,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/10/2013 05:18:10 AM, Alexander Graf wrote:
+On 07/10/2013 05:15:09 AM, Alexander Graf wrote:
 >=20
-> On 10.07.2013, at 02:12, Scott Wood wrote:
+> On 10.07.2013, at 02:06, Scott Wood wrote:
 >=20
-> > On 07/09/2013 04:45:10 PM, Alexander Graf wrote:
-> >> On 28.06.2013, at 11:20, Mihai Caraman wrote:
-> >> > +	/* Get page size */
-> >> > +	if (MAS0_GET_TLBSEL(mfspr(SPRN_MAS0)) =3D=3D 0)
-> >> > +		psize_shift =3D PAGE_SHIFT;
-> >> > +	else
-> >> > +		psize_shift =3D MAS1_GET_TSIZE(mas1) + 10;
-> >> > +
-> >> > +	mas7_mas3 =3D (((u64) mfspr(SPRN_MAS7)) << 32) |
-> >> > +		    mfspr(SPRN_MAS3);
-> >> > +	addr =3D (mas7_mas3 & (~0ULL << psize_shift)) |
-> >> > +	       (geaddr & ((1ULL << psize_shift) - 1ULL));
-> >> > +
-> >> > +	/* Map a page and get guest's instruction */
-> >> > +	page =3D pfn_to_page(addr >> PAGE_SHIFT);
-> >> While looking at this I just realized that you're missing a check =20
-> here. What if our IP is in some PCI BAR? Or can't we execute from =20
-> those?
+> > On 07/09/2013 04:44:24 PM, Alexander Graf wrote:
+> >> On 09.07.2013, at 20:46, Scott Wood wrote:
+> >> > I suspect that tlbsx is faster, or at worst similar.  And unlike =20
+> comparing tlbsx to lwepx (not counting a fix for the threading =20
+> problem), we don't already have code to search the guest TLB, so =20
+> testing would be more work.
+> >> We have code to walk the guest TLB for TLB misses. This really is =20
+> just the TLB miss search without host TLB injection.
+> >> So let's say we're using the shadow TLB. The guest always has its =20
+> say 64 TLB entries that it can count on - we never evict anything by =20
+> accident, because we store all of the 64 entries in our guest TLB =20
+> cache. When the guest faults at an address, the first thing we do is =20
+> we check the cache whether we have that page already mapped.
+> >> However, with this method we now have 2 enumeration methods for =20
+> guest TLB searches. We have the tlbsx one which searches the host TLB =20
+> and we have our guest TLB cache. The guest TLB cache might still =20
+> contain an entry for an address that we already invalidated on the =20
+> host. Would that impose a problem?
+> >> I guess not because we're swizzling the exit code around to =20
+> instead be an instruction miss which means we restore the TLB entry =20
+> into our host's TLB so that when we resume, we land here and the =20
+> tlbsx hits. But it feels backwards.
 > >
-> > We at least need to check pfn_valid() first.  That'll just keep us =20
-> from accessing a bad pointer in the host kernel, though -- it won't =20
-> make the emulation actually work.  If we need that, we'll probably =20
-> need to create a temporary TLB entry manually.
+> > Any better way?  Searching the guest TLB won't work for the LRAT =20
+> case, so we'd need to have this logic around anyway.  We shouldn't =20
+> add a second codepath unless it's a clear performance gain -- and =20
+> again, I suspect it would be the opposite, especially if the entry is =20
+> not in TLB0 or in one of the first few entries searched in TLB1.  The =20
+> tlbsx miss case is not what we should optimize for.
 >=20
-> ioremap()?
-
-That's a bit heavy... also we'd need to deal with cacheability.  This =20
-code is already engaged in directly creating TLB entries, so it doesn't =20
-seem like much of a stretch to create one for this.  It should be =20
-faster than ioremap() or kmap_atomic().
-
-The one complication is allocating the virtual address space, but maybe =20
-we could just use the page that kmap_atomic would have used?  Of =20
-course, if we want to handle execution from other than normal kernel =20
-memory, we'll need to make sure that the virtual address space is =20
-allocated even when highmem is not present (e.g. 64-bit).
-
-> However, if we were walking the guest TLB cache instead we would get =20
-> a guest physical address which we can always resolve to a host =20
-> virtual address.
+> Hrm.
 >=20
-> I'm not sure how important that whole use case is though. Maybe we =20
-> should just error out to the guest for now.
+> So let's redesign this thing theoretically. We would have an exit =20
+> that requires an instruction fetch. We would override =20
+> kvmppc_get_last_inst() to always do kvmppc_ld_inst(). That one can =20
+> fail because it can't find the TLB entry in the host TLB. When it =20
+> fails, we have to abort the emulation and resume the guest at the =20
+> same IP.
+>=20
+> Now the guest gets the TLB miss, we populate, go back into the guest. =20
+> The guest hits the emulation failure again. We go back to =20
+> kvmppc_ld_inst() which succeeds this time and we can emulate the =20
+> instruction.
 
-It's not that important, now that we are using hugetlb rather than =20
-directly mapping a large hunk of reserved memory.  It would be nice to =20
-handle it though, if we can do without too much hassle.  And I think =20
-manually creating a TLB entry could be faster than kmap_atomic(), or =20
-searching the guest TLB and then doing a reverse memslot lookup.
+That's pretty much what this patch does, except that it goes =20
+immediately to the TLB miss code rather than having the extra =20
+round-trip back to the guest.  Is there any benefit from adding that =20
+extra round-trip?  Rewriting the exit type instead doesn't seem that =20
+bad...
+
+> I think this works. Just make sure that the gateway to the =20
+> instruction fetch is kvmppc_get_last_inst() and make that failable. =20
+> Then the difference between looking for the TLB entry in the host's =20
+> TLB or in the guest's TLB cache is hopefully negligible.
+
+I don't follow here.  What does this have to do with looking in the =20
+guest TLB?
 
 -Scott=
