@@ -1,15 +1,26 @@
-Return-Path: <wni@nvidia.com>
-From: Wei Ni <wni@nvidia.com>
-To: <grant.likely@linaro.org>, <rob@landley.net>, <rob.herring@calxeda.com>,
- <cjb@laptop.org>
-Subject: [PATCH] mmc: dt: add host-off-card-on dt property
-Date: Thu, 11 Jul 2013 17:15:29 +0800
-Message-ID: <1373534129-9017-1-git-send-email-wni@nvidia.com>
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by ozlabs.org (Postfix) with SMTP id E46862C00AA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 20:05:01 +1000 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 15911-02 for <linuxppc-dev@lists.ozlabs.org>;
+ Thu, 11 Jul 2013 11:04:59 +0100 (BST)
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Wei Ni <wni@nvidia.com>, linux-doc@vger.kernel.org,
- devicetree-discuss@lists.ozlabs.org, linux-mmc@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain;
+	charset="Windows-1252"
+Subject: RE: [PATCH] powerpc/85xx: enable the math emulation for the
+ corenet64_smp_defconfig
+Date: Thu, 11 Jul 2013 11:04:06 +0100
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B72DF@saturn3.aculab.com>
+In-Reply-To: <20130711092148.GB22910@pek-khao-d1.corp.ad.wrs.com>
+References: <1373420992-25167-1-git-send-email-haokexin@gmail.com>
+ <1373492403.8183.234@snotra>
+ <20130711092148.GB22910@pek-khao-d1.corp.ad.wrs.com>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: "Kevin Hao" <haokexin@gmail.com>,
+	"Scott Wood" <scottwood@freescale.com>
+Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,41 +30,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add "host-off-card-on" dt property and parse it to support the
-quirk SDHCI_QUIRK2_HOST_OFF_CARD_ON.
+> > It'd also be nice if we had an option to only include the portions
+> > of math-emu that are known to be missing in some CPUs (excluding
+> > CPUs that are missing the entire FPU, of course).  Besides its
+> > effect on kernel image size, in my experience math-emu adds a
+> > non-trivial amount of time to a kernel build.
+>=20
+> Sounds reasonable. I will give it a try.
 
-Signed-off-by: Wei Ni <wni@nvidia.com>
----
- Documentation/devicetree/bindings/mmc/mmc.txt |    2 ++
- drivers/mmc/host/sdhci-pltfm.c                |    3 +++
- 2 files changed, 5 insertions(+)
+It also ought to be possible to use the FPU when emulating the
+missing instructions - rather than using the full 'soft' FPU.
 
-diff --git a/Documentation/devicetree/bindings/mmc/mmc.txt b/Documentation/devicetree/bindings/mmc/mmc.txt
-index 85aada2..95ebe3e 100644
---- a/Documentation/devicetree/bindings/mmc/mmc.txt
-+++ b/Documentation/devicetree/bindings/mmc/mmc.txt
-@@ -28,6 +28,8 @@ Optional properties:
- - cap-mmc-highspeed: MMC high-speed timing is supported
- - cap-power-off-card: powering off the card is safe
- - cap-sdio-irq: enable SDIO IRQ signalling on this interface
-+- host-off-card-on: when resume, denote that card keeps power
-+  but host controller does not, so that it will reset sdhci all.
- 
- *NOTE* on CD and WP polarity. To use common for all SD/MMC host controllers line
- polarity properties, we have to fix the meaning of the "normal" and "inverted"
-diff --git a/drivers/mmc/host/sdhci-pltfm.c b/drivers/mmc/host/sdhci-pltfm.c
-index cd0f1f6..b3730cc 100644
---- a/drivers/mmc/host/sdhci-pltfm.c
-+++ b/drivers/mmc/host/sdhci-pltfm.c
-@@ -89,6 +89,9 @@ void sdhci_get_of_property(struct platform_device *pdev)
- 		if (of_get_property(np, "no-1-8-v", NULL))
- 			host->quirks2 |= SDHCI_QUIRK2_NO_1_8_V;
- 
-+		if (of_get_property(np, "host-off-card-on", NULL))
-+			host->quirks2 |= SDHCI_QUIRK2_HOST_OFF_CARD_ON;
-+
- 		if (of_device_is_compatible(np, "fsl,p2020-rev1-esdhc"))
- 			host->quirks |= SDHCI_QUIRK_BROKEN_DMA;
- 
--- 
-1.7.9.5
+	David
