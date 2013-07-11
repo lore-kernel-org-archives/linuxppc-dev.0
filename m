@@ -2,13 +2,13 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 45BF32C02F3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 22:39:39 +1000 (EST)
-Message-ID: <1373546368.19894.87.camel@pasglop>
+ by ozlabs.org (Postfix) with ESMTPS id 3E4FE2C02B0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 22:40:27 +1000 (EST)
+Message-ID: <1373546418.19894.88.camel@pasglop>
 Subject: Re: [PATCH 6/8] KVM: PPC: Add support for multiple-TCE hcalls
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Alexander Graf <agraf@suse.de>
-Date: Thu, 11 Jul 2013 22:39:28 +1000
+Date: Thu, 11 Jul 2013 22:40:18 +1000
 In-Reply-To: <C6BC1E27-4C9C-4A18-A64A-052202DA64B5@suse.de>
 References: <1373123227-22969-1-git-send-email-aik@ozlabs.ru>
  <1373123227-22969-7-git-send-email-aik@ozlabs.ru>
@@ -33,13 +33,21 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Thu, 2013-07-11 at 13:15 +0200, Alexander Graf wrote:
-> And that's bad. Jeez, seriously. Don't argue this case. We enable new
-> features individually unless we're 100% sure we can keep everything
-> working. In this case an ENABLE_CAP doesn't hurt at all, because user
-> space still needs to handle the hypercalls if it wants them anyways.
-> But you get debugging for free for example.
+> There are 2 ways of dealing with this:
+> 
+>   1) Call the ENABLE_CAP on every vcpu. That way one CPU may handle
+> this hypercall in the kernel while another one may not. The same as we
+> handle PAPR today.
+> 
+>   2) Create a new ENABLE_CAP for the vm.
+> 
+> I think in this case option 1 is fine - it's how we handle everything
+> else already.
 
-An ENABLE_CAP is utterly pointless. More bloat. But you seem to like
-it :-)
+So, you are now asking him to chose between a gross horror or adding a
+new piece of infrastructure for something that is entirely pointless to
+begin with ?
+
+Come on, give him a break. That stuff is fine as it is.
 
 Ben.
