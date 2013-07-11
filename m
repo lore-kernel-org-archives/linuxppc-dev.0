@@ -1,23 +1,15 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- by ozlabs.org (Postfix) with ESMTP id E4A792C02F2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 19:52:48 +1000 (EST)
-Subject: Re: [PATCH 8/8] KVM: PPC: Add hugepage support for IOMMU in-kernel
- handling
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=koi8-r
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <51DE7377.1060503@ozlabs.ru>
-Date: Thu, 11 Jul 2013 11:52:38 +0200
-Message-Id: <902F79B9-BB81-40A0-865D-94E7108DAC5E@suse.de>
-References: <1373123227-22969-1-git-send-email-aik@ozlabs.ru>
- <1373123227-22969-9-git-send-email-aik@ozlabs.ru> <51DC4923.5010501@suse.de>
- <51DE7377.1060503@ozlabs.ru>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <wni@nvidia.com>
+From: Wei Ni <wni@nvidia.com>
+To: <grant.likely@linaro.org>, <rob@landley.net>, <rob.herring@calxeda.com>,
+ <cjb@laptop.org>
+Subject: [PATCH] mmc: dt: add host-off-card-on dt property
+Date: Thu, 11 Jul 2013 17:15:29 +0800
+Message-ID: <1373534129-9017-1-git-send-email-wni@nvidia.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Wei Ni <wni@nvidia.com>, linux-doc@vger.kernel.org,
+ devicetree-discuss@lists.ozlabs.org, linux-mmc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,179 +19,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Add "host-off-card-on" dt property and parse it to support the
+quirk SDHCI_QUIRK2_HOST_OFF_CARD_ON.
 
-On 11.07.2013, at 10:57, Alexey Kardashevskiy wrote:
+Signed-off-by: Wei Ni <wni@nvidia.com>
+---
+ Documentation/devicetree/bindings/mmc/mmc.txt |    2 ++
+ drivers/mmc/host/sdhci-pltfm.c                |    3 +++
+ 2 files changed, 5 insertions(+)
 
-> On 07/10/2013 03:32 AM, Alexander Graf wrote:
->> On 07/06/2013 05:07 PM, Alexey Kardashevskiy wrote:
->>> This adds special support for huge pages (16MB).  The reference
->>> counting cannot be easily done for such pages in real mode (when
->>> MMU is off) so we added a list of huge pages.  It is populated in
->>> virtual mode and get_page is called just once per a huge page.
->>> Real mode handlers check if the requested page is huge and in the =
-list,
->>> then no reference counting is done, otherwise an exit to virtual =
-mode
->>> happens.  The list is released at KVM exit.  At the moment the =
-fastest
->>> card available for tests uses up to 9 huge pages so walking through =
-this
->>> list is not very expensive.  However this can change and we may want
->>> to optimize this.
->>>=20
->>> Signed-off-by: Paul Mackerras<paulus@samba.org>
->>> Signed-off-by: Alexey Kardashevskiy<aik@ozlabs.ru>
->>>=20
->>> ---
->>>=20
->>> Changes:
->>> 2013/06/27:
->>> * list of huge pages replaces with hashtable for better performance
->>=20
->> So the only thing your patch description really talks about is not =
-true
->> anymore?
->>=20
->>> * spinlock removed from real mode and only protects insertion of new
->>> huge [ages descriptors into the hashtable
->>>=20
->>> 2013/06/05:
->>> * fixed compile error when CONFIG_IOMMU_API=3Dn
->>>=20
->>> 2013/05/20:
->>> * the real mode handler now searches for a huge page by gpa (used to =
-be pte)
->>> * the virtual mode handler prints warning if it is called twice for =
-the same
->>> huge page as the real mode handler is expected to fail just once - =
-when a
->>> huge
->>> page is not in the list yet.
->>> * the huge page is refcounted twice - when added to the hugepage =
-list and
->>> when used in the virtual mode hcall handler (can be optimized but it =
-will
->>> make the patch less nice).
->>>=20
->>> Signed-off-by: Alexey Kardashevskiy<aik@ozlabs.ru>
->>> ---
->>>  arch/powerpc/include/asm/kvm_host.h |  25 +++++++++
->>>  arch/powerpc/kernel/iommu.c         |   6 ++-
->>>  arch/powerpc/kvm/book3s_64_vio.c    | 104
->>> +++++++++++++++++++++++++++++++++---
->>>  arch/powerpc/kvm/book3s_64_vio_hv.c |  21 ++++++--
->>>  4 files changed, 146 insertions(+), 10 deletions(-)
->>>=20
->>> diff --git a/arch/powerpc/include/asm/kvm_host.h
->>> b/arch/powerpc/include/asm/kvm_host.h
->>> index 53e61b2..a7508cf 100644
->>> --- a/arch/powerpc/include/asm/kvm_host.h
->>> +++ b/arch/powerpc/include/asm/kvm_host.h
->>> @@ -30,6 +30,7 @@
->>>  #include<linux/kvm_para.h>
->>>  #include<linux/list.h>
->>>  #include<linux/atomic.h>
->>> +#include<linux/hashtable.h>
->>>  #include<asm/kvm_asm.h>
->>>  #include<asm/processor.h>
->>>  #include<asm/page.h>
->>> @@ -182,10 +183,34 @@ struct kvmppc_spapr_tce_table {
->>>      u32 window_size;
->>>      struct iommu_group *grp;        /* used for IOMMU groups */
->>>      struct vfio_group *vfio_grp;        /* used for IOMMU groups */
->>> +    DECLARE_HASHTABLE(hash_tab, ilog2(64));    /* used for IOMMU =
-groups */
->>> +    spinlock_t hugepages_write_lock;    /* used for IOMMU groups */
->>>      struct { struct { unsigned long put, indir, stuff; } rm, vm; } =
-stat;
->>>      struct page *pages[0];
->>>  };
->>>=20
->>> +/*
->>> + * The KVM guest can be backed with 16MB pages.
->>> + * In this case, we cannot do page counting from the real mode
->>> + * as the compound pages are used - they are linked in a list
->>> + * with pointers as virtual addresses which are inaccessible
->>> + * in real mode.
->>> + *
->>> + * The code below keeps a 16MB pages list and uses page struct
->>> + * in real mode if it is already locked in RAM and inserted into
->>> + * the list or switches to the virtual mode where it can be
->>> + * handled in a usual manner.
->>> + */
->>> +#define KVMPPC_SPAPR_HUGEPAGE_HASH(gpa)    hash_32(gpa>>  24, 32)
->>> +
->>> +struct kvmppc_spapr_iommu_hugepage {
->>> +    struct hlist_node hash_node;
->>> +    unsigned long gpa;    /* Guest physical address */
->>> +    unsigned long hpa;    /* Host physical address */
->>> +    struct page *page;    /* page struct of the very first subpage =
-*/
->>> +    unsigned long size;    /* Huge page size (always 16MB at the =
-moment) */
->>> +};
->>> +
->>>  struct kvmppc_linear_info {
->>>      void        *base_virt;
->>>      unsigned long     base_pfn;
->>> diff --git a/arch/powerpc/kernel/iommu.c =
-b/arch/powerpc/kernel/iommu.c
->>> index 51678ec..e0b6eca 100644
->>> --- a/arch/powerpc/kernel/iommu.c
->>> +++ b/arch/powerpc/kernel/iommu.c
->>> @@ -999,7 +999,8 @@ int iommu_free_tces(struct iommu_table *tbl, =
-unsigned
->>> long entry,
->>>              if (!pg) {
->>>                  ret =3D -EAGAIN;
->>>              } else if (PageCompound(pg)) {
->>> -                ret =3D -EAGAIN;
->>> +                /* Hugepages will be released at KVM exit */
->>> +                ret =3D 0;
->>>              } else {
->>>                  if (oldtce&  TCE_PCI_WRITE)
->>>                      SetPageDirty(pg);
->>> @@ -1009,6 +1010,9 @@ int iommu_free_tces(struct iommu_table *tbl,
->>> unsigned long entry,
->>>              struct page *pg =3D pfn_to_page(oldtce>>  PAGE_SHIFT);
->>>              if (!pg) {
->>>                  ret =3D -EAGAIN;
->>> +            } else if (PageCompound(pg)) {
->>> +                /* Hugepages will be released at KVM exit */
->>> +                ret =3D 0;
->>>              } else {
->>>                  if (oldtce&  TCE_PCI_WRITE)
->>>                      SetPageDirty(pg);
->>> diff --git a/arch/powerpc/kvm/book3s_64_vio.c
->>> b/arch/powerpc/kvm/book3s_64_vio.c
->>> index 2b51f4a..c037219 100644
->>> --- a/arch/powerpc/kvm/book3s_64_vio.c
->>> +++ b/arch/powerpc/kvm/book3s_64_vio.c
->>> @@ -46,6 +46,40 @@
->>>=20
->>>  #define ERROR_ADDR      ((void *)~(unsigned long)0x0)
->>>=20
->>> +#ifdef CONFIG_IOMMU_API
->>=20
->> Can't you just make CONFIG_IOMMU_API mandatory in Kconfig?
->=20
->=20
-> Where exactly (it is rather SPAPR_TCE_IOMMU but does not really =
-matter)?
-> Select it on KVM_BOOK3S_64? CONFIG_KVM_BOOK3S_64_HV?
-> CONFIG_KVM_BOOK3S_64_PR? PPC_BOOK3S_64?
-
-I'd say the most logical choice would be to check the Makefile and see =
-when it gets compiled. For those cases we want it enabled.
-
-> I am trying to imagine a configuration where we really do not want
-> IOMMU_API. Ben mentioned PPC32 and embedded PPC64 and that's it so any =
-of
-> BOOK3S (KVM_BOOK3S_64 is the best) should be fine, no?
-
-book3s_32 doesn't want this, but any book3s_64 implementation could =
-potentially use it, yes. That's pretty much what the Makefile tells you =
-too :).
-
-
-Alex
+diff --git a/Documentation/devicetree/bindings/mmc/mmc.txt b/Documentation/devicetree/bindings/mmc/mmc.txt
+index 85aada2..95ebe3e 100644
+--- a/Documentation/devicetree/bindings/mmc/mmc.txt
++++ b/Documentation/devicetree/bindings/mmc/mmc.txt
+@@ -28,6 +28,8 @@ Optional properties:
+ - cap-mmc-highspeed: MMC high-speed timing is supported
+ - cap-power-off-card: powering off the card is safe
+ - cap-sdio-irq: enable SDIO IRQ signalling on this interface
++- host-off-card-on: when resume, denote that card keeps power
++  but host controller does not, so that it will reset sdhci all.
+ 
+ *NOTE* on CD and WP polarity. To use common for all SD/MMC host controllers line
+ polarity properties, we have to fix the meaning of the "normal" and "inverted"
+diff --git a/drivers/mmc/host/sdhci-pltfm.c b/drivers/mmc/host/sdhci-pltfm.c
+index cd0f1f6..b3730cc 100644
+--- a/drivers/mmc/host/sdhci-pltfm.c
++++ b/drivers/mmc/host/sdhci-pltfm.c
+@@ -89,6 +89,9 @@ void sdhci_get_of_property(struct platform_device *pdev)
+ 		if (of_get_property(np, "no-1-8-v", NULL))
+ 			host->quirks2 |= SDHCI_QUIRK2_NO_1_8_V;
+ 
++		if (of_get_property(np, "host-off-card-on", NULL))
++			host->quirks2 |= SDHCI_QUIRK2_HOST_OFF_CARD_ON;
++
+ 		if (of_device_is_compatible(np, "fsl,p2020-rev1-esdhc"))
+ 			host->quirks |= SDHCI_QUIRK_BROKEN_DMA;
+ 
+-- 
+1.7.9.5
