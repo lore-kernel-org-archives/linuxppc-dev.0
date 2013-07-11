@@ -1,23 +1,27 @@
-Return-Path: <B07421@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5DD272C0350
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2013 06:34:34 +1000 (EST)
-Date: Thu, 11 Jul 2013 15:34:18 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 2/2 V4] powerpc/85xx: add the P1020RDB-PD DTS support
-To: Haijun Zhang <Haijun.Zhang@freescale.com>
-In-Reply-To: <1373423097-27866-1-git-send-email-Haijun.Zhang@freescale.com>
- (from Haijun.Zhang@freescale.com on Tue Jul  9 21:24:57 2013)
-Message-ID: <1373574858.8183.267@snotra>
+Return-Path: <pladow@gmail.com>
+Received: from mail-lb0-x230.google.com (mail-lb0-x230.google.com
+ [IPv6:2a00:1450:4010:c04::230])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E5D852C0353
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2013 07:00:12 +1000 (EST)
+Received: by mail-lb0-f176.google.com with SMTP id z5so6954076lbh.7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 14:00:06 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: Jerry Huang <Chang-Ming.Huang@freescale.com>, AFLEMING@freescale.com,
- Haijun Zhang <Haijun.Zhang@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- Xie Xiaobo-R63061 <X.Xie@freescale.com>
+Sender: pladow@gmail.com
+In-Reply-To: <1373492413.19894.29.camel@pasglop>
+References: <CAN8Q1EdnN9+kKGy+voF3=EyPfbHv04Emfz=uA6XKMJEAkvLpAA@mail.gmail.com>
+ <CAN8Q1Ed9Lpg1Sog5tQODe+jqCRXBBH3d_UeR5usdc23CD7vwjg@mail.gmail.com>
+ <1371945647.3944.106.camel@pasglop>
+ <CAN8Q1EetHpVkWFmbDGCE-3J4H7oJm0zE66SAdJyvtDb7OBc-gg@mail.gmail.com>
+ <1373492413.19894.29.camel@pasglop>
+Date: Thu, 11 Jul 2013 14:00:06 -0700
+Message-ID: <CAN8Q1EdVVw3ofg9O3o=WThsKpcfMBXe_C7JsSSx9DdRZULW17Q@mail.gmail.com>
+Subject: Re: Inbound PCI and Memory Corruption
+From: Peter LaDow <petela@gocougs.wsu.edu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,82 +31,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/09/2013 09:24:57 PM, Haijun Zhang wrote:
-> +		nand@1,0 {
-> +			#address-cells =3D <1>;
-> +			#size-cells =3D <1>;
-> +			compatible =3D "fsl,p1020-fcm-nand",
-> +				     "fsl,elbc-fcm-nand";
-> +			reg =3D <0x1 0x0 0x40000>;
-> +
-> +			partition@0 {
-> +				/* This location must not be altered  */
-> +				/* 1MB for u-boot Bootloader Image */
-> +				reg =3D <0x0 0x00100000>;
-> +				label =3D "NAND U-Boot Image";
-> +				read-only;
-> +			};
-> +
-> +			partition@100000 {
-> +				/* 1MB for DTB Image */
-> +				reg =3D <0x00100000 0x00100000>;
-> +				label =3D "NAND DTB Image";
-> +			};
-> +
-> +			partition@200000 {
-> +				/* 4MB for Linux Kernel Image */
-> +				reg =3D <0x00200000 0x00400000>;
-> +				label =3D "NAND Linux Kernel Image";
-> +			};
-> +
-> +			partition@600000 {
-> +				/* 96MB for File System Image */
-> +				reg =3D <0x00600000 0x06000000>;
-> +				label =3D "NAND FILE System Image";
-> +			};
+On Wed, Jul 10, 2013 at 2:40 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> Did you get any traces that show the flow that happens around a case of
+> corruption ?
 
-This accounts for 102 MiB of the flash.  The rest is just unused?  Why =20
-not increase the filesystem partition?
+Well, I captured a lot of data, both logging kernel output and
+capturing PCI traffic.  I've put the full console log output on
+pastebin at http://pastebin.com/ZFYbneNR
 
-Also, why capitalize "FILE"?
+The initial corruption is a starting address of 0xe94f17f8. Looking at
+the dumped data:
 
-> +		spi@7000 {
-> +			flash@0 {
-> +				#address-cells =3D <1>;
-> +				#size-cells =3D <1>;
-> +				compatible =3D "spansion,s25sl12801";
-> +				reg =3D <0>;
-> +				/* input clock */
-> +				spi-max-frequency =3D <40000000>;
-> +
-> +				partition@0 {
-> +					/* 512KB for u-boot Bootloader =20
-> Image */
-> +					reg =3D <0x0 0x00080000>;
-> +					label =3D "SPI U-Boot Image";
-> +					read-only;
-> +				};
-> +
-> +				partition@80000 {
-> +					/* 512KB for DTB Image*/
-> +					reg =3D <0x00080000 0x00080000>;
-> +					label =3D "SPI DTB Image";
-> +				};
-> +
-> +				partition@100000 {
-> +					/* 4MB for Linux Kernel Image */
-> +					reg =3D <0x00100000 0x00400000>;
-> +					label =3D "SPI Linux Kernel =20
-> Image";
-> +				};
-> +
-> +				partition@500000 {
-> +					/* 7MB for FS System Image */
-> +					reg =3D <0x00500000 0x00700000>;
-> +					label =3D "SPI File System Image";
-> +				};
-> +			};
+Slab corruption: fib6_nodes start=e94f17f8, len=32
+Redzone: 0x9f911029d74e35b/0xd4bed90f1c6f0806.
+Last user: [<06040001>](0x6040001)
+010: 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b ff ff ff ff ff ff
+Prev obj: start=e94f17c0, len=32
+Redzone: 0x9f911029d74e35b/0x9f911029d74e35b.
+Last user: [<  (null)>](0x0)
+000: 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b
+010: 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b a5
+Next obj: start=e94f1830, len=32
+Redzone: 0xd4bed90f1c6f0aca/0xafba11029d74e35b.
+Last user: [<  (null)>](0x0)
+000: 0d 5b 00 00 00 00 00 00 0a ca 0d 01 00 00 00 00
+010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 bd 3e
 
-Likewise.
+The first corrupted byte is at address 0xe94f1802.  Looking at the
+dump of all the DMA mappings this range is never mapped.  Nor is there
+a single PCI write to this mapped address either.  However, I did find
+some correlation to a PCI write to a near address.  From the PCI
+capture:
 
--Scott=
+Command | Address  |  Data     | /BE
+Mem Wr  | 294F1810 |           |
+        |          | FFFF0000  | 0011
+        |          | FFFFFFFF  | 0000
+        |          | 0FD9BED4  | 0000
+        |          | 06086F1C  | 0000
+        |          | 00080100  | 0000
+        |          | 01000406  | 0000
+        |          | 0FD9BED4  | 0000
+        |          | CA0A6F1C  | 0000
+        |          | 00005B0D  | 0000
+        |          | 00000000  | 0000
+        |          | 010DCA0A  | 0000
+        |          | 00000000  | 0000
+        |          | 00000000  | 0000
+        |          | 00000000  | 0000
+        |          | 00000000  | 0000
+        |          | 3EBD0000  | 1100
+
+The data in this write looks very much like the pattern in the
+detected slab corruption.  Looking at the PCI trace, it doesn't appear
+to be the incoming PCI data (unless the PCI Inbound Address
+Translation registers are misconfigured).  Yet clearly these are
+corrupted with ethernet traffic.
+
+Thanks,
+Pete
