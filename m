@@ -1,32 +1,23 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-f46.google.com (mail-pa0-f46.google.com
- [209.85.220.46])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AA5542C0313
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 23:46:44 +1000 (EST)
-Received: by mail-pa0-f46.google.com with SMTP id fa11so7933757pad.33
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 06:46:42 -0700 (PDT)
-Message-ID: <51DEB73B.9090702@ozlabs.ru>
-Date: Thu, 11 Jul 2013 23:46:35 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Return-Path: <shawn.guo@linaro.org>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 02D632C0313
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2013 00:08:14 +1000 (EST)
+Date: Thu, 11 Jul 2013 22:07:57 +0800
+From: Shawn Guo <shawn.guo@linaro.org>
+To: Nicolin Chen <b42378@freescale.com>
+Subject: Re: [PATCH] ASoC: fsl: Disable SSI in trigger() if RE/TE are both
+ cleared
+Message-ID: <20130711140755.GA3361@S2101-09.ap.freescale.net>
+References: <1373453034-21618-1-git-send-email-b42378@freescale.com>
 MIME-Version: 1.0
-To: chandrashekar shastri <cshastri@linux.vnet.ibm.com>
-Subject: Re: [PATCH 8/8] KVM: PPC: Add hugepage support for IOMMU in-kernel
- handling
-References: <1373123227-22969-1-git-send-email-aik@ozlabs.ru>
- <1373123227-22969-9-git-send-email-aik@ozlabs.ru>	 <51DC4923.5010501@suse.de>
- <51DE7377.1060503@ozlabs.ru>	 <902F79B9-BB81-40A0-865D-94E7108DAC5E@suse.de>
- <1373546233.19894.85.camel@pasglop>
- <B526C260-1ADB-4B9F-B80A-46E5A9E53FF6@suse.de>
- <1373547392.19894.100.camel@pasglop> <51DEB5F0.3000502@linux.vnet.ibm.com>
-In-Reply-To: <51DEB5F0.3000502@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=KOI8-R
-Cc: kvm@vger.kernel.org, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1373453034-21618-1-git-send-email-b42378@freescale.com>
+Cc: fabio.estevam@freescale.com, alsa-devel@alsa-project.org,
+ broonie@kernel.org, linuxppc-dev@lists.ozlabs.org, timur@tabi.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,21 +27,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/11/2013 11:41 PM, chandrashekar shastri wrote:
-> Hi All,
+On Wed, Jul 10, 2013 at 06:43:54PM +0800, Nicolin Chen wrote:
+> The code enabled SSIEN when triggered by SNDRV_PCM_TRIGGER_START,
+> so move the disable code to SNDRV_PCM_TRIGGER_STOP for symmetric.
 > 
-> I complied the latest kernel 3.10.0+ pulled from the git on top of 
-> 3.10.0-rc5+ by enabling the new Virtualiztaion features. The compliation
-> was sucessfull, when I rebooted the machine it fails to boot with error as
-> " systemd [1] : Failed to mount /dev : no such device.
+> This also allows us to use the SSI driver more flexible so that
+> it can support some use cases like "aplay S16_LE.wav S24_LE.wav"
+> which would call the driver in sequence like:
+>  startup()->hw_params(S16_LE)->trigger(START)->tirgger(STOP)->
+>  hw_params(S24_LE)->trigger(START)->tirgger(STOP)->shutdown()
 > 
-> Is it problem with the KVM module?
+> If we disable SSIEN in shutdown(), the second hw_params() would
+> bypass the sample bits setting while using symmetric_rate.
+> 
+> Signed-off-by: Nicolin Chen <b42378@freescale.com>
 
+Acked-by: Shawn Guo <shawn.guo@linaro.org>
 
-Wrong thread actually, would be better if you started the new one.
-
-And you may want to try this - http://patchwork.ozlabs.org/patch/256027/
-
-
--- 
-Alexey
+> ---
+>  sound/soc/fsl/fsl_ssi.c |   12 +++---------
+>  1 files changed, 3 insertions(+), 9 deletions(-)
+> 
+> diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+> index 2f2d837..b6ab341 100644
+> --- a/sound/soc/fsl/fsl_ssi.c
+> +++ b/sound/soc/fsl/fsl_ssi.c
+> @@ -510,6 +510,9 @@ static int fsl_ssi_trigger(struct snd_pcm_substream *substream, int cmd,
+>  			write_ssi_mask(&ssi->scr, CCSR_SSI_SCR_TE, 0);
+>  		else
+>  			write_ssi_mask(&ssi->scr, CCSR_SSI_SCR_RE, 0);
+> +
+> +		if ((read_ssi(&ssi->scr) & (CCSR_SSI_SCR_TE | CCSR_SSI_SCR_RE)) == 0)
+> +			write_ssi_mask(&ssi->scr, CCSR_SSI_SCR_SSIEN, 0);
+>  		break;
+>  
+>  	default:
+> @@ -534,15 +537,6 @@ static void fsl_ssi_shutdown(struct snd_pcm_substream *substream,
+>  		ssi_private->first_stream = ssi_private->second_stream;
+>  
+>  	ssi_private->second_stream = NULL;
+> -
+> -	/*
+> -	 * If this is the last active substream, disable the SSI.
+> -	 */
+> -	if (!ssi_private->first_stream) {
+> -		struct ccsr_ssi __iomem *ssi = ssi_private->ssi;
+> -
+> -		write_ssi_mask(&ssi->scr, CCSR_SSI_SCR_SSIEN, 0);
+> -	}
+>  }
+>  
+>  static int fsl_ssi_dai_probe(struct snd_soc_dai *dai)
+> -- 
+> 1.7.1
+> 
+> 
