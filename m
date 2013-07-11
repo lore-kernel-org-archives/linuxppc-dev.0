@@ -1,22 +1,26 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A267E2C02EA
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 22:22:27 +1000 (EST)
-From: Kevin Hao <haokexin@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Scott Wood
- <scottwood@freescale.com>
-Subject: [PATCH 1/2] powerpc/math-emu: move the flush FPU state function into
- do_mathemu
-Date: Thu, 11 Jul 2013 20:21:54 +0800
-Message-ID: <1373545315-9219-2-git-send-email-haokexin@gmail.com>
-In-Reply-To: <1373545315-9219-1-git-send-email-haokexin@gmail.com>
-References: <1373545315-9219-1-git-send-email-haokexin@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 8EA3B2C02F3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 22:33:14 +1000 (EST)
+Message-ID: <1373545982.19894.82.camel@pasglop>
+Subject: Re: [PATCH 6/8] KVM: PPC: Add support for multiple-TCE hcalls
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Date: Thu, 11 Jul 2013 22:33:02 +1000
+In-Reply-To: <51DE3ECB.7080803@ozlabs.ru>
+References: <1373123227-22969-1-git-send-email-aik@ozlabs.ru>
+ <1373123227-22969-7-git-send-email-aik@ozlabs.ru>
+ <51DC4228.7010607@suse.de> <51DCEA76.9070808@ozlabs.ru>
+ <D10E7B99-3A7C-4275-9A49-3CB15598E705@suse.de> <51DE3ECB.7080803@ozlabs.ru>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: kvm@vger.kernel.org, Alexander Graf <agraf@suse.de>,
+ kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,54 +30,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-By doing this we can make sure that the FPU state is only flushed to
-the thread struct when it is really needed.
+On Thu, 2013-07-11 at 15:12 +1000, Alexey Kardashevskiy wrote:
+> >> Any debug code is prohibited? Ok, I'll remove.
+> > 
+> > Debug code that requires code changes is prohibited, yes.
+> > Debug code that is runtime switchable (pr_debug, trace points, etc)
+> > are allowed.
 
-Signed-off-by: Kevin Hao <haokexin@gmail.com>
----
- arch/powerpc/kernel/traps.c  | 9 ---------
- arch/powerpc/math-emu/math.c | 9 +++++++++
- 2 files changed, 9 insertions(+), 9 deletions(-)
+Bollox.
 
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index bf33c22..58a8065 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -1131,15 +1131,6 @@ void __kprobes program_check_exception(struct pt_regs *regs)
- 	 * instruction or only on FP instructions, whether there is a
- 	 * pattern to occurrences etc. -dgibson 31/Mar/2003
- 	 */
--
--	/*
--	 * If we support a HW FPU, we need to ensure the FP state
--	 * if flushed into the thread_struct before attempting
--	 * emulation
--	 */
--#ifdef CONFIG_PPC_FPU
--	flush_fp_to_thread(current);
--#endif
- 	switch (do_mathemu(regs)) {
- 	case 0:
- 		emulate_single_step(regs);
-diff --git a/arch/powerpc/math-emu/math.c b/arch/powerpc/math-emu/math.c
-index 3fe8e35..18ce6a7 100644
---- a/arch/powerpc/math-emu/math.c
-+++ b/arch/powerpc/math-emu/math.c
-@@ -420,6 +420,15 @@ do_mathemu(struct pt_regs *regs)
- 		goto illegal;
- 	}
- 
-+	/*
-+	 * If we support a HW FPU, we need to ensure the FP state
-+	 * if flushed into the thread_struct before attempting
-+	 * emulation
-+	 */
-+#ifdef CONFIG_PPC_FPU
-+	flush_fp_to_thread(current);
-+#endif
-+
- 	eflag = func(op0, op1, op2, op3);
- 
- 	if (insn & 1) {
--- 
-1.8.1.4
+$ grep DBG\( arch/powerpc/ -r | wc -l
+418
+
+Also pr_devel is not runtime switchable in normal kernels either and
+still an "official" kernel interface.
+
+> Is there any easy way to enable just this specific udbg_printf (not all of
+> them at once)? Trace points do not work in real mode as we figured out.
+
+The cleaner way to do it is to use some kind of local macro that you
+enable/disable by changing a #define at the top of the function, possibly
+several.
+
+Cheers,
+Ben.
