@@ -1,23 +1,37 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1BB3E2C02CC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 12:59:50 +1000 (EST)
-Message-ID: <51DE1FD1.90609@windriver.com>
-Date: Thu, 11 Jul 2013 11:00:33 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
+Return-Path: <mahesh@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2E9E32C02C1
+ for <linuxppc-dev@ozlabs.org>; Thu, 11 Jul 2013 14:34:40 +1000 (EST)
+Received: from /spool/local
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Thu, 11 Jul 2013 14:24:32 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 43F892CE804A
+ for <linuxppc-dev@ozlabs.org>; Thu, 11 Jul 2013 14:34:33 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r6B4JOWe721386
+ for <linuxppc-dev@ozlabs.org>; Thu, 11 Jul 2013 14:19:25 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r6B4YVYq007082
+ for <linuxppc-dev@ozlabs.org>; Thu, 11 Jul 2013 14:34:32 +1000
+Message-ID: <51DE35D5.5070005@linux.vnet.ibm.com>
+Date: Thu, 11 Jul 2013 10:04:29 +0530
+From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [v1][PATCH 1/1] KVM: PPC: disable preemption when using
- hard_irq_disable()
-References: <1373436139-27998-1-git-send-email-tiejun.chen@windriver.com>
- <1373483740.8183.223@snotra>
-In-Reply-To: <1373483740.8183.223@snotra>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc: Fix the corrupt r3 error during MCE handling.
+References: <20130710130155.4993.61577.stgit@mars>
+ <8761wild20.fsf@linux.vnet.ibm.com>
+In-Reply-To: <8761wild20.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+ Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,27 +41,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/11/2013 03:15 AM, Scott Wood wrote:
-> On 07/10/2013 01:02:19 AM, Tiejun Chen wrote:
->> We should ensure the preemption cannot occur while calling get_paca()
->> insdide hard_irq_disable(), otherwise the paca_struct may be the
->> wrong one just after. And btw, we may update timing stats in this case.
->
-> The soft-ee mechanism depends on accessing the PACA directly via r13 to avoid
-> this.  We probably should be using inline asm to read was_enabled rather than
+On 07/10/2013 07:41 PM, Aneesh Kumar K.V wrote:
+> Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> writes:
+> 
+>> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>>
+>> During Machine Check interrupt on pseries platform, R3 generally points to
+>> memory region inside RTAS (FWNMI) area. We see r3 corruption because when RTAS
+>> delivers the machine check exception it passes the address inside FWNMI area
+>> with the top most bit set. This patch fixes this issue by masking top two bit
+>> in machine check exception handler.
+> 
+> I always got that error and used to wonder why I find FWNMI
+> corrupt. IS this a rtas bug or is it documented in papr ?
 
-Yes.
+Nope. There is no mention of it in PAPR. It looks like a bug in RTAS.
 
-> hoping the compiler doesn't do anything silly.
-
-Do you recommend I should directly replace get_paca() with local_paca inside 
-hard_irq_disable()?
-
-#define hard_irq_disable()      do {                    \
-         u8 _was_enabled = get_paca()->soft_enabled;     \
-
-->	u8 _was_enabled = local_paca->soft_enabled;
-
-But is this safe for all scenarios?
-
-Tiejun
+> 
+> 
+>>
+>> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/platforms/pseries/ras.c |    3 +++
+>>  1 file changed, 3 insertions(+)
+>>
+>> diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
+>> index 7b3cbde..721c058 100644
+>> --- a/arch/powerpc/platforms/pseries/ras.c
+>> +++ b/arch/powerpc/platforms/pseries/ras.c
+>> @@ -287,6 +287,9 @@ static struct rtas_error_log *fwnmi_get_errinfo(struct pt_regs *regs)
+>>  	unsigned long *savep;
+>>  	struct rtas_error_log *h, *errhdr = NULL;
+>>
+>> +	/* Mask top two bits */
+>> +	regs->gpr[3] &= ~(0x3UL << 62);
+>> +
+>>  	if (!VALID_FWNMI_BUFFER(regs->gpr[3])) {
+>>  		printk(KERN_ERR "FWNMI: corrupt r3 0x%016lx\n", regs->gpr[3]);
+>>  		return NULL;
+>>
+> 
+> -aneesh
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
