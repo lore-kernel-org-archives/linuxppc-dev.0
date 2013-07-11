@@ -1,36 +1,27 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 27C612C02FF
- for <linuxppc-dev@ozlabs.org>; Thu, 11 Jul 2013 15:54:59 +1000 (EST)
-Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Thu, 11 Jul 2013 11:16:21 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 44A131258055
- for <linuxppc-dev@ozlabs.org>; Thu, 11 Jul 2013 11:24:07 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r6B5sm7n16974042
- for <linuxppc-dev@ozlabs.org>; Thu, 11 Jul 2013 11:24:48 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r6B5soBY016040
- for <linuxppc-dev@ozlabs.org>; Thu, 11 Jul 2013 05:54:50 GMT
-Message-ID: <51DE4887.6050206@linux.vnet.ibm.com>
-Date: Thu, 11 Jul 2013 11:24:15 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Return-Path: <michael@ellerman.id.au>
+Date: Thu, 11 Jul 2013 16:58:08 +1000
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Vince Weaver <vincent.weaver@maine.edu>
+Subject: Re: [PATCH v2 2/2] perf tools: Make Power7 events available for perf
+Message-ID: <20130711065807.GA26495@concordia>
+References: <1372170933-4538-3-git-send-email-runzhen@linux.vnet.ibm.com>
+ <alpine.DEB.2.02.1306251240440.25443@pianoman.cluster.toy>
+ <20130704125218.GA21134@concordia>
+ <20130704125700.GM18898@dyad.programming.kicks-ass.net>
+ <20130709012952.GA7185@concordia>
+ <alpine.DEB.2.10.1307082204550.26280@vincent-weaver-1.um.maine.edu>
+ <20130709081434.GI25631@dyad.programming.kicks-ass.net>
+ <20130710030926.GD7491@concordia>
+ <20130710083435.GA24070@gmail.com>
+ <alpine.DEB.2.10.1307110039560.26051@vincent-weaver-1.um.maine.edu>
 MIME-Version: 1.0
-To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc: Fix the corrupt r3 error during MCE handling.
-References: <20130710130155.4993.61577.stgit@mars>
-In-Reply-To: <20130710130155.4993.61577.stgit@mars>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
- Anton Blanchard <anton@samba.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.DEB.2.10.1307110039560.26051@vincent-weaver-1.um.maine.edu>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+ Stephane Eranian <eranian@google.com>, Vince Weaver <vince@deater.net>,
+ acme@redhat.com, paulus@samba.org, xiaoguangrong@linux.vnet.ibm.com,
+ Runzhen Wang <runzhen@linux.vnet.ibm.com>, sukadev@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,30 +31,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/10/2013 06:32 PM, Mahesh J Salgaonkar wrote:
-> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+On Thu, Jul 11, 2013 at 12:42:31AM -0400, Vince Weaver wrote:
+> On Wed, 10 Jul 2013, Ingo Molnar wrote:
 > 
-> During Machine Check interrupt on pseries platform, R3 generally points to
-> memory region inside RTAS (FWNMI) area. We see r3 corruption because when RTAS
-> delivers the machine check exception it passes the address inside FWNMI area
-> with the top most bit set. This patch fixes this issue by masking top two bit
-> in machine check exception handler.
+> > Exactly - PMUs enumerated in /sys should be self-identifying, it's a 
+> > hardware topology after all ...
+> > 
+> > Anytime userspace is forced to look into /proc, or into weird places in 
+> > /sys it's a FAIL really.
 > 
-> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/platforms/pseries/ras.c |    3 +++
->  1 file changed, 3 insertions(+)
-> 
-> diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
-> index 7b3cbde..721c058 100644
-> --- a/arch/powerpc/platforms/pseries/ras.c
-> +++ b/arch/powerpc/platforms/pseries/ras.c
-> @@ -287,6 +287,9 @@ static struct rtas_error_log *fwnmi_get_errinfo(struct pt_regs *regs)
->  	unsigned long *savep;
->  	struct rtas_error_log *h, *errhdr = NULL;
-> 
-> +	/* Mask top two bits */
-> +	regs->gpr[3] &= ~(0x3UL << 62);
+> well on x86 you have to look at /proc/cpuinfo to get the 
+> vendor/family/model number.  Should we add some specifier under sys?
+> It's probably too late though as all userspace event libs will have
+> to look at /proc/cpuinfo anyway to be backwards compatible.
 
-We need to replace this "62" with a shift macro specifying the significance
-of these top two address bits in the real mode.
+If it's a new library implementing a new feature then no I don't think
+it needs to be backward compatible. It's just a choice the library makes
+as to what extent it depends on new kernel features.
+
+cheers
