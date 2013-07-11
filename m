@@ -1,40 +1,23 @@
-Return-Path: <vincent.weaver@maine.edu>
-Received: from mail-vc0-f176.google.com (mail-vc0-f176.google.com
- [209.85.220.176])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 77B022C0355
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2013 03:47:37 +1000 (EST)
-Received: by mail-vc0-f176.google.com with SMTP id ha12so7020140vcb.35
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 10:47:34 -0700 (PDT)
-Date: Thu, 11 Jul 2013 13:53:11 -0400 (EDT)
-From: Vince Weaver <vincent.weaver@maine.edu>
-To: Will Deacon <will.deacon@arm.com>
-Subject: Re: [PATCH v2 2/2] perf tools: Make Power7 events available for perf
-In-Reply-To: <20130711105843.GG32197@mudshark.cambridge.arm.com>
-Message-ID: <alpine.DEB.2.10.1307111340090.32218@vincent-weaver-1.um.maine.edu>
-References: <1372170933-4538-1-git-send-email-runzhen@linux.vnet.ibm.com>
- <1372170933-4538-3-git-send-email-runzhen@linux.vnet.ibm.com>
- <alpine.DEB.2.02.1306251240440.25443@pianoman.cluster.toy>
- <20130704125218.GA21134@concordia>
- <20130704125700.GM18898@dyad.programming.kicks-ass.net>
- <20130709012952.GA7185@concordia>
- <alpine.DEB.2.10.1307082204550.26280@vincent-weaver-1.um.maine.edu>
- <20130709081434.GI25631@dyad.programming.kicks-ass.net>
- <alpine.DEB.2.10.1307091059270.675@vincent-weaver-1.um.maine.edu>
- <20130711105843.GG32197@mudshark.cambridge.arm.com>
+Return-Path: <B07421@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 5DD272C0350
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2013 06:34:34 +1000 (EST)
+Date: Thu, 11 Jul 2013 15:34:18 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 2/2 V4] powerpc/85xx: add the P1020RDB-PD DTS support
+To: Haijun Zhang <Haijun.Zhang@freescale.com>
+In-Reply-To: <1373423097-27866-1-git-send-email-Haijun.Zhang@freescale.com>
+ (from Haijun.Zhang@freescale.com on Tue Jul  9 21:24:57 2013)
+Message-ID: <1373574858.8183.267@snotra>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: "acme@redhat.com" <acme@redhat.com>,
- Vince Weaver <vincent.weaver@maine.edu>, Peter Zijlstra <peterz@infradead.org>,
- Vince Weaver <vince@deater.net>, Stephane Eranian <eranian@google.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "paulus@samba.org" <paulus@samba.org>,
- "xiaoguangrong@linux.vnet.ibm.com" <xiaoguangrong@linux.vnet.ibm.com>,
- Runzhen Wang <runzhen@linux.vnet.ibm.com>,
- "sukadev@linux.vnet.ibm.com" <sukadev@linux.vnet.ibm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "mingo@kernel.org" <mingo@kernel.org>
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: Jerry Huang <Chang-Ming.Huang@freescale.com>, AFLEMING@freescale.com,
+ Haijun Zhang <Haijun.Zhang@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ Xie Xiaobo-R63061 <X.Xie@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,41 +27,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 11 Jul 2013, Will Deacon wrote:
-> On Tue, Jul 09, 2013 at 04:05:30PM +0100, Vince Weaver wrote:
+On 07/09/2013 09:24:57 PM, Haijun Zhang wrote:
+> +		nand@1,0 {
+> +			#address-cells =3D <1>;
+> +			#size-cells =3D <1>;
+> +			compatible =3D "fsl,p1020-fcm-nand",
+> +				     "fsl,elbc-fcm-nand";
+> +			reg =3D <0x1 0x0 0x40000>;
+> +
+> +			partition@0 {
+> +				/* This location must not be altered  */
+> +				/* 1MB for u-boot Bootloader Image */
+> +				reg =3D <0x0 0x00100000>;
+> +				label =3D "NAND U-Boot Image";
+> +				read-only;
+> +			};
+> +
+> +			partition@100000 {
+> +				/* 1MB for DTB Image */
+> +				reg =3D <0x00100000 0x00100000>;
+> +				label =3D "NAND DTB Image";
+> +			};
+> +
+> +			partition@200000 {
+> +				/* 4MB for Linux Kernel Image */
+> +				reg =3D <0x00200000 0x00400000>;
+> +				label =3D "NAND Linux Kernel Image";
+> +			};
+> +
+> +			partition@600000 {
+> +				/* 96MB for File System Image */
+> +				reg =3D <0x00600000 0x06000000>;
+> +				label =3D "NAND FILE System Image";
+> +			};
 
-> > libpfm4 uses the
-> >    CPU part	: 0xc09
-> > line in /proc/cpuinfo on ARM, and that's enough for the processors PAPI 
-> 
-> The CPU part you cite is actually A9-specific, so you probably want to
-> probe each CPU specifically. Take a look at the cpuinfo parsing in OProfile
-> (used by operf).
+This accounts for 102 MiB of the flash.  The rest is just unused?  Why =20
+not increase the filesystem partition?
 
-I meant we use the CPU part line to probe things.  I just cut and pasted
-from a Cortex A9 I had handy as an example.
+Also, why capitalize "FILE"?
 
-> > And speaking of ARM, I should be railing at them for breaking the ABI too, 
-> > with their (understandable yet still ABI breaking) decision to remove 
-> > BogoMIPS from /proc/cpuinfo.  That change will impact PAPI as well as 
-> > various other programs I maintain that have the misfortune of parsing that 
-> > file.
-> 
-> Really? Why are you checking for that line at all?
+> +		spi@7000 {
+> +			flash@0 {
+> +				#address-cells =3D <1>;
+> +				#size-cells =3D <1>;
+> +				compatible =3D "spansion,s25sl12801";
+> +				reg =3D <0>;
+> +				/* input clock */
+> +				spi-max-frequency =3D <40000000>;
+> +
+> +				partition@0 {
+> +					/* 512KB for u-boot Bootloader =20
+> Image */
+> +					reg =3D <0x0 0x00080000>;
+> +					label =3D "SPI U-Boot Image";
+> +					read-only;
+> +				};
+> +
+> +				partition@80000 {
+> +					/* 512KB for DTB Image*/
+> +					reg =3D <0x00080000 0x00080000>;
+> +					label =3D "SPI DTB Image";
+> +				};
+> +
+> +				partition@100000 {
+> +					/* 4MB for Linux Kernel Image */
+> +					reg =3D <0x00100000 0x00400000>;
+> +					label =3D "SPI Linux Kernel =20
+> Image";
+> +				};
+> +
+> +				partition@500000 {
+> +					/* 7MB for FS System Image */
+> +					reg =3D <0x00500000 0x00700000>;
+> +					label =3D "SPI File System Image";
+> +				};
+> +			};
 
-Old programs.
+Likewise.
 
-PAPI dates back to the day when processor frequency was meaningful (and 
-stable).  In cases where MHz wasn't reported in cpuinfo (mostly MIPS and 
-ARM) it tries to estimate it based on BogoMIPS.  Not the sanest thing to 
-do, but it worked well enough at the time.  We recently fixed things so it 
-should do something reasonable if BogoMIPS is missing, but if users wrote 
-their code poorly they can get divide by zero errors if BogoMIPS suddenly 
-goes missing from /proc/cpuinfo (and yes we have had a low but non-zero 
-number of users report bugs of this type).
-
-Other programs I have (like linux_logo and ll) are 15+ years old and 
-simply print the BogoMIPS value for historical reasons.  So they won't 
-break if the value goes away but it's still sad to see it go.
-
-Vince
+-Scott=
