@@ -1,23 +1,25 @@
-Return-Path: <shawn.guo@linaro.org>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
+Return-Path: <B07421@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 02D632C0313
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2013 00:08:14 +1000 (EST)
-Date: Thu, 11 Jul 2013 22:07:57 +0800
-From: Shawn Guo <shawn.guo@linaro.org>
-To: Nicolin Chen <b42378@freescale.com>
-Subject: Re: [PATCH] ASoC: fsl: Disable SSI in trigger() if RE/TE are both
- cleared
-Message-ID: <20130711140755.GA3361@S2101-09.ap.freescale.net>
-References: <1373453034-21618-1-git-send-email-b42378@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id CB7AB2C0312
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2013 00:13:46 +1000 (EST)
+Date: Thu, 11 Jul 2013 09:13:36 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [v1][PATCH 1/1] KVM: PPC: disable preemption when using
+ hard_irq_disable()
+To: tiejun.chen <tiejun.chen@windriver.com>
+References: <1373436139-27998-1-git-send-email-tiejun.chen@windriver.com>
+ <1373483740.8183.223@snotra> <51DE1FD1.90609@windriver.com>
+In-Reply-To: <51DE1FD1.90609@windriver.com> (from tiejun.chen@windriver.com
+ on Wed Jul 10 22:00:33 2013)
+Message-ID: <1373552016.8183.242@snotra>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1373453034-21618-1-git-send-email-b42378@freescale.com>
-Cc: fabio.estevam@freescale.com, alsa-devel@alsa-project.org,
- broonie@kernel.org, linuxppc-dev@lists.ozlabs.org, timur@tabi.org
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: linuxppc-dev@lists.ozlabs.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,58 +29,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 10, 2013 at 06:43:54PM +0800, Nicolin Chen wrote:
-> The code enabled SSIEN when triggered by SNDRV_PCM_TRIGGER_START,
-> so move the disable code to SNDRV_PCM_TRIGGER_STOP for symmetric.
-> 
-> This also allows us to use the SSI driver more flexible so that
-> it can support some use cases like "aplay S16_LE.wav S24_LE.wav"
-> which would call the driver in sequence like:
->  startup()->hw_params(S16_LE)->trigger(START)->tirgger(STOP)->
->  hw_params(S24_LE)->trigger(START)->tirgger(STOP)->shutdown()
-> 
-> If we disable SSIEN in shutdown(), the second hw_params() would
-> bypass the sample bits setting while using symmetric_rate.
-> 
-> Signed-off-by: Nicolin Chen <b42378@freescale.com>
+On 07/10/2013 10:00:33 PM, tiejun.chen wrote:
+> On 07/11/2013 03:15 AM, Scott Wood wrote:
+>> On 07/10/2013 01:02:19 AM, Tiejun Chen wrote:
+>>> We should ensure the preemption cannot occur while calling =20
+>>> get_paca()
+>>> insdide hard_irq_disable(), otherwise the paca_struct may be the
+>>> wrong one just after. And btw, we may update timing stats in this =20
+>>> case.
+>>=20
+>> The soft-ee mechanism depends on accessing the PACA directly via r13 =20
+>> to avoid
+>> this.  We probably should be using inline asm to read was_enabled =20
+>> rather than
+>=20
+> Yes.
+>=20
+>> hoping the compiler doesn't do anything silly.
+>=20
+> Do you recommend I should directly replace get_paca() with local_paca =20
+> inside hard_irq_disable()?
+>=20
+> #define hard_irq_disable()      do {                    \
+>         u8 _was_enabled =3D get_paca()->soft_enabled;     \
+>=20
+> ->	u8 _was_enabled =3D local_paca->soft_enabled;
+>=20
+> But is this safe for all scenarios?
 
-Acked-by: Shawn Guo <shawn.guo@linaro.org>
+get_paca() is just a #define for local_paca.  It won't make a =20
+difference, other than to evade the debug check.
 
-> ---
->  sound/soc/fsl/fsl_ssi.c |   12 +++---------
->  1 files changed, 3 insertions(+), 9 deletions(-)
-> 
-> diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-> index 2f2d837..b6ab341 100644
-> --- a/sound/soc/fsl/fsl_ssi.c
-> +++ b/sound/soc/fsl/fsl_ssi.c
-> @@ -510,6 +510,9 @@ static int fsl_ssi_trigger(struct snd_pcm_substream *substream, int cmd,
->  			write_ssi_mask(&ssi->scr, CCSR_SSI_SCR_TE, 0);
->  		else
->  			write_ssi_mask(&ssi->scr, CCSR_SSI_SCR_RE, 0);
-> +
-> +		if ((read_ssi(&ssi->scr) & (CCSR_SSI_SCR_TE | CCSR_SSI_SCR_RE)) == 0)
-> +			write_ssi_mask(&ssi->scr, CCSR_SSI_SCR_SSIEN, 0);
->  		break;
->  
->  	default:
-> @@ -534,15 +537,6 @@ static void fsl_ssi_shutdown(struct snd_pcm_substream *substream,
->  		ssi_private->first_stream = ssi_private->second_stream;
->  
->  	ssi_private->second_stream = NULL;
-> -
-> -	/*
-> -	 * If this is the last active substream, disable the SSI.
-> -	 */
-> -	if (!ssi_private->first_stream) {
-> -		struct ccsr_ssi __iomem *ssi = ssi_private->ssi;
-> -
-> -		write_ssi_mask(&ssi->scr, CCSR_SSI_SCR_SSIEN, 0);
-> -	}
->  }
->  
->  static int fsl_ssi_dai_probe(struct snd_soc_dai *dai)
-> -- 
-> 1.7.1
-> 
-> 
+In practice, it's unlikely that GCC would do anything other than a load =20
+directly from r13, but to be sure we should use inline asm to do the =20
+load, just like arch_local_save_flags and arch_local_irq_disable do.
+
+-Scott=
