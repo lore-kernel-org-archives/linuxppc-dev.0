@@ -1,19 +1,30 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- by ozlabs.org (Postfix) with ESMTP id 37F542C007E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 10:17:37 +1000 (EST)
-Subject: Re: [PATCH 2/2] KVM: PPC: Book3E: Get vcpu's last instruction for
- emulation
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <1373501728.8183.239@snotra>
-Date: Thu, 11 Jul 2013 02:17:31 +0200
-Message-Id: <FCC64AB7-1168-4365-8A5D-AEFE7E0E1D43@suse.de>
-References: <1373501728.8183.239@snotra>
-To: Scott Wood <scottwood@freescale.com>
-Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+Return-Path: <B42677@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0253.outbound.messaging.microsoft.com [213.199.154.253])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2144C2C02EE
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 11:00:35 +1000 (EST)
+From: Zhang Haijun-B42677 <B42677@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: =?gb2312?B?UkU6ILTwuLQ6IFtQQVRDSF0gUG93ZXJwYy90NDI0MDogY2hhbmdlIHRoZSBj?=
+ =?gb2312?Q?ompatible_flags_for_t4240qds_board?=
+Date: Thu, 11 Jul 2013 01:02:31 +0000
+Message-ID: <99E897753B6F7048BD8CCDB4661D02E139E033@039-SN2MPN1-021.039d.mgd.msft.net>
+References: <99E897753B6F7048BD8CCDB4661D02E1396F57@039-SN2MPN1-021.039d.mgd.msft.net>
+ <1373400262.8183.201@snotra>
+ <99E897753B6F7048BD8CCDB4661D02E139CE27@039-SN2MPN1-021.039d.mgd.msft.net>
+ <1373488205.8183.228@snotra>
+In-Reply-To: <1373488205.8183.228@snotra>
+Content-Type: text/plain; charset="gb2312"
+MIME-Version: 1.0
+Cc: Xie Xiaobo-R63061 <r63061@freescale.com>,
+ Wrobel Heinz-R39252 <r39252@freescale.com>,
+ Fleming Andy-AFLEMING <afleming@freescale.com>,
+ "cbouatmailru@gmail.com" <cbouatmailru@gmail.com>,
+ "cjb@laptop.org" <cjb@laptop.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,92 +34,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On 11.07.2013, at 02:15, Scott Wood wrote:
-
-> On 07/10/2013 05:50:01 PM, Alexander Graf wrote:
->> On 10.07.2013, at 20:42, Scott Wood wrote:
->> > On 07/10/2013 05:15:09 AM, Alexander Graf wrote:
->> >> On 10.07.2013, at 02:06, Scott Wood wrote:
->> >> > On 07/09/2013 04:44:24 PM, Alexander Graf wrote:
->> >> >> On 09.07.2013, at 20:46, Scott Wood wrote:
->> >> >> > I suspect that tlbsx is faster, or at worst similar.  And =
-unlike comparing tlbsx to lwepx (not counting a fix for the threading =
-problem), we don't already have code to search the guest TLB, so testing =
-would be more work.
->> >> >> We have code to walk the guest TLB for TLB misses. This really =
-is just the TLB miss search without host TLB injection.
->> >> >> So let's say we're using the shadow TLB. The guest always has =
-its say 64 TLB entries that it can count on - we never evict anything by =
-accident, because we store all of the 64 entries in our guest TLB cache. =
-When the guest faults at an address, the first thing we do is we check =
-the cache whether we have that page already mapped.
->> >> >> However, with this method we now have 2 enumeration methods for =
-guest TLB searches. We have the tlbsx one which searches the host TLB =
-and we have our guest TLB cache. The guest TLB cache might still contain =
-an entry for an address that we already invalidated on the host. Would =
-that impose a problem?
->> >> >> I guess not because we're swizzling the exit code around to =
-instead be an instruction miss which means we restore the TLB entry into =
-our host's TLB so that when we resume, we land here and the tlbsx hits. =
-But it feels backwards.
->> >> >
->> >> > Any better way?  Searching the guest TLB won't work for the LRAT =
-case, so we'd need to have this logic around anyway.  We shouldn't add a =
-second codepath unless it's a clear performance gain -- and again, I =
-suspect it would be the opposite, especially if the entry is not in TLB0 =
-or in one of the first few entries searched in TLB1.  The tlbsx miss =
-case is not what we should optimize for.
->> >> Hrm.
->> >> So let's redesign this thing theoretically. We would have an exit =
-that requires an instruction fetch. We would override =
-kvmppc_get_last_inst() to always do kvmppc_ld_inst(). That one can fail =
-because it can't find the TLB entry in the host TLB. When it fails, we =
-have to abort the emulation and resume the guest at the same IP.
->> >> Now the guest gets the TLB miss, we populate, go back into the =
-guest. The guest hits the emulation failure again. We go back to =
-kvmppc_ld_inst() which succeeds this time and we can emulate the =
-instruction.
->> >
->> > That's pretty much what this patch does, except that it goes =
-immediately to the TLB miss code rather than having the extra round-trip =
-back to the guest.  Is there any benefit from adding that extra =
-round-trip?  Rewriting the exit type instead doesn't seem that bad...
->> It's pretty bad. I want to have code that is easy to follow - and I =
-don't care whether the very rare case of a TLB entry getting evicted by =
-a random other thread right when we execute the exit path is slower by a =
-few percent if we get cleaner code for that.
->=20
-> I guess I just don't see how this is so much harder to follow than =
-returning to guest.  I find it harder to follow the flow when there are =
-more round trips to the guest involved.  "Treat this as an ITLB miss" is =
-simpler than, "Let this fail, and make sure we retry the trapping =
-instruction on failure.  Then, an ITLB miss will happen."
->=20
-> Also note that making kvmppc_get_last_inst() able to fail means =
-updating several existing callsites, both for the change in function =
-signature and to actually handle failures.
->=20
-> I don't care that deeply either way, it just doesn't seem obviously =
-better.
->=20
->> >> I think this works. Just make sure that the gateway to the =
-instruction fetch is kvmppc_get_last_inst() and make that failable. Then =
-the difference between looking for the TLB entry in the host's TLB or in =
-the guest's TLB cache is hopefully negligible.
->> >
->> > I don't follow here.  What does this have to do with looking in the =
-guest TLB?
->> I want to hide the fact that we're cheating as much as possible, =
-that's it.
->=20
-> How are we cheating, and what specifically are you proposing to do to =
-hide that?  How is the guest TLB involved at all in the change you're =
-asking for?
-
-It's not involved, but it's basically what we do on book3s pr kvm. There =
-kvmppc_ld reads the guest htab, not the host htab. I think it's fine to =
-expose both cases as the same thing to the rest of kvm.
-
-
-Alex
+DQoNClRoYW5rcy4NCg0KUmVnYXJkcw0KSGFpanVuLg0KDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNz
+YWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gU2VudDogVGh1cnNkYXksIEp1
+bHkgMTEsIDIwMTMgNDozMCBBTQ0KPiBUbzogWmhhbmcgSGFpanVuLUI0MjY3Nw0KPiBDYzogV29v
+ZCBTY290dC1CMDc0MjE7IGxpbnV4LW1tY0B2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLQ0KPiBk
+ZXZAbGlzdHMub3psYWJzLm9yZzsgY2JvdWF0bWFpbHJ1QGdtYWlsLmNvbTsgY2piQGxhcHRvcC5v
+cmc7IEZsZW1pbmcNCj4gQW5keS1BRkxFTUlORzsgV3JvYmVsIEhlaW56LVIzOTI1Mg0KPiBTdWJq
+ZWN0OiBSZTogtPC4tDogW1BBVENIXSBQb3dlcnBjL3Q0MjQwOiBjaGFuZ2UgdGhlIGNvbXBhdGli
+bGUgZmxhZ3MgZm9yDQo+IHQ0MjQwcWRzIGJvYXJkDQo+IA0KPiBPbiAwNy8wOS8yMDEzIDEwOjQx
+OjIyIFBNLCBaaGFuZyBIYWlqdW4tQjQyNjc3IHdyb3RlOg0KPiA+ID4gTm8uICBJdCdzIHN0aWxs
+IHN1cHBvc2VkIHRvIGJlIGRlc2NyaWJpbmcgdGhlIHNkaGMgYmxvY2sgaXRzZWxmLA0KPiA+IG5v
+dCB0aGUNCj4gPiA+IGJvYXJkIC0tIGFuZCBhbnkgd29ya2Fyb3VuZHMgdGhhdCBrZXkgb2ZmIG9m
+IHRoaXMgd2lsbCBzdGlsbCBmYWlsDQo+ID4gdG8gd29yaw0KPiA+ID4gd2l0aCBleGlzdGluZyBk
+ZXZpY2UgdHJlZXMuDQo+ID4gW0hhaWp1biBXcm90ZTpdIFNvLCBsZWF2ZSBkdHMgdW5jaGFuZ2Vk
+IGFuZCB0byBjaGVjayBjb21waXRhYmxlIGZvcg0KPiA+IGJvYXJkIGluIHNkaGNpLXBsdGZtLmMN
+Cj4gPiBlLmcuOg0KPiA+IAl1bnNpZ25lZCBsb25nIHJvb3QgPSBvZl9nZXRfZmxhdF9kdF9yb290
+KCk7DQo+ID4NCj4gPiAJaWYgKG9mX2ZsYXRfZHRfaXNfY29tcGF0aWJsZShyb290LCAiZnNsLFQ0
+MjQwUURTIikpDQo+ID4gCQlob3N0LT5xdWlya3MgfD0gWFhYOw0KPiANCj4gV2h5IGFyZSB5b3Ug
+bG9va2luZyBhdCB0aGUgZmxhdCB0cmVlIGF0IHRoaXMgcG9pbnQ/ICBVc2UgdGhlIG5vcm1hbCBP
+Rg0KPiBhY2Nlc3NvcnMuICBUaGUgZmxhdCBzdHVmZiBpcyBvbmx5IGZvciBlYXJseSBib290Lg0K
+PiANCj4gQWxzbyBtYWtlIHN1cmUgdGhhdCB5b3Ugb25seSBkbyB0aGlzIGZvciBxdWlya3MgdGhh
+dCBhcmUgYWN0dWFsbHkgYm9hcmQtDQo+IHNwZWNpZmljLiAgSW4geW91ciBsYXN0IHBhdGNoIHlv
+dSBoYWQgdHdvIHF1aXJrcyBrZXllZCBvZmYgb2YgdGhlIGJvYXJkLA0KPiBvbmUgb2Ygd2hpY2gg
+aXMga2V5ZWQgb2ZmIG9mIHRoZSBTb0MgZm9yIG90aGVyIGNoaXBzLg0KPiANCltIYWlqdW4gV3Jv
+dGU6XSBBY3R1YWxseSB0aGVyZSBhcmUgb25seSBvbmUgYm9hcmQgd2l0aCBUNDI0MCBTb2MuIEkn
+bGwgdHJ5IHRvIHZlcmlmeSB0aGVzZSB0d28gZGVmZWN0IHdpdGggaGFyZHdhcmUgdGVhbS4gSG9w
+ZSBjYW4gc29tZSBoZWxwLg0KT25jZSBjbGVhciBJJ2xsIHJlc2VuZCB0aGUgcGF0Y2guIFRoYW5r
+cyBmb3IgeW91ciBraW5kbHkgcmV2aWV3Lg0KPiAtU0NvdHQNCg==
