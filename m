@@ -1,28 +1,22 @@
 Return-Path: <B07421@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0253.outbound.messaging.microsoft.com [213.199.154.253])
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 770C62C0312
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2013 00:15:34 +1000 (EST)
-Date: Thu, 11 Jul 2013 09:15:17 -0500
+ by ozlabs.org (Postfix) with ESMTPS id F2F962C031A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2013 00:30:25 +1000 (EST)
+Date: Thu, 11 Jul 2013 09:30:02 -0500
 From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 1/4 V2] powerpc/85xx: Add support for 85xx cpu type
- detection
-To: David Laight <David.Laight@ACULAB.COM>
-References: <1373441941-32650-1-git-send-email-Haijun.Zhang@freescale.com>
- <1373492893.8183.236@snotra>
- <AE90C24D6B3A694183C094C60CF0A2F6026B72DE@saturn3.aculab.com>
-In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6026B72DE@saturn3.aculab.com>
- (from David.Laight@ACULAB.COM on Thu Jul 11 03:43:35 2013)
-Message-ID: <1373552117.8183.243@snotra>
+Subject: Re: [PATCH 2/2] powerpc/math-emu: keep track of the instructions
+ unimplemented by FPU
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1373546721.19894.90.camel@pasglop> (from
+ benh@kernel.crashing.org on Thu Jul 11 07:45:21 2013)
+Message-ID: <1373553002.8183.245@snotra>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: Zhao Chenhui <chenhui.zhao@freescale.com>, linux-mmc@vger.kernel.org,
- r39252@freescale.com, AFLEMING@freescale.com, X.Xie@freescale.com,
- cbouatmailru@gmail.com, cjb@laptop.org, linuxppc-dev@lists.ozlabs.org,
- Haijun Zhang <Haijun.Zhang@freescale.com>
+Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>, Kevin Hao <haokexin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,20 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/11/2013 03:43:35 AM, David Laight wrote:
-> > > +#define IS_SVR_REV(svr, maj, min) \
-> > > +	((SVR_MAJ(svr) =3D=3D (maj)) && (SVR_MIN(svr) =3D=3D (min)))
-> >
-> > I don't think IS_SVR_REV is needed.  Callers can just do "if
-> > (SVR_REV(svr) =3D=3D 0x30)" or whatever, especially since we're relying=
- =20
-> on
-> > them to do this for greater/less than comparisons.
+On 07/11/2013 07:45:21 AM, Benjamin Herrenschmidt wrote:
+> On Thu, 2013-07-11 at 20:21 +0800, Kevin Hao wrote:
+> > Some cores (such as Freescale BookE) don't implement all floating
+> > point instructions in ISA. But some gcc versions do use these
+> > instructions. So we would have to enable the math emulation in this
+> > case. Add this to emulated instructions tracking statistics so that
+> > the user has a way to know that its toolcahin emit these =20
+> unimplemented
+> > floating point instructions.
 >=20
-> Not only that, I'd guess that 'maj' and 'min' are likely to be
-> constants - so you'd want to combine them and compare against 'svr'
-> rather than have two conditionals.
+> That patch is gross, it makes the function even more nasty than it
+> already is. Besides, CONFIG_PPC_FPU doesn't mean you have a HW FPU,
+> you need to check the CPU feature bits.
+>=20
+> Also the caller already does PPC_WARN_EMULATED, so this patch makes
+> you call it twice or am I missing something ?
 
-Yes, that's what I meant -- 0x30 would represent revision 3.0.
+Sorry, that was my fault -- for some reason I didn't see that when I =20
+grepped for PPC_WARN_EMULATED looking for math stuff, and thus =20
+requested it be added.  In any case, I don't see why it should be =20
+conditional on having an FPU (and indeed, the warning in the caller =20
+isn't conditional).
 
 -Scott=
