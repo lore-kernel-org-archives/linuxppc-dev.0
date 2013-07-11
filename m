@@ -2,19 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id AD4ED2C02F1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 22:37:22 +1000 (EST)
-Message-ID: <1373546233.19894.85.camel@pasglop>
-Subject: Re: [PATCH 8/8] KVM: PPC: Add hugepage support for IOMMU in-kernel
- handling
+ by ozlabs.org (Postfix) with ESMTPS id 390BB2C02F1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 22:38:19 +1000 (EST)
+Message-ID: <1373546290.19894.86.camel@pasglop>
+Subject: Re: [PATCH 6/8] KVM: PPC: Add support for multiple-TCE hcalls
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Alexander Graf <agraf@suse.de>
-Date: Thu, 11 Jul 2013 22:37:13 +1000
-In-Reply-To: <902F79B9-BB81-40A0-865D-94E7108DAC5E@suse.de>
+Date: Thu, 11 Jul 2013 22:38:10 +1000
+In-Reply-To: <43E93931-F213-47CC-ADCF-D3A6D6BC4372@suse.de>
 References: <1373123227-22969-1-git-send-email-aik@ozlabs.ru>
- <1373123227-22969-9-git-send-email-aik@ozlabs.ru>
- <51DC4923.5010501@suse.de> <51DE7377.1060503@ozlabs.ru>
- <902F79B9-BB81-40A0-865D-94E7108DAC5E@suse.de>
+ <1373123227-22969-7-git-send-email-aik@ozlabs.ru>
+ <51DC4228.7010607@suse.de> <51DCEA76.9070808@ozlabs.ru>
+ <D10E7B99-3A7C-4275-9A49-3CB15598E705@suse.de> <51DE3ECB.7080803@ozlabs.ru>
+ <43E93931-F213-47CC-ADCF-D3A6D6BC4372@suse.de>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -31,34 +31,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-07-11 at 11:52 +0200, Alexander Graf wrote:
-> > Where exactly (it is rather SPAPR_TCE_IOMMU but does not really
-> matter)?
-> > Select it on KVM_BOOK3S_64? CONFIG_KVM_BOOK3S_64_HV?
-> > CONFIG_KVM_BOOK3S_64_PR? PPC_BOOK3S_64?
+On Thu, 2013-07-11 at 12:11 +0200, Alexander Graf wrote:
+> > So I must add one more ioctl to enable MULTITCE in kernel handling. Is it
+> > what you are saying?
+> > 
+> > I can see KVM_CHECK_EXTENSION but I do not see KVM_ENABLE_EXTENSION or
+> > anything like that.
 > 
-> I'd say the most logical choice would be to check the Makefile and see
-> when it gets compiled. For those cases we want it enabled.
+> KVM_ENABLE_CAP. It's how we enable sPAPR capabilities too.
 
-What *what* gets compiled ? You know our Makefile, it's crap :-)
-
-We enable built-in things when CONFIG_KVM=m (which means you cannot take
-a kernel build with CONFIG_KVM not set, enable CONFIG_KVM=m, and just
-build the module, it won't work).
-
-We could use KVM_BOOK3S_64 maybe ?
-
-> > I am trying to imagine a configuration where we really do not want
-> > IOMMU_API. Ben mentioned PPC32 and embedded PPC64 and that's it so
-> any of
-> > BOOK3S (KVM_BOOK3S_64 is the best) should be fine, no?
-> 
-> book3s_32 doesn't want this, but any book3s_64 implementation could
-> potentially use it, yes. That's pretty much what the Makefile tells
-> you too :).
-
-Not really no. But that would do. You could have give a more useful
-answer in the first place though rather than stringing him along.
+But in that case I don't see the point.
 
 Cheers,
 Ben.
