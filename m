@@ -1,30 +1,21 @@
 Return-Path: <B42677@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0253.outbound.messaging.microsoft.com [213.199.154.253])
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0185.outbound.messaging.microsoft.com [213.199.154.185])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2144C2C02EE
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 11:00:35 +1000 (EST)
-From: Zhang Haijun-B42677 <B42677@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: =?gb2312?B?UkU6ILTwuLQ6IFtQQVRDSF0gUG93ZXJwYy90NDI0MDogY2hhbmdlIHRoZSBj?=
- =?gb2312?Q?ompatible_flags_for_t4240qds_board?=
-Date: Thu, 11 Jul 2013 01:02:31 +0000
-Message-ID: <99E897753B6F7048BD8CCDB4661D02E139E033@039-SN2MPN1-021.039d.mgd.msft.net>
-References: <99E897753B6F7048BD8CCDB4661D02E1396F57@039-SN2MPN1-021.039d.mgd.msft.net>
- <1373400262.8183.201@snotra>
- <99E897753B6F7048BD8CCDB4661D02E139CE27@039-SN2MPN1-021.039d.mgd.msft.net>
- <1373488205.8183.228@snotra>
-In-Reply-To: <1373488205.8183.228@snotra>
-Content-Type: text/plain; charset="gb2312"
+ by ozlabs.org (Postfix) with ESMTPS id 0D8F82C02F5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 11:14:33 +1000 (EST)
+From: Haijun Zhang <Haijun.Zhang@freescale.com>
+To: <linux-mmc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH V3] powerpc/85xx: Add support for 85xx cpu type detection
+Date: Thu, 11 Jul 2013 08:23:52 +0800
+Message-ID: <1373502232-4772-1-git-send-email-Haijun.Zhang@freescale.com>
 MIME-Version: 1.0
-Cc: Xie Xiaobo-R63061 <r63061@freescale.com>,
- Wrobel Heinz-R39252 <r39252@freescale.com>,
- Fleming Andy-AFLEMING <afleming@freescale.com>,
- "cbouatmailru@gmail.com" <cbouatmailru@gmail.com>,
- "cjb@laptop.org" <cjb@laptop.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: Zhao Chenhui <chenhui.zhao@freescale.com>, r39252@freescale.com,
+ AFLEMING@freescale.com, cbouatmailru@gmail.com, scottwood@freescale.com,
+ cjb@laptop.org, Haijun Zhang <Haijun.Zhang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,30 +25,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNClRoYW5rcy4NCg0KUmVnYXJkcw0KSGFpanVuLg0KDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNz
-YWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gU2VudDogVGh1cnNkYXksIEp1
-bHkgMTEsIDIwMTMgNDozMCBBTQ0KPiBUbzogWmhhbmcgSGFpanVuLUI0MjY3Nw0KPiBDYzogV29v
-ZCBTY290dC1CMDc0MjE7IGxpbnV4LW1tY0B2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLQ0KPiBk
-ZXZAbGlzdHMub3psYWJzLm9yZzsgY2JvdWF0bWFpbHJ1QGdtYWlsLmNvbTsgY2piQGxhcHRvcC5v
-cmc7IEZsZW1pbmcNCj4gQW5keS1BRkxFTUlORzsgV3JvYmVsIEhlaW56LVIzOTI1Mg0KPiBTdWJq
-ZWN0OiBSZTogtPC4tDogW1BBVENIXSBQb3dlcnBjL3Q0MjQwOiBjaGFuZ2UgdGhlIGNvbXBhdGli
-bGUgZmxhZ3MgZm9yDQo+IHQ0MjQwcWRzIGJvYXJkDQo+IA0KPiBPbiAwNy8wOS8yMDEzIDEwOjQx
-OjIyIFBNLCBaaGFuZyBIYWlqdW4tQjQyNjc3IHdyb3RlOg0KPiA+ID4gTm8uICBJdCdzIHN0aWxs
-IHN1cHBvc2VkIHRvIGJlIGRlc2NyaWJpbmcgdGhlIHNkaGMgYmxvY2sgaXRzZWxmLA0KPiA+IG5v
-dCB0aGUNCj4gPiA+IGJvYXJkIC0tIGFuZCBhbnkgd29ya2Fyb3VuZHMgdGhhdCBrZXkgb2ZmIG9m
-IHRoaXMgd2lsbCBzdGlsbCBmYWlsDQo+ID4gdG8gd29yaw0KPiA+ID4gd2l0aCBleGlzdGluZyBk
-ZXZpY2UgdHJlZXMuDQo+ID4gW0hhaWp1biBXcm90ZTpdIFNvLCBsZWF2ZSBkdHMgdW5jaGFuZ2Vk
-IGFuZCB0byBjaGVjayBjb21waXRhYmxlIGZvcg0KPiA+IGJvYXJkIGluIHNkaGNpLXBsdGZtLmMN
-Cj4gPiBlLmcuOg0KPiA+IAl1bnNpZ25lZCBsb25nIHJvb3QgPSBvZl9nZXRfZmxhdF9kdF9yb290
-KCk7DQo+ID4NCj4gPiAJaWYgKG9mX2ZsYXRfZHRfaXNfY29tcGF0aWJsZShyb290LCAiZnNsLFQ0
-MjQwUURTIikpDQo+ID4gCQlob3N0LT5xdWlya3MgfD0gWFhYOw0KPiANCj4gV2h5IGFyZSB5b3Ug
-bG9va2luZyBhdCB0aGUgZmxhdCB0cmVlIGF0IHRoaXMgcG9pbnQ/ICBVc2UgdGhlIG5vcm1hbCBP
-Rg0KPiBhY2Nlc3NvcnMuICBUaGUgZmxhdCBzdHVmZiBpcyBvbmx5IGZvciBlYXJseSBib290Lg0K
-PiANCj4gQWxzbyBtYWtlIHN1cmUgdGhhdCB5b3Ugb25seSBkbyB0aGlzIGZvciBxdWlya3MgdGhh
-dCBhcmUgYWN0dWFsbHkgYm9hcmQtDQo+IHNwZWNpZmljLiAgSW4geW91ciBsYXN0IHBhdGNoIHlv
-dSBoYWQgdHdvIHF1aXJrcyBrZXllZCBvZmYgb2YgdGhlIGJvYXJkLA0KPiBvbmUgb2Ygd2hpY2gg
-aXMga2V5ZWQgb2ZmIG9mIHRoZSBTb0MgZm9yIG90aGVyIGNoaXBzLg0KPiANCltIYWlqdW4gV3Jv
-dGU6XSBBY3R1YWxseSB0aGVyZSBhcmUgb25seSBvbmUgYm9hcmQgd2l0aCBUNDI0MCBTb2MuIEkn
-bGwgdHJ5IHRvIHZlcmlmeSB0aGVzZSB0d28gZGVmZWN0IHdpdGggaGFyZHdhcmUgdGVhbS4gSG9w
-ZSBjYW4gc29tZSBoZWxwLg0KT25jZSBjbGVhciBJJ2xsIHJlc2VuZCB0aGUgcGF0Y2guIFRoYW5r
-cyBmb3IgeW91ciBraW5kbHkgcmV2aWV3Lg0KPiAtU0NvdHQNCg==
+Add this file to help detect cpu type in runtime.
+These macros will be more favorable for driver
+to apply errata and workaround to specified cpu type.
+
+Signed-off-by: Haijun Zhang <Haijun.Zhang@freescale.com>
+Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+---
+changes for v3:
+	- remove get_svr and is_svr_rev
+
+ arch/powerpc/include/asm/mpc85xx.h | 47 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 47 insertions(+)
+ create mode 100644 arch/powerpc/include/asm/mpc85xx.h
+
+diff --git a/arch/powerpc/include/asm/mpc85xx.h b/arch/powerpc/include/asm/mpc85xx.h
+new file mode 100644
+index 0000000..824b619
+--- /dev/null
++++ b/arch/powerpc/include/asm/mpc85xx.h
+@@ -0,0 +1,47 @@
++/*
++ * MPC85xx cpu type detection
++ *
++ * Copyright 2011-2012 Freescale Semiconductor, Inc.
++ *
++ * This is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++#ifndef __ASM_PPC_MPC85XX_H
++#define __ASM_PPC_MPC85XX_H
++
++#define SVR_REV(svr)	((svr) & 0xFF)		/* SOC design resision */
++#define SVR_MAJ(svr)	(((svr) >>  4) & 0xF)	/* Major revision field*/
++#define SVR_MIN(svr)	(((svr) >>  0) & 0xF)	/* Minor revision field*/
++
++/* Some parts define SVR[0:23] as the SOC version */
++#define SVR_SOC_VER(svr) (((svr) >> 8) & 0xFFF7FF)	/* SOC Version fields */
++
++#define SVR_8533	0x803400
++#define SVR_8535	0x803701
++#define SVR_8536	0x803700
++#define SVR_8540	0x803000
++#define SVR_8541	0x807200
++#define SVR_8543	0x803200
++#define SVR_8544	0x803401
++#define SVR_8545	0x803102
++#define SVR_8547	0x803101
++#define SVR_8548	0x803100
++#define SVR_8555	0x807100
++#define SVR_8560	0x807000
++#define SVR_8567	0x807501
++#define SVR_8568	0x807500
++#define SVR_8569	0x808000
++#define SVR_8572	0x80E000
++#define SVR_P1010	0x80f900
++#define SVR_P2041	0x821001
++#define SVR_P3041	0x821103
++#define SVR_P5010	0x822100
++#define SVR_P5020	0x822000
++#define SVR_P5040	0x820400
++#define SVR_T4240	0x824800
++#define SVR_B4860	0x868800
++
++#endif
+-- 
+1.8.0
