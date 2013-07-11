@@ -1,21 +1,30 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- by ozlabs.org (Postfix) with ESMTP id 95EAA2C030A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 23:11:23 +1000 (EST)
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pd0-f169.google.com (mail-pd0-f169.google.com
+ [209.85.192.169])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4F47C2C030A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 23:13:13 +1000 (EST)
+Received: by mail-pd0-f169.google.com with SMTP id y10so7523009pdj.14
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 06:13:11 -0700 (PDT)
+Message-ID: <51DEAF60.2000902@ozlabs.ru>
+Date: Thu, 11 Jul 2013 23:13:04 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH 6/8] KVM: PPC: Add support for multiple-TCE hcalls
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <1373545982.19894.82.camel@pasglop>
-Date: Thu, 11 Jul 2013 15:11:15 +0200
-Message-Id: <55F96DD9-50B1-41CA-9257-FBF7DED90966@suse.de>
 References: <1373123227-22969-1-git-send-email-aik@ozlabs.ru>
  <1373123227-22969-7-git-send-email-aik@ozlabs.ru> <51DC4228.7010607@suse.de>
  <51DCEA76.9070808@ozlabs.ru> <D10E7B99-3A7C-4275-9A49-3CB15598E705@suse.de>
- <51DE3ECB.7080803@ozlabs.ru> <1373545982.19894.82.camel@pasglop>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
- linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ <51DE3ECB.7080803@ozlabs.ru> <43E93931-F213-47CC-ADCF-D3A6D6BC4372@suse.de>
+ <51DE8EE9.2000508@ozlabs.ru> <C6BC1E27-4C9C-4A18-A64A-052202DA64B5@suse.de>
+ <1373546368.19894.87.camel@pasglop>
+ <4133424D-B105-4CB1-A72A-4F47A6184DC7@suse.de>
+ <1373547480.19894.102.camel@pasglop>
+In-Reply-To: <1373547480.19894.102.camel@pasglop>
+Content-Type: text/plain; charset=KOI8-R
+Cc: kvm@vger.kernel.org, Alexander Graf <agraf@suse.de>,
+ kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
  Alex Williamson <alex.williamson@redhat.com>,
  Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
  David Gibson <david@gibson.dropbear.id.au>
@@ -28,37 +37,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 07/11/2013 10:58 PM, Benjamin Herrenschmidt wrote:
+> On Thu, 2013-07-11 at 14:51 +0200, Alexander Graf wrote:
+>> I don't like bloat usually. But Alexey even had an #ifdef DEBUG in
+>> there to selectively disable in-kernel handling of multi-TCE. Not
+>> calling ENABLE_CAP would give him exactly that without ugly #ifdefs in
+>> the kernel.
+> 
+> I don't see much point in disabling it... but ok, if that's a valuable
+> feature, then shoot some VM level ENABLE_CAP (please don't iterate all
+> VCPUs, that's gross).
 
-On 11.07.2013, at 14:33, Benjamin Herrenschmidt wrote:
+No use for me whatsoever as I only want to disable real more handlers and
+keep virtual mode handlers enabled (sometime, for debug only) and this
+capability is not about that - I can easily just not enable it in QEMU with
+the exactly the same effect.
 
-> On Thu, 2013-07-11 at 15:12 +1000, Alexey Kardashevskiy wrote:
->>>> Any debug code is prohibited? Ok, I'll remove.
->>>=20
->>> Debug code that requires code changes is prohibited, yes.
->>> Debug code that is runtime switchable (pr_debug, trace points, etc)
->>> are allowed.
->=20
-> Bollox.
->=20
-> $ grep DBG\( arch/powerpc/ -r | wc -l
-> 418
->=20
-> Also pr_devel is not runtime switchable in normal kernels either and
-> still an "official" kernel interface.
->=20
->> Is there any easy way to enable just this specific udbg_printf (not =
-all of
->> them at once)? Trace points do not work in real mode as we figured =
-out.
->=20
-> The cleaner way to do it is to use some kind of local macro that you
-> enable/disable by changing a #define at the top of the function, =
-possibly
-> several.
-
-If you do that in a way that doesn't bitrot, that's acceptable, yes. =
-Something that leaves cpp compile checks working while optimizing out =
-the debug code.
+So please, fellas, decide whether I should iterate vcpu's or add ENABLE_CAP
+per KVM. Thanks.
 
 
-Alex
+-- 
+Alexey
