@@ -1,25 +1,23 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail-pb0-x22c.google.com (mail-pb0-x22c.google.com
- [IPv6:2607:f8b0:400e:c01::22c])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 592B12C0302
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 19:22:02 +1000 (EST)
-Received: by mail-pb0-f44.google.com with SMTP id uo1so7696912pbc.17
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 02:21:59 -0700 (PDT)
-Date: Thu, 11 Jul 2013 17:21:48 +0800
-From: Kevin Hao <haokexin@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] powerpc/85xx: enable the math emulation for the
- corenet64_smp_defconfig
-Message-ID: <20130711092148.GB22910@pek-khao-d1.corp.ad.wrs.com>
-References: <1373420992-25167-1-git-send-email-haokexin@gmail.com>
- <1373492403.8183.234@snotra>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="6sX45UoQRIJXqkqR"
-In-Reply-To: <1373492403.8183.234@snotra>
-Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ by ozlabs.org (Postfix) with ESMTP id E4A792C02F2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 19:52:48 +1000 (EST)
+Subject: Re: [PATCH 8/8] KVM: PPC: Add hugepage support for IOMMU in-kernel
+ handling
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=koi8-r
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <51DE7377.1060503@ozlabs.ru>
+Date: Thu, 11 Jul 2013 11:52:38 +0200
+Message-Id: <902F79B9-BB81-40A0-865D-94E7108DAC5E@suse.de>
+References: <1373123227-22969-1-git-send-email-aik@ozlabs.ru>
+ <1373123227-22969-9-git-send-email-aik@ozlabs.ru> <51DC4923.5010501@suse.de>
+ <51DE7377.1060503@ozlabs.ru>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,56 +28,178 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---6sX45UoQRIJXqkqR
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 11.07.2013, at 10:57, Alexey Kardashevskiy wrote:
 
-On Wed, Jul 10, 2013 at 04:40:03PM -0500, Scott Wood wrote:
-> On 07/09/2013 08:49:52 PM, Kevin Hao wrote:
-> >I got the following error on my t4240qds board.
-> >  ntpd[2713]: unhandled signal 4 at 0fd5b448 nip 0fd5b448 lr
-> >0fd5b424 code 30001
-> >
-> >The root cause is that the float point instruction 'fsqrt' is used.
-> >But this instruction is not implemented on e6500 core. Even this
-> >does seem a gcc bug, I would like to enable the math emulation
-> >in the kernel to workaround this kind of issue.
+> On 07/10/2013 03:32 AM, Alexander Graf wrote:
+>> On 07/06/2013 05:07 PM, Alexey Kardashevskiy wrote:
+>>> This adds special support for huge pages (16MB).  The reference
+>>> counting cannot be easily done for such pages in real mode (when
+>>> MMU is off) so we added a list of huge pages.  It is populated in
+>>> virtual mode and get_page is called just once per a huge page.
+>>> Real mode handlers check if the requested page is huge and in the =
+list,
+>>> then no reference counting is done, otherwise an exit to virtual =
+mode
+>>> happens.  The list is released at KVM exit.  At the moment the =
+fastest
+>>> card available for tests uses up to 9 huge pages so walking through =
+this
+>>> list is not very expensive.  However this can change and we may want
+>>> to optimize this.
+>>>=20
+>>> Signed-off-by: Paul Mackerras<paulus@samba.org>
+>>> Signed-off-by: Alexey Kardashevskiy<aik@ozlabs.ru>
+>>>=20
+>>> ---
+>>>=20
+>>> Changes:
+>>> 2013/06/27:
+>>> * list of huge pages replaces with hashtable for better performance
+>>=20
+>> So the only thing your patch description really talks about is not =
+true
+>> anymore?
+>>=20
+>>> * spinlock removed from real mode and only protects insertion of new
+>>> huge [ages descriptors into the hashtable
+>>>=20
+>>> 2013/06/05:
+>>> * fixed compile error when CONFIG_IOMMU_API=3Dn
+>>>=20
+>>> 2013/05/20:
+>>> * the real mode handler now searches for a huge page by gpa (used to =
+be pte)
+>>> * the virtual mode handler prints warning if it is called twice for =
+the same
+>>> huge page as the real mode handler is expected to fail just once - =
+when a
+>>> huge
+>>> page is not in the list yet.
+>>> * the huge page is refcounted twice - when added to the hugepage =
+list and
+>>> when used in the virtual mode hcall handler (can be optimized but it =
+will
+>>> make the patch less nice).
+>>>=20
+>>> Signed-off-by: Alexey Kardashevskiy<aik@ozlabs.ru>
+>>> ---
+>>>  arch/powerpc/include/asm/kvm_host.h |  25 +++++++++
+>>>  arch/powerpc/kernel/iommu.c         |   6 ++-
+>>>  arch/powerpc/kvm/book3s_64_vio.c    | 104
+>>> +++++++++++++++++++++++++++++++++---
+>>>  arch/powerpc/kvm/book3s_64_vio_hv.c |  21 ++++++--
+>>>  4 files changed, 146 insertions(+), 10 deletions(-)
+>>>=20
+>>> diff --git a/arch/powerpc/include/asm/kvm_host.h
+>>> b/arch/powerpc/include/asm/kvm_host.h
+>>> index 53e61b2..a7508cf 100644
+>>> --- a/arch/powerpc/include/asm/kvm_host.h
+>>> +++ b/arch/powerpc/include/asm/kvm_host.h
+>>> @@ -30,6 +30,7 @@
+>>>  #include<linux/kvm_para.h>
+>>>  #include<linux/list.h>
+>>>  #include<linux/atomic.h>
+>>> +#include<linux/hashtable.h>
+>>>  #include<asm/kvm_asm.h>
+>>>  #include<asm/processor.h>
+>>>  #include<asm/page.h>
+>>> @@ -182,10 +183,34 @@ struct kvmppc_spapr_tce_table {
+>>>      u32 window_size;
+>>>      struct iommu_group *grp;        /* used for IOMMU groups */
+>>>      struct vfio_group *vfio_grp;        /* used for IOMMU groups */
+>>> +    DECLARE_HASHTABLE(hash_tab, ilog2(64));    /* used for IOMMU =
+groups */
+>>> +    spinlock_t hugepages_write_lock;    /* used for IOMMU groups */
+>>>      struct { struct { unsigned long put, indir, stuff; } rm, vm; } =
+stat;
+>>>      struct page *pages[0];
+>>>  };
+>>>=20
+>>> +/*
+>>> + * The KVM guest can be backed with 16MB pages.
+>>> + * In this case, we cannot do page counting from the real mode
+>>> + * as the compound pages are used - they are linked in a list
+>>> + * with pointers as virtual addresses which are inaccessible
+>>> + * in real mode.
+>>> + *
+>>> + * The code below keeps a 16MB pages list and uses page struct
+>>> + * in real mode if it is already locked in RAM and inserted into
+>>> + * the list or switches to the virtual mode where it can be
+>>> + * handled in a usual manner.
+>>> + */
+>>> +#define KVMPPC_SPAPR_HUGEPAGE_HASH(gpa)    hash_32(gpa>>  24, 32)
+>>> +
+>>> +struct kvmppc_spapr_iommu_hugepage {
+>>> +    struct hlist_node hash_node;
+>>> +    unsigned long gpa;    /* Guest physical address */
+>>> +    unsigned long hpa;    /* Host physical address */
+>>> +    struct page *page;    /* page struct of the very first subpage =
+*/
+>>> +    unsigned long size;    /* Huge page size (always 16MB at the =
+moment) */
+>>> +};
+>>> +
+>>>  struct kvmppc_linear_info {
+>>>      void        *base_virt;
+>>>      unsigned long     base_pfn;
+>>> diff --git a/arch/powerpc/kernel/iommu.c =
+b/arch/powerpc/kernel/iommu.c
+>>> index 51678ec..e0b6eca 100644
+>>> --- a/arch/powerpc/kernel/iommu.c
+>>> +++ b/arch/powerpc/kernel/iommu.c
+>>> @@ -999,7 +999,8 @@ int iommu_free_tces(struct iommu_table *tbl, =
+unsigned
+>>> long entry,
+>>>              if (!pg) {
+>>>                  ret =3D -EAGAIN;
+>>>              } else if (PageCompound(pg)) {
+>>> -                ret =3D -EAGAIN;
+>>> +                /* Hugepages will be released at KVM exit */
+>>> +                ret =3D 0;
+>>>              } else {
+>>>                  if (oldtce&  TCE_PCI_WRITE)
+>>>                      SetPageDirty(pg);
+>>> @@ -1009,6 +1010,9 @@ int iommu_free_tces(struct iommu_table *tbl,
+>>> unsigned long entry,
+>>>              struct page *pg =3D pfn_to_page(oldtce>>  PAGE_SHIFT);
+>>>              if (!pg) {
+>>>                  ret =3D -EAGAIN;
+>>> +            } else if (PageCompound(pg)) {
+>>> +                /* Hugepages will be released at KVM exit */
+>>> +                ret =3D 0;
+>>>              } else {
+>>>                  if (oldtce&  TCE_PCI_WRITE)
+>>>                      SetPageDirty(pg);
+>>> diff --git a/arch/powerpc/kvm/book3s_64_vio.c
+>>> b/arch/powerpc/kvm/book3s_64_vio.c
+>>> index 2b51f4a..c037219 100644
+>>> --- a/arch/powerpc/kvm/book3s_64_vio.c
+>>> +++ b/arch/powerpc/kvm/book3s_64_vio.c
+>>> @@ -46,6 +46,40 @@
+>>>=20
+>>>  #define ERROR_ADDR      ((void *)~(unsigned long)0x0)
+>>>=20
+>>> +#ifdef CONFIG_IOMMU_API
+>>=20
+>> Can't you just make CONFIG_IOMMU_API mandatory in Kconfig?
 >=20
-> I'll apply this, but we should add PPC_WARN_EMULATED to math-emu so
-> that people know when their toolchain is emitting things that
-> require emulation.
-
-Sure.
-
 >=20
-> It'd also be nice if we had an option to only include the portions
-> of math-emu that are known to be missing in some CPUs (excluding
-> CPUs that are missing the entire FPU, of course).  Besides its
-> effect on kernel image size, in my experience math-emu adds a
-> non-trivial amount of time to a kernel build.
+> Where exactly (it is rather SPAPR_TCE_IOMMU but does not really =
+matter)?
+> Select it on KVM_BOOK3S_64? CONFIG_KVM_BOOK3S_64_HV?
+> CONFIG_KVM_BOOK3S_64_PR? PPC_BOOK3S_64?
 
-Sounds reasonable. I will give it a try.
+I'd say the most logical choice would be to check the Makefile and see =
+when it gets compiled. For those cases we want it enabled.
 
-Thanks,
-Kevin
+> I am trying to imagine a configuration where we really do not want
+> IOMMU_API. Ben mentioned PPC32 and embedded PPC64 and that's it so any =
+of
+> BOOK3S (KVM_BOOK3S_64 is the best) should be fine, no?
 
->=20
-> -Scott
+book3s_32 doesn't want this, but any book3s_64 implementation could =
+potentially use it, yes. That's pretty much what the Makefile tells you =
+too :).
 
---6sX45UoQRIJXqkqR
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQEcBAEBAgAGBQJR3nksAAoJEJNY7TDerrFxorEH/0sirlmctvpITnwY5b2Zci6p
-tFuUpxzIvpy8fbURWnDGgf4IR3V6gZStfww49vuXrvyZFqccHq5a3FU81vom8lU4
-hevol1mfi3gz/ZooN6mGWbczXz+/IaW2pH1N++wPjLVOKIP81yp6wEZTlIo43tlZ
-Jl/07yJ7iDwiBkq22wdpjaKJp2ynjAQRjU5n7aEzrovsGa5BvAypYL2wbMxgLguG
-Vi9sSNMgWxuu0HgZRilrj4PNhrIzP0YM1EXI+fVxJaY/ycStL3j7y4NwgaqUgTK6
-2FpRmBPYdLqPfA6gdjpb2C0bLUh2XKuZQVSMeAGch304LLiWdyMcMOHjRyMESaE=
-=FbgG
------END PGP SIGNATURE-----
-
---6sX45UoQRIJXqkqR--
+Alex
