@@ -1,27 +1,33 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-gh0-f180.google.com (mail-gh0-f180.google.com
- [209.85.160.180])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4385F2C02FE
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 18:57:37 +1000 (EST)
-Received: by mail-gh0-f180.google.com with SMTP id f18so2710691ghb.11
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 01:57:34 -0700 (PDT)
-Message-ID: <51DE7377.1060503@ozlabs.ru>
-Date: Thu, 11 Jul 2013 18:57:27 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Return-Path: <B42677@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 896882C02ED
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 19:00:06 +1000 (EST)
+From: Zhang Haijun-B42677 <B42677@freescale.com>
+To: David Laight <David.Laight@ACULAB.COM>, Wood Scott-B07421
+ <B07421@freescale.com>
+Subject: RE: [PATCH 1/4 V2] powerpc/85xx: Add support for 85xx cpu type
+ detection
+Date: Thu, 11 Jul 2013 09:02:10 +0000
+Message-ID: <99E897753B6F7048BD8CCDB4661D02E139F499@039-SN2MPN1-021.039d.mgd.msft.net>
+References: <1373441941-32650-1-git-send-email-Haijun.Zhang@freescale.com>
+ (from Haijun.Zhang@freescale.com on Wed Jul 10 02:39:01 2013)
+ <1373492893.8183.236@snotra>
+ <AE90C24D6B3A694183C094C60CF0A2F6026B72DE@saturn3.aculab.com>
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6026B72DE@saturn3.aculab.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 8/8] KVM: PPC: Add hugepage support for IOMMU in-kernel
- handling
-References: <1373123227-22969-1-git-send-email-aik@ozlabs.ru>
- <1373123227-22969-9-git-send-email-aik@ozlabs.ru> <51DC4923.5010501@suse.de>
-In-Reply-To: <51DC4923.5010501@suse.de>
-Content-Type: text/plain; charset=KOI8-R
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: Xie Xiaobo-R63061 <r63061@freescale.com>,
+ Zhao Chenhui-B35336 <B35336@freescale.com>,
+ "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+ Wrobel Heinz-R39252 <r39252@freescale.com>,
+ Fleming Andy-AFLEMING <afleming@freescale.com>,
+ "cbouatmailru@gmail.com" <cbouatmailru@gmail.com>,
+ "cjb@laptop.org" <cjb@laptop.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,153 +37,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/10/2013 03:32 AM, Alexander Graf wrote:
-> On 07/06/2013 05:07 PM, Alexey Kardashevskiy wrote:
->> This adds special support for huge pages (16MB).  The reference
->> counting cannot be easily done for such pages in real mode (when
->> MMU is off) so we added a list of huge pages.  It is populated in
->> virtual mode and get_page is called just once per a huge page.
->> Real mode handlers check if the requested page is huge and in the list,
->> then no reference counting is done, otherwise an exit to virtual mode
->> happens.  The list is released at KVM exit.  At the moment the fastest
->> card available for tests uses up to 9 huge pages so walking through this
->> list is not very expensive.  However this can change and we may want
->> to optimize this.
->>
->> Signed-off-by: Paul Mackerras<paulus@samba.org>
->> Signed-off-by: Alexey Kardashevskiy<aik@ozlabs.ru>
->>
->> ---
->>
->> Changes:
->> 2013/06/27:
->> * list of huge pages replaces with hashtable for better performance
-> 
-> So the only thing your patch description really talks about is not true
-> anymore?
-> 
->> * spinlock removed from real mode and only protects insertion of new
->> huge [ages descriptors into the hashtable
->>
->> 2013/06/05:
->> * fixed compile error when CONFIG_IOMMU_API=n
->>
->> 2013/05/20:
->> * the real mode handler now searches for a huge page by gpa (used to be pte)
->> * the virtual mode handler prints warning if it is called twice for the same
->> huge page as the real mode handler is expected to fail just once - when a
->> huge
->> page is not in the list yet.
->> * the huge page is refcounted twice - when added to the hugepage list and
->> when used in the virtual mode hcall handler (can be optimized but it will
->> make the patch less nice).
->>
->> Signed-off-by: Alexey Kardashevskiy<aik@ozlabs.ru>
->> ---
->>   arch/powerpc/include/asm/kvm_host.h |  25 +++++++++
->>   arch/powerpc/kernel/iommu.c         |   6 ++-
->>   arch/powerpc/kvm/book3s_64_vio.c    | 104
->> +++++++++++++++++++++++++++++++++---
->>   arch/powerpc/kvm/book3s_64_vio_hv.c |  21 ++++++--
->>   4 files changed, 146 insertions(+), 10 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/kvm_host.h
->> b/arch/powerpc/include/asm/kvm_host.h
->> index 53e61b2..a7508cf 100644
->> --- a/arch/powerpc/include/asm/kvm_host.h
->> +++ b/arch/powerpc/include/asm/kvm_host.h
->> @@ -30,6 +30,7 @@
->>   #include<linux/kvm_para.h>
->>   #include<linux/list.h>
->>   #include<linux/atomic.h>
->> +#include<linux/hashtable.h>
->>   #include<asm/kvm_asm.h>
->>   #include<asm/processor.h>
->>   #include<asm/page.h>
->> @@ -182,10 +183,34 @@ struct kvmppc_spapr_tce_table {
->>       u32 window_size;
->>       struct iommu_group *grp;        /* used for IOMMU groups */
->>       struct vfio_group *vfio_grp;        /* used for IOMMU groups */
->> +    DECLARE_HASHTABLE(hash_tab, ilog2(64));    /* used for IOMMU groups */
->> +    spinlock_t hugepages_write_lock;    /* used for IOMMU groups */
->>       struct { struct { unsigned long put, indir, stuff; } rm, vm; } stat;
->>       struct page *pages[0];
->>   };
->>
->> +/*
->> + * The KVM guest can be backed with 16MB pages.
->> + * In this case, we cannot do page counting from the real mode
->> + * as the compound pages are used - they are linked in a list
->> + * with pointers as virtual addresses which are inaccessible
->> + * in real mode.
->> + *
->> + * The code below keeps a 16MB pages list and uses page struct
->> + * in real mode if it is already locked in RAM and inserted into
->> + * the list or switches to the virtual mode where it can be
->> + * handled in a usual manner.
->> + */
->> +#define KVMPPC_SPAPR_HUGEPAGE_HASH(gpa)    hash_32(gpa>>  24, 32)
->> +
->> +struct kvmppc_spapr_iommu_hugepage {
->> +    struct hlist_node hash_node;
->> +    unsigned long gpa;    /* Guest physical address */
->> +    unsigned long hpa;    /* Host physical address */
->> +    struct page *page;    /* page struct of the very first subpage */
->> +    unsigned long size;    /* Huge page size (always 16MB at the moment) */
->> +};
->> +
->>   struct kvmppc_linear_info {
->>       void        *base_virt;
->>       unsigned long     base_pfn;
->> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
->> index 51678ec..e0b6eca 100644
->> --- a/arch/powerpc/kernel/iommu.c
->> +++ b/arch/powerpc/kernel/iommu.c
->> @@ -999,7 +999,8 @@ int iommu_free_tces(struct iommu_table *tbl, unsigned
->> long entry,
->>               if (!pg) {
->>                   ret = -EAGAIN;
->>               } else if (PageCompound(pg)) {
->> -                ret = -EAGAIN;
->> +                /* Hugepages will be released at KVM exit */
->> +                ret = 0;
->>               } else {
->>                   if (oldtce&  TCE_PCI_WRITE)
->>                       SetPageDirty(pg);
->> @@ -1009,6 +1010,9 @@ int iommu_free_tces(struct iommu_table *tbl,
->> unsigned long entry,
->>               struct page *pg = pfn_to_page(oldtce>>  PAGE_SHIFT);
->>               if (!pg) {
->>                   ret = -EAGAIN;
->> +            } else if (PageCompound(pg)) {
->> +                /* Hugepages will be released at KVM exit */
->> +                ret = 0;
->>               } else {
->>                   if (oldtce&  TCE_PCI_WRITE)
->>                       SetPageDirty(pg);
->> diff --git a/arch/powerpc/kvm/book3s_64_vio.c
->> b/arch/powerpc/kvm/book3s_64_vio.c
->> index 2b51f4a..c037219 100644
->> --- a/arch/powerpc/kvm/book3s_64_vio.c
->> +++ b/arch/powerpc/kvm/book3s_64_vio.c
->> @@ -46,6 +46,40 @@
->>
->>   #define ERROR_ADDR      ((void *)~(unsigned long)0x0)
->>
->> +#ifdef CONFIG_IOMMU_API
-> 
-> Can't you just make CONFIG_IOMMU_API mandatory in Kconfig?
 
 
-Where exactly (it is rather SPAPR_TCE_IOMMU but does not really matter)?
-Select it on KVM_BOOK3S_64? CONFIG_KVM_BOOK3S_64_HV?
-CONFIG_KVM_BOOK3S_64_PR? PPC_BOOK3S_64?
+Thanks.
 
-I am trying to imagine a configuration where we really do not want
-IOMMU_API. Ben mentioned PPC32 and embedded PPC64 and that's it so any of
-BOOK3S (KVM_BOOK3S_64 is the best) should be fine, no?
+Regards
+Haijun.
 
 
-
--- 
-Alexey
+> -----Original Message-----
+> From: David Laight [mailto:David.Laight@ACULAB.COM]
+> Sent: Thursday, July 11, 2013 4:44 PM
+> To: Wood Scott-B07421; Zhang Haijun-B42677
+> Cc: Zhao Chenhui-B35336; linux-mmc@vger.kernel.org; Wrobel Heinz-R39252;
+> Fleming Andy-AFLEMING; Zhang Haijun-B42677; cbouatmailru@gmail.com;
+> cjb@laptop.org; linuxppc-dev@lists.ozlabs.org; Xie Xiaobo-R63061
+> Subject: RE: [PATCH 1/4 V2] powerpc/85xx: Add support for 85xx cpu type
+> detection
+>=20
+> > > +#define IS_SVR_REV(svr, maj, min) \
+> > > +	((SVR_MAJ(svr) =3D=3D (maj)) && (SVR_MIN(svr) =3D=3D (min)))
+> >
+> > I don't think IS_SVR_REV is needed.  Callers can just do "if
+> > (SVR_REV(svr) =3D=3D 0x30)" or whatever, especially since we're relying=
+ on
+> > them to do this for greater/less than comparisons.
+>=20
+> Not only that, I'd guess that 'maj' and 'min' are likely to be constants
+> - so you'd want to combine them and compare against 'svr'
+> rather than have two conditionals.
+[Haijun Wrote:] yes, e.g: 1.0, 1.1 or 2.0. 'Major revision field' + '.' + '=
+Minor revision field '
+I had resent the patch(V2). I'm not so clear about what you want to express=
+.^_^ =20
+>=20
+> 	David
+>=20
+>=20
+>=20
