@@ -3,17 +3,15 @@ Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mail1.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 36B912C02CE
+ by ozlabs.org (Postfix) with ESMTPS id 368C12C00A2
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 22:22:26 +1000 (EST)
 From: Kevin Hao <haokexin@gmail.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Scott Wood
  <scottwood@freescale.com>
-Subject: [PATCH 2/2] powerpc/math-emu: keep track of the instructions
- unimplemented by FPU
-Date: Thu, 11 Jul 2013 20:21:55 +0800
-Message-ID: <1373545315-9219-3-git-send-email-haokexin@gmail.com>
-In-Reply-To: <1373545315-9219-1-git-send-email-haokexin@gmail.com>
-References: <1373545315-9219-1-git-send-email-haokexin@gmail.com>
+Subject: [PATCH 0/2] powerpc/math-emu: two patches for the emulation of the
+ FPU unimplemented instructions
+Date: Thu, 11 Jul 2013 20:21:53 +0800
+Message-ID: <1373545315-9219-1-git-send-email-haokexin@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
@@ -26,159 +24,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some cores (such as Freescale BookE) don't implement all floating
-point instructions in ISA. But some gcc versions do use these
-instructions. So we would have to enable the math emulation in this
-case. Add this to emulated instructions tracking statistics so that
-the user has a way to know that its toolcahin emit these unimplemented
-floating point instructions.
+These two patches are for the emulation of the FPU unimplemented instructions.
+The first is just a bit optimization for the FPU state flush.
+The second is requested by Scott.
 
-Signed-off-by: Kevin Hao <haokexin@gmail.com>
----
- arch/powerpc/math-emu/math.c | 50 +++++++++++++++++++++++++++-----------------
- 1 file changed, 31 insertions(+), 19 deletions(-)
+Kevin Hao (2):
+  powerpc/math-emu: move the flush FPU state function into do_mathemu
+  powerpc/math-emu: keep track of the instructions unimplemented by FPU
 
-diff --git a/arch/powerpc/math-emu/math.c b/arch/powerpc/math-emu/math.c
-index 18ce6a7..9a98b6c 100644
---- a/arch/powerpc/math-emu/math.c
-+++ b/arch/powerpc/math-emu/math.c
-@@ -10,6 +10,7 @@
- 
- #include <asm/sfp-machine.h>
- #include <math-emu/double.h>
-+#include <asm/emulated_ops.h>
- 
- #define FLOATFUNC(x)	extern int x(void *, void *, void *, void *)
- 
-@@ -222,10 +223,17 @@ do_mathemu(struct pt_regs *regs)
- 	int idx = 0;
- 	int (*func)(void *, void *, void *, void *);
- 	int type = 0;
--	int eflag, trap;
-+	int eflag, trap, ret = -ENOSYS;
-+	int has_hw_fpu = 0;
- 
--	if (get_user(insn, (u32 *)pc))
--		return -EFAULT;
-+#ifdef CONFIG_PPC_FPU
-+	has_hw_fpu = 1;
-+#endif
-+
-+	if (get_user(insn, (u32 *)pc)) {
-+		ret = -EFAULT;
-+		goto out;
-+	}
- 
- 	switch (insn >> 26) {
- 	case LFS:	func = lfs;	type = D;	break;
-@@ -249,7 +257,7 @@ do_mathemu(struct pt_regs *regs)
- 		case STFDUX:	func = stfd;	type = XEU;	break;
- 		case STFIWX:	func = stfiwx;	type = XE;	break;
- 		default:
--			goto illegal;
-+			goto out;
- 		}
- 		break;
- 
-@@ -267,7 +275,7 @@ do_mathemu(struct pt_regs *regs)
- 		case FNMSUBS:	func = fnmsubs;	type = ABC;	break;
- 		case FNMADDS:	func = fnmadds;	type = ABC;	break;
- 		default:
--			goto illegal;
-+			goto out;
- 		}
- 		break;
- 
-@@ -287,7 +295,7 @@ do_mathemu(struct pt_regs *regs)
- 			case FNMSUB:	func = fnmsub;	type = ABC;	break;
- 			case FNMADD:	func = fnmadd;	type = ABC;	break;
- 			default:
--				goto illegal;
-+				goto out;
- 			}
- 			break;
- 		}
-@@ -309,12 +317,12 @@ do_mathemu(struct pt_regs *regs)
- 		case MFFS:	func = mffs;	type = X;	break;
- 		case MTFSF:	func = mtfsf;	type = XFLB;	break;
- 		default:
--			goto illegal;
-+			goto out;
- 		}
- 		break;
- 
- 	default:
--		goto illegal;
-+		goto out;
- 	}
- 
- 	switch (type) {
-@@ -347,7 +355,7 @@ do_mathemu(struct pt_regs *regs)
- 	case DU:
- 		idx = (insn >> 16) & 0x1f;
- 		if (!idx)
--			goto illegal;
-+			goto out;
- 
- 		sdisp = (insn & 0xffff);
- 		op0 = (void *)&current->thread.TS_FPR((insn >> 21) & 0x1f);
-@@ -375,7 +383,7 @@ do_mathemu(struct pt_regs *regs)
- 			if (((insn >> 1) & 0x3ff) == STFIWX)
- 				op1 = (void *)(regs->gpr[(insn >> 11) & 0x1f]);
- 			else
--				goto illegal;
-+				goto out;
- 		} else {
- 			op1 = (void *)(regs->gpr[idx] + regs->gpr[(insn >> 11) & 0x1f]);
- 		}
-@@ -417,7 +425,7 @@ do_mathemu(struct pt_regs *regs)
- 		break;
- 
- 	default:
--		goto illegal;
-+		goto out;
- 	}
- 
- 	/*
-@@ -425,9 +433,8 @@ do_mathemu(struct pt_regs *regs)
- 	 * if flushed into the thread_struct before attempting
- 	 * emulation
- 	 */
--#ifdef CONFIG_PPC_FPU
--	flush_fp_to_thread(current);
--#endif
-+	if (has_hw_fpu)
-+		flush_fp_to_thread(current);
- 
- 	eflag = func(op0, op1, op2, op3);
- 
-@@ -437,8 +444,10 @@ do_mathemu(struct pt_regs *regs)
- 	}
- 
- 	trap = record_exception(regs, eflag);
--	if (trap)
--		return 1;
-+	if (trap) {
-+		ret = 1;
-+		goto out;
-+	}
- 
- 	switch (type) {
- 	case DU:
-@@ -451,8 +460,11 @@ do_mathemu(struct pt_regs *regs)
- 	}
- 
- 	regs->nip += 4;
--	return 0;
-+	ret = 0;
-+
-+out:
-+	if (has_hw_fpu && ret >= 0)
-+		PPC_WARN_EMULATED(math, regs);
- 
--illegal:
--	return -ENOSYS;
-+	return ret;
- }
+ arch/powerpc/kernel/traps.c  |  9 --------
+ arch/powerpc/math-emu/math.c | 53 +++++++++++++++++++++++++++++++-------------
+ 2 files changed, 37 insertions(+), 25 deletions(-)
+
 -- 
 1.8.1.4
