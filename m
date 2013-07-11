@@ -2,19 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 390BB2C02F1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 22:38:19 +1000 (EST)
-Message-ID: <1373546290.19894.86.camel@pasglop>
+ by ozlabs.org (Postfix) with ESMTPS id 45BF32C02F3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jul 2013 22:39:39 +1000 (EST)
+Message-ID: <1373546368.19894.87.camel@pasglop>
 Subject: Re: [PATCH 6/8] KVM: PPC: Add support for multiple-TCE hcalls
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Alexander Graf <agraf@suse.de>
-Date: Thu, 11 Jul 2013 22:38:10 +1000
-In-Reply-To: <43E93931-F213-47CC-ADCF-D3A6D6BC4372@suse.de>
+Date: Thu, 11 Jul 2013 22:39:28 +1000
+In-Reply-To: <C6BC1E27-4C9C-4A18-A64A-052202DA64B5@suse.de>
 References: <1373123227-22969-1-git-send-email-aik@ozlabs.ru>
  <1373123227-22969-7-git-send-email-aik@ozlabs.ru>
  <51DC4228.7010607@suse.de> <51DCEA76.9070808@ozlabs.ru>
  <D10E7B99-3A7C-4275-9A49-3CB15598E705@suse.de> <51DE3ECB.7080803@ozlabs.ru>
- <43E93931-F213-47CC-ADCF-D3A6D6BC4372@suse.de>
+ <43E93931-F213-47CC-ADCF-D3A6D6BC4372@suse.de> <51DE8EE9.2000508@ozlabs.ru>
+ <C6BC1E27-4C9C-4A18-A64A-052202DA64B5@suse.de>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -31,16 +32,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-07-11 at 12:11 +0200, Alexander Graf wrote:
-> > So I must add one more ioctl to enable MULTITCE in kernel handling. Is it
-> > what you are saying?
-> > 
-> > I can see KVM_CHECK_EXTENSION but I do not see KVM_ENABLE_EXTENSION or
-> > anything like that.
-> 
-> KVM_ENABLE_CAP. It's how we enable sPAPR capabilities too.
+On Thu, 2013-07-11 at 13:15 +0200, Alexander Graf wrote:
+> And that's bad. Jeez, seriously. Don't argue this case. We enable new
+> features individually unless we're 100% sure we can keep everything
+> working. In this case an ENABLE_CAP doesn't hurt at all, because user
+> space still needs to handle the hypercalls if it wants them anyways.
+> But you get debugging for free for example.
 
-But in that case I don't see the point.
+An ENABLE_CAP is utterly pointless. More bloat. But you seem to like
+it :-)
 
-Cheers,
 Ben.
