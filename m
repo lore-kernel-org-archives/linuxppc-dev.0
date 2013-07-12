@@ -1,15 +1,23 @@
-Return-Path: <tony@bakeyournoodle.com>
-Date: Sat, 13 Jul 2013 08:31:42 +1000
-From: Tony Breeds <tony@bakeyournoodle.com>
-To: Chris Friesen <cbf123@mail.usask.ca>
-Subject: Re: error compiling ptrace in current mainline git
-Message-ID: <20130712223141.GA14807@thor.bakeyournoodle.com>
-References: <51E02E7D.5050304@mail.usask.ca>
+Return-Path: <cbf123@mail.usask.ca>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8F59F2C0349
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jul 2013 08:59:22 +1000 (EST)
+Message-ID: <51E08A40.80900@mail.usask.ca>
+Date: Fri, 12 Jul 2013 16:59:12 -0600
+From: Chris Friesen <cbf123@mail.usask.ca>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="FL5UXtIhxfXey3p5"
-In-Reply-To: <51E02E7D.5050304@mail.usask.ca>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: visible memory seems wrong in kexec crash dump kernel
+References: <51DF1BBB.5060904@mail.usask.ca> <51DF2229.5010604@mail.usask.ca>
+ <20130712012142.GA24112@concordia> <51E07056.8040007@mail.usask.ca>
+In-Reply-To: <51E07056.8040007@mail.usask.ca>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: kexec@lists.infradead.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, Vivek Goyal <vgoyal@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,61 +27,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 07/12/2013 03:08 PM, Chris Friesen wrote:
 
---FL5UXtIhxfXey3p5
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> I turned on the instrumentation in early_init_dt_scan_memory() and got
+> the following when jumping to the capture kernel:
+>
+> memory scan node memory, reg size 16, data: 0 0 2 0,
+> - 0 , 200000000
+>
+> That 0x200000000 matches the fact that I'm seeing 8GB of memory
+> available in the recovery kernel.
+>
+> If I boot the original kernel with "crashkernel=224M@32M", should I
+> expect that only 224MB is marked as "linux,usable-memory" in the
+> recovery kernel?
 
-On Fri, Jul 12, 2013 at 10:27:41AM -0600, Chris Friesen wrote:
-> Hi all,
->=20
-> I'm trying to build current mainline git with gcc version 4.4.1 as a
-> cross compiler and I'm getting the following:
->=20
->=20
->   CC      arch/powerpc/kernel/ptrace.o
-> {standard input}: Assembler messages:
-> {standard input}:1619: Error: junk at end of line: `1'
+I started looking at the kexec side of things, and I noticed something a 
+bit odd.  In most places dealing with the device tree in kexec it 
+accepts either "memory" or "memory@" for the memory node name.  In 
+add_usable_mem_property() in arch/ppc64/fs2dt.c it seems to only accept 
+"memory@".
 
-<snip>
-=20
-> Any ideas on how to deal with this?  Is this a code error or a
-> compiler error?
+Is this expected behaviour?  It seems to be the same in current git 
+versions of kexec-tools.
 
-It could be either can you:
-a) try the 4.6.3 cross compiler from: https://www.kernel.org/pub/tools/cros=
-stool/
-b) Try a ppc64_defconfig build.
+On my system I see "/proc/device-tree/memory".
 
-If the newer compiler with your .config fixes it it's a compiler issue.
-If chaning the config with you 4.4.1 compiler fixes it please post you
-=2Econfig to see if we can work out what's going on.
+If I modify add_usable_mem_property() to also accept "/memory" then my 
+recovery kernel boots up with
 
-Also when you say "current mainline git" I assume you mean the HEAD of
-linus's tree not Ben's right?
+physicalMemorySize            = 0x10000000
 
-Yours Tony
+which is 256MB (which is still a bit odd since I specified 224MB for the 
+crashkernel).
 
---FL5UXtIhxfXey3p5
-Content-Type: application/pgp-signature
+However, it then hits the BUG() call at the end of mark_bootmem() in 
+mm/bootmem.c.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.13 (GNU/Linux)
-
-iQIcBAEBCAAGBQJR4IPNAAoJEEsCiJRY75GKtEcP+wdY+pGx1Yk77tSoOhjcXpg8
-Op9lI51zHv8wt733vXBONZOUzMiEhy5RbrYoGYQivKkFemIGi4S1G5JUUm1R+ITW
-7tBFUPcSXxx62QaPCNKtBBDoNlzMEbXvpFHbTxeZ8Rzte9ojcMiu4Ha52Rc6c6x3
-uOc+W4mrlHIusBB1ZbyQQsR+GRX75Ngg77SMWDDwq+y8tNXxa4YzTMy0ooZeisbx
-Yx9Ks2c2VX40DA8jhu5JIimRA/rwiF/US5uSbvw3boDWWdx4srrSUhfVXAC8Kp1l
-dRPZsXgUCD5qAh67ziekqqfhS3SQnEzyNazYGkZPFl+RpJGt94nOhJsfLb7oo9Ng
-1Njq8TXSQSr/7TevRA4mEVhi1GMJngdmSQiQuoBuH5UOQU/zTekvjjR5lWdXzFhe
-nWfmHCUXmpdpVSfyNoX18UNagHfyZj9DiyfRTcclO71zhL7bYMIy2U4MAlf9adzi
-/EdWkp36kZeO7zWbrZAT2BYDbRT6f+2ShWjefcwvu0o6r3dmzbyxnIFiFoDM2MOI
-/ed9lO+p+ATAEjeiddFJo51n/CG+oYHl3IM5qfLkmEDBibYxa7vG69WjMSeACxxl
-EHG0Lwd882eE3qsgnUrFVKU/ZB3tzeP78InlLoLptDBvuKRqCyprBt1p8UGrka2w
-gPYcGqPkIGNnVe3UQ2WD
-=egzJ
------END PGP SIGNATURE-----
-
---FL5UXtIhxfXey3p5--
+Chris
