@@ -1,22 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <broonie@sirena.org.uk>
+Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 4E4C82C0319
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2013 18:37:29 +1000 (EST)
-Message-ID: <1373618233.19894.143.camel@pasglop>
-Subject: Re: [PATCH v2 1/2] powerpc/math-emu: move the flush FPU state
- function into do_mathemu
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kevin Hao <haokexin@gmail.com>
-Date: Fri, 12 Jul 2013 18:37:13 +1000
-In-Reply-To: <1373607402-21738-2-git-send-email-haokexin@gmail.com>
-References: <1373607402-21738-1-git-send-email-haokexin@gmail.com>
- <1373607402-21738-2-git-send-email-haokexin@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>,
- linuxppc <linuxppc-dev@lists.ozlabs.org>
+ by ozlabs.org (Postfix) with ESMTPS id 003B02C033C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2013 19:13:16 +1000 (EST)
+Date: Fri, 12 Jul 2013 09:43:28 +0100
+From: Mark Brown <broonie@kernel.org>
+To: Timur Tabi <timur@tabi.org>
+Message-ID: <20130712084328.GW24508@sirena.org.uk>
+References: <1373453034-21618-1-git-send-email-b42378@freescale.com>
+ <20130711165401.GU24508@sirena.org.uk> <51DEE810.3090304@tabi.org>
+ <20130712035732.GA27823@MrMyself> <51DF7F4F.90707@tabi.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="ulNsWUvGrZAj8PMr"
+In-Reply-To: <51DF7F4F.90707@tabi.org>
+Subject: Re: [alsa-devel] [PATCH] ASoC: fsl: Disable SSI in trigger() if
+ RE/TE are both cleared
+Cc: fabio.estevam@freescale.com, alsa-devel@alsa-project.org,
+ Nicolin Chen <b42378@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ shawn.guo@linaro.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,31 +29,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-07-12 at 13:36 +0800, Kevin Hao wrote:
-> +       /*
-> +        * If we support a HW FPU, we need to ensure the FP state
-> +        * if flushed into the thread_struct before attempting
-> +        * emulation
-> +        */
-> +#ifdef CONFIG_PPC_FPU
-> +       flush_fp_to_thread(current);
-> +#endif
-> +
 
-While at it, care to send a patch that defined an empty
-flush_fp_to_thread() in the header instead ?
+--ulNsWUvGrZAj8PMr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-ie, switch_to.h
+On Thu, Jul 11, 2013 at 11:00:15PM -0500, Timur Tabi wrote:
+> Nicolin Chen wrote:
 
-#ifdef CONFIG_PPC_FPU
-extern void flush_fp_to_thread(struct task-struct *);
-#else
-static inline void flush_fp_to_thread(struct task-struct *) { };
-#endif
+> >If I'm not missing some part of branch updating, it looks like Mark hasn't
+> >pushed it to the branch yet.
+> >Please test it for me. Thank you.
 
-And get rid of the ifdef's here (and elsewhere if any) ?
+> I definitely want to.  Unfortunately, I'm literally in the middle of
+> moving into a new house, and so everything is packed up.  I won't be
+> able to look at it for another week.
 
-Thanks !
+Yes, that's why I just went ahead - you'd said recently that you'd be
+out of action for a while and not able to test anything.
 
-Cheers,
-Ben.
+--ulNsWUvGrZAj8PMr
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.20 (GNU/Linux)
+
+iQIcBAEBAgAGBQJR38GsAAoJELSic+t+oim9DZUQAJ4WQQUxFZdPT0z37KwgeA+2
+Arnby1rNs0lXX2F/wpjsUsdJItQzrotO+VRSTJvJ4Qs8S3BU2463IqXua6MethyB
+BZf+GeLLVW68vAwCQXqS7YBjmJpqUhVJCjJVZfHpR9/bqE7W2iB7H+OvGNTSy242
+YuVt5YduYesu4iKklVGwBforWwgD/SQScGMaEHdUlMx2EsO4O8jPC81uB3TVUSGw
+ldv6Az4yELP2ImFkKH9j0IblH7OWHKAXCvRlKRsSRBX/7DwCeCODY8foxdeXJl8M
+6IIZw/FgYguz3dWSPP8/eBx13Rx0RrlZ6YP9PbqoP0NkVvyPEuq/xpkolWiVe9T4
+rrr83D1nBzMPIUuJ+HlkBSm1yITGl+rAljek/WDmY6BxiVmrdvqD9NiJiLQu9MMI
+8KbzTqObC+FF80VxrrdxukSytOK/3Q3qevgGeD2L6lNYSRTj26qpCVbLNfVZMW3S
+7NmYHoHn7ugyJFknNzrPtebTbr5HsD8Mk9dMSUaQwClAGdbFKCPn2YeW4c3PCThd
+A3z1ZUdFfsSgkZh8cZMu+AThkAfVuimei3kn2xh2RPNoJ4OwniaUWjnZWhhCfb96
+3TMEOgqr70sdGBxlegqm/QEDdqoxijeiZR62NlXUaS9IT2zF42DgLvfO+cSaDat9
+funGXfHV+7bYWkC2N1zk
+=koiT
+-----END PGP SIGNATURE-----
+
+--ulNsWUvGrZAj8PMr--
