@@ -2,14 +2,15 @@ Return-Path: <gsi@denx.de>
 From: Gerhard Sittig <gsi@denx.de>
 To: linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
  Alexander Popov <a13xp0p0v88@gmail.com>
-Subject: [PATCH RFC 5/8] dma: mpc512x: use symbolic specifiers for DMA channels
-Date: Fri, 12 Jul 2013 17:26:18 +0200
-Message-Id: <1373642781-32631-6-git-send-email-gsi@denx.de>
+Subject: [PATCH RFC 6/8] dma: of: Add common xlate function for matching by
+ channel id
+Date: Fri, 12 Jul 2013 17:26:19 +0200
+Message-Id: <1373642781-32631-7-git-send-email-gsi@denx.de>
 In-Reply-To: <1373642781-32631-1-git-send-email-gsi@denx.de>
 References: <1373642781-32631-1-git-send-email-gsi@denx.de>
-Cc: Lars-Peter Clausen <lars@metafoo.de>, Arnd Bergmann <arnd@arndb.de>,
- Vinod Koul <vinod.koul@intel.com>, Gerhard Sittig <gsi@denx.de>,
- Dan Williams <djbw@fb.com>, Anatolij Gustschin <agust@denx.de>
+Cc: Vinod Koul <vinod.koul@intel.com>, Lars-Peter Clausen <lars@metafoo.de>,
+ Anatolij Gustschin <agust@denx.de>, Arnd Bergmann <arnd@arndb.de>,
+ Dan Williams <djbw@fb.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,110 +20,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-for the DMA controller of the MPC512x SoC, DMA channels directly
-correspond to specific peripherals, since requester lines directly map
-to channels while no additional flexibility or mapping is involved
+From: Lars-Peter Clausen <lars@metafoo.de>
 
-introduce a dt-bindings header file for MPC512x DMA channels, and make
-the shared DT specs in the mpc5121.dtsi as well as the DMA engine driver
-use those names instead of numbers
+From: Lars-Peter Clausen <lars@metafoo.de>
 
-Signed-off-by: Gerhard Sittig <gsi@denx.de>
+This patch adds a new common OF dma xlate callback function which will match a
+channel by it's id. The binding expects one integer argument which it will use to
+lookup the channel by the id.
+
+Unlike of_dma_simple_xlate this function is able to handle a system with
+multiple DMA controllers. When registering the of dma provider with
+of_dma_controller_register a pointer to the dma_device struct which is
+associated with the dt node needs to passed as the data parameter. The filter
+function will use this pointer to match only channels which belong to the
+specified DMA controller.
+
+Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
 ---
- arch/powerpc/boot/dts/mpc5121.dtsi    |    6 +++++-
- drivers/dma/mpc512x_dma.c             |    6 ++++--
- include/dt-bindings/dma/mpc512x-dma.h |   21 +++++++++++++++++++++
- 3 files changed, 30 insertions(+), 3 deletions(-)
- create mode 100644 include/dt-bindings/dma/mpc512x-dma.h
+ drivers/dma/of-dma.c   |   47 +++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/of_dma.h |    4 ++++
+ 2 files changed, 51 insertions(+)
 
-diff --git a/arch/powerpc/boot/dts/mpc5121.dtsi b/arch/powerpc/boot/dts/mpc5121.dtsi
-index bd14c00..384e692 100644
---- a/arch/powerpc/boot/dts/mpc5121.dtsi
-+++ b/arch/powerpc/boot/dts/mpc5121.dtsi
-@@ -9,6 +9,8 @@
-  * option) any later version.
-  */
- 
-+#include <dt-bindings/dma/mpc512x-dma.h>
+diff --git a/drivers/dma/of-dma.c b/drivers/dma/of-dma.c
+index 7aa0864..d5d528e 100644
+--- a/drivers/dma/of-dma.c
++++ b/drivers/dma/of-dma.c
+@@ -229,3 +229,50 @@ struct dma_chan *of_dma_simple_xlate(struct of_phandle_args *dma_spec,
+ 			&dma_spec->args[0]);
+ }
+ EXPORT_SYMBOL_GPL(of_dma_simple_xlate);
 +
- /dts-v1/;
- 
- / {
-@@ -152,7 +154,7 @@
- 			compatible = "fsl,mpc5121-sdhc";
- 			reg = <0x1500 0x100>;
- 			interrupts = <8 0x8>;
--			dmas = <&dma0 30>;
-+			dmas = <&dma0 MPC512x_DMACHAN_SDHC>;
- 			dma-names = "rx-tx";
- 		};
- 
-@@ -262,6 +264,8 @@
- 		lpc@10000 {
- 			compatible = "fsl,mpc5121-lpc";
- 			reg = <0x10000 0x200>;
-+			dmas = <&dma0 MPC512x_DMACHAN_SCLPC>;
-+			dma-names = "rx-tx";
- 		};
- 
- 		pata@10200 {
-diff --git a/drivers/dma/mpc512x_dma.c b/drivers/dma/mpc512x_dma.c
-index 0053ff8..8f6d545 100644
---- a/drivers/dma/mpc512x_dma.c
-+++ b/drivers/dma/mpc512x_dma.c
-@@ -29,6 +29,8 @@
-  * file called COPYING.
-  */
- 
-+#include <dt-bindings/dma/mpc512x-dma.h>
++struct of_dma_filter_by_chan_id_args {
++	struct dma_device *dev;
++	unsigned int chan_id;
++};
 +
- #include <linux/module.h>
- #include <linux/dmaengine.h>
- #include <linux/dma-mapping.h>
-@@ -257,7 +259,7 @@ static void mpc_dma_execute(struct mpc_dma_chan *mchan)
- 		prev->tcd->dlast_sga = mdesc->tcd_paddr;
- 		prev->tcd->e_sg = 1;
- 		/* only start explicitly on MDDRC channel */
--		if (cid == 32)
-+		if (cid == MPC512x_DMACHAN_MDDRC)
- 			mdesc->tcd->start = 1;
- 
- 		prev = mdesc;
-@@ -276,7 +278,7 @@ static void mpc_dma_execute(struct mpc_dma_chan *mchan)
- 		/* peripherals involved, use external request */
- 		out_8(&mdma->regs->dmaserq, cid);
- 		break;
--	case 32:
-+	case MPC512x_DMACHAN_MDDRC:
- 		/* memory transfer, software provided start signal */
- 		out_8(&mdma->regs->dmassrt, cid);
- 		break;
-diff --git a/include/dt-bindings/dma/mpc512x-dma.h b/include/dt-bindings/dma/mpc512x-dma.h
-new file mode 100644
-index 0000000..56b06d1
---- /dev/null
-+++ b/include/dt-bindings/dma/mpc512x-dma.h
-@@ -0,0 +1,21 @@
-+/*
-+ * This header file provides symbolic specifiers for DMA channels
-+ * within the MPC512x SoC's DMA controller.  Since requester lines
-+ * directly map to channel numbers and no additional flexibility
-+ * is involved, DMA channels can be considered directly associated
-+ * with individual peripherals.
++static bool of_dma_filter_by_chan_id(struct dma_chan *chan, void *params)
++{
++	struct of_dma_filter_by_chan_id_args *args = params;
++
++	return chan->device == args->dev && chan->chan_id == args->chan_id;
++}
++
++/**
++ * of_dma_xlate_by_chan_id - Translate dt property to DMA channel by channel id
++ * @dma_spec:	pointer to DMA specifier as found in the device tree
++ * @of_dma:	pointer to DMA controller data
 + *
-+ * This header file gets shared among DT bindings which provide
-+ * hardware specs, and driver code which implements supporting logic.
++ * This function can be used as the of xlate callback for DMA driver which wants
++ * to match the channel based on the channel id. When using this xlate function
++ * the #dma-cells propety of the DMA controller dt node needs to be set to 1.
++ * The data parameter of of_dma_controller_register must be a pointer to the
++ * dma_device struct the function should match upon.
++ *
++ * Returns pointer to appropriate dma channel on success or NULL on error.
 + */
++struct dma_chan *of_dma_xlate_by_chan_id(struct of_phandle_args *dma_spec,
++					 struct of_dma *ofdma)
++{
++	struct of_dma_filter_by_chan_id_args args;
++	dma_cap_mask_t cap;
 +
-+#ifndef _DT_BINDINGS_DMA_MPC512x_DMA_H
-+#define _DT_BINDINGS_DMA_MPC512x_DMA_H
++	args.dev = ofdma->of_dma_data;
++	if (!args.dev)
++		return NULL;
 +
-+#define MPC512x_DMACHAN_SCLPC		26
-+#define MPC512x_DMACHAN_SDHC		30
-+#define MPC512x_DMACHAN_MDDRC		32
++	if (dma_spec->args_count != 1)
++		return NULL;
 +
-+#define MPC512x_DMACHAN_MAX		64
++	dma_cap_zero(cap);
++	dma_cap_set(DMA_SLAVE, cap);
 +
-+#endif
++	args.chan_id = dma_spec->args[0];
++
++	return dma_request_channel(cap, of_dma_filter_by_chan_id, &args);
++}
++EXPORT_SYMBOL_GPL(of_dma_xlate_by_chan_id);
+diff --git a/include/linux/of_dma.h b/include/linux/of_dma.h
+index 364dda7..b7cf614 100644
+--- a/include/linux/of_dma.h
++++ b/include/linux/of_dma.h
+@@ -42,6 +42,8 @@ extern struct dma_chan *of_dma_request_slave_channel(struct device_node *np,
+ 						     const char *name);
+ extern struct dma_chan *of_dma_simple_xlate(struct of_phandle_args *dma_spec,
+ 		struct of_dma *ofdma);
++extern struct dma_chan *of_dma_xlate_by_chan_id(struct of_phandle_args *dma_spec,
++		struct of_dma *ofdma);
+ #else
+ static inline int of_dma_controller_register(struct device_node *np,
+ 		struct dma_chan *(*of_dma_xlate)
+@@ -67,6 +69,8 @@ static inline struct dma_chan *of_dma_simple_xlate(struct of_phandle_args *dma_s
+ 	return NULL;
+ }
+ 
++#define of_dma_xlate_by_chan_id NULL
++
+ #endif
+ 
+ #endif /* __LINUX_OF_DMA_H */
 -- 
 1.7.10.4
