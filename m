@@ -1,24 +1,23 @@
-Return-Path: <B07421@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
+Return-Path: <cbf123@mail.usask.ca>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 70BFF2C036A
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jul 2013 07:02:05 +1000 (EST)
-Date: Fri, 12 Jul 2013 16:01:56 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH V5] powerpc/85xx: add the P1020RDB-PD DTS support
-To: Haijun Zhang <Haijun.Zhang@freescale.com>
-References: <1373587738-29235-1-git-send-email-Haijun.Zhang@freescale.com>
-In-Reply-To: <1373587738-29235-1-git-send-email-Haijun.Zhang@freescale.com>
- (from Haijun.Zhang@freescale.com on Thu Jul 11 19:08:58 2013)
-Message-ID: <1373662916.8183.285@snotra>
+ by ozlabs.org (Postfix) with ESMTPS id 2F1022C02EF
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jul 2013 07:08:47 +1000 (EST)
+Message-ID: <51E07056.8040007@mail.usask.ca>
+Date: Fri, 12 Jul 2013 15:08:38 -0600
+From: Chris Friesen <cbf123@mail.usask.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: Jerry Huang <Chang-Ming.Huang@freescale.com>, AFLEMING@freescale.com,
- Haijun Zhang <Haijun.Zhang@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- Xie Xiaobo-R63061 <X.Xie@freescale.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: visible memory seems wrong in kexec crash dump kernel
+References: <51DF1BBB.5060904@mail.usask.ca> <51DF2229.5010604@mail.usask.ca>
+ <20130712012142.GA24112@concordia>
+In-Reply-To: <20130712012142.GA24112@concordia>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: kexec@lists.infradead.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, Vivek Goyal <vgoyal@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,29 +27,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/11/2013 07:08:58 PM, Haijun Zhang wrote:
-> Overview of P1020RDB-PD device:
-> - DDR3 2GB
-> - NOR flash 64MB
-> - NAND flash 128MB
-> - SPI flash 16MB
-> - I2C EEPROM 256Kb
-> - eTSEC1 (RGMII PHY) connected to VSC7385 L2 switch
-> - eTSEC2 (SGMII PHY)
-> - eTSEC3 (RGMII PHY)
-> - SDHC
-> - 1 USB ports
-> - TDM ports
-> - PCIe
->=20
-> Signed-off-by: Haijun Zhang <Haijun.Zhang@freescale.com>
-> Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
-> Signed-off-by: Xie Xiaobo-R63061 <X.Xie@freescale.com>
-> CC: Scott Wood <scottwood@freescale.com>
-> ---
-> changes for v5:
-> 	- change the size of nand file system
+On 07/11/2013 07:21 PM, Michael Ellerman wrote:
+> On Thu, Jul 11, 2013 at 03:22:49PM -0600, Chris Friesen wrote:
+>> On 07/11/2013 02:55 PM, Chris Friesen wrote:
+>>> Hi,
+>>>
+>>> I'm running 2.6.34 with kexec 2.0.1 on a Freescale p5020-based system
+>>> with 8GB of memory.  (It's an embedded system and I can't do much
+>>> about the fact that it's using older software.)
+>>
+>> I should probably clarify this...I may be able to update kexec, I
+>> can't update the kernel but I can backport more recent code if
+>> necessary.
+>>
+>> Looking at the version of kexec that I have, it seems like where x86
+>> uses "memmap=" to specify the memory map usable by the capture
+>> kernel, powerpc does something different.
+>
+>  From memory, it's been years, on powerpc we add properties to the memory
+> nodes in the device tree that specify which memory is usable. The
+> properties are called "linux,usable-memory", and in modern kernels they
+> are read in early_init_dt_scan_memory().
 
-What about the SPI filesystem?
+I turned on the instrumentation in early_init_dt_scan_memory() and got 
+the following when jumping to the capture kernel:
 
--Scott=
+memory scan node memory, reg size 16, data: 0 0 2 0,
+  - 0 ,  200000000
+
+That 0x200000000 matches the fact that I'm seeing 8GB of memory 
+available in the recovery kernel.
+
+If I boot the original kernel with "crashkernel=224M@32M", should I 
+expect that only 224MB is marked as "linux,usable-memory" in the 
+recovery kernel?
+
+Chris
