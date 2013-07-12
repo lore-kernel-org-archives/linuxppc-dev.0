@@ -1,24 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 13DFA2C0316
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2013 13:56:17 +1000 (EST)
-Message-ID: <1373601363.19894.134.camel@pasglop>
-Subject: Re: [PATCH 2/2] powerpc/math-emu: keep track of the instructions
- unimplemented by FPU
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kevin Hao <haokexin@gmail.com>
-Date: Fri, 12 Jul 2013 13:56:03 +1000
-In-Reply-To: <20130712020749.GA32154@pek-khao-d1.corp.ad.wrs.com>
-References: <1373545315-9219-1-git-send-email-haokexin@gmail.com>
- <1373545315-9219-3-git-send-email-haokexin@gmail.com>
- <1373546721.19894.90.camel@pasglop>
- <20130712020749.GA32154@pek-khao-d1.corp.ad.wrs.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>,
- linuxppc <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <B42378@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2A14C2C0323
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2013 13:59:25 +1000 (EST)
+Date: Fri, 12 Jul 2013 11:57:33 +0800
+From: Nicolin Chen <b42378@freescale.com>
+To: <timur@tabi.org>
+Subject: Re: [alsa-devel] [PATCH] ASoC: fsl: Disable SSI in trigger() if
+ RE/TE are both cleared
+Message-ID: <20130712035732.GA27823@MrMyself>
+References: <1373453034-21618-1-git-send-email-b42378@freescale.com>
+ <20130711165401.GU24508@sirena.org.uk> <51DEE810.3090304@tabi.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <51DEE810.3090304@tabi.org>
+Cc: fabio.estevam@freescale.com, alsa-devel@alsa-project.org,
+ Mark Brown <broonie@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ shawn.guo@linaro.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,15 +29,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-07-12 at 10:07 +0800, Kevin Hao wrote:
-> There are two invocations of do_mathemu() in the traps.c. The one in the
-> function program_check_exception() doesn't call the PPC_WARN_EMULATED.
-> This is also the one I try to fix. Of course my patch will definitely corrupt
-> the one in function SoftwareEmulation(). I will respin a new patch to
-> fix this. Sorry for my mistake.
+Hi Timur,
 
-Put the call in the caller (in program_check_exception). It keeps the code
-in math-emu simpler and is consistent with what we do elsewhere.
+On Thu, Jul 11, 2013 at 12:14:56PM -0500, timur@tabi.org wrote:
+> Don't you need an ACK from the maintainer of the driver before applying
+> it?  I haven't had a chance to test it yet.
+If I'm not missing some part of branch updating, it looks like Mark hasn't
+pushed it to the branch yet.
+Please test it for me. Thank you.
 
-Cheers,
-Ben.
+Best regards,
+Nicolin Chen
