@@ -1,24 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id AF1282C033F
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jul 2013 09:06:49 +1000 (EST)
-Message-ID: <1373670396.19894.215.camel@pasglop>
-Subject: Re: [PATCH 2/2] powerpc/hibernate: add restore mmu context after
- resume
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <anton@scarybugs.org>
+Received: from mail-pa0-f41.google.com (mail-pa0-f41.google.com
+ [209.85.220.41])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2CB882C0345
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jul 2013 04:35:09 +1000 (EST)
+Received: by mail-pa0-f41.google.com with SMTP id bj3so9293655pad.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2013 11:35:06 -0700 (PDT)
+Sender: Anton Vorontsov <anton@scarybugs.org>
+Date: Fri, 12 Jul 2013 11:35:03 -0700
+From: Anton Vorontsov <anton@enomsg.org>
 To: Scott Wood <scottwood@freescale.com>
-Date: Sat, 13 Jul 2013 09:06:36 +1000
-In-Reply-To: <1373666090.8183.290@snotra>
-References: <1373666090.8183.290@snotra>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "anton@enomsg.org" <anton@enomsg.org>,
- Wang Dongsheng-B40534 <B40534@freescale.com>,
- "johannes@sipsolutions.net" <johannes@sipsolutions.net>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH 3/4 V2] mmc: esdhc: Add quirks to support T4240QDS board
+Message-ID: <20130712183503.GA24689@teo>
+References: <1373267764-6364-1-git-send-email-Haijun.Zhang@freescale.com>
+ <1373267764-6364-2-git-send-email-Haijun.Zhang@freescale.com>
+ <1373303919.8183.164@snotra>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1373303919.8183.164@snotra>
+Cc: linux-mmc@vger.kernel.org, r39252@freescale.com, AFLEMING@freescale.com,
+ cjb@laptop.org, linuxppc-dev@lists.ozlabs.org,
+ Haijun Zhang <Haijun.Zhang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,17 +31,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-07-12 at 16:54 -0500, Scott Wood wrote:
-> set_context() doesn't exist for hash MMUs.
+On Mon, Jul 08, 2013 at 12:18:39PM -0500, Scott Wood wrote:
+> On 07/08/2013 02:16:04 AM, Haijun Zhang wrote:
+> >On T4240QDS board controllers has an unusable ADMA engine, so use
+> >SDMA instead.
+> >Also 3.0v is support on T4240QDS board even if the capacity
+> >detailed only 1.8v
+> >support. Without this quirk SD card will declare voltage not
+> >support and
+> >
+> >Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
 > 
-> Whatever you do, please try actually building it on various targets,  
-> including both 32 and 64 bits, and both hash and non-hash.  And make  
-> sure that whatever effect PPC32 was depending on switch_mmu_context
-> for  
-> is preserved, including on non-booke.
+> ...and what?
+> 
+> Why is this board-specific?  Isn't the controller part of the SoC,
+> not part of the board?  If it really is board-specific, could you be
+> more detailed about why (ideally with an erratum number), and check
+> the toplevel board compatible (or get the information from platform
+> code) rather than modify the device tree?
 
-The right thing to do is probably to have the various tlb_* files
-provide a pair of save/restore functions that do the right thing
-for that specific MMU type.
+Yup, and if anything, I would recommend to reuse voltage-ranges property,
+it is already implemented for mmc spi driver,
 
-Ben.
+drivers/mmc/host/of_mmc_spi.c
+Documentation/devicetree/bindings/mmc/mmc-spi-slot.txt
+
+Thanks,
+
+Anton
