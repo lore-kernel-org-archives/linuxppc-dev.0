@@ -1,21 +1,20 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C33742C0341
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2013 15:37:52 +1000 (EST)
-From: Kevin Hao <haokexin@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Scott Wood
- <scottwood@freescale.com>
-Subject: [PATCH v2 2/2] powerpc: introduce function emulate_math()
-Date: Fri, 12 Jul 2013 13:36:42 +0800
-Message-ID: <1373607402-21738-3-git-send-email-haokexin@gmail.com>
-In-Reply-To: <1373607402-21738-1-git-send-email-haokexin@gmail.com>
-References: <1373607402-21738-1-git-send-email-haokexin@gmail.com>
+Return-Path: <B40534@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A74D82C0345
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2013 15:48:18 +1000 (EST)
+From: Dongsheng Wang <dongsheng.wang@freescale.com>
+To: <scottwood@freescale.com>
+Subject: [PATCH v2 1/2] powerpc: add Book E support to 64-bit hibernation
+Date: Fri, 12 Jul 2013 12:58:08 +0800
+Message-ID: <1373605088-14537-1-git-send-email-dongsheng.wang@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Wang Dongsheng <dongsheng.wang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,146 +24,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There are two invocations of do_mathemu() in traps.c. And the codes
-in these two places are almost the same. Introduce a locale function
-to eliminate the duplication. With this change we can also make sure
-that in program_check_exception() the PPC_WARN_EMULATED is invoked for
-the correctly emulated math instructions.
+From: Wang Dongsheng <dongsheng.wang@freescale.com>
 
-Signed-off-by: Kevin Hao <haokexin@gmail.com>
+Update the 64-bit hibernation code to support Book E CPUs.
+Some registers and instructions are not defined for Book3e
+(SDR reg, tlbia instruction).
+
+SDR: Storage Description Register. Book3S and Book3E have different
+address translation mode, we do not need HTABORG & HTABSIZE to
+translate virtual address to real address.
+
+More registers are saved in BookE-64bit.(TCR, SPRG1)
+
+Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
 ---
 v2:
-  * Don't depend on the FPU for the PPC_WARN_EMULATED.
-  * Invoke the PPC_WARN_EMULATED in the caller of do_mathemu().
-  * Introduce a new function to eliminate the code duplication.
+* Remove: Save SPRG0, SPRG2-SPRG7.
+  SPRG1 should be saved, the paca will be saved here.
 
- arch/powerpc/kernel/traps.c | 79 +++++++++++++++++++--------------------------
- 1 file changed, 34 insertions(+), 45 deletions(-)
+* Add: Invaild tlbs.
 
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 58a8065..217724a 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -1052,11 +1052,41 @@ int is_valid_bugaddr(unsigned long addr)
- 	return is_kernel_addr(addr);
- }
+* Modify: Code style, add whitespace after commas.
+
+diff --git a/arch/powerpc/kernel/swsusp_asm64.S b/arch/powerpc/kernel/swsusp_asm64.S
+index 86ac1d9..f530350 100644
+--- a/arch/powerpc/kernel/swsusp_asm64.S
++++ b/arch/powerpc/kernel/swsusp_asm64.S
+@@ -46,10 +46,19 @@
+ #define SL_r29		0xe8
+ #define SL_r30		0xf0
+ #define SL_r31		0xf8
+-#define SL_SIZE		SL_r31+8
++#define SL_SPRG1	0x100
++#define SL_TCR		0x108
++#define SL_SIZE		SL_TCR+8
  
-+#ifdef CONFIG_MATH_EMULATION
-+static int emulate_math(struct pt_regs *regs)
-+{
-+	int ret;
-+	extern int do_mathemu(struct pt_regs *regs);
+ /* these macros rely on the save area being
+  * pointed to by r11 */
 +
-+	ret = do_mathemu(regs);
-+	if (ret >= 0)
-+		PPC_WARN_EMULATED(math, regs);
-+
-+	switch (ret) {
-+	case 0:
-+		emulate_single_step(regs);
-+		return 0;
-+	case 1: {
-+			int code = 0;
-+			code = __parse_fpscr(current->thread.fpscr.val);
-+			_exception(SIGFPE, regs, code, regs->nip);
-+			return 0;
-+		}
-+	case -EFAULT:
-+		_exception(SIGSEGV, regs, SEGV_MAPERR, regs->nip);
-+		return 0;
-+	}
-+
-+	return -1;
-+}
++#define SAVE_SPR(register)		\
++	mfspr	r0, SPRN_##register	;\
++	std	r0, SL_##register(r11)
++#define RESTORE_SPR(register)		\
++	ld	r0, SL_##register(r11)	;\
++	mtspr	SPRN_##register, r0
+ #define SAVE_SPECIAL(special)		\
+ 	mf##special	r0		;\
+ 	std	r0, SL_##special(r11)
+@@ -103,8 +112,15 @@ _GLOBAL(swsusp_arch_suspend)
+ 	SAVE_REGISTER(r30)
+ 	SAVE_REGISTER(r31)
+ 	SAVE_SPECIAL(MSR)
+-	SAVE_SPECIAL(SDR1)
+ 	SAVE_SPECIAL(XER)
++#ifdef CONFIG_PPC_BOOK3S_64
++	SAVE_SPECIAL(SDR1)
 +#else
-+static inline int emulate_math(struct pt_regs *regs) { return -1; }
++	SAVE_SPR(TCR)
++
++	/* Save SPRG1, SPRG1 be used save paca */
++	SAVE_SPR(SPRG1)
 +#endif
+ 
+ 	/* we push the stack up 128 bytes but don't store the
+ 	 * stack pointer on the stack like a real stackframe */
+@@ -151,6 +167,7 @@ copy_page_loop:
+ 	bne+	copyloop
+ nothing_to_copy:
+ 
++#ifdef CONFIG_PPC_BOOK3S_64
+ 	/* flush caches */
+ 	lis	r3, 0x10
+ 	mtctr	r3
+@@ -167,6 +184,7 @@ nothing_to_copy:
+ 	sync
+ 
+ 	tlbia
++#endif
+ 
+ 	ld	r11,swsusp_save_area_ptr@toc(r2)
+ 
+@@ -208,16 +226,39 @@ nothing_to_copy:
+ 	RESTORE_REGISTER(r29)
+ 	RESTORE_REGISTER(r30)
+ 	RESTORE_REGISTER(r31)
 +
- void __kprobes program_check_exception(struct pt_regs *regs)
- {
- 	enum ctx_state prev_state = exception_enter();
- 	unsigned int reason = get_reason(regs);
--	extern int do_mathemu(struct pt_regs *regs);
- 
- 	/* We can now get here via a FP Unavailable exception if the core
- 	 * has no FPU, in that case the reason flags will be 0 */
-@@ -1122,7 +1152,6 @@ void __kprobes program_check_exception(struct pt_regs *regs)
- 	if (!arch_irq_disabled_regs(regs))
- 		local_irq_enable();
- 
--#ifdef CONFIG_MATH_EMULATION
- 	/* (reason & REASON_ILLEGAL) would be the obvious thing here,
- 	 * but there seems to be a hardware bug on the 405GP (RevD)
- 	 * that means ESR is sometimes set incorrectly - either to
-@@ -1131,22 +1160,8 @@ void __kprobes program_check_exception(struct pt_regs *regs)
- 	 * instruction or only on FP instructions, whether there is a
- 	 * pattern to occurrences etc. -dgibson 31/Mar/2003
- 	 */
--	switch (do_mathemu(regs)) {
--	case 0:
--		emulate_single_step(regs);
--		goto bail;
--	case 1: {
--			int code = 0;
--			code = __parse_fpscr(current->thread.fpscr.val);
--			_exception(SIGFPE, regs, code, regs->nip);
--			goto bail;
--		}
--	case -EFAULT:
--		_exception(SIGSEGV, regs, SEGV_MAPERR, regs->nip);
-+	if (!emulate_math(regs))
- 		goto bail;
--	}
--	/* fall through on any other errors */
--#endif /* CONFIG_MATH_EMULATION */
- 
- 	/* Try to emulate it if we should. */
- 	if (reason & (REASON_ILLEGAL | REASON_PRIVILEGED)) {
-@@ -1425,11 +1440,6 @@ void performance_monitor_exception(struct pt_regs *regs)
- #ifdef CONFIG_8xx
- void SoftwareEmulation(struct pt_regs *regs)
- {
--	extern int do_mathemu(struct pt_regs *);
--#if defined(CONFIG_MATH_EMULATION)
--	int errcode;
--#endif
--
- 	CHECK_FULL_REGS(regs);
- 
- 	if (!user_mode(regs)) {
-@@ -1437,31 +1447,10 @@ void SoftwareEmulation(struct pt_regs *regs)
- 		die("Kernel Mode Software FPU Emulation", regs, SIGFPE);
- 	}
- 
--#ifdef CONFIG_MATH_EMULATION
--	errcode = do_mathemu(regs);
--	if (errcode >= 0)
--		PPC_WARN_EMULATED(math, regs);
--
--	switch (errcode) {
--	case 0:
--		emulate_single_step(regs);
--		return;
--	case 1: {
--			int code = 0;
--			code = __parse_fpscr(current->thread.fpscr.val);
--			_exception(SIGFPE, regs, code, regs->nip);
--			return;
--		}
--	case -EFAULT:
--		_exception(SIGSEGV, regs, SEGV_MAPERR, regs->nip);
-+	if (!emulate_math(regs))
- 		return;
--	default:
--		_exception(SIGILL, regs, ILL_ILLOPC, regs->nip);
--		return;
--	}
--#else
++#ifdef CONFIG_PPC_BOOK3S_64
+ 	/* can't use RESTORE_SPECIAL(MSR) */
+ 	ld	r0, SL_MSR(r11)
+ 	mtmsrd	r0, 0
+ 	RESTORE_SPECIAL(SDR1)
++#else
++	/* Restore SPRG1, be used to save paca */
++	ld	r0, SL_SPRG1(r11)
++	mtsprg	1, r0
 +
- 	_exception(SIGILL, regs, ILL_ILLOPC, regs->nip);
--#endif
- }
- #endif /* CONFIG_8xx */
++	RESTORE_SPECIAL(MSR)
++
++	/* Restore TCR and clear any pending bits in TSR. */
++	RESTORE_SPR(TCR)
++	lis	r0, (TSR_ENW | TSR_WIS | TSR_DIS | TSR_FIS)@h
++	mtspr	SPRN_TSR, r0
++
++	/* Kick decrementer */
++	li	r0, 1
++	mtdec	r0
++#endif
+ 	RESTORE_SPECIAL(XER)
+ 
+ 	sync
+ 
++	/* Invalidate all tlbs */
++	bl	_tlbil_all
++
+ 	addi	r1,r1,-128
++#ifdef CONFIG_PPC_BOOK3S_64
+ 	bl	slb_flush_and_rebolt
++#endif
+ 	bl	do_after_copyback
+ 	addi	r1,r1,128
  
 -- 
-1.8.1.4
+1.8.0
