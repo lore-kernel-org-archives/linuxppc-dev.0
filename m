@@ -1,25 +1,25 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 003B02C033C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2013 19:13:16 +1000 (EST)
-Date: Fri, 12 Jul 2013 09:43:28 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Timur Tabi <timur@tabi.org>
-Message-ID: <20130712084328.GW24508@sirena.org.uk>
-References: <1373453034-21618-1-git-send-email-b42378@freescale.com>
- <20130711165401.GU24508@sirena.org.uk> <51DEE810.3090304@tabi.org>
- <20130712035732.GA27823@MrMyself> <51DF7F4F.90707@tabi.org>
+Return-Path: <a13xp0p0v88@gmail.com>
+Received: from mail-we0-x22b.google.com (mail-we0-x22b.google.com
+ [IPv6:2a00:1450:400c:c03::22b])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0AE782C0337
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2013 20:15:22 +1000 (EST)
+Received: by mail-we0-f171.google.com with SMTP id m46so7873429wev.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2013 03:15:16 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="ulNsWUvGrZAj8PMr"
-In-Reply-To: <51DF7F4F.90707@tabi.org>
-Subject: Re: [alsa-devel] [PATCH] ASoC: fsl: Disable SSI in trigger() if
- RE/TE are both cleared
-Cc: fabio.estevam@freescale.com, alsa-devel@alsa-project.org,
- Nicolin Chen <b42378@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- shawn.guo@linaro.org
+In-Reply-To: <20130710125811.GB2615@book.gsilab.sittig.org>
+References: <1373451651-20029-1-git-send-email-a13xp0p0v88@gmail.com>
+ <20130710125811.GB2615@book.gsilab.sittig.org>
+Date: Fri, 12 Jul 2013 14:15:16 +0400
+Message-ID: <CAF0T0X70wa1DBPtvccr+-cb9_2AAw1tFaqJSt7_7GP-xa1qyVg@mail.gmail.com>
+Subject: Re: [V2 1/2] powerpc: mpc512x_dma: add support for data transfers
+ between memory and i/o memory
+From: Alexander Popov <a13xp0p0v88@gmail.com>
+To: Alexander Popov <a13xp0p0v88@gmail.com>, Vinod Koul <vinod.koul@intel.com>,
+ Dan Williams <djbw@fb.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,45 +29,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+2013/7/10 Gerhard Sittig <gsi@denx.de>:
+> Disclaimer:  It's been a while since I worked with the MPC512x
+> DMA controller, and I only read the RM rev3 back then.
 
---ulNsWUvGrZAj8PMr
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Hello Gerhard.
 
-On Thu, Jul 11, 2013 at 11:00:15PM -0500, Timur Tabi wrote:
-> Nicolin Chen wrote:
+Thank you for fast and detailed feedback.
 
-> >If I'm not missing some part of branch updating, it looks like Mark hasn't
-> >pushed it to the branch yet.
-> >Please test it for me. Thank you.
+>> @@ -256,7 +256,9 @@ static void mpc_dma_execute(struct mpc_dma_chan *mchan)
+>>
+>>               prev->tcd->dlast_sga = mdesc->tcd_paddr;
+>>               prev->tcd->e_sg = 1;
+>> -             mdesc->tcd->start = 1;
+>> +             /* only start explicitly on MDDRC channel */
+>> +             if (cid == 32)
+>> +                     mdesc->tcd->start = 1;
+>>
+>>               prev = mdesc;
+>>       }
+>> @@ -268,7 +270,15 @@ static void mpc_dma_execute(struct mpc_dma_chan *mchan)
+>>
+>>       if (first != prev)
+>>               mdma->tcd[cid].e_sg = 1;
+>> -     out_8(&mdma->regs->dmassrt, cid);
+>> +
+>> +     switch (cid) {
+>> +     case 26:
+>> +             out_8(&mdma->regs->dmaserq, cid);
+>> +             break;
+>> +     case 32:
+>> +             out_8(&mdma->regs->dmassrt, cid);
+>> +             break;
+>> +     }
+>>  }
+>>
+>>  /* Handle interrupt on one half of DMA controller (32 channels) */
 
-> I definitely want to.  Unfortunately, I'm literally in the middle of
-> moving into a new house, and so everything is packed up.  I won't be
-> able to look at it for another week.
+> This part of the change looks suspicious to me.  The logic
+> changes from always starting the transfer in software to only
+> starting from software for memory or having hardware request the
+> start for LPB controller requests, while _all_other_ channels
+> remain without setup of the start condition.
+>
+> Either make sure that only the new source (LPB) gets handled
+> specially, or
 
-Yes, that's why I just went ahead - you'd said recently that you'd be
-out of action for a while and not able to test anything.
+I agree, I'll use this way.
 
---ulNsWUvGrZAj8PMr
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+> In addition, try to get rid of the magic numbers.  Use symbolic
+> identifiers instead (regardless of whether other floating patches
+> used magic numbers as well).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
+Ok.
 
-iQIcBAEBAgAGBQJR38GsAAoJELSic+t+oim9DZUQAJ4WQQUxFZdPT0z37KwgeA+2
-Arnby1rNs0lXX2F/wpjsUsdJItQzrotO+VRSTJvJ4Qs8S3BU2463IqXua6MethyB
-BZf+GeLLVW68vAwCQXqS7YBjmJpqUhVJCjJVZfHpR9/bqE7W2iB7H+OvGNTSy242
-YuVt5YduYesu4iKklVGwBforWwgD/SQScGMaEHdUlMx2EsO4O8jPC81uB3TVUSGw
-ldv6Az4yELP2ImFkKH9j0IblH7OWHKAXCvRlKRsSRBX/7DwCeCODY8foxdeXJl8M
-6IIZw/FgYguz3dWSPP8/eBx13Rx0RrlZ6YP9PbqoP0NkVvyPEuq/xpkolWiVe9T4
-rrr83D1nBzMPIUuJ+HlkBSm1yITGl+rAljek/WDmY6BxiVmrdvqD9NiJiLQu9MMI
-8KbzTqObC+FF80VxrrdxukSytOK/3Q3qevgGeD2L6lNYSRTj26qpCVbLNfVZMW3S
-7NmYHoHn7ugyJFknNzrPtebTbr5HsD8Mk9dMSUaQwClAGdbFKCPn2YeW4c3PCThd
-A3z1ZUdFfsSgkZh8cZMu+AThkAfVuimei3kn2xh2RPNoJ4OwniaUWjnZWhhCfb96
-3TMEOgqr70sdGBxlegqm/QEDdqoxijeiZR62NlXUaS9IT2zF42DgLvfO+cSaDat9
-funGXfHV+7bYWkC2N1zk
-=koiT
------END PGP SIGNATURE-----
+>> +             if (!IS_ALIGNED(sg_dma_address(sg), 4))
+>> +                     return NULL;
+>> +
+>> +             if (direction == DMA_DEV_TO_MEM) {
+>> +                     tcd->saddr = mchan->per_paddr;
+>> +                     tcd->daddr = sg_dma_address(sg);
+>> +                     tcd->soff = 0;
+>> +                     tcd->doff = 4;
+>> +             } else if (direction == DMA_MEM_TO_DEV) {
+>> +                     tcd->saddr = sg_dma_address(sg);
+>> +                     tcd->daddr = mchan->per_paddr;
+>> +                     tcd->soff = 4;
+>> +                     tcd->doff = 0;
+>> +             } else {
+>> +                     return NULL;
+>> +             }
+>> +             tcd->ssize = MPC_DMA_TSIZE_4;
+>> +             tcd->dsize = MPC_DMA_TSIZE_4;
 
---ulNsWUvGrZAj8PMr--
+> This hardcodes the address increments and the source and
+> destination port sizes to 32bits, right?  This may be an
+> acceptable limitation given the current use of the DMA engine,
+> but might need a comment as well.
+
+Ok, I'll add it.
+
+>> +             } else {
+>> +                     /* citer_linkch contains the high bits of iter */
+>> +                     tcd->biter = iter & 0x1ff;
+>> +                     tcd->biter_linkch = iter >> 9;
+>> +                     tcd->citer = tcd->biter;
+>> +                     tcd->citer_linkch = tcd->biter_linkch;
+>> +             }
+
+> I cannot tell how these magic numbers here (bit masks, shift
+> numbers) are acceptable or shall get replaced by something else.
+> Just pointing at potential for improvement. :)
+
+This piece of code may become clearer if I improve the comment.
+
+>> +
+>> +             tcd->e_sg = 0;
+>> +             tcd->d_req = 1;
+>> +
+>> +             /* Place descriptor in prepared list */
+>> +             spin_lock_irqsave(&mchan->lock, iflags);
+>> +             list_add_tail(&mdesc->node, &mchan->prepared);
+>> +             spin_unlock_irqrestore(&mchan->lock, iflags);
+>> +     }
+>> +
+>> +     /* Return the last descriptor */
+>> +     return &mdesc->desc;
+>> +}
+>> +
+
+> It's not related to your specific patch, but I guess that the
+> current implementation of the MPC512x DMA engine cannot really
+> cope with scatter/gather as it should.  Unfortunately the Linux
+> DMA API appears to "somehow intermingle" the S/G aspect with
+> "peripheral access", while it actually should be orthogonal.
+
+That's why I tried to add my code to mpc_dma_prep_memcpy()
+in the first version of this patch.
+
+> To cut it short:  As long as "mdesc" items and "TCD" items can't
+> get allocated and chained individually, and as long as the prep
+> and submit routines assume that an mdesc is associated with
+> exactly one tcd, there should be a comment about this limitation
+> or even better an explicit check in the prep slave sg routine to
+> reject S/G lists with more than one entry.
+
+I'll fix that and return with the third version.
+
+Best regards,
+Alexander
