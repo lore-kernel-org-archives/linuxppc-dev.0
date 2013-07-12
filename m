@@ -1,26 +1,13 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 425E62C0345
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jul 2013 00:23:44 +1000 (EST)
-Date: Fri, 12 Jul 2013 15:23:33 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Timur Tabi <timur@tabi.org>
-Message-ID: <20130712142333.GG24508@sirena.org.uk>
-References: <1373453034-21618-1-git-send-email-b42378@freescale.com>
- <20130711165401.GU24508@sirena.org.uk> <51DEE810.3090304@tabi.org>
- <20130712035732.GA27823@MrMyself> <51DF7F4F.90707@tabi.org>
- <20130712084328.GW24508@sirena.org.uk> <51DFF277.7020105@tabi.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="4B4+7MsODflw+h2f"
-In-Reply-To: <51DFF277.7020105@tabi.org>
-Subject: Re: [alsa-devel] [PATCH] ASoC: fsl: Disable SSI in trigger() if
- RE/TE are both cleared
-Cc: fabio.estevam@freescale.com, alsa-devel@alsa-project.org,
- Nicolin Chen <b42378@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- shawn.guo@linaro.org
+Return-Path: <gsi@denx.de>
+From: Gerhard Sittig <gsi@denx.de>
+To: linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
+ Alexander Popov <a13xp0p0v88@gmail.com>
+Subject: [PATCH RFC 0/8] MPC512x DMA slave s/g support, OF DMA lookup
+Date: Fri, 12 Jul 2013 17:26:13 +0200
+Message-Id: <1373642781-32631-1-git-send-email-gsi@denx.de>
+Cc: Lars-Peter Clausen <lars@metafoo.de>, Arnd Bergmann <arnd@arndb.de>,
+ Vinod Koul <vinod.koul@intel.com>, Gerhard Sittig <gsi@denx.de>,
+ Dan Williams <djbw@fb.com>, Anatolij Gustschin <agust@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,52 +17,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+blurb is below the stats
 
---4B4+7MsODflw+h2f
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Alexander Popov (1):
+  powerpc: mpc512x_dma: add support for data transfers between memory
+    and i/o memory
 
-On Fri, Jul 12, 2013 at 07:11:35AM -0500, Timur Tabi wrote:
-> Mark Brown wrote:
+Gerhard Sittig (6):
+  dma: mpc512x: fix start condition in execute()
+  dma: mpc512x: support 'terminate all' control request
+  dts: mpc512x: prepare for preprocessor support
+  dma: mpc512x: use symbolic specifiers for DMA channels
+  dma: mpc512x: register for device tree channel lookup
+  HACK mmc: mxcmmc: enable clocks for the MPC512x
 
-> >Yes, that's why I just went ahead - you'd said recently that you'd be
-> >out of action for a while and not able to test anything.
+Lars-Peter Clausen (1):
+  dma: of: Add common xlate function for matching by channel id
 
-> Yeah, I'd rather you waited until I at least made sure it compiled.
-> Is there any way you can at least install the Freescale PowerPC SDK
-> and do compile tests?  At least that way you won't have to wait for
-> me for every little thing.
+ .../devicetree/bindings/dma/mpc512x-dma.txt        |   55 ++++++
+ arch/powerpc/boot/dts/ac14xx.dts                   |    2 +-
+ arch/powerpc/boot/dts/include/dt-bindings          |    1 +
+ arch/powerpc/boot/dts/mpc5121.dtsi                 |    7 +-
+ arch/powerpc/boot/dts/mpc5121ads.dts               |    2 +-
+ arch/powerpc/boot/dts/pdm360ng.dts                 |    2 +-
+ drivers/dma/mpc512x_dma.c                          |  181 +++++++++++++++++++-
+ drivers/dma/of-dma.c                               |   47 +++++
+ drivers/mmc/host/mxcmmc.c                          |   41 +++--
+ include/dt-bindings/dma/mpc512x-dma.h              |   21 +++
+ include/linux/of_dma.h                             |    4 +
+ 11 files changed, 336 insertions(+), 27 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/dma/mpc512x-dma.txt
+ create mode 120000 arch/powerpc/boot/dts/include/dt-bindings
+ create mode 100644 include/dt-bindings/dma/mpc512x-dma.h
 
-Several of the automated systems that cover -next do PowerPC test builds
-so I think it's getting covered already (Stephen Rothwell plus I think
-that Fengguang's system has some too).  Now that I'm keeping everything
-in topic branches it's much easier for me to discard anything found in
-such testing.
 
-But yes, it's easy enough for me to install a PowerPC toolchain - in
-fact I was going to do that anyway as there's some SPI drivers that only
-build for PowerPC which I want to clean up.
+this series
+- introduces slave s/g support (that's support for DMA transfers which
+  involve peripherals in contrast to mem-to-mem transfers)
+- adds device tree based lookup support for DMA channels
+- combines floating patches and related feedback which already covered
+  several aspects of what the suggested LPB driver needs, to demonstrate
+  how integration might be done
 
---4B4+7MsODflw+h2f
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
+Alexander, I'd suggest that you pickup this series and
+- squash part 2 (start condition) and optionally part 3 (terminate all)
+  into part 1 (your slave s/g introduction)
+- drop part 8 (SD card demo) as it was already NAKed and will be
+  obsolete with correct COMMON_CLK support, but was useful during test
+  to have one more DMA client on the MPC512x platform
+- put your SCLPC support on top of the then OF capable DMA driver
+- please leave the preprocessor support for DTS files separate from the
+  DMA related DTS part, as it will be part of another series as well
+  (clocks) or might get picked up separately for its being useful or
+  even a dependency in other ways (GPIOs, interrupts)
 
-iQIcBAEBAgAGBQJR4BFcAAoJELSic+t+oim9G/EP/1WLROvhyhukAZNZ47Za9fKA
-L2PlJEJwQMcS1MHxyAx8Y6PAXkBCCXBnBhQi0U6I1TS9aHzJAcuwV9cb4XypDLDm
-bCNdcYriejymY374I0n1/DZys/uaM5KJPMCDPC4u5XqT9mWIHQ5Znc21V1u98dk7
-JAiha/uE5ichnQtNiS8Twi7Qg5HdkY3HpG5BzyJVJzjZ5X2hdSKJZ/m/62XQnko6
-t2gBaS7VuBQad3wVZ/cqkINqaSBdXRBqd+HvL9GkC67Vl8TeTQ5x6o/o5IpgsLYu
-GMLQWORNIJ0EHvJP2yEIRql6+dhVshSlc0yVoBjFTiC/5ZSYNigEU0Jt4oS+7OIW
-iWZQP6uiSK6jhotCt3Te2YT4ZM/q4l3r6lSFFvXd8lvvYWFD8h3x8fPUyd9taqRt
-YLcFhEP9HKfFYhEPff0mg4BCl5FsldM583nOMDzlUpTUuWh3pDfY+9koCRk01YVn
-ZVBkPzHyskIwyKpzxao5CvnE73ie+tbS50E+rbfFku9T47iGLJc0lTCH2y66hfus
-v28lTgNSsnN6L8Uz6zMXJorq7bNVot0aOWPMUlVpQ69Bav8JCwvtagZhAMmJQave
-nmhtuojK/12eVl8xfpACI4cxHDIHnf6URU/TCiA6AX1nM3ZnJd+yiGgttG3LW/qD
-UKmDqaB8P9IekG1DJtvE
-=wJWv
------END PGP SIGNATURE-----
+Lars, there is a checkpatch warning about a line longer than 80
+characters in the common xlate part -- I didn't dare to change your
+submission, and the part included here is verbatim from your patchwork
+2331091 (original submission) and 2555701 (resend), is there a followup
+which you can provide or point us to?
 
---4B4+7MsODflw+h2f--
+Arnd, this version addresses your concerns in Anatolij's earlier
+submissions:
+- the DMA controller really maps peripheral requesters 1:1 to DMA
+  channels, there's no other mapping or flexibility involved
+- OF registration in the DMA controller's driver now is non-fatal for
+  compatibility with older device trees
+- the device tree binding is documented (even if it's in line with the
+  generic DMA binding, being explicit is good, I guess)
+
+Vinod, would you take these DMA related patches when Alexander's updated
+version has passed review?  That's what I understood from Lars so far.
+
+
+the series is based on v3.10, each step in the series was build-tested,
+the series' result including the mxcmmc hack was run-tested with the
+commands below, moving 170MB of data and using DMA during transfers, the
+numbers translate to 1.6MB/s throughput for the SD card and some 62.5KB
+per DMA IRQ on average (does this help verify plausibility?)
+
+  $ find /media/mmcblk0p1/ -type f | xargs time wc
+    ...
+    532086   3032411 173164032 total
+  real    1m 47.41s
+  user    0m 8.08s
+  sys     0m 1.69s
+  $ grep -i dma /proc/interrupts 
+   65:       2716      IPIC Level     mpc512x_dma
+  $ grep -i mmc /proc/interrupts 
+   20:       5489      IPIC Level     mxc-mmc
+
+-- 
+1.7.10.4
