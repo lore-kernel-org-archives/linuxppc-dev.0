@@ -1,39 +1,22 @@
-Return-Path: <matthltc@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e36.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4D3522C0350
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jul 2013 06:44:03 +1000 (EST)
-Received: from /spool/local
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <matthltc@linux.vnet.ibm.com>;
- Fri, 12 Jul 2013 14:44:00 -0600
-Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
- [9.17.195.226])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id AA6C819D8042
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2013 14:43:46 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r6CKhubJ149468
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2013 14:43:57 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r6CKhuOS017772
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2013 14:43:56 -0600
-Date: Thu, 11 Jul 2013 17:34:45 -0700
-From: Matt Helsley <matthltc@linux.vnet.ibm.com>
-To: Kevin Hao <haokexin@gmail.com>
-Subject: Re: [PATCH 1/2] powerpc/math-emu: move the flush FPU state function
- into do_mathemu
-Message-ID: <20130712003445.GC14599@us.ibm.com>
-References: <1373545315-9219-1-git-send-email-haokexin@gmail.com>
- <1373545315-9219-2-git-send-email-haokexin@gmail.com>
+Return-Path: <cbf123@mail.usask.ca>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CB8152C036E
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jul 2013 09:40:52 +1000 (EST)
+Message-ID: <51E093F9.6050303@mail.usask.ca>
+Date: Fri, 12 Jul 2013 17:40:41 -0600
+From: Chris Friesen <cbf123@mail.usask.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1373545315-9219-2-git-send-email-haokexin@gmail.com>
-Cc: Scott Wood <scottwood@freescale.com>,
- linuxppc <linuxppc-dev@lists.ozlabs.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: error compiling ptrace in current mainline git
+References: <51E02E7D.5050304@mail.usask.ca>
+ <20130712223141.GA14807@thor.bakeyournoodle.com>
+In-Reply-To: <20130712223141.GA14807@thor.bakeyournoodle.com>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,50 +26,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 11, 2013 at 08:21:54PM +0800, Kevin Hao wrote:
-> By doing this we can make sure that the FPU state is only flushed to
-> the thread struct when it is really needed.
-> 
-> Signed-off-by: Kevin Hao <haokexin@gmail.com>
-> ---
->  arch/powerpc/kernel/traps.c  | 9 ---------
->  arch/powerpc/math-emu/math.c | 9 +++++++++
->  2 files changed, 9 insertions(+), 9 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> index bf33c22..58a8065 100644
-> --- a/arch/powerpc/kernel/traps.c
-> +++ b/arch/powerpc/kernel/traps.c
-> @@ -1131,15 +1131,6 @@ void __kprobes program_check_exception(struct pt_regs *regs)
->  	 * instruction or only on FP instructions, whether there is a
->  	 * pattern to occurrences etc. -dgibson 31/Mar/2003
->  	 */
-> -
-> -	/*
-> -	 * If we support a HW FPU, we need to ensure the FP state
-> -	 * if flushed into the thread_struct before attempting
-> -	 * emulation
-> -	 */
-> -#ifdef CONFIG_PPC_FPU
-> -	flush_fp_to_thread(current);
-> -#endif
->  	switch (do_mathemu(regs)) {
->  	case 0:
->  		emulate_single_step(regs);
-> diff --git a/arch/powerpc/math-emu/math.c b/arch/powerpc/math-emu/math.c
-> index 3fe8e35..18ce6a7 100644
-> --- a/arch/powerpc/math-emu/math.c
-> +++ b/arch/powerpc/math-emu/math.c
-> @@ -420,6 +420,15 @@ do_mathemu(struct pt_regs *regs)
->  		goto illegal;
->  	}
-> 
-> +	/*
-> +	 * If we support a HW FPU, we need to ensure the FP state
-> +	 * if flushed into the thread_struct before attempting
+On 07/12/2013 04:31 PM, Tony Breeds wrote:
+> On Fri, Jul 12, 2013 at 10:27:41AM -0600, Chris Friesen wrote:
+>> Hi all,
+>>
+>> I'm trying to build current mainline git with gcc version 4.4.1 as a
+>> cross compiler and I'm getting the following:
+>>
+>>
+>>    CC      arch/powerpc/kernel/ptrace.o
+>> {standard input}: Assembler messages:
+>> {standard input}:1619: Error: junk at end of line: `1'
+>
+> <snip>
+>
+>> Any ideas on how to deal with this?  Is this a code error or a
+>> compiler error?
+>
+> It could be either can you:
+> a) try the 4.6.3 cross compiler from: https://www.kernel.org/pub/tools/crosstool/
+> b) Try a ppc64_defconfig build.
+>
+> If the newer compiler with your .config fixes it it's a compiler issue.
+> If chaning the config with you 4.4.1 compiler fixes it please post you
+> .config to see if we can work out what's going on.
 
-As long as you're moving the comment you could fix up the spelling
-error: s/if/is/
+I used the 4.6.3 cross compiler for x86_64 from the above location.  It 
+seems to be able to build arch/powerpc/kernel/ptrace.c, but then it 
+gives a different error:
 
-Cheers,
-	-Matt Helsley
+   CC      arch/powerpc/kernel/epapr_paravirt.o
+   AS      arch/powerpc/kernel/epapr_hcalls.o
+   CC      arch/powerpc/kernel/prom_init.o
+   AS      arch/powerpc/kernel/head_64.o
+/tmp/ccnAw2ZB.s: Assembler messages:
+/tmp/ccnAw2ZB.s: Internal error, aborting at 
+/home/tony/buildall/src/binutils/gas/config/tc-ppc.c line 6351 in 
+md_apply_fix
+Please report this bug.
+make[2]: *** [arch/powerpc/kernel/head_64.o] Error 1
+
+> Also when you say "current mainline git" I assume you mean the HEAD of
+> linus's tree not Ben's right?
+
+Yes, that's correct.
+
+Chris
