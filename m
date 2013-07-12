@@ -1,22 +1,19 @@
-Return-Path: <B42378@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2A14C2C0323
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2013 13:59:25 +1000 (EST)
-Date: Fri, 12 Jul 2013 11:57:33 +0800
-From: Nicolin Chen <b42378@freescale.com>
-To: <timur@tabi.org>
-Subject: Re: [alsa-devel] [PATCH] ASoC: fsl: Disable SSI in trigger() if
- RE/TE are both cleared
-Message-ID: <20130712035732.GA27823@MrMyself>
+Return-Path: <timur@tabi.org>
+Received: from relay00.pair.com (relay00.pair.com [209.68.5.9])
+ by ozlabs.org (Postfix) with SMTP id 415E42C032D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2013 14:00:20 +1000 (EST)
+Message-ID: <51DF7F4F.90707@tabi.org>
+Date: Thu, 11 Jul 2013 23:00:15 -0500
+From: Timur Tabi <timur@tabi.org>
+MIME-Version: 1.0
+To: Nicolin Chen <b42378@freescale.com>
+Subject: Re: [alsa-devel] [PATCH] ASoC: fsl: Disable SSI in trigger() if RE/TE
+ are both cleared
 References: <1373453034-21618-1-git-send-email-b42378@freescale.com>
  <20130711165401.GU24508@sirena.org.uk> <51DEE810.3090304@tabi.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <51DEE810.3090304@tabi.org>
+ <20130712035732.GA27823@MrMyself>
+In-Reply-To: <20130712035732.GA27823@MrMyself>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: fabio.estevam@freescale.com, alsa-devel@alsa-project.org,
  Mark Brown <broonie@kernel.org>, linuxppc-dev@lists.ozlabs.org,
  shawn.guo@linaro.org
@@ -29,14 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Timur,
+Nicolin Chen wrote:
+> Hi Timur,
+>
+> On Thu, Jul 11, 2013 at 12:14:56PM -0500, timur@tabi.org wrote:
+>> Don't you need an ACK from the maintainer of the driver before applying
+>> it?  I haven't had a chance to test it yet.
+> If I'm not missing some part of branch updating, it looks like Mark hasn't
+> pushed it to the branch yet.
+> Please test it for me. Thank you.
 
-On Thu, Jul 11, 2013 at 12:14:56PM -0500, timur@tabi.org wrote:
-> Don't you need an ACK from the maintainer of the driver before applying
-> it?  I haven't had a chance to test it yet.
-If I'm not missing some part of branch updating, it looks like Mark hasn't
-pushed it to the branch yet.
-Please test it for me. Thank you.
+I definitely want to.  Unfortunately, I'm literally in the middle of 
+moving into a new house, and so everything is packed up.  I won't be able 
+to look at it for another week.
 
-Best regards,
-Nicolin Chen
+
+-- 
+Timur Tabi
