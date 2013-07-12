@@ -1,19 +1,20 @@
-Return-Path: <cbf123@mail.usask.ca>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8F3302C034A
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jul 2013 02:27:52 +1000 (EST)
-Message-ID: <51E02E7D.5050304@mail.usask.ca>
-Date: Fri, 12 Jul 2013 10:27:41 -0600
-From: Chris Friesen <cbf123@mail.usask.ca>
+Return-Path: <lars@metafoo.de>
+Received: from smtp-out-076.synserver.de (smtp-out-076.synserver.de
+ [212.40.185.76]) by ozlabs.org (Postfix) with ESMTP id B1BDA2C0362
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jul 2013 02:51:05 +1000 (EST)
+Message-ID: <51E03290.7070806@metafoo.de>
+Date: Fri, 12 Jul 2013 18:45:04 +0200
+From: Lars-Peter Clausen <lars@metafoo.de>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: error compiling ptrace in current mainline git
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+To: Gerhard Sittig <gsi@denx.de>
+Subject: Re: [PATCH RFC 0/8] MPC512x DMA slave s/g support, OF DMA lookup
+References: <1373642781-32631-1-git-send-email-gsi@denx.de>
+In-Reply-To: <1373642781-32631-1-git-send-email-gsi@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Arnd Bergmann <arnd@arndb.de>, Vinod Koul <vinod.koul@intel.com>,
+ devicetree-discuss@lists.ozlabs.org, Alexander Popov <a13xp0p0v88@gmail.com>,
+ Dan Williams <djbw@fb.com>, Anatolij Gustschin <agust@denx.de>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,30 +24,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+On 07/12/2013 05:26 PM, Gerhard Sittig wrote:
+[...]
+> Lars, there is a checkpatch warning about a line longer than 80
+> characters in the common xlate part -- I didn't dare to change your
+> submission, and the part included here is verbatim from your patchwork
+> 2331091 (original submission) and 2555701 (resend), is there a followup
+> which you can provide or point us to?
 
-I'm trying to build current mainline git with gcc version 4.4.1 as a 
-cross compiler and I'm getting the following:
+Well the line is 81 characters long, so I wouldn't worry to much about that.
+But we should probably remove the extern from all the function declarations
+in dma-of.h, since the extern is kind of implicit for functions declarations.
 
-
-   CC      arch/powerpc/kernel/ptrace.o
-{standard input}: Assembler messages:
-{standard input}:1619: Error: junk at end of line: `1'
-{standard input}:2074: Error: junk at end of line: `1'
-{standard input}:2742: Error: junk at end of line: `1'
-{standard input}:2855: Error: junk at end of line: `1'
-{standard input}:2943: Error: junk at end of line: `1'
-{standard input}:4699: Error: junk at end of line: `1'
-{standard input}:4794: Error: junk at end of line: `1'
-{standard input}:4915: Error: junk at end of line: `1'
-{standard input}:4985: Error: junk at end of line: `1'
-{standard input}:5087: Error: junk at end of line: `1'
-make[2]: *** [arch/powerpc/kernel/ptrace.o] Error 1
-make[1]: *** [arch/powerpc/kernel] Error 2
-make: *** [sub-make] Error 2
-
-
-Any ideas on how to deal with this?  Is this a code error or a compiler 
-error?
-
-Chris
+- Lars
