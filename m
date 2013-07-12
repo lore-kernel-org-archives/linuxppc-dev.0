@@ -2,12 +2,15 @@ Return-Path: <gsi@denx.de>
 From: Gerhard Sittig <gsi@denx.de>
 To: linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
  Alexander Popov <a13xp0p0v88@gmail.com>
-Subject: [PATCH RFC 0/8] MPC512x DMA slave s/g support, OF DMA lookup
-Date: Fri, 12 Jul 2013 17:26:13 +0200
-Message-Id: <1373642781-32631-1-git-send-email-gsi@denx.de>
-Cc: Lars-Peter Clausen <lars@metafoo.de>, Arnd Bergmann <arnd@arndb.de>,
- Vinod Koul <vinod.koul@intel.com>, Gerhard Sittig <gsi@denx.de>,
- Dan Williams <djbw@fb.com>, Anatolij Gustschin <agust@denx.de>
+Subject: [PATCH RFC 1/8] powerpc: mpc512x_dma: add support for data transfers
+ between memory and i/o memory
+Date: Fri, 12 Jul 2013 17:26:14 +0200
+Message-Id: <1373642781-32631-2-git-send-email-gsi@denx.de>
+In-Reply-To: <1373642781-32631-1-git-send-email-gsi@denx.de>
+References: <1373642781-32631-1-git-send-email-gsi@denx.de>
+Cc: Vinod Koul <vinod.koul@intel.com>, Lars-Peter Clausen <lars@metafoo.de>,
+ Anatolij Gustschin <agust@denx.de>, Arnd Bergmann <arnd@arndb.de>,
+ Dan Williams <djbw@fb.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,96 +20,227 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-blurb is below the stats
+From: Alexander Popov <a13xp0p0v88@gmail.com>
 
-Alexander Popov (1):
-  powerpc: mpc512x_dma: add support for data transfers between memory
-    and i/o memory
+From: Alexander Popov <a13xp0p0v88@gmail.com>
 
-Gerhard Sittig (6):
-  dma: mpc512x: fix start condition in execute()
-  dma: mpc512x: support 'terminate all' control request
-  dts: mpc512x: prepare for preprocessor support
-  dma: mpc512x: use symbolic specifiers for DMA channels
-  dma: mpc512x: register for device tree channel lookup
-  HACK mmc: mxcmmc: enable clocks for the MPC512x
+Data transfers between memory and i/o memory require more delicate TCD
+(Transfer Control Descriptor) configuration and DMA channel service requests
+via hardware.
 
-Lars-Peter Clausen (1):
-  dma: of: Add common xlate function for matching by channel id
+dma_device.device_control callback function is needed to configure
+DMA channel to work with i/o memory.
 
- .../devicetree/bindings/dma/mpc512x-dma.txt        |   55 ++++++
- arch/powerpc/boot/dts/ac14xx.dts                   |    2 +-
- arch/powerpc/boot/dts/include/dt-bindings          |    1 +
- arch/powerpc/boot/dts/mpc5121.dtsi                 |    7 +-
- arch/powerpc/boot/dts/mpc5121ads.dts               |    2 +-
- arch/powerpc/boot/dts/pdm360ng.dts                 |    2 +-
- drivers/dma/mpc512x_dma.c                          |  181 +++++++++++++++++++-
- drivers/dma/of-dma.c                               |   47 +++++
- drivers/mmc/host/mxcmmc.c                          |   41 +++--
- include/dt-bindings/dma/mpc512x-dma.h              |   21 +++
- include/linux/of_dma.h                             |    4 +
- 11 files changed, 336 insertions(+), 27 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/dma/mpc512x-dma.txt
- create mode 120000 arch/powerpc/boot/dts/include/dt-bindings
- create mode 100644 include/dt-bindings/dma/mpc512x-dma.h
+Signed-off-by: Alexander Popov <a13xp0p0v88@gmail.com>
+---
+ drivers/dma/mpc512x_dma.c |  147 ++++++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 140 insertions(+), 7 deletions(-)
 
-
-this series
-- introduces slave s/g support (that's support for DMA transfers which
-  involve peripherals in contrast to mem-to-mem transfers)
-- adds device tree based lookup support for DMA channels
-- combines floating patches and related feedback which already covered
-  several aspects of what the suggested LPB driver needs, to demonstrate
-  how integration might be done
-
-
-Alexander, I'd suggest that you pickup this series and
-- squash part 2 (start condition) and optionally part 3 (terminate all)
-  into part 1 (your slave s/g introduction)
-- drop part 8 (SD card demo) as it was already NAKed and will be
-  obsolete with correct COMMON_CLK support, but was useful during test
-  to have one more DMA client on the MPC512x platform
-- put your SCLPC support on top of the then OF capable DMA driver
-- please leave the preprocessor support for DTS files separate from the
-  DMA related DTS part, as it will be part of another series as well
-  (clocks) or might get picked up separately for its being useful or
-  even a dependency in other ways (GPIOs, interrupts)
-
-Lars, there is a checkpatch warning about a line longer than 80
-characters in the common xlate part -- I didn't dare to change your
-submission, and the part included here is verbatim from your patchwork
-2331091 (original submission) and 2555701 (resend), is there a followup
-which you can provide or point us to?
-
-Arnd, this version addresses your concerns in Anatolij's earlier
-submissions:
-- the DMA controller really maps peripheral requesters 1:1 to DMA
-  channels, there's no other mapping or flexibility involved
-- OF registration in the DMA controller's driver now is non-fatal for
-  compatibility with older device trees
-- the device tree binding is documented (even if it's in line with the
-  generic DMA binding, being explicit is good, I guess)
-
-Vinod, would you take these DMA related patches when Alexander's updated
-version has passed review?  That's what I understood from Lars so far.
-
-
-the series is based on v3.10, each step in the series was build-tested,
-the series' result including the mxcmmc hack was run-tested with the
-commands below, moving 170MB of data and using DMA during transfers, the
-numbers translate to 1.6MB/s throughput for the SD card and some 62.5KB
-per DMA IRQ on average (does this help verify plausibility?)
-
-  $ find /media/mmcblk0p1/ -type f | xargs time wc
-    ...
-    532086   3032411 173164032 total
-  real    1m 47.41s
-  user    0m 8.08s
-  sys     0m 1.69s
-  $ grep -i dma /proc/interrupts 
-   65:       2716      IPIC Level     mpc512x_dma
-  $ grep -i mmc /proc/interrupts 
-   20:       5489      IPIC Level     mxc-mmc
-
+diff --git a/drivers/dma/mpc512x_dma.c b/drivers/dma/mpc512x_dma.c
+index 2d95673..f90b717 100644
+--- a/drivers/dma/mpc512x_dma.c
++++ b/drivers/dma/mpc512x_dma.c
+@@ -2,6 +2,7 @@
+  * Copyright (C) Freescale Semicondutor, Inc. 2007, 2008.
+  * Copyright (C) Semihalf 2009
+  * Copyright (C) Ilya Yanok, Emcraft Systems 2010
++ * Copyright (C) Alexander Popov, Promcontroller 2013
+  *
+  * Written by Piotr Ziecik <kosmo@semihalf.com>. Hardware description
+  * (defines, structures and comments) was taken from MPC5121 DMA driver
+@@ -28,11 +29,6 @@
+  * file called COPYING.
+  */
+ 
+-/*
+- * This is initial version of MPC5121 DMA driver. Only memory to memory
+- * transfers are supported (tested using dmatest module).
+- */
+-
+ #include <linux/module.h>
+ #include <linux/dmaengine.h>
+ #include <linux/dma-mapping.h>
+@@ -190,9 +186,13 @@ struct mpc_dma_chan {
+ 	struct list_head		completed;
+ 	struct mpc_dma_tcd		*tcd;
+ 	dma_addr_t			tcd_paddr;
++	u32				tcd_nunits;
+ 
+ 	/* Lock for this structure */
+ 	spinlock_t			lock;
++
++	/* Channel's peripheral fifo address */
++	dma_addr_t			per_paddr;
+ };
+ 
+ struct mpc_dma {
+@@ -256,7 +256,9 @@ static void mpc_dma_execute(struct mpc_dma_chan *mchan)
+ 
+ 		prev->tcd->dlast_sga = mdesc->tcd_paddr;
+ 		prev->tcd->e_sg = 1;
+-		mdesc->tcd->start = 1;
++		/* only start explicitly on MDDRC channel */
++		if (cid == 32)
++			mdesc->tcd->start = 1;
+ 
+ 		prev = mdesc;
+ 	}
+@@ -268,7 +270,15 @@ static void mpc_dma_execute(struct mpc_dma_chan *mchan)
+ 
+ 	if (first != prev)
+ 		mdma->tcd[cid].e_sg = 1;
+-	out_8(&mdma->regs->dmassrt, cid);
++
++	switch (cid) {
++	case 26:
++		out_8(&mdma->regs->dmaserq, cid);
++		break;
++	case 32:
++		out_8(&mdma->regs->dmassrt, cid);
++		break;
++	}
+ }
+ 
+ /* Handle interrupt on one half of DMA controller (32 channels) */
+@@ -641,6 +651,126 @@ mpc_dma_prep_memcpy(struct dma_chan *chan, dma_addr_t dst, dma_addr_t src,
+ 	return &mdesc->desc;
+ }
+ 
++static struct dma_async_tx_descriptor *mpc_dma_prep_slave_sg(
++		struct dma_chan *chan, struct scatterlist *sgl,
++		unsigned int sg_len, enum dma_transfer_direction direction,
++		unsigned long flags, void *context)
++{
++	struct mpc_dma *mdma = dma_chan_to_mpc_dma(chan);
++	struct mpc_dma_chan *mchan = dma_chan_to_mpc_dma_chan(chan);
++	struct mpc_dma_desc *mdesc = NULL;
++	struct mpc_dma_tcd *tcd;
++	unsigned long iflags;
++	struct scatterlist *sg;
++	size_t len;
++	int iter, i;
++
++	if (!list_empty(&mchan->active))
++		return NULL;
++
++	for_each_sg(sgl, sg, sg_len, i) {
++		spin_lock_irqsave(&mchan->lock, iflags);
++
++		mdesc = list_first_entry(&mchan->free, struct mpc_dma_desc,
++									node);
++		if (!mdesc) {
++			spin_unlock_irqrestore(&mchan->lock, iflags);
++			/* try to free completed descriptors */
++			mpc_dma_process_completed(mdma);
++			return NULL;
++		}
++
++		list_del(&mdesc->node);
++
++		spin_unlock_irqrestore(&mchan->lock, iflags);
++
++		mdesc->error = 0;
++		tcd = mdesc->tcd;
++
++		/* Prepare Transfer Control Descriptor for this transaction */
++		memset(tcd, 0, sizeof(struct mpc_dma_tcd));
++
++		if (!IS_ALIGNED(sg_dma_address(sg), 4))
++			return NULL;
++
++		if (direction == DMA_DEV_TO_MEM) {
++			tcd->saddr = mchan->per_paddr;
++			tcd->daddr = sg_dma_address(sg);
++			tcd->soff = 0;
++			tcd->doff = 4;
++		} else if (direction == DMA_MEM_TO_DEV) {
++			tcd->saddr = sg_dma_address(sg);
++			tcd->daddr = mchan->per_paddr;
++			tcd->soff = 4;
++			tcd->doff = 0;
++		} else {
++			return NULL;
++		}
++		tcd->ssize = MPC_DMA_TSIZE_4;
++		tcd->dsize = MPC_DMA_TSIZE_4;
++
++		len = sg_dma_len(sg);
++
++		if (mchan->tcd_nunits)
++			tcd->nbytes = mchan->tcd_nunits * 4;
++		else
++			tcd->nbytes = 64;
++
++		if (!IS_ALIGNED(len, tcd->nbytes))
++			return NULL;
++
++		iter = len / tcd->nbytes;
++		if (iter > ((1 << 15) - 1)) {   /* maximum biter */
++			return NULL; /* len is too big */
++		} else {
++			/* citer_linkch contains the high bits of iter */
++			tcd->biter = iter & 0x1ff;
++			tcd->biter_linkch = iter >> 9;
++			tcd->citer = tcd->biter;
++			tcd->citer_linkch = tcd->biter_linkch;
++		}
++
++		tcd->e_sg = 0;
++		tcd->d_req = 1;
++
++		/* Place descriptor in prepared list */
++		spin_lock_irqsave(&mchan->lock, iflags);
++		list_add_tail(&mdesc->node, &mchan->prepared);
++		spin_unlock_irqrestore(&mchan->lock, iflags);
++	}
++
++	/* Return the last descriptor */
++	return &mdesc->desc;
++}
++
++static int mpc_dma_device_control(struct dma_chan *chan, enum dma_ctrl_cmd cmd,
++				  unsigned long arg)
++{
++	struct mpc_dma_chan *mchan = dma_chan_to_mpc_dma_chan(chan);
++	struct dma_slave_config *cfg = (void *)arg;
++
++	switch (cmd) {
++	case DMA_SLAVE_CONFIG:
++		if (cfg->src_addr_width != DMA_SLAVE_BUSWIDTH_4_BYTES &&
++		    cfg->dst_addr_width != DMA_SLAVE_BUSWIDTH_4_BYTES)
++			return -EINVAL;
++
++		if (cfg->direction == DMA_DEV_TO_MEM) {
++			mchan->per_paddr = cfg->src_addr;
++			mchan->tcd_nunits = cfg->src_maxburst;
++		} else {
++			mchan->per_paddr = cfg->dst_addr;
++			mchan->tcd_nunits = cfg->dst_maxburst;
++		}
++
++		return 0;
++	default:
++		return -ENOSYS;
++	}
++
++	return -EINVAL;
++}
++
+ static int mpc_dma_probe(struct platform_device *op)
+ {
+ 	struct device_node *dn = op->dev.of_node;
+@@ -725,9 +855,12 @@ static int mpc_dma_probe(struct platform_device *op)
+ 	dma->device_issue_pending = mpc_dma_issue_pending;
+ 	dma->device_tx_status = mpc_dma_tx_status;
+ 	dma->device_prep_dma_memcpy = mpc_dma_prep_memcpy;
++	dma->device_prep_slave_sg = mpc_dma_prep_slave_sg;
++	dma->device_control = mpc_dma_device_control;
+ 
+ 	INIT_LIST_HEAD(&dma->channels);
+ 	dma_cap_set(DMA_MEMCPY, dma->cap_mask);
++	dma_cap_set(DMA_SLAVE, dma->cap_mask);
+ 
+ 	for (i = 0; i < dma->chancnt; i++) {
+ 		mchan = &mdma->channels[i];
 -- 
 1.7.10.4
