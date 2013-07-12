@@ -1,19 +1,20 @@
-Return-Path: <B45939@freescale.com>
-Message-ID: <51DF952B.8050802@freescale.com>
-Date: Fri, 12 Jul 2013 13:33:31 +0800
-From: Hongbo Zhang <hongbo.zhang@freescale.com>
+Return-Path: <haokexin@gmail.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 923CB2C0341
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2013 15:37:51 +1000 (EST)
+From: Kevin Hao <haokexin@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Scott Wood
+ <scottwood@freescale.com>
+Subject: [PATCH v2 0/2] powerpc/math-emu: two patches for the emulation of the
+ FPU unimplemented instructions
+Date: Fri, 12 Jul 2013 13:36:40 +0800
+Message-ID: <1373607402-21738-1-git-send-email-haokexin@gmail.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH V2 1/2] DMA: Freescale: Add new 8-channel DMA engine device
- tree nodes
-References: <1373005626-20726-1-git-send-email-hongbo.zhang@freescale.com>
- <1373005626-20726-2-git-send-email-hongbo.zhang@freescale.com>
- <1373388526.8183.191@snotra>
-In-Reply-To: <1373388526.8183.191@snotra>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: vinod.koul@intel.com, devicetree-discuss@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, vakul@freescale.com, djbw@fb.com,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,30 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/10/2013 12:48 AM, Scott Wood wrote:
-> On 07/05/2013 01:27:05 AM, hongbo.zhang@freescale.com wrote:
->> From: Hongbo Zhang <hongbo.zhang@freescale.com>
->>
->> Freescale QorIQ T4 and B4 introduce new 8-channel DMA engines, this 
->> patch add
->> the device tree nodes for them.
->>
->> Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
->> ---
->>  arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi   |   90 
->> +++++++++++++++++++++++++++
->>  arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi   |   90 
->> +++++++++++++++++++++++++++
->>  arch/powerpc/boot/dts/fsl/t4240si-post.dtsi |    4 +-
->>  3 files changed, 182 insertions(+), 2 deletions(-)
->>  create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi
->>  create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi
->
-> Please update Documentation/devicetree/bindings/powerpc/fsl/dma.txt 
-> for the new compatible and dgsr1.
-OK, thanks.
-What's more, some text string in the driver and Kconfig files should be 
-updated too, e.g. "Elo / Elo Plus DMA" may be changed to "Elo series 
-DMA", will send out v3 patches soon.
->
-> -Scott
+v2:
+Tweak the patch 2 as suggested by Benjamin and Scott.
+
+v1:
+These two patches are for the emulation of the FPU unimplemented instructions.
+The first is just a bit optimization for the FPU state flush.
+The second is requested by Scott.
+
+
+Kevin Hao (2):
+  powerpc/math-emu: move the flush FPU state function into do_mathemu
+  powerpc: introduce function emulate_math()
+
+ arch/powerpc/kernel/traps.c  | 88 +++++++++++++++++---------------------------
+ arch/powerpc/math-emu/math.c |  9 +++++
+ 2 files changed, 43 insertions(+), 54 deletions(-)
+
+-- 
+1.8.1.4
