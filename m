@@ -1,21 +1,18 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: Gerhard Sittig <gsi@denx.de>
-Subject: Re: [PATCH RFC 5/8] dma: mpc512x: use symbolic specifiers for DMA
- channels
-Date: Sun, 14 Jul 2013 10:50:04 +0200
-References: <1373642781-32631-1-git-send-email-gsi@denx.de>
- <201307130917.08904.arnd@arndb.de>
- <20130713141443.GJ2615@book.gsilab.sittig.org>
-In-Reply-To: <20130713141443.GJ2615@book.gsilab.sittig.org>
+Return-Path: <haokexin@gmail.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4217B2C00F3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Jul 2013 19:07:29 +1000 (EST)
+From: Kevin Hao <haokexin@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 0/4] powerpc: several cleanup patches for the FPU
+Date: Sun, 14 Jul 2013 17:02:02 +0800
+Message-ID: <1373792526-16241-1-git-send-email-haokexin@gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <201307141050.05153.arnd@arndb.de>
-Cc: Lars-Peter Clausen <lars@metafoo.de>, Vinod Koul <vinod.koul@intel.com>,
- devicetree-discuss@lists.ozlabs.org, Alexander Popov <a13xp0p0v88@gmail.com>,
- Dan Williams <djbw@fb.com>, Anatolij Gustschin <agust@denx.de>,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,83 +22,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Saturday 13 July 2013, Gerhard Sittig wrote:
-> [ MPC8308 knowledge required, see below ]
-> 
-> On Sat, Jul 13, 2013 at 09:17 +0200, Arnd Bergmann wrote:
-> > 
-> > On Friday 12 July 2013, Gerhard Sittig wrote:
-> > > +++ b/include/dt-bindings/dma/mpc512x-dma.h
-> > > @@ -0,0 +1,21 @@
-> > > +/*
-> > > + * This header file provides symbolic specifiers for DMA channels
-> > > + * within the MPC512x SoC's DMA controller.  Since requester lines
-> > > + * directly map to channel numbers and no additional flexibility
-> > > + * is involved, DMA channels can be considered directly associated
-> > > + * with individual peripherals.
-> > > + *
-> > > + * This header file gets shared among DT bindings which provide
-> > > + * hardware specs, and driver code which implements supporting logic.
-> > > + */
-> > > +
-> > > +#ifndef _DT_BINDINGS_DMA_MPC512x_DMA_H
-> > > +#define _DT_BINDINGS_DMA_MPC512x_DMA_H
-> > > +
-> > > +#define MPC512x_DMACHAN_SCLPC          26
-> > > +#define MPC512x_DMACHAN_SDHC           30
-> > > +#define MPC512x_DMACHAN_MDDRC          32
-> > > +
-> > > +#define MPC512x_DMACHAN_MAX            64
-> > > +
-> > 
-> > I think these should not be in the header and should not bve part of the
-> > binding either. They are specific to an SoC that happens to be using this
-> > DMA controller but would be completely different for any other SoC with
-> > the same DMA engine. These belong into the dma descriptors of the slave
-> > drivers and don't need symbolic names.
-> 
-> Thank you for the feedback.
-> 
-> OK, so not adding the dt-bindings header leads to no change in
-> the DTS nodes, which in turn collapses 5/8 into something local
-> to the .c driver source (introduce an enum and replace a few
-> magic numbers with names), and obsoletes 4/8 as a prerequisite.
-> This will further reduce the patch set's size.
+All these patches passed the build test for the following configurations:
+	ppc40x_defconfig
+        ppc64e_defconfig
+        ppc64_defconfig
+	mpc85xx_defconfig
+	mpc85xx_smp_defconfig
+        corenet32_smp_defconfig
+        corenet64_smp_defconfig
+        ppc44x_defconfig
+	mpc885_ads_defconfig
+        pseries_defconfig
 
-Actually I think you will need extra changes: The dma-engine driver
-should not require knowledge of any channel-specific settings.
-I did not notice you had them until you mentioned the above, but
-from what I can tell, you need a few flags in the dma-specifier
-to replace code like
+Also passed the boot test on a t4240qds board.
 
-                /* only start explicitly on MDDRC channel */
--               if (cid == 32)
-+               if (cid == MPC512x_DMACHAN_MDDRC)
-                        mdesc->tcd->start = 1;
+Kevin Hao (4):
+  powerpc: remove the unused function disable_kernel_fp()
+  powerpc: remove the redundant flush_fp_to_thread() in
+    setup_sigcontext()
+  powerpc: make flush_fp_to_thread() nop when CONFIG_PPC_FPU is disabled
+  powerpc: remove the empty giveup_fpu() function on 32bit kernel
 
-with
+ arch/powerpc/include/asm/switch_to.h | 11 ++++++++---
+ arch/powerpc/kernel/head_40x.S       |  8 --------
+ arch/powerpc/kernel/head_44x.S       | 10 ----------
+ arch/powerpc/kernel/head_8xx.S       |  4 ----
+ arch/powerpc/kernel/head_fsl_booke.S | 10 ----------
+ arch/powerpc/kernel/misc_64.S        | 13 -------------
+ arch/powerpc/kernel/ppc_ksyms.c      |  2 ++
+ arch/powerpc/kernel/process.c        |  2 ++
+ arch/powerpc/kernel/signal_64.c      |  2 --
+ arch/powerpc/math-emu/math.c         |  3 +--
+ 10 files changed, 13 insertions(+), 52 deletions(-)
 
-		mdesc->tcd->start = dmaspec->explicit_start;
-
-or something along these lines, where dmaspec is a data structure
-derived from the fields in the DT dma specifier of the child
-node.		
-
-> I scanned chapter 12 (DMA controller) in the MPC8308 reference
-> manual (rev 0 as of 2010-04) several times and could not find any
-> hint about peripherals, request lines, or anything else related
-> to flow control.  Searching in the whole RM won't give a hint
-> either.  Does this suggest that the MPC8308 DMA controller's
-> channels are "free" in their assignment to transfer tasks?  Or
-> are they "memory transfers only"?  Or do they happily accept any
-> XLB address (internal and external RAM, IMMR and IP bus space)
-> but don't apply flow control, i.e. expect either peripherals to
-> already hold the RX data, or peripherals to keep up with being
-> fed random amounts of TX data?  I tend to read the doc as the
-> latter.
-
-It sounds to me that they are memory-to-memory only, which means
-you probably want to allow #dma-cells=<0> as a special case to
-describe an instance that has no slave API support.
-
-	Arnd
+-- 
+1.8.1.4
