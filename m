@@ -2,19 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 576C22C00E3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jul 2013 08:01:36 +1000 (EST)
-Message-ID: <1373839281.19894.272.camel@pasglop>
-Subject: Re: [PATCH] powerpc/pseries: drop "select HOTPLUG"
+ by ozlabs.org (Postfix) with ESMTPS id D6FCF2C00E4
+ for <linuxppc-dev@ozlabs.org>; Mon, 15 Jul 2013 08:19:46 +1000 (EST)
+Message-ID: <1373840376.19894.274.camel@pasglop>
+Subject: Re: ABI defined register usage within function calls
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Bolle <pebolle@tiscali.nl>
-Date: Mon, 15 Jul 2013 08:01:21 +1000
-In-Reply-To: <1373799735.1370.5.camel@x61.thuisdomein>
-References: <1373799735.1370.5.camel@x61.thuisdomein>
+To: JiveTalkin <aijazbaig1@gmail.com>
+Date: Mon, 15 Jul 2013 08:19:36 +1000
+In-Reply-To: <1373629119047-73669.post@n7.nabble.com>
+References: <1373464479578-73565.post@n7.nabble.com>
+ <1373629119047-73669.post@n7.nabble.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,33 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2013-07-14 at 13:02 +0200, Paul Bolle wrote:
-> The Kconfig symbol HOTPLUG was removed with commit 40b313608a ("Finally
-> eradicate CONFIG_HOTPLUG"). But there's still one select statement for
-> that symbol. It seems that select statement was added after the patch to
-> remove CONFIG_HOTPLUG was submitted. Anyhow, it is useless and can be
-> dropped.
+On Fri, 2013-07-12 at 04:38 -0700, JiveTalkin wrote:
+> Moderator..can you change the subject of this to "Understanding register
+> usage as per ABI rules for functions" ??
+> 
+> Additionally, doesn't anyone have anything to say about this?
 
-Thanks. I'll apply.
+We don't modify subjects after the fact. As to why nobody replied, well,
+I suppose the 2 or 3 people who actually understand that stuff were
+all too busy or didn't notice :-)
 
+I'll try to reply later today if I get a chance or you can try to catch
+me on IRC (freenode/#mklinux)
+
+Cheers,
 Ben.
 
-> Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
-> ---
-> Not tested.
-> 
->  arch/powerpc/platforms/pseries/Kconfig | 1 -
->  1 file changed, 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
-> index 1bd3399..62b4f80 100644
-> --- a/arch/powerpc/platforms/pseries/Kconfig
-> +++ b/arch/powerpc/platforms/pseries/Kconfig
-> @@ -19,7 +19,6 @@ config PPC_PSERIES
->  	select ZLIB_DEFLATE
->  	select PPC_DOORBELL
->  	select HAVE_CONTEXT_TRACKING
-> -	select HOTPLUG if SMP
->  	select HOTPLUG_CPU if SMP
->  	default y
->  
+> --
+> View this message in context: http://linuxppc.10917.n7.nabble.com/ABI-defined-register-usage-within-function-calls-tp73565p73669.html
+> Sent from the linuxppc-dev mailing list archive at Nabble.com.
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
