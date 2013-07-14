@@ -1,22 +1,21 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 104402C00D0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Jul 2013 18:41:24 +1000 (EST)
-From: Kevin Hao <haokexin@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Scott Wood
- <scottwood@freescale.com>
-Subject: [PATCH v3 1/2] powerpc/math-emu: move the flush FPU state function
- into do_mathemu
-Date: Sun, 14 Jul 2013 16:40:06 +0800
-Message-ID: <1373791207-15017-2-git-send-email-haokexin@gmail.com>
-In-Reply-To: <1373791207-15017-1-git-send-email-haokexin@gmail.com>
-References: <1373791207-15017-1-git-send-email-haokexin@gmail.com>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: Gerhard Sittig <gsi@denx.de>
+Subject: Re: [PATCH RFC 5/8] dma: mpc512x: use symbolic specifiers for DMA
+ channels
+Date: Sun, 14 Jul 2013 10:50:04 +0200
+References: <1373642781-32631-1-git-send-email-gsi@denx.de>
+ <201307130917.08904.arnd@arndb.de>
+ <20130713141443.GJ2615@book.gsilab.sittig.org>
+In-Reply-To: <20130713141443.GJ2615@book.gsilab.sittig.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <201307141050.05153.arnd@arndb.de>
+Cc: Lars-Peter Clausen <lars@metafoo.de>, Vinod Koul <vinod.koul@intel.com>,
+ devicetree-discuss@lists.ozlabs.org, Alexander Popov <a13xp0p0v88@gmail.com>,
+ Dan Williams <djbw@fb.com>, Anatolij Gustschin <agust@denx.de>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,56 +25,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-By doing this we can make sure that the FPU state is only flushed to
-the thread struct when it is really needed.
+On Saturday 13 July 2013, Gerhard Sittig wrote:
+> [ MPC8308 knowledge required, see below ]
+> 
+> On Sat, Jul 13, 2013 at 09:17 +0200, Arnd Bergmann wrote:
+> > 
+> > On Friday 12 July 2013, Gerhard Sittig wrote:
+> > > +++ b/include/dt-bindings/dma/mpc512x-dma.h
+> > > @@ -0,0 +1,21 @@
+> > > +/*
+> > > + * This header file provides symbolic specifiers for DMA channels
+> > > + * within the MPC512x SoC's DMA controller.  Since requester lines
+> > > + * directly map to channel numbers and no additional flexibility
+> > > + * is involved, DMA channels can be considered directly associated
+> > > + * with individual peripherals.
+> > > + *
+> > > + * This header file gets shared among DT bindings which provide
+> > > + * hardware specs, and driver code which implements supporting logic.
+> > > + */
+> > > +
+> > > +#ifndef _DT_BINDINGS_DMA_MPC512x_DMA_H
+> > > +#define _DT_BINDINGS_DMA_MPC512x_DMA_H
+> > > +
+> > > +#define MPC512x_DMACHAN_SCLPC          26
+> > > +#define MPC512x_DMACHAN_SDHC           30
+> > > +#define MPC512x_DMACHAN_MDDRC          32
+> > > +
+> > > +#define MPC512x_DMACHAN_MAX            64
+> > > +
+> > 
+> > I think these should not be in the header and should not bve part of the
+> > binding either. They are specific to an SoC that happens to be using this
+> > DMA controller but would be completely different for any other SoC with
+> > the same DMA engine. These belong into the dma descriptors of the slave
+> > drivers and don't need symbolic names.
+> 
+> Thank you for the feedback.
+> 
+> OK, so not adding the dt-bindings header leads to no change in
+> the DTS nodes, which in turn collapses 5/8 into something local
+> to the .c driver source (introduce an enum and replace a few
+> magic numbers with names), and obsoletes 4/8 as a prerequisite.
+> This will further reduce the patch set's size.
 
-Signed-off-by: Kevin Hao <haokexin@gmail.com>
----
-v3: Fix the typo in the comments.
+Actually I think you will need extra changes: The dma-engine driver
+should not require knowledge of any channel-specific settings.
+I did not notice you had them until you mentioned the above, but
+from what I can tell, you need a few flags in the dma-specifier
+to replace code like
 
- arch/powerpc/kernel/traps.c  | 9 ---------
- arch/powerpc/math-emu/math.c | 9 +++++++++
- 2 files changed, 9 insertions(+), 9 deletions(-)
+                /* only start explicitly on MDDRC channel */
+-               if (cid == 32)
++               if (cid == MPC512x_DMACHAN_MDDRC)
+                        mdesc->tcd->start = 1;
 
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index bf33c22..58a8065 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -1131,15 +1131,6 @@ void __kprobes program_check_exception(struct pt_regs *regs)
- 	 * instruction or only on FP instructions, whether there is a
- 	 * pattern to occurrences etc. -dgibson 31/Mar/2003
- 	 */
--
--	/*
--	 * If we support a HW FPU, we need to ensure the FP state
--	 * if flushed into the thread_struct before attempting
--	 * emulation
--	 */
--#ifdef CONFIG_PPC_FPU
--	flush_fp_to_thread(current);
--#endif
- 	switch (do_mathemu(regs)) {
- 	case 0:
- 		emulate_single_step(regs);
-diff --git a/arch/powerpc/math-emu/math.c b/arch/powerpc/math-emu/math.c
-index 3fe8e35..f9ef347 100644
---- a/arch/powerpc/math-emu/math.c
-+++ b/arch/powerpc/math-emu/math.c
-@@ -420,6 +420,15 @@ do_mathemu(struct pt_regs *regs)
- 		goto illegal;
- 	}
- 
-+	/*
-+	 * If we support a HW FPU, we need to ensure the FP state
-+	 * is flushed into the thread_struct before attempting
-+	 * emulation
-+	 */
-+#ifdef CONFIG_PPC_FPU
-+	flush_fp_to_thread(current);
-+#endif
-+
- 	eflag = func(op0, op1, op2, op3);
- 
- 	if (insn & 1) {
--- 
-1.8.1.4
+with
+
+		mdesc->tcd->start = dmaspec->explicit_start;
+
+or something along these lines, where dmaspec is a data structure
+derived from the fields in the DT dma specifier of the child
+node.		
+
+> I scanned chapter 12 (DMA controller) in the MPC8308 reference
+> manual (rev 0 as of 2010-04) several times and could not find any
+> hint about peripherals, request lines, or anything else related
+> to flow control.  Searching in the whole RM won't give a hint
+> either.  Does this suggest that the MPC8308 DMA controller's
+> channels are "free" in their assignment to transfer tasks?  Or
+> are they "memory transfers only"?  Or do they happily accept any
+> XLB address (internal and external RAM, IMMR and IP bus space)
+> but don't apply flow control, i.e. expect either peripherals to
+> already hold the RX data, or peripherals to keep up with being
+> fed random amounts of TX data?  I tend to read the doc as the
+> latter.
+
+It sounds to me that they are memory-to-memory only, which means
+you probably want to allow #dma-cells=<0> as a special case to
+describe an instance that has no slave API support.
+
+	Arnd
