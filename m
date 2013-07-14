@@ -1,15 +1,16 @@
 Return-Path: <haokexin@gmail.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9A6AE2C00F4
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Jul 2013 19:07:30 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 165A52C00F3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Jul 2013 19:07:31 +1000 (EST)
 From: Kevin Hao <haokexin@gmail.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 1/4] powerpc: remove the unused function disable_kernel_fp()
-Date: Sun, 14 Jul 2013 17:02:03 +0800
-Message-ID: <1373792526-16241-2-git-send-email-haokexin@gmail.com>
+Subject: [PATCH 2/4] powerpc: remove the redundant flush_fp_to_thread() in
+ setup_sigcontext()
+Date: Sun, 14 Jul 2013 17:02:04 +0800
+Message-ID: <1373792526-16241-3-git-send-email-haokexin@gmail.com>
 In-Reply-To: <1373792526-16241-1-git-send-email-haokexin@gmail.com>
 References: <1373792526-16241-1-git-send-email-haokexin@gmail.com>
 MIME-Version: 1.0
@@ -24,50 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The only using of function disable_kernel_fp() was already dropped
-in the commit 5daf9071 (powerpc: merge align.c).
+In commit c6e6771b(powerpc: Introduce VSX thread_struct and CONFIG_VSX)
+we add a invocation of flush_fp_to_thread() before copying the FPR or
+VSR to users. But we already invoke the flush_fp_to_thread() in this
+function. So remove one of them.
 
 Signed-off-by: Kevin Hao <haokexin@gmail.com>
 ---
- arch/powerpc/include/asm/switch_to.h |  1 -
- arch/powerpc/kernel/misc_64.S        | 13 -------------
- 2 files changed, 14 deletions(-)
+ arch/powerpc/kernel/signal_64.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
-index 49a13e0..33e1cd8 100644
---- a/arch/powerpc/include/asm/switch_to.h
-+++ b/arch/powerpc/include/asm/switch_to.h
-@@ -18,7 +18,6 @@ extern struct task_struct *_switch(struct thread_struct *prev,
+diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
+index 887e99d..cb833bf 100644
+--- a/arch/powerpc/kernel/signal_64.c
++++ b/arch/powerpc/kernel/signal_64.c
+@@ -96,8 +96,6 @@ static long setup_sigcontext(struct sigcontext __user *sc, struct pt_regs *regs,
+ 	unsigned long msr = regs->msr;
+ 	long err = 0;
  
- extern void giveup_fpu(struct task_struct *);
- extern void load_up_fpu(void);
--extern void disable_kernel_fp(void);
- extern void enable_kernel_fp(void);
- extern void flush_fp_to_thread(struct task_struct *);
- extern void enable_kernel_altivec(void);
-diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
-index 6820e45..8110abe 100644
---- a/arch/powerpc/kernel/misc_64.S
-+++ b/arch/powerpc/kernel/misc_64.S
-@@ -416,19 +416,6 @@ _GLOBAL(scom970_write)
- 	blr
- #endif /* CONFIG_CPU_FREQ_PMAC64 || CONFIG_CPU_FREQ_MAPLE */
+-	flush_fp_to_thread(current);
+-
+ #ifdef CONFIG_ALTIVEC
+ 	err |= __put_user(v_regs, &sc->v_regs);
  
--
--/*
-- * disable_kernel_fp()
-- * Disable the FPU.
-- */
--_GLOBAL(disable_kernel_fp)
--	mfmsr	r3
--	rldicl	r0,r3,(63-MSR_FP_LG),1
--	rldicl	r3,r0,(MSR_FP_LG+1),0
--	mtmsrd	r3			/* disable use of fpu now */
--	isync
--	blr
--
- /* kexec_wait(phys_cpu)
-  *
-  * wait for the flag to change, indicating this kernel is going away but
 -- 
 1.8.1.4
