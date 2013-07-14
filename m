@@ -1,20 +1,16 @@
-Return-Path: <gsi@denx.de>
-Date: Sun, 14 Jul 2013 13:07:08 +0200
-From: Gerhard Sittig <gsi@denx.de>
-To: Lars-Peter Clausen <lars@metafoo.de>
-Subject: Re: [PATCH RFC 1/8] powerpc: mpc512x_dma: add support for data
- transfers between memory and i/o memory
-Message-ID: <20130714110708.GC7080@book.gsilab.sittig.org>
-References: <1373642781-32631-1-git-send-email-gsi@denx.de>
- <1373642781-32631-2-git-send-email-gsi@denx.de>
- <51E277E5.8050305@metafoo.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <51E277E5.8050305@metafoo.de>
-Cc: Arnd Bergmann <arnd@arndb.de>, Vinod Koul <vinod.koul@intel.com>,
- devicetree-discuss@lists.ozlabs.org, Alexander Popov <a13xp0p0v88@gmail.com>,
- Dan Williams <djbw@fb.com>, Anatolij Gustschin <agust@denx.de>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <pebolle@tiscali.nl>
+Received: from cpsmtpb-ews09.kpnxchange.com (cpsmtpb-ews09.kpnxchange.com
+ [213.75.39.14]) by ozlabs.org (Postfix) with ESMTP id 86F7D2C0183
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Jul 2013 21:15:49 +1000 (EST)
+Message-ID: <1373799735.1370.5.camel@x61.thuisdomein>
+Subject: [PATCH] powerpc/pseries: drop "select HOTPLUG"
+From: Paul Bolle <pebolle@tiscali.nl>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>
+Date: Sun, 14 Jul 2013 13:02:15 +0200
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,33 +20,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Jul 14, 2013 at 12:05 +0200, Lars-Peter Clausen wrote:
-> 
-> On 07/12/2013 05:26 PM, Gerhard Sittig wrote:
-> [...]
-> ]
-> > +		if (mchan->tcd_nunits)
-> > +			tcd->nbytes = mchan->tcd_nunits * 4;
-> > +		else
-> > +			tcd->nbytes = 64;
-> 
-> Just wondering where does the magic 64 come from?
+The Kconfig symbol HOTPLUG was removed with commit 40b313608a ("Finally
+eradicate CONFIG_HOTPLUG"). But there's still one select statement for
+that symbol. It seems that select statement was added after the patch to
+remove CONFIG_HOTPLUG was submitted. Anyhow, it is useless and can be
+dropped.
 
-"Inherited" from Alexander's submission.  By coincidence the SDHC
-client happened to work with this constraint, as did Alexander's
-LPB test suite.  I'm not aware of other DMA clients as of now
-(except for the memory transfer, which runs a different prep
-routine).
+Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+---
+Not tested.
 
-It looks like there is more potential for generalization and auto
-adapting to user input (adjusting configurable inner-loop
-parameters to exactly fullfill the overall job from the user's
-spec yet meet the chunking constraints of the hardware).
+ arch/powerpc/platforms/pseries/Kconfig | 1 -
+ 1 file changed, 1 deletion(-)
 
-
-virtually yours
-Gerhard Sittig
+diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
+index 1bd3399..62b4f80 100644
+--- a/arch/powerpc/platforms/pseries/Kconfig
++++ b/arch/powerpc/platforms/pseries/Kconfig
+@@ -19,7 +19,6 @@ config PPC_PSERIES
+ 	select ZLIB_DEFLATE
+ 	select PPC_DOORBELL
+ 	select HAVE_CONTEXT_TRACKING
+-	select HOTPLUG if SMP
+ 	select HOTPLUG_CPU if SMP
+ 	default y
+ 
 -- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr. 5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+1.8.1.4
