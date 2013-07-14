@@ -1,20 +1,17 @@
-Return-Path: <gsi@denx.de>
-Date: Sat, 13 Jul 2013 16:14:43 +0200
-From: Gerhard Sittig <gsi@denx.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH RFC 5/8] dma: mpc512x: use symbolic specifiers for DMA
- channels
-Message-ID: <20130713141443.GJ2615@book.gsilab.sittig.org>
-References: <1373642781-32631-1-git-send-email-gsi@denx.de>
- <1373642781-32631-6-git-send-email-gsi@denx.de>
- <201307130917.08904.arnd@arndb.de>
+Return-Path: <michael@ellerman.id.au>
+Date: Sun, 14 Jul 2013 14:36:00 +1000
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Chris Friesen <cbf123@mail.usask.ca>
+Subject: Re: visible memory seems wrong in kexec crash dump kernel
+Message-ID: <20130714043600.GA30717@concordia>
+References: <51DF1BBB.5060904@mail.usask.ca> <51DF2229.5010604@mail.usask.ca>
+ <20130712012142.GA24112@concordia> <51E07056.8040007@mail.usask.ca>
+ <51E08A40.80900@mail.usask.ca> <51E0F41A.20904@mail.usask.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <201307130917.08904.arnd@arndb.de>
-Cc: Lars-Peter Clausen <lars@metafoo.de>, Vinod Koul <vinod.koul@intel.com>,
- devicetree-discuss@lists.ozlabs.org, Alexander Popov <a13xp0p0v88@gmail.com>,
- Dan Williams <djbw@fb.com>, Anatolij Gustschin <agust@denx.de>,
- linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <51E0F41A.20904@mail.usask.ca>
+Cc: kexec@lists.infradead.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, Vivek Goyal <vgoyal@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,84 +21,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[ MPC8308 knowledge required, see below ]
-
-On Sat, Jul 13, 2013 at 09:17 +0200, Arnd Bergmann wrote:
+On Sat, Jul 13, 2013 at 12:30:50AM -0600, Chris Friesen wrote:
+> On 07/12/2013 04:59 PM, Chris Friesen wrote:
+> >On 07/12/2013 03:08 PM, Chris Friesen wrote:
+> >
+> >>I turned on the instrumentation in early_init_dt_scan_memory() and got
+> >>the following when jumping to the capture kernel:
+> >>
+> >>memory scan node memory, reg size 16, data: 0 0 2 0,
+> >>- 0 , 200000000
+> >>
+> >>That 0x200000000 matches the fact that I'm seeing 8GB of memory
+> >>available in the recovery kernel.
+> >>
+> >>If I boot the original kernel with "crashkernel=224M@32M", should I
+> >>expect that only 224MB is marked as "linux,usable-memory" in the
+> >>recovery kernel?
+> >
+> >I started looking at the kexec side of things, and I noticed something a
+> >bit odd. In most places dealing with the device tree in kexec it accepts
+> >either "memory" or "memory@" for the memory node name. In
+> >add_usable_mem_property() in arch/ppc64/fs2dt.c it seems to only accept
+> >"memory@".
+> >
+> >Is this expected behaviour? It seems to be the same in current git
+> >versions of kexec-tools.
+> >
+> >On my system I see "/proc/device-tree/memory".
+> >
+> >If I modify add_usable_mem_property() to also accept "/memory" then my
+> >recovery kernel boots up with
+> >
+> >physicalMemorySize = 0x10000000
+> >
+> >which is 256MB (which is still a bit odd since I specified 224MB for the
+> >crashkernel).
+> >
+> >However, it then hits the BUG() call at the end of mark_bootmem() in
+> >mm/bootmem.c.
 > 
-> On Friday 12 July 2013, Gerhard Sittig wrote:
-> > +++ b/include/dt-bindings/dma/mpc512x-dma.h
-> > @@ -0,0 +1,21 @@
-> > +/*
-> > + * This header file provides symbolic specifiers for DMA channels
-> > + * within the MPC512x SoC's DMA controller.  Since requester lines
-> > + * directly map to channel numbers and no additional flexibility
-> > + * is involved, DMA channels can be considered directly associated
-> > + * with individual peripherals.
-> > + *
-> > + * This header file gets shared among DT bindings which provide
-> > + * hardware specs, and driver code which implements supporting logic.
-> > + */
-> > +
-> > +#ifndef _DT_BINDINGS_DMA_MPC512x_DMA_H
-> > +#define _DT_BINDINGS_DMA_MPC512x_DMA_H
-> > +
-> > +#define MPC512x_DMACHAN_SCLPC          26
-> > +#define MPC512x_DMACHAN_SDHC           30
-> > +#define MPC512x_DMACHAN_MDDRC          32
-> > +
-> > +#define MPC512x_DMACHAN_MAX            64
-> > +
+> One final thing and I'll stop replying to myself. :)
 > 
-> I think these should not be in the header and should not bve part of the
-> binding either. They are specific to an SoC that happens to be using this
-> DMA controller but would be completely different for any other SoC with
-> the same DMA engine. These belong into the dma descriptors of the slave
-> drivers and don't need symbolic names.
+> It looks like the problem is that some board-specific freescale code
+> was calling lmb_reserve() with a base address in the 4GB range.  It
+> seems odd that lmb_reserve() didn't throw some kind of error when
+> the recovery kernel was supposed to be limited to 224MB.
+> 
+> Rather than try and fix the bug, I turned off the (unneeded) config
+> options related to the above lmb_reserve() calls and was able to
+> successfully access the information I needed via /dev/oldmem.
+> 
+> The upshot is that there seems to be a number of things that could
+> be improved:
+> 
+> 1) kexec should accept "/memory" and not just "/memory@"
 
-Thank you for the feedback.
+Yeah probably, I think folks tend to use "/memory@0" even if they only
+have a single memory node. But that does sound like a bug in kexec.
 
-OK, so not adding the dt-bindings header leads to no change in
-the DTS nodes, which in turn collapses 5/8 into something local
-to the .c driver source (introduce an enum and replace a few
-magic numbers with names), and obsoletes 4/8 as a prerequisite.
-This will further reduce the patch set's size.
+> 2) lmb_reserve() should really respect the crashkernel memory limit
 
-Your feedback made me re-visit the driver source and notice that
-it is shared among the MPC512x as well as the MPC8308 hardware.
-The latter only has 16 channels, and appears to _not_ have its
-channels dedicated to peripherals.  It's even uncertain to me
-whether it can cope with peripherals at all and how so.
+It's been replaced in mainline, so you'd have to check what the current
+code does in that situation.
 
-I scanned chapter 12 (DMA controller) in the MPC8308 reference
-manual (rev 0 as of 2010-04) several times and could not find any
-hint about peripherals, request lines, or anything else related
-to flow control.  Searching in the whole RM won't give a hint
-either.  Does this suggest that the MPC8308 DMA controller's
-channels are "free" in their assignment to transfer tasks?  Or
-are they "memory transfers only"?  Or do they happily accept any
-XLB address (internal and external RAM, IMMR and IP bus space)
-but don't apply flow control, i.e. expect either peripherals to
-already hold the RX data, or peripherals to keep up with being
-fed random amounts of TX data?  I tend to read the doc as the
-latter.
+> 3) the freescale stuff really shouldn't assume it can map things
+> wherever it feels like
 
-Can somebody with MPC8308 knowledge confirm my suspicion that the
-MPC8308 DMA channels aren't associated with peripherals, and thus
-always need the software initiated start condition (_if_ they are
-used for data transfer to/from peripherals)?  Can somebody with
-access to an MPC8308 based board test later versions of the
-series, to verify we don't break DMA operation on that platform?
+Agreed :)
 
-Regardless of whether MPC8308 can't handle peripheral access, or
-doesn't differ from memory transfers there, the patch series
-needs an update.  Part 1/8 in its current form is either wrong or
-incomplete, works for MPC512x but not for all hardware that this
-driver is responsible for.
-
-
-virtually yours
-Gerhard Sittig
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr. 5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+cheers
