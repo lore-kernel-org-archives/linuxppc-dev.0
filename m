@@ -2,10 +2,9 @@ Return-Path: <gsi@denx.de>
 From: Gerhard Sittig <gsi@denx.de>
 To: linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
  Alexander Popov <a13xp0p0v88@gmail.com>
-Subject: [PATCH RFC v2 3/5] dma: of: Add common xlate function for matching by
- channel id
-Date: Sun, 14 Jul 2013 14:01:59 +0200
-Message-Id: <1373803321-11628-4-git-send-email-gsi@denx.de>
+Subject: [PATCH RFC v2 5/5] HACK mmc: mxcmmc: enable clocks for the MPC512x
+Date: Sun, 14 Jul 2013 14:02:01 +0200
+Message-Id: <1373803321-11628-6-git-send-email-gsi@denx.de>
 In-Reply-To: <1373803321-11628-1-git-send-email-gsi@denx.de>
 References: <1373642781-32631-1-git-send-email-gsi@denx.de>
  <1373803321-11628-1-git-send-email-gsi@denx.de>
@@ -21,102 +20,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Lars-Peter Clausen <lars@metafoo.de>
+Q&D HACK to enable SD card support without correct COMMON_CLK support,
+best viewed with 'git diff -w -b', NOT acceptable for mainline (NAKed)
 
-This patch adds a new common OF dma xlate callback function which will match a
-channel by it's id. The binding expects one integer argument which it will use to
-lookup the channel by the id.
-
-Unlike of_dma_simple_xlate this function is able to handle a system with
-multiple DMA controllers. When registering the of dma provider with
-of_dma_controller_register a pointer to the dma_device struct which is
-associated with the dt node needs to passed as the data parameter. The filter
-function will use this pointer to match only channels which belong to the
-specified DMA controller.
-
-Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
 Signed-off-by: Gerhard Sittig <gsi@denx.de>
 ---
- drivers/dma/of-dma.c   |   47 +++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/of_dma.h |    4 ++++
- 2 files changed, 51 insertions(+)
+ drivers/mmc/host/mxcmmc.c |   41 +++++++++++++++++++++++++++--------------
+ 1 file changed, 27 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/dma/of-dma.c b/drivers/dma/of-dma.c
-index 7aa0864..d5d528e 100644
---- a/drivers/dma/of-dma.c
-+++ b/drivers/dma/of-dma.c
-@@ -229,3 +229,50 @@ struct dma_chan *of_dma_simple_xlate(struct of_phandle_args *dma_spec,
- 			&dma_spec->args[0]);
- }
- EXPORT_SYMBOL_GPL(of_dma_simple_xlate);
-+
-+struct of_dma_filter_by_chan_id_args {
-+	struct dma_device *dev;
-+	unsigned int chan_id;
-+};
-+
-+static bool of_dma_filter_by_chan_id(struct dma_chan *chan, void *params)
-+{
-+	struct of_dma_filter_by_chan_id_args *args = params;
-+
-+	return chan->device == args->dev && chan->chan_id == args->chan_id;
-+}
-+
-+/**
-+ * of_dma_xlate_by_chan_id - Translate dt property to DMA channel by channel id
-+ * @dma_spec:	pointer to DMA specifier as found in the device tree
-+ * @of_dma:	pointer to DMA controller data
-+ *
-+ * This function can be used as the of xlate callback for DMA driver which wants
-+ * to match the channel based on the channel id. When using this xlate function
-+ * the #dma-cells propety of the DMA controller dt node needs to be set to 1.
-+ * The data parameter of of_dma_controller_register must be a pointer to the
-+ * dma_device struct the function should match upon.
-+ *
-+ * Returns pointer to appropriate dma channel on success or NULL on error.
-+ */
-+struct dma_chan *of_dma_xlate_by_chan_id(struct of_phandle_args *dma_spec,
-+					 struct of_dma *ofdma)
-+{
-+	struct of_dma_filter_by_chan_id_args args;
-+	dma_cap_mask_t cap;
-+
-+	args.dev = ofdma->of_dma_data;
-+	if (!args.dev)
-+		return NULL;
-+
-+	if (dma_spec->args_count != 1)
-+		return NULL;
-+
-+	dma_cap_zero(cap);
-+	dma_cap_set(DMA_SLAVE, cap);
-+
-+	args.chan_id = dma_spec->args[0];
-+
-+	return dma_request_channel(cap, of_dma_filter_by_chan_id, &args);
-+}
-+EXPORT_SYMBOL_GPL(of_dma_xlate_by_chan_id);
-diff --git a/include/linux/of_dma.h b/include/linux/of_dma.h
-index 364dda7..b7cf614 100644
---- a/include/linux/of_dma.h
-+++ b/include/linux/of_dma.h
-@@ -42,6 +42,8 @@ extern struct dma_chan *of_dma_request_slave_channel(struct device_node *np,
- 						     const char *name);
- extern struct dma_chan *of_dma_simple_xlate(struct of_phandle_args *dma_spec,
- 		struct of_dma *ofdma);
-+extern struct dma_chan *of_dma_xlate_by_chan_id(struct of_phandle_args *dma_spec,
-+		struct of_dma *ofdma);
- #else
- static inline int of_dma_controller_register(struct device_node *np,
- 		struct dma_chan *(*of_dma_xlate)
-@@ -67,6 +69,8 @@ static inline struct dma_chan *of_dma_simple_xlate(struct of_phandle_args *dma_s
- 	return NULL;
- }
+diff --git a/drivers/mmc/host/mxcmmc.c b/drivers/mmc/host/mxcmmc.c
+index d503635..b9d21cc 100644
+--- a/drivers/mmc/host/mxcmmc.c
++++ b/drivers/mmc/host/mxcmmc.c
+@@ -1121,20 +1121,29 @@ static int mxcmci_probe(struct platform_device *pdev)
+ 	host->res = r;
+ 	host->irq = irq;
  
-+#define of_dma_xlate_by_chan_id NULL
-+
- #endif
+-	host->clk_ipg = devm_clk_get(&pdev->dev, "ipg");
+-	if (IS_ERR(host->clk_ipg)) {
+-		ret = PTR_ERR(host->clk_ipg);
+-		goto out_iounmap;
+-	}
++	if (!is_mpc512x_mmc(host)) {
++		host->clk_ipg = devm_clk_get(&pdev->dev, "ipg");
++		if (IS_ERR(host->clk_ipg)) {
++			ret = PTR_ERR(host->clk_ipg);
++			goto out_iounmap;
++		}
  
- #endif /* __LINUX_OF_DMA_H */
+-	host->clk_per = devm_clk_get(&pdev->dev, "per");
+-	if (IS_ERR(host->clk_per)) {
+-		ret = PTR_ERR(host->clk_per);
+-		goto out_iounmap;
++		host->clk_per = devm_clk_get(&pdev->dev, "per");
++		if (IS_ERR(host->clk_per)) {
++			ret = PTR_ERR(host->clk_per);
++			goto out_iounmap;
++		}
++	} else {
++		host->clk_per = devm_clk_get(&pdev->dev, "sdhc_clk");
++		if (IS_ERR(host->clk_per)) {
++			ret = PTR_ERR(host->clk_per);
++			goto out_iounmap;
++		}
+ 	}
+ 
+ 	clk_prepare_enable(host->clk_per);
+-	clk_prepare_enable(host->clk_ipg);
++	if (host->clk_ipg)
++		clk_prepare_enable(host->clk_ipg);
+ 
+ 	mxcmci_softreset(host);
+ 
+@@ -1204,7 +1213,8 @@ out_free_dma:
+ 		dma_release_channel(host->dma);
+ out_clk_put:
+ 	clk_disable_unprepare(host->clk_per);
+-	clk_disable_unprepare(host->clk_ipg);
++	if (host->clk_ipg)
++		clk_disable_unprepare(host->clk_ipg);
+ out_iounmap:
+ 	iounmap(host->base);
+ out_free:
+@@ -1236,7 +1246,8 @@ static int mxcmci_remove(struct platform_device *pdev)
+ 		dma_release_channel(host->dma);
+ 
+ 	clk_disable_unprepare(host->clk_per);
+-	clk_disable_unprepare(host->clk_ipg);
++	if (host->clk_ipg)
++		clk_disable_unprepare(host->clk_ipg);
+ 
+ 	release_mem_region(host->res->start, resource_size(host->res));
+ 
+@@ -1255,7 +1266,8 @@ static int mxcmci_suspend(struct device *dev)
+ 	if (mmc)
+ 		ret = mmc_suspend_host(mmc);
+ 	clk_disable_unprepare(host->clk_per);
+-	clk_disable_unprepare(host->clk_ipg);
++	if (host->clk_ipg)
++		clk_disable_unprepare(host->clk_ipg);
+ 
+ 	return ret;
+ }
+@@ -1267,7 +1279,8 @@ static int mxcmci_resume(struct device *dev)
+ 	int ret = 0;
+ 
+ 	clk_prepare_enable(host->clk_per);
+-	clk_prepare_enable(host->clk_ipg);
++	if (host->clk_ipg)
++		clk_prepare_enable(host->clk_ipg);
+ 	if (mmc)
+ 		ret = mmc_resume_host(mmc);
+ 
 -- 
 1.7.10.4
