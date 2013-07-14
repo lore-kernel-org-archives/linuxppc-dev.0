@@ -1,25 +1,25 @@
 Return-Path: <haokexin@gmail.com>
-Received: from mail-pa0-x229.google.com (mail-pa0-x229.google.com
- [IPv6:2607:f8b0:400e:c03::229])
+Received: from mail-pb0-x232.google.com (mail-pb0-x232.google.com
+ [IPv6:2607:f8b0:400e:c01::232])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AFE1E2C00A1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Jul 2013 18:11:19 +1000 (EST)
-Received: by mail-pa0-f41.google.com with SMTP id bj3so10363588pad.28
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Jul 2013 01:11:14 -0700 (PDT)
-Date: Sun, 14 Jul 2013 16:11:04 +0800
+ by ozlabs.org (Postfix) with ESMTPS id 6011C2C0114
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Jul 2013 18:30:00 +1000 (EST)
+Received: by mail-pb0-f50.google.com with SMTP id wz7so10210555pbc.23
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Jul 2013 01:29:57 -0700 (PDT)
+Date: Sun, 14 Jul 2013 16:29:47 +0800
 From: Kevin Hao <haokexin@gmail.com>
-To: Matt Helsley <matthltc@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/2] powerpc/math-emu: move the flush FPU state function
- into do_mathemu
-Message-ID: <20130714081103.GA13793@pek-khao-d1.corp.ad.wrs.com>
-References: <1373545315-9219-1-git-send-email-haokexin@gmail.com>
- <1373545315-9219-2-git-send-email-haokexin@gmail.com>
- <20130712003445.GC14599@us.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v2 1/2] powerpc/math-emu: move the flush FPU state
+ function into do_mathemu
+Message-ID: <20130714082947.GB13793@pek-khao-d1.corp.ad.wrs.com>
+References: <1373607402-21738-1-git-send-email-haokexin@gmail.com>
+ <1373607402-21738-2-git-send-email-haokexin@gmail.com>
+ <1373618233.19894.143.camel@pasglop>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="SUOF0GtieIMvvwua"
-In-Reply-To: <20130712003445.GC14599@us.ibm.com>
+ protocol="application/pgp-signature"; boundary="nVMJ2NtxeReIH9PS"
+In-Reply-To: <1373618233.19894.143.camel@pasglop>
 Cc: Scott Wood <scottwood@freescale.com>,
  linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,80 +32,65 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---SUOF0GtieIMvvwua
+--nVMJ2NtxeReIH9PS
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Jul 11, 2013 at 05:34:45PM -0700, Matt Helsley wrote:
-> On Thu, Jul 11, 2013 at 08:21:54PM +0800, Kevin Hao wrote:
-> > By doing this we can make sure that the FPU state is only flushed to
-> > the thread struct when it is really needed.
-> >=20
-> > Signed-off-by: Kevin Hao <haokexin@gmail.com>
-> > ---
-> >  arch/powerpc/kernel/traps.c  | 9 ---------
-> >  arch/powerpc/math-emu/math.c | 9 +++++++++
-> >  2 files changed, 9 insertions(+), 9 deletions(-)
-> >=20
-> > diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> > index bf33c22..58a8065 100644
-> > --- a/arch/powerpc/kernel/traps.c
-> > +++ b/arch/powerpc/kernel/traps.c
-> > @@ -1131,15 +1131,6 @@ void __kprobes program_check_exception(struct pt=
-_regs *regs)
-> >  	 * instruction or only on FP instructions, whether there is a
-> >  	 * pattern to occurrences etc. -dgibson 31/Mar/2003
-> >  	 */
-> > -
-> > -	/*
-> > -	 * If we support a HW FPU, we need to ensure the FP state
-> > -	 * if flushed into the thread_struct before attempting
-> > -	 * emulation
-> > -	 */
-> > -#ifdef CONFIG_PPC_FPU
-> > -	flush_fp_to_thread(current);
-> > -#endif
-> >  	switch (do_mathemu(regs)) {
-> >  	case 0:
-> >  		emulate_single_step(regs);
-> > diff --git a/arch/powerpc/math-emu/math.c b/arch/powerpc/math-emu/math.c
-> > index 3fe8e35..18ce6a7 100644
-> > --- a/arch/powerpc/math-emu/math.c
-> > +++ b/arch/powerpc/math-emu/math.c
-> > @@ -420,6 +420,15 @@ do_mathemu(struct pt_regs *regs)
-> >  		goto illegal;
-> >  	}
-> >=20
-> > +	/*
-> > +	 * If we support a HW FPU, we need to ensure the FP state
-> > +	 * if flushed into the thread_struct before attempting
+On Fri, Jul 12, 2013 at 06:37:13PM +1000, Benjamin Herrenschmidt wrote:
+> On Fri, 2013-07-12 at 13:36 +0800, Kevin Hao wrote:
+> > +       /*
+> > +        * If we support a HW FPU, we need to ensure the FP state
+> > +        * if flushed into the thread_struct before attempting
+> > +        * emulation
+> > +        */
+> > +#ifdef CONFIG_PPC_FPU
+> > +       flush_fp_to_thread(current);
+> > +#endif
+> > +
 >=20
-> As long as you're moving the comment you could fix up the spelling
-> error: s/if/is/
+> While at it, care to send a patch that defined an empty
+> flush_fp_to_thread() in the header instead ?
+>=20
+> ie, switch_to.h
+>=20
+> #ifdef CONFIG_PPC_FPU
+> extern void flush_fp_to_thread(struct task-struct *);
+> #else
+> static inline void flush_fp_to_thread(struct task-struct *) { };
+> #endif
+>=20
+> And get rid of the ifdef's here (and elsewhere if any) ?
 
-Fixed. Thanks Matt.
+Sure. Matt also pointed out a typo in the comments of this patch.
+So I will respin a v3 for this. But since I also have some similar
+clean up patches as the change you just suggested, I will send them
+as a separate patch series instead of messing the v3.
 
+Thanks,
 Kevin
 
 >=20
+> Thanks !
+>=20
 > Cheers,
-> 	-Matt Helsley
+> Ben.
+>=20
 >=20
 
---SUOF0GtieIMvvwua
+--nVMJ2NtxeReIH9PS
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.19 (GNU/Linux)
 
-iQEcBAEBAgAGBQJR4l0XAAoJEJNY7TDerrFxY0YH/RNV/G2O+XIC7Oa7z/l3Kodg
-ZJpqXXF50Ai70Ee8qwK/dFdMlFPIpAoWk5v1UdgLHTPhRYYuYprkkWxiJEuSA+LR
-awI2B6ZIRJ/XX4JL7kq/77D14WQ5ajZReWQXkV3H7M7Bygjw5wRDBGgAXkTu22K+
-DtuXR29LCmp+FpMmj5H54lSldcBh7Sb2tf4bTVWu+Q8AVHk4xEWRzWPG+Ql4hlRv
-gvpda4+9TqhCozRY3FBX693vWw5xfT7e8sP0FE/zU+MSwpVOWdasGlYZfRbOS5MD
-bF0CXJ0Dl7dsUEnPrYZlJi/IqzQjVaiDfUx0liINGmjBvZtl2Y7qqwef5kZVyQE=
-=XKSO
+iQEcBAEBAgAGBQJR4mF7AAoJEJNY7TDerrFxw08IAKSQ5fpVvj0s0VKE83VQK4KL
+sRw5dtaf2i+6sScHauGoMe43MP/AYkuuH1+umuGz1M1JTmx81CafZBUZoxNjTZfR
+Fh4WWEn0kU44N7UJy3tW0dvaTh1ixKd5uUK+5TBrS6PCxYqaI8bxBdLPVEXBjwuP
+4ZN7moKVKXejWnEsALzOzJ6B2Pzhyn84SZYQ9UR1/s7S7iH8L/wRnyumRwrSP/2G
+kjp/aqYjajayez6sNCqWg5dxqFGYFKdkFOo6oZXAG98vVh18eVn9TMcRyOQqPnG0
+TpQunztN+E+LGhf8p19MZvGQcVTNdYVmcJ2aeFlXJ/t1vyIyrh3lCIppNSqNLDk=
+=cWc9
 -----END PGP SIGNATURE-----
 
---SUOF0GtieIMvvwua--
+--nVMJ2NtxeReIH9PS--
