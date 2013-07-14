@@ -1,16 +1,16 @@
 Return-Path: <haokexin@gmail.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 997EA2C00F3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Jul 2013 19:07:33 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id E96D22C0123
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Jul 2013 19:07:34 +1000 (EST)
 From: Kevin Hao <haokexin@gmail.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 3/4] powerpc: make flush_fp_to_thread() nop when
- CONFIG_PPC_FPU is disabled
-Date: Sun, 14 Jul 2013 17:02:05 +0800
-Message-ID: <1373792526-16241-4-git-send-email-haokexin@gmail.com>
+Subject: [PATCH 4/4] powerpc: remove the empty giveup_fpu() function on 32bit
+ kernel
+Date: Sun, 14 Jul 2013 17:02:06 +0800
+Message-ID: <1373792526-16241-5-git-send-email-haokexin@gmail.com>
 In-Reply-To: <1373792526-16241-1-git-send-email-haokexin@gmail.com>
 References: <1373792526-16241-1-git-send-email-haokexin@gmail.com>
 MIME-Version: 1.0
@@ -25,89 +25,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In the current kernel, the function flush_fp_to_thread() is not
-dependent on CONFIG_PPC_FPU. So most invocations of this function
-is not wrapped by CONFIG_PPC_FPU. Even through we don't really
-save the FPRs to the thread struct if CONFIG_PPC_FPU is not enabled,
-but there does have some runtime overhead such as the check for
-tsk->thread.regs and preempt disable and enable. It really make
-no sense to do that. So make it a nop when CONFIG_PPC_FPU is
-disabled. Also remove the wrapped #ifdef CONFIG_PPC_FPU
-when invoking this function.
+Instead of implementing an empty giveup_fpu() function for each
+32bit processor type, replace them with an unique empty inline
+function.
 
 Signed-off-by: Kevin Hao <haokexin@gmail.com>
 ---
- arch/powerpc/include/asm/switch_to.h | 7 ++++++-
- arch/powerpc/kernel/process.c        | 2 ++
- arch/powerpc/math-emu/math.c         | 3 +--
- 3 files changed, 9 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/switch_to.h |  3 ++-
+ arch/powerpc/kernel/head_40x.S       |  8 --------
+ arch/powerpc/kernel/head_44x.S       | 10 ----------
+ arch/powerpc/kernel/head_8xx.S       |  4 ----
+ arch/powerpc/kernel/head_fsl_booke.S | 10 ----------
+ arch/powerpc/kernel/ppc_ksyms.c      |  2 ++
+ 6 files changed, 4 insertions(+), 33 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
-index 33e1cd8..39cf0f6 100644
+index 39cf0f6..2c7edde 100644
 --- a/arch/powerpc/include/asm/switch_to.h
 +++ b/arch/powerpc/include/asm/switch_to.h
-@@ -19,7 +19,6 @@ extern struct task_struct *_switch(struct thread_struct *prev,
- extern void giveup_fpu(struct task_struct *);
+@@ -16,7 +16,6 @@ struct thread_struct;
+ extern struct task_struct *_switch(struct thread_struct *prev,
+ 				   struct thread_struct *next);
+ 
+-extern void giveup_fpu(struct task_struct *);
  extern void load_up_fpu(void);
  extern void enable_kernel_fp(void);
--extern void flush_fp_to_thread(struct task_struct *);
  extern void enable_kernel_altivec(void);
- extern void load_up_altivec(struct task_struct *);
- extern int emulate_altivec(struct pt_regs *);
-@@ -37,6 +36,12 @@ static inline void discard_lazy_cpu_state(void)
- }
+@@ -38,8 +37,10 @@ static inline void discard_lazy_cpu_state(void)
+ 
+ #ifdef CONFIG_PPC_FPU
+ extern void flush_fp_to_thread(struct task_struct *);
++extern void giveup_fpu(struct task_struct *);
+ #else
+ static inline void flush_fp_to_thread(struct task_struct *t) { }
++static inline void giveup_fpu(struct task_struct *t) { }
  #endif
  
-+#ifdef CONFIG_PPC_FPU
-+extern void flush_fp_to_thread(struct task_struct *);
-+#else
-+static inline void flush_fp_to_thread(struct task_struct *t) { }
-+#endif
-+
  #ifdef CONFIG_ALTIVEC
- extern void flush_altivec_to_thread(struct task_struct *);
- extern void giveup_altivec(struct task_struct *);
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index c517dbe..0ec255a 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -74,6 +74,7 @@ struct task_struct *last_task_used_vsx = NULL;
- struct task_struct *last_task_used_spe = NULL;
+diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
+index 8a9b6f5..67ee0d6 100644
+--- a/arch/powerpc/kernel/head_40x.S
++++ b/arch/powerpc/kernel/head_40x.S
+@@ -822,14 +822,6 @@ finish_tlb_load:
+ 	rfi			/* Should sync shadow TLBs */
+ 	b	.		/* prevent prefetch past rfi */
+ 
+-/* extern void giveup_fpu(struct task_struct *prev)
+- *
+- * The PowerPC 4xx family of processors do not have an FPU, so this just
+- * returns.
+- */
+-_ENTRY(giveup_fpu)
+-	blr
+-
+ /* This is where the main kernel code starts.
+  */
+ start_here:
+diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
+index 97e2671..c334f53 100644
+--- a/arch/powerpc/kernel/head_44x.S
++++ b/arch/powerpc/kernel/head_44x.S
+@@ -784,16 +784,6 @@ _GLOBAL(__fixup_440A_mcheck)
+ 	sync
+ 	blr
+ 
+-/*
+- * extern void giveup_fpu(struct task_struct *prev)
+- *
+- * The 44x core does not have an FPU.
+- */
+-#ifndef CONFIG_PPC_FPU
+-_GLOBAL(giveup_fpu)
+-	blr
+-#endif
+-
+ _GLOBAL(set_context)
+ 
+ #ifdef CONFIG_BDI_SWITCH
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index b2a5860..1b92a97 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -691,10 +691,6 @@ modified_instr:
+ 	b	151b
  #endif
  
-+#ifdef CONFIG_PPC_FPU
+-	.globl	giveup_fpu
+-giveup_fpu:
+-	blr
+-
  /*
-  * Make sure the floating-point register state in the
-  * the thread_struct is up to date for task tsk.
-@@ -107,6 +108,7 @@ void flush_fp_to_thread(struct task_struct *tsk)
- 	}
- }
- EXPORT_SYMBOL_GPL(flush_fp_to_thread);
-+#endif
+  * This is where the main kernel code starts.
+  */
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index d10a7ca..289afaf 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -948,16 +948,6 @@ _GLOBAL(giveup_spe)
+ #endif /* CONFIG_SPE */
  
- void enable_kernel_fp(void)
- {
-diff --git a/arch/powerpc/math-emu/math.c b/arch/powerpc/math-emu/math.c
-index f9ef347..d1ebac7 100644
---- a/arch/powerpc/math-emu/math.c
-+++ b/arch/powerpc/math-emu/math.c
-@@ -7,6 +7,7 @@
- 
- #include <asm/uaccess.h>
- #include <asm/reg.h>
-+#include <asm/switch_to.h>
- 
- #include <asm/sfp-machine.h>
- #include <math-emu/double.h>
-@@ -425,9 +426,7 @@ do_mathemu(struct pt_regs *regs)
- 	 * is flushed into the thread_struct before attempting
- 	 * emulation
- 	 */
--#ifdef CONFIG_PPC_FPU
- 	flush_fp_to_thread(current);
+ /*
+- * extern void giveup_fpu(struct task_struct *prev)
+- *
+- * Not all FSL Book-E cores have an FPU
+- */
+-#ifndef CONFIG_PPC_FPU
+-_GLOBAL(giveup_fpu)
+-	blr
 -#endif
+-
+-/*
+  * extern void abort(void)
+  *
+  * At present, this routine just applies a system reset.
+diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
+index c296665..689ef81 100644
+--- a/arch/powerpc/kernel/ppc_ksyms.c
++++ b/arch/powerpc/kernel/ppc_ksyms.c
+@@ -96,7 +96,9 @@ EXPORT_SYMBOL(pci_dram_offset);
  
- 	eflag = func(op0, op1, op2, op3);
+ EXPORT_SYMBOL(start_thread);
  
++#ifdef CONFIG_PPC_FPU
+ EXPORT_SYMBOL(giveup_fpu);
++#endif
+ #ifdef CONFIG_ALTIVEC
+ EXPORT_SYMBOL(giveup_altivec);
+ #endif /* CONFIG_ALTIVEC */
 -- 
 1.8.1.4
