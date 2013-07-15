@@ -1,19 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 30C552C0222
- for <linuxppc-dev@ozlabs.org>; Mon, 15 Jul 2013 13:03:39 +1000 (EST)
-Received: from pasglop.ozlabs.ibm.com (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id r6F33KdN013377
- for <linuxppc-dev@ozlabs.org>; Sun, 14 Jul 2013 22:03:37 -0500
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 8/8] powerpc/powernv: Enable detection of legacy UARTs
-Date: Mon, 15 Jul 2013 13:03:15 +1000
-Message-Id: <1373857395-2084-8-git-send-email-benh@kernel.crashing.org>
-In-Reply-To: <1373857395-2084-1-git-send-email-benh@kernel.crashing.org>
-References: <1373857395-2084-1-git-send-email-benh@kernel.crashing.org>
+Return-Path: <anton@samba.org>
+Date: Mon, 15 Jul 2013 14:04:50 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Rusty Russell <rusty@rustcorp.com.au>, Neil Horman
+ <nhorman@tuxdriver.com>
+Subject: [PATCH] module: ppc64 module CRC relocation fix causes perf issues
+Message-ID: <20130715140450.573aab15@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,25 +18,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Legacy UARTs can exist on PowerNV, memory-mapped ones on PCI
-or IO based ones on the LPC bus.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Module CRCs are implemented as absolute symbols that get resolved by
+a linker script. We build an intermediate .o that contains an
+unresolved symbol for each CRC. genksysms parses this .o, calculates
+the CRCs and writes a linker script that "resolves" the symbols to
+the calculated CRC.
+
+Unfortunately the ppc64 relocatable kernel sees these CRCs as symbols
+that need relocating and relocates them at boot. Commit d4703aef
+(module: handle ppc64 relocating kcrctabs when CONFIG_RELOCATABLE=y)
+added a hook to reverse the bogus relocations. Part of this patch
+created a symbol at 0x0:
+
+# head -2 /proc/kallsyms 
+0000000000000000 T reloc_start
+c000000000000000 T .__start
+
+This reloc_start symbol is causing lots of confusion to perf. It
+thinks reloc_start is a massive function that stretches from 0x0 to
+0xc000000000000000 and we get various cryptic errors out of perf,
+including:
+
+problem incrementing symbol count, skipping event
+
+This patch removes the  reloc_start linker script label and instead
+defines it as PHYSICAL_START. We also need to wrap it with
+CONFIG_PPC64 because the ppc32 kernel can set a non zero
+PHYSICAL_START at compile time and we wouldn't want to subtract
+it from the CRCs in that case.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+Cc: <stable@kernel.org>
 ---
- arch/powerpc/platforms/powernv/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/platforms/powernv/Kconfig b/arch/powerpc/platforms/powernv/Kconfig
-index 6529587..6fae5eb 100644
---- a/arch/powerpc/platforms/powernv/Kconfig
-+++ b/arch/powerpc/platforms/powernv/Kconfig
-@@ -8,6 +8,7 @@ config PPC_POWERNV
- 	select PPC_PCI_CHOICE if EMBEDDED
- 	select EPAPR_BOOT
- 	select PPC_INDIRECT_PIO
-+	select PPC_UDBG_16550
- 	default y
+This bug was originally reported on Fedora 19 (3.9.x), so I've marked
+it for stable.
+
+Index: b/arch/powerpc/include/asm/module.h
+===================================================================
+--- a/arch/powerpc/include/asm/module.h
++++ b/arch/powerpc/include/asm/module.h
+@@ -82,10 +82,9 @@ struct exception_table_entry;
+ void sort_ex_table(struct exception_table_entry *start,
+ 		   struct exception_table_entry *finish);
  
- config POWERNV_MSI
--- 
-1.8.1.2
+-#ifdef CONFIG_MODVERSIONS
++#if defined(CONFIG_MODVERSIONS) && defined(CONFIG_PPC64)
+ #define ARCH_RELOCATES_KCRCTAB
+-
+-extern const unsigned long reloc_start[];
++#define reloc_start PHYSICAL_START
+ #endif
+ #endif /* __KERNEL__ */
+ #endif	/* _ASM_POWERPC_MODULE_H */
+Index: b/arch/powerpc/kernel/vmlinux.lds.S
+===================================================================
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -38,9 +38,6 @@ jiffies = jiffies_64 + 4;
+ #endif
+ SECTIONS
+ {
+-	. = 0;
+-	reloc_start = .;
+-
+ 	. = KERNELBASE;
+ 
+ /*
