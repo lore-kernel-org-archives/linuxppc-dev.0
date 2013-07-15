@@ -1,16 +1,36 @@
-Return-Path: <rusty@ozlabs.org>
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Anton Blanchard <anton@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Neil Horman <nhorman@tuxdriver.com>
-Subject: Re: [PATCH] module: ppc64 module CRC relocation fix causes perf issues
-In-Reply-To: <20130715140450.573aab15@kryten>
-References: <20130715140450.573aab15@kryten>
-Date: Mon, 15 Jul 2013 14:09:49 +0930
-Message-ID: <87zjto1lnu.fsf@rustcorp.com.au>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9DF362C00E8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jul 2013 16:03:32 +1000 (EST)
+Received: from /spool/local
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 15 Jul 2013 11:27:55 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 2B485E0055
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jul 2013 11:33:17 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r6F63LWu33095702
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jul 2013 11:33:22 +0530
+Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r6F63MGH032374
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jul 2013 16:03:24 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Scott Wood <scottwood@freescale.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/fsl-booke: Work around erratum A-006958
+In-Reply-To: <1373677412-24329-1-git-send-email-scottwood@freescale.com>
+References: <1373677412-24329-1-git-send-email-scottwood@freescale.com>
+Date: Mon, 15 Jul 2013 11:33:22 +0530
+Message-ID: <87mwpojr6d.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,42 +40,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anton Blanchard <anton@samba.org> writes:
-> Module CRCs are implemented as absolute symbols that get resolved by
-> a linker script. We build an intermediate .o that contains an
-> unresolved symbol for each CRC. genksysms parses this .o, calculates
-> the CRCs and writes a linker script that "resolves" the symbols to
-> the calculated CRC.
->
-> Unfortunately the ppc64 relocatable kernel sees these CRCs as symbols
-> that need relocating and relocates them at boot. Commit d4703aef
-> (module: handle ppc64 relocating kcrctabs when CONFIG_RELOCATABLE=y)
-> added a hook to reverse the bogus relocations. Part of this patch
-> created a symbol at 0x0:
->
-> # head -2 /proc/kallsyms 
-> 0000000000000000 T reloc_start
-> c000000000000000 T .__start
->
-> This reloc_start symbol is causing lots of confusion to perf. It
-> thinks reloc_start is a massive function that stretches from 0x0 to
-> 0xc000000000000000 and we get various cryptic errors out of perf,
-> including:
->
-> problem incrementing symbol count, skipping event
->
-> This patch removes the  reloc_start linker script label and instead
-> defines it as PHYSICAL_START. We also need to wrap it with
-> CONFIG_PPC64 because the ppc32 kernel can set a non zero
-> PHYSICAL_START at compile time and we wouldn't want to subtract
-> it from the CRCs in that case.
->
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> Cc: <stable@kernel.org>
+Scott Wood <scottwood@freescale.com> writes:
 
-Acked-by: Rusty Russell <rusty@rustcorp.com.au>
 
-Ben?
 
-Cheers,
-Rusty.
+> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+> index ae0aaea..7f0e2e5 100644
+> --- a/arch/powerpc/platforms/Kconfig.cputype
+> +++ b/arch/powerpc/platforms/Kconfig.cputype
+> @@ -165,6 +165,17 @@ config PPC_E500MC
+>  	  such as e5500/e6500), and must be disabled for running on
+>  	  e500v1 or e500v2.
+>
+> +config FSL_ERRATUM_A_006958
+> +	bool
+> +	depends on PPC_E500MC && PPC64
+> +	default y
+> +	help
+> +	  Workaround for erratum A-006958, which says that 64-bit
+> +	  timebase reads are not atomic.  The workaround is to fall back
+> +	  to the 32-bit method of reading timebase.  Note that timebase
+> +	  is readable by userspace, so any non-vdso userspace accesses
+> +	  will need to have the workaround applied separately.
+> +
+>  config PPC_FPU
+>  	bool
+>  	default y if PPC64
+
+
+I am completely new to this area, so ignore if it is silly. But how do
+we expect to select this config ? Should that happen via .config ?
+That seems strange, because without this change some of the configs
+will surely be broken/buggy right ?. I was expecting it not be a config
+entry, primarily because I haven't seem something similar on other
+archs. And if there is an erratum against a cpu release, we should by
+default apply this when we know we are running on those cpus right ?
+Which implies this should not be a config option ?
+
+-aneesh
