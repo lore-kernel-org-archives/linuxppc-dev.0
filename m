@@ -1,23 +1,39 @@
-Return-Path: <B07421@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 45FA22C02A2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jul 2013 02:55:27 +1000 (EST)
-Date: Mon, 15 Jul 2013 11:55:11 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] powerpc/fsl-booke: Work around erratum A-006958
-To: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-References: <1373677412-24329-1-git-send-email-scottwood@freescale.com>
- <87mwpojr6d.fsf@linux.vnet.ibm.com>
-In-Reply-To: <87mwpojr6d.fsf@linux.vnet.ibm.com> (from
- aneesh.kumar@linux.vnet.ibm.com on Mon Jul 15 01:03:22 2013)
-Message-ID: <1373907311.8183.298@snotra>
+Return-Path: <aruna@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id AF4EA2C0242
+ for <linuxppc-dev@ozlabs.org>; Tue, 16 Jul 2013 02:55:31 +1000 (EST)
+Received: from /spool/local
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <aruna@linux.vnet.ibm.com>;
+ Mon, 15 Jul 2013 22:17:17 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 6FF30E005B
+ for <linuxppc-dev@ozlabs.org>; Mon, 15 Jul 2013 22:25:18 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r6FGtMVK33423450
+ for <linuxppc-dev@ozlabs.org>; Mon, 15 Jul 2013 22:25:22 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r6FGtOPA013793
+ for <linuxppc-dev@ozlabs.org>; Tue, 16 Jul 2013 02:55:25 +1000
+Subject: [PATCH 01/11] powerpc/pseries: Remove (de)compression in nvram with
+ pstore enabled
+To: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org,
+ benh@kernel.crashing.org
+From: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
+Date: Mon, 15 Jul 2013 22:25:20 +0530
+Message-ID: <20130715165520.1520.72367.stgit@aruna-ThinkPad-T420>
+In-Reply-To: <20130715164844.1520.27771.stgit@aruna-ThinkPad-T420>
+References: <20130715164844.1520.27771.stgit@aruna-ThinkPad-T420>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="utf-8"
+Cc: jkenisto@linux.vnet.ibm.com, tony.luck@intel.com, mahesh@linux.vnet.ibm.com,
+ cbouatmailru@gmail.com, anton@samba.org, ccross@android.com,
+ keescook@chromium.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,40 +43,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/15/2013 01:03:22 AM, Aneesh Kumar K.V wrote:
-> Scott Wood <scottwood@freescale.com> writes:
->=20
->=20
->=20
-> > diff --git a/arch/powerpc/platforms/Kconfig.cputype =20
-> b/arch/powerpc/platforms/Kconfig.cputype
-> > index ae0aaea..7f0e2e5 100644
-> > --- a/arch/powerpc/platforms/Kconfig.cputype
-> > +++ b/arch/powerpc/platforms/Kconfig.cputype
-> > @@ -165,6 +165,17 @@ config PPC_E500MC
-> >  	  such as e5500/e6500), and must be disabled for running on
-> >  	  e500v1 or e500v2.
-> >
-> > +config FSL_ERRATUM_A_006958
-> > +	bool
-> > +	depends on PPC_E500MC && PPC64
-> > +	default y
-> > +	help
-> > +	  Workaround for erratum A-006958, which says that 64-bit
-> > +	  timebase reads are not atomic.  The workaround is to fall back
-> > +	  to the 32-bit method of reading timebase.  Note that timebase
-> > +	  is readable by userspace, so any non-vdso userspace accesses
-> > +	  will need to have the workaround applied separately.
-> > +
-> >  config PPC_FPU
-> >  	bool
-> >  	default y if PPC64
->=20
->=20
-> I am completely new to this area, so ignore if it is silly. But how do
-> we expect to select this config ? Should that happen via .config ?
+(De)compression support is provided in pstore in subsequent patches which
+needs an additional argument 'compressed' to determine if the data
+is compressed or not. This patch will take care of removing (de)compression
+in nvram with pstore which was making use of 'hsize' argument in pstore write
+as 'hsize' will be removed in the subsequent patch.
 
-It will automatically be selected if PPC_E500MC and PPC64 are both =20
-selected.
+Signed-off-by: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/pseries/nvram.c |   40 --------------------------------
+ 1 file changed, 40 deletions(-)
 
--Scott=
+diff --git a/arch/powerpc/platforms/pseries/nvram.c b/arch/powerpc/platforms/pseries/nvram.c
+index 9f8671a..07c3c07 100644
+--- a/arch/powerpc/platforms/pseries/nvram.c
++++ b/arch/powerpc/platforms/pseries/nvram.c
+@@ -640,27 +640,6 @@ static int nvram_pstore_write(enum pstore_type_id type,
+ 	oops_hdr->report_length = (u16) size;
+ 	oops_hdr->timestamp = get_seconds();
+ 
+-	if (big_oops_buf) {
+-		rc = zip_oops(size);
+-		/*
+-		 * If compression fails copy recent log messages from
+-		 * big_oops_buf to oops_data.
+-		 */
+-		if (rc != 0) {
+-			size_t diff = size - oops_data_sz + hsize;
+-
+-			if (size > oops_data_sz) {
+-				memcpy(oops_data, big_oops_buf, hsize);
+-				memcpy(oops_data + hsize, big_oops_buf + diff,
+-					oops_data_sz - hsize);
+-
+-				oops_hdr->report_length = (u16) oops_data_sz;
+-			} else
+-				memcpy(oops_data, big_oops_buf, size);
+-		} else
+-			err_type = ERR_TYPE_KERNEL_PANIC_GZ;
+-	}
+-
+ 	rc = nvram_write_os_partition(&oops_log_partition, oops_buf,
+ 		(int) (sizeof(*oops_hdr) + oops_hdr->report_length), err_type,
+ 		count);
+@@ -751,25 +730,6 @@ read_partition:
+ 	if (nvram_type_ids[read_type] == PSTORE_TYPE_DMESG) {
+ 		oops_hdr = (struct oops_log_info *)buff;
+ 		*buf = buff + sizeof(*oops_hdr);
+-
+-		if (err_type == ERR_TYPE_KERNEL_PANIC_GZ) {
+-			big_buff = kmalloc(big_oops_buf_sz, GFP_KERNEL);
+-			if (!big_buff)
+-				return -ENOMEM;
+-
+-			rc = unzip_oops(buff, big_buff);
+-
+-			if (rc != 0) {
+-				kfree(buff);
+-				kfree(big_buff);
+-				goto read_partition;
+-			}
+-
+-			oops_hdr = (struct oops_log_info *)big_buff;
+-			*buf = big_buff + sizeof(*oops_hdr);
+-			kfree(buff);
+-		}
+-
+ 		time->tv_sec = oops_hdr->timestamp;
+ 		time->tv_nsec = 0;
+ 		return oops_hdr->report_length;
