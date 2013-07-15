@@ -1,32 +1,31 @@
 Return-Path: <aruna@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0E8682C0489
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Jul 2013 02:56:48 +1000 (EST)
+ (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 12F722C030F
+ for <linuxppc-dev@ozlabs.org>; Tue, 16 Jul 2013 02:56:54 +1000 (EST)
 Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <aruna@linux.vnet.ibm.com>;
- Mon, 15 Jul 2013 22:21:13 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 607573940057
- for <linuxppc-dev@ozlabs.org>; Mon, 15 Jul 2013 22:26:39 +0530 (IST)
+ Mon, 15 Jul 2013 22:19:14 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 00E2B1258052
+ for <linuxppc-dev@ozlabs.org>; Mon, 15 Jul 2013 22:26:09 +0530 (IST)
 Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r6FGvN5B31129854
- for <linuxppc-dev@ozlabs.org>; Mon, 15 Jul 2013 22:27:23 +0530
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r6FGukHb14090458
+ for <linuxppc-dev@ozlabs.org>; Mon, 15 Jul 2013 22:26:46 +0530
 Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
  by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r6FGufWk019462
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Jul 2013 02:56:42 +1000
-Subject: [PATCH 08/11] powerpc/pseries: Read and write to the 'compressed'
- flag of pstore
+ r6FGunjY019863
+ for <linuxppc-dev@ozlabs.org>; Tue, 16 Jul 2013 02:56:49 +1000
+Subject: [PATCH 09/11] erst: Read and write to the 'compressed' flag of pstore
 To: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org,
  benh@kernel.crashing.org
 From: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
-Date: Mon, 15 Jul 2013 22:26:37 +0530
-Message-ID: <20130715165637.1520.4138.stgit@aruna-ThinkPad-T420>
+Date: Mon, 15 Jul 2013 22:26:45 +0530
+Message-ID: <20130715165645.1520.72286.stgit@aruna-ThinkPad-T420>
 In-Reply-To: <20130715164844.1520.27771.stgit@aruna-ThinkPad-T420>
 References: <20130715164844.1520.27771.stgit@aruna-ThinkPad-T420>
 MIME-Version: 1.0
@@ -43,79 +42,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If data returned from pstore is compressed, nvram's write callback
-will add a flag ERR_TYPE_KERNEL_PANIC_GZ indicating the data is compressed
-while writing to nvram. If the data read from nvram is compressed, nvram's
-read callback will set the flag 'compressed'. The patch adds backward
-compatibilty with old format oops header when reading from pstore.
+In pstore write, set the section type to CPER_SECTION_TYPE_DMESG_COMPR
+if the data is compressed. In pstore read, read the section type and
+update the 'compressed' flag accordingly.
 
 Signed-off-by: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/pseries/nvram.c |   34 +++++++++++++++++++++++++-------
- 1 file changed, 27 insertions(+), 7 deletions(-)
+ drivers/acpi/apei/erst.c |   13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/pseries/nvram.c b/arch/powerpc/platforms/pseries/nvram.c
-index 78c6f45..6f383eb 100644
---- a/arch/powerpc/platforms/pseries/nvram.c
-+++ b/arch/powerpc/platforms/pseries/nvram.c
-@@ -581,6 +581,9 @@ static int nvram_pstore_write(enum pstore_type_id type,
- 	oops_hdr->report_length = (u16) size;
- 	oops_hdr->timestamp = get_seconds();
- 
-+	if (compressed)
-+		err_type = ERR_TYPE_KERNEL_PANIC_GZ;
-+
- 	rc = nvram_write_os_partition(&oops_log_partition, oops_buf,
- 		(int) (sizeof(*oops_hdr) + oops_hdr->report_length), err_type,
- 		count);
-@@ -604,11 +607,10 @@ static ssize_t nvram_pstore_read(u64 *id, enum pstore_type_id *type,
- 	struct oops_log_info *oops_hdr;
- 	unsigned int err_type, id_no, size = 0;
- 	struct nvram_os_partition *part = NULL;
--	char *buff = NULL, *big_buff = NULL;
--	int rc, sig = 0;
-+	char *buff = NULL;
-+	int  sig = 0;
- 	loff_t p;
- 
--read_partition:
- 	read_type++;
- 
- 	switch (nvram_type_ids[read_type]) {
-@@ -669,14 +671,32 @@ read_partition:
- 		*id = id_no;
- 
- 	if (nvram_type_ids[read_type] == PSTORE_TYPE_DMESG) {
-+		u16 length;
- 		oops_hdr = (struct oops_log_info *)buff;
--		*buf = buff + sizeof(*oops_hdr);
--		time->tv_sec = oops_hdr->timestamp;
--		time->tv_nsec = 0;
--		return oops_hdr->report_length;
-+
-+		/* Provide backward compatibility with old format headers */
-+		if (oops_hdr->version < OOPS_HDR_VERSION) {
-+			*buf = buff + sizeof(u16);
-+			length = oops_hdr->version;
-+			time->tv_sec = 0;
-+			time->tv_nsec = 0;
-+		} else {
-+			*buf = buff + sizeof(*oops_hdr);
-+			length = oops_hdr->report_length;
-+			time->tv_sec = oops_hdr->timestamp;
-+			time->tv_nsec = 0;
-+		}
-+
-+		if (err_type == ERR_TYPE_KERNEL_PANIC_GZ)
-+			*compressed = true;
-+		else
-+			*compressed = false;
-+
-+		return length;
+diff --git a/drivers/acpi/apei/erst.c b/drivers/acpi/apei/erst.c
+index b0dca8e..62df189 100644
+--- a/drivers/acpi/apei/erst.c
++++ b/drivers/acpi/apei/erst.c
+@@ -956,6 +956,9 @@ static struct pstore_info erst_info = {
+ #define CPER_SECTION_TYPE_DMESG						\
+ 	UUID_LE(0xc197e04e, 0xd545, 0x4a70, 0x9c, 0x17, 0xa5, 0x54,	\
+ 		0x94, 0x19, 0xeb, 0x12)
++#define CPER_SECTION_TYPE_DMESG_Z					\
++	UUID_LE(0x4f118707, 0x04dd, 0x4055, 0xb5, 0xdd, 0x95, 0x6d,	\
++		0x34, 0xdd, 0xfa, 0xc6)
+ #define CPER_SECTION_TYPE_MCE						\
+ 	UUID_LE(0xfe08ffbe, 0x95e4, 0x4be7, 0xbc, 0x73, 0x40, 0x96,	\
+ 		0x04, 0x4a, 0x38, 0xfc)
+@@ -1034,7 +1037,12 @@ skip:
  	}
- 
- 	*buf = buff;
+ 	memcpy(*buf, rcd->data, len - sizeof(*rcd));
+ 	*id = record_id;
 +	*compressed = false;
- 	return part->size;
- }
- 
+ 	if (uuid_le_cmp(rcd->sec_hdr.section_type,
++			CPER_SECTION_TYPE_DMESG_Z) == 0) {
++		*type = PSTORE_TYPE_DMESG;
++		*compressed = true;
++	} else if (uuid_le_cmp(rcd->sec_hdr.section_type,
+ 			CPER_SECTION_TYPE_DMESG) == 0)
+ 		*type = PSTORE_TYPE_DMESG;
+ 	else if (uuid_le_cmp(rcd->sec_hdr.section_type,
+@@ -1085,7 +1093,10 @@ static int erst_writer(enum pstore_type_id type, enum kmsg_dump_reason reason,
+ 	rcd->sec_hdr.flags = CPER_SEC_PRIMARY;
+ 	switch (type) {
+ 	case PSTORE_TYPE_DMESG:
+-		rcd->sec_hdr.section_type = CPER_SECTION_TYPE_DMESG;
++		if (compressed)
++			rcd->sec_hdr.section_type = CPER_SECTION_TYPE_DMESG_Z;
++		else
++			rcd->sec_hdr.section_type = CPER_SECTION_TYPE_DMESG;
+ 		break;
+ 	case PSTORE_TYPE_MCE:
+ 		rcd->sec_hdr.section_type = CPER_SECTION_TYPE_MCE;
