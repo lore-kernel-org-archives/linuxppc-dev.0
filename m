@@ -1,15 +1,31 @@
-Return-Path: <B45939@freescale.com>
-From: <hongbo.zhang@freescale.com>
-To: <vinod.koul@intel.com>, <djbw@fb.com>, <leoli@freescale.com>,
- <scottwood@freescale.com>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v3 0/2] DMA: Freescale: Add support for 8-channel DMA engine
-Date: Mon, 15 Jul 2013 18:34:57 +0800
-Message-ID: <1373884499-24079-1-git-send-email-hongbo.zhang@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Hongbo Zhang <hongbo.zhang@freescale.com>,
- devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- vakul@freescale.com
+Return-Path: <thomas.petazzoni@free-electrons.com>
+Received: from mail.free-electrons.com (mail.free-electrons.com [94.23.35.102])
+ by ozlabs.org (Postfix) with ESMTP id 0C7BA2C015A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jul 2013 21:52:56 +1000 (EST)
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+To: Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
+ Russell King <linux@arm.linux.org.uk>,
+ Grant Likely <grant.likely@secretlab.ca>,
+ Rob Herring <rob.herring@calxeda.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>,
+ Andrew Lunn <andrew@lunn.ch>,
+ Gregory Clement <gregory.clement@free-electrons.com>
+Subject: [PATCHv5 03/11] PCI: remove ARCH_SUPPORTS_MSI kconfig option
+Date: Mon, 15 Jul 2013 13:52:39 +0200
+Message-Id: <1373889167-27878-4-git-send-email-thomas.petazzoni@free-electrons.com>
+In-Reply-To: <1373889167-27878-1-git-send-email-thomas.petazzoni@free-electrons.com>
+References: <1373889167-27878-1-git-send-email-thomas.petazzoni@free-electrons.com>
+Cc: Lior Amsalem <alior@marvell.com>, linux-mips@linux-mips.org,
+ linux-ia64@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Thierry Reding <thierry.reding@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ linux-s390@vger.kernel.org, x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
+ Ezequiel Garcia <ezequiel.garcia@free-electrons.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Chris Metcalf <cmetcalf@tilera.com>,
+ linux-arm-kernel@lists.infradead.org, Tony Luck <tony.luck@intel.com>,
+ Ralf Baechle <ralf@linux-mips.org>, Maen Suleiman <maen@marvell.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,37 +35,166 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Hongbo Zhang <hongbo.zhang@freescale.com>
+Now that we have weak versions for each of the PCI MSI architecture
+functions, we can actually build the MSI support for all platforms,
+regardless of whether they provide or not architecture-specific
+versions of those functions. For this reason, the ARCH_SUPPORTS_MSI
+hidden kconfig boolean becomes useless, and this patch gets rid of it.
 
-Hi Vinod, Dan, Leo and Scott, please have a look at these V2 patches.
+Signed-off-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: linux390@de.ibm.com
+Cc: linux-s390@vger.kernel.org
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: x86@kernel.org
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Fenghua Yu <fenghua.yu@intel.com>
+Cc: linux-ia64@vger.kernel.org
+Cc: Ralf Baechle <ralf@linux-mips.org>
+Cc: linux-mips@linux-mips.org
+Cc: David S. Miller <davem@davemloft.net>
+Cc: sparclinux@vger.kernel.org
+Cc: Chris Metcalf <cmetcalf@tilera.com>
+---
+ arch/arm/Kconfig     | 1 -
+ arch/ia64/Kconfig    | 1 -
+ arch/mips/Kconfig    | 2 --
+ arch/powerpc/Kconfig | 1 -
+ arch/s390/Kconfig    | 1 -
+ arch/sparc/Kconfig   | 1 -
+ arch/tile/Kconfig    | 1 -
+ arch/x86/Kconfig     | 1 -
+ drivers/pci/Kconfig  | 4 ----
+ 9 files changed, 13 deletions(-)
 
-Freescale QorIQ T4 and B4 introduce new 8-channel DMA engines, this patch set
-adds support this DMA engine.
-
-V2->V3 changes:
-- edit Documentation/devicetree/bindings/powerpc/fsl/dma.txt
-- edit text string in Kconfig and the driver files, using "elo series" to
-  mention all the current "elo*"
-
-V1->V2 changes:
-- removed the codes handling the register dgsr1, since it isn't used corrently
-- renamed the DMA DT compatible to "fsl,elo3-dma"
-- renamed the new dts files to "elo3-dma-<n>.dtsi"
-
-Hongbo Zhang (2):
-  DMA: Freescale: Add new 8-channel DMA engine device tree nodes
-  DMA: Freescale: update driver to support 8-channel DMA engine
-
- .../devicetree/bindings/powerpc/fsl/dma.txt        |    8 +-
- arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi          |   90 ++++++++++++++++++++
- arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi          |   90 ++++++++++++++++++++
- arch/powerpc/boot/dts/fsl/t4240si-post.dtsi        |    4 +-
- drivers/dma/Kconfig                                |    9 +-
- drivers/dma/fsldma.c                               |    9 +-
- drivers/dma/fsldma.h                               |    2 +-
- 7 files changed, 199 insertions(+), 13 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi
- create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi
-
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index ba412e0..b173c1d 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -441,7 +441,6 @@ config ARCH_NETX
+ config ARCH_IOP13XX
+ 	bool "IOP13xx-based"
+ 	depends on MMU
+-	select ARCH_SUPPORTS_MSI
+ 	select CPU_XSC3
+ 	select NEED_MACH_MEMORY_H
+ 	select NEED_RET_TO_USER
+diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
+index 5a768ad..098602b 100644
+--- a/arch/ia64/Kconfig
++++ b/arch/ia64/Kconfig
+@@ -9,7 +9,6 @@ config IA64
+ 	select PCI if (!IA64_HP_SIM)
+ 	select ACPI if (!IA64_HP_SIM)
+ 	select PM if (!IA64_HP_SIM)
+-	select ARCH_SUPPORTS_MSI
+ 	select HAVE_UNSTABLE_SCHED_CLOCK
+ 	select HAVE_IDE
+ 	select HAVE_OPROFILE
+diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
+index 4758a8f..00b2698 100644
+--- a/arch/mips/Kconfig
++++ b/arch/mips/Kconfig
+@@ -726,7 +726,6 @@ config CAVIUM_OCTEON_SOC
+ 	select SYS_HAS_CPU_CAVIUM_OCTEON
+ 	select SWAP_IO_SPACE
+ 	select HW_HAS_PCI
+-	select ARCH_SUPPORTS_MSI
+ 	select ZONE_DMA32
+ 	select USB_ARCH_HAS_OHCI
+ 	select USB_ARCH_HAS_EHCI
+@@ -762,7 +761,6 @@ config NLM_XLR_BOARD
+ 	select CEVT_R4K
+ 	select CSRC_R4K
+ 	select IRQ_CPU
+-	select ARCH_SUPPORTS_MSI
+ 	select ZONE_DMA32 if 64BIT
+ 	select SYNC_R4K
+ 	select SYS_HAS_EARLY_PRINTK
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 3bf72cd..183a165 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -727,7 +727,6 @@ config PCI
+ 	default y if !40x && !CPM2 && !8xx && !PPC_83xx \
+ 		&& !PPC_85xx && !PPC_86xx && !GAMECUBE_COMMON
+ 	default PCI_QSPAN if !4xx && !CPM2 && 8xx
+-	select ARCH_SUPPORTS_MSI
+ 	select GENERIC_PCI_IOMAP
+ 	help
+ 	  Find out whether your system includes a PCI bus. PCI is the name of
+diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
+index 22f75b5..e9982a3 100644
+--- a/arch/s390/Kconfig
++++ b/arch/s390/Kconfig
+@@ -428,7 +428,6 @@ menuconfig PCI
+ 	bool "PCI support"
+ 	default n
+ 	depends on 64BIT
+-	select ARCH_SUPPORTS_MSI
+ 	select PCI_MSI
+ 	help
+ 	  Enable PCI support.
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index a00cbd3..1570ad2 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -52,7 +52,6 @@ config SPARC32
+ 
+ config SPARC64
+ 	def_bool 64BIT
+-	select ARCH_SUPPORTS_MSI
+ 	select HAVE_FUNCTION_TRACER
+ 	select HAVE_FUNCTION_GRAPH_TRACER
+ 	select HAVE_FUNCTION_GRAPH_FP_TEST
+diff --git a/arch/tile/Kconfig b/arch/tile/Kconfig
+index 24565a7..74dff90 100644
+--- a/arch/tile/Kconfig
++++ b/arch/tile/Kconfig
+@@ -380,7 +380,6 @@ config PCI
+ 	select PCI_DOMAINS
+ 	select GENERIC_PCI_IOMAP
+ 	select TILE_GXIO_TRIO if TILEGX
+-	select ARCH_SUPPORTS_MSI if TILEGX
+ 	select PCI_MSI if TILEGX
+ 	---help---
+ 	  Enable PCI root complex support, so PCIe endpoint devices can
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index b32ebf9..5db62ef 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -2014,7 +2014,6 @@ menu "Bus options (PCI etc.)"
+ config PCI
+ 	bool "PCI support"
+ 	default y
+-	select ARCH_SUPPORTS_MSI if (X86_LOCAL_APIC && X86_IO_APIC)
+ 	---help---
+ 	  Find out whether you have a PCI motherboard. PCI is the name of a
+ 	  bus system, i.e. the way the CPU talks to the other stuff inside
+diff --git a/drivers/pci/Kconfig b/drivers/pci/Kconfig
+index 81944fb..b6a99f7 100644
+--- a/drivers/pci/Kconfig
++++ b/drivers/pci/Kconfig
+@@ -1,13 +1,9 @@
+ #
+ # PCI configuration
+ #
+-config ARCH_SUPPORTS_MSI
+-	bool
+-
+ config PCI_MSI
+ 	bool "Message Signaled Interrupts (MSI and MSI-X)"
+ 	depends on PCI
+-	depends on ARCH_SUPPORTS_MSI
+ 	help
+ 	   This allows device drivers to enable MSI (Message Signaled
+ 	   Interrupts).  Message Signaled Interrupts enable a device to
 -- 
-1.7.9.5
+1.8.1.2
