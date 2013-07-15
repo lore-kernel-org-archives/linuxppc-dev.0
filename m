@@ -2,16 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 02ACC2C01B6
- for <linuxppc-dev@ozlabs.org>; Mon, 15 Jul 2013 13:03:32 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 02CE42C01E6
+ for <linuxppc-dev@ozlabs.org>; Mon, 15 Jul 2013 13:03:34 +1000 (EST)
 Received: from pasglop.ozlabs.ibm.com (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id r6F33KdJ013377
- for <linuxppc-dev@ozlabs.org>; Sun, 14 Jul 2013 22:03:27 -0500
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id r6F33KdK013377
+ for <linuxppc-dev@ozlabs.org>; Sun, 14 Jul 2013 22:03:31 -0500
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 4/8] powerpc/powernv: Add PIO accessors for Power8 LPC bus
-Date: Mon, 15 Jul 2013 13:03:11 +1000
-Message-Id: <1373857395-2084-4-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 5/8] powerpc: Cleanup udbg_16550 and add support for LPC
+ PIO-only UARTs
+Date: Mon, 15 Jul 2013 13:03:12 +1000
+Message-Id: <1373857395-2084-5-git-send-email-benh@kernel.crashing.org>
 In-Reply-To: <1373857395-2084-1-git-send-email-benh@kernel.crashing.org>
 References: <1373857395-2084-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,328 +24,591 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This uses the hooks provided by CONFIG_PPC_INDIRECT_PIO to
-implement a set of hooks for IO port access to use the LPC
-bus via OPAL calls for the first 64K of IO space
+The udbg_16550 code, which we use for our early consoles and debug
+backends was fairly messy. Especially for the debug consoles, it
+would re-implement the "high level" getc/putc/poll functions for
+each access method. It also had code to configure the UART but only
+for the straight MMIO method.
+
+This changes it to instead abstract at the register accessor level,
+and have the various functions and configuration routines use these.
+
+The result is simpler and slightly smaller code, and free support
+for non-MMIO mapped PIO UARTs, which such as the ones that can be
+present on a POWER 8 LPC bus.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/include/asm/io.h             |   8 ++
- arch/powerpc/include/asm/opal.h           |   2 +
- arch/powerpc/kernel/io.c                  |   3 +
- arch/powerpc/platforms/powernv/Kconfig    |   1 +
- arch/powerpc/platforms/powernv/Makefile   |   2 +-
- arch/powerpc/platforms/powernv/opal-lpc.c | 203 ++++++++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/powernv.h  |   2 +
- arch/powerpc/platforms/powernv/setup.c    |   6 +
- 8 files changed, 226 insertions(+), 1 deletion(-)
- create mode 100644 arch/powerpc/platforms/powernv/opal-lpc.c
+ arch/powerpc/include/asm/udbg.h     |   9 +-
+ arch/powerpc/kernel/legacy_serial.c |  46 +++--
+ arch/powerpc/kernel/udbg_16550.c    | 344 ++++++++++++++++++------------------
+ 3 files changed, 206 insertions(+), 193 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
-index 6cc61a3..5a64757 100644
---- a/arch/powerpc/include/asm/io.h
-+++ b/arch/powerpc/include/asm/io.h
-@@ -69,6 +69,14 @@ extern unsigned long pci_dram_offset;
+diff --git a/arch/powerpc/include/asm/udbg.h b/arch/powerpc/include/asm/udbg.h
+index dc59091..b51fba1 100644
+--- a/arch/powerpc/include/asm/udbg.h
++++ b/arch/powerpc/include/asm/udbg.h
+@@ -27,10 +27,11 @@ extern void udbg_printf(const char *fmt, ...)
+ 	__attribute__ ((format (printf, 1, 2)));
+ extern void udbg_progress(char *s, unsigned short hex);
  
- extern resource_size_t isa_mem_base;
- 
-+/* Boolean set by platform if PIO accesses are suppored while _IO_BASE
-+ * is not set or addresses cannot be translated to MMIO. This is typically
-+ * set when the platform supports "special" PIO accesses via a non memory
-+ * mapped mechanism, and allows things like the early udbg UART code to
-+ * function.
-+ */
-+extern bool isa_io_special;
+-extern void udbg_init_uart(void __iomem *comport, unsigned int speed,
+-			   unsigned int clock);
+-extern unsigned int udbg_probe_uart_speed(void __iomem *comport,
+-					  unsigned int clock);
++extern void udbg_uart_init_mmio(void __iomem *addr, unsigned int stride);
++extern void udbg_uart_init_pio(unsigned long port, unsigned int stride);
 +
- #ifdef CONFIG_PPC32
- #if defined(CONFIG_PPC_INDIRECT_PIO) || defined(CONFIG_PPC_INDIRECT_MMIO)
- #error CONFIG_PPC_INDIRECT_{PIO,MMIO} are not yet supported on 32 bits
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index c701e2b..48ad678 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -687,6 +687,8 @@ extern int opal_machine_check(struct pt_regs *regs);
++extern void udbg_uart_setup(unsigned int speed, unsigned int clock);
++extern unsigned int udbg_probe_uart_speed(unsigned int clock);
  
- extern void opal_shutdown(void);
+ struct device_node;
+ extern void udbg_scc_init(int force_scc);
+diff --git a/arch/powerpc/kernel/legacy_serial.c b/arch/powerpc/kernel/legacy_serial.c
+index 0733b05..5cf11b0 100644
+--- a/arch/powerpc/kernel/legacy_serial.c
++++ b/arch/powerpc/kernel/legacy_serial.c
+@@ -221,14 +221,19 @@ static int __init add_legacy_isa_port(struct device_node *np,
+ 	/* Translate ISA address. If it fails, we still register the port
+ 	 * with no translated address so that it can be picked up as an IO
+ 	 * port later by the serial driver
++	 *
++	 * Note: Don't even try on P8 lpc, we know it's not directly mapped
+ 	 */
+-	taddr = of_translate_address(np, reg);
+-	if (taddr == OF_BAD_ADDR)
++	if (!of_device_is_compatible(isa_brg, "ibm,power8-lpc")) {
++		taddr = of_translate_address(np, reg);
++		if (taddr == OF_BAD_ADDR)
++			taddr = 0;
++	} else
+ 		taddr = 0;
  
-+extern void opal_lpc_init(void);
-+
- #endif /* __ASSEMBLY__ */
+ 	/* Add port, irq will be dealt with later */
+-	return add_legacy_port(np, index, UPIO_PORT, be32_to_cpu(reg[1]), taddr,
+-			       NO_IRQ, UPF_BOOT_AUTOCONF, 0);
++	return add_legacy_port(np, index, UPIO_PORT, be32_to_cpu(reg[1]),
++			       taddr, NO_IRQ, UPF_BOOT_AUTOCONF, 0);
  
- #endif /* __OPAL_H */
-diff --git a/arch/powerpc/kernel/io.c b/arch/powerpc/kernel/io.c
-index 886381f..2a2b4ae 100644
---- a/arch/powerpc/kernel/io.c
-+++ b/arch/powerpc/kernel/io.c
-@@ -25,6 +25,9 @@
- #include <asm/firmware.h>
- #include <asm/bug.h>
+ }
  
-+/* See definition in io.h */
-+bool isa_io_special;
-+
- void _insb(const volatile u8 __iomem *port, void *buf, long count)
+@@ -307,19 +312,31 @@ static int __init add_legacy_pci_port(struct device_node *np,
+ 
+ static void __init setup_legacy_serial_console(int console)
  {
- 	u8 *tbuf = buf;
-diff --git a/arch/powerpc/platforms/powernv/Kconfig b/arch/powerpc/platforms/powernv/Kconfig
-index c24684c..6529587 100644
---- a/arch/powerpc/platforms/powernv/Kconfig
-+++ b/arch/powerpc/platforms/powernv/Kconfig
-@@ -7,6 +7,7 @@ config PPC_POWERNV
- 	select PPC_P7_NAP
- 	select PPC_PCI_CHOICE if EMBEDDED
- 	select EPAPR_BOOT
-+	select PPC_INDIRECT_PIO
- 	default y
+-	struct legacy_serial_info *info =
+-		&legacy_serial_infos[console];
++	struct legacy_serial_info *info = &legacy_serial_infos[console];
++	struct plat_serial8250_port *port = &legacy_serial_ports[console];
+ 	void __iomem *addr;
  
- config POWERNV_MSI
-diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-index 7fe5951..300c437 100644
---- a/arch/powerpc/platforms/powernv/Makefile
-+++ b/arch/powerpc/platforms/powernv/Makefile
-@@ -1,5 +1,5 @@
- obj-y			+= setup.o opal-takeover.o opal-wrappers.o opal.o
--obj-y			+= opal-rtc.o opal-nvram.o
-+obj-y			+= opal-rtc.o opal-nvram.o opal-lpc.o
- 
- obj-$(CONFIG_SMP)	+= smp.o
- obj-$(CONFIG_PCI)	+= pci.o pci-p5ioc2.o pci-ioda.o
-diff --git a/arch/powerpc/platforms/powernv/opal-lpc.c b/arch/powerpc/platforms/powernv/opal-lpc.c
-new file mode 100644
-index 0000000..a7614bb
---- /dev/null
-+++ b/arch/powerpc/platforms/powernv/opal-lpc.c
-@@ -0,0 +1,203 @@
-+/*
-+ * PowerNV LPC bus handling.
-+ *
-+ * Copyright 2013 IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/of.h>
-+#include <linux/bug.h>
-+
-+#include <asm/machdep.h>
-+#include <asm/firmware.h>
-+#include <asm/xics.h>
-+#include <asm/opal.h>
-+
-+static int opal_lpc_chip_id = -1;
-+
-+static u8 opal_lpc_inb(unsigned long port)
-+{
-+	int64_t rc;
-+	uint32_t data;
-+
-+	if (opal_lpc_chip_id < 0 || port > 0xffff)
-+		return 0xff;
-+	rc = opal_lpc_read(opal_lpc_chip_id, OPAL_LPC_IO, port, &data, 1);
-+	return rc ? 0xff : data;
-+}
-+
-+static __le16 __opal_lpc_inw(unsigned long port)
-+{
-+	int64_t rc;
-+	uint32_t data;
-+
-+	if (opal_lpc_chip_id < 0 || port > 0xfffe)
-+		return 0xffff;
-+	if (port & 1)
-+		return (__le16)opal_lpc_inb(port) << 8 | opal_lpc_inb(port + 1);
-+	rc = opal_lpc_read(opal_lpc_chip_id, OPAL_LPC_IO, port, &data, 2);
-+	return rc ? 0xffff : data;
-+}
-+static u16 opal_lpc_inw(unsigned long port)
-+{
-+	return le16_to_cpu(__opal_lpc_inw(port));
-+}
-+
-+static __le32 __opal_lpc_inl(unsigned long port)
-+{
-+	int64_t rc;
-+	uint32_t data;
-+
-+	if (opal_lpc_chip_id < 0 || port > 0xfffc)
-+		return 0xffffffff;
-+	if (port & 3)
-+		return (__le32)opal_lpc_inb(port    ) << 24 |
-+		       (__le32)opal_lpc_inb(port + 1) << 16 |
-+		       (__le32)opal_lpc_inb(port + 2) <<  8 |
-+			       opal_lpc_inb(port + 3);
-+	rc = opal_lpc_read(opal_lpc_chip_id, OPAL_LPC_IO, port, &data, 4);
-+	return rc ? 0xffffffff : data;
-+}
-+
-+static u32 opal_lpc_inl(unsigned long port)
-+{
-+	return le32_to_cpu(__opal_lpc_inl(port));
-+}
-+
-+static void opal_lpc_outb(u8 val, unsigned long port)
-+{
-+	if (opal_lpc_chip_id < 0 || port > 0xffff)
-+		return;
-+	opal_lpc_write(opal_lpc_chip_id, OPAL_LPC_IO, port, val, 1);
-+}
-+
-+static void __opal_lpc_outw(__le16 val, unsigned long port)
-+{
-+	if (opal_lpc_chip_id < 0 || port > 0xfffe)
-+		return;
-+	if (port & 1) {
-+		opal_lpc_outb(val >> 8, port);
-+		opal_lpc_outb(val     , port + 1);
-+		return;
+-	if (info->taddr == 0)
+-		return;
+-	addr = ioremap(info->taddr, 0x1000);
+-	if (addr == NULL)
+-		return;
++	/* Check if a translated MMIO address has been found */
++	if (info->taddr) {
++		addr = ioremap(info->taddr, 0x1000);
++		if (addr == NULL)
++			return;
++		udbg_uart_init_mmio(addr, 1);
++	} else {
++		/* Check if it's PIO and we support untranslated PIO */
++		if (port->iotype == UPIO_PORT && isa_io_special)
++			udbg_uart_init_pio(port->iobase, 1);
++		else
++			return;
 +	}
-+	opal_lpc_write(opal_lpc_chip_id, OPAL_LPC_IO, port, val, 2);
-+}
 +
-+static void opal_lpc_outw(u16 val, unsigned long port)
-+{
-+	__opal_lpc_outw(cpu_to_le16(val), port);
-+}
++	/* Try to query the current speed */
+ 	if (info->speed == 0)
+-		info->speed = udbg_probe_uart_speed(addr, info->clock);
++		info->speed = udbg_probe_uart_speed(info->clock);
 +
-+static void __opal_lpc_outl(__le32 val, unsigned long port)
-+{
-+	if (opal_lpc_chip_id < 0 || port > 0xfffc)
-+		return;
-+	if (port & 3) {
-+		opal_lpc_outb(val >> 24, port);
-+		opal_lpc_outb(val >> 16, port + 1);
-+		opal_lpc_outb(val >>  8, port + 2);
-+		opal_lpc_outb(val      , port + 3);
-+		return;
-+	}
-+	opal_lpc_write(opal_lpc_chip_id, OPAL_LPC_IO, port, val, 4);
-+}
-+
-+static void opal_lpc_outl(u32 val, unsigned long port)
-+{
-+	__opal_lpc_outl(cpu_to_le32(val), port);
-+}
-+
-+static void opal_lpc_insb(unsigned long p, void *b, unsigned long c)
-+{
-+	u8 *ptr = b;
-+
-+	while(c--)
-+		*(ptr++) = opal_lpc_inb(p);
-+}
-+
-+static void opal_lpc_insw(unsigned long p, void *b, unsigned long c)
-+{
-+	__le16 *ptr = b;
-+
-+	while(c--)
-+		*(ptr++) = __opal_lpc_inw(p);
-+}
-+
-+static void opal_lpc_insl(unsigned long p, void *b, unsigned long c)
-+{
-+	__le32 *ptr = b;
-+
-+	while(c--)
-+		*(ptr++) = __opal_lpc_inl(p);
-+}
-+
-+static void opal_lpc_outsb(unsigned long p, const void *b, unsigned long c)
-+{
-+	const u8 *ptr = b;
-+
-+	while(c--)
-+		opal_lpc_outb(*(ptr++), p);
-+}
-+
-+static void opal_lpc_outsw(unsigned long p, const void *b, unsigned long c)
-+{
-+	const __le16 *ptr = b;
-+
-+	while(c--)
-+		__opal_lpc_outw(*(ptr++), p);
-+}
-+
-+static void opal_lpc_outsl(unsigned long p, const void *b, unsigned long c)
-+{
-+	const __le32 *ptr = b;
-+
-+	while(c--)
-+		__opal_lpc_outl(*(ptr++), p);
-+}
-+
-+static const struct ppc_pci_io opal_lpc_io = {
-+	.inb	= opal_lpc_inb,
-+	.inw	= opal_lpc_inw,
-+	.inl	= opal_lpc_inl,
-+	.outb	= opal_lpc_outb,
-+	.outw	= opal_lpc_outw,
-+	.outl	= opal_lpc_outl,
-+	.insb	= opal_lpc_insb,
-+	.insw	= opal_lpc_insw,
-+	.insl	= opal_lpc_insl,
-+	.outsb	= opal_lpc_outsb,
-+	.outsw	= opal_lpc_outsw,
-+	.outsl	= opal_lpc_outsl,
-+};
-+
-+void opal_lpc_init(void)
-+{
-+	struct device_node *np;
-+
-+	/*
-+	 * Look for a Power8 LPC bus tagged as "primary",
-+	 * we currently support only one though the OPAL APIs
-+	 * support any number.
-+	 */
-+	for_each_compatible_node(np, NULL, "ibm,power8-lpc") {
-+		if (!of_device_is_available(np))
-+			continue;
-+		if (!of_get_property(np, "primary", NULL))
-+			continue;
-+		opal_lpc_chip_id = of_get_ibm_chip_id(np);
-+		break;
-+	}
-+	if (opal_lpc_chip_id < 0)
-+		return;
-+
-+	/* Setup special IO ops */
-+	ppc_pci_io = opal_lpc_io;
-+	isa_io_special = true;
-+
-+	pr_info("OPAL: Power8 LPC bus found, chip ID %d\n", opal_lpc_chip_id);
-+}
-diff --git a/arch/powerpc/platforms/powernv/powernv.h b/arch/powerpc/platforms/powernv/powernv.h
-index a1c6f83..de6819b 100644
---- a/arch/powerpc/platforms/powernv/powernv.h
-+++ b/arch/powerpc/platforms/powernv/powernv.h
-@@ -15,4 +15,6 @@ static inline void pnv_pci_init(void) { }
- static inline void pnv_pci_shutdown(void) { }
- #endif
++	/* Set it up */
+ 	DBG("default console speed = %d\n", info->speed);
+-	udbg_init_uart(addr, info->speed, info->clock);
++	udbg_uart_setup(info->speed, info->clock);
+ }
  
-+extern void pnv_lpc_init(void);
-+
- #endif /* _POWERNV_H */
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index 84438af..4ddb339 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -54,6 +54,12 @@ static void __init pnv_setup_arch(void)
+ /*
+@@ -367,7 +384,8 @@ void __init find_legacy_serial_ports(void)
+ 	/* Next, fill our array with ISA ports */
+ 	for_each_node_by_type(np, "serial") {
+ 		struct device_node *isa = of_get_parent(np);
+-		if (isa && !strcmp(isa->name, "isa")) {
++		if (isa && (!strcmp(isa->name, "isa") ||
++			    !strcmp(isa->name, "lpc"))) {
+ 			index = add_legacy_isa_port(np, isa);
+ 			if (index >= 0 && np == stdout)
+ 				legacy_serial_console = index;
+diff --git a/arch/powerpc/kernel/udbg_16550.c b/arch/powerpc/kernel/udbg_16550.c
+index 6837f83..25c58e8 100644
+--- a/arch/powerpc/kernel/udbg_16550.c
++++ b/arch/powerpc/kernel/udbg_16550.c
+@@ -18,23 +18,19 @@ extern void real_writeb(u8 data, volatile u8 __iomem *addr);
+ extern u8 real_205_readb(volatile u8 __iomem  *addr);
+ extern void real_205_writeb(u8 data, volatile u8 __iomem *addr);
  
- static void __init pnv_init_early(void)
+-struct NS16550 {
+-	/* this struct must be packed */
+-	unsigned char rbr;  /* 0 */
+-	unsigned char ier;  /* 1 */
+-	unsigned char fcr;  /* 2 */
+-	unsigned char lcr;  /* 3 */
+-	unsigned char mcr;  /* 4 */
+-	unsigned char lsr;  /* 5 */
+-	unsigned char msr;  /* 6 */
+-	unsigned char scr;  /* 7 */
+-};
+-
+-#define thr rbr
+-#define iir fcr
+-#define dll rbr
+-#define dlm ier
+-#define dlab lcr
++#define UART_RBR	0
++#define UART_IER	1
++#define UART_FCR	2
++#define UART_LCR	3
++#define UART_MCR	4
++#define UART_LSR	5
++#define UART_MSR	6
++#define UART_SCR	7
++#define UART_THR	UART_RBR
++#define UART_IIR	UART_FCR
++#define UART_DLL	UART_RBR
++#define UART_DLM	UART_IER
++#define UART_DLAB	UART_LCR
+ 
+ #define LSR_DR   0x01  /* Data ready */
+ #define LSR_OE   0x02  /* Overrun */
+@@ -47,52 +43,62 @@ struct NS16550 {
+ 
+ #define LCR_DLAB 0x80
+ 
+-static struct NS16550 __iomem *udbg_comport;
++static u8 (*udbg_uart_in)(unsigned int reg);
++static void (*udbg_uart_out)(unsigned int reg, u8 data);
+ 
+-static void udbg_550_flush(void)
++static void udbg_uart_flush(void)
  {
-+	/*
-+	 * Initialize the LPC bus now so that legacy serial
-+	 * ports can be found on it
-+	 */
-+	opal_lpc_init();
+-	if (udbg_comport) {
+-		while ((in_8(&udbg_comport->lsr) & LSR_THRE) == 0)
+-			/* wait for idle */;
+-	}
++	if (!udbg_uart_in)
++		return;
 +
- #ifdef CONFIG_HVC_OPAL
- 	if (firmware_has_feature(FW_FEATURE_OPAL))
- 		hvc_opal_init_early();
++	/* wait for idle */
++	while ((udbg_uart_in(UART_LSR) & LSR_THRE) == 0)
++		cpu_relax();
+ }
+ 
+-static void udbg_550_putc(char c)
++static void udbg_uart_putc(char c)
+ {
+-	if (udbg_comport) {
+-		if (c == '\n')
+-			udbg_550_putc('\r');
+-		udbg_550_flush();
+-		out_8(&udbg_comport->thr, c);
+-	}
++	if (!udbg_uart_out)
++		return;
++
++	if (c == '\n')
++		udbg_uart_putc('\r');
++	udbg_uart_flush();
++	udbg_uart_out(UART_THR, c);
+ }
+ 
+-static int udbg_550_getc_poll(void)
++static int udbg_uart_getc_poll(void)
+ {
+-	if (udbg_comport) {
+-		if ((in_8(&udbg_comport->lsr) & LSR_DR) != 0)
+-			return in_8(&udbg_comport->rbr);
+-		else
+-			return -1;
+-	}
++	if (!udbg_uart_in || !(udbg_uart_in(UART_LSR) & LSR_DR))
++		return udbg_uart_in(UART_RBR);
+ 	return -1;
+ }
+ 
+-static int udbg_550_getc(void)
++static int udbg_uart_getc(void)
+ {
+-	if (udbg_comport) {
+-		while ((in_8(&udbg_comport->lsr) & LSR_DR) == 0)
+-			/* wait for char */;
+-		return in_8(&udbg_comport->rbr);
+-	}
+-	return -1;
++	if (!udbg_uart_in)
++		return -1;
++	/* wait for char */
++	while (!(udbg_uart_in(UART_LSR) & LSR_DR))
++		cpu_relax();
++	return udbg_uart_in(UART_RBR);
++}
++
++static void udbg_use_uart(void)
++{
++	udbg_putc = udbg_uart_putc;
++	udbg_flush = udbg_uart_flush;
++	udbg_getc = udbg_uart_getc;
++	udbg_getc_poll = udbg_uart_getc_poll;
+ }
+ 
+-void udbg_init_uart(void __iomem *comport, unsigned int speed,
+-		    unsigned int clock)
++void udbg_uart_setup(unsigned int speed, unsigned int clock)
+ {
+ 	unsigned int dll, base_bauds;
+ 
++	if (!udbg_uart_out)
++		return;
++
+ 	if (clock == 0)
+ 		clock = 1843200;
+ 	if (speed == 0)
+@@ -101,51 +107,43 @@ void udbg_init_uart(void __iomem *comport, unsigned int speed,
+ 	base_bauds = clock / 16;
+ 	dll = base_bauds / speed;
+ 
+-	if (comport) {
+-		udbg_comport = (struct NS16550 __iomem *)comport;
+-		out_8(&udbg_comport->lcr, 0x00);
+-		out_8(&udbg_comport->ier, 0xff);
+-		out_8(&udbg_comport->ier, 0x00);
+-		out_8(&udbg_comport->lcr, LCR_DLAB);
+-		out_8(&udbg_comport->dll, dll & 0xff);
+-		out_8(&udbg_comport->dlm, dll >> 8);
+-		/* 8 data, 1 stop, no parity */
+-		out_8(&udbg_comport->lcr, 0x03);
+-		/* RTS/DTR */
+-		out_8(&udbg_comport->mcr, 0x03);
+-		/* Clear & enable FIFOs */
+-		out_8(&udbg_comport->fcr ,0x07);
+-		udbg_putc = udbg_550_putc;
+-		udbg_flush = udbg_550_flush;
+-		udbg_getc = udbg_550_getc;
+-		udbg_getc_poll = udbg_550_getc_poll;
+-	}
++	udbg_uart_out(UART_LCR, 0x00);
++	udbg_uart_out(UART_IER, 0xff);
++	udbg_uart_out(UART_IER, 0x00);
++	udbg_uart_out(UART_LCR, LCR_DLAB);
++	udbg_uart_out(UART_DLL, dll & 0xff);
++	udbg_uart_out(UART_DLM, dll >> 8);
++	/* 8 data, 1 stop, no parity */
++	udbg_uart_out(UART_LCR, 0x3);
++	/* RTS/DTR */
++	udbg_uart_out(UART_MCR, 0x3);
++	/* Clear & enable FIFOs */
++	udbg_uart_out(UART_FCR, 0x7);
+ }
+ 
+-unsigned int udbg_probe_uart_speed(void __iomem *comport, unsigned int clock)
++unsigned int udbg_probe_uart_speed(unsigned int clock)
+ {
+ 	unsigned int dll, dlm, divisor, prescaler, speed;
+ 	u8 old_lcr;
+-	struct NS16550 __iomem *port = comport;
+ 
+-	old_lcr = in_8(&port->lcr);
++	old_lcr = udbg_uart_in(UART_LCR);
+ 
+ 	/* select divisor latch registers.  */
+-	out_8(&port->lcr, LCR_DLAB);
++	udbg_uart_out(UART_LCR, old_lcr | LCR_DLAB);
+ 
+ 	/* now, read the divisor */
+-	dll = in_8(&port->dll);
+-	dlm = in_8(&port->dlm);
++	dll = udbg_uart_in(UART_DLL);
++	dlm = udbg_uart_in(UART_DLM);
+ 	divisor = dlm << 8 | dll;
+ 
+ 	/* check prescaling */
+-	if (in_8(&port->mcr) & 0x80)
++	if (udbg_uart_in(UART_MCR) & 0x80)
+ 		prescaler = 4;
+ 	else
+ 		prescaler = 1;
+ 
+ 	/* restore the LCR */
+-	out_8(&port->lcr, old_lcr);
++	udbg_uart_out(UART_LCR, old_lcr);
+ 
+ 	/* calculate speed */
+ 	speed = (clock / prescaler) / (divisor * 16);
+@@ -157,150 +155,151 @@ unsigned int udbg_probe_uart_speed(void __iomem *comport, unsigned int clock)
+ 	return speed;
+ }
+ 
+-#ifdef CONFIG_PPC_MAPLE
+-void udbg_maple_real_flush(void)
++static union {
++	unsigned char __iomem *mmio_base;
++	unsigned long pio_base;
++} udbg_uart;
++
++static unsigned int udbg_uart_stride = 1;
++
++static u8 udbg_uart_in_pio(unsigned int reg)
+ {
+-	if (udbg_comport) {
+-		while ((real_readb(&udbg_comport->lsr) & LSR_THRE) == 0)
+-			/* wait for idle */;
+-	}
++	return inb(udbg_uart.pio_base + (reg * udbg_uart_stride));
+ }
+ 
+-void udbg_maple_real_putc(char c)
++static void udbg_uart_out_pio(unsigned int reg, u8 data)
+ {
+-	if (udbg_comport) {
+-		if (c == '\n')
+-			udbg_maple_real_putc('\r');
+-		udbg_maple_real_flush();
+-		real_writeb(c, &udbg_comport->thr); eieio();
+-	}
++	outb(data, udbg_uart.pio_base + (reg * udbg_uart_stride));
+ }
+ 
+-void __init udbg_init_maple_realmode(void)
++void udbg_uart_init_pio(unsigned long port, unsigned int stride)
+ {
+-	udbg_comport = (struct NS16550 __iomem *)0xf40003f8;
++	if (!port)
++		return;
++	udbg_uart.pio_base = port;
++	udbg_uart_stride = stride;
++	udbg_uart_in = udbg_uart_in_pio;
++	udbg_uart_out = udbg_uart_out_pio;
++	udbg_use_uart();
++}
+ 
+-	udbg_putc = udbg_maple_real_putc;
+-	udbg_flush = udbg_maple_real_flush;
+-	udbg_getc = NULL;
+-	udbg_getc_poll = NULL;
++static u8 udbg_uart_in_mmio(unsigned int reg)
++{
++	return in_8(udbg_uart.mmio_base + (reg * udbg_uart_stride));
+ }
+-#endif /* CONFIG_PPC_MAPLE */
+ 
+-#ifdef CONFIG_PPC_PASEMI
+-void udbg_pas_real_flush(void)
++static void udbg_uart_out_mmio(unsigned int reg, u8 data)
+ {
+-	if (udbg_comport) {
+-		while ((real_205_readb(&udbg_comport->lsr) & LSR_THRE) == 0)
+-			/* wait for idle */;
+-	}
++	out_8(udbg_uart.mmio_base + (reg * udbg_uart_stride), data);
++}
++
++
++void udbg_uart_init_mmio(void __iomem *addr, unsigned int stride)
++{
++	if (!addr)
++		return;
++	udbg_uart.mmio_base = addr;
++	udbg_uart_stride = stride;
++	udbg_uart_in = udbg_uart_in_mmio;
++	udbg_uart_out = udbg_uart_out_mmio;
++	udbg_use_uart();
+ }
+ 
+-void udbg_pas_real_putc(char c)
++#ifdef CONFIG_PPC_MAPLE
++
++#define UDBG_UART_MAPLE_ADDR	((void __iomem *)0xf40003f8)
++
++static u8 udbg_uart_in_maple(unsigned int reg)
+ {
+-	if (udbg_comport) {
+-		if (c == '\n')
+-			udbg_pas_real_putc('\r');
+-		udbg_pas_real_flush();
+-		real_205_writeb(c, &udbg_comport->thr); eieio();
+-	}
++	return real_readb(UDBG_UART_MAPLE_ADDR + reg);
+ }
+ 
+-void udbg_init_pas_realmode(void)
++static void udbg_uart_out_maple(unsigned int reg, u8 val)
+ {
+-	udbg_comport = (struct NS16550 __iomem *)0xfcff03f8UL;
++	real_writeb(val, UDBG_UART_MAPLE_ADDR + reg);
++}
+ 
+-	udbg_putc = udbg_pas_real_putc;
+-	udbg_flush = udbg_pas_real_flush;
+-	udbg_getc = NULL;
+-	udbg_getc_poll = NULL;
++void __init udbg_init_maple_realmode(void)
++{
++	udbg_uart_in = udbg_uart_in_maple;
++	udbg_uart_out = udbg_uart_out_maple;
++	udbg_use_uart();
+ }
++
+ #endif /* CONFIG_PPC_MAPLE */
+ 
+-#ifdef CONFIG_PPC_EARLY_DEBUG_44x
+-#include <platforms/44x/44x.h>
++#ifdef CONFIG_PPC_PASEMI
++
++#define UDBG_UART_PAS_ADDR	((void __iomem *)0xfcff03f8UL)
+ 
+-static void udbg_44x_as1_flush(void)
++static u8 udbg_uart_in_pas(unsigned int reg)
+ {
+-	if (udbg_comport) {
+-		while ((as1_readb(&udbg_comport->lsr) & LSR_THRE) == 0)
+-			/* wait for idle */;
+-	}
++	return real_205_readb(UDBG_UART_PAS_ADDR + reg);
+ }
+ 
+-static void udbg_44x_as1_putc(char c)
++static void udbg_uart_out_pas(unsigned int reg, u8 val)
+ {
+-	if (udbg_comport) {
+-		if (c == '\n')
+-			udbg_44x_as1_putc('\r');
+-		udbg_44x_as1_flush();
+-		as1_writeb(c, &udbg_comport->thr); eieio();
+-	}
++	real_205_writeb(val, UDBG_UART_PAS_ADDR + reg);
+ }
+ 
+-static int udbg_44x_as1_getc(void)
++void __init udbg_init_pas_realmode(void)
+ {
+-	if (udbg_comport) {
+-		while ((as1_readb(&udbg_comport->lsr) & LSR_DR) == 0)
+-			; /* wait for char */
+-		return as1_readb(&udbg_comport->rbr);
+-	}
+-	return -1;
++	udbg_uart_in = udbg_uart_in_pas;
++	udbg_uart_out = udbg_uart_out_pas;
++	udbg_use_uart();
+ }
+ 
+-void __init udbg_init_44x_as1(void)
++#endif /* CONFIG_PPC_PASEMI */
++
++#ifdef CONFIG_PPC_EARLY_DEBUG_44x
++
++#include <platforms/44x/44x.h>
++
++static u8 udbg_uart_in_44x_as1(unsigned int reg)
+ {
+-	udbg_comport =
+-		(struct NS16550 __iomem *)PPC44x_EARLY_DEBUG_VIRTADDR;
++	return as1_readb((void __iomem *)PPC44x_EARLY_DEBUG_VIRTADDR + reg);
++}
+ 
+-	udbg_putc = udbg_44x_as1_putc;
+-	udbg_flush = udbg_44x_as1_flush;
+-	udbg_getc = udbg_44x_as1_getc;
++static void udbg_uart_out_44x_as1(unsigned int reg, u8 val)
++{
++	as1_writeb(val, (void __iomem *)PPC44x_EARLY_DEBUG_VIRTADDR + reg);
+ }
+-#endif /* CONFIG_PPC_EARLY_DEBUG_44x */
+ 
+-#ifdef CONFIG_PPC_EARLY_DEBUG_40x
+-static void udbg_40x_real_flush(void)
++void __init udbg_init_44x_as1(void)
+ {
+-	if (udbg_comport) {
+-		while ((real_readb(&udbg_comport->lsr) & LSR_THRE) == 0)
+-			/* wait for idle */;
+-	}
++	udbg_uart_in = udbg_uart_in_44x_as1;
++	udbg_uart_out = udbg_uart_out_44x_as1;
++	udbg_use_uart();
+ }
+ 
+-static void udbg_40x_real_putc(char c)
++#endif /* CONFIG_PPC_EARLY_DEBUG_44x */
++
++#ifdef CONFIG_PPC_EARLY_DEBUG_40x
++
++static u8 udbg_uart_in_40x(unsigned int reg)
+ {
+-	if (udbg_comport) {
+-		if (c == '\n')
+-			udbg_40x_real_putc('\r');
+-		udbg_40x_real_flush();
+-		real_writeb(c, &udbg_comport->thr); eieio();
+-	}
++	return real_readb((void __iomem *)CONFIG_PPC_EARLY_DEBUG_40x_PHYSADDR
++			  + reg);
+ }
+ 
+-static int udbg_40x_real_getc(void)
++static void udbg_uart_out_40x(unsigned int reg, u8 val)
+ {
+-	if (udbg_comport) {
+-		while ((real_readb(&udbg_comport->lsr) & LSR_DR) == 0)
+-			; /* wait for char */
+-		return real_readb(&udbg_comport->rbr);
+-	}
+-	return -1;
++	real_writeb(val, (void __iomem *)CONFIG_PPC_EARLY_DEBUG_40x_PHYSADDR
++		    + reg);
+ }
+ 
+ void __init udbg_init_40x_realmode(void)
+ {
+-	udbg_comport = (struct NS16550 __iomem *)
+-		CONFIG_PPC_EARLY_DEBUG_40x_PHYSADDR;
+-
+-	udbg_putc = udbg_40x_real_putc;
+-	udbg_flush = udbg_40x_real_flush;
+-	udbg_getc = udbg_40x_real_getc;
+-	udbg_getc_poll = NULL;
++	udbg_uart_in = udbg_uart_in_40x;
++	udbg_uart_out = udbg_uart_out_40x;
++	udbg_use_uart();
+ }
++
+ #endif /* CONFIG_PPC_EARLY_DEBUG_40x */
+ 
++
+ #ifdef CONFIG_PPC_EARLY_DEBUG_WSP
++
+ static void udbg_wsp_flush(void)
+ {
+ 	if (udbg_comport) {
+@@ -339,13 +338,8 @@ static int udbg_wsp_getc_poll(void)
+ 
+ void __init udbg_init_wsp(void)
+ {
+-	udbg_comport = (struct NS16550 __iomem *)WSP_UART_VIRT;
+-
+-	udbg_init_uart(udbg_comport, 57600, 50000000);
+-
+-	udbg_putc = udbg_wsp_putc;
+-	udbg_flush = udbg_wsp_flush;
+-	udbg_getc = udbg_wsp_getc;
+-	udbg_getc_poll = udbg_wsp_getc_poll;
++	udbg_uart_init_mmio(WSP_UART_VIRT, 1);
++	udbg_uart_setup(57600, 50000000);
+ }
++
+ #endif /* CONFIG_PPC_EARLY_DEBUG_WSP */
 -- 
 1.8.1.2
