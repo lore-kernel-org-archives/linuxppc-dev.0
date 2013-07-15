@@ -1,14 +1,23 @@
-Return-Path: <anton@samba.org>
-Date: Mon, 15 Jul 2013 14:04:50 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Rusty Russell <rusty@rustcorp.com.au>, Neil Horman
- <nhorman@tuxdriver.com>
-Subject: [PATCH] module: ppc64 module CRC relocation fix causes perf issues
-Message-ID: <20130715140450.573aab15@kryten>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <B16395@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0185.outbound.messaging.microsoft.com [213.199.154.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CA3812C0180
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jul 2013 15:02:02 +1000 (EST)
+From: Varun Sethi <Varun.Sethi@freescale.com>
+To: <joro@8bytes.org>, <iommu@lists.linux-foundation.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+ <benh@kernel.crashing.org>, <galak@kernel.crashing.org>,
+ <alex.williamson@redhat.com>, <stuart.yoder@freescale.com>,
+ <scottwood@freescale.com>
+Subject: [PATCH 1/3] powerpc: Add iommu domain pointer to device archdata
+Date: Mon, 15 Jul 2013 10:20:55 +0530
+Message-ID: <1373863857-27239-1-git-send-email-Varun.Sethi@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Varun Sethi <Varun.Sethi@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,71 +27,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Add an iommu domain pointer to device (powerpc) archdata.  Devices
+are attached to iommu domains and this pointer provides a mechanism
+to correlate between a device and the associated iommu domain.  This
+field is set when a device is attached to a domain.
 
-Module CRCs are implemented as absolute symbols that get resolved by
-a linker script. We build an intermediate .o that contains an
-unresolved symbol for each CRC. genksysms parses this .o, calculates
-the CRCs and writes a linker script that "resolves" the symbols to
-the calculated CRC.
-
-Unfortunately the ppc64 relocatable kernel sees these CRCs as symbols
-that need relocating and relocates them at boot. Commit d4703aef
-(module: handle ppc64 relocating kcrctabs when CONFIG_RELOCATABLE=y)
-added a hook to reverse the bogus relocations. Part of this patch
-created a symbol at 0x0:
-
-# head -2 /proc/kallsyms 
-0000000000000000 T reloc_start
-c000000000000000 T .__start
-
-This reloc_start symbol is causing lots of confusion to perf. It
-thinks reloc_start is a massive function that stretches from 0x0 to
-0xc000000000000000 and we get various cryptic errors out of perf,
-including:
-
-problem incrementing symbol count, skipping event
-
-This patch removes the  reloc_start linker script label and instead
-defines it as PHYSICAL_START. We also need to wrap it with
-CONFIG_PPC64 because the ppc32 kernel can set a non zero
-PHYSICAL_START at compile time and we wouldn't want to subtract
-it from the CRCs in that case.
-
-Signed-off-by: Anton Blanchard <anton@samba.org>
-Cc: <stable@kernel.org>
+Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
+Acked-by: Kumar Gala <galak@kernel.crashing.org>
 ---
+- rebased patch to 3.11-rc1
+ arch/powerpc/include/asm/device.h |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-This bug was originally reported on Fedora 19 (3.9.x), so I've marked
-it for stable.
-
-Index: b/arch/powerpc/include/asm/module.h
-===================================================================
---- a/arch/powerpc/include/asm/module.h
-+++ b/arch/powerpc/include/asm/module.h
-@@ -82,10 +82,9 @@ struct exception_table_entry;
- void sort_ex_table(struct exception_table_entry *start,
- 		   struct exception_table_entry *finish);
+diff --git a/arch/powerpc/include/asm/device.h b/arch/powerpc/include/asm/device.h
+index 77e97dd..38faede 100644
+--- a/arch/powerpc/include/asm/device.h
++++ b/arch/powerpc/include/asm/device.h
+@@ -28,6 +28,9 @@ struct dev_archdata {
+ 		void		*iommu_table_base;
+ 	} dma_data;
  
--#ifdef CONFIG_MODVERSIONS
-+#if defined(CONFIG_MODVERSIONS) && defined(CONFIG_PPC64)
- #define ARCH_RELOCATES_KCRCTAB
--
--extern const unsigned long reloc_start[];
-+#define reloc_start PHYSICAL_START
++#ifdef CONFIG_IOMMU_API
++	void			*iommu_domain;
++#endif
+ #ifdef CONFIG_SWIOTLB
+ 	dma_addr_t		max_direct_dma_addr;
  #endif
- #endif /* __KERNEL__ */
- #endif	/* _ASM_POWERPC_MODULE_H */
-Index: b/arch/powerpc/kernel/vmlinux.lds.S
-===================================================================
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -38,9 +38,6 @@ jiffies = jiffies_64 + 4;
- #endif
- SECTIONS
- {
--	. = 0;
--	reloc_start = .;
--
- 	. = KERNELBASE;
- 
- /*
+-- 
+1.7.4.1
