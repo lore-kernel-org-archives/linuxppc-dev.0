@@ -1,21 +1,36 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id F2CFD2C011A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jul 2013 18:47:18 +1000 (EST)
-Message-ID: <1373878026.19894.335.camel@pasglop>
-Subject: Re: [PATCH] module: ppc64 module CRC relocation fix causes perf issues
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-Date: Mon, 15 Jul 2013 18:47:06 +1000
-In-Reply-To: <20130715140450.573aab15@kryten>
-References: <20130715140450.573aab15@kryten>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Neil Horman <nhorman@tuxdriver.com>, Rusty Russell <rusty@rustcorp.com.au>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
+ (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D52642C011D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jul 2013 18:50:22 +1000 (EST)
+Received: from /spool/local
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+ Mon, 15 Jul 2013 14:15:13 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 83EA71258052
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jul 2013 14:19:34 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r6F8oud631654058
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jul 2013 14:20:56 +0530
+Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r6F8oESd017115
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jul 2013 18:50:15 +1000
+Message-ID: <51E3B6FB.7040002@linux.vnet.ibm.com>
+Date: Mon, 15 Jul 2013 14:16:51 +0530
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Paul Bolle <pebolle@tiscali.nl>
+Subject: Re: [PATCH] powerpc/pseries: drop "select HOTPLUG"
+References: <1373799735.1370.5.camel@x61.thuisdomein>
+In-Reply-To: <1373799735.1370.5.camel@x61.thuisdomein>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,78 +40,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-07-15 at 14:04 +1000, Anton Blanchard wrote:
-> Module CRCs are implemented as absolute symbols that get resolved by
-> a linker script. We build an intermediate .o that contains an
-> unresolved symbol for each CRC. genksysms parses this .o, calculates
-> the CRCs and writes a linker script that "resolves" the symbols to
-> the calc
-
-Scott, can somebody from FSL test that on 32-bit and Ack it ?
-
-Thanks !
-
-Cheers,
-Ben.
-
-> Unfortunately the ppc64 relocatable kernel sees these CRCs as symbols
-> that need relocating and relocates them at boot. Commit d4703aef
-> (module: handle ppc64 relocating kcrctabs when CONFIG_RELOCATABLE=y)
-> added a hook to reverse the bogus relocations. Part of this patch
-> created a symbol at 0x0:
+On 07/14/2013 04:32 PM, Paul Bolle wrote:
+> The Kconfig symbol HOTPLUG was removed with commit 40b313608a ("Finally
+> eradicate CONFIG_HOTPLUG"). But there's still one select statement for
+> that symbol. It seems that select statement was added after the patch to
+> remove CONFIG_HOTPLUG was submitted. Anyhow, it is useless and can be
+> dropped.
 > 
-> # head -2 /proc/kallsyms 
-> 0000000000000000 T reloc_start
-> c000000000000000 T .__start
-> 
-> This reloc_start symbol is causing lots of confusion to perf. It
-> thinks reloc_start is a massive function that stretches from 0x0 to
-> 0xc000000000000000 and we get various cryptic errors out of perf,
-> including:
-> 
-> problem incrementing symbol count, skipping event
-> 
-> This patch removes the  reloc_start linker script label and instead
-> defines it as PHYSICAL_START. We also need to wrap it with
-> CONFIG_PPC64 because the ppc32 kernel can set a non zero
-> PHYSICAL_START at compile time and we wouldn't want to subtract
-> it from the CRCs in that case.
-> 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> Cc: <stable@kernel.org>
+> Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
 > ---
+
+Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+
 > 
-> This bug was originally reported on Fedora 19 (3.9.x), so I've marked
-> it for stable.
+>  arch/powerpc/platforms/pseries/Kconfig | 1 -
+>  1 file changed, 1 deletion(-)
 > 
-> Index: b/arch/powerpc/include/asm/module.h
-> ===================================================================
-> --- a/arch/powerpc/include/asm/module.h
-> +++ b/arch/powerpc/include/asm/module.h
-> @@ -82,10 +82,9 @@ struct exception_table_entry;
->  void sort_ex_table(struct exception_table_entry *start,
->  		   struct exception_table_entry *finish);
->  
-> -#ifdef CONFIG_MODVERSIONS
-> +#if defined(CONFIG_MODVERSIONS) && defined(CONFIG_PPC64)
->  #define ARCH_RELOCATES_KCRCTAB
-> -
-> -extern const unsigned long reloc_start[];
-> +#define reloc_start PHYSICAL_START
->  #endif
->  #endif /* __KERNEL__ */
->  #endif	/* _ASM_POWERPC_MODULE_H */
-> Index: b/arch/powerpc/kernel/vmlinux.lds.S
-> ===================================================================
-> --- a/arch/powerpc/kernel/vmlinux.lds.S
-> +++ b/arch/powerpc/kernel/vmlinux.lds.S
-> @@ -38,9 +38,6 @@ jiffies = jiffies_64 + 4;
->  #endif
->  SECTIONS
->  {
-> -	. = 0;
-> -	reloc_start = .;
-> -
->  	. = KERNELBASE;
->  
->  /*
+> diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
+> index 1bd3399..62b4f80 100644
+> --- a/arch/powerpc/platforms/pseries/Kconfig
+> +++ b/arch/powerpc/platforms/pseries/Kconfig
+> @@ -19,7 +19,6 @@ config PPC_PSERIES
+>  	select ZLIB_DEFLATE
+>  	select PPC_DOORBELL
+>  	select HAVE_CONTEXT_TRACKING
+> -	select HOTPLUG if SMP
+>  	select HOTPLUG_CPU if SMP
+>  	default y
+> 
+
+Regards,
+Srivatsa S. Bhat
