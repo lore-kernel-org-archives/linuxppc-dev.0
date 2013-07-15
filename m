@@ -1,24 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E23642C017B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jul 2013 09:12:21 +1000 (EST)
-Message-ID: <1373843487.19894.304.camel@pasglop>
-Subject: Re: visible memory seems wrong in kexec crash dump kernel
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Chris Friesen <cbf123@mail.usask.ca>
-Date: Mon, 15 Jul 2013 09:11:27 +1000
-In-Reply-To: <51E32F76.5070502@mail.usask.ca>
-References: <51DF1BBB.5060904@mail.usask.ca>
- <51DF2229.5010604@mail.usask.ca> <20130712012142.GA24112@concordia>
- <51E07056.8040007@mail.usask.ca> <51E08A40.80900@mail.usask.ca>
- <51E0F41A.20904@mail.usask.ca> <20130714043600.GA30717@concordia>
- <1373779584.19894.270.camel@pasglop> <51E32F76.5070502@mail.usask.ca>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: kexec@lists.infradead.org, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org, Vivek Goyal <vgoyal@redhat.com>
+ (Client CN "mail.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 402182C0172
+ for <linuxppc-dev@ozlabs.org>; Mon, 15 Jul 2013 12:35:18 +1000 (EST)
+From: Tiejun Chen <tiejun.chen@windriver.com>
+To: <benh@kernel.crashing.org>
+Subject: [v1][PATCH 1/1] powerpc: to access local paca after hard irq disabled
+Date: Mon, 15 Jul 2013 10:36:04 +0800
+Message-ID: <1373855764-5115-1-git-send-email-tiejun.chen@windriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org, kvm@vger.kernel.org,
+ kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,30 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2013-07-14 at 17:08 -0600, Chris Friesen wrote:
-> > So for memory starting at 0 it should be memory@0
-> 
-> There are a fair number of dts files in the kernel tree that don't 
-> specify an address for the memory node.
-> 
-> If the kernel accepts it without an address, it seems logical that kexec 
-> should as well.
+We can access paca directly after hard interrupt disabled, and
+this can avoid accessing wrong paca when using get_paca() in
+preempt case.
 
-As long as kexec doesn't start being stupid when there are several nodes
-and doesn't pick up the "first one in device-tree order" instead of the
-one at 0...
+Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+---
+ arch/powerpc/include/asm/hw_irq.h |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-I've been hit by that sort of bugs before (though not specifically in
-kexec).
-
-> Or maybe the kernel should just implicitly assume an address of zero and 
-> export it as such in /proc/device-tree?
-
-I don't want /proc/device-tree to expose something different than what's in
-the actual device-tree, that would be the source for endless horrors.
-
-We already are borderline with the occasional renaming we do in the case of
-duplicate name+property...
-
-Cheers,
-Ben.
+diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
+index ba713f1..10be1dd 100644
+--- a/arch/powerpc/include/asm/hw_irq.h
++++ b/arch/powerpc/include/asm/hw_irq.h
+@@ -96,10 +96,11 @@ static inline bool arch_irqs_disabled(void)
+ #endif
+ 
+ #define hard_irq_disable()	do {			\
+-	u8 _was_enabled = get_paca()->soft_enabled;	\
++	u8 _was_enabled;				\
+ 	__hard_irq_disable();				\
+-	get_paca()->soft_enabled = 0;			\
+-	get_paca()->irq_happened |= PACA_IRQ_HARD_DIS;	\
++	_was_enabled = local_paca->soft_enabled;	\
++	local_paca->soft_enabled = 0;			\
++	local_paca->irq_happened |= PACA_IRQ_HARD_DIS;	\
+ 	if (_was_enabled)				\
+ 		trace_hardirqs_off();			\
+ } while(0)
+-- 
+1.7.9.5
