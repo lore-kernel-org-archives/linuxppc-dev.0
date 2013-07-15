@@ -1,36 +1,23 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D52642C011D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jul 2013 18:50:22 +1000 (EST)
-Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Mon, 15 Jul 2013 14:15:13 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 83EA71258052
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jul 2013 14:19:34 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r6F8oud631654058
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jul 2013 14:20:56 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r6F8oESd017115
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jul 2013 18:50:15 +1000
-Message-ID: <51E3B6FB.7040002@linux.vnet.ibm.com>
-Date: Mon, 15 Jul 2013 14:16:51 +0530
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by ozlabs.org (Postfix) with SMTP id B744D2C00FD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jul 2013 18:55:29 +1000 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 32699-06 for <linuxppc-dev@lists.ozlabs.org>;
+ Mon, 15 Jul 2013 09:47:24 +0100 (BST)
 MIME-Version: 1.0
-To: Paul Bolle <pebolle@tiscali.nl>
-Subject: Re: [PATCH] powerpc/pseries: drop "select HOTPLUG"
-References: <1373799735.1370.5.camel@x61.thuisdomein>
-In-Reply-To: <1373799735.1370.5.camel@x61.thuisdomein>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Content-Type: text/plain;
+	charset="Windows-1252"
+Subject: RE: [PATCH] powerpc/fsl-booke: Work around erratum A-006958
+Date: Mon, 15 Jul 2013 09:45:36 +0100
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B72E1@saturn3.aculab.com>
+In-Reply-To: <1373677412-24329-1-git-send-email-scottwood@freescale.com>
+References: <1373677412-24329-1-git-send-email-scottwood@freescale.com>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: "Scott Wood" <scottwood@freescale.com>,
+ "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,34 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/14/2013 04:32 PM, Paul Bolle wrote:
-> The Kconfig symbol HOTPLUG was removed with commit 40b313608a ("Finally
-> eradicate CONFIG_HOTPLUG"). But there's still one select statement for
-> that symbol. It seems that select statement was added after the patch to
-> remove CONFIG_HOTPLUG was submitted. Anyhow, it is useless and can be
-> dropped.
-> 
-> Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
-> ---
+> +#define MFTB(dest, scratch1, scratch2)	\
+> +90:	mftbu	scratch1;		\
+> +	mftbl	dest;			\
+> +	mftbu	scratch2;		\
+> +	cmpw	scratch1,scratch2;	\
+> +	bne	90b;			\
+> +	rldimi	dest,scratch1,32,0;
 
-Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Are the three mftbu/l instructions guaranteed to be executed
+in order?
 
-> 
->  arch/powerpc/platforms/pseries/Kconfig | 1 -
->  1 file changed, 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
-> index 1bd3399..62b4f80 100644
-> --- a/arch/powerpc/platforms/pseries/Kconfig
-> +++ b/arch/powerpc/platforms/pseries/Kconfig
-> @@ -19,7 +19,6 @@ config PPC_PSERIES
->  	select ZLIB_DEFLATE
->  	select PPC_DOORBELL
->  	select HAVE_CONTEXT_TRACKING
-> -	select HOTPLUG if SMP
->  	select HOTPLUG_CPU if SMP
->  	default y
-> 
+Also, if the high word changes, there is no need to loop.
+Just return the second value with a low word of zero
+(the returned count happened while the function was active).
 
-Regards,
-Srivatsa S. Bhat
+If the mftbx instructions are synchronizing ones (or need
+sequencing), then it might be possible to only have 2 of them
+by reading the 64bit value and the high 32bits.
+(The correct order depends on the exact definition of the errata!)
+
+Another option is that the 64bit value returned by mftb is
+(presumably) only likely to be wrong when the low 32bits is
+very near zero (either side).
+A second mftb could be done in this case only with some logic
+to work out a valid result (I think):
+  High changed - 2nd high, low zero.
+  First low -ve - first value.
+  First low +ve - second value.
+
+	David
