@@ -1,23 +1,19 @@
-Return-Path: <B07421@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 649232C013A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jul 2013 08:16:11 +1000 (EST)
-Date: Mon, 15 Jul 2013 17:15:58 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] powerpc/fsl-booke: Work around erratum A-006958
-To: Scott Wood <scottwood@freescale.com>
-References: <AE90C24D6B3A694183C094C60CF0A2F6026B72E1@saturn3.aculab.com>
- <1373907234.8183.297@snotra>
-In-Reply-To: <1373907234.8183.297@snotra> (from scottwood@freescale.com on
- Mon Jul 15 11:53:54 2013)
-Message-ID: <1373926558.8183.317@snotra>
+Return-Path: <beneliezer@gmail.com>
+Received: from mail-ve0-x22f.google.com (mail-ve0-x22f.google.com
+ [IPv6:2607:f8b0:400c:c01::22f])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9B4F42C0114
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jul 2013 02:29:08 +1000 (EST)
+Received: by mail-ve0-f175.google.com with SMTP id da11so9942737veb.20
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jul 2013 09:29:04 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: David Laight <David.Laight@ACULAB.COM>, linuxppc-dev@lists.ozlabs.org
+Date: Mon, 15 Jul 2013 12:29:04 -0400
+Message-ID: <CAKJjzp--F+8MVnaxJAdO6OphwXW81rA0Pm21-rZKQtQ=Wx-O0Q@mail.gmail.com>
+Subject: SMP on PPC750
+From: Tal Ben-Eliezer <beneliezer@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary=047d7b342d8ad9f49504e18f5b4d
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,19 +23,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/15/2013 11:53:54 AM, Scott Wood wrote:
-> On 07/15/2013 03:45:36 AM, David Laight wrote:
->> Also, if the high word changes, there is no need to loop.
->> Just return the second value with a low word of zero
->> (the returned count happened while the function was active).
->=20
-> That would be more complicated than looping.
+--047d7b342d8ad9f49504e18f5b4d
+Content-Type: text/plain; charset=ISO-8859-1
 
-That said, it's since been confirmed internally that the low word =20
-should always be zero when this happens, so we could share the Cell =20
-workaround code -- as long as we do something special in the timebase =20
-sync code so that we don't get stuck if the timebase happens to be =20
-frozen with TBL=3D=3D0.  This would avoid the need for scratch registers =20
-(other than CR0).
+Hello-
 
--Scott=
+The Espresso CPU within the Nintendo Wii U is a PowerPC 750 based CPU with
+three cores. I was wondering if anyone knew of any way to enable CONFIG_SMP
+on the Linux kernel without preventing the kernel from booting.
+
+http://en.wikipedia.org/wiki/Espresso_(microprocessor)
+
+--047d7b342d8ad9f49504e18f5b4d
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr">Hello-<div><br></div><div>The Espresso CPU within the Nint=
+endo Wii U is a PowerPC 750 based CPU with three cores. I was wondering if =
+anyone knew of any way to enable CONFIG_SMP on the Linux kernel without pre=
+venting the kernel from booting.=A0</div>
+<div><br></div><div><a href=3D"http://en.wikipedia.org/wiki/Espresso_(micro=
+processor)">http://en.wikipedia.org/wiki/Espresso_(microprocessor)</a><br><=
+/div></div>
+
+--047d7b342d8ad9f49504e18f5b4d--
