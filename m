@@ -1,25 +1,18 @@
-Return-Path: <andriy.shevchenko@linux.intel.com>
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
- by ozlabs.org (Postfix) with ESMTP id AAABA2C00D8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jul 2013 20:21:31 +1000 (EST)
-Message-ID: <1373883677.24799.243.camel@smile>
-Subject: Re: [PATCH 00/12] dma: various minor clean ups for slave drivers
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Vinod Koul <vinod.koul@intel.com>
-Date: Mon, 15 Jul 2013 13:21:17 +0300
-In-Reply-To: <20130715093748.GO16653@intel.com>
-References: <1369656882-25241-1-git-send-email-andriy.shevchenko@linux.intel.com>
- <20130530174727.GE3767@intel.com>
- <CAHp75VcZCVskWnQuNeO4A0keZJS27vaWe5zTDomAgSa_ezyUQQ@mail.gmail.com>
- <20130715093748.GO16653@intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Shawn Guo <shawn.guo@linaro.org>, Stephen Warren <swarren@wwwdotorg.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Andy Shevchenko <andriy.shevchenko@linux.jf.intel.com>,
- Andy Shevchenko <andy.shevchenko@gmail.com>,
- Zhang Wei <zw@melbourneit.hotkeysparking.com>, Dan Williams <djbw@fb.com>,
- linux-tegra@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <B45939@freescale.com>
+From: <hongbo.zhang@freescale.com>
+To: <vinod.koul@intel.com>, <djbw@fb.com>, <leoli@freescale.com>,
+ <scottwood@freescale.com>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH v3 2/2] DMA: Freescale: update driver to support 8-channel DMA
+ engine
+Date: Mon, 15 Jul 2013 18:34:59 +0800
+Message-ID: <1373884499-24079-3-git-send-email-hongbo.zhang@freescale.com>
+In-Reply-To: <1373884499-24079-1-git-send-email-hongbo.zhang@freescale.com>
+References: <1373884499-24079-1-git-send-email-hongbo.zhang@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Hongbo Zhang <hongbo.zhang@freescale.com>,
+ devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ vakul@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,17 +22,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-07-15 at 15:07 +0530, Vinod Koul wrote:=20
-> On Thu, May 30, 2013 at 09:32:19PM +0300, Andy Shevchenko wrote:
-> > >> Here is a set of small independent patches that clean up or fix mino=
-r things
-> > >> across DMA slave drivers.
->=20
-> Applied thanks
+From: Hongbo Zhang <hongbo.zhang@freescale.com>
 
-Thank you. You were faster than me, I was just about to send rebased
-version.
+This patch adds support to 8-channel DMA engine, thus the driver works for both
+the new 8-channel and the legacy 4-channel DMA engines.
 
---=20
-Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Intel Finland Oy
+Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
+---
+ drivers/dma/Kconfig  |    9 +++++----
+ drivers/dma/fsldma.c |    9 ++++++---
+ drivers/dma/fsldma.h |    2 +-
+ 3 files changed, 12 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
+index e992489..b916800 100644
+--- a/drivers/dma/Kconfig
++++ b/drivers/dma/Kconfig
+@@ -107,14 +107,15 @@ config AT_HDMAC
+ 	  Support the Atmel AHB DMA controller.
+ 
+ config FSL_DMA
+-	tristate "Freescale Elo and Elo Plus DMA support"
++	tristate "Freescale Elo series DMA support"
+ 	depends on FSL_SOC
+ 	select DMA_ENGINE
+ 	select ASYNC_TX_ENABLE_CHANNEL_SWITCH
+ 	---help---
+-	  Enable support for the Freescale Elo and Elo Plus DMA controllers.
+-	  The Elo is the DMA controller on some 82xx and 83xx parts, and the
+-	  Elo Plus is the DMA controller on 85xx and 86xx parts.
++	  Enable support for the Freescale Elo series DMA controllers.
++	  The Elo is the DMA controller on some 82xx and 83xx parts, the Elo
++	  Plus is the DMA controller on 85xx and 86xx parts, and the Elo3 is
++	  DMA controller on QorIQ T and B parts.
+ 
+ config MPC512X_DMA
+ 	tristate "Freescale MPC512x built-in DMA engine support"
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index 4fc2980..76252ce 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -1261,7 +1261,9 @@ static int fsl_dma_chan_probe(struct fsldma_device *fdev,
+ 	WARN_ON(fdev->feature != chan->feature);
+ 
+ 	chan->dev = fdev->dev;
+-	chan->id = ((res.start - 0x100) & 0xfff) >> 7;
++	chan->id = (res.start & 0xfff) < 0x300 ?
++		   ((res.start - 0x100) & 0xfff) >> 7 :
++		   ((res.start - 0x200) & 0xfff) >> 7;
+ 	if (chan->id >= FSL_DMA_MAX_CHANS_PER_DEVICE) {
+ 		dev_err(fdev->dev, "too many channels for device\n");
+ 		err = -EINVAL;
+@@ -1435,6 +1437,7 @@ static int fsldma_of_remove(struct platform_device *op)
+ }
+ 
+ static const struct of_device_id fsldma_of_ids[] = {
++	{ .compatible = "fsl,elo3-dma", },
+ 	{ .compatible = "fsl,eloplus-dma", },
+ 	{ .compatible = "fsl,elo-dma", },
+ 	{}
+@@ -1456,7 +1459,7 @@ static struct platform_driver fsldma_of_driver = {
+ 
+ static __init int fsldma_init(void)
+ {
+-	pr_info("Freescale Elo / Elo Plus DMA driver\n");
++	pr_info("Freescale Elo series DMA driver\n");
+ 	return platform_driver_register(&fsldma_of_driver);
+ }
+ 
+@@ -1468,5 +1471,5 @@ static void __exit fsldma_exit(void)
+ subsys_initcall(fsldma_init);
+ module_exit(fsldma_exit);
+ 
+-MODULE_DESCRIPTION("Freescale Elo / Elo Plus DMA driver");
++MODULE_DESCRIPTION("Freescale Elo series DMA driver");
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/dma/fsldma.h b/drivers/dma/fsldma.h
+index f5c3879..1ffc244 100644
+--- a/drivers/dma/fsldma.h
++++ b/drivers/dma/fsldma.h
+@@ -112,7 +112,7 @@ struct fsldma_chan_regs {
+ };
+ 
+ struct fsldma_chan;
+-#define FSL_DMA_MAX_CHANS_PER_DEVICE 4
++#define FSL_DMA_MAX_CHANS_PER_DEVICE 8
+ 
+ struct fsldma_device {
+ 	void __iomem *regs;	/* DGSR register base */
+-- 
+1.7.9.5
