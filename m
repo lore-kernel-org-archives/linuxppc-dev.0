@@ -1,18 +1,28 @@
-Return-Path: <gsi@denx.de>
-From: Gerhard Sittig <gsi@denx.de>
-To: linuxppc-dev@lists.ozlabs.org, Anatolij Gustschin <agust@denx.de>,
- Mike Turquette <mturquette@linaro.org>,
- linux-arm-kernel@lists.infradead.org, devicetree-discuss@lists.ozlabs.org
-Subject: [PATCH v1 14/24] powerpc/mpc512x: improve DIU related clock setup
-Date: Mon, 15 Jul 2013 20:47:43 +0200
-Message-Id: <1373914074-20889-15-git-send-email-gsi@denx.de>
-In-Reply-To: <1373914074-20889-1-git-send-email-gsi@denx.de>
+Return-Path: <sha@pengutronix.de>
+Received: from metis.ext.pengutronix.de (unknown
+ [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id D40FF2C0168
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jul 2013 05:38:47 +1000 (EST)
+Date: Mon, 15 Jul 2013 21:38:29 +0200
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Gerhard Sittig <gsi@denx.de>
+Subject: Re: [PATCH v1 05/24] clk: wrap I/O access for improved portability
+Message-ID: <20130715193829.GS14452@pengutronix.de>
 References: <1373914074-20889-1-git-send-email-gsi@denx.de>
-Cc: Detlev Zundel <dzu@denx.de>, Wolfram Sang <wsa@the-dreams.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Gerhard Sittig <gsi@denx.de>,
- Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@kernel.org>,
- Marc Kleine-Budde <mkl@pengutronix.de>, David Woodhouse <dwmw2@infradead.org>,
- Wolfgang Grandegger <wg@grandegger.com>,
+ <1373914074-20889-6-git-send-email-gsi@denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1373914074-20889-6-git-send-email-gsi@denx.de>
+Cc: Mike Turquette <mturquette@linaro.org>, Detlev Zundel <dzu@denx.de>,
+ Wolfram Sang <wsa@the-dreams.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ devicetree-discuss@lists.ozlabs.org, Rob Herring <rob.herring@calxeda.com>,
+ Mark Brown <broonie@kernel.org>, Marc Kleine-Budde <mkl@pengutronix.de>,
+ Wolfgang Grandegger <wg@grandegger.com>, Anatolij Gustschin <agust@denx.de>,
+ linuxppc-dev@lists.ozlabs.org, David Woodhouse <dwmw2@infradead.org>,
+ linux-arm-kernel@lists.infradead.org,
  Mauro Carvalho Chehab <m.chehab@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -23,235 +33,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-adapt the DIU clock initialization to the COMMON_CLK approach: device
-tree based clock lookup, prepare and unprepare for clocks, work with
-frequencies not dividers, call the appropriate clk_*() routines and
-don't access CCM registers, remove the pre-enable workaround in the
-platform's clock driver
+On Mon, Jul 15, 2013 at 08:47:34PM +0200, Gerhard Sittig wrote:
+> diff --git a/drivers/clk/clk-divider.c b/drivers/clk/clk-divider.c
+> index 6d55eb2..2c07061 100644
+> --- a/drivers/clk/clk-divider.c
+> +++ b/drivers/clk/clk-divider.c
+> @@ -104,7 +104,7 @@ static unsigned long clk_divider_recalc_rate(struct clk_hw *hw,
+>  	struct clk_divider *divider = to_clk_divider(hw);
+>  	unsigned int div, val;
+>  
+> -	val = readl(divider->reg) >> divider->shift;
+> +	val = clk_readl(divider->reg) >> divider->shift;
+>  	val &= div_mask(divider);
 
-the "best clock" determination now completely relies on the platform's
-clock driver to pick a frequency close to what the caller requests, and
-merely checks whether the desired frequency was met (is acceptable since
-it meets the tolerance of the monitor) -- this approach shall succeed
-upon first try in the usual case, will test a few less desirable yet
-acceptable frequencies in edge cases, and will fallback to "best effort"
-if none of the previously tried frequencies pass the test
+Would it be an option to use regmap for the generic dividers/muxes
+instead? This should be suitable for ppc and also for people who want to
+use the generic clocks on i2c devices.
 
-Signed-off-by: Gerhard Sittig <gsi@denx.de>
----
- arch/powerpc/platforms/512x/clock-commonclk.c |    1 -
- arch/powerpc/platforms/512x/mpc512x_shared.c  |  165 +++++++++++++------------
- 2 files changed, 88 insertions(+), 78 deletions(-)
+Sascha
 
-diff --git a/arch/powerpc/platforms/512x/clock-commonclk.c b/arch/powerpc/platforms/512x/clock-commonclk.c
-index 218f55b..f31f895 100644
---- a/arch/powerpc/platforms/512x/clock-commonclk.c
-+++ b/arch/powerpc/platforms/512x/clock-commonclk.c
-@@ -705,7 +705,6 @@ static void mpc512x_clk_setup_clock_tree(int busfreq)
- 	/* some are not yet acquired by their respective drivers */
- 	clk_prepare_enable(clks[MPC512x_CLK_PSC3_MCLK]);/* serial console */
- 	clk_prepare_enable(clks[MPC512x_CLK_FEC]);	/* network, NFS */
--	clk_prepare_enable(clks[MPC512x_CLK_DIU]);	/* display */
- 	clk_prepare_enable(clks[MPC512x_CLK_I2C]);
- 	/*
- 	 * some have their individual clock subtree with separate clock
-diff --git a/arch/powerpc/platforms/512x/mpc512x_shared.c b/arch/powerpc/platforms/512x/mpc512x_shared.c
-index a82a41b..3381eea 100644
---- a/arch/powerpc/platforms/512x/mpc512x_shared.c
-+++ b/arch/powerpc/platforms/512x/mpc512x_shared.c
-@@ -12,6 +12,7 @@
-  * (at your option) any later version.
-  */
- 
-+#include <linux/clk.h>
- #include <linux/kernel.h>
- #include <linux/io.h>
- #include <linux/irq.h>
-@@ -70,98 +71,108 @@ struct fsl_diu_shared_fb {
- 	bool		in_use;
- };
- 
--#define DIU_DIV_MASK	0x000000ff
-+/* receives a pixel clock spec in pico seconds, adjusts the DIU clock rate */
- void mpc512x_set_pixel_clock(unsigned int pixclock)
- {
--	unsigned long bestval, bestfreq, speed, busfreq;
--	unsigned long minpixclock, maxpixclock, pixval;
--	struct mpc512x_ccm __iomem *ccm;
- 	struct device_node *np;
--	u32 temp;
--	long err;
--	int i;
-+	struct clk *clk_diu;
-+	unsigned long epsilon, minpixclock, maxpixclock;
-+	unsigned long offset, want, got, delta;
- 
--	np = of_find_compatible_node(NULL, NULL, "fsl,mpc5121-clock");
-+	/* lookup and enable the DIU clock */
-+	np = of_find_compatible_node(NULL, NULL, "fsl,mpc5121-diu");
- 	if (!np) {
--		pr_err("Can't find clock control module.\n");
-+		pr_err("Could not find DIU device tree node.\n");
- 		return;
- 	}
--
--	ccm = of_iomap(np, 0);
-+	clk_diu = of_clk_get_by_name(np, "per");
- 	of_node_put(np);
--	if (!ccm) {
--		pr_err("Can't map clock control module reg.\n");
-+	if (IS_ERR(clk_diu)) {
-+		pr_err("Could not lookup DIU clock.\n");
- 		return;
- 	}
--
--	np = of_find_node_by_type(NULL, "cpu");
--	if (np) {
--		const unsigned int *prop =
--			of_get_property(np, "bus-frequency", NULL);
--
--		of_node_put(np);
--		if (prop) {
--			busfreq = *prop;
--		} else {
--			pr_err("Can't get bus-frequency property\n");
--			return;
--		}
--	} else {
--		pr_err("Can't find 'cpu' node.\n");
-+	if (clk_prepare_enable(clk_diu)) {
-+		pr_err("Could not enable DIU clock.\n");
- 		return;
- 	}
- 
--	/* Pixel Clock configuration */
--	pr_debug("DIU: Bus Frequency = %lu\n", busfreq);
--	speed = busfreq * 4; /* DIU_DIV ratio is 4 * CSB_CLK / DIU_CLK */
--
--	/* Calculate the pixel clock with the smallest error */
--	/* calculate the following in steps to avoid overflow */
--	pr_debug("DIU pixclock in ps - %d\n", pixclock);
--	temp = (1000000000 / pixclock) * 1000;
--	pixclock = temp;
--	pr_debug("DIU pixclock freq - %u\n", pixclock);
--
--	temp = temp / 20; /* pixclock * 0.05 */
--	pr_debug("deviation = %d\n", temp);
--	minpixclock = pixclock - temp;
--	maxpixclock = pixclock + temp;
--	pr_debug("DIU minpixclock - %lu\n", minpixclock);
--	pr_debug("DIU maxpixclock - %lu\n", maxpixclock);
--	pixval = speed/pixclock;
--	pr_debug("DIU pixval = %lu\n", pixval);
--
--	err = LONG_MAX;
--	bestval = pixval;
--	pr_debug("DIU bestval = %lu\n", bestval);
--
--	bestfreq = 0;
--	for (i = -1; i <= 1; i++) {
--		temp = speed / (pixval+i);
--		pr_debug("DIU test pixval i=%d, pixval=%lu, temp freq. = %u\n",
--			i, pixval, temp);
--		if ((temp < minpixclock) || (temp > maxpixclock))
--			pr_debug("DIU exceeds monitor range (%lu to %lu)\n",
--				minpixclock, maxpixclock);
--		else if (abs(temp - pixclock) < err) {
--			pr_debug("Entered the else if block %d\n", i);
--			err = abs(temp - pixclock);
--			bestval = pixval + i;
--			bestfreq = temp;
--		}
-+	/*
-+	 * convert the picoseconds spec into the desired clock rate,
-+	 * determine the acceptable clock range for the monitor (+/- 5%),
-+	 * do the calculation in steps to avoid integer overflow
-+	 */
-+	pr_debug("DIU pixclock in ps - %u\n", pixclock);
-+	pixclock = (1000000000 / pixclock) * 1000;
-+	pr_debug("DIU pixclock freq  - %u\n", pixclock);
-+	epsilon = pixclock / 20; /* pixclock * 0.05 */
-+	pr_debug("DIU deviation      - %lu\n", epsilon);
-+	minpixclock = pixclock - epsilon;
-+	maxpixclock = pixclock + epsilon;
-+	pr_debug("DIU minpixclock    - %lu\n", minpixclock);
-+	pr_debug("DIU maxpixclock    - %lu\n", maxpixclock);
-+
-+	/*
-+	 * check whether the DIU supports the desired pixel clock
-+	 *
-+	 * - simply request the desired clock and see what the
-+	 *   platform's clock driver will make of it, assuming that it
-+	 *   will setup the best approximation of the requested value
-+	 * - try other candidate frequencies in the order of decreasing
-+	 *   preference (i.e. with increasing distance from the desired
-+	 *   pixel clock, and checking the lower frequency before the
-+	 *   higher frequency to not overload the hardware) until the
-+	 *   first match is found -- any potential subsequent match
-+	 *   would only be as good as the former match or typically
-+	 *   would be less preferrable
-+	 *
-+	 * the offset increment of pixelclock divided by 64 is an
-+	 * arbitrary choice -- it's simple to calculate, in the typical
-+	 * case we expect the first check to succeed already, in the
-+	 * worst case seven frequencies get tested (the exact center and
-+	 * three more values each to the left and to the right) before
-+	 * the 5% tolerance window is exceeded, resulting in fast enough
-+	 * execution yet high enough probability of finding a suitable
-+	 * value, while the error rate will be in the order of single
-+	 * percents
-+	 */
-+	for (offset = 0; offset <= epsilon; offset += pixclock / 64) {
-+		want = pixclock - offset;
-+		pr_debug("DIU checking clock - %lu\n", want);
-+		clk_set_rate(clk_diu, want);
-+		got = clk_get_rate(clk_diu);
-+		delta = abs(pixclock - got);
-+		if (delta < epsilon)
-+			break;
-+		if (!offset)
-+			continue;
-+		want = pixclock + offset;
-+		pr_debug("DIU checking clock - %lu\n", want);
-+		clk_set_rate(clk_diu, want);
-+		got = clk_get_rate(clk_diu);
-+		delta = abs(pixclock - got);
-+		if (delta < epsilon)
-+			break;
- 	}
-+	if (offset <= epsilon) {
-+		pr_debug("DIU clock accepted - %lu\n", want);
-+		pr_debug("DIU pixclock want %u, got %lu, delta %lu, eps %lu\n",
-+			 pixclock, got, delta, epsilon);
-+		return;
-+	}
-+	pr_warn("DIU pixclock auto search unsuccessful\n");
- 
--	pr_debug("DIU chose = %lx\n", bestval);
--	pr_debug("DIU error = %ld\n NomPixClk ", err);
--	pr_debug("DIU: Best Freq = %lx\n", bestfreq);
--	/* Modify DIU_DIV in CCM SCFR1 */
--	temp = in_be32(&ccm->scfr1);
--	pr_debug("DIU: Current value of SCFR1: 0x%08x\n", temp);
--	temp &= ~DIU_DIV_MASK;
--	temp |= (bestval & DIU_DIV_MASK);
--	out_be32(&ccm->scfr1, temp);
--	pr_debug("DIU: Modified value of SCFR1: 0x%08x\n", temp);
--	iounmap(ccm);
-+	/*
-+	 * what is the most appropriate action to take when the search
-+	 * for an available pixel clock which is acceptable to the
-+	 * monitor has failed?  disable the DIU (clock) or just provide
-+	 * a "best effort"?  we go with the latter
-+	 */
-+	pr_warn("DIU pixclock best effort fallback (backend's choice)\n");
-+	clk_set_rate(clk_diu, pixclock);
-+	got = clk_get_rate(clk_diu);
-+	delta = abs(pixclock - got);
-+	pr_debug("DIU pixclock want %u, got %lu, delta %lu, eps %lu\n",
-+		 pixclock, got, delta, epsilon);
- }
- 
- enum fsl_diu_monitor_port
 -- 
-1.7.10.4
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
