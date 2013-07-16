@@ -1,28 +1,16 @@
-Return-Path: <B42677@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0248.outbound.messaging.microsoft.com [213.199.154.248])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D23282C074D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jul 2013 18:48:15 +1000 (EST)
-From: Zhang Haijun-B42677 <B42677@freescale.com>
-To: Zhang Haijun-B42677 <B42677@freescale.com>, "linux-mmc@vger.kernel.org"
- <linux-mmc@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH V3] powerpc/85xx: Add support for 85xx cpu type detection
-Date: Tue, 16 Jul 2013 08:46:44 +0000
-Message-ID: <99E897753B6F7048BD8CCDB4661D02E13C0099@039-SN2MPN1-023.039d.mgd.msft.net>
-References: <1373502232-4772-1-git-send-email-Haijun.Zhang@freescale.com>
-In-Reply-To: <1373502232-4772-1-git-send-email-Haijun.Zhang@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- Zhao Chenhui-B35336 <B35336@freescale.com>,
- Wrobel Heinz-R39252 <r39252@freescale.com>,
- Fleming Andy-AFLEMING <afleming@freescale.com>,
- "cbouatmailru@gmail.com" <cbouatmailru@gmail.com>,
- "cjb@laptop.org" <cjb@laptop.org>
+Return-Path: <pebolle@tiscali.nl>
+Received: from cpsmtpb-ews04.kpnxchange.com (cpsmtpb-ews04.kpnxchange.com
+ [213.75.39.7]) by ozlabs.org (Postfix) with ESMTP id 813462C019E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jul 2013 18:56:43 +1000 (EST)
+Message-ID: <1373964998.2591.57.camel@x61.thuisdomein>
+Subject: [PATCH] powerpc/8xx: Remove last traces of 8XX_MINIMAL_FPEMU
+From: Paul Bolle <pebolle@tiscali.nl>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>
+Date: Tue, 16 Jul 2013 10:56:38 +0200
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,96 +20,250 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi, scott
+The Kconfig symbol 8XX_MINIMAL_FPEMU was removed in commit 968219fa33
+("powerpc/8xx: Remove 8xx specific "minimal FPU emulation""). But that
+commit didn't remove all code depending on that symbol. Do so now.
 
-Need I change something?
-I have some patches depend on this.
-Expect your advice.
+Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+---
+Not even compile tested!
 
-Thanks.
+ arch/powerpc/include/asm/emulated_ops.h |   2 -
+ arch/powerpc/kernel/Makefile            |   2 -
+ arch/powerpc/kernel/softemu8xx.c        | 199 --------------------------------
+ 3 files changed, 203 deletions(-)
+ delete mode 100644 arch/powerpc/kernel/softemu8xx.c
 
-Regards
-Haijun.
-
-
-> -----Original Message-----
-> From: Zhang Haijun-B42677
-> Sent: Thursday, July 11, 2013 8:24 AM
-> To: linux-mmc@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
-> Cc: cbouatmailru@gmail.com; cjb@laptop.org; Wood Scott-B07421; Fleming
-> Andy-AFLEMING; Wrobel Heinz-R39252; Zhang Haijun-B42677; Zhao Chenhui-
-> B35336
-> Subject: [PATCH V3] powerpc/85xx: Add support for 85xx cpu type detection
->=20
-> Add this file to help detect cpu type in runtime.
-> These macros will be more favorable for driver to apply errata and
-> workaround to specified cpu type.
->=20
-> Signed-off-by: Haijun Zhang <Haijun.Zhang@freescale.com>
-> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
-> ---
-> changes for v3:
-> 	- remove get_svr and is_svr_rev
->=20
->  arch/powerpc/include/asm/mpc85xx.h | 47
-> ++++++++++++++++++++++++++++++++++++++
->  1 file changed, 47 insertions(+)
->  create mode 100644 arch/powerpc/include/asm/mpc85xx.h
->=20
-> diff --git a/arch/powerpc/include/asm/mpc85xx.h
-> b/arch/powerpc/include/asm/mpc85xx.h
-> new file mode 100644
-> index 0000000..824b619
-> --- /dev/null
-> +++ b/arch/powerpc/include/asm/mpc85xx.h
-> @@ -0,0 +1,47 @@
-> +/*
-> + * MPC85xx cpu type detection
-> + *
-> + * Copyright 2011-2012 Freescale Semiconductor, Inc.
-> + *
-> + * This is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; either version 2 of the License, or
-> + * (at your option) any later version.
-> + */
-> +
-> +#ifndef __ASM_PPC_MPC85XX_H
-> +#define __ASM_PPC_MPC85XX_H
-> +
-> +#define SVR_REV(svr)	((svr) & 0xFF)		/* SOC design resision */
-> +#define SVR_MAJ(svr)	(((svr) >>  4) & 0xF)	/* Major revision field*/
-> +#define SVR_MIN(svr)	(((svr) >>  0) & 0xF)	/* Minor revision field*/
-> +
-> +/* Some parts define SVR[0:23] as the SOC version */
-> +#define SVR_SOC_VER(svr) (((svr) >> 8) & 0xFFF7FF)	/* SOC Version
-> fields */
-> +
-> +#define SVR_8533	0x803400
-> +#define SVR_8535	0x803701
-> +#define SVR_8536	0x803700
-> +#define SVR_8540	0x803000
-> +#define SVR_8541	0x807200
-> +#define SVR_8543	0x803200
-> +#define SVR_8544	0x803401
-> +#define SVR_8545	0x803102
-> +#define SVR_8547	0x803101
-> +#define SVR_8548	0x803100
-> +#define SVR_8555	0x807100
-> +#define SVR_8560	0x807000
-> +#define SVR_8567	0x807501
-> +#define SVR_8568	0x807500
-> +#define SVR_8569	0x808000
-> +#define SVR_8572	0x80E000
-> +#define SVR_P1010	0x80f900
-> +#define SVR_P2041	0x821001
-> +#define SVR_P3041	0x821103
-> +#define SVR_P5010	0x822100
-> +#define SVR_P5020	0x822000
-> +#define SVR_P5040	0x820400
-> +#define SVR_T4240	0x824800
-> +#define SVR_B4860	0x868800
-> +
-> +#endif
-> --
-> 1.8.0
+diff --git a/arch/powerpc/include/asm/emulated_ops.h b/arch/powerpc/include/asm/emulated_ops.h
+index 63f2a22..5a8b82a 100644
+--- a/arch/powerpc/include/asm/emulated_ops.h
++++ b/arch/powerpc/include/asm/emulated_ops.h
+@@ -46,8 +46,6 @@ extern struct ppc_emulated {
+ 	struct ppc_emulated_entry unaligned;
+ #ifdef CONFIG_MATH_EMULATION
+ 	struct ppc_emulated_entry math;
+-#elif defined(CONFIG_8XX_MINIMAL_FPEMU)
+-	struct ppc_emulated_entry 8xx;
+ #endif
+ #ifdef CONFIG_VSX
+ 	struct ppc_emulated_entry vsx;
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index a8619bf..d706e58 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -117,8 +117,6 @@ obj-$(CONFIG_DYNAMIC_FTRACE)	+= ftrace.o
+ obj-$(CONFIG_FUNCTION_GRAPH_TRACER)	+= ftrace.o
+ obj-$(CONFIG_FTRACE_SYSCALLS)	+= ftrace.o
+ 
+-obj-$(CONFIG_8XX_MINIMAL_FPEMU) += softemu8xx.o
+-
+ ifneq ($(CONFIG_PPC_INDIRECT_IO),y)
+ obj-y				+= iomap.o
+ endif
+diff --git a/arch/powerpc/kernel/softemu8xx.c b/arch/powerpc/kernel/softemu8xx.c
+deleted file mode 100644
+index 29b2f81..0000000
+--- a/arch/powerpc/kernel/softemu8xx.c
++++ /dev/null
+@@ -1,199 +0,0 @@
+-/*
+- * Software emulation of some PPC instructions for the 8xx core.
+- *
+- * Copyright (C) 1998 Dan Malek (dmalek@jlc.net)
+- *
+- * Software floating emuation for the MPC8xx processor.  I did this mostly
+- * because it was easier than trying to get the libraries compiled for
+- * software floating point.  The goal is still to get the libraries done,
+- * but I lost patience and needed some hacks to at least get init and
+- * shells running.  The first problem is the setjmp/longjmp that save
+- * and restore the floating point registers.
+- *
+- * For this emulation, our working registers are found on the register
+- * save area.
+- */
+-
+-#include <linux/errno.h>
+-#include <linux/sched.h>
+-#include <linux/kernel.h>
+-#include <linux/mm.h>
+-#include <linux/stddef.h>
+-#include <linux/unistd.h>
+-#include <linux/ptrace.h>
+-#include <linux/user.h>
+-#include <linux/interrupt.h>
+-
+-#include <asm/pgtable.h>
+-#include <asm/uaccess.h>
+-#include <asm/io.h>
+-
+-/* Eventually we may need a look-up table, but this works for now.
+-*/
+-#define LFS	48
+-#define LFD	50
+-#define LFDU	51
+-#define STFD	54
+-#define STFDU	55
+-#define FMR	63
+-
+-void print_8xx_pte(struct mm_struct *mm, unsigned long addr)
+-{
+-	pgd_t *pgd;
+-	pmd_t *pmd;
+-	pte_t *pte;
+-
+-	printk(" pte @ 0x%8lx: ", addr);
+-	pgd = pgd_offset(mm, addr & PAGE_MASK);
+-	if (pgd) {
+-		pmd = pmd_offset(pud_offset(pgd, addr & PAGE_MASK),
+-		                 addr & PAGE_MASK);
+-		if (pmd && pmd_present(*pmd)) {
+-			pte = pte_offset_kernel(pmd, addr & PAGE_MASK);
+-			if (pte) {
+-				printk(" (0x%08lx)->(0x%08lx)->0x%08lx\n",
+-				        (long)pgd, (long)pte, (long)pte_val(*pte));
+-#define pp ((long)pte_val(*pte))
+-				printk(" RPN: %05lx PP: %lx SPS: %lx SH: %lx "
+-				       "CI: %lx v: %lx\n",
+-				       pp>>12,    /* rpn */
+-				       (pp>>10)&3, /* pp */
+-				       (pp>>3)&1, /* small */
+-				       (pp>>2)&1, /* shared */
+-				       (pp>>1)&1, /* cache inhibit */
+-				       pp&1       /* valid */
+-				       );
+-#undef pp
+-			}
+-			else {
+-				printk("no pte\n");
+-			}
+-		}
+-		else {
+-			printk("no pmd\n");
+-		}
+-	}
+-	else {
+-		printk("no pgd\n");
+-	}
+-}
+-
+-int get_8xx_pte(struct mm_struct *mm, unsigned long addr)
+-{
+-	pgd_t *pgd;
+-	pmd_t *pmd;
+-	pte_t *pte;
+-	int retval = 0;
+-
+-	pgd = pgd_offset(mm, addr & PAGE_MASK);
+-	if (pgd) {
+-		pmd = pmd_offset(pud_offset(pgd, addr & PAGE_MASK),
+-		                 addr & PAGE_MASK);
+-		if (pmd && pmd_present(*pmd)) {
+-			pte = pte_offset_kernel(pmd, addr & PAGE_MASK);
+-			if (pte) {
+-				retval = (int)pte_val(*pte);
+-			}
+-		}
+-	}
+-	return retval;
+-}
+-
+-/*
+- * We return 0 on success, 1 on unimplemented instruction, and EFAULT
+- * if a load/store faulted.
+- */
+-int Soft_emulate_8xx(struct pt_regs *regs)
+-{
+-	u32 inst, instword;
+-	u32 flreg, idxreg, disp;
+-	int retval;
+-	s16 sdisp;
+-	u32 *ea, *ip;
+-
+-	retval = 0;
+-
+-	instword = *((u32 *)regs->nip);
+-	inst = instword >> 26;
+-
+-	flreg = (instword >> 21) & 0x1f;
+-	idxreg = (instword >> 16) & 0x1f;
+-	disp = instword & 0xffff;
+-
+-	ea = (u32 *)(regs->gpr[idxreg] + disp);
+-	ip = (u32 *)&current->thread.TS_FPR(flreg);
+-
+-	switch ( inst )
+-	{
+-	case LFD:
+-		/* this is a 16 bit quantity that is sign extended
+-		 * so use a signed short here -- Cort
+-		 */
+-		sdisp = (instword & 0xffff);
+-		ea = (u32 *)(regs->gpr[idxreg] + sdisp);
+-		if (copy_from_user(ip, ea, sizeof(double)))
+-			retval = -EFAULT;
+-		break;
+-
+-	case LFDU:
+-		if (copy_from_user(ip, ea, sizeof(double)))
+-			retval = -EFAULT;
+-		else
+-			regs->gpr[idxreg] = (u32)ea;
+-		break;
+-	case LFS:
+-		sdisp = (instword & 0xffff);
+-		ea = (u32 *)(regs->gpr[idxreg] + sdisp);
+-		if (copy_from_user(ip, ea, sizeof(float)))
+-			retval = -EFAULT;
+-		break;
+-	case STFD:
+-		/* this is a 16 bit quantity that is sign extended
+-		 * so use a signed short here -- Cort
+-		 */
+-		sdisp = (instword & 0xffff);
+-		ea = (u32 *)(regs->gpr[idxreg] + sdisp);
+-		if (copy_to_user(ea, ip, sizeof(double)))
+-			retval = -EFAULT;
+-		break;
+-
+-	case STFDU:
+-		if (copy_to_user(ea, ip, sizeof(double)))
+-			retval = -EFAULT;
+-		else
+-			regs->gpr[idxreg] = (u32)ea;
+-		break;
+-	case FMR:
+-		/* assume this is a fp move -- Cort */
+-		memcpy(ip, &current->thread.TS_FPR((instword>>11)&0x1f),
+-		       sizeof(double));
+-		break;
+-	default:
+-		retval = 1;
+-		printk("Bad emulation %s/%d\n"
+-		       " NIP: %08lx instruction: %08x opcode: %x "
+-		       "A: %x B: %x C: %x code: %x rc: %x\n",
+-		       current->comm,current->pid,
+-		       regs->nip,
+-		       instword,inst,
+-		       (instword>>16)&0x1f,
+-		       (instword>>11)&0x1f,
+-		       (instword>>6)&0x1f,
+-		       (instword>>1)&0x3ff,
+-		       instword&1);
+-		{
+-			int pa;
+-			print_8xx_pte(current->mm,regs->nip);
+-			pa = get_8xx_pte(current->mm,regs->nip) & PAGE_MASK;
+-			pa |= (regs->nip & ~PAGE_MASK);
+-			pa = (unsigned long)__va(pa);
+-			printk("Kernel VA for NIP %x ", pa);
+-			print_8xx_pte(current->mm,pa);
+-		}
+-	}
+-
+-	if (retval == 0)
+-		regs->nip += 4;
+-
+-	return retval;
+-}
+-- 
+1.8.1.4
