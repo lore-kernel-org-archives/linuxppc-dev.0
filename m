@@ -1,20 +1,28 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9CB9B2C0148
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Jul 2013 13:08:40 +1000 (EST)
-From: Tiejun Chen <tiejun.chen@windriver.com>
-To: <benh@kernel.crashing.org>
-Subject: [v1][PATCH 1/1] powerpc/ppc64: rename SOFT_DISABLE_INTS with
- RECONCILE_IRQ_STATE
-Date: Tue, 16 Jul 2013 11:09:30 +0800
-Message-ID: <1373944170-22559-1-git-send-email-tiejun.chen@windriver.com>
+Return-Path: <B42677@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CB9AA2C014A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jul 2013 13:09:50 +1000 (EST)
+From: Zhang Haijun-B42677 <B42677@freescale.com>
+To: Anton Vorontsov <anton@enomsg.org>, Wood Scott-B07421
+ <B07421@freescale.com>
+Subject: RE: [PATCH 3/4 V2] mmc: esdhc: Add quirks to support T4240QDS board
+Date: Tue, 16 Jul 2013 03:11:47 +0000
+Message-ID: <99E897753B6F7048BD8CCDB4661D02E13A7CC3@039-SN2MPN1-021.039d.mgd.msft.net>
+References: <1373267764-6364-1-git-send-email-Haijun.Zhang@freescale.com>
+ <1373267764-6364-2-git-send-email-Haijun.Zhang@freescale.com>
+ <1373303919.8183.164@snotra> <20130712183503.GA24689@teo>
+In-Reply-To: <20130712183503.GA24689@teo>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org, kvm@vger.kernel.org,
- kvm-ppc@vger.kernel.org
+Cc: Wrobel Heinz-R39252 <r39252@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "cjb@laptop.org" <cjb@laptop.org>,
+ "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+ Fleming Andy-AFLEMING <afleming@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,94 +32,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The SOFT_DISABLE_INTS seems an odd name for something that updates the
-software state to be consistent with interrupts being hard disabled, so
-rename SOFT_DISABLE_INTS with RECONCILE_IRQ_STATE to avoid this confusion.
-
-Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
----
-Ben,
-
-Looks currently RECONCILE_IRQ_STATE is our better choice as we discussed :)
-
-Tiejun
-
- arch/powerpc/include/asm/exception-64s.h |    2 +-
- arch/powerpc/include/asm/irqflags.h      |    7 ++++---
- arch/powerpc/kernel/entry_64.S           |    4 ++--
- arch/powerpc/kernel/exceptions-64e.S     |    4 ++--
- 4 files changed, 9 insertions(+), 8 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-index 07ca627..4834a6d 100644
---- a/arch/powerpc/include/asm/exception-64s.h
-+++ b/arch/powerpc/include/asm/exception-64s.h
-@@ -479,7 +479,7 @@ label##_relon_hv:							\
-  */
- 
- /* Exception addition: Hard disable interrupts */
--#define DISABLE_INTS	SOFT_DISABLE_INTS(r10,r11)
-+#define DISABLE_INTS	RECONCILE_IRQ_STATE(r10,r11)
- 
- #define ADD_NVGPRS				\
- 	bl	.save_nvgprs
-diff --git a/arch/powerpc/include/asm/irqflags.h b/arch/powerpc/include/asm/irqflags.h
-index 6f9b6e2..f51a558 100644
---- a/arch/powerpc/include/asm/irqflags.h
-+++ b/arch/powerpc/include/asm/irqflags.h
-@@ -40,9 +40,10 @@
- #define TRACE_DISABLE_INTS	TRACE_WITH_FRAME_BUFFER(.trace_hardirqs_off)
- 
- /*
-- * This is used by assembly code to soft-disable interrupts
-+ * This is used by assembly code to soft-disable interrupts first and
-+ * reconcile irq state.
-  */
--#define SOFT_DISABLE_INTS(__rA, __rB)		\
-+#define RECONCILE_IRQ_STATE(__rA, __rB)		\
- 	lbz	__rA,PACASOFTIRQEN(r13);	\
- 	lbz	__rB,PACAIRQHAPPENED(r13);	\
- 	cmpwi	cr0,__rA,0;			\
-@@ -58,7 +59,7 @@
- #define TRACE_ENABLE_INTS
- #define TRACE_DISABLE_INTS
- 
--#define SOFT_DISABLE_INTS(__rA, __rB)		\
-+#define RECONCILE_IRQ_STATE(__rA, __rB)		\
- 	lbz	__rA,PACAIRQHAPPENED(r13);	\
- 	li	__rB,0;				\
- 	ori	__rA,__rA,PACA_IRQ_HARD_DIS;	\
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index ab15b8d..c1055a1 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -721,9 +721,9 @@ resume_kernel:
- 
- 	/*
- 	 * Here we are preempting the current task. We want to make
--	 * sure we are soft-disabled first
-+	 * sure we are soft-disabled first and reconcile irq state.
- 	 */
--	SOFT_DISABLE_INTS(r3,r4)
-+	RECONCILE_IRQ_STATE(r3,r4)
- 1:	bl	.preempt_schedule_irq
- 
- 	/* Re-test flags and eventually loop */
-diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index be3b4b1..e71511c 100644
---- a/arch/powerpc/kernel/exceptions-64e.S
-+++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -198,9 +198,9 @@ exc_##n##_common:							    \
- /* This second version is meant for exceptions that don't immediately
-  * hard-enable. We set a bit in paca->irq_happened to ensure that
-  * a subsequent call to arch_local_irq_restore() will properly
-- * hard-enable and avoid the fast-path
-+ * hard-enable and avoid the fast-path, and then reconcile irq state.
-  */
--#define INTS_DISABLE	SOFT_DISABLE_INTS(r3,r4)
-+#define INTS_DISABLE	RECONCILE_IRQ_STATE(r3,r4)
- 
- /* This is called by exceptions that used INTS_KEEP (that did not touch
-  * irq indicators in the PACA). This will restore MSR:EE to it's previous
--- 
-1.7.9.5
+SGksIEFudG9uDQoNCllvdSBtZWFuIGdldCB2b2x0YWdlIHN1cHBvcnQgZnJvbSBEVFM/DQpPciBn
+ZXQgdm9sdGFnZSBib3RoIGZyb20gRFRTIGFuZCBob3N0IGNhcGFjaXR5IHJlZ2lzdGVyPw0KDQpU
+aGFua3MuDQoNClJlZ2FyZHMNCkhhaWp1bi4NCg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0t
+LS0tDQo+IEZyb206IGxpbnV4LW1tYy1vd25lckB2Z2VyLmtlcm5lbC5vcmcgW21haWx0bzpsaW51
+eC1tbWMtDQo+IG93bmVyQHZnZXIua2VybmVsLm9yZ10gT24gQmVoYWxmIE9mIEFudG9uIFZvcm9u
+dHNvdg0KPiBTZW50OiBTYXR1cmRheSwgSnVseSAxMywgMjAxMyAyOjM1IEFNDQo+IFRvOiBXb29k
+IFNjb3R0LUIwNzQyMQ0KPiBDYzogWmhhbmcgSGFpanVuLUI0MjY3NzsgbGludXgtbW1jQHZnZXIu
+a2VybmVsLm9yZzsgbGludXhwcGMtDQo+IGRldkBsaXN0cy5vemxhYnMub3JnOyBjamJAbGFwdG9w
+Lm9yZzsgRmxlbWluZyBBbmR5LUFGTEVNSU5HOyBXcm9iZWwNCj4gSGVpbnotUjM5MjUyDQo+IFN1
+YmplY3Q6IFJlOiBbUEFUQ0ggMy80IFYyXSBtbWM6IGVzZGhjOiBBZGQgcXVpcmtzIHRvIHN1cHBv
+cnQgVDQyNDBRRFMNCj4gYm9hcmQNCj4gDQo+IE9uIE1vbiwgSnVsIDA4LCAyMDEzIGF0IDEyOjE4
+OjM5UE0gLTA1MDAsIFNjb3R0IFdvb2Qgd3JvdGU6DQo+ID4gT24gMDcvMDgvMjAxMyAwMjoxNjow
+NCBBTSwgSGFpanVuIFpoYW5nIHdyb3RlOg0KPiA+ID5PbiBUNDI0MFFEUyBib2FyZCBjb250cm9s
+bGVycyBoYXMgYW4gdW51c2FibGUgQURNQSBlbmdpbmUsIHNvIHVzZQ0KPiA+ID5TRE1BIGluc3Rl
+YWQuDQo+ID4gPkFsc28gMy4wdiBpcyBzdXBwb3J0IG9uIFQ0MjQwUURTIGJvYXJkIGV2ZW4gaWYg
+dGhlIGNhcGFjaXR5IGRldGFpbGVkDQo+ID4gPm9ubHkgMS44diBzdXBwb3J0LiBXaXRob3V0IHRo
+aXMgcXVpcmsgU0QgY2FyZCB3aWxsIGRlY2xhcmUgdm9sdGFnZQ0KPiA+ID5ub3Qgc3VwcG9ydCBh
+bmQNCj4gPiA+DQo+ID4gPlNpZ25lZC1vZmYtYnk6IEhhaWp1biBaaGFuZyA8aGFpanVuLnpoYW5n
+QGZyZWVzY2FsZS5jb20+DQo+ID4NCj4gPiAuLi5hbmQgd2hhdD8NCj4gPg0KPiA+IFdoeSBpcyB0
+aGlzIGJvYXJkLXNwZWNpZmljPyAgSXNuJ3QgdGhlIGNvbnRyb2xsZXIgcGFydCBvZiB0aGUgU29D
+LCBub3QNCj4gPiBwYXJ0IG9mIHRoZSBib2FyZD8gIElmIGl0IHJlYWxseSBpcyBib2FyZC1zcGVj
+aWZpYywgY291bGQgeW91IGJlIG1vcmUNCj4gPiBkZXRhaWxlZCBhYm91dCB3aHkgKGlkZWFsbHkg
+d2l0aCBhbiBlcnJhdHVtIG51bWJlciksIGFuZCBjaGVjayB0aGUNCj4gPiB0b3BsZXZlbCBib2Fy
+ZCBjb21wYXRpYmxlIChvciBnZXQgdGhlIGluZm9ybWF0aW9uIGZyb20gcGxhdGZvcm0NCj4gPiBj
+b2RlKSByYXRoZXIgdGhhbiBtb2RpZnkgdGhlIGRldmljZSB0cmVlPw0KPiANCj4gWXVwLCBhbmQg
+aWYgYW55dGhpbmcsIEkgd291bGQgcmVjb21tZW5kIHRvIHJldXNlIHZvbHRhZ2UtcmFuZ2VzIHBy
+b3BlcnR5LA0KPiBpdCBpcyBhbHJlYWR5IGltcGxlbWVudGVkIGZvciBtbWMgc3BpIGRyaXZlciwN
+Cj4gDQo+IGRyaXZlcnMvbW1jL2hvc3Qvb2ZfbW1jX3NwaS5jDQo+IERvY3VtZW50YXRpb24vZGV2
+aWNldHJlZS9iaW5kaW5ncy9tbWMvbW1jLXNwaS1zbG90LnR4dA0KPiANCj4gVGhhbmtzLA0KPiAN
+Cj4gQW50b24NCj4gLS0NCj4gVG8gdW5zdWJzY3JpYmUgZnJvbSB0aGlzIGxpc3Q6IHNlbmQgdGhl
+IGxpbmUgInVuc3Vic2NyaWJlIGxpbnV4LW1tYyIgaW4NCj4gdGhlIGJvZHkgb2YgYSBtZXNzYWdl
+IHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5lbC5vcmcgTW9yZSBtYWpvcmRvbW8gaW5mbyBhdA0KPiBo
+dHRwOi8vdmdlci5rZXJuZWwub3JnL21ham9yZG9tby1pbmZvLmh0bWwNCg0K
