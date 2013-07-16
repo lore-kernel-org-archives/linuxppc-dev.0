@@ -1,21 +1,21 @@
-Return-Path: <neorf3k@gmail.com>
-Received: from mail-ee0-x235.google.com (mail-ee0-x235.google.com
- [IPv6:2a00:1450:4013:c00::235])
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
+ [209.85.160.51])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4F4302C0130
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jul 2013 10:08:32 +1000 (EST)
-Received: by mail-ee0-f53.google.com with SMTP id c41so22969eek.26
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jul 2013 17:08:28 -0700 (PDT)
-Subject: Help on mpc5200b and 1:1 CPU:bus clock ratio
-Mime-Version: 1.0 (1.0)
-From: Neorf3k <neorf3k@gmail.com>
-Content-Type: multipart/alternative;
- boundary=Apple-Mail-A34C375F-A7F1-471B-8EF2-DB45D0448E7C
-Message-Id: <0897B824-1A4F-412B-9FA1-D26DF191CFD5@gmail.com>
-Date: Tue, 16 Jul 2013 02:08:26 +0200
-To: Linux Ppc Dev List <linuxppc-dev@lists.ozlabs.org>
-Cc: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+ by ozlabs.org (Postfix) with ESMTPS id A44E42C017A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jul 2013 10:54:20 +1000 (EST)
+Received: by mail-pb0-f51.google.com with SMTP id um15so87677pbc.10
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jul 2013 17:54:18 -0700 (PDT)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 00/10 v6] KVM: PPC: IOMMU in-kernel handling
+Date: Tue, 16 Jul 2013 10:53:55 +1000
+Message-Id: <1373936045-22653-1-git-send-email-aik@ozlabs.ru>
+Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,83 +25,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The changes are:
+1. rebased on v3.11-rc1 so the capability numbers changed again
+2. fixed multiple comments from maintainers
+3. "KVM: PPC: Add support for IOMMU in-kernel handling" is split into
+2 patches, the new one is "powerpc/iommu: rework to support realmode".
+4. IOMMU_API is now always enabled for KVM_BOOK3S_64.
 
---Apple-Mail-A34C375F-A7F1-471B-8EF2-DB45D0448E7C
-Content-Type: text/plain;
-	charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
+MOre details in the individual patch comments.
 
-Hello, this is our custom board's u-boot:
+Depends on "hashtable: add hash_for_each_possible_rcu_notrace()",
+posted a while ago.
 
-U-Boot 2009.08 (Apr 19 2010 - 05:35:19)                              =20
 
-CPU:   MPC5200B v2.2, Core v1.4 at 132 MHz
-       Bus 132 MHz, IPB 132 MHz, PCI 66 MHz
-Board: Ran Controller Board
-I2C:   85 kHz, ready
-DRAM:  128 MB
-FLASH: 64 MB
+Alexey Kardashevskiy (10):
+  KVM: PPC: reserve a capability number for multitce support
+  KVM: PPC: reserve a capability and ioctl numbers for realmode VFIO
+  vfio: add external user support
+  powerpc: Prepare to support kernel handling of IOMMU map/unmap
+  powerpc: add real mode support for dma operations on powernv
+  KVM: PPC: enable IOMMU_API for KVM_BOOK3S_64 permanently
+  KVM: PPC: Add support for multiple-TCE hcalls
+  powerpc/iommu: rework to support realmode
+  KVM: PPC: Add support for IOMMU in-kernel handling
+  KVM: PPC: Add hugepage support for IOMMU in-kernel handling
 
-We have 1:1 CPU:bus clock ratio and for now we are having problems with Fec d=
-rivers (I suppose).=20
-Using 2.6.33 kernel, during a ping session, we have 60% packet loss.
-We can't change kernel.
+ Documentation/virtual/kvm/api.txt         |  52 +++
+ arch/powerpc/include/asm/iommu.h          |   9 +-
+ arch/powerpc/include/asm/kvm_host.h       |  37 +++
+ arch/powerpc/include/asm/kvm_ppc.h        |  18 +-
+ arch/powerpc/include/asm/machdep.h        |  12 +
+ arch/powerpc/include/asm/pgtable-ppc64.h  |   4 +
+ arch/powerpc/include/uapi/asm/kvm.h       |   7 +
+ arch/powerpc/kernel/iommu.c               | 201 +++++++----
+ arch/powerpc/kvm/Kconfig                  |   1 +
+ arch/powerpc/kvm/book3s_64_vio.c          | 533 +++++++++++++++++++++++++++++-
+ arch/powerpc/kvm/book3s_64_vio_hv.c       | 404 ++++++++++++++++++++--
+ arch/powerpc/kvm/book3s_hv.c              |  41 ++-
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S   |   8 +-
+ arch/powerpc/kvm/book3s_pr_papr.c         |  35 ++
+ arch/powerpc/kvm/powerpc.c                |  15 +
+ arch/powerpc/mm/init_64.c                 |  76 ++++-
+ arch/powerpc/platforms/powernv/pci-ioda.c |  47 ++-
+ arch/powerpc/platforms/powernv/pci.c      |  38 ++-
+ arch/powerpc/platforms/powernv/pci.h      |   3 +-
+ drivers/vfio/vfio.c                       |  62 ++++
+ include/linux/page-flags.h                |   4 +-
+ include/linux/vfio.h                      |   7 +
+ include/uapi/linux/kvm.h                  |   5 +
+ 23 files changed, 1496 insertions(+), 123 deletions(-)
 
-Where could I find the problem in the kernel?=20
-
-Thank you so much
-
-Lorenzo=20=
-
---Apple-Mail-A34C375F-A7F1-471B-8EF2-DB45D0448E7C
-Content-Type: text/html;
-	charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-
-<html><head><meta http-equiv=3D"content-type" content=3D"text/html; charset=3D=
-utf-8"></head><body dir=3D"auto"><div>Hello, this is our custom board's u-bo=
-ot:</div><div><br></div><div><div style=3D"font-family: '.Helvetica NeueUI';=
- font-size: 18px; line-height: 24px; -webkit-tap-highlight-color: rgba(26, 2=
-6, 26, 0.296875); -webkit-composition-fill-color: rgba(130, 98, 83, 0.097656=
-3); -webkit-composition-frame-color: rgba(191, 107, 82, 0.496094); -webkit-t=
-ext-size-adjust: none; ">U-Boot 2009.08 (Apr 19 2010 - 05:35:19) &nbsp; &nbs=
-p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
-sp; &nbsp; &nbsp;&nbsp;</div><div style=3D"font-family: '.Helvetica NeueUI';=
- font-size: 18px; line-height: 24px; -webkit-tap-highlight-color: rgba(26, 2=
-6, 26, 0.296875); -webkit-composition-fill-color: rgba(130, 98, 83, 0.097656=
-3); -webkit-composition-frame-color: rgba(191, 107, 82, 0.496094); -webkit-t=
-ext-size-adjust: none; "><br></div><div style=3D"font-family: '.Helvetica Ne=
-ueUI'; font-size: 18px; line-height: 24px; -webkit-tap-highlight-color: rgba=
-(26, 26, 26, 0.296875); -webkit-composition-fill-color: rgba(130, 98, 83, 0.=
-0976563); -webkit-composition-frame-color: rgba(191, 107, 82, 0.496094); -we=
-bkit-text-size-adjust: none; ">CPU: &nbsp; MPC5200B v2.2, Core v1.4 at 132 M=
-Hz</div><div style=3D"font-family: '.Helvetica NeueUI'; font-size: 18px; lin=
-e-height: 24px; -webkit-tap-highlight-color: rgba(26, 26, 26, 0.296875); -we=
-bkit-composition-fill-color: rgba(130, 98, 83, 0.0976563); -webkit-compositi=
-on-frame-color: rgba(191, 107, 82, 0.496094); -webkit-text-size-adjust: none=
-; ">&nbsp; &nbsp; &nbsp; &nbsp;Bus 132 MHz, IPB 132 MHz, PCI 66 MHz</div><di=
-v style=3D"font-family: '.Helvetica NeueUI'; font-size: 18px; line-height: 2=
-4px; -webkit-tap-highlight-color: rgba(26, 26, 26, 0.296875); -webkit-compos=
-ition-fill-color: rgba(130, 98, 83, 0.0976563); -webkit-composition-frame-co=
-lor: rgba(191, 107, 82, 0.496094); -webkit-text-size-adjust: none; ">Board: R=
-an Controller Board</div><div style=3D"font-family: '.Helvetica NeueUI'; fon=
-t-size: 18px; line-height: 24px; -webkit-tap-highlight-color: rgba(26, 26, 2=
-6, 0.296875); -webkit-composition-fill-color: rgba(130, 98, 83, 0.0976563); -=
-webkit-composition-frame-color: rgba(191, 107, 82, 0.496094); -webkit-text-s=
-ize-adjust: none; ">I2C: &nbsp; 85 kHz, ready</div><div style=3D"font-family=
-: '.Helvetica NeueUI'; font-size: 18px; line-height: 24px; -webkit-tap-highl=
-ight-color: rgba(26, 26, 26, 0.296875); -webkit-composition-fill-color: rgba=
-(130, 98, 83, 0.0976563); -webkit-composition-frame-color: rgba(191, 107, 82=
-, 0.496094); -webkit-text-size-adjust: none; ">DRAM: &nbsp;128 MB</div><div s=
-tyle=3D"font-family: '.Helvetica NeueUI'; font-size: 18px; line-height: 24px=
-; -webkit-tap-highlight-color: rgba(26, 26, 26, 0.296875); -webkit-compositi=
-on-fill-color: rgba(130, 98, 83, 0.0976563); -webkit-composition-frame-color=
-: rgba(191, 107, 82, 0.496094); -webkit-text-size-adjust: none; ">FLASH: 64 M=
-B</div><div><br></div><div>We have 1:1 CPU:bus clock ratio and for now we ar=
-e having problems with Fec drivers (I suppose).&nbsp;</div><div>Using 2.6.33=
- kernel, during a ping session, we have 60% packet loss.</div><div>We can't c=
-hange kernel.</div><div><br></div><div>Where could I find the problem in the=
- kernel?&nbsp;</div><div><br></div><div>Thank you so much</div><div><br></di=
-v><div>Lorenzo&nbsp;</div></div></body></html>=
-
---Apple-Mail-A34C375F-A7F1-471B-8EF2-DB45D0448E7C--
+-- 
+1.8.3.2
