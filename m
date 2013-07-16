@@ -1,24 +1,20 @@
-Return-Path: <aijazbaig1@gmail.com>
-Received: from sam.nabble.com (sam.nabble.com [216.139.236.26])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 2E6B02C03BC
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Jul 2013 10:37:05 +1000 (EST)
-Received: from tom.nabble.com ([192.168.236.105])
- by sam.nabble.com with esmtp (Exim 4.72)
- (envelope-from <aijazbaig1@gmail.com>) id 1UytGJ-0004dT-1B
- for linuxppc-dev@ozlabs.org; Mon, 15 Jul 2013 17:37:03 -0700
-Date: Mon, 15 Jul 2013 17:37:03 -0700 (PDT)
-From: JiveTalkin <aijazbaig1@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Message-ID: <CAHB2L+dbwNt8GxMYAvzZO-+WhOOuM_pyjq5XdSJ9Wm_=jHdoKw@mail.gmail.com>
-In-Reply-To: <1373840376.19894.274.camel@pasglop>
-References: <1373464479578-73565.post@n7.nabble.com>
- <1373629119047-73669.post@n7.nabble.com> <1373840376.19894.274.camel@pasglop>
-Subject: Re: ABI defined register usage within function calls
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9CB9B2C0148
+ for <linuxppc-dev@ozlabs.org>; Tue, 16 Jul 2013 13:08:40 +1000 (EST)
+From: Tiejun Chen <tiejun.chen@windriver.com>
+To: <benh@kernel.crashing.org>
+Subject: [v1][PATCH 1/1] powerpc/ppc64: rename SOFT_DISABLE_INTS with
+ RECONCILE_IRQ_STATE
+Date: Tue, 16 Jul 2013 11:09:30 +0800
+Message-ID: <1373944170-22559-1-git-send-email-tiejun.chen@windriver.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
- boundary="----=_Part_73053_3822182.1373935023026"
+Content-Type: text/plain
+Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org, kvm@vger.kernel.org,
+ kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,122 +24,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-------=_Part_73053_3822182.1373935023026
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+The SOFT_DISABLE_INTS seems an odd name for something that updates the
+software state to be consistent with interrupts being hard disabled, so
+rename SOFT_DISABLE_INTS with RECONCILE_IRQ_STATE to avoid this confusion.
 
-Hi Ben.
+Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+---
+Ben,
 
-Thanks for the information. Your reply is eagerly awaited.
+Looks currently RECONCILE_IRQ_STATE is our better choice as we discussed :)
 
-Regards.
-On Jul 15, 2013 3:50 AM, "Benjamin Herrenschmidt [via linuxppc]" <
-ml-node+s10917n73731h5@n7.nabble.com> wrote:
+Tiejun
 
-> On Fri, 2013-07-12 at 04:38 -0700, JiveTalkin wrote:
-> > Moderator..can you change the subject of this to "Understanding register
-> > usage as per ABI rules for functions" ??
-> >
-> > Additionally, doesn't anyone have anything to say about this?
->
-> We don't modify subjects after the fact. As to why nobody replied, well,
-> I suppose the 2 or 3 people who actually understand that stuff were
-> all too busy or didn't notice :-)
->
-> I'll try to reply later today if I get a chance or you can try to catch
-> me on IRC (freenode/#mklinux)
->
-> Cheers,
-> Ben.
->
-> > --
-> > View this message in context:
-> http://linuxppc.10917.n7.nabble.com/ABI-defined-register-usage-within-function-calls-tp73565p73669.html
-> > Sent from the linuxppc-dev mailing list archive at Nabble.com.
-> > _______________________________________________
-> > Linuxppc-dev mailing list
-> > [hidden email] <http://user/SendEmail.jtp?type=node&node=73731&i=0>
-> > https://lists.ozlabs.org/listinfo/linuxppc-dev
->
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> [hidden email] <http://user/SendEmail.jtp?type=node&node=73731&i=1>
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
->
-> ------------------------------
->  If you reply to this email, your message will be added to the discussion
-> below:
->
-> http://linuxppc.10917.n7.nabble.com/ABI-defined-register-usage-within-function-calls-tp73565p73731.html
->  To unsubscribe from ABI defined register usage within function calls, click
-> here<http://linuxppc.10917.n7.nabble.com/template/NamlServlet.jtp?macro=unsubscribe_by_code&node=73565&code=YWlqYXpiYWlnMUBnbWFpbC5jb218NzM1NjV8MTg5MDM1OTIxOA==>
-> .
-> NAML<http://linuxppc.10917.n7.nabble.com/template/NamlServlet.jtp?macro=macro_viewer&id=instant_html%21nabble%3Aemail.naml&base=nabble.naml.namespaces.BasicNamespace-nabble.view.web.template.NabbleNamespace-nabble.view.web.template.NodeNamespace&breadcrumbs=notify_subscribers%21nabble%3Aemail.naml-instant_emails%21nabble%3Aemail.naml-send_instant_email%21nabble%3Aemail.naml>
->
+ arch/powerpc/include/asm/exception-64s.h |    2 +-
+ arch/powerpc/include/asm/irqflags.h      |    7 ++++---
+ arch/powerpc/kernel/entry_64.S           |    4 ++--
+ arch/powerpc/kernel/exceptions-64e.S     |    4 ++--
+ 4 files changed, 9 insertions(+), 8 deletions(-)
 
-
-
-
---
-View this message in context: http://linuxppc.10917.n7.nabble.com/ABI-defined-register-usage-within-function-calls-tp73565p73803.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
-------=_Part_73053_3822182.1373935023026
-Content-Type: text/html; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-
-<p>Hi Ben.</p>
-<p>Thanks for the information. Your reply is eagerly awaited.</p>
-<p>Regards.</p>
-<div class="gmail_quote">On Jul 15, 2013 3:50 AM, &quot;Benjamin Herrenschmidt [via linuxppc]&quot; &lt;<a href="/user/SendEmail.jtp?type=node&node=73803&i=0" target="_top" rel="nofollow" link="external">[hidden email]</a>&gt; wrote:<br type="attribution">
-<blockquote style='border-left:2px solid #CCCCCC;padding:0 1em' class="gmail_quote" style="margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex">
-
-	On Fri, 2013-07-12 at 04:38 -0700, JiveTalkin wrote:
-<br>&gt; Moderator..can you change the subject of this to &quot;Understanding register
-<br>&gt; usage as per ABI rules for functions&quot; ??
-<br>&gt; 
-<br>&gt; Additionally, doesn&#39;t anyone have anything to say about this?
-<br><br>We don&#39;t modify subjects after the fact. As to why nobody replied, well,
-<br>I suppose the 2 or 3 people who actually understand that stuff were
-<br>all too busy or didn&#39;t notice :-)
-<br><br>I&#39;ll try to reply later today if I get a chance or you can try to catch
-<br>me on IRC (freenode/#mklinux)
-<br><br>Cheers,
-<br>Ben.
-<br><br>&gt; --
-<br>&gt; View this message in context: <a href="http://linuxppc.10917.n7.nabble.com/ABI-defined-register-usage-within-function-calls-tp73565p73669.html" rel="nofollow" link="external" target="_blank">http://linuxppc.10917.n7.nabble.com/ABI-defined-register-usage-within-function-calls-tp73565p73669.html</a><br>
-&gt; Sent from the linuxppc-dev mailing list archive at Nabble.com.
-<br>&gt; _______________________________________________
-<br>&gt; Linuxppc-dev mailing list
-<br>&gt; <a href="http://user/SendEmail.jtp?type=node&amp;node=73731&amp;i=0" rel="nofollow" link="external" target="_blank">[hidden email]</a>
-<br>&gt; <a href="https://lists.ozlabs.org/listinfo/linuxppc-dev" rel="nofollow" link="external" target="_blank">https://lists.ozlabs.org/listinfo/linuxppc-dev</a><br><br><br>_______________________________________________
-<br>Linuxppc-dev mailing list
-<br><a href="http://user/SendEmail.jtp?type=node&amp;node=73731&amp;i=1" rel="nofollow" link="external" target="_blank">[hidden email]</a>
-<br><a href="https://lists.ozlabs.org/listinfo/linuxppc-dev" rel="nofollow" link="external" target="_blank">https://lists.ozlabs.org/listinfo/linuxppc-dev</a><br>
-
-	
-	
-	
-	<br>
-	<br>
-	<hr noshade size="1" color="#cccccc">
-	<div style="color:#444;font:12px tahoma,geneva,helvetica,arial,sans-serif">
-		<div style="font-weight:bold">If you reply to this email, your message will be added to the discussion below:</div>
-		<a href="http://linuxppc.10917.n7.nabble.com/ABI-defined-register-usage-within-function-calls-tp73565p73731.html" target="_blank" rel="nofollow" link="external">http://linuxppc.10917.n7.nabble.com/ABI-defined-register-usage-within-function-calls-tp73565p73731.html</a>
-	</div>
-	<div style="color:#666;font:11px tahoma,geneva,helvetica,arial,sans-serif;margin-top:.4em;line-height:1.5em">
-		
-		To unsubscribe from ABI defined register usage within function calls, <a href="" target="_blank" rel="nofollow" link="external">click here</a>.<br>
-
-		<a href="http://linuxppc.10917.n7.nabble.com/template/NamlServlet.jtp?macro=macro_viewer&amp;id=instant_html%21nabble%3Aemail.naml&amp;base=nabble.naml.namespaces.BasicNamespace-nabble.view.web.template.NabbleNamespace-nabble.view.web.template.NodeNamespace&amp;breadcrumbs=notify_subscribers%21nabble%3Aemail.naml-instant_emails%21nabble%3Aemail.naml-send_instant_email%21nabble%3Aemail.naml" rel="nofollow" style="font:9px serif" target="_blank" link="external">NAML</a>
-	</div></blockquote></div>
-
-
-	
-	
-	
-<br/><hr align="left" width="300" />
-View this message in context: <a href="http://linuxppc.10917.n7.nabble.com/ABI-defined-register-usage-within-function-calls-tp73565p73803.html">Re: ABI defined register usage within function calls</a><br/>
-Sent from the <a href="http://linuxppc.10917.n7.nabble.com/linuxppc-dev-f3.html">linuxppc-dev mailing list archive</a> at Nabble.com.<br/>
-------=_Part_73053_3822182.1373935023026--
+diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+index 07ca627..4834a6d 100644
+--- a/arch/powerpc/include/asm/exception-64s.h
++++ b/arch/powerpc/include/asm/exception-64s.h
+@@ -479,7 +479,7 @@ label##_relon_hv:							\
+  */
+ 
+ /* Exception addition: Hard disable interrupts */
+-#define DISABLE_INTS	SOFT_DISABLE_INTS(r10,r11)
++#define DISABLE_INTS	RECONCILE_IRQ_STATE(r10,r11)
+ 
+ #define ADD_NVGPRS				\
+ 	bl	.save_nvgprs
+diff --git a/arch/powerpc/include/asm/irqflags.h b/arch/powerpc/include/asm/irqflags.h
+index 6f9b6e2..f51a558 100644
+--- a/arch/powerpc/include/asm/irqflags.h
++++ b/arch/powerpc/include/asm/irqflags.h
+@@ -40,9 +40,10 @@
+ #define TRACE_DISABLE_INTS	TRACE_WITH_FRAME_BUFFER(.trace_hardirqs_off)
+ 
+ /*
+- * This is used by assembly code to soft-disable interrupts
++ * This is used by assembly code to soft-disable interrupts first and
++ * reconcile irq state.
+  */
+-#define SOFT_DISABLE_INTS(__rA, __rB)		\
++#define RECONCILE_IRQ_STATE(__rA, __rB)		\
+ 	lbz	__rA,PACASOFTIRQEN(r13);	\
+ 	lbz	__rB,PACAIRQHAPPENED(r13);	\
+ 	cmpwi	cr0,__rA,0;			\
+@@ -58,7 +59,7 @@
+ #define TRACE_ENABLE_INTS
+ #define TRACE_DISABLE_INTS
+ 
+-#define SOFT_DISABLE_INTS(__rA, __rB)		\
++#define RECONCILE_IRQ_STATE(__rA, __rB)		\
+ 	lbz	__rA,PACAIRQHAPPENED(r13);	\
+ 	li	__rB,0;				\
+ 	ori	__rA,__rA,PACA_IRQ_HARD_DIS;	\
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index ab15b8d..c1055a1 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -721,9 +721,9 @@ resume_kernel:
+ 
+ 	/*
+ 	 * Here we are preempting the current task. We want to make
+-	 * sure we are soft-disabled first
++	 * sure we are soft-disabled first and reconcile irq state.
+ 	 */
+-	SOFT_DISABLE_INTS(r3,r4)
++	RECONCILE_IRQ_STATE(r3,r4)
+ 1:	bl	.preempt_schedule_irq
+ 
+ 	/* Re-test flags and eventually loop */
+diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+index be3b4b1..e71511c 100644
+--- a/arch/powerpc/kernel/exceptions-64e.S
++++ b/arch/powerpc/kernel/exceptions-64e.S
+@@ -198,9 +198,9 @@ exc_##n##_common:							    \
+ /* This second version is meant for exceptions that don't immediately
+  * hard-enable. We set a bit in paca->irq_happened to ensure that
+  * a subsequent call to arch_local_irq_restore() will properly
+- * hard-enable and avoid the fast-path
++ * hard-enable and avoid the fast-path, and then reconcile irq state.
+  */
+-#define INTS_DISABLE	SOFT_DISABLE_INTS(r3,r4)
++#define INTS_DISABLE	RECONCILE_IRQ_STATE(r3,r4)
+ 
+ /* This is called by exceptions that used INTS_KEEP (that did not touch
+  * irq indicators in the PACA). This will restore MSR:EE to it's previous
+-- 
+1.7.9.5
