@@ -1,23 +1,20 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
- by ozlabs.org (Postfix) with SMTP id 2B4812C0159
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jul 2013 18:29:36 +1000 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
- by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
- id 20617-09 for <linuxppc-dev@lists.ozlabs.org>;
- Tue, 16 Jul 2013 09:29:29 +0100 (BST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
-Subject: RE: [PATCH] powerpc/fsl-booke: Work around erratum A-006958
-Date: Tue, 16 Jul 2013 09:28:06 +0100
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B72E2@saturn3.aculab.com>
-In-Reply-To: <1373926558.8183.317@snotra>
-References: <AE90C24D6B3A694183C094C60CF0A2F6026B72E1@saturn3.aculab.com><1373907234.8183.297@snotra>
- <1373926558.8183.317@snotra>
-From: "David Laight" <David.Laight@ACULAB.COM>
-To: "Scott Wood" <scottwood@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <gsi@denx.de>
+From: Gerhard Sittig <gsi@denx.de>
+To: linuxppc-dev@lists.ozlabs.org, Anatolij Gustschin <agust@denx.de>,
+ Mike Turquette <mturquette@linaro.org>,
+ linux-arm-kernel@lists.infradead.org, devicetree-discuss@lists.ozlabs.org
+Subject: [PATCH v1 21/24] [media] fsl-viu: OF clock lookup,
+ prepare before enable
+Date: Tue, 16 Jul 2013 10:45:37 +0200
+Message-Id: <1373964341-25228-1-git-send-email-gsi@denx.de>
+In-Reply-To: <1373914074-20889-1-git-send-email-gsi@denx.de>
+References: <1373914074-20889-1-git-send-email-gsi@denx.de>
+Cc: Detlev Zundel <dzu@denx.de>, Wolfram Sang <wsa@the-dreams.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Gerhard Sittig <gsi@denx.de>,
+ Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@kernel.org>,
+ Marc Kleine-Budde <mkl@pengutronix.de>, David Woodhouse <dwmw2@infradead.org>,
+ Wolfgang Grandegger <wg@grandegger.com>,
+ Mauro Carvalho Chehab <m.chehab@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,37 +24,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> On 07/15/2013 11:53:54 AM, Scott Wood wrote:
-> > On 07/15/2013 03:45:36 AM, David Laight wrote:
-> >> Also, if the high word changes, there is no need to loop.
-> >> Just return the second value with a low word of zero
-> >> (the returned count happened while the function was active).
-> >
-> > That would be more complicated than looping.
+device tree based clock lookup, must prepare clocks before enabling
+them, unprepare after disable, error check in the clock setup
 
-I'm not that familiar with the ppc instructions set, but on x86
-the equivalent instructions are synchronising ones - so can have
-performance penalties, so a few extra 'normal' instructions to
-avoid re-reading the timebase counter may be worth while.
+Signed-off-by: Gerhard Sittig <gsi@denx.de>
+---
+ drivers/media/platform/fsl-viu.c |   12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
-The branch for the loop might also be statically predicted 'taken'
-leading to a branch misprediction penalty as well.
-
-> That said, it's since been confirmed internally that the low word
-> should always be zero when this happens, so we could share the Cell
-> workaround code -- as long as we do something special in the timebase
-> sync code so that we don't get stuck if the timebase happens to be
-> frozen with TBL=3D=3D0.  This would avoid the need for scratch =
-registers
-> (other than CR0).
-
-Yes - if the actual errata is that the low word is read one clock
-later then the high word then the only illegal value is one where
-the low word is zero.
-In that case it is sufficient to reread the counter - it can't be
-wrong again!
-Indeed it is only necessary to read the high part (even if the
-code pre-empted for over 2^32 counts, the returned value will
-have happened during the designated period).
-
-	David
+diff --git a/drivers/media/platform/fsl-viu.c b/drivers/media/platform/fsl-viu.c
+index 221ec42..b95aa43 100644
+--- a/drivers/media/platform/fsl-viu.c
++++ b/drivers/media/platform/fsl-viu.c
+@@ -1582,8 +1582,11 @@ static int viu_of_probe(struct platform_device *op)
+ 		dev_err(&op->dev, "failed to find the clock module!\n");
+ 		ret = -ENODEV;
+ 		goto err_clk;
+-	} else {
+-		clk_enable(viu_dev->clk);
++	}
++	ret = clk_prepare_enable(viu_dev->clk);
++	if (ret) {
++		dev_err(&op->dev, "failed to enable the clock!\n");
++		goto err_clk_put;
+ 	}
+ 
+ 	/* reset VIU module */
+@@ -1602,7 +1605,8 @@ static int viu_of_probe(struct platform_device *op)
+ 	return ret;
+ 
+ err_irq:
+-	clk_disable(viu_dev->clk);
++	clk_disable_unprepare(viu_dev->clk);
++err_clk_put:
+ 	clk_put(viu_dev->clk);
+ err_clk:
+ 	video_unregister_device(viu_dev->vdev);
+@@ -1626,7 +1630,7 @@ static int viu_of_remove(struct platform_device *op)
+ 	free_irq(dev->irq, (void *)dev);
+ 	irq_dispose_mapping(dev->irq);
+ 
+-	clk_disable(dev->clk);
++	clk_disable_unprepare(dev->clk);
+ 	clk_put(dev->clk);
+ 
+ 	video_unregister_device(dev->vdev);
+-- 
+1.7.10.4
