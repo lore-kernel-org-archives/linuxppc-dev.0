@@ -1,18 +1,18 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from mail-pd0-f172.google.com (mail-pd0-f172.google.com
- [209.85.192.172])
+Received: from mail-pd0-f169.google.com (mail-pd0-f169.google.com
+ [209.85.192.169])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C3BD52C022B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jul 2013 10:54:28 +1000 (EST)
-Received: by mail-pd0-f172.google.com with SMTP id z10so84291pdj.17
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jul 2013 17:54:26 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 809602C0258
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jul 2013 10:54:33 +1000 (EST)
+Received: by mail-pd0-f169.google.com with SMTP id y10so84688pdj.14
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jul 2013 17:54:31 -0700 (PDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 01/10] KVM: PPC: reserve a capability number for multitce
- support
-Date: Tue, 16 Jul 2013 10:53:56 +1000
-Message-Id: <1373936045-22653-2-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH 02/10] KVM: PPC: reserve a capability and ioctl numbers for
+ realmode VFIO
+Date: Tue, 16 Jul 2013 10:53:57 +1000
+Message-Id: <1373936045-22653-3-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1373936045-22653-1-git-send-email-aik@ozlabs.ru>
 References: <1373936045-22653-1-git-send-email-aik@ozlabs.ru>
 Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -29,31 +29,44 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 This is to reserve a capablity number for upcoming support
-of H_PUT_TCE_INDIRECT and H_STUFF_TCE pseries hypercalls
-which support mulptiple DMA map/unmap operations per one call.
+of VFIO-IOMMU DMA operations in real mode.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+
 ---
 Changes:
 2013/07/16:
 * changed the number
 
+2013/07/11:
+* changed order in a file, added comment about a gap in ioctl number
+
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- include/uapi/linux/kvm.h | 1 +
- 1 file changed, 1 insertion(+)
+ include/uapi/linux/kvm.h | 4 ++++
+ 1 file changed, 4 insertions(+)
 
 diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
-index acccd08..99c2533 100644
+index 99c2533..53c3f1f 100644
 --- a/include/uapi/linux/kvm.h
 +++ b/include/uapi/linux/kvm.h
-@@ -667,6 +667,7 @@ struct kvm_ppc_smmu_info {
- #define KVM_CAP_PPC_RTAS 91
+@@ -668,6 +668,7 @@ struct kvm_ppc_smmu_info {
  #define KVM_CAP_IRQ_XICS 92
  #define KVM_CAP_ARM_EL1_32BIT 93
-+#define KVM_CAP_SPAPR_MULTITCE 94
+ #define KVM_CAP_SPAPR_MULTITCE 94
++#define KVM_CAP_SPAPR_TCE_IOMMU 95
  
  #ifdef KVM_CAP_IRQ_ROUTING
  
+@@ -933,6 +934,9 @@ struct kvm_s390_ucas_mapping {
+ #define KVM_ARM_SET_DEVICE_ADDR	  _IOW(KVMIO,  0xab, struct kvm_arm_device_addr)
+ /* Available with KVM_CAP_PPC_RTAS */
+ #define KVM_PPC_RTAS_DEFINE_TOKEN _IOW(KVMIO,  0xac, struct kvm_rtas_token_args)
++/* 0xad and 0xaf are already taken */
++/* Available with KVM_CAP_SPAPR_TCE_IOMMU */
++#define KVM_CREATE_SPAPR_TCE_IOMMU _IOW(KVMIO,  0xaf, struct kvm_create_spapr_tce_iommu)
+ 
+ /* ioctl for vm fd */
+ #define KVM_CREATE_DEVICE	  _IOWR(KVMIO,  0xe0, struct kvm_create_device)
 -- 
 1.8.3.2
