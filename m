@@ -3,9 +3,9 @@ From: Gerhard Sittig <gsi@denx.de>
 To: linuxppc-dev@lists.ozlabs.org, Anatolij Gustschin <agust@denx.de>,
  Mike Turquette <mturquette@linaro.org>,
  linux-arm-kernel@lists.infradead.org, devicetree-discuss@lists.ozlabs.org
-Subject: [PATCH v1 17/24] serial: mpc512x: setup the PSC FIFO clock as well
-Date: Tue, 16 Jul 2013 08:05:05 +0200
-Message-Id: <1373954707-23909-2-git-send-email-gsi@denx.de>
+Subject: [PATCH v1 18/24] i2c: mpc: OF clock lookup for MPC512x
+Date: Tue, 16 Jul 2013 08:05:06 +0200
+Message-Id: <1373954707-23909-3-git-send-email-gsi@denx.de>
 In-Reply-To: <1373914074-20889-1-git-send-email-gsi@denx.de>
 References: <1373914074-20889-1-git-send-email-gsi@denx.de>
 Cc: Detlev Zundel <dzu@denx.de>, Wolfram Sang <wsa@the-dreams.de>,
@@ -23,109 +23,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-prepare and enable the FIFO clock upon PSC FIFO initialization, disable
-and unprepare the FIFO clock upon PSC FIFO uninitialization, remove the
-pre-enable workaround from the platform's clock driver
+make the MPC I2C driver prepare and enable the peripheral clock
+('per' for register access) in the MPC512x setup routine,
+make this clock setup non-fatal to allow for a migration period,
+remove the pre-enabling hack in the platform's clock driver
 
 Signed-off-by: Gerhard Sittig <gsi@denx.de>
 ---
- arch/powerpc/platforms/512x/clock-commonclk.c |    2 --
- drivers/tty/serial/mpc52xx_uart.c             |   47 +++++++++++++++++++++----
- 2 files changed, 41 insertions(+), 8 deletions(-)
+ arch/powerpc/platforms/512x/clock-commonclk.c |    1 -
+ drivers/i2c/busses/i2c-mpc.c                  |    9 +++++++++
+ 2 files changed, 9 insertions(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/platforms/512x/clock-commonclk.c b/arch/powerpc/platforms/512x/clock-commonclk.c
-index 31707b5..2c6da07 100644
+index 2c6da07..29c51a5 100644
 --- a/arch/powerpc/platforms/512x/clock-commonclk.c
 +++ b/arch/powerpc/platforms/512x/clock-commonclk.c
-@@ -690,8 +690,6 @@ static void mpc512x_clk_setup_clock_tree(int busfreq)
- 	clk_prepare_enable(clks[MPC512x_CLK_MEM]);	/* SRAM */
- 	clk_prepare_enable(clks[MPC512x_CLK_IPS]);	/* SoC periph */
- 	clk_prepare_enable(clks[MPC512x_CLK_LPC]);	/* boot media */
--	/* some are required yet no dependencies were declared */
--	clk_prepare_enable(clks[MPC512x_CLK_PSC_FIFO]);
+@@ -693,7 +693,6 @@ static void mpc512x_clk_setup_clock_tree(int busfreq)
  	/* some are not yet acquired by their respective drivers */
  	clk_prepare_enable(clks[MPC512x_CLK_PSC3_MCLK]);/* serial console */
  	clk_prepare_enable(clks[MPC512x_CLK_FEC]);	/* network, NFS */
-diff --git a/drivers/tty/serial/mpc52xx_uart.c b/drivers/tty/serial/mpc52xx_uart.c
-index 221fb89..e67d4c0 100644
---- a/drivers/tty/serial/mpc52xx_uart.c
-+++ b/drivers/tty/serial/mpc52xx_uart.c
-@@ -567,35 +567,70 @@ static unsigned int mpc512x_psc_set_baudrate(struct uart_port *port,
- static int __init mpc512x_psc_fifoc_init(void)
+-	clk_prepare_enable(clks[MPC512x_CLK_I2C]);
+ 	/*
+ 	 * some have their individual clock subtree with separate clock
+ 	 * items and their individual enable counters, yet share a
+diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+index 7607dc0..13d6822 100644
+--- a/drivers/i2c/busses/i2c-mpc.c
++++ b/drivers/i2c/busses/i2c-mpc.c
+@@ -21,6 +21,7 @@
+ #include <linux/of_i2c.h>
+ #include <linux/slab.h>
+ 
++#include <linux/clk.h>
+ #include <linux/io.h>
+ #include <linux/fsl_devices.h>
+ #include <linux/i2c.h>
+@@ -264,11 +265,19 @@ static void mpc_i2c_setup_512x(struct device_node *node,
+ 					 struct mpc_i2c *i2c,
+ 					 u32 clock, u32 prescaler)
  {
- 	struct device_node *np;
 +	struct clk *clk;
+ 	struct device_node *node_ctrl;
+ 	void __iomem *ctrl;
+ 	const u32 *pval;
+ 	u32 idx;
  
- 	np = of_find_compatible_node(NULL, NULL,
- 				     "fsl,mpc5121-psc-fifo");
- 	if (!np) {
- 		pr_err("%s: Can't find FIFOC node\n", __func__);
--		return -ENODEV;
-+		goto out_err;
++	/* enable clock for the I2C peripheral (non fatal) */
++	clk = of_clk_get_by_name(node, "per");
++	if (!IS_ERR(clk)) {
++		clk_prepare_enable(clk);
++		clk_put(clk);
 +	}
 +
-+	clk = of_clk_get_by_name(np, "per");
-+	if (IS_ERR(clk)) {
-+		pr_err("%s: Can't lookup FIFO clock\n", __func__);
-+		goto out_ofnode_put;
-+	}
-+	if (clk_prepare_enable(clk)) {
-+		pr_err("%s: Can't enable FIFO clock\n", __func__);
-+		goto out_clk_put;
- 	}
- 
- 	psc_fifoc = of_iomap(np, 0);
- 	if (!psc_fifoc) {
- 		pr_err("%s: Can't map FIFOC\n", __func__);
--		of_node_put(np);
--		return -ENODEV;
-+		goto out_clk_disable;
- 	}
- 
- 	psc_fifoc_irq = irq_of_parse_and_map(np, 0);
--	of_node_put(np);
- 	if (psc_fifoc_irq == 0) {
- 		pr_err("%s: Can't get FIFOC irq\n", __func__);
--		iounmap(psc_fifoc);
--		return -ENODEV;
-+		goto out_unmap;
- 	}
- 
-+	clk_put(clk);
-+	of_node_put(np);
- 	return 0;
-+
-+out_unmap:
-+	iounmap(psc_fifoc);
-+out_clk_disable:
-+	clk_disable_unprepare(clk);
-+out_clk_put:
-+	clk_put(clk);
-+out_ofnode_put:
-+	of_node_put(np);
-+out_err:
-+	return -ENODEV;
- }
- 
- static void __exit mpc512x_psc_fifoc_uninit(void)
- {
-+	struct device_node *np;
-+	struct clk *clk;
-+
- 	iounmap(psc_fifoc);
-+
-+	/* disable the clock, errors are not fatal */
-+	np = of_find_compatible_node(NULL, NULL, "fsl,mpc5121-psc-fifo");
-+	if (np) {
-+		clk = of_clk_get_by_name(np, "per");
-+		if (!IS_ERR(clk)) {
-+			clk_disable_unprepare(clk);
-+			clk_put(clk);
-+		}
-+		of_node_put(np);
-+	}
- }
- 
- /* 512x specific interrupt handler. The caller holds the port lock */
+ 	/* Enable I2C interrupts for mpc5121 */
+ 	node_ctrl = of_find_compatible_node(NULL, NULL,
+ 					    "fsl,mpc5121-i2c-ctrl");
 -- 
 1.7.10.4
