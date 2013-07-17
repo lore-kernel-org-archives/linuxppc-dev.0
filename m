@@ -1,36 +1,28 @@
-Return-Path: <cascardo@linux.vnet.ibm.com>
-Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e24smtp03.br.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 93DBB2C0099
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jul 2013 01:11:01 +1000 (EST)
-Received: from /spool/local
- by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <cascardo@linux.vnet.ibm.com>;
- Wed, 17 Jul 2013 12:10:47 -0300
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id 42AF43520027
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jul 2013 11:10:38 -0400 (EDT)
-Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
- by d24relay03.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r6HF9KAk27787514
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jul 2013 12:09:20 -0300
-Received: from d24av03.br.ibm.com (localhost [127.0.0.1])
- by d24av03.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r6HFAbk2001071
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jul 2013 12:10:37 -0300
-From: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] KVM: PPC: Book3S PR: return appropriate error when allocation
- fails
-Date: Wed, 17 Jul 2013 12:10:29 -0300
-Message-Id: <1374073829-28246-1-git-send-email-cascardo@linux.vnet.ibm.com>
-Cc: kvm@vger.kernel.org, Gleb Natapov <gleb@redhat.com>,
- Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
- Paolo Bonzini <pbonzini@redhat.com>
+Return-Path: <broonie@sirena.org.uk>
+Date: Wed, 17 Jul 2013 17:53:00 +0100
+From: Mark Brown <broonie@kernel.org>
+To: Mike Turquette <mturquette@linaro.org>, Detlev Zundel <dzu@denx.de>,
+ Wolfram Sang <wsa@the-dreams.de>, David Woodhouse <dwmw2@infradead.org>,
+ devicetree-discuss@lists.ozlabs.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Rob Herring <rob.herring@calxeda.com>,
+ Marc Kleine-Budde <mkl@pengutronix.de>,
+ Wolfgang Grandegger <wg@grandegger.com>,
+ Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org,
+ Mauro Carvalho Chehab <m.chehab@samsung.com>
+Message-ID: <20130717165300.GU22506@sirena.org.uk>
+References: <1373914074-20889-1-git-send-email-gsi@denx.de>
+ <1373914074-20889-2-git-send-email-gsi@denx.de>
+ <20130715201734.GF11538@sirena.org.uk>
+ <20130717112229.GK7080@book.gsilab.sittig.org>
+ <20130717120758.GR22506@sirena.org.uk>
+ <20130717142628.GN7080@book.gsilab.sittig.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="f8uTbadvzI+nQOZu"
+In-Reply-To: <20130717142628.GN7080@book.gsilab.sittig.org>
+Subject: Re: [PATCH v1 01/24] spi: mpc512x: prepare clocks before enabling them
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,33 +32,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-err was overwritten by a previous function call, and checked to be 0. If
-the following page allocation fails, 0 is going to be returned instead
-of -ENOMEM.
 
-Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
----
- arch/powerpc/kvm/book3s_pr.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+--f8uTbadvzI+nQOZu
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-index 19498a5..c6e13d9 100644
---- a/arch/powerpc/kvm/book3s_pr.c
-+++ b/arch/powerpc/kvm/book3s_pr.c
-@@ -1047,11 +1047,12 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
- 	if (err)
- 		goto free_shadow_vcpu;
- 
-+	err = -ENOMEM;
- 	p = __get_free_page(GFP_KERNEL|__GFP_ZERO);
--	/* the real shared page fills the last 4k of our page */
--	vcpu->arch.shared = (void*)(p + PAGE_SIZE - 4096);
- 	if (!p)
- 		goto uninit_vcpu;
-+	/* the real shared page fills the last 4k of our page */
-+	vcpu->arch.shared = (void *)(p + PAGE_SIZE - 4096);
- 
- #ifdef CONFIG_PPC_BOOK3S_64
- 	/* default to book3s_64 (970fx) */
--- 
-1.7.1
+On Wed, Jul 17, 2013 at 04:26:28PM +0200, Gerhard Sittig wrote:
+> On Wed, Jul 17, 2013 at 13:07 +0100, Mark Brown wrote:
+
+> > This is a pretty long e-mail.  It'd probably have taken less time to
+> > fix the issues than to reply to the e-mail...  but anyway.
+
+> Not quite.  Please consider that careful submission is as
+> expensive as thorough review is, and that a lot of work is done
+> before v1 gets submitted, which you may not always notice from
+> looking at a concentrated series that may no longer suggest how
+> much it took to get there (especially when prepared carefully).
+
+This is rather undermined the more time and effort gets spent pushing
+back against doing trival fixes, of course...  besides, the issues here
+are all really simple to fix and test.  It's not a major or risky
+rewrite of the driver or anything like that - most of this can be tested
+by just probing the driver.
+
+> As mentioned before I did not question the need to fix issues as
+> they get identified.  I just asked whether reworking the serial
+
+OK, so send patches then.
+
+> The initial COMMON_CLK implementation in part 09/24 registers
+> clkdev items for compatibility during migration.  The string
+> isn't greppable since it's constructed by the preprocessor in the
+> MCLK data setup, see the MCLK_SETUP_DATA_PSC() macro.
+
+Ugh, right - it didn't show up in searches due to being hidden by the
+macro.
+
+> Now let me see how I can improve the SPI driver with regard to
+> overall clock handling and beyond mere operation by coincidence
+> in the absence of errors.  But please understand that I don't
+> want to stall the common clock support for a whole platform just
+> because some of the drivers it needs to touch to keep them
+> operational have other issues that weren't addressed yet, while
+> these issues aren't introduced with the series but preceed it.
+
+Again, you're not being asked to implement substantial new functionality
+here.  From my point of view I can't test this at all so I'm looking at
+code that's obviously not good for the standard clock API and wondering
+if it even works or how robust it's going to be going forward as the
+common clock code changes which makes me relucatant to say it'll be OK.
+
+The fact that you're switching over to use generic code is itself a
+reason to make sure that the API usage is sane, dodgy API usage against
+open coded clock implementations is less risky than against the common
+code.
+
+--f8uTbadvzI+nQOZu
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.20 (GNU/Linux)
+
+iQIcBAEBAgAGBQJR5svpAAoJELSic+t+oim95O4P/0GKvCN3rMBcGCdIdB5/KPxx
+A43nsGEJGLvzrJ8MPuK8/lNxre1tPbh40B53pRk4cnccquxJUzTqVRcMrIKwzMy3
+B/HUKswbjMzViSt2j2JBCMsof3BSNXgtGuvMLMZMLSG16EJEa0JCuHPbBMNEiRZl
+CGO0vXDwCyl8//UXzLth8WjSuVsdelflRTYzooU15fCeA6ruDIz03E9vAA1/ZiOR
+jMrcfQ277drHlO+mysw8S3dDyOhneNh6pNUVrOmY4cHVHZUSaYfGFTjpdfyFFwCg
+i3rPPHBdr+8au/XnsyQy5aKWsSMlQWOjsZRw5XBXCvq3DHUCbZ2m7eCl7++cEabz
+YB79eIpH0dt/LRmld8h1FWP+zGI2T6lg0AKriZpxc1mGJ81u7qM3NB1yHx34e0A3
+JH7tknO3BJrLqJ7GdgFINXVBASSNjg8lfGzdmE7kGyZWZk4EfeW71Ss5REsF8/Ga
+v6zKOPK8lYfJWLrkS8XRZ63Alhs9C3k7FVhoA7+PijItFQGptfaAxaCOPAtdMhc9
+R9zIw7Oc41g92vWo7M6y2VoxfCEzktUxCTCmSrgYMP/fpOJckzXJl+0SNc1XlN9Z
+E388Y6zWL969yFZ3JPWdXWORxcPmHcvq6bku5Vro5tdvEV1IhOMREy+KfJMFAkZC
+LEjSZU6BuDm6dmezbivw
+=Z1pg
+-----END PGP SIGNATURE-----
+
+--f8uTbadvzI+nQOZu--
