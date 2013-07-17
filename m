@@ -1,21 +1,21 @@
-Return-Path: <gsi@denx.de>
-Date: Wed, 17 Jul 2013 12:42:34 +0200
-From: Gerhard Sittig <gsi@denx.de>
-To: Lars-Peter Clausen <lars@metafoo.de>
-Subject: Re: [PATCH RFC v2 2/5] dma: mpc512x: add support for peripheral
- transfers
-Message-ID: <20130717104234.GJ7080@book.gsilab.sittig.org>
-References: <1373642781-32631-1-git-send-email-gsi@denx.de>
- <1373803321-11628-1-git-send-email-gsi@denx.de>
- <1373803321-11628-3-git-send-email-gsi@denx.de>
- <51E5226D.9050100@metafoo.de>
+Return-Path: <B42677@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 81D142C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jul 2013 21:02:33 +1000 (EST)
+From: Haijun Zhang <Haijun.Zhang@freescale.com>
+To: <linux-mmc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 2/4 V2] mmc: esdhc: workaround for dma err in the last system
+ transaction
+Date: Wed, 17 Jul 2013 18:11:29 +0800
+Message-ID: <1374055891-20703-1-git-send-email-Haijun.Zhang@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <51E5226D.9050100@metafoo.de>
-Cc: Arnd Bergmann <arnd@arndb.de>, Vinod Koul <vinod.koul@intel.com>,
- devicetree-discuss@lists.ozlabs.org, Alexander Popov <a13xp0p0v88@gmail.com>,
- Dan Williams <djbw@fb.com>, Anatolij Gustschin <agust@denx.de>,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: scottwood@freescale.com, cjb@laptop.org, AFLEMING@freescale.com,
+ Haijun Zhang <haijun.zhang@freescale.com>, cbouatmailru@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,83 +25,194 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 16, 2013 at 12:37 +0200, Lars-Peter Clausen wrote:
-> 
-> On 07/14/2013 02:01 PM, Gerhard Sittig wrote:
-> > From: Alexander Popov <a13xp0p0v88@gmail.com>
-> > 
-> > introduce support for slave s/g transfer preparation and the associated
-> > device control callback in the MPC512x DMA controller driver, which adds
-> > support for data transfers between memory and peripheral I/O to the
-> > previously supported mem-to-mem transfers
-> > 
-> > refuse to prepare chunked transfers (transfers with more than one part)
-> > as long as proper support for scatter/gather is lacking
-> > 
-> > keep MPC8308 operational by always starting transfers from software,
-> > this SoC appears to not have request lines for flow control when
-> > peripherals are involved in transfers
-> 
-> I had a look at the current driver and it seems that any channel can be used
-> for memcpy operation not only the MDDRC channel. Since the dmaengine API
-> will just pick one of the currently free channels when performing a memcpy
-> operation I think this patch breaks memcpy operations. You probably need to
-> register two dma controllers, one for memcpy operations one for slave
-> operations, that way you can ensure that only the MDDRC channel is used for
-> memcpy operations.
+A-004388: eSDHC DMA might not stop if error occurs on system transaction
 
-OK, so the need for explicit start in software or external
-request by the peripheral remains, but the condition for the
-choice is different.  It might become a flag attached to the DMA
-channel, that gets setup in the prep routines (memory and slave
-access each use their own prep calls) and gets evaluated in
-execute.  Something like "will access memory", or "will access
-peripheral" (the latter may be preferrable since slave support is
-the new feature).
+eSDHC DMA(SDMA/ADMA) might not stop if an error occurs in the last system
+transaction. It may continue initiating additional transactions until
+software reset for data/all is issued during error recovery. There is not
+any data corruption to the SD data. The IRQSTAT[DMAE] is set when the
+erratum occurs.
+The only conditions under which issues occur are the following:
+1. SDMA - For SD Write , the error occurs in the last system transaction.
+No issue for SD read
+2. ADMA
+a. Block count is enabled: For SD write, the error occurs in the last system
+transaction. There is no issue for SD read when block count is enabled.
+b. Block count is disabled: Block count is designated by the ADMA descriptor
+table, and the error occurs in the last system transaction when ADMA is
+executing last descriptor line of table.
 
-This assumes that the non-MDDRC channels can get used for memory
-transfers as well, which your description of the the former use
-suggests, when slave support was absent.
+eSDHC may initiate additional system transactions. There is no data integrity
+issue for case 1 and 2a described below. For case 2b, system data might be
+corrupted.
 
-Making the MDDRC channel preferrable for memcpy operations is
-orthogonal to that.
+Workaround: Set eSDHC_SYSCTL[RSTD] when IRQSTAT[DMAE] is set. For cases 2a and
+2b above, add an extra descriptor line with zero data next to the last
+descriptor line.
 
-> > 
-> > [ introduction of slave s/g preparation and device control ]
-> > Signed-off-by: Alexander Popov <a13xp0p0v88@gmail.com>
-> > [ execute() start condition, mpc8308 compat, terminate all, s/g length check, reworded commit msg ]
-> > Signed-off-by: Gerhard Sittig <gsi@denx.de>
-> > ---
-> [...]
+Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
+---
+changes for V2:
+	- Update the svr version list
 
+ drivers/mmc/host/sdhci-of-esdhc.c | 112 ++++++++++++++++++++++++++++++++++----
+ 1 file changed, 102 insertions(+), 10 deletions(-)
 
-> > +
-> > +static int mpc_dma_device_control(struct dma_chan *chan, enum dma_ctrl_cmd cmd,
-> > +				  unsigned long arg)
-> > +{
-> > +	struct mpc_dma_chan *mchan;
-> > +	struct mpc_dma *mdma;
-> > +	struct dma_slave_config *cfg;
-> > +
-> > +	mchan = dma_chan_to_mpc_dma_chan(chan);
-> > +	switch (cmd) {
-> > +	case DMA_TERMINATE_ALL:
-> > +		/* disable channel requests */
-> > +		mdma = dma_chan_to_mpc_dma(chan);
-> > +		out_8(&mdma->regs->dmacerq, chan->chan_id);
-> > +		list_splice_tail_init(&mchan->prepared, &mchan->free);
-> > +		list_splice_tail_init(&mchan->queued, &mchan->free);
-> > +		list_splice_tail_init(&mchan->active, &mchan->free);
-> 
-> This probably need locking.
-
-Ah, yes.  It needs to grab the same lock as all the other list
-manipulations in the driver's source.
-
-
-virtually yours
-Gerhard Sittig
+diff --git a/drivers/mmc/host/sdhci-of-esdhc.c b/drivers/mmc/host/sdhci-of-esdhc.c
+index 15039e2..adfaadd 100644
+--- a/drivers/mmc/host/sdhci-of-esdhc.c
++++ b/drivers/mmc/host/sdhci-of-esdhc.c
+@@ -21,9 +21,13 @@
+ #include <linux/mmc/host.h>
+ #include "sdhci-pltfm.h"
+ #include "sdhci-esdhc.h"
++#include <asm/mpc85xx.h>
+ 
+ #define VENDOR_V_22	0x12
+ #define VENDOR_V_23	0x13
++
++static u32 svr;
++
+ static u32 esdhc_readl(struct sdhci_host *host, int reg)
+ {
+ 	u32 ret;
+@@ -142,6 +146,26 @@ static void esdhc_writeb(struct sdhci_host *host, u8 val, int reg)
+ 	sdhci_be32bs_writeb(host, val, reg);
+ }
+ 
++static void esdhc_reset(struct sdhci_host *host, u8 mask)
++{
++	u32 ier;
++	u32 uninitialized_var(isav);
++
++	if (host->quirks & SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET)
++		isav = esdhc_readl(host, SDHCI_INT_ENABLE);
++
++	esdhc_writeb(host, mask, SDHCI_SOFTWARE_RESET);
++	mdelay(100);
++
++	if (host->quirks & SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET) {
++		ier = esdhc_readl(host, SDHCI_INT_ENABLE);
++		ier &= ~SDHCI_INT_ALL_MASK;
++		ier |= isav;
++		esdhc_writel(host, ier, SDHCI_INT_ENABLE);
++		esdhc_writel(host, ier, SDHCI_SIGNAL_ENABLE);
++	}
++}
++
+ /*
+  * For Abort or Suspend after Stop at Block Gap, ignore the ADMA
+  * error(IRQSTAT[ADMAE]) if both Transfer Complete(IRQSTAT[TC])
+@@ -156,25 +180,92 @@ static void esdhci_of_adma_workaround(struct sdhci_host *host, u32 intmask)
+ 	dma_addr_t dmastart;
+ 	dma_addr_t dmanow;
+ 
+-	tmp = in_be32(host->ioaddr + SDHCI_SLOT_INT_STATUS);
++	tmp = esdhc_readl(host, SDHCI_SLOT_INT_STATUS);
+ 	tmp = (tmp & SDHCI_VENDOR_VER_MASK) >> SDHCI_VENDOR_VER_SHIFT;
+ 
+ 	applicable = (intmask & SDHCI_INT_DATA_END) &&
+ 		(intmask & SDHCI_INT_BLK_GAP) &&
+ 		(tmp == VENDOR_V_23);
+-	if (!applicable)
++	if (applicable) {
++
++		esdhc_reset(host, SDHCI_RESET_DATA);
++		host->data->error = 0;
++		dmastart = sg_dma_address(host->data->sg);
++		dmanow = dmastart + host->data->bytes_xfered;
++
++		/* Force update to the next DMA block boundary. */
++		dmanow = (dmanow & ~(SDHCI_DEFAULT_BOUNDARY_SIZE - 1)) +
++			SDHCI_DEFAULT_BOUNDARY_SIZE;
++		host->data->bytes_xfered = dmanow - dmastart;
++		esdhc_writel(host, dmanow, SDHCI_DMA_ADDRESS);
++
+ 		return;
++	}
+ 
+-	host->data->error = 0;
+-	dmastart = sg_dma_address(host->data->sg);
+-	dmanow = dmastart + host->data->bytes_xfered;
+ 	/*
+-	 * Force update to the next DMA block boundary.
++	 * Check for A-004388: eSDHC DMA might not stop if error
++	 * occurs on system transaction
++	 * Impact list:
++	 * T4240-R1.0 B4860-R1.0 P1010-R1.0
++	 * P3041-R1.0-R2.0-R1.1 P2041-R1.0-R1.1-R2.0
++	 * P5040-R2.0
+ 	 */
+-	dmanow = (dmanow & ~(SDHCI_DEFAULT_BOUNDARY_SIZE - 1)) +
+-		SDHCI_DEFAULT_BOUNDARY_SIZE;
+-	host->data->bytes_xfered = dmanow - dmastart;
+-	sdhci_writel(host, dmanow, SDHCI_DMA_ADDRESS);
++	if (!(((SVR_SOC_VER(svr) == SVR_T4240) && (SVR_REV(svr) == 0x10)) ||
++		((SVR_SOC_VER(svr) == SVR_B4860) && (SVR_REV(svr) == 0x10)) ||
++		((SVR_SOC_VER(svr) == SVR_P1010) && (SVR_REV(svr) == 0x10)) ||
++		((SVR_SOC_VER(svr) == SVR_P3041) && (SVR_REV(svr) <= 0x20)) ||
++		((SVR_SOC_VER(svr) == SVR_P2041) && (SVR_REV(svr) <= 0x20)) ||
++		((SVR_SOC_VER(svr) == SVR_P5040) && SVR_REV(svr) == 0x20)))
++		return;
++
++	esdhc_reset(host, SDHCI_RESET_DATA);
++
++	if (host->flags & SDHCI_USE_ADMA) {
++		u32 mod, i, offset;
++		u8 *desc;
++		dma_addr_t addr;
++		struct scatterlist *sg;
++		__le32 *dataddr;
++		__le32 *cmdlen;
++
++		/*
++		 * If block count was enabled, in case read transfer there
++		 * is no data was corrupted
++		 */
++		mod = esdhc_readl(host, SDHCI_TRANSFER_MODE);
++		if ((mod & SDHCI_TRNS_BLK_CNT_EN) &&
++			(host->data->flags & MMC_DATA_READ))
++			host->data->error = 0;
++
++		BUG_ON(!host->data);
++		desc = host->adma_desc;
++		for_each_sg(host->data->sg, sg, host->sg_count, i) {
++			addr = sg_dma_address(sg);
++			offset = (4 - (addr & 0x3)) & 0x3;
++			if (offset)
++				desc += 8;
++			desc += 8;
++		}
++
++		/*
++		 * Add an extra zero descriptor next to the
++		 * terminating descriptor.
++		 */
++		desc += 8;
++		WARN_ON((desc - host->adma_desc) > (128 * 2 + 1) * 4);
++
++		dataddr = (__le32 __force *)(desc + 4);
++		cmdlen = (__le32 __force *)desc;
++
++		cmdlen[0] = cpu_to_le32(0);
++		dataddr[0] = cpu_to_le32(0);
++	}
++
++	if ((host->flags & SDHCI_USE_SDMA) &&
++		(host->data->flags & MMC_DATA_READ))
++		host->data->error = 0;
++
++	return;
+ }
+ 
+ static int esdhc_of_enable_dma(struct sdhci_host *host)
+@@ -299,6 +390,7 @@ static int sdhci_esdhc_probe(struct platform_device *pdev)
+ 	struct device_node *np;
+ 	int ret;
+ 
++	svr = mfspr(SPRN_SVR);
+ 	host = sdhci_pltfm_init(pdev, &sdhci_esdhc_pdata, 0);
+ 	if (IS_ERR(host))
+ 		return PTR_ERR(host);
 -- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr. 5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+1.8.0
