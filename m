@@ -1,16 +1,15 @@
 Return-Path: <gsi@denx.de>
-Date: Wed, 17 Jul 2013 13:27:50 +0200
+Date: Wed, 17 Jul 2013 14:07:42 +0200
 From: Gerhard Sittig <gsi@denx.de>
 To: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [PATCH v1 15/24] serial: mpc512x: OF clock lookup, use the
- 'mclk' name
-Message-ID: <20130717112750.GL7080@book.gsilab.sittig.org>
+Subject: Re: [PATCH v1 05/24] clk: wrap I/O access for improved portability
+Message-ID: <20130717120742.GM7080@book.gsilab.sittig.org>
 References: <1373914074-20889-1-git-send-email-gsi@denx.de>
- <1373924770-22599-1-git-send-email-gsi@denx.de>
- <20130715215423.GU14452@pengutronix.de>
+ <1373914074-20889-6-git-send-email-gsi@denx.de>
+ <20130715193829.GS14452@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130715215423.GU14452@pengutronix.de>
+In-Reply-To: <20130715193829.GS14452@pengutronix.de>
 Cc: Mike Turquette <mturquette@linaro.org>, Detlev Zundel <dzu@denx.de>,
  Wolfram Sang <wsa@the-dreams.de>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -29,49 +28,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 15, 2013 at 23:54 +0200, Sascha Hauer wrote:
+On Mon, Jul 15, 2013 at 21:38 +0200, Sascha Hauer wrote:
 > 
-> On Mon, Jul 15, 2013 at 11:46:01PM +0200, Gerhard Sittig wrote:
-> > with device tree based clock lookup, the MCLK name no longer
-> > depends on the PSC index
-> > 
-> > Signed-off-by: Gerhard Sittig <gsi@denx.de>
-> > ---
-> >  drivers/tty/serial/mpc52xx_uart.c |    8 ++------
-> >  1 file changed, 2 insertions(+), 6 deletions(-)
-> > 
-> > diff --git a/drivers/tty/serial/mpc52xx_uart.c b/drivers/tty/serial/mpc52xx_uart.c
-> > index 53c1093..221fb89 100644
-> > --- a/drivers/tty/serial/mpc52xx_uart.c
-> > +++ b/drivers/tty/serial/mpc52xx_uart.c
-> > @@ -619,21 +619,17 @@ static irqreturn_t mpc512x_psc_handle_irq(struct uart_port *port)
-> >  static int mpc512x_psc_clock(struct uart_port *port, int enable)
-> >  {
-> >  	struct clk *psc_clk;
-> > -	int psc_num;
-> > -	char clk_name[10];
+> On Mon, Jul 15, 2013 at 08:47:34PM +0200, Gerhard Sittig wrote:
+> > diff --git a/drivers/clk/clk-divider.c b/drivers/clk/clk-divider.c
+> > index 6d55eb2..2c07061 100644
+> > --- a/drivers/clk/clk-divider.c
+> > +++ b/drivers/clk/clk-divider.c
+> > @@ -104,7 +104,7 @@ static unsigned long clk_divider_recalc_rate(struct clk_hw *hw,
+> >  	struct clk_divider *divider = to_clk_divider(hw);
+> >  	unsigned int div, val;
 > >  
-> >  	if (uart_console(port))
-> >  		return 0;
-> >  
-> > -	psc_num = (port->mapbase & 0xf00) >> 8;
-> > -	snprintf(clk_name, sizeof(clk_name), "psc%d_mclk", psc_num);
-> > -	psc_clk = clk_get(port->dev, clk_name);
-> > +	psc_clk = clk_get(port->dev, "mclk");
+> > -	val = readl(divider->reg) >> divider->shift;
+> > +	val = clk_readl(divider->reg) >> divider->shift;
+> >  	val &= div_mask(divider);
 > 
-> Same comment applies here as Mark made to the spi driver.
+> Would it be an option to use regmap for the generic dividers/muxes
+> instead? This should be suitable for ppc and also for people who want to
+> use the generic clocks on i2c devices.
 
-So I'd like to respond in the same way as I did for the SPI
-driver. :)
+Does regmap assume that those registers form a (dense) array of
+equal sized items?  Does it introduce unconditional indirection
+and requirement for explicit setup beyond mere mapping?  What's
+the overhead compared to the readl/inbe32 approach that's
+currently resolved at compile time?
 
-The scope of this series is the introduction of support for the
-common clock framework.  Addressing other (legacy non-fatal and
-previously accepted) issues as they get identified in bypassing
-would be the scope of a separate patch or series.
+Neither of the above needs to be a blocker, just needs to be
+acceptable after consideration.  So far nobody appears to have
+felt pain with the LE32 register assumption.
 
-I'm not questioning the need to fix other additionally identified
-issues.  I'm just asking whether they shall be in the scope of
-this very series.
+
+BTW does the common clock support that I introduce for MPC512x
+only cover those parts from crystal over internal busses to
+internal peripherals (register files).
+
+It does not include bitrate generation within the peripherals --
+this appears to remain the domain of individual drivers, which
+keep manipulating register fields to derive wire bitrates from
+internal references.  Sharing drivers between platforms with and
+without common clock support forbids the switch anyway, or both
+CCF abstraction as well as local register manipulation need to
+get implemented in parallel, as I did for the mscan(4) driver.
+
+Some of these bitrate related registers aren't 32bit entities and
+thus could not get managed by the common clock primitives in
+their current form.  Some of the IP blocks may even spread
+integer values across several non-adjacent bit fields for legacy
+reasons, but I guess that these aren't in the scope of the shared
+primitives either (and they may not be popular either).
+
+
+While we are at improvements for the common clock primitives:
+
+What I missed was support for fractional dividers, i.e. dividers
+with a register bitfield backed divider part but a fixed factor
+multiplier part.  Currently there's only dividers (bitfield
+factor or bitfield with table lookup for the factor) and
+fixed-factor (multiplier and divider, but both of them fixed and
+not adjustable by register manipulation).  This was addressed by
+"intermediate" clock items ("ungated", "x4")
 
 
 virtually yours
