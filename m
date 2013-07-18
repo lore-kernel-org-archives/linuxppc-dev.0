@@ -1,19 +1,32 @@
-Return-Path: <gsi@denx.de>
-From: Gerhard Sittig <gsi@denx.de>
-To: linuxppc-dev@lists.ozlabs.org, Anatolij Gustschin <agust@denx.de>,
- Mike Turquette <mturquette@linaro.org>,
- linux-arm-kernel@lists.infradead.org, devicetree-discuss@lists.ozlabs.org
-Subject: [PATCH v2 14/24] serial: mpc512x: setup the PSC FIFO clock as well
-Date: Thu, 18 Jul 2013 19:00:45 +0200
-Message-Id: <1374166855-7280-15-git-send-email-gsi@denx.de>
-In-Reply-To: <1374166855-7280-1-git-send-email-gsi@denx.de>
+Return-Path: <nicolas.pitre@linaro.org>
+Received: from mail-qc0-f171.google.com (mail-qc0-f171.google.com
+ [209.85.216.171])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CB46B2C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jul 2013 03:47:27 +1000 (EST)
+Received: by mail-qc0-f171.google.com with SMTP id n1so1859727qcw.16
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jul 2013 10:47:24 -0700 (PDT)
+Date: Thu, 18 Jul 2013 13:47:22 -0400 (EDT)
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH v1 05/24] clk: wrap I/O access for improved portability
+In-Reply-To: <20130718091735.GW24642@n2100.arm.linux.org.uk>
+Message-ID: <alpine.LFD.2.03.1307181330520.14924@syhkavp.arg>
 References: <1373914074-20889-1-git-send-email-gsi@denx.de>
- <1374166855-7280-1-git-send-email-gsi@denx.de>
-Cc: Detlev Zundel <dzu@denx.de>, Wolfram Sang <wsa@the-dreams.de>,
+ <1373914074-20889-6-git-send-email-gsi@denx.de>
+ <20130715193829.GS14452@pengutronix.de>
+ <20130718070402.GO7080@book.gsilab.sittig.org>
+ <20130718091735.GW24642@n2100.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Mike Turquette <mturquette@linaro.org>, Detlev Zundel <dzu@denx.de>,
+ Wolfram Sang <wsa@the-dreams.de>, devicetree-discuss@lists.ozlabs.org,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Gerhard Sittig <gsi@denx.de>,
- Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@kernel.org>,
- Marc Kleine-Budde <mkl@pengutronix.de>, David Woodhouse <dwmw2@infradead.org>,
- Wolfgang Grandegger <wg@grandegger.com>,
+ linuxppc-dev@lists.ozlabs.org, Rob Herring <rob.herring@calxeda.com>,
+ Mark Brown <broonie@kernel.org>, Marc Kleine-Budde <mkl@pengutronix.de>,
+ Wolfgang Grandegger <wg@grandegger.com>, David Woodhouse <dwmw2@infradead.org>,
+ Sascha Hauer <s.hauer@pengutronix.de>, linux-arm-kernel@lists.infradead.org,
  Mauro Carvalho Chehab <m.chehab@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,103 +37,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-prepare and enable the FIFO clock upon PSC FIFO initialization,
-disable and unprepare the FIFO clock upon PSC FIFO uninitialization,
-remove the pre-enable workaround from the platform's clock driver
+On Thu, 18 Jul 2013, Russell King - ARM Linux wrote:
 
-Signed-off-by: Gerhard Sittig <gsi@denx.de>
----
- arch/powerpc/platforms/512x/clock-commonclk.c |    2 --
- drivers/tty/serial/mpc52xx_uart.c             |   39 +++++++++++++++++++++----
- 2 files changed, 33 insertions(+), 8 deletions(-)
+> 1. clk_get() and clk_put() are NOT part of the common clock API.
+>    They're separate - they're part of the clk API, and the infrastructure
+>    behind that is clkdev, which is a separately owned thing (by me.)
+> 
+> 2. The "contract" of the clk API is defined by the clk API, not by some
+>    random implementation like the common clock API.  The clk API is
+>    maintained by myself, and is described in include/linux/clk.h
+> 
+> 3. clk_prepare() and clk_unprepare() are functions MUST only be called
+>    from contexts where sleeping is permitted.  These functions MAY sleep
+>    for whatever reason they require to, and as long as they require to.
+>    (This is the whole reason these two functions were created in the
+>    first place.)
+> 
+> 4. clk_enable() and clk_disable() MAY be called from any context, but
+>    MUST never sleep.  If you need to talk over a non-atomic bus for these,
+>    then these functions should be no-ops, and the code which does that
+>    must be executed from the clk_prepare()/clk_unprepare() operations.
 
-diff --git a/arch/powerpc/platforms/512x/clock-commonclk.c b/arch/powerpc/platforms/512x/clock-commonclk.c
-index b822469..99d197d 100644
---- a/arch/powerpc/platforms/512x/clock-commonclk.c
-+++ b/arch/powerpc/platforms/512x/clock-commonclk.c
-@@ -689,8 +689,6 @@ static void mpc512x_clk_setup_clock_tree(int busfreq)
- 	clk_prepare_enable(clks[MPC512x_CLK_MEM]);	/* SRAM */
- 	clk_prepare_enable(clks[MPC512x_CLK_IPS]);	/* SoC periph */
- 	clk_prepare_enable(clks[MPC512x_CLK_LPC]);	/* boot media */
--	/* some are required yet no dependencies were declared */
--	clk_prepare_enable(clks[MPC512x_CLK_PSC_FIFO]);
- 	/* some are not yet acquired by their respective drivers */
- 	clk_prepare_enable(clks[MPC512x_CLK_PSC3_MCLK]);/* serial console */
- 	clk_prepare_enable(clks[MPC512x_CLK_FEC]);	/* network, NFS */
-diff --git a/drivers/tty/serial/mpc52xx_uart.c b/drivers/tty/serial/mpc52xx_uart.c
-index 8643dcf..3fdadf9 100644
---- a/drivers/tty/serial/mpc52xx_uart.c
-+++ b/drivers/tty/serial/mpc52xx_uart.c
-@@ -421,6 +421,7 @@ struct psc_fifoc {
- 
- static struct psc_fifoc __iomem *psc_fifoc;
- static unsigned int psc_fifoc_irq;
-+static struct clk *psc_fifoc_clk;
- 
- static void mpc512x_psc_fifo_init(struct uart_port *port)
- {
-@@ -574,30 +575,56 @@ static int __init mpc512x_psc_fifoc_init(void)
- 				     "fsl,mpc5121-psc-fifo");
- 	if (!np) {
- 		pr_err("%s: Can't find FIFOC node\n", __func__);
--		return -ENODEV;
-+		goto out_err;
-+	}
-+
-+	psc_fifoc_clk = of_clk_get_by_name(np, "per");
-+	if (IS_ERR(psc_fifoc_clk)) {
-+		pr_err("%s: Can't lookup FIFO clock\n", __func__);
-+		goto out_ofnode_put;
-+	}
-+	if (clk_prepare_enable(psc_fifoc_clk)) {
-+		pr_err("%s: Can't enable FIFO clock\n", __func__);
-+		goto out_clk_put;
- 	}
- 
- 	psc_fifoc = of_iomap(np, 0);
- 	if (!psc_fifoc) {
- 		pr_err("%s: Can't map FIFOC\n", __func__);
--		of_node_put(np);
--		return -ENODEV;
-+		goto out_clk_disable;
- 	}
- 
- 	psc_fifoc_irq = irq_of_parse_and_map(np, 0);
--	of_node_put(np);
- 	if (psc_fifoc_irq == 0) {
- 		pr_err("%s: Can't get FIFOC irq\n", __func__);
--		iounmap(psc_fifoc);
--		return -ENODEV;
-+		goto out_unmap;
- 	}
- 
-+	of_node_put(np);
- 	return 0;
-+
-+out_unmap:
-+	iounmap(psc_fifoc);
-+out_clk_disable:
-+	clk_disable_unprepare(psc_fifoc_clk);
-+out_clk_put:
-+	clk_put(psc_fifoc_clk);
-+out_ofnode_put:
-+	of_node_put(np);
-+out_err:
-+	return -ENODEV;
- }
- 
- static void __exit mpc512x_psc_fifoc_uninit(void)
- {
- 	iounmap(psc_fifoc);
-+
-+	/* disable the clock, errors are not fatal */
-+	if (psc_fifoc_clk && !IS_ERR(psc_fifoc_clk)) {
-+		clk_disable_unprepare(psc_fifoc_clk);
-+		clk_put(psc_fifoc_clk);
-+		psc_fifoc_clk = NULL;
-+	}
- }
- 
- /* 512x specific interrupt handler. The caller holds the port lock */
--- 
-1.7.10.4
+Could the above be included in some form in Documentation/clk.txt (this 
+is likely one of the first location people look for information) and 
+elsewhere if appropriate please?
+
+A *lot* of people are confused by the prepare-enable-disable-unprepare 
+sequence and when I try to find some rational for the prepare/enable 
+split I can only direct them to mail archive posts since this is nowhere 
+to be found in the kernel.
+
+The comments in include/linux/clk.h, while correct, are very terse and 
+don't provide any insight to the reason why there is a split in the API.
+
+The content of Documentation/clk.txt does refer to prepare and enable 
+(and their counterparts) but again doesn't provide any clue about the 
+reason for their existence.
+
+Since there've been several good posts with usage example now buried 
+into list archives, I think this would go a long way helping people get 
+it right if those were part of the kernel documentation as well.
+
+
+Nicolas
