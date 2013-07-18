@@ -1,30 +1,33 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e7.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B58A62C00A2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jul 2013 12:14:31 +1000 (EST)
+ (Client CN "e38.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 961D32C00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jul 2013 12:14:32 +1000 (EST)
 Received: from /spool/local
- by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Wed, 17 Jul 2013 22:14:28 -0400
-Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 78C1D6E8040
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jul 2013 22:14:21 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r6I2EPKa167022
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jul 2013 22:14:25 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r6I2EPrx012751
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jul 2013 23:14:25 -0300
+ Wed, 17 Jul 2013 20:14:29 -0600
+Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
+ [9.17.195.226])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 6BD9819D804C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jul 2013 20:14:16 -0600 (MDT)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r6I2ERKQ049056
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jul 2013 20:14:27 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r6I2EQiT010526
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jul 2013 20:14:26 -0600
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 0/10] EEH Followup Fixes (II) 
-Date: Thu, 18 Jul 2013 10:14:10 +0800
-Message-Id: <1374113660-15347-1-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 01/10] powerpc/eeh: Remove reference to PCI device
+Date: Thu, 18 Jul 2013 10:14:11 +0800
+Message-Id: <1374113660-15347-2-git-send-email-shangw@linux.vnet.ibm.com>
+In-Reply-To: <1374113660-15347-1-git-send-email-shangw@linux.vnet.ibm.com>
+References: <1374113660-15347-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -35,76 +38,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The series of patches bases on linux-poerpc-next initially and intends to resolve
-the following problems:
+We will rely on pcibios_release_device() to remove the EEH cache
+and unbind EEH device for the specific PCI device. So we shouldn't
+hold the reference to the PCI device from EEH cache and EEH device.
+Otherwise, pcibios_release_device() won't be called as we expected.
+The patch removes the reference to the PCI device in EEH core.
+
+Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/eeh.c       |    4 ----
+ arch/powerpc/kernel/eeh_cache.c |   18 +++++-------------
+ 2 files changed, 5 insertions(+), 17 deletions(-)
+
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index 39954fe..b5c425e 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -499,8 +499,6 @@ unsigned long eeh_check_failure(const volatile void __iomem *token, unsigned lon
+ 	}
  
-	- On pSeries platform, the EEH doesn't work after PHB hotplug
-	  with "drmgr". The root cause is that the EEH resources (
-	  EEH devices, EEH caches) aren't released correctly. For the
-	  problem, we add one hook (pcibios_stop_dev), which is called
-	  on pci_stop_and_remove_device(). In pcibios_stop_dev(), we
-	  release the EEH resources.
-	- Another issue is that we need put the domain (PE or PHB) into
-	  quite state while doing reset on that domain. However, some
-	  deivces in the domain might not have EEH sensitive drivers, or
-	  even don't have driver. Those deivces can't be put into quite
-	  state and possibly keep issuing PCI-CFG or MMIO request during
-	  resetting the domain. That possibly causes the failure of reset
-	  and eventually failure of EEH recovery. For the issue, we introduces
-	  so-called "partial hotplug". That means, those devices without driver or
-	  without EEH sensitive driver are removed before doing reset, and
-	  plugged (probed) into the system after reset.
-	- We need traverse EEH devices of one specific PE with safe variant
-	  of list tranverse function. The EEH device might be removed while
-	  doing iteration.
-	- When doing plug for PCI bus, we need check if we need reassign the
-	  resources for subordinate devices (PCI_REASSIGN_ALL_RSRC) and do that
-	  accordingly.
-
-The patchset is verified on pSeires and PowerNV platforms:
-
-pSeries Platform:
-
-drmgr -c phb -r -s "PHB 513"
-drmgr -c phb -a -s "PHB 513"
-errinjct eeh -f 1 -s net/eth2
-
-PowerNV Platform:
-
-cd /sys/devices/pci0005:00/0005:00:00.0/0005:01:00.0/0005:02:08.0/0005:80:00.0/0005:90:01.0
-while true; do od -x config > /dev/null; sleep 1; done
-echo 1 > /sys/kernel/debug/powerpc/PCI0005/err_injct
-
----
-
-v1 -> v2:
-	* Rebase to 3.11.rc1 in order to use pcibios_release_device().
-	* Use pcibios_release_device() to release EEH cache and detach
-	  EEH device from PCI device.
-	* Remove reference to PCI device in EEH cache since we're relying
-	  on pcibios_release_device().
-	* PCI device instance (struct pci_dev) isn't available during BAR
-	  restore and avoid use the instance that time.
-	* Fix unbalanced enable for IRQ in eeh_driver.c
-	* Retest the series of patches on Firebird-L/VPL3/VPL4
-
----
-
-arch/powerpc/include/asm/eeh.h               |   28 +++++-
-arch/powerpc/include/asm/pci-bridge.h        |    3 +-
-arch/powerpc/include/asm/pci.h               |    2 +
-arch/powerpc/kernel/eeh.c                    |   68 +++++++-------
-arch/powerpc/kernel/eeh_cache.c              |   18 +---
-arch/powerpc/kernel/eeh_driver.c             |  109 +++++++++++++++++++++-
-arch/powerpc/kernel/eeh_pe.c                 |   58 +++++-------
-arch/powerpc/kernel/eeh_sysfs.c              |    7 ++
-arch/powerpc/kernel/pci-common.c             |    8 +-
-arch/powerpc/kernel/pci-hotplug.c            |  127 ++++++++++++++++++++++----
-arch/powerpc/kernel/pci_of_scan.c            |   43 ++++++---
-arch/powerpc/platforms/powernv/eeh-powernv.c |   11 ++
-arch/powerpc/platforms/pseries/eeh_pseries.c |   63 +++++++++++++-
-drivers/pci/hotplug/rpadlpar_core.c          |    1 -
-14 files changed, 417 insertions(+), 129 deletions(-)
-
-Thanks,
-Gavin
+ 	eeh_dev_check_failure(edev);
+-
+-	pci_dev_put(eeh_dev_to_pci_dev(edev));
+ 	return val;
+ }
+ 
+@@ -904,7 +902,6 @@ static void eeh_add_device_late(struct pci_dev *dev)
+ 	}
+ 	WARN_ON(edev->pdev);
+ 
+-	pci_dev_get(dev);
+ 	edev->pdev = dev;
+ 	dev->dev.archdata.edev = edev;
+ 
+@@ -992,7 +989,6 @@ static void eeh_remove_device(struct pci_dev *dev, int purge_pe)
+ 	}
+ 	edev->pdev = NULL;
+ 	dev->dev.archdata.edev = NULL;
+-	pci_dev_put(dev);
+ 
+ 	eeh_rmv_from_parent_pe(edev, purge_pe);
+ 	eeh_addr_cache_rmv_dev(dev);
+diff --git a/arch/powerpc/kernel/eeh_cache.c b/arch/powerpc/kernel/eeh_cache.c
+index f9ac123..e8c9fd5 100644
+--- a/arch/powerpc/kernel/eeh_cache.c
++++ b/arch/powerpc/kernel/eeh_cache.c
+@@ -68,16 +68,12 @@ static inline struct eeh_dev *__eeh_addr_cache_get_device(unsigned long addr)
+ 		struct pci_io_addr_range *piar;
+ 		piar = rb_entry(n, struct pci_io_addr_range, rb_node);
+ 
+-		if (addr < piar->addr_lo) {
++		if (addr < piar->addr_lo)
+ 			n = n->rb_left;
+-		} else {
+-			if (addr > piar->addr_hi) {
+-				n = n->rb_right;
+-			} else {
+-				pci_dev_get(piar->pcidev);
+-				return piar->edev;
+-			}
+-		}
++		else if (addr > piar->addr_hi)
++			n = n->rb_right;
++		else
++			return piar->edev;
+ 	}
+ 
+ 	return NULL;
+@@ -156,7 +152,6 @@ eeh_addr_cache_insert(struct pci_dev *dev, unsigned long alo,
+ 	if (!piar)
+ 		return NULL;
+ 
+-	pci_dev_get(dev);
+ 	piar->addr_lo = alo;
+ 	piar->addr_hi = ahi;
+ 	piar->edev = pci_dev_to_eeh_dev(dev);
+@@ -250,7 +245,6 @@ restart:
+ 
+ 		if (piar->pcidev == dev) {
+ 			rb_erase(n, &pci_io_addr_cache_root.rb_root);
+-			pci_dev_put(piar->pcidev);
+ 			kfree(piar);
+ 			goto restart;
+ 		}
+@@ -302,12 +296,10 @@ void eeh_addr_cache_build(void)
+ 		if (!edev)
+ 			continue;
+ 
+-		pci_dev_get(dev);  /* matching put is in eeh_remove_device() */
+ 		dev->dev.archdata.edev = edev;
+ 		edev->pdev = dev;
+ 
+ 		eeh_addr_cache_insert_dev(dev);
+-
+ 		eeh_sysfs_add_device(dev);
+ 	}
+ 
+-- 
+1.7.5.4
