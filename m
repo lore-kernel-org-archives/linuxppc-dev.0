@@ -1,25 +1,15 @@
-Return-Path: <sha@pengutronix.de>
-Received: from metis.ext.pengutronix.de (unknown
- [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+ [IPv6:2002:4e20:1eda::1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 241772C0097
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jul 2013 18:07:15 +1000 (EST)
-Date: Thu, 18 Jul 2013 10:06:57 +0200
-From: Sascha Hauer <s.hauer@pengutronix.de>
-To: linuxppc-dev@lists.ozlabs.org, Anatolij Gustschin <agust@denx.de>,
- Mike Turquette <mturquette@linaro.org>,
- linux-arm-kernel@lists.infradead.org,
- devicetree-discuss@lists.ozlabs.org, Detlev Zundel <dzu@denx.de>,
- Wolfram Sang <wsa@the-dreams.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@kernel.org>,
- Marc Kleine-Budde <mkl@pengutronix.de>,
- David Woodhouse <dwmw2@infradead.org>,
- Wolfgang Grandegger <wg@grandegger.com>,
- Mauro Carvalho Chehab <m.chehab@samsung.com>
+ by ozlabs.org (Postfix) with ESMTPS id ADD9C2C0146
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jul 2013 19:18:32 +1000 (EST)
+Date: Thu, 18 Jul 2013 10:17:35 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Gerhard Sittig <gsi@denx.de>
 Subject: Re: [PATCH v1 05/24] clk: wrap I/O access for improved portability
-Message-ID: <20130718080657.GI10380@pengutronix.de>
+Message-ID: <20130718091735.GW24642@n2100.arm.linux.org.uk>
 References: <1373914074-20889-1-git-send-email-gsi@denx.de>
  <1373914074-20889-6-git-send-email-gsi@denx.de>
  <20130715193829.GS14452@pengutronix.de>
@@ -27,6 +17,16 @@ References: <1373914074-20889-1-git-send-email-gsi@denx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20130718070402.GO7080@book.gsilab.sittig.org>
+Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Mike Turquette <mturquette@linaro.org>, Detlev Zundel <dzu@denx.de>,
+ Wolfram Sang <wsa@the-dreams.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Sascha Hauer <s.hauer@pengutronix.de>, Rob Herring <rob.herring@calxeda.com>,
+ David Woodhouse <dwmw2@infradead.org>, Mark Brown <broonie@kernel.org>,
+ Marc Kleine-Budde <mkl@pengutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org,
+ devicetree-discuss@lists.ozlabs.org, Wolfgang Grandegger <wg@grandegger.com>,
+ Mauro Carvalho Chehab <m.chehab@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,65 +37,32 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Thu, Jul 18, 2013 at 09:04:02AM +0200, Gerhard Sittig wrote:
-> On Mon, Jul 15, 2013 at 21:38 +0200, Sascha Hauer wrote:
-> > 
-> > On Mon, Jul 15, 2013 at 08:47:34PM +0200, Gerhard Sittig wrote:
-> > > diff --git a/drivers/clk/clk-divider.c b/drivers/clk/clk-divider.c
-> > > index 6d55eb2..2c07061 100644
-> > > --- a/drivers/clk/clk-divider.c
-> > > +++ b/drivers/clk/clk-divider.c
-> > > @@ -104,7 +104,7 @@ static unsigned long clk_divider_recalc_rate(struct clk_hw *hw,
-> > >  	struct clk_divider *divider = to_clk_divider(hw);
-> > >  	unsigned int div, val;
-> > >  
-> > > -	val = readl(divider->reg) >> divider->shift;
-> > > +	val = clk_readl(divider->reg) >> divider->shift;
-> > >  	val &= div_mask(divider);
-> > 
-> > Would it be an option to use regmap for the generic dividers/muxes
-> > instead? This should be suitable for ppc and also for people who want to
-> > use the generic clocks on i2c devices.
-> 
-> Some other thought crossed my mind regarding access to clock
-> control registers that reside behind some communication channel
-> like I2C:
-> 
 > The common clock API assumes (it's part of the contract) that
 > there are potentially expensive operations like get, put, prepare
 > and unprepare, as well as swift and non-blocking operations like
 > enable and disable.
-> 
-> Would the regmap abstraction hide the potentially blocking nature
-> of a register access (I understand that you can implement "local"
-> as well as "remote" register sets by this mechanism)?  Or could
-> you still meet the assumptions or requirements of the common
-> clock API?
-> 
-> It might as well be the responsibility of the clock driver's
-> implementor to arrange for the availability of non-blocking
-> enable/disable operations, just as it is today.  Such that
-> expensive register access need not be forbidden in general.
 
-regmap for mmio uses a spinlock for read/modify/write operations, just
-like you have to use a spinlock in the common clk dividers/gates. This
-part wouldn't change with regmap.
+Let's get something straight here, because what you've said above is
+wrong.
 
-For i2c connected clocks where a spinlock doesn't work due to the
-nonatomic nature of i2c devices we would have to move the enable/disble
-stuff to prepare/unprepare in the common gate code. This can be left
-for someone who works on i2c clocks though.
+1. clk_get() and clk_put() are NOT part of the common clock API.
+   They're separate - they're part of the clk API, and the infrastructure
+   behind that is clkdev, which is a separately owned thing (by me.)
 
-I think regmap has the potential to solve a number of issues like the
-hardcoded readl/writel in the common clock blocks, issues with i2c
-clocks and your endianess issue. The biggest question probably is how
-to get there without putting too much of a burden on you. It's probably
-not an option to convert all users to regmap, so it seems additional
-functions like clk_register_gate_regmap are better to handle.
+2. The "contract" of the clk API is defined by the clk API, not by some
+   random implementation like the common clock API.  The clk API is
+   maintained by myself, and is described in include/linux/clk.h
 
-Sascha
+3. clk_prepare() and clk_unprepare() are functions MUST only be called
+   from contexts where sleeping is permitted.  These functions MAY sleep
+   for whatever reason they require to, and as long as they require to.
+   (This is the whole reason these two functions were created in the
+   first place.)
 
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+4. clk_enable() and clk_disable() MAY be called from any context, but
+   MUST never sleep.  If you need to talk over a non-atomic bus for these,
+   then these functions should be no-ops, and the code which does that
+   must be executed from the clk_prepare()/clk_unprepare() operations.
+
+That is the "clk API" contract.  The CCF has no bearing on this; if it
+disagrees, then the CCF is buggy and is non-conformant.
