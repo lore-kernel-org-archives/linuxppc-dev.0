@@ -3,10 +3,9 @@ From: Gerhard Sittig <gsi@denx.de>
 To: linuxppc-dev@lists.ozlabs.org, Anatolij Gustschin <agust@denx.de>,
  Mike Turquette <mturquette@linaro.org>,
  linux-arm-kernel@lists.infradead.org, devicetree-discuss@lists.ozlabs.org
-Subject: [PATCH v2 19/24] USB: fsl-mph-dr-of: OF clock lookup,
- prepare and enable
-Date: Thu, 18 Jul 2013 22:20:53 +0200
-Message-Id: <1374178858-8683-5-git-send-email-gsi@denx.de>
+Subject: [PATCH v2 18/24] i2c: mpc: OF clock lookup for MPC512x
+Date: Thu, 18 Jul 2013 22:20:52 +0200
+Message-Id: <1374178858-8683-4-git-send-email-gsi@denx.de>
 In-Reply-To: <1374166855-7280-1-git-send-email-gsi@denx.de>
 References: <1374166855-7280-1-git-send-email-gsi@denx.de>
 Cc: Detlev Zundel <dzu@denx.de>, Wolfram Sang <wsa@the-dreams.de>,
@@ -24,61 +23,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-device tree based clock lookup in the MPC512x initialization (lookup
-'per' for register access), add error check in the clock setup, must
-prepare clocks before they can get enabled, unprepare after disable
+make the MPC I2C driver prepare and enable the peripheral clock
+('per' for register access) in the MPC512x setup routine,
+make this clock setup non-fatal to allow for a migration period,
+remove the pre-enabling hack in the platform's clock driver
 
 Signed-off-by: Gerhard Sittig <gsi@denx.de>
 ---
- drivers/usb/host/fsl-mph-dr-of.c |   24 +++++++++---------------
- 1 file changed, 9 insertions(+), 15 deletions(-)
+ arch/powerpc/platforms/512x/clock-commonclk.c |    1 -
+ drivers/i2c/busses/i2c-mpc.c                  |    9 +++++++++
+ 2 files changed, 9 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/usb/host/fsl-mph-dr-of.c b/drivers/usb/host/fsl-mph-dr-of.c
-index 11e0b79..eb564f3 100644
---- a/drivers/usb/host/fsl-mph-dr-of.c
-+++ b/drivers/usb/host/fsl-mph-dr-of.c
-@@ -260,25 +260,19 @@ int fsl_usb2_mpc5121_init(struct platform_device *pdev)
+diff --git a/arch/powerpc/platforms/512x/clock-commonclk.c b/arch/powerpc/platforms/512x/clock-commonclk.c
+index b8963b7..49c52bc 100644
+--- a/arch/powerpc/platforms/512x/clock-commonclk.c
++++ b/arch/powerpc/platforms/512x/clock-commonclk.c
+@@ -692,7 +692,6 @@ static void mpc512x_clk_setup_clock_tree(int busfreq)
+ 	/* some are not yet acquired by their respective drivers */
+ 	clk_prepare_enable(clks[MPC512x_CLK_PSC3_MCLK]);/* serial console */
+ 	clk_prepare_enable(clks[MPC512x_CLK_FEC]);	/* network, NFS */
+-	clk_prepare_enable(clks[MPC512x_CLK_I2C]);
+ 	/*
+ 	 * some have their individual clock subtree with separate clock
+ 	 * items and their individual enable counters, yet share a
+diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+index 7607dc0..13d6822 100644
+--- a/drivers/i2c/busses/i2c-mpc.c
++++ b/drivers/i2c/busses/i2c-mpc.c
+@@ -21,6 +21,7 @@
+ #include <linux/of_i2c.h>
+ #include <linux/slab.h>
+ 
++#include <linux/clk.h>
+ #include <linux/io.h>
+ #include <linux/fsl_devices.h>
+ #include <linux/i2c.h>
+@@ -264,11 +265,19 @@ static void mpc_i2c_setup_512x(struct device_node *node,
+ 					 struct mpc_i2c *i2c,
+ 					 u32 clock, u32 prescaler)
  {
- 	struct fsl_usb2_platform_data *pdata = pdev->dev.platform_data;
- 	struct clk *clk;
--	char clk_name[10];
--	int base, clk_num;
--
--	base = pdev->resource->start & 0xf000;
--	if (base == 0x3000)
--		clk_num = 1;
--	else if (base == 0x4000)
--		clk_num = 2;
--	else
--		return -ENODEV;
-+	int err;
++	struct clk *clk;
+ 	struct device_node *node_ctrl;
+ 	void __iomem *ctrl;
+ 	const u32 *pval;
+ 	u32 idx;
  
--	snprintf(clk_name, sizeof(clk_name), "usb%d_clk", clk_num);
--	clk = clk_get(&pdev->dev, clk_name);
-+	clk = clk_get(&pdev->dev, "per");
- 	if (IS_ERR(clk)) {
- 		dev_err(&pdev->dev, "failed to get clk\n");
- 		return PTR_ERR(clk);
- 	}
--
--	clk_enable(clk);
-+	err = clk_prepare_enable(clk);
-+	if (err) {
-+		dev_err(&pdev->dev, "failed to enable clk\n");
++	/* enable clock for the I2C peripheral (non fatal) */
++	clk = of_clk_get_by_name(node, "per");
++	if (!IS_ERR(clk)) {
++		clk_prepare_enable(clk);
 +		clk_put(clk);
-+		return err;
 +	}
- 	pdata->clk = clk;
- 
- 	if (pdata->phy_mode == FSL_USB2_PHY_UTMI_WIDE) {
-@@ -303,7 +297,7 @@ static void fsl_usb2_mpc5121_exit(struct platform_device *pdev)
- 	pdata->regs = NULL;
- 
- 	if (pdata->clk) {
--		clk_disable(pdata->clk);
-+		clk_disable_unprepare(pdata->clk);
- 		clk_put(pdata->clk);
- 	}
- }
++
+ 	/* Enable I2C interrupts for mpc5121 */
+ 	node_ctrl = of_find_compatible_node(NULL, NULL,
+ 					    "fsl,mpc5121-i2c-ctrl");
 -- 
 1.7.10.4
