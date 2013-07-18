@@ -1,29 +1,23 @@
-Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
-Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
- [IPv6:2002:4e20:1eda::1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 7DFD32C0099
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jul 2013 06:33:43 +1000 (EST)
-Date: Thu, 18 Jul 2013 21:33:24 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Return-Path: <broonie@sirena.org.uk>
+Date: Thu, 18 Jul 2013 21:49:56 +0100
+From: Mark Brown <broonie@kernel.org>
 To: Gerhard Sittig <gsi@denx.de>
-Subject: Re: [PATCH v2 18/24] i2c: mpc: OF clock lookup for MPC512x
-Message-ID: <20130718203324.GB24642@n2100.arm.linux.org.uk>
-References: <1374166855-7280-1-git-send-email-gsi@denx.de>
- <1374178858-8683-4-git-send-email-gsi@denx.de>
+Message-ID: <20130718204956.GU22506@sirena.org.uk>
+References: <1373914074-20889-1-git-send-email-gsi@denx.de>
+ <1374166855-7280-1-git-send-email-gsi@denx.de>
+ <1374166855-7280-2-git-send-email-gsi@denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1374178858-8683-4-git-send-email-gsi@denx.de>
-Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="UsIKHTtpqa9hxcvF"
+In-Reply-To: <1374166855-7280-2-git-send-email-gsi@denx.de>
+Subject: Re: [PATCH v2 01/24] spi: mpc512x: cleanup clock API use
 Cc: Mike Turquette <mturquette@linaro.org>, Detlev Zundel <dzu@denx.de>,
- Wolfram Sang <wsa@the-dreams.de>,
+ Wolfram Sang <wsa@the-dreams.de>, David Woodhouse <dwmw2@infradead.org>,
+ devicetree-discuss@lists.ozlabs.org,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- devicetree-discuss@lists.ozlabs.org, Rob Herring <rob.herring@calxeda.com>,
- Mark Brown <broonie@kernel.org>, Marc Kleine-Budde <mkl@pengutronix.de>,
+ Rob Herring <rob.herring@calxeda.com>, Marc Kleine-Budde <mkl@pengutronix.de>,
  Wolfgang Grandegger <wg@grandegger.com>, Anatolij Gustschin <agust@denx.de>,
- linuxppc-dev@lists.ozlabs.org, David Woodhouse <dwmw2@infradead.org>,
- linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
  Mauro Carvalho Chehab <m.chehab@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -34,50 +28,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 18, 2013 at 10:20:52PM +0200, Gerhard Sittig wrote:
-> +	/* enable clock for the I2C peripheral (non fatal) */
-> +	clk = of_clk_get_by_name(node, "per");
-> +	if (!IS_ERR(clk)) {
-> +		clk_prepare_enable(clk);
-> +		clk_put(clk);
-> +	}
-> +
 
-This kind of hacked up approach to the clk API is exactly the thing I
-really don't like seeing.  I don't know what it is... is the clk API
-somehow difficult to use or what's the problem with doing stuff correctly?
+--UsIKHTtpqa9hxcvF
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-1. Get the clock in your probe function.
-2. Prepare it at the appropriate time.
-3. Enable it appropriately.  (or if you want to combine 2 and 3, use
-   clk_prepare_enable().)
-4. Ensure that enables/disables and prepares/unprepares are appropriately
-   balanced.
-5. 'put' the clock in your remove function.
+On Thu, Jul 18, 2013 at 07:00:32PM +0200, Gerhard Sittig wrote:
 
-Certainly do not get-enable-put a clock.  You're supposed to hold on to
-the clock all the time that you're actually using it.
+> +	psc_num = master->bus_num;
+> +	snprintf(clk_name, sizeof(clk_name), "psc%d_mclk", psc_num);
+> +	mps->clk_mclk = clk_get(dev, clk_name);
+> +	if (IS_ERR(mps->clk_mclk))
+> +		goto free_irq;
 
-Final point - if you want to make it non-fatal, don't play games like:
+Should be using devm_clk_get().
 
-	clk = clk_get(whatever);
-	if (IS_ERR(clk))
-		clk = NULL;
+--UsIKHTtpqa9hxcvF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-	...
-	if (clk)
-		clk_prepare(clk);
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.20 (GNU/Linux)
 
-Do this instead:
+iQIcBAEBAgAGBQJR6FTxAAoJELSic+t+oim9NNcP/A9TP2KECJIULm9OaazmNXl4
+Ckij+jj4rK31RPK+1Hx/2hfRPl/Z+RJ7Q0LStXV/CYMskBTH86L5TWKI9r4bmFuf
+2DpClmSuzsHVMZazAigcG0uVqbUST49AWvmPKCrgL4h0RVLxQFvb2A4AMqamZfpN
+e6YkKRl0vgg5Zm1wlML9qmU1nBCMwvmxZ49IaWzv1pua+EG6BI1bBqn0FoOpI5rC
+0C/b7Z8FDEVjkDl3+fG4d6A6tO18mtEbMXpYLuzwANCkSX8vPHGDA6CxHIOBo0m+
+0Dalsm/eLEIXzkYu+2fzGDSiiOZkETVdk0ywJgC3ufi3tvJUX2JLBWzVDuELV5ZD
+6apqWKwapVZxBHt3Zdn0LOiSS4GYLl85qKraJMpTjNpVlo5J0wZ32h0ZJ14Q3Npa
+5B/A+GZv9d0DS2u5Ef1fu0qztX8reXZqxy3iYVn3edz/Qcgav0GEOnTEZvWQDL4n
+FrhOrKP07bOgfg/CbDz80D8S1aReprvfbKE2zsP4iMtWXsezWbeIkSSiuJWmO+80
+4cRIea/Ct1JuPKi946Va4uLbgD6rd58NcGJ0cCPzQMLAtQJwa4Libh3xrDB94tsU
+5sHZVExmFKVqpv/tAcIbmbMvZH5RWEVow+jQxRD33yu1/+yJIrQvvtZcC5nZOaNp
+nl3zY6ZTZnKUfAyeVrLL
+=gM5y
+-----END PGP SIGNATURE-----
 
-	clk = clk_get(whatever);
-	...
-
-	if (!IS_ERR(clk))
-		clk_prepare(clk);
-etc.
-
-(And on this subject, I'm considering whether to make a change to the
-clk API where clk_prepare() and clk_enable() return zero when passed
-an error pointer - this means drivers with optional clocks don't have
-to burden themselves with these kinds of checks.)
+--UsIKHTtpqa9hxcvF--
