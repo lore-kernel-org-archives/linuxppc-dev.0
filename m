@@ -1,11 +1,31 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: benh@kernel.crashing.org
-MIME-Version: 1.0
-Subject: [PATCH] powerpc: Add second POWER8 PVR entry
-Date: Thu, 18 Jul 2013 11:31:51 +1000
-Message-ID: <16137.1374111111@ale.ozlabs.ibm.com>
-Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>, miltonm@realtime.net
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e7.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B58A62C00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jul 2013 12:14:31 +1000 (EST)
+Received: from /spool/local
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Wed, 17 Jul 2013 22:14:28 -0400
+Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 78C1D6E8040
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jul 2013 22:14:21 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r6I2EPKa167022
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jul 2013 22:14:25 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r6I2EPrx012751
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jul 2013 23:14:25 -0300
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 0/10] EEH Followup Fixes (II) 
+Date: Thu, 18 Jul 2013 10:14:10 +0800
+Message-Id: <1374113660-15347-1-git-send-email-shangw@linux.vnet.ibm.com>
+Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -15,81 +35,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-POWER8 comes with two different PVRs.  This patch enables the additional
-PVR in the cputable.
-
-The existing entry (PVR=0x4b) is renamed to POWER8E and the new entry
-(PVR=0x4d) is given POWER8.
-
-Signed-off-by: Michael Neuling <mikey@neuling.org>
-
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index 5d7d9c2..a6840e4 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -1088,7 +1088,8 @@
- #define PVR_970MP	0x0044
- #define PVR_970GX	0x0045
- #define PVR_POWER7p	0x004A
--#define PVR_POWER8	0x004B
-+#define PVR_POWER8E	0x004B
-+#define PVR_POWER8	0x004D
- #define PVR_BE		0x0070
- #define PVR_PA6T	0x0090
+The series of patches bases on linux-poerpc-next initially and intends to resolve
+the following problems:
  
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index 2a45d0f..22973a7 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -494,9 +494,27 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.cpu_restore		= __restore_cpu_power7,
- 		.platform		= "power7+",
- 	},
--	{	/* Power8 */
-+	{	/* Power8E */
- 		.pvr_mask		= 0xffff0000,
- 		.pvr_value		= 0x004b0000,
-+		.cpu_name		= "POWER8E (raw)",
-+		.cpu_features		= CPU_FTRS_POWER8,
-+		.cpu_user_features	= COMMON_USER_POWER8,
-+		.cpu_user_features2	= COMMON_USER2_POWER8,
-+		.mmu_features		= MMU_FTRS_POWER8,
-+		.icache_bsize		= 128,
-+		.dcache_bsize		= 128,
-+		.num_pmcs		= 6,
-+		.pmc_type		= PPC_PMC_IBM,
-+		.oprofile_cpu_type	= "ppc64/power8",
-+		.oprofile_type		= PPC_OPROFILE_INVALID,
-+		.cpu_setup		= __setup_cpu_power8,
-+		.cpu_restore		= __restore_cpu_power8,
-+		.platform		= "power8",
-+	},
-+	{	/* Power8 */
-+		.pvr_mask		= 0xffff0000,
-+		.pvr_value		= 0x004d0000,
- 		.cpu_name		= "POWER8 (raw)",
- 		.cpu_features		= CPU_FTRS_POWER8,
- 		.cpu_user_features	= COMMON_USER_POWER8,
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 5eccda9..6079024 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -644,7 +644,8 @@ unsigned char ibm_architecture_vec[] = {
- 	W(0xfffe0000), W(0x003a0000),	/* POWER5/POWER5+ */
- 	W(0xffff0000), W(0x003e0000),	/* POWER6 */
- 	W(0xffff0000), W(0x003f0000),	/* POWER7 */
--	W(0xffff0000), W(0x004b0000),	/* POWER8 */
-+	W(0xffff0000), W(0x004b0000),	/* POWER8E */
-+	W(0xffff0000), W(0x004d0000),	/* POWER8 */
- 	W(0xffffffff), W(0x0f000004),	/* all 2.07-compliant */
- 	W(0xffffffff), W(0x0f000003),	/* all 2.06-compliant */
- 	W(0xffffffff), W(0x0f000002),	/* all 2.05-compliant */
-@@ -706,7 +707,7 @@ unsigned char ibm_architecture_vec[] = {
- 	 * must match by the macro below. Update the definition if
- 	 * the structure layout changes.
- 	 */
--#define IBM_ARCH_VEC_NRCORES_OFFSET	117
-+#define IBM_ARCH_VEC_NRCORES_OFFSET	125
- 	W(NR_CPUS),			/* number of cores supported */
- 	0,
- 	0,
+	- On pSeries platform, the EEH doesn't work after PHB hotplug
+	  with "drmgr". The root cause is that the EEH resources (
+	  EEH devices, EEH caches) aren't released correctly. For the
+	  problem, we add one hook (pcibios_stop_dev), which is called
+	  on pci_stop_and_remove_device(). In pcibios_stop_dev(), we
+	  release the EEH resources.
+	- Another issue is that we need put the domain (PE or PHB) into
+	  quite state while doing reset on that domain. However, some
+	  deivces in the domain might not have EEH sensitive drivers, or
+	  even don't have driver. Those deivces can't be put into quite
+	  state and possibly keep issuing PCI-CFG or MMIO request during
+	  resetting the domain. That possibly causes the failure of reset
+	  and eventually failure of EEH recovery. For the issue, we introduces
+	  so-called "partial hotplug". That means, those devices without driver or
+	  without EEH sensitive driver are removed before doing reset, and
+	  plugged (probed) into the system after reset.
+	- We need traverse EEH devices of one specific PE with safe variant
+	  of list tranverse function. The EEH device might be removed while
+	  doing iteration.
+	- When doing plug for PCI bus, we need check if we need reassign the
+	  resources for subordinate devices (PCI_REASSIGN_ALL_RSRC) and do that
+	  accordingly.
+
+The patchset is verified on pSeires and PowerNV platforms:
+
+pSeries Platform:
+
+drmgr -c phb -r -s "PHB 513"
+drmgr -c phb -a -s "PHB 513"
+errinjct eeh -f 1 -s net/eth2
+
+PowerNV Platform:
+
+cd /sys/devices/pci0005:00/0005:00:00.0/0005:01:00.0/0005:02:08.0/0005:80:00.0/0005:90:01.0
+while true; do od -x config > /dev/null; sleep 1; done
+echo 1 > /sys/kernel/debug/powerpc/PCI0005/err_injct
+
+---
+
+v1 -> v2:
+	* Rebase to 3.11.rc1 in order to use pcibios_release_device().
+	* Use pcibios_release_device() to release EEH cache and detach
+	  EEH device from PCI device.
+	* Remove reference to PCI device in EEH cache since we're relying
+	  on pcibios_release_device().
+	* PCI device instance (struct pci_dev) isn't available during BAR
+	  restore and avoid use the instance that time.
+	* Fix unbalanced enable for IRQ in eeh_driver.c
+	* Retest the series of patches on Firebird-L/VPL3/VPL4
+
+---
+
+arch/powerpc/include/asm/eeh.h               |   28 +++++-
+arch/powerpc/include/asm/pci-bridge.h        |    3 +-
+arch/powerpc/include/asm/pci.h               |    2 +
+arch/powerpc/kernel/eeh.c                    |   68 +++++++-------
+arch/powerpc/kernel/eeh_cache.c              |   18 +---
+arch/powerpc/kernel/eeh_driver.c             |  109 +++++++++++++++++++++-
+arch/powerpc/kernel/eeh_pe.c                 |   58 +++++-------
+arch/powerpc/kernel/eeh_sysfs.c              |    7 ++
+arch/powerpc/kernel/pci-common.c             |    8 +-
+arch/powerpc/kernel/pci-hotplug.c            |  127 ++++++++++++++++++++++----
+arch/powerpc/kernel/pci_of_scan.c            |   43 ++++++---
+arch/powerpc/platforms/powernv/eeh-powernv.c |   11 ++
+arch/powerpc/platforms/pseries/eeh_pseries.c |   63 +++++++++++++-
+drivers/pci/hotplug/rpadlpar_core.c          |    1 -
+14 files changed, 417 insertions(+), 129 deletions(-)
+
+Thanks,
+Gavin
