@@ -3,9 +3,9 @@ From: Gerhard Sittig <gsi@denx.de>
 To: linuxppc-dev@lists.ozlabs.org, Anatolij Gustschin <agust@denx.de>,
  Mike Turquette <mturquette@linaro.org>,
  linux-arm-kernel@lists.infradead.org, devicetree-discuss@lists.ozlabs.org
-Subject: [PATCH v2 02/24] serial: mpc512x: cleanup clock API use
-Date: Thu, 18 Jul 2013 19:00:33 +0200
-Message-Id: <1374166855-7280-3-git-send-email-gsi@denx.de>
+Subject: [PATCH v2 05/24] clk: wrap I/O access for improved portability
+Date: Thu, 18 Jul 2013 19:00:36 +0200
+Message-Id: <1374166855-7280-6-git-send-email-gsi@denx.de>
 In-Reply-To: <1374166855-7280-1-git-send-email-gsi@denx.de>
 References: <1373914074-20889-1-git-send-email-gsi@denx.de>
  <1374166855-7280-1-git-send-email-gsi@denx.de>
@@ -24,201 +24,138 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-cleanup the clock API use of the UART driver which is shared among the
-MPC512x and the MPC5200 platforms
-- get, prepare, and enable the MCLK during port allocation; disable,
-  unprepare and put the MCLK upon port release; hold a reference to the
-  clock over the period of use; check for and propagate enable errors
-- fix a buffer overflow for clock names with two digit PSC index numbers
-- stick with the PPC_CLOCK 'psc%d_mclk' name for clock lookup, only
-  switch to a fixed string later after device tree based clock lookup
-  will have become available
+the common clock drivers were motivated/initiated by ARM development
+and apparently assume little endian peripherals
 
-the omission in the clock handling previously went unnoticed, but will
-become fatal in the common clock scenario
-
-to achieve support for MPC512x which is neutral to MPC5200, the
-modification was done as follows
-- introduce "clock alloc" and "clock release" routines in addition to
-  the previous "clock enable/disable" routine in the psc_ops struct
-- make the clock allocation a part of the port request (resource
-  allocation), and make clock release a part of the port release, such
-  that essential resources get allocated early
-- just enable/disable the clock from within the .clock() callback
-  without any allocation or preparation as the former implementation
-  did, since this routine is called from within the startup and shutdown
-  callbacks
-- all of the above remains a NOP for the MPC5200 platform (no callbacks
-  are provided on that platform)
-- implementation note: the clock gets enabled upon allocation already
-  just in case the clock is not only required for bitrate generation but
-  for register access as well
+wrap register/peripherals access in the common code (div, gate, mux)
+in preparation of adding COMMON_CLK support for other platforms
 
 Signed-off-by: Gerhard Sittig <gsi@denx.de>
 ---
- drivers/tty/serial/mpc52xx_uart.c |  100 ++++++++++++++++++++++++++++++-------
- 1 file changed, 83 insertions(+), 17 deletions(-)
+ drivers/clk/clk-divider.c    |    6 +++---
+ drivers/clk/clk-gate.c       |    6 +++---
+ drivers/clk/clk-mux.c        |    6 +++---
+ include/linux/clk-provider.h |   17 +++++++++++++++++
+ 4 files changed, 26 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/tty/serial/mpc52xx_uart.c b/drivers/tty/serial/mpc52xx_uart.c
-index e1280a2..98a1f43 100644
---- a/drivers/tty/serial/mpc52xx_uart.c
-+++ b/drivers/tty/serial/mpc52xx_uart.c
-@@ -107,6 +107,8 @@ struct psc_ops {
- 	unsigned int	(*set_baudrate)(struct uart_port *port,
- 					struct ktermios *new,
- 					struct ktermios *old);
-+	int		(*clock_alloc)(struct uart_port *port);
-+	void		(*clock_relse)(struct uart_port *port);
- 	int		(*clock)(struct uart_port *port, int enable);
- 	int		(*fifoc_init)(void);
- 	void		(*fifoc_uninit)(void);
-@@ -616,31 +618,75 @@ static irqreturn_t mpc512x_psc_handle_irq(struct uart_port *port)
- 	return IRQ_NONE;
- }
+diff --git a/drivers/clk/clk-divider.c b/drivers/clk/clk-divider.c
+index 6d55eb2..2c07061 100644
+--- a/drivers/clk/clk-divider.c
++++ b/drivers/clk/clk-divider.c
+@@ -104,7 +104,7 @@ static unsigned long clk_divider_recalc_rate(struct clk_hw *hw,
+ 	struct clk_divider *divider = to_clk_divider(hw);
+ 	unsigned int div, val;
  
--static int mpc512x_psc_clock(struct uart_port *port, int enable)
-+static struct clk *psc_mclk_clk[MPC52xx_PSC_MAXNUM];
-+
-+/* called from within the .request_port() callback (allocation) */
-+static int mpc512x_psc_alloc_clock(struct uart_port *port)
- {
--	struct clk *psc_clk;
- 	int psc_num;
--	char clk_name[10];
-+	char clk_name[16];
-+	struct clk *clk;
-+	int err;
-+
-+	psc_num = (port->mapbase & 0xf00) >> 8;
-+	snprintf(clk_name, sizeof(clk_name), "psc%d_mclk", psc_num);
-+	clk = clk_get(port->dev, clk_name);
-+	if (IS_ERR(clk)) {
-+		dev_err(port->dev, "Failed to get MCLK!\n");
-+		return PTR_ERR(clk);
-+	}
-+	err = clk_prepare_enable(clk);
-+	if (err) {
-+		dev_err(port->dev, "Failed to enable MCLK!\n");
-+		clk_put(clk);
-+		return err;
-+	}
-+	psc_mclk_clk[psc_num] = clk;
-+	return 0;
-+}
-+
-+/* called from within the .release_port() callback (release) */
-+static void mpc512x_psc_relse_clock(struct uart_port *port)
-+{
-+	int psc_num;
-+	struct clk *clk;
-+
-+	psc_num = (port->mapbase & 0xf00) >> 8;
-+	clk = psc_mclk_clk[psc_num];
-+	if (clk) {
-+		clk_disable_unprepare(clk);
-+		clk_put(clk);
-+		psc_mclk_clk[psc_num] = NULL;
-+	}
-+}
-+
-+/* implementation of the .clock() callback (enable/disable) */
-+static int mpc512x_psc_endis_clock(struct uart_port *port, int enable)
-+{
-+	int psc_num;
-+	struct clk *psc_clk;
-+	int ret;
+-	val = readl(divider->reg) >> divider->shift;
++	val = clk_readl(divider->reg) >> divider->shift;
+ 	val &= div_mask(divider);
  
- 	if (uart_console(port))
- 		return 0;
+ 	div = _get_div(divider, val);
+@@ -230,11 +230,11 @@ static int clk_divider_set_rate(struct clk_hw *hw, unsigned long rate,
+ 	if (divider->flags & CLK_DIVIDER_HIWORD_MASK) {
+ 		val = div_mask(divider) << (divider->shift + 16);
+ 	} else {
+-		val = readl(divider->reg);
++		val = clk_readl(divider->reg);
+ 		val &= ~(div_mask(divider) << divider->shift);
+ 	}
+ 	val |= value << divider->shift;
+-	writel(val, divider->reg);
++	clk_writel(val, divider->reg);
  
- 	psc_num = (port->mapbase & 0xf00) >> 8;
--	snprintf(clk_name, sizeof(clk_name), "psc%d_mclk", psc_num);
--	psc_clk = clk_get(port->dev, clk_name);
--	if (IS_ERR(psc_clk)) {
-+	psc_clk = psc_mclk_clk[psc_num];
-+	if (!psc_clk) {
- 		dev_err(port->dev, "Failed to get PSC clock entry!\n");
- 		return -ENODEV;
+ 	if (divider->lock)
+ 		spin_unlock_irqrestore(divider->lock, flags);
+diff --git a/drivers/clk/clk-gate.c b/drivers/clk/clk-gate.c
+index 790306e..b7fbd96 100644
+--- a/drivers/clk/clk-gate.c
++++ b/drivers/clk/clk-gate.c
+@@ -58,7 +58,7 @@ static void clk_gate_endisable(struct clk_hw *hw, int enable)
+ 		if (set)
+ 			reg |= BIT(gate->bit_idx);
+ 	} else {
+-		reg = readl(gate->reg);
++		reg = clk_readl(gate->reg);
+ 
+ 		if (set)
+ 			reg |= BIT(gate->bit_idx);
+@@ -66,7 +66,7 @@ static void clk_gate_endisable(struct clk_hw *hw, int enable)
+ 			reg &= ~BIT(gate->bit_idx);
  	}
  
--	dev_dbg(port->dev, "%s %sable\n", clk_name, enable ? "en" : "dis");
--
--	if (enable)
--		clk_enable(psc_clk);
--	else
-+	dev_dbg(port->dev, "mclk %sable\n", enable ? "en" : "dis");
-+	if (enable) {
-+		ret = clk_enable(psc_clk);
-+		if (ret)
-+			dev_err(port->dev, "Failed to enable MCLK!\n");
-+		return ret;
-+	} else {
- 		clk_disable(psc_clk);
--
--	return 0;
-+		return 0;
-+	}
- }
+-	writel(reg, gate->reg);
++	clk_writel(reg, gate->reg);
  
- static void mpc512x_psc_get_irq(struct uart_port *port, struct device_node *np)
-@@ -873,7 +919,9 @@ static struct psc_ops mpc5125_psc_ops = {
- 	.cw_disable_ints = mpc5125_psc_cw_disable_ints,
- 	.cw_restore_ints = mpc5125_psc_cw_restore_ints,
- 	.set_baudrate = mpc5125_psc_set_baudrate,
--	.clock = mpc512x_psc_clock,
-+	.clock_alloc = mpc512x_psc_alloc_clock,
-+	.clock_relse = mpc512x_psc_relse_clock,
-+	.clock = mpc512x_psc_endis_clock,
- 	.fifoc_init = mpc512x_psc_fifoc_init,
- 	.fifoc_uninit = mpc512x_psc_fifoc_uninit,
- 	.get_irq = mpc512x_psc_get_irq,
-@@ -906,7 +954,9 @@ static struct psc_ops mpc512x_psc_ops = {
- 	.cw_disable_ints = mpc512x_psc_cw_disable_ints,
- 	.cw_restore_ints = mpc512x_psc_cw_restore_ints,
- 	.set_baudrate = mpc512x_psc_set_baudrate,
--	.clock = mpc512x_psc_clock,
-+	.clock_alloc = mpc512x_psc_alloc_clock,
-+	.clock_relse = mpc512x_psc_relse_clock,
-+	.clock = mpc512x_psc_endis_clock,
- 	.fifoc_init = mpc512x_psc_fifoc_init,
- 	.fifoc_uninit = mpc512x_psc_fifoc_uninit,
- 	.get_irq = mpc512x_psc_get_irq,
-@@ -1166,6 +1216,9 @@ mpc52xx_uart_type(struct uart_port *port)
- static void
- mpc52xx_uart_release_port(struct uart_port *port)
- {
-+	if (psc_ops->clock_relse)
-+		psc_ops->clock_relse(port);
-+
- 	/* remapped by us ? */
- 	if (port->flags & UPF_IOREMAP) {
- 		iounmap(port->membase);
-@@ -1190,11 +1243,24 @@ mpc52xx_uart_request_port(struct uart_port *port)
- 	err = request_mem_region(port->mapbase, sizeof(struct mpc52xx_psc),
- 			"mpc52xx_psc_uart") != NULL ? 0 : -EBUSY;
+ 	if (gate->lock)
+ 		spin_unlock_irqrestore(gate->lock, flags);
+@@ -89,7 +89,7 @@ static int clk_gate_is_enabled(struct clk_hw *hw)
+ 	u32 reg;
+ 	struct clk_gate *gate = to_clk_gate(hw);
  
--	if (err && (port->flags & UPF_IOREMAP)) {
-+	if (err)
-+		goto out_membase;
-+
-+	if (psc_ops->clock_alloc) {
-+		err = psc_ops->clock_alloc(port);
-+		if (err)
-+			goto out_mapregion;
-+	}
-+
-+	return 0;
-+
-+out_mapregion:
-+	release_mem_region(port->mapbase, sizeof(struct mpc52xx_psc));
-+out_membase:
-+	if (port->flags & UPF_IOREMAP) {
- 		iounmap(port->membase);
- 		port->membase = NULL;
+-	reg = readl(gate->reg);
++	reg = clk_readl(gate->reg);
+ 
+ 	/* if a set bit disables this clk, flip it before masking */
+ 	if (gate->flags & CLK_GATE_SET_TO_DISABLE)
+diff --git a/drivers/clk/clk-mux.c b/drivers/clk/clk-mux.c
+index 614444c..02ef506 100644
+--- a/drivers/clk/clk-mux.c
++++ b/drivers/clk/clk-mux.c
+@@ -42,7 +42,7 @@ static u8 clk_mux_get_parent(struct clk_hw *hw)
+ 	 * OTOH, pmd_trace_clk_mux_ck uses a separate bit for each clock, so
+ 	 * val = 0x4 really means "bit 2, index starts at bit 0"
+ 	 */
+-	val = readl(mux->reg) >> mux->shift;
++	val = clk_readl(mux->reg) >> mux->shift;
+ 	val &= mux->mask;
+ 
+ 	if (mux->table) {
+@@ -89,11 +89,11 @@ static int clk_mux_set_parent(struct clk_hw *hw, u8 index)
+ 	if (mux->flags & CLK_MUX_HIWORD_MASK) {
+ 		val = mux->mask << (mux->shift + 16);
+ 	} else {
+-		val = readl(mux->reg);
++		val = clk_readl(mux->reg);
+ 		val &= ~(mux->mask << mux->shift);
  	}
--
- 	return err;
- }
+ 	val |= index << mux->shift;
+-	writel(val, mux->reg);
++	clk_writel(val, mux->reg);
  
+ 	if (mux->lock)
+ 		spin_unlock_irqrestore(mux->lock, flags);
+diff --git a/include/linux/clk-provider.h b/include/linux/clk-provider.h
+index 1ec14a7..c4f7799 100644
+--- a/include/linux/clk-provider.h
++++ b/include/linux/clk-provider.h
+@@ -12,6 +12,7 @@
+ #define __LINUX_CLK_PROVIDER_H
+ 
+ #include <linux/clk.h>
++#include <linux/io.h>
+ 
+ #ifdef CONFIG_COMMON_CLK
+ 
+@@ -490,5 +491,21 @@ static inline const char *of_clk_get_parent_name(struct device_node *np,
+ #define of_clk_init(matches) \
+ 	{ while (0); }
+ #endif /* CONFIG_OF */
++
++/*
++ * wrap access to peripherals in accessor routines
++ * for improved portability across platforms
++ */
++
++static inline u32 clk_readl(u32 __iomem *reg)
++{
++	return readl(reg);
++}
++
++static inline void clk_writel(u32 val, u32 __iomem *reg)
++{
++	writel(val, reg);
++}
++
+ #endif /* CONFIG_COMMON_CLK */
+ #endif /* CLK_PROVIDER_H */
 -- 
 1.7.10.4
