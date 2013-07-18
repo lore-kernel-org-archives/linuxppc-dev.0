@@ -1,19 +1,29 @@
-Return-Path: <gsi@denx.de>
-From: Gerhard Sittig <gsi@denx.de>
-To: linuxppc-dev@lists.ozlabs.org, Anatolij Gustschin <agust@denx.de>,
- Mike Turquette <mturquette@linaro.org>,
- linux-arm-kernel@lists.infradead.org, devicetree-discuss@lists.ozlabs.org
-Subject: [PATCH v2 24/24] net: can: mscan: remove MPC512x non-COMMON_CLK code
- path
-Date: Thu, 18 Jul 2013 22:20:58 +0200
-Message-Id: <1374178858-8683-10-git-send-email-gsi@denx.de>
-In-Reply-To: <1374166855-7280-1-git-send-email-gsi@denx.de>
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+ [IPv6:2002:4e20:1eda::1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 7DFD32C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jul 2013 06:33:43 +1000 (EST)
+Date: Thu, 18 Jul 2013 21:33:24 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Gerhard Sittig <gsi@denx.de>
+Subject: Re: [PATCH v2 18/24] i2c: mpc: OF clock lookup for MPC512x
+Message-ID: <20130718203324.GB24642@n2100.arm.linux.org.uk>
 References: <1374166855-7280-1-git-send-email-gsi@denx.de>
-Cc: Detlev Zundel <dzu@denx.de>, Wolfram Sang <wsa@the-dreams.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Gerhard Sittig <gsi@denx.de>,
- Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@kernel.org>,
- Marc Kleine-Budde <mkl@pengutronix.de>, David Woodhouse <dwmw2@infradead.org>,
- Wolfgang Grandegger <wg@grandegger.com>,
+ <1374178858-8683-4-git-send-email-gsi@denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1374178858-8683-4-git-send-email-gsi@denx.de>
+Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Mike Turquette <mturquette@linaro.org>, Detlev Zundel <dzu@denx.de>,
+ Wolfram Sang <wsa@the-dreams.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ devicetree-discuss@lists.ozlabs.org, Rob Herring <rob.herring@calxeda.com>,
+ Mark Brown <broonie@kernel.org>, Marc Kleine-Budde <mkl@pengutronix.de>,
+ Wolfgang Grandegger <wg@grandegger.com>, Anatolij Gustschin <agust@denx.de>,
+ linuxppc-dev@lists.ozlabs.org, David Woodhouse <dwmw2@infradead.org>,
+ linux-arm-kernel@lists.infradead.org,
  Mauro Carvalho Chehab <m.chehab@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,168 +34,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-transition to the COMMON_CLK framework has completed for the MPC512x
-platform, remove the now obsolete code path of the mpc5xxx mscan
-driver which accessed clock control module registers directly
+On Thu, Jul 18, 2013 at 10:20:52PM +0200, Gerhard Sittig wrote:
+> +	/* enable clock for the I2C peripheral (non fatal) */
+> +	clk = of_clk_get_by_name(node, "per");
+> +	if (!IS_ERR(clk)) {
+> +		clk_prepare_enable(clk);
+> +		clk_put(clk);
+> +	}
+> +
 
-Signed-off-by: Gerhard Sittig <gsi@denx.de>
----
- drivers/net/can/mscan/mpc5xxx_can.c |  136 -----------------------------------
- 1 file changed, 136 deletions(-)
+This kind of hacked up approach to the clk API is exactly the thing I
+really don't like seeing.  I don't know what it is... is the clk API
+somehow difficult to use or what's the problem with doing stuff correctly?
 
-diff --git a/drivers/net/can/mscan/mpc5xxx_can.c b/drivers/net/can/mscan/mpc5xxx_can.c
-index dd26ab6..cf5e4cfc 100644
---- a/drivers/net/can/mscan/mpc5xxx_can.c
-+++ b/drivers/net/can/mscan/mpc5xxx_can.c
-@@ -108,9 +108,6 @@ static u32 mpc52xx_can_get_clock(struct platform_device *ofdev,
- #endif /* CONFIG_PPC_MPC52xx */
- 
- #ifdef CONFIG_PPC_MPC512x
--
--#if IS_ENABLED(CONFIG_COMMON_CLK)
--
- static u32 mpc512x_can_get_clock(struct platform_device *ofdev,
- 				 const char *clock_source, int *mscan_clksrc)
- {
-@@ -244,139 +241,6 @@ err_notavail:
- 	dev_err(&ofdev->dev, "cannot acquire or setup clock source\n");
- 	return 0;
- }
--#else	/* COMMON_CLK */
--struct mpc512x_clockctl {
--	u32 spmr;		/* System PLL Mode Reg */
--	u32 sccr[2];		/* System Clk Ctrl Reg 1 & 2 */
--	u32 scfr1;		/* System Clk Freq Reg 1 */
--	u32 scfr2;		/* System Clk Freq Reg 2 */
--	u32 reserved;
--	u32 bcr;		/* Bread Crumb Reg */
--	u32 pccr[12];		/* PSC Clk Ctrl Reg 0-11 */
--	u32 spccr;		/* SPDIF Clk Ctrl Reg */
--	u32 cccr;		/* CFM Clk Ctrl Reg */
--	u32 dccr;		/* DIU Clk Cnfg Reg */
--	u32 mccr[4];		/* MSCAN Clk Ctrl Reg 1-3 */
--};
--
--static struct of_device_id mpc512x_clock_ids[] = {
--	{ .compatible = "fsl,mpc5121-clock", },
--	{}
--};
--
--static u32 mpc512x_can_get_clock(struct platform_device *ofdev,
--				 const char *clock_name, int *mscan_clksrc)
--{
--	struct mpc512x_clockctl __iomem *clockctl;
--	struct device_node *np_clock;
--	struct clk *sys_clk, *ref_clk;
--	int plen, clockidx, clocksrc = -1;
--	u32 sys_freq, val, clockdiv = 1, freq = 0;
--	const u32 *pval;
--
--	np_clock = of_find_matching_node(NULL, mpc512x_clock_ids);
--	if (!np_clock) {
--		dev_err(&ofdev->dev, "couldn't find clock node\n");
--		return 0;
--	}
--	clockctl = of_iomap(np_clock, 0);
--	if (!clockctl) {
--		dev_err(&ofdev->dev, "couldn't map clock registers\n");
--		goto exit_put;
--	}
--
--	/* Determine the MSCAN device index from the peripheral's
--	 * physical address. Register address offsets against the
--	 * IMMR base are:  0x1300, 0x1380, 0x2300, 0x2380
--	 */
--	pval = of_get_property(ofdev->dev.of_node, "reg", &plen);
--	BUG_ON(!pval || plen < sizeof(*pval));
--	clockidx = (*pval & 0x80) ? 1 : 0;
--	if (*pval & 0x2000)
--		clockidx += 2;
--
--	/*
--	 * Clock source and divider selection: 3 different clock sources
--	 * can be selected: "ip", "ref" or "sys". For the latter two, a
--	 * clock divider can be defined as well. If the clock source is
--	 * not specified by the device tree, we first try to find an
--	 * optimal CAN source clock based on the system clock. If that
--	 * is not posslible, the reference clock will be used.
--	 */
--	if (clock_name && !strcmp(clock_name, "ip")) {
--		*mscan_clksrc = MSCAN_CLKSRC_IPS;
--		freq = mpc5xxx_get_bus_frequency(ofdev->dev.of_node);
--	} else {
--		*mscan_clksrc = MSCAN_CLKSRC_BUS;
--
--		pval = of_get_property(ofdev->dev.of_node,
--				       "fsl,mscan-clock-divider", &plen);
--		if (pval && plen == sizeof(*pval))
--			clockdiv = *pval;
--		if (!clockdiv)
--			clockdiv = 1;
--
--		if (!clock_name || !strcmp(clock_name, "sys")) {
--			sys_clk = clk_get(&ofdev->dev, "sys_clk");
--			if (IS_ERR(sys_clk)) {
--				dev_err(&ofdev->dev, "couldn't get sys_clk\n");
--				goto exit_unmap;
--			}
--			/* Get and round up/down sys clock rate */
--			sys_freq = 1000000 *
--				((clk_get_rate(sys_clk) + 499999) / 1000000);
--
--			if (!clock_name) {
--				/* A multiple of 16 MHz would be optimal */
--				if ((sys_freq % 16000000) == 0) {
--					clocksrc = 0;
--					clockdiv = sys_freq / 16000000;
--					freq = sys_freq / clockdiv;
--				}
--			} else {
--				clocksrc = 0;
--				freq = sys_freq / clockdiv;
--			}
--		}
--
--		if (clocksrc < 0) {
--			ref_clk = clk_get(&ofdev->dev, "ref_clk");
--			if (IS_ERR(ref_clk)) {
--				dev_err(&ofdev->dev, "couldn't get ref_clk\n");
--				goto exit_unmap;
--			}
--			clocksrc = 1;
--			freq = clk_get_rate(ref_clk) / clockdiv;
--		}
--	}
--
--	/* Disable clock */
--	out_be32(&clockctl->mccr[clockidx], 0x0);
--	if (clocksrc >= 0) {
--		/* Set source and divider */
--		val = (clocksrc << 14) | ((clockdiv - 1) << 17);
--		out_be32(&clockctl->mccr[clockidx], val);
--		/* Enable clock */
--		out_be32(&clockctl->mccr[clockidx], val | 0x10000);
--	}
--
--	/* Enable MSCAN clock domain */
--	val = in_be32(&clockctl->sccr[1]);
--	if (!(val & (1 << 25)))
--		out_be32(&clockctl->sccr[1], val | (1 << 25));
--
--	dev_dbg(&ofdev->dev, "using '%s' with frequency divider %d\n",
--		*mscan_clksrc == MSCAN_CLKSRC_IPS ? "ips_clk" :
--		clocksrc == 1 ? "ref_clk" : "sys_clk", clockdiv);
--
--exit_unmap:
--	iounmap(clockctl);
--exit_put:
--	of_node_put(np_clock);
--	return freq;
--}
--#endif	/* COMMON_CLK */
--
- #else /* !CONFIG_PPC_MPC512x */
- static u32 mpc512x_can_get_clock(struct platform_device *ofdev,
- 				 const char *clock_name, int *mscan_clksrc)
--- 
-1.7.10.4
+1. Get the clock in your probe function.
+2. Prepare it at the appropriate time.
+3. Enable it appropriately.  (or if you want to combine 2 and 3, use
+   clk_prepare_enable().)
+4. Ensure that enables/disables and prepares/unprepares are appropriately
+   balanced.
+5. 'put' the clock in your remove function.
+
+Certainly do not get-enable-put a clock.  You're supposed to hold on to
+the clock all the time that you're actually using it.
+
+Final point - if you want to make it non-fatal, don't play games like:
+
+	clk = clk_get(whatever);
+	if (IS_ERR(clk))
+		clk = NULL;
+
+	...
+	if (clk)
+		clk_prepare(clk);
+
+Do this instead:
+
+	clk = clk_get(whatever);
+	...
+
+	if (!IS_ERR(clk))
+		clk_prepare(clk);
+etc.
+
+(And on this subject, I'm considering whether to make a change to the
+clk API where clk_prepare() and clk_enable() return zero when passed
+an error pointer - this means drivers with optional clocks don't have
+to burden themselves with these kinds of checks.)
