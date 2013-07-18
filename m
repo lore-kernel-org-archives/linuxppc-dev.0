@@ -1,27 +1,31 @@
-Return-Path: <broonie@sirena.org.uk>
-Date: Thu, 18 Jul 2013 11:08:00 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Message-ID: <20130718100800.GF22506@sirena.org.uk>
-References: <1373914074-20889-1-git-send-email-gsi@denx.de>
- <1373914074-20889-6-git-send-email-gsi@denx.de>
- <20130715193829.GS14452@pengutronix.de>
- <20130718070402.GO7080@book.gsilab.sittig.org>
- <20130718080657.GI10380@pengutronix.de>
+Return-Path: <B07421@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe002.messaging.microsoft.com [216.32.180.12])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 696932C0082
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jul 2013 01:24:24 +1000 (EST)
+Date: Thu, 18 Jul 2013 10:24:12 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 3/4 V2] mmc: esdhc: Correct host version of T4240-R1.0
+To: Zang Roy-R61911 <r61911@freescale.com>
+References: <1374055891-20703-1-git-send-email-Haijun.Zhang@freescale.com>
+ <1374055891-20703-2-git-send-email-Haijun.Zhang@freescale.com>
+ <1374081074.8183.360@snotra>
+ <3E027F8168735B46AC006B1D0C7BB0020B27D1E9@039-SN2MPN1-012.039d.mgd.msft.net>
+In-Reply-To: <3E027F8168735B46AC006B1D0C7BB0020B27D1E9@039-SN2MPN1-012.039d.mgd.msft.net>
+ (from r61911@freescale.com on Wed Jul 17 21:30:45 2013)
+Message-ID: <1374161052.5357.0@snotra>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="a2GlHqZBJuVUxZ2A"
-In-Reply-To: <20130718080657.GI10380@pengutronix.de>
-Subject: Re: [PATCH v1 05/24] clk: wrap I/O access for improved portability
-Cc: Mike Turquette <mturquette@linaro.org>, Detlev Zundel <dzu@denx.de>,
- Wolfram Sang <wsa@the-dreams.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- devicetree-discuss@lists.ozlabs.org, Rob Herring <rob.herring@calxeda.com>,
- Marc Kleine-Budde <mkl@pengutronix.de>,
- Wolfgang Grandegger <wg@grandegger.com>, Anatolij Gustschin <agust@denx.de>,
- linuxppc-dev@lists.ozlabs.org, David Woodhouse <dwmw2@infradead.org>,
- linux-arm-kernel@lists.infradead.org,
- Mauro Carvalho Chehab <m.chehab@samsung.com>
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+ Zhang Haijun-B42677 <B42677@freescale.com>,
+ Fleming Andy-AFLEMING <afleming@freescale.com>,
+ "cbouatmailru@gmail.com" <cbouatmailru@gmail.com>,
+ "cjb@laptop.org" <cjb@laptop.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,43 +35,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 07/17/2013 09:30:45 PM, Zang Roy-R61911 wrote:
+>=20
+>=20
+> > -----Original Message-----
+> > From: linux-mmc-owner@vger.kernel.org [mailto:linux-mmc-
+> > owner@vger.kernel.org] On Behalf Of Scott Wood
+> >
+> > On 07/17/2013 05:11:30 AM, Haijun Zhang wrote:
+> > > Vender version and sdhc spec version of T4240-R1.0 is incorrect.
+> > > The right value should be VVN=3D0x13, SVN =3D 0x1. The wrong version
+> > > number will break down the ADMA data transfer.
+> > > This defect only exist in T4240-R1.0. Will be fixed in T4240-R2.0.
+> > > Also share vvn and svr for public use.
+> > >
+> > > Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
+> >
+> > We're not supporting T4240 rev 1.0 in upstream Linux, as it's not
+> > production silicon.
+> As discussed, production silicon Rev 2.0 will also suffer this issue. =20
+> So need to address it beyond T4240-R2.0.
 
---a2GlHqZBJuVUxZ2A
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+OK -- please update the commit message.
 
-On Thu, Jul 18, 2013 at 10:06:57AM +0200, Sascha Hauer wrote:
-
-> I think regmap has the potential to solve a number of issues like the
-> hardcoded readl/writel in the common clock blocks, issues with i2c
-> clocks and your endianess issue. The biggest question probably is how
-> to get there without putting too much of a burden on you. It's probably
-> not an option to convert all users to regmap, so it seems additional
-> functions like clk_register_gate_regmap are better to handle.
-
-That's basically what regulator does.  There's versions of the ops that
-all the drivers can use.
-
---a2GlHqZBJuVUxZ2A
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
-
-iQIcBAEBAgAGBQJR5759AAoJELSic+t+oim9FpgQAJLTChS7UMhyGs/rcPs/r8AD
-gXQ/CSLkgtcqhrjoojWTn7/TPA/IwCBD+e8b/W6qkBaWdqiSOuOGBsuBBob2z0Mb
-N6oI//Nwi5k2pbMvDrJP8CWuvtWGDVnKwWAMpHO1ykPHFVsgtOwtROcqXHtVupSU
-HvnmOiP8hrZIB63PSUyEozC9Uniag25wDm+EtduFS3YXfphlmux3Yc1bg3fKB8ar
-m3ai0u9Fhtd3A8ovYAfKxg+Ws4gRn8o/9kkyLErJxR7fU58dGfUULjyIdVFp3FFY
-TqeBnVYoPI9/cv2EZPM+89aQgYyvrW/2H43cmKFYmRR7NfjJLC50FUBIqkaoueUU
-uOKsQLvjeuOYcsvKOJqmNOXabeEYrtln10Lc8qVorSOS6Rgmwj7i0ocFNTRlJIB0
-wusnYSMjo2jIt+17ZAmFF3MGT7i3yTkHFASrz4moK0EkZAJe2LzOnC7HBAHu3v0V
-wmNnzG/o9/j3a0X5iqSQIPuIOiqe4uUJNuPxCi38xUcv+EqQ0E3v6GbTIYac46fa
-veJKQZFsXUWQRCkopBdVCsQzCJCW8Msp49Xfj1tLBenddP8Qpw1IuBeVjhzojVT6
-3rGUOFLnODvJ/UaW+6fszKaPDOLfWL8t6T7Qz8Get2Di9skRjxJSWYx53Cqe/bq/
-Xj7MGMHN2gjABv147L7m
-=fuLU
------END PGP SIGNATURE-----
-
---a2GlHqZBJuVUxZ2A--
+-Scott=
