@@ -1,25 +1,31 @@
-Return-Path: <gsi@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id C4DAA2C008C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jul 2013 23:46:25 +1000 (EST)
-Date: Fri, 19 Jul 2013 15:46:15 +0200
-From: Gerhard Sittig <gsi@denx.de>
-To: Peter LaDow <petela@gocougs.wsu.edu>
-Subject: Re: Inbound PCI and Memory Corruption
-Message-ID: <20130719134615.GR7080@book.gsilab.sittig.org>
-References: <CAN8Q1EdnN9+kKGy+voF3=EyPfbHv04Emfz=uA6XKMJEAkvLpAA@mail.gmail.com>
- <CAN8Q1Ed9Lpg1Sog5tQODe+jqCRXBBH3d_UeR5usdc23CD7vwjg@mail.gmail.com>
- <1371945647.3944.106.camel@pasglop>
- <CAN8Q1EetHpVkWFmbDGCE-3J4H7oJm0zE66SAdJyvtDb7OBc-gg@mail.gmail.com>
- <1373492413.19894.29.camel@pasglop>
- <CAN8Q1EdVVw3ofg9O3o=WThsKpcfMBXe_C7JsSSx9DdRZULW17Q@mail.gmail.com>
- <CAN8Q1EeKCTCB30N50iA8-QB=0aoNtS1U3nNLGVoz7sHG-Qg26A@mail.gmail.com>
+Return-Path: <B07421@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 29B632C0096
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Jul 2013 03:21:04 +1000 (EST)
+Date: Fri, 19 Jul 2013 12:20:45 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 1/4 V4] powerpc/85xx: Add support for 85xx cpu type
+ detection
+To: Zhang Haijun-B42677 <B42677@freescale.com>
+References: <1374037947-23670-1-git-send-email-Haijun.Zhang@freescale.com>
+ <99E897753B6F7048BD8CCDB4661D02E13DF580@039-SN2MPN1-022.039d.mgd.msft.net>
+In-Reply-To: <99E897753B6F7048BD8CCDB4661D02E13DF580@039-SN2MPN1-022.039d.mgd.msft.net>
+ (from B42677@freescale.com on Thu Jul 18 21:28:20 2013)
+Message-ID: <1374254445.5357.18@snotra>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAN8Q1EeKCTCB30N50iA8-QB=0aoNtS1U3nNLGVoz7sHG-Qg26A@mail.gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ Zhao Chenhui-B35336 <B35336@freescale.com>,
+ "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+ Zhang Haijun-B42677 <B42677@freescale.com>,
+ Fleming Andy-AFLEMING <afleming@freescale.com>,
+ "cbouatmailru@gmail.com" <cbouatmailru@gmail.com>,
+ "cjb@laptop.org" <cjb@laptop.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,52 +35,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 18, 2013 at 14:30 -0700, Peter LaDow wrote:
-> 
-> We are still stumped on this one, but during a review of the system
-> setup one thing came up that we aren't sure about is the device tree
-> and the DMA engine.
-> 
-> It does seem that for incoming PCI transactions the Freescale DMA
-> engine is not used.  And in our device tree we have the DMA engine
-> commented out.  That is, the "fsl,mpc8349-dma" and "fsl,elo-dma"
-> compatible items are not present in the FDT.
-> 
-> I don't suppose this could be a problem?
+On 07/18/2013 09:28:20 PM, Zhang Haijun-B42677 wrote:
+> Hi, scott
+>=20
+> I had update this patch, this is the newest version.
+> If there is no other problem, can you help merge this patch?
+> I hope to make sure the following patch don't need to rebuild due to =20
+> the change of this patch.
 
-Can't tell whether it helps or whether I'm telling you what's
-already known, but here we go:
+It looks OK.  I'll pick it up when I do my next batch of patch =20
+application (hopefully soon).  Go ahead and send the patches that =20
+depend on it.
 
-Some Freescale SoC's don't have "_the_ DMA", but instead several
-of them.  Many peripherals have a DMA engine of their own, which
-you won't notice as a separate entity from the software POV
-(typically ethernet, USB, PCI, partially video in and out, even
-coprocessor may have dedicated DMA engines which they might take
-care of themselves).
-
-The thing that you do see (in the device tree, as a software
-controllable entity) is the "general purpose DMA" with user
-servicable channels.  This one is may be used for serial
-communication via UART or SPI, or SDHC/MMC, or peripherals
-attached to the EMB.  Sometimes it's called "DMA2" to reflect
-that there are others as well.
-
-So:  No, not having to fiddle with DMA stuff when doing PCI need
-not be a problem, it's actually expected.  But since a DMA engine
-might be involved (that's just not under your command), the
-accompanying problems may arise.  You may need to flush CPU
-provided data upon write before telling an external entity to
-access it, and may need to invalidate caches (to have data
-re-fetched) before the CPU accesses what an external entity did
-manipulate.  And this applies to both payload data as well as
-management data (descriptors) if the latter apply to the former.
-
-HTH
-
-
-virtually yours
-Gerhard Sittig
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr. 5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+-Scott=
