@@ -1,42 +1,24 @@
-Return-Path: <mingo.kernel.org@gmail.com>
-Received: from mail-ee0-x22e.google.com (mail-ee0-x22e.google.com
- [IPv6:2a00:1450:4013:c00::22e])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 728E92C008F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jul 2013 17:40:37 +1000 (EST)
-Received: by mail-ee0-f46.google.com with SMTP id d41so2151245eek.19
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jul 2013 00:40:32 -0700 (PDT)
-Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
-Date: Fri, 19 Jul 2013 09:40:27 +0200
-From: Ingo Molnar <mingo@kernel.org>
-To: Arnaldo Carvalho de Melo <acme@infradead.org>
-Subject: Re: [GIT PULL 00/76] perf/core improvements and fixes
-Message-ID: <20130719074027.GA32585@gmail.com>
-References: <1374177003-3706-1-git-send-email-acme@infradead.org>
+Return-Path: <gsi@denx.de>
+Date: Fri, 19 Jul 2013 10:42:52 +0200
+From: Gerhard Sittig <gsi@denx.de>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH v2 18/24] i2c: mpc: OF clock lookup for MPC512x
+Message-ID: <20130719084252.GP7080@book.gsilab.sittig.org>
+References: <1374166855-7280-1-git-send-email-gsi@denx.de>
+ <1374178858-8683-4-git-send-email-gsi@denx.de>
+ <20130718203324.GB24642@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1374177003-3706-1-git-send-email-acme@infradead.org>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Frederic Weisbecker <fweisbec@gmail.com>,
- Stephane Eranian <eranian@google.com>, Adrian Hunter <adrian.hunter@intel.com>,
- Maynard Johnson <mpjohn@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
- Jiri Olsa <jolsa@redhat.com>, Andi Kleen <ak@linux.intel.com>,
- Xiao Guangrong <xiaoguangrong@linux.vnet.ibm.com>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- "David A. Gilbert" <DavidAGilbert@uk.ibm.com>,
- Robert Richter <rric@kernel.org>, icycoder@gmail.com,
- Corey Ashford <cjashfor@linux.vnet.ibm.com>,
- Kwanghyun Yoo <ykh815.yoo@lge.com>, Runzhen Wang <runzhew@clemson.edu>,
- Greg Price <price@mit.edu>, Borislav Petkov <bp@alien8.de>,
- Steven Rostedt <rostedt@goodmis.org>,
- Runzhen Wang <runzhen@linux.vnet.ibm.com>, Namhyung Kim <namhyung@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, Thomas Renninger <trenn@suse.de>,
- Arnaldo Carvalho de Melo <acme@redhat.com>, Mike Galbraith <efault@gmx.de>,
- linux-kernel@vger.kernel.org, Pekka Enberg <penberg@kernel.org>,
- David Ahern <dsahern@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Fengguang Wu <fengguang.wu@intel.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20130718203324.GB24642@n2100.arm.linux.org.uk>
+Cc: Mike Turquette <mturquette@linaro.org>, Detlev Zundel <dzu@denx.de>,
+ Wolfram Sang <wsa@the-dreams.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ devicetree-discuss@lists.ozlabs.org, Rob Herring <rob.herring@calxeda.com>,
+ Mark Brown <broonie@kernel.org>, Marc Kleine-Budde <mkl@pengutronix.de>,
+ Wolfgang Grandegger <wg@grandegger.com>, Anatolij Gustschin <agust@denx.de>,
+ linuxppc-dev@lists.ozlabs.org, David Woodhouse <dwmw2@infradead.org>,
+ linux-arm-kernel@lists.infradead.org,
+ Mauro Carvalho Chehab <m.chehab@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,248 +28,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, Jul 18, 2013 at 21:33 +0100, Russell King - ARM Linux wrote:
+> 
+> On Thu, Jul 18, 2013 at 10:20:52PM +0200, Gerhard Sittig wrote:
+> > +	/* enable clock for the I2C peripheral (non fatal) */
+> > +	clk = of_clk_get_by_name(node, "per");
+> > +	if (!IS_ERR(clk)) {
+> > +		clk_prepare_enable(clk);
+> > +		clk_put(clk);
+> > +	}
+> > +
+> 
+> This kind of hacked up approach to the clk API is exactly the thing I
+> really don't like seeing.  I don't know what it is... is the clk API
+> somehow difficult to use or what's the problem with doing stuff correctly?
+> 
+> 1. Get the clock in your probe function.
+> 2. Prepare it at the appropriate time.
+> 3. Enable it appropriately.  (or if you want to combine 2 and 3, use
+>    clk_prepare_enable().)
+> 4. Ensure that enables/disables and prepares/unprepares are appropriately
+>    balanced.
+> 5. 'put' the clock in your remove function.
+> 
+> Certainly do not get-enable-put a clock.  You're supposed to hold on to
+> the clock all the time that you're actually using it.
 
-* Arnaldo Carvalho de Melo <acme@infradead.org> wrote:
+Russel, thank you for the feedback!  I agree that your outline of
+steps to take is simple and should not be a problem to do.
 
-> From: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-> 
-> Hi Ingo,
-> 
-> 	Please consider pulling.
-> 
-> 	There was a long delay in processing patches related to my vacations
-> that took longer than antecipated to being addressed.
-> 
-> 	With the recent acme/perf/urgent merge and this one I get closer to
-> processing the resulting long backlog.
-> 
-> 	There are still many patches to process, which I will be working on as
-> time permits in the next days and weeks.
-> 
-> Thanks,
-> 
-> - Arnaldo
-> 
-> The following changes since commit 67516844625f45f0ce148a01c27bf41f591872b2:
-> 
->   perf: Remove the 'match' callback for auxiliary events processing (2013-07-12 13:50:36 +0200)
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux tags/perf-core-for-mingo
-> 
-> for you to fetch changes up to 2a08c3ec4f7d6058a450d2d4bc6e366955872707:
-> 
->   perf header: Recognize version number for perf data file (2013-07-17 17:04:00 -0300)
-> 
-> ----------------------------------------------------------------
-> perf/core improvements and fixes:
-> 
-> . Add missing 'finished_round' event forwarding in 'perf inject', from Adrian Hunter.
-> 
-> . Assorted tidy ups, from Adrian Hunter.
-> 
-> . Fall back to sysfs event names when parsing fails, from Andi Kleen.
-> 
-> . List pmu events in perf list, from Andi Kleen.
-> 
-> . Cleanup some memory allocation/freeing uses, from David Ahern.
-> 
-> . Add option to collapse undesired parts of call graph, from Greg Price.
-> 
-> . Prep work for multi perf data file storage, from Jiri Olsa.
-> 
-> . Add support for more than two files comparision in 'perf diff', from Jiri Olsa
-> 
-> . A few more 'perf test' improvements, from Jiri Olsa
-> 
-> . libtraceevent cleanups, from Namhyung Kim.
-> 
-> . Remove odd build stall in 'perf sched' by moving a large struct initialization
->   from a local variable to a global one, from Namhyung Kim.
-> 
-> . Add support for callchains in the gtk UI, from Namhyung Kim.
-> 
-> . Do not apply symfs for an absolute vmlinux path, fix from Namhyung Kim.
-> 
-> . Use default include path notation for libtraceevent, from Robert Richter.
-> 
-> . Fix 'make tools/perf', from Robert Richter.
-> 
-> . Make Power7 events available, from Runzhen Wang.
-> 
-> . Add --objdump option to 'perf top', from Sukadev Bhattiprolu.
-> 
-> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-> 
-> ----------------------------------------------------------------
-> Adrian Hunter (7):
->       perf inject: Remove unused parameter
->       perf tools: Fix missing tool parameter
->       perf inject: Add missing 'finished_round'
->       perf tools: Add const specifier to perf_pmu__find name parameter
->       perf evlist: Tidy duplicated munmap code
->       perf tools: Validate perf event header size
->       perf tools: struct thread has a tid not a pid
-> 
-> Andi Kleen (2):
->       perf tools: Default to cpu// for events v5
->       perf list: List kernel supplied event aliases
-> 
-> David Ahern (5):
->       perf tools: Add methods for setting/retrieving priv element of thread struct
->       perf evlist: Fix use of uninitialized variable
->       perf tools: Don't free list head in parse_events__free_terms
->       perf tests: Make terms a stack variable in test_term
->       perf parse events: Demystify memory allocations
-> 
-> Greg Price (1):
->       perf report/top: Add option to collapse undesired parts of call graph
-> 
-> Jiri Olsa (30):
->       perf tools: Remove cwd from perf_session struct
->       perf tests: Omit end of the symbol check failure for test 1
->       perf tests: Make TEST_ASSERT_VAL global
->       perf tools: Remove callchain_cursor_reset call
->       perf tools: Do not elide parent symbol column
->       perf report: Fix perf_session__delete removal
->       perf tools: Add struct perf_hpp_fmt into hpp callbacks
->       perf tools: Centralize default columns init in perf_hpp__init
->       perf diff: Introducing diff_data object to hold files
->       perf diff: Switching the base hists to be pairs head
->       perf hists: Marking dummy hists entries
->       perf diff: Display data file info ahead of the diff output
->       perf diff: Move diff related columns into diff command
->       perf diff: Move columns into struct data__file
->       perf diff: Change diff command to work over multiple data files
->       perf diff: Update perf diff documentation for multiple data comparison
->       perf diff: Making compute functions static
->       perf diff: Add generic order option for compute sorting
->       perf tools: Move hist_entry__period_snprintf into stdio code
->       perf timechart: Use traceevent lib event-parse.h include
->       perf timechart: Remove event types framework only user
->       perf tools: Remove event types from perf data file
->       perf record: Remove event types pushing
->       perf tools: Remove event types framework completely
->       perf tests: Check proper prev_state size for sched_switch tp
->       perf session: Use session->fd instead of passing fd as argument
->       perf header: Remove data_offset seek as it's not needed
->       perf header: Remove attr_offset from perf_header
->       perf header: Introduce feat_offset into perf_header
->       perf header: Recognize version number for perf data file
-> 
-> Namhyung Kim (26):
->       perf util: Move debugfs/tracing helper functions to util.c
->       perf util: Use evsel->name to get tracepoint_paths
->       tools lib traceevent: Remove unused install targets
->       tools lib traceevent: Get rid of unused gui target
->       tools lib traceevent: Add const qualifier to string arguments
->       tools lib traceevent: Add trace_seq_reset()
->       tools lib traceevent: Add page_size field to pevent
->       tools lib traceevent: Port kbuffer parser routines
->       perf util: Save page size in a trace file to pevent
->       perf util: Save long size of traced system
->       perf util: Make file/host_bigendian variable local
->       perf util: Skip reading header_event file
->       perf util: Parse header_page to get proper long size
->       perf util: Get rid of unused header_page_* variables
->       perf script: Adopt latency_format variable
->       perf util: Rename read_*() functions in trace-event-info.c
->       perf util: No need to call read_trace_init() in tracing_data_header()
->       perf util: Remove unused enum and macro in trace-event.h
->       perf sched: Move struct perf_sched definition out of cmd_sched()
->       perf gtk/hists: Use GtkTreeStore instead of GtkListStore
->       perf gtk/hists: Add support for callchains
->       perf gtk/hists: Display callchain overhead also
->       perf gtk/hists: Make column headers resizable
->       perf gtk/hists: Add a double-click handler for callchains
->       perf gtk/hists: Set rules hint for the hist browser
->       perf symbols: Do not apply symfs for an absolute vmlinux path
-> 
-> Robert Richter (2):
->       perf tools: Use default include path notation for libtraceevent headers
->       perf tools: Fix 'make tools/perf'
-> 
-> Runzhen Wang (1):
->       perf tools: Make Power7 events available for perf
-> 
-> Sukadev Bhattiprolu (2):
->       perf tools: Rename cpu_map__all() to cpu_map__empty()
->       perf top: Add --objdump option
-> 
->  arch/powerpc/include/asm/perf_event_server.h |   4 +-
->  arch/powerpc/perf/power7-events-list.h       | 548 ++++++++++++++++++++
->  arch/powerpc/perf/power7-pmu.c               | 148 ++----
->  tools/lib/traceevent/Makefile                |  18 +-
->  tools/lib/traceevent/event-parse.c           |   7 +-
->  tools/lib/traceevent/event-parse.h           |  15 +-
->  tools/lib/traceevent/kbuffer-parse.c         | 732 +++++++++++++++++++++++++++
->  tools/lib/traceevent/kbuffer.h               |  67 +++
->  tools/lib/traceevent/trace-seq.c             |  13 +
->  tools/perf/Documentation/perf-diff.txt       |  79 ++-
->  tools/perf/Documentation/perf-list.txt       |   4 +-
->  tools/perf/Documentation/perf-report.txt     |   5 +
->  tools/perf/Documentation/perf-top.txt        |   5 +
->  tools/perf/Makefile                          |   4 +-
->  tools/perf/builtin-diff.c                    | 662 +++++++++++++++++++-----
->  tools/perf/builtin-inject.c                  |  45 +-
->  tools/perf/builtin-kmem.c                    |   2 +-
->  tools/perf/builtin-list.c                    |   3 +
->  tools/perf/builtin-record.c                  |  13 -
->  tools/perf/builtin-report.c                  |  60 ++-
->  tools/perf/builtin-sched.c                   |  53 +-
->  tools/perf/builtin-script.c                  |   2 +-
->  tools/perf/builtin-timechart.c               | 176 ++++---
->  tools/perf/builtin-top.c                     |  15 +-
->  tools/perf/builtin-trace.c                   |   6 +-
->  tools/perf/config/Makefile                   |   5 +-
->  tools/perf/tests/dso-data.c                  |   8 -
->  tools/perf/tests/evsel-tp-sched.c            |   4 +-
->  tools/perf/tests/parse-events.c              |  22 +-
->  tools/perf/tests/tests.h                     |   8 +
->  tools/perf/tests/vmlinux-kallsyms.c          |  15 +-
->  tools/perf/ui/browsers/hists.c               |  18 +-
->  tools/perf/ui/gtk/hists.c                    | 126 ++++-
->  tools/perf/ui/hist.c                         | 258 +---------
->  tools/perf/ui/setup.c                        |   1 -
->  tools/perf/ui/stdio/hist.c                   |  45 +-
->  tools/perf/util/cpumap.h                     |   2 +-
->  tools/perf/util/event.c                      |   2 +-
->  tools/perf/util/event.h                      |   2 +-
->  tools/perf/util/evlist.c                     |  38 +-
->  tools/perf/util/evsel.c                      |   8 +-
->  tools/perf/util/header.c                     | 150 +-----
->  tools/perf/util/header.h                     |  40 +-
->  tools/perf/util/hist.c                       |   1 +
->  tools/perf/util/hist.h                       |  26 +-
->  tools/perf/util/include/linux/string.h       |   1 +
->  tools/perf/util/machine.c                    |  46 +-
->  tools/perf/util/machine.h                    |   8 +-
->  tools/perf/util/parse-events.c               | 112 ++--
->  tools/perf/util/parse-events.h               |  11 +-
->  tools/perf/util/parse-events.y               |  62 ++-
->  tools/perf/util/pmu.c                        |  87 +++-
->  tools/perf/util/pmu.h                        |   5 +-
->  tools/perf/util/session.c                    |  45 +-
->  tools/perf/util/session.h                    |   1 -
->  tools/perf/util/sort.c                       |   8 +-
->  tools/perf/util/sort.h                       |   7 +
->  tools/perf/util/string.c                     |  24 +
->  tools/perf/util/symbol.c                     |   7 +-
->  tools/perf/util/thread.c                     |  10 +-
->  tools/perf/util/thread.h                     |  14 +-
->  tools/perf/util/tool.h                       |  10 +-
->  tools/perf/util/trace-event-info.c           |  96 +---
->  tools/perf/util/trace-event-parse.c          |   6 -
->  tools/perf/util/trace-event-read.c           |  52 +-
->  tools/perf/util/trace-event.h                |  17 +-
->  tools/perf/util/util.c                       |  59 +++
->  tools/perf/util/util.h                       |   3 +
->  68 files changed, 2948 insertions(+), 1208 deletions(-)
->  create mode 100644 arch/powerpc/perf/power7-events-list.h
->  create mode 100644 tools/lib/traceevent/kbuffer-parse.c
->  create mode 100644 tools/lib/traceevent/kbuffer.h
+I noticed that I kept looking at the wrong spot in the driver,
+hooked up to some setup routine which lacks a counter part.  You
+made me re-visit the drivers and find better locations to hook up
+to (probe and remove).  Part of my sloppiness with immediate put
+after enable was caused by put being a NOP at the moment, and the
+assumption that clocks without references but in the enabled
+state won't go away.  But I saw your recent message as well about
+how clocks shall get reference counted and keep their provider's
+module loaded.
 
-Pulled, thanks a lot Arnaldo!
+I've queued an update to the I2C, ethernet, and PCI drivers,
+which addresses your concerns.  I2C and ethernet clock handling
+will become correctly balanced, while PCI won't since the
+existing driver already lacks a remove() routine.  These changes
+will be part of v3 of the series.
 
-	Ingo
+Mark, Greg, v2 of the series already addresses the above concerns
+for the serial communication with the PSC hardware (UART and
+SPI).  See how 01/24 and 02/24 became much more complex than in
+v1, yet should result in appropriate clock handling in these
+drivers.
+
+In the very minute I wanted to send out v3, I received feedback
+on the CAN driver manipulation from Marc.  Apparently it suffers
+from the same problem (my blindness to locate the best spot for
+resource release), but CAN shall be the last driver in the series
+which is not acceptable yet.
+
+
+> Final point - if you want to make it non-fatal, don't play games like:
+> 
+> 	clk = clk_get(whatever);
+> 	if (IS_ERR(clk))
+> 		clk = NULL;
+> 
+> 	...
+> 	if (clk)
+> 		clk_prepare(clk);
+> 
+> Do this instead:
+> 
+> 	clk = clk_get(whatever);
+> 	...
+> 
+> 	if (!IS_ERR(clk))
+> 		clk_prepare(clk);
+> etc.
+
+You saw this in the ethernet driver, right?  This "interesting"
+style of "normalization to NULL" in the setup path was meant to
+simplify the cleanup path, but that point has become obsolete by
+now.  Your example doesn't reflect that 'clk' was a more complex
+to access member in the driver's private data.
+
+It seems that doing the setup in steps with a local variable, to
+only store the reference when all steps were successful, cleans
+up the release code paths.
+
+Immediately putting the clock and not having stored the reference
+when enable failed is one more instruction before jumping to the
+bailout label, but eliminates the pain of tracking get and enable
+separately, and needing two labels for disable and put (you
+cannot disable a clock that wasn't enabled).
+
+As mentioned, both the I2C driver you responded to as well as the
+ethernet driver you reference here got adjusted.  v3 will get
+sent when I could address the remaining CAN driver issue.
+
+
+> (And on this subject, I'm considering whether to make a change to the
+> clk API where clk_prepare() and clk_enable() return zero when passed
+> an error pointer - this means drivers with optional clocks don't have
+> to burden themselves with these kinds of checks.)
+
+
+virtually yours
+Gerhard Sittig
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr. 5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
