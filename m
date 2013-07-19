@@ -1,25 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 293022C0084
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jul 2013 08:03:05 +1000 (EST)
-Message-ID: <1374184953.19894.525.camel@pasglop>
-Subject: Re: Inbound PCI and Memory Corruption
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Peter LaDow <petela@gocougs.wsu.edu>
-Date: Fri, 19 Jul 2013 08:02:33 +1000
-In-Reply-To: <CAN8Q1EeKCTCB30N50iA8-QB=0aoNtS1U3nNLGVoz7sHG-Qg26A@mail.gmail.com>
-References: <CAN8Q1EdnN9+kKGy+voF3=EyPfbHv04Emfz=uA6XKMJEAkvLpAA@mail.gmail.com>
- <CAN8Q1Ed9Lpg1Sog5tQODe+jqCRXBBH3d_UeR5usdc23CD7vwjg@mail.gmail.com>
- <1371945647.3944.106.camel@pasglop>
- <CAN8Q1EetHpVkWFmbDGCE-3J4H7oJm0zE66SAdJyvtDb7OBc-gg@mail.gmail.com>
- <1373492413.19894.29.camel@pasglop>
- <CAN8Q1EdVVw3ofg9O3o=WThsKpcfMBXe_C7JsSSx9DdRZULW17Q@mail.gmail.com>
- <CAN8Q1EeKCTCB30N50iA8-QB=0aoNtS1U3nNLGVoz7sHG-Qg26A@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <B42677@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0184.outbound.messaging.microsoft.com [213.199.154.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CAF662C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jul 2013 12:20:39 +1000 (EST)
+From: Zhang Haijun-B42677 <B42677@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH 4/4 V2] mmc: esdhc: Add broken timeout quirk for p4/p5
+ board
+Date: Fri, 19 Jul 2013 02:19:59 +0000
+Message-ID: <99E897753B6F7048BD8CCDB4661D02E13DF50D@039-SN2MPN1-022.039d.mgd.msft.net>
+References: <1374055891-20703-1-git-send-email-Haijun.Zhang@freescale.com>
+ <1374055891-20703-3-git-send-email-Haijun.Zhang@freescale.com>
+ <1374081229.8183.361@snotra>
+In-Reply-To: <1374081229.8183.361@snotra>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "cjb@laptop.org" <cjb@laptop.org>,
+ "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+ Fleming Andy-AFLEMING <afleming@freescale.com>,
+ "cbouatmailru@gmail.com" <cbouatmailru@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,25 +32,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-07-18 at 14:30 -0700, Peter LaDow wrote:
-> We are still stumped on this one, but during a review of the system
-> setup one thing came up that we aren't sure about is the device tree
-> and the DMA engine.
-> 
-> It does seem that for incoming PCI transactions the Freescale DMA
-> engine is not used.  And in our device tree we have the DMA engine
-> commented out.  That is, the "fsl,mpc8349-dma" and "fsl,elo-dma"
-> compatible items are not present in the FDT.
-> 
-> I don't suppose this could be a problem?
 
-I doubt it but somebody from FSL might be able to give a better answer.
 
-I'm personally at a loss. It looks like you are doing everything
-right from what I can tell.
+Thanks.
 
-That leaves us with some kind of oddball driver bug or a problem
-with the low level configuration of the PCIe bridge or the chip
-internal bus related to cache coherency maybe.
+Regards
+Haijun.
 
-Ben.
+
+> -----Original Message-----
+> From: Wood Scott-B07421
+> Sent: Thursday, July 18, 2013 1:14 AM
+> To: Zhang Haijun-B42677
+> Cc: linux-mmc@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
+> cbouatmailru@gmail.com; cjb@laptop.org; Fleming Andy-AFLEMING; Zhang
+> Haijun-B42677; Zhang Haijun-B42677
+> Subject: Re: [PATCH 4/4 V2] mmc: esdhc: Add broken timeout quirk for
+> p4/p5 board
+>=20
+> On 07/17/2013 05:11:31 AM, Haijun Zhang wrote:
+> > Sometimes command can't be completed within the time give in
+> > eSDHC_SYSCTL[DTOCV]. So just give the max value 0x14 to avoid this
+> > issue.
+> >
+> > Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
+> > ---
+> > changes for v2:
+> > 	- Rebuild patch of eSDHC host need long time to generate
+> > 	 command interrupt
+> >
+> >  drivers/mmc/host/sdhci-of-esdhc.c | 6 ++++++
+> >  1 file changed, 6 insertions(+)
+> >
+> > diff --git a/drivers/mmc/host/sdhci-of-esdhc.c
+> > b/drivers/mmc/host/sdhci-of-esdhc.c
+> > index 570bca8..30bfb5c 100644
+> > --- a/drivers/mmc/host/sdhci-of-esdhc.c
+> > +++ b/drivers/mmc/host/sdhci-of-esdhc.c
+> > @@ -325,6 +325,12 @@ static void esdhc_of_platform_init(struct
+> > sdhci_host *host)
+> >
+> >  	if (vvn > VENDOR_V_22)
+> >  		host->quirks &=3D ~SDHCI_QUIRK_NO_BUSY_IRQ;
+> > +
+> > +	if ((SVR_SOC_VER(svr) =3D=3D SVR_B4860) ||
+> > +		(SVR_SOC_VER(svr) =3D=3D SVR_P5020) ||
+> > +		(SVR_SOC_VER(svr) =3D=3D SVR_P5040) ||
+> > +		(SVR_SOC_VER(svr) =3D=3D SVR_P4080))
+> > +		host->quirks |=3D SDHCI_QUIRK_BROKEN_TIMEOUT_VAL;
+> >  }
+>=20
+> Please don't line up the continuation lines of the if-condition with the
+> if-body.
+[Haijun Wrote:] I'll correct it.
+>=20
+> Please check variant SoCs as well.  If the bug exists on p4080, then it
+> exists on p4040.  Likewise with p5040/p5021, and p5020/p5010.
+>=20
+> Is it present on all revisions of these SoCs?  How about p3041, which is
+> usually pretty similar to p5020?  p2040/p2041?  Is there an erratum
+> number for this problem?
+>=20
+[Haijun Wrote:] I only checked this on these boards. No errata number yet, =
+This
+quirk only give the host max detecting time value to check card's response.=
+ No
+impact on performance or other functions.=20
+
+> -Scott
