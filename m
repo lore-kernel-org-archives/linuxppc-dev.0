@@ -1,21 +1,29 @@
-Return-Path: <aaro.koskinen@iki.fi>
-Received: from filtteri5.pp.htv.fi (filtteri5.pp.htv.fi [213.243.153.188])
- by ozlabs.org (Postfix) with ESMTP id C21CC2C008A
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Jul 2013 03:44:08 +1000 (EST)
-Date: Fri, 19 Jul 2013 20:43:00 +0300
-From: Aaro Koskinen <aaro.koskinen@iki.fi>
+Return-Path: <B07421@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2B5EA2C0092
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Jul 2013 03:44:42 +1000 (EST)
+Date: Fri, 19 Jul 2013 12:44:33 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: Inbound PCI and Memory Corruption
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: therm_pm72 units, interface
-Message-ID: <20130719174300.GL14385@blackmetal.musicnaut.iki.fi>
-References: <alpine.LNX.2.01.1208151941010.22695@frira.zrqbmnf.qr>
- <1345066616.11751.2.camel@pasglop>
- <alpine.LNX.2.01.1301142240140.30171@nerf07.vanv.qr>
- <1358465885.2782.24.camel@pasglop>
+References: <CAN8Q1EdnN9+kKGy+voF3=EyPfbHv04Emfz=uA6XKMJEAkvLpAA@mail.gmail.com>
+ <CAN8Q1Ed9Lpg1Sog5tQODe+jqCRXBBH3d_UeR5usdc23CD7vwjg@mail.gmail.com>
+ <1371945647.3944.106.camel@pasglop>
+ <CAN8Q1EetHpVkWFmbDGCE-3J4H7oJm0zE66SAdJyvtDb7OBc-gg@mail.gmail.com>
+ <1373492413.19894.29.camel@pasglop>
+ <CAN8Q1EdVVw3ofg9O3o=WThsKpcfMBXe_C7JsSSx9DdRZULW17Q@mail.gmail.com>
+ <CAN8Q1EeKCTCB30N50iA8-QB=0aoNtS1U3nNLGVoz7sHG-Qg26A@mail.gmail.com>
+ <1374184953.19894.525.camel@pasglop>
+In-Reply-To: <1374184953.19894.525.camel@pasglop> (from
+ benh@kernel.crashing.org on Thu Jul 18 17:02:33 2013)
+Message-ID: <1374255873.5357.20@snotra>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1358465885.2782.24.camel@pasglop>
-Cc: Jan Engelhardt <jengelh@inai.de>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: Peter LaDow <petela@gocougs.wsu.edu>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,19 +33,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jan 18, 2013 at 10:38:05AM +1100, Benjamin Herrenschmidt wrote:
-> On Thu, 2013-01-17 at 15:38 +0100, Jan Engelhardt wrote:
-> > Meanwhile, I run Linux 3.7.1 and the software side changed somewhat.
-> > windfarm_rm31 seems to no longer calm the fans down once loaded,
-> > whereas therm_pm72 on Linux 3.0 did so.
-> 
-> Hrm, that would be a bug ... unfortunately I never got to test it
-> properly due to my xserve being dead.
+On 07/18/2013 05:02:33 PM, Benjamin Herrenschmidt wrote:
+> On Thu, 2013-07-18 at 14:30 -0700, Peter LaDow wrote:
+> > We are still stumped on this one, but during a review of the system
+> > setup one thing came up that we aren't sure about is the device tree
+> > and the DMA engine.
+> >
+> > It does seem that for incoming PCI transactions the Freescale DMA
+> > engine is not used.  And in our device tree we have the DMA engine
+> > commented out.  That is, the "fsl,mpc8349-dma" and "fsl,elo-dma"
+> > compatible items are not present in the FDT.
+> >
+> > I don't suppose this could be a problem?
+>=20
+> I doubt it but somebody from FSL might be able to give a better =20
+> answer.
 
-I booted a Xserve today with 3.11-rc1, and noticed the noise is coming
-from slots-fan (PCI fan?) which is always 99%, although the slots-temp is
-just 33. Is it on purpose the rm31 slots PID params are totally different
-from therm_pm72 slots params? It seems like they have been copied from
-pm72 "drive bay" PID params instead.
+The DMA engine is not related to inbound PCI transactions.
 
-A.
+-Scott=
