@@ -1,21 +1,36 @@
-Return-Path: <B07421@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0253.outbound.messaging.microsoft.com [213.199.154.253])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E24722C0099
- for <linuxppc-dev@ozlabs.org>; Sat, 20 Jul 2013 09:49:23 +1000 (EST)
-Date: Fri, 19 Jul 2013 18:49:13 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: ABI defined register usage within function calls
-To: JiveTalkin <aijazbaig1@gmail.com>
-In-Reply-To: <1373464479578-73565.post@n7.nabble.com> (from
- aijazbaig1@gmail.com on Wed Jul 10 08:54:39 2013)
-Message-ID: <1374277753.5357.36@snotra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-wg0-f43.google.com (mail-wg0-f43.google.com [74.125.82.43])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E1D482C00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Jul 2013 22:22:46 +1000 (EST)
+Received: by mail-wg0-f43.google.com with SMTP id z11so4573663wgg.34
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Jul 2013 05:22:42 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@linaro.org>
+Subject: Re: [PATCH v2] of: Specify initrd location using 64-bit
+To: Rob Herring <robherring2@gmail.com>,
+ Santosh Shilimkar <santosh.shilimkar@ti.com>
+In-Reply-To: <51D1F5E2.6070609@gmail.com>
+References: <1372702835-5333-1-git-send-email-santosh.shilimkar@ti.com>
+ <51D1F5E2.6070609@gmail.com>
+Date: Sat, 20 Jul 2013 06:39:45 +0100
+Message-Id: <20130720053945.C7AC63E0C52@localhost>
+Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, linux-mips@linux-mips.org,
+ Aurelien Jacquiot <a-jacquiot@ti.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ Will Deacon <will.deacon@arm.com>, Max Filippov <jcmvbkbc@gmail.com>,
+ Paul Mackerras <paulus@samba.org>, Jonas Bonn <jonas@southpole.se>,
+ Russell King <linux@arm.linux.org.uk>, linux-c6x-dev@linux-c6x.org,
+ x86@kernel.org, arm@kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>,
+ Mark Salter <msalter@redhat.com>,
+ Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>,
+ linux-xtensa@linux-xtensa.org, James Hogan <james.hogan@imgtec.com>,
+ devicetree-discuss@lists.ozlabs.org, Rob Herring <rob.herring@calxeda.com>,
+ linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>,
+ Michal Simek <monstr@monstr.eu>, Vineet Gupta <vgupta@synopsys.com>,
+ Ralf Baechle <ralf@linux-mips.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,110 +40,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/10/2013 08:54:39 AM, JiveTalkin wrote:
-> Hello.
->=20
-> I would like to monitor the value of one of the parameters (within =20
-> the stack
-> frame) that have been passed as part of a context switch (from process
-> context to interrupt context).
+On Mon, 01 Jul 2013 16:34:26 -0500, Rob Herring <robherring2@gmail.com> wrote:
+> On 07/01/2013 01:20 PM, Santosh Shilimkar wrote:
+> > On some PAE architectures, the entire range of physical memory could reside
+> > outside the 32-bit limit.  These systems need the ability to specify the
+> > initrd location using 64-bit numbers.
+> > 
+> > This patch globally modifies the early_init_dt_setup_initrd_arch() function to
+> > use 64-bit numbers instead of the current unsigned long.
+> > 
+> > There has been quite a bit of debate about whether to use u64 or phys_addr_t.
+> > It was concluded to stick to u64 to be consistent with rest of the device
+> > tree code. As summarized by Geert, "The address to load the initrd is decided
+> > by the bootloader/user and set at that point later in time. The dtb should not
+> > be tied to the kernel you are booting"
+> 
+> That was quoting me. Otherwise:
+> 
+> Acked-by: Rob Herring <rob.herring@calxeda.com>
+> 
+> Unless Grant feels compelled to pick this up for 3.11, I think it has to
+> wait for 3.12.
 
-I don't understand this...  What specifically do you mean by "interrupt =20
-context"?  Do you mean syscall context?  Syscall parameters are passed =20
-in registers, not in the stack frame.
+Nope, 3.12 is fine. Applied.
 
-> START_EXCEPTION does nothing more than align us to a word (32bit) =20
-> boundary
-> (obviously for performance reasons). What I need to understand is the
-> NORMAL_EXCEPTION_PROLOG. I reproduce it here:
->=20
->=20
-> First thing it does it saves r10, r11 and r1(containing the Stack =20
-> pointer)
-> into the scratch registers 0,1 and 2 respectively. Correct me if I am =20
-> wrong,
-> but as per the older EABI, isn't it recommended for the OS to load =20
-> SPRG0
-> with the start address of an area of memory (the stack top) to be =20
-> used by
-> the 1st level interrupt handler? Or can these registers be used =20
-> anyway we
-> see fit?
-
-Linux doesn't use EABI -- and in any case, I don't see "SPRG" anywhere =20
-in the EABI document, and no relevant mention in the SVR4 ABI.  It's up =20
-to the OS how SPRGs are used.
-
-> Moving on, it seems the kernel folks have decided to use SPRNG3 to =20
-> point to
-> the currently running process's thread_struct structure. Is there a =20
-> document
-> which recommends so or was it an unanimous decision taken during early
-> development? Just curios.
->=20
-> Then we go on to check the value of the PR bit from the MSR which has =20
-> been
-> copied by the hardware to SRR1. So here we are actually checking =20
-> whether the
-> exception occurred when the machine was in user space or kernel space =20
-> right?
->=20
-> So once we determine that we've originated in the userspace, as is =20
-> the case
-> for SystemCall, we are apparently updating r1 (stack pointer) with =20
-> (r1 +
-> THREAD) - THREAD_INFO. Or is it actually r1 + (THREAD_INFO-THREAD)?
-
-Neither; it's the address stored at r10 + (THREAD_INFO-THREAD).
-
-> In
-> either case, how does this take us to the top of the kernel stack, is
-> something I am unable to get my head around. May be I do not know =20
-> some basic
-> concepts here, which is why this is looking strange to me. Could =20
-> someone
-> please elaborate? Some ASCII art would be really nice here.
-
-r10 was loaded from SPRG3, and thus points to the thread struct.  The =20
-thread struct (a.k.a. SPRG3, a.k.a. THREAD) and a pointer to the stack =20
-are both contained within the task_struct (a.k.a. current).  At the =20
-bottom of the stack is the thread_info struct, which is why =20
-current->stack is called THREAD_INFO in asm-offsets.c.  Since THREAD =20
-and THREAD_INFO are both in the same struct, we can get THREAD_INFO by =20
-adding the difference in offsets to the THREAD pointer that we got from =20
-SPRG3.
-
-That gets us to the bottom of the stack; ALLOC_STACK_FRAME() adds the =20
-size of the stack so that we point to the top and are ready to create a =20
-frame.  It's a confusing name since it doesn't actually allocate a =20
-frame; that happens in the "subi" instruction that follows.
-
-> We then allocate an exception frame to hold the activation record =20
-> (stack
-> frame) for the caller. Into this frame, we save the CR. We also save =20
-> R12 and
-> R9 (as they are volatile registers and the caller must save them =20
-> before
-> calling a function). We then retrieve the earlier stored values of =20
-> r10 and
-> r11 and store them into the frame (using r11 as an anchor as it now =20
-> points
-> to the top of the stack frame). Then we store the link register.
->=20
-> We retrieve previously stored r1 (previous frame's stack pointer =20
-> isn't it?),
-> retrieve SRR0 (which includes the return address and in this case, the
-> address of the next instruction in case of a syscall from userspace,
-> correct?). If we have already stored the previous value of R1 then =20
-> what are
-> we doing with this:
->=20
->=20
->=20
-
-What are we doing with what?
-
-The previous value of r1 is still in r1.  At this point r11 holds the =20
-new stack pointer.  Did you misread the "stw r1, GPR1(r11)" as a load?
-
--Scott=
+g.
