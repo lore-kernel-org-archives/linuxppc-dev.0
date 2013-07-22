@@ -1,26 +1,35 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <santosh.shilimkar@ti.com>
+Received: from comal.ext.ti.com (comal.ext.ti.com [198.47.26.152])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 6826F2C00A8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 00:40:21 +1000 (EST)
-Subject: Re: [PATCH 1/2] Powerpc: Add voltage ranges support for T4
-Mime-Version: 1.0 (Apple Message framework v1283)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <192298D25D96A042975E372855100DB70A1A93DC@039-SN2MPN1-012.039d.mgd.msft.net>
-Date: Mon, 22 Jul 2013 09:39:41 -0500
-Message-Id: <18210A71-9F5A-40B7-AC3A-03CEF6C28982@kernel.crashing.org>
-References: <1374479636-9254-1-git-send-email-Haijun.Zhang@freescale.com>
- <192298D25D96A042975E372855100DB70A1A93DC@039-SN2MPN1-012.039d.mgd.msft.net>
-To: Wrobel Heinz-R39252 <r39252@freescale.com>
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- Zhang Haijun-B42677 <B42677@freescale.com>,
- Fleming Andy-AFLEMING <afleming@freescale.com>,
- "cbouatmailru@gmail.com" <cbouatmailru@gmail.com>,
- "cjb@laptop.org" <cjb@laptop.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ (Client CN "mailhost.ti.com",
+ Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BBD622C00A9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 00:51:23 +1000 (EST)
+Message-ID: <51ED469A.9000801@ti.com>
+Date: Mon, 22 Jul 2013 10:50:02 -0400
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@linaro.org>
+Subject: Re: [PATCH v2] of: Specify initrd location using 64-bit
+References: <1372702835-5333-1-git-send-email-santosh.shilimkar@ti.com>
+ <51D1F5E2.6070609@gmail.com> <20130720053945.C7AC63E0C52@localhost>
+In-Reply-To: <20130720053945.C7AC63E0C52@localhost>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, linux-mips@linux-mips.org,
+ Aurelien Jacquiot <a-jacquiot@ti.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ Will Deacon <will.deacon@arm.com>, Max Filippov <jcmvbkbc@gmail.com>,
+ Paul Mackerras <paulus@samba.org>, Jonas Bonn <jonas@southpole.se>,
+ Russell King <linux@arm.linux.org.uk>, linux-c6x-dev@linux-c6x.org,
+ x86@kernel.org, arm@kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>,
+ Mark Salter <msalter@redhat.com>, Rob Herring <robherring2@gmail.com>,
+ Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>,
+ linux-xtensa@linux-xtensa.org, James Hogan <james.hogan@imgtec.com>,
+ devicetree-discuss@lists.ozlabs.org, Rob Herring <rob.herring@calxeda.com>,
+ linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>,
+ Michal Simek <monstr@monstr.eu>, Vineet Gupta <vgupta@synopsys.com>,
+ Ralf Baechle <ralf@linux-mips.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,69 +39,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Saturday 20 July 2013 01:39 AM, Grant Likely wrote:
+> On Mon, 01 Jul 2013 16:34:26 -0500, Rob Herring <robherring2@gmail.com> wrote:
+>> On 07/01/2013 01:20 PM, Santosh Shilimkar wrote:
+>>> On some PAE architectures, the entire range of physical memory could reside
+>>> outside the 32-bit limit.  These systems need the ability to specify the
+>>> initrd location using 64-bit numbers.
+>>>
+>>> This patch globally modifies the early_init_dt_setup_initrd_arch() function to
+>>> use 64-bit numbers instead of the current unsigned long.
+>>>
+>>> There has been quite a bit of debate about whether to use u64 or phys_addr_t.
+>>> It was concluded to stick to u64 to be consistent with rest of the device
+>>> tree code. As summarized by Geert, "The address to load the initrd is decided
+>>> by the bootloader/user and set at that point later in time. The dtb should not
+>>> be tied to the kernel you are booting"
+>>
+>> That was quoting me. Otherwise:
+>>
+>> Acked-by: Rob Herring <rob.herring@calxeda.com>
+>>
+>> Unless Grant feels compelled to pick this up for 3.11, I think it has to
+>> wait for 3.12.
+> 
+> Nope, 3.12 is fine. Applied.
+> 
+Thanks Grant.
 
-On Jul 22, 2013, at 4:47 AM, Wrobel Heinz-R39252 wrote:
-
->> Subject: [PATCH 1/2] Powerpc: Add voltage ranges support for T4
->>=20
->> Special voltages that can be support by eSDHC of T4 in esdhc node.
->>=20
->> Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
->> Signed-off-by: Anton Vorontsov <cbouatmailru@gmail.com>
->=20
->> --- a/Documentation/devicetree/bindings/mmc/fsl-esdhc.txt
->> +++ b/Documentation/devicetree/bindings/mmc/fsl-esdhc.txt
->> @@ -19,6 +19,8 @@ Optional properties:
->>     "bus-width =3D <1>" property.
->>   - sdhci,auto-cmd12: specifies that a controller can only handle =
-auto
->>     CMD12.
->> +  - 3300 3300: specifies that eSDHC controller can support voltages
->> ranges
->> +    from 3300 to 3300. This is an optional.
->=20
-> "This is an optional." is an unclear statement.
->=20
->> +++ b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
->> @@ -399,6 +399,7 @@
->> 	sdhc@114000 {
->> 		compatible =3D "fsl,t4240-esdhc", "fsl,esdhc";
->> 		sdhci,auto-cmd12;
->> +		voltage-ranges =3D <1800 1800 3300 3300>;
->=20
-> This is IMHO incorrect and potentially dangerous.
-> The T4 silicon will only support 1.8V on SDHC pins per hardware =
-specification.
-> The Freescale T4240QDS reference board has extra voltage shifters =
-added to allow 3.3V operation, but that is _not_ a silicon feature. It =
-is a specific board feature that may or may not translate to other =
-boards, depending on how SD spec conformant a board builder wants to be.
->=20
-> If the intent is to state that a physical SDHC interface on a board =
-has to be built to support 3.3V operation to be SD spec conformant for =
-off-the-shelf cards because a reset would change the signal voltage to =
-3.3V, then I am not sure that putting this down as silicon "feature" =
-without further explanation about the background anywhere is the right =
-way to go.
-> IMHO silicon features are really just silicon features and not =
-technically optional external circuitry additions implied by common use.
->=20
-> Best regards,
->=20
-> Heinz
-
-I'd say that the t4240si-post.dtsi should be:
-
-	voltage-ranges =3D <1800 1800>;
-
-Than have the t4240qds.dts do:
-
-	voltage-ranges =3D <1800 1800 3300 3300>;
-
-As the 3.3V sounds like a board specific feature.
-
-[ send this as 2 patches, on for the t4240si-post.dtsi and another for =
-the t4240qds.dts ]
-
-- k
-=09=
+Regards,
+Santosh
