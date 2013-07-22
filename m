@@ -1,27 +1,22 @@
 Return-Path: <B07421@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0252.outbound.messaging.microsoft.com [213.199.154.252])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7BFBF2C01C5
- for <linuxppc-dev@ozlabs.org>; Tue, 23 Jul 2013 09:00:33 +1000 (EST)
-Received: from mail195-co9 (localhost [127.0.0.1])	by
- mail195-co9-R.bigfish.com (Postfix) with ESMTP id 121BDB0012F	for
- <linuxppc-dev@ozlabs.org>; Mon, 22 Jul 2013 23:00:31 +0000 (UTC)
-Received: from CO9EHSMHS009.bigfish.com (unknown [10.236.132.250])	by
- mail195-co9.bigfish.com (Postfix) with ESMTP id 66679D00047	for
- <linuxppc-dev@ozlabs.org>; Mon, 22 Jul 2013 23:00:29 +0000 (UTC)
-Date: Mon, 22 Jul 2013 18:00:27 -0500
+ by ozlabs.org (Postfix) with ESMTPS id 74FD22C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 09:11:57 +1000 (EST)
+Date: Mon, 22 Jul 2013 18:11:35 -0500
 From: Scott Wood <scottwood@freescale.com>
-To: Po Liu <po.liu@freescale.com>
-Subject: Re: [4/4] powerpc/85xx: Update mpc85xx_defconfig for C293PCIE
-Message-ID: <20130722230026.GA26621@home.buserror.net>
-References: <1366854857-22791-4-git-send-email-Po.Liu@freescale.com>
+To: Xie Xiaobo <X.Xie@freescale.com>
+Subject: Re: powerpc/85xx: Add TWR-P1025 board support
+Message-ID: <20130722231135.GA26665@home.buserror.net>
+References: <1366874028-18870-1-git-send-email-X.Xie@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1366854857-22791-4-git-send-email-Po.Liu@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Mingkai Hu <Mingkai.Hu@freescale.com>
+In-Reply-To: <1366874028-18870-1-git-send-email-X.Xie@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Michael Johnston <michael.johnston@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,30 +26,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Apr 25, 2013 at 09:54:17AM +0800, Po Liu wrote:
-> From: Mingkai Hu <Mingkai.Hu@freescale.com>
-> 
-> Signed-off-by: Mingkai Hu <Mingkai.Hu@freescale.com>
-> 
-> ---
-> Base on git://git.am.freescale.net/gitolite/mirrors/linux-2.6.git
->  arch/powerpc/configs/mpc85xx_defconfig | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/arch/powerpc/configs/mpc85xx_defconfig b/arch/powerpc/configs/mpc85xx_defconfig
-> index cf815e8..ddc33a2 100644
-> --- a/arch/powerpc/configs/mpc85xx_defconfig
-> +++ b/arch/powerpc/configs/mpc85xx_defconfig
-> @@ -28,6 +28,7 @@ CONFIG_MPC85xx_MDS=y
->  CONFIG_MPC8536_DS=y
->  CONFIG_MPC85xx_DS=y
->  CONFIG_MPC85xx_RDB=y
-> +CONFIG_C293_PCIE=y
->  CONFIG_P1010_RDB=y
->  CONFIG_P1022_DS=y
->  CONFIG_P1022_RDK=y
+On Thu, Apr 25, 2013 at 03:13:48PM +0800, Xie Xiaobo wrote:
+> +		partition@400000 {
+> +			/* 58.75MB for JFFS2 based Root file System */
+> +			reg = <0x00400000 0x03ac0000>;
+> +			label = "NOR JFFS2 Root File System";
+> +		};
 
-Also, why only mpc85xx_defconfig and mpc85xx_smp_defconfig?  Just because
-this board isn't SMP doesn't mean it can't be supported by an SMP kernel.
+Don't specify JFFS2.
+
+> diff --git a/arch/powerpc/platforms/85xx/twr_p102x.c b/arch/powerpc/platforms/85xx/twr_p102x.c
+> new file mode 100644
+> index 0000000..a5de4e0
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/85xx/twr_p102x.c
+> @@ -0,0 +1,176 @@
+> +/*
+> + * Copyright 2010-2011, 2013 Freescale Semiconductor, Inc.
+> + *
+> + * Author: Michael Johnston <michael.johnston@freescale.com>
+> + *
+> + * Description:
+> + * TWR-P102x Board Setup
+> + *
+> + * This program is free software; you can redistribute  it and/or modify it
+> + * under  the terms of  the GNU General  Public License as published by the
+> + * Free Software Foundation;  either version 2 of the  License, or (at your
+> + * option) any later version.
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/init.h>
+> +#include <linux/errno.h>
+> +#include <linux/pci.h>
+> +#include <linux/delay.h>
+> +#include <linux/module.h>
+> +#include <linux/fsl_devices.h>
+> +#include <linux/of_platform.h>
+> +#include <linux/of_device.h>
+> +#include <linux/memblock.h>
+> +
+> +#include <asm/time.h>
+> +#include <asm/machdep.h>
+> +#include <asm/pci-bridge.h>
+> +#include <mm/mmu_decl.h>
+> +#include <asm/prom.h>
+> +#include <asm/udbg.h>
+> +#include <asm/mpic.h>
+> +#include <asm/qe.h>
+> +#include <asm/qe_ic.h>
+> +#include <asm/fsl_guts.h>
+> +
+> +#include <sysdev/fsl_soc.h>
+> +#include <sysdev/fsl_pci.h>
+> +#include "smp.h"
+> +
+> +#include "mpc85xx.h"
+
+Are you sure you need all of these?  I don't see any delays, for example.
+
+> +static void __init twr_p1025_pic_init(void)
+> +{
+> +	struct mpic *mpic;
+> +
+> +#ifdef CONFIG_QUICC_ENGINE
+> +	struct device_node *np;
+> +#endif
+> +
+> +	mpic = mpic_alloc(NULL, 0, MPIC_BIG_ENDIAN |
+> +			MPIC_SINGLE_DEST_CPU,
+> +			0, 256, " OpenPIC  ");
+> +
+> +	BUG_ON(mpic == NULL);
+> +	mpic_init(mpic);
+> +
+> +#ifdef CONFIG_QUICC_ENGINE
+> +	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
+> +	if (np) {
+> +		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
+> +				qe_ic_cascade_high_mpic);
+> +		of_node_put(np);
+> +	} else
+> +		printk(KERN_ERR "Could not find qe-ic node\n");
+
+WARNING: Prefer netdev_err(netdev, ... then dev_err(dev, ... then
+pr_err(...  to printk(KERN_ERR ...
+#529: FILE: arch/powerpc/platforms/85xx/twr_p102x.c:65:
++		printk(KERN_ERR "Could not find qe-ic node\n");
+
+Likewise elsewhere.
+
+Also, it'd be nice if this code (as well as the QE code later in this
+file) were factored out to a QE file rather than being duplicated in
+board files.
+
+> +static int __init twr_p1025_probe(void)
+> +{
+> +	unsigned long root = of_get_flat_dt_root();
+> +
+> +	return of_flat_dt_is_compatible(root, "fsl,TWR-P1025");
+> +
+> +}
+
+Remove the newline at the end of the function.
 
 -Scott
+ 
