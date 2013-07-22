@@ -3,15 +3,16 @@ Received: from mail-out.m-online.net (mail-out.m-online.net
  [IPv6:2001:a60:0:28:0:1:25:1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 2CF3C2C02B0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2013 22:16:15 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 3E2D02C02B8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2013 22:16:17 +1000 (EST)
 From: Gerhard Sittig <gsi@denx.de>
 To: linuxppc-dev@lists.ozlabs.org, Anatolij Gustschin <agust@denx.de>,
  Mike Turquette <mturquette@linaro.org>,
  linux-arm-kernel@lists.infradead.org, devicetree-discuss@lists.ozlabs.org
-Subject: [PATCH v3 20/31] spi: mpc512x: remove now obsolete clock lookup name
-Date: Mon, 22 Jul 2013 14:14:47 +0200
-Message-Id: <1374495298-22019-21-git-send-email-gsi@denx.de>
+Subject: [PATCH v3 21/31] serial: mpc512x: remove now obsolete clock lookup
+ name
+Date: Mon, 22 Jul 2013 14:14:48 +0200
+Message-Id: <1374495298-22019-22-git-send-email-gsi@denx.de>
 In-Reply-To: <1374495298-22019-1-git-send-email-gsi@denx.de>
 References: <1374166855-7280-1-git-send-email-gsi@denx.de>
  <1374495298-22019-1-git-send-email-gsi@denx.de>
@@ -36,32 +37,37 @@ remove the "psc%d_mclk" template and unconditionally use "mclk"
 
 Signed-off-by: Gerhard Sittig <gsi@denx.de>
 ---
- drivers/spi/spi-mpc512x-psc.c |    6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+ drivers/tty/serial/mpc52xx_uart.c |    8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/spi/spi-mpc512x-psc.c b/drivers/spi/spi-mpc512x-psc.c
-index 823e5e0..1a4a983 100644
---- a/drivers/spi/spi-mpc512x-psc.c
-+++ b/drivers/spi/spi-mpc512x-psc.c
-@@ -474,8 +474,6 @@ static int mpc512x_psc_spi_do_probe(struct device *dev, u32 regaddr,
- 	struct spi_master *master;
- 	int ret;
- 	void *tempp;
+diff --git a/drivers/tty/serial/mpc52xx_uart.c b/drivers/tty/serial/mpc52xx_uart.c
+index 8f16ed9..04dc564 100644
+--- a/drivers/tty/serial/mpc52xx_uart.c
++++ b/drivers/tty/serial/mpc52xx_uart.c
+@@ -623,14 +623,11 @@ static struct clk *psc_mclk_clk[MPC52xx_PSC_MAXNUM];
+ /* called from within the .request_port() callback (allocation) */
+ static int mpc512x_psc_alloc_clock(struct uart_port *port)
+ {
 -	int psc_num;
 -	char clk_name[16];
  	struct clk *clk;
+ 	int err;
++	int psc_num;
  
- 	master = spi_alloc_master(dev, sizeof *mps);
-@@ -519,9 +517,7 @@ static int mpc512x_psc_spi_do_probe(struct device *dev, u32 regaddr,
- 		goto free_master;
- 	init_completion(&mps->txisrdone);
- 
--	psc_num = master->bus_num;
+-	psc_num = (port->mapbase & 0xf00) >> 8;
 -	snprintf(clk_name, sizeof(clk_name), "psc%d_mclk", psc_num);
--	clk = devm_clk_get(dev, clk_name);
-+	clk = devm_clk_get(dev, "mclk");
- 	if (IS_ERR(clk))
- 		goto free_irq;
- 	ret = clk_prepare_enable(clk);
+-	clk = devm_clk_get(port->dev, clk_name);
++	clk = devm_clk_get(port->dev, "mclk");
+ 	if (IS_ERR(clk)) {
+ 		dev_err(port->dev, "Failed to get MCLK!\n");
+ 		return PTR_ERR(clk);
+@@ -641,6 +638,7 @@ static int mpc512x_psc_alloc_clock(struct uart_port *port)
+ 		devm_clk_put(port->dev, clk);
+ 		return err;
+ 	}
++	psc_num = (port->mapbase & 0xf00) >> 8;
+ 	psc_mclk_clk[psc_num] = clk;
+ 	return 0;
+ }
 -- 
 1.7.10.4
