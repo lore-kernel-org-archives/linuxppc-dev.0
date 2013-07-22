@@ -1,18 +1,16 @@
 Return-Path: <gsi@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:28:0:1:25:1])
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3E2D02C02B8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2013 22:16:17 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 9848F2C02AA
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2013 22:16:18 +1000 (EST)
 From: Gerhard Sittig <gsi@denx.de>
 To: linuxppc-dev@lists.ozlabs.org, Anatolij Gustschin <agust@denx.de>,
  Mike Turquette <mturquette@linaro.org>,
  linux-arm-kernel@lists.infradead.org, devicetree-discuss@lists.ozlabs.org
-Subject: [PATCH v3 21/31] serial: mpc512x: remove now obsolete clock lookup
- name
-Date: Mon, 22 Jul 2013 14:14:48 +0200
-Message-Id: <1374495298-22019-22-git-send-email-gsi@denx.de>
+Subject: [PATCH v3 22/31] clk: mpc512x: remove clkdev registration (uart, spi)
+Date: Mon, 22 Jul 2013 14:14:49 +0200
+Message-Id: <1374495298-22019-23-git-send-email-gsi@denx.de>
 In-Reply-To: <1374495298-22019-1-git-send-email-gsi@denx.de>
 References: <1374166855-7280-1-git-send-email-gsi@denx.de>
  <1374495298-22019-1-git-send-email-gsi@denx.de>
@@ -31,43 +29,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-after device tree based clock lookup became available, the peripheral
-driver need no longer construct clock names which include the PSC index,
-remove the "psc%d_mclk" template and unconditionally use "mclk"
+after the UART and SPI peripheral drivers have switched to device tree
+based clock lookup and no longer construct clock names from their PSC
+component index, the "psc%d_mclk" alias names have become obsolete --
+remove the corresponding clk_register_clkdev() calls
 
 Signed-off-by: Gerhard Sittig <gsi@denx.de>
 ---
- drivers/tty/serial/mpc52xx_uart.c |    8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
+ arch/powerpc/platforms/512x/clock-commonclk.c |   11 -----------
+ 1 file changed, 11 deletions(-)
 
-diff --git a/drivers/tty/serial/mpc52xx_uart.c b/drivers/tty/serial/mpc52xx_uart.c
-index 8f16ed9..04dc564 100644
---- a/drivers/tty/serial/mpc52xx_uart.c
-+++ b/drivers/tty/serial/mpc52xx_uart.c
-@@ -623,14 +623,11 @@ static struct clk *psc_mclk_clk[MPC52xx_PSC_MAXNUM];
- /* called from within the .request_port() callback (allocation) */
- static int mpc512x_psc_alloc_clock(struct uart_port *port)
- {
--	int psc_num;
--	char clk_name[16];
- 	struct clk *clk;
- 	int err;
-+	int psc_num;
- 
--	psc_num = (port->mapbase & 0xf00) >> 8;
--	snprintf(clk_name, sizeof(clk_name), "psc%d_mclk", psc_num);
--	clk = devm_clk_get(port->dev, clk_name);
-+	clk = devm_clk_get(port->dev, "mclk");
- 	if (IS_ERR(clk)) {
- 		dev_err(port->dev, "Failed to get MCLK!\n");
- 		return PTR_ERR(clk);
-@@ -641,6 +638,7 @@ static int mpc512x_psc_alloc_clock(struct uart_port *port)
- 		devm_clk_put(port->dev, clk);
- 		return err;
+diff --git a/arch/powerpc/platforms/512x/clock-commonclk.c b/arch/powerpc/platforms/512x/clock-commonclk.c
+index 8b71ceb..a860ded 100644
+--- a/arch/powerpc/platforms/512x/clock-commonclk.c
++++ b/arch/powerpc/platforms/512x/clock-commonclk.c
+@@ -529,17 +529,6 @@ static void mpc512x_clk_setup_mclk(struct mclk_setup_data *entry)
+ 				entry->name_mclk,
+ 				entry->name_mux1, 1, 1);
  	}
-+	psc_num = (port->mapbase & 0xf00) >> 8;
- 	psc_mclk_clk[psc_num] = clk;
- 	return 0;
+-
+-	/*
+-	 * without this "clock device" registration, "simple" lookups in
+-	 * the SPI master initialization and serial port setup will fail
+-	 *
+-	 * those drivers need to get adjusted to lookup their required
+-	 * clocks from device tree specs, and device tree nodes need to
+-	 * provide the clock specs, before this clkdev registration
+-	 * becomes obsolete
+-	 */
+-	clk_register_clkdev(clks[clks_idx_pub], entry->name_mclk, NULL);
  }
+ 
+ static void mpc512x_clk_setup_mclks(struct mclk_setup_data *table, size_t count)
 -- 
 1.7.10.4
