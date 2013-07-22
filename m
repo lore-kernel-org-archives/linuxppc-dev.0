@@ -1,35 +1,27 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0CF422C007C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 01:24:51 +1000 (EST)
-Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 22 Jul 2013 20:46:13 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id D7FBEE004F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2013 20:54:34 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r6MFPSTm40829032
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2013 20:55:29 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r6MFOXdT015028
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 01:24:34 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Denis Kirjanov <kda@linux-powerpc.org>
-Subject: Re: [PATCH] Fix a typo in pSeries_lpar_hpte_insert()
-In-Reply-To: <1374470630-2106-1-git-send-email-kda@linux-powerpc.org>
-References: <1374470630-2106-1-git-send-email-kda@linux-powerpc.org>
-Date: Mon, 22 Jul 2013 20:54:31 +0530
-Message-ID: <874nbmobww.fsf@linux.vnet.ibm.com>
+Return-Path: <B07421@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 814562C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 03:19:19 +1000 (EST)
+Date: Mon, 22 Jul 2013 12:18:53 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] powerpc/msi: Fix compile error on mpc83xx
+To: Jia Hongtao-B38951 <B38951@freescale.com>
+References: <1372728997-31665-1-git-send-email-hongtao.jia@freescale.com>
+ <412C8208B4A0464FA894C5F0C278CD5D01CF350E@039-SN1MPN1-004.039d.mgd.msft.net>
+ <412C8208B4A0464FA894C5F0C278CD5D01CF8676@039-SN1MPN1-004.039d.mgd.msft.net>
+In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01CF8676@039-SN1MPN1-004.039d.mgd.msft.net>
+ (from B38951@freescale.com on Sun Jul 21 21:00:51 2013)
+Message-ID: <1374513533.15592.3@snotra>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Denis Kirjanov <kda@linux-powerpc.org>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ Jia Hongtao-B38951 <B38951@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,37 +31,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Denis Kirjanov <kda@linux-powerpc.org> writes:
+On 07/21/2013 09:00:51 PM, Jia Hongtao-B38951 wrote:
+> Hi Scott,
+>=20
+> The fsl_msi.c build error on MPC83xx platform is fixed by this patch.
+>=20
+> Could you please have a review?
+>=20
+> Thanks.
+> -Hongtao
 
-> Fix a typo in pSeries_lpar_hpte_insert()
->
-> Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
+I will apply it when I apply the patch that depends on it.  I hope to =20
+resume applying patches soon.
 
-looks good
-
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-
-We may want to add the commit that introduced the change ?
-
-801eb73f45371accc78ca9d6d22d647eeb722c11
-
-
-> ---
->  arch/powerpc/platforms/pseries/lpar.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-> index 0da39fe..c4112ed 100644
-> --- a/arch/powerpc/platforms/pseries/lpar.c
-> +++ b/arch/powerpc/platforms/pseries/lpar.c
-> @@ -136,7 +136,7 @@ static long pSeries_lpar_hpte_insert(unsigned long hpte_group,
->  	flags = 0;
->
->  	/* Make pHyp happy */
-> -	if ((rflags & _PAGE_NO_CACHE) & !(rflags & _PAGE_WRITETHRU))
-> +	if ((rflags & _PAGE_NO_CACHE) && !(rflags & _PAGE_WRITETHRU))
->  		hpte_r &= ~_PAGE_COHERENT;
->  	if (firmware_has_feature(FW_FEATURE_XCMO) && !(hpte_r & HPTE_R_N))
->  		flags |= H_COALESCE_CAND;
-> -- 
-> 1.8.0.2
+-Scott=
