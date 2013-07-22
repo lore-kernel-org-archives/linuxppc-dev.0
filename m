@@ -1,16 +1,18 @@
 Return-Path: <B42677@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0249.outbound.messaging.microsoft.com [213.199.154.249])
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DDC402C00DE
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2013 18:45:22 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 4E3582C00DE
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2013 18:45:24 +1000 (EST)
 From: Haijun Zhang <Haijun.Zhang@freescale.com>
 To: <linux-mmc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 1/2] Powerpc: Add voltage ranges support for T4
-Date: Mon, 22 Jul 2013 15:53:55 +0800
-Message-ID: <1374479636-9254-1-git-send-email-Haijun.Zhang@freescale.com>
+Subject: [PATCH 2/2] mmc: esdhc: get voltage from dts file
+Date: Mon, 22 Jul 2013 15:53:56 +0800
+Message-ID: <1374479636-9254-2-git-send-email-Haijun.Zhang@freescale.com>
+In-Reply-To: <1374479636-9254-1-git-send-email-Haijun.Zhang@freescale.com>
+References: <1374479636-9254-1-git-send-email-Haijun.Zhang@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: scottwood@freescale.com, cjb@laptop.org, AFLEMING@freescale.com,
@@ -24,45 +26,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Special voltages that can be support by eSDHC of T4 in esdhc node.
+Add voltage-range support in esdhc of T4, So we can choose
+to read voltages from dts file as one optional.
+If we can get a valid voltage-range from device node, we use
+this voltage as the final voltage support. Else we still read
+from capacity or from other provider.
 
 Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
 Signed-off-by: Anton Vorontsov <cbouatmailru@gmail.com>
 ---
- Documentation/devicetree/bindings/mmc/fsl-esdhc.txt | 3 +++
- arch/powerpc/boot/dts/fsl/t4240si-post.dtsi         | 1 +
- 2 files changed, 4 insertions(+)
+ drivers/mmc/host/sdhci-of-esdhc.c | 31 +++++++++++++++++++++++++++++++
+ drivers/mmc/host/sdhci.c          |  3 +++
+ include/linux/mmc/sdhci.h         |  1 +
+ 3 files changed, 35 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/mmc/fsl-esdhc.txt b/Documentation/devicetree/bindings/mmc/fsl-esdhc.txt
-index bd9be0b..4aeae6e 100644
---- a/Documentation/devicetree/bindings/mmc/fsl-esdhc.txt
-+++ b/Documentation/devicetree/bindings/mmc/fsl-esdhc.txt
-@@ -19,6 +19,8 @@ Optional properties:
-     "bus-width = <1>" property.
-   - sdhci,auto-cmd12: specifies that a controller can only handle auto
-     CMD12.
-+  - 3300 3300: specifies that eSDHC controller can support voltages ranges
-+    from 3300 to 3300. This is an optional.
+diff --git a/drivers/mmc/host/sdhci-of-esdhc.c b/drivers/mmc/host/sdhci-of-esdhc.c
+index 15039e2..8b4b27a 100644
+--- a/drivers/mmc/host/sdhci-of-esdhc.c
++++ b/drivers/mmc/host/sdhci-of-esdhc.c
+@@ -262,6 +262,35 @@ static int esdhc_pltfm_bus_width(struct sdhci_host *host, int width)
+ 	return 0;
+ }
  
- Example:
++static void esdhc_get_voltage(struct sdhci_host *host,
++			struct platform_device *pdev)
++{
++	const u32 *voltage_ranges;
++	int num_ranges, i;
++	struct device_node *np;
++	np = pdev->dev.of_node;
++
++	voltage_ranges = of_get_property(np, "voltage-ranges", &num_ranges);
++	num_ranges = num_ranges / sizeof(*voltage_ranges) / 2;
++	if (!voltage_ranges || !num_ranges) {
++		dev_info(&pdev->dev, "OF: voltage-ranges unspecified\n");
++		return;
++	}
++
++	for (i = 0; i < num_ranges; i++) {
++		const int j = i * 2;
++		u32 mask;
++		mask = mmc_vddrange_to_ocrmask(be32_to_cpu(voltage_ranges[j]),
++				be32_to_cpu(voltage_ranges[j + 1]));
++		if (!mask) {
++			dev_info(&pdev->dev,
++				"OF: false voltage-ranges specified\n");
++			return;
++		}
++		host->ocr_mask |= mask;
++	}
++}
++
+ static const struct sdhci_ops sdhci_esdhc_ops = {
+ 	.read_l = esdhc_readl,
+ 	.read_w = esdhc_readw,
+@@ -317,6 +346,8 @@ static int sdhci_esdhc_probe(struct platform_device *pdev)
+ 	/* call to generic mmc_of_parse to support additional capabilities */
+ 	mmc_of_parse(host->mmc);
  
-@@ -29,4 +31,5 @@ sdhci@2e000 {
- 	interrupt-parent = <&ipic>;
- 	/* Filled in by U-Boot */
- 	clock-frequency = <0>;
-+	voltage-ranges = <3300 3300>;
- };
-diff --git a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-index bd611a9..1ef2d2d 100644
---- a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-@@ -399,6 +399,7 @@
- 	sdhc@114000 {
- 		compatible = "fsl,t4240-esdhc", "fsl,esdhc";
- 		sdhci,auto-cmd12;
-+		voltage-ranges = <1800 1800 3300 3300>;
- 	};
- /include/ "qoriq-i2c-0.dtsi"
- /include/ "qoriq-i2c-1.dtsi"
++	esdhc_get_voltage(host, pdev);
++
+ 	ret = sdhci_add_host(host);
+ 	if (ret)
+ 		sdhci_pltfm_free(pdev);
+diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+index a78bd4f..57541e0 100644
+--- a/drivers/mmc/host/sdhci.c
++++ b/drivers/mmc/host/sdhci.c
+@@ -3119,6 +3119,9 @@ int sdhci_add_host(struct sdhci_host *host)
+ 				   SDHCI_MAX_CURRENT_MULTIPLIER;
+ 	}
+ 
++	if (host->ocr_mask)
++		ocr_avail = host->ocr_mask;
++
+ 	mmc->ocr_avail = ocr_avail;
+ 	mmc->ocr_avail_sdio = ocr_avail;
+ 	if (host->ocr_avail_sdio)
+diff --git a/include/linux/mmc/sdhci.h b/include/linux/mmc/sdhci.h
+index e3c6a74..3e781b8 100644
+--- a/include/linux/mmc/sdhci.h
++++ b/include/linux/mmc/sdhci.h
+@@ -171,6 +171,7 @@ struct sdhci_host {
+ 	unsigned int            ocr_avail_sdio;	/* OCR bit masks */
+ 	unsigned int            ocr_avail_sd;
+ 	unsigned int            ocr_avail_mmc;
++	u32 ocr_mask;		/* available voltages */
+ 
+ 	wait_queue_head_t	buf_ready_int;	/* Waitqueue for Buffer Read Ready interrupt */
+ 	unsigned int		tuning_done;	/* Condition flag set when CMD19 succeeds */
 -- 
 1.8.0
