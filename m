@@ -1,16 +1,17 @@
 Return-Path: <gsi@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+Received: from mail-out.m-online.net (mail-out.m-online.net
+ [IPv6:2001:a60:0:28:0:1:25:1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E0CDC2C0151
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2013 22:15:43 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 4347D2C0082
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2013 22:15:46 +1000 (EST)
 From: Gerhard Sittig <gsi@denx.de>
 To: linuxppc-dev@lists.ozlabs.org, Anatolij Gustschin <agust@denx.de>,
  Mike Turquette <mturquette@linaro.org>,
  linux-arm-kernel@lists.infradead.org, devicetree-discuss@lists.ozlabs.org
-Subject: [PATCH v3 05/31] [media] fsl-viu: cleanup clock API use
-Date: Mon, 22 Jul 2013 14:14:32 +0200
-Message-Id: <1374495298-22019-6-git-send-email-gsi@denx.de>
+Subject: [PATCH v3 06/31] i2c: mpc: cleanup clock API use
+Date: Mon, 22 Jul 2013 14:14:33 +0200
+Message-Id: <1374495298-22019-7-git-send-email-gsi@denx.de>
 In-Reply-To: <1374495298-22019-1-git-send-email-gsi@denx.de>
 References: <1374166855-7280-1-git-send-email-gsi@denx.de>
  <1374495298-22019-1-git-send-email-gsi@denx.de>
@@ -29,74 +30,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-prepare clocks before enabling them, check for and propagate enable
-errors, balance get/put and prepare/unprepare and enable/disable,
-use devm_{get,put}_clk()
+make the MPC I2C driver get, prepare and enable the peripheral clock
+('per' for access to the peripheral's registers) during probe;
+disable, unprepare and put the clock upon remove(); hold a reference
+to the clock over the period of use
+
+clock lookup is non-fatal in this implementation as not all platforms
+may provide clock specs in their device tree, but enable errors for
+specified clocks are considered fatal
 
 Signed-off-by: Gerhard Sittig <gsi@denx.de>
 ---
- drivers/media/platform/fsl-viu.c |   26 ++++++++++++++++----------
- 1 file changed, 16 insertions(+), 10 deletions(-)
+ drivers/i2c/busses/i2c-mpc.c |   28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
 
-diff --git a/drivers/media/platform/fsl-viu.c b/drivers/media/platform/fsl-viu.c
-index 221ec42..48fced4 100644
---- a/drivers/media/platform/fsl-viu.c
-+++ b/drivers/media/platform/fsl-viu.c
-@@ -1485,6 +1485,7 @@ static int viu_of_probe(struct platform_device *op)
- 	struct viu_reg __iomem *viu_regs;
- 	struct i2c_adapter *ad;
- 	int ret, viu_irq;
+diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+index 7607dc0..9e837be 100644
+--- a/drivers/i2c/busses/i2c-mpc.c
++++ b/drivers/i2c/busses/i2c-mpc.c
+@@ -21,6 +21,7 @@
+ #include <linux/of_i2c.h>
+ #include <linux/slab.h>
+ 
++#include <linux/clk.h>
+ #include <linux/io.h>
+ #include <linux/fsl_devices.h>
+ #include <linux/i2c.h>
+@@ -67,6 +68,7 @@ struct mpc_i2c {
+ #ifdef CONFIG_PM
+ 	u8 fdr, dfsrr;
+ #endif
++	struct clk *clk_per;
+ };
+ 
+ struct mpc_i2c_divider {
+@@ -623,6 +625,8 @@ static int fsl_i2c_probe(struct platform_device *op)
+ 	u32 clock = MPC_I2C_CLOCK_LEGACY;
+ 	int result = 0;
+ 	int plen;
 +	struct clk *clk;
++	int err;
  
- 	ret = of_address_to_resource(op->dev.of_node, 0, &r);
- 	if (ret) {
-@@ -1577,14 +1578,19 @@ static int viu_of_probe(struct platform_device *op)
+ 	match = of_match_device(mpc_i2c_of_match, &op->dev);
+ 	if (!match)
+@@ -653,6 +657,21 @@ static int fsl_i2c_probe(struct platform_device *op)
+ 		}
  	}
  
- 	/* enable VIU clock */
--	viu_dev->clk = clk_get(&op->dev, "viu_clk");
--	if (IS_ERR(viu_dev->clk)) {
--		dev_err(&op->dev, "failed to find the clock module!\n");
--		ret = -ENODEV;
-+	clk = devm_clk_get(&op->dev, "viu_clk");
-+	if (IS_ERR(clk)) {
-+		dev_err(&op->dev, "failed to lookup the clock!\n");
-+		ret = PTR_ERR(clk);
-+		goto err_clk;
++	/*
++	 * enable clock for the I2C peripheral (non fatal),
++	 * keep a reference upon successful allocation
++	 */
++	clk = devm_clk_get(&op->dev, "per");
++	if (!IS_ERR(clk)) {
++		err = clk_prepare_enable(clk);
++		if (err) {
++			dev_err(&op->dev, "failed to enable clock\n");
++			devm_clk_put(&op->dev, clk);
++		} else {
++			i2c->clk_per = clk;
++		}
 +	}
-+	ret = clk_prepare_enable(clk);
-+	if (ret) {
-+		dev_err(&op->dev, "failed to enable the clock!\n");
-+		devm_clk_put(&op->dev, clk);
- 		goto err_clk;
--	} else {
--		clk_enable(viu_dev->clk);
- 	}
-+	viu_dev->clk = clk;
++
+ 	if (of_get_property(op->dev.of_node, "fsl,preserve-clocking", NULL)) {
+ 		clock = MPC_I2C_CLOCK_PRESERVE;
+ 	} else {
+@@ -696,6 +715,10 @@ static int fsl_i2c_probe(struct platform_device *op)
+ 	return result;
  
- 	/* reset VIU module */
- 	viu_reset(viu_dev->vr);
-@@ -1602,8 +1608,8 @@ static int viu_of_probe(struct platform_device *op)
- 	return ret;
+  fail_add:
++	if (i2c->clk_per) {
++		clk_disable_unprepare(i2c->clk_per);
++		devm_clk_put(&op->dev, i2c->clk_per);
++	}
+ 	free_irq(i2c->irq, i2c);
+  fail_request:
+ 	irq_dispose_mapping(i2c->irq);
+@@ -711,6 +734,11 @@ static int fsl_i2c_remove(struct platform_device *op)
  
- err_irq:
--	clk_disable(viu_dev->clk);
--	clk_put(viu_dev->clk);
-+	clk_disable_unprepare(viu_dev->clk);
-+	devm_clk_put(&op->dev, viu_dev->clk);
- err_clk:
- 	video_unregister_device(viu_dev->vdev);
- err_vdev:
-@@ -1626,8 +1632,8 @@ static int viu_of_remove(struct platform_device *op)
- 	free_irq(dev->irq, (void *)dev);
- 	irq_dispose_mapping(dev->irq);
+ 	i2c_del_adapter(&i2c->adap);
  
--	clk_disable(dev->clk);
--	clk_put(dev->clk);
-+	clk_disable_unprepare(dev->clk);
-+	devm_clk_put(&op->dev, dev->clk);
++	if (i2c->clk_per) {
++		clk_disable_unprepare(i2c->clk_per);
++		devm_clk_put(&op->dev, i2c->clk_per);
++	}
++
+ 	if (i2c->irq)
+ 		free_irq(i2c->irq, i2c);
  
- 	video_unregister_device(dev->vdev);
- 	i2c_put_adapter(client->adapter);
 -- 
 1.7.10.4
