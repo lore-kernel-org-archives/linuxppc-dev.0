@@ -1,16 +1,16 @@
 Return-Path: <gsi@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id ABCC02C0203
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2013 22:15:46 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id F24532C0177
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2013 22:15:48 +1000 (EST)
 From: Gerhard Sittig <gsi@denx.de>
 To: linuxppc-dev@lists.ozlabs.org, Anatolij Gustschin <agust@denx.de>,
  Mike Turquette <mturquette@linaro.org>,
  linux-arm-kernel@lists.infradead.org, devicetree-discuss@lists.ozlabs.org
-Subject: [PATCH v3 07/31] fs_enet: silence a build warning (unused variable)
-Date: Mon, 22 Jul 2013 14:14:34 +0200
-Message-Id: <1374495298-22019-8-git-send-email-gsi@denx.de>
+Subject: [PATCH v3 08/31] fs_enet: cleanup clock API use
+Date: Mon, 22 Jul 2013 14:14:35 +0200
+Message-Id: <1374495298-22019-9-git-send-email-gsi@denx.de>
 In-Reply-To: <1374495298-22019-1-git-send-email-gsi@denx.de>
 References: <1374166855-7280-1-git-send-email-gsi@denx.de>
  <1374495298-22019-1-git-send-email-gsi@denx.de>
@@ -29,23 +29,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+make the Freescale ethernet driver get, prepare and enable the FEC clock
+during probe(); disable, unprepare and put the clock upon remove(); hold
+a reference to the clock over the period of use; use devm_{get,put}_clk()
+
+clock lookup is non-fatal as not all platforms provide clock specs in
+their device tree; failure to enable specified clocks is fatal
 
 Signed-off-by: Gerhard Sittig <gsi@denx.de>
 ---
- drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c |    1 -
- 1 file changed, 1 deletion(-)
+ .../net/ethernet/freescale/fs_enet/fs_enet-main.c  |   25 ++++++++++++++++++++
+ include/linux/fs_enet_pd.h                         |    3 +++
+ 2 files changed, 28 insertions(+)
 
 diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-index 8de53a1..c04eb3a 100644
+index c04eb3a..1f58f57 100644
 --- a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
 +++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-@@ -583,7 +583,6 @@ static struct sk_buff *tx_skb_align_workaround(struct net_device *dev,
- 					       struct sk_buff *skb)
- {
- 	struct sk_buff *new_skb;
--	struct fs_enet_private *fep = netdev_priv(dev);
+@@ -999,6 +999,8 @@ static int fs_enet_probe(struct platform_device *ofdev)
+ 	struct fs_enet_private *fep;
+ 	struct fs_platform_info *fpi;
+ 	const u32 *data;
++	struct clk *clk;
++	int err;
+ 	const u8 *mac_addr;
+ 	const char *phy_connection_type;
+ 	int privsize, len, ret = -ENODEV;
+@@ -1036,6 +1038,21 @@ static int fs_enet_probe(struct platform_device *ofdev)
+ 			fpi->use_rmii = 1;
+ 	}
  
- 	/* Alloc new skb */
- 	new_skb = netdev_alloc_skb(dev, skb->len + 4);
++	/* make clock lookup non-fatal (the driver is shared among platforms),
++	 * but require enable to succeed when a clock was specified/found,
++	 * keep a reference to the clock upon successful acquisition
++	 */
++	clk = devm_clk_get(&ofdev->dev, "per");
++	if (!IS_ERR(clk)) {
++		err = clk_prepare_enable(clk);
++		if (err) {
++			devm_clk_put(&ofdev->dev, clk);
++			ret = err;
++			goto out_free_fpi;
++		}
++		fpi->clk_per = clk;
++	}
++
+ 	privsize = sizeof(*fep) +
+ 	           sizeof(struct sk_buff **) *
+ 	           (fpi->rx_ring + fpi->tx_ring);
+@@ -1107,6 +1124,10 @@ out_free_dev:
+ 	free_netdev(ndev);
+ out_put:
+ 	of_node_put(fpi->phy_node);
++	if (fpi->clk_per) {
++		clk_disable_unprepare(fpi->clk_per);
++		devm_clk_put(&ofdev->dev, fpi->clk_per);
++	}
+ out_free_fpi:
+ 	kfree(fpi);
+ 	return ret;
+@@ -1123,6 +1144,10 @@ static int fs_enet_remove(struct platform_device *ofdev)
+ 	fep->ops->cleanup_data(ndev);
+ 	dev_set_drvdata(fep->dev, NULL);
+ 	of_node_put(fep->fpi->phy_node);
++	if (fep->fpi->clk_per) {
++		clk_disable_unprepare(fep->fpi->clk_per);
++		devm_clk_put(&ofdev->dev, fep->fpi->clk_per);
++	}
+ 	free_netdev(ndev);
+ 	return 0;
+ }
+diff --git a/include/linux/fs_enet_pd.h b/include/linux/fs_enet_pd.h
+index 51b7934..a978d0d 100644
+--- a/include/linux/fs_enet_pd.h
++++ b/include/linux/fs_enet_pd.h
+@@ -16,6 +16,7 @@
+ #ifndef FS_ENET_PD_H
+ #define FS_ENET_PD_H
+ 
++#include <linux/clk.h>
+ #include <linux/string.h>
+ #include <linux/of_mdio.h>
+ #include <asm/types.h>
+@@ -142,6 +143,8 @@ struct fs_platform_info {
+ 
+ 	int use_rmii;		/* use RMII mode 	       */
+ 	int has_phy;            /* if the network is phy container as well...*/
++
++	struct clk *clk_per;	/* 'per' clock for register access */
+ };
+ struct fs_mii_fec_platform_info {
+ 	u32 irq[32];
 -- 
 1.7.10.4
