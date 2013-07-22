@@ -1,29 +1,26 @@
-Return-Path: <mkl@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
- [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <broonie@sirena.org.uk>
+Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E440E2C0089
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2013 23:05:36 +1000 (EST)
-Message-ID: <51ED2DF4.2090606@pengutronix.de>
-Date: Mon, 22 Jul 2013 15:04:52 +0200
-From: Marc Kleine-Budde <mkl@pengutronix.de>
-MIME-Version: 1.0
+ by ozlabs.org (Postfix) with ESMTPS id 76CFB2C00A4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 00:09:21 +1000 (EST)
+Date: Mon, 22 Jul 2013 15:09:04 +0100
+From: Mark Brown <broonie@kernel.org>
 To: Gerhard Sittig <gsi@denx.de>
-Subject: Re: [PATCH v3 27/31] net: can: mscan: add common clock support for
- mpc512x
+Message-ID: <20130722140904.GU9858@sirena.org.uk>
 References: <1374166855-7280-1-git-send-email-gsi@denx.de>
  <1374495298-22019-1-git-send-email-gsi@denx.de>
- <1374495298-22019-28-git-send-email-gsi@denx.de>
-In-Reply-To: <1374495298-22019-28-git-send-email-gsi@denx.de>
+ <1374495298-22019-2-git-send-email-gsi@denx.de>
+MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="----enig2PJXSIVVFEOIDGCPHBDEN"
+ protocol="application/pgp-signature"; boundary="yKucn/VR3FthLjAA"
+In-Reply-To: <1374495298-22019-2-git-send-email-gsi@denx.de>
+Subject: Re: [PATCH v3 01/31] spi: mpc512x: cleanup clock API use
 Cc: Mike Turquette <mturquette@linaro.org>, Detlev Zundel <dzu@denx.de>,
  Wolfram Sang <wsa@the-dreams.de>, David Woodhouse <dwmw2@infradead.org>,
  devicetree-discuss@lists.ozlabs.org,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@kernel.org>,
+ Rob Herring <rob.herring@calxeda.com>, Marc Kleine-Budde <mkl@pengutronix.de>,
  Wolfgang Grandegger <wg@grandegger.com>, Anatolij Gustschin <agust@denx.de>,
  linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
  Mauro Carvalho Chehab <m.chehab@samsung.com>
@@ -36,275 +33,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
-------enig2PJXSIVVFEOIDGCPHBDEN
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
 
-On 07/22/2013 02:14 PM, Gerhard Sittig wrote:
-> implement a .get_clock() callback for the MPC512x platform which uses
-> the common clock infrastructure (eliminating direct access to the clock=
+--yKucn/VR3FthLjAA
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> control registers from within the CAN network driver), and provide the
-> corresponding .put_clock() callback to release resources after use
->=20
-> keep the previous implementation of MPC512x support in place during
-> migration, since common clock support is optional
->=20
-> this change is neutral to the MPC5200 platform
->=20
-> Signed-off-by: Gerhard Sittig <gsi@denx.de>
-> ---
->  drivers/net/can/mscan/mpc5xxx_can.c |  169 +++++++++++++++++++++++++++=
-++++++++
->  1 file changed, 169 insertions(+)
->=20
-> diff --git a/drivers/net/can/mscan/mpc5xxx_can.c b/drivers/net/can/msca=
-n/mpc5xxx_can.c
-> index e59b3a3..4897929 100644
-> --- a/drivers/net/can/mscan/mpc5xxx_can.c
-> +++ b/drivers/net/can/mscan/mpc5xxx_can.c
-> @@ -109,6 +109,167 @@ static u32 mpc52xx_can_get_clock(struct platform_=
-device *ofdev,
->  #endif /* CONFIG_PPC_MPC52xx */
-> =20
->  #ifdef CONFIG_PPC_MPC512x
-> +
-> +#if IS_ENABLED(CONFIG_COMMON_CLK)
-> +
-> +static u32 mpc512x_can_get_clock(struct platform_device *ofdev,
-> +				 const char *clock_source, int *mscan_clksrc)
-> +{
-> +	struct device_node *np;
-> +	u32 clockdiv;
-> +	enum {
-> +		CLK_FROM_AUTO,
-> +		CLK_FROM_IPS,
-> +		CLK_FROM_SYS,
-> +		CLK_FROM_REF,
-> +	} clk_from;
-> +	struct clk *clk_in, *clk_can;
-> +	unsigned long freq_calc;
-> +	struct mscan_priv *priv;
-> +
-> +	/* the caller passed in the clock source spec that was read from
-> +	 * the device tree, get the optional clock divider as well
-> +	 */
-> +	np =3D ofdev->dev.of_node;
-> +	clockdiv =3D 1;
-> +	of_property_read_u32(np, "fsl,mscan-clock-divider", &clockdiv);
-> +	dev_dbg(&ofdev->dev, "device tree specs: clk src[%s] div[%d]\n",
-> +		clock_source ? clock_source : "<NULL>", clockdiv);
-> +
-> +	/* when clock-source is 'ip', the CANCTL1[CLKSRC] bit needs to
-> +	 * get set, and the 'ips' clock is the input to the MSCAN
-> +	 * component
-> +	 *
-> +	 * for clock-source values of 'ref' or 'sys' the CANCTL1[CLKSRC]
-> +	 * bit needs to get cleared, an optional clock-divider may have
-> +	 * been specified (the default value is 1), the appropriate
-> +	 * MSCAN related MCLK is the input to the MSCAN component
-> +	 *
-> +	 * in the absence of a clock-source spec, first an optimal clock
-> +	 * gets determined based on the 'sys' clock, if that fails the
-> +	 * 'ref' clock is used
-> +	 */
-> +	clk_from =3D CLK_FROM_AUTO;
-> +	if (clock_source) {
-> +		/* interpret the device tree's spec for the clock source */
-> +		if (!strcmp(clock_source, "ip"))
-> +			clk_from =3D CLK_FROM_IPS;
-> +		else if (!strcmp(clock_source, "sys"))
-> +			clk_from =3D CLK_FROM_SYS;
-> +		else if (!strcmp(clock_source, "ref"))
-> +			clk_from =3D CLK_FROM_REF;
-> +		else
-> +			goto err_invalid;
-> +		dev_dbg(&ofdev->dev, "got a clk source spec[%d]\n", clk_from);
-> +	}
-> +	if (clk_from =3D=3D CLK_FROM_AUTO) {
-> +		/* no spec so far, try the 'sys' clock; round to the
-> +		 * next MHz and see if we can get a multiple of 16MHz
-> +		 */
-> +		dev_dbg(&ofdev->dev, "no clk source spec, trying SYS\n");
-> +		clk_in =3D devm_clk_get(&ofdev->dev, "sys");
-> +		if (IS_ERR(clk_in))
-> +			goto err_notavail;
-> +		freq_calc =3D clk_get_rate(clk_in);
-> +		freq_calc +=3D  499999;
-> +		freq_calc /=3D 1000000;
-> +		freq_calc *=3D 1000000;
-> +		if ((freq_calc % 16000000) =3D=3D 0) {
-> +			clk_from =3D CLK_FROM_SYS;
-> +			clockdiv =3D freq_calc / 16000000;
-> +			dev_dbg(&ofdev->dev,
-> +				"clk fit, sys[%lu] div[%d] freq[%lu]\n",
-> +				freq_calc, clockdiv, freq_calc / clockdiv);
-> +		}
-> +	}
-> +	if (clk_from =3D=3D CLK_FROM_AUTO) {
-> +		/* no spec so far, use the 'ref' clock */
-> +		dev_dbg(&ofdev->dev, "no clk source spec, trying REF\n");
-> +		clk_in =3D devm_clk_get(&ofdev->dev, "ref");
-> +		if (IS_ERR(clk_in))
-> +			goto err_notavail;
-> +		clk_from =3D CLK_FROM_REF;
-> +		freq_calc =3D clk_get_rate(clk_in);
-> +		dev_dbg(&ofdev->dev,
-> +			"clk fit, ref[%lu] (no div) freq[%lu]\n",
-> +			freq_calc, freq_calc);
-> +	}
-> +
-> +	/* select IPS or MCLK as the MSCAN input (returned to the caller),
-> +	 * setup the MCLK mux source and rate if applicable, apply the
-> +	 * optionally specified or derived above divider, and determine
-> +	 * the actual resulting clock rate to return to the caller
-> +	 */
-> +	switch (clk_from) {
-> +	case CLK_FROM_IPS:
-> +		clk_can =3D devm_clk_get(&ofdev->dev, "ips");
-> +		if (IS_ERR(clk_can))
-> +			goto err_notavail;
-> +		if (clk_prepare(clk_can)) {
+On Mon, Jul 22, 2013 at 02:14:28PM +0200, Gerhard Sittig wrote:
 
-I would just call prepare_enable in the main mscan driver, then we don't
-need a special "clock is prepared but not enabled" contract.
+> +	ret = clk_prepare_enable(clk);
+> +	if (ret) {
+> +		devm_clk_put(dev, clk);
+> +		goto free_irq;
 
-> +			devm_clk_put(&ofdev->dev, clk_can);
+The main point of the devm_ APIs is to avoid the need for explicit
+freeing so you should just remove these puts.
 
-not needed, as this driver instance will fail, doesn't it?
-
-> +			goto err_notavail;
-> +		}
-> +		priv =3D netdev_priv(dev_get_drvdata(&ofdev->dev));
-> +		priv->clk_can =3D clk_can;
-> +		freq_calc =3D clk_get_rate(clk_can);
-> +		*mscan_clksrc =3D MSCAN_CLKSRC_IPS;
-> +		dev_dbg(&ofdev->dev, "clk from IPS, clksrc[%d] freq[%lu]\n",
-> +			*mscan_clksrc, freq_calc);
-> +		break;
-> +	case CLK_FROM_SYS:
-> +	case CLK_FROM_REF:
-> +		clk_can =3D devm_clk_get(&ofdev->dev, "mclk");
-> +		if (IS_ERR(clk_can))
-> +			goto err_notavail;
-> +		if (clk_prepare(clk_can)) {
-> +			devm_clk_put(&ofdev->dev, clk_can);
-
-same here
-
-> +			goto err_notavail;
-> +		}
-> +		priv =3D netdev_priv(dev_get_drvdata(&ofdev->dev));
-> +		priv->clk_can =3D clk_can;
-> +		if (clk_from =3D=3D CLK_FROM_SYS)
-> +			clk_in =3D devm_clk_get(&ofdev->dev, "sys");
-> +		if (clk_from =3D=3D CLK_FROM_REF)
-> +			clk_in =3D devm_clk_get(&ofdev->dev, "ref");
-> +		if (IS_ERR(clk_in))
-> +			goto err_notavail;
-> +		clk_set_parent(clk_can, clk_in);
-> +		freq_calc =3D clk_get_rate(clk_in);
-> +		freq_calc /=3D clockdiv;
-> +		clk_set_rate(clk_can, freq_calc);
-> +		freq_calc =3D clk_get_rate(clk_can);
-> +		*mscan_clksrc =3D MSCAN_CLKSRC_BUS;
-> +		dev_dbg(&ofdev->dev, "clk from MCLK, clksrc[%d] freq[%lu]\n",
-> +			*mscan_clksrc, freq_calc);
-> +		break;
-> +	default:
-> +		goto err_invalid;
-> +	}
-> +
-> +	return freq_calc;
-> +
-> +err_invalid:
-> +	dev_err(&ofdev->dev, "invalid clock source specification\n");
-> +	return 0;
-
-return 0 in case of error? Please add a comment what this 0 means here.
-> +
-> +err_notavail:
-> +	dev_err(&ofdev->dev, "cannot acquire or setup clock source\n");
-> +	return 0;
-> +}
-> +
-> +static void mpc512x_can_put_clock(struct platform_device *ofdev)
-> +{
-> +	struct mscan_priv *priv;
-> +
-> +	priv =3D netdev_priv(dev_get_drvdata(&ofdev->dev));
-> +	if (priv->clk_can) {
-> +		clk_unprepare(priv->clk_can);
-> +		devm_clk_put(&ofdev->dev, priv->clk_can);
-
-devm_clk_put can be removed, it's called automatically.
-
-> +	}
-> +}
-> +
-> +#else	/* COMMON_CLK */
-> +
->  struct mpc512x_clockctl {
->  	u32 spmr;		/* System PLL Mode Reg */
->  	u32 sccr[2];		/* System Clk Ctrl Reg 1 & 2 */
-> @@ -239,12 +400,18 @@ exit_put:
->  	of_node_put(np_clock);
->  	return freq;
->  }
-> +
-> +#define mpc512x_can_put_clock NULL
-> +
-> +#endif	/* COMMON_CLK */
-> +
->  #else /* !CONFIG_PPC_MPC512x */
->  static u32 mpc512x_can_get_clock(struct platform_device *ofdev,
->  				 const char *clock_name, int *mscan_clksrc)
->  {
->  	return 0;
->  }
-> +#define mpc512x_can_put_clock NULL
->  #endif /* CONFIG_PPC_MPC512x */
-> =20
->  static const struct of_device_id mpc5xxx_can_table[];
-> @@ -386,11 +553,13 @@ static int mpc5xxx_can_resume(struct platform_dev=
-ice *ofdev)
->  static const struct mpc5xxx_can_data mpc5200_can_data =3D {
->  	.type =3D MSCAN_TYPE_MPC5200,
->  	.get_clock =3D mpc52xx_can_get_clock,
-> +	/* .put_clock not applicable */
->  };
-> =20
->  static const struct mpc5xxx_can_data mpc5121_can_data =3D {
->  	.type =3D MSCAN_TYPE_MPC5121,
->  	.get_clock =3D mpc512x_can_get_clock,
-> +	.put_clock =3D mpc512x_can_put_clock,
->  };
-> =20
->  static const struct of_device_id mpc5xxx_can_table[] =3D {
->=20
-
-Marc
-
---=20
-Pengutronix e.K.                  | Marc Kleine-Budde           |
-Industrial Linux Solutions        | Phone: +49-231-2826-924     |
-Vertretung West/Dortmund          | Fax:   +49-5121-206917-5555 |
-Amtsgericht Hildesheim, HRA 2686  | http://www.pengutronix.de   |
-
-
-------enig2PJXSIVVFEOIDGCPHBDEN
+--yKucn/VR3FthLjAA
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Icedove - http://www.enigmail.net/
+Version: GnuPG v2.0.20 (GNU/Linux)
 
-iEYEARECAAYFAlHtLfQACgkQjTAFq1RaXHOLogCeOS8hW9jKqkkOFy7uYqKidses
-ocUAn2iEi3xZa5CRPJhL/7kEFVwGMrHT
-=5Mb7
+iQIcBAEBAgAGBQJR7Tz9AAoJELSic+t+oim98nsP/27loR3uzD6vU4Iq6PIP9XrZ
+oeTT4jiRvolsbAQ2b8FnWtJYqf61S/ql+yHFvous9eeIWHiYCQZgu+1QYy5DeUwG
+IyG9qGrrFGa8rZS+VnXxPUOFjmgYkxmadQN/tvnqM0TJnfRoM2x77MODjJ65d1Yf
+wjIFjwUGKY4c/CkhMDD3eglA4jyXE94uLZ1gU1EByw3RTtdpTBcZirBY3kuxE3Sk
+kEOyLgAEzIUfgHLQBYk+Uv3REwkxJJboZdcNx9G9fnY6mz9YVEvis+DhJzhZEd6u
+syAcYSoZwNSPhtd2IfpclQSF9illzIHPHkoSxm+nFaUv41phl1A9iWmkEgHzd0Rn
+paFBjdbDXOg884mzUzdbcZnTsroCL89avzGts+YnjgHWTD4ISAdze361e1GVXCTn
+yuOaMuLiOyKL8TLI015ICLKj8xKL/mjUhpXfqoDRWipcYSdKbZcwfVTLbGnUXSmU
++zIvwwmt9XXaD4nbKtwqamOL94iEja7WAtVncxPYkpEkM3lT8QDqOfxxDU5VEh6B
+SWfiG9pgcJhujsAeoADdvv6d9nt8oOSIlVunWqcaQX8OCKNmU2xz4pf+xpiJcABv
+aP3xe5w9y1kbGHZT9JMqOoUYQS4DdTaEimLjTNoITzR/5IGbnmCz9ZmYUKSXYivW
+BYhitlq7N2WFm5VQiznq
+=yo5g
 -----END PGP SIGNATURE-----
 
-------enig2PJXSIVVFEOIDGCPHBDEN--
+--yKucn/VR3FthLjAA--
