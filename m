@@ -1,24 +1,22 @@
-Return-Path: <B38951@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe004.messaging.microsoft.com [216.32.180.14])
+Return-Path: <B45939@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 313952C00D8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2013 12:01:00 +1000 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH] powerpc/msi: Fix compile error on mpc83xx
-Date: Mon, 22 Jul 2013 02:00:51 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01CF8676@039-SN1MPN1-004.039d.mgd.msft.net>
-References: <1372728997-31665-1-git-send-email-hongtao.jia@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01CF350E@039-SN1MPN1-004.039d.mgd.msft.net>
-In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01CF350E@039-SN1MPN1-004.039d.mgd.msft.net>
-Content-Type: text/plain; charset="us-ascii"
+ by ozlabs.org (Postfix) with ESMTPS id 582C72C00CF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2013 15:56:20 +1000 (EST)
+From: <hongbo.zhang@freescale.com>
+To: <vinod.koul@intel.com>, <djbw@fb.com>, <leoli@freescale.com>,
+ <scottwood@freescale.com>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH v4 0/3] DMA: Freescale: Add support for 8-channel DMA engine
+Date: Mon, 22 Jul 2013 13:55:37 +0800
+Message-ID: <1374472540-21177-1-git-send-email-hongbo.zhang@freescale.com>
 MIME-Version: 1.0
-Cc: Jia Hongtao-B38951 <B38951@freescale.com>,
- Li Yang-R58472 <r58472@freescale.com>
+Content-Type: text/plain
+Cc: Hongbo Zhang <hongbo.zhang@freescale.com>,
+ devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ vakul@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,68 +26,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Scott,
+From: Hongbo Zhang <hongbo.zhang@freescale.com>
 
-The fsl_msi.c build error on MPC83xx platform is fixed by this patch.
+Hi Vinod, Dan, Scott and Leo, please have a look at these V2 patches.
 
-Could you please have a review?
+Freescale QorIQ T4 and B4 introduce new 8-channel DMA engines, this patch set
+adds support this DMA engine.
 
-Thanks.
--Hongtao
+V3->V4 changes:
+- introduce new patch [1/3] to revise the legacy dma binding document
+- and then add new paragraph to describe new dt node binding in [2/3]
+- rebase to latest kernel v3.11-rc1
 
-> -----Original Message-----
-> From: Jia Hongtao-B38951
-> Sent: Wednesday, July 10, 2013 10:04 AM
-> To: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org
-> Cc: galak@kernel.crashing.org; Li Yang-R58472; Jia Hongtao-B38951
-> Subject: RE: [PATCH] powerpc/msi: Fix compile error on mpc83xx
->=20
-> Hi Scott,
->=20
-> I made this patch to fix msi compile error on mpc83xx.
-> Could you please have a review.
->=20
-> Thanks.
-> -Hongtao
->=20
-> > -----Original Message-----
-> > From: Jia Hongtao-B38951
-> > Sent: Tuesday, July 02, 2013 9:37 AM
-> > To: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421
-> > Cc: galak@kernel.crashing.org; Li Yang-R58472; Jia Hongtao-B38951
-> > Subject: [PATCH] powerpc/msi: Fix compile error on mpc83xx
-> >
-> > mpic_get_primary_version() is not defined when not using MPIC.
-> > The compile error log like:
-> >
-> > arch/powerpc/sysdev/built-in.o: In function `fsl_of_msi_probe':
-> > fsl_msi.c:(.text+0x150c): undefined reference to
-> > `fsl_mpic_primary_get_version'
-> >
-> > Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
-> > ---
-> >  arch/powerpc/include/asm/mpic.h | 7 +++++++
-> >  1 file changed, 7 insertions(+)
-> >
-> > diff --git a/arch/powerpc/include/asm/mpic.h
-> > b/arch/powerpc/include/asm/mpic.h index ea6bf72..97b5a63 100644
-> > --- a/arch/powerpc/include/asm/mpic.h
-> > +++ b/arch/powerpc/include/asm/mpic.h
-> > @@ -394,7 +394,14 @@ struct mpic
-> >  #define	MPIC_REGSET_TSI108		MPIC_REGSET(1)	/* Tsi108/109
-> > PIC */
-> >
-> >  /* Get the version of primary MPIC */
-> > +#ifdef CONFIG_MPIC
-> >  extern u32 fsl_mpic_primary_get_version(void);
-> > +#else
-> > +static inline u32 fsl_mpic_primary_get_version(void)
-> > +{
-> > +	return 0;
-> > +}
-> > +#endif
-> >
-> >  /* Allocate the controller structure and setup the linux irq descs
-> >   * for the range if interrupts passed in. No HW initialization is
-> > --
-> > 1.8.0
+V2->V3 changes:
+- edit Documentation/devicetree/bindings/powerpc/fsl/dma.txt
+- edit text string in Kconfig and the driver files, using "elo series" to
+  mention all the current "elo*"
+
+V1->V2 changes:
+- removed the codes handling the register dgsr1, since it isn't used corrently
+- renamed the DMA DT compatible to "fsl,elo3-dma"
+- renamed the new dts files to "elo3-dma-<n>.dtsi"
+
+Hongbo Zhang (3):
+  DMA: Freescale: revise device tree binding document
+  DMA: Freescale: Add new 8-channel DMA engine device tree nodes
+  DMA: Freescale: update driver to support 8-channel DMA engine
+
+ .../devicetree/bindings/powerpc/fsl/dma.txt        |  122 +++++++++++++++-----
+ arch/powerpc/boot/dts/fsl/b4si-post.dtsi           |    4 +-
+ arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi          |   81 +++++++++++++
+ arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi          |   81 +++++++++++++
+ arch/powerpc/boot/dts/fsl/t4240si-post.dtsi        |    4 +-
+ drivers/dma/Kconfig                                |    9 +-
+ drivers/dma/fsldma.c                               |    9 +-
+ drivers/dma/fsldma.h                               |    2 +-
+ 8 files changed, 274 insertions(+), 38 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi
+
+-- 
+1.7.9.5
