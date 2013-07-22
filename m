@@ -1,16 +1,17 @@
 Return-Path: <gsi@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+Received: from mail-out.m-online.net (mail-out.m-online.net
+ [IPv6:2001:a60:0:28:0:1:25:1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 6850D2C011E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2013 22:16:11 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 0F8CB2C0150
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2013 22:16:13 +1000 (EST)
 From: Gerhard Sittig <gsi@denx.de>
 To: linuxppc-dev@lists.ozlabs.org, Anatolij Gustschin <agust@denx.de>,
  Mike Turquette <mturquette@linaro.org>,
  linux-arm-kernel@lists.infradead.org, devicetree-discuss@lists.ozlabs.org
-Subject: [PATCH v3 18/31] dts: mpc512x: add clock specs for client lookups
-Date: Mon, 22 Jul 2013 14:14:45 +0200
-Message-Id: <1374495298-22019-19-git-send-email-gsi@denx.de>
+Subject: [PATCH v3 19/31] clk: mpc512x: don't pre-enable FEC and I2C clocks
+Date: Mon, 22 Jul 2013 14:14:46 +0200
+Message-Id: <1374495298-22019-20-git-send-email-gsi@denx.de>
 In-Reply-To: <1374495298-22019-1-git-send-email-gsi@denx.de>
 References: <1374166855-7280-1-git-send-email-gsi@denx.de>
  <1374495298-22019-1-git-send-email-gsi@denx.de>
@@ -29,320 +30,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-this addresses the client side of device tree based clock lookups
-
-add clock specifiers to the mbx, nfc, mscan, sdhc, i2c, axe, diu, viu,
-mdio, fec, usb, pata, psc, psc fifo, and pci nodes in the shared
-mpc5121.dtsi include
-
-these specs map 'clock-names' encoded in drivers to their respective
-'struct clk' items in the platform's clock driver
+after the device tree nodes provide clock specs for client side lookups,
+peripheral drivers can attach to their clocks and the clock driver need
+no longer pre-enable those clock items
 
 Signed-off-by: Gerhard Sittig <gsi@denx.de>
 ---
- arch/powerpc/boot/dts/mpc5121.dtsi |   79 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 79 insertions(+)
+ arch/powerpc/platforms/512x/clock-commonclk.c |    2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/mpc5121.dtsi b/arch/powerpc/boot/dts/mpc5121.dtsi
-index 8f4cba0..3657ae6 100644
---- a/arch/powerpc/boot/dts/mpc5121.dtsi
-+++ b/arch/powerpc/boot/dts/mpc5121.dtsi
-@@ -51,6 +51,10 @@
- 		compatible = "fsl,mpc5121-mbx";
- 		reg = <0x20000000 0x4000>;
- 		interrupts = <66 0x8>;
-+		clocks = <&clks MPC512x_CLK_MBX_BUS>,
-+			 <&clks MPC512x_CLK_MBX_3D>,
-+			 <&clks MPC512x_CLK_MBX>;
-+		clock-names = "mbx-bus", "mbx-3d", "mbx";
- 	};
- 
- 	sram@30000000 {
-@@ -64,6 +68,8 @@
- 		interrupts = <6 8>;
- 		#address-cells = <1>;
- 		#size-cells = <1>;
-+		clocks = <&clks MPC512x_CLK_NFC>;
-+		clock-names = "per";
- 	};
- 
- 	localbus@80000020 {
-@@ -153,12 +159,22 @@
- 			compatible = "fsl,mpc5121-mscan";
- 			reg = <0x1300 0x80>;
- 			interrupts = <12 0x8>;
-+			clocks = <&clks MPC512x_CLK_IPS>,
-+				 <&clks MPC512x_CLK_SYS>,
-+				 <&clks MPC512x_CLK_REF>,
-+				 <&clks MPC512x_CLK_MSCAN0_MCLK>;
-+			clock-names = "ips", "sys", "ref", "mclk";
- 		};
- 
- 		can@1380 {
- 			compatible = "fsl,mpc5121-mscan";
- 			reg = <0x1380 0x80>;
- 			interrupts = <13 0x8>;
-+			clocks = <&clks MPC512x_CLK_IPS>,
-+				 <&clks MPC512x_CLK_SYS>,
-+				 <&clks MPC512x_CLK_REF>,
-+				 <&clks MPC512x_CLK_MSCAN1_MCLK>;
-+			clock-names = "ips", "sys", "ref", "mclk";
- 		};
- 
- 		sdhc@1500 {
-@@ -167,6 +183,9 @@
- 			interrupts = <8 0x8>;
- 			dmas = <&dma0 30>;
- 			dma-names = "rx-tx";
-+			clocks = <&clks MPC512x_CLK_IPS>,
-+				 <&clks MPC512x_CLK_SDHC>;
-+			clock-names = "ipg", "per";
- 		};
- 
- 		i2c@1700 {
-@@ -175,6 +194,8 @@
- 			compatible = "fsl,mpc5121-i2c", "fsl-i2c";
- 			reg = <0x1700 0x20>;
- 			interrupts = <9 0x8>;
-+			clocks = <&clks MPC512x_CLK_I2C>;
-+			clock-names = "per";
- 		};
- 
- 		i2c@1720 {
-@@ -183,6 +204,8 @@
- 			compatible = "fsl,mpc5121-i2c", "fsl-i2c";
- 			reg = <0x1720 0x20>;
- 			interrupts = <10 0x8>;
-+			clocks = <&clks MPC512x_CLK_I2C>;
-+			clock-names = "per";
- 		};
- 
- 		i2c@1740 {
-@@ -191,6 +214,8 @@
- 			compatible = "fsl,mpc5121-i2c", "fsl-i2c";
- 			reg = <0x1740 0x20>;
- 			interrupts = <11 0x8>;
-+			clocks = <&clks MPC512x_CLK_I2C>;
-+			clock-names = "per";
- 		};
- 
- 		i2ccontrol@1760 {
-@@ -202,30 +227,46 @@
- 			compatible = "fsl,mpc5121-axe";
- 			reg = <0x2000 0x100>;
- 			interrupts = <42 0x8>;
-+			clocks = <&clks MPC512x_CLK_AXE>;
-+			clock-names = "per";
- 		};
- 
- 		display@2100 {
- 			compatible = "fsl,mpc5121-diu";
- 			reg = <0x2100 0x100>;
- 			interrupts = <64 0x8>;
-+			clocks = <&clks MPC512x_CLK_DIU>;
-+			clock-names = "per";
- 		};
- 
- 		can@2300 {
- 			compatible = "fsl,mpc5121-mscan";
- 			reg = <0x2300 0x80>;
- 			interrupts = <90 0x8>;
-+			clocks = <&clks MPC512x_CLK_IPS>,
-+				 <&clks MPC512x_CLK_SYS>,
-+				 <&clks MPC512x_CLK_REF>,
-+				 <&clks MPC512x_CLK_MSCAN2_MCLK>;
-+			clock-names = "ips", "sys", "ref", "mclk";
- 		};
- 
- 		can@2380 {
- 			compatible = "fsl,mpc5121-mscan";
- 			reg = <0x2380 0x80>;
- 			interrupts = <91 0x8>;
-+			clocks = <&clks MPC512x_CLK_IPS>,
-+				 <&clks MPC512x_CLK_SYS>,
-+				 <&clks MPC512x_CLK_REF>,
-+				 <&clks MPC512x_CLK_MSCAN3_MCLK>;
-+			clock-names = "ips", "sys", "ref", "mclk";
- 		};
- 
- 		viu@2400 {
- 			compatible = "fsl,mpc5121-viu";
- 			reg = <0x2400 0x400>;
- 			interrupts = <67 0x8>;
-+			clocks = <&clks MPC512x_CLK_VIU>;
-+			clock-names = "per";
- 		};
- 
- 		mdio@2800 {
-@@ -233,6 +274,8 @@
- 			reg = <0x2800 0x800>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
-+			clocks = <&clks MPC512x_CLK_FEC>;
-+			clock-names = "per";
- 		};
- 
- 		eth0: ethernet@2800 {
-@@ -241,6 +284,8 @@
- 			reg = <0x2800 0x800>;
- 			local-mac-address = [ 00 00 00 00 00 00 ];
- 			interrupts = <4 0x8>;
-+			clocks = <&clks MPC512x_CLK_FEC>;
-+			clock-names = "per";
- 		};
- 
- 		/* USB1 using external ULPI PHY */
-@@ -252,6 +297,8 @@
- 			interrupts = <43 0x8>;
- 			dr_mode = "otg";
- 			phy_type = "ulpi";
-+			clocks = <&clks MPC512x_CLK_USB1>;
-+			clock-names = "per";
- 		};
- 
- 		/* USB0 using internal UTMI PHY */
-@@ -263,6 +310,8 @@
- 			interrupts = <44 0x8>;
- 			dr_mode = "otg";
- 			phy_type = "utmi_wide";
-+			clocks = <&clks MPC512x_CLK_USB2>;
-+			clock-names = "per";
- 		};
- 
- 		/* IO control */
-@@ -281,6 +330,8 @@
- 			compatible = "fsl,mpc5121-pata";
- 			reg = <0x10200 0x100>;
- 			interrupts = <5 0x8>;
-+			clocks = <&clks MPC512x_CLK_PATA>;
-+			clock-names = "per";
- 		};
- 
- 		/* 512x PSCs are not 52xx PSC compatible */
-@@ -292,6 +343,8 @@
- 			interrupts = <40 0x8>;
- 			fsl,rx-fifo-size = <16>;
- 			fsl,tx-fifo-size = <16>;
-+			clocks = <&clks MPC512x_CLK_PSC0_MCLK>;
-+			clock-names = "mclk";
- 		};
- 
- 		/* PSC1 */
-@@ -301,6 +354,8 @@
- 			interrupts = <40 0x8>;
- 			fsl,rx-fifo-size = <16>;
- 			fsl,tx-fifo-size = <16>;
-+			clocks = <&clks MPC512x_CLK_PSC1_MCLK>;
-+			clock-names = "mclk";
- 		};
- 
- 		/* PSC2 */
-@@ -310,6 +365,8 @@
- 			interrupts = <40 0x8>;
- 			fsl,rx-fifo-size = <16>;
- 			fsl,tx-fifo-size = <16>;
-+			clocks = <&clks MPC512x_CLK_PSC2_MCLK>;
-+			clock-names = "mclk";
- 		};
- 
- 		/* PSC3 */
-@@ -319,6 +376,8 @@
- 			interrupts = <40 0x8>;
- 			fsl,rx-fifo-size = <16>;
- 			fsl,tx-fifo-size = <16>;
-+			clocks = <&clks MPC512x_CLK_PSC3_MCLK>;
-+			clock-names = "mclk";
- 		};
- 
- 		/* PSC4 */
-@@ -328,6 +387,8 @@
- 			interrupts = <40 0x8>;
- 			fsl,rx-fifo-size = <16>;
- 			fsl,tx-fifo-size = <16>;
-+			clocks = <&clks MPC512x_CLK_PSC4_MCLK>;
-+			clock-names = "mclk";
- 		};
- 
- 		/* PSC5 */
-@@ -337,6 +398,8 @@
- 			interrupts = <40 0x8>;
- 			fsl,rx-fifo-size = <16>;
- 			fsl,tx-fifo-size = <16>;
-+			clocks = <&clks MPC512x_CLK_PSC5_MCLK>;
-+			clock-names = "mclk";
- 		};
- 
- 		/* PSC6 */
-@@ -346,6 +409,8 @@
- 			interrupts = <40 0x8>;
- 			fsl,rx-fifo-size = <16>;
- 			fsl,tx-fifo-size = <16>;
-+			clocks = <&clks MPC512x_CLK_PSC6_MCLK>;
-+			clock-names = "mclk";
- 		};
- 
- 		/* PSC7 */
-@@ -355,6 +420,8 @@
- 			interrupts = <40 0x8>;
- 			fsl,rx-fifo-size = <16>;
- 			fsl,tx-fifo-size = <16>;
-+			clocks = <&clks MPC512x_CLK_PSC7_MCLK>;
-+			clock-names = "mclk";
- 		};
- 
- 		/* PSC8 */
-@@ -364,6 +431,8 @@
- 			interrupts = <40 0x8>;
- 			fsl,rx-fifo-size = <16>;
- 			fsl,tx-fifo-size = <16>;
-+			clocks = <&clks MPC512x_CLK_PSC8_MCLK>;
-+			clock-names = "mclk";
- 		};
- 
- 		/* PSC9 */
-@@ -373,6 +442,8 @@
- 			interrupts = <40 0x8>;
- 			fsl,rx-fifo-size = <16>;
- 			fsl,tx-fifo-size = <16>;
-+			clocks = <&clks MPC512x_CLK_PSC9_MCLK>;
-+			clock-names = "mclk";
- 		};
- 
- 		/* PSC10 */
-@@ -382,6 +453,8 @@
- 			interrupts = <40 0x8>;
- 			fsl,rx-fifo-size = <16>;
- 			fsl,tx-fifo-size = <16>;
-+			clocks = <&clks MPC512x_CLK_PSC10_MCLK>;
-+			clock-names = "mclk";
- 		};
- 
- 		/* PSC11 */
-@@ -391,12 +464,16 @@
- 			interrupts = <40 0x8>;
- 			fsl,rx-fifo-size = <16>;
- 			fsl,tx-fifo-size = <16>;
-+			clocks = <&clks MPC512x_CLK_PSC11_MCLK>;
-+			clock-names = "mclk";
- 		};
- 
- 		pscfifo@11f00 {
- 			compatible = "fsl,mpc5121-psc-fifo";
- 			reg = <0x11f00 0x100>;
- 			interrupts = <40 0x8>;
-+			clocks = <&clks MPC512x_CLK_PSC_FIFO>;
-+			clock-names = "per";
- 		};
- 
- 		dma0: dma@14000 {
-@@ -414,6 +491,8 @@
- 		#address-cells = <3>;
- 		#size-cells = <2>;
- 		#interrupt-cells = <1>;
-+		clocks = <&clks MPC512x_CLK_PCI>;
-+		clock-names = "per";
- 
- 		reg = <0x80008500 0x100	/* internal registers */
- 		       0x80008300 0x8>;	/* config space access registers */
+diff --git a/arch/powerpc/platforms/512x/clock-commonclk.c b/arch/powerpc/platforms/512x/clock-commonclk.c
+index 762ee85..8b71ceb 100644
+--- a/arch/powerpc/platforms/512x/clock-commonclk.c
++++ b/arch/powerpc/platforms/512x/clock-commonclk.c
+@@ -713,9 +713,7 @@ static void mpc512x_clk_setup_clock_tree(int busfreq)
+ 	clk_prepare_enable(clks[MPC512x_CLK_PSC_FIFO]);
+ 	/* some are not yet acquired by their respective drivers */
+ 	clk_prepare_enable(clks[MPC512x_CLK_PSC3_MCLK]);/* serial console */
+-	clk_prepare_enable(clks[MPC512x_CLK_FEC]);	/* network, NFS */
+ 	clk_prepare_enable(clks[MPC512x_CLK_DIU]);	/* display */
+-	clk_prepare_enable(clks[MPC512x_CLK_I2C]);
+ 	/*
+ 	 * some have their individual clock subtree with separate clock
+ 	 * items and their individual enable counters, yet share a
 -- 
 1.7.10.4
