@@ -1,30 +1,29 @@
 Return-Path: <B42677@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CF8992C00A9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2013 11:58:01 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 652932C00AA
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2013 11:58:49 +1000 (EST)
 From: Zhang Haijun-B42677 <B42677@freescale.com>
 To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH 4/4 V2] mmc: esdhc: Add broken timeout quirk for p4/p5
- board
-Date: Mon, 22 Jul 2013 01:57:54 +0000
-Message-ID: <99E897753B6F7048BD8CCDB4661D02E13E329F@039-SN2MPN1-022.039d.mgd.msft.net>
-References: <1374055891-20703-1-git-send-email-Haijun.Zhang@freescale.com>
- <1374055891-20703-3-git-send-email-Haijun.Zhang@freescale.com>
- <1374081229.8183.361@snotra>
- <99E897753B6F7048BD8CCDB4661D02E13DF50D@039-SN2MPN1-022.039d.mgd.msft.net>
- <1374254658.5357.19@snotra>
-In-Reply-To: <1374254658.5357.19@snotra>
+Subject: RE: [PATCH 1/4 V4] powerpc/85xx: Add support for 85xx cpu type
+ detection
+Date: Mon, 22 Jul 2013 01:58:34 +0000
+Message-ID: <99E897753B6F7048BD8CCDB4661D02E13E32B7@039-SN2MPN1-022.039d.mgd.msft.net>
+References: <1374037947-23670-1-git-send-email-Haijun.Zhang@freescale.com>
+ <99E897753B6F7048BD8CCDB4661D02E13DF580@039-SN2MPN1-022.039d.mgd.msft.net>
+ <1374254445.5357.18@snotra>
+In-Reply-To: <1374254445.5357.18@snotra>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "cjb@laptop.org" <cjb@laptop.org>,
+Cc: Zhao Chenhui-B35336 <B35336@freescale.com>,
  "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
  Fleming Andy-AFLEMING <afleming@freescale.com>,
- "cbouatmailru@gmail.com" <cbouatmailru@gmail.com>
+ "cbouatmailru@gmail.com" <cbouatmailru@gmail.com>,
+ "cjb@laptop.org" <cjb@laptop.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,107 +35,32 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-Thanks.
+Many Thanks.
 
 Regards
 Haijun.
 
+
 > -----Original Message-----
 > From: Wood Scott-B07421
-> Sent: Saturday, July 20, 2013 1:24 AM
+> Sent: Saturday, July 20, 2013 1:21 AM
 > To: Zhang Haijun-B42677
-> Cc: Wood Scott-B07421; linux-mmc@vger.kernel.org; linuxppc-
-> dev@lists.ozlabs.org; cbouatmailru@gmail.com; cjb@laptop.org; Fleming
-> Andy-AFLEMING
-> Subject: Re: [PATCH 4/4 V2] mmc: esdhc: Add broken timeout quirk for
-> p4/p5 board
+> Cc: Zhang Haijun-B42677; linux-mmc@vger.kernel.org; linuxppc-
+> dev@lists.ozlabs.org; cbouatmailru@gmail.com; cjb@laptop.org; Wood Scott-
+> B07421; Fleming Andy-AFLEMING; Zhao Chenhui-B35336
+> Subject: Re: [PATCH 1/4 V4] powerpc/85xx: Add support for 85xx cpu type
+> detection
 >=20
-> On 07/18/2013 09:19:59 PM, Zhang Haijun-B42677 wrote:
+> On 07/18/2013 09:28:20 PM, Zhang Haijun-B42677 wrote:
+> > Hi, scott
 > >
-> >
-> > Thanks.
-> >
-> > Regards
-> > Haijun.
-> >
-> >
-> > > -----Original Message-----
-> > > From: Wood Scott-B07421
-> > > Sent: Thursday, July 18, 2013 1:14 AM
-> > > To: Zhang Haijun-B42677
-> > > Cc: linux-mmc@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
-> > > cbouatmailru@gmail.com; cjb@laptop.org; Fleming Andy-AFLEMING; Zhang
-> > > Haijun-B42677; Zhang Haijun-B42677
-> > > Subject: Re: [PATCH 4/4 V2] mmc: esdhc: Add broken timeout quirk for
-> > > p4/p5 board
-> > >
-> > > On 07/17/2013 05:11:31 AM, Haijun Zhang wrote:
-> > > > Sometimes command can't be completed within the time give in
-> > > > eSDHC_SYSCTL[DTOCV]. So just give the max value 0x14 to avoid this
-> > > > issue.
-> > > >
-> > > > Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
-> > > > ---
-> > > > changes for v2:
-> > > > 	- Rebuild patch of eSDHC host need long time to generate
-> > > > 	 command interrupt
-> > > >
-> > > >  drivers/mmc/host/sdhci-of-esdhc.c | 6 ++++++
-> > > >  1 file changed, 6 insertions(+)
-> > > >
-> > > > diff --git a/drivers/mmc/host/sdhci-of-esdhc.c
-> > > > b/drivers/mmc/host/sdhci-of-esdhc.c
-> > > > index 570bca8..30bfb5c 100644
-> > > > --- a/drivers/mmc/host/sdhci-of-esdhc.c
-> > > > +++ b/drivers/mmc/host/sdhci-of-esdhc.c
-> > > > @@ -325,6 +325,12 @@ static void esdhc_of_platform_init(struct
-> > > > sdhci_host *host)
-> > > >
-> > > >  	if (vvn > VENDOR_V_22)
-> > > >  		host->quirks &=3D ~SDHCI_QUIRK_NO_BUSY_IRQ;
-> > > > +
-> > > > +	if ((SVR_SOC_VER(svr) =3D=3D SVR_B4860) ||
-> > > > +		(SVR_SOC_VER(svr) =3D=3D SVR_P5020) ||
-> > > > +		(SVR_SOC_VER(svr) =3D=3D SVR_P5040) ||
-> > > > +		(SVR_SOC_VER(svr) =3D=3D SVR_P4080))
-> > > > +		host->quirks |=3D SDHCI_QUIRK_BROKEN_TIMEOUT_VAL;
-> > > >  }
-> > >
-> > > Please don't line up the continuation lines of the if-condition
-> > with the
-> > > if-body.
-> > [Haijun Wrote:] I'll correct it.
-> > >
-> > > Please check variant SoCs as well.  If the bug exists on p4080,
-> > then it
-> > > exists on p4040.  Likewise with p5040/p5021, and p5020/p5010.
-> > >
-> > > Is it present on all revisions of these SoCs?  How about p3041,
-> > which is
-> > > usually pretty similar to p5020?  p2040/p2041?  Is there an erratum
-> > > number for this problem?
-> > >
-> > [Haijun Wrote:] I only checked this on these boards.
+> > I had update this patch, this is the newest version.
+> > If there is no other problem, can you help merge this patch?
+> > I hope to make sure the following patch don't need to rebuild due to
+> > the change of this patch.
 >=20
-> These aren't boards; they're chips.
->=20
-> Please find out for sure which chips are affected, or else we'll have
-> support issues later when someone is using a chip you didn't test with.
-> And always include the fewer-core variants -- if p4080 is affected, then
-> p4040 is affected, and so on as described above.
-[Haijun Wrote:] Ok, I'll try to cover all the chips.
->=20
-> > No errata number yet,
->=20
-> Will one be coming?
-[Haijun Wrote:] I need to confirm with integration team. This may take a lo=
-ng time for so many chips.
->=20
-> > This quirk only give the host max detecting time value to check card's
-> > response. No impact on performance or other functions.
->=20
-> Does this affect boot time if a card is not present?
-[Haijun Wrote:] No impact on boot time. Normally a command can finished wit=
-hin 10*HZ, In extreme cases this time will be extended.
+> It looks OK.  I'll pick it up when I do my next batch of patch
+> application (hopefully soon).  Go ahead and send the patches that depend
+> on it.
 >=20
 > -Scott
