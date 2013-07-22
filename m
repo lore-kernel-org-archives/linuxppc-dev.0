@@ -1,35 +1,35 @@
-Return-Path: <santosh.shilimkar@ti.com>
-Received: from comal.ext.ti.com (comal.ext.ti.com [198.47.26.152])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mailhost.ti.com",
- Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BBD622C00A9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 00:51:23 +1000 (EST)
-Message-ID: <51ED469A.9000801@ti.com>
-Date: Mon, 22 Jul 2013 10:50:02 -0400
-From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+ (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0CF422C007C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 01:24:51 +1000 (EST)
+Received: from /spool/local
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 22 Jul 2013 20:46:13 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id D7FBEE004F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2013 20:54:34 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r6MFPSTm40829032
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2013 20:55:29 +0530
+Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r6MFOXdT015028
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 01:24:34 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Denis Kirjanov <kda@linux-powerpc.org>
+Subject: Re: [PATCH] Fix a typo in pSeries_lpar_hpte_insert()
+In-Reply-To: <1374470630-2106-1-git-send-email-kda@linux-powerpc.org>
+References: <1374470630-2106-1-git-send-email-kda@linux-powerpc.org>
+Date: Mon, 22 Jul 2013 20:54:31 +0530
+Message-ID: <874nbmobww.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@linaro.org>
-Subject: Re: [PATCH v2] of: Specify initrd location using 64-bit
-References: <1372702835-5333-1-git-send-email-santosh.shilimkar@ti.com>
- <51D1F5E2.6070609@gmail.com> <20130720053945.C7AC63E0C52@localhost>
-In-Reply-To: <20130720053945.C7AC63E0C52@localhost>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, linux-mips@linux-mips.org,
- Aurelien Jacquiot <a-jacquiot@ti.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- Will Deacon <will.deacon@arm.com>, Max Filippov <jcmvbkbc@gmail.com>,
- Paul Mackerras <paulus@samba.org>, Jonas Bonn <jonas@southpole.se>,
- Russell King <linux@arm.linux.org.uk>, linux-c6x-dev@linux-c6x.org,
- x86@kernel.org, arm@kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>,
- Mark Salter <msalter@redhat.com>, Rob Herring <robherring2@gmail.com>,
- Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>,
- linux-xtensa@linux-xtensa.org, James Hogan <james.hogan@imgtec.com>,
- devicetree-discuss@lists.ozlabs.org, Rob Herring <rob.herring@calxeda.com>,
- linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>,
- Michal Simek <monstr@monstr.eu>, Vineet Gupta <vgupta@synopsys.com>,
- Ralf Baechle <ralf@linux-mips.org>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: Denis Kirjanov <kda@linux-powerpc.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,32 +39,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Saturday 20 July 2013 01:39 AM, Grant Likely wrote:
-> On Mon, 01 Jul 2013 16:34:26 -0500, Rob Herring <robherring2@gmail.com> wrote:
->> On 07/01/2013 01:20 PM, Santosh Shilimkar wrote:
->>> On some PAE architectures, the entire range of physical memory could reside
->>> outside the 32-bit limit.  These systems need the ability to specify the
->>> initrd location using 64-bit numbers.
->>>
->>> This patch globally modifies the early_init_dt_setup_initrd_arch() function to
->>> use 64-bit numbers instead of the current unsigned long.
->>>
->>> There has been quite a bit of debate about whether to use u64 or phys_addr_t.
->>> It was concluded to stick to u64 to be consistent with rest of the device
->>> tree code. As summarized by Geert, "The address to load the initrd is decided
->>> by the bootloader/user and set at that point later in time. The dtb should not
->>> be tied to the kernel you are booting"
->>
->> That was quoting me. Otherwise:
->>
->> Acked-by: Rob Herring <rob.herring@calxeda.com>
->>
->> Unless Grant feels compelled to pick this up for 3.11, I think it has to
->> wait for 3.12.
-> 
-> Nope, 3.12 is fine. Applied.
-> 
-Thanks Grant.
+Denis Kirjanov <kda@linux-powerpc.org> writes:
 
-Regards,
-Santosh
+> Fix a typo in pSeries_lpar_hpte_insert()
+>
+> Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
+
+looks good
+
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+
+We may want to add the commit that introduced the change ?
+
+801eb73f45371accc78ca9d6d22d647eeb722c11
+
+
+> ---
+>  arch/powerpc/platforms/pseries/lpar.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+> index 0da39fe..c4112ed 100644
+> --- a/arch/powerpc/platforms/pseries/lpar.c
+> +++ b/arch/powerpc/platforms/pseries/lpar.c
+> @@ -136,7 +136,7 @@ static long pSeries_lpar_hpte_insert(unsigned long hpte_group,
+>  	flags = 0;
+>
+>  	/* Make pHyp happy */
+> -	if ((rflags & _PAGE_NO_CACHE) & !(rflags & _PAGE_WRITETHRU))
+> +	if ((rflags & _PAGE_NO_CACHE) && !(rflags & _PAGE_WRITETHRU))
+>  		hpte_r &= ~_PAGE_COHERENT;
+>  	if (firmware_has_feature(FW_FEATURE_XCMO) && !(hpte_r & HPTE_R_N))
+>  		flags |= H_COALESCE_CAND;
+> -- 
+> 1.8.0.2
