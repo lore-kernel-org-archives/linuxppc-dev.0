@@ -1,16 +1,16 @@
 Return-Path: <gsi@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id F24532C0177
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2013 22:15:48 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 4A2212C0144
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2013 22:15:50 +1000 (EST)
 From: Gerhard Sittig <gsi@denx.de>
 To: linuxppc-dev@lists.ozlabs.org, Anatolij Gustschin <agust@denx.de>,
  Mike Turquette <mturquette@linaro.org>,
  linux-arm-kernel@lists.infradead.org, devicetree-discuss@lists.ozlabs.org
-Subject: [PATCH v3 08/31] fs_enet: cleanup clock API use
-Date: Mon, 22 Jul 2013 14:14:35 +0200
-Message-Id: <1374495298-22019-9-git-send-email-gsi@denx.de>
+Subject: [PATCH v3 09/31] powerpc/fsl-pci: improve clock API use
+Date: Mon, 22 Jul 2013 14:14:36 +0200
+Message-Id: <1374495298-22019-10-git-send-email-gsi@denx.de>
 In-Reply-To: <1374495298-22019-1-git-send-email-gsi@denx.de>
 References: <1374166855-7280-1-git-send-email-gsi@denx.de>
  <1374495298-22019-1-git-send-email-gsi@denx.de>
@@ -29,96 +29,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-make the Freescale ethernet driver get, prepare and enable the FEC clock
-during probe(); disable, unprepare and put the clock upon remove(); hold
-a reference to the clock over the period of use; use devm_{get,put}_clk()
+make the Freescale PCI driver get, prepare and enable the PCI clock
+during probe()
 
-clock lookup is non-fatal as not all platforms provide clock specs in
-their device tree; failure to enable specified clocks is fatal
+clock lookup is non-fatal as not all platforms may provide clock specs
+in their device tree, but failure to enable specified clocks are fatal
+
+the driver appears to not have a remove() routine, so no reference to
+the clock is kept during use, and the clock isn't released (the devm
+approach will put the clock, but it won't get disabled or unprepared)
 
 Signed-off-by: Gerhard Sittig <gsi@denx.de>
 ---
- .../net/ethernet/freescale/fs_enet/fs_enet-main.c  |   25 ++++++++++++++++++++
- include/linux/fs_enet_pd.h                         |    3 +++
- 2 files changed, 28 insertions(+)
+ arch/powerpc/sysdev/fsl_pci.c |   23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
 
-diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-index c04eb3a..1f58f57 100644
---- a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-@@ -999,6 +999,8 @@ static int fs_enet_probe(struct platform_device *ofdev)
- 	struct fs_enet_private *fep;
- 	struct fs_platform_info *fpi;
- 	const u32 *data;
-+	struct clk *clk;
-+	int err;
- 	const u8 *mac_addr;
- 	const char *phy_connection_type;
- 	int privsize, len, ret = -ENODEV;
-@@ -1036,6 +1038,21 @@ static int fs_enet_probe(struct platform_device *ofdev)
- 			fpi->use_rmii = 1;
- 	}
- 
-+	/* make clock lookup non-fatal (the driver is shared among platforms),
-+	 * but require enable to succeed when a clock was specified/found,
-+	 * keep a reference to the clock upon successful acquisition
-+	 */
-+	clk = devm_clk_get(&ofdev->dev, "per");
-+	if (!IS_ERR(clk)) {
-+		err = clk_prepare_enable(clk);
-+		if (err) {
-+			devm_clk_put(&ofdev->dev, clk);
-+			ret = err;
-+			goto out_free_fpi;
-+		}
-+		fpi->clk_per = clk;
-+	}
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 46ac1dd..5e2f411 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -17,6 +17,8 @@
+  * Free Software Foundation;  either version 2 of the  License, or (at your
+  * option) any later version.
+  */
 +
- 	privsize = sizeof(*fep) +
- 	           sizeof(struct sk_buff **) *
- 	           (fpi->rx_ring + fpi->tx_ring);
-@@ -1107,6 +1124,10 @@ out_free_dev:
- 	free_netdev(ndev);
- out_put:
- 	of_node_put(fpi->phy_node);
-+	if (fpi->clk_per) {
-+		clk_disable_unprepare(fpi->clk_per);
-+		devm_clk_put(&ofdev->dev, fpi->clk_per);
-+	}
- out_free_fpi:
- 	kfree(fpi);
- 	return ret;
-@@ -1123,6 +1144,10 @@ static int fs_enet_remove(struct platform_device *ofdev)
- 	fep->ops->cleanup_data(ndev);
- 	dev_set_drvdata(fep->dev, NULL);
- 	of_node_put(fep->fpi->phy_node);
-+	if (fep->fpi->clk_per) {
-+		clk_disable_unprepare(fep->fpi->clk_per);
-+		devm_clk_put(&ofdev->dev, fep->fpi->clk_per);
-+	}
- 	free_netdev(ndev);
- 	return 0;
- }
-diff --git a/include/linux/fs_enet_pd.h b/include/linux/fs_enet_pd.h
-index 51b7934..a978d0d 100644
---- a/include/linux/fs_enet_pd.h
-+++ b/include/linux/fs_enet_pd.h
-@@ -16,6 +16,7 @@
- #ifndef FS_ENET_PD_H
- #define FS_ENET_PD_H
- 
 +#include <linux/clk.h>
- #include <linux/string.h>
- #include <linux/of_mdio.h>
- #include <asm/types.h>
-@@ -142,6 +143,8 @@ struct fs_platform_info {
+ #include <linux/kernel.h>
+ #include <linux/pci.h>
+ #include <linux/delay.h>
+@@ -926,12 +928,33 @@ void fsl_pci_assign_primary(void)
  
- 	int use_rmii;		/* use RMII mode 	       */
- 	int has_phy;            /* if the network is phy container as well...*/
+ static int fsl_pci_probe(struct platform_device *pdev)
+ {
++	struct clk *clk;
+ 	int ret;
+ 	struct device_node *node;
+ #ifdef CONFIG_SWIOTLB
+ 	struct pci_controller *hose;
+ #endif
+ 
++	/*
++	 * clock lookup is non-fatal since the driver is shared among
++	 * platforms and not all of them provide clocks specs in their
++	 * device tree, but failure to enable a specified clock is
++	 * considered fatal
++	 */
++	clk = devm_clk_get(&pdev->dev, "per");
++	if (!IS_ERR(clk)) {
++		ret = clk_prepare_enable(clk);
++		if (ret) {
++			dev_err(dev, "Could not enable peripheral clock\n");
++			devm_clk_put(&pdev->dev, clk);
++			return ret;
++		}
++		/*
++		 * TODO where to store the 'clk' reference?  there appears
++		 * to be no remove() routine which undoes what probe() does
++		 */
++	}
 +
-+	struct clk *clk_per;	/* 'per' clock for register access */
- };
- struct fs_mii_fec_platform_info {
- 	u32 irq[32];
+ 	node = pdev->dev.of_node;
+ 	ret = fsl_add_bridge(pdev, fsl_pci_primary == node);
+ 
 -- 
 1.7.10.4
