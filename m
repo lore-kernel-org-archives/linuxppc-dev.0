@@ -1,23 +1,22 @@
-Return-Path: <gang.chen@asianux.com>
-Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 1E6CF2C00DC
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2013 16:41:21 +1000 (EST)
-Message-ID: <51ECD3D4.9020405@asianux.com>
-Date: Mon, 22 Jul 2013 14:40:20 +0800
-From: Chen Gang <gang.chen@asianux.com>
-MIME-Version: 1.0
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v2] powerpc: kernel: remove useless code which related with
- 'max_cpus'
-References: <51ECCA10.7010709@asianux.com>
- <51ECCEA8.5040406@linux.vnet.ibm.com> <51ECD0BF.8080605@asianux.com>
-In-Reply-To: <51ECD0BF.8080605@asianux.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: chenhui.zhao@freescale.com, "paulus@samba.org" <paulus@samba.org>,
- Thomas Gleixner <tglx@linutronix.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ by ozlabs.org (Postfix) with ESMTPS id A30382C00C7
+ for <linuxppc-dev@ozlabs.org>; Mon, 22 Jul 2013 16:48:48 +1000 (EST)
+Message-ID: <1374475696.3916.35.camel@pasglop>
+Subject: Re: [PATCH V3 2/2] powerpc, perf: BHRB filter configuration should
+ follow the task
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Date: Mon, 22 Jul 2013 16:48:16 +1000
+In-Reply-To: <51ECD3B6.5050509@linux.vnet.ibm.com>
+References: <1370843609-32618-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1370843609-32618-3-git-send-email-khandual@linux.vnet.ibm.com>
+ <32432.1372058442@ale.ozlabs.ibm.com> <51ECD3B6.5050509@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Michael Neuling <mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,41 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since not need 'max_cpus' after the related commit, the related code
-are useless too, need be removed.
+On Mon, 2013-07-22 at 12:09 +0530, Anshuman Khandual wrote:
+> These patches have not been applied yet. Would like me to correct
+> these spellings myself and send out again. Please do let me know.
+> Thanks !
 
-The related commit:
+No, it's ok, I'll add them to my batch.
 
-  c1aa687 powerpc: Clean up obsolete code relating to decrementer and timebase
+Usually I assume that perf related stuff goes through acme's perf tree
+so I might have overlooked them because of that.
 
-The related warning:
+Michael, you're ok with these ?
 
-  arch/powerpc/kernel/smp.c:323:43: warning: parameter ‘max_cpus’ set but not used [-Wunused-but-set-parameter]
-
-Signed-off-by: Chen Gang <gang.chen@asianux.com>
----
- arch/powerpc/kernel/smp.c |    9 ++-------
- 1 files changed, 2 insertions(+), 7 deletions(-)
-
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 38b0ba6..7edbd5b 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -346,13 +346,8 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
- 	cpumask_set_cpu(boot_cpuid, cpu_sibling_mask(boot_cpuid));
- 	cpumask_set_cpu(boot_cpuid, cpu_core_mask(boot_cpuid));
- 
--	if (smp_ops)
--		if (smp_ops->probe)
--			max_cpus = smp_ops->probe();
--		else
--			max_cpus = NR_CPUS;
--	else
--		max_cpus = 1;
-+	if (smp_ops && smp_ops->probe)
-+		smp_ops->probe();
- }
- 
- void smp_prepare_boot_cpu(void)
--- 
-1.7.7.6
+Cheers,
+Ben
