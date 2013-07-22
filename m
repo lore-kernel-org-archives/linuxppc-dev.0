@@ -1,29 +1,21 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 76CFB2C00A4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 00:09:21 +1000 (EST)
-Date: Mon, 22 Jul 2013 15:09:04 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Gerhard Sittig <gsi@denx.de>
-Message-ID: <20130722140904.GU9858@sirena.org.uk>
-References: <1374166855-7280-1-git-send-email-gsi@denx.de>
- <1374495298-22019-1-git-send-email-gsi@denx.de>
- <1374495298-22019-2-git-send-email-gsi@denx.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="yKucn/VR3FthLjAA"
-In-Reply-To: <1374495298-22019-2-git-send-email-gsi@denx.de>
-Subject: Re: [PATCH v3 01/31] spi: mpc512x: cleanup clock API use
-Cc: Mike Turquette <mturquette@linaro.org>, Detlev Zundel <dzu@denx.de>,
- Wolfram Sang <wsa@the-dreams.de>, David Woodhouse <dwmw2@infradead.org>,
- devicetree-discuss@lists.ozlabs.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Rob Herring <rob.herring@calxeda.com>, Marc Kleine-Budde <mkl@pengutronix.de>,
- Wolfgang Grandegger <wg@grandegger.com>, Anatolij Gustschin <agust@denx.de>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- Mauro Carvalho Chehab <m.chehab@samsung.com>
+ by ozlabs.org (Postfix) with ESMTPS id 6608C2C00A4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 00:30:32 +1000 (EST)
+Subject: Re: [PATCH 3/4 V2] mmc: esdhc: Correct host version of T4240-R1.0
+Mime-Version: 1.0 (Apple Message framework v1283)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1374055891-20703-2-git-send-email-Haijun.Zhang@freescale.com>
+Date: Mon, 22 Jul 2013 09:30:20 -0500
+Message-Id: <25F3761C-ECFA-4397-A4F0-551BDAEDA4C7@kernel.crashing.org>
+References: <1374055891-20703-1-git-send-email-Haijun.Zhang@freescale.com>
+ <1374055891-20703-2-git-send-email-Haijun.Zhang@freescale.com>
+To: Haijun Zhang <Haijun.Zhang@freescale.com>
+Cc: linux-mmc@vger.kernel.org, AFLEMING@freescale.com, cbouatmailru@gmail.com,
+ scottwood@freescale.com, cjb@laptop.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,40 +26,129 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---yKucn/VR3FthLjAA
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+On Jul 17, 2013, at 5:11 AM, Haijun Zhang wrote:
 
-On Mon, Jul 22, 2013 at 02:14:28PM +0200, Gerhard Sittig wrote:
+> Vender version and sdhc spec version of T4240-R1.0 is incorrect.
+> The right value should be VVN=3D0x13, SVN =3D 0x1. The wrong version
+> number will break down the ADMA data transfer.
+> This defect only exist in T4240-R1.0. Will be fixed in T4240-R2.0.
+> Also share vvn and svr for public use.
+>=20
+> Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
+> ---
+> changes for V2:
+> 	- Remove broken ADMA quirk.
+> 	- Rebuild patch of  Add quirks to support T4240 board
+>=20
+> drivers/mmc/host/sdhci-of-esdhc.c | 29 +++++++++++++----------------
+> 1 file changed, 13 insertions(+), 16 deletions(-)
+>=20
+> diff --git a/drivers/mmc/host/sdhci-of-esdhc.c =
+b/drivers/mmc/host/sdhci-of-esdhc.c
+> index adfaadd..570bca8 100644
+> --- a/drivers/mmc/host/sdhci-of-esdhc.c
+> +++ b/drivers/mmc/host/sdhci-of-esdhc.c
+> @@ -26,7 +26,7 @@
+> #define VENDOR_V_22	0x12
+> #define VENDOR_V_23	0x13
+>=20
+> -static u32 svr;
+> +static u32 svr, vvn;
+>=20
+> static u32 esdhc_readl(struct sdhci_host *host, int reg)
+> {
+> @@ -43,11 +43,9 @@ static u32 esdhc_readl(struct sdhci_host *host, int =
+reg)
+> 	 * For FSL eSDHC, must aligned 4-byte, so use 0xFC to read the
+> 	 * the verdor version number, oxFE is SDHCI_HOST_VERSION.
+> 	 */
+> -	if ((reg =3D=3D SDHCI_CAPABILITIES) && (ret & =
+SDHCI_CAN_DO_ADMA1)) {
+> -		u32 tmp =3D in_be32(host->ioaddr + =
+SDHCI_SLOT_INT_STATUS);
+> -		tmp =3D (tmp & SDHCI_VENDOR_VER_MASK) >> =
+SDHCI_VENDOR_VER_SHIFT;
+> -		if (tmp > VENDOR_V_22)
+> -			ret |=3D SDHCI_CAN_DO_ADMA2;
+> +	if ((reg =3D=3D SDHCI_CAPABILITIES) && (ret & =
+SDHCI_CAN_DO_ADMA1) &&
+> +		(vvn > VENDOR_V_22)) {
+> +		ret |=3D SDHCI_CAN_DO_ADMA2;
+> 	}
+>=20
+> 	return ret;
+> @@ -63,6 +61,12 @@ static u16 esdhc_readw(struct sdhci_host *host, int =
+reg)
+> 		ret =3D in_be32(host->ioaddr + base) & 0xffff;
+> 	else
+> 		ret =3D (in_be32(host->ioaddr + base) >> shift) & =
+0xffff;
+> +
+> +	/* T4240-R1.0 had a incorrect vendor version and spec version */
+> +	if ((reg =3D=3D SDHCI_HOST_VERSION) &&
+> +		((SVR_SOC_VER(svr) =3D=3D SVR_T4240) && (SVR_REV(svr) =3D=3D=
+ 0x10)))
+> +		ret =3D (VENDOR_V_23 << SDHCI_VENDOR_VER_SHIFT) | =
+SDHCI_SPEC_200;
+> +
 
-> +	ret = clk_prepare_enable(clk);
-> +	if (ret) {
-> +		devm_clk_put(dev, clk);
-> +		goto free_irq;
+is this check correct if this is on v2.0 Si as well?
 
-The main point of the devm_ APIs is to avoid the need for explicit
-freeing so you should just remove these puts.
+- k
 
---yKucn/VR3FthLjAA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
-
-iQIcBAEBAgAGBQJR7Tz9AAoJELSic+t+oim98nsP/27loR3uzD6vU4Iq6PIP9XrZ
-oeTT4jiRvolsbAQ2b8FnWtJYqf61S/ql+yHFvous9eeIWHiYCQZgu+1QYy5DeUwG
-IyG9qGrrFGa8rZS+VnXxPUOFjmgYkxmadQN/tvnqM0TJnfRoM2x77MODjJ65d1Yf
-wjIFjwUGKY4c/CkhMDD3eglA4jyXE94uLZ1gU1EByw3RTtdpTBcZirBY3kuxE3Sk
-kEOyLgAEzIUfgHLQBYk+Uv3REwkxJJboZdcNx9G9fnY6mz9YVEvis+DhJzhZEd6u
-syAcYSoZwNSPhtd2IfpclQSF9illzIHPHkoSxm+nFaUv41phl1A9iWmkEgHzd0Rn
-paFBjdbDXOg884mzUzdbcZnTsroCL89avzGts+YnjgHWTD4ISAdze361e1GVXCTn
-yuOaMuLiOyKL8TLI015ICLKj8xKL/mjUhpXfqoDRWipcYSdKbZcwfVTLbGnUXSmU
-+zIvwwmt9XXaD4nbKtwqamOL94iEja7WAtVncxPYkpEkM3lT8QDqOfxxDU5VEh6B
-SWfiG9pgcJhujsAeoADdvv6d9nt8oOSIlVunWqcaQX8OCKNmU2xz4pf+xpiJcABv
-aP3xe5w9y1kbGHZT9JMqOoUYQS4DdTaEimLjTNoITzR/5IGbnmCz9ZmYUKSXYivW
-BYhitlq7N2WFm5VQiznq
-=yo5g
------END PGP SIGNATURE-----
-
---yKucn/VR3FthLjAA--
+> 	return ret;
+> }
+>=20
+> @@ -175,17 +179,12 @@ static void esdhc_reset(struct sdhci_host *host, =
+u8 mask)
+>  */
+> static void esdhci_of_adma_workaround(struct sdhci_host *host, u32 =
+intmask)
+> {
+> -	u32 tmp;
+> 	bool applicable;
+> 	dma_addr_t dmastart;
+> 	dma_addr_t dmanow;
+>=20
+> -	tmp =3D esdhc_readl(host, SDHCI_SLOT_INT_STATUS);
+> -	tmp =3D (tmp & SDHCI_VENDOR_VER_MASK) >> SDHCI_VENDOR_VER_SHIFT;
+> -
+> 	applicable =3D (intmask & SDHCI_INT_DATA_END) &&
+> -		(intmask & SDHCI_INT_BLK_GAP) &&
+> -		(tmp =3D=3D VENDOR_V_23);
+> +		(intmask & SDHCI_INT_BLK_GAP) && (vvn =3D=3D =
+VENDOR_V_23);
+> 	if (applicable) {
+>=20
+> 		esdhc_reset(host, SDHCI_RESET_DATA);
+> @@ -318,10 +317,9 @@ static void esdhc_of_resume(struct sdhci_host =
+*host)
+>=20
+> static void esdhc_of_platform_init(struct sdhci_host *host)
+> {
+> -	u32 vvn;
+> +	svr =3D mfspr(SPRN_SVR);
+> +	vvn =3D esdhc_readw(host, SDHCI_HOST_VERSION);
+>=20
+> -	vvn =3D in_be32(host->ioaddr + SDHCI_SLOT_INT_STATUS);
+> -	vvn =3D (vvn & SDHCI_VENDOR_VER_MASK) >> SDHCI_VENDOR_VER_SHIFT;
+> 	if (vvn =3D=3D VENDOR_V_22)
+> 		host->quirks2 |=3D SDHCI_QUIRK2_HOST_NO_CMD23;
+>=20
+> @@ -390,7 +388,6 @@ static int sdhci_esdhc_probe(struct =
+platform_device *pdev)
+> 	struct device_node *np;
+> 	int ret;
+>=20
+> -	svr =3D mfspr(SPRN_SVR);
+> 	host =3D sdhci_pltfm_init(pdev, &sdhci_esdhc_pdata, 0);
+> 	if (IS_ERR(host))
+> 		return PTR_ERR(host);
+> --=20
+> 1.8.0
+>=20
+>=20
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
