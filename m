@@ -1,26 +1,31 @@
-Return-Path: <gsi@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mkl@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+ [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 77DF82C15C3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2013 22:33:30 +1000 (EST)
-Date: Mon, 22 Jul 2013 14:33:24 +0200
-From: Gerhard Sittig <gsi@denx.de>
-To: linuxppc-dev@lists.ozlabs.org, Anatolij Gustschin <agust@denx.de>,
- Mike Turquette <mturquette@linaro.org>,
- linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
-Subject: Re: [PATCH v3 00/31] add COMMON_CLK support for PowerPC MPC512x
-Message-ID: <20130722123324.GE19071@book.gsilab.sittig.org>
+ by ozlabs.org (Postfix) with ESMTPS id E440E2C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2013 23:05:36 +1000 (EST)
+Message-ID: <51ED2DF4.2090606@pengutronix.de>
+Date: Mon, 22 Jul 2013 15:04:52 +0200
+From: Marc Kleine-Budde <mkl@pengutronix.de>
+MIME-Version: 1.0
+To: Gerhard Sittig <gsi@denx.de>
+Subject: Re: [PATCH v3 27/31] net: can: mscan: add common clock support for
+ mpc512x
 References: <1374166855-7280-1-git-send-email-gsi@denx.de>
  <1374495298-22019-1-git-send-email-gsi@denx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1374495298-22019-1-git-send-email-gsi@denx.de>
-Cc: Detlev Zundel <dzu@denx.de>, Wolfram Sang <wsa@the-dreams.de>,
+ <1374495298-22019-28-git-send-email-gsi@denx.de>
+In-Reply-To: <1374495298-22019-28-git-send-email-gsi@denx.de>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="----enig2PJXSIVVFEOIDGCPHBDEN"
+Cc: Mike Turquette <mturquette@linaro.org>, Detlev Zundel <dzu@denx.de>,
+ Wolfram Sang <wsa@the-dreams.de>, David Woodhouse <dwmw2@infradead.org>,
+ devicetree-discuss@lists.ozlabs.org,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@kernel.org>,
- Marc Kleine-Budde <mkl@pengutronix.de>, David Woodhouse <dwmw2@infradead.org>,
- Wolfgang Grandegger <wg@grandegger.com>,
+ Wolfgang Grandegger <wg@grandegger.com>, Anatolij Gustschin <agust@denx.de>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
  Mauro Carvalho Chehab <m.chehab@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,33 +36,275 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[ manually added devicetree at vger now ]
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+------enig2PJXSIVVFEOIDGCPHBDEN
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, Jul 22, 2013 at 14:14 +0200, Gerhard Sittig wrote:
-> 
-> this series
-> - fixes several drivers that are used in the MPC512x platform (UART,
->   SPI, ethernet, PCI, USB, CAN, NAND flash, video capture) in how they
->   handle clocks (appropriately acquire and setup them, hold references
->   during use, release clocks after use)
-> - introduces support for the common clock framework (CCF, COMMON_CLK
->   Kconfig option) in the PowerPC based MPC512x platform, which brings
->   device tree based clock lookup as well
+On 07/22/2013 02:14 PM, Gerhard Sittig wrote:
+> implement a .get_clock() callback for the MPC512x platform which uses
+> the common clock infrastructure (eliminating direct access to the clock=
 
-Haven't noticed before that the ozlabs device tree list started
-actively rejecting reception.  And the scope of the series has
-widened to include clock related fixes in many more drivers while
-the initial submission only introduced CCF for MPC512x.
+> control registers from within the CAN network driver), and provide the
+> corresponding .put_clock() callback to release resources after use
+>=20
+> keep the previous implementation of MPC512x support in place during
+> migration, since common clock support is optional
+>=20
+> this change is neutral to the MPC5200 platform
+>=20
+> Signed-off-by: Gerhard Sittig <gsi@denx.de>
+> ---
+>  drivers/net/can/mscan/mpc5xxx_can.c |  169 +++++++++++++++++++++++++++=
+++++++++
+>  1 file changed, 169 insertions(+)
+>=20
+> diff --git a/drivers/net/can/mscan/mpc5xxx_can.c b/drivers/net/can/msca=
+n/mpc5xxx_can.c
+> index e59b3a3..4897929 100644
+> --- a/drivers/net/can/mscan/mpc5xxx_can.c
+> +++ b/drivers/net/can/mscan/mpc5xxx_can.c
+> @@ -109,6 +109,167 @@ static u32 mpc52xx_can_get_clock(struct platform_=
+device *ofdev,
+>  #endif /* CONFIG_PPC_MPC52xx */
+> =20
+>  #ifdef CONFIG_PPC_MPC512x
+> +
+> +#if IS_ENABLED(CONFIG_COMMON_CLK)
+> +
+> +static u32 mpc512x_can_get_clock(struct platform_device *ofdev,
+> +				 const char *clock_source, int *mscan_clksrc)
+> +{
+> +	struct device_node *np;
+> +	u32 clockdiv;
+> +	enum {
+> +		CLK_FROM_AUTO,
+> +		CLK_FROM_IPS,
+> +		CLK_FROM_SYS,
+> +		CLK_FROM_REF,
+> +	} clk_from;
+> +	struct clk *clk_in, *clk_can;
+> +	unsigned long freq_calc;
+> +	struct mscan_priv *priv;
+> +
+> +	/* the caller passed in the clock source spec that was read from
+> +	 * the device tree, get the optional clock divider as well
+> +	 */
+> +	np =3D ofdev->dev.of_node;
+> +	clockdiv =3D 1;
+> +	of_property_read_u32(np, "fsl,mscan-clock-divider", &clockdiv);
+> +	dev_dbg(&ofdev->dev, "device tree specs: clk src[%s] div[%d]\n",
+> +		clock_source ? clock_source : "<NULL>", clockdiv);
+> +
+> +	/* when clock-source is 'ip', the CANCTL1[CLKSRC] bit needs to
+> +	 * get set, and the 'ips' clock is the input to the MSCAN
+> +	 * component
+> +	 *
+> +	 * for clock-source values of 'ref' or 'sys' the CANCTL1[CLKSRC]
+> +	 * bit needs to get cleared, an optional clock-divider may have
+> +	 * been specified (the default value is 1), the appropriate
+> +	 * MSCAN related MCLK is the input to the MSCAN component
+> +	 *
+> +	 * in the absence of a clock-source spec, first an optimal clock
+> +	 * gets determined based on the 'sys' clock, if that fails the
+> +	 * 'ref' clock is used
+> +	 */
+> +	clk_from =3D CLK_FROM_AUTO;
+> +	if (clock_source) {
+> +		/* interpret the device tree's spec for the clock source */
+> +		if (!strcmp(clock_source, "ip"))
+> +			clk_from =3D CLK_FROM_IPS;
+> +		else if (!strcmp(clock_source, "sys"))
+> +			clk_from =3D CLK_FROM_SYS;
+> +		else if (!strcmp(clock_source, "ref"))
+> +			clk_from =3D CLK_FROM_REF;
+> +		else
+> +			goto err_invalid;
+> +		dev_dbg(&ofdev->dev, "got a clk source spec[%d]\n", clk_from);
+> +	}
+> +	if (clk_from =3D=3D CLK_FROM_AUTO) {
+> +		/* no spec so far, try the 'sys' clock; round to the
+> +		 * next MHz and see if we can get a multiple of 16MHz
+> +		 */
+> +		dev_dbg(&ofdev->dev, "no clk source spec, trying SYS\n");
+> +		clk_in =3D devm_clk_get(&ofdev->dev, "sys");
+> +		if (IS_ERR(clk_in))
+> +			goto err_notavail;
+> +		freq_calc =3D clk_get_rate(clk_in);
+> +		freq_calc +=3D  499999;
+> +		freq_calc /=3D 1000000;
+> +		freq_calc *=3D 1000000;
+> +		if ((freq_calc % 16000000) =3D=3D 0) {
+> +			clk_from =3D CLK_FROM_SYS;
+> +			clockdiv =3D freq_calc / 16000000;
+> +			dev_dbg(&ofdev->dev,
+> +				"clk fit, sys[%lu] div[%d] freq[%lu]\n",
+> +				freq_calc, clockdiv, freq_calc / clockdiv);
+> +		}
+> +	}
+> +	if (clk_from =3D=3D CLK_FROM_AUTO) {
+> +		/* no spec so far, use the 'ref' clock */
+> +		dev_dbg(&ofdev->dev, "no clk source spec, trying REF\n");
+> +		clk_in =3D devm_clk_get(&ofdev->dev, "ref");
+> +		if (IS_ERR(clk_in))
+> +			goto err_notavail;
+> +		clk_from =3D CLK_FROM_REF;
+> +		freq_calc =3D clk_get_rate(clk_in);
+> +		dev_dbg(&ofdev->dev,
+> +			"clk fit, ref[%lu] (no div) freq[%lu]\n",
+> +			freq_calc, freq_calc);
+> +	}
+> +
+> +	/* select IPS or MCLK as the MSCAN input (returned to the caller),
+> +	 * setup the MCLK mux source and rate if applicable, apply the
+> +	 * optionally specified or derived above divider, and determine
+> +	 * the actual resulting clock rate to return to the caller
+> +	 */
+> +	switch (clk_from) {
+> +	case CLK_FROM_IPS:
+> +		clk_can =3D devm_clk_get(&ofdev->dev, "ips");
+> +		if (IS_ERR(clk_can))
+> +			goto err_notavail;
+> +		if (clk_prepare(clk_can)) {
 
-Shall I resend (with vger devicetree included and more subsystems
-lists added)?  Which other lists to include without spamming too
-many channels?  Poor moderators have to ACK messages for lists
-that I'm not subscribed to.
+I would just call prepare_enable in the main mscan driver, then we don't
+need a special "clock is prepared but not enabled" contract.
+
+> +			devm_clk_put(&ofdev->dev, clk_can);
+
+not needed, as this driver instance will fail, doesn't it?
+
+> +			goto err_notavail;
+> +		}
+> +		priv =3D netdev_priv(dev_get_drvdata(&ofdev->dev));
+> +		priv->clk_can =3D clk_can;
+> +		freq_calc =3D clk_get_rate(clk_can);
+> +		*mscan_clksrc =3D MSCAN_CLKSRC_IPS;
+> +		dev_dbg(&ofdev->dev, "clk from IPS, clksrc[%d] freq[%lu]\n",
+> +			*mscan_clksrc, freq_calc);
+> +		break;
+> +	case CLK_FROM_SYS:
+> +	case CLK_FROM_REF:
+> +		clk_can =3D devm_clk_get(&ofdev->dev, "mclk");
+> +		if (IS_ERR(clk_can))
+> +			goto err_notavail;
+> +		if (clk_prepare(clk_can)) {
+> +			devm_clk_put(&ofdev->dev, clk_can);
+
+same here
+
+> +			goto err_notavail;
+> +		}
+> +		priv =3D netdev_priv(dev_get_drvdata(&ofdev->dev));
+> +		priv->clk_can =3D clk_can;
+> +		if (clk_from =3D=3D CLK_FROM_SYS)
+> +			clk_in =3D devm_clk_get(&ofdev->dev, "sys");
+> +		if (clk_from =3D=3D CLK_FROM_REF)
+> +			clk_in =3D devm_clk_get(&ofdev->dev, "ref");
+> +		if (IS_ERR(clk_in))
+> +			goto err_notavail;
+> +		clk_set_parent(clk_can, clk_in);
+> +		freq_calc =3D clk_get_rate(clk_in);
+> +		freq_calc /=3D clockdiv;
+> +		clk_set_rate(clk_can, freq_calc);
+> +		freq_calc =3D clk_get_rate(clk_can);
+> +		*mscan_clksrc =3D MSCAN_CLKSRC_BUS;
+> +		dev_dbg(&ofdev->dev, "clk from MCLK, clksrc[%d] freq[%lu]\n",
+> +			*mscan_clksrc, freq_calc);
+> +		break;
+> +	default:
+> +		goto err_invalid;
+> +	}
+> +
+> +	return freq_calc;
+> +
+> +err_invalid:
+> +	dev_err(&ofdev->dev, "invalid clock source specification\n");
+> +	return 0;
+
+return 0 in case of error? Please add a comment what this 0 means here.
+> +
+> +err_notavail:
+> +	dev_err(&ofdev->dev, "cannot acquire or setup clock source\n");
+> +	return 0;
+> +}
+> +
+> +static void mpc512x_can_put_clock(struct platform_device *ofdev)
+> +{
+> +	struct mscan_priv *priv;
+> +
+> +	priv =3D netdev_priv(dev_get_drvdata(&ofdev->dev));
+> +	if (priv->clk_can) {
+> +		clk_unprepare(priv->clk_can);
+> +		devm_clk_put(&ofdev->dev, priv->clk_can);
+
+devm_clk_put can be removed, it's called automatically.
+
+> +	}
+> +}
+> +
+> +#else	/* COMMON_CLK */
+> +
+>  struct mpc512x_clockctl {
+>  	u32 spmr;		/* System PLL Mode Reg */
+>  	u32 sccr[2];		/* System Clk Ctrl Reg 1 & 2 */
+> @@ -239,12 +400,18 @@ exit_put:
+>  	of_node_put(np_clock);
+>  	return freq;
+>  }
+> +
+> +#define mpc512x_can_put_clock NULL
+> +
+> +#endif	/* COMMON_CLK */
+> +
+>  #else /* !CONFIG_PPC_MPC512x */
+>  static u32 mpc512x_can_get_clock(struct platform_device *ofdev,
+>  				 const char *clock_name, int *mscan_clksrc)
+>  {
+>  	return 0;
+>  }
+> +#define mpc512x_can_put_clock NULL
+>  #endif /* CONFIG_PPC_MPC512x */
+> =20
+>  static const struct of_device_id mpc5xxx_can_table[];
+> @@ -386,11 +553,13 @@ static int mpc5xxx_can_resume(struct platform_dev=
+ice *ofdev)
+>  static const struct mpc5xxx_can_data mpc5200_can_data =3D {
+>  	.type =3D MSCAN_TYPE_MPC5200,
+>  	.get_clock =3D mpc52xx_can_get_clock,
+> +	/* .put_clock not applicable */
+>  };
+> =20
+>  static const struct mpc5xxx_can_data mpc5121_can_data =3D {
+>  	.type =3D MSCAN_TYPE_MPC5121,
+>  	.get_clock =3D mpc512x_can_get_clock,
+> +	.put_clock =3D mpc512x_can_put_clock,
+>  };
+> =20
+>  static const struct of_device_id mpc5xxx_can_table[] =3D {
+>=20
+
+Marc
+
+--=20
+Pengutronix e.K.                  | Marc Kleine-Budde           |
+Industrial Linux Solutions        | Phone: +49-231-2826-924     |
+Vertretung West/Dortmund          | Fax:   +49-5121-206917-5555 |
+Amtsgericht Hildesheim, HRA 2686  | http://www.pengutronix.de   |
 
 
-virtually yours
-Gerhard Sittig
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr. 5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+------enig2PJXSIVVFEOIDGCPHBDEN
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Icedove - http://www.enigmail.net/
+
+iEYEARECAAYFAlHtLfQACgkQjTAFq1RaXHOLogCeOS8hW9jKqkkOFy7uYqKidses
+ocUAn2iEi3xZa5CRPJhL/7kEFVwGMrHT
+=5Mb7
+-----END PGP SIGNATURE-----
+
+------enig2PJXSIVVFEOIDGCPHBDEN--
