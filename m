@@ -1,25 +1,30 @@
-Return-Path: <gsi@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mkl@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+ [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E90742C0225
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2013 22:16:40 +1000 (EST)
-From: Gerhard Sittig <gsi@denx.de>
-To: linuxppc-dev@lists.ozlabs.org, Anatolij Gustschin <agust@denx.de>,
- Mike Turquette <mturquette@linaro.org>,
- linux-arm-kernel@lists.infradead.org, devicetree-discuss@lists.ozlabs.org
-Subject: [PATCH v3 31/31] clk: mpc512x: remove clkdev registration (sys/ref,
- header)
-Date: Mon, 22 Jul 2013 14:14:58 +0200
-Message-Id: <1374495298-22019-32-git-send-email-gsi@denx.de>
-In-Reply-To: <1374495298-22019-1-git-send-email-gsi@denx.de>
+ by ozlabs.org (Postfix) with ESMTPS id 0FCCE2C09D4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2013 22:29:35 +1000 (EST)
+Message-ID: <51ED2574.9020105@pengutronix.de>
+Date: Mon, 22 Jul 2013 14:28:36 +0200
+From: Marc Kleine-Budde <mkl@pengutronix.de>
+MIME-Version: 1.0
+To: Gerhard Sittig <gsi@denx.de>
+Subject: Re: [PATCH v3 08/31] fs_enet: cleanup clock API use
 References: <1374166855-7280-1-git-send-email-gsi@denx.de>
  <1374495298-22019-1-git-send-email-gsi@denx.de>
-Cc: Detlev Zundel <dzu@denx.de>, Wolfram Sang <wsa@the-dreams.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Gerhard Sittig <gsi@denx.de>,
+ <1374495298-22019-9-git-send-email-gsi@denx.de>
+In-Reply-To: <1374495298-22019-9-git-send-email-gsi@denx.de>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="----enig2VRGGGALKWWVRSRWLRCSB"
+Cc: Mike Turquette <mturquette@linaro.org>, Detlev Zundel <dzu@denx.de>,
+ Wolfram Sang <wsa@the-dreams.de>, David Woodhouse <dwmw2@infradead.org>,
+ devicetree-discuss@lists.ozlabs.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@kernel.org>,
- Marc Kleine-Budde <mkl@pengutronix.de>, David Woodhouse <dwmw2@infradead.org>,
- Wolfgang Grandegger <wg@grandegger.com>,
+ Wolfgang Grandegger <wg@grandegger.com>, Anatolij Gustschin <agust@denx.de>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
  Mauro Carvalho Chehab <m.chehab@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -30,40 +35,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-remove the last clkdev registration call ("sys_clk" and "ref_clk"
-for mscan), as well as the clkdev header inclusion and the "compat
-registration" comment
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+------enig2VRGGGALKWWVRSRWLRCSB
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-all client lookups for clock items are device tree based now, no
-compatibility alias names need to get provided any longer
+On 07/22/2013 02:14 PM, Gerhard Sittig wrote:
+> make the Freescale ethernet driver get, prepare and enable the FEC cloc=
+k
+> during probe(); disable, unprepare and put the clock upon remove(); hol=
+d
+> a reference to the clock over the period of use; use devm_{get,put}_clk=
+()
 
-Signed-off-by: Gerhard Sittig <gsi@denx.de>
----
- arch/powerpc/platforms/512x/clock-commonclk.c |    5 -----
- 1 file changed, 5 deletions(-)
+There's no need for devm_clk_put(), devm will take care of this.
 
-diff --git a/arch/powerpc/platforms/512x/clock-commonclk.c b/arch/powerpc/platforms/512x/clock-commonclk.c
-index 893fbe5..e9451a7 100644
---- a/arch/powerpc/platforms/512x/clock-commonclk.c
-+++ b/arch/powerpc/platforms/512x/clock-commonclk.c
-@@ -12,7 +12,6 @@
-  */
- 
- #include <linux/clk-provider.h>
--#include <linux/clkdev.h>
- #include <linux/device.h>
- #include <linux/errno.h>
- #include <linux/io.h>
-@@ -673,10 +672,6 @@ static void mpc512x_clk_setup_clock_tree(int busfreq)
- 	/* fixed frequency for AC97, always 24.567MHz */
- 	clks[MPC512x_CLK_AC97] = mpc512x_clk_fixed("ac97", 24567000);
- 
--	/* clkdev registration for compatibility reasons */
--	clk_register_clkdev(clks[MPC512x_CLK_REF], "ref_clk", NULL);
--	clk_register_clkdev(clks[MPC512x_CLK_SYS], "sys_clk", NULL);
--
- 	pr_debug("clock tree setup complete\n");
- 	freq = clk_get_rate(clks[MPC512x_CLK_E300]);
- 	pr_debug("derived PPC freq [%d]\n", freq);
--- 
-1.7.10.4
+Marc
+
+--=20
+Pengutronix e.K.                  | Marc Kleine-Budde           |
+Industrial Linux Solutions        | Phone: +49-231-2826-924     |
+Vertretung West/Dortmund          | Fax:   +49-5121-206917-5555 |
+Amtsgericht Hildesheim, HRA 2686  | http://www.pengutronix.de   |
+
+
+------enig2VRGGGALKWWVRSRWLRCSB
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Icedove - http://www.enigmail.net/
+
+iEYEARECAAYFAlHtJXoACgkQjTAFq1RaXHN1PACePqdj/CxFKu+bqSy6adn7oXmW
+om0An0nK+7eDaIBkSQtkgN9tpyRVmX1P
+=XQKt
+-----END PGP SIGNATURE-----
+
+------enig2VRGGGALKWWVRSRWLRCSB--
