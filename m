@@ -1,23 +1,22 @@
 Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 858402C0089
- for <linuxppc-dev@ozlabs.org>; Tue, 23 Jul 2013 08:59:56 +1000 (EST)
-Received: from mail223-ch1 (localhost [127.0.0.1])	by
- mail223-ch1-R.bigfish.com (Postfix) with ESMTP id 4C3434A0070	for
- <linuxppc-dev@ozlabs.org>; Mon, 22 Jul 2013 22:59:53 +0000 (UTC)
-Received: from CH1EHSMHS005.bigfish.com (snatpool2.int.messaging.microsoft.com
- [10.43.68.235])	by mail223-ch1.bigfish.com (Postfix) with ESMTP id
- 9D8B5160046	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jul 2013 22:59:51 +0000
- (UTC)
-Date: Mon, 22 Jul 2013 17:59:49 -0500
+ by ozlabs.org (Postfix) with ESMTPS id 7BFBF2C01C5
+ for <linuxppc-dev@ozlabs.org>; Tue, 23 Jul 2013 09:00:33 +1000 (EST)
+Received: from mail195-co9 (localhost [127.0.0.1])	by
+ mail195-co9-R.bigfish.com (Postfix) with ESMTP id 121BDB0012F	for
+ <linuxppc-dev@ozlabs.org>; Mon, 22 Jul 2013 23:00:31 +0000 (UTC)
+Received: from CO9EHSMHS009.bigfish.com (unknown [10.236.132.250])	by
+ mail195-co9.bigfish.com (Postfix) with ESMTP id 66679D00047	for
+ <linuxppc-dev@ozlabs.org>; Mon, 22 Jul 2013 23:00:29 +0000 (UTC)
+Date: Mon, 22 Jul 2013 18:00:27 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: Po Liu <po.liu@freescale.com>
 Subject: Re: [4/4] powerpc/85xx: Update mpc85xx_defconfig for C293PCIE
-Message-ID: <20130722225948.GA26586@home.buserror.net>
+Message-ID: <20130722230026.GA26621@home.buserror.net>
 References: <1366854857-22791-4-git-send-email-Po.Liu@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -55,7 +54,7 @@ On Thu, Apr 25, 2013 at 09:54:17AM +0800, Po Liu wrote:
 >  CONFIG_P1022_DS=y
 >  CONFIG_P1022_RDK=y
 
-Please just merge this in with the patch that adds CONFIG_C293_PCIE
-support, when you respin that patch.
+Also, why only mpc85xx_defconfig and mpc85xx_smp_defconfig?  Just because
+this board isn't SMP doesn't mean it can't be supported by an SMP kernel.
 
 -Scott
