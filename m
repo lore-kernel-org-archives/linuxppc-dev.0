@@ -1,25 +1,24 @@
 Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CD9322C009E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 03:41:03 +1000 (EST)
-Date: Mon, 22 Jul 2013 12:40:47 -0500
+ by ozlabs.org (Postfix) with ESMTPS id 9B1D72C0097
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 03:53:32 +1000 (EST)
+Date: Mon, 22 Jul 2013 12:53:20 -0500
 From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 2/2] mmc: esdhc: get voltage from dts file
-To: Haijun Zhang <Haijun.Zhang@freescale.com>
-References: <1374479636-9254-1-git-send-email-Haijun.Zhang@freescale.com>
- <1374479636-9254-2-git-send-email-Haijun.Zhang@freescale.com>
-In-Reply-To: <1374479636-9254-2-git-send-email-Haijun.Zhang@freescale.com>
- (from Haijun.Zhang@freescale.com on Mon Jul 22 02:53:56 2013)
-Message-ID: <1374514847.15592.7@snotra>
+Subject: Re: [PATCH v4 1/3] DMA: Freescale: revise device tree binding document
+To: <hongbo.zhang@freescale.com>
+In-Reply-To: <1374472540-21177-2-git-send-email-hongbo.zhang@freescale.com>
+ (from hongbo.zhang@freescale.com on Mon Jul 22 00:55:38 2013)
+Message-ID: <1374515600.15592.8@snotra>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: linux-mmc@vger.kernel.org, AFLEMING@freescale.com, cbouatmailru@gmail.com,
- cjb@laptop.org, linuxppc-dev@lists.ozlabs.org,
- Haijun Zhang <haijun.zhang@freescale.com>
+Cc: vinod.koul@intel.com, devicetree-discuss@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, vakul@freescale.com,
+ Hongbo Zhang <hongbo.zhang@freescale.com>, djbw@fb.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,67 +28,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/22/2013 02:53:56 AM, Haijun Zhang wrote:
-> Add voltage-range support in esdhc of T4, So we can choose
-> to read voltages from dts file as one optional.
-> If we can get a valid voltage-range from device node, we use
-> this voltage as the final voltage support. Else we still read
-> from capacity or from other provider.
+On 07/22/2013 12:55:38 AM, hongbo.zhang@freescale.com wrote:
+> From: Hongbo Zhang <hongbo.zhang@freescale.com>
 >=20
-> Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
-> Signed-off-by: Anton Vorontsov <cbouatmailru@gmail.com>
+> This updates the discription of each type of DMA controller and its =20
+> channels,
+> it is preparation for adding another new DMA controller binding, also =20
+> fixes
+> some defects of indent for text alignment at the same time.
+>=20
+> Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
 > ---
->  drivers/mmc/host/sdhci-of-esdhc.c | 31 =20
-> +++++++++++++++++++++++++++++++
->  drivers/mmc/host/sdhci.c          |  3 +++
->  include/linux/mmc/sdhci.h         |  1 +
->  3 files changed, 35 insertions(+)
+>  .../devicetree/bindings/powerpc/fsl/dma.txt        |   56 =20
+> +++++++++++---------
+>  1 file changed, 30 insertions(+), 26 deletions(-)
 >=20
-> diff --git a/drivers/mmc/host/sdhci-of-esdhc.c =20
-> b/drivers/mmc/host/sdhci-of-esdhc.c
-> index 15039e2..8b4b27a 100644
-> --- a/drivers/mmc/host/sdhci-of-esdhc.c
-> +++ b/drivers/mmc/host/sdhci-of-esdhc.c
-> @@ -262,6 +262,35 @@ static int esdhc_pltfm_bus_width(struct =20
-> sdhci_host *host, int width)
->  	return 0;
->  }
+> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/dma.txt =20
+> b/Documentation/devicetree/bindings/powerpc/fsl/dma.txt
+> index 2a4b4bc..0650171 100644
+> --- a/Documentation/devicetree/bindings/powerpc/fsl/dma.txt
+> +++ b/Documentation/devicetree/bindings/powerpc/fsl/dma.txt
+> @@ -1,33 +1,33 @@
+> -* Freescale 83xx DMA Controller
+> +* Freescale DMA Controllers
 >=20
-> +static void esdhc_get_voltage(struct sdhci_host *host,
-> +			struct platform_device *pdev)
-> +{
-> +	const u32 *voltage_ranges;
-> +	int num_ranges, i;
-> +	struct device_node *np;
-> +	np =3D pdev->dev.of_node;
-> +
-> +	voltage_ranges =3D of_get_property(np, "voltage-ranges", =20
-> &num_ranges);
-> +	num_ranges =3D num_ranges / sizeof(*voltage_ranges) / 2;
-> +	if (!voltage_ranges || !num_ranges) {
-> +		dev_info(&pdev->dev, "OF: voltage-ranges =20
-> unspecified\n");
-> +		return;
-> +	}
-> +
-> +	for (i =3D 0; i < num_ranges; i++) {
-> +		const int j =3D i * 2;
-> +		u32 mask;
-> +		mask =3D =20
-> mmc_vddrange_to_ocrmask(be32_to_cpu(voltage_ranges[j]),
-> +				be32_to_cpu(voltage_ranges[j + 1]));
-> +		if (!mask) {
-> +			dev_info(&pdev->dev,
-> +				"OF: false voltage-ranges specified\n");
-> +			return;
-> +		}
-> +		host->ocr_mask |=3D mask;
-> +	}
-> +}
+> -Freescale PowerPC 83xx have on chip general purpose DMA controllers.
+> +** Freescale ELO DMA Controller
+> +   This is a little-endian DMA controller.
+> +   Used in Freescale PowerPC 83xx series, such as:
+> +   mpc8313, mpc8315, mpc8323, mpc8347, mpc8349, mpc8360, mpc8377, =20
+> mpc8378, mpc8379.
 
-Don't duplicate this code.  Move it somewhere common and share it.
+You don't need to list every single chip...  What happens when new =20
+chips come out (not so likely with mpc83xx, but more likely for =20
+eloplus/elo3)?  Do we keep updating this, or have a list that looks =20
+complete but isn't?
 
-Why did you remove the range index from the error string, and why did =20
-you change it from dev_err to dev_info?
+My point in suggesting that some examples be given is just so that the =20
+reader knows where to find a manual that documents a particular version =20
+of "elo", and to give a rough idea of what product families use it.
+
+> -Freescale PowerPC 85xx/86xx have on chip general purpose DMA =20
+> controllers.
+> +** Freescale ELOPLUS DMA Controller
+> +   This is DMA controller with extended addresses and chaining.
+> +   Used in Freescale PowerPC 85xx/86xx and pxxx series chips, such =20
+> as:
+> +   [1] mpc8540, mpc8541, mpc8555, mpc8560, mpc8610, mpc8641,
+> +   [2] mpc8536, mpc8544, mpc8548, mpc8568, mpc8569, mpc8572, p1010, =20
+> p1020, p1021,
+> +       p1022, p1023, p2020, p2041, p3041, p4080, p5020, p5040, and =20
+> also bsc9131.
+
+What do [1] and [2] signify here?
+
+Oh, I see.  It's weird for footnotes to come before the place they're =20
+referenced...
+
+>  Required properties:
+>=20
+> -- compatible        : compatible list, contains 2 entries, first is
+> -		 "fsl,CHIP-dma", where CHIP is the processor
+> -		 (mpc8540, mpc8540, etc.) and the second is
+> -		 "fsl,eloplus-dma"
+> +- compatible        : compatible list, contains 2 entries for chips =20
+> in above
+> +                      list[1], the first is "fsl,CHIP-dma", where =20
+> CHIP is the
+> +                      processor and the second is "fsl,eloplus-dma". =20
+> contains
+> +                      only one "fsl,eloplus-dma" for chips in above =20
+> list[2]
+
+Don't encode this difference in the binding document.  It wasn't on =20
+purpose, but rather an artifact of factoring things out into dtsi =20
+files.  Just make it optional.
+
+Why can't we just talk about what compatible must include, as I =20
+suggested earlier, rather than what it must *be*?
+
+>  - reg               : <registers mapping for DMA general status reg>
+>  - cell-index        : controller index.  0 for controller @ 0x21000,
+>                                           1 for controller @ 0xc000
+> -- ranges		: Should be defined as specified in 1) to =20
+> describe the
+> -		  DMA controller channels.
+> +- ranges            : physical address range of DMA controller =20
+> channels
+
+ranges will not have physical addresses at this level.  They'll only =20
+become physical addresses when translated by the ccsr node's ranges.
 
 -Scott=
