@@ -1,21 +1,40 @@
-Return-Path: <gang.chen@asianux.com>
-Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
+Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id F21BD2C00DB
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2013 16:53:20 +1000 (EST)
-Message-ID: <51ECD6A4.3050408@asianux.com>
-Date: Mon, 22 Jul 2013 14:52:20 +0800
-From: Chen Gang <gang.chen@asianux.com>
+ (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9BCA02C00DB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2013 16:54:55 +1000 (EST)
+Received: from /spool/local
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+ Mon, 22 Jul 2013 12:19:07 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 1CCBBE0055
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2013 12:24:47 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r6M6teEd24510614
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2013 12:25:41 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r6M6skXH012964
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2013 16:54:47 +1000
+Message-ID: <51ECD664.7040708@linux.vnet.ibm.com>
+Date: Mon, 22 Jul 2013 12:21:16 +0530
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- "paulus@samba.org" <paulus@samba.org>,
- shangw@linux.vnet.ibm.com, weiyang@linux.vnet.ibm.com,
- linuxram@us.ibm.com, Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH] powerpc: platforms: powernv: add '__init' for
- pnv_pci_init_ioda2_phb()
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Chen Gang <gang.chen@asianux.com>
+Subject: Re: [PATCH v2] powerpc: kernel: remove useless code which related
+ with 'max_cpus'
+References: <51ECCA10.7010709@asianux.com>
+ <51ECCEA8.5040406@linux.vnet.ibm.com> <51ECD0BF.8080605@asianux.com>
+ <51ECD3D4.9020405@asianux.com>
+In-Reply-To: <51ECD3D4.9020405@asianux.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: chenhui.zhao@freescale.com, "paulus@samba.org" <paulus@samba.org>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,32 +44,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-pnv_pci_init_ioda2_phb() is only used during boot up, so need add
-'__init' to save the related memory, and avoid related warning:
+On 07/22/2013 12:10 PM, Chen Gang wrote:
+> Since not need 'max_cpus' after the related commit, the related code
+> are useless too, need be removed.
+> 
+> The related commit:
+> 
+>   c1aa687 powerpc: Clean up obsolete code relating to decrementer and timebase
+> 
+> The related warning:
+> 
+>   arch/powerpc/kernel/smp.c:323:43: warning: parameter ‘max_cpus’ set but not used [-Wunused-but-set-parameter]
+> 
+> Signed-off-by: Chen Gang <gang.chen@asianux.com>
 
-  The function .pnv_pci_init_ioda2_phb() references
-  the function __init .pnv_pci_init_ioda_phb().
-  This is often because .pnv_pci_init_ioda2_phb lacks a __init 
-  annotation or the annotation of .pnv_pci_init_ioda_phb is wrong.
+This version looks good.
 
+Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 
-Signed-off-by: Chen Gang <gang.chen@asianux.com>
----
- arch/powerpc/platforms/powernv/pci-ioda.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Regards,
+Srivatsa S. Bhat
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 49b57b9..d8140b1 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1266,7 +1266,7 @@ void __init pnv_pci_init_ioda_phb(struct device_node *np,
- 		opal_pci_set_pe(phb_id, 0, 0, 7, 1, 1 , OPAL_MAP_PE);
- }
- 
--void pnv_pci_init_ioda2_phb(struct device_node *np)
-+void __init pnv_pci_init_ioda2_phb(struct device_node *np)
- {
- 	pnv_pci_init_ioda_phb(np, 0, PNV_PHB_IODA2);
- }
--- 
-1.7.7.6
+> ---
+>  arch/powerpc/kernel/smp.c |    9 ++-------
+>  1 files changed, 2 insertions(+), 7 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+> index 38b0ba6..7edbd5b 100644
+> --- a/arch/powerpc/kernel/smp.c
+> +++ b/arch/powerpc/kernel/smp.c
+> @@ -346,13 +346,8 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
+>  	cpumask_set_cpu(boot_cpuid, cpu_sibling_mask(boot_cpuid));
+>  	cpumask_set_cpu(boot_cpuid, cpu_core_mask(boot_cpuid));
+> 
+> -	if (smp_ops)
+> -		if (smp_ops->probe)
+> -			max_cpus = smp_ops->probe();
+> -		else
+> -			max_cpus = NR_CPUS;
+> -	else
+> -		max_cpus = 1;
+> +	if (smp_ops && smp_ops->probe)
+> +		smp_ops->probe();
+>  }
+> 
+>  void smp_prepare_boot_cpu(void)
+> 
