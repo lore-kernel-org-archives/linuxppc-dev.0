@@ -1,32 +1,40 @@
-Return-Path: <B07421@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8CBB42C00B8
- for <linuxppc-dev@ozlabs.org>; Wed, 24 Jul 2013 02:22:10 +1000 (EST)
-Received: from mail177-co1 (localhost [127.0.0.1])	by
- mail177-co1-R.bigfish.com (Postfix) with ESMTP id A6030B001D3	for
- <linuxppc-dev@ozlabs.org>; Tue, 23 Jul 2013 16:22:06 +0000 (UTC)
-Received: from CO1EHSMHS016.bigfish.com (unknown [10.243.78.247])	by
- mail177-co1.bigfish.com (Postfix) with ESMTP id 44B49A8004A	for
- <linuxppc-dev@ozlabs.org>; Tue, 23 Jul 2013 16:22:04 +0000 (UTC)
-Date: Tue, 23 Jul 2013 11:22:00 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [3/4] powerpc/85xx: Add C293PCIE board support
-To: Liu Po-B43644 <B43644@freescale.com>
-References: <1366854857-22791-3-git-send-email-Po.Liu@freescale.com>
- <20130722225835.GA26484@home.buserror.net>
- <D473A0D087F4EA47A30C37E4637E25E609DAD260@039-SN2MPN1-021.039d.mgd.msft.net>
-In-Reply-To: <D473A0D087F4EA47A30C37E4637E25E609DAD260@039-SN2MPN1-021.039d.mgd.msft.net>
- (from B43644@freescale.com on Tue Jul 23 02:47:18 2013)
-Message-ID: <1374596520.15592.26@snotra>
+Return-Path: <deepthi@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 722472C027F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 02:22:40 +1000 (EST)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
+ Wed, 24 Jul 2013 02:12:24 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 636F82BB004F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 02:22:34 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r6NGMO8t4784506
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 02:22:24 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r6NGMXuG027983
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 02:22:33 +1000
+Message-ID: <51EEAD93.8060300@linux.vnet.ibm.com>
+Date: Tue, 23 Jul 2013 21:51:39 +0530
+From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- Hu Mingkai-B21284 <B21284@freescale.com>,
- "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: cpuidle/pseries: Fix kernel command line parameter
+ smt-snooze-delay
+References: <51EE0C65.6020903@linux.vnet.ibm.com>
+ <20130723140256.GH31944@concordia>
+In-Reply-To: <20130723140256.GH31944@concordia>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Preeti Murthy <preeti@linux.vnet.ibm.com>,
+ PowerPC email list <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,73 +44,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/23/2013 02:47:18 AM, Liu Po-B43644 wrote:
-> >  > +		partition@1900000 {
-> >  > +			/* 7MB for User Area */
-> >  > +			reg =3D <0x01900000 0x00700000>;
-> >  > +			label =3D "NAND User area";
-> >  > +		};
-> >
-> >  Above you say there's 4 GiB of NAND, but here you define =20
-> partitions that
-> >  only cover 32 MiB.
-> Can I set one partion include all other space(4GB- 32MB) with label =20
-> name "Others"?
+On 07/23/2013 07:32 PM, Michael Ellerman wrote:
+> On Tue, Jul 23, 2013 at 10:23:57AM +0530, Deepthi Dharwar wrote:
+>> smt-snooze-delay is a tun-able provided currently on powerpc to delay the
+>> entry of an idle cpu to NAP state. By default, the value is 100us,
+>> which is entry criteria for NAP state i.e only if the idle period is
+>> above 100us it would enter NAP. Value of -1 disables entry into NAP.
+>> This value can be set either through sysfs, ppc64_cpu util or by
+>> passing it via kernel command line. Currently this feature is broken
+>> when the value is passed via the kernel command line.
+> 
+> Has it always been broken? Or just since some commit?
 
-Are you sure you don't want to leave more room for the RFS?  And what =20
-is the difference between "user area" and "others"?
+Yes, it is broken since inclusion of pseries back-end driver, around 3.3
+kernel time-frame.
 
-> >  > diff --git a/arch/powerpc/platforms/85xx/c293pcie.c
-> >  > b/arch/powerpc/platforms/85xx/c293pcie.c
-> >  > new file mode 100644
-> >  > index 0000000..75dda12
-> >  > --- /dev/null
-> >  > +++ b/arch/powerpc/platforms/85xx/c293pcie.c
-> >  > @@ -0,0 +1,82 @@
-> >  > +/*
-> >  > + * C293PCIE Board Setup
-> >  > + *
-> >  > + * Copyright 2013 Freescale Semiconductor Inc.
-> >  > + *
-> >  > + * This program is free software; you can redistribute  it =20
-> and/or
-> >  > +modify it
-> >  > + * under  the terms of  the GNU General  Public License as =20
-> published
-> >  > +by the
-> >  > + * Free Software Foundation;  either version 2 of the  License, =20
-> or
-> >  > +(at your
-> >  > + * option) any later version.
-> >  > + */
-> >  > +
-> >  > +#include <linux/stddef.h>
-> >  > +#include <linux/kernel.h>
-> >  > +#include <linux/pci.h>
-> >  > +#include <linux/delay.h>
-> >  > +#include <linux/interrupt.h>
-> >  > +#include <linux/of_platform.h>
-> >  > +
-> >  > +#include <asm/time.h>
-> >  > +#include <asm/machdep.h>
-> >  > +#include <asm/pci-bridge.h>
-> >  > +#include <mm/mmu_decl.h>
-> >  > +#include <asm/prom.h>
-> >  > +#include <asm/udbg.h>
-> >  > +#include <asm/mpic.h>
-> >  > +
-> >  > +#include <sysdev/fsl_soc.h>
-> >  > +#include <sysdev/fsl_pci.h>
-> >  > +
-> >  > +#include "mpc85xx.h"
-> >
-> >  Are you sure you need all of these?  I don't see any delays, for =20
-> example.
-> Thanks, I'll test and remove redundant includes.
+>> This patch aims to fix this, by taking the appropriate action
+>> based on the value after the pseries driver is registered.
+>> This check is carried on in the back-end driver rather than
+>> setup_smt_snooze_delay(), as one is not sure if the cpuidle driver
+>> is even registered when setup routine is executed.
+>> Also, this fixes re-enabling of NAP states by setting appropriate
+>> value without having to reboot using smt-snooze-delay parameter.
+>>
+>> Also, to note is, smt-snooze-delay is per-cpu variable.
+>> This can be used to enable/disable NAP on per-cpu
+>> basis using sysfs but when this variable is passed
+>> via kernel command line or using the smt-snooze-delay
+>> it applies to all the cpus. Per-cpu tuning can
+>> only be done via sysfs.
+>>
+>> Signed-off-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/platforms/pseries/processor_idle.c |   34 ++++++++++++++++++-----
+>>  1 file changed, 27 insertions(+), 7 deletions(-)
+>>
+>> diff --git a/arch/powerpc/platforms/pseries/processor_idle.c b/arch/powerpc/platforms/pseries/processor_idle.c
+>> index 4644efa0..8133f50 100644
+>> --- a/arch/powerpc/platforms/pseries/processor_idle.c
+>> +++ b/arch/powerpc/platforms/pseries/processor_idle.c
+>> @@ -170,18 +170,36 @@ static struct cpuidle_state shared_states[MAX_IDLE_STATE_COUNT] = {
+>>  void update_smt_snooze_delay(int cpu, int residency)
+>>  {
+>>  	struct cpuidle_driver *drv = cpuidle_get_driver();
+>> -	struct cpuidle_device *dev = per_cpu(cpuidle_devices, cpu);
+>> +	struct cpuidle_device *dev;
+>>  
+>>  	if (cpuidle_state_table != dedicated_states)
+>>  		return;
+>>  
+>> -	if (residency < 0) {
+>> -		/* Disable the Nap state on that cpu */
+>> -		if (dev)
+>> -			dev->states_usage[1].disable = 1;
+>> -	} else
+>> -		if (drv)
+>> +	if (!drv)
+>> +		return;
+>> +
+>> +	if (cpu == -1) {
+>> +		if (residency < 0) {
+>> +			/* Disable NAP on all cpus */
+>> +			drv->states[1].disabled = true;
+>> +		} else {
+>>  			drv->states[1].target_residency = residency;
+>> +			drv->states[1].disabled = false;
+>> +		}
+>> +		return;
+>> +	}
+>> +
+>> +	dev = per_cpu(cpuidle_devices, cpu);
+>> +	if (!dev)
+>> +		return;
+>> +
+>> +	if (residency < 0)
+>> +		dev->states_usage[1].disable = 1;
+>> +	else {
+>> +		drv->states[1].target_residency = residency;
+>> +		drv->states[1].disabled = false;
+>> +		dev->states_usage[1].disable = 0;
+> 
+> Why are we indexing into all these array with '1' ?
 
-Don't base it purely on testing -- you don't want to rely on =20
-accidentally picking up a needed include from some other include (which =20
-could change down the road).  Base it on whether this file uses =20
-something declared by the header in question.
+We are disabling/enabling  NAP state, which indexes into pseries cpuidle
+state table array with index value of 1.
+smt-snooze-delay of -1, disables NAP state.
+Else, we need to set the residency of NAP state i.e minimum time CPU
+should spend in NAP state ( based on which menu governor takes a
+decision on selection of Idle state) there by delaying the entry to NAP
+state.
 
--Scott=
+Thanks for the review.
+
+Regards,
+Deepthi
+
+> cheers
+> 
