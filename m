@@ -1,36 +1,25 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DB8772C013E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 11:51:15 +1000 (EST)
-Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 23 Jul 2013 07:11:23 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 1A4EEE004F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 07:21:09 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r6N1p5rr44171352
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 07:21:05 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r6N1p8to014957
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 11:51:08 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: Re: [PATCH 2/2] powerpc/mm: Fix fallthrough bug in  hpte_decode
-In-Reply-To: <1372839603-8308-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1372839603-8308-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1372839603-8308-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Date: Tue, 23 Jul 2013 07:21:04 +0530
-Message-ID: <87li4ym4c7.fsf@linux.vnet.ibm.com>
+Return-Path: <B38951@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id AC8662C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 11:58:44 +1000 (EST)
+From: Jia Hongtao-B38951 <B38951@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH] powerpc/msi: Fix compile error on mpc83xx
+Date: Tue, 23 Jul 2013 01:58:36 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01CF8A4D@039-SN1MPN1-004.039d.mgd.msft.net>
+References: <1372728997-31665-1-git-send-email-hongtao.jia@freescale.com>
+ <412C8208B4A0464FA894C5F0C278CD5D01CF350E@039-SN1MPN1-004.039d.mgd.msft.net>
+ <412C8208B4A0464FA894C5F0C278CD5D01CF8676@039-SN1MPN1-004.039d.mgd.msft.net>
+ <1374513533.15592.3@snotra>
+In-Reply-To: <1374513533.15592.3@snotra>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,41 +29,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+> -----Original Message-----
+> From: Wood Scott-B07421
+> Sent: Tuesday, July 23, 2013 1:19 AM
+> To: Jia Hongtao-B38951
+> Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org;
+> galak@kernel.crashing.org; Li Yang-R58472; Jia Hongtao-B38951
+> Subject: Re: [PATCH] powerpc/msi: Fix compile error on mpc83xx
+>=20
+> On 07/21/2013 09:00:51 PM, Jia Hongtao-B38951 wrote:
+> > Hi Scott,
+> >
+> > The fsl_msi.c build error on MPC83xx platform is fixed by this patch.
+> >
+> > Could you please have a review?
+> >
+> > Thanks.
+> > -Hongtao
+>=20
+> I will apply it when I apply the patch that depends on it.  I hope to
+> resume applying patches soon.
+>=20
+> -Scott
 
-> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
->
-> We should not fallthrough different case statements in hpte_decode. Add
-> break statement to break out of the switch. The regression is introduced by
-> dcda287a9b26309ae43a091d0ecde16f8f61b4c0 "powerpc/mm: Simplify hpte_decode"
->
-> Reported-by: Paul Mackerras <paulus@samba.org>
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/mm/hash_native_64.c | 2 ++
->  1 file changed, 2 insertions(+)
->
-> diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
-> index 0de15fc..e1f9b82 100644
-> --- a/arch/powerpc/mm/hash_native_64.c
-> +++ b/arch/powerpc/mm/hash_native_64.c
-> @@ -560,6 +560,7 @@ static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
->  			seg_off |= vpi << shift;
->  		}
->  		*vpn = vsid << (SID_SHIFT - VPN_SHIFT) | seg_off >> VPN_SHIFT;
-> +		break;
->  	case MMU_SEGSIZE_1T:
->  		/* We only have 40 - 23 bits of seg_off in avpn */
->  		seg_off = (avpn & 0x1ffff) << 23;
-> @@ -569,6 +570,7 @@ static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
->  			seg_off |= vpi << shift;
->  		}
->  		*vpn = vsid << (SID_SHIFT_1T - VPN_SHIFT) | seg_off >> VPN_SHIFT;
-> +		break;
->  	default:
->  		*vpn = size = 0;
->  	}
-
-Any update on this ?
-
--aneesh
+Thanks.
+- Hongtao
