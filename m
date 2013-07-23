@@ -1,22 +1,20 @@
-Return-Path: <gang.chen@asianux.com>
-Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 137BD2C00AF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 10:39:21 +1000 (EST)
-Message-ID: <51EF21FD.9020509@asianux.com>
-Date: Wed, 24 Jul 2013 08:38:21 +0800
-From: Chen Gang <gang.chen@asianux.com>
+Return-Path: <B42677@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0253.outbound.messaging.microsoft.com [213.199.154.253])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 28BDF2C009A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 10:45:16 +1000 (EST)
+From: Haijun Zhang <Haijun.Zhang@freescale.com>
+To: <linux-mmc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 1/2 V2] Powerpc: Add voltage support in dts file
+Date: Wed, 24 Jul 2013 07:53:33 +0800
+Message-ID: <1374623613-16681-1-git-send-email-Haijun.Zhang@freescale.com>
 MIME-Version: 1.0
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [Suggestion] powerpc: xmon: about 'longjmp' related warning.
-References: <51ECD91D.7090903@asianux.com> <20130723135809.GG31944@concordia>
-In-Reply-To: <20130723135809.GG31944@concordia>
-Content-Type: text/plain; charset=UTF-8
-Cc: Michael Neuling <mikey@neuling.org>, "paulus@samba.org" <paulus@samba.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- jovi.zhangwei@huawei.com
+Content-Type: text/plain
+Cc: scottwood@freescale.com, cjb@laptop.org, AFLEMING@freescale.com,
+ Haijun Zhang <haijun.zhang@freescale.com>, cbouatmailru@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,57 +24,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/23/2013 09:58 PM, Michael Ellerman wrote:
-> On Mon, Jul 22, 2013 at 03:02:53PM +0800, Chen Gang wrote:
->> Hello Maintainers:
->>
->> With allmodconfig and EXTRA_CFLAGS=-W", it reports warnings below:
-> 
->>
->> arch/powerpc/xmon/xmon.c:3027:6: warning: variable ‘i’ might be clobbered by ‘longjmp’ or ‘vfork’ [-Wclobbered]
->> arch/powerpc/xmon/xmon.c:3068:6: warning: variable ‘i’ might be clobbered by ‘longjmp’ or ‘vfork’ [-Wclobbered]
-> 
-> In both these cases we are inside the body of a for loop and we do a
-> if (setjmp) / else block. Although looking at the source the value of i
-> is not modified by the setjmp, I guess it's possible that the compiler
-> might reorder the increment of i inside the setjmp and loose the value
-> when we longjmp.
-> 
+eSDHC of T4240 had 1.8v voltage support. Add this node to specify
+eSDHC voltage capacity. If this node not specified eSDHC driver
+still can read from eSDHC host capacity register.
 
-I should continue to confirm the details based on your valuable
-information, thanks.
+Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
+Signed-off-by: Anton Vorontsov <cbouatmailru@gmail.com>
+---
+changes for v2:
+	- rewrite the voltage-ranges description
 
+ Documentation/devicetree/bindings/mmc/fsl-esdhc.txt | 4 ++++
+ arch/powerpc/boot/dts/fsl/t4240si-post.dtsi         | 1 +
+ 2 files changed, 5 insertions(+)
 
->> arch/powerpc/xmon/xmon.c:352:48: warning: argument ‘fromipi’ might be clobbered by ‘longjmp’ or ‘vfork’ [-Wclobbered]
-> 
-> This one I can't see, but I assume it's a similar case.
-> 
-
-OK, I should continue for it.
-
-
->> Excuse me, I am not quite sure about it whether can cause issue or not.
-> 
-> I've never seen it get stuck in those loops or anything, but I guess
-> it's possible.
-> 
-
-OK, I should make the confirmation.
-
-> The first thing to do would be to analyse the generated assembler code
-> to determine if there really is any possiblity of the value being
-> clobbered, or if it's just a theoretical bug.
->
-
-Thank you for your valuable information again.
-
-Excuse me, I have to do another things within this month, so I should
-provide the confirmation within next month (2013-08-31), is it OK (no
-reply means OK).
-
-Welcome any suggestions or completions.
-
-
-Thanks.
+diff --git a/Documentation/devicetree/bindings/mmc/fsl-esdhc.txt b/Documentation/devicetree/bindings/mmc/fsl-esdhc.txt
+index bd9be0b..b7943f3 100644
+--- a/Documentation/devicetree/bindings/mmc/fsl-esdhc.txt
++++ b/Documentation/devicetree/bindings/mmc/fsl-esdhc.txt
+@@ -19,6 +19,9 @@ Optional properties:
+     "bus-width = <1>" property.
+   - sdhci,auto-cmd12: specifies that a controller can only handle auto
+     CMD12.
++  - voltage-ranges : two cells are required, first cell specifies minimum
++    slot voltage (mV), second cell specifies maximum slot voltage (mV).
++    Several ranges could be specified.
+ 
+ Example:
+ 
+@@ -29,4 +32,5 @@ sdhci@2e000 {
+ 	interrupt-parent = <&ipic>;
+ 	/* Filled in by U-Boot */
+ 	clock-frequency = <0>;
++	voltage-ranges = <3300 3300>;
+ };
+diff --git a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
+index bd611a9..567d0fb 100644
+--- a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
+@@ -399,6 +399,7 @@
+ 	sdhc@114000 {
+ 		compatible = "fsl,t4240-esdhc", "fsl,esdhc";
+ 		sdhci,auto-cmd12;
++		voltage-ranges = <1800 1800>;
+ 	};
+ /include/ "qoriq-i2c-0.dtsi"
+ /include/ "qoriq-i2c-1.dtsi"
 -- 
-Chen Gang
+1.8.0
