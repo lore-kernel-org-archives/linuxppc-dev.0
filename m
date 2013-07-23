@@ -1,35 +1,35 @@
-Return-Path: <rcj@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 795512C00B6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 22:33:55 +1000 (EST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <rcj@linux.vnet.ibm.com>;
- Tue, 23 Jul 2013 22:23:27 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 7A22A2CE8051
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 22:33:48 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r6NCIFUa10879340
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 22:18:16 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r6NCXkQ0024929
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 22:33:47 +1000
-Date: Tue, 23 Jul 2013 07:33:44 -0500
-From: Robert Jennings <rcj@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: VPHN topology change updates all siblings
-Message-ID: <20130723123344.GA11611@linux.vnet.ibm.com>
+Return-Path: <mkl@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+ [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 2C23B2C0114
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 22:34:03 +1000 (EST)
+Message-ID: <51EE77FC.8090809@pengutronix.de>
+Date: Tue, 23 Jul 2013 14:33:00 +0200
+From: Marc Kleine-Budde <mkl@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: stable@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Robert Jennings <rcj@linux.vnet.ibm.com>, Jan Stancek <jstancek@redhat.com>
+To: linuxppc-dev@lists.ozlabs.org, Anatolij Gustschin <agust@denx.de>,
+ Mike Turquette <mturquette@linaro.org>,
+ linux-arm-kernel@lists.infradead.org,
+ devicetree-discuss@lists.ozlabs.org, Wolfram Sang <wsa@the-dreams.de>,
+ Mauro Carvalho Chehab <m.chehab@samsung.com>,
+ David Woodhouse <dwmw2@infradead.org>,
+ Wolfgang Grandegger <wg@grandegger.com>,
+ Pantelis Antoniou <pantelis.antoniou@gmail.com>,
+ Mark Brown <broonie@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Rob Herring <rob.herring@calxeda.com>, Detlev Zundel <dzu@denx.de>
+Subject: Re: [PATCH v3 11/31] net: can: mscan: improve clock API use
+References: <1374166855-7280-1-git-send-email-gsi@denx.de>
+ <1374495298-22019-1-git-send-email-gsi@denx.de>
+ <1374495298-22019-12-git-send-email-gsi@denx.de>
+ <51ED2619.5040107@pengutronix.de>
+ <20130723115348.GF19071@book.gsilab.sittig.org>
+In-Reply-To: <20130723115348.GF19071@book.gsilab.sittig.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="----enig2OFXQGVTIVRKRXFDNKXDT"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,133 +39,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When an associativity level change is found for one thread, the
-siblings threads need to be updated as well.  This is done today
-for PRRN in stage_topology_update() but is missing for VPHN in
-update_cpu_associativity_changes_mask().
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+------enig2OFXQGVTIVRKRXFDNKXDT
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-All threads should be updated to move to the new node.  Without this
-patch, a single thread may be flagged for a topology change, leaving it
-in a different node from its siblings, which is incorrect.  This causes
-problems for the scheduler where overlapping scheduler groups are created
-and a loop is formed in those groups.
+On 07/23/2013 01:53 PM, Gerhard Sittig wrote:
+> On Mon, Jul 22, 2013 at 14:31 +0200, Marc Kleine-Budde wrote:
+>>
+>> On 07/22/2013 02:14 PM, Gerhard Sittig wrote:
+>>> the .get_clock() callback is run from probe() and might allocate
+>>> resources, introduce a .put_clock() callback that is run from remove(=
+)
+>>> to undo any allocation activities
+>>
+>> looks good
+>>
+>>> use devm_get_clk() upon lookup (for SYS and REF) to have the clocks p=
+ut
+>>> upon driver unload
+>>
+>> fine
+>>
+>>> assume that resources get prepared but not necessarily enabled in the=
 
-Reported-by: Jan Stancek <jstancek@redhat.com>
-Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
-Cc: <stable@vger.kernel.org>
----
-Looking to get this fix in 3.11.
-This is requested for the 3.10 stable tree as well, it fixes a
-bug that presents as a scheduler issue when VPHN is active.
-VPHN was enabled in the v3.9 window in commit b7abef0.
----
- arch/powerpc/mm/numa.c | 59
- +++++++++++++++++++++++++++++++++++++-------------
- 1 file changed, 44 insertions(+), 15 deletions(-)
+>>> setup phase, make the open() and close() callbacks of the CAN network=
 
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 0839721..5850798 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -27,6 +27,7 @@
- #include <linux/seq_file.h>
- #include <linux/uaccess.h>
- #include <linux/slab.h>
-+#include <asm/cputhreads.h>
- #include <asm/sparsemem.h>
- #include <asm/prom.h>
- #include <asm/smp.h>
-@@ -1318,7 +1319,8 @@ static int update_cpu_associativity_changes_mask(void)
- 			}
- 		}
- 		if (changed) {
--			cpumask_set_cpu(cpu, changes);
-+			cpumask_or(changes, changes, cpu_sibling_mask(cpu));
-+			cpu = cpu_last_thread_sibling(cpu);
- 		}
- 	}
- 
-@@ -1426,7 +1428,7 @@ static int update_cpu_topology(void *data)
- 	if (!data)
- 		return -EINVAL;
- 
--	cpu = get_cpu();
-+	cpu = smp_processor_id();
- 
- 	for (update = data; update; update = update->next) {
- 		if (cpu != update->cpu)
-@@ -1446,12 +1448,12 @@ static int update_cpu_topology(void *data)
-  */
- int arch_update_cpu_topology(void)
- {
--	unsigned int cpu, changed = 0;
-+	unsigned int cpu, sibling, changed = 0;
- 	struct topology_update_data *updates, *ud;
- 	unsigned int associativity[VPHN_ASSOC_BUFSIZE] = {0};
- 	cpumask_t updated_cpus;
- 	struct device *dev;
--	int weight, i = 0;
-+	int weight, new_nid, i = 0;
- 
- 	weight = cpumask_weight(&cpu_associativity_changes_mask);
- 	if (!weight)
-@@ -1464,19 +1466,46 @@ int arch_update_cpu_topology(void)
- 	cpumask_clear(&updated_cpus);
- 
- 	for_each_cpu(cpu, &cpu_associativity_changes_mask) {
--		ud = &updates[i++];
--		ud->cpu = cpu;
--		vphn_get_associativity(cpu, associativity);
--		ud->new_nid = associativity_to_nid(associativity);
--
--		if (ud->new_nid < 0 || !node_online(ud->new_nid))
--			ud->new_nid = first_online_node;
-+		/*
-+		 * If siblings aren't flagged for changes, updates list
-+		 * will be too short. Skip on this update and set for next
-+		 * update.
-+		 */
-+		if (!cpumask_subset(cpu_sibling_mask(cpu),
-+					&cpu_associativity_changes_mask)) {
-+			pr_info("Sibling bits not set for associativity "
-+					"change, cpu%d\n", cpu);
-+			cpumask_or(&cpu_associativity_changes_mask,
-+					&cpu_associativity_changes_mask,
-+					cpu_sibling_mask(cpu));
-+			cpu = cpu_last_thread_sibling(cpu);
-+			continue;
-+		}
- 
--		ud->old_nid = numa_cpu_lookup_table[cpu];
--		cpumask_set_cpu(cpu, &updated_cpus);
-+		/* Use associativity from first thread for all siblings */
-+		vphn_get_associativity(cpu, associativity);
-+		new_nid = associativity_to_nid(associativity);
-+		if (new_nid < 0 || !node_online(new_nid))
-+			new_nid = first_online_node;
-+
-+		if (new_nid == numa_cpu_lookup_table[cpu]) {
-+			cpumask_andnot(&cpu_associativity_changes_mask,
-+					&cpu_associativity_changes_mask,
-+					cpu_sibling_mask(cpu));
-+			cpu = cpu_last_thread_sibling(cpu);
-+			continue;
-+		}
- 
--		if (i < weight)
--			ud->next = &updates[i];
-+		for_each_cpu(sibling, cpu_sibling_mask(cpu)) {
-+			ud = &updates[i++];
-+			ud->cpu = sibling;
-+			ud->new_nid = new_nid;
-+			ud->old_nid = numa_cpu_lookup_table[sibling];
-+			cpumask_set_cpu(sibling, &updated_cpus);
-+			if (i < weight)
-+				ud->next = &updates[i];
-+		}
-+		cpu = cpu_last_thread_sibling(cpu);
- 	}
- 
- 	stop_machine(update_cpu_topology, &updates[0], &updated_cpus);
--- 
-1.8.1.2
+>>> device enable and disable a previously acquired and prepared clock
+>>
+>> I think you should call prepare_enable and disable_unprepare in the
+>> open/close functions.
+>=20
+> After more local research, which totally eliminated the need to
+> pre-enable the CAN related clocks, but might need more discussion
+> as it touches the common gate support, I've learned something
+> more:
+>=20
+> The CAN clock needs to get enabled during probe() already, since
+> registers get accessed between probe() for the driver and open()
+> for the network device -- while access to peripheral registers
+> crashes the kernel when clocks still are disabled (other hardware
+> may just hang or provide fake data, neither of this is OK).
+
+Then call prepare_enable(); before and disable_unprepare(); after
+accessing the registers. Have a look at the flexcan driver.
+
+> But I see the point in your suggestion to prepare _and_ enable
+> the clock during open() as well -- to have open() cope with
+> whatever probe() did, after all the driver is shared among
+> platforms, which may differ in what they do during probe().
+
+If you enable a clock to access the registers before open() (and disable
+it afterwards), it should not harm any architecture that doesn't need
+this clock enabled.
+
+> So I will:
+> - make open() of the network device prepare _and_ enable the
+>   clock for the peripheral (if acquired during probe())
+
+good
+
+> - adjust open() because ATM it leaves the clock enabled when the
+>   network device operation fails (the error path is incomplete in
+>   v3)
+
+yes, clock should be disabled if open() fails.
+
+> - make the MPC512x specific probe() time .get_clock() routine not
+>   just prepare but enable the clock as well
+
+If needed enable the clock, but disable after probe() has finished.
+
+> - and of course address all the shutdown counter parts of the
+>   above setup paths
+
+> This results in:
+> - specific chip drivers only need to balance their private get
+>   and put clock routines which are called from probe and remove,
+>   common paths DTRT for all of them
+
+Yes, but clock should not stay enabled between probe() and open().
+
+[...]
+
+> Removing unnecessary devm_put_clk() calls is orthogonal to that.
+> Putting these in isn't totally wrong (they won't harm, and they
+> do signal "visual balance" more clearly such that the next person
+> won't stop and wonder), but it's true that they are redundant.
+> "Trained persons" will wonder as much about their presence as
+> untrained persons wonder about their absence. :)  Apparently I'm
+> not well trained yet.
+
+The whole point about devm_* is to get rid of auto manually tear down
+functions. So please remove all devm_put_clk() calls, as it will be
+called automatically if a driver instance is removed.
+
+Marc
+
+--=20
+Pengutronix e.K.                  | Marc Kleine-Budde           |
+Industrial Linux Solutions        | Phone: +49-231-2826-924     |
+Vertretung West/Dortmund          | Fax:   +49-5121-206917-5555 |
+Amtsgericht Hildesheim, HRA 2686  | http://www.pengutronix.de   |
+
+
+------enig2OFXQGVTIVRKRXFDNKXDT
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Icedove - http://www.enigmail.net/
+
+iEYEARECAAYFAlHud/wACgkQjTAFq1RaXHMMSwCeMfHdkAhDHmX3ci798jQtjWuB
+GKoAn0c0vxyi6q2zcxcQ9CnmCngrkvxb
+=tLOU
+-----END PGP SIGNATURE-----
+
+------enig2OFXQGVTIVRKRXFDNKXDT--
