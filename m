@@ -1,23 +1,30 @@
-Return-Path: <joe@perches.com>
-Received: from labridge.com (perches-mx.perches.com [206.117.179.246])
- (using SSLv3 with cipher DES-CBC3-SHA (168/168 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id AE51B2C008A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 12:41:19 +1000 (EST)
-Message-ID: <1374547276.8308.12.camel@joe-AO722>
-Subject: Re: [PATCH] hashtable: add hash_for_each_possible_rcu_notrace()
-From: Joe Perches <joe@perches.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Mon, 22 Jul 2013 19:41:16 -0700
-In-Reply-To: <51EDEA39.3000400@ozlabs.ru>
-References: <1373084210-27767-1-git-send-email-aik@ozlabs.ru>
- <51E3C92B.2070704@ozlabs.ru> <51EDEA39.3000400@ozlabs.ru>
-Content-Type: text/plain; charset="ISO-8859-1"
-Mime-Version: 1.0
-Cc: linux-kernel@vger.kernel.org, Sasha Levin <sasha.levin@oracle.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- "Paul E . McKenney" <paulmck@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <B07421@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0250.outbound.messaging.microsoft.com [213.199.154.250])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C5F9F2C00AF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 12:42:09 +1000 (EST)
+Date: Mon, 22 Jul 2013 21:41:34 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 2/2] mmc: esdhc: get voltage from dts file
+To: Zhang Haijun-B42677 <B42677@freescale.com>
+References: <1374479636-9254-1-git-send-email-Haijun.Zhang@freescale.com>
+ <1374479636-9254-2-git-send-email-Haijun.Zhang@freescale.com>
+ <1374514847.15592.7@snotra>
+ <99E897753B6F7048BD8CCDB4661D02E13E49EC@039-SN2MPN1-022.039d.mgd.msft.net>
+In-Reply-To: <99E897753B6F7048BD8CCDB4661D02E13E49EC@039-SN2MPN1-022.039d.mgd.msft.net>
+ (from B42677@freescale.com on Mon Jul 22 21:38:33 2013)
+Message-ID: <1374547294.15592.22@snotra>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+ Fleming Andy-AFLEMING <afleming@freescale.com>,
+ "cbouatmailru@gmail.com" <cbouatmailru@gmail.com>,
+ "cjb@laptop.org" <cjb@laptop.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,22 +34,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-07-23 at 12:28 +1000, Alexey Kardashevskiy wrote:
-> Anyone, ping. Is it good, bad, ugly (ack/nack)? Thanks!
-> 
-> Is there any "trivial patches" list? Could not find it on vger.
+On 07/22/2013 09:38:33 PM, Zhang Haijun-B42677 wrote:
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Tuesday, July 23, 2013 1:41 AM
+> > To: Zhang Haijun-B42677
+> > Cc: linux-mmc@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
+> > cbouatmailru@gmail.com; cjb@laptop.org; Fleming Andy-AFLEMING; Zhang
+> > Haijun-B42677; Zhang Haijun-B42677
+> > Subject: Re: [PATCH 2/2] mmc: esdhc: get voltage from dts file
+> >
+> > On 07/22/2013 02:53:56 AM, Haijun Zhang wrote:
+> > > Add voltage-range support in esdhc of T4, So we can choose to read
+> > > voltages from dts file as one optional.
+> > > If we can get a valid voltage-range from device node, we use this
+> > > voltage as the final voltage support. Else we still read from =20
+> capacity
+> > > or from other provider.
+> > >
+> > > Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
+> > > Signed-off-by: Anton Vorontsov <cbouatmailru@gmail.com>
+> > > ---
+> > >  drivers/mmc/host/sdhci-of-esdhc.c | 31
+> > > +++++++++++++++++++++++++++++++
+> > >  drivers/mmc/host/sdhci.c          |  3 +++
+> > >  include/linux/mmc/sdhci.h         |  1 +
+> > >  3 files changed, 35 insertions(+)
+> > >
+> > > diff --git a/drivers/mmc/host/sdhci-of-esdhc.c
+> > > b/drivers/mmc/host/sdhci-of-esdhc.c
+> > > index 15039e2..8b4b27a 100644
+> > > --- a/drivers/mmc/host/sdhci-of-esdhc.c
+> > > +++ b/drivers/mmc/host/sdhci-of-esdhc.c
+> > > @@ -262,6 +262,35 @@ static int esdhc_pltfm_bus_width(struct
+> > > sdhci_host *host, int width)
+> > >  	return 0;
+> > >  }
+> > >
+> > > +static void esdhc_get_voltage(struct sdhci_host *host,
+> > > +			struct platform_device *pdev)
+> > > +{
+> > > +	const u32 *voltage_ranges;
+> > > +	int num_ranges, i;
+> > > +	struct device_node *np;
+> > > +	np =3D pdev->dev.of_node;
+> > > +
+> > > +	voltage_ranges =3D of_get_property(np, "voltage-ranges",
+> > > &num_ranges);
+> > > +	num_ranges =3D num_ranges / sizeof(*voltage_ranges) / 2;
+> > > +	if (!voltage_ranges || !num_ranges) {
+> > > +		dev_info(&pdev->dev, "OF: voltage-ranges
+> > > unspecified\n");
+> > > +		return;
+> > > +	}
+> > > +
+> > > +	for (i =3D 0; i < num_ranges; i++) {
+> > > +		const int j =3D i * 2;
+> > > +		u32 mask;
+> > > +		mask =3D
+> > > mmc_vddrange_to_ocrmask(be32_to_cpu(voltage_ranges[j]),
+> > > +				be32_to_cpu(voltage_ranges[j + 1]));
+> > > +		if (!mask) {
+> > > +			dev_info(&pdev->dev,
+> > > +				"OF: false voltage-ranges specified\n");
+> > > +			return;
+> > > +		}
+> > > +		host->ocr_mask |=3D mask;
+> > > +	}
+> > > +}
+> >
+> > Don't duplicate this code.  Move it somewhere common and share it.
+> [Haijun Wrote:] So, move it drivers/mmc/host/sdhci-pltfm.c and share =20
+> it as
+> Sdhc_get_voltage()....?
 
-Jiri Kosina has trivial@kernel.org
+I'll let the MMC maintainer say what the appropriate place would be...  =20
+Don't capitalize the function name, though. :-)
 
-Also, there's kernel-janitors
-
-http://vger.kernel.org/vger-lists.html#kernel-janitors
-http://kernelnewbies.org/KernelJanitors
-
-MAINTAINERS has an entry:
-
-TRIVIAL PATCHES
-M:	Jiri Kosina <trivial@kernel.org>
-T:	git git://git.kernel.org/pub/scm/linux/kernel/git/jikos/trivial.git
-S:	Maintained
-K:	^Subject:.*(?i)trivial
+-Scott=
