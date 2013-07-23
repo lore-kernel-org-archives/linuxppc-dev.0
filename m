@@ -1,29 +1,21 @@
 Return-Path: <B42677@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A270C2C00BB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 13:41:58 +1000 (EST)
-From: Zhang Haijun-B42677 <B42677@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH 2/2] mmc: esdhc: get voltage from dts file
-Date: Tue, 23 Jul 2013 03:41:49 +0000
-Message-ID: <99E897753B6F7048BD8CCDB4661D02E13E4A96@039-SN2MPN1-022.039d.mgd.msft.net>
-References: <1374479636-9254-1-git-send-email-Haijun.Zhang@freescale.com>
- <1374479636-9254-2-git-send-email-Haijun.Zhang@freescale.com>
- <1374514847.15592.7@snotra>
- <99E897753B6F7048BD8CCDB4661D02E13E49EC@039-SN2MPN1-022.039d.mgd.msft.net>
- <1374547294.15592.22@snotra>
-In-Reply-To: <1374547294.15592.22@snotra>
-Content-Type: text/plain; charset="us-ascii"
+ by ozlabs.org (Postfix) with ESMTPS id CAD732C00B9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 13:50:35 +1000 (EST)
+From: Haijun Zhang <Haijun.Zhang@freescale.com>
+To: <linux-mmc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 1/2] Powerpc: Add voltage support in dts file
+Date: Tue, 23 Jul 2013 10:59:04 +0800
+Message-ID: <1374548345-15017-1-git-send-email-Haijun.Zhang@freescale.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "cjb@laptop.org" <cjb@laptop.org>,
- "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- Fleming Andy-AFLEMING <afleming@freescale.com>,
- "cbouatmailru@gmail.com" <cbouatmailru@gmail.com>
+Content-Type: text/plain
+Cc: r39252@freescale.com, AFLEMING@freescale.com, cbouatmailru@gmail.com,
+ scottwood@freescale.com, cjb@laptop.org,
+ Haijun Zhang <haijun.zhang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,98 +25,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+eSDHC of T4240 had 1.8v voltage support. Add this node to specify
+eSDHC voltage capacity. If this node not specified eSDHC driver
+still can read from eSDHC host capacity register.
 
+Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
+Signed-off-by: Anton Vorontsov <cbouatmailru@gmail.com>
+---
+changes for this patch set:
+	- split from patch [PATCH 1/2] Powerpc: Add 
+	- voltage ranges support for T4
 
-Thanks.
+ Documentation/devicetree/bindings/mmc/fsl-esdhc.txt | 3 +++
+ arch/powerpc/boot/dts/fsl/t4240si-post.dtsi         | 1 +
+ 2 files changed, 4 insertions(+)
 
-Regards
-Haijun.
-
-
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Tuesday, July 23, 2013 10:42 AM
-> To: Zhang Haijun-B42677
-> Cc: Wood Scott-B07421; linux-mmc@vger.kernel.org; linuxppc-
-> dev@lists.ozlabs.org; cbouatmailru@gmail.com; cjb@laptop.org; Fleming
-> Andy-AFLEMING
-> Subject: Re: [PATCH 2/2] mmc: esdhc: get voltage from dts file
->=20
-> On 07/22/2013 09:38:33 PM, Zhang Haijun-B42677 wrote:
-> > > -----Original Message-----
-> > > From: Wood Scott-B07421
-> > > Sent: Tuesday, July 23, 2013 1:41 AM
-> > > To: Zhang Haijun-B42677
-> > > Cc: linux-mmc@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
-> > > cbouatmailru@gmail.com; cjb@laptop.org; Fleming Andy-AFLEMING; Zhang
-> > > Haijun-B42677; Zhang Haijun-B42677
-> > > Subject: Re: [PATCH 2/2] mmc: esdhc: get voltage from dts file
-> > >
-> > > On 07/22/2013 02:53:56 AM, Haijun Zhang wrote:
-> > > > Add voltage-range support in esdhc of T4, So we can choose to read
-> > > > voltages from dts file as one optional.
-> > > > If we can get a valid voltage-range from device node, we use this
-> > > > voltage as the final voltage support. Else we still read from
-> > capacity
-> > > > or from other provider.
-> > > >
-> > > > Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
-> > > > Signed-off-by: Anton Vorontsov <cbouatmailru@gmail.com>
-> > > > ---
-> > > >  drivers/mmc/host/sdhci-of-esdhc.c | 31
-> > > > +++++++++++++++++++++++++++++++
-> > > >  drivers/mmc/host/sdhci.c          |  3 +++
-> > > >  include/linux/mmc/sdhci.h         |  1 +
-> > > >  3 files changed, 35 insertions(+)
-> > > >
-> > > > diff --git a/drivers/mmc/host/sdhci-of-esdhc.c
-> > > > b/drivers/mmc/host/sdhci-of-esdhc.c
-> > > > index 15039e2..8b4b27a 100644
-> > > > --- a/drivers/mmc/host/sdhci-of-esdhc.c
-> > > > +++ b/drivers/mmc/host/sdhci-of-esdhc.c
-> > > > @@ -262,6 +262,35 @@ static int esdhc_pltfm_bus_width(struct
-> > > > sdhci_host *host, int width)
-> > > >  	return 0;
-> > > >  }
-> > > >
-> > > > +static void esdhc_get_voltage(struct sdhci_host *host,
-> > > > +			struct platform_device *pdev)
-> > > > +{
-> > > > +	const u32 *voltage_ranges;
-> > > > +	int num_ranges, i;
-> > > > +	struct device_node *np;
-> > > > +	np =3D pdev->dev.of_node;
-> > > > +
-> > > > +	voltage_ranges =3D of_get_property(np, "voltage-ranges",
-> > > > &num_ranges);
-> > > > +	num_ranges =3D num_ranges / sizeof(*voltage_ranges) / 2;
-> > > > +	if (!voltage_ranges || !num_ranges) {
-> > > > +		dev_info(&pdev->dev, "OF: voltage-ranges
-> > > > unspecified\n");
-> > > > +		return;
-> > > > +	}
-> > > > +
-> > > > +	for (i =3D 0; i < num_ranges; i++) {
-> > > > +		const int j =3D i * 2;
-> > > > +		u32 mask;
-> > > > +		mask =3D
-> > > > mmc_vddrange_to_ocrmask(be32_to_cpu(voltage_ranges[j]),
-> > > > +				be32_to_cpu(voltage_ranges[j + 1]));
-> > > > +		if (!mask) {
-> > > > +			dev_info(&pdev->dev,
-> > > > +				"OF: false voltage-ranges specified\n");
-> > > > +			return;
-> > > > +		}
-> > > > +		host->ocr_mask |=3D mask;
-> > > > +	}
-> > > > +}
-> > >
-> > > Don't duplicate this code.  Move it somewhere common and share it.
-> > [Haijun Wrote:] So, move it drivers/mmc/host/sdhci-pltfm.c and share
-> > it as Sdhc_get_voltage()....?
->=20
-> I'll let the MMC maintainer say what the appropriate place would be...
-> Don't capitalize the function name, though. :-)
-[Haijun Wrote:] Thanks scott. I'm always expecting chris's advice.
->=20
-> -Scott
+diff --git a/Documentation/devicetree/bindings/mmc/fsl-esdhc.txt b/Documentation/devicetree/bindings/mmc/fsl-esdhc.txt
+index bd9be0b..f1ac253 100644
+--- a/Documentation/devicetree/bindings/mmc/fsl-esdhc.txt
++++ b/Documentation/devicetree/bindings/mmc/fsl-esdhc.txt
+@@ -19,6 +19,8 @@ Optional properties:
+     "bus-width = <1>" property.
+   - sdhci,auto-cmd12: specifies that a controller can only handle auto
+     CMD12.
++  - 3300 3300: specifies that eSDHC controller can support voltages ranges
++    from 3300 to 3300.
+ 
+ Example:
+ 
+@@ -29,4 +31,5 @@ sdhci@2e000 {
+ 	interrupt-parent = <&ipic>;
+ 	/* Filled in by U-Boot */
+ 	clock-frequency = <0>;
++	voltage-ranges = <3300 3300>;
+ };
+diff --git a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
+index bd611a9..567d0fb 100644
+--- a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
+@@ -399,6 +399,7 @@
+ 	sdhc@114000 {
+ 		compatible = "fsl,t4240-esdhc", "fsl,esdhc";
+ 		sdhci,auto-cmd12;
++		voltage-ranges = <1800 1800>;
+ 	};
+ /include/ "qoriq-i2c-0.dtsi"
+ /include/ "qoriq-i2c-1.dtsi"
+-- 
+1.8.0
