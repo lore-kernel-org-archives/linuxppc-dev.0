@@ -1,30 +1,30 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 109552C00EE
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 21:11:12 +1000 (EST)
+ (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0D4A32C0105
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 21:11:13 +1000 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Tue, 23 Jul 2013 07:11:10 -0400
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 20F446E803F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 07:11:02 -0400 (EDT)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r6NBB6Fu183630
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 07:11:06 -0400
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r6NBB6qu023746
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 05:11:06 -0600
+ Tue, 23 Jul 2013 12:11:11 +0100
+Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 8F630C90044
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 07:11:07 -0400 (EDT)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r6NBB9uX163864
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 07:11:09 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r6NBB8XO014891
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 07:11:08 -0400
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 08/11] powerpc/eeh: Support partial hotplug
-Date: Tue, 23 Jul 2013 19:10:53 +0800
-Message-Id: <1374577856-1712-9-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 11/11] powerpc/eeh: Introdce flag to protect sysfs
+Date: Tue, 23 Jul 2013 19:10:56 +0800
+Message-Id: <1374577856-1712-12-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1374577856-1712-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1374577856-1712-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -37,317 +37,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When EEH error happens to one specific PE, some devices with drivers
-supporting EEH won't except hotplug on the deivce. However, there
-might have other deivces without driver, or with driver without EEH
-support. For the case, we need do partial hotplug in order to make
-sure that the PE becomes absolutely quite during reset. Otherise,
-the PE reset might fail and leads to failure of error recovery.
-
-The patch intends to support so-called "partial" hotplug for EEH:
-Before we do reset, we stop and remove those PCI devices without
-EEH sensitive driver. The corresponding EEH devices are not detached
-from its PE, but with special flag. After the reset is done, those
-EEH devices with the special flag will be scanned one by one.
+The patch introduces flag EEH_DEV_SYSFS to trace that the sysfs for
+the corresponding EEH device (then PCI device) has been added or
+removed, in order to avoid race condition.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h               |    6 ++-
- arch/powerpc/kernel/eeh.c                    |   30 +++++++++-
- arch/powerpc/kernel/eeh_driver.c             |   74 ++++++++++++++++++++++++--
- arch/powerpc/kernel/eeh_pe.c                 |   20 +++-----
- arch/powerpc/kernel/eeh_sysfs.c              |    7 +++
- arch/powerpc/platforms/powernv/eeh-powernv.c |    2 +-
+ arch/powerpc/include/asm/eeh.h               |    2 ++
+ arch/powerpc/kernel/eeh.c                    |    2 ++
+ arch/powerpc/kernel/eeh_sysfs.c              |   16 +++++++++++++++-
+ arch/powerpc/platforms/powernv/eeh-powernv.c |    4 ++--
  arch/powerpc/platforms/pseries/eeh_pseries.c |    2 +-
- 7 files changed, 117 insertions(+), 24 deletions(-)
+ 5 files changed, 22 insertions(+), 4 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index e8c411b..f54a601 100644
+index 4199d99..d3e5e9b 100644
 --- a/arch/powerpc/include/asm/eeh.h
 +++ b/arch/powerpc/include/asm/eeh.h
-@@ -84,7 +84,8 @@ struct eeh_pe {
-  * another tree except the currently existing tree of PCI
-  * buses and PCI devices
-  */
--#define EEH_DEV_IRQ_DISABLED	(1<<0)	/* Interrupt disabled		*/
-+#define EEH_DEV_IRQ_DISABLED	(1 << 0)	/* Interrupt disabled	*/
-+#define EEH_DEV_DISCONNECTED	(1 << 1)	/* Removing from PE	*/
+@@ -90,6 +90,8 @@ struct eeh_pe {
+ #define EEH_DEV_IRQ_DISABLED	(1 << 3)	/* Interrupt disabled	*/
+ #define EEH_DEV_DISCONNECTED	(1 << 4)	/* Removing from PE	*/
  
++#define EEH_DEV_SYSFS		(1 << 8)	/* Sysfs created        */
++
  struct eeh_dev {
  	int mode;			/* EEH mode			*/
-@@ -97,6 +98,7 @@ struct eeh_dev {
- 	struct pci_controller *phb;	/* Associated PHB		*/
- 	struct device_node *dn;		/* Associated device node	*/
- 	struct pci_dev *pdev;		/* Associated PCI device	*/
-+	struct pci_bus *bus;		/* PCI bus for partial hotplug	*/
- };
- 
- static inline struct device_node *eeh_dev_to_of_node(struct eeh_dev *edev)
-@@ -197,6 +199,8 @@ struct eeh_pe *eeh_pe_get(struct eeh_dev *edev);
- int eeh_add_to_parent_pe(struct eeh_dev *edev);
- int eeh_rmv_from_parent_pe(struct eeh_dev *edev);
- void eeh_pe_update_time_stamp(struct eeh_pe *pe);
-+void *eeh_pe_traverse(struct eeh_pe *root,
-+		eeh_traverse_func fn, void *flag);
- void *eeh_pe_dev_traverse(struct eeh_pe *root,
- 		eeh_traverse_func fn, void *flag);
- void eeh_pe_restore_bars(struct eeh_pe *pe);
+ 	int class_code;			/* Class code of the device	*/
 diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 56bd458..a5783f1 100644
+index a5783f1..ea9414c8 100644
 --- a/arch/powerpc/kernel/eeh.c
 +++ b/arch/powerpc/kernel/eeh.c
-@@ -900,7 +900,21 @@ void eeh_add_device_late(struct pci_dev *dev)
- 		pr_debug("EEH: Already referenced !\n");
- 		return;
- 	}
--	WARN_ON(edev->pdev);
-+
-+	/*
-+	 * The EEH cache might not be removed correctly because of
-+	 * unbalanced kref to the device during unplug time, which
-+	 * relies on pcibios_release_device(). So we have to remove
-+	 * that here explicitly.
-+	 */
-+	if (edev->pdev) {
-+		eeh_rmv_from_parent_pe(edev);
-+		eeh_addr_cache_rmv_dev(edev->pdev);
-+		eeh_sysfs_remove_device(edev->pdev);
-+
-+		edev->pdev = NULL;
-+		dev->dev.archdata.edev = NULL;
-+	}
+@@ -911,6 +911,7 @@ void eeh_add_device_late(struct pci_dev *dev)
+ 		eeh_rmv_from_parent_pe(edev);
+ 		eeh_addr_cache_rmv_dev(edev->pdev);
+ 		eeh_sysfs_remove_device(edev->pdev);
++		edev->mode &= ~EEH_DEV_SYSFS;
  
- 	edev->pdev = dev;
- 	dev->dev.archdata.edev = edev;
-@@ -982,14 +996,24 @@ void eeh_remove_device(struct pci_dev *dev)
- 	/* Unregister the device with the EEH/PCI address search system */
- 	pr_debug("EEH: Removing device %s\n", pci_name(dev));
+ 		edev->pdev = NULL;
+ 		dev->dev.archdata.edev = NULL;
+@@ -1016,6 +1017,7 @@ void eeh_remove_device(struct pci_dev *dev)
  
--	if (!edev || !edev->pdev) {
-+	if (!edev || !edev->pdev || !edev->pe) {
- 		pr_debug("EEH: Not referenced !\n");
- 		return;
- 	}
-+
-+	/*
-+	 * During the hotplug for EEH error recovery, we need the EEH
-+	 * device attached to the parent PE in order for BAR restore
-+	 * a bit later. So we keep it for BAR restore and remove it
-+	 * from the parent PE during the BAR resotre.
-+	 */
- 	edev->pdev = NULL;
- 	dev->dev.archdata.edev = NULL;
-+	if (!(edev->pe->state & EEH_PE_KEEP))
-+		eeh_rmv_from_parent_pe(edev);
-+	else
-+		edev->mode |= EEH_DEV_DISCONNECTED;
- 
--	eeh_rmv_from_parent_pe(edev);
  	eeh_addr_cache_rmv_dev(dev);
  	eeh_sysfs_remove_device(dev);
- }
-diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-index 9ef3bbb..9fda75d 100644
---- a/arch/powerpc/kernel/eeh_driver.c
-+++ b/arch/powerpc/kernel/eeh_driver.c
-@@ -338,6 +338,54 @@ static void *eeh_report_failure(void *data, void *userdata)
- 	return NULL;
++	edev->mode &= ~EEH_DEV_SYSFS;
  }
  
-+static void *eeh_rmv_device(void *data, void *userdata)
-+{
-+	struct pci_driver *driver;
-+	struct eeh_dev *edev = (struct eeh_dev *)data;
-+	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
-+	int *removed = (int *)userdata;
-+
-+	/*
-+	 * Actually, we should remove the PCI bridges as well.
-+	 * However, that's lots of complexity to do that,
-+	 * particularly some of devices under the bridge might
-+	 * support EEH. So we just care about PCI devices for
-+	 * simplicity here.
-+	 */
-+	if (!dev || (dev->hdr_type & PCI_HEADER_TYPE_BRIDGE))
-+		return NULL;
-+	driver = eeh_pcid_get(dev);
-+	if (driver && driver->err_handler)
-+		return NULL;
-+
-+	/* Remove it from PCI subsystem */
-+	pr_debug("EEH: Removing %s without EEH sensitive driver\n",
-+		 pci_name(dev));
-+	edev->bus = dev->bus;
-+	edev->mode |= EEH_DEV_DISCONNECTED;
-+	(*removed)++;
-+
-+	pci_stop_and_remove_bus_device(dev);
-+
-+	return NULL;
-+}
-+
-+static void *eeh_pe_detach_dev(void *data, void *userdata)
-+{
-+	struct eeh_pe *pe = (struct eeh_pe *)data;
-+	struct eeh_dev *edev, *tmp;
-+
-+	eeh_pe_for_each_dev(pe, edev, tmp) {
-+		if (!(edev->mode & EEH_DEV_DISCONNECTED))
-+			continue;
-+
-+		edev->mode &= ~(EEH_DEV_DISCONNECTED | EEH_DEV_IRQ_DISABLED);
-+		eeh_rmv_from_parent_pe(edev);
-+	}
-+
-+	return NULL;
-+}
-+
- /**
-  * eeh_reset_device - Perform actual reset of a pci slot
-  * @pe: EEH PE
-@@ -349,8 +397,9 @@ static void *eeh_report_failure(void *data, void *userdata)
-  */
- static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
- {
-+	struct pci_bus *frozen_bus = eeh_pe_bus_get(pe);
- 	struct timeval tstamp;
--	int cnt, rc;
-+	int cnt, rc, removed = 0;
- 
- 	/* pcibios will clear the counter; save the value */
- 	cnt = pe->freeze_count;
-@@ -362,10 +411,11 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
- 	 * devices are expected to be attached soon when calling
- 	 * into pcibios_add_pci_devices().
- 	 */
--	if (bus) {
--		eeh_pe_state_mark(pe, EEH_PE_KEEP);
-+	eeh_pe_state_mark(pe, EEH_PE_KEEP);
-+	if (bus)
- 		pcibios_remove_pci_devices(bus);
--	}
-+	else if (frozen_bus)
-+		eeh_pe_dev_traverse(pe, eeh_rmv_device, &removed);
- 
- 	/* Reset the pci controller. (Asserts RST#; resets config space).
- 	 * Reconfigure bridges and devices. Don't try to bring the system
-@@ -386,10 +436,24 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
- 	 * potentially weird things happen.
- 	 */
- 	if (bus) {
-+		pr_info("EEH: Sleep 5s ahead of complete hotplug\n");
- 		ssleep(5);
-+
-+		/*
-+		 * The EEH device is still connected with its parent
-+		 * PE. We should disconnect it so the binding can be
-+		 * rebuilt when adding PCI devices.
-+		 */
-+		eeh_pe_traverse(pe, eeh_pe_detach_dev, NULL);
- 		pcibios_add_pci_devices(bus);
--		eeh_pe_state_clear(pe, EEH_PE_KEEP);
-+	} else if (frozen_bus && removed) {
-+		pr_info("EEH: Sleep 5s ahead of partial hotplug\n");
-+		ssleep(5);
-+
-+		eeh_pe_traverse(pe, eeh_pe_detach_dev, NULL);
-+		pcibios_add_pci_devices(frozen_bus);
- 	}
-+	eeh_pe_state_clear(pe, EEH_PE_KEEP);
- 
- 	pe->tstamp = tstamp;
- 	pe->freeze_count = cnt;
-diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
-index c8b815e..2aa955a 100644
---- a/arch/powerpc/kernel/eeh_pe.c
-+++ b/arch/powerpc/kernel/eeh_pe.c
-@@ -149,8 +149,8 @@ static struct eeh_pe *eeh_pe_next(struct eeh_pe *pe,
-  * callback returns something other than NULL, or no more PEs
-  * to be traversed.
-  */
--static void *eeh_pe_traverse(struct eeh_pe *root,
--			eeh_traverse_func fn, void *flag)
-+void *eeh_pe_traverse(struct eeh_pe *root,
-+		      eeh_traverse_func fn, void *flag)
- {
- 	struct eeh_pe *pe;
- 	void *ret;
-@@ -409,8 +409,8 @@ int eeh_rmv_from_parent_pe(struct eeh_dev *edev)
- 	int cnt;
- 
- 	if (!edev->pe) {
--		pr_warning("%s: No PE found for EEH device %s\n",
--			__func__, edev->dn->full_name);
-+		pr_debug("%s: No PE found for EEH device %s\n",
-+			 __func__, edev->dn->full_name);
- 		return -EEXIST;
- 	}
- 
-@@ -728,18 +728,12 @@ static void eeh_restore_device_bars(struct eeh_dev *edev,
-  */
- static void *eeh_restore_one_device_bars(void *data, void *flag)
- {
--	struct pci_dev *pdev = NULL;
- 	struct eeh_dev *edev = (struct eeh_dev *)data;
-+	struct pci_dev *pdev = eeh_dev_to_pci_dev(edev);
- 	struct device_node *dn = eeh_dev_to_of_node(edev);
- 
--	/* Trace the PCI bridge */
--	if (eeh_probe_mode_dev()) {
--		pdev = eeh_dev_to_pci_dev(edev);
--		if (pdev->hdr_type != PCI_HEADER_TYPE_BRIDGE)
--                        pdev = NULL;
--        }
--
--	if (pdev)
-+	/* Do special restore for bridges */
-+	if (pdev->hdr_type == PCI_HEADER_TYPE_BRIDGE)
- 		eeh_restore_bridge_bars(pdev, edev, dn);
- 	else
- 		eeh_restore_device_bars(edev, dn);
+ static int proc_eeh_show(struct seq_file *m, void *v)
 diff --git a/arch/powerpc/kernel/eeh_sysfs.c b/arch/powerpc/kernel/eeh_sysfs.c
-index e7ae348..61e2a14 100644
+index 61e2a14..5d753d4 100644
 --- a/arch/powerpc/kernel/eeh_sysfs.c
 +++ b/arch/powerpc/kernel/eeh_sysfs.c
-@@ -68,6 +68,13 @@ void eeh_sysfs_add_device(struct pci_dev *pdev)
+@@ -56,26 +56,40 @@ EEH_SHOW_ATTR(eeh_pe_config_addr,  pe_config_addr,  "0x%x");
+ 
+ void eeh_sysfs_add_device(struct pci_dev *pdev)
+ {
++	struct eeh_dev *edev = pci_dev_to_eeh_dev(pdev);
+ 	int rc=0;
+ 
++	if (edev && (edev->mode & EEH_DEV_SYSFS))
++		return;
++
+ 	rc += device_create_file(&pdev->dev, &dev_attr_eeh_mode);
+ 	rc += device_create_file(&pdev->dev, &dev_attr_eeh_config_addr);
+ 	rc += device_create_file(&pdev->dev, &dev_attr_eeh_pe_config_addr);
+ 
+ 	if (rc)
+ 		printk(KERN_WARNING "EEH: Unable to create sysfs entries\n");
++	else if (edev)
++		edev->mode |= EEH_DEV_SYSFS;
+ }
  
  void eeh_sysfs_remove_device(struct pci_dev *pdev)
  {
-+	/*
-+	 * The parent directory might have been removed. We needn't
-+	 * continue for that case.
-+	 */
-+	if (!pdev->dev.kobj.sd)
-+		return;
++	struct eeh_dev *edev = pci_dev_to_eeh_dev(pdev);
 +
+ 	/*
+ 	 * The parent directory might have been removed. We needn't
+ 	 * continue for that case.
+ 	 */
+-	if (!pdev->dev.kobj.sd)
++	if (!pdev->dev.kobj.sd) {
++		if (edev)
++			edev->mode &= ~EEH_DEV_SYSFS;
+ 		return;
++	}
+ 
  	device_remove_file(&pdev->dev, &dev_attr_eeh_mode);
  	device_remove_file(&pdev->dev, &dev_attr_eeh_config_addr);
  	device_remove_file(&pdev->dev, &dev_attr_eeh_pe_config_addr);
++
++	if (edev)
++		edev->mode &= ~EEH_DEV_SYSFS;
+ }
 diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index 969cce7..a380428 100644
+index 4361a5c..79663d2 100644
 --- a/arch/powerpc/platforms/powernv/eeh-powernv.c
 +++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -114,7 +114,7 @@ static int powernv_eeh_dev_probe(struct pci_dev *dev, void *flag)
- 	 * the root bridge. So it's not reasonable to continue
- 	 * the probing.
- 	 */
--	if (!dn || !edev)
-+	if (!dn || !edev || edev->pe)
+@@ -122,8 +122,8 @@ static int powernv_eeh_dev_probe(struct pci_dev *dev, void *flag)
  		return 0;
  
- 	/* Skip for PCI-ISA bridge */
+ 	/* Initialize eeh device */
+-	edev->class_code	= dev->class;
+-	edev->mode		= 0;
++	edev->class_code = dev->class;
++	edev->mode	&= 0xFFFFFF00;
+ 	if (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE)
+ 		edev->mode |= EEH_DEV_BRIDGE;
+ 	if (pci_is_pcie(dev)) {
 diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
-index b456b15..0f44f9f 100644
+index 9e80f0a..7fbc25b 100644
 --- a/arch/powerpc/platforms/pseries/eeh_pseries.c
 +++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
-@@ -153,7 +153,7 @@ static void *pseries_eeh_of_probe(struct device_node *dn, void *flag)
- 
- 	/* Retrieve OF node and eeh device */
- 	edev = of_node_to_eeh_dev(dn);
--	if (!of_device_is_available(dn))
-+	if (edev->pe || !of_device_is_available(dn))
- 		return NULL;
- 
- 	/* Retrieve class/vendor/device IDs */
+@@ -218,7 +218,7 @@ static void *pseries_eeh_of_probe(struct device_node *dn, void *flag)
+ 	 */
+ 	edev->class_code = *class_code;
+ 	edev->pcie_cap = pseries_eeh_find_cap(dn, PCI_CAP_ID_EXP);
+-	edev->mode = 0;
++	edev->mode &= 0xFFFFFF00;
+ 	if ((edev->class_code >> 8) == PCI_CLASS_BRIDGE_PCI) {
+ 		edev->mode |= EEH_DEV_BRIDGE;
+ 		if (edev->pcie_cap) {
 -- 
 1.7.5.4
