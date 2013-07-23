@@ -1,34 +1,29 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+Return-Path: <gsi@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e37.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C21772C041C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 21:13:00 +1000 (EST)
-Received: from /spool/local
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Tue, 23 Jul 2013 05:12:58 -0600
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
- [9.17.195.228])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 19E6B1FF001F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 05:05:46 -0600 (MDT)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r6NBB7YB164298
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 05:11:07 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r6NBB6rD023802
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 05:11:07 -0600
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 10/11] powerpc/eeh: Fix unbalanced enable for IRQ
-Date: Tue, 23 Jul 2013 19:10:55 +0800
-Message-Id: <1374577856-1712-11-git-send-email-shangw@linux.vnet.ibm.com>
-In-Reply-To: <1374577856-1712-1-git-send-email-shangw@linux.vnet.ibm.com>
-References: <1374577856-1712-1-git-send-email-shangw@linux.vnet.ibm.com>
-Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 15C272C00C7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 21:53:58 +1000 (EST)
+Date: Tue, 23 Jul 2013 13:53:48 +0200
+From: Gerhard Sittig <gsi@denx.de>
+To: Marc Kleine-Budde <mkl@pengutronix.de>
+Subject: Re: [PATCH v3 11/31] net: can: mscan: improve clock API use
+Message-ID: <20130723115348.GF19071@book.gsilab.sittig.org>
+References: <1374166855-7280-1-git-send-email-gsi@denx.de>
+ <1374495298-22019-1-git-send-email-gsi@denx.de>
+ <1374495298-22019-12-git-send-email-gsi@denx.de>
+ <51ED2619.5040107@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <51ED2619.5040107@pengutronix.de>
+Cc: Mike Turquette <mturquette@linaro.org>, Detlev Zundel <dzu@denx.de>,
+ Wolfram Sang <wsa@the-dreams.de>, David Woodhouse <dwmw2@infradead.org>,
+ devicetree-discuss@lists.ozlabs.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@kernel.org>,
+ Wolfgang Grandegger <wg@grandegger.com>, Anatolij Gustschin <agust@denx.de>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ Mauro Carvalho Chehab <m.chehab@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,50 +33,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch fixes following issue:
+On Mon, Jul 22, 2013 at 14:31 +0200, Marc Kleine-Budde wrote:
+> 
+> On 07/22/2013 02:14 PM, Gerhard Sittig wrote:
+> > the .get_clock() callback is run from probe() and might allocate
+> > resources, introduce a .put_clock() callback that is run from remove()
+> > to undo any allocation activities
+> 
+> looks good
+> 
+> > use devm_get_clk() upon lookup (for SYS and REF) to have the clocks put
+> > upon driver unload
+> 
+> fine
+> 
+> > assume that resources get prepared but not necessarily enabled in the
+> > setup phase, make the open() and close() callbacks of the CAN network
+> > device enable and disable a previously acquired and prepared clock
+> 
+> I think you should call prepare_enable and disable_unprepare in the
+> open/close functions.
 
-Unbalanced enable for IRQ 23
-------------[ cut here ]------------
-WARNING: at kernel/irq/manage.c:437
-:
-NIP [c00000000016de8c] .__enable_irq+0x11c/0x140
-LR [c00000000016de88] .__enable_irq+0x118/0x140
-Call Trace:
-[c000003ea1f23880] [c00000000016de88] .__enable_irq+0x118/0x140 (unreliable)
-[c000003ea1f23910] [c00000000016df08] .enable_irq+0x58/0xa0
-[c000003ea1f239a0] [c0000000000388b4] .eeh_enable_irq+0xc4/0xe0
-[c000003ea1f23a30] [c000000000038a28] .eeh_report_reset+0x78/0x130
-[c000003ea1f23ac0] [c000000000037508] .eeh_pe_dev_traverse+0x98/0x170
-[c000003ea1f23b60] [c0000000000391ac] .eeh_handle_normal_event+0x2fc/0x3d0
-[c000003ea1f23bf0] [c000000000039538] .eeh_handle_event+0x2b8/0x2c0
-[c000003ea1f23c90] [c000000000039600] .eeh_event_handler+0xc0/0x170
-[c000003ea1f23d30] [c0000000000da9a0] .kthread+0xf0/0x100
-[c000003ea1f23e30] [c00000000000a1dc] .ret_from_kernel_thread+0x5c/0x80
+After more local research, which totally eliminated the need to
+pre-enable the CAN related clocks, but might need more discussion
+as it touches the common gate support, I've learned something
+more:
 
-Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/eeh_driver.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
+The CAN clock needs to get enabled during probe() already, since
+registers get accessed between probe() for the driver and open()
+for the network device -- while access to peripheral registers
+crashes the kernel when clocks still are disabled (other hardware
+may just hang or provide fake data, neither of this is OK).
 
-diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-index 9fda75d..36bed5a 100644
---- a/arch/powerpc/kernel/eeh_driver.c
-+++ b/arch/powerpc/kernel/eeh_driver.c
-@@ -143,10 +143,14 @@ static void eeh_disable_irq(struct pci_dev *dev)
- static void eeh_enable_irq(struct pci_dev *dev)
- {
- 	struct eeh_dev *edev = pci_dev_to_eeh_dev(dev);
-+	struct irq_desc *desc;
- 
- 	if ((edev->mode) & EEH_DEV_IRQ_DISABLED) {
- 		edev->mode &= ~EEH_DEV_IRQ_DISABLED;
--		enable_irq(dev->irq);
-+
-+		desc = irq_to_desc(dev->irq);
-+		if (desc && desc->depth > 0)
-+			enable_irq(dev->irq);
- 	}
- }
- 
+But I see the point in your suggestion to prepare _and_ enable
+the clock during open() as well -- to have open() cope with
+whatever probe() did, after all the driver is shared among
+platforms, which may differ in what they do during probe().
+
+So I will:
+- make open() of the network device prepare _and_ enable the
+  clock for the peripheral (if acquired during probe())
+- adjust open() because ATM it leaves the clock enabled when the
+  network device operation fails (the error path is incomplete in
+  v3)
+- make the MPC512x specific probe() time .get_clock() routine not
+  just prepare but enable the clock as well
+- and of course address all the shutdown counter parts of the
+  above setup paths
+
+This results in:
+- specific chip drivers only need to balance their private get
+  and put clock routines which are called from probe and remove,
+  common paths DTRT for all of them
+- correct operation for MPC512x, where common clock is used
+- still everything is neutral for MPC5200 where common clock
+  isn't used, behaviour is identical to before the change
+- no assumptions are made about what occurs or doesn't occur
+  during probe(), when the network device is used then the clock
+  is fully setup and operational
+- when the CAN network device isn't setup (because device tree
+  doesn't describe it, or disables that node), then its clock
+  remains idle (neither gets setup nor enabled)
+- complete preparation for future improvement wrt power
+  consumption, where potential changes remain isolated to the
+  specific chip (probe() time setup, get_clock() routine) while
+  the ndo part need not get touched any more
+
+So this is the most appropriate approach I can come up with.
+
+
+Removing unnecessary devm_put_clk() calls is orthogonal to that.
+Putting these in isn't totally wrong (they won't harm, and they
+do signal "visual balance" more clearly such that the next person
+won't stop and wonder), but it's true that they are redundant.
+"Trained persons" will wonder as much about their presence as
+untrained persons wonder about their absence. :)  Apparently I'm
+not well trained yet.
+
+I thought that being explicit and cautious would be good, but the
+feedback I got suggests that encoding unnecessary instructions
+isn't desirable.  So I will remove those devm_put_clk() in v4.
+
+To save us one more iteration, shall I remove those calls only
+from error paths during setup?  Or shall I remove them from
+regular shutdown paths as well?  How much pain does the community
+feel with harmless yet unnecessary instructions? :)
+
+
+virtually yours
+Gerhard Sittig
 -- 
-1.7.5.4
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr. 5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
