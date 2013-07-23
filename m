@@ -1,21 +1,16 @@
-Return-Path: <B07421@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0252.outbound.messaging.microsoft.com [213.199.154.252])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1A5E22C00BE
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 04:43:19 +1000 (EST)
-Date: Tue, 23 Jul 2013 13:43:04 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [RFC] power/mpc85xx: Add delay after enabling I2C master
-To: York Sun <yorksun@freescale.com>
-In-Reply-To: <51EEA34A.9050400@freescale.com> (from yorksun@freescale.com on
- Tue Jul 23 10:37:46 2013)
-Message-ID: <1374604984.15592.34@snotra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: albrecht.dress@arcor.de, linuxppc-dev@lists.ozlabs.org
+Return-Path: <aaro.koskinen@iki.fi>
+Received: from filtteri5.pp.htv.fi (filtteri5.pp.htv.fi [213.243.153.188])
+ by ozlabs.org (Postfix) with ESMTP id 6F7E32C00D0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 06:25:01 +1000 (EST)
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Nick Piggin <npiggin@suse.de>, linux-pm@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/3] cpufreq: pmac64: speed up frequency switch
+Date: Tue, 23 Jul 2013 23:24:37 +0300
+Message-Id: <1374611079-28091-1-git-send-email-aaro.koskinen@iki.fi>
+Cc: Aaro Koskinen <aaro.koskinen@iki.fi>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,68 +20,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/23/2013 10:37:46 AM, York Sun wrote:
-> On 07/22/2013 05:33 PM, Scott Wood wrote:
-> > On Mon, May 13, 2013 at 02:27:08PM -0700, York Sun wrote:
-> >> Erratum A-006037 indicates I2C controller executes the write to =20
-> I2CCR only
-> >> after it sees SCL idle for 64K cycle of internal I2C controller =20
-> clocks. If
-> >> during this waiting period, I2C controller is disabled (I2CCR[MEN] =20
-> set to
-> >> 0), then the controller could end in bad state, and hang the =20
-> future access
-> >> to I2C register.
-> >>
-> >> The mpc_i2c_fixup() function tries to recover the bus from a =20
-> stalled state
-> >> where the 9th clock pulse wasn't generated. However, this =20
-> workaround
-> >> disables and enables I2C controller without meeting waiting =20
-> requirement of
-> >> this erratum.
-> >>
-> >> This erratum applies to some 85xx SoCs. It is safe to apply to all =20
-> of them
-> >> for mpc_i2c_fixup().
-> >>
-> >> Signed-off-by: York Sun <yorksun@freescale.com>
-> >>
-> >> ---
-> >> I'd like to get rid of the #ifdef if mpc5121 is OK with the longer =20
-> delay.
-> >
-> > Are mpc5121 and mpc85xx the only things that use this?
->=20
-> No. 83xx and 86xx also uses this file. But I am only unsure if mpc52xx
-> is OK with this extended delay. I guess they are but I don't have a
-> proof, or someone to confirm.
->=20
-> >
-> > Are you sure the delay always works out to be longer?  What is the
-> > relationship between fsl_get_sys_freq() and i2c->real_clk?
->=20
-> Yes. The max divider from sys clock to i2c clcok is 32K.
-> i2c->real_clk is the clock I2C controller pumps out, not its internal =20
-> operation clock.
+Some functions on switch path use msleep() which is inaccurate, and
+depends on HZ. With HZ=100 msleep(1) takes actually over ten times longer.
+Using usleep_range() we get more accurate sleeps.
 
-32K is the max for all implementations?
+I measured the "pfunc_slewing_done" polling to take 300us at max (on
+2.3GHz dual-processor Xserve G5), so using 500us sleep there should
+be fine.
 
-BTW, Where does the "2000000" come from?  Shouldn't it be 1000000 if =20
-you're converting to usec?  If you're trying to add some slack, say so =20
-rather than having a comment suggest that the output of that formula is =20
-64K cycles.  Or is there an implicit assumption that i2c runs at half =20
-the system frequency?  Is that assumption true for all implementations =20
-that have this erratum?
+With the patch, g5_switch_freq() duration drops from ~50ms to ~10ms on
+Xserve with HZ=100.
 
-> > In any case, you should send this patch to the i2c maintainer and =20
-> list.
-> >
->=20
-> I don't have the name on top of my head. Is that =20
-> linux-i2c@vger.kernel.org?
+Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
+---
+ drivers/cpufreq/pmac64-cpufreq.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Yes, and Wolfram Sang <wsa@the-dreams.de> is the maintainer.  This is =20
-listed in the MAINTAINERS file.
-
--Scott=
+diff --git a/drivers/cpufreq/pmac64-cpufreq.c b/drivers/cpufreq/pmac64-cpufreq.c
+index 7ba4234..674807d 100644
+--- a/drivers/cpufreq/pmac64-cpufreq.c
++++ b/drivers/cpufreq/pmac64-cpufreq.c
+@@ -141,7 +141,7 @@ static void g5_vdnap_switch_volt(int speed_mode)
+ 		pmf_call_one(pfunc_vdnap0_complete, &args);
+ 		if (done)
+ 			break;
+-		msleep(1);
++		usleep_range(1000, 1000);
+ 	}
+ 	if (done == 0)
+ 		printk(KERN_WARNING "cpufreq: Timeout in clock slewing !\n");
+@@ -240,7 +240,7 @@ static void g5_pfunc_switch_volt(int speed_mode)
+ 		if (pfunc_cpu1_volt_low)
+ 			pmf_call_one(pfunc_cpu1_volt_low, NULL);
+ 	}
+-	msleep(10); /* should be faster , to fix */
++	usleep_range(10000, 10000); /* should be faster , to fix */
+ }
+ 
+ /*
+@@ -285,7 +285,7 @@ static int g5_pfunc_switch_freq(int speed_mode)
+ 		pmf_call_one(pfunc_slewing_done, &args);
+ 		if (done)
+ 			break;
+-		msleep(1);
++		usleep_range(500, 500);
+ 	}
+ 	if (done == 0)
+ 		printk(KERN_WARNING "cpufreq: Timeout in clock slewing !\n");
+-- 
+1.8.3.2
