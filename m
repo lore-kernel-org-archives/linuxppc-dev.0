@@ -1,31 +1,30 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e36.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7E7552C00C6
+ (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 052AB2C00CD
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 21:11:11 +1000 (EST)
 Received: from /spool/local
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Tue, 23 Jul 2013 05:11:09 -0600
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
- [9.17.195.227])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 1DB203E40044
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 05:10:45 -0600 (MDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r6NBB6lb162586
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 05:11:06 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r6NBB6uA029577
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 05:11:06 -0600
+ Tue, 23 Jul 2013 07:11:08 -0400
+Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 731976E803A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 07:11:01 -0400 (EDT)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r6NBB6fr155612
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 07:11:06 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r6NBB5wH014766
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 07:11:06 -0400
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 09/11] powerpc/eeh: Don't use pci_dev during BAR restore
-Date: Tue, 23 Jul 2013 19:10:54 +0800
-Message-Id: <1374577856-1712-10-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 07/11] powerpc/pci: Partial hotplug support
+Date: Tue, 23 Jul 2013 19:10:52 +0800
+Message-Id: <1374577856-1712-8-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1374577856-1712-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1374577856-1712-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -38,231 +37,151 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-While restoring BARs for one specific PCI device, the pci_dev
-instance should have been released. So it's not reliable to use
-the pci_dev instance on restoring BARs. However, we still need
-some information (e.g. PCIe capability position, header type) from
-the pci_dev instance. So we have to store those information to
-EEH device in advance.
+When EEH error happens to one specific PE, the device drivers
+of its attached EEH devices (PCI devices) are checked to see
+the further action: reset with complete hotplug, or reset without
+hotplug. However, that's not enough for those PCI devices whose
+drivers can't support EEH, or those PCI devices without driver.
+So we need do so-called "partial hotplug" on basis of PCI devices.
+In the situation, part of PCI devices of the specific PE are
+unplugged and plugged again after PE reset.
+
+The patch changes pcibios_add_pci_devices() so that it can support
+full hotplug and so-called "partial" hotplug based on device-tree
+or real hardware. It's notable that pci_of_scan.c has been changed
+for a bit in order to support the "partial" hotplug based on dev-tree.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h               |    8 +++-
- arch/powerpc/kernel/eeh_pe.c                 |   25 +++++-----
- arch/powerpc/platforms/powernv/eeh-powernv.c |   11 +++++
- arch/powerpc/platforms/pseries/eeh_pseries.c |   63 +++++++++++++++++++++++++-
- 4 files changed, 91 insertions(+), 16 deletions(-)
+ arch/powerpc/kernel/pci-common.c  |    1 +
+ arch/powerpc/kernel/pci-hotplug.c |    6 +--
+ arch/powerpc/kernel/pci_of_scan.c |   56 ++++++++++++++++++++++++++----------
+ 3 files changed, 43 insertions(+), 20 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index f54a601..4199d99 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -84,8 +84,11 @@ struct eeh_pe {
-  * another tree except the currently existing tree of PCI
-  * buses and PCI devices
-  */
--#define EEH_DEV_IRQ_DISABLED	(1 << 0)	/* Interrupt disabled	*/
--#define EEH_DEV_DISCONNECTED	(1 << 1)	/* Removing from PE	*/
-+#define EEH_DEV_BRIDGE		(1 << 0)	/* PCI bridge		*/
-+#define EEH_DEV_ROOT_PORT	(1 << 1)	/* PCIe root port	*/
-+#define EEH_DEV_DS_PORT		(1 << 2)	/* Downstream port	*/
-+#define EEH_DEV_IRQ_DISABLED	(1 << 3)	/* Interrupt disabled	*/
-+#define EEH_DEV_DISCONNECTED	(1 << 4)	/* Removing from PE	*/
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index f46914a..f80a4f4 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -1462,6 +1462,7 @@ void pcibios_finish_adding_to_bus(struct pci_bus *bus)
+ 	/* Allocate bus and devices resources */
+ 	pcibios_allocate_bus_resources(bus);
+ 	pcibios_claim_one_bus(bus);
++	pci_assign_unassigned_bus_resources(bus);
  
- struct eeh_dev {
- 	int mode;			/* EEH mode			*/
-@@ -93,6 +96,7 @@ struct eeh_dev {
- 	int config_addr;		/* Config address		*/
- 	int pe_config_addr;		/* PE config address		*/
- 	u32 config_space[16];		/* Saved PCI config space	*/
-+	u8 pcie_cap;			/* Saved PCIe capability	*/
- 	struct eeh_pe *pe;		/* Associated PE		*/
- 	struct list_head list;		/* Form link list in the PE	*/
- 	struct pci_controller *phb;	/* Associated PHB		*/
-diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
-index 2aa955a..f945053 100644
---- a/arch/powerpc/kernel/eeh_pe.c
-+++ b/arch/powerpc/kernel/eeh_pe.c
-@@ -578,7 +578,7 @@ void eeh_pe_state_clear(struct eeh_pe *pe, int state)
-  * blocked on normal path during the stage. So we need utilize
-  * eeh operations, which is always permitted.
+ 	/* Fixup EEH */
+ 	eeh_add_device_tree_late(bus);
+diff --git a/arch/powerpc/kernel/pci-hotplug.c b/arch/powerpc/kernel/pci-hotplug.c
+index fc0831d..8e9b1c2 100644
+--- a/arch/powerpc/kernel/pci-hotplug.c
++++ b/arch/powerpc/kernel/pci-hotplug.c
+@@ -71,7 +71,7 @@ EXPORT_SYMBOL_GPL(pcibios_remove_pci_devices);
   */
--static void eeh_bridge_check_link(struct pci_dev *pdev,
-+static void eeh_bridge_check_link(struct eeh_dev *edev,
- 				  struct device_node *dn)
+ void pcibios_add_pci_devices(struct pci_bus * bus)
  {
- 	int cap;
-@@ -589,16 +589,17 @@ static void eeh_bridge_check_link(struct pci_dev *pdev,
- 	 * We only check root port and downstream ports of
- 	 * PCIe switches
- 	 */
--	if (!pci_is_pcie(pdev) ||
--	    (pci_pcie_type(pdev) != PCI_EXP_TYPE_ROOT_PORT &&
--	     pci_pcie_type(pdev) != PCI_EXP_TYPE_DOWNSTREAM))
-+	if (!(edev->mode & (EEH_DEV_ROOT_PORT | EEH_DEV_DS_PORT)))
+-	int slotno, num, mode, pass, max;
++	int slotno, mode, pass, max;
+ 	struct pci_dev *dev;
+ 	struct device_node *dn = pci_bus_to_OF_node(bus);
+ 
+@@ -87,9 +87,7 @@ void pcibios_add_pci_devices(struct pci_bus * bus)
+ 	} else if (mode == PCI_PROBE_NORMAL) {
+ 		/* use legacy probe */
+ 		slotno = PCI_SLOT(PCI_DN(dn->child)->devfn);
+-		num = pci_scan_slot(bus, PCI_DEVFN(slotno, 0));
+-		if (!num)
+-			return;
++		pci_scan_slot(bus, PCI_DEVFN(slotno, 0));
+ 		pcibios_setup_bus_devices(bus);
+ 		max = bus->busn_res.start;
+ 		for (pass = 0; pass < 2; pass++) {
+diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
+index 6b0ba58..15d9105 100644
+--- a/arch/powerpc/kernel/pci_of_scan.c
++++ b/arch/powerpc/kernel/pci_of_scan.c
+@@ -230,11 +230,14 @@ void of_scan_pci_bridge(struct pci_dev *dev)
  		return;
+ 	}
  
--	pr_debug("%s: Check PCIe link for %s ...\n",
--		 __func__, pci_name(pdev));
-+	pr_debug("%s: Check PCIe link for %04x:%02x:%02x.%01x ...\n",
-+		 __func__, edev->phb->global_number,
-+		 edev->config_addr >> 8,
-+		 PCI_SLOT(edev->config_addr & 0xFF),
-+		 PCI_FUNC(edev->config_addr & 0xFF));
+-	bus = pci_add_new_bus(dev->bus, dev, busrange[0]);
++	bus = pci_find_bus(pci_domain_nr(dev->bus), busrange[0]);
+ 	if (!bus) {
+-		printk(KERN_ERR "Failed to create pci bus for %s\n",
+-		       node->full_name);
+-		return;
++		bus = pci_add_new_bus(dev->bus, dev, busrange[0]);
++		if (!bus) {
++			printk(KERN_ERR "Failed to create pci bus for %s\n",
++			       node->full_name);
++			return;
++		}
+ 	}
  
- 	/* Check slot status */
--	cap = pdev->pcie_cap;
-+	cap = edev->pcie_cap;
- 	eeh_ops->read_config(dn, cap + PCI_EXP_SLTSTA, 2, &val);
- 	if (!(val & PCI_EXP_SLTSTA_PDS)) {
- 		pr_debug("  No card in the slot (0x%04x) !\n", val);
-@@ -652,8 +653,7 @@ static void eeh_bridge_check_link(struct pci_dev *pdev,
- #define BYTE_SWAP(OFF)	(8*((OFF)/4)+3-(OFF))
- #define SAVED_BYTE(OFF)	(((u8 *)(edev->config_space))[BYTE_SWAP(OFF)])
- 
--static void eeh_restore_bridge_bars(struct pci_dev *pdev,
--				    struct eeh_dev *edev,
-+static void eeh_restore_bridge_bars(struct eeh_dev *edev,
- 				    struct device_node *dn)
- {
- 	int i;
-@@ -679,7 +679,7 @@ static void eeh_restore_bridge_bars(struct pci_dev *pdev,
- 	eeh_ops->write_config(dn, PCI_COMMAND, 4, edev->config_space[1]);
- 
- 	/* Check the PCIe link is ready */
--	eeh_bridge_check_link(pdev, dn);
-+	eeh_bridge_check_link(edev, dn);
+ 	bus->primary = dev->bus->number;
+@@ -292,6 +295,38 @@ void of_scan_pci_bridge(struct pci_dev *dev)
  }
+ EXPORT_SYMBOL(of_scan_pci_bridge);
  
- static void eeh_restore_device_bars(struct eeh_dev *edev,
-@@ -729,12 +729,11 @@ static void eeh_restore_device_bars(struct eeh_dev *edev,
- static void *eeh_restore_one_device_bars(void *data, void *flag)
- {
- 	struct eeh_dev *edev = (struct eeh_dev *)data;
--	struct pci_dev *pdev = eeh_dev_to_pci_dev(edev);
- 	struct device_node *dn = eeh_dev_to_of_node(edev);
- 
- 	/* Do special restore for bridges */
--	if (pdev->hdr_type == PCI_HEADER_TYPE_BRIDGE)
--		eeh_restore_bridge_bars(pdev, edev, dn);
-+	if (edev->mode & EEH_DEV_BRIDGE)
-+		eeh_restore_bridge_bars(edev, dn);
- 	else
- 		eeh_restore_device_bars(edev, dn);
- 
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index a380428..4361a5c 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -124,6 +124,17 @@ static int powernv_eeh_dev_probe(struct pci_dev *dev, void *flag)
- 	/* Initialize eeh device */
- 	edev->class_code	= dev->class;
- 	edev->mode		= 0;
-+	if (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE)
-+		edev->mode |= EEH_DEV_BRIDGE;
-+	if (pci_is_pcie(dev)) {
-+		edev->pcie_cap = pci_pcie_cap(dev);
++static struct pci_dev *of_scan_pci_dev(struct pci_bus *bus,
++			    struct device_node *dn)
++{
++	struct pci_dev *dev = NULL;
++	const u32 *reg;
++	int reglen, devfn;
 +
-+		if (pci_pcie_type(dev) == PCI_EXP_TYPE_ROOT_PORT)
-+			edev->mode |= EEH_DEV_ROOT_PORT;
-+		else if (pci_pcie_type(dev) == PCI_EXP_TYPE_DOWNSTREAM)
-+			edev->mode |= EEH_DEV_DS_PORT;
++	pr_debug("  * %s\n", dn->full_name);
++	if (!of_device_is_available(dn))
++		return NULL;
++
++	reg = of_get_property(dn, "reg", &reglen);
++	if (reg == NULL || reglen < 20)
++		return NULL;
++	devfn = (reg[0] >> 8) & 0xff;
++
++	/* Check if the PCI device is already there */
++	dev = pci_get_slot(bus, devfn);
++	if (dev) {
++		pci_dev_put(dev);
++		return dev;
 +	}
 +
- 	edev->config_addr	= ((dev->bus->number << 8) | dev->devfn);
- 	edev->pe_config_addr	= phb->bdfn_to_pe(phb, dev->bus, dev->devfn & 0xff);
- 
-diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
-index 0f44f9f..9e80f0a 100644
---- a/arch/powerpc/platforms/pseries/eeh_pseries.c
-+++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
-@@ -133,6 +133,48 @@ static int pseries_eeh_init(void)
- 	return 0;
- }
- 
-+static int pseries_eeh_cap_start(struct device_node *dn)
-+{
-+	struct pci_dn *pdn = PCI_DN(dn);
-+	u32 status;
++	/* create a new pci_dev for this device */
++	dev = of_create_pci_dev(dn, bus, devfn);
++	if (!dev)
++		return NULL;
 +
-+	if (!pdn)
-+		return 0;
-+
-+	rtas_read_config(pdn, PCI_STATUS, 2, &status);
-+	if (!(status & PCI_STATUS_CAP_LIST))
-+		return 0;
-+
-+	return PCI_CAPABILITY_LIST;
-+}
-+
-+
-+static int pseries_eeh_find_cap(struct device_node *dn, int cap)
-+{
-+	struct pci_dn *pdn = PCI_DN(dn);
-+	int pos = pseries_eeh_cap_start(dn);
-+	int cnt = 48;	/* Maximal number of capabilities */
-+	u32 id;
-+
-+	if (!pos)
-+		return 0;
-+
-+        while (cnt--) {
-+		rtas_read_config(pdn, pos, 1, &pos);
-+		if (pos < 0x40)
-+			break;
-+		pos &= ~3;
-+		rtas_read_config(pdn, pos + PCI_CAP_LIST_ID, 1, &id);
-+		if (id == 0xff)
-+			break;
-+		if (id == cap)
-+			return pos;
-+		pos += PCI_CAP_LIST_NEXT;
-+	}
-+
-+	return 0;
++	pr_debug("  dev header type: %x\n", dev->hdr_type);
++	return dev;
 +}
 +
  /**
-  * pseries_eeh_of_probe - EEH probe on the given device
-  * @dn: OF node
-@@ -146,8 +188,10 @@ static void *pseries_eeh_of_probe(struct device_node *dn, void *flag)
+  * __of_scan_bus - given a PCI bus node, setup bus and scan for child devices
+  * @node: device tree node for the PCI bus
+@@ -302,8 +337,6 @@ static void __of_scan_bus(struct device_node *node, struct pci_bus *bus,
+ 			  int rescan_existing)
  {
- 	struct eeh_dev *edev;
- 	struct eeh_pe pe;
-+	struct pci_dn *pdn = PCI_DN(dn);
- 	const u32 *class_code, *vendor_id, *device_id;
- 	const u32 *regs;
-+	u32 pcie_flags;
- 	int enable = 0;
- 	int ret;
+ 	struct device_node *child;
+-	const u32 *reg;
+-	int reglen, devfn;
+ 	struct pci_dev *dev;
  
-@@ -167,9 +211,26 @@ static void *pseries_eeh_of_probe(struct device_node *dn, void *flag)
- 	if (dn->type && !strcmp(dn->type, "isa"))
- 		return NULL;
+ 	pr_debug("of_scan_bus(%s) bus no %d...\n",
+@@ -311,16 +344,7 @@ static void __of_scan_bus(struct device_node *node, struct pci_bus *bus,
  
--	/* Update class code and mode of eeh device */
-+	/*
-+	 * Update class code and mode of eeh device. We need
-+	 * correctly reflects that current device is root port
-+	 * or PCIe switch downstream port.
-+	 */
- 	edev->class_code = *class_code;
-+	edev->pcie_cap = pseries_eeh_find_cap(dn, PCI_CAP_ID_EXP);
- 	edev->mode = 0;
-+	if ((edev->class_code >> 8) == PCI_CLASS_BRIDGE_PCI) {
-+		edev->mode |= EEH_DEV_BRIDGE;
-+		if (edev->pcie_cap) {
-+			rtas_read_config(pdn, edev->pcie_cap + PCI_EXP_FLAGS,
-+					 2, &pcie_flags);
-+			pcie_flags = (pcie_flags & PCI_EXP_FLAGS_TYPE) >> 4;
-+			if (pcie_flags == PCI_EXP_TYPE_ROOT_PORT)
-+				edev->mode |= EEH_DEV_ROOT_PORT;
-+			else if (pcie_flags == PCI_EXP_TYPE_DOWNSTREAM)
-+				edev->mode |= EEH_DEV_DS_PORT;
-+		}
-+	}
- 
- 	/* Retrieve the device address */
- 	regs = of_get_property(dn, "reg", NULL);
+ 	/* Scan direct children */
+ 	for_each_child_of_node(node, child) {
+-		pr_debug("  * %s\n", child->full_name);
+-		if (!of_device_is_available(child))
+-			continue;
+-		reg = of_get_property(child, "reg", &reglen);
+-		if (reg == NULL || reglen < 20)
+-			continue;
+-		devfn = (reg[0] >> 8) & 0xff;
+-
+-		/* create a new pci_dev for this device */
+-		dev = of_create_pci_dev(child, bus, devfn);
++		dev = of_scan_pci_dev(bus, child);
+ 		if (!dev)
+ 			continue;
+ 		pr_debug("    dev header type: %x\n", dev->hdr_type);
 -- 
 1.7.5.4
