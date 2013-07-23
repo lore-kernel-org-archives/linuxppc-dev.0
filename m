@@ -1,20 +1,17 @@
 Return-Path: <michael@ellerman.id.au>
-Date: Tue, 23 Jul 2013 23:44:31 +1000
+Date: Tue, 23 Jul 2013 23:58:10 +1000
 From: Michael Ellerman <michael@ellerman.id.au>
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] powerpc: kernel: remove useless code which related
- with 'max_cpus'
-Message-ID: <20130723134431.GF31944@concordia>
-References: <51ECCA10.7010709@asianux.com>
- <51ECCEA8.5040406@linux.vnet.ibm.com>
- <51ECD0BF.8080605@asianux.com> <51ECD3D4.9020405@asianux.com>
- <51ECD664.7040708@linux.vnet.ibm.com>
+To: Chen Gang <gang.chen@asianux.com>
+Subject: Re: [Suggestion] powerpc: xmon: about 'longjmp' related warning.
+Message-ID: <20130723135809.GG31944@concordia>
+References: <51ECD91D.7090903@asianux.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <51ECD664.7040708@linux.vnet.ibm.com>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Chen Gang <gang.chen@asianux.com>, "paulus@samba.org" <paulus@samba.org>,
- chenhui.zhao@freescale.com, Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <51ECD91D.7090903@asianux.com>
+Cc: Michael Neuling <mikey@neuling.org>, "paulus@samba.org" <paulus@samba.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ jovi.zhangwei@huawei.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,27 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 22, 2013 at 12:21:16PM +0530, Srivatsa S. Bhat wrote:
-> On 07/22/2013 12:10 PM, Chen Gang wrote:
-> > Since not need 'max_cpus' after the related commit, the related code
-> > are useless too, need be removed.
-> > 
-> > The related commit:
-> > 
-> >   c1aa687 powerpc: Clean up obsolete code relating to decrementer and timebase
-> > 
-> > The related warning:
-> > 
-> >   arch/powerpc/kernel/smp.c:323:43: warning: parameter ‘max_cpus’ set but not used [-Wunused-but-set-parameter]
-> > 
-> > Signed-off-by: Chen Gang <gang.chen@asianux.com>
+On Mon, Jul 22, 2013 at 03:02:53PM +0800, Chen Gang wrote:
+> Hello Maintainers:
 > 
-> This version looks good.
+> With allmodconfig and EXTRA_CFLAGS=-W", it reports warnings below:
 
-Agreed.
+> 
+> arch/powerpc/xmon/xmon.c:3027:6: warning: variable ‘i’ might be clobbered by ‘longjmp’ or ‘vfork’ [-Wclobbered]
+> arch/powerpc/xmon/xmon.c:3068:6: warning: variable ‘i’ might be clobbered by ‘longjmp’ or ‘vfork’ [-Wclobbered]
 
-A good follow up patch, or actually series of patches, would be to
-change the prototype of smp_ops->probe() to return void, and fix all the
-implementations to no longer return anything.
+In both these cases we are inside the body of a for loop and we do a
+if (setjmp) / else block. Although looking at the source the value of i
+is not modified by the setjmp, I guess it's possible that the compiler
+might reorder the increment of i inside the setjmp and loose the value
+when we longjmp.
+
+> arch/powerpc/xmon/xmon.c:352:48: warning: argument ‘fromipi’ might be clobbered by ‘longjmp’ or ‘vfork’ [-Wclobbered]
+
+This one I can't see, but I assume it's a similar case.
+
+> Excuse me, I am not quite sure about it whether can cause issue or not.
+
+I've never seen it get stuck in those loops or anything, but I guess
+it's possible.
+
+The first thing to do would be to analyse the generated assembler code
+to determine if there really is any possiblity of the value being
+clobbered, or if it's just a theoretical bug.
 
 cheers
