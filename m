@@ -1,28 +1,20 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-ob0-f182.google.com (mail-ob0-f182.google.com
- [209.85.214.182])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A95D62C00C6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 19:07:52 +1000 (EST)
-Received: by mail-ob0-f182.google.com with SMTP id va7so9732755obc.27
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 02:07:50 -0700 (PDT)
-Message-ID: <51EE47DE.5020002@ozlabs.ru>
-Date: Tue, 23 Jul 2013 19:07:42 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Return-Path: <B40534@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D3A232C0096
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 20:19:40 +1000 (EST)
+From: Dongsheng Wang <dongsheng.wang@freescale.com>
+To: <daniel.lezcano@linaro.org>
+Subject: [PATCH 1/2] cpuidle: fix cpu idle driver as a module can not remove
+Date: Tue, 23 Jul 2013 17:28:00 +0800
+Message-ID: <1374571681-31911-1-git-send-email-dongsheng.wang@freescale.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 03/10] vfio: add external user support
-References: <1373936045-22653-1-git-send-email-aik@ozlabs.ru>
- <1373936045-22653-4-git-send-email-aik@ozlabs.ru>
- <1374546224.15429.8.camel@ul30vt.home>
-In-Reply-To: <1374546224.15429.8.camel@ul30vt.home>
-Content-Type: text/plain; charset=KOI8-R
-Cc: kvm@vger.kernel.org, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain
+Cc: rjw@sisk.pl, linuxppc-dev@lists.ozlabs.org,
+ Wang Dongsheng <dongsheng.wang@freescale.com>, linux-pm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,55 +24,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/23/2013 12:23 PM, Alex Williamson wrote:
-> On Tue, 2013-07-16 at 10:53 +1000, Alexey Kardashevskiy wrote:
->> VFIO is designed to be used via ioctls on file descriptors
->> returned by VFIO.
->>
->> However in some situations support for an external user is required.
->> The first user is KVM on PPC64 (SPAPR TCE protocol) which is going to
->> use the existing VFIO groups for exclusive access in real/virtual mode
->> on a host to avoid passing map/unmap requests to the user space which
->> would made things pretty slow.
->>
->> The protocol includes:
->>
->> 1. do normal VFIO init operation:
->> 	- opening a new container;
->> 	- attaching group(s) to it;
->> 	- setting an IOMMU driver for a container.
->> When IOMMU is set for a container, all groups in it are
->> considered ready to use by an external user.
->>
->> 2. User space passes a group fd to an external user.
->> The external user calls vfio_group_get_external_user()
->> to verify that:
->> 	- the group is initialized;
->> 	- IOMMU is set for it.
->> If both checks passed, vfio_group_get_external_user()
->> increments the container user counter to prevent
->> the VFIO group from disposal before KVM exits.
->>
->> 3. The external user calls vfio_external_user_iommu_id()
->> to know an IOMMU ID. PPC64 KVM uses it to link logical bus
->> number (LIOBN) with IOMMU ID.
->>
->> 4. When the external KVM finishes, it calls
->> vfio_group_put_external_user() to release the VFIO group.
->> This call decrements the container user counter.
->> Everything gets released.
->>
->> The "vfio: Limit group opens" patch is also required for the consistency.
->>
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> 
-> This looks fine to me.  Is the plan to add this through the ppc tree
-> again?  Thanks,
+From: Wang Dongsheng <dongsheng.wang@freescale.com>
 
+The module can not be removed when execute "rmmod". rmmod not use
+"--force".
 
-Nope, better to add this through your tree. And faster for sure :) Thanks!
+Log:
+root:~# rmmod cpuidle-e500
+incs[9], decs[1]
+rmmod: can't unload 'cpuidle_e500': Resource temporarily unavailable
 
+Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+---
+Branch: pm-cpuidle
 
+ drivers/cpuidle/cpuidle.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index fdc432f..534320a 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -386,6 +386,9 @@ static int __cpuidle_register_device(struct cpuidle_device *dev)
+ 		goto err_coupled;
+ 
+ 	dev->registered = 1;
++
++	module_put(drv->owner);
++
+ 	return 0;
+ 
+ err_coupled:
+@@ -432,8 +435,6 @@ EXPORT_SYMBOL_GPL(cpuidle_register_device);
+  */
+ void cpuidle_unregister_device(struct cpuidle_device *dev)
+ {
+-	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
+-
+ 	if (dev->registered == 0)
+ 		return;
+ 
+@@ -448,8 +449,6 @@ void cpuidle_unregister_device(struct cpuidle_device *dev)
+ 	cpuidle_coupled_unregister_device(dev);
+ 
+ 	cpuidle_resume_and_unlock();
+-
+-	module_put(drv->owner);
+ }
+ 
+ EXPORT_SYMBOL_GPL(cpuidle_unregister_device);
 -- 
-Alexey
+1.8.0
